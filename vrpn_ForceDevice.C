@@ -93,9 +93,6 @@ vrpn_ForceDevice::vrpn_ForceDevice(char *name, vrpn_Connection *c)
 	    clearTrimesh_message_id = 
 	      connection->register_message_type("clearTrimesh");
 	    scp_message_id = connection->register_message_type("SCP");
-	    scp_withTriangleIndex_message_id = connection->register_message_type("SCP with Triangle Index");
-	    record_message_id = 
-	      connection->register_message_type("recordForceSession");
 	    error_message_id = connection->register_message_type
 				    ("Force Error");
 
@@ -195,16 +192,15 @@ vrpn_int32 vrpn_ForceDevice::decode_force (const char *buffer, const vrpn_int32 
     return 0;
 }
 
-char *vrpn_ForceDevice::encode_scp (vrpn_int32 &length, 
-				    const vrpn_float64 * pos,
-                                    const vrpn_float64 * quat)
- {
+char *vrpn_ForceDevice::encode_scp(vrpn_int32 &length, 
+				const vrpn_float64 *pos, const vrpn_float64 *quat)
+{
     int i;
-    char * buf;
-    char * mptr;
+    char *buf;
+    char *mptr;
     vrpn_int32 mlen;
 
-    length = 7 * sizeof(vrpn_float64);
+    length = 7*sizeof(vrpn_float64);
     mlen = length;
 
     buf = new char [length];
@@ -220,84 +216,27 @@ char *vrpn_ForceDevice::encode_scp (vrpn_int32 &length,
     return buf;
 }
 
-vrpn_int32 vrpn_ForceDevice::decode_scp (const char * buffer,
-                                         const vrpn_int32 len,
-					 vrpn_float64 * pos,
-                                         vrpn_float64 * quat) {
-    int desiredLen;
+vrpn_int32 vrpn_ForceDevice::decode_scp(const char *buffer, const vrpn_int32 len,
+				 vrpn_float64 *pos, vrpn_float64 *quat)
+{
     int i;
-    const char * mptr = buffer;
+    const char *mptr = buffer;
+    int  desiredLen = 7 * sizeof(vrpn_float64);
 
-    desiredLen = 7 * sizeof(vrpn_float64);
-
-    if (len != desiredLen) {
+    if (len != desiredLen){
 	    fprintf(stderr,"vrpn_ForceDevice: scp message payload error\n");
 	    fprintf(stderr,"             (got %d, expected %d)\n",
-		    len, desiredLen);
+		    len, desiredLen );
 	    return -1;
     }
 
     for (i = 0; i < 3; i++)
-      CHECK(vrpn_unbuffer(&mptr, &(pos[i])));
+	    CHECK(vrpn_unbuffer(&mptr, &(pos[i])));
     for (i = 0; i < 4; i++)
-      CHECK(vrpn_unbuffer(&mptr, &(quat[i])));
+	    CHECK(vrpn_unbuffer(&mptr, &(quat[i])));
 
     return 0;
 }
-
-char *vrpn_ForceDevice::encode_scp_withTriangleIndex (vrpn_int32 &length, 
-				    const vrpn_float64 * pos,
-                                    const vrpn_float64 * quat,
-				    const vrpn_int32 triId) {
-    int i;
-    char * buf;
-    char * mptr;
-    vrpn_int32 mlen;
-
-    length = 7 * sizeof(vrpn_float64) + sizeof(vrpn_int32);
-    mlen = length;
-
-    buf = new char [length];
-    mptr = buf;
-
-    for (i = 0; i < 3; i++) {
-        vrpn_buffer(&mptr, &mlen, pos[i]);
-    }
-    for (i = 0; i < 4; i++) {
-        vrpn_buffer(&mptr, &mlen, quat[i]);
-    }
-    vrpn_buffer(&mptr, &mlen, triId);
-
-    return buf;
-}
-
-vrpn_int32 vrpn_ForceDevice::decode_scp_withTriangleIndex (const char * buffer,
-                                         const vrpn_int32 len,
-					 vrpn_float64 * pos,
-                                         vrpn_float64 * quat,
-					 vrpn_int32 & triId) {
-    int desiredLen;
-    int i;
-    const char * mptr = buffer;
-
-    desiredLen = 7 * sizeof(vrpn_float64) + sizeof(vrpn_int32);
-
-    if (len != desiredLen) {
-	    fprintf(stderr,"vrpn_ForceDevice: scp_with_triangle_index message payload error\n");
-	    fprintf(stderr,"             (got %d, expected %d)\n",
-		    len, desiredLen);
-	    return -1;
-    }
-
-    for (i = 0; i < 3; i++)
-      CHECK(vrpn_unbuffer(&mptr, &(pos[i])));
-    for (i = 0; i < 4; i++)
-      CHECK(vrpn_unbuffer(&mptr, &(quat[i])));
-    CHECK(vrpn_unbuffer(&mptr, &triId));
-
-    return 0;
-}
-
 
 char *vrpn_ForceDevice::encode_plane(vrpn_int32 &len, const vrpn_float32 *plane, 
 				const vrpn_float32 kspring, const vrpn_float32 kdamp,
@@ -682,44 +621,10 @@ vrpn_int32 vrpn_ForceDevice::decode_trimeshTransform(const char *buffer,
     }
 
     for (i = 0; i < 16; i++)
-      CHECK(vrpn_unbuffer(&mptr, &(homMatrix[i])));
+	    CHECK(vrpn_unbuffer(&mptr, &(homMatrix[i])));
 
     return 0;
 }
-
-char *vrpn_ForceDevice::encode_setRecordStatus(vrpn_int32 &len,const vrpn_int32 action){
-
-    char *buf;
-    char *mptr;
-    vrpn_int32 mlen;
-
-    len = sizeof(vrpn_int32);
-    mlen = len;
-
-    buf = new char [len];
-    mptr = buf;
-
-    vrpn_buffer(&mptr, &mlen, action);
-
-    return buf; 
-}
-
-vrpn_int32 vrpn_ForceDevice::decode_setRecordStatus(const char *buffer,const vrpn_int32 len,
-						    vrpn_int32 *action){
-
-    const char *mptr = buffer;
-
-    if (len != sizeof(vrpn_int32)){
-	fprintf(stderr,"vrpn_ForceDevice: record status message payload");
-	    fprintf(stderr," error\n             (got %d, expected %d)\n",
-		    len, sizeof(vrpn_int32) );
-	    return -1;
-    }
-
-    CHECK(vrpn_unbuffer(&mptr, action));
-    return 0;
-}
-
 
 char *vrpn_ForceDevice::encode_forcefield(vrpn_int32 &len, const vrpn_float32 origin[3],
 	const vrpn_float32 force[3], const vrpn_float32 jacobian[3][3], const vrpn_float32 radius)
@@ -1417,6 +1322,7 @@ void vrpn_ForceDevice_Remote::useHcollide(void){
     delete []msgbuf;
   }
 }
+
 void vrpn_ForceDevice_Remote::useGhost(void){
   char	*msgbuf;
   vrpn_int32		len;
@@ -1429,49 +1335,6 @@ void vrpn_ForceDevice_Remote::useGhost(void){
   if(connection){
     msgbuf = encode_setTrimeshType(len,GHOST);
     if (connection->pack_message(len,timestamp,setTrimeshType_message_id,
-				 my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
-      fprintf(stderr,"Phantom: cannot write message: tossing\n");
-    }
-    connection->mainloop();
-    delete []msgbuf;
-  }
-}
-
-// start/stop recording a force session (generally for debugging)
-void vrpn_ForceDevice_Remote::startRecording(){
-  char	*msgbuf;
-  vrpn_int32		len;
-  struct timeval current_time;
-  
-  gettimeofday(&current_time, NULL);
-  timestamp.tv_sec = current_time.tv_sec;
-  timestamp.tv_usec = current_time.tv_usec;
-
-  if(connection){
-    // 1 = on 
-    msgbuf = encode_setRecordStatus(len,(vrpn_int32)1);
-    if (connection->pack_message(len,timestamp,record_message_id,
-				 my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
-      fprintf(stderr,"Phantom: cannot write message: tossing\n");
-    }
-    connection->mainloop();
-    delete []msgbuf;
-  }
-}
-
-void vrpn_ForceDevice_Remote::stopRecording(){
-  char	*msgbuf;
-  vrpn_int32		len;
-  struct timeval current_time;
-  
-  gettimeofday(&current_time, NULL);
-  timestamp.tv_sec = current_time.tv_sec;
-  timestamp.tv_usec = current_time.tv_usec;
-
-  if(connection){
-    // 0 = off 
-    msgbuf = encode_setRecordStatus(len,(vrpn_int32)0);
-    if (connection->pack_message(len,timestamp,record_message_id,
 				 my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
       fprintf(stderr,"Phantom: cannot write message: tossing\n");
     }
@@ -1784,68 +1647,6 @@ int vrpn_ForceDevice_Remote::unregister_scp_change_handler(void *userdata,
     return 0;
 }
 
-
-int vrpn_ForceDevice_Remote::register_scp_withTriangleIndex_change_handler(void *userdata,
-                        vrpn_FORCESCP_WITH_TRIANGLE_INDEX_HANDLER handler)
-{
-    vrpn_FORCESCP_WITH_TRIANGLE_INDEX_CHANGELIST    *new_entry;
-
-    // Ensure that the handler is non-NULL
-    if (handler == NULL) {
-	fprintf(stderr,
-	  "vrpn_ForceDevice_Remote::register_scp_withTriangleIndex_handler: NULL handler\n");
-	return -1;
-    }
-
-    // Allocate and initialize the new entry
-    if ( (new_entry = new vrpn_FORCESCP_WITH_TRIANGLE_INDEX_CHANGELIST) == NULL) {
-	fprintf(stderr,
-	 "vrpn_ForceDevice_Remote::register_scp_withTriangleIndex_handler: Out of memory\n");
-	return -1;
-    }
-    new_entry->handler = handler;
-    new_entry->userdata = userdata;
-
-    // Add this handler to the chain at the beginning (don't check to see
-    // if it is already there, since duplication is okay).
-    new_entry->next = scp_withTriangleIndex_change_list;
-    scp_withTriangleIndex_change_list = new_entry;
-
-    return 0;
-}
-
-int vrpn_ForceDevice_Remote::unregister_scp_withTriangleIndex_change_handler(void *userdata,
-                        vrpn_FORCESCP_WITH_TRIANGLE_INDEX_HANDLER handler)
-{
-    // The pointer at *snitch points to victim
-    vrpn_FORCESCP_WITH_TRIANGLE_INDEX_CHANGELIST    *victim, **snitch;
-
-    // Find a handler with this registry in the list (any one will do,
-    // since all duplicates are the same).
-    snitch = &scp_withTriangleIndex_change_list;
-    victim = *snitch;
-    while ( (victim != NULL) &&
-	    ( (victim->handler != handler) ||
-	      (victim->userdata != userdata) )) {
-	snitch = &( (*snitch)->next );
-	victim = victim->next;
-    }
-
-    // Make sure we found one
-    if (victim == NULL) {
-     fprintf(stderr,
-      "vrpn_ForceDevice_Remote::unregister_scp_withTriangleIndex_handler: No such handler\n");
-      return -1;
-    }
-
-    // Remove the entry from the list
-    *snitch = victim->next;
-    delete victim;
-
-    return 0;
-}
-
-
 int vrpn_ForceDevice_Remote::register_error_handler(void *userdata,
                         vrpn_FORCEERRORHANDLER handler)
 {
@@ -1935,26 +1736,6 @@ int vrpn_ForceDevice_Remote::handle_scp_change_message(void *userdata,
 
     tp.msg_time = p.msg_time;
     decode_scp(p.buffer, p.payload_len, tp.pos, tp.quat);
-
-    // Go down the list of callbacks that have been registered.
-    // Fill in the parameter and call each.
-    while (handler != NULL) {
-	    handler->handler(handler->userdata, tp);
-	    handler = handler->next;
-    }
-
-    return 0;
-}
-
-int vrpn_ForceDevice_Remote::handle_scp_withTriangleIndex_change_message(void *userdata,
-	vrpn_HANDLERPARAM p)
-{
-    vrpn_ForceDevice_Remote *me = (vrpn_ForceDevice_Remote *)userdata;
-    vrpn_FORCESCP_WITH_TRIANGLE_INDEX_CB tp;
-    vrpn_FORCESCP_WITH_TRIANGLE_INDEX_CHANGELIST *handler = me->scp_withTriangleIndex_change_list;
-
-    tp.msg_time = p.msg_time;
-    decode_scp_withTriangleIndex(p.buffer, p.payload_len, tp.pos, tp.quat,tp.triId);
 
     // Go down the list of callbacks that have been registered.
     // Fill in the parameter and call each.

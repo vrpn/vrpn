@@ -109,7 +109,6 @@ class vrpn_ForceDevice {
 	vrpn_int32 plane_effects_message_id; // additional plane properties
     vrpn_int32 forcefield_message_id; 	// ID of force field message
     vrpn_int32 scp_message_id;		// ID of surface contact point message
-    vrpn_int32 scp_withTriangleIndex_message_id; // ID of scp with index into triangle mesh
 
 
     // constraint messages
@@ -141,15 +140,10 @@ class vrpn_ForceDevice {
     vrpn_int32 setTrimeshType_message_id;    
     vrpn_int32 clearTrimesh_message_id;    
 
-    // ID for start/stop force interaction recording message
-    vrpn_int32 record_message_id;
-
     //	virtual void get_report(void) = 0;
 
     // ENCODING
     static char *encode_force(vrpn_int32 &length, const vrpn_float64 *force);
-    static char *encode_scp_withTriangleIndex(vrpn_int32 &length,
-	    const vrpn_float64 *pos, const vrpn_float64 *quat,const vrpn_int32 triId);
     static char *encode_scp(vrpn_int32 &length,
 	    const vrpn_float64 *pos, const vrpn_float64 *quat);
     static char *encode_plane(vrpn_int32 &length,const vrpn_float32 *plane, 
@@ -176,8 +170,6 @@ class vrpn_ForceDevice {
     static char *encode_trimeshTransform(vrpn_int32 &len,
 		const vrpn_float32 homMatrix[16]);
 
-    static char *encode_setRecordStatus(vrpn_int32 &len,const vrpn_int32 type);
-
     static char *encode_forcefield(vrpn_int32 &len, const vrpn_float32 origin[3],
 	const vrpn_float32 force[3], const vrpn_float32 jacobian[3][3], const vrpn_float32 radius);
     static char *encode_error(vrpn_int32 &len, const vrpn_int32 error_code);
@@ -188,8 +180,6 @@ class vrpn_ForceDevice {
 							vrpn_float64 *force);
     static vrpn_int32 decode_scp(const char *buffer, const vrpn_int32 len,
 					vrpn_float64 *pos, vrpn_float64 *quat);
-    static vrpn_int32 decode_scp_withTriangleIndex(const char *buffer, const vrpn_int32 len,
-				 vrpn_float64 *pos, vrpn_float64 *quat,vrpn_int32 &triId);
     static vrpn_int32 decode_plane(const char *buffer, const vrpn_int32 len,
 	    vrpn_float32 *plane, 
 	    vrpn_float32 *kspring, vrpn_float32 *kdamp,vrpn_float32 *fdyn, vrpn_float32 *fstat, 
@@ -215,9 +205,6 @@ class vrpn_ForceDevice {
 						vrpn_int32 *type);
     static vrpn_int32 decode_trimeshTransform(const char *buffer,const vrpn_int32 len,
 						vrpn_float32 homMatrix[16]);
-
-    static vrpn_int32 decode_setRecordStatus(const char *buffer,const vrpn_int32 len,
-					     vrpn_int32 *action);
 
     static vrpn_int32 decode_forcefield(const char *buffer,const vrpn_int32 len,
 	vrpn_float32 origin[3], vrpn_float32 force[3], vrpn_float32 jacobian[3][3], vrpn_float32 *radius);
@@ -310,8 +297,6 @@ class vrpn_ForceDevice {
     vrpn_float64 force[3];
     vrpn_float64 scp_pos[3];
     vrpn_float64 scp_quat[4];  // for torque
-    // if displaying a HCOLLIDE trimesh, the id of the triangle we are feeling
-    vrpn_int32   scp_triId;
     vrpn_float32 plane[4];
 
     vrpn_float32 ff_origin[3];
@@ -342,24 +327,11 @@ class vrpn_ForceDevice {
 // rather than the tracker position for graphics so the hand position
 // doesn't appear to go below the surface making the surface look very
 // compliant. 
-
 typedef struct {
 	struct		timeval msg_time;	// Time of the report
 	vrpn_float64	pos[3];			// position of SCP
 	vrpn_float64	quat[4];		// orientation of SCP
-  // if displaying a HCOLLIDE trimesh, the id of the triangle we are feeling
-  vrpn_int32      triId;                  
-} vrpn_FORCESCP_WITH_TRIANGLE_INDEX_CB;
-
-typedef void (*vrpn_FORCESCP_WITH_TRIANGLE_INDEX_HANDLER) (void *userdata,
-					const vrpn_FORCESCP_WITH_TRIANGLE_INDEX_CB info);
-
-typedef struct {
-	struct		timeval msg_time;	// Time of the report
-	vrpn_float64	pos[3];			// position of SCP
-	vrpn_float64	quat[4];		// orientation of SCP               
 } vrpn_FORCESCPCB;
-
 typedef void (*vrpn_FORCESCPHANDLER) (void *userdata,
 					const vrpn_FORCESCPCB info);
 
@@ -389,7 +361,8 @@ public:
 
     // vertNum normNum and triNum start at 0
     void setVertex(vrpn_int32 vertNum,vrpn_float32 x,vrpn_float32 y,vrpn_float32 z);
-    // NOTE: ghost dosen't accept normals
+    // NOTE: ghost dosen't take normals, 
+    //       and normals still aren't implemented for Hcollide
     void setNormal(vrpn_int32 normNum,vrpn_float32 x,vrpn_float32 y,vrpn_float32 z);
     void setTriangle(vrpn_int32 triNum,vrpn_int32 vert0,vrpn_int32 vert1,vrpn_int32 vert2,
 		  vrpn_int32 norm0=-1,vrpn_int32 norm1=-1,vrpn_int32 norm2=-1);
@@ -404,10 +377,6 @@ public:
     // the next time we send a trimesh we will use the following type
     void useHcollide();
     void useGhost();
-  
-    // start/stop recording a force session (generally for debugging)
-    void startRecording();
-    void stopRecording();
 
     // Generalized constraint code.
     // Constrains as a spring connected to a point, sliding along a line
@@ -466,11 +435,6 @@ public:
     virtual int unregister_scp_change_handler(void *userdata,
 	    vrpn_FORCESCPHANDLER handler);
 
-    virtual int register_scp_withTriangleIndex_change_handler(void *userdata,
-	    vrpn_FORCESCP_WITH_TRIANGLE_INDEX_HANDLER handler);
-    virtual int unregister_scp_withTriangleIndex_change_handler(void *userdata,
-	    vrpn_FORCESCP_WITH_TRIANGLE_INDEX_HANDLER handler);
-
     virtual int register_error_handler(void *userdata,
 	    vrpn_FORCEERRORHANDLER handler);
     virtual int unregister_error_handler(void *userdata,
@@ -493,17 +457,6 @@ protected:
     vrpn_FORCESCPCHANGELIST	*scp_change_list;
     static int handle_scp_change_message(void *userdata,
 						    vrpn_HANDLERPARAM p);
-
-    typedef struct vrpn_RFSCP_withTriangleIndex_CS {
-	    void                            *userdata;
-	    vrpn_FORCESCP_WITH_TRIANGLE_INDEX_HANDLER handler;
-	    struct vrpn_RFSCP_withTriangleIndex_CS *next;
-    } vrpn_FORCESCP_WITH_TRIANGLE_INDEX_CHANGELIST;
-    vrpn_FORCESCP_WITH_TRIANGLE_INDEX_CHANGELIST	*scp_withTriangleIndex_change_list;
-    static int handle_scp_withTriangleIndex_change_message(void *userdata,
-						    vrpn_HANDLERPARAM p);
-
-
     typedef struct vrpn_RFERRCS {
 	    void				*userdata;
 	    vrpn_FORCEERRORHANDLER handler;
