@@ -439,8 +439,8 @@ vrpn_Button_Remote::vrpn_Button_Remote(char *name) :
 
 	// XXX These should be read from a description message that comes
 	// from the button device (as a response to a query?).  For now,
-	// we assume a Python.
-	num_buttons = 5;
+	// we assume an SGI button box.
+	num_buttons = 32;
 	for (i = 0; i < num_buttons; i++) {
 		buttons[i] = lastbuttons[i] = 0;
 	}
