@@ -109,6 +109,7 @@ class vrpn_Shared_int32 {
     // ACCESSORS
 
     const char * name (void) const { return d_name; }
+    vrpn_bool isSerializer (void) const;
     vrpn_int32 value (void) const;
     operator vrpn_int32 () const;
 
@@ -255,6 +256,7 @@ class vrpn_Shared_float64 {
     // ACCESSORS
 
     const char * name (void) const { return d_name; }
+    vrpn_bool isSerializer (void) const;
     vrpn_float64 value (void) const;
     operator vrpn_float64 () const;
 
@@ -389,6 +391,7 @@ class vrpn_Shared_String {
     // ACCESSORS
 
     const char * name (void) const { return d_name; }
+    vrpn_bool isSerializer (void) const;
     const char * value (void) const;
     operator const char * () const;
 

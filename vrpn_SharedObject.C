@@ -51,6 +51,14 @@ vrpn_Shared_int32::~vrpn_Shared_int32 (void) {
   }
 }
 
+vrpn_bool vrpn_Shared_int32::isSerializer (void) const {
+  if (d_mode & VRPN_SO_DEFER_UPDATES) {
+    return d_isSerializer;
+  } else {
+    return VRPN_TRUE;
+  }
+}
+
 vrpn_int32 vrpn_Shared_int32::value (void) const {
   return d_value;
 }
@@ -517,6 +525,14 @@ vrpn_Shared_float64::~vrpn_Shared_float64 (void) {
   if (d_connection) {
     d_connection->unregister_handler(d_becomeSerializer_type,
                                      handle_becomeSerializer, this, d_myId);
+  }
+}
+
+vrpn_bool vrpn_Shared_float64::isSerializer (void) const {
+  if (d_mode & VRPN_SO_DEFER_UPDATES) {
+    return d_isSerializer;
+  } else {
+    return VRPN_TRUE;
   }
 }
 
@@ -1009,6 +1025,14 @@ vrpn_Shared_String::~vrpn_Shared_String (void) {
   if (d_connection) {
     d_connection->unregister_handler(d_becomeSerializer_type,
                                      handle_becomeSerializer, this, d_myId);
+  }
+}
+
+vrpn_bool vrpn_Shared_String::isSerializer (void) const {
+  if (d_mode & VRPN_SO_DEFER_UPDATES) {
+    return d_isSerializer;
+  } else {
+    return VRPN_TRUE;
   }
 }
 
