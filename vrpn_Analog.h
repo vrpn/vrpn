@@ -43,8 +43,11 @@ public:
 	int status; 
 
 	virtual vrpn_int32 encode_to(char *buf);
-        virtual void report_changes (void);  // send report iff changed
-	virtual void report (void);  // send report
+        virtual void report_changes (vrpn_uint32 class_of_service
+                                     = vrpn_CONNECTION_LOW_LATENCY);
+            // send report iff changed
+	virtual void report (vrpn_uint32 class_of_service
+                             = vrpn_CONNECTION_LOW_LATENCY);  // send report
 };
 
 class vrpn_Serial_Analog: public vrpn_Analog {

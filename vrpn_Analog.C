@@ -61,7 +61,7 @@ vrpn_int32 vrpn_Analog::encode_to(char *buf)
    //fprintf(stderr, "encode___ %x %x", buf[0], buf[1]);
    return index*sizeof(vrpn_float64);
 }
-void vrpn_Analog::report_changes (void) {
+void vrpn_Analog::report_changes (vrpn_uint32 class_of_service) {
 
   vrpn_int32 i;
   vrpn_int32 change = 0;
@@ -82,10 +82,10 @@ void vrpn_Analog::report_changes (void) {
   }
       
   // there is indeed some change, send it;
-  vrpn_Analog::report();
+  vrpn_Analog::report(class_of_service);
 }
 
-void vrpn_Analog::report (void) {
+void vrpn_Analog::report (vrpn_uint32 class_of_service) {
 
     // msgbuf must be float64-aligned!
     vrpn_float64 fbuf [125];
@@ -100,7 +100,7 @@ void vrpn_Analog::report (void) {
 #endif
     if (connection && connection->pack_message(len, timestamp,
                                  channel_m_id, my_id, msgbuf,
-                                 vrpn_CONNECTION_LOW_LATENCY)) {
+                                 class_of_service)) {
       fprintf(stderr,"vrpn_Analog: cannot write message: tossing\n");
     }
 }
