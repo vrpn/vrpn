@@ -1288,7 +1288,7 @@ main (int argc, char * argv[])
 	if (client_name) {
 	    fprintf(stderr, "vrpn_serv: connecting to client: %s:%d\n",
 		client_name, client_port);
-	    if (connection->connect_to_client(0, client_name, client_port)){
+	    if (connection->connect_to_client(client_name, client_port)){
 	 	fprintf(stderr, "server: could not connect to client %s:%d\n",
 			client_name, client_port);
 		shutDown();

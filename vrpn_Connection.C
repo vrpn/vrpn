@@ -4563,24 +4563,51 @@ int flush_udp_socket (int fd) {
 }
 
 
+/** Create a new endpoint for this connection and connect to using a
+    TCP connection directly to the specified machine and port.  This
+    bypasses the UDP send, and is used as part of the vrpn "RSH" startup,
+    where the server is started by the client program and calls it back
+    at a specified port.
 
-int vrpn_Connection::connect_to_client (int endpointIndex,
-                                        const char *machine, int port)
+    Returns 0 on success and -1 on failure.
+*/
+
+int vrpn_Connection::connect_to_client (const char *machine, int port)
 {
-    vrpn_Endpoint * endpoint = d_endpoints[endpointIndex];
-    char msg [100];
+	if (connectionStatus != LISTEN) { return -1; };
 
-    if (connectionStatus != LISTEN) return -1;
-    sprintf(msg, "%s %d", machine, port);
-    printf("vrpn_Connection::connect_to_client:  "
-           "Connection request received: %s\n", msg);
-    endpoint->connect_tcp_to(msg);
-    if (endpoint->status != COOKIE_PENDING) {   // Something broke
-      endpoint->status = BROKEN;
-      return -1;
-    } else {
-      handle_connection(endpointIndex);
-    }
+	int which_end = d_numEndpoints;
+
+	// Make sure that we have room for a new connection
+	if (which_end >= vrpn_MAX_ENDPOINTS) {
+	  fprintf(stderr, "vrpn_Connection::connect_to_client:"
+			" Too many existing connections.\n");
+	  return -1;
+	}
+
+	d_endpoints[which_end] = new vrpn_Endpoint (d_dispatcher,
+		&d_numConnectedEndpoints);
+	vrpn_Endpoint * endpoint = d_endpoints[which_end];
+
+	if (!endpoint) {
+		fprintf(stderr, "vrpn_Connection::connect_to_client:"
+			" Out of memory on new endpoint\n");
+		return -1;
+	}
+
+	char msg [100];
+	sprintf(msg, "%s %d", machine, port);
+	printf("vrpn_Connection::connect_to_client:  "
+	   "Connection request received: %s\n", msg);
+	endpoint->connect_tcp_to(msg);
+	if (endpoint->status != COOKIE_PENDING) {   // Something broke
+		endpoint->status = BROKEN;
+		return -1;
+	} else {
+		d_numEndpoints++;
+		handle_connection(which_end);
+	}
+
     return 0;
 }
 

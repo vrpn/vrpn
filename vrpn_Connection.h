@@ -388,8 +388,7 @@ class vrpn_Connection {
 
 	// This is similar to check connection except that it can be
 	// used to receive requests from before a server starts up
-	virtual int connect_to_client (int whichEndpoint,
-                                       const char * machine, int port);
+	virtual int connect_to_client (const char * machine, int port);
 
 	// Returns the name of the service that the connection was first
 	// constructed to talk to, or NULL if it was built as a server.
