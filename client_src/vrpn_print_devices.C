@@ -62,7 +62,7 @@ class t_sensor_counter {
 class t_user_callback {
     public:
 	char		    t_name[vrpn_MAX_TEXT_LEN];
-	t_sensor_counter    t_sensor_list[TRACKER_MAX_SENSORS];
+	t_sensor_counter    t_sensor_list[vrpn_TRACKER_MAX_SENSORS];
 };
 
 
@@ -253,7 +253,7 @@ void main (int argc, char * argv [])
 
 	    // Fill in the user-data callback information
 	    strncpy(tc->t_name, dev->name, sizeof(tc->t_name));
-	    for (j = 0; j < TRACKER_MAX_SENSORS; j++) {
+	    for (j = 0; j < vrpn_TRACKER_MAX_SENSORS; j++) {
 		tc->t_sensor_list[j].count = 0;
 		tc->t_sensor_list[j].stride = tracker_stride;
 	    }
