@@ -662,6 +662,22 @@
 #vrpn_DirectXFFJoystick	Joystick0	60	200
 
 ################################################################################
+# Manager for joysticks under windows using standard win32 calls.
+# for force feedback support, see DirectX joystick above
+#
+# Arguments:
+#	char	name_of_this_device[]
+#	int	joystick Id
+#           (1 for first joystick JOYSTICKID1 or 2 for second JOYSTICKID2 only)
+# 	int  number of times per second to read from the device
+# 	int  readmode : 0 = raw data;
+#			1 = 0,1 normalized data;
+#			2=-1,1 normalized data 
+# 	int  percentage (0 to 100) of deadzone (used mode 1 and 2 only)
+
+#vrpn_Joywin32 joyWin32 1 60 2 35
+
+################################################################################
 # Global Haptics GeoOrb serial-line device that contains a number of buttons,
 # a thumbwheel, and a trackball.  For current devices, only 19200 baud works.
 # Arguments:

@@ -1,3 +1,11 @@
+2003-08-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Added changes by Sebastien Maraux to include
+		reading from joysticks in Windows without going
+		through DirectX.
+	* vrpn.cfg : Same.
+	* vrpn.cfg.SAMPLE : Same.
+
 2003-07-21  Sascha Scholz  <sascha.scholz@imk.fraunhofer.de>
 
 	* client_and_server.C : Changed main() to return int.

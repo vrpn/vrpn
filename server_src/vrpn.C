@@ -42,6 +42,7 @@
 #include "vrpn_Tng3.h"
 #include "vrpn_Tracker_isense.h"
 #include "vrpn_DirectXFFJoystick.h"
+#include "vrpn_Joywin32.h"
 #include "vrpn_GlobalHapticsOrb.h"
 #include "vrpn_Phantom.h"
 #include "vrpn_ADBox.h"
@@ -70,6 +71,7 @@ const int MAX_TNG3S = 8;
 #ifdef	VRPN_USE_DIRECTINPUT
 const int MAX_DIRECTXJOYS = 8;
 #endif
+const int MAX_WIN32JOYS = 2;
 const int MAX_GLOBALHAPTICSORBS = 8;
 #ifdef	VRPN_USE_PHANTOM_SERVER
 const int MAX_PHANTOMS = 10;
@@ -139,6 +141,10 @@ int             num_tng3s = 0;
 #ifdef	VRPN_USE_DIRECTINPUT
 vrpn_DirectXFFJoystick	* DirectXJoys [MAX_DIRECTXJOYS];
 int		num_DirectXJoys = 0;
+#endif
+#ifdef	_WIN32
+vrpn_Joywin32 *win32joys[MAX_WIN32JOYS];
+int		num_Win32Joys = 0;
 #endif
 vrpn_GlobalHapticsOrb *ghos[MAX_GLOBALHAPTICSORBS];
 int		num_GlobalHapticsOrbs = 0;
@@ -1576,6 +1582,44 @@ int setup_Joylin (char * & pch, char * line, FILE * config_file) {
 }
 
 //================================
+int setup_Joywin32 (char * & pch, char * line, FILE * config_file) {
+  char s2[LINESIZE];
+  int joyId;
+  int readRate;
+  int mode;
+  int deadZone;
+  
+  // Get the arguments
+  next();
+  if (sscanf(pch, "%511s%d%d%d%d", s2, &joyId, &readRate, &mode, &deadZone) != 5) {
+    fprintf(stderr, "Bad vrpn_Joywin32 line: %s\n", line);
+    return -1;
+  }
+#if defined(_WIN32)  
+  // Make sure there's room for a new joystick server
+  if (num_Win32Joys >= MAX_WIN32JOYS) {
+    fprintf(stderr, "Too many win32 joysticks devices in config file");
+    return -1;
+  }
+
+  // Open the joystick server
+  if (verbose) 
+    printf("Opening vrpn_Joywin32: %s (device %d), baud rate:%d, mode:%d, dead zone:%d\n", s2, joyId, readRate, mode, deadZone);
+  if ((win32joys[num_Win32Joys] = 
+       new vrpn_Joywin32(s2, connection, joyId, readRate, mode, deadZone)) == NULL) {
+    fprintf(stderr, "Can't create new vrpn_Joywin32\n");
+    return -1;
+  } else {
+    num_Win32Joys++;
+  }
+  return 0;
+#else
+    fprintf(stderr, "Joywin32 is for use under Windows only");
+	return -2;
+#endif
+}
+
+//================================
 int setup_Tng3 (char * & pch, char * line, FILE * config_file) {
     char s2 [LINESIZE], s3 [LINESIZE];
     int i1, i2;
@@ -1913,6 +1957,8 @@ main (int argc, char * argv[])
             CHECK(setup_Joystick);
 	  } else  if (isit("vrpn_Joylin")) {
             CHECK(setup_Joylin);
+          } else  if (isit("vrpn_Joywin32")) {
+            CHECK(setup_Joywin32);
 	  } else if (isit("vrpn_Dial_Example")) {
             CHECK(setup_DialExample);
 	  } else if (isit("vrpn_CerealBox")) {
@@ -2081,6 +2127,13 @@ main (int argc, char * argv[])
 	  }
 #endif
 
+#ifdef	_WIN32
+	  // Let all the win32 Joysticks do their thing
+	  for (i=0; i < num_Win32Joys; i++) {
+		  win32joys[i]->mainloop();
+	  }
+#endif
+	  
 	  // Let all the Orbs do their thing
 	  for (i = 0; i < num_GlobalHapticsOrbs; i++) {
 	    ghos[i]->mainloop();
