@@ -3345,12 +3345,12 @@ vrpn_Connection::vrpn_Connection
 		return;
 	  }
 
-	  // See if we have a connection yet (wait for 1/2 sec at most).
+	  // See if we have a connection yet (wait for 1 sec at most).
 	  // This will allow the connection to come up fast if things are
 	  // all set. Otherwise, we'll drop into re-sends when we get
 	  // to mainloop().
 	  retval = vrpn_poll_for_accept(endpoint.tcp_client_listen_sock,
-				 &endpoint.tcp_sock, 0.5);
+				 &endpoint.tcp_sock, 1.0);
 	  if (retval  == -1) {
 		fprintf(stderr,
 		  "vrpn_Connection: Can't poll for accept\n");
