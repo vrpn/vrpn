@@ -25,7 +25,7 @@
 #define BUF_SIZE 4096
 
 int audio_fd; // File descriptor for audio device /dev/audio
-unsigned char audio_buffer[BUF_SIZE]; // audio buffer
+signed char audio_buffer[512]; // audio buffer
 #ifdef linux
 struct sbi_instrument instr; // MIDI
 #endif
@@ -117,71 +117,32 @@ void wait(int delay)
         sbwrite((char*)&jiffies);
 #endif
 }
-
-vrpn_Linux_Sound::set_instr(void)
+int vrpn_Linux_Sound::mapping(char *name, int address)
 {
-#ifdef linux
-        char buf1[100];
-        int dev, nrdevs;
-        struct synth_info info;
-
-        int l, i, op, finstrf;
-        if ((sb=open("/dev/sequencer", O_WRONLY, 0))==-1)
-        {
-                perror("/dev/sequencer");
-                exit(-1);
-        }
-
-        if (ioctl(sb, SNDCTL_SEQ_NRSYNTHS, &nrdevs) == -1)
-        {
-                perror("/dev/sequencer");
-                exit(-1);
-        }
-
-        dev = -1;
-
-        for (i=0;i<nrdevs && dev==-1;i++)
-        {
-                info.device = i;
-                if (ioctl(sb, SNDCTL_SYNTH_INFO, &info)==-1)
-                {
-                        perror("info: /dev/sequencer");
-                        exit(-1);
-                }
-
-                if (info.synth_type == SYNTH_TYPE_FM) dev = i;
-        }
-
-        if (dev == -1)
-        {
-                fprintf(stderr, "FM synthesizer not detected\n");
-                exit(-1);
-        }
-        for (op=0;op < num_instr;op++) {
-                if ((finstrf=open(instrlib[instr_ID[op]], O_RDONLY, 0))==-1) {
-                        perror(instrlib[op]);
-                } else if ((l=read(finstrf, buf1, 100))==-1) {
-                        perror(instrlib[op]);
-                } else if (buf1[0]!='S' || buf1[1]!='B' || buf1[2]!='I') {
-                        fprintf(stderr,"Not SBI file\n");
-                } else if (l<51) {
-                        fprintf(stderr,"Short file\n");
-                } else {
-                        instr.channel = op;
-                        instr.key = FM_PATCH;
-                        instr.device = dev;
-
-                        for (i=0;i<16;i++) {
-                                instr.operators[i]=buf1[i+0x24];
-                        }
-
-                		if (write(sb, &instr, sizeof(instr))==-1) 
-						perror("/dev/sequencer");
-				 }
-                 close(finstrf);
-        }
-		close(sb);
-#endif
+	int i, fd, n, t;
+	for (i=0; i< filenum; i++)
+	   if (strcmp(name, filetable[i]) == 0) 
+	  	 { channel_max[address] = filemax[i];
+		   return i;
+		 }
+	if (filenum < MAXFNUM) 
+	{
+		strcpy(filetable[filenum], name);
+		filetable[filenum][strlen(name)] = '\0';
+		fd = open(name, O_RDONLY, 0);
+		printf("fd = %d\n", fd);
+		t = 0;
+		fileinmem[filenum] = (signed char *) calloc(327680, sizeof(char));
+		do {
+			n = read(fd, &fileinmem[filenum][t*512], 512);
+			t++;
+		} while ( n>0 && t < 640);
+		filemax[i] = t;
+		channel_max[address] = t;
+		close(fd);
+	}	
+	filenum++;
+	return filenum - 1;
 }
 
 // This function is for child process. It will read from the pipe and see if there 
@@ -223,47 +184,25 @@ int vrpn_Linux_Sound::checkpipe(void)
         // 5~: filename / content of notebuf
 	switch (cbuff[0]) {
 		case vrpn_SND_SAMPLE:
-			play_mode = cbuff[1];
-			ear_mode = cbuff[2];
-			volume = cbuff[3];
+			play_mode[cbuff[5]] = cbuff[1];
+			//	ear_mode = cbuff[2];
+			volume[cbuff[5]] = cbuff[3];
 			//cbuff[5] is used for channel #
+			channel_on[cbuff[5]] = 1;
 			strncpy(samplename, &cbuff[6], (int) cbuff[4]-1);
 	    	samplename[(int) cbuff[4]-1] = '\0';
-			status = vrpn_SND_SAMPLE;
-			{
-				int bar, baz;
-				char devname[30] = "/dev/mixer";
-				if ((baz = open(devname,O_RDWR)) < 0){
-					perror(devname);
-					exit(1);
-				}
-				bar = volume;
-				if (ioctl(baz, MIXER_WRITE(0), &bar) == -1)
-					fprintf(stderr, "can't set volume\n");
-				close(baz);
-			}
-			break;
-		case vrpn_SND_MIDI:
-			play_mode = cbuff[1];
-			ear_mode = cbuff[2];
-			strncpy(notebuff, &cbuff[4], (int) cbuff[3]);
-			notebuff[(int) cbuff[3]] = '\0';
-			status = vrpn_SND_MIDI;
+			channel_index[cbuff[5]] = 100;
+			channel_file[cbuff[5]] = 
+			    mapping(samplename, cbuff[5]);
 			break;
 		case vrpn_SND_STOP:
-			status = vrpn_SND_STOP;
+			channel_on[cbuff[1]] = 0;	
 			break;
-		case vrpn_SND_WAVEFORM:
-			break;
-		case vrpn_SND_SETINSTR:
-			status = vrpn_SND_SETINSTR;
-			num_instr = (int) cbuff[1];
-			for (int i=0; i < num_instr; i++)
-			{
-				instr_ID[i] = (int) cbuff[i+2];
-			}
-			set_instr();
-			status = vrpn_SND_STOP;
+		case vrpn_SND_PRELOAD:
+			strncpy(samplename, &cbuff[2], (int) cbuff[1]);
+	    	samplename[(int) cbuff[1]] = '\0';
+			printf("%s\n", samplename);
+			mapping(samplename, 0);
 			break;
 		case SHUTDOWN:
 			return 1;	
@@ -286,118 +225,71 @@ vrpn_Linux_Sound::soundplay()
 {
 #ifdef linux
 	// the local variables for sampled sound
-    int fd, n, speed, stereo;
-    int format = AFMT_MU_LAW;
-    // the local variables for MIDI
-    char buf[100];
-    int dev, nrdevs;
-    struct synth_info info;
-    int l, i, j, op;
-    int instr_num;
-    int channel;
-	int num_channel, octave = 3, time = 50, volume = 90;
-	static int audio_status = 0;
+    int i, j;
 
-	switch (status) {
-	case vrpn_SND_SAMPLE:
-		if (play_mode == vrpn_SND_SINGLE)
-			status = vrpn_SND_STOP;
-		else if (play_mode == vrpn_SND_LOOPED)
-			status = vrpn_SND_SAMPLE;
-        // play the sample sound on /dev/audio
-		if (audio_status == 0) {
-		audio_status = 1;
-		if ((audio_fd = open("/dev/audio", O_WRONLY, 0)) == -1)
-		{
-			perror("/dev/audio");
-			fprintf(stderr, "can't open device /dev/audio\n");
-			exit(0);
-		} 
-		if (ioctl(audio_fd, SNDCTL_DSP_SETFMT, &format) == -1)
-			fprintf(stderr, "can't set audio format\n");
-		format = AFMT_QUERY;
-		if (ioctl(audio_fd, SNDCTL_DSP_SETFMT, &format)==-1)
-        {
-            fprintf(stderr, "can't test the format\n");
-        }
-        stereo = ear_mode;
-		if (ioctl(audio_fd, SNDCTL_DSP_STEREO, &stereo)==-1)
-            fprintf(stderr, "can't set the stereo mode\n");
-        speed = 8192;
-        if (ioctl(audio_fd, SNDCTL_DSP_SPEED, &speed)==-1)
-            fprintf(stderr, "can't set the speed\n");
+	checkpipe();
+    // play the sample sound on /dev/audio
+	for (i=0; i < 512; i++)
+		audio_buffer[i] = 0;
+	for (i=1; i < CHANNEL_NUM; i++)
+		if (channel_on[i]) {
+			for ( j = 0; j < 512; j++)
+				audio_buffer[j] += 
+				fileinmem[channel_file[i]][channel_index[i]*512 + j] 
+				* 1.0 * volume[i] /100;
+			channel_index[i] = 
+			(channel_index[i] + 1 > channel_max[i]) ? 100 : channel_index[i]+1;
+			if ((play_mode[i] == vrpn_SND_SINGLE) && channel_index[i] ==100)
+				 	channel_on[i] = 0;
 		}
-        fd = open(samplename, O_RDONLY, 0);
-       // n = read(fd,  audio_buffer, BUF_SIZE);
-        n = read(fd,  audio_buffer, 512);
-        write(audio_fd, audio_buffer, n);
-        while (n>0)
-        {
-            n = read(fd, audio_buffer, BUF_SIZE);
-            write(audio_fd, audio_buffer, n);
-        }
-        close(fd);
-		break;
-	case vrpn_SND_MIDI:
-		// set up the volume
-			{
-				int bar, baz;
-				char devname[30] = "/dev/mixer";
-				if ((baz = open(devname,O_RDWR)) < 0){
-					perror(devname);
-					exit(1);
-				}
-				bar = 90;
-				if (ioctl(baz, MIXER_WRITE(0), &bar) == -1)
-					fprintf(stderr, "can't set volume\n");
-				close(baz);
-			}
-	 	if (play_mode == vrpn_SND_SINGLE)
-            status = vrpn_SND_STOP;
-        else if (play_mode == vrpn_SND_LOOPED)
-            status = vrpn_SND_MIDI;
-        // play the music note on /dev/sequencer
-	if ((sb= open("/dev/sequencer", O_WRONLY, 0))==-1)
-	{
-		perror("/dev/sequencer");
-	}
-	num_channel = (int) notebuff[0];
-    sndinit(0);	
-	// play the music according to the notes in the buffer 
-		for (i = 0; i < num_channel; i++)
-		    for (j = 0; j < notebuff[notebuff[i+1] + 3]; j++)
-			{
-				noteon(notebuff[notebuff[i+1]] -1, notebuff[notebuff[i+1]+6+
-				 j*3]+12 * notebuff[notebuff[i+1]+4+3*j],
-				 notebuff[notebuff[i+1]+5+3*j]);
-				 wait(notebuff[notebuff[i+1] + 1] + 
-				      (j+1) * time * notebuff[notebuff[i+1]+2]);
-				noteoff(notebuff[notebuff[i+1]]-1, notebuff[notebuff[i+1]+6+
-				 j*3]+12 * notebuff[notebuff[i+1]+4+3*j],
-				 notebuff[notebuff[i+1]+5+3*j]);
-			}
-		sbflush();
-		close(sb);
-		break;
-	case vrpn_SND_STOP:
-	    if (audio_status == 1)
-        close(audio_fd);
-		audio_status = 0;
-		break;
-	case vrpn_SND_WAVEFORM:
-		break;
-	default: 
-		break;
-	}	
+    write(audio_fd, audio_buffer, 512); 
 #endif
 }
 
 vrpn_Linux_Sound::initchild()
 {
-	status = vrpn_SND_STOP;
-	volume = 60;
-	// the following sets the default midi instr
-	num_instr = 0;
+#ifdef linux
+	int i, stereo, speed;
+    int format = AFMT_S16_LE;
+
+	filenum = 0;
+	for (i=0; i<CHANNEL_NUM; i++)
+	{
+		channel_on[i] = 0;
+		channel_max[i] = 0;
+	}
+	if ((audio_fd = open("/dev/audio", O_WRONLY, 0)) == -1)
+	{
+		perror("/dev/audio");
+		fprintf(stderr, "can't open device /dev/audio\n");
+		exit(0);
+	} 
+	if (ioctl(audio_fd, SNDCTL_DSP_SETFMT, &format) == -1)
+		fprintf(stderr, "can't set audio format\n");
+	format = AFMT_QUERY;
+	if (ioctl(audio_fd, SNDCTL_DSP_SETFMT, &format)==-1)
+    {
+        fprintf(stderr, "can't test the format\n");
+    }
+    stereo = ear_mode;
+	if (ioctl(audio_fd, SNDCTL_DSP_STEREO, &stereo)==-1)
+        fprintf(stderr, "can't set the stereo mode\n");
+    speed = 8192*2;
+    if (ioctl(audio_fd, SNDCTL_DSP_SPEED, &speed)==-1)
+        fprintf(stderr, "can't set the speed\n");
+    {
+		int bar, baz;
+		char devname[30] = "/dev/mixer";
+		if ((baz = open(devname,O_RDWR)) < 0){
+			perror(devname);
+			exit(1);
+		}
+		bar = 100;
+		if (ioctl(baz, MIXER_WRITE(0), &bar) == -1)
+			fprintf(stderr, "can't set volume\n");
+		close(baz);
+	}
+#endif
 }
 
 vrpn_Linux_Sound::decode(char *msgbuf)
@@ -405,24 +297,19 @@ vrpn_Linux_Sound::decode(char *msgbuf)
 	tag = 0;
 	sound_type = (int) command_buffer[0];
 	if (sound_type == vrpn_SND_SAMPLE) {
-	volume = (int) command_buffer[1];
-	play_mode = (int) command_buffer[2];
+	volume[0] = (int) command_buffer[1];
+	play_mode[0] = (int) command_buffer[2];
 	ear_mode = (int) command_buffer[3];
-	strncpy(samplename, &command_buffer[4], strlen(command_buffer) - 4);
+	strncpy(samplename, 
+	        &command_buffer[4], strlen(command_buffer) - 4);
 	samplename[strlen(command_buffer) - 4] = '\0';}
-	else if (sound_type == vrpn_SND_MIDI) {
-	play_mode = (int) command_buffer[1];
-	ear_mode = (int) command_buffer[2];
-	strncpy(notebuff, &command_buffer[3], strlen(command_buffer) - 3);
-	notebuff[strlen(command_buffer) - 3] = '\0';
-	} 
-	else if (sound_type == vrpn_SND_SETINSTR) 
+	else if (sound_type == vrpn_SND_STOP)
+			volume[0] = (int) command_buffer[1];
+	else if (sound_type == vrpn_SND_PRELOAD)
 	{
-		num_instr = command_buffer[1];
-		for (int i=0; i< num_instr; i++)
-			instr_ID[i] = (int) command_buffer[i+2];
-	} else if (sound_type != vrpn_SND_STOP)
-			fprintf(stderr, "Unknown command from user. \n");
+	strncpy(samplename, 
+	        &command_buffer[1], strlen(command_buffer) - 1);
+	samplename[strlen(command_buffer) - 1] = '\0';}
 	status = sound_type;
 }
 int sound_handler(void *userdata, vrpn_HANDLERPARAM p)
@@ -453,10 +340,8 @@ vrpn_Linux_Sound::vrpn_Linux_Sound(char *name, vrpn_Connection *c):vrpn_Sound(c)
 	    connection->register_handler(playsample_id, Myhandler, NULL, my_id);
 	}
 	sound_type = -1; // No music type has been set
-	play_mode = vrpn_SND_SINGLE; //init as single mode
+	play_mode[0] = vrpn_SND_SINGLE; //init as single mode
 	ear_mode = vrpn_SND_BOTH; // init as stereo mode
-
-        notelen = 0;
 
         // Create Child Process which communicate through pipe with the parent
 	// process. It will listen on the pipe for the command and control the 
@@ -481,9 +366,7 @@ vrpn_Linux_Sound::vrpn_Linux_Sound(char *name, vrpn_Connection *c):vrpn_Sound(c)
 		close(pipe2[0]);
 		initchild();
 		while(1)
-		    if (checkpipe()) 
-			break;	
-		    else soundplay();
+		    soundplay();
 		close(pipe1[0]);
 		close(pipe2[1]);
 		exit(0);
@@ -510,40 +393,25 @@ int vrpn_Linux_Sound::pack_command(int sound_type, int play_mode, int ear_mode,
 	return 1;
 }
 
-int vrpn_Linux_Sound::pack_command(int sound_type, int play_mode, int ear_mode,
-					char *notebuff)
+int vrpn_Linux_Sound::pack_command(int set_stop, int channel)
 {
 	char box[1024];
 	box[1] = sound_type;
-	box[2] = play_mode;
-	box[3] = ear_mode;
-	box[4] = (char) strlen(notebuff);
-	strncpy(&box[5], notebuff, (int) box[4]);
-	box[0] = 5 + (int) box[4];
-	for ( int i = 0; i< box[0]; i++)
-	write(pipe1[1], box, box[0] + 1);
-	return 1;
-}
-
-int vrpn_Linux_Sound::pack_command(int set_stop)
-{
-	char box[1024];
-	box[1] = sound_type;
-	box[2] = '\0';
-	box[0] = 2;
+	box[2] = channel;
+	box[3] = '\0';
+	box[0] = 3;
 	write(pipe1[1], box, box[0]+1);
 	return 1;
 }
 
-int vrpn_Linux_Sound::pack_command(int command, int *instrids, int num)
+int vrpn_Linux_Sound::pack_command(int set_load, char *sound)
 {
 	char box[1024];
-	box[1] = sound_type;
-	box[2] = num;
-	for (int i = 0; i < num; i++)
-		box[i+3] = instrids[i];
-	box[3 + num] = '0';
-	box[0] = 3 + num;
+	box[1] = vrpn_SND_PRELOAD;
+	box[2] = (char) strlen(sound);
+	strncpy(&box[3], sound, (int) box[2]);
+	box[3+(int)box[2]] = '\0';
+	box[0] = 3 + (int) box[2];
 	write(pipe1[1], box, box[0]+1);
 	return 1;
 }
@@ -556,18 +424,14 @@ void vrpn_Linux_Sound::mainloop(void)
 	decode(command_buffer);
 	switch(status) {
 		case vrpn_SND_SAMPLE: // for sampled sound using /dev/audio 
-		 pack_command(sound_type, play_mode, ear_mode, volume, samplename);
-		 break;
-		case vrpn_SND_MIDI: // for midi sound using /dev/sequencer 
-		 pack_command(sound_type, play_mode, ear_mode, notebuff); 
+		 pack_command(sound_type, play_mode[0], ear_mode, 
+		              volume[0], samplename);
 		 break;
 		case vrpn_SND_STOP: // stop the currently playing audio
-		 pack_command(vrpn_SND_STOP);
+		 pack_command(vrpn_SND_STOP, volume[0]);
 		 break;
-		case vrpn_SND_WAVEFORM:
-		 break;
-		case vrpn_SND_SETINSTR:
-		 pack_command(vrpn_SND_SETINSTR, instr_ID, num_instr);
+		case vrpn_SND_PRELOAD:
+		 pack_command(vrpn_SND_PRELOAD, samplename);
 		 break;
 		default:
 		 break;
@@ -595,8 +459,11 @@ void vrpn_Sound_Remote::mainloop(void)
 }
 // this function is used to change all the information to a msg
 // the format used here conforms to the one defined in checkpipe()
-int vrpn_Sound_Remote::encode(char *msgbuf, char *sound, int volume, 
-				int mode, int ear, int channel)
+int vrpn_Sound_Remote::encode(char *msgbuf, const char *sound, 
+                              const int volume, 
+				              const int mode, 
+							  const int ear, 
+							  const int channel)
 {
 	int i;
 	unsigned long *longbuf = (unsigned long*) (void*)(msgbuf);
@@ -612,45 +479,32 @@ int vrpn_Sound_Remote::encode(char *msgbuf, char *sound, int volume,
 		longbuf[i] = htonl(longbuf[i]);
 	return index*sizeof(unsigned long);
 }
-int vrpn_Sound_Remote::encode(char *msgbuf, char *notes, int mode, int ear)
-{
-	int i;
-	unsigned long *longbuf = (unsigned long*) (void*)(msgbuf);
-	int index = 0;
-	longbuf[index++] = vrpn_SND_MIDI;
-	longbuf[index++] = mode;
-	longbuf[index++] = ear;
-	for ( i = 0; i< strlen(notes); i++)
-		longbuf[index++] = notes[i];
-	for ( i = 0; i< index; i++) 
-		longbuf[i] = htonl(longbuf[i]);
-	return index*sizeof(unsigned long);
-}
 
-int vrpn_Sound_Remote::encode(char *msgbuf, int set_stop)
+int vrpn_Sound_Remote::encode(char *msgbuf, int set_stop, int channel)
 {
 	int i;
 	unsigned long *longbuf = (unsigned long*) (void*)(msgbuf);
 	int index = 0;
-	longbuf[index++] = vrpn_SND_STOP;
+	longbuf[index++] = set_stop;
+	longbuf[index++] = channel;
 	longbuf[0] = htonl(longbuf[0]);
+	longbuf[1] = htonl(longbuf[1]);
 	return index*sizeof(unsigned long);
 }
-int vrpn_Sound_Remote::encode(char *msgbuf, int num, int *instrids)
+int vrpn_Sound_Remote::encode(char *msgbuf, int set_load, const char *sound)
 {
 	int i;
 	unsigned long *longbuf = (unsigned long*) (void*)(msgbuf);
 	int index = 0;
-	longbuf[index++] = vrpn_SND_SETINSTR;
-	longbuf[index++] = num;
-	for (i=0; i<num;i++)
-		longbuf[index++] = instrids[i];
+	longbuf[index++] = set_load;
+	for ( i = 0; i< strlen(sound); i++)
+		longbuf[index++] = sound[i];
 	for ( i = 0; i< index; i++) 
 		longbuf[i] = htonl(longbuf[i]);
 	return index*sizeof(unsigned long);
 }
 
-vrpn_Sound_Remote::play_sampled_sound(char *sound, 
+void vrpn_Sound_Remote::play_sampled_sound(const char *sound, 
                                       const int volume, 
                                       const int mode, 
 									  const int ear,
@@ -670,7 +524,7 @@ vrpn_Sound_Remote::play_sampled_sound(char *sound,
 		  	fprintf(stderr, "can't write message\n");
 	}
 }
-vrpn_Sound_Remote::play_stop(const int channel)
+void vrpn_Sound_Remote::play_stop(const int channel)
 {
 	struct timeval current_time;
 	char msgbuf[1024];
@@ -679,13 +533,13 @@ vrpn_Sound_Remote::play_stop(const int channel)
 	gettimeofday(&current_time, NULL);
 	
 	if (connection) {
-	    len = encode(msgbuf, vrpn_SND_STOP);
+	    len = encode(msgbuf, vrpn_SND_STOP, channel);
 		if (connection->pack_message(len, current_time, playsample_id, my_id, 
 		  msgbuf, vrpn_CONNECTION_RELIABLE))
 		  	fprintf(stderr, "can't write message\n");
 	}
 }
-vrpn_Sound_Remote::set_midi_instr(int num, int *instrname)
+void vrpn_Sound_Remote::preload_sampled_sound(const char *sound)
 {
 	struct timeval current_time;
 	char msgbuf[1024];
@@ -694,22 +548,7 @@ vrpn_Sound_Remote::set_midi_instr(int num, int *instrname)
 	gettimeofday(&current_time, NULL);
 	
 	if (connection) {
-	    len = encode(msgbuf, num, instrname);
-		if (connection->pack_message(len, current_time, playsample_id, my_id, 
-		  msgbuf, vrpn_CONNECTION_RELIABLE))
-		  	fprintf(stderr, "can't write message\n");
-	}
-}
-vrpn_Sound_Remote::play_midi_music(char *notes, int mode, int ear)
-{
-	struct timeval current_time;
-	char msgbuf[1024];
-	int len;
-
-	gettimeofday(&current_time, NULL);
-	
-	if (connection) {
-	    len = encode(msgbuf, notes, mode, ear);
+	    len = encode(msgbuf, vrpn_SND_PRELOAD, sound);
 		if (connection->pack_message(len, current_time, playsample_id, my_id, 
 		  msgbuf, vrpn_CONNECTION_RELIABLE))
 		  	fprintf(stderr, "can't write message\n");
