@@ -46,7 +46,7 @@ vrpn_TempImager_Server::vrpn_TempImager_Server(const char *name, vrpn_Connection
     // to fire on the "new connection" system message.
 
     register_autodeleted_handler(d_ping_message_id, handle_ping_message, this, d_sender_id);
-    register_autodeleted_handler(d_connection->register_message_type(vrpn_got_connection), handle_ping_message, this);
+    register_autodeleted_handler(d_connection->register_message_type(vrpn_got_connection), handle_ping_message, this, vrpn_ANY_SENDER);
 }
 
 int vrpn_TempImager_Server::add_channel(const char *name, const char *units,
@@ -589,7 +589,6 @@ int vrpn_TempImager_Remote::register_description_handler(void *userdata,
   new_entry->next = d_description_list;
   d_description_list = new_entry;
 
-  d_got_description = true;
   return 0;
 }
 
@@ -711,6 +710,7 @@ int vrpn_TempImager_Remote::handle_description_message(void *userdata,
 	  handler = handler->next;
   }
 
+  me->d_got_description = true;
   return 0;
 }
 

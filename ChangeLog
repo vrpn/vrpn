@@ -1,3 +1,9 @@
+2003-05-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_TempImager.C : Fixes bug by which a new imager client would
+		not get the region description message, causing it to never
+		get region callbacks.
+
 2003-05-01  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Configure.h : Added configuration entry for Intersense driver.
