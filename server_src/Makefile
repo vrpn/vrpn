@@ -74,7 +74,7 @@ ifeq ($(HW_OS),sgi_irix)
       SGI_ARCH := mips3
    endif
    OBJECT_DIR_SUFFIX := .$(SGI_ABI).$(SGI_ARCH)
-   CC := CC -$(SGI_ABI) -$(SGI_ARCH) -LANG:std
+   CC := CC -$(SGI_ABI) -$(SGI_ARCH)
    GL := -lgl
 endif
 

@@ -66,7 +66,7 @@ ifeq ($(HW_OS),sgi_irix)
       SGI_ARCH := mips3
   endif
   OBJECT_DIR_SUFFIX := .$(SGI_ABI).$(SGI_ARCH)
-  CC := CC -$(SGI_ABI) -$(SGI_ARCH) -LANG:std
+  CC := CC -$(SGI_ABI) -$(SGI_ARCH)
   GLUTLIBS := -L/afs/cs.unc.edu/project/walk/lib/sgi_irix.$(SGI_ABI) -lglut -lGLU -lGL -lXmu -lXext -lX11
 endif
 
@@ -136,7 +136,7 @@ all:	$(OBJ_DIR)/printvals $(OBJ_DIR)/printcereal \
 	$(OBJ_DIR)/phan_client \
 	$(OBJ_DIR)/forcedevice_test_client \
 	$(OBJ_DIR)/sphere_client $(OBJ_DIR)/bdbox_client \
-	add_vrpn_cookie testLamport test_mutex \
+	add_vrpn_cookie test_mutex \
 	vrpn_ping test_imager
 #	$(OBJ_DIR)/vrpn_print_messages
 

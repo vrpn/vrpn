@@ -1,3 +1,8 @@
+2005-02-25  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Removed -LANG:std from compile, no streams
+		used in the code anymore.
+
 2005-02-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.cfg : Added entries for NationalInstruments
