@@ -1,9 +1,13 @@
-2000-02-05 Tom Hudson  <hudson@cs.unc.edu>
+2001-02-07  Kwan Torrich Skinner <skinner@cs.unc.edu>
+	* vrpn_Connection.C : increased minor version number.
+	* Changelog : fixed Tom's (and my own) dates to be 2001 and not y2k.
+
+2001-02-05 Tom Hudson  <hudson@cs.unc.edu>
 
         (vrpn_Connection::server_check_for_incoming_connections) :
         Change one type to compile on the PC
 
-2000-02-05 Tom Hudson  <hudson@cs.unc.edu>
+2001-02-05 Tom Hudson  <hudson@cs.unc.edu>
 
 	* vrpn_Connection.h: add vrpn_Connection::listen_tcp_sock
 	vrpn_Connection.C
@@ -18,7 +22,7 @@
         station name; if found, initiate a TCP connection instead
         of sending UDP message asking the server to initiate on
 
-2000-01-07 Kwan Torrich Skinner  <skinner@cs.unc.edu>
+2001-01-07  Kwan Torrich Skinner  <skinner@cs.unc.edu>
 
 	* vrpn_MTd.dsp: added vrpn_RedundantTransmission to the project
 	file so topo will compile.
