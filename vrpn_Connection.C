@@ -98,6 +98,9 @@ vrpn_Synchronized_Connection(char *server_name, double dFreq,
 
    pClockServer = (vrpn_Clock_Server *) NULL;
 
+   if (status) { 
+     return;
+   }
    pClockRemote = new vrpn_Clock_Remote(server_name, dFreq, cSyncWindow);
    pClockRemote->register_clock_sync_handler( &tvClockOffset, 
 					      setClockOffset );

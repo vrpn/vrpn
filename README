@@ -56,3 +56,22 @@ How to reduce latency on the tracker:
 		report.  The read should grab directly from this buffer and
 		cook the report in user time.
 
+Why do we need to do any of this ...
+
+Serial drivers have two parts:
+1) back end: interrupt driven; it collects chars in buffer as they arrive
+2) front end: os driven; every so often the os grabs from the back end
+buffer and fills the read/write device buffer (ie, /dev/ttyd*)
+
+On the sgi's, "every so often" is about every 20 ms, so if you do a serial
+loopback test (even at 115k), data will not be available for 20 ms (on 
+average).
+
+Luckily on machines running linux we can change the "every so often" to
+whatever we want (within reason).  We also need to tell linux to use
+the 16550 uart driver rather than the general driver.  If we set the hz
+up to 1000 and don't change the serial driver, then this doesn't really do
+anything.  With both changes, serial loopbacks respond within tenths of a
+ms.
+
+(weberh 1/19/98)

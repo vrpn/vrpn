@@ -21,13 +21,13 @@ class vrpn_Tracker_3Space: public vrpn_Tracker_Serial {
 		      char *port = "/dev/ttyS1", long baud = 19200) :
     vrpn_Tracker_Serial(name,c,port,baud) {};
     
-    virtual void mainloop(void);
+  virtual void mainloop(void);
     
  protected:
+  
+  virtual void get_report(void);
 
-    virtual void get_report(void);
-
-    virtual void reset();
+  virtual void reset();
 
 };
 

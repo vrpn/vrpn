@@ -22,25 +22,7 @@
 #include "vrpn_Tracker.h"
 
 //#define VERBOSE
-#define READ_HISTOGRAM
-
-#define MAX_LENGTH		(512)
-
-#define MAX_TIME_INTERVAL	(2000000) // max time between reports (usec)
-
-#define TRACKER_SYNCING		(2)
-#define TRACKER_REPORT_READY 	(1)
-#define TRACKER_PARTIAL 	(0)
-#define TRACKER_RESETTING	(-1)
-#define TRACKER_FAIL 	 	(-2)
-
-// This constant turns the tracker binary values in the range -32768 to
-// 32768 to meters.
-#define	T_3_DATA_MAX		(32768.0)
-#define	T_3_INCH_RANGE		(65.48)
-#define	T_3_CM_RANGE		(T_3_INCH_RANGE * 2.54)
-#define	T_3_METER_RANGE		(T_3_CM_RANGE / 100.0)
-#define	T_3_BINARY_TO_METERS	(T_3_METER_RANGE / T_3_DATA_MAX)
+// #define READ_HISTOGRAM
 
 static	unsigned long	duration(struct timeval t1, struct timeval t2)
 {
@@ -50,65 +32,94 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 
 int vrpn_open_commport(char *portname, long baud)
 {
-#ifdef linux
-    int fileDescriptor;
-    struct termio   sttyArgs;
-
-    // Open the serial port for r/w
-    if ( (fileDescriptor = open(portname, O_RDWR)) == -1) {
-	perror("Tracker: cannot open serial port");
-	return -1;
-    }
-
-    /* get current settings */
-    if ( ioctl(fileDescriptor, TCGETA , &sttyArgs) == -1 ) {
-	perror("Tracker: ioctl failed");
-	return(-1);
-    }
-
-    /* override old values 	*/
-    sttyArgs.c_cflag &= ~CBAUD;
-    switch (baud) {
-      case   300: sttyArgs.c_cflag |=   B300; break;
-      case  1200: sttyArgs.c_cflag |=  B1200; break;
-      case  2400: sttyArgs.c_cflag |=  B2400; break;
-      case  4800: sttyArgs.c_cflag |=  B4800; break;
-      case  9600: sttyArgs.c_cflag |=  B9600; break;
-      case 19200: sttyArgs.c_cflag |=  B19200; break;
-      case 38400: sttyArgs.c_cflag |=  B38400; break;
-      default:
-	fprintf(stderr,"vrpn: Serial tracker: unknown baud rate %ld\n",baud);
-	return -1;
-    }
-
-    sttyArgs.c_iflag = (IGNBRK | IGNPAR);  /* Ignore break & parity errs */
-    sttyArgs.c_oflag = 0;                  /* Raw output, leave tabs alone */
-    sttyArgs.c_lflag = 0;              /* Raw input (no KILL, etc.), no echo */
-
-    sttyArgs.c_cflag |= CS8;		/* 8 bits */
-    sttyArgs.c_cflag &= ~CSTOPB;	/* One stop bit */
-    sttyArgs.c_cflag &= ~PARENB;	/* No parity */
-    sttyArgs.c_cflag |= CREAD;		/* Allow reading */
-    sttyArgs.c_cflag &= ~CLOCAL;	/* No modem between us and device */
-                                        /* WRM: Is this inverted?? */
-
-    sttyArgs.c_cc[VMIN] = 0;		/* Return read even if no chars */
-    sttyArgs.c_cc[VTIME] = 0;		/* Return without waiting */
-
-    /* pass the new settings back to the driver */
-    if ( ioctl(fileDescriptor, TCSETA, &sttyArgs) == -1 ) {
-	perror("Tracker: ioctl failed");
-	close(fileDescriptor);
-	return(-1);
-    }
-
-    return(fileDescriptor);
-#else
-    portname = portname; // Keep the compiler happy
-    baud = baud;
+  int fileDescriptor;
+  struct termio   sttyArgs;
+  
+  // Open the serial port for r/w
+  if ( (fileDescriptor = open(portname, O_RDWR)) == -1) {
+    perror("Tracker: cannot open serial port");
     return -1;
+  }
+  
+  /* get current settings */
+  if ( ioctl(fileDescriptor, TCGETA , &sttyArgs) == -1 ) {
+    perror("Tracker: ioctl failed");
+    return(-1);
+  }
+
+  /* override old values 	*/
+  // note, newer sgi's don't support regular ("old") stty speed
+  // settings -- they require the use of the new ospeed field to 
+  // use settings above 38400.  The O2 line can use any baud rate 
+  // up 460k (no fixed settings).
+#if defined(sgi) && defined(__NEW_MAX_BAUD)
+  sttyArgs.c_ospeed = baud;
+#else
+  sttyArgs.c_cflag &= ~CBAUD;
+  switch (baud) {
+  case   300: sttyArgs.c_cflag |=   B300; break;
+  case  1200: sttyArgs.c_cflag |=  B1200; break;
+  case  2400: sttyArgs.c_cflag |=  B2400; break;
+  case  4800: sttyArgs.c_cflag |=  B4800; break;
+  case  9600: sttyArgs.c_cflag |=  B9600; break;
+  case 19200: sttyArgs.c_cflag |=  B19200; break;
+  case 38400: sttyArgs.c_cflag |=  B38400; break;
+#ifdef B57600
+  case 57600: sttyArgs.c_cflag |=  B57600; break;
 #endif
+#ifdef B115200
+  case 115200: sttyArgs.c_cflag |=  B115200; break;
+#endif
+  default:
+    fprintf(stderr,"vrpn: Serial tracker: unknown baud rate %ld\n",baud);
+    return -1;
+  }
+#endif
+
+  sttyArgs.c_iflag = (IGNBRK | IGNPAR);  /* Ignore break & parity errs */
+  sttyArgs.c_oflag = 0;                  /* Raw output, leave tabs alone */
+  sttyArgs.c_lflag = 0;              /* Raw input (no KILL, etc.), no echo */
+  
+  sttyArgs.c_cflag |= CS8;	/* 8 bits */
+  sttyArgs.c_cflag &= ~CSTOPB;	/* One stop bit */
+  sttyArgs.c_cflag &= ~PARENB;	/* No parity */
+  sttyArgs.c_cflag |= CREAD;	/* Allow reading */
+  sttyArgs.c_cflag |= CLOCAL;	/* No modem between us and device */
+
+  sttyArgs.c_cc[VMIN] = 0;	/* Return read even if no chars */
+  sttyArgs.c_cc[VTIME] = 0;	/* Return without waiting */
+  
+  /* pass the new settings back to the driver */
+  if ( ioctl(fileDescriptor, TCSETA, &sttyArgs) == -1 ) {
+    perror("Tracker: ioctl failed");
+    close(fileDescriptor);
+    return(-1);
+  }
+  
+  return(fileDescriptor);
 }
+
+// empty the input buffer (discarding the chars)
+// Return 0 on success, -1 on failure.
+int vrpn_flush_input_buffer(int comm)
+{
+   return tcflush(comm, TCIFLUSH);
+}
+
+// empty the output buffer, discarding all of the chars
+// Return 0 on success, tc err codes other on failure.
+int vrpn_flush_output_buffer(int comm)
+{
+   return tcflush(comm, TCOFLUSH);
+}
+
+// empty the output buffer, discarding all of the chars
+// Return 0 on success, tc err codes on failure.
+int vrpn_drain_output_buffer(int comm)
+{
+   return tcdrain(comm);
+}
+
 
 vrpn_Tracker::vrpn_Tracker(char *name, vrpn_Connection *c) {
 	// Set our connection to the one passed in
@@ -265,15 +276,31 @@ int	vrpn_Tracker::encode_acc_to(char *buf)
 // reads characters that are available at the time of the read, so less
 // than the requested number may be returned.
 #ifndef _WIN32
-int vrpn_Tracker_Serial::readAvailableCharacters(unsigned char *buffer,
+int vrpn_Tracker_Serial::read_available_characters(unsigned char *buffer,
 	int bytes)
 {
    int bRead;
-   if ( (bRead = read(serial_fd, (char *)buffer, bytes)) == -1) {
-      perror("Tracker: cannot read from serial port");
-      return -1;
-   }
 
+   // on sgi's (and possibly other architectures) the folks from 
+   // ascension have noticed that a read command will not necessarily
+   // read everything available in the read buffer (see the following file:
+   // ~hmd/src/libs/tracker/apps/ascension/FLOCK232/C/unix.txt
+   // For this reason, we loop and try to fill the buffer, stopping our
+   // loop whenever no chars are available.
+   int cReadThisTime = 0;
+   int cSpaceLeft = bytes;
+   unsigned char *pch = buffer;
+
+   do {
+     if ( (cReadThisTime = read(serial_fd, (char *)pch, cSpaceLeft)) == -1) {
+       perror("Tracker: cannot read from serial port");
+       return -1;
+     }
+     cSpaceLeft -= cReadThisTime;
+     pch += cReadThisTime;
+   }  while ((cReadThisTime!=0) && (cSpaceLeft>0));
+   bRead = pch - buffer;
+ 
 #ifdef	VERBOSE
    if (bRead > 0) printf("  vrpn_Tracker_Serial: Read %d bytes\n",(int)(bRead));
 #endif

@@ -11,12 +11,27 @@
 // client and the server
 
 #include "vrpn_Connection.h"
-extern	int vrpn_open_commport(char *portname, long baud);
+
+// flush discards characters in buffer
+// drain blocks until they are written
+extern int vrpn_open_commport(char *portname, long baud);
+extern int vrpn_flush_input_buffer( int comm );
+extern int vrpn_flush_output_buffer( int comm );
+extern int vrpn_drain_output_buffer( int comm );
+
+// tracker status flags
+#define TRACKER_SYNCING		(2)
+#define TRACKER_REPORT_READY 	(1)
+#define TRACKER_PARTIAL 	(0)
+#define TRACKER_RESETTING	(-1)
+#define TRACKER_FAIL 	 	(-2)
+
 
 class vrpn_Tracker {
   public:
    vrpn_Tracker(char *name, vrpn_Connection *c = NULL);
    virtual void mainloop(void) = 0;	// Handle getting any reports
+   virtual ~vrpn_Tracker() {};
 
    void print_latest_report(void);
 
@@ -45,19 +60,21 @@ class vrpn_Tracker {
 };
 
 #ifndef _WIN32
+#define BUF_SIZE 100
+
 class vrpn_Tracker_Serial : public vrpn_Tracker {
   public:
    vrpn_Tracker_Serial(char *name, vrpn_Connection *c,
 		char *port = "/dev/ttyS1", long baud = 38400);
   protected:
-   char portname[100];
+   char portname[BUF_SIZE];
    long baudrate;
    int serial_fd;
 
-   unsigned char buffer[100];	// Characters read in from the tracker so far
+   unsigned char buffer[BUF_SIZE];// Characters read in from the tracker so far
    unsigned bufcount;		// How many characters in the buffer?
 
-   int readAvailableCharacters(unsigned char *buffer, int count);
+   int read_available_characters(unsigned char *buffer, int count);
    virtual void get_report(void) = 0;
    virtual void reset(void) = 0;
 };
@@ -76,7 +93,7 @@ class vrpn_Tracker_NULL: public vrpn_Tracker {
 
 
 //----------------------------------------------------------
-//************** Users deal with the following *************
+// ************** Users deal with the following *************
 
 // User routine to handle a tracker position update.  This is called when
 // the tracker callback is called (when a message from its counterpart

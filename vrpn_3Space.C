@@ -23,17 +23,7 @@
 
 #include "vrpn_3Space.h"
 
-#define READ_HISTOGRAM
-
-#define MAX_LENGTH              (512)
-
 #define MAX_TIME_INTERVAL       (2000000) // max time between reports (usec)
-
-#define TRACKER_SYNCING         (2)
-#define TRACKER_REPORT_READY    (1)
-#define TRACKER_PARTIAL         (0)
-#define TRACKER_RESETTING       (-1)
-#define TRACKER_FAIL            (-2)
 
 // This constant turns the tracker binary values in the range -32768 to
 // 32768 to meters.
@@ -43,26 +33,12 @@
 #define T_3_METER_RANGE         (T_3_CM_RANGE / 100.0)
 #define T_3_BINARY_TO_METERS    (T_3_METER_RANGE / T_3_DATA_MAX)
 
-
-#ifdef linux
-
 static	unsigned long	duration(struct timeval t1, struct timeval t2)
 {
 	return (t1.tv_usec - t2.tv_usec) +
 	       1000000L * (t1.tv_sec - t2.tv_sec);
 }
 
-// Read from the input buffer on the specified handle until all of the
-//  characters are read.  Return 0 on success, -1 on failure.
-static int	vrpn_flushInputBuffer(int comm)
-{
-#ifdef	linux
-   tcflush(comm, TCIFLUSH);
-#else
-   comm = comm;	// Keep the compiler happy
-#endif
-   return 0;
-}
 
 void vrpn_Tracker_3Space::reset()
 {
@@ -107,12 +83,12 @@ void vrpn_Tracker_3Space::reset()
    fprintf(stderr,"\n");
 
    // Get rid of the characters left over from before the reset
-   vrpn_flushInputBuffer(serial_fd);
+   vrpn_flush_input_buffer(serial_fd);
 
    // Make sure that the tracker has stopped sending characters
    sleep(2);
    unsigned char scrap[80];
-   if ( (ret = readAvailableCharacters(scrap, 80)) != 0) {
+   if ( (ret = read_available_characters(scrap, 80)) != 0) {
      fprintf(stderr,"  3Space warning: got >=%d characters after reset:\n",ret);
      for (i = 0; i < ret; i++) {
       	if (isprint(scrap[i])) {
@@ -122,7 +98,7 @@ void vrpn_Tracker_3Space::reset()
          }
      }
      fprintf(stderr, "\n");
-     vrpn_flushInputBuffer(serial_fd);		// Flush what's left
+     vrpn_flush_input_buffer(serial_fd);		// Flush what's left
    }
 
    // Asking for tracker status
@@ -136,7 +112,7 @@ void vrpn_Tracker_3Space::reset()
 
    // Read Status
    unsigned char statusmsg[56];
-   if ( (ret = readAvailableCharacters(statusmsg, 55)) != 55) {
+   if ( (ret = read_available_characters(statusmsg, 55)) != 55) {
   	fprintf(stderr, "  Got %d of 55 characters for status\n",ret);
    }
    if ( (statusmsg[0]!='2') || (statusmsg[54]!=(char)(10)) ) {
@@ -195,7 +171,7 @@ void vrpn_Tracker_3Space::get_report(void)
    // one with the high bit set.
    if (status == TRACKER_SYNCING) {
       // Try to get a character.  If none, just return.
-      if (readAvailableCharacters(buffer, 1) != 1) {
+      if (read_available_characters(buffer, 1) != 1) {
       	return;
       }
 
@@ -219,7 +195,7 @@ void vrpn_Tracker_3Space::get_report(void)
    // makes sure we get a full reading often enough (ie, it is responsible
    // for doing the watchdog timing to make sure the tracker hasn't simply
    // stopped sending characters).
-   ret = readAvailableCharacters(&buffer[bufcount], 20-bufcount);
+   ret = read_available_characters(&buffer[bufcount], 20-bufcount);
    if (ret == -1) {
 	fprintf(stderr,"3Space: Error reading\n");
 	status = TRACKER_FAIL;
@@ -367,4 +343,4 @@ void vrpn_Tracker_3Space::mainloop()
    }
 }
 
-#endif
+
