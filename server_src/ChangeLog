@@ -1,5 +1,13 @@
 2003-09-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Tracker.cfg : Removed because it caused lots of error
+		messages.
+	* vrpn_Tracker.cfg.UNC : Added so that we can remember the
+		settings for the Phantoms that we use in the systems
+		at UNC.
+
+2003-09-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn.cfg : Added description for UNC joystick on a
 		Windows machine.  Removed redundant example.
 	* vrpn_Phantom.C : Made it stop doing planes, meshes,
