@@ -17,7 +17,7 @@ vrpn_Shared_int32::vrpn_Shared_int32 (const char * name,
   d_becomeSerializer_type (-1),
   d_callbacks (NULL),
   d_timedCallbacks (NULL),
-  d_policy (ACCEPT),
+  d_policy (vrpn_ACCEPT),
   d_policyCallback (NULL),
   d_policyUserdata (NULL),
   d_isSerializer (vrpn_FALSE) {
@@ -238,13 +238,13 @@ vrpn_bool vrpn_Shared_int32::shouldAcceptUpdate
   }
 
   // Are we accepting all updates?
-  if (d_policy == ACCEPT) {
+  if (d_policy == vrpn_ACCEPT) {
 //fprintf(stderr, "policy is to accept.\n");
     return vrpn_TRUE;
   }
 
   // Does the user want to accept this one?
-  if ((d_policy == CALLBACK) && d_policyCallback &&
+  if ((d_policy == vrpn_CALLBACK) && d_policyCallback &&
       (*d_policyCallback)(d_policyUserdata, newValue, when, this)) {
 //fprintf(stderr, "user callback accepts.\n");
     return vrpn_TRUE;
@@ -457,7 +457,7 @@ vrpn_Shared_float64::vrpn_Shared_float64 (const char * name,
   d_becomeSerializer_type (-1),
   d_callbacks (NULL),
   d_timedCallbacks (NULL),
-  d_policy (ACCEPT),
+  d_policy (vrpn_ACCEPT),
   d_policyCallback (NULL),
   d_policyUserdata (NULL),
   d_isSerializer (vrpn_FALSE) {
@@ -668,12 +668,12 @@ vrpn_bool vrpn_Shared_float64::shouldAcceptUpdate
   // We are the serializer.
 
   // Are we accepting all updates?
-  if (d_policy == ACCEPT) {
+  if (d_policy == vrpn_ACCEPT) {
     return vrpn_TRUE;
   }
 
   // Does the user want to accept this one?
-  if ((d_policy == CALLBACK) && d_policyCallback &&
+  if ((d_policy == vrpn_CALLBACK) && d_policyCallback &&
       (*d_policyCallback)(d_policyUserdata, newValue, when, this)) {
     return vrpn_TRUE;
   }
@@ -879,7 +879,7 @@ vrpn_Shared_String::vrpn_Shared_String (const char * name,
   d_becomeSerializer_type (-1),
   d_callbacks (NULL),
   d_timedCallbacks (NULL),
-  d_policy (ACCEPT),
+  d_policy (vrpn_ACCEPT),
   d_policyCallback (NULL),
   d_policyUserdata (NULL),
   d_isSerializer (vrpn_FALSE) {
@@ -1106,12 +1106,12 @@ vrpn_bool vrpn_Shared_String::shouldAcceptUpdate
   // We are the serializer.
 
   // Are we accepting all updates?
-  if (d_policy == ACCEPT) {
+  if (d_policy == vrpn_ACCEPT) {
     return vrpn_TRUE;
   }
 
   // Does the user want to accept this one?
-  if ((d_policy == CALLBACK) && d_policyCallback &&
+  if ((d_policy == vrpn_CALLBACK) && d_policyCallback &&
       (*d_policyCallback)(d_policyUserdata, newValue, when, this)) {
     return vrpn_TRUE;
   }

@@ -1,14 +1,14 @@
 #ifndef VRPN_SHARED_OBJECT
 #define VRPN_SHARED_OBJECT
 
+#include <vrpn_Shared.h>  // for types
+#include <vrpn_Types.h>
+
 #ifdef _WIN32
 #include <winsock.h>
 #else
 #include <sys/time.h>  // for struct timeval
 #endif
-
-#include <vrpn_Shared.h>  // for types
-#include <vrpn_Types.h>
 
 #include <vrpn_Connection.h>  // for vrpn_HANDLERPARAM
 
@@ -86,12 +86,12 @@ typedef int (* vrpnSharedStringSerializerPolicy)
 
 // setSerializerPolicy() can be used to change the way VRPN_SO_DEFER_UPDATES
 // operates.  The default value described above is equivalent to calling
-// setSerializerPolicy(ACCEPT).  Also possible are DENY,
+// setSerializerPolicy(vrpn_ACCEPT).  Also possible are vrpn_DENY,
 // which causes the serializer to ignore all updates from its peers,
-// and CALLBACK, which passes the update to a callback which can
-// return zero for ACCEPT or nonzero for DENY. 
+// and vrpn_CALLBACK, which passes the update to a callback which can
+// return zero for vrpn_ACCEPT or nonzero for vrpn_DENY. 
 
-enum vrpn_SerializerPolicy { ACCEPT, DENY, CALLBACK };
+enum vrpn_SerializerPolicy { vrpn_ACCEPT, vrpn_DENY, vrpn_CALLBACK };
 
 class vrpn_Shared_int32 {
 
@@ -127,7 +127,7 @@ class vrpn_Shared_int32 {
       // has been made, so any check of the value of their shared int
       // will return newValue
 
-    void setSerializerPolicy (vrpn_SerializerPolicy policy = ACCEPT,
+    void setSerializerPolicy (vrpn_SerializerPolicy policy = vrpn_ACCEPT,
                               vrpnSharedIntSerializerPolicy f = NULL,
                               void * userdata = NULL);
 
@@ -164,7 +164,7 @@ class vrpn_Shared_int32 {
     timedCallbackEntry * d_timedCallbacks;
 
     // serializer policy code
-    vrpn_SerializerPolicy d_policy;  // default to ACCEPT
+    vrpn_SerializerPolicy d_policy;  // default to vrpn_ACCEPT
     vrpnSharedIntSerializerPolicy d_policyCallback;
     void * d_policyUserdata;
     vrpn_bool d_isSerializer;
@@ -266,7 +266,7 @@ class vrpn_Shared_float64 {
       // has been made, so any check of the value of their shared int
       // will return newValue
 
-    void setSerializerPolicy (vrpn_SerializerPolicy policy = ACCEPT,
+    void setSerializerPolicy (vrpn_SerializerPolicy policy = vrpn_ACCEPT,
                               vrpnSharedFloatSerializerPolicy f = NULL,
                               void * userdata = NULL);
 
@@ -302,7 +302,7 @@ class vrpn_Shared_float64 {
     };
     timedCallbackEntry * d_timedCallbacks;
 
-    vrpn_SerializerPolicy d_policy;  // default to ACCEPT
+    vrpn_SerializerPolicy d_policy;  // default to vrpn_ACCEPT
     vrpnSharedFloatSerializerPolicy d_policyCallback;
     void * d_policyUserdata;
     vrpn_bool d_isSerializer;
@@ -396,7 +396,7 @@ class vrpn_Shared_String {
       // has been made, so any check of the value of their shared int
       // will return newValue
 
-    void setSerializerPolicy (vrpn_SerializerPolicy policy = ACCEPT,
+    void setSerializerPolicy (vrpn_SerializerPolicy policy = vrpn_ACCEPT,
                               vrpnSharedStringSerializerPolicy f = NULL,
                               void * userdata = NULL);
 
@@ -433,7 +433,7 @@ class vrpn_Shared_String {
     };
     timedCallbackEntry * d_timedCallbacks;
 
-    vrpn_SerializerPolicy d_policy;  // default to ACCEPT
+    vrpn_SerializerPolicy d_policy;  // default to vrpn_ACCEPT
     vrpnSharedStringSerializerPolicy d_policyCallback;
     void * d_policyUserdata;
     vrpn_bool d_isSerializer;
