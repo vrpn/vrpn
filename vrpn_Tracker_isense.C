@@ -27,7 +27,6 @@
 
 #ifdef  VRPN_INCLUDE_INTERSENSE
 #include "isense.c"
-#endif
 
 #define MAX_TIME_INTERVAL       (5000000) // max time between reports (usec)
 #define	INCHES_TO_METERS	(2.54/100.0)
@@ -572,3 +571,4 @@ int vrpn_Tracker_InterSense::add_is900_analog(const char *analog_device_name, in
     // Send a new station-format command to the tracker so it will report the analog status
     return set_sensor_output_format(sensor);
 }
+#endif

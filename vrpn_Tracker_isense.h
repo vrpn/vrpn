@@ -19,6 +19,7 @@
 #include "isense.h"
 #endif
 
+#ifdef VRPN_INCLUDE_INTERSENSE
 class vrpn_Tracker_InterSense : public vrpn_Tracker {
   
  public:
@@ -58,11 +59,9 @@ class vrpn_Tracker_InterSense : public vrpn_Tracker {
   char	add_reset_cmd[2048];	//< Additional reset commands to be sent
 
   int m_CommPort;
-#ifdef VRPN_INCLUDE_INTERSENSE
   ISD_TRACKER_HANDLE m_Handle;
   ISD_TRACKER_INFO_TYPE m_TrackerInfo;
   ISD_STATION_INFO_TYPE m_StationInfo[ISD_MAX_STATIONS];
-#endif
 
   int	do_is900_timestamps;	    //< Request and process IS-900 timestamps?
   struct timeval is900_zerotime;    //< When the IS-900 time counter was zeroed
@@ -74,6 +73,7 @@ class vrpn_Tracker_InterSense : public vrpn_Tracker {
 
   void  getTrackerInfo(char *msg);
 };
+#endif
 
 
 #endif
