@@ -224,6 +224,7 @@ vrpn_parallel_Button::vrpn_parallel_Button(char *name, vrpn_Connection *c,
 
    // Open the port
    if ( (port = open(portname, O_RDWR)) < 0) {
+     perror("vrpn_Button::vrpn_Button(): Can't open port");
 	fprintf(stderr,
 		"vrpn_Button::vrpn_Button(): Can't open port %s",portname);
 	status = BUTTON_FAIL;

@@ -457,7 +457,7 @@ int vrpn_Connection::setup_for_new_connection(void)
 	// use a maximally restrictive check.)
         //   This pointer arithmetic isn't completely safe.
 
-	bp = strrchr(MAGIC, '.');
+	bp = strrchr(buf, '.');
 	if (strncmp(buf, MAGIC,
             (bp == NULL ? MAGICLEN : bp + 1 - buf))) {
 	  fprintf(stderr, "vrpn_Connection::setup_for_new_connection:  "

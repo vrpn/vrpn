@@ -4,6 +4,8 @@
 # supported.  It should be possible to build simultaneously on multiple
 # architectures.
 #
+# On the sgi, both g++ and CC verisons are built by default.
+#
 # Author: Russ Taylor, 10/2/1997
 #	  
 # modified:
@@ -37,27 +39,37 @@ endif
 #
 # IF YOU CHANGE THESE, document either here or in the header comment
 # why.  Multiple contradictory changes have been made recently.
+# On the sgi, both g++ and CC versions are compiled by default.
 
 CC := g++
-ifeq ($(HW_OS),sgi_irix)
+
+ifeq ($(FORCE_GPP),1)
+  CC := g++
+else
+  ifeq ($(HW_OS),sgi_irix)
 	CC := CC
-endif
-ifeq ($(HW_OS),hp700_hpux10)
+  endif
+  ifeq ($(HW_OS),hp700_hpux10)
 	CC := CC +a1
-endif
-ifeq ($(HW_OS),sparc_sunos)
+  endif
+  ifeq ($(HW_OS),sparc_sunos)
 	CC := /usr/local/lib/CenterLine/bin/CC
-endif
-ifeq ($(HW_OS), hp_flow_aCC)
+  endif
+  ifeq ($(HW_OS), hp_flow_aCC)
 	CC := /opt/aCC/bin/aCC 
+  endif
 endif
 
 HMD_INCLUDE_DIR	:= /afs/unc/proj/hmd/include
 
 # subdirectory for make
+ifeq ($(FORCE_GPP),1)
+OBJECT_DIR	 := $(HW_OS)/g++
+SOBJECT_DIR      := $(HW_OS)/g++/server
+else
 OBJECT_DIR	 := $(HW_OS)
 SOBJECT_DIR      := $(HW_OS)/server
-
+endif
 
 ##########################
 # Include flags
@@ -148,7 +160,22 @@ $(SOBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) $(MAKEFILE)
 #
 #############################################################################
 
+ifeq ($(HW_OS),sgi_irix)
+# build both gcc and regular
+all:	client_g++ server_g++ client server 
+else
 all:	client server
+endif
+
+.PHONY:	client_g++
+client_g++:
+	$(MAKE) FORCE_GPP=1 $(OBJECT_DIR)/g++/libvrpn.a
+	mv $(OBJECT_DIR)/g++/libvrpn.a $(OBJECT_DIR)/libvrpn_g++.a
+
+.PHONY:	server_g++
+server_g++:
+	$(MAKE) FORCE_GPP=1 $(OBJECT_DIR)/g++/libvrpnserver.a
+	mv $(OBJECT_DIR)/g++/libvrpnserver.a $(OBJECT_DIR)/libvrpnserver_g++.a
 
 .PHONY:	client
 client:
@@ -210,8 +237,11 @@ $(OBJECT_DIR)/libvrpnserver.a: $(MAKEFILE) $(SOBJECT_DIR) $(SLIB_OBJECTS) $(SLIB
 #############################################################################
 
 clean:
-	\rm -f $(LIB_OBJECTS) $(OBJECT_DIR)/libvrpn.a \
-		$(SLIB_OBJECTS) $(OBJECT_DIR)/libvrpnserver.a
+	\rm -f $(LIB_OBJECTS) $(OBJECT_DIR)/libvrpn.a $(OBJECT_DIR)/libvrpn_g++.a \
+		$(SLIB_OBJECTS) $(OBJECT_DIR)/libvrpnserver.a $(OBJECT_DIR)/libvrpnserver_g++.a
+ifneq ($(CC), g++)
+	$(MAKE) FORCE_GPP=1 clean
+endif
 
 #############################################################################
 #
