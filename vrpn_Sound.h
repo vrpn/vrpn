@@ -63,10 +63,13 @@ class vrpn_Linux_Sound: public vrpn_Sound {
 	int  filenum;
 	int channel_on[vrpn_SND_CHANNEL_NUM];
 	int channel_file[vrpn_SND_CHANNEL_NUM];
-    int     volume[vrpn_SND_CHANNEL_NUM];
-	int  	play_mode[vrpn_SND_CHANNEL_NUM]; // vrpn_SND_SINGLE, LOOPED or STOP 
+	int volume[vrpn_SND_CHANNEL_NUM];
+	int play_mode[vrpn_SND_CHANNEL_NUM]; // vrpn_SND_SINGLE, LOOPED or STOP 
 	int channel_index[vrpn_SND_CHANNEL_NUM];
 	int channel_max[vrpn_SND_CHANNEL_NUM]; //num of chunks chunk size is 512 here
+	// for midi
+	int midi_flag;
+	int midi_data;
 	
     void soundplay(void);
     void initchild();
@@ -96,6 +99,7 @@ class vrpn_Sound_Remote: public vrpn_Sound {
 					   const int ear = vrpn_SND_BOTH, 
 					   const int channel = 1);
 	void play_stop(const int channel = 1);
+	void play_midi_sound(float data);
 
 	int encode(char *msgbuf,
 	       const char *sound,
@@ -103,7 +107,8 @@ class vrpn_Sound_Remote: public vrpn_Sound {
 		   const int mode,
 		   const int ear,
 		   const int channel);
-	int encode(char *msgbuf, int set_stop, int channel);
+	int encode(char *msgbuf, int set_mode, int info); // info = channel/data
+//	int encode(char *msgbuf, int set_midi, int data);
 	int encode(char *msgbuf, int set_load, const char *sound);
 	
 	void preload_sampled_sound(const char *sound);

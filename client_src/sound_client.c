@@ -33,7 +33,7 @@ int main()
 	remote->play_sampled_sound(SOUND1, 100,
 	                    vrpn_SND_LOOPED, vrpn_SND_BOTH, 3);
 	remote->mainloop();
-	sleep(20);
+	sleep(20); 
 
 	printf("...stopping looped sound on channel 2...\n");
         remote->play_stop(2);

@@ -14,7 +14,7 @@ LFLAGS = -L../`hw_os` \
 .C.o:
 	$(CC) $(CFLAGS) -c $*.C
 
-all:  sound_client 
+all:  sound_client printvals
 
 sound_client: sound_client.o ../`hw_os`/libvrpn.a
 	$(CC) $(LFLAGS) -o sound_client sound_client.o -lvrpn -lsdi -lm
@@ -22,13 +22,16 @@ sound_client: sound_client.o ../`hw_os`/libvrpn.a
 midi_client: midi_client.o ../`hw_os`/libvrpn.a
 	$(CC) $(LFLAGS) -o midi_client midi_client.o -lvrpn -lsdi -lm
 
+printvals: printvals.o ../`hw_os`/libvrpn.a
+	$(CC) $(LFLAGS) -o printvals printvals.o -lvrpn -lsdi -lm
+
 listen_client: listen_client.o ../`hw_os`/libvrpn.a
 	$(CC) $(LFLAGS) -o listen_client listen_client.o -lvrpn -lsdi -lm
 
 
 
 clean:
-	rm -f *.o sound_client midi_client
+	rm -f *.o sound_client midi_client printvals
 
 
 ../`hw_os`/libvrpn.a:

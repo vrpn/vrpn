@@ -16,7 +16,7 @@ void	handle_pos(void *userdata, const vrpn_TRACKERCB t)
 {
 	static	int	count = 0;
 
-	fprintf(stderr, ".");
+	fprintf(stderr, "%ld.", t.sensor);
 	if (++count >= 20) {
 		fprintf(stderr, "\n");
 		count = 0;
@@ -27,14 +27,14 @@ void	handle_vel(void *userdata, const vrpn_TRACKERVELCB t)
 {
 	static	int	count = 0;
 
-	fprintf(stderr, "/");
+	fprintf(stderr, "%ld/", t.sensor);
 }
 
 void	handle_acc(void *userdata, const vrpn_TRACKERACCCB t)
 {
 	static	int	count = 0;
 
-	fprintf(stderr, "~");
+	fprintf(stderr, "%ld~", t.sensor);
 }
 
 void	handle_button(void *userdata, const vrpn_BUTTONCB b)
@@ -51,8 +51,8 @@ void	handle_button(void *userdata, const vrpn_BUTTONCB b)
 void init(void)
 {
 	//tkr = new vrpn_Tracker_Remote("Tracker0_hiball1");
-	tkr = new vrpn_Tracker_Remote("Tracker0@iron");
-	btn = new vrpn_Button_Remote("Button0@iron");
+	tkr = new vrpn_Tracker_Remote("Tracker0@ioglab");
+	btn = new vrpn_Button_Remote("Button0@ioglab");
 
 	// Set up the tracker callback handler
 	printf("Tracker update: '.' = pos, '/' = vel, '~' = acc\n");
