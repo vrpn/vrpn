@@ -37,7 +37,8 @@
 // is probably adding more latency -- see the vrpn README for more info.
 
 class vrpn_Tracker_Flock_Master: public vrpn_Tracker_Serial {
-  
+private:
+ unsigned long  duration(struct timeval t1, struct timeval t2) ;
  public:
   
   vrpn_Tracker_Flock_Master(char *name, vrpn_Connection *c, int cSensors=1,

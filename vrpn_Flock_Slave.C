@@ -222,6 +222,9 @@ vrpn_Tracker_Flock_Slave::vrpn_Tracker_Flock_Slave(
   fprintf(stderr, "\nvrpn_Tracker_Flock_Slave: starting up ...\n");
   status = TRACKER_RESETTING;
   timestamp.tv_sec = -1;
+  cSensors = 1;
+  cSeconds = 3;
+  fFirst =1; cReports = 0;
 }
 
 
@@ -263,7 +266,7 @@ void vrpn_Tracker_Flock_Slave::reset()
    // we are waitng for the output only
 
    status = TRACKER_SYNCING;	// We're trying for a new reading
-   fprintf(stderr, "reset\n");
+   //fprintf(stderr, "reset\n");
    write(serial_fd, "B", 1);
    timestamp.tv_sec = -1;
    cResets=0;
@@ -313,6 +316,7 @@ void vrpn_Tracker_Flock_Slave::get_report(void)
      gettimeofday(&timestamp, NULL);
      status = TRACKER_PARTIAL;
      //fprintf(stderr, "Reading some thing %d\n", sensor);
+     write(serial_fd, "B", 1); // poll back next record;
    }
      
    // Read as many bytes of this record as we can, storing them
@@ -390,7 +394,12 @@ void vrpn_Tracker_Flock_Slave::get_report(void)
    // all set for this sensor, so cycle
    status = TRACKER_REPORT_READY;
    bufcount = 0;
-   write(serial_fd, "B", 1);
+   if (fFirst == 1) {
+     gettimeofday(&tvNow, NULL);
+     tvLastPrint = tvNow;
+     fFirst = 2;
+   }
+
 #ifdef VERBOSE
       print();
 #endif
@@ -403,34 +412,23 @@ void vrpn_Tracker_Flock_Slave::mainloop()
   switch (status) {
   case TRACKER_REPORT_READY:
     {
-#ifdef	VERBOSE
-      static int count = 0;
-      if (count++ == 120) {
-	//printf("\nvrpn_Tracker_Flock_Slave: Sensor %d Got report", sensor); 
-	//printf(" Pos(%f %f %f)\n", pos[0], pos[1], pos[2]);
-	count = 0;
-      }
-#endif            
       
       // Send the message on the connection
       if (connection) {
-	static int cSeconds = 3;
-	static int fFirst = 1;
+	
 	static char	msgbuf[1000];
 	int	len = encode_to(msgbuf);
 
 	// data to calc report rate 
-	static struct timeval tvNow;
+	
 	gettimeofday(&tvNow, NULL);
-	static struct timeval tvLastPrint=tvNow;
-	static int cReports=0;
 	
 	cReports++;
 
 #ifdef STATUS_MSG
 	if (vrpn_TimevalMsecs(vrpn_TimevalDiff(tvNow, tvLastPrint)) > cSeconds*1000){
 
-	  if (fFirst) {
+	  if (fFirst==2) {
 	    fprintf(stderr, "\nFlock: status will be printed every %d seconds",
 		    STATUS_MSG_SECS);
 	    fFirst = 0;
@@ -441,6 +439,7 @@ void vrpn_Tracker_Flock_Slave::mainloop()
 	  time_t tNow = time(NULL);
 	  char *pch = ctime(&tNow);
 	  pch[24]='\0';
+	  cSensors = 1; // one Flock Slave server 1 sensors;
 	  fprintf(stderr, "\nFlock: reports being sent at %6.2lf hz (%d sensors, so ~%6.2lf hz per sensor) ( %s )", 
 		  dRate, cSensors, dRate/cSensors, pch);
 	  tvLastPrint = tvNow;

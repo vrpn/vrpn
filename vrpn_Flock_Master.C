@@ -245,12 +245,12 @@ vrpn_Tracker_Flock_Master::~vrpn_Tracker_Flock_Master() {
 }
 
 
-#define MAX_TIME_INTERVAL       (2000000) // max time between reports (usec)
-
-static	unsigned long	duration(struct timeval t1, struct timeval t2)
+#define MAX_TIME_INTERVAL       (5*1000000) // max time between reports (usec)
+unsigned long	vrpn_Tracker_Flock_Master::duration(struct timeval t1, struct timeval t2)
 {
-	return (t1.tv_usec - t2.tv_usec) +
-	       1000000L * (t1.tv_sec - t2.tv_sec);
+  if (cResets != -1 ) return 0;
+  return (t1.tv_usec - t2.tv_usec) +
+    1000000L * (t1.tv_sec - t2.tv_sec);
 }
 
 void vrpn_Tracker_Flock_Master::reset()
@@ -407,7 +407,7 @@ void vrpn_Tracker_Flock_Master::reset()
      reset[resetLen++] = 0xc;
      reset[resetLen++] = 0;
    }
-   reset[resetLen++]= 'F';
+   //reset[resetLen++]= 'F';
 
    if (write(serial_fd, reset, resetLen )!=resetLen) {
      perror("\nvrpn_Tracker_Flock_Master: failed writing set mode cmds to tracker");
@@ -422,7 +422,7 @@ void vrpn_Tracker_Flock_Master::reset()
 
    gettimeofday(&timestamp, NULL);	// Set watchdog now
    status = TRACKER_SYNCING;	// We're trying for a new reading
-   cResets=0;
+   cResets=-1; 
 }
 
 
@@ -430,6 +430,60 @@ void vrpn_Tracker_Flock_Master::get_report(void)
 {
   // master is the controller , it doesn't get any report
   // all reports are sent through seperate serial port
+  // poll back a status report every now and then;
+  static int ctimes = 0;
+  unsigned char cReport[24];
+  int thisread;
+  const int reportLen = 14;
+  if (status == TRACKER_PARTIAL) {
+    thisread =read_available_characters(buffer+bufcount, reportLen-bufcount);
+    //fprintf(stderr, "this time read %d %d %d **", thisread,reportLen, bufcount);
+
+    //thisread =this->read_available_characters(buffer, 14);
+    //fprintf(stderr, "this time read %d %d %d \n", thisread,reportLen, bufcount);
+    if (thisread < 0) { status = TRACKER_FAIL; return;}
+    bufcount += thisread;
+    if (bufcount < reportLen) return;
+    //printf("Report Status=  %x %x %x %x\n", 
+    // buffer[0], buffer[1], buffer[2], buffer[3]);
+    if (!(buffer[0] & (0x80|0x40) && buffer[1] & (0x80|0x40)  &&
+	  buffer[2] & (0x80|0x40) && buffer[3] & (0x80|0x40)))
+	{ status = TRACKER_FAIL; return; }
+
+    status = TRACKER_SYNCING;
+    cResets = 0;
+    return; 
+  }
+  else {
+    cResets = -1;
+    int start =0;
+    int read = 0;
+    //cReport[start++]= 0xf0 +1;
+    //cReport[start++]= 'G', 
+    cReport[start++]= 'O', cReport[start++]= 36;
+    //cReport[start++]= 'F';
+    //fprintf(stderr, " get status report\n");
+
+    // write the cmd and get response
+   if (write(serial_fd, cReport, start )!=start) {
+     perror("\nvrpn_Tracker_Flock_Master: failed writing get sys config to tracker");
+     status = TRACKER_FAIL;
+     return;
+   }
+    // make sure the command is sent out
+   //vrpn_drain_output_buffer( serial_fd );
+
+    gettimeofday(&timestamp, NULL);
+    status = TRACKER_PARTIAL;
+    bufcount =0;
+    //sleep(1);
+    //fprintf(stderr, " get status report 1.5\n");
+    // Try to get a character.  If none, just return.
+    bufcount = read_available_characters(buffer, 14); 
+    
+    //fprintf(stderr, " get status report 2 %d\n", bufcount);
+    
+  } 
   return;
 }
 
@@ -443,6 +497,19 @@ void vrpn_Tracker_Flock_Master::mainloop()
   
   case TRACKER_SYNCING:
   case TRACKER_PARTIAL:
+    {
+      struct timeval current_time;
+
+      gettimeofday(&current_time, NULL);
+      if ( duration(current_time,timestamp) < MAX_TIME_INTERVAL) {
+	get_report();
+      } else {
+	fprintf(stderr,"\nvrpn_Tracker_Flock_Master: failed to read ... current_time=%ld:%ld, timestamp=%ld:%ld",
+		current_time.tv_sec, current_time.tv_usec, 
+		timestamp.tv_sec, timestamp.tv_usec);
+	status = TRACKER_FAIL;
+      }
+    }
     break;
 
   case TRACKER_RESETTING:
@@ -454,7 +521,7 @@ void vrpn_Tracker_Flock_Master::mainloop()
       char ch;
       checkError();
       fprintf(stderr, "\nvrpn_Tracker_Flock_Master: problems resetting ... check that: a) all cables are attached, b) all units have FLY/STANDBY switches in FLY mode, and c) no receiver is laying too close to the transmitter.  When done checking, power cycle the flock.\nPress return when the flock is ready to be re-started. ");
-      fscanf(stdin, "%c", &ch);
+      sleep(10); //fscanf(stdin, "%c", &ch);
       cResets=0;
     }
     fprintf(stderr, 

@@ -54,6 +54,11 @@ class vrpn_Tracker_Flock_Slave: public vrpn_Tracker_Serial {
   int checkError();
   int cResets;
   int cSensors;
+  int cSeconds;
+  int fFirst;
+  struct timeval tvNow;
+  struct timeval tvLastPrint;
+  int cReports;
 };
 
 #endif  // #ifndef _WIN32
