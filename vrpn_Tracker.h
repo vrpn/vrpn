@@ -149,6 +149,12 @@ class vrpn_Tracker_Serial : public vrpn_Tracker {
 #endif  // VRPN_CLIENT_ONLY
 
 
+// This is an example of a tracker server.  It basically reports the
+// position at the origin with zero velocity and acceleration over and
+// over again at the rate requested.  It is here mostly as an example of
+// how to build a tracker server, and also serves as a test object for
+// client codes and VRPN builds.
+
 class vrpn_Tracker_NULL: public vrpn_Tracker {
   public:
    vrpn_Tracker_NULL (const char * name, vrpn_Connection * c,
@@ -164,6 +170,35 @@ class vrpn_Tracker_NULL: public vrpn_Tracker {
    vrpn_RedundantTransmission * d_redundancy;
 };
 
+
+// This is a tracker server that can be used by an application that
+// just wants to generate tracker reports but does not really have
+// a tracker device to drive.  Similar to the vrpn_Analog_Server, it
+// provides a quick and easy way for an application to report things.
+//
+// The application creates an object of this class, specifying the
+// number of sensors and the connection that is to be used.  It then
+// reports poses (position + quat), pose velocities, and pose
+// accelerations as desired using the provided functions.  The
+// mainloop() function needs to be called periodically even when
+// there is nothing to report.
+
+class vrpn_Tracker_Server: public vrpn_Tracker {
+  public:
+   vrpn_Tracker_Server (const char * name, vrpn_Connection * c,
+	vrpn_int32 sensors = 1);
+
+   /// This function should be called each time through app mainloop.
+   virtual void mainloop();
+
+   /// These functions should be called to report changes in state, once per sensor.
+   virtual int report_pose(int sensor, struct timeval t, vrpn_float64 position[3], vrpn_float64 quaternion[4]);
+   virtual int report_pose_velocity(int sensor, struct timeval t, vrpn_float64 position[3], vrpn_float64 quaternion[4], vrpn_float64 interval);
+   virtual int report_pose_acceleration(int sensor, struct timeval t, vrpn_float64 position[3], vrpn_float64 quaternion[4], vrpn_float64 interval);
+
+  protected:
+   vrpn_int32	num_sensors;
+};
 
 
 

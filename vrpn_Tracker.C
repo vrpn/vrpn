@@ -630,6 +630,131 @@ void vrpn_Tracker_NULL::setRedundantTransmission
 }
 
 
+vrpn_Tracker_Server::vrpn_Tracker_Server
+                  (const char * name, vrpn_Connection * c,
+	           vrpn_int32 sensors) :
+    vrpn_Tracker(name, c),
+    num_sensors(sensors)
+{
+	register_server_handlers();
+	// Nothing left to do
+}
+
+void	vrpn_Tracker_Server::mainloop()
+{
+	// Call the generic server mainloop routine, since this is a server
+	server_mainloop();
+}
+
+int	vrpn_Tracker_Server::report_pose(int sensor, struct timeval t,
+									 vrpn_float64 position[3], vrpn_float64 quaternion[4])
+{
+	char	msgbuf[1000];
+	vrpn_int32	len;
+
+	  // Update the time
+	  timestamp.tv_sec = t.tv_sec;
+	  timestamp.tv_usec = t.tv_usec;
+
+	  // Send messages for all sensors if we have a connection
+	  if (sensor >= num_sensors) {
+		  send_text_message("Sensor number too high", timestamp, vrpn_TEXT_ERROR);
+		  return -1;
+	  } else if (!d_connection) {
+		  send_text_message("No connection", timestamp, vrpn_TEXT_ERROR);
+		  return -1;
+	  } else {
+		d_sensor = sensor;
+
+		// Pack position report
+		memcpy(pos, position, sizeof(pos));
+		memcpy(d_quat, quaternion, sizeof(d_quat));
+		len = encode_to(msgbuf);
+		if (d_connection->pack_message(len, timestamp,
+			position_m_id, d_sender_id, msgbuf,
+			vrpn_CONNECTION_LOW_LATENCY)) {
+		 fprintf(stderr,"vrpn_Tracker_Server: can't write message: tossing\n");
+		 return -1;
+		}
+	  }
+	  return 0;
+}
+
+int	vrpn_Tracker_Server::report_pose_velocity(int sensor, struct timeval t,
+									 vrpn_float64 position[3], vrpn_float64 quaternion[4],
+									 vrpn_float64 interval)
+{
+	char	msgbuf[1000];
+	vrpn_int32	len;
+
+	  // Update the time
+	  timestamp.tv_sec = t.tv_sec;
+	  timestamp.tv_usec = t.tv_usec;
+
+	  // Send messages for all sensors if we have a connection
+	  if (sensor >= num_sensors) {
+		  send_text_message("Sensor number too high", timestamp, vrpn_TEXT_ERROR);
+		  return -1;
+	  } else if (!d_connection) {
+		  send_text_message("No connection", timestamp, vrpn_TEXT_ERROR);
+		  return -1;
+	  } else {
+		d_sensor = sensor;
+
+		// Pack velocity report
+		memcpy(vel, position, sizeof(pos));
+		memcpy(vel_quat, quaternion, sizeof(d_quat));
+		vel_quat_dt = interval;
+		len = encode_vel_to(msgbuf);
+		if (d_connection->pack_message(len, timestamp,
+			velocity_m_id, d_sender_id, msgbuf,
+			vrpn_CONNECTION_LOW_LATENCY)) {
+		 fprintf(stderr,"vrpn_Tracker_Server: can't write message: tossing\n");
+		 return -1;
+		}
+	  }
+
+	return 0;
+}
+
+int	vrpn_Tracker_Server::report_pose_acceleration(int sensor, struct timeval t,
+									 vrpn_float64 position[3], vrpn_float64 quaternion[4],
+									 vrpn_float64 interval)
+{
+	char	msgbuf[1000];
+	vrpn_int32	len;
+
+	  // Update the time
+	  timestamp.tv_sec = t.tv_sec;
+	  timestamp.tv_usec = t.tv_usec;
+
+	  // Send messages for all sensors if we have a connection
+	  if (sensor >= num_sensors) {
+		  send_text_message("Sensor number too high", timestamp, vrpn_TEXT_ERROR);
+		  return -1;
+	  } else if (!d_connection) {
+		  send_text_message("No connection", timestamp, vrpn_TEXT_ERROR);
+		  return -1;
+	  } else {
+		d_sensor = sensor;
+
+		// Pack acceleration report
+		memcpy(acc, position, sizeof(pos));
+		memcpy(acc_quat, quaternion, sizeof(d_quat));
+		acc_quat_dt = interval;
+		len = encode_acc_to(msgbuf);
+		if (d_connection->pack_message(len, timestamp,
+			accel_m_id, d_sender_id, msgbuf,
+			vrpn_CONNECTION_LOW_LATENCY)) {
+		 fprintf(stderr,"vrpn_Tracker_Server: can't write message: tossing\n");
+		 return -1;
+		}
+	  }
+
+	return 0;
+}
+
+
 #ifndef VRPN_CLIENT_ONLY
 vrpn_Tracker_Serial::vrpn_Tracker_Serial
                     (const char * name, vrpn_Connection * c,
