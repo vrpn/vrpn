@@ -1,5 +1,9 @@
 2003-08-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Shared.C : Removed #ifdef'd out code.
+
+2003-08-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	*  vrpn_Shared.C : Fixed the code that handles high-resolution
 		Windows timing.  This version always has time moving
 		forwards.

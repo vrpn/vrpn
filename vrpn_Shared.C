@@ -1011,59 +1011,6 @@ int gettimeofday(timeval *tp, struct timezone *tzp)
 }
 #else //defined(VRPN_WINDOWS_CLOCK_V2)
 
-#if 0
-void get_time_using_GetLocalTime(unsigned long &sec, unsigned long &usec)
-{
-    static LARGE_INTEGER first_count = { 0, 0 };
-    static unsigned long first_sec, first_usec;
-    static LARGE_INTEGER perf_freq;   //< Frequency of the performance counter
-    SYSTEMTIME	stime;	    // System time in funky structure
-    FILETIME	ftime;	    // Time in 100-nsec intervals since Jan 1 1601
-    LARGE_INTEGER   tics;   // ftime stored into a 64-bit quantity
-    LARGE_INTEGER perf_counter, perf_freq;
-    
-    if (first_count.QuadPart == 0) {
-      //XXX It is not this part being called too often that causes the shift: it is only called once.
-	GetLocalTime(&stime);
-	SystemTimeToFileTime(&stime, &ftime);
-
-	// Copy the data into a structure that can be treated as a 64-bit integer
-	tics.HighPart = ftime.dwHighDateTime;
-	tics.LowPart = ftime.dwLowDateTime;
-
-	// Convert the 64-bit time into seconds and microseconds since July 1 1601
-	sec = (long)( tics.QuadPart / 10000000L );
-	usec = (long)( ( tics.QuadPart - ( ((LONGLONG)(sec)) * 10000000L ) ) / 10 );
-	QueryPerformanceCounter( &first_count );
-	first_sec = sec;
-	first_usec = usec;
-    } else {
-	//XXX Should this only happen the first time?  It doesn't change.
-	QueryPerformanceFrequency( &perf_freq );
-	QueryPerformanceCounter( &perf_counter );
-	if ( perf_counter.QuadPart >= first_count.QuadPart ) {
-	  perf_counter.QuadPart = perf_counter.QuadPart - first_count.QuadPart;
-	} else {
-	  //XXX It is not this route causing the shift: it is not called.
-	  // Take care of the case when the counter rolls over.
-	  perf_counter.QuadPart = 0x7fffffffffffffff - first_count.QuadPart + perf_counter.QuadPart;
-	}
-//XXX This is integer dividing by a large number ending in 5	printf("PerfFreq = %ld\n", perf_freq.QuadPart);
-
-	sec = (long)( perf_counter.QuadPart / perf_freq.QuadPart );
-	perf_counter.QuadPart = perf_counter.QuadPart - perf_freq.QuadPart * sec;
-	perf_freq.QuadPart = perf_freq.QuadPart / 1000000;
-	sec += first_sec;
-
-	usec = first_usec + (long)( perf_counter.QuadPart / perf_freq.QuadPart );
-    }
-
-    // Translate the time to be based on January 1, 1970 (_ftime base)
-    // The offset here is gotten by using the "time_test" program to report the
-    // difference in seconds between the two clocks.
-    sec -= 3054524608L;
-}
-#endif
 void get_time_using_GetLocalTime(unsigned long &sec, unsigned long &usec)
 {
     static LARGE_INTEGER first_count = { 0, 0 };
