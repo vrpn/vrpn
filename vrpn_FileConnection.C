@@ -748,17 +748,20 @@ int vrpn_File_Connection::read_entry (void)
     header.msg_time.tv_sec = ntohl(header.msg_time.tv_sec);
     header.msg_time.tv_usec = ntohl(header.msg_time.tv_usec);
     header.payload_len = ntohl(header.payload_len);
+    header.buffer = NULL;
 
     // get the body of the next message
 
-    header.buffer = new char [header.payload_len];
-    if (!header.buffer) {
+    if (header.payload_len > 0) {
+      header.buffer = new char [header.payload_len];
+      if (!header.buffer) {
         fprintf(stderr, "vrpn_File_Connection::read_entry:  "
                 "Out of memory.\n");
         return -1;
-    }
+      }
 
-    retval = fread((char *) header.buffer, 1, header.payload_len, d_file);
+      retval = fread((char *) header.buffer, 1, header.payload_len, d_file);
+    }
 
     // return 1 if nothing to read OR end-of-file;
     // the latter isn't an error state

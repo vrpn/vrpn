@@ -775,16 +775,20 @@ int vrpn_Log::logMessage (vrpn_int32 payloadLen, struct timeval time,
   lp->data.msg_time.tv_usec = htonl(time.tv_usec);
 
   lp->data.payload_len = htonl(payloadLen);
-  lp->data.buffer = new char [payloadLen];
-  if (!lp->data.buffer) {
-    fprintf(stderr, "vrpn_Log::logMessage:  "
-                    "Out of memory!\n");
-    delete lp;
-    return -1;
-  }
+  lp->data.buffer = NULL;
 
-  // need to explicitly override the const
-  memcpy((char *) lp->data.buffer, buffer, payloadLen);
+  if (payloadLen > 0) {
+    lp->data.buffer = new char [payloadLen];
+    if (!lp->data.buffer) {
+      fprintf(stderr, "vrpn_Log::logMessage:  "
+                      "Out of memory!\n");
+      delete lp;
+      return -1;
+    }
+
+    // need to explicitly override the const
+    memcpy((char *) lp->data.buffer, buffer, payloadLen);
+  }
 
   // Insert the new message into the log
   lp->next = d_logTail;
