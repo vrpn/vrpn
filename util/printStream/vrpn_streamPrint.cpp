@@ -1,5 +1,6 @@
 
 #include <stdlib.h>
+#include <limits.h>
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>
@@ -15,7 +16,7 @@ static   vrpn_File_Connection *fcon = NULL;
 static char * device_name = NULL;
 
 static bool doHead = false;
-static int msgs_to_print = -1;
+static int msgs_to_print = INT_MAX;
 
 static bool done = false;
 
