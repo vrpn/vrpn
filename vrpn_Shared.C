@@ -116,8 +116,13 @@ int vrpn_TimevalGreater (const timeval & tv1, const timeval & tv2)
     return 0;
 }
 
-
-
+// return 1 if tv1 is equal to tv2; 0 otherwise
+int vrpn_TimevalEqual( const timeval& tv1, const timeval& tv2 )
+{
+  if( tv1.tv_sec == tv2.tv_sec && tv1.tv_usec == tv2.tv_usec )
+    return true;
+  else return false;
+}
 
 double vrpn_TimevalMsecs( const timeval& tv )
 {

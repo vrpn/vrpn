@@ -16,6 +16,15 @@
 // timestamps as message identifiers/sequencers, so they need to be invariant
 // over several network hops.
 
+// Note on Lamport clocks:  the implementation was never completed
+// (see vrpn_LamportClock.[C,h]), so it's use here has been disabled in the
+// following ways.  First, the code that considers the Lamport clock
+// in vrpn_Shared_int32::shouldAcceptUpdates(...) is commented out 
+// (the other shared objects, float64 and String, never had code to
+// consider the Lamport clock).  Second, the body of the method 
+// vrpn_SharedObject::useLamportClock is commented out so that a
+// Lamport clock is never started.
+
 vrpn_SharedObject::vrpn_SharedObject (const char * name, const char * tname,
                                       vrpn_int32 mode) :
   d_name (name ? new char [1 + strlen(name)] : NULL),
@@ -31,7 +40,7 @@ vrpn_SharedObject::vrpn_SharedObject (const char * name, const char * tname,
   d_grantSerializer_type (-1),
   d_assumeSerializer_type (-1),
   d_lamportUpdate_type (-1),
-  d_isSerializer (vrpn_FALSE),
+  d_isSerializer (vrpn_TRUE),
   d_isNegotiatingSerializer (vrpn_FALSE),
   d_queueSets (vrpn_FALSE),
   d_lClock (NULL),
@@ -80,11 +89,7 @@ const char * vrpn_SharedObject::name (void) const {
 }
 
 vrpn_bool vrpn_SharedObject::isSerializer (void) const {
-  if (d_mode & VRPN_SO_DEFER_UPDATES) {
-    return d_isSerializer;
-  } else {
-    return VRPN_TRUE;
-  }
+  return VRPN_TRUE;
 }
 
 // virtual
@@ -127,7 +132,8 @@ void vrpn_SharedObject::bindConnection (vrpn_Connection * c) {
 
 void vrpn_SharedObject::useLamportClock (vrpn_LamportClock * l) {
 
-  d_lClock = l;
+  // NOTE:  this is disabled
+  // d_lClock = l;
 
 }
 
@@ -533,12 +539,21 @@ vrpn_bool vrpn_Shared_int32::shouldAcceptUpdate
 
 //fprintf(stderr, "In vrpn_Shared_int32::shouldAcceptUpdate(%s).\n", d_name);
 
-  vrpn_bool old;
+  /*
+    // this commented-out code uses Lamport logical clocks, and is
+    // disabled now b/c the implementation of Lamport clocks was
+    // never complete.  We use standard timestamps instead.
+  vrpn_bool old, equal;
   if (t) {
     old = d_lastLamportUpdate && (*t < *d_lastLamportUpdate);
+    equal = d_lastLamportUpdate && (*t == *d_lastLamportUpdate);
   } else {
     old = !vrpn_TimevalGreater(when, d_lastUpdate);
+    equal = vrpn_TimevalEqual( when, d_lastUpdate );
   }
+  */
+  vrpn_bool old = !vrpn_TimevalGreater(when, d_lastUpdate);
+  vrpn_bool equal = vrpn_TimevalEqual( when, d_lastUpdate );
 
   // Is this "new" change idempotent?
   if ((d_mode & VRPN_SO_IGNORE_IDEMPOTENT) &&
@@ -548,9 +563,23 @@ vrpn_bool vrpn_Shared_int32::shouldAcceptUpdate
   }
 
   // Is this "new" change older than the previous change?
-  if ((d_mode & VRPN_SO_IGNORE_OLD) && old) {
+  if ( (d_mode & VRPN_SO_IGNORE_OLD) && old ) {
 //fprintf(stderr, "... was outdated.\n");
     return vrpn_FALSE;
+  }
+  // Is this "new" change older than the previous change?
+  if ((d_mode & VRPN_SO_IGNORE_OLD) && old) {
+
+    // If the timestamps of the new & previous changes are equal:
+    //  - if we are the serializer, we can accept the local change
+    //  - if we are not the serializer, local updates are to be rejected
+    if( equal ) {
+      if( !d_isSerializer && isLocalSet ) {
+	return vrpn_FALSE;
+      }
+    }
+    else
+      return vrpn_FALSE;
   }
 
   // All other clauses of shouldAcceptUpdate depend on serialization
@@ -940,52 +969,49 @@ vrpn_bool vrpn_Shared_float64::shouldAcceptUpdate
                      (vrpn_float64 newValue, timeval when,
                       vrpn_bool isLocalSet) {
 
-//fprintf(stderr, "In vrpn_Shared_float64::shouldAcceptUpdate(%s).\n", d_name);
-
   // Is this "new" change idempotent?
   if ((d_mode & VRPN_SO_IGNORE_IDEMPOTENT) &&
       (newValue == d_value)) {
-//fprintf(stderr, "... was idempotent.\n");
-
     return vrpn_FALSE;
   }
 
   // Is this "new" change older than the previous change?
   if ((d_mode & VRPN_SO_IGNORE_OLD) &&
       !vrpn_TimevalGreater(when, d_lastUpdate)) {
-//fprintf(stderr, "... was outdated.\n");
 
-    return vrpn_FALSE;
+    // If the timestamps of the new & previous changes are equal:
+    //  - if we are the serializer, we can accept the local change
+    //  - if we are not the serializer, local updates are to be rejected
+    if( vrpn_TimevalEqual( when, d_lastUpdate ) ) {
+      if( !d_isSerializer && isLocalSet ) {
+	return vrpn_FALSE;
+      }
+    }
+    else
+      return vrpn_FALSE;
   }
+
 
   // All other clauses of shouldAcceptUpdate depend on serialization
   if (!(d_mode & VRPN_SO_DEFER_UPDATES)) {
     return vrpn_TRUE;
   }
 
-//fprintf(stderr, "... serializing:  ");
-
-
   // If we're not the serializer, don't accept local set() calls -
   // forward those to the serializer.  Non-local set() calls are
   // messages from the serializer that we should accept.
   if (!d_isSerializer) {
     if (isLocalSet) {
-//fprintf(stderr, "local update, not serializer, so reject.\n");
       yankDeferredUpdateCallbacks();
       return vrpn_FALSE;
     } else {
-//fprintf(stderr, "remote update, not serializer, so accept.\n");
-
       return vrpn_TRUE;
     }
   }
 
   // We are the serializer.
-//fprintf(stderr, "serializer:  ");
 
   if (isLocalSet) {
-//fprintf(stderr, "local update.\n");
     if (d_policy == vrpn_DENY_LOCAL) {
       return vrpn_FALSE;
     } else {
@@ -996,21 +1022,14 @@ vrpn_bool vrpn_Shared_float64::shouldAcceptUpdate
 
   // Are we accepting all updates?
   if (d_policy == vrpn_ACCEPT) {
-//fprintf(stderr, "policy is to accept.\n");
-
     return vrpn_TRUE;
   }
 
   // Does the user want to accept this one?
   if ((d_policy == vrpn_CALLBACK) && d_policyCallback &&
       (*d_policyCallback)(d_policyUserdata, newValue, when, this)) {
-//fprintf(stderr, "user callback accepts.\n");
-
-
     return vrpn_TRUE;
   }
-
-//fprintf(stderr, "rejected.\n");
 
   return vrpn_FALSE;
 }
@@ -1320,56 +1339,48 @@ vrpn_bool vrpn_Shared_String::shouldAcceptUpdate
                      (const char * newValue, timeval when,
                       vrpn_bool isLocalSet) {
 
-//fprintf(stderr, "In vrpn_Shared_String::shouldAcceptUpdate(%s).\n", d_name);
-
-
   // Is this "new" change idempotent?
   if ((d_mode & VRPN_SO_IGNORE_IDEMPOTENT) &&
       (newValue == d_value)) {
-//fprintf(stderr, "... was idempotent.\n");
-
     return vrpn_FALSE;
   }
 
   // Is this "new" change older than the previous change?
   if ((d_mode & VRPN_SO_IGNORE_OLD) &&
       !vrpn_TimevalGreater(when, d_lastUpdate)) {
-//fprintf(stderr, "... was outdated.\n");
 
-    return vrpn_FALSE;
+    // If the timestamps of the new & previous changes are equal:
+    //  - if we are the serializer, we can accept the local change
+    //  - if we are not the serializer, local updates are to be rejected
+    if( vrpn_TimevalEqual( when, d_lastUpdate ) ) {
+      if( !d_isSerializer && isLocalSet ) {
+	return vrpn_FALSE;
+      }
+    }
+    else
+      return vrpn_FALSE;
   }
 
   // All other clauses of shouldAcceptUpdate depend on serialization
   if (!(d_mode & VRPN_SO_DEFER_UPDATES)) {
-//fprintf(stderr, "accepted.\n");
     return vrpn_TRUE;
   }
-
-//fprintf(stderr, "... serializing:  ");
-
 
   // If we're not the serializer, don't accept local set() calls -
   // forward those to the serializer.  Non-local set() calls are
   // messages from the serializer that we should accept.
   if (!d_isSerializer) {
     if (isLocalSet) {
-//fprintf(stderr, "local update, not serializer, so reject.\n");
       yankDeferredUpdateCallbacks();
       return vrpn_FALSE;
     } else {
-//fprintf(stderr, "remote update, not serializer, so accept.\n");
-
       return vrpn_TRUE;
     }
   }
 
   // We are the serializer.
 
-//fprintf(stderr, "serializer:  ");
-
-
   if (isLocalSet) {
-//fprintf(stderr, "local update.\n");
     if (d_policy == vrpn_DENY_LOCAL) {
       return vrpn_FALSE;
     } else {
@@ -1379,20 +1390,14 @@ vrpn_bool vrpn_Shared_String::shouldAcceptUpdate
 
   // Are we accepting all updates?
   if (d_policy == vrpn_ACCEPT) {
-//fprintf(stderr, "policy is to accept.\n");
-
     return vrpn_TRUE;
   }
 
   // Does the user want to accept this one?
   if ((d_policy == vrpn_CALLBACK) && d_policyCallback &&
       (*d_policyCallback)(d_policyUserdata, newValue, when, this)) {
-//fprintf(stderr, "user callback accepts.\n");
-
     return vrpn_TRUE;
   }
-
-//fprintf(stderr, "rejected.\n");
 
   return vrpn_FALSE;
 }

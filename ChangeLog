@@ -1,3 +1,25 @@
+2001-07-03  David Marshburn  <marshbur@tungsten-cs.cs.unc.edu>
+
+	* vrpn_Shared.h, C: added vrpn_TimevalEqual
+
+	* vrpn_SharedObject.C: 
+	(shouldAcceptUpdate) changed the logic of shouldAcceptUpdate
+	in regard to timing.  Changes were formerly ignored if the 
+	timestamp of the update was <= the time of the last update.
+	Due to poor time resolution, the "=" part of this comparison
+	is a bug.  Now, we only reject an update if the time of the
+	current and last updates are equal, and we are not the
+	serializer, and the update is of a local source.  
+	(vrpn_SharedObject) made d_isSerializer initialized to vrpn_TRUE,
+	so shared object will by default accept changes having equal
+	timestamps.
+	(vrpn_Shared_int32::shouldAcceptUpdate)  removed test of
+	Lamport clock, so that we only ever test the standard timevals.  
+	The implementation of vrpn_LamportClock is incomplete.
+	(useLamportClock) disabled so that Lamport clocks can't be
+	accidentally turned on.
+	- Also removed a bunch of commented-out print statements.
+	
 2001-06-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Flock_Parallel.h : Spoof Master ID directly, removed un-needed

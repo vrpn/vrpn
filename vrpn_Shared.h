@@ -93,6 +93,8 @@ extern struct timeval vrpn_TimevalScale (const struct timeval & tv,
                                          double scale);
 extern int vrpn_TimevalGreater (const struct timeval & tv1,
                                 const struct timeval & tv2);
+extern int vrpn_TimevalEqual( const struct timeval& tv1,
+			      const struct timeval& tv2 );
 extern double vrpn_TimevalMsecs( const struct timeval& tv1 );
 
 extern struct timeval vrpn_MsecsTimeval( const double dMsecs );
