@@ -1,3 +1,27 @@
+2000-12-6  Tom Hudson  <hudson@cs.unc.edu>
+
+	* Makefile:  remove vrpn_DelayedConnection.C, vrpn_DelayedConnection.h
+
+	* vrpn_RedundantTransmission.C
+	(vrpn_RedundantTransmission::mainloop) : rewrite deletion routine
+	so it doesn't occasionally crash for no apparent reason on PCs
+
+	(vrpn_RedundantTransmission::pack_message) : add new parameter;
+	handle special cases and boundary conditions better
+	* vrpn_Tracker.C (vrpn_Tracker_NULL::mainloop) : pass new parameter
+	to vrpn_RedundantTransmission::pack_message
+
+	(vrpn_RedundantTransmission) : new data member d_isEnabled
+	(vrpn_RedundantTransmission::isEnabled) : new function
+	(vrpn_RedundantTransmission::enable) : same
+	(vrpn_RedundantController_Protocol::encode_enable) : same
+	(vrpn_RedundantController_Protocol::decode_enable) : same
+	(vrpn_RedundantController::handle_enable) : same
+	(vrpn_RedundantRemote::enable) : same
+	(vrpn_RedundantController constructor) : add handler registration
+
+	(vrpn_RedundantReceiver) : new class
+
 2000-11-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Flock_Parallel.C (mainloop) : Made the code close and then

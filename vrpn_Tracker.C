@@ -640,21 +640,24 @@ void	vrpn_Tracker_NULL::mainloop()
 		// Pack position report
 		len = encode_to(msgbuf);
 		if (d_redundancy->pack_message(len, timestamp,
-			position_m_id, d_sender_id, msgbuf)) {
+			position_m_id, d_sender_id, msgbuf,
+                        vrpn_CONNECTION_LOW_LATENCY)) {
 		 fprintf(stderr,"NULL tracker: can't write message: tossing\n");
 		}
 
 		// Pack velocity report
 		len = encode_vel_to(msgbuf);
 		if (d_redundancy->pack_message(len, timestamp,
-			velocity_m_id, d_sender_id, msgbuf)) {
+			velocity_m_id, d_sender_id, msgbuf,
+                        vrpn_CONNECTION_LOW_LATENCY)) {
 		 fprintf(stderr,"NULL tracker: can't write message: tossing\n");
 		}
 
 		// Pack acceleration report
 		len = encode_acc_to(msgbuf);
 		if (d_redundancy->pack_message(len, timestamp,
-			accel_m_id, d_sender_id, msgbuf)) {
+			accel_m_id, d_sender_id, msgbuf,
+                        vrpn_CONNECTION_LOW_LATENCY)) {
 		 fprintf(stderr,"NULL tracker: can't write message: tossing\n");
 		}
 	    }
