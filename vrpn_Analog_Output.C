@@ -67,6 +67,20 @@ vrpn_Analog_Output_Server::vrpn_Analog_Output_Server(const char* name, vrpn_Conn
     if (d_connection == NULL) {
         fprintf(stderr, "vrpn_Analog_Output: Can't get connection!\n");
     }
+
+    // Register a handler for the request channel change message
+ 	if (register_autodeleted_handler(request_m_id,
+			handle_request_message, this, d_sender_id)) {
+		fprintf(stderr,"vrpn_Analog_Output_Server: can't register change channel request handler\n");
+		d_connection = NULL;
+	}
+
+    // Register a handler for the request channels change message
+    if (register_autodeleted_handler(request_channels_m_id,
+			handle_request_channels_message, this, d_sender_id)) {
+		fprintf(stderr,"vrpn_Analog_Output_Server: can't register change channels request handler\n");
+		d_connection = NULL;
+	}
 }
 
 // virtual

@@ -1,3 +1,8 @@
+2002-09-18  David Borland <borland@cs.unc.edu>
+
+        * vrpn_Analog_Output.C : wasn't regestering callbacks in the sample
+        server.  Changed this.
+
 2002-09-18  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Analog_Output.h : Comment changes, cosmetic changes.
