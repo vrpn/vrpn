@@ -1,3 +1,7 @@
+2002-10-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* testimager_client.C : Scales faster, puts in more timing info.
+
 2002-09-27  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* testimager_client.C : Displays TempImager server output in OpenGL/Glut.

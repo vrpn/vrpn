@@ -6,7 +6,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef	_WIN32
 #include <windows.h>
+#endif
 #include <GL/gl.h>
 #include <glut.h>
 #include <vrpn_Connection.h>
@@ -51,7 +53,8 @@ void  handle_region_change(void *, const vrpn_IMAGERREGIONCB info)
 	fprintf(stderr, "Cannot read pixel from region\n");
 	exit(-1);
       }
-      
+
+#if 0
       // This assumes that the pixels are actually 8-bit values
       // and will clip if they go above this.  It also writes pixels
       // from all regions into the image, which is similar to
@@ -61,6 +64,47 @@ void  handle_region_change(void *, const vrpn_IMAGERREGIONCB info)
       g_image[0 + 3 * (c + g_ti->nCols() * ir)] = uns_pix;
       g_image[1 + 3 * (c + g_ti->nCols() * ir)] = uns_pix;
       g_image[2 + 3 * (c + g_ti->nCols() * ir)] = uns_pix;
+#else
+      // This assumes that the pixels are actually 12-bit values
+      // and will clip if they go above this.  It also writes pixels
+      // from all regions into the image, which is similar to
+      // assuming that there is only one channel.  It also does
+      // not scale or offset the pixels to get them into the
+      // units for the region.
+      g_image[0 + 3 * (c + g_ti->nCols() * ir)] = uns_pix >> 4;
+      g_image[1 + 3 * (c + g_ti->nCols() * ir)] = uns_pix >> 4;
+      g_image[2 + 3 * (c + g_ti->nCols() * ir)] = uns_pix >> 4;
+#endif
+    }
+  }
+
+  // Capture timing information and print out how many frames per second
+  // are coming across the wire.  A new frame is assumed whenever the row
+  // minimum for this report is lower than the row minimum for the last
+  // report.
+
+  { static struct timeval last_print_time;
+    struct timeval now;
+    static bool first_time = true;
+    static int frame_count = 0;
+    static int last_min_row = 0;
+
+    if (first_time) {
+      gettimeofday(&last_print_time, NULL);
+      first_time = false;
+    } else {
+      if (info.region->rMin < last_min_row) {
+	frame_count++;
+      }
+      last_min_row = info.region->rMin;
+      gettimeofday(&now, NULL);
+      double timesecs = 0.001 * vrpn_TimevalMsecs(vrpn_TimevalDiff(now, last_print_time));
+      if (timesecs >= 5) {
+	double frames_per_sec = frame_count / timesecs;
+	frame_count = 0;
+	printf("Received frames per second = %lg\n", frames_per_sec);
+	last_print_time = now;
+      }
     }
   }
 
@@ -86,6 +130,30 @@ void myDisplayFunc(void)
 
   // Swap buffers so we can see it.
   glutSwapBuffers();
+
+  // Capture timing information and print out how many frames per second
+  // are being drawn.
+
+  { static struct timeval last_print_time;
+    struct timeval now;
+    static bool first_time = true;
+    static int frame_count = 0;
+
+    if (first_time) {
+      gettimeofday(&last_print_time, NULL);
+      first_time = false;
+    } else {
+      frame_count++;
+      gettimeofday(&now, NULL);
+      double timesecs = 0.001 * vrpn_TimevalMsecs(vrpn_TimevalDiff(now, last_print_time));
+      if (timesecs >= 5) {
+	double frames_per_sec = frame_count / timesecs;
+	frame_count = 0;
+	printf("Displayed frames per second = %lg\n", frames_per_sec);
+	last_print_time = now;
+      }
+    }
+  }
 }
 
 void myIdleFunc(void)
@@ -98,7 +166,7 @@ void myIdleFunc(void)
 
 int main(int argc, char **argv)
 {
-  char	*device_name = "TestImage@radon-cs:4511";
+  char	*device_name = "TestImage@copper-cs:4511";
 
   // Open the TempImager client and set the callback
   // for new data and for information about the size of
@@ -117,6 +185,7 @@ int main(int argc, char **argv)
     return -1;
   }
   g_ready_for_region = true;
+  printf("Receiving images at size %dx%d\n", g_ti->nCols(), g_ti->nRows());
 
   // Initialize GLUT and create the window that will display the
   // video -- name the window after the device that has been
