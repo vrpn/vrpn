@@ -1,5 +1,6 @@
 #include "vrpn_Sound.h"
 #include <string.h>
+#include <stdlib.h>
 
 //vrpn_Sound constructor.
 vrpn_Sound::vrpn_Sound(const char * name, vrpn_Connection * c)
