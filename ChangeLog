@@ -1,5 +1,36 @@
 2003-01-02  David Marshburn  <marshbur@cs.unc.edu>
 
+	* vrpn_Analog_Output.h:  uniform formatting, new data members for
+	num-channel report and new-connection message types, plus:
+	(vrpn_Analog_Output::getNumChannels):  new
+	(vrpn_Analog_Output::encode_to):  removed, unused.
+	(vrpn_Analog_Output_Server::setNumChannels):  note about expected use.
+	(vrpn_Analog_Output_Server::vrpn_Analog_Output_Sever):  added a third
+	parameter which specifies the number of active channels.  defaults 
+	to vrpn_CHANNEL_MAX.
+	(vrpn_Analog_Output_Server::handle_got_connection):  new
+	(vrpn_Analog_Output_Server::report_num_channels):  new
+	(vrpn_Analog_Output_Server::encode_num_channels_to):  new
+	(vrpn_Analog_Output_Remote::handle_report_num_channels):  new
+
+	* vrpn_Analog_Output.C:  the functions noted above, plus:
+	(vrpn_Analog_Output::register_types):  register "number of channels" 
+	and "new connection" message types.
+	(vrpn_Analog_Output_Server::vrpn_Analog_Output_Server):  register
+	handler for new-connection messages.
+	(vrpn_Analog_Output_Server::handle_request_message):  sends a text
+	error message to the client if it tries to set an invalid/inactive
+	channel.
+	(vrpn_Analog_Output_Server::handle_request_channels_message):  same.
+	also catches the case in which the number of channels to change is
+	negative.
+	(vrpn_Analog_Output_Remote::vrpn_Analog_Ouput_Remote):  register
+	handler for "number of active channels" message.
+	(vrpn_Analog_Output_Remote::request_change_channels):  uses a 
+	statically declared buffer instead of one dynamically declared.
+
+2003-01-02  David Marshburn  <marshbur@cs.unc.edu>
+
 	* vrpn_Analog.h:  
 	(vrpn_Analog::getNumChannels):  new
 	(vrpn_Analog_Server::numChannels):  removed
