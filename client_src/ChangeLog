@@ -1,3 +1,8 @@
+2005-01-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* testimager_client.C : Modified to handle red, green,
+		blue channels from client.
+
 2004-12-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpnTrackerClient.cpp : Fixed compiler warnings.

@@ -69,9 +69,10 @@ DWORD lastCallTime[2]={0,0};
 DWORD ReportInterval=5000;
 
 // New pixels coming: fill them into the image and tell Glut to redraw.
-void  VRPN_CALLBACK handle_region_change(void *, const vrpn_IMAGERREGIONCB info)
+void  VRPN_CALLBACK handle_region_change(void *userdata, const vrpn_IMAGERREGIONCB info)
 {
     const vrpn_Imager_Region  *region=info.region;
+    const vrpn_Imager_Remote  *imager = (const vrpn_Imager_Remote *)userdata;
 
     // Just leave things alone if we haven't set up the drawable things
     // yet.
@@ -79,18 +80,25 @@ void  VRPN_CALLBACK handle_region_change(void *, const vrpn_IMAGERREGIONCB info)
 
     // Copy pixels into the image buffer.
     // Flip the image over in Y so that the image coordinates
-    // display correctly in OpenGL.  Make 3 copies of each element,
-    // for red, green, and blue.
-
-    // NOTE: This copies all channels into the buffer, rather than just
-    // a specific one (overwriting all with the last one written).  A real
-    // application will probably want to provide a selector to choose which
-    // is drawn.  It can check region->d_chanIndex to determine which channel
-    // is being reported for each callback.
-
-    // XXX Later, use BGR or RGB mode (as appropriate) and have the
-    // transcoding done within the imager to handle non-color cameras.
-    region->decode_unscaled_region_using_base_pointer(g_image, 3, 3*g_Xdim, 0, g_Ydim, true, 3);
+    // display correctly in OpenGL.
+    // Figure out which color to put the data in depending on the name associated
+    // with the channel index.  If it is one of "red", "green", or "blue" then put
+    // it into that channel.  If it is not one of these, put it into all channels.
+    if (strcmp(imager->channel(region->d_chanIndex)->name, "red") == 0) {
+      region->decode_unscaled_region_using_base_pointer(g_image+0, 3, 3*g_Xdim, 0, g_Ydim, true);
+    } else if (strcmp(imager->channel(region->d_chanIndex)->name, "green") == 0) {
+      region->decode_unscaled_region_using_base_pointer(g_image+1, 3, 3*g_Xdim, 0, g_Ydim, true);
+    } else if (strcmp(imager->channel(region->d_chanIndex)->name, "blue") == 0) {
+      region->decode_unscaled_region_using_base_pointer(g_image+2, 3, 3*g_Xdim, 0, g_Ydim, true);
+    } else {
+      // This uses a repeat count of three to put the data into all channels.
+      // NOTE: This copies each channel into all buffers, rather
+      // than just a specific one (overwriting all with the last one written).  A real
+      // application will probably want to provide a selector to choose which
+      // is drawn.  It can check region->d_chanIndex to determine which channel
+      // is being reported for each callback.
+      region->decode_unscaled_region_using_base_pointer(g_image, 3, 3*g_Xdim, 0, g_Ydim, true, 3);
+    }
 
     // If we're logging, save to disk.  This is needed to keep up with
     // logging and because to program is killed to exit it.
@@ -101,6 +109,12 @@ void  VRPN_CALLBACK handle_region_change(void *, const vrpn_IMAGERREGIONCB info)
     // since the last time we posted it.  If we don't do this check, it gums
     // up the works with tons of redisplay requests and the program won't
     // even handle windows events.
+
+    // NOTE: This will show intermediate frames, where perhaps only one color has
+    // been loaded or a fraction of some have been loaded.  Use the end-of-frame
+    // callback to determine when a full frame has been filled if you want to
+    // ensure that no tearing is visible.
+
     if (!g_already_posted) {
       g_already_posted = true;
       glutPostRedisplay();
@@ -220,7 +234,7 @@ int main(int argc, char **argv)
   printf("Opening %s\n", device_name);
   g_imager = new vrpn_Imager_Remote(device_name);
   g_imager->register_description_handler(NULL, handle_description_message);
-  g_imager->register_region_handler(NULL, handle_region_change);
+  g_imager->register_region_handler(g_imager, handle_region_change);
   g_imager->register_discarded_frames_handler(NULL, handle_discarded_frames);
 
 

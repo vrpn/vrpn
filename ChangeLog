@@ -1,3 +1,9 @@
+2005-01-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Imager.C : Removed all references to the ill-planned
+		RGB and BGR formats.
+	* vrpn_Imager.h : Same.
+
 2004-12-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_3Space.C : Turned on a higher level of warnings in

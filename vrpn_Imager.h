@@ -14,8 +14,6 @@
 // ImagerPose (may be a separate physical device from the imager)
 // XXX Lets client request new pose for imager
 
-//XXX How to transcode from RGB or BGR into a single-channel format,
-// while enabling selection of which channel to choose?
 // XXX When transcoding to a lower-bitcount resolution, should we
 // adjust the scale and offset to make best use of the bits?  Perhaps
 // a local and a global scale and offset?
@@ -35,8 +33,6 @@ const unsigned vrpn_IMAGER_MAX_REGIONu8 = (vrpn_CONNECTION_TCP_BUFLEN - 8*sizeof
 const unsigned vrpn_IMAGER_MAX_REGIONu16 = (vrpn_CONNECTION_TCP_BUFLEN - 8*sizeof(vrpn_int16) - 6*sizeof(vrpn_int32))/sizeof(vrpn_uint16);
 const unsigned vrpn_IMAGER_MAX_REGIONu12in16 = vrpn_IMAGER_MAX_REGIONu16;
 const unsigned vrpn_IMAGER_MAX_REGIONf32 = (vrpn_CONNECTION_TCP_BUFLEN - 8*sizeof(vrpn_int16) - 6*sizeof(vrpn_int32))/sizeof(vrpn_float32);
-const unsigned vrpn_IMAGER_MAX_REGIONu8rgb = (vrpn_CONNECTION_TCP_BUFLEN - 8*sizeof(vrpn_int16) - 6*sizeof(vrpn_int32))/(3*sizeof(vrpn_uint8));
-const unsigned vrpn_IMAGER_MAX_REGIONu8bgr = vrpn_IMAGER_MAX_REGIONu8rgb;
 
 /// Holds the description needed to convert from raw data to values for a channel
 class VRPN_API vrpn_Imager_Channel {
@@ -116,8 +112,6 @@ protected:
   vrpn_int32	d_regionu12in16_m_id;   //< ID of the message type describing a region with 12-bit unsigned entries packed in 16 bits
   vrpn_int32	d_regionu16_m_id;	//< ID of the message type describing a region with 16-bit unsigned entries
   vrpn_int32	d_regionf32_m_id;	//< ID of the message type describing a region with 32-bit float entries
-  vrpn_int32	d_regionu8rgb_m_id;	//< ID of the message type describing a region with packed 8-bit RGB entries
-  vrpn_int32	d_regionu8bgr_m_id;	//< ID of the message type describing a region with packed 8-bit BGR entries
 };
 
 class VRPN_API vrpn_Imager_Server: public vrpn_Imager {
@@ -306,8 +300,8 @@ protected:
 
 const vrpn_uint16 vrpn_IMAGER_VALTYPE_UNKNOWN	  = 0;
 const vrpn_uint16 vrpn_IMAGER_VALTYPE_UINT8	  = 1;
-const vrpn_uint16 vrpn_IMAGER_VALTYPE_UINT8RGB	  = 2;	// Placeholder
-const vrpn_uint16 vrpn_IMAGER_VALTYPE_UINT8BGR	  = 3;	// Placeholder
+//XXX Bad idea -- do not do this! const vrpn_uint16 vrpn_IMAGER_VALTYPE_UINT8RGB	  = 2;	// Placeholder
+//XXX Bad idea -- do not do this! const vrpn_uint16 vrpn_IMAGER_VALTYPE_UINT8BGR	  = 3;	// Placeholder
 const vrpn_uint16 vrpn_IMAGER_VALTYPE_UINT16	  = 4;
 const vrpn_uint16 vrpn_IMAGER_VALTYPE_UINT12IN16  = 5;
 const vrpn_uint16 vrpn_IMAGER_VALTYPE_FLOAT32	  = 6;
@@ -440,9 +434,6 @@ public:
     return true;
   }
 
-  // XXX Add routine to get a pixel from RGB
-  // XXX Add routine to get a pixel from BGR
-
   // Bulk read routines to copy the whole region right into user structures as
   // efficiently as possible.
   bool	decode_unscaled_region_using_base_pointer(vrpn_uint8 *data,
@@ -455,9 +446,6 @@ public:
   bool	decode_unscaled_region_using_base_pointer(vrpn_float32 *data,
     vrpn_uint32 colStride, vrpn_uint32 rowStride, vrpn_uint32 depthStride = 0,
     vrpn_uint16 nRows = 0, bool invert_rows = false, unsigned repeat = 1) const;
-
-  // XXX Add routine to read RGB
-  // XXX Add routine to read BGR
 
   // XXX Add routines to read scaled pixels.  Clamp values.
 

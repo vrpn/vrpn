@@ -22,8 +22,6 @@ int vrpn_Imager::register_types(void)
   d_regionu16_m_id = d_connection->register_message_type("vrpn_Imager Regionu16");
   d_regionu12in16_m_id = d_connection->register_message_type("vrpn_Imager Regionu12in16");
   d_regionf32_m_id = d_connection->register_message_type("vrpn_Imager Regionf32");
-  d_regionu8rgb_m_id = d_connection->register_message_type("vrpn_Imager RegionRGB");
-  d_regionu8bgr_m_id = d_connection->register_message_type("vrpn_Imager RegionBGR");
   if ((d_description_m_id == -1) ||
       (d_regionu8_m_id == -1) ||
       (d_regionu16_m_id == -1) ||
@@ -1237,7 +1235,7 @@ bool  vrpn_Imager_Remote::throttle_sender(vrpn_int32 N)
 	      This tells how far to jump ahead when writing the next element in the row (must
 	      be larger or the same as the repeat) and how make elements to skip to get to the
 	      beginning of the next column.  For example, copying a uint from the network into
-	      an RGBA texture would have repeat=3, colStride=4,
+	      the Red, Green, and Blue elements of an RGBA texture would have repeat=3, colStride=4,
 	      and rowStride=4*(number of columns).
       numRows, invert_rows: numRows needs to equal the number of rows in the entire image if
 	      invert_rows is true; it is not used otherwise.  invert_rows inverts the image in y

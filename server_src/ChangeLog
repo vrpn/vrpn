@@ -1,3 +1,7 @@
+2005-01-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* testimager_server.cpp : Comment change.
+
 2004-12-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* NIUtil.cpp : Turned on a higher level of warnings in

@@ -8,7 +8,7 @@ static	vrpn_Connection	    *g_connection = NULL;
 static	vrpn_Imager_Server  *g_is = NULL;
 const	unsigned	    g_size = 256;
 
-// Fill a buffer of 16-bit integers with an image that has a diagonal
+// Fill a buffer of 8-bit integers with an image that has a diagonal
 // line of growing brightness.  The size of the image is passed in, as
 // well as an offset for the brightnesses to make the image change
 // a bit over time.
