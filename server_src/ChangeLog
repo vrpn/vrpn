@@ -1,3 +1,12 @@
+2003-12-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Adds driver submitted by Daniel Myall
+                from Westco for the Polhemus Liberty tracker.
+	* vrpn.cfg : Same.
+	* vrpn.cfg.SAMPLE : Same.
+	* LibertyLinuxUSB.tar.gz : Instructions for making Linux USB work
+		with Liberty tracker.
+
 2003-11-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.cfg : Removing DOS end-of-lines.

@@ -16,6 +16,7 @@
 #include "vrpn_Tracker.h"
 #include "vrpn_3Space.h"
 #include "vrpn_Tracker_Fastrak.h"
+#include "vrpn_Tracker_Liberty.h"
 #include "vrpn_Flock.h"
 #include "vrpn_Flock_Parallel.h"
 #include "vrpn_Dyna.h"
@@ -1279,6 +1280,92 @@ int setup_Tracker_Fastrak (char * & pch, char * line, FILE * config_file) {
   return 0;
 }
 
+int setup_Tracker_Liberty (char * & pch, char * line, FILE * config_file) {
+
+  char s2 [LINESIZE], s3 [LINESIZE];
+  int i1;
+  int numparms;
+  vrpn_Tracker_Liberty	*mytracker;
+  int do_is900_timing = 0;
+
+
+        char    rcmd[5000];     // Reset command to send to Liberty
+        next();
+        // Get the arguments (class, tracker_name, port, baud)
+        if ( (numparms = sscanf(pch,"%511s%511s%d%511s",s2,s3,&i1) < 3)) {
+          fprintf(stderr,"Bad vrpn_Tracker_Liberty line: %s\n%s %s\n",
+                  line, pch, s3);
+          return -1;
+        }
+
+
+        // Make sure there's room for a new tracker
+        if (num_trackers >= MAX_TRACKERS) {
+	    fprintf(stderr,"Too many trackers in config file");
+            return -1;
+        }
+
+        // If the last character in the line is a backslash, '\', then
+        // the following line is an additional command to send to the
+        // Liberty at reset time. So long as we find lines with slashes
+        // at the ends, we add them to the command string to send. Note
+        // that there is a newline at the end of the line, following the
+        // backslash.
+        sprintf(rcmd, "");
+        while (line[strlen(line)-2] == '\\') {
+          // Read the next line
+          if (fgets(line, LINESIZE, config_file) == NULL) {
+              fprintf(stderr,"Ran past end of config file in Liberty description\n");
+                  return -1;
+          }
+
+          // Copy the line into the remote command,
+          // then replace \ with \015 if present
+          // In any case, make sure we terminate with \015.
+          strncat(rcmd, line, LINESIZE);
+          if (rcmd[strlen(rcmd)-2] == '\\') {
+                  rcmd[strlen(rcmd)-2] = '\015';
+                  rcmd[strlen(rcmd)-1] = '\0';
+          } else if (rcmd[strlen(rcmd)-2] == '/') {
+                  rcmd[strlen(rcmd)-2] = '\015';
+                  rcmd[strlen(rcmd)-1] = '\0';
+          } else if (rcmd[strlen(rcmd)-1] == '\n') {
+                  rcmd[strlen(rcmd)-1] = '\015';
+          } else {        // Add one, we reached the EOF before CR
+                  rcmd[strlen(rcmd)+1] = '\0';
+                  rcmd[strlen(rcmd)] = '\015';
+          }
+
+        }
+
+        if (strlen(rcmd) > 0) {
+                printf("... additional reset commands follow:\n");
+                printf("%s\n",rcmd);
+        }
+
+        // Open the tracker
+        if (verbose) printf(
+            "Opening vrpn_Tracker_Liberty: %s on port %s, baud %d\n",
+            s2,s3,i1);
+
+#if defined(sgi) || defined(linux) || defined(WIN32)
+
+        if ( (trackers[num_trackers] = mytracker =
+             new vrpn_Tracker_Liberty(s2, connection, s3, i1, 0, 8, rcmd))
+                            == NULL){
+
+#endif
+
+          fprintf(stderr,"Can't create new vrpn_Tracker_Liberty\n");
+          return -1;
+        }
+
+	num_trackers++;
+
+
+  return 0;
+}
+
 int setup_Tracker_3Space (char * & pch, char * line, FILE * config_file) {
 
   char s2 [LINESIZE], s3 [LINESIZE];
@@ -2216,6 +2303,8 @@ main (int argc, char * argv[])
             CHECK(setup_Tracker_Dyna);
 	  } else if (isit("vrpn_Tracker_Fastrak")) {
             CHECK(setup_Tracker_Fastrak);
+	  } else if (isit("vrpn_Tracker_Liberty")) {
+	    CHECK(setup_Tracker_Liberty);
 	  } else if (isit("vrpn_Tracker_3Space")) {
             CHECK(setup_Tracker_3Space);
 	  } else if (isit("vrpn_Tracker_Flock")) {
