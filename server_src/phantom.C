@@ -8,9 +8,6 @@
 #include "vrpn_Tracker.h"
 #include "vrpn_ForceDevice.h"
 
-/*static	int	M_TRAXACKERS = 100;
-static	int	MAX_BUTTONS = 100;
-*/
 const int 	MAX_TRACKERS = 100;
 const int	MAX_BUTTONS = 100;
 
@@ -63,10 +60,8 @@ void main (unsigned argc, char *argv[])
 #endif
 
 	vrpn_Synchronized_Connection	connection;
-	vrpn_Phantom	*trackers[MAX_TRACKERS];
-	int		num_trackers = 0;
-	vrpn_Button	*buttons[MAX_BUTTONS];
-	int		num_buttons = 0;
+	vrpn_Phantom	*phantoms[MAX_TRACKERS];
+	int		num_phantoms = 0;
 	// Open the configuration file
 	if (verbose) printf("Reading from config file %s\n", config_file_name);
 	if ( (config_file = fopen(config_file_name, "r")) == NULL) {
@@ -107,7 +102,7 @@ void main (unsigned argc, char *argv[])
 		}
 
 		// Make sure there's room for a new phantom
-		if (num_trackers >= MAX_TRACKERS) {
+		if (num_phantoms >= MAX_TRACKERS) {
 		  fprintf(stderr,"Too many trackers in config file");
 		  if (bail_on_error) { return; /*return -1; */}
 		  else { continue; }	// Skip this line
@@ -115,13 +110,13 @@ void main (unsigned argc, char *argv[])
 		//open the phantom
 		if(verbose) printf(
 			"Opening vrpn_phantom: %s on port %d\n", s2,i1);
-		if ( (trackers[num_buttons] =
+		if ( (phantoms[num_phantoms] =
 		     new vrpn_Phantom(s2, &connection, f1)) == NULL){
 		  fprintf(stderr,"Can't create new vrpn_phantom\n");
 		  if (bail_on_error) { return; /*return -1;*/ }
 		  else { continue; }	// Skip this line
 		} else {
-		  num_trackers++;
+		  num_phantoms++;
 		}
 	  }
 	  else {	// Never heard of it
@@ -140,23 +135,17 @@ void main (unsigned argc, char *argv[])
 	while (1) {
 		int	i;
 
-		// Let all the buttons generate reports
-		for (i = 0; i < num_buttons; i++) {
-			buttons[i]->mainloop();
-		}
-
 		// Let all the trackers generate reports
-		for (i = 0; i < num_trackers; i++) {
-			trackers[i]->mainloop();
-		}
+		for (i = 0; i < num_phantoms; i++)
+			phantoms[i]->mainloop();
 
 		// Send and receive all messages
 		connection.mainloop();
 
 		// if we're not connected make sure our phantoms are reset
 		if(!connection.connected()){
-			for (i = 0; i < num_trackers; i++) {
-				trackers[i]->reset();
+			for (i = 0; i < num_phantoms; i++) {
+				phantoms[i]->reset();
 			}
 		}
 	}
