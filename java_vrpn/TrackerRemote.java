@@ -302,7 +302,7 @@ public class TrackerRemote extends VRPN implements Runnable
 	 */
 	protected native void shutdownTracker( );
 	
-	protected synchronized native void mainloop( );
+	protected native void mainloop( );
 	
 	protected void finalize( ) throws Throwable
 	{

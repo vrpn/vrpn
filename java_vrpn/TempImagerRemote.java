@@ -277,7 +277,7 @@ public class TempImagerRemote extends VRPN implements Runnable
 	 */
 	protected native void shutdownTempImager( );
 	
-	protected synchronized native void mainloop( );
+	protected native void mainloop( );
 	
 	protected void finalize( ) throws Throwable
 	{

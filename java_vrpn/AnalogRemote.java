@@ -179,7 +179,7 @@ public class AnalogRemote extends VRPN implements Runnable
 	 */
 	protected native void shutdownAnalog( );
 	
-	protected synchronized native void mainloop( );
+	protected native void mainloop( );
 	
 	protected void finalize( ) throws Throwable
 	{

@@ -1,3 +1,11 @@
+2003-05-16  David Marshburn  <marshbur@cs.unc.edu>
+
+	* *Remote.java:  removed the 'synchronized' keyword from a number
+	of functions.  This was allowing users to deadlock in certain 
+	situations.  This per-oject synchronization is not necessary, as
+	all java_vrpn objects obtain a lock, anyway, before calling any
+	c++ vrpn code.
+
 2003-05-09  David Marshburn  <marshbur@cs.unc.edu>
 
 	* *Remote.java:  each device type now gives its thread a name
