@@ -487,10 +487,16 @@ void  vrpn_DirectXFFJoystick::send_normalized_force(double fx, double fy)
   // Set the forces to match a right-handed coordinate system
   fx *= -1;
 
+  // If the total force vector is more than unit length, scale down by that
+  // length.
+  double len = sqrt(fx*fx + fy*fy);
+  if (len > 1) {
+    fx /= len;
+    fy /= len;
+  }
+
   // Convert the force from (-1..1) into the maximum range for each axis and then send it to
   // the device.
-  fx = max(-1.0, fx); fx = min( 1.0, fx);
-  fy = max(-1.0, fy); fy = min( 1.0, fy);
   INT xForce = (INT)(fx * DI_FFNOMINALMAX);
   INT yForce = (INT)(fy * DI_FFNOMINALMAX);
 
@@ -554,6 +560,7 @@ void	vrpn_DirectXFFJoystick::mainloop()
   }
 }
 
+/*XXX
 // Set the force to match the X and Y components of the gradient of the plane.
 int vrpn_DirectXFFJoystick::handle_plane_change_message(void *selfPtr, 
 					      vrpn_HANDLERPARAM p)
@@ -585,6 +592,57 @@ int vrpn_DirectXFFJoystick::handle_plane_change_message(void *selfPtr,
 
   return 0;
 }
+XXX*/
+
+// Margaret Minsky's dissertation suggests using the slope of the plane,
+// which is the equivalent of the step size in Z for a unit step in X and
+// a unit step in Y.  This turns out to be equivalent to A/C and B/C.
+// Note that this can increase without bound, so we have to find some
+// scaling factor and then clip if the step size in Z gets too large
+// (clipping happens in the code that writes the value to the device
+// when the length of the force vector exceeds 1).
+int vrpn_DirectXFFJoystick::handle_plane_change_message(void *selfPtr, 
+					      vrpn_HANDLERPARAM p)
+{
+  vrpn_DirectXFFJoystick *me = (vrpn_DirectXFFJoystick *)selfPtr;
+  vrpn_float32	abcd[4];
+  vrpn_float32	kspring, kdamp, fricdynamic, fricstatic;
+  vrpn_int32	plane_index, plane_recovery_cycles;
+  double	fscale = 0.25;	// Maximum force at four times slope for 45 degrees
+
+  // XXX We are ignoring the plane index and treating it as if there is
+  // only one plane.
+  decode_plane(p.buffer, p.payload_len, abcd, 
+	  &kspring, &kdamp, &fricdynamic, &fricstatic,
+	  &plane_index, &plane_recovery_cycles);
+
+  // If the plane normal is (0,0,0) this is a command to stop the surface
+  if ( (abcd[0] == 0) && (abcd[1] == 0) && (abcd[2] == 0) ) {
+    me->_fX = me->_fY = 0;
+    return 0;
+  }
+
+  // If C is zero, then we set the forces to unit length in the direction of
+  // the vector (A, B).  This preserves the direction of the force and makes it
+  // be the maximum force (would be infinite if we divided by C).
+  if (abcd[2] == 0) {
+    double len = sqrt(abcd[0]*abcd[0] + abcd[1]*abcd[1]);
+    me->_fX = abcd[0] / len;
+    me->_fY = abcd[1] / len;
+
+  // Since the plane equation is (AX + BY + CZ + D = 0), A/C and B/C
+  // determine the amount of force in X and Y.  We do not count D
+  // (we send the force no matter where we are with respect to the plane,
+  // since we are a 2D device in a 3D space).
+  } else {
+
+    me->_fX = fscale * abcd[0] / abcd[2];
+    me->_fY = fscale * abcd[1] / abcd[2];
+  }
+
+  return 0;
+}
+
 
 // Zero the force sent to the device when the last connection is dropped.
 int	vrpn_DirectXFFJoystick::handle_last_connection_dropped(void *selfPtr, vrpn_HANDLERPARAM p)
