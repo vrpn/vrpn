@@ -1,3 +1,16 @@
+2000-09-26  Tom Hudson  <hudson@cs.unc.edu>
+
+        * Makefile : now that we're using makedepend, got rid of rebuild
+        of entire library whenever any header file changed.
+
+        * vrpn_DelayedConnection.C
+        (vrpn_DelayedEndpoint::send_pending_reports) : implemented
+        (vrpn_DelayedEndpoint::dispatch) : same
+        (vrpn_DelayedEndpoint::dispatchPending) : same
+        (vrpn_DelayedEndpoint::setDelay) : new function
+        (vrpn_DelayedEndpoint::deletePending) : same
+        (vrpn_DelayedConnection::setDelay) : same
+
 2000-09-25  Tom Hudson  <hudson@cs.unc.edu>
 
 	* connection : new directory, to be populated later today

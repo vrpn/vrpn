@@ -6,6 +6,15 @@
 // We'd like to reuse bits of Log or FileController here to manage
 // a list of messages-to-be-dispatched but there isn't an obvious easy way.
 
+// List of messages, each one with a wall-clock time at which it becomes
+// "valid".  The connection will not trigger any callbacks for it until
+// that time.  That time = time of receipt + the delay to which the
+// connection is set.
+
+struct vrpn_DELAYLIST : public vrpn_LOGLIST {
+  timeval valid;
+};
+
 ///< @class vrpn_DelayedEndpoint
 ///< Adds a user-controlled latency to the delivery of every message.
 
@@ -23,6 +32,8 @@ class vrpn_DelayedEndpoint : public vrpn_Endpoint {
       ///< After we send things that need to go out, also see if there
       ///< are any delayed callbacks that need to be dispatched locally.
 
+    void setDelay (timeval);
+
   protected:
 
     virtual int dispatch (vrpn_int32, vrpn_int32, timeval,
@@ -34,7 +45,12 @@ class vrpn_DelayedEndpoint : public vrpn_Endpoint {
       ///< Dispatch local callbacks for any delayed messages that have now
       ///< become valid.
 
+    virtual void deletePending (vrpn_DELAYLIST * start, vrpn_DELAYLIST * end);
+      ///< Delete the list of pending messages beginning at <start> and ending
+      ///< just before <end>.
+
     timeval d_delay;
+    vrpn_DELAYLIST * d_delayListHead;
 };
 
 
@@ -69,6 +85,8 @@ class vrpn_DelayedConnection : public vrpn_Synchronized_Connection {
     virtual ~vrpn_DelayedConnection (void);
 
 
+    void setDelay (timeval);
+
   protected:
 
     virtual vrpn_Endpoint * allocateEndpoint (vrpn_int32 *);
@@ -79,14 +97,4 @@ class vrpn_DelayedConnection : public vrpn_Synchronized_Connection {
 
 #endif  // VRPN_DELAYED_CONNECTION_H
 
-
-// imp notes:
-//   subclass Endpoint
-//     factor dispatch() out of getOneUDP/TCPMessage
-//     in EP subclass, dispatcher() should instead put the
-//       message received into a log with a valid date in the future
-//       and read through that log to find things already valid
-//     bug - need to dispatch already-valid even when new mesages not arriving
-//       therefore need to do it in mainloop
-//       subclass send_pending_reports() to call check-dispatching?!
 
