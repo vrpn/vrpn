@@ -76,7 +76,7 @@
 // be put either in Windows/system32 or in the location where the
 // executable lives or somewhere on the path.
  
-#define VRPN_INCLUDE_INTERSENSE
+//#define VRPN_INCLUDE_INTERSENSE
 
 //---------------------------------------------------------------//
 // DO NOT EDIT BELOW THIS LINE FOR NORMAL CONFIGURATION SETTING. //
