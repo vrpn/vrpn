@@ -10,6 +10,7 @@
 #ifndef	VRPN_CLIENT_ONLY
 #include "ghost.h"
 #include "plane.h"
+#include "trimesh.h"
 #endif
 #include <quat.h>
 #endif
@@ -52,12 +53,19 @@ protected:
 	long force_message_id;	// ID of force message to connection
 	long plane_message_id;  //ID of plane equation message
 	long scp_message_id;	// ID of surface contact point message
+        // IDs for trimesh messages
+        long startTrimesh_message_id;   
+        long setVertex_message_id;   
+        long setTriangle_message_id;   
+        long finishTrimesh_message_id;   
+
 
 	int   which_plane;
 	double force[3];
 	double scp_pos[3];
 	double scp_quat[4];  // I think this would only be used on 6DOF device
 	float plane[4];
+
 	float SurfaceKspring;
 	float SurfaceKdamping;
 	float SurfaceFstatic;
@@ -69,34 +77,25 @@ protected:
 #ifdef _WIN32
 #ifndef	VRPN_CLIENT_ONLY
 
-typedef	struct {
-	struct		timeval	msg_time;// Time of the report
-	float		which_plane;
-	float		plane[4];	// plane equation, ax+by+cz+d = 0
-	float		SurfaceKspring; //surface spring coefficient
-	float		SurfaceFdynamic;//surface dynamic friction conefficient
-	float	        SurfaceFstatic; //surface static friction coefficient
-	float		SurfaceKdamping;//surface damping coefficient
-	float		numRecCycles;	// number of recovery cycles
-} vrpn_PHANTOMCB;
+class vrpn_Plane_PHANTOMCB {
+public:
+  struct	timeval	msg_time;// Time of the report
+  float		SurfaceKspring; //surface spring coefficient
+  float		SurfaceFdynamic;//surface dynamic friction conefficient
+  float	        SurfaceFstatic; //surface static friction coefficient
+  float		SurfaceKdamping;//surface damping coefficient
 
-typedef void (*vrpn_PHANTOMCHANGEHANDLER)(void *userdata,
-					 const vrpn_PHANTOMCB info);
+  float		which_plane;
+  float		plane[4];	// plane equation, ax+by+cz+d = 0
+  float		numRecCycles;	// number of recovery cycles
+};
+
+
+typedef void (*vrpn_PHANTOMPLANECHANGEHANDLER)(void *userdata,
+					 const vrpn_Plane_PHANTOMCB &info);
 
 class vrpn_Phantom: public vrpn_ForceDevice,public vrpn_Tracker,
 					public vrpn_Button {
-public:
-	vrpn_Phantom(char *name, vrpn_Connection *c, float hz=1.0);
-	virtual void mainloop(void);
-	virtual void print_report(void);
-	virtual int register_change_handler(void *userdata,
-		vrpn_PHANTOMCHANGEHANDLER handler);
-	virtual int unregister_change_handler(void *userdata,
-		vrpn_PHANTOMCHANGEHANDLER handler);
-
-	static void handle_plane(void *userdata,const vrpn_PHANTOMCB p);
-        static void check_parameters(vrpn_PHANTOMCB *p);
-
 protected:
 	float update_rate;
 	gstScene *scene;
@@ -108,6 +107,8 @@ protected:
 	struct timeval timestamp;
 	Plane *planes[MAXPLANE];
 	Plane *cur_plane;
+	Trimesh *trimesh;
+				       
 	gstEffect *effect; 	// this is a force appended to
 				// other forces exerted by phantom
   //  vrpn_PHANTOMCB	surface;
@@ -118,14 +119,43 @@ protected:
 	
 	typedef	struct vrpn_RPCS {
 		void				*userdata;
-		vrpn_PHANTOMCHANGEHANDLER	handler;
+		vrpn_PHANTOMPLANECHANGEHANDLER	handler;
 		struct vrpn_RPCS		*next;
 	} vrpn_PHANTOMCHANGELIST;
-	vrpn_PHANTOMCHANGELIST	*change_list;
+	vrpn_PHANTOMCHANGELIST	*plane_change_list;
 
-	static int handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
+	static int handle_plane_change_message(void *userdata, 
+					       vrpn_HANDLERPARAM p);
+	static int handle_startTrimesh_message(void *userdata, 
+					vrpn_HANDLERPARAM p);
+	static int handle_setVertex_message(void *userdata, 
+				     vrpn_HANDLERPARAM p);
+	static int handle_setTriangle_message(void *userdata, 
+				       vrpn_HANDLERPARAM p);
+	static int handle_finishTrimesh_message(void *userdata, 
+					 vrpn_HANDLERPARAM p);
+public:
+	vrpn_Phantom(char *name, vrpn_Connection *c, float hz=1.0);
+	virtual void mainloop(void);
+	virtual void reset();
+	virtual void print_report(void);
+	virtual int register_change_handler(void *userdata,
+		vrpn_PHANTOMPLANECHANGEHANDLER handler,
+		vrpn_PHANTOMCHANGELIST	*&change_list);
+	virtual int unregister_change_handler(void *userdata,
+		vrpn_PHANTOMPLANECHANGEHANDLER handler,
+		vrpn_PHANTOMCHANGELIST	*&change_list);
+
+	virtual int register_plane_change_handler(void *userdata,
+		vrpn_PHANTOMPLANECHANGEHANDLER handler);
+	virtual int unregister_plane_change_handler(void *userdata,
+		vrpn_PHANTOMPLANECHANGEHANDLER handler);
+
+	static void handle_plane(void *userdata,const vrpn_Plane_PHANTOMCB &p);
+    static void check_parameters(vrpn_Plane_PHANTOMCB *p);	
 
 };
+
 #endif  // VRPN_CLIENT_ONLY
 #endif  // _WIN32
 
@@ -158,17 +188,30 @@ public:
  	void set_plane(float *p);
 	void set_plane(float *p, float d);
 	void set_plane(float a, float b, float c,float d);
+
 	void sendSurface(void);
 	void startSurface(void);
 	void stopSurface(void);
 
-	int encode_plane(char *buf);
+	void startSendingTrimesh(int numVerts,int numTris);
+        // vertNum and triNum start at 0
+        void sendVertex(int vertNum,float x,float y,float z);
+        void sendTriangle(int triNum,int vert0,int vert1,int vert2);
+        void finishSendingTrimesh();
+  	void stopTrimesh(void);
+
+	char *encode_plane(int &len);
+	char *encode_startTrimesh(int &len,int numVerts,int numTris);
+        char *encode_vertex(int &len,int vertNum,float x,float y,float z); 
+        char *encode_triangle(int &len,int triNum,
+			      int vert0,int vert1,int vert2);	       
+        char *encode_finishTrimesh(int &len);
 
 	// This routine calls the mainloop of the connection it's on
 	virtual void mainloop(void);
 
 	// (un)Register a callback handler to handle a force change
-	// and plane equation change
+	// and plane equation change and trimesh change
 	virtual int register_change_handler(void *userdata,
 		vrpn_FORCECHANGEHANDLER handler);
 	virtual int unregister_change_handler(void *userdata,
@@ -179,7 +222,8 @@ public:
         virtual int unregister_scp_change_handler(void *userdata,
                 vrpn_FORCESCPHANDLER handler);
 
-  protected:
+protected:
+
 	typedef	struct vrpn_RFCS {
 		void				*userdata;
 		vrpn_FORCECHANGEHANDLER	handler;
@@ -198,6 +242,8 @@ public:
         static int handle_scp_change_message(void *userdata,
                                                         vrpn_HANDLERPARAM p);
 
+        void set_trimesh(int nV,float v[][3],
+			 int nT,int t[][3]);
 };
 
 #endif

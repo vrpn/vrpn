@@ -36,6 +36,14 @@ vrpn_ForceDevice::vrpn_ForceDevice(char *name, vrpn_Connection *c)
 		my_id = connection->register_sender(name);
 		force_message_id = connection->register_message_type("Force");
 		plane_message_id = connection->register_message_type("Plane");
+		startTrimesh_message_id = 
+		  connection->register_message_type("startTrimesh");
+		setVertex_message_id = 
+		  connection->register_message_type("setVertex");
+		setTriangle_message_id = 
+		  connection->register_message_type("setTriangle");
+		finishTrimesh_message_id = 
+		  connection->register_message_type("finishTrimesh");
 		scp_message_id = connection->register_message_type("SCP");
 	}
 
@@ -45,6 +53,7 @@ vrpn_ForceDevice::vrpn_ForceDevice(char *name, vrpn_Connection *c)
 
 	//set the force to zero
 	force[0] = force[1] = force[2] = 0.0;
+
 }
 
 void vrpn_ForceDevice::print_report(void)
@@ -95,7 +104,7 @@ int vrpn_ForceDevice::encode_scp_to(char *buf)
 #ifdef _WIN32
 #ifndef	VRPN_CLIENT_ONLY
 
-void vrpn_Phantom::handle_plane(void *userdata,const vrpn_PHANTOMCB p)
+void vrpn_Phantom::handle_plane(void *userdata,const vrpn_Plane_PHANTOMCB &p)
 {
  // printf("MY Plane is %lfX + %lfY + %lfZ + %lf = 0 \n",p.plane[0],
 //	p.plane[1],p.plane[2],p.plane[3]);
@@ -117,7 +126,7 @@ void vrpn_Phantom::handle_plane(void *userdata,const vrpn_PHANTOMCB p)
 	plane_node[which_plane]->setInEffect(FALSE);
     }
     else {
-	vrpn_PHANTOMCB p2 = p;
+	vrpn_Plane_PHANTOMCB p2 = p;
 	check_parameters(&p2);
 	plane_node[which_plane]->update(p2.plane[0],p2.plane[1],
 					p2.plane[2],p2.plane[3]*1000.0);
@@ -131,11 +140,12 @@ void vrpn_Phantom::handle_plane(void *userdata,const vrpn_PHANTOMCB p)
     }
 }
 
+
 // This function reports errors if surface friction, compliance parameters
 // are not in valid ranges for the GHOST library and sets them as 
 // close as it can to the requested values.
 
-void vrpn_Phantom::check_parameters(vrpn_PHANTOMCB *p)
+void vrpn_Phantom::check_parameters(vrpn_Plane_PHANTOMCB *p)
 {
         if (p->SurfaceKspring <= 0){
                 printf("Error: Kspring = %f <= 0\n", p->SurfaceKspring);
@@ -170,8 +180,8 @@ void vrpn_Phantom::check_parameters(vrpn_PHANTOMCB *p)
 
 vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
 		:vrpn_Tracker(name, c),vrpn_Button(name,c),
-		 vrpn_ForceDevice(name,c), update_rate(hz),change_list(NULL)
-{  
+		 vrpn_ForceDevice(name,c), update_rate(hz),
+		 plane_change_list(NULL){  
   num_buttons = 1;  // only has one button
 
   timestamp.tv_sec = 0;
@@ -199,7 +209,7 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
   rootH->addChild(hapticScene);
 	
   SurfaceKspring= 0.29;
-  SurfaceFdynamic=0.02;
+  SurfaceFdynamic = 0.02;
   SurfaceFstatic = 0.03;
   SurfaceKdamping = 0.0;
 
@@ -215,16 +225,42 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
  
   cur_plane = planes[which_plane];
 
-//  status= TRACKER_RESETTING;
+  trimesh = new Trimesh(0,NULL,0,NULL);
+
+  trimesh->addToScene(hapticScene);
+
+  //  status= TRACKER_RESETTING;
   gettimeofday(&(vrpn_ForceDevice::timestamp),NULL);
 
   if (vrpn_ForceDevice::connection->register_handler(plane_message_id, 
-	handle_change_message, this, vrpn_ForceDevice::my_id)) {
+	handle_plane_change_message, this, vrpn_ForceDevice::my_id)) {
+		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
+		vrpn_ForceDevice::connection = NULL;
+  }
+  if (vrpn_ForceDevice::connection->register_handler(startTrimesh_message_id, 
+	handle_startTrimesh_message, this, vrpn_ForceDevice::my_id)) {
+		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
+		vrpn_ForceDevice::connection = NULL;
+  }
+  if (vrpn_ForceDevice::connection->register_handler(setVertex_message_id, 
+	handle_setVertex_message, this, vrpn_ForceDevice::my_id)) {
+		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
+		vrpn_ForceDevice::connection = NULL;
+  }
+  if (vrpn_ForceDevice::connection->register_handler(setTriangle_message_id, 
+	handle_setTriangle_message, this, vrpn_ForceDevice::my_id)) {
+		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
+		vrpn_ForceDevice::connection = NULL;
+  }
+  if (vrpn_ForceDevice::connection->register_handler(finishTrimesh_message_id, 
+	handle_finishTrimesh_message, this, vrpn_ForceDevice::my_id)) {
 		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
 		vrpn_ForceDevice::connection = NULL;
   }
 
-  this->register_change_handler(this, handle_plane);
+  this->register_plane_change_handler(this, handle_plane);
+
+
   if (vrpn_Tracker::register_xform_request_handlers())
     fprintf(stderr, "vrpn_Phantom: couldn't register xform request handlers\n");
 
@@ -407,13 +443,19 @@ void vrpn_Phantom::mainloop(void) {
 		    fprintf(stderr,"Phantom: cannot write message: tossing\n");
 	    }
 	}
+	
   //      print_report();
     }
 }
 
+void vrpn_Phantom::reset(){
+	if(trimesh->displayStatus())
+		trimesh->clear();
+}
 
 int vrpn_Phantom::register_change_handler(void *userdata,
-			vrpn_PHANTOMCHANGEHANDLER handler)
+			vrpn_PHANTOMPLANECHANGEHANDLER handler,
+			vrpn_PHANTOMCHANGELIST	*&change_list)
 {
 	vrpn_PHANTOMCHANGELIST	*new_entry;
 
@@ -440,8 +482,8 @@ int vrpn_Phantom::register_change_handler(void *userdata,
 }
 
 int vrpn_Phantom::unregister_change_handler(void *userdata,
-			vrpn_PHANTOMCHANGEHANDLER handler)
-{
+			vrpn_PHANTOMPLANECHANGEHANDLER handler,
+			vrpn_PHANTOMCHANGELIST	*&change_list){
 	// The pointer at *snitch points to victim
 	vrpn_PHANTOMCHANGELIST	*victim, **snitch;
 
@@ -469,12 +511,25 @@ int vrpn_Phantom::unregister_change_handler(void *userdata,
 	return 0;
 }
 
-int vrpn_Phantom::handle_change_message(void *userdata, vrpn_HANDLERPARAM p)
-{
+int vrpn_Phantom::register_plane_change_handler(void *userdata,
+				  vrpn_PHANTOMPLANECHANGEHANDLER handler){
+  return register_change_handler(userdata, handler,
+		plane_change_list);
+}
+
+int vrpn_Phantom::unregister_plane_change_handler(void *userdata,
+				    vrpn_PHANTOMPLANECHANGEHANDLER handler){
+  return unregister_change_handler(userdata, handler,
+		plane_change_list);
+}
+
+
+int vrpn_Phantom::handle_plane_change_message(void *userdata, 
+					      vrpn_HANDLERPARAM p){
 	vrpn_Phantom *me = (vrpn_Phantom *)userdata;
 	long *params = (long*)(p.buffer);
-	vrpn_PHANTOMCB	tp;
-	vrpn_PHANTOMCHANGELIST *handler = me->change_list;
+	vrpn_Plane_PHANTOMCB	tp;
+	vrpn_PHANTOMCHANGELIST *handler = me->plane_change_list;
 	long	temp;
 	int	i;
 
@@ -519,12 +574,133 @@ int vrpn_Phantom::handle_change_message(void *userdata, vrpn_HANDLERPARAM p)
 	return 0;
 }
 
+int vrpn_Phantom::handle_startTrimesh_message(void *userdata, 
+					      vrpn_HANDLERPARAM p){
+  vrpn_Phantom *me = (vrpn_Phantom *)userdata;
+  long *params = (long*)(p.buffer);
+  
+  long	temp;
+  
+  int numExpectedParameters=2;
+  
+  if (p.payload_len !=  (numExpectedParameters*sizeof(float)) ) {
+    fprintf(stderr,"vrpn_Phantom: change message payload error\n");
+    fprintf(stderr,"             (got %d, expected %d)\n",
+	    p.payload_len, numExpectedParameters*sizeof(float) );
+    return -1;
+  }
+  
+  temp = ntohl(params[0]);
+  int numVerts=temp;
+  temp = ntohl(params[1]);
+  int numTris=temp;
+  
+  me->trimesh->startDefining(numVerts,numTris);
+  return 0;
+}
+
+int vrpn_Phantom::handle_setVertex_message(void *userdata, 
+					   vrpn_HANDLERPARAM p){
+  vrpn_Phantom *me = (vrpn_Phantom *)userdata;
+  long *params = (long*)(p.buffer);
+  
+  long	temp;
+  
+  int numExpectedParameters=4;
+  
+  if (p.payload_len !=  (numExpectedParameters*sizeof(float)) ) {
+    fprintf(stderr,"vrpn_Phantom: change message payload error\n");
+    fprintf(stderr,"             (got %d, expected %d)\n",
+	    p.payload_len, numExpectedParameters*sizeof(float) );
+    return -1;
+  }
+
+  temp = ntohl(params[0]);
+  int vertNum=temp;
+  temp = ntohl(params[1]);
+  float x = *(float*)(&temp);
+  temp = ntohl(params[2]);
+  float y = *(float*)(&temp);
+  temp = ntohl(params[3]);
+  float z = *(float*)(&temp);
+    
+  if(me->trimesh->setVertex(vertNum,x*1000.0,y*1000.0,z*1000.0))
+    return 0;
+  else
+    return -1;
+}
+
+int vrpn_Phantom::handle_setTriangle_message(void *userdata, 
+					     vrpn_HANDLERPARAM p){
+  vrpn_Phantom *me = (vrpn_Phantom *)userdata;
+  long *params = (long*)(p.buffer);
+  
+  long	temp;
+ 
+  int numExpectedParameters=4;
+  
+  if (p.payload_len !=  (numExpectedParameters*sizeof(float)) ) {
+    fprintf(stderr,"vrpn_Phantom: change message payload error\n");
+    fprintf(stderr,"             (got %d, expected %d)\n",
+	    p.payload_len, numExpectedParameters*sizeof(float) );
+    return -1;
+  }
+
+  temp = ntohl(params[0]);
+  int triNum=temp;
+  temp = ntohl(params[1]);
+  int v0=temp;
+  temp = ntohl(params[2]);
+  int v1=temp;
+  temp = ntohl(params[3]);
+  int v2=temp;
+
+  if(me->trimesh->setTriangle(triNum,v0,v1,v2))
+    return 0;
+  else
+    return -1;
+}
+
+
+int vrpn_Phantom::handle_finishTrimesh_message(void *userdata, 
+					       vrpn_HANDLERPARAM p){
+  vrpn_Phantom *me = (vrpn_Phantom *)userdata;
+  long *params = (long*)(p.buffer);
+  
+  long	temp;
+  
+  
+  int numExpectedParameters=4;
+
+  // Typecasting used to get the byte order correct on the floats
+  // that are coming from the other side.
+  temp = ntohl(params[0]);
+  float SurfaceKspring = *(float*)(&temp);
+  temp = ntohl(params[1]);
+  float SurfaceKdamping = *(float*)(&temp);
+  temp = ntohl(params[2]);
+  float SurfaceFdynamic = *(float*)(&temp);
+  temp = ntohl(params[3]);
+  float SurfaceFstatic = *(float*)(&temp);
+
+  Trimesh *myTrimesh=me->trimesh;
+  
+  myTrimesh->finishDefining();
+
+  myTrimesh->setSurfaceKspring(SurfaceKspring);
+  myTrimesh->setSurfaceFstatic(SurfaceFstatic);
+  myTrimesh->setSurfaceFdynamic(SurfaceFdynamic); 
+  myTrimesh->setSurfaceKdamping(SurfaceKdamping);
+
+  return 0;
+}
+
 #endif  // VRPN_CLIENT_ONLY
 #endif  // _WIN32
 
 vrpn_ForceDevice_Remote::vrpn_ForceDevice_Remote(char *name):
 	vrpn_ForceDevice(name,vrpn_get_connection_by_name(name)),
-	change_list(NULL), scp_change_list(NULL)
+	change_list(NULL), scp_change_list(NULL) 
 {
     which_plane = 0;
 
@@ -553,15 +729,17 @@ vrpn_ForceDevice_Remote::vrpn_ForceDevice_Remote(char *name):
 }
 
 
-int vrpn_ForceDevice_Remote::encode_plane(char *buf)
-{
+char *vrpn_ForceDevice_Remote::encode_plane(int &len){
    // Message includes: float force[3]
    // Byte order of each needs to be reversed to match network standard
    // This moving is done by horrible typecast hacks.  Please forgive.
 
-   int i;
-   unsigned long *longbuf = (unsigned long*)(void*)(buf);
-   int	index = 0;
+  len=10*sizeof(unsigned long); // currently a plane has 10 parameters
+  char *buf=new char[len];
+
+  int i;
+  unsigned long *longbuf = (unsigned long*)(void*)(buf);
+  int	index = 0;
 
    // Move the force there
    for (i = 0; i < 4; i++){
@@ -579,7 +757,117 @@ int vrpn_ForceDevice_Remote::encode_plane(char *buf)
    for (i = 0; i < index; i++) {
    	longbuf[i] = htonl(longbuf[i]);
    }
-   return index*sizeof(unsigned long);
+   if(index*sizeof(unsigned long)!=len){
+     fprintf(stderr,
+	     "ERROR: incorrect # of parameters in vrpn_ForceDevice_Remote::encode_plane\n");
+   }
+   return buf;
+}
+
+char *vrpn_ForceDevice_Remote::encode_startTrimesh(int &len,
+						int numVerts,int numTris){
+  // Byte order of each needs to be reversed to match network standard
+  // This moving is done by horrible typecast hacks. 
+  // someone did this in the encode_plane(), so I just moused it on down (AG)
+
+  // count the number of parameters we're sending
+  len = (2)*sizeof(unsigned long);
+  // allocate the buffer for the message
+  char *buf=new char[len];
+
+  int i;
+  unsigned long *longbuf = (unsigned long*)(void*)(buf);
+  int	index = 0;
+
+  printf("startSending trimesh: %d verts, %d tris\n",numVerts,numTris);
+  printf("char_len: %d\n",len);
+
+  longbuf[index++] = *(unsigned long*)(void*)(&numVerts);
+  longbuf[index++] = *(unsigned long*)(void*)(&numTris);
+ 
+  for (i = 0; i < index; i++) {
+    longbuf[i] = htonl(longbuf[i]);
+  }
+
+  return buf; 
+}
+
+char *vrpn_ForceDevice_Remote::encode_vertex(int &len,int vertNum,
+					     float x,float y,float z){
+  // Byte order of each needs to be reversed to match network standard
+  // This moving is done by horrible typecast hacks. 
+  // someone did this in the encode_plane(), so I just moused it on down (AG)
+
+  // count the number of parameters we're sending
+  len = (4)*sizeof(unsigned long);
+  // allocate the buffer for the message
+  char *buf=new char[len];
+
+  int i;
+  unsigned long *longbuf = (unsigned long*)(void*)(buf);
+  int	index = 0;
+
+  longbuf[index++] = *(unsigned long*)(void*)(&vertNum);
+  longbuf[index++] = *(unsigned long*)(void*)(&x);
+  longbuf[index++] = *(unsigned long*)(void*)(&y);
+  longbuf[index++] = *(unsigned long*)(void*)(&z);
+ 
+  for (i = 0; i < index; i++) {
+    longbuf[i] = htonl(longbuf[i]);
+  }
+  return buf; 
+}
+
+char *vrpn_ForceDevice_Remote::encode_triangle(int &len,int triNum,
+					       int vert0,int vert1,int vert2){
+  // Byte order of each needs to be reversed to match network standard
+  // This moving is done by horrible typecast hacks. 
+  // someone did this in the encode_plane(), so I just moused it on down (AG)
+
+  // count the number of parameters we're sending
+  len = (4)*sizeof(unsigned long);
+  // allocate the buffer for the message
+  char *buf=new char[len];
+
+  int i;
+  unsigned long *longbuf = (unsigned long*)(void*)(buf);
+  int	index = 0;
+
+  longbuf[index++] = *(unsigned long*)(void*)(&triNum);
+  longbuf[index++] = *(unsigned long*)(void*)(&vert0);
+  longbuf[index++] = *(unsigned long*)(void*)(&vert1);
+  longbuf[index++] = *(unsigned long*)(void*)(&vert2);
+ 
+  for (i = 0; i < index; i++) {
+    longbuf[i] = htonl(longbuf[i]);
+  }
+  return buf; 
+}
+
+// this is where we send down our surface parameters
+char *vrpn_ForceDevice_Remote::encode_finishTrimesh(int &len){
+  // Byte order of each needs to be reversed to match network standard
+  // This moving is done by horrible typecast hacks. 
+  // someone did this in the encode_plane(), so I just moused it on down (AG)
+
+  // count the number of parameters we're sending
+  len = (4)*sizeof(unsigned long);
+  // allocate the buffer for the message
+  char *buf=new char[len];
+
+  int i;
+  unsigned long *longbuf = (unsigned long*)(void*)(buf);
+  int	index = 0;
+
+  longbuf[index++] = *(unsigned long*)(void*)(&SurfaceKspring);
+  longbuf[index++] = *(unsigned long*)(void*)(&SurfaceKdamping);
+  longbuf[index++] = *(unsigned long*)(void*)(&SurfaceFdynamic);
+  longbuf[index++] = *(unsigned long*)(void*)(&SurfaceFstatic);
+  
+  for (i = 0; i < index; i++) {
+    longbuf[i] = htonl(longbuf[i]);
+  }
+  return buf; 
 }
 
 void vrpn_ForceDevice_Remote::set_plane(float *p)
@@ -604,70 +892,181 @@ void vrpn_ForceDevice_Remote::set_plane(float *normal, float d)
 	}
 
      plane[3] = d;
-
 }
 
 void vrpn_ForceDevice_Remote::sendSurface(void)
-{ //Encode the plane if there is a connection
-    char	msgbuf[1000];
-	int		len;
-	struct timeval current_time;
-
-	gettimeofday(&current_time, NULL);
-	timestamp.tv_sec = current_time.tv_sec;
-	timestamp.tv_usec = current_time.tv_usec;
-
-	if(connection) {
-		len = encode_plane(msgbuf);
-		if(connection->pack_message(len,timestamp,plane_message_id,
-			my_id, msgbuf, vrpn_CONNECTION_LOW_LATENCY)) {
-			fprintf(stderr,"Phantom: cannot write message: tossing\n");
-		}
-		connection->mainloop();
-	}
+{ // Encode the plane if there is a connection
+  char	*msgbuf;
+  int		len;
+  struct timeval current_time;
+  
+  gettimeofday(&current_time, NULL);
+  timestamp.tv_sec = current_time.tv_sec;
+  timestamp.tv_usec = current_time.tv_usec;
+  
+  if(connection) {
+    msgbuf = encode_plane(len);
+    if(connection->pack_message(len,timestamp,plane_message_id,
+				my_id, msgbuf, vrpn_CONNECTION_LOW_LATENCY)) {
+      fprintf(stderr,"Phantom: cannot write message: tossing\n");
+    }
+    connection->mainloop();
+    delete msgbuf;
+  }
 
 }
 
 void vrpn_ForceDevice_Remote::startSurface(void)
 {  //Encode the plane if there is a connection
-    char	msgbuf[1000];
-	int		len;
-	struct timeval current_time;
-
-	gettimeofday(&current_time, NULL);
-	timestamp.tv_sec = current_time.tv_sec;
-	timestamp.tv_usec = current_time.tv_usec;
-
-	if (connection) {
-		len = encode_plane(msgbuf);
-		if (connection->pack_message(len,timestamp,plane_message_id,
-		     my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
-		     fprintf(stderr,"Phantom: cannot write message: tossing\n");
-		}
-		connection->mainloop();
-	}
+    char	*msgbuf;
+    int		len;
+    struct timeval current_time;
+    
+    gettimeofday(&current_time, NULL);
+    timestamp.tv_sec = current_time.tv_sec;
+    timestamp.tv_usec = current_time.tv_usec;
+    
+    if(connection){
+      msgbuf = encode_plane(len);
+      if (connection->pack_message(len,timestamp,plane_message_id,
+				   my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+	fprintf(stderr,"Phantom: cannot write message: tossing\n");
+      }
+      connection->mainloop();
+      delete msgbuf;
+    }
 }
 
 void vrpn_ForceDevice_Remote::stopSurface(void)
 {  //Encode the plane if there is a connection
-    char	msgbuf[1000];
-	int		len;
-	struct timeval current_time;
+    char	*msgbuf;
+    int		len;
+    struct timeval current_time;
+    
+    gettimeofday(&current_time, NULL);
+    timestamp.tv_sec = current_time.tv_sec;
+    timestamp.tv_usec = current_time.tv_usec;
+    
+    set_plane(0,0,0,0);
+  
+    if(connection) {
+      msgbuf = encode_plane(len);
+      if (connection->pack_message(len,timestamp,plane_message_id,
+				   my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+	fprintf(stderr,"Phantom: cannot write message: tossing\n");
+      }
+      connection->mainloop();
+      delete msgbuf;
+    }
+}
 
-	gettimeofday(&current_time, NULL);
-	timestamp.tv_sec = current_time.tv_sec;
-	timestamp.tv_usec = current_time.tv_usec;
 
-	set_plane(0,0,0,0);
 
-	if(connection) {
-		len = encode_plane(msgbuf);
-		if(connection->pack_message(len,timestamp,plane_message_id,
-			my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
-			fprintf(stderr,"Phantom: cannot write message: tossing\n");
-		}
-		connection->mainloop();
-	}
+void vrpn_ForceDevice_Remote::startSendingTrimesh(int numVerts,int numTris){
+
+  char	*msgbuf;
+  int		len;
+  struct timeval current_time;
+  
+  gettimeofday(&current_time, NULL);
+  timestamp.tv_sec = current_time.tv_sec;
+  timestamp.tv_usec = current_time.tv_usec;
+
+  if(connection){
+    msgbuf = encode_startTrimesh(len,numVerts,numTris);
+    if (connection->pack_message(len,timestamp,startTrimesh_message_id,
+				 my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+      fprintf(stderr,"Phantom: cannot write message: tossing\n");
+    }
+    connection->mainloop();
+    delete msgbuf;
+  }
+}
+
+void vrpn_ForceDevice_Remote::sendVertex(int vertNum,float x,float y,float z){
+
+  char	*msgbuf;
+  int		len;
+  struct timeval current_time;
+  
+  gettimeofday(&current_time, NULL);
+  timestamp.tv_sec = current_time.tv_sec;
+  timestamp.tv_usec = current_time.tv_usec;
+
+  if(connection){
+    msgbuf = encode_vertex(len,vertNum,x,y,z);
+    if (connection->pack_message(len,timestamp,setVertex_message_id,
+				 my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+      fprintf(stderr,"Phantom: cannot write message: tossing\n");
+    }
+    connection->mainloop();
+    delete msgbuf;
+  }
+}
+
+void vrpn_ForceDevice_Remote::sendTriangle(int triNum,
+					   int vert0,int vert1,int vert2){
+
+  char	*msgbuf;
+  int		len;
+  struct timeval current_time;
+  
+  gettimeofday(&current_time, NULL);
+  timestamp.tv_sec = current_time.tv_sec;
+  timestamp.tv_usec = current_time.tv_usec;
+
+  if(connection){
+    msgbuf = encode_triangle(len,triNum,vert0,vert1,vert2);
+    if (connection->pack_message(len,timestamp,setTriangle_message_id,
+				 my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+      fprintf(stderr,"Phantom: cannot write message: tossing\n");
+    }
+    connection->mainloop();
+    delete msgbuf;
+  }
+}
+
+void vrpn_ForceDevice_Remote::finishSendingTrimesh(){
+
+  char	*msgbuf;
+  int		len;
+  struct timeval current_time;
+  
+  gettimeofday(&current_time, NULL);
+  timestamp.tv_sec = current_time.tv_sec;
+  timestamp.tv_usec = current_time.tv_usec;
+
+  if(connection){
+    msgbuf = encode_finishTrimesh(len);
+    if (connection->pack_message(len,timestamp,finishTrimesh_message_id,
+				 my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+      fprintf(stderr,"Phantom: cannot write message: tossing\n");
+    }
+    connection->mainloop();
+    delete msgbuf;
+  }
+}
+
+// stop the triMesh if connection
+void vrpn_ForceDevice_Remote::stopTrimesh(void){
+  
+  char	*msgbuf;
+  int		len;
+  struct timeval current_time;
+  
+  gettimeofday(&current_time, NULL);
+  timestamp.tv_sec = current_time.tv_sec;
+  timestamp.tv_usec = current_time.tv_usec;
+
+  if(connection){
+    msgbuf = encode_startTrimesh(len,0,0);
+    if (connection->pack_message(len,timestamp,startTrimesh_message_id,
+				 my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+      fprintf(stderr,"Phantom: cannot write message: tossing\n");
+    }
+    connection->mainloop();
+    delete msgbuf;
+  }
 }
 
 
@@ -809,7 +1208,7 @@ int vrpn_ForceDevice_Remote::handle_change_message(void *userdata,
 	double *params = (double*)(p.buffer);
 	vrpn_FORCECB	tp;
 	vrpn_FORCECHANGELIST *handler = me->change_list;
-	long	temp;
+
 	int	i;
 
 	// Fill in the parameters to the tracker from the message
@@ -872,3 +1271,5 @@ int vrpn_ForceDevice_Remote::handle_scp_change_message(void *userdata,
 
         return 0;
 }
+
+

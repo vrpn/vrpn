@@ -152,6 +152,13 @@ void main (unsigned argc, char *argv[])
 
 		// Send and receive all messages
 		connection.mainloop();
+
+		// if we're not connected make sure our phantoms are reset
+		if(!connection.connected()){
+			for (i = 0; i < num_trackers; i++) {
+				trackers[i]->reset();
+			}
+		}
 	}
 
 }

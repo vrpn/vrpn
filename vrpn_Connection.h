@@ -94,6 +94,7 @@ class vrpn_Connection
 
 	// Returns 1 if the connection is okay, 0 if not
 	inline int doing_okay (void) { return (status >= 0); }
+	virtual	int	connected (void) const;
 
 	// Returns the name of the service that the connection was first
 	// constructed to talk to, or NULL if it was built as a server.
@@ -230,7 +231,6 @@ class vrpn_Connection
 	virtual	int	pack_sender_description (int which);
 	virtual	int	pack_type_description (int which);
 	virtual	int	pack_udp_description (int portno);
-	virtual	int	connected (void) const;
 	inline	int	outbound_udp_open (void) const
 				{ return endpoint.udp_sock != -1; }
 	virtual	int	marshall_message (char * outbuf, int outbuf_size,

@@ -37,7 +37,7 @@ endif
 
 CC := g++
 ifeq ($(HW_OS),sgi_irix)
-	CC := CC
+	CC := g++
 endif
 ifeq ($(HW_OS),hp700_hpux10)
 	CC := CC +a1
