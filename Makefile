@@ -244,7 +244,7 @@ all:	client server client_g++ server_g++
   endif
 else
   ifeq ($(HW_OS),pc_cygwin)
-all:	client server
+all:	client
   else
 all:	client server
   endif
