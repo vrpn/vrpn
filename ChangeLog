@@ -1,3 +1,10 @@
+2000-08-28  Adam Seeger  <seeger@cs.unc.edu>
+
+        * vrpn_Router.[hC] (vrpn_Router, ~vrpn_Router) : Made it so that
+	the big arrays in this class get dynamically allocated instead
+	of statically allocated so we don't have to use the huge_objects
+	flag with Visual C++
+
 2000-08-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Makefile : Added Brown patches to compile under AIX.

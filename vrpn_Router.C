@@ -34,7 +34,7 @@ vrpn_Router::vrpn_Router (const char * name, vrpn_Connection * c) :
 	for (i = 0; i < vrpn_LEVEL_MAX; i++){
             output_channel_name[i] = new char*[vrpn_OUTPUT_CHANNEL_MAX];
             for (j = 0; j < vrpn_OUTPUT_CHANNEL_MAX; j++){
-                input_channel_name[i][j] = new char[vrpn_NAME_MAX];
+                output_channel_name[i][j] = new char[vrpn_NAME_MAX];
             }
         }
 
@@ -85,7 +85,7 @@ vrpn_Router::~vrpn_Router(void)
 
         for (i = 0; i < vrpn_LEVEL_MAX; i++){
             for (j = 0; j < vrpn_OUTPUT_CHANNEL_MAX; j++){
-                delete [] input_channel_name[i][j];
+                delete [] output_channel_name[i][j];
             }
 	    delete [] output_channel_name[i];
         }
