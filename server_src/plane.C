@@ -16,7 +16,6 @@ Plane::Plane(const gstPlane & p)
   lastDepth = 0;
   dIncrement = 0;
   numRecoveryCycles = 1;
-//  boundingRadius = 1000.0;
   invalidateCumTransf();
 }
 
@@ -30,7 +29,6 @@ Plane::Plane(const gstPlane * p)
   lastDepth = 0;
   dIncrement = 0;
   numRecoveryCycles = 1;
-//  boundingRadius = 1000.0;
   invalidateCumTransf();
 }
 
@@ -43,7 +41,6 @@ Plane::Plane(const Plane *p)
   lastDepth = 0;
   dIncrement = 0;
   numRecoveryCycles = 1;
- // boundingRadius = 1000.0;
   invalidateCumTransf();	
   plane = gstPlane(p->plane);
 }
@@ -58,7 +55,6 @@ Plane::Plane(const Plane &p)
   lastDepth = 0;
   dIncrement = 0;
   numRecoveryCycles = 1;
-//  boundingRadius = 1000.0;
   invalidateCumTransf();
 }
 
@@ -66,7 +62,6 @@ Plane::Plane(const Plane &p)
 Plane::Plane(double a,double b, double c, double d) 
 {  gstVector vec = gstVector(a,b,c);
   plane = gstPlane(vec,d);
- // boundingRadius = 1000.0;
   invalidateCumTransf();
   inEffect= FALSE;
   isNewPlane = FALSE;
@@ -146,13 +141,6 @@ gstBoolean Plane::collisionDetect(gstPHANToM *PHANToM)
 
 		return inContact;
 	}
-
-
-	//get the start and end position of the line segment against
-	//which the collision will be checked
-/*	PHANToM->getLastSCP_WC(lastSCP);
-	lastSCP = fromWorld(lastSCP);
-*/
 	
 	PHANToM->getPosition_WC(phantomPos);
 	phantomPos= fromWorld(phantomPos);
@@ -174,8 +162,7 @@ gstBoolean Plane::collisionDetect(gstPHANToM *PHANToM)
 
 	    // START OF RECOVERY IMPLEMENTATION
 	    if (isNewPlane) {	// set up stuff for recovery
-		isNewPlane = FALSE;
-		//if (depth >= lastDepth) {
+		    isNewPlane = FALSE;
 		    isInRecovery = TRUE;
 		    recoveryPlaneCount = 0;
 		    originalPlane = plane;
@@ -183,19 +170,16 @@ gstBoolean Plane::collisionDetect(gstPHANToM *PHANToM)
 		    // calculate a new value for d such that the depth below 
 		    // the surface is the same as the last depth
 		    d_new = depth + d_goal;
-		    if (lastDepth > 0)
+		    if (lastDepth > 0) {
 			d_new -= lastDepth;
+		    }
 		    // set first value for plane
 		    plane = gstPlane(originalPlane.a(),originalPlane.b(),
 			originalPlane.c(), d_new);
 		    if (numRecoveryCycles < 1) {
-			//printf("Error: invalid recovery time.\n");
 			numRecoveryCycles = 1;
 		    }
 		    dIncrement = (d_goal - d_new)/(float)numRecoveryCycles;
-		//}
-		//else
-		//    isInRecovery = FALSE;
 	    }
 
 	    if (isInRecovery) {	// move the recovery along one more step
@@ -204,9 +188,10 @@ gstBoolean Plane::collisionDetect(gstPHANToM *PHANToM)
 		    isInRecovery = FALSE;
 		    plane = originalPlane;
 		}
-		else
+		else {
 		    plane = gstPlane(plane.a(),plane.b(),plane.c(),
 			plane.d() + dIncrement);
+		}
 	    }
 	    lastDepth = -(phantomPos[0]*plane.a() + phantomPos[1]*plane.b() +
 		phantomPos[2]*plane.c() + plane.d());

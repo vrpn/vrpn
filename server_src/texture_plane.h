@@ -93,8 +93,6 @@ public:
 	// gstPHANToM::getCollisionInfo() and gstPHANToM::collisionAdded().
 	virtual gstBoolean	collisionDetect(gstPHANToM *PHANToM) ;
 
-	virtual void	doRecovery(double depth);
-	
 	// Used by system or for creating sub-classes only.
 	// Returns TRUE if pt is inside of this object.
 	//virtual int	checkIfPointIsInside_WC(const gstPoint &pt) = 0;

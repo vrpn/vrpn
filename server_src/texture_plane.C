@@ -481,11 +481,6 @@ gstBoolean TexturePlane::collisionDetect(gstPHANToM *PHANToM)
 
 	phantomPos = fromWorld(phantomPos);
 
-	// recovery doesn't work with the new plane
-	// implementation because the plane is a constant
-	// (transformation is changed instead)
-	//doRecovery(depth);
-
 	//project the current phantomPosition onto the plane to get the SCP
 	
 	// if we don't have the constant plane assumed by texture computing
@@ -800,47 +795,4 @@ void TexturePlane::getTextureShape(int nsamples, float *surface)
 			radius += incr;
 		}
 	}
-}
-
-
-// this function should not be used in this implementation and
-// it will be obsolete anyway when we store the whole surface locally
-void TexturePlane::doRecovery(double depth) {
-    double d_new, d_goal;
-
-    if (isNewPlane) {   // set up stuff for recovery
-	isNewPlane = FALSE;
-        //if (depth >= lastDepth) {
-        isInRecovery = TRUE;
-        recoveryPlaneCount = 0;
-        originalPlane = plane;
-        d_goal = plane.d();
-        // calculate a new value for d such that the depth below
-        // the surface is the same as the last depth
-        d_new = depth + d_goal;
-        if (lastDepth > 0)
-            d_new -= lastDepth;
-        // set first value for plane
-        plane = gstPlane(originalPlane.a(),originalPlane.b(),
-            originalPlane.c(), d_new);
-        if (numRecoveryCycles < 1) {
-            //printf("Error: invalid recovery time.\n");
-            numRecoveryCycles = 1;
-        }
-        dIncrement = (d_goal - d_new)/(float)numRecoveryCycles;
-        // }
-        //else
-        //    isInRecovery = FALSE;
-    }
-
-    if (isInRecovery) { // move the recovery along one more step
-        recoveryPlaneCount++;
-        if (recoveryPlaneCount == numRecoveryCycles) {
-            isInRecovery = FALSE;
-            plane = originalPlane;
-        }
-        else
-            plane = gstPlane(plane.a(),plane.b(),plane.c(),
-                plane.d() + dIncrement);
-    }
 }

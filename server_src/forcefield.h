@@ -5,27 +5,28 @@
 //#include "gstEffect.h"
 #include <math.h>
 
-// force field effect for PHANToM
+/// force field effect for PHANToM
 
 class  ForceFieldEffect:public gstEffect 
-
 {
   public:
 
-	// Constructor.
-	ForceFieldEffect():gstEffect(){}
+	/// Constructor.
+	ForceFieldEffect():gstEffect() {}
 
-	// Destructor.
+	/// Destructor.
 	~ForceFieldEffect() {}
 
+	/// Sets the member variables to the specified values
 	void setForce(float ori[3], float f[3], float jm[3][3],
 		float r) {
 	    int i,j;
-	    for (i=0; i < 3; i++){
+	    for (i=0; i < 3; i++) {
 		origin[i] = ori[i];
 		force[i] = f[i];
-		for (j=0; j < 3; j++)
+		for (j=0; j < 3; j++) {
 		    jacobian[i][j] = jm[i][j];
+		}
 	    }
 	    radius = r;
 	}
@@ -35,19 +36,22 @@ class  ForceFieldEffect:public gstEffect
         // make sure to reset any state, such as past PHANToM position.
     	// Otherwise, the next call to calcEffectForce could 
 	// generate unexpectedly large forces.
+	/// Start the application of forces based on the field.
 	virtual gstBoolean start() { 
-		if (!active) printf("starting force\n");
-		active = TRUE; time = 0.0; return TRUE;}
+	    if (!active) { printf("starting ForceFieldEffect\n"); }
+	    active = TRUE; time = 0.0; return TRUE;
+	}
 
 	// FOR_GHOST_EXTENSION:
-	// Stop the effect.
+	/// Stop the application of force based on the field.
 	virtual void stop() { 
-		if (active) printf("stopping force\n");
-		active = FALSE;}
+	    if (active) { printf("stopping ForceFieldEffect\n"); }
+	    active = FALSE;
+	}
 
 	// FOR_GHOST_EXTENSION:
-	// Calculate the force.  Force is returned in parent 
-	// reference frame of phantom. When subclassing, the first 
+	/// Calculate the force in parent reference frame of phantom.
+	// When subclassing, the first 
 	// parameter should be cast to gstPHANToM to retrieve 
 	// any information about the state of the PHANToM that 
 	// is needed to calculate the forces.  deltaT should 
@@ -59,15 +63,12 @@ class  ForceFieldEffect:public gstEffect
 	//			It will cause an infinite recursion.
 	virtual gstVector	calcEffectForce(void *phantom);
 
-
   protected:
 
-	gstPoint origin;
-	gstVector force;
-	double radius;
-	double jacobian[3][3];
+	gstPoint origin;	//< Origin of the force field
+	gstVector force;	//< Constant force to add to position-dependent forces
+	double radius;		//< Distance from origin at which the field drops to zero
+	double jacobian[3][3];	//< Describes increase in force away from origin in different directions
 };
-
-
 
 #endif

@@ -163,17 +163,36 @@ void main (int argc, char * argv [])
 	printf("You should see tracker2 positions remaining at 1\n");
 	while ( 1 ) {
 
-		// Let the servers, clients and connection do their things
-		sana->mainloop();
-		stkr1->mainloop();
-		stkr2->mainloop();
-		rana->mainloop();
-		rtkr1->mainloop();
-		rtkr2->mainloop();
-		connection->mainloop();
+	    // Make sure that we are getting analog values
+	    {	static	struct	timeval	last_report;
+		static	int	first = 1;
+		struct timeval now;
 
-		// Sleep for 1ms each iteration so we don't eat the CPU
-		vrpn_SleepMsecs(1);
+		if (first) {
+		    gettimeofday(&last_report, NULL);
+		    first = 0;
+		}
+		gettimeofday(&now, NULL);
+		if (now.tv_sec - last_report.tv_sec > 1) {
+		    if (!getting_analog_values) {
+			cerr << "Error - not getting analog values!" << endl;
+		    }
+		    gettimeofday(&last_report, NULL);
+		    getting_analog_values = 0; // Make sure we get more next time
+		}
+	    }
+
+	    // Let the servers, clients and connection do their things
+	    sana->report(); sana->mainloop();
+	    stkr1->mainloop();
+	    stkr2->mainloop();
+	    rana->mainloop();
+	    rtkr1->mainloop();
+	    rtkr2->mainloop();
+	    connection->mainloop();
+
+	    // Sleep for 1ms each iteration so we don't eat the CPU
+	    vrpn_SleepMsecs(1);
 	}
 
 }   /* main */

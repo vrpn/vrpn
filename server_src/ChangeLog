@@ -1,3 +1,16 @@
+2001-06-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* constraint.h : Massive cleanup
+	* forcefield.C : Massive cleanup
+	* forcefield.h : Massive cleanup
+	* phan_server.dsp : Massive cleanup
+	* plane.C : Massive cleanup
+	* test_analogfly.C : Massive cleanup
+	* texture_plane.C : Massive cleanup
+	* texture_plane.h : Massive cleanup
+	* vrpn_Phantom.C : Massive cleanup
+	* vrpn_Phantom.h : Massive cleanup
+
 2001-06-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.C : Added code to drive the buttons on a PC mouse treated as

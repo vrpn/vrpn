@@ -801,14 +801,14 @@ int vrpn_Phantom::handle_forcefield_change_message(void *userdata,
 	  me->ff_force, me->ff_jacobian, &(me->ff_radius));
 
   for (i=0;i<3;i++){
-    me->ff_origin[i] *= (1000); // convert from m->mm
+    me->ff_origin[i] *= (1000); // convert from meters->mm
     for (j=0;j<3;j++){
       me->ff_jacobian[i][j] *= (0.001f); // convert from 
 					// dyne/m to dyne/mm
     }
   }
 
-  me->ff_radius *= (1000); // convert m to mm
+  me->ff_radius *= (1000); // convert meters to mm
   me->forceField->setForce(me->ff_origin, me->ff_force, 
 	me->ff_jacobian, me->ff_radius);
   if (!me->forceField->isActive()){

@@ -35,10 +35,8 @@ class vrpn_Phantom: public vrpn_ForceDevice,public vrpn_Tracker,
 protected:
 	float update_rate;
 	gstScene *scene;
-	gstSeparator *rootH; /* This is the haptics root separator that is 
-					attached to the scene. */
-	gstSeparator *hapticScene; /* This is the next separator that contains 
-					the entire scene graph. */
+	gstSeparator *rootH;	    //< The haptics root separator attached to the scene.
+	gstSeparator *hapticScene;  //< The next separator containing the entire scene graph.
 	gstPHANToM *phantom;
 	struct timeval timestamp;
 	DynamicPlane *planes[MAXPLANE];
@@ -46,8 +44,8 @@ protected:
 				       
 	ConstraintEffect *pointConstraint; // this is a force appended to
 					// other forces exerted by phantom
-	ForceFieldEffect *forceField; // general purpose force field 
-					// approximation
+					// (Superceded by ForceFieldEffect)
+	ForceFieldEffect *forceField; //< general purpose force field approximation
 
 	virtual void get_report(void);
 	

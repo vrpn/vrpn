@@ -2,10 +2,9 @@
 #define CONSTRAINT_H
 
 #include "ghost.h"
-//#include <gstEffect.h>
 #include <math.h>
 
-// Constraint effect for PHANToM
+/// Constraint effect for PHANToM (superceded by ForceField)
 
 class  ConstraintEffect:public gstEffect 
 
