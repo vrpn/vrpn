@@ -930,9 +930,29 @@ vrpn_Tracker_Remote::vrpn_Tracker_Remote (const char * name, vrpn_Connection *cn
 
 vrpn_Tracker_Remote::~vrpn_Tracker_Remote()
 {
-	// Delete all of the callback handlers that other code had registered
-	// with this object. This will free up the memory taken by the lists
-	//XXX do this once there is only one list, not one/sensor and one for all
+  // Delete all of the callback handlers that other code had registered
+  // with this object. This will free up the memory taken by the lists
+  int i;
+  for (i = 0; i < vrpn_TRACKER_MAX_SENSOR_LIST; i++) {
+    while (change_list[i] != NULL) {
+      unregister_change_handler(change_list[i]->userdata, change_list[i]->handler);
+    }
+    while (velchange_list[i] != NULL) {
+      unregister_change_handler(velchange_list[i]->userdata, velchange_list[i]->handler);
+    }
+    while (accchange_list[i] != NULL) {
+      unregister_change_handler(accchange_list[i]->userdata, accchange_list[i]->handler);
+    }
+    while (unit2sensorchange_list[i] != NULL) {
+      unregister_change_handler(unit2sensorchange_list[i]->userdata, unit2sensorchange_list[i]->handler);
+    }
+  }
+  while (tracker2roomchange_list != NULL) {
+    unregister_change_handler(tracker2roomchange_list->userdata, tracker2roomchange_list->handler);
+  }
+  while (workspacechange_list != NULL) {
+    unregister_change_handler(workspacechange_list->userdata, workspacechange_list->handler);
+  }
 }
 
 int vrpn_Tracker_Remote::request_t2r_xform(void)

@@ -1,3 +1,9 @@
+2003-09-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker.C : Cleans up memory in the destructor to
+		prevent it leaking when remote tracker objects
+		are created and destroyed.
+
 2003-09-26  Sebastien MARAUX  <maraux@ondim.fr>
 
 	* vrpn_ForceDevice.C : Added custom effect to ForceDevice,
