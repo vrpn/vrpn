@@ -74,6 +74,11 @@ vrpn_Tracker_Fastrak::vrpn_Tracker_Fastrak(const char *name, vrpn_Connection *c,
 	    is900_buttons[i] = NULL;
 	    is900_analogs[i] = NULL;
 	}
+
+	// Let me assume I am an Intersense till proven false,
+	// by an instance of a fastrak-only command like "FTStylus"
+	// in the initialization strings.
+	really_fastrak = false;
 }
 
 vrpn_Tracker_Fastrak::~vrpn_Tracker_Fastrak()
@@ -108,15 +113,21 @@ int vrpn_Tracker_Fastrak::set_sensor_output_format(int sensor)
     const char    *analogstring;
 
     // Set output format for the station to be position and quaternion,
-    // and any of the extended IS900 states (timestamp, button, analog).
+    // and any of the extended Fastrak (stylus with button) or
+    // IS900 states (timestamp, button, analog).
     // This command is a capitol 'o' followed by the number of the
     // station, then comma-separated values (2 for xyz, 11 for quat, 21 for
-    // timestamp, 22 for buttons, 23 for joystick, 0 for space) that
+    // timestamp, 22 for buttons, 16 for Fastrak stylus button,
+    // 23 for joystick, 0 for space) that
     // indicate data sets, followed by character 13 (octal 15).
     // Note that the sensor number has to be bumped to map to station number.
 
     timestring = do_is900_timestamps ? ",21" : "";
-    buttonstring = is900_buttons[sensor] ? ",22" : "";
+    if (really_fastrak) {
+      buttonstring = is900_buttons[sensor] ? ",16" : ""; 
+    } else {
+      buttonstring = is900_buttons[sensor] ? ",22" : "";
+    }
     analogstring = is900_analogs[sensor] ? ",23" : "";
     sprintf(outstring, "O%d,2,11%s%s%s,0\015", sensor+1, timestring,
 	buttonstring, analogstring);
@@ -647,19 +658,25 @@ int vrpn_Tracker_Fastrak::get_report(void)
    }
 
    //--------------------------------------------------------------------
-   // If this sensor has an IS900 button on it, decode the button values
-   // into the button device and mainloop the button device so that it
-   // will report any changes.  Each button is stored in one bit of the
-   // byte, with the lowest-numbered button in the lowest bit.
+   // If this sensor has an IS900 button or fastrak button on it, decode
+   // the button values into the button device and mainloop the button
+   // device so that it will report any changes.  Each button is stored
+   // in one bit of the byte, with the lowest-numbered button in the
+   // lowest bit.
    //--------------------------------------------------------------------
 
    if (is900_buttons[d_sensor]) {
- 
-       for (i = 0; i < is900_buttons[d_sensor]->number_of_buttons(); i++) {
-	   int value = ( (*bufptr) >> i) & 1;
-	   is900_buttons[d_sensor]->set_button(i, value);
+       // the following section was modified by Debug to add support for Fastrak stylus button
+       int value;
+       if (really_fastrak) {
+	  value=*(++bufptr)-'0'; // only one button, status in ASCII, skip over space
+	  is900_buttons[d_sensor]->set_button(0, value);
+       } else {// potentially multiple buttons, values encoded in binary as a bit field
+	  for (i = 0; i < is900_buttons[d_sensor]->number_of_buttons(); i++) {
+	    value = ( (*bufptr) >> i) & 1;
+	    is900_buttons[d_sensor]->set_button(i, value);
+	  }
        }
-
        is900_buttons[d_sensor]->mainloop();
 
        bufptr++;
@@ -730,6 +747,32 @@ int vrpn_Tracker_Fastrak::add_is900_button(const char *button_device_name, int s
     // Send a new station-format command to the tracker so it will report the button states.
     return set_sensor_output_format(sensor);
 }
+
+// this routine is called when an "FTStylus" button is encountered by the tracker init string parser
+// it sets up the VRPN button device & enables the switch "really_fastrak" that affects subsequent interpretation
+// of button readings - Debug
+int vrpn_Tracker_Fastrak::add_fastrak_stylus_button(const char *button_device_name, int sensor, int numbuttons)
+{
+    // Make sure this is a valid sensor
+    if ( (sensor < 0) || (sensor >= num_stations) ) {
+	return -1;
+    }
+
+    // Add a new button device and set the pointer to point at it.
+    is900_buttons[sensor] = new vrpn_Button_Server(button_device_name, d_connection, numbuttons);
+    if (is900_buttons[sensor] == NULL) {
+	FT_ERROR("Cannot open button device");
+	return -1;
+    }
+
+	// Debug's HACK here.  Make sure it knows that it is a plain vanilla fastrak, so it will
+	// get the button output parameters right.
+	really_fastrak=true;
+
+    // Send a new station-format command to the tracker so it will report the button states.
+    return set_sensor_output_format(sensor);
+}
+
 
 /** This function indicates to the driver that there is an InterSense IS-900-
     compatible joystick device attached to the port (a Wand).  The driver

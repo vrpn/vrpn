@@ -62,28 +62,24 @@ void vrpn_Joystick::report(struct timeval current_time)
 }
 
 void vrpn_Joystick::mainloop(void) {
-	struct timeval current_time;
-	gettimeofday(&current_time, NULL);
+  struct timeval current_time;
+  gettimeofday(&current_time, NULL);
 
-	// Since we are a server, call the generic server mainloop()
+  // Since we are a server, call the generic server mainloop()
   server_mainloop();
     
   switch (status) {
 
-  case vrpn_ANALOG_REPORT_READY:
-
-	// Send the report
-	report(current_time);
-
-	// Ready for another report
-	status = vrpn_ANALOG_SYNCING;
-    break;
-
   case vrpn_ANALOG_SYNCING:
   case vrpn_ANALOG_PARTIAL:
     {	
-	// See if we have a report ready.
-	get_report();
+	// As long as we keep getting reports, send them.
+        // XXX Ideally, this time would be the time of the first
+        // character read from the serial port for this report.
+	while (get_report()) {
+	  gettimeofday(&current_time, NULL);
+	  report(current_time);
+	}
 
 	// If it has been longer than the requested report interval
 	// since we sent a report, send a complete report
@@ -154,22 +150,22 @@ joystick, should be 16, trying again\n", bytesread);
 // PARTIAL means that we have gotten the first character and are
 // looking for the second character (which will have the high bit
 // set).
-void vrpn_Joystick::get_report() {
+int vrpn_Joystick::get_report() {
   int bytesread = 0;
   
   if (status == vrpn_ANALOG_SYNCING) {
     bytesread =vrpn_read_available_characters(serial_fd, serialbuf, 1);
 	if (bytesread == -1) {
 		perror("vrpn_Joystick::get_report() 1st read failed");
-		return;
+		return 0;
 	}
     if (bytesread == 1) {
-		if ((serialbuf[0] >> 7) == 0) {
-			status = vrpn_ANALOG_PARTIAL;
-		} else {
-		    fprintf(stderr,"vrpn_Joystick::get_report(): Bad 1st byte (re-syncing)\n");
-			return;
-		}
+	if ((serialbuf[0] >> 7) == 0) {
+	    status = vrpn_ANALOG_PARTIAL;
+	} else {
+	    fprintf(stderr,"vrpn_Joystick::get_report(): Bad 1st byte (re-syncing)\n");
+		return 0;
+	}
     }
   }
 
@@ -177,11 +173,11 @@ void vrpn_Joystick::get_report() {
   // looking for the second character.
   bytesread = vrpn_read_available_characters(serial_fd, serialbuf+1, 1);
   if (bytesread == -1) {
-		perror("vrpn_Joystick::get_report() 2nd read failed");
-		return;
+	perror("vrpn_Joystick::get_report() 2nd read failed");
+	return 0;
   }
   if (bytesread  == 0) {
-	return;
+	return 0;
   }
   // If the high bit is not set, then what we have here is a
   // first character, not a second.  Go ahead and put it into
@@ -192,11 +188,12 @@ void vrpn_Joystick::get_report() {
   if ( (serialbuf[1] >> 7) == 0 ) {	// Should have high bit set
 	  serialbuf[0] = serialbuf[1];
 	  status = vrpn_ANALOG_PARTIAL;
-	  return;
+	  return 0;
   }
 
   parse(0);	// Parse starting at the beginning of the serialbuf.
-  status = vrpn_ANALOG_REPORT_READY;
+  status = vrpn_ANALOG_SYNCING;
+  return 1;	// Indicates that we have gotten a report
 }
 
 /****************************************************************************/

@@ -1,3 +1,12 @@
+2002-12-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * vrpn_Tracker_Fastrak.h : Added Deepak's code to handle the fastrak
+                with a stylus that has a button.
+        * vrpn_Tracker_Fastrak.C : Same.
+        * vrpn_UNC_Joystick.h : Changed return type to say if got report.
+        * vrpn_UNC_Joystick.C : Changed server to read multiple reports from
+                the joystick if they are available.
+
 2002-12-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_TempImager.h : Removed duplicate definition.  Note to self,

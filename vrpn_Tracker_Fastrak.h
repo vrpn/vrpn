@@ -53,6 +53,9 @@ class vrpn_Tracker_Fastrak: public vrpn_Tracker_Serial {
 
   ~vrpn_Tracker_Fastrak();
 
+  // is the version modified (debug@cs.unc.edu, 5/20/01) to handle Pol.Fastrak stylus buttons
+  add_fastrak_stylus_button(const char *button_device_name, int sensor, int numbuttons = 1);
+
   /// Add an IS900 button device to one of the sensors
   /// This allows configuration of an InterSense IS-900
   int	add_is900_button(const char *button_device_name, int sensor, int numbuttons = 5);
@@ -81,6 +84,9 @@ class vrpn_Tracker_Fastrak: public vrpn_Tracker_Serial {
   int	do_filter;		//< Should we turn on filtering for pos/orient?
   int	num_stations;		//< How many stations maximum on this Fastrak?
   char	add_reset_cmd[2048];	//< Additional reset commands to be sent
+
+  // another modification by Debug, 5/23/01
+  bool really_fastrak;  // to distinguish it from intersense when using buttons!!!
 
   // The following members provide support for the InterSense IS-900 features
   // that are beyond the standard Fastrak features.

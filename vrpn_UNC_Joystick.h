@@ -16,7 +16,7 @@ public:
   void mainloop(void);
 
 protected:
-  void get_report();
+  int get_report();
   void report(struct timeval current_time);
   void reset();
   void parse(int, int reset_rest_pos = 0);
