@@ -14,38 +14,40 @@ public:
 
 	~vrpn_Magellan () {};
 
-	// Called once through each main loop iteration to handle
-	// updates.
+	/// Called once through each main loop iteration to handle updates.
 	virtual void mainloop ();
 
   protected:
-	int _status;
-	int _numbuttons;	// How many buttons to open
-	int _numchannels;	// How many analog channels to open
+	int _status;			///< Used by mainloop() and get_report()
+	int _numbuttons;		///< How many buttons to open
+	int _numchannels;		///< How many analog channels to open
 
-	int _expected_chars;	// How many characters to expect in the report
-	unsigned char _buffer[512];	// Buffer of characters in report
-	int _bufcount;		// How many characters we have so far
+	int _expected_chars;		///< How many characters to expect in the report
+	unsigned char _buffer[512];	///< Buffer of characters in report
+	int _bufcount;			///< How many characters we have so far
 
-	int _null_radius;	// The range over which no motion should be reported
+	int _null_radius;		///< The range over which no motion should be reported
 
-	struct timeval timestamp;	// Time of the last report from the device
+	struct timeval timestamp;	///< Time of the last report from the device
 
-	virtual	void clear_values(void);	// Set all buttons, analogs and encoders back to 0
-	virtual int reset(void);		// Set device back to starting config
-	virtual	void get_report(void);		// Try to read a report from the device
+	virtual	void clear_values(void);///< Set all buttons, analogs and encoders back to 0
+	virtual int reset(void);	///< Set device back to starting config
 
-	// send report iff changed
+	/// Try to read a report from the device.  Returns 1 if complete report received,
+	/// 0 otherwise.  Sets _status to match current status.
+	virtual	int get_report(void);
+
+	/// send report iff changed
         virtual void report_changes
                    (vrpn_uint32 class_of_service
                     = vrpn_CONNECTION_LOW_LATENCY);
-        // send report whether or not changed
+        /// send report whether or not changed
         virtual void report
                    (vrpn_uint32 class_of_service
                     = vrpn_CONNECTION_LOW_LATENCY);
 
-          // NOTE:  class_of_service is only applied to vrpn_Analog
-          //  values, not vrpn_Button, which are always vrpn_RELIABLE
+        // NOTE:  class_of_service is only applied to vrpn_Analog
+        //  values, not vrpn_Button, which are always vrpn_RELIABLE
 };
 
 #endif

@@ -48,11 +48,11 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 // This routine writes out the characters slowly, so as not to
 // overburden the poor Magellan, which seems to choke when a
 // bunch of characters are all sent at once.
-static	int	vrpn_write_slowly(int fd, unsigned char *buffer, int len)
+static	int	vrpn_write_slowly(int fd, unsigned char *buffer, int len, int MsecWait)
 {	int	i;
 
 	for (i = 0; i < len; i++) {
-		vrpn_SleepMsecs(1);
+		vrpn_SleepMsecs(MsecWait);
 		if (vrpn_write_characters(fd, &buffer[i], 1) != 1) {
 			return -1;
 		}
@@ -121,11 +121,10 @@ int	vrpn_Magellan::reset(void)
 	//-----------------------------------------------------------------------
 	// Send the list of commands to the device to cause it to reset and beep.
 	// Read back the response and make sure it matches what we expect.
-	// Give it a reasonable amount of time to finish (2 seconds), then timeout
+	// Give it a reasonable amount of time to finish, then timeout
 	vrpn_flush_input_buffer(serial_fd);
-	vrpn_write_slowly(serial_fd, (unsigned char *)reset_str, strlen(reset_str));
-	vrpn_SleepMsecs(200); //Give it time to respond
-	timeout.tv_sec = 4;
+	vrpn_write_slowly(serial_fd, (unsigned char *)reset_str, strlen(reset_str), 5);
+	timeout.tv_sec = 1;
 	timeout.tv_usec = 0;
 	ret = vrpn_read_available_characters(serial_fd, inbuf, strlen(expect_back), &timeout);
 	inbuf[strlen(expect_back)] = 0;		// Make sure string is NULL-terminated
@@ -168,8 +167,11 @@ int	vrpn_Magellan::reset(void)
 // depends on what the first character of the report is.  We switch based
 // on the first character of the report to see how many more to expect and
 // to see how to handle the report.
+//   Returns 1 if there is a complete report found, 0 otherwise.  This is
+// so that the calling routine can know to check again at the end of complete
+// reports to see if there is more than one report buffered up.
    
-void vrpn_Magellan::get_report(void)
+int vrpn_Magellan::get_report(void)
 {
    int ret;		// Return value from function call to be checked
    int i;		// Loop counter
@@ -186,7 +188,7 @@ void vrpn_Magellan::get_report(void)
    if (status == STATUS_SYNCING) {
       // Try to get a character.  If none, just return.
       if (vrpn_read_available_characters(serial_fd, _buffer, 1) != 1) {
-      	return;
+      	return 0;
       }
 
       switch (_buffer[0]) {
@@ -212,7 +214,7 @@ void vrpn_Magellan::get_report(void)
 	  default:
 	      fprintf(stderr,"vrpn_Magellan: Unknown command (%c), resetting\n", _buffer[0]);
 	      status = STATUS_RESETTING;
-	      return;
+	      return 0;
       }
 
 
@@ -241,14 +243,14 @@ void vrpn_Magellan::get_report(void)
 	fprintf(stderr,"vrpn_Magellan: Error reading\n");
 	//XXX Put out a VRPN text message here, and at other error locations
 	status = STATUS_RESETTING;
-	return;
+	return 0;
    }
    _bufcount += ret;
 #ifdef	VERBOSE
    if (ret != 0) printf("... got %d characters (%d total)\n",ret, _bufcount);
 #endif
    if (_bufcount < _expected_chars) {	// Not done -- go back for more
-	return;
+	return 0;
    }
 
    //--------------------------------------------------------------------
@@ -262,7 +264,7 @@ void vrpn_Magellan::get_report(void)
    if (_buffer[_expected_chars-1] != '\r') {
 	   status = STATUS_SYNCING;
       	   fprintf(stderr,"vrpn_Magellan: No carriage return in record\n");
-	   return;
+	   return 0;
    }
 
 #ifdef	VERBOSE
@@ -306,7 +308,7 @@ void vrpn_Magellan::get_report(void)
 	 if ( (_buffer[1] & 0x08) != 0) {
 	     fprintf(stderr,"vrpn_Magellan: Was put into mouse mode, resetting\n");
 	     status = STATUS_RESETTING;
-	     return;
+	     return 1;
 	 }
 	 break;
 
@@ -369,7 +371,7 @@ void vrpn_Magellan::get_report(void)
      default:
 	fprintf(stderr,"vrpn_Magellan: Unknown [internal] command (%c), resetting\n", _buffer[0]);
 	status = STATUS_RESETTING;
-	return;
+	return 1;
    }
 
    //--------------------------------------------------------------------
@@ -379,6 +381,8 @@ void vrpn_Magellan::get_report(void)
    report_changes();
    status = STATUS_SYNCING;
    _bufcount = 0;
+
+   return 1;	// We got a full report.
 }
 
 void	vrpn_Magellan::report_changes(vrpn_uint32 class_of_service)
@@ -413,7 +417,8 @@ void	vrpn_Magellan::mainloop()
 
     case STATUS_SYNCING:
     case STATUS_READING:
-	get_report();
+	// Keep getting reports until all full reports are read.
+	while (get_report()) {};
         break;
 
     default:

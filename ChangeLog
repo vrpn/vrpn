@@ -1,3 +1,13 @@
+2000-09-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Magellan.C (vrpn_write_slowly) : Added parameter for how long
+		wait.
+		(get_report) : Returns 1 if a full report found
+		(mainloop): Retries reading when a full report is found
+			so that the buffer is cleared of all reports
+
+	* vrpn_Router.C : #include string.h to compile on Linux
+
 2000-09-01  Adam Seeger  <seeger@cs.unc.edu>
 
 	* vrpn_Connection.h (check_vrpn_file_cookie) : Now this will work
