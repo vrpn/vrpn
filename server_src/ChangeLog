@@ -1,5 +1,10 @@
 2003-04-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* Makefile : Includes files needed to build Phantom server.
+	* Makefile.phan.sgi_irix.n32.mips4 : No longer needed.
+
+2003-04-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* buzzForceField.C : Included only if VRPN_USE_PHANTOM_SERVER defined.
 	* buzzForceField.h : Included only if VRPN_USE_PHANTOM_SERVER defined.
 	* constraint.C : Included only if VRPN_USE_PHANTOM_SERVER defined.

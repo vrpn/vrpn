@@ -152,10 +152,16 @@ testSharedObject:	$(OBJ_DIR)/testSharedObject
 # $(OBJ_DIR)/client: $(OBJ_DIR)/client.o	
 # 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/client $(OBJ_DIR)/client.o -lvrpn -lsdi 
 
-$(OBJ_DIR)/vrpn_server: $(OBJ_DIR)/vrpn.o  \
-			 $(LIB_DIR)/libvrpnserver.a
-	$(CC) $(LFLAGS) -o $(OBJ_DIR)/vrpn_server \
-		$(OBJ_DIR)/vrpn.o \
+$(OBJ_DIR)/vrpn_server: $(OBJ_DIR)/vrpn.o $(LIB_DIR)/libvrpnserver.a \
+		$(OBJ_DIR)/buzzForceField.o $(OBJ_DIR)/constraint.o \
+		$(OBJ_DIR)/forcefield.o $(OBJ_DIR)/plane.o \
+		$(OBJ_DIR)/texture_plane.o $(OBJ_DIR)/trimesh.o \
+		$(OBJ_DIR)/vrpn_Phantom.o
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/vrpn_server $(OBJ_DIR)/vrpn.o \
+		$(OBJ_DIR)/buzzForceField.o $(OBJ_DIR)/constraint.o \
+		$(OBJ_DIR)/forcefield.o $(OBJ_DIR)/plane.o \
+		$(OBJ_DIR)/texture_plane.o $(OBJ_DIR)/trimesh.o \
+		$(OBJ_DIR)/vrpn_Phantom.o \
 		-lvrpnserver $(GL) -lquat $(SYSLIBS) -lm
 
 $(OBJ_DIR)/test_vrpn: $(OBJ_DIR)/test_vrpn.o  \
