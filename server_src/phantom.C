@@ -105,6 +105,8 @@ void main (unsigned argc, char *argv[])
 		//open the phantom
 		if(verbose) printf(
 			"Opening vrpn_phantom: %s on port %d with update rate %f\n", s2,i1,f1);
+		printf("Initializing phantom, you have 10 seconds to establish reset position\n");
+		vrpn_SleepMsecs(10000);
 		if ( (phantoms[num_phantoms] =
 		     new vrpn_Phantom(s2, &connection, f1)) == NULL){
 		  fprintf(stderr,"Can't create new vrpn_phantom\n");

@@ -516,10 +516,13 @@ void vrpn_Phantom::reset(){
 	for (int i = 0; i < MAXPLANE; i++)
 	   if (planes[i]) planes[i]->setActive(FALSE);
 	phantom->stopEffect();
+	/*
+        XXX - this causes program to crash in ghost 3.0 code for some reason
 	if (errorCode != FD_OK) {
 		errorCode = FD_OK;
 		resetPHANToM();
 	}
+	*/
 }
 
 int vrpn_Phantom::register_change_handler(void *userdata,

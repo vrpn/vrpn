@@ -67,7 +67,8 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MDd /W3 /GX /Od /I "quat" /I "../" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR"C:/temp/seeger/pc_win32/Debug/" /Fp"C:/temp/seeger/pc_win32/Debug/phan_server.pch" /YX /Fo"C:/temp/seeger/pc_win32/Debug/" /Fd"C:/temp/seeger/pc_win32/Debug/" /FD /c /Tp
+# ADD CPP /nologo /MDd /W3 /GX /Zi /Od /I "..\..\quat" /I "../" /I "C:\Program Files\SensAble\GHOST\v3.0\include" /I "C:\Program Files\SensAble\GHOST\v3.0\external\stl" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"C:/temp/seeger/pc_win32/Debug/phan_server.pch" /YX /Fo"C:/temp/seeger/pc_win32/Debug/" /Fd"C:/temp/seeger/pc_win32/Debug/" /FD /c /Tp
+# SUBTRACT CPP /Fr
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -75,7 +76,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo /o"pc_win32/Debug/phan_server.bsc"
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 vrpn.lib ghost30.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib winmm.lib quat/pc_win32/Debug/quat.lib /nologo /pdb:none /debug /machine:I386 /nodefaultlib:"libcmtd.lib" /out:"pc_win32/Debug/phan_server.exe" /libpath:"../../sdi/pc_win32" /libpath:"../../ghostLib" /libpath:"../../vrpn/pc_win32/debug" /libpath:"quat/Debug" /libpath:"../../../ghostLib"
+# ADD LINK32 vrpn.lib quat.lib ghost30.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib winmm.lib /nologo /pdb:none /map /debug /machine:I386 /nodefaultlib:"libcmtd.lib" /out:"pc_win32/Debug/phan_server.exe" /libpath:"C:\Program Files\SensAble\GHOST\v3.0\lib" /libpath:"../../ghostLib" /libpath:"../../vrpn/pc_win32/debug" /libpath:"quat/Debug" /libpath:"../../../ghostLib"
 
 !ENDIF 
 
