@@ -98,6 +98,9 @@ Package=<5>
 
 Package=<4>
 {{{
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
 }}}
 
 ###############################################################################
@@ -127,9 +130,6 @@ Package=<4>
 {{{
     Begin Project Dependency
     Project_Dep_Name quat
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name test_radamec_spi
     End Project Dependency
 }}}
 
