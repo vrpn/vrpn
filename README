@@ -1,3 +1,4 @@
+IMPORTANT LEGAL INFORMATION for offsite use is in README.Legal
 Compile using 'gmake'
 Compile for flow using 'gmake flow'
 
@@ -11,7 +12,7 @@ VRPN Readme:
 	The Virtual-Reality Peripheral Network (VRPN) is the PC-at-a-station
 implementation that will drive trackers, buttons and sound for each VR
 station.
-	It's implemented in Linux and Windows NT.  server_src holds the
+	It's implemented in Linux, Irix and Windows NT.  server_src holds the
 server application for the Linux and NT boxes.  The current directory holds
 the library source.
 
@@ -24,10 +25,6 @@ the library source.
 	In all cases, base class is not what you instance.  There are local
 (server-side) derived classes for each device.  There is a remote device that
 is used by the client-side (user application).
-
-Things to do:
-	Get some trackers working!!!!!
-	Fix ttest/t_diags on PC/linux
 
 Problems:
 
