@@ -40,7 +40,9 @@
 #include "vrpn_Serial.h"
 #endif
 
-static const char *tracker_cfg_file_name = "vrpn_Tracker.cfg";
+static const char *default_tracker_cfg_file_name = "vrpn_Tracker.cfg";
+//this is used unless we pass in a path & file name into the vrpn_TRACKER
+//constructor
 
 #define vrpn_ser_tkr_MAX_TIME_INTERVAL       (2000000) // max time between reports (usec)
 
@@ -54,7 +56,8 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 }
 
 
-vrpn_Tracker::vrpn_Tracker (const char * name, vrpn_Connection * c) :
+vrpn_Tracker::vrpn_Tracker (const char * name, vrpn_Connection * c,
+			    const char * tracker_cfg_file_name) :
 vrpn_BaseClass(name, c)
 {
 	FILE	*config_file;
@@ -116,10 +119,21 @@ vrpn_BaseClass(name, c)
   	workspace_min[0] = workspace_min[1] = workspace_min[2] = -0.5;
   	workspace_max[0] = workspace_max[1] = workspace_max[2] = 0.5;
 #endif
-	// replace defaults with values from "vrpn_Tracker.cfg" file
+	// replace defaults with values from tracker config file
 	// if it exists
+	if (tracker_cfg_file_name==NULL) { //the default argument value
+	  tracker_cfg_file_name=default_tracker_cfg_file_name;
+	}
 	if ((config_file = fopen(tracker_cfg_file_name, "r")) == NULL) {
-		// Can't find the config file. Oh well!
+	  // Can't find the config file
+	  // Complain only if we are using the a non-default config file
+	  // (Since most people don't use any config file at all,
+	  // and would be confused to see an error about not being
+	  // able to open the default config file)
+	  if (tracker_cfg_file_name!=default_tracker_cfg_file_name) {
+	      fprintf(stderr, "vrpn_Tracker: Can't find config file %s\n",
+		      tracker_cfg_file_name);
+	    }
 	} else if (read_config_file(config_file, name)) {
 		fprintf(stderr, "vrpn_Tracker: Found config file %s, but cannot read info for %s\n",
 				tracker_cfg_file_name, name);

@@ -45,7 +45,15 @@ const	int vrpn_TRACKER_MAX_SENSOR_LIST = vrpn_TRACKER_MAX_SENSORS + 1;
 
 class vrpn_Tracker : public vrpn_BaseClass {
   public:
-   vrpn_Tracker (const char * name, vrpn_Connection * c = NULL);
+  // vrpn_Tracker.cfg, in the "local" directory, is the default config file
+  // . You can specify a different config file in the constructor. When
+  // you do this, you must also specify a vrpn_Connection. Pass in NULL
+  // if you don't have one. This awkwardness is because C++ requires that
+  //only the rightmost arguements can use the default values, and that the
+  //order of arguements must match the base class :(
+   vrpn_Tracker (const char * name, vrpn_Connection * c = NULL,
+		 const char * tracker_cfg_file_name = NULL);
+
    virtual ~vrpn_Tracker (void);
 
    int read_config_file (FILE * config_file, const char * tracker_name);
