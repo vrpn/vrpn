@@ -1,3 +1,7 @@
+2003-06-20  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Configure.h:  adds a (commented-out) option to use Ghost 3.1
+
 2003-06-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Configure.h : Removed syntax error that kept it from compiling.

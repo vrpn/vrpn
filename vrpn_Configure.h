@@ -24,7 +24,18 @@
 // server, using phantom as a common device, and phantom 
 // configuration in .cfg file.
 // PLEASE SPECIFY PATH TO GHOSTLIB IN NEXT SECTION IF YOU USE THIS
-//#define	VRPN_USE_PHANTOM_SERVER
+#define	VRPN_USE_PHANTOM_SERVER
+
+//------------------------
+// Instructs vrpn to use Ghost 3.1 instead of Ghost 3.4.
+// Only used in conjuntion with VRPN_USE_PHANTOM_SERVER.
+// PLEASE SPECIFY PATH TO GHOSTLIB IN NEXT SECTION IF YOU USE THIS
+// (This is expected to be used on systems where Ghost 4.0 is not 
+// available, such as the SGI platform.  If you are using this on
+// a Windows PC with Visual Studio, you will need to alter
+// server_src/vrpn_phantom.dsp to reference the Ghost 3.1 include
+// paths.)
+// #define VRPN_USE_GHOST_31
 
 //-----------------------
 // Instructs VRPN to use the high-performance timer code on
@@ -84,8 +95,10 @@
 
 // Load VRPN Phantom library if we are using phantom server as unified server
 // Load SensAble Technologies GHOST library to run the Phantom
-#ifdef	VRPN_USE_PHANTOM_SERVER
+#ifdef VRPN_USE_PHANTOM_SERVER
+#ifdef _WIN32
 #pragma comment (lib,"C:/Program Files/SensAble/GHOST/v4.0/lib/GHOST40.lib")
+#endif
 #endif
 
 // Load DirectX SDK libraries and tell which version we need if we are using it.
