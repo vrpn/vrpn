@@ -8,7 +8,9 @@
 // error message.  
 //------------------------------------------------------------------
 #ifndef __cplusplus
+#ifndef	VRPN_IGNORE_NO_CPLUSPLUS
 #error Need to compile with a C++ compiler, not a C compiler
+#endif
 #endif
 
 //------------------------------------------------------------------

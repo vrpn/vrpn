@@ -1,3 +1,10 @@
+2004-10-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Types.h : Added a flag to tell the file not to throw an error
+		when compiled with a C compiler rather than a C++ compiler.
+		Useful to programs that want to hide things behind a C
+		interface.
+
 2004-10-01  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_DirectXFFJoystick.C : Fixed a crash bug when you didn't have
