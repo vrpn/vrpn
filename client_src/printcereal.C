@@ -108,7 +108,7 @@ void handle_cntl_c (int) {
 
 
   if (btn) delete btn;
-  if (ana) delete btn;
+  if (ana) delete ana;
   if (dial) delete dial;
   if (c)
     delete c;

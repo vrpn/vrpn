@@ -1,0 +1,4 @@
+2000-08-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* printcereal.C (handle_control_C) : fixed deletion bug
+
