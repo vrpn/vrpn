@@ -16,6 +16,8 @@ vrpn_Tracker_Remote *tkr;
 vrpn_Connection * c;
 vrpn_File_Controller * fc;
 
+int   print_for_tracker = 1;	// Print tracker reports?
+
 /*****************************************************************************
  *
    Callback handlers
@@ -26,6 +28,7 @@ void	handle_pos (void *, const vrpn_TRACKERCB t)
 {
 	static	int	count = 0;
 
+	if (!print_for_tracker) { return; };
 	fprintf(stderr, "%ld.", t.sensor);
 	if ((++count % 20) == 0) {
 		fprintf(stderr, "\n");
@@ -41,6 +44,7 @@ void	handle_vel (void *, const vrpn_TRACKERVELCB t)
 {
 	//static	int	count = 0;
 
+	if (!print_for_tracker) { return; };
 	fprintf(stderr, "%ld/", t.sensor);
 }
 
@@ -48,6 +52,7 @@ void	handle_acc (void *, const vrpn_TRACKERACCCB t)
 {
 	//static	int	count = 0;
 
+	if (!print_for_tracker) { return; };
 	fprintf(stderr, "%ld~", t.sensor);
 }
 
@@ -203,6 +208,7 @@ int main (int argc, char * argv [])
   if (argc < 2) {
     fprintf(stderr, "Usage:  %s [-ll logfile mode] [-rl logfile mode]\n"
                     "           [-filterpos] station_name\n"
+                    "  -notracker:  Don't print tracker reports\n" 
                     "  -ll:  log locally in <logfile>\n" 
                     "  -rl:  log remotely in <logfile>\n" 
                     "  <mode> is one of i, o, io\n" 
@@ -229,6 +235,8 @@ int main (int argc, char * argv [])
       i++;
       if (strchr(argv[i], 'i')) remote_logmode |= vrpn_LOG_INCOMING;
       if (strchr(argv[i], 'o')) remote_logmode |= vrpn_LOG_OUTGOING;
+    } else if (!strcmp(argv[i], "-notracker")) {
+      print_for_tracker = 0;
     } else if (!strcmp(argv[i], "-filterpos")) {
       filter = 1;
     } else
