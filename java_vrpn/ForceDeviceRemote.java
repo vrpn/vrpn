@@ -159,6 +159,8 @@ public class ForceDeviceRemote extends TimerTask
 	public synchronized void setTimerPeriod( long period )
 	{
 		this.cancel( );
+		forceTimer.cancel( );
+		forceTimer = new Timer( );
 		timerPeriod = period;
 		forceTimer.scheduleAtFixedRate( this, 0, timerPeriod );
 	}

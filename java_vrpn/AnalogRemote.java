@@ -58,6 +58,30 @@ public class AnalogRemote extends TimerTask
 	}
 	
 	/**
+	 * Sets the interval between invocations of <code>mainloop()</code>, which checks
+	 * for and delivers messages.
+	 * @param period The period, in milliseconds, between the beginnings of two
+	 * consecutive message loops.
+	 */
+	public synchronized void setTimerPeriod( long period )
+	{
+		this.cancel( );
+		analogTimer.cancel( );
+		analogTimer = new Timer( );
+		timerPeriod = period;
+		analogTimer.scheduleAtFixedRate( this, 0, timerPeriod );
+	}
+	
+	/**
+	 * @return The period, in milliseconds.
+	 */
+	public synchronized long getTimerPeriod( )
+	{
+		return timerPeriod;
+	}
+	
+
+	/**
 	 * This should <b>not</b> be called by user code.
 	 */
 	public void run( )

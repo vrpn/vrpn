@@ -60,6 +60,8 @@ public class ButtonRemote extends TimerTask
 	public synchronized void setTimerPeriod( long period )
 	{
 		this.cancel( );
+		buttonTimer.cancel( );
+		buttonTimer = new Timer( );
 		timerPeriod = period;
 		buttonTimer.scheduleAtFixedRate( this, 0, timerPeriod );
 	}

@@ -134,6 +134,8 @@ public class TrackerRemote extends TimerTask
 	public synchronized void setTimerPeriod( long period )
 	{
 		this.cancel( );
+		trackingTimer.cancel( );
+		trackingTimer = new Timer( );
 		timerPeriod = period;
 		trackingTimer.scheduleAtFixedRate( this, 0, timerPeriod );
 	}
