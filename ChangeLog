@@ -1,3 +1,12 @@
+2002-08-02 David Borland <borland@cs.unc.edu>
+
+        * vrpn_Poser.[Ch] : files for the new Poser class.  A Poser
+        is basically the inverse of a Tracker.  It takes pose requests for
+        a device and will (eventually) drive the device to the given pose.
+        Right now, we can give pose and velocity requests on the client 
+        side and recieve them on the server side.  Just performing this 
+        commit for some testing purposes.
+
 2002-07-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Serial.C (vrpn_drain_output_buffer) : Changed return value to
