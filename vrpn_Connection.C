@@ -4661,38 +4661,6 @@ void vrpn_Connection::handle_connection (int endpointIndex) {
 
   vrpn_Endpoint * endpoint = d_endpoints[endpointIndex];
 
-   // Set TCP_NODELAY on the socket
-/*XXX It looks like this means something different to Linux than what I
-	expect.  I expect it means to send acknowlegements without waiting
-	to piggyback on reply.  This causes the serial port to fail.  As
-	long as the other end has this set, things seem to work fine.  From
-	this end, if we set it it fails (unless we're talking to another
-	PC).  Russ Taylor
-
-   {    struct  protoent        *p_entry;
-	int     nonzero = 1;
-
-	//endpoint->init();
-
-	if ( (p_entry = getprotobyname("TCP")) == NULL ) {
-		fprintf(stderr,
-		  "vrpn: vrpn_Connection: getprotobyname() failed.\n");
-		endpoint->status = BROKEN;
-//fprintf(stderr, "BROKEN - vrpn_Connection::handle_connection.\n");
-		return;
-	}
-
-	if (setsockopt(endpoint.d_tcpSocket, p_entry->p_proto,
-		TCP_NODELAY, &nonzero, sizeof(nonzero))==-1) {
-		perror("vrpn: vrpn_Connection: setsockopt() failed");
-		endpoint->status = BROKEN;
-//fprintf(stderr, "BROKEN - vrpn_Connection::handle_connection.\n");
-		return;
-	}
-   }
-*/
-
-   
    // Set up the things that need to happen when a new connection is
    // started.
    if (endpoint->setup_new_connection()) {

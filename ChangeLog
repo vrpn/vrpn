@@ -1,3 +1,7 @@
+2000-10-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Deleted commented-out code.
+
 2000-10-16  Tom Hudson  <hudson@cs.unc.edu>
 
 	* vrpn_RedundantTransmission.C (defaultInterval) : new function
