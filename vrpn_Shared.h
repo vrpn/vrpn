@@ -3,7 +3,11 @@
 
 #include "vrpn_Types.h"
 
+// {{{ timeval defines
 #ifdef _WIN32
+
+// {{{ win32 specific stuff
+
 #include <windows.h>
 #include <sys/timeb.h>
 #include <winsock.h>   // timeval is defined here
@@ -23,17 +27,25 @@ struct timezone {
 
 extern int gettimeofday(struct timeval *tp, struct timezone *tzp);
 
+#else
+#include <sys/time.h>
 #endif // ! __CYGWIN__
 
 // This has been moved to connection.C so that users of this
 // lib can still use fstream and other objects with close functions.
 // #define close closesocket
 
+// }}} end win32 specific
+
 #else  // not _WIN32
 
 #include <sys/time.h>    // for struct timeval
 
 #endif
+// }}} timeval defines
+
+// {{{ vrpn_* timeval utility functions
+//     --------------------------------
 
 // IMPORTANT: timevals must be normalized to make any sense
 //
@@ -64,6 +76,10 @@ extern struct timeval vrpn_MsecsTimeval( const double dMsecs );
 
 extern void vrpn_SleepMsecs( double dMsecs );
 
+// }}}
+// {{{ vrpn_* buffer util functions
+//     ----------------------------
+
 // xform a double to/from network order -- like htonl and htons
 extern vrpn_float64 htond( vrpn_float64 d );
 extern vrpn_float64 ntohd( vrpn_float64 d );
@@ -84,6 +100,7 @@ extern long vrpn_unbuffer (const char ** buffer, vrpn_float64 * dval);
 extern long vrpn_unbuffer (const char ** buffer, timeval * t);
 extern long vrpn_unbuffer (const char ** buffer, char * string,
                            vrpn_uint32 length);
+// }}}
 
 #ifdef	_WIN32	// No sleep() function, but Sleep(DWORD) defined in winbase.h
 #define	sleep(x)	Sleep( DWORD(1000.0 * x) )

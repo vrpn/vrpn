@@ -14,91 +14,149 @@
 // can determine which machine type it is on.
 //------------------------------------------------------------------
 
-#ifdef	sgi
-#define	vrpn_int8	char
-#define	vrpn_uint8	unsigned char
-#define	vrpn_int16	short
-#define	vrpn_uint16	unsigned short
-#define	vrpn_int32	int
-#define	vrpn_uint32	unsigned int
-#define	vrpn_float32	float
-#define	vrpn_float64	double
+#undef VRPN_ARCH
+
+#ifdef  sgi
+#define  VRPN_ARCH  sgi
+typedef  char            vrpn_int8;
+typedef  unsigned char   vrpn_uint8;
+typedef  short           vrpn_int16;
+typedef  unsigned short  vrpn_uint16;
+typedef  int             vrpn_int32;
+typedef  unsigned int    vrpn_uint32;
+typedef  float           vrpn_float32;
+typedef  double          vrpn_float64;
 #endif
 
-#ifdef	hpux
-#define	vrpn_int8	char
-#define	vrpn_uint8	unsigned char
-#define	vrpn_int16	short
-#define	vrpn_uint16	unsigned short
-#define	vrpn_int32	int
-#define	vrpn_uint32	unsigned int
-#define	vrpn_float32	float
-#define	vrpn_float64	double
+#ifdef  hpux
+#define  VRPN_ARCH  hpux
+typedef  char            vrpn_int8;
+typedef  unsigned char   vrpn_uint8;
+typedef  short           vrpn_int16;
+typedef  unsigned short  vrpn_uint16;
+typedef  int             vrpn_int32;
+typedef  unsigned int    vrpn_uint32;
+typedef  float           vrpn_float32;
+typedef  double          vrpn_float64;
 #endif
 
 // For PixelFlow aCC compiler
-#ifdef	__hpux
-#define	vrpn_int8	char
-#define	vrpn_uint8	unsigned char
-#define	vrpn_int16	short
-#define	vrpn_uint16	unsigned short
-#define	vrpn_int32	int
-#define	vrpn_uint32	unsigned int
-#define	vrpn_float32	float
-#define	vrpn_float64	double
+#ifdef  __hpux
+#undef   VRPN_ARCH
+#define  VRPN_ARCH  __hpux
+typedef  char            vrpn_int8;
+typedef  unsigned char   vrpn_uint8;
+typedef  short           vrpn_int16;
+typedef  unsigned short  vrpn_uint16;
+typedef  int             vrpn_int32;
+typedef  unsigned int    vrpn_uint32;
+typedef  float           vrpn_float32;
+typedef  double          vrpn_float64;
 #endif
 
-#ifdef	sparc
-#define	vrpn_int8	char
-#define	vrpn_uint8	unsigned char
-#define	vrpn_int16	short
-#define	vrpn_uint16	unsigned short
-#define	vrpn_int32	int
-#define	vrpn_uint32	unsigned int
-#define	vrpn_float32	float
-#define	vrpn_float64	double
+#ifdef  sparc
+#define  VRPN_ARCH  sparc
+typedef  char            vrpn_int8;
+typedef  unsigned char   vrpn_uint8;
+typedef  short           vrpn_int16;
+typedef  unsigned short  vrpn_uint16;
+typedef  int             vrpn_int32;
+typedef  unsigned int    vrpn_uint32;
+typedef  float           vrpn_float32;
+typedef  double          vrpn_float64;
 #endif
 
-#ifdef	linux
-#define	vrpn_int8	char
-#define	vrpn_uint8	unsigned char
-#define	vrpn_int16	short
-#define	vrpn_uint16	unsigned short
-#define	vrpn_int32	int
-#define	vrpn_uint32	unsigned int
-#define	vrpn_float32	float
-#define	vrpn_float64	double
+#ifdef  linux
+#define  VRPN_ARCH  linux
+typedef  char            vrpn_int8;
+typedef  unsigned char   vrpn_uint8;
+typedef  short           vrpn_int16;
+typedef  unsigned short  vrpn_uint16;
+typedef  int             vrpn_int32;
+typedef  unsigned int    vrpn_uint32;
+typedef  float           vrpn_float32;
+typedef  double          vrpn_float64;
 #endif
 
-// _WIN32 is defined for all compilers for Windows (Cygnus G++ included)
-// WIN32 is defined only by the Windows VC compiler
-#ifdef	_WIN32
-#define	vrpn_int8	char
-#define	vrpn_uint8	unsigned char
-#define	vrpn_int16	short
-#define	vrpn_uint16	unsigned short
-#define	vrpn_int32	long
-#define	vrpn_uint32	unsigned long
-#define	vrpn_float32	float
-#define	vrpn_float64	double
+// _WIN32 is defined for all compilers for Windows (cygnus g++ included)
+// furthermore, __CYGNUS__ is defined by g++ but not by VC++
+// currently, we use __CYGNUS__ to differentiate between VC++ and g++.
+//
+// XXX [juliano 10/9/99] now that cygnus gcc and GNU gcc have been merged
+// back into a single compiler (starting with gcc-2.95), we should probably
+// start to use __GNUC__, since that's the official GNU C macro. XXX
+//
+//   WIN32 is defined only by the Windows VC++ compiler
+//   DO NOT EVER USE WIN32.  It is too hard to differentiate
+//   from _WIN32.  If you use it to distinguish between
+//   VC++ and g++, may your wrists quickly develop a nerve
+//   disorder that prevents you from ever typing again  :)
+// 
+#ifdef  _WIN32
+#define  VRPN_ARCH  _WIN32
+typedef  char            vrpn_int8;
+typedef  unsigned char   vrpn_uint8;
+typedef  short           vrpn_int16;
+typedef  unsigned short  vrpn_uint16;
+typedef  long            vrpn_int32;
+typedef  unsigned long   vrpn_uint32;
+typedef  float           vrpn_float32;
+typedef  double          vrpn_float64;
 #endif
 
-#ifdef	FreeBSD
-#define	vrpn_int8	char
-#define	vrpn_uint8	unsigned char
-#define	vrpn_int16	short
-#define	vrpn_uint16	unsigned short
-#define	vrpn_int32	long
-#define	vrpn_uint32	unsigned long
-#define	vrpn_float32	float
-#define	vrpn_float64	double
+#ifdef  FreeBSD
+#define  VRPN_ARCH  FreeBSD
+typedef  char            vrpn_int8;
+typedef  unsigned char   vrpn_uint8;
+typedef  short           vrpn_int16;
+typedef  unsigned short  vrpn_uint16;
+typedef  long            vrpn_int32;
+typedef  unsigned long   vrpn_uint32;
+typedef  float           vrpn_float32;
+typedef  double          vrpn_float64;
 #endif
 
-#ifndef	vrpn_int8
-XXX	Need to define architecture-dependent sizes here
+#ifndef VRPN_ARCH
+XXX     Need to define architecture-dependent sizes here
 #endif
+
+#ifndef __cplusplus
+XXX     Need to compile with a C++ compiler
+#endif
+
+// prevent use of these macros outside this file
+// if you need to distinguish, then define new types in this file
+//
+// [juliano 10/10/99] actually, we do need to test (and do so directly)
+// outside this file for functions that differ between platforms.  A much
+// better solution is to create our own functions that are wrappers for
+// the platform-specific ones or the platform-specific hacks.  All such
+// things go in some common file (that file is the ONLY place that knows
+// which platform you are actually on).  Then, you call our wrappers in
+// the real code.
+//
+//   Localizing platform-specific stuff like this is much more robust, easy to
+//   port, and makes the rest of the source code easier to understand
+//
+//   however, I'm not sure this would really work for us.  We'd be restriced
+//   to defining the vrpn_ versions to be the greatest-common-denominator
+//   of features available on all the platforms.  But aren't we really
+//   restricted to that already?
+//
+#undef  VRPN_ARCH
+#undef  VRPN_ARCH
+#undef  VRPN_ARCH
+#undef  VRPN_ARCH
+#undef  VRPN_ARCH
+#undef  VRPN_ARCH
+#undef  VRPN_ARCH
+
+// *******************************************************
+// you should NOT need to modify anything below this point
+// *******************************************************
 
 typedef vrpn_int16 vrpn_bool;
+
 const vrpn_int16 vrpn_true  = 1;
 const vrpn_int16 vrpn_false = 0;
 const vrpn_int16 vrpn_TRUE  = 1;
@@ -107,5 +165,31 @@ const vrpn_int16 VRPN_TRUE  = 1;
 const vrpn_int16 VRPN_FALSE = 0;
 
 // should we add a success & fail?
+
+
+// [juliano 10/9/99] The vrpn bool variables can not actually be fully
+// optimized away, because the compiler is not allowed to assume their
+// values don't change.
+//
+// If you are willing to assume templates, I think there is a
+// clean alternative that does allow the optimization.
+//
+// If you don't want to use templates, but still want the sizeof
+// these things be vrpn_int16, you can use macros like this.
+//
+//    #define vrpn_false /*false*/vrpn_int16(0)
+//    #define vrpn_true  /*true*/vrpn_int16(1)
+//
+// With this method, you will still be able to tell, in the
+// compiler error messages, what the real code contains.
+// 
+// If you don't care about them being a different type than
+// vrpn_int16 (probably not a good idea), you can use this technique,
+// which guarantees optimizations can be performed.
+//
+//     enum vrpn_bool_constants_t{
+//         vrpn_false=0, vrpn_FALSE=0, VRPN_FALSE=0,
+//         vrpn_true=1,  vrpn_TRUE=1,  VRPN_TRUE=1 };
+//
 
 #endif //VRPN_TYPES_H
