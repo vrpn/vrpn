@@ -28,6 +28,8 @@ all:  vrpn_server
 
 # player: vrpn_player.o
 # 	$(CC) $(LFLAGS) -o player vrpn_player.o -lvrpnserver -lsdi -lm
+client: client.o	
+	$(CC) $(LFLAGS) -o client client.o -lvrpn -lsdi 
 
 vrpn_server: vrpn.o  midi.o ../$(HW_OS)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o vrpn_server vrpn.o midi.o -lvrpnserver $(GL) -lsdi -lm -lquat
@@ -37,6 +39,8 @@ clean:
 
 midi.o:	midi.c
 vrpn.o:	vrpn.C
+
+
 
 
 

@@ -21,15 +21,18 @@
  * Author          : Ruigang Yang
  * Created On      : Tue Mar 17 16:01:46 1998
  * Last Modified By: Ruigang Yang
- * Last Modified On: Wed May  6 13:02:11 1998
- * Update Count    : 46
+ * Last Modified On: Thu May  7 11:40:20 1998
+ * Update Count    : 47
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Analog.C,v $
- * $Date: 1998/05/06 18:00:37 $
+ * $Date: 1998/05/14 14:45:23 $
  * $Author: ryang $
- * $Revision: 1.2 $
+ * $Revision: 1.3 $
  * 
  * $Log: vrpn_Analog.C,v $
+ * Revision 1.3  1998/05/14 14:45:23  ryang
+ * modified vrpn_sgibox, so output is clamped to +-0.5, max 2 rounds
+ *
  * Revision 1.2  1998/05/06 18:00:37  ryang
  * v0.1 of vrpn_sgibox
  *
@@ -42,7 +45,7 @@
  * HISTORY
  */
 
-static char rcsid[] = "$Id: vrpn_Analog.C,v 1.2 1998/05/06 18:00:37 ryang Exp $";
+static char rcsid[] = "$Id: vrpn_Analog.C,v 1.3 1998/05/14 14:45:23 ryang Exp $";
 
 #include "vrpn_Analog.h"
 #include <stdio.h>
@@ -296,14 +299,16 @@ int vrpn_Analog_Remote::handle_change_message(void *userdata,
 	//fprintf(stderr, "Analog_Remote::handle_chg_msg\n");
 	// Fill in the parameters to the button from the message;
 
+	/*
 	// XXX here we assume that analog device is a Joystick     ****
+
 
 	if (p.payload_len != (7+1)*sizeof(double)) {
 		fprintf(stderr,"vrpn_Analog: change message payload error\n");
 		fprintf(stderr,"             (got %d, expected %d)\n",
 			p.payload_len, 2*sizeof(long));
 		return -1;
-	}
+	}*/
 	cp.msg_time = p.msg_time;
 	//char * buf= (char *) p.buffer;
 

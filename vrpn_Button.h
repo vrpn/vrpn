@@ -116,7 +116,7 @@ class vrpn_Button_Remote: public vrpn_Button {
 	virtual int unregister_change_handler(void *userdata,
 		vrpn_BUTTONCHANGEHANDLER handler);
 
-	set_button_mode(int mode, int button_id);
+	int set_button_mode(int mode, int button_id);
 
   protected:
 	typedef	struct vrpn_RBCS {

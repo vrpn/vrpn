@@ -4,15 +4,18 @@
  * Author          : Ruigang Yang
  * Created On      : Wed Apr 29 16:06:25 1998
  * Last Modified By: Ruigang Yang
- * Last Modified On: Wed May  6 13:21:50 1998
- * Update Count    : 8
+ * Last Modified On: Thu May 14 10:31:53 1998
+ * Update Count    : 13
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_sgibox.h,v $
- * $Date: 1998/05/06 18:00:41 $
+ * $Date: 1998/05/14 14:45:26 $
  * $Author: ryang $
- * $Revision: 1.1 $
+ * $Revision: 1.2 $
  * 
  * $Log: vrpn_sgibox.h,v $
+ * Revision 1.2  1998/05/14 14:45:26  ryang
+ * modified vrpn_sgibox, so output is clamped to +-0.5, max 2 rounds
+ *
  * Revision 1.1  1998/05/06 18:00:41  ryang
  * v0.1 of vrpn_sgibox
  *
@@ -36,12 +39,12 @@
 class vrpn_SGIBox :public vrpn_Analog, public vrpn_Button {
 public:
   vrpn_SGIBox(char * name, vrpn_Connection * c);
-
   void mainloop();
+  void reset();
 
 protected:
   void get_report();
-  void reset();
+
   
 private:
   double resetval[vrpn_CHANNEL_MAX];
@@ -54,5 +57,8 @@ private:
   short   vals1[NUMDEVS],
     vals2[NUMDEVS];         /* two values arrays */
   int	dial_changed[NUM_DIALS];
+  int  mid_values[NUM_DIALS];
+  int winid;
+  int sid;// server id;
 };
 #endif
