@@ -256,8 +256,10 @@ class vrpn_Clock_Server;
 class vrpn_Clock_Remote;
 
 // NOTE: the clock offset is calculated only if the freq is >= 0
-// if it is < 0, then the offset is only calced and used if the
+// if it is -1, then the offset is only calced and used if the
 // client specifically calls fullSync on the vrpn_Clock_Remote.
+// if the freq is -2, then the offset is calced immediately using
+// full sync.
 // Time stamp for messages on the connection server are never
 // adjusted (only the clients get adjusted time stamps).
 

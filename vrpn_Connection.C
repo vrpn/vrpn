@@ -128,6 +128,17 @@ vrpn_Synchronized_Connection(char *server_name, double dFreq,
    pClockRemote = new vrpn_Clock_Remote(server_name, dFreq, cSyncWindow);
    pClockRemote->register_clock_sync_handler( &tvClockOffset, 
 					      setClockOffset );
+   // -2 as freq tells connection to immediately perform
+   // a full sync to calc clock offset accurately.
+   if (dFreq==-2) {
+     // register messages
+     mainloop();
+     mainloop();
+
+     // do full sync
+     pClockRemote->fullSync();
+     mainloop();
+   }
 }
 
 struct timeval vrpn_Synchronized_Connection::fullSync(void) {

@@ -13,10 +13,10 @@
   ----------------------------------------------------------------------------
   Author: weberh
   Created: Sat Dec 13 11:21:15 1997
-  Revised: Wed Mar 18 16:33:03 1998 by weberh
+  Revised: Mon Mar 23 11:34:26 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.h,v $
   $Locker:  $
-  $Revision: 1.6 $
+  $Revision: 1.7 $
 \*****************************************************************************/
 #ifndef _VRPN_CLOCK_H_
 #define _VRPN_CLOCK_H_
@@ -151,6 +151,10 @@ class vrpn_Clock_Remote: public vrpn_Clock {
   // vars for stats on clock for full sync
   int fDoFullSync;
   int cBounces;
+#ifdef USE_REGRESSION
+  double *rgdOffsets;
+  double *rgdTimes;
+#endif
 
   struct timeval tvMinHalfRoundTrip;
 
@@ -178,6 +182,23 @@ class vrpn_Clock_Remote: public vrpn_Clock {
 
 /*****************************************************************************\
   $Log: vrpn_Clock.h,v $
+  Revision 1.7  1998/03/23 17:06:45  weberh
+  clock changes:
+
+  fixed up clock constructor to allow proper independent clock server/client
+  creation.
+
+  added code to do fullsync regression for offset slope estimation (added,
+  but not currently used because it is not beneficial enough).
+
+  fixed up a few comments and a minor bug which affected quick sync accuracy.
+
+
+  connection changes:
+
+  added -2 as a sync connection freq arg which performs an immediate
+  fullsync.
+
   Revision 1.6  1998/03/19 06:04:38  weberh
   added a fullSync call to vrpn_Synchronized connection for convenience.
 

@@ -6,10 +6,10 @@
   ----------------------------------------------------------------------------
   Author: weberh
   Created: Sat Dec 13 11:05:16 1997
-  Revised: Thu Mar 19 01:06:07 1998 by weberh
+  Revised: Mon Mar 23 11:33:58 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.C,v $
   $Locker:  $
-  $Revision: 1.8 $
+  $Revision: 1.9 $
   \*****************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
@@ -123,9 +123,23 @@ void vrpn_Clock_Server::mainloop() {};
 // This next part is the class for users (client class)
 
 
+// If this clock is created as part of a sync_conn constructor,
+// then the connection will already exist, and the -1 will have no
+// effect (the vrpn_get_connection by name will just return a
+// ptr to the connection).
+
+// If the use is actually creating a vrpn_Clock_Remote directly
+// (as a clock client), then they don't want another clock on the
+// connection as this will result in less accurate calibration.
+// -1 as the freq arg, because if the connection does not yet
+// exist, then when it is created it does not need to have another
+// clock running on it (the sync_connection will still have a clock
+// created on it, but the clock will be a fullSync clock and
+// will be inactive.)
+
 vrpn_Clock_Remote::vrpn_Clock_Remote(char *name, double dFreq, 
 				     int cOffsetWindow ) : 
-  vrpn_Clock("clockServer", vrpn_get_connection_by_name(name)), 
+  vrpn_Clock("clockServer", vrpn_get_connection_by_name(name,-1)), 
   change_list(NULL)
 {
   char rgch[50];
@@ -150,7 +164,6 @@ vrpn_Clock_Remote::vrpn_Clock_Remote(char *name, double dFreq,
     fDoQuickSyncs=0;
     
     // handler is automatically registered by full sync part of mainloop
-
   } else {
     fDoQuickSyncs=1;
 
@@ -182,12 +195,24 @@ vrpn_Clock_Remote::vrpn_Clock_Remote(char *name, double dFreq,
   gettimeofday(&tv, NULL);
 
   lUniqueID = tv.tv_usec;
+
+#ifdef USE_REGRESSION
+  rgdOffsets = NULL;
+  rgdTimes = NULL;
+#endif
 }
 
 vrpn_Clock_Remote::~vrpn_Clock_Remote() {
   // release the quick arrays
   delete [] rgtvHalfRoundTrip;
   delete [] rgtvClockOffset;
+
+#ifdef USE_REGRESSION
+  // release the regression arrays
+  delete rgdOffsets;
+  delete rgdTimes;
+#endif
+
 }
 
 #if 0
@@ -260,20 +285,49 @@ void vrpn_Clock_Remote::mainloop(void)
       struct timeval tvCalib;
       struct timeval tvNow;
       long cNextTime=0;
-      long cInterval=25;
-      long cCalibMsecs=1000;
+      const long cInterval=20;
+      const long cCalibMsecs=1000;
       long cElapsedMsecs=0;
-      
+      const long cQueries = (cCalibMsecs/cInterval) + 1;
+      long iQueries = 0;
+
+      cerr << "vrpn_Clock_Remote: performing fullsync calibration, "
+	"this will take " << cCalibMsecs/1000.0 << " seconds." << endl;
+
+#ifdef USE_REGRESSION
+      // save offsets and time of offset calc for regression
+      if (!rgdOffsets) {
+	rgdOffsets = new double[cQueries];
+      }
+      if (!rgdTimes) {
+	rgdTimes = new double[cQueries];
+      }
+#endif
       gettimeofday( &tvCalib, NULL );
-      
+
       // do bounces for one second to calibrate the clocks
-      while (cElapsedMsecs<=cCalibMsecs) {
-	
+      //      while (cElapsedMsecs<=cCalibMsecs) {
+      while ( iQueries < cQueries ) {
+
+	// don't let replies overwrite the buffer
+	if (cBounces>=cQueries) {
+	  cerr << "vrpn_Clock_Remote::mainloop: multiple clock servers on "
+	    "connection -- aborting fullSync " <<cBounces<< endl;
+	  if (connection->unregister_handler(replyMsg_id, 
+					     fullSyncClockServerReplyHandler,
+					     this, clockServer_id)) {
+	    cerr << "vrpn_Clock_Remote: Can't unregister handler" << endl;
+	    connection = NULL;
+	  }
+	  break;
+	}
+
 	// do one every cInterval ms or so
 	if (cElapsedMsecs>=cNextTime) {
 	  struct timeval tv;
 	  long rgl[3];
 	  
+	  iQueries++;
 	  // send a clock query with this clock client's unique id
 	  // not converted using htonl because it is never interpreted
 	  // by the server -- only by the client.
@@ -288,24 +342,23 @@ void vrpn_Clock_Remote::mainloop(void)
 	}
 	
 	// actually process the message and any callbacks from local
-	// or remote messages
-	connection->mainloop();
+	// or remote messages (just call the base mainloop)
+	connection->vrpn_Connection::mainloop();
 	gettimeofday( &tvNow, NULL );
 	cElapsedMsecs = (long) vrpn_TimevalMsecs(vrpn_TimevalDiff(tvNow, tvCalib));
       }
-      
       // we don't care if we missed numerous replies, just make sure we had
       // at least half back already
       
       if (cBounces<((cCalibMsecs/cInterval)/2)) {
-	cerr << "calib error: did not receive replies for at least half of "
-	     << "the bounces" << endl;
+	cerr << "vrpn_Clock_Remote::mainloop: calib error; did not receive "
+	  "replies for at least half of the bounces" << endl;
 	return;
       } 
 
-      // actually, we just want to use the min roundtrip record to calc the offset
-      // so we can do it interactively, and the clock offset calced from that 
-      // record is in tvFullClockOffset
+      // actually, we just want to use the min roundtrip record to calc the
+      // offset so we can do it interactively, and the clock offset calced
+      // from that record is in tvFullClockOffset
       
       // now get rid of handler -- no need to calibrate any longer
       // so don't waste time checking the ids of other's clock server replies.
@@ -317,6 +370,91 @@ void vrpn_Clock_Remote::mainloop(void)
 	connection = NULL;
       }
 
+#ifdef USE_REGRESSION
+      // NOTE: save this chunk of code.
+      // At some point, we may want to use this code.
+      // What this does is try to estimate drift (in usec/sec) during
+      // the full sync by performing linear regression on the clock offsets.
+      // This could be used to drift correct the time stamps.
+      // I (Hans Weber) worked on this for a while and found that 
+      // although the stddev of the drift rates (slope) in usec/sec
+      // were fairly low (usually i could get about 2-5 usec/sec
+      // stddev for a 10 second sync), they did not represent the 
+      // distribution very well (ie, i don't feel like the distribution
+      // is very normal).  Even if they do represent it accurately,
+      // 5 usec/sec means 1/2 ms error in 100 secs, and 5 ms error
+      // after running for 1000 secs (quick syncs can get us down to
+      // 0.5*mainloop_service_period error regardless of how long we run, so 
+      // for 60 hz, about 8 ms).
+      // Neither method is great, but for now quick sync's are easier
+      // and don't bias the offset over time, so i will stick with them.
+      // Also, the calculations below have been checked with matlab,
+      // so I am fairly confident they are correct.
+
+      // now do the regression calculation 
+      double dIntercept;
+      double dSlope;
+      // x is time, y is offset
+      double dSXY=0, dSX=0, dSY=0, dSXX=0, dSXSX=0;
+      int n = cBounces;
+
+      // ignore the first ten bounces
+      int cIgnore = 10;
+
+      double dN = n - cIgnore;
+
+      
+      // do a scale on the times to get better 
+      // use of floating point range and to find
+      // slope in uSec per sec.
+      double dInitTime = rgdTimes[0];
+
+      for (int irgd=cIgnore;irgd<n;irgd++) {
+	rgdTimes[irgd]-=dInitTime;
+	rgdTimes[irgd]/=1000.0;
+	rgdOffsets[irgd]*=1000.0;
+	//	cerr << irgd << "\ttime " << rgdTimes[irgd] 
+	//	     << "\toffset " << rgdOffsets[irgd] 
+	//	     << endl;
+
+	dSXY += rgdTimes[irgd]*rgdOffsets[irgd];
+	dSX += rgdTimes[irgd];
+	dSY += rgdOffsets[irgd];
+	dSXX += rgdTimes[irgd]*rgdTimes[irgd];
+      }
+      dSXSX = dSX*dSX;
+
+      cerr << "dSXY= " << dSXY << endl; 
+      cerr << "dSX= " << dSX << endl; 
+      cerr << "dSY= " << dSY << endl; 
+      cerr << "dSXX= " << dSXX << endl; 
+      cerr << "dSXSX= " << dSXSX << endl; 
+
+      dSlope = ( dSXY - (1/dN)*dSX*dSY ) /
+	(dSXX - (1/dN)*dSXSX);
+
+      dIntercept = (dSY/dN) - dSlope * (dSX/dN);
+
+      cerr << "regression coeffs are (int (usec), slope (usec/sec)) " <<
+	dIntercept << ", " << dSlope << endl;
+      
+      double dSEE = 0;
+      double dSXMXM = 0;
+
+      for (int i=cIgnore;i<n;i++) {
+	dSEE += (rgdOffsets[i] - (dSlope*rgdTimes[i] + dIntercept))*
+	  (rgdOffsets[i] - (dSlope*rgdTimes[i] + dIntercept));
+	dSXMXM += (rgdTimes[i] - dSX/dN)*(rgdTimes[i] - dSX/dN);
+      }
+
+      double dS = sqrt(dSEE/(dN-2));
+      double dSSlope = dS / sqrt(dSXMXM);
+      double dSInt = dS * sqrt((1/dN) + (dSX/dN)*(dSX/dN) / dSXMXM);
+
+      cerr << "stddev of slope is " << dSSlope << endl;
+      cerr << "stddev of intercept is " << dSInt << endl;
+#endif
+
       // now call any user callbacks that want to know the time diff
       // when syncs occur
       vrpn_CLOCKCB cs;
@@ -325,6 +463,15 @@ void vrpn_Clock_Remote::mainloop(void)
       cs.tvClockOffset = tvFullClockOffset;
       cs.tvHalfRoundTrip = tvMinHalfRoundTrip;
       
+#if 0
+     cerr << "vrpn_Clock_Remote::mainloop: clock offset is " 
+	  << tvFullClockOffset.tv_sec << "s, "
+	  << tvFullClockOffset.tv_usec << "us." << endl;
+     cerr << "vrpn_Clock_Remote::mainloop: half round trip is " 
+	  << tvMinHalfRoundTrip.tv_sec << "s, "
+	  << tvMinHalfRoundTrip.tv_usec << "us." << endl;
+#endif
+
       // go thru list of user specified clock sync callbacks
       while (pHandlerInfo!=NULL) {
 	pHandlerInfo->handler(pHandlerInfo->userdata, cs);
@@ -471,39 +618,47 @@ int vrpn_Clock_Remote::fullSyncClockServerReplyHandler(void *userdata,
   // Now approx calc local time when remote server replied to us ...
   // assume it occured halfway thru roundtrip time
   
+  // cut round trip time in half
+  struct timeval tvHalfRoundTrip = tvRoundTrip;
+  
+  tvHalfRoundTrip.tv_usec /= 2;
+  if (tvHalfRoundTrip.tv_sec % 2) {
+    // odd, so add half to usecs
+    tvHalfRoundTrip.tv_usec += (long) (1e6/2);
+  } 
 
-  if ((tvRoundTrip.tv_sec < me->tvMinHalfRoundTrip.tv_sec) ||
-      ((tvRoundTrip.tv_sec == me->tvMinHalfRoundTrip.tv_sec) &&
-       (tvRoundTrip.tv_usec < me->tvMinHalfRoundTrip.tv_usec)) ||
+  tvHalfRoundTrip.tv_sec /= 2;
+
+  //  printTime( "half roundtrip ", tvHalfRoundTrip );
+
+  struct timeval tvLServerReply;
+  tvLServerReply.tv_sec = tvLReq.tv_sec + tvHalfRoundTrip.tv_sec;
+  tvLServerReply.tv_usec = tvLReq.tv_usec +  tvHalfRoundTrip.tv_usec;
+  
+  if (tvLServerReply.tv_usec>=1e6) {
+    tvLServerReply.tv_sec++;
+    tvLServerReply.tv_usec -= (long) 1e6;
+  }
+  
+#ifdef USE_REGRESSION
+  // save all of the offsets for now
+  me->rgdTimes[me->cBounces-1] = vrpn_TimevalMsecs(tvLNow);
+  me->rgdOffsets[me->cBounces-1] = vrpn_TimevalMsecs(
+			   vrpn_TimevalDiff( tvLServerReply, tvRRep ));
+#endif
+
+  //  printTime( "bounce reply sent (local approx)", tvLServerReply );
+  
+  // LATER: could check for drift, but probably not essential  
+  
+  if ((tvHalfRoundTrip.tv_sec < me->tvMinHalfRoundTrip.tv_sec) ||
+      ((tvHalfRoundTrip.tv_sec == me->tvMinHalfRoundTrip.tv_sec) &&
+       (tvHalfRoundTrip.tv_usec < me->tvMinHalfRoundTrip.tv_usec)) ||
       (me->cBounces==1)) {
-    // calc new offset
-
-    // cut round trip time in half
-    tvRoundTrip.tv_usec /= 2;
-    if (tvRoundTrip.tv_sec % 2) {
-      // odd, so add half to usecs
-      tvRoundTrip.tv_usec += (long) (1e6/2);
-    } 
-    tvRoundTrip.tv_sec /= 2;
-  
-    //  printTime( "half roundtrip ", tvRoundTrip );
-    struct timeval tvLServerReply;
-    tvLServerReply.tv_sec = tvLReq.tv_sec + tvRoundTrip.tv_sec;
-    tvLServerReply.tv_usec = tvLReq.tv_usec +  tvRoundTrip.tv_usec;
-  
-    if (tvLServerReply.tv_usec>=1e6) {
-      tvLServerReply.tv_sec++;
-      tvLServerReply.tv_usec -= (long) 1e6;
-    }
-  
-    //  printTime( "bounce reply sent (local approx)", tvLServerReply );
-    
-    // LATER: could check for drift, but probably not essential  
-  
+    // use new offset
     // calc offset between clocks
     me->tvFullClockOffset = vrpn_TimevalDiff( tvLServerReply, tvRRep );
-    me->tvMinHalfRoundTrip = tvRoundTrip;
-  
+    me->tvMinHalfRoundTrip = tvHalfRoundTrip;
     //  printTime( "diff btwn local and remote", tvClockDiff );
   }
   
@@ -648,6 +803,23 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
 
 /*****************************************************************************\
   $Log: vrpn_Clock.C,v $
+  Revision 1.9  1998/03/23 17:06:43  weberh
+  clock changes:
+
+  fixed up clock constructor to allow proper independent clock server/client
+  creation.
+
+  added code to do fullsync regression for offset slope estimation (added,
+  but not currently used because it is not beneficial enough).
+
+  fixed up a few comments and a minor bug which affected quick sync accuracy.
+
+
+  connection changes:
+
+  added -2 as a sync connection freq arg which performs an immediate
+  fullsync.
+
   Revision 1.8  1998/03/19 06:07:01  weberh
   *** empty log message ***
 
