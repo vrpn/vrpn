@@ -101,6 +101,8 @@ XXX	Need to define architecture-dependent sizes here
 typedef vrpn_int16 vrpn_bool;
 const vrpn_int16 vrpn_true=1;
 const vrpn_int16 vrpn_false=0;
+const vrpn_int16 VRPN_TRUE=1;
+const vrpn_int16 VRPN_FALSE=0;
 
 // should we add a success & fail?
 
