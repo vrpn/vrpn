@@ -183,6 +183,10 @@ SOURCE=.\vrpn_GlobalHapticsOrb.C
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_Imager.C
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_ImmersionBox.C
 # End Source File
 # Begin Source File
@@ -248,10 +252,6 @@ SOURCE=.\vrpn_Sound.C
 # Begin Source File
 
 SOURCE=.\vrpn_Spaceball.C
-# End Source File
-# Begin Source File
-
-SOURCE=.\vrpn_TempImager.C
 # End Source File
 # Begin Source File
 
@@ -411,6 +411,10 @@ SOURCE=.\vrpn_GlobalHapticsOrb.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_Imager.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_ImmersionBox.h
 # End Source File
 # Begin Source File
@@ -476,10 +480,6 @@ SOURCE=.\vrpn_Sound.h
 # Begin Source File
 
 SOURCE=.\vrpn_Spaceball.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\vrpn_TempImager.h
 # End Source File
 # Begin Source File
 

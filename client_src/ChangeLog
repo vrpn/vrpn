@@ -1,3 +1,7 @@
+2004-12-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Modified to use vrpn_Imager rather than vrpn_TempImager.
+
 2004-11-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
         * Happy Birthday to me!
