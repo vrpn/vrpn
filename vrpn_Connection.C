@@ -1069,7 +1069,8 @@ int check_vrpn_cookie (const char * buffer) {
 
   if (strncmp(buffer, vrpn_MAGIC, vrpn_MAGICLEN)) {
     fprintf(stderr, "vrpn_Connection:  "
-        "Warning:  minor version number doesn't match.\n");
+        "Warning:  minor version number doesn't match: (prefer '%s', got '%s')\n",
+	    vrpn_MAGIC, buffer);
     return 1;
   }
 
