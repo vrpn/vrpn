@@ -21,8 +21,9 @@
 #ifdef VRPN_USE_WINSOCK_SOCKETS
 //XXX #include <winsock.h>
 // a socket in windows can not be closed like it can in unix-land
-#define close closesocket
+#define vrpn_closeSocket closesocket
 #else
+#define vrpn_closeSocket close
 #include <unistd.h>
   // gethostname() and getdtablesize() should be here on SGIs,
   // but apparently aren't under g++
@@ -414,16 +415,6 @@ void vrpn_TranslationTable::clear (void) {
   }
   d_numEntries = 0;
 }
-
-
-
-
-
-
-
-
-
-
 
 /**
  * @class vrpn_Log
@@ -2180,7 +2171,7 @@ static SOCKET vrpn_connect_udp_port
           // Note that this is the failure clause of gethostbyname() on
           // non-WIN32 systems, but of the sscanf() on WIN32 systems.
                 
-          close(udp_socket);
+          vrpn_closeSocket(udp_socket);
           fprintf(stderr,
                   "vrpn_connect_udp_port: error finding host by name.\n");
           return(-1);
@@ -2197,7 +2188,7 @@ static SOCKET vrpn_connect_udp_port
 
   if ( connect(udp_socket,(struct sockaddr *) &udp_name,udp_namelen) ) {
       fprintf(stderr,"vrpn_connect_udp_port: can't bind udp socket.\n");
-      close(udp_socket);
+      vrpn_closeSocket(udp_socket);
       return(-1);
   }
 
@@ -2263,7 +2254,7 @@ int vrpn_udp_request_lob_packet(
   if (vrpn_getmyIP(myIPchar, sizeof(myIPchar), NIC_IP)) {
     fprintf(stderr,
        "vrpn_udp_request_lob_packet: Error finding local hostIP\n");
-    close(udp_sock);
+    vrpn_closeSocket(udp_sock);
     return(-1);
   }
   sprintf(msg, "%s %d", myIPchar, local_port);
@@ -2272,11 +2263,11 @@ int vrpn_udp_request_lob_packet(
   // Lob the message
   if (send(udp_sock, msg, msglen, 0) == -1) {
     perror("vrpn_udp_request_lob_packet: send() failed");
-    close(udp_sock);
+    vrpn_closeSocket(udp_sock);
     return -1;
   }
 
-  close(udp_sock);	// We're done with the port
+  vrpn_closeSocket(udp_sock);	// We're done with the port
   return 0;
 }
 
@@ -2310,7 +2301,7 @@ int vrpn_get_a_TCP_socket (SOCKET * listen_sock, int * listen_portnum,
 
   if (listen(*listen_sock, 1) ) {
     fprintf(stderr,"vrpn_get_a_TCP_socket: listen() failed.\n");
-    close(*listen_sock);
+    vrpn_closeSocket(*listen_sock);
     return(-1);
   }
 
@@ -2318,7 +2309,7 @@ int vrpn_get_a_TCP_socket (SOCKET * listen_sock, int * listen_portnum,
                   (struct sockaddr *) &listen_name,
                   GSN_CAST &listen_namelen)) {
     fprintf(stderr, "vrpn_get_a_TCP_socket: cannot get socket name.\n");
-    close(*listen_sock);
+    vrpn_closeSocket(*listen_sock);
     return(-1);
   }
 
@@ -2358,32 +2349,32 @@ int vrpn_poll_for_accept(SOCKET listen_sock, SOCKET *accept_sock, double timeout
 	  return -1;
 	}
 	if (FD_ISSET(listen_sock, &rfds)) {	/* Got one! */
-		/* Accept the connection from the remote machine and set TCP_NODELAY
-		* on the socket. */
-		if ( (*accept_sock = accept(listen_sock,0,0)) == -1 ) {
-			perror("vrpn_poll_for_accept: accept() failed");
-			return -1;
+	    /* Accept the connection from the remote machine and set TCP_NODELAY
+	    * on the socket. */
+	    if ( (*accept_sock = accept(listen_sock,0,0)) == -1 ) {
+		perror("vrpn_poll_for_accept: accept() failed");
+		return -1;
+	    }
+
+	    {	struct	protoent	*p_entry;
+		int	nonzero = 1;
+
+		if ( (p_entry = getprotobyname("TCP")) == NULL ) {
+			fprintf(stderr,
+			"vrpn_poll_for_accept: getprotobyname() failed.\n");
+			vrpn_closeSocket(*accept_sock);
+			return(-1);
 		}
-
-		{	struct	protoent	*p_entry;
-			int	nonzero = 1;
-
-			if ( (p_entry = getprotobyname("TCP")) == NULL ) {
-				fprintf(stderr,
-				"vrpn_poll_for_accept: getprotobyname() failed.\n");
-				close(*accept_sock);
-				return(-1);
-			}
 	
-			if (setsockopt(*accept_sock, p_entry->p_proto,
-			TCP_NODELAY, SOCK_CAST &nonzero, sizeof(nonzero))==-1) {
-				perror("vrpn_poll_for_accept: setsockopt() failed");
-				close(*accept_sock);
-				return(-1);
-			}
+		if (setsockopt(*accept_sock, p_entry->p_proto,
+		TCP_NODELAY, SOCK_CAST &nonzero, sizeof(nonzero))==-1) {
+			perror("vrpn_poll_for_accept: setsockopt() failed");
+			vrpn_closeSocket(*accept_sock);
+			return(-1);
 		}
+	    }
 
-		return 1;	// Got one!
+	    return 1;	// Got one!
 	}
 
 	return 0;	// Nobody called
@@ -2424,7 +2415,7 @@ int vrpn_start_server(const char * machine, char * server_name, char * args,
 
         if ( (pid = fork()) == -1) {
                 fprintf(stderr,"vrpn_start_server: cannot fork().\n");
-                close(server_sock);
+                vrpn_closeSocket(server_sock);
                 return(-1);
         }
         if (pid == 0) {  /* CHILD */
@@ -2438,7 +2429,7 @@ int vrpn_start_server(const char * machine, char * server_name, char * args,
                 if (vrpn_getmyIP(myIPchar,sizeof(myIPchar), IPaddress)) {
                         fprintf(stderr,
                            "vrpn_start_server: Error finding my IP\n");
-                        close(server_sock);
+                        vrpn_closeSocket(server_sock);
                         return(-1);
                 }
 
@@ -2467,7 +2458,7 @@ int vrpn_start_server(const char * machine, char * server_name, char * args,
                         perror("Error");
                         fprintf(stderr, "Attempted command was: '%s'\n",
                                 command);
-                        close(server_sock);
+                        vrpn_closeSocket(server_sock);
                         exit(-1);  /* This should never occur */
                 }
                 exit(0);
@@ -2495,7 +2486,7 @@ int vrpn_start_server(const char * machine, char * server_name, char * args,
 		    ret = vrpn_poll_for_accept(server_sock, &child_socket, SERVWAIT);
 		    if (ret == -1) {
 			    fprintf(stderr,"vrpn_start_server: Accept poll failed\n");
-			    close(server_sock);
+			    vrpn_closeSocket(server_sock);
 			    return -1;
 		    }
 		    if (ret == 1) {
@@ -2512,7 +2503,7 @@ int vrpn_start_server(const char * machine, char * server_name, char * args,
                     if (deadkid == pid) {
                         fprintf(stderr,
                                 "vrpn_start_server: server process exited\n");
-                        close(server_sock);
+                        vrpn_closeSocket(server_sock);
                         return(-1);
                     }
                 }
@@ -2522,13 +2513,13 @@ int vrpn_start_server(const char * machine, char * server_name, char * args,
                     fprintf(stderr,
                         "                  (took more than %d seconds)\n",
                         SERVWAIT*SERVCOUNT);
-                    close(server_sock);
+                    vrpn_closeSocket(server_sock);
                     kill(pid,SIGKILL);
                     wait(0);
                     return(-1);
                 }
 
-                close(server_sock);
+                vrpn_closeSocket(server_sock);
                 return(child_socket);
         }
         return 0;
@@ -2628,26 +2619,26 @@ static	SOCKET connect_udp_to (const char * machine, int portno,
 	client.sin_family = AF_INET;
 	if ( (host=gethostbyname(machine)) == NULL ) {
 #ifndef VRPN_USE_WINSOCK_SOCKETS
-		close(sock);
+	    vrpn_closeSocket(sock);
+	    fprintf(stderr,
+		 "vrpn: connect_udp_to: error finding host by name\n");
+	    return(INVALID_SOCKET);
+#else
+	    unsigned long addr = inet_addr(machine);
+	    if (addr == INADDR_NONE){
+		vrpn_closeSocket(sock);
 		fprintf(stderr,
 			 "vrpn: connect_udp_to: error finding host by name\n");
 		return(INVALID_SOCKET);
-#else
-		unsigned long addr = inet_addr(machine);
-		if (addr == INADDR_NONE){
-			close(sock);
-			fprintf(stderr,
-				 "vrpn: connect_udp_to: error finding host by name\n");
-			return(INVALID_SOCKET);
-		} else{
-			host = gethostbyaddr((char *)&addr,sizeof(addr), AF_INET);
-			if (!host){
-				close(sock);
-				fprintf(stderr,
-					 "vrpn: connect_udp_to: error finding host by name\n");
-				return(INVALID_SOCKET);
-			}
+	    } else{
+		host = gethostbyaddr((char *)&addr,sizeof(addr), AF_INET);
+		if (!host){
+		    vrpn_closeSocket(sock);
+		    fprintf(stderr,
+			 "vrpn: connect_udp_to: error finding host by name\n");
+		    return(INVALID_SOCKET);
 		}
+	    }
 #endif
 	}
 #ifdef CRAY
@@ -2672,7 +2663,7 @@ static	SOCKET connect_udp_to (const char * machine, int portno,
 		int error = WSAGetLastError();
 		fprintf(stderr, "Winsock error: %d\n", error);
 #endif
-		close(sock);
+		vrpn_closeSocket(sock);
 		return(INVALID_SOCKET);
 	}
 
@@ -2720,8 +2711,30 @@ vrpn_Endpoint::vrpn_Endpoint (vrpn_TypeDispatcher * dispatcher,
   init();
 }
 
+
 vrpn_Endpoint::~vrpn_Endpoint (void) {
 
+  // Close all of the sockets that are left open
+  if (d_tcpSocket != INVALID_SOCKET) {
+        vrpn_closeSocket(d_tcpSocket);
+        d_tcpSocket = INVALID_SOCKET;
+        d_tcpNumOut = 0;      // Ignore characters waiting to go
+  }
+  if (d_udpOutboundSocket != INVALID_SOCKET) {
+        vrpn_closeSocket(d_udpOutboundSocket);
+        d_udpOutboundSocket = INVALID_SOCKET;
+        d_udpNumOut = 0;      // Ignore characters waiting to go
+  }
+  if (d_udpInboundSocket != INVALID_SOCKET) {
+        vrpn_closeSocket(d_udpInboundSocket);
+        d_udpInboundSocket = INVALID_SOCKET;
+  }
+  if (d_tcpListenSocket != INVALID_SOCKET) {
+        vrpn_closeSocket(d_tcpListenSocket);
+        d_tcpListenSocket = INVALID_SOCKET;
+  }
+
+  // Delete type and sender arrays
   if (d_senders) {
     delete d_senders;
   }
@@ -2729,6 +2742,7 @@ vrpn_Endpoint::~vrpn_Endpoint (void) {
     delete d_types;
   }
 
+  // Delete the log, if any
   if (d_log) {
     // close() is called by destructor IFF necessary
     //d_log->close();
@@ -2736,7 +2750,6 @@ vrpn_Endpoint::~vrpn_Endpoint (void) {
   }
 
 }
-
 
 
 
@@ -2942,8 +2955,7 @@ int vrpn_Endpoint::mainloop (timeval * timeout,
       	printf("TRYING_TO_CONNECT\n");
 #endif
       	// See if we have a connection yet (nonblocking select).
-      	ret = vrpn_poll_for_accept(d_tcpListenSocket,
-					 &d_tcpSocket);
+      	ret = vrpn_poll_for_accept(d_tcpListenSocket, &d_tcpSocket);
       	if (ret  == -1) {
       		fprintf(stderr,
       		  "vrpn_Endpoint: mainloop: Can't poll for accept\n");
@@ -3540,7 +3552,7 @@ int vrpn_Endpoint::connect_tcp_to (const char * msg) {
     int error = WSAGetLastError();
     fprintf(stderr, "Winsock error: %d\n", error);
 #endif
-    close(d_tcpSocket);
+    vrpn_closeSocket(d_tcpSocket);
     status = BROKEN;
     return(-1);
   }
@@ -3553,7 +3565,7 @@ int vrpn_Endpoint::connect_tcp_to (const char * msg) {
 		if ( (p_entry = getprotobyname("TCP")) == NULL ) {
 			fprintf(stderr,
 			  "vrpn_Endpoint::connect_tcp_to: getprotobyname() failed.\n");
-			close(d_tcpSocket);
+			vrpn_closeSocket(d_tcpSocket);
                         status = BROKEN;
 			return -1;
 		}
@@ -3561,7 +3573,7 @@ int vrpn_Endpoint::connect_tcp_to (const char * msg) {
 		if (setsockopt(d_tcpSocket, p_entry->p_proto,
 			TCP_NODELAY, SOCK_CAST &nonzero, sizeof(nonzero))==-1) {
 			perror("vrpn_Endpoint::connect_tcp_to: setsockopt() failed");
-			close(d_tcpSocket);
+			vrpn_closeSocket(d_tcpSocket);
                         status = BROKEN;
 			return -1;
 		}
@@ -3611,17 +3623,17 @@ void vrpn_Endpoint::drop_connection (void) {
 //fprintf(stderr, "vrpn_Endpoint::drop_connection().\n");
 
   if (d_tcpSocket != INVALID_SOCKET) {
-        close(d_tcpSocket);
+        vrpn_closeSocket(d_tcpSocket);
         d_tcpSocket = INVALID_SOCKET;
         d_tcpNumOut = 0;      // Ignore characters waiting to go
   }
   if (d_udpOutboundSocket != INVALID_SOCKET) {
-        close(d_udpOutboundSocket);
+        vrpn_closeSocket(d_udpOutboundSocket);
         d_udpOutboundSocket = INVALID_SOCKET;
         d_udpNumOut = 0;      // Ignore characters waiting to go
   }
   if (d_udpInboundSocket != INVALID_SOCKET) {
-        close(d_udpInboundSocket);
+        vrpn_closeSocket(d_udpInboundSocket);
         d_udpInboundSocket = INVALID_SOCKET;
   }
 
@@ -3634,6 +3646,9 @@ void vrpn_Endpoint::drop_connection (void) {
   // definition).
 
   clear_other_senders_and_types();
+
+  // Clear out the buffers; nothing to read or send if no connection.
+  clearBuffers();
 
   // If we are logging, put a message in the log telling that we
   // have had a disconnection. We don't close the logfile here unless
@@ -3658,27 +3673,32 @@ void vrpn_Endpoint::drop_connection (void) {
     }
   }
 
+  // Recall that the connection counter is a pointer to our parent
+  // connection's count of active endpoints.  If it exists, we need
+  // to send disconnect messages to those who care.  If this is the
+  // last endpoint, then we send the last endpoint message; we
+  // always send a connection dropped message.
   // Message needs to be dispatched *locally only*, so we do_callbacks_for()
   // and never pack_message()
   struct timeval now;
   gettimeofday(&now, NULL);
 
-  if (d_connectionCounter) {
-    *d_connectionCounter--;
+  if (d_connectionCounter != NULL) {	// Do nothing on NULL pointer
+
+	*d_connectionCounter--;	// One less connection
+
+	d_dispatcher->doCallbacksFor
+	       (d_dispatcher->registerType(vrpn_dropped_connection),
+		d_dispatcher->registerSender(vrpn_CONTROL),
+		now, 0, NULL);
+
+	if (*d_connectionCounter == 0) { // None more left
+	    d_dispatcher->doCallbacksFor
+		 (d_dispatcher->registerType(vrpn_dropped_last_connection),
+		  d_dispatcher->registerSender(vrpn_CONTROL),
+		  now, 0, NULL);
+	}
   }
-
-  d_dispatcher->doCallbacksFor
-       (d_dispatcher->registerType(vrpn_dropped_connection),
-        d_dispatcher->registerSender(vrpn_CONTROL),
-        now, 0, NULL);
-
-  if (d_connectionCounter && !*d_connectionCounter) {
-    d_dispatcher->doCallbacksFor
-         (d_dispatcher->registerType(vrpn_dropped_last_connection),
-          d_dispatcher->registerSender(vrpn_CONTROL),
-          now, 0, NULL);
-  }
-
 }
 
 void vrpn_Endpoint::clearBuffers (void) {
@@ -5217,6 +5237,7 @@ vrpn_Connection::vrpn_Connection
                               NIC_IPaddress) == -1) {
   	fprintf(stderr,"vrpn_Connection: Can't create listen socket\n");
   	endpoint->status = BROKEN;
+	endpoint->d_tcpListenSocket = INVALID_SOCKET;
 //fprintf(stderr, "BROKEN - vrpn_Connection::vrpn_Connection.\n");
   	return;
     }
