@@ -44,6 +44,8 @@ vrpn_ForceDevice::vrpn_ForceDevice(char *name, vrpn_Connection *c)
 		  connection->register_message_type("setTriangle");
 		finishTrimesh_message_id = 
 		  connection->register_message_type("finishTrimesh");
+		transformTrimesh_message_id = 
+		  connection->register_message_type("transformTrimesh");
 		scp_message_id = connection->register_message_type("SCP");
 		set_constraint_message_id = 
 			connection->register_message_type("CONSTRAINT");
@@ -284,6 +286,11 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
   }
   if (vrpn_ForceDevice::connection->register_handler(finishTrimesh_message_id, 
 	handle_finishTrimesh_message, this, vrpn_ForceDevice::my_id)) {
+		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
+		vrpn_ForceDevice::connection = NULL;
+  }
+  if (vrpn_ForceDevice::connection->register_handler(transformTrimesh_message_id, 
+	handle_transformTrimesh_message, this, vrpn_ForceDevice::my_id)) {
 		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
 		vrpn_ForceDevice::connection = NULL;
   }
@@ -710,8 +717,14 @@ int vrpn_Phantom::handle_finishTrimesh_message(void *userdata,
   
   long	temp;
   
-  
   int numExpectedParameters=4;
+  
+  if (p.payload_len !=  (numExpectedParameters*sizeof(float)) ) {
+    fprintf(stderr,"vrpn_Phantom: change message payload error\n");
+    fprintf(stderr,"             (got %d, expected %d)\n",
+	    p.payload_len, numExpectedParameters*sizeof(float) );
+    return -1;
+  }
 
   // Typecasting used to get the byte order correct on the floats
   // that are coming from the other side.
@@ -732,6 +745,45 @@ int vrpn_Phantom::handle_finishTrimesh_message(void *userdata,
   myTrimesh->setSurfaceFstatic(SurfaceFstatic);
   myTrimesh->setSurfaceFdynamic(SurfaceFdynamic); 
   myTrimesh->setSurfaceKdamping(SurfaceKdamping);
+
+  return 0;
+}
+
+int vrpn_Phantom::handle_transformTrimesh_message(void *userdata, 
+					       vrpn_HANDLERPARAM p){
+
+  vrpn_Phantom *me = (vrpn_Phantom *)userdata;
+  long *params = (long*)(p.buffer);
+  
+  long	temp;
+
+  int numExpectedParameters=16;
+  
+  if (p.payload_len !=  (numExpectedParameters*sizeof(float)) ) {
+    fprintf(stderr,"vrpn_Phantom: change message payload error\n");
+    fprintf(stderr,"             (got %d, expected %d)\n",
+	    p.payload_len, numExpectedParameters*sizeof(float) );
+    return -1;
+  }
+  
+  float xformMatrix[16];
+
+  for(int i=0;i<16;i++){
+    // Typecasting used to get the byte order correct on the floats
+    // that are coming from the other side.
+    temp = ntohl(params[i]);
+    xformMatrix[i]= *(float*)(&temp);
+  }
+
+  /* now we need to scale the transformation vector of our matrix from meters
+	to millimeters */
+  xformMatrix[3]*=1000.0;
+  xformMatrix[7]*=1000.0;
+  xformMatrix[11]*=1000.0;
+
+  Trimesh *myTrimesh=me->trimesh;
+  
+  myTrimesh->setTransformMatrix(xformMatrix);
 
   return 0;
 }
@@ -859,9 +911,6 @@ char *vrpn_ForceDevice_Remote::encode_startTrimesh(int &len,
   unsigned long *longbuf = (unsigned long*)(void*)(buf);
   int	index = 0;
 
-  printf("startSending trimesh: %d verts, %d tris\n",numVerts,numTris);
-  printf("char_len: %d\n",len);
-
   longbuf[index++] = *(unsigned long*)(void*)(&numVerts);
   longbuf[index++] = *(unsigned long*)(void*)(&numTris);
  
@@ -950,6 +999,29 @@ char *vrpn_ForceDevice_Remote::encode_finishTrimesh(int &len){
   return buf; 
 }
 
+char *vrpn_ForceDevice_Remote::encode_trimeshTransform(int &len,
+						       float homMatrix[16]){
+  // Byte order of each needs to be reversed to match network standard
+  // This moving is done by horrible typecast hacks. 
+  // someone did this in the encode_plane(), so I just moused it on down (AG)
+
+  // count the number of parameters we're sending
+  len = (16)*sizeof(unsigned long);
+  // allocate the buffer for the message
+  char *buf=new char[len];
+
+  int i;
+  unsigned long *longbuf = (unsigned long*)(void*)(buf);
+  int	index;
+  
+  for(index=0;index<16;index++){
+    longbuf[index] = *(unsigned long*)(void*)(&(homMatrix[index]));    
+  }
+  for (i = 0; i < index; i++) {
+    longbuf[i] = htonl(longbuf[i]);
+  }
+  return buf; 
+}
 
 char *vrpn_ForceDevice_Remote::encode_constraint(int &len, int enable,
 			float x, float y, float z,float kSpr){
@@ -1148,6 +1220,27 @@ void vrpn_ForceDevice_Remote::finishSendingTrimesh(){
   }
 }
 
+// set the trimesh's homogen transform matrix (in row major order)
+void vrpn_ForceDevice_Remote::sendTrimeshTransform(float homMatrix[16]){
+  char	*msgbuf;
+  int		len;
+  struct timeval current_time;
+  
+  gettimeofday(&current_time, NULL);
+  timestamp.tv_sec = current_time.tv_sec;
+  timestamp.tv_usec = current_time.tv_usec;
+
+  if(connection){
+    msgbuf = encode_trimeshTransform(len,homMatrix);
+    if (connection->pack_message(len,timestamp,transformTrimesh_message_id,
+				 my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+      fprintf(stderr,"Phantom: cannot write message: tossing\n");
+    }
+    connection->mainloop();
+    delete msgbuf;
+  }
+}
+
 // stop the triMesh if connection
 void vrpn_ForceDevice_Remote::stopTrimesh(void){
   
@@ -1191,7 +1284,6 @@ void vrpn_ForceDevice_Remote::sendConstraint(int enable,
     delete msgbuf;
   }
 }
-
 
 void	vrpn_ForceDevice_Remote::mainloop(void)
 {/*  	float p[4];

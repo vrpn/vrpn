@@ -58,9 +58,10 @@ protected:
         long startTrimesh_message_id;   
         long setVertex_message_id;   
         long setTriangle_message_id;   
-        long finishTrimesh_message_id;
-	long set_constraint_message_id;
+        long finishTrimesh_message_id;   
+        long transformTrimesh_message_id;   
 
+	long set_constraint_message_id;
 
 	int   which_plane;
 	double force[3];
@@ -136,9 +137,10 @@ protected:
 				       vrpn_HANDLERPARAM p);
 	static int handle_finishTrimesh_message(void *userdata, 
 					 vrpn_HANDLERPARAM p);
+	static int handle_transformTrimesh_message(void *userdata, 
+					 vrpn_HANDLERPARAM p);
 	static int handle_constraint_change_message(void *userdata,
 					vrpn_HANDLERPARAM p);
-					
 public:
 	vrpn_Phantom(char *name, vrpn_Connection *c, float hz=1.0);
 	virtual void mainloop(void);
@@ -205,6 +207,8 @@ public:
         void sendVertex(int vertNum,float x,float y,float z);
         void sendTriangle(int triNum,int vert0,int vert1,int vert2);
         void finishSendingTrimesh();
+        // set the trimesh's homogen transform matrix (in row major order)
+        void sendTrimeshTransform(float homMatrix[16]);
   	void stopTrimesh(void);
 
 	void sendConstraint(int enable, float x, float y, float z, float kSpr);
@@ -215,10 +219,12 @@ public:
         char *encode_triangle(int &len,int triNum,
 			      int vert0,int vert1,int vert2);	       
         char *encode_finishTrimesh(int &len);
+
+        char *encode_trimeshTransform(int &len,float homMatrix[16]);
 	char *encode_constraint(int &len, int enable, float x, float y, float z,
 				float kSpr);
 
-	// This routine calls the mainloop of the connection it's on
+	// This routine calls the mainloop of the connection it's own
 	virtual void mainloop(void);
 
 	// (un)Register a callback handler to handle a force change
@@ -253,9 +259,9 @@ protected:
         static int handle_scp_change_message(void *userdata,
                                                         vrpn_HANDLERPARAM p);
 
-        void set_trimesh(int nV,float v[][3],
-			 int nT,int t[][3]);
 };
 
 #endif
+
+
 

@@ -162,6 +162,7 @@ static int client_msg_handler(void *userdata, vrpn_HANDLERPARAM p) {
       instance->set_all_toggle(mode);
     else instance->set_toggle(buttonid,mode);
   } 
+  return 0;
 }
 
 void	vrpn_Button::report_changes(void)
