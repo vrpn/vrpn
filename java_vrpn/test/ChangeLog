@@ -1,0 +1,8 @@
+2002-06-07  David Marshburn  <marshbur@cs.unc.edu>
+
+	* .cvsignore:  new
+	* TrackerTest.java:  changes to keep up with vrpn.TrackerRemote
+	(velocity, acceleration and exception)
+	* test.vjp:  build setting (CLASSPATH)
+	
+
