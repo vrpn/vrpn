@@ -10,6 +10,7 @@
 
 #ifdef linux
 #include <linux/lp.h>
+#include <string.h>
 #endif
 
 // Include vrpn_Shared.h _first_ to avoid conflicts with sys/time.h 
@@ -81,7 +82,25 @@ vrpn_BaseClass(name, c)
     SurfaceBuzzAmp = 0.0004f;
     SurfaceTextureWavelength = 0.01f;
     SurfaceTextureAmplitude = 0.0005f;
+	
+    // ajout ONDIM
+    customEffectId = -1;
+    customEffectParams = NULL;
+    nbCustomEffectParams = 0;
+    // fin ajout ONDIM
 }
+
+// ajout ONDIM
+void vrpn_ForceDevice::setCustomEffect(vrpn_int32 effectId, vrpn_float32 *params, vrpn_uint32 nbParams){
+	customEffectId=effectId;
+	if (customEffectParams != NULL) {
+		delete [] customEffectParams;
+	}
+	customEffectParams = new vrpn_float32[nbParams];
+	memcpy(customEffectParams, params, sizeof(vrpn_float32)*nbParams);
+	nbCustomEffectParams = nbParams;
+}
+// fin ajout ondim
 
 int vrpn_ForceDevice::register_types(void)
 {
@@ -131,12 +150,19 @@ int vrpn_ForceDevice::register_types(void)
       setConstraintKSpring_message_id =
             d_connection->register_message_type("vrpn_ForceDevice constraint_KSpring");
 
-      return 0;
+      // ajout ONDIM
+	  custom_effect_message_id = 
+            d_connection->register_message_type("vrpn_ForceDevice Custom Effect");
+	  // fin ajout ONDIM
+
+	  return 0;
 }
 
 // virtual
 vrpn_ForceDevice::~vrpn_ForceDevice (void) {
-
+	if (customEffectParams != NULL) {
+		delete [] customEffectParams;
+	}
 }
 
 void vrpn_ForceDevice::print_plane(void)
@@ -196,6 +222,66 @@ vrpn_int32 vrpn_ForceDevice::decode_force (const char *buffer, const vrpn_int32 
 
     return 0;
 }
+
+// ajout ONDIM
+char *vrpn_ForceDevice::encode_custom_effect(vrpn_int32 &len, const vrpn_uint32 effectId,
+					const vrpn_float32 *params, const vrpn_uint32 nbParams)
+{
+	char *buf;
+	char *mptr;
+	vrpn_int32 mlen;
+
+	len = sizeof(vrpn_uint32)*2 + nbParams*sizeof(vrpn_float32);
+	mlen = len;
+	
+	buf = new char [len];
+	mptr = buf;
+
+	vrpn_buffer(&mptr, &mlen, effectId);
+	vrpn_buffer(&mptr, &mlen, nbParams);
+
+	for (unsigned int i=0;i<nbParams;i++) {
+		vrpn_buffer(&mptr, &mlen, params[i]);
+	}
+
+	return buf;
+}
+
+// static
+vrpn_int32 vrpn_ForceDevice::decode_custom_effect (const char *buffer, const vrpn_int32 len, 
+	vrpn_uint32 *effectId, vrpn_float32 **params,vrpn_uint32 *nbParams)
+{
+    const char *mptr = buffer;
+
+	//OutputDebugString("decoding custom effect\n");
+
+    if (len < (sizeof(vrpn_uint32)*2)) {
+	  fprintf(stderr,"vrpn_ForceDevice: custom effect message payload error\n");
+      fprintf(stderr,"             (got %d, expected at least %d)\n",
+		    len, 2*sizeof(vrpn_uint32) );
+      return -1;
+    }
+
+    CHECK(vrpn_unbuffer(&mptr, effectId));
+	CHECK(vrpn_unbuffer(&mptr, nbParams));
+
+    if (len < (2*sizeof(vrpn_uint32) + (*nbParams)*sizeof(vrpn_float32))) {
+	  fprintf(stderr,"vrpn_ForceDevice: custom effect message payload error\n");
+      fprintf(stderr,"             (got %d, expected at least %d)\n",
+		    len,(2*sizeof(vrpn_uint32) + (*nbParams)*sizeof(vrpn_float32)));
+      return -2;
+    }
+
+	if (*params != NULL) delete [] *params;
+	*params = new vrpn_float32[(*nbParams)];
+
+	for (int i=0;i<(*nbParams);i++) {
+		CHECK(vrpn_unbuffer(&mptr, &((*params)[i])));
+	}
+	
+	return 0;
+}
+// fin ajout ONDIM
 
 // static
 char *vrpn_ForceDevice::encode_scp(vrpn_int32 &length, 
@@ -1383,6 +1469,49 @@ void vrpn_ForceDevice_Remote::useGhost(void){
   }
 }
 
+// ajout ONDIM
+void vrpn_ForceDevice_Remote::startEffect(void)
+{
+  char	*msgbuf;
+  vrpn_int32		len;
+  struct timeval current_time;
+  
+  gettimeofday(&current_time, NULL);
+  timestamp.tv_sec = current_time.tv_sec;
+  timestamp.tv_usec = current_time.tv_usec;
+
+  if(d_connection) {
+      msgbuf = encode_custom_effect(len, customEffectId, customEffectParams, nbCustomEffectParams);
+      if(d_connection->pack_message(len,timestamp,custom_effect_message_id,
+		d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+		fprintf(stderr,"Phantom: cannot write message: tossing\n");
+      }
+      delete [] msgbuf;
+  }
+}
+
+void vrpn_ForceDevice_Remote::stopEffect(void)
+{ 
+    char	*msgbuf;
+    vrpn_int32		len;
+    struct timeval current_time;
+    
+    gettimeofday(&current_time, NULL);
+    timestamp.tv_sec = current_time.tv_sec;
+    timestamp.tv_usec = current_time.tv_usec;
+    
+    setCustomEffect(-1,NULL,0);
+	  
+  if(d_connection) {
+      msgbuf = encode_custom_effect(len, customEffectId, customEffectParams, nbCustomEffectParams);
+      if(d_connection->pack_message(len,timestamp,custom_effect_message_id,
+		d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+		fprintf(stderr,"Phantom: cannot write message: tossing\n");
+      }
+      delete [] msgbuf;
+  }
+}
+// fin ajout ONDIM
 
 //
 // constraint methods

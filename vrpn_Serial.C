@@ -13,9 +13,13 @@
 #include <termios.h>
 #endif
 
-#if defined(linux) || defined(__APPLE__) 
+#if defined(linux) || defined(__APPLE__)
 #include <termios.h>
 #include <sys/errno.h>
+#endif
+
+#if defined(sgi)
+#include <errno.h>
 #endif
 
 #ifdef	_AIX

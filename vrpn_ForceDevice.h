@@ -1,4 +1,3 @@
-
 #ifndef FORCEDEVICE_H
 #define  FORCEDEVICE_H
 
@@ -62,6 +61,8 @@ class vrpn_ForceDevice : public vrpn_BaseClass {
            { SurfaceTextureWavelength = wl; }
     void setSurfaceTextureAmplitude (vrpn_float32 amp) 
            { SurfaceTextureAmplitude = amp; }
+    
+    void setCustomEffect(vrpn_int32 effectId, vrpn_float32 *params = NULL, vrpn_uint32 nbParams = 0);
 
     void setFF_Origin (vrpn_float32 x, vrpn_float32 y, vrpn_float32 z)
            { ff_origin[0] = x; ff_origin[1] = y; ff_origin[2] = z; }
@@ -139,7 +140,15 @@ class vrpn_ForceDevice : public vrpn_BaseClass {
     vrpn_int32 setTrimeshType_message_id;    
     vrpn_int32 clearTrimesh_message_id;    
 
+    // ajout ONDIM
+    vrpn_int32 custom_effect_message_id;
+    // fni ajout ONDIM
+
     // ENCODING
+    // ajout ONDIM
+    static char *encode_custom_effect(vrpn_int32 &len, vrpn_uint32 effectId, 
+		const vrpn_float32 *params, const vrpn_uint32 nbParams);
+    // fin ajout ONDIM
     static char *encode_force(vrpn_int32 &length, const vrpn_float64 *force);
     static char *encode_scp(vrpn_int32 &length,
 	    const vrpn_float64 *pos, const vrpn_float64 *quat);
@@ -173,6 +182,10 @@ class vrpn_ForceDevice : public vrpn_BaseClass {
 
 
     // DECODING
+    // ajout ONDIM
+    static vrpn_int32 decode_custom_effect(const char*buffer, const vrpn_int32 len,
+		vrpn_uint32 *effectId, vrpn_float32 **params, vrpn_uint32 *nbParams);
+    // fin ajout ONDIM
     static vrpn_int32 decode_force (const char *buffer, const vrpn_int32 len, 
 							vrpn_float64 *force);
     static vrpn_int32 decode_scp(const char *buffer, const vrpn_int32 len,
@@ -315,6 +328,12 @@ class vrpn_ForceDevice : public vrpn_BaseClass {
     vrpn_float32 SurfaceBuzzAmp;
     vrpn_float32 SurfaceTextureWavelength;
     vrpn_float32 SurfaceTextureAmplitude;
+	
+    // ajout ONDIM
+    vrpn_int32	customEffectId;
+    vrpn_float32 *customEffectParams;
+    vrpn_uint32	nbCustomEffectParams;
+    // fin ajout ONDIM
 };
 
 // User routine to handle position reports for surface contact point (SCP)
@@ -372,7 +391,7 @@ public:
     void updateTrimeshChanges();
     // set the trimesh's homogen transform matrix (in row major order)
     void setTrimeshTransform(vrpn_float32 homMatrix[16]);
-  	void clearTrimesh(void);
+    void clearTrimesh(void);
   
     // the next time we send a trimesh we will use the following type
     void useHcollide();
@@ -416,6 +435,11 @@ public:
 	    vrpn_float32 jacobian [3][3], vrpn_float32 radius);
     void sendForceField (void);
     void stopForceField (void);
+
+    // ajout ONDIM
+    void startEffect (void);
+    void stopEffect (void);
+    // fin ajout ONDIM
 
     // This routine calls the mainloop of the connection it is on
     virtual void mainloop ();
@@ -492,6 +516,4 @@ protected:
 };
 
 #endif
-
-
 

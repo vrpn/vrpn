@@ -1,3 +1,11 @@
+2003-09-26  Sebastien MARAUX  <maraux@ondim.fr>
+
+	* vrpn_ForceDevice.C : Added custom effect to ForceDevice,
+		in particular a buzzing effect whose amplitude
+		and frequency can be set.
+	* vrpn_ForceDevice.h : Same.
+	* vrpn_Serial.C : Change to make it compile on SGI.
+
 2003-09-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Tracker_isense.h : Fixing things that broke the build.
