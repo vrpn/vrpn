@@ -37,11 +37,14 @@ int main (int argc, char ** argv) {
   while (1) {
 
     me->mainloop();
+    memset(inputLine, 0, 100);
     fgets(inputLine, 100, stdin);
 
     if (!strncmp(inputLine, "req", 3)) {
+      printf("test_mutex:  sending request.\n");
       me->request();
     } else if (!strncmp(inputLine, "rel", 3)) {
+      printf("test_mutex:  sending release.\n");
       me->release();
     } else if (!strncmp(inputLine, "?", 1)) {
       printf("isAvailable:  %d.\n", me->isAvailable());
@@ -56,6 +59,8 @@ int main (int argc, char ** argv) {
     } else if (!strncmp(inputLine, "quit", 4)) {
       delete me;
       exit(0);
+    } else {
+      printf(".\n");
     }
   }
 
