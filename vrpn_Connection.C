@@ -1614,56 +1614,65 @@ static int	vrpn_getmyIP (char * myIPchar, int maxlen,
                               char * nameP = NULL,
                               const char * NIC_IP = NULL)
 {	
-	char	myname[100];		// Host name of this host
-        struct	hostent *host;          // Encoded host IP address, etc.
-	char	myIPstring[100];	// Hold "152.2.130.90" or whatever
+  char myname [100];		// Host name of this host
+  struct hostent * host;          // Encoded host IP address, etc.
+  char myIPstring [100];	// Hold "152.2.130.90" or whatever
+  int retval;
 
-        if (NIC_IP) {
-          if (strlen(NIC_IP) > maxlen) {
-            fprintf(stderr,"vrpn_getmyIP: Name too long to return\n");
-            return -1;
-          }
-          strcpy(myIPchar, NIC_IP);
-          return 0;
-        }
-
-	// Find out what my name is
-	if (gethostname(myname, sizeof(myname))) {
-		fprintf(stderr, "vrpn_getmyIP: Error finding local hostname\n");
-		return -1;
-	}
-
-	// Find out what my IP address is
-	if ( (host = gethostbyname(myname)) == NULL ) {
-		fprintf(stderr, "vrpn_getmyIP: error finding host by name\n");
-		return -1;
-	}
-
-	// Convert this back into a string
-#ifndef CRAY
-	if (host->h_length != 4) {
-		fprintf(stderr, "vrpn_getmyIP: Host length not 4\n");
-		return -1;
-	}
+  if (NIC_IP) {
+    if (strlen(NIC_IP) > maxlen) {
+      fprintf(stderr,"vrpn_getmyIP: Name too long to return\n");
+      return -1;
+    }
+#ifdef VERBOSE
+    fprintf(stderr, "Was given IP address of %s so returning that.\n",
+            NIC_IP);
 #endif
-	sprintf(myIPstring, "%u.%u.%u.%u",
-		(unsigned int)(unsigned char)host->h_addr_list[0][0],
-		(unsigned int)(unsigned char)host->h_addr_list[0][1],
-		(unsigned int)(unsigned char)host->h_addr_list[0][2],
-		(unsigned int)(unsigned char)host->h_addr_list[0][3]);
+    strncpy(myIPchar, NIC_IP, maxlen);
+    return 0;
+  }
 
-	// Copy this to the output
-	if (myIPchar == NULL) {
-		fprintf(stderr,"vrpn_getmyIP: NULL pointer passed in\n");
-		return -1;
-	}
-	if ((int)strlen(myIPstring) > maxlen) {
-		fprintf(stderr,"vrpn_getmyIP: Name too long to return\n");
-		return -1;
-	}
+  // Find out what my name is
+  if (gethostname(myname, sizeof(myname))) {
+    fprintf(stderr, "vrpn_getmyIP: Error finding local hostname\n");
+    return -1;
+  }
 
-	strcpy(myIPchar, myIPstring);
-	return 0;
+  // Find out what my IP address is
+  host = gethostbyname(myname);
+  if (host == NULL) {
+    fprintf(stderr, "vrpn_getmyIP: error finding host by name\n");
+    return -1;
+  }
+
+  // Convert this back into a string
+#ifndef CRAY
+  if (host->h_length != 4) {
+    fprintf(stderr, "vrpn_getmyIP: Host length not 4\n");
+    return -1;
+  }
+#endif
+  sprintf(myIPstring, "%u.%u.%u.%u",
+  	(unsigned int)(unsigned char)host->h_addr_list[0][0],
+  	(unsigned int)(unsigned char)host->h_addr_list[0][1],
+  	(unsigned int)(unsigned char)host->h_addr_list[0][2],
+  	(unsigned int)(unsigned char)host->h_addr_list[0][3]);
+
+  // Copy this to the output
+  if (myIPchar == NULL) {
+    fprintf(stderr,"vrpn_getmyIP: NULL pointer passed in\n");
+    return -1;
+  }
+  if ((int)strlen(myIPstring) > maxlen) {
+    fprintf(stderr,"vrpn_getmyIP: Name too long to return\n");
+    return -1;
+  }
+
+  strcpy(myIPchar, myIPstring);
+#ifdef VERBOSE
+  fprintf(stderr, "Decided on IP address of %s.\n", myIPchar);
+#endif
+  return 0;
 }
 
 
@@ -3171,13 +3180,15 @@ int vrpn_Endpoint::pack_udp_description (int portno) {
   struct timeval now;
   vrpn_uint32 portparam = portno;
   char myIPchar [1000];
+  int retval;
 
 #ifdef VERBOSE2
   fprintf(stderr, "Getting IP address of NIC %s.\n", d_NICaddress);
 #endif
 
   // Find the local host name
-  if (vrpn_getmyIP(myIPchar, sizeof(myIPchar)), NULL, d_NICaddress) {
+  retval = vrpn_getmyIP(myIPchar, sizeof(myIPchar), NULL, d_NICaddress);
+  if (retval) {
     perror("vrpn_Endpoint::pack_udp_description: can't get host name");
     return -1;
   }
