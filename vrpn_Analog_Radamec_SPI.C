@@ -201,7 +201,7 @@ vrpn_int32 vrpn_Radamec_SPI::convert_16bit_unsigned(const unsigned char *buf)
 
 double	vrpn_Radamec_SPI::int_to_pan(vrpn_uint32 val)
 {
-    return (val - 0x7ffff) / 900.0;
+    return (((int)val) - 0x7ffff) / 900.0;
 }
 
 double	vrpn_Radamec_SPI::int_to_zoom(vrpn_uint32 val)

@@ -1,3 +1,7 @@
+2000-08-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Analog_Radamec.C (int_to_pan) : Fix negative rotations
+
 2000-08-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Analog_Radamec.C (send_command) : Removed slow writes
