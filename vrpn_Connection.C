@@ -52,7 +52,7 @@
 #include <netinet/tcp.h>
 #endif
 
-#include "vrpn_cygwin_hack.h"
+//#include "vrpn_cygwin_hack.h"
 
 // cast fourth argument to setsockopt()
 #ifdef _WIN32
@@ -1220,6 +1220,17 @@ void vrpn_OneConnection::init(void)
 		other_types[i].local_id = -1;
 		other_types[i].name = NULL;
 	}
+	
+	tvClockOffset.tv_sec = 0;
+	tvClockOffset.tv_usec = 0;
+
+	// Set up default value for the cookie received from the server
+	// because if we are using a file connection and want to 
+	// write a log, we never receive a cookie from the server.
+	d_logmagic = new char[vrpn_cookie_size() + 1];
+	write_vrpn_cookie(d_logmagic, vrpn_cookie_size() + 1,
+			     vrpn_LOG_NONE);
+
 }
 
 vrpn_OneConnection::vrpn_OneConnection (void) :
@@ -1285,6 +1296,9 @@ vrpn_OneConnection::~vrpn_OneConnection(void)
 			delete d_log_filters;
 			d_log_filters = next;
 		}
+	}
+	if (d_logmagic) {
+	    delete [] d_logmagic;
 	}
 }
 
@@ -1768,7 +1782,6 @@ int vrpn_OneConnection::close_log (void)
   // to make the log mode 0.
 
   retval = fwrite(d_logmagic, 1, vrpn_cookie_size(), d_logfile);
-  delete [] d_logmagic;
   if (retval != vrpn_cookie_size()) {
     fprintf(stderr, "vrpn_Connection::close_log:  "
                     "Couldn't write magic cookie to log file "
@@ -2259,7 +2272,6 @@ int vrpn_Connection::setup_new_connection
 
 	// Store the magic cookie from the other side into a buffer so
 	// that it can be put into an incoming log file.
-	endpoint.d_logmagic = new char[vrpn_cookie_size()];
 	memcpy(endpoint.d_logmagic, recvbuf, vrpn_cookie_size());
 
 	// Find out what log mode they want us to be in BEFORE we pack
@@ -3605,9 +3617,12 @@ int	vrpn_Connection::do_callbacks_for(vrpn_int32 type, vrpn_int32 sender,
 {
 	// Make sure we have a non-negative type.  System messages are
 	// handled differently.
-	if (type < 0)
+    if (type < 0) {
+	// XXX Hack allow clock system messages to be handled by "user" code. 
+	    if ((type != vrpn_CLOCK_QUERY) && ( type!=vrpn_CLOCK_REPLY)) {
 		return 0;
-
+	    }
+    }
 	vrpnMsgCallbackEntry * who;
 	vrpn_HANDLERPARAM p;
 
@@ -4108,7 +4123,7 @@ int	vrpn_Connection::handle_sender_message(void *userdata,
 // reconnected server.
 
 int	vrpn_Connection::handle_disconnect_message(void *userdata,
-		vrpn_HANDLERPARAM p)
+		vrpn_HANDLERPARAM /*p*/)
 {
 	vrpn_Connection * me = (vrpn_Connection*)userdata;
 
@@ -4130,9 +4145,13 @@ int vrpn_Connection::register_handler(vrpn_int32 type,
         //   OR that it is "any"
 	if ( ( (type < 0) || (type >= num_my_types) ) &&
              (type != vrpn_ANY_TYPE) ) {
+	    // XXX Hack allow clock system message to be registered 
+	    // by user code, for now.
+	    if ((type != vrpn_CLOCK_QUERY) && ( type!=vrpn_CLOCK_REPLY)) {
 		fprintf(stderr,
 			"vrpn_Connection::register_handler: No such type\n");
 		return -1;
+	    }
 	}
 
 	// Ensure that the sender is a valid one (or "any")
@@ -4187,9 +4206,13 @@ int vrpn_Connection::unregister_handler(vrpn_int32 type,
         //   OR that it is "any"
 	if ( ( (type < 0) || (type >= num_my_types) ) &&
 	     (type != vrpn_ANY_TYPE) ) {
+	    // XXX Hack allow clock system message to be registered 
+	    // by user code, for now.
+	    if ((type != vrpn_CLOCK_QUERY) && ( type!=vrpn_CLOCK_REPLY)) {
 		fprintf(stderr,
 			"vrpn_Connection::unregister_handler: No such type\n");
 		return -1;
+	    }
 	}
 
 	// Find a handler with this registry in the list (any one will do,
@@ -4298,7 +4321,8 @@ vrpn_Connection * vrpn_get_connection_by_name
 		is_file = !strncmp(cname, "file:", 5);
 
                 if (is_file)
-                        c = new vrpn_File_Connection (cname);
+                        c = new vrpn_File_Connection (cname, 
+				  local_logfile_name, local_log_mode);
                 else {
 			port = vrpn_get_port_number(cname);
                         c = new vrpn_Synchronized_Connection

@@ -33,8 +33,10 @@
 // }}}
 // {{{ constructor
 
-vrpn_File_Connection::vrpn_File_Connection (const char * file_name) :
-    vrpn_Connection (file_name),
+vrpn_File_Connection::vrpn_File_Connection (const char * file_name,
+                         const char * local_logfile_name,
+                         long local_log_mode) :
+    vrpn_Connection (file_name, -1, local_logfile_name, local_log_mode),
     d_controllerId (register_sender("vrpn File Controller")),
     d_set_replay_rate_type(
         register_message_type("vrpn File set replay rate")),
@@ -802,6 +804,16 @@ int vrpn_File_Connection::handle_play_to_time(
     newtime.tv_usec = ((vrpn_int32 *) (p.buffer))[1];
 
     return me->play_to_time(newtime);
+}
+
+int vrpn_File_Connection::send_pending_reports(void)
+{
+    // Do nothing except clear the buffer - 
+    // file connections aren't really connected to anything. 
+
+   d_tcp_num_out = 0;	// Clear the buffer for the next time
+   d_udp_num_out = 0;	// Clear the buffer for the next time
+   return 0;
 }
 
 // }}}

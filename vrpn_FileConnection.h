@@ -27,7 +27,9 @@
 class vrpn_File_Connection : public vrpn_Connection
 {
 public:
-    vrpn_File_Connection (const char * file_name);
+    vrpn_File_Connection (const char * file_name, 
+                         const char * local_logfile_name = NULL,
+                         long local_log_mode = vrpn_LOG_NONE);
     virtual ~vrpn_File_Connection (void);
     
     virtual int mainloop (const timeval * timeout = NULL);
@@ -35,6 +37,9 @@ public:
     virtual int time_since_connection_open (timeval * elapsed_time);
 
     virtual vrpn_File_Connection *get_File_Connection() { return this; }
+
+    // Pretend to send pending report, really just clear the buffer.
+    virtual int     send_pending_reports (void);
 
     // {{{ fileconnections-specific methods (playback control)
 public:

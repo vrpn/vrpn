@@ -4,7 +4,7 @@
 #include "vrpn_Types.h"
 
 // {{{ timeval defines
-#ifdef _WIN32
+#if defined (_WIN32) && !defined (__CYGWIN__)
 
 // {{{ win32 specific stuff
 
@@ -12,10 +12,9 @@
 #include <sys/timeb.h>
 #include <winsock.h>   // timeval is defined here
 
+
 // If compiling under Cygnus Solutions Cygwin
 // then this should already be defined.
-
-#if !defined(__CYGWIN__)
 #ifndef _STRUCT_TIMEVAL
 #define _STRUCT_TIMEVAL
   /* from HP-UX */
@@ -27,17 +26,18 @@ struct timezone {
 
 extern int gettimeofday(struct timeval *tp, struct timezone *tzp);
 
-#else
-#include <sys/time.h>
-#endif // ! __CYGWIN__
-
 // This has been moved to connection.C so that users of this
 // lib can still use fstream and other objects with close functions.
 // #define close closesocket
 
-// }}} end win32 specific
+#else  // not _WIN32, but including CYGWIN
 
-#else  // not _WIN32
+#if defined(__CYGWIN__)
+#include <windows.h>
+#include <sys/timeb.h>
+#include <winsock.h>   // timeval is defined here
+#endif
+// }}} end win32 specific
 
 #include <sys/time.h>    // for struct timeval
 

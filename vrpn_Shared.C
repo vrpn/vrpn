@@ -14,7 +14,7 @@
 #include <netinet/in.h>
 #endif
 
-#include "vrpn_cygwin_hack.h"
+//#include "vrpn_cygwin_hack.h"
 
 #define CHECK(a) if (a == -1) return -1
 
@@ -305,6 +305,9 @@ long vrpn_unbuffer (const char ** buffer, char * string,
 
 // Although VC++ doesn't include a gettimeofday
 // call, Cygnus Solutions Cygwin32 environment does.
+// XXX AND ITS WRONG in the current release 10/11/99, version b20.1
+// They claim it will be fixed in the next release, version b21
+// so until then, we will make it right using our solution. 
 #if defined(_WIN32) && !defined(__CYGWIN__)
 #include <iostream.h>
 #include <math.h>
@@ -449,6 +452,10 @@ static int vrpn_AdjustFrequency(void)
 // Although VC++ doesn't include a gettimeofday
 // call, Cygnus Solutions Cygwin32 environment does,
 // so this is not used when compiling with gcc under WIN32
+
+// XXX AND ITS WRONG in the current release 10/11/99
+// They claim it will be fixed in the next release, 
+// so until then, we will make it right using our solution. 
 ///////////////////////////////////////////////////////////////
 int gettimeofday(timeval *tp, struct timezone *tzp)
 {
@@ -480,7 +487,7 @@ int gettimeofday(timeval *tp, struct timezone *tzp)
             gettimeofday( tp, tzp );
             return 0;
         }
-    
+
         if (vrpn_AdjustFrequency()<0) {
             cerr << "\nvrpn gettimeofday: can't verify clock frequency. " 
                  << "Defaulting to _ftime (~6 ms resolution) ..." << endl;
@@ -488,7 +495,6 @@ int gettimeofday(timeval *tp, struct timezone *tzp)
             gettimeofday( tp, tzp );
             return 0;
         }
-
         // get current time
         // We assume this machine has a time stamp counter register --
         // I don't know of an easy way to check for this
@@ -520,7 +526,8 @@ int gettimeofday(timeval *tp, struct timezone *tzp)
   
     return 0;
 }
-#endif
+
+#endif //defined(_WIN32)
 
 // do the calibration before the program ever starts up
 static timeval __tv;

@@ -48,6 +48,12 @@ vrpn_Shared_int32 & vrpn_Shared_int32::operator =
 
 void vrpn_Shared_int32::bindConnection (vrpn_Connection * c) {
   char buffer [101];
+  if (c == NULL) {
+      // unbind the connection
+      d_connection = NULL;
+      return;
+  }
+
   if (c && d_connection) {
     fprintf(stderr, "vrpn_Shared_int32::bindConnection:  "
                     "Tried to rebind a connection to %s.\n", d_name);
@@ -278,7 +284,7 @@ vrpn_Shared_int32_Remote::~vrpn_Shared_int32_Remote (void) {
   // unregister handlers
   if (d_connection) {
     d_connection->unregister_handler
-           (d_updateFromRemote_type, handle_updateFromServer, this, d_myId);
+           (d_updateFromServer_type, handle_updateFromServer, this, d_myId);
   }
 
 }
@@ -391,6 +397,12 @@ vrpn_Shared_float64 & vrpn_Shared_float64::operator =
 
 void vrpn_Shared_float64::bindConnection (vrpn_Connection * c) {
   char buffer [101];
+  if (c == NULL) {
+      // unbind the connection
+      d_connection = NULL;
+      return;
+  }
+
   if (c && d_connection) {
     fprintf(stderr, "vrpn_Shared_float64::bindConnection:  "
                     "Tried to rebind a connection to %s.\n", d_name);
@@ -623,7 +635,7 @@ vrpn_Shared_float64_Remote::~vrpn_Shared_float64_Remote (void) {
   // unregister handlers
   if (d_connection) {
     d_connection->unregister_handler
-           (d_updateFromRemote_type, handle_updateFromServer, this, d_myId);
+           (d_updateFromServer_type, handle_updateFromServer, this, d_myId);
   }
 
 }

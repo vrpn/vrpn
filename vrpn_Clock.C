@@ -9,7 +9,7 @@
   Revised: Wed Apr  1 13:23:40 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.C,v $
   $Locker:  $
-  $Revision: 1.22 $
+  $Revision: 1.23 $
   \*****************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
@@ -44,8 +44,13 @@ vrpn_Clock::vrpn_Clock(const char * name, vrpn_Connection *c) {
   }
   clockServer_id = connection->register_sender(servicename);
 
-  queryMsg_id = connection->register_message_type("clock query");
-  replyMsg_id = connection->register_message_type("clock reply");
+  // XXX Hack We need to force the clock messages to be system messages,
+  // so we use hard-coded message IDs from vrpn_Connection.h
+  // Should be fixed in a re-write by Stefan Sain and Jeff Juliano. 
+  queryMsg_id = vrpn_CLOCK_QUERY;
+  replyMsg_id = vrpn_CLOCK_REPLY;
+//    queryMsg_id = connection->register_message_type("clock query");
+//    replyMsg_id = connection->register_message_type("clock reply");
   if ( (clockServer_id == -1) || (queryMsg_id == -1) || (replyMsg_id == -1) ) {
     cerr << "vrpn_Clock: Can't register IDs" << endl;
     connection = NULL;
@@ -887,6 +892,25 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
 
 /*****************************************************************************\
   $Log: vrpn_Clock.C,v $
+  Revision 1.23  1999/10/14 15:54:21  helser
+  Changes vrpn_FileConnection so it will allow local logging. I used this
+  ability to write a log-file manipulator. I read in a log file, check and
+  apply a fix to the timestamps, then send out an identical message to the
+  one I received on the file connection, which gets logged. Problem: I don't
+  get system messages in the new log file.
+
+  Played with gettimeofday in Cygwin environment, and found it is broken and
+  can't be fixed using Han's tricks in vrpn_Shared.C. But, instead found a
+  way to get rid of vrpn_cygwin_hack.h - just include sys/time.h AFTER the
+  standard windows headers. vrpn_cygwin_hack.h will be totally removed in my
+  next commit.
+
+  Added quick hack to make Clock messages system messages. This allows clock
+  sync to happen before any user messages are send, if you spin the
+  connection's mainloop a few times on each end, and allows the
+  File_Connection to replay a log of the session correctly later. This is
+  the work-around for the broken Cygwin gettimeofday.
+
   Revision 1.22  1999/10/08 22:29:54  taylorr
   Shutdown/restart server w/o restarting app
   	If the client starts before the server, this is okay -- it will retry
