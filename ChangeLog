@@ -1,3 +1,10 @@
+2004-1-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker.C : Added initialization of the watchdog timer
+		in the constructor to keep it from accidentally taking
+		over and causing infinite-reset problems on all but
+		the Liberty.
+
 2003-12-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Flock.h : Added an optional flag to tell whether to invert

@@ -73,6 +73,10 @@ vrpn_BaseClass(name, c)
 	timestamp.tv_sec = 0;
 	timestamp.tv_usec = 0;
 
+	// Set the watchdog time to zero, which will disable it unless it is used
+	watchdog_timestamp.tv_sec = 0;
+	watchdog_timestamp.tv_usec = 0;
+
 	// Set the sensor to 0 just to have something in there.
 	d_sensor = 0;
 
@@ -841,7 +845,7 @@ void vrpn_Tracker_Serial::mainloop()
 		time_lapsed=duration(current_time,watchdog_timestamp);
 	    }
 
-	    if ( time_lapsed > vrpn_ser_tkr_MAX_TIME_INTERVAL) {
+	    if (time_lapsed > vrpn_ser_tkr_MAX_TIME_INTERVAL) {
 	      char errmsg[1024];
 	      sprintf(errmsg,"Tracker failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n", \
 		      current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);
