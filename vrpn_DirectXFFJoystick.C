@@ -15,15 +15,15 @@
 //	The driver portions of this code are based on the Microsoft
 // DirectInput example code from the DirectX SDK.
 
+#include <math.h>
 #include "vrpn_DirectXFFJoystick.h"
-#include "vrpn_Shared.h"
 
 #undef	DEBUG
 #undef VERBOSE
 
 // Defines the modes in which the box can find itself.
-#define	STATUS_BROKEN		(-1)	// Broken joystick
-#define	STATUS_READING		(1)	// Looking for a report
+const int STATUS_BROKEN	  = -1;	  // Broken joystick
+const int STATUS_READING  =  1;	  // Looking for a report
 
 #define MAX_TIME_INTERVAL       (2000000) // max time to try and reacquire
 
@@ -31,33 +31,6 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 {
 	return (t1.tv_usec - t2.tv_usec) +
 	       1000000L * (t1.tv_sec - t2.tv_sec);
-}
-
-// XXX This is a horrible hack to get a handle to the console window for
-// the running process.  This is needed to pass into the DirectInput
-// routines.
-static	HWND GetConsoleHwnd(void) {
-  // Get the current window title.
-  char pszOldWindowTitle[1024];
-  GetConsoleTitle(pszOldWindowTitle, 1024);
-
-  // Format a unique New Window Title.
-  char pszNewWindowTitle[1024];
-  wsprintf(pszNewWindowTitle, "%d/%d", GetTickCount(), GetCurrentProcessId());
-
-  // Change the current window title.
-  SetConsoleTitle(pszNewWindowTitle);
-
-  // Ensure window title has changed.
-  Sleep(40);
-
-  // Look for the new window.
-  HWND hWnd = FindWindow(NULL, pszNewWindowTitle);
-
-  // Restore orignal name
-  SetConsoleTitle(pszOldWindowTitle);
-
-  return hWnd;
 }
 
 // This creates a vrpn_CerealBox and sets it to reset mode. It opens
@@ -68,12 +41,14 @@ vrpn_DirectXFFJoystick::vrpn_DirectXFFJoystick (const char * name, vrpn_Connecti
 						double readRate, double forceRate) :
 		vrpn_Analog(name, c),
 		vrpn_Button(name, c),
+		vrpn_ForceDevice(name, c),
 		_read_rate(readRate),
 		_force_rate(forceRate),
 		_DirectInput(NULL),
 		_Joystick(NULL),
 		_numchannels(min(12,vrpn_CHANNEL_MAX)),		   // Maximum available
-		_numbuttons(min(128,vrpn_BUTTON_MAX_BUTTONS))      // Maximum available
+		_numbuttons(min(128,vrpn_BUTTON_MAX_BUTTONS)),     // Maximum available
+		_numforceaxes(0)				   // Filles in later.
 {
   // Set the parameters in the parent classes
   vrpn_Button::num_buttons = _numbuttons;
@@ -88,17 +63,44 @@ vrpn_DirectXFFJoystick::vrpn_DirectXFFJoystick (const char * name, vrpn_Connecti
   // Set the status of the buttons and analogs to 0 to start
   clear_values();
 
+  // We need a non-console window handle to give to the function if we are
+  // asking for exclusive access (I don't know why, but we do).
+  _hWnd = CreateWindow("STATIC", "JoystickWindow", WS_ICONIC, 0,0, 10,10, NULL, NULL, NULL, NULL);
+
   // Initialize DirectInput and set the axes to return numbers in the range
   // -1000 to 1000.  We make the same mapping for analogs and sliders, so we
   // don't care how many this particular joystick has.  This enables users of
   // joysticks to keep the same mappings (but does not pass on the list of
   // what is actually intalled, unfortunately).
-  _hWnd = GetConsoleHwnd();
+  // If we're using a forceDevice, then set it up as well.
+#ifdef DEBUG
+  printf("vrpn_DirectXFFJoystick::vrpn_DirectXFFJoystick(): Window handle %ld\n", _hWnd);
+#endif
   if( FAILED( InitDirectJoystick() ) ) {
-    fprintf(stderr,"vrpn_DirectXFFJoystick::vrpn_DirectXFFJoystick(): Failed to open direct input\n");
+    fprintf(stderr,"vrpn_DirectXFFJoystick::vrpn_DirectXFFJoystick(): Failed to open direct joystick\n");
     _status = STATUS_BROKEN;
     _hWnd = NULL;
     return;
+  }
+
+  // Zero the forces on the device, if we have one.
+  if (_force_rate > 0) {
+    _fX = _fY = 0;
+    send_normalized_force(0,0);
+  }
+
+  // Register an autodeleted handler on the "last connection dropped" system message
+  // and have it call a routine that zeroes the forces when it is called.
+  register_autodeleted_handler(d_connection->register_message_type(vrpn_dropped_last_connection), handle_last_connection_dropped, this);
+
+  // Register handlers for the force-feedback messages coming from the remote object.
+  // XXX Eventually, fill out this list.  For now, we have only planes.
+  if (_force_rate > 0) {
+    if (register_autodeleted_handler(plane_message_id, 
+	  handle_plane_change_message, this, vrpn_ForceDevice::d_sender_id)) {
+		  fprintf(stderr,"vrpn_DirectXFFJoystick:can't register plane handler\n");
+		  _status = STATUS_BROKEN;
+    }
   }
 
   // Set the mode to reading.  Set time to zero, so we'll try to read
@@ -108,8 +110,15 @@ vrpn_DirectXFFJoystick::vrpn_DirectXFFJoystick (const char * name, vrpn_Connecti
 
 vrpn_DirectXFFJoystick::~vrpn_DirectXFFJoystick()
 {
-    // Unacquire the device one last time just in case 
-    // the app tried to exit while the device is still acquired.
+  // Remove the ForceEffect if there is one
+  if ( _ForceEffect ) {
+    send_normalized_force(0,0);
+    _ForceEffect->Release();
+    _ForceEffect = NULL;
+  }
+
+  // Unacquire the device one last time just in case 
+  // the app tried to exit while the device is still acquired.
   if( _Joystick ) {
     _Joystick->Unacquire();
     _Joystick->Release();
@@ -125,7 +134,6 @@ vrpn_DirectXFFJoystick::~vrpn_DirectXFFJoystick()
 
 HRESULT vrpn_DirectXFFJoystick::InitDirectJoystick( void )
 {
-    HWND    hWnd = GetConsoleHwnd();
     HRESULT hr;
 
     // Register with the DirectInput subsystem and get a pointer
@@ -138,16 +146,19 @@ HRESULT vrpn_DirectXFFJoystick::InitDirectJoystick( void )
         return hr;
     }
 
-    // Look for a simple joystick we can use for this sample program.
+    // Look for a simple joystick we can use for this sample program; if we want force feedback,
+    // then also look for one that has this feature.
+    long device_type = DIEDFL_ATTACHEDONLY;
+    if (_force_rate > 0) { device_type |= DIEDFL_FORCEFEEDBACK; }
     if( FAILED( hr = _DirectInput->EnumDevices( DI8DEVCLASS_GAMECTRL, 
                            EnumJoysticksCallback,
-                           this, DIEDFL_ATTACHEDONLY ) ) ) {
+                           this, device_type ) ) ) {
         fprintf(stderr, "vrpn_DirectXFFJoystick::InitDirectJoystick(): Cannot Enumerate devices\n");
 	_status = STATUS_BROKEN;
         return hr;
     }
 
-    // Make sure we got a joystick
+    // Make sure we got a joystick of the type we wanted
     if( NULL == _Joystick ) {
 	fprintf(stderr, "vrpn_DirectXFFJoystick::InitDirectJoystick(): No joystick found\n");
 	_status = STATUS_BROKEN;
@@ -167,8 +178,12 @@ HRESULT vrpn_DirectXFFJoystick::InitDirectJoystick( void )
 
     // Set the cooperative level to let DInput know how this device should
     // interact with the system and with other DInput applications.
-    if( FAILED( hr = _Joystick->SetCooperativeLevel( hWnd, DISCL_NONEXCLUSIVE | 
-		     DISCL_BACKGROUND ) ) ) {
+    // Exclusive access is required in order to perform force feedback.
+    long access_type = DISCL_NONEXCLUSIVE | DISCL_BACKGROUND;
+    if (_force_rate > 0) {
+      access_type = DISCL_EXCLUSIVE | DISCL_BACKGROUND;
+    }
+    if( FAILED( hr = _Joystick->SetCooperativeLevel( _hWnd, access_type) ) ) {
         fprintf(stderr, "vrpn_DirectXFFJoystick::InitDirectJoystick(): Cannot set cooperative level\n");
 	_status = STATUS_BROKEN;
         return hr;
@@ -181,6 +196,61 @@ HRESULT vrpn_DirectXFFJoystick::InitDirectJoystick( void )
         fprintf(stderr, "vrpn_DirectXFFJoystick::InitDirectJoystick(): Cannot enumerate objects\n");
 	_status = STATUS_BROKEN;
         return hr;
+    }
+    if (_force_rate > 0) {
+      if (_numforceaxes != 2) {
+	fprintf(stderr, "vrpn_DirectXFFJoystick::InitDirectJoystick(): Not two force axes, disabling forces\n");
+	_force_rate = 0;
+      } else {
+#ifdef DEBUG
+	printf("vrpn_DirectXFFJoystick::InitDirectJoystick(): found %d force axes\n", _numforceaxes);
+#endif
+	// Since we will be playing force feedback effects, we should disable the
+	// auto-centering spring.
+        DIPROPDWORD dipdw;
+	dipdw.diph.dwSize       = sizeof(DIPROPDWORD);
+	dipdw.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+	dipdw.diph.dwObj        = 0;
+	dipdw.diph.dwHow        = DIPH_DEVICE;
+	dipdw.dwData            = FALSE;
+
+#ifdef DEBUG
+	printf("vrpn_DirectXFFJoystick::InitDirectJoystick(): disabling autocenter\n");
+#endif
+	if( FAILED( hr = _Joystick->SetProperty( DIPROP_AUTOCENTER, &dipdw.diph ) ) ) {
+	  fprintf(stderr, "vrpn_DirectXFFJoystick::InitDirectJoystick(): Can't disable autocenter, disabling forces\n");
+	  _force_rate = 0;
+	} else {
+	  // This application needs only one effect: Applying raw forces.
+	  DWORD           rgdwAxes[2]     = { DIJOFS_X, DIJOFS_Y };
+	  LONG            rglDirection[2] = { 0, 0 };
+	  DICONSTANTFORCE cf              = { 0 };
+
+	  DIEFFECT eff;
+	  ZeroMemory( &eff, sizeof(eff) );
+	  eff.dwSize                  = sizeof(DIEFFECT);
+	  eff.dwFlags                 = DIEFF_CARTESIAN | DIEFF_OBJECTOFFSETS;
+	  eff.dwDuration              = INFINITE;
+	  eff.dwSamplePeriod          = 0;
+	  eff.dwGain                  = DI_FFNOMINALMAX;
+	  eff.dwTriggerButton         = DIEB_NOTRIGGER;
+	  eff.dwTriggerRepeatInterval = 0;
+	  eff.cAxes                   = _numforceaxes;
+	  eff.rgdwAxes                = rgdwAxes;
+	  eff.rglDirection            = rglDirection;
+	  eff.lpEnvelope              = 0;
+	  eff.cbTypeSpecificParams    = sizeof(DICONSTANTFORCE);
+	  eff.lpvTypeSpecificParams   = &cf;
+	  eff.dwStartDelay            = 0;
+
+	  // Create the prepared effect
+	  if( FAILED( hr = _Joystick->CreateEffect( GUID_ConstantForce, &eff, &_ForceEffect, NULL ) ) ||
+	      (_ForceEffect == NULL) ) {
+	    fprintf(stderr,"vrpn_DirectXFFJoystick::InitDirectJoystick(): Can't create force effect, disabling forces\n");
+	    _force_rate = 0;
+	  }
+	}
+      }
     }
 
     // Acquire the joystick
@@ -252,8 +322,7 @@ BOOL CALLBACK vrpn_DirectXFFJoystick::EnumObjectsCallback( const DIDEVICEOBJECTI
 #endif
     // For axes that are returned, set the DIPROP_RANGE property for the
     // enumerated axis in order to scale min/max values to -1000 to 1000.
-    if( pdidoi->dwType & DIDFT_AXIS )
-    {
+    if (pdidoi->dwType & DIDFT_AXIS) {
         DIPROPRANGE diprg; 
         diprg.diph.dwSize       = sizeof(DIPROPRANGE); 
         diprg.diph.dwHeaderSize = sizeof(DIPROPHEADER); 
@@ -264,8 +333,12 @@ BOOL CALLBACK vrpn_DirectXFFJoystick::EnumObjectsCallback( const DIDEVICEOBJECTI
     
         // Set the range for the axis
         if( FAILED( me->_Joystick->SetProperty( DIPROP_RANGE, &diprg.diph ) ) ) 
-            return DIENUM_STOP;
-         
+            return DIENUM_STOP;         
+    }
+
+    // For each force-feedback actuator returned, add one to the count.
+    if (pdidoi->dwFlags & DIDOI_FFACTUATOR) {
+      me->_numforceaxes++;
     }
 
     return DIENUM_CONTINUE;
@@ -293,18 +366,30 @@ int vrpn_DirectXFFJoystick::get_report(void)
 {
   HRESULT     hr;
 
-  // If it has not been long enough, just return
+  // If it has been long enough, update the force sent to the user.
+  {
+    static struct timeval forcetime = {0,0};
+    struct timeval now;
+    gettimeofday(&now, NULL);
+    if (duration(now, forcetime) >= 1000000.0 / _force_rate) {
+      send_normalized_force(_fX, _fY);
+      forcetime = now;
+    }
+  }
+
+  // If it is not time for the next read, just return
   struct timeval reporttime;
   gettimeofday(&reporttime, NULL);
   if (duration(reporttime, _timestamp) < 1000000.0 / _read_rate) {
     return 0;
   }
 
-#ifdef	DEBUG
+#ifdef	VERBOSE
   printf(" now: %ld:%ld,   last %ld:%ld\n", reporttime.tv_sec, reporttime.tv_usec,
     _timestamp.tv_sec, _timestamp.tv_usec);
   printf(" DirectX joystick: Getting report\n");
 #endif
+
   // Poll the joystick.  If we can't poll it then try to reacquire
   // until that times out.
   hr = _Joystick->Poll(); 
@@ -389,6 +474,55 @@ void	vrpn_DirectXFFJoystick::report(vrpn_uint32 class_of_service)
 	vrpn_Button::report_changes();
 }
 
+// A force of 1 goes the the right in X and up in Y
+void  vrpn_DirectXFFJoystick::send_normalized_force(double fx, double fy)
+{
+  // Make sure we have force capability.  If not, then set our status to
+  // broken.
+  if ( (_force_rate <= 0) || (_ForceEffect == NULL) ) {
+    send_text_message("Asked to send force when no force enabled", _timestamp, vrpn_TEXT_ERROR);
+    return;
+  }
+
+  // Set the forces to match a right-handed coordinate system
+  fx *= -1;
+
+  // Convert the force from (-1..1) into the maximum range for each axis and then send it to
+  // the device.
+  fx = max(-1.0, fx); fx = min( 1.0, fx);
+  fy = max(-1.0, fy); fy = min( 1.0, fy);
+  INT xForce = (INT)(fx * DI_FFNOMINALMAX);
+  INT yForce = (INT)(fy * DI_FFNOMINALMAX);
+
+  LONG rglDirection[2];	  // Direction for the force (does not carry magnitude)
+  DICONSTANTFORCE cf;	  // Magnitude of the force
+
+  rglDirection[0] = xForce;
+  rglDirection[1] = yForce;
+  cf.lMagnitude = (DWORD)sqrt( (double)xForce * (double)xForce +
+			       (double)yForce * (double)yForce );
+
+  DIEFFECT eff;
+  ZeroMemory( &eff, sizeof(eff) );
+  eff.dwSize                = sizeof(DIEFFECT);
+  eff.dwFlags               = DIEFF_CARTESIAN | DIEFF_OBJECTOFFSETS;
+  eff.cAxes                 = _numforceaxes;
+  eff.rglDirection          = rglDirection;
+  eff.lpEnvelope            = 0;
+  eff.cbTypeSpecificParams  = sizeof(DICONSTANTFORCE);
+  eff.lpvTypeSpecificParams = &cf;
+  eff.dwStartDelay            = 0;
+
+  // Now set the new parameters and start the effect immediately.
+  if ( FAILED ( _ForceEffect->SetParameters( &eff, DIEP_DIRECTION |
+                                         DIEP_TYPESPECIFICPARAMS |
+                                         DIEP_START) ) ) {
+    send_text_message("Can't send force", _timestamp, vrpn_TEXT_ERROR);
+    return;
+  }
+}
+
+
 // This routine is called each time through the server's main loop. It will
 // take a course of action depending on the current status of the joystick,
 // either trying to reset it or trying to get a reading from it.
@@ -419,5 +553,49 @@ void	vrpn_DirectXFFJoystick::mainloop()
 	break;
   }
 }
+
+// Set the force to match the X and Y components of the gradient of the plane.
+int vrpn_DirectXFFJoystick::handle_plane_change_message(void *selfPtr, 
+					      vrpn_HANDLERPARAM p)
+{
+  vrpn_DirectXFFJoystick *me = (vrpn_DirectXFFJoystick *)selfPtr;
+  vrpn_float32	abcd[4];
+  vrpn_float32	kspring, kdamp, fricdynamic, fricstatic;
+  vrpn_int32	plane_index, plane_recovery_cycles;
+
+  // XXX We are ignoring the plane index and treating it as if there is
+  // only one plane.
+  decode_plane(p.buffer, p.payload_len, abcd, 
+	  &kspring, &kdamp, &fricdynamic, &fricstatic,
+	  &plane_index, &plane_recovery_cycles);
+
+  // If the plane normal is (0,0,0) this is a command to stop the surface
+  if ( (abcd[0] == 0) && (abcd[1] == 0) && (abcd[2] == 0) ) {
+    me->_fX = me->_fY = 0;
+    return 0;
+  }
+
+  // Since the plane equation is (AX + BY + CZ + D = 0), the normalized A and B
+  // coefficients determine the amount of force in X and Y.  We normalize by the
+  // plane's direction vector not counting D (we send the force no matter where
+  // we are with respect to the plane, since we are a 2D device in a 3D space).
+  double  norm = sqrt(abcd[0]*abcd[0] + abcd[1]*abcd[1] + abcd[2]*abcd[2]);
+  me->_fX = abcd[0] / norm;
+  me->_fY = abcd[1] / norm;
+
+  return 0;
+}
+
+// Zero the force sent to the device when the last connection is dropped.
+int	vrpn_DirectXFFJoystick::handle_last_connection_dropped(void *selfPtr, vrpn_HANDLERPARAM p)
+{
+  vrpn_DirectXFFJoystick  *me = (vrpn_DirectXFFJoystick*)selfPtr;
+  if (me->_force_rate > 0) {
+    me->_fX = me->_fY = 0;
+    me->send_normalized_force(0,0);
+  }
+  return 0;
+}
+
 
 #endif

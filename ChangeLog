@@ -1,5 +1,10 @@
 2002-08-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_DirectXFFJoystick.h : Added force feedback.
+	* vrpn_DirectXFFJoystick.C : Added force feedback.
+
+2002-08-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn.dsp : Add in definition of VRPN_USE_DIRECTINPUT to enable the
 		compilation of force-feedback joystick code under DirectX (this
 		first implementation doesn't use force feedback, just reads from
