@@ -1,3 +1,13 @@
+2000-08-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Serial.C (vrpn_open_commport): Adds input baud to SGI code
+
+	* vrpn_Tracker_Fastrak.C (get_report): Flushes buffer when resynching
+
+	* vrpn_ImmersionBox.h : New file
+
+	* vrpn_ImmersionBox.C : New file
+
 2000-08-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.dsp: Adds a driver for the Radamec Serial Position Interface

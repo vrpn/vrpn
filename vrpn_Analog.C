@@ -128,7 +128,7 @@ vrpn_Serial_Analog::vrpn_Serial_Analog (const char * name, vrpn_Connection * c,
 
    // Open the serial port we're going to use
    if ( (serial_fd=vrpn_open_commport(portname, baudrate, bits, parity)) == -1) {
-	fprintf(stderr,"vrpn_Tracker_Serial: Cannot Open serial port\n");
+	fprintf(stderr,"vrpn_Serial_Analog: Cannot Open serial port\n");
 	status = ANALOG_FAIL;
    }
 

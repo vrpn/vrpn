@@ -471,10 +471,12 @@ void vrpn_Tracker_Fastrak::get_report(void)
       // If it is not an '0', we don't want it but we
       // need to look at the next one, so just return and stay
       // in Syncing mode so that we will try again next time through.
+      // Also, flush the buffer so that it won't take as long to catch up.
       if ( buffer[0] != '0') {
       	sprintf(errmsg,"While syncing (looking for '0', "
 		"got '%c')", buffer[0]);
 	FT_INFO(errmsg);
+	vrpn_flush_input_buffer(serial_fd);
       	return;
       }
 
@@ -508,6 +510,7 @@ void vrpn_Tracker_Fastrak::get_report(void)
 	   status = TRACKER_SYNCING;
       	   sprintf(errmsg,"Bad sensor # (%d) in record, re-syncing", d_sensor);
 	   FT_INFO(errmsg);
+	   vrpn_flush_input_buffer(serial_fd);
 	   return;
       }
 
@@ -555,17 +558,20 @@ void vrpn_Tracker_Fastrak::get_report(void)
    if (buffer[0] != '0') {
 	   status = TRACKER_SYNCING;
 	   FT_INFO("Not '0' in record, re-syncing");
+	   vrpn_flush_input_buffer(serial_fd);
 	   return;
    }
    // Sensor checking was handled when we received the character for it
    if ( (buffer[2] != ' ') && !isalpha(buffer[2]) ) {
 	   status = TRACKER_SYNCING;
 	   FT_INFO("Bad 3rd char in record, re-syncing");
+	   vrpn_flush_input_buffer(serial_fd);
 	   return;
    }
    if (buffer[bufcount-1] != ' ') {
 	   status = TRACKER_SYNCING;
 	   FT_INFO("No space character at end of report, re-syncing");
+	   vrpn_flush_input_buffer(serial_fd);
 	   return;
    }
 

@@ -136,7 +136,7 @@ int vrpn_open_commport(char *portname, long baud, int charsize, vrpn_SER_PARITY 
   case 57600: dcb.BaudRate =  CBR_57600; break;
   case 115200: dcb.BaudRate =  CBR_115200; break;
   default:
-    fprintf(stderr,"vrpn: Serial tracker: unknown baud rate %ld\n",baud);
+    fprintf(stderr,"vrpn_open_commport: unknown baud rate %ld\n",baud);
 	CloseHandle(hCom);
     return -1;
   }   
@@ -231,6 +231,7 @@ int vrpn_open_commport(char *portname, long baud, int charsize, vrpn_SER_PARITY 
   // up 460k (no fixed settings).
 #if defined(sgi) && defined(__NEW_MAX_BAUD)
   sttyArgs.c_ospeed = baud;
+  sttyArgs.c_ispeed = baud;
 #else
   sttyArgs.c_cflag &= ~CBAUD;
   switch (baud) {
@@ -248,7 +249,7 @@ int vrpn_open_commport(char *portname, long baud, int charsize, vrpn_SER_PARITY 
   case 115200: sttyArgs.c_cflag |=  B115200; break;
 #endif //End B115200
   default:
-    fprintf(stderr,"vrpn: Serial tracker: unknown baud rate %ld\n",baud);
+    fprintf(stderr,"vrpn_open_commport: unknown baud rate %ld\n",baud);
     return -1;
   }
 #endif //SGI NEX MAX BAUD check
