@@ -97,18 +97,18 @@ class vrpn_Tracker {
 
 #ifndef VRPN_CLIENT_ONLY
 #ifndef _WIN32
-#define BUF_SIZE 100
+#define VRPN_TRACKER_BUF_SIZE 100
 
 class vrpn_Tracker_Serial : public vrpn_Tracker {
   public:
    vrpn_Tracker_Serial(char *name, vrpn_Connection *c,
 		char *port = "/dev/ttyS1", long baud = 38400);
   protected:
-   char portname[BUF_SIZE];
+   char portname[VRPN_TRACKER_BUF_SIZE];
    long baudrate;
    int serial_fd;
 
-   unsigned char buffer[BUF_SIZE];// Characters read in from the tracker so far
+   unsigned char buffer[VRPN_TRACKER_BUF_SIZE];// Characters read in from the tracker so far
    unsigned bufcount;		// How many characters in the buffer?
 
    int read_available_characters(unsigned char *buffer, int count);
