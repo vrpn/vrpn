@@ -24,8 +24,9 @@
 #
 
 # commands
-CC = /usr/local/lib/CenterLine/bin/CC
+#CC = /usr/local/lib/CenterLine/bin/CC
 #CC = g++
+CC = CC
 MAKE = make
 makefile = Makefile
 HW_OS = `/usr/local/bin/hw_os`
