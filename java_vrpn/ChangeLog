@@ -1,3 +1,8 @@
+2004-10-15	Ben Wilde	<wilde@cs.unc.edu>
+
+	* Added the line 'VRPN_CALLBACK' in front of handler functions
+	so that java_vrpn would compile.
+
 2004-07-22  David Marshburn  <marshbur@cs.unc.edu>
 
 	* *Remote.java (stopRunning):  added most of the functionality of

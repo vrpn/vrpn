@@ -96,7 +96,7 @@ JNIEXPORT void JNICALL JNI_OnUnload_Tracker_Remote( JavaVM* jvm, void* reserved 
 
 
 // This is the callback for vprn to notify us of a new tracker message
-void handle_tracker_change( void* userdata, const vrpn_TRACKERCB info )
+void VRPN_CALLBACK handle_tracker_change( void* userdata, const vrpn_TRACKERCB info )
 {
   if( jvm == NULL )
     return;
@@ -130,7 +130,7 @@ void handle_tracker_change( void* userdata, const vrpn_TRACKERCB info )
 
 
 // This is the callback for vprn to notify us of a new velocity message
-void handle_velocity_change( void* userdata, const vrpn_TRACKERVELCB info )
+void VRPN_CALLBACK handle_velocity_change( void* userdata, const vrpn_TRACKERVELCB info )
 {
   if( jvm == NULL )
     return;
@@ -165,7 +165,7 @@ void handle_velocity_change( void* userdata, const vrpn_TRACKERVELCB info )
 
 
 // This is the callback for vprn to notify us of a new tracker message
-void handle_acceleration_change( void* userdata, const vrpn_TRACKERACCCB info )
+void VRPN_CALLBACK handle_acceleration_change( void* userdata, const vrpn_TRACKERACCCB info )
 {
   if( jvm == NULL )
     return;

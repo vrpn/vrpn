@@ -82,7 +82,7 @@ JNIEXPORT void JNICALL JNI_OnUnload_Button_Remote( JavaVM* jvm, void* reserved )
 
 
 // This is the callback for vprn to notify us of a new button message
-void handle_button_change( void* userdata, const vrpn_BUTTONCB info )
+void VRPN_CALLBACK handle_button_change( void* userdata, const vrpn_BUTTONCB info )
 {
   if( jvm == NULL )
     return;

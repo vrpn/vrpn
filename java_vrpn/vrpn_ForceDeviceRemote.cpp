@@ -96,7 +96,7 @@ JNIEXPORT void JNICALL JNI_OnUnload_ForceDevice_Remote( JavaVM* jvm, void* reser
 /////////////////////////////
 // java_vrpn utility funcitons
 
-void handle_force_change( void* userdata, const vrpn_FORCECB info )
+void VRPN_CALLBACK handle_force_change( void* userdata, const vrpn_FORCECB info )
 {
   if( jvm == NULL )
   {
@@ -129,7 +129,7 @@ void handle_force_change( void* userdata, const vrpn_FORCECB info )
 } // end handle_force_change
 
 
-void handle_scp_change( void* userdata, const vrpn_FORCESCPCB info )
+void VRPN_CALLBACK handle_scp_change( void* userdata, const vrpn_FORCESCPCB info )
 {
   if( jvm == NULL )
   {
@@ -165,7 +165,7 @@ void handle_scp_change( void* userdata, const vrpn_FORCESCPCB info )
 } // end handle_scp_change
 
 
-void handle_force_error( void* userdata, const vrpn_FORCEERRORCB info )
+void VRPN_CALLBACK handle_force_error( void* userdata, const vrpn_FORCEERRORCB info )
 {
   if( jvm == NULL )
   {

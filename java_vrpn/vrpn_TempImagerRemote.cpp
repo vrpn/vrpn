@@ -97,7 +97,7 @@ JNIEXPORT void JNICALL JNI_OnUnload_TempImagerRemote( JavaVM* jvm, void* reserve
 // dll utility functions
 
 
-void java_vrpn_handle_region_change( void * userdata, const vrpn_IMAGERREGIONCB info )
+void VRPN_CALLBACK java_vrpn_handle_region_change( void * userdata, const vrpn_IMAGERREGIONCB info )
 {
   if( jvm == NULL )
     return;
@@ -160,7 +160,7 @@ void java_vrpn_handle_region_change( void * userdata, const vrpn_IMAGERREGIONCB 
 } // end java_vrpn_handle_region_change(...)
 
 
-void java_vrpn_handle_description_change( void * userdata, const struct timeval msg_time )
+void VRPN_CALLBACK java_vrpn_handle_description_change( void * userdata, const struct timeval msg_time )
 {
   
   if( jvm == NULL )

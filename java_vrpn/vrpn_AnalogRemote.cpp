@@ -86,7 +86,7 @@ JNIEXPORT void JNICALL JNI_OnUnload_Analog_Remote( JavaVM* jvm, void* reserved )
 
 
 // This is the callback for vprn to notify us of a new analog message
-void handle_analog_change( void* userdata, const vrpn_ANALOGCB info )
+void VRPN_CALLBACK handle_analog_change( void* userdata, const vrpn_ANALOGCB info )
 {
   if( jvm == NULL )
     return;
