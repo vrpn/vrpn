@@ -87,11 +87,16 @@ endif
 GLUTINCLUDE = /afs/cs.unc.edu/project/walk/include
 CFLAGS = -I../ -I$(GLUTINCLUDE) -g
 
+.SUFFIXES:	.cpp
+
 .c.o:
 	$(CC) $(CFLAGS) -c $*.c
 
 .C.o:
 	$(CC) $(CFLAGS) -c $*.C
+
+.cpp.o:
+	$(CC) $(CFLAGS) -c $*.cpp
 
 OBJ_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)
 LIB_DIR := ../$(OBJ_DIR)
@@ -106,6 +111,10 @@ $(OBJ_DIR)/%.o: %.C
 	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
+$(OBJ_DIR)/%.o: %.cpp
+	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
+	$(CC) $(CFLAGS) -o $@ -c $<
+
 all:	$(OBJ_DIR)/printvals $(OBJ_DIR)/printcereal \
 	$(OBJ_DIR)/vrpn_print_devices \
 	$(OBJ_DIR)/checklogfile $(OBJ_DIR)/logfilesenders \
@@ -113,6 +122,7 @@ all:	$(OBJ_DIR)/printvals $(OBJ_DIR)/printcereal \
 	forwarderClient $(OBJ_DIR)/bdbox_client \
 	$(OBJ_DIR)/ff_client \
 	$(OBJ_DIR)/phan_client \
+	$(OBJ_DIR)/forcedevice_test_client \
 	$(OBJ_DIR)/sphere_client $(OBJ_DIR)/bdbox_client \
 	add_vrpn_cookie testLamport test_mutex \
 	vrpn_ping test_tempimager
@@ -186,6 +196,10 @@ $(OBJ_DIR)/ff_client: $(OBJ_DIR)/ff_client.o $(LIB_DIR)/libvrpn.a
 $(OBJ_DIR)/ohm_client: $(OBJ_DIR)/ohm_client.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/ohm_client \
 		$(OBJ_DIR)/ohm_client.o -lvrpn $(ARCH_LIBS)
+
+$(OBJ_DIR)/forcedevice_test_client: $(OBJ_DIR)/forcedevice_test_client.o $(LIB_DIR)/libvrpn.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/forcedevice_test_client \
+		$(OBJ_DIR)/forcedevice_test_client.o -lvrpn $(ARCH_LIBS)
 
 $(OBJ_DIR)/phan_client: $(OBJ_DIR)/phan_client.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/phan_client \

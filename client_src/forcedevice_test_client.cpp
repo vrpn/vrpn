@@ -72,9 +72,9 @@ static	float g_kDampingMult = 2;
 // Standard values for static and dynamic friction
 // Factors by which to multiple/divide static and dynamic friction when they vary
 static  float g_sFric = (float)0.2;	  // Unit is fraction of normal force, range is 0 <= value <= 1
-static	float g_dFric = (float)0.2;	  // Unit is fraction of normal force, range is 0 <= value <= 1, dynamic <= static
+//static	float g_dFric = (float)0.2;	  // Unit is fraction of normal force, range is 0 <= value <= 1, dynamic <= static
 static	float g_sFricMult = (float)2;
-static	float g_dFricMult = (float)2;
+//static	float g_dFricMult = (float)2;
 
 // State of the application (what should be generated now).
 static	APP_STATE g_state = box;	  //< What mode are we in?
@@ -134,9 +134,6 @@ void    handle_force_change(void *userdata, const vrpn_FORCECB f)
 
 void    handle_tracker_change(void *userdata, const vrpn_TRACKERCB t)
 {
-  static vrpn_TRACKERCB lr; // last report
-  static float dist_interval_sq = (float)0.004;
-
   // Record the current position of the device in global variables
   // so that the button routine can know where to store the center
   // position.

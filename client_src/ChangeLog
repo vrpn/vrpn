@@ -1,3 +1,10 @@
+2004-07-27  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Adding build rule for .cpp (Horrible Windows extension
+		that is the same as the default rule in Unix for running the
+		C-pre-processor).  Adding rule to build force test client.
+	* forcedevice_test.client.cpp : Removing unused variables.
+
 2004-07-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* testimager_client.C : Changed default port number.
