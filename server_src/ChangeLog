@@ -1,3 +1,7 @@
+2000-10-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Set default sleep back to 0 milliseconds
+
 2000-10-11  Tom Hudson  <hudson@cs.unc.edu>
 
 	* vrpn.C : add vrpn_RedundantTransmission, vrpn_RedundantController

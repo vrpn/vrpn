@@ -1141,7 +1141,7 @@ main (int argc, char * argv[])
 	int	realparams = 0;
 	int	i;
 	int	port = vrpn_DEFAULT_LISTEN_PORT_NO;
-	int	milli_sleep_time = 1;		// How long to sleep each iteration (default 1ms)?
+	int	milli_sleep_time = 0;		// How long to sleep each iteration (default 0ms)
 #ifdef WIN32
 	WSADATA wsaData; 
 	int status;
