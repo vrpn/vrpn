@@ -1654,22 +1654,26 @@ int setup_Tng3 (char * & pch, char * line, FILE * config_file) {
 
 //================================
 int setup_Tracker_InterSense(char * &pch, char *line, FILE * config_file) {
-#ifdef	VRPN_TRACKER_ISENSE
+#ifdef	VRPN_INCLUDE_INTERSENSE
   char trackerName[LINESIZE];
   char commStr[100];
   int commPort;
 
   char s4 [LINESIZE];
+  char s5 [LINESIZE];
+  char s6 [LINESIZE];
   int numparms;
   vrpn_Tracker_InterSense	*mytracker;
   int do_is900_timing = 0;
+  int reset_at_start = 0;		// nahon@virtools.com
+  
   char    rcmd[5000];     // Reset command to send to Intersense
 		
   next();
 
   // Get the arguments (class, tracker_name, port, [optional IS900time])
   sscanf(line,"vrpn_Tracker_InterSense %s %s",trackerName,commStr);
-  if ( (numparms = sscanf(pch,"%511s%511s%511s",trackerName,commStr,s4)) < 2) {
+  if ( (numparms = sscanf(pch,"%511s%511s%511s%511s%511s",trackerName,commStr,s4,s5,s6)) < 2) {
 	fprintf(stderr,"Bad vrpn_Tracker_InterSense line: %s\n%s %s\n",
             line, pch, trackerName);
     return -1;
@@ -1686,21 +1690,49 @@ int setup_Tracker_InterSense(char * &pch, char *line, FILE * config_file) {
   }	else if(!strcmp(commStr,"AUTO")) {
     commPort = 0; //the intersense SDK will find the tracker on any COM or USB port.
   } else {
-    fprintf(stderr,"Error determining COM port: %s not should be either COM1, COM2, COM3, or COM4",commStr);
+    fprintf(stderr,"Error determining COM port: %s not should be either COM1, COM2, COM3, COM4 or AUTO",commStr);
     return -1;
   }
-
+  int found_a_valid_option=0;
   // See if we got the optional parameter to enable IS900 timings
-  if (numparms == 3) {
-	    if (strncmp(s4, "IS900time", strlen("IS900time")) == 0) {
+  if (numparms >= 3) {
+	    if ( (strncmp(s4, "IS900time", strlen("IS900time")) == 0) ||
+			 (strncmp(s5, "IS900time", strlen("IS900time")) == 0) ||
+			 (strncmp(s6, "IS900time", strlen("IS900time")) == 0)
+			) {
   			do_is900_timing = 1;
+			found_a_valid_option = 1;
 			printf(" ...using IS900 timing information\n");
-	    } else if (strcmp(s4, "/") == 0) {
-			// Nothing to do
-	    } else if (strcmp(s4, "\\") == 0) {
-			// Nothing to do
-	    } else {
-			fprintf(stderr,"InterSense: Bad timing optional param (expected 'IS900time', got '%s')\n",s4);
+	    }  
+		if ( 
+			 (strncmp(s4, "ResetAtStartup", strlen("ResetAtStartup")) == 0) ||
+			 (strncmp(s5, "ResetAtStartup", strlen("ResetAtStartup")) == 0) ||
+			 (strncmp(s6, "ResetAtStartup", strlen("ResetAtStartup")) == 0)
+			) {
+  			reset_at_start = 1;
+			found_a_valid_option = 1;
+			printf(" ...Sensor will reset at startup\n");
+	    } 
+		if (strcmp(s4, "/") == 0) {
+			found_a_valid_option = 1;
+	    }
+		if (strcmp(s5, "/") == 0) {
+			found_a_valid_option = 1;
+	    }
+		if (strcmp(s6, "/") == 0) {
+			found_a_valid_option = 1;
+	    }
+		if (strcmp(s4, "\\") == 0) {
+			found_a_valid_option = 1;
+	    }
+		if (strcmp(s5, "\\") == 0) {
+			found_a_valid_option = 1;
+	    }
+		if (strcmp(s6, "\\") == 0) {
+			found_a_valid_option = 1;
+	    }
+		if (!found_a_valid_option) {
+			fprintf(stderr,"InterSense: Bad optional param (expected 'IS900time', 'ResetAtStartup' and/or 'SensorsStartsAtOne', got '%s %s %s')\n",s4,s5,s6);
 			return -1;
 	    }
 	}
@@ -1721,7 +1753,7 @@ int setup_Tracker_InterSense(char * &pch, char *line, FILE * config_file) {
     while (line[strlen(line)-2] == '\\') {
           // Read the next line
           if (fgets(line, LINESIZE, config_file) == NULL) {
-              fprintf(stderr,"Ran past end of config file in Fastrak/Isense description\n");
+              fprintf(stderr,"Ran past end of config file in Isense description\n");
                   return -1;
           }
 
@@ -1757,8 +1789,8 @@ int setup_Tracker_InterSense(char * &pch, char *line, FILE * config_file) {
 #if defined(sgi) || defined(linux) || defined(WIN32) || defined(MACOSX)
 
      if ( (trackers[num_trackers] = mytracker =
-             new vrpn_Tracker_InterSense(trackerName, connection, commPort, rcmd, do_is900_timing))
-                            == NULL){
+             new vrpn_Tracker_InterSense(trackerName, connection, commPort, rcmd, do_is900_timing, 
+				reset_at_start)) == NULL){
 #endif
 
           fprintf(stderr,"Can't create new vrpn_Tracker_InterSense\n");

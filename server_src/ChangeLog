@@ -1,3 +1,13 @@
+2003-11-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Added changed by David Nahon that lets
+                the user specify whether to do a boresight reset at startup.
+                Also changes the sensor numbers to be zero-indexed like all
+                other VRPN trackers.  Also changes units to meters and
+                radians to match other VPRN trackers.
+	* vrpn.cfg : Same.
+	* vrpn.cfg.SAMPLE : Same.
+
 2003-09-26  Matt Harvey  <m.j.harvey@ucl.ac.uk>
 
 	* vrpn.cfg : Added new joystick device.

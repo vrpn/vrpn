@@ -1,4 +1,4 @@
-# vrpn.cfg.SAMPLE for VRPN version 06.04
+# vrpn.cfg.SAMPLE for VRPN version 06.05
 
 ################################################################################
 ################################################################################
@@ -162,7 +162,9 @@
 #                                     as these just tell the isense library
 #                                     to look in serial port 1-4.
 #                                     I guess you can't have >1 USB trackers.
-#     char "IS900time"  - use the IS900 timestamps (optional)
+#     char "IS900time"		- use the IS900 timestamps (optional)
+#     char "ResetAtStartup"	- resets all boresight and heading, on intertrax, 
+#			          equivalent to push the reset button
 #
 # It is possible to add additional commands that will be sent to the tracker
 # by putting the backslash character (\) at the end of the config line. This
@@ -203,13 +205,19 @@
 # Fastrak and InterSense tracker, not to extend the line for any other
 # type of device
 # listed in this configuration file.
-
-# Vanilla InterSense
-#vrpn_Tracker_InterSense Tracker0 AUTO IS900time /
-#Wand            Wand0           0       -1.0 0.0 0.0 1.0  -1.0 0.0 0.0 1.0
-
-# Vanilla InterSense using IS900 timing
+#
+# Note that this driver expects the device to be set to output centimeters, and will convert 
+# the positions to meters. It is recommanded to permanently set the units in the eeprom of your device.
+# If this is not possible, you should add in this file the "u" reset command so as to have vrpn
+# tell your device to use centimeters
+#
+#Vanilla InterSense
 #vrpn_Tracker_InterSense Tracker0 AUTO IS900time
+
+# Vanilla InterSense using IS900 timing, with first tracker at index 1, and forcing to use centimeters
+#vrpn_Tracker_InterSense Tracker0 AUTO IS900time \
+#u /
+#Wand            Wand0           0       -1.0 0.0 0.0 1.0  -1.0 0.0 0.0 1.0
 
 # IS600 and its pip settings
 #vrpn_Tracker_InterSense        Isense600       COM1 \
@@ -228,6 +236,10 @@
 #vrpn_Tracker_InterSense        Isense900       COM1 /
 #Wand           Wand0           0       -1.0 0.0 0.0 1.0  -1.0 0.0 0.0 1.0 /
 #Stylus Stylus0 2
+
+# Intertrax2 on USB, With automatic reset at startup
+#vrpn_Tracker_InterSense        Tracker0       AUTO  ResetAtStartup
+
 
 ################################################################################
 # Dynasight Tracker. Runs an Origin System's DynaSight tracker connected to a
