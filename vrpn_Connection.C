@@ -2042,6 +2042,7 @@ ntohl(name.sin_addr.s_addr) & 0xff);
 #ifndef _WIN32_WCE
     fprintf(stderr, "  --  %d  --  %s\n", errno, strerror(errno));
 #endif
+    fprintf(stderr,"  (This probably means that another application has the port open already)\n");
     return -1;
   }
 
