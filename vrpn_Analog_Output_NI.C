@@ -137,7 +137,6 @@ int vrpn_Analog_Output_Server_NI::handle_request_message(void *userdata,
 #ifdef	VRPN_USE_NATIONAL_INSTRUMENTS
     if (me->NI_device_number != -1) {
       AO_VWrite(me->NI_device_number, chan_num, value);
-      printf("XXX setting channel #d to %f\n", chan_num, value);
     }
 #endif
     return 0;
@@ -197,7 +196,6 @@ int vrpn_Analog_Output_Server_NI::handle_request_channels_message(void* userdata
 	}
 #endif
     }
-    printf("XXX setting channels to %0.5f %0.5f %0.5f\n", me->o_channel[0], me->o_channel[1], me->o_channel[2]);
     
     return 0;
 }

@@ -1,3 +1,15 @@
+2004-05-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Analog_Output_NI.C : Removed debug print statements.
+	* vrpn_Poser_Analog.C : Changed the parameters so that it can
+		use a different analog output device for each channel.
+		This is going to break code that uses the Posers, but it
+		was needed to split it up for the case where some channels
+		were driven by one device and others by a different
+		device.  It now behaves more like an AnalogFly in terms
+		of parameters.
+	* vrpn_Poser_Analog.h : Same.
+
 2004-05-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Analog_Output_NI.h : Analog output that uses National

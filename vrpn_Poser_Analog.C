@@ -2,9 +2,6 @@
 
 
 vrpn_Poser_AnalogParam::vrpn_Poser_AnalogParam() {
-    // Name of the Analog device
-    ana_name = NULL;
-
     // set workspace values to defaults
     for (int i = 0; i < 3; i ++) {
         pos_min[i] = vel_min[i] = -1;
@@ -12,6 +9,35 @@ vrpn_Poser_AnalogParam::vrpn_Poser_AnalogParam() {
         pos_rot_min[i] = vel_rot_min[i] = -45;
         pos_rot_max[i] = vel_rot_max[i] = 45;
     }
+}
+
+
+bool vrpn_Poser_Analog::setup_channel(vrpn_PA_fullaxis *full)
+{
+    // If the name is NULL, we're done.
+    if (full->axis.ana_name == NULL) { return 0; }
+
+    // Create the Analog Output Remote 
+    // If the name starts with the '*' character, use the server
+    // connection rather than making a new one.
+    if (full->axis.ana_name != NULL) {
+        if (full->axis.ana_name[0] == '*') {
+            full->ana = new vrpn_Analog_Output_Remote(&(full->axis.ana_name[1]), d_connection);
+        }
+        else {
+            full->ana = new vrpn_Analog_Output_Remote(full->axis.ana_name);
+        }
+
+        if (full->ana == NULL) {
+            fprintf(stderr, "vrpn_Poser_Analog: Can't open Analog %s\n", full->axis.ana_name);
+	    return false;
+        }
+    } else {
+	full->ana = NULL;
+	fprintf(stderr, "vrpn_Poser_Analog: Can't open Analog: No name given\n");
+	return false;
+    }
+    return true;
 }
 
 vrpn_Poser_Analog::vrpn_Poser_Analog(const char* name, vrpn_Connection* c, vrpn_Poser_AnalogParam* p) :
@@ -43,32 +69,28 @@ vrpn_Poser_Analog::vrpn_Poser_Analog(const char* name, vrpn_Connection* c, vrpn_
 	}
 
     // Set up the axes
-    x = p->x;
-    y = p->y;
-    z = p->z;
-    rx = p->rx;
-    ry = p->ry;
-    rz = p->rz;
+    x.axis = p->x; y.axis = p->y; z.axis = p->z;
+    rx.axis = p->rx; ry.axis = p->ry; rz.axis = p->rz;
 
-    // Create the Analog Output Remote 
-    // If the name starts with the '*' character, use the server
-    // connection rather than making a new one.
-    if (p->ana_name != NULL) {
-        if (p->ana_name[0] == '*') {
-            ana = new vrpn_Analog_Output_Remote(&(p->ana_name[1]), d_connection);
-        }
-        else {
-            ana = new vrpn_Analog_Output_Remote(p->ana_name);
-        }
+    x.ana = y.ana = z.ana = NULL;
+    rx.ana = ry.ana = rz.ana = NULL;
 
-        if (ana == NULL) {
-            fprintf(stderr, "vrpn_Poser_Analog: Can't open Analog %s\n", p->ana_name);
-        }
-    }
-	else {
-		ana = NULL;
-		fprintf(stderr, "vrpn_Poser_Analog: Can't open Analog: No name given\n");
-	}
+    x.value = y.value = z.value = 0.0;
+    rx.value = ry.value = rz.value = 0.0;
+
+    x.pa = this; y.pa = this; z.pa = this;
+    rx.pa = this; ry.pa = this; rz.pa = this;
+
+    //--------------------------------------------------------------------
+    // Open analog remotes for any channels that have non-NULL names.
+    // If the name starts with the "*" character, use tracker
+    //      connection rather than getting a new connection for it.
+    setup_channel(&x);
+    setup_channel(&y);
+    setup_channel(&z);
+    setup_channel(&rx);
+    setup_channel(&ry);
+    setup_channel(&rz);
 
     // Set up the workspace max and min values
     for (i = 0; i < 3; i++) {
@@ -85,21 +107,22 @@ vrpn_Poser_Analog::vrpn_Poser_Analog(const char* name, vrpn_Connection* c, vrpn_
 
 vrpn_Poser_Analog::~vrpn_Poser_Analog() {}
 
-void vrpn_Poser_Analog::mainloop() {
+void vrpn_Poser_Analog::mainloop()
+{
     // Call generic server mainloop, since we are a server
     server_mainloop();
 
-    // Call the Analog's mainloop
-    if (ana) {
-		ana->mainloop();
-	
-		if (ana->connectionPtr()->connected()) {
-			// Update the Analog's values
-			if (!update_Analog_values()) {
-				fprintf(stderr, "vrpn_Poser_Analog: Error updating Analog values\n");
-			}
-		}
-	}
+    // Call the Analog outputs' mainloops
+    if (x.ana != NULL) { x.ana->mainloop(); };
+    if (y.ana != NULL) { y.ana->mainloop(); };
+    if (z.ana != NULL) { z.ana->mainloop(); };
+    if (rx.ana != NULL) { rx.ana->mainloop(); };
+    if (ry.ana != NULL) { ry.ana->mainloop(); };
+    if (rz.ana != NULL) { rz.ana->mainloop(); };
+
+    if (!update_Analog_values()) {
+      fprintf(stderr, "vrpn_Poser_Analog: Error updating Analog values\n");
+    }
 }
 
 int vrpn_Poser_Analog::handle_change_message(void* userdata,
@@ -125,6 +148,7 @@ int vrpn_Poser_Analog::handle_change_message(void* userdata,
 	for (i = 0; i < 4; i++) {
 		vrpn_unbuffer(&params, &me->p_quat[i]);
 	}
+
 
     // Check the pose against the max and min values of the workspace
     for (i = 0; i < 3; i++) {
@@ -167,9 +191,9 @@ int vrpn_Poser_Analog::handle_change_message(void* userdata,
 int vrpn_Poser_Analog::handle_vel_change_message(void* userdata,
 	    vrpn_HANDLERPARAM p)
 {
-	vrpn_Poser_Analog* me = (vrpn_Poser_Analog*)userdata;
-	const char* params = (p.buffer);
-	int	i;
+      vrpn_Poser_Analog* me = (vrpn_Poser_Analog*)userdata;
+      const char* params = (p.buffer);
+      int	i;
     bool outside_bounds = false;
 
 	// Fill in the parameters to the poser from the message
@@ -227,29 +251,24 @@ int vrpn_Poser_Analog::handle_vel_change_message(void* userdata,
     return 0;
 }
 
-bool vrpn_Poser_Analog::update_Analog_values() {
-    vrpn_float64 values[vrpn_CHANNEL_MAX];
-
-	int i;
-	int max_channel = -1;	// sets the range of values we are changing
-
-	for (i = 0; i < vrpn_CHANNEL_MAX; i++) {
-		values[i] = 0.0;
-	}
+bool vrpn_Poser_Analog::update_Analog_values()
+{
+    vrpn_float64 value;
+    bool ret = true;
 
     // XXX ONLY DOING TRANS FOR NOW...ADD ROT LATER
-    if (x.channel != -1 && x.channel < vrpn_CHANNEL_MAX) {
-		if (max_channel <= x.channel) max_channel = x.channel + 1;
-		values[x.channel] = (p_pos[0] - x.offset) * x.scale;
+    if (x.axis.channel != -1 && x.axis.channel < vrpn_CHANNEL_MAX) {
+      value = (p_pos[0] - x.axis.offset) * x.axis.scale;
+      if (x.ana != NULL) { ret &= x.ana->request_change_channel_value(x.axis.channel, value); }
     }
-    if (y.channel != -1 && y.channel < vrpn_CHANNEL_MAX) {
-		if (max_channel <= y.channel) max_channel = y.channel + 1;
-        values[y.channel] = (p_pos[1] - y.offset) * y.scale;
+    if (y.axis.channel != -1 && y.axis.channel < vrpn_CHANNEL_MAX) {
+      value = (p_pos[1] - y.axis.offset) * y.axis.scale;
+      if (y.ana != NULL) { ret &= y.ana->request_change_channel_value(y.axis.channel, value); }
     }
-    if (z.channel != -1 && z.channel < vrpn_CHANNEL_MAX) {
-		if (max_channel <= z.channel) max_channel = z.channel + 1;
-        values[z.channel] = (p_pos[2] - z.offset) * z.scale;
+    if (z.axis.channel != -1 && z.axis.channel < vrpn_CHANNEL_MAX) {
+      value = (p_pos[2] - z.axis.offset) * z.axis.scale;
+      if (z.ana != NULL) { ret &= z.ana->request_change_channel_value(z.axis.channel, value); }
     }
 
-    return ana->request_change_channels(max_channel, values);
+    return ret;
 }
