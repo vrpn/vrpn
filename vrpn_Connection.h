@@ -117,6 +117,10 @@ class vrpn_Connection
 	inline int doing_okay (void) { return (status >= 0); }
 	virtual	int	connected (void) const;
 
+	// This is similar to check connection except that it can be
+	// used to receive requests from before a server starts up
+	virtual int connect_to_client(const char *machine, int port);
+
 	// Returns the name of the service that the connection was first
 	// constructed to talk to, or NULL if it was built as a server.
 	//inline const char * name (void) const { return my_name; }
@@ -258,6 +262,7 @@ class vrpn_Connection
 
 	virtual	int	send_pending_reports (void);
 	virtual	void	check_connection (void);
+	virtual void	handle_connection(void);
 	virtual	int	setup_for_new_connection (void);
 		// set up data
 	virtual	int	setup_new_connection (long logmode = 0L,
@@ -398,8 +403,11 @@ char * vrpn_copy_file_name (const char * filespecifier);
 //   <hostname>:<port number>
 //   x-vrpn://<hostname>
 //   x-vrpn://<hostname>:<port number>
+//   x-vrsh://<hostname>/<server program>,<server arguments comma-separated>
 char * vrpn_copy_machine_name (const char * hostspecifier);
 int vrpn_get_port_number (const char * hostspecifier);
+char * vrpn_copy_rsh_program (const char * hostspecifier);
+char * vrpn_copy_rsh_arguments (const char * hostspecifier);
 
 #endif // VRPN_CONNECTION_H
 

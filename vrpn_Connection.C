@@ -120,10 +120,29 @@ const	int	MAGICLEN = 16;	// Must be a multiple of vrpn_ALIGN bytes!
 #define getdtablesize() MAXFUPLIM
 #endif
 
+/* The version of rsh in /usr/local/bin is the AFS version that passes tokens
+ * to the remote machine.  This will allow remote execution of anything you
+ * can execute locally.  This is the default location from which to get rsh.
+ * If the SDI_RSH environment variable is set, that will be used as the full
+ * path instead.  */
+#ifdef  linux
+#define RSH             "/usr/local/bin/ssh"
+#else
+#define RSH             "/usr/local/bin/rsh"
+#endif
+
 /* How long to wait for a UDP packet to cause a callback connection,
  * and how many times to retry. */
 #define	UDP_CALL_TIMEOUT	(2)
 #define	UDP_CALL_RETRIES	(5)
+
+/* How long to wait for the server to connect, and how many times to wait
+ * this long.  The death of the child is checked for between each of the
+ * waits, in order to allow faster exit if the child quits before calling
+ * back. */
+#define SERVCOUNT       (20)
+#define SERVWAIT        (120/SERVCOUNT)
+static  struct  timeval longtime= { SERVWAIT,0 };  /* Poll/startup interval */
 
 #if 0
 
@@ -653,6 +672,206 @@ int vrpn_udp_request_call(const char * machine, int port)
 	return accept_sock;
 }
 
+// This is like sdi_start_server except that the convention for
+// passing information on the client machine to the server program is 
+// different; everything else has been left the same
+/**********************************
+ *      This routine will start up a given server on a given machine.  The
+ * name of the machine requesting service and the socket number to connect to
+ * are supplied after the -client argument. The "args" parameters are
+ * passed next.  They should be space-separated arguments, each of which is
+ * passed separately.  It is NOT POSSIBLE to send parameters with embedded
+ * spaces.
+ *      This routine returns a file descriptor that points to the socket
+ * to the server on success and -1 on failure.
+ **********************************/
+int vrpn_start_server(const char *machine, char *server_name, char *args)
+{
+#ifdef  _WIN32
+        fprintf(stderr,"VRPN: vrpn_start_server not ported to NT!\n");
+        return -1;
+#else
+        int     pid;    /* Child's process ID */
+        int     inmask, zero;   /* Used in select() */
+        int     server_sock;    /* Where the accept returns */
+        int     child_socket;   /* Where the final socket is */
+        struct sockaddr_in name;/* The socket to listen to */
+        int     PortNum;        /* Port number we got */
+        int     scrap;
+
+        /* Open a socket and insure we can bind it */
+
+        name.sin_family = AF_INET;                      /* Internet socket */
+        name.sin_addr.s_addr = INADDR_ANY;              /* Accept any port */
+        name.sin_port = htons(0);
+        server_sock = socket(AF_INET,SOCK_STREAM,0);
+        if (server_sock < 0) {
+                fprintf(stderr,"vrpn_start_server: cannot open socket().\n");
+                return(-1);
+        }
+        if ( bind(server_sock,(struct sockaddr*)&name,sizeof(name)) ) {
+                fprintf(stderr,"vrpn_start_server: cannot bind socket().\n");
+                close(server_sock);
+                return(-1);
+        }
+        scrap = sizeof(name);
+        if ( getsockname(server_sock,(struct sockaddr*)&name,&scrap) ) {
+                fprintf(stderr,"vrpn_start_server: cannot get socket name.\n");
+                close(server_sock);
+                return(-1);
+        }
+        PortNum = ntohs(name.sin_port);
+
+        if ( (pid = fork()) == -1) {
+                fprintf(stderr,"vrpn_start_server: cannot fork().\n");
+                close(server_sock);
+                return(-1);
+        }
+        if (pid == 0) {  /* CHILD */
+                int     loop;
+                int     ret;
+                int     num_descriptors;/* Number of available file descr */
+                char    myname[300];    /* Host name of this host */
+                char    command[600];   /* Command passed to system() call */
+                char    *rsh_to_use;    /* Full path to Rsh command. */
+
+                if (gethostname(myname,sizeof(myname))) {
+                        fprintf(stderr,
+                           "vrpn_start_server: Error finding local hostname\n");
+                        close(server_sock);
+                        return(-1);
+                }
+
+                /* Close all files except stdout and stderr. */
+                /* This prevents a hung child from keeping devices open */
+                num_descriptors = getdtablesize();
+                for (loop = 0; loop < num_descriptors; loop++) {
+                  if ( (loop != 1) && (loop != 2) ) {
+                        close(loop);
+                  }
+                }
+
+                /* Find the RSH command, either from the environment
+                 * variable or the default, and use it to start up the
+                 * remote server. */
+
+                if ( (rsh_to_use =(char *)getenv("VRPN_RSH")) == NULL) {
+                        rsh_to_use = RSH;
+                }
+                sprintf(command,"%s %s %s %s -client %s %d",rsh_to_use, machine,
+                        server_name, args, myname, PortNum);
+                ret = system(command);
+                if ( (ret == 127) || (ret == -1) ) {
+                        fprintf(stderr,
+                                "vrpn_start_server: system() failed !!!!!\n");
+                        perror("Error");
+                        fprintf(stderr, "Attempted command was: '%s'\n",
+                                command);
+                        close(server_sock);
+                        exit(-1);  /* This should never occur */
+                }
+                exit(0);
+
+        } else {  /* PARENT */
+                int     waitloop;
+
+                /* Listen on the socket for the server to call */
+
+                if ( listen(server_sock,2) ) {
+                        fprintf(stderr,"vrpn_start_server: listen() failed.\n");
+                        close(server_sock);
+                        return(-1);
+                }
+
+                /* Use select() on the file descriptor to see if the child
+                 * is trying to call us back.  Do SERVCOUNT waits, each of
+                 * which is SERVWAIT long.  Only SERVCOUNT-1 of these are
+                 * done in the first loop.  The last one is done after, so
+                 * that it can timeout and exit. */
+                /* If the child dies while we are waiting, then we can be
+                 * sure that they will not be calling us back.  Check for
+                 * this at smaller intervals while waiting for the callback. */
+
+                for (waitloop = 0; waitloop < (SERVCOUNT-1); waitloop++) {
+                    pid_t deadkid;
+                    union wait status;
+		    
+                    /* Check to see if they called back yet. */
+                    inmask = (1 << server_sock);
+                    zero = 0;
+                    if (vrpn_noint_select(32,(fd_set *)&inmask,(fd_set *)&zero,
+                                         (fd_set *)&zero,&longtime)==1) {
+                      break;    /* Jump out of the loop */
+                    }
+
+                    /* Check to see if the child is dead yet */
+#if defined(hpux) || defined(sgi) || defined(__hpux)
+                    /* hpux include files have the wrong declaration */
+                    deadkid = wait3((int*)&status, WNOHANG, NULL);
+#else
+                    deadkid = wait3(&status, WNOHANG, NULL);
+#endif
+                    if (deadkid == pid) {
+                        fprintf(stderr,
+                                "vrpn_start_server: server process exited\n");
+                        close(server_sock);
+                        return(-1);
+                    }
+                }
+                /* This is the last wait.  If it fails, then it has been
+                 * too long and assume the child is not going to call us.
+                 * If the above select has succeeded, then this one should
+                 * return very quickly. */
+
+                if (vrpn_noint_select(32,(fd_set *)&inmask,(fd_set *)&zero,
+                                     (fd_set *)&zero,&longtime) != 1) {
+                    fprintf(stderr,
+                        "vrpn_start_server: server failed to connect in time\n");
+                    fprintf(stderr,
+                        "                  (took more than %d seconds)\n",
+                        SERVWAIT);
+                    close(server_sock);
+                    kill(pid,SIGKILL);
+                    wait(0);
+                    return(-1);
+                }
+
+                /* Accept the connection from the server */
+
+                if ( (child_socket = accept(server_sock,0,0)) == -1 ) {
+                        fprintf(stderr,"vrpn_start_server: accept() failed.\n");
+                        close(server_sock);
+                        return(-1);
+                }
+                close(server_sock);
+
+                /* Set the socket for TCP_NODELAY */
+
+                {       struct  protoent        *p_entry;
+                        static  int     nonzero = 1;
+
+                        if ( (p_entry = getprotobyname("TCP")) == NULL ) {
+                                fprintf(stderr,
+                                  "vrpn_start_server: getprotobyname() failed.\n"
+);
+                                close(child_socket);
+                                return(-1);
+                        }
+
+                        if (setsockopt(child_socket, p_entry->p_proto,
+                                TCP_NODELAY, &nonzero, sizeof(nonzero))==-1) {
+                                perror("vrpn_start_server: setsockopt() failed");
+                                close(child_socket);
+                                return(-1);
+                        }
+                }
+
+                return(child_socket);
+        }
+        return 0;
+#endif
+}
+
 
 //**  End of section pulled from SDI library
 //*********************************************************************
@@ -996,10 +1215,34 @@ void vrpn_Connection::check_connection (void)
 		status = CONNECTED;
 	}
    }
-
-   if (status != CONNECTED) {	// Something broke
-   	return;
+   if (status != CONNECTED) {   // Something broke
+	return;
    }
+   else
+   	handle_connection();
+   return;
+}
+
+int vrpn_Connection::connect_to_client (const char *machine, int port)
+{
+    char msg[100];
+    if (status != LISTEN) return -1;
+    sprintf(msg, "%s %d", machine, port);
+    printf("vrpn: Connection request received: %s\n", msg);
+    endpoint.tcp_sock = connect_tcp_to(msg);
+    if (endpoint.tcp_sock != -1) {
+	status = CONNECTED;
+    }
+    if (status != CONNECTED) {   // Something broke
+	return -1;
+    }
+    else
+	handle_connection();
+    return 0;
+}
+
+void vrpn_Connection::handle_connection(void)
+{
 
    // Set TCP_NODELAY on the socket
 /*XXX It looks like this means something different to Linux than what I
@@ -2053,13 +2296,15 @@ vrpn_Connection::vrpn_Connection
   const char * machinename;
   int retval;
   int isfile;
+  int isrsh;
 
   isfile = (strstr(station_name, "file:") ? 1 : 0);
+  isrsh = (strstr(station_name, "x-vrsh:") ? 1 : 0);
 
 	// Initialize the things that must be for any constructor
 	init();
 
-	if (!isfile) {
+	if (!isfile && !isrsh) {
 	  // Open a connection to the station using SDI
 	  machinename = vrpn_copy_machine_name(station_name);
 	  if (!machinename) {
@@ -2079,6 +2324,33 @@ vrpn_Connection::vrpn_Connection
 	      return;
 	  }
 	}
+	if (isrsh) {
+	  // Start up the server and wait for it to connect back
+	  char *server_program;
+          char *server_args;   // server program plus its arguments
+	  char *token;
+
+          machinename = vrpn_copy_machine_name(station_name);
+	  server_program = vrpn_copy_rsh_program(station_name);
+          server_args = vrpn_copy_rsh_arguments(station_name);
+	  token = server_args;
+          // replace all argument separators (',') with spaces (' ')
+          while (token = strchr(token, ','))
+                *token = ' ';
+	  endpoint.tcp_sock = vrpn_start_server(machinename, server_program, 
+							     server_args);
+	  if (machinename) delete [] (char *) machinename;
+	  if (server_program) delete [] (char *) server_program;
+	  if (server_args) delete [] (char *) server_args;
+
+	  if (endpoint.tcp_sock < 0) {
+	      fprintf(stderr, "vrpn_Connection:  "
+			      "Can't open %s\n", station_name);
+	      status = BROKEN;
+	      return;
+	  }
+	}
+
 	status = CONNECTED;
 
 	// Set up the things that need to happen when a new connection is
@@ -3073,16 +3345,18 @@ char * vrpn_copy_file_name (const char * filespecifier) {
 
 char * vrpn_copy_machine_name (const char * hostspecifier) {
   int nearoffset = 0;
-    // if it begins with "x-vrpn://" skip that
+    // if it begins with "x-vrpn://" or "x-vrsh://" skip that
   int faroffset;
     // if it contains a ':', copy only the prefix before the last ':'
     // otherwise copy all of it
   int len;
   char * tbuf;
 
-  if (!strncmp(hostspecifier, "x-vrpn://", 9))
+  if (!strncmp(hostspecifier, "x-vrpn://", 9) || 
+      !strncmp(hostspecifier, "x-vrsh://", 9))
     nearoffset = 9;
-  faroffset = strcspn(hostspecifier + nearoffset, ":");
+  // stop at first occurrence of :<port #> or /<rsh arguments>
+  faroffset = strcspn(hostspecifier + nearoffset, ":/");
   len = 1 + (faroffset ? faroffset : strlen(hostspecifier) - nearoffset);
   tbuf = new char [len];
 
@@ -3105,7 +3379,8 @@ int vrpn_get_port_number (const char * hostspecifier) {
   if (!pn) return -1;
 
   // skip over ':' in header
-  if (!strncmp(pn, "x-vrpn://", 9))
+  if (!strncmp(pn, "x-vrpn://", 9) ||
+      !strncmp(pn, "x-vrsh://", 9))
     pn += 9;
 
   pn = strrchr(pn, ':');
@@ -3119,3 +3394,53 @@ int vrpn_get_port_number (const char * hostspecifier) {
   return port;
 }
 
+char * vrpn_copy_rsh_program (const char * hostspecifier) {
+  int nearoffset = 0; // location of first char after machine name
+  int faroffset; // location of last character of program name
+  int len;
+  char * tbuf;
+
+  if (!strncmp(hostspecifier, "x-vrpn://", 9) ||
+      !strncmp(hostspecifier, "x-vrsh://", 9))
+    nearoffset += 9;
+  nearoffset += strcspn(hostspecifier + nearoffset, "/");
+  nearoffset++; // step past the '/'
+  faroffset = strcspn(hostspecifier + nearoffset, ",");
+  len = 1 + (faroffset ? faroffset : strlen(hostspecifier) - nearoffset);
+  tbuf = new char [len];
+
+  if (!tbuf)
+    fprintf(stderr, "vrpn_copy_rsh_program: Out of memory!\n");
+  else {
+    strncpy(tbuf, hostspecifier + nearoffset, len - 1);
+    tbuf[len-1] = 0;
+    //fprintf(stderr, "server program: '%s'.\n", tbuf);
+  }
+  return tbuf;
+}
+
+char * vrpn_copy_rsh_arguments (const char * hostspecifier) {
+  int nearoffset = 0; // location of first char after server name
+  int faroffset; // location of last character
+  int len;
+  char * tbuf;
+
+  if (!strncmp(hostspecifier, "x-vrpn://", 9) ||
+      !strncmp(hostspecifier, "x-vrsh://", 9))
+    nearoffset += 9;
+
+  nearoffset += strcspn(hostspecifier + nearoffset, "/");
+  nearoffset += strcspn(hostspecifier + nearoffset, ",");
+  faroffset = strlen(hostspecifier);
+  len = 1 + faroffset - nearoffset;
+  tbuf = new char [len];
+
+  if (!tbuf)
+    fprintf(stderr, "vrpn_copy_rsh_arguments: Out of memory!\n");
+  else {
+    strncpy(tbuf, hostspecifier + nearoffset, len - 1);
+    tbuf[len-1] = 0;
+    //fprintf(stderr, "server args: '%s'.\n", tbuf);
+  }
+  return tbuf;
+}
