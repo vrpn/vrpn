@@ -15,44 +15,40 @@
 # the server library!
 #############################################################################
 
+#########################################
+# Pick your hardware and operating system (non-NT)
+
+HW_OS := sgi_irix
+#HW_OS := pc_linux
+#HW_OS := hp700_hpux
+
+#########################################
+# Pick your C++ compiler
+
+#CC := g++
+CC := CC
+
+#
+##############################################################################
+
 ##########################
 # common definitions
 #
 
-MAKEFILE := Makefile
+MAKEFILE := Makefile.remote
 MAKE := gmake -f $(MAKEFILE)
-HW_OS := $(shell hw_os)
 
-# check if its for pxfl
-ifeq ($(HW_OS),hp700_hpux10)
-  ifdef PBASE_ROOT
-    HW_OS := hp_flow
-  endif
-  ifneq ($(PXFL_COMPILER), gnu)
-    HW_OS := hp_flow_$(PXFL_COMPILER)
-  endif
-endif
-
-# Which C++ compiler to use.  Default is g++, but some don't use this.
+##########################
+# directories
 #
-# IF YOU CHANGE THESE, document either here or in the header comment
-# why.  Multiple contradictory changes have been made recently.
 
-CC := g++
-ifeq ($(HW_OS),sgi_irix)
-	CC := CC
-endif
-ifeq ($(HW_OS),hp700_hpux10)
-	CC := CC +a1
-endif
-ifeq ($(HW_OS),sparc_sunos)
-	CC := /usr/local/lib/CenterLine/bin/CC
-endif
-ifeq ($(HW_OS), hp_flow_aCC)
-	CC := /opt/aCC/bin/aCC 
-endif
+HMD_DIR 	 := .
+INCLUDE_DIR	 := .
+LIB_DIR 	 := .
 
-HMD_INCLUDE_DIR	:= /afs/unc/proj/hmd/include
+BETA_DIR	 := .
+BETA_INCLUDE_DIR := .
+BETA_LIB_DIR 	 := .
 
 # subdirectory for make
 OBJECT_DIR	 := $(HW_OS)
@@ -85,13 +81,13 @@ else
  endif
 endif
 
-INCLUDE_FLAGS := -I. $(SYS_INCLUDE) -I$(HMD_INCLUDE_DIR)
+INCLUDE_FLAGS := -I. $(SYS_INCLUDE) -I$(BETA_INCLUDE_DIR)
 
 ##########################
 # Load flags
 #
 
-LOAD_FLAGS := -L./$(HW_OS) -L/usr/local/lib \
+LOAD_FLAGS := -L./$(HW_OS) -L$(BETA_LIB_DIR) -L$(LIB_DIR) -L/usr/local/lib \
 		-L/usr/local/contrib/unmod/lib -L/usr/local/contrib/mod/lib -g
 
 ifeq ($(HW_OS),sgi_irix)
@@ -119,7 +115,7 @@ LIBS := -lv -ltracker -lad -lquat -lsound -larm -lvrpn -lsdi \
 # Defines for the compilation, CFLAGS
 #
 
-CFLAGS		 := $(INCLUDE_FLAGS) -g
+CFLAGS		 := $(INCLUDE_FLAGS) $(DEFINES) -g
 
 #############################################################################
 #
@@ -172,7 +168,7 @@ $(SOBJECT_DIR):
 
 LIB_FILES =  vrpn_Connection.C vrpn_Tracker.C vrpn_Button.C \
 	     vrpn_Sound.C vrpn_ForceDevice.C vrpn_Clock.C vrpn_Shared.C \
-	     vrpn_Ohmmeter.C vrpn_Analog.C 
+	     vrpn_Ohmmeter.C vrpn_Analog.C
 
 LIB_OBJECTS = $(patsubst %,$(OBJECT_DIR)/%,$(LIB_FILES:.C=.o))
 
@@ -183,8 +179,7 @@ LIB_INCLUDES = vrpn_Connection.h vrpn_Tracker.h vrpn_Button.h \
 SLIB_FILES =  vrpn_Connection.C vrpn_Tracker.C vrpn_3Space.C vrpn_Button.C \
 	     vrpn_Sound.C vrpn_ForceDevice.C vrpn_Clock.C vrpn_Shared.C \
 	     vrpn_Flock.C vrpn_Tracker_Fastrak.C vrpn_Dyna.C \
-	     vrpn_Flock_Parallel.C  vrpn_Joystick.C vrpn_Analog.C \
-	     vrpn_JoyFly.C vrpn_sgibox.C 
+	     vrpn_Flock_Parallel.C  vrpn_Joystick.C vrpn_Analog.C 
 
 # Until we have tracker.h, we can't compile vrpn_Tracker_Ceiling
 
