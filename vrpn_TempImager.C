@@ -106,10 +106,25 @@ bool  vrpn_TempImager_Server::fill_region(vrpn_int16 chanIndex, vrpn_uint16 cMin
   unsigned  r,c;
   vrpn_float32	offset = _channels[_region.chanIndex].offset;
   vrpn_float32	scale = _channels[_region.chanIndex].scale;
-  for (r = rMin; r <= rMax; r++) {
-    for (c = cMin; c <= cMax; c++) {
-      _region.write_unscaled_pixel(c, r, (vrpn_uint16)( (data[c+r*_nCols]-offset)/scale) );
-    }
+
+  // if there is no need to offset or scale then avoid all those fp additions and divisions
+  if (offset==0 && scale==1)
+  {
+    unsigned regionLine=_region.cMax-_region.cMin+1;
+    unsigned rOffset,rCols;
+    for (r = rMin,rOffset=rMin-_region.rMin,rCols=0; r <= rMax; r++,rOffset+=regionLine,rCols+=_nCols){
+		for (c = cMin; c <= cMax; c++){
+			_region.vals[(c-_region.cMin) + rOffset] = data[c+rCols];
+		}
+	}
+  }
+  else
+  {
+	  for (r = rMin; r <= rMax; r++){
+		  for (c = cMin; c <= cMax; c++){
+				_region.write_unscaled_pixel(c, r, (vrpn_uint16)( (data[c+r*_nCols]-offset)/scale) );
+		  }
+	  }
   }
 
   return true;
