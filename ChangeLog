@@ -1,3 +1,9 @@
+2000-10-02  Tom Hudson  <hudson@cs.unc.edu>
+
+	* vrpn_SharedObject.h :  Uncommented initial #include of
+        vrpn_Shared.h, which is necessary for compiling under
+        Cygwin 1.1;  code still compiles under VC++ and Cygwin 1.0
+
 2000-10-02  Adam Seeger  <seeger@cs.unc.edu>
 
 	* vrpn_Shared.C (vrpn_buffer, vrpn_unbuffer) : added these functions

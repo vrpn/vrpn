@@ -1,14 +1,9 @@
 #ifndef VRPN_SHARED_OBJECT
 #define VRPN_SHARED_OBJECT
 
-//#include "vrpn_Shared.h"  // for types
-//#include "vrpn_Types.h"
-
-#ifdef _WIN32
-#include <winsock.h>
-#else
-#include <sys/time.h>  // for struct timeval
-#endif
+#include "vrpn_Shared.h"  // for types
+  // This *must* be here to take care of winsock.h and sys/time.h and other
+  // assorted system-dependent details.
 
 #include "vrpn_Connection.h"  // for vrpn_HANDLERPARAM
 
