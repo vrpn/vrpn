@@ -111,7 +111,7 @@ int gethostname (char *, int);
 // string.  Since minor versions should interoperate, MAGIC is only
 // checked through the last period;  characters after that are ignored.
 
-const char * vrpn_MAGIC = (const char *) "vrpn: ver. 05.01";
+const char * vrpn_MAGIC = (const char *) "vrpn: ver. 05.02";
 const int vrpn_MAGICLEN = 16;  // Must be a multiple of vrpn_ALIGN bytes!
 
 // This is the list of states that a connection can be in
