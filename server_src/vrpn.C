@@ -53,6 +53,8 @@
 #include "vrpn_Tracker_DTrack.h"
 #include "vrpn_Analog_Output_NI.h"
 #include "vrpn_Poser_Analog.h"
+#include "vrpn_nikon_controls.h"
+#include "vrpn_Poser_Tek4662.h"
 
 #include "vrpn_ForwarderController.h"
 #include <vrpn_RedundantTransmission.h>
@@ -1121,40 +1123,38 @@ int setup_Wanda (char * & pch, char * line, FILE * config_file) {
   return 0;
 }
 
-int setup_Tracker_Dyna (char * & pch, char * line, FILE * config_file) {
-
+int setup_Tracker_Dyna (char * & pch, char * line, FILE * config_file)
+{
   char s2 [LINESIZE], s3 [LINESIZE];
   int i1, i2;
   int ret;
 
-            next();
-            // Get the arguments (class, tracker_name, sensors, port, baud)
-            if ( (ret=sscanf(pch,"%511s%d%511s%d",s2,&i2, s3, &i1)) != 4) {
-              fprintf(stderr,"Bad vrpn_Tracker_Dyna line (ret %d): %s\n",ret,
-		line);
-              return -1;
-            }
+  next();
+  // Get the arguments (class, tracker_name, sensors, port, baud)
+  if ( (ret=sscanf(pch,"%511s%d%511s%d",s2,&i2, s3, &i1)) != 4) {
+    fprintf(stderr,"Bad vrpn_Tracker_Dyna line (ret %d): %s\n",ret,
+      line);
+    return -1;
+  }
 
-            // Make sure there's room for a new tracker
-            if (num_trackers >= MAX_TRACKERS) {
-              fprintf(stderr,"Too many trackers in config file");
-              return -1;
-            }
+  // Make sure there's room for a new tracker
+  if (num_trackers >= MAX_TRACKERS) {
+    fprintf(stderr,"Too many trackers in config file");
+    return -1;
+  }
 
-            // Open the tracker
-            if (verbose) 
-              printf("Opening vrpn_Tracker_Dyna: %s on port %s, baud %d, "
-                     "%d sensors\n",
-                    s2,s3,i1, i2);
-            if ((trackers[num_trackers] =
-                  new vrpn_Tracker_Dyna(s2, connection, i2, s3, i1)) == NULL)   
-            
-              {
-                fprintf(stderr,"Can't create new vrpn_Tracker_Dyna\n");
-                return -1;
-              } else {
-                num_trackers++;
-              }
+  // Open the tracker
+  if (verbose) 
+    printf("Opening vrpn_Tracker_Dyna: %s on port %s, baud %d, "
+           "%d sensors\n",
+          s2,s3,i1, i2);
+  if ((trackers[num_trackers] =
+        new vrpn_Tracker_Dyna(s2, connection, i2, s3, i1)) == NULL) {
+    fprintf(stderr,"Can't create new vrpn_Tracker_Dyna\n");
+    return -1;
+  } else {
+    num_trackers++;
+  }
 
   return 0;
 }
@@ -2333,7 +2333,8 @@ int	get_poser_axis_line(FILE *config_file, char *axis_name, vrpn_PA_axis *axis, 
 	return 0;
 }
 
-int setup_Poser_Analog (char * & pch, char * line, FILE * config_file) {
+int setup_Poser_Analog (char * & pch, char * line, FILE * config_file)
+{
     char s2 [LINESIZE];
     vrpn_Poser_AnalogParam     p;
 
@@ -2388,6 +2389,71 @@ int setup_Poser_Analog (char * & pch, char * line, FILE * config_file) {
 
     if (!posers[num_posers]) {
       fprintf(stderr,"Can't create new vrpn_Poser_Analog\n");
+      return -1;
+    } else {
+      num_posers++;
+    }
+
+    return 0;
+}
+
+int setup_nikon_controls (char * & pch, char * line, FILE * config_file) {
+  char s2 [LINESIZE], s3 [LINESIZE];
+
+    // Get the arguments
+    next();
+    if (sscanf(pch, "%511s%511s", s2, s3) != 2) {
+      fprintf(stderr, "Bad vrpn_nikon_controls line: %s\n", line);
+      return -1;
+    }
+
+    // Make sure there's room for a new server
+    if (num_analogs >= MAX_ANALOG) {
+      fprintf(stderr, "Too many analog devices in config file");
+      return -1;
+    }
+
+    // Open the server
+    if (verbose) 
+      printf("Opening vrpn_nikon_control %s on port %s \n", 
+             s2,s3);
+    if ((analogs[num_analogs] =
+          new vrpn_Nikon_Controls(s2, connection,s3)) == NULL) {
+        fprintf(stderr, "Can't create new vrpn_nikon_controls\n");
+        return -1;
+    } else {
+        num_analogs++;
+    }
+
+  return 0;
+}
+
+int setup_Poser_Tek4662 (char * & pch, char * line, FILE * config_file)
+{
+    char s2 [LINESIZE], s3 [LINESIZE];
+    int i1;
+
+    next();
+    if ( sscanf(pch,"%511s%511s%d",s2,s3, &i1) != 3) {
+      fprintf(stderr, "Bad vrpn_Poser_Tek4662 line: %s\n", line);
+      return -1;
+    }
+
+    // Make sure there's room for a new poser
+    if (num_posers >= MAX_POSER) {
+      fprintf(stderr,"Too many posers in config file");
+      return -1;
+    }
+
+    if (verbose) {
+      printf("Opening vrpn_Poser_Tek4662 %s on port %s at baud %d\n"
+             ,s2, s3, i1);
+    }
+
+    posers[num_posers] = new vrpn_Poser_Tek4662(s2, connection, s3, i1);
+
+    if (!posers[num_posers]) {
+      fprintf(stderr,"Can't create new vrpn_Poser_Tek4662\n");
       return -1;
     } else {
       num_posers++;
@@ -2623,6 +2689,10 @@ main (int argc, char * argv[])
 	    CHECK(setup_DTrack);
 	  } else if (isit("vrpn_NI_Analog_Output")) {
             CHECK(setup_NI);
+	  } else if (isit("vrpn_nikon_controls")) {
+            CHECK(setup_nikon_controls);
+	  } else if (isit("vrpn_Tek4662")) {
+            CHECK(setup_Poser_Tek4662);
 	  } else if (isit("vrpn_Poser_Analog")) {
             CHECK(setup_Poser_Analog);
 
