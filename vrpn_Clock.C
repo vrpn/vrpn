@@ -9,7 +9,7 @@
   Revised: Wed Apr  1 13:23:40 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.C,v $
   $Locker:  $
-  $Revision: 1.26 $
+  $Revision: 1.27 $
   \*****************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
@@ -58,25 +58,39 @@ vrpn_Clock::vrpn_Clock(const char * name, vrpn_Connection *c) {
     delete [] servicename;
 }
 
-// packs time of message sent and all data sent to it back into buffer
+/** Packs time of message sent and all data sent to it back into buffer.
+    buf is outgoing buffer, tvSRep is current time, tvCReq is the time
+    that the just-received message had in it, cChars is the length of
+    the old message payload, and pch is a pointer to the old payload.
+    When encoding the old payload, the first vrpn_int32 in the payload
+    is skipped (it is the version number).
+
+    Returns the number of characters encoded total.
+*/
+
 int vrpn_Clock::encode_to(char *buf, const struct timeval& tvSRep,
 			  const struct timeval& tvCReq, 
 			  vrpn_int32 cChars, const char *pch ) {
 
-  // pack client time and the unique client identifier
-  vrpn_int32 *rgl = (vrpn_int32 *)buf;
-  rgl[0]=htonl(CLOCK_VERSION);
-  rgl[1]=htonl(tvSRep.tv_sec);
-  rgl[2]=(vrpn_int32)htonl(tvSRep.tv_usec);
-  rgl[3]=htonl(tvCReq.tv_sec);
-  rgl[4]=(vrpn_int32)htonl(tvCReq.tv_usec);
+  char *bufptr = buf;
+  int	buflen = 100;
 
-  // skip over version number
+  // pack version number, client time, and the old message time.
+  vrpn_buffer( &bufptr, &buflen, CLOCK_VERSION );
+  vrpn_buffer( &bufptr, &buflen, tvSRep );
+  vrpn_buffer( &bufptr, &buflen, tvCReq );
+
+  // Skip the version number from the old message
   pch += sizeof(vrpn_int32);
   cChars -= sizeof(vrpn_int32);
-  memcpy( (char *) &rgl[5], pch, cChars );
-  
-  return 5*sizeof(vrpn_int32)+cChars;
+
+  // Pack the payload of the old message
+  // XXX Note that this will un-align any 64-bit entries in the buffer.
+  // This means that none can be put there.
+  vrpn_buffer( &bufptr, &buflen, pch, cChars );
+
+  // Tell how many characters we sent.
+  return 100-buflen;
 }
 
 
@@ -110,9 +124,7 @@ vrpn_Clock_Server::~vrpn_Clock_Server()
 int vrpn_Clock_Server::clockQueryHandler(void *userdata, vrpn_HANDLERPARAM p) {
   vrpn_Clock_Server *me = (vrpn_Clock_Server *) userdata;
   static struct timeval now;
-
-  vrpn_int32	alignbuf[13];	// Ensure word-aligned buffer for encode
-  char *rgch = (char *)alignbuf;
+  char rgch[100];
   
   // send back time client sent request and the buffer the client sent
   //  cerr << ".";
@@ -888,6 +900,18 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
 
 /*****************************************************************************\
   $Log: vrpn_Clock.C,v $
+  Revision 1.27  2000/02/23 18:59:36  taylorr
+  Converts the objects that write things into VRPN buffers to use the
+  vrpn_buffer() functions. These functions are robust in the presence
+  of unaligned output buffer. This should fix seg fault problems on
+  some architectures.
+
+  Made the TCP incoming buffer aligned, rather than malloc()ed. This
+  should fix yet more seg fault problems on some architectures.
+
+  None of these caused problems at UNC, but several outside users have
+  reported problems with this.
+
   Revision 1.26  2000/01/05 23:09:19  taylorr
   Aligns the buffer that the clock writes into. This was a problem on
   solaris machines. Dunno who trackers and other devices don't have the

@@ -357,49 +357,64 @@ vrpn_Connection *vrpn_Tracker::connectionPtr() {
   return connection;
 }
 
+/** Encodes the "Tracker to Room" transformation into the buffer
+    specified. Returns the number of bytes encoded into the
+    buffer.  Assumes that the buffer can hold all of the data.
+    Encodes the position, then the quaternion.
+*/
+
 int     vrpn_Tracker::encode_tracker2room_to(char *buf)
 {
-    int i;
-    vrpn_float64 *dBuf = (vrpn_float64 *)buf;
-    int index = 0;
-    for (i = 0; i < 3; i++) {
-        dBuf[index++] = *(vrpn_float64 *)(&tracker2room[i]);
-    }
-    for (i = 0; i < 4; i++) {
-        dBuf[index++] = *(vrpn_float64 *)(&tracker2room_quat[i]);
-    }
+	char	*bufptr = buf;
+	int	buflen = 1000;
+	int	i;
 
-    // convert the vrpn_float64
-    for (i = 0; i < index; i++) {    
-        dBuf[i] = htond(dBuf[i]);
-    }
-    return index*sizeof(vrpn_float64);
+	// Encode the position part of the transformation.
+	for (i = 0; i < 3; i++) {
+		vrpn_buffer( &bufptr, &buflen, tracker2room[i] );
+	}
+
+	// Encode the quaternion part of the transformation.
+	for (i = 0; i < 4; i++) {
+		vrpn_buffer( &bufptr, &buflen, tracker2room_quat[i] );
+	}
+
+	// Return the number of characters sent.
+	return 1000-buflen;
 }
 
-// WARNING: make sure sensor is set to desired value before sending this message
+/** Encodes the "Unit to Sensor" transformation into the buffer
+    specified. Returns the number of bytes encoded into the
+    buffer.  Assumes that the buffer can hold all of the data.
+    Encodes the position, then the quaternion.
+
+    WARNING: make sure sensor is set to desired value before encoding
+    this message.
+*/
+
 int	vrpn_Tracker::encode_unit2sensor_to(char *buf)
 {
-    int i;
-    vrpn_float64 *dBuf = (vrpn_float64 *)buf;
-    int index = 0;
+	char	*bufptr = buf;
+	int	buflen = 1000;
+	int	i;
 
-    *(vrpn_int32 *)dBuf = htonl(sensor);
-    
-    // re-align to vrpn_float64
-    index++;
+	// Encode the sensor number, then put a filler in32 to re-align
+	// to the 64-bit boundary.
+	vrpn_buffer( &bufptr, &buflen, sensor );
+	vrpn_buffer( &bufptr, &buflen, (vrpn_int32)(0) );
 
-    for (i = 0; i < 3; i++) {
-    	dBuf[index++] = *(vrpn_float64 *)(&unit2sensor[sensor][i]);
-    }
-    for (i = 0; i < 4; i++) {
-	dBuf[index++] = *(vrpn_float64 *)(&unit2sensor_quat[sensor][i]);
-    }
+	// Encode the position part of the transformation.
+	for (i = 0; i < 3; i++) {
+		vrpn_buffer( &bufptr, &buflen, unit2sensor[sensor][i] );
+	}
 
-    // convert the vrpn_float64
-    for (i = 1; i < index; i++) {
-	dBuf[i] = htond(dBuf[i]);
-    }
-    return index*sizeof(vrpn_float64);
+	// Encode the quaternion part of the transformation.
+	for (i = 0; i < 4; i++) {
+		vrpn_buffer( &bufptr, &buflen, unit2sensor_quat[sensor][i] );
+	}
+
+	// Return the number of characters sent.
+	return 1000-buflen;
 }
 
 int	vrpn_Tracker::encode_workspace_to(char *buf)

@@ -34,42 +34,34 @@ void vrpn_Text::mainloop (void) {
 
 vrpn_Connection * vrpn_Text::connectionPtr (void) {
         return connection;
-
 }
 
 vrpn_int32 vrpn_Text::encode_to (char * buf, vrpn_uint32 type,
-                          vrpn_uint32 level, const char * msg){
+                          vrpn_uint32 level, const char * msg)
+{
+	char *bufptr = buf;
+	int  buflen = 2 * sizeof(vrpn_int32) + vrpn_MAX_TEXT_LEN;
 
-  vrpn_uint32 net_type;
-  vrpn_uint32 net_level;
+	// Send the type, level and string message (of maximum length)
+	vrpn_buffer( &bufptr, &buflen, type );
+	vrpn_buffer( &bufptr, &buflen, level );
+	vrpn_buffer( &bufptr, &buflen, msg, vrpn_MAX_TEXT_LEN );
 
-  net_type  = htonl(type);
-  net_level = htonl(level);  // reorder to network byte order
-
-  memcpy(buf, &net_type, sizeof(net_type));
-  memcpy(buf + sizeof(net_type), &net_level, sizeof(net_level));
-  strncpy(buf + sizeof(net_type) + sizeof(net_level), msg,
-          vrpn_MAX_TEXT_LEN);
-
-  return 0;
+	return 0;
 }
 
 
-vrpn_int32 vrpn_Text::decode_to(char *msg, vrpn_uint32 *type,
-                         vrpn_uint32 *level,const char *buf){
+vrpn_int32 vrpn_Text::decode_to (char *msg, vrpn_uint32 *type,
+                         vrpn_uint32 *level, const char *buf)
+{
+	const char	*bufptr = buf;
 
-  vrpn_uint32 net_level;
-  vrpn_uint32 net_type;
+	// Read the type, level and message
+	vrpn_unbuffer( &bufptr, type );
+	vrpn_unbuffer( &bufptr, level );
+	vrpn_unbuffer( &bufptr, msg, vrpn_MAX_TEXT_LEN );
 
-  memcpy(&net_type, buf, sizeof(net_type));
-  memcpy(&net_level, buf + sizeof(net_type), sizeof(net_level)); 
-  *type = ntohl(net_type);
-  *level = ntohl(net_level);
-
-  strncpy(msg, buf + sizeof(net_type)+ sizeof(net_level),
-          vrpn_MAX_TEXT_LEN);
-
-  return 0;	
+	return 0;	
 }
 
 

@@ -3416,8 +3416,7 @@ vrpn_Connection::vrpn_Connection (unsigned short listen_port_no,
     d_udp_num_out (0),
     d_pendingLogmode (0),
     d_pendingLogname (NULL),
-    d_TCPbuflen (0),
-    d_TCPbuf (NULL),
+    d_TCPbuf ((char*)(&d_TCPinbufToAlignRight[0])),
     d_UDPinbuf ((char*)(&d_UDPinbufToAlignRight[0])),
     d_sequenceNumberUDP (0),
     d_sequenceNumberTCP (0)
@@ -3491,8 +3490,7 @@ vrpn_Connection::vrpn_Connection
     d_udp_num_out (0),
     d_pendingLogmode (0),
     d_pendingLogname (NULL),
-    d_TCPbuflen (0),
-    d_TCPbuf (NULL),
+    d_TCPbuf ((char*) (&d_TCPinbufToAlignRight[0])),
     d_UDPinbuf ((char *) (&d_UDPinbufToAlignRight[0])),
     d_sequenceNumberUDP (0),
     d_sequenceNumberTCP (0)
@@ -3720,8 +3718,6 @@ vrpn_Connection::~vrpn_Connection (void) {
   //   (or the "anonymous connections" list).
   vrpn_ConnectionManager::instance().deleteConnection(this);
 
-  if (d_TCPbuf)
-    free(d_TCPbuf);
   if (d_tcp_outbuf)
     delete [] d_tcp_outbuf;
   if (d_udp_outbuf)
@@ -4004,14 +4000,9 @@ int	vrpn_Connection::handle_tcp_messages (int fd,
 
 		// Make sure the buffer is long enough to hold the whole
 		// message body.
-		if ((vrpn_int32)d_TCPbuflen < ceil_len) {
-		  if (d_TCPbuf) { d_TCPbuf = (char*)realloc(d_TCPbuf,ceil_len); }
-		  else { d_TCPbuf = (char*)malloc(ceil_len); }
-		  if (d_TCPbuf == NULL) {
-		     fprintf(stderr, "vrpn: vrpn_Connection::handle_tcp_messages: Out of memory\n");
+		if (sizeof(d_TCPinbufToAlignRight) < ceil_len) {
+		     fprintf(stderr, "vrpn: vrpn_Connection::handle_tcp_messages: Message too long\n");
 		     return -1;
-		  }
-		  d_TCPbuflen = ceil_len;
 		}
 
 		// Read the body of the message 

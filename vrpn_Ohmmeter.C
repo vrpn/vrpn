@@ -156,7 +156,7 @@ vrpn_Ohmmeter_ORPX2::vrpn_Ohmmeter_ORPX2(char *name, vrpn_Connection *c = NULL,
 
 void vrpn_Ohmmeter_ORPX2::mainloop(void) {
     struct timeval current_time;
-    char msgbuf[1000];
+    char msgbuf[1024];
     vrpn_int32 len;
 
     gettimeofday(&current_time, NULL);
@@ -403,7 +403,7 @@ void vrpn_Ohmmeter_Remote::mainloop(void)
 int vrpn_Ohmmeter_Remote::set_channel_parameters(vrpn_int32 chan, vrpn_int32 enable,
 	vrpn_float64 volt, vrpn_float64 r_min, vrpn_float64 filt)
 {
-    char msgbuf[1000];
+    char msgbuf[1024];
     vrpn_int32 len;
     struct timeval current_time;
 

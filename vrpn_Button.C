@@ -232,19 +232,23 @@ vrpn_Connection *vrpn_Button::connectionPtr() {
   return connection;
 }
 
+/** Encode a message describing the new state of a button.
+    Assumes that there is enough room in the buffer to hold
+    the bytes from the message. Returns the number of bytes
+    sent.
+*/
 
-vrpn_int32	vrpn_Button::encode_to(char *buf, vrpn_int32 button, vrpn_int32 state)
+vrpn_int32 vrpn_Button::encode_to(char *buf,
+		vrpn_int32 button, vrpn_int32 state)
 {
-   // Message includes: vrpn_int32 buttonNum, vrpn_int32 state
-   // Byte order of each needs to be reversed to match network standard
+	char	*bufptr = buf;
+	int 	buflen = 1000;
 
-   vrpn_uint32 *longbuf = (vrpn_uint32*)(void*)(buf);
-   vrpn_int32	index = 0;
+	// Message includes: vrpn_int32 buttonNum, vrpn_int32 state
+	vrpn_buffer( &bufptr, &buflen, button );
+	vrpn_buffer( &bufptr, &buflen, state );
 
-   longbuf[index++] = htonl(button);
-   longbuf[index++] = htonl(state);
-
-   return index*sizeof(vrpn_uint32);
+	return 1000 - buflen;
 }
 
 /*

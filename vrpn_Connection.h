@@ -1,4 +1,4 @@
-#ifndef	VRPN_CONNECTION_H
+#ifndef VRPN_CONNECTION_H
 #define VRPN_CONNECTION_H
 #include <stdio.h>  // for FILE
 
@@ -488,9 +488,8 @@ class vrpn_Connection
 	// and differentiate them from parameters or local variables.
 
 	// Input buffers
-        // HACK:  d_TCPbuf uses malloc()/realloc()/free() instead of
-        //   new/delete.
-	vrpn_uint32 d_TCPbuflen;
+	vrpn_float64 d_TCPinbufToAlignRight
+		[vrpn_CONNECTION_TCP_BUFLEN / sizeof(vrpn_float64) + 1];
 	char * d_TCPbuf;
 	vrpn_float64 d_UDPinbufToAlignRight
 		[vrpn_CONNECTION_UDP_BUFLEN / sizeof(vrpn_float64) + 1];
