@@ -132,7 +132,7 @@ void vrpn_File_Connection::play_to_user_message (void)
         vrpn_HANDLERPARAM &header = d_currentLogEntry->data;
 
         if (header.type != vrpn_CONNECTION_UDP_DESCRIPTION) {
-            if (system_messages[-header.type](endpoint, header)) {
+            if (doSystemCallbacksFor(header, endpoint)) {
                 fprintf(stderr, "vrn_File_Connection::play_to_user_message: "
                         "Nonzero system return.\n");
             }
@@ -608,7 +608,7 @@ int vrpn_File_Connection::playone_to_filetime( timeval end_filetime )
     } else {  // system handler            
 
         if (header.type != vrpn_CONNECTION_UDP_DESCRIPTION) {
-            if (system_messages[-header.type](endpoint, header)) {
+            if (doSystemCallbacksFor(header, endpoint)) {
                 fprintf(stderr, "vrpn_File_Connection::playone_to_filename:  "
                         "Nonzero system return.\n");
                 return -1;
@@ -848,8 +848,7 @@ int vrpn_File_Connection::send_pending_reports(void)
     // Do nothing except clear the buffer - 
     // file connections aren't really connected to anything. 
 
-   d_endpoints[0]->d_tcpNumOut = 0;	// Clear the buffer for the next time
-   d_endpoints[0]->d_udpNumOut = 0;	// Clear the buffer for the next time
+   d_endpoints[0]->clearBuffers();	// Clear the buffer for the next time
    return 0;
 }
 
