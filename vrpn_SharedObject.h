@@ -123,6 +123,21 @@ class vrpn_SharedObject {
 
     virtual void bindConnection (vrpn_Connection *);
     void useLamportClock (vrpn_LamportClock *);
+      ///< Lamport Clocks are NOT currently integrated.  They should
+      ///< provide serialization (virtual timestamps) that work even
+      ///< when the clocks of the computers communicating are not
+      ///< roughly synchronized.
+
+    // lock migration
+
+    void becomeSerializer (void);
+      ///< Requests that this instance of the shared object becomes 
+      ///< the serializer (i.e. lock-arbitrator), and we can then use
+      ///< setSerializerPolicy to imitate a complete lock.  Does nothing
+      ///< if we already are the serializer (isSerializer() returns true);
+      ///< otherwise initiates a 3-phase request protocol with the
+      ///< current serializer.  There currently isn't any provision for
+      ///< notification of success (or failure).
 
   protected:
 
@@ -135,19 +150,33 @@ class vrpn_SharedObject {
     vrpn_int32 d_myId;
     vrpn_int32 d_updateFromServer_type;
     vrpn_int32 d_updateFromRemote_type;
-    vrpn_int32 d_becomeSerializer_type;
     vrpn_int32 d_myUpdate_type;  // fragile
 
+    vrpn_int32 d_requestSerializer_type;
+      ///< Sent to the serializer to assume its duties.
+    vrpn_int32 d_grantSerializer_type;
+      ///< Sent by the serializer to grant a request.
+    vrpn_int32 d_assumeSerializer_type;
+      ///< Sent by a new serializer once it has been notified that
+      ///< its request has been granted.
+
     vrpn_bool d_isSerializer;
-      // default to vrpn_TRUE for servers, FALSE for remotes
+      ///< default to vrpn_TRUE for servers, FALSE for remotes
 
     virtual vrpn_bool shouldSendUpdate (vrpn_bool isLocalSet,
                                         vrpn_bool acceptedUpdate);
 
     int yankCallbacks (vrpn_bool isLocal);
-      // must set d_lastUpdate BEFORE calling yankCallbacks()
+      ///< must set d_lastUpdate BEFORE calling yankCallbacks()
         
-    static int handle_becomeSerializer (void *, vrpn_HANDLERPARAM);
+    static int handle_requestSerializer (void *, vrpn_HANDLERPARAM);
+    static int handle_grantSerializer (void *, vrpn_HANDLERPARAM);
+    static int handle_assumeSerializer (void *, vrpn_HANDLERPARAM);
+
+    vrpn_bool d_queueSets;
+      ///< If this is true, no set()s are processed;  instead, they
+      ///< are queued for later execution.
+      ///< NOT IMPLEMENTED
 
     vrpn_LamportClock * d_lClock;
 

@@ -328,6 +328,7 @@ LIB_FILES =  vrpn_Connection.C vrpn_Tracker.C vrpn_Button.C \
              vrpn_ForwarderController.C vrpn_Serial.C vrpn_Dial.C \
              vrpn_SharedObject.C vrpn_BaseClass.C \
 	     vrpn_Sound.C vrpn_LamportClock.C vrpn_Mutex.C vrpn_Router.C
+#             vrpn_Ohmmeter.C
 
 LIB_OBJECTS = $(patsubst %,$(OBJECT_DIR)/%,$(LIB_FILES:.C=.o))
 
@@ -338,6 +339,42 @@ LIB_INCLUDES = vrpn_Connection.h vrpn_Tracker.h vrpn_Button.h \
                vrpn_ForwarderController.h vrpn_Serial.h vrpn_Dial.h \
                vrpn_SharedObject.h vrpn_LamportClock.h vrpn_Mutex.h \
                vrpn_BaseClass.h
+#               vrpn_Ohmmeter.h
+
+# additional files for the new connection work-in-progress
+
+NEW_LIB_FILES = \
+      vrpn_BaseConnectionManager.C \
+      vrpn_ClientConnectionManager.C \
+      vrpn_ServerConnectionManager.C \
+      vrpn_BaseConnection.C \
+      vrpn_NetConnection.C \
+      vrpn_NewFileConnection.C \
+      vrpn_NewFileController.C \
+      vrpn_FileLogger.C \
+      vrpn_ConnectionCommonStuff.C \
+      vrpn_BaseMulticast.C \
+      vrpn_UnreliableMulticastSender.C \
+      vrpn_UnreliableMulticastRecvr.C
+
+NEW_LIB_OBJECTS = $(patsubst %,$(OBJECT_DIR)/%,$(NEW_LIB_FILES:.C=.o))
+
+NEW_LIB_INCLUDES = \
+      vrpn_ConnectionManagerCallbackInterface.h \
+      vrpn_BaseConnectionManager.h \
+      vrpn_ClientConnectionManager.h \
+      vrpn_ServerConnectionManager.h \
+      vrpn_BaseConnection.h \
+      vrpn_NetConnection.h \
+      vrpn_FileConnectionInterface.h\
+      vrpn_NewFileConnection.h \
+      vrpn_NewFileController.h \
+      vrpn_FileLogger.h \
+      vrpn_ConnectionCommonStuff.h \
+      vrpn_BaseMulticast.h \
+      vrpn_UnreliableMulticastSender.h \
+      vrpn_UnreliableMulticastRecvr.h
+
 
 # Additional files to be compiled into the server library
 

@@ -1,3 +1,32 @@
+2000-09-12  Tom Hudson  <hudson@cs.unc.edu>
+
+        * vrpn_BaseClass.h : made some of the comments 80-column correct
+        so I could read them.
+
+        * vrpn_SharedObject.h: (becomeSerializer) : new function
+        d_requestSerializer_type, d_grantSerializer_type,
+        d_assumeSerializer_type : new data members
+        d_queueSets : new data member (probably unnecessary)
+        d_becomeSerializer_type : removed old data member
+        (handle_requestSerializer) : new function
+        (handle_grantSerializer) : renamed from handle_becomeSerializer
+        (handle_assumeSerializer) : new function
+
+        * vrpn_SharedObject.C: (vrpn_SharedObject constructor) :
+        default values for new data members, d_lClock.
+        (vrpn_SharedObject::becomeSerializer) : new function
+        (vrpn_SharedObject::handle_requestSerializer) : new function
+        (vrpn_SharedObject::handle_grantSerializer) :
+        renamed from handle_becomeSerializer
+        (vrpn_SharedObject::handle_assumeSerializer) : new function
+        (vrpn_Shared_int32_Server::bindConnection) : added registration
+        of handler for requestSerializer
+        (vrpn_Shared_float64_Server::bindConnection) : added registration
+        of handler for requestSerializer
+        (vrpn_Shared_String_Server::bindConnection) : added registration
+        of handler for requestSerializer
+
+
 2000-09-11  Adam Seeger  <seeger@cs.unc.edu>
 
         * vrpn_FileConnection.C (vrpn_File_Connection::reset) : 
