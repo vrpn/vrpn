@@ -81,9 +81,12 @@ all:	$(OBJ_DIR)/printvals $(OBJ_DIR)/printcereal \
 	$(OBJ_DIR)/logfiletypes $(OBJ_DIR)/text \
 	forwarderClient $(OBJ_DIR)/bdbox_client \
 	$(OBJ_DIR)/ff_client \
-	$(OBJ_DIR)/ohm_client $(OBJ_DIR)/phan_client \
+	$(OBJ_DIR)/phan_client \
 	$(OBJ_DIR)/sphere_client $(OBJ_DIR)/bdbox_client \
-	$(OBJ_DIR)/vrpn_print_messages add_vrpn_cookie testLamport
+	add_vrpn_cookie testLamport
+#	$(OBJ_DIR)/vrpn_print_messages
+
+# $(OBJ_DIR)/ohm_client
 
 $(OBJ_DIR):
 	mkdir $(OBJ_DIR)

@@ -95,7 +95,8 @@ $(OBJ_DIR)/%.o:	%.C
 
 
 
-all:  vrpn_server test_vrpn client_and_server testSharedObject
+all:  vrpn_server test_vrpn client_and_server
+# testSharedObject
 
 .PHONY:	vrpn_server
 vrpn_server:	$(OBJ_DIR)/vrpn_server
