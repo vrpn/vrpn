@@ -1,3 +1,8 @@
+2003-09-26  Matt Harvey  <m.j.harvey@ucl.ac.uk>
+
+	* vrpn.cfg : Added new joystick device.
+	* vrpn.C : Added new joystick device.
+
 2003-09-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Tracker.cfg : Removed because it caused lots of error

@@ -769,3 +769,16 @@
 #	float	rate_to_send_tracker_reports
 
 #vrpn_Phantom	Phantom	0	60.0
+
+##############################################################################
+# Virtual Presence Joystick tracker device. (http://www.vrweb.com)
+# Use this driver to read the button states,
+# use Flock-of-Birds driver for the position/orientation state
+#
+# Arguments:
+#  char  name_of_this_device[]
+#  char  name_of_serial_device[]
+#  int   baud_rate_of_serial_device
+
+#vrpn_VPJoystick VPJoystick0 /dev/ttyS0 9600
+
