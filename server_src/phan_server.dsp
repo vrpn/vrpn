@@ -42,7 +42,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MTd /W3 /GX /O2 /I "../../quat" /I "../../external/pc_win32/include/ghost3.0" /I "../../external/pc_win32/include/stl" /I "../" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /D "USING_HCOLLIDE" /YX /FD /c /Tp
+# ADD CPP /nologo /MTd /W3 /GX /O2 /I "../../quat" /I "../../external/pc_win32/include/ghost3.0" /I "../../external/pc_win32/include/stl" /I "../" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /D "USING_HCOLLIDE" /D "$(VRPN_COMPILE_DEF)" /D "WIN32" /YX /FD /c /Tp
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -67,7 +67,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MDd /W3 /GX /Zi /Od /I "..\..\quat" /I "../" /I "../../external/pc_win32/include/ghost-stl" /I "../../external/pc_win32/include/ghost3.1" /I "C:\Program Files\SensAble\GHOST\v3.1\include" /I "C:\Program Files\SensAble\GHOST\v3.1\external\stl" /I "C:\Program Files\SensAble\GHOST\v3.0\include" /I "C:\Program Files\SensAble\GHOST\v3.0\external\stl" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"pc_win32/Debug/phan_server.pch" /YX /Fo"pc_win32/Debug/" /Fd"pc_win32/Debug/" /FD /c /Tp
+# ADD CPP /nologo /MDd /W3 /GX /Zi /Od /I "..\..\quat" /I "../" /I "../../external/pc_win32/include/ghost-stl" /I "../../external/pc_win32/include/ghost3.1" /I "C:\Program Files\SensAble\GHOST\v3.1\include" /I "C:\Program Files\SensAble\GHOST\v3.1\external\stl" /I "C:\Program Files\SensAble\GHOST\v3.0\include" /I "C:\Program Files\SensAble\GHOST\v3.0\external\stl" /D "_CONSOLE" /D "_MBCS" /D "_DEBUG" /D "$(VRPN_COMPILE_DEF)" /D "WIN32" /Fp"pc_win32/Debug/phan_server.pch" /YX /Fo"pc_win32/Debug/" /Fd"pc_win32/Debug/" /FD /c /Tp
 # SUBTRACT CPP /Fr
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"

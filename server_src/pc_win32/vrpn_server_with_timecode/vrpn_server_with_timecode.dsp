@@ -41,7 +41,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /D "$(VRPN_COMPILE_DEF)" /D "WIN32" /YX /FD /c
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -65,7 +65,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MDd /W3 /GX /ZI /Od /I "..\..\.." /I "..\..\..\..\quat" /I "../../../../Adrienne/AEC_DLL" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "INCLUDE_TIMECODE_SERVER" /YX /FD /TP /c
+# ADD CPP /nologo /MDd /W3 /GX /ZI /Od /I "..\..\.." /I "..\..\..\..\quat" /I "../../../../Adrienne/AEC_DLL" /D "_CONSOLE" /D "_MBCS" /D "INCLUDE_TIMECODE_SERVER" /D "_DEBUG" /D "$(VRPN_COMPILE_DEF)" /D "WIN32" /YX /FD /TP /c
 # SUBTRACT CPP /X
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"

@@ -37,7 +37,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /Z7 /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MTd /W3 /GX /Z7 /Od /I "../quat" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "DESKTOP_PHANTOM_DEFAULTS" /Fp"pc_win32_MTd/vrpn.pch" /YX /Fo"pc_win32_MTd/" /Fd"pc_win32_MTd/" /FD /TP /c
+# ADD CPP /nologo /MTd /W3 /GX /Z7 /Od /I "../quat" /D "_WINDOWS" /D "DESKTOP_PHANTOM_DEFAULTS" /D "_DEBUG" /D "$(VRPN_COMPILE_DEF)" /D "WIN32" /Fp"pc_win32_MTd/vrpn.pch" /YX /Fo"pc_win32_MTd/" /Fd"pc_win32_MTd/" /FD /TP /c
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409
 BSC32=bscmake.exe
