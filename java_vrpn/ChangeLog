@@ -1,3 +1,12 @@
+2002-06-12  Tatsuhiro Segi  <segi@email.unc.edu>
+
+	* java_vrpn.dsw:  added ButtonRemote.dsp project
+	* java_vrpn.vjp:  added ButtonRemote.java
+	* ButtonRemote.dsp:  new project file
+	* ButtonRemote.java:  new.  the java part of the vrpn button remote
+	* vrpn_ButtonRemote.cpp:  new. c++ part of the same thing
+	* .cvsignore:  added vrpn_ButtonRemote.h
+
 2002-06-10  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_TrackerRemote.cpp:  minor comment chanes
