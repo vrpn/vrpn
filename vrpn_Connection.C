@@ -4796,9 +4796,13 @@ void vrpn_Connection::server_check_for_incoming_connections
     d_endpoints[which_end]->setNICaddress(d_NIC_IP);
     d_endpoints[which_end]->connect_tcp_to(msg);
 
-    handle_connection(which_end);
-
+    // d_numEndpoints must be incremented before handle_connection is called
+    // otherwise the functions doing_okay and connected do not check all
+    // the endpoints. Because of this topo was unable to send the header
+    // information and nano crashed...
     d_numEndpoints++;
+
+    handle_connection(which_end);
 
     // HACK
     // We don't want to do this, but connection requests are soft state
@@ -5365,6 +5369,16 @@ int vrpn_Connection::message_type_is_registered (const char * name) const
 // "ok" status, so we need to admit it.  (Used to check >= 0)
 // XXX What if one endpoint is BROKEN? Don't we need to loop?
 vrpn_bool vrpn_Connection::doing_okay (void) const {
+//     return (connectionStatus >= TRYING_TO_CONNECT);
+
+    int endpointIndex;
+    
+    for (endpointIndex = 0; endpointIndex < d_numEndpoints; endpointIndex++) {
+        if (d_endpoints[endpointIndex] &&
+            (!d_endpoints[endpointIndex]->doing_okay())) {
+          return VRPN_FALSE;
+        }
+    }
     return (connectionStatus >= TRYING_TO_CONNECT);
 }
 
