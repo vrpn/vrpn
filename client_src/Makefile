@@ -105,7 +105,7 @@ all:	$(OBJ_DIR)/printvals $(OBJ_DIR)/printcereal \
 	$(OBJ_DIR)/ff_client \
 	$(OBJ_DIR)/phan_client \
 	$(OBJ_DIR)/sphere_client $(OBJ_DIR)/bdbox_client \
-	add_vrpn_cookie testLamport
+	add_vrpn_cookie testLamport es
 #	$(OBJ_DIR)/vrpn_print_messages
 
 # $(OBJ_DIR)/ohm_client
@@ -114,6 +114,9 @@ $(OBJ_DIR):
 	mkdir $(OBJ_DIR)
 
 # testSharedObject
+
+.PHONY: es
+es:	$(OBJ_DIR)/es
 
 .PHONY:	forwarderClient
 forwarderClient:	$(OBJ_DIR)/forwarderClient
@@ -129,6 +132,10 @@ testLamport:	$(OBJ_DIR)/testLamport
 
 .PHONY:	text
 text:	$(OBJ_DIR)/text
+
+$(OBJ_DIR)/es : $(OBJ_DIR)/es.o $(LIB_DIR)/libvrpn.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/es \
+                $(OBJ_DIR)/es.o -lvrpn $(ARCH_LIBS)
 
 $(OBJ_DIR)/sound_client: $(OBJ_DIR)/sound_client.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/sound_client \
