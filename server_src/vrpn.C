@@ -185,7 +185,7 @@ main (int argc, char *argv[])
       {	char	line[512];	// Line read from the input file
         char *pch;
 	char    scrap[512];
-	char	s1[512],s2[512],s3[512], s4[512];	// String parameters
+	char	s1[512],s2[512],s3[512], s4[512]; // String parameters
 	int	i1, i2;				// Integer parameters
 	float	f1;				// Float parameters
 
@@ -215,8 +215,9 @@ main (int argc, char *argv[])
 #define isit(s) !strcmp(pch=strtok(scrap," \t"),s)
 #define next() pch += strlen(pch) + 1
 	  if (isit("vrpn_SGIBOX")) {
+	    int tbutton;
 	    next();
-	    if (sscanf(pch,"%511s",s2) != 1) {
+	    if (sscanf(pch,"%511s",s2)!=1) {
 	      fprintf(stderr,"Bad vrpn_SGIBOX line: %s\n",line);
 	      if (bail_on_error) { return -1; }
 	      else { continue; }	// Skip this line
@@ -238,7 +239,19 @@ main (int argc, char *argv[])
 		  if (bail_on_error) { return -1; }
 		  else { continue; }	// Skip this line
 		} 
+		
+		//setting listed buttons to toggles instead of default momentary
+		pch+=strlen(s2)+1;
+		while(sscanf(pch,"%s",s2)==1){
+			pch+=strlen(s2)+1;
+			tbutton=atoi(s2);	
+			vrpn_special_sgibox->set_toggle(tbutton,vrpn_BUTTON_TOGGLE_OFF);  
+			//vrpnButton class will make sure I don't set
+			//an invalid button number
+			printf("Button %d toggles\n",tbutton);
+		}
 		printf("Opening vrpn_SGIBOX on host %s done\n", s2);
+
 #else
 		fprintf(stderr,"vrpn_server: Can't open SGIbox: not an SGI!\n");
 #endif

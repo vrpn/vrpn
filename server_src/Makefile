@@ -16,7 +16,7 @@ endif
 
 OBJ_DIR := $(HW_OS)
 
-CFLAGS = -I../ -g -I/afs/unc/proj/hmd/beta/include
+CFLAGS = -g -I../ -g -I/afs/unc/proj/hmd/beta/include
 LFLAGS = -L../$(HW_OS) \
 	 -L/afs/unc/proj/hmd/beta/lib/$(HW_OS) \
          -L/afs/unc/proj/hmd/lib/$(HW_OS)
