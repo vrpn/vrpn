@@ -1,5 +1,14 @@
 2002-09-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_TempImager.h : Temporary Imager class until the new cool one arrives.
+		Not yet tested, but compiles on PCs and SGIs.
+	* vrpn_TempImager.C : Same.
+	* vrpn.dsp : Adds vrpn_TempImager classes.
+	* Makefile : Adds vrpn_TempImager classes.  Removed obsolete "NEW_LIB" stuff.
+	* vrpn_Analog.h : White space cleanup.
+
+2002-09-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_nikon_controls.h : Control for the focus stage of a Nikon
 		optical microscope.  Later may include other controls as
 		well.  This is a pretty specialized driver for the 3DFM

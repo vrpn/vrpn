@@ -217,6 +217,10 @@ SOURCE=.\vrpn_Spaceball.C
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_TempImager.C
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_Text.C
 # End Source File
 # Begin Source File
@@ -386,6 +390,10 @@ SOURCE=.\vrpn_Sound.h
 # Begin Source File
 
 SOURCE=.\vrpn_Spaceball.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_TempImager.h
 # End Source File
 # Begin Source File
 

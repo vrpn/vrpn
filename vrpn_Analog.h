@@ -180,25 +180,25 @@ typedef void (*vrpn_ANALOGCHANGEHANDLER) (void * userdata,
 
 class vrpn_Analog_Remote: public vrpn_Analog {
   public:
-	// The name of the analog device to connect to
-        // Optional argument to be used when the Remote MUST listen on
-        // a connection that is already open.
-	vrpn_Analog_Remote (const char * name, vrpn_Connection * c = NULL);
-	virtual ~vrpn_Analog_Remote (void);
+    // The name of the analog device to connect to
+    // Optional argument to be used when the Remote should listen on
+    // a connection that is already open.
+    vrpn_Analog_Remote (const char * name, vrpn_Connection * c = NULL);
+    virtual ~vrpn_Analog_Remote (void);
 
-	// This routine calls the mainloop of the connection it's on
-	virtual void mainloop();
+    // This routine calls the mainloop of the connection it's on
+    virtual void mainloop();
 
-	// (un)Register a callback handler to handle analog value change
-	virtual int register_change_handler(void *userdata,
-		vrpn_ANALOGCHANGEHANDLER handler);
-	virtual int unregister_change_handler(void *userdata,
-		vrpn_ANALOGCHANGEHANDLER handler);
+    // (un)Register a callback handler to handle analog value change
+    virtual int register_change_handler(void *userdata,
+	    vrpn_ANALOGCHANGEHANDLER handler);
+    virtual int unregister_change_handler(void *userdata,
+	    vrpn_ANALOGCHANGEHANDLER handler);
 
-	// Request the analog to change its value to the one specified.
-	// Returns false on failure.
-	virtual	bool request_change_channel_value(unsigned int chan, vrpn_float64 val,
-	  vrpn_uint32 class_of_service = vrpn_CONNECTION_RELIABLE);
+    // Request the analog to change its value to the one specified.
+    // Returns false on failure.
+    virtual	bool request_change_channel_value(unsigned int chan, vrpn_float64 val,
+      vrpn_uint32 class_of_service = vrpn_CONNECTION_RELIABLE);
 
     // Request the analog to change values all at once.  If more values are given than we have channels, the 
     // Extra values are discarded.  If less values are given than we have channels, the extra channels are set to 0
@@ -207,18 +207,18 @@ class vrpn_Analog_Remote: public vrpn_Analog {
         vrpn_uint32 class_of_service = vrpn_CONNECTION_RELIABLE);
 
   protected:
-	typedef	struct vrpn_RBCS {
-		void				*userdata;
-		vrpn_ANALOGCHANGEHANDLER	handler;
-		struct vrpn_RBCS		*next;
-	} vrpn_ANALOGCHANGELIST;
-	vrpn_ANALOGCHANGELIST	*change_list;
+    typedef struct vrpn_RBCS {
+	void				*userdata;
+	vrpn_ANALOGCHANGEHANDLER	handler;
+	struct vrpn_RBCS		*next;
+    } vrpn_ANALOGCHANGELIST;
+    vrpn_ANALOGCHANGELIST *change_list;
 
-	static int handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
+    static int handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
 
-	//------------------------------------------------------------------
-	// Routines used to send requests from the client
-	virtual vrpn_int32 encode_change_to(char *buf, vrpn_int32 chan, vrpn_float64 val);
+    //------------------------------------------------------------------
+    // Routines used to send requests from the client
+    virtual vrpn_int32 encode_change_to(char *buf, vrpn_int32 chan, vrpn_float64 val);
     virtual vrpn_int32 encode_change_channels_to(char* buf, vrpn_int32 num, vrpn_float64* vals);
 };
 
