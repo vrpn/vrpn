@@ -37,6 +37,7 @@
 #include "vrpn_Wanda.h"
 
 #include "vrpn_ForwarderController.h"
+#include <vrpn_RedundantTransmission.h>
 
 #define MAX_TRACKERS 100
 #define MAX_BUTTONS 100
@@ -108,6 +109,9 @@ vrpn_SGIBox	* vrpn_special_sgibox;
 // TCH October 1998
 // Use Forwarder as remote-controlled multiple connections.
 vrpn_Forwarder_Server * forwarderServer;
+
+vrpn_RedundantTransmission * redundancy;
+vrpn_RedundantController * redundantController;
 
 int	verbose = 1;
 
@@ -1052,6 +1056,8 @@ int setup_Tracker_NULL (char * & pch, char * line, FILE * config_file) {
                   fprintf(stderr,"Can't create new vrpn_Tracker_NULL\n");
                   return -1;
                 } else {
+                  ((vrpn_Tracker_NULL *) trackers[num_trackers])->
+                    setRedundantTransmission(redundancy);
                   num_trackers++;
                 }
 
@@ -1210,6 +1216,13 @@ main (int argc, char * argv[])
 	connection = new vrpn_Synchronized_Connection
              (port, g_logName, g_logMode, g_NICname);
 	
+        // Open the Redundant Transmission support
+        // Need to have this handy to pass into NULL trackers,
+        // which are currently the only things willing to use them.
+        redundancy = new vrpn_RedundantTransmission (connection);
+        redundantController = new vrpn_RedundantController
+                                        (redundancy, connection);
+
 	// Open the configuration file
 	if (verbose) printf("Reading from config file %s\n", config_file_name);
 	if ( (config_file = fopen(config_file_name, "r")) == NULL) {
@@ -1392,6 +1405,9 @@ main (int argc, char * argv[])
 		if (vrpn_special_sgibox) 
 		  vrpn_special_sgibox->mainloop();
 #endif
+
+                redundantController->mainloop();
+                redundancy->mainloop();
 
 		// Send and receive all messages
 		connection->mainloop();

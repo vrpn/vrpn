@@ -1,3 +1,10 @@
+2000-10-11  Tom Hudson  <hudson@cs.unc.edu>
+
+	* vrpn.C : add vrpn_RedundantTransmission, vrpn_RedundantController
+        (setup_Tracker_NULL) : call setRedundantTransmission()
+        (main) : create vrpn_RedundantTransmission, vrpn_RedundantController,
+        call mainloops
+
 2000-08-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Makefile.remote : Removed; use Makefile.
