@@ -26,7 +26,6 @@ int main (int argc, char ** argv) {
   char * in_name;
   char * out_name;
   int final_retval = 0;
-  int charcount;
   int retval;
 
   // parse command line arguments
@@ -55,7 +54,7 @@ int main (int argc, char ** argv) {
 
   f_out = fopen(out_name, "wb");
   if (!f_out) {
-    fprintf(stderr, "Couldn't open output file.\n", out_name);
+    fprintf(stderr, "Couldn't open output file (%s).\n", out_name);
     fclose(f_in);
     exit(0);
   }
@@ -78,12 +77,6 @@ int main (int argc, char ** argv) {
   }
 
   while (!final_retval && !feof(f_in)) {
-    //charcount = fread(magicbuf, 1, 512, f_in);
-    //retval = fwrite(magicbuf, 1, charcount, f_out);
-    //if (retval != charcount) {
-      //fprintf(stderr, "Couldn't write all off buffer into output file.\n");
-      //goto CLEANUP;
-    //}
     a = fgetc(f_in);
     fputc(a, f_out);
   }

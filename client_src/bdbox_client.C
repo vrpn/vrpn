@@ -42,16 +42,15 @@ void	handle_button_change(void *userdata, const vrpn_BUTTONCB b)
 {
 	static int count=0;
 	static int buttonstate = 1;
-	int done = 0;
 
 	if (b.state != buttonstate) {
 	     printf("button #%ld is in state %ld\n", b.button, b.state);
 	     buttonstate = b.state;
 	     count++;
 	}
-	if (count > 20)
-		done = 1;
-	//*(int *)userdata = done;
+	if (count > 20) {
+		*(int*)userdata = 1;
+	}
 }
 
 void	handle_dial_change(void *userdata, const vrpn_ANALOGCB info)

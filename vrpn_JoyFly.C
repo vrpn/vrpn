@@ -55,7 +55,7 @@ void vrpn_Tracker_JoyFly::mainloop(void)
 
   if (joy_remote !=  NULL)
     joy_remote->mainloop();
-  if (status == TRACKER_REPORT_READY) {
+  if (status == vrpn_TRACKER_REPORT_READY) {
     // pack and deliver tracker report;
     fprintf(stderr, "Sending a report\n");
 
@@ -69,7 +69,7 @@ void vrpn_Tracker_JoyFly::mainloop(void)
     } else {
 	fprintf(stderr,"\nvrpn_Tracker_Flock: No valid connection");
     }
-    status = TRACKER_SYNCING;
+    status = vrpn_TRACKER_SYNCING;
   } 	
 }
 
@@ -145,7 +145,7 @@ void vrpn_Tracker_JoyFly::update(q_matrix_type & newM) {
   q_row_matrix_to_xyz_quat( & xq, currentMatrix);
 
   
-  status = TRACKER_REPORT_READY;
+  status = vrpn_TRACKER_REPORT_READY;
   for (i=0; i< 3; i++) {
     pos[i] = xq.xyz[i]; // position;
   }

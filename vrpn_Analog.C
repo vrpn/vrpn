@@ -415,3 +415,4 @@ int vrpn_Analog_Remote::handle_change_message(void *userdata,
 
     return 0;
 }
+

@@ -105,7 +105,7 @@ int main (int argc, char ** argv) {
 
     if (!summary_mode) {
         if (name_mode)
-          printf("%s from %s, payload length %d\n",
+          printf("%ld from %ld, payload length %d\n",
                   type, sender, len);
         else
           printf("Message type %ld, sender %ld, payload length %d\n",

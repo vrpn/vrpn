@@ -10,7 +10,6 @@
 #include <vrpn_Button.h>
 
 static float xpos,ypos,zpos;
-static float planeZval;
 
 
 /*****************************************************************************
@@ -28,7 +27,6 @@ void    handle_force_change(void *userdata, const vrpn_FORCECB f)
     ((f.force[0] != lr.force[0]) || (f.force[1] != lr.force[1])
       || (f.force[2] != lr.force[2]))) {
     printf("force is (%f,%f,%f)\n", f.force[0], f.force[1], f.force[2]);
-//    printf("Plane: N= %f %f %f, D=%f\n",xpos,ypos,zpos, -planeZval);
   }
 
   first_report_done = 1;
@@ -63,7 +61,6 @@ void    handle_tracker_change(void *userdata, const vrpn_TRACKERCB t)
     double norm = sqrt(xpos*xpos + ypos*ypos + zpos*zpos);
     double radius = .03;        // radius is 3 cm
     forceDevice->set_plane(xpos,ypos,zpos, (float)(-radius*norm));
-//    printf("Plane: N= %f %f %f, D=%f\n",xpos,ypos,zpos, -planeZval);
 
     forceDevice->sendSurface();
 

@@ -94,7 +94,6 @@ void handle_cntl_c (int) {
 
 void shutdown (void) {
 
-  static int invocations = 0;
   const char * n;
   long i;
 

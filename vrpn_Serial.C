@@ -317,7 +317,7 @@ int vrpn_close_commport(int comm)
 		delete [] commConnections;
 
 #else
-	return vrpn_closesocket(comm);
+	return close(comm);
 #endif
 }
 
@@ -432,8 +432,7 @@ int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes)
    unsigned char *pch = buffer;
 
    do {
-     if ((cReadThisTime = vrpn_readsocket(comm, (char *) pch,
-                                          cSpaceLeft)) == -1) {
+     if ((cReadThisTime = read(comm, (char *) pch, cSpaceLeft)) == -1) {
        perror("vrpn_read_available_characters: cannot read from serial port");
        fprintf(stderr, "buffer = %p, %d\n", pch, bytes);  
        return -1;
