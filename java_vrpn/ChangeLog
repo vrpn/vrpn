@@ -1,3 +1,9 @@
+2002-09-19  David Marshburn  <marshbur@cs.unc.edu>
+
+	* TempImagerRemote.java:  change the function named
+	handleTempImagerChange to be named handleDescriptionChange
+	* vrpn_TempImagerRemote.cpp:  comment changes.
+
 2002-09-19  Chris Weigle  <weigle@cs.unc.edu>
    * TempImagerRemote.java: TempImagerChanel and TempImagerRegion now have
      public data members

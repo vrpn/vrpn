@@ -197,7 +197,7 @@ public class TempImagerRemote implements Runnable
 	 * a given tempImagerRemote object, this method can only be called from one
 	 * thread at a time).
 	 */
-	protected void handleTempImagerChange( long tv_sec, long tv_usec )
+	protected void handleDescriptionChange( long tv_sec, long tv_usec )
 	{
 		// our values of numRows, numCols, minX, etc. should be set in the native
 		// handler before this function is called.
@@ -218,7 +218,7 @@ public class TempImagerRemote implements Runnable
 				l.tempImagerDescriptionUpdate( d, this );
 			}
 		} // end synchronized( notifyingChangeListenersLock )
-	} // end method handleTempImagerChange
+	} // end method handleDescriptionChange
 	
 	
 	/**

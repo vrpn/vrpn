@@ -176,7 +176,7 @@ void handle_description_change( void * userdata, const struct timeval msg_time )
 	  = env->GetMethodID( jcls, "setupTempImagerDescription", "(IIFFFFI)V" );
   if( jmid_setupDescription == NULL )
   {
-    printf( "Warning:  vrpn_TempImageRemote library was unable to find the "
+    printf( "Warning:  vrpn_TempImagerRemote library was unable to find the "
             "Java method \'setupTempImagerDescription\'.  This may indicate a version mismatch.\n" );
     return;
   }
@@ -193,7 +193,7 @@ void handle_description_change( void * userdata, const struct timeval msg_time )
   jfieldID jfid_imagerptr = env->GetFieldID( jcls, "native_tempImager", "I" );
   if( jfid_imagerptr == NULL )
   {
-    printf( "Warning:  vrpn_TempImageRemote library was unable to ID the "
+    printf( "Warning:  vrpn_TempImagerRemote library was unable to ID the "
             "native TempImager in \'handle_description_change\'.  "
 			"This may indicate a version mismatch.\n" );
     return;
