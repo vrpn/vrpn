@@ -742,6 +742,7 @@
 # architecture. Arguments:
 #	char	name_of_this_device[]
 #	int	parallel_port_to_use_starting_with_1
+#	int	hexadecimal_io_base_number (default address used if left off)
 
 #vrpn_Button_Python	Button0	1
 

@@ -1597,31 +1597,32 @@ int setup_Tracker_NULL (char * & pch, char * line, FILE * config_file) {
 int setup_Button_Python (char * & pch, char * line, FILE * config_file) {
 
   char s2 [LINESIZE];
-  int i1;
+  int i1,i2;
 
-            next();
-                // Get the arguments (class, button_name, portno)
-                if (sscanf(pch,"%511s%d",s2,&i1) != 2) {
-                  fprintf(stderr,"Bad vrpn_Button_Python line: %s\n",line);
-                  return -1;
-                }
+  next();
+  i2 = 0; // Set it to use the default value if we don't read a value from the file.
+  // Get the arguments (class, button_name, which_lpt, optional_hex_port_number)
+  if (sscanf(pch,"%511s%d%x",s2,&i1, &i2) < 2) {
+    fprintf(stderr,"Bad vrpn_Button_Python line: %s\n",line);
+    return -1;
+  }
 
-                // Make sure there's room for a new button
-                if (num_buttons >= MAX_BUTTONS) {
-                  fprintf(stderr,"Too many buttons in config file");
-                  return -1;
-                }
+  // Make sure there's room for a new button
+  if (num_buttons >= MAX_BUTTONS) {
+    fprintf(stderr,"Too many buttons in config file");
+    return -1;
+  }
 
-                // Open the button
-                if (verbose) printf(
-                    "Opening vrpn_Button_Python: %s on port %d\n", s2,i1);
-                if ( (buttons[num_buttons] =
-                     new vrpn_Button_Python(s2, connection, i1)) == NULL){
-                  fprintf(stderr,"Can't create new vrpn_Button_Python\n");
-                  return -1;
-                } else {
-                  num_buttons++;
-                }
+  // Open the button
+  if (verbose) printf(
+      "Opening vrpn_Button_Python: %s on port %d\n", s2,i1);
+  if ( (buttons[num_buttons] =
+       new vrpn_Button_Python(s2, connection, i1, i2)) == NULL){
+    fprintf(stderr,"Can't create new vrpn_Button_Python\n");
+    return -1;
+  } else {
+    num_buttons++;
+  }
 
   return 0;
 

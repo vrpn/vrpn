@@ -1,3 +1,12 @@
+2004-10-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Added parsing for the config file for a Python joystick
+		so that the IO port address of the device can be specified
+		in the configuration file.  This lets PC-card ports be used,
+		which use nonstandard I/O ports even for LPT1 and LPT2.
+	* vrpn.cfg : Comment in the config file saying how to do this.
+	* vrpn.cfg.SAMPLE : Same.
+
 2004-10-01  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Phantom.h : Hides the GHOST headers again.
