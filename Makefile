@@ -35,6 +35,7 @@
 #
 #HW_OS := sgi_irix
 #HW_OS := pc_linux
+#HW_OS := pc_linux_arm
 #HW_OS := pc_cygwin
 #HW_OS := pc_FreeBSD
 #HW_OS := sparc_solaris
@@ -105,6 +106,12 @@ else
         RANLIB := ranlib
   endif
 
+  ifeq ($(HW_OS), pc_linux_arm)
+        CC := arm-linux-g++
+        RANLIB := arm-linux-ranlib
+	AR := arm-linux-ar ruv
+  endif
+
   ifeq ($(HW_OS),sgi_irix)
    ifndef SGI_ABI
       SGI_ABI := n32
@@ -160,7 +167,7 @@ endif
 # directories that we can do an rm -f on because they only contain
 # object files and executables
 SAFE_KNOWN_ARCHITECTURES :=	hp700_hpux/* hp700_hpux10/* mips_ultrix/* \
-	pc_linux/* sgi_irix.32/* sgi_irix.n32/* sparc_solaris/* sparc_sunos/* pc_cygwin/* powerpc_aix/*
+	pc_linux/* sgi_irix.32/* sgi_irix.n32/* sparc_solaris/* sparc_sunos/* pc_cygwin/* powerpc_aix/* pc_linux_arm/*
 
 CLIENT_SKA = $(patsubst %,client_src/%,$(SAFE_KNOWN_ARCHITECTURES))
 SERVER_SKA = $(patsubst %,server_src/%,$(SAFE_KNOWN_ARCHITECTURES))
@@ -176,6 +183,13 @@ ifeq ($(HW_OS),pc_linux)
   SYS_INCLUDE := -I/usr/include -I/usr/local/contrib/include \
 	  	 -I/usr/local/contrib/mod/include -I/usr/include/bsd \
 		 -I/usr/include/g++
+endif
+
+ifeq ($(HW_OS),pc_linux_arm)
+  SYS_INCLUDE := -I/opt/Embedix/arm-linux/include
+#   -I/usr/local/contrib/include \
+#	  	 -I/usr/local/contrib/mod/include -I/usr/include/bsd \
+#		 -I/usr/include/g++
 endif
 
 ifeq ($(HW_OS),sgi_irix)
@@ -346,6 +360,8 @@ LIB_INCLUDES = vrpn_Connection.h vrpn_Tracker.h vrpn_Button.h \
                vrpn_BaseClass.h \
                vrpn_RedundantTransmission.h vrpn_TempImager.h
 
+# additional files for the new connection work-in-progress
+
 # Additional files to be compiled into the server library
 
 # We aren't going to use architecture-dependent sets of files.
@@ -359,7 +375,7 @@ SLIB_FILES =  $(LIB_FILES) vrpn_3Space.C \
 	vrpn_Tracker_AnalogFly.C vrpn_raw_sgibox.C vrpn_Magellan.C \
 	vrpn_Analog_Radamec_SPI.C vrpn_ImmersionBox.C vrpn_Wanda.C \
 	vrpn_Analog_5dt.C vrpn_Joylin.C vrpn_Tng3.C vrpn_Spaceball.C \
-	vrpn_Tracker_isense.C vrpn_Zaber.C vrpn_nikon_controls.C 
+	vrpn_Tracker_isense.C vrpn_Zaber.C vrpn_nikon_controls.C
 
 SLIB_OBJECTS = $(patsubst %,$(SOBJECT_DIR)/%,$(SLIB_FILES:.C=.o))
 
@@ -370,7 +386,8 @@ SLIB_INCLUDES = $(LIB_INCLUDES) vrpn_3Space.h \
 	vrpn_CerealBox.h vrpn_Tracker_AnalogFly.h vrpn_Magellan.h \
 	vrpn_Analog_Radamec_SPI.h vrpn_ImmersionBox.h vrpn_Wanda.h \
 	vrpn_Analog_5dt.h vrpn_Joylin.h vrpn_Tng3.h vrpn_Spaceball.h \
-	vrpn_tracker_isense.h vrpn_Zaber.h vrpn_nikon_controls.h 
+	vrpn_tracker_isense.h vrpn_Zaber.h vrpn_nikon_controls.h
+
 
 #$(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(OBJECT_DIR) \
 #                         lib_depends \

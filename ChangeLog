@@ -1,5 +1,10 @@
 2002-09-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* Makefile : Added to compile on ARM
+	* vrpn_TempImager.C : Added include needed on Linux.
+
+2002-09-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Magellan.h : Added 'altreset' paramter to constructor.
 	* vrpn_Magellan.C : Alternate reset command for older Magellans added.
 

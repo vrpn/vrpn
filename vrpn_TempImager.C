@@ -1,4 +1,5 @@
 #include  <stdio.h>
+#include  <string.h>
 #include  "vrpn_TempImager.h"
 
 vrpn_TempImager::vrpn_TempImager(const char *name, vrpn_Connection *c) :
