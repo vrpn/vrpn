@@ -36,6 +36,7 @@ vrpn_DirectXFFJoystick::vrpn_DirectXFFJoystick (const char * name, vrpn_Connecti
 		_force_rate(forceRate),
 		_DirectInput(NULL),
 		_Joystick(NULL),
+		_ForceEffect(NULL),
 		_numchannels(min(12,vrpn_CHANNEL_MAX)),		   // Maximum available
 		_numbuttons(min(128,vrpn_BUTTON_MAX_BUTTONS)),     // Maximum available
 		_numforceaxes(0)				   // Filles in later.

@@ -1,3 +1,8 @@
+2004-10-01  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_DirectXFFJoystick.C : Fixed a crash bug when you didn't have
+		a joystick open.
+
 2004-09-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Button.C : Adding a couple more VRPN_CALLBACKs that I thought
