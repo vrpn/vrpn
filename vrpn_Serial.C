@@ -431,9 +431,15 @@ int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes)
 
    do {
      if ((cReadThisTime = read(comm, (char *) pch, cSpaceLeft)) == -1) {
-       perror("vrpn_read_available_characters: cannot read from serial port");
-       fprintf(stderr, "buffer = %p, %d\n", pch, bytes);  
-       return -1;
+       // If the read stopped because of an interrupt, don't cause an error
+       // but rather behave as if no characters were available.
+       if (errno == EINTR) {
+	 cReadThisTime = 0;
+       } else {
+	 perror("vrpn_read_available_characters: cannot read from serial port");
+	 fprintf(stderr, "buffer = %p, %d\n", pch, bytes);  
+	 return -1;
+       }
      }
      cSpaceLeft -= cReadThisTime;
      pch += cReadThisTime;

@@ -1,3 +1,12 @@
+2003-07-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Added configurable default port, no longer
+		set to 4500 (which is being used by VPN and Microsoft).
+	* vrpn_Connection.h : Same.
+	* vrpn_Connection.C : Uses non-interruptable version of select,
+		which is more general for apps that have interrupts.
+	* vrpn_Serial.C : Switches to interrupt-savvy version of read.
+
 2003-07-24  Matt McCallus  <mccallus@cs.unc.edu>
 
 	* vrpn_Sound.C : Added a "look at/look up" call for setting

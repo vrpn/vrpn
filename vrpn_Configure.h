@@ -12,6 +12,14 @@
 // EDIT BELOW THIS LINE FOR NORMAL CONFIGURATION SETTING. //
 //--------------------------------------------------------//
 
+// Default port to listen on for a server.  It used to be 4500
+// up through version 6.03, but then all sorts of VPNs started
+// using this, as did Microsoft.  Change this to make a location-
+// specific default if you like.  This was was suggested by
+// VRPN user Chris Ozeroff.  The parentheses are to keep it
+// from being expanded into something unexpected.
+#define	vrpn_DEFAULT_LISTEN_PORT_NO (39684)
+
 //-----------------------
 // Instructs VRPN not to use any iostream library functions, but
 // rather to always use C-style FILE objects.  This is to provide

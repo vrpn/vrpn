@@ -87,9 +87,6 @@ const	long	vrpn_LOG_NONE		= (0);
 const	long	vrpn_LOG_INCOMING	= (1<<0);
 const	long	vrpn_LOG_OUTGOING	= (1<<1);
 
-// Default port to listen on for a server
-const	unsigned short	vrpn_DEFAULT_LISTEN_PORT_NO = (4500);
-
 // If defined, will filter out messages:  if the remote side hasn't
 // registered a type, messages of that type won't be sent over the
 // link.
