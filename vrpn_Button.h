@@ -83,6 +83,10 @@ class vrpn_parallel_Button: public vrpn_Button_Filter {
 	int	status;
 
 	virtual void read(void) = 0;
+#ifdef _WIN32
+	int openGiveIO(void);
+#endif // _WIN32
+
 };
 
 // Open a Python that is connected to a parallel port on this Linux box.

@@ -11,15 +11,15 @@
 #include <linux/lp.h>
 #endif
 
-#ifndef _WIN32
+#ifdef _WIN32
+#include <windows.h>
+#include <conio.h>  // for _inp()
+#else
 #include <strings.h>
 #include <netinet/in.h>
 #include <sys/ioctl.h>
 #endif 
 
-#ifdef	_WIN32
-#include <io.h>
-#endif
 
 #if (defined(sgi)&&(!defined(VRPN_CLIENT_ONLY)))
 //need these for the gl based setdblight calls
@@ -312,49 +312,78 @@ void	vrpn_Button::report_changes(void)
    }
 }
 
+
 #ifndef VRPN_CLIENT_ONLY
 
 vrpn_parallel_Button::vrpn_parallel_Button(char *name, vrpn_Connection *c,
 	int portno) : vrpn_Button_Filter(name, c)
-{
-   int	i;
-   char *portname;
+{      
+#ifdef linux
+    char *portname;
+    switch (portno) {
+	case 1: portname = "/dev/lp0";
+		break;
+	case 2: portname = "/dev/lp1";
+		break;
+	case 3: portname = "/dev/lp2";
+		break;
+	default:
+	    fprintf(stderr, "vrpn_parallel_Button: "
+			    "Bad port number (%d)\n",portno);
+	    status = BUTTON_FAIL;
+	    portname = "UNKNOWN";
+	    break;
+    }
 
-   // Find out which port they want
-   switch (portno) {
-		case 1: portname = (char *) "/dev/lp0";
-			break;
-		case 2: portname = (char *) "/dev/lp1";
-			break;
-		case 3: portname = (char *) "/dev/lp2";
-			break;
-     default:
-	fprintf(stderr,"vrpn_parallel_Button: Bad port number (%d)\n",portno);
-	status = BUTTON_FAIL;
-	portname = (char *) "UNKNOWN";
-	break;
-   }
-
-   // Open the port
-   if ( (port = open(portname, O_RDWR)) < 0) {
-     perror("vrpn_Button::vrpn_Button(): Can't open port");
-	fprintf(stderr,
-		"vrpn_Button::vrpn_Button(): Can't open port %s",portname);
+      // Open the port
+    if ( (port = open(portname, O_RDWR)) < 0) {
+	perror("vrpn_parallel_Button::vrpn_parallel_Button(): "
+	       "Can't open port");
+	fprintf(stderr, "vrpn_parallel_Button::vrpn_parallel_Button(): "
+		        "Can't open port %s\n",portname);
 	status = BUTTON_FAIL;
 	return;
-   }
+    }
+#elif _WIN32
+      // if on NT we need a device driver to do direct reads
+      // from the parallel port
+    if (!openGiveIO()) {
+       fprintf(stderr, "vrpn_Button: need giveio driver for port access!\n");
+       fprintf(stderr, "vrpn_Button: can't use vrpn_Button()\n");
+       status = BUTTON_FAIL;
+       return;
+    }
+    switch (portno) {
+	  // we use this mapping, although LPT? can actually
+	  // have different addresses.
+	case 1: port = 0x378; break;  // usually LPT1
+	case 2: port = 0x3bc; break;  // usually LPT2
+	case 3: port = 0x278; break;  // usually LPT3
+	default:
+	    fprintf(stderr,"vrpn_parallel_Button: Bad port number (%d)\n",portno);
+	    status = BUTTON_FAIL;
+	    break;
+    }
+#else  // _WIN32      
+    fprintf(stderr, "vrpn_parallel_Button: not supported on this platform\n?");
+    status = BUTTON_FAIL;
+    portno = portno;  // unused argument
+    return;
+#endif
 
+#if defined(linux) || defined(_WIN32)
    // Set the INIT line on the device to provide power to the python
    // XXX apparently, we don't need to do this.
 
-   // Zero the button states
-   num_buttons = 5;	//XXX This is specific to the python
-   for (i = 0; i < num_buttons; i++) {
-   	buttons[i] = lastbuttons[i] = 0;
-   }
+     // Zero the button states
+    num_buttons = 5;	//XXX This is specific to the python
+    for (int i = 0; i < num_buttons; i++) {
+	buttons[i] = lastbuttons[i] = 0;
+    }
 
-   status = BUTTON_READY;
-   gettimeofday(&timestamp, NULL);
+    status = BUTTON_READY;
+    gettimeofday(&timestamp, NULL);
+#endif
 }
 
 void vrpn_Button_Python::mainloop(void)
@@ -379,40 +408,45 @@ void vrpn_Button_Python::mainloop(void)
 // buttons
 void vrpn_Button_Python::read(void)
 {
-	int   status_register[3];
-	
-	// Make sure we're ready to read
-	if (status != BUTTON_READY) {
-		return;
-	}
+    int   status_register[3];
+    
+    // Make sure we're ready to read
+    if (status != BUTTON_READY) {
+	    return;
+    }
 
-	// Read from the status register, read 3 times to debounce noise.
+    // Read from the status register, read 3 times to debounce noise.
 #ifdef	linux
-	for (int i=0; i< 3; i++) 
-	  if (ioctl(port, LPGETSTATUS, &status_register[i]) == -1) {
-		perror("vrpn_Button_Python::read(): ioctl() failed");
-		return;
-	  }
+    for (int i = 0; i < 3; i++) 
+      if (ioctl(port, LPGETSTATUS, &status_register[i]) == -1) {
+	    perror("vrpn_Button_Python::read(): ioctl() failed");
+	    return;
+      }
 
+#elif _WIN32
+	static const int STATUS_REGISTER_OFFSET = 1;
+    for (int i = 0; i < 3; i++) {
+		status_register[i] = _inp(port + STATUS_REGISTER_OFFSET);
+    }
 #else
-	status_register[0] = status_register[1] = status_register[2] = 0;
+    status_register[0] = status_register[1] = status_register[2] = 0;
 #endif
-	status_register[0] = status_register[0] & BIT_MASK;
-	status_register[1] = status_register[1] & BIT_MASK;
-	status_register[2] = status_register[2] & BIT_MASK;
-	
-	if (!(status_register[0] == status_register[1]  &&
-	      status_register[0] == status_register[2])) 
-	  return;
+    status_register[0] = status_register[0] & BIT_MASK;
+    status_register[1] = status_register[1] & BIT_MASK;
+    status_register[2] = status_register[2] & BIT_MASK;
+    
+    if (!(status_register[0] == status_register[1]  &&
+	  status_register[0] == status_register[2])) 
+      return;
 
-	// Assign values to the bits based on the control signals
-	buttons[0] = ((status_register[0] & PORT_SLCT) == 0);
-	buttons[1] = ((status_register[0] & PORT_BUSY) != 0);
-	buttons[2] = ((status_register[0] & PORT_PE) == 0);
-	buttons[3] = ((status_register[0] & PORT_ERROR) == 0);
-	buttons[4] = ((status_register[0] & PORT_ACK) == 0);
+    // Assign values to the bits based on the control signals
+    buttons[0] = ((status_register[0] & PORT_SLCT) == 0);
+    buttons[1] = ((status_register[0] & PORT_BUSY) != 0);
+    buttons[2] = ((status_register[0] & PORT_PE) == 0);
+    buttons[3] = ((status_register[0] & PORT_ERROR) == 0);
+    buttons[4] = ((status_register[0] & PORT_ACK) == 0);
 
-   gettimeofday(&timestamp, NULL);
+    gettimeofday(&timestamp, NULL);
 }
 
 #endif  // VRPN_CLIENT_ONLY
@@ -541,3 +575,46 @@ int vrpn_Button_Remote::handle_change_message(void *userdata,
 	return 0;
 }
 
+  // We use _inp (inport) to read the parallel port status register
+  // since we haven't found a way to do it through the Win32 API.
+  // On NT we need a special device driver (giveio) to be installed
+  // so that we can get permission to execute _inp.  On Win95 we
+  // don't need to do anything.
+  //
+  // The giveio driver is from the May 1996 issue of Dr. Dobb's,
+  // an article by Dale Roberts called "Direct Port I/O and Windows NT"
+  //
+  // This function returns 1 if either running Win95 or running NT and
+  // the giveio device was opened.  0 if device not opened.
+#ifdef _WIN32
+int vrpn_parallel_Button::openGiveIO(void)
+{
+    OSVERSIONINFO osvi;
+
+    memset(&osvi, 0, sizeof(OSVERSIONINFO));
+    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+    GetVersionEx(&osvi);
+
+      // if Win95: no initialization required
+    if (osvi.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS) {	
+	return 1;
+    }
+
+      // else if NT: use giveio driver
+    if (osvi.dwPlatformId == VER_PLATFORM_WIN32_NT) {
+	HANDLE h = CreateFile("\\\\.\\giveio", GENERIC_READ, 0, NULL,
+				OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (h == INVALID_HANDLE_VALUE) {
+	      // maybe driver not installed?
+	    return 0;
+	}
+	CloseHandle(h);
+	  // giveio opened successfully
+	return 1;
+    }
+
+	// else GetVersionEx gave unexpected result
+    fprintf(stderr, "vrpn_parallel_Button::openGiveIO: unknown windows version\n");
+    return 0;
+}
+#endif // _WIN32
