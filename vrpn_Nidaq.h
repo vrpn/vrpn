@@ -1,15 +1,15 @@
 /*****************************************************************************\
-  $FILE$
+  vrpn_Nidaq.h
   --
   Description :
 
   ----------------------------------------------------------------------------
   Author: weberh
   Created: Fri Jan 29 10:00:00 1999
-  Revised: Fri Jan 29 14:46:00 1999 by weberh
+  Revised: Fri Jan 29 14:47:56 1999 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Nidaq.h,v $
   $Locker:  $
-  $Revision: 1.2 $
+  $Revision: 1.3 $
 \*****************************************************************************/
 
 #ifndef VRPN_NIDAQ
@@ -39,6 +39,9 @@ private:
 
 /*****************************************************************************\
   $Log: vrpn_Nidaq.h,v $
+  Revision 1.3  1999/01/29 19:48:28  weberh
+  *** empty log message ***
+
   Revision 1.2  1999/01/29 19:47:34  weberh
   *** empty log message ***
 
