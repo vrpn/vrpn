@@ -3,8 +3,9 @@
 
 #include "vrpn_Connection.h"
 #include "vrpn_Analog.h"
+#include "vrpn_Analog_Output.h"
 
-class vrpn_Zaber: public vrpn_Serial_Analog
+class vrpn_Zaber: public vrpn_Serial_Analog, public vrpn_Analog_Output
 {
 public:
 	vrpn_Zaber (const char * name, vrpn_Connection * c,

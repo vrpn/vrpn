@@ -44,7 +44,8 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 
 vrpn_Zaber::vrpn_Zaber (const char * name, vrpn_Connection * c,
 			const char * port):
-		vrpn_Serial_Analog(name, c, port)
+		vrpn_Serial_Analog(name, c, port),
+        vrpn_Analog_Output(name, c)
 {
   num_channel = 0;	// This is an estimate; will change when the reset happens
 

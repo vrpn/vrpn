@@ -31,12 +31,11 @@ vrpn_Analog::vrpn_Analog (const char * name, vrpn_Connection * c) :
 int vrpn_Analog::register_types(void)
 {
     channel_m_id = d_connection->register_message_type("vrpn_Analog Channel");
-    request_m_id = d_connection->register_message_type("vrpn_Analog Change_request");
-    request_channels_m_id = d_connection->register_message_type("vrpn_Analog Change_Channels_request");
-    if ((channel_m_id == -1) || (request_m_id == -1) || request_channels_m_id == -1) {
-	return -1;
-    } else {
-	return 0;
+    if (channel_m_id == -1) {
+	    return -1;
+    } 
+    else {
+	    return 0;
     }
 }
 
@@ -160,24 +159,12 @@ vrpn_Analog_Server::vrpn_Analog_Server (const char * name,
                                         vrpn_Connection * c) :
     vrpn_Analog (name, c)
 {
-  num_channel = 0;
+    num_channel = 0;
 
-  // Register handlers for the change request callbacks from this device,
-  // if we got a connection.
-  if (d_connection != NULL) {
-    if (register_autodeleted_handler(request_m_id, handle_request_message,
-      this, d_sender_id)) {
-	  fprintf(stderr,"vrpn_Analog_Server: can't register handler\n");
-	  d_connection = NULL;
-    }
-    if (register_autodeleted_handler(request_channels_m_id, handle_request_channels_message,
-        this, d_sender_id)) {
-        fprintf(stderr, "vrpn_Analog_Server: can't register handler\n");
-        d_connection = NULL;
-    }
-  } else {
-	  fprintf(stderr,"vrpn_Analog_Server: Can't get connection!\n");
-  }    
+    // Check if we got a connection.
+    if (d_connection == NULL) {
+        fprintf(stderr,"vrpn_Analog_Server: Can't get connection!\n");
+    }    
 }
 
 //virtual
@@ -214,50 +201,7 @@ vrpn_int32 vrpn_Analog_Server::setNumChannels (vrpn_int32 sizeRequested) {
   return num_channel;
 }
 
-int vrpn_Analog_Server::handle_request_message(void *userdata,
-	vrpn_HANDLERPARAM p)
-{
-    const char	  *bufptr = p.buffer;
-    vrpn_int32	  chan_num;
-    vrpn_int32	  pad;
-    vrpn_float64  value;
-    vrpn_Analog_Server *me = (vrpn_Analog_Server *)userdata;
 
-    // Read the parameters from the buffer
-    vrpn_unbuffer(&bufptr, &chan_num);
-    vrpn_unbuffer(&bufptr, &pad);
-    vrpn_unbuffer(&bufptr, &value);
-
-    // Set the appropriate value, if the channel number is in the
-    // range of the ones we have.
-    if ( (chan_num < 0) || (chan_num >= me->num_channel) ) {
-      fprintf(stderr,"vrpn_Analog_Server::handle_request_message(): Index out of bounds\n");
-      return 0;
-    }
-    me->channel[chan_num] = value;
-
-    return 0;
-}
-
-int vrpn_Analog_Server::handle_request_channels_message(void* userdata,
-    vrpn_HANDLERPARAM p)
-{
-    int i;
-    const char* bufptr = p.buffer;
-	vrpn_int32 num;
-	vrpn_int32 pad;
-    vrpn_Analog_Server* me = (vrpn_Analog_Server*) userdata;
-
-    // Read the values from the buffer
-	vrpn_unbuffer(&bufptr, &num);
-	vrpn_unbuffer(&bufptr, &pad);
-	if (num > me->num_channel) num = me->num_channel;
-    for (i = 0; i < num; i++) {
-        vrpn_unbuffer(&bufptr, &(me->channel[i]));
-    }
-
-    return 0;
-}
 
 
 vrpn_Clipping_Analog_Server::vrpn_Clipping_Analog_Server(const char *name, vrpn_Connection *c) :
@@ -343,7 +287,7 @@ int vrpn_Clipping_Analog_Server::setChannelValue(int chan, double value)
 vrpn_Analog_Remote::vrpn_Analog_Remote (const char * name,
                                         vrpn_Connection * c) : 
 	vrpn_Analog (name, c),
-	change_list (NULL)
+    change_list(NULL)
 {
 	vrpn_int32	i;
 
@@ -395,10 +339,10 @@ void	vrpn_Analog_Remote::mainloop()
   }
 }
 
-int vrpn_Analog_Remote::register_change_handler(void *userdata,
+int vrpn_Analog_Remote::register_change_handler(void* userdata,
 			vrpn_ANALOGCHANGEHANDLER handler)
 {
-	vrpn_ANALOGCHANGELIST	*new_entry;
+	vrpn_ANALOGCHANGELIST* new_entry;
 
 	// Ensure that the handler is non-NULL
 	if (handler == NULL) {
@@ -458,11 +402,11 @@ int vrpn_Analog_Remote::unregister_change_handler(void *userdata,
 int vrpn_Analog_Remote::handle_change_message(void *userdata,
 	vrpn_HANDLERPARAM p)
 {
-    const char *bufptr = p.buffer;
+    const char* bufptr = p.buffer;
     vrpn_float64 numchannelD;	//< Number of channels passed in a double (yuck!)
-    vrpn_Analog_Remote *me = (vrpn_Analog_Remote *)userdata;
+    vrpn_Analog_Remote* me = (vrpn_Analog_Remote* )userdata;
     vrpn_ANALOGCB	cp;
-    vrpn_ANALOGCHANGELIST *handler = me->change_list;
+    vrpn_ANALOGCHANGELIST* handler = me->change_list;
 
     cp.msg_time = p.msg_time;
     vrpn_unbuffer(&bufptr, &numchannelD);
@@ -480,80 +424,3 @@ int vrpn_Analog_Remote::handle_change_message(void *userdata,
 
     return 0;
 }
-
-bool vrpn_Analog_Remote::request_change_channel_value(unsigned int chan, vrpn_float64 val,
-						      vrpn_uint32 class_of_service)
-{
-    // msgbuf must be float64-aligned!
-    vrpn_float64 fbuf [2];
-    char * msgbuf = (char *) fbuf;
-
-    vrpn_int32  len;
-
-    gettimeofday(&timestamp, NULL);
-    len = encode_change_to(msgbuf, chan, val);
-    if (d_connection && d_connection->pack_message(len, timestamp,
-                                 request_m_id, d_sender_id, msgbuf,
-                                 class_of_service)) {
-      fprintf(stderr,"vrpn_Analog_Remote: cannot write message: tossing\n");
-      return false;
-    }
-
-    return true;
-}
-
-bool vrpn_Analog_Remote::request_change_channels(int num, vrpn_float64* vals, vrpn_uint32 class_of_service)
-{
-	if (num < 0 || num > vrpn_CHANNEL_MAX) {
-		fprintf(stderr, "vrpn_Analog_Remote: cannot change channels: number of channels out of range\n");
-		return false;
-	}
-
-    char* msgbuf = new char[2 * sizeof(vrpn_int32) + num * sizeof(vrpn_float64)];
-    vrpn_int32 len;
-
-    gettimeofday(&timestamp, NULL);
-    len = encode_change_channels_to(msgbuf, num, vals);
-    if (d_connection && d_connection->pack_message(len, timestamp,
-                                    request_channels_m_id, d_sender_id, msgbuf, 
-                                    class_of_service)) {
-        fprintf(stderr, "vrpn_Analog_Remote: cannot write message: tossing\n");
-        return false;
-    }
-
-	delete [] msgbuf;
-
-    return true;
-}
-
-
-vrpn_int32 vrpn_Analog_Remote::encode_change_to(char *buf, vrpn_int32 chan, vrpn_float64 val)
-{
-    // Message includes: int32 channel_number, int32 padding, float64 request_value
-    // Byte order of each needs to be reversed to match network standard
-
-    vrpn_int32	    pad = 0;
-    int		    buflen = 2*sizeof(vrpn_int32)+sizeof(vrpn_float64);
-
-    vrpn_buffer(&buf, &buflen, chan);
-    vrpn_buffer(&buf, &buflen, pad);
-    vrpn_buffer(&buf, &buflen, val);
-
-    return 2*sizeof(vrpn_int32)+sizeof(vrpn_float64);
-}
-
-vrpn_int32 vrpn_Analog_Remote::encode_change_channels_to(char* buf, vrpn_int32 num, vrpn_float64* vals) 
-{
-    int i;
-	vrpn_int32 pad = 0;
-    int buflen = 2 * sizeof(vrpn_int32) + num * sizeof(vrpn_float64);
-
-	vrpn_buffer(&buf, &buflen, num);
-	vrpn_buffer(&buf, &buflen, pad);
-    for (i = 0; i < num; i++) {
-        vrpn_buffer(&buf, &buflen, vals[i]);
-    }
-
-    return 2 * sizeof(vrpn_int32) + num * sizeof(vrpn_float64);
-}
-

@@ -14,10 +14,10 @@
 #endif
 
 #include "vrpn_Poser.h"
-#include "vrpn_Analog.h"
+#include "vrpn_Analog_Output.h"
 
 
-// This code is for a Poser server that uses a vrpn_Analog to drive a device.  
+// This code is for a Poser server that uses a vrpn_Analog to drive a device.
 // It is basically the inverse of a vrpn_Tracker_AnalogFly.
 // We are assuming that one Analog device will be used to drive all axes.  This could be
 // Changed by storing an Analog device per axis.
@@ -39,11 +39,8 @@ class vrpn_Poser_AnalogParam {
     public:
         vrpn_Poser_AnalogParam();
 
-		// port to use for the connection
-		int port_num;	
-
-		// number of channels to use
-		int num_channels;
+        // Name of the Analog Device
+        char* ana_name;
                                 
         // Translation for the three axes
         vrpn_PA_axis x, y, z;
@@ -66,16 +63,13 @@ class vrpn_Poser_Analog : public vrpn_Poser_Server {
 
     protected:
         // The Analog device
-        vrpn_Analog_Server* ana;
-
-		// The connection for the analog device
-		vrpn_Connection* ana_c;
+        vrpn_Analog_Output_Remote* ana;
 
         // Axes for translation and rotation
         vrpn_PA_axis x, y, z, rx, ry, rz;
 
         // Routine to update the analog values from the current pose
-        void update_Analog_values();
+        bool update_Analog_values();
 };
 
 #endif

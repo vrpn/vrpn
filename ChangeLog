@@ -1,3 +1,24 @@
+2002-09-12  David Borland  <borland@cs.unc.edu>
+        
+        * vrpn_Analog_Output.[Ch] : New classes for analog devices that
+        write values.  vrpn_Analog was getting overloaded with both 
+        input and output functions, so these have been factored into
+        the old vrpn_Analog, which does analog input, and the new
+        vrpn_Analog_Output, which does analog output.
+
+        * vrpn_Analog.[Ch] : took out the output functionality
+
+        * vrpn_Poser_Analog.[Ch] : changed so that it now uses a
+        vrpn_Analog_Output_Remote
+
+        * vrpn_Zaber.[Ch] : now derived from vrpn_Serial_Analog and
+        vrpn_Analog_Output
+
+        * vrpn_nikon_controls.[Ch] : now derived from vrpn_Serial_Analog
+        and vrpn_Analog_Output
+
+        * vrpn.dsp : added the vrpn_Analog_Output files
+
 2002-09-11  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_TempImager.h (getNumVals):  new, returns the number of

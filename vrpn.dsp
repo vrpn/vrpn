@@ -97,6 +97,10 @@ SOURCE=.\vrpn_Analog_5dt.C
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_Analog_Output.C
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_Analog_Radamec_SPI.C
 # End Source File
 # Begin Source File
@@ -182,6 +186,14 @@ SOURCE=.\vrpn_Mutex.C
 # Begin Source File
 
 SOURCE=.\vrpn_nikon_controls.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Poser.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Poser_Analog.C
 # End Source File
 # Begin Source File
 
@@ -273,6 +285,10 @@ SOURCE=.\vrpn_Analog_5dt.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_Analog_Output.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_Analog_Radamec_SPI.h
 # End Source File
 # Begin Source File
@@ -358,6 +374,14 @@ SOURCE=.\vrpn_Mutex.h
 # Begin Source File
 
 SOURCE=.\vrpn_nikon_controls.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Poser.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Poser_Analog.h
 # End Source File
 # Begin Source File
 

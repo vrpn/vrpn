@@ -31,7 +31,8 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 }
 
 vrpn_Nikon_Controls::vrpn_Nikon_Controls(const char *device_name, vrpn_Connection *con, const char *port_name)
-: vrpn_Serial_Analog(device_name, con, port_name)
+: vrpn_Serial_Analog(device_name, con, port_name), 
+  vrpn_Analog_Output(device_name, con)
 {
   num_channel = 1;	// Focus control
 

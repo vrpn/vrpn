@@ -30,8 +30,6 @@ public:
 	vrpn_int32	num_channel;
 	struct timeval	timestamp;
 	vrpn_int32	channel_m_id;	        //< channel message id (message from server)
-	vrpn_int32	request_m_id;	        //< Request to change message from client
-    vrpn_int32  request_channels_m_id;  //< Request to change channels message from client
 	int status; 
 
 	virtual	int register_types(void);
@@ -40,7 +38,7 @@ public:
 	// Routines used to send data from the server
 	virtual vrpn_int32 encode_to(char *buf);
 	/// Send a report only if something has changed (for servers)
-        virtual void report_changes (vrpn_uint32 class_of_service
+    virtual void report_changes (vrpn_uint32 class_of_service
                                      = vrpn_CONNECTION_LOW_LATENCY);
 	/// Send a report whether something has changed or not (for servers)
 	virtual void report (vrpn_uint32 class_of_service
@@ -68,8 +66,8 @@ protected:
 // vrpn_Analog_Server
 // Tom Hudson, March 1999
 //
-/// A simple core class to build other servers around;
-// used for the nMmon network monitor and some test programs.
+// A *Sample* Analog server.  Use this or derive your own from vrpn_Analog with this
+// as a guide.
 //
 // Write whatever values you want into channels(), then call report()
 // or report_changes().  (Original spec only called for report_changes(),
@@ -103,7 +101,7 @@ class vrpn_Analog_Server : public vrpn_Analog {
     virtual void mainloop () { server_mainloop(); };
 
     /// Exposes an array of values for the user to write into.
-    vrpn_float64 * channels (void);
+    vrpn_float64* channels (void);
 
     /// Size of the array.
     vrpn_int32 numChannels (void) const;
@@ -111,15 +109,6 @@ class vrpn_Analog_Server : public vrpn_Analog {
     /// Sets the size of the array;  returns the size actually set.
     /// (May be clamped to vrpn_CHANNEL_MAX)
     vrpn_int32 setNumChannels (vrpn_int32 sizeRequested);
-
-    /// Responds to a request to change one of the values by
-    /// setting the channel to that value.
-    static int handle_request_message(void *userdata,
-	vrpn_HANDLERPARAM p);
-
-    /// Responds to a request to change a number of channels
-    static int handle_request_channels_message(void* userdata,
-    vrpn_HANDLERPARAM p);
 };
 
 /// Analog server that can scale and clip its range to -1..1.
@@ -139,7 +128,7 @@ class	vrpn_Clipping_Analog_Server : public vrpn_Analog_Server {
     /// minimum equal to the lowzero.
     /// Returns 0 on success, -1 on failure.
     int	setClipValues(int channel, double min, double lowzero, double
-	highzero, double max);
+	    highzero, double max);
 
     /// This method should be used to set the value of a channel.
     /// It will be scaled and clipped as described in setClipValues.
@@ -148,10 +137,10 @@ class	vrpn_Clipping_Analog_Server : public vrpn_Analog_Server {
 
   protected:
       typedef	struct {
-	  double    minimum_val;    // Value mapped to -1
-	  double    lower_zero;	    // Minimum value mapped to 0
-	  double    upper_zero;	    // Maximum value mapped to 0
-	  double    maximum_val;    // Value mapped to 1
+	      double    minimum_val;    // Value mapped to -1
+	      double    lower_zero;	    // Minimum value mapped to 0
+	      double    upper_zero;	    // Maximum value mapped to 0
+	      double    maximum_val;    // Value mapped to 1
       } clipvals_struct;
 
       clipvals_struct	clipvals[vrpn_CHANNEL_MAX];
@@ -179,47 +168,31 @@ typedef void (*vrpn_ANALOGCHANGEHANDLER) (void * userdata,
 // that user code will deal with.
 
 class vrpn_Analog_Remote: public vrpn_Analog {
-  public:
-    // The name of the analog device to connect to
-    // Optional argument to be used when the Remote should listen on
-    // a connection that is already open.
-    vrpn_Analog_Remote (const char * name, vrpn_Connection * c = NULL);
-    virtual ~vrpn_Analog_Remote (void);
+    public:
+        // The name of the analog device to connect to
+        // Optional argument to be used when the Remote should listen on
+        // a connection that is already open.
+        vrpn_Analog_Remote (const char * name, vrpn_Connection * c = NULL);
+        virtual ~vrpn_Analog_Remote (void);
 
-    // This routine calls the mainloop of the connection it's on
-    virtual void mainloop();
+        // This routine calls the mainloop of the connection it's on
+        virtual void mainloop();
 
-    // (un)Register a callback handler to handle analog value change
-    virtual int register_change_handler(void *userdata,
-	    vrpn_ANALOGCHANGEHANDLER handler);
-    virtual int unregister_change_handler(void *userdata,
-	    vrpn_ANALOGCHANGEHANDLER handler);
+        // (un)Register a callback handler to handle analog value change
+        virtual int register_change_handler(void *userdata,
+	        vrpn_ANALOGCHANGEHANDLER handler);
+        virtual int unregister_change_handler(void *userdata,
+	        vrpn_ANALOGCHANGEHANDLER handler);
 
-    // Request the analog to change its value to the one specified.
-    // Returns false on failure.
-    virtual	bool request_change_channel_value(unsigned int chan, vrpn_float64 val,
-      vrpn_uint32 class_of_service = vrpn_CONNECTION_RELIABLE);
+    protected:
+        typedef struct vrpn_RBCS {
+	    void				*userdata;
+	    vrpn_ANALOGCHANGEHANDLER	handler;
+	    struct vrpn_RBCS		*next;
+        } vrpn_ANALOGCHANGELIST;
+        vrpn_ANALOGCHANGELIST *change_list;
 
-    // Request the analog to change values all at once.  If more values are given than we have channels, the 
-    // Extra values are discarded.  If less values are given than we have channels, the extra channels are set to 0
-    // Returns false on failure
-    virtual bool request_change_channels(int num, vrpn_float64* vals,
-        vrpn_uint32 class_of_service = vrpn_CONNECTION_RELIABLE);
-
-  protected:
-    typedef struct vrpn_RBCS {
-	void				*userdata;
-	vrpn_ANALOGCHANGEHANDLER	handler;
-	struct vrpn_RBCS		*next;
-    } vrpn_ANALOGCHANGELIST;
-    vrpn_ANALOGCHANGELIST *change_list;
-
-    static int handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
-
-    //------------------------------------------------------------------
-    // Routines used to send requests from the client
-    virtual vrpn_int32 encode_change_to(char *buf, vrpn_int32 chan, vrpn_float64 val);
-    virtual vrpn_int32 encode_change_channels_to(char* buf, vrpn_int32 num, vrpn_float64* vals);
+        static int handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
 };
 
 #endif
