@@ -44,8 +44,8 @@ const	int	VRPN_DIAL_RANGE = 200;
 #include <unistd.h>
 #endif
 
-static int sgibox_raw_con_cb(void * userdata, vrpn_HANDLERPARAM p);
-static int sgibox_raw_alert_handler(void * userdata, vrpn_HANDLERPARAM);
+static int VRPN_CALLBACK sgibox_raw_con_cb(void * userdata, vrpn_HANDLERPARAM p);
+static int VRPN_CALLBACK sgibox_raw_alert_handler(void * userdata, vrpn_HANDLERPARAM);
 
 // This routine writes out the characters slowly, so as not to
 // overburden the poor button box, which seems to choke when a
@@ -402,7 +402,7 @@ int	vrpn_raw_SGIBox::send_light_command(void)  {
 // the HANDLERPARAM parameter, since it is not required to figure this
 // out.
 
-static int sgibox_raw_alert_handler(void * userdata, vrpn_HANDLERPARAM)
+static int VRPN_CALLBACK sgibox_raw_alert_handler(void * userdata, vrpn_HANDLERPARAM)
 {
   vrpn_raw_SGIBox *me=(vrpn_raw_SGIBox *)userdata;
 
@@ -410,7 +410,7 @@ static int sgibox_raw_alert_handler(void * userdata, vrpn_HANDLERPARAM)
   return 0;
 }
 
-static int sgibox_raw_con_cb(void * userdata, vrpn_HANDLERPARAM)
+static int VRPN_CALLBACK sgibox_raw_con_cb(void * userdata, vrpn_HANDLERPARAM)
 {
      
   printf("vrpn_raw_SGIBox::Get first new connection, reset the box\n");

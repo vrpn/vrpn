@@ -154,17 +154,17 @@
 #ifdef VRPN_USE_PHANTOM_SERVER
   #define	VRPN_NO_STREAMS
   #ifdef VRPN_USE_HDAPI
-    #pragma comment (lib,"D:/Program Files/SensAble/3DTouch/lib/hd.lib")
+    #pragma comment (lib,"C:/Program Files/SensAble/3DTouch/lib/hd.lib")
     #ifdef	_DEBUG
-      #pragma comment (lib,"D:/Program Files/SensAble/3DTouch/utilities/lib/hdud.lib")
+      #pragma comment (lib,"C:/Program Files/SensAble/3DTouch/utilities/lib/hdud.lib")
     #else
-      #pragma comment (lib,"D:/Program Files/SensAble/3DTouch/utilities/lib/hdu.lib")
+      #pragma comment (lib,"C:/Program Files/SensAble/3DTouch/utilities/lib/hdu.lib")
     #endif
   #else
     #ifdef VRPN_USE_GHOST_31
-      #pragma comment (lib,"D:/Program Files/SensAble/GHOST/v3.1/lib/GHOST31.lib")
+      #pragma comment (lib,"C:/Program Files/SensAble/GHOST/v3.1/lib/GHOST31.lib")
     #else
-      #pragma comment (lib,"D:/Program Files/SensAble/GHOST/v4.0/lib/GHOST40.lib")
+      #pragma comment (lib,"C:/Program Files/SensAble/GHOST/v4.0/lib/GHOST40.lib")
     #endif
   #endif
 #endif

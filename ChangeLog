@@ -1,5 +1,13 @@
 2004-09-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Button.C : Adding a couple more VRPN_CALLBACKs that I thought
+		we didn't need but we do.
+	* vrpn_raw_sgibox.C : same.
+	* vrpn_Configure.h : Changing back to the C: drive for normal users
+		(I've got everything installed on D:).
+
+2004-09-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	Adding Chris VanderKnyff's changes that enable DLL linkage
 	for applications.  Heading towards enabling C# and other language
 	support.

@@ -65,7 +65,7 @@ const unsigned char PG_START_BYTE_DATA_TIME(0x81);
 const unsigned char PG_START_BYTE_TEXT(0x82);
 const unsigned char PG_END_BYTE(0x8F);
 
-static int client_msg_handler(void *userdata, vrpn_HANDLERPARAM p);
+static int VRPN_CALLBACK client_msg_handler(void *userdata, vrpn_HANDLERPARAM p);
 
 #define PACK_ADMIN_MESSAGE(i,event) { \
   char	msgbuf[1000]; \
@@ -268,7 +268,7 @@ vrpn_int32 vrpn_Button::encode_to(char *buf,
 }
 
 
-static int client_msg_handler(void *userdata, vrpn_HANDLERPARAM p) {
+static int VRPN_CALLBACK client_msg_handler(void *userdata, vrpn_HANDLERPARAM p) {
   vrpn_Button_Filter * instance = (vrpn_Button_Filter *) userdata;
   const char *bufptr = p.buffer;
   vrpn_int32 event;
