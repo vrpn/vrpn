@@ -9,6 +9,8 @@
 # Author: Russ Taylor, 10/2/1997
 #	  
 # modified:
+# * Jeff Juliano, 9/1999
+#   support for parallel make
 # * Tom Hudson, 25 Jun 1998
 #   Support for n32 ABI on sgi.  (gmake n32)
 # * Hans Weber, ???
@@ -33,7 +35,14 @@
 ##########################
 
 MAKEFILE := Makefile
-MAKE := gmake -f $(MAKEFILE)
+MAKE := $(MAKE) -f $(MAKEFILE)
+##
+## WARNING: [juliano 9/99]
+##   if the user sets MAKE on the commandline, for example
+##      gmake MAKE="gmake -j 2" -j 2
+##   then the -f will get lost.  This is VERY DANGEROUS,
+##   but until it's decided what to do, I'll leave it this way.
+##
 
 ifndef	HW_OS
 # hw_os does not exist on FreeBSD at UNC
@@ -44,15 +53,12 @@ else
   # pc_cygwin doesn't have HW_OS
   ifeq ($(UNAME), CYGWIN_NT-4.0)
     HW_OS := pc_cygwin
-    # On cygwin make is gmake (and gmake doesn't exist)
-    MAKE  := make -f $(MAKEFILE)
   else
     ifeq ($(UNAME), CYGWIN_98-4.10)
-		HW_OS := pc_cygwin
-		MAKE := make -f $(MAKEFILE)
-	else
-	  HW_OS := $(shell hw_os)
-	endif
+      HW_OS := pc_cygwin
+    else
+      HW_OS := $(shell hw_os)
+    endif
   endif
 endif
 endif
