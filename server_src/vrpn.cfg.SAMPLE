@@ -606,9 +606,7 @@
 
 ################################################################################
 # Wands button/analog, driver from Brown University. Runs a Wanda device
-# attached to a serial port.  As of Aug 28, 2000 this driver was untested on
-# Windows machines.  The code compiles fine for them, so it seems like things
-# should work okay...
+# attached to a serial port.
 #
 # Arguments:
 #       char    name_of_this_device[]
@@ -616,7 +614,8 @@
 #       int     baud_rate_of_serial_device
 #	  float   minimum_update_rate
 
-#vrpn_Wanda      wanda    /dev/ttyd2      38400   60.0
+#vrpn_Wanda      Wanda    /dev/ttyd2      1200   60.0
+#vrpn_Wanda      Wanda    COM2      1200   60.0
 
 ################################################################################
 # Radamec Serial Position Interface analog. Camera tracker that attaches

@@ -1,3 +1,8 @@
+2003-11-25  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg : Update from David Nahon fixing the Wanda startup.
+	* vrpn.cfg.SAMPLE : Same.
+
 2003-11-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.C : Added changes by David Nahon to enable optional use
