@@ -25,11 +25,14 @@
  * Update Count    : 60
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Joystick.C,v $
- * $Date: 1998/03/25 02:15:24 $
- * $Author: ryang $
- * $Revision: 1.2 $
+ * $Date: 1998/03/25 22:09:24 $
+ * $Author: taylorr $
+ * $Revision: 1.3 $
  * 
  * $Log: vrpn_Joystick.C,v $
+ * Revision 1.3  1998/03/25 22:09:24  taylorr
+ * Compiles under g++
+ *
  * Revision 1.2  1998/03/25 02:15:24  ryang
  * add button report function
  *
@@ -42,12 +45,13 @@
  * HISTORY
  */
 
-static char rcsid[] = "$Id: vrpn_Joystick.C,v 1.2 1998/03/25 02:15:24 ryang Exp $";
+static char rcsid[] = "$Id: vrpn_Joystick.C,v 1.3 1998/03/25 22:09:24 taylorr Exp $";
 
 #include "vrpn_Joystick.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 
 static const double JoyScale[] = {1019, 227, 208, 400, 200, 213, 422};
 
@@ -104,9 +108,17 @@ void vrpn_Joystick::mainloop(void) {
 		get_report();
 	} else {
 	  //get_report();
-	  
+
+// This code does not compile with g++
+// The first code does not compile under CC.
+// What a mess.
+#ifdef __GNUC__
+	  memcpy((char*)(&vrpn_Analog::timestamp), &current_time,
+		sizeof(current_time));
+#else
 	  vrpn_Analog::timestamp.tv_sec = current_time.tv_sec;
 	  vrpn_Analog::timestamp.tv_usec = current_time.tv_usec;
+#endif
 	  status = ANALOG_REPORT_READY;
 		// send out the last report again;
 	}
@@ -163,14 +175,14 @@ void vrpn_Joystick::get_report() {
       status = ANALOG_PARTIAL;
     }
   }
-  bytesread == read_available_characters(buffer+1, 1);
+  bytesread = read_available_characters(buffer+1, 1);
   if (bytesread  ==0)  
 	return;
   parse(0);
-  bytesread == read_available_characters(buffer, 2);
+  bytesread = read_available_characters(buffer, 2);
   while (bytesread ==2) {
     parse(0);
-    bytesread == read_available_characters(buffer, 2);
+    bytesread = read_available_characters(buffer, 2);
   }
   status = ANALOG_REPORT_READY;
 }
