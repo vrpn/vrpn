@@ -244,10 +244,15 @@ int vrpn_Analog_Server::handle_request_channels_message(void* userdata,
 {
     int i;
     const char* bufptr = p.buffer;
+	vrpn_int32 num;
+	vrpn_int32 pad;
     vrpn_Analog_Server* me = (vrpn_Analog_Server*) userdata;
 
     // Read the values from the buffer
-    for (i = 0; i < me->num_channel; i++) {
+	vrpn_unbuffer(&bufptr, &num);
+	vrpn_unbuffer(&bufptr, &pad);
+	if (num > me->num_channel) num = me->num_channel;
+    for (i = 0; i < num; i++) {
         vrpn_unbuffer(&bufptr, &(me->channel[i]));
     }
 
@@ -499,7 +504,12 @@ bool vrpn_Analog_Remote::request_change_channel_value(unsigned int chan, vrpn_fl
 
 bool vrpn_Analog_Remote::request_change_channels(int num, vrpn_float64* vals, vrpn_uint32 class_of_service)
 {
-    char msgbuf[1000];     // should be large enough...
+	if (num < 0 || num > vrpn_CHANNEL_MAX) {
+		fprintf(stderr, "vrpn_Analog_Remote: cannot change channels: number of channels out of range\n");
+		return false;
+	}
+
+    char* msgbuf = new char[2 * sizeof(vrpn_int32) + num * sizeof(vrpn_float64)];
     vrpn_int32 len;
 
     gettimeofday(&timestamp, NULL);
@@ -510,6 +520,8 @@ bool vrpn_Analog_Remote::request_change_channels(int num, vrpn_float64* vals, vr
         fprintf(stderr, "vrpn_Analog_Remote: cannot write message: tossing\n");
         return false;
     }
+
+	delete [] msgbuf;
 
     return true;
 }
@@ -530,18 +542,17 @@ vrpn_int32 vrpn_Analog_Remote::encode_change_to(char *buf, vrpn_int32 chan, vrpn
     return 2*sizeof(vrpn_int32)+sizeof(vrpn_float64);
 }
 
-vrpn_int32 vrpn_Analog_Remote::encode_change_channels_to(char* buf, int num, vrpn_float64* vals) 
+vrpn_int32 vrpn_Analog_Remote::encode_change_channels_to(char* buf, vrpn_int32 num, vrpn_float64* vals) 
 {
     int i;
-    int buflen = num * sizeof(vrpn_float64);
+	vrpn_int32 pad = 0;
+    int buflen = 2 * sizeof(vrpn_int32) + num * sizeof(vrpn_float64);
 
-    for (i = 0; i < num && i < num_channel; i++) {
-        vrpn_buffer(&buf, &buflen, channel[i]);
-    }
-    // pad with zeroes if num < num_channel
-    for (; i < num_channel; i++) {
-        vrpn_buffer(&buf, &buflen, (vrpn_float64)0);
+	vrpn_buffer(&buf, &buflen, num);
+	vrpn_buffer(&buf, &buflen, pad);
+    for (i = 0; i < num; i++) {
+        vrpn_buffer(&buf, &buflen, vals[i]);
     }
 
-    return num_channel * sizeof(vrpn_float64);
+    return 2 * sizeof(vrpn_int32) + num * sizeof(vrpn_float64);
 }

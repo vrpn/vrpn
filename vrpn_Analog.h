@@ -219,7 +219,7 @@ class vrpn_Analog_Remote: public vrpn_Analog {
 	//------------------------------------------------------------------
 	// Routines used to send requests from the client
 	virtual vrpn_int32 encode_change_to(char *buf, vrpn_int32 chan, vrpn_float64 val);
-    virtual vrpn_int32 encode_change_channels_to(char* buf, int num, vrpn_float64* vals);
+    virtual vrpn_int32 encode_change_channels_to(char* buf, vrpn_int32 num, vrpn_float64* vals);
 };
 
 #endif

@@ -69,7 +69,7 @@ class vrpn_Poser_Analog : public vrpn_Poser_Server {
         vrpn_PA_axis x, y, z, rx, ry, rz;
 
         // Routine to update the analog values from the current pose
-        int update_Analog_values();
+        bool update_Analog_values();
 };
 
 #endif

@@ -42,6 +42,10 @@ vrpn_Poser_Analog::vrpn_Poser_Analog(const char* name, vrpn_Connection* c, vrpn_
             fprintf(stderr, "vrpn_Poser_Analog: Can't open Analog %s\n", p->ana_name);
         }
     }
+	else {
+		ana = NULL;
+		fprintf(stderr, "vrpn_Poser_Analog: Can't open Analog: No name given\n");
+	}
 
     // Set up the workspace max and min values
     for (i = 0; i < 3; i++) {
@@ -56,32 +60,48 @@ vrpn_Poser_Analog::vrpn_Poser_Analog(const char* name, vrpn_Connection* c, vrpn_
     }
 }
 
+vrpn_Poser_Analog::~vrpn_Poser_Analog() {}
+
 void vrpn_Poser_Analog::mainloop() {
     // Call generic server mainloop, since we are a server
     server_mainloop();
 
     // Call the Analog's mainloop
-    ana->mainloop();
-
-    // Update the Analog's values
-    if (!update_Analog_values()) {
-        fprintf(stderr, "vrpn_Poser_Analog: Error updating Analog values\n");
-    }
+    if (ana) {
+		ana->mainloop();
+	
+		if (ana->connectionPtr()->connected()) {
+			// Update the Analog's values
+			if (!update_Analog_values()) {
+				fprintf(stderr, "vrpn_Poser_Analog: Error updating Analog values\n");
+			}
+		}
+	}
 }
 
-int vrpn_Poser_Analog::update_Analog_values() {
+bool vrpn_Poser_Analog::update_Analog_values() {
     vrpn_float64 values[vrpn_CHANNEL_MAX];
+
+	int i;
+	int max_channel = -1;	// sets the range of values we are changing
+
+	for (i = 0; i < vrpn_CHANNEL_MAX; i++) {
+		values[i] = 0.0;
+	}
 
     // ONLY DOING TRANS FOR NOW...ADD ROT LATER
     if (x.channel != -1 && x.channel < vrpn_CHANNEL_MAX) {
-        values[x.channel] = (pos[0] - x.offset) * x.scale;
+		if (max_channel <= x.channel) max_channel = x.channel + 1;
+		values[x.channel] = (pos[0] - x.offset) * x.scale;
     }
     if (y.channel != -1 && y.channel < vrpn_CHANNEL_MAX) {
+		if (max_channel <= y.channel) max_channel = y.channel + 1;
         values[y.channel] = (pos[1] - y.offset) * y.scale;
     }
     if (z.channel != -1 && z.channel < vrpn_CHANNEL_MAX) {
+		if (max_channel <= z.channel) max_channel = z.channel + 1;
         values[z.channel] = (pos[2] - z.offset) * z.scale;
     }
 
-    return ana->request_change_channels(vrpn_CHANNEL_MAX, values);
+    return ana->request_change_channels(max_channel, values);
 }
