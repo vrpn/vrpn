@@ -1,3 +1,33 @@
+2004-12-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_BaseClass.h : Added a template class to deal with
+		callback list handling.  This does not use STL, to
+		avoid the problems with having incompatible STL
+		versions on some systems.  It generated a warning
+		message when using DLLs that seemed to make no sense,
+		and the test code still works in DLL mode (tested),
+		so I turned the warning off.  This change removes
+		a lot of duplicate code from derived classes, and
+		ensures proper clean-up of lists at destruction.
+	* vrpn_Analog.C : Modified to use templated callbacks.
+	* vrpn_Analog.h : Same.
+	* vrpn_Button.C : Same.
+	* vrpn_Button.h : Same.
+	* vrpn_Clock.C : Same.
+	* vrpn_Clock.h : Same.
+	* vrpn_Connection.C : Same (modified Clock callback).
+	* vrpn_Dial.C : Same.
+	* vrpn_Dial.h : Same.
+	* vrpn_Imager.C : Same.
+	* vrpn_Imager.h : Same.
+	* vrpn_Router.C : Same.
+	* vrpn_Router.h : Same.
+	* vrpn_Text.C : Same.
+	* vrpn_Text.h : Same.
+	* vrpn_Tracker.C : Same.
+	* vrpn_Tracker.h : Same.
+	* vrpndll.dsp : Must have tweaked a compiler flag.
+
 2004-12-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Connection.C : Changes from Patrick Hartling to make

@@ -785,8 +785,7 @@ void vrpn_Button_PinchGlove::report_no_timestamp()
 
 
 vrpn_Button_Remote::vrpn_Button_Remote(const char *name, vrpn_Connection *cn):
-	vrpn_Button(name, cn),
-	change_list(NULL)
+	vrpn_Button(name, cn)
 {
 	vrpn_int32	i;
 
@@ -815,15 +814,6 @@ vrpn_Button_Remote::vrpn_Button_Remote(const char *name, vrpn_Connection *cn):
 // virtual
 vrpn_Button_Remote::~vrpn_Button_Remote (void)
 {
-	vrpn_BUTTONCHANGELIST	*next;
-
-	// Delete all of the callback handlers that other code had registered
-	// with this object. This will free up the memory taken by the list
-	while (change_list != NULL) {
-		next = change_list->next;
-		delete change_list;
-		change_list = next;
-	}
 }
 
 void vrpn_Button_Remote::mainloop()
@@ -834,73 +824,12 @@ void vrpn_Button_Remote::mainloop()
 	client_mainloop();
 }
 
-int vrpn_Button_Remote::register_change_handler(void *userdata,
-			vrpn_BUTTONCHANGEHANDLER handler)
-{
-	vrpn_BUTTONCHANGELIST	*new_entry;
-
-	// Ensure that the handler is non-NULL
-	if (handler == NULL) {
-		fprintf(stderr,
-			"vrpn_Button_Remote::register_handler: NULL handler\n");
-		return -1;
-	}
-
-	// Allocate and initialize the new entry
-	if ( (new_entry = new vrpn_BUTTONCHANGELIST) == NULL) {
-		fprintf(stderr,
-		    "vrpn_Button_Remote::register_handler: Out of memory\n");
-		return -1;
-	}
-	new_entry->handler = handler;
-	new_entry->userdata = userdata;
-
-	// Add this handler to the chain at the beginning (don't check to see
-	// if it is already there, since duplication is okay).
-	new_entry->next = change_list;
-	change_list = new_entry;
-
-	return 0;
-}
-
-int vrpn_Button_Remote::unregister_change_handler(void *userdata,
-			vrpn_BUTTONCHANGEHANDLER handler)
-{
-	// The pointer at *snitch points to victim
-	vrpn_BUTTONCHANGELIST	*victim, **snitch;
-
-	// Find a handler with this registry in the list (any one will do,
-	// since all duplicates are the same).
-	snitch = &change_list;
-	victim = *snitch;
-	while ( (victim != NULL) &&
-		( (victim->handler != handler) ||
-		  (victim->userdata != userdata) )) {
-	    snitch = &( (*snitch)->next );
-	    victim = victim->next;
-	}
-
-	// Make sure we found one
-	if (victim == NULL) {
-		fprintf(stderr,
-		   "vrpn_Button_Remote::unregister_handler: No such handler\n");
-		return -1;
-	}
-
-	// Remove the entry from the list
-	*snitch = victim->next;
-	delete victim;
-
-	return 0;
-}
-
 int vrpn_Button_Remote::handle_change_message(void *userdata,
 	vrpn_HANDLERPARAM p)
 {
 	vrpn_Button_Remote *me = (vrpn_Button_Remote *)userdata;
 	const char *bufptr = p.buffer;
 	vrpn_BUTTONCB	bp;
-	vrpn_BUTTONCHANGELIST *handler = me->change_list;
 
 	// Fill in the parameters to the button from the message
 	if (p.payload_len != 2*sizeof(vrpn_int32)) {
@@ -915,10 +844,7 @@ int vrpn_Button_Remote::handle_change_message(void *userdata,
 
 	// Go down the list of callbacks that have been registered.
 	// Fill in the parameter and call each.
-	while (handler != NULL) {
-		handler->handler(handler->userdata, bp);
-		handler = handler->next;
-	}
+	me->d_callback_list.call_handlers(bp);
 
 	return 0;
 }

@@ -184,17 +184,16 @@ class VRPN_API vrpn_Analog_Remote: public vrpn_Analog {
 
         // (un)Register a callback handler to handle analog value change
         virtual int register_change_handler(void *userdata,
-	        vrpn_ANALOGCHANGEHANDLER handler);
+		vrpn_ANALOGCHANGEHANDLER handler) {
+	  return d_callback_list.register_handler(userdata, handler);
+	};
         virtual int unregister_change_handler(void *userdata,
-	        vrpn_ANALOGCHANGEHANDLER handler);
+		vrpn_ANALOGCHANGEHANDLER handler) {
+	  return d_callback_list.unregister_handler(userdata, handler);
+	}
 
     protected:
-        typedef struct vrpn_RACS {
-	    void				*userdata;
-	    vrpn_ANALOGCHANGEHANDLER	handler;
-	    struct vrpn_RACS		*next;
-        } vrpn_ANALOGCHANGELIST;
-        vrpn_ANALOGCHANGELIST *change_list;
+        vrpn_Callback_List<vrpn_ANALOGCB> d_callback_list;
 
         static int VRPN_CALLBACK handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
 };

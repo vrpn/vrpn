@@ -89,17 +89,16 @@ class VRPN_API vrpn_Dial_Remote: public vrpn_Dial {
 
 	// (un)Register a callback handler to handle dial updates
 	virtual int register_change_handler(void *userdata,
-		vrpn_DIALCHANGEHANDLER handler);
+		vrpn_DIALCHANGEHANDLER handler) {
+	  return d_callback_list.register_handler(userdata, handler);
+	};
 	virtual int unregister_change_handler(void *userdata,
-		vrpn_DIALCHANGEHANDLER handler);
+		vrpn_DIALCHANGEHANDLER handler) {
+	  return d_callback_list.unregister_handler(userdata, handler);
+	}
 
   protected:
-	typedef	struct vrpn_RDCS {
-		void				*userdata;
-		vrpn_DIALCHANGEHANDLER		handler;
-		struct vrpn_RDCS		*next;
-	} vrpn_DIALCHANGELIST;
-	vrpn_DIALCHANGELIST	*change_list;
+	vrpn_Callback_List<vrpn_DIALCB> d_callback_list;
 
 	static int VRPN_CALLBACK handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
 };

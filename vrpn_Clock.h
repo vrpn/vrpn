@@ -75,7 +75,7 @@ typedef	struct _vrpn_CLOCKCB {
 } vrpn_CLOCKCB;
 
 typedef void (VRPN_CALLBACK *vrpn_CLOCKSYNCHANDLER)(void *userdata,
-				      const vrpn_CLOCKCB& info);
+				      const vrpn_CLOCKCB info);
 
 // Connect to a clock server that is on the other end of a connection
 // and figure out the offset between the local and remote clocks
@@ -119,9 +119,13 @@ class VRPN_API vrpn_Clock_Remote: public vrpn_Clock {
 
     // (un)Register a callback to handle a clock sync
     virtual int register_clock_sync_handler(void *userdata,
-					    vrpn_CLOCKSYNCHANDLER handler);
+	    vrpn_CLOCKSYNCHANDLER handler) {
+      return d_callback_list.register_handler(userdata, handler);
+    };
     virtual int unregister_clock_sync_handler(void *userdata,
-					      vrpn_CLOCKSYNCHANDLER handler);
+	    vrpn_CLOCKSYNCHANDLER handler) {
+      return d_callback_list.unregister_handler(userdata, handler);
+    }
     // request a high accuracy sync (and turn off quick syncs)
     void fullSync (void);
 
@@ -177,14 +181,7 @@ class VRPN_API vrpn_Clock_Remote: public vrpn_Clock {
     // offset to report to user
     struct timeval tvFullClockOffset;
 
-    // vars for user specified handlers
-    typedef struct _vrpn_CLOCKSYNCLIST {
-      void			*userdata;
-      vrpn_CLOCKSYNCHANDLER	handler;
-      struct _vrpn_CLOCKSYNCLIST	*next;
-    } vrpn_CLOCKSYNCLIST;
-
-    vrpn_CLOCKSYNCLIST	*change_list;
+    vrpn_Callback_List<vrpn_CLOCKCB>	d_callback_list;
 
     static int VRPN_CALLBACK quickSyncClockServerReplyHandler(void *userdata, 
 					        vrpn_HANDLERPARAM p);

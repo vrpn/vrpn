@@ -994,12 +994,7 @@ int  vrpn_Imager_Server::handle_last_drop_message(void *userdata, vrpn_HANDLERPA
 
 vrpn_Imager_Remote::vrpn_Imager_Remote(const char *name, vrpn_Connection *c) :
   vrpn_Imager(name, c),
-  d_got_description(false),
-  d_region_list(NULL),
-  d_description_list(NULL),
-  d_begin_frame_list(NULL),
-  d_end_frame_list(NULL),
-  d_discarded_frames_list(NULL)
+  d_got_description(false)
 {
   // Register the handlers for the description message and the region change messages
   register_autodeleted_handler(d_description_m_id, handle_description_message, this, d_sender_id);
@@ -1032,297 +1027,11 @@ const vrpn_Imager_Channel *vrpn_Imager_Remote::channel(unsigned chanNum) const
   return &d_channels[chanNum];
 }
 
-int vrpn_Imager_Remote::register_description_handler(void *userdata,
-			vrpn_IMAGERDESCRIPTIONHANDLER handler)
-{
-  vrpn_DESCRIPTIONLIST	*new_entry;
-
-  // Ensure that the handler is non-NULL
-  if (handler == NULL) {
-    fprintf(stderr, "vrpn_Imager_Remote::register_description_handler: NULL handler\n");
-    return -1;
-  }
-
-  // Allocate and initialize the new entry
-  if ( (new_entry = new vrpn_DESCRIPTIONLIST) == NULL) {
-    fprintf(stderr, "vrpn_Imager_Remote::register_description_handler: Out of memory\n");
-    return -1;
-  }
-  new_entry->handler = handler;
-  new_entry->userdata = userdata;
-
-  // Add this handler to the chain at the beginning (don't check to see
-  // if it is already there, since duplication is okay).
-  new_entry->next = d_description_list;
-  d_description_list = new_entry;
-
-  return 0;
-}
-
-int vrpn_Imager_Remote::unregister_description_handler(void *userdata,
-			vrpn_IMAGERDESCRIPTIONHANDLER handler)
-{
-  // The pointer at *snitch points to victim
-  vrpn_DESCRIPTIONLIST	*victim, **snitch;
-
-  // Find a handler with this registry in the list (any one will do,
-  // since all duplicates are the same).
-  snitch = &d_description_list;
-  victim = *snitch;
-  while ( (victim != NULL) &&
-	  ( (victim->handler != handler) ||
-	    (victim->userdata != userdata) )) {
-    snitch = &( (*snitch)->next );
-    victim = victim->next;
-  }
-
-  // Make sure we found one
-  if (victim == NULL) {
-    fprintf(stderr, "vrpn_Imager_Remote::unregister_description_handler: No such handler\n");
-    return -1;
-  }
-
-  // Remove the entry from the list
-  *snitch = victim->next;
-  delete victim;
-
-  return 0;
-}
-
-int vrpn_Imager_Remote::register_region_handler(void *userdata,
-			vrpn_IMAGERREGIONHANDLER handler)
-{
-  vrpn_REGIONLIST	*new_entry;
-
-  // Ensure that the handler is non-NULL
-  if (handler == NULL) {
-    fprintf(stderr, "vrpn_Imager_Remote::register_region_handler: NULL handler\n");
-    return -1;
-  }
-
-  // Allocate and initialize the new entry
-  if ( (new_entry = new vrpn_REGIONLIST) == NULL) {
-    fprintf(stderr, "vrpn_Imager_Remote::register_region_handler: Out of memory\n");
-    return -1;
-  }
-  new_entry->handler = handler;
-  new_entry->userdata = userdata;
-
-  // Add this handler to the chain at the beginning (don't check to see
-  // if it is already there, since duplication is okay).
-  new_entry->next = d_region_list;
-  d_region_list = new_entry;
-
-  return 0;
-}
-
-int vrpn_Imager_Remote::unregister_region_handler(void *userdata,
-			vrpn_IMAGERREGIONHANDLER handler)
-{
-  // The pointer at *snitch points to victim
-  vrpn_REGIONLIST	*victim, **snitch;
-
-  // Find a handler with this registry in the list (any one will do,
-  // since all duplicates are the same).
-  snitch = &d_region_list;
-  victim = *snitch;
-  while ( (victim != NULL) &&
-	  ( (victim->handler != handler) ||
-	    (victim->userdata != userdata) )) {
-    snitch = &( (*snitch)->next );
-    victim = victim->next;
-  }
-
-  // Make sure we found one
-  if (victim == NULL) {
-    fprintf(stderr, "vrpn_Imager_Remote::unregister_region_handler: No such handler\n");
-    return -1;
-  }
-
-  // Remove the entry from the list
-  *snitch = victim->next;
-  delete victim;
-
-  return 0;
-}
-
-int vrpn_Imager_Remote::register_begin_frame_handler(void *userdata,
-			vrpn_IMAGERBEGINFRAMEHANDLER handler)
-{
-  vrpn_BEGINFRAMELIST	*new_entry;
-
-  // Ensure that the handler is non-NULL
-  if (handler == NULL) {
-    fprintf(stderr, "vrpn_Imager_Remote::register_begin_frame_handler: NULL handler\n");
-    return -1;
-  }
-
-  // Allocate and initialize the new entry
-  if ( (new_entry = new vrpn_BEGINFRAMELIST) == NULL) {
-    fprintf(stderr, "vrpn_Imager_Remote::register_begin_frame_handler: Out of memory\n");
-    return -1;
-  }
-  new_entry->handler = handler;
-  new_entry->userdata = userdata;
-
-  // Add this handler to the chain at the beginning (don't check to see
-  // if it is already there, since duplication is okay).
-  new_entry->next = d_begin_frame_list;
-  d_begin_frame_list = new_entry;
-
-  return 0;
-}
-
-int vrpn_Imager_Remote::unregister_begin_frame_handler(void *userdata,
-			vrpn_IMAGERBEGINFRAMEHANDLER handler)
-{
-  // The pointer at *snitch points to victim
-  vrpn_BEGINFRAMELIST	*victim, **snitch;
-
-  // Find a handler with this registry in the list (any one will do,
-  // since all duplicates are the same).
-  snitch = &d_begin_frame_list;
-  victim = *snitch;
-  while ( (victim != NULL) &&
-	  ( (victim->handler != handler) ||
-	    (victim->userdata != userdata) )) {
-    snitch = &( (*snitch)->next );
-    victim = victim->next;
-  }
-
-  // Make sure we found one
-  if (victim == NULL) {
-    fprintf(stderr, "vrpn_Imager_Remote::unregister_begin_frame_handler: No such handler\n");
-    return -1;
-  }
-
-  // Remove the entry from the list
-  *snitch = victim->next;
-  delete victim;
-
-  return 0;
-}
-
-int vrpn_Imager_Remote::register_end_frame_handler(void *userdata,
-			vrpn_IMAGERENDFRAMEHANDLER handler)
-{
-  vrpn_ENDFRAMELIST	*new_entry;
-
-  // Ensure that the handler is non-NULL
-  if (handler == NULL) {
-    fprintf(stderr, "vrpn_Imager_Remote::register_end_frame_handler: NULL handler\n");
-    return -1;
-  }
-
-  // Allocate and initialize the new entry
-  if ( (new_entry = new vrpn_ENDFRAMELIST) == NULL) {
-    fprintf(stderr, "vrpn_Imager_Remote::register_end_frame_handler: Out of memory\n");
-    return -1;
-  }
-  new_entry->handler = handler;
-  new_entry->userdata = userdata;
-
-  // Add this handler to the chain at the beginning (don't check to see
-  // if it is already there, since duplication is okay).
-  new_entry->next = d_end_frame_list;
-  d_end_frame_list = new_entry;
-
-  return 0;
-}
-
-int vrpn_Imager_Remote::unregister_end_frame_handler(void *userdata,
-			vrpn_IMAGERENDFRAMEHANDLER handler)
-{
-  // The pointer at *snitch points to victim
-  vrpn_ENDFRAMELIST	*victim, **snitch;
-
-  // Find a handler with this registry in the list (any one will do,
-  // since all duplicates are the same).
-  snitch = &d_end_frame_list;
-  victim = *snitch;
-  while ( (victim != NULL) &&
-	  ( (victim->handler != handler) ||
-	    (victim->userdata != userdata) )) {
-    snitch = &( (*snitch)->next );
-    victim = victim->next;
-  }
-
-  // Make sure we found one
-  if (victim == NULL) {
-    fprintf(stderr, "vrpn_Imager_Remote::unregister_end_frame_handler: No such handler\n");
-    return -1;
-  }
-
-  // Remove the entry from the list
-  *snitch = victim->next;
-  delete victim;
-
-  return 0;
-}
-
-int vrpn_Imager_Remote::register_discarded_frames_handler(void *userdata,
-			vrpn_IMAGERDISCARDEDFRAMESHANDLER handler)
-{
-  vrpn_DISCARDEDFRAMESLIST	*new_entry;
-
-  // Ensure that the handler is non-NULL
-  if (handler == NULL) {
-    fprintf(stderr, "vrpn_Imager_Remote::register_discarded_frames_handler: NULL handler\n");
-    return -1;
-  }
-
-  // Allocate and initialize the new entry
-  if ( (new_entry = new vrpn_DISCARDEDFRAMESLIST) == NULL) {
-    fprintf(stderr, "vrpn_Imager_Remote::register_discarded_frames_handler: Out of memory\n");
-    return -1;
-  }
-  new_entry->handler = handler;
-  new_entry->userdata = userdata;
-
-  // Add this handler to the chain at the beginning (don't check to see
-  // if it is already there, since duplication is okay).
-  new_entry->next = d_discarded_frames_list;
-  d_discarded_frames_list = new_entry;
-
-  return 0;
-}
-
-int vrpn_Imager_Remote::unregister_discarded_frames_handler(void *userdata,
-			vrpn_IMAGERDISCARDEDFRAMESHANDLER handler)
-{
-  // The pointer at *snitch points to victim
-  vrpn_DISCARDEDFRAMESLIST	*victim, **snitch;
-
-  // Find a handler with this registry in the list (any one will do,
-  // since all duplicates are the same).
-  snitch = &d_discarded_frames_list;
-  victim = *snitch;
-  while ( (victim != NULL) &&
-	  ( (victim->handler != handler) ||
-	    (victim->userdata != userdata) )) {
-    snitch = &( (*snitch)->next );
-    victim = victim->next;
-  }
-
-  // Make sure we found one
-  if (victim == NULL) {
-    fprintf(stderr, "vrpn_Imager_Remote::unregister_discarded_frames_handler: No such handler\n");
-    return -1;
-  }
-
-  // Remove the entry from the list
-  *snitch = victim->next;
-  delete victim;
-
-  return 0;
-}
-
 int vrpn_Imager_Remote::handle_description_message(void *userdata,
 	vrpn_HANDLERPARAM p)
 {
   const char *bufptr = p.buffer;
   vrpn_Imager_Remote *me = (vrpn_Imager_Remote *)userdata;
-  vrpn_DESCRIPTIONLIST *handler = me->d_description_list;
   int i;
 
   // Get my new information from the buffer
@@ -1340,10 +1049,7 @@ int vrpn_Imager_Remote::handle_description_message(void *userdata,
 
   // Go down the list of callbacks that have been registered.
   // Fill in the parameter and call each.
-  while (handler != NULL) {
-	  handler->handler(handler->userdata, p.msg_time);
-	  handler = handler->next;
-  }
+  me->d_description_list.call_handlers(p.msg_time);
 
   me->d_got_description = true;
   return 0;
@@ -1354,7 +1060,6 @@ int vrpn_Imager_Remote::handle_region_message(void *userdata,
 {
   const char *bufptr = p.buffer;
   vrpn_Imager_Remote *me = (vrpn_Imager_Remote *)userdata;
-  vrpn_REGIONLIST *handler = me->d_region_list;
   vrpn_IMAGERREGIONCB rp;
   vrpn_Imager_Region  reg;
 
@@ -1391,9 +1096,8 @@ int vrpn_Imager_Remote::handle_region_message(void *userdata,
   // ONLY if we have gotten a description message,
   // Go down the list of callbacks that have been registered.
   // Fill in the parameter and call each.
-  if (me->d_got_description) while (handler != NULL) {
-	  handler->handler(handler->userdata, rp);
-	  handler = handler->next;
+  if (me->d_got_description) {
+    me->d_region_list.call_handlers(rp);
   }
 
   reg.d_valid = false;
@@ -1405,7 +1109,6 @@ int vrpn_Imager_Remote::handle_begin_frame_message(void *userdata,
 {
   const char *bufptr = p.buffer;
   vrpn_Imager_Remote *me = (vrpn_Imager_Remote *)userdata;
-  vrpn_BEGINFRAMELIST *handler = me->d_begin_frame_list;
   vrpn_IMAGERBEGINFRAMECB bf;
 
   bf.msg_time = p.msg_time;
@@ -1422,9 +1125,8 @@ int vrpn_Imager_Remote::handle_begin_frame_message(void *userdata,
   // ONLY if we have gotten a description message,
   // Go down the list of callbacks that have been registered.
   // Fill in the parameter and call each.
-  if (me->d_got_description) while (handler != NULL) {
-	  handler->handler(handler->userdata, bf);
-	  handler = handler->next;
+  if (me->d_got_description) {
+    me->d_begin_frame_list.call_handlers(bf);
   }
 
   return 0;
@@ -1435,16 +1137,15 @@ int vrpn_Imager_Remote::handle_end_frame_message(void *userdata,
 {
   const char *bufptr = p.buffer;
   vrpn_Imager_Remote *me = (vrpn_Imager_Remote *)userdata;
-  vrpn_ENDFRAMELIST *handler = me->d_end_frame_list;
-  vrpn_IMAGERENDFRAMECB bf;
+  vrpn_IMAGERENDFRAMECB ef;
 
-  bf.msg_time = p.msg_time;
-  if (vrpn_unbuffer(&bufptr, &bf.dMin) ||
-      vrpn_unbuffer(&bufptr, &bf.dMax) ||
-      vrpn_unbuffer(&bufptr, &bf.rMin) ||
-      vrpn_unbuffer(&bufptr, &bf.rMax) ||
-      vrpn_unbuffer(&bufptr, &bf.cMin) ||
-      vrpn_unbuffer(&bufptr, &bf.cMax) )  {
+  ef.msg_time = p.msg_time;
+  if (vrpn_unbuffer(&bufptr, &ef.dMin) ||
+      vrpn_unbuffer(&bufptr, &ef.dMax) ||
+      vrpn_unbuffer(&bufptr, &ef.rMin) ||
+      vrpn_unbuffer(&bufptr, &ef.rMax) ||
+      vrpn_unbuffer(&bufptr, &ef.cMin) ||
+      vrpn_unbuffer(&bufptr, &ef.cMax) )  {
     fprintf(stderr, "vrpn_Imager_Remote::handle_end_frame_message(): Can't unbuffer parameters!\n");
     return -1;
   }
@@ -1452,9 +1153,8 @@ int vrpn_Imager_Remote::handle_end_frame_message(void *userdata,
   // ONLY if we have gotten a description message,
   // Go down the list of callbacks that have been registered.
   // Fill in the parameter and call each.
-  if (me->d_got_description) while (handler != NULL) {
-	  handler->handler(handler->userdata, bf);
-	  handler = handler->next;
+  if (me->d_got_description) {
+    me->d_end_frame_list.call_handlers(ef);
   }
 
   return 0;
@@ -1465,11 +1165,10 @@ int vrpn_Imager_Remote::handle_discarded_frames_message(void *userdata,
 {
   const char *bufptr = p.buffer;
   vrpn_Imager_Remote *me = (vrpn_Imager_Remote *)userdata;
-  vrpn_DISCARDEDFRAMESLIST *handler = me->d_discarded_frames_list;
-  vrpn_IMAGERDISCARDEDFRAMESCB bf;
+  vrpn_IMAGERDISCARDEDFRAMESCB df;
 
-  bf.msg_time = p.msg_time;
-  if (vrpn_unbuffer(&bufptr, &bf.count))  {
+  df.msg_time = p.msg_time;
+  if (vrpn_unbuffer(&bufptr, &df.count))  {
     fprintf(stderr, "vrpn_Imager_Remote::handle_discarded_frames_message(): Can't unbuffer parameters!\n");
     return -1;
   }
@@ -1477,9 +1176,8 @@ int vrpn_Imager_Remote::handle_discarded_frames_message(void *userdata,
   // ONLY if we have gotten a description message,
   // Go down the list of callbacks that have been registered.
   // Fill in the parameter and call each.
-  if (me->d_got_description) while (handler != NULL) {
-	  handler->handler(handler->userdata, bf);
-	  handler = handler->next;
+  if (me->d_got_description) {
+    me->d_discarded_frames_list.call_handlers(df);
   }
 
   return 0;
@@ -1925,8 +1623,7 @@ void  vrpn_ImagerPose_Server::mainloop(void)
 
 
 vrpn_ImagerPose_Remote::vrpn_ImagerPose_Remote(const char *name, vrpn_Connection *c) :
-  vrpn_ImagerPose(name, c),
-  d_description_list(NULL)
+  vrpn_ImagerPose(name, c)
 {
   // Register the handlers for the description message
   register_autodeleted_handler(d_description_m_id, handle_description_message, this, d_sender_id);
@@ -1937,7 +1634,6 @@ int vrpn_ImagerPose_Remote::handle_description_message(void *userdata,
 {
   const char *bufptr = p.buffer;
   vrpn_ImagerPose_Remote *me = (vrpn_ImagerPose_Remote *)userdata;
-  vrpn_DESCRIPTIONLIST *handler = me->d_description_list;
 
   // Get my new information from the buffer
   if (vrpn_unbuffer(&bufptr, &me->d_origin[0]) ||
@@ -1957,67 +1653,7 @@ int vrpn_ImagerPose_Remote::handle_description_message(void *userdata,
 
   // Go down the list of callbacks that have been registered.
   // Fill in the parameter and call each.
-  while (handler != NULL) {
-	  handler->handler(handler->userdata, p.msg_time);
-	  handler = handler->next;
-  }
-
-  return 0;
-}
-
-int vrpn_ImagerPose_Remote::register_description_handler(void *userdata,
-			vrpn_IMAGERPOSEDESCRIPTIONHANDLER handler)
-{
-  vrpn_DESCRIPTIONLIST	*new_entry;
-
-  // Ensure that the handler is non-NULL
-  if (handler == NULL) {
-    fprintf(stderr, "vrpn_ImagerPose_Remote::register_description_handler: NULL handler\n");
-    return -1;
-  }
-
-  // Allocate and initialize the new entry
-  if ( (new_entry = new vrpn_DESCRIPTIONLIST) == NULL) {
-    fprintf(stderr, "vrpn_ImagerPose_Remote::register_description_handler: Out of memory\n");
-    return -1;
-  }
-  new_entry->handler = handler;
-  new_entry->userdata = userdata;
-
-  // Add this handler to the chain at the beginning (don't check to see
-  // if it is already there, since duplication is okay).
-  new_entry->next = d_description_list;
-  d_description_list = new_entry;
-
-  return 0;
-}
-
-int vrpn_ImagerPose_Remote::unregister_description_handler(void *userdata,
-			vrpn_IMAGERPOSEDESCRIPTIONHANDLER handler)
-{
-  // The pointer at *snitch points to victim
-  vrpn_DESCRIPTIONLIST	*victim, **snitch;
-
-  // Find a handler with this registry in the list (any one will do,
-  // since all duplicates are the same).
-  snitch = &d_description_list;
-  victim = *snitch;
-  while ( (victim != NULL) &&
-	  ( (victim->handler != handler) ||
-	    (victim->userdata != userdata) )) {
-    snitch = &( (*snitch)->next );
-    victim = victim->next;
-  }
-
-  // Make sure we found one
-  if (victim == NULL) {
-    fprintf(stderr, "vrpn_ImagerPose_Remote::unregister_description_handler: No such handler\n");
-    return -1;
-  }
-
-  // Remove the entry from the list
-  *snitch = victim->next;
-  delete victim;
+  me->d_description_list.call_handlers(p.msg_time);
 
   return 0;
 }

@@ -478,24 +478,44 @@ public:
   vrpn_Imager_Remote(const char *name, vrpn_Connection *c = NULL);
 
   /// Register a handler for when new data arrives (can look up info in object when this happens)
-  virtual int register_region_handler(void *userdata, vrpn_IMAGERREGIONHANDLER handler);
-  virtual int unregister_region_handler(void *userdata, vrpn_IMAGERREGIONHANDLER handler);
+  virtual int register_region_handler(void *userdata, vrpn_IMAGERREGIONHANDLER handler) {
+    return d_region_list.register_handler(userdata, handler);
+  };
+  virtual int unregister_region_handler(void *userdata, vrpn_IMAGERREGIONHANDLER handler) {
+    return d_region_list.unregister_handler(userdata, handler);
+  }
 
   /// Register a handler for when the object's description changes (if desired)
-  virtual int register_description_handler(void *userdata, vrpn_IMAGERDESCRIPTIONHANDLER handler);
-  virtual int unregister_description_handler(void *userdata, vrpn_IMAGERDESCRIPTIONHANDLER handler);
+  virtual int register_description_handler(void *userdata, vrpn_IMAGERDESCRIPTIONHANDLER handler) {
+    return d_description_list.register_handler(userdata, handler);
+  };
+  virtual int unregister_description_handler(void *userdata, vrpn_IMAGERDESCRIPTIONHANDLER handler) {
+    return d_description_list.unregister_handler(userdata, handler);
+  }
 
   /// Register a handler for frame beginning (if the application cares)
-  virtual int register_begin_frame_handler(void *userdata, vrpn_IMAGERBEGINFRAMEHANDLER handler);
-  virtual int unregister_begin_frame_handler(void *userdata, vrpn_IMAGERBEGINFRAMEHANDLER handler);
+  virtual int register_begin_frame_handler(void *userdata, vrpn_IMAGERBEGINFRAMEHANDLER handler) {
+    return d_begin_frame_list.register_handler(userdata, handler);
+  };
+  virtual int unregister_begin_frame_handler(void *userdata, vrpn_IMAGERBEGINFRAMEHANDLER handler) {
+    return d_begin_frame_list.unregister_handler(userdata, handler);
+  }
 
   /// Register a handler for frame end (if the application cares)
-  virtual int register_end_frame_handler(void *userdata, vrpn_IMAGERENDFRAMEHANDLER handler);
-  virtual int unregister_end_frame_handler(void *userdata, vrpn_IMAGERENDFRAMEHANDLER handler);
+  virtual int register_end_frame_handler(void *userdata, vrpn_IMAGERENDFRAMEHANDLER handler) {
+    return d_end_frame_list.register_handler(userdata, handler);
+  };
+  virtual int unregister_end_frame_handler(void *userdata, vrpn_IMAGERENDFRAMEHANDLER handler) {
+    return d_end_frame_list.unregister_handler(userdata, handler);
+  }
 
   /// Register a handler for discarded frame notifications (if the application cares)
-  virtual int register_discarded_frames_handler(void *userdata, vrpn_IMAGERDISCARDEDFRAMESHANDLER handler);
-  virtual int unregister_discarded_frames_handler(void *userdata, vrpn_IMAGERDISCARDEDFRAMESHANDLER handler);
+  virtual int register_discarded_frames_handler(void *userdata, vrpn_IMAGERDISCARDEDFRAMESHANDLER handler) {
+    return d_discarded_frames_list.register_handler(userdata, handler);
+  };
+  virtual int unregister_discarded_frames_handler(void *userdata, vrpn_IMAGERDISCARDEDFRAMESHANDLER handler) {
+    return d_discarded_frames_list.unregister_handler(userdata, handler);
+  }
 
   /// Request that the server send at most N more frames until a new request is sent.
   // This is used to throttle senders that are incurring lots of latency by filling
@@ -526,40 +546,11 @@ public:
 protected:
   bool	  d_got_description;	//< Have we gotten a description yet?
   // Lists to keep track of registered user handlers.
-  typedef struct vrpn_IDCS {
-      void			    *userdata;
-      vrpn_IMAGERDESCRIPTIONHANDLER handler;
-      struct vrpn_IDCS		    *next;
-  } vrpn_DESCRIPTIONLIST;
-  vrpn_DESCRIPTIONLIST *d_description_list;
-
-  typedef struct vrpn_IRCS {
-      void			    *userdata;
-      vrpn_IMAGERREGIONHANDLER	    handler;
-      struct vrpn_IRCS		    *next;
-  } vrpn_REGIONLIST;
-  vrpn_REGIONLIST *d_region_list;
-
-  typedef struct vrpn_IBFCS {
-      void			    *userdata;
-      vrpn_IMAGERBEGINFRAMEHANDLER  handler;
-      struct vrpn_IBFCS		    *next;
-  } vrpn_BEGINFRAMELIST;
-  vrpn_BEGINFRAMELIST *d_begin_frame_list;
-
-  typedef struct vrpn_IEFCS {
-      void			    *userdata;
-      vrpn_IMAGERENDFRAMEHANDLER    handler;
-      struct vrpn_IEFCS		    *next;
-  } vrpn_ENDFRAMELIST;
-  vrpn_ENDFRAMELIST *d_end_frame_list;
-
-  typedef struct vrpn_IDFCS {
-      void				*userdata;
-      vrpn_IMAGERDISCARDEDFRAMESHANDLER	handler;
-      struct vrpn_IDFCS			*next;
-  } vrpn_DISCARDEDFRAMESLIST;
-  vrpn_DISCARDEDFRAMESLIST *d_discarded_frames_list;
+  vrpn_Callback_List<struct timeval>		    d_description_list;
+  vrpn_Callback_List<vrpn_IMAGERREGIONCB>	    d_region_list;
+  vrpn_Callback_List<vrpn_IMAGERBEGINFRAMECB>	    d_begin_frame_list;
+  vrpn_Callback_List<vrpn_IMAGERENDFRAMECB>	    d_end_frame_list;
+  vrpn_Callback_List<vrpn_IMAGERDISCARDEDFRAMESCB>  d_discarded_frames_list;
 
   /// Handler for region update message from the server.
   static int VRPN_CALLBACK handle_region_message(void *userdata, vrpn_HANDLERPARAM p);
@@ -592,20 +583,19 @@ public:
   vrpn_ImagerPose_Remote(const char *name, vrpn_Connection *c = NULL);
 
   /// Register a handler for when the object's description changes (if desired)
-  virtual int register_description_handler(void *userdata, vrpn_IMAGERDESCRIPTIONHANDLER handler);
-  virtual int unregister_description_handler(void *userdata, vrpn_IMAGERDESCRIPTIONHANDLER handler);
+  virtual int register_description_handler(void *userdata, vrpn_IMAGERDESCRIPTIONHANDLER handler) {
+    return d_description_list.register_handler(userdata, handler);
+  };
+  virtual int unregister_description_handler(void *userdata, vrpn_IMAGERDESCRIPTIONHANDLER handler) {
+    return d_description_list.unregister_handler(userdata, handler);
+  }
 
   /// Call this each time through the program's main loop
   virtual void	mainloop(void);
 
 protected:
   // Lists to keep track of registered user handlers.
-  typedef struct vrpn_IDCS {
-      void			    *userdata;
-      vrpn_IMAGERDESCRIPTIONHANDLER handler;
-      struct vrpn_IDCS		    *next;
-  } vrpn_DESCRIPTIONLIST;
-  vrpn_DESCRIPTIONLIST *d_description_list;
+  vrpn_Callback_List<struct timeval>  d_description_list;
 
   /// Handler for resolution and channel list message from the server.
   static int VRPN_CALLBACK handle_description_message(void *userdata, vrpn_HANDLERPARAM p);

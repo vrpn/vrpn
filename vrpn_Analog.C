@@ -282,8 +282,7 @@ int vrpn_Clipping_Analog_Server::setChannelValue(int chan, double value)
 
 vrpn_Analog_Remote::vrpn_Analog_Remote (const char * name,
                                         vrpn_Connection * c ) : 
-	vrpn_Analog (name, c),
-    change_list(NULL)
+	vrpn_Analog (name, c)
 {
 	vrpn_int32	i;
 
@@ -312,19 +311,6 @@ vrpn_Analog_Remote::vrpn_Analog_Remote (const char * name,
 // virtual
 vrpn_Analog_Remote::~vrpn_Analog_Remote (void)
 {
-	vrpn_ANALOGCHANGELIST	*next;
-
-	// Our handlers have all been registered using the
-	// register_autodeleted_handler() method, so we don't have to
-	// worry about unregistering them here.
-
-	// Delete all of the callback handlers that other code had registered
-	// with this object. This will free up the memory taken by the list
-	while (change_list != NULL) {
-		next = change_list->next;
-		delete change_list;
-		change_list = next;
-	}
 }
 
 void	vrpn_Analog_Remote::mainloop()
@@ -335,66 +321,6 @@ void	vrpn_Analog_Remote::mainloop()
   }
 }
 
-int vrpn_Analog_Remote::register_change_handler(void* userdata,
-			vrpn_ANALOGCHANGEHANDLER handler)
-{
-	vrpn_ANALOGCHANGELIST* new_entry;
-
-	// Ensure that the handler is non-NULL
-	if (handler == NULL) {
-		fprintf(stderr,
-			"vrpn_Analog_Remote::register_handler: NULL handler\n");
-		return -1;
-	}
-
-	// Allocate and initialize the new entry
-	if ( (new_entry = new vrpn_ANALOGCHANGELIST) == NULL) {
-		fprintf(stderr,
-		    "vrpn_Analog_Remote::register_handler: Out of memory\n");
-		return -1;
-	}
-	new_entry->handler = handler;
-	new_entry->userdata = userdata;
-
-	// Add this handler to the chain at the beginning (don't check to see
-	// if it is already there, since duplication is okay).
-	new_entry->next = change_list;
-	change_list = new_entry;
-
-	return 0;
-}
-
-int vrpn_Analog_Remote::unregister_change_handler(void *userdata,
-			vrpn_ANALOGCHANGEHANDLER handler)
-{
-	// The pointer at *snitch points to victim
-	vrpn_ANALOGCHANGELIST	*victim, **snitch;
-
-	// Find a handler with this registry in the list (any one will do,
-	// since all duplicates are the same).
-	snitch = &change_list;
-	victim = *snitch;
-	while ( (victim != NULL) &&
-		( (victim->handler != handler) ||
-		  (victim->userdata != userdata) )) {
-	    snitch = &( (*snitch)->next );
-	    victim = victim->next;
-	}
-
-	// Make sure we found one
-	if (victim == NULL) {
-		fprintf(stderr,
-		   "vrpn_Analog_Remote::unregister_handler: No such handler\n");
-		return -1;
-	}
-
-	// Remove the entry from the list
-	*snitch = victim->next;
-	delete victim;
-
-	return 0;
-}
-
 int vrpn_Analog_Remote::handle_change_message(void *userdata,
 	vrpn_HANDLERPARAM p)
 {
@@ -402,7 +328,6 @@ int vrpn_Analog_Remote::handle_change_message(void *userdata,
     vrpn_float64 numchannelD;	//< Number of channels passed in a double (yuck!)
     vrpn_Analog_Remote* me = (vrpn_Analog_Remote* )userdata;
     vrpn_ANALOGCB	cp;
-    vrpn_ANALOGCHANGELIST* handler = me->change_list;
 
     cp.msg_time = p.msg_time;
     vrpn_unbuffer(&bufptr, &numchannelD);
@@ -414,10 +339,7 @@ int vrpn_Analog_Remote::handle_change_message(void *userdata,
 
     // Go down the list of callbacks that have been registered.
     // Fill in the parameter and call each.
-    while (handler != NULL) {
-	    handler->handler(handler->userdata, cp);
-	    handler = handler->next;
-    }
+    me->d_callback_list.call_handlers(cp);
 
     return 0;
 }

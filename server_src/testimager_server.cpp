@@ -25,7 +25,9 @@ static	void  fill_buffer(vrpn_uint8 *buffer,
   }
 }
 
+#ifndef min
 #define	min(a,b) ( (a) < (b) ? (a) : (b) )
+#endif
 int main (int argc, char * argv[])
 {
   static  int frame_number = 0;

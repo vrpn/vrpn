@@ -544,8 +544,6 @@ vrpn_Router::setOutputChannelName( int levelNum, int channelNum, const char* cha
 vrpn_Router_Remote::vrpn_Router_Remote (const char * name,
                                         vrpn_Connection * c) : 
 	vrpn_Router( name, c )
-	,change_list( NULL )
-	,name_list( NULL )
 {
 	// Register a handler for the change callback from this device,
 	// if we got a connection.
@@ -594,140 +592,12 @@ void	vrpn_Router_Remote::mainloop()
 
 
 /**************************************************************************************/
-// REGISTER, UNREGISTER, AND HANDLE CALLBACKS
+// HANDLE CALLBACKS
 // FOR MESSAGES RECEIVED BY CLIENT.
 // namely:
 //     change_messages
 //     name_messages
 /**************************************************************************************/
-
-
-
-#if 0
-// SINGLE CALLBACK CHANGE MESSAGE CODE
-
-
-/**************************************************************************************/
-int vrpn_Router_Remote::register_change_handler(void *userdata,
-			vrpn_ROUTERCHANGEHANDLER handler)
-{
-	// Store a pointer to the desired handler function for this 
-	// message type.  Also save a word of data (userdata) to be
-	// passed on when the handler is invoked.  
-	change_block.handler  = handler;
-	change_block.userdata = userdata;
-
-	return 0;
-}
-
-
-/**************************************************************************************/
-int vrpn_Router_Remote::unregister_change_handler(void *userdata,
-			vrpn_ROUTERCHANGEHANDLER handler)
-{
-	// Force the ptr to the callback function for this message type
-	// to be null.
-	change_block.handler  = NULL;
-
-	return 0;
-}
-
-
-/**************************************************************************************/
-int vrpn_Router_Remote::handle_change_message(void *userdata,
-	vrpn_HANDLERPARAM p)
-{
-	// Only static member functions can be passed as pointers,
-	// so the "this" pointer is passed in "userdata".  
-	// We can't call it "this" (reserved keyword), so we call it "me".
-	// Get ptr to the data block holding the callback function and its data.
-	vrpn_Router_Remote *me = (vrpn_Router_Remote *)userdata;
-	vrpn_ROUTERCHANGELIST *handlerBlockPtr = &(me->change_block);
-
-
-	// Unpack the message from the series of chars into the
-	// data structure for this message type.  
-	vrpn_ROUTERCB	cp;
-	decode_change_message( p, cp );
-
-	// Call callback, if one was registered.
-	// Fill in the parameters and call it.
-	if( handlerBlockPtr->handler ) {
-		handlerBlockPtr->handler( handlerBlockPtr->userdata, cp );
-	}
-
-	return 0;
-}
-
-
-
-#else
-// OLD (SAVED) CHANGE MESSAGE CALLBACK CODE
-
-
-/**************************************************************************************/
-int vrpn_Router_Remote::register_change_handler(void *userdata,
-			vrpn_ROUTERCHANGEHANDLER handler)
-{
-	vrpn_ROUTERCHANGELIST	*new_entry;
-
-	// Ensure that the handler is non-NULL
-	if (handler == NULL) {
-		fprintf(stderr,
-			"vrpn_ROUTER_Remote::register_handler: NULL handler\n");
-		return -1;
-	}
-
-	// Allocate and initialize the new entry
-	if ( (new_entry = new vrpn_ROUTERCHANGELIST) == NULL) {
-		fprintf(stderr,
-			"vrpn_Router_Remote::register_handler: Out of memory\n");
-		return -1;
-	}
-	new_entry->handler = handler;
-	new_entry->userdata = userdata;
-
-	// Add this handler to the chain at the beginning (don't check to see
-	// if it is already there, since duplication is okay).
-	new_entry->next = change_list;
-	change_list = new_entry;
-
-	return 0;
-}
-
-
-/**************************************************************************************/
-int vrpn_Router_Remote::unregister_change_handler(void *userdata,
-			vrpn_ROUTERCHANGEHANDLER handler)
-{
-	// The pointer at *snitch points to victim
-	vrpn_ROUTERCHANGELIST	*victim, **snitch;
-
-	// Find a handler with this registry in the list (any one will do,
-	// since all duplicates are the same).
-	snitch = &change_list;
-	victim = *snitch;
-	while ( (victim != NULL) &&
-		( (victim->handler != handler) ||
-		  (victim->userdata != userdata) )) {
-		snitch = &( (*snitch)->next );
-		victim = victim->next;
-	}
-
-	// Make sure we found one
-	if (victim == NULL) {
-		fprintf(stderr,
-		   "vrpn_Router_Remote::unregister_handler: No such handler\n");
-		return -1;
-	}
-
-	// Remove the entry from the list
-	*snitch = victim->next;
-	delete victim;
-
-	return 0;
-}
-
 
 /**************************************************************************************/
 int vrpn_Router_Remote::handle_change_message(void *userdata,
@@ -738,8 +608,6 @@ int vrpn_Router_Remote::handle_change_message(void *userdata,
 	// We can't call it "this" (reserved keyword), so we call it "me".
 	// Get ptr to the data block holding the callback function and its data.
 	vrpn_Router_Remote* me = (vrpn_Router_Remote *)userdata;
-	vrpn_ROUTERCHANGELIST* handlerBlockPtr = me->change_list;
-
 
 	// Unpack the message from the series of chars into the
 	// data structure for this message type.  
@@ -753,151 +621,10 @@ int vrpn_Router_Remote::handle_change_message(void *userdata,
 
 	// Go down the list of callbacks that have been registered.
 	// Fill in the parameters and call each.
-	while (handlerBlockPtr != NULL) {
-		handlerBlockPtr->handler(handlerBlockPtr->userdata, cp);
-		handlerBlockPtr = handlerBlockPtr->next;
-	}
+	me->d_change_list.call_handlers(cp);
 
 	return 0;
 }
-
-#endif
-
-
-
-
-
-/**************************************************************************************/
-/**************************************************************************************/
-/**************************************************************************************/
-
-
-
-#if 0
-// SINGLE CALLBACK NAME MESSAGE CODE
-
-
-/**************************************************************************************/
-int vrpn_Router_Remote::register_name_handler(void *userdata,
-			vrpn_ROUTERNAMEHANDLER handler)
-{
-	// Store a pointer to the desired handler function for this 
-	// message type.  Also save a word of data (userdata) to be
-	// passed on when the handler is invoked.  
-	name_block.handler  = handler;
-	name_block.userdata = userdata;
-
-	return 0;
-}
-
-
-/**************************************************************************************/
-int vrpn_Router_Remote::unregister_name_handler(void *userdata,
-			vrpn_ROUTERNAMEHANDLER handler)
-{
-	// Force the ptr to the callback function for this message type
-	// to be null.
-	name_block.handler  = NULL;
-
-	return 0;
-}
-
-
-/**************************************************************************************/
-int vrpn_Router_Remote::handle_name_message(void *userdata, vrpn_HANDLERPARAM p)
-{
-	// Get data for this message type into a struct.
-	vrpn_ROUTERNAMECB	cp;
-	decode_name_message( p, cp );
-
-	
-	// Only static member functions can be passed as pointers,
-	// so the "this" pointer is passed in "userdata".  
-	// We can't call it "this" (reserved keyword), so we call it "me".
-	// Get ptr to the data block holding the callback function and its data.
-	vrpn_Router_Remote *me = (vrpn_Router_Remote *)userdata;
-	vrpn_ROUTERNAMELIST *handlerBlockPtr = &(me->name_block);
-
-	// Call callback, if one was registered.
-	// Fill in the parameters and call it.
-	if( handlerBlockPtr->handler ) {
-		handlerBlockPtr->handler( handlerBlockPtr->userdata, cp );
-	}
-
-	return 0;
-}
-
-
-
-
-#else
-// NEW NAME MESSAGE CALLBACK CODE
-
-
-
-/**************************************************************************************/
-int vrpn_Router_Remote::register_name_handler(void *userdata,
-			vrpn_ROUTERNAMEHANDLER handler)
-{
-	vrpn_ROUTERNAMELIST	*new_entry;
-
-	// Ensure that the handler is non-NULL
-	if (handler == NULL) {
-		fprintf(stderr,
-			"vrpn_ROUTER_Remote::register_handler: NULL handler\n");
-		return -1;
-	}
-
-	// Allocate and initialize the new entry
-	if ( (new_entry = new vrpn_ROUTERNAMELIST) == NULL) {
-		fprintf(stderr,
-			"vrpn_Router_Remote::register_handler: Out of memory\n");
-		return -1;
-	}
-	new_entry->handler = handler;
-	new_entry->userdata = userdata;
-
-	// Add this handler to the chain at the beginning (don't check to see
-	// if it is already there, since duplication is okay).
-	new_entry->next = name_list;
-	name_list = new_entry;
-
-	return 0;
-}
-
-
-/**************************************************************************************/
-int vrpn_Router_Remote::unregister_name_handler(void *userdata,
-			vrpn_ROUTERNAMEHANDLER handler)
-{
-	// The pointer at *snitch points to victim
-	vrpn_ROUTERNAMELIST	*victim, **snitch;
-
-	// Find a handler with this registry in the list (any one will do,
-	// since all duplicates are the same).
-	snitch = &name_list;
-	victim = *snitch;
-	while ( (victim != NULL) &&
-		( (victim->handler != handler) ||
-		  (victim->userdata != userdata) )) {
-		snitch = &( (*snitch)->next );
-		victim = victim->next;
-	}
-
-	// Make sure we found one
-	if (victim == NULL) {
-		fprintf(stderr,
-		   "vrpn_Router_Remote::unregister_handler: No such handler\n");
-		return -1;
-	}
-
-	// Remove the entry from the list
-	*snitch = victim->next;
-	delete victim;
-
-	return 0;
-}
-
 
 /**************************************************************************************/
 int vrpn_Router_Remote::handle_name_message(void *userdata,
@@ -908,8 +635,6 @@ int vrpn_Router_Remote::handle_name_message(void *userdata,
 	// We can't call it "this" (reserved keyword), so we call it "me".
 	// Get ptr to the data block holding the callback function and its data.
 	vrpn_Router_Remote* me = (vrpn_Router_Remote *)userdata;
-	vrpn_ROUTERNAMELIST* handlerBlockPtr = me->name_list;
-
 
 	// Unpack the message from the series of chars into the
 	// data structure for this message type.  
@@ -919,16 +644,8 @@ int vrpn_Router_Remote::handle_name_message(void *userdata,
 
 	// Go down the list of callbacks that have been registered.
 	// Fill in the parameters and call each.
-	while (handlerBlockPtr != NULL) {
-		handlerBlockPtr->handler(handlerBlockPtr->userdata, cp);
-		handlerBlockPtr = handlerBlockPtr->next;
-	}
+	me->d_name_list.call_handlers(cp);
 
 	return 0;
 }
-
-#endif
-
-
-
 

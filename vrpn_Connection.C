@@ -4364,7 +4364,7 @@ int vrpn_Endpoint::setControlMsgTimeOffset(const timeval * offset)
     return 0;
 }
 
-void VRPN_CALLBACK setClockOffset( void *userdata, const vrpn_CLOCKCB& info )
+void VRPN_CALLBACK setClockOffset( void *userdata, const vrpn_CLOCKCB info )
 {
 #if 0
   cerr << "clock offset is " << vrpn_TimevalMsecs(info.tvClockOffset) 

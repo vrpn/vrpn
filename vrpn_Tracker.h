@@ -371,70 +371,47 @@ class VRPN_API vrpn_Tracker_Remote: public vrpn_Tracker {
 	// **** to get workspace information ****
 	// (un)Register a callback handler to handle a workspace change
 	virtual int register_change_handler(void *userdata,
-		vrpn_TRACKERWORKSPACECHANGEHANDLER handler);
+		vrpn_TRACKERWORKSPACECHANGEHANDLER handler) {
+	  return d_workspacechange_list.register_handler(userdata, handler);
+	};
 	virtual int unregister_change_handler(void *userdata,
-		vrpn_TRACKERWORKSPACECHANGEHANDLER handler);
+		vrpn_TRACKERWORKSPACECHANGEHANDLER handler) {
+	  return d_workspacechange_list.unregister_handler(userdata, handler);
+	}
 
 	// (un)Register a callback handler to handle a tracker2room change
 	virtual int register_change_handler(void *userdata,
-		vrpn_TRACKERTRACKER2ROOMCHANGEHANDLER handler);
+		vrpn_TRACKERTRACKER2ROOMCHANGEHANDLER handler) {
+	  return d_tracker2roomchange_list.register_handler(userdata, handler);
+	};
 	virtual int unregister_change_handler(void *userdata,
-		vrpn_TRACKERTRACKER2ROOMCHANGEHANDLER handler);
+		vrpn_TRACKERTRACKER2ROOMCHANGEHANDLER handler) {
+	  return d_tracker2roomchange_list.unregister_handler(userdata, handler);
+	};
 
   protected:
-	typedef	struct vrpn_RTCS {
-		void				*userdata;
-		vrpn_TRACKERCHANGEHANDLER	handler;
-		struct vrpn_RTCS		*next;
-	} vrpn_TRACKERCHANGELIST;
-	vrpn_TRACKERCHANGELIST	*change_list[vrpn_TRACKER_MAX_SENSOR_LIST];
+    // Callbacks with one per sensor (plus one for "all")
+    vrpn_Callback_List<vrpn_TRACKERCB>	  d_change_list[vrpn_TRACKER_MAX_SENSOR_LIST];
+    vrpn_Callback_List<vrpn_TRACKERVELCB> d_velchange_list[vrpn_TRACKER_MAX_SENSOR_LIST];
+    vrpn_Callback_List<vrpn_TRACKERACCCB> d_accchange_list[vrpn_TRACKER_MAX_SENSOR_LIST];
+    vrpn_Callback_List<vrpn_TRACKERUNIT2SENSORCB>   d_unit2sensorchange_list[vrpn_TRACKER_MAX_SENSOR_LIST];
 
-	typedef	struct vrpn_RTVCS {
-		void				*userdata;
-		vrpn_TRACKERVELCHANGEHANDLER	handler;
-		struct vrpn_RTVCS		*next;
-	} vrpn_TRACKERVELCHANGELIST;
-	vrpn_TRACKERVELCHANGELIST *velchange_list[vrpn_TRACKER_MAX_SENSOR_LIST];
+    // Callbacks that are one per tracker
+    vrpn_Callback_List<vrpn_TRACKERTRACKER2ROOMCB>  d_tracker2roomchange_list;
+    vrpn_Callback_List<vrpn_TRACKERWORKSPACECB>	    d_workspacechange_list;
 
-	typedef	struct vrpn_RTACS {
-		void				*userdata;
-		vrpn_TRACKERACCCHANGEHANDLER	handler;
-		struct vrpn_RTACS		*next;
-	} vrpn_TRACKERACCCHANGELIST;
-	vrpn_TRACKERACCCHANGELIST *accchange_list[vrpn_TRACKER_MAX_SENSOR_LIST];
-
-	typedef struct vrpn_RTT2RCS {
-		void				*userdata;
-		vrpn_TRACKERTRACKER2ROOMCHANGEHANDLER handler;
-		struct vrpn_RTT2RCS		*next;
-	} vrpn_TRACKERTRACKER2ROOMCHANGELIST;
-	vrpn_TRACKERTRACKER2ROOMCHANGELIST *tracker2roomchange_list;
-
-	typedef struct vrpn_RTU2SCS {
-		void                            *userdata;
-		vrpn_TRACKERUNIT2SENSORCHANGEHANDLER handler;
-		struct vrpn_RTU2SCS		*next;
-	} vrpn_TRACKERUNIT2SENSORCHANGELIST;
-	vrpn_TRACKERUNIT2SENSORCHANGELIST *unit2sensorchange_list[vrpn_TRACKER_MAX_SENSOR_LIST];
-	
-	typedef struct vrpn_RTWSCS {
-		void				*userdata;
-		vrpn_TRACKERWORKSPACECHANGEHANDLER handler;
-		struct vrpn_RTWSCS	*next;
-	} vrpn_TRACKERWORKSPACECHANGELIST;
-	vrpn_TRACKERWORKSPACECHANGELIST *workspacechange_list;
-
-	static int VRPN_CALLBACK handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
-	static int VRPN_CALLBACK handle_vel_change_message(void *userdata,
-			vrpn_HANDLERPARAM p);
-	static int VRPN_CALLBACK handle_acc_change_message(void *userdata,
-			vrpn_HANDLERPARAM p);
-	static int VRPN_CALLBACK handle_tracker2room_change_message(void *userdata,
-			vrpn_HANDLERPARAM p);
-	static int VRPN_CALLBACK handle_unit2sensor_change_message(void *userdata,
-                        vrpn_HANDLERPARAM p);
-	static int VRPN_CALLBACK handle_workspace_change_message(void *userdata,
-			vrpn_HANDLERPARAM p);
+    static int VRPN_CALLBACK handle_change_message(void *userdata,
+		    vrpn_HANDLERPARAM p);
+    static int VRPN_CALLBACK handle_vel_change_message(void *userdata,
+		    vrpn_HANDLERPARAM p);
+    static int VRPN_CALLBACK handle_acc_change_message(void *userdata,
+		    vrpn_HANDLERPARAM p);
+    static int VRPN_CALLBACK handle_tracker2room_change_message(void *userdata,
+		    vrpn_HANDLERPARAM p);
+    static int VRPN_CALLBACK handle_unit2sensor_change_message(void *userdata,
+                    vrpn_HANDLERPARAM p);
+    static int VRPN_CALLBACK handle_workspace_change_message(void *userdata,
+		    vrpn_HANDLERPARAM p);
 };
 
 #endif

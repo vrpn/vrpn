@@ -249,8 +249,6 @@ typedef	struct _vrpn_BUTTONCB {
 	struct timeval	msg_time;	// Time of button press/release
 	vrpn_int32	button;		// Which button (numbered from zero)
 	vrpn_int32	state;		// button state (0 = off, 1 = on) 
-	    // If the button is the type of vrpn_Button_PinchGlove there are up to 5
-	    // different kinds of on state since it knows which fingers are touching
 } vrpn_BUTTONCB;
 typedef void (VRPN_CALLBACK *vrpn_BUTTONCHANGEHANDLER)(void *userdata,
 					 const vrpn_BUTTONCB info);
@@ -272,18 +270,16 @@ class VRPN_API vrpn_Button_Remote: public vrpn_Button {
 
 	// (un)Register a callback handler to handle a button state change
 	virtual int register_change_handler(void *userdata,
-		vrpn_BUTTONCHANGEHANDLER handler);
+			vrpn_BUTTONCHANGEHANDLER handler) {
+	  return d_callback_list.register_handler(userdata, handler);
+	};
 	virtual int unregister_change_handler(void *userdata,
-		vrpn_BUTTONCHANGEHANDLER handler);
+			vrpn_BUTTONCHANGEHANDLER handler) {
+	  return d_callback_list.unregister_handler(userdata, handler);
+	}
 
   protected:
-	typedef	struct vrpn_RBCS {
-		void				*userdata;
-		vrpn_BUTTONCHANGEHANDLER	handler;
-		struct vrpn_RBCS		*next;
-	} vrpn_BUTTONCHANGELIST;
-	vrpn_BUTTONCHANGELIST	*change_list;
-
+	vrpn_Callback_List<vrpn_BUTTONCB> d_callback_list;
 	static int VRPN_CALLBACK handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
 };
 

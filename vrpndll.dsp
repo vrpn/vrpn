@@ -68,7 +68,8 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "VRPNDLL_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../quat" /I "../isense" /I "../Dtrack" /I "C:\Program Files\National Instruments\NI-DAQ\Include" /I "D:\Program Files\National Instruments\NI-DAQ\Include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "VRPNDLL_EXPORTS" /YX /FD /GZ /c /Tp
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../quat" /I "../isense" /I "../Dtrack" /I "C:\Program Files\National Instruments\NI-DAQ\Include" /I "D:\Program Files\National Instruments\NI-DAQ\Include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "VRPNDLL_EXPORTS" /FD /GZ /c /Tp
+# SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"

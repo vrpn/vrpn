@@ -179,8 +179,7 @@ void vrpn_Clock_Server::mainloop () {};
 vrpn_Clock_Remote::vrpn_Clock_Remote(const char * name, vrpn_float64 dFreq, 
 				     vrpn_int32 cOffsetWindow ) : 
   vrpn_Clock ("clockServer",
-              vrpn_get_connection_by_name (name, NULL, 0L, NULL, 0L, -1)), 
-  change_list(NULL)
+              vrpn_get_connection_by_name (name, NULL, 0L, NULL, 0L, -1))
 {
   char rgch [50];
   int i;
@@ -253,16 +252,6 @@ vrpn_Clock_Remote::vrpn_Clock_Remote(const char * name, vrpn_float64 dFreq,
 
 vrpn_Clock_Remote::~vrpn_Clock_Remote (void)
 {
-  // Release any handlers that have not been unregistered
-  // by higher-level code.
-  vrpn_CLOCKSYNCLIST	*curr, *next;
-  curr = change_list;
-  while (curr != NULL) {
-    next = curr->next;
-    delete curr;
-    curr = next;
-  }
-
   // must remove a reference from the connection, because
   //  we call vrpn_get_connection_by_name in the constructor.
   if (d_connection) {
@@ -540,7 +529,6 @@ void vrpn_Clock_Remote::mainloop (const struct timeval *timeout)
       // now call any user callbacks that want to know the time diff
       // when syncs occur
       vrpn_CLOCKCB cs;
-      vrpn_CLOCKSYNCLIST *pHandlerInfo=change_list;
       
       cs.tvClockOffset = tvFullClockOffset;
       cs.tvHalfRoundTrip = tvMinHalfRoundTrip;
@@ -555,71 +543,9 @@ void vrpn_Clock_Remote::mainloop (const struct timeval *timeout)
 #endif
 
       // go thru list of user specified clock sync callbacks
-      while (pHandlerInfo!=NULL) {
-	pHandlerInfo->handler(pHandlerInfo->userdata, cs);
-	pHandlerInfo = pHandlerInfo->next;
-      }
+      d_callback_list.call_handlers(cs);
     }
   }
-}
-
-int vrpn_Clock_Remote::register_clock_sync_handler(void *userdata,
-						   vrpn_CLOCKSYNCHANDLER handler)
-{
-  vrpn_CLOCKSYNCLIST	*new_entry;
-  
-  // Ensure that the handler is non-NULL
-  if (handler == NULL) {
-    fprintf(stderr, "vrpn_Clock_Remote::register_clock_sync_handler:" 
-	 " NULL handler\n");
-    return -1;
-  }
-  
-  // Allocate and initialize the new entry
-  if ( (new_entry = new vrpn_CLOCKSYNCLIST) == NULL) {
-    fprintf(stderr, "vrpn_Clock_Remote::register_clock_sync_handler:" 
-	 " out of memory\n");
-    return -1;
-  }
-  new_entry->handler = handler;
-  new_entry->userdata = userdata;
-  
-  // Add this handler to the chain at the beginning (don't check to see
-  // if it is already there, since duplication is okay).
-  new_entry->next = change_list;
-  change_list = new_entry;
-  
-  return 0;
-}
-
-int vrpn_Clock_Remote::unregister_clock_sync_handler(void *userdata,
-						     vrpn_CLOCKSYNCHANDLER handler)
-{
-  // The pointer at *snitch points to victim
-  vrpn_CLOCKSYNCLIST	*victim, **snitch;
-  
-  // Find a handler with this registry in the list (any one will do,
-  // since all duplicates are the same).
-  snitch = &change_list;
-  victim = *snitch;
-  while ( (victim != NULL) &&
-	  ( (victim->handler != handler) ||
-	    (victim->userdata != userdata) )) {
-    snitch = &( (*snitch)->next );
-    victim = victim->next;
-  }
-  
-  // Make sure we found one
-  if (victim == NULL) {
-    fprintf(stderr, "vrpn_Clock_Remote::unregister_handler: No such handler\n");
-    return -1;
-  }
-  
-  // Remove the entry from the list
-  *snitch = victim->next;
-  delete victim;
-  
-  return 0;
 }
 
 void vrpn_Clock_Remote::fullSync (void) {
@@ -889,7 +815,6 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
   // now call any user callbacks that want to know the time diff
   // when syncs occur
   vrpn_CLOCKCB cs;
-  vrpn_CLOCKSYNCLIST *pHandlerInfo=me->change_list;
   
   cs.tvClockOffset =  me->rgtvClockOffset[iMin];
   cs.tvHalfRoundTrip = me->rgtvHalfRoundTrip[iMin];
@@ -903,10 +828,7 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
   //  printTime("used", cs.tvClockOffset);
   
   // go thru list of user specified clock sync callbacks
-  while (pHandlerInfo!=NULL) {
-    pHandlerInfo->handler(pHandlerInfo->userdata, cs);
-    pHandlerInfo = pHandlerInfo->next;
-  }
+  me->d_callback_list.call_handlers(cs);
   
   return 0;
 }

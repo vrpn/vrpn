@@ -57,21 +57,20 @@ class VRPN_API vrpn_Text_Receiver: public vrpn_BaseClass {
 	vrpn_Text_Receiver (const char * name, vrpn_Connection * c = NULL);
 	virtual ~vrpn_Text_Receiver (void);
 	virtual int register_message_handler(void *userdata,
-                vrpn_TEXTHANDLER handler);
+		vrpn_TEXTHANDLER handler) {
+	  return d_callback_list.register_handler(userdata, handler);
+	};
+
         virtual int unregister_message_handler(void *userdata,
-                vrpn_TEXTHANDLER handler);
+		vrpn_TEXTHANDLER handler) {
+	  return d_callback_list.unregister_handler(userdata, handler);
+	}
 
 	virtual void mainloop(void) { if (d_connection) { d_connection->mainloop(); }; client_mainloop(); };
 
   protected:
 	static int VRPN_CALLBACK handle_message (void * userdata, vrpn_HANDLERPARAM p);
-	typedef struct vrpn_TCS {
-                void                    *userdata;
-                vrpn_TEXTHANDLER        handler;
-                struct vrpn_TCS         *next;
-        } vrpn_TEXTMESSAGELIST;
-
-        vrpn_TEXTMESSAGELIST            *change_list;
+	vrpn_Callback_List<vrpn_TEXTCB>	d_callback_list;
 
 	/// No types to register beyond the text, which is done in BaseClass.
 	virtual int register_types(void) { return 0; };

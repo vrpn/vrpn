@@ -1,3 +1,7 @@
+2004-12-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* testimager_server.cpp : Guarded min() definition.
+
 2004-12-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Makefile : Makes testimager_server as well.

@@ -267,4 +267,113 @@ class VRPN_API vrpn_BaseClass : virtual public vrpn_BaseClassUnique {
 };
 
 // End of defined VRPN_BASECLASS for vrpn_BaseClass.h
+
+//---------------------------------------------------------------
+// Within VRPN (and other libraries), it is wise to avoid using the
+// Standard Template Library.  This is very annoying, but required
+// by the fact that some systems have incompatible versions of STL.
+// This caused problems with any program that uses the GHOST library
+// (which had its own STL on Windows), and I've heard tell of problems
+// with other systems as well.  On the other hand, nothing says that
+// we can't have our OWN template types and use them.  This next type
+// is used to handle callback lists within objects.  It is templated
+// over the struct that is passed to the user callback.
+// See vrpn_Button.h's usage for an example.
+
+// Disables a warning that the class requires DLL linkage to be
+// used by clients of classes that include one: The classes themselves
+// have DLL linkage, the code below asks for (but apparently does not
+// get) DLL linkage, and the DLL-linked test programs work when things
+// are as they are.  Do not use this class outside of a derived class.
+#pragma warning( disable : 4251 )
+template<class CALLBACK_STRUCT> class VRPN_API vrpn_Callback_List {
+public:
+  typedef void (VRPN_CALLBACK *HANDLER_TYPE)(void *userdata, const CALLBACK_STRUCT info);
+
+  /// Call this to add a handler to the list.
+  int register_handler(void *userdata, HANDLER_TYPE handler) {
+	CHANGELIST_ENTRY  *new_entry;
+
+	// Ensure that the handler is non-NULL
+	if (handler == NULL) {
+		fprintf(stderr,"vrpn_Callback_List::register_handler(): NULL handler\n");
+		return -1;
+	}
+
+	// Allocate and initialize the new entry
+	if ( (new_entry = new CHANGELIST_ENTRY) == NULL) {
+		fprintf(stderr,"vrpn_Callback_List::register_handler(): Out of memory\n");
+		return -1;
+	}
+	new_entry->handler = handler;
+	new_entry->userdata = userdata;
+
+	// Add this handler to the chain at the beginning (don't check to see
+	// if it is already there, since duplication is okay).
+	new_entry->next = d_change_list;
+	d_change_list = new_entry;
+
+	return 0;
+  };
+
+  /// Call this to remove a handler from the list (if it exists)
+  int unregister_handler(void *userdata, HANDLER_TYPE handler) {
+	// The pointer at *snitch points to victim
+	CHANGELIST_ENTRY	*victim, **snitch;
+
+	// Find a handler with this registry in the list (any one will do,
+	// since all duplicates are the same).
+	snitch = &d_change_list;
+	victim = *snitch;
+	while ( (victim != NULL) &&
+		( (victim->handler != handler) ||
+		  (victim->userdata != userdata) )) {
+	    snitch = &( (*snitch)->next );
+	    victim = victim->next;
+	}
+
+	// Make sure we found one
+	if (victim == NULL) {
+		fprintf(stderr,
+		   "vrpn_Callback_List::unregister_handler: No such handler\n");
+		return -1;
+	}
+
+	// Remove the entry from the list
+	*snitch = victim->next;
+	delete victim;
+
+	return 0;
+  };
+
+  /// This will pass the referenced parameter as a const to all the callbacks.
+  void call_handlers(const CALLBACK_STRUCT &info) {
+    CHANGELIST_ENTRY *handler = d_change_list;
+    while (handler != NULL) {
+      handler->handler(handler->userdata, info);
+      handler = handler->next;
+    }
+  };
+
+  /// The list starts out empty
+  vrpn_Callback_List() : d_change_list(NULL) {};
+
+  /// Clear the list upon destruction if it is not empty already
+  ~vrpn_Callback_List() {
+    while (d_change_list != NULL) {
+      CHANGELIST_ENTRY *next = d_change_list->next;
+      delete d_change_list;
+      d_change_list = next;
+    }
+  };
+
+protected:
+  typedef struct vrpn_CBS {
+	  void			*userdata;
+	  HANDLER_TYPE		handler;
+	  struct vrpn_CBS	*next;
+  } CHANGELIST_ENTRY;
+  CHANGELIST_ENTRY	*d_change_list;
+};
+
 #endif

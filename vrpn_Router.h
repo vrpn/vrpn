@@ -32,7 +32,6 @@
 #define vrpn_UNKNOWN_CHANNEL	 0
 
 
-
 /**************************************************************************************/
 //************** Users deal with the following *************
 
@@ -134,31 +133,26 @@ class VRPN_API vrpn_Router_Remote: public vrpn_Router {
 	// (un)Register a callback handler function to handle router state change messages
 	// going from server to client.  The client must register a handler in 
 	// order to get any information back from the router server about the router state.
-	virtual int register_change_handler(  void *userdata, vrpn_ROUTERCHANGEHANDLER handler);
-	virtual int unregister_change_handler(void *userdata, vrpn_ROUTERCHANGEHANDLER handler);
-	virtual int register_name_handler(  void *userdata, vrpn_ROUTERNAMEHANDLER handler);
-	virtual int unregister_name_handler(void *userdata, vrpn_ROUTERNAMEHANDLER handler);
+	virtual int register_change_handler(void *userdata, vrpn_ROUTERCHANGEHANDLER handler) {
+	  return d_change_list.register_handler(userdata, handler);
+	};
+	virtual int unregister_change_handler(void *userdata, vrpn_ROUTERCHANGEHANDLER handler) {
+	  return d_change_list.unregister_handler(userdata, handler);
+	};
+
+	virtual int register_name_handler(void *userdata, vrpn_ROUTERNAMEHANDLER handler) {
+	  return d_name_list.register_handler(userdata, handler);
+	};
+	virtual int unregister_name_handler(void *userdata, vrpn_ROUTERNAMEHANDLER handler) {
+	  return d_name_list.unregister_handler(userdata, handler);
+	};
 
   protected:
 
 	static int VRPN_CALLBACK handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
-	typedef	struct vrpn_RCH {
-		void						*userdata;
-		vrpn_ROUTERCHANGEHANDLER	handler;
-		struct vrpn_RCH				*next;
-	} vrpn_ROUTERCHANGELIST;
-	vrpn_ROUTERCHANGELIST	change_block;
-	vrpn_ROUTERCHANGELIST *	change_list;
-
+	vrpn_Callback_List<vrpn_ROUTERCB> d_change_list;
 
 	static int VRPN_CALLBACK handle_name_message(void *userdata, vrpn_HANDLERPARAM p);
-	typedef	struct vrpn_RNH {
-		void					*userdata;
-		vrpn_ROUTERNAMEHANDLER	handler;
-		struct vrpn_RNH				*next;
-	} vrpn_ROUTERNAMELIST;
-	vrpn_ROUTERNAMELIST	  name_block;
-	vrpn_ROUTERNAMELIST	* name_list;
+	vrpn_Callback_List<vrpn_ROUTERNAMECB> d_name_list;
 };
-
 #endif
