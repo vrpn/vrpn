@@ -45,58 +45,27 @@ DWORD ReportInterval=5000;
 // New pixels coming; fill them into the image and tell Glut to redraw.
 void  handle_region_change(void *, const vrpn_IMAGERREGIONCB info)
 {
-    int r,c;	//< Row, Column
-    int ir;		//< Inverted Row
-    int offset,RegionOffset;
-    const vrpn_TempImager_Region* region=info.region;
+    const vrpn_TempImager_Region  *region=info.region;
 
-    int infoLineSize=region->cMax-region->cMin+1;
     vrpn_int32 nCols=g_ti->nCols();
-    vrpn_uint16 uns_pix;
+    vrpn_int32 nRows=g_ti->nRows();
 
     if (!g_ready_for_region) { return; }
 
-    // Copy pixels into the image buffer.  Flip the image over in
-    // Y so that the image coordinates display correctly in OpenGL.
-    for (r = info.region->rMin,RegionOffset=(r-region->rMin)*infoLineSize; r <= region->rMax; r++,RegionOffset+=infoLineSize) {
-		ir = g_ti->nRows() - r - 1;
-		for (c = info.region->cMin; c <= region->cMax; c++) {
-			offset=3 * (c + ir*nCols);
-#if 1
-			// This assumes that the pixels are actually 8-bit values
-			// and will clip if they go above this.  It also writes pixels
-			// from all regions into the image, which is similar to
-			// assuming that there is only one channel.  It also does
-			// not scale or offset the pixels to get them into the
-			// units for the region.
-			uns_pix = region->vals[(c-region->cMin) + RegionOffset];
-#else
-			// This assumes that the pixels are actually 12-bit values
-			// and will clip if they go above this.  It also writes pixels
-			// from all regions into the image, which is similar to
-			// assuming that there is only one channel.  It also does
-			// not scale or offset the pixels to get them into the
-			// units for the region.
-			uns_pix = region->vals[(c-region->cMin) + RegionOffset] >> 4;
-#endif
-			g_image[0 + offset] = uns_pix;
-			g_image[1 + offset] = uns_pix;
-			g_image[2 + offset] = uns_pix;
-		}
+    // Copy pixels into the image buffer.
+    // Flip the image over in Y so that the image coordinates
+    // display correctly in OpenGL.
+    region->decode_unscaled_region_using_base_pointer(g_image, 3, 3*nCols, nRows, true, 3);
+
+    // Tell Glut it is time to draw.  Make sure that we don't post the redisplay
+    // operation more than once by checking to make sure that it has been handled
+    // since the last time we posted it.  If we don't do this check, it gums
+    // up the works with tons of redisplay requests and the program won't
+    // even handle windows events.
+    if (!g_already_posted) {
+      glutPostRedisplay();
+      g_already_posted = true;
     }
-
-    // Capture timing information and print out how many frames per second
-    // are coming across the wire.
-
-  // Tell Glut it is time to draw.  Make sure that we don't post the redisplay
-  // operation more than once by checking to make sure that it has been handled
-  // since the last time we posted it.  If we don't do this check, it gums
-  // up the works with tons of redisplay requests and the program won't
-  // even handle windows events.
-  if (!g_already_posted) {
-    glutPostRedisplay();
-    g_already_posted = true;
-  }
 }
 
 //----------------------------------------------------------------------------
@@ -156,7 +125,7 @@ void myIdleFunc(void)
 
 int main(int argc, char **argv)
 {
-  char	*device_name = "TestImage@localhost:4511";
+  char	*device_name = "TestImage@localhos:4511";
 
   // Open the TempImager client and set the callback
   // for new data and for information about the size of
