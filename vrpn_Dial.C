@@ -204,6 +204,7 @@ vrpn_Dial_Remote::~vrpn_Dial_Remote()
 
 void	vrpn_Dial_Remote::mainloop()
 {
+  client_mainloop();
   if (d_connection) { 
     d_connection->mainloop(); 
   }

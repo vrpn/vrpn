@@ -1,3 +1,7 @@
+2002-04-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Dial.C (vrpn_Dial_Remote::mainloop): Calls client_mainloop()
+
 2002-03-20  Aron Helser  <helser@cs.unc.edu>
 
 	* time_test.dsp: Moved here so it is next to the code it
