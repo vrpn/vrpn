@@ -391,6 +391,22 @@ void vrpn_Tracker_Flock_Slave::get_report(void)
    }
    quat[3] = (double)(rgs[3] * WTF);
 
+   // KEY: the flock is unusual -- most trackers report back the
+   //      transform xfSourceFromSensor, which you can apply
+   //      to points in sensor space to get the coords of those
+   //      points in src space.  The flock is strange, it reports
+   //      the pos of the sensor in the src space (fine), and
+   //      then it reports how to rotate the sensor axes to
+   //      coincide with the src axes -- the inverse of the quat
+   //      needed for xfSrcFromSensor.  So that the flock is 
+   //      consistent with all other trackers, we invert the quat
+   //      here (since we assume quat is normalized, we can form 
+   //      the inverse by rotating about the opp axis)
+   
+   quat[0] = -quat[0];
+   quat[1] = -quat[1];
+   quat[2] = -quat[2];
+
    // all set for this sensor, so cycle
    status = TRACKER_REPORT_READY;
    bufcount = 0;

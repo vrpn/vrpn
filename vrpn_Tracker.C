@@ -8,6 +8,15 @@
 #include <fcntl.h>
 #include <ctype.h>
 
+
+// NOTE: a vrpn tracker must call user callbacks with tracker data (pos and
+//       ori info) which represent the transformation xfSourceFromSensor.
+//       This means that the pos info is the position of the origin of
+//       the sensor coord sys in the source coord sys space, and the
+//       quat represents the orientation of the sensor relative to the
+//       source space (ie, its value rotates the source's axes so that
+//       they coincide with the sensor's)
+
 #ifdef linux
 #include <termios.h>
 #endif

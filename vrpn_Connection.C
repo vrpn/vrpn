@@ -105,7 +105,7 @@ void setClockOffset( void *userdata, const vrpn_CLOCKCB& info ) {
 }
 
 vrpn_Synchronized_Connection::
-vrpn_Synchronized_Connection(unsigned short listen_port_no) :
+ vrpn_Synchronized_Connection(unsigned short listen_port_no) :
   vrpn_Connection(listen_port_no)
 {
    pClockServer = new vrpn_Clock_Server(this);
