@@ -95,7 +95,7 @@ $(OBJ_DIR)/%.o:	%.C
 
 
 
-all:  vrpn_server test_vrpn client_and_server test_mutex
+all:  vrpn_server test_vrpn client_and_server test_mutex test_peerMutex
 # testSharedObject
 
 .PHONY:	vrpn_server
@@ -112,6 +112,9 @@ sample_server:	$(OBJ_DIR)/sample_server
 
 .PHONY:	test_mutex
 test_mutex:	$(OBJ_DIR)/test_mutex
+
+.PHONY:	test_peerMutex
+test_peerMutex:	$(OBJ_DIR)/test_peerMutex
 
 .PHONY:	sample_analog
 sample_analog:	$(OBJ_DIR)/sample_analog
@@ -174,6 +177,12 @@ $(OBJ_DIR)/test_mutex:	$(OBJ_DIR) $(OBJ_DIR)/test_mutex.o \
 		$(OBJ_DIR)/test_mutex.o \
 		-lvrpnserver -lm
 
+$(OBJ_DIR)/test_peerMutex:	$(OBJ_DIR) $(OBJ_DIR)/test_peerMutex.o \
+			$(LIB_DIR)/libvrpnserver.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/test_peerMutex \
+		$(OBJ_DIR)/test_peerMutex.o \
+		-lvrpnserver -lm
+
 $(OBJ_DIR)/sample_analog:	$(OBJ_DIR) $(OBJ_DIR)/sample_analog.o \
 			$(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/sample_analog \
@@ -192,12 +201,14 @@ $(OBJ_DIR):
 
 clean:
 	rm -f $(OBJ_DIR)/*.o $(OBJ_DIR)/vrpn_server $(OBJ_DIR)/forward \
-	$(OBJ_DIR)/text $(OBJ_DIR)/sample_server $(OBJ_DIR)/test_mutex
+	$(OBJ_DIR)/text $(OBJ_DIR)/sample_server $(OBJ_DIR)/test_mutex \
+	$(OBJ_DIR)/test_peerMutex
 
 $(OBJ_DIR)/vrpn.o:	vrpn.C
 $(OBJ_DIR)/forward.o:	forward.C
 $(OBJ_DIR)/text.o:	text.C
 $(OBJ_DIR)/sample_server.o:	sample_server.C
 $(OBJ_DIR)/test_mutex.o:	test_mutex.C
+$(OBJ_DIR)/test_peerMutex.o:	test_peerMutex.C
 $(OBJ_DIR)/sample_analog.o:	sample_analog.C
 
