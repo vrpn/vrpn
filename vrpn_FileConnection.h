@@ -125,12 +125,20 @@ public:
     // returns the timestamp of the earliest in time user message
     timeval get_lowest_user_timestamp();
 
+    // returns the timestamp of the greatest-in-time user message
+    timeval get_highest_user_timestamp();
+
     // returns the name of the file
     const char *get_filename();
 
     // jump_to_time sets the current position to the given elapsed time
+	// return 1 if we got to the specified time and 0 if we didn't
     int jump_to_time(vrpn_float64 newtime);
     int jump_to_time(timeval newtime);
+
+	// jump_to_filetime sets the current position to the given absolute time
+	// return 1 if we got to the specified time and 0 if we didn't
+	int jump_to_filetime( timeval absolute_time );
 
     // Not very useful.
     // Limits the number of messages played out on any one call to mainloop.
@@ -152,6 +160,35 @@ protected:
 protected:
     timeval d_time;  // current time in file
     timeval d_start_time;  // time of first record in file
+    timeval d_earliest_user_time;  // time of first user message
+    vrpn_bool d_earliest_user_time_valid;
+    timeval d_highest_user_time;  // time of last user message
+    vrpn_bool d_highest_user_time_valid;
+
+    // finds the timestamps of the earliest and highest-time user messages
+	void find_superlative_user_times( );  
+	
+	// these are to be used internally when jumping around in the
+	// stream (e.g., for finding the earliest and latest timed
+	// user messages).  They assume 
+	//   1) that only functions such as advance_currentLogEntry, 
+	//      read_entry and manual traversal of d_logHead/d_logTail 
+	//      will be used.
+	// the functions return false if they don't save or restore the bookmark
+	class vrpn_FileBookmark
+	{
+	public:
+		vrpn_FileBookmark( );
+		~vrpn_FileBookmark( );
+		bool valid;
+		timeval oldTime;
+		long int file_pos;  // ftell result
+		vrpn_LOGLIST* oldCurrentLogEntryPtr;  // just a pointer, useful for accum or preload
+		vrpn_LOGLIST* oldCurrentLogEntryCopy;  // a deep copy, useful for no-accum, no-preload
+	};
+	bool store_stream_bookmark( );
+	bool return_to_bookmark( );
+	vrpn_FileBookmark d_bookmark;
 
     // wallclock time at the (beginning of the) last call
     // to mainloop that played back an event
@@ -239,13 +276,13 @@ protected:
     // {{{ Maintains a doubly-linked list structure that keeps
     //     copies of the messages from the file in memory.  If
     //     d_accumulate is false, then there is only ever one entry
-    //     in memory (d_currentLogEntry == d_logHead == d_logTail.
+    //     in memory (d_currentLogEntry == d_logHead == d_logTail).
     //     If d_preload is true, then all of the records from the file
     //     are read into the list in the constructor and we merely step
     //     through memory when playing the streamfile.  If d_preload is
     //     false and d_accumulate is true, then we have all of the
     //     records up the d_currentLogEntry in memory (d_logTail points
-    //     too d_currentLogEntry but not to the last entry in the file
+    //     to d_currentLogEntry but not to the last entry in the file
     //     until we get to the end of the file).
     //     The d_currentLogEntry should always be non-NULL unless we are
     //     past the end of all messages... we will either have preloaded

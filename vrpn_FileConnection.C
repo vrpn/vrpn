@@ -144,6 +144,10 @@ vrpn_File_Connection::vrpn_File_Connection (const char * file_name,
       d_startEntry = d_logHead;
       d_start_time = d_startEntry->data.msg_time;  
       d_time = d_start_time;
+      d_earliest_user_time.tv_sec = d_earliest_user_time.tv_usec = 0;
+      d_earliest_user_time_valid = false;
+      d_highest_user_time.tv_sec = d_highest_user_time.tv_usec = 0;
+      d_highest_user_time_valid = false;
     } else {
       fprintf(stderr, "vrpn_File_Connection: Can't read first message\n");
       connectionStatus = BROKEN;
@@ -211,6 +215,7 @@ vrpn_File_Connection::~vrpn_File_Connection (void)
 // }}}
 // {{{ jump_to_time
 
+// newtime is an elapsed time from the start of the file
 int vrpn_File_Connection::jump_to_time(vrpn_float64 newtime)
 {
     return jump_to_time(vrpn_MsecsTimeval(newtime * 1000));
@@ -220,9 +225,13 @@ int vrpn_File_Connection::jump_to_time(vrpn_float64 newtime)
 // time) then reset back to the beginning.  Whether or not we did
 // that, search forwards until we get to or past the time we are
 // searching for.
+// newtime is an elapsed time from the start of the file
 int vrpn_File_Connection::jump_to_time(timeval newtime)
 {
-    d_time = vrpn_TimevalSum(d_start_time, newtime);
+	if( d_earliest_user_time_valid )
+	{  d_time = vrpn_TimevalSum( d_earliest_user_time, newtime );  }
+	else
+	{  d_time = vrpn_TimevalSum( d_start_time, newtime );  } // XXX get rid of this option - dtm
     
     // If the time is earlier than where we are, or if we have
     // run past the end (no current entry), jump back to
@@ -246,16 +255,25 @@ int vrpn_File_Connection::jump_to_time(timeval newtime)
 }
 
 
+int vrpn_File_Connection::jump_to_filetime( timeval absolute_time )
+{
+	if( d_earliest_user_time_valid )
+	{  return jump_to_time( vrpn_TimevalDiff( absolute_time, d_earliest_user_time ) );  }
+	else
+	{  return jump_to_time( vrpn_TimevalDiff( absolute_time, d_start_time ) );  }  // XX get rid of this option - dtm
+}
+
+
 // }}}
 // {{{
-
 void vrpn_File_Connection::limit_messages_played_back (vrpn_int32 limit) {
   d_max_message_playback = limit;
 }
 
+
+
 // }}}
 // {{{ vrpn_File_Connection::FileTime_Accumulator
-
 vrpn_File_Connection::FileTime_Accumulator::FileTime_Accumulator()
     : d_replay_rate( 1.0 )
 {
@@ -306,6 +324,9 @@ void vrpn_File_Connection::FileTime_Accumulator::reset_at_time(
     d_filetime_accum_since_last_playback.tv_usec = 0;
     d_time_of_last_accum = now_time;
 }
+// {{{ end vrpn_File_Connection::FileTime_Accumulator
+// }}}
+
 
 
 // }}}
@@ -525,7 +546,10 @@ int vrpn_File_Connection::play_to_time(vrpn_float64 end_time)
 // plays to an elapsed end_time
 int vrpn_File_Connection::play_to_time(timeval end_time)
 {
-    return play_to_filetime(vrpn_TimevalSum(d_start_time, end_time));
+	if( d_earliest_user_time_valid )
+	{  return play_to_filetime( vrpn_TimevalSum( d_earliest_user_time, end_time ) );  }
+	else
+	{  return play_to_filetime( vrpn_TimevalSum( d_start_time, end_time ) );  }
 }
 
 
@@ -606,6 +630,7 @@ int vrpn_File_Connection::playone()
     }
 }
 
+
 // plays at most one entry which comes before end_filetime
 // returns
 //   -1 on error (including EOF, call eof() to test)
@@ -677,9 +702,9 @@ int vrpn_File_Connection::playone_to_filetime( timeval end_filetime )
     return advance_currentLogEntry();
 }
 
+
 // Advance to next entry.  If there is no next entry, and if we have
 // not preloaded, then try to read one in.
-
 int vrpn_File_Connection::advance_currentLogEntry(void)
 {
     d_currentLogEntry = d_currentLogEntry->next;
@@ -706,96 +731,251 @@ timeval vrpn_File_Connection::get_length()
 {
     timeval len = {0, 0};
 
-    // If we've not preloaded, then we need to
-    // do a loop through the whole file to find out how long it is.  Otherwise,
-    // just check the difference between the times for the last message and
-    // the first message in the log.
-
-    if (d_preload) {
-      if (d_logHead && d_logTail) {
-	  len = vrpn_TimevalDiff(d_logTail->data.msg_time,
-				 d_start_time);
-      }
-    } else {
-
-      // Remember where we were when we asked this question
-      timeval time_to_come_back_to = d_time;
-
-      reset();
-      if (d_logHead != NULL) {
-	// Go to the beginning of the file and find out when it
-	// started.
-	timeval start = d_logHead->data.msg_time;
-
-	// Go to the end and find out what time it is
-	timeval stop;
-	do {
-	  stop = d_logHead->data.msg_time;
-	} while (advance_currentLogEntry() == 0);
-
-	len = vrpn_TimevalDiff(stop, start);
-      }
-
-      // We have our value.  Set it and go back where
-      // we came from, but don't play the records along
-      // the way.  Make sure that we or the routines we
-      // call set both the current pointer and the d_time
-      // to the correct value.
-      jump_to_time(time_to_come_back_to);
+    if( !d_earliest_user_time_valid || !d_highest_user_time_valid )
+    {
+        this->get_lowest_user_timestamp( );
+        this->get_highest_user_timestamp( );
     }
 
+    len = vrpn_TimevalDiff( d_highest_user_time, d_earliest_user_time );
     return len;
 }
 
 
 timeval vrpn_File_Connection::get_lowest_user_timestamp()
 {
+    if( !d_earliest_user_time_valid ) find_superlative_user_times( );
+    return d_earliest_user_time;
+}
+
+
+timeval vrpn_File_Connection::get_highest_user_timestamp()
+{
+    if( !d_highest_user_time_valid ) find_superlative_user_times( );
+    return d_highest_user_time;
+}
+
+
+void vrpn_File_Connection::find_superlative_user_times( )
+{
+    timeval high = {LONG_MIN, LONG_MIN};
     timeval low = {LONG_MAX, LONG_MAX};
-
+    
     // Remember where we were when we asked this question
-    timeval time_to_come_back_to = d_time;
-
+    bool retval = store_stream_bookmark( );
+	if( retval == false )
+	{
+#ifdef VERBOSE
+		printf( "vrpn_File_Connection::find_superlative_user_times:  didn't successfully save bookmark.\n" );
+#endif
+		return;
+	}
+    
     // Go to the beginning of the file and then run through all
-    // of the messages to find the one with the lowest value
+    // of the messages to find the one with the lowest/highest value
     reset();
     do {
-      if ( (d_currentLogEntry->data.type >= 0) &&
-	    vrpn_TimevalGreater(low, d_currentLogEntry->data.msg_time)) {
-	low = d_currentLogEntry->data.msg_time;
-      }
-    } while (advance_currentLogEntry() == 0);
-
+        if( d_currentLogEntry && (d_currentLogEntry->data.type >= 0)  )
+        {
+            if( vrpn_TimevalGreater( d_currentLogEntry->data.msg_time, high ) ) 
+            {
+                high = d_currentLogEntry->data.msg_time;
+            }
+            if( vrpn_TimevalGreater(low, d_currentLogEntry->data.msg_time ) )
+            {
+                low = d_currentLogEntry->data.msg_time;
+            }
+        }
+    } while( d_currentLogEntry && ( advance_currentLogEntry( ) == 0 ) );
+    
     // We have our value.  Set it and go back where
     // we came from, but don't play the records along
-    // the way.  Make sure that we or the routines we
-    // call set both the current pointer and the d_time
-    // to the correct value.
-    jump_to_time(time_to_come_back_to);
+    // the way.
+    retval = return_to_bookmark( );
+	if( retval == false )
+	{
+		//  oops.  we've really screwed things up.
+		fprintf( stderr, "vrpn_File_Connection::find_superlative_user_times messed up the location in the file stream.\n" );
+		reset( );
+		return;
+	}
+    
+    if( high.tv_sec != LONG_MIN ) // we found something
+    {
+        d_highest_user_time = high;
+        d_highest_user_time_valid = true;
+    }
+#ifdef VERBOSE
+    else
+    {
+        fprintf( stderr, "vrpn_File_Connection::find_superlative_user_times:  did not find a highest-time user message\n"
+    }
+#endif
+    
+    if( low.tv_sec != LONG_MAX ) // we found something
+    {
+        d_earliest_user_time = low;
+        d_earliest_user_time_valid = true;
+    }
+#ifdef VERBOSE
+    else
+    {
+        fprintf( stderr, "vrpn_File_Connection::find_superlative_user_times:  did not find an earliest user message\n"
+    }
+#endif
 
-    return low;
+} // end find_superlative_user_times
+
+
+vrpn_File_Connection::vrpn_FileBookmark::vrpn_FileBookmark( )
+{
+	valid = false;
+	file_pos = -1;
+	oldTime.tv_sec = 0;
+	oldTime.tv_usec = 0;
+	oldCurrentLogEntryPtr = NULL;
+	oldCurrentLogEntryCopy = new vrpn_LOGLIST( );
+	if( oldCurrentLogEntryCopy == NULL )
+	{
+		fprintf( stderr, "Out of memory error:  vrpn_File_Connection::vrpn_FileBookmark\n" );
+		return;
+	}
+	oldCurrentLogEntryCopy->next = oldCurrentLogEntryCopy->prev = NULL;
+	oldCurrentLogEntryCopy->data.buffer = NULL;
 }
+
+
+vrpn_File_Connection::vrpn_FileBookmark::~vrpn_FileBookmark( )
+{
+	if( oldCurrentLogEntryCopy == NULL ) return;
+	if( oldCurrentLogEntryCopy->data.buffer != NULL )
+		delete (char*) (oldCurrentLogEntryCopy->data.buffer);
+	delete oldCurrentLogEntryCopy;
+}
+
+
+bool vrpn_File_Connection::store_stream_bookmark( )
+{
+	if( d_preload )
+	{
+		// everything is already in memory, so just remember where we were
+		d_bookmark.oldCurrentLogEntryPtr = d_currentLogEntry;
+		d_bookmark.oldTime = d_time;
+	}
+	else if( d_accumulate ) // but not pre-load
+	{
+		// our current location will remain in memory
+		d_bookmark.oldCurrentLogEntryPtr = d_currentLogEntry;
+		d_bookmark.file_pos = ftell( d_file );
+		d_bookmark.oldTime = d_time;
+	}
+	else // !preload and !accumulate
+	{
+		if( d_bookmark.oldCurrentLogEntryCopy == NULL )
+		{
+#ifdef VERBOSE
+			printf( "vrpn_File_Connection::store_stream_bookmark:  NULL oldCurrentLogEntryCopy\n" )
+#endif
+			return false;
+		}
+		d_bookmark.oldTime = d_time;
+		d_bookmark.file_pos = ftell( d_file );
+		d_bookmark.oldCurrentLogEntryCopy->next = d_currentLogEntry->next;
+		d_bookmark.oldCurrentLogEntryCopy->prev = d_currentLogEntry->prev;
+		d_bookmark.oldCurrentLogEntryCopy->data.type = d_currentLogEntry->data.type;
+		d_bookmark.oldCurrentLogEntryCopy->data.sender = d_currentLogEntry->data.sender;
+		d_bookmark.oldCurrentLogEntryCopy->data.msg_time = d_currentLogEntry->data.msg_time;
+		d_bookmark.oldCurrentLogEntryCopy->data.payload_len = d_currentLogEntry->data.payload_len;
+		if( d_bookmark.oldCurrentLogEntryCopy->data.buffer != NULL ) 
+		{  delete (void*) d_bookmark.oldCurrentLogEntryCopy->data.buffer;  }
+		d_bookmark.oldCurrentLogEntryCopy->data.buffer = new char[d_currentLogEntry->data.payload_len];
+		if( d_bookmark.oldCurrentLogEntryCopy->data.buffer == NULL )
+		{  
+			d_bookmark.valid = false;
+			return false;  
+		}
+		memcpy( (char*) d_bookmark.oldCurrentLogEntryCopy->data.buffer, 
+				 d_currentLogEntry->data.buffer, d_currentLogEntry->data.payload_len );
+	}
+	d_bookmark.valid = true;
+	return true;
+}
+
+
+bool vrpn_File_Connection::return_to_bookmark( )
+{
+	int retval = 0;
+	if( !d_bookmark.valid ) return false;
+	if( d_preload )
+	{
+		d_time = d_bookmark.oldTime;
+		d_currentLogEntry = d_bookmark.oldCurrentLogEntryPtr;
+	}
+	else if( d_accumulate ) // but not pre-load
+	{
+		d_time = d_bookmark.oldTime;
+		d_currentLogEntry = d_bookmark.oldCurrentLogEntryPtr;
+		retval |= fseek( d_file, d_bookmark.file_pos, SEEK_SET );
+	}
+	else // !preload and !accumulate
+	{
+		if( d_bookmark.oldCurrentLogEntryCopy == NULL )
+		{
+#ifdef VERBOSE
+			printf( "vrpn_File_Connection::return_to_bookmark:  NULL oldCurrentLogEntryCopy\n" )
+#endif
+			return false;
+		}
+		char* newBuffer = new char[d_bookmark.oldCurrentLogEntryCopy->data.payload_len];
+		if( newBuffer == NULL )
+		{ // make sure we can allocate the memory before we do anything else
+			return false;
+		}
+		d_time = d_bookmark.oldTime;
+		retval |= fseek( d_file, d_bookmark.file_pos, SEEK_SET );
+		d_currentLogEntry->next = d_bookmark.oldCurrentLogEntryCopy->next;
+		d_currentLogEntry->prev = d_bookmark.oldCurrentLogEntryCopy->prev;
+		d_currentLogEntry->data.type = d_bookmark.oldCurrentLogEntryCopy->data.type;
+		d_currentLogEntry->data.sender = d_bookmark.oldCurrentLogEntryCopy->data.sender;
+		d_currentLogEntry->data.msg_time = d_bookmark.oldCurrentLogEntryCopy->data.msg_time;
+		d_currentLogEntry->data.payload_len = d_bookmark.oldCurrentLogEntryCopy->data.payload_len;
+		char* temp = (char*) d_currentLogEntry->data.buffer;
+		d_currentLogEntry->data.buffer = newBuffer;
+		memcpy( (char*) d_currentLogEntry->data.buffer, 
+				d_bookmark.oldCurrentLogEntryCopy->data.buffer, d_currentLogEntry->data.payload_len );
+		delete temp;
+	}
+	return ( retval == 0 );
+}
+
 
 const char *vrpn_File_Connection::get_filename()
 {
     return d_fileName;
 }
 
+
 // Returns the time since the connection opened.
 // Some subclasses may redefine time.
-
 // virtual
 int vrpn_File_Connection::time_since_connection_open( timeval * elapsed_time )
 {
-
-    *elapsed_time = vrpn_TimevalDiff(d_time, d_start_time);
+	if( !d_earliest_user_time_valid )
+	{  this->find_superlative_user_times( );  }
+	if( d_earliest_user_time_valid )
+	{  *elapsed_time = vrpn_TimevalDiff( d_time, d_earliest_user_time );  }
+	else
+	{  *elapsed_time = vrpn_TimevalDiff(d_time, d_start_time);  }  // XXX get rid of this option - dtm
 
     return 0;
 }
+
 
 // virtual
 vrpn_File_Connection * vrpn_File_Connection::get_File_Connection (void) {
   return this;
 }
+
 
 // {{{ read_cookie and read_entry
 

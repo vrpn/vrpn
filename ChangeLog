@@ -1,3 +1,16 @@
+2004-04-13  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FileConnection.h:  adds new data members to track earliest
+	and latest user-message times and functions for finding these times.  
+	Adds a function, jump_to_filetime, that jumps the current time in
+	a vrpn stream to a specified absolute time.  Adds an internal 
+	class, vrpn_FileBookmark, used when jumping around in a stream.
+	* vrpn_FileConnection.C:  this should no longer cause repeated 
+	or missed message when (internally) jumping around in streams.
+	Also, elapsed time is computed based on the earliest-timed user
+	message.  As a result, functions that query elapsed time or
+	stream length will cause vrpn to examine the entire stream once.
+
 2004-04-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Shared.C : Added check for old/new streams.
