@@ -81,6 +81,11 @@ char * vrpn_MAGIC = (char *) "vrpn: ver. 04.03";
 const int MAGICLEN = 16;  // Must be a multiple of vrpn_ALIGN bytes!
 
 // Version history:
+//   04.03:  Russ Taylor, Nov/Dec 1998
+//           Put most of what is needed for a connection into OneConnection
+//           to hopefully make it easier to allow multiple connections to a
+//           server.  Made it so that the client and server use IP address
+//           rather than DNS name to connect.
 //   04.02:  Tom Hudson, October 1998
 //           Added WSAStartup(), WSACleanup() calls for PC initialization.
 //   04.01:  Tom Hudson, September 1998
