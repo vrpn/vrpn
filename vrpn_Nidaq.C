@@ -9,7 +9,7 @@
   Revised: Fri Jan 29 16:22:55 1999 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Nidaq.C,v $
   $Locker:  $
-  $Revision: 1.4 $
+  $Revision: 1.5 $
 \*****************************************************************************/
 
 #include "vrpn_Nidaq.h"
@@ -151,50 +151,6 @@ int vrpn_Nidaq::doing_okay() {
   return (pDAQ->status()==DAQ::RUNNING);
 }
 
-#if OLD_VERSION
-void vrpn_Nidaq::report_changes() {
-  // always service the nidaq, but only pack messages if there is 
-  // a new report and we have a connection.
-
-  // getSample will fill in the report with most recent valid
-  // data and the time of that data.
-  // return value is the number of reports processed by
-  // the a/d card since the last getSample call.
-  // (if > 1, then we missed a report; if 0, then no new data)
-  // if gfAllInertial is filled in, then we will grab the intervening
-  // reports as well (note: gfAllInertial does not work properly as 
-  // of 1/29/99 weberh).
-
-  if (pDAQ->getSample(&daqSample) && connection) {
-    // there is a reading and a connection ... so package it
-
-    // copy daq channels to analog class data
-    for (int i=0;i<daqSample.cChannels;i++) {
-      channel[i]=daqSample.rgd[i];
-    }
-
-    // It will actually be sent out when the server calls 
-    // mainloop() on the connection object this device uses.
-    char rgch[1000];
-    int	cChars = vrpn_Analog::encode_to(rgch);
-#ifdef VERBOSE
-    print();
-#endif
-
-    struct timeval tv;
-
-    tv = vrpn_TimevalSum(vrpn_MsecsTimeval(daqSample.dTime*1000.0), 
-			 tvOffset);
-
-    if (connection->pack_message(cChars, tv, channel_m_id, my_id, rgch,
-				  vrpn_CONNECTION_LOW_LATENCY)) {
-      cerr << "vrpn_Nidaq::report_changes: cannot write message: tossing.\n";
-    }
-  } else if (!connection) {
-    cerr << "vrpn_Nidaq::report_changes: no valid connection.\n";
-  }
-}
-#else // OLD_VERSION
 void vrpn_Nidaq::report_changes() {
 	// always service the nidaq, but only pack messages if there is 
 	// a new report and we have a connection.
@@ -239,18 +195,22 @@ void vrpn_Nidaq::report_changes() {
 			LeaveCriticalSection(&csAnalogBuffer);
 		}
 #ifdef VERBOSE
-		print();
+		if (fHadNew) {
+			print();
+		}
 #endif
 		
 	} else {
 		cerr << "vrpn_Nidaq::report_changes: no valid connection.\n";
 	}
 }
-#endif // OLD_VERSION
 #endif  // def(WIN32) || def(_WIN32)
 
 /*****************************************************************************\
   $Log: vrpn_Nidaq.C,v $
+  Revision 1.5  1999/02/11 21:47:49  weberh
+  *** empty log message ***
+
   Revision 1.4  1999/02/01 20:53:07  weberh
   cleaned up and added nice and multithreading for practical usage.
 
