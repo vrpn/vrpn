@@ -191,6 +191,14 @@ SOURCE=.\vrpn_3Space.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_Analog.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Analog.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_Button.C
 # End Source File
 # Begin Source File
