@@ -352,7 +352,7 @@ int vrpn_Mutex_Server::handle_dropLastConnection (void * userdata,
 
 
 vrpn_Mutex_Remote::vrpn_Mutex_Remote (const char * name, vrpn_Connection * c) :
-    vrpn_Mutex (name, c ? c : ((strcmp(name,"null")==0) ? NULL : vrpn_get_connection_by_name(name))),
+    vrpn_Mutex (name, c ? c : ((strcmp(name,"null")==0) ? (vrpn_Connection *)NULL : vrpn_get_connection_by_name(name))),
     d_state (AVAILABLE),
     d_myIndex (-1),
     d_requestBeforeInit(vrpn_FALSE),

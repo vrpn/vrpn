@@ -165,7 +165,7 @@ int gethostname (char *, int);
 // proposed strategy hadles both partial major version compatibility as well
 // as accidental partial minor version incompatibility.
 //
-const char * vrpn_MAGIC = (const char *) "vrpn: ver. 05.02";
+const char * vrpn_MAGIC = (const char *) "vrpn: ver. 05.03";
 const int vrpn_MAGICLEN = 16;  // Must be a multiple of vrpn_ALIGN bytes!
 
 // This is the list of states that a connection can be in
