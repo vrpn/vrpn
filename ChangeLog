@@ -1,3 +1,11 @@
+2001-04-30  Tom Hudson  <hudson@cs.unc.edu>
+
+	* vrpn_Tracker_AnalogFly.C (d_reportChanges) : new member variable
+	recording whether we're reporting at the full update_rate or at the
+	rate at which changes actually happen
+	(shouldReport) : new function
+	(mainloop) : call shouldReport()
+
 2001-04-24  Adam Seeger  <seeger@cs.unc.edu>
 
 	* vrpn_Mutex.hC : added a new message to let the client request

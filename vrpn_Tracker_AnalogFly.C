@@ -17,12 +17,13 @@ static	double	duration(struct timeval t1, struct timeval t2)
 vrpn_Tracker_AnalogFly::vrpn_Tracker_AnalogFly
          (const char * name, vrpn_Connection * trackercon,
           vrpn_Tracker_AnalogFlyParam * params, float update_rate,
-	  vrpn_bool absolute) :
+	  vrpn_bool absolute, vrpn_bool reportChanges) :
 	vrpn_Tracker (name, trackercon),
 	d_reset_button(NULL),
 	d_which_button (params->reset_which),
 	d_update_interval (update_rate ? (1/update_rate) : 1.0),
-	d_absolute(absolute)
+	d_absolute (absolute),
+        d_reportChanges (reportChanges)
 {
 	int i;
 
@@ -293,7 +294,8 @@ void vrpn_Tracker_AnalogFly::mainloop()
         // If so, generate a new one.
 	gettimeofday(&now, NULL);
 	interval = duration(now, d_prevtime);
-	if (interval >= d_update_interval) {
+
+	if (shouldReport(interval)) {
 
 		// Set the time on the report to now, if not an absolute
 		// tracker.  Absolute trackers have their time values set
@@ -325,6 +327,13 @@ void vrpn_Tracker_AnalogFly::mainloop()
 		// We just sent a report, so reset the time
 		d_prevtime = now;
 	}
+
+	// We're not always sending reports, but we still want to
+	// update the interval clock so that we don't integrate over
+	// too long a timespan when we do finally report a change.
+        if (interval >= d_update_interval) {
+          d_prevtime = now;
+        }
 }
 
 // This routine will update the current matrix based on the current values
@@ -390,3 +399,31 @@ void vrpn_Tracker_AnalogFly::convert_matrix_to_tracker (void)
     d_quat[i] = xq.quat[i]; // orientation. 
   }
 }
+
+vrpn_bool vrpn_Tracker_AnalogFly::shouldReport
+                  (double elapsedInterval) const {
+  
+  // If we haven't had enough time pass yet, don't report.
+  if (elapsedInterval < d_update_interval) {
+    return VRPN_FALSE;
+  }
+
+  // If we're sending a report every interval, regardless of
+  // whether or not there are changes, then send one now.
+  if (!d_reportChanges) {
+    return VRPN_TRUE;
+  }
+
+  // If anything's nonzero, send the report.
+  // HACK:  This values may be unstable, depending on device characteristics;
+  // we may need to designate a small dead zone around zero and only report
+  // if the value is outside the dead zone.
+  if (d_x.value || d_y.value || d_z.value ||
+      d_sx.value || d_sy.value || d_sz.value) {
+    return VRPN_TRUE;
+  }
+
+  // Enough time has elapsed, but nothing has changed, so return false.
+  return VRPN_FALSE;
+}
+
