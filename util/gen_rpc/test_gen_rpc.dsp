@@ -130,8 +130,8 @@ BuildCmds= \
 InputPath=.\rpc_Test.vrpndef
 
 BuildCmds= \
-	E:\cygwin\bin\perl.exe gen_vrpn_rpc.pl -h rpc_Test.vrpndef \
-	E:\cygwin\bin\perl.exe gen_vrpn_rpc.pl -c rpc_Test.vrpndef \
+	C:\cygwin\bin\perl.exe gen_vrpn_rpc.pl -h rpc_Test.vrpndef \
+	C:\cygwin\bin\perl.exe gen_vrpn_rpc.pl -c rpc_Test.vrpndef \
 	
 
 "rpc_Test.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -164,7 +164,7 @@ InputPath=.\rpc_Test_Remote.Cdef
 InputPath=.\rpc_Test_Remote.Cdef
 
 "rpc_Test_Remote.C" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	E:\cygwin\bin\perl.exe gen_vrpn_rpc.pl rpc_Test_Remote.Cdef
+	C:\cygwin\bin\perl.exe gen_vrpn_rpc.pl rpc_Test_Remote.Cdef
 
 # End Custom Build
 
@@ -191,7 +191,7 @@ InputPath=.\rpc_Test_Remote.hdef
 InputPath=.\rpc_Test_Remote.hdef
 
 "rpc_Test_Remote.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	E:\cygwin\bin\perl.exe gen_vrpn_rpc.pl rpc_Test_Remote.hdef
+	C:\cygwin\bin\perl.exe gen_vrpn_rpc.pl rpc_Test_Remote.hdef
 
 # End Custom Build
 

@@ -1,3 +1,8 @@
+2004-03-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* test_gen_rpc.dsp : Point to Cygwin installed in C: rather than
+		on the E: drive.
+
 2002-12-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* test_gen_rpc.dsp : DSP files have been modified to not do definitions
