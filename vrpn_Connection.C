@@ -952,7 +952,9 @@ void vrpn_Connection::check_connection (void)
 	status = BROKEN;
 	return;
    } else if (request != 0) {	// Some data to read!  Go get it.
-	if (recvfrom(listen_udp_sock, msg, sizeof(msg), 0, NULL, NULL) == -1) {
+	struct sockaddr from;
+	int fromlen = sizeof(from);
+	if (recvfrom(listen_udp_sock, msg, sizeof(msg), 0, &from, &fromlen) == -1) {
 		fprintf(stderr,
 			"vrpn: Error on recvfrom: Bad connection attempt\n");
 		return;
