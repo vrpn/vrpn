@@ -524,7 +524,7 @@ int vrpn_Phantom::handle_change_message(void *userdata, vrpn_HANDLERPARAM p)
 
 vrpn_ForceDevice_Remote::vrpn_ForceDevice_Remote(char *name):
 	vrpn_ForceDevice(name,vrpn_get_connection_by_name(name)),
-	change_list(NULL)	  
+	change_list(NULL), scp_change_list(NULL)
 {
     which_plane = 0;
 
