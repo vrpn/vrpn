@@ -75,6 +75,7 @@ public class TrackerRemote extends TimerTask
 		}
 		
 		this.trackerThread = new Thread( this );
+		this.trackerThread.start( );
 	}
 	
 	
