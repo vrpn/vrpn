@@ -86,6 +86,12 @@ public:
     }
     return true;
   }
+  
+  /// Returns the number of values in the <code>vals</code> array.
+  inline vrpn_uint32 getNumVals( ) const
+  {
+	  return ( rMax - rMin + 1 ) * ( cMax - cMin + 1 );
+  }
 
   /// Reads pixel from the region with no scale and offset applied to the value
   inline  bool	read_unscaled_pixel(vrpn_uint16 c, vrpn_uint16 r, vrpn_uint16 &val) const {

@@ -1,3 +1,8 @@
+2002-09-11  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_TempImager.h (getNumVals):  new, returns the number of
+	entries in the 'vals' array.
+
 2002-09-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_TempImager.h : Changed a lot a debugged to make test program work.
