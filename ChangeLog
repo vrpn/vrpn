@@ -3,6 +3,8 @@
         * vrpn_FileConnection.C (vrpn_File_Connection::reset) : 
 	Added call to d_endpoints[0]->drop_connection() to clear all state for
 	replaying the file from the beginning.
+        * vrpn_FileConnection.C (vrpn_File_Connection::mainloop) :
+	returns -1 if there is an error reading from the file
 
 2000-09-11  Adam Seeger  <seeger@cs.unc.edu>
 

@@ -395,11 +395,16 @@ int vrpn_File_Connection::mainloop( const timeval * /*timeout*/ )
         // tracker file that were recorded with synchronized clocks.
         return 0;
     } else {
+	// return something to indicate there was an error
+        // reading the file
+	return -1;
+
         // an error occurred while reading the next event from the file
         // let's close the connection.
         // XXX(jj) is this the right thing to do?
         // XXX(jj) for now, let's leave it how it was
         // XXX(jj) come back to this and do it right
+/*
         fprintf( stderr, "vrpn_File_Connection::mainloop(): error reading "
                  "next event from file.  Skipping to end of file. "
                  "XXX Please edit this function and fix it.  It should probably"
@@ -407,6 +412,7 @@ int vrpn_File_Connection::mainloop( const timeval * /*timeout*/ )
         d_last_time = now_time;
         d_filetime_accum.reset_at_time( now_time );
         return play_to_filetime(end_time);
+*/
     }
 }
 
