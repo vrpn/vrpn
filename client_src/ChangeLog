@@ -1,3 +1,9 @@
+2004-05-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* client_to_poser.cpp : New application to read from tracker
+		and send to poser.
+	* client_to_poser.dsp : Project file for this app.
+
 2004-04-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Makefile : Adding flag to SGI compile in the hope that it would
