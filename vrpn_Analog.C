@@ -556,3 +556,4 @@ vrpn_int32 vrpn_Analog_Remote::encode_change_channels_to(char* buf, vrpn_int32 n
 
     return 2 * sizeof(vrpn_int32) + num * sizeof(vrpn_float64);
 }
+

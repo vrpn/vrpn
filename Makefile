@@ -394,7 +394,7 @@ SLIB_FILES =  $(LIB_FILES) vrpn_3Space.C \
 	vrpn_Tracker_AnalogFly.C vrpn_raw_sgibox.C vrpn_Magellan.C \
 	vrpn_Analog_Radamec_SPI.C vrpn_ImmersionBox.C vrpn_Wanda.C \
 	vrpn_Analog_5dt.C vrpn_Joylin.C vrpn_Tng3.C vrpn_Spaceball.C \
-	vrpn_Tracker_isense.C vrpn_Zaber.C
+	vrpn_Tracker_isense.C vrpn_Zaber.C vrpn_nikon_controls.C
 
 SLIB_OBJECTS = $(patsubst %,$(SOBJECT_DIR)/%,$(SLIB_FILES:.C=.o))
 
@@ -405,7 +405,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) vrpn_3Space.h \
 	vrpn_CerealBox.h vrpn_Tracker_AnalogFly.h vrpn_Magellan.h \
 	vrpn_Analog_Radamec_SPI.h vrpn_ImmersionBox.h vrpn_Wanda.h \
 	vrpn_Analog_5dt.h vrpn_Joylin.h vrpn_Tng3.h vrpn_Spaceball.h \
-	vrpn_tracker_isense.h vrpn_Zaber.h
+	vrpn_tracker_isense.h vrpn_Zaber.h vrpn_nikon_controls.h
 
 
 #$(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(OBJECT_DIR) \
