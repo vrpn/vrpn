@@ -121,7 +121,7 @@ void shutdown (void) {
   exit(0);
 }
 
-void main (int argc, char * argv [])
+int main (int argc, char * argv [])
 {
 
 #ifdef hpux
@@ -151,10 +151,10 @@ void main (int argc, char * argv [])
   // signal handler so logfiles get closed right
   signal(SIGINT, handle_cntl_c);
 
-/* 
- * main interactive loop
- */
-while ( ! done )
+  /* 
+   * main interactive loop
+   */
+  while ( ! done )
     {
 	// Let the tracker and button do their things
 	btn->mainloop();
@@ -165,6 +165,6 @@ while ( ! done )
 	vrpn_SleepMsecs(1);
     }
 
-    shutdown();
-
+  shutdown();
+  return 0;
 }   /* main */

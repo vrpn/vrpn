@@ -1,3 +1,13 @@
+2003-05-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* printcereal.C : main() now returns int like it should.
+	* printvals.C : Same.
+	* sphere_clien.C : Same.
+	* test_Zaber.C : Same.
+	* test_tempimager.C : Uses new interface to TempImager.
+	* test_tempimager.dsp : Release version compiles now.
+	* test_zaber.dsp : Same.
+
 2002-12-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* printcereal.dsp : DSP files have been modified to not do definitions

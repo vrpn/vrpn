@@ -64,9 +64,9 @@ void  mainloop_server_code(void)
   static  vrpn_uint16 y = 0;	//< Loops through the image and sends data
 
   // Send the current row over to the client.
-  svr->fill_region(svrchan, 0, image_x_size-1, y,y, image);
+  svr->send_region_using_base_pointer(svrchan, 0, image_x_size-1, y,y, image, 1, image_x_size);
   svr->mainloop();
-  svr->send_region();
+  printf("Sent a region\n");
 
   // Go to the next line for next time.
   if (++y == image_y_size) { y = 0; }
@@ -93,16 +93,16 @@ void  handle_region_data(void *, const vrpn_IMAGERREGIONCB info)
   const	vrpn_TempImager_Channel *chan;
 
   // Find out the scale and offset for this channel.
-  if ( (chan = clt->channel(info.region->chanIndex)) == NULL) {
-    fprintf(stderr, "Warning: Illegal channel index (%d) in region report\n", info.region->chanIndex);
+  if ( (chan = clt->channel(info.region->d_chanIndex)) == NULL) {
+    fprintf(stderr, "Warning: Illegal channel index (%d) in region report\n", info.region->d_chanIndex);
     return;
   }
   double scale = chan->scale;
   double offset = chan->offset;
 
   // Check the image data against the image to make sure it matches.
-  for (y = info.region->rMin; y <= info.region->rMax; y++) {
-    for (x = info.region->cMin; x <= info.region->cMax; x++) {
+  for (y = info.region->d_rMin; y <= info.region->d_rMax; y++) {
+    for (x = info.region->d_cMin; x <= info.region->d_cMax; x++) {
       vrpn_uint16 val;
       if (!info.region->read_unscaled_pixel(x,y,val)) {
 	fprintf(stderr, "Error indexing region that was read\n");

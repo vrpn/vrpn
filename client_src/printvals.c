@@ -274,7 +274,7 @@ void Usage (const char * arg0) {
   exit(0);
 }
 
-void main (int argc, char * argv [])
+int main (int argc, char * argv [])
 {
 
 #ifdef hpux
@@ -394,7 +394,6 @@ void main (int argc, char * argv [])
   }
 
   shutdown();
+  return 0;
 
 }   /* main */
-
-

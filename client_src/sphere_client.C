@@ -83,7 +83,7 @@ void	handle_button_change(void *userdata, const vrpn_BUTTONCB b)
   *(int *)userdata = done;
 }
 
-void main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
   int     done = 0;
   vrpn_Tracker_Remote *tracker;
@@ -172,5 +172,6 @@ be smaller than static friction or you will get the same error.
 
   // shut off force device
   forceDevice->stopSurface();
+  return 0;
 }   /* main */
 

@@ -76,7 +76,7 @@ void shutdown (void) {
   exit(0);
 }
 
-void main (int argc, char * argv [])
+int main (int argc, char * argv [])
 {
   struct timeval  timestamp;
   gettimeofday(&timestamp, NULL);
@@ -141,5 +141,6 @@ void main (int argc, char * argv [])
     vrpn_SleepMsecs(1);
   }
   shutdown();
+  return 0;
 
 }   /* main */
