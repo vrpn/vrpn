@@ -11,7 +11,7 @@
 #include <strings.h>
 #endif
 
-vrpn_Button_Remote *btn;
+vrpn_Button_Remote *btn,*btn2;
 vrpn_Tracker_Remote *tkr;
 vrpn_Connection * c;
 vrpn_File_Controller * fc;
@@ -116,6 +116,9 @@ fprintf(stderr, "Tracker's name is %s.\n", devicename);
 	sprintf(devicename, "Button0@%s", station_name);
 fprintf(stderr, "Button's name is %s.\n", devicename);
 	btn = new vrpn_Button_Remote (devicename);
+	sprintf(devicename, "Button1@%s", station_name);
+fprintf(stderr, "Button 2's name is %s.\n", devicename);
+	btn2 = new vrpn_Button_Remote (devicename);
 
 
 	// Set up the tracker callback handler
@@ -127,6 +130,7 @@ fprintf(stderr, "Button's name is %s.\n", devicename);
 	// Set up the button callback handler
 	printf("Button update: B<number> is <newstate>\n");
 	btn->register_change_handler(NULL, handle_button);
+	btn2->register_change_handler(NULL, handle_button);
 
 }	/* init */
 
@@ -181,6 +185,8 @@ void handle_cntl_c (int) {
 
   if (btn)
     delete btn;
+  if (btn2)
+    delete btn2;
   if (tkr)
     delete tkr;
   if (c)
@@ -274,6 +280,7 @@ while ( ! done )
     {
 	// Let the tracker and button do their things
 	btn->mainloop();
+	btn2->mainloop();
 	tkr->mainloop();
 
 	// XXX Sleep a tiny bit to free up the other process
