@@ -111,13 +111,15 @@ typedef int (* vrpn_LOGFILTER) (void * userdata, vrpn_HANDLERPARAM p);
 // to have large tables.  We need at least 150-200 for the microscope
 // project as of Jan 98, and will eventually need two to three times that
 // number.
-#define vrpn_CONNECTION_MAX_SENDERS (2000)
-#define vrpn_CONNECTION_MAX_TYPES   (2000)
+#define	vrpn_CONNECTION_MAX_SENDERS   (2000) /*XXX*/
+#define	vrpn_CONNECTION_MAX_SERVICES  (2000)
+#define	vrpn_CONNECTION_MAX_TYPES     (2000)
 
 // vrpn_ANY_SENDER can be used to register callbacks on a given message
 // type from any sender.
 
-#define vrpn_ANY_SENDER (-1)
+#define	vrpn_ANY_SENDER  (-1) /*XXX*/
+#define	vrpn_ANY_SERVICE (-1)
 
 // vrpn_ANY_TYPE can be used to register callbacks for any USER type of
 // message from a given sender.  System messages are handled separately.

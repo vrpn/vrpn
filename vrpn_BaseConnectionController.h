@@ -100,6 +100,7 @@ public:  // c'tors and d'tors
     //   vrpn_get_connection_by_name (for clients)
 
     // Destructor should delete all entries from callback lists
+    // and all BaseConnection's
     virtual ~vrpn_BaseConnectionController();
 
 protected:  // c'tors and init
@@ -114,7 +115,10 @@ protected:  // c'tors and init
 public:  // status
 
     // are there any connections?
-    vrpn_int32 at_least_one_open_connection() const = 0;
+    virtual /*bool*/vrpn_int32 at_least_one_open_connection() const = 0;
+    
+    // overall, all connections are doing okay
+    virtual /*bool*/vrpn_int32 all_connections_doing_okay() const = 0;
     
     // some way to get a list of open connection names
     // (one need is for the hiball control panel)
@@ -148,28 +152,77 @@ public:  // handling incoming and outgoing messages
         const char * buffer,
         vrpn_uint32 class_of_service ) = 0;
     
-#ifdef 0  // XXX these have to go into the subclasses
-protected:  // handling incoming and outgoing messages
-    //         wrappers that forwards the functioncall to each open connection
 
-    virtual vrpn_int32 pack_service_description( vrpn_int32 which_service ) = 0;
-    virtual vrpn_int32 pack_type_description( vrpn_int32 which_type ) = 0;
-    virtual vrpn_int32 pack_udp_description( vrpn_int32 portno ) = 0;
-    //virtual int pack_log_description( long mode, const char * filename );
+public:  // services and types
+    // * messages in vrpn are identified by two different ID's
+    // * one is the service id.  It will be renamed.  An example is
+    //   tracker0 or tracker1, button0 or button1, etc.
+    // * the other ID is the type id.  This one speaks to how to
+    //   decode the message.  Examples are ...XXX...
+    // * the layer sitting above the connection (...XXX_name...)
+    //   defines the types.  For example, vrpn_Tracker defines
+    //   ...XXX_vel/pos/acc...
+    // * when a client instantiates a vrpn_TrackerRemote,
+    //   a connection is made and the pertainant types are registered
+    // * the service name is part of the connection name, for example
+    //   "tracker0@ioglab.cs.unc.edu".
 
 
-    // Routines that handle system messages
-    // these are registered as callbacks
-    static vrpn_int32 handle_incoming_service_message(
-        void * userdata, vrpn_HANDLERPARAM p);
-    static vrpn_int32 handle_incoming_type_message(
-        void * userdata, vrpn_HANDLERPARAM p);
-    static vrpn_int32 handle_incoming_udp_message(
-        void * userdata, vrpn_HANDLERPARAM p);
-    static vrpn_int32 handle_incoming_log_message(
-        void * userdata, vrpn_HANDLERPARAM p);
-#endif
+    // * get a token to use for the string name of the service
+    // * remember to check for -1 meaning failure
+    vrpn_int32 register_service( const char * service_name );
 
+    // * get a token to use for the string name of the message type
+    // * remember to check for -1 meaning failure
+    vrpn_int32 register_message_type( const char * type_name );
+
+    // * returns service ID, or -1 if unregistered
+    vrpn_int32 get_service_id( const char * service_name ) const;
+    
+    // * returns message type ID, or -1 if unregistered
+    // * was message_type_is_registered  
+    vrpn_int32 get_message_type_id( const char * type_name ) const;
+    
+    // * returns the name of the specified service,
+    //   or NULL if the parameter is invalid
+    // * was: sender_name
+    const char * get_service_name( vrpn_int32 service_id ) const;
+    
+    // * returns the name of the specified type,
+    //   or NULL if the parameter is invalid
+    // * only works for user messages (type_id >= 0)
+    // * was: message_type_name
+    const char * get_message_type_name( vrpn_int32 type_id ) const;
+
+protected: // implementation of services and types
+    //        these are called by the public functions above
+
+    virtual void register_service_with_connections(
+        const char * service_name, vrpn_int32 service_id ) = 0;
+    
+    virtual void register_type_with_connections(
+        const char * type_name, vrpn_int32 type_id ) = 0;
+    
+
+private:  // implementation of services and types
+
+    // [jj: taken from old connection.h]
+    // The senders we know about and the message types we know about
+    // that have been declared by the local version.
+    // cCares:  has the other side of this connection registered
+    //   a type by this name?  Only used by filtering.
+    
+    struct vrpnLocalMapping {
+        char                  * name;       // Name of type
+        vrpnMsgCallbackEntry  * who_cares;  // Callbacks
+        vrpn_int32              cCares;     // TCH 28 Oct 97
+    };
+    char              * my_services [vrpn_CONNECTION_MAX_SERVICES];
+    vrpn_int32          num_my_services;
+    vrpnLocalMapping    my_types [vrpn_CONNECTION_MAX_TYPES];
+    vrpn_int32          num_my_types;
+    
+    
 public:  // callbacks
     // * clients and servers register callbacks.  The callbacks are how they
     //   are informed about messages passing between the connections.
@@ -210,49 +263,12 @@ public:  // callbacks
         timeval time,
         vrpn_uint32 len, const char * buffer);
     
-    
-public:  // services and types
-    // * messages in vrpn are identified by two different ID's
-    // * one is the service id.  It will be renamed.  An example is
-    //   tracker0 or tracker1, button0 or button1, etc.
-    // * the other ID is the type id.  This one speaks to how to
-    //   decode the message.  Examples are ...XXX...
-    // * the layer sitting above the connection (...XXX_name...)
-    //   defines the types.  For example, vrpn_Tracker defines
-    //   ...XXX_vel/pos/acc...
-    // * when a client instantiates a vrpn_TrackerRemote,
-    //   a connection is made and the pertainant types are registered
-    // * the service name is part of the connection name, for example
-    //   "tracker0@ioglab.cs.unc.edu".
+private:  // implementation of callbacks
+
+    // Callbacks on vrpn_ANY_TYPE
+    vrpnMsgCallbackEntry * generic_callbacks;
 
 
-    // * get a token to use for the string name of the service
-    // * remember to check for -1 meaning failure
-    virtual vrpn_int32 register_service( const char * name );
-
-    // * get a token to use for the string name of the message type
-    // * remember to check for -1 meaning failure
-    virtual vrpn_int32 register_message_type( const char * name );
-
-    // * returns service ID, or -1 if unregistered
-    vrpn_int32 get_service_id( const char * ) const;
-    
-    // * returns message type ID, or -1 if unregistered
-    // * was message_type_is_registered  
-    vrpn_int32 get_message_type_id( const char * ) const;
-    
-    // * returns the name of the specified service,
-    //   or NULL if the parameter is invalid
-    // * was: sender_name
-    virtual const char * get_service_name( vrpn_int32 service_id ) const;
-    
-    // * returns the name of the specified type,
-    //   or NULL if the parameter is invalid
-    // * only works for user messages (type_id >= 0)
-    // * was: message_type_name
-    virtual const char * get_message_type_name( vrpn_int32 type_id ) const;
-    
-    
 public: // logging functions
 
     virtual vrpn_int32 get_local_logmode(void);
@@ -263,11 +279,11 @@ public: // logging functions
 
 private: // logging data members
 
-    char * d_local_logname;            // local name of file to write log to
-    vrpn_int32 d_local_logmode;        // local logging: incoming, outgoing, or both
+    char * d_local_logname;      // local name of file to write log to
+    vrpn_int32 d_local_logmode;  // local logging: incoming, outgoing, or both
     
-    char * d_remote_logname;           // remote name of file to write log to
-    vrpn_int32 d_remote_logmode;       // remote logging: incoming, outgoing, both
+    char * d_remote_logname;     // remote name of file to write log to
+    vrpn_int32 d_remote_logmode; // remote logging: incoming, outgoing, both
 
 public: // clock functions
 
@@ -277,3 +293,31 @@ public: // clock functions
     struct timeval tvClockOffset;
 
 };
+
+
+#ifdef 0  // XXX these have to go into the subclasses
+protected:  // handling incoming and outgoing messages
+    //         wrappers that forwards the functioncall to each open connection
+
+    virtual int pack_service_description( vrpn_int32 which_service ) = 0;
+    virtual int pack_type_description( vrpn_int32 which_type ) = 0;
+    virtual int pack_udp_description( int portno ) = 0;
+    //virtual int pack_log_description( long mode, const char * filename );
+
+    // Routines to handle incoming messages on file descriptors
+    int handle_incoming_udp_messages (int fd, const timeval * timeout);
+    int handle_incoming_tcp_messages (int fd, const timeval * timeout);
+    
+    // Routines that handle system messages
+    // these are registered as callbacks
+    static int handle_incoming_service_message(
+        void * userdata, vrpn_HANDLERPARAM p);
+    static int handle_incoming_type_message(
+        void * userdata, vrpn_HANDLERPARAM p);
+    static int handle_incoming_udp_message(
+        void * userdata, vrpn_HANDLERPARAM p);
+    static int handle_incoming_log_message(
+        void * userdata, vrpn_HANDLERPARAM p);
+#endif
+
+#endif
