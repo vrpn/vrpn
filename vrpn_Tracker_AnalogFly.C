@@ -228,7 +228,7 @@ int	vrpn_Tracker_AnalogFly::teardown_channel(vrpn_TAF_fullaxis *full)
 	ret = full->ana->unregister_change_handler((void*)full,
                           handle_analog_update);
 
-	// Delete the analog device and point the remote at it.
+	// Delete the analog device.
 	delete full->ana;
 
 	return ret;

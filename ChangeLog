@@ -1,3 +1,12 @@
+2003-04-01  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Added definitions to control which version of
+		the system clock is used in Windows.
+	* vrpn_Shared.C : Added Haris' code to use the system performance
+		clock, guarded by VRPN_WINDOWS_CLOCK_V2.  Tested using
+		the Analogfly test program.
+	* vrpn_Tracker_AnalogFly.C : Comment change.
+
 2003-01-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Configure.h : Put back the uncommented #pragma for library loads

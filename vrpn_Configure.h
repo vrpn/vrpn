@@ -20,6 +20,22 @@
 #define	VRPN_NO_STREAMS
 
 //-----------------------
+// Instructs VRPN to use the high-performance timer code on
+// Windows, rather than the default clock which has an infrequent
+// update.  At one point in the past, an implementation of this
+// would only work correctly on some flavors of Windows and with
+// some types of CPUs.
+// There are actually two implementations
+// of the faster windows clock.  The original one, made by Hans
+// Weber, checks the clock rate to see how fast the performance
+// clock runs (it takes a second to do this when the program
+// first calls gettimeofday()).  The second version by Haris
+// Fretzagias relies on the timing supplied by Windows.  To use
+// the second version, also define VRPN_WINDOWS_CLOCK_V2.
+#define	VRPN_UNSAFE_WINDOWS_CLOCK
+#define	VRPN_WINDOWS_CLOCK_V2
+
+//-----------------------
 // Instructs VRPN to use the default room space transforms for
 // the Desktop Phantom as used in the nanoManipulator application
 // rather than the default world-origin with identity rotation.
