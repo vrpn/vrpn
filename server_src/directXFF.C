@@ -1,3 +1,7 @@
+//XXX Note that this application can be replaced by building the
+// vrpn_server program with DirectInput included in the configuration
+// file and then giving it an appropriate vrpn.cfg file.
+
 #include "vrpn_DirectXFFJoystick.h"
 #include "vrpn_Tracker_AnalogFly.h"
 
@@ -68,11 +72,11 @@ int main (unsigned argc, char *argv[])
 	afp.x.channel = 0;
 	afp.x.offset = 0;
 	afp.x.thresh = 0;
-	afp.x.scale = 0.07;
+	afp.x.scale = (float)0.07;
 	afp.x.power = 1;
-	afp.y = afp.x; afp.y.channel = 1; afp.y.scale = -0.07;
-	afp.z = afp.x; afp.z.channel = 6; afp.z.scale = 0.2; afp.z.offset = 1.5;
-	afp.sz = afp.x; afp.sz.channel = 5; afp.sz.scale = 0.06;
+	afp.y = afp.x; afp.y.channel = 1; afp.y.scale = (float)-0.07;
+	afp.z = afp.x; afp.z.channel = 6; afp.z.scale = (float)0.2; afp.z.offset = (float)1.5;
+	afp.sz = afp.x; afp.sz.channel = 5; afp.sz.scale = (float)0.06;
 	vrpn_Tracker_AnalogFly *joyflyServer = new vrpn_Tracker_AnalogFly((char*) handTrackerName,
 				&connection, &afp, 200, vrpn_true);
         if (joyflyServer==NULL) {
@@ -81,9 +85,9 @@ int main (unsigned argc, char *argv[])
         }
 
 	// Loop forever calling the mainloop()s for all devices
-	struct timeval tv1, tv2;
+/*	struct timeval tv1, tv2;
 	struct timezone tz;
-	int counter = 0;
+*/	int counter = 0;
 	while (1) {
 	  /*
 	  if ( counter == 0 ) {

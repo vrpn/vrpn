@@ -1,3 +1,15 @@
+2003-01-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* directXFF.C : Comments.  Modified to compile without warnings.
+	* directXFF_server.dsp : Modified to have the libraries specified in
+		the vrpn_Config.h file.
+
+2003-01-15  Alexandra Bokinsky  <bokinsky@cs.unc.edu>
+
+	* directXFF.C : Server for Direct X joystick in case you don't want
+		to run the vrpn_server program with special config file.
+	* directXFF_server.dsp : File to build the above server.
+
 2003-01-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.C : Added code to use a ButtonFly and Global Haptics GeoOrb.
