@@ -108,7 +108,7 @@ $(OBJ_DIR)/%.o: %.C
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 all:	$(OBJ_DIR)/printvals $(OBJ_DIR)/printcereal \
-	$(OBJ_DIR)/vrpn_print_devices
+	$(OBJ_DIR)/vrpn_print_devices \
 	$(OBJ_DIR)/checklogfile $(OBJ_DIR)/logfilesenders \
 	$(OBJ_DIR)/logfiletypes $(OBJ_DIR)/text \
 	forwarderClient $(OBJ_DIR)/bdbox_client \
