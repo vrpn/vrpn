@@ -44,6 +44,10 @@ all:	$(OBJ_DIR)/sound_client $(OBJ_DIR)/printvals \
 	$(OBJ_DIR)/checklogfile $(OBJ_DIR)/logfilesenders \
 	$(OBJ_DIR)/logfiletypes $(OBJ_DIR)/text
 
+.PHONY:
+text:	$(OBJ_DIR)/text
+	@echo Done.
+
 $(OBJ_DIR)/sound_client: $(OBJ_DIR)/sound_client.o ../`hw_os`/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/sound_client \
 		$(OBJ_DIR)/sound_client.o -lvrpn $(ARCH_LIBS)

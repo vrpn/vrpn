@@ -1,8 +1,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/time.h>
+#include <signal.h>
 #include <vrpn_Connection.h>
-#include "vrpn_Text.h"
+#include <vrpn_Text.h>
 
 vrpn_Connection * c;
 
@@ -21,6 +22,7 @@ void handle_cntl_c (int) {
     for (i = 0L; n = c->message_type_name(i); i++)
       printf("Knew type \"%s\".\n", n);
 
+  exit(0);
 }
 
 void  my_handler(void * userdata, const vrpn_TEXTCB info){
