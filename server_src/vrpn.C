@@ -49,6 +49,8 @@
 #define MAX_IBOXES 8
 #define MAX_DIALS 8
 
+static	int	done = 0;	// Done and should exit?
+
 const int LINESIZE = 512;
 
 #define CHECK(s) \
@@ -115,23 +117,6 @@ vrpn_RedundantController * redundantController;
 
 int	verbose = 1;
 
-// install a signal handler to shut down the trackers and buttons
-#ifndef WIN32
-#include <signal.h>
-void closeDevices();
-//#ifdef sgi
-//void sighandler( ... )
-//#else
-void sighandler (int)
-//#endif
-{
-    closeDevices();
-    delete connection;
-    //return;
-    exit(0);
-}
-#endif
-
 void closeDevices (void) {
   int i;
   for (i=0;i < num_buttons; i++) {
@@ -143,15 +128,6 @@ void closeDevices (void) {
     delete trackers[i];
   }
   fprintf(stderr, "\nAll devices closed. Exiting ...\n");
-  //exit(0);
-}
-
-int handle_dlc (void *, vrpn_HANDLERPARAM p)
-{
-    closeDevices();
-    delete connection;
-    exit(0);
-    return 0;
 }
 
 void shutDown (void)
@@ -159,8 +135,26 @@ void shutDown (void)
     closeDevices();
     delete connection;
     exit(0);
-    return;
 }
+
+int handle_dlc (void *, vrpn_HANDLERPARAM p)
+{
+    shutDown();
+    return 0;
+}
+
+// install a signal handler to shut down the trackers and buttons
+#ifndef WIN32
+#include <signal.h>
+//#ifdef sgi
+//void sighandler( ... )
+//#else
+void sighandler (int)
+//#endif
+{
+	done = 1;
+}
+#endif
 
 // This function will read one line of the vrpn_AnalogFly configuration (matching
 // one axis) and fill in the data for that axis. The axis name, the file to read
@@ -1354,7 +1348,7 @@ main (int argc, char * argv[])
 	// **                MAIN LOOP                                       **
 	// **                                                                **
 	// ********************************************************************
-	while (1) {
+	while (!done) {
 		int	i;
 
 		// Let all the buttons generate reports
@@ -1423,5 +1417,6 @@ main (int argc, char * argv[])
 		}
 	}
 
+	shutDown();
 	return 0;
 }

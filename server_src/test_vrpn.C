@@ -241,6 +241,7 @@ void main (int argc, char * argv [])
 
 		// Let the servers, clients and connection do their things
 		send_analog_once_in_a_while();
+		sana->mainloop();
 		rana->mainloop();
 		send_text_once_in_a_while();
 		rtext->mainloop();
