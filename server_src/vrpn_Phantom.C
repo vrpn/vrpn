@@ -19,6 +19,11 @@
 #include "quat.h"
 
 // ajout ONDIM
+/*
+# instantBuzzEffect : instantaneous buzz "custom" effect for Phantom server
+# written by Sebastien MARAUX, ONDIM SA (France)
+# maraux@ondim.fr
+*/
 // add each ghost effect header
 #include "ghostEffects/InstantBuzzEffect.h"
 // fin ajout ONDIM

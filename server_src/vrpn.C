@@ -102,10 +102,14 @@ void Usage (const char * s)
   fprintf(stderr,"       [-NIC name] [-li filename] [-lo filename]\n");
   fprintf(stderr,"       -f: Full path to config file (default vrpn.cfg).\n");
   fprintf(stderr,"       -millisleep: Sleep n milliseconds each loop cycle\n"); 
-  fprintf(stderr,"                    (if no option is specified, no sleep is done on Windows\n");
-  fprintf(stderr,"                     and a 1ms sleep is done on all other architectures).\n");
+  fprintf(stderr,"                    (if no option is specified, the Windows architecture\n");
+  fprintf(stderr,"                     will free the rest of its time slice on each loop\n");
+  fprintf(stderr,"                     but leave the processes available to be run immediately;\n");
+  fprintf(stderr,"                     a 1ms sleep is the default on all other architectures).\n");
   fprintf(stderr,"                    -millisleep 0 is recommended when using this server and\n"); 
-  fprintf(stderr,"                    a client on the same uniprocessor CPU Win32 PC.\n");
+  fprintf(stderr,"                     a client on the same uniprocessor CPU Win32 PC.\n");
+  fprintf(stderr,"                    -millisleep -1 will cause the server process to use the\n"); 
+  fprintf(stderr,"                     whole CPU on any uniprocessor machine.\n");
   fprintf(stderr,"       -warn: Only warn on errors (default is to bail).\n");
   fprintf(stderr,"       -v: Verbose.\n");
   fprintf(stderr,"       -q: Quit when last connection is dropped.\n");
@@ -2181,7 +2185,7 @@ main (int argc, char * argv[])
 	// On Windows, the millisleep with 0 option frees up the CPU time slice for other jobs
 	// but does not sleep for a specific time.  On Unix, this returns immediately and does
 	// not do anything but waste cycles.
-	int	milli_sleep_time = 0;		// How long to sleep each iteration (default: no sleep)
+	int	milli_sleep_time = 0;		// How long to sleep each iteration (default: free the timeslice but be runnable again immediately)
 #else
 	int	milli_sleep_time = 1;		// How long to sleep each iteration (default: 1ms)
 #endif

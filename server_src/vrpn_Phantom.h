@@ -13,6 +13,11 @@ class ConstraintEffect;
 class ForceFieldEffect;
 
 // ajout ONDIM
+/*
+# instantBuzzEffect : instantaneous buzz "custom" effect for Phantom server
+# written by Sebastien MARAUX, ONDIM SA (France)
+# maraux@ondim.fr
+*/
 const unsigned int NB_CUSTOM_EFFECTS = 1;
 class InstantBuzzEffect;
 const unsigned BUZZ_EFFECT_ID = 0;
