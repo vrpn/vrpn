@@ -22,7 +22,7 @@ int vrpn_Dial::register_types(void)
     if (d_connection == NULL) {
 	return 0;
     }
-    change_m_id = d_connection->register_message_type("Dial_update");
+    change_m_id = d_connection->register_message_type("vrpn_Dial update");
     if (change_m_id == -1) {
     	fprintf(stderr,"vrpn_Dial: Can't register type IDs\n");
        d_connection = NULL;

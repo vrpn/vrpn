@@ -133,17 +133,17 @@ int vrpn_Tracker::register_types(void)
 {
 	// Register this tracker device and the needed message types
 	if (d_connection) {
-	  position_m_id = d_connection->register_message_type("Tracker_Pos_Quat");
-	  velocity_m_id = d_connection->register_message_type("Tracker_Velocity");
-	  accel_m_id =d_connection->register_message_type("Tracker_Acceleration");
-	  tracker2room_m_id = d_connection->register_message_type("Tracker_To_Room");
-	  unit2sensor_m_id = d_connection->register_message_type("Unit_To_Sensor");
-	  request_t2r_m_id = d_connection->register_message_type("Request_Tracker_To_Room");
-	  request_u2s_m_id = d_connection->register_message_type("Request_Unit_To_Sensor");
-	  workspace_m_id = d_connection->register_message_type("Tracker_Workspace");
-	  request_workspace_m_id = d_connection->register_message_type("Request_Tracker_Workspace");
+	  position_m_id = d_connection->register_message_type("vrpn_Tracker Pos_Quat");
+	  velocity_m_id = d_connection->register_message_type("vrpn_Tracker Velocity");
+	  accel_m_id =d_connection->register_message_type("vrpn_Tracker Acceleration");
+	  tracker2room_m_id = d_connection->register_message_type("vrpn_Tracker To_Room");
+	  unit2sensor_m_id = d_connection->register_message_type("vrpn_Tracker Unit_To_Sensor");
+	  request_t2r_m_id = d_connection->register_message_type("vrpn_Tracker Request_Tracker_To_Room");
+	  request_u2s_m_id = d_connection->register_message_type("vrpn_Tracker Request_Unit_To_Sensor");
+	  workspace_m_id = d_connection->register_message_type("vrpn_Tracker Workspace");
+	  request_workspace_m_id = d_connection->register_message_type("vrpn_Tracker Request_Tracker_Workspace");
 	  update_rate_id = d_connection->register_message_type("vrpn_Tracker_set_update_rate");
-	  reset_origin_m_id = d_connection->register_message_type("Reset_Origin");
+	  reset_origin_m_id = d_connection->register_message_type("vrpn_Tracker Reset_Origin");
 	}
 	return 0;
 }

@@ -30,7 +30,7 @@ vrpn_Analog::vrpn_Analog (const char * name, vrpn_Connection * c) :
 
 int vrpn_Analog::register_types(void)
 {
-    channel_m_id = d_connection->register_message_type("Analog_Channel");
+    channel_m_id = d_connection->register_message_type("vrpn_Analog Channel");
     if (channel_m_id == -1) {
 	return -1;
     } else {

@@ -96,11 +96,11 @@ vrpn_Button::vrpn_Button(const char *name, vrpn_Connection *c)
 int vrpn_Button::register_types(void)
 {
       //used to handle button strikes
-      change_message_id = d_connection->register_message_type("Button_Change");
+      change_message_id = d_connection->register_message_type("vrpn_Button Change");
       
       //to handle button state changes -- see Buton_Filter should register a handler
       //for this ID -- ideally the message will be ignored otherwise
-      admin_message_id = d_connection->register_message_type("Button_Admin");
+      admin_message_id = d_connection->register_message_type("vrpn_Button Admin");
 
       return 0;
 }
@@ -123,7 +123,7 @@ vrpn_Button_Filter::vrpn_Button_Filter(const char *name, vrpn_Connection *c)
       register_autodeleted_handler(admin_message_id, client_msg_handler, this);
 
       //setup message id type for alert messages to alert a device about changes
-      alert_message_id = d_connection->register_message_type("Button_Alert");
+      alert_message_id = d_connection->register_message_type("vrpn_Button Alert");
       send_alerts=0;	//used to turn on/off alerts -- send and admin message from
 			//remote to turn it on -- or server side call set_alerts();
 

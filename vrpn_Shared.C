@@ -759,7 +759,7 @@ static int vrpn_AdjustFrequency(void)
     const int tPerLoop = 500; // milliseconds for Sleep()
     cerr.precision(4);
     cerr.setf(ios::fixed);
-    cerr << "vrpn gettimeofday: determining clock frequency...";
+    //cerr << "vrpn gettimeofday: determining clock frequency...";
 
     LARGE_INTEGER startperf, endperf;
     LARGE_INTEGER perffreq;
@@ -793,8 +793,8 @@ static int vrpn_AdjustFrequency(void)
 
     if (fabs(perffreq.QuadPart - freq) < 0.05*freq) {
         VRPN_CLOCK_FREQ = (__int64) perffreq.QuadPart;
-        cerr << "\nvrpn gettimeofday: perf clock is tsc -- using perf clock freq (" 
-             << perffreq.QuadPart/1e6 << " MHz)" << endl;
+        //cerr << "\nvrpn gettimeofday: perf clock is tsc -- using perf clock freq (" 
+        //     << perffreq.QuadPart/1e6 << " MHz)" << endl;
         SetPriorityClass( GetCurrentProcess() , dwPriorityClass );
         SetThreadPriority( GetCurrentThread(), iThreadPriority );
         return 0;
@@ -804,8 +804,8 @@ static int vrpn_AdjustFrequency(void)
     // tell accurately enough with the short test. either way we now
     // need an accurate frequency measure, so ...
 
-    cerr << " (this will take " << setprecision(0) << loops*tPerLoop/1000.0 
-         << " seconds)... " << endl;
+    //cerr << " (this will take " << setprecision(0) << loops*tPerLoop/1000.0 
+    //     << " seconds)... " << endl;
     cerr.precision(4);
 
     for (int j = 0; j < loops; j++) {
@@ -848,11 +848,11 @@ static int vrpn_AdjustFrequency(void)
     // approx the perf clock freq).
     if (fabs(perffreq.QuadPart - freq) < 0.05*freq) {
         VRPN_CLOCK_FREQ = perffreq.QuadPart;
-        cerr << "vrpn gettimeofday: perf clock is tsc -- using perf clock freq (" 
-             << perffreq.QuadPart/1e6 << " MHz)" << endl;
+        //cerr << "vrpn gettimeofday: perf clock is tsc -- using perf clock freq (" 
+        //     << perffreq.QuadPart/1e6 << " MHz)" << endl;
     } else {
-        cerr << "vrpn gettimeofday: adjusted clock freq to measured freq (" 
-             << freq/1e6 << " MHz)" << endl;
+        //cerr << "vrpn gettimeofday: adjusted clock freq to measured freq (" 
+        //     << freq/1e6 << " MHz)" << endl;
     }
     VRPN_CLOCK_FREQ = (__int64) freq;
     return 0;
@@ -912,8 +912,8 @@ int gettimeofday(timeval *tp, struct timezone *tzp)
 	    GetVersionEx(&osvi);
 
 	    if (osvi.dwPlatformId != VER_PLATFORM_WIN32_NT) {
-                cerr << "\nvrpn gettimeofday: disabling hi performance clock on non-NT system. " 
-	             << "Defaulting to _ftime (~6 ms resolution) ..." << endl;
+                //cerr << "\nvrpn gettimeofday: disabling hi performance clock on non-NT system. " 
+	        //     << "Defaulting to _ftime (~6 ms resolution) ..." << endl;
 		fHasPerfCounter=0;
 	        gettimeofday( tp, tzp );
 		return 0;
@@ -922,16 +922,16 @@ int gettimeofday(timeval *tp, struct timezone *tzp)
 
         // check that hi-perf clock is available
         if ( !(fHasPerfCounter = QueryPerformanceFrequency( &liTemp )) ) {
-            cerr << "\nvrpn gettimeofday: no hi performance clock available. " 
-                 << "Defaulting to _ftime (~6 ms resolution) ..." << endl;
+            //cerr << "\nvrpn gettimeofday: no hi performance clock available. " 
+            //     << "Defaulting to _ftime (~6 ms resolution) ..." << endl;
             fHasPerfCounter=0;
             gettimeofday( tp, tzp );
             return 0;
         }
 
         if (vrpn_AdjustFrequency()<0) {
-            cerr << "\nvrpn gettimeofday: can't verify clock frequency. " 
-                 << "Defaulting to _ftime (~6 ms resolution) ..." << endl;
+            //cerr << "\nvrpn gettimeofday: can't verify clock frequency. " 
+            //     << "Defaulting to _ftime (~6 ms resolution) ..." << endl;
             fHasPerfCounter=0;
             gettimeofday( tp, tzp );
             return 0;

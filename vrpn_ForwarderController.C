@@ -18,9 +18,9 @@ vrpn_Forwarder_Brain::vrpn_Forwarder_Brain (vrpn_Connection * c) :
   d_myId = c->register_sender("vrpn_Forwarder_Brain");
 
   d_start_forwarding_type =
-      c->register_message_type("vrpn_Forwarder_Brain_start");
+      c->register_message_type("vrpn_Forwarder_Brain start_forwarding");
   d_forward_type = 
-      c->register_message_type("vrpn_Forwarder_Brain_forward");
+      c->register_message_type("vrpn_Forwarder_Brain forward");
 }
 
 

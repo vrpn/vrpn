@@ -60,8 +60,8 @@ int vrpn_Clock::register_types(void)
 	return -1;
     }
 
-    queryMsg_id = d_connection->register_message_type("clock_query");
-    replyMsg_id = d_connection->register_message_type("clock_reply");
+    queryMsg_id = d_connection->register_message_type("vrpn_Clock query");
+    replyMsg_id = d_connection->register_message_type("vrpn_Clock reply");
     if ( (queryMsg_id == -1) || (replyMsg_id == -1) ) {
       cerr << "vrpn_Clock: Can't register type IDs" << endl;
       d_connection = NULL;

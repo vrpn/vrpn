@@ -86,50 +86,50 @@ vrpn_BaseClass(name, c)
 int vrpn_ForceDevice::register_types(void)
 {
     force_message_id =
-	d_connection->register_message_type("Force");
+	d_connection->register_message_type("vrpn_ForceDevice Force");
     forcefield_message_id = 
-	d_connection->register_message_type("Force_Field");
+	d_connection->register_message_type("vrpn_ForceDevice Force_Field");
     plane_message_id =
-	d_connection->register_message_type("Plane");
+	d_connection->register_message_type("vrpn_ForceDevice Plane");
     plane_effects_message_id =
-	d_connection->register_message_type("Plane2");
+	d_connection->register_message_type("vrpn_ForceDevice Plane2");
     setVertex_message_id = 
-	d_connection->register_message_type("setVertex");
+	d_connection->register_message_type("vrpn_ForceDevice setVertex");
     setNormal_message_id =
-	d_connection->register_message_type("setNormal");
+	d_connection->register_message_type("vrpn_ForceDevice setNormal");
     setTriangle_message_id = 
-	d_connection->register_message_type("setTriangle");
+	d_connection->register_message_type("vrpn_ForceDevice setTriangle");
     removeTriangle_message_id = 
-	d_connection->register_message_type("removeTriangle");
+	d_connection->register_message_type("vrpn_ForceDevice removeTriangle");
     updateTrimeshChanges_message_id = 
-	d_connection->register_message_type("updateTrimeshChanges");
+	d_connection->register_message_type("vrpn_ForceDevice updateTrimeshChanges");
     transformTrimesh_message_id = 
-	d_connection->register_message_type("transformTrimesh");
+	d_connection->register_message_type("vrpn_ForceDevice transformTrimesh");
     setTrimeshType_message_id = 
-	d_connection->register_message_type("setTrimeshType");
+	d_connection->register_message_type("vrpn_ForceDevice setTrimeshType");
     clearTrimesh_message_id = 
-	d_connection->register_message_type("clearTrimesh");
+	d_connection->register_message_type("vrpn_ForceDevice clearTrimesh");
     scp_message_id =
-	d_connection->register_message_type("SCP");
+	d_connection->register_message_type("vrpn_ForceDevice SCP");
     error_message_id =
-	d_connection->register_message_type("Force_Error");
+	d_connection->register_message_type("vrpn_ForceDevice Force_Error");
 
       enableConstraint_message_id =
-            d_connection->register_message_type("vrpn_FDev_constraint_enable");
+            d_connection->register_message_type("vrpn_ForceDevice constraint_enable");
       setConstraintMode_message_id =
-            d_connection->register_message_type("vrpn_FDev_constraint_mode");
+            d_connection->register_message_type("vrpn_ForceDevice constraint_mode");
       setConstraintPoint_message_id =
-            d_connection->register_message_type("vrpn_FDev_constraint_point");
+            d_connection->register_message_type("vrpn_ForceDevice constraint_point");
       setConstraintLinePoint_message_id =
-            d_connection->register_message_type("vrpn_FDev_constraint_linept");
+            d_connection->register_message_type("vrpn_ForceDevice constraint_linept");
       setConstraintLineDirection_message_id =
-            d_connection->register_message_type("vrpn_FDev_constraint_linedir");
+            d_connection->register_message_type("vrpn_ForceDevice constraint_linedir");
       setConstraintPlanePoint_message_id =
-            d_connection->register_message_type("vrpn_FDev_constraint_plpt");
+            d_connection->register_message_type("vrpn_ForceDevice constraint_plpt");
       setConstraintPlaneNormal_message_id =
-            d_connection->register_message_type("vrpn_FDev_constraint_plnorm");
+            d_connection->register_message_type("vrpn_ForceDevice constraint_plnorm");
       setConstraintKSpring_message_id =
-            d_connection->register_message_type("vrpn_FDev_constraint_KSpring");
+            d_connection->register_message_type("vrpn_ForceDevice constraint_KSpring");
 
       return 0;
 }

@@ -254,19 +254,19 @@ int vrpn_BaseClass::init(void)
 
     // Register the text and ping/pong types, which will be available to all classes for use.
     if ( d_connection != NULL ) {
-        d_text_message_id  = d_connection->register_message_type("vrpn_Text_ascii_type");
+        d_text_message_id  = d_connection->register_message_type("vrpn_Base text_message");
         if (d_text_message_id  == -1) {
 	    cerr << "vrpn_BaseClass: Can't register Text type ID" << endl;
 	    d_connection = NULL;
 	    return -1;
         }
-        d_ping_message_id  = d_connection->register_message_type("Server_are_you_there");
+        d_ping_message_id  = d_connection->register_message_type("vrpn_Base ping_message");
         if (d_ping_message_id  == -1) {
 	    cerr << "vrpn_BaseClass: Can't register ping type ID" << endl;
 	    d_connection = NULL;
 	    return -1;
         }
-        d_pong_message_id  = d_connection->register_message_type("Server_is_here");
+        d_pong_message_id  = d_connection->register_message_type("vrpn_Base pong_message");
         if (d_pong_message_id  == -1) {
 	    cerr << "vrpn_BaseClass: Can't register pong type ID" << endl;
 	    d_connection = NULL;

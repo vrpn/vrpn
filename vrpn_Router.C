@@ -102,7 +102,7 @@ int vrpn_Router::register_types(void)
 
 	// Define message type: the router server sends a message to its clients
 	// announcing that the router state has changed.
-    change_m_id = d_connection->register_message_type("Router_state_update");
+    change_m_id = d_connection->register_message_type("vrpn_Router state_update");
     if (change_m_id == -1) {
 		fprintf(stderr,"vrpn_Router: Can't register type IDs\n");
 		d_connection = NULL;
@@ -110,19 +110,19 @@ int vrpn_Router::register_types(void)
 
 	// Define message type: a client sends a command to the router server
 	// to route a certain input channel to a certain output channel.
-    set_link_m_id = d_connection->register_message_type("Set_link_command_from_client");
+    set_link_m_id = d_connection->register_message_type("vrpn_Router set_link");
     if (set_link_m_id == -1) {
 		fprintf(stderr,"vrpn_Router: Can't register type IDs\n");
 		d_connection = NULL;
     }
 
-    name_m_id = d_connection->register_message_type("Send_channel_name_to_client");
+    name_m_id = d_connection->register_message_type("vrpn_Router channel_name");
     if (name_m_id == -1) {
 		fprintf(stderr,"vrpn_Router: Can't register type IDs\n");
 		d_connection = NULL;
     }
 
-    set_named_link_m_id = d_connection->register_message_type("Client_sends_pair_of_names_to_server");
+    set_named_link_m_id = d_connection->register_message_type("vrpn_Router pair_of_names");
     if (set_named_link_m_id == -1) {
 		fprintf(stderr,"vrpn_Router: Can't register type IDs\n");
 		d_connection = NULL;

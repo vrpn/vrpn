@@ -108,21 +108,21 @@ void vrpn_SharedObject::bindConnection (vrpn_Connection * c) {
   sprintf(buffer, "vrpn Shared peer %s %s", d_typename, d_name);
   d_remoteId = c->register_sender(buffer);
   //d_updateFromServer_type = c->register_message_type
-          //("vrpn_Shared_update_from_server");
+          //("vrpn_Shared update_from_server");
   //d_updateFromRemote_type = c->register_message_type
-          //("vrpn_Shared_update_from_remote");
+          //("vrpn_Shared update_from_remote");
   d_update_type = c->register_message_type
-          ("vrpn_Shared_update");
+          ("vrpn_Shared update");
 
 //fprintf (stderr, "My name is %s;  myId %d, ufs type %d, ufr type %d.\n",
 //buffer, d_myId, d_updateFromServer_type, d_updateFromRemote_type);
 
   d_requestSerializer_type = c->register_message_type
-          ("vrpn_Shared_request_serializer");
+          ("vrpn_Shared request_serializer");
   d_grantSerializer_type = c->register_message_type
-          ("vrpn_Shared_grant_serializer");
+          ("vrpn_Shared grant_serializer");
   d_assumeSerializer_type = c->register_message_type
-          ("vrpn_Shared_assume_serializer");
+          ("vrpn_Shared assume_serializer");
 }
 
 void vrpn_SharedObject::useLamportClock (vrpn_LamportClock * l) {

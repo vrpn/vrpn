@@ -17,11 +17,11 @@ vrpn_File_Controller::vrpn_File_Controller (vrpn_Connection * c) :
         c->register_sender("vrpn File Controller");
 
   d_set_replay_rate_type =
-        c->register_message_type("vrpn_File_set_replay_rate");
+        c->register_message_type("vrpn_File set_replay_rate");
   d_reset_type =
-        c->register_message_type("vrpn_File_reset");
+        c->register_message_type("vrpn_File reset");
   d_play_to_time_type =
-        c->register_message_type("vrpn_File_play_to_time");
+        c->register_message_type("vrpn_File play_to_time");
 }
 
 vrpn_File_Controller::~vrpn_File_Controller (void) {

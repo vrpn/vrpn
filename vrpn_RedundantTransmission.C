@@ -260,8 +260,8 @@ void vrpn_RedundantController_Protocol::decode_enable
 
 
 void vrpn_RedundantController_Protocol::register_types (vrpn_Connection * c) {
-  d_set_type = c->register_message_type("vrpn_Red_Xmit_Ctrl_set");
-  d_enable_type = c->register_message_type("vrpn_Red_Xmit_Ctrl_enable");
+  d_set_type = c->register_message_type("vrpn_Red_Xmit_Ctrl set");
+  d_enable_type = c->register_message_type("vrpn_Red_Xmit_Ctrl enable");
 }
 
 

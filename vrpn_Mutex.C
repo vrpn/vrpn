@@ -47,14 +47,14 @@
 //#define VERBOSE
 
 //static const char * myID = "vrpn_Mutex";
-static const char * request_type = "vrpn_Mutex_Request";
-static const char * release_type = "vrpn_Mutex_Release";
+static const char * request_type = "vrpn_Mutex Request";
+static const char * release_type = "vrpn_Mutex Release";
 static const char * releaseNotification_type =
-                                   "vrpn_Mutex_Release_Notification";
-static const char * grantRequest_type = "vrpn_Mutex_Grant_Request";
-static const char * denyRequest_type = "vrpn_Mutex_Deny_Request";
-//static const char * losePeer_type = "vrpn_Mutex_Lose_Peer";
-static const char * initialize_type = "vrpn_Mutex_Initialize";
+                                   "vrpn_Mutex Release_Notification";
+static const char * grantRequest_type = "vrpn_Mutex Grant_Request";
+static const char * denyRequest_type = "vrpn_Mutex Deny_Request";
+//static const char * losePeer_type = "vrpn_Mutex Lose_Peer";
+static const char * initialize_type = "vrpn_Mutex Initialize";
 
 struct losePeerData {
   vrpn_Connection * connection;
