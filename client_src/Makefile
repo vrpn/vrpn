@@ -12,6 +12,7 @@
 #HW_OS := sparc_solaris_64
 #HW_OS := hp700_hpux10
 #HW_OS := pc_linux
+#HW_OS := pc_linux64
 #HW_OS := pc_cygwin
 #HW_OS := pc_FreeBSD
 #HW_OS := powerpc_aix
@@ -51,6 +52,10 @@ ARCH_LIBS := -lquat -lm
 
 ifeq ($(HW_OS),pc_linux)
   CC := g++
+endif
+
+ifeq ($(HW_OS),pc_linux64)
+  CC := cc -m64
 endif
 
 ifeq ($(HW_OS),sgi_irix)

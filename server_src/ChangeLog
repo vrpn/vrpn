@@ -1,3 +1,8 @@
+2005-02-01  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * Makefile : Added John Stone's definitions to make
+                things compile under 64-bit Linux.
+
 2005-01-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Generic_server_object.h : Added final newline.

@@ -10,6 +10,7 @@
 #HW_OS := sparc_solaris_64
 #HW_OS := hp700_hpux10
 #HW_OS := pc_linux
+#HW_OS := pc_linux64
 #HW_OS := pc_cygwin
 #HW_OS := pc_FreeBSD
 #HW_OS := powerpc_aix
@@ -58,8 +59,11 @@ ifeq ($(HW_OS),sparc_solaris_64)
 	CC := /opt/SUNWspro/bin/CC -xarch=v9a
 	SYSLIBS := -lsocket -lnsl
 endif
-ifeq ($(HW_OS),powerpc_aix)
+ifeq ($(HW_os),powerpc_aix)
 	CC := /usr/ibmcxx/bin/xlC_r -g -qarch=pwr3 -w
+endif
+ifeq ($(HW_os),pc_linux64)
+	CC := cc -m64
 endif
 
 ifeq ($(HW_OS),sgi_irix)
@@ -84,9 +88,6 @@ endif
 ifeq ($(HW_OS), hp_flow_aCC)
 	CC := /opt/aCC/bin/aCC
 endif
-
-        
-
 
 OBJ_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)
 LIB_DIR := ../$(OBJ_DIR)
