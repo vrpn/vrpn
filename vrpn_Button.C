@@ -1040,7 +1040,8 @@ void vrpn_Button_SerialMouse::mainloop()
 }
     
 // Fill in the buttons[] array with the current value of each of the
-// buttons
+// buttons  For a description of the protocols for a Microsoft 3button
+// mouse and a MouseSystems mouse, see http://www.hut.fi/~then/mytexts/mouse.html
 void vrpn_Button_SerialMouse::read(void)
 { 
     // Make sure we're ready to read
@@ -1075,30 +1076,34 @@ void vrpn_Button_SerialMouse::read(void)
 		  case THREEBUTTON_EMULATION:
 			// a mouse capable of 3 button emulation
 			// this mouse encodes its buttons in a byte that is one of
-			// 0xc0 0xd0 0xe0 0xf0 
-		
-			if ((buffer&0xcf) == 0x80)  // throw away all unwanted bytes
-				continue;
-		
+			// 0xc0 0xd0 0xe0 0xf0.
+
+		        // Throw away all bytes that are not one of C0, D0, E0 or F0.
+		        if ( (buffer != 0xc0) && (buffer != 0xd0) &&
+			  (buffer != 0xe0) && (buffer != 0xf0) ) {
+			  continue;
+			}
+
 			buttons[0] = (buffer & 0x20)?1:0;
 			buttons[2] = (buffer & 0x10)?1:0;
 			// middle button check:: we get here without a change in left or right
-			if ((buttons[0] == lastL) &&
-				(buttons[2] == lastR) &&
-				!debounce) {
+			// This means that we toggle the middle button by moving the mouse
+			// around while not pressing or releasing the other buttons!
+			if ((buttons[0] == lastL) && (buttons[2] == lastR) && !debounce) {
 				buttons[1] = lastM?0:1;
 			}
 			debounce = 1;
 			break;
 
-	      case MOUSESYSTEMS:
+		  case MOUSESYSTEMS:
 
 			// mousesystems (real PC 3 button mouse) protocol
 			// The pc three button mouse encodes its buttons in a byte 
 			// that looks like 1 0 0 0 0 lb mb rb
 
-			if ((buffer  & 0xf8) != 0x80)
+		        if ((buffer  & 0xf8) != 0x80) {	// Ignore all bytes but first in record
 				continue;
+			}
 			debounce = 1;
 			buttons[0] = (buffer & 4)?0:1;
 			buttons[1] = (buffer & 2)?0:1;

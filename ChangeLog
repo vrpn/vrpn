@@ -1,5 +1,11 @@
 2002-01-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Button.C (vrpn_Button_SerialMouse::read) : Checks more
+		carefully for unwanted characters.  More comments to
+		describe what is happening.
+
+2002-01-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Tracker_Fastrak.C (reset) : Some IS900 trackers report
 		a status message with only 54 bytes, rather than the 55 bytes
 		for a Fastrak.  This code is generalized to handle both.
