@@ -8,19 +8,20 @@ main()
 	remote->preload_sampled_sound("/net/nano/nano3/sounds/sfx-4/4-3.au");
 	remote->mainloop();
 	sleep(5);
-
 	remote->play_sampled_sound("/net/nano/nano3/sounds/sfx-4/4-3.au", 100,
-	                    vrpn_SND_LOOPED, vrpn_SND_BOTH, 1);
+	                    vrpn_SND_SINGLE, vrpn_SND_BOTH, 1);
 	remote->mainloop();
-
-	sleep(5);
-
+	sleep(1); 
+	remote->play_sampled_sound("/net/nano/nano3/sounds/sfx-4/4-3.au", 100,
+	                    vrpn_SND_LOOPED, vrpn_SND_BOTH, 3);
+	remote->mainloop();
+	sleep(1);
 	remote->play_sampled_sound("/net/nano/nano3/sounds/sfx-3/3-2.au", 60,
 	                    vrpn_SND_LOOPED, vrpn_SND_BOTH, 2);
 	remote->mainloop();
 	sleep(20);
 
-        remote->play_stop(1);
+        remote->play_stop(2);
 	while(1)
 	remote->mainloop();
 }

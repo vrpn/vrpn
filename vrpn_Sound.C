@@ -31,8 +31,14 @@ struct sbi_instrument instr; // MIDI
 #endif
 static int sb, sbptr = 0;
 unsigned char sbbuf[404];
-static int tag = 0;
 static char command_buffer[1024];
+static int my_sound_type;
+static int my_volume;
+static int my_play_mode;
+static int my_ear_mode;
+char my_samplename[100];
+static int my_status;
+int childpid, pipe1[2], pipe2[2];
 
 void sbflush()
 {
@@ -221,7 +227,7 @@ sndinit(int chan)
         sbwrite(buf);
 #endif
 }
-vrpn_Linux_Sound::soundplay()
+void vrpn_Linux_Sound::soundplay()
 {
 #ifdef linux
 	// the local variables for sampled sound
@@ -234,9 +240,9 @@ vrpn_Linux_Sound::soundplay()
 	for (i=1; i < CHANNEL_NUM; i++)
 		if (channel_on[i]) {
 			for ( j = 0; j < 512; j++)
-				audio_buffer[j] += 
+				audio_buffer[j] += ((signed char) ( 
 				fileinmem[channel_file[i]][channel_index[i]*512 + j] 
-				* 1.0 * volume[i] /100;
+				* 1.0 * volume[i] /100)>>1);
 			channel_index[i] = 
 			(channel_index[i] + 1 > channel_max[i]) ? 100 : channel_index[i]+1;
 			if ((play_mode[i] == vrpn_SND_SINGLE) && channel_index[i] ==100)
@@ -246,7 +252,7 @@ vrpn_Linux_Sound::soundplay()
 #endif
 }
 
-vrpn_Linux_Sound::initchild()
+void vrpn_Linux_Sound::initchild()
 {
 #ifdef linux
 	int i, stereo, speed;
@@ -292,26 +298,66 @@ vrpn_Linux_Sound::initchild()
 #endif
 }
 
-vrpn_Linux_Sound::decode(char *msgbuf)
+void decode()
 {
-	tag = 0;
-	sound_type = (int) command_buffer[0];
-	if (sound_type == vrpn_SND_SAMPLE) {
-	volume[0] = (int) command_buffer[1];
-	play_mode[0] = (int) command_buffer[2];
-	ear_mode = (int) command_buffer[3];
-	strncpy(samplename, 
+	my_sound_type = (int) command_buffer[0];
+	if (my_sound_type == vrpn_SND_SAMPLE) {
+	my_volume = (int) command_buffer[1];
+	my_play_mode = (int) command_buffer[2];
+	my_ear_mode = (int) command_buffer[3];
+	strncpy(my_samplename, 
 	        &command_buffer[4], strlen(command_buffer) - 4);
-	samplename[strlen(command_buffer) - 4] = '\0';}
-	else if (sound_type == vrpn_SND_STOP)
-			volume[0] = (int) command_buffer[1];
-	else if (sound_type == vrpn_SND_PRELOAD)
+	my_samplename[strlen(command_buffer) - 4] = '\0';}
+	else if (my_sound_type == vrpn_SND_STOP)
+			my_volume = (int) command_buffer[1];
+	else if (my_sound_type == vrpn_SND_PRELOAD)
 	{
-	strncpy(samplename, 
+	strncpy(my_samplename, 
 	        &command_buffer[1], strlen(command_buffer) - 1);
-	samplename[strlen(command_buffer) - 1] = '\0';}
-	status = sound_type;
+	my_samplename[strlen(command_buffer) - 1] = '\0';}
+	my_status = my_sound_type;
 }
+
+int pack_command(int sound_type, int play_mode, int ear_mode,
+					int volume,char *samplename1)
+{
+	char box[1024];
+	// box[0] is the total bytes transfered, so starting from box[1]
+	box[1] = sound_type;
+	box[2] = play_mode;
+	box[3] = ear_mode;
+	box[4] = volume;
+	box[5] = (char) strlen(samplename1);
+	strncpy(&box[6], samplename1, (int) box[5]);
+	box[6+(int)box[5]] = '\0';
+	box[0] = 6 + (int) box[5];
+	write(pipe1[1], box, box[0]+1);
+	return 1;
+}
+
+int pack_command(int set_stop, int channel)
+{
+	char box[1024];
+	box[1] = set_stop;
+	box[2] = channel;
+	box[3] = '\0';
+	box[0] = 3;
+	write(pipe1[1], box, box[0]+1);
+	return 1;
+}
+
+int pack_command(int set_load, char *sound)
+{
+	char box[1024];
+	box[1] = set_load;
+	box[2] = (char) strlen(sound);
+	strncpy(&box[3], sound, (int) box[2]);
+	box[3+(int)box[2]] = '\0';
+	box[0] = 3 + (int) box[2];
+	write(pipe1[1], box, box[0]+1);
+	return 1;
+}
+
 int sound_handler(void *userdata, vrpn_HANDLERPARAM p)
 {
 #ifdef linux
@@ -323,7 +369,21 @@ int sound_handler(void *userdata, vrpn_HANDLERPARAM p)
 		command_buffer[i] = (char) ntohl(longbuf[i]);
 	}
 	command_buffer[p.payload_len/4] = '\0';
-	tag = 1;
+	decode();
+	switch(my_status) {
+		case vrpn_SND_SAMPLE: // for sampled sound using /dev/audio 
+		 pack_command(my_sound_type, my_play_mode, my_ear_mode, 
+		             my_volume, my_samplename);
+		 break;
+		case vrpn_SND_STOP: // stop the currently playing audio
+		 pack_command(vrpn_SND_STOP, my_volume);
+		 break;
+		case vrpn_SND_PRELOAD:
+		 pack_command(vrpn_SND_PRELOAD, my_samplename);
+		 break;
+		default:
+		 break;
+	} 
 #endif
 	return 0;
 }
@@ -376,73 +436,14 @@ vrpn_Linux_Sound::vrpn_Linux_Sound(char *name, vrpn_Connection *c):vrpn_Sound(c)
 }
 
 
-int vrpn_Linux_Sound::pack_command(int sound_type, int play_mode, int ear_mode,
-					int volume,char *samplename1)
-{
-	char box[1024];
-	// box[0] is the total bytes transfered, so starting from box[1]
-	box[1] = sound_type;
-	box[2] = play_mode;
-	box[3] = ear_mode;
-	box[4] = volume;
-	box[5] = (char) strlen(samplename1);
-	strncpy(&box[6], samplename1, (int) box[5]);
-	box[6+(int)box[5]] = '\0';
-	box[0] = 6 + (int) box[5];
-	write(pipe1[1], box, box[0]+1);
-	return 1;
-}
-
-int vrpn_Linux_Sound::pack_command(int set_stop, int channel)
-{
-	char box[1024];
-	box[1] = sound_type;
-	box[2] = channel;
-	box[3] = '\0';
-	box[0] = 3;
-	write(pipe1[1], box, box[0]+1);
-	return 1;
-}
-
-int vrpn_Linux_Sound::pack_command(int set_load, char *sound)
-{
-	char box[1024];
-	box[1] = vrpn_SND_PRELOAD;
-	box[2] = (char) strlen(sound);
-	strncpy(&box[3], sound, (int) box[2]);
-	box[3+(int)box[2]] = '\0';
-	box[0] = 3 + (int) box[2];
-	write(pipe1[1], box, box[0]+1);
-	return 1;
-}
 
 void vrpn_Linux_Sound::mainloop(void)
 {
-	char msgbuf[4096];
-
-	if (tag) {
-	decode(command_buffer);
-	switch(status) {
-		case vrpn_SND_SAMPLE: // for sampled sound using /dev/audio 
-		 pack_command(sound_type, play_mode[0], ear_mode, 
-		              volume[0], samplename);
-		 break;
-		case vrpn_SND_STOP: // stop the currently playing audio
-		 pack_command(vrpn_SND_STOP, volume[0]);
-		 break;
-		case vrpn_SND_PRELOAD:
-		 pack_command(vrpn_SND_PRELOAD, samplename);
-		 break;
-		default:
-		 break;
-	} }
-	return;
 }
 // The following are the part the users are concerned with
 
 vrpn_Sound_Remote::vrpn_Sound_Remote(char *name)
 {
-
 	//Establish the connection
 	if ((connection = vrpn_get_connection_by_name(name)) == NULL) {
 		return;
@@ -482,7 +483,6 @@ int vrpn_Sound_Remote::encode(char *msgbuf, const char *sound,
 
 int vrpn_Sound_Remote::encode(char *msgbuf, int set_stop, int channel)
 {
-	int i;
 	unsigned long *longbuf = (unsigned long*) (void*)(msgbuf);
 	int index = 0;
 	longbuf[index++] = set_stop;
@@ -513,7 +513,7 @@ void vrpn_Sound_Remote::play_sampled_sound(const char *sound,
 	struct timeval current_time;
 	//pack the message and send it to the sound server through connection
 	char msgbuf[1024];
-	int i, len;
+	int len;
 
 	gettimeofday(&current_time, NULL);
 	

@@ -41,19 +41,11 @@ class vrpn_Linux_Sound: public vrpn_Sound {
 	// Open the sound devices connected to the local machine, talk to the
 	// outside world through the connection.
 	vrpn_Linux_Sound(char *name, vrpn_Connection *connection);
-	decode(char *msgbuf);
-	int checkpipe();
 	virtual void mainloop(void);
-	// just for test, will be moved to protected part after done
-    int pack_command(int sound_type, int play_mode, int ear_mode, 
-			int volume, char *samplename);	
-    int pack_command(int set_stop, int channel);
-    int pack_command(int set_load, char* sound);
 	int mapping(char *name, int address);
+	int checkpipe();
 
   protected:
-	int     childpid, pipe1[2], pipe2[2]; 
-
   	int     status; // playing or idle which will be used by child process
                     // to dertermine stopping the playing sound
 	int	sound_type; // most-recent sound type 
@@ -74,8 +66,8 @@ class vrpn_Linux_Sound: public vrpn_Sound {
 	int channel_index[CHANNEL_NUM];
 	int channel_max[CHANNEL_NUM]; //num of chunks chunk size is 512 here
 	
-    soundplay(void);
-    int initchild();
+    void soundplay(void);
+    void initchild();
 };
 
 //----------------------------------------------------------
