@@ -37,6 +37,10 @@ void vrpn_Analog::print(void ) {
   printf("\n");
 }
 
+vrpn_Connection *vrpn_Analog::connectionPtr() {
+  return connection;
+}
+
 int vrpn_Analog::encode_to(char *buf)
 {
    // Message includes: long AnalogNum, long state

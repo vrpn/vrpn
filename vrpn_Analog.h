@@ -21,6 +21,9 @@ public:
 	// updates.
 	virtual void mainloop(void) = 0;	// Report changes to conneciton
 
+        
+        vrpn_Connection *connectionPtr();
+
   protected:
 	vrpn_Connection *connection;
 	double	channel[vrpn_CHANNEL_MAX];
