@@ -1,3 +1,8 @@
+2004-05-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* tracker_to_poser.cpp : Can specify name of tracker and poser
+		on command line.
+
 2004-05-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* client_to_poser.cpp : New application to read from tracker

@@ -9,7 +9,7 @@ static	bool  g_verbose = false;
 
 void Usage (const char * s)
 {
-  fprintf(stderr,"Usage: %s [-v] [-millisleep n]\n",s);
+  fprintf(stderr,"Usage: %s [-v] [-millisleep n] [trackername [posername]]\n",s);
   fprintf(stderr,"       -millisleep: Sleep n milliseconds each loop cycle\n"); 
   fprintf(stderr,"                    (if no option is specified, the Windows architecture\n");
   fprintf(stderr,"                     will free the rest of its time slice on each loop\n");
@@ -20,6 +20,8 @@ void Usage (const char * s)
   fprintf(stderr,"                    -millisleep -1 will cause the server process to use the\n"); 
   fprintf(stderr,"                     whole CPU on any uniprocessor machine.\n");
   fprintf(stderr,"       -v: Verbose.\n");
+  fprintf(stderr,"       trackername: String name of the tracker device (default Tracker0@localhost)\n");
+  fprintf(stderr,"       posername: String name of the poser device (default Poser0@localhost)\n");
   exit(0);
 }
 
@@ -42,8 +44,6 @@ void	handle_tracker_update(void *userdata, const vrpn_TRACKERCB t)
 
 main (int argc, char * argv[])
 {
-  // This uses hard-coded names for the tracker client and poser client, but could be
-  // generalized to accept these as other optional parameters.
   char 	*tracker_client_name = "Tracker0@localhost";
   char 	*poser_client_name = "Poser0@localhost";
   int	realparams = 0;
@@ -71,7 +71,6 @@ main (int argc, char * argv[])
   i = 1;
   while (i < argc) {
     if (!strcmp(argv[i], "-v")) {		// Specify config-file name
-	  if (++i > argc) { Usage(argv[0]); }
 	  g_verbose = true;
     } else if (!strcmp(argv[i], "-millisleep")) {	// How long to sleep each loop?
 	  if (++i > argc) { Usage(argv[0]); }
@@ -80,19 +79,27 @@ main (int argc, char * argv[])
 	  Usage(argv[0]);
     } else switch (realparams) {		// Non-flag parameters
       case 0:
-	Usage(argv[0]);
+	tracker_client_name = argv[i];
+	realparams++;
+	break;
+      case 1:
+	poser_client_name = argv[i];
+	realparams++;
 	break;
       default:
 	Usage(argv[0]);
     }
     i++;
   }
-  if (realparams != 0) {
+  if (realparams > 2) {
     Usage(argv[0]);
   }
 
   //--------------------------------------------------------------------------------------
   // Open the tracker and poser objects that we're going to use.
+  if (g_verbose) {
+    printf("Opening tracker %s, poser %s\n", tracker_client_name, poser_client_name);
+  }
   vrpn_Tracker_Remote *tkr = new vrpn_Tracker_Remote(tracker_client_name);
   vrpn_Poser_Remote *psr = new vrpn_Poser_Remote(poser_client_name);
 
