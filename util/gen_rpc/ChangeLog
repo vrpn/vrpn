@@ -1,3 +1,14 @@
+2004-09-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	Adding Chris VanderKnyff's changes that enable DLL linkage
+	for applications.  Heading towards enabling C# and other language
+	support.
+
+	* test_gen_rpc.dsp : Making it depend on the project
+		that causes both VRPN and VRPNDLL projects to be built, rather
+		than on VRPN.  If you try to make it depend on both
+		VRPN and VRPNDLL, you get linking trouble.
+
 2004-04-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* main_tes.C : Using vrpn_gettimeofday() not gettimeofday().
