@@ -1,3 +1,11 @@
+2003-09-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg : Added description for UNC joystick on a
+		Windows machine.  Removed redundant example.
+	* vrpn_Phantom.C : Made it stop doing planes, meshes,
+		and effects when the last connection is dropped.
+	* vrpn_Phantom.h : Same.
+
 2003-09-26  Blair MacIntyre     <blair@cc.gatech.edu>
 
 	* vrpn.cfg.SAMPLE : Added description of the parameters

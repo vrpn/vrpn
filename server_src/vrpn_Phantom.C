@@ -149,6 +149,17 @@ void vrpn_Phantom::resetPHANToM(void)
     scene->startServoLoop();
 }
 
+int vrpn_Phantom::handle_dropConnection(void * userdata, vrpn_HANDLERPARAM)
+{     
+  printf("vrpn_Phantom: Dropped last connection, resetting force effects\n");
+  ((vrpn_Phantom *)(userdata))->reset();
+
+  // Always return 0 here, because nonzero return means that the input data
+  // was garbage, not that there was an error. If we return nonzero from a
+  // vrpn_Connection handler, it shuts down the connection.
+  return 0;
+}
+
 // return the position of the phantom stylus relative to base
 // coordinate system
 void vrpn_Phantom::getPosition(double *vec, double *orient)
@@ -253,10 +264,10 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
     planes[i]->setSurfaceFdynamic(SurfaceFdynamic);
     planes[i]->setSurfaceFstatic(SurfaceFstatic);
     planes[i]->setSurfaceKdamping(SurfaceKdamping);
-	planes[i]->setBuzzAmplitude(1000.0*SurfaceBuzzAmp);
-	planes[i]->setBuzzFrequency(SurfaceBuzzFreq);
-	planes[i]->setTextureAmplitude(1000.0*SurfaceTextureAmplitude);
-	planes[i]->setTextureWavelength(1000.0*SurfaceTextureWavelength);
+    planes[i]->setBuzzAmplitude(1000.0*SurfaceBuzzAmp);
+    planes[i]->setBuzzFrequency(SurfaceBuzzFreq);
+    planes[i]->setTextureAmplitude(1000.0*SurfaceTextureAmplitude);
+    planes[i]->setTextureWavelength(1000.0*SurfaceTextureWavelength);
     hapticScene->addChild(planes[i]);
   }
 
@@ -348,6 +359,14 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
                                 "Can't register update-rate handler\n");
                 vrpn_Tracker::d_connection = NULL;
   }
+
+  //--------------------------------------------------------------------
+  // Whenever we drop the last connection to this server, we also
+  // want to reset all of the planes and other active effects so that
+  // forces are zeroed.
+  register_autodeleted_handler(d_connection->register_message_type
+                                      (vrpn_dropped_last_connection),
+		handle_dropConnection, this);
 
   scene->startServoLoop();
 
@@ -542,18 +561,15 @@ void vrpn_Phantom::mainloop(void) {
 
 
 void vrpn_Phantom::reset(){
-	if(trimesh->displayStatus())
-		trimesh->clear();
-	for (int i = 0; i < MAXPLANE; i++)
-	   if (planes[i]) planes[i]->setActive(FALSE);
-	phantom->stopEffect();
-	/*
-        XXX - this causes program to crash in ghost 3.0 code for some reason
-	if (errorCode != FD_OK) {
-		errorCode = FD_OK;
-		resetPHANToM();
-	}
-	*/
+  if(trimesh->displayStatus()) {
+    trimesh->clear();
+  }
+  for (int i = 0; i < MAXPLANE; i++) {
+    if (planes[i]) {
+      planes[i]->setActive(FALSE);
+    }
+  }
+  phantom->stopEffect();
 }
 
 int vrpn_Phantom::register_change_handler(void *userdata,

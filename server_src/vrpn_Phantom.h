@@ -96,6 +96,7 @@ protected:
 						vrpn_HANDLERPARAM p);
 	static int handle_custom_effect_change_message(void *userdata,
 						vrpn_HANDLERPARAM p);
+	static int handle_dropConnection (void *, vrpn_HANDLERPARAM);
 
 	// from vrpn_Tracker
 
