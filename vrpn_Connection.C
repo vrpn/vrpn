@@ -1248,7 +1248,7 @@ int vrpn_OneConnection::connect_tcp_to (const char * msg)
         } else {
 
 			perror("gethostbyname error:");
-#ifndef hpux
+#if !defined(hpux) && !defined(_WIN32) 
 			herror("gethostbyname error:");
 #endif
 
