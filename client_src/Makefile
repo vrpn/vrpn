@@ -69,13 +69,16 @@ all:	$(OBJ_DIR)/printvals $(OBJ_DIR)/printcereal \
 	$(OBJ_DIR)/ff_client \
 	$(OBJ_DIR)/ohm_client $(OBJ_DIR)/phan_client \
 	$(OBJ_DIR)/sphere_client $(OBJ_DIR)/bdbox_client \
-	add_vrpn_cookie
+	add_vrpn_cookie testSharedObject
 
 .PHONY:	forwarderClient
 forwarderClient:	$(OBJ_DIR)/forwarderClient
 
 .PHONY:	add_vrpn_cookie
 add_vrpn_cookie:	$(OBJ_DIR)/add_vrpn_cookie
+
+.PHONY: testSharedObject
+testSharedObject:	$(OBJ_DIR)/testSharedObject
 
 .PHONY:	text
 text:	$(OBJ_DIR)/text
@@ -131,6 +134,12 @@ $(OBJ_DIR)/checklogfile: $(OBJ_DIR)/checklogfile.o ../$(HW_OS)/libvrpn.a
 $(OBJ_DIR)/add_vrpn_cookie: $(OBJ_DIR)/add_vrpn_cookie.o ../$(HW_OS)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/add_vrpn_cookie \
 		$(OBJ_DIR)/add_vrpn_cookie.o -lvrpn $(ARCH_LIBS)
+
+$(OBJ_DIR)/testSharedObject: $(OBJ_DIR)/testSharedObject.o \
+				../$(HW_OS)/libvrpn.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/testSharedObject \
+		$(OBJ_DIR)/testSharedObject.o -lvrpn $(ARCH_LIBS)
+
 
 # These utilities actually DON'T use libvrpn
 

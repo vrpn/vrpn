@@ -85,7 +85,7 @@ $(OBJ_DIR)/%.o:	%.C
 
 
 
-all:  vrpn_server test_vrpn client_and_server
+all:  vrpn_server test_vrpn client_and_server testSharedObject
 
 .PHONY:	vrpn_server
 vrpn_server:	$(OBJ_DIR)/vrpn_server
@@ -107,6 +107,9 @@ forward:	$(OBJ_DIR)/forward
 
 .PHONY:	text
 text:	$(OBJ_DIR)/text
+
+.PHONY:	testSharedObject
+testSharedObject:	$(OBJ_DIR)/testSharedObject
 
 # client:		$(OBJ_DIR)/client
 # player:		$(OBJ_DIR)/player
@@ -155,6 +158,12 @@ $(OBJ_DIR)/sample_analog:	$(OBJ_DIR) $(OBJ_DIR)/sample_analog.o \
 			../$(HW_OS)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/sample_analog \
 		$(OBJ_DIR)/sample_analog.o \
+		-lvrpnserver -lm
+
+$(OBJ_DIR)/testSharedObject:	$(OBJ_DIR) $(OBJ_DIR)/testSharedObject.o \
+			../$(HW_OS)/libvrpnserver.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/testSharedObject \
+		$(OBJ_DIR)/testSharedObject.o \
 		-lvrpnserver -lm
 
 
