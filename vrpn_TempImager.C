@@ -8,7 +8,7 @@ vrpn_TempImager::vrpn_TempImager(const char *name, vrpn_Connection *c) :
   _minY(0), _maxY(0),
   _nChannels(0)
 {
-
+    vrpn_BaseClass::init();
 }
 
 int vrpn_TempImager::register_types(void)
@@ -23,7 +23,7 @@ int vrpn_TempImager::register_types(void)
 }
 
 vrpn_TempImager_Server::vrpn_TempImager_Server(const char *name, vrpn_Connection *c,
-			 vrpn_int32 nRows, vrpn_int32 nCols,
+			 vrpn_int32 nCols, vrpn_int32 nRows,
 			 vrpn_float32 minX, vrpn_float32 maxX,
 			 vrpn_float32 minY, vrpn_float32 maxY) :
     vrpn_TempImager(name, c),
@@ -36,9 +36,11 @@ vrpn_TempImager_Server::vrpn_TempImager_Server(const char *name, vrpn_Connection
 
     // Set up callback handler for ping message from client so that it
     // sends the description.  This will make sure that the other side has
-    // heard the descrption before it hears a region message.
+    // heard the descrption before it hears a region message.  Also set this up
+    // to fire on the "new connection" system message.
 
     register_autodeleted_handler(d_ping_message_id, handle_ping_message, this, d_sender_id);
+    register_autodeleted_handler(d_connection->register_message_type(vrpn_got_connection), handle_ping_message, this);
 }
 
 int vrpn_TempImager_Server::add_channel(const char *name, const char *units,
@@ -65,8 +67,8 @@ int vrpn_TempImager_Server::add_channel(const char *name, const char *units,
   return _nChannels-1;
 }
 
-bool  vrpn_TempImager_Server::fill_region(vrpn_int16 chanIndex, vrpn_uint16 rMin, vrpn_uint16 rMax,
-		    vrpn_uint16 cMin, vrpn_uint16 cMax, vrpn_uint16 *data)
+bool  vrpn_TempImager_Server::fill_region(vrpn_int16 chanIndex, vrpn_uint16 cMin, vrpn_uint16 cMax,
+		    vrpn_uint16 rMin, vrpn_uint16 rMax, vrpn_uint16 *data)
 {
   // Make sure the region request has a valid channel, has indices all
   // within the image size, and is not too large to fit into the data
@@ -89,23 +91,31 @@ bool  vrpn_TempImager_Server::fill_region(vrpn_int16 chanIndex, vrpn_uint16 rMin
     return false;
   }
 
+  // Set the channel index
+  _region.chanIndex = chanIndex;
+
+  // Set the region size.
+  _region.rMin = rMin;
+  _region.rMax = rMax;
+  _region.cMin = cMin;
+  _region.cMax = cMax;
+
   // Fill the region with the values from the data, unscaling and unoffsetting beforehand so
   // that it fits within the range.
   unsigned  r,c;
-  unsigned  cols = cMax-cMin+1;
   vrpn_float32	offset = _channels[_region.chanIndex].offset;
   vrpn_float32	scale = _channels[_region.chanIndex].scale;
   for (r = rMin; r <= rMax; r++) {
     for (c = cMin; c <= cMax; c++) {
-      _region.vals[c + r*cols] = (vrpn_uint16)( (data[c+r*cols]-offset)/scale );
+      _region.write_unscaled_pixel(c, r, (vrpn_uint16)( (data[c+r*_nCols]-offset)/scale) );
     }
   }
 
   return true;
 }
 
-bool  vrpn_TempImager_Server::fill_region(vrpn_int16 chanIndex, vrpn_uint16 rMin, vrpn_uint16 rMax,
-		    vrpn_uint16 cMin, vrpn_uint16 cMax, vrpn_float32 *data)
+bool  vrpn_TempImager_Server::fill_region(vrpn_int16 chanIndex, vrpn_uint16 cMin, vrpn_uint16 cMax,
+		    vrpn_uint16 rMin, vrpn_uint16 rMax, vrpn_float32 *data)
 {
   // Make sure the region request has a valid channel, has indices all
   // within the image size, and is not too large to fit into the data
@@ -128,23 +138,31 @@ bool  vrpn_TempImager_Server::fill_region(vrpn_int16 chanIndex, vrpn_uint16 rMin
     return false;
   }
 
+  // Set the channel index
+  _region.chanIndex = chanIndex;
+
+  // Set the region size.
+  _region.rMin = rMin;
+  _region.rMax = rMax;
+  _region.cMin = cMin;
+  _region.cMax = cMax;
+
   // Fill the region with the values from the data, unscaling and unoffsetting beforehand so
   // that it fits within the range.
   unsigned  r,c;
-  unsigned  cols = cMax-cMin+1;
   vrpn_float32	offset = _channels[_region.chanIndex].offset;
   vrpn_float32	scale = _channels[_region.chanIndex].scale;
   for (r = rMin; r <= rMax; r++) {
     for (c = cMin; c <= cMax; c++) {
-      _region.vals[c + r*cols] = (vrpn_uint16)( (data[c+r*cols]-offset)/scale );
+      _region.write_unscaled_pixel(c, r, (vrpn_uint16)( (data[c+r*_nCols]-offset)/scale) );
     }
   }
 
   return true;
 }
 
-bool  vrpn_TempImager_Server::fill_region(vrpn_int16 chanIndex, vrpn_uint16 rMin, vrpn_uint16 rMax,
-		    vrpn_uint16 cMin, vrpn_uint16 cMax, vrpn_uint8 *data)
+bool  vrpn_TempImager_Server::fill_region(vrpn_int16 chanIndex, vrpn_uint16 cMin, vrpn_uint16 cMax,
+		    vrpn_uint16 rMin, vrpn_uint16 rMax, vrpn_uint8 *data)
 {
   // Make sure the region request has a valid channel, has indices all
   // within the image size, and is not too large to fit into the data
@@ -167,15 +185,23 @@ bool  vrpn_TempImager_Server::fill_region(vrpn_int16 chanIndex, vrpn_uint16 rMin
     return false;
   }
 
+  // Set the channel index
+  _region.chanIndex = chanIndex;
+
+  // Set the region size.
+  _region.rMin = rMin;
+  _region.rMax = rMax;
+  _region.cMin = cMin;
+  _region.cMax = cMax;
+
   // Fill the region with the values from the data, unscaling and unoffsetting beforehand so
   // that it fits within the range.
   unsigned  r,c;
-  unsigned  cols = cMax-cMin+1;
   vrpn_float32	offset = _channels[_region.chanIndex].offset;
   vrpn_float32	scale = _channels[_region.chanIndex].scale;
   for (r = rMin; r <= rMax; r++) {
     for (c = cMin; c <= cMax; c++) {
-      _region.vals[c + r*cols] = (vrpn_uint16)( (data[c+r*cols]-offset)/scale );
+      _region.write_unscaled_pixel(c, r, (vrpn_uint16)( (data[c+r*_nCols]-offset)/scale) );
     }
   }
 
@@ -207,7 +233,7 @@ bool  vrpn_TempImager_Server::send_region(const struct timeval *time)
   }
   vrpn_int32  len = sizeof(fbuf) - buflen;
   if (d_connection && d_connection->pack_message(len, timestamp,
-                               _region_m_id, d_sender_id, msgbuf,
+                               _region_m_id, d_sender_id, (char*)(void*)fbuf,
                                vrpn_CONNECTION_RELIABLE)) {
     fprintf(stderr,"vrpn_TempImager_Server::send_region(): cannot write message: tossing\n");
     return false;
@@ -227,19 +253,19 @@ bool  vrpn_TempImager_Server::send_description(void)
 
   // Pack the description of all of the fields in the imager into the buffer,
   // including the channel descriptions.
-  if (!vrpn_buffer(&msgbuf, &buflen, _minX) ||
-      !vrpn_buffer(&msgbuf, &buflen, _maxX) ||
-      !vrpn_buffer(&msgbuf, &buflen, _minY) ||
-      !vrpn_buffer(&msgbuf, &buflen, _maxY) ||
-      !vrpn_buffer(&msgbuf, &buflen, _nRows) ||
-      !vrpn_buffer(&msgbuf, &buflen, _nCols) ||
-      !vrpn_buffer(&msgbuf, &buflen, _nChannels) ) {
-    fprintf(stderr,"vrpn_TempImager_Server::send_description(): Can't pack message, tossing\n");
+  if (vrpn_buffer(&msgbuf, &buflen, _minX) ||
+      vrpn_buffer(&msgbuf, &buflen, _maxX) ||
+      vrpn_buffer(&msgbuf, &buflen, _minY) ||
+      vrpn_buffer(&msgbuf, &buflen, _maxY) ||
+      vrpn_buffer(&msgbuf, &buflen, _nRows) ||
+      vrpn_buffer(&msgbuf, &buflen, _nCols) ||
+      vrpn_buffer(&msgbuf, &buflen, _nChannels) ) {
+    fprintf(stderr,"vrpn_TempImager_Server::send_description(): Can't pack message header, tossing\n");
     return false;
   }
   for (i = 0; i < _nChannels; i++) {
     if (!_channels[i].buffer(&msgbuf, &buflen)) {
-      fprintf(stderr,"vrpn_TempImager_Server::send_description(): Can't pack message, tossing\n");
+      fprintf(stderr,"vrpn_TempImager_Server::send_description(): Can't pack message channel, tossing\n");
       return false;
     }
   }
@@ -249,7 +275,7 @@ bool  vrpn_TempImager_Server::send_description(void)
   vrpn_int32  len = sizeof(fbuf) - buflen;
   gettimeofday(&timestamp, NULL);
   if (d_connection && d_connection->pack_message(len, timestamp,
-                               _description_m_id, d_sender_id, msgbuf,
+                               _description_m_id, d_sender_id, (char *)(void*)fbuf,
                                vrpn_CONNECTION_RELIABLE)) {
     fprintf(stderr,"vrpn_TempImager_Server::send_description(): cannot write message: tossing\n");
     return false;
@@ -272,7 +298,9 @@ int  vrpn_TempImager_Server::handle_ping_message(void *userdata, vrpn_HANDLERPAR
 }
 
 vrpn_TempImager_Remote::vrpn_TempImager_Remote(const char *name, vrpn_Connection *c) :
-  vrpn_TempImager(name, c)
+  vrpn_TempImager(name, c),
+  _region_list(NULL),
+  _description_list(NULL)
 {
   // Register the handlers for the description message and the region change message
   register_autodeleted_handler(_region_m_id, handle_region_message, this, d_sender_id);
@@ -416,13 +444,13 @@ int vrpn_TempImager_Remote::handle_description_message(void *userdata,
   int i;
 
   // Get my new information from the buffer
-  if (!vrpn_unbuffer(&bufptr, &me->_minX) ||
-      !vrpn_unbuffer(&bufptr, &me->_maxX) ||
-      !vrpn_unbuffer(&bufptr, &me->_minY) ||
-      !vrpn_unbuffer(&bufptr, &me->_maxY) ||
-      !vrpn_unbuffer(&bufptr, &me->_nRows) ||
-      !vrpn_unbuffer(&bufptr, &me->_nCols) ||
-      !vrpn_unbuffer(&bufptr, &me->_nChannels) ) {
+  if (vrpn_unbuffer(&bufptr, &me->_minX) ||
+      vrpn_unbuffer(&bufptr, &me->_maxX) ||
+      vrpn_unbuffer(&bufptr, &me->_minY) ||
+      vrpn_unbuffer(&bufptr, &me->_maxY) ||
+      vrpn_unbuffer(&bufptr, &me->_nRows) ||
+      vrpn_unbuffer(&bufptr, &me->_nCols) ||
+      vrpn_unbuffer(&bufptr, &me->_nChannels) ) {
     return -1;
   }
   for (i = 0; i < me->_nChannels; i++) {

@@ -60,7 +60,7 @@ public:
     int cols = cMax-cMin+1;
     for (unsigned r = rMin; r <= rMax; r++) {
       for (unsigned c = cMin; c <= cMax; c++) {
-	if (vrpn_buffer(insertPt, buflen, vals[c + r*cols])) {
+	if (vrpn_buffer(insertPt, buflen, vals[(c-cMin) + (r-rMin)*cols])) {
 	  return false;
 	}
       }
@@ -79,10 +79,30 @@ public:
     int cols = cMax-cMin+1;
     for (unsigned r = rMin; r <= rMax; r++) {
       for (unsigned c = cMin; c <= cMax; c++) {
-	if (vrpn_unbuffer(buffer, &vals[c + r*cols])) {
+	if (vrpn_unbuffer(buffer, &vals[(c-cMin) + (r-rMin)*cols])) {
 	  return false;
 	}
       }
+    }
+    return true;
+  }
+
+  /// Reads pixel from the region with no scale and offset applied to the value
+  inline  bool	read_unscaled_pixel(vrpn_uint16 c, vrpn_uint16 r, vrpn_uint16 &val) const {
+    if ( (c < cMin) || (c > cMax) || (r < rMin) || (r > rMax) ) {
+      return false;
+    } else {
+      val = vals[(c-cMin) + (r-rMin)*(cMax-cMin+1)];
+    }
+    return true;
+  }
+
+  /// Writes pixel into the region; caller is responsible for doing scale and offset of the value
+  inline  bool	write_unscaled_pixel(vrpn_uint16 c, vrpn_uint16 r, vrpn_uint16 val) {
+    if ( (c < cMin) || (c > cMax) || (r < rMin) || (r > rMax) ) {
+      return false;
+    } else {
+      vals[(c-cMin) + (r-rMin)*(cMax-cMin+1)] = val;
     }
     return true;
   }
@@ -115,7 +135,7 @@ protected:
 class vrpn_TempImager_Server: public vrpn_TempImager {
 public:
   vrpn_TempImager_Server(const char *name, vrpn_Connection *c,
-			 vrpn_int32 nRows, vrpn_int32 nCols,
+			 vrpn_int32 nCols, vrpn_int32 nRows,
 			 vrpn_float32 minX = 0, vrpn_float32 maxX = 1,
 			 vrpn_float32 minY = 0, vrpn_float32 MaxY = 1);
 
@@ -124,12 +144,12 @@ public:
 		    vrpn_float32 minVal = 0, vrpn_float32 maxVal = 255,
 		    vrpn_float32 scale = 1, vrpn_float32 offset = 0);
 
-  bool	fill_region(vrpn_int16 chanIndex, vrpn_uint16 rMin, vrpn_uint16 rMax,
-		    vrpn_uint16 cMin, vrpn_uint16 cMax, vrpn_uint8 *data);
-  bool	fill_region(vrpn_int16 chanIndex, vrpn_uint16 rMin, vrpn_uint16 rMax,
-		    vrpn_uint16 cMin, vrpn_uint16 cMax, vrpn_uint16 *data);
-  bool	fill_region(vrpn_int16 chanIndex, vrpn_uint16 rMin, vrpn_uint16 rMax,
-		    vrpn_uint16 cMin, vrpn_uint16 cMax, vrpn_float32 *data);
+  bool	fill_region(vrpn_int16 chanIndex, vrpn_uint16 cMin, vrpn_uint16 cMax,
+		    vrpn_uint16 rMin, vrpn_uint16 rMax, vrpn_uint8 *data);
+  bool	fill_region(vrpn_int16 chanIndex, vrpn_uint16 cMin, vrpn_uint16 cMax,
+		    vrpn_uint16 rMin, vrpn_uint16 rMax, vrpn_uint16 *data);
+  bool	fill_region(vrpn_int16 chanIndex, vrpn_uint16 cMin, vrpn_uint16 cMax,
+		    vrpn_uint16 rMin, vrpn_uint16 rMax, vrpn_float32 *data);
 
   bool	send_region(const struct timeval *time = NULL);
 

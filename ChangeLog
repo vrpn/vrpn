@@ -1,3 +1,8 @@
+2002-09-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_TempImager.h : Changed a lot a debugged to make test program work.
+	* vrpn_TempImager.C : Same.
+
 2002-09-06  David Borland <borland@cs.unc.edu>
 
         * vrpn_Poser_Analog.[Ch] : Changed the Poser_Analog to have a 
