@@ -32,7 +32,7 @@ client: client.o
 	$(CC) $(LFLAGS) -o client client.o -lvrpn -lsdi 
 
 vrpn_server: vrpn.o  midi.o ../$(HW_OS)/libvrpnserver.a
-	$(CC) $(LFLAGS) -o vrpn_server vrpn.o midi.o -lvrpnserver $(GL) -lsdi -lm -lquat
+	$(CC) $(LFLAGS) -o vrpn_server vrpn.o midi.o -lvrpnserver $(GL) -lquat -lm
 
 clean:
 	rm -f *.o vrpn_server
