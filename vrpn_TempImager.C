@@ -73,6 +73,12 @@ int vrpn_TempImager_Server::add_channel(const char *name, const char *units,
   return d_nChannels-1;
 }
 
+// XXX Re-cast the base pointer versions of these functions to use the
+// tight pointer versions, to avoid code drift between the two sets of functions.
+// XXX Re-cast the memcpy loop in terms of offsets (the same way the per-element
+// loop is done) and share base calculation between the two; move the if statement
+// into the inner loop, doing it memcpy or step-at-a-time.
+
 /** As efficiently as possible, pull the values out of the array whose pointer is passed
     in and send them over a VRPN connection as a region message that is appropriate for
     the type that has been passed in (the type that data points to).
@@ -496,6 +502,429 @@ bool  vrpn_TempImager_Server::send_region_using_base_pointer(vrpn_int16 chanInde
   return true;
 }
 
+/** As efficiently as possible, pull the values out of the array whose pointer is passed
+    in and send them over a VRPN connection as a region message that is appropriate for
+    the type that has been passed in (the type that data points to).
+      Chanindex: What channel this region holds data for
+      cMin, cMax: Range of columns to extract from this data set
+      rMin, rMax: Range of rows to extract from this data set
+      data: Points at the (cMin,rMin) element of the 2D array that holds the image.
+	    It is assumed that the data values should be copied exactly, and that
+	    offset and scale should be applied at the reading end by the user if
+	    they want to get them back into absolute units.
+      colStride, rowStride: Number of elements (size of data type) to skip along a column and row
+      nRows, invert_y: If invert_y is true, then nRows must be set to the number of rows
+	    in the entire image.  If invert_y is false, then nRows is not used.
+      time: What time the message should have associated with it (NULL pointer for "now")
+*/
+
+bool  vrpn_TempImager_Server::send_region_using_first_pointer(vrpn_int16 chanIndex, vrpn_uint16 cMin, vrpn_uint16 cMax,
+		    vrpn_uint16 rMin, vrpn_uint16 rMax, const vrpn_uint8 *data,
+		    vrpn_uint32	colStride, vrpn_uint32 rowStride, vrpn_uint16 nRows, bool invert_y,
+		    const struct timeval *time)
+{
+  // msgbuf must be float64-aligned!  It is the buffer to send to the client; static to avoid reallocating
+  static  vrpn_float64 fbuf [vrpn_CONNECTION_TCP_BUFLEN/sizeof(vrpn_float64)];
+  char	  *msgbuf = (char *) fbuf;
+  int	  buflen = sizeof(fbuf);
+  struct  timeval timestamp;
+
+  // Make sure the region request has a valid channel, has indices all
+  // within the image size, and is not too large to fit into the data
+  // array (which is sized the way it is to make sure it can be sent in
+  // one VRPN reliable message).
+  if ( (chanIndex < 0) || (chanIndex >= d_nChannels) ) {
+    fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): Invalid channel index (%d)\n", chanIndex);
+    return false;
+  }
+  if ( (rMax >= d_nRows) || (rMin > rMax) ) {
+    fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): Invalid row range (%d..%d)\n", rMin, rMax);
+    return false;
+  }
+  if ( (cMax >= d_nCols) || (cMin > cMax) ) {
+    fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): Invalid column range (%d..%d)\n", cMin, cMax);
+    return false;
+  }
+  if ( (rMax-rMin+1) * (cMax-cMin+1) * sizeof(vrpn_uint8) > vrpn_IMAGER_MAX_REGIONu8) {
+    fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): Region too large (%d,%d to %d,%d)\n",
+      cMin,rMin, cMax,rMax);
+    return false;
+  }
+  if ( invert_y && (nRows < rMax) ) {
+    fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): nRows must not be less than rMax\n");
+    return false;
+  }
+
+  // Make sure we've sent the description before we send any regions
+  if (!d_description_sent) {
+    send_description();
+    d_description_sent = true;
+  }
+
+  // If the user didn't specify a time, assume they want "now" and look it up.
+  if (time != NULL) {
+    timestamp = *time;
+  } else {
+    vrpn_gettimeofday(&timestamp, NULL);
+  }
+
+  // Tell which channel this region is for, and what the borders of the
+  // region are.
+  if (vrpn_buffer(&msgbuf, &buflen, chanIndex) ||
+      vrpn_buffer(&msgbuf, &buflen, rMin) ||
+      vrpn_buffer(&msgbuf, &buflen, rMax) ||
+      vrpn_buffer(&msgbuf, &buflen, cMin) ||
+      vrpn_buffer(&msgbuf, &buflen, cMax) ||
+      vrpn_buffer(&msgbuf, &buflen, vrpn_IMAGER_VALTYPE_UINT8) ) {
+    return false;
+  }
+
+  // Insert the data into the buffer, copying it as efficiently as possible
+  // from the caller's buffer into the buffer we are going to send.  Note that
+  // the send buffer is going to be little-endian.  The code looks a little
+  // complicated because it short-circuits the copying for the case where the
+  // column stride is one element long (using memcpy() on each row) but has to
+  // copy one element at a time otherwise.
+  // There is also the matter if deciding whether to invert the image in y,
+  // which complicates the index calculation and the calculation of the strides.
+  int cols = cMax-cMin+1;
+  int linelen = cols * sizeof(data[0]);
+  if (colStride == 1) {
+    for (unsigned r = rMin; r <= rMax; r++) {
+      unsigned rActual;
+      if (invert_y) {
+	rActual = (r-rMax);	//XXX This is different from base version
+      } else {
+	rActual = (r-rMin);	//XXX This is different from base version
+      }
+      if (buflen < linelen) {
+	return false;
+      }
+      memcpy(msgbuf, &data[rActual*rowStride], linelen);  //XXX This is different from base version
+      msgbuf += linelen;
+      buflen -= linelen;
+    }
+  } else {
+    const vrpn_uint8 *rowStart = data;  //XXX This is different from base version
+    if (invert_y) {
+      //XXX This is different from base version (deleted offset)
+      rowStride *= -1;
+    }
+    const vrpn_uint8 *copyFrom = rowStart;
+    if (buflen < (int)((rMax-rMin+1)*(cMax-cMin+1)*sizeof(*copyFrom))) {
+      return false;
+    }
+    for (unsigned r = rMin; r <= rMax; r++) {
+      for (unsigned c = cMin; c <= cMax; c++) {
+	*msgbuf = *copyFrom;	//< Copy the current element
+	msgbuf++;		//< Skip to the next buffer location
+	copyFrom += colStride;	//< Skip appropriate number of elements
+      }
+      rowStart += rowStride;	//< Skip to the start of the next row
+      copyFrom = rowStart;
+    }
+    buflen -= (rMax-rMin+1)*(cMax-cMin+1)*sizeof(*copyFrom);
+  }
+
+  // No need to swap endian-ness on single-byte elements.
+
+  // Pack the message
+  vrpn_int32  len = sizeof(fbuf) - buflen;
+  if (d_connection && d_connection->pack_message(len, timestamp,
+                               d_regionu8_m_id, d_sender_id, (char*)(void*)fbuf,
+                               vrpn_CONNECTION_RELIABLE)) {
+    fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): cannot write message: tossing\n");
+    return false;
+  }
+
+  return true;
+}
+
+/** As efficiently as possible, pull the values out of the array whose pointer is passed
+    in and send them over a VRPN connection as a region message that is appropriate for
+    the type that has been passed in (the type that data points to).
+      Chanindex: What channel this region holds data for
+      cMin, cMax: Range of columns to extract from this data set
+      rMin, rMax: Range of rows to extract from this data set
+      data: Points at the (cMin, rMin) element of the 2D array that holds the image.
+	    It is assumed that the data values should be copied exactly, and that
+	    offset and scale should be applied at the reading end by the user if
+	    they want to get them back into absolute units.
+      colStride, rowStride: Number of elements (size of data type) to skip along a column and row
+      nRows, invert_y: If invert_y is true, then nRows must be set to the number of rows
+	    in the entire image.  If invert_y is false, then nRows is not used.
+      time: What time the message should have associated with it (NULL pointer for "now")
+*/
+
+bool  vrpn_TempImager_Server::send_region_using_first_pointer(vrpn_int16 chanIndex, vrpn_uint16 cMin, vrpn_uint16 cMax,
+		    vrpn_uint16 rMin, vrpn_uint16 rMax, const vrpn_uint16 *data,
+		    vrpn_uint32	colStride, vrpn_uint32 rowStride,
+		    vrpn_uint16 nRows, bool invert_y,
+		    const struct timeval *time)
+{
+  // msgbuf must be float64-aligned!  It is the buffer to send to the client
+  static  vrpn_float64 fbuf [vrpn_CONNECTION_TCP_BUFLEN/sizeof(vrpn_float64)];
+  char	  *msgbuf = (char *) fbuf;
+  int	  buflen = sizeof(fbuf);
+  struct  timeval timestamp;
+
+  // Make sure the region request has a valid channel, has indices all
+  // within the image size, and is not too large to fit into the data
+  // array (which is sized the way it is to make sure it can be sent in
+  // one VRPN reliable message).
+  if ( (chanIndex < 0) || (chanIndex >= d_nChannels) ) {
+    fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): Invalid channel index (%d)\n", chanIndex);
+    return false;
+  }
+  if ( (rMax >= d_nRows) || (rMin > rMax) ) {
+    fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): Invalid row range (%d..%d)\n", rMin, rMax);
+    return false;
+  }
+  if ( (cMax >= d_nCols) || (cMin > cMax) ) {
+    fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): Invalid column range (%d..%d)\n", cMin, cMax);
+    return false;
+  }
+  if ( (rMax-rMin+1) * (cMax-cMin+1) * sizeof(vrpn_uint16) > vrpn_IMAGER_MAX_REGIONu16) {
+    fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): Region too large (%d,%d to %d,%d)\n",
+      cMin,rMin, cMax,rMax);
+    return false;
+  }
+  if ( invert_y && (nRows < rMax) ) {
+    fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): nRows must not be less than rMax\n");
+    return false;
+  }
+
+  // Make sure we've sent the description before we send any regions
+  if (!d_description_sent) {
+    send_description();
+    d_description_sent = true;
+  }
+
+  // If the user didn't specify a time, assume they want "now" and look it up.
+  if (time != NULL) {
+    timestamp = *time;
+  } else {
+    vrpn_gettimeofday(&timestamp, NULL);
+  }
+
+  // Tell which channel this region is for, and what the borders of the
+  // region are.
+  if (vrpn_buffer(&msgbuf, &buflen, chanIndex) ||
+      vrpn_buffer(&msgbuf, &buflen, rMin) ||
+      vrpn_buffer(&msgbuf, &buflen, rMax) ||
+      vrpn_buffer(&msgbuf, &buflen, cMin) ||
+      vrpn_buffer(&msgbuf, &buflen, cMax) ||
+      vrpn_buffer(&msgbuf, &buflen, vrpn_IMAGER_VALTYPE_UINT16) ) {
+    return false;
+  }
+
+  // Insert the data into the buffer, copying it as efficiently as possible
+  // from the caller's buffer into the buffer we are going to send.  Note that
+  // the send buffer is going to be little-endian.  The code looks a little
+  // complicated because it short-circuits the copying for the case where the
+  // column stride is one element long (using memcpy() on each row) but has to
+  // copy one element at a time otherwise.
+  // There is also the matter if deciding whether to invert the image in y,
+  // which complicates the index calculation and the calculation of the strides.
+  int cols = cMax-cMin+1;
+  int linelen = cols * sizeof(data[0]);
+  if (colStride == 1) {
+    for (unsigned r = rMin; r <= rMax; r++) {
+      unsigned rActual;
+      if (invert_y) {
+	rActual = (r-rMax);	//XXX This is different from base version
+      } else {
+	rActual = (r-rMin);	//XXX This is different from base version
+      }
+      if (buflen < linelen) {
+	return false;
+      }
+      memcpy(msgbuf, &data[rActual*rowStride], linelen);  //XXX This is different from base version
+      msgbuf += linelen;
+      buflen -= linelen;
+    }
+  } else {
+    const vrpn_uint16 *rowStart = data;	  //XXX This is different from base version
+    if (invert_y) {
+      //XXX This is different from base version (deleted offset)
+      rowStride *= -1;
+    }
+    const vrpn_uint16 *copyFrom = rowStart;
+    if (buflen < (int)((rMax-rMin+1)*(cMax-cMin+1)*sizeof(*copyFrom))) {
+      return false;
+    }
+    for (unsigned r = rMin; r <= rMax; r++) {
+      for (unsigned c = cMin; c <= cMax; c++) {
+	memcpy(msgbuf, copyFrom, sizeof(*copyFrom));
+	msgbuf+= sizeof(*copyFrom); //< Skip to the next buffer location
+	copyFrom += colStride;	    //< Skip appropriate number of elements
+      }
+      rowStart += rowStride;	//< Skip to the start of the next row
+      copyFrom = rowStart;
+    }
+    buflen -= (rMax-rMin+1)*(cMax-cMin+1)*sizeof(*copyFrom);
+  }
+
+  // Swap endian-ness of the buffer if we are on a big-endian machine.
+  if (vrpn_big_endian) {
+    fprintf(stderr, "XXX TempImager Region needs swapping on Big-endian\n");
+    return false;
+  }
+
+  // Pack the message
+  vrpn_int32  len = sizeof(fbuf) - buflen;
+  if (d_connection && d_connection->pack_message(len, timestamp,
+                               d_regionu16_m_id, d_sender_id, (char*)(void*)fbuf,
+                               vrpn_CONNECTION_RELIABLE)) {
+    fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): cannot write message: tossing\n");
+    return false;
+  }
+
+  return true;
+}
+
+/** As efficiently as possible, pull the values out of the array whose pointer is passed
+    in and send them over a VRPN connection as a region message that is appropriate for
+    the type that has been passed in (the type that data points to).
+      Chanindex: What channel this region holds data for
+      cMin, cMax: Range of columns to extract from this data set
+      rMin, rMax: Range of rows to extract from this data set
+      data: Points at the (cMin, rMin) element of the 2D array that holds the image.
+	    It is assumed that the data values should be copied exactly, and that
+	    offset and scale should be applied at the reading end by the user if
+	    they want to get them back into absolute units.
+      colStride, rowStride: Number of elements (size of data type) to skip along a column and row
+      nRows, invert_y: If invert_y is true, then nRows must be set to the number of rows
+	    in the entire image.  If invert_y is false, then nRows is not used.
+      time: What time the message should have associated with it (NULL pointer for "now")
+*/
+
+bool  vrpn_TempImager_Server::send_region_using_first_pointer(vrpn_int16 chanIndex, vrpn_uint16 cMin, vrpn_uint16 cMax,
+		    vrpn_uint16 rMin, vrpn_uint16 rMax, const vrpn_float32 *data,
+		    vrpn_uint32	colStride, vrpn_uint32 rowStride, vrpn_uint16 nRows, bool invert_y,
+		    const struct timeval *time)
+{
+  // msgbuf must be float64-aligned!  It is the buffer to send to the client
+  static  vrpn_float64 fbuf [vrpn_CONNECTION_TCP_BUFLEN/sizeof(vrpn_float64)];
+  char	  *msgbuf = (char *) fbuf;
+  int	  buflen = sizeof(fbuf);
+  struct  timeval timestamp;
+
+  // Make sure the region request has a valid channel, has indices all
+  // within the image size, and is not too large to fit into the data
+  // array (which is sized the way it is to make sure it can be sent in
+  // one VRPN reliable message).
+  if ( (chanIndex < 0) || (chanIndex >= d_nChannels) ) {
+    fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): Invalid channel index (%d)\n", chanIndex);
+    return false;
+  }
+  if ( (rMax >= d_nRows) || (rMin > rMax) ) {
+    fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): Invalid row range (%d..%d)\n", rMin, rMax);
+    return false;
+  }
+  if ( (cMax >= d_nCols) || (cMin > cMax) ) {
+    fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): Invalid column range (%d..%d)\n", cMin, cMax);
+    return false;
+  }
+  if ( (rMax-rMin+1) * (cMax-cMin+1) * sizeof(vrpn_float32) > vrpn_IMAGER_MAX_REGIONf32) {
+    fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): Region too large (%d,%d to %d,%d)\n",
+      cMin,rMin, cMax,rMax);
+    return false;
+  }
+  if ( invert_y && (nRows < rMax) ) {
+    fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): nRows must not be less than rMax\n");
+    return false;
+  }
+
+  // Make sure we've sent the description before we send any regions
+  if (!d_description_sent) {
+    send_description();
+    d_description_sent = true;
+  }
+
+  // If the user didn't specify a time, assume they want "now" and look it up.
+  if (time != NULL) {
+    timestamp = *time;
+  } else {
+    vrpn_gettimeofday(&timestamp, NULL);
+  }
+
+  // Tell which channel this region is for, and what the borders of the
+  // region are.
+  if (vrpn_buffer(&msgbuf, &buflen, chanIndex) ||
+      vrpn_buffer(&msgbuf, &buflen, rMin) ||
+      vrpn_buffer(&msgbuf, &buflen, rMax) ||
+      vrpn_buffer(&msgbuf, &buflen, cMin) ||
+      vrpn_buffer(&msgbuf, &buflen, cMax) ||
+      vrpn_buffer(&msgbuf, &buflen, vrpn_IMAGER_VALTYPE_FLOAT32) )  {
+    return false;
+  }
+
+  // Insert the data into the buffer, copying it as efficiently as possible
+  // from the caller's buffer into the buffer we are going to send.  Note that
+  // the send buffer is going to be little-endian.  The code looks a little
+  // complicated because it short-circuits the copying for the case where the
+  // column stride is one element long (using memcpy() on each row) but has to
+  // copy one element at a time otherwise.
+  // There is also the matter if deciding whether to invert the image in y,
+  // which complicates the index calculation and the calculation of the strides.
+  int cols = cMax-cMin+1;
+  int linelen = cols * sizeof(data[0]);
+  if (colStride == 1) {
+    for (unsigned r = rMin; r <= rMax; r++) {
+      unsigned rActual;
+      if (invert_y) {
+	rActual = (r-rMax);	//XXX This is different from base version
+      } else {
+	rActual = (r-rMin);	//XXX This is different from base version
+      }
+      if (buflen < linelen) {
+	return false;
+      }
+      memcpy(msgbuf, &data[rActual*rowStride], linelen);  //XXX This is different from base version
+      msgbuf += linelen;
+      buflen -= linelen;
+    }
+  } else {
+    const vrpn_float32 *rowStart = data;    //XXX This is different from base version
+    if (invert_y) {
+      //XXX This is different from base version (deleted offset)
+      rowStride *= -1;
+    }
+    const vrpn_float32 *copyFrom = rowStart;
+    if (buflen < (int)((rMax-rMin+1)*(cMax-cMin+1)*sizeof(*copyFrom))) {
+      return false;
+    }
+    for (unsigned r = rMin; r <= rMax; r++) {
+      for (unsigned c = cMin; c <= cMax; c++) {
+	memcpy(msgbuf, copyFrom, sizeof(*copyFrom));
+	msgbuf+= sizeof(*copyFrom); //< Skip to the next buffer location
+	copyFrom += colStride;	    //< Skip appropriate number of elements
+      }
+      rowStart += rowStride;	//< Skip to the start of the next row
+      copyFrom = rowStart;
+    }
+    buflen -= (rMax-rMin+1)*(cMax-cMin+1)*sizeof(*copyFrom);
+  }
+
+  // Swap endian-ness of the buffer if we are on a big-endian machine.
+  if (vrpn_big_endian) {
+    fprintf(stderr, "XXX TempImager Region needs swapping on Big-endian\n");
+    return false;
+  }
+
+  // Pack the message
+  vrpn_int32  len = sizeof(fbuf) - buflen;
+  if (d_connection && d_connection->pack_message(len, timestamp,
+                               d_regionf32_m_id, d_sender_id, (char*)(void*)fbuf,
+                               vrpn_CONNECTION_RELIABLE)) {
+    fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): cannot write message: tossing\n");
+    return false;
+  }
+
+  return true;
+}
+
 
 bool  vrpn_TempImager_Server::send_description(void)
 {
@@ -538,6 +967,31 @@ bool  vrpn_TempImager_Server::send_description(void)
 
   d_description_sent = true;
   return true;
+}
+
+bool  vrpn_TempImager_Server::set_resolution(vrpn_int32 nCols, vrpn_int32 nRows)
+{
+  if ( (nCols <= 0) || (nRows <= 0) ) {
+    fprintf(stderr,"vrpn_TempImager_Server::set_resolution(): Invalid size (%d, %d)\n", nCols, nRows);
+    return false;
+  }
+  d_nCols = nCols;
+  d_nRows = nRows;
+  return send_description();
+}
+
+bool  vrpn_TempImager_Server::set_range(vrpn_float32 minX, vrpn_float32 maxX, vrpn_float32 minY, vrpn_float32 maxY)
+{
+  if ( (maxX < minX) || (maxY < minY) ) {
+    fprintf(stderr,"vrpn_TempImager_Server::set_range(): Invalid range: (%g, %g) to (%g, %g)\n", minX,minY, maxX, maxY);
+    return false;
+  }
+
+  d_minX = minX;
+  d_maxX = maxX;
+  d_minY = minY;
+  d_maxY = maxY;
+  return send_description();
 }
 
 void  vrpn_TempImager_Server::mainloop(void)

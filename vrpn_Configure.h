@@ -139,6 +139,7 @@
 // Load VRPN Phantom library if we are using phantom server as unified server
 // Load SensAble Technologies GHOST library to run the Phantom
 #ifdef VRPN_USE_PHANTOM_SERVER
+#define	VRPN_NO_STREAMS
 #ifdef VRPN_USE_GHOST_31
 #pragma comment (lib,"C:/Program Files/SensAble/GHOST/v3.1/lib/GHOST31.lib")
 #else

@@ -1,3 +1,12 @@
+2004-06-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Turns off streams when compiling for the
+		Phantom server.
+	* vrpn_TempImager.C : Adds functions to send using pointers to
+		the data to be sent, rather than pointer to the whole
+		image.  Added functions to set the resolution and range.
+	* vrpn_TempImager.h : Same.  Increased number of channels.
+
 2004-05-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Analog_Output_NI.C : Removed debug print statements.

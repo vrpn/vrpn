@@ -34,7 +34,7 @@
 #include  "vrpn_Connection.h"
 #include  "vrpn_BaseClass.h"
 
-const unsigned vrpn_IMAGER_MAX_CHANNELS = 10;
+const unsigned vrpn_IMAGER_MAX_CHANNELS = 100;
 
 /// Set of constants to tell how many points you can put into a region
 /// depending on the type you are putting in there.  Useful for senders
@@ -86,6 +86,14 @@ class vrpn_TempImager: public vrpn_BaseClass {
 public:
   vrpn_TempImager(const char *name, vrpn_Connection *c = NULL);
 
+  // Data member accessors.
+  vrpn_int32	nRows(void) const { return d_nRows; };
+  vrpn_int32	nCols(void) const { return d_nCols; };
+  vrpn_float32	minX(void) const { return d_minX; };
+  vrpn_float32	maxX(void) const { return d_maxX; };
+  vrpn_float32	minY(void) const { return d_minY; };
+  vrpn_float32	maxY(void) const { return d_maxY; };
+
 protected:
   vrpn_int32	d_nRows;	//< Number of rows in the image
   vrpn_int32	d_nCols;	//< Number of columns in the image
@@ -114,6 +122,7 @@ public:
 		    vrpn_float32 scale = 1, vrpn_float32 offset = 0);
 
   /// Pack and send the region as efficiently as possible; strides are in steps of the element being sent.
+  // These functions each take a pointer to the base of the image to be sent: its [0,0] element.
   bool	send_region_using_base_pointer(vrpn_int16 chanIndex, vrpn_uint16 cMin, vrpn_uint16 cMax,
 		    vrpn_uint16 rMin, vrpn_uint16 rMax, const vrpn_uint8 *data,
 		    vrpn_uint32	colStride, vrpn_uint32 rowStride,
@@ -129,6 +138,34 @@ public:
 		    vrpn_uint32	colStride, vrpn_uint32 rowStride,
 		    vrpn_uint16 nRows = 0, bool invert_y = false,
 		    const struct timeval *time = NULL);
+
+  /// Pack and send the region as efficiently as possible; strides are in steps of the element being sent.
+  // These functions each take a pointer to the first of the data values to be sent.  This is a
+  // pointer to the [cMin, rMin] element of the image to be sent.  Note that if the Y value is inverted,
+  // this will NOT be a pointer to the beginning of the data block, but rather the the beginning of
+  // the last line in the data block.  Note that rowStride will be less than the number of rows in the
+  // whole image if the data is tightly packed into a block and the region does not cover all columns.
+  bool	send_region_using_first_pointer(vrpn_int16 chanIndex, vrpn_uint16 cMin, vrpn_uint16 cMax,
+		    vrpn_uint16 rMin, vrpn_uint16 rMax, const vrpn_uint8 *data,
+		    vrpn_uint32	colStride, vrpn_uint32 rowStride,
+		    vrpn_uint16 nRows = 0, bool invert_y = false,
+		    const struct timeval *time = NULL);
+  bool	send_region_using_first_pointer(vrpn_int16 chanIndex, vrpn_uint16 cMin, vrpn_uint16 cMax,
+		    vrpn_uint16 rMin, vrpn_uint16 rMax, const vrpn_uint16 *data,
+		    vrpn_uint32	colStride, vrpn_uint32 rowStride,
+		    vrpn_uint16 nRows = 0, bool invert_y = false,
+		    const struct timeval *time = NULL);
+  bool	send_region_using_first_pointer(vrpn_int16 chanIndex, vrpn_uint16 cMin, vrpn_uint16 cMax,
+		    vrpn_uint16 rMin, vrpn_uint16 rMax, const vrpn_float32 *data,
+		    vrpn_uint32	colStride, vrpn_uint32 rowStride,
+		    vrpn_uint16 nRows = 0, bool invert_y = false,
+		    const struct timeval *time = NULL);
+
+  /// Set the resolution to a different value than it had been before.  Returns true on success.
+  bool	set_resolution(vrpn_int32 nCols, vrpn_int32 nRows);
+
+  /// Set the range of the region to a different range.  Returns true on success.
+  bool	set_range(vrpn_float32 minX, vrpn_float32 maxX, vrpn_float32 minY, vrpn_float32 maxY);
 
   /// Handle baseclass ping/pong messages
   virtual void	mainloop(void);
