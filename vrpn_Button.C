@@ -200,11 +200,16 @@ vrpn_Button_Remote::vrpn_Button_Remote(char *name) :
 {
 	int	i;
 
-	// Register a handler for the change callback from this device.
-	if (connection->register_handler(message_id, handle_change_message,
+	// Register a handler for the change callback from this device,
+	// if we got a connection.
+	if (connection != NULL) {
+	  if (connection->register_handler(message_id, handle_change_message,
 	    this, my_id)) {
 		fprintf(stderr,"vrpn_Button_Remote: can't register handler\n");
 		connection = NULL;
+	  }
+	} else {
+		fprintf(stderr,"vrpn_Button_Remote: Can't get connection!\n");
 	}
 
 	// XXX These should be read from a description message that comes
