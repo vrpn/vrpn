@@ -82,6 +82,9 @@ endif
 
 CC := g++
 AR := ar ruv
+# need default 'ranlib' to be touch for platforms that don't use it,
+# otherwise make fails.
+RANLIB := touch
 
 ifeq ($(FORCE_GPP),1)
   CC := g++
@@ -222,13 +225,13 @@ endif
 #
 
 ifeq ($(HW_OS),pc_linux)
-	ARCH_LIBS := -lbsd -ldl
+        ARCH_LIBS := -lbsd -ldl
 else
-#  ifeq ($(HW_OS),sparc_solaris)
-#	ARCH_LIBS := -lsocket -lnsl
-#  else
-	ARCH_LIBS :=
-#  endif
+  ifeq ($(HW_OS),sparc_solaris)
+        ARCH_LIBS := -lsocket -lnsl
+  else
+        ARCH_LIBS :=
+  endif
 endif
 
 
@@ -388,7 +391,7 @@ SLIB_FILES =  $(LIB_FILES) vrpn_3Space.C \
 	     vrpn_JoyFly.C vrpn_sgibox.C vrpn_CerealBox.C \
            vrpn_Tracker_AnalogFly.C vrpn_raw_sgibox.C vrpn_Magellan.C \
            vrpn_Analog_Radamec_SPI.C vrpn_ImmersionBox.C vrpn_Wanda.C \
-           vrpn_Analog_5dt.C vrpn_Joylin.C vrpn_Tng3.C
+           vrpn_Analog_5dt.C vrpn_Joylin.C vrpn_Tng3.C vrpn_Spaceball.C
 
 SLIB_OBJECTS = $(patsubst %,$(SOBJECT_DIR)/%,$(SLIB_FILES:.C=.o))
 
@@ -398,7 +401,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) vrpn_3Space.h \
 	       vrpn_JoyFly.h vrpn_sgibox.h vrpn_raw_sgibox.h \
              vrpn_CerealBox.h vrpn_Tracker_AnalogFly.h vrpn_Magellan.h \
              vrpn_Analog_Radamec_SPI.h vrpn_ImmersionBox.h vrpn_Wanda.h \
-             vrpn_Analog_5dt.h vrpn_Joylin.h vrpn_Tng3.h
+             vrpn_Analog_5dt.h vrpn_Joylin.h vrpn_Tng3.h vrpn_Spaceball.h
 
 
 #$(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(OBJECT_DIR) \

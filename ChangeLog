@@ -1,3 +1,10 @@
+2002-01-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Spaceball.C : Code to drive Spaceballs (from John Stone).
+	* vrpn_Spaceball.h : Code to drive Spaceballs (from John Stone).
+	* Makefile : Include files needed to drive Spaceballs (from John Stone).
+	* vrpn.dsp : Include files needed to drive Spaceballs (from John Stone).
+
 2002-01-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Tracker.C : Adding vrpn_Tracker_Server (utility class for apps)
