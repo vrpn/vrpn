@@ -1,27 +1,32 @@
-#ifndef CONSTRAINT_H
-#define CONSTRAINT_H
+#ifndef FORCEFIELD_H
+#define FORCEFIELD_H
 
 #include "GHOST.H"
 #include <math.h>
 
-// Constraint effect for PHANToM
+// force field effect for PHANToM
 
-class  ConstraintEffect:public gstEffect 
+class  ForceFieldEffect:public gstEffect 
 
 {
   public:
 
 	// Constructor.
-	ConstraintEffect():gstEffect(){}
+	ForceFieldEffect():gstEffect(){}
 
 	// Destructor.
-	~ConstraintEffect() {}
+	~ForceFieldEffect() {}
 
-	// set the point to which this effect is attached
-	// units are mm and Newtons/mm
-	void setPoint(double *pnt, double kSpr) {
-		fixedEnd = gstPoint(pnt[0],pnt[1],pnt[2]);
-		kSpring = kSpr;
+	void setForce(float ori[3], float f[3], float jm[3][3],
+		float r) {
+	    int i,j;
+	    for (i=0; i < 3; i++){
+		origin[i] = ori[i];
+		force[i] = f[i];
+		for (j=0; j < 3; j++)
+		    jacobian[i][j] = jm[i][j];
+	    }
+	    radius = r;
 	}
 
 	// FOR_GHOST_EXTENSION:
@@ -56,8 +61,10 @@ class  ConstraintEffect:public gstEffect
 
   protected:
 
-	gstPoint fixedEnd;
-	double kSpring;
+	gstPoint origin;
+	gstVector force;
+	double radius;
+	double jacobian[3][3];
 };
 
 

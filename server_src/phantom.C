@@ -12,6 +12,7 @@
 #include "plane.h"
 #include "trimesh.h"
 #include "constraint.h"
+#include "forcefield.h"
 #include "quat.h"
 
 #ifndef	_WIN32
@@ -61,8 +62,11 @@ protected:
 	Plane *cur_plane;
 	Trimesh *trimesh;
 				       
-	ConstraintEffect *pointConstraint; 	// this is a force appended to
-				// other forces exerted by phantom
+	ConstraintEffect *pointConstraint; // this is a force appended to
+					// other forces exerted by phantom
+	ForceFieldEffect *forceField; // general purpose force field 
+					// approximation
+
   //  vrpn_PHANTOMCB	surface;
 
 //	gstPoint cursor_pos;
@@ -90,6 +94,8 @@ protected:
 					 vrpn_HANDLERPARAM p);
 	static int handle_constraint_change_message(void *userdata,
 					vrpn_HANDLERPARAM p);
+	static int handle_forcefield_change_message(void *userdata,
+						vrpn_HANDLERPARAM p);
 
 	// from vrpn_Tracker
 	static int handle_resetOrigin_change_message(void *, vrpn_HANDLERPARAM);
@@ -145,7 +151,7 @@ void vrpn_Phantom::handle_plane(void *userdata,const vrpn_Plane_PHANTOMCB &p)
 	vrpn_Plane_PHANTOMCB p2 = p;
 	check_parameters(&p2);
 	plane_node[which_plane]->update(p2.plane[0],p2.plane[1],
-					p2.plane[2],p2.plane[3]*1000.0);
+					p2.plane[2],p2.plane[3]*1000.0);//convert m to mm
 	plane_node[which_plane]->setSurfaceKspring(p2.SurfaceKspring);
 	plane_node[which_plane]->setSurfaceFstatic(p2.SurfaceFstatic);
 	plane_node[which_plane]->setSurfaceFdynamic(p2.SurfaceFdynamic); 
@@ -255,6 +261,7 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
 
   pointConstraint = new ConstraintEffect();
   phantom->setEffect(pointConstraint);
+  forceField = new ForceFieldEffect();
 
   SurfaceKspring= 0.29f;
   SurfaceFdynamic = 0.02f;
@@ -312,6 +319,11 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
   }
   if (vrpn_ForceDevice::connection->register_handler(set_constraint_message_id,
 	handle_constraint_change_message, this, vrpn_ForceDevice::my_id)) {
+		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
+		vrpn_ForceDevice::connection = NULL;
+  }
+  if (vrpn_ForceDevice::connection->register_handler(forcefield_message_id,
+	handle_forcefield_change_message, this, vrpn_ForceDevice::my_id)) {
 		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
 		vrpn_ForceDevice::connection = NULL;
   }
@@ -914,6 +926,53 @@ int vrpn_Phantom::handle_constraint_change_message(void *userdata,
         me->pointConstraint->setPoint(pnt, kSpr/1000.0);
 	me->phantom->startEffect();
 	me->pointConstraint->start();
+  }
+  return 0;
+}
+
+int vrpn_Phantom::handle_forcefield_change_message(void *userdata,
+						vrpn_HANDLERPARAM p){
+
+  vrpn_Phantom *me = (vrpn_Phantom *)userdata;
+  long *params = (long*)(p.buffer);
+  long temp;
+  int i,j;
+  int index = 0;
+
+  int numExpectedParameters = 16;
+  if (p.payload_len !=  (numExpectedParameters*sizeof(float)) ) {
+    fprintf(stderr,"vrpn_Phantom: change force field payload error\n");
+    fprintf(stderr,"             (got %d, expected %d)\n",
+	p.payload_len, numExpectedParameters*sizeof(float) );
+    return -1;
+  }
+
+  for (i=0;i<3;i++){
+    temp = ntohl(params[index]);
+    me->ff_origin[i] = (1000)*(*(float*)(&temp)); // convert from m->mm
+    index++;
+  }
+  for (i=0;i<3;i++){
+    temp = ntohl(params[index]);
+    me->ff_force[i] = *(float*)(&temp);
+    index++;
+  }
+  for (i=0;i<3;i++)
+    for (j=0;j<3;j++){
+      temp = ntohl(params[index]);
+      me->ff_jacobian[i][j] = (0.001)*(*(float*)(&temp)); // convert from 
+					// dyne/m to dyne/mm
+      index++;
+    }
+
+  temp = ntohl(params[index]);
+  me->ff_radius = (1000)*(*(float*)(&temp)); // convert m to mm
+  me->forceField->setForce(me->ff_origin, me->ff_force, 
+	me->ff_jacobian, me->ff_radius);
+  if (!me->forceField->isActive()){
+	me->phantom->setEffect(me->forceField);
+	me->phantom->startEffect();
+	me->forceField->start();
   }
   return 0;
 }
