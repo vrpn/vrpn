@@ -31,7 +31,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 SOUNDSERVERWIN32 DIALOG DISCARDABLE  100, 100, 319, 230
 STYLE WS_MINIMIZEBOX | WS_CAPTION | WS_SYSMENU
-CAPTION "VRPN Sound Server"
+CAPTION "VRPN Sound Server v1.0a"
 CLASS "SoundServerWin32"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -89,7 +89,10 @@ BEGIN
                     ES_NUMBER
     GROUPBOX        "Position",IDC_STATIC,165,85,55,55
     GROUPBOX        "Orientation",IDC_STATIC,240,85,55,55
-    PUSHBUTTON      "More Info",162,55,150,40,15
+    PUSHBUTTON      "More Info",162,87,66,40,15
+    LTEXT           "Distance to listener:",IDC_STATIC,15,150,65,9
+    EDITTEXT        181,85,145,46,13,ES_AUTOHSCROLL | ES_READONLY | 
+                    ES_NUMBER
 END
 
 SND_INFO DIALOG DISCARDABLE  120, 120, 209, 85
@@ -112,7 +115,7 @@ BEGIN
                     ES_NUMBER
     EDITTEXT        154,155,55,30,10,ES_AUTOHSCROLL | ES_READONLY | 
                     ES_NUMBER
-    LTEXT           "(Automatically closes in 3 seconds)",IDC_STATIC,51,75,
+    LTEXT           "(Automatically closes in 5 seconds)",IDC_STATIC,51,75,
                     108,10
 END
 

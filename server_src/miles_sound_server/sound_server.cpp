@@ -36,6 +36,9 @@ using namespace std;
 #ifdef _WIN32
 vrpn_Sound_Server_Miles *soundServer = NULL;
 
+#define DIALOG_TIMEOUT 5000
+#define UPDATE_TIMEOUT 2000
+
 #define cboxTech     100
 #define btnPlay      101
 #define btnStop      110
@@ -61,6 +64,8 @@ vrpn_Sound_Server_Miles *soundServer = NULL;
 #define SoundIdTBox	 161
 #define MoreInfoBtn  162
 
+#define Sound2Listener 181
+
 #define SorX		 300
 #define SorY		 301
 #define SorZ		 302
@@ -73,14 +78,17 @@ vrpn_Sound_Server_Miles *soundServer = NULL;
 int         blanked     =  0;		
 int         ProviderSet = 0;		
 
+int got_report;
+
 HWND        SoundProvideCombo;
 HWND        SoundIdCombo;
 HWND		SoundWnd;
 HWND		InfoWnd;
 
 vrpn_Tracker_Remote * tracker_connection;
-char tracker_device[512];
-char tracker_name[512];
+char                  tracker_device[512];
+char                  tracker_name[512];
+vrpn_ListenerDef      listener, oldlistener;
 
 int USE_TRACKER;
 
@@ -117,23 +125,46 @@ void closeDevices (void) {
 	cerr << endl << "All devices closed. Exiting ..." << endl;
 }
 
-void handle_tracker_report(void *, const vrpn_TRACKERCB track_rep) {
-  static vrpn_TRACKERCB last_rep; // last report
-  vrpn_ListenerDef listener;
+void handle_tracker(void *, const vrpn_TRACKERCB t) {
+  
+  q_xyz_quat_type  sensor_f_tracker;  // aka hiball_f_tracker or hiball_f_source
+  qogl_matrix_type sensor_f_tracker_m;
+  qogl_matrix_type eyeball_f_tracker_m;
+  q_xyz_quat_type  eyeball_f_tracker;
+ 
+  sensor_f_tracker.xyz[0] = t.pos[0];
+  sensor_f_tracker.xyz[1] = t.pos[1];
+  sensor_f_tracker.xyz[2] = t.pos[2];
+  sensor_f_tracker.quat[0] = t.quat[0];
+  sensor_f_tracker.quat[1] = t.quat[1];
+  sensor_f_tracker.quat[2] = t.quat[2];
+  sensor_f_tracker.quat[3] = t.quat[3];
 
-  listener.pose.position[0]    = last_rep.pos[0];
-  listener.pose.position[1]    = last_rep.pos[1];
-  listener.pose.position[2]    = last_rep.pos[2];
-  listener.pose.orientation[0] = last_rep.quat[0];
-  listener.pose.orientation[1] = last_rep.quat[1];
-  listener.pose.orientation[2] = last_rep.quat[2];
-  listener.pose.orientation[3] = last_rep.quat[3];
+  q_xyz_quat_to_ogl_matrix(sensor_f_tracker_m, &sensor_f_tracker);
   
-  // velocity _should_ be automatically set
-  
-  soundServer->changeListenerStatus(listener);
-  last_rep = track_rep;
+  // need to compose with the eye_from_sensor matrix here
+
+  qogl_matrix_mult(eyeball_f_tracker_m, soundServer->eye_f_sensor_m, sensor_f_tracker_m);
+
+  q_ogl_matrix_to_xyz_quat(&eyeball_f_tracker, eyeball_f_tracker_m);
+
+  listener.pose.position[0] = eyeball_f_tracker.xyz[0];
+  listener.pose.position[1] = eyeball_f_tracker.xyz[1];
+  listener.pose.position[2] = eyeball_f_tracker.xyz[2];
+  listener.pose.orientation[0] = eyeball_f_tracker.quat[0];
+  listener.pose.orientation[1] = eyeball_f_tracker.quat[1];
+  listener.pose.orientation[2] = eyeball_f_tracker.quat[2];
+  listener.pose.orientation[3] = eyeball_f_tracker.quat[3];
+ 
+  got_report = 1;
+
   return;
+}
+
+void UpdateListenerDef() {
+	if (listener.pose.orientation != oldlistener.pose.orientation)
+	  soundServer->changeListenerStatus(listener);
+	oldlistener = oldlistener;
 }
 
 int handle_dlc (void *, vrpn_HANDLERPARAM p)
@@ -170,6 +201,7 @@ void ChangeSoundIdBox(vrpn_int32 action, vrpn_int32 newId) {
 void UpdateDialog(HWND SoundWnd) {
 	
 	float posx, posy, posz, orx, ory, orz;
+	float lposx, lposy, lposz;
 	char buf[15];
 	
 	SetDlgItemText(SoundWnd,ErrorBox,soundServer->GetLastError());
@@ -182,12 +214,12 @@ void UpdateDialog(HWND SoundWnd) {
 	sprintf(buf,"%4.3f",posz);
 	SetDlgItemText(SoundWnd,PosZ,buf);	
 	
-	soundServer->GetListenerPosition(&posx, &posy, &posz);
-	sprintf(buf,"%4.3f",posx);
+	soundServer->GetListenerPosition(&lposx, &lposy, &lposz);
+	sprintf(buf,"%4.3f",lposx);
 	SetDlgItemText(SoundWnd,LPosX,buf);
-	sprintf(buf,"%4.3f",posy);
+	sprintf(buf,"%4.3f",lposy);
 	SetDlgItemText(SoundWnd,LPosY,buf);
-	sprintf(buf,"%4.3f",posz);
+	sprintf(buf,"%4.3f",lposz);
 	SetDlgItemText(SoundWnd,LPosZ,buf);	
 
 	soundServer->GetCurrentOrientation(CurrentSoundId, &orx, &ory, &orz);
@@ -205,6 +237,11 @@ void UpdateDialog(HWND SoundWnd) {
 	SetDlgItemText(SoundWnd,LorY,buf);
 	sprintf(buf,"%4.3f",orz);
 	SetDlgItemText(SoundWnd,LorZ,buf);	
+
+	sprintf(buf,"%4.3f",sqrt((lposx-posx)*(lposx-posx)+
+		                     (lposy-posy)*(lposy-posy)+
+							 (lposz-posz)*(lposz-posz)));
+	SetDlgItemText(SoundWnd,Sound2Listener,buf);
 
 
 }
@@ -249,7 +286,7 @@ LRESULT AILEXPORT SoundServerProc(HWND SoundWnd, UINT message, WPARAM wParam, LP
 
           case cboxTech:
              if (HIWORD(wParam) == CBN_SELENDOK)
-				 if (ComboBox_GetCurSel(SoundProvideCombo)-1 > 0) {
+				 if (ComboBox_GetCurSel(SoundProvideCombo)-1 >= 0) {
 					 ProviderSet = 1;
                    soundServer->setProvider(ComboBox_GetCurSel(SoundProvideCombo)-1);
 				 } else ProviderSet = 0;
@@ -273,12 +310,12 @@ LRESULT AILEXPORT SoundServerProc(HWND SoundWnd, UINT message, WPARAM wParam, LP
 			  sprintf(buf,"Sound: none selected");
 			SetWindowText(InfoWnd,buf);
 			ShowWindow(InfoWnd,SW_SHOW);
-			SetTimer(SoundWnd,DialogTimerId,3000,NULL);
+			SetTimer(SoundWnd,DialogTimerId,DIALOG_TIMEOUT,NULL);
 		  break;
 
           case SoundIdBox:
 			  if (HIWORD(wParam) == CBN_SELENDOK) {
-				  if (ComboBox_GetCurSel(SoundProvideCombo)-1 > 0) {
+				  if (ComboBox_GetCurSel(SoundProvideCombo)-1 >= 0) {
 				  CurrentSoundId = ComboBox_GetCurSel(SoundIdCombo);
 				  UpdateDialog(SoundWnd);
 				  }
@@ -370,7 +407,7 @@ bool InitSoundServerWindow(HINSTANCE  hInstance)
 		return false;
 	}
 	// set a timer to update server stats
-	SetTimer(SoundWnd,UpdateTimerId,1000,NULL);
+	SetTimer(SoundWnd,UpdateTimerId,UPDATE_TIMEOUT,NULL);
 	SoundIdCombo=GetDlgItem(SoundWnd, SoundIdBox);	
 	
 	ShowWindow(SoundWnd,SW_SHOW);
@@ -431,8 +468,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdL
 	con = new CConsole(TRUE);
 	con->RedirectToConsole(0);
 
-	USE_TRACKER = 0;
+	// TCH 2 Nov 99 - debugging code
+	vrpn_Connection * trackerCon;
 
+	USE_TRACKER = 0;
 	
 	// Need to have a global pointer to it so we can shut it down
 	// in the signal handler (so we can close any open logfiles.)
@@ -490,7 +529,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdL
 #ifdef _WIN32
 			if(isit("vrpn_Sound_Server"))
 			{
-				fprintf(stderr,"ss%s\n",pch); 
+				fprintf(stderr,"%s\n",pch); 
 				next();
 				fprintf(stderr,"%s\n",pch);
 				if (sscanf(pch,"%511s\t%d\t%511s\t%511s",s2,&USE_TRACKER,tracker_name, tracker_device) != 4) 
@@ -532,8 +571,17 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdL
 		char newname[1024];
 		sprintf(newname,"%s@%s",(const char*)tracker_device, (const char*)tracker_name);
 		fprintf(stderr,"Using tracker: %s\n",newname);
+		trackerCon = vrpn_get_connection_by_name(tracker_name);
 		tracker_connection = new vrpn_Tracker_Remote((const char *) newname);
-		tracker_connection->register_change_handler(NULL,handle_tracker_report);
+		//if (tracker_connection!=NULL) fprintf(stderr,"Connection set up correctly\n");
+		int val = tracker_connection->register_change_handler(NULL,handle_tracker);
+		fprintf(stderr," Handler set up %d\n",val);
+
+		if (trackerCon->doing_okay()) {
+			fprintf(stderr, "TC OK.\n");
+		} else {
+			fprintf(stderr, "TC Not OK.\n");
+		}
 	}
 	else fprintf(stderr,"Not using tracker\n");
 
@@ -564,8 +612,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdL
 	// **                MAIN LOOP                                       **
 	// **                                                                **
 	// ********************************************************************
-	while (1) 
-	{
+	while (1) {
+		
 		GetMessage(&msg, 0, 0, 0);
 	    if (!IsDialogMessage(SoundWnd,&msg))
 		{
@@ -574,11 +622,28 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdL
 		}
    
 		// Let the sound server do it's thing 
+
+		UpdateListenerDef();
 		soundServer->mainloop();
 		if (soundServer->noSounds()) {
 			EnableWindow(SoundProvideCombo, true);
+				
 			if (!blanked) {
 			  ComboBox_ResetContent(SoundIdCombo); 
+		      Edit_SetText(GetDlgItem(SoundWnd, ErrorBox), "");
+			  Edit_SetText(GetDlgItem(SoundWnd, LPosX), ""); 
+			  Edit_SetText(GetDlgItem(SoundWnd, LPosY), ""); 
+			  Edit_SetText(GetDlgItem(SoundWnd, LPosZ), ""); 
+			  Edit_SetText(GetDlgItem(SoundWnd, SorX), ""); 
+			  Edit_SetText(GetDlgItem(SoundWnd, SorY), ""); 
+			  Edit_SetText(GetDlgItem(SoundWnd, SorZ), ""); 
+			  Edit_SetText(GetDlgItem(SoundWnd, LorX), ""); 
+			  Edit_SetText(GetDlgItem(SoundWnd, LorY), ""); 
+			  Edit_SetText(GetDlgItem(SoundWnd, LorZ), ""); 
+			  Edit_SetText(GetDlgItem(SoundWnd, PosX), ""); 
+			  Edit_SetText(GetDlgItem(SoundWnd, PosY), ""); 
+			  Edit_SetText(GetDlgItem(SoundWnd, PosZ), ""); 
+		
 			  blanked = 1;
 			}
 		}
@@ -588,6 +653,15 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdL
 		}
 		
 		
+		// ensure we get a new report!
+		if (USE_TRACKER) {
+		  tracker_connection->mainloop();
+		  got_report = 0;
+		  if (trackerCon->doing_okay())
+		    while (!got_report) 
+			  tracker_connection->mainloop(); 
+		}
+
 		// Send and receive all messages
 		connection->mainloop();
 		if (!connection->doing_okay()) shutDown();
@@ -595,6 +669,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdL
 		// Handle forwarding requests;  send messages
 		// on auxiliary connections
 		forwarderServer->mainloop();
+					
 	}
 	
 	return 0;

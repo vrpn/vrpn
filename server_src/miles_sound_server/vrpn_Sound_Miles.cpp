@@ -1,17 +1,8 @@
-/*To Do list:
-	1. Figure out how to get up vector info from quaternion pose to set listener up vector.  
-		Setting the Sound up vectors would be nice, but isn't as important as sounds are 
-		symmetric around their orientation vector.
-	2. Sample level environment preferences (ie, EAX_ENVIRONMENT_BATHROOM)
-		could be added in loadSound as a passed-in parameter
-
- */
-
 
 #ifdef _WIN32
 
 #include "vrpn_Sound_Miles.h"
-#include "quat.h"
+//#include "quat.h"
 #include <math.h>
 #include <iostream.h>
 
@@ -23,12 +14,15 @@ vrpn_Sound_Server_Miles::vrpn_Sound_Server_Miles(const char * name, vrpn_Connect
 {
 	AIL_startup();							//initialize the Miles SDK stuff
 
-	// load a digital driver
+	
+	//load a digital driver
 	if (!AIL_quick_startup(1,0,44100,16,2)) {
      MessageBox(0,"Couldn't open a digital output device.","Error",MB_OK);
     }
+
     AIL_quick_handles(&DIG,0,0);
 
+	
 	// No sound played yet
 	LastSoundId = -1;
 
@@ -46,6 +40,25 @@ vrpn_Sound_Server_Miles::vrpn_Sound_Server_Miles(const char * name, vrpn_Connect
 
 	//Allocate space for Audio Handle array
 	providers = new HPROVIDER[P_Max];
+
+	// init eye from sensor matrix
+	eye_f_sensor_m[0] = 1.0;
+	eye_f_sensor_m[1] = 0.0;
+	eye_f_sensor_m[2] = 0.0;
+	eye_f_sensor_m[3] = 0.0;
+	eye_f_sensor_m[4] = 0.0;
+	eye_f_sensor_m[5] = 1.0;
+	eye_f_sensor_m[6] = 0.0;
+	eye_f_sensor_m[7] = 0.0;
+	eye_f_sensor_m[8] = 0.0;
+	eye_f_sensor_m[9] = 0.0;
+	eye_f_sensor_m[10] = 1.0;
+	eye_f_sensor_m[11] = 0.0;
+	eye_f_sensor_m[12] = 0.0;
+	eye_f_sensor_m[13] = 0.0;
+	eye_f_sensor_m[14] = 0.0;
+	eye_f_sensor_m[15] = 1.0;
+	
 }
 
 vrpn_Sound_Server_Miles::~vrpn_Sound_Server_Miles()		
@@ -83,7 +96,8 @@ void vrpn_Sound_Server_Miles::addProvider(HPROVIDER p)
 		delete [] oldproviders;
 	}
 
-	providers[P_Cur++] = p;
+	providers[P_Cur] = p;
+	P_Cur++;
 }
 
 bool vrpn_Sound_Server_Miles::noSounds()
@@ -106,19 +120,22 @@ void vrpn_Sound_Server_Miles::setProvider(int index, int providerRoomSetting)
   AIL_close_3D_provider(provider);
 
   //load the new provider
+  
   result = AIL_open_3D_provider(providers[index]);
-  if (result != M3D_NOERR)
-     cerr << "Error Opening 3D Provider" << endl;     
-
-  provider = providers[index];
-  //open a listener.  Position defaults to the origin, looking down the -Z axis with (
-  listener = AIL_open_3D_listener(provider);
-  AIL_set_3D_position(listener, 0, 0, 0);
-  AIL_set_3D_orientation(listener, 0, 0, -1, 0, 1, 0);
-  AIL_set_3D_velocity(listener, 0, 0, 0, 0);
-
-  //set a room style
-  AIL_set_3D_provider_preference(provider, "EAX environment selection", &providerRoomSetting);
+  if (result != M3D_NOERR) {
+	  fprintf(stderr,"Error Opening 3D Provider: %s\n",AIL_last_error());
+  }
+  else {
+  
+    provider = providers[index];
+    //open a listener.  Position defaults to the origin, looking down the -Z axis with (
+    listener = AIL_open_3D_listener(provider);
+    AIL_set_3D_position(listener, 0, 0, 0);
+    AIL_set_3D_orientation(listener, 0, 0, -1, 0, 1, 0);
+    AIL_set_3D_velocity(listener, 0, 0, 0, 0);
+    //set a room style
+    AIL_set_3D_provider_preference(provider, "EAX environment selection", &providerRoomSetting);
+  }
 }
 
 void vrpn_Sound_Server_Miles::unloadHandle(vrpn_SoundID id)
@@ -222,7 +239,7 @@ currently (7/28/99) this does not reuse space previously vacated in
 samples by unloading sounds*/
 {
 	if (provider != 0) {
-      fprintf(stdout,"Loading sound: %s\n", filename);
+      fprintf(stdout,"Loading sound: #%d %s\n", id, filename);
 	  ChangeSoundIdBox(0,id);
 	  //load into handle
 	  unsigned long *s;
@@ -285,7 +302,6 @@ void vrpn_Sound_Server_Miles::changeSoundStatus(vrpn_SoundID id, vrpn_SoundDef s
 
 	if (provider != 0) {
 
-	  
 	  //get pose info from quaternion	in soundDef, put it into the above vectors
 	  AIL_set_3D_position(getSample(id),soundDef.pose.position[0] , soundDef.pose.position[1], soundDef.pose.position[2]);
 	  
@@ -302,14 +318,26 @@ void vrpn_Sound_Server_Miles::changeSoundStatus(vrpn_SoundID id, vrpn_SoundDef s
 	  /*set the volume to the new level.*/
 	  AIL_set_3D_sample_volume(getSample(id), soundDef.volume);
 
+
+	  // Since the RSX software sets max front/back to 128.0 * min front/back,
+	  // we will divide max front/back by 128 and set this to min 
+	  // before giving it to miles
+	  // We will change GetCurrentDistances to multiply by 128.0 before displaying
+	  // value to the user.. This mess may need to be cleaned up if the Miles people
+	  // come to their senses...
+
+	  soundDef.min_back_dist = soundDef.max_back_dist / 128.0;
+	  soundDef.min_front_dist = soundDef.max_front_dist / 128.0;
+	  
 	  AIL_set_3D_sample_distances(getSample(id), soundDef.max_front_dist, soundDef.min_front_dist, soundDef.max_back_dist, soundDef.min_back_dist);
-	}
+	 }
 	else fprintf(stderr,"No provider has been set prior to changeSoundStatus\n");
 }
 
 void vrpn_Sound_Server_Miles::playSound(vrpn_SoundID id, vrpn_int32 repeat, vrpn_SoundDef soundDef)
 {
 	if (provider != 0) {
+      fprintf(stderr,"Playing sound: %d\n",id); 
 	  // update last sound played record
 	  LastSoundId = id;
 
@@ -374,15 +402,57 @@ void vrpn_Sound_Server_Miles::changeListenerStatus(vrpn_ListenerDef listenerDef)
 	  vrpn_float32 uX = 0, uY = 1, uZ = 0;
 
 	  AIL_set_3D_position(listener, listenerDef.pose.position[0], listenerDef.pose.position[1], listenerDef.pose.position[2]);
+
 	  // normalize
 	  listenerDef.pose.orientation[0] /= listenerDef.pose.orientation[3];
 	  listenerDef.pose.orientation[1] /= listenerDef.pose.orientation[3];
 	  listenerDef.pose.orientation[2] /= listenerDef.pose.orientation[3];
 	  listenerDef.pose.orientation[3] /= listenerDef.pose.orientation[3];
 
-	  AIL_set_3D_orientation(listener, listenerDef.pose.orientation[0], listenerDef.pose.orientation[1], listenerDef.pose.orientation[2], uX, uY, uZ);
+	  q_matrix_type mymatrix;
+	  q_matrix_type multmatrix;
+	  q_type facevec;
+
+	  q_to_row_matrix(mymatrix, listenerDef.pose.orientation);
+
+	  // 90 degree rotation about x
+	  multmatrix[0][0] = 1;
+	  multmatrix[0][1] = 0;
+	  multmatrix[0][2] = 0;
+	  multmatrix[0][3] = 0;
+
+	  multmatrix[1][0] = 0;
+	  multmatrix[1][1] = 0;
+	  multmatrix[1][2] = -1;
+	  multmatrix[1][3] = 0;
+
+	  multmatrix[2][0] = 0;
+	  multmatrix[2][1] = 1;
+	  multmatrix[2][2] = 0;
+	  multmatrix[2][3] = 0;
+
+	  multmatrix[3][0] = 0;
+	  multmatrix[3][1] = 0;
+	  multmatrix[3][2] = 0;
+	  multmatrix[3][3] = 1;
+
+	  q_matrix_mult(mymatrix, mymatrix, multmatrix);
+
+	  q_from_row_matrix(facevec, mymatrix);
+
+      AIL_set_3D_orientation(listener, listenerDef.pose.orientation[0], listenerDef.pose.orientation[1], listenerDef.pose.orientation[2], facevec[0], facevec[1], facevec[2]);
+	
 	  AIL_set_3D_velocity(listener, listenerDef.velocity[0], listenerDef.velocity[1], listenerDef.velocity[2], listenerDef.velocity[3]);
 	} else fprintf(stderr,"No provider has been set prior to changeListenerStatus\n");
+}
+
+void vrpn_Sound_Server_Miles::changeE_f_S_m(qogl_matrix_type newmatrix) {
+	qogl_matrix_copy(eye_f_sensor_m, newmatrix);
+	return;
+}
+
+void vrpn_Sound_Server_Miles::initModel(vrpn_ModelDef modelDef) {
+    qogl_matrix_copy(eye_f_sensor_m, modelDef.eye_from_sensor_matrix);
 }
 
 void vrpn_Sound_Server_Miles::mainloop(const timeval *timeout)
@@ -485,10 +555,13 @@ return;
 }
 
 void vrpn_Sound_Server_Miles::GetCurrentDistances(const vrpn_int32 CurrentSoundId, F32* FMin, F32* FMax, F32* BMin, F32* BMax) {
-	if (CurrentSoundId > -1)
+	if (CurrentSoundId > -1) {
 	  AIL_3D_sample_distances(getSample(CurrentSoundId), FMax, FMin, BMax, BMin);
+	  *FMin *= 128.0;	// multiply by 128.0 since we divided before setting them
+	  *BMin *= 128.0;
+	}
 	else {
-		*FMin = *FMax = *BMin = *BMax = -1;
+		*FMin = *FMax = *BMin = *BMax = 0;
 	}
 }
 

@@ -6,7 +6,7 @@
 
 #include "c:\miles\mss.h"
 #include "vrpn_Sound.h"
-
+#include "quat.h"
 
 extern void ChangeSoundIdBox(vrpn_int32 action, vrpn_int32 newId);
 
@@ -53,6 +53,10 @@ public:
 						/*sets the sounds's pose and velocity to what is passed in.  
 						If the sound is playing changes take place immediately.  
 						If not nothing happens. */
+	void        initModel(vrpn_ModelDef modelDef);
+	
+	void        changeE_f_S_m(qogl_matrix_type newmatrix); // sets the eye_from_sensor matrix
+
 	void		addProvider(HPROVIDER p);
 	void		mainloop(const struct timeval * timeout=NULL);
 	bool		noSounds(void);
@@ -66,9 +70,14 @@ public:
 	void        GetCurrentDistances(const vrpn_int32 CurrentSoundId, F32* FMin, F32* FMax, F32* BMin, F32* BMax);
 	void        GetListenerOrientation(F32* X_val, F32 *Y_val, F32 *Z_val);
 	void        GetCurrentOrientation(const vrpn_int32 CurrentSoundId,F32 *X_val, F32 *Y_val, F32 *Z_val);
-
-
+	
 	vrpn_int32    LastSoundId;		//ID of last played sound	
+
+	qogl_matrix_type eye_f_sensor_m; // this is the matrix that goes from the
+							         // sensor to the eyeball space (so for example
+	                                 // it could be eyeball_f_hiballsensor [ where 
+	                                 // hiballsensor would be the hiball mounted 
+									 // on the HMD   
 
 private:
 			
@@ -80,8 +89,6 @@ private:
 	HPROVIDER	*providers;			//3D audio provider
 	H3DPOBJECT	listener;			//listener
 	
-
-
 	vrpn_int32	  H_Max;			//size of array samples
 	vrpn_int32	  H_Cur;			//index in samples
 	vrpn_int32	  P_Max;			//size of array samples
