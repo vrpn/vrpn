@@ -8,9 +8,6 @@
   Author: weberh
   Created: Thu Mar  5 19:38:55 1998
   Revised: Fri Mar 19 15:05:28 1999 by weberh
-  $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Flock_Parallel.h,v $
-  $Locker:  $
-  $Revision: 1.7 $
 \*****************************************************************************/
 #ifndef _VRPN_FLOCK_PARALLEL_H_
 #define _VRPN_FLOCK_PARALLEL_H_

@@ -19,6 +19,12 @@
 #define VRPN_USE_WINSOCK_SOCKETS
 #endif
 
+#ifndef	VRPN_USE_WINSOCK_SOCKETS
+// On Win32, this constant is defined as ~0 (sockets are unsigned ints)
+#define	INVALID_SOCKET	-1
+#define	SOCKET		int
+#endif
+
 // comment from vrpn_Connection.h reads :
 //
 //   gethostbyname() fails on SOME Windows NT boxes, but not all,
@@ -53,10 +59,6 @@
 
   // manually define this too.  _WIN32 sans cygwin doesn't have gettimeofday
   extern "C" int gettimeofday(struct timeval *tp, struct timezone *tzp);
-
-  // This has been moved to connection.C so that users of this
-  // lib can still use fstream and other objects with close functions.
-  // #define close closesocket
 
 #endif
 // }}} timeval defines

@@ -7,9 +7,6 @@
   Author: weberh
   Created: Sat Dec 13 11:05:16 1997
   Revised: Wed Apr  1 13:23:40 1998 by weberh
-  $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.C,v $
-  $Locker:  $
-  $Revision: 1.29 $
   \*****************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>

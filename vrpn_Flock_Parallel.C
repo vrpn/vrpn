@@ -9,9 +9,6 @@
   Author: weberh
   Created: Thu Mar  5 19:38:55 1998
   Revised: Fri Mar 19 15:05:56 1999 by weberh
-  $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Flock_Parallel.C,v $
-  $Locker:  $
-  $Revision: 1.8 $
 \*****************************************************************************/
 
 // The structure of this code came from vrpn_3Space.[Ch]
@@ -492,6 +489,19 @@ void vrpn_Tracker_Flock_Parallel_Slave::mainloop()
 
 /*****************************************************************************\
   $Log: vrpn_Flock_Parallel.C,v $
+  Revision 1.9  2000/08/28 16:24:52  taylorr
+  2000-08-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+          * Makefile : Added Brown patches to compile under AIX.
+                  Cleaned up RANLIB and some dependencies.
+
+          * vrpn_Shared.h : Added INVALID_SOCKET defs for Win32.
+
+          * vrpn_Types.h : Added AIX definitions.
+
+  Revision 1.1.1.2  2000/07/10 13:12:55  ddj
+  VRPN 5.00 release sources
+
   Revision 1.8  2000/07/03 16:39:46  taylorr
   This takes us to vrpn 5.0, which includes several improvements over
   the previous versions, but means that everyone now needs to upgrade

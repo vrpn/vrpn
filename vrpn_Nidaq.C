@@ -7,9 +7,6 @@
   Author: weberh
   Created: Fri Jan 29 10:00:00 1999
   Revised: Fri Mar 19 14:46:06 1999 by weberh
-  $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Nidaq.C,v $
-  $Locker:  $
-  $Revision: 1.8 $
 \*****************************************************************************/
 
 #include "vrpn_Nidaq.h"

@@ -1,5 +1,14 @@
 2000-08-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* Makefile : Added Brown patches to compile under AIX.
+		Cleaned up RANLIB and some dependencies.
+
+	* vrpn_Shared.h : Added INVALID_SOCKET defs for Win32.
+
+	* vrpn_Types.h : Added AIX definitions.
+
+2000-08-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Wanda.h : New file
 	* vrpn_Wanda.C : New file
 	* Makefile : Add Wanda to server library

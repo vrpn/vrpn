@@ -17,9 +17,6 @@
   Author: weberh
   Created: Fri Jan 29 10:00:00 1999
   Revised: Fri Mar 19 14:45:55 1999 by weberh
-  $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Nidaq.h,v $
-  $Locker:  $
-  $Revision: 1.10 $
 \*****************************************************************************/
 
 #ifndef VRPN_NIDAQ

@@ -93,8 +93,13 @@ else
   endif
 
   ifeq ($(HW_OS),powerpc_aix)
-	CC := /usr/ibmcxx/bin/xlC_r -c -g -qarch=pwr3 -w
-	AR := ar
+	CC := /usr/ibmcxx/bin/xlC_r -g -qarch=pwr3 -w
+	RANLIB := ranlib
+  endif
+
+  ifeq ($(HW_OS), pc_linux)
+        CC := gcc
+        RANLIB := ranlib
   endif
 
   ifeq ($(HW_OS),sgi_irix)
@@ -106,6 +111,7 @@ else
    endif
    OBJECT_DIR_SUFFIX := .$(SGI_ABI).$(SGI_ARCH)
 	CC := CC -$(SGI_ABI) -$(SGI_ARCH)
+        RANLIB := :
   endif
 
   ifeq ($(HW_OS),hp700_hpux10)
@@ -151,7 +157,7 @@ endif
 # directories that we can do an rm -f on because they only contain
 # object files and executables
 SAFE_KNOWN_ARCHITECTURES :=	hp700_hpux/* hp700_hpux10/* mips_ultrix/* \
-	pc_linux/* sgi_irix.32/* sgi_irix.n32/* sparc_solaris/* sparc_sunos/* pc_cygwin/*
+	pc_linux/* sgi_irix.32/* sgi_irix.n32/* sparc_solaris/* sparc_sunos/* pc_cygwin/* powerpc_aix/*
 
 CLIENT_SKA = $(patsubst %,client_src/%,$(SAFE_KNOWN_ARCHITECTURES))
 SERVER_SKA = $(patsubst %,server_src/%,$(SAFE_KNOWN_ARCHITECTURES))
@@ -247,15 +253,18 @@ CFLAGS		 := $(INCLUDE_FLAGS) -g
 
 # Build objects from .c files
 $(OBJECT_DIR)/%.o: %.c $(LIB_INCLUDES) $(MAKEFILE)
+	@[ -d $(OBJECT_DIR) ] || mkdir $(OBJECT_DIR)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 # Build objects from .C files
 #$(OBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) $(MAKEFILE)
 $(OBJECT_DIR)/%.o: %.C $(LIB_INCLUDES)
+	@[ -d $(OBJECT_DIR) ] || mkdir $(OBJECT_DIR)
 	$(CC) $(CFLAGS) -DVRPN_CLIENT_ONLY -o $@ -c $<
 
 # Build objects from .C files
 $(SOBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) $(MAKEFILE)
+	@[ -d $(SOBJECT_DIR) ] || mkdir $(SOBJECT_DIR)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 #
@@ -350,22 +359,25 @@ SLIB_INCLUDES = $(LIB_INCLUDES) vrpn_3Space.h \
 	       vrpn_Flock_Parallel.h vrpn_Joystick.h \
 	       vrpn_JoyFly.h vrpn_sgibox.h vrpn_raw_sgibox.h \
                vrpn_CerealBox.h vrpn_Tracker_AnalogFly.h vrpn_Magellan.h \
-               vrpn_Analog_Radamec_SPI.h vrpn_ImmersionBox.h
+               vrpn_Analog_Radamec_SPI.h vrpn_ImmersionBox.h vrpn_Wanda.h
 
 
 #$(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(OBJECT_DIR) \
 #                         lib_depends \
 #                         $(LIB_OBJECTS) $(LIB_INCLUDES)
-#$(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(OBJECT_DIR) \
 
-$(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(OBJECT_DIR) $(LIB_OBJECTS)
+$(LIB_OBJECTS): $(LIB_INCLUDES)
+$(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(LIB_OBJECTS)
 	$(AR) $(OBJECT_DIR)/libvrpn.a $(LIB_OBJECTS)
-	-ranlib $(OBJECT_DIR)/libvrpn.a
+	-$(RANLIB) $(OBJECT_DIR)/libvrpn.a
 
-$(OBJECT_DIR)/libvrpnserver.a: $(MAKEFILE) $(SOBJECT_DIR) $(SLIB_OBJECTS) \
-			$(SLIB_INCLUDES)
+#$(OBJECT_DIR)/libvrpnserver.a: $(MAKEFILE) $(SOBJECT_DIR) $(SLIB_OBJECTS) \
+#			$(SLIB_INCLUDES)
+
+$(SLIB_OBJECTS): $(SLIB_INCLUDES)
+$(OBJECT_DIR)/libvrpnserver.a: $(MAKEFILE) $(SLIB_OBJECTS)
 	$(AR) $(OBJECT_DIR)/libvrpnserver.a $(SLIB_OBJECTS)
-	-ranlib $(OBJECT_DIR)/libvrpnserver.a
+	-$(RANLIB) $(OBJECT_DIR)/libvrpnserver.a
 
 #############################################################################
 #
@@ -422,8 +434,8 @@ beta :
 	-$(MV) $(OBJECT_DIR)/libvrpn.a $(OBJECT_DIR)/libvrpn_g++.a \
 	    $(OBJECT_DIR)/libvrpnserver.a $(OBJECT_DIR)/libvrpnserver_g++.a \
             $(BETA_LIB_DIR)/$(OBJECT_DIR)
-	-ranlib $(BETA_LIB_DIR)/$(OBJECT_DIR)/libvrpn.a
-	-ranlib $(BETA_LIB_DIR)/$(OBJECT_DIR)/libvrpnserver.a
+	-$(RANLIB) $(BETA_LIB_DIR)/$(OBJECT_DIR)/libvrpn.a
+	-$(RANLIB) $(BETA_LIB_DIR)/$(OBJECT_DIR)/libvrpnserver.a
 	-( cd $(BETA_INCLUDE_DIR); $(RMF) $(SLIB_INCLUDES) )
 	cp $(SLIB_INCLUDES) $(BETA_INCLUDE_DIR) 
 
@@ -484,8 +496,15 @@ else
 	$(SHELL) -ec 'g++ -MM $(CFLAGS) $(LIB_FILES) \
 	    | sed '\''s/\(.*\.o[ ]*:[ ]*\)/$(OBJECT_DIR)\/\1/g'\'' > $(OBJECT_DIR)/.depend'
   else
+    ifeq ($(HW_OS),powerpc_aix)
+	@$(RMF) *.u
+	$(SHELL) -ec '$(CC) -E -M $(CFLAGS) $(LIB_FILES) > /dev/null 2>&1'
+	cat *.u > .depend
+	@$(RMF) *.u
+    else
 	$(SHELL) -ec '$(CC) -M $(CFLAGS) $(LIB_FILES) \
 	    | sed '\''s/\(.*\.o[ ]*:[ ]*\)/$(OBJECT_DIR)\/\1/g'\'' > $(OBJECT_DIR)/.depend'
+    endif
   endif
 endif
 	@echo ----------------------------------------------------------------

@@ -86,6 +86,18 @@ typedef  float           vrpn_float32;
 typedef  double          vrpn_float64;
 #endif
 
+#ifdef  _AIX
+#define  VRPN_ARCH  aix
+typedef  char            vrpn_int8;
+typedef  unsigned char   vrpn_uint8;
+typedef  short           vrpn_int16;
+typedef  unsigned short  vrpn_uint16;
+typedef  int             vrpn_int32;
+typedef  unsigned int    vrpn_uint32;
+typedef  float           vrpn_float32;
+typedef  double          vrpn_float64;
+#endif
+
 // _WIN32 is defined for all compilers for Windows (cygnus g++ included)
 // furthermore, __CYGNUS__ is defined by g++ but not by VC++
 // currently, we use __CYGNUS__ to differentiate between VC++ and g++.

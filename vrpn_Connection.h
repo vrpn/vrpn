@@ -85,10 +85,6 @@ typedef int (* vrpn_LOGFILTER) (void * userdata, vrpn_HANDLERPARAM p);
 #define vrpn_LOG_OUTGOING			(1<<1)
 
 
-#if !defined(_WIN32) || defined (__CYGWIN__)
-#define SOCKET int
-#endif
-
 
 // Default port to listen on for a server
 #define vrpn_DEFAULT_LISTEN_PORT_NO             (4500)

@@ -14,9 +14,6 @@
   Author: weberh
   Created: Sat Dec 13 11:21:15 1997
   Revised: Mon Mar 23 11:34:26 1998 by weberh
-  $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.h,v $
-  $Locker:  $
-  $Revision: 1.14 $
 \*****************************************************************************/
 #ifndef _VRPN_CLOCK_H_
 #define _VRPN_CLOCK_H_
