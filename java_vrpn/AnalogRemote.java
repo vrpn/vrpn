@@ -38,7 +38,7 @@ public class AnalogRemote implements Runnable
 		catch( java.lang.UnsatisfiedLinkError e )
 		{  
 			System.out.println( "Error initializing remote analog device " + name + "." );
-			System.out.println( " -- Unable to find native library." );
+			System.out.println( " -- Unable to find the right functions.  This may be a version problem." );
 			throw new InstantiationException( e.getMessage( ) );
 		}
 		
@@ -46,7 +46,7 @@ public class AnalogRemote implements Runnable
 		this.analogThread.start( );
 	}
 	
-	public native boolean requestValueChange( int channel, double value );
+	public synchronized native boolean requestValueChange( int channel, double value );
 	
 	public synchronized void addAnalogChangeListener( AnalogChangeListener listener )
 	{
@@ -163,7 +163,18 @@ public class AnalogRemote implements Runnable
 	// static initialization
 	static 
 	{
-		System.loadLibrary( "AnalogRemote" );
+		try { System.loadLibrary( "AnalogRemote" ); }
+		catch( UnsatisfiedLinkError e )
+		{
+			System.out.println( e.getMessage( ) );
+			System.out.println( "Error initializing remote analog device." );
+			System.out.println( " -- Unable to find native library." );
+		}
+		catch( SecurityException e )
+		{
+			System.out.println( e.getMessage( ) );
+			System.out.println( "Security exception:  you couldn't load the native analog remote dll." );
+		}
 	}
 	
 	

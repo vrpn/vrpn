@@ -70,7 +70,7 @@ public class TrackerRemote implements Runnable
 		catch( java.lang.UnsatisfiedLinkError e )
 		{  
 			System.out.println( "Error initializing remote tracker " + name + "." );
-			System.out.println( " -- Unable to find native library." );
+			System.out.println( " -- Unable to find the right functions.  This may be a version problem." );
 			throw new InstantiationException( e.getMessage( ) );
 		}
 		
@@ -306,7 +306,19 @@ public class TrackerRemote implements Runnable
 	// static initialization
 	static 
 	{
-		System.loadLibrary( "TrackerRemote" );
+		try { System.loadLibrary( "TrackerRemote" ); }
+		catch( UnsatisfiedLinkError e )
+		{
+			System.out.println( e.getMessage( ) );
+			System.out.println( "Error initializing remote tracker." );
+			System.out.println( " -- Unable to find native library." );
+		}
+		catch( SecurityException e )
+		{
+			System.out.println( e.getMessage( ) );
+			System.out.println( "Security exception:  you couldn't load the native tracker remote dll." );
+		}
+
 	}
 	
 }
