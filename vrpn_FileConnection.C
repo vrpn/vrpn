@@ -225,6 +225,12 @@ int vrpn_File_Connection::jump_to_time(timeval newtime)
 //     event is played from the file, d_last_time will be set to now_time and
 //     d_virtual_time_elapsed_since_last_event will be zero'd.
 
+// XXX debugging
+enum {
+    JJ_PRINT, JJ_DO_NOT_PRINT
+} debug_jj_print_state = JJ_DO_NOT_PRINT;
+//} debug_jj_print_state = JJ_PRINT;
+
 // virtual
 int vrpn_File_Connection::mainloop( const timeval * /*timeout*/ ) {
 
@@ -260,7 +266,7 @@ int vrpn_File_Connection::mainloop( const timeval * /*timeout*/ ) {
     const timeval real_elapsed_time  // amount of ellapsed wallclock time
         = vrpn_TimevalDiff( now_time, d_last_time );
     const timeval skip_time          // scale it by d_rate
-        = vrpn_TimevalScale( real_elapsed_time, d_rate );
+        = vrpn_TimevalNormalize( vrpn_TimevalScale( real_elapsed_time, d_rate ) );
     const timeval end_time           // add it to the last file-time
         = vrpn_TimevalSum( d_time, skip_time );
     
@@ -283,17 +289,30 @@ int vrpn_File_Connection::mainloop( const timeval * /*timeout*/ ) {
     //                  from the log file
     const int need_to_play_retval = need_to_play(end_time);
 
-//      fprintf( stderr,
-//               "d_rate = %g\t"
-//               "skip_time = [%d, %d]\t"
-//               "%d <- need_to_play()\n",
-//               d_rate,
-//               skip_time.tv_sec, skip_time.tv_usec,
-//               need_to_play_retval );
-
+    if( (debug_jj_print_state == JJ_DO_NOT_PRINT) && (d_rate > 0) ) {
+        //debug_jj_print_state = JJ_PRINT;
+    }
+    if( debug_jj_print_state == JJ_PRINT ) {
+        fprintf( stderr, "(_________________\n" );
+        fprintf( stderr,
+                 "d_rate = %g\t"
+                 "skip_time = [%d, %d]\t"
+                 "%d <- need_to_play()\n",
+                 d_rate,
+                 skip_time.tv_sec, skip_time.tv_usec,
+                 need_to_play_retval );
+    }
+    
     if (need_to_play_retval > 0) {
         d_last_time = now_time;
-        return play_to_filetime(end_time);
+        const int rv = play_to_filetime(end_time);
+        if( debug_jj_print_state == JJ_PRINT ) {
+            fprintf( stderr, "-----------------------)\n");
+            if( d_rate == 0 ) {
+                debug_jj_print_state = JJ_DO_NOT_PRINT;
+            }
+        }
+        return rv;
     } else if (need_to_play_retval == 0) {
         // (winston) we don't set d_last_time so that we can more
         // accurately measure the (larger) interval next time around
@@ -305,6 +324,12 @@ int vrpn_File_Connection::mainloop( const timeval * /*timeout*/ ) {
         // The tracker group does this to run the hybrid tracking
         // algorithm on both an inertial data file and a hiball
         // tracker file that were recorded with synchronized clocks.
+        if( debug_jj_print_state == JJ_PRINT ) {
+            fprintf( stderr, "=======================)\n");
+            if( d_rate == 0 ) {
+                debug_jj_print_state = JJ_DO_NOT_PRINT;
+            }
+        }
         return 0;
     } else {
         // an error occurred while reading the next event from the file
@@ -322,7 +347,24 @@ int vrpn_File_Connection::mainloop( const timeval * /*timeout*/ ) {
 
 // checks if there is at least one log entry that occurs
 // between the current d_time and the given filetime
-int vrpn_File_Connection::need_to_play(timeval filetime)
+//
+// XXX [juliano 9/24/99] the above comment makes no sense to me
+//     this function checks if the next message to play back
+//     from the stream file has a timestamp GREATER than
+//     the argument to this function (which is the time that we
+//     wish to play to)
+//
+//     you can pause playback of a streamfile by ceasing to increment
+//     the value that is passed to this function.  However, if the next
+//     message in the streamfile has the same timestamp as the previous
+//     one, it will get played anyway.  Pause will not be achieved until
+//     all such messages have been played.
+//
+//     Beware: make sure you put the correct timestamps on individual
+//     messages when recording them in chunks (batches)
+//     to a time to a streamfile.
+//
+int vrpn_File_Connection::need_to_play( timeval time_we_want_to_play_to )
 {
     if (!d_currentLogEntry) {
         int retval = read_entry();
@@ -335,7 +377,24 @@ int vrpn_File_Connection::need_to_play(timeval filetime)
 
     vrpn_HANDLERPARAM & header = d_currentLogEntry->data;
 
-    return vrpn_TimevalGreater(filetime, header.msg_time);
+    // XXX [juliano 9/24/99]  is this right?
+    //   this is a ">" test, not a ">=" test
+    //   consequently, this function keeps returning true until the
+    //   next message is timestamped greater.  So, if a group of
+    //   messages share a timestamp, you cannot pause streamfile
+    //   replay anywhere inside the group.
+    //
+    //   this is true, but do you ever want to pause in the middle of
+    //   such a group?  This was a problem prior to fixing the
+    //   timeval overflow bug, but now that it's fixed, (who cares?)
+    
+    if( debug_jj_print_state == JJ_PRINT ) {
+        fprintf( stderr, "message_time = [%d, %d]\n",
+                 header.msg_time.tv_sec,
+                 header.msg_time.tv_usec );
+    }
+    
+    return vrpn_TimevalGreater( time_we_want_to_play_to, header.msg_time );
 }
 
 // plays to an elapsed end_time (in seconds)
@@ -363,6 +422,7 @@ int vrpn_File_Connection::play_to_filetime(timeval end_filetime) {
         // juliano(8/25/99)
         //   * you get here ONLY IF playone_to_filetime returned 0
         //   * that means that it played one entry
+        // XXX debug fprintf( stderr, "." );
     }
     
     if (ret == 1) {

@@ -18,6 +18,18 @@
 
 #define CHECK(a) if (a == -1) return -1
 
+timeval vrpn_TimevalNormalize( const timeval & tv )
+    // XXX [juliano 9/25/99] this function is untested
+{
+    timeval retval = tv;
+    
+    const long div = (tv.tv_usec / 1000000);
+    retval.tv_sec += div;
+    retval.tv_usec -= (div * 1000000);
+
+    return retval;
+}
+
 // Calcs the sum of tv1 and tv2.  Returns the sum in a timeval struct.
 // Calcs negative times properly, with the appropriate sign on both tv_sec
 // and tv_usec (these signs will match unless one of them is 0).

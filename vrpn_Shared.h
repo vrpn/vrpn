@@ -35,6 +35,18 @@ extern int gettimeofday(struct timeval *tp, struct timezone *tzp);
 
 #endif
 
+// [juliano 9/25/99] must normalize timeval
+//  * normalized means abs(tv_usec) is less than 1,000,000
+//  * the comments in vrpn_Sharec.C say that TimevalSum and TimevalDiff
+//    do not do the right thing if the inputs are not normalized
+//  * TimevalScale does not normalize
+//  * Instead of modifying TimevalScale, I'm going to add a
+//    Timeval_normalize function
+//  * XXX TimevalScale may overflow the tv_usec part
+
+// make sure tv_usec is less than 1,000,000
+timeval vrpn_TimevalNormalize( const timeval & );
+
 extern struct timeval vrpn_TimevalSum( const struct timeval& tv1, 
 				  const struct timeval& tv2 );
 extern struct timeval vrpn_TimevalDiff( const struct timeval& tv1, 
