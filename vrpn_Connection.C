@@ -175,25 +175,6 @@ extern "C" {
 #define SERVCOUNT       (20)
 #define SERVWAIT        (120/SERVCOUNT)
 
-#if 0
-
-#define time_greater(t1,t2)     ( (t1.tv_sec > t2.tv_sec) || \
-                                 ((t1.tv_sec == t2.tv_sec) && \
-                                  (t1.tv_usec > t2.tv_usec)) )
-#define time_add(t1,t2, tr)     { (tr).tv_sec = (t1).tv_sec + (t2).tv_sec ; \
-                                  (tr).tv_usec = (t1).tv_usec + (t2).tv_usec ; \
-                                  if ((tr).tv_usec >= 1000000L) { \
-                                        (tr).tv_sec++; \
-                                        (tr).tv_usec -= 1000000L; \
-                                  } }
-#define	time_subtract(t1,t2, tr) { (tr).tv_sec = (t1).tv_sec - (t2).tv_sec ; \
-				   (tr).tv_usec = (t1).tv_usec - (t2).tv_usec ;\
-				   if ((tr).tv_usec < 0) { \
-					(tr).tv_sec--; \
-					(tr).tv_usec += 1000000L; \
-				   } }
-#endif  // 0
-
 
 //
 // vrpn_ConnectionManager
@@ -346,12 +327,22 @@ vrpn_ConnectionManager::vrpn_ConnectionManager (void) :
  * DNS may not even be running.
  **********************/
 
-static int	vrpn_getmyIP (char *myIPchar, int maxlen,
-                              char * nameP = NULL)
+static int	vrpn_getmyIP (char * myIPchar, int maxlen,
+                              char * nameP = NULL,
+                              const char * NIC_IP = NULL)
 {	
 	char	myname[100];		// Host name of this host
         struct	hostent *host;          // Encoded host IP address, etc.
 	char	myIPstring[100];	// Hold "152.2.130.90" or whatever
+
+        if (NIC_IP) {
+          if (strlen(NIC_IP) > maxlen) {
+            fprintf(stderr,"vrpn_getmyIP: Name too long to return\n");
+            return -1;
+          }
+          strcpy(myIPchar, NIC_IP);
+          return 0;
+        }
 
 	// Find out what my name is
 	if (gethostname(myname, sizeof(myname))) {
@@ -753,7 +744,8 @@ int vrpn_noint_block_read_timeout(int infile, char buffer[],
 int vrpn_udp_request_lob_packet(
 		const char * machine,	// Name of the machine to call
 		const int remote_port,	// UDP port on remote machine
-		const int local_port)	// TCP port on this machine
+		const int local_port,	// TCP port on this machine
+                const char * NIC_IP = NULL)
 {
 	SOCKET	udp_sock;		/* We lob datagrams from here */
 	struct sockaddr_in udp_name;	/* The UDP socket binding name */
@@ -842,7 +834,7 @@ int vrpn_udp_request_lob_packet(
 	 * the remote server should connect to.  These are ASCII, separated
 	 * by a space. */
 
-	if (vrpn_getmyIP(myIPchar, sizeof(myIPchar))) {
+	if (vrpn_getmyIP(myIPchar, sizeof(myIPchar), NULL, NIC_IP)) {
 		fprintf(stderr,
 		   "vrpn_udp_request_lob_packet: Error finding local hostIP\n");
 		close(udp_sock);
@@ -997,63 +989,8 @@ int vrpn_poll_for_accept(SOCKET listen_sock, SOCKET *accept_sock, double timeout
 #if 0
   -- obsolete ??  never called!
 
-/***************************
- *	This routine will send UDP packets requesting a TCP callback from
- * a remote server given the name of the machine and the socket number to
- * send the requests to.
- *	This routine returns the file descriptor of the socket on success
- * and -1 on failure.
- ***************************/
 SOCKET vrpn_udp_request_call (const char * machine, int port,
                               const char * IPaddress)
-{
-	SOCKET	listen_sock;		/* The socket to listen on */
-	int	listen_portnum;		/* Port number we're listening on */
-	SOCKET	accept_sock;		/* The socket we get when accepting */
-	int	try_connect;
-
-	// Open the socket that we will listen on for connections
-	if (vrpn_get_a_TCP_socket(&listen_sock, &listen_portnum, IPaddress)) {
-		fprintf(stderr,"vrpn_udp_request_call(): Can't get listen sock\n");
-		return -1;
-	}
-
-	/* Repeat sending the request to the server and checking for it
-	 * to call back until either there is a connection request from the
-	 * server or it times out as many times as we're supposed to try. */
-
-	for (try_connect = 0; try_connect < UDP_CALL_RETRIES; try_connect++) {
-		int	ret;
-
-		/* Send a packet to the server asking for a connection. */
-		if (vrpn_udp_request_lob_packet(machine, port, listen_portnum)
-			== -1) {
-		  perror("vrpn_udp_request_call: Can't request connection");
-		  close(listen_sock);
-		  return -1;
-		}
-
-		ret = vrpn_poll_for_accept(listen_sock, &accept_sock, UDP_CALL_TIMEOUT);
-		if (ret == -1) {
-			fprintf(stderr,"vrpn_udp_request_call: Accept poll failed\n");
-			close(listen_sock);
-			return -1;
-		}
-		if (ret == 1) {
-			break;		// Got one!
-		}
-	}
-	if (try_connect == UDP_CALL_RETRIES) {	/* We didn't get an answer */
-		fprintf(stderr,"vrpn_udp_request_call: No reply from server\n");
-		fprintf(stderr,"                      (Server down or busy)\n");
-		close(listen_sock);
-		return -1;
-	}
-
-	close(listen_sock);	// We're done with the port
-
-	return accept_sock;
-}
 
 #endif  // 0
 
@@ -1070,7 +1007,7 @@ SOCKET vrpn_udp_request_call (const char * machine, int port,
  *      This routine returns a file descriptor that points to the socket
  * to the server on success and -1 on failure.
  **********************************/
-int vrpn_start_server(const char *machine, char *server_name, char *args,
+int vrpn_start_server(const char * machine, char * server_name, char * args,
                       const char * IPaddress = NULL)
 {
 #ifdef  VRPN_USE_WINSOCK_SOCKETS
@@ -1102,7 +1039,7 @@ int vrpn_start_server(const char *machine, char *server_name, char *args,
                 char    command[600];   /* Command passed to system() call */
                 char    *rsh_to_use;    /* Full path to Rsh command. */
 
-                if (vrpn_getmyIP(myIPchar,sizeof(myIPchar))) {
+                if (vrpn_getmyIP(myIPchar,sizeof(myIPchar), NULL, IPaddress)) {
                         fprintf(stderr,
                            "vrpn_start_server: Error finding my IP\n");
                         close(server_sock);
@@ -2641,7 +2578,7 @@ int vrpn_Connection::pack_udp_description(int portno)
    char myIPchar[1000];
 
    // Find the local host name
-   if (vrpn_getmyIP(myIPchar, sizeof(myIPchar))) {
+   if (vrpn_getmyIP(myIPchar, sizeof(myIPchar), NULL, d_NIC_IP)) {
 	perror("vrpn_Connection::pack_udp_description: can't get host name");
 	return -1;
    }
@@ -3389,7 +3326,8 @@ int vrpn_Connection::mainloop (const struct timeval * pTimeout)
 
 		  if (vrpn_udp_request_lob_packet(endpoint.remote_machine_name,
 					endpoint.remote_UDP_port,
-					endpoint.tcp_client_listen_port) == -1){
+					endpoint.tcp_client_listen_port,
+                                        d_NIC_IP) == -1){
 			fprintf(stderr,
 			  "vrpn_Connection: mainloop: Can't lob UDP request\n");
 			status = BROKEN;
@@ -3643,7 +3581,8 @@ vrpn_Connection::vrpn_Connection
 	  gettimeofday(&endpoint.last_UDP_lob, NULL);
 	  if (vrpn_udp_request_lob_packet(endpoint.remote_machine_name,
 				endpoint.remote_UDP_port,
-				endpoint.tcp_client_listen_port) == -1) {
+				endpoint.tcp_client_listen_port,
+                                NIC_IPaddress) == -1) {
 		fprintf(stderr,"vrpn_Connection: Can't lob UDP request\n");
 		status = BROKEN;
 //fprintf(stderr, "BROKEN - vrpn_Connection::vrpn_Connection.\n");
