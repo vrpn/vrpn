@@ -25,11 +25,14 @@
  * Update Count    : 20
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_JoyFly.h,v $
- * $Date: 1998/04/07 17:32:33 $
- * $Author: ryang $
- * $Revision: 1.2 $
+ * $Date: 1998/04/08 14:07:37 $
+ * $Author: taylorr $
+ * $Revision: 1.3 $
  * 
  * $Log: vrpn_JoyFly.h,v $
+ * Revision 1.3  1998/04/08 14:07:37  taylorr
+ * Makes it compile on HPs
+ *
  * Revision 1.2  1998/04/07 17:32:33  ryang
  * change to const XXX
  *
@@ -81,7 +84,7 @@ public:
 
   virtual void mainloop(void);
   virtual void reset();
-  void update(const q_matrix_type &);
+  void update(q_matrix_type &);
 };
 #endif
 

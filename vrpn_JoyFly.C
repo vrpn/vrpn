@@ -25,11 +25,14 @@
  * Update Count    : 95
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_JoyFly.C,v $
- * $Date: 1998/04/07 17:32:31 $
- * $Author: ryang $
- * $Revision: 1.2 $
+ * $Date: 1998/04/08 14:07:36 $
+ * $Author: taylorr $
+ * $Revision: 1.3 $
  * 
  * $Log: vrpn_JoyFly.C,v $
+ * Revision 1.3  1998/04/08 14:07:36  taylorr
+ * Makes it compile on HPs
+ *
  * Revision 1.2  1998/04/07 17:32:31  ryang
  * change to const XXX
  *
@@ -41,7 +44,7 @@
  * HISTORY
  */
 
-static char rcsid[] = "$Id: vrpn_JoyFly.C,v 1.2 1998/04/07 17:32:31 ryang Exp $";
+static char rcsid[] = "$Id: vrpn_JoyFly.C,v 1.3 1998/04/08 14:07:36 taylorr Exp $";
 
 #include <string.h>
 #include "vrpn_JoyFly.h"
@@ -57,7 +60,7 @@ vrpn_Tracker_JoyFly::vrpn_Tracker_JoyFly(char *name, vrpn_Connection *c,
 
 
   joy_remote = new vrpn_Analog_Remote(source);
-  joy_remote->register_change_handler(this,joy_cb);
+  joy_remote->register_change_handler(this,(vrpn_ANALOGCHANGEHANDLER)joy_cb);
   c->register_handler(c->register_message_type(vrpn_got_connection),
 		      con_cb, this);
   //joy_remote->register_change_handler(NULL,(vrpn_ANALOGCHANGEHANDLER)joy_cb);
@@ -179,7 +182,7 @@ void joy_cb(void * userdata, vrpn_ANALOGCB b) {
   pts->update(newM);
 }
 
-void vrpn_Tracker_JoyFly::update(const q_matrix_type & newM) {
+void vrpn_Tracker_JoyFly::update(q_matrix_type & newM) {
   q_matrix_type final;
   q_xyz_quat_type xq;
   int i;
