@@ -197,13 +197,11 @@ int vrpn_Connection::connect_tcp_to(char *msg)
 //  It then sends descriptions for all of the known packet types.
 
 void vrpn_Connection::check_connection(void)
-{  int	i;
-   int	request;
+{  int	request;
    char	msg[200];	// Message received on the request channel
    timeval timeout;
    timeout.tv_sec = 0;
    timeout.tv_usec = 0;
-   unsigned short udp_portnum;
 
    // Do a zero-time select() to see if there is an incoming packet on
    // the UDP socket.
@@ -235,7 +233,7 @@ void vrpn_Connection::check_connection(void)
    }
 
    // Set TCP_NODELAY on the socket
-/*XXX It looks like this means something different to Linux that what I
+/*XXX It looks like this means something different to Linux than what I
 	expect.  I expect it means to send acknowlegements without waiting
 	to piggyback on reply.  This causes the serial port to fail.  As
 	long as the other end has this set, things seem to work fine.  From
@@ -273,79 +271,30 @@ void vrpn_Connection::check_connection(void)
 
    // Set up the things that need to happen when a new connection is
    // started.
-   // XXX Should move all the cookie stuff in here so that it works
-   // the same for both sides and is only written once.
    if (setup_for_new_connection()) {
 	fprintf(stderr,"vrpn_Connection: Can't set up new connection!\n");
 	drop_connection();
 	return;
    }
 
-   // Pack a magic cookie at the beginning of the buffer that
-   // identifies the version and type of this connection.
-   // RECALL that the magic must be an even multiple of 4 in
-   // length in order to maintain word alignment for all following
-   // message elements (in later messages).
-   tcp_num_out = 0;			// No characters in buffer yet
-   memcpy(tcp_outbuf,MAGIC,MAGICLEN);
-   tcp_num_out = MAGICLEN;		// 16 characters in the buffer.
-
-   // Open the UDP port to accept time-critical messages on.
-   udp_portnum = (unsigned short)INADDR_ANY;
-   if ((udp_inbound = open_udp_socket(&udp_portnum)) == -1)  {
-	fprintf(stderr,
-	   "vrpn_Connection::vrpn_Connection: can't open UDP socket\n");
-	drop_connection();
-	return;
-   }
-
-   // Tell the other side what port number to send its UDP messages to.
-   if (pack_udp_description(udp_portnum) == -1) {
-	fprintf(stderr,
-	    "vrpn_Connection::vrpn_Connection: Can't pack UDP msg\n");
-	drop_connection();
-	return;
-   }
-   udp_num_out = 0;			// No characters in buffer yet
-
-   // Pack messages that describe the types of messages and sender
-   // ID mappings that have been described to this connection.  These
-   // messages use special IDs (negative ones).
-   for (i = 0; i < num_my_senders; i++) {
-	pack_sender_description(i);
-   }
-   for (i = 0; i < num_my_types; i++) {
-	pack_type_description(i);
-   }
-
-   // Send the messages
-   send_pending_reports();
-
-   // Get and verify the magic cookie from the other side
-   {	char buffer[MAGICLEN];
-	struct timeval t; t.tv_sec = 3; t.tv_usec = 0;
-
-	if (sdi_noint_block_read_timeout(tcp_sock, buffer, MAGICLEN, &t) !=
-	    MAGICLEN) {
-		perror("vrpn: vrpn_Connection: Can't read magic");
-		drop_connection();
-		return;
-	}
-	if (strncmp(buffer, MAGIC, MAGICLEN)) {
-		fprintf(stderr, "vrpn: vrpn_Connection: Bad magic\n");
-		drop_connection();
-		return;
-	}
-   }
-
 }
 
 int vrpn_Connection::setup_for_new_connection(void)
 {
+	char	buf[17];
 	int	i;
+	unsigned short udp_portnum;
+
 	// No senders or types yet defined by the other side.
 	num_other_senders = 0;
 	num_other_types = 0;
+
+	// No characters to send on any port
+	tcp_num_out = 0;
+	udp_num_out = 0;
+
+	// No UDP outbound is defined
+	udp_outbound = INVALID_SOCKET;
 
 	// Set all of the local IDs to zero, in case the other side
 	// sends a message of a type that it has not yet defined.
@@ -356,6 +305,57 @@ int vrpn_Connection::setup_for_new_connection(void)
 	}
 	for (i = 0; i < vrpn_CONNECTION_MAX_TYPES; i++) {
 		other_types[i].local_id = -1;
+	}
+
+	// Write the magic cookie header to the server
+	if (sdi_noint_block_write(tcp_sock,MAGIC,16) != 16) {
+	  perror(
+	    "vrpn_Connection::setup_for_new_connection: Can't write cookie");
+	  return -1;
+	}
+
+	// Read the magic cookie from the server
+	if (sdi_noint_block_read(tcp_sock,buf,16) != 16) {
+	  perror(
+	    "vrpn_Connection::setup_for_new_connection: Can't read cookie");
+	  return -1;
+	}
+	buf[16] = '\0';
+	if (strncmp(buf,MAGIC,16) != 0) {
+	  fprintf(stderr,"vrpn_Connection::setup_for_new_connection: bad cookie (wanted '%s', got '%s'\n", MAGIC, buf);
+	  return -1;
+	}
+
+	// Open the UDP port to accept time-critical messages on.
+	udp_portnum = (unsigned short)INADDR_ANY;
+	if ((udp_inbound = open_udp_socket(&udp_portnum)) == -1)  {
+	  fprintf(stderr,
+	  "vrpn_Connection::setup_for_new_connection: can't open UDP socket\n");
+	  return -1;
+	}
+
+	// Tell the other side what port number to send its UDP messages to.
+	if (pack_udp_description(udp_portnum) == -1) {
+	  fprintf(stderr,
+	    "vrpn_Connection::setup_for_new_connection: Can't pack UDP msg\n");
+	  return -1;
+	}
+
+	// Pack messages that describe the types of messages and sender
+	// ID mappings that have been described to this connection.  These
+	// messages use special IDs (negative ones).
+	for (i = 0; i < num_my_senders; i++) {
+		pack_sender_description(i);
+	}
+	for (i = 0; i < num_my_types; i++) {
+		pack_type_description(i);
+	}
+
+	// Send the messages
+	if (send_pending_reports() == -1) {
+	  fprintf(stderr,
+	    "vrpn_Connection::setup_for_new_connection: Can't send UDP msg\n");
+	  return -1;
 	}
 
 	return 0;
@@ -587,7 +587,7 @@ void vrpn_Connection::drop_connection(void)
 		close(udp_inbound);
 		udp_inbound = INVALID_SOCKET;
 	}
-	if (listen_udp_sock != -1) {
+	if (listen_udp_sock != INVALID_SOCKET) {
 		status = LISTEN;	// We're able to accept more
 	} else {
 		status = BROKEN;	// We're unable to accept more
@@ -771,7 +771,7 @@ void	vrpn_Connection::init(void)
 	tcp_num_out = 0;
 	udp_num_out = 0;
 
-	listen_udp_sock = -1;
+	listen_udp_sock = INVALID_SOCKET;
 	tcp_sock = INVALID_SOCKET;
 	udp_inbound = INVALID_SOCKET;
 	udp_outbound = INVALID_SOCKET;
@@ -802,7 +802,7 @@ vrpn_Connection::vrpn_Connection(unsigned short listen_port_no)
    // Initialize the things that must be for any constructor
    init();
 
-   if ( (listen_udp_sock=open_udp_socket(&listen_port_no)) == -1) {
+   if ( (listen_udp_sock=open_udp_socket(&listen_port_no)) == INVALID_SOCKET) {
       status = BROKEN;
    } else {
       status = LISTEN;
@@ -814,7 +814,6 @@ vrpn_Connection::vrpn_Connection(unsigned short listen_port_no)
 vrpn_Connection::vrpn_Connection(char *station_name)
 {
 	char	buf[17];
-	unsigned short	udp_portnum;
 
 	// Initialize the things that must be for any constructor
 	init();
@@ -831,58 +830,13 @@ vrpn_Connection::vrpn_Connection(char *station_name)
 	status = 0;
 
 	// Set up the things that need to happen when a new connection is
-	// started.
-	// XXX Should move all the cookie stuff in here so that it works
-	// the same for both sides and is only written once.
+	// established.
 	if (setup_for_new_connection()) {
 	    fprintf(stderr,"vrpn_Connection: Can't setup new connection!\n");
 	    drop_connection();
 	    return;
 	}
 
-	// Write the magic cookie header to the server
-	if (sdi_noint_block_write(tcp_sock,MAGIC,16) != 16) {
-		perror("vrpn_Connection::vrpn_Connection: Can't write cookie");
-		drop_connection();
-		return;
-	}
-
-	// Read the magic cookie from the server
-	if (sdi_noint_block_read(tcp_sock,buf,16) != 16) {
-		perror("vrpn_Connection::vrpn_Connection: Can't read cookie");
-		drop_connection();
-		return;
-	}
-	buf[16] = '\0';
-	if (strncmp(buf,MAGIC,16) != 0) {
-		fprintf(stderr,"vrpn_Connection::vrpn_Connection: bad cookie (wanted '%s', got '%s'\n", MAGIC, buf);
-		drop_connection();
-		return;
-	}
-
-	// Open the UDP port to accept time-critical messages on.
-
-	udp_portnum = (unsigned short)INADDR_ANY;
-	if ((udp_inbound = open_udp_socket(&udp_portnum)) == -1)  {
-		fprintf(stderr,
-		   "vrpn_Connection::vrpn_Connection: can't open UDP socket\n");
-		drop_connection();
-		return;
-	}
-
-	// Tell the other side what port number to send its UDP messages to.
-	if (pack_udp_description(udp_portnum) == -1) {
-		fprintf(stderr,
-		    "vrpn_Connection::vrpn_Connection: Can't pack UDP msg\n");
-		drop_connection();
-		return;
-	}
-	if (send_pending_reports() == -1) {
-		fprintf(stderr,
-		    "vrpn_Connection::vrpn_Connection: Can't send UDP msg\n");
-		drop_connection();
-		return;
-	}
 }
 #endif
 

@@ -71,11 +71,6 @@ class vrpn_Connection
 	virtual long register_sender(char *name);
 	virtual long register_message_type(char *name);
 
-//XXX	Still need pc_station to wrap the tracker and button callbacks and
-//XXX	tell the connection about its handlers.
-//XXX	Eventually, make button and tracker work on both sides, so that
-//XXX	packing and unpacking is done by the same object, (open it by name).
-
 	// Set up (or remove) a handler for a message of a given type.
 	// Optionally, specify which sender to handle messages from.
 	// Handlers will be called during mainloop().

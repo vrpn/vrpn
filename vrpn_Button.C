@@ -46,7 +46,7 @@ vrpn_Button::vrpn_Button(char *name, vrpn_Connection *c): num_buttons(0)
    }
 
    // Set the time to 0 just to have something there.
-   timestamp.tv_sec = timestamp.tv_usec = 0;
+   timestamp.tv_usec = timestamp.tv_sec = 0;
 }
 
 
@@ -295,8 +295,8 @@ int vrpn_Button_Remote::handle_change_message(void *userdata,
 		return -1;
 	}
 	bp.msg_time = p.msg_time;
-	bp.button = ntohl(params[0]);
-	bp.state = ntohl(params[1]);
+	bp.button = (int)ntohl(params[0]);
+	bp.state = (int)ntohl(params[1]);
 
 	// Go down the list of callbacks that have been registered.
 	// Fill in the parameter and call each.

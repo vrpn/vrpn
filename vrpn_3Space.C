@@ -312,7 +312,7 @@ void vrpn_Tracker_3Space::mainloop()
 #ifdef	VERBOSE
 	static int count = 0;
 	if (count++ == 120) {
-		printf("  XXX Got report\n"); print();
+		printf("  vrpn_Tracker_3Space: Got report\n"); print();
 		count = 0;
 	}
 #endif            

@@ -187,7 +187,7 @@ int vrpn_Tracker_Serial::readAvailableCharacters(unsigned char *buffer,
    }
 
 #ifdef	VERBOSE
-   if (bRead > 0) printf("  XXX Read %d bytes\n",(int)(bRead));
+   if (bRead > 0) printf("  vrpn_Tracker_Serial: Read %d bytes\n",(int)(bRead));
 #endif
 
 #ifdef	READ_HISTOGRAM
