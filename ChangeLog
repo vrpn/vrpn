@@ -1,5 +1,12 @@
 2004-07-27  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_FileConnection.C : Made all of the deletes for
+		arrays of characters use the [] version of
+		delete on (char *).  Very scary that it didn't
+		used to do this.
+
+2004-07-27  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* Makefile : Adding in recent files.  Deleting commented-out
 		rules.
 	* vrpn_Poser.C : removing unused variables.

@@ -849,7 +849,7 @@ vrpn_File_Connection::vrpn_FileBookmark::~vrpn_FileBookmark( )
 {
 	if( oldCurrentLogEntryCopy == NULL ) return;
 	if( oldCurrentLogEntryCopy->data.buffer != NULL )
-		delete (char*) (oldCurrentLogEntryCopy->data.buffer);
+		delete [] (char*) (oldCurrentLogEntryCopy->data.buffer);
 	delete oldCurrentLogEntryCopy;
 }
 
@@ -887,7 +887,7 @@ bool vrpn_File_Connection::store_stream_bookmark( )
 		d_bookmark.oldCurrentLogEntryCopy->data.msg_time = d_currentLogEntry->data.msg_time;
 		d_bookmark.oldCurrentLogEntryCopy->data.payload_len = d_currentLogEntry->data.payload_len;
 		if( d_bookmark.oldCurrentLogEntryCopy->data.buffer != NULL ) 
-		{  delete (void*) d_bookmark.oldCurrentLogEntryCopy->data.buffer;  }
+		{  delete [] (char*) d_bookmark.oldCurrentLogEntryCopy->data.buffer;  }
 		d_bookmark.oldCurrentLogEntryCopy->data.buffer = new char[d_currentLogEntry->data.payload_len];
 		if( d_bookmark.oldCurrentLogEntryCopy->data.buffer == NULL )
 		{  
@@ -943,7 +943,7 @@ bool vrpn_File_Connection::return_to_bookmark( )
 		d_currentLogEntry->data.buffer = newBuffer;
 		memcpy( (char*) d_currentLogEntry->data.buffer, 
 				d_bookmark.oldCurrentLogEntryCopy->data.buffer, d_currentLogEntry->data.payload_len );
-		delete temp;
+		delete [] temp;
 	}
 	return ( retval == 0 );
 }
