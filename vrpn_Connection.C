@@ -2577,76 +2577,124 @@ int vrpn_Connection::send_pending_reports(void)
 
 int vrpn_Connection::mainloop (const struct timeval * timeout)
 {
-  struct timeval perSocketTimeout;
+  // struct timeval perSocketTimeout;
   const int numSockets = 2;
   int	tcp_messages_read;
   int	udp_messages_read;
-
+  
 #ifdef	VERBOSE2
-	printf("vrpn_Connection::mainloop() called (status %d)\n",status);
+  printf("vrpn_Connection::mainloop() called (status %d)\n",status);
 #endif
+  
+  // divide timeout over all selects()
+  //  if (timeout) {
+  //    perSocketTimeout.tv_sec = timeout->tv_sec / numSockets;
+  //    perSocketTimeout.tv_usec = timeout->tv_usec / numSockets
+  //      + (timeout->tv_sec % numSockets) *
+  //      (1000000L / numSockets);
+  //  } else {
+  //    perSocketTimeout.tv_sec = 0L;
+  //    perSocketTimeout.tv_usec = 0L;
+  //  }
 
-   // divide timeout over all selects()
-   if (timeout) {
-     perSocketTimeout.tv_sec = timeout->tv_sec / numSockets;
-     perSocketTimeout.tv_usec = timeout->tv_usec / numSockets
-                                + (timeout->tv_sec % numSockets) *
-                                  (1000000L / numSockets);
-   } else {
-     perSocketTimeout.tv_sec = 0L;
-     perSocketTimeout.tv_usec = 0L;
-   }
+  // BETTER IDEA: do one select rather than multiple -- otherwise you are
+  // potentially holding up one or the other.  This allows clients which
+  // should not do anything until they get messages to request infinite
+  // waits (servers can't usually do infinite waits this because they need
+  // to service other devices to generate info which they then send to
+  // clients) .  weberh 3/20/99
+  
+  switch (status) {
+  case LISTEN:
+    check_connection(timeout);
+    break;
+    
+  case CONNECTED:
+    
+    // Send all pending reports on the way out
+    send_pending_reports();
+    
+    // check for pending incoming tcp or udp reports
+    // we do this so that we can trigger out of the timeout
+    // on either type of message without waiting on the other
+    
+    fd_set  readfds, exceptfds;
+    FD_ZERO(&readfds);              /* Clear the descriptor sets */
+    FD_ZERO(&exceptfds);
+    // Read incoming messages from the UDP channel
+    if (endpoint.udp_inbound != -1) {
+      FD_SET(endpoint.udp_inbound, &readfds);     /* Check for read */
+      FD_SET(endpoint.udp_inbound, &exceptfds);   /* Check for exceptions */
+    }
+    FD_SET(endpoint.tcp_sock, &readfds);
+    FD_SET(endpoint.tcp_sock, &exceptfds);
 
+    // Select to see if ready to hear from other side, or exception
+    
+    if (select(32,&readfds,NULL,&exceptfds, timeout) == -1) {
+      if (errno == EINTR) { /* Ignore interrupt */
+        break;
+      } else {
+        perror("vrpn: vrpn_Connection::mainloop: select failed.");
+        drop_connection();
+        if (status != LISTEN) {
+          status = DROPPED;
+          return -1;
+        }
+      }
+    }
 
-   switch (status) {
-      case LISTEN:
-      	check_connection(timeout);
-      	break;
+    // See if exceptional condition on either socket
+    if (FD_ISSET(endpoint.tcp_sock, &exceptfds) ||
+        ((endpoint.udp_inbound!=-1) && 
+         FD_ISSET(endpoint.udp_inbound, &exceptfds))) {
+      fprintf(stderr, "vrpn_Connection::mainloop: Exception on socket\n");
+      return(-1);
+    }
 
-      case CONNECTED:
-
-	// Send all pending reports on the way out
-      	send_pending_reports();
-
-	// Read incoming messages from the UDP channel
-	if (endpoint.udp_inbound != -1) {
-	  if ( (udp_messages_read = 
-                   handle_udp_messages(endpoint.udp_inbound,
-                                       &perSocketTimeout)) == -1) {
-		fprintf(stderr,
-			"vrpn: UDP handling failed, dropping connection\n");
-		drop_connection();
-		if (status != LISTEN) {
-			status = DROPPED;
-			return -1;
-		}
-		break;
-	  }
+    // Read incoming messages from the UDP channel
+    if ((endpoint.udp_inbound != -1) && 
+        FD_ISSET(endpoint.udp_inbound,&readfds)) {
+      if ( (udp_messages_read = 
+            handle_udp_messages(endpoint.udp_inbound,
+                                NULL)) == -1) {
+   //                               &perSocketTimeout)) == -1) {
+        fprintf(stderr,
+                "vrpn: UDP handling failed, dropping connection\n");
+        drop_connection();
+        if (status != LISTEN) {
+          status = DROPPED;
+          return -1;
+        }
+        break;
+      }
 #ifdef VERBOSE3
-	  if(udp_messages_read != 0 )
-	    printf("udp message read = %d\n",udp_messages_read);
+      if(udp_messages_read != 0 )
+        printf("udp message read = %d\n",udp_messages_read);
 #endif
-	}
+    }
 
-	// Read incoming messages from the TCP channel
-	if ((tcp_messages_read =
-                  handle_tcp_messages(endpoint.tcp_sock,
-                                      &perSocketTimeout)) == -1) {
-		printf(
-			"vrpn: TCP handling failed, dropping connection\n");
-		drop_connection();
-		if (status != LISTEN) {
-			status = DROPPED;
-			return -1;
-		}
-		break;
-	}
+    // Read incoming messages from the TCP channel
+    if (FD_ISSET(endpoint.tcp_sock,&readfds)) {
+      if ((tcp_messages_read =
+           handle_tcp_messages(endpoint.tcp_sock,
+                               NULL)) == -1) {
+        //                             &perSocketTimeout)) == -1) {
+        printf("vrpn: TCP handling failed, dropping connection\n");
+        drop_connection();
+        if (status != LISTEN) {
+          status = DROPPED;
+          return -1;
+        }
+        break;
+      }
 #ifdef VERBOSE3
-	else {
-	  if(tcp_messages_read!=0)
-		printf("tcp_message_read %d bytes\n",tcp_messages_read);
-	}
+      else {
+        if(tcp_messages_read!=0)
+          printf("tcp_message_read %d bytes\n",tcp_messages_read);
+      }
 #endif
+    }
 #ifdef	PRINT_READ_HISTOGRAM
 #define      HISTSIZE 25
    {
@@ -3194,7 +3242,7 @@ int	vrpn_Connection::handle_tcp_messages (int fd,
 	  localTimeout.tv_usec = 0L;
 	  localTimeout.tv_usec = 0L;
         }
-
+        
 	// Read incoming messages until there are no more characters to
 	// read from the other side.  For each message, determine what
 	// type it is and then pass it off to the appropriate handler

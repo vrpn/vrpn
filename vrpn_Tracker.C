@@ -553,7 +553,7 @@ vrpn_Tracker_Canned::~vrpn_Tracker_Canned (void) {
 }
 
 
-void vrpn_Tracker_Canned::mainloop (void) {
+void vrpn_Tracker_Canned::mainloop (const struct timeval * tvTimeout) {
   // Send the message on the connection;
   if (connection) {
     char	msgbuf[1000];
@@ -621,7 +621,7 @@ vrpn_Tracker_NULL::vrpn_Tracker_NULL
 	// Nothing left to do
 }
 
-void	vrpn_Tracker_NULL::mainloop(void)
+void	vrpn_Tracker_NULL::mainloop(const struct timeval * timeout)
 {
 	struct timeval current_time;
 	char	msgbuf[1000];
@@ -912,9 +912,9 @@ int vrpn_Tracker_Remote::reset_origin() {
   return 0;
 }
 
-void	vrpn_Tracker_Remote::mainloop(void)
+void	vrpn_Tracker_Remote::mainloop(const struct timeval * timeout)
 {
-	if (connection) { connection->mainloop(); }
+	if (connection) { connection->mainloop(timeout); }
 }
 
 int vrpn_Tracker_Remote::register_change_handler(void *userdata,

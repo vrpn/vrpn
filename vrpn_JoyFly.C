@@ -49,10 +49,10 @@ vrpn_Tracker_JoyFly::~vrpn_Tracker_JoyFly()
   delete joy_remote;
 }
 
-void vrpn_Tracker_JoyFly::mainloop()
+void vrpn_Tracker_JoyFly::mainloop(const struct timeval * timeout)
 {
   if (joy_remote !=  NULL)
-    joy_remote->mainloop();
+    joy_remote->mainloop(timeout);
   if (status == TRACKER_REPORT_READY) {
     // pack and deliver tracker report;
     fprintf(stderr, "Sending a report\n");

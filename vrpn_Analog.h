@@ -18,9 +18,9 @@ public:
 
 	// Called once through each main loop iteration to handle
 	// updates.
-	virtual void mainloop(void) = 0;	// Report changes to conneciton
+	virtual void mainloop(const struct timeval * timeout=NULL) = 0;
 
-        
+	// Report changes to conneciton
         vrpn_Connection *connectionPtr();
 
   protected:
@@ -82,7 +82,7 @@ class vrpn_Analog_Remote: public vrpn_Analog {
 	vrpn_Analog_Remote (const char * name, vrpn_Connection * c = NULL);
 
 	// This routine calls the mainloop of the connection it's on
-	virtual void mainloop(void);
+	virtual void mainloop(const struct timeval * timeout = NULL);
 
 	// (un)Register a callback handler to handle a button state change
 	virtual int register_change_handler(void *userdata,

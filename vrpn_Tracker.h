@@ -38,7 +38,7 @@
 class vrpn_Tracker {
   public:
    vrpn_Tracker (const char * name, vrpn_Connection * c = NULL);
-   virtual void mainloop(void) = 0;	// Handle getting any reports
+   virtual void mainloop(const struct timeval * timeout=NULL) = 0;
    virtual ~vrpn_Tracker() {};
 
    int read_config_file (FILE * config_file, const char * tracker_name);
@@ -128,7 +128,7 @@ class vrpn_Tracker_NULL: public vrpn_Tracker {
   public:
    vrpn_Tracker_NULL (const char * name, vrpn_Connection * c,
 	vrpn_int32 sensors = 1, vrpn_float64 Hz = 1.0);
-   virtual void mainloop(void);
+   virtual void mainloop(const struct timeval * timeout=NULL);
   protected:
    vrpn_float64	update_rate;
    vrpn_int32	num_sensors;
@@ -224,7 +224,7 @@ class vrpn_Tracker_Canned: public vrpn_Tracker {
                         const char * datafile);
 
    virtual ~vrpn_Tracker_Canned (void);
-   virtual void mainloop (void);
+   virtual void mainloop(const struct timeval * timeout=NULL);
 
   protected:
 
@@ -273,7 +273,7 @@ class vrpn_Tracker_Remote: public vrpn_Tracker {
 	int reset_origin(void);
 
 	// This routine calls the mainloop of the connection it's on
-	virtual void mainloop(void);
+  virtual void mainloop(const struct timeval * timeout=NULL);
 
 	// **** to register handlers for all sensors: ****
 

@@ -304,7 +304,7 @@ int vrpn_Tracker_Dyna::decode_record()
 }	/* t_pdyn_decode_record */
 
 
-void vrpn_Tracker_Dyna::mainloop()
+void vrpn_Tracker_Dyna::mainloop(const struct timeval * timeout)
 {
   switch (status) {
     case TRACKER_REPORT_READY:

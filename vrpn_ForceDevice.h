@@ -21,7 +21,7 @@
 class vrpn_ForceDevice {
 public:
     vrpn_ForceDevice(char * name, vrpn_Connection *c);
-    virtual void mainloop(void) = 0;
+    virtual void mainloop(const struct timeval * timeout=NULL) = 0;
     void print_report(void);
     void print_plane(void);
 
@@ -246,7 +246,7 @@ public:
     void stopForceField();
 
     // This routine calls the mainloop of the connection it's own
-    virtual void mainloop(void);
+    virtual void mainloop(const struct timeval * timeout=NULL);
 
     // (un)Register a callback handler to handle a force change
     // and plane equation change and trimesh change

@@ -27,7 +27,7 @@ private:
 		      char *port = "/dev/ttyd3", long baud = 38400);
     
   virtual ~vrpn_Tracker_Dyna();
-  virtual void mainloop(void);
+  virtual void mainloop(const struct timeval * timeout=NULL);
     
 private:
   void my_flush() {

@@ -145,10 +145,11 @@ vrpn_Analog_Remote::vrpn_Analog_Remote (const char * name,
 	gettimeofday(&timestamp, NULL);
 }
 
-void	vrpn_Analog_Remote::mainloop(void)
+void	vrpn_Analog_Remote::mainloop(const struct timeval * timeout)
 {
-	if (connection) { connection->mainloop(); 
-	}
+  if (connection) { 
+    connection->mainloop(timeout); 
+  }
 }
 
 int vrpn_Analog_Remote::register_change_handler(void *userdata,

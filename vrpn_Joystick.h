@@ -8,7 +8,7 @@ public:
   vrpn_Joystick(char * name, vrpn_Connection * c, char * portname,int
 		baud, double);
 
-  void mainloop();
+  void mainloop(const struct timeval * timeout = NULL);
 
 protected:
   void get_report();

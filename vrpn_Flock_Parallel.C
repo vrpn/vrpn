@@ -8,10 +8,10 @@
   ----------------------------------------------------------------------------
   Author: weberh
   Created: Thu Mar  5 19:38:55 1998
-  Revised: Tue Mar 10 14:24:35 1998 by weberh
+  Revised: Fri Mar 19 15:05:56 1999 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Flock_Parallel.C,v $
   $Locker:  $
-  $Revision: 1.3 $
+  $Revision: 1.4 $
 \*****************************************************************************/
 
 // The structure of this code came from vrpn_3Space.[Ch]
@@ -133,13 +133,13 @@ void vrpn_Tracker_Flock_Parallel::get_report(void)
   // this could either do nothing or call slave get_report(s)
 }
 
-void vrpn_Tracker_Flock_Parallel::mainloop()
+void vrpn_Tracker_Flock_Parallel::mainloop(const struct timeval * timeout)
 {
   int i;
 
   // call slave mainloops
   for (i=0;i<cSensors;i++) {
-    rgSlaves[i]->mainloop();
+    rgSlaves[i]->mainloop(timeout);
   }
 
   // check slave status (master fails if any slave does
@@ -340,7 +340,7 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 	       1000000L * (t1.tv_sec - t2.tv_sec);
 }
 
-void vrpn_Tracker_Flock_Parallel_Slave::mainloop()
+void vrpn_Tracker_Flock_Parallel_Slave::mainloop(const struct timeval * timeout)
 {
   switch (status) {
   case TRACKER_REPORT_READY:
@@ -485,6 +485,11 @@ void vrpn_Tracker_Flock_Parallel_Slave::mainloop()
 
 /*****************************************************************************\
   $Log: vrpn_Flock_Parallel.C,v $
+  Revision 1.4  1999/03/19 23:05:43  weberh
+  modified the client and server classes so that they work with
+  tom's changes to allow blocking vrpn mainloop calls (ie, mainloop
+  signature changed).
+
   Revision 1.3  1999/02/24 15:58:33  taylorr
   BIG CHANGES.
   I modified the code so that it can compile on 64-bit SGI machines.

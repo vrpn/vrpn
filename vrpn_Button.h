@@ -27,7 +27,8 @@ class vrpn_Button {
 
 	// Called once through each main loop iteration to handle
 	// button updates.
-	virtual void mainloop(void) = 0;	// Report changes to conneciton
+	// Report changes to conneciton
+        virtual void mainloop(const struct timeval * timeout = NULL) = 0;
 
         vrpn_Connection *connectionPtr();
 
@@ -98,7 +99,7 @@ class vrpn_Button_Python: public vrpn_parallel_Button {
 	vrpn_Button_Python(char *name, vrpn_Connection *c, int p):
 		vrpn_parallel_Button(name,c,p) {};
 
-	virtual void mainloop(void);
+	virtual void mainloop(const struct timeval * timeout = NULL);
   protected:
   	virtual void read(void);
 };
@@ -133,7 +134,7 @@ class vrpn_Button_Remote: public vrpn_Button {
 	vrpn_Button_Remote(char *name);
 
 	// This routine calls the mainloop of the connection it's on
-	virtual void mainloop(void);
+	virtual void mainloop(const struct timeval * timeout = NULL);
 
 	// (un)Register a callback handler to handle a button state change
 	virtual int register_change_handler(void *userdata,
@@ -154,3 +155,4 @@ class vrpn_Button_Remote: public vrpn_Button {
 
 #define	VRPN_BUTTON_H
 #endif
+

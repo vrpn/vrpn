@@ -1195,9 +1195,9 @@ void vrpn_ForceDevice_Remote::stopForceField()
 }
 
 
-void	vrpn_ForceDevice_Remote::mainloop(void)
+void	vrpn_ForceDevice_Remote::mainloop(const struct timeval * timeout)
 {
-	if (connection) { connection->mainloop(); }
+	if (connection) { connection->mainloop(timeout); }
 }
 
 int vrpn_ForceDevice_Remote::register_force_change_handler(void *userdata,

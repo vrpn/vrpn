@@ -16,10 +16,10 @@
   ----------------------------------------------------------------------------
   Author: weberh
   Created: Fri Jan 29 10:00:00 1999
-  Revised: Mon Feb 15 11:08:40 1999 by weberh
+  Revised: Fri Mar 19 14:45:55 1999 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Nidaq.h,v $
   $Locker:  $
-  $Revision: 1.8 $
+  $Revision: 1.9 $
 \*****************************************************************************/
 
 #ifndef VRPN_NIDAQ
@@ -48,7 +48,7 @@ public:
 		   int fNice=0);
 
   ~vrpn_Nidaq();
-  void mainloop();
+  void mainloop(const struct timeval * timeout = NULL);
   int doing_okay();
 
 protected:
@@ -81,6 +81,11 @@ private:
 
 /*****************************************************************************\
   $Log: vrpn_Nidaq.h,v $
+  Revision 1.9  1999/03/19 23:05:49  weberh
+  modified the client and server classes so that they work with
+  tom's changes to allow blocking vrpn mainloop calls (ie, mainloop
+  signature changed).
+
   Revision 1.8  1999/03/17 22:30:14  weberh
   added new comment re: max rate with fNice.
 

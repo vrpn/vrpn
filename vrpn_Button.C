@@ -386,7 +386,7 @@ vrpn_parallel_Button::vrpn_parallel_Button(char *name, vrpn_Connection *c,
 #endif
 }
 
-void vrpn_Button_Python::mainloop(void)
+void vrpn_Button_Python::mainloop(const struct timeval * timeout)
 {
   switch (status) {
       case BUTTON_READY:
@@ -480,9 +480,9 @@ vrpn_Button_Remote::vrpn_Button_Remote(char *name) :
 	gettimeofday(&timestamp, NULL);
 }
 
-void	vrpn_Button_Remote::mainloop(void)
+void	vrpn_Button_Remote::mainloop(const struct timeval * timeout)
 {
-	if (connection) { connection->mainloop(); 
+	if (connection) { connection->mainloop(timeout); 
 	}
 }
 

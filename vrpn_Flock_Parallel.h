@@ -7,10 +7,10 @@
   ----------------------------------------------------------------------------
   Author: weberh
   Created: Thu Mar  5 19:38:55 1998
-  Revised: Tue Mar 10 14:09:55 1998 by weberh
+  Revised: Fri Mar 19 15:05:28 1999 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Flock_Parallel.h,v $
   $Locker:  $
-  $Revision: 1.5 $
+  $Revision: 1.6 $
 \*****************************************************************************/
 #ifndef _VRPN_FLOCK_PARALLEL_H_
 #define _VRPN_FLOCK_PARALLEL_H_
@@ -64,7 +64,7 @@ class vrpn_Tracker_Flock_Parallel: public vrpn_Tracker_Flock {
 			      char *slavePortArray[] );
     
   virtual ~vrpn_Tracker_Flock_Parallel();
-  virtual void mainloop(void);
+  virtual void mainloop(const struct timeval * timeout=NULL);
     
  protected:
   virtual void get_report(void);
@@ -86,7 +86,7 @@ public:
 				     vrpn_int32 vrpnPositionMsgID,
 				     int iSensorID );
   virtual ~vrpn_Tracker_Flock_Parallel_Slave();
-  virtual void mainloop();
+  virtual void mainloop(const struct timeval * timeout=NULL);
 
  protected:
   virtual void reset();
@@ -102,6 +102,11 @@ public:
 
 /*****************************************************************************\
   $Log: vrpn_Flock_Parallel.h,v $
+  Revision 1.6  1999/03/19 23:05:44  weberh
+  modified the client and server classes so that they work with
+  tom's changes to allow blocking vrpn mainloop calls (ie, mainloop
+  signature changed).
+
   Revision 1.5  1999/02/24 15:58:33  taylorr
   BIG CHANGES.
   I modified the code so that it can compile on 64-bit SGI machines.

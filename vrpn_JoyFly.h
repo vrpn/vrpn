@@ -27,16 +27,13 @@ class vrpn_Tracker_JoyFly : public vrpn_Tracker {
     vrpn_Analog_Remote * joy_remote;
     q_matrix_type initMatrix, currentMatrix;
 
-
-  
-
   public:
     vrpn_Tracker_JoyFly (const char * name, vrpn_Connection * c, 
 		         const char * source, const char * config_file_name,
                          vrpn_Connection * sourceConnection = NULL);
     virtual ~vrpn_Tracker_JoyFly (void);
 
-    virtual void mainloop (void);
+    virtual void mainloop (const struct timeval * timeout = NULL);
     virtual void reset (void);
 
     void update (q_matrix_type &);

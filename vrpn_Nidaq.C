@@ -6,10 +6,10 @@
   ----------------------------------------------------------------------------
   Author: weberh
   Created: Fri Jan 29 10:00:00 1999
-  Revised: Fri Jan 29 16:22:55 1999 by weberh
+  Revised: Fri Mar 19 14:46:06 1999 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Nidaq.C,v $
   $Locker:  $
-  $Revision: 1.6 $
+  $Revision: 1.7 $
 \*****************************************************************************/
 
 #include "vrpn_Nidaq.h"
@@ -136,7 +136,7 @@ vrpn_Nidaq::~vrpn_Nidaq() {
   delete pDAQ;
 }
 
-void vrpn_Nidaq::mainloop() {
+void vrpn_Nidaq::mainloop(const struct timeval * timeout) {
 
   // lower cpu utilization, but do so before report_changes so
 	// that when connection->mainloop is called after nidaq->mainloop
@@ -211,6 +211,11 @@ void vrpn_Nidaq::report_changes() {
 
 /*****************************************************************************\
   $Log: vrpn_Nidaq.C,v $
+  Revision 1.7  1999/03/19 23:05:48  weberh
+  modified the client and server classes so that they work with
+  tom's changes to allow blocking vrpn mainloop calls (ie, mainloop
+  signature changed).
+
   Revision 1.6  1999/03/16 22:07:07  weberh
   vrpn_Analog.C: cast to get rid of warning
   vrpn_Nidaq.C: got rid of internal Sleep(1) for nice behavior -- users should

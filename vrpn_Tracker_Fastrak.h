@@ -355,7 +355,7 @@ private:
 		       char *port = "/dev/ttyS1", long baud = 9600) :
     vrpn_Tracker_Serial(name,c,port,baud) {};
     
-  virtual void mainloop(void);
+  virtual void mainloop(const struct timeval * timeout=NULL);
   
   //int get_status(void) { return status;}
     

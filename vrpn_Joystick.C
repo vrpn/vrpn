@@ -29,7 +29,7 @@ vrpn_Joystick::vrpn_Joystick(char * name,
 }
 
 
-void vrpn_Joystick::mainloop(void) {
+void vrpn_Joystick::mainloop(const struct timeval * timeout) {
   //printf("joy::mainloop %d status\n", status);
   switch (status) {
   case ANALOG_REPORT_READY:
