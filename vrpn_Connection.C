@@ -2262,6 +2262,68 @@ void vrpn_Connection::handle_connection(void)
 
 }
 
+void vrpn_Connection::poll_for_cookie (const timeval * pTimeout) {
+
+  timeval timeout;
+  if (pTimeout) {
+    timeout = *pTimeout;
+  } else {
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 0;
+  }
+
+  fd_set  readfds, exceptfds;
+
+  // most of this code copied from mainloop() case CONNECTED
+
+  // check for pending incoming tcp or udp reports
+  // we do this so that we can trigger out of the timeout
+  // on either type of message without waiting on the other
+    
+  FD_ZERO(&readfds);              /* Clear the descriptor sets */
+  FD_ZERO(&exceptfds);
+
+  // Read incoming COOKIE from TCP channel
+
+  FD_SET(endpoint.tcp_sock, &readfds);
+  FD_SET(endpoint.tcp_sock, &exceptfds);
+
+  // Select to see if ready to hear from other side, or exception
+    
+  if (select(32, &readfds, NULL ,&exceptfds, (timeval *)&timeout) == -1) {
+    if (errno == EINTR) { /* Ignore interrupt */
+      //break;
+      return;
+    } else {
+      perror("vrpn: vrpn_Connection::poll_for_cookie(): select failed.");
+      drop_connection();
+      return;
+    }
+  }
+
+  // See if exceptional condition on either socket
+  if (FD_ISSET(endpoint.tcp_sock, &exceptfds)) {
+    fprintf(stderr, "vrpn_Connection::poll_for_cookie(): Exception on socket\n");
+    return;
+  }
+
+  // Read incoming COOKIE from the TCP channel
+  if (FD_ISSET(endpoint.tcp_sock,&readfds)) {
+    finish_new_connection_setup();
+    if (!doing_okay()) {
+      printf("vrpn: cookie handling failed\n");
+      return;
+    }
+#ifdef VERBOSE3
+    else {
+      if
+        printf("vrpn_Connection::poll_for_cookie() got cookie\n",tcp_messages_read);
+    }
+#endif
+  }
+
+}
+
 // network initialization
 int vrpn_Connection::setup_new_connection
          (long remote_log_mode, const char * remote_logfile_name)
@@ -2308,6 +2370,8 @@ int vrpn_Connection::setup_new_connection
 //fprintf(stderr, "COOKIE_PENDING - vrpn_Connection::setup_new_connection.\n");
 
 //fprintf(stderr, "Leaving setup_new_connection().\n");
+
+        poll_for_cookie();
 
         return 0;
 }
@@ -3178,53 +3242,7 @@ int vrpn_Connection::mainloop (const struct timeval * pTimeout)
 
       case COOKIE_PENDING:
 
-        // most of this code copied from case CONNECTED
-
-    // check for pending incoming tcp or udp reports
-    // we do this so that we can trigger out of the timeout
-    // on either type of message without waiting on the other
-    
-    FD_ZERO(&readfds);              /* Clear the descriptor sets */
-    FD_ZERO(&exceptfds);
-
-    // Read incoming COOKIE from TCP channel
-
-    FD_SET(endpoint.tcp_sock, &readfds);
-    FD_SET(endpoint.tcp_sock, &exceptfds);
-
-    // Select to see if ready to hear from other side, or exception
-    
-    if (select(32, &readfds, NULL ,&exceptfds, (timeval *)&timeout) == -1) {
-      if (errno == EINTR) { /* Ignore interrupt */
-        break;
-      } else {
-        perror("vrpn: vrpn_Connection::mainloop: select failed.");
-        drop_connection();
-	return -1;
-      }
-    }
-
-    // See if exceptional condition on either socket
-    if (FD_ISSET(endpoint.tcp_sock, &exceptfds)) {
-      fprintf(stderr,"vrpn_Connection::mainloop: Exception on socket\n");
-      drop_connection();
-      return(-1);
-    }
-
-    // Read incoming COOKIE from the TCP channel
-    if (FD_ISSET(endpoint.tcp_sock,&readfds)) {
-      finish_new_connection_setup();
-      if (!doing_okay()) {
-        printf("vrpn: cookie handling failed\n");
-        break;
-      }
-#ifdef VERBOSE3
-      else {
-        if
-          printf("vrpn_Connection::mainloop got cookie\n",tcp_messages_read);
-      }
-#endif
-    }
+        poll_for_cookie(pTimeout);
 
         break;
 
