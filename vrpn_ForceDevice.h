@@ -124,8 +124,8 @@ protected:
 	static int handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
 
 };
-#endif
-#endif
+#endif  // VRPN_CLIENT_ONLY
+#endif  // _WIN32
 
 
 typedef	struct {

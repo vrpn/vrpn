@@ -34,6 +34,8 @@ class vrpn_Button {
 	virtual int encode_to(char *buf, int button, int state);
 };
 
+#ifndef VRPN_CLIENT_ONLY
+
 // Button device that is connected to a parallel port and uses the
 // status bits to read from the buttons.  There can be up to 5 buttons
 // read this way.
@@ -61,6 +63,9 @@ class vrpn_Button_Python: public vrpn_parallel_Button {
   protected:
   	virtual void read(void);
 };
+
+#endif  // VRPN_CLIENT_ONLY
+
 
 //----------------------------------------------------------
 //************** Users deal with the following *************

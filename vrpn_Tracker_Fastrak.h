@@ -25,11 +25,19 @@
  * Update Count    : 45
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Tracker_Fastrak.h,v $
- * $Date: 1998/02/11 20:35:41 $
- * $Author: ryang $
- * $Revision: 1.3 $
+ * $Date: 1998/02/20 20:27:01 $
+ * $Author: hudson $
+ * $Revision: 1.4 $
  * 
  * $Log: vrpn_Tracker_Fastrak.h,v $
+ * Revision 1.4  1998/02/20 20:27:01  hudson
+ * Version 02.10:
+ *   Makefile:  split library into server & client versions
+ *   Connection:  added sender "VRPN Control", "VRPN Connection Got/Dropped"
+ *     messages, vrpn_ANY_TYPE;  set vrpn_MAX_TYPES to 2000.  Bugfix for sender
+ *     and type names.
+ *   Tracker:  added Ruigang Yang's vrpn_Tracker_Canned
+ *
  * Revision 1.3  1998/02/11 20:35:41  ryang
  * canned class
  *
@@ -58,7 +66,7 @@
 #include "vrpn_Tracker.h"
 
 #ifndef _WIN32
-
+#ifndef VRPN_CLIENT_ONLY
 
 
 /*
@@ -418,11 +426,12 @@ private:
 };
 
 #endif  // #ifndef _WIN32
+#endif  // VRPN_CLIENT_ONLY
 
 
 
 
-#endif
+#endif  // INCLUDED_FASTRAK
 
 
 

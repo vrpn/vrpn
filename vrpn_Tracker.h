@@ -73,6 +73,7 @@ class vrpn_Tracker {
    virtual int encode_sensor2unit_to(char *buf); // and sensor2unit xforms
 };
 
+#ifndef VRPN_CLIENT_ONLY
 #ifndef _WIN32
 #define BUF_SIZE 100
 
@@ -92,7 +93,9 @@ class vrpn_Tracker_Serial : public vrpn_Tracker {
    virtual void get_report(void) = 0;
    virtual void reset(void) = 0;
 };
-#endif
+#endif  // _WIN32
+#endif  // VRPN_CLIENT_ONLY
+
 
 class vrpn_Tracker_NULL: public vrpn_Tracker {
   public:
@@ -103,6 +106,8 @@ class vrpn_Tracker_NULL: public vrpn_Tracker {
    float	update_rate;
    int		num_sensors;
 };
+
+
 
 
 //----------------------------------------------------------
@@ -170,6 +175,47 @@ typedef struct {
 } vrpn_TRACKERSENSOR2UNITCB;
 typedef void (*vrpn_TRACKERSENSOR2UNITCHANGEHANDLER)(void *userdata,
                                         const vrpn_TRACKERSENSOR2UNITCB info);
+
+#ifndef VRPN_CLIENT_ONLY
+
+
+
+
+
+// This is a virtual device that plays back pre-recorded sensor data.
+
+class vrpn_Tracker_Canned: public vrpn_Tracker {
+  
+  public:
+  
+   vrpn_Tracker_Canned (char * name, vrpn_Connection * c,
+                        char * datafile);
+
+   virtual ~vrpn_Tracker_Canned (void);
+   virtual void mainloop (void);
+
+  protected:
+
+   virtual void get_report (void) { /* do nothing */ }
+   virtual void reset (void);
+
+  private:
+
+   void copy (void);
+
+   FILE * fp;
+   int totalRecord;
+   vrpn_TRACKERCB t;
+   int current;
+
+};
+#endif  // VRPN_CLIENT_ONLY
+
+
+
+
+
+
 // Open a tracker that is on the other end of a connection
 // and handle updates from it.  This is the type of tracker that user code will
 // deal with.

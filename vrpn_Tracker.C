@@ -30,11 +30,14 @@ static const char *tracker_cfg_file_name = "vrpn_Tracker.cfg";
 //#define VERBOSE
 // #define READ_HISTOGRAM
 
+
 static	unsigned long	duration(struct timeval t1, struct timeval t2)
 {
 	return (t1.tv_usec - t2.tv_usec) +
 	       1000000L * (t1.tv_sec - t2.tv_sec);
 }
+
+#ifndef VRPN_CLIENT_ONLY
 
 int vrpn_open_commport(char *portname, long baud)
 {
@@ -109,11 +112,14 @@ int vrpn_open_commport(char *portname, long baud)
   }
   
   return(fileDescriptor);
-#endif
+#endif  // _WIN32
 }
+
+#endif  // VRPN_CLIENT_ONLY
 
 // empty the input buffer (discarding the chars)
 // Return 0 on success, -1 on failure.
+// NOT CALLED!  OBSOLETE?
 int vrpn_flush_input_buffer(int comm)
 {
 #if defined(_WIN32) || defined(sparc) || defined(hpux)
@@ -127,6 +133,7 @@ int vrpn_flush_input_buffer(int comm)
 
 // empty the output buffer, discarding all of the chars
 // Return 0 on success, tc err codes other on failure.
+// NOT CALLED!  OBSOLETE?
 int vrpn_flush_output_buffer(int comm)
 {
 #if defined(_WIN32) || defined(sparc) || defined(hpux)
@@ -140,6 +147,7 @@ int vrpn_flush_output_buffer(int comm)
 
 // empty the output buffer, discarding all of the chars
 // Return 0 on success, tc err codes on failure.
+// NOT CALLED!  OBSOLETE?
 int vrpn_drain_output_buffer(int comm)
 {
 #if defined(_WIN32) || defined(sparc) || defined(hpux)
@@ -436,6 +444,8 @@ int	vrpn_Tracker::encode_acc_to(char *buf)
    return index*sizeof(double);
 }
 
+#ifndef VRPN_CLIENT_ONLY
+
 // This routine will read any available characters from the handle into
 // the buffer specified, up to the number of bytes requested.  It returns
 // the number of characters read or -1 on failure.  Note that it only
@@ -500,7 +510,91 @@ int vrpn_Tracker_Serial::read_available_characters(unsigned char *buffer,
 
    return bRead;
 }
-#endif
+#endif  // _WIN32
+
+
+
+vrpn_Tracker_Canned::vrpn_Tracker_Canned (char * name, vrpn_Connection * c,
+                                          char * datafile) 
+  : vrpn_Tracker(name, c) {
+    fp =fopen(datafile,"r");
+    if (fp == NULL) {
+      perror("can't open datafile:");
+      return;
+    } else {
+      fread(&totalRecord, sizeof(int), 1, fp);
+      fread(&t, sizeof(vrpn_TRACKERCB), 1, fp);
+      printf("pos[0]=%.4f, time = %ld usec\n", t.pos[0],
+	     t.msg_time.tv_usec);
+      printf("sizeof trackcb = %d, total = %d\n", sizeof(t), totalRecord);
+      current =1;
+      copy();
+    }
+}
+
+
+vrpn_Tracker_Canned::~vrpn_Tracker_Canned (void) {
+  if (fp != NULL) fclose(fp);
+}
+
+
+void vrpn_Tracker_Canned::mainloop (void) {
+  // Send the message on the connection;
+  if (connection) {
+    char	msgbuf[1000];
+    int	len = encode_to(msgbuf);
+    if (connection->pack_message(len, timestamp,
+				 position_m_id, my_id, msgbuf,
+				 vrpn_CONNECTION_LOW_LATENCY)) {
+      fprintf(stderr,"Tracker: cannot write message: tossing\n");
+    }
+  } else {
+    fprintf(stderr,"Tracker canned: No valid connection\n");
+    return;
+  }
+
+  if (fread(&t, sizeof(vrpn_TRACKERCB), 1, fp) < 1) {
+    reset();
+    return;
+  }
+  struct timeval timeout;
+  timeout.tv_sec =0;
+  timeout.tv_usec = (t.msg_time.tv_sec * 1000000 + t.msg_time.tv_usec)
+    - (timestamp.tv_sec *  1000000 + timestamp.tv_usec);
+  if (timeout.tv_usec > 1000000) timeout.tv_usec = 0;
+  
+  //printf("pos[0]=%.4f, time = %ld usec\n", pos[0], timeout.tv_usec);
+  select(0, 0, 0, 0, & timeout);  // wait for that long;
+  current ++;
+  copy();
+
+}
+
+void vrpn_Tracker_Canned::copy (void) {
+  memcpy(&(timestamp), &(t.msg_time), sizeof(struct timeval));
+  sensor = t.sensor;
+  pos[0] = t.pos[0];  pos[1] = t.pos[1];  pos[2] = t.pos[2];
+  quat[0] = t.quat[0];  quat[1] = t.quat[1];  
+  quat[2] = t.quat[2];  quat[3] = t.quat[3];
+}
+
+void vrpn_Tracker_Canned::reset() {
+  fprintf(stderr, "Resetting!");
+  if (fp == NULL) return;
+  fseek(fp, sizeof(int), SEEK_SET);
+  fread(&t, sizeof(vrpn_TRACKERCB), 1, fp);
+  copy();
+  current = 1;
+}
+
+
+
+
+
+
+
+
+#endif  // VRPN_CLIENT_ONLY
 
 vrpn_Tracker_NULL::vrpn_Tracker_NULL(char *name, vrpn_Connection *c,
 	int sensors, float Hz) : vrpn_Tracker(name, c), update_rate(Hz),
@@ -556,6 +650,7 @@ void	vrpn_Tracker_NULL::mainloop(void)
 	}
 }
 
+#ifndef VRPN_CLIENT_ONLY
 #ifndef	_WIN32
 vrpn_Tracker_Serial::vrpn_Tracker_Serial(char *name, vrpn_Connection *c,
 	char *port, long baud): vrpn_Tracker(name, c)
@@ -581,7 +676,8 @@ vrpn_Tracker_Serial::vrpn_Tracker_Serial(char *name, vrpn_Connection *c,
    status = TRACKER_RESETTING;
    gettimeofday(&timestamp, NULL);
 }
-#endif
+#endif  // _WIN32
+#endif  // VRPN_CLIENT_ONLY
 
 vrpn_Tracker_Remote::vrpn_Tracker_Remote(char *name ) :
 	vrpn_Tracker(name, vrpn_get_connection_by_name(name)) ,

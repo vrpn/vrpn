@@ -34,6 +34,8 @@ class vrpn_Sound {
 	long playsample_id;		// ID of "play sample" message
 };
 
+#ifndef VRPN_CLIENT_ONLY
+
 // Sound server running under Linux.
 
 class vrpn_Linux_Sound: public vrpn_Sound {
@@ -69,6 +71,8 @@ class vrpn_Linux_Sound: public vrpn_Sound {
     void soundplay(void);
     void initchild();
 };
+
+#endif  // VRPN_CLIENT_ONLY
 
 //----------------------------------------------------------
 //************** Users deal with the following *************

@@ -491,6 +491,7 @@ int vrpn_Phantom::handle_change_message(void *userdata, vrpn_HANDLERPARAM p)
 	return 0;
 }
 
+
 int vrpn_Phantom::handle_r2t_request(void *userdata, vrpn_HANDLERPARAM p)
 {
 	struct timeval current_time;
@@ -546,8 +547,8 @@ int vrpn_Phantom::handle_s2u_request(void *userdata, vrpn_HANDLERPARAM p)
         return 0;
 }
 
-#endif
-#endif
+#endif  // VRPN_CLIENT_ONLY
+#endif  // _WIN32
 
 vrpn_ForceDevice_Remote::vrpn_ForceDevice_Remote(char *name):
 	vrpn_ForceDevice(name,vrpn_get_connection_by_name(name)),

@@ -1,3 +1,4 @@
+
 #include <stdlib.h>
 #include <malloc.h>
 #include <memory.h>
@@ -6,6 +7,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <signal.h>
+#include <iostream.h>
 
 #ifdef _WIN32
 #include <winsock.h>
@@ -29,6 +31,7 @@
 #endif
 
 #include "vrpn_Connection.h"
+#include "vrpn_Clock.h"
 
 //#define VERBOSE
 //#define	VERBOSE3
@@ -57,7 +60,13 @@ extern "C" int sdi_noint_block_read_timeout(SOCKET tcp_sock, char *buffer,
 extern "C" int sdi_udp_request_call(char *machine, int port);
 #endif
 
-char	*MAGIC = "vrpn: ver. 02.00";
+// Syntax of MAGIC:
+//   The minor version number must follow the last period ('.') and be
+// the only significant thing following the last period in the MAGIC
+// string.  Since minor versions should interoperate, MAGIC is only
+// checked through the last period;  characters after that are ignored.
+
+char	*MAGIC = "vrpn: ver. 02.10";
 const	int	MAGICLEN = 16;	// Must be a multiple of vrpn_ALIGN bytes!
 
 // This is the list of states that a connection can be in
@@ -68,7 +77,23 @@ const	int	MAGICLEN = 16;	// Must be a multiple of vrpn_ALIGN bytes!
 #define BROKEN			(-2)
 #define DROPPED			(-3)
 
-#include <iostream.h>
+
+
+vrpn_Connection::vrpn_OneConnection::vrpn_OneConnection (void) :
+    tcp_sock (INVALID_SOCKET),
+    udp_sock (INVALID_SOCKET)
+{
+
+}
+
+vrpn_Connection::vrpn_OneConnection::vrpn_OneConnection
+                      (const SOCKET _tcp, const SOCKET _udp) :
+    tcp_sock (_tcp),
+    udp_sock (_udp)
+{
+
+}
+
 
 void setClockOffset( void *userdata, const vrpn_CLOCKCB& info ) {
 #if 0
@@ -130,7 +155,7 @@ else {
 // (this is useful when the address INADDR_ANY is used, since it tells
 // what port was opened).
 
-static	int open_udp_socket(unsigned short *portno)
+static	int open_udp_socket (unsigned short * portno)
 {
    int sock;
    struct sockaddr_in server_addr;
@@ -168,11 +193,11 @@ static	int open_udp_socket(unsigned short *portno)
 //  The routine returns -1 on failure and the file descriptor on success.
 
 #ifdef _WIN32
-static	SOCKET connect_udp_to(char *machine, int portno)
+static	SOCKET connect_udp_to (char * machine, int portno)
 {
    SOCKET sock; 
 #else
-static	int connect_udp_to(char *machine, int portno)
+static	int connect_udp_to (char * machine, int portno)
 {
    int sock;
 #endif
@@ -224,17 +249,20 @@ static	int connect_udp_to(char *machine, int portno)
 // the machine name, a space, then the port number.
 //  The routine returns -1 on failure and the file descriptor on success.
 
-int vrpn_Connection::connect_tcp_to(char *msg)
-{	char	machine[5000];
+int vrpn_Connection::connect_tcp_to (const char * msg)
+{	char	machine [5000];
 	int	port;
 
 	// Find the machine name and port number
 	if (sscanf(msg, "%s %d", machine, &port) != 2) {
 		return -1;
 	}
-	// Save the remote machine name in case we need it later
-	strncpy(rmachine_name, machine, sizeof(rmachine_name));
-	rmachine_name[sizeof(rmachine_name)-1] = '\0';
+	// Save the remote machine name
+	// No longer done here because this only works for half the
+	// endponts;  EVERY system involved does it
+	// during exchange of UDP ports
+	//strncpy(endpoint.rhostname, machine, sizeof(endpoint.rhostname));
+	//endpoint.rhostname[sizeof(endpoint.rhostname)-1] = '\0';
 
 	// Open the socket
 	return sdi_connect_to_client(machine, port);
@@ -253,7 +281,7 @@ int vrpn_Connection::connect_tcp_to(char *msg)
 // sets up the local UDP sender.
 //  It then sends descriptions for all of the known packet types.
 
-void vrpn_Connection::check_connection(void)
+void vrpn_Connection::check_connection (void)
 {  int	request;
    char	msg[200];	// Message received on the request channel
    timeval timeout;
@@ -279,8 +307,8 @@ void vrpn_Connection::check_connection(void)
 	}
 
 	printf("vrpn: Connection request received: %s\n", msg);
-	tcp_sock = connect_tcp_to(msg);
-	if (tcp_sock != -1) {
+	endpoint.tcp_sock = connect_tcp_to(msg);
+	if (endpoint.tcp_sock != -1) {
 		status = CONNECTED;
 	}
    }
@@ -303,15 +331,15 @@ void vrpn_Connection::check_connection(void)
 	if ( (p_entry = getprotobyname("TCP")) == NULL ) {
 		fprintf(stderr,
 		  "vrpn: vrpn_Connection: getprotobyname() failed.\n");
-		close(tcp_sock); tcp_sock = -1;
+		close(endpoint.tcp_sock); endpoint.tcp_sock = -1;
 		status = BROKEN;
 		return;
 	}
 
-	if (setsockopt(tcp_sock, p_entry->p_proto,
+	if (setsockopt(endpoint.tcp_sock, p_entry->p_proto,
 		TCP_NODELAY, &nonzero, sizeof(nonzero))==-1) {
 		perror("vrpn: vrpn_Connection: setsockopt() failed");
-		close(tcp_sock); tcp_sock = -1;
+		close(endpoint.tcp_sock); endpoint.tcp_sock = -1;
 		status = BROKEN;
 		return;
 	}
@@ -334,11 +362,27 @@ void vrpn_Connection::check_connection(void)
 	return;
    }
 
+  // Message needs to be dispatched *locally only*, so we do_callbacks_for()
+  // and never pack_message()
+  struct timeval now;
+  gettimeofday(&now, NULL);
+
+  if (!num_live_connections)
+    do_callbacks_for(register_message_type(vrpn_got_first_connection),
+                     register_sender(vrpn_CONTROL),
+                     now, 0, NULL);
+
+  do_callbacks_for(register_message_type(vrpn_got_connection),
+                   register_sender(vrpn_CONTROL),
+                   now, 0, NULL);
+
+  num_live_connections++;
 }
 
 int vrpn_Connection::setup_for_new_connection(void)
 {
-	char	buf[MAGICLEN+1];
+	char	buf [MAGICLEN + 1];
+	char *	bp;
 	int	i;
 	unsigned short udp_portnum;
 
@@ -351,7 +395,7 @@ int vrpn_Connection::setup_for_new_connection(void)
 	udp_num_out = 0;
 
 	// No UDP outbound is defined
-	udp_outbound = INVALID_SOCKET;
+	endpoint.udp_sock = INVALID_SOCKET;
 
 	// Set all of the local IDs to zero, in case the other side
 	// sends a message of a type that it has not yet defined.
@@ -359,36 +403,59 @@ int vrpn_Connection::setup_for_new_connection(void)
 	// definition).
 	for (i = 0; i < vrpn_CONNECTION_MAX_SENDERS; i++) {
 		other_senders[i].local_id = -1;
+		other_senders[i].name = NULL;
 	}
 	for (i = 0; i < vrpn_CONNECTION_MAX_TYPES; i++) {
 		other_types[i].local_id = -1;
+		other_types[i].name = NULL;
 	}
 
 	// Write the magic cookie header to the server
-	if (sdi_noint_block_write(tcp_sock,MAGIC,MAGICLEN) != MAGICLEN) {
+	if (sdi_noint_block_write(endpoint.tcp_sock, MAGIC, MAGICLEN)
+            != MAGICLEN) {
 	  perror(
 	    "vrpn_Connection::setup_for_new_connection: Can't write cookie");
 	  return -1;
 	}
 
 	// Read the magic cookie from the server
-	if (sdi_noint_block_read(tcp_sock,buf,MAGICLEN) != MAGICLEN) {
+	if (sdi_noint_block_read(endpoint.tcp_sock, buf, MAGICLEN)
+            != MAGICLEN) {
 	  perror(
 	    "vrpn_Connection::setup_for_new_connection: Can't read cookie");
 	  return -1;
 	}
 	buf[MAGICLEN] = '\0';
-	if (strncmp(buf,MAGIC,MAGICLEN) != 0) {
-	  fprintf(stderr,"vrpn_Connection::setup_for_new_connection: bad cookie (wanted '%s', got '%s'\n", MAGIC, buf);
+
+	// Comparison changed 9 Feb 98 by TCH
+	//   We don't care if the minor version numbers don't match,
+	// so only check the characters through the last '.' in our
+	// template.  (If there is no last '.' in our template, somebody's
+        // modified this code to break the constraints above, and we just
+	// use a maximally restrictive check.)
+        //   This pointer arithmetic isn't completely safe.
+
+	bp = strrchr(MAGIC, '.');
+	if (strncmp(buf, MAGIC,
+            (bp == NULL ? MAGICLEN : bp + 1 - buf))) {
+	  fprintf(stderr, "vrpn_Connection::setup_for_new_connection:  "
+                  "bad cookie (wanted '%s', got '%s'\n", MAGIC, buf);
 	  return -1;
 	}
 
-	// Open the UDP port to accept time-critical messages on.
-	udp_portnum = (unsigned short)INADDR_ANY;
-	if ((udp_inbound = open_udp_socket(&udp_portnum)) == -1)  {
-	  fprintf(stderr,
-	  "vrpn_Connection::setup_for_new_connection: can't open UDP socket\n");
-	  return -1;
+	if (strncmp(buf, MAGIC, MAGICLEN)) {
+	  fprintf(stderr, "vrpn_Connection:  "
+              "Warning:  minor version number doesn't match.\n");
+	}
+
+	if (udp_inbound == INVALID_SOCKET) {
+	  // Open the UDP port to accept time-critical messages on.
+	  udp_portnum = (unsigned short)INADDR_ANY;
+	  if ((udp_inbound = open_udp_socket(&udp_portnum)) == -1)  {
+	    fprintf(stderr, "vrpn_Connection::setup_for_new_connection:  "
+                            "can't open UDP socket\n");
+	    return -1;
+	  }
 	}
 
 	// Tell the other side what port number to send its UDP messages to.
@@ -422,22 +489,25 @@ int vrpn_Connection::setup_for_new_connection(void)
 int vrpn_Connection::pack_type_description(int which)
 {
    struct timeval now;
-   // need to pack the null char as well
-   long	len = strlen(my_types[which].name) + 1;
-   char	buffer[sizeof(len)+sizeof(cName)];
 
+   // need to pack the null char as well
+   long	len = strlen(*my_types[which].name) + 1;
+   long netlen;
+   char buffer [sizeof(len) + sizeof(cName)];
+
+   netlen = htonl(len);
    // Pack a message with type vrpn_CONNECTION_TYPE_DESCRIPTION
    // whose sender ID is the ID of the type that is being
    // described and whose body contains the length of the name
    // and then the name of the type.
 
 #ifdef	VERBOSE
-   printf("  vrpn_Connection: Packing type '%s'\n",my_types[which].name);
+   printf("  vrpn_Connection: Packing type '%s'\n",*my_types[which].name);
 #endif
-   memcpy(buffer, &len, sizeof(len));
-   memcpy(&buffer[sizeof(len)], my_types[which].name, (int)len);
+   memcpy(buffer, &netlen, sizeof(netlen));
+   memcpy(&buffer[sizeof(len)], *my_types[which].name, (int)len);
    gettimeofday(&now,NULL);
-   return pack_message((int)(len+sizeof(len)), now,
+   return pack_message((int)(len + sizeof(len)), now,
    	vrpn_CONNECTION_TYPE_DESCRIPTION, which, buffer,
 	vrpn_CONNECTION_RELIABLE);
 }
@@ -445,23 +515,25 @@ int vrpn_Connection::pack_type_description(int which)
 int vrpn_Connection::pack_sender_description(int which)
 {
    struct timeval now;
-   // need to pack the null char as well
-   long	len = strlen(my_senders[which]) + 1;
-   char	buffer[sizeof(len)+sizeof(cName)];
 
+   // need to pack the null char as well
+   long	len = strlen(*my_senders[which]) + 1;
+   long netlen;
+   char buffer [sizeof(len) + sizeof(cName)];
+
+   netlen = htonl(len);
    // Pack a message with type vrpn_CONNECTION_SENDER_DESCRIPTION
    // whose sender ID is the ID of the sender that is being
    // described and whose body contains the length of the name
    // and then the name of the sender.
 
 #ifdef	VERBOSE
-	printf(
-		"  vrpn_Connection: Packing sender '%s'\n",my_senders[which]);
+	printf("  vrpn_Connection: Packing sender '%s'\n", *my_senders[which]);
 #endif
-   memcpy(buffer, &len, sizeof(len));
-   memcpy(&buffer[sizeof(len)], my_senders[which], (int)len);
+   memcpy(buffer, &netlen, sizeof(netlen));
+   memcpy(&buffer[sizeof(len)], *my_senders[which], (int) len);
    gettimeofday(&now,NULL);
-   return pack_message((int)(len+sizeof(len)), now,
+   return pack_message((int)(len + sizeof(len)), now,
    	vrpn_CONNECTION_SENDER_DESCRIPTION, which, buffer,
 	vrpn_CONNECTION_RELIABLE);
 }
@@ -500,7 +572,7 @@ int vrpn_Connection::handle_UDP_message(void *userdata,
 		vrpn_HANDLERPARAM p)
 {
 	char	rhostname[1000];	// name of remote host
-	vrpn_Connection *me = (vrpn_Connection *)userdata;
+	vrpn_Connection * me = (vrpn_Connection *)userdata;
 
 	// Get the name of the remote host from the buffer (ensure terminated)
 	strncpy(rhostname, p.buffer, sizeof(rhostname));
@@ -509,11 +581,19 @@ int vrpn_Connection::handle_UDP_message(void *userdata,
 	// Open the UDP outbound port and connect it to the port on the
 	// remote machine.
 	// (remember that the sender field holds the UDP port number)
-	me->udp_outbound = connect_udp_to(rhostname, (int)p.sender);
-	if (me->udp_outbound == -1) {
+	me->endpoint.udp_sock = connect_udp_to(rhostname, (int)p.sender);
+	if (me->endpoint.udp_sock == -1) {
 	    perror("vrpn: vrpn_Connection: Couldn't open outbound UDP link");
 	    return -1;
 	}
+
+	// Put this here because currently every connection opens a UDP
+	// port and every host will get this data.  Previous implementation
+	// did it in connect_tcp_to, which only gets called by servers.
+
+	strncpy(me->endpoint.rhostname, rhostname,
+		sizeof(me->endpoint.rhostname));
+
 #ifdef	VERBOSE
 	printf("  Opened UDP channel to %s:%d\n", rhostname, p.sender);
 #endif
@@ -552,8 +632,20 @@ int vrpn_Connection::pack_message(int len, struct timeval time,
 	// toss it out.
 	if (!connected()) { return 0; }
 
+	// TCH 28 Oct 97
+	// If the other side doesn't care about the message, toss it out.
+#ifdef vrpn_FILTER_MESSAGES
+	if ((type >= 0) && !my_types[type].cCares) {
+#ifdef VERBOSE
+		printf("  vrpn_Connection:  discarding a message of type %ld "
+                       "because the receiver doesn't care.\n", type);
+#endif // VERBOSE
+		return 0;
+	}
+#endif  // vrpn_FILTER_MESSAGES
+
 	// If we don't have a UDP outbound channel, send everything TCP
-	if (udp_outbound == -1) {
+	if (endpoint.udp_sock == -1) {
 	    ret = marshall_message(tcp_outbuf, sizeof(tcp_outbuf), tcp_num_out,
 				   len, time, type, sender, buffer);
 	    tcp_num_out += ret;
@@ -653,13 +745,13 @@ void vrpn_Connection::drop_connection(void)
 {
 	//XXX Store name when opening, say which dropped here
 	printf("vrpn: Connection dropped\n");
-	if (tcp_sock != INVALID_SOCKET) {
-		close(tcp_sock);
-		tcp_sock = INVALID_SOCKET;
+	if (endpoint.tcp_sock != INVALID_SOCKET) {
+		close(endpoint.tcp_sock);
+		endpoint.tcp_sock = INVALID_SOCKET;
 	}
-	if (udp_outbound != INVALID_SOCKET) {
-		close(udp_outbound);
-		udp_outbound = INVALID_SOCKET;
+	if (endpoint.udp_sock != INVALID_SOCKET) {
+		close(endpoint.udp_sock);
+		endpoint.udp_sock = INVALID_SOCKET;
 	}
 	if (udp_inbound != INVALID_SOCKET) {
 		close(udp_inbound);
@@ -670,6 +762,23 @@ void vrpn_Connection::drop_connection(void)
 	} else {
 		status = BROKEN;	// We're unable to accept more
 	}
+
+  num_live_connections--;
+
+  // Message needs to be dispatched *locally only*, so we do_callbacks_for()
+  // and never pack_message()
+  struct timeval now;
+  gettimeofday(&now, NULL);
+
+  do_callbacks_for(register_message_type(vrpn_dropped_connection),
+                   register_sender(vrpn_CONTROL),
+                   now, 0, NULL);
+
+  if (!num_live_connections)
+    do_callbacks_for(register_message_type(vrpn_dropped_last_connection),
+                     register_sender(vrpn_CONTROL),
+                     now, 0, NULL);
+
 }
 
 int vrpn_Connection::send_pending_reports(void)
@@ -689,7 +798,7 @@ int vrpn_Connection::send_pending_reports(void)
 
    fd_set f;
    FD_ZERO (&f);
-   FD_SET ( tcp_sock, &f);
+   FD_SET ( endpoint.tcp_sock, &f);
 
    int connection = select(32, NULL, NULL, &f, &timeout);
    if (connection != 0) {
@@ -702,7 +811,7 @@ int vrpn_Connection::send_pending_reports(void)
    // an exceptional condition, close the accept socket and go back
    // to listening for new connections.
    while (sent < tcp_num_out) {
-	ret = send(tcp_sock, &tcp_outbuf[sent], tcp_num_out-sent, 0);
+	ret = send(endpoint.tcp_sock, &tcp_outbuf[sent], tcp_num_out-sent, 0);
 #ifdef	VERBOSE
    printf("TCP Sent %d bytes\n",ret);
 #endif
@@ -719,7 +828,7 @@ int vrpn_Connection::send_pending_reports(void)
    // an exceptional condition, close the accept socket and go back
    // to listening for new connections.
    if (udp_num_out > 0) {
-	ret = send(udp_outbound, udp_outbuf, udp_num_out, 0);
+	ret = send(endpoint.udp_sock, udp_outbuf, udp_num_out, 0);
 #ifdef	VERBOSE
    printf("UDP Sent %d bytes\n",ret);
 #endif 
@@ -773,7 +882,8 @@ int vrpn_Connection::mainloop(void)
 	}
 
 	// Read incoming messages from the TCP channel
-	if ( (tcp_messages_read = handle_tcp_messages(tcp_sock)) == -1) {
+	if ((tcp_messages_read = handle_tcp_messages(endpoint.tcp_sock))
+            == -1) {
 		printf(
 			"vrpn: TCP handling failed, dropping connection\n");
 		drop_connection();
@@ -836,9 +946,13 @@ int vrpn_Connection::mainloop(void)
    return 0;
 }
 
-void	vrpn_Connection::init(void)
+void	vrpn_Connection::init (void)
 {
 	int	i;
+
+	// Lots of constants used to be set up here.  They were moved
+	// into the constructors in 02.10;  this will create a slight
+        // increase in maintenance burden keeping the constructors consistient.
 
 	// offset of clocks on connected machines -- local - remote
 	// (this should really not be here, it should be in adjusted time
@@ -846,26 +960,15 @@ void	vrpn_Connection::init(void)
 	tvClockOffset.tv_sec=0;
 	tvClockOffset.tv_usec=0;
 
-	num_my_senders = 0;
-	num_my_types = 0;
-
-	num_other_senders = 0;
-	num_other_types = 0;
-
-	tcp_num_out = 0;
-	udp_num_out = 0;
-
-	listen_udp_sock = INVALID_SOCKET;
-	tcp_sock = INVALID_SOCKET;
-	udp_inbound = INVALID_SOCKET;
-	udp_outbound = INVALID_SOCKET;
-
 	// Set up the default handlers for the different types of user
 	// incoming messages.  Initially, they are all set to the
 	// NULL handler, which tosses them out.
 	// Note that system messages always have negative indices.
 	for (i = 0; i < vrpn_CONNECTION_MAX_TYPES; i++) {
 		my_types[i].who_cares = NULL;
+		my_types[i].cCares = 0;
+		my_types[i].name = NULL;
+		other_types[i].name = NULL;
 	}
 
 	// Set up the handlers for the system messages.  Skip any ones
@@ -879,9 +982,27 @@ void	vrpn_Connection::init(void)
 		handle_type_message;
 	system_messages[-vrpn_CONNECTION_UDP_DESCRIPTION] =
 		handle_UDP_message;
+
+	for (i = 0; i < vrpn_CONNECTION_MAX_SENDERS; i++) {
+		my_senders[i] = NULL;
+	}
 }
 
-vrpn_Connection::vrpn_Connection(unsigned short listen_port_no)
+vrpn_Connection::vrpn_Connection (unsigned short listen_port_no) :
+    //my_name (NULL),
+    endpoint (INVALID_SOCKET, INVALID_SOCKET),
+    udp_inbound (INVALID_SOCKET),
+    udp_portnum (0),
+    num_live_connections (0),
+    listen_udp_sock (INVALID_SOCKET),
+    num_my_senders (0),
+    num_my_types (0),
+    generic_callbacks (NULL),
+    num_other_senders (0),
+    num_other_types (0),
+    tcp_num_out (0),
+    udp_num_out (0)
+
 {
    // Initialize the things that must be for any constructor
    init();
@@ -910,31 +1031,53 @@ typedef	struct vrpn_KNOWN_CONS_STRUCT {
 static vrpn_KNOWN_CONNECTION *known = NULL;
 
 
-vrpn_Connection::vrpn_Connection(char *station_name)
+vrpn_Connection::vrpn_Connection (char * station_name) :
+    //my_name (NULL),
+    endpoint (INVALID_SOCKET, INVALID_SOCKET),
+    udp_inbound (INVALID_SOCKET),
+    udp_portnum (0),
+    num_live_connections (0),
+    listen_udp_sock (INVALID_SOCKET),
+    num_my_senders (0),
+    num_my_types (0),
+    generic_callbacks (NULL),
+    num_other_senders (0),
+    num_other_types (0),
+    tcp_num_out (0),
+    udp_num_out (0)
+
 {
 	// Initialize the things that must be for any constructor
 	init();
 
+	//if (station_name && strlen(station_name)) {
+	  //my_name = new char [1 + strlen(station_name)];
+          //if (!my_name) {
+            //fprintf(stderr, "vrpn_Connection:  Out of memory.\n");
+            //status = BROKEN;
+            //return;
+          //}
+	  //strcpy(my_name, station_name);
+	//}
+
 	// Open a connection to the station using SDI
 #ifdef	_WIN32
-	tcp_sock = sdi_udp_request_call(station_name,
+	endpoint.tcp_sock = sdi_udp_request_call(station_name,
 					vrpn_DEFAULT_LISTEN_PORT_NO);
 #else
-	tcp_sock = sdi_connect_to_device(station_name);
+	endpoint.tcp_sock = sdi_connect_to_device(station_name);
 #endif
-	if (tcp_sock < 0) {
-	    fprintf(stderr,
-		"vrpn: vrpn_Connection::vrpn_Connection(): Can't open %s\n",
-		station_name);
-		status = BROKEN;
-		return;
+	if (endpoint.tcp_sock < 0) {
+	    fprintf(stderr, "vrpn_Connection:  Can't open %s\n", station_name);
+	    status = BROKEN;
+	    return;
 	}
 	status = 0;
 
 	// Set up the things that need to happen when a new connection is
 	// established.
 	if (setup_for_new_connection()) {
-	    fprintf(stderr,"vrpn_Connection: Can't setup new connection!\n");
+	    fprintf(stderr, "vrpn_Connection:  Can't setup new connection!\n");
 	    drop_connection();
 	    return;
 	}
@@ -942,7 +1085,7 @@ vrpn_Connection::vrpn_Connection(char *station_name)
 	vrpn_KNOWN_CONNECTION *curr;
 
 	if ( (curr = new(vrpn_KNOWN_CONNECTION)) == NULL) {
-	  fprintf(stderr,"vrpn_Connection: Out of memory\n");
+	  fprintf(stderr, "vrpn_Connection:  Out of memory.\n");
 	  return;
 	}
 	strncpy(curr->name, station_name, sizeof(curr->name));
@@ -951,69 +1094,88 @@ vrpn_Connection::vrpn_Connection(char *station_name)
 	known = curr;
 }
 
-long vrpn_Connection::register_sender(char *name)
+long vrpn_Connection::register_sender (const char * name)
 {
    int	i;
 
    // See if the name is already in the list.  If so, return it.
    for (i = 0; i < num_my_senders; i++) {
-      if (strcmp(my_senders[i],name) == 0) {
+      if (strcmp((char *) my_senders[i], name) == 0) {
       	return i;
       }
    }
 
    // See if there are too many on the list.  If so, return -1.
    if (num_my_senders == vrpn_CONNECTION_MAX_SENDERS) {
-   	fprintf(stderr,"vrpn: vrpn_Connection::register_sender: Too many!\n");
+   	fprintf(stderr, "vrpn: vrpn_Connection::register_sender:  "
+                        "Too many! (%d)\n", num_my_senders);
    	return -1;
    }
 
+   if (!my_senders[num_my_senders]) {
+     my_senders[num_my_senders] = (cName *) new cName;
+     if (!my_senders[num_my_senders]) {
+       fprintf(stderr, "vrpn_Connection::register_sender:  "
+                       "Can't allocate memory for new record\n");
+       return -1;
+     }
+   }
+
    // Add this one into the list
-   strncpy(my_senders[num_my_senders], name, sizeof(cName)-1);
+   strncpy(*my_senders[num_my_senders], name, sizeof(cName) - 1);
    num_my_senders++;
 
    // If we're connected, pack the sender description
    if (connected()) {
-   	pack_sender_description(num_my_senders-1);
+   	pack_sender_description(num_my_senders - 1);
    }
 
    // If the other side has declared this sender, establish the
    // mapping for it.
    for (i = 0; i < num_other_senders; i++) {
-	if (strcmp(other_senders[i].name,name) == 0) {
+	if (strcmp(*other_senders[i].name, name) == 0) {
 #ifdef	VERBOSE
 	printf("  ...mapping from other-side sender %d\n", i);
 #endif
-		other_senders[i].local_id = num_my_senders-1;
+		other_senders[i].local_id = num_my_senders - 1;
 		break;
 	}
    }
 
    // One more in place -- return its index
-   return num_my_senders-1;
+   return num_my_senders - 1;
 }
 
-long vrpn_Connection::register_message_type(char *name)
+long vrpn_Connection::register_message_type (const char * name)
 {
 	int	i;
 
 	// See if the name is already in the list.  If so, return it.
-	for (i = 0; i < num_my_types; i++) {
-		if (strcmp(my_types[i].name,name) == 0) {
-			return i;
-		}
-	}
+	i = message_type_is_registered(name);
+	if (i != -1)
+	  return i;
 
 	// See if there are too many on the list.  If so, return -1.
 	if (num_my_types == vrpn_CONNECTION_MAX_TYPES) {
 		fprintf(stderr,
-		  "vrpn: vrpn_Connection::register_message_type: Too many!\n");
+		  "vrpn: vrpn_Connection::register_message_type:  "
+                  "Too many! (%d)\n", num_my_types);
 		return -1;
 	}
 
+	if (!my_types[num_my_types].name) {
+	  my_types[num_my_types].name = (cName *) new cName;
+          if (!my_types[num_my_types].name) {
+            fprintf(stderr, "vrpn_Connection::register_message_type:  "
+                            "Can't allocate memory for new record\n");
+            return -1;
+          }
+        }
+
 	// Add this one into the list and return its index
-	strncpy(my_types[num_my_types].name, name, sizeof(cName)-1);
+	strncpy(*my_types[num_my_types].name, name, sizeof(cName) - 1);
 	my_types[num_my_types].who_cares = NULL;
+	my_types[num_my_types].cCares = 0;  // TCH 28 Oct 97 - redundant?
 	num_my_types++;
 
 	// If we're connected, pack the type description
@@ -1024,20 +1186,20 @@ long vrpn_Connection::register_message_type(char *name)
 	// If the other side has declared this type, establish the
 	// mapping for it.  If not, make sure there isn't one.
 	for (i = 0; i < num_other_types; i++) {
-		if (strcmp(other_types[i].name,name) == 0) {
-			other_types[i].local_id = num_my_types-1;
+		if (strcmp(*other_types[i].name, name) == 0) {
+			other_types[i].local_id = num_my_types - 1;
+			my_types[num_my_types - 1].cCares = 1;  // TCH 28 Oct 97
 #ifdef	VERBOSE
-	printf("  ...mapping from other-side type %d\n", i);
+	printf("  ...mapping from other-side type (who cares!) %d\n", i);
 #endif
 			break;
 		}
 	}
 
 	// One more in place -- return its index
-	return num_my_types-1;
+	return num_my_types - 1;
 }
 
-int	vrpn_Connection::connected(void) { return status == CONNECTED; };
 
 // Yank the callback chain for a message type.  Call all handlers that
 // are interested in messages from this sender.  Return 0 if they all
@@ -1048,15 +1210,13 @@ int	vrpn_Connection::do_callbacks_for(long type, long sender,
 {
 	// Make sure we have a non-negative type.  System messages are
 	// handled differently.
-	if (type < 0) {
+	if (type < 0)
 		return 0;
-	}
 
-	// Find the head for the list of callbacks to call
-	vrpnMsgCallbackEntry *who = my_types[type].who_cares;
+	vrpnMsgCallbackEntry * who;
+	vrpn_HANDLERPARAM p;
 
 	// Fill in the parameter to be passed to the routines
-	vrpn_HANDLERPARAM p;
 	p.type = type;
 	p.sender = sender;
 	p.msg_time = vrpn_TimevalSum(time, tvClockOffset);
@@ -1070,6 +1230,27 @@ int	vrpn_Connection::do_callbacks_for(long type, long sender,
 #endif
 	p.payload_len = payload_len;
 	p.buffer = buf;
+
+        // Do generic callbacks (vrpn_ANY_TYPE)
+	who = generic_callbacks;
+
+	while (who != NULL) {	// For each callback entry
+
+		// Verify that the sender is ANY or matches
+		if ( (who->sender == vrpn_ANY_SENDER) ||
+		     (who->sender == sender) ) {
+			if (who->handler(who->userdata, p)) {
+				fprintf(stderr, "vrpn: vrpn_Connection::do_callbacks_for: Nonzero user generic handler return\n");
+				return -1;
+			}
+		}
+
+		// Next callback in list
+		who = who->next;
+	}
+
+	// Find the head for the list of callbacks to call
+	who = my_types[type].who_cares;
 
 	while (who != NULL) {	// For each callback entry
 
@@ -1382,7 +1563,7 @@ int	vrpn_Connection::handle_udp_messages(int fd)
 int	vrpn_Connection::handle_type_message(void *userdata,
 		vrpn_HANDLERPARAM p)
 {
-	vrpn_Connection *me = (vrpn_Connection*)userdata;
+	vrpn_Connection * me = (vrpn_Connection*)userdata;
 	cName	type_name;
 	int	i;
 
@@ -1392,7 +1573,13 @@ int	vrpn_Connection::handle_type_message(void *userdata,
 	}
 
 	// Find out the name of the type (skip the length)
-	strcpy(type_name, p.buffer+sizeof(long));
+	strncpy(type_name, p.buffer + sizeof(long),
+                p.payload_len - sizeof(long));
+
+	// Use the exact length packed into the start of the buffer
+	// to figure out where to put the trailing '\0'
+	i = ntohl(*((int *) p.buffer));
+	type_name[i] = '\0';
 
 #ifdef	VERBOSE
 	printf("Registering other-side type: '%s'\n", type_name);
@@ -1401,9 +1588,20 @@ int	vrpn_Connection::handle_type_message(void *userdata,
 	// The assumption is that the type has not been defined before.
 	// Add this as a new type to the list of those defined
 	if (me->num_other_types >= vrpn_CONNECTION_MAX_TYPES) {
-		fprintf(stderr,"vrpn: Too many types from other side\n");
+		fprintf(stderr,"vrpn: Too many types from other side (%d)\n",
+                        me->num_other_types);
 		return -1;
 	}
+
+        if (!me->other_types[me->num_other_types].name) {
+	  me->other_types[me->num_other_types].name = (cName *) new cName;
+          if (!me->other_types[me->num_other_types].name) {
+            fprintf(stderr, "vrpn_Connection::handle_type_message:  "
+                            "Can't allocate memory for new record\n");
+            return -1;
+          }
+        }
+
 #ifdef _WIN32
 	memcpy(me->other_types[me->num_other_types].name, type_name, 
 		 sizeof(type_name));
@@ -1416,10 +1614,11 @@ int	vrpn_Connection::handle_type_message(void *userdata,
 	// If not, clear the mapping.
 	me->other_types[me->num_other_types].local_id = -1; // None yet
 	for (i = 0; i < me->num_my_types; i++) {
-		if (strcmp(type_name, me->my_types[i].name) == 0) {
+		if (strcmp(type_name, (char *) me->my_types[i].name) == 0) {
 			me->other_types[me->num_other_types].local_id = i;
+			me->my_types[i].cCares = 1;  // TCH 28 Oct 97
 #ifdef	VERBOSE
-	printf("  ...mapping to this-side type %d\n", i);
+	printf("  ...mapping to this-side type (who cares!) %d\n", i);
 #endif
 			break;
 		}
@@ -1434,7 +1633,7 @@ int	vrpn_Connection::handle_type_message(void *userdata,
 int	vrpn_Connection::handle_sender_message(void *userdata,
 		vrpn_HANDLERPARAM p)
 {
-	vrpn_Connection *me = (vrpn_Connection*)userdata;
+	vrpn_Connection * me = (vrpn_Connection*)userdata;
 	cName	sender_name;
 	int	i;
 
@@ -1445,7 +1644,12 @@ int	vrpn_Connection::handle_sender_message(void *userdata,
 
 	// Find out the name of the sender (skip the length)
 	// NOTE: this assumes that longs are 4 bytes on sender arch
-	strcpy(sender_name, p.buffer+4);
+	strncpy(sender_name, p.buffer + 4, p.payload_len-4);
+
+	// Use the exact length packed into the start of the buffer
+	// to figure out where to put the trailing '\0'
+	i = ntohl(*((int *) p.buffer));
+	sender_name[i] = '\0';
 
 #ifdef	VERBOSE
 	printf("Registering other-side sender: '%s'\n", sender_name);
@@ -1454,9 +1658,20 @@ int	vrpn_Connection::handle_sender_message(void *userdata,
 	// The assumption is that the sender has not been defined before.
 	// Add this as a new sender to the list of those defined
 	if (me->num_other_senders >= vrpn_CONNECTION_MAX_SENDERS) {
-		fprintf(stderr,"vrpn: Too many senders from other side\n");
+		fprintf(stderr,"vrpn: Too many senders from other side (%d)\n", 
+                        me->num_other_senders);
 		return -1;
 	}
+
+        if (!me->other_senders[me->num_other_senders].name) {
+	  me->other_senders[me->num_other_senders].name = (cName *) new cName;
+          if (!me->other_senders[me->num_other_senders].name) {
+            fprintf(stderr, "vrpn_Connection::handle_sender_message:  "
+                            "Can't allocate space for sender record\n");
+            return -1;
+          }
+        }
+
 #ifdef _WIN32
 	memcpy(me->other_senders[me->num_other_senders].name, sender_name, 
 		sizeof(sender_name));
@@ -1469,7 +1684,7 @@ int	vrpn_Connection::handle_sender_message(void *userdata,
 	// If not, set it to -1.
 	me->other_senders[me->num_other_senders].local_id = -1; // None yet
 	for (i = 0; i < me->num_my_senders; i++) {
-		if (strcmp(sender_name, me->my_senders[i]) == 0) {
+		if (strcmp(sender_name, *me->my_senders[i]) == 0) {
 			me->other_senders[me->num_other_senders].local_id = i;
 #ifdef	VERBOSE
 	printf("  ...mapping to this-side sender %d\n", i);
@@ -1490,7 +1705,9 @@ int vrpn_Connection::register_handler(long type, vrpn_MESSAGEHANDLER handler,
 	vrpnMsgCallbackEntry	*new_entry;
 
 	// Ensure that the type is a valid one (one that has been defined)
-	if ( (type < 0) || (type >= num_my_types) ) {
+        //   OR that it is "any"
+	if ( ( (type < 0) || (type >= num_my_types) ) &&
+             (type != vrpn_ANY_TYPE) ) {
 		fprintf(stderr,
 			"vrpn_Connection::register_handler: No such type\n");
 		return -1;
@@ -1526,9 +1743,14 @@ int vrpn_Connection::register_handler(long type, vrpn_MESSAGEHANDLER handler,
 #ifdef	VERBOSE
 	printf("Adding user handler for type %ld, sender %ld\n",type,sender);
 #endif
-	new_entry->next = my_types[type].who_cares;
-	my_types[type].who_cares = new_entry;
 
+	if (type == vrpn_ANY_TYPE) {
+	  new_entry->next = generic_callbacks;
+	  generic_callbacks = new_entry;
+	} else {
+	  new_entry->next = my_types[type].who_cares;
+	  my_types[type].who_cares = new_entry;
+	};
 	return 0;
 }
 
@@ -1539,7 +1761,9 @@ int vrpn_Connection::unregister_handler(long type, vrpn_MESSAGEHANDLER handler,
 	vrpnMsgCallbackEntry	*victim, **snitch;
 
 	// Ensure that the type is a valid one (one that has been defined)
-	if ( (type < 0) || (type >= num_my_types) ) {
+        //   OR that it is "any"
+	if ( ( (type < 0) || (type >= num_my_types) ) &&
+	     (type != vrpn_ANY_TYPE) ) {
 		fprintf(stderr,
 			"vrpn_Connection::unregister_handler: No such type\n");
 		return -1;
@@ -1547,7 +1771,10 @@ int vrpn_Connection::unregister_handler(long type, vrpn_MESSAGEHANDLER handler,
 
 	// Find a handler with this registry in the list (any one will do,
 	// since all duplicates are the same).
-	snitch = &(my_types[type].who_cares);
+	if (type == vrpn_ANY_TYPE)
+	  snitch = &generic_callbacks;
+	else
+	  snitch = &(my_types[type].who_cares);
 	victim = *snitch;
 	while ( (victim != NULL) &&
 		( (victim->handler != handler) ||
@@ -1570,6 +1797,23 @@ int vrpn_Connection::unregister_handler(long type, vrpn_MESSAGEHANDLER handler,
 
 	return 0;
 }
+
+int vrpn_Connection::message_type_is_registered (const char * name) const {
+
+	int	i;
+
+	// See if the name is already in the list.  If so, return it.
+	for (i = 0; i < num_my_types; i++)
+		if (strcmp(*my_types[i].name, name) == 0)
+			return i;
+
+	return -1;
+}
+
+int vrpn_Connection::connected (void) const {
+  return (status == CONNECTED);
+}
+
 
 //------------------------------------------------------------------------
 //	This section holds data structures and functions to open
@@ -1601,8 +1845,8 @@ int vrpn_Connection::unregister_handler(long type, vrpn_MESSAGEHANDLER handler,
 // because they are derived from connections, and the default 
 // args of freq=-1 makes it behave like a regular connection
 
-vrpn_Connection *vrpn_get_connection_by_name(char *cname, double dFreq,
-					     int cSyncWindow )
+vrpn_Connection * vrpn_get_connection_by_name (char * cname, double dFreq,
+					       int cSyncWindow)
 {
 	vrpn_KNOWN_CONNECTION	*curr = known;
 	char			*where_at;	// Part of name past last '@'
@@ -1644,3 +1888,4 @@ vrpn_Connection *vrpn_get_connection_by_name(char *cname, double dFreq,
 		return NULL;
 	}
 }
+

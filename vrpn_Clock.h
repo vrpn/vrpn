@@ -16,7 +16,7 @@
   Revised: Sat Dec 20 08:25:44 1997 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.h,v $
   $Locker:  $
-  $Revision: 1.3 $
+  $Revision: 1.4 $
 \*****************************************************************************/
 #ifndef _VRPN_CLOCK_H_
 #define _VRPN_CLOCK_H_
@@ -45,6 +45,7 @@ protected:
 			int cChars, const char* pch);
 };
 
+
 class vrpn_Clock_Server : public vrpn_Clock {
 public:
   vrpn_Clock_Server(vrpn_Connection *c);
@@ -54,6 +55,7 @@ public:
   virtual void mainloop(void);	// Report changes to connection
   static int clockQueryHandler( void *userdata, vrpn_HANDLERPARAM p );
 };
+
 
 //----------------------------------------------------------
 // ************* Users deal with the following *************
@@ -173,6 +175,20 @@ class vrpn_Clock_Remote: public vrpn_Clock {
 
 /*****************************************************************************\
   $Log: vrpn_Clock.h,v $
+  Revision 1.4  1998/02/20 20:26:50  hudson
+  Version 02.10:
+    Makefile:  split library into server & client versions
+    Connection:  added sender "VRPN Control", "VRPN Connection Got/Dropped"
+      messages, vrpn_ANY_TYPE;  set vrpn_MAX_TYPES to 2000.  Bugfix for sender
+      and type names.
+    Tracker:  added Ruigang Yang's vrpn_Tracker_Canned
+
+  Revision 1.2  1998/02/13 15:50:58  hudson
+  *** empty log message ***
+
+  Revision 1.1  1998/01/29 20:09:35  hudson
+  Initial revision
+
   Revision 1.3  1998/01/20 15:53:27  taylorr
   	This version allows the client-side compilation of VRPN on NT.
 

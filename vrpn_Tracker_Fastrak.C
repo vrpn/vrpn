@@ -25,11 +25,19 @@
  * Update Count    : 412
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Tracker_Fastrak.C,v $
- * $Date: 1998/02/19 21:00:47 $
- * $Author: ryang $
- * $Revision: 1.5 $
+ * $Date: 1998/02/20 20:27:00 $
+ * $Author: hudson $
+ * $Revision: 1.6 $
  * 
  * $Log: vrpn_Tracker_Fastrak.C,v $
+ * Revision 1.6  1998/02/20 20:27:00  hudson
+ * Version 02.10:
+ *   Makefile:  split library into server & client versions
+ *   Connection:  added sender "VRPN Control", "VRPN Connection Got/Dropped"
+ *     messages, vrpn_ANY_TYPE;  set vrpn_MAX_TYPES to 2000.  Bugfix for sender
+ *     and type names.
+ *   Tracker:  added Ruigang Yang's vrpn_Tracker_Canned
+ *
  * Revision 1.5  1998/02/19 21:00:47  ryang
  * drivers for DynaSight
  *
@@ -50,7 +58,7 @@
  * HISTORY
  */
 
-static char rcsid[] = "$Id: vrpn_Tracker_Fastrak.C,v 1.5 1998/02/19 21:00:47 ryang Exp $";
+static char rcsid[] = "$Id: vrpn_Tracker_Fastrak.C,v 1.6 1998/02/20 20:27:00 hudson Exp $";
 #include <time.h>
 #include <math.h>
 #include <stdlib.h>
@@ -75,6 +83,9 @@ static char rcsid[] = "$Id: vrpn_Tracker_Fastrak.C,v 1.5 1998/02/19 21:00:47 rya
 #include "vrpn_Tracker.h"
 
 #include "vrpn_Tracker_Fastrak.h"
+
+#ifndef VRPN_CLIENT_ONLY
+#if defined(sgi) || defined(linux)
 
 #define READ_HISTOGRAM
 
@@ -551,7 +562,7 @@ vrpn_Tracker_Fastrak::set_unit(int whichUnit, int onOff)
       
 
     /* send enable command for this unit to fastrak	*/
-      write(serial_fd, (unsigned char *) stationString, 
+      write(serial_fd, (const unsigned char *) stationString, 
 	    strlen(stationString));
       ms_sleep(50);
 
@@ -623,7 +634,7 @@ int vrpn_Tracker_Fastrak::get_units(int stationVector[T_F_MAX_NUM_STATIONS])
 	/* this error may be caused by fastrak ignoring poll mode command */
 	poll_mode();
 
-      write(serial_fd, (unsigned char *) T_F_C_RETRIEVE_STATIONS, 
+      write(serial_fd, (const unsigned char *) T_F_C_RETRIEVE_STATIONS, 
     	    	    	    	strlen(T_F_C_RETRIEVE_STATIONS));
       ms_sleep(500);
       read_available_characters((unsigned char *) this_buffer, 
@@ -739,7 +750,7 @@ int vrpn_Tracker_Fastrak::filter()
     my_flush();
 
     /* try to turn off pos'n filtering  */
-    write(serial_fd, (unsigned char *) T_F_C_SET_POSITION_FILTER, 
+    write(serial_fd, (const unsigned char *) T_F_C_SET_POSITION_FILTER, 
 	  strlen(T_F_C_SET_POSITION_FILTER));
 
     /* any output here probably indicates an error message, so just quit */
@@ -1610,6 +1621,8 @@ int vrpn_Tracker_Fastrak::get_output_list(int unitNum, char * curOutputList)
 
 
 
+#endif  // defined(sgi) || defined(linux)
+#endif  // VRPN_CLIENT_ONLY
 
 
 

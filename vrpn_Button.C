@@ -106,6 +106,8 @@ void	vrpn_Button::report_changes(void)
    }
 }
 
+#ifndef VRPN_CLIENT_ONLY
+
 vrpn_parallel_Button::vrpn_parallel_Button(char *name, vrpn_Connection *c,
 	int portno) : vrpn_Button(name, c)
 {
@@ -192,6 +194,8 @@ void vrpn_Button_Python::read(void)
 
    gettimeofday(&timestamp, NULL);
 }
+
+#endif  // VRPN_CLIENT_ONLY
 
 
 vrpn_Button_Remote::vrpn_Button_Remote(char *name) : 

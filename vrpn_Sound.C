@@ -44,6 +44,7 @@ static int sb, sbptr = 0;
 #endif
 unsigned char sbbuf[404];
 
+#ifndef VRPN_CLIENT_ONLY
 #ifdef	linux
 static char command_buffer[1024];
 static int my_sound_type;
@@ -458,6 +459,8 @@ void vrpn_Linux_Sound::mainloop(void)
 {
 }
 // The following are the part the users are concerned with
+
+#endif  // VRPN_CLIENT_ONLY
 
 #ifndef	_WIN32
 vrpn_Sound_Remote::vrpn_Sound_Remote(char *name)

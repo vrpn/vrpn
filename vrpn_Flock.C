@@ -172,10 +172,20 @@ void vrpn_Tracker_Flock::printError( unsigned char uchErrCode,
 // check for flock error, return err number if there is an error
 // zero if no error
 int vrpn_Tracker_Flock::checkError() {
-  unsigned char rguch[4]={'B','G','O',10};
+
+  // Some compilers (CenterLine CC on sunos!?) still don't support 
+  // automatic aggregate initialization
+
+  //unsigned char rguch[4]={'B','G','O',10};
+
+  unsigned char rguch [4];
+  rguch[0] = 'B';
+  rguch[1] = 'G';
+  rguch[2] = 'O';
+  rguch[3] = 10;
 
   // put the flock to sleep (B to get out of stream mode, G to sleep)
-  if (write(serial_fd, &rguch, 2 )!=2) {
+  if (write(serial_fd, (const char *) &rguch, 2 )!=2) {
     perror("\nvrpn_Tracker_Flock: failed writing cmds to tracker");
     return -1;
   }
@@ -189,7 +199,7 @@ int vrpn_Tracker_Flock::checkError() {
   vrpn_flush_input_buffer( serial_fd );
 
   // now get error code
-  if (write(serial_fd, &(rguch[2]), 2 )!=2) {
+  if (write(serial_fd, (const char *) &(rguch[2]), 2 )!=2) {
     perror("\nvrpn_Tracker_Flock: failed writing cmds to tracker");
     return -1;
   }
@@ -226,15 +236,22 @@ vrpn_Tracker_Flock::vrpn_Tracker_Flock(char *name, vrpn_Connection *c,
 
 
 vrpn_Tracker_Flock::~vrpn_Tracker_Flock() {
+
+  // Some compilers (CenterLine CC on sunos!?) still don't support 
+  // automatic aggregate initialization
+
   int cChars=2;
-  unsigned char rgch[2]={'B','G'};
+  //unsigned char rgch[2]={'B','G'};
+  unsigned char rgch [2];
+  rgch[0] = 'B';
+  rgch[1] = 'G';
 
   fprintf(stderr,"\nvrpn_Tracker_Flock: shutting down ...");
   // clear output buffer
   vrpn_flush_output_buffer( serial_fd );
 
   // put the flock to sleep (B to get out of stream mode, G to sleep)
-  if (write(serial_fd, &rgch, cChars )!=cChars) {
+  if (write(serial_fd, (const char *) &rgch, cChars )!=cChars) {
     perror("\nvrpn_Tracker_Flock: failed writing sleep cmd to tracker");
     status = TRACKER_FAIL;
     return;
@@ -268,7 +285,7 @@ void vrpn_Tracker_Flock::reset()
    reset[resetLen++]='B';
 
    // send the poll mode command (cmd and cmd_size are args)
-   if (write(serial_fd, reset, resetLen )!=resetLen) {
+   if (write(serial_fd, (const char *) reset, resetLen )!=resetLen) {
      perror("\nvrpn_Tracker_Flock: failed writing poll cmd to tracker");
      status = TRACKER_FAIL;
      return;
@@ -299,7 +316,7 @@ void vrpn_Tracker_Flock::reset()
 
    sleep(1);
    // send the reset command (cmd and cmd_size are args)
-   if (write(serial_fd, reset, resetLen )!=resetLen) {
+   if (write(serial_fd, (const char *) reset, resetLen )!=resetLen) {
      perror("\nvrpn_Tracker_Flock: failed writing auto-config to tracker");
      status = TRACKER_FAIL;
      return;
@@ -322,7 +339,7 @@ void vrpn_Tracker_Flock::reset()
    reset[resetLen++]=36;
 
    // write the cmd and get response
-   if (write(serial_fd, reset, resetLen )!=resetLen) {
+   if (write(serial_fd, (const char *) reset, resetLen )!=resetLen) {
      perror("\nvrpn_Tracker_Flock: failed writing get sys config to tracker");
      status = TRACKER_FAIL;
      return;
@@ -404,7 +421,7 @@ void vrpn_Tracker_Flock::reset()
      reset[resetLen++] = 0;
    }
 
-   if (write(serial_fd, reset, resetLen )!=resetLen) {
+   if (write(serial_fd, (const char *) reset, resetLen )!=resetLen) {
      perror("\nvrpn_Tracker_Flock: failed writing set mode cmds to tracker");
      status = TRACKER_FAIL;
      return;
