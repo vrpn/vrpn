@@ -19,7 +19,7 @@
   Revised: Mon Feb 15 11:08:40 1999 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Nidaq.h,v $
   $Locker:  $
-  $Revision: 1.7 $
+  $Revision: 1.8 $
 \*****************************************************************************/
 
 #ifndef VRPN_NIDAQ
@@ -36,15 +36,16 @@ public:
 	// whether they should sleep for 1 ms each time thru their loops
 	// (the net effect is that they add 1 ms of uncertainty to the
 	// existing 1 or 1/2 ms of uncertainty in time-stamps across a
-	// synchronized vrpn connection)
+	// synchronized vrpn connection).  If fNice is set, then 
+  // the max theoretical reporting rate is 1000 hz.
 	vrpn_Nidaq(char * pchName, vrpn_Connection * pConnection,
-	     double dSamplingRate=1000.0, double dInterChannelRate=100000.0, 
+	     double dSamplingRate=100.0, double dInterChannelRate=100000.0, 
 	     short sDeviceNumber=DAQ::DEF_DEVICE, int cChannels=10, 
 	     short rgsChan[]=DAQ::DEF_CHANS_DIFF, 
 	     short rgsGain[]=DAQ::DEF_GAINS,
 	     short sInputMode=DAQ::DIFFERENTIAL, 
 	     short sPolarity=DAQ::BIPOLAR,
-		 int fNice=0);
+		   int fNice=0);
 
   ~vrpn_Nidaq();
   void mainloop();
@@ -80,6 +81,9 @@ private:
 
 /*****************************************************************************\
   $Log: vrpn_Nidaq.h,v $
+  Revision 1.8  1999/03/17 22:30:14  weberh
+  added new comment re: max rate with fNice.
+
   Revision 1.7  1999/02/15 16:09:08  weberh
   updated comments to reflect necessary files to compile this component.
 
