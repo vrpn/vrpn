@@ -1,3 +1,11 @@
+2003-10-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker.C : Fixed a bug that was added in the code that
+		unregisters handlers in the descructor.  It needed to pass
+		another parameter, which it does here, to work in the
+		general case.  This bug caused nano to hang at exit,
+		repeatedly tryin to unregister the same (wrong) handler.
+
 2003-09-26  Matt Harvey  <m.j.harvey@ucl.ac.uk>
 
 	* Makefile : Added VPJoystick driver.

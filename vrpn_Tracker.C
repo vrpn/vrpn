@@ -935,16 +935,16 @@ vrpn_Tracker_Remote::~vrpn_Tracker_Remote()
   int i;
   for (i = 0; i < vrpn_TRACKER_MAX_SENSOR_LIST; i++) {
     while (change_list[i] != NULL) {
-      unregister_change_handler(change_list[i]->userdata, change_list[i]->handler);
+      unregister_change_handler(change_list[i]->userdata, change_list[i]->handler, i);
     }
     while (velchange_list[i] != NULL) {
-      unregister_change_handler(velchange_list[i]->userdata, velchange_list[i]->handler);
+      unregister_change_handler(velchange_list[i]->userdata, velchange_list[i]->handler, i);
     }
     while (accchange_list[i] != NULL) {
-      unregister_change_handler(accchange_list[i]->userdata, accchange_list[i]->handler);
+      unregister_change_handler(accchange_list[i]->userdata, accchange_list[i]->handler, i);
     }
     while (unit2sensorchange_list[i] != NULL) {
-      unregister_change_handler(unit2sensorchange_list[i]->userdata, unit2sensorchange_list[i]->handler);
+      unregister_change_handler(unit2sensorchange_list[i]->userdata, unit2sensorchange_list[i]->handler, i);
     }
   }
   while (tracker2roomchange_list != NULL) {
