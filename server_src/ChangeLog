@@ -1,3 +1,21 @@
+
+2004-09-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * client_and_server.dsp : Changing code generation back to DLL
+		linkage, which turned out to be correct after all.
+	* daq_server.dsp : Same.
+	* test_analogfly.dsp : Same.
+	* test_radamec_spi.dsp : Same.
+	* test_vrpn.dsp : Same.
+	* vrpn_phantom.dsp : Same.
+	* vrpn_server.dsp : Same.
+	* sierra_router_server.dsp : Same.
+	* timecode_generator.dsp : Same.
+	* test_gen_rpc.dsp : Same.
+	* vrpn.C : Added Tek4662 Poser parser and creator.  Whitespace changes.
+	* vrpn.cfg : Same.  Comment changes.
+	* vrpn.cfg.SAMPLE : Same.
+
 2004-08-31  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
         * client_and_server.dsp : Changing code generation to use
