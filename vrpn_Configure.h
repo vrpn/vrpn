@@ -75,7 +75,7 @@
 // at the same level as the vrpn directory.  The isense.dll should
 // be put either in Windows/system32 or in the location where the
 // executable lives or somewhere on the path.
-/ 
+ 
 #define VRPN_INCLUDE_INTERSENSE
 
 //---------------------------------------------------------------//

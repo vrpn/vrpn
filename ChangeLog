@@ -1,5 +1,9 @@
 2003-06-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Configure.h : Removed syntax error that kept it from compiling.
+
+2003-06-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn.dsp : Changes to include Intersense files in ../isense.
 	* vrpn_Configure.h : Describes how to link with InterSense library.
 	* vrpn_Tracker_isense.C : Updated to newer version of InterSense
