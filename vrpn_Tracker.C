@@ -739,3 +739,4 @@ int vrpn_Tracker_Remote::handle_change_message(void *userdata,
 }
 
 #endif // #ifndef _WIN32
+

@@ -41,11 +41,13 @@ extern "C" int sdi_connect_to_client(char *machine, int port);
 extern "C" int sdi_connect_to_device(char *s);
 extern "C" int sdi_noint_block_read(int file, char *buf, int len);
 extern "C" int sdi_noint_block_write(int file, const char *buf, int len);
+extern "C" int sdi_noint_block_read_timeout(int filedes, char *buffer,
+					int len, struct timeval *timeout);
 #else
 extern "C" int sdi_noint_block_read(SOCKET outsock, char *buffer, int length);
 extern "C" int sdi_noint_block_write(SOCKET insock, char *buffer, int length);
 extern "C" int sdi_noint_block_read_timeout(SOCKET tcp_sock, char *buffer,
-											int len, struct timeval *timeout);
+					int len, struct timeval *timeout);
 #endif
 
 const	char	MAGIC[] = "vrpn: ver. 01.00";
@@ -433,7 +435,7 @@ int vrpn_Connection::pack_udp_description(int portno)
 #endif
    gettimeofday(&now,NULL);
    return pack_message(strlen(hostname)+1, now, vrpn_CONNECTION_UDP_DESCRIPTION,
-	portno, hostname, vrpn_CONNECTION_RELIABLE);
+	portparam, hostname, vrpn_CONNECTION_RELIABLE);
 }
 
 // Get the UDP port description from the other side and connect the

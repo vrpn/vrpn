@@ -37,7 +37,8 @@ void	handle_button(void *userdata, vrpn_BUTTONCB b)
 void init(void)
 {
 	//btn = new vrpn_Button_Remote("Button0_silver");
-	tkr = new vrpn_Tracker_Remote("Tracker0_hiball1");
+	//tkr = new vrpn_Tracker_Remote("Tracker0_hiball1");
+	tkr = new vrpn_Tracker_Remote("Tracker0_ioglab");
 
 	// Set up the tracker callback handler
 	tkr->register_change_handler(NULL, handle_tracker);
