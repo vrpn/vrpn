@@ -85,7 +85,9 @@ vrpn_File_Connection::vrpn_File_Connection (const char * file_name,
         status = BROKEN;
         return;
     }
-    while (!read_entry());
+    while (!read_entry()) {
+      // empty loop body - read all the entries
+    }
     d_currentLogEntry = d_logHead;
 
     //fprintf(stderr, "vrpn_File_Connection::vrpn_File_Connection: Done preload.\n");

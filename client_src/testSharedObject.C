@@ -22,7 +22,7 @@ int main (int argc, char ** argv) {
     exit(0);
   }
 
-  vrpn_Shared_int32_Remote a ("a", 0);
+  vrpn_Shared_int32_Remote a ("a", 0, VRPN_SO_DEFER_UPDATES);
 
   a.bindConnection(c);
   a.register_handler(noteChange, &a);

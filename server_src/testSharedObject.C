@@ -19,7 +19,9 @@ int main (int argc, char ** argv) {
 
   c = new vrpn_Synchronized_Connection (atoi(argv[1]));
 
-  vrpn_Shared_int32_Server a ("a", 0);
+  vrpn_Shared_int32_Server a ("a", 0, VRPN_SO_DEFER_UPDATES);
+
+  a.setSerializerPolicy(DENY);
 
   c->mainloop();
 
