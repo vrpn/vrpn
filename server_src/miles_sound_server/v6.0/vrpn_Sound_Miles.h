@@ -4,7 +4,7 @@
 
 #ifdef _WIN32
 
-#include "c:\miles\mss.h"
+#include "c:\miles6\include\mss.h"
 #include "vrpn_Sound.h"
 #include "quat.h"
 
@@ -28,7 +28,9 @@ public:
 						complete list is on page 214 of the MSS 5.0 manual. */
 	~vrpn_Sound_Server_Miles();
 
+	void		setSpeakerType(int index = AIL_3D_HEADPHONE);  
 	void		setProvider(int index, int providerRoomSetting = EAX_ENVIRONMENT_GENERIC);  
+
 					    //Set the 3D sound provider
 	void		playSound(vrpn_SoundID id, vrpn_int32 repeat, vrpn_SoundDef soundDef);
 						/*vrpn_SoundID's are used to access sounds in memory.  One is set
@@ -67,7 +69,7 @@ public:
 	vrpn_int32  GetCurrentPlaybackRate(const vrpn_int32 CurrentSoundId);
 	void        GetCurrentPosition(const vrpn_int32 CurrentSoundId, F32* X_val, F32* Y_val, F32* Z_val);
 	void        GetListenerPosition(F32* X_val, F32* Y_val, F32* Z_val);
-	void        GetCurrentDistances(const vrpn_int32 CurrentSoundId, F32* FMin, F32* FMax, F32* BMin, F32* BMax);
+	void        GetCurrentDistances(const vrpn_int32 CurrentSoundId, F32* FMin, F32* FMax);
 	void        GetListenerOrientation(F32* X_val, F32 *Y_val, F32 *Z_val);
 	void        GetCurrentOrientation(const vrpn_int32 CurrentSoundId,F32 *X_val, F32 *Y_val, F32 *Z_val);
 	

@@ -38,6 +38,7 @@ vrpn_Sound_Server_Miles *soundServer = NULL;
 
 #define DIALOG_TIMEOUT 5000
 #define UPDATE_TIMEOUT 2000
+#define SPIN_TIMEOUT   2000
 
 #define cboxTech     100
 #define btnPlay      101
@@ -47,6 +48,8 @@ vrpn_Sound_Server_Miles *soundServer = NULL;
 #define VolumeBox    115
 #define ReplayBox    116
 #define SoundIdBox   131
+
+#define SPEAKERTYPE_BOX     102
 
 #define PosX		 120
 #define PosY		 121
@@ -65,6 +68,7 @@ vrpn_Sound_Server_Miles *soundServer = NULL;
 #define MoreInfoBtn  162
 
 #define Sound2Listener 181
+#define SPIN_BOX 434
 
 #define SorX		 300
 #define SorY		 301
@@ -75,12 +79,17 @@ vrpn_Sound_Server_Miles *soundServer = NULL;
 
 #define UpdateTimerId 1001
 #define DialogTimerId 1002
+#define SpinTimerId   1003
 int         blanked     =  0;		
 int         ProviderSet = 0;		
+
+float       spinrate;
+int spincounter;
 
 int got_report;
 
 HWND        SoundProvideCombo;
+HWND        SpeakerTypeCombo;
 HWND        SoundIdCombo;
 HWND		SoundWnd;
 HWND		InfoWnd;
@@ -252,7 +261,7 @@ void UpdateDialog(HWND SoundWnd) {
 LRESULT AILEXPORT SoundServerProc(HWND SoundWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
   HWND h;
-  float fmin, fmax, bmin, bmax;
+  float fmin, fmax;
   char buf[15];
 
   switch (message)
@@ -292,18 +301,19 @@ LRESULT AILEXPORT SoundServerProc(HWND SoundWnd, UINT message, WPARAM wParam, LP
 				 } else ProviderSet = 0;
 	
 			 break;
+		  case SPEAKERTYPE_BOX:
+			  if (HIWORD(wParam) == CBN_SELENDOK)
+				 soundServer->setSpeakerType(ComboBox_GetCurSel(SpeakerTypeCombo)+1);
+				 
+			  break;
 		  case MoreInfoBtn:
 		  	SetDlgItemInt(InfoWnd,VolumeBox,soundServer->GetCurrentVolume(CurrentSoundId),1);
 			SetDlgItemInt(InfoWnd,ReplayBox,soundServer->GetCurrentPlaybackRate(CurrentSoundId),1);
-			soundServer->GetCurrentDistances(CurrentSoundId, &fmin, &fmax, &bmin, &bmax);
+			soundServer->GetCurrentDistances(CurrentSoundId, &fmin, &fmax);
 			sprintf(buf,"%4.3f",fmin);
 			SetDlgItemText(InfoWnd,FMin,buf);
 			sprintf(buf,"%4.3f",fmax);
 			SetDlgItemText(InfoWnd,FMax,buf);
-			sprintf(buf,"%4.3f",bmin);
-			SetDlgItemText(InfoWnd,BMin,buf);	
-			sprintf(buf,"%4.3f",bmax);
-			SetDlgItemText(InfoWnd,BMax,buf);	
 			if (CurrentSoundId >= 0)
 			  sprintf(buf,"Sound: %d",CurrentSoundId);
 			else 
@@ -347,7 +357,14 @@ LRESULT AILEXPORT SoundServerProc(HWND SoundWnd, UINT message, WPARAM wParam, LP
 		    if (ProviderSet)
 		      UpdateDialog(SoundWnd);
 		  }
-		  else {
+		  else if (wParam == SpinTimerId) {
+			  char buf[15];
+			  spinrate = ((float) spincounter / (float)SPIN_TIMEOUT) * ((float)SPIN_TIMEOUT/1.0);
+			  spincounter = 0;
+			  sprintf(buf,"%4.3f",spinrate);
+			  SetDlgItemText(SoundWnd,SPIN_BOX,buf);	
+		  }
+			  else {
 			  ShowWindow(InfoWnd, SW_HIDE);
 			  KillTimer(SoundWnd, DialogTimerId);
 		  }
@@ -408,7 +425,15 @@ bool InitSoundServerWindow(HINSTANCE  hInstance)
 	}
 	// set a timer to update server stats
 	SetTimer(SoundWnd,UpdateTimerId,UPDATE_TIMEOUT,NULL);
+	
+
 	SoundIdCombo=GetDlgItem(SoundWnd, SoundIdBox);	
+	SpeakerTypeCombo=GetDlgItem(SoundWnd,SPEAKERTYPE_BOX);
+	ComboBox_AddString(SpeakerTypeCombo,"Normal stereo speakers");
+	ComboBox_AddString(SpeakerTypeCombo,"Headphones");
+	ComboBox_AddString(SpeakerTypeCombo,"3+ speakers in surround sound");
+	ComboBox_AddString(SpeakerTypeCombo,"Four speakers (quad-channel)");
+	ComboBox_SetCurSel(SpeakerTypeCombo,1);
 	
 	ShowWindow(SoundWnd,SW_SHOW);
 	InfoWnd = CreateDialog(hInstance,(LPCSTR)"SND_INFO",0,NULL);
@@ -612,19 +637,28 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdL
 	// **                MAIN LOOP                                       **
 	// **                                                                **
 	// ********************************************************************
+	
+//    SetTimer(SoundWnd,SpinTimerId,SPIN_TIMEOUT,NULL);
+//	spincounter = 0;
+	
 	while (1) {
-		
+//		spincounter++;
+	    
 		GetMessage(&msg, 0, 0, 0);
 	    if (!IsDialogMessage(SoundWnd,&msg))
 		{
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
-   
+	
+	
 		// Let the sound server do it's thing 
+		
+		if (USE_TRACKER && trackerCon->doing_okay() && ProviderSet) 
+		  UpdateListenerDef();
 
-		UpdateListenerDef();
 		soundServer->mainloop();
+
 		if (soundServer->noSounds()) {
 			EnableWindow(SoundProvideCombo, true);
 				
@@ -669,7 +703,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdL
 		// Handle forwarding requests;  send messages
 		// on auxiliary connections
 		forwarderServer->mainloop();
-					
 	}
 	
 	return 0;

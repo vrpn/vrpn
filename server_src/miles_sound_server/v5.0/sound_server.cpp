@@ -620,10 +620,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdL
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
-   
-		// Let the sound server do it's thing 
 
-		UpdateListenerDef();
+		if (USE_TRACKER && trackerCon->doing_okay() && ProviderSet) {
+		  fprintf(stderr,"%d %d %d\n",USE_TRACKER, trackerCon->doing_okay(), ProviderSet);
+		  UpdateListenerDef();
+		}
+
 		soundServer->mainloop();
 		if (soundServer->noSounds()) {
 			EnableWindow(SoundProvideCombo, true);
@@ -669,7 +671,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdL
 		// Handle forwarding requests;  send messages
 		// on auxiliary connections
 		forwarderServer->mainloop();
-					
 	}
 	
 	return 0;

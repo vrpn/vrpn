@@ -58,7 +58,6 @@ vrpn_Sound_Server_Miles::vrpn_Sound_Server_Miles(const char * name, vrpn_Connect
 	eye_f_sensor_m[13] = 0.0;
 	eye_f_sensor_m[14] = 0.0;
 	eye_f_sensor_m[15] = 1.0;
-	
 }
 
 vrpn_Sound_Server_Miles::~vrpn_Sound_Server_Miles()		
@@ -76,6 +75,24 @@ void vrpn_Sound_Server_Miles::shutDown()
 	program will hang when you try to quit.*/
 	AIL_waveOutClose(DIG);
 	AIL_shutdown();
+}
+
+void vrpn_Sound_Server_Miles::setSpeakerType(int index) {
+  S32 speaker_type;
+  if (index==1)
+    speaker_type=AIL_3D_2_SPEAKER;
+  else
+  if (index==2)
+    speaker_type=AIL_3D_HEADPHONE;
+  else
+  if (index==3)
+    speaker_type=AIL_3D_SURROUND;
+  else
+  if (index==4)
+    speaker_type=AIL_3D_4_SPEAKER;
+
+  AIL_set_3D_speaker_type(provider, speaker_type);
+	return;
 }
 
 void vrpn_Sound_Server_Miles::addProvider(HPROVIDER p)
@@ -285,7 +302,7 @@ samples by unloading sounds*/
 	  AIL_set_3D_position(handle,0,0,0);
 	  AIL_set_3D_orientation(handle, 0,0,-1,0,1,0);
 	  AIL_set_3D_velocity(handle,0,0,-1,0);
-	  AIL_set_3D_sample_distances(handle, 200, 20, 200, 20);
+	  AIL_set_3D_sample_distances(handle, 200, 20);
 
 	  //load handle into samples
 	  addSample(handle, id);
@@ -302,6 +319,11 @@ void vrpn_Sound_Server_Miles::changeSoundStatus(vrpn_SoundID id, vrpn_SoundDef s
 
 	if (provider != 0) {
 
+	  // need to negate the Z values to get this into left handed before shipping to Miles..
+      soundDef.pose.orientation[2] *= -1.0;
+	  soundDef.pose.orientation[3] *= -1.0;
+	  soundDef.pose.position[2]    *= -1.0;  
+
 	  //get pose info from quaternion	in soundDef, put it into the above vectors
 	  AIL_set_3D_position(getSample(id),soundDef.pose.position[0] , soundDef.pose.position[1], soundDef.pose.position[2]);
 	  
@@ -317,19 +339,8 @@ void vrpn_Sound_Server_Miles::changeSoundStatus(vrpn_SoundID id, vrpn_SoundDef s
 
 	  /*set the volume to the new level.*/
 	  AIL_set_3D_sample_volume(getSample(id), soundDef.volume);
-
-
-	  // Since the RSX software sets max front/back to 128.0 * min front/back,
-	  // we will divide max front/back by 128 and set this to min 
-	  // before giving it to miles
-	  // We will change GetCurrentDistances to multiply by 128.0 before displaying
-	  // value to the user.. This mess may need to be cleaned up if the Miles people
-	  // come to their senses...
-
-	  soundDef.min_back_dist = soundDef.max_back_dist / 128.0;
-	  soundDef.min_front_dist = soundDef.max_front_dist / 128.0;
-	  
-	  AIL_set_3D_sample_distances(getSample(id), soundDef.max_front_dist, soundDef.min_front_dist, soundDef.max_back_dist, soundDef.min_back_dist);
+ 
+	  AIL_set_3D_sample_distances(getSample(id), soundDef.max_front_dist, soundDef.min_front_dist);
 	 }
 	else fprintf(stderr,"No provider has been set prior to changeSoundStatus\n");
 }
@@ -400,6 +411,12 @@ void vrpn_Sound_Server_Miles::changeListenerStatus(vrpn_ListenerDef listenerDef)
 {
 	if (provider != 0) {
 	  vrpn_float32 uX = 0, uY = 1, uZ = 0;
+
+	  // switch to left handed
+      listenerDef.pose.orientation[2] *= -1.0;
+	  listenerDef.pose.orientation[3] *= -1.0;
+	  listenerDef.pose.position[2]    *= -1.0;  
+
 
 	  AIL_set_3D_position(listener, listenerDef.pose.position[0], listenerDef.pose.position[1], listenerDef.pose.position[2]);
 
@@ -542,6 +559,7 @@ void vrpn_Sound_Server_Miles::GetCurrentOrientation(const vrpn_int32 CurrentSoun
 	  srcQuat[2] = Z_f;
 
 	  srcQuat[3] = 	1.0;
+	  fprintf(stderr,"%f %f %f\n",srcQuat[0]*180.0/Q_PI,srcQuat[1]*180.0/Q_PI,srcQuat[2]*180.0/Q_PI);
 
 	  q_to_col_matrix (colMatrix, srcQuat);
 	  q_col_matrix_to_euler(angles,colMatrix);
@@ -554,14 +572,13 @@ void vrpn_Sound_Server_Miles::GetCurrentOrientation(const vrpn_int32 CurrentSoun
 return;
 }
 
-void vrpn_Sound_Server_Miles::GetCurrentDistances(const vrpn_int32 CurrentSoundId, F32* FMin, F32* FMax, F32* BMin, F32* BMax) {
+void vrpn_Sound_Server_Miles::GetCurrentDistances(const vrpn_int32 CurrentSoundId, F32* FMin, F32* FMax) {
 	if (CurrentSoundId > -1) {
-	  AIL_3D_sample_distances(getSample(CurrentSoundId), FMax, FMin, BMax, BMin);
-	  *FMin *= 128.0;	// multiply by 128.0 since we divided before setting them
-	  *BMin *= 128.0;
+	  AIL_3D_sample_distances(getSample(CurrentSoundId), FMax, FMin);
+  
 	}
 	else {
-		*FMin = *FMax = *BMin = *BMax = 0;
+		*FMin = *FMax = 0;
 	}
 }
 
