@@ -582,7 +582,7 @@ void vrpn_Button_Python::read(void)
     }
   #endif
 #else
-    for (i = 0; i < debounce_count; i++) {
+    for (int i = 0; i < debounce_count; i++) {
       status_register[i] = 0;
     }
 #endif

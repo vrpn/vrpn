@@ -1,3 +1,8 @@
+2002-03-18  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Button.C (read): change in Python's read method to allow
+	compilation on the SGI.
+
 2002-03-15  Aron Helser  <helser@cs.unc.edu>
 
 	* *.dsp: Added VRPN_COMPILE_DEF environment variable to
