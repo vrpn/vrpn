@@ -170,10 +170,8 @@ int		num_GlobalHapticsOrbs = 0;
 vrpn_Phantom	*phantoms[MAX_PHANTOMS];
 int		num_phantoms = 0;
 #endif
-#ifdef	VRPN_USE_DTRACK
 vrpn_Tracker_DTrack *DTracks[MAX_DTRACKS];
 int num_DTracks=0;
-#endif
 vrpn_Analog_Output	* analogouts [MAX_ANALOG];
 int		num_analogouts = 0;
 vrpn_Poser	* posers [MAX_POSER];
@@ -2174,42 +2172,120 @@ int setup_VPJoystick(char* &pch, char *line, FILE *config_file) {
 }
 
 
-int setup_DTrack (char * & pch, char * line, FILE * config_file) {
-  char s2[LINESIZE];
-  int  i1;
-  float timeToReachJoy;
+int setup_DTrack (char* &pch, char* line, FILE* config_file)
+{
+	char* s2;
+	char* str[LINESIZE];
+	char *s;
+	char sep[] = " ,\t,\n";
+	int  count = 0;
+	unsigned short dtrackPort;
+	float timeToReachJoy;
+	int nob, nof, nidbf;
+	unsigned long idbf[vrpn_DTRACK_MAX_NBODY + vrpn_DTRACK_MAX_NFLYSTICK];
+	bool actTracing;
+	
+	next();
+	
+	// Get the arguments:
+	
+	str[count] = strtok( pch, sep );
+	while( str[count] != NULL )
+	{
+		count++;
+		// Get next token: 
+		str[count] = strtok( NULL, sep );
+	}
 
-  next();
-  // Get the arguments (name, udpPort)
-  if (sscanf(pch,"%511s%d%f",s2, &i1, &timeToReachJoy) != 3) {
-    fprintf(stderr,"Bad vrpn_Tracker_DTrack line: %s\n",line);
-    return -1;
-  }
-#ifdef	VRPN_USE_DTRACK
-  // Make sure there's room for a new one
-  if (num_DTracks >= MAX_DTRACKS) {
-    fprintf(stderr,"Too many DTracks in config file");
-    return -1;
-  }
+	if(count < 3){
+		fprintf(stderr,"Bad vrpn_Tracker_DTrack line: %s\n",line);
+		return -1;
+	}
 
-  // Open the orb
-  if (verbose) {
-  printf("Opening vrpn_Tracker_DTrack: %s, port %d, timeToReachJoy %f\n",
-	s2, i1, timeToReachJoy);
-  }
-  if ((DTracks[num_DTracks] =
-      new vrpn_Tracker_DTrack(s2, connection, i1, timeToReachJoy)) == NULL)               
-  {
-    fprintf(stderr,"Can't create new vrpn_Tracker_DTrack\n");
-    return -1;
-  } else {
-    num_DTracks++;
-  }
-#else
-  fprintf(stderr,"VRPN_USE_DTRACK not defined in vrpn_Configure.h, can't open DTracks\n");
-#endif
+	// Make sure there's room for a new one:
+	
+	if (num_DTracks >= MAX_DTRACKS) {
+		fprintf(stderr,"Too many DTracks in config file");
+		return -1;
+	}
+	
+	s2 = str[0];
+	dtrackPort = (unsigned short )strtol(str[1], &s, 0);
+	timeToReachJoy = (float )strtod(str[2], &s);
+	
+	// tracing (optional; always last argument):
+	
+	actTracing = false;
+	
+	if(count > 3){  
+		if(!strcmp(str[count-1], "-")){
+			actTracing = true;
+			count--;
+		}
+	}
 
-  return 0;
+	// number of bodies and flysticks (optional):
+
+	nob = nof = -1;
+
+	if(count > 3){
+		if(count < 5){  // there must be two additional arguments at least
+			fprintf(stderr, "Bad vrpn_Tracker_DTrack line: %s\n", line);
+			return -1;
+		}
+
+		nob = strtol(str[3], &s, 0);
+		nof = strtol(str[4], &s, 0);
+	}
+
+	// renumbering of targets (optional):
+
+	nidbf = 0;
+
+	if(count > 5){
+		if(count < 5 + nob + nof){  // there must be an argument for each target
+			fprintf(stderr, "Bad vrpn_Tracker_DTrack line: %s\n", line);
+			return -1;
+		}
+
+		for(int i=0; i<nob+nof; i++){
+			idbf[i] = strtol(str[5+i], &s, 0);
+			nidbf++;
+		}
+	}
+
+	// Open vrpn_Tracker_DTrack:
+
+	unsigned long* pidbf = NULL;
+
+	if(nidbf > 0){
+		pidbf = idbf;
+	}
+	
+	if(verbose){
+		printf("Opening vrpn_Tracker_DTrack: %s at port %d, timeToReachJoy %.2f", s2, dtrackPort, timeToReachJoy);
+		if(nob >= 0 && nof >= 0){
+			printf(", fixNtargets %d %d", nob, nof);
+		}
+		if(nidbf > 0){
+			printf(", fixId");
+			for(int i=0; i<nidbf; i++){
+				printf(" %d", idbf[i]);
+			}
+		}
+		printf("\n");
+	}
+  
+	if((DTracks[num_DTracks] = new vrpn_Tracker_DTrack(s2, connection, dtrackPort, timeToReachJoy,
+		                                                nob, nof, pidbf, actTracing)) == NULL)
+	{
+		fprintf(stderr,"Can't create new vrpn_Tracker_DTrack\n");
+		return -1;
+	} 
+		
+	num_DTracks++;
+
+	return 0;
 }
 
 // This function will read one line of the vrpn_Poser_Analog configuration (matching
@@ -2380,8 +2456,8 @@ main (int argc, char * argv[])
 		client_name = argv[i];
 		if (++i > argc) { Usage(argv[0]); }
 		client_port = atoi(argv[i]);
-	  } else if (!strcmp(argv[i], "-NIC")) { // specify a network interface
-            if (++i > argc) { Usage(argv[0]); }
+ 	  } else if (!strcmp(argv[i], "-NIC")) { // specify a network interface
+        if (++i > argc) { Usage(argv[0]); }
             fprintf(stderr, "Listening on network interface card %s.\n",
                     argv[i]);
             g_NICname = argv[i];
@@ -2390,9 +2466,9 @@ main (int argc, char * argv[])
             fprintf(stderr, "Incoming logfile name %s.\n", argv[i]);
             g_inLogName = argv[i];
           } else if (!strcmp(argv[i], "-lo")) { // specify server-side logging
+            g_outLogName = argv[i];
             if (++i > argc) { Usage(argv[0]); }
             fprintf(stderr, "Outgoing logfile name %s.\n", argv[i]);
-            g_outLogName = argv[i];
 	  } else if (argv[i][0] == '-') {	// Unknown flag
 		Usage(argv[0]);
 	  } else switch (realparams) {		// Non-flag parameters
@@ -2681,11 +2757,9 @@ main (int argc, char * argv[])
 #endif
 
 	  // Let all the DTracks do their thing
-#ifdef	VRPN_USE_DTRACK
 	  for (i = 0; i < num_DTracks; i++) {
 	    DTracks[i]->mainloop();
 	  }
-#endif
 	  
 	  // Let all the Orbs do their thing
 	  for (i = 0; i < num_GlobalHapticsOrbs; i++) {

@@ -899,20 +899,36 @@
 
 ################################################################################
 # Advanced Realtime Tracking GmbH (http://www.ar-tracking.de) DTrack client 
-# developped by David Nahon for Virtools VR Pack (http://www.virtools.com)
+#
 # creates as many vrpn_Tracker as there are bodies or flysticks, starting with the bodies
 # creates 2 analogs per flystick
 # creates 8 buttons per flystick
 #
-# Arguments:
-#	char	name_of_this_device[]
-#	int	udp_port
-#	float	timeToReachJoy
+# NOTE: numbering of flystick buttons differs from DTrack documentation
 #
-# NOTE: timeToReachJoy is the time needed to reach the maximum value of the joystick 
-# (1.0 or -1.0) when the corresponding button is pressed ( one of the last buttons amongst the 8 )
+# Arguments:
+#  char  name_of_this_device[]
+#  int   udp_port                               (DTrack sends data to this udp port)
+#  float time_to_reach_joy                      (see below)
+#
+# Optional arguments:
+#  int   number_of_bodies, number_of_flysticks  (fixed numbers of bodies and flysticks)
+#  int   renumbered_ids[]                       (vrpn_Tracker IDs of bodies and flysticks)
+#  char  "-"                                    (activates tracing; always last argument)
+#
+# NOTE: time_to_reach_joy is the time needed to reach the maximum value of the joystick 
+#       (1.0 or -1.0) when the corresponding button is pressed (one of the last buttons
+#       amongst the 8)
+#
+# NOTE: if fixed numbers of bodies and flysticks should be used, both arguments
+#       number_of_bodies and number_of_flysticks have to be set
+#
+# NOTE: renumbering of tracker IDs is only possible, if fixed numbers of bodies and
+#       flysticks are set; there has to be an argument present for each body/flystick
 
-#vrpn_Tracker_DTrack Dtrack 5000 0.5
+#vrpn_Tracker_DTrack DTrack  5000 0.5
+#vrpn_Tracker_DTrack DTrack  5000 0.5  2 2
+#vrpn_Tracker_DTrack DTrack  5000 0.5  2 2  2 1 0 3
 
 ################################################################################
 # National Instruments Analog Output server.  This will open the board whose
@@ -965,3 +981,4 @@
 #RX	NULL	0	0.0	1.0	-10	10
 #RY	NULL	0	0.0	1.0	-10	10
 #RZ	NULL	0	0.0	1.0	-10	10
+

@@ -1,3 +1,11 @@
+2004-08-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : changes added by Kurt Achatz of A.R.T. to handle
+		up to four Flysticks on A.R.T. tracker.  Also avoids
+		target renumbering.
+	* vrpn.cfg : Same.
+	* vrpn.cfg.SAMPLE : Same.
+
 2004-07-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* constraint.h : Hiding the HDAPI include files to avoid exposing
