@@ -28,7 +28,7 @@
  * where xx is ignored and FF turns on all of the dials.
  */
 
-#define	VERBOSE
+//#define	VERBOSE
 
 #include "vrpn_raw_sgibox.h"
 #include "vrpn_Serial.h"
@@ -106,37 +106,62 @@ int vrpn_raw_SGIBox::reset() {  /* Button/Dial box setup */
 	  return -1;
   }
 #ifdef	VERBOSE
-  printf("vrpn_raw_SGIBox::reset(): Got reset command: %02x\n", inbuf[0]);
+  printf("vrpn_raw_SGIBox::reset(): Box's response to reset command: %02x\n", inbuf[0]);
 #endif
 
   for (i = 0; i < ret; i++) {
 	  if (inbuf[i] != BBOX_RESET) {
 		  //XXX Turn this into a vrpn text message
-		  fprintf(stderr,"vrpn_raw_SGIBox::reset(): Bad response: %c\n",inbuf[i]);
+		  fprintf(stderr,"vrpn_raw_SGIBox::reset(): Bad response to reset command : %02x- please restart sgiBox vrpn server\n",inbuf[i]);
 		  serialfd = -1;
 		  return -1;
 	  }
   }
-
+  
   // Active and enable all of the buttons, enable the dials
+  
   if (serialfd != -1) {
-	  if (write(serialfd, enablebuttons,5) != 5) {
-		perror("vrpn_raw_SGIBox::reset(): Can't enable buttons");
+    // for some reason, enabling the dials, disable the buttons
+    // so we have to enable the dials first
+  	  if (write(serialfd, enabledials,5) != 5) {
+		perror("vrpn_raw_SGIBox::reset(): Can't enable dials");
 		serialfd = -1;
 		return -1;
 	  }
-	  if (write(serialfd, activatebuttons,5) != 5) {
-		perror("vrpn_raw_SGIBox::reset(): Can't activate buttons");
-		serialfd = -1;
-		return -1;
+#ifdef VERBOSE
+	  else {
+	    printf("vrpn_raw_SGIBOX::reset() : Enabled Dials\n");
 	  }
-	  if (write(serialfd, enabledials,5) != 5) {
-		perror("vrpn_raw_SGIBox::reset(): Can't activate buttons");
-		serialfd = -1;
-		return -1;
-	  }
-  }
+#endif
+	  // for some reasn the box doesn't always understand the enable buttons
+	  // command the frist time. So we send it twice to make sure
+	  for (i=0; i < 2; i++) {
 
+	    if (write(serialfd, enablebuttons,5) != 5) {
+	      perror("vrpn_raw_SGIBox::reset(): Can't enable buttons");
+	      serialfd = -1;
+	      return -1;
+	    }
+#ifdef VERBOSE
+	    else {
+	      printf("vrpn_raw_SGIBOX::reset() : Enabled Buttons\n");
+	    }
+#endif 
+	  
+	    if (write(serialfd, activatebuttons,5) != 5) {
+	      perror("vrpn_raw_SGIBox::reset(): Can't activate buttons\n");
+	      serialfd = -1;
+	      return -1;
+	    }
+#ifdef VERBOSE
+	    else {
+	      printf("vrpn_raw_SGIBOX::reset() : Activated Buttons\n");
+	    }
+#endif
+	  } // end of loop to send enable and activate commands
+
+  }
+  
   // Reset the button and dial values to zero, since the dial box
   // and button box are now reset.
   
@@ -193,8 +218,11 @@ void vrpn_raw_SGIBox::get_report() {
 		return;
 	}
 	if (ret == -1) { // Error in the read; try resetting.
-		reset();
-		return;
+#ifdef VERBOSE
+	    perror("vrpn_raw_SGIBOX::get_report(): error reading serial port - reseting...");
+#endif
+	    reset();
+	    return;
 	}
 
 #ifdef	VERBOSE
@@ -203,9 +231,11 @@ void vrpn_raw_SGIBox::get_report() {
 	// If this is a reset command, we can skip it and get the next command
 	// next time.
 	if (command == 0x20) {
-		return;
+	  perror("vrpn_raw_SGIBOX::get_report(): Got reset response when we didn't expect it - reseting...\n");
+	  reset();
+	  return;
 	}
-
+	
 	// See if this is a button report, which are only a single byte.
 	if ( (command >= 0xC0) && (command <= 0xFF) ) {
 		// Due to the strange layout of the commands to buttons,
@@ -220,25 +250,36 @@ void vrpn_raw_SGIBox::get_report() {
 		check_release_bank(16, 0xE8, command);
 		check_release_bank(8, 0xF0, command);
 		check_release_bank(0, 0xF8, command);
+
 	}
+
 	vrpn_Button_Filter::report_changes();
+	
 	
 	// Parse the dial results, which are more than single-byte
 	// results so will require reading in the rest of the command.
 	// We will block until either we get them or get an error or time
 	// out.  If there is an error or timeout, try resetting.
-	if ( (command >= 0x30) && (command <= 37) ) {
+	if ( (command >= 0x30) && (command <= 0x37) ) {
+#ifdef VERBOSE
+	  printf("vrpn_raw_SGIBOX::get_report(): Got dial event\n");
+#endif
 		unsigned char dial_value[2];
 		int i = command - 0x30;		// Which dial
 		vrpn_uint16 value;
-		struct timeval timeout = {0, 3000};	// 3 milliseconds
+		struct timeval timeout = {0, 10000};	// 10 milliseconds
 
 		// Attempt to read both new values until we run out of time
 		// and give up.  If we give up or have an error, try a reset.
 		if (vrpn_read_available_characters(serialfd, dial_value, 2, &timeout) != 2) {
-			reset();
-			return;
+		  perror("vrpn_raw_SGIBOX: starting getting a dial command from box, but message wasn't completed -reseting ...");
+		  reset();
+		  return;
 		}
+#ifdef VERBOSE
+		printf("vrpn_raw_SGIBOX::get_report(): Dial event %02x:[ %02x %02x] \n",
+		 command,dial_value[0],dial_value[1]);
+#endif
 
 		// Figure out the value and adjust the corresponding dial value.
 		// The dials are set up to clamp at both the to and bottom end of
@@ -257,6 +298,16 @@ void vrpn_raw_SGIBox::get_report() {
 		}
 	}
 	vrpn_Analog::report_changes();
+	
+	// check for an unrecognized command from the box
+	if (! (
+	     ( (command >= 0x30) && (command <= 0x37) ) ||
+	      ( (command >= 0xC0) && (command <= 0xFF) )
+	     ))
+	  {
+	    perror("vrpn_raw_SGIBOX: unrecognized command from sgiBox - reseting...");
+	    reset();
+	  }
 }
 
 void vrpn_raw_SGIBox::mainloop(const struct timeval * timeout)
@@ -270,16 +321,18 @@ int	vrpn_raw_SGIBox::send_light_command(void)  {
   unsigned char msg[5];		// Message to send to turn on lights
 
 #ifdef	VERBOSE
-	printf("vrpn_raw_SGIBox::send_light_command() starting\n");
+	//printf("vrpn_raw_SGIBox::send_light_command() starting\n");
 #endif
 
   // Figure out which lights should be on, and pack them into the
   // four bytes that describe which should be on.
   for (bank = 0; bank < 4; bank++) {
-    lights[bank] = 0;
+    lights[bank] = 0; //one bit per button light
     for (i = 0; i < 8; i++) {
-	int light = bank*8 + i;
-	if(buttonstate[light]==vrpn_BUTTON_TOGGLE_ON) {
+	int buttonLightNumber = bank*8 + i;
+	if (buttonstate[buttonLightNumber]==vrpn_BUTTON_TOGGLE_ON)
+	
+	  {
 		lights[bank]=lights[bank]|1<<i;
 	}
     }
@@ -287,6 +340,7 @@ int	vrpn_raw_SGIBox::send_light_command(void)  {
 
   // Prepare the control message to turn the lights on, then
   // send it.
+  
   msg[0] = 0x75; memcpy(&msg[1],lights,4);
   if (write(serialfd, msg, 5) != 5) {
 	  perror("Could not write light control message");
