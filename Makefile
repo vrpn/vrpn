@@ -275,9 +275,8 @@ beta :
 	-mv $(OBJECT_DIR)/libvrpn.a $(OBJECT_DIR)/libvrpn_g++.a \
 	    $(OBJECT_DIR)/libvrpnserver.a $(OBJECT_DIR)/libvrpnserver_g++.a \
             $(BETA_LIB_DIR)/$(OBJECT_DIR)
-	-rm -rf $(OBJECT_DIR)
-	-ranlib $(BETA_LIB_DIR)/libvrpn.a
-	-ranlib $(BETA_LIB_DIR)/libvrpnserver.a
+	-ranlib $(BETA_LIB_DIR)/$(OBJECT_DIR)/libvrpn.a
+	-ranlib $(BETA_LIB_DIR)/$(OBJECT_DIR)/libvrpnserver.a
 	-( cd $(BETA_INCLUDE_DIR); /bin/rm -f $(VRPN_INCLUDES) )
 	cp $(VRPN_INCLUDES) $(BETA_INCLUDE_DIR) 
 
