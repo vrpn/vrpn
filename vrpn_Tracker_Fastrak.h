@@ -21,15 +21,18 @@
  * Author          : Ruigang Yang
  * Created On      : Thu Jan 15 17:27:52 1998
  * Last Modified By: Ruigang Yang
- * Last Modified On: Thu Jan 22 15:10:36 1998
- * Update Count    : 37
+ * Last Modified On: Sat Jan 24 14:08:07 1998
+ * Update Count    : 43
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Tracker_Fastrak.h,v $
- * $Date: 1998/01/22 21:08:52 $
+ * $Date: 1998/01/24 19:12:14 $
  * $Author: ryang $
- * $Revision: 1.1 $
+ * $Revision: 1.2 $
  * 
  * $Log: vrpn_Tracker_Fastrak.h,v $
+ * Revision 1.2  1998/01/24 19:12:14  ryang
+ * read one report at a time, no matter how many sensors are on.
+ *
  * Revision 1.1  1998/01/22 21:08:52  ryang
  * add vrpn_Tracker_Fastrak.C to data base
  *
@@ -347,13 +350,15 @@
 #define Q_W 	3
 
 class vrpn_Tracker_Fastrak: public vrpn_Tracker_Serial {
+  int foo[10];
   int reportLength;
   int totalReportLength;
   int numUnits;
   int stationArray[T_F_MAX_NUM_STATIONS];
   int dataFormat;
   int mode;
-  float f_pos[T_F_MAX_NUM_STATIONS][3],  f_quat[T_F_MAX_NUM_STATIONS][4];
+  float f_pos[T_F_MAX_NUM_STATIONS][3];
+  float f_quat[T_F_MAX_NUM_STATIONS][4];
   
 private:
   void my_flush() {
@@ -387,10 +392,7 @@ private:
   void set_hemisphere(int,int,int);
   int xyz_quat_interpret();
   int checkSubType(int, int);
-  void fast_sync_read();
-  void sync_read();
-  int valid_list();
-  int valid_report(int,int,int);
+  int valid_report();
 
   void printBuffer();
   void printChar(char *, int);

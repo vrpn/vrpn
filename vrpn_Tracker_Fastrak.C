@@ -21,15 +21,18 @@
  * Author          : Ruigang Yang
  * Created On      : Thu Jan 15 17:30:37 1998
  * Last Modified By: Ruigang Yang
- * Last Modified On: Thu Jan 22 16:06:26 1998
- * Update Count    : 284
+ * Last Modified On: Sat Jan 24 14:09:45 1998
+ * Update Count    : 401
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Tracker_Fastrak.C,v $
- * $Date: 1998/01/22 21:08:51 $
+ * $Date: 1998/01/24 19:12:13 $
  * $Author: ryang $
- * $Revision: 1.1 $
+ * $Revision: 1.2 $
  * 
  * $Log: vrpn_Tracker_Fastrak.C,v $
+ * Revision 1.2  1998/01/24 19:12:13  ryang
+ * read one report at a time, no matter how many sensors are on.
+ *
  * Revision 1.1  1998/01/22 21:08:51  ryang
  * add vrpn_Tracker_Fastrak.C to data base
  *
@@ -38,7 +41,7 @@
  * HISTORY
  */
 
-static char rcsid[] = "$Id: vrpn_Tracker_Fastrak.C,v 1.1 1998/01/22 21:08:51 ryang Exp $";
+static char rcsid[] = "$Id: vrpn_Tracker_Fastrak.C,v 1.2 1998/01/24 19:12:13 ryang Exp $";
 #include <time.h>
 #include <math.h>
 #include <stdlib.h>
@@ -84,6 +87,7 @@ static char rcsid[] = "$Id: vrpn_Tracker_Fastrak.C,v 1.1 1998/01/22 21:08:51 rya
 #define T_3_METER_RANGE         (T_3_CM_RANGE / 100.0)
 #define T_3_BINARY_TO_METERS    (T_3_METER_RANGE / T_3_DATA_MAX)
 
+#undef VERBOSE
 
 #ifdef linux
 
@@ -205,17 +209,17 @@ void vrpn_Tracker_Fastrak::reset()
 				
       stationArray[0] = T_F_ON;
       stationArray[1] = T_F_ON;
-      stationArray[2] = T_F_OFF;
-      stationArray[3] = T_F_OFF;
-
-    
+      stationArray[2] = T_F_ON;
+      stationArray[3] = T_F_ON;
+    numUnits = 4;
+    mode = T_F_M_POLLING;
 
     if ( set_all_units() == T_ERROR ) {
       fprintf(stderr,"can't set all units\n");
       return;
     }
 
-    numUnits = 4;
+
 
     /* set binary mode  */
     ms_sleep(50);
@@ -269,15 +273,17 @@ void vrpn_Tracker_Fastrak::get_report(void) {
   int full=0, readchar=0;
   int i;
   unsigned char tempbuf[1024*2];
-
-  //fprintf(stderr,"get report\t%s:%d\n", __FILE__, __LINE__);
+  
+  //fprintf(stderr,"get report %p\t%s:%d\n",this,  __FILE__, __LINE__);
   if (status == TRACKER_SYNCING) {
     
-    if ((ret=read_available_characters(buffer, totalReportLength))
-	!=  totalReportLength) {
-      status = TRACKER_PARTIAL;
+    if ((ret=read_available_characters(buffer, 1)) !=  1 || buffer[0]
+	!= '0') {
+      return;
     }
+
     gettimeofday(&timestamp, NULL);
+    status = TRACKER_PARTIAL;
     bufcount= ret;
   }
 
@@ -288,8 +294,10 @@ void vrpn_Tracker_Fastrak::get_report(void) {
   // for doing the watchdog timing to make sure the tracker hasn't simply;
   // stopped sending characters).;*/	
   if (status == TRACKER_PARTIAL) {
-    ret=read_available_characters(&buffer[bufcount], totalReportLength-bufcount);
-    if (ret == -1) {
+    if (reportLength < 0 || reportLength > 100) exit(-1);
+    //fprintf(stderr, "reportLength = %d,bufC= %d\n", reportLength,bufcount);
+    ret=read_available_characters(&(buffer[bufcount]), reportLength-bufcount);
+    if (ret < 0) {
       fprintf(stderr,"%s@%d: Error reading\n", __FILE__, __LINE__);
       status = TRACKER_FAIL;
       return;
@@ -297,23 +305,32 @@ void vrpn_Tracker_Fastrak::get_report(void) {
     //fprintf(stderr,"get report:get %d bytes\t%s:%d\n", 
 	//   bufcount, __FILE__, __LINE__);
     bufcount += ret;
-    if (bufcount < totalReportLength) {	// Not done -- go back for more
+    if (bufcount < reportLength) {	// Not done -- go back for more
       return;
     }	
+    //fprintf(stderr, "this time read: %d rL= %d, \n", ret, reportLength);
   }
   
   // now decode the report;
-  fprintf(stderr, "get_report: start decode\t%s:%d\n", __FILE__, __LINE__);
-  if (!valid_list()) {
-    fprintf(stderr,"get_report: not a valid one\t%s:%d\n", __FILE__, __LINE__);
-    fast_sync_read();
-    if (status == TRACKER_FAIL) return;
+  //fprintf(stderr, "get_report: start decode %d\t%s:%d\n", 
+	//  reportLength, __FILE__, __LINE__);
+
+
+  if (!valid_report()) {
+    //fast_sync_read();
+    //fprintf(stderr,"get_report: not a valid one %d,\t%s:%d\n", 
+	//    reportLength, __FILE__, __LINE__);
+    bufcount = 0;
+    status = TRACKER_SYNCING;
+    return;
   }
-  fprintf(stderr, "get_report: valid_list\t%s:%d\n", __FILE__, __LINE__);
+  //fprintf(stderr, "get_report: valid list, %d\t%s:%d\n", 
+	//  reportLength, __FILE__, __LINE__);
   xyz_quat_interpret();
-  
+
   status = TRACKER_REPORT_READY;
   bufcount=0;
+
 #ifdef VERBOSE
       print();
 #endif
@@ -325,13 +342,13 @@ void vrpn_Tracker_Fastrak::mainloop()
   switch (status) {
     case TRACKER_REPORT_READY:
       {
-#ifdef	VERBOSE
+
 	static int count = 0;
 	if (count++ == 120) {
-		printf("  vrpn_Tracker_Fastrak: Got report\n"); print();
+		printf("  vrpn_Tracker_Fastrak: Got report\n");
 		count = 0;
 	}
-#endif            
+
 
 	// Send the message on the connection
 	if (connection) {
@@ -343,7 +360,7 @@ void vrpn_Tracker_Fastrak::mainloop()
 		  fprintf(stderr,"Tracker: cannot write message: tossing\n");
 		}
 	} else {
-		fprintf(stderr,"Tracker 3Space: No valid connection\n");
+		fprintf(stderr,"Tracker Fastrak: No valid connection\n");
 	}
 
 	// Ready for another report
@@ -406,14 +423,10 @@ int vrpn_Tracker_Fastrak::set_all_units()
       {
 	/* if station should be on, turn it on	*/
 	if ( stationArray[i] == T_F_ON ) {
-
-
 	  if ( set_unit(i, T_F_ON) == T_ERROR )
 	    return (T_ERROR);
-
 	  /* set hemisphere to be the normal +X	*/
 	  set_hemisphere(i, Q_X, 1);
-
 	  set_data_format(i);
 
 	}
@@ -938,40 +951,6 @@ void vrpn_Tracker_Fastrak::cont_mode()
 
 
 
-/*****************************************************************************
- *
-   t_f_valid_list - takes a buffer of continuous mode records and an index
-    	    	    	into that buffer, and tells whether the buffer
-			has trackerPtr->numUnits valid records.
- 
-    input:
-    	- pointer to current tracker table entry
-	- pointer to beginning of buffer to check
-    
-    output:
-    	- returns T_TRUE if all reports are valid, T_FALSE otherwise
-    
-    notes:
-    	- list is valid if each report is OK'ed by t_f_valid_report
- *
- *****************************************************************************/
-
-int vrpn_Tracker_Fastrak::valid_list()
-{
-    int	    	    i;
-
-
-    for ( i = 0; i < numUnits; i++ )
-    {
-      if (!valid_report(i*reportLength,
-	    	    	    	totalReportLength, i ) )
-        return(T_FALSE);
-    }
-
-    return(T_TRUE);
-
-}	/* t_f_valid_list */
-
 
 
 /*****************************************************************************
@@ -1016,8 +995,7 @@ int vrpn_Tracker_Fastrak::valid_list()
  *
  *****************************************************************************/
 
-int vrpn_Tracker_Fastrak::valid_report(int bufIndex, int
-					bufferLength, int unitIndex)
+int vrpn_Tracker_Fastrak::valid_report()
 {
 
     static char	    correctStatusBytes[] = T_F_STATUS_BYTES;    
@@ -1026,62 +1004,27 @@ int vrpn_Tracker_Fastrak::valid_report(int bufIndex, int
     int	    	    prevUnitBufIndex;	/* buf index for prev unit  */
 
 
-    /* add one to unit number since fastrak numbers its stations from '1'   */
-    correctStatusBytes[1] = ('0'+ unitIndex +1);
 
-    fprintf(stderr, "valid_report\t%s:%d\n", __FILE__, __LINE__);
+    //printChar((char *)(buffer), 3);
 
-    //printChar((char *)buffer, bufferLength);
+    //fprintf(stderr, "valid_report\t%s:%d\n", __FILE__, __LINE__);
+
+
     /* is first byte an ascii 0?	*/
-    if ( buffer[bufIndex] != correctStatusBytes[0] )
+    if ( buffer[0] != correctStatusBytes[0] )
       return (T_FALSE);
 
 
+
     /*   see if the station number byte is past the end of this buffer   */
-    if ( (bufIndex+1) < bufferLength ) {
-      if ( buffer[bufIndex+1] != correctStatusBytes[1] )
-    	return(T_FALSE);
-    } else {
-    /*
-     * if we're at the end of the buffer, then the info we're looking for 
-     *  hasn't been read in yet.  however, this means that there is status 
-     *  info from the previous report shifted rightward into this buffer
-     *  (since this report's status info is shifted to the right, out past
-     *  the end of the buffer).
-     *  we can look at that status info and see if it corresponds to what
-     *  should have come before this report;  ie, it should be the status 
-     *  info for either the previous station in the same multi-station report,
-     *  or it should be the last record of the previous report (single or
-     *  multi-station).
-     */
-
-      fprintf(stderr, "valid_report\t%s:%d\n", __FILE__, __LINE__);
-    /* get index of report before this one     */
-    if ( unitIndex > 0 )
-	/* this is not the first station's report, so just decrement to
-	 *  get back to the previous station's report.
-	 */
-    	prevUnitIndex = unitIndex-1;
-    else
-	/* this is the first record of the current batch, so the 
-	 * previous record will belong to the previous batch of reports
-	 *   note that if trackerPtr->numUnits == 1, 
-	 * prevUnitIndex <- 0, which is correct.
-	 */
-    	prevUnitIndex = numUnits-1;
-    
-    /* convert to station number	*/
-    prevStationNum = ('0' + unitIndex+1);
-
-
-    /* look back in list to find number of station for previous report	*/
-    prevUnitBufIndex = bufIndex+1 - reportLength;
-    
-    if ( buffer[prevUnitBufIndex] != prevStationNum )
-    	return(T_FALSE);
-    }
-
-    return( checkSubType(bufIndex, bufferLength) );
+    if (buffer[1] < '1' || buffer[1] >'4' )
+      return(T_FALSE);
+    if (!(buffer[2] == correctStatusBytes[2] || isalpha(buffer[2]))) 
+	// should be a space or D-F;
+      return(T_FALSE);
+    //printf("I am returning ture\n");  
+    return T_TRUE;
+      //( checkSubType(bufIndex, bufferLength) );
 
 }	/* t_f_valid_report */
 
@@ -1146,7 +1089,7 @@ int vrpn_Tracker_Fastrak::checkSubType(int bufIndex, int bufferLength)
 int vrpn_Tracker_Fastrak::xyz_quat_interpret()
 {
 
-    int	    	    i, j;
+    int	    	    i, j,k;
     double  	    mag;
     unsigned char   *rawPtr;
     float   *dataPtr;
@@ -1162,56 +1105,33 @@ int vrpn_Tracker_Fastrak::xyz_quat_interpret()
     numDataItems = (int) 
       (reportLength-T_F_STATUS_LENGTH) / T_F_FULL_WORD_SIZE;
 
-    /* parse one report for each unit   */
-    for ( i = 0, rawPtr = buffer + T_F_STATUS_LENGTH; 
-    	    	    	    	i < numUnits; i++ )
-    {
+    rawPtr = buffer +3;;
+
     /* reverse the bytes for this full report if this machine
      *  is not little-endian
      */
       T_F_REVERSE_BYTES((unsigned char *) dataBuffer, rawPtr, 
     	    	    	    	    	    T_F_FULL_WORD_SIZE, numDataItems);
-
+      sensor = buffer[1]-'0';
       dataPtr = dataBuffer;
 
-      /* R. Yang 
-      // get position 
-      for ( j = 0; j < 3; j++, dataPtr++ )
-	xyzQuat.xyz[j] = *dataPtr;
-    
+      // get position ;
+      //fprintf(stderr, "pos: ");
+      for ( j = 0; j < 3; j++, dataPtr++ ){
+	pos[j] = *dataPtr;
+	//fprintf(stderr, " %.3f", pos[j]);
+      }
+      
       // on to orientation quaternion;  NOTE:  Q_W is read FIRST!   
-      xyzQuat.quat[3] = *dataPtr;
+      quat[Q_W] = *dataPtr;
       dataPtr++;
-    
+      
+      //fprintf(stderr, "Done\n");
       // get rest of orientation quat 
       for ( j = 0; j < 3; j++, dataPtr++ )
-	xyzQuat.quat[j] = *dataPtr;
+	quat[j] = *dataPtr;
+
     
-      // scale the values into meters 
-      q_vec_scale(xyzQuat.xyz, T_F_METERS_PER_INCH, xyzQuat.xyz);
-
-      //  current version of the fastrak occasionally flakes out and gives
-      //  huge values when the source is too close to the sensor;  trap
-      //  this so other stuff doesn't blow up.
-
-      if ( (mag = q_vec_magnitude(xyzQuat.xyz)) > 100.0 )
-    	{
-	fprintf(stderr, 
-	    "%s@%d:  bogus data from Fastrak; vec magnitude = %lf\n", 
-	    __FILE__, __LINE__, mag);
-	fprintf(stderr, "  Try re-running and/or cycling power on Fastrak.\n");
-	return(T_ERROR);
-	}
-
-    // add initial angle and position offsets as appropriate for frame	
-    //roomXform(trackerPtr, &reportList[i].xyzQuat, &xyzQuat);
-    // comment by R.Yang, should we do it in client side???
-
-    // reportLength is the length of one station's report w/ status bytes 
-    rawPtr += reportLength;
-    */
-    }
-
     return(T_OK);
 
 }	/* t_f_xyz_quat_interpret */
@@ -1245,211 +1165,7 @@ void vrpn_Tracker_Fastrak::printBuffer()
 }	/* printBuffer */
 
 
-/*****************************************************************************
- *
-   t_f_fast_sync_read - fast read and synchronize in continuous mode
-   
-    input:
-    	- pointer to current tracker table entry
-	- pointer to data from last failed read (one full report that doesn't 
-	    start with the sync byte)
-	- total report length for all stations
-    
-    output:
-    	- a valid report in rawBuffer
-    	- fastrak is "re-synchronized"; ie., the next byte to appear in the
-	    read buffer will be the beginning of a new report
-    
-    notes:
 
-    used after we get out of sync with the fastrak and reads no longer start
-    with the 0 sync byte. it finds the beginning of the last report in
-    "rawBuffer" and then does a read to get the rest of the report.  thus, the
-    data in rawBuffer must be both valid and recently read, or this routine may
-    fail.  in practice, this routine is called just after a call to
-    t_read_all_reports(), which practically empties the host input buffer,
-    so that the chances of reading the rest of the last report are pretty 
-    good, and does usually work.
-
-    in case of a failed read of the "scrap", the bullet-proof t_f_sync_read()
-    is called to try again and get it right, at the cost of higher execution
-    time.
- *
- *****************************************************************************/
-
-
-void vrpn_Tracker_Fastrak::fast_sync_read()
-{
-    int	    	    i, j;
-    int	    	    scrapLength;
-    unsigned char   tempbuffer[T_MAX_READ_BUFFER_SIZE];
-
-
-    /* find proper beginning of last report list in buffer  */
-    for ( i = totalReportLength-1; i >= 0; i-- )
-      if ( valid_report(i, totalReportLength, 0) )
-	break;
-
-    scrapLength = i;
-
-    if ( scrapLength < 0 )
-    {
-      printf("fastrak glitch:\n");
-      printBuffer();
-    }
-
-
-    /* if we do not succeed at getting the rest of this report, give up and
-     *  call the slower, bulletproof sync_read()
-     */
-    if ( (scrapLength >= 0) && 
-    	read_available_characters(tempbuffer, scrapLength) < scrapLength)
-      {
-      /* otherwise, shift the beginning of the old report to the start of the
-       *  buffer, then tack this new data on to the end  
-     */
-    for ( i = 0, j = scrapLength; j < totalReportLength; i++, j++ )
-	buffer[i] = buffer[j];
-
-    /* tack on scrap.  i == (totalReportLength - scrapLength) already    */
-    for ( j = 0; j < scrapLength; i++, j++ )
-	buffer[i] = tempbuffer[j];
-    }
-    else
-    {
-    /* if that read failed or no valid data in old buffer, call sync
-       read  */
-      fprintf(stderr, "can't  sync the fastrak, trying reset\n"); 
-      status=TRACKER_FAIL;
-    }
-    
-    /* final check of buffer;  occasionally, the if clause above will fail at
-     *  getting the scrap due to getting swapped out, but will still read 
-     *  something in;  in that case, this check will fail and we'll retry
-     */
-    /*
-    while (valid_list())
-      sync_read();
-      */
-}	/* t_f_fast_sync_read */
-
-
-
-
-/*****************************************************************************
- *
-   t_f_sync_read - continuous mode blocking read.  used after we get out 
-    	    	    of sync with the fastrak and reads no longer start 
-		    with the sync byte.  
-    
-    input:
-    	- pointer to current tracker table entry
-	- buffer pointer
-	- total encoded report length
-    
-    output:
-	- one valid report in rawBuffer
-    	- fastrak is "re-synchronized"; ie., the next byte to appear in the
-	    read buffer will be the beginning of a new report
-    
-    notes:
-
-    in contrast to t_f_fast_sync_read(), this routine assumes nothing about
-    the validity of the old data in rawBuffer.  it starts by reading 
-    everything in the fastrak buffer to clear it;  when it has a full report
-    (doing another read if nec.), it grabs the last, partial report in that 
-    buffer and tries to read in the rest of that report, plus enough for
-    a new, complete report.  this whole process is repeated indefinitely
-    until a valid report is collected.  at return, the final buffer
-    should contain a valid report, since this report (in contrast to
-    t_f_fast_sync_read()) will be read in all at once, rather than
-    in pieces.  the idea here is to _make_sure_ we have a good report on
-    return, not just pretty sure.  that requires reading in the report
-    all in one gulp, which is why we read scrapLength + totalReportLength.
-
- *
- *****************************************************************************/
-
-void vrpn_Tracker_Fastrak::sync_read()
-{
-    int	    	    i;
-    int	    	    numTries = 0;
-    int	    	    scrapLength;
-    unsigned char   *bufPtr;
-    int	    	    bytesRead;
-    
-
-    return ;
-
-    /* loop until we get a valid report */
-    do
-    {
-    /* try to read everything in the buffer */
-    bytesRead = read_available_characters(buffer, T_MAX_READ_BUFFER_SIZE);
-    
-    /* if there wasn't a full report list there, get one now	*/
-    if ( bytesRead < totalReportLength )
-	{
-	  sleep(1);
-	//t_patient_read(buffer, totalReportLength);
-	bytesRead = totalReportLength;
-	}
-    
-    /* now we have a full report list;  use it to find out how much 
-     *   scrap to read in
-     */
-    
-    /* find proper beginning of last report in buffer  */
-    for ( i = bytesRead-1; i >= 0; i-- )
-    	{
-	  if ( valid_report(i, bytesRead, 0) )
-	    break;
-    	}
-    
-    numTries++;
-
-    if ( i == -1 ) 
-	{
-	/* if this happens, no valid report-  don't read in scrap, just
-	 *  try all over again.  this means that we could hang here
-	 *  indefinitely, which can happen if byte-swapping isn't done
-	 *  but should be or vice versa.  in the normal case, this 
-	 *  doesn't seem to happen, though.
-	 *
-	 * make sure that bufPtr is set up for the "while" call to
-	 *  t_f_valid_report()
-	 */
-	bufPtr = &buffer[0];
-    	continue;
-	}
-
-    /* bytesRead - i = the amount of the last report already read in.  we
-     *  want to read the rest of this last report.  bytesRead - i is 
-     *  less than or equal to totalReportLength assuming valid data, since
-     *  it's the last report fragment in the buffer.  thus, we need to read
-     *  in totalReportLength - (bytesRead - i);  ie., the remainder of the
-     *  report.
-     */
-    scrapLength = totalReportLength - (bytesRead - i);
-
-    /* read the scrap part in, plus enough for a good report, we hope; see
-     *  header comments for more expl.
-     */
-    // t_patient_read(trackerPtr, buffer, scrapLength+totalReportLength);
-
-    bufPtr = &buffer[0] + scrapLength;
-    }
-    while ( ! valid_list() );
-
-    /* copy good buffer to output buffer	*/
-    for ( i = 0; i < totalReportLength; i++ )
-      buffer[i] = bufPtr[i];
-
-    if ( numTries > 1 )
-      fprintf(stderr, "%s@%d:  sync read done, %d tries.\n", 
-	      __FILE__, __LINE__, numTries);
-    
-}	/* t_f_sync_read */
 
 void vrpn_Tracker_Fastrak::printChar(char *buf, int size) {
   int	    i;

@@ -319,6 +319,7 @@ int vrpn_Tracker_Serial::read_available_characters(unsigned char *buffer,
    do {
      if ( (cReadThisTime = read(serial_fd, (char *)pch, cSpaceLeft)) == -1) {
        perror("Tracker: cannot read from serial port");
+       fprintf(stderr, "this = %p, buffer = %p, %d\n", this, pch, bytes);  
        return -1;
      }
      cSpaceLeft -= cReadThisTime;
@@ -326,9 +327,10 @@ int vrpn_Tracker_Serial::read_available_characters(unsigned char *buffer,
    }  while ((cReadThisTime!=0) && (cSpaceLeft>0));
    bRead = pch - buffer;
  
-#ifdef	VERBOSE
-   if (bRead > 0) printf("  vrpn_Tracker_Serial: Read %d bytes\n",(int)(bRead));
-#endif
+
+   if (bRead > 100 || bRead < 0) 
+     fprintf(stderr, "  vrpn_Tracker_Serial: Read %d bytes\n",bRead);
+
 
 #ifdef	READ_HISTOGRAM
    // When we are using a 16550A UART with buffers enabled, the histogram is:
