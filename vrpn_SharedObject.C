@@ -8,7 +8,16 @@
 // which will be modified by the clock synchronization code in
 // vrpn_Synchronized_Connection.  Comment it out to put d_lastUpdate
 // in the message body and ignore clock synchronization.
-#define USE_CLOCK_SYNCHRONIZATION
+//#define USE_CLOCK_SYNCHRONIZATION
+
+// Notes about subtlties:
+//   For clock synchronization, vrpn computes a ONE-WAY synchronization
+// offset.  We can't just blindly use synchronized timestamps in both
+// directions, or what we get is not synchronized.  So the convention
+// adopted is that messages received by the Server are corrected to the
+// local clock, but messages sent at the receiver are left in
+// "native" time.  This is, unfortunately, much more complex in the code
+// than always using clock sync or never using it.
 
 vrpn_Shared_int32::vrpn_Shared_int32 (const char * name,
                                       vrpn_int32 defaultValue,
@@ -354,9 +363,6 @@ int vrpn_Shared_int32::handle_update (void * ud, vrpn_HANDLERPARAM p) {
   timeval when;
 
   s->decode(&p.buffer, &p.payload_len, &newValue, &when);
-#ifdef USE_CLOCK_SYNCHRONIZATION
-  when = p.msg_time;
-#endif
 
 //fprintf(stderr, "vrpn_Shared_int32::handle_update to %d at %d:%d.\n",
 //newValue, when.tv_sec, when.tv_usec);
@@ -803,9 +809,6 @@ int vrpn_Shared_float64::handle_update (void * userdata, vrpn_HANDLERPARAM p) {
   timeval when;
 
   s->decode(&p.buffer, &p.payload_len, &newValue, &when);
-#ifdef USE_CLOCK_SYNCHRONIZATION
-  when = p.msg_time;
-#endif
 
   s->set(newValue, when, vrpn_FALSE);
 
@@ -1273,9 +1276,6 @@ int vrpn_Shared_String::handle_update (void * ud, vrpn_HANDLERPARAM p) {
   timeval when;
 
   s->decode(&p.buffer, &p.payload_len, newValue, &when);
-#ifdef USE_CLOCK_SYNCHRONIZATION
-  when = p.msg_time;
-#endif
 
   s->set(newValue, when, vrpn_FALSE);
 
