@@ -95,12 +95,14 @@ class vrpn_Analog_Server : public vrpn_Analog {
 
     // If anything has changed, report it to the client.
     
-    virtual void report_changes (void);
+    //virtual void report_changes (vrpn_uint32 class_of_service
+                                 //= vrpn_CONNECTION_LOW_LATENCY);
 
     // Reports current status to the client regardless of whether
     // or not there have been any changes.
 
-    virtual void report (void);
+    //virtual void report (vrpn_uint32 class_of_service
+                                 //= vrpn_CONNECTION_LOW_LATENCY);
 
     // Exposes an array of values for the user to write into.
 
