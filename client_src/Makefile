@@ -50,13 +50,16 @@ ifeq ($(HW_OS),pc_linux)
   CC := g++
 endif
 
-  ifeq ($(HW_OS),sgi_irix)
-   ifndef SGI_ABI
+ifeq ($(HW_OS),sgi_irix)
+  ifndef SGI_ABI
       SGI_ABI := n32
-   endif
-   OBJECT_DIR_SUFFIX := .$(SGI_ABI)
-        CC := CC -$(SGI_ABI)
   endif
+  ifndef SGI_ARCH
+      SGI_ARCH := mips3
+  endif
+  OBJECT_DIR_SUFFIX := .$(SGI_ABI).$(SGI_ARCH)
+  CC := CC -$(SGI_ABI) -$(SGI_ARCH)
+endif
 
 #ifeq ($(HW_OS),sgi_irix)
 #  CC := CC -32
