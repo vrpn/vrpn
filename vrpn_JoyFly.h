@@ -16,6 +16,11 @@
  * at the Computer Science Dept., Columbia University,                    
  * 500 W 120th St, Room 450, New York, NY, 10027.                         
  *                                                                        
+ * Author   : Sang-Uok Kum
+ * Modified : 4/17/98
+ * Content  : Changed the funciton update(q_matrix_type)        
+ *            from update(const q_matrix_type &)
+ *
  * Copyright (C) Blair MacIntyre 1995, Columbia University 1995           
  * 
  * Author          : Ruigang Yang
@@ -25,11 +30,14 @@
  * Update Count    : 20
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_JoyFly.h,v $
- * $Date: 1998/04/08 14:07:37 $
- * $Author: taylorr $
- * $Revision: 1.3 $
+ * $Date: 1998/06/01 20:12:12 $
+ * $Author: kumsu $
+ * $Revision: 1.4 $
  * 
  * $Log: vrpn_JoyFly.h,v $
+ * Revision 1.4  1998/06/01 20:12:12  kumsu
+ * changed to ANSI to compile with aCC for hp
+ *
  * Revision 1.3  1998/04/08 14:07:37  taylorr
  * Makes it compile on HPs
  *
@@ -84,7 +92,9 @@ public:
 
   virtual void mainloop(void);
   virtual void reset();
+
   void update(q_matrix_type &);
+
 };
 #endif
 

@@ -25,11 +25,14 @@
  * Update Count    : 95
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_JoyFly.C,v $
- * $Date: 1998/04/08 14:07:36 $
- * $Author: taylorr $
- * $Revision: 1.3 $
+ * $Date: 1998/06/01 20:12:11 $
+ * $Author: kumsu $
+ * $Revision: 1.4 $
  * 
  * $Log: vrpn_JoyFly.C,v $
+ * Revision 1.4  1998/06/01 20:12:11  kumsu
+ * changed to ANSI to compile with aCC for hp
+ *
  * Revision 1.3  1998/04/08 14:07:36  taylorr
  * Makes it compile on HPs
  *
@@ -44,7 +47,7 @@
  * HISTORY
  */
 
-static char rcsid[] = "$Id: vrpn_JoyFly.C,v 1.3 1998/04/08 14:07:36 taylorr Exp $";
+static char rcsid[] = "$Id: vrpn_JoyFly.C,v 1.4 1998/06/01 20:12:11 kumsu Exp $";
 
 #include <string.h>
 #include "vrpn_JoyFly.h"
@@ -183,6 +186,7 @@ void joy_cb(void * userdata, vrpn_ANALOGCB b) {
 }
 
 void vrpn_Tracker_JoyFly::update(q_matrix_type & newM) {
+
   q_matrix_type final;
   q_xyz_quat_type xq;
   int i;

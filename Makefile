@@ -26,12 +26,10 @@ MAKE := gmake -f $(MAKEFILE)
 HW_OS := $(shell hw_os)
 
 # check if its for pxfl
-ifeq ($(HW_OS),hp700_hpux10)
-  ifdef PBASE_ROOT
-    HW_OS := hp_flow
-  endif
+ifdef PBASE_ROOT
+  HW_OS := hp_flow
   ifeq ($(PXFL_COMPILER), aCC)
-    HW_OS := hp_flow_$(PXFL_COMPILER)
+    HW_OS = hp_flow_aCC
   endif
 endif
 
@@ -60,7 +58,12 @@ else
   endif
 endif
 
-HMD_INCLUDE_DIR	:= /afs/unc/proj/hmd/include
+##########################
+# directories
+#
+
+HMD_DIR 	 := /afs/cs.unc.edu/proj/hmd
+HMD_INCLUDE_DIR	 := $(HMD_DIR)/include
 
 # subdirectory for make
 ifeq ($(FORCE_GPP),1)
@@ -75,26 +78,31 @@ endif
 # Include flags
 #
 
+SYS_INCLUDE := -I/usr/local/contrib/include -I/usr/local/contrib/mod/include
+
 ifeq ($(HW_OS),pc_linux)
-    SYS_INCLUDE := -I/usr/include -I/usr/local/contrib/include \
-		-I/usr/local/contrib/mod/include -I/usr/include/bsd \
-		-I/usr/include/g++
-else
- ifeq ($(HW_OS),sgi_irix)
+  SYS_INCLUDE := -I/usr/include -I/usr/local/contrib/include \
+	  	 -I/usr/local/contrib/mod/include -I/usr/include/bsd \
+		 -I/usr/include/g++
+endif
+
+ifeq ($(HW_OS),sgi_irix)
   SYS_INCLUDE := -I/usr/local/contrib/mod/include
- else
-  ifeq ($(HW_OS),hp700_hpux10) 
-   SYS_INCLUDE := -I/usr/local/contrib/include -I/usr/local/contrib/mod/include\
-		  -I/usr/include/bsd
-  else
-   ifeq ($(HW_OS),hp700_hpux10) 
-    SYS_INCLUDE := -I/usr/local/contrib/include -I/usr/local/contrib/mod/include\
-	 	   -I/usr/include/bsd
-   else
-    SYS_INCLUDE := -I/usr/local/contrib/include -I/usr/local/contrib/mod/include
-   endif
-  endif
- endif
+endif
+
+ifeq ($(HW_OS),hp700_hpux10) 
+  SYS_INCLUDE := -I/usr/local/contrib/include -I/usr/local/contrib/mod/include \
+                 -I/usr/include/bsd
+endif
+
+ifeq ($(HW_OS),hp_flow) 
+  SYS_INCLUDE := -I/usr/local/contrib/include -I/usr/local/contrib/mod/include \
+                 -I/usr/include/bsd -DFLOW
+endif
+
+ifeq ($(HW_OS),hp_flow_aCC) 
+  SYS_INCLUDE := -I/usr/local/contrib/include -I/usr/local/contrib/mod/include \
+                 -I/usr/include/bsd -DFLOW
 endif
 
 INCLUDE_FLAGS := -I. $(SYS_INCLUDE) -I$(HMD_INCLUDE_DIR)
@@ -124,8 +132,12 @@ else
 	ARCH_LIBS :=
 endif
 
-LIBS := -lv -ltracker -lad -lquat -lsound -larm -lvrpn -lsdi \
-	-lXext -lX11 $(ARCH_LIBS) -lm
+
+LIBS := -lquat -lsdi $(TCL_LIBS) -lXext -lX11 $(ARCH_LIBS) -lm
+#=======
+#LIBS := -lv -ltracker -lad -lquat -lsound -larm -lvrpn -lsdi \
+#	-lXext -lX11 $(ARCH_LIBS) -lm
+#>>>>>>> 1.26
 
 #
 # Defines for the compilation, CFLAGS
@@ -162,7 +174,7 @@ $(SOBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) $(MAKEFILE)
 
 ifeq ($(HW_OS),sgi_irix)
 # build both gcc and regular
-all:	client_g++ server_g++ client server 
+all:	client server client_g++ server_g++
 else
 all:	client server
 endif
@@ -211,7 +223,15 @@ SLIB_FILES =  vrpn_Connection.C vrpn_Tracker.C vrpn_3Space.C vrpn_Button.C \
 	     vrpn_Sound.C vrpn_ForceDevice.C vrpn_Clock.C vrpn_Shared.C \
 	     vrpn_Flock.C vrpn_Tracker_Fastrak.C vrpn_Dyna.C \
 	     vrpn_Flock_Parallel.C  vrpn_Joystick.C vrpn_Analog.C \
+	     vrpn_JoyFly.C 
+
+ifeq ($(HW_OS), sgi_irix)
+  SLIB_FILES =  vrpn_Connection.C vrpn_Tracker.C vrpn_3Space.C vrpn_Button.C \
+	     vrpn_Sound.C vrpn_ForceDevice.C vrpn_Clock.C vrpn_Shared.C \
+	     vrpn_Flock.C vrpn_Tracker_Fastrak.C vrpn_Dyna.C \
+	     vrpn_Flock_Parallel.C  vrpn_Joystick.C vrpn_Analog.C \
 	     vrpn_JoyFly.C vrpn_sgibox.C 
+endif
 
 # Until we have tracker.h, we can't compile vrpn_Tracker_Ceiling
 
@@ -247,4 +267,3 @@ endif
 #
 # Dependencies that are non-obvious
 #
-

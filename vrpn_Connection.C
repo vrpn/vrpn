@@ -22,6 +22,9 @@
 #include <netdb.h>
 #endif
 
+#include "sdi.h"
+
+extern int sdi_noint_block_write(int outfile, char buffer[], int length);
 
 #ifdef	sgi
 #include <bstring.h>
@@ -38,23 +41,6 @@
 // On Win32, this constant is defined as ~0 (sockets are unsigned ints)
 #ifndef	_WIN32
 #define	INVALID_SOCKET	-1
-#endif
-
-extern "C" int sdi_disconnect_from_device(int device);
-extern "C" int sdi_connect_to_client(char *machine, int port);
-#ifndef _WIN32
-extern "C" int sdi_connect_to_device(char *s);
-extern "C" int sdi_noint_block_read(int file, char *buf, int len);
-extern "C" int sdi_noint_block_write(int file, char *buf, int len);
-extern "C" int sdi_noint_block_read_timeout(int filedes, char *buffer,
-					int len, struct timeval *timeout);
-#else
-extern "C" int sdi_connect_to_device(char *s);
-extern "C" int sdi_noint_block_read(SOCKET outsock, char *buffer, int length);
-extern "C" int sdi_noint_block_write(SOCKET insock, char *buffer, int length);
-extern "C" int sdi_noint_block_read_timeout(SOCKET tcp_sock, char *buffer,
-					int len, struct timeval *timeout);
-extern "C" int sdi_udp_request_call(char *machine, int port);
 #endif
 
 // Syntax of MAGIC:

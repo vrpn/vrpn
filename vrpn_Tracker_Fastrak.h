@@ -25,11 +25,14 @@
  * Update Count    : 45
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Tracker_Fastrak.h,v $
- * $Date: 1998/05/05 21:09:59 $
- * $Author: taylorr $
- * $Revision: 1.5 $
+ * $Date: 1998/06/01 20:12:12 $
+ * $Author: kumsu $
+ * $Revision: 1.6 $
  * 
  * $Log: vrpn_Tracker_Fastrak.h,v $
+ * Revision 1.6  1998/06/01 20:12:12  kumsu
+ * changed to ANSI to compile with aCC for hp
+ *
  * Revision 1.5  1998/05/05 21:09:59  taylorr
  * This version works better with the aCC compiler on PixelFlow.
  *
@@ -430,14 +433,4 @@ private:
 
 #endif  // #ifndef _WIN32
 #endif  // VRPN_CLIENT_ONLY
-
-
-
-
 #endif  // INCLUDED_FASTRAK
-
-
-
-
-
-
