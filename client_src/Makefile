@@ -46,7 +46,7 @@ endif
 OBJ_DIR := $(HW_OS)
 
 CFLAGS = -I../ -g
-LFLAGS = -L../$(HW_OS) \
+LFLAGS = -L../$(HW_OS) -L../../quat/$(HW_OS) \
 	 -L/afs/unc/proj/hmd/beta/lib/$(HW_OS) \
          -L/afs/unc/proj/hmd/lib/$(HW_OS)
 
