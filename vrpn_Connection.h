@@ -450,10 +450,17 @@ class vrpn_Connection
 	virtual void	handle_connection(void);
 
 	// This sends the magic cookie and other information to its
-	// peer, and receives the peer's cookie. It is called by both
-	// the client and server setup routines.
+	// peer.  It is called by both the client and server setup routines.
 	virtual	int	setup_new_connection (long logmode = 0L,
 	                                      const char * logfile = NULL);
+
+        // This receives the peer's cookie. It is called by both
+	// the client and server setup routines.
+	virtual	int	finish_new_connection_setup (void);
+
+        long d_pendingLogmode;
+        char * d_pendingLogname;
+
 	// set up network
 	virtual	void	drop_connection (void);
 	virtual	int	pack_sender_description (vrpn_int32 which);

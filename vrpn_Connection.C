@@ -27,9 +27,6 @@
 #include <sys/time.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#ifdef _AIX
-#define	_USE_IRS
-#endif
 #include <netdb.h>
 #endif
 
@@ -68,14 +65,10 @@
  #endif
 #endif
 
-#ifdef _AIX
-  #define GSN_CAST (socklen_t *)
+#ifdef linux
+#define GSN_CAST (unsigned int *)
 #else
-  #ifdef linux
-    #define GSN_CAST (unsigned int *)
-  #else
-    #define GSN_CAST
-  #endif
+#define GSN_CAST
 #endif
 
 //  NOT SUPPORTED ON SPARC_SOLARIS
@@ -112,12 +105,14 @@ const char * vrpn_MAGIC = (const char *) "vrpn: ver. 04.11";
 const int vrpn_MAGICLEN = 16;  // Must be a multiple of vrpn_ALIGN bytes!
 
 // This is the list of states that a connection can be in
-// (possible values for status).
+// (possible values for status).  doing_okay() returns VRPN_TRUE
+// for connections >= TRYING_TO_CONNECT.
 #define LISTEN			(1)
 #define CONNECTED		(0)
-#define TRYING_TO_CONNECT	(-1)
-#define BROKEN			(-2)
-#define DROPPED			(-3)
+#define COOKIE_PENDING          (-1)
+#define TRYING_TO_CONNECT	(-2)
+#define BROKEN			(-3)
+#define DROPPED			(-4)
 
 
 #ifdef	_WIN32
@@ -1112,8 +1107,8 @@ int vrpn_start_server(const char *machine, char *server_name, char *args)
                 for (waitloop = 0; waitloop < (SERVCOUNT); waitloop++) {
 		    int ret;
                     pid_t deadkid;
-#if defined(sparc) || defined(FreeBSD) || defined(_AIX)
-                    int status;  // doesn't exist on solaris, FreeBSD, AIX
+#if defined(sparc) || defined(FreeBSD)
+                    int status;  // doesn't exist on sparc_solaris or FreeBSD
 #else
                     union wait status;
 #endif
@@ -1933,9 +1928,13 @@ vrpn_Synchronized_Connection::vrpn_Synchronized_Connection
 
    pClockServer = (vrpn_Clock_Server *) NULL;
 
-   if ( (status != CONNECTED) && (status != TRYING_TO_CONNECT) ) { 
+   if ( (status != CONNECTED) && (status != TRYING_TO_CONNECT)  &&
+        (status != COOKIE_PENDING) ) { 
      return;
    }
+
+   // DO WE NEED TO ALLOW COOKIE_PENDING HERE?
+
    pClockRemote = new vrpn_Clock_Remote (server_name, dFreq, cSyncWindow);
    pClockRemote->register_clock_sync_handler( &endpoint.tvClockOffset, 
 					      setClockOffset );
@@ -1984,7 +1983,7 @@ int vrpn_Synchronized_Connection::mainloop (const struct timeval * timeout)
 {
   // If we are not in a connected state, don't do synchronization, just
   // call the parent class mainloop()
-  if ( status ) {
+  if (status != CONNECTED) {
 	return vrpn_Connection::mainloop(timeout);
   }
   if (pClockServer) {
@@ -2157,6 +2156,7 @@ void vrpn_Connection::check_connection (const struct timeval * pTimeout)
    if (request == -1 ) {	// Error in the select()
 	perror("vrpn: vrpn_Connection: select failed");
 	status = BROKEN;
+//fprintf(stderr, "BROKEN - vrpn_Connection::check_connection.\n");
 	return;
    } else if (request != 0) {	// Some data to read!  Go get it.
 	struct sockaddr from;
@@ -2171,14 +2171,15 @@ void vrpn_Connection::check_connection (const struct timeval * pTimeout)
 	printf("vrpn: Connection request received: %s\n", msg);
 	endpoint.tcp_sock = endpoint.connect_tcp_to(msg);
 	if (endpoint.tcp_sock != -1) {
-		status = CONNECTED;
+		status = COOKIE_PENDING;
+//fprintf(stderr, "COOKIE_PENDING - vrpn_Connection::check_connection.\n");
 	}
    }
-   if (status != CONNECTED) {   // Something broke
+   if (status != COOKIE_PENDING) {   // Something broke
 	return;
-   }
-   else
+   } else {
    	handle_connection();
+   }
    return;
 }
 
@@ -2190,13 +2191,14 @@ int vrpn_Connection::connect_to_client (const char *machine, int port)
     printf("vrpn: Connection request received: %s\n", msg);
     endpoint.tcp_sock = endpoint.connect_tcp_to(msg);
     if (endpoint.tcp_sock != -1) {
-	status = CONNECTED;
+	status = COOKIE_PENDING;
+//fprintf(stderr, "COOKIE_PENDING - vrpn_Connection::connect_to_client.\n");
     }
-    if (status != CONNECTED) {   // Something broke
+    if (status != COOKIE_PENDING) {   // Something broke
 	return -1;
-    }
-    else
+    } else {
 	handle_connection();
+    }
     return 0;
 }
 
@@ -2220,6 +2222,7 @@ void vrpn_Connection::handle_connection(void)
 		  "vrpn: vrpn_Connection: getprotobyname() failed.\n");
 		close(endpoint.tcp_sock); endpoint.tcp_sock = -1;
 		status = BROKEN;
+//fprintf(stderr, "BROKEN - vrpn_Connection::handle_connection.\n");
 		return;
 	}
 
@@ -2228,6 +2231,7 @@ void vrpn_Connection::handle_connection(void)
 		perror("vrpn: vrpn_Connection: setsockopt() failed");
 		close(endpoint.tcp_sock); endpoint.tcp_sock = -1;
 		status = BROKEN;
+//fprintf(stderr, "BROKEN - vrpn_Connection::handle_connection.\n");
 		return;
 	}
    }
@@ -2262,13 +2266,9 @@ void vrpn_Connection::handle_connection(void)
 int vrpn_Connection::setup_new_connection
          (long remote_log_mode, const char * remote_logfile_name)
 {
-	char	sendbuf [501];  // HACK
-	char	recvbuf [501];  // HACK
-	long	received_logmode;
-	vrpn_int32	sendlen;
-	int	i;
+	char sendbuf [501];  // HACK
+	vrpn_int32 sendlen;
         int retval;
-	unsigned short udp_portnum;
 
 	num_live_connections++;
 
@@ -2286,18 +2286,57 @@ int vrpn_Connection::setup_new_connection
             != sendlen) {
 	  perror(
 	    "vrpn_Connection::setup_new_connection: Can't write cookie");
+          status = BROKEN;
+//fprintf(stderr, "BROKEN - vrpn_Connection::setup_new_connection.\n");
 	  return -1;
 	}
+
+        d_pendingLogmode = remote_log_mode;
+        if (remote_logfile_name) {
+          d_pendingLogname = new char [1 + strlen(remote_logfile_name)];
+          if (!d_pendingLogname) {
+            fprintf(stderr, "vrpn_Connection::setup_new_connection:  "
+                            "Out of memory.\n");
+            status = BROKEN;
+//fprintf(stderr, "BROKEN - vrpn_Connection::setup_new_connection.\n");
+            return -1;
+          }
+          strcpy(d_pendingLogname, remote_logfile_name);
+        }
+
+        status = COOKIE_PENDING;
+//fprintf(stderr, "COOKIE_PENDING - vrpn_Connection::setup_new_connection.\n");
+
+//fprintf(stderr, "Leaving setup_new_connection().\n");
+
+        return 0;
+}
+
+int vrpn_Connection::finish_new_connection_setup (void) {
+
+	char recvbuf [501];  // HACK
+	vrpn_int32 sendlen;
+	long received_logmode;
+	unsigned short udp_portnum;
+        int i;
+
+//fprintf(stderr, "Entering finish_new_connection_setup().\n");
+
+	sendlen = vrpn_cookie_size();
 
 	// Read the magic cookie from the server
 	if (vrpn_noint_block_read(endpoint.tcp_sock, recvbuf, sendlen)
             != sendlen) {
 	  perror(
-	    "vrpn_Connection::setup_new_connection: Can't read cookie");
+	    "vrpn_Connection::finish_new_connection_setup: Can't read cookie");
+          status = BROKEN;
+//fprintf(stderr, "BROKEN - vrpn_Connection::finish_new_connection_setup.\n");
 	  return -1;
 	}
 
 	if (check_vrpn_cookie(recvbuf) < 0) {
+          status = BROKEN;
+//fprintf(stderr, "BROKEN - vrpn_Connection::finish_new_connection_setup.\n");
 		return -1;
 	}
 
@@ -2312,17 +2351,21 @@ int vrpn_Connection::setup_new_connection
 	received_logmode = recvbuf[vrpn_MAGICLEN + 2] - '0';
 	if ((received_logmode < 0) ||
             (received_logmode > (vrpn_LOG_INCOMING | vrpn_LOG_OUTGOING))) {
-	  fprintf(stderr, "vrpn_Connection::setup_new_connection:  "
+	  fprintf(stderr, "vrpn_Connection::finish_new_connection_setup:  "
                           "Got invalid log mode %d\n", received_logmode);
+          status = BROKEN;
+//fprintf(stderr, "BROKEN - vrpn_Connection::finish_new_connection_setup.\n");
           return -1;
         }
 	endpoint.d_logmode |= received_logmode;
 
-	if (remote_log_mode)
-	  if (pack_log_description(remote_log_mode,
-	                           remote_logfile_name) == -1) {
-	    fprintf(stderr, "vrpn_Connection::setup_new_connection:  "
+	if (d_pendingLogmode)
+	  if (pack_log_description(d_pendingLogmode,
+	                           d_pendingLogname) == -1) {
+	    fprintf(stderr, "vrpn_Connection::finish_new_connection_setup:  "
 	                    "Can't pack remote logging instructions.\n");
+            status = BROKEN;
+//fprintf(stderr, "BROKEN - vrpn_Connection::finish_new_connection_setup.\n");
 	    return -1;
 	  }
 
@@ -2330,16 +2373,26 @@ int vrpn_Connection::setup_new_connection
 	  // Open the UDP port to accept time-critical messages on.
 	  udp_portnum = (unsigned short)INADDR_ANY;
 	  if ((endpoint.udp_inbound = open_udp_socket(&udp_portnum)) == -1)  {
-	    fprintf(stderr, "vrpn_Connection::setup_new_connection:  "
+	    fprintf(stderr, "vrpn_Connection::finish_new_connection_setup:  "
                             "can't open UDP socket\n");
+            status = BROKEN;
+//fprintf(stderr, "BROKEN - vrpn_Connection::finish_new_connection_setup.\n");
 	    return -1;
 	  }
 	}
 
+        // status must be sent to CONNECTED *before* any messages are
+        // packed;  otherwise they're silently discarded in pack_message.
+
+        status = CONNECTED;
+//fprintf(stderr, "CONNECTED - vrpn_Connection::finish_new_connection_setup.\n");
+
 	// Tell the other side what port number to send its UDP messages to.
 	if (pack_udp_description(udp_portnum) == -1) {
 	  fprintf(stderr,
-	    "vrpn_Connection::setup_new_connection: Can't pack UDP msg\n");
+	    "vrpn_Connection::finish_new_connection_setup: Can't pack UDP msg\n");
+          status = BROKEN;
+//fprintf(stderr, "BROKEN - vrpn_Connection::finish_new_connection_setup.\n");
 	  return -1;
 	}
 
@@ -2356,7 +2409,9 @@ int vrpn_Connection::setup_new_connection
 	// Send the messages
 	if (send_pending_reports() == -1) {
 	  fprintf(stderr,
-	    "vrpn_Connection::setup_new_connection: Can't send UDP msg\n");
+	    "vrpn_Connection::finish_new_connection_setup: Can't send UDP msg\n");
+          status = BROKEN;
+//fprintf(stderr, "BROKEN - vrpn_Connection::finish_new_connection_setup.\n");
 	  return -1;
 	}
 
@@ -2374,6 +2429,8 @@ int vrpn_Connection::setup_new_connection
 	do_callbacks_for(register_message_type(vrpn_got_connection),
 		   register_sender(vrpn_CONTROL),
 		   now, 0, NULL);
+
+//fprintf(stderr, "Leaving finish_new_connection_setup().\n");
 
 	return 0;
 }
@@ -2504,6 +2561,7 @@ int vrpn_Connection::handle_log_message (void * userdata,
     if (retval == -1) {
       me->drop_connection();
       me->status = BROKEN;
+//fprintf(stderr, "BROKEN - vrpn_Connection::handle_log_message.\n");
     }
   } else {
     fprintf(stderr, "vrpn_Connection::handle_log_message:  "
@@ -2563,6 +2621,8 @@ int vrpn_Connection::pack_message(vrpn_uint32 len, struct timeval time,
 {
 	int	ret;
 
+//fprintf(stderr, "In vrpn_Connection::pack_message()\n");
+
 	// Make sure type is either a system type (-) or a legal user type
 	if ( type >= num_my_types ) {
 	    printf("vrpn_Connection::pack_message: bad type (%ld)\n",
@@ -2583,9 +2643,11 @@ int vrpn_Connection::pack_message(vrpn_uint32 len, struct timeval time,
         // any other failure-prone action (such as do_callbacks_for()).  Only
         // semantic checking should precede it.
 
-        if (endpoint.d_logmode & vrpn_LOG_OUTGOING)
-          if (endpoint.log_message(len, time, type, sender, buffer))
+        if (endpoint.d_logmode & vrpn_LOG_OUTGOING) {
+          if (endpoint.log_message(len, time, type, sender, buffer)) {
             return -1;
+          }
+        }
 
 	// See if there are any local handlers for this message type from
 	// this sender.  If so, yank the callbacks.
@@ -2832,10 +2894,12 @@ void vrpn_Connection::drop_connection(void)
 		// We're a server, so we go back to listening on our
 		// UDP socket.
 		status = LISTEN;
+//fprintf(stderr, "LISTEN - vrpn_Connection::drop_connection.\n");
 	} else {
 		// We're a client, so we try to reconnect to the server
 		// that just dropped its connection.
 		status = TRYING_TO_CONNECT;
+//fprintf(stderr, "TRYING_TO_CONNECT - vrpn_Connection::drop_connection.\n");
 	}
 
 	// Remove the remote mappings for senders and types. If we
@@ -2989,6 +3053,8 @@ int vrpn_Connection::mainloop (const struct timeval * pTimeout)
   // waits (servers can't usually do infinite waits this because they need
   // to service other devices to generate info which they then send to
   // clients) .  weberh 3/20/99
+
+    fd_set  readfds, exceptfds;
   
   switch (status) {
   case LISTEN:
@@ -3004,7 +3070,6 @@ int vrpn_Connection::mainloop (const struct timeval * pTimeout)
     // we do this so that we can trigger out of the timeout
     // on either type of message without waiting on the other
     
-    fd_set  readfds, exceptfds;
     FD_ZERO(&readfds);              /* Clear the descriptor sets */
     FD_ZERO(&exceptfds);
 
@@ -3110,6 +3175,57 @@ int vrpn_Connection::mainloop (const struct timeval * pTimeout)
 #endif
       	break;
 
+      case COOKIE_PENDING:
+
+        // most of this code copied from case CONNECTED
+
+    // check for pending incoming tcp or udp reports
+    // we do this so that we can trigger out of the timeout
+    // on either type of message without waiting on the other
+    
+    FD_ZERO(&readfds);              /* Clear the descriptor sets */
+    FD_ZERO(&exceptfds);
+
+    // Read incoming COOKIE from TCP channel
+
+    FD_SET(endpoint.tcp_sock, &readfds);
+    FD_SET(endpoint.tcp_sock, &exceptfds);
+
+    // Select to see if ready to hear from other side, or exception
+    
+    if (select(32, &readfds, NULL ,&exceptfds, (timeval *)&timeout) == -1) {
+      if (errno == EINTR) { /* Ignore interrupt */
+        break;
+      } else {
+        perror("vrpn: vrpn_Connection::mainloop: select failed.");
+        drop_connection();
+	return -1;
+      }
+    }
+
+    // See if exceptional condition on either socket
+    if (FD_ISSET(endpoint.tcp_sock, &exceptfds)) {
+      fprintf(stderr, "vrpn_Connection::mainloop: Exception on socket\n");
+      return(-1);
+    }
+
+    // Read incoming COOKIE from the TCP channel
+    if (FD_ISSET(endpoint.tcp_sock,&readfds)) {
+      finish_new_connection_setup();
+      if (!doing_okay()) {
+        printf("vrpn: cookie handling failed\n");
+        break;
+      }
+#ifdef VERBOSE3
+      else {
+        if
+          printf("vrpn_Connection::mainloop got cookie\n",tcp_messages_read);
+      }
+#endif
+    }
+
+        break;
+
       case TRYING_TO_CONNECT:
 	{	struct timeval	now;
 		int ret;
@@ -3124,10 +3240,12 @@ int vrpn_Connection::mainloop (const struct timeval * pTimeout)
 			fprintf(stderr,
 			  "vrpn_Connection: mainloop: Can't poll for accept\n");
 			status = BROKEN;
+//fprintf(stderr, "BROKEN - vrpn_Connection::mainloop.\n");
 			break;
 		}
 		if (ret == 1) {	// Got one!
-		  status = CONNECTED;
+		  status = COOKIE_PENDING;
+//fprintf(stderr, "COOKIE_PENDING - vrpn_Connection::mainloop.\n");
 		  printf("vrpn: Connection established\n");
 
 		  // Set up the things that need to happen when a new connection
@@ -3138,6 +3256,7 @@ int vrpn_Connection::mainloop (const struct timeval * pTimeout)
 				      "Can't set up new connection!\n");
 		      drop_connection();
 		      status = BROKEN;
+//fprintf(stderr, "BROKEN - vrpn_Connection::mainloop.\n");
 		      break;
 		  }
 		  break;
@@ -3153,6 +3272,7 @@ int vrpn_Connection::mainloop (const struct timeval * pTimeout)
 			fprintf(stderr,
 			  "vrpn_Connection: mainloop: Can't lob UDP request\n");
 			status = BROKEN;
+//fprintf(stderr, "BROKEN - vrpn_Connection::mainloop.\n");
 			break;
 		  }
 		}
@@ -3162,6 +3282,7 @@ int vrpn_Connection::mainloop (const struct timeval * pTimeout)
       case BROKEN:
       	fprintf(stderr, "vrpn: Fatal connection failure.  Giving up!\n");
 	status = DROPPED;
+//fprintf(stderr, "DROPPED - vrpn_Connection::mainloop.\n");
       	return -1;
 
       case DROPPED:
@@ -3252,6 +3373,8 @@ vrpn_Connection::vrpn_Connection (unsigned short listen_port_no,
     d_udp_buflen (d_udp_outbuf ? vrpn_CONNECTION_UDP_BUFLEN : 0),
     d_tcp_num_out (0),
     d_udp_num_out (0),
+    d_pendingLogmode (0),
+    d_pendingLogname (NULL),
     d_TCPbuflen (0),
     d_TCPbuf (NULL),
     d_UDPinbuf ((char*)(&d_UDPinbufToAlignRight[0]))
@@ -3263,6 +3386,7 @@ vrpn_Connection::vrpn_Connection (unsigned short listen_port_no,
 
    if (!d_tcp_buflen || !d_udp_buflen) {
      status = BROKEN;
+//fprintf(stderr, "BROKEN - vrpn_Connection::vrpn_Connection.\n");
      fprintf(stderr, "vrpn_Connection couldn't allocate buffers.\n");
      return;
    }
@@ -3270,8 +3394,10 @@ vrpn_Connection::vrpn_Connection (unsigned short listen_port_no,
    if ( (listen_udp_sock = open_udp_socket(&listen_port_no))
            == INVALID_SOCKET) {
       status = BROKEN;
+//fprintf(stderr, "BROKEN - vrpn_Connection::vrpn_Connection.\n");
    } else {
       status = LISTEN;
+//fprintf(stderr, "LISTEN - vrpn_Connection::vrpn_Connection.\n");
    printf("vrpn: Listening for requests on port %d\n",listen_port_no);
    }
   
@@ -3283,6 +3409,7 @@ vrpn_Connection::vrpn_Connection (unsigned short listen_port_no,
       fprintf(stderr, "vrpn_Connection::vrpn_Connection:  "
                       "Out of memory!\n");
       status = BROKEN;
+//fprintf(stderr, "BROKEN - vrpn_Connection::vrpn_Connection.\n");
       return;
     }
 
@@ -3293,6 +3420,7 @@ vrpn_Connection::vrpn_Connection (unsigned short listen_port_no,
       fprintf(stderr, "vrpn_Connection::vrpn_Connection:  "
                       "Couldn't open log file.\n");
       status = BROKEN;
+//fprintf(stderr, "BROKEN - vrpn_Connection::vrpn_Connection.\n");
       return;
     }
   }
@@ -3318,6 +3446,8 @@ vrpn_Connection::vrpn_Connection
     d_udp_buflen (d_udp_outbuf ? vrpn_CONNECTION_UDP_BUFLEN : 0),
     d_tcp_num_out (0),
     d_udp_num_out (0),
+    d_pendingLogmode (0),
+    d_pendingLogname (NULL),
     d_TCPbuflen (0),
     d_TCPbuf (NULL),
     d_UDPinbuf ((char *) (&d_UDPinbufToAlignRight[0]))
@@ -3346,6 +3476,7 @@ vrpn_Connection::vrpn_Connection
 	  if (!endpoint.remote_machine_name) {
 	    fprintf(stderr, "vrpn_Connection: Out of memory!\n");
 	    status = BROKEN;
+//fprintf(stderr, "BROKEN - vrpn_Connection::vrpn_Connection.\n");
             return;
           }
 	  if (port < 0) {
@@ -3366,6 +3497,7 @@ vrpn_Connection::vrpn_Connection
 	  }
 	 
 	  status = TRYING_TO_CONNECT;
+//fprintf(stderr, "TRYING_TO_CONNECT - vrpn_Connection::vrpn_Connection.\n");
 
 #ifdef	VERBOSE
 	  printf("vrpn_Connection: Getting the TCP port to listen on\n");
@@ -3375,6 +3507,7 @@ vrpn_Connection::vrpn_Connection
 				    &endpoint.tcp_client_listen_port) == -1) {
 		fprintf(stderr,"vrpn_Connection: Can't create listen socket\n");
 		status = BROKEN;
+//fprintf(stderr, "BROKEN - vrpn_Connection::vrpn_Connection.\n");
 		return;
 	  }
 
@@ -3385,6 +3518,7 @@ vrpn_Connection::vrpn_Connection
 				endpoint.tcp_client_listen_port) == -1) {
 		fprintf(stderr,"vrpn_Connection: Can't lob UDP request\n");
 		status = BROKEN;
+//fprintf(stderr, "BROKEN - vrpn_Connection::vrpn_Connection.\n");
 		return;
 	  }
 
@@ -3398,20 +3532,23 @@ vrpn_Connection::vrpn_Connection
 		fprintf(stderr,
 		  "vrpn_Connection: Can't poll for accept\n");
 		status = BROKEN;
+//fprintf(stderr, "BROKEN - vrpn_Connection::vrpn_Connection.\n");
 		return;
 	  }
 	  if (retval == 1) {	// Got one!
-	    status = CONNECTED;
+	    status = COOKIE_PENDING;
+//fprintf(stderr, "COOKIE_PENDING - vrpn_Connection::vrpn_Connection.\n");
 	    printf("vrpn: Connection established on initial try\n");
 
 	    // Set up the things that need to happen when a new connection
 	    // is established.
 	    if (setup_new_connection(endpoint.remote_log_mode,
-			endpoint.remote_log_name)){
+			endpoint.remote_log_name)) {
 	      fprintf(stderr, "vrpn_Connection: "
 			      "Can't set up new connection!\n");
 	      drop_connection();
 	      status = BROKEN;
+//fprintf(stderr, "BROKEN - vrpn_Connection::vrpn_Connection.\n");
 	      return;
 	    }
 	  }
@@ -3446,9 +3583,11 @@ vrpn_Connection::vrpn_Connection
 	      fprintf(stderr, "vrpn_Connection:  "
 			      "Can't open %s\n", station_name);
 	      status = BROKEN;
+//fprintf(stderr, "BROKEN - vrpn_Connection::vrpn_Connection.\n");
 	      return;
 	  } else {
-		status = CONNECTED;
+		status = COOKIE_PENDING;
+//fprintf(stderr, "COOKIE_PENDING - vrpn_Connection::vrpn_Connection.\n");
 
 		// Set up the things that need to happen when a new connection
 		// is established.
@@ -3458,6 +3597,7 @@ vrpn_Connection::vrpn_Connection
 				      "Can't set up new connection!\n");
 		      drop_connection();
 		      status = BROKEN;
+//fprintf(stderr, "BROKEN - vrpn_Connection::vrpn_Connection.\n");
 		      return;
 		 }
 		}
@@ -3476,6 +3616,7 @@ vrpn_Connection::vrpn_Connection
 		  fprintf(stderr, "vrpn_Connection::vrpn_Connection:  "
 		      "Out of memory!\n");
 		  status = BROKEN;
+//fprintf(stderr, "BROKEN - vrpn_Connection::vrpn_Connection.\n");
 		  return;
 		}
 
@@ -3486,6 +3627,7 @@ vrpn_Connection::vrpn_Connection
 			fprintf(stderr, "vrpn_Connection::vrpn_Connection:  "
 				      "Couldn't open log file.\n");
 			status = BROKEN;
+//fprintf(stderr, "BROKEN - vrpn_Connection::vrpn_Connection.\n");
 			return;
 		}
 
@@ -4284,7 +4426,7 @@ int vrpn_Connection::message_type_is_registered (const char * name) const
 // With multiple connections allowed, TRYING_TO_CONNECT is an
 // "ok" status, so we need to admit it.  (Used to check >= 0)
 vrpn_bool vrpn_Connection::doing_okay (void) const {
-  return (status >= -1);
+  return (status >= TRYING_TO_CONNECT);
 }
 
 vrpn_bool vrpn_Connection::connected (void) const
