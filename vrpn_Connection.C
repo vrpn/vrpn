@@ -405,11 +405,13 @@ vrpn_int32 vrpn_TranslationTable::addRemoteEntry (cName name,
     return -1;
   }
 
+/*XXX This check causes problem with vrpn_Control when reading from log file...
   // Check to see if there is already an entry here.
   if (d_entry[useEntry].remote_id != -1) {
     fprintf(stderr,"Warning: Duplicate entry in translation table (%s) -- ignoring\n",name);
     return -1;
   }
+*/
 
   if (!d_entry[useEntry].name) {
     d_entry[useEntry].name = new cName;

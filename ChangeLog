@@ -1,6 +1,14 @@
 2001-11-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Connection.C (vrpn_TranslationTable::addRemoteEntry) :
+		The check put in below causes the system to fail when
+		reading from tracker log files.  This is scary, but I'm
+		taking the check back out until I can debug this
+		properly.
+
+2001-11-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C (vrpn_TranslationTable::addRemoteEntry) :
 		Check added to see if there is already an entry in the
 		table.  If so, error printed and returned.
 
