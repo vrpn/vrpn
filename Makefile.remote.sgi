@@ -85,20 +85,19 @@ LIB = libvrpn.a
 #
 # lib
 #
+LIB_FILES =  vrpn_Connection.C vrpn_Tracker.C vrpn_Button.C \
+	     vrpn_Sound.C vrpn_ForceDevice.C vrpn_Clock.C vrpn_Shared.C \
+	     vrpn_Ohmmeter.C vrpn_Analog.C vrpn_FileConnection.C \
+             vrpn_FileController.C vrpn_Forwarder.C vrpn_Text.C \
+             vrpn_ForwarderController.C vrpn_Serial.C
 
-LIB_FILES =  \
-        vrpn_Connection.C vrpn_Tracker.C vrpn_3Space.C vrpn_Button.C \
-        vrpn_Sound.C vrpn_ForceDevice.C vrpn_Clock.C vrpn_Shared.C \
-        vrpn_Flock.C vrpn_Tracker_Fastrak.C vrpn_Ohmmeter.C
+LIB_OBJECTS = $(LIB_FILES:.C=.o)
 
-LIB_OBJECTS =  \
-        vrpn_Connection.o vrpn_Tracker.o vrpn_3Space.o vrpn_Button.o \
-        vrpn_Sound.o vrpn_ForceDevice.o vrpn_Clock.o vrpn_Shared.o \
-        vrpn_Flock.o vrpn_Tracker_Fastrak.o vrpn_Ohmmeter.o
-
-LIB_INCLUDES = vrpn_Connection.h vrpn_Tracker.h vrpn_3Space.h vrpn_Button.h \
-               vrpn_Sound.h vrpn_ForceDevice.h vrpn_Clock.h vrpn_Shared.h \
-               vrpn_Flock.h vrpn_Ohmmeter.h
+LIB_INCLUDES = vrpn_Connection.h vrpn_Tracker.h vrpn_Button.h \
+	       vrpn_Sound.h vrpn_ForceDevice.h vrpn_Clock.h vrpn_Shared.h \
+	       vrpn_Ohmmeter.h vrpn_Analog.h vrpn_FileConnection.h \
+               vrpn_FileController.h vrpn_Forwarder.h vrpn_Text.h \
+               vrpn_ForwarderController.h vrpn_Serial.h
 
 lib$(SUFFIX) : $(OBJECT_DIR)
 	@$(MAKE) "EXE_NAME = $(LIB)" \
