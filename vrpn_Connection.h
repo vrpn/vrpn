@@ -56,14 +56,14 @@ typedef int (* vrpn_LOGFILTER) (void * userdata, vrpn_HANDLERPARAM p);
 // Buffer lengths for TCP and UDP.
 // TCP is an arbitrary number that can be changed by the user
 // using vrpn_Connection::set_tcp_outbuf_size().
-// UDP is set based on ethernet maximum transmission size;  trying
+// UDP is set based on Ethernet maximum transmission size;  trying
 // to send a message via UDP which is longer than the MTU of any
 // intervening physical network may cause untraceable failures,
 // so for now we do not expose any way to change the UDP output
-// buffer size.
+// buffer size.  (MTU = 1500 bytes, - 28 bytes of IP+UDP header)
 
 #define	vrpn_CONNECTION_TCP_BUFLEN	(64000)
-#define	vrpn_CONNECTION_UDP_BUFLEN	(1500)
+#define	vrpn_CONNECTION_UDP_BUFLEN	(1472)
 
 // System message types
 
@@ -275,7 +275,8 @@ class vrpn_Connection
         // Optional argument is TOTAL time to block on select() calls;
         // there may be multiple calls to select() per call to mainloop(),
         // and this timeout will be divided evenly between them.
-	virtual int mainloop (const struct timeval * timeout = &DEFAULT_SELECT_TIMEOUT);
+	virtual int mainloop (const struct timeval * timeout
+                                      = &DEFAULT_SELECT_TIMEOUT);
 
 	// Get a token to use for the string name of the sender or type.
 	// Remember to check for -1 meaning failure.
@@ -506,7 +507,8 @@ class vrpn_Synchronized_Connection : public vrpn_Connection
 	~vrpn_Synchronized_Connection();
 	struct timeval fullSync();
     vrpn_Clock_Remote * pClockRemote;
-    virtual int mainloop (const struct timeval * timeout = NULL);
+    virtual int mainloop (const struct timeval * timeout
+                                      = &DEFAULT_SELECT_TIMEOUT);
 };
 
 // 1hz sync connection by default, windowed over last three bounces 

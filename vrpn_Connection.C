@@ -2579,8 +2579,6 @@ int vrpn_Connection::send_pending_reports(void)
 
 int vrpn_Connection::mainloop (const struct timeval * timeout)
 {
-  // struct timeval perSocketTimeout;
-  const int numSockets = 2;
   int	tcp_messages_read;
   int	udp_messages_read;
   
@@ -2588,6 +2586,8 @@ int vrpn_Connection::mainloop (const struct timeval * timeout)
   printf("vrpn_Connection::mainloop() called (status %d)\n",status);
 #endif
   
+  // struct timeval perSocketTimeout;
+  // const int numSockets = 2;
   // divide timeout over all selects()
   //  if (timeout) {
   //    perSocketTimeout.tv_sec = timeout->tv_sec / numSockets;
@@ -2623,7 +2623,9 @@ int vrpn_Connection::mainloop (const struct timeval * timeout)
     fd_set  readfds, exceptfds;
     FD_ZERO(&readfds);              /* Clear the descriptor sets */
     FD_ZERO(&exceptfds);
-    // Read incoming messages from the UDP channel
+
+    // Read incoming messages from both the UDP and TCP channels
+
     if (endpoint.udp_inbound != -1) {
       FD_SET(endpoint.udp_inbound, &readfds);     /* Check for read */
       FD_SET(endpoint.udp_inbound, &exceptfds);   /* Check for exceptions */
