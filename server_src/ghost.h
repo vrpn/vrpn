@@ -6,7 +6,14 @@
 #include <gstNode.h>
 #include <gstPHANToM.h>
 #include <gstPHANToM_SCP.h>
+
+#include <gstTriPolyMeshHaptic.h>
 #include <gstPolyMesh.h>
+
+#include <gstRAPIDTriMesh.h>
+#include <gstHashGridTriMesh.h>
+#include <gstHybridHashGridTriMesh.h>
+
 #include <gstPoint.h>
 #include <gstScene.h>
 #include <gstSeparator.h>
@@ -15,7 +22,3 @@
 
 #include <gstCube.h>
 #include <gstSphere.h>
-
-#include <gstBuzzEffect.h>
-#include <gstConstraintEffect.h>
-#include <gstInertiaEffect.h>

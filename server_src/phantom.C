@@ -45,8 +45,6 @@ public:
 typedef void (*vrpn_PHANTOMPLANECHANGEHANDLER)(void *userdata,
 					 const vrpn_Plane_PHANTOMCB &info);
 
-void phantomErrorHandler (int errorNumber, char *description, void *userdata);
-
 class vrpn_Phantom: public vrpn_ForceDevice,public vrpn_Tracker,
 					public vrpn_Button {
 protected:
@@ -82,23 +80,29 @@ protected:
 
 	static int handle_plane_change_message(void *userdata, 
 					       vrpn_HANDLERPARAM p);
-	static int handle_startTrimesh_message(void *userdata, 
-					vrpn_HANDLERPARAM p);
 	static int handle_setVertex_message(void *userdata, 
+				     vrpn_HANDLERPARAM p);
+	static int handle_setNormal_message(void *userdata, 
 				     vrpn_HANDLERPARAM p);
 	static int handle_setTriangle_message(void *userdata, 
 				       vrpn_HANDLERPARAM p);
-	static int handle_finishTrimesh_message(void *userdata, 
+	static int handle_removeTriangle_message(void *userdata, 
+				       vrpn_HANDLERPARAM p);
+	static int handle_updateTrimeshChanges_message(void *userdata, 
 					 vrpn_HANDLERPARAM p);
 	static int handle_transformTrimesh_message(void *userdata, 
 					 vrpn_HANDLERPARAM p);
+	static int handle_setTrimeshType_message(void *userdata, 
+					 vrpn_HANDLERPARAM p);
+	static int handle_clearTrimesh_message(void *userdata, 
+					       vrpn_HANDLERPARAM p);
 	static int handle_constraint_change_message(void *userdata,
 					vrpn_HANDLERPARAM p);
 	static int handle_forcefield_change_message(void *userdata,
 						vrpn_HANDLERPARAM p);
 
 	// from vrpn_Tracker
-	static int handle_resetOrigin_change_message(void *, vrpn_HANDLERPARAM);
+
 	static int handle_update_rate_request (void *, vrpn_HANDLERPARAM);
 
 public:
@@ -122,7 +126,7 @@ public:
 
 	static void handle_plane(void *userdata,const vrpn_Plane_PHANTOMCB &p);
     static void check_parameters(vrpn_Plane_PHANTOMCB *p);	
-	void handlePHANToM_Error(int errorNumber, char *description);
+
 };
 
 
@@ -238,8 +242,7 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
   /* make it so simulation loop doesn't exit if remote switch is released */
   scene->setQuitOnDevFault((gstBoolean)FALSE);
 
-  /* register ghost error handler */
-  setErrorCallback( phantomErrorHandler, (void *)this);
+  
   /* disable popup error dialogs */
   printErrorMessages(FALSE);
 
@@ -280,7 +283,7 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
  
   cur_plane = planes[which_plane];
 
-  trimesh = new Trimesh(0,NULL,0,NULL);
+  trimesh = new Trimesh();
 
   trimesh->addToScene(hapticScene);
 
@@ -292,13 +295,13 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
 		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
 		vrpn_ForceDevice::connection = NULL;
   }
-  if (vrpn_ForceDevice::connection->register_handler(startTrimesh_message_id, 
-	handle_startTrimesh_message, this, vrpn_ForceDevice::my_id)) {
+  if (vrpn_ForceDevice::connection->register_handler(setVertex_message_id, 
+	handle_setVertex_message, this, vrpn_ForceDevice::my_id)) {
 		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
 		vrpn_ForceDevice::connection = NULL;
   }
-  if (vrpn_ForceDevice::connection->register_handler(setVertex_message_id, 
-	handle_setVertex_message, this, vrpn_ForceDevice::my_id)) {
+  if (vrpn_ForceDevice::connection->register_handler(setNormal_message_id, 
+	handle_setNormal_message, this, vrpn_ForceDevice::my_id)) {
 		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
 		vrpn_ForceDevice::connection = NULL;
   }
@@ -307,8 +310,13 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
 		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
 		vrpn_ForceDevice::connection = NULL;
   }
-  if (vrpn_ForceDevice::connection->register_handler(finishTrimesh_message_id, 
-	handle_finishTrimesh_message, this, vrpn_ForceDevice::my_id)) {
+  if (vrpn_ForceDevice::connection->register_handler(removeTriangle_message_id, 
+	handle_removeTriangle_message, this, vrpn_ForceDevice::my_id)) {
+		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
+		vrpn_ForceDevice::connection = NULL;
+  }
+  if (vrpn_ForceDevice::connection->register_handler(updateTrimeshChanges_message_id, 
+	handle_updateTrimeshChanges_message, this, vrpn_ForceDevice::  my_id)) {
 		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
 		vrpn_ForceDevice::connection = NULL;
   }
@@ -317,11 +325,20 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
 		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
 		vrpn_ForceDevice::connection = NULL;
   }
+  if (vrpn_ForceDevice::connection->register_handler(setTrimeshType_message_id, 
+	handle_setTrimeshType_message, this, vrpn_ForceDevice::my_id)) {
+		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
+		vrpn_ForceDevice::connection = NULL;
+  }
+  if (vrpn_ForceDevice::connection->register_handler(clearTrimesh_message_id, 
+	handle_clearTrimesh_message, this, vrpn_ForceDevice::my_id)) {
+		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
+		vrpn_ForceDevice::connection = NULL;
+  }
   if (vrpn_ForceDevice::connection->register_handler(set_constraint_message_id,
 	handle_constraint_change_message, this, vrpn_ForceDevice::my_id)) {
 		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
 		vrpn_ForceDevice::connection = NULL;
-  }
   if (vrpn_ForceDevice::connection->register_handler(forcefield_message_id,
 	handle_forcefield_change_message, this, vrpn_ForceDevice::my_id)) {
 		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
@@ -553,44 +570,6 @@ void vrpn_Phantom::mainloop(void) {
 }
 
 
-void phantomErrorHandler (int errorNumber, char *description, void *userdata)
-{
-
-	vrpn_Phantom *me = (vrpn_Phantom *)userdata;
-
-	me->handlePHANToM_Error(errorNumber, description);
-}
-
-void vrpn_Phantom::handlePHANToM_Error(int errorNumber, char *description)
-{
-	char errorBuf[100];
-    int len;
-    fprintf(stderr, "PHANToM Error: %s\n", description);
-    // an error condition has occurred; send it to the client
-    switch(errorNumber){
-	case GST_OUT_OF_RANGE_ERROR:
-	  errorCode = FD_VALUE_OUT_OF_RANGE;
-	  break;
-	case GST_DUTY_CYCLE_ERROR:
-	  errorCode = FD_DUTY_CYCLE_ERROR;
-	  break;
-	case GST_PHANTOM_FORCE_ERROR:
-	  errorCode = FD_FORCE_ERROR;
-	  break;
-	default:
-	  errorCode = FD_MISC_ERROR;
-	  break;
-    }
-    if (vrpn_ForceDevice::connection) {
-	len = vrpn_ForceDevice::encode_error_to(errorBuf);
-	if (vrpn_ForceDevice::connection->pack_message(len, timestamp,
-		error_message_id, vrpn_ForceDevice::my_id,
-		errorBuf, vrpn_CONNECTION_RELIABLE)) {
-		    fprintf(stderr,"Phantom: cannot write message: tossing\n");	
-	}
-    }
-}
-
 
 void vrpn_Phantom::reset(){
 	if(trimesh->displayStatus())
@@ -721,31 +700,6 @@ int vrpn_Phantom::handle_plane_change_message(void *userdata,
 	return 0;
 }
 
-int vrpn_Phantom::handle_startTrimesh_message(void *userdata, 
-					      vrpn_HANDLERPARAM p){
-  vrpn_Phantom *me = (vrpn_Phantom *)userdata;
-  long *params = (long*)(p.buffer);
-  
-  long	temp;
-  
-  int numExpectedParameters=2;
-  
-  if (p.payload_len !=  (numExpectedParameters*sizeof(float)) ) {
-    fprintf(stderr,"vrpn_Phantom: change message payload error\n");
-    fprintf(stderr,"             (got %d, expected %d)\n",
-	    p.payload_len, numExpectedParameters*sizeof(float) );
-    return -1;
-  }
-  
-  temp = ntohl(params[0]);
-  int numVerts=temp;
-  temp = ntohl(params[1]);
-  int numTris=temp;
-  
-  me->trimesh->startDefining(numVerts,numTris);
-  return 0;
-}
-
 int vrpn_Phantom::handle_setVertex_message(void *userdata, 
 					   vrpn_HANDLERPARAM p){
   vrpn_Phantom *me = (vrpn_Phantom *)userdata;
@@ -779,6 +733,39 @@ int vrpn_Phantom::handle_setVertex_message(void *userdata,
   }
 }
 
+int vrpn_Phantom::handle_setNormal_message(void *userdata, 
+					   vrpn_HANDLERPARAM p){
+  vrpn_Phantom *me = (vrpn_Phantom *)userdata;
+  long *params = (long*)(p.buffer);
+  
+  long	temp;
+  
+  int numExpectedParameters=4;
+  
+  if (p.payload_len !=  (numExpectedParameters*sizeof(float)) ) {
+    fprintf(stderr,"vrpn_Phantom: change message payload error\n");
+    fprintf(stderr,"             (got %d, expected %d)\n",
+	    p.payload_len, numExpectedParameters*sizeof(float) );
+    return -1;
+  }
+
+  temp = ntohl(params[0]);
+  int normNum=temp;
+  temp = ntohl(params[1]);
+  float x = *(float*)(&temp);
+  temp = ntohl(params[2]);
+  float y = *(float*)(&temp);
+  temp = ntohl(params[3]);
+  float z = *(float*)(&temp);
+    
+  if(me->trimesh->setNormal(normNum,x,y,z))
+    return 0;
+  else{
+      fprintf(stderr,"vrpn_Phantom: error in trimesh::setNormal\n");
+    return -1;
+  }
+}
+
 int vrpn_Phantom::handle_setTriangle_message(void *userdata, 
 					     vrpn_HANDLERPARAM p){
   vrpn_Phantom *me = (vrpn_Phantom *)userdata;
@@ -786,7 +773,7 @@ int vrpn_Phantom::handle_setTriangle_message(void *userdata,
   
   long	temp;
  
-  int numExpectedParameters=4;
+  int numExpectedParameters=7;
   
   if (p.payload_len !=  (numExpectedParameters*sizeof(float)) ) {
     fprintf(stderr,"vrpn_Phantom: change message payload error\n");
@@ -803,8 +790,14 @@ int vrpn_Phantom::handle_setTriangle_message(void *userdata,
   int v1=temp;
   temp = ntohl(params[3]);
   int v2=temp;
+  temp = ntohl(params[4]);
+  int n0=temp;
+  temp = ntohl(params[5]);
+  int n1=temp;
+  temp = ntohl(params[6]);
+  int n2=temp;
 
-  if(me->trimesh->setTriangle(triNum,v0,v1,v2))
+  if(me->trimesh->setTriangle(triNum,v0,v1,v2,n0,n1,n2))
     return 0;
   else{
       fprintf(stderr,"vrpn_Phantom: error in trimesh::setTriangle\n");
@@ -813,8 +806,36 @@ int vrpn_Phantom::handle_setTriangle_message(void *userdata,
 }
 
 
-int vrpn_Phantom::handle_finishTrimesh_message(void *userdata, 
-					       vrpn_HANDLERPARAM p){
+int vrpn_Phantom::handle_removeTriangle_message(void *userdata, 
+						vrpn_HANDLERPARAM p){
+  vrpn_Phantom *me = (vrpn_Phantom *)userdata;
+  long *params = (long*)(p.buffer);
+  
+  long	temp;
+ 
+  int numExpectedParameters=1;
+  
+  if (p.payload_len !=  (numExpectedParameters*sizeof(float)) ) {
+    fprintf(stderr,"vrpn_Phantom: change message payload error\n");
+    fprintf(stderr,"             (got %d, expected %d)\n",
+	    p.payload_len, numExpectedParameters*sizeof(float) );
+    return -1;
+  }
+
+  temp = ntohl(params[0]);
+  int triNum=temp;
+
+  if(me->trimesh->removeTriangle(triNum))
+    return 0;
+  else{
+      fprintf(stderr,"vrpn_Phantom: error in trimesh::removeTriangle\n");
+    return -1;
+  }
+}
+
+
+int vrpn_Phantom::handle_updateTrimeshChanges_message(void *userdata, 
+						      vrpn_HANDLERPARAM p){
   vrpn_Phantom *me = (vrpn_Phantom *)userdata;
   long *params = (long*)(p.buffer);
   
@@ -842,13 +863,44 @@ int vrpn_Phantom::handle_finishTrimesh_message(void *userdata,
 
   Trimesh *myTrimesh=me->trimesh;
   
-  myTrimesh->finishDefining();
+  myTrimesh->updateChanges();
 
   myTrimesh->setSurfaceKspring(SurfaceKspring);
   myTrimesh->setSurfaceFstatic(SurfaceFstatic);
   myTrimesh->setSurfaceFdynamic(SurfaceFdynamic); 
   myTrimesh->setSurfaceKdamping(SurfaceKdamping);
 
+  return 0;
+}
+
+int vrpn_Phantom::handle_setTrimeshType_message(void *userdata, 
+					       vrpn_HANDLERPARAM p){
+  vrpn_Phantom *me = (vrpn_Phantom *)userdata;
+  long *params = (long*)(p.buffer);
+  
+  long	temp;
+  
+  int numExpectedParameters=1;
+  
+  if (p.payload_len !=  (numExpectedParameters*sizeof(float)) ) {
+    fprintf(stderr,"vrpn_Phantom: change message payload error\n");
+    fprintf(stderr,"             (got %d, expected %d)\n",
+	    p.payload_len, numExpectedParameters*sizeof(float) );
+    return -1;
+  }
+
+  Trimesh *myTrimesh=me->trimesh;
+  
+  temp = ntohl(params[0]);
+  myTrimesh->setType((TrimeshType)temp);
+
+  return 0;
+}
+
+int vrpn_Phantom::handle_clearTrimesh_message(void *userdata, 
+					      vrpn_HANDLERPARAM){
+  vrpn_Phantom *me = (vrpn_Phantom *)userdata;
+  me->trimesh->clear();
   return 0;
 }
 
@@ -985,7 +1037,6 @@ int vrpn_Phantom::handle_resetOrigin_change_message(void * userdata,
   return 0;
 
 }
-
 
 // static
 int vrpn_Phantom::handle_update_rate_request (void * userdata,
