@@ -8,11 +8,17 @@
  * Update Count    : 50
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_sgibox.C,v $
- * $Date: 1998/05/14 14:45:25 $
- * $Author: ryang $
- * $Revision: 1.3 $
+ * $Date: 1998/06/26 15:49:03 $
+ * $Author: hudson $
+ * $Revision: 1.4 $
  * 
  * $Log: vrpn_sgibox.C,v $
+ * Revision 1.4  1998/06/26 15:49:03  hudson
+ * Wrote vrpn_FileConnection.
+ * Changed connection naming convention.
+ * Changed all the base classes to reflect the new naming convention.
+ * Added #ifdef sgi around vrpn_sgibox.
+ *
  * Revision 1.3  1998/05/14 14:45:25  ryang
  * modified vrpn_sgibox, so output is clamped to +-0.5, max 2 rounds
  *
@@ -24,7 +30,9 @@
  * HISTORY
  */
 
-static char rcsid[] = "$Id: vrpn_sgibox.C,v 1.3 1998/05/14 14:45:25 ryang Exp $";
+#ifdef sgi
+
+static char rcsid[] = "$Id: vrpn_sgibox.C,v 1.4 1998/06/26 15:49:03 hudson Exp $";
 
 #include "vrpn_sgibox.h"
 #include <stdio.h>
@@ -120,7 +128,7 @@ static int sgibox_con_cb(void * userdata, vrpn_HANDLERPARAM)
   return 0;
 }
 
-
+#endif  // sgi
 
 
 

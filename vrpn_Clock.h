@@ -16,7 +16,7 @@
   Revised: Mon Mar 23 11:34:26 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.h,v $
   $Locker:  $
-  $Revision: 1.7 $
+  $Revision: 1.8 $
 \*****************************************************************************/
 #ifndef _VRPN_CLOCK_H_
 #define _VRPN_CLOCK_H_
@@ -31,7 +31,7 @@ class vrpn_Connection;
 // clock class for the user is at the end.
 class vrpn_Clock {
 public:
-  vrpn_Clock(char *name, vrpn_Connection *c = NULL);
+  vrpn_Clock(const char *name, vrpn_Connection *c = NULL);
   
   virtual void mainloop(void) = 0;	// Report changes to connection
   
@@ -104,7 +104,7 @@ class vrpn_Clock_Remote: public vrpn_Clock {
   // while a low setting (e.g., 3) works well when drift is present.
   // See cMaxQuickRecords below for more detail.
 
-  vrpn_Clock_Remote(char *name, double dFreq=1, int cOffsetWindow=3);
+  vrpn_Clock_Remote(const char *name, double dFreq=1, int cOffsetWindow=3);
   virtual ~vrpn_Clock_Remote();
 
   // This routine calls does the sync and calls the mainloop of the 
@@ -182,6 +182,12 @@ class vrpn_Clock_Remote: public vrpn_Clock {
 
 /*****************************************************************************\
   $Log: vrpn_Clock.h,v $
+  Revision 1.8  1998/06/26 15:48:54  hudson
+  Wrote vrpn_FileConnection.
+  Changed connection naming convention.
+  Changed all the base classes to reflect the new naming convention.
+  Added #ifdef sgi around vrpn_sgibox.
+
   Revision 1.7  1998/03/23 17:06:45  weberh
   clock changes:
 

@@ -44,8 +44,10 @@ vrpn_Button::vrpn_Button(char *name, vrpn_Connection *c): num_buttons(0)
    // If the connection is valid, use it to register this button by
    // name and the button change report by name.
    connection = c;
+  char * servicename;
+  servicename = vrpn_copy_service_name(name);
    if (connection != NULL) {
-      my_id = connection->register_sender(name);
+      my_id = connection->register_sender(servicename);
       message_id = connection->register_message_type("Button Toggle");
       if ( (my_id == -1) || (message_id == -1) ) {
       	fprintf(stderr,"vrpn_Button: Can't register IDs\n");
@@ -62,6 +64,8 @@ vrpn_Button::vrpn_Button(char *name, vrpn_Connection *c): num_buttons(0)
 	   buttonstate[i] = BUTTON_MOMENTARY;
 	   lastbuttons[i] = 0;
    }
+  if (servicename)
+    delete [] servicename;
 }
 
 void vrpn_Button::set_momentary(int which_button) {

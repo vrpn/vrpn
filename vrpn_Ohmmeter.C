@@ -19,11 +19,13 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 vrpn_Ohmmeter::vrpn_Ohmmeter(char *name, vrpn_Connection *c)
 {
     // Set our connection to the one passed in 
+  char * servicename;
+  servicename = vrpn_copy_service_name(name);
     connection = c;
 
     // Register this ohmmeter and the needed message types
     if (connection) {
-	my_id = connection->register_sender(name);
+	my_id = connection->register_sender(servicename);
 	channelset_m_id = connection->register_message_type("Channel Settings");
 	measure_m_id = connection->register_message_type("Resistance");
 	setchannel_m_id = connection->register_message_type("Set Channel");
@@ -40,6 +42,8 @@ vrpn_Ohmmeter::vrpn_Ohmmeter(char *name, vrpn_Connection *c)
 	error[i] = 0;
     }
     num_channels = 1;
+  if (servicename)
+    delete [] servicename;
 }
 
 #define SETOHM_MESSAGE_SIZE (4*sizeof(double))

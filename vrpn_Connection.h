@@ -18,6 +18,7 @@ typedef	struct {
 } vrpn_HANDLERPARAM;
 typedef	int  (*vrpn_MESSAGEHANDLER)(void *userdata, vrpn_HANDLERPARAM p);
 
+
 // bufs are aligned on 8 byte boundaries
 #define vrpn_ALIGN                       (8)
 
@@ -45,6 +46,7 @@ typedef	int  (*vrpn_MESSAGEHANDLER)(void *userdata, vrpn_HANDLERPARAM p);
 #define	vrpn_CONNECTION_SENDER_DESCRIPTION	(-1)
 #define	vrpn_CONNECTION_TYPE_DESCRIPTION	(-2)
 #define	vrpn_CONNECTION_UDP_DESCRIPTION		(-3)
+#define	vrpn_CONNECTION_LOG_DESCRIPTION		(-4)
 
 // Classes of service for messages, specify multiple by ORing them together
 // Priority of satisfying these should go from the top down (RELIABLE will
@@ -55,6 +57,12 @@ typedef	int  (*vrpn_MESSAGEHANDLER)(void *userdata, vrpn_HANDLERPARAM p);
 #define	vrpn_CONNECTION_LOW_LATENCY		(1<<2)
 #define	vrpn_CONNECTION_FIXED_THROUGHPUT	(1<<3)
 #define	vrpn_CONNECTION_HIGH_THROUGHPUT		(1<<4)
+
+// What to log
+#define vrpn_LOG_NONE				(0)
+#define vrpn_LOG_INCOMING			(1<<0)
+#define vrpn_LOG_OUTGOING			(1<<1)
+
 
 #ifndef _WIN32
 #define SOCKET int
@@ -100,6 +108,7 @@ class vrpn_Connection
   // vrpn_get_connection_by_name (for clients)
 
 	//XXX Destructor should delete all entries from callback lists
+	virtual ~vrpn_Connection (void);
 
 	// Returns 1 if the connection is okay, 0 if not
 	inline int doing_okay (void) { return (status >= 0); }
@@ -133,7 +142,7 @@ class vrpn_Connection
 	// Pack a message that will be sent the next time mainloop() is called.
 	// Turn off the RELIABLE flag if you want low-latency (UDP) send.
 	virtual int pack_message(int len, struct timeval time,
-				 long type, long sender, char *buffer,
+				 long type, long sender, const char * buffer,
 				 unsigned long class_of_service);
 
   protected:
@@ -145,8 +154,16 @@ class vrpn_Connection
 	vrpn_Connection (unsigned short listen_port_no =
 		         vrpn_DEFAULT_LISTEN_PORT_NO);
 
-	// Create a connection  makes an SDI connection to a remote server
-	vrpn_Connection (char * server_name);
+	//   Create a connection -  if server_name is not a file: name,
+	// makes an SDI-like connection to the named remote server
+	// (otherwise functions as a non-networked messaging hub).
+	// Port less than zero forces default.
+	vrpn_Connection (const char * server_name,
+                         int port = vrpn_DEFAULT_LISTEN_PORT_NO,
+                         const char * local_logfile_name = NULL,
+                         long local_log_mode = vrpn_LOG_NONE,
+                         const char * remote_logfile_name = NULL,
+                         long remote_log_mode = vrpn_LOG_NONE);
 
 	//char *	my_name;
 	int	status;			// Status of the connection
@@ -218,6 +235,7 @@ class vrpn_Connection
 	static int handle_sender_message (void * userdata, vrpn_HANDLERPARAM p);
 	static int handle_type_message (void * userdata, vrpn_HANDLERPARAM p);
 	static int handle_UDP_message (void * userdata, vrpn_HANDLERPARAM p);
+	static int handle_log_message (void * userdata, vrpn_HANDLERPARAM p);
 
 	// Pointers to the handlers for system messages
 	vrpn_MESSAGEHANDLER	system_messages [vrpn_CONNECTION_MAX_TYPES];
@@ -227,20 +245,27 @@ class vrpn_Connection
 	virtual	int	send_pending_reports (void);
 	virtual	void	check_connection (void);
 	virtual	int	setup_for_new_connection (void);
+		// set up data
+	virtual	int	setup_new_connection (long logmode = 0L,
+	                                      const char * logfile = NULL);
+		// set up network
 	virtual	void	drop_connection (void);
 	virtual	int	pack_sender_description (int which);
 	virtual	int	pack_type_description (int which);
 	virtual	int	pack_udp_description (int portno);
+	virtual int	pack_log_description (long mode,
+                                              const char * filename);
 	inline	int	outbound_udp_open (void) const
 				{ return endpoint.udp_sock != -1; }
 	virtual	int	marshall_message (char * outbuf, int outbuf_size,
 				int initial_out, int len, struct timeval time,
-				long type, long sender, char * buffer);
+				long type, long sender, const char * buffer);
 
 	virtual	int	connect_tcp_to (const char * msg);
 
 	virtual	int	do_callbacks_for (long type, long sender,
-				struct timeval time, int len, char * buffer);
+				struct timeval time, int len,
+	                        const char * buffer);
 
 	// Returns message type ID, or -1 if unregistered
 	int		message_type_is_registered (const char *) const;
@@ -258,6 +283,26 @@ class vrpn_Connection
 	double d_UDPinbufToAlignRight
 			[vrpn_CONNECTION_UDP_BUFLEN/sizeof(double)+1];
 	char *d_UDPinbuf;
+
+	// Logging - TCH 11 June 98
+
+	struct vrpn_LOGLIST {
+	  vrpn_HANDLERPARAM data;
+	  vrpn_LOGLIST * next;
+	  vrpn_LOGLIST * prev;
+	};
+
+	vrpn_LOGLIST * d_logbuffer;  // last entry in log
+	vrpn_LOGLIST * d_first_log_entry;  // first entry in log
+	char * d_logname;            // name of file to write log to
+	long d_logmode;              // logging incoming, outgoing, or both
+	int d_logfile_handle;
+
+	virtual int log_message (int payload_len, struct timeval time,
+	                         long type, long sender, const char * buffer);
+	virtual int close_log (void);
+	virtual int open_log (void);
+
 };
 
 // forward decls
@@ -291,8 +336,15 @@ class vrpn_Synchronized_Connection : public vrpn_Connection
     // cOffsetWindow is how many syncs to include in search window for min
     // roundtrip.  Higher values are more accurate but result in a sync
     // which accumulates drift error more quickly.
-    vrpn_Synchronized_Connection(char * server_name, double dFreq = 4.0, 
-			       int cOffsetWindow = 2);
+    vrpn_Synchronized_Connection
+	 (const char * server_name,
+          int port = vrpn_DEFAULT_LISTEN_PORT_NO,
+          const char * local_logfile_name = NULL,
+          long local_log_mode = vrpn_LOG_NONE,
+          const char * remote_logfile_name = NULL,
+          long remote_log_mode = vrpn_LOG_NONE,
+	  double dFreq = 4.0, 
+	  int cOffsetWindow = 2);
     // fullSync will perform an accurate sync on the connection for the
     // user and return the current offset
     struct timeval fullSync();
@@ -301,9 +353,35 @@ class vrpn_Synchronized_Connection : public vrpn_Connection
 };
 
 // 1hz sync connection by default, windowed over last three bounces 
-extern vrpn_Connection *vrpn_get_connection_by_name (char * cname,
-		   double dFreq = 1.0,int cSyncWindow = 3);
+// WARNING:  vrpn_get_connection_by_name() may not be thread safe.
+vrpn_Connection * vrpn_get_connection_by_name
+         (const char * cname,
+          const char * local_logfile_name = NULL,
+          long local_log_mode = vrpn_LOG_NONE,
+          const char * remote_logfile_name = NULL,
+          long remote_log_mode = vrpn_LOG_NONE,
+	  double dFreq = 1.0, int cSyncWindow = 3);
 
+
+// Utility routines to parse names (<service>@<location specifier>)
+// Both return new char [], and it is the caller's responsibility
+// to delete this memory!
+char * vrpn_copy_service_name (const char * fullname);
+char * vrpn_copy_service_location (const char * fullname);
+
+// Utility routines to parse file specifiers
+//   file:<filename>
+//   file://<hostname>/<filename>
+//   file:///<filename>
+char * vrpn_copy_file_name (const char * filespecifier);
+
+// Utility routines to parse host specifiers
+//   <hostname>
+//   <hostname>:<port number>
+//   x-vrpn://<hostname>
+//   x-vrpn://<hostname>:<port number>
+char * vrpn_copy_machine_name (const char * hostspecifier);
+int vrpn_get_port_number (const char * hostspecifier);
 
 #endif // VRPN_CONNECTION_H
 

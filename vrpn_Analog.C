@@ -25,11 +25,17 @@
  * Update Count    : 47
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Analog.C,v $
- * $Date: 1998/05/14 14:45:23 $
- * $Author: ryang $
- * $Revision: 1.3 $
+ * $Date: 1998/06/26 15:48:50 $
+ * $Author: hudson $
+ * $Revision: 1.4 $
  * 
  * $Log: vrpn_Analog.C,v $
+ * Revision 1.4  1998/06/26 15:48:50  hudson
+ * Wrote vrpn_FileConnection.
+ * Changed connection naming convention.
+ * Changed all the base classes to reflect the new naming convention.
+ * Added #ifdef sgi around vrpn_sgibox.
+ *
  * Revision 1.3  1998/05/14 14:45:23  ryang
  * modified vrpn_sgibox, so output is clamped to +-0.5, max 2 rounds
  *
@@ -45,7 +51,7 @@
  * HISTORY
  */
 
-static char rcsid[] = "$Id: vrpn_Analog.C,v 1.3 1998/05/14 14:45:23 ryang Exp $";
+static char rcsid[] = "$Id: vrpn_Analog.C,v 1.4 1998/06/26 15:48:50 hudson Exp $";
 
 #include "vrpn_Analog.h"
 #include <stdio.h>
@@ -57,9 +63,11 @@ extern int vrpn_open_commport(char *portname, long baud);
 vrpn_Analog::vrpn_Analog(char *name, vrpn_Connection *c) {
   // If the connection is valid, use it to register this button by
    // name and the button change report by name.
+  char * servicename;
+  servicename = vrpn_copy_service_name(name);
    connection = c;
    if (connection != NULL) {
-      my_id = connection->register_sender(name);
+      my_id = connection->register_sender(servicename);
       channel_m_id = connection->register_message_type("Analog Channel");
       if ( (my_id == -1) || (channel_m_id == -1) ) {
       	fprintf(stderr,"vrpn_Analog: Can't register IDs\n");
@@ -69,6 +77,8 @@ vrpn_Analog::vrpn_Analog(char *name, vrpn_Connection *c) {
    num_channel = 0;
    // Set the time to 0 just to have something there.
    timestamp.tv_usec = timestamp.tv_sec = 0;
+  if (servicename)
+    delete [] servicename;
 }
 
 void vrpn_Analog::print(void ) {

@@ -334,10 +334,12 @@ static int sound_handler(void *userdata, vrpn_HANDLERPARAM p)
 vrpn_Linux_Sound::vrpn_Linux_Sound(char *name, vrpn_Connection *c):vrpn_Sound(c)
 {
 #ifdef linux
+  char * servicename;
+  servicename = vrpn_copy_service_name(name);
     vrpn_MESSAGEHANDLER Myhandler;
 	Myhandler = sound_handler;
 	if (connection) {
-	    my_id = connection->register_sender(name);
+	    my_id = connection->register_sender(servicename);
 	    playsample_id = connection->register_message_type("play_sample");
             // install a handler for sound 
 	    connection->register_handler(playsample_id, Myhandler, NULL, my_id);
@@ -375,6 +377,8 @@ vrpn_Linux_Sound::vrpn_Linux_Sound(char *name, vrpn_Connection *c):vrpn_Sound(c)
 		exit(0);
         }
 	}
+  if (servicename)
+    delete [] servicename;
 #else
 	name = name;	// Keep the compiler happy
 #endif
@@ -392,14 +396,18 @@ void vrpn_Linux_Sound::mainloop(void)
 #ifndef	_WIN32
 vrpn_Sound_Remote::vrpn_Sound_Remote(char *name)
 {
+  char * servicename;
+  servicename = vrpn_copy_service_name(name);
 	//Establish the connection
 	if ((connection = vrpn_get_connection_by_name(name)) == NULL) {
 		return;
 	}
 
 	//Register the sound device and the needed sample id
-	my_id = connection->register_sender(name);
+	my_id = connection->register_sender(servicename);
 	playsample_id = connection->register_message_type("play_sample");
+  if (servicename)
+    delete [] servicename;
 }
 #endif
 

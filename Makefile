@@ -47,6 +47,7 @@ endif
 
 
 CC := g++
+AR := ar
 
 ifeq ($(FORCE_GPP),1)
   CC := g++
@@ -71,6 +72,10 @@ else
   ifeq ($(HW_OS), hp_flow_aCC)
 	CC := /opt/aCC/bin/aCC 
   endif
+endif
+
+ifeq ($(HW_OS),sparc_solaris)
+  AR := /usr/ccs/bin/ar
 endif
 
 ##########################
@@ -150,7 +155,11 @@ endif
 ifeq ($(HW_OS),pc_linux)
 	ARCH_LIBS := -lbsd -ldl
 else
+#  ifeq ($(HW_OS),sparc_solaris)
+#	ARCH_LIBS := -lsocket -lnsl
+#  else
 	ARCH_LIBS :=
+#  endif
 endif
 
 
@@ -239,27 +248,32 @@ $(SOBJECT_DIR):
 
 LIB_FILES =  vrpn_Connection.C vrpn_Tracker.C vrpn_Button.C \
 	     vrpn_Sound.C vrpn_ForceDevice.C vrpn_Clock.C vrpn_Shared.C \
-	     vrpn_Ohmmeter.C vrpn_Analog.C 
+	     vrpn_Ohmmeter.C vrpn_Analog.C vrpn_FileConnection.C
 
 LIB_OBJECTS = $(patsubst %,$(OBJECT_DIR)/%,$(LIB_FILES:.C=.o))
 
 LIB_INCLUDES = vrpn_Connection.h vrpn_Tracker.h vrpn_Button.h \
 	       vrpn_Sound.h vrpn_ForceDevice.h vrpn_Clock.h vrpn_Shared.h \
-	       vrpn_Ohmmeter.h vrpn_Analog.h
+	       vrpn_Ohmmeter.h vrpn_Analog.h vrpn_FileConnection.h
 
 SLIB_FILES =  vrpn_Connection.C vrpn_Tracker.C vrpn_3Space.C vrpn_Button.C \
 	     vrpn_Sound.C vrpn_ForceDevice.C vrpn_Clock.C vrpn_Shared.C \
 	     vrpn_Flock.C vrpn_Tracker_Fastrak.C vrpn_Dyna.C \
 	     vrpn_Flock_Parallel.C  vrpn_Joystick.C vrpn_Analog.C \
-	     vrpn_JoyFly.C 
+	     vrpn_JoyFly.C vrpn_sgibox.C vrpn_FileConnection.C
 
-ifeq ($(HW_OS), sgi_irix)
-  SLIB_FILES =  vrpn_Connection.C vrpn_Tracker.C vrpn_3Space.C vrpn_Button.C \
-	     vrpn_Sound.C vrpn_ForceDevice.C vrpn_Clock.C vrpn_Shared.C \
-	     vrpn_Flock.C vrpn_Tracker_Fastrak.C vrpn_Dyna.C \
-	     vrpn_Flock_Parallel.C  vrpn_Joystick.C vrpn_Analog.C \
-	     vrpn_JoyFly.C vrpn_sgibox.C 
-endif
+# NO NO NO!
+# We aren't supposed to have architecture-dependent sets of files used.
+# If vrpn_sgibox isn't supposed to be compiled on any other architecture,
+# then put all of it inside "#ifdef sgi"
+
+#ifeq ($(HW_OS), sgi_irix)
+#  SLIB_FILES =  vrpn_Connection.C vrpn_Tracker.C vrpn_3Space.C vrpn_Button.C \
+#	     vrpn_Sound.C vrpn_ForceDevice.C vrpn_Clock.C vrpn_Shared.C \
+#	     vrpn_Flock.C vrpn_Tracker_Fastrak.C vrpn_Dyna.C \
+#	     vrpn_Flock_Parallel.C  vrpn_Joystick.C vrpn_Analog.C \
+#	     vrpn_JoyFly.C vrpn_sgibox.C vrpn_FileConnection.C
+#endif
 
 # Until we have tracker.h, we can't compile vrpn_Tracker_Ceiling
 
@@ -267,15 +281,18 @@ SLIB_OBJECTS = $(patsubst %,$(SOBJECT_DIR)/%,$(SLIB_FILES:.C=.o))
 
 SLIB_INCLUDES = vrpn_Connection.h vrpn_Tracker.h vrpn_3Space.h vrpn_Button.h \
 	       vrpn_Sound.h vrpn_ForceDevice.h vrpn_Clock.h vrpn_Shared.h \
-	       vrpn_Flock.h vrpn_Flock_Parallel.h 
+	       vrpn_Flock.h vrpn_Flock_Parallel.h vrpn_FileConnection.h \
+		vrpn_sgibox.h
 
 
-$(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(OBJECT_DIR) $(LIB_OBJECTS) $(LIB_INCLUDES)
-	ar ruv $(OBJECT_DIR)/libvrpn.a $(LIB_OBJECTS)
+$(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(OBJECT_DIR) $(LIB_OBJECTS) \
+			$(LIB_INCLUDES)
+	$(AR) ruv $(OBJECT_DIR)/libvrpn.a $(LIB_OBJECTS)
 	-ranlib $(OBJECT_DIR)/libvrpn.a
 
-$(OBJECT_DIR)/libvrpnserver.a: $(MAKEFILE) $(SOBJECT_DIR) $(SLIB_OBJECTS) $(SLIB_INCLUDES)
-	ar ruv $(OBJECT_DIR)/libvrpnserver.a $(SLIB_OBJECTS)
+$(OBJECT_DIR)/libvrpnserver.a: $(MAKEFILE) $(SOBJECT_DIR) $(SLIB_OBJECTS) \
+			$(SLIB_INCLUDES)
+	$(AR) ruv $(OBJECT_DIR)/libvrpnserver.a $(SLIB_OBJECTS)
 	-ranlib $(OBJECT_DIR)/libvrpnserver.a
 
 #############################################################################

@@ -50,9 +50,9 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 
 int vrpn_open_commport(char *portname, long baud)
 {
-#if defined(_WIN32) || defined(sparc) || defined(hpux) || defined(__hpux)
+#if defined(_WIN32) || defined(sparc) || defined(hpux) || defined(__hpux) || defined(ultrix)
 	fprintf(stderr,
-		"vrpn_open_commport: Not implemented in NT, sparc or HP\n");
+		"vrpn_open_commport: Not implemented in NT, sparc, ultrix, or HP\n");
 	return -1;
 #else
   int fileDescriptor;
@@ -131,9 +131,9 @@ int vrpn_open_commport(char *portname, long baud)
 // NOT CALLED!  OBSOLETE? -- no ... used by vrpn_Flock
 int vrpn_flush_input_buffer(int comm)
 {
-#if defined(_WIN32) || defined(sparc) || defined(hpux) || defined(__hpux)
+#if defined(_WIN32) || defined(sparc) || defined(hpux) || defined(__hpux) || defined(ultrix)
    fprintf(stderr,
-	"vrpn_flush_input_buffer: Not impemented on NT, sparc or HP\n");
+	"vrpn_flush_input_buffer: Not impemented on NT, sparc, ultrix, or HP\n");
    return -1;
 #else
    return tcflush(comm, TCIFLUSH);
@@ -145,9 +145,9 @@ int vrpn_flush_input_buffer(int comm)
 // NOT CALLED!  OBSOLETE? -- no ... used by vrpn_Flock
 int vrpn_flush_output_buffer(int comm)
 {
-#if defined(_WIN32) || defined(sparc) || defined(hpux) || defined(__hpux)
+#if defined(_WIN32) || defined(sparc) || defined(hpux) || defined(__hpux) || defined(ultrix)
    fprintf(stderr,
-	"vrpn_flush_output_buffer: Not impemented on NT, sparc or HP\n");
+	"vrpn_flush_output_buffer: Not impemented on NT, sparc, ultrix, or HP\n");
    return -1;
 #else
    return tcflush(comm, TCOFLUSH);
@@ -159,9 +159,9 @@ int vrpn_flush_output_buffer(int comm)
 // NOT CALLED!  OBSOLETE? -- no ... used by vrpn_Flock
 int vrpn_drain_output_buffer(int comm)
 {
-#if defined(_WIN32) || defined(sparc) || defined(hpux) || defined(__hpux)
+#if defined(_WIN32) || defined(sparc) || defined(hpux) || defined(__hpux) || defined(ultrix)
    fprintf(stderr,
-	"vrpn_drain_output_buffer: Not impemented on NT, sparc or HP\n");
+	"vrpn_drain_output_buffer: Not impemented on NT, sparc, ultrix, or HP\n");
    return -1;
 #else
    return tcdrain(comm);
@@ -171,6 +171,8 @@ int vrpn_drain_output_buffer(int comm)
 
 vrpn_Tracker::vrpn_Tracker(char *name, vrpn_Connection *c) {
 	FILE	*config_file;
+  char * servicename;
+  servicename = vrpn_copy_service_name(name);
 
 
 	// Set our connection to the one passed in
@@ -178,7 +180,7 @@ vrpn_Tracker::vrpn_Tracker(char *name, vrpn_Connection *c) {
 
 	// Register this tracker device and the needed message types
 	if (connection) {
-	  my_id = connection->register_sender(name);
+	  my_id = connection->register_sender(servicename);
 	  position_m_id = connection->register_message_type("Tracker Pos/Quat");
 	  velocity_m_id = connection->register_message_type("Tracker Velocity");
 	  accel_m_id =connection->register_message_type("Tracker Acceleration");
@@ -254,6 +256,9 @@ vrpn_Tracker::vrpn_Tracker(char *name, vrpn_Connection *c) {
 	}
 	else	// no problems
 		fclose(config_file);
+
+  if (servicename)
+    delete [] servicename;
 }
 
 int vrpn_Tracker::read_config_file(FILE *config_file, char *tracker_name)

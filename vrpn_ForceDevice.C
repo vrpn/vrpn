@@ -29,11 +29,13 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 vrpn_ForceDevice::vrpn_ForceDevice(char *name, vrpn_Connection *c)
 {
 	//set connection to the one passed in
+  char * servicename;
+  servicename = vrpn_copy_service_name(name);
 	connection = c;
 
 	//register this force device and the needed message types
 	if(connection) {
-		my_id = connection->register_sender(name);
+		my_id = connection->register_sender(servicename);
 		force_message_id = connection->register_message_type("Force");
 		plane_message_id = connection->register_message_type("Plane");
 		startTrimesh_message_id = 
@@ -58,6 +60,8 @@ vrpn_ForceDevice::vrpn_ForceDevice(char *name, vrpn_Connection *c)
 	//set the force to zero
 	force[0] = force[1] = force[2] = 0.0;
 
+  if (servicename)
+    delete [] servicename;
 }
 
 void vrpn_ForceDevice::print_report(void)

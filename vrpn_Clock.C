@@ -9,7 +9,7 @@
   Revised: Wed Apr  1 13:23:40 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.C,v $
   $Locker:  $
-  $Revision: 1.10 $
+  $Revision: 1.11 $
   \*****************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
@@ -30,15 +30,17 @@ void printTime( char *pch, const struct timeval& tv ) {
 }
 
 // both server and client call this constructor
-vrpn_Clock::vrpn_Clock(char *name, vrpn_Connection *c) {
+vrpn_Clock::vrpn_Clock(const char * name, vrpn_Connection *c) {
   // If the connection is valid, use it to register this clock by
   // name, the query by name, and the reply by name
+  char * servicename;
+  servicename = vrpn_copy_service_name(name);
   connection = c;
   if (connection == NULL) {
     return;
   }
 
-  clockServer_id = connection->register_sender(name);
+  clockServer_id = connection->register_sender(servicename);
   queryMsg_id = connection->register_message_type("clock query");
   replyMsg_id = connection->register_message_type("clock reply");
   if ( (clockServer_id == -1) || (queryMsg_id == -1) || (replyMsg_id == -1) ) {
@@ -50,6 +52,8 @@ vrpn_Clock::vrpn_Clock(char *name, vrpn_Connection *c) {
   // need to init gettimeofday for the pc
   struct timeval tv;
   gettimeofday(&tv, NULL);
+  if (servicename)
+    delete [] servicename;
 }
 
 // packs time of message sent and all data sent to it back into buffer
@@ -137,9 +141,10 @@ void vrpn_Clock_Server::mainloop() {};
 // created on it, but the clock will be a fullSync clock and
 // will be inactive.)
 
-vrpn_Clock_Remote::vrpn_Clock_Remote(char *name, double dFreq, 
+vrpn_Clock_Remote::vrpn_Clock_Remote(const char * name, double dFreq, 
 				     int cOffsetWindow ) : 
-  vrpn_Clock("clockServer", vrpn_get_connection_by_name(name,-1)), 
+  vrpn_Clock ("clockServer",
+              vrpn_get_connection_by_name (name, NULL, 0L, NULL, 0L, -1)), 
   change_list(NULL)
 {
   char rgch[50];
@@ -806,6 +811,12 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
 
 /*****************************************************************************\
   $Log: vrpn_Clock.C,v $
+  Revision 1.11  1998/06/26 15:48:53  hudson
+  Wrote vrpn_FileConnection.
+  Changed connection naming convention.
+  Changed all the base classes to reflect the new naming convention.
+  Added #ifdef sgi around vrpn_sgibox.
+
   Revision 1.10  1998/04/02 23:16:57  weberh
   Modified so quick sync messages get sent immediately rather than waiting
   a cycle.
