@@ -82,7 +82,8 @@ int filter_pos (void * userdata, vrpn_HANDLERPARAM p) {
 
 void init (const char * station_name, 
            const char * local_logfile, long local_logmode,
-           const char * remote_logfile, long remote_logmode)
+           const char * remote_logfile, long remote_logmode,
+           const char * NIC)
 {
 	char devicename [1000];
 	//char * hn;
@@ -106,7 +107,8 @@ fprintf(stderr, "Connecting to host %s.\n", station_name);
 	  c = new vrpn_Synchronized_Connection
                    (station_name, port,
 		    local_logfile, local_logmode,
-		    remote_logfile, remote_logmode);
+		    remote_logfile, remote_logmode,
+                    1.0, 3, NIC);
 	}
 
 	fc = new vrpn_File_Controller (c);
@@ -210,6 +212,7 @@ void main (int argc, char * argv [])
   const char * station_name = default_station_name;
   const char * local_logfile = NULL;
   const char * remote_logfile = NULL;
+  const char * NIC = NULL;
   long local_logmode = vrpn_LOG_NONE;
   long remote_logmode = vrpn_LOG_NONE;
   int	done = 0;
@@ -227,11 +230,12 @@ void main (int argc, char * argv [])
 
   if (argc < 2) {
     fprintf(stderr, "Usage:  %s [-ll logfile mode] [-rl logfile mode]\n"
-                    "           [-filterpos] station_name\n"
+                    "           [-NIC ip] [-filterpos] station_name\n"
                     "  -notracker:  Don't print tracker reports\n" 
                     "  -ll:  log locally in <logfile>\n" 
                     "  -rl:  log remotely in <logfile>\n" 
                     "  <mode> is one of i, o, io\n" 
+                    "  -NIC:  use network interface with address <ip>\n"
                     "  -filterpos:  log only Tracker Position messages\n"
                     "  station_name:  VRPN name of data source to contact\n"
                     "    one of:  <hostname>[:<portnum>]\n"
@@ -259,6 +263,9 @@ void main (int argc, char * argv [])
       print_for_tracker = 0;
     } else if (!strcmp(argv[i], "-filterpos")) {
       filter = 1;
+    } else if (!strcmp(argv[i], "-NIC")) {
+      i++;
+      NIC = argv[i];
     } else
       station_name = argv[i];
   }
@@ -266,7 +273,8 @@ void main (int argc, char * argv [])
   // initialize the PC/station
   init(station_name, 
        local_logfile, local_logmode,
-       remote_logfile, remote_logmode);
+       remote_logfile, remote_logmode,
+       NIC);
 
   // signal handler so logfiles get closed right
   signal(SIGINT, handle_cntl_c);

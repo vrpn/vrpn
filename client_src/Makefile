@@ -31,9 +31,19 @@ ARCH_LIBS := -lquat -lm
 ifeq ($(HW_OS),pc_linux)
   CC := g++
 endif
-ifeq ($(HW_OS),sgi_irix)
-  CC := CC -32
-endif
+
+  ifeq ($(HW_OS),sgi_irix)
+   ifndef SGI_ABI
+      SGI_ABI := n32
+   endif
+   OBJECT_DIR_SUFFIX := .$(SGI_ABI)
+        CC := CC -$(SGI_ABI)
+  endif
+
+#ifeq ($(HW_OS),sgi_irix)
+#  CC := CC -32
+#endif
+
 ifeq ($(HW_OS),hp700_hpux10)
   CC := CC +a1
 endif
@@ -47,17 +57,18 @@ ifeq ($(HW_OS),sparc_solaris)
 endif
 
 CFLAGS = -I../ -g
-LFLAGS = -L../$(HW_OS) -L../../quat/$(HW_OS) \
-	 -L/afs/unc/proj/hmd/beta/lib/$(HW_OS) \
-         -L/afs/unc/proj/hmd/lib/$(HW_OS)
-
 .c.o:
 	$(CC) $(CFLAGS) -c $*.c
 
 .C.o:
 	$(CC) $(CFLAGS) -c $*.C
 
-OBJ_DIR := $(HW_OS)
+OBJ_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)
+LIB_DIR := ../$(OBJ_DIR)
+
+LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS) \
+	 -L/afs/unc/proj/hmd/beta/lib/$(HW_OS) \
+         -L/afs/unc/proj/hmd/lib/$(HW_OS)
 
 $(OBJ_DIR)/%.o: %.c $(OBJ_DIR)
 	$(CC) $(CFLAGS) -o $@ -c $<
@@ -94,69 +105,69 @@ testLamport:	$(OBJ_DIR)/testLamport
 .PHONY:	text
 text:	$(OBJ_DIR)/text
 
-$(OBJ_DIR)/sound_client: $(OBJ_DIR)/sound_client.o ../$(HW_OS)/libvrpn.a
+$(OBJ_DIR)/sound_client: $(OBJ_DIR)/sound_client.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/sound_client \
 		$(OBJ_DIR)/sound_client.o -lvrpn $(ARCH_LIBS)
 
-$(OBJ_DIR)/vrpn_print_messages: $(OBJ_DIR)/vrpn_print_messages.o ../$(HW_OS)/libvrpn.a
+$(OBJ_DIR)/vrpn_print_messages: $(OBJ_DIR)/vrpn_print_messages.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/vrpn_print_messages \
 		$(OBJ_DIR)/vrpn_print_messages.o -lvrpn $(ARCH_LIBS)
 
-$(OBJ_DIR)/printvals: $(OBJ_DIR)/printvals.o ../$(HW_OS)/libvrpn.a
+$(OBJ_DIR)/printvals: $(OBJ_DIR)/printvals.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/printvals \
 		$(OBJ_DIR)/printvals.o -lvrpn $(ARCH_LIBS)
 
-$(OBJ_DIR)/printcereal: $(OBJ_DIR)/printcereal.o ../$(HW_OS)/libvrpn.a
+$(OBJ_DIR)/printcereal: $(OBJ_DIR)/printcereal.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/printcereal \
 		$(OBJ_DIR)/printcereal.o -lvrpn $(ARCH_LIBS)
 
-$(OBJ_DIR)/bdbox_client: $(OBJ_DIR)/bdbox_client.o ../$(HW_OS)/libvrpn.a
+$(OBJ_DIR)/bdbox_client: $(OBJ_DIR)/bdbox_client.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/bdbox_client \
 		$(OBJ_DIR)/bdbox_client.o -lvrpn $(ARCH_LIBS)
 
-$(OBJ_DIR)/ff_client: $(OBJ_DIR)/ff_client.o ../$(HW_OS)/libvrpn.a
+$(OBJ_DIR)/ff_client: $(OBJ_DIR)/ff_client.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/ff_client \
 		$(OBJ_DIR)/ff_client.o -lvrpn $(ARCH_LIBS)
 
-$(OBJ_DIR)/ohm_client: $(OBJ_DIR)/ohm_client.o ../$(HW_OS)/libvrpn.a
+$(OBJ_DIR)/ohm_client: $(OBJ_DIR)/ohm_client.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/ohm_client \
 		$(OBJ_DIR)/ohm_client.o -lvrpn $(ARCH_LIBS)
 
-$(OBJ_DIR)/phan_client: $(OBJ_DIR)/phan_client.o ../$(HW_OS)/libvrpn.a
+$(OBJ_DIR)/phan_client: $(OBJ_DIR)/phan_client.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/phan_client \
 		$(OBJ_DIR)/phan_client.o -lvrpn $(ARCH_LIBS)
 
-$(OBJ_DIR)/sphere_client: $(OBJ_DIR)/sphere_client.o ../$(HW_OS)/libvrpn.a
+$(OBJ_DIR)/sphere_client: $(OBJ_DIR)/sphere_client.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/sphere_client \
 		$(OBJ_DIR)/sphere_client.o -lvrpn $(ARCH_LIBS)
 
-$(OBJ_DIR)/listen_client: $(OBJ_DIR)/listen_client.o ../$(HW_OS)/libvrpn.a
+$(OBJ_DIR)/listen_client: $(OBJ_DIR)/listen_client.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/listen_client \
 		$(OBJ_DIR)/listen_client.o -lvrpn $(ARCH_LIBS)
 
-$(OBJ_DIR)/text: $(OBJ_DIR)/text.o ../$(HW_OS)/libvrpn.a
+$(OBJ_DIR)/text: $(OBJ_DIR)/text.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/text \
 		$(OBJ_DIR)/text.o -lvrpn $(ARCH_LIBS)
 
-$(OBJ_DIR)/forwarderClient: $(OBJ_DIR)/forwarderClient.o ../$(HW_OS)/libvrpn.a
+$(OBJ_DIR)/forwarderClient: $(OBJ_DIR)/forwarderClient.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/forwarderClient \
 		$(OBJ_DIR)/forwarderClient.o -lvrpn $(ARCH_LIBS)
 
-$(OBJ_DIR)/checklogfile: $(OBJ_DIR)/checklogfile.o ../$(HW_OS)/libvrpn.a
+$(OBJ_DIR)/checklogfile: $(OBJ_DIR)/checklogfile.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/checklogfile \
 		$(OBJ_DIR)/checklogfile.o -lvrpn $(ARCH_LIBS)
 
-$(OBJ_DIR)/add_vrpn_cookie: $(OBJ_DIR)/add_vrpn_cookie.o ../$(HW_OS)/libvrpn.a
+$(OBJ_DIR)/add_vrpn_cookie: $(OBJ_DIR)/add_vrpn_cookie.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/add_vrpn_cookie \
 		$(OBJ_DIR)/add_vrpn_cookie.o -lvrpn $(ARCH_LIBS)
 
 $(OBJ_DIR)/testSharedObject: $(OBJ_DIR)/testSharedObject.o \
-				../$(HW_OS)/libvrpn.a
+				$(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/testSharedObject \
 		$(OBJ_DIR)/testSharedObject.o -lvrpn $(ARCH_LIBS)
 
 $(OBJ_DIR)/testLamport: $(OBJ_DIR)/vrpn_LamportClock.t.o \
-				../$(HW_OS)/libvrpn.a
+				$(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/testLamport \
 		$(OBJ_DIR)/vrpn_LamportClock.t.o -lvrpn $(ARCH_LIBS)
 
@@ -174,6 +185,6 @@ $(OBJ_DIR)/logfiletypes: $(OBJ_DIR)/logfiletypes.o
 clean:
 	rm -f $(OBJ_DIR)/*
 
-../$(HW_OS)/libvrpn.a:
+$(LIB_DIR)/libvrpn.a:
 
 
