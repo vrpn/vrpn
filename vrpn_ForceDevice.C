@@ -22,11 +22,14 @@
 #include "vrpn_Shared.h"
 
 
+#ifdef _WIN32
 static	unsigned long	duration(struct timeval t1, struct timeval t2)
 {
 	return (t1.tv_usec - t2.tv_usec) +
 	       1000000L * (t1.tv_sec - t2.tv_sec);
 }
+#endif
+
 vrpn_ForceDevice::vrpn_ForceDevice(char *name, vrpn_Connection *c)
 {
 	//set connection to the one passed in
