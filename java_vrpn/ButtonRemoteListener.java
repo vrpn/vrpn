@@ -84,8 +84,8 @@ public class ButtonRemoteListener implements ButtonRemote.ButtonChangeListener
 	 * @return A Vector containing the buffered ButtonUpdates.  The number of
 	 * ButtonUpdates returned will depend on the buffering mode.  If there are
 	 * no ButtonUpdates buffered, an empty Vector will be returned.
-	 * @see ButtonRemoteListener.setModeLastButtonUpdate
-	 * @see ButtonRemoteListener.setModeAllButtonUpdates
+	 * @see #setModeLastButtonUpdate
+	 * @see #setModeAllButtonUpdates
 	 */
 	public synchronized Vector getButtonUpdate()
 	{

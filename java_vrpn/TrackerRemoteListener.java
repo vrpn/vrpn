@@ -179,8 +179,8 @@ public class TrackerRemoteListener
 	 * @return A Vector containing the buffered TrackerUpdates.  The number of
 	 * TrackerUpdates returned will depend on the buffering mode.  If there are
 	 * no TrackerUpdates buffered, an empty Vector will be returned.
-	 * @see TrackerRemoteListener.setModeLastTrackerUpdate
-	 * @see TrackerRemoteListener.setModeAllTrackerUpdates
+	 * @see #setModeLastTrackerUpdate
+	 * @see #setModeAllTrackerUpdates
 	 */
 	public synchronized Vector getTrackerUpdate()
 	{
@@ -217,8 +217,8 @@ public class TrackerRemoteListener
 	 * @return A Vector containing the buffered VelocityUpdates.  The number of
 	 * VelocityUpdates returned will depend on the buffering mode.  If there are
 	 * no VelocityUpdates buffered, an empty Vector will be returned.
-	 * @see TrackerRemoteListener.setModeLastVelocityUpdate
-	 * @see TrackerRemoteListener.setModeAllVelocityUpdates
+	 * @see #setModeLastVelocityUpdate
+	 * @see #setModeAllVelocityUpdates
 	 */
 	public synchronized Vector getVelocityUpdate()
 	{
@@ -255,8 +255,8 @@ public class TrackerRemoteListener
 	 * @return A Vector containing the buffered AccelerationUpdates.  The number of
 	 * AccelerationUpdates returned will depend on the buffering mode.  If there are
 	 * no AccelerationUpdates buffered, an empty Vector will be returned.
-	 * @see TrackerRemoteListener.setModeLastAccelerationUpdate
-	 * @see TrackerRemoteListener.setModeAllAccelerationUpdates
+	 * @see #setModeLastAccelerationUpdate
+	 * @see #setModeAllAccelerationUpdates
 	 */
 	public synchronized Vector getAcclerationUpdate()
 	{

@@ -232,7 +232,7 @@ public class ForceDeviceRemote implements Runnable
 	
 	
 	/**
-	 * @see vrpn.ForceDeviceRemote.handleforceChange
+	 * @see #handleForceChange
 	 */
 	protected void handleSCPChange( long tv_sec, long tv_usec, 
 									double x, double y, double z, 
@@ -258,7 +258,7 @@ public class ForceDeviceRemote implements Runnable
 		
 	
 	/**
-	 * @see vrpn.ForceDeviceRemote.handleForceChange
+	 * @see #handleForceChange
 	 */
 	protected void handleForceError( long tv_sec, long tv_usec, int errorCode )
 	{
@@ -336,7 +336,7 @@ public class ForceDeviceRemote implements Runnable
 	/**
 	 * these notifying*ListenersLock variables are used to ensure that multiple
 	 * ForceDeviceRemote objects running in multiple threads don't call the 
-	 * forceUpdate, et. al., method of some single object concurrently.
+	 * forceUpdate, et al, method of some single object concurrently.
 	 * For example, the handleForceChange(...) method, which is invoked from native 
 	 * code, gets a lock on the notifyingForceListenersLock object.  Since that object
 	 * is static, all other instances of ForceDeviceRemote must wait before notifying 

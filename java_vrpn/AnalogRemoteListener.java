@@ -84,8 +84,8 @@ public class AnalogRemoteListener implements AnalogRemote.AnalogChangeListener
 	 * @return A Vector containing the buffered AnalogUpdates.  The number of
 	 * AnalogUpdates returned will depend on the buffering mode.  If there are
 	 * no AnalogUpdates buffered, an empty Vector will be returned.
-	 * @see AnalogRemoteListener.setModeLastAnalogUpdate
-	 * @see AnalogRemoteListener.setModeAllAnalogUpdates
+	 * @see #setModeLastAnalogUpdate
+	 * @see #setModeAllAnalogUpdates
 	 */
 	public synchronized Vector getAnalogUpdate()
 	{

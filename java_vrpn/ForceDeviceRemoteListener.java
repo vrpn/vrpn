@@ -178,8 +178,8 @@ public class ForceDeviceRemoteListener
 	 * @return A Vector containing the buffered ForceChanges.  The number of
 	 * ForceChanges returned will depend on the buffering mode.  If there are
 	 * no ForceChanges buffered, an empty Vector will be returned.
-	 * @see ForceDeviceRemoteListener.setModeLastForceUpdate
-	 * @see ForceDeviceRemoteListener.setModeAllForcegUpdates
+	 * @see #setModeLastForceUpdate
+	 * @see #setModeAllForceUpdates
 	 */
 	public synchronized Vector getForceUpdate()
 	{
@@ -216,8 +216,8 @@ public class ForceDeviceRemoteListener
 	 * @return A Vector containing the buffered ForceErrors.  The number of
 	 * ForceErrors returned will depend on the buffering mode.  If there are
 	 * no ForceErrors buffered, an empty Vector will be returned.
-	 * @see ForceDeviceRemoteListener.setModeLastErrorUpdate
-	 * @see ForceDeviceRemoteListener.setModeAllErrorUpdates
+	 * @see #setModeLastForceErrorUpdate
+	 * @see #setModeAllForceErrorUpdates
 	 */
 	public synchronized Vector getForceErrorUpdate()
 	{
@@ -254,8 +254,8 @@ public class ForceDeviceRemoteListener
 	 * @return A Vector containing the buffered SCPChanges.  The number of
 	 * SCPChanges returned will depend on the buffering mode.  If there are
 	 * no SCPChanges buffered, an empty Vector will be returned.
-	 * @see ForceDeviceRemoteListener.setModeLastSCPUpdate
-	 * @see ForceDeviceRemoteListener.setModeAllSCPUpdates
+	 * @see #setModeLastSCPUpdate
+	 * @see #setModeAllSCPUpdates
 	 */
 	public synchronized Vector getSCPUpdate()
 	{

@@ -1,3 +1,10 @@
+2002-08-19  David Marshburn  <marshbur@cs.unc.edu>
+
+	* *.java:  fixed up the javadoc comments
+	* java_vrpn.vjp:  builds the javadoc documentation from the
+	class files along with everything else.
+	* .cvsignore:  ignore the javadoc directory
+
 2002-08-15  David Marshburn  <marshbur@cs.unc.edu>
 
 	* .cvsignore:  ignore vprn.jar

@@ -188,7 +188,18 @@ public class AnalogRemote implements Runnable
 
 	
 	/**
-	 * @see vrpn.AnalogRemote.notifyingChangeListenersLock
+	 * This variable is used to ensure that multiple
+	 * AnalogRemote objects running in multiple threads don't call the 
+	 * analogUpdate method of some single object concurrently.
+	 * For example, the handleTrackerChange(...) method, which is invoked from native 
+	 * code, gets a lock on the notifyingChangeListenersLock object.  Since that object
+	 * is static, all other instances of AnalogRemote must wait before notifying 
+	 * their listeners and completing their handleAnalogChange(...) methods.
+	 * They are necessary, in part, because methods in an interface can't be declared
+	 * synchronized (and the semantics of the keyword 'synchronized' aren't what's
+	 * wanted here, anyway -- we want synchronization across all instances, not just a 
+	 * single object).
+	 * @see vrpn.TrackerRemote#notifyingChangeListenersLock
 	 */
 	protected final static Object notifyingChangeListenersLock = new Object( );
 	protected Vector changeListeners = new Vector( );

@@ -209,7 +209,7 @@ public class TrackerRemote implements Runnable
 	
 	
 	/**
-	 * @see vrpn.TrackerRemote.handleTrackerChange
+	 * @see #handleTrackerChange
 	 */
 	protected void handleVelocityChange( long tv_sec, long tv_usec, int sensor, 
 										 double x, double y, double z, 
@@ -238,7 +238,7 @@ public class TrackerRemote implements Runnable
 		
 	
 	/**
-	 * @see vrpn.TrackerRemote.handleTrackerChange
+	 * @see #handleTrackerChange
 	 */
 	protected void handleAccelerationChange( long tv_sec, long tv_usec, int sensor, 
 											 double x, double y, double z, 
@@ -323,7 +323,7 @@ public class TrackerRemote implements Runnable
 	/**
 	 * these notifying*ListenersLock variables are used to ensure that multiple
 	 * TrackerRemote objects running in multiple threads don't call the 
-	 * trackerChangeUpdate, et. al., method of some single object concurrently.
+	 * trackerChangeUpdate, et al, method of some single object concurrently.
 	 * For example, the handleTrackerChange(...) method, which is invoked from native 
 	 * code, gets a lock on the notifyingChangeListenersLock object.  Since that object
 	 * is static, all other instances of TrackerRemote must wait before notifying 

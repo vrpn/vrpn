@@ -186,7 +186,7 @@ public class ButtonRemote implements Runnable
 	/**
 	 * these notifying*ListenersLock variables are used to ensure that multiple
 	 * ButtonRemote objects running in multiple threads don't call the 
-	 * buttonChangeUpdate, et. al., method of some single object concurrently.
+	 * buttonChangeUpdate, et al, method of some single object concurrently.
 	 * For example, the handleButtonChange(...) method, which is invoked from native 
 	 * code, gets a lock on the notifyingChangeListenersLock object.  Since that object
 	 * is static, all other instances of ButtonRemote must wait before notifying 
