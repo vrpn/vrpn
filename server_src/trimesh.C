@@ -69,12 +69,14 @@ bool Trimesh::getVertex(int vertNum,double &x,double &y,double &z){
       return true;
     }
   }
+#ifdef USING_HCOLLIDE
   else if(HCOLLIDE==ourType){
     if(NULL==gstMesh)
       return false;
     else
       return ((gstHybridHashGridTriMesh *)gstMesh)->getVertex(vertNum,x,y,z);
   }
+#endif
   else {
     fprintf(stderr,"ERROR: ourType is not valid\n");
     return false;
@@ -116,6 +118,7 @@ bool Trimesh::setVertex(int vertNum,double x,double y,double z){
     
     return true;
   }
+#ifdef USING_HCOLLIDE
   else if(HCOLLIDE==ourType){
     if(NULL==gstMesh){
       gstMesh=new gstHybridHashGridTriMesh(minX,minY,minZ,maxX,maxY,maxZ);      
@@ -129,6 +132,7 @@ bool Trimesh::setVertex(int vertNum,double x,double y,double z){
     ((gstHybridHashGridTriMesh *)gstMesh)->setVertex(vertNum,x,y,z);
 	return retVal;
   }
+#endif
   else {
     fprintf(stderr,"ERROR: ourType is not valid\n");
     return false;
@@ -152,6 +156,7 @@ bool Trimesh::setTriangle(int triNum,int vert0,int vert1,int vert2,
     ghostPolyMesh->createTriPoly(vert0,vert1,vert2,triNum);
     return true;
   }
+#ifdef USING_HCOLLIDE
   else if(HCOLLIDE==ourType){
     if(NULL==gstMesh)
       return false;
@@ -160,6 +165,7 @@ bool Trimesh::setTriangle(int triNum,int vert0,int vert1,int vert2,
 	  return true;
     }
   }
+#endif
   else {
     fprintf(stderr,"ERROR: ourType is not valid\n");
     return false;
@@ -179,10 +185,12 @@ bool Trimesh::removeTriangle(int triNum){
     else 
       return false;
   }
+#ifdef USING_HCOLLIDE
   else if(HCOLLIDE==ourType){
     ((gstHybridHashGridTriMesh *)gstMesh)->removeTriangle(triNum);
 	return true;
   }
+#endif
   else {
     fprintf(stderr,"ERROR: ourType is not valid\n");
     return false;
@@ -208,10 +216,12 @@ bool Trimesh::updateChanges(){
     
     return true;
   }
+#ifdef USING_HCOLLIDE
   else if(HCOLLIDE==ourType){
     ((gstHybridHashGridTriMesh *)gstMesh)->updateModifications();
     return true;
   }
+#endif
   else {
     fprintf(stderr,"ERROR: ourType is not valid\n");
     return false;

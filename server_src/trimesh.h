@@ -7,7 +7,8 @@
 /*
 #include <gstPHANToM.h>
 #include <gstShape.h>
-*/ 
+ */
+
 #include "GHOST.H"
 
 // the different types of trimeshes we have available for haptic display

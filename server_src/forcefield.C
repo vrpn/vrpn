@@ -1,4 +1,4 @@
-#include "GHOST.H"
+#include "gstPHANToM.h"
 #include "forcefield.h"
 
 #define FF_MAX_FORCE 10.0	// we try not to exceed this
@@ -14,7 +14,7 @@ gstVector ForceFieldEffect::calcEffectForce(void *PHANToM){
 	gstVector phantomForce;
 	gstVector effectForce = gstVector(0,0,0);
 	double forceMag;
-	double dt;
+//	double dt;
 	int i,j;
 	phantom->getPosition_WC(phantomPos);
 /*	phantomForce = phantom->getReactionForce_WC();

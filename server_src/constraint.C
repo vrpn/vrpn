@@ -1,5 +1,6 @@
-#include "GHOST.H"
+#include <gstPHANToM.h>
 #include "constraint.h"
+
 
 #define MAX_FORCE 10.0	// we try not to exceed this
 			// force [dyne], this gets pretty close

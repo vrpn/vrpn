@@ -10,9 +10,11 @@
 #include <gstTriPolyMeshHaptic.h>
 #include <gstPolyMesh.h>
 
+#ifdef USING_HCOLLIDE
 #include <gstRAPIDTriMesh.h>
 #include <gstHashGridTriMesh.h>
 #include <gstHybridHashGridTriMesh.h>
+#endif
 
 #include <gstPoint.h>
 #include <gstScene.h>

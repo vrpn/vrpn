@@ -120,7 +120,6 @@ void main (unsigned argc, char *argv[])
 
 	// Loop forever calling the mainloop()s for all devices
 	while (1) {
-		int	i;
 
 		ohmmeter->mainloop();
 
