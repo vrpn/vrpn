@@ -1,6 +1,7 @@
 
-#include "vrpn_Shared.h"
 
+#include "vrpn_Shared.h"
+#include "vrpn_ConnectionOldCommonStuff.h"
 
 //==========================================================================
 //
@@ -46,47 +47,50 @@ class vrpn_BaseMulticastChannel {
 
 public:
 
-  //-------------------------------------------------------------------
-  // constructors and destructor
-  //-----------------------------------------------------------------
-  vrpn_BaseMulticastChannel( char* group_name, vrpn_uint16 port);
-  ~vrpn_BaseMulticastChannel(void){};
+	//-------------------------------------------------------------------
+	// constructors and destructor
+	//-------------------------------------------------------------------
+	vrpn_BaseMulticastChannel( char* group_name, vrpn_uint16 port);
+	~vrpn_BaseMulticastChannel(void){};
 
-  //-------------------------------------------------------------------
-  // get functions
-  //------------------------------------------------------------------
-  virtual vrpn_int32 get_mcast_info(char *info_buffer) = 0;
-  char* get_mcast_group_name(void);
+	//-------------------------------------------------------------------
+	// status functions
+	//-------------------------------------------------------------------
+	virtual vrpn_bool created_correctly(void);
 
-  vrpn_int32 get_mcast_addr(void);
-  vrpn_uint16 get_mcast_port_num(void);
-
-  vrpn_int32 get_mcast_sock(void);
-
+	//-------------------------------------------------------------------
+	// get functions
+	//-------------------------------------------------------------------
+	virtual vrpn_int32 get_mcast_info(char *info_buffer) = 0;
+	char* get_mcast_group_name(void);
+	vrpn_int32 get_mcast_addr(void);
+	vrpn_uint16 get_mcast_port_num(void);
+	vrpn_int32 get_mcast_sock(void);
+	
 
 protected:
 
-  //-------------------------------------------------------------------
-  // set functions
-  //-------------------------------------------------------------------
-  void set_mcast_group_name(char *);
-  void set_mcast_port_num(vrpn_uint16);
-  vrpn_int32 set_mcast_sock(vrpn_int32);
+	//-------------------------------------------------------------------
+	// set functions
+	//-------------------------------------------------------------------
+	void set_mcast_group_name(char *);
+	void set_mcast_port_num(vrpn_uint16);
+	vrpn_int32 set_mcast_sock(vrpn_int32);
+	void set_created_correctly(vrpn_bool);
 
-
-  virtual void init_mcast_channel(void) = 0;  // implement in subclasses
+	virtual void init_mcast_channel(void) = 0;  // implement in subclasses
 
   
 private:
 
-  //-------------------------------------------------------------------
-  // data members
-  //-------------------------------------------------------------------
-  vrpn_int32 d_mcast_sock;
-  vrpn_int32 d_mcast_port;
-  char d_mcast_group[20];
-  vrpn_int32 d_mcast_ttl;
-
+	//-------------------------------------------------------------------
+	// data members
+	//-------------------------------------------------------------------
+	vrpn_int32 d_mcast_sock;
+	vrpn_uint16 d_mcast_port;
+	char d_mcast_group[20];
+	vrpn_int32 d_mcast_ttl;
+	vrpn_bool d_created_correctly;
 };
 
 

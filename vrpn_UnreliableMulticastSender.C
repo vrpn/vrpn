@@ -23,9 +23,14 @@
 //-------------------------------------------------------------------
 vrpn_UnreliableMulticastSender::vrpn_UnreliableMulticastSender(
 char* group_name, vrpn_uint16 port, vrpn_int32 ttl)
-  :vrpn_BaseMulticastChannel(group_name,port),d_mcast_ttl(ttl),d_mcast_num_out(0){};
+  :vrpn_BaseMulticastChannel(group_name,port),d_mcast_ttl(ttl),d_mcast_num_out(0){
+	  
+	  init_mcast_channel();
+}
 
-vrpn_UnreliableMulticastSender::~vrpn_UnreliableMulticastSender(void){};
+vrpn_UnreliableMulticastSender::~vrpn_UnreliableMulticastSender(void){}
+
+
 
 //-------------------------------------------------------------------
 // get functions
@@ -49,6 +54,7 @@ vrpn_int32 vrpn_UnreliableMulticastSender::get_mcast_info(char *info_buffer){
   descrp->d_mcast_ttl = this->get_mcast_ttl();
   memcpy(info_buffer,descrp,sizeof(vrpn_McastGroupDescrp));
 
+  delete descrp;
   return 0;
 }
 
@@ -75,7 +81,8 @@ vrpn_int32 vrpn_UnreliableMulticastSender::set_mcast_ttl(vrpn_int32 ttl){
 
   if( setsockopt(get_mcast_sock(),IPPROTO_IP,IP_MULTICAST_TTL,(char *) &ttl,
   		sizeof(vrpn_int32))== -1) {
-    return -1;
+	  set_created_correctly(vrpn_false);
+	  return -1;
   }
 
   return 0;
@@ -91,6 +98,7 @@ vrpn_int32 vrpn_UnreliableMulticastSender::set_mcast_loopback(vrpn_int32 loopbac
 
 	if( setsockopt(get_mcast_sock(),IPPROTO_IP,IP_MULTICAST_LOOP,
 		(char *) &loopback_on, sizeof(vrpn_int32)) == -1 ){
+		set_created_correctly(vrpn_false);
     	return -1;
     }
 
@@ -125,7 +133,8 @@ vrpn_int32 vrpn_UnreliableMulticastSender::marshall_message(vrpn_uint32 len,
 															vrpn_int32 type, 
 															vrpn_int32 sender, 
 															const char* buffer){
-  vrpn_marshall_message(d_mcast_outbuf,sizeof(d_mcast_outbuf),d_mcast_num_out,len,time,type,sender,buffer);
+  return vrpn_marshall_message(d_mcast_outbuf,sizeof(d_mcast_outbuf),d_mcast_num_out,len,time,type,sender,buffer);
+
 }
 
 
@@ -135,11 +144,6 @@ vrpn_int32 vrpn_UnreliableMulticastSender::marshall_message(vrpn_uint32 len,
 vrpn_int32 vrpn_UnreliableMulticastSender::send_pending_reports(void) {
 
    vrpn_int32 ret, sent = 0;
-
-   // Do nothing if not connected.
-   if (!connected()) {
-   	return 0;
-   }
 
    // Check for an exception on the socket.  If there is one, shut it
    // down and go back to listening.
@@ -153,8 +157,9 @@ vrpn_int32 vrpn_UnreliableMulticastSender::send_pending_reports(void) {
 
    vrpn_int32 connection = select(32, NULL, NULL, &f, &timeout);
    if (connection != 0) {
-	 drop_connection();
-	 return -1;
+	   // need to come up w/ a drop_connection for mcast classes
+	   //drop_connection();
+	   return -1;
    }
 
    // Send all of the messages that have built
@@ -168,7 +173,7 @@ vrpn_int32 vrpn_UnreliableMulticastSender::send_pending_reports(void) {
 #endif 
 	 if (ret == -1) {
 	   printf("vrpn: Mcast send failed\n");
-	   drop_connection(); // XXX - what to do if send fails?
+	   //drop_connection(); // XXX - what to do if send fails?
 	   return -1;
 	 }
    }
@@ -195,7 +200,7 @@ void vrpn_UnreliableMulticastSender::init_mcast_channel(void){
   	// create what looks like an ordinary UDP socket
   	if (set_mcast_sock(socket(AF_INET,SOCK_DGRAM,0)) < 0) {
     	perror("error: socket failure in multicast sender");
-    	exit(1);
+		set_created_correctly(vrpn_false);
   	}
   
   	// set up destination address 
@@ -206,7 +211,7 @@ void vrpn_UnreliableMulticastSender::init_mcast_channel(void){
 
 	if( this->set_mcast_loopback(no_loopback) < 0 ){
 		perror("error: set loopback failed in mcast sender init");
-		exit(1);
+		set_created_correctly(vrpn_false);
 	}
 	
 }

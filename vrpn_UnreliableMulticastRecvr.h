@@ -48,5 +48,5 @@ private:
   struct sockaddr_in d_mcast_addr;
   vrpn_float64 d_MCASTinbufToAlignRight
 	[vrpn_CONNECTION_UDP_BUFLEN / sizeof(vrpn_float64) + 1];
-
+  char d_mcast_inbuf[vrpn_CONNECTION_UDP_BUFLEN];
 };

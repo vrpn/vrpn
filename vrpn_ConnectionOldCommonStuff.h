@@ -8,6 +8,84 @@
 #ifndef VRPN_CONNECTIONOLDCOMMONSTUFF_H
 #define VRPN_CONNECTIONOLDCOMMONSTUFF_H
 
+//--------------------------------------
+// bunch of includes from Connection.C
+#include <stdlib.h>
+#include <memory.h>
+#include <math.h>
+#include <errno.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <signal.h>
+#include <iostream.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+#ifndef FreeBSD
+// malloc.h is deprecated in FreeBSD;  all the functionality *should*
+// be in stdlib.h
+#include <malloc.h>
+#endif
+
+#ifdef _WIN32
+#include <winsock.h>
+// a socket in windows can not be closed like it can in unix-land
+#define close closesocket
+#else
+#include <unistd.h>
+#include <strings.h>
+#include <sys/time.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#endif
+
+#ifdef	sgi
+#include <bstring.h>
+#endif
+
+#ifdef hpux
+#include <arpa/nameser.h>
+#include <resolv.h>  // for herror() - but it isn't there?
+#endif
+
+#ifdef _WIN32
+#include <winsock.h>
+#include <sys/timeb.h>
+#else
+#include <sys/wait.h>
+#include <sys/resource.h>  // for wait3() on sparc_solaris
+#include <netinet/tcp.h>
+#endif
+
+#include "vrpn_cygwin_hack.h"
+
+// cast fourth argument to setsockopt()
+#ifdef _WIN32
+#define SOCK_CAST (char *)
+#else
+ #ifdef sparc
+#define SOCK_CAST (const char *)
+ #else
+#define SOCK_CAST
+ #endif
+#endif
+
+#ifdef linux
+#define GSN_CAST (unsigned int *)
+#else
+#define GSN_CAST
+#endif
+
+//  NOT SUPPORTED ON SPARC_SOLARIS
+//  gethostname() doesn't seem to want to link out of stdlib
+#ifdef sparc
+extern "C" {
+int gethostname (char *, int);
+}
+#endif
+
+#include "vrpn_Shared.h"
 
 class vrpn_File_Connection;  // for get_File_Connection()
 
@@ -58,12 +136,22 @@ typedef int (* vrpn_LOGFILTER) (void * userdata, vrpn_HANDLERPARAM p);
 #define	vrpn_CONNECTION_TCP_BUFLEN	(64000)
 #define	vrpn_CONNECTION_UDP_BUFLEN	(1472)
 
-// System message types
+// This is the list of states that a connection can be in
+// (possible values for status).
+#define LISTEN			(1)
+#define CONNECTED		(0)
+#define CONNECTION_FAIL		(-1)
+#define BROKEN			(-2)
+#define DROPPED			(-3)
 
+
+// System message types
 #define	vrpn_CONNECTION_SENDER_DESCRIPTION	(-1)
 #define	vrpn_CONNECTION_TYPE_DESCRIPTION	(-2)
 #define	vrpn_CONNECTION_UDP_DESCRIPTION		(-3)
 #define	vrpn_CONNECTION_LOG_DESCRIPTION		(-4)
+#define vrpn_CONNECTION_MCAST_DESCRIPTION	(-5)  
+#define vrpn_CLIENT_MCAST_CAPABLE_REPLY		(-6)
 
 // Classes of service for messages, specify multiple by ORing them together
 // Priority of satisfying these should go from the top down (RELIABLE will
@@ -136,6 +224,7 @@ struct vrpnLogFilterEntry {
   vrpnLogFilterEntry * next;
 };
 
+
 //-------------------------------------------------------------------
 // UTILITY FUNCTIONS
 //-------------------------------------------------------------------
@@ -143,12 +232,12 @@ struct vrpnLogFilterEntry {
 // marshalls a message into the output buffer for a protocol socket
 // this got move out of vrpn_Connection and made into a global function
 // so that the multicast sender class could have access to it.
-virtual	vrpn_uint32 vrpn_marshall_message (char * outbuf,vrpn_uint32 outbuf_size,
+vrpn_uint32 vrpn_marshall_message (char * outbuf,vrpn_uint32 outbuf_size,
 					   vrpn_uint32 initial_out,
 					   vrpn_uint32 len, struct timeval time,
 					   vrpn_int32 type, vrpn_int32 sender,
 					   const char * buffer);
-
+/*
 // 1hz sync connection by default, windowed over last three bounces 
 // WARNING:  vrpn_get_connection_by_name() may not be thread safe.
 vrpn_Connection * vrpn_get_connection_by_name
@@ -158,7 +247,7 @@ vrpn_Connection * vrpn_get_connection_by_name
           const char * remote_logfile_name = NULL,
           long remote_log_mode = vrpn_LOG_NONE,
 	  double dFreq = 1.0, int cSyncWindow = 3);
-
+*/
 
 // Utility routines to parse names (<service>@<location specifier>)
 // Both return new char [], and it is the caller's responsibility

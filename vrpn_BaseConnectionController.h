@@ -69,10 +69,12 @@ public:  // c'tors and d'tors
     // Destructor should delete all entries from callback lists
     virtual ~vrpn_BaseConnectionController();
 
-protected:  // c'tors
+protected:  // c'tors and init
 
     // constructors ...XXX...
     vrpn_BaseConnectionController();
+
+	virtual void init(void) = 0;
 
 public:  // status
 

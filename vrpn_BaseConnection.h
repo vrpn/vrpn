@@ -23,20 +23,23 @@ public:  // c'tors and d'tors
     vrpn_BaseConnection();
     virtual ~vrpn_BaseConnection();
 
+protected: // init
+	virtual void init(void);
+   
 public:  // status
     
     // a connection was made
-    virtual int connected() const;
+    virtual vrpn_int32 connected() const;
 
     // no errors
-    virtual int doing_okay() const;
+    virtual vrpn_int32 doing_okay() const;
 
 public: // clock stuff
-    virtual int time_since_connection_open( timeval * elapsed_time );
+    virtual vrpn_int32 time_since_connection_open( timeval * elapsed_time );
 
     // has a clock sync occured yet (slight prob of false negative, but
     // only for a brief period)
-    virtual int clockSynched();
+    virtual vrpn_int32 clockSynched();
 
 protected: // clock stuff
     timeval tvClockOffset;
@@ -51,13 +54,25 @@ public:  // sending and receiving
 	// stefan
 
 
+	// Call each time through program main loop to handle receiving any
+	// incoming messages and sending any packed messages.
+	// Returns -1 when connection dropped due to error, 0 otherwise.
+	// (only returns -1 once per connection drop).
+	// Optional argument is TOTAL time to block on select() calls;
+	// there may be multiple calls to select() per call to mainloop(),
+	// and this timeout will be divided evenly between them.
+	virtual vrpn_int32 mainloop (const struct timeval * timeout = NULL) = 0;
+
     // functions for sending messages and receiving messages
     // the ConnectionController will call these functions
 
-    virtual int handle_outgoing_message( /*...XXX...*/ ) = 0;
+    virtual vrpn_int32 handle_outgoing_messages( /*...XXX...*/ ) = 0;
 
-    virtual int handle_incoming_message( /*...XXX...*/ ) = 0;
-
+    virtual vrpn_int32 handle_incoming_messages( /*...XXX...*/ ) = 0;
+	
+	virtual	vrpn_int32 do_callbacks_for (vrpn_int32 type, vrpn_int32 sender,
+				struct timeval time, vrpn_uint32 len,
+				const char * buffer){};
 
 public:  // public type_id and sender_id stuff
 
@@ -74,12 +89,12 @@ public:  // public type_id and sender_id stuff
     //by the other side, 0 if not.
 
     // was: newLocalSender
-    virtual int register_local_sender(
+    virtual vrpn_int32 register_local_sender(
         const char *sender_name,  // e.g. "tracker0"
         vrpn_int32 local_id );    // from controller
     
     // was: newLocalType
-    virtual int register_local_type(
+    virtual vrpn_int32 register_local_type(
         const char *type_name,   // e.g. "tracker_pos"
         vrpn_int32 local_id );   // from controller
 
@@ -96,13 +111,13 @@ public:  // public type_id and sender_id stuff
     
     // Adds a new remote type/sender and returns its index
     // was: newRemoteSender
-    virtual int register_remote_sender(
+    virtual vrpn_int32 register_remote_sender(
         const cName sender_name,  // e.g. "tracker0"
         vrpn_int32 local_id );    // from controller
         
     // Adds a new remote type/sender and returns its index
     // was: newRemoteType
-    virtual int register_remote_type(
+    virtual vrpn_int32 register_remote_type(
         const cName type_name,    // e.g. "tracker_pos"
         vrpn_int32 local_id );    // from controller
 
@@ -118,12 +133,12 @@ public:  // public type_id and sender_id stuff
 
     // Give the local mapping for the remote type
     // was: local_type_id
-    virtual int translate_remote_type_to_local(
+    virtual vrpn_int32 translate_remote_type_to_local(
         vrpn_int32 remote_type );
     
     // Give the local mapping for the remote sender
     // was: local_sender_id
-    virtual int translate_remote_sender_to_local(
+    virtual vrpn_int32 translate_remote_sender_to_local(
         vrpn_int32 remote_sender );
 
 
@@ -136,12 +151,12 @@ protected: // protected type_id and sender_id stuff
 
     // Holds one entry for a mapping of remote strings to local IDs
     struct cRemoteMapping {
-	// remote/local sender/type equivalence
-	// is based on name string comparison
-	char * name;
+		// remote/local sender/type equivalence
+		// is based on name string comparison
+		char * name;
 	
-	// each side assigns an id to each name
-	// the id's may differ on the two ends of a connection
+		// each side assigns an id to each name
+		// the id's may differ on the two ends of a connection
         vrpn_int32 local_id;
     };
     

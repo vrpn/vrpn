@@ -2,6 +2,56 @@
 //**************************************************************************
 //**************************************************************************
 //
+// vrpn_ServerConnectionController: protected: c'tors and init
+//
+//**************************************************************************
+//**************************************************************************
+
+void vrpn_ServerConnectionController::init(void)
+{
+	vrpn_int32 i;
+
+	// Set all of the local IDs to -1, in case the other side
+	// sends a message of a type that it has not yet defined.
+	// (for example, arriving on the UDP line ahead of its TCP
+	// definition).
+	num_other_senders = 0;
+	for (i = 0; i < vrpn_CONNECTION_MAX_SENDERS; i++) {
+		other_senders[i].local_id = -1;
+		other_senders[i].name = NULL;
+	}
+
+	num_other_types = 0;
+	for (i = 0; i < vrpn_CONNECTION_MAX_TYPES; i++) {
+		other_types[i].local_id = -1;
+		other_types[i].name = NULL;
+	}
+
+	// create list for connections
+
+	// try and create multicast sender. if it fails, we are not
+	// multicast capable
+	mcast_sender = new UnreliableMulticastSender(/* xxx */);
+	if( mcast_sender->created_correctly() ){
+		vrpn_Mcast_Capable = vrpn_true;
+	}
+	else {
+		vrpn_Mcast_Capable = vrpn_false;
+	}
+
+	// get mcast group info to pass to 
+	// new connections
+	if( vrpn_Mcast_Capable ){
+		d_mcast_info = new char[sizeof(McastGroupDescrp)];
+		mcast_sender->get_mcast_description(d_mcast_info);
+	}
+
+	// create logging object
+}
+
+//**************************************************************************
+//**************************************************************************
+//
 // vrpn_ServerConnectionController: public: connection setup
 //
 //**************************************************************************
@@ -69,6 +119,11 @@ listen_for_incoming_connections(const struct timeval * pTimeout){
    return;
 }
 
+// get mcast group info from mcast sender for use
+// during connection setup
+char* ServerConnectionController::get_mcast_info(){
+	return d_mcast_info;
+}
 
 
 //**************************************************************************
@@ -79,6 +134,20 @@ listen_for_incoming_connections(const struct timeval * pTimeout){
 //**************************************************************************
 //**************************************************************************
 
+// rough draft of mainloop function
 vrpn_int32 mainloop( const timeval * timeout){
-
 	
+	switch( status ){
+	case NOTCONNECTED:
+		listen_for_incoming_connections();
+		break;
+	case CONNECTED:
+		ListItr itr = ConnectionList; // create list iterator
+		for( ; itr != NULL; itr++){
+			itr->handle_incoming_messages(/* xxx */);
+			itr->handle_outgoing_messages(/* xxx */);
+		}
+		listen_for_incoming_connections();
+		break;
+	}
+}

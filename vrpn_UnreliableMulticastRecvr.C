@@ -92,7 +92,7 @@ vrpn_int32 vrpn_UnreliableMulticastRecvr::handle_incoming_message(char* inbuf_pt
 	sel_ret = select(32, &readfds, NULL, &exceptfds, &localTimeout);
 	if (sel_ret == -1) {
 		if (errno == EINTR) { /* Ignore interrupt */
-			continue;
+			//continue;
 		}
 		else {
 			perror("vrpn: vrpn_NetConnection::handle_udp_messages: select failed()");
@@ -113,8 +113,8 @@ vrpn_int32 vrpn_UnreliableMulticastRecvr::handle_incoming_message(char* inbuf_pt
 	printf("vrpn_UnreliableMulticastRecvr::handle_incoming_message() something to read\n");
 #endif
 		// Read the buffer
-		inbuf_ptr = buffer;
-		if ( (inbuf_len = recv(get_mcast_sock(), inbuf_ptr, sizeof(d_MCASTinbufToAlignRight), 0)) == -1) {
+		inbuf_ptr = d_mcast_inbuf;
+		if ( (inbuf_len = recv(get_mcast_sock(), d_mcast_inbuf, sizeof(d_MCASTinbufToAlignRight), 0)) == -1) {
 		   perror("vrpn: vrpn_UnreliableMulticastrecvr::handle_incoming_message: recv() failed");
 		   return -1;
 		}
@@ -138,14 +138,17 @@ vrpn_int32 vrpn_UnreliableMulticastRecvr::join_mcast_group(char* group){
 	struct sockaddr_in groupStruct;
 	struct ip_mreq mreq;  // multicast group info structure
 
-	if((groupStruct.sin_addr.s_addr = inet_addr(group))== -1) return -1;
-
+	if((groupStruct.sin_addr.s_addr = inet_addr(group))== -1){
+		set_created_correctly(vrpn_false);
+		return -1;
+	}
 	// check if group address is indeed a Class D address
 	mreq.imr_multiaddr = groupStruct.sin_addr;
 	mreq.imr_interface.s_addr = INADDR_ANY;
 
 	if ( setsockopt(get_mcast_sock(),IPPROTO_IP,IP_ADD_MEMBERSHIP,(char *) &mreq,
 		sizeof(mreq)) == -1 ){
+		set_created_correctly(vrpn_false);
 		return -1;
 	}
 		
@@ -168,6 +171,7 @@ vrpn_int32 vrpn_UnreliableMulticastRecvr::leave_mcast_group(char* group){
 
 	if ( setsockopt(get_mcast_sock(),IPPROTO_IP,IP_DROP_MEMBERSHIP,(char *) &mreq,
 		sizeof(mreq)) == -1 ){
+		set_created_correctly(vrpn_false);
 		return -1;
 	}
 		
@@ -187,14 +191,12 @@ vrpn_int32 vrpn_UnreliableMulticastRecvr::leave_mcast_group(char* group){
 // only called by constructor
 void vrpn_UnreliableMulticastRecvr::init_mcast_channel(void){
 	
-  	vrpn_int32 nbytes,addrlen;
   	vrpn_int32 one = 1; // used in first setsockopt, but not sure why
-  	struct ip_mreq mreq;
 
   	// create what looks like an ordinary UDP socket 
   	if (set_mcast_sock(socket(AF_INET,SOCK_DGRAM,0)) < 0) {
-	  perror("error:failed to create multicast recvr socket");
-	  exit(1);
+		perror("error:failed to create multicast recvr socket");
+		set_created_correctly(vrpn_false);
   	}
   
   	// set up destination address
@@ -203,23 +205,39 @@ void vrpn_UnreliableMulticastRecvr::init_mcast_channel(void){
   	d_mcast_addr.sin_addr.s_addr=htonl(INADDR_ANY); // N.B.: differs from sender
   	d_mcast_addr.sin_port=htons(get_mcast_port_num());
 
-  	// set up socket so multiple sockets can bind to the same port  
-  	if (setsockopt(get_mcast_sock(),SOL_SOCKET,SO_REUSEPORT,&one,sizeof(one)) < 0) {
-	  perror("error: setsockopt failed in multicast recvr init");
-	  exit(1);
+#ifdef WIN32
+  	// set up socket so local addr can be reused
+	// not sure why you want to do this 
+  	if (setsockopt(get_mcast_sock(),SOL_SOCKET,SO_REUSEADDR,(char *)&one,sizeof(one)) < 0) {
+		perror("error: setsockopt failed in multicast recvr init");
+		set_created_correctly(vrpn_false);
   	}
+#else
+  	// set up socket so multiple sockets can bind to the same port
+	// useful for machines like evans, where there might be multiple clients 
+  	if (setsockopt(get_mcast_sock(),SOL_SOCKET,SO_REUSEPORT,&one,sizeof(one)) < 0) {
+		perror("error: setsockopt failed in multicast recvr init");
+		set_created_correctly(vrpn_false);
+  	}
+#endif
 
 	// bind to receive address 
   	if (bind(get_mcast_sock(),(struct sockaddr *) &d_mcast_addr,
 		 sizeof(d_mcast_addr)) < 0) {
-	  perror("error: bind failed in multicast receiver init");
-	  exit(1);
+		perror("error: bind failed in multicast receiver init");
+		set_created_correctly(vrpn_false);
   	}
   
 	if( this->join_mcast_group(get_mcast_group_name()) < 0 ){
 		perror("error: failed to join multicast group");
-		exit(1);
+		set_created_correctly(vrpn_false);
 	}
 
 }
+
+
+
+
+
+
 

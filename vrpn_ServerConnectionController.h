@@ -24,10 +24,12 @@ public:  // c'tors and d'tors
     // destructor ...XXX...
     virtual ~vrpn_ServerConnectionController();
 	
-protected:  // c'tors
+protected:  // c'tors and init
 	
     // constructors ...XXX...
     vrpn_ServerConnectionController();
+
+	virtual void init(void);
 
 public: // sending and receving mesages
 
@@ -39,7 +41,7 @@ public: // sending and receving mesages
     // * optional argument is TOTAL time to block on select() calls;
     //   there may be multiple calls to select() per call to mainloop(),
     //   and this timeout will be divided evenly between them.
-    virtual int mainloop( const timeval * timeout = NULL );
+    virtual vrpn_int32 mainloop( const timeval * timeout = NULL );
 
 
 private: // the connections
@@ -51,17 +53,23 @@ protected: // initializaton and connection setup
 	// might have equivalent in Connection
 	void listen_for_incoming_connections(const struct timeval * pTimeout);
 
+	// get mcast group info from mcast sender
+	char* get_mcast_info();
+
     // helper function
     // XXX if this doesn't go away, give a more descriptive comment
     virtual vrpn_int32 connect_to_client( const char *machine, vrpn_int16 port );
     	
 private: // data members
 
+	char* d_mcast_info;			// stores mcast group info
 	vrpn_int32	status;			// Status of the connection
 
+	/*
 	// perhaps we should move to enums
-	enum ControllerStatus = { NOTCONNECTED, CONNECTED };
+	enum ControllerStatus = { NOTCONNECTED, CONNECTED, ERROR };
 	ControllerStatus status;
+	*/
 
 	vrpn_int32	num_live_connections;
 

@@ -332,3 +332,34 @@ char * vrpn_copy_rsh_arguments (const char * hostspecifier)
   }
   return tbuf;
 }
+
+// check if the network interface supports multicast.
+// uses system calls and unix utilites to determine
+// whether interface supports multicast. not the most
+// efficient methid, i admit. also, haven't figured out how
+// to do it in windows yet, so it always returns false.
+// - sain 7/99
+vrpn_bool vrpn_am_i_mcast_capable(void){
+
+	// #include <fcntl.h>
+
+	vrpn_int32 fd, mcast_capable;
+	char buffer[8];
+	
+#ifdef WIN32
+	return vrpn_false;
+#else
+	system("ifconfig -a | grep MULTICAST | wc -l > mcast.tmp");
+	fd = open("mcast.tmp",O_RDONLY);
+	read(fd,buffer,sizeof(buffer));
+	mcast_capable = atoi(buffer);
+	close(fd);
+	system("rm -f mcast.tmp");
+	if ( mcast_capable > 0 ){
+		return vrpn_true;
+	}
+	else{
+		return vrpn_false;
+	}
+#endif
+}

@@ -3,7 +3,7 @@
 // class vrpn_NetConnection
 //
 // This class provides a single communication channel over the network.
-// It encompasses a tcp connection, a udp sonnection, and a udp connection
+// It encompasses a tcp connection, a udp connection, and a udp connection
 // for receiving multicast messages. In addition to the various types of
 // network connections, the NetConnection also provides logging 
 // cpapbilities.
@@ -16,28 +16,43 @@
 
 #include "vrpn_ConnectionOldCommonStuff.h"
 #include "vrpn_BaseConnection.h"
+#include "vrpn_UnreliableMulticastRecvr.h"
+#include "vrpn_Shared.h"
 
-class vrpn_NetConnection:: public vrpn_BaseConnection {
+class vrpn_NetConnection: public vrpn_BaseConnection {
 
 public:  // c'tors and d'tors
     vrpn_NetConnection();	
     virtual ~vrpn_NetConnection();
 
+protected: //init
+	virtual void init(void);
+
 public:  // sending and receiving
+
+
+	// Call each time through program main loop to handle receiving any
+	// incoming messages and sending any packed messages.
+	// Returns -1 when connection dropped due to error, 0 otherwise.
+	// (only returns -1 once per connection drop).
+	// Optional argument is TOTAL time to block on select() calls;
+	// there may be multiple calls to select() per call to mainloop(),
+	// and this timeout will be divided evenly between them.
+	virtual vrpn_int32 mainloop (const struct timeval * timeout = NULL);
 
     // functions for sending messages and receiving messages
     // the ConnectionController will call these functions
 
-    vrpn_int32 handle_outgoing_messages( /*...XXX...*/ );
+    vrpn_int32 handle_outgoing_messages( const struct timeval * pTimeout = NULL );
 
-    vrpn_int32 handle_incoming_messages( /*...XXX...*/ );
+    vrpn_int32 handle_incoming_messages( const struct timeval * pTimeout = NULL );
 
 
 	// Pack a message that will be sent the next time mainloop() is called.
 	// Turn off the RELIABLE flag if you want low-latency (UDP) send.
 	virtual vrpn_int32 pack_message(vrpn_uint32 len, struct timeval time,
 		vrpn_int32 type, vrpn_int32 sender, const char * buffer,
-		vrpn_uint32 class_of_service);
+		vrpn_uint32 class_of_service, vrpn_bool sent_mcast);
 
 	// send pending report, clear the buffer.
 	// This function was protected, now is public, so we can use it
@@ -59,7 +74,8 @@ public: // status
 	inline vrpn_int32 outbound_udp_open (void) const
 	  { return udp_outbound != -1; }
 	inline vrpn_int32 outbound_mcast_open (void) const
-	  { return mcast_recv ? 1 : 0; } // if multicast recvr ptr non-null
+	  { return mcast_recvr ? 1 : 0; } // if multicast recvr ptr non-null
+
 
 public: // setting up connections
 
@@ -89,12 +105,24 @@ protected: // setting up connections
 	// i think the arg list on this should be (machine,port)
 	virtual vrpn_int32 connect_tcp_to(const char* msg);
 
+	// set up network
+	vrpn_int32 handle_mcast_reply();
+	vrpn_int32 pack_mcast_description(vrpn_int32 sender);
+	inline vrpn_bool peer_mcast_capable(void){return d_peer_mcast_capable;}
+	inline void set_peer_mcast_capable(vrpn_bool capable){ d_peer_mcast_capable = capable;}
+
 	//-----------------------------
 	// client side
 
 	// formerly vrpn_udp_request_call
 	vrpn_int32 udp_request_connection_call(const char* machine, vrpn_int16 port);
 	vrpn_int32 open_udp_socket(vrpn_int16 port);
+
+	// setting up network
+	vrpn_int32 handle_mcast_description(char* message);
+	vrpn_int32 pack_mcast_reply(/* XXX */);
+	inline vrpn_bool mcast_capable(void){return d_mcast_capable};
+	inline void set_mcast_capable(vrpn_bool capable){ d_mcast_capable = capable};
 
 
 	//-----------------------------
@@ -114,13 +142,21 @@ protected: // setting up connections
  
 private: // data members
 
+	vrpn_bool d_mcast_capable;
+	vrpn_bool d_peer_mcast_capable;
+
 	vrpn_int32	status;			// Status of the connection
 
 	/*
-	// perhaps we should move to enums
-	enum ConnectionStatus = { LISTEN, CONNECTED, CONNECTION_FAIL, BROKEN, DROPPED };
+	// perhaps we should move to enums 
+	//typedef and move to header
+	enum ConnectionStatus = { CONNECTED, CONNECTION_FAIL, BROKEN, DROPPED };
 	ConnectionStatus status;
 	*/
+
+
+	// temporary name
+	vrpn_UnreliableMulticastRecvr* mcast_recvr;
 
 	// Output buffers storing messages to be sent
 	// Convention:  use d_ to denote a data member of an object so
@@ -191,4 +227,4 @@ private: // data members
 
 
 
-
+#endif VRPN_NETCONNECTION_INCLUDED

@@ -126,6 +126,14 @@ vrpn_BaseMulticastChannel::vrpn_BaseMulticastChannel( char* group_name,
 
 
 //-------------------------------------------------------------------
+// status functions
+//-------------------------------------------------------------------
+vrpn_bool vrpn_BaseMulticastChannel::created_correctly(void){
+	return d_created_correctly;
+}
+
+
+//-------------------------------------------------------------------
 // get functions
 //------------------------------------------------------------------
 
@@ -179,3 +187,7 @@ vrpn_int32 vrpn_BaseMulticastChannel::set_mcast_sock(vrpn_int32 sock){
 	return sock;
 }
 
+// return bool of whether everything was initialized ok
+void vrpn_BaseMulticastChannel::set_created_correctly(vrpn_bool status){
+	d_created_correctly = status;
+}
