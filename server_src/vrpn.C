@@ -1395,13 +1395,14 @@ int setup_Tracker_3Space (char * & pch, char * line, FILE * config_file) {
 int setup_Tracker_Flock (char * & pch, char * line, FILE * config_file) {
 
   char s2 [LINESIZE], s3 [LINESIZE];
-  int i1, i2;
+  int i1, i2, i3;
   char useERT[LINESIZE]; strcpy(useERT, "y");
+  bool invertQuaternion;
 
   next();
   // Get the arguments (class, tracker_name, sensors, port, baud, useERT)
-  int nb=sscanf(pch,"%511s%d%511s%d%511s", s2, &i1, s3, &i2, useERT);
-  if ((nb != 4) && (nb != 5)) {
+  int nb=sscanf(pch,"%511s%d%511s%d%d%511s", s2, &i1, s3, &i2, &i3, useERT);
+  if ((nb != 5) && (nb != 6)) {
     fprintf(stderr,"Bad vrpn_Tracker_Flock line: %s\n",line);
     return -1;
   }
@@ -1417,13 +1418,14 @@ int setup_Tracker_Flock (char * & pch, char * line, FILE * config_file) {
   if ((useERT[0] == 'n') || (useERT[0] == 'N')) {
     buseERT = false;
   }
+  invertQuaternion = (i3 != 0);
   if (verbose) {
     printf("Opening vrpn_Tracker_Flock: "
       "%s (%d sensors, on port %s, baud %d) %s ERT\n",
       s2, i1, s3,i2, buseERT ? "with" : "without");
   }
   if ( (trackers[num_trackers] =
-    new vrpn_Tracker_Flock(s2,connection,i1,s3,i2, 1, buseERT)) == NULL) {
+    new vrpn_Tracker_Flock(s2,connection,i1,s3,i2, 1, buseERT, invertQuaternion)) == NULL) {
       fprintf(stderr,"Can't create new vrpn_Tracker_Flock\n");
       return -1;
   } else {
@@ -1436,58 +1438,61 @@ int setup_Tracker_Flock (char * & pch, char * line, FILE * config_file) {
 int setup_Tracker_Flock_Parallel (char * & pch, char * line, FILE * config_file) {
 
   char s2 [LINESIZE], s3 [LINESIZE];
-  int i1, i2;
+  int i1, i2, i3;
+  bool invertQuaternion;
 
-            next();
-            // Get the arguments (class, tracker_name, sensors, port, baud, 
-            // and parallel sensor ports )
-            
-            if (sscanf(pch,"%511s%d%511s%d", s2, 
-                       &i1, s3, &i2) != 4) {
-              fprintf(stderr,"Bad vrpn_Tracker_Flock_Parallel line: %s\n",line);
-              return -1;
-            }
+  next();
+  // Get the arguments (class, tracker_name, sensors, port, baud, invertQuaternion
+  // and parallel sensor ports )
+  
+  if (sscanf(pch,"%511s%d%511s%d%d", s2, 
+             &i1, s3, &i2, &i3) != 5) {
+    fprintf(stderr,"Bad vrpn_Tracker_Flock_Parallel line: %s\n",line);
+    return -1;
+  }
 
-            // set up strtok to get the variable num of port names
-            char rgch[24];
-            sprintf(rgch, "%d", i2);
-            char *pch2 = strstr(pch, rgch); 
-            strtok(pch2," \t");
-            fprintf(stderr,"%s",pch2);
-            // pch points to baud, next strtok will give first port name
-            
-            char *rgs[MAX_SENSORS];
-            // get sensor ports
-            for (int iSlaves=0;iSlaves<i1;iSlaves++) {
-              rgs[iSlaves]=new char[LINESIZE];
-              if (!(pch2 = strtok(0," \t"))) {
-                fprintf(stderr,"Bad vrpn_Tracker_Flock_Parallel line: %s\n",
-                    line);
-                return -1;
-              } else {
-                sscanf(pch2,"%511s", rgs[iSlaves]);
-              }
-            }
+  // set up strtok to get the variable num of port names
+  char rgch[24];
+  sprintf(rgch, "%d", i2);
+  char *pch2 = strstr(pch, rgch); 
+  strtok(pch2," \t");
+  // pch points to baud, next strtok will give invertQuaternion
+  strtok(NULL," \t");  
+  // pch points to invertQuaternion, next strtok will give first port name
+  
+  char *rgs[MAX_SENSORS];
+  // get sensor ports
+  for (int iSlaves=0;iSlaves<i1;iSlaves++) {
+    rgs[iSlaves]=new char[LINESIZE];
+    if (!(pch2 = strtok(NULL," \t"))) {
+      fprintf(stderr,"Bad vrpn_Tracker_Flock_Parallel line: %s\n",
+          line);
+      return -1;
+    } else {
+      sscanf(pch2,"%511s", rgs[iSlaves]);
+    }
+  }
 
-            // Make sure there's room for a new tracker
-            if (num_trackers >= MAX_TRACKERS) {
-              fprintf(stderr,"Too many trackers in config file");
-              return -1;
-            }
-            
-            // Open the tracker
-            if (verbose)
-              printf("Opening vrpn_Tracker_Flock_Parallel: "
-                     "%s (%d sensors, on port %s, baud %d)\n",
-                    s2, i1, s3,i2);
-            if ( (trackers[num_trackers] =
-                  new vrpn_Tracker_Flock_Parallel(s2,connection,i1,s3,i2,
-                                                  rgs)) == NULL){
-              fprintf(stderr,"Can't create new vrpn_Tracker_Flock_Parallel\n");
-              return -1;
-            } else {
-              num_trackers++;
-            }
+  // Make sure there's room for a new tracker
+  if (num_trackers >= MAX_TRACKERS) {
+    fprintf(stderr,"Too many trackers in config file");
+    return -1;
+  }
+  
+  // Open the tracker
+  invertQuaternion = (i3 != 0);
+  if (verbose)
+    printf("Opening vrpn_Tracker_Flock_Parallel: "
+           "%s (%d sensors, on port %s, baud %d)\n",
+          s2, i1, s3,i2);
+  if ( (trackers[num_trackers] =
+        new vrpn_Tracker_Flock_Parallel(s2,connection,i1,s3,i2,
+                                        rgs, invertQuaternion)) == NULL){
+    fprintf(stderr,"Can't create new vrpn_Tracker_Flock_Parallel\n");
+    return -1;
+  } else {
+    num_trackers++;
+  }
 
   return 0;
 }

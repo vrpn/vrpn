@@ -1,3 +1,11 @@
+2003-12-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Added parser for new Flock parameter telling whether
+		to invert the Quaternion orientation report.  Default is
+		to invert it, which was the previous behavior.
+	* vrpn.cfg : Same.
+	* vrpn.cfg.SAMPLE : Same.
+
 2003-12-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.C : Added optional parameter to specify 9 or 10 bytes.
