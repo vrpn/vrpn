@@ -1,3 +1,8 @@
+2003-11-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg : Removing DOS end-of-lines.
+	* vrpn.cfg.SAMPLE : Same.
+
 2003-11-25  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.cfg : Update from David Nahon fixing the Wanda startup.
