@@ -1,5 +1,10 @@
 2003-11-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Configure.h : I messed up the commented-out config for UNC
+		with the last commit.  Fixed here.
+
+2003-11-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Connection.C : Compiler warning on SGI caught this!  There
 		was an = rather than == where we were checking for the
 		existence of a local type.  No harm done, but this avoids
