@@ -1303,7 +1303,7 @@ main (int argc, char * argv[])
             CHECK(setup_Wanda);
 	  } else {	// Never heard of it
 		sscanf(line,"%511s",s1);	// Find out the class name
-		fprintf(stderr,"Unknown class: %s\n",s1);
+		fprintf(stderr,"vrpn_server: Unknown Device: %s\n",s1);
 		if (bail_on_error) { return -1; }
 		else { continue; }	// Skip this line
 	  }
