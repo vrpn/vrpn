@@ -1,0 +1,16 @@
+This directory contains test and example files for using a Phantom
+force-feedback device with VRPN.  They were written by John Stone
+at the NIH National Research Resource on molecular dynamics at the
+Beckman Institute at UIUC.
+
+This README is made by Russ Taylor, so hopefully it is accurate.
+
+testvrpn.C:
+	This opens the Phantom as a tracker, button, and forcedevice.  It prints out all tracker messages, button messages, amd force messages (should there be force messages?)
+
+glvrpn.C:
+	This opens and openGL window and displays the tracker as it moves around (along with a line from the origin to the tracker).  It is a good example of how to use a VRPN tracker with openGL.
+
+Others:
+	Good question
+
