@@ -4,7 +4,8 @@
 
 #include <vrpn_Connection.h>
 
-vrpn_Shared_int32::vrpn_Shared_int32 (const char * name, int defaultValue) :
+vrpn_Shared_int32::vrpn_Shared_int32 (const char * name,
+                                      vrpn_int32 defaultValue) :
   d_value (defaultValue),
   d_name (name ? new char [1 + strlen(name)] : NULL),
   d_connection (NULL),
@@ -21,7 +22,7 @@ vrpn_Shared_int32::~vrpn_Shared_int32 (void) {
   }
 }
 
-int vrpn_Shared_int32::value (void) const {
+vrpn_int32 vrpn_Shared_int32::value (void) const {
   return d_value;
 }
 
@@ -60,17 +61,17 @@ void vrpn_Shared_int32::register_handler (vrpnSharedIntCallback cb,
   d_callbacks = e;
 }
 
-void vrpn_Shared_int32::encode (char ** buffer, int * len) {
+void vrpn_Shared_int32::encode (char ** buffer, vrpn_int32 * len) const {
   vrpn_buffer(buffer, len, d_value);
 }
-void vrpn_Shared_int32::decode (const char ** buffer, int *) {
+void vrpn_Shared_int32::decode (const char ** buffer, vrpn_int32 *) {
   vrpn_unbuffer(buffer, &d_value);
 }
 
 
 
 vrpn_Shared_int32_Server::vrpn_Shared_int32_Server (const char * name,
-                                                    int defaultValue) :
+                                                    vrpn_int32 defaultValue) :
     vrpn_Shared_int32 (name, defaultValue) {
 
 }
@@ -87,7 +88,8 @@ vrpn_Shared_int32_Server::~vrpn_Shared_int32_Server (void) {
 }
 
 // virtual
-vrpn_Shared_int32 & vrpn_Shared_int32_Server::operator = (int & newValue) {
+vrpn_Shared_int32 & vrpn_Shared_int32_Server::operator =
+                                      (vrpn_int32 & newValue) {
   struct timeval now;
 
   d_value = newValue;
@@ -96,7 +98,7 @@ vrpn_Shared_int32 & vrpn_Shared_int32_Server::operator = (int & newValue) {
     char buffer [32];
     int buflen = 32;
 
-    gettimeofday(&now);
+    gettimeofday(&now, NULL);
     encode((char **) &buffer, &buflen);
     d_connection->pack_message(32 - buflen, now,
                                d_updateFromServer_type, d_myId,
@@ -129,7 +131,7 @@ int vrpn_Shared_int32_Server::handle_updateFromRemote
 
 
 vrpn_Shared_int32_Remote::vrpn_Shared_int32_Remote (const char * name,
-                                                    int defaultValue) :
+                                                    vrpn_int32 defaultValue) :
     vrpn_Shared_int32 (name, defaultValue) {
 
 }
@@ -146,7 +148,8 @@ vrpn_Shared_int32_Remote::~vrpn_Shared_int32_Remote (void) {
 }
 
 // virtual
-vrpn_Shared_int32 & vrpn_Shared_int32_Remote::operator = (int & newValue) {
+vrpn_Shared_int32 & vrpn_Shared_int32_Remote::operator =
+                                            (vrpn_int32 & newValue) {
   struct timeval now;
 
   d_value = newValue;
@@ -155,7 +158,7 @@ vrpn_Shared_int32 & vrpn_Shared_int32_Remote::operator = (int & newValue) {
     char buffer [32];
     int buflen = 32;
 
-    gettimeofday(&now);
+    gettimeofday(&now, NULL);
     encode((char **) &buffer, &buflen);
     d_connection->pack_message(32 - buflen, now,
                                d_updateFromRemote_type, d_myId,

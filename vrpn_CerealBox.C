@@ -435,24 +435,24 @@ void vrpn_CerealBox::get_report(void)
    _bufcount = 0;
 }
 
-void	vrpn_CerealBox::report_changes(void)
+void	vrpn_CerealBox::report_changes(vrpn_uint32 class_of_service)
 {
 	vrpn_Analog::timestamp = timestamp;
 	vrpn_Button::timestamp = timestamp;
 	vrpn_Dial::timestamp = timestamp;
 
-	vrpn_Analog::report_changes();
+	vrpn_Analog::report_changes(class_of_service);
 	vrpn_Button::report_changes();
 	vrpn_Dial::report_changes();
 }
 
-void	vrpn_CerealBox::report(void)
+void	vrpn_CerealBox::report(vrpn_uint32 class_of_service)
 {
 	vrpn_Analog::timestamp = timestamp;
 	vrpn_Button::timestamp = timestamp;
 	vrpn_Dial::timestamp = timestamp;
 
-	vrpn_Analog::report();
+	vrpn_Analog::report(class_of_service);
 	vrpn_Button::report_changes();
 	vrpn_Dial::report();
 }

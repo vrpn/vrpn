@@ -37,8 +37,17 @@ public:
 	virtual int reset(void);		// Set device back to starting config
 	virtual	void get_report(void);		// Try to read a report from the device
 
-        virtual void report_changes (void);	// send report iff changed
-	virtual void report (void);		// send report whether or not changed
+	// send report iff changed
+        virtual void report_changes
+                   (vrpn_uint32 class_of_service
+                    = vrpn_CONNECTION_LOW_LATENCY);
+        // send report whether or not changed
+        virtual void report
+                   (vrpn_uint32 class_of_service
+                    = vrpn_CONNECTION_LOW_LATENCY);
+
+          // NOTE:  class_of_service is only applied to vrpn_Analog
+          //  values, not vrpn_Button or vrpn_Dial
 };
 
 #endif

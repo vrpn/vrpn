@@ -48,7 +48,7 @@ class vrpn_Button {
 	vrpn_int32 my_id;		// ID of this button to connection
 	vrpn_int32 change_message_id;	// ID of change button message to connection
 	vrpn_int32 admin_message_id;	// ID of admin button message to connection
-	virtual void report_changes();
+	virtual void report_changes (void);
 	virtual vrpn_int32 encode_to(char *buf, vrpn_int32 button,
 				     vrpn_int32 state);
 };

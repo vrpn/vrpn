@@ -236,6 +236,7 @@ int vrpn_File_Connection::mainloop( const timeval * /*timeout*/ ) {
 
     // XXX timeout ignored for now, needs to be added
 
+    int retval;
     timeval now_time;
     gettimeofday(&now_time, NULL);
 
@@ -695,6 +696,7 @@ int vrpn_File_Connection::reset()
 void vrpn_File_Connection::set_replay_rate(vrpn_float32 rate)
 {
     d_rate = rate;
+//fprintf(stderr, "Set replay rate!\n");
 }
 
 // static
@@ -713,7 +715,7 @@ int vrpn_File_Connection::handle_reset
 (void * userdata, vrpn_HANDLERPARAM) {
     vrpn_File_Connection * me = (vrpn_File_Connection *) userdata;
 
-    fprintf(stderr, "In vrpn_File_Connection::handle_reset().\n");
+//fprintf(stderr, "In vrpn_File_Connection::handle_reset().\n");
 
     return me->reset();
 }

@@ -268,7 +268,7 @@ static int client_msg_handler(void *userdata, vrpn_HANDLERPARAM p) {
 }
 
 
-void vrpn_Button_Filter::report_changes(void){
+void vrpn_Button_Filter::report_changes (void){
    vrpn_int32 i;
 
 //   vrpn_Button::report_changes();

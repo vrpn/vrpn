@@ -5,6 +5,13 @@
 
 #include <vrpn_Connection.h>  // for vrpn_HANDLERPARAM
 
+#define VRPN_SO_DEFER_UPDATES
+// Implementation - if DEFER_UPDATES is set, a Remote will NOT
+//   update d_value on assignment, but only in handle_updateFromServer.
+// This avoids loops.
+// If DEFER_UPDATES is NOT defined, Remotes will immediately update
+//   their values, reducing latency.
+
 typedef int (* vrpnSharedIntCallback) (void * userdata, vrpn_int32 newValue);
 typedef int (* vrpnSharedFloatCallback) (void * userdata,
                                          vrpn_float64 newValue);
@@ -16,17 +23,17 @@ class vrpn_Shared_int32 {
   public:
 
     vrpn_Shared_int32 (const char * name,
-                       int defaultValue = 0);
+                       vrpn_int32 defaultValue = 0);
     virtual ~vrpn_Shared_int32 (void);
 
     // ACCESSORS
 
-    int value (void) const;
+    vrpn_int32 value (void) const;
     operator int () const;
 
     // MANIPULATORS
 
-    virtual vrpn_Shared_int32 & operator = (int &) = 0;
+    virtual vrpn_Shared_int32 & operator = (vrpn_int32 &) = 0;
 
     virtual void bindConnection (vrpn_Connection *);
 
@@ -42,9 +49,6 @@ class vrpn_Shared_int32 {
     vrpn_int32 d_updateFromServer_type;
     vrpn_int32 d_updateFromRemote_type;
 
-    void encode (char ** buffer, int * len);
-    void decode (const char ** buffer, int * len);
-
     // callback code
     struct callbackEntry {
       vrpnSharedIntCallback handler;
@@ -52,6 +56,10 @@ class vrpn_Shared_int32 {
       callbackEntry * next;
     };
     callbackEntry * d_callbacks;
+
+    void encode (char ** buffer, vrpn_int32 * len) const;
+    void decode (const char ** buffer, vrpn_int32 * len);
+      // decode() is non-const;  it writes *this as a side-effect.
         
 };
 
@@ -60,10 +68,10 @@ class vrpn_Shared_int32_Server : public vrpn_Shared_int32 {
   public:
 
     vrpn_Shared_int32_Server (const char * name,
-                       int defaultValue = 0);
+                       vrpn_int32 defaultValue = 0);
     virtual ~vrpn_Shared_int32_Server (void);
 
-    virtual vrpn_Shared_int32 & operator = (int &);
+    virtual vrpn_Shared_int32 & operator = (vrpn_int32 &);
     virtual void bindConnection (vrpn_Connection *);
 
   protected:
@@ -76,10 +84,10 @@ class vrpn_Shared_int32_Remote : public vrpn_Shared_int32 {
   public:
 
     vrpn_Shared_int32_Remote (const char * name,
-                       int defaultValue = 0);
+                              vrpn_int32 defaultValue = 0);
     virtual ~vrpn_Shared_int32_Remote (void);
 
-    virtual vrpn_Shared_int32 & operator = (int &);
+    virtual vrpn_Shared_int32 & operator = (vrpn_int32 &);
     virtual void bindConnection (vrpn_Connection *);
 
   protected:

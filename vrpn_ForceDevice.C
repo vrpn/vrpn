@@ -1843,11 +1843,13 @@ void vrpn_ForceDevice_Remote::send (const char * msgbuf, vrpn_int32 len,
 
 void vrpn_ForceDevice_Remote::constraintToForceField (void) {
 
-  vrpn_float64 a [9];  // scratch matrix
+  //vrpn_float64 a [9];  // scratch matrix
+  //vrpn_float64 n0 [3];  // scratch vectors
+  //vrpn_float64 theta;
+  //q_type rotation;
   vrpn_float32 c [9];  // scratch matrix
-  vrpn_float64 n0 [3], s [3];  // scratch vectors
-  vrpn_float64 theta;
-  q_type rotation;
+  vrpn_float64 s [3];  // scratch vectors
+  int i, j;
 
   // quatlib wants 64-bit reals;  the forcefield code wants 32-bit
   // reals.  We do most of our math in 64 bits, then copy into 32
@@ -1873,61 +1875,36 @@ void vrpn_ForceDevice_Remote::constraintToForceField (void) {
       setFF_Origin(d_conLinePoint);
       setFF_Force(0.0f, 0.0f,  0.0f);
 
-      // Jacobian matrix for a spring attached to the line in
-      // the direction <0, 0, 1>.
+      // Paul Grayson (pdg@mit.edu) points out that rotating the Jacobian
+      // won't work and we should use something simpler here.
+      // Unfortunately, it's because of the apparent difficulty of this
+      // case that we'd tried rotating a Jacobian in the first place.
+      // Time to hit the books again looking for something that'll work.
 
-      a[0] = -d_conKSpring;
-      a[1] = 0.0;
-      a[2] = 0.0;
-      a[3] = 0.0;
-      a[4] = -d_conKSpring;
-      a[5] = 0.0;
-      a[6] = 0.0;
-      a[7] = 0.0;
-      a[8] = 0.0;
+      // The direction we want (modulo instability in computation)
+      // is (userPosition - d_conLinePoint) -
+      //        d_conLineDirection x
+      //          (userPosition - d_conLinePoint) * d_conLineDirection;
+      // for force, multiply that by -d_conKSpring.
 
-//fprintf(stderr, "Jacobian:  %.4g %.4g %.4g  %.4g %.4g %.4g  %.4g %.4g %.4g\n",
-//a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8]);
+      // So we fudge the partial derivatives:
+      //   dFx/dx = dx (1 - d_conLineDirection[0]^2)
+      //   dFx/dy = dy ( - d_conLineDirection[0]^2)
+      //   dFx/dz = dz ( - d_conLineDirection[0]^2)
 
-      // Find the rotation that takes <0, 0, 1> into d_conLineDirection.
+      s[0] = d_conLineDirection[0] * d_conLineDirection[0];
+      s[1] = d_conLineDirection[1] * d_conLineDirection[1];
+      s[2] = d_conLineDirection[2] * d_conLineDirection[2];
 
-      s[0] = 0.0;
-      s[1] = 0.0;
-      s[2] = 1.0;
-      vector_cross(s, d_conLineDirection, n0);
-      theta = acos(vector_dot(s, d_conLineDirection));
-
-//fprintf(stderr, "dcld:  %.4g %.4g %.4g\n",
-//d_conLineDirection[0], d_conLineDirection[1], d_conLineDirection[2]);
-
-//fprintf(stderr, "Axis:  %.4g %.4g %.4g;  Theta:  %.4g\n",
-//n0[0], n0[1], n0[2], theta);
-
-      // The rotation we want is by angle theta about the
-      // axis (s x conLineDirection).
-
-      q_make(rotation, n0[0], n0[1], n0[2], theta);
-
-//fprintf(stderr, "Quaternion:  %.4g %.4g %.4g  %.4g\n",
-//rotation[0], rotation[1], rotation[2], rotation[3]);
-
-      // apply rotation to a;  that's our Jacobian
-      q_xform(&a[0], rotation, &a[0]);
-      q_xform(&a[3], rotation, &a[3]);
-      q_xform(&a[6], rotation, &a[6]);
-
-//fprintf(stderr, "Rotated Jacobian:  "
-//"%.4g %.4g %.4g  %.4g %.4g %.4g  %.4g %.4g %.4g\n",
-//a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8]);
-
-      // discard bits
-
-      // should change to static_cast when all compilers understand it
-      c[0] = vrpn_float32(a[0]);  c[1] = vrpn_float32(a[1]);
-      c[2] = vrpn_float32(a[2]);  c[3] = vrpn_float32(a[3]);
-      c[4] = vrpn_float32(a[4]);  c[5] = vrpn_float32(a[5]);
-      c[6] = vrpn_float32(a[6]);  c[7] = vrpn_float32(a[7]);
-      c[8] = vrpn_float32(a[0]);
+      c[0] = 1.0 - s[0];
+      c[1] = - s[0];
+      c[2] = - s[0];
+      c[3] = - s[1];
+      c[4] = 1.0 - s[1];
+      c[5] = - s[1];
+      c[6] = - s[2];
+      c[7] = - s[2];
+      c[8] = 1.0 - s[2];
 
       setFF_Jacobian(c[0], c[1], c[2], c[3], c[4], c[5], c[6], c[7], c[8]);
 
@@ -1938,46 +1915,14 @@ void vrpn_ForceDevice_Remote::constraintToForceField (void) {
       setFF_Origin(d_conPlanePoint);
       setFF_Force(0.0f, 0.0f,  0.0f);
 
-      // Jacobian matrix for a spring attached to a plane
-      // with normal <0, 0, 1>.
+      // Paul Grayson (pdg@mit.edu) points out that rotating the Jacobian
+      // won't work and we should use something simpler here.  The below
+      // is his code.
 
-      a[0] = 0.0;
-      a[1] = 0.0;
-      a[2] = 0.0;
-      a[3] = 0.0;
-      a[4] = 0.0;
-      a[5] = 0.0;
-      a[6] = 0.0;
-      a[7] = 0.0;
-      a[8] = -d_conKSpring;
-
-      // Find rotation matrix b that takes <0, 0, 1> into
-      // d_conLineDirection.
-
-      s[0] = 0.0;
-      s[1] = 0.0;
-      s[2] = 1.0;
-      vector_cross(s, d_conPlaneNormal, n0);
-      theta = acos(vector_dot(s, d_conPlaneNormal));
-
-      // The rotation we want is by angle theta about the
-      // axis (s x conLineDirection).
-
-      q_make(rotation, n0[0], n0[1], n0[2], theta);
-
-      // Apply rotation to a;  that's our Jacobian.
-      q_xform(&a[0], rotation, &a[0]);
-      q_xform(&a[3], rotation, &a[3]);
-      q_xform(&a[6], rotation, &a[6]);
-
-      // discard bits
-
-      // should change to static_cast when all compilers understand it
-      c[0] = vrpn_float32(a[0]);  c[1] = vrpn_float32(a[1]);
-      c[2] = vrpn_float32(a[2]);  c[3] = vrpn_float32(a[3]);
-      c[4] = vrpn_float32(a[4]);  c[5] = vrpn_float32(a[5]);
-      c[6] = vrpn_float32(a[6]);  c[7] = vrpn_float32(a[7]);
-      c[8] = vrpn_float32(a[0]);
+      for (i = 0; i < 3; i++)
+        for (j = 0; j < 3; j++)
+          c[i + j * 3] = -d_conKSpring * d_conPlaneNormal[i]
+                                       * d_conPlaneNormal[j];
 
       setFF_Jacobian(c[0], c[1], c[2], c[3], c[4], c[5], c[6], c[7], c[8]);
 

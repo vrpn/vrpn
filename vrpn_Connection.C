@@ -21,6 +21,8 @@
 #define close closesocket
 #else
 #include <unistd.h>
+  // gethostname() and getdtablesize() should be here on SGIs,
+  // but apparently aren't under g++
 #include <strings.h>
 #include <sys/time.h>
 #include <sys/socket.h>
