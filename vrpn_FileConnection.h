@@ -90,6 +90,11 @@ public:
     int jump_to_time(vrpn_float64 newtime);
     int jump_to_time(timeval newtime);
 
+    // Not very useful.
+    // Limits the number of messages played out on any one call to mainloop.
+    // 0 => no limit.
+    void limit_messages_played_back (vrpn_int32 max_playback);
+
     // }}}
     // {{{ tokens for VRPN control messages (data members)
 protected:
@@ -188,6 +193,9 @@ protected:
     vrpn_LOGLIST * d_currentLogEntry;  // most recently replayed
     vrpn_LOGLIST * d_startEntry;  // potentially after initial system messages
     // }}}
+
+protected:
+    vrpn_int32 d_max_message_playback;
 };
 
 

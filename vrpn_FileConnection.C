@@ -45,7 +45,8 @@ vrpn_File_Connection::vrpn_File_Connection (const char * file_name,
     d_file (NULL),
     d_logHead (NULL),
     d_logTail (NULL),
-    d_currentLogEntry (NULL)
+    d_currentLogEntry (NULL),
+    d_max_message_playback (0)
 {
     const char * bare_file_name;
 
@@ -200,6 +201,14 @@ int vrpn_File_Connection::jump_to_time(timeval newtime)
     }
     
     return 0;
+}
+
+
+// }}}
+// {{{
+
+void vrpn_File_Connection::limit_messages_played_back (vrpn_int32 limit) {
+  d_max_message_playback = limit;
 }
 
 // }}}
@@ -476,6 +485,8 @@ int vrpn_File_Connection::play_to_time(timeval end_time)
 // returns -1 on error, 0 on success
 int vrpn_File_Connection::play_to_filetime(const timeval end_filetime)
 {
+    vrpn_int32 playback_this_iteration = 0;
+
     if (vrpn_TimevalGreater(d_time, end_filetime)) {
         // end_filetime is BEFORE d_time (our current time in the stream)
         // so, we need to go backwards in the stream
@@ -488,10 +499,17 @@ int vrpn_File_Connection::play_to_filetime(const timeval end_filetime)
     int ret;
     
     while (!(ret = playone_to_filetime(end_filetime))) {
-        /* empty loop */
-        // juliano(8/25/99)
-        //   * you get here ONLY IF playone_to_filetime returned 0
-        //   * that means that it played one entry
+      //   * you get here ONLY IF playone_to_filetime returned 0
+      //   * that means that it played one entry
+
+      playback_this_iteration++;
+      if ((d_max_message_playback > 0) &&
+          (playback_this_iteration >= d_max_message_playback)) {
+        // Early exit from the loop
+        // Don't reset d_time to end_filetime
+        return 0;
+      }
+
     }
     
     if (ret == 1) {
