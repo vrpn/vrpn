@@ -18,6 +18,8 @@
 #include "vrpn_Shared.h"
 #endif
 
+class vrpn_File_Connection;  // for get_File_Connection()
+
 // NOTE: most users will want to use the vrpn_Synchronized_Connection
 // class rather than the default connection class (either will work,
 // a regular connection just has 0 as the client-server time offset)
@@ -332,8 +334,11 @@ class vrpn_Connection
   // to shrink the buffer, only to increase it or leave it the same.
   vrpn_int32 set_tcp_outbuf_size (vrpn_int32 bytecount);
 
-
   vrpn_OneConnection *endpointPtr() { return &endpoint; }
+
+  // vrpn_File_Connection implements this as "return this" so it
+  // can be used to detect a File_Connection and get the pointer for it
+  virtual vrpn_File_Connection *get_File_Connection() { return NULL; }
 
   protected:
   // Users should not create vrpn_Connection directly -- use 
