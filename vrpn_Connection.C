@@ -1285,6 +1285,7 @@ int	vrpn_Connection::handle_type_message(void *userdata,
 	vrpn_Connection *me = (vrpn_Connection*)userdata;
 	cName	type_name;
 	int	i;
+        long name_length;
 
 	if (p.payload_len > sizeof(type_name)) {
 		fprintf(stderr,"vrpn: vrpn_Connection::Type name too long\n");
@@ -1292,8 +1293,9 @@ int	vrpn_Connection::handle_type_message(void *userdata,
 	}
 
 	// Find out the name of the type (skip the length)
-	strncpy(type_name, p.buffer+4, p.payload_len-4);
-	type_name[p.payload_len-4] = '\0';
+	name_length = htonl( *(long*)(void*)p.buffer );
+	strncpy(type_name, p.buffer+4, name_length);
+	type_name[name_length] = '\0';
 
 #ifdef	VERBOSE
 	printf("Registering other-side type: '%s'\n", type_name);
@@ -1338,15 +1340,17 @@ int	vrpn_Connection::handle_sender_message(void *userdata,
 	vrpn_Connection *me = (vrpn_Connection*)userdata;
 	cName	sender_name;
 	int	i;
+	long	name_length;
 
 	if (p.payload_len > sizeof(sender_name)) {
 		fprintf(stderr,"vrpn: vrpn_Connection::Type name too long\n");
 		return -1;
 	}
 
-	// Find out the name of the sender (skip the length)
-	strncpy(sender_name, p.buffer+4, p.payload_len-4);
-	sender_name[p.payload_len-4] = '\0';
+	// Find out the name of the sender and then copy the name.
+	name_length = htonl( *(long*)(void*)p.buffer );
+	strncpy(sender_name, p.buffer+4, name_length);
+	sender_name[name_length] = '\0';
 
 #ifdef	VERBOSE
 	printf("Registering other-side sender: '%s'\n", sender_name);
