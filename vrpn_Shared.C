@@ -545,7 +545,7 @@ int vrpn_unbuffer (const char ** buffer, vrpn_int16 * lval)
 
 int vrpn_unbuffer (const char ** buffer, vrpn_uint16 * lval)
 {
-    *lval = ntohl(*((vrpn_uint16 *)(*buffer)));
+    *lval = ntohs(*((vrpn_uint16 *)(*buffer)));
     *buffer += sizeof(vrpn_uint16);
     return 0;
 }
