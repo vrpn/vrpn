@@ -4087,6 +4087,8 @@ int vrpn_Endpoint::getOneTCPMessage (int fd, char * buf, int buflen) {
   struct timeval time;
   vrpn_int32 sender, type;
   vrpn_int32 len, payload_len, ceil_len;
+  int retval;
+
 #ifdef  VERBOSE2
   fprintf(stderr, "vrpn_Endpoint::handle_tcp_messages():  something to read\n");
 #endif
@@ -4164,29 +4166,9 @@ int vrpn_Endpoint::getOneTCPMessage (int fd, char * buf, int buflen) {
     return -1;
   }
 
-  // Call the handler(s) for this message type
-  // If one returns nonzero, return an error.
-  if (type >= 0) {        // User handler, map to local id
-
-    // Only process if local ID has been set 
-
-    if (local_type_id(type) >= 0) {
-      if (d_dispatcher->doCallbacksFor
-                          (local_type_id(type),
-                           local_sender_id(sender),
-                           time, payload_len, buf)) {
-        return -1;
-      }
-    }
-
-  } else {        // Call system handler if there is one
-
-    if (d_dispatcher->doSystemCallbacksFor
-          (type, sender, time, payload_len, buf, this)) {
-      fprintf(stderr, "vrpn_Endpoint::handle_tcp_messages:  "
-                      "Nonzero system handler return.\n");
-      return -1;
-    }
+  retval = dispatch(type, sender, time, payload_len, buf);
+  if (retval) {
+    return -1;
   }
 
   return 0;
@@ -4197,6 +4179,7 @@ int vrpn_Endpoint::getOneUDPMessage (char * inbuf_ptr, int inbuf_len) {
   struct timeval  time;
   vrpn_int32      sender, type;
   vrpn_uint32     len, payload_len, ceil_len;
+  int retval;
 
   // Read and parse the header
   // skip up to alignment
@@ -4261,6 +4244,18 @@ int vrpn_Endpoint::getOneUDPMessage (char * inbuf_ptr, int inbuf_len) {
              << " " << time.tv_usec << endl;
 #endif
 
+  retval = dispatch(type, sender, time, payload_len, inbuf_ptr);
+  if (retval) {
+    return -1;
+  }
+
+  return ceil_len + header_len;
+}
+
+int vrpn_Endpoint::dispatch (vrpn_int32 type, vrpn_int32 sender,
+                             timeval time, vrpn_uint32 payload_len,
+                             char * bufptr) {
+
   // Call the handler for this message type
   // If it returns nonzero, return an error.
   if (type >= 0) {        // User handler, map to local id
@@ -4271,7 +4266,7 @@ int vrpn_Endpoint::getOneUDPMessage (char * inbuf_ptr, int inbuf_len) {
       if (d_dispatcher->doCallbacksFor
                            (local_type_id(type),
                             local_sender_id(sender),
-                            time, payload_len, inbuf_ptr)) {
+                            time, payload_len, bufptr)) {
         return -1;
       }
     }
@@ -4279,16 +4274,15 @@ int vrpn_Endpoint::getOneUDPMessage (char * inbuf_ptr, int inbuf_len) {
   } else {        // System handler
 
     if (d_dispatcher->doSystemCallbacksFor
-          (type, sender, time, payload_len, inbuf_ptr, this)) {
-      fprintf(stderr, "vrpn_Endpoint::getOneUDPMessage:  "
+          (type, sender, time, payload_len, bufptr, this)) {
+      fprintf(stderr, "vrpn_Endpoint::dispatch:  "
                       "Nonzero system return\n");
       return -1;
     }
   }
 
-  return ceil_len + header_len;
+  return 0;
 }
-
 
 int vrpn_Endpoint::tryToMarshall
          (char * outbuf, int &buflen, int &numOut,
@@ -4636,8 +4630,7 @@ int vrpn_Connection::connect_to_client (const char *machine, int port)
 	  return -1;
 	}
 
-	d_endpoints[which_end] = new vrpn_Endpoint (d_dispatcher,
-		&d_numConnectedEndpoints);
+	d_endpoints[which_end] = allocateEndpoint(&d_numConnectedEndpoints);
 	vrpn_Endpoint * endpoint = d_endpoints[which_end];
 
 	if (!endpoint) {
@@ -5048,8 +5041,7 @@ void vrpn_Connection::server_check_for_incoming_connections
 
       // Create a new endpoint and start trying to connect it to
       // the client.
-    d_endpoints[which_end] = new vrpn_Endpoint (d_dispatcher,
-                                                &d_numConnectedEndpoints);
+    d_endpoints[which_end] = allocateEndpoint(&d_numConnectedEndpoints);
     endpoint = d_endpoints[which_end];
     if (!endpoint) {
         fprintf(stderr,
@@ -5258,7 +5250,7 @@ vrpn_Connection::vrpn_Connection
   if (local_logfile_name) {
 
     if (local_log_mode & vrpn_LOG_OUTGOING) {
-      d_endpoints[0] = new vrpn_Endpoint (d_dispatcher, NULL);
+      d_endpoints[0] = allocateEndpoint(NULL);
       endpoint = d_endpoints[0];
       if (!endpoint) {
         fprintf(stderr, "vrpn_Connection::vrpn_Connection:  "
@@ -5327,8 +5319,7 @@ vrpn_Connection::vrpn_Connection
   init();
 
   // We're a client;  create our single endpoint and initialize it.
-  d_endpoints[0] = new vrpn_Endpoint (d_dispatcher,
-                                      &d_numConnectedEndpoints);
+  d_endpoints[0] = allocateEndpoint(&d_numConnectedEndpoints);
   if (!d_endpoints[0]) {
     fprintf(stderr, "vrpn_Connection:  Out of memory.\n");
     connectionStatus = BROKEN;
@@ -5654,6 +5645,15 @@ int	vrpn_Connection::do_callbacks_for(vrpn_int32 type, vrpn_int32 sender,
 int vrpn_Connection::doSystemCallbacksFor (vrpn_HANDLERPARAM p, void * ud) {
   return d_dispatcher->doSystemCallbacksFor(p, ud);
 }
+
+
+
+
+
+vrpn_Endpoint * vrpn_Connection::allocateEndpoint (vrpn_int32 * connectedEC) {
+  return new vrpn_Endpoint (d_dispatcher, connectedEC);
+}
+
 
 
 // This is called when a disconnect message is found in the logfile.

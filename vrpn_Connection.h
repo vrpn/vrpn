@@ -205,7 +205,7 @@ class vrpn_Endpoint {
     // send pending report, clear the buffer.
     // This function was protected, now is public, so we can use it
     // to send out intermediate results without calling mainloop
-    int send_pending_reports (void);
+    virtual int send_pending_reports (void);
 
     int pack_udp_description (int portno);
     int pack_log_description (void);
@@ -302,6 +302,9 @@ class vrpn_Endpoint {
     int getOneTCPMessage (int fd, char * buf, int buflen);
     int getOneUDPMessage (char * buf, int buflen);
       ///< These two functions are ALMOST identical, but hard to combine.
+    int dispatch (vrpn_int32 type, vrpn_int32 sender,
+                  timeval time, vrpn_uint32 payload_len,
+                  char * bufptr);
 
     int tryToMarshall (char * outbuf, int &buflen, int &numOut,
                        vrpn_uint32 len, timeval time,
@@ -366,7 +369,7 @@ class vrpn_Endpoint {
 
 class vrpn_Connection {
 
-  friend class vrpn_Endpoint;
+  //friend class vrpn_Endpoint;
 
   public:
 
@@ -560,6 +563,9 @@ class vrpn_Connection {
     vrpn_int32 d_serverLogMode;
     char * d_serverLogName;
 
+    virtual vrpn_Endpoint * allocateEndpoint (vrpn_int32 * connectedEC);
+      ///< Redefining this allows a subclass to use a different subclass
+      ///< of Endpoint.
 };
 
 

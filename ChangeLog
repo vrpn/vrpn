@@ -1,3 +1,19 @@
+2000-09-25  Tom Hudson  <hudson@cs.unc.edu>
+
+	* connection : new directory, to be populated later today
+
+	* vrpn_Connection.C (vrpn_Endpoint::dispatch) : new function
+        (vrpn_Connection::allocateEndpoint) : new function
+        (vrpn_Endpoint::getOneTCPMessage) : call dispatch()
+        (vrpn_Endpoint::getOneUDPMessage) : same
+        (vrpn_Connection::connectToClient) : call allocateEndpoint()
+        (vrpn_Connection::server_check_for_incoming_connections) : same
+        (vrpn_Connection::server constuctor) : same
+        (vrpn_Connection::client constuctor) : same
+
+        * vrpn_DelayedConnection.C : new file
+
+
 2000-09-22  Adam Seeger  <seeger@cs.unc.edu>
 
         * vrpn_Connection.C (vrpn_Log::lastLogTime) : new function to 
