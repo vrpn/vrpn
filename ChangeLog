@@ -1,24 +1,35 @@
+2002-05-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_isense.C : Code to interface to Intersense trackers
+		using their library.  By default, it is not built (requires
+		proprietary library) but instead prints an error message.
+	* vrpn_Tracker_isense.h : Same.
+	* Makefile : Added Zaber and Isense drivers to the server library.
+	* vrpn.dsp : Added Zaber and Isense drivers to the server library.
+
 2002-05-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
-	* vrpn_Zaber.C : Code to handle report types 20 and 255.  Added code to tell the
-			 remote device its values upon initial connection.  Code to
-			 tell it to start off more slowly and have a smaller maximum
-			 speed (to help with torque).  Fixed timeout code so that it
-			 will reset correctly if devices are unplugged and replugged.
-	* vrpn_Zaber.h : Code to tell the remote device its values upon initial connection
+	* vrpn_Zaber.C : Code to handle report types 20 and 255.  Added code
+		to tell the
+		remote device its values upon initial connection.  Code to
+		tell it to start off more slowly and have a smaller maximum
+		speed (to help with torque).  Fixed timeout code so that it
+		will reset correctly if devices are unplugged and replugged.
+	* vrpn_Zaber.h : Code to tell the remote device its values upon
+		initial connection
 
 2002-05-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
-	* vrpn_Analog.C : Added capability to send requests from an analog remote
-		to an analog server for it to change a channel to the requested
-		value.  Modified the example server to respond by setting its
-		channels to this.  This is done to enable the Zaber linear
-		actuator to be moved to requested positions.
+	* vrpn_Analog.C : Added capability to send requests from an analog
+		remote to an analog server for it to change a channel to the
+		requested value.  Modified the example server to respond by
+		setting its channels to this.  This is done to enable the
+		Zaber linear actuator to be moved to requested positions.
 	* vrpn_Analog.h : Same.
 	* vrpn_Zaber.h : Code to control a Zaber linear actuator.
 	* vrpn_Zaber.C : Code to control a Zaber linear actuator.
-	* vrpn.dsw : Added vrpn_Zaber.[hC] to compile code for Windows.  It should work
-		for any architecture.
+	* vrpn.dsw : Added vrpn_Zaber.[hC] to compile code for Windows.
+		It should work for any architecture.
 
 2002-04-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
 

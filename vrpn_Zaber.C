@@ -298,9 +298,8 @@ int vrpn_Zaber::get_report(void)
    //--------------------------------------------------------------------
 
    unsigned char chan = _buffer[0] - 1;
-   unsigned char cmd = _buffer[1];
    vrpn_int32 value = convert_bytes_to_reading(&_buffer[2]);
-   if ( (chan < 0) || (chan >= num_channel) ) {
+   if (chan >= num_channel) {	// Unsigned, so can't be < 0
      char msg[1024];
      sprintf(msg,"Invalid channel (%d of %d), resetting", chan, num_channel);
      ZAB_ERROR(msg);
