@@ -92,7 +92,39 @@ typedef int (* vrpn_LOGFILTER) (void * userdata, vrpn_HANDLERPARAM p);
 
 #define vrpn_CONTROL "VRPN Control"
 
+
+
 typedef char cName [100];
+
+
+
+// Placed here so vrpn_FileConnection can use it too.
+struct vrpn_LOGLIST {
+  vrpn_HANDLERPARAM data;
+  vrpn_LOGLIST * next;
+  vrpn_LOGLIST * prev;
+};
+
+// HACK
+// These structs must be declared outside of vrpn_Connection
+// (although we'd like to make them protected/private members)
+// because aCC on PixelFlow doesn't handle nested classes correctly.
+
+// Description of a callback entry for a user type.
+struct vrpnMsgCallbackEntry {
+  vrpn_MESSAGEHANDLER	handler;	// Routine to call
+  void			* userdata;	// Passed along
+  long			sender;		// Only if from sender
+  vrpnMsgCallbackEntry	* next;		// Next handler
+};
+
+struct vrpnLogFilterEntry {
+  vrpn_LOGFILTER filter;   // routine to call
+  void * userdata;         // passed along
+  vrpnLogFilterEntry * next;
+};
+
+
 
 
 class vrpn_Connection
@@ -214,14 +246,6 @@ class vrpn_Connection
 	// Only used for a vrpn_Connection that awaits incoming connections
 	int	listen_udp_sock;	// Connect requests come here
 
-        // Description of a callback entry for a user type.
-        struct vrpnMsgCallbackEntry {
-          vrpn_MESSAGEHANDLER	handler;	// Routine to call
-          void			* userdata;	// Passed along
-          long			sender;		// Only if from sender
-          vrpnMsgCallbackEntry	* next;		// Next handler
-        };
-
 	// The senders we know about and the message types we know about
 	// that have been declared by the local version.
 
@@ -316,12 +340,6 @@ class vrpn_Connection
 
 	// Logging - TCH 11 June 98
 
-	struct vrpn_LOGLIST {
-	  vrpn_HANDLERPARAM data;
-	  vrpn_LOGLIST * next;
-	  vrpn_LOGLIST * prev;
-	};
-
 	vrpn_LOGLIST * d_logbuffer;  // last entry in log
 	vrpn_LOGLIST * d_first_log_entry;  // first entry in log
 	char * d_logname;            // name of file to write log to
@@ -334,12 +352,6 @@ class vrpn_Connection
                                  int isRemote = 0);
 	virtual int close_log (void);
 	virtual int open_log (void);
-
-        struct vrpnLogFilterEntry {
-          vrpn_LOGFILTER filter;   // routine to call
-          void * userdata;         // passed along
-          vrpnLogFilterEntry * next;
-        };
 
 	// Filters (assumed to be on vrpn_ANY_TYPE)
 	vrpnLogFilterEntry	* d_log_filters;	

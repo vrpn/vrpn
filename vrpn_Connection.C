@@ -3248,8 +3248,7 @@ int vrpn_Connection::log_message (int len, struct timeval time,
     p.buffer = lp->data.buffer;
 
     if (check_log_filters(p)) {  // abort logging
-  // NOTE: this should probably not be a const char * (weberh 9/14/98)
-      delete [] ((char *)lp->data.buffer);
+      delete [] (char *) lp->data.buffer;
       delete lp;
       return 0;  // this is not a failure - do not return nonzero!
     }

@@ -48,12 +48,21 @@ class vrpn_File_Connection : public vrpn_Connection {
 
     FILE * d_file;
 
+    virtual int read_entry (void);  // appends entry to d_logTail
+      // returns 0 on success, 1 on EOF, -1 on error
     virtual int close_file (void);
 
     // handlers for VRPN control messages
 
     static int handle_set_replay_rate (void *, vrpn_HANDLERPARAM);
     static int handle_reset (void *, vrpn_HANDLERPARAM);
+
+    // TCH 16 Sept 98
+    // support for preloading
+
+    vrpn_LOGLIST * d_logHead;  // where the log begins
+    vrpn_LOGLIST * d_logTail;  // the most recently read-in record
+    vrpn_LOGLIST * d_currentLogEntry;  // most recently replayed
 };
 
 
