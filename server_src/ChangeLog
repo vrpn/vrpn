@@ -1,3 +1,7 @@
+2003-07-07  Sascha Scholz  <sascha.scholz@imk.fraunhofer.de>
+
+        * vrpn.cfg : added ADBox/CubicMouse driver
+
 2003-06-20  David Marshburn  <marshbur@cs.unc.edu>
 
 	* plane.C:  uses Ghost 4.0/3.1 syntax depending on VRPN_USE_GHOST_31

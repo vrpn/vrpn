@@ -44,6 +44,7 @@
 #include "vrpn_DirectXFFJoystick.h"
 #include "vrpn_GlobalHapticsOrb.h"
 #include "vrpn_Phantom.h"
+#include "vrpn_ADBox.h"
 
 #include "vrpn_ForwarderController.h"
 #include <vrpn_RedundantTransmission.h>
@@ -1709,6 +1710,49 @@ int setup_GlobalHapticsOrb (char * & pch, char * line, FILE * config_file) {
   return 0;
 }
 
+//================================
+int setup_ADBox(char* &pch, char *line, FILE *config_file) {
+
+  char name[LINESIZE], port[LINESIZE];
+  int baud;
+
+  next();
+  // Get the arguments (class, button_name, port, baud)
+  if (sscanf(pch,"%511s%511s%d", name, port, &baud) != 3) {
+    fprintf(stderr,"Bad vrpn_ADBox line: %s\n",line);
+    return -1;
+  }
+
+  // Make sure there's room for a new button
+  if (num_buttons >= MAX_BUTTONS) {
+    fprintf(stderr,"vrpn_ADBox : Too many buttons in config file");
+    return -1;
+  }
+
+  // Make sure there's room for a new analog
+  if (num_analogs >= MAX_ANALOG) {
+    fprintf(stderr,"vrpn_ADBox : Too many analogs in config file");
+    return -1;
+  }
+
+  // Open the button
+  if (verbose)   
+    printf("Opening vrpn_ADBox: %s on port %s at %d baud\n",name,port,baud);
+
+  if ( (buttons[num_buttons] = new vrpn_ADBox(name,connection,port,baud)) 
+       == NULL ) {
+    fprintf(stderr,"Can't create new vrpn_ADBox\n");
+    return -1;
+  } else {
+     
+    analogs[num_analogs] = (vrpn_Analog*)buttons[num_buttons];
+    num_buttons++;
+    num_analogs++;
+  }
+  
+  return 0;
+}
+
 main (int argc, char * argv[])
 {
 	char	* config_file_name = "vrpn.cfg";
@@ -1917,7 +1961,9 @@ main (int argc, char * argv[])
 	    CHECK(setup_GlobalHapticsOrb);
 	  } else if (isit("vrpn_Phantom")) {
 	    CHECK(setup_Phantom);
-	  } else {	// Never heard of it
+    } else if (isit("vrpn_ADBox")) {
+      CHECK(setup_ADBox);
+    } else {	// Never heard of it
 		sscanf(line,"%511s",s1);	// Find out the class name
 		fprintf(stderr,"vrpn_server: Unknown Device: %s\n",s1);
 		if (bail_on_error) { return -1; }
