@@ -2201,6 +2201,22 @@ static SOCKET vrpn_connect_udp_port
       return(-1);
   }
 
+  // Find out which port was actually bound
+  udp_namelen = sizeof(udp_name);
+  if (getsockname(udp_socket, (struct sockaddr *) &udp_name,
+                  GSN_CAST &udp_namelen)) {
+    fprintf(stderr, "vrpn_connect_udp_port: cannot get socket name.\n");
+    return -1;
+  }
+
+#ifdef VERBOSE3
+fprintf(stderr, "vrpn_connect_udp_port:  got port %d, using NIC %d %d %d %d.\n",
+ntohs(udp_name.sin_port), udp_name.sin_addr.s_addr >> 24,
+(udp_name.sin_addr.s_addr >> 16) & 0xff,
+(udp_name.sin_addr.s_addr >> 8) & 0xff,
+udp_name.sin_addr.s_addr & 0xff);
+#endif
+
   return udp_socket;
 }
 
@@ -2592,6 +2608,8 @@ int vrpn_cookie_size (void) {
  *  The routine returns -1 on failure and the file descriptor on success.
  */
 
+// OBSOLETE
+// This function does the same thing as vrpn_connect_udp_port ?!
 static	SOCKET connect_udp_to (const char * machine, int portno,
                                const char * NIC_IP) {
    SOCKET sock; 
@@ -5070,15 +5088,8 @@ vrpn_Connection::vrpn_Connection
   vrpn_ConnectionManager::instance().addConnection(this, NULL);
 
   if (local_logfile_name) {
-#if 0
-    fprintf(stderr, "ERROR - server-initiated logging is not supported "
-                    "in this release!\n");
-    connectionStatus = BROKEN;
-#else
 
     if (local_log_mode & vrpn_LOG_OUTGOING) {
-      //d_serverLogEndpoint = new vrpn_Endpoint (d_dispatcher, NULL)
-      //if (!d_serverLogEndpoint) {
       d_endpoints[0] = new vrpn_Endpoint (d_dispatcher, NULL);
       endpoint = d_endpoints[0];
       if (!endpoint) {
@@ -5087,9 +5098,6 @@ vrpn_Connection::vrpn_Connection
         connectionStatus = BROKEN;
         return;
       }
-      //d_serverLogEndpoint->d_log->setName(local_logfile_name);
-      //d_serverLogEndpoint->d_log->logMode() = local_log_mode;
-      //retval = d_serverLogEndpoint->d_log->open();
       endpoint->d_log->setName(local_logfile_name);
       endpoint->d_log->logMode() = local_log_mode;
       retval = endpoint->d_log->open();
@@ -5117,9 +5125,7 @@ vrpn_Connection::vrpn_Connection
       }
       strcpy(d_serverLogName, local_logfile_name);
     }
-#endif
   }
-
 
 }
 
