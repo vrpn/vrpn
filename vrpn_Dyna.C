@@ -21,15 +21,18 @@
  * Author          : Ruigang Yang
  * Created On      : Tue Feb 17 13:51:40 1998
  * Last Modified By: Ruigang Yang
- * Last Modified On: Thu Feb 19 12:33:54 1998
- * Update Count    : 31
+ * Last Modified On: Mon Feb 23 15:57:14 1998
+ * Update Count    : 32
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Dyna.C,v $
- * $Date: 1998/02/19 21:00:44 $
+ * $Date: 1998/02/23 20:57:38 $
  * $Author: ryang $
- * $Revision: 1.1 $
+ * $Revision: 1.2 $
  * 
  * $Log: vrpn_Dyna.C,v $
+ * Revision 1.2  1998/02/23 20:57:38  ryang
+ * bug fix
+ *
  * Revision 1.1  1998/02/19 21:00:44  ryang
  * drivers for DynaSight
  *
@@ -38,7 +41,7 @@
  * HISTORY
  */
 
-static char rcsid[] = "$Id: vrpn_Dyna.C,v 1.1 1998/02/19 21:00:44 ryang Exp $";
+static char rcsid[] = "$Id: vrpn_Dyna.C,v 1.2 1998/02/23 20:57:38 ryang Exp $";
 
 #include <termios.h> // for tcdrain
 #include <unistd.h>
@@ -161,8 +164,7 @@ void vrpn_Tracker_Dyna::reset() {
     } 
     
   }else {
-    fprintf(stderr, "vrpn_Tracker_Dyan: return valid status
-report\n");
+    fprintf(stderr, "vrpn_Tracker_Dyan: return valid status report\n");
     reportLength = T_PDYN_RECORD_LENGTH;
     
     // set it to continues mode;
