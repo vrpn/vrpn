@@ -1,9 +1,11 @@
 #ifndef VRPN_FILE_CONNECTION_H
 #define VRPN_FILE_CONNECTION_H
 
+#include "vrpn_FileConnectionInterface.h"
 #include "vrpn_BaseConnection.h"
 
-// vrpn_FileConnection
+
+// vrpn_NewFileConnection
 //
 // MODIFIED
 // By: Stefan Sain, July 1999
@@ -21,7 +23,7 @@
 
 // The interface exactly matches that of vrpn_Connection.  To do things that
 // are meaningful on log replay but not on live networks, create a
-// vrpn_File_Controller and pass your vrpn_FileConnection to its constructor.
+// vrpn_File_Controller and pass your vrpn_NewFileConnection to its constructor.
 
 // Logfiles are recorded as *sent*, not as translated by the receiver,
 // so we still need to have all the correct names for senders and types
@@ -33,42 +35,71 @@
 // but we still have the problem that the semantics of reverse often don't
 // make sense.
 
-class vrpn_FileConnection 
+class vrpn_NewFileConnection 
 	: public vrpn_BaseConnection, 
-	  protected vrpn_FileConnection_ControllerInterface 
+	  protected vrpn_FileConnectionInterface 
 {
 
-	friend class FileController;
+	friend class vrpn_NewFileController;
 
+    // {{{ c'tors, d'tors
 public: // c'tors & d'tors
 
-    vrpn_FileConnection (ConnectionControllerCallbackInterface* ccci,
-						 const char * file_name);
-    virtual ~vrpn_FileConnection ();
+    vrpn_NewFileConnection(
+		vrpn_ConnectionControllerCallbackInterface* ccci,
+		const char * file_name,
+		const char * local_logfile_name = NULL,
+		vrpn_int32 local_log_mode = vrpn_LOG_NONE);
+
+    virtual ~vrpn_NewFileConnection ();
 
     virtual vrpn_int32 time_since_connection_open (struct timeval * elapsed_time);
 
-    virtual vrpn_FileConnection *get_FileConnection() { return this; }
-
-protected: // opening and closing logs
-
-	// these are empty functions because we do not want to log 
-	// the replay of a streamfile
-	virtual vrpn_int32 open_log(){return 0;}
-	virtual vrpn_int32 close_log(){return 0;}
+    virtual vrpn_NewFileConnection *get_FileConnection() { return this; }
    
-public:  // status
+    // }}}
+    // {{{ public type_id and service_id stuff
+public:  
+
+    // * register a new local {type,service} that that controller
+    //   has assigned a {type,service}_id to.
+    // * in addition, look to see if this {type,service} has
+    //   already been registered remotely (newRemoteType/Service)
+    // * if so, record the correspondence so that
+    //   local_{type,service}_id() can do its thing
+    // * XXX proposed new name:
+    //         register_local_{type,service}
+    //
+    //Return 1 if this {type,service} was already registered
+    //by the other side, 0 if not.
+
+    // was: newLocalSender
+    virtual vrpn_int32 register_local_service(
+        const char *service_name,  // e.g. "tracker0"
+        vrpn_int32 local_id );    // from controller
+    
+    // was: newLocalType
+    virtual vrpn_int32 register_local_type(
+        const char *type_name,   // e.g. "tracker_pos"
+        vrpn_int32 local_id );   // from controller
+
+    // }}}
+    // {{{ status ...
+public:  
     
     // a connection was made
-    inline vrpn_bool connected() const { return (status == CONNECTED); }
+    vrpn_bool connected() const
+	{ return (status == vrpn_CONNECTION_CONNECTED); }
 
     // no errors
-    inline vrpn_bool doing_okay() const { return (status >= 0); }
+    vrpn_bool doing_okay() const { return (status >= 0); }
 
     // get status of connection
-    inline vrpn_int32 get_status() const { return status; }
-
-public:  // sending and receiving
+    vrpn_int32 get_status() const { return status; }
+    
+    // }}}
+    // {{{ sending and receiving ...
+public:  
 
 
     // Call each time through program main loop to handle receiving any
@@ -82,15 +113,31 @@ public:  // sending and receiving
 
     // functions for sending messages and receiving messages
     // the ConnectionController will call these functions
-  
-	// does nothing. no outgoing messages in FileConnections
-    inline vrpn_int32 handle_outgoing_messages( const struct timeval * pTimeout = NULL )
-		{ return 0; }
+
+    vrpn_int32 queue_outgoing_message(
+		vrpn_uint32 len, 
+        struct timeval time,
+        vrpn_int32 type, 
+        vrpn_int32 service, 
+        const char * buffer,
+        vrpn_uint32 class_of_service, 
+        vrpn_bool sent_mcast );
+
 
     vrpn_int32 handle_incoming_messages( const struct timeval * pTimeout = NULL );
 
+    virtual vrpn_int32 handle_incoming_udp_message(
+        void * userdata, vrpn_HANDLERPARAM p);
 
-protected: // playback functions - are public in base class
+    
+    // * send pending report (that have been packed), and clear the buffer
+    // * this function was protected, now is public, so we can use
+    //   it to send out intermediate results without calling mainloop
+    virtual vrpn_int32 send_pending_reports(){ return 0;}
+    
+    // }}}
+    // {{{ playback functions - are public in base class ...
+protected: 
 
 	// rate of 0.0 is paused, 1.0 is normal speed
     void set_replay_rate(vrpn_float32 rate);
@@ -128,8 +175,9 @@ protected: // playback functions - are public in base class
     vrpn_int32 jump_to_time(vrpn_float64 newtime);
     vrpn_int32 jump_to_time(timeval newtime);
 
-
-protected: // playback functions
+    // }}}
+    // {{{ playback functions ...
+protected: 
 
     void play_to_user_message();
 
@@ -151,11 +199,13 @@ protected: // playback functions
     static vrpn_int32 handle_set_replay_rate (void *, vrpn_HANDLERPARAM);
     static vrpn_int32 handle_reset (void *, vrpn_HANDLERPARAM);
     static vrpn_int32 handle_play_to_time (void *, vrpn_HANDLERPARAM);
-	
-protected: // data members
+
+    // }}}	
+    // {{{ data members ...
+protected: 
 
 	// pointer to let NetConnection do callbacks
-	ConnectionControllerCallbackInterface* d_callback_interface_ptr;
+	vrpn_ConnectionControllerCallbackInterface* d_callback_interface_ptr;
 
 	vrpn_int32 status;
 
@@ -187,7 +237,21 @@ protected: // data members
     vrpn_LOGLIST * d_logTail;  // the most recently read-in record
     vrpn_LOGLIST * d_currentLogEntry;  // most recently replayed
     vrpn_LOGLIST * d_startEntry;  // potentially after initial system messages
+
+    // }}}
+
+#ifndef HAVE_DYNAMIC_CAST
+public:
+    // this is a temporary measure until you can assume
+    // dynamic_cast in all compilers
+    virtual vrpn_NewFileConnection* get_FileConnectionPtr()
+    {
+        // all other BaseConnection objects return NULL
+        return this;
+    }
+#endif
 };
+
 
 
 #endif  // VRPN_FILE_CONNECTION_H

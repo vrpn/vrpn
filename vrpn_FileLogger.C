@@ -1,14 +1,14 @@
-#include <vrpn_FileLogger.h>
+#include "vrpn_FileLogger.h"
 
 
 
-//**************************************************************************
-//**************************************************************************
+//==========================================================================
+//==========================================================================
 //
 // vrpn_FileLogger: public: c'tors and d'tors
 //
-//**************************************************************************
-//**************************************************************************
+//==========================================================================
+//==========================================================================
 
 vrpn_FileLogger::vrpn_FileLogger(
 	char *_d_logname,
@@ -16,34 +16,44 @@ vrpn_FileLogger::vrpn_FileLogger(
 	vrpnLogFilterEntry *_d_logfilters
 	) :
     d_logmode (_d_logmode),
-    d_log_filters (_d_logfilters)
+    d_logfilters (_d_logfilters)
 {
 
-		d_logname = new char[strlen(logfile_name)+1];
-		strcpy(d_logname,logfile_name,strlen(logfile_name)+1);
+		d_logname = new char[strlen(_d_logname)+1];
+		strcpy(d_logname,_d_logname);
 		open_log();
 }
 
 vrpn_FileLogger::~vrpn_FileLogger()
 {
 	close_log();
+
+	// Get rid of all the log filter records if there are any
+	if (d_logfilters) {
+		vrpnLogFilterEntry * next;
+		while (d_logfilters) {
+			next = d_logfilters->next;
+			delete d_logfilters;
+			d_logfilters = next;
+		}
+	}
 }
 
 
-//**************************************************************************
-//**************************************************************************
+//==========================================================================
+//==========================================================================
 //
 // vrpn_FileLogger: public: logging functions
 //
-//**************************************************************************
-//**************************************************************************
+//==========================================================================
+//==========================================================================
 
 // differs a bit from old log_message found in OneConnection. 
 // type translation from remote to local is done outside this class
 vrpn_int32 vrpn_FileLogger::log_message (vrpn_int32 len, 
 										 struct timeval time,
 										 vrpn_int32 type, 
-										 vrpn_int32 sender, 
+										 vrpn_int32 service, 
 										 const char * buffer)
 {
 	vrpn_LOGLIST * lp;
@@ -56,13 +66,10 @@ vrpn_int32 vrpn_FileLogger::log_message (vrpn_int32 len,
 		return -1;
 	}
 	lp->data.type = htonl(type);
-	lp->data.sender = htonl(sender);
+	lp->data.service = htonl(service);
 
-	// adjust the time stamp by the clock offset (as in do_callbacks_for)
-	struct timeval tvTemp = vrpn_TimevalSum(time, tvClockOffset);
-  
-	lp->data.msg_time.tv_sec = htonl(tvTemp.tv_sec);
-	lp->data.msg_time.tv_usec = htonl(tvTemp.tv_usec);
+	lp->data.msg_time.tv_sec = htonl(time.tv_sec);
+	lp->data.msg_time.tv_usec = htonl(time.tv_usec);
 
 	lp->data.payload_len = htonl(len);
 	lp->data.buffer = new char [len];
@@ -79,10 +86,8 @@ vrpn_int32 vrpn_FileLogger::log_message (vrpn_int32 len,
 	// filter (user) messages
 	if (type >= 0) {  // do not filter system messages
 
-		p.type = local_type_id(type);
-		p.sender = local_sender_id(sender);
-		
-
+		p.type = type;
+		p.service = service;
 		p.msg_time.tv_sec = time.tv_sec;
 		p.msg_time.tv_usec = time.tv_usec;
 		p.payload_len = len;
@@ -122,30 +127,30 @@ vrpn_int32 vrpn_FileLogger::register_log_filter (vrpn_LOGFILTER filter,
 
 	newEntry->filter = filter;
 	newEntry->userdata = userdata;
-	newEntry->next = endpoint.d_log_filters;
-	endpoint.d_log_filters = newEntry;
+	newEntry->next = d_logfilters;
+	d_logfilters = newEntry;
 	
 	return 0;
 }
 
-vrpn_int32 vrpn_OneConnection::check_log_filters (vrpn_HANDLERPARAM message) 
+vrpn_int32 vrpn_FileLogger::check_log_filters (vrpn_HANDLERPARAM message) 
 {
 	vrpnLogFilterEntry * nextFilter;
 	
-	for (nextFilter = d_log_filters; nextFilter; nextFilter = nextFilter->next)
+	for (nextFilter = d_logfilters; nextFilter; nextFilter = nextFilter->next)
 		if ((*nextFilter->filter)(nextFilter->userdata, message))
 			return 1;  // don't log
 	
 	return 0;
 }
 
-//**************************************************************************
-//**************************************************************************
+//==========================================================================
+//==========================================================================
 //
 // vrpn_FileLogger: protected: setup and teardown
 //
-//**************************************************************************
-//**************************************************************************
+//==========================================================================
+//==========================================================================
 
 vrpn_int32 vrpn_FileLogger::open_log () 
 {

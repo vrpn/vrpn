@@ -1,29 +1,21 @@
-
+#ifndef VRPN_BASE_MULTICAST_H
+#define VRPN_BASE_MULTICAST_H
 
 #include "vrpn_Shared.h"
-#include "vrpn_ConnectionOldCommonStuff.h"
+#include "vrpn_ConnectionCommonStuff.h"
+#include "vrpn_CommonSystemIncludes.h"
 
 //==========================================================================
 //
-// class vrpn_McastGroupDescrp
+// struct vrpn_McastGroupDescrp
 //
 // this is a helper class for encapsulating information about the multicast
 // channel. this class is marshalled and passed through the network to the 
 // client during the setup phase of multicast communications.
 //
 //==========================================================================
-class vrpn_McastGroupDescrp {
-
-public:
-
-  //-------------------------------------------------------------------
-  // constructor
-  //-------------------------------------------------------------------
-  vrpn_McastGroupDescrp(){};
-
-  //-------------------------------------------------------------------
-  // data members
-  //-------------------------------------------------------------------
+struct vrpn_McastGroupDescrp 
+{
   char d_mcast_group[20]; // string in dot notation
   vrpn_int32 d_mcast_addr; // 32 bit number form
   vrpn_uint16 d_mcast_port;
@@ -94,3 +86,4 @@ private:
 };
 
 
+#endif // VRPN_BASE_MULTICAST_H

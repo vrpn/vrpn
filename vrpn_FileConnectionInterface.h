@@ -1,8 +1,8 @@
-#ifndef VRPN_FILE_CONNECTION_CONTROLLER_INTERFACE_H
-#define VRPN_FILE_CONNECTION_CONTROLLER_INTERFACE_H
+#ifndef VRPN_FILE_CONNECTION_INTERFACE_H
+#define VRPN_FILE_CONNECTION_INTERFACE_H
 
 //=============================================================================
-// vrpn_FileConnection_ControllerInterface
+// vrpn_FileConnectionInterface
 //
 // Stefan Sain, July 1999
 //
@@ -12,16 +12,16 @@
 //=============================================================================
 
 #include "vrpn_Shared.h"
-#include "vrpn_CommonSystemIncludes.h"
+//#include "vrpn_CommonSystemIncludes.h"
 #include "vrpn_ConnectionCommonStuff.h"
 
-class vrpn_FileConnection_ControllerInterface 
+class vrpn_FileConnectionInterface 
 {
 
 public:
 
-    vrpn_FileConnection_ControllerInterface();
-    virtual ~vrpn_FileConnection_ControllerInterface();
+    vrpn_FileConnectionInterface();
+    virtual ~vrpn_FileConnectionInterface();
 	
     virtual vrpn_int32 time_since_connection_open (struct timeval * elapsed_time) = 0;
 	
@@ -87,4 +87,4 @@ protected:
 
 };
 
-#endif // VRPN_FILE_CONNECTION_CONTROLLER_INTERFACE_H
+#endif // VRPN_FILE_CONNECTION_INTERFACE_H

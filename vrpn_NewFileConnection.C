@@ -1,18 +1,4 @@
-#include "vrpn_FileConnection.h"
-
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <limits.h>
-
-#ifndef _WIN32
-#include <unistd.h>
-#include <netinet/in.h>
-#endif
-
-#include "vrpn_cygwin_hack.h"
+#include "vrpn_NewFileConnection.h"
 
 #define CHECK(x) if (x == -1) return -1
 
@@ -22,24 +8,21 @@
 // be hard to go back, but... -PBW 3/99
 
 
-//**************************************************************************
-//**************************************************************************
+//==========================================================================
+//==========================================================================
 //
-// vrpn_FileConnection: public: c'tors and d'tors
+// vrpn_NewFileConnection: public: c'tors and d'tors
 //
-//**************************************************************************
-//**************************************************************************
+//==========================================================================
+//==========================================================================
 
 
-vrpn_FileConnection::vrpn_FileConnection (
-	ConnectionControllerCallbackInterface* ccci,
-	const char * file_name
-	) :
-    //vrpn_Connection (file_name),
-    d_controllerId (register_sender("vrpn File Controller")),
-    d_set_replay_rate_type (register_message_type("vrpn File set replay rate")),
-    d_reset_type (register_message_type("vrpn File reset")),
-    d_play_to_time_type (register_message_type("vrpn File play to time")),
+vrpn_NewFileConnection::vrpn_NewFileConnection (
+	vrpn_ConnectionControllerCallbackInterface* ccci,
+	const char * file_name,
+    const char * local_logfile_name,
+    vrpn_int32 local_log_mode) :
+    vrpn_BaseConnection(ccci,local_logfile_name,local_log_mode),
     d_rate (1.0f),
     d_file (NULL),
     d_logHead (NULL),
@@ -49,31 +32,25 @@ vrpn_FileConnection::vrpn_FileConnection (
 {
 	const char * bare_file_name;
 	
-	register_handler(d_set_replay_rate_type, handle_set_replay_rate,
-					 this, d_controllerId);
-	register_handler(d_reset_type, handle_reset, this, d_controllerId);
-	register_handler(d_play_to_time_type, handle_play_to_time,
-					 this, d_controllerId);
-
     // necessary to initialize properly in mainloop()
 	d_last_time.tv_usec = d_last_time.tv_sec = 0;
 	
 	bare_file_name = vrpn_copy_file_name(file_name);
 	if (!bare_file_name) {
-		fprintf(stderr, "vrpn_FileConnection:  Out of memory!\n");
-		status = ERROR;
+		fprintf(stderr, "vrpn_NewFileConnection:  Out of memory!\n");
+		status = vrpn_CONNECTION_BROKEN;
 		return;
 	}
 
 	d_file = fopen(bare_file_name, "rb");
 	if (!d_file) {
-		fprintf(stderr, "vrpn_FileConnection:  "
+		fprintf(stderr, "vrpn_NewFileConnection:  "
 				"Could not open file \"%s\".\n", bare_file_name);
 		delete [] (char *) bare_file_name;
-		status = ERROR;
+		status = vrpn_CONNECTION_BROKEN;
 		return;
 	} else {
-		status = CONNECTED;
+		status = vrpn_CONNECTION_CONNECTED;
 	}
 
 	delete [] (char *) bare_file_name;
@@ -81,16 +58,16 @@ vrpn_FileConnection::vrpn_FileConnection (
 	// PRELOAD
 	// TCH 16 Sept 1998
 
-	//fprintf(stderr, "vrpn_FileConnection::vrpn_FileConnection: Preload...\n");
+	//fprintf(stderr, "vrpn_NewFileConnection::vrpn_NewFileConnection: Preload...\n");
 
 	if (read_cookie() < 0) {
-		status = ERROR;
+		status = vrpn_CONNECTION_BROKEN;
 		return;
 	}
 	while (!read_entry());
 	d_currentLogEntry = d_logHead;
 
-	//fprintf(stderr, "vrpn_FileConnection::vrpn_FileConnection: Done preload.\n");
+	//fprintf(stderr, "vrpn_NewFileConnection::vrpn_NewFileConnection: Done preload.\n");
 
 	d_startEntry = d_logHead;
 	d_start_time = d_startEntry->data.msg_time;  
@@ -114,7 +91,7 @@ vrpn_FileConnection::vrpn_FileConnection (
 
 
 // virtual
-vrpn_FileConnection::~vrpn_FileConnection () {
+vrpn_NewFileConnection::~vrpn_NewFileConnection () {
 	vrpn_LOGLIST * np;
 	
 	close_file();
@@ -128,39 +105,61 @@ vrpn_FileConnection::~vrpn_FileConnection () {
 	}
 }
 
-//**************************************************************************
-//**************************************************************************
+//==========================================================================
+//==========================================================================
 //
-// vrpn_FileConnection: public: sending and receiving
+// vrpn_NewFileConnection: public: sending and receiving
 //
-//**************************************************************************
-//**************************************************************************
+//==========================================================================
+//==========================================================================
 
 // virtual
-vrpn_int32 vrpn_FileConnection::mainloop (const struct timeval * timeout)
+vrpn_int32 vrpn_NewFileConnection::mainloop (const struct timeval * timeout)
 {
 	vrpn_int32 retval = 0;
 
 	switch( status ){
-	case NOT_CONNECTED:
+	case vrpn_CONNECTION_LISTEN:
 		// have reached end of file
 		// but reset() will change state to
-		// CONNECTED
+		// vrpn_CONNECTION_CONNECTED
 		break;
-	case CONNECTED:
+	case vrpn_CONNECTION_CONNECTED:
 		retval = handle_incoming_messages(timeout);
 		break;
-	case ERROR:
+	case vrpn_CONNECTION_BROKEN:
 	default:
 		// error - exit program?
-		cerr << "vrpn_FileConnection: mainloop: status = " << status << endl;
+		cerr << "vrpn_NewFileConnection: mainloop: status = " << status << endl;
 		exit(1);
 	}
 	   
 	return retval;
 }
-vrpn_int32 
-vrpn_FileConnection::handle_incoming_messages( const struct timeval * pTimeout = NULL )
+
+
+vrpn_int32 vrpn_NewFileConnection::queue_outgoing_message(
+		vrpn_uint32 len, 
+        struct timeval time,
+        vrpn_int32 type, 
+        vrpn_int32 service, 
+        const char * buffer,
+        vrpn_uint32 class_of_service, 
+        vrpn_bool sent_mcast )
+{
+
+    // might want to log outgoing messages
+    if (d_local_logmode & vrpn_LOG_OUTGOING) { // FileLogger object exists
+        if (d_logger_ptr->log_message(len, time, type, service, buffer)){
+            return -1;
+        }
+    }
+
+    return 0;
+}
+
+vrpn_int32 vrpn_NewFileConnection::handle_incoming_messages( 
+    const struct timeval * pTimeout)
 {
     // timeout ignored for now, needs to be added
 
@@ -196,20 +195,75 @@ vrpn_FileConnection::handle_incoming_messages( const struct timeval * pTimeout =
     }
 }
 
+//==========================================================================
+//==========================================================================
+//
+// vrpn_NewFileConnection: public: type and service id functions
+//
+//==========================================================================
+//==========================================================================
+
+// was: newLocalSender
+vrpn_int32 vrpn_NewFileConnection::register_local_service(
+    const char *service_name,  // e.g. "tracker0"
+    vrpn_int32 local_id )      // from controller
+{
+    vrpn_int32 service_id = 
+        vrpn_BaseConnection::register_local_service(
+            service_name,
+            local_id);
+
+    if( strcmp("vrpn File Controller",service_name) == 0 ){
+        d_controllerId = service_id;
+    }
+
+    return service_id;
+}
+
+// was: newLocalType
+vrpn_int32 vrpn_NewFileConnection::register_local_type(
+    const char *type_name,   // e.g. "tracker_pos"
+    vrpn_int32 local_id )    // from controller
+{
+    vrpn_int32 type_id = 
+        vrpn_BaseConnection::register_local_type(
+            type_name,
+            local_id);
 
 
-//**************************************************************************
-//**************************************************************************
+    // register handlers if these types are being registered
+    if( strcmp("vrpn File set replay rate",type_name) == 0 ){
+        d_callback_interface_ptr->register_handler(
+            type_id, handle_set_replay_rate,
+            this, d_controllerId);
+    } 
+    else if( strcmp("vrpn File reset",type_name) == 0 ){
+        d_callback_interface_ptr->register_handler(
+            type_id, handle_reset, 
+            this, d_controllerId);
+    } 
+    else if( strcmp("vrpn File play to time",type_name) == 0 ){
+        d_callback_interface_ptr->register_handler(
+            type_id, handle_play_to_time,
+            this, d_controllerId);
+    }
+
+    return type_id;
+
+}
+
+//==========================================================================
+//==========================================================================
 //
-// vrpn_FileConnection: protected: playback functions
+// vrpn_NewFileConnection: protected: playback functions
 //
-//**************************************************************************
-//**************************************************************************
+//==========================================================================
+//==========================================================================
 
 // Advances through the file, calling callbacks, up until
 // a user message (type >= 0) is encountered)
 // NOTE: assumes pre-load (could be changed to not)
-void vrpn_FileConnection::play_to_user_message()
+void vrpn_NewFileConnection::play_to_user_message()
 {
     if (!d_currentLogEntry) {
         return;
@@ -237,13 +291,13 @@ void vrpn_FileConnection::play_to_user_message()
 }
 
 
-vrpn_int32 vrpn_FileConnection::jump_to_time(vrpn_float64 newtime)
+vrpn_int32 vrpn_NewFileConnection::jump_to_time(vrpn_float64 newtime)
 {
     return jump_to_time(vrpn_MsecsTimeval(newtime * 1000));
 }
 
 // assumes preload(?)
-vrpn_int32 vrpn_FileConnection::jump_to_time(timeval newtime)
+vrpn_int32 vrpn_NewFileConnection::jump_to_time(timeval newtime)
 {
     d_time = vrpn_TimevalSum(d_start_time, newtime);
 	
@@ -275,7 +329,7 @@ vrpn_int32 vrpn_FileConnection::jump_to_time(timeval newtime)
 
   // checks if there is at least one log entry that occurs
   // between the current d_time and the given filetime
-vrpn_int32 vrpn_FileConnection::need_to_play(timeval filetime)
+vrpn_int32 vrpn_NewFileConnection::need_to_play(timeval filetime)
 {
    if (!d_currentLogEntry) {
         vrpn_int32 retval = read_entry();
@@ -292,13 +346,13 @@ vrpn_int32 vrpn_FileConnection::need_to_play(timeval filetime)
 }
 
 // plays to an elapsed end_time (in seconds)
-vrpn_int32 vrpn_FileConnection::play_to_time(vrpn_float64 end_time)
+vrpn_int32 vrpn_NewFileConnection::play_to_time(vrpn_float64 end_time)
 {
     return play_to_time(vrpn_MsecsTimeval(end_time * 1000));
 }
 
 // plays to an elapsed end_time
-vrpn_int32 vrpn_FileConnection::play_to_time(timeval end_time)
+vrpn_int32 vrpn_NewFileConnection::play_to_time(timeval end_time)
 {
     return play_to_filetime(vrpn_TimevalSum(d_start_time, end_time));
 }
@@ -307,7 +361,7 @@ vrpn_int32 vrpn_FileConnection::play_to_time(timeval end_time)
 
   // plays all entries between d_time and end_filetime
   // returns -1 on error, 0 on success
-vrpn_int32 vrpn_FileConnection::play_to_filetime(timeval end_filetime) {
+vrpn_int32 vrpn_NewFileConnection::play_to_filetime(timeval end_filetime) {
     
     vrpn_int32 ret;
     
@@ -327,7 +381,7 @@ vrpn_int32 vrpn_FileConnection::play_to_filetime(timeval end_filetime) {
 }
 
   // returns 1 if we're at the EOF, -1 on error
-vrpn_int32 vrpn_FileConnection::eof()
+vrpn_int32 vrpn_NewFileConnection::eof()
 {
     if (d_currentLogEntry) {
         return 0;
@@ -340,7 +394,7 @@ vrpn_int32 vrpn_FileConnection::eof()
     }
 	
 	if (ret == 1)
-		status = NOT_CONNECTED;
+		status = vrpn_CONNECTION_LISTEN;
 	
     return ret;
 }
@@ -349,7 +403,7 @@ vrpn_int32 vrpn_FileConnection::eof()
 // returns
 //   -1 on error (including EOF, call eof() to test)
 //    0 for normal result (played one entry)
-vrpn_int32 vrpn_FileConnection::playone() 
+vrpn_int32 vrpn_NewFileConnection::playone() 
 {
     static timeval tvMAX = { LONG_MAX, LONG_MAX };
 	
@@ -368,7 +422,7 @@ vrpn_int32 vrpn_FileConnection::playone()
 //   -1 on error (including EOF, call eof() to test)
 //    0 for normal result (played one entry)
 //    1 if we hit end_filetime
-vrpn_int32 vrpn_FileConnection::playone_to_filetime(timeval end_filetime)
+vrpn_int32 vrpn_NewFileConnection::playone_to_filetime(timeval end_filetime)
 {
 	// read from disk if not in memory
     if (!d_currentLogEntry) {
@@ -391,18 +445,21 @@ vrpn_int32 vrpn_FileConnection::playone_to_filetime(timeval end_filetime)
 
 	// Handle this log entry
     if (header.type >= 0) {
-        if (endpoint.local_type_id(header.type) >= 0)                
-            if (d_callback_interface_ptr->do_callbacks_for(endpoint.local_type_id(header.type),
-								 endpoint.local_sender_id(header.sender),
-								 header.msg_time, header.payload_len,
-								 header.buffer))
+        if (translate_remote_type_to_local(header.type) >= 0) {
+            if (d_callback_interface_ptr->do_callbacks_for(
+                translate_remote_type_to_local(header.type),
+                translate_remote_service_to_local(header.service),
+                header.msg_time, header.payload_len,
+                header.buffer)) {
                 return -1;     
+            }
+        }
             
     } else {  // system handler            
 
 	    if (header.type != vrpn_CONNECTION_UDP_DESCRIPTION) {
 	        if (system_messages[-header.type](this, header)) {
-		        fprintf(stderr, "vrpn_FileConnection::playone_to_filename:  "
+		        fprintf(stderr, "vrpn_NewFileConnection::playone_to_filename:  "
 						"Nonzero system return.\n");
 		        return -1;
 	        }
@@ -418,14 +475,14 @@ vrpn_int32 vrpn_FileConnection::playone_to_filetime(timeval end_filetime)
 }
 
 
-vrpn_float64 vrpn_FileConnection::get_length_secs()
+vrpn_float64 vrpn_NewFileConnection::get_length_secs()
 {
     return vrpn_TimevalMsecs(get_length())/1000;
 }
 
 
 //virtual
-timeval vrpn_FileConnection::get_length()
+timeval vrpn_NewFileConnection::get_length()
 {
     timeval len = {0, 0};
 
@@ -438,7 +495,7 @@ timeval vrpn_FileConnection::get_length()
 }
 
 
-timeval vrpn_FileConnection::get_lowest_user_timestamp()
+timeval vrpn_NewFileConnection::get_lowest_user_timestamp()
 {
     timeval low = {LONG_MAX, LONG_MAX};
 
@@ -463,7 +520,7 @@ timeval vrpn_FileConnection::get_lowest_user_timestamp()
 // Some subclasses may redefine time.
 
 // virtual
-vrpn_int32 vrpn_FileConnection::time_since_connection_open
+vrpn_int32 vrpn_NewFileConnection::time_since_connection_open
                                 (timeval * elapsed_time) 
 {
 	*elapsed_time = vrpn_TimevalDiff(d_time, d_start_time);
@@ -476,14 +533,14 @@ vrpn_int32 vrpn_FileConnection::time_since_connection_open
 // 0 otherwise.
 
 // virtual
-vrpn_int32 vrpn_FileConnection::read_cookie () 
+vrpn_int32 vrpn_NewFileConnection::read_cookie () 
 {
 	char readbuf [501];  // HACK!
 	vrpn_int32 retval;
   
 	retval = fread(readbuf, vrpn_cookie_size(), 1, d_file);
 	if (retval <= 0) {
-		fprintf(stderr, "vrpn_FileConnection::read_cookie:  "
+		fprintf(stderr, "vrpn_NewFileConnection::read_cookie:  "
 				"No cookie.  If you're sure this is a logfile, "
 				"run add_vrpn_cookie on it and try again.\n");
 		return -1;
@@ -497,19 +554,19 @@ vrpn_int32 vrpn_FileConnection::read_cookie ()
 }
 
 // virtual
-vrpn_int32 vrpn_FileConnection::read_entry () 
+vrpn_int32 vrpn_NewFileConnection::read_entry () 
 {
 	vrpn_LOGLIST * newEntry;
 	vrpn_int32 retval;
 
 	newEntry = new vrpn_LOGLIST;
 	if (!newEntry) {
-		fprintf(stderr, "vrpn_FileConnection::read_entry: Out of memory.\n");
+		fprintf(stderr, "vrpn_NewFileConnection::read_entry: Out of memory.\n");
 		return -1;
 	}
 
 	if (!d_file) {
-		fprintf(stderr, "vrpn_FileConnection::read_entry: no open file\n");
+		fprintf(stderr, "vrpn_NewFileConnection::read_entry: no open file\n");
 		return -1;
 	}
 
@@ -527,7 +584,7 @@ vrpn_int32 vrpn_FileConnection::read_entry ()
 	}
 
 	header.type = ntohl(header.type);
-	header.sender = ntohl(header.sender);
+	header.service = ntohl(header.service);
 	header.msg_time.tv_sec = ntohl(header.msg_time.tv_sec);
 	header.msg_time.tv_usec = ntohl(header.msg_time.tv_usec);
 	header.payload_len = ntohl(header.payload_len);
@@ -536,7 +593,7 @@ vrpn_int32 vrpn_FileConnection::read_entry ()
 	
 	header.buffer = new char [header.payload_len];
 	if (!header.buffer) {
-		fprintf(stderr, "vrpn_FileConnection::read_entry:  "
+		fprintf(stderr, "vrpn_NewFileConnection::read_entry:  "
 				"Out of memory.\n");
 		return -1;
 	}
@@ -565,7 +622,7 @@ vrpn_int32 vrpn_FileConnection::read_entry ()
 }
 
 // virtual
-vrpn_int32 vrpn_FileConnection::close_file () {
+vrpn_int32 vrpn_NewFileConnection::close_file () {
 
 	if (d_file)
 		fclose(d_file);
@@ -576,32 +633,42 @@ vrpn_int32 vrpn_FileConnection::close_file () {
 }
 
 
-vrpn_int32 vrpn_FileConnection::reset()
+vrpn_int32 vrpn_NewFileConnection::reset()
 {
     d_currentLogEntry = d_startEntry;
     d_time = d_startEntry->data.msg_time;
 	// reset for mainloop()
     d_last_time.tv_usec = d_last_time.tv_sec = 0;
 
-	// reset status to CONNECTED
-	// could have been NOT_CONNECTED if eof
+	// reset status to vrpn_CONNECTION_CONNECTED
+	// could have been vrpn_CONNECTION_LISTEN if eof
 	// was reached
-	status = CONNECTED;
+	status = vrpn_CONNECTION_CONNECTED;
     return 0;
 }
 
 
-void vrpn_FileConnection::set_replay_rate(vrpn_float32 rate)
+void vrpn_NewFileConnection::set_replay_rate(vrpn_float32 rate)
 {
     d_rate = rate;
 }
 
+
+
+//==========================================================================
+//==========================================================================
+//
+// vrpn_NewFileConnection: protected: handlers
+//
+//==========================================================================
+//==========================================================================
+
 // static
 vrpn_int32 
-vrpn_FileConnection::handle_set_replay_rate(void * userdata, 
+vrpn_NewFileConnection::handle_set_replay_rate(void * userdata, 
 											vrpn_HANDLERPARAM p) 
 {
-	vrpn_FileConnection * me = (vrpn_FileConnection *) userdata;
+	vrpn_NewFileConnection * me = (vrpn_NewFileConnection *) userdata;
 	
 	vrpn_int32 value = ntohl(*(vrpn_int32 *) (p.buffer));
 	me->set_replay_rate(*((vrpn_float32 *) &value));
@@ -611,20 +678,20 @@ vrpn_FileConnection::handle_set_replay_rate(void * userdata,
 
 // static
 vrpn_int32 
-vrpn_FileConnection::handle_reset(void * userdata, 
+vrpn_NewFileConnection::handle_reset(void * userdata, 
 								  vrpn_HANDLERPARAM) 
 {
-	vrpn_FileConnection * me = (vrpn_FileConnection *) userdata;
-	fprintf(stderr, "In vrpn_FileConnection::handle_reset().\n");
+	vrpn_NewFileConnection * me = (vrpn_NewFileConnection *) userdata;
+	fprintf(stderr, "In vrpn_NewFileConnection::handle_reset().\n");
 	return me->reset();
 }
 
 // static
 vrpn_int32 
-vrpn_FileConnection::handle_play_to_time(void * userdata, 
+vrpn_NewFileConnection::handle_play_to_time(void * userdata, 
 										 vrpn_HANDLERPARAM p) 
 {
-	vrpn_FileConnection * me = (vrpn_FileConnection *) userdata;
+	vrpn_NewFileConnection * me = (vrpn_NewFileConnection *) userdata;
 	timeval newtime;
 
 	newtime.tv_sec = ((vrpn_int32 *) (p.buffer))[0];

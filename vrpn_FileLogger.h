@@ -4,6 +4,12 @@
 // This file implements logging functionality that was formerly
 // a part of vrpn_Connection.
 
+// The FileLogger class is a dumb claass. It just stores messages. It
+// assumes that types and services have been translated to local, if
+// that is desired, and that the clock offset has already been
+// adjusted
+
+
 #ifndef VRPN_FILE_LOGGER_H
 #define VRPN_FILE_LOGGER_H
 #include <stdio.h>  // for FILE
@@ -12,7 +18,8 @@
 #include "vrpn_Shared.h"
 #endif
 
-#include <vrpn_ConnectionOldCommonStuff.h>
+#include "vrpn_ConnectionCommonStuff.h"
+#include "vrpn_CommonSystemIncludes.h"
 
 class vrpn_FileLogger {
 

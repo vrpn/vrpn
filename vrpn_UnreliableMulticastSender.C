@@ -1,4 +1,3 @@
-
 #include "vrpn_UnreliableMulticastSender.h"
 
 //==========================================================================
@@ -153,7 +152,7 @@ vrpn_int32 vrpn_UnreliableMulticastSender::marshall_message(vrpn_uint32 len,
 // many reports are packed into the same multicast message 
 vrpn_int32 vrpn_UnreliableMulticastSender::send_pending_reports() {
 
-   vrpn_int32 ret, sent = 0;
+   vrpn_int32 ret;
 
    // Check for an exception on the socket.  If there is one, shut it
    // down and go back to listening.
@@ -230,7 +229,7 @@ void vrpn_UnreliableMulticastSender::init_mcast_channel(){
 
 	// right now a multicast  address is chosen from the first range
 	if( get_mcast_group_name() == NULL ){
-#ifdef WIN32
+#ifdef _WIN32
 		srand(_getpid());
 #else
 		srand(getpid());

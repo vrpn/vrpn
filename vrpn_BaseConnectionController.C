@@ -2,37 +2,37 @@
 
 
 
-//**************************************************************************
-//**************************************************************************
+//==========================================================================
+//==========================================================================
 // 
-// {{{ vrpn_ConnectionController constructors and destructor
+// {{{ vrpn_BaseConnectionController constructors and destructor
 // 
-//**************************************************************************
-//**************************************************************************
+//==========================================================================
+//==========================================================================
 
 
 vrpn_BaseConnectionController::vrpn_BaseConnectionController(
-	char * local_logfile,
+	const char * local_logfile,
 	vrpn_int32 local_logmode,
-	char * remote_logfile,
+	const char * remote_logfile,
 	vrpn_int32 remote_logmode,
-    vrpn_float64 dFreq, 
-    vrpn_int32 cOffsetWindow
-	):
+    vrpn_float64 _dFreq, 
+    vrpn_int32 _cOffsetWindow):
 	d_local_logmode(local_logmode),
-	d_remote_logmode(remote_logmode)
+	d_remote_logmode(remote_logmode),
+    dFreq(_dFreq),
+    cOffsetWindow(_cOffsetWindow)
 {
-
-    // init for clock server/client
-    // need to init gettimeofday for the pc
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-
+    
 	vrpn_int32	i;
 
 	// Lots of constants used to be set up here.  They were moved
 	// into the constructors in 02.10;  this will create a slight
-        // increase in maintenance burden keeping the constructors consistient.
+    // increase in maintenance burden keeping the constructors consistient.
+
+    // need to init gettimeofday for the pc
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
 
 	// offset of clocks on connected machines -- local - remote
 	// (this should really not be here, it should be in adjusted time
@@ -63,20 +63,18 @@ vrpn_BaseConnectionController::vrpn_BaseConnectionController(
 		if (!d_local_logname) {
 			fprintf(stderr, "vrpn_BaseConnectionController::vrpn_BaseConnectionController:  "
 					"Out of memory!\n");
-			status = BROKEN;
 			return;
 		}
-		strcpy(d_local_logname,local_logfile,strlen(local_logfile)+1);
+		strcpy(d_local_logname,local_logfile);
 	}
 	if( remote_logfile ){
 		d_remote_logname = new char [1 + strlen(remote_logfile)];
 		if (!d_remote_logname) {
 			fprintf(stderr, "vrpn_BaseConnectionController::vrpn_BaseConnectionController:  "
 					"Out of memory!\n");
-			status = BROKEN;
 			return;
 		}
-		strcpy(d_remote_logname,remote_logfile,strlen(remote_logfile)+1);
+		strcpy(d_remote_logname,remote_logfile);
 	}
 
 #ifdef _WIN32
@@ -101,15 +99,30 @@ vrpn_BaseConnectionController::vrpn_BaseConnectionController(
 
 vrpn_BaseConnectionController::~vrpn_BaseConnectionController()
 {
-    // delete stuff in services/types/callbacks lists
-    vrpn_int32 i;
-    for (i = 0; i < num_my_services; ++i) {
-        delete my_services[i];
-    }
-    for (i = 0; i < num_my_types; ++i) {
-        delete my_types[i].name;
-        delete my_types[i].who_cares;
-    }
+	vrpn_int32 i;
+	vrpn_MsgCallbackEntry *pVMCB, *pVMCB_Del;
+	for (i=0;i<num_my_types;i++) {
+		delete my_types[i].name;
+		pVMCB=my_types[i].who_cares;
+		while (pVMCB) {
+			pVMCB_Del=pVMCB;
+			pVMCB=pVMCB_Del->next;
+			delete pVMCB_Del;
+		}
+	}
+	for (i=0;i<num_my_services;i++) {
+		delete my_services[i];
+	}
+	
+	// free generic message callbacks
+	pVMCB=generic_callbacks;
+	
+	while (pVMCB) {
+		pVMCB_Del=pVMCB;
+		pVMCB=pVMCB_Del->next;
+		delete pVMCB_Del;
+	}
+
     // XXX callbacks
 
     //...XXX...
@@ -117,18 +130,18 @@ vrpn_BaseConnectionController::~vrpn_BaseConnectionController()
 
 // }}}
 // 
-//**************************************************************************
-//**************************************************************************
+//==========================================================================
+//==========================================================================
 // 
 // {{{ vrpn_BaseConnectionController services and types
 
 // 
-//**************************************************************************
-//**************************************************************************
+//==========================================================================
+//==========================================================================
 
 vrpn_int32
 vrpn_BaseConnectionController::register_service(
-    const char * const name )
+    const char * name )
 {
     vrpn_int32	i;
 
@@ -188,7 +201,7 @@ vrpn_BaseConnectionController::register_service(
 
 vrpn_int32
 vrpn_BaseConnectionController::register_message_type(
-    const char * const name )
+    const char * name )
 {
     vrpn_int32	i;
 
@@ -244,7 +257,7 @@ vrpn_BaseConnectionController::register_message_type(
 
 vrpn_int32
 vrpn_BaseConnectionController::get_service_id(
-    const char * const name ) const
+    const char * name ) const
 {
     vrpn_int32	i;
 
@@ -259,7 +272,7 @@ vrpn_BaseConnectionController::get_service_id(
 
 vrpn_int32
 vrpn_BaseConnectionController::get_message_type_id(
-    const char * const name ) const
+    const char * name ) const
 {
     vrpn_int32	i;
 
@@ -295,13 +308,13 @@ vrpn_BaseConnectionController::get_message_type_name(
 
 // }}}
 // 
-//**************************************************************************
-//**************************************************************************
+//==========================================================================
+//==========================================================================
 //
-// {{{ vrpn_BaseConnectionController: public: logging get functions
+// {{{ vrpn_BaseConnectionController: public: logging functions
 //
-//**************************************************************************
-//**************************************************************************
+//==========================================================================
+//==========================================================================
 
 vrpn_int32 vrpn_BaseConnectionController::get_local_logmode()
 {

@@ -101,6 +101,9 @@ else
   ifeq ($(HW_OS),hp700_hpux10)
 	CC := CC +a1
   endif
+  ifeq ($(HW_OS),pc_cygwin)
+	CC := g++ -fhuge-objects
+  endif
   ifeq ($(HW_OS),sparc_sunos)
 	CC := /usr/local/lib/CenterLine/bin/CC
   endif
@@ -340,22 +343,28 @@ NEW_LIB_FILES = \
       vrpn_NewFileConnection.C \
       vrpn_NewFileController.C \
       vrpn_FileLogger.C \
-      vrpn_ConnectionOldCommonStuff.C \
+      vrpn_ConnectionCommonStuff.C \
+      vrpn_BaseMulticast.C \
+      vrpn_UnreliableMulticastSender.C \
+      vrpn_UnreliableMulticastRecvr.C
 
 NEW_LIB_OBJECTS = $(patsubst %,$(OBJECT_DIR)/%,$(NEW_LIB_FILES:.C=.o))
 
 NEW_LIB_INCLUDES = \
+      vrpn_ConnectionControllerCallbackInterface.h \
       vrpn_BaseConnectionController.h \
       vrpn_ClientConnectionController.h \
       vrpn_ServerConnectionController.h \
       vrpn_BaseConnection.h \
       vrpn_NetConnection.h \
-      vrpn_FileConnectionControllerInterface.h\
+      vrpn_FileConnectionInterface.h\
       vrpn_NewFileConnection.h \
       vrpn_NewFileController.h \
       vrpn_FileLogger.h \
-      vrpn_ConnectionOldCommonStuff.h \
-      vrpn_ConnectionCommonStuff.h
+      vrpn_ConnectionCommonStuff.h \
+      vrpn_BaseMulticast.h \
+      vrpn_UnreliableMulticastSender.h \
+      vrpn_UnreliableMulticastRecvr.h
 
 
 # Additional files to be compiled into the server library

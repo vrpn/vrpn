@@ -65,7 +65,7 @@ vrpn_int32 vrpn_UnreliableMulticastRecvr::handle_incoming_message(char* inbuf_pt
     vrpn_int32	sel_ret;
     fd_set  readfds, exceptfds;
 	struct  timeval localTimeout;
-	vrpn_uint32	inbuf_len;
+	vrpn_int32	inbuf_len;
 
 #ifdef	VERBOSE2
 	printf("vrpn_UnreliabelMulticastRecvr::handle_incoming_message() called\n");
@@ -205,7 +205,7 @@ void vrpn_UnreliableMulticastRecvr::init_mcast_channel(){
   	d_mcast_addr.sin_addr.s_addr=htonl(INADDR_ANY); // N.B.: differs from sender
   	d_mcast_addr.sin_port=htons(get_mcast_port_num());
 
-#ifdef WIN32
+#ifdef _WIN32
   	// set up socket so local addr can be reused
 	// not sure why you want to do this 
   	if (setsockopt(get_mcast_sock(),SOL_SOCKET,SO_REUSEADDR,(char *)&one,sizeof(one)) < 0) {

@@ -1,5 +1,14 @@
+
 #ifndef VRPN_BASECONNECTIONCONTROLLER_INCLUDED
 #define VRPN_BASECONNECTIONCONTROLLER_INCLUDED
+
+#include "vrpn_CommonSystemIncludes.h"
+#include "vrpn_Shared.h"
+#include "vrpn_ConnectionCommonStuff.h"
+#include "vrpn_ConnectionControllerCallbackInterface.h"
+//#include "vrpn_BaseConnection.h"
+#include "vrpn_NewFileConnection.h"
+#include "vrpn_NetConnection.h"
 
 //
 // In this file, we define the classes
@@ -43,16 +52,6 @@
 // BaseConnection is new.
 //
 
-// {{{ includes
-
-#include <stdio.h>
-#include <string.h>
-
-#include "vrpn_ConnectionCommonStuff.h"
-//#include "vrpn_ConnectionOldCommonStuff.h"  /* should go away */
-
-// }}}
-
 // {{{ Local defs
 
 //-------------------------------------------------
@@ -81,13 +80,6 @@ typedef void (*vrpn_CLOCKSYNCHANDLER)(void *userdata,
 #define VRPN_CLOCK_FULL_SYNC 1
 #define VRPN_CLOCK_QUICK_SYNC 2
 
-#if 0  /* XXX move this out of the .h file */
-void printTime( char *pch, const struct timeval& tv ) {
-  cerr << pch << " " << tv.tv_sec*1000.0 + tv.tv_usec/1000.0
-       << " msecs." << endl;
-}
-#endif
-
 
 
 // HACK
@@ -98,28 +90,28 @@ void printTime( char *pch, const struct timeval& tv ) {
 //                  the nested class is self-referential]
 
 // Description of a callback entry for a user type.
-struct vrpnMsgCallbackEntry {
+struct vrpn_MsgCallbackEntry {
     vrpn_MESSAGEHANDLER     handler;   // Routine to call
     void                  * userdata;  // Passed along
     vrpn_int32              sender;    // Only if from sender
-    vrpnMsgCallbackEntry  * next;      // Next handler
+    vrpn_MsgCallbackEntry  * next;      // Next handler
 };
 
 
-// This is the interface that we provide to the Connection
-// classes so that they can invoke callbacks. The only function
-// of the ConnectionControllers that we want the Connection
-// classes to have access to is do_callbacks_for
-struct ConnectionControllerCallbackInterface
-{
-    virtual vrpn_int32 do_callbacks_for( 
-		vrpn_int32 type, 
-		vrpn_int32 sender,
-		timeval time, 
-		vrpn_uint32 len,
-		const char * buffer) = 0;
+//  // This is the interface that we provide to the Connection
+//  // classes so that they can invoke callbacks. The only function
+//  // of the ConnectionControllers that we want the Connection
+//  // classes to have access to is do_callbacks_for
+//  struct vrpn_ConnectionControllerCallbackInterface
+//  {
+//      virtual vrpn_int32 do_callbacks_for( 
+//  		vrpn_int32 type, 
+//  		vrpn_int32 sender,
+//  		timeval time, 
+//  		vrpn_uint32 len,
+//  		const char * buffer) = 0;
 
-};
+//  };
 
 // }}}
 
@@ -133,9 +125,9 @@ struct ConnectionControllerCallbackInterface
 // ClientConnectionController
 //
 
-class vrpn_BaseConnectionController: public ConnectionControllerCallbackInterface
+class vrpn_BaseConnectionController: public vrpn_ConnectionControllerCallbackInterface
 {
-    // {{{ c'tors,  d'tors, and init
+    // {{{ c'tors, and d'tors
 public:
 
     // OLD COMMENT:
@@ -152,18 +144,21 @@ protected:
 
     // constructor should include these for clock synch
     vrpn_BaseConnectionController(  
-        char *        local_logfile  = NULL,
+        const char *  local_logfile  = NULL,
         vrpn_int32    local_logmode  = vrpn_LOG_NONE,
-        char *        remote_logfile = NULL,
+        const char *  remote_logfile = NULL,
         vrpn_int32    remote_logmode = vrpn_LOG_NONE,
-        vrpn_float64  dFreq          = 4.0, 
-        vrpn_int32    cOffsetWindow  = 2);
+        vrpn_float64  _dFreq          = 4.0, 
+        vrpn_int32    _cOffsetWindow  = 2);
     
-    virtual void init(void) = 0;
     
     // }}}
     // {{{ status
-    
+
+protected:
+
+    vrpn_int32 status;
+
 public:
 
     // are there any connections?
@@ -171,6 +166,12 @@ public:
     
     // overall, all connections are doing okay
     virtual /*bool*/vrpn_int32 all_connections_doing_okay() const = 0;
+
+    // number of connections
+    virtual vrpn_int32 num_connections() const = 0;
+
+    virtual void got_a_connection(void *) = 0;
+    virtual void dropped_a_connection(void *) = 0; 
     
     // some way to get a list of open connection names
     // (one need is for the hiball control panel)
@@ -198,7 +199,7 @@ public:
     // * pack a message that will be sent the next time mainloop() is called
     // * turn off the RELIABLE flag if you want low-latency (UDP) send
     // * was: pack_message
-    virtual vrpn_int32 handle_outgoing_message(
+    virtual vrpn_int32 queue_outgoing_message(
         vrpn_uint32 len, 
         timeval time,
         vrpn_int32 type,
@@ -208,6 +209,7 @@ public:
 
     // }}}
     // {{{ services and types
+
 public:
     // * messages in vrpn are identified by two different ID's
     // * one is the service id.  It will be renamed.  An example is
@@ -253,6 +255,11 @@ public:
     // * was: message_type_name
     const char * get_message_type_name( vrpn_int32 type_id ) const;
 
+    // These are const, but the compiler says that type qualifiers
+    // are meaningless here.
+    vrpn_int32 get_num_my_types( void ){ return num_my_types; }
+    vrpn_int32 get_num_my_services( void ){ return num_my_services; }
+
 protected:  // these are called by the public functions above
 
     virtual void register_service_with_connections(
@@ -262,7 +269,8 @@ protected:  // these are called by the public functions above
         const char * type_name, vrpn_int32 type_id ) = 0;
     
 
-private:
+protected: // changed from private because derived classes need acess
+    // to these and no get/set functions have been written - XXX sain 10/
 
     // [jj: taken from old connection.h]
     // The senders we know about and the message types we know about
@@ -271,17 +279,18 @@ private:
     //   a type by this name?  Only used by filtering.
     
     struct vrpnLocalMapping {
-        char                  * name;       // Name of type
-        vrpnMsgCallbackEntry  * who_cares;  // Callbacks
+        char *                  name;       // Name of type
+        vrpn_MsgCallbackEntry *  who_cares;  // Callbacks
         vrpn_int32              cCares;     // TCH 28 Oct 97
     };
-    char              * my_services [vrpn_CONNECTION_MAX_SERVICES];
+    char *              my_services [vrpn_CONNECTION_MAX_SERVICES];
     vrpn_int32          num_my_services;
     vrpnLocalMapping    my_types [vrpn_CONNECTION_MAX_TYPES];
     vrpn_int32          num_my_types;
 
     // }}}
     // {{{ callbacks
+
 public:
     // * clients and servers register callbacks.  The callbacks are how they
     //   are informed about messages passing between the connections.
@@ -325,12 +334,25 @@ public:
 private:  // implementation of callbacks
 
     // Callbacks on vrpn_ANY_TYPE
-    vrpnMsgCallbackEntry * generic_callbacks;
+    vrpn_MsgCallbackEntry * generic_callbacks;
 
     // }}}
     // {{{ logging and clock
 
 public: // logging functions
+
+    // This calls a function by the same name in BaseConnection, wich
+    // calls the same named function in FileLogger
+    //
+    // Sets up a filter
+    // function for logging.  Any user message to be logged is first
+    // passed to this function, and will only be logged if the
+    // function returns zero (XXX).  NOTE: this only affects local
+    // logging - remote logging is unfiltered!  Only user messages are
+    // filtered; all system messages are logged.  Returns nonzero on
+    // failure.
+    virtual vrpn_int32 register_log_filter (vrpn_LOGFILTER filter, 
+                                            void * userdata) = 0;
 
     virtual vrpn_int32 get_local_logmode();
     virtual void get_local_logfile_name(char *);
@@ -349,40 +371,18 @@ private:
 public:  // clock
     
     // offset of clocks on connected machines -- local - remote
-    struct timeval tvClockOffset;
-    
+    timeval       tvClockOffset;    
+    timeval       start_time;
+
+    vrpn_float64  dFreq;
+    vrpn_int32    cOffsetWindow;
+
+    vrpn_int32 clockServer_id;
+    vrpn_int32 queryMsg_id;
+    vrpn_int32 replyMsg_id;
     // }}}
     
 };
-
-// }}}
-
-// {{{ XXX stuff to go elsewhere
-
-#ifdef 0
-protected:  // handling incoming and outgoing messages
-    //         wrappers that forwards the functioncall to each open connection
-
-    virtual int pack_service_description( vrpn_int32 which_service ) = 0;
-    virtual int pack_type_description( vrpn_int32 which_type ) = 0;
-    virtual int pack_udp_description( int portno ) = 0;
-    //virtual int pack_log_description( long mode, const char * filename );
-
-    // Routines to handle incoming messages on file descriptors
-    int handle_incoming_udp_messages (int fd, const timeval * timeout);
-    int handle_incoming_tcp_messages (int fd, const timeval * timeout);
-    
-    // Routines that handle system messages
-    // these are registered as callbacks
-    static int handle_incoming_service_message(
-        void * userdata, vrpn_HANDLERPARAM p);
-    static int handle_incoming_type_message(
-        void * userdata, vrpn_HANDLERPARAM p);
-    static int handle_incoming_udp_message(
-        void * userdata, vrpn_HANDLERPARAM p);
-    static int handle_incoming_log_message(
-        void * userdata, vrpn_HANDLERPARAM p);
-#endif
 
 // }}}
 

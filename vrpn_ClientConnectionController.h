@@ -1,6 +1,8 @@
 #ifndef VRPN_CLIENTCONNECTIONCONTROLLER_INCLUDED
 #define VRPN_CLIENTCONNECTIONCONTROLLER_INCLUDED
 
+
+
 ////////////////////////////////////////////////////////
 //
 // class vrpn_ClientConnectionController
@@ -19,7 +21,7 @@
 // {{{ class vrpn_ClientConnectionController
 
 class vrpn_ClientConnectionController
-    : vrpn_BaseConnectionController
+    : public vrpn_BaseConnectionController
 {
     // {{{ c'tors and d'tors
 public:
@@ -27,26 +29,33 @@ public:
     // destructor ...XXX...
     virtual ~vrpn_ClientConnectionController();
 
-protected:
-
     // constructors ...XXX...
     vrpn_ClientConnectionController(
-		char * cname, 
-		vrpn_uint16 port = vrpn_DEFAULT_LISTEN_PORT_NO,
-		char * local_logfile_name = NULL, 
+		const char * cname, 
+		vrpn_int16 port = vrpn_DEFAULT_LISTEN_PORT_NO,
+		const char * local_logfile_name = NULL, 
 		vrpn_int32 local_log_mode = vrpn_LOG_NONE,
-		char * remote_logfile_name = NULL, 
+		const char * remote_logfile_name = NULL, 
 		vrpn_int32 remote_log_mode = vrpn_LOG_NONE,
 		vrpn_int32 tcp_inbuflen = vrpn_CONNECTION_TCP_BUFLEN,
 		vrpn_int32 tcp_outbuflen = vrpn_CONNECTION_TCP_BUFLEN,
-		vrpn_int32 udp_inbuflen = vrpn_CONNECTION_UDP_BUFLEN,
+		//vrpn_int32 udp_inbuflen = vrpn_CONNECTION_UDP_BUFLEN,
 		vrpn_int32 udp_outbuflen = vrpn_CONNECTION_UDP_BUFLEN,
 		vrpn_float64 dFreq = 4.0, 
-		vrpn_in32 cSyncWindow = 2
+		vrpn_int32 cSyncWindow = 2
 		);
 
     // helper function
+    // called by vrpn_get_connection_by_name()
     virtual int connect_to_server( const char *machine, int port );
+
+    // called by NewFileController to get an interface to a FileConnection.
+    //
+    // XXX it would be nice if this were private for now, it's public.  it's
+    // only needed by FileConnection for now, by may be needed by other stuff
+    // in the future.  An alternative is to make it a friend.
+    virtual vrpn_BaseConnection* get_BaseConnection()
+    { return d_connection_ptr; }
 
     // }}} end c'tors and d'tors
 
@@ -55,6 +64,7 @@ public: // mainloop
     virtual vrpn_int32 mainloop( const timeval * timeout = NULL );
 
     // {{{ services and types
+
 protected: // called by methods in the base class
 
     virtual void register_service_with_connections(
@@ -65,6 +75,40 @@ protected: // called by methods in the base class
 
     // }}} end services and types
 
+public: // sending and receving
+
+    // * send pending report (that have been packed), and clear the buffer
+    // * this function was protected, now is public, so we can use
+    //   it to send out intermediate results without calling mainloop
+    virtual vrpn_int32 send_pending_reports();
+
+    
+    // * pack a message that will be sent the next time mainloop() is called
+    // * turn off the RELIABLE flag if you want low-latency (UDP) send
+    // * was: pack_message
+    virtual vrpn_int32 queue_outgoing_message(
+        vrpn_uint32 len, 
+        timeval time,
+        vrpn_int32 type,
+        vrpn_int32 service,
+        const char * buffer,
+        vrpn_uint32 class_of_service );
+
+public: // logging
+
+    // This calls a function by the same name in BaseConnection, wich
+    // calls the same named function in FileLogger
+    //
+    // Sets up a filter
+    // function for logging.  Any user message to be logged is first
+    // passed to this function, and will only be logged if the
+    // function returns zero (XXX).  NOTE: this only affects local
+    // logging - remote logging is unfiltered!  Only user messages are
+    // filtered; all system messages are logged.  Returns nonzero on
+    // failure.
+    virtual vrpn_int32 register_log_filter (vrpn_LOGFILTER filter, 
+                                            void * userdata);
+
 public: // status 
 
     // are there any connections?
@@ -72,14 +116,21 @@ public: // status
     
     // overall, all connections are doing okay
     virtual /*bool*/vrpn_int32 all_connections_doing_okay() const;
+
+    // number of connections
+    virtual vrpn_int32 num_connections() const { return (d_connection_ptr ? 1 : 0); }
+
+    // these are only needed by the Server, but they had to be
+    // included in vrpn_ConnectionControllerCallbackInterface
+    virtual void got_a_connection(void *) {}
+    virtual void dropped_a_connection(void *) {}
     
 private: // the connection
     vrpn_BaseConnection * d_connection_ptr;
 
     // {{{ clock synch functions
-public:
 
-    void setClockOffset( void *userdata, const vrpn_CLOCKCB& info );
+public:
 
     // do all inits that are done in
     // vrpn_Clock_Remote constructor
@@ -91,10 +142,12 @@ public:
     // MANIPULATORS
 
     // (un)Register a callback to handle a clock sync
-    virtual vrpn_int32 register_clock_sync_handler(void *userdata,
-                        vrpn_CLOCKSYNCHANDLER handler);
-    virtual vrpn_int32 unregister_clock_sync_handler(void *userdata,
-                          vrpn_CLOCKSYNCHANDLER handler);
+    virtual vrpn_int32 register_clock_sync_handler(
+        void *userdata,
+        vrpn_CLOCKSYNCHANDLER handler);
+    virtual vrpn_int32 unregister_clock_sync_handler(
+        void *userdata,
+        vrpn_CLOCKSYNCHANDLER handler);
     // request a high accuracy sync (and turn off quick syncs)
     struct timeval fullSync ();
 
@@ -152,21 +205,95 @@ protected: // clock synch data members and funcs
     struct timeval tvFullClockOffset;
 
     // vars for user specified handlers
-    typedef struct _vrpn_CLOCKSYNCLIST {
+    struct vrpn_CLOCKSYNCLIST {
       void          *userdata;
       vrpn_CLOCKSYNCHANDLER handler;
-      struct _vrpn_CLOCKSYNCLIST    *next;
-    } vrpn_CLOCKSYNCLIST;
+      struct vrpn_CLOCKSYNCLIST    *next;
+    };
 
     vrpn_CLOCKSYNCLIST  *change_list;
 
-    static vrpn_int32 quickSyncClockServerReplyHandler(void *userdata, 
-                                                       vrpn_HANDLERPARAM p);
-    static vrpn_int32 fullSyncClockServerReplyHandler(void *userdata, 
-                                                       vrpn_HANDLERPARAM p);
+    static vrpn_int32 quickSyncClockServerReplyHandler(
+		void *userdata, 
+		vrpn_HANDLERPARAM p);
+    static vrpn_int32 fullSyncClockServerReplyHandler(
+		void *userdata,
+		vrpn_HANDLERPARAM p);
+
     // }}} end clock synch
+
 };
 
 // }}} end class vrpn_ClientConnectionController
 
+
+//
+// vrpn_ConnectionControllerManager
+//
+// Singleton class that keeps track of all known VRPN
+// ClientConnectionControllers and makes sure they're deleted on
+// shutdown.  We make it static to guarantee that the destructor is
+// called on program close so that the destructors of all the
+// vrpn_Connections that have been allocated are called so that all
+// open logs are flushed to disk.
+//
+
+//      This section holds data structures and functions to open
+// connections by name.
+//      The intention of this section is that it can open connections for
+// objects that are in different libraries (trackers, buttons and sound),
+// even if they all refer to the same connection.
+
+
+class vrpn_ConnectionControllerManager {
+
+  public:
+
+    ~vrpn_ConnectionControllerManager (void);
+
+    static vrpn_ConnectionControllerManager & instance (void);
+      // The only way to get access to an instance of this class.
+      // Guarantees that there is only one, global object.
+      // Also guarantees that it will be constructed the first time
+      // this function is called, and (hopefully?) destructed when
+      // the program terminates.
+
+    void addController (
+        vrpn_ClientConnectionController *, 
+        const char * name);
+    void deleteController (vrpn_ClientConnectionController *);
+      // NB implementation is not particularly efficient;  we expect
+      // to have O(10) connections, not O(1000).
+
+    vrpn_ClientConnectionController * getByName (const char * name);
+      // Searches through d_kcList but NOT d_anonList
+      // (Connections constructed with no name)
+
+    vrpn_int32 numControllers();
+
+  private:
+
+    struct knownController {
+      char name [1000];
+      vrpn_ClientConnectionController * controller;
+      knownController * next;
+    };
+
+    knownController * d_kcList;
+      // named Controllers
+
+    knownController * d_anonList;
+      // unnamed (server) Controllers
+
+    vrpn_ConnectionControllerManager (void);
+
+    vrpn_ConnectionControllerManager (const vrpn_ConnectionControllerManager &);
+      // copy constructor undefined to prevent instantiations
+
+    static void deleteController (vrpn_ClientConnectionController *, knownController **);
+
+    vrpn_int32 d_numControllers;
+};
+
 #endif
+
