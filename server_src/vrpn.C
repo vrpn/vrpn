@@ -9,6 +9,9 @@
 #include "vrpn_3Space.h"
 #include "vrpn_Tracker_Fastrak.h"
 #include "vrpn_Flock.h"
+#include "vrpn_Flock_Master.h"
+#include "vrpn_Flock_Slave.h"
+#include "vrpn_Dyna.h"
 
 
 #define MAX_TRACKERS 100
@@ -108,6 +111,7 @@ main (int argc, char *argv[])
 	  i++;
 	}
 
+
 	// Open the configuration file
 	if (verbose) printf("Reading from config file %s\n", config_file_name);
 	if ( (config_file = fopen(config_file_name, "r")) == NULL) {
@@ -143,7 +147,95 @@ main (int argc, char *argv[])
 
 	  // Figure out the device from the name and handle appropriately
 	  #define isit(s) !strncmp(line,s,strlen(s))
-	  if (isit("vrpn_Tracker_Fastrak")) {
+	  if (isit("vrpn_Tracker_Dyna")) {
+	    // Get the arguments (class, tracker_name, sensors,port, baud)
+	    if (sscanf(line,"%511s%511s%d%511s%d",s1,s2,&i2, s3, &i1) != 5) {
+	      fprintf(stderr,"Bad vrpn_Tracker_Dyan line: %s\n",line);
+	      if (bail_on_error) { return -1; }
+	      else { continue; }	// Skip this line
+	    }
+
+	    // Make sure there's room for a new tracker
+	    if (num_trackers >= MAX_TRACKERS) {
+	      fprintf(stderr,"Too many trackers in config file");
+	      if (bail_on_error) { return -1; }
+	      else { continue; }	// Skip this line
+	    }
+
+
+	    // Open the tracker
+	    if (verbose) 
+	      printf("Opening vrpn_Tracker_Dyan: %s on port %s, baud %d, %d sensors\n",
+		    s2,s3,i1, i2);
+	    if ((trackers[num_trackers] =
+		  new vrpn_Tracker_Dyna(s2, &connection, i2, s3, i1)) == NULL)               
+	      {
+		fprintf(stderr,"Can't create new vrpn_Tracker_Dyna\n");
+		if (bail_on_error) { return -1; }
+		else { continue; }	// Skip this line
+	      } else {
+		num_trackers++;
+	      }
+	  } else if (isit("vrpn_Tracker_FlockMaster")) {
+
+	    // Get the arguments (class, tracker_name, sensors,port, baud)
+	    if (sscanf(line,"%511s%511s%d%511s%d",s1,s2,&i2,s3, &i1) != 5) {
+	      fprintf(stderr,"Bad vrpn_Tracker_FlockMaster line: %s\n",line);
+	      if (bail_on_error) { return -1; }
+	      else { continue; }	// Skip this line
+	    }
+
+	    // Make sure there's room for a new tracker
+	    if (num_trackers >= MAX_TRACKERS) {
+	      fprintf(stderr,"Too many trackers in config file");
+	      if (bail_on_error) { return -1; }
+	      else { continue; }	// Skip this line
+	    }
+
+
+	    // Open the tracker
+	    if (verbose) 
+	      printf("Opening vrpn_Tracker_FlockMaster: %s on port %s, baud %d, %d sensors\n",
+		    s2,s3,i1, i2);
+	    if ((trackers[num_trackers] =
+		  new vrpn_Tracker_Flock_Master(s2, &connection, i2, s3, i1)) == NULL)               
+	      {
+		fprintf(stderr,"Can't create new vrpn_Tracker_FlockMaster\n");
+		if (bail_on_error) { return -1; }
+		else { continue; }	// Skip this line
+	      } else {
+		num_trackers++;
+	      }
+	  }else if( isit("vrpn_Tracker_FlockSlave")) {
+
+	    // Get the arguments (class, tracker_name, sensors,port, baud)
+	    if (sscanf(line,"%511s%511s%d%511s%d",s1,s2,&i2,s3, &i1) != 5) {
+	      fprintf(stderr,"Bad vrpn_Tracker_FlockSlave line: %s\n",line);
+	      if (bail_on_error) { return -1; }
+	      else { continue; }	// Skip this line
+	    }
+
+	    // Make sure there's room for a new tracker
+	    if (num_trackers >= MAX_TRACKERS) {
+	      fprintf(stderr,"Too many trackers in config file");
+	      if (bail_on_error) { return -1; }
+	      else { continue; }	// Skip this line
+	    }
+
+	    // Open the tracker
+	    if (verbose) 
+	      printf("Opening vrpn_Tracker_FlockSlave: %s on port %s, baud %d,  sensors Id = %d\n",
+		    s2,s3,i1, i2);
+	    if ((trackers[num_trackers] =
+		  new vrpn_Tracker_Flock_Slave(s2, &connection, i2, s3, i1)) == NULL)
+	      {
+		fprintf(stderr,"Can't create new vrpn_Tracker_FlockSlave\n");
+		if (bail_on_error) { return -1; }
+		else { continue; }	// Skip this line
+	      } else {
+		num_trackers++;
+	      }
+	  } else if (isit("vrpn_Tracker_Fastrak")) {
 	    // Get the arguments (class, tracker_name, port, baud)
 	    if (sscanf(line,"%511s%511s%511s%d",s1,s2,s3,&i1) != 4) {
 	      fprintf(stderr,"Bad vrpn_Tracker_Fastrak line: %s\n",line);

@@ -1,4 +1,4 @@
-CC = CC
+CC = g++
 CFLAGS = -I../ -g
 LFLAGS = -L/afs/unc/proj/hmd/beta/lib/`hw_os` \
          -L/afs/unc/proj/hmd/lib/`hw_os`
@@ -17,7 +17,8 @@ vrpn: vrpn.o
 	$(CC) $(LFLAGS) -o vrpn vrpn.o ../`hw_os`/libvrpn.a -lsdi -lm
 
 client: client.C
-	$(CC) $(CFLAGS) $(LFLAGS) -o client client.C ../`hw_os`/libvrpn.a -lsdi -lm
+	g++ $(CFLAGS) -L/afs/unc/proj/hmd/lib/`hw_os` -o client client.C   ../`hw_os`/libvrpn.a  -lsdi  -lm
+
 
 vrpn_Connection.o: ../vrpn_Connection.C
 	$(CC) $(CFLAGS) -c ../vrpn_Connection.C
