@@ -55,11 +55,11 @@ void	handle_acc (void *, const vrpn_TRACKERACCCB t)
 	fprintf(stderr, "%ld~", t.sensor);
 }
 
-void main (int argc, char * argv [])
+int main (int argc, char * argv [])
 {
 	if (argc != 1) {
 		fprintf(stderr, "Usage: %s\n", argv[0]);
-		exit(-1);
+		return -1;
 	}
 
 	// explicitly open the connection
@@ -90,6 +90,8 @@ void main (int argc, char * argv [])
 		// Sleep for 1ms so we don't eat the CPU
 		vrpn_SleepMsecs(1);
 	}
+
+	return 0;
 
 }   /* main */
 

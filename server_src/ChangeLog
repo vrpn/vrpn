@@ -1,3 +1,9 @@
+2003-07-21  Sascha Scholz  <sascha.scholz@imk.fraunhofer.de>
+
+	* client_and_server.C : Changed main() to return int.
+	* test_radamec_spi.C : Changed main() to return int.
+	* test_vrpn.C : Changed main() to return int.
+
 2003-07-07  Sascha Scholz  <sascha.scholz@imk.fraunhofer.de>
 
         * vrpn.cfg : added ADBox/CubicMouse driver

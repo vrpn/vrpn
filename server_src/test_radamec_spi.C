@@ -84,11 +84,11 @@ void	create_and_link_analog_remote(void)
 }
 
 
-void main (int argc, char * argv [])
+int main (int argc, char * argv [])
 {
 	if (argc != 2) {
 		fprintf(stderr, "Usage: %s serial_port_name\n", argv[0]);
-		exit(-1);
+		return -1;
 	}
 
 	//---------------------------------------------------------------------
@@ -120,6 +120,8 @@ void main (int argc, char * argv [])
 		// Sleep for 1ms each iteration so we don't eat the CPU
 		vrpn_SleepMsecs(1);
 	}
+
+	return 0;
 
 }   /* main */
 
