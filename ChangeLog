@@ -1,3 +1,7 @@
+2000-08-27  Jeffrey Juliano  <juliano@cs.unc.edu>
+
+	* .cvsignore: Add sgi_irix.n32.mips3 to ignore list.
+
 2000-08-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_BaseClass.C (~vrpn_TextPrinter) : Hack to remove segfaults
@@ -33,7 +37,6 @@
 
 	* vrpn_Tracker_AnalogFly.h : Added "absolute" and offset
 	* vrpn_Tracker_AnalogFly.C : Added "absolute" and offset
-
 
 2000-08-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
