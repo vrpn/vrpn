@@ -53,21 +53,10 @@ class vrpn_Tng3: public vrpn_Serial_Analog,
 
  private:
 
-#define MAX_TCHANNELS 8	
-#define MAX_TBUTTONS  8
-
 // utility routine to sync up the data stream
     int syncDatastream (double seconds);
 
-#define PAUSE_RESET     .015
-#define PAUSE_END       .015
-#define PAUSE_RESTORE   2.0
-#define PAUSE_BYTE      .015
-
     unsigned char bDataPacketStart;
-
-#define DATA_RECORD_LENGTH 9  // 9 bytes follow the start byte
-
 };
 
 #define VRPN_TNG3B_H

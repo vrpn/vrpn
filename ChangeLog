@@ -1,3 +1,10 @@
+2002-05-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tng3.C : Cosmetic + fixing infinite-loop bug by turning it from
+			hanging waiting for characters to polling for any
+			available characters.
+	* vrpn_Tng3.h : Same.
+
 2002-05-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Tracker_isense.C : Code to interface to Intersense trackers

@@ -14,13 +14,26 @@
 
 #undef VERBOSE
 
+#define MAX_TCHANNELS 8	
+#define MAX_TBUTTONS  8
+
+#define PAUSE_RESET     .015
+#define PAUSE_END       .015
+#define PAUSE_RESTORE   2.0
+#define PAUSE_BYTE      .015
+
+#define DATA_RECORD_LENGTH 9  // 9 bytes follow the start byte
+
+
 // Defines the modes in which the box can find itself.
 #define	STATUS_RESETTING	(-1)	// Resetting the box
 #define	STATUS_SYNCING		(0)	// Looking for the first character of report
 #define	STATUS_READING		(1)	// Looking for the rest of the report
-
-
 #define MAX_TIME_INTERVAL  (2000000) // max time between reports (usec)
+
+#define	VRPN_INFO(msg)	  { send_text_message(msg, timestamp, vrpn_TEXT_NORMAL) ; if (d_connection) d_connection->send_pending_reports(); }
+#define	VRPN_WARNING(msg) { send_text_message(msg, timestamp, vrpn_TEXT_WARNING) ; if (d_connection) d_connection->send_pending_reports(); }
+#define	VRPN_ERROR(msg)	  { send_text_message(msg, timestamp, vrpn_TEXT_ERROR) ; if (d_connection) d_connection->send_pending_reports(); }
 
 static	unsigned long	duration(struct timeval t1, struct timeval t2)
 {
@@ -109,7 +122,7 @@ int    vrpn_Tng3::reset(void)
 
     //-----------------------------------------------------------------------
     // sending an end at this time will force the ibox into the reset mode, if it
-    // was not already.  if the ibox is in the power up mode, nothing will happen because
+    // was not already.  if the box is in the power up mode, nothing will happen because
     // it 'should' be waiting to sync up the baudrate
 
 
@@ -124,11 +137,6 @@ int    vrpn_Tng3::reset(void)
 
     cout << "TNG3B found" << endl;
 
-    // flush the input buffer
-    vrpn_flush_input_buffer(serial_fd);
-
-    cout << "Tng3 reset complete." << endl;
-
     status = STATUS_SYNCING;
     gettimeofday(&timestamp, NULL);	// Set watchdog now
     return 0;
@@ -137,7 +145,8 @@ int    vrpn_Tng3::reset(void)
 // This function will read characters until it has a full report, then
 // put that report into the time, analog amd button fields and call
 // the report methods on these. The time stored is that of
-// the first character received as part of the report. 
+// the first character received as part of the report.  Each time
+// through, it gets however many characters are available.
 // 
 // Reports start with the byte bDataPacketStart followed by 
 // DATA_RECORD_LENGTH bytes
@@ -154,26 +163,29 @@ int vrpn_Tng3::get_report(void)
 {
     int i;
     unsigned int buttonBits = 0;
+    static  int num_read = 0;
 
-    struct timeval timeout;
-    timeout.tv_sec = 0;
-    timeout.tv_usec = 100000;
+    // Zero timeout, poll for any available characters
+    struct timeval timeout = {0, 0};
 
-    status = STATUS_SYNCING;
-
-    // process as long as we can get characters
-    while (1 == vrpn_read_available_characters(serial_fd, buffer, 1, &timeout)) 
-    {
+    // Go looking for a synchronization byte.  This apparently start out
+    // as 0x55 for one record, then toggles all of the bits for the next
+    // record.
+    if (status == STATUS_SYNCING) {
+      if (1 == vrpn_read_available_characters(serial_fd, _buffer, 1, &timeout)) {
 	// if not a record start, we need to resync
-	if (buffer[0] != bDataPacketStart)
-	    break;
+        if (_buffer[0] != bDataPacketStart) {
+            VRPN_WARNING("Resyncing");
+	    return 0;;
+        }
 
 	// we got a good start byte... we're reading now
+        num_read = 0;   //< Ignore the status byte for the following record
 	status = STATUS_READING;
 
 	// invert the bits for the next packet start
 	bDataPacketStart ^= 0xFF;
-	break;
+      }
     }
 
     // we broke out.. if we're not reading, then we have nothing to do
@@ -185,35 +197,40 @@ int vrpn_Tng3::get_report(void)
 
     // get the expected number of data record bytes
     int result = vrpn_read_available_characters(serial_fd, 
-						buffer, 
-						DATA_RECORD_LENGTH, 
-						&timeout);    
-    
-    if (result < DATA_RECORD_LENGTH) {
-	status = STATUS_SYNCING;
+		  &_buffer[num_read], DATA_RECORD_LENGTH-num_read, &timeout);    
+
+    if (result < 0) {
+      VRPN_WARNING("Bad read");
+      status = STATUS_SYNCING;
+      return 0;
+    }
+
+    // If we don't have a full record, go back again.
+    num_read += result;
+    if (num_read < DATA_RECORD_LENGTH) {
 	return 0;
     }
 
-    // parse the report here
+    // parse the report here -- we got a full record.
  
     // here is where we decode the analog stuff
     for (i = 0; i < _numchannels; i++) {
 	vrpn_Analog::last[i] = vrpn_Analog::channel[i];
-	vrpn_Analog::channel[i] = (unsigned short) buffer[i];
+	vrpn_Analog::channel[i] = (unsigned short) _buffer[i];
     }
 
     // get the button bits and make sense of them
 
-    buttonBits = buffer[DATA_RECORD_LENGTH-1];
+    buttonBits = _buffer[DATA_RECORD_LENGTH-1];
     for (i = 0; i < _numbuttons; i++) {
 	vrpn_Button::lastbuttons[i] = vrpn_Button::buttons[i];
-	vrpn_Button::buttons[i]	= 
-	    (buttonBits & (1 << i)) ? VRPN_BUTTON_OFF : VRPN_BUTTON_ON;
+	vrpn_Button::buttons[i]	= (buttonBits & (1 << i)) ? VRPN_BUTTON_OFF : VRPN_BUTTON_ON;
     }
 
     report_changes();
     gettimeofday(&timestamp, NULL);	// Set watchdog now
 
+    status = STATUS_SYNCING;
     return 1;
 }
 
@@ -293,13 +310,14 @@ int vrpn_Tng3::syncDatastream (double seconds) {
     int loggedOn = 0;
     int numRead;
 
-    if (serial_fd < 0)
+    if (serial_fd < 0) {
 	return 0;
+    }
 
     // ensure that the packet start byte is valid
-    if ( bDataPacketStart != 0x55 &&
-	 bDataPacketStart != 0xAA )
-	bDataPacketStart = 0x55;
+    if ( bDataPacketStart != 0x55 && bDataPacketStart != 0xAA ) {
+      bDataPacketStart = 0x55;
+    }
 
     vrpn_flush_input_buffer(serial_fd);
 
@@ -317,38 +335,44 @@ int vrpn_Tng3::syncDatastream (double seconds) {
 	}
 	
 	// get a byte
-	if (1 != vrpn_read_available_characters(serial_fd,	buffer, 1, &miniDelay))
+        if (1 != vrpn_read_available_characters(serial_fd, _buffer, 1, &miniDelay)) {
 	    continue;
+        }
 	// if not a record start, skip
-	if (buffer[0] != bDataPacketStart)
+        if (_buffer[0] != bDataPacketStart) {
 	    continue;
+        }
 	// invert the packet start byte for the next test
 	bDataPacketStart ^= 0xFF;
 	
 	// get an entire report
 	numRead = vrpn_read_available_characters(serial_fd, 
-						 buffer, DATA_RECORD_LENGTH, &miniDelay);
+		    _buffer, DATA_RECORD_LENGTH, &miniDelay);
 
-	if (numRead < DATA_RECORD_LENGTH) 
+        if (numRead < DATA_RECORD_LENGTH) {
 	    continue;
+        }
 
 	// get the start byte for the next packet
-	if (1 != vrpn_read_available_characters(serial_fd, buffer, 1, &miniDelay))
+        if (1 != vrpn_read_available_characters(serial_fd, _buffer, 1, &miniDelay)) {
 	    continue;
+        }
 
 	// if not the anticipated record start, things are not yet sync'd
-	if (buffer[0] != bDataPacketStart)
+        if (_buffer[0] != bDataPacketStart) {
 	    continue;
+        }
 
 	// invert the packet start byte in anticipation of normal operation
 	bDataPacketStart ^= 0xFF;
 
 	// get an entire report
 	numRead = vrpn_read_available_characters(serial_fd, 
-						 buffer, DATA_RECORD_LENGTH, &miniDelay);
+			_buffer, DATA_RECORD_LENGTH, &miniDelay);
 
-	if (numRead < DATA_RECORD_LENGTH) 
+        if (numRead < DATA_RECORD_LENGTH) {
 	    continue;
+        }
 
 	return 1;
     }
