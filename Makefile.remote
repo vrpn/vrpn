@@ -28,6 +28,12 @@ HW_OS := sgi_irix
 #CC := g++
 CC := CC
 
+#########################################
+# Tell it where quatlib and SDIlib are
+
+SDI_DIR		:= ../sdi
+QUAT_DIR	:= ../quat
+
 #
 ##############################################################################
 
@@ -37,18 +43,6 @@ CC := CC
 
 MAKEFILE := Makefile.remote
 MAKE := gmake -f $(MAKEFILE)
-
-##########################
-# directories
-#
-
-HMD_DIR 	 := .
-INCLUDE_DIR	 := .
-LIB_DIR 	 := .
-
-BETA_DIR	 := .
-BETA_INCLUDE_DIR := .
-BETA_LIB_DIR 	 := .
 
 # subdirectory for make
 OBJECT_DIR	 := $(HW_OS)
@@ -81,7 +75,7 @@ else
  endif
 endif
 
-INCLUDE_FLAGS := -I. $(SYS_INCLUDE) -I$(BETA_INCLUDE_DIR)
+INCLUDE_FLAGS := -I. $(SYS_INCLUDE) -I$(SDI_DIR) -I$(QUAT_DIR)
 
 ##########################
 # Load flags
@@ -168,7 +162,7 @@ $(SOBJECT_DIR):
 
 LIB_FILES =  vrpn_Connection.C vrpn_Tracker.C vrpn_Button.C \
 	     vrpn_Sound.C vrpn_ForceDevice.C vrpn_Clock.C vrpn_Shared.C \
-	     vrpn_Ohmmeter.C vrpn_Analog.C
+	     vrpn_Ohmmeter.C vrpn_Analog.C vrpn_JoyFly.C
 
 LIB_OBJECTS = $(patsubst %,$(OBJECT_DIR)/%,$(LIB_FILES:.C=.o))
 

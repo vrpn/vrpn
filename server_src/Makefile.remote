@@ -1,0 +1,48 @@
+# this is a gmake file
+
+################################
+# Tell it where sdi and quat libs live
+
+SDI_DIR		:= ../../sdi
+QUAT_DIR	:= ../../quat
+
+################################
+# Set your hardware/operating system
+
+HW_OS := sgi_irix
+#HW_OS := pc_linux
+#HW_OS := hp700_hpux
+
+# Figure out which compiler based on the operating system
+
+CC := g++
+ifeq ($(HW_OS),sgi_irix)
+	CC := CC
+endif
+ifeq ($(HW_OS),hp700_hpux10)
+	CC := CC +a1
+endif
+
+CFLAGS = -I../ -I$(SDI_DIR) -I$(QUAT_DIR) -g
+LFLAGS = -L../$(HW_OS) -L$(SDI_DIR) -L$(QUAT_DIR)
+
+.C.o:
+	$(CC) $(CFLAGS) -c $*.C
+
+.c.o:
+	$(CC) $(CFLAGS) -c $*.c
+
+all:  vrpn_server 
+
+vrpn_server: vrpn.o  midi.o ../$(HW_OS)/libvrpnserver.a
+	$(CC) $(LFLAGS) -o vrpn_server vrpn.o midi.o -lvrpnserver -lgl -lsdi -lm -lquat
+
+clean:
+	rm -f *.o vrpn_server
+
+midi.o:	midi.c
+vrpn.o:	vrpn.C
+
+
+
+

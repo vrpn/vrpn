@@ -219,7 +219,6 @@ main (int argc, char *argv[])
 		} else {
 		  num_trackers++;
 		}
-
 	  } else  if (isit("vrpn_Joystick")) {
 	    float fhz;
 	    // Get the arguments (sound_name)
