@@ -6,8 +6,10 @@
 
 #ifndef __STDC__
 #ifndef	hpux
+#ifndef __hpux
 #ifndef	_WIN32
 #include <getopt.h>
+#endif
 #endif
 #endif
 #endif

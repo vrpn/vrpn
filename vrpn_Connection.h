@@ -81,6 +81,15 @@ typedef	int  (*vrpn_MESSAGEHANDLER)(void *userdata, vrpn_HANDLERPARAM p);
 
 #define vrpn_CONTROL "VRPN Control"
 
+typedef char cName[100];
+
+// Description of a callback entry for a user type.
+struct vrpnMsgCallbackEntry {
+  vrpn_MESSAGEHANDLER	handler;	// Routine to call
+  void			* userdata;	// Passed along
+  long			sender;		// Only if from sender
+  vrpnMsgCallbackEntry	* next;		// Next handler
+};
 
 class vrpn_Connection
 {
@@ -167,18 +176,9 @@ class vrpn_Connection
 	// Only used for a vrpn_Connection that awaits incoming connections
 	int	listen_udp_sock;	// Connect requests come here
 
-	// Description of a callback entry for a user type.
-	struct vrpnMsgCallbackEntry {
-		vrpn_MESSAGEHANDLER	handler;	// Routine to call
-		void			* userdata;	// Passed along
-		long			sender;		// Only if from sender
-		vrpnMsgCallbackEntry	* next;		// Next handler
-	};
-
 	// The senders we know about and the message types we know about
 	// that have been declared by the local version.
 
-	typedef char cName [100];
 	struct vrpnLocalMapping {
 		cName			* name;		// Name of type
 		vrpnMsgCallbackEntry	* who_cares;	// Callbacks

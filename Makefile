@@ -28,6 +28,9 @@ ifeq ($(HW_OS),hp700_hpux10)
   ifdef PBASE_ROOT
     HW_OS := hp_flow
   endif
+  ifneq ($(PXFL_COMPILER), gnu)
+    HW_OS := hp_flow_$(PXFL_COMPILER)
+  endif
 endif
 
 # Which C++ compiler to use.  Default is g++, but some don't use this.
@@ -44,6 +47,9 @@ ifeq ($(HW_OS),hp700_hpux10)
 endif
 ifeq ($(HW_OS),sparc_sunos)
 	CC := /usr/local/lib/CenterLine/bin/CC
+endif
+ifeq ($(HW_OS), hp_flow_aCC)
+	CC := /opt/aCC/bin/aCC 
 endif
 
 ##########################

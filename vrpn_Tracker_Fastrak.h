@@ -25,11 +25,14 @@
  * Update Count    : 45
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Tracker_Fastrak.h,v $
- * $Date: 1998/02/20 20:27:01 $
- * $Author: hudson $
- * $Revision: 1.4 $
+ * $Date: 1998/05/05 21:09:59 $
+ * $Author: taylorr $
+ * $Revision: 1.5 $
  * 
  * $Log: vrpn_Tracker_Fastrak.h,v $
+ * Revision 1.5  1998/05/05 21:09:59  taylorr
+ * This version works better with the aCC compiler on PixelFlow.
+ *
  * Revision 1.4  1998/02/20 20:27:01  hudson
  * Version 02.10:
  *   Makefile:  split library into server & client versions
@@ -85,7 +88,7 @@
  *
  * (check the typedefs section for other machine-dependent definitions)
  */
-#if defined(sun) || defined(sgi) || defined(hpux)
+#if defined(sun) || defined(sgi) || defined(hpux) || defined(__hpux)
 #   define T_F_REVERSE_BYTES(dest, src, size, num) \
     	    	    	    	t_reverse_bytes(dest, src, size, num)
 #else

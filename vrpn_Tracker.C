@@ -50,7 +50,7 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 
 int vrpn_open_commport(char *portname, long baud)
 {
-#if defined(_WIN32) || defined(sparc) || defined(hpux)
+#if defined(_WIN32) || defined(sparc) || defined(hpux) || defined(__hpux)
 	fprintf(stderr,
 		"vrpn_open_commport: Not implemented in NT, sparc or HP\n");
 	return -1;
@@ -131,7 +131,7 @@ int vrpn_open_commport(char *portname, long baud)
 // NOT CALLED!  OBSOLETE? -- no ... used by vrpn_Flock
 int vrpn_flush_input_buffer(int comm)
 {
-#if defined(_WIN32) || defined(sparc) || defined(hpux)
+#if defined(_WIN32) || defined(sparc) || defined(hpux) || defined(__hpux)
    fprintf(stderr,
 	"vrpn_flush_input_buffer: Not impemented on NT, sparc or HP\n");
    return -1;
@@ -145,7 +145,7 @@ int vrpn_flush_input_buffer(int comm)
 // NOT CALLED!  OBSOLETE? -- no ... used by vrpn_Flock
 int vrpn_flush_output_buffer(int comm)
 {
-#if defined(_WIN32) || defined(sparc) || defined(hpux)
+#if defined(_WIN32) || defined(sparc) || defined(hpux) || defined(__hpux)
    fprintf(stderr,
 	"vrpn_flush_output_buffer: Not impemented on NT, sparc or HP\n");
    return -1;
@@ -159,7 +159,7 @@ int vrpn_flush_output_buffer(int comm)
 // NOT CALLED!  OBSOLETE? -- no ... used by vrpn_Flock
 int vrpn_drain_output_buffer(int comm)
 {
-#if defined(_WIN32) || defined(sparc) || defined(hpux)
+#if defined(_WIN32) || defined(sparc) || defined(hpux) || defined(__hpux)
    fprintf(stderr,
 	"vrpn_drain_output_buffer: Not impemented on NT, sparc or HP\n");
    return -1;

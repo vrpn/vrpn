@@ -10,7 +10,7 @@
   Revised: Tue Mar 10 14:09:55 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Flock_Parallel.h,v $
   $Locker:  $
-  $Revision: 1.1 $
+  $Revision: 1.2 $
 \*****************************************************************************/
 #ifndef _VRPN_FLOCK_PARALLEL_H_
 #define _VRPN_FLOCK_PARALLEL_H_
@@ -102,12 +102,15 @@ public:
 #endif  // #ifndef _WIN32
 
 
-#endif _VRPN_FLOCK_PARALLEL_H_
+#endif //_VRPN_FLOCK_PARALLEL_H_
 
 
 
 /*****************************************************************************\
   $Log: vrpn_Flock_Parallel.h,v $
+  Revision 1.2  1998/05/05 21:09:56  taylorr
+  This version works better with the aCC compiler on PixelFlow.
+
   Revision 1.1  1998/03/10 19:35:46  weberh
   The original parallel flock structure was a pain, so I redid it from
   scratch. The result is a new vrpn_Tracker_Flock_Parallel class and
