@@ -33,6 +33,7 @@
 #include "vrpn_CerealBox.h"
 #include "vrpn_Tracker_AnalogFly.h"
 #include "vrpn_Magellan.h"
+#include "vrpn_Spaceball.h"
 #include "vrpn_ImmersionBox.h"
 #include "vrpn_Analog_Radamec_SPI.h"
 #include "vrpn_Wanda.h"
@@ -53,6 +54,7 @@
 #define	MAX_SGIBOX 2
 #define	MAX_CEREALS 8
 #define	MAX_MAGELLANS 8
+#define MAX_SPACEBALLS 8
 #define MAX_IBOXES 8
 #define MAX_DIALS 8
 #define MAX_TIMECODE_GENERATORS 8
@@ -107,6 +109,8 @@ vrpn_CerealBox	* cereals [MAX_CEREALS];
 int		num_cereals = 0;
 vrpn_Magellan	* magellans [MAX_MAGELLANS];
 int		num_magellans = 0;
+vrpn_Spaceball  * spaceballs [MAX_SPACEBALLS];
+int             num_spaceballs = 0;
 vrpn_ImmersionBox  *iboxes[MAX_IBOXES];
 int             num_iboxes = 0;
 vrpn_Dial	* dials [MAX_DIALS];
@@ -627,6 +631,41 @@ int setup_Magellan (char * & pch, char * line, FILE * config_file) {
                 return -1;
               } else {
                 num_magellans++;
+              }
+
+  return 0;
+}
+
+int setup_Spaceball (char * & pch, char * line, FILE * config_file) {
+  char s2 [LINESIZE], s3 [LINESIZE];
+  int i1;
+
+            next();
+            // Get the arguments (class, magellan_name, port, baud
+            if (sscanf(pch,"%511s%511s%d",s2,s3, &i1) != 3)
+ {
+              fprintf(stderr,"Bad vrpn_Spaceball line: %s\n",line);
+              return -1;
+            }
+
+            // Make sure there's room for a new magellan
+            if (num_spaceballs >= MAX_SPACEBALLS) {
+              fprintf(stderr,"Too many Spaceballs in config file");
+              return -1;
+            }
+
+            // Open the device
+            if (verbose)
+              printf("Opening vrpn_Spaceball: %s on port %s, baud %d\n",
+                    s2,s3,i1);
+            if ((spaceballs[num_spaceballs] =
+                  new vrpn_Spaceball(s2, connection, s3, i1)) == NULL)
+
+              {
+                fprintf(stderr,"Can't create new vrpn_Spaceball\n");
+                return -1;
+              } else {
+                num_spaceballs++;
               }
 
   return 0;
@@ -1474,6 +1513,8 @@ main (int argc, char * argv[])
             CHECK(setup_CerealBox);
 	  } else if (isit("vrpn_Magellan")) {
             CHECK(setup_Magellan);
+          } else if (isit("vrpn_Spaceball")) {
+            CHECK(setup_Spaceball);
 	  } else if (isit("vrpn_Radamec_SPI")) {
             CHECK(setup_Radamec_SPI);
 	  } else if (isit("vrpn_5dt")) {
@@ -1582,10 +1623,15 @@ main (int argc, char * argv[])
 			magellans[i]->mainloop();
 		}
 
-        // Let all the Immersion boxes do their thing
-        for (i=0; i< num_iboxes; i++) {
-                iboxes[i]->mainloop();
-        }
+                // Let all the Spaceballs do their thing
+                for (i=0; i< num_spaceballs; i++) {
+                        spaceballs[i]->mainloop();
+                }
+
+                // Let all the Immersion boxes do their thing
+                for (i=0; i< num_iboxes; i++) {
+                        iboxes[i]->mainloop();
+                }
 
 		// Let all of the SGI button/knob boxes do their thing
 		for (i=0; i < num_sgiboxes; i++) {

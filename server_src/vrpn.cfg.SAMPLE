@@ -278,12 +278,16 @@
 # need to run a vrpn_Tracker_AnalogFly device that listens to its analog
 # outputs and converts them into tracker reports
 #
+# John Stone added support for the SpaceBalls in version 06.03, an example
+# startup is shown below.
+#
 # Arguments:
 #	char	name_of_this_device[]
 #	char	name_of_serial_device[]
 #	int	baud_rate_of_serial_device
 
-#vrpn_Magellan	Magellan0	/dev/cua0	9600
+#vrpn_Magellan	Magellan0	/dev/ttyS0	9600
+#vrpn_Spaceball	Spaceball0	/dev/ttyS0	9600
 
 ################################################################################
 # NRL Immersion Box dial/button/analog. Runs a Immersion Interface Box device
