@@ -3741,7 +3741,7 @@ void vrpn_Endpoint::drop_connection (void) {
   // Clear out the buffers; nothing to read or send if no connection.
   clearBuffers();
 
-  // BUG TCH 16 Feb 01
+  // XXX BUG TCH 16 Feb 01
   // Why is this code here?  What does it do?  I can't port it to 2-log.
 
   struct timeval now;

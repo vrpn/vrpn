@@ -625,7 +625,7 @@ void vrpn_Shared_int32::decodeLamport (const char ** buffer, vrpn_int32 *,
                                 vrpn_LamportTimestamp ** t) const {
   vrpn_uint32 size;
   vrpn_uint32 * array;
-  int i;
+  unsigned int i;
 
   vrpn_unbuffer(buffer, newValue);
   vrpn_unbuffer(buffer, when);

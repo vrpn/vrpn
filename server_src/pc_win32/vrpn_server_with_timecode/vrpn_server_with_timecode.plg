@@ -3,33 +3,26 @@
 <pre>
 <h1>Build Log</h1>
 <h3>
---------------------Configuration: vrpn_server_with_timecode - Win32 Debug--------------------
+--------------------Configuration: timecode_generator - Win32 Debug--------------------
 </h3>
 <h3>Command Lines</h3>
-Creating temporary file "E:\DOCUME~1\kskinner\LOCALS~1\Temp\RSP6F.tmp" with contents
+Creating temporary file "C:\DOCUME~1\TAYLOR~1.UNC\LOCALS~1\Temp\RSP1D.tmp" with contents
 [
-/nologo /MDd /W3 /GX /ZI /Od /I "..\..\.." /I "..\..\..\..\quat" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"Debug/vrpn_server_with_timecode.pch" /YX /Fo"Debug/" /Fd"Debug/" /FD /TP /c 
-"E:\Documents and Settings\kskinner\Desktop\vrpn\server_src\vrpn_with_timecode.C"
+/nologo /MLd /W3 /Gm /GX /ZI /Od /I "..\.." /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /Fp"Debug/timecode_generator.pch" /YX /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"F:\taylorr\Personal\Work\consulting\DisneyQuest\vrpn\server_src\timecode_generator_server\vrpn_timecode_generator.cpp"
 ]
-Creating command line "cl.exe @E:\DOCUME~1\kskinner\LOCALS~1\Temp\RSP6F.tmp" 
-Creating temporary file "E:\DOCUME~1\kskinner\LOCALS~1\Temp\RSP70.tmp" with contents
-[
-../../../pc_win32/Debug/vrpn.lib ../../../pc_win32/Debug/quat.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib ../../timecode_generator_server/Debug/timecode_generator.lib ../../timecode_generator_server/AEC_NTTC.lib /nologo /subsystem:console /incremental:yes /pdb:"Debug/vrpn_server_with_timecode.pdb" /debug /machine:I386 /out:"Debug/vrpn_server_with_timecode.exe" /pdbtype:sept 
-".\Debug\vrpn_with_timecode.obj"
-"\Documents and Settings\kskinner\Desktop\vrpn\server_src\timecode_generator_server\Debug\timecode_generator.lib"
-"\Documents and Settings\kskinner\Desktop\vrpn\PC_WIN32\DEBUG\vrpn.lib"
-]
-Creating command line "link.exe @E:\DOCUME~1\kskinner\LOCALS~1\Temp\RSP70.tmp"
+Creating command line "cl.exe @C:\DOCUME~1\TAYLOR~1.UNC\LOCALS~1\Temp\RSP1D.tmp" 
+Creating command line "link.exe -lib /nologo /out:"Debug\timecode_generator.lib"  .\Debug\vrpn_timecode_generator.obj \taylorr\Personal\Work\consulting\DisneyQuest\vrpn\PC_WIN32\DEBUG\vrpn.lib "
 <h3>Output Window</h3>
 Compiling...
-vrpn_with_timecode.C
-Linking...
-LINK : warning LNK4098: defaultlib "LIBCD" conflicts with use of other libs; use /NODEFAULTLIB:library
+vrpn_timecode_generator.cpp
+f:\taylorr\personal\work\consulting\disneyquest\vrpn\server_src\timecode_generator_server\vrpn_timecode_generator.h(9) : fatal error C1083: Cannot open include file: 'aecinttc.h': No such file or directory
+Error executing cl.exe.
 
 
 
 <h3>Results</h3>
-vrpn_server_with_timecode.exe - 0 error(s), 1 warning(s)
+vrpn_server_with_timecode.exe - 1 error(s), 0 warning(s)
 </pre>
 </body>
 </html>

@@ -3,7 +3,7 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
-Project: "Router_Client_GUI"=".\CLIENT_SRC\PC_WIN32\Router_Client_GUI\Router_Client_GUI.dsp" - Package Owner=<4>
+Project: "Router_Client_GUI"=.\CLIENT_SRC\PC_WIN32\Router_Client_GUI\Router_Client_GUI.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -18,7 +18,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "client_and_server"=".\SERVER_SRC\PC_WIN32\client_and_server\client_and_server.dsp" - Package Owner=<4>
+Project: "client_and_server"=.\SERVER_SRC\PC_WIN32\client_and_server\client_and_server.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -33,7 +33,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "phan_server"=".\server_src\phan_server.dsp" - Package Owner=<4>
+Project: "phan_server"=.\server_src\phan_server.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -54,7 +54,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "printcereal"=".\CLIENT_SRC\PC_WIN32\printcereal\printcereal.dsp" - Package Owner=<4>
+Project: "printcereal"=.\CLIENT_SRC\PC_WIN32\printcereal\printcereal.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -69,7 +69,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "printvals"=".\client_src\pc_win32\printvals\printvals.dsp" - Package Owner=<4>
+Project: "printvals"=.\client_src\pc_win32\printvals\printvals.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -84,7 +84,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "quat"=".\pc_win32\quat\quat.dsp" - Package Owner=<4>
+Project: "quat"=.\pc_win32\quat\quat.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -96,22 +96,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "setrouter"=".\CLIENT_SRC\PC_WIN32\setrouter\setrouter.dsp" - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name vrpn
-    End Project Dependency
-}}}
-
-###############################################################################
-
-Project: "sierra_router_server"=".\SERVER_SRC\PC_WIN32\sierra_router_server\sierra_router_server.dsp" - Package Owner=<4>
+Project: "setrouter"=.\CLIENT_SRC\PC_WIN32\setrouter\setrouter.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -126,7 +111,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "sphere_client"=".\client_src\pc_win32\sphere_client\sphere_client.dsp" - Package Owner=<4>
+Project: "sierra_router_server"=.\SERVER_SRC\PC_WIN32\sierra_router_server\sierra_router_server.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -141,7 +126,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "test_analogfly"=".\SERVER_SRC\PC_WIN32\test_analogfly\test_analogfly.dsp" - Package Owner=<4>
+Project: "sphere_client"=.\client_src\pc_win32\sphere_client\sphere_client.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -156,7 +141,22 @@ Package=<4>
 
 ###############################################################################
 
-Project: "test_gen_rpc"=".\UTIL\gen_rpc\test_gen_rpc.dsp" - Package Owner=<4>
+Project: "test_analogfly"=.\SERVER_SRC\PC_WIN32\test_analogfly\test_analogfly.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "test_gen_rpc"=.\UTIL\gen_rpc\test_gen_rpc.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -171,7 +171,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "test_radamec_spi"=".\server_src\pc_win32\test_radamec_spi\test_radamec_spi.dsp" - Package Owner=<4>
+Project: "test_radamec_spi"=.\server_src\pc_win32\test_radamec_spi\test_radamec_spi.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -186,7 +186,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "test_vrpn"=".\server_src\pc_win32\test_vrpn\test_vrpn.dsp" - Package Owner=<4>
+Project: "test_vrpn"=.\server_src\pc_win32\test_vrpn\test_vrpn.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -201,7 +201,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "timecode_generator"=".\server_src\timecode_generator_server\timecode_generator.dsp" - Package Owner=<4>
+Project: "timecode_generator"=.\server_src\timecode_generator_server\timecode_generator.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -216,49 +216,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "vrpn"=".\vrpn.dsp" - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name quat
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name test_gen_rpc
-    End Project Dependency
-}}}
-
-###############################################################################
-
-Project: "vrpn_MT"=".\vrpn_MT.dsp" - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "vrpn_MTd"=".\vrpn_MTd.dsp" - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "vrpn_phantom"=".\server_src\vrpn_phantom.dsp" - Package Owner=<4>
+Project: "vrpn"=.\vrpn.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -273,7 +231,46 @@ Package=<4>
 
 ###############################################################################
 
-Project: "vrpn_server"=".\server_src\pc_win32\vrpn_server\vrpn_server.dsp" - Package Owner=<4>
+Project: "vrpn_MT"=.\vrpn_MT.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "vrpn_MTd"=.\vrpn_MTd.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "vrpn_phantom"=.\server_src\vrpn_phantom.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name quat
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "vrpn_server"=.\server_src\pc_win32\vrpn_server\vrpn_server.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -288,7 +285,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "vrpn_server_with_timecode"=".\server_src\pc_win32\vrpn_server_with_timecode\vrpn_server_with_timecode.dsp" - Package Owner=<4>
+Project: "vrpn_server_with_timecode"=.\server_src\pc_win32\vrpn_server_with_timecode\vrpn_server_with_timecode.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
