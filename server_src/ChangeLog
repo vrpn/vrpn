@@ -1,3 +1,9 @@
+2002-03-13  Aron Helser  <helser@cs.unc.edu>
+
+	* vrpn_Phantom.h: Avoid ghost includes here, instead declare
+	classes, and include in .C file. Allows apps that use vrpn_phantom
+	lib to not include Ghost headers, and non-standard ghost-stl. 
+
 2002-01-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.C : Added code from John Stone to enable using Spaceballs.

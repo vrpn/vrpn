@@ -1,11 +1,13 @@
 #ifndef VRPN_PHANTOM_H
 #define VRPN_PHANTOM_H
 
-#include "ghost.h"
-#include "texture_plane.h"
-#include "trimesh.h"
-#include "constraint.h"
-#include "forcefield.h"
+class gstScene;
+class gstSeparator;
+class gstPHANToM;
+class DynamicPlane;
+class Trimesh;
+class ConstraintEffect;
+class ForceFieldEffect;
 
 #include "vrpn_Button.h"
 #include "vrpn_Tracker.h"

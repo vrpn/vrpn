@@ -2755,6 +2755,9 @@ void vrpn_Endpoint::init (void) {
     fprintf(stderr, "vrpn_Endpoint::init:  Out of memory!\n");
     return;
   }
+
+  d_controlMsgTimeOffset.tv_sec = 0;
+  d_controlMsgTimeOffset.tv_usec = 0;
 }
 
 int vrpn_Endpoint::mainloop (timeval * timeout,
@@ -3565,8 +3568,10 @@ void vrpn_Endpoint::drop_connection (void) {
   // Clear out the buffers; nothing to read or send if no connection.
   clearBuffers();
 
-  struct timeval now;
+  struct timeval now, adj_time;
   gettimeofday(&now, NULL);
+  // Adjust the time of this system message. Default adjustment is 0. 
+  adj_time = vrpn_TimevalSum(now, d_controlMsgTimeOffset);
 
   // If we are logging, put a message in the log telling that we
   // have had a disconnection. We don't close the logfile here unless
@@ -3575,7 +3580,7 @@ void vrpn_Endpoint::drop_connection (void) {
   // the endpoint is destroyed.
   if (d_outLog->logMode()) {
     if (d_outLog->logMessage
-               (0, now, vrpn_CONNECTION_DISCONNECT_MESSAGE, 0, NULL, 0)
+               (0, adj_time, vrpn_CONNECTION_DISCONNECT_MESSAGE, 0, NULL, 0)
             == -1) {
       fprintf(stderr,"vrpn_Endpoint::drop_connection: Can't log\n");
       d_outLog->close();       // Hope for the best...
@@ -3597,13 +3602,13 @@ void vrpn_Endpoint::drop_connection (void) {
 	d_dispatcher->doCallbacksFor
 	       (d_dispatcher->registerType(vrpn_dropped_connection),
 		d_dispatcher->registerSender(vrpn_CONTROL),
-		now, 0, NULL);
+		adj_time, 0, NULL);
 
 	if (*d_connectionCounter == 0) { // None more left
 	    d_dispatcher->doCallbacksFor
 		 (d_dispatcher->registerType(vrpn_dropped_last_connection),
 		  d_dispatcher->registerSender(vrpn_CONTROL),
-		  now, 0, NULL);
+		  adj_time, 0, NULL);
 	}
   }
 }
@@ -4342,6 +4347,18 @@ int vrpn_Endpoint::pack_sender_description (vrpn_int32 which) {
        vrpn_CONNECTION_RELIABLE);
 }
 
+/** Set an offset that the endpoint should add to the timestamp it gets from
+   gettimeofday before it sends drop connection system messages. Allows us to
+   construct a log file with something other than wall-clock time for system
+   messages. I was having a problem with dropped connection, specifically, but
+   if other messages are a problem, it can be extended to those.  
+*/
+int vrpn_Endpoint::setControlMsgTimeOffset(const timeval * offset)
+{
+    d_controlMsgTimeOffset.tv_sec = offset->tv_sec;
+    d_controlMsgTimeOffset.tv_usec = offset->tv_usec;
+    return 0;
+}
 
 
 
@@ -4510,6 +4527,25 @@ int vrpn_Connection::pack_sender_description (vrpn_int32 which) {
     }
   }
 
+  return 0;
+}
+
+/** Set time offset for all endpoints. See
+ vrpn_Endpoint::setControlMsgTimeOffset  for more. 
+*/
+int vrpn_Connection::setControlMsgTimeOffset(const timeval * offset)
+{
+  int retval;
+  int i;
+
+  for (i = 0; i < d_numEndpoints; i++) {
+    if (d_endpoints[i]) {
+      retval = d_endpoints[i]->setControlMsgTimeOffset(offset);
+      if (retval) {
+        return -1;
+      }
+    }
+  }
   return 0;
 }
 

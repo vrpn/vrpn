@@ -256,6 +256,9 @@ class vrpn_Endpoint {
     int pack_type_description (vrpn_int32 which);
       ///< Packs a type description.
 
+    int setControlMsgTimeOffset(const timeval * offset);
+      ///< Offset endpoint should apply to timestamps of system messages,
+      ///< allows us to construct a log with the timestamps we want.
 
     int status;
 
@@ -362,6 +365,8 @@ class vrpn_Endpoint {
 
     char * d_NICaddress;
 
+    timeval d_controlMsgTimeOffset;
+
     // The senders and types we know about that have been described by
     // the other end of the connection.  Also, record the local mapping
     // for ones that have been described with the same name locally.
@@ -464,6 +469,10 @@ class vrpn_Connection {
         // Returns nonzero on failure.
         virtual int register_log_filter (vrpn_LOGFILTER filter,
                                          void * userdata);
+
+    int setControlMsgTimeOffset(const timeval * offset);
+      ///< Offset endpoint should apply to timestamps of system messages,
+      ///< allows us to construct a log with the timestamps we want.
 
         // Save any messages on any endpoints which have been logged so far.
         virtual int save_log_so_far();

@@ -1,3 +1,11 @@
+2002-03-13  Aron Helser  <helser@cs.unc.edu>
+
+	* vrpn_Connection.C (setControlMsgTimeOffset): new method to
+	assist writing a stream file with artibrary time stamps inside. 
+	(d_controlMsgTimeOffset): new, same. 
+	(drop_connection): Use d_controlMsgTimeOffset
+	* vrpn_Spaceball.C: compiler warning fix.
+	
 2002-02-01  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn.dsp:  added vrpn_LamportClock.[C,h]

@@ -188,8 +188,10 @@ int	vrpn_Spaceball::reset(void) {
 int vrpn_Spaceball::get_report(void)
 {
   unsigned char rawbuf[1024]; // raw unprocessed incoming characters
-  int i, j, num, packs;
-
+  int i, num, packs;
+#if defined(DEBUG)
+  int j;
+#endif
   packs = 0; /* no packs received yet */
 
   // read up to 1023 unprocessed characters from the serial device at once
