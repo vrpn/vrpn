@@ -41,7 +41,7 @@ vrpn_Tracker_Serial(name,c,port,baud), cSensors(cSensors), cResets(0)
 }
 
 vrpn_Tracker_Dyna::~vrpn_Tracker_Dyna() {
-  fprintf(stderr, "vrpn_Tracker_Dyna:Shuting down...\n");
+  fprintf(stderr, "vrpn_Tracker_Dyna:Shutting down...\n");
 }
 
 
@@ -119,14 +119,14 @@ void vrpn_Tracker_Dyna::reset() {
     /* if no data, tracker probably not connected.  just bag it.    */
     if ( status == T_PDYN_NO_DATA )
     {
-      fprintf(stderr, "vrpn_Tracker_Dyan::reset(): no data (is tracker turned on?)\n"); 
+      fprintf(stderr, "vrpn_Tracker_Dyna::reset(): no data (is tracker turned on?)\n"); 
       status = TRACKER_RESETTING;
       return;
 
     } 
     
   }else {
-    fprintf(stderr, "vrpn_Tracker_Dyan: return valid status report\n");
+    fprintf(stderr, "vrpn_Tracker_Dyna: return valid status report\n");
     reportLength = T_PDYN_RECORD_LENGTH;
     
     // set it to continues mode;
@@ -202,7 +202,7 @@ int vrpn_Tracker_Dyna::valid_report() {
 	   ( (buffer[i+1] & llll_OOOO) == lOOO_OOOO))
       {
 	fprintf(stderr, 
-		"vrpn_Tracker_Dyan: found two more status bytes in the Dynasight's output list\n");
+		"vrpn_Tracker_Dyna: found two more status bytes in the Dynasight's output list\n");
 	return (0);
      }
    }
