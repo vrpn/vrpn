@@ -65,7 +65,7 @@ public:
     // end_filetime is an absolute time, corresponding to the
     // timestamps of the entries in the file,
     // returns -1 on error or EOF, 0 on success
-    int play_to_filetime(timeval end_filetime);
+    int play_to_filetime(const timeval end_filetime);
 
     // plays the next entry, returns -1 or error or EOF, 0 otherwise
     int playone();
