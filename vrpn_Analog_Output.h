@@ -59,22 +59,6 @@ class vrpn_Analog_Output_Server : public vrpn_Analog_Output {
         /// Responds to a request to change a number of channels
         static int handle_request_channels_message(void* userdata,
             vrpn_HANDLERPARAM p);
-
-        // (un)Register a callback handler to handle analog value requests
-        virtual int register_change_handler(void *userdata,
-	        vrpn_ANALOGCHANGEHANDLER handler);
-        virtual int unregister_change_handler(void *userdata,
-	        vrpn_ANALOGCHANGEHANDLER handler);
-
-    protected:
-        typedef struct vrpn_RAOCS {
-            void*                       userdata;
-            vrpn_ANALOGCHANGEHANDLER    handler;   // reuse the change handler struct from vrpn_Analog_Remote
-            struct vrpn_RAOCS*          next;
-        } vrpn_ANALOGCHANGELIST;
-        vrpn_ANALOGCHANGELIST* change_list;
-
-        static int handle_change_message(void* userdata, vrpn_HANDLERPARAM p);
 };
 
 // Open an analog device that is on the other end of a connection

@@ -57,44 +57,18 @@ vrpn_int32 vrpn_Analog_Output::encode_to(char *buf)
 }
 
 vrpn_Analog_Output_Server::vrpn_Analog_Output_Server(const char* name, vrpn_Connection* c) :
-    vrpn_Analog_Output(name, c),
-    change_list(NULL)
+    vrpn_Analog_Output(name, c)
 {
     o_num_channel = 0;
 
-    // Register handlers for the change request callbacks from this device,
-    // if we have a connection
-    if (d_connection != NULL) {
-        if (register_autodeleted_handler(request_m_id, handle_request_message, this, d_sender_id)) {
-            fprintf(stderr, "vrpn_Analog_Output: can't register handler\n");
-            d_connection = NULL;
-        }
-        if (register_autodeleted_handler(request_channels_m_id, handle_request_channels_message, this, d_sender_id)) {
-            fprintf(stderr, "vrpn_Analog_Output: can't register handler\n");
-            d_connection = NULL;
-        }
-    }
-    else {
+    // Check if we have a connection
+    if (d_connection == NULL) {
         fprintf(stderr, "vrpn_Analog_Output: Can't get connection!\n");
     }
 }
 
 // virtual
-vrpn_Analog_Output_Server::~vrpn_Analog_Output_Server(void) {
-	vrpn_ANALOGCHANGELIST	*next;
-
-	// Our handlers have all been registered using the
-	// register_autodeleted_handler() method, so we don't have to
-	// worry about unregistering them here.
-
-	// Delete all of the callback handlers that other code had registered
-	// with this object. This will free up the memory taken by the list
-	while (change_list != NULL) {
-		next = change_list->next;
-		delete change_list;
-		change_list = next;
-	}
-}
+vrpn_Analog_Output_Server::~vrpn_Analog_Output_Server(void) {}
 
 vrpn_int32 vrpn_Analog_Output_Server::setNumChannels (vrpn_int32 sizeRequested) {
   if (sizeRequested < 0) sizeRequested = 0;
@@ -108,14 +82,11 @@ vrpn_int32 vrpn_Analog_Output_Server::setNumChannels (vrpn_int32 sizeRequested) 
 int vrpn_Analog_Output_Server::handle_request_message(void *userdata,
 	vrpn_HANDLERPARAM p)
 {
-    int i;
     const char* bufptr = p.buffer;
     vrpn_int32 chan_num;
     vrpn_int32 pad;
     vrpn_float64 value;
     vrpn_Analog_Output_Server* me = (vrpn_Analog_Output_Server*)userdata;
-    vrpn_ANALOGCB ap;
-    vrpn_ANALOGCHANGELIST* handler = me->change_list;
 
     // Read the parameters from the buffer
     vrpn_unbuffer(&bufptr, &chan_num);
@@ -130,19 +101,6 @@ int vrpn_Analog_Output_Server::handle_request_message(void *userdata,
     }
     me->o_channel[chan_num] = value;
 
-    // Fill in the parameters for the callbacks...treat both handle_request_change_channel and
-    // handle_request_channels the same for now, so just make all the channels available to the user
-    // callbacks in the server
-    ap.msg_time = p.msg_time;
-    ap.num_channel = me->o_num_channel;
-    for (i = 0; i < me->o_num_channel; i++) {
-        ap.channel[i] = me->o_channel[i];
-    }
-    while (handler != NULL) {
-        handler->handler(handler->userdata, ap);
-        handler = handler->next;
-    }
-
     return 0;
 }
 
@@ -154,8 +112,6 @@ int vrpn_Analog_Output_Server::handle_request_channels_message(void* userdata,
 	vrpn_int32 num;
 	vrpn_int32 pad;
     vrpn_Analog_Output_Server* me = (vrpn_Analog_Output_Server*)userdata;
-    vrpn_ANALOGCB ap;
-    vrpn_ANALOGCHANGELIST* handler = me->change_list;
 
     // Read the values from the buffer
 	vrpn_unbuffer(&bufptr, &num);
@@ -165,81 +121,9 @@ int vrpn_Analog_Output_Server::handle_request_channels_message(void* userdata,
         vrpn_unbuffer(&bufptr, &(me->o_channel[i]));
     }
 
-    // Fill in the parameters for the callbacks...treat both handle_request_change_channel and
-    // handle_request_channels the same for now, so just make all the channels available to the user
-    // callbacks in the server
-    ap.msg_time = p.msg_time;
-    ap.num_channel = me->o_num_channel;
-    for (i = 0; i < me->o_num_channel; i++) {
-        ap.channel[i] = me->o_channel[i];
-    }
-    while (handler != NULL) {
-        handler->handler(handler->userdata, ap);
-        handler = handler->next;
-    }
-
     return 0;
 }
 
-int vrpn_Analog_Output_Server::register_change_handler(void* userdata,
-			vrpn_ANALOGCHANGEHANDLER handler)
-{
-	vrpn_ANALOGCHANGELIST* new_entry;
-
-	// Ensure that the handler is non-NULL
-	if (handler == NULL) {
-		fprintf(stderr,
-			"vrpn_Analog_Output_Server::register_handler: NULL handler\n");
-		return -1;
-	}
-
-	// Allocate and initialize the new entry
-	if ( (new_entry = new vrpn_ANALOGCHANGELIST) == NULL) {
-		fprintf(stderr,
-		    "vrpn_Analog_Output_Server::register_handler: Out of memory\n");
-		return -1;
-	}
-	new_entry->handler = handler;
-	new_entry->userdata = userdata;
-
-	// Add this handler to the chain at the beginning (don't check to see
-	// if it is already there, since duplication is okay).
-	new_entry->next = change_list;
-	change_list = new_entry;
-
-	return 0;
-}
-
-int vrpn_Analog_Output_Server::unregister_change_handler(void *userdata,
-			vrpn_ANALOGCHANGEHANDLER handler)
-{
-	// The pointer at *snitch points to victim
-	vrpn_ANALOGCHANGELIST	*victim, **snitch;
-
-	// Find a handler with this registry in the list (any one will do,
-	// since all duplicates are the same).
-	snitch = &change_list;
-	victim = *snitch;
-	while ( (victim != NULL) &&
-		( (victim->handler != handler) ||
-		  (victim->userdata != userdata) )) {
-	    snitch = &( (*snitch)->next );
-	    victim = victim->next;
-	}
-
-	// Make sure we found one
-	if (victim == NULL) {
-		fprintf(stderr,
-		   "vrpn_Analog_Output_Server::unregister_handler: No such handler\n");
-		return -1;
-	}
-
-	// Remove the entry from the list
-	*snitch = victim->next;
-	delete victim;
-
-	return 0;
-}
 
 
 
