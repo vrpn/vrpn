@@ -3574,9 +3574,9 @@ vrpn_int32 vrpn_Connection::register_sender (const char * name)
    num_my_senders++;
 
    // If we're connected, pack the sender description
-   if (connected()) {
+   //if (connected()) {
    	pack_sender_description(num_my_senders - 1);
-   }
+   //}
 
    // If the other side has declared this sender, establish the
    // mapping for it.
@@ -3619,9 +3619,9 @@ vrpn_int32 vrpn_Connection::register_message_type (const char * name)
 	num_my_types++;
 
 	// If we're connected, pack the type description
-	if (connected()) {
+	//if (connected()) {
 		pack_type_description(num_my_types-1);
-	}
+	//}
 
 	if (endpoint.newLocalType(name, num_my_types - 1)) {
 		my_types[num_my_types - 1].cCares = 1;  // TCH 28 Oct 97
