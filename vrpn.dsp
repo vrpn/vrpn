@@ -181,6 +181,10 @@ SOURCE=.\vrpn_Joylin.C
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_Joywin32.C
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_LamportClock.C
 # End Source File
 # Begin Source File
@@ -386,6 +390,10 @@ SOURCE=.\vrpn_ImmersionBox.h
 # Begin Source File
 
 SOURCE=.\vrpn_Joylin.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Joywin32.h
 # End Source File
 # Begin Source File
 

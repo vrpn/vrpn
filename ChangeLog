@@ -1,5 +1,9 @@
 2003-08-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn.dsp : Includes the new files for Joywin32.
+
+2003-08-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Serial.C : Added include needed on Linux
 	* vrpn_Joywin32.C : Code from Sebastien Maraux to read
 		from joysticks without going through DirectX.
