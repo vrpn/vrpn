@@ -25,11 +25,15 @@
  * Update Count    : 414
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Tracker_Fastrak.C,v $
- * $Date: 1998/06/04 16:05:53 $
+ * $Date: 1998/06/05 17:13:15 $
  * $Author: taylorr $
- * $Revision: 1.9 $
+ * $Revision: 1.10 $
  * 
  * $Log: vrpn_Tracker_Fastrak.C,v $
+ * Revision 1.10  1998/06/05 17:13:15  taylorr
+ * This version works on machines where float cannot be accessed on
+ * unaligned memory boundaries.
+ *
  * Revision 1.9  1998/06/04 16:05:53  taylorr
  * This version should compile at remote locations.
  * This version no longer requires the SDI library to run.  It does all
@@ -70,7 +74,7 @@
  * HISTORY
  */
 
-static char rcsid[] = "$Id: vrpn_Tracker_Fastrak.C,v 1.9 1998/06/04 16:05:53 taylorr Exp $";
+static char rcsid[] = "$Id: vrpn_Tracker_Fastrak.C,v 1.10 1998/06/05 17:13:15 taylorr Exp $";
 #include <time.h>
 #include <math.h>
 #include <stdlib.h>
@@ -1181,26 +1185,23 @@ int vrpn_Tracker_Fastrak::xyz_quat_interpret()
 
 
     // get position ;
-    //fprintf(stderr, "pos: ");
     for ( j = 0; j < 3; j++, dataPtr++ ){
-	pos[j] = *dataPtr;
-	//fprintf(stderr, " %.3f", pos[j]);
-      }
+	// Use memcpy to avoid problems with unaligned floats
+	memcpy(&pos[j], dataPtr, sizeof(pos[j]));
+    }
       
-      // on to orientation quaternion;  NOTE:  Q_W is read FIRST!   
-      quat[Q_W] = *dataPtr;
-      dataPtr++;
+    // on to orientation quaternion;  NOTE:  Q_W is read FIRST!   
+    // Use memcpy to avoid problems with unaligned floats
+    memcpy(&quat[Q_W], dataPtr, sizeof(quat[Q_W]));
+    dataPtr++;
       
-      //fprintf(stderr, "Done\n");
-      // get rest of orientation quat ;
-      for ( j = 0; j < 3; j++, dataPtr++ ){
-	quat[j] = *dataPtr;
-	//fprintf(stderr, "%.3f", quat[j]);
-      }
-
+    // get rest of orientation quat ;
+    for ( j = 0; j < 3; j++, dataPtr++ ){
+	// Use memcpy to avoid problems with unaligned floats
+	memcpy(&quat[j], dataPtr, sizeof(quat[j]));
+    }
 
     return(T_OK);
-
 }	/* t_f_xyz_quat_interpret */
 
 
