@@ -134,21 +134,32 @@ fprintf(stderr, "Button's name is %s.\n", devicename);
 void handle_cntl_c (int) {
 
   static int invocations = 0;
+  struct timeval t;
   const char * n;
   long i;
 
   fprintf(stderr, "In control-c handler.\n");
 
   if (!invocations) {
-    printf("(First press -- setting replay rate to 2.0 -- 2 more to exit)\n");
+    printf("(First press -- setting replay rate to 2.0 -- 3 more to exit)\n");
     fc->set_replay_rate(2.0f);
     invocations++;
     signal(SIGINT, handle_cntl_c);
     return;
   }
   if (invocations == 1) {
-    printf("(Second press -- Starting replay over -- 1 more to exit)\n");
+    printf("(Second press -- Starting replay over -- 2 more to exit)\n");
     fc->reset();
+    invocations++;
+    signal(SIGINT, handle_cntl_c);
+    return;
+  }
+  if (invocations == 2) {
+    printf("(Third press -- Jumping replay to t+30 seconds -- "
+           "1 more to exit)\n");
+    t.tv_sec = 30L;
+    t.tv_usec = 0L;
+    fc->play_to_time(t);
     invocations++;
     signal(SIGINT, handle_cntl_c);
     return;
