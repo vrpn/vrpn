@@ -256,7 +256,7 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 void vrpn_Tracker_Flock::reset()
 {
    int resetLen;
-   unsigned char reset[2*(MAX_SENSORS+1)+10];
+   unsigned char reset[6*(MAX_SENSORS+1)+10];
 
    // Get rid of the characters left over from before the reset
    vrpn_flush_input_buffer(serial_fd);
