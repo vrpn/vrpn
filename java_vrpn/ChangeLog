@@ -1,3 +1,37 @@
+2002-10-08  David Marshburn  <marshbur@cs.unc.edu>
+
+	* VRPN.java:  adds a static variable (downInVrpnLock) on which all 
+	the vrpn devices can synchronize their access to the vrpn libray.  
+	Also, loads the native library.
+	* AnalogOutputRemote.java:  synchronizes on downInVrpnLock all calls 
+	to init, mainloop and shutdown native methods.  Also removes
+	library-loading, static-initialization block.
+	* AnalogRemote.java:  same
+	* ButtonRemote.java:  same
+	* ForceDeviceRemote.java:  same
+	* TempImagerRemote.java:  same
+	* TrackerRemote.java:  same
+	
+	* vrpn_AnalogOutputRemote.cpp:  JNI_Onload and JNI_OnUnload renamed
+	to be device specific.  Removed 'jvm' global variable.  Check that
+	jvm has been defined in JNI_Onload function.
+	* vrpn_AnalogRemote.cpp:  same
+	* vrpn_ButtonRemote.cpp:  same
+	* vrpn_ForceDeviceRemote.cpp: same
+	* vrpn_TempImagerRemote.cpp:  same
+	* vrpn_TrackerRemote.cpp:  same
+
+	* java_vrpn.h:  global 'jvm' variable.  Functions definitons for
+	device-specific JNI_Onload/OnUnload function.
+	* java_vrpn.cpp:  new.  contains JNI_Onload and JNI_OnUnload, whick
+	call the device-specific versions of these functions.
+
+	* java_vrpn.dsp:  new.  everything in a single project.
+	* AnalogOutputRemote.dsp, AnalogRemote.dsp, ButtonRemote.dsp,
+	ForceDeviceRemote.dsp, TempImagerRemote.dsp, TrackerRemote.dsp:
+	all removed in favor of java_vrpn.dsp.
+	* java_vrpn.dsw:  added/removed projects.
+
 2002-10-07  David Marshburn  <marshbur@cs.unc.edu>
 
 	* VRPN.java:  new, pending superclass for java vrpn devices

@@ -1,7 +1,7 @@
 package vrpn;
 import java.util.*;
 
-public class ButtonRemote implements Runnable
+public class ButtonRemote extends VRPN implements Runnable
 {
 	
 	//////////////////
@@ -31,8 +31,11 @@ public class ButtonRemote implements Runnable
 	{
 		try 
 		{ 
-			this.init( name, localInLogfileName, localOutLogfileName, 
-					   remoteInLogfileName, remoteOutLogfileName ); 
+			synchronized( downInVrpnLock )
+			{
+				this.init( name, localInLogfileName, localOutLogfileName, 
+						   remoteInLogfileName, remoteOutLogfileName ); 
+			}
 		}
 		catch( java.lang.UnsatisfiedLinkError e )
 		{  
@@ -95,7 +98,10 @@ public class ButtonRemote implements Runnable
 	{
 		while( keepRunning )
 		{
-			this.mainloop( );
+			synchronized( downInVrpnLock )
+			{
+				this.mainloop( );
+			}
 			try { Thread.sleep( mainloopPeriod ); }
 			catch( InterruptedException e ) { } 
 		}
@@ -165,7 +171,10 @@ public class ButtonRemote implements Runnable
 			catch( InterruptedException e ) { }
 		}
 		changeListeners.removeAllElements( );
-		this.shutdownButton( );
+		synchronized( downInVrpnLock )
+		{
+			this.shutdownButton( );
+		}
 	}
 	
 	
@@ -196,24 +205,6 @@ public class ButtonRemote implements Runnable
 	 */
 	protected final static Object notifyingChangeListenersLock = new Object( );
 
-	// static initialization
-	static 
-	{
-		System.loadLibrary( "ButtonRemote" );
-		try { System.loadLibrary( "ButtonRemote" ); }
-		catch( UnsatisfiedLinkError e )
-		{
-			System.out.println( e.getMessage( ) );
-			System.out.println( "Error initializing remote button device." );
-			System.out.println( " -- Unable to find native library." );
-		}
-		catch( SecurityException e )
-		{
-			System.out.println( e.getMessage( ) );
-			System.out.println( "Security exception:  you couldn't load the native button remote dll." );
-		}
-
-	}
 	
 }
 

@@ -5,17 +5,25 @@
 #include "vrpn_Tracker.h"
 #include "vrpn_TrackerRemote.h"
 
-JavaVM* jvm = NULL;
 jclass jclass_vrpn_TrackerRemote = NULL;
 jfieldID jfid_vrpn_TrackerRemote_native_tracker = NULL;
 
+
+//////////////////////////
+//  DLL functions
+
+
 // This is called when the Java Virtual Machine loads this library
 //  and sets some global references that are used elsewhere.
-JNIEXPORT jint JNICALL JNI_OnLoad( JavaVM* jvm, void* reserved )
+JNIEXPORT jint JNICALL JNI_OnLoad_Tracker_Remote( JavaVM* jvm, void* reserved )
 {
-  //////////////
-  // set the jvm reference
-  ::jvm = jvm;
+  ///////////////
+  // make sure the general library code set jvm
+  if( jvm == NULL )
+  {
+	printf( "vrpn_TrackerRemote native:  no jvm.\n" );
+    return JNI_ERR;
+  }
 
   ///////////////
   // get the JNIEnv pointer
@@ -64,7 +72,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad( JavaVM* jvm, void* reserved )
 } // end JNI_OnLoad
 
 
-JNIEXPORT void JNICALL JNI_OnUnload( JavaVM* jvm, void* reserved )
+JNIEXPORT void JNICALL JNI_OnUnload_Tracker_Remote( JavaVM* jvm, void* reserved )
 {
   // get the JNIEnv pointer
   JNIEnv* env;
@@ -77,6 +85,14 @@ JNIEXPORT void JNICALL JNI_OnUnload( JavaVM* jvm, void* reserved )
   // delete the global reference to the vrpn.TrackerRemote class
   env->DeleteWeakGlobalRef( jclass_vrpn_TrackerRemote );
 }
+
+
+// end DLL functions
+/////////////////////////////
+
+
+////////////////////////////
+// dll utility functions
 
 
 // This is the callback for vprn to notify us of a new tracker message

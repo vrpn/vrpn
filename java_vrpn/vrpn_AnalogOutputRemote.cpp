@@ -7,17 +7,25 @@
 #include "vrpn_AnalogOutputRemote.h"
 
 
-JavaVM* jvm = NULL;
 jclass jclass_vrpn_AnalogOutputRemote = NULL;
 jfieldID jfid_vrpn_AnalogOutputRemote_native_analog_output = NULL;
 
+
+//////////////////////////
+//  DLL functions
+
+
 // This is called when the Java Virtual Machine loads this library
 //  and sets some global references that are used elsewhere.
-JNIEXPORT jint JNICALL JNI_OnLoad( JavaVM* jvm, void* reserved )
+JNIEXPORT jint JNICALL JNI_OnLoad_AnalogOutput_Remote( JavaVM* jvm, void* reserved )
 {
-  //////////////
-  // set the jvm reference
-  ::jvm = jvm;
+  ///////////////
+  // make sure the general library code set jvm
+  if( jvm == NULL )
+  {
+	printf( "vrpn_TrackerRemote native:  no jvm.\n" );
+    return JNI_ERR;
+  }
 
   ///////////////
   // get the JNIEnv pointer
@@ -66,7 +74,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad( JavaVM* jvm, void* reserved )
 } // end JNI_OnLoad
 
 
-JNIEXPORT void JNICALL JNI_OnUnload( JavaVM* jvm, void* reserved )
+JNIEXPORT void JNICALL JNI_OnUnload_AnalogOutput_Remote( JavaVM* jvm, void* reserved )
 {
   // get the JNIEnv pointer
   JNIEnv* env;
@@ -79,6 +87,15 @@ JNIEXPORT void JNICALL JNI_OnUnload( JavaVM* jvm, void* reserved )
   // delete the global reference to the vrpn.analogRemote class
   env->DeleteWeakGlobalRef( jclass_vrpn_AnalogOutputRemote );
 }
+
+
+
+// end DLL functions
+/////////////////////////////
+
+
+////////////////////////////
+// dll utility functions
 
 
 

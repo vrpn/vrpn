@@ -2,7 +2,7 @@
 package vrpn;
 import java.util.*;
 
-public class AnalogOutputRemote implements Runnable
+public class AnalogOutputRemote extends VRPN implements Runnable
 {
 	
 	//////////////////
@@ -27,8 +27,11 @@ public class AnalogOutputRemote implements Runnable
 	{
 		try	
 		{  
-			this.init( name, localInLogfileName, localOutLogfileName, 
-					   remoteInLogfileName, remoteOutLogfileName );  
+			synchronized( downInVrpnLock )
+			{
+				this.init( name, localInLogfileName, localOutLogfileName, 
+						   remoteInLogfileName, remoteOutLogfileName );  
+			}
 		}
 		catch( java.lang.UnsatisfiedLinkError e )
 		{  
@@ -80,7 +83,10 @@ public class AnalogOutputRemote implements Runnable
 	{
 		while( keepRunning )
 		{
-			this.mainloop( );
+			synchronized( downInVrpnLock )
+			{
+				this.mainloop( );
+			}
 			try { Thread.sleep( mainloopPeriod ); }
 			catch( InterruptedException e ) { } 
 		}
@@ -120,7 +126,10 @@ public class AnalogOutputRemote implements Runnable
 			catch( InterruptedException e ) { }
 		}
 		changeListeners.removeAllElements( );
-		this.shutdownAnalogOutput( );
+		synchronized( downInVrpnLock )
+		{
+			this.shutdownAnalogOutput( );
+		}
 	}
 	
 	
@@ -151,22 +160,5 @@ public class AnalogOutputRemote implements Runnable
 	protected final static Object notifyingChangeListenersLock = new Object( );
 	protected Vector changeListeners = new Vector( );
 
-
-	// static initialization
-	static 
-	{
-		try { System.loadLibrary( "AnalogOutputRemote" ); }
-		catch( UnsatisfiedLinkError e )
-		{
-			System.out.println( e.getMessage( ) );
-			System.out.println( "Error initializing remote analogOutput device." );
-			System.out.println( " -- Unable to find native library." );
-		}
-		catch( SecurityException e )
-		{
-			System.out.println( e.getMessage( ) );
-			System.out.println( "Security exception:  you couldn't load the native analogOutput output remote dll." );
-		}
-	}
 	
 }

@@ -7,7 +7,6 @@
 #include "vrpn_TempImagerRemote.h"
 
 
-JavaVM* jvm = NULL;
 jclass jclass_vrpn_TempImagerRemote = NULL;
 jfieldID jfid_vrpn_TempImagerRemote_native_tempImager = NULL;
 
@@ -18,11 +17,15 @@ jfieldID jfid_vrpn_TempImagerRemote_native_tempImager = NULL;
 
 // This is called when the Java Virtual Machine loads this library
 //  and sets some global references that are used elsewhere.
-JNIEXPORT jint JNICALL JNI_OnLoad( JavaVM* jvm, void* reserved )
+JNIEXPORT jint JNICALL JNI_OnLoad_TempImagerRemote( JavaVM* jvm, void* reserved )
 {
-  //////////////
-  // set the jvm reference
-  ::jvm = jvm;
+  ///////////////
+  // make sure the general library code set jvm
+  if( jvm == NULL )
+  {
+	printf( "vrpn_TrackerRemote native:  no jvm.\n" );
+    return JNI_ERR;
+  }
 
   ///////////////
   // get the JNIEnv pointer
@@ -72,7 +75,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad( JavaVM* jvm, void* reserved )
 
 
 
-JNIEXPORT void JNICALL JNI_OnUnload( JavaVM* jvm, void* reserved )
+JNIEXPORT void JNICALL JNI_OnUnload_TempImagerRemote( JavaVM* jvm, void* reserved )
 {
   // get the JNIEnv pointer
   JNIEnv* env;

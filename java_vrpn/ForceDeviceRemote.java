@@ -3,7 +3,7 @@ import java.util.*;
 
 
 
-public class ForceDeviceRemote implements Runnable
+public class ForceDeviceRemote extends VRPN implements Runnable
 {
 	
 	//////////////////
@@ -70,8 +70,11 @@ public class ForceDeviceRemote implements Runnable
 	{
 		try	
 		{  
-			this.init( name, localInLogfileName, localOutLogfileName, 
-					   remoteInLogfileName, remoteOutLogfileName );  
+			synchronized( downInVrpnLock )
+			{
+				this.init( name, localInLogfileName, localOutLogfileName, 
+						   remoteInLogfileName, remoteOutLogfileName );  
+			}
 		}
 		catch( java.lang.UnsatisfiedLinkError e )
 		{  
@@ -194,7 +197,10 @@ public class ForceDeviceRemote implements Runnable
 	{
 		while( keepRunning )
 		{
-			this.mainloop( );
+			synchronized( downInVrpnLock )
+			{
+				this.mainloop( );
+			}
 			try { Thread.sleep( mainloopPeriod ); }
 			catch( InterruptedException e ) { } 
 		}
@@ -313,7 +319,10 @@ public class ForceDeviceRemote implements Runnable
 		forceListeners.removeAllElements( );
 		scpListeners.removeAllElements( );
 		errorListeners.removeAllElements( );
-		this.shutdownForceDevice( );
+		synchronized( downInVrpnLock )
+		{
+			this.shutdownForceDevice( );
+		}
 	}
 	
 	// end protected methods
@@ -348,22 +357,5 @@ public class ForceDeviceRemote implements Runnable
 	protected final static Object notifyingSCPListenersLock = new Object( );
 	protected final static Object notifyingErrorListenersLock = new Object( );
 	
-	// static initialization
-	static 
-	{
-		try { System.loadLibrary( "ForceDeviceRemote" ); }
-		catch( UnsatisfiedLinkError e )
-		{
-			System.out.println( e.getMessage( ) );
-			System.out.println( "Error initializing remote force device." );
-			System.out.println( " -- Unable to find native library." );
-		}
-		catch( SecurityException e )
-		{
-			System.out.println( e.getMessage( ) );
-			System.out.println( "Security exception:  you couldn't load the native force remote dll." );
-		}
-
-	}
 	
 }

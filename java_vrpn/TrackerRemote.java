@@ -3,7 +3,7 @@ package vrpn;
 import java.util.*;
 
 
-public class TrackerRemote implements Runnable
+public class TrackerRemote extends VRPN implements Runnable
 {
 	//////////////////
 	// Public structures and interfaces
@@ -79,8 +79,11 @@ public class TrackerRemote implements Runnable
 	{
 		try	
 		{  
-			this.init( name, localInLogfileName, localOutLogfileName, 
-					   remoteInLogfileName, remoteOutLogfileName );  
+			synchronized( downInVrpnLock )
+			{
+				this.init( name, localInLogfileName, localOutLogfileName, 
+						   remoteInLogfileName, remoteOutLogfileName );
+			}
 		}
 		catch( java.lang.UnsatisfiedLinkError e )
 		{  
@@ -177,7 +180,10 @@ public class TrackerRemote implements Runnable
 	{
 		while( keepRunning )
 		{
-			this.mainloop( );
+			synchronized( downInVrpnLock )
+			{
+				this.mainloop( );
+			}
 			try { Thread.sleep( mainloopPeriod ); }
 			catch( InterruptedException e ) { } 
 		}
@@ -310,7 +316,10 @@ public class TrackerRemote implements Runnable
 		changeListeners.removeAllElements( );
 		velocityListeners.removeAllElements( );
 		accelerationListeners.removeAllElements( );
-		this.shutdownTracker( );
+		synchronized( downInVrpnLock )
+		{
+			this.shutdownTracker( );
+		}
 	}
 	
 	// end protected methods
@@ -353,23 +362,5 @@ public class TrackerRemote implements Runnable
 	protected final static Object notifyingChangeListenersLock = new Object( );
 	protected final static Object notifyingVelocityListenersLock = new Object( );
 	protected final static Object notifyingAccelerationListenersLock = new Object( );
-	
-	// static initialization
-	static 
-	{
-		try { System.loadLibrary( "TrackerRemote" ); }
-		catch( UnsatisfiedLinkError e )
-		{
-			System.out.println( e.getMessage( ) );
-			System.out.println( "Error initializing remote tracker." );
-			System.out.println( " -- Unable to find native library." );
-		}
-		catch( SecurityException e )
-		{
-			System.out.println( e.getMessage( ) );
-			System.out.println( "Security exception:  you couldn't load the native tracker remote dll." );
-		}
-
-	}
-	
+		
 }

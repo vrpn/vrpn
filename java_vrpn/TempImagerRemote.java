@@ -2,7 +2,7 @@ package vrpn;
 import java.util.*;
 
 
-public class TempImagerRemote implements Runnable
+public class TempImagerRemote extends VRPN implements Runnable
 {
 	//////////////////
 	// Public structures and interfaces
@@ -69,7 +69,13 @@ public class TempImagerRemote implements Runnable
 	 */
 	public TempImagerRemote( String name ) throws InstantiationException
 	{
-		try	{  this.init( name );  }
+		try	
+		{  
+			synchronized( downInVrpnLock )
+			{
+				this.init( name );  
+			}
+		}
 		catch( java.lang.UnsatisfiedLinkError e )
 		{  
 			System.out.println( "Error initializing remote tempImager " + name + "." );
@@ -178,7 +184,10 @@ public class TempImagerRemote implements Runnable
 	{
 		while( keepRunning )
 		{
-			this.mainloop( );
+			synchronized( downInVrpnLock )
+			{
+				this.mainloop( );
+			}
 			try { Thread.sleep( mainloopPeriod ); }
 			catch( InterruptedException e ) { } 
 		}
@@ -281,7 +290,10 @@ public class TempImagerRemote implements Runnable
 		
 		descriptionListeners.removeAllElements( );
 		regionListeners.removeAllElements( );
-		this.shutdownTempImager( );
+		synchronized( downInVrpnLock )
+		{
+			this.shutdownTempImager( );
+		}
 	}
 	
 	
@@ -370,22 +382,5 @@ public class TempImagerRemote implements Runnable
 	protected final static Object notifyingDescriptionListenersLock = new Object( );
 	protected final static Object notifyingRegionListenersLock = new Object( );
 	
-	// static initialization
-	static 
-	{
-		try { System.loadLibrary( "TempImagerRemote" ); }
-		catch( UnsatisfiedLinkError e )
-		{
-			System.out.println( e.getMessage( ) );
-			System.out.println( "Error initializing remote tempImager." );
-			System.out.println( " -- Unable to find native library." );
-		}
-		catch( SecurityException e )
-		{
-			System.out.println( e.getMessage( ) );
-			System.out.println( "Security exception:  you couldn't load the native TempImager remote dll." );
-		}
-
-	}
 	
 }

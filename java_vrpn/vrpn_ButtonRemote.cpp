@@ -4,17 +4,20 @@
 #include "vrpn_Button.h"
 #include "vrpn_ButtonRemote.h"
 
-JavaVM* jvm = NULL;
 jclass jclass_vrpn_ButtonRemote = NULL;
 jfieldID jfid_vrpn_ButtonRemote_native_button = NULL;
 
 // This is called when the Java Virtual Machine loads this library
 //  and sets some global references that are used elsewhere.
-JNIEXPORT jint JNICALL JNI_OnLoad( JavaVM* jvm, void* reserved )
+JNIEXPORT jint JNICALL JNI_OnLoad_Button_Remote( JavaVM* jvm, void* reserved )
 {
-  //////////////
-  // set the jvm reference
-  ::jvm = jvm;
+  ///////////////
+  // make sure the general library code set jvm
+  if( jvm == NULL )
+  {
+	printf( "vrpn_TrackerRemote native:  no jvm.\n" );
+    return JNI_ERR;
+  }
 
   ///////////////
   // get the JNIEnv pointer
@@ -63,7 +66,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad( JavaVM* jvm, void* reserved )
 } // end JNI_OnLoad
 
 
-JNIEXPORT void JNICALL JNI_OnUnload( JavaVM* jvm, void* reserved )
+JNIEXPORT void JNICALL JNI_OnUnload_Button_Remote( JavaVM* jvm, void* reserved )
 {
   // get the JNIEnv pointer
   JNIEnv* env;

@@ -2,7 +2,7 @@
 package vrpn;
 import java.util.*;
 
-public class AnalogRemote implements Runnable
+public class AnalogRemote extends VRPN implements Runnable
 {
 	
 	//////////////////
@@ -28,6 +28,15 @@ public class AnalogRemote implements Runnable
 	// Public methods
 	
 	/**
+	 * @param name The name of the analog to connect to (e.g., Tracker0@localhost)
+	 * @param localInLogfileName The name of a logfile to save incoming messages.  Use <code>
+	 * null</code> if no such log is desired.
+	 * @param localOutLogfileName The name of a logfile to save outgoing messages.  Use <code>
+	 * null</code> if no such log is desired.
+	 * @param remoteInLogfileName The name of a logfile in which the server <code>name</code>
+	 * should save incoming messages.  Use <code>null</code> if no such log is desired.
+	 * @param remoteOutLogfileName  The name of a logfile in which the server <code>name</code>
+	 * should save outgoing messages.  Use <code>null</code> if no such log is desired.
 	 * @exception java.lang.InstantiationException
 	 *		If the analog could not be created because of problems with
 	 *      its native code and linking.
@@ -38,8 +47,11 @@ public class AnalogRemote implements Runnable
 	{
 		try	
 		{  
-			this.init( name, localInLogfileName, localOutLogfileName, 
-					   remoteInLogfileName, remoteOutLogfileName );  
+			synchronized( downInVrpnLock )
+			{
+				this.init( name, localInLogfileName, localOutLogfileName, 
+						   remoteInLogfileName, remoteOutLogfileName );
+			}
 		}
 		catch( java.lang.UnsatisfiedLinkError e )
 		{  
@@ -102,7 +114,10 @@ public class AnalogRemote implements Runnable
 	{
 		while( keepRunning )
 		{
-			this.mainloop( );
+			synchronized( downInVrpnLock )
+			{
+				this.mainloop( );
+			}
 			try { Thread.sleep( mainloopPeriod ); }
 			catch( InterruptedException e ) { } 
 		}
@@ -171,7 +186,10 @@ public class AnalogRemote implements Runnable
 			catch( InterruptedException e ) { }
 		}
 		changeListeners.removeAllElements( );
-		this.shutdownAnalog( );
+		synchronized( downInVrpnLock )
+		{
+			this.shutdownAnalog( );
+		}
 	}
 	
 	
@@ -202,22 +220,5 @@ public class AnalogRemote implements Runnable
 	protected final static Object notifyingChangeListenersLock = new Object( );
 	protected Vector changeListeners = new Vector( );
 
-
-	// static initialization
-	static 
-	{
-		try { System.loadLibrary( "AnalogRemote" ); }
-		catch( UnsatisfiedLinkError e )
-		{
-			System.out.println( e.getMessage( ) );
-			System.out.println( "Error initializing remote analog device." );
-			System.out.println( " -- Unable to find native library." );
-		}
-		catch( SecurityException e )
-		{
-			System.out.println( e.getMessage( ) );
-			System.out.println( "Security exception:  you couldn't load the native analog remote dll." );
-		}
-	}
 	
 }
