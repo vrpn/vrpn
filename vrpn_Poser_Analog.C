@@ -237,7 +237,7 @@ bool vrpn_Poser_Analog::update_Analog_values() {
 		values[i] = 0.0;
 	}
 
-    // ONLY DOING TRANS FOR NOW...ADD ROT LATER
+    // XXX ONLY DOING TRANS FOR NOW...ADD ROT LATER
     if (x.channel != -1 && x.channel < vrpn_CHANNEL_MAX) {
 		if (max_channel <= x.channel) max_channel = x.channel + 1;
 		values[x.channel] = (p_pos[0] - x.offset) * x.scale;

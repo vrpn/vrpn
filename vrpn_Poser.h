@@ -57,13 +57,13 @@ class vrpn_Poser : public vrpn_BaseClass {
         virtual int encode_to(char* buf);       // Encodes the position
         virtual int encode_vel_to(char* buf);   // Encodes the velocity
 
-        virtual void set_pose(struct timeval t,                 // Sets the pose internally
-                            vrpn_float64 position[3], 
-                            vrpn_float64 quaternion[4]);
-        virtual void set_pose_velocity(struct timeval t,        // Sets the velocity internally
-                                    vrpn_float64 position[3], 
-                                    vrpn_float64 quaternion[4], 
-                                    vrpn_float64 interval);
+        virtual void set_pose(const struct timeval t,                 // Sets the pose internally
+                            const vrpn_float64 position[3], 
+                            const vrpn_float64 quaternion[4]);
+        virtual void set_pose_velocity(const struct timeval t,        // Sets the velocity internally
+                                    const vrpn_float64 position[3], 
+                                    const vrpn_float64 quaternion[4], 
+                                    const vrpn_float64 interval);
 };
 
 
@@ -111,8 +111,8 @@ class vrpn_Poser_Remote: public vrpn_Poser {
 	virtual void mainloop();
    
         // Routines to set the state of the poser
-        int request_pose(struct timeval t, vrpn_float64 position[3], vrpn_float64 quaternion[4]);
-        int request_pose_velocity(struct timeval t, vrpn_float64 position[3], vrpn_float64 quaternion[4], vrpn_float64 interval);
+        int request_pose(const struct timeval t, const vrpn_float64 position[3], const vrpn_float64 quaternion[4]);
+        int request_pose_velocity(const struct timeval t, const vrpn_float64 position[3], const vrpn_float64 quaternion[4], const vrpn_float64 interval);
 
     protected:
         virtual int client_send_pose();            // Sends the current pose.  Called by request_pose

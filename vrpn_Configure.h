@@ -105,7 +105,7 @@
 // can be synchronized with events on a movie.  The Adrienne folder
 // should be located at the same level as the VRPN folder for the
 // code to find it.
-//#define	INCLUDE_TIMECODE_SERVER
+//#define	VRPN_INCLUDE_TIMECODE_SERVER
 
 //-----------------------
 // Compiles the InterSense Tracker using the 
@@ -124,6 +124,13 @@
 // company.  It expects to find their library in a directory
 // on the same level as the vrpn and quat source directories.
 //#define VRPN_USE_DTRACK
+
+//-----------------------
+// Instructs VRPN library and server to include code that uses
+// the National Instruments Nidaq libary to control analog outputa.
+// Later in this file, we also instruct the compiler to link with
+// the National Instruments libraries if this is defined.
+//#define	VRPN_USE_NATIONAL_INSTRUMENTS
 
 //---------------------------------------------------------------//
 // DO NOT EDIT BELOW THIS LINE FOR NORMAL CONFIGURATION SETTING. //
@@ -156,8 +163,18 @@
 // edit the following lines to point at the correct libraries.  Do
 // this here rather than in the project settings so that it can be
 // turned on and off using the definition above. 
-#ifdef	INCLUDE_TIMECODE_SERVER
+#ifdef	VRPN_INCLUDE_TIMECODE_SERVER
 #pragma comment (lib, "../../Adrienne/AEC_DLL/AEC_NTTC.lib")
+#endif
+
+// Load National Instruments libraries if we are using them.
+// If this doesn't match where you have installed these libraries,
+// edit the following lines to point at the correct libraries.  Do
+// this here rather than in the project settings so that it can be
+// turned on and off using the definition above. 
+#ifdef	VRPN_USE_NATIONAL_INSTRUMENTS
+#pragma comment (lib, "C:/Program Files/National Instruments/NI-DAQ/Lib/nidaq32.lib")
+#pragma comment (lib, "C:/Program Files/National Instruments/NI-DAQ/Lib/nidex32.lib")
 #endif
 
 #endif

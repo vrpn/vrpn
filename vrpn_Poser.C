@@ -174,7 +174,7 @@ int vrpn_Poser::encode_vel_to(char* buf)
     return 1000 - buflen;
 }
 
-void vrpn_Poser::set_pose(timeval t, vrpn_float64 position[3], vrpn_float64 quaternion[4])
+void vrpn_Poser::set_pose(const timeval t, const vrpn_float64 position[3], const vrpn_float64 quaternion[4])
 {
     // Update the time
     p_timestamp.tv_sec = t.tv_sec;
@@ -185,7 +185,7 @@ void vrpn_Poser::set_pose(timeval t, vrpn_float64 position[3], vrpn_float64 quat
     memcpy(p_quat, quaternion, sizeof(p_quat));
 }
 
-void vrpn_Poser::set_pose_velocity(timeval t, vrpn_float64 velocity[3], vrpn_float64 quaternion[4], vrpn_float64 interval)
+void vrpn_Poser::set_pose_velocity(const timeval t, const vrpn_float64 velocity[3], const vrpn_float64 quaternion[4], const vrpn_float64 interval)
 {
     // Update the time
     p_timestamp.tv_sec = t.tv_sec;
@@ -345,9 +345,9 @@ void vrpn_Poser_Remote::mainloop()
 	client_mainloop();
 }
 
-int vrpn_Poser_Remote::request_pose(struct timeval t, 
-                                vrpn_float64 position[3], 
-                                vrpn_float64 quaternion[4]) 
+int vrpn_Poser_Remote::request_pose(const struct timeval t, 
+                                const vrpn_float64 position[3], 
+                                const vrpn_float64 quaternion[4]) 
 {
     // Set the requested pose 
     set_pose(t, position, quaternion);
@@ -361,10 +361,10 @@ int vrpn_Poser_Remote::request_pose(struct timeval t,
     return 1;
 }
 
-int vrpn_Poser_Remote::request_pose_velocity(struct timeval t, 
-                                            vrpn_float64 velocity[3], 
-                                            vrpn_float64 quaternion[4], 
-                                            vrpn_float64 interval)
+int vrpn_Poser_Remote::request_pose_velocity(const struct timeval t, 
+                                            const vrpn_float64 velocity[3], 
+                                            const vrpn_float64 quaternion[4], 
+                                            const vrpn_float64 interval)
 {
     // Set the requested velocity
     set_pose_velocity(t, velocity, quaternion, interval);

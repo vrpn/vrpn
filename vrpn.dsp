@@ -41,7 +41,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "pc_win32/Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I "../dtrack" /I "../quat" /I "../isense" /I "../Dtrack" /D "_LIB" /D "_WINDOWS" /D "NDEBUG" /D "_MBCS" /D "WIN32" /FR /YX /FD /c /Tp
+# ADD CPP /nologo /MD /W3 /GX /O2 /I "../dtrack" /I "../quat" /I "../isense" /I "../Dtrack" /I "C:\Program Files\National Instruments\NI-DAQ\Include" /D "_LIB" /D "_WINDOWS" /D "NDEBUG" /D "_MBCS" /D "WIN32" /FR /YX /FD /c /Tp
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409
 BSC32=bscmake.exe
@@ -64,7 +64,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "pc_win32/Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /Z7 /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MDd /W3 /GX /Zi /Od /I "../quat" /I "../isense" /I "../Dtrack" /D "_LIB" /D "_WINDOWS" /D "_DEBUG" /D "_MBCS" /D "WIN32" /FR /YX /FD /TP /c
+# ADD CPP /nologo /MDd /W3 /GX /Zi /Od /I "../quat" /I "../isense" /I "../Dtrack" /I "C:\Program Files\National Instruments\NI-DAQ\Include" /D "_LIB" /D "_WINDOWS" /D "_DEBUG" /D "_MBCS" /D "WIN32" /FR /YX /FD /TP /c
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409
 BSC32=bscmake.exe
@@ -102,6 +102,10 @@ SOURCE=.\vrpn_Analog_5dt.C
 # Begin Source File
 
 SOURCE=.\vrpn_Analog_Output.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Analog_Output_NI.C
 # End Source File
 # Begin Source File
 
@@ -322,6 +326,10 @@ SOURCE=.\vrpn_Analog_5dt.h
 # Begin Source File
 
 SOURCE=.\vrpn_Analog_Output.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Analog_Output_NI.h
 # End Source File
 # Begin Source File
 

@@ -264,6 +264,24 @@ Package=<4>
 
 ###############################################################################
 
+Project: "tracker_to_poser"=.\CLIENT_SRC\tracker_to_poser.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name quatlib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
 Project: "vrpn"=.\vrpn.dsp - Package Owner=<4>
 
 Package=<5>

@@ -126,6 +126,12 @@ bool  vrpn_TempImager_Server::send_region_using_base_pointer(vrpn_int16 chanInde
     return false;
   }
 
+  // Make sure we've sent the description before we send any regions
+  if (!d_description_sent) {
+    send_description();
+    d_description_sent = true;
+  }
+
   // If the user didn't specify a time, assume they want "now" and look it up.
   if (time != NULL) {
     timestamp = *time;
@@ -257,6 +263,12 @@ bool  vrpn_TempImager_Server::send_region_using_base_pointer(vrpn_int16 chanInde
   if ( invert_y && (nRows < rMax) ) {
     fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): nRows must not be less than rMax\n");
     return false;
+  }
+
+  // Make sure we've sent the description before we send any regions
+  if (!d_description_sent) {
+    send_description();
+    d_description_sent = true;
   }
 
   // If the user didn't specify a time, assume they want "now" and look it up.
@@ -395,6 +407,12 @@ bool  vrpn_TempImager_Server::send_region_using_base_pointer(vrpn_int16 chanInde
     return false;
   }
 
+  // Make sure we've sent the description before we send any regions
+  if (!d_description_sent) {
+    send_description();
+    d_description_sent = true;
+  }
+
   // If the user didn't specify a time, assume they want "now" and look it up.
   if (time != NULL) {
     timestamp = *time;
@@ -527,7 +545,7 @@ void  vrpn_TempImager_Server::mainloop(void)
   server_mainloop();
 }
 
-int  vrpn_TempImager_Server::handle_ping_message(void *userdata, vrpn_HANDLERPARAM p)
+int  vrpn_TempImager_Server::handle_ping_message(void *userdata, vrpn_HANDLERPARAM)
 {
   vrpn_TempImager_Server  *me = (vrpn_TempImager_Server*)userdata;
   me->send_description();

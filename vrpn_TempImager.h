@@ -1,7 +1,34 @@
 //XXX Adam has code in the SEM simulator whereby the client requests a number
 // of images from the server.  Once some have come in, it requests more.  This
 // keeps the network pipeline from filling up with a bunch of images.  Could
-// be a generally useful feature to keep the latency down.
+// be a generally useful feature to keep the latency down.  See below...
+
+// XXX Client can send request for certain number of images (-1 for continuous)
+//     Example: client may ask for two to start, and then one more for each to
+//     produce one outstanding buffer at all times.
+// XXX The example imager for Nano will send a request for -1 (continuous) when it gets the
+//     first pong from the server.
+// XXX Do we enable a different message type to force a frame send even if there
+//     is no new image (or no image at all?).  This would be useful to the example
+//     imager for nano but would impose yuck on all of the servers.  Don't do it ...
+//     it will fail when reading from a stored file anyway.  Do have the nano
+//     imager server send a new copy whenever a nonzero number of images is requested,
+//     even if there are no changes.  Bracket this with begin and end regions messages.
+//     Other ones won't be bracketed.
+// XXX Server sets number to send back to -1 when last connection closed.
+
+// XXX Client can sent request for only subregion of image to be sent
+//     Server may ignore this message.
+// XXX Server packs marker DISCARDED(four corners of [sub]region) if none requested when one gotten
+//     Every frame that is discarded will be so marked, so the client can count lost frames.
+//     They are marked as discarded even if they were lost by something in the driver rather
+//     than by the connection getting clogged up.  Actually, include a count of how many were
+//     discarded (so that if it finds out about them all at once it doesn't have to back a
+//     bunch of messages).
+// XXX Server packs marker BEGIN(four corners of [sub]region) before sending each frame known to be contiguous
+// XXX Server packs marker END(four corners of [sub]region) when done sending each frame known to be contiguous
+// XXX Server sets region back to total region when last connection closed.
+
 #ifndef	VRPN_TEMPIMAGER_H
 #define	VRPN_TEMPIMAGER_H
 #include  "vrpn_Connection.h"
@@ -188,6 +215,26 @@ public:
 	return false;
       } else {
 	val = ((vrpn_uint16 *)d_valBuf)[(c - d_cMin) + (r - d_rMin)*(d_cMax - d_cMin+1)];
+      }
+    }
+    return true;
+  }
+
+  /// Reads pixel from the region with no scale and offset applied to the value.  Not
+  /// the most efficient way to read the pixels out -- use the block read routines.
+  inline  bool	read_unscaled_pixel(vrpn_uint16 c, vrpn_uint16 r, vrpn_float32 &val) const {
+    if ( !d_valid || (c < d_cMin) || (c > d_cMax) || (r < d_rMin) || (r > d_rMax) ) {
+      fprintf(stderr, "vrpn_TempImager_Region::read_unscaled_pixel(): Invalid region or out of range\n");
+      return false;
+    } else {
+      if (d_valType != vrpn_IMAGER_VALTYPE_FLOAT32) {
+	fprintf(stderr, "XXX vrpn_TempImager_Region::read_unscaled_pixel(): Transcoding not implemented yet\n");
+	return false;
+      } else if (vrpn_big_endian) {
+	fprintf(stderr, "XXX vrpn_TempImager_Region::read_unscaled_pixel(): Not implemented on big-endian yet\n");
+	return false;
+      } else {
+	val = ((vrpn_float32 *)d_valBuf)[(c - d_cMin) + (r - d_rMin)*(d_cMax - d_cMin+1)];
       }
     }
     return true;

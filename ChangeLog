@@ -1,17 +1,37 @@
+2004-05-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Analog_Output_NI.h : Analog output that uses National
+		Instruments board.
+	* vrpn_Analog_Output_NH.C : Same.
+	* vrpn.dsp : Added NI-DAQ to library path, files to project.
+		Enable/disable using vrpn_Configure.h.
+	* vrpn.dsw : Added tracker_to_poser project (client_src).
+	* vrpn_Configure.h : Added entry for National Instruments
+		board.  Also loads libraries if NI is configured.
+	* vrpn_Poser.C : Made several things const that should have
+		been.
+	* vrpn_Poser.h : Same.
+	* vrpn_Poser_Analog.C : Added comment.
+	* vrpn_TempImager.C : Checks to make sure we have sent the
+		description before sending any regions.  Removed an
+		unused parameter.
+	* vrpn_TempImager.h : Added comments for improvements.  Added
+		some functions.  Still a work in progress.
+
 2004-05-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
-	vrpn_TempImager.C : Implemented another of the decode functions.
+	* vrpn_TempImager.C : Implemented another of the decode functions.
 
 2004-04-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
-	vrpn_ButtonC : Modified the reset command for the Pinchglove
+	* vrpn_ButtonC : Modified the reset command for the Pinchglove
 		so that it works more reliably (fixed timeout bug
 		and reworked logic).  Tested by offsite user who
 		had problems with the original version.
-	vrpn_ForceDevice.C : Making it compile under Cygwin.
-	vrpn_Serial.C : Making it compile undre Cygwin.
-	vrpn_Tracker.h : Describing the format of the values to be returned.
-	vrpn_Types.h : Making it compile under Cygwin.
+	* vrpn_ForceDevice.C : Making it compile under Cygwin.
+	* vrpn_Serial.C : Making it compile undre Cygwin.
+	* vrpn_Tracker.h : Describing the format of the values to be returned.
+	* vrpn_Types.h : Making it compile under Cygwin.
 
 2004-04-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
