@@ -1,3 +1,8 @@
+2003-12-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* InstantBuzzEffect.h : Making it compile again WITH Ghost.
+	* InstantBuzzEffect.cpp : Same.
+
 2003-11-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* InstantBuzzEffect.h : Makes it compile without requiring Ghost

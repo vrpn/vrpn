@@ -1,6 +1,5 @@
-#ifdef	VRPN_USE_PHANTOM_SERVER
-
 #include "InstantBuzzEffect.h"
+#ifdef	VRPN_USE_PHANTOM_SERVER
 #include <gstPHANToM.h>
 #include <windows.h>
 #include <math.h>

@@ -1,6 +1,7 @@
 #ifndef INSTANT_BUZZ_EFFECT
 #define INSTANT_BUZZ_EFFECT
 
+#include "vrpn_Configure.h"
 #ifdef	VRPN_USE_PHANTOM_SERVER
 #include <gstBasic.h>
 #include <math.h>
