@@ -38,16 +38,29 @@ vrpn_Sound_Server_Miles *soundServer = NULL;
 #define ErrorBox	 114
 #define VolumeBox    115
 #define ReplayBox    116
+#define SoundIdBox   131
 
 #define PosX		 120
 #define PosY		 121
 #define PosZ		 122
 
+#define LPosX		 141
+#define LPosY		 142
+#define LPosZ		 143
+
+
 
 #define TimerId      1001
 
-HWND        SoundCombo;
+int         ProviderSet;		// used to make sure a provider has been set before updating dialog
+
+HWND        SoundProvideCombo;
+HWND        SoundIdCombo;
 HWND		SoundWnd;
+
+enum BoxAction{add, del};
+
+vrpn_int32 CurrentSoundId = -1;
 #endif
 
 vrpn_Connection * connection;
@@ -101,18 +114,31 @@ void shutDown (void)
 
 #ifdef _WIN32
 
+void ChangeSoundIdBox(vrpn_int32 action, vrpn_int32 newId) {
+	char numbuf[3];
+
+	sprintf(numbuf,"%d",newId);
+	ComboBox_AddString(SoundIdCombo,numbuf);
+}
+
 void UpdateDialog(HWND SoundWnd) {
 	
 	float posx, posy, posz;
 	int  decimal, sign;   
 	
 	SetDlgItemText(SoundWnd,ErrorBox,soundServer->GetLastError());
-	SetDlgItemInt(SoundWnd,VolumeBox,soundServer->GetCurrentVolume(),1);
-	SetDlgItemInt(SoundWnd,ReplayBox,soundServer->GetCurrentPlaybackRate(),1);
-    soundServer->GetCurrentPosition(&posx, &posy, &posz);
+	SetDlgItemInt(SoundWnd,VolumeBox,soundServer->GetCurrentVolume(CurrentSoundId),1);
+	SetDlgItemInt(SoundWnd,ReplayBox,soundServer->GetCurrentPlaybackRate(CurrentSoundId),1);
+    soundServer->GetCurrentPosition(CurrentSoundId, &posx, &posy, &posz);
 	SetDlgItemText(SoundWnd,PosX,_fcvt(posx,3,&decimal, &sign));
 	SetDlgItemText(SoundWnd,PosY,_fcvt(posy,3,&decimal, &sign));
-	SetDlgItemText(SoundWnd,PosZ,_fcvt(posz,3,&decimal, &sign));
+	SetDlgItemText(SoundWnd,PosZ,_fcvt(posz,3,&decimal, &sign));	
+	
+	soundServer->GetListenerPosition(&posx, &posy, &posz);
+	SetDlgItemText(SoundWnd,LPosX,_fcvt(posx,3,&decimal, &sign));
+	SetDlgItemText(SoundWnd,LPosY,_fcvt(posy,3,&decimal, &sign));
+	SetDlgItemText(SoundWnd,LPosZ,_fcvt(posz,3,&decimal, &sign));	
+
 }
 
 /******************************************************************************
@@ -153,9 +179,19 @@ LRESULT AILEXPORT SoundServerProc(HWND SoundWnd, UINT message, WPARAM wParam, LP
 
           case cboxTech:
              if (HIWORD(wParam) == CBN_SELENDOK)
-               if (ComboBox_GetCurSel(SoundCombo)-1 > 0)
-                 soundServer->setProvider(ComboBox_GetCurSel(SoundCombo)-1);
+				 if (ComboBox_GetCurSel(SoundProvideCombo)-1 > 0) {
+                 soundServer->setProvider(ComboBox_GetCurSel(SoundProvideCombo)-1);
+				 ProviderSet = 1;
+				 }
+				 else ProviderSet = 0;
 			 break;
+          case SoundIdBox:
+			  if (HIWORD(wParam) == CBN_SELENDOK) {
+				  CurrentSoundId = ComboBox_GetCurSel(SoundIdCombo);
+				  UpdateDialog(SoundWnd);
+			  }
+			 break;
+
 
           case btnStop:
 			 soundServer->stopAllSounds();
@@ -173,7 +209,9 @@ LRESULT AILEXPORT SoundServerProc(HWND SoundWnd, UINT message, WPARAM wParam, LP
         PostQuitMessage(0);
         return 0;
       case WM_TIMER:
-		  UpdateDialog(SoundWnd);
+		  // if there is no provider set then updating will cause an error!
+		  if (ProviderSet)
+		    UpdateDialog(SoundWnd);
 		  break;
       }
 
@@ -187,17 +225,17 @@ static void add_providers()
 
    HPROENUM next = HPROENUM_FIRST;
 
-   SoundCombo=GetDlgItem(SoundWnd,cboxTech);
-
-   ComboBox_AddString(SoundCombo,"Choose a provider...");
+   SoundProvideCombo=GetDlgItem(SoundWnd,cboxTech);
+   
+   ComboBox_AddString(SoundProvideCombo,"Choose a provider...");
 
    while (AIL_enumerate_3D_providers(&next, &provider, &name))
    {
-      ComboBox_AddString(SoundCombo,name);
+      ComboBox_AddString(SoundProvideCombo,name);
 	  soundServer->addProvider(provider);
    }
 
-   ComboBox_SetCurSel(SoundCombo,0);
+   ComboBox_SetCurSel(SoundProvideCombo,0);
 }
 
 bool InitSoundServerWindow(HINSTANCE  hInstance)
@@ -231,6 +269,7 @@ bool InitSoundServerWindow(HINSTANCE  hInstance)
 	}
 	// set a timer to update server stats
 	SetTimer(SoundWnd,TimerId,1000,NULL);
+	SoundIdCombo=GetDlgItem(SoundWnd, SoundIdBox);
 	
 	ShowWindow(SoundWnd,SW_SHOW);
 
@@ -410,9 +449,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdL
 		// Let the sound server do it's thing 
 		soundServer->mainloop();
 		if (soundServer->noSounds())
-			EnableWindow(SoundCombo, true);
+			EnableWindow(SoundProvideCombo, true);
 		else
-			EnableWindow(SoundCombo, false);
+			EnableWindow(SoundProvideCombo, false);
 		
 		// Send and receive all messages
 		connection->mainloop();

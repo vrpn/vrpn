@@ -8,14 +8,7 @@
 #include "vrpn_Sound.h"
 
 
-/*3D Providers*/
-#define RAD "RSX 3D Audio from RAD Game Tools"	//poor doppler 
-#define MILES "Miles Fast 2D Positional Audio"  //no positional or doppler heard
-#define DOLBY "Dolby Surround"					//poor positional
-#define DIRECT "Microsoft DirectSound3D hardware support"
-#define CREATIVE "Microsoft DirectSound3D with Creative Labs EAX(TM)"
-#define AUREAL "Aureal A3D Interactive(TM)"
-#define DSOFT "Microsoft DirectSound3D software emulation"	
+extern void ChangeSoundIdBox(vrpn_int32 action, vrpn_int32 newId);
 
 class vrpn_Sound_Server_Miles : public vrpn_Sound_Server
 {
@@ -65,12 +58,13 @@ public:
 	bool		noSounds(void);
 	void		stopAllSounds();
 	void		shutDown();
-	vrpn_int32  GetCurrentVolume();
+	vrpn_int32  GetCurrentVolume(const vrpn_int32 CurrentSoundId);
 	char      * GetLastError();
-	vrpn_int32  GetCurrentPlaybackRate();
-	void        GetCurrentPosition(F32* X, F32* Y, F32* Z);
+	vrpn_int32  GetCurrentPlaybackRate(const vrpn_int32 CurrentSoundId);
+	void        GetCurrentPosition(const vrpn_int32 CurrentSoundId, F32* X, F32* Y, F32* Z);
+	void        GetListenerPosition(F32* X, F32* Y, F32* Z);
 
-	vrpn_int32    LastSoundId;		//ID of last played sound
+	vrpn_int32    LastSoundId;		//ID of last played sound	
 
 private:
 
@@ -83,6 +77,8 @@ private:
 	HPROVIDER	*providers;			//3D audio provider
 	H3DPOBJECT	listener;			//listener
 	
+
+
 	vrpn_int32	  H_Max;			//size of array samples
 	vrpn_int32	  H_Cur;			//index in samples
 	vrpn_int32	  P_Max;			//size of array samples

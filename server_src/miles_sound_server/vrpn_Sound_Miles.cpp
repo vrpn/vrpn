@@ -112,9 +112,9 @@ void vrpn_Sound_Server_Miles::setProvider(int index, int providerRoomSetting)
   provider = providers[index];
   //open a listener.  Position defaults to the origin, looking down the -Z axis with (
   listener = AIL_open_3D_listener(provider);
-  AIL_set_3D_position(&listener, 0, 0, 0);
-  AIL_set_3D_orientation(&listener, 0, 0, -1, 0, 1, 0);
-  AIL_set_3D_velocity(&listener, 0, 0, 0, 0);
+  AIL_set_3D_position(listener, 0, 0, 0);
+  AIL_set_3D_orientation(listener, 0, 0, -1, 0, 1, 0);
+  AIL_set_3D_velocity(listener, 0, 0, 0, 0);
 
   //set a room style
   AIL_set_3D_provider_preference(provider, "EAX environment selection", &providerRoomSetting);
@@ -221,6 +221,7 @@ currently (7/28/99) this does not reuse space previously vacated in
 samples by unloading sounds*/
 {
     fprintf(stdout,"Loading sound: %s\n", filename);
+	ChangeSoundIdBox(0,id);
 	//load into handle
 	unsigned long *s;
 	long type;
@@ -292,6 +293,8 @@ void vrpn_Sound_Server_Miles::changeSoundStatus(vrpn_SoundID id, vrpn_SoundDef s
 
 	/*set the volume to the new level.*/
 	AIL_set_3D_sample_volume(getSample(id), soundDef.volume);
+
+	AIL_set_3D_sample_distances(getSample(id), soundDef.max_front_dist, soundDef.min_front_dist, soundDef.max_back_dist, soundDef.min_back_dist);
 }
 
 void vrpn_Sound_Server_Miles::playSound(vrpn_SoundID id, vrpn_int32 repeat, vrpn_SoundDef soundDef)
@@ -358,9 +361,9 @@ void vrpn_Sound_Server_Miles::changeListenerStatus(vrpn_ListenerDef listenerDef)
 {
 	vrpn_float32 uX = 0, uY = 1, uZ = 0;
 
-	AIL_set_3D_position(&listener, listenerDef.pose.position[0], listenerDef.pose.position[1], listenerDef.pose.position[2]);
-	AIL_set_3D_orientation(&listener, listenerDef.pose.orientation[0], listenerDef.pose.orientation[1], listenerDef.pose.orientation[2], uX, uY, uZ);
-	AIL_set_3D_velocity(&listener, listenerDef.velocity[0], listenerDef.velocity[1], listenerDef.velocity[2], listenerDef.velocity[3]);
+	AIL_set_3D_position(listener, listenerDef.pose.position[0], listenerDef.pose.position[1], listenerDef.pose.position[2]);
+	AIL_set_3D_orientation(listener, listenerDef.pose.orientation[0], listenerDef.pose.orientation[1], listenerDef.pose.orientation[2], uX, uY, uZ);
+	AIL_set_3D_velocity(listener, listenerDef.velocity[0], listenerDef.velocity[1], listenerDef.velocity[2], listenerDef.velocity[3]);
 }
 
 void vrpn_Sound_Server_Miles::mainloop(const timeval *timeout)
@@ -373,11 +376,9 @@ void vrpn_Sound_Server_Miles::mainloop(const timeval *timeout)
 	connection->mainloop(timeout);
 }
 
-vrpn_int32 vrpn_Sound_Server_Miles::GetCurrentVolume() {
-	if (LastSoundId != -1) {
-		AIL_set_3D_sample_volume(getSample(LastSoundId),100);
-
-		return (vrpn_int32) AIL_3D_sample_volume(getSample(LastSoundId)); }
+vrpn_int32 vrpn_Sound_Server_Miles::GetCurrentVolume(const vrpn_int32 CurrentSoundId) {
+	if (CurrentSoundId > -1) {
+		return (vrpn_int32) AIL_3D_sample_volume(getSample(CurrentSoundId)); }
 	else return -1;
  }
 
@@ -385,15 +386,15 @@ char * vrpn_Sound_Server_Miles::GetLastError() {
 	return AIL_last_error();
 }
 
-vrpn_int32 vrpn_Sound_Server_Miles::GetCurrentPlaybackRate() {
-	if (LastSoundId != -1)
-		return (vrpn_int32) AIL_3D_sample_playback_rate(getSample(LastSoundId));
+vrpn_int32 vrpn_Sound_Server_Miles::GetCurrentPlaybackRate(const vrpn_int32 CurrentSoundId) {
+	if (CurrentSoundId > -1)
+		return (vrpn_int32) AIL_3D_sample_playback_rate(getSample(CurrentSoundId));
  	else return -1;
 }
 
-void vrpn_Sound_Server_Miles::GetCurrentPosition(F32* X, F32* Y, F32* Z) {
-	if (LastSoundId != -1) 
-		AIL_3D_position(getSample(LastSoundId),X,Y,Z);
+void vrpn_Sound_Server_Miles::GetCurrentPosition(const vrpn_int32 CurrentSoundId,F32* X, F32* Y, F32* Z) {
+	if (CurrentSoundId > -1) 
+		AIL_3D_position(getSample(CurrentSoundId),X,Y,Z);
     else {
 		*X = -1;
 		*Y = -1;
@@ -401,6 +402,14 @@ void vrpn_Sound_Server_Miles::GetCurrentPosition(F32* X, F32* Y, F32* Z) {
 	}
 return;
 }
+
+void vrpn_Sound_Server_Miles::GetListenerPosition(F32* X, F32* Y, F32* Z) {
+	
+	AIL_3D_position(listener,X,Y,Z);
+    
+return;
+}
+
 
 
 #endif
