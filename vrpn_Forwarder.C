@@ -45,8 +45,9 @@ int vrpn_ConnectionForwarder::forward
   newList->next = d_list;
   d_list = newList;
 
-  d_source->register_handler(newList->sourceId, handle_message,
-                             this, newList->sourceServiceId);
+  if (d_source)
+    d_source->register_handler(newList->sourceId, handle_message,
+                               this, newList->sourceServiceId);
 
   return 0;
 }
@@ -58,9 +59,32 @@ int vrpn_ConnectionForwarder::unforward
                    const char * destinationServiceId,
                    unsigned long classOfService) {
 
-  // TODO
+  vrpn_CONNECTIONFORWARDERRECORD ** snitch;
+  vrpn_CONNECTIONFORWARDERRECORD * victim;
 
-  return -1;
+  long st, ss, dt, ds;
+
+  st = d_source->register_message_type(sourceName);
+  ss = d_source->register_sender(sourceServiceId);
+  dt = d_destination->register_message_type(destinationName);
+  ss = d_source->register_sender(destinationServiceId);
+
+  for (snitch = &d_list, victim = *snitch;
+       victim;
+       snitch = &(victim->next), victim = *snitch) {
+
+    if ((victim->sourceId == st) &&
+        (victim->sourceServiceId == ss) &&
+        (victim->destinationId == dt) &&
+        (victim->destinationServiceId == ds) &&
+        (victim->classOfService == classOfService)) {
+      (*snitch)->next = victim->next;
+      delete victim;
+    }
+
+  }
+
+  return 0;
 }
 
 // static
@@ -83,16 +107,14 @@ int vrpn_ConnectionForwarder::handle_message (void * userdata,
   if (retval)
     return -1;
 
-  me->d_destination->pack_message(p.payload_len, p.msg_time,
-                                  id, serviceId, p.buffer,
-                                  vrpn_CONNECTION_RELIABLE);
-    // Not knowing what service discipline we arrived on, we
-    // forward everything reliably.
-    // TODO:  add optional to forward() to allow this to be
-    // stored and looked up by map()
+  if (me->d_destination) {
+    me->d_destination->pack_message(p.payload_len, p.msg_time,
+                                    id, serviceId, p.buffer,
+                                    serviceClass);
 
-  // HACK:  should we have this here?
-  me->d_destination->mainloop();
+    // HACK:  should we have this here?
+    me->d_destination->mainloop();
+  }
 
   return 0;
 }
@@ -192,9 +214,27 @@ int vrpn_StreamForwarder::unforward
                    const char * destinationName,
                    unsigned long classOfService) {
 
-  // TODO
+  vrpn_STREAMFORWARDERRECORD ** snitch;
+  vrpn_STREAMFORWARDERRECORD * victim;
 
-  return -1;
+  long st, dt;
+
+  st = d_source->register_message_type(sourceName);
+  dt = d_destination->register_message_type(destinationName);
+
+  for (snitch = &d_list, victim = *snitch;
+       victim;
+       snitch = &(victim->next), victim = *snitch) {
+
+    if ((victim->sourceId == st) &&
+        (victim->destinationId == dt) &&
+        (victim->classOfService == classOfService)) {
+      (*snitch)->next = victim->next;
+      delete victim;
+    }
+  }
+
+  return 0;
 }
 
 // static
@@ -219,10 +259,6 @@ int vrpn_StreamForwarder::handle_message (void * userdata,
     me->d_destination->pack_message(p.payload_len, p.msg_time,
                                     id, me->d_destinationService, p.buffer,
                                     serviceClass);
-    // Not knowing what service discipline we arrived on, we
-    // forward everything reliably.
-    // TODO:  add optional to forward() to allow this to be
-    // stored and looked up by map()
 
     // HACK:  should we have this here?
     me->d_destination->mainloop();

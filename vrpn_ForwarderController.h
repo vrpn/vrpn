@@ -24,6 +24,11 @@
 // types, changing class of service) are hidden from the user;  this
 // is meant to be a simple interface and simple first implementation.
 
+// New Forwarder_Servers are NOT constructed on connections that a
+// Forwarder_Server opens, so clients that are only listening to a
+// forwarded stream cannot open new forwarders for still other clients to
+// listen to.
+
 #include "vrpn_Connection.h"  // for vrpn_HANDLERPARAM
 
 class vrpn_ConnectionForwarder;
@@ -35,7 +40,12 @@ class vrpn_Forwarder_Brain {
     vrpn_Forwarder_Brain (vrpn_Connection *);
     ~vrpn_Forwarder_Brain (void);
 
+    // Tell a Forwarder_Server to open a vrpn_Connection on remote_port.
+
     virtual void start_remote_forwarding (int remote_port) = 0;
+
+    // Tell a Forwarder_Server to begin forwarding messages of type
+    // message_type from the sender named service_name over remote_port.
 
     virtual void forward_message_type (int remote_port,
                                        const char * service_name,
@@ -63,6 +73,13 @@ class vrpn_Forwarder_Brain {
                        char ** message_type);
 
 };
+
+
+// Server class
+
+// VRPN server builders who want to enable remotely-controlled forwarding in
+// their server need only create a Forwarder_Server on their server Connections
+// and call its mainloop() regularly.
 
 struct vrpn_Forwarder_List {
   vrpn_Forwarder_List * next;
@@ -97,6 +114,11 @@ class vrpn_Forwarder_Server : public vrpn_Forwarder_Brain {
     static int handle_forward (void *, vrpn_HANDLERPARAM);
 
 };
+
+// Client class
+
+// Construct a Forwarder_Controller on a connection to control a
+// Forwarder_Server on its far end.
 
 class vrpn_Forwarder_Controller : public vrpn_Forwarder_Brain {
 

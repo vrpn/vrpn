@@ -81,11 +81,14 @@ char * vrpn_MAGIC = (char *) "vrpn: ver. 04.02";
 const int MAGICLEN = 16;  // Must be a multiple of vrpn_ALIGN bytes!
 
 // Version history:
+//   04.02:  Tom Hudson, October 1998
+//           Added WSAStartup(), WSACleanup() calls for PC initialization.
 //   04.01:  Tom Hudson, September 1998
 //           Added filters to logging.
 //   04.00:  Adam Seeger, August 1998
 //           Added the ability to start up a remote server via rsh
 //           and then to connect to it:  x-vrsh://<server name>.
+//           NB:  Should not have been a major version # change.
 //   03.02:  
 //   03.01:  Tom Hudson, July 1998
 //           Bugfixes.  Changes to vrpn_ForceDevice.  Wrote

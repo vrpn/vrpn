@@ -28,6 +28,7 @@ class vrpn_ConnectionForwarder {
 
   public:
 
+    // Set up to forward messages from <source> to <destination>
     vrpn_ConnectionForwarder (vrpn_Connection * source,
                               vrpn_Connection * destination);
 
@@ -36,6 +37,9 @@ class vrpn_ConnectionForwarder {
 
 
     // Begins forwarding of a message type.
+    // Forwards messages of type <sourceName> and sender <sourceServiceName>,
+    // sending them out as type <destinationName> from sender
+    // <destinationServiceName>.
     // Return nonzero on failure.
     int forward (const char * sourceName,
                  const char * sourceServiceName,
@@ -45,7 +49,6 @@ class vrpn_ConnectionForwarder {
 
     // Stops forwarding of a message type.
     // Return nonzero on failure.
-    // WARNING:  UNIMPLEMENTED.
     int unforward (const char * sourceName,
                    const char * sourceServiceName,
                    const char * destinationName,
@@ -70,11 +73,11 @@ class vrpn_ConnectionForwarder {
            const char *, const char *, const char *, const char *,
            unsigned long);
 
-      long sourceId;
-      long sourceServiceId;
-      long destinationId;
-      long destinationServiceId;
-      unsigned long classOfService;
+      long sourceId;              // source's type id
+      long sourceServiceId;       // source's sender id
+      long destinationId;         // destination's type id
+      long destinationServiceId;  // destination's sender id
+      unsigned long classOfService;  // class of service to send
 
       vrpn_CONNECTIONFORWARDERRECORD * next;
     };
@@ -87,6 +90,8 @@ class vrpn_StreamForwarder {
 
   public:
 
+    // Set up to forward messages from sender <sourceServiceName> on <source>
+    // to <destination>, as if from sender <destinationServiceName>
     vrpn_StreamForwarder
         (vrpn_Connection * source,
          const char * sourceServiceName,
@@ -128,9 +133,9 @@ class vrpn_StreamForwarder {
       vrpn_STREAMFORWARDERRECORD (vrpn_Connection *, vrpn_Connection *,
            const char *, const char *, unsigned long);
 
-      long sourceId;
-      long destinationId;
-      unsigned long classOfService;
+      long sourceId;       // source's type id
+      long destinationId;  // destination's type id
+      unsigned long classOfService;  // class of service to send
 
       vrpn_STREAMFORWARDERRECORD * next;
     };
