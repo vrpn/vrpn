@@ -39,6 +39,7 @@ class vrpn_Shared_int32 {
     virtual void bindConnection (vrpn_Connection *);
 
     void register_handler (vrpnSharedIntCallback, void *);
+    void unregister_handler (vrpnSharedIntCallback, void *);
       // Callbacks are (currently) called *AFTER* the assignment
       // has been made, so any check of the value of their shared int
       // will return newValue

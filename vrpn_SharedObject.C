@@ -50,8 +50,8 @@ void vrpn_Shared_int32::bindConnection (vrpn_Connection * c) {
   d_updateFromRemote_type = c->register_message_type
           ("vrpn Shared int32 update from remote");
 
-printf ("My name is %s;  myId %d, ufs type %d, ufr type %d.\n",
-buffer, d_myId, d_updateFromServer_type, d_updateFromRemote_type);
+//printf ("My name is %s;  myId %d, ufs type %d, ufr type %d.\n",
+//buffer, d_myId, d_updateFromServer_type, d_updateFromRemote_type);
 }
 
 void vrpn_Shared_int32::register_handler (vrpnSharedIntCallback cb,
@@ -66,6 +66,26 @@ void vrpn_Shared_int32::register_handler (vrpnSharedIntCallback cb,
   e->userdata = userdata;
   e->next = d_callbacks;
   d_callbacks = e;
+}
+
+void vrpn_Shared_int32::unregister_handler (vrpnSharedIntCallback cb,
+                                          void * userdata) {
+  callbackEntry * e, ** snitch;
+
+  snitch = &d_callbacks;
+  e = *snitch;
+  while (e && (e->handler != cb) && (e->userdata != userdata)) {
+    snitch = &(e->next);
+    e = *snitch;
+  }
+  if (!e) {
+    fprintf(stderr, "vrpn_Shared_int32::unregister_handler:  "
+                    "Handler not found.\n");
+    return;
+  }
+
+  *snitch = e->next;
+  delete e;
 }
 
 void vrpn_Shared_int32::encode (char ** buffer, vrpn_int32 * len) const {
@@ -113,12 +133,14 @@ vrpn_Shared_int32_Server::~vrpn_Shared_int32_Server (void) {
 // virtual
 vrpn_Shared_int32 & vrpn_Shared_int32_Server::operator =
                                       (vrpn_int32 newValue) {
-  struct timeval now;
+
+//fprintf(stderr, "vrpn_Shared_int32_Server::operator = (%d)\n", newValue);
 
   d_value = newValue;
   yankCallbacks();
 
   if (d_connection) {
+    struct timeval now;
     char buffer [32];
     vrpn_int32 buflen = 32;
     char * bp = buffer;
@@ -128,6 +150,7 @@ vrpn_Shared_int32 & vrpn_Shared_int32_Server::operator =
     d_connection->pack_message(32 - buflen, now,
                                d_updateFromServer_type, d_myId,
                                buffer, vrpn_CONNECTION_RELIABLE);
+//fprintf(stderr, "vrpn_Shared_int32_Server::operator =:  packed message\n");
   }
 
   return *this;
@@ -170,6 +193,7 @@ int vrpn_Shared_int32_Server::handle_updateFromRemote
   }
 #endif
 
+//fprintf(stderr, "vrpn_Shared_int32_Server::handle_updateFromRemote done\n");
   return 0;
 }
 
@@ -194,16 +218,17 @@ vrpn_Shared_int32_Remote::~vrpn_Shared_int32_Remote (void) {
 // virtual
 vrpn_Shared_int32 & vrpn_Shared_int32_Remote::operator =
                                             (vrpn_int32 newValue) {
-  struct timeval now;
 
 #ifndef VRPN_SO_DEFER_UPDATES
   // If we're not deferring updates until the server verifies them,
   // update our local value immediately.
+//fprintf(stderr, "vrpn_Shared_int32_Remote::operator = (%d)\n", newValue);
   d_value = newValue;
   yankCallbacks();
 #endif
 
   if (d_connection) {
+    struct timeval now;
     char buffer [32];
     vrpn_int32 buflen = 32;
     char * bp = buffer;
@@ -213,6 +238,7 @@ vrpn_Shared_int32 & vrpn_Shared_int32_Remote::operator =
     d_connection->pack_message(32 - buflen, now,
                                d_updateFromRemote_type, d_myId,
                                buffer, vrpn_CONNECTION_RELIABLE);
+//fprintf(stderr, "vrpn_Shared_int32_Remote::operator =:  packed message\n");
   }
 
   return *this;
@@ -236,6 +262,7 @@ int vrpn_Shared_int32_Remote::handle_updateFromServer
   vrpn_Shared_int32_Remote * s = (vrpn_Shared_int32_Remote *) ud;
   s->decode(&p.buffer, &p.payload_len);
   s->yankCallbacks();
+//fprintf(stderr, "vrpn_Shared_int32_Remote::handle_updateFromServer done\n");
 
   return 0;
 }
