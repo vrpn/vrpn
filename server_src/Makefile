@@ -34,4 +34,6 @@ vrpn_server: vrpn.o  midi.o ../$(HW_OS)/libvrpnserver.a
 clean:
 	rm -f *.o vrpn_server
 
+midi.o:	midi.c
+vrpn.o:	vrpn.C
 

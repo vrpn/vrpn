@@ -292,11 +292,15 @@ void randomplay(int j, int dateflow)
 	}
 	switch (j) {
 	case 0:
-        fp = fopen("garth_a.txt", "r");
+		fp = fopen("/net/nano/nano3/sounds/garth_a.txt", "r");
 		break;
 	case 1:
-		fp = fopen("garth_b.txt", "r");
+		fp = fopen("/net/nano/nano3/sounds/garth_b.txt", "r");
 		break;
+	}
+	if (fp == NULL) {
+		perror("Cannot open tune file");
+		return;
 	}
         fscanf(fp, "%s %d", name, &total_duration);
         fscanf(fp, "%s %d", name, &unit);
