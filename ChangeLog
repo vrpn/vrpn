@@ -1,5 +1,7 @@
 2000-08-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Connection.C (vrpn_Log::setCompoundName): added 'const'
+
 	* vrpn_Serial.C (vrpn_open_commport): Adds input baud to SGI code
 
 	* vrpn_Tracker_Fastrak.C (get_report): Flushes buffer when resynching

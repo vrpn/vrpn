@@ -803,7 +803,7 @@ int vrpn_Log::logMessage (vrpn_int32 payloadLen, struct timeval time,
 
 int vrpn_Log::setCompoundName (const char * name, int index) {
   char newName [1000];  // HACK
-  char * dot;
+  const char * dot;
   int len;
 
   // Change foo.bar, 5 to foo-5.bar
