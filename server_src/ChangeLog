@@ -1,5 +1,12 @@
 2003-06-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_server.dsp : Removed isense.c file (this file is included
+		in the vrpn_Tracker_isense.C file in the library, so putting
+		it in here again is duplication that causes the link to
+		fail.
+
+2003-06-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn.C : Changes to enable opening InterSense tracker on
 		an arbitrary port (even USB).
 	* vrpn.cfg : Same.

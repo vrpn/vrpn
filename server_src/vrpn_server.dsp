@@ -84,10 +84,6 @@ LINK32=link.exe
 # Name "vrpn_server - Win32 Debug"
 # Begin Source File
 
-SOURCE=..\..\isense\isense.c
-# End Source File
-# Begin Source File
-
 SOURCE=vrpn.C
 # End Source File
 # End Target
