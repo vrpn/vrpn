@@ -1,51 +1,50 @@
-
+#include "vrpn_ClientConnectionController.h"
 
 ////////////////////////////////////////////////
 // List of controllers that are already open
 //
-typedef	struct vrpn_KNOWN_CONTS_STRUCT {
-	char	name[1000];	// The name of the connection
-	vrpn_ClientConnectionController	*c;	// The conntroller
-	struct vrpn_KNOWN_CONTS_STRUCT *next;	// Next on the list
+struct vrpn_KNOWN_CONTROLLER {
+    char name[1000];                    // The name of the connection
+    vrpn_ClientConnectionController *c; // The conntroller
+    vrpn_KNOWN_CONTROLLER *next;        // Next on the list
 } vrpn_KNOWN_CONTROLLER;
+
 static vrpn_KNOWN_CONTROLLER *known_controllers = NULL;
 
 //**************************************************************************
 //**************************************************************************
 //
-// vrpn_ClientConnectionController: public: c'tors and d'tors
+// {{{ vrpn_ClientConnectionController: public: c'tors and d'tors
 //
 //**************************************************************************
 //**************************************************************************
 
 vrpn_ClientConnectionController::ClientConnectionController(
-	char * cname, 
-	vrpn_uint16 port,
-	char * local_logfile_name, 
-	vrpn_int32 local_log_mode,
-	char * remote_logfile_name, 
-	vrpn_int32 remote_log_mode,
-	vrpn_int32 tcp_inbuflen,
-	vrpn_int32 tcp_outbuflen,
-	vrpn_int32 udp_inbuflen,
-	vrpn_int32 udp_outbuflen,
-	vrpn_float64 dFreq, 
-	vrpn_in32 cSyncWindow
-	):
-	BaseConnectionController(
-		local_logfile_name,
-		local_log_moded,
-		remote_logfile_name,
-		remote_log_mode,
-		Freq,
-		cSyncWindow)
+    char * cname, 
+    vrpn_uint16 port,
+    char * local_logfile_name, 
+    vrpn_int32 local_log_mode,
+    char * remote_logfile_name, 
+    vrpn_int32 remote_log_mode,
+    vrpn_int32 tcp_inbuflen,
+    vrpn_int32 tcp_outbuflen,
+    vrpn_int32 udp_inbuflen,
+    vrpn_int32 udp_outbuflen,
+    vrpn_float64 dFreq, 
+    vrpn_in32 cSyncWindow
+    )
+    : BaseConnectionController( local_logfile_name,
+                                local_log_moded,
+                                remote_logfile_name,
+                                remote_log_mode,
+                                Freq,
+                                cSyncWindow)
 {
-
-	const char * machinename;
-	vrpn_int32 retval;
-	vrpn_int32 isfile;
-	vrpn_int32 isrsh;
-
+    const char * machinename;
+    vrpn_int32 retval;
+    vrpn_int32 isfile;
+    vrpn_int32 isrsh;
+    
     register_clock_sync_handler( &endpoint.tvClockOffset, 
                                  setClockOffset );
     // -2 as freq tells connection to immediately perform
@@ -55,116 +54,116 @@ vrpn_ClientConnectionController::ClientConnectionController(
         fullSync();
         mainloop();
     }
-
+    
     init_clock_client();
-
-
-	isfile = (strstr(station_name, "file:") ? 1 : 0);
-	isrsh = (strstr(station_name, "x-vrsh:") ? 1 : 0);
-
-	if (!isfile && !isrsh) {
-		// Open a connection to the station using VRPN
-		machinename = vrpn_copy_machine_name(station_name);
-		if (!machinename) {
-			fprintf(stderr, "vrpn_ClientConnectionController:  "
-                            "Out of memory!\n");
+    
+    isfile = (strstr(station_name, "file:") ? 1 : 0);
+    isrsh = (strstr(station_name, "x-vrsh:") ? 1 : 0);
+    
+    if (!isfile && !isrsh) {
+        // Open a connection to the station using VRPN
+        machinename = vrpn_copy_machine_name(station_name);
+        if (!machinename) {
+            fprintf(stderr, "vrpn_ClientConnectionController:  "
+                    "Out of memory!\n");
             return;
-		}
-		if (port < 0)
-			port = vrpn_DEFAULT_LISTEN_PORT_NO;
-
-		// create NetConnection here
-		d_connection_ptr = new NetConnection(
-			this,	
-			local_logfile_name, 
-			local_log_mode,
-			remote_logfile_name, 
-			remote_log_mode,
-			tcp_inbuflen,
-			tcp_outbuflen,
-			udp_inbuflen,
-			udp_outbuflen);
-		d_connection_ptr->connect_to_server(cname,port);
-
-		if (machinename)
-			delete [] (char *) machinename;
-	}
-	if (isrsh) {
-		// Start up the server and wait for it to connect back
-		char *server_program;
-		char *server_args;   // server program plus its arguments
-		char *token;
-		
-		machinename = vrpn_copy_machine_name(station_name);
-		server_program = vrpn_copy_rsh_program(station_name);
-		server_args = vrpn_copy_rsh_arguments(station_name);
-		token = server_args;
-		// replace all argument separators (',') with spaces (' ')
-		while (token = strchr(token, ','))
-			*token = ' ';
-
-		// start server on remote machine
-		d_connection_ptr->start_server(machinename, server_program, 
-									   server_args);
-
-		if (machinename) delete [] (char *) machinename;
-		if (server_program) delete [] (char *) server_program;
-		if (server_args) delete [] (char *) server_args;
-		
-		if (endpoint.tcp_sock < 0) {
-			fprintf(stderr, "vrpn_ClientConnectionController:  "
-					"Can't open %s\n", station_name);
-			status = BROKEN;
-			return;
-		}
-	}
-	
-	status = CONNECTED;
-
-	// create FileConnection Here
-	if (isfile) {
-		d_connection_ptr = new FileConnection(this,local_logfile_name);
-	}
-
-	// add self to list of known controllers
-	if (station_name) {
-		vrpn_KNOWN_CONTROLLER *curr;
-		
-		if ( (curr = new(vrpn_KNOWN_CONTROLLER)) == NULL) {
-			fprintf(stderr, "vrpn_ClientConnectionController:  Out of memory.\n");
-			return;
-		}
-		strncpy(curr->name, station_name, sizeof(curr->name));
-		curr->c = this;
-		curr->next = known_controllers;
-		known_controllers = curr;
-	}
-
+        }
+        if (port < 0) {
+            port = vrpn_DEFAULT_LISTEN_PORT_NO;
+        }
+        
+        // create NetConnection here
+        d_connection_ptr 
+            = new NetConnection( this,   
+                                 local_logfile_name, 
+                                 local_log_mode,
+                                 remote_logfile_name, 
+                                 remote_log_mode,
+                                 tcp_inbuflen,
+                                 tcp_outbuflen,
+                                 udp_inbuflen,
+                                 udp_outbuflen);
+        d_connection_ptr->connect_to_server(cname,port);
+        
+        if (machinename) {
+            delete [] (char *) machinename;
+        }
+    }
+    if (isrsh) {
+        // Start up the server and wait for it to connect back
+        char *server_program;
+        char *server_args;   // server program plus its arguments
+        char *token;
+        
+        machinename = vrpn_copy_machine_name(station_name);
+        server_program = vrpn_copy_rsh_program(station_name);
+        server_args = vrpn_copy_rsh_arguments(station_name);
+        token = server_args;
+        // replace all argument separators (',') with spaces (' ')
+        while (token = strchr(token, ',')) {
+            *token = ' ';
+        }
+        
+        // start server on remote machine
+        d_connection_ptr->start_server(machinename, server_program, 
+                                       server_args);
+        
+        if (machinename) delete [] (char *) machinename;
+        if (server_program) delete [] (char *) server_program;
+        if (server_args) delete [] (char *) server_args;
+        
+        if (endpoint.tcp_sock < 0) {
+            fprintf(stderr, "vrpn_ClientConnectionController:  "
+                    "Can't open %s\n", station_name);
+            status = BROKEN;
+            return;
+        }
+    }
+    
+    status = CONNECTED;
+    
+    // create FileConnection Here
+    if (isfile) {
+        d_connection_ptr = new FileConnection(this,local_logfile_name);
+    }
+    
+    // add self to list of known controllers
+    if (station_name) {
+        vrpn_KNOWN_CONTROLLER *curr;
+        
+        if ( (curr = new(vrpn_KNOWN_CONTROLLER)) == NULL) {
+            fprintf(stderr, "vrpn_ClientConnectionController:  Out of memory.\n");
+            return;
+        }
+        strncpy(curr->name, station_name, sizeof(curr->name));
+        curr->c = this;
+        curr->next = known_controllers;
+        known_controllers = curr;
+    }
 }
-	
-	
+        
 
-vrpn_ClientConnectionController::~vrpn_ClientConnectionController () {
-
+vrpn_ClientConnectionController::~vrpn_ClientConnectionController ()
+{
     //------------------------------------
     // clock client stuff
-
+    
     // release the quick arrays
     if (rgtvHalfRoundTrip)
         delete [] rgtvHalfRoundTrip;
     if (rgtvClockOffset)
         delete [] rgtvClockOffset;
-
+    
 #ifdef USE_REGRESSION
-
+    
     // release the regression arrays
     if (rgdOffsets)
         delete rgdOffsets;
     if (rgdTimes)
         delete rgdTimes;
-
+    
 #endif  // USE_REGRESSION
-
+    
 }
 
 #if 0
@@ -176,31 +175,33 @@ static vrpn_int32 dCompare( const void *pd1, const void *pd2 ) {
 }
 #endif
 
-
+// }}} end c'tors and d'tors
+// 
 //**************************************************************************
 //**************************************************************************
 //
-// vrpn_ClientConnectionController: public: mainloop
+// {{{ vrpn_ClientConnectionController: public: mainloop
 //
 //**************************************************************************
 //**************************************************************************
 
-vrpn_int32 vrpn_ClientConnectionController::mainloop( const timeval * timeout)
+vrpn_int32 vrpn_ClientConnectionController::mainloop(
+    const timeval * timeout)
 {
-
     // don't know what else will go in here
-
-	// do this before calling BaseConnection mainloop 
-	// because it creates messages that need to be sent
+    
+    // do this before calling BaseConnection mainloop 
+    // because it creates messages that need to be sent
     synchronize_clocks();
-
-	switch( status ){
-		// call BaseConnection mainloop
-		connection->mainloop(timeout);
-	}
+    
+    switch( status ){
+        // call BaseConnection mainloop
+        connection->mainloop(timeout);
+    }
 }
 
-
+// }}} end mainloop
+// 
 //**************************************************************************
 //**************************************************************************
 //
@@ -212,16 +213,16 @@ vrpn_int32 vrpn_ClientConnectionController::mainloop( const timeval * timeout)
 // are there any connections?
 vrpn_int32 vrpn_ClientConnectionController::at_least_one_open_connection()
 {
-	return d_connection_ptr->connected();
+    return d_connection_ptr->connected();
 }
 
 // overall, all connections are doing okay
 vrpn_int32 vrpn_ClientConnectionController::all_connections_doing_okay()
 {
-	return d_connection_ptr->doing_okay();
-}	
-	
-    
+    return d_connection_ptr->doing_okay();
+}       
+
+
 //**************************************************************************
 //**************************************************************************
 //
@@ -233,61 +234,60 @@ vrpn_int32 vrpn_ClientConnectionController::all_connections_doing_okay()
 // * pack a message that will be sent the next time mainloop() is called
 // * turn off the RELIABLE flag if you want low-latency (UDP) send
 // * was: pack_message
-virtual vrpn_int32 vrpn_ClientConnectionController::handle_outgoing_message(
-        vrpn_uint32 len, 
-        timeval time,
-        vrpn_int32 type,
-        vrpn_int32 service,
-        const char * buffer,
-        vrpn_uint32 class_of_service )
+vrpn_int32 vrpn_ClientConnectionController::handle_outgoing_message(
+    vrpn_uint32 len, 
+    timeval time,
+    vrpn_int32 type,
+    vrpn_int32 service,
+    const char * buffer,
+    vrpn_uint32 class_of_service )
 {
-	vrpn_int32 ret;
-
-
-	// Make sure type is either a system type (-) or a legal user type
-	if ( type >= num_my_types ) {
-	    printf("vrpn_ClientConnectionController::handle_outgoing_messages: bad type (%ld)\n",
-		type);
-	    return -1;
-	}
-
-	// If this is not a system message, make sure the service is legal.
-	if (type >= 0) {
-	  if ( (service < 0) || (service >= num_my_services) ) {
-	    printf("vrpn_ClientConnectionController::handle_outgoing_messages: bad service (%ld)\n",
-		service);
-	    return -1;
-	  }
-	}
-
-	// See if there are any local handlers for this message type from
-	// this sender.  If so, yank the callbacks.
-	if (do_callbacks_for(type, sender, time, len, buffer)) {
-		return -1;
-	}
-
-	// send on to Connection
-	// XXX - temp name for connection pointer
-	ret = d_connection_ptr->handle_outgoing_messages(
-		len,time,
-		type,service,
-		buffer,vrpn_false);
-	if( ret = -1 ) return -1; 
-
-	return 0;
-	
+    vrpn_int32 ret;
+    
+    // Make sure type is either a system type (-) or a legal user type
+    if ( type >= num_my_types ) {
+        printf("vrpn_ClientConnectionController::handle_outgoing_messages: bad type (%ld)\n",
+               type);
+        return -1;
+    }
+    
+    // If this is not a system message, make sure the service is legal.
+    if (type >= 0) {
+        if ( (service < 0) || (service >= num_my_services) ) {
+            printf("vrpn_ClientConnectionController::handle_outgoing_messages: bad service (%ld)\n",
+                   service);
+            return -1;
+        }
+    }
+    
+    // See if there are any local handlers for this message type from
+    // this sender.  If so, yank the callbacks.
+    if (do_callbacks_for(type, sender, time, len, buffer)) {
+        return -1;
+    }
+    
+    // send on to Connection
+    // XXX - temp name for connection pointer
+    ret = d_connection_ptr->handle_outgoing_messages(
+        len,time,
+        type,service,
+        buffer,vrpn_false);
+    if( ret = -1 ) return -1; 
+    
+    return 0;
 }
 
 
 //**************************************************************************
 //**************************************************************************
 //
-// vrpn_ClientConnectionController: public : clock synch functions
+// {{{ vrpn_ClientConnectionController: public : clock synch functions
 //
 //**************************************************************************
 //**************************************************************************
 
-void vrpn_ClientConnectionController::setClockOffset( void *userdata, const vrpn_CLOCKCB& info )
+void vrpn_ClientConnectionController::setClockOffset(
+    void *userdata, const vrpn_CLOCKCB& info )
 {
 #if 0
     cerr << "clock offset is " << vrpn_TimevalMsecs(info.tvClockOffset) 
@@ -305,7 +305,7 @@ void vrpn_ClientConnectionController::init_clock_client()
     vrpn_int32 i;
     
     change_list = NULL;
-  
+    
     if (connection==NULL) {
         cerr << "vrpn_ClientConnectionController: unable to connect to clock server \"" 
              << name << "\"." << endl;
@@ -314,13 +314,13 @@ void vrpn_ClientConnectionController::init_clock_client()
     // not sure what this translates to
     sprintf( rgch, "%ld", (vrpn_int32) this );
     clockClient_id = register_service(rgch);
-  
+    
     if (clockClient_id == -1) {
         cerr << "vrpn_ClientConnectionController: Can't register ID" << endl;
         connection = NULL;
         return;
     }
-
+    
     fDoFullSync = 0;
     if (dFreq <= 0) {
         // only sync on request of user, and then do it with fullSync()
@@ -331,21 +331,21 @@ void vrpn_ClientConnectionController::init_clock_client()
         // handler is automatically registered by full sync part of mainloop
     } else {
         fDoQuickSyncs=1;
-
+        
         // init quick bounce variables
         cQuickBounces=0;
         dQuickIntervalMsecs = (1/dFreq)*1000.0;
-
+        
         // do sync asap
         tvQuickLastSync.tv_sec=0;
         tvQuickLastSync.tv_usec=0;
-
+        
         // set up quick arrays
         irgtvQuick=0;
         cMaxQuickRecords = cOffsetWindow;
         rgtvHalfRoundTrip = new struct timeval [cMaxQuickRecords];
         rgtvClockOffset = new struct timeval [cMaxQuickRecords];
-
+        
         // Initialize rgtv to 0 so that currentRTT doesn't return garbage.
         // TCH April 99
         for (i = 0; i < cMaxQuickRecords; i++) {
@@ -385,13 +385,13 @@ void vrpn_ClientConnectionController::synchronize_clocks()
         //      cerr << "QuickSync" << endl;      
         struct timeval tvNow;
         gettimeofday(&tvNow, NULL);
-
+        
         // Check if we have passed the interval
         if (vrpn_TimevalMsecs(vrpn_TimevalDiff(tvNow, tvQuickLastSync)) >=
             dQuickIntervalMsecs) {
             vrpn_int32 rgl[3];
             struct timeval tv;
-
+            
             // yes, we have, so pack a message and reset clock
 
             // send a clock query with this clock client's unique id
@@ -403,12 +403,12 @@ void vrpn_ClientConnectionController::synchronize_clocks()
                                      clockClient_id, (char *)rgl, 
                                      vrpn_CONNECTION_RELIABLE);
             tvQuickLastSync = tvNow;
-        
+            
             // send out the clock sync messages right away
             connection->vrpn_Connection::mainloop();
         }
     }
-
+    
     // any time a full clock sync has been requested, do it for 1 sec
     if (fDoFullSync) {
         fDoFullSync=0;
@@ -455,7 +455,7 @@ void vrpn_ClientConnectionController::synchronize_clocks()
         // do bounces for one second to calibrate the clocks
         //      while (cElapsedMsecs<=cCalibMsecs) {
         while ( iQueries < cQueries ) {
-
+            
             // don't let replies overwrite the buffer
             if (cBounces>=cQueries) {
                 cerr << "vrpn_ClientConnectionController::mainloop: multiple clock servers on "
@@ -468,7 +468,7 @@ void vrpn_ClientConnectionController::synchronize_clocks()
                 }
                 break;
             }
-
+            
             // do one every cInterval ms or so
             if (cElapsedMsecs>=cNextTime) {
                 struct timeval tv;
@@ -629,8 +629,9 @@ void vrpn_ClientConnectionController::synchronize_clocks()
 }
 
 vrpn_int32 
-vrpn_ClientConnectionController::register_clock_sync_handler(void *userdata,
-                                                             vrpn_CLOCKSYNCHANDLER handler)
+vrpn_ClientConnectionController::register_clock_sync_handler(
+    void *userdata,
+    vrpn_CLOCKSYNCHANDLER handler)
 {
     vrpn_CLOCKSYNCLIST  *new_entry;
     
@@ -659,8 +660,8 @@ vrpn_ClientConnectionController::register_clock_sync_handler(void *userdata,
 }
 
 vrpn_int32 
-vrpn_ClientConnectionController::unregister_clock_sync_handler(void *userdata,
-                                                               vrpn_CLOCKSYNCHANDLER handler)
+vrpn_ClientConnectionController::unregister_clock_sync_handler(
+    void *userdata, vrpn_CLOCKSYNCHANDLER handler)
 {
     // The pointer at *snitch points to victim
     vrpn_CLOCKSYNCLIST  *victim, **snitch;
@@ -675,7 +676,7 @@ vrpn_ClientConnectionController::unregister_clock_sync_handler(void *userdata,
         snitch = &( (*snitch)->next );
         victim = victim->next;
     }
-  
+    
     // Make sure we found one
     if (victim == NULL) {
         fprintf(stderr,
@@ -719,10 +720,12 @@ struct timeval vrpn_ClientConnectionController::currentRTT () const
         return retval;
 
     last = this->irgtvQuick - 1;
-    while (last < 0)
+    while (last < 0) {
         last += cMaxQuickRecords;
+    }
     retval = vrpn_TimevalScale(this->rgtvHalfRoundTrip[last], 2.0);
-    //fprintf(stderr, "Record %d is %ld:%ld.\n", last, retval.tv_sec, retval.tv_usec);
+    //fprintf(stderr, "Record %d is %ld:%ld.\n",
+    //        last, retval.tv_sec, retval.tv_usec);
 
     return retval;
 }
@@ -742,23 +745,26 @@ struct timeval vrpn_ClientConnectionController::currentRTT () const
 // the clock offset.
 
 vrpn_int32 
-vrpn_ClientConnectionController::fullSyncClockServerReplyHandler(void *userdata, 
-                                                                 vrpn_HANDLERPARAM p) 
+vrpn_ClientConnectionController::fullSyncClockServerReplyHandler(
+    void *userdata, vrpn_HANDLERPARAM p) 
 {
     // get current local time
     struct timeval tvLNow;
-  
+    
     gettimeofday(&tvLNow, NULL);
   
     // all of the tv structs have an L (local) or R (remote) tag
-    vrpn_ClientConnectionController *me = (vrpn_ClientConnectionController *)userdata;
+    vrpn_ClientConnectionController *me
+        = (vrpn_ClientConnectionController *)userdata;
 
     // look at timing info sent along
     vrpn_int32 *plTimeData = (vrpn_int32 *) p.buffer;
 
     // check clock version
-    if ((p.payload_len==0) || (ntohl(*(vrpn_int32 *)p.buffer)!=CLOCK_VERSION)) {
-        cerr << "vrpn_ClientConnectionController: current version is 0x" << hex << CLOCK_VERSION 
+    if (  (p.payload_len==0)
+          || (ntohl(*(vrpn_int32 *)p.buffer)!=CLOCK_VERSION)) {
+        cerr << "vrpn_ClientConnectionController: current version is 0x"
+             << hex << CLOCK_VERSION 
              << ", clock server reply msg uses version 0x" 
              << ntohl(*(vrpn_int32 *)p.buffer) << "." << dec << endl;
         return -1;
@@ -865,30 +871,33 @@ vrpn_ClientConnectionController::fullSyncClockServerReplyHandler(void *userdata,
 // the clock offset.
 
 vrpn_int32 
-vrpn_ClientConnectionController::quickSyncClockServerReplyHandler(void *userdata, 
-                                                                  vrpn_HANDLERPARAM p) 
+vrpn_ClientConnectionController::quickSyncClockServerReplyHandler(
+    void *userdata, vrpn_HANDLERPARAM p) 
 {
     // get current local time
     struct timeval tvLNow;
-  
+    
     gettimeofday(&tvLNow, NULL);
-
+    
     // printTime("L now time", tvLNow);
-
+    
     // all of the tv structs have an L (local) or R (remote) tag
-    vrpn_ClientConnectionController *me = (vrpn_ClientConnectionController *)userdata;
-
+    vrpn_ClientConnectionController *me
+        = (vrpn_ClientConnectionController *)userdata;
+    
     // look at timing data sent along
     vrpn_int32 *plTimeData = (vrpn_int32 *) p.buffer;
-
+    
     // check clock version
-    if ((p.payload_len==0) || (ntohl(*(vrpn_int32 *)p.buffer)!=CLOCK_VERSION)) {
-        cerr << "vrpn_ClientConnectionController: current version is 0x" << hex << CLOCK_VERSION 
+    if (  (p.payload_len==0)
+          || (ntohl(*(vrpn_int32 *)p.buffer)!=CLOCK_VERSION)) {
+        cerr << "vrpn_ClientConnectionController: current version is 0x"
+             << hex << CLOCK_VERSION 
              << ", clock server reply msg uses version 0x" 
              << ntohl(*(vrpn_int32 *)p.buffer) << "." << dec << endl;
         return -1;
     }
-
+    
     // now grab the id from the message to check that is is correct
     if (me->lUniqueID!=(vrpn_int32)ntohl(plTimeData[5])) {
         // Don't squawk: there could be multiple connections now
@@ -996,4 +1005,75 @@ vrpn_ClientConnectionController::quickSyncClockServerReplyHandler(void *userdata
     return 0;
 }
 
+// }}} end clock sync functions
+// 
+//**************************************************************************
+//**************************************************************************
+//
+// {{{ services and types
+// 
+//**************************************************************************
 
+void ClientConnectionController::register_service_with_connections(
+    const char * service_name, vrpn_int32 service_id )
+{
+    // XXX fill in
+
+#if 0  // was ...
+
+    // If we're connected, pack the service description
+    if (connected()) {
+        pack_service_description(num_my_services - 1);
+    }
+
+    // If the other side has declared this service, establish the
+    // mapping for it.
+    endpoint.newLocalService(name, num_my_services - 1);
+
+#else  // changing it to ...
+    
+    // If we're connected, pack the service description
+    if (the_connection) {
+        the_connection->pack_service_description( service_name, service_id );
+    }
+
+    // If the other side has declared this service, establish the
+    // mapping for it.
+    newLocalService( service_name, service_id );
+    
+#endif // ... end change
+}
+
+
+void ClientConnectionController::register_type_with_connections(
+    const char * type_name, vrpn_int32 type_id )
+{
+    // XXX fill in
+
+#if 0   // was ...
+
+    // If we're connected, pack the type description
+    if (connected()) {
+        pack_type_description(num_my_types-1);
+    }
+
+    if (endpoint.newLocalType(name, num_my_types - 1)) {  //XXX-JJ
+        my_types[num_my_types - 1].cCares = 1;  // TCH 28 Oct 97
+    }
+
+#else  // chaging it to ...
+
+    if (the_connection) {
+        the_connection->pack_type_description( type_id );
+        
+        //XXX???
+        if (the_connection->newLocalType( type_name, type_id )) {
+            my_types[type_id].cCares = 1;
+        }
+    }
+    
+#endif  // ... end change
+
+}
+
+// }}} end services and types

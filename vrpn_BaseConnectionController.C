@@ -2,10 +2,14 @@
 
 
 
+//**************************************************************************
+//**************************************************************************
+// 
+// {{{ vrpn_ConnectionController constructors and destructor
+// 
+//**************************************************************************
+//**************************************************************************
 
-////////////////////////////////////////////////////////
-// vrpn_ConnectionController constructors and destructor
-//
 
 vrpn_BaseConnectionController::vrpn_BaseConnectionController(
 	char * local_logfile,
@@ -111,10 +115,16 @@ vrpn_BaseConnectionController::~vrpn_BaseConnectionController()
     //...XXX...
 }
 
+// }}}
+// 
+//**************************************************************************
+//**************************************************************************
+// 
+// {{{ vrpn_BaseConnectionController services and types
 
-////////////////////////////////////////////////////////
-// vrpn_BaseConnectionController services and types
-//
+// 
+//**************************************************************************
+//**************************************************************************
 
 vrpn_int32
 vrpn_BaseConnectionController::register_service(
@@ -283,12 +293,12 @@ vrpn_BaseConnectionController::get_message_type_name(
     return (const char *) my_types[type_id].name;
 }
 
-
-
+// }}}
+// 
 //**************************************************************************
 //**************************************************************************
 //
-// vrpn_BaseConnectionController: public: logging get functions
+// {{{ vrpn_BaseConnectionController: public: logging get functions
 //
 //**************************************************************************
 //**************************************************************************
@@ -318,3 +328,6 @@ void vrpn_BaseConnectionController::get_remote_logfile_name(char * logname_copy)
              d_remote_logname,
              strlen(d_remote_logname)+1 );
 }
+
+
+// }}}

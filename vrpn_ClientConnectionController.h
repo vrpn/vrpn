@@ -16,15 +16,18 @@
 
 #include "vrpn_BaseConnectionController.h"
 
+// {{{ class vrpn_ClientConnectionController
+
 class vrpn_ClientConnectionController
     : vrpn_BaseConnectionController
 {
-public:  // c'tors and d'tors
+    // {{{ c'tors and d'tors
+public:
 
     // destructor ...XXX...
     virtual ~vrpn_ClientConnectionController();
 
-protected:  // c'tors
+protected:
 
     // constructors ...XXX...
     vrpn_ClientConnectionController(
@@ -45,9 +48,22 @@ protected:  // c'tors
     // helper function
     virtual int connect_to_server( const char *machine, int port );
 
+    // }}} end c'tors and d'tors
+
 public: // mainloop
 
     virtual vrpn_int32 mainloop( const timeval * timeout = NULL );
+
+    // {{{ services and types
+protected: // called by methods in the base class
+
+    virtual void register_service_with_connections(
+        const char * service_name, vrpn_int32 service_id );
+    
+    virtual void register_type_with_connections(
+        const char * type_name, vrpn_int32 type_id );
+
+    // }}} end services and types
 
 public: // status 
 
@@ -60,7 +76,8 @@ public: // status
 private: // the connection
     vrpn_BaseConnection * d_connection_ptr;
 
-public: // clock synch functions
+    // {{{ clock synch functions
+public:
 
     void setClockOffset( void *userdata, const vrpn_CLOCKCB& info );
 
@@ -88,10 +105,9 @@ public: // clock synch functions
     // Returns the most recent RTT estimate.  TCH April 99
     // Returns 0 if the first RTT estimate is not yet completed
     // or if no quick syncs are being done.
-    struct timeval currentRTT () const;
+    timeval currentRTT () const;
 
 protected: // clock synch data members and funcs
-
 
     vrpn_int32 clockClient_id;             // vrpn id for this client
 
@@ -147,9 +163,10 @@ protected: // clock synch data members and funcs
     static vrpn_int32 quickSyncClockServerReplyHandler(void *userdata, 
                                                        vrpn_HANDLERPARAM p);
     static vrpn_int32 fullSyncClockServerReplyHandler(void *userdata, 
-
-
-
+                                                       vrpn_HANDLERPARAM p);
+    // }}} end clock synch
 };
+
+// }}} end class vrpn_ClientConnectionController
 
 #endif

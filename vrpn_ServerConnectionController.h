@@ -36,21 +36,20 @@ protected:  // c'tors and init
         
     // constructors ...XXX...
     vrpn_ServerConnectionController(
-		vrpn_uint16 port = vrpn_DEFAULT_LISTEN_PORT_NO,
-		char * local_logfile_name = NULL, 
-		vrpn_int32 local_log_mode = vrpn_LOG_NONE,
-		vrpn_int32 tcp_inbuflen = vrpn_CONNECTION_TCP_BUFLEN,
-		vrpn_int32 tcp_outbuflen = vrpn_CONNECTION_TCP_BUFLEN,
-		vrpn_int32 udp_inbuflen = vrpn_CONNECTION_UDP_BUFLEN,
-		vrpn_int32 udp_outbuflen = vrpn_CONNECTION_UDP_BUFLEN,
-		vrpn_float64 dFreq = 4.0, 
-		vrpn_in32 cSyncWindow = 2
-		// add multicast arguments later
-		);
-
-
+        vrpn_uint16   port                = vrpn_DEFAULT_LISTEN_PORT_NO,
+        char *        local_logfile_name  = NULL, 
+        vrpn_int32    local_log_mode      = vrpn_LOG_NONE,
+        vrpn_int32    tcp_inbuflen        = vrpn_CONNECTION_TCP_BUFLEN,
+        vrpn_int32    tcp_outbuflen       = vrpn_CONNECTION_TCP_BUFLEN,
+        vrpn_int32    udp_inbuflen        = vrpn_CONNECTION_UDP_BUFLEN,
+        vrpn_int32    udp_outbuflen       = vrpn_CONNECTION_UDP_BUFLEN,
+        vrpn_float64  dFreq               = 4.0, 
+        vrpn_in32     cSyncWindow         = 2
+        // add multicast arguments later
+        );
+    
 public: // sending and receving messages
-
+    
     // * call each time through the program main loop
     // * handles receiving any incoming messages
     //   and sending any packed messages
@@ -90,36 +89,36 @@ protected: // initializaton and connection setup
     // helper function
     virtual vrpn_int32 connect_to_client( const char *machine,
                                           vrpn_int16 port );
-        
+    
 private: // data members
-
+    
     char* d_mcast_info;                 // stores mcast group info
     vrpn_int32  status;                 // Status of the connection
     
     /*
-    // perhaps we should move to enums
-    enum ControllerStatus = { NOTCONNECTED, CONNECTED, ERROR };
-    ControllerStatus status;
+      // perhaps we should move to enums
+      enum ControllerStatus = { NOTCONNECTED, CONNECTED, ERROR };
+      ControllerStatus status;
     */
     
     vrpn_int32  num_live_connections;
     
     // Only used for a vrpn_Connection that awaits incoming connections
     vrpn_int32  listen_udp_sock;        // Connect requests come here
-	vrpn_uint16 listen_port_no;
-
+    vrpn_uint16 listen_port_no;
+    
     // logging object
     vrpn_FileLogger* d_logger_ptr;
-
-	// data needed to pass to Connection c'tor
-	vrpn_int32 d_tcp_inbuflen;
-	vrpn_int32 d_tcp_outbuflen;
-	vrpn_int32 d_udp_inbuflen;
-	vrpn_int32 d_udp_outbuflen;
-
-
+    
+    // data needed to pass to Connection c'tor
+    vrpn_int32 d_tcp_inbuflen;
+    vrpn_int32 d_tcp_outbuflen;
+    vrpn_int32 d_udp_inbuflen;
+    vrpn_int32 d_udp_outbuflen;
+    
+    
 public: // logging functions
-
+    
     virtual vrpn_int32 get_remote_logmode();
     virtual void get_remote_logfile_name(char *);
 
