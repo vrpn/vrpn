@@ -242,8 +242,6 @@ int vrpn_Poser_Server::handle_change_message(void* userdata,
 	vrpn_Poser_Server* me = (vrpn_Poser_Server *)userdata;
 	const char* params = (p.buffer);
 	int	i;
-    bool outside_bounds = false;
-
 	// Fill in the parameters to the poser from the message
 	if (p.payload_len != (7 * sizeof(vrpn_float64)) ) {
 		fprintf(stderr,"vrpn_Poser_Server: change message payload error\n");
@@ -264,11 +262,9 @@ int vrpn_Poser_Server::handle_change_message(void* userdata,
     for (i = 0; i < 3; i++) {
         if (me->p_pos[i] < me->p_pos_min[i]) {
             me->p_pos[i] = me->p_pos_min[i];
-            outside_bounds = true;
         }
         else if (me->p_pos[i] > me->p_pos_max[i]) {
             me->p_pos[i] = me->p_pos_max[i];
-            outside_bounds = true;
         }
     }
 
@@ -281,7 +277,6 @@ int vrpn_Poser_Server::handle_vel_change_message(void* userdata,
 	vrpn_Poser_Server* me = (vrpn_Poser_Server*)userdata;
 	const char* params = (p.buffer);
 	int	i;
-    bool outside_bounds = false;
 
 	// Fill in the parameters to the poser from the message
 	if (p.payload_len != (8 * sizeof(vrpn_float64)) ) {
@@ -304,11 +299,9 @@ int vrpn_Poser_Server::handle_vel_change_message(void* userdata,
     for (i = 0; i < 3; i++) {
         if (me->p_vel[i] < me->p_vel_min[i]) {
             me->p_vel[i] = me->p_vel_min[i];
-            outside_bounds = true;
         }
         else if (me->p_vel[i] > me->p_vel_max[i]) {
             me->p_vel[i] = me->p_vel_max[i];
-            outside_bounds = true;
         }
     }
     return 0;

@@ -87,3 +87,4 @@ class vrpn_Poser_Analog : public vrpn_Poser, public vrpn_Tracker {
 };
 
 #endif
+

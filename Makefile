@@ -334,7 +334,6 @@ server_g++:
 
 .PHONY:	client
 client: $(OBJECT_DIR)/libvrpn.a
-#	$(MAKE) $(OBJECT_DIR)/libvrpn.a
 
 .PHONY:	server
 server:
@@ -362,7 +361,7 @@ LIB_FILES =  vrpn_Connection.C vrpn_Tracker.C vrpn_Button.C \
 		vrpn_SharedObject.C vrpn_BaseClass.C \
 		vrpn_Sound.C vrpn_LamportClock.C vrpn_Mutex.C vrpn_Router.C \
 		vrpn_RedundantTransmission.C vrpn_TempImager.C \
-		vrpn_Analog_Output.C
+		vrpn_Analog_Output.C vrpn_Poser.C
 
 LIB_OBJECTS = $(patsubst %,$(OBJECT_DIR)/%,$(LIB_FILES:.C=.o))
 
@@ -373,7 +372,7 @@ LIB_INCLUDES = vrpn_Connection.h vrpn_Tracker.h vrpn_Button.h \
 		vrpn_ForwarderController.h vrpn_Serial.h vrpn_Dial.h \
 		vrpn_SharedObject.h vrpn_LamportClock.h vrpn_Mutex.h \
 		vrpn_BaseClass.h vrpn_RedundantTransmission.h vrpn_TempImager.h \
-		vrpn_Analog_Output.h
+		vrpn_Analog_Output.h vrpn_Poser.h
 
 # additional files for the new connection work-in-progress
 
@@ -392,7 +391,8 @@ SLIB_FILES =  $(LIB_FILES) vrpn_3Space.C \
 	vrpn_Analog_5dt.C vrpn_Joylin.C vrpn_Tng3.C vrpn_Spaceball.C \
 	vrpn_Tracker_isense.C vrpn_Zaber.C vrpn_nikon_controls.C \
 	vrpn_GlobalHapticsOrb.C vrpn_Tracker_ButtonFly.C vrpn_ADBox.C \
-	vrpn_VPJoystick.C vrpn_Tracker_Liberty.C
+	vrpn_VPJoystick.C vrpn_Tracker_Liberty.C vrpn_Analog_Output_NI.C \
+	vrpn_Poser_Analog.C
 
 SLIB_OBJECTS = $(patsubst %,$(SOBJECT_DIR)/%,$(SLIB_FILES:.C=.o))
 
@@ -405,20 +405,14 @@ SLIB_INCLUDES = $(LIB_INCLUDES) vrpn_3Space.h \
 	vrpn_Analog_5dt.h vrpn_Joylin.h vrpn_Tng3.h vrpn_Spaceball.h \
 	vrpn_tracker_isense.h vrpn_Zaber.h vrpn_nikon_controls.h \
 	vrpn_GlobalHapticsOrb.C vrpn_Tracker_ButtonFly.h vrpn_ADBox.h \
-	vrpn_VPJoystick.C vrpn_Tracker_Liberty.h
+	vrpn_VPJoystick.C vrpn_Tracker_Liberty.h vrpn_Analog_Output_NI.h \
+	vrpn_Poser_Analog.C
 
-
-#$(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(OBJECT_DIR) \
-#                         lib_depends \
-#                         $(LIB_OBJECTS) $(LIB_INCLUDES)
 
 $(LIB_OBJECTS): 
 $(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(LIB_OBJECTS)
 	$(AR) $(OBJECT_DIR)/libvrpn.a $(LIB_OBJECTS)
 	-$(RANLIB) $(OBJECT_DIR)/libvrpn.a
-
-#$(OBJECT_DIR)/libvrpnserver.a: $(MAKEFILE) $(SOBJECT_DIR) $(SLIB_OBJECTS) \
-#			$(SLIB_INCLUDES)
 
 $(SLIB_OBJECTS): 
 $(OBJECT_DIR)/libvrpnserver.a: $(MAKEFILE) $(SLIB_OBJECTS)
