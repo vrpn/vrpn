@@ -901,6 +901,7 @@ void vrpn_Shared_String::decode (const char ** buffer, vrpn_int32 * len,
                                  char * newValue, timeval * when) const {
   vrpn_unbuffer(buffer, when);
   vrpn_unbuffer(buffer, newValue, *len - sizeof(*when));
+  newValue[*len - sizeof(*when)] = 0;
     // HACKish
 }
 

@@ -3191,13 +3191,13 @@ void	vrpn_Connection::init (void)
   // TCH 2 Nov 98 after Phil Winston
 
   WSADATA wsaData;
-  int status;
+  int winStatus;
 
-  status = WSAStartup(MAKEWORD(1, 1), &wsaData);
-  if (status) {
+  winStatus = WSAStartup(MAKEWORD(1, 1), &wsaData);
+  if (winStatus) {
     fprintf(stderr, "vrpn_Connection::init():  "
                     "Failed to set up sockets.\n");
-    fprintf(stderr, "WSAStartup failed with error code %d\n", status);
+    fprintf(stderr, "WSAStartup failed with error code %d\n", winStatus);
     exit(0);
   }
 
@@ -4245,7 +4245,14 @@ int vrpn_Connection::message_type_is_registered (const char * name) const
 	return -1;
 }
 
-int vrpn_Connection::connected (void) const
+// Changed 8 November 1999 by TCH
+// With multiple connections allowed, TRYING_TO_CONNECT is an
+// "ok" status, so we need to admit it.  (Used to check >= 0)
+vrpn_bool vrpn_Connection::doing_okay (void) const {
+  return (status >= -1);
+}
+
+vrpn_bool vrpn_Connection::connected (void) const
 {
   return (status == CONNECTED);
 }

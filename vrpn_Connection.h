@@ -1,15 +1,3 @@
-//XXX When multicast is implemented, make sure that the buffers are
-// still sent to the individual OneConnections so that they can be
-// logged.  Should tag them as multicast, so that the OneConnection
-// knows not to send them again, but only to log them.  Or else the
-// Connection class should handle the logging for each of its
-// OneConnections (maybe this is better).
-
-//XXX When multiple outgoing connections can be made, and the creator
-// of the connection asks for local logging, it should only be turned
-// on for the first connection, so that they don't all try to write
-// the same file?
-
 #ifndef	VRPN_CONNECTION_H
 #define VRPN_CONNECTION_H
 #include <stdio.h>  // for FILE
@@ -277,8 +265,8 @@ class vrpn_Connection
 	virtual ~vrpn_Connection (void);
 
 	// Returns 1 if the connection is okay, 0 if not
-	inline int doing_okay (void) { return (status >= 0); }
-	virtual	int	connected (void) const;
+	vrpn_bool doing_okay (void) const;
+	virtual	vrpn_bool connected (void) const;
 
 	// This is similar to check connection except that it can be
 	// used to receive requests from before a server starts up
