@@ -49,23 +49,28 @@ MVF = $(MV) -f
 RM = /bin/rm
 RMF = $(RM) -f
 
-ifndef	HW_OS
-# hw_os does not exist on FreeBSD at UNC
-UNAME := $(shell uname -s)
-ifeq ($(UNAME), FreeBSD)
-  HW_OS := pc_FreeBSD
-else
-  # pc_cygwin doesn't have HW_OS
-  ifeq ($(UNAME), CYGWIN_NT-4.0)
-    HW_OS := pc_cygwin
+ifndef HW_OS
+  # hw_os does not exist on FreeBSD at UNC or on CYGWIN
+  UNAME := $(shell uname -s)
+  ifeq ($(UNAME), FreeBSD)
+    HW_OS := pc_FreeBSD
   else
-    ifeq ($(UNAME), CYGWIN_98-4.10)
+    # pc_cygwin doesn't have HW_OS
+    ifeq ($(UNAME), CYGWIN_NT-4.0)
       HW_OS := pc_cygwin
+      # On cygwin make is gmake (and gmake doesn't exist)
+      MAKE  := make -f $(MAKEFILE)
     else
-      HW_OS := $(shell hw_os)
+      ifeq ($(UNAME), CYGWIN_98-4.10)
+        ifeq ($(UNAME), CYGWIN_NT-5.0)
+	    HW_OS := pc_cygwin
+	    MAKE := make -f $(MAKEFILE)
+        else
+	    HW_OS := $(shell hw_os)
+        endif
+      endif
     endif
   endif
-endif
 endif
 
 # check if its for pxfl
