@@ -146,14 +146,6 @@ SOURCE=.\vrpn_Connection.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\vrpn_DelayedConnection.C
-# End Source File
-# Begin Source File
-
-SOURCE=.\vrpn_DelayedConnection.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\vrpn_Dial.C
 # End Source File
 # Begin Source File

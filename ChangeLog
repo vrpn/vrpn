@@ -1,3 +1,6 @@
+2001-02-09  Kwan Torrich Skinner <skinner@cs.unc.edu>
+	* vrpn.dsp : removes references to vrpn_DelayedConnection.[C,h]
+
 2001-02-07  Kwan Torrich Skinner <skinner@cs.unc.edu>
 	* vrpn_Connection.C : increased minor version number.
 	* Changelog : fixed Tom's (and my own) dates to be 2001 and not y2k.
