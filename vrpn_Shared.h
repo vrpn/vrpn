@@ -115,6 +115,8 @@ extern long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
                          const timeval t);
 extern long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
                          const char * string, vrpn_uint32 length);
+extern long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
+                         const vrpn_bool value);
 extern long vrpn_unbuffer (const char ** buffer, char * cval);
 extern long vrpn_unbuffer (const char ** buffer, vrpn_int32 * lval);
 extern long vrpn_unbuffer (const char ** buffer, vrpn_uint32 * lval);
@@ -123,6 +125,7 @@ extern long vrpn_unbuffer (const char ** buffer, vrpn_float64 * dval);
 extern long vrpn_unbuffer (const char ** buffer, timeval * t);
 extern long vrpn_unbuffer (const char ** buffer, char * string,
                            vrpn_uint32 length);
+extern long vrpn_unbuffer (const char ** buffer, vrpn_bool * lval);
 // }}}
 
 // XXX should this be done in cygwin?

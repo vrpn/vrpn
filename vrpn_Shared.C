@@ -382,6 +382,36 @@ long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
     return 0;
 }
 
+/** Utility routine for placing a vrpn_bool into a buffer that
+    is to be sent as a message. Handles packing into an unaligned
+    buffer (though this should not be done). Advances the insertPt
+    pointer to just after newly-inserted value. Decreases the buflen
+    (space remaining) by the length of the value. Returns zero on
+    success and -1 on failure.
+
+    Part of a family of routines that buffer different VRPN types
+    based on their type (vrpn_buffer is overloaded based on the third
+    parameter type). These routines handle byte-swapping to the
+    VRPN standard wire protocol.
+*/
+
+long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_bool value)
+{
+    vrpn_bool netValue = htonl(value);
+    int length = sizeof(netValue);
+
+    if (length > *buflen) {
+        fprintf(stderr, "vrpn_buffer: buffer not large enough\n");
+        return -1;
+    }
+
+    memcpy(*insertPt, &netValue, length);
+    *insertPt += length;
+    *buflen -= length;
+
+    return 0;
+}
+
 /** Utility routine for taking a character from a buffer that
     was sent as a message. Does NOT handle unpacking from an
     unaligned buffer, because the semantics of VRPN require
@@ -536,6 +566,27 @@ long vrpn_unbuffer (const char ** buffer, char * string,
     memcpy(string, *buffer, length);
     *buffer += length;
 
+    return 0;
+}
+
+/** Utility routine for taking a vrpn_bool from a buffer that
+    was sent as a message. Does NOT handle unpacking from an
+    unaligned buffer, because the semantics of VRPN require
+    message buffers and the values in them to be aligned, in order to
+    reduce the amount of copying that goes on. Advances the insertPt
+    pointer to just after newly-inserted value. Assumes that the
+    buffer holds a complete value. Returns zero on success and -1 on failure.
+
+    Part of a family of routines that unbuffer different VRPN types
+    based on their type (vrpn_buffer is overloaded based on the third
+    parameter type). These routines handle byte-swapping to and from
+    the VRPN defined wire protocol.
+*/
+
+long vrpn_unbuffer (const char ** buffer, vrpn_bool * lval)
+{
+    *lval = ntohl(*((vrpn_bool *)(*buffer)));
+    *buffer += sizeof(vrpn_bool);
     return 0;
 }
 
