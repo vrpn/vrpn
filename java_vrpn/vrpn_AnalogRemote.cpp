@@ -133,8 +133,38 @@ void handle_analog_change( void* userdata, const vrpn_ANALOGCB info )
 
 
 
+JNIEXPORT jboolean JNICALL 
+Java_vrpn_AnalogRemote_requestValueChange( JNIEnv* env, jobject jobj, 
+                                           jint jchannel, jdouble jvalue )
+{
+  if( jchannel < 0 ) 
+  {
+    return false;
+  }
+  jclass jcls = env->GetObjectClass( jobj );
+  jfieldID jfid = env->GetFieldID( jcls, "native_analog", "I" );
+  if( jfid == NULL )
+  {
+    printf( "Error in native method \"requestValueChange\":  unable to ID native analog field.\n" );
+    return false;
+  }
+
+  // get the analog pointer
+  vrpn_Analog_Remote* a = (vrpn_Analog_Remote*) env->GetIntField( jobj, jfid );
+  if( a <= 0 )  // this analog is uninitialized or has been shut down already
+  {
+    printf( "Error in native method \"requestValueChange\":  the analog is uninitialized or "
+            "has been shut down.\n" );
+    return false;
+  }
+
+  return a->request_change_channel_value( jchannel, jvalue );
+}
+
+
+
 JNIEXPORT void JNICALL 
-Java_vrpn_AnalogRemote_shutdownAnalog( JNIEnv *env, jobject jobj )
+Java_vrpn_AnalogRemote_shutdownAnalog( JNIEnv* env, jobject jobj )
 {
   // look up where to store the analog pointer
   jclass jcls = env->GetObjectClass( jobj );

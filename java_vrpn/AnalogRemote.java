@@ -46,6 +46,8 @@ public class AnalogRemote implements Runnable
 		this.analogThread.start( );
 	}
 	
+	public native boolean requestValueChange( int channel, double value );
+	
 	public synchronized void addAnalogChangeListener( AnalogChangeListener listener )
 	{
 		changeListeners.addElement( listener );

@@ -1,3 +1,9 @@
+2002-06-19  David Marshburn  <marshbur@cs.unc.edu>
+
+	* AnalogRemote.java (requestValueChange):  new
+	* vrpn_AnalogRemote.cpp (Java_vrpn_AnalogRemote_requestValueChange):  
+	  new.
+
 2002-06-18 Tatsuhiro Segi <segi@email.unc.edu>
 
 	* ButtonRemote.java:  minor comment changes
