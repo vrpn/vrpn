@@ -102,7 +102,7 @@ void vrpn_Tracker_3Space::reset()
    }
 
    // Asking for tracker status
-   if (vrpn_write_characters(serial_fd, "S", 1) == 1) {
+   if (vrpn_write_characters(serial_fd, (const unsigned char *) "S", 1) == 1) {
       sleep(1); // Sleep for a second to let it respond
    } else {
 	perror("  3Space write failed");
@@ -137,7 +137,7 @@ void vrpn_Tracker_3Space::reset()
    // These are a capitol 'o' followed by comma-separated values that
    // indicate data sets according to appendix F of the 3Space manual,
    // then followed by character 13 (octal 15).
-   if (vrpn_write_characters(serial_fd, "O2,11\015", 6) == 6) {
+   if (vrpn_write_characters(serial_fd, (const unsigned char *)"O2,11\015", 6) == 6) {
 	sleep(1); // Sleep for a second to let it respond
    } else {
 	perror("  3Space write failed");
@@ -146,10 +146,10 @@ void vrpn_Tracker_3Space::reset()
    }
 
    // Set data format to BINARY mode
-   vrpn_write_characters(serial_fd, "f", 1);
+   vrpn_write_characters(serial_fd, (const unsigned char *)"f", 1);
 
    // Set tracker to continuous mode
-   if (vrpn_write_characters(serial_fd, "C", 1) != 1)
+   if (vrpn_write_characters(serial_fd,(const unsigned char *) "C", 1) != 1)
    	perror("  3Space write failed");
    else {
    	fprintf(stderr, "  3Space set to continuous mode\n");

@@ -54,7 +54,7 @@ int vrpn_Tracker_Dyna::get_status()
 
     /* send request for status record   */
 
-    vrpn_write_characters(serial_fd, "\021", 1);
+    vrpn_write_characters(serial_fd,(const unsigned char *) "\021", 1);
     vrpn_drain_output_buffer(serial_fd);
     sleep(2);
 
@@ -106,7 +106,7 @@ void vrpn_Tracker_Dyna::reset() {
   static int T_PDYN_RECORD_LENGTH = 8;
 
   vrpn_write_characters(serial_fd, (unsigned char*)T_PDYN_C_CTL_C, strlen(T_PDYN_C_CTL_C));
-  vrpn_write_characters(serial_fd, "4", 1); // set to polling mode;
+  vrpn_write_characters(serial_fd,(const unsigned char *) "4", 1); // set to polling mode;
       
   /* pause 1 second to allow the Dynasight buffer to stabilize	*/
   sleep(1);
@@ -135,7 +135,7 @@ void vrpn_Tracker_Dyna::reset() {
 
    /* set the Dynasight to continuous mode    */
    vrpn_write_characters(serial_fd, (unsigned char*)T_PDYN_C_CTL_C, strlen(T_PDYN_C_CTL_C));
-   vrpn_write_characters(serial_fd, "V", 1); 
+   vrpn_write_characters(serial_fd, (const unsigned char *)"V", 1); 
    //T_PDYN_C_CONTINUOUS = "V"
    sleep(1);
    //gettimeofday(&timestamp, NULL);	// Set watchdog now;
