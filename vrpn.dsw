@@ -36,37 +36,6 @@ Package=<4>
 
 ###############################################################################
 
-Project: "directXFF_server"=.\server_src\directXFF_server.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name vrpn
-    End Project Dependency
-}}}
-
-###############################################################################
-
-Project: "phan_server"=.\server_src\phan_server.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name vrpn
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name vrpn_phantom
-    End Project Dependency
-}}}
-
 ###############################################################################
 
 Project: "printcereal"=.\client_src\printcereal.dsp - Package Owner=<4>
@@ -364,6 +333,9 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name timecode_generator
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vrpn_phantom
     End Project Dependency
 }}}
 

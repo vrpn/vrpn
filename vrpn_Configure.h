@@ -20,6 +20,13 @@
 #define	VRPN_NO_STREAMS
 
 //-----------------------
+// Instructs VRPN to use phantom library to construct a unified
+// server, using phantom as a common device, and phantom 
+// configuration in .cfg file.
+// PLEASE SPECIFY PATH TO GHOSTLIB IN NEXT SECTION IF YOU USE THIS
+#define	VRPN_USE_PHANTOM_SERVER
+
+//-----------------------
 // Instructs VRPN to use the high-performance timer code on
 // Windows, rather than the default clock which has an infrequent
 // update.  At one point in the past, an implementation of this
@@ -41,7 +48,7 @@
 // rather than the default world-origin with identity rotation.
 // Please don't anyone new use the room space transforms built
 // into VRPN -- they are a hack pulled forward from Trackerlib.
-#define	DESKTOP_PHANTOM_DEFAULTS
+//#define	DESKTOP_PHANTOM_DEFAULTS
 
 //-----------------------
 // Instructs VRPN library and server to include code that uses
@@ -63,6 +70,12 @@
 // DO NOT EDIT BELOW THIS LINE FOR NORMAL CONFIGURATION SETTING.  //
 // DO EDIT IF THE LIBRARIES TO BE USED ARE NOT IN STANDARD PLACES.//
 //----------------------------------------------------------------//
+
+// Load VRPN Phantom library if we are using phantom server as unified server
+// Load SensAble Technologies GHOST library to run the Phantom
+#ifdef	VRPN_USE_PHANTOM_SERVER
+#pragma comment (lib,"C:/Program Files/SensAble/GHOST/v3.1/lib/GHOST31.lib")
+#endif
 
 // Load DirectX SDK libraries and tell which version we need if we are using it.
 // If this doesn't match where you have installed these libraries,
@@ -86,3 +99,4 @@
 #endif
 
 #endif
+
