@@ -147,10 +147,6 @@ vrpn_Analog_Server::~vrpn_Analog_Server (void) {
 
 }
 
-#if 0
-// These functions are identical to the base class -
-// so don't implement them!
-
 //virtual
 void vrpn_Analog_Server::report_changes (vrpn_uint32 class_of_service) {
   vrpn_Analog::report_changes(class_of_service);
@@ -160,7 +156,6 @@ void vrpn_Analog_Server::report_changes (vrpn_uint32 class_of_service) {
 void vrpn_Analog_Server::report (vrpn_uint32 class_of_service) {
   vrpn_Analog::report(class_of_service);
 }
-#endif
 
 vrpn_float64 * vrpn_Analog_Server::channels (void) {
   return channel;
