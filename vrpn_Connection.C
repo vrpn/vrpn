@@ -108,7 +108,7 @@ const int vrpn_MAGICLEN = 16;  // Must be a multiple of vrpn_ALIGN bytes!
 // (possible values for status).
 #define LISTEN			(1)
 #define CONNECTED		(0)
-#define CONNECTION_FAIL		(-1)
+#define TRYING_TO_CONNECT	(-1)
 #define BROKEN			(-2)
 #define DROPPED			(-3)
 
@@ -147,7 +147,7 @@ pid_t wait3 (int * statusp, int options, struct rusage * rusage);
 /* The version of rsh in /usr/local/bin is the AFS version that passes tokens
  * to the remote machine.  This will allow remote execution of anything you
  * can execute locally.  This is the default location from which to get rsh.
- * If the SDI_RSH environment variable is set, that will be used as the full
+ * If the VRPN_RSH environment variable is set, that will be used as the full
  * path instead.  */
 #ifdef  linux
 #define RSH             (char *) "/usr/local/bin/ssh"
@@ -166,7 +166,6 @@ pid_t wait3 (int * statusp, int options, struct rusage * rusage);
  * back. */
 #define SERVCOUNT       (20)
 #define SERVWAIT        (120/SERVCOUNT)
-static  struct  timeval longtime= { SERVWAIT,0 };  /* Poll/startup interval */
 
 #if 0
 
@@ -560,75 +559,41 @@ int vrpn_noint_block_read_timeout(int infile, char buffer[],
         return(sofar);			/* All bytes read */
 }
 
+//---------------------------------------------------------------------------
+// This section deals with implementing a method of connection termed a
+// UDP request.  This works by having the client open a TCP socket that
+// it listens on. It then lobs datagrams to the server asking to be
+// called back at the socket. This allows it to timeout on waiting for
+// a connection request, resend datagrams in case some got lost, or give
+// up at any time. The whole algorithm is implemented in the
+// vrpn_udp_request_call() function; the functions before that are helper
+// functions that have been broken out to allow a subset of the algorithm
+// to be run by a connection whose server has dropped and they want to
+// re-establish it.
 
-/***************************
- *	This routine will send UDP packets requesting a TCP callback from
- * a remote server given the name of the machine and the socket number to
- * send the requests to.
- *	This routine returns the file descriptor of the socket on success
- * and -1 on failure.
- ***************************/
-int vrpn_udp_request_call(const char * machine, int port)
+// This routine will lob a datagram to the given port on the given
+// machine asking it to call back at the port on this machine that
+// is also specified. It returns 0 on success and -1 on failure.
+
+int vrpn_udp_request_lob_packet(
+		const char * machine,	// Name of the machine to call
+		const int remote_port,	// UDP port on remote machine
+		const int local_port)	// TCP port on this machine
 {
-	struct sockaddr_in listen_name;	/* The listen socket binding name */
-	int	listen_namelen;
-#ifdef	_WIN32
-	SOCKET	listen_sock;		/* The socket to listen on */
-	SOCKET	accept_sock;		/* The socket we get when accepting */
 	SOCKET	udp_sock;		/* We lob datagrams from here */
-#else
-	int	listen_sock;		/* The socket to listen on */
-	int	accept_sock;		/* The socket we get when accepting */
-	int	udp_sock;		/* We lob datagrams from here */
-#endif
 	struct sockaddr_in udp_name;	/* The UDP socket binding name */
 	int	udp_namelen;
-	int	listen_portnum;		/* Port number we're listening on */
         struct	hostent *host;          /* The host to connect to */
 	char	msg[150];		/* Message to send */
 	vrpn_int32	msglen;		/* How long it is (including \0) */
 	char	myIPchar[100];		/* IP decription this host */
-	int	try_connect;
-
-	/* Create a TCP socket to listen for incoming connections from the
-	 * remote server. */
-
-        listen_name.sin_family = AF_INET;		/* Internet socket */
-        listen_name.sin_addr.s_addr = INADDR_ANY;	/* Accept any port */
-        listen_name.sin_port = htons(0);
-        listen_sock = socket(AF_INET,SOCK_STREAM,0);
-	listen_namelen = sizeof(listen_name);
-        if (listen_sock < 0) {
-		fprintf(stderr,"vrpn_udp_request_call: can't open socket().\n");
-                return(-1);
-        }
-        if ( bind(listen_sock,(struct sockaddr*)&listen_name,listen_namelen) ) {
-		fprintf(stderr,"vrpn_udp_request_call: can't bind socket().\n");
-                close(listen_sock);
-                return(-1);
-        }
-        if (getsockname(listen_sock,
-	                (struct sockaddr *) &listen_name,
-                        GSN_CAST &listen_namelen)) {
-		fprintf(stderr,
-			"vrpn_udp_request_call: cannot get socket name.\n");
-                close(listen_sock);
-                return(-1);
-        }
-	listen_portnum = ntohs(listen_name.sin_port);
-	if ( listen(listen_sock,2) ) {
-		fprintf(stderr,"vrpn_udp_request_call: listen() failed.\n");
-		close(listen_sock);
-		return(-1);
-	}
 
 	/* Create a UDP socket and connect it to the port on the remote
 	 * machine. */
 
         udp_sock = socket(AF_INET,SOCK_DGRAM,0);
         if (udp_sock < 0) {
-	    fprintf(stderr,"vrpn_udp_request_call: can't open udp socket().\n");
-	    close(listen_sock);
+	    fprintf(stderr,"vrpn_udp_request_lob_packet: can't open udp socket().\n");
             return(-1);
         }
 	udp_name.sin_family = AF_INET;
@@ -677,9 +642,9 @@ int vrpn_udp_request_call(const char * machine, int port)
 // Note that this is the failure clause of gethostbyname() on
 // non-WIN32 systems, but of the sscanf() on WIN32 systems.
 
-		close(listen_sock);
+		close(udp_sock);
 		fprintf(stderr,
-			"vrpn_udp_request_call: error finding host by name\n");
+			"vrpn_udp_request_lob_packet: error finding host by name\n");
 		return(-1);
 
 #ifdef _WIN32
@@ -691,13 +656,12 @@ int vrpn_udp_request_call(const char * machine, int port)
         }
 
 #ifndef _WIN32
-	udp_name.sin_port = htons(port);
+	udp_name.sin_port = htons(remote_port);
 #else
-	udp_name.sin_port = htons((u_short)port);
+	udp_name.sin_port = htons((u_short)remote_port);
 #endif
         if ( connect(udp_sock,(struct sockaddr*)&udp_name,udp_namelen) ) {
-	    fprintf(stderr,"vrpn_udp_request_call: can't bind udp socket().\n");
-	    close(listen_sock);
+	    fprintf(stderr,"vrpn_udp_request_lob_packet: can't bind udp socket().\n");
 	    close(udp_sock);
 	    return(-1);
         }
@@ -708,86 +672,176 @@ int vrpn_udp_request_call(const char * machine, int port)
 
 	if (vrpn_getmyIP(myIPchar, sizeof(myIPchar))) {
 		fprintf(stderr,
-		   "vrpn_udp_request_call: Error finding local hostIP\n");
-		close(listen_sock);
+		   "vrpn_udp_request_lob_packet: Error finding local hostIP\n");
 		close(udp_sock);
 		return(-1);
 	}
-	sprintf(msg, "%s %d", myIPchar, listen_portnum);
+	sprintf(msg, "%s %d", myIPchar, local_port);
 	msglen = strlen(msg) + 1;	/* Include the terminating 0 char */
+
+	// Lob the message
+	if (send(udp_sock, msg, msglen, 0) == -1) {
+	  perror("vrpn_udp_request_lob_packet: send() failed");
+	  close(udp_sock);
+	  return -1;
+	}
+
+	close(udp_sock);	// We're done with the port
+	return 0;
+}
+
+// This routine will get a TCP socket that is ready to accept connections.
+// That is, listen() has already been called on it.
+// It will get whatever socket is available from the system. It returns
+// 0 on success and -1 on failure. On success, it fills in the pointers to
+// the socket and the port number of the socket that it obtained.
+
+int vrpn_get_a_TCP_socket(SOCKET *listen_sock, int *listen_portnum)
+{
+	struct sockaddr_in listen_name;	/* The listen socket binding name */
+	int	listen_namelen;
+
+	/* Create a TCP socket to listen for incoming connections from the
+	 * remote server. */
+
+        listen_name.sin_family = AF_INET;		/* Internet socket */
+        listen_name.sin_addr.s_addr = INADDR_ANY;	/* Accept any port */
+        listen_name.sin_port = htons(0);
+        *listen_sock = socket(AF_INET,SOCK_STREAM,0);
+	listen_namelen = sizeof(listen_name);
+        if (*listen_sock < 0) {
+		fprintf(stderr,"vrpn_get_a_TCP_socket: can't open socket().\n");
+                return(-1);
+        }
+        if ( bind(*listen_sock,(struct sockaddr*)&listen_name,listen_namelen) ) {
+		fprintf(stderr,"vrpn_get_a_TCP_socket: can't bind socket().\n");
+                close(*listen_sock);
+                return(-1);
+        }
+        if (getsockname(*listen_sock,
+	                (struct sockaddr *) &listen_name,
+                        GSN_CAST &listen_namelen)) {
+		fprintf(stderr,
+			"vrpn_get_a_TCP_socket: cannot get socket name.\n");
+                close(*listen_sock);
+                return(-1);
+        }
+	*listen_portnum = ntohs(listen_name.sin_port);
+	if ( listen(*listen_sock,2) ) {
+		fprintf(stderr,"vrpn_get_a_TCP_socket: listen() failed.\n");
+		close(*listen_sock);
+		return(-1);
+	}
+
+	return 0;
+}
+
+// This routine will check the listen socket to see if there has been a
+// connection request. If so, it will accept a connection on the accept
+// socket and set TCP_NODELAY on that socket. The attempt will timeout
+// in the amount of time specified.  If the accept and set are
+// successfull, it returns 1. If there is nothing asking for a connection,
+// it returns 0. If there is an error along the way, it returns -1.
+
+int vrpn_poll_for_accept(SOCKET listen_sock, SOCKET *accept_sock, double timeout = 0.0)
+{
+	fd_set	rfds;
+	struct	timeval t;
+
+	// See if we have a connection attempt within the timeout
+	FD_ZERO(&rfds);
+	FD_SET(listen_sock, &rfds);	/* Check for read (connect) */
+	t.tv_sec = (long)(timeout);
+	t.tv_usec = (long)( (timeout - t.tv_sec) * 1000000L );
+	if (select(32, &rfds, NULL, NULL, &t) == -1) {
+	  perror("vrpn_poll_for_accept: select() failed");
+	  return -1;
+	}
+	if (FD_ISSET(listen_sock, &rfds)) {	/* Got one! */
+		/* Accept the connection from the remote machine and set TCP_NODELAY
+		* on the socket. */
+		if ( (*accept_sock = accept(listen_sock,0,0)) == -1 ) {
+			perror("vrpn_poll_for_accept: accept() failed");
+			return -1;
+		}
+
+		{	struct	protoent	*p_entry;
+			int	nonzero = 1;
+
+			if ( (p_entry = getprotobyname("TCP")) == NULL ) {
+				fprintf(stderr,
+				"vrpn_poll_for_accept: getprotobyname() failed.\n");
+				close(*accept_sock);
+				return(-1);
+			}
+	
+			if (setsockopt(*accept_sock, p_entry->p_proto,
+			TCP_NODELAY, SOCK_CAST &nonzero, sizeof(nonzero))==-1) {
+				perror("vrpn_poll_for_accept: setsockopt() failed");
+				close(*accept_sock);
+				return(-1);
+			}
+		}
+
+		return 1;	// Got one!
+	}
+
+	return 0;	// Nobody called
+}
+
+/***************************
+ *	This routine will send UDP packets requesting a TCP callback from
+ * a remote server given the name of the machine and the socket number to
+ * send the requests to.
+ *	This routine returns the file descriptor of the socket on success
+ * and -1 on failure.
+ ***************************/
+SOCKET vrpn_udp_request_call(const char * machine, int port)
+{
+	SOCKET	listen_sock;		/* The socket to listen on */
+	int	listen_portnum;		/* Port number we're listening on */
+	SOCKET	accept_sock;		/* The socket we get when accepting */
+	int	try_connect;
+
+	// Open the socket that we will listen on for connections
+	if (vrpn_get_a_TCP_socket(&listen_sock, &listen_portnum)) {
+		fprintf(stderr,"vrpn_udp_request_call(): Can't get listen sock\n");
+		return -1;
+	}
 
 	/* Repeat sending the request to the server and checking for it
 	 * to call back until either there is a connection request from the
 	 * server or it times out as many times as we're supposed to try. */
 
 	for (try_connect = 0; try_connect < UDP_CALL_RETRIES; try_connect++) {
-		fd_set	rfds;
-		struct	timeval t;
+		int	ret;
 
 		/* Send a packet to the server asking for a connection. */
-		if (send(udp_sock, msg, msglen, 0) == -1) {
-		  perror("vrpn_udp_request_call: send() failed");
+		if (vrpn_udp_request_lob_packet(machine, port, listen_portnum)
+			== -1) {
+		  perror("vrpn_udp_request_call: Can't request connection");
 		  close(listen_sock);
-		  close(udp_sock);
 		  return -1;
 		}
 
-		/* See if we get a connection attempt within the timeout */
-		FD_ZERO(&rfds);
-		FD_SET(listen_sock, &rfds);	/* Check for read (connect) */
-		t.tv_sec = UDP_CALL_TIMEOUT;
-		t.tv_usec = 0;
-		if (select(32, &rfds, NULL, NULL, &t) == -1) {
-		  perror("vrpn_udp_request_call: select() failed");
-		  close(listen_sock);
-		  close(udp_sock);
-		  return -1;
+		ret = vrpn_poll_for_accept(listen_sock, &accept_sock, UDP_CALL_TIMEOUT);
+		if (ret == -1) {
+			fprintf(stderr,"vrpn_udp_request_call: Accept poll failed\n");
+			close(listen_sock);
+			return -1;
 		}
-		if (FD_ISSET(listen_sock, &rfds)) {	/* Got one! */
-			break;	/* Break out of the for loop */
+		if (ret == 1) {
+			break;		// Got one!
 		}
 	}
 	if (try_connect == UDP_CALL_RETRIES) {	/* We didn't get an answer */
 		fprintf(stderr,"vrpn_udp_request_call: No reply from server\n");
 		fprintf(stderr,"                      (Server down or busy)\n");
 		close(listen_sock);
-		close(udp_sock);
 		return -1;
 	}
 
-	/* Accept the connection from the remote machine and set TCP_NODELAY
-	 * on the socket. */
-	if ( (accept_sock = accept(listen_sock,0,0)) == -1 ) {
-		perror("vrpn_udp_request_call: accept() failed");
-		close(listen_sock);
-		close(udp_sock);
-		return -1;
-	}
-
-	{	struct	protoent	*p_entry;
-		int	nonzero = 1;
-
-		if ( (p_entry = getprotobyname("TCP")) == NULL ) {
-			fprintf(stderr,
-			  "vrpn_udp_request_call: getprotobyname() failed.\n");
-			close(accept_sock);
-			close(listen_sock);
-			close(udp_sock);
-			return(-1);
-		}
-
-		if (setsockopt(accept_sock, p_entry->p_proto,
-		    TCP_NODELAY, SOCK_CAST &nonzero, sizeof(nonzero))==-1) {
-			perror("vrpn_udp_request_call: setsockopt() failed");
-			close(accept_sock);
-			close(listen_sock);
-			close(udp_sock);
-			return(-1);
-		}
-	}
-
-	close(listen_sock);	/* Don't need this now */
-	close(udp_sock);	/* Don't need this now */
+	close(listen_sock);	// We're done with the port
 
 	return accept_sock;
 }
@@ -812,36 +866,15 @@ int vrpn_start_server(const char *machine, char *server_name, char *args)
         return -1;
 #else
         int     pid;    /* Child's process ID */
-        int     inmask, zero;   /* Used in select() */
         int     server_sock;    /* Where the accept returns */
         int     child_socket;   /* Where the final socket is */
-        struct sockaddr_in name;/* The socket to listen to */
         int     PortNum;        /* Port number we got */
-        int     scrap;
 
         /* Open a socket and insure we can bind it */
-
-        name.sin_family = AF_INET;                      /* Internet socket */
-        name.sin_addr.s_addr = INADDR_ANY;              /* Accept any port */
-        name.sin_port = htons(0);
-        server_sock = socket(AF_INET,SOCK_STREAM,0);
-        if (server_sock < 0) {
-                fprintf(stderr,"vrpn_start_server: cannot open socket().\n");
-                return(-1);
-        }
-        if ( bind(server_sock,(struct sockaddr*)&name,sizeof(name)) ) {
-                fprintf(stderr,"vrpn_start_server: cannot bind socket().\n");
-                close(server_sock);
-                return(-1);
-        }
-        scrap = sizeof(name);
-        if (getsockname(server_sock, (struct sockaddr *) &name,
-                        GSN_CAST &scrap)) {
-                fprintf(stderr,"vrpn_start_server: cannot get socket name.\n");
-                close(server_sock);
-                return(-1);
-        }
-        PortNum = ntohs(name.sin_port);
+	if (vrpn_get_a_TCP_socket(&server_sock, &PortNum)) {
+		fprintf(stderr,"vrpn_start_server: Cannot get listen socket\n");
+		return -1;
+	}
 
         if ( (pid = fork()) == -1) {
                 fprintf(stderr,"vrpn_start_server: cannot fork().\n");
@@ -896,24 +929,15 @@ int vrpn_start_server(const char *machine, char *server_name, char *args)
         } else {  /* PARENT */
                 int     waitloop;
 
-                /* Listen on the socket for the server to call */
-
-                if ( listen(server_sock,2) ) {
-                        fprintf(stderr,"vrpn_start_server: listen() failed.\n");
-                        close(server_sock);
-                        return(-1);
-                }
-
-                /* Use select() on the file descriptor to see if the child
+                /* Check to see if the child
                  * is trying to call us back.  Do SERVCOUNT waits, each of
-                 * which is SERVWAIT long.  Only SERVCOUNT-1 of these are
-                 * done in the first loop.  The last one is done after, so
-                 * that it can timeout and exit. */
-                /* If the child dies while we are waiting, then we can be
+                 * which is SERVWAIT long.
+                 * If the child dies while we are waiting, then we can be
                  * sure that they will not be calling us back.  Check for
-                 * this at smaller intervals while waiting for the callback. */
+                 * this while waiting for the callback. */
 
-                for (waitloop = 0; waitloop < (SERVCOUNT-1); waitloop++) {
+                for (waitloop = 0; waitloop < (SERVCOUNT); waitloop++) {
+		    int ret;
                     pid_t deadkid;
 #if defined(sparc) || defined(FreeBSD)
                     int status;  // doesn't exist on sparc_solaris or FreeBSD
@@ -922,12 +946,15 @@ int vrpn_start_server(const char *machine, char *server_name, char *args)
 #endif
 		    
                     /* Check to see if they called back yet. */
-                    inmask = (1 << server_sock);
-                    zero = 0;
-                    if (vrpn_noint_select(32,(fd_set *)&inmask,(fd_set *)&zero,
-                                         (fd_set *)&zero,&longtime)==1) {
-                      break;    /* Jump out of the loop */
-                    }
+		    ret = vrpn_poll_for_accept(server_sock, &child_socket, SERVWAIT);
+		    if (ret == -1) {
+			    fprintf(stderr,"vrpn_start_server: Accept poll failed\n");
+			    close(server_sock);
+			    return -1;
+		    }
+		    if (ret == 1) {
+			    break;	// Got it!
+		    }
 
                     /* Check to see if the child is dead yet */
 #if defined(hpux) || defined(sgi) || defined(__hpux)
@@ -943,14 +970,8 @@ int vrpn_start_server(const char *machine, char *server_name, char *args)
                         return(-1);
                     }
                 }
-                /* This is the last wait.  If it fails, then it has been
-                 * too long and assume the child is not going to call us.
-                 * If the above select has succeeded, then this one should
-                 * return very quickly. */
-
-                if (vrpn_noint_select(32,(fd_set *)&inmask,(fd_set *)&zero,
-                                     (fd_set *)&zero,&longtime) != 1) {
-                    fprintf(stderr,
+		if (waitloop == SERVCOUNT) {
+			fprintf(stderr,
                         "vrpn_start_server: server failed to connect in time\n");
                     fprintf(stderr,
                         "                  (took more than %d seconds)\n",
@@ -961,37 +982,7 @@ int vrpn_start_server(const char *machine, char *server_name, char *args)
                     return(-1);
                 }
 
-                /* Accept the connection from the server */
-
-                if ( (child_socket = accept(server_sock,0,0)) == -1 ) {
-                        fprintf(stderr,"vrpn_start_server: accept() failed.\n");
-                        close(server_sock);
-                        return(-1);
-                }
                 close(server_sock);
-
-                /* Set the socket for TCP_NODELAY */
-
-                {       struct  protoent        *p_entry;
-                        static  int     nonzero = 1;
-
-                        if ( (p_entry = getprotobyname("TCP")) == NULL ) {
-                                fprintf(stderr,
-                                  "vrpn_start_server: getprotobyname() failed.\n"
-);
-                                close(child_socket);
-                                return(-1);
-                        }
-
-                        if (setsockopt(child_socket, p_entry->p_proto,
-                                TCP_NODELAY, SOCK_CAST &nonzero,
-                                sizeof(nonzero)) == -1) {
-                                perror("vrpn_start_server: setsockopt() failed");
-                                close(child_socket);
-                                return(-1);
-                        }
-                }
-
                 return(child_socket);
         }
         return 0;
@@ -2856,7 +2847,9 @@ int vrpn_Connection::mainloop (const struct timeval * pTimeout)
 #endif
       	break;
 
-      case CONNECTION_FAIL:
+      case TRYING_TO_CONNECT:
+//XXX Put in something here.
+
       case BROKEN:
       	fprintf(stderr, "vrpn: Socket failure.  Giving up!\n");
 	status = DROPPED;
@@ -3046,7 +3039,8 @@ vrpn_Connection::vrpn_Connection
 	endpoint.init();
 
 	if (!isfile && !isrsh) {
-	  // Open a connection to the station using SDI
+	  // Open a connection to the station using a UDP request
+	  // that asks to machine to call us back here.
 	  machinename = vrpn_copy_machine_name(station_name);
 	  if (!machinename) {
 	    fprintf(stderr, "vrpn_Connection:  "
@@ -4010,12 +4004,10 @@ vrpn_Connection * vrpn_get_connection_by_name
 		}
 	}
 
-	// See if the connection is okay.  If so, return it.  If not, NULL
-	if (curr->c->doing_okay()) {
-		return curr->c;
-	} else {
-		return NULL;
-	}
+	// Return a pointer to the connection, even if it is not doing
+	// okay. This will allow a connection to retry over and over
+	// again before connecting to the server.
+	return curr->c;
 }
 
 
