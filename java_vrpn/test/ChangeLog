@@ -1,3 +1,11 @@
+2002-07-25  Tatsuhiro Segi  <segi@email.unc.edu>
+
+	* AnalogListenerTest.java:  new file to test and demonstrate
+	  how to use Remote Listener classes.
+	* ButtonListenerTest.java:  same
+	* AnalogRandomValueGenerator.java:  thread to generate bunch
+	  of random value requests to analogRemote for testing
+
 2002-06-25  David Marshburn  <marshbur@cs.unc.edu>
 
 	* AnalogTest.java:  new

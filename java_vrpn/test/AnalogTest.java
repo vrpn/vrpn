@@ -38,6 +38,4 @@ public class AnalogTest
 		analog.requestValueChange( 2, 5 );
 		
 	}
-	
-	
 }
