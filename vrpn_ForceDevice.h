@@ -91,7 +91,10 @@ public:
 		vrpn_PHANTOMCHANGEHANDLER handler);
 
 	static void handle_plane(void *userdata,const vrpn_PHANTOMCB p);
-    
+        static void check_parameters(vrpn_PHANTOMCB *p);
+	static int handle_r2t_request(void *userdata, vrpn_HANDLERPARAM p);
+	static int handle_s2u_request(void *userdata, vrpn_HANDLERPARAM p);
+
 protected:
 	float update_rate;
 	gstScene *scene;
@@ -131,13 +134,11 @@ typedef	struct {
 } vrpn_FORCECB;
 typedef void (*vrpn_FORCECHANGEHANDLER)(void *userdata,
 					 const vrpn_FORCECB info);
-
 class vrpn_ForceDevice_Remote: public vrpn_ForceDevice {
 public:
 
 	// The name of the force device to connect to
 	vrpn_ForceDevice_Remote(char *name);
-
  	void set_plane(float *p);
 	void set_plane(float *p, float d);
 	void set_plane(float a, float b, float c,float d);

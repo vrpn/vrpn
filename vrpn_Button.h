@@ -68,6 +68,8 @@ class vrpn_Button_Python: public vrpn_parallel_Button {
 // User routine to handle a change in button state.  This is called when
 // the button callback is called (when a message from its counterpart
 // across the connetion arrives).
+#define VRPN_BUTTON_OFF	(0)
+#define VRPN_BUTTON_ON	(1)
 
 typedef	struct {
 	struct timeval	msg_time;	// Time of button press/release

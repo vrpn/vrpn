@@ -25,6 +25,8 @@
 
 #include "vrpn_Tracker.h"
 
+static const char *tracker_cfg_file_name = "vrpn_Tracker.cfg";
+
 //#define VERBOSE
 // #define READ_HISTOGRAM
 
@@ -147,6 +149,8 @@ int vrpn_drain_output_buffer(int comm)
 
 
 vrpn_Tracker::vrpn_Tracker(char *name, vrpn_Connection *c) {
+	FILE	*config_file;
+
 	// Set our connection to the one passed in
 	connection = c;
 
@@ -156,6 +160,14 @@ vrpn_Tracker::vrpn_Tracker(char *name, vrpn_Connection *c) {
 	  position_m_id = connection->register_message_type("Tracker Pos/Quat");
 	  velocity_m_id = connection->register_message_type("Tracker Velocity");
 	  accel_m_id =connection->register_message_type("Tracker Acceleration");
+	  room2tracker_m_id = connection->register_message_type(
+							"Room To Tracker");
+	  sensor2unit_m_id = connection->register_message_type(
+							"Sensor To Unit");
+	  request_r2t_m_id = connection->register_message_type(
+						"Request Room To Tracker");
+	  request_s2u_m_id = connection->register_message_type(
+						"Request Sensor To Unit");
 	}
 
 	// Set the current time to zero, just to have something there
@@ -184,8 +196,87 @@ vrpn_Tracker::vrpn_Tracker(char *name, vrpn_Connection *c) {
 	acc_quat[0] = acc_quat[1] = acc_quat[2] = 0.0;
 	acc_quat[3] = 1.0;
 	acc_quat_dt = 1;
+
+	// Set the room to tracker and sensor to unit transforms to identity
+	room2tracker[0] = room2tracker[1] = room2tracker[2] = 0.0;
+	room2tracker_quat[0] = room2tracker_quat[1] = 
+						room2tracker_quat[2] = 0.0;
+	room2tracker_quat[3] = 1.0;
+
+	num_sensors = 1;
+	for (int sens = 0; sens < TRACKER_MAX_SENSORS; sens++){
+	    sensor2unit[sens][0] = sensor2unit[sens][1] = 
+						sensor2unit[sens][2] = 0.0;
+	    sensor2unit_quat[sens][0] = sensor2unit_quat[sens][1] = 0.0;
+	    sensor2unit_quat[sens][2] = 0.0;
+	    sensor2unit_quat[sens][3] = 1.0;
+	}
+	// replace defaults with values from "vrpn_Tracker.cfg" file
+	// if it exists
+	if ((config_file = fopen(tracker_cfg_file_name, "r")) == NULL) {
+		fprintf(stderr, "Cannot open config file %s\n",
+				tracker_cfg_file_name);
+	}
+	else if (read_config_file(config_file, name)){
+		fprintf(stderr, "Found but cannot read config file %s\n",
+				tracker_cfg_file_name);
+	fclose(config_file);
+	}
 }
 
+int vrpn_Tracker::read_config_file(FILE *config_file, char *tracker_name)
+{
+    char	line[512];	// line read from input file
+    int		num_sens;
+    int 	which_sensor;
+    float	f[7];
+    int 	i,j;
+
+    // Read lines from the file until we run out
+    while ( fgets(line, sizeof(line), config_file) != NULL ) {
+	// Make sure the line wasn't too long
+	if (strlen(line) >= sizeof(line)-1) {
+		 fprintf(stderr,"Line too long in config file: %s\n",line);
+		 return -1;
+	}
+	// find 
+	if (!(strncmp(line,tracker_name,strlen(tracker_name)))) {
+	    // get the room2tracker xform
+	    if (fgets(line, sizeof(line), config_file) == NULL) break;
+	    if (sscanf(line, "%f%f%f", &f[0], &f[1], &f[2]) != 3) break;
+	    if (fgets(line, sizeof(line), config_file) == NULL) break;
+	    if (sscanf(line, "%f%f%f%f",&f[3],&f[4], &f[5], &f[6]) != 4) break;
+	    for (i = 0; i < 3; i++)
+		room2tracker[i] = f[i];
+	    for (i = 0; i < 4; i++)
+		room2tracker_quat[i] = f[i+3];
+	    // get the number of sensors
+	    if (fgets(line, sizeof(line), config_file) == NULL) break;
+	    if ((sscanf(line, "%d", &num_sens) != 1) ||
+		(num_sens > TRACKER_MAX_SENSORS)) break;
+	    for (i = 0; i < num_sens; i++){
+		// get which sensor this xform is for
+		if (fgets(line, sizeof(line), config_file) == NULL) break;
+		if ((sscanf(line, "%d", &which_sensor) != 1) ||
+		    (which_sensor > TRACKER_MAX_SENSORS)) break;
+		// get the sensor to unit xform
+		if (fgets(line, sizeof(line), config_file) == NULL) break;
+		if (sscanf(line, "%f%f%f", &f[0], &f[1], &f[2]) != 3) break;
+		if (fgets(line, sizeof(line), config_file) == NULL) break;
+		if (sscanf(line,"%f%f%f%f",&f[3],&f[4],&f[5],&f[6]) != 4) break;
+		for (j = 0; j < 3; j++)
+		    sensor2unit[which_sensor][j] = f[j];
+		for (j = 0; j < 4; j++)
+		    sensor2unit_quat[which_sensor][j] = f[j+3];
+	    }
+	    num_sensors = num_sens;
+	    return 0;	// success
+	}
+    }
+    fprintf(stderr, "Error reading or %s not found in config file\n", 
+		tracker_name);
+    return -1;
+}
 
 void vrpn_Tracker::print_latest_report(void)
 {
@@ -195,6 +286,52 @@ void vrpn_Tracker::print_latest_report(void)
    printf("Pos      :%lf, %lf, %lf\n", pos[0],pos[1],pos[2]);
    printf("Quat     :%lf, %lf, %lf, %lf\n", quat[0],quat[1],quat[2],quat[3]);
 }
+
+int     vrpn_Tracker::encode_room2tracker_to(char *buf)
+{
+    int i;
+    double *dBuf = (double *)buf;
+    int index = 0;
+    for (i = 0; i < 3; i++) {
+        dBuf[index++] = *(double *)(&room2tracker[i]);
+    }
+    for (i = 0; i < 4; i++) {
+        dBuf[index++] = *(double *)(&room2tracker_quat[i]);
+    }
+
+    // convert the doubles
+    for (i = 0; i < index; i++) {    
+        dBuf[i] = htond(dBuf[i]);
+    }
+    return index*sizeof(double);
+}
+
+
+int	vrpn_Tracker::encode_sensor2unit_to(char *buf)
+{
+    int i;
+    double *dBuf = (double *)buf;
+    int index = 0;
+
+    *(long *)dBuf = htonl(sensor);
+    
+    // re-align to doubles
+    index++;
+
+    for (i = 0; i < 3; i++) {
+    	dBuf[index++] = *(double *)(&sensor2unit[sensor][i]);
+    }
+    for (i = 0; i < 4; i++) {
+	dBuf[index++] = *(double *)(&sensor2unit_quat[sensor][i]);
+    }
+
+    // convert the doubles
+    for (i = 1; i < index; i++) {
+	dBuf[i] = htond(dBuf[i]);
+    }
+    return index*sizeof(double);
+}
+
 
 // NOTE: you need to be sure that if you are sending doubles then 
 //       the entire array needs to remain aligned to 8 byte boundaries
@@ -475,9 +612,69 @@ vrpn_Tracker_Remote::vrpn_Tracker_Remote(char *name ) :
 		  "vrpn_Tracker_Remote: can't register acceleration handler\n");
 		connection = NULL;
 	}
+	
+	// Register a handler for the room to tracker xform change callback
+        if (connection->register_handler(room2tracker_m_id,
+            handle_room2tracker_change_message, this, my_id)) {
+                fprintf(stderr,
+                  "vrpn_Tracker_Remote: can't register room2tracker handler\n");
+                connection = NULL;
+        }
+
+	// Register a handler for the sensor to unit xform change callback
+        if (connection->register_handler(sensor2unit_m_id,
+            handle_sensor2unit_change_message, this, my_id)) {
+                fprintf(stderr,
+                  "vrpn_Tracker_Remote: can't register sensor2unit handler\n");
+                connection = NULL;
+        }
 
 	// Find out what time it is and put this into the timestamp
 	gettimeofday(&timestamp, NULL);
+}
+
+int vrpn_Tracker_Remote::request_r2t_xform(void)
+{
+	char *msgbuf = NULL;
+	int len = 0; // no payload
+	struct timeval current_time;
+
+	gettimeofday(&current_time, NULL);
+	timestamp.tv_sec = current_time.tv_sec;
+	timestamp.tv_usec = current_time.tv_usec;
+
+	if (connection) {
+		if (connection->pack_message(len, timestamp, request_r2t_m_id,
+		    my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+			fprintf(stderr, 
+			    "vrpn_Tracker_Remote: cannot request r2t xform\n");
+			return -1;
+		}
+		connection->mainloop();
+	}
+	return 0;
+}
+
+int vrpn_Tracker_Remote::request_s2u_xform(void)
+{
+	char *msgbuf = NULL;
+        int len = 0; // no payload
+        struct timeval current_time;
+
+        gettimeofday(&current_time, NULL);
+        timestamp.tv_sec = current_time.tv_sec;
+        timestamp.tv_usec = current_time.tv_usec;
+
+        if (connection) {
+                if (connection->pack_message(len, timestamp, request_s2u_m_id,
+                    my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+                        fprintf(stderr, 
+                            "vrpn_Tracker_Remote: cannot request r2t xform\n");
+		    	return -1;
+                }
+                connection->mainloop();
+        }
+	return 0;
 }
 
 void	vrpn_Tracker_Remote::mainloop(void)
@@ -573,6 +770,63 @@ int vrpn_Tracker_Remote::register_change_handler(void *userdata,
 	return 0;
 }
 
+int vrpn_Tracker_Remote::register_change_handler(void *userdata,
+			vrpn_TRACKERROOM2TRACKERCHANGEHANDLER handler)
+{
+	vrpn_TRACKERROOM2TRACKERCHANGELIST	*new_entry;
+
+	// Ensure that the handler is non-NULL
+        if (handler == NULL) {
+                fprintf(stderr, "%s%s", "vrpn_Tracker_Remote:"
+                   	":register_room2tracker_handler: NULL handler\n");
+                return -1;
+        }
+
+        // Allocate and initialize the new entry
+        if ( (new_entry = new vrpn_TRACKERROOM2TRACKERCHANGELIST) == NULL) {
+                fprintf(stderr, "%s%s", "vrpn_Tracker_Remote:",
+                  ":register_room2tracker_handler: Out of memory\n");
+                return -1;
+        }
+        new_entry->handler = handler;
+        new_entry->userdata = userdata;
+
+        // Add this handler to the chain at the beginning (don't check to see
+        // if it is already there, since duplication is okay).
+        new_entry->next = room2trackerchange_list;
+        room2trackerchange_list = new_entry;
+
+        return 0;
+}
+
+int vrpn_Tracker_Remote::register_change_handler(void *userdata,
+                        vrpn_TRACKERSENSOR2UNITCHANGEHANDLER handler)
+{
+        vrpn_TRACKERSENSOR2UNITCHANGELIST      *new_entry;
+
+        // Ensure that the handler is non-NULL
+        if (handler == NULL) {
+                fprintf(stderr, "%s%s", "vrpn_Tracker_Remote:"
+                        ":register_sensor2unit_handler: NULL handler\n");
+                return -1;
+        }
+
+        // Allocate and initialize the new entry
+        if ( (new_entry = new vrpn_TRACKERSENSOR2UNITCHANGELIST) == NULL) {
+                fprintf(stderr, "%s%s", "vrpn_Tracker_Remote:",
+                  ":register_sensor2unit_handler: Out of memory\n");
+                return -1;
+        }
+        new_entry->handler = handler;
+        new_entry->userdata = userdata;
+
+        // Add this handler to the chain at the beginning (don't check to see
+        // if it is already there, since duplication is okay).
+        new_entry->next = sensor2unitchange_list;
+        sensor2unitchange_list = new_entry;
+
+        return 0;
+}
 
 int vrpn_Tracker_Remote::unregister_change_handler(void *userdata,
 			vrpn_TRACKERCHANGEHANDLER handler)
@@ -667,6 +921,67 @@ int vrpn_Tracker_Remote::unregister_change_handler(void *userdata,
 	return 0;
 }
 
+int vrpn_Tracker_Remote::unregister_change_handler(void *userdata,
+                        vrpn_TRACKERROOM2TRACKERCHANGEHANDLER handler)
+{
+        // The pointer at *snitch points to victim
+        vrpn_TRACKERROOM2TRACKERCHANGELIST       *victim, **snitch;
+
+        // Find a handler with this registry in the list (any one will do,
+        // since all duplicates are the same).
+        snitch = &room2trackerchange_list;
+        victim = *snitch;
+        while ( (victim != NULL) &&
+                ( (victim->handler != handler) ||
+                  (victim->userdata != userdata) )) {
+            snitch = &( (*snitch)->next );
+            victim = victim->next;
+        }
+
+        // Make sure we found one
+        if (victim == NULL) {
+            fprintf(stderr, "%s%s", "vrpn_Tracker_Remote:",
+              ":unregister_room2tracker_handler: No such handler\n");
+            return -1;
+        }
+
+        // Remove the entry from the list
+        *snitch = victim->next;
+        delete victim;
+
+        return 0;
+}
+
+int vrpn_Tracker_Remote::unregister_change_handler(void *userdata,
+                        vrpn_TRACKERSENSOR2UNITCHANGEHANDLER handler)
+{
+        // The pointer at *snitch points to victim
+        vrpn_TRACKERSENSOR2UNITCHANGELIST       *victim, **snitch;
+
+        // Find a handler with this registry in the list (any one will do,
+        // since all duplicates are the same).
+        snitch = &sensor2unitchange_list;
+        victim = *snitch;
+        while ( (victim != NULL) &&
+                ( (victim->handler != handler) ||
+                  (victim->userdata != userdata) )) {
+            snitch = &( (*snitch)->next );
+            victim = victim->next;
+        }
+
+        // Make sure we found one
+        if (victim == NULL) {
+            fprintf(stderr, "%s%s", "vrpn_Tracker_Remote:",
+              ":unregister_sensor2unit_handler: No such handler\n");
+            return -1;
+        }
+
+        // Remove the entry from the list
+        *snitch = victim->next;
+        delete victim;
+
+        return 0;
+}
 
 int vrpn_Tracker_Remote::handle_change_message(void *userdata,
 	vrpn_HANDLERPARAM p)
@@ -759,8 +1074,8 @@ int vrpn_Tracker_Remote::handle_acc_change_message(void *userdata,
 
 	// Fill in the parameters to the tracker from the message
 	if (p.payload_len != (9*sizeof(double)) ) {
-		fprintf(stderr,"vrpn_Tracker: acc message payload error\n");
-		fprintf(stderr,"             (got %d, expected %d)\n",
+		fprintf(stderr, "vrpn_Tracker: acc message payload error\n");
+		fprintf(stderr, "(got %d, expected %d)\n",
 			p.payload_len, 9*sizeof(double) );
 		return -1;
 	}
@@ -787,5 +1102,82 @@ int vrpn_Tracker_Remote::handle_acc_change_message(void *userdata,
 	}
 
 	return 0;
+}
+
+int vrpn_Tracker_Remote::handle_room2tracker_change_message(void *userdata,
+	vrpn_HANDLERPARAM p)
+{
+	vrpn_Tracker_Remote *me = (vrpn_Tracker_Remote *)userdata;
+	double *params = (double*)(p.buffer);
+	vrpn_TRACKERROOM2TRACKERCB tp;
+	vrpn_TRACKERROOM2TRACKERCHANGELIST *handler = 
+						me->room2trackerchange_list;
+	int i;
+
+	// Fill in the parameters to the tracker from the message
+	if (p.payload_len != (7*sizeof(double))) {
+		fprintf(stderr, "vrpn_Tracker: room2tracker message payload");
+		fprintf(stderr, " error\n(got %d, expected %d)\n",
+			p.payload_len, 7*sizeof(double));
+		return -1;
+	}
+	tp.msg_time = p.msg_time;
+	// Typecasting used to get the byte order correct on the doubles
+	// that are coming from the other side.
+        for (i = 0; i < 3; i++) {
+                tp.room2tracker[i] = ntohd(*params++);
+        }
+        for (i = 0; i < 4; i++) {
+                tp.room2tracker_quat[i] =  ntohd(*params++);
+        }
+
+        // Go down the list of callbacks that have been registered.
+        // Fill in the parameter and call each.
+        while (handler != NULL) {
+                handler->handler(handler->userdata, tp);
+                handler = handler->next;
+        }
+
+        return 0;
+}
+
+int vrpn_Tracker_Remote::handle_sensor2unit_change_message(void *userdata,
+        vrpn_HANDLERPARAM p)
+{
+        vrpn_Tracker_Remote *me = (vrpn_Tracker_Remote *)userdata;
+        double *params = (double*)(p.buffer);
+        vrpn_TRACKERSENSOR2UNITCB tp;
+        vrpn_TRACKERSENSOR2UNITCHANGELIST *handler = 
+                                                me->sensor2unitchange_list;
+        int i;
+
+        // Fill in the parameters to the tracker from the message
+        if (p.payload_len != (8*sizeof(double))) {
+                fprintf(stderr, "vrpn_Tracker: sensor2unit message payload");
+                fprintf(stderr, " error\n(got %d, expected %d)\n",
+                        p.payload_len, 8*sizeof(double));
+                return -1;
+        }
+        tp.msg_time = p.msg_time;
+	tp.sensor = ntohl(*((long *)params));
+        params++;
+	
+        // Typecasting used to get the byte order correct on the doubles
+        // that are coming from the other side.
+        for (i = 0; i < 3; i++) {
+                tp.sensor2unit[i] = ntohd(*params++);
+        }
+        for (i = 0; i < 4; i++) {
+                tp.sensor2unit_quat[i] =  ntohd(*params++);
+        }
+
+        // Go down the list of callbacks that have been registered.
+        // Fill in the parameter and call each.
+        while (handler != NULL) {
+                handler->handler(handler->userdata, tp);
+                handler = handler->next;
+        }
+
+        return 0;
 }
 

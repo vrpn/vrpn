@@ -224,7 +224,8 @@ vrpn_Button_Remote::vrpn_Button_Remote(char *name) :
 
 void	vrpn_Button_Remote::mainloop(void)
 {
-	if (connection) { connection->mainloop(); }
+	if (connection) { connection->mainloop(); 
+	}
 }
 
 int vrpn_Button_Remote::register_change_handler(void *userdata,
