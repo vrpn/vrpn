@@ -21,15 +21,18 @@
  * Author          : Ruigang Yang
  * Created On      : Thu Jan 15 17:30:37 1998
  * Last Modified By: Ruigang Yang
- * Last Modified On: Thu Feb 19 13:38:12 1998
- * Update Count    : 412
+ * Last Modified On: Tue Feb 24 16:51:41 1998
+ * Update Count    : 413
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Tracker_Fastrak.C,v $
- * $Date: 1998/02/20 20:27:00 $
- * $Author: hudson $
- * $Revision: 1.6 $
+ * $Date: 1998/02/24 22:24:19 $
+ * $Author: ryang $
+ * $Revision: 1.7 $
  * 
  * $Log: vrpn_Tracker_Fastrak.C,v $
+ * Revision 1.7  1998/02/24 22:24:19  ryang
+ * comment the printf debug function
+ *
  * Revision 1.6  1998/02/20 20:27:00  hudson
  * Version 02.10:
  *   Makefile:  split library into server & client versions
@@ -58,7 +61,7 @@
  * HISTORY
  */
 
-static char rcsid[] = "$Id: vrpn_Tracker_Fastrak.C,v 1.6 1998/02/20 20:27:00 hudson Exp $";
+static char rcsid[] = "$Id: vrpn_Tracker_Fastrak.C,v 1.7 1998/02/24 22:24:19 ryang Exp $";
 #include <time.h>
 #include <math.h>
 #include <stdlib.h>
@@ -404,7 +407,7 @@ void vrpn_Tracker_Fastrak::mainloop()
 
 	static int count = 0;
 	if (count++ == 120) {
-		printf("  vrpn_Tracker_Fastrak: Got report\n");
+		//printf("  vrpn_Tracker_Fastrak: Got report\n");
 		count = 0;
 	}
 

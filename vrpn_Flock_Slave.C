@@ -406,8 +406,8 @@ void vrpn_Tracker_Flock_Slave::mainloop()
 #ifdef	VERBOSE
       static int count = 0;
       if (count++ == 120) {
-	printf("\nvrpn_Tracker_Flock_Slave: Sensor %d Got report", sensor); 
-	printf(" Pos(%f %f %f)\n", pos[0], pos[1], pos[2]);
+	//printf("\nvrpn_Tracker_Flock_Slave: Sensor %d Got report", sensor); 
+	//printf(" Pos(%f %f %f)\n", pos[0], pos[1], pos[2]);
 	count = 0;
       }
 #endif            
