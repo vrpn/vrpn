@@ -3574,6 +3574,8 @@ vrpn_int32 vrpn_Connection::register_sender (const char * name)
    num_my_senders++;
 
    // If we're connected, pack the sender description
+   // TCH 24 Jan 00 - Need to do this even if not connected so
+   // that it goes into the logs (if we're keeping any).
    //if (connected()) {
    	pack_sender_description(num_my_senders - 1);
    //}
@@ -3619,6 +3621,8 @@ vrpn_int32 vrpn_Connection::register_message_type (const char * name)
 	num_my_types++;
 
 	// If we're connected, pack the type description
+   // TCH 24 Jan 00 - Need to do this even if not connected so
+   // that it goes into the logs (if we're keeping any).
 	//if (connected()) {
 		pack_type_description(num_my_types-1);
 	//}
