@@ -25,11 +25,14 @@
  * Update Count    : 45
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Tracker_Fastrak.h,v $
- * $Date: 1998/06/05 19:30:48 $
- * $Author: taylorr $
- * $Revision: 1.7 $
+ * $Date: 1998/09/11 19:47:24 $
+ * $Author: hudson $
+ * $Revision: 1.8 $
  * 
  * $Log: vrpn_Tracker_Fastrak.h,v $
+ * Revision 1.8  1998/09/11 19:47:24  hudson
+ * Version 4.02:  added filtering of log files to vrpn_Connection
+ *
  * Revision 1.7  1998/06/05 19:30:48  taylorr
  * Slightly cleaner Fastrak driver.  It should work on SGIs as well as Linux.
  *
@@ -74,8 +77,9 @@
 
 #include "vrpn_Tracker.h"
 
-#ifndef _WIN32
 #ifndef VRPN_CLIENT_ONLY
+//#ifndef _WIN32
+#if defined(sgi) || defined(linux)
 
 
 /*
@@ -428,6 +432,7 @@ private:
 
 };
 
-#endif  // #ifndef _WIN32
+#endif  // defined(sgi) || defined(linux)
+//#endif  // #ifndef _WIN32
 #endif  // VRPN_CLIENT_ONLY
 #endif  // INCLUDED_FASTRAK

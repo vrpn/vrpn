@@ -76,10 +76,16 @@ int gethostname (char *, int);
 // string.  Since minor versions should interoperate, MAGIC is only
 // checked through the last period;  characters after that are ignored.
 
-char	*vrpn_MAGIC = "vrpn: ver. 04.00";
-const	int	MAGICLEN = 16;	// Must be a multiple of vrpn_ALIGN bytes!
+char * vrpn_MAGIC = (char *) "vrpn: ver. 04.01";
+const int MAGICLEN = 16;  // Must be a multiple of vrpn_ALIGN bytes!
 
 // Version history:
+//   04.01:  Tom Hudson, September 1998
+//           Added filters to logging.
+//   04.00:  Adam Seeger, August 1998
+//           Added the ability to start up a remote server via rsh
+//           and then to connect to it:  x-vrsh://<server name>.
+//   03.02:  
 //   03.01:  Tom Hudson, July 1998
 //           Bugfixes.  Changes to vrpn_ForceDevice.  Wrote
 //           vrpn_File_Controller.
@@ -126,9 +132,9 @@ const	int	MAGICLEN = 16;	// Must be a multiple of vrpn_ALIGN bytes!
  * If the SDI_RSH environment variable is set, that will be used as the full
  * path instead.  */
 #ifdef  linux
-#define RSH             "/usr/local/bin/ssh"
+#define RSH             (char *) "/usr/local/bin/ssh"
 #else
-#define RSH             "/usr/local/bin/rsh"
+#define RSH             (char *) "/usr/local/bin/rsh"
 #endif
 
 /* How long to wait for a UDP packet to cause a callback connection,
@@ -1737,6 +1743,27 @@ const char * vrpn_Connection::message_type_name (long type) {
   return (const char *) my_types[type].name;
 }
 
+// virtual
+int vrpn_Connection::register_log_filter (vrpn_LOGFILTER filter,
+                                          void * userdata) {
+  vrpnLogFilterEntry * newEntry;
+
+  newEntry = new vrpnLogFilterEntry;
+  if (!newEntry) {
+    fprintf(stderr, "vrpn_Connection::register_log_filter:  "
+                    "Out of memory.\n");
+    return -1;
+  }
+
+  newEntry->filter = filter;
+  newEntry->userdata = userdata;
+  newEntry->next = d_log_filters;
+  d_log_filters = newEntry;
+
+  return 0;
+}
+
+
 
 
 // Marshal the message into the buffer if it will fit.  Return the number
@@ -2075,6 +2102,14 @@ vrpn_Connection::~vrpn_Connection (void) {
   if (d_logname)
     close_log();
 
+  if (d_log_filters) {
+    vrpnLogFilterEntry * next;
+    while (d_log_filters) {
+      next = d_log_filters->next;
+      delete d_log_filters;
+      d_log_filters = next;
+    }
+  }
 }
 
 int vrpn_Connection::open_log (void) {
@@ -2237,7 +2272,8 @@ vrpn_Connection::vrpn_Connection (unsigned short listen_port_no) :
     d_logname (NULL),
     d_logmode (vrpn_LOG_NONE),
     d_logfile_handle (-1),
-    d_logfile (NULL)
+    d_logfile (NULL),
+    d_log_filters (NULL)
 {
    // Initialize the things that must be for any constructor
    init();
@@ -2291,7 +2327,8 @@ vrpn_Connection::vrpn_Connection
     d_logname (NULL),
     d_logmode (vrpn_LOG_NONE),
     d_logfile_handle (-1),
-    d_logfile (NULL)
+    d_logfile (NULL),
+    d_log_filters (NULL)
 {
   const char * machinename;
   int retval;
@@ -2553,7 +2590,9 @@ int	vrpn_Connection::do_callbacks_for(long type, long sender,
 		if ( (who->sender == vrpn_ANY_SENDER) ||
 		     (who->sender == sender) ) {
 			if (who->handler(who->userdata, p)) {
-				fprintf(stderr, "vrpn: vrpn_Connection::do_callbacks_for: Nonzero user generic handler return\n");
+				fprintf(stderr,
+                                  "vrpn: vrpn_Connection::do_callbacks_for:  "
+                                  "Nonzero user generic handler return\n");
 				return -1;
 			}
 		}
@@ -2571,7 +2610,9 @@ int	vrpn_Connection::do_callbacks_for(long type, long sender,
 		if ( (who->sender == vrpn_ANY_SENDER) ||
 		     (who->sender == sender) ) {
 			if (who->handler(who->userdata, p)) {
-				fprintf(stderr, "vrpn: vrpn_Connection::do_callbacks_for: Nonzero user handler return\n");
+				fprintf(stderr,
+                                  "vrpn: vrpn_Connection::do_callbacks_for:  "
+                                  "Nonzero user handler return\n");
 				return -1;
 			}
 		}
@@ -2701,9 +2742,7 @@ int	vrpn_Connection::handle_tcp_messages(int fd)
 		      if (log_message(payload_len, time,
                                       type,
                                       sender,
-                                      //other_types[type].local_id,
-                                      //other_senders[sender].local_id,
-                                      d_TCPbuf))
+                                      d_TCPbuf, 1))
                         return -1;
 		    if (do_callbacks_for(other_types[type].local_id,
 				         other_senders[sender].local_id,
@@ -2716,7 +2755,8 @@ int	vrpn_Connection::handle_tcp_messages(int fd)
 		 if (system_messages[-type] != NULL) {
 
 		  if (d_logmode & vrpn_LOG_INCOMING)
-		    if (log_message(payload_len, time, type, sender, d_TCPbuf))
+		    if (log_message(payload_len, time, type, sender,
+                                    d_TCPbuf, 1))
 		      return -1;
 
 		  // Fill in the parameter to be passed to the routines
@@ -2861,9 +2901,7 @@ int	vrpn_Connection::handle_udp_messages(int fd)
 		      if (log_message(payload_len, time,
                                       type,
                                       sender,
-                                      //other_types[type].local_id,
-                                      //other_senders[sender].local_id,
-                                      inbuf_ptr))
+                                      inbuf_ptr, 1))
                         return -1;
 		    if (do_callbacks_for(other_types[type].local_id,
 				         other_senders[sender].local_id,
@@ -2874,7 +2912,8 @@ int	vrpn_Connection::handle_udp_messages(int fd)
 		} else {	// System handler
 
 		  if (d_logmode & vrpn_LOG_INCOMING)
-		    if (log_message(payload_len, time, type, sender, inbuf_ptr))
+		    if (log_message(payload_len, time, type, sender,
+                                    inbuf_ptr, 1))
 		      return -1;
 
 		  // Fill in the parameter to be passed to the routines
@@ -3157,9 +3196,11 @@ int vrpn_Connection::connected (void) const {
 }
 
 int vrpn_Connection::log_message (int len, struct timeval time,
-                long type, long sender, const char * buffer)
+                long type, long sender, const char * buffer,
+                int isRemote)
 {
   vrpn_LOGLIST * lp;
+  vrpn_HANDLERPARAM p;
 
   lp = new vrpn_LOGLIST;
   if (!lp) {
@@ -3173,7 +3214,7 @@ int vrpn_Connection::log_message (int len, struct timeval time,
   lp->data.msg_time.tv_usec = htonl(time.tv_usec);
   lp->data.payload_len = htonl(len);
   lp->data.buffer = new char [len];
-  if (!lp) {
+  if (!lp->data.buffer) {
     fprintf(stderr, "vrpn_Connection::log_message:  "
                     "Out of memory!\n");
     delete lp;
@@ -3181,6 +3222,44 @@ int vrpn_Connection::log_message (int len, struct timeval time,
   }
     // need to explicitly override the const
   memcpy((char *) lp->data.buffer, buffer, len);
+
+  // filter (user) messages
+
+  if (type >= 0) {  // do not filter system messages
+
+    if (isRemote) {
+
+      // UGLY!
+      // The user's filtering routines can't know anything about
+      // remote IDs, only local IDs, so we translate the IDs into
+      // something they can understand
+
+      p.type = other_types[type].local_id;
+      p.sender = other_senders[sender].local_id;
+    } else {
+      p.type = type;
+      p.sender = sender;
+    }
+
+    p.msg_time.tv_sec = time.tv_sec;
+    p.msg_time.tv_usec = time.tv_usec;
+    p.payload_len = len;
+    p.buffer = lp->data.buffer;
+
+    if (check_log_filters(p)) {  // abort logging
+      delete [] lp->data.buffer;
+      delete lp;
+      return 0;  // this is not a failure - do not return nonzero!
+    }
+  }
+
+//if (type < 0)
+//fprintf(stderr, "LOGGED MESSAGE:  type %ld, sender %ld (%s)\n",
+//type, sender,
+//type == -1 ? sender_name(isRemote ? other_senders[sender].local_id : sender) :
+//(type == -2 ? message_type_name(isRemote ? other_types[sender].local_id :
+//                                           sender) : "n/a"));
+
   lp->next = d_logbuffer;
   lp->prev = NULL;
   if (d_logbuffer)
@@ -3192,6 +3271,16 @@ int vrpn_Connection::log_message (int len, struct timeval time,
   return 0;
 }
 
+int vrpn_Connection::check_log_filters (vrpn_HANDLERPARAM message) {
+  vrpnLogFilterEntry * nextFilter;
+
+  for (nextFilter = d_log_filters; nextFilter;
+       nextFilter = nextFilter->next)
+    if ((*nextFilter->filter)(nextFilter->userdata, message))
+      return 1;  // don't log
+
+  return 0;
+}
 
 //------------------------------------------------------------------------
 //	This section holds data structures and functions to open

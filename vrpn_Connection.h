@@ -20,6 +20,7 @@ typedef	struct {
 } vrpn_HANDLERPARAM;
 typedef	int  (*vrpn_MESSAGEHANDLER)(void *userdata, vrpn_HANDLERPARAM p);
 
+typedef int (* vrpn_LOGFILTER) (void * userdata, vrpn_HANDLERPARAM p);
 
 // bufs are aligned on 8 byte boundaries
 #define vrpn_ALIGN                       (8)
@@ -94,14 +95,6 @@ typedef	int  (*vrpn_MESSAGEHANDLER)(void *userdata, vrpn_HANDLERPARAM p);
 typedef char cName [100];
 
 
-// Description of a callback entry for a user type.
-struct vrpnMsgCallbackEntry {
-  vrpn_MESSAGEHANDLER	handler;	// Routine to call
-  void			* userdata;	// Passed along
-  long			sender;		// Only if from sender
-  vrpnMsgCallbackEntry	* next;		// Next handler
-};
-
 class vrpn_Connection
 {
   public:
@@ -163,6 +156,16 @@ class vrpn_Connection
 	virtual const char * sender_name (long sender);
 	virtual const char * message_type_name (long type);
 
+        // Sets up a filter function for logging.
+        // Any user message to be logged is first passed to this function,
+        // and will only be logged if the function returns zero (XXX).
+        // NOTE:  this only affects local logging - remote logging
+        // is unfiltered!  Only user messages are filtered;  all system
+        // messages are logged.
+        // Returns nonzero on failure.
+        virtual int register_log_filter (vrpn_LOGFILTER filter,
+                                         void * userdata);
+
   protected:
   // Users should not create vrpn_Connection directly -- use 
   // vrpn_Synchronized_Connection (for servers) or 
@@ -210,6 +213,14 @@ class vrpn_Connection
 
 	// Only used for a vrpn_Connection that awaits incoming connections
 	int	listen_udp_sock;	// Connect requests come here
+
+        // Description of a callback entry for a user type.
+        struct vrpnMsgCallbackEntry {
+          vrpn_MESSAGEHANDLER	handler;	// Routine to call
+          void			* userdata;	// Passed along
+          long			sender;		// Only if from sender
+          vrpnMsgCallbackEntry	* next;		// Next handler
+        };
 
 	// The senders we know about and the message types we know about
 	// that have been declared by the local version.
@@ -319,9 +330,22 @@ class vrpn_Connection
 	FILE * d_logfile;
 
 	virtual int log_message (int payload_len, struct timeval time,
-	                         long type, long sender, const char * buffer);
+	                         long type, long sender, const char * buffer,
+                                 int isRemote = 0);
 	virtual int close_log (void);
 	virtual int open_log (void);
+
+        struct vrpnLogFilterEntry {
+          vrpn_LOGFILTER filter;   // routine to call
+          void * userdata;         // passed along
+          vrpnLogFilterEntry * next;
+        };
+
+	// Filters (assumed to be on vrpn_ANY_TYPE)
+	vrpnLogFilterEntry	* d_log_filters;	
+
+        // Returns nonzero if we shouldn't log this message.
+        virtual int check_log_filters (vrpn_HANDLERPARAM message);
 
 	// Timekeeping - TCH 30 June 98
 	struct timeval start_time;
@@ -392,18 +416,18 @@ vrpn_Connection * vrpn_get_connection_by_name
 char * vrpn_copy_service_name (const char * fullname);
 char * vrpn_copy_service_location (const char * fullname);
 
-// Utility routines to parse file specifiers
+// Utility routines to parse file specifiers FROM service locations
 //   file:<filename>
 //   file://<hostname>/<filename>
 //   file:///<filename>
 char * vrpn_copy_file_name (const char * filespecifier);
 
-// Utility routines to parse host specifiers
+// Utility routines to parse host specifiers FROM service locations
 //   <hostname>
 //   <hostname>:<port number>
 //   x-vrpn://<hostname>
 //   x-vrpn://<hostname>:<port number>
-//   x-vrsh://<hostname>/<server program>,<server arguments comma-separated>
+//   x-vrsh://<hostname>/<server program>,<comma-separated server arguments>
 char * vrpn_copy_machine_name (const char * hostspecifier);
 int vrpn_get_port_number (const char * hostspecifier);
 char * vrpn_copy_rsh_program (const char * hostspecifier);
