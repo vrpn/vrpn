@@ -39,22 +39,12 @@ vrpn_Joystick::vrpn_Joystick(char * name,
 
 void vrpn_Joystick::report(struct timeval current_time)
 {
-	// Store the current time in the structures
-// This code does not compile with g++
-// The first code does not compile under CC.
-// What a mess.
-#ifdef __GNUC__
-	  memcpy((char*)(&vrpn_Analog::timestamp), &current_time,
-		sizeof(current_time));
-	  memcpy((char*)(&vrpn_Button::timestamp), &current_time,
-		sizeof(current_time));
-#else
-	  vrpn_Analog::timestamp.tv_sec = current_time.tv_sec;
-	  vrpn_Analog::timestamp.tv_usec = current_time.tv_usec;
-	  vrpn_Button::timestamp.tv_sec = current_time.tv_sec;
-	  vrpn_Button::timestamp.tv_usec = current_time.tv_usec;
-#endif
-    
+    // Store the current time in the structures
+    vrpn_Analog::timestamp.tv_sec = current_time.tv_sec;
+    vrpn_Analog::timestamp.tv_usec = current_time.tv_usec;
+    vrpn_Button::timestamp.tv_sec = current_time.tv_sec;
+    vrpn_Button::timestamp.tv_usec = current_time.tv_usec;
+
     vrpn_Button::report_changes(); // report any button event;
 
     // Send the message on the connection;
@@ -236,7 +226,7 @@ void vrpn_Joystick::parse (int index, int reset_rest_pos)
 
    // If channel number is > 7, this is illegal.
    if (chan > 7) {
-	   fprintf(stderr,"vrpn_Joystick::parse(): Invalid channel % (%d)\n",chan);
+	   fprintf(stderr,"vrpn_Joystick::parse(): Invalid channel (%d)\n",chan);
 	   status = vrpn_ANALOG_FAIL;
 	   return;
    }
