@@ -85,12 +85,10 @@ typedef	int  (*vrpn_MESSAGEHANDLER)(void *userdata, vrpn_HANDLERPARAM p);
 class vrpn_Connection
 {
   public:
-	// Create a connection to listen for incoming connections on a port
-	vrpn_Connection (unsigned short listen_port_no =
-		         vrpn_DEFAULT_LISTEN_PORT_NO);
-
-	// Create a connection  makes an SDI connection to a remote server
-	vrpn_Connection (char * server_name);
+  // No public constructors because ...
+  // Users should not create vrpn_Connection directly -- use 
+  // vrpn_Synchronized_Connection (for servers) or 
+  // vrpn_get_connection_by_name (for clients)
 
 	//XXX Destructor should delete all entries from callback lists
 
@@ -129,6 +127,17 @@ class vrpn_Connection
 				 unsigned long class_of_service);
 
   protected:
+  // Users should not create vrpn_Connection directly -- use 
+  // vrpn_Synchronized_Connection (for servers) or 
+  // vrpn_get_connection_by_name (for clients)
+
+	// Create a connection to listen for incoming connections on a port
+	vrpn_Connection (unsigned short listen_port_no =
+		         vrpn_DEFAULT_LISTEN_PORT_NO);
+
+	// Create a connection  makes an SDI connection to a remote server
+	vrpn_Connection (char * server_name);
+
 	//char *	my_name;
 	int	status;			// Status of the connection
 

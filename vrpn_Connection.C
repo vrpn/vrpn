@@ -1870,6 +1870,7 @@ vrpn_Connection * vrpn_get_connection_by_name (char * cname, double dFreq,
 
 	// If its not already open, open it and add it to the list.
 	if (curr == NULL) {
+#if 0
 		if ( (curr = new(vrpn_KNOWN_CONNECTION)) == NULL) {
 			fprintf(stderr,"vrpn_get_connection: Out of memory\n");
 			return NULL;
@@ -1879,6 +1880,22 @@ vrpn_Connection * vrpn_get_connection_by_name (char * cname, double dFreq,
 							   cSyncWindow );
 		curr->next = known;
 		known = curr;
+#endif
+		// connections now self-register in the known list --
+		// this is kind of odd, but oh well (can probably be done
+		// more cleanly later).
+		new vrpn_Synchronized_Connection( cname, dFreq, cSyncWindow );
+
+		// and now set curr properly (it will have been added to list
+		// by the vrpn_Connection constructor)
+		curr = known;
+		while ( (curr != NULL) && (strcmp(cname, curr->name) != 0)) {
+		  curr = curr->next;
+		}
+		if (!curr) {
+		  // unable to open connection
+		  return NULL;
+		}
 	}
 
 	// See if the connection is okay.  If so, return it.  If not, NULL

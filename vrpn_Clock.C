@@ -6,10 +6,10 @@
   ----------------------------------------------------------------------------
   Author: weberh
   Created: Sat Dec 13 11:05:16 1997
-  Revised: Tue Jan 20 20:03:34 1998 by weberh
+  Revised: Wed Mar 18 15:20:41 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.C,v $
   $Locker:  $
-  $Revision: 1.5 $
+  $Revision: 1.6 $
   \*****************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
@@ -57,7 +57,7 @@ int vrpn_Clock::encode_to(char *buf, const struct timeval& tvSRep,
 			  const struct timeval& tvCReq, 
 			  int cChars, const char *pch ) {
 
-  // pack client time and the (almost) unique client identifier
+  // pack client time and the unique client identifier
   long *rgl = (long *)buf;
   rgl[0]=htonl(CLOCK_VERSION);
   rgl[1]=htonl(tvSRep.tv_sec);
@@ -86,9 +86,8 @@ vrpn_Clock_Server::vrpn_Clock_Server(vrpn_Connection *c)
   }
 }
 
-// the user can get back incorrect info because there is no way to 
-// simple way to uniquely identify a client.  For all practical purposes
-// using the address of the client as the id should be fine.
+// to prevent the user from gettting back incorrect info, clients are
+// (nearly) uniquely identified by a usec timestamp.
 int vrpn_Clock_Server::clockQueryHandler(void *userdata, vrpn_HANDLERPARAM p) {
   vrpn_Clock_Server *me = (vrpn_Clock_Server *) userdata;
   static struct timeval now;
@@ -124,8 +123,10 @@ void vrpn_Clock_Server::mainloop() {};
 // This next part is the class for users (client class)
 
 
-vrpn_Clock_Remote::vrpn_Clock_Remote(char *name, double dFreq, int cOffsetWindow ) : 
-  vrpn_Clock("clockServer", vrpn_get_connection_by_name(name)), change_list(NULL)
+vrpn_Clock_Remote::vrpn_Clock_Remote(char *name, double dFreq, 
+				     int cOffsetWindow ) : 
+  vrpn_Clock("clockServer", vrpn_get_connection_by_name(name)), 
+  change_list(NULL)
 {
   char rgch[50];
   
@@ -143,6 +144,7 @@ vrpn_Clock_Remote::vrpn_Clock_Remote(char *name, double dFreq, int cOffsetWindow
     return;
   }
 
+  fDoFullSync = 0;
   if (dFreq <= 0) {
     // only sync on request of user, and then do it with fullSync()
     fDoQuickSyncs=0;
@@ -174,6 +176,12 @@ vrpn_Clock_Remote::vrpn_Clock_Remote(char *name, double dFreq, int cOffsetWindow
       connection = NULL;
     }
   }
+
+  // establish unique id
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+
+  lUniqueID = tv.tv_usec;
 }
 
 vrpn_Clock_Remote::~vrpn_Clock_Remote() {
@@ -182,12 +190,14 @@ vrpn_Clock_Remote::~vrpn_Clock_Remote() {
   delete [] rgtvClockOffset;
 }
 
+#if 0
 // for qsort for median
 static int dCompare( const void *pd1, const void *pd2 ) {
   if (*(double *)pd1==*(double *)pd2) return 0;
   if (*(double *)pd1<*(double *)pd2) return -1;
   return 1;
 }
+#endif
 
 
 // this will take 1 second to run (sync's the clocks)
@@ -203,7 +213,7 @@ void vrpn_Clock_Remote::mainloop(void)
     
     if (fDoQuickSyncs) {
       // just a quick sync
-      
+      //      cerr << "QuickSync" << endl;      
       struct timeval tvNow;
       gettimeofday(&tvNow, NULL);
 
@@ -217,7 +227,7 @@ void vrpn_Clock_Remote::mainloop(void)
 
 	// send a clock query with this clock client's unique id
 	rgl[0]=htonl(CLOCK_VERSION);
-	rgl[1]=htonl((long)this);	// An easy, unique ID, NOT USED as ptr
+	rgl[1]=htonl(lUniqueID);	// An easy, unique ID
 	rgl[2]=htonl((long)VRPN_CLOCK_QUICK_SYNC);
 	gettimeofday(&tv, NULL);
 	connection->pack_message(3*sizeof(long), tv, queryMsg_id, 
@@ -230,7 +240,7 @@ void vrpn_Clock_Remote::mainloop(void)
     // any time a full clock sync has been requested, do it for 1 sec
     if (fDoFullSync) {
       fDoFullSync=0;
-      
+      //      cerr << "FullSync" << endl;      
       // register a handler for replies from the clock server.
       if (connection->register_handler(replyMsg_id, 
 				       fullSyncClockServerReplyHandler,
@@ -268,7 +278,7 @@ void vrpn_Clock_Remote::mainloop(void)
 	  // not converted using htonl because it is never interpreted
 	  // by the server -- only by the client.
 	  rgl[0]=htonl(CLOCK_VERSION);
-	  rgl[1]=htonl((long)this);	// An easy, unique ID, NOT USED as ptr
+	  rgl[1]=htonl(lUniqueID);	// An easy, unique ID
 	  rgl[2]=htonl((long)VRPN_CLOCK_FULL_SYNC);
 	  gettimeofday(&tv, NULL);
 	  connection->pack_message(3*sizeof(long), tv, queryMsg_id, 
@@ -415,7 +425,7 @@ int vrpn_Clock_Remote::fullSyncClockServerReplyHandler(void *userdata,
   }
 
   // now grab the id from the message to check that is is correct
-  if (me!=(vrpn_Clock_Remote *)ntohl(plTimeData[5])) {
+  if (me->lUniqueID!=(long)ntohl(plTimeData[5])) {
     cerr << "vrpn_Clock_Remote: warning, server entertaining multiple clock" 
 	 << " sync requests simultaneously -- results may be inaccurate." 
 	 << endl;
@@ -529,7 +539,7 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
   }
 
   // now grab the id from the message to check that is is correct
-  if (me!=(vrpn_Clock_Remote *)ntohl(plTimeData[5])) {
+  if (me->lUniqueID!=(long)ntohl(plTimeData[5])) {
     cerr << "vrpn_Clock_Remote: warning, server entertaining multiple clock" 
 	 << " sync requests simultaneously -- results may be inaccurate." 
 	 << endl;
@@ -637,6 +647,12 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
 
 /*****************************************************************************\
   $Log: vrpn_Clock.C,v $
+  Revision 1.6  1998/03/18 20:24:30  weberh
+  vrpn_Clock -- added better unique id for clock sync messages
+
+  vrpn_Connection -- fixed error which caused calls to get_connection_by_name
+                     to create multiple connections.
+
   Revision 1.5  1998/02/20 20:26:49  hudson
   Version 02.10:
     Makefile:  split library into server & client versions

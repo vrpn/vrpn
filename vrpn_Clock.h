@@ -13,10 +13,10 @@
   ----------------------------------------------------------------------------
   Author: weberh
   Created: Sat Dec 13 11:21:15 1997
-  Revised: Sat Dec 20 08:25:44 1997 by weberh
+  Revised: Tue Mar 17 11:42:34 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.h,v $
   $Locker:  $
-  $Revision: 1.4 $
+  $Revision: 1.5 $
 \*****************************************************************************/
 #ifndef _VRPN_CLOCK_H_
 #define _VRPN_CLOCK_H_
@@ -122,6 +122,9 @@ class vrpn_Clock_Remote: public vrpn_Clock {
   protected:
   long clockClient_id;             // vrpn id for this client
 
+  // unique id for this particular client (to disambiguate replies)
+  long lUniqueID;
+
   // vars for stats on clock for quick sync
   int fDoQuickSyncs;
   int cQuickBounces;
@@ -175,6 +178,12 @@ class vrpn_Clock_Remote: public vrpn_Clock {
 
 /*****************************************************************************\
   $Log: vrpn_Clock.h,v $
+  Revision 1.5  1998/03/18 20:24:31  weberh
+  vrpn_Clock -- added better unique id for clock sync messages
+
+  vrpn_Connection -- fixed error which caused calls to get_connection_by_name
+                     to create multiple connections.
+
   Revision 1.4  1998/02/20 20:26:50  hudson
   Version 02.10:
     Makefile:  split library into server & client versions
