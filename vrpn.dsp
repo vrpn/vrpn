@@ -138,6 +138,15 @@ SOURCE=.\vrpn_Dial.C
 # Begin Source File
 
 SOURCE=.\vrpn_DirectXFFJoystick.C
+
+!IF  "$(CFG)" == "vrpn - Win32 Release"
+
+# ADD CPP /FR
+
+!ELSEIF  "$(CFG)" == "vrpn - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -170,6 +179,10 @@ SOURCE=.\vrpn_Forwarder.C
 # Begin Source File
 
 SOURCE=.\vrpn_ForwarderController.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_FunctionGenerator.C
 # End Source File
 # Begin Source File
 
@@ -406,6 +419,10 @@ SOURCE=.\vrpn_Forwarder.h
 # Begin Source File
 
 SOURCE=.\vrpn_ForwarderController.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_FunctionGenerator.h
 # End Source File
 # Begin Source File
 
