@@ -704,7 +704,7 @@ int vrpn_File_Connection::read_cookie (void)
         return -1;
     }
 
-    retval = check_vrpn_cookie(readbuf);
+    retval = check_vrpn_file_cookie(readbuf);
     if (retval < 0)
         return -1;
 

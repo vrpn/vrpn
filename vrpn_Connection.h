@@ -663,6 +663,7 @@ char * vrpn_copy_rsh_arguments (const char * hostspecifier);
 // 1 on minor version mismatch or other acceptable difference,
 // and 0 on exact match.
 int check_vrpn_cookie (const char * buffer);
+int check_vrpn_file_cookie (const char * buffer);
 
 // Returns the size of the magic cookie buffer, plus any alignment overhead.
 int vrpn_cookie_size (void);

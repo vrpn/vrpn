@@ -1,3 +1,9 @@
+2000-08-22  Kwan Skinner  <skinner@cs.unc.edu>
+
+	* vrpn_Connection.C (check_vrpn_file_cookie) : New function
+	* vrpn_Connection.h (check_vrpn_file_cookie) : New function
+	* vrpn_FileConnection.C (read_cookie) : Now calls check_vrpn_file_cookie
+
 2000-08-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Connection.C (connect_to_client) : Bug fix

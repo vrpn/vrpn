@@ -166,6 +166,7 @@ int gethostname (char *, int);
 // as accidental partial minor version incompatibility.
 //
 const char * vrpn_MAGIC = (const char *) "vrpn: ver. 05.03";
+const char * vrpn_FILE_MAGIC = (const char *) "vrpn: ver. 04.00";
 const int vrpn_MAGICLEN = 16;  // Must be a multiple of vrpn_ALIGN bytes!
 
 // This is the list of states that a connection can be in
@@ -2631,6 +2632,37 @@ int check_vrpn_cookie (const char * buffer)
   }
 
   if (strncmp(buffer, vrpn_MAGIC, vrpn_MAGICLEN)) {
+    fprintf(stderr, "vrpn_Connection: "
+        "Warning:  minor version number doesn't match: (prefer '%s', got '%s')\n",
+	    vrpn_MAGIC, buffer);
+    return 1;
+  }
+
+  return 0;
+}
+
+
+int check_vrpn_file_cookie (const char * buffer)
+{
+  const char * bp;
+
+  // Comparison changed 9 Feb 98 by TCH
+  //   We don't care if the minor version numbers don't match,
+  // so only check the characters through the last '.' in our
+  // template.  (If there is no last '.' in our template, somebody's
+  // modified this code to break the constraints above, and we just
+  // use a maximally restrictive check.)
+  //   XXX This pointer arithmetic isn't completely safe.
+
+  bp = strrchr(buffer, '.');
+  if (strncmp(buffer, vrpn_FILE_MAGIC,
+      (bp == NULL ? vrpn_MAGICLEN : bp + 1 - buffer))) {
+    fprintf(stderr, "check_vrpn_file_cookie:  "
+            "bad cookie (wanted '%s', got '%s'\n", vrpn_FILE_MAGIC, buffer);
+    return -1;
+  }
+
+  if (strncmp(buffer, vrpn_FILE_MAGIC, vrpn_MAGICLEN)) {
     fprintf(stderr, "vrpn_Connection: "
         "Warning:  minor version number doesn't match: (prefer '%s', got '%s')\n",
 	    vrpn_MAGIC, buffer);
