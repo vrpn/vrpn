@@ -184,10 +184,6 @@ void vrpn_Analog_Server::report (vrpn_uint32 class_of_service)
   vrpn_Analog::report(class_of_service);
 }
 
-vrpn_float64 * vrpn_Analog_Server::channels (void) {
-  return channel;
-}
-
 vrpn_int32 vrpn_Analog_Server::numChannels (void) const {
   return num_channel;
 }

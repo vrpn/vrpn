@@ -216,7 +216,7 @@ vrpn_float64 ntohd (vrpn_float64 d)
 int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_int16 value)
 {
     vrpn_int16 netValue = htons(value);
-    int length = sizeof(netValue);
+    const int length = sizeof(netValue);
 
     if (length > *buflen) {
         fprintf(stderr, "vrpn_buffer: buffer not large enough\n");
@@ -246,7 +246,7 @@ int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_int16 value)
 int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_uint16 value)
 {
     vrpn_uint16 netValue = htons(value);
-    int length = sizeof(netValue);
+    const int length = sizeof(netValue);
 
     if (length > *buflen) {
         fprintf(stderr, "vrpn_buffer: buffer not large enough\n");
@@ -276,7 +276,7 @@ int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_uint16 value)
 int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_int32 value)
 {
     vrpn_int32 netValue = htonl(value);
-    int length = sizeof(netValue);
+    const int length = sizeof(netValue);
 
     if (length > *buflen) {
         fprintf(stderr, "vrpn_buffer: buffer not large enough\n");
@@ -306,7 +306,7 @@ int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_int32 value)
 int vrpn_buffer(char ** insertPt, vrpn_int32 * buflen, const vrpn_uint32 value)
 {
     vrpn_uint32 netValue = htonl(value);
-    int length = sizeof(netValue);
+    const int length = sizeof(netValue);
 
     if (length > *buflen) {
         fprintf(stderr, "vrpn_buffer: buffer not large enough\n");
@@ -335,7 +335,7 @@ int vrpn_buffer(char ** insertPt, vrpn_int32 * buflen, const vrpn_uint32 value)
 
 int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const char value)
 {
-  vrpn_int32 length = sizeof(char);
+  const vrpn_int32 length = sizeof(char);
 
   if (*buflen < length) {
     fprintf(stderr, "vrpn_buffer:  buffer not large enough.\n");
@@ -386,7 +386,7 @@ int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
                   const vrpn_float64 value)
 {
     vrpn_float64 netValue = htond(value);
-    vrpn_int32 length = sizeof(netValue);
+    const vrpn_int32 length = sizeof(netValue);
 
     if (length > *buflen) {
         fprintf(stderr, "vrpn_buffer: buffer not large enough\n");

@@ -1,3 +1,21 @@
+2002-11-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Analog.C : Inlined the channels() function.
+	* vrpn_Analog.h : Same.
+	* vrpn_Connection.h : Whitespace changes.
+	* vrpn_Shared.C : changed variables to constants for speed.
+	* vrpn_TempImager.C : Major modifications to reduce the number of
+		copies from three down to one when going through the imager.
+		On the server side, there is a reformatting copy into a
+		buffer for VRPN, then the VRPN buffer copy.  On the client
+		side, there is a reformatting copy right from the VRPN
+		buffer.  Made it so that several different message types
+		can be sent for regions; the receiver code will do
+		transcoding to make it right (not yet implemented).  Uses
+		memcpy() when it can to increase throughput.  Several
+		functions collapsed into send_region_using_base_pointer().
+	* vrpn_TempImager.h : Same.
+
 2002-11-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Connection.h : Made Connection constructor public.

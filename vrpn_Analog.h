@@ -92,16 +92,13 @@ class vrpn_Analog_Server : public vrpn_Analog {
     virtual void report (vrpn_uint32 class_of_service
                                  = vrpn_CONNECTION_LOW_LATENCY);
 
-    /// For this server, the user will normally call report() or
-    /// report_changes() directly.  Here, mainloop() defaults to
-    /// calling report(), since we are not asking for reliable
-    /// communication.  Note that this will cause very rapid sending
-    /// of reports if this is called each time through a loop whose
-    /// rate is unchecked.
+    /// For this server, the user must normally call report() or
+    /// report_changes() directly.  This mainloop() only takes
+    /// care of the things any server object should do.
     virtual void mainloop () { server_mainloop(); };
 
     /// Exposes an array of values for the user to write into.
-    vrpn_float64* channels (void);
+    vrpn_float64* channels (void) { return channel; }
 
     /// Size of the array.
     vrpn_int32 numChannels (void) const;
