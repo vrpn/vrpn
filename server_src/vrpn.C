@@ -525,10 +525,13 @@ int setup_Tracker_Dyna (char * & pch, char * line, FILE * config_file) {
 
   char s2 [512], s3 [512];
   int i1, i2;
+  int ret;
 
+            next();
             // Get the arguments (class, tracker_name, sensors, port, baud)
-            if (sscanf(pch,"%511s%d%511s%d",s2,&i2, s3, &i1) != 4) {
-              fprintf(stderr,"Bad vrpn_Tracker_Dyan line: %s\n",line);
+            if ( (ret=sscanf(pch,"%511s%d%511s%d",s2,&i2, s3, &i1)) != 4) {
+              fprintf(stderr,"Bad vrpn_Tracker_Dyna line (ret %d): %s\n",ret,
+		line);
               return -1;
             }
 
@@ -538,10 +541,9 @@ int setup_Tracker_Dyna (char * & pch, char * line, FILE * config_file) {
               return -1;
             }
 
-
             // Open the tracker
             if (verbose) 
-              printf("Opening vrpn_Tracker_Dyan: %s on port %s, baud %d, "
+              printf("Opening vrpn_Tracker_Dyna: %s on port %s, baud %d, "
                      "%d sensors\n",
                     s2,s3,i1, i2);
             if ((trackers[num_trackers] =
