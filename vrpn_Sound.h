@@ -4,13 +4,21 @@
 #include "vrpn_Shared.h"
 #include "vrpn_Tracker.h"
 
+
+
 #if defined(__CYGWIN__)
 #include "vrpn_cygwin_hack.h"
 #endif
 
-typedef vrpn_int32 vrpn_SoundID;
+    // this is used to send any data that the server might need for initializing
+    typedef struct _vrpn_ModelDef
+	{
+		vrpn_float64 eye_from_sensor_matrix[16];
+	} vrpn_ModelDef;
 
-typedef struct _vrpn_PoseDef
+    typedef vrpn_int32 vrpn_SoundID;
+
+    typedef struct _vrpn_PoseDef
 	{
 	  vrpn_float64 position[3];
 	  vrpn_float64 orientation[4];
@@ -42,8 +50,10 @@ public:
 protected:
 #define vrpn_Sound_START 10
 
+	vrpn_ModelDef    Model;
 	vrpn_ListenerDef Listener;				 // A listeners information
 	vrpn_Connection *connection;		     // Used to send messages
+
 	vrpn_int32 my_id;						 // ID of this tracker to connection
 	vrpn_int32 load_sound;					 // ID of message to load a sound
 	vrpn_int32 unload_sound;				 // ID of message to unload a sound
@@ -53,6 +63,7 @@ protected:
 	vrpn_int32 change_listener_status;		 // ID of message to change the listener's status
 	vrpn_int32 set_listener_quat;			 // ID of message to set the listener's pos and 
 		                                     //  orientation based on a tracker report
+	vrpn_int32 init_model;					 // ID of message for initialize stuff
 	struct timeval timestamp;				 // Current timestamp
 	
 
@@ -73,6 +84,9 @@ protected:
 	vrpn_int32 decodeSoundDef(const char* buf, vrpn_SoundDef *sound, vrpn_SoundID *id, vrpn_int32 *repeat);
 	vrpn_int32 encodeListener(const vrpn_ListenerDef Listener, char* buf);
 	vrpn_int32 decodeListener(const char* buf, vrpn_ListenerDef *Listener);
+	vrpn_int32 encodeModelDef(const vrpn_ModelDef model, char* buf);
+	vrpn_int32 decodeModelDef(const char* buf, vrpn_ModelDef *model);
+
 
 public:
 	vrpn_Sound(const char * name, vrpn_Connection * c);
@@ -111,6 +125,8 @@ public:
 	//The position, orientation and velocity of the listener can change how it sounds
 	vrpn_int32 changeListenerPose(const vrpn_float64 position[3], const vrpn_float64 orientation[4]);
 	vrpn_int32 changeListenerVelocity(const vrpn_float64 velocity[4]);
+
+	vrpn_int32 initModel(const vrpn_float64 eye_f_sensor[16]);
 
 	void mainloop(const struct timeval * timeout=NULL);
 
@@ -153,6 +169,7 @@ protected:
 		soundDefs[id].max_back_dist  = max_back_dist;
 		soundDefs[id].min_back_dist  = min_back_dist;
 	};
+	void setDefModel(vrpn_float64 *eye_f_sensor); 
 
 private:
 	vrpn_SoundDef *soundDefs;
@@ -179,6 +196,7 @@ public:
 	virtual void unloadSound(vrpn_SoundID id) = 0;
 	virtual void changeSoundStatus(vrpn_SoundID id, vrpn_SoundDef soundDef) = 0;
 	virtual void changeListenerStatus(vrpn_ListenerDef listener) = 0;
+	virtual void initModel(vrpn_ModelDef model) = 0;
 	
 protected:
 #define vrpn_Sound_FAIL -1								//To be set when in in the Mapping
@@ -206,6 +224,7 @@ private:
 	static int handle_unloadSound(void *userdata, vrpn_HANDLERPARAM p);
 	static int handle_soundStatus(void *userdata, vrpn_HANDLERPARAM p);
 	static int handle_listener(void *userdata, vrpn_HANDLERPARAM p);
+	static int handle_initialize(void *userdata, vrpn_HANDLERPARAM p);
 	
 };
 #endif //#ifndef VRPN_CLIENT_ONLY

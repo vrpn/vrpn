@@ -1,6 +1,7 @@
 #include "vrpn_Sound.h"
 #include <string.h>
 #include <stdlib.h>
+#include "quat.h"
 
 //vrpn_Sound constructor.
 vrpn_Sound::vrpn_Sound(const char * name, vrpn_Connection * c)
@@ -27,6 +28,7 @@ vrpn_Sound::vrpn_Sound(const char * name, vrpn_Connection * c)
 	change_sound_status = connection->register_message_type("Sound Status");
 	change_listener_status = connection->register_message_type("Listener");
 	set_listener_quat = connection->register_message_type("Tracker Pos/Quat");
+	init_model = connection->register_message_type("Init Sound Model");
 
 	// Set the current time to zero, just to have something there
 	timestamp.tv_sec = 0;
@@ -121,10 +123,10 @@ vrpn_int32 vrpn_Sound::encodeSoundDef(const vrpn_SoundDef sound, const vrpn_Soun
 	
 	vrpn_buffer(&mptr, &len, sound.volume);
 
-	vrpn_buffer(&mptr, &len, sound.max_front_dist);
-	vrpn_buffer(&mptr, &len, sound.min_front_dist);
 	vrpn_buffer(&mptr, &len, sound.max_back_dist);
 	vrpn_buffer(&mptr, &len, sound.min_back_dist);
+	vrpn_buffer(&mptr, &len, sound.max_front_dist);
+	vrpn_buffer(&mptr, &len, sound.min_front_dist);
 
 	return ret;
 	
@@ -149,11 +151,10 @@ vrpn_int32 vrpn_Sound::decodeSoundDef(const char* buf, vrpn_SoundDef *sound, vrp
 
 	vrpn_unbuffer(&mptr, &(sound->volume));
 
-	vrpn_unbuffer(&mptr, &(sound->max_front_dist));
-	vrpn_unbuffer(&mptr, &(sound->min_front_dist));
 	vrpn_unbuffer(&mptr, &(sound->max_back_dist));
 	vrpn_unbuffer(&mptr, &(sound->min_back_dist));
-
+	vrpn_unbuffer(&mptr, &(sound->max_front_dist));
+	vrpn_unbuffer(&mptr, &(sound->min_front_dist));
 
 	return 0;
 }
@@ -191,6 +192,27 @@ vrpn_int32 vrpn_Sound::decodeListener(const char* buf, vrpn_ListenerDef *Listene
 	for(i = 0; i < 4; i++)
 		vrpn_unbuffer(&mptr, &(Listener->velocity[i]));
 
+	return 0;
+}
+
+vrpn_int32 vrpn_Sound::encodeModelDef(const vrpn_ModelDef model, char* buf) {
+	char *mptr = buf;
+	vrpn_int32 len = sizeof(vrpn_ModelDef);
+	vrpn_int32 ret = len;
+	int i;
+
+	for(i = 0; i < 15; i++)
+		vrpn_buffer(&mptr, &len, model.eye_from_sensor_matrix[i]);
+	return ret;
+}
+
+vrpn_int32 vrpn_Sound::decodeModelDef(const char* buf, vrpn_ModelDef *model) {
+	const char *mptr = buf;
+	int i;
+
+	for(i = 0; i < 15; i++)
+		vrpn_unbuffer(&mptr, &(model->eye_from_sensor_matrix[i]));
+	
 	return 0;
 }
 
@@ -469,7 +491,24 @@ vrpn_int32 vrpn_Sound_Client::changeSoundDistances(const vrpn_SoundID id, const 
 
 	gettimeofday(&timestamp, NULL);
 
-	if (connection->pack_message(len, timestamp, change_listener_status, my_id, buf, vrpn_CONNECTION_RELIABLE))
+	if (connection->pack_message(len, timestamp, change_sound_status, my_id, buf, vrpn_CONNECTION_RELIABLE))
+      fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
+
+	delete [] buf;
+	return 0;
+}
+
+vrpn_int32 vrpn_Sound_Client::initModel(const vrpn_float64 *eye_f_sensor) {
+	char* buf = new char[sizeof(vrpn_ModelDef)];
+	vrpn_int32 len;
+
+	setDefModel((vrpn_float64*)eye_f_sensor);
+		
+	len = encodeModelDef((const vrpn_ModelDef) Model, buf);
+
+	gettimeofday(&timestamp, NULL);
+
+	if (connection->pack_message(len, timestamp, change_sound_status, my_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
 
 	delete [] buf;
@@ -479,6 +518,10 @@ vrpn_int32 vrpn_Sound_Client::changeSoundDistances(const vrpn_SoundID id, const 
 void vrpn_Sound_Client::mainloop(const timeval *timeout)
 {
 	connection->mainloop(timeout);
+}
+
+void vrpn_Sound_Client::setDefModel(vrpn_float64 *eye_f_sensor) {
+	qogl_matrix_copy(Model.eye_from_sensor_matrix,eye_f_sensor);
 }
 
 /********************************************************************************************
@@ -505,7 +548,7 @@ vrpn_Sound_Server::vrpn_Sound_Server(const char * name, vrpn_Connection * c)
 	connection->register_handler(stop_sound, handle_stopSound, this, my_id);
 	connection->register_handler(change_sound_status, handle_soundStatus, this, my_id);
 	connection->register_handler(change_listener_status, handle_listener, this, my_id);
-
+	connection->register_handler(init_model, handle_initialize, this, my_id);
 }
 
 vrpn_Sound_Server::~vrpn_Sound_Server()
@@ -596,6 +639,7 @@ int vrpn_Sound_Server::handle_soundStatus(void *userdata, vrpn_HANDLERPARAM p)
 	vrpn_int32 repeat;
 
 	me->decodeSoundDef((char*)p.buffer, &soundDef, &id, &repeat);
+	fprintf(stderr,"%f %f %f %f\n",soundDef.max_front_dist,soundDef.min_front_dist,soundDef.max_back_dist,soundDef.min_back_dist);
 	me->changeSoundStatus(id, soundDef);
 	return 0;
 }
@@ -610,6 +654,15 @@ int vrpn_Sound_Server::handle_listener(void *userdata, vrpn_HANDLERPARAM p)
 	return 0;
 }
 
+int vrpn_Sound_Server::handle_initialize(void *userdata, vrpn_HANDLERPARAM p)
+{
+	vrpn_Sound_Server *me = (vrpn_Sound_Server*)userdata;
+	vrpn_ModelDef model;
+
+	me->decodeModelDef((const char*)p.buffer, &model);
+	me->initModel(model);
+	return 0;
+}
 
 
 #endif //#ifndef VRPN_CLIENT_ONLY
