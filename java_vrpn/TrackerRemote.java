@@ -1,0 +1,305 @@
+
+package vrpn;
+import java.util.*;
+
+
+public class TrackerRemote implements Runnable
+{
+	//////////////////
+	// Public structures and interfaces
+
+	public class TrackerUpdate
+	{
+		public Date msg_time = new Date();
+		public int sensor = -1;
+		public double pos[] = new double[3];
+		public double quat[] = new double[4];
+	}
+	
+	public interface PositionChangeListener
+	{
+		public void trackerPositionUpdate( TrackerUpdate u, TrackerRemote tracker );
+	}
+	
+	
+	public class VelocityUpdate
+	{
+		public Date msg_time = new Date( );
+		public int sensor = -1;
+		public double vel[] = new double[3];
+		public double vel_quat[] = new double[4];
+		public double vel_quat_dt = 0;
+	}
+		
+	public interface VelocityChangeListener
+	{
+		public void trackerVelocityUpdate( VelocityUpdate v, TrackerRemote tracker );
+	}
+	
+	
+	public class AccelerationUpdate
+	{
+		public Date msg_time = new Date( );
+		public int sensor = -1;
+		public double acc[] = new double[3];
+		public double acc_quat[] = new double[4];
+		public double acc_quat_dt = 0;
+	}
+	
+	public interface AccelerationChangeListener
+	{
+		public void trackerAccelerationUpdate( AccelerationUpdate a, TrackerRemote tracker );
+	}
+	
+	// end of the public structures and interfaces
+	//////////////////////////////////
+	
+	
+	////////////////////////////////
+	// Public methods
+	//
+	
+	public TrackerRemote( String name )
+	{
+		try	{  this.init( name );  }
+		catch( java.lang.UnsatisfiedLinkError e )
+		{  
+			System.out.println( "Error initializing remote tracker " + name + "." );
+			System.out.println( e.getMessage( ) );
+			return;
+		}
+		
+		this.trackingThread = new Thread( this );
+		this.trackingThread.start( );
+	}
+	
+	
+	/**
+	 * @return 0 on success; non-zero on failure
+	 */
+	public synchronized native int setUpdateRate( double samplesPerSecond );
+	
+	public synchronized void addPositionChangeListener( PositionChangeListener listener )
+	{
+		changeListeners.addElement( listener );
+	}
+
+	/**
+	 * @return true on success; false on failure
+	 */
+	public synchronized boolean removePositionChangeListener( PositionChangeListener listener )
+	{
+		return changeListeners.removeElement( listener );
+	}
+	
+	
+	public synchronized void addVelocityChangeListener( VelocityChangeListener listener )
+	{
+		velocityListeners.addElement( listener );
+	}
+	
+	/**
+	 * @return true on success; false on failure
+	 */
+	public synchronized boolean removeVelocityChangeListener( VelocityChangeListener listener )
+	{
+		return velocityListeners.removeElement( listener );
+	}
+	
+	
+	public synchronized void addAccelerationChangeListener( AccelerationChangeListener listener )
+	{
+		accelerationListeners.addElement( listener );
+	}
+	
+	/**
+	 * @return true on success; false on failure
+	 */
+	public synchronized boolean removeAccelerationChangeListener( AccelerationChangeListener listener )
+	{
+		return accelerationListeners.removeElement( listener );
+	}
+
+	/**
+	 * This should <b>not</b> be called by user code.
+	 */
+	public void run( )
+	{
+		while( keepTracking )
+		{
+			this.mainloop( );
+			try { Thread.sleep( 100 ); }
+			catch( InterruptedException e ) { } 
+		}
+	}
+	
+	// end public methods
+	////////////////////////
+	
+	
+	////////////////////////
+	// Protected methods
+	//
+	
+	/**
+	 * Should be called only by mainloop(), a native method which is itself
+	 * synchronized.  By extension, this method is synchronized (in that, for
+	 * a given TrackerRemote object, this method can only be called from one
+	 * thread at a time).
+	 */
+	protected void handleTrackerChange( long tv_sec, long tv_usec, int sensor, 
+										double x, double y, double z, 
+										double quat0, double quat1, double quat2, double quat3 )
+	{
+		// putting the body of this function into a synchronized block prevents
+		// other instances of TrackerRemote from calling listeners' trackerPositionUpdate
+		// method concurrently.
+		synchronized( notifyingChangeListenersLock )
+		{
+			TrackerUpdate t = new TrackerUpdate();
+			t.msg_time.setTime( tv_sec * 1000 + tv_usec );
+			t.sensor = sensor;
+			t.pos[0] = x;  t.pos[1] = y;  t.pos[2] = z;
+			t.quat[0] = quat0;  t.quat[1] = quat1;  t.quat[2] = quat2;  t.quat[3] = quat3;
+			
+			// notify all listeners
+			Enumeration e = changeListeners.elements( );
+			while( e.hasMoreElements( ) )
+			{
+				PositionChangeListener l = (PositionChangeListener) e.nextElement( );
+				l.trackerPositionUpdate( t, this );
+			}
+		} // end synchronized( notifyingChangeListenersLock )
+	} // end method handleTrackerChange
+	
+	
+	/**
+	 * @see vrpn.TrackerRemote.handleTrackerChange
+	 */
+	protected void handleVelocityChange( long tv_sec, long tv_usec, int sensor, 
+										 double x, double y, double z, 
+										 double quat0, double quat1, double quat2, double quat3,
+										 double quat_dt )
+	{
+		synchronized( notifyingVelocityListenersLock )
+		{
+			VelocityUpdate v = new VelocityUpdate();
+			v.msg_time.setTime( tv_sec * 1000 + tv_usec );
+			v.sensor = sensor;
+			v.vel[0] = x;  v.vel[1] = y;  v.vel[2] = z;
+			v.vel_quat[0] = quat0;  v.vel_quat[1] = quat1;  v.vel_quat[2] = quat2;  
+			v.vel_quat[3] = quat3;
+			v.vel_quat_dt = quat_dt;
+			
+			// notify all listeners
+			Enumeration e = velocityListeners.elements( );
+			while( e.hasMoreElements( ) )
+			{
+				VelocityChangeListener l = (VelocityChangeListener) e.nextElement( );
+				l.trackerVelocityUpdate( v, this );
+			}
+		} // end synchronized( notifyingVelocityListenersLock )
+	} // end method handleVelocityChange
+		
+	
+	/**
+	 * @see vrpn.TrackerRemote.handleTrackerChange
+	 */
+	protected void handleAccelerationChange( long tv_sec, long tv_usec, int sensor, 
+											 double x, double y, double z, 
+											 double quat0, double quat1, double quat2, double quat3,
+											 double quat_dt )
+	{
+		synchronized( notifyingAccelerationListenersLock )
+		{
+			AccelerationUpdate a = new AccelerationUpdate();
+			a.msg_time.setTime( tv_sec * 1000 + tv_usec );
+			a.sensor = sensor;
+			a.acc[0] = x;  a.acc[1] = y;  a.acc[2] = z;
+			a.acc_quat[0] = quat0;  a.acc_quat[1] = quat1;  a.acc_quat[2] = quat2;
+			a.acc_quat[3] = quat3;
+			a.acc_quat_dt = quat_dt;
+			
+			// notify all listeners
+			Enumeration e = accelerationListeners.elements( );
+			while( e.hasMoreElements( ) )
+			{
+				AccelerationChangeListener l = (AccelerationChangeListener) e.nextElement( );
+				l.trackerAccelerationUpdate( a, this );
+			}
+		} // end synchronized( notifyingAccelerationListenersLock )
+	} // end method handleAccelerationChange
+	
+
+	/**
+	 * Initialize the native tracker object
+	 * @param name The name of the tracker and host (e.g., <code>"Tracker0@myhost.edu"</code>).
+	 * @return <code>true</code> if the tracker was connected successfully, 
+	 *			<code>false</code> otherwise.
+	 */
+	protected native boolean init( String name );
+
+	/**
+	 * This should only be called from the method finalize()
+	 */
+	protected native void shutdownTracker( );
+	
+	protected synchronized native void mainloop( );
+	
+	protected void finalize( ) throws Throwable
+	{
+		keepTracking = false;
+		while( trackingThread.isAlive( ) )
+		{
+			try { trackingThread.join( ); }
+			catch( InterruptedException e ) { }
+		}
+		changeListeners.removeAllElements( );
+		velocityListeners.removeAllElements( );
+		accelerationListeners.removeAllElements( );
+		this.shutdownTracker( );
+	}
+	
+	// end protected methods
+	///////////////////////
+	
+	///////////////////
+	// data members
+	
+	// this is used by the native code to store a C++ pointer to the 
+	// native vrpn_TrackerRemote object
+	protected int native_tracker = -1;
+	
+	// this is used to stop and to keep running the tracking thread
+	// in an orderly fashion.
+	protected boolean keepTracking = true;
+	
+	// the tracking thread
+	Thread trackingThread = null;
+	
+	protected Vector changeListeners = new Vector( );
+	protected final static Object notifyingChangeListenersLock = new Object( );
+	protected Vector velocityListeners = new Vector( );
+	protected final static Object notifyingVelocityListenersLock = new Object( );
+	protected Vector accelerationListeners = new Vector( );
+	protected final static Object notifyingAccelerationListenersLock = new Object( );
+	
+	// these notifying*ListenersLock variables are used to ensure that multiple
+	// TrackerRemote objects running in multiple threads don't call the 
+	// trackerChangeUpdate, et. al., method of some single object concurrently.
+	// For example, the handleTrackerChange(...) method, which is invoked from native 
+	// code, gets a lock on the notifyingChangeListenersLock object.  Since that object
+	// is static, all other instances of TrackerRemote must wait before notifying 
+	// their listeners and completing their handleTrackerChange(...) methods.
+	// They are necessary, in part, because methods in an interface can't be declared
+	// synchronized (and the semantics of the keyword 'synchronized' aren't what's
+	// wanted here, anyway -- we want synchronization across all instances, not just a 
+	// single object).
+	
+	// static initialization
+	static 
+	{
+		System.loadLibrary( "TrackerRemote" );
+	}
+	
+}
