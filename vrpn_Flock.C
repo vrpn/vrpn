@@ -797,17 +797,23 @@ void vrpn_Tracker_Flock::mainloop()
   case TRACKER_SYNCING:
   case TRACKER_PARTIAL:
     {
-      struct timeval current_time;
-
-      gettimeofday(&current_time, NULL);
-      if ( duration(current_time,timestamp) < MAX_TIME_INTERVAL) {
-	get_report();
-      } else {
-	fprintf(stderr,"\nvrpn_Tracker_Flock: failed to read ... current_time=%ld:%ld, timestamp=%ld:%ld",
-		current_time.tv_sec, current_time.tv_usec, 
-		timestamp.tv_sec, timestamp.tv_usec);
-	status = TRACKER_FAIL;
-      }
+		// It turns out to be important to get the report before checking
+		// to see if it has been too long since the last report.  This is
+		// because there is the possibility that some other device running
+		// in the same server may have taken a long time on its last pass
+		// through mainloop().  Trackers that are resetting do this.  When
+		// this happens, you can get an infinite loop -- where one tracker
+		// resets and causes the other to timeout, and then it returns the
+		// favor.  By checking for the report here, we reset the timestamp
+		// if there is a report ready (ie, if THIS device is still operating).
+		get_report();
+		struct timeval current_time;
+		gettimeofday(&current_time, NULL);
+		if ( duration(current_time,timestamp) > MAX_TIME_INTERVAL) {
+			fprintf(stderr,"Tracker failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n",current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);
+			send_text_message("Too long since last report, resetting", current_time, vrpn_TEXT_ERROR);
+			status = TRACKER_FAIL;
+		}
     }
   break;
   

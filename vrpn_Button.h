@@ -188,6 +188,35 @@ private:
    const unsigned char PG_START_BYTE_TEXT;
    const unsigned char PG_END_BYTE;
 };
+
+// (RDK) Button device that is connected to a serial port.  This is a
+// raw driver that can be used with any of the serial-enabled architectures,
+// and does not go through the mouse driver -- it talks to the mouse
+// directly as a serial device.  This enables the user to use a mouse, or
+// a rewired serial mouse, as a simple button device.
+
+enum vrpn_MOUSETYPE {MOUSESYSTEMS, THREEBUTTON_EMULATION, MAX_MOUSE_TYPES};
+
+class vrpn_Button_SerialMouse: public vrpn_Button_Filter {
+public:
+    // Open a serial mouse button device connected to the local machine
+    
+    vrpn_Button_SerialMouse(const char *name, vrpn_Connection *connection,
+			    const char *port, int baud, vrpn_MOUSETYPE type);
+     
+    virtual void mainloop(void);
+
+protected:
+    char    portname[512];
+    int     baudrate;
+    int     serial_fd;
+    int	    status;
+    int     lastL, lastM, lastR;  //used in 3 button emulator
+    vrpn_MOUSETYPE mousetype;
+
+    void read(void);
+};
+
 #endif  // VRPN_CLIENT_ONLY
 
 

@@ -1,3 +1,25 @@
+2001-06-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3Space.C (mainloop) : Made it so that it tries to read a record
+		before checking for timeout (to prevent infinite resets when there
+		are two trackers or other devices running on same server).
+	* vrpn_Analog_5dt.C (mainloop) : Same
+	* vrpn_Analog_Radamec_SPI.C (mainloop) : Same
+	* vrpn_CerealBox.C (mainloop) : Same
+	* vrpn_Analog_.C (mainloop) : Same
+	* vrpn_Dyna.C (mainloop) : Same
+	* vrpn_Flock.C (mainloop) : Same
+	* vrpn_Flock_Parallel.C (mainloop) : Same
+	* vrpn_ImmersionBox.C (mainloop) : Same
+	* vrpn_Tracker_Fastrak.C (mainloop) : Same
+	* vrpn_Button.h : Added entry to read from the buttons on a mouse that
+		is treated as a serial device.
+	* vrpn_Button.C : Same
+	* vrpn_Tng3.h : Code to run a "Totally Neat Gadget", or at least its
+		buttons.  Driver by Rob King at NRL.
+	* vrpn_Tng3.C : Same
+	* Makefile : Modified to load the Tng drivers into servers.
+
 2001-06-01  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Analog_5dt.h : Driver for 5DT data glove (5 fingers, roll, pitch)

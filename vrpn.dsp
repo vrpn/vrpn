@@ -322,6 +322,14 @@ SOURCE=.\vrpn_Text.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_Tng3.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Tng3.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_Tracker.C
 # End Source File
 # Begin Source File

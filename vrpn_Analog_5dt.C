@@ -343,13 +343,19 @@ void vrpn_5dt::mainloop ()
 
     case STATUS_READING:
       {
-	struct timeval current_time;
-	gettimeofday(&current_time, NULL);
-	if ( duration(current_time,timestamp) < MAX_TIME_INTERVAL)
-	  {
-	    get_report();
-	  }
-	else
+		// It turns out to be important to get the report before checking
+		// to see if it has been too long since the last report.  This is
+		// because there is the possibility that some other device running
+		// in the same server may have taken a long time on its last pass
+		// through mainloop().  Trackers that are resetting do this.  When
+		// this happens, you can get an infinite loop -- where one tracker
+		// resets and causes the other to timeout, and then it returns the
+		// favor.  By checking for the report here, we reset the timestamp
+		// if there is a report ready (ie, if THIS device is still operating).
+		get_report();
+		struct timeval current_time;
+		gettimeofday(&current_time, NULL);
+		if ( duration(current_time,timestamp) > MAX_TIME_INTERVAL)
 	  {
 	    sprintf (l_errmsg, "vrpn_5dt::mainloop: Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",
 		     current_time.tv_sec,
