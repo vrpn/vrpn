@@ -255,9 +255,26 @@ int vrpn_TextPrinter::text_message_handler(void *userdata, vrpn_HANDLERPARAM p)
 
 vrpn_BaseClass::vrpn_BaseClass (const char * name, vrpn_Connection * c)
 {
-    // Get the part of the name for this device that does not include the connection.
+  // Get the part of the name for this device that does not include the connection.
+  // We see if some other sibling has already set the service name.  If so,
+  // then we leave it alone.  This would ideally be in the virtual
+  // unique base-class constructor so that we know it happens only once, but then
+  // we have to have all of the derived classes at the top level call the constructor
+  // for the virtual class (it would have to be told the name and connection).
+  // The unique base class destructor handles the deletion of the space.
+  if (d_servicename == NULL) {
     d_servicename = vrpn_copy_service_name(name);
+  }
 
+  // We see if some other sibling has already handled the connection-creation
+  // code.  If so, then we leave it alone.  This would ideally be in the virtual
+  // unique base-class constructor so that we know it happens only once, but then
+  // we have to have all of the derived classes at the top level call the constructor
+  // for the virtual class (it would have to be told the name and connection).
+  // The unique base class destructor handles the removal of the reference and
+  // possible deletion of the connection.
+
+  if (d_connection == NULL) {
     // Get the connection for this object established. If the user passed in a
     // NULL connection object, then we determine the connection from the name of
     // the object itself (for example, Tracker0@mumble.cs.unc.edu will make a
@@ -268,17 +285,13 @@ vrpn_BaseClass::vrpn_BaseClass (const char * name, vrpn_Connection * c)
     } else {
 	d_connection = vrpn_get_connection_by_name(name);
     }
+  }
 }
 
 vrpn_BaseClass::~vrpn_BaseClass()
 {
     // Remove us from the list of objects with messages to be printed
     vrpn_System_TextPrinter.remove_object(this);
-
-    // notify the connection that this object is no longer using it.
-    if (d_connection) {
-	d_connection->removeReference();
-    }
 }
 
 /** This would normally be found in the constructor, but the constructor
@@ -360,7 +373,9 @@ vrpn_BaseClassUnique::vrpn_BaseClassUnique()  :
 d_num_autodeletions(0),
 d_first_mainloop(1),
 d_unanswered_ping(0),
-d_flatline(0)
+d_flatline(0),
+d_connection(NULL),
+d_servicename(NULL)
 {
     // Initialize variables
     d_time_first_ping.tv_sec = d_time_first_ping.tv_usec = 0;
@@ -383,6 +398,12 @@ vrpn_BaseClassUnique::~vrpn_BaseClassUnique ()
 		d_handler_autodeletion_record[i].sender);
 	}
 	d_num_autodeletions = 0;
+    }
+
+
+    // notify the connection that this object is no longer using it.
+    if (d_connection) {
+	d_connection->removeReference();
     }
 
     // Delete the space allocated in the constructor for the servicename

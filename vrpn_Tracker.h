@@ -47,7 +47,7 @@ const	int vrpn_TRACKER_PARTIAL 	   = (0);
 const	int vrpn_TRACKER_RESETTING	   = (-1);
 const	int vrpn_TRACKER_FAIL 	 	   = (-2);
 
-const	int vrpn_TRACKER_MAX_SENSORS = (20);
+const	int vrpn_TRACKER_MAX_SENSORS = (100);
 
 // index for the change_list that should be called for all sensors
 const	int vrpn_ALL_SENSORS = vrpn_TRACKER_MAX_SENSORS;

@@ -1,4 +1,17 @@
-2004-09-07  David Marshburn  <marshbur@cs.unc.edu>
+2004-08-31  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker.h : Bumped the maximum number of sensors per tracker
+		from 20 to 100.
+	* vrpn_BaseClass.C : Making the d_servicename and d_connection
+		code only run once for a multiple-inheritance tree.
+		Moved the deletion code into the Unique base class
+		destructor to avoid crashing due to accessing already-
+		deleted connection object.
+	* vrpn_Connection.C : Prettifying.
+	* time_test.dsp : Switching back to DLL-based linkage
+	* vrpn.dsp : Same.
+
+2004-08-31  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Serial.C : Added John Stone's fix to make it compile on macs.
 

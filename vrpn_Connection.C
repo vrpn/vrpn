@@ -1516,7 +1516,8 @@ vrpn_ConnectionManager & vrpn_ConnectionManager::instance (void) {
 }
 
 void vrpn_ConnectionManager::addConnection (vrpn_Connection * c,
-                                            const char * name) {
+                                            const char * name)
+{
   knownConnection * p;
 
   p = new knownConnection;
@@ -1533,7 +1534,8 @@ void vrpn_ConnectionManager::addConnection (vrpn_Connection * c,
   }
 }
 
-void vrpn_ConnectionManager::deleteConnection (vrpn_Connection * c) {
+void vrpn_ConnectionManager::deleteConnection (vrpn_Connection * c)
+{
   deleteConnection(c, &d_kcList);
   deleteConnection(c, &d_anonList);
 }
@@ -1568,7 +1570,8 @@ vrpn_Connection * vrpn_ConnectionManager::getByName (const char * name) {
 
 vrpn_ConnectionManager::vrpn_ConnectionManager (void) :
     d_kcList (NULL),
-    d_anonList (NULL) {
+    d_anonList (NULL)
+{
 
 }
 
