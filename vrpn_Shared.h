@@ -26,10 +26,12 @@ extern struct timeval vrpn_TimevalDiff( const struct timeval& tv1,
 				   const struct timeval& tv2 );
 extern double vrpn_TimevalMsecs( const struct timeval& tv1 );
 
+extern void vrpn_SleepMsecs( double dMsecs );
 
 // xform a double to/from network order -- like htonl and htons
 extern double htond( double d );
 extern double ntohd( double d );
+
 
 #endif
 

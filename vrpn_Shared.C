@@ -64,6 +64,13 @@ double vrpn_TimevalMsecs( const struct timeval& tv ) {
   return tv.tv_sec*1000.0 + tv.tv_usec/1000.0;
 }
 
+void vrpn_SleepMsecs( double dMsecs ) {
+  struct timeval tvStart, tvNow;
+  gettimeofday(&tvStart, NULL);
+  do {
+    gettimeofday(&tvNow, NULL);
+  } while (vrpn_TimevalMsecs(vrpn_TimevalDiff( tvNow, tvStart ))<dMsecs);
+}
 
 static const long lTestEndian = 0x1;
 static const int fLittleEndian = (*((char *)&lTestEndian) == 0x1);
