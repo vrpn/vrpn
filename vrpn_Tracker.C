@@ -34,6 +34,8 @@
 
 #include "vrpn_Tracker.h"
 
+#include "vrpn_RedundantTransmission.h"
+
 #ifndef VRPN_CLIENT_ONLY
 #include "vrpn_Serial.h"
 #endif
@@ -606,7 +608,8 @@ vrpn_Tracker_NULL::vrpn_Tracker_NULL
                   (const char * name, vrpn_Connection * c,
 	           vrpn_int32 sensors, vrpn_float64 Hz) :
     vrpn_Tracker(name, c), update_rate(Hz),
-    num_sensors(sensors)
+    num_sensors(sensors),
+    d_redundancy (NULL)
 {
 	register_server_handlers();
 	// Nothing left to do
@@ -630,7 +633,32 @@ void	vrpn_Tracker_NULL::mainloop()
 	  timestamp.tv_usec = current_time.tv_usec;
 
 	  // Send messages for all sensors if we have a connection
-	  if (d_connection) {
+	  if (d_redundancy) {
+	    for (i = 0; i < num_sensors; i++) {
+		d_sensor = i;
+
+		// Pack position report
+		len = encode_to(msgbuf);
+		if (d_redundancy->pack_message(len, timestamp,
+			position_m_id, d_sender_id, msgbuf)) {
+		 fprintf(stderr,"NULL tracker: can't write message: tossing\n");
+		}
+
+		// Pack velocity report
+		len = encode_vel_to(msgbuf);
+		if (d_redundancy->pack_message(len, timestamp,
+			velocity_m_id, d_sender_id, msgbuf)) {
+		 fprintf(stderr,"NULL tracker: can't write message: tossing\n");
+		}
+
+		// Pack acceleration report
+		len = encode_acc_to(msgbuf);
+		if (d_redundancy->pack_message(len, timestamp,
+			accel_m_id, d_sender_id, msgbuf)) {
+		 fprintf(stderr,"NULL tracker: can't write message: tossing\n");
+		}
+	    }
+	  } else if (d_connection) {
 	    for (i = 0; i < num_sensors; i++) {
 		d_sensor = i;
 
@@ -661,6 +689,12 @@ void	vrpn_Tracker_NULL::mainloop()
 	  }
 	}
 }
+
+void vrpn_Tracker_NULL::setRedundantTransmission
+                              (vrpn_RedundantTransmission * t) {
+  d_redundancy = t;
+}
+
 
 #ifndef VRPN_CLIENT_ONLY
 vrpn_Tracker_Serial::vrpn_Tracker_Serial

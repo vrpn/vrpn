@@ -410,6 +410,7 @@ vrpn_int32 vrpn_TranslationTable::addRemoteEntry (cName name,
   if (remote_id != d_numEntries) {
     fprintf(stderr, "vrpn_TranslationTable::addRemoteEntry:  "
                    "Our peer isn't sending every type it registers!\n");
+    fprintf(stderr, "        %s has remote id %d.\n", name, remote_id);
     // Reenable this if we want to go back to a constant-time system.
     // This should probably force an error return.
   }

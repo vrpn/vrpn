@@ -1,3 +1,14 @@
+2000-10-11  Tom Hudson  <hudson@cs.unc.edu>
+
+	* vrpn_Connection.C (vrpn_TranslationTable::addRemoteEntry) :
+        add details to error output
+
+	* vrpn_Tracker.C (vrpn_Tracker_NULL::mainloop) : add support for
+        vrpn_RedundantTransmission
+        (vrpn_Tracker_NULL::setRedundantTransmission) : new function
+        * vrpn_RedundantTransmission.h : new file
+        * vrpn_RedundantTransmission.C : new file
+        
 2000-10-10  Adam Seeger  <seeger@cs.unc.edu>
 
 	* vrpn_FileConnection.hC (vrpn_File_Connection::get_filename) :

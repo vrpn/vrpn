@@ -21,6 +21,8 @@
 #include "vrpn_Connection.h"
 #include "vrpn_BaseClass.h"
 
+class vrpn_RedundantTransmission;
+
 // tracker status flags
 #define TRACKER_SYNCING		    (3)
 #define	TRACKER_AWAITING_STATION    (2)
@@ -127,9 +129,14 @@ class vrpn_Tracker_NULL: public vrpn_Tracker {
    vrpn_Tracker_NULL (const char * name, vrpn_Connection * c,
 	vrpn_int32 sensors = 1, vrpn_float64 Hz = 1.0);
    virtual void mainloop();
+
+   void setRedundantTransmission (vrpn_RedundantTransmission *);
+
   protected:
    vrpn_float64	update_rate;
    vrpn_int32	num_sensors;
+
+   vrpn_RedundantTransmission * d_redundancy;
 };
 
 
