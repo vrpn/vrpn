@@ -300,6 +300,11 @@ class vrpn_Connection
 		vrpn_int32 type, vrpn_int32 sender, const char * buffer,
 		vrpn_uint32 class_of_service);
 
+	// send pending report, clear the buffer.
+	// This function was protected, now is public, so we can use it
+	// to send out intermediate results without calling mainloop
+	virtual int     send_pending_reports (void);
+
 	// Returns the time since the connection opened.
 	// Some subclasses may redefine time.
 	virtual int time_since_connection_open
@@ -419,7 +424,6 @@ class vrpn_Connection
 
 	virtual	void	init (void);	// Called by all constructors
 
-	virtual	int	send_pending_reports (void);
 	virtual	void	check_connection (const struct timeval * timeout = 
                                           NULL);
 	virtual void	handle_connection(void);
