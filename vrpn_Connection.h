@@ -301,7 +301,7 @@ class vrpn_Connection
         virtual int register_log_filter (vrpn_LOGFILTER filter,
                                          void * userdata);
 
-  vrpn_OneConnection endpointPtr() { return &endpoint; }
+  vrpn_OneConnection *endpointPtr() { return &endpoint; }
   protected:
   // Users should not create vrpn_Connection directly -- use 
   // vrpn_Synchronized_Connection (for servers) or 
