@@ -10,15 +10,15 @@
  * contact Tatsuhiro Segi (segi@email.unc.edu)
  ***************************************************************************/
 
+package vrpn;
 
-import vrpn.*;
 import java.util.Vector;
 
 
 public class TrackerRemoteListener
-	implements vrpn.TrackerRemote.PositionChangeListener, 
-				vrpn.TrackerRemote.VelocityChangeListener, 
-				vrpn.TrackerRemote.AccelerationChangeListener
+	implements TrackerRemote.PositionChangeListener, 
+				TrackerRemote.VelocityChangeListener, 
+				TrackerRemote.AccelerationChangeListener
 {
 	Vector trackerUpdates;
 	Vector velocityUpdates;

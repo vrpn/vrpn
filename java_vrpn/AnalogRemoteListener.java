@@ -10,12 +10,12 @@
  * contact Tatsuhiro Segi (segi@email.unc.edu)
  ***************************************************************************/
 
+package vrpn;
 
-import vrpn.*;
 import java.util.Vector;
 
 
-public class AnalogRemoteListener implements vrpn.AnalogRemote.AnalogChangeListener
+public class AnalogRemoteListener implements AnalogRemote.AnalogChangeListener
 {
 	Vector analogUpdates;
 	

@@ -10,12 +10,12 @@
  * contact Tatsuhiro Segi (segi@email.unc.edu)
  ***************************************************************************/
 
+package vrpn;
 
-import vrpn.*;
 import java.util.Vector;
 
 
-public class ButtonRemoteListener implements vrpn.ButtonRemote.ButtonChangeListener
+public class ButtonRemoteListener implements ButtonRemote.ButtonChangeListener
 {
 	Vector buttonUpdates;
 	

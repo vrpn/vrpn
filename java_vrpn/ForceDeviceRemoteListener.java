@@ -10,15 +10,15 @@
  * contact Tatsuhiro Segi (segi@email.unc.edu)
  ***************************************************************************/
 
+package vrpn;
 
-import vrpn.*;
 import java.util.Vector;
 
 
 public class ForceDeviceRemoteListener
-	implements vrpn.ForceDeviceRemote.ForceChangeListener,
-				vrpn.ForceDeviceRemote.ForceErrorListener,
-				vrpn.ForceDeviceRemote.SCPChangeListener
+	implements ForceDeviceRemote.ForceChangeListener,
+				ForceDeviceRemote.ForceErrorListener,
+				ForceDeviceRemote.SCPChangeListener
 {
 	Vector forceUpdates;
 	Vector errorUpdates;
