@@ -69,35 +69,55 @@ void vrpn_Phantom::handle_plane(void *userdata,const vrpn_Plane_PHANTOMCB &p)
 
 void vrpn_Phantom::check_parameters(vrpn_Plane_PHANTOMCB *p)
 {
+	// only prints out errors every 100 times an error occurs so that
+	// we don't take too much time from servo loop - windows doesn't
+	// enforce process priorities well enough
+	static int errorcnt = 0;
+	int erroroccurred = 0;
+
         if (p->SurfaceKspring <= 0){
-                printf("Error: Kspring = %f <= 0\n", p->SurfaceKspring);
+		if (errorcnt % 100 == 0)
+                  printf("Error: Kspring = %f <= 0\n", p->SurfaceKspring);
                 p->SurfaceKspring = 0.001f;
+		erroroccurred = 1;
         }
         else if (p->SurfaceKspring > 1.0){
-                printf("Error: Kspring = %f > 1.0\n", p->SurfaceKspring);
+		if (errorcnt % 100 == 0)
+                  printf("Error: Kspring = %f > 1.0\n", p->SurfaceKspring);
                 p->SurfaceKspring = 1.0;
+		erroroccurred = 1;
         }
         if (p->SurfaceFstatic < 0){
-                printf("Error: Fstatic = %f < 0\n", p->SurfaceFstatic);
+		if (errorcnt % 100 == 0)
+                  printf("Error: Fstatic = %f < 0\n", p->SurfaceFstatic);
                 p->SurfaceFstatic = 0.0;
+		erroroccurred = 1;
         }
         else if (p->SurfaceFstatic > 1.0){
-                printf("Error: Fstatic = %f > 1.0\n", p->SurfaceFstatic);
+		if (errorcnt % 100 == 0)
+                  printf("Error: Fstatic = %f > 1.0\n", p->SurfaceFstatic);
                 p->SurfaceFstatic = 1.0;
+		erroroccurred = 1;
         }
         if (p->SurfaceFdynamic > p->SurfaceFstatic){
-                printf("Error: Fdynamic > Fstatic\n");
+		if (errorcnt % 100 == 0)
+                  printf("Error: Fdynamic > Fstatic\n");
                 p->SurfaceFdynamic = 0.0;
+		erroroccurred = 1;
         }
         if (p->SurfaceKdamping < 0){
-                printf("Error: Kdamping = %f < 0\n", p->SurfaceKdamping);
+		if (errorcnt % 100 == 0)
+                  printf("Error: Kdamping = %f < 0\n", p->SurfaceKdamping);
                 p->SurfaceKdamping = 0;
+		erroroccurred = 1;
         }
         else if (p->SurfaceKdamping > 0.005){
-                printf("Error: Kdamping = %f > 0.005\n", p->SurfaceKdamping);
+		if (errorcnt % 100 == 0)
+                  printf("Error: Kdamping = %f > 0.005\n", p->SurfaceKdamping);
                 p->SurfaceKdamping = 0.005f;
+		erroroccurred = 1;
         }
-
+	if (erroroccurred) errorcnt++;
 }
 
 // This function reinitializes the PHANToM (resets the origin)
@@ -561,7 +581,7 @@ int vrpn_Phantom::handle_plane_change_message(void *userdata,
 
 	decode_plane(p.buffer, p.payload_len, tp.plane, 
 		&(tp.SurfaceKspring), &(tp.SurfaceKdamping),
-		&(tp.SurfaceFstatic), &(tp.SurfaceFdynamic),
+		&(tp.SurfaceFdynamic), &(tp.SurfaceFstatic),
 		&(tp.which_plane), &(tp.numRecCycles));
 
 	// Go down the list of callbacks that have been registered.

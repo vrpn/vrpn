@@ -246,7 +246,7 @@ int vrpn_ForceDevice::decode_scp(const char *buffer, const int len,
 
 char *vrpn_ForceDevice::encode_plane(int &len, const float *plane, 
 				const float kspring, const float kdamp,
-				const float fstat, const float fdyn, 
+				const float fdyn, const float fstat, 
 				const long plane_index, const long n_rec_cycles){
 	// Message includes: float plane[4],
 
@@ -267,8 +267,8 @@ char *vrpn_ForceDevice::encode_plane(int &len, const float *plane,
 
 	buffer(&mptr, &mlen, kspring);
 	buffer(&mptr, &mlen, kdamp);
-	buffer(&mptr, &mlen, fstat);
 	buffer(&mptr, &mlen, fdyn);
+	buffer(&mptr, &mlen, fstat);
 	buffer(&mptr, &mlen, plane_index);
 	buffer(&mptr, &mlen, n_rec_cycles);
 
@@ -278,7 +278,7 @@ char *vrpn_ForceDevice::encode_plane(int &len, const float *plane,
 int vrpn_ForceDevice::decode_plane(const char *buffer, const int len, 
 				float *plane, 
 				float *kspring, float *kdamp,
-				float *fstat, float *fdyn, 
+				float *fdyn, float *fstat, 
 				long *plane_index, long *n_rec_cycles)
 {
     int i;
@@ -296,8 +296,8 @@ int vrpn_ForceDevice::decode_plane(const char *buffer, const int len,
 	    res = unbuffer(&mptr, &(plane[i]));
     res = unbuffer(&mptr, kspring);
     res = unbuffer(&mptr, kdamp);
-    res = unbuffer(&mptr, fstat);
     res = unbuffer(&mptr, fdyn);
+    res = unbuffer(&mptr, fstat);
     res = unbuffer(&mptr, plane_index);
     res = unbuffer(&mptr, n_rec_cycles);
 
@@ -871,7 +871,7 @@ void vrpn_ForceDevice_Remote::sendSurface(void)
   
   if(connection) {
     msgbuf = encode_plane(len, plane, SurfaceKspring, SurfaceKdamping,
-		SurfaceFstatic, SurfaceFdynamic, which_plane, numRecCycles);
+		SurfaceFdynamic, SurfaceFstatic, which_plane, numRecCycles);
     if(connection->pack_message(len,timestamp,plane_message_id,
 		my_id, msgbuf, vrpn_CONNECTION_LOW_LATENCY)) {
       fprintf(stderr,"Phantom: cannot write message: tossing\n");
@@ -894,7 +894,7 @@ void vrpn_ForceDevice_Remote::startSurface(void)
     
     if(connection){
       msgbuf = encode_plane(len, plane, SurfaceKspring, SurfaceKdamping,
-		SurfaceFstatic, SurfaceFdynamic, which_plane, numRecCycles);
+		SurfaceFdynamic, SurfaceFstatic, which_plane, numRecCycles);
       if (connection->pack_message(len,timestamp,plane_message_id,
 			   my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
 	fprintf(stderr,"Phantom: cannot write message: tossing\n");
@@ -918,7 +918,7 @@ void vrpn_ForceDevice_Remote::stopSurface(void)
   
     if(connection) {
       msgbuf = encode_plane(len, plane, SurfaceKspring, SurfaceKdamping,
-		SurfaceFstatic, SurfaceFdynamic, which_plane, numRecCycles);
+		SurfaceFdynamic, SurfaceFstatic, which_plane, numRecCycles);
       if (connection->pack_message(len,timestamp,plane_message_id,
 				   my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
 	fprintf(stderr,"Phantom: cannot write message: tossing\n");
