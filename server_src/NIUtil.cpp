@@ -145,6 +145,7 @@ namespace NIUtil
          case 320: name = "PCI-4453"; break;
          case 321: name = "PCI-4454"; break;
 	 case 348: name = "DAQCard-6036E"; break;
+	 case 350: name = "PCI-6733"; break;
          default :
             cerr << "NIUtil::nameCodeToString: Unknown code " << code << "!\n";
             name = "Unknown";

@@ -64,7 +64,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "../pc_win32/server_src/Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /Zi /Od /I "C:/Program Files/SensAble/3DTouch/include" /I "C:/Program Files/SensAble/3DTouch/utilities/include" /I "D:/Program Files/SensAble/3DTouch/include" /I "D:/Program Files/SensAble/3DTouch/utilities/include" /I "../../quat" /I "../" /I "./" /D "_LIB" /D "_DEBUG" /D "_MBCS" /D "WIN32" /YX /FD /GZ /TP /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /Zi /Od /I "D:\Program Files\SensAble\GHOST\v4.0\include" /I "D:\Program Files\SensAble\GHOST\v4.0\external\stl" /I "C:/Program Files/SensAble/3DTouch/include" /I "C:/Program Files/SensAble/3DTouch/utilities/include" /I "D:/Program Files/SensAble/3DTouch/include" /I "D:/Program Files/SensAble/3DTouch/utilities/include" /I "../../quat" /I "../" /I "./" /D "_LIB" /D "_DEBUG" /D "_MBCS" /D "WIN32" /YX /FD /GZ /TP /c
 # SUBTRACT CPP /Fr
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
