@@ -597,8 +597,11 @@ int vrpn_unbuffer (const char ** buffer, vrpn_float32 * fval)
 
 int vrpn_unbuffer (const char ** buffer, vrpn_float64 * dval)
 {
-    *dval = ntohd(*(vrpn_float64 *)(*buffer));
-    *buffer += sizeof(vrpn_float64);
+    vrpn_float64 aligned;
+
+    memcpy( &aligned, *buffer, sizeof( aligned ) );
+    *dval = ntohd( aligned );
+    *buffer += sizeof( aligned );
     return 0;
 }
 
