@@ -9,6 +9,7 @@
 #endif
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>	// For memcpy()
 #ifndef _WIN32_WCE
 #include <sys/types.h>
 #include <sys/stat.h>

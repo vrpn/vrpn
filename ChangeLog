@@ -1,5 +1,9 @@
 2002-07-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_FileConnection.C : Include needed for Linux.
+
+2002-07-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Clock.h : Cosmetic changes.
 	* vrpn_Connection.C : Adds hostname to error messages.
 		Only reports broken connection message once/second.
