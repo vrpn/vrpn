@@ -124,7 +124,12 @@ void myIdleFunc(void)
 
 int main(int argc, char **argv)
 {
-  char	*device_name = "TestImage@cuprum-cs:4511";
+  char	*device_name = "TestImage@localhost";
+
+#if 0
+  // Create a log file of the video
+  vrpn_Connection *c = vrpn_get_connection_by_name(device_name, "TestImageLog.vrpn");
+#endif
 
   // Open the TempImager client and set the callback
   // for new data and for information about the size of

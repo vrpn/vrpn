@@ -1,3 +1,7 @@
+2003-12-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* testimager_client.C : Added #ifdef-ed out line to save log.
+
 2003-07-24  Matt McCallus  <mccallus@cs.unc.edu>
 
 	* sound_client.c : white space, include path removed.
