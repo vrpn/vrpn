@@ -13,10 +13,13 @@
 #include "vrpn_Dyna.h"
 #include "vrpn_Sound.h"
 
+#include "vrpn_Analog.h"
+#include "vrpn_Joystick.h"
 
 #define MAX_TRACKERS 100
 #define MAX_BUTTONS 100
 #define MAX_SOUNDS 2
+#define MAX_ANALOG 4
 
 void	Usage(char *s)
 {
@@ -33,6 +36,8 @@ vrpn_Button	*buttons[MAX_BUTTONS];
 int		num_buttons = 0;
 vrpn_Sound	*sounds[MAX_SOUNDS];
 int		num_sounds = 0;
+vrpn_Analog	*analogs[MAX_ANALOG];
+int		num_analogs = 0;
 
 // install a signal handler to shut down the trackers and buttons
 #ifndef WIN32
@@ -160,7 +165,37 @@ main (int argc, char *argv[])
 	  //	  #define isit(s) !strncmp(line,s,strlen(s))
 #define isit(s) !strcmp(pch=strtok(scrap," \t"),s)
 #define next() pch += strlen(pch) + 1
-	  if (isit("vrpn_Linux_Sound")) {
+	  if (isit("vrpn_Joystick")) {
+	    float fhz;
+	    // Get the arguments (sound_name)
+	    next();
+	    if (sscanf(pch,"%511s%511s%d %f",s2,s3, &i1, &fhz) != 4) {
+	      fprintf(stderr,"Bad vrpn_Joystick line: %s\n",line);
+	      if (bail_on_error) { return -1; }
+	      else { continue; }	// Skip this line
+	    }
+
+	    // Make sure there's room for a new sound server
+	    if (num_analogs >= MAX_ANALOG) {
+	      fprintf(stderr,"Too many analog devices in config file");
+	      if (bail_on_error) { return -1; }
+	      else { continue; }	// Skip this line
+	    }
+
+	    // Open the sound server
+	    if (verbose) 
+	      printf("Opening vrpn_Joystick: %s on port %s baud %d, mim update rate = %.2f\n", 
+		     s2,s3, i1, fhz);
+	    if ((analogs[num_analogs] =
+		  new vrpn_Joystick(s2, &connection,s3, i1, fhz)) == NULL) {
+		fprintf(stderr,"Can't create new vrpn_Joystick\n");
+		if (bail_on_error) { return -1; }
+		else { continue; }	// Skip this line
+	    } else {
+		num_analogs++;
+	    }
+
+	  } else if (isit("vrpn_Linux_Sound")) {
 	    // Get the arguments (sound_name)
 	    next();
 	    if (sscanf(pch,"%511s",s2) != 1) {
@@ -444,6 +479,9 @@ main (int argc, char *argv[])
 			sounds[i]->mainloop();
 		}
 
+		for (i=0; i< num_analogs; i++) {
+		  analogs[i]->mainloop();
+		}
 		// Send and receive all messages
 		connection.mainloop();
 	}
