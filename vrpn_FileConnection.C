@@ -245,6 +245,8 @@ void vrpn_File_Connection::FileTime_Accumulator::set_replay_rate(
 void vrpn_File_Connection::FileTime_Accumulator::reset_at_time(
     const timeval & now_time )
 {
+    // this function is confusing.  It doesn't appear to do anything.
+    // (I added the next three lines. did I delete what was previously there?)
     d_filetime_accum_since_last_playback.tv_sec = 0;
     d_filetime_accum_since_last_playback.tv_usec = 0;
     d_time_of_last_accum = now_time;
@@ -468,8 +470,16 @@ int vrpn_File_Connection::play_to_time(timeval end_time)
 
 // plays all entries between d_time and end_filetime
 // returns -1 on error, 0 on success
-int vrpn_File_Connection::play_to_filetime(timeval end_filetime)
+int vrpn_File_Connection::play_to_filetime(const timeval end_filetime)
 {
+    if (vrpn_TimevalGreater(d_time, end_filetime)) {
+        // end_filetime is BEFORE d_time (our current time in the stream)
+        // so, we need to go backwards in the stream
+        // currently, this is implemented by
+        //   * rewinding the stream to the beginning
+        //   * playing log messages one at a time until we get to end_filetime
+        reset();
+    }
     
     int ret;
     
@@ -752,7 +762,7 @@ int vrpn_File_Connection::reset()
     // reset for mainloop()
     d_last_time.tv_usec = d_last_time.tv_sec = 0;
     d_filetime_accum.reset_at_time( d_last_time );
-        
+    
     return 0;
 }
 
