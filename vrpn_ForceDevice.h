@@ -295,7 +295,11 @@ class vrpn_ForceDevice {
     struct timeval timestamp;
 
     vrpn_int32   which_plane;
-    //vrpn_float64 d_force [3];
+
+    vrpn_float64 d_force [3];
+      ///< d_force isn't used in vrpn_ForceDevice, but seems to be used
+      ///< by derived classes?  What's the meaning?
+
     vrpn_float64 scp_pos [3];
     vrpn_float64 scp_quat [4];  // for torque
     vrpn_float32 plane [4];
