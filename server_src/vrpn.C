@@ -835,6 +835,39 @@ int setup_Button_Python (char * & pch, char * line, FILE * config_file) {
 
 }
 
+//================================
+int setup_Button_PinchGlove(char* &pch, char *line, FILE *config_file) {
+
+   char name[512], port[512];
+   int baud;
+
+   next();
+   // Get the arguments (class, button_name, port, baud)
+   if (sscanf(pch,"%511s%511s%d", name, port, &baud) != 3) {
+      fprintf(stderr,"Bad vrpn_Button_PinchGlove line: %s\n",line);
+      return -1;
+    }
+
+   // Make sure there's room for a new button
+   if (num_buttons >= MAX_BUTTONS) {
+      fprintf(stderr,"vrpn_Button_PinchGlove: Too many buttons in config file");
+      return -1;
+   }
+
+   // Open the button
+   if (verbose)   
+      printf("Opening vrpn_Button_PinchGlove: %s on port %s at %d baud\n",name,port,baud);
+   if ( (buttons[num_buttons] = new vrpn_Button_PinchGlove(name,connection,port,baud)) 
+         == NULL ) {
+      fprintf(stderr,"Can't create new vrpn_Button_PinchGlove\n");
+      return -1;
+   } else 
+      num_buttons++;
+  
+   return 0;
+
+}
+
 main (int argc, char * argv[])
 {
 	char	* config_file_name = "vrpn.cfg";
@@ -989,6 +1022,8 @@ main (int argc, char * argv[])
             CHECK(setup_Tracker_NULL);
 	  } else if (isit("vrpn_Button_Python")) {
             CHECK(setup_Button_Python);
+	  } else if (isit("vrpn_Button_PinchGlove")) {
+            CHECK(setup_Button_PinchGlove);
 	  } else {	// Never heard of it
 		sscanf(line,"%511s",s1);	// Find out the class name
 		fprintf(stderr,"Unknown class: %s\n",s1);

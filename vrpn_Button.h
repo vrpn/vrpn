@@ -5,8 +5,10 @@
 #endif
 
 #include "vrpn_Connection.h"
+#include "vrpn_Serial.h"
 
 #define	vrpn_BUTTON_MAX_BUTTONS	(100)
+const int VRPN_BUTTON_BUF_SIZE = 100;
 
 // Base class for buttons.  Definition
 // of remote button class for the user is at the end.
@@ -93,16 +95,16 @@ protected:
 // Button device that is connected to a parallel port and uses the
 // status bits to read from the buttons.  There can be up to 5 buttons
 // read this way.
-class vrpn_parallel_Button: public vrpn_Button_Filter {
+class vrpn_Button_Parallel: public vrpn_Button_Filter {
   public:
 	// Open a button connected to the local machine, talk to the
 	// outside world through the connection.
-	vrpn_parallel_Button(const char *name, vrpn_Connection *connection,
+	vrpn_Button_Parallel(const char *name, vrpn_Connection *connection,
 				int portno);
 
   protected:
 	int	port;
-	int	status;
+   int	status;
 
 	virtual void read(void) = 0;
 #ifdef _WIN32
@@ -112,16 +114,58 @@ class vrpn_parallel_Button: public vrpn_Button_Filter {
 };
 
 // Open a Python that is connected to a parallel port on this Linux box.
-class vrpn_Button_Python: public vrpn_parallel_Button {
+class vrpn_Button_Python: public vrpn_Button_Parallel {
   public:
 	vrpn_Button_Python (const char * name, vrpn_Connection * c, int p);
-        virtual ~vrpn_Button_Python (void);
 
 	virtual void mainloop(const struct timeval * timeout = NULL);
   protected:
   	virtual void read(void);
 };
 
+
+// Button device that is connected to the serial port.
+class vrpn_Button_Serial : public vrpn_Button_Filter {
+public:
+   vrpn_Button_Serial(const char* name, vrpn_Connection *c, 
+                      const char *port="/dev/ttyS1/", long baud=38400);
+   virtual ~vrpn_Button_Serial();
+
+protected:
+   char portname[VRPN_BUTTON_BUF_SIZE];
+   long baudrate;
+   int serial_fd;
+   int	status;
+
+   unsigned char buffer[VRPN_BUTTON_BUF_SIZE]; // char read from the button so far
+   vrpn_uint32 bufcount; // number of char in the buffer
+
+   virtual void read()=0;
+};
+
+// Open a Fakespace Pinch Glove System that is connected to a serial port. There are
+// total of 10 buttons. Buttons 0-4 are fingers for the right hand-thumb first 
+// and pinkie last-while buttons 5-9 are for the left hand-thumb first. The report
+// you get back is the finger is touching. So you will not have a state where only
+// one button is ON.
+class vrpn_Button_PinchGlove : public vrpn_Button_Serial {
+public:
+   vrpn_Button_PinchGlove(const char* name, vrpn_Connection *c, 
+                      const char *port="/dev/ttyS1/", long baud=38400);
+
+   virtual void mainloop(const struct timeval *timeout=NULL);
+
+protected:
+   virtual void read();
+   void report_no_timestamp(); // set the glove to report data without timestamp
+
+private:
+   // message constants
+   const unsigned char PG_START_BYTE_DATA;
+   const unsigned char PG_START_BYTE_DATA_TIME;
+   const unsigned char PG_START_BYTE_TEXT;
+   const unsigned char PG_END_BYTE;
+};
 #endif  // VRPN_CLIENT_ONLY
 
 
@@ -130,14 +174,18 @@ class vrpn_Button_Python: public vrpn_parallel_Button {
 
 // User routine to handle a change in button state.  This is called when
 // the button callback is called (when a message from its counterpart
-// across the connetion arrives).
+// across the connetion arrives). The pinch glove has 5 different state of on
+// since it knows which fingers are touching.
 #define VRPN_BUTTON_OFF	(0)
 #define VRPN_BUTTON_ON	(1)
 
 typedef	struct {
 	struct timeval	msg_time;	// Time of button press/release
 	vrpn_int32	button;		// Which button (numbered from zero)
-	vrpn_int32	state;		// New state (0 = off, 1 = on)
+   // button state (0 = off, 1 = on) 
+   // If the button is the type of vrpn_Button_PinchGlove there are upto 5
+   // different kinds of on state since it knows which fingers are touching
+   vrpn_int32	state;		
 } vrpn_BUTTONCB;
 typedef void (*vrpn_BUTTONCHANGEHANDLER)(void *userdata,
 					 const vrpn_BUTTONCB info);

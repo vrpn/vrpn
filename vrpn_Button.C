@@ -390,7 +390,7 @@ void vrpn_Button_Example_Server::mainloop(const struct timeval * timeout)
 }
 
 
-vrpn_parallel_Button::vrpn_parallel_Button(const char *name,
+vrpn_Button_Parallel::vrpn_Button_Parallel(const char *name,
 					   vrpn_Connection *c,
 					   int portno)
 	: vrpn_Button_Filter(name, c)
@@ -405,7 +405,7 @@ vrpn_parallel_Button::vrpn_parallel_Button(const char *name,
 	case 3: portname = "/dev/lp2";
 		break;
 	default:
-	    fprintf(stderr, "vrpn_parallel_Button: "
+	    fprintf(stderr, "vrpn_Button_Parallel: "
 			    "Bad port number (%d)\n",portno);
 	    status = BUTTON_FAIL;
 	    portname = "UNKNOWN";
@@ -414,9 +414,9 @@ vrpn_parallel_Button::vrpn_parallel_Button(const char *name,
 
       // Open the port
     if ( (port = open(portname, O_RDWR)) < 0) {
-	perror("vrpn_parallel_Button::vrpn_parallel_Button(): "
+	perror("vrpn_Button_Parallel::vrpn_Button_Parallel(): "
 	       "Can't open port");
-	fprintf(stderr, "vrpn_parallel_Button::vrpn_parallel_Button(): "
+	fprintf(stderr, "vrpn_Button_Parallel::vrpn_Button_Parallel(): "
 		        "Can't open port %s\n",portname);
 	status = BUTTON_FAIL;
 	return;
@@ -437,12 +437,12 @@ vrpn_parallel_Button::vrpn_parallel_Button(const char *name,
 	case 2: port = 0x3bc; break;  // usually LPT2
 	case 3: port = 0x278; break;  // usually LPT3
 	default:
-	    fprintf(stderr,"vrpn_parallel_Button: Bad port number (%d)\n",portno);
+	    fprintf(stderr,"vrpn_Button_Parallel: Bad port number (%d)\n",portno);
 	    status = BUTTON_FAIL;
 	    break;
     }
 #else  // _WIN32      
-    fprintf(stderr, "vrpn_parallel_Button: not supported on this platform\n?");
+    fprintf(stderr, "vrpn_Button_Parallel: not supported on this platform\n?");
     status = BUTTON_FAIL;
     portno = portno;  // unused argument
     return;
@@ -465,12 +465,7 @@ vrpn_parallel_Button::vrpn_parallel_Button(const char *name,
 
 vrpn_Button_Python::vrpn_Button_Python (const char * name, vrpn_Connection * c,
                                         int p) :
-    vrpn_parallel_Button (name, c, p) {
-
-}
-
-// virtual
-vrpn_Button_Python::~vrpn_Button_Python (void) {
+    vrpn_Button_Parallel (name, c, p) {
 
 }
 
@@ -539,6 +534,194 @@ void vrpn_Button_Python::read(void)
     buttons[4] = ((status_register[0] & PORT_ACK) == 0);
 
     gettimeofday(&timestamp, NULL);
+}
+
+vrpn_Button_Serial::vrpn_Button_Serial(const char* name, vrpn_Connection *c, 
+                    const char *port, long baud) : vrpn_Button_Filter(name, c)
+{
+   // port name and baud rate
+   if (port == NULL) {
+	   fprintf(stderr,"vrpn_Button_Serial: NULL port name\n");
+	   status = BUTTON_FAIL;
+	   return;
+   } else {
+	   strncpy(portname, port, sizeof(portname));
+	   portname[sizeof(portname)-1] = '\0';
+   }
+   baudrate = baud;
+
+   // Open the serial port
+   if ( (serial_fd=vrpn_open_commport(portname, baudrate)) == -1) {
+	   fprintf(stderr,"vrpn_Button_Serial: Cannot Open serial port\n");
+	   status = BUTTON_FAIL;
+   }
+
+   // Reset the tracker and find out what time it is
+   status = BUTTON_READY;
+   gettimeofday(&timestamp, NULL);
+}
+
+vrpn_Button_Serial::~vrpn_Button_Serial() {
+   vrpn_close_commport(serial_fd);
+}
+
+// init pinch glove to send hand data only
+vrpn_Button_PinchGlove::vrpn_Button_PinchGlove(const char* name, vrpn_Connection *c, 
+               const char *port, long baud) : vrpn_Button_Serial(name, c, port, baud),
+               PG_START_BYTE_DATA(0x80), PG_START_BYTE_DATA_TIME(0x81), 
+               PG_START_BYTE_TEXT(0x82), PG_END_BYTE(0x8F)
+{ 
+   num_buttons = 10;   // 0-4: right, 5-9: left starting from thumb
+   status = BUTTON_READY;
+
+   // check if the number of buttons is not more than max allowed.
+   if (num_buttons > vrpn_BUTTON_MAX_BUTTONS) {
+	   fprintf(stderr,"vrpn_Button_PinchGlove: Too many buttons. The limit is ");
+      fprintf(stderr,"%i but this device has %i.\n",vrpn_BUTTON_MAX_BUTTONS,num_buttons);
+	   status = BUTTON_FAIL;
+   }
+
+   // set glove to report with no timestamp
+   report_no_timestamp();
+ 
+   // initialize the buttons
+   for (vrpn_int32 i=0; i<num_buttons; i++)
+      buttons[i] = lastbuttons[i] = VRPN_BUTTON_OFF;
+
+   // Reset the tracker and find out what time it is
+   gettimeofday(&timestamp, NULL);
+}
+
+void vrpn_Button_PinchGlove::mainloop(const struct timeval*)
+{
+   switch (status) {
+      case BUTTON_READY:
+	      read();
+	      report_changes();
+      	break;
+      case BUTTON_FAIL: 
+         {  static int first = 1;
+            if (first) {
+         	   first = 0;
+	      	   fprintf(stderr, "vrpn_Button_PinchGlove failure!\n");
+            }
+         }
+      	break;
+   }
+   return;
+
+}
+
+// Pinch glove should only report hand data(see contructor). If the message has
+// time stamp data change the the message type by sending command to just send
+// hand data. Any other kind of message is ignored and the buffer is read until
+// end of message byte(PG_END_BYTE) is reached.
+void vrpn_Button_PinchGlove::read()
+{
+   // check if button is ready
+   if (status != BUTTON_READY)   return;
+
+   // check if there is something to read
+   if (vrpn_read_available_characters(serial_fd,buffer,1) != 1)   return;
+
+   // This while loop is to keep reading messages until its empty.
+   while (buffer[0] != PG_END_BYTE ) {
+      // switch according to its message start byte
+      if (buffer[0] == PG_START_BYTE_DATA) {
+         // reset button state
+         for (vrpn_int32 i=0; i<num_buttons; i++)   buttons[i] = VRPN_BUTTON_OFF;
+
+         // read next message
+         bufcount = vrpn_read_available_characters(serial_fd,buffer,2);
+
+         // read until end of message
+         while (buffer[0] != PG_END_BYTE) {
+         
+            // if only one byte read, read the left hand byte
+            while (bufcount != 2)
+               bufcount += vrpn_read_available_characters(serial_fd,buffer+1,1);
+
+            unsigned char mask = 0x10;
+            // set button states 
+            for (int j=0; j<5; j++, mask=mask>>1) {
+               if (mask & buffer[1])  {  // right hand
+                  buttons[j] = VRPN_BUTTON_ON;
+               }
+               if (mask & buffer[0])  {  // left hand
+                  buttons[j+5] = VRPN_BUTTON_ON;
+               }
+
+            }
+
+            // read next bytes
+            bufcount = vrpn_read_available_characters(serial_fd,buffer,2);
+         } // while (buffer[0] != PG_END_BYTE)
+         // if there is another message read it
+         if (bufcount != 1)   buffer[0] = buffer[1];
+      } // if (buffer[0] == PG_START_BYTE_DATA) {
+      else if (buffer[0] == PG_START_BYTE_DATA_TIME) {
+         fprintf(stderr, "vrpn_Button_PinchGlove message start byte: time stamped byte!\n");
+         report_no_timestamp();
+      }
+      else {    // ignore any other type of messages: empty butter till PG_END_BYTE
+         // clear messages
+         while(buffer[0] != PG_END_BYTE)
+            vrpn_read_available_characters(serial_fd,buffer,1);
+
+     	   fprintf(stderr, "vrpn_Button_PinchGlove wrong message start byte!\n");
+      } // else
+   } // while (buffer[0] != PG_END_BYTE )
+   
+   gettimeofday(&timestamp, NULL);
+   return;
+}
+
+// set the glove to report data without timestamp
+void vrpn_Button_PinchGlove::report_no_timestamp()
+{
+   // emtpty the message buffer
+   while (vrpn_read_available_characters(serial_fd, buffer, 1) != 0) {};
+
+   // send command to just send hand data and no time stamp
+   buffer[0] = 'T';   buffer[1] = '0';
+   vrpn_write_characters(serial_fd, buffer, 2);
+
+   bufcount = 0;
+   struct timeval timeout = {0, 30}; // time_out for response from glove: 30 msec
+   
+   // read until correct reply is recieved
+   while ( (bufcount!=3) || (buffer[1]!='0') || (buffer[2]!=PG_END_BYTE) ) {
+
+      // if there is no message within the timeout interval resend the command
+      while (vrpn_read_available_characters(serial_fd,buffer,1,&timeout) != 1) {};
+
+      // if not start of reply to host command keep reading the message buffer
+      // until the correct start byte of the message. If there is no more message
+      // resend the command to glovebox
+      while (buffer[0] != PG_START_BYTE_TEXT) {
+         while(buffer[0] != PG_END_BYTE) 
+            vrpn_read_available_characters(serial_fd, buffer, 1);
+         while ( vrpn_read_available_characters(serial_fd,buffer,1,&timeout) != 1) {
+            buffer[0] = 'T';   buffer[1] = '0';
+            vrpn_write_characters(serial_fd, buffer, 2);
+         }
+      } // while (buffer[0] != PG_START_BYTE_TEXT)
+
+      bufcount = 1;
+      // read until the end of the message
+      // IMPORTANT: it is assumed that the buffer is big enough to hold one text message
+      while(buffer[bufcount-1] != PG_END_BYTE) 
+         bufcount += vrpn_read_available_characters(serial_fd, buffer+bufcount, 1);
+
+      if (bufcount > VRPN_BUTTON_BUF_SIZE) {
+	      fprintf(stderr,"vrpn_Button_PinchGlove: Glove Box message is too big for buffer");
+	      status = BUTTON_FAIL;
+      }
+
+   } // while ( (bufcount!=3) || (buffer[2]!=PG_END_BYTE) ) {
+
+
+   return;
 }
 
 #endif  // VRPN_CLIENT_ONLY
@@ -705,7 +888,7 @@ int vrpn_Button_Remote::handle_change_message(void *userdata,
   // the giveio device was opened.  0 if device not opened.
 #ifndef VRPN_CLIENT_ONLY
 #ifdef _WIN32
-int vrpn_parallel_Button::openGiveIO(void)
+int vrpn_Button_Parallel::openGiveIO(void)
 {
     OSVERSIONINFO osvi;
 
@@ -732,7 +915,7 @@ int vrpn_parallel_Button::openGiveIO(void)
     }
 
 	// else GetVersionEx gave unexpected result
-    fprintf(stderr, "vrpn_parallel_Button::openGiveIO: unknown windows version\n");
+    fprintf(stderr, "vrpn_Button_Parallel::openGiveIO: unknown windows version\n");
     return 0;
 }
 #endif // _WIN32

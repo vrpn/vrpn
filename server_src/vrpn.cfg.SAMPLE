@@ -260,3 +260,16 @@
 
 #vrpn_Joystick	joybox	/dev/ttyd1	19200	10.0
 
+################################################################################
+# Fakespace Pinch Glove. Drives a Fakespace Pinch Glove device connected to a 
+# serial port on this machine. This device has ten buttons-two hands and five
+# fingers on each hand. Buttons 0-4 are fingers for the right hand-thumb first 
+# and pinkie last- while buttons 5-9 are for the left hand-thumb first. The
+# Button is ON when it is touching another finger. Therefore there cannot
+# be just one Button ON. Arguments:
+#	char	name_of_this_device[]
+#	char	name_of_serial_device[]
+#	int	baud_rate_of_serial_device
+ 
+# vrpn_Button_PinchGlove	PinchGlove0		COM1		9600
+
