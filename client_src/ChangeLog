@@ -1,3 +1,12 @@
+2000-10-18  Tom Hudson  <hudson@cs.unc.edu>
+
+	* printvals.c (init) : sometimes use vrpn_DelayedConnection instead
+	of a straight vrpn_(Synchronized_)Connection
+	(Usage) : new option -delay
+	(main) : parse new option -delay, fix set of redundant
+	transmission time
+	(handle_gotConnection) : fix set of redundant transmission time
+
 2000-10-17  Tom Hudson  <hudson@cs.unc.edu>
 
 	* printvals.c (handle_gotConnection) : new function

@@ -1,8 +1,3 @@
-#include "vrpn_Shared.h"
-#include "vrpn_Button.h"
-#include "vrpn_Tracker.h"
-#include "vrpn_FileConnection.h"
-#include "vrpn_FileController.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
@@ -12,7 +7,13 @@
 #include <strings.h>
 #endif
 
+#include <vrpn_Shared.h>
+#include <vrpn_Button.h>
+#include <vrpn_Tracker.h>
+#include <vrpn_FileConnection.h>
+#include <vrpn_FileController.h>
 #include <vrpn_RedundantTransmission.h>
+#include <vrpn_DelayedConnection.h>
 
 vrpn_Button_Remote *btn,*btn2;
 vrpn_Tracker_Remote *tkr;
@@ -26,6 +27,7 @@ int beQuiet = 0;
 int beRedundant = 0;
 int redNum = 0;
 double redTime = 0.0;
+double delayTime = 0.0;
 
 /*****************************************************************************
  *
@@ -77,7 +79,7 @@ int handle_gotConnection (void *, vrpn_HANDLERPARAM) {
   if (beRedundant) {
     fprintf(stderr, "printvals got connection;  "
             "initializing redundant xmission.\n");
-    rc->set(redNum, vrpn_MsecsTimeval(redTime));
+    rc->set(redNum, vrpn_MsecsTimeval(redTime * 1000.0));
   }
 
   return 0;
@@ -125,11 +127,18 @@ fprintf(stderr, "Opening file %s.\n", station_name);
 	} else {
 fprintf(stderr, "Connecting to host %s.\n", station_name);
 	  port = vrpn_get_port_number(station_name);
-	  c = new vrpn_Synchronized_Connection
-                   (station_name, port,
+	  //c = new vrpn_Synchronized_Connection
+	  c = new vrpn_DelayedConnection
+                   (vrpn_MsecsTimeval(0.0),
+                    station_name, port,
 		    local_logfile, local_logmode,
 		    remote_logfile, remote_logmode,
                     1.0, 3, NIC);
+          if (delayTime > 0.0) {
+            ((vrpn_DelayedConnection *) c)->setDelay
+                              (vrpn_MsecsTimeval(delayTime * 1000.0));
+            ((vrpn_DelayedConnection *) c)->delayAllTypes(vrpn_TRUE);
+          }
 	}
 
 	fc = new vrpn_File_Controller (c);
@@ -258,7 +267,7 @@ void main (int argc, char * argv [])
   if (argc < 2) {
     fprintf(stderr, "Usage:  %s [-ll logfile mode] [-rl logfile mode]\n"
                     "           [-NIC ip] [-filterpos] [-quiet]\n"
-                    "           [-red num time] [-station_name\n"
+                    "           [-red num time] [-delay time] station_name\n"
                     "  -notracker:  Don't print tracker reports\n" 
                     "  -ll:  log locally in <logfile>\n" 
                     "  -rl:  log remotely in <logfile>\n" 
@@ -268,6 +277,7 @@ void main (int argc, char * argv [])
                     "  -quiet:  ignore VRPN warnings\n"
                     "  -red <num> <time>:  send every message <num>\n"
                     "    times <time> seconds apart\n"
+                    "  -delay <time:  delay all messages received by <time>\n"
                     "  station_name:  VRPN name of data source to contact\n"
                     "    one of:  <hostname>[:<portnum>]\n"
                     "             file:<filename>\n",
@@ -305,6 +315,9 @@ void main (int argc, char * argv [])
       redNum = atoi(argv[i]);
       i++;
       redTime = atof(argv[i]);
+    } else if (!strcmp(argv[i], "-delay")) {
+      i++;
+      delayTime = atof(argv[i]);
     } else
       station_name = argv[i];
   }
@@ -331,7 +344,7 @@ void main (int argc, char * argv [])
   }
 
   if (beRedundant) {
-    rc->set(redNum, vrpn_MsecsTimeval(redTime));
+    rc->set(redNum, vrpn_MsecsTimeval(redTime * 1000.0));
   }
 
 /* 
