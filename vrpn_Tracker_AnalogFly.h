@@ -25,23 +25,15 @@ class vrpn_TAF_axis {
   public:
 
     vrpn_TAF_axis (void)
-      { name = NULL; channel = 0; thresh = 0.0f;
-        power = 1.0f; scale = 1.0f; };
+      { name = NULL; channel = 0; offset = 0.0f; thresh = 0.0f;
+        scale = 1.0f; power = 1.0f; };
 
-  // Name of the Analog device for each axis (x,y,z) and rotation
-  //   (about x,y,z).
-  // Which channel to use from the Analog for each.
-  // Threshold (distance from zero indistinguishable from zero).
-  // Power (to which the value is taken, to allow slow near center
-  //   and fast away).
-  // Scale (which is applied before the power to values that are
-  //   above threshold).
-
-	char * name;
-        int channel;
-        float thresh;
-        float power;
-        float scale;
+	char * name;	//< Name of the Analog device driving this axis
+        int channel;	//< Which channel to use from the Analog device
+	float offset;	//< Offset to apply to values from this channel to reach 0
+        float thresh;	//< Threshold to apply after offset within which values count as zero
+        float scale;	//< Scale applied to values after offset and threshold
+        float power;	//< Power to which values are taken after scaling
 };
 
 class vrpn_Tracker_AnalogFlyParam {
@@ -53,42 +45,55 @@ class vrpn_Tracker_AnalogFlyParam {
         sx.name = sy.name = sz.name = reset_name = NULL;
     }
 
-    // Translation along each of these three axes
+    /// Translation along each of these three axes
     vrpn_TAF_axis x, y, z;
 
-    // Rotation in the positive direction about the three axes
+    /// Rotation in the positive direction about the three axes
     vrpn_TAF_axis sx, sy, sz;
 
-    // Button device that is used to reset the matrix to the origin
+    /// Button device that is used to reset the matrix to the origin
 
     char * reset_name;
     int reset_which;
 };
 
-// This class will turn a joystick into a tracker by interpreting the joystick
-// positions as velocity inputs and "flying" the user around based on
-// analog values.
-// The mapping from analog channels to directions (or orientation changes) is
-// described in the vrpn_Tracker_AnalogFlyParam parameter. For translations,
-// values above threshold are multiplied by the scale and then taken to the
-// power; the result is the number of meters per second to move in that
-// direction. For rotations, the result is taken as the number of revolutions
-// per second around the given axis.
+class vrpn_Tracker_AnalogFly;	// Forward reference
 
 class vrpn_TAF_fullaxis {
 public:
-	vrpn_TAF_fullaxis (void) { ana = NULL; value = 0.0; };
+        vrpn_TAF_fullaxis (void) { ana = NULL; value = 0.0; af = NULL; };
 
 	vrpn_TAF_axis axis;
         vrpn_Analog_Remote * ana;
+	vrpn_Tracker_AnalogFly * af;
         double value;
 };
+
+/// This class will turn an analog device such as a joystick or a camera
+// tracker into a tracker by interpreting the joystick
+// positions as either position or velocity inputs and "flying" the user
+// around based on analog values.
+// The "absolute" parameter tells whether the tracker integrates differential
+// changes (the default, with FALSE) or takes the analog values as absolute
+// positions or orientations.
+// The mapping from analog channels to directions (or orientation changes) is
+// described in the vrpn_Tracker_AnalogFlyParam parameter. For translations,
+// values above threshold are multiplied by the scale and then taken to the
+// power; the result is the number of meters (or meters per second) to move
+// in that direction. For rotations, the result is taken as the number of
+// revolutions (or revolutions per second) around the given axis.
+// Note that the reset button has no effect on an absolute tracker.
+// The time reported by absolute trackers is as of the last report they have
+// had from their analog devices.  The time reported by differential trackers
+// is the local time that the report was generated.  This is to allow a
+// gen-locked camera tracker to have its time values passed forward through
+// the AnalogFly class.
 
 class vrpn_Tracker_AnalogFly : public vrpn_Tracker {
   public:
     vrpn_Tracker_AnalogFly (const char * name, vrpn_Connection * trackercon,
 			    vrpn_Tracker_AnalogFlyParam * params,
-                            float update_rate);
+                            float update_rate, vrpn_bool absolute = vrpn_FALSE);
 
     virtual ~vrpn_Tracker_AnalogFly (void);
 
@@ -102,8 +107,9 @@ class vrpn_Tracker_AnalogFly : public vrpn_Tracker {
 
   protected:
 
-    double	d_update_interval;	// How long to wait between sends
-    struct timeval d_prevtime;		// Time of the previous report
+    double	    d_update_interval;	//< How long to wait between sends
+    struct timeval  d_prevtime;		//< Time of the previous report
+    vrpn_bool	    d_absolute;		//< Report absolute (vs. differential)?
 
     vrpn_TAF_fullaxis	d_x, d_y, d_z, d_sx, d_sy, d_sz;
     vrpn_Button_Remote	* d_reset_button;
@@ -111,8 +117,8 @@ class vrpn_Tracker_AnalogFly : public vrpn_Tracker {
 
     q_matrix_type d_initMatrix, d_currentMatrix;
 
-    void	update_matrix_based_on_values (double time_interval);
-    void	convert_matrix_to_tracker (void);
+    void    update_matrix_based_on_values (double time_interval);
+    void    convert_matrix_to_tracker (void);
 
     int setup_channel (vrpn_TAF_fullaxis * full);
     int teardown_channel (vrpn_TAF_fullaxis * full);

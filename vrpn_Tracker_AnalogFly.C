@@ -16,20 +16,27 @@ static	double	duration(struct timeval t1, struct timeval t2)
 
 vrpn_Tracker_AnalogFly::vrpn_Tracker_AnalogFly
          (const char * name, vrpn_Connection * trackercon,
-          vrpn_Tracker_AnalogFlyParam * params, float update_rate) :
+          vrpn_Tracker_AnalogFlyParam * params, float update_rate,
+	  vrpn_bool absolute) :
 	vrpn_Tracker (name, trackercon),
 	d_reset_button(NULL),
 	d_which_button (params->reset_which),
-	d_update_interval (update_rate ? (1/update_rate) : 1.0)
+	d_update_interval (update_rate ? (1/update_rate) : 1.0),
+	d_absolute(absolute)
 {
 	int i;
 
 	d_x.axis = params->x; d_y.axis = params->y; d_z.axis = params->z;
 	d_sx.axis = params->sx; d_sy.axis = params->sy; d_sz.axis = params->sz;
+
 	d_x.ana = d_y.ana = d_z.ana = NULL;
 	d_sx.ana = d_sy.ana = d_sz.ana = NULL;
+
 	d_x.value = d_y.value = d_z.value = 0.0;
 	d_sx.value = d_sy.value = d_sz.value = 0.0;
+
+	d_x.af = this; d_y.af = this; d_z.af = this;
+	d_sx.af = this; d_sy.af = this; d_sz.af = this;
 
 	//--------------------------------------------------------------------
 	// Open analog remotes for any channels that have non-NULL names.
@@ -91,6 +98,17 @@ vrpn_Tracker_AnalogFly::vrpn_Tracker_AnalogFly
 	d_initMatrix[0][0] = d_initMatrix[1][1] = d_initMatrix[2][2] =
                            d_initMatrix[3][3] = 1.0;
 	reset();
+
+	//--------------------------------------------------------------------
+	// Set the current timestamp to "now" and current matrix to identity
+	// for absolute trackers.  This is done in case we never hear from the
+	// analog devices.  Reset doesn't do this for absolute trackers.
+	if (d_absolute) {
+	    gettimeofday(&d_prevtime, NULL);
+	    vrpn_Tracker::timestamp = d_prevtime;
+	    q_matrix_copy(d_currentMatrix, d_initMatrix);
+	    convert_matrix_to_tracker();
+	}
 }
 
 vrpn_Tracker_AnalogFly::~vrpn_Tracker_AnalogFly (void)
@@ -119,14 +137,21 @@ vrpn_Tracker_AnalogFly::~vrpn_Tracker_AnalogFly (void)
 // This routine handles updates of the analog values. The value coming in is
 // adjusted per the parameters in the full axis description, and then used to
 // update the value there. The value is used by the matrix-generation code in
-// mainloop() to update the transformations, that work is not done here.
+// mainloop() to update the transformations; that work is not done here.
 
 void	vrpn_Tracker_AnalogFly::handle_analog_update
                      (void *userdata, const vrpn_ANALOGCB info)
 {
 	vrpn_TAF_fullaxis	*full = (vrpn_TAF_fullaxis *)userdata;
 	double value = info.channel[full->axis.channel];
-	double value_abs = fabs(value);
+	double value_offset = value - full->axis.offset;
+	double value_abs = fabs(value_offset);
+
+	// If we're an absolute channel, store the time of the report
+	// into the tracker's timestamp field.
+	if (full->af->d_absolute) {
+	    full->af->vrpn_Tracker::timestamp = info.msg_time;
+	}
 
 	// If we're not above threshold, store zero and we're done!
 	if (value_abs <= full->axis.thresh) {
@@ -135,11 +160,10 @@ void	vrpn_Tracker_AnalogFly::handle_analog_update
 	}
 
 	// Scale and apply the power to the value (maintaining its sign)
-	if (value >=0) {
-		full->value = pow(value*full->axis.scale, full->axis.power);
+	if (value_offset >=0) {
+		full->value = pow(value_offset*full->axis.scale, full->axis.power);
 	} else {
-		full->value = -pow(value_abs*full->axis.scale,
-                                   full->axis.power);
+		full->value = -pow(value_abs*full->axis.scale, full->axis.power);
 	}
 }
 
@@ -151,7 +175,7 @@ void vrpn_Tracker_AnalogFly::handle_reset_press
 {
 	vrpn_Tracker_AnalogFly	*me = (vrpn_Tracker_AnalogFly*)userdata;
 
-	// If this is the right button, and it has just been pressed, then
+	// If this is the correct button, and it has just been pressed, then
 	// reset the matrix.
 	if ( (info.button == me->d_which_button) && (info.state == 1) ) {
 		me->reset();
@@ -228,12 +252,19 @@ int vrpn_Tracker_AnalogFly::handle_newConnection(void * userdata,
   return 0;
 }
 
+/** Reset the current matrix to zero and store it into the tracker
+    position/quaternion location.  This is is not done for an absolute
+    tracker, whose position and orientation are locked to the reports from
+    the analog device.
+*/
+
 void vrpn_Tracker_AnalogFly::reset (void)
 {
+	if (d_absolute) { return; };
+
 	// Set the matrix back to the identity matrix
 	q_matrix_copy(d_currentMatrix, d_initMatrix);
-	d_prevtime.tv_sec = -1;
-	d_prevtime.tv_usec = -1;
+	gettimeofday(&d_prevtime, NULL);
 
 	// Convert the matrix into quaternion notation and copy into the
 	// tracker pos and quat elements.
@@ -262,10 +293,15 @@ void vrpn_Tracker_AnalogFly::mainloop()
         // If so, generate a new one.
 	gettimeofday(&now, NULL);
 	interval = duration(now, d_prevtime);
-	if (interval > d_update_interval) {
+	if (interval >= d_update_interval) {
 
-		// Set the time on the report to now
-		vrpn_Tracker::timestamp = now;
+		// Set the time on the report to now, if not an absolute
+		// tracker.  Absolute trackers have their time values set
+	        // to match the time at which their analog devices gave the
+	        // last report.
+		if (!d_absolute) {
+		    vrpn_Tracker::timestamp = now;
+		}
 
 		// Figure out the new matrix based on the current values and
                 // the length of the interval since the last report
@@ -275,7 +311,7 @@ void vrpn_Tracker_AnalogFly::mainloop()
 		if (d_connection) {
 			char	msgbuf[1000];
 			int	len = encode_to(msgbuf);
-			if (d_connection->pack_message(len, timestamp,
+			if (d_connection->pack_message(len, vrpn_Tracker::timestamp,
 				position_m_id, d_sender_id, msgbuf,
 				vrpn_CONNECTION_LOW_LATENCY)) {
 			fprintf(stderr,"Tracker AnalogFly: "
@@ -293,17 +329,24 @@ void vrpn_Tracker_AnalogFly::mainloop()
 
 // This routine will update the current matrix based on the current values
 // in the offsets list for each axis, and the length of time over which the
-// action is taking place (time_interval). It treats the values as either
+// action is taking place (time_interval).
+// Handling of non-absolute trackers: It treats the values as either
 // meters/second or else rotations/second to be integrated over the interval
 // to adjust the current matrix.
-// XXX Later, it would be cool to have it send velocity information as well,
-// since it knows what this is.
+// Handling of absolute trackers: It always assumes that the starting matrix
+// is the identity, so that the values are absolute offsets/rotations.
+// XXX Later, it would be cool to have non-absolute trackers send velocity
+// information as well, since it knows what this is.
 
 void	vrpn_Tracker_AnalogFly::update_matrix_based_on_values
                   (double time_interval)
 {
   double tx,ty,tz, rx,ry,rz;	// Translation (m/s) and rotation (rad/sec)
   q_matrix_type diffM;		// Difference (delta) matrix
+
+  // For absolute trackers, the interval is treated as "1", so that the
+  // translations and rotations are unscaled;
+  if (d_absolute) { time_interval = 1.0; };
 
   // compute the translation and rotation
   tx = d_x.value * time_interval;
@@ -318,14 +361,17 @@ void	vrpn_Tracker_AnalogFly::update_matrix_based_on_values
   q_euler_to_col_matrix(diffM, rz, ry, rx);
   diffM[3][0] = tx; diffM[3][1] = ty; diffM[3][2] = tz;
 
-  // Multiply the current matrix by the difference matrix to update
-  // it to the current time. Then convert the matrix into a pos/quat
-  // and copy it into the tracker position and quaternion structures.
-
-  q_matrix_type final;
-
-  q_matrix_mult(final, diffM, d_currentMatrix);
-  q_matrix_copy(d_currentMatrix, final);
+  if (d_absolute) {
+      // The difference matrix IS the current matrix
+      q_matrix_copy(d_currentMatrix, diffM);
+  } else {
+      // Multiply the current matrix by the difference matrix to update
+      // it to the current time. Then convert the matrix into a pos/quat
+      // and copy it into the tracker position and quaternion structures.
+      q_matrix_type final;
+      q_matrix_mult(final, diffM, d_currentMatrix);
+      q_matrix_copy(d_currentMatrix, final);
+  }
 
   convert_matrix_to_tracker();
 }

@@ -127,7 +127,7 @@ int vrpn_Radamec_SPI::send_command(const unsigned char *cmd, int len)
     outbuf[len] = compute_crc(cmd, len);
 
     // Send the command
-    ret = vrpn_write_slowly(serial_fd, outbuf, len+1);
+    ret = vrpn_write_characters(serial_fd, outbuf, len+1);
 
     // Tell if this all worked.
     if (ret == len+1) {
@@ -181,9 +181,9 @@ vrpn_int32 vrpn_Radamec_SPI::convert_16bit_unsigned(const unsigned char *buf)
     return retval;
 }
 
-/* ------------------- Conversion of encoder indices to values ----------------
+/** ------------------- Conversion of encoder indices to values ----------------
     Pan and tilt axis have an encoder index pulse which resets the value to
-    7FFFF (7FFFFF?) hex each time the head passes through 0 degrees, the centre of range
+    7FFFF hex each time the head passes through 0 degrees, the centre of range
     of the head.  This is indicated by two red dots on the pan axis, which when
     aligned show the head is at 0 degrees.  Tilt 0 position is when the camera
     is horizontal.  There are 900 encoder counts per degree and the direction
@@ -201,18 +201,18 @@ vrpn_int32 vrpn_Radamec_SPI::convert_16bit_unsigned(const unsigned char *buf)
 
 double	vrpn_Radamec_SPI::int_to_pan(vrpn_uint32 val)
 {
-    return (val - 0x7fffff) / 900.0;
+    return (val - 0x7ffff) / 900.0;
 }
 
 double	vrpn_Radamec_SPI::int_to_zoom(vrpn_uint32 val)
 {
-    //XXX Unknown conversion, send the integer along unchanged
+    //XXX Unknown conversion, return the raw value
     return val;
 }
 
 double	vrpn_Radamec_SPI::int_to_focus(vrpn_uint32 val)
 {
-    //XXX Unknown conversion, send the integer along unchanged
+    //XXX Unknown conversion, return the raw value
     return val;
 }
 
@@ -239,20 +239,23 @@ double	vrpn_Radamec_SPI::int_to_orientation(vrpn_uint32 val)
 
 
 // This routine will reset the Radamec_SPI, requesting the camera number from the
-// device and then turning on stream mode.  It then verifies that the commands were received
-// and processed by the device.
+// device and then turning on stream mode. XXX The device never seems to return a
+// response to these queries, but always seems to go ahead and spew reports, even
+// when not genlocked.  If you find a device that doesn't send reports, this may
+// be a good place to look for the problem.
 //   Commands		Responses	    Meanings
 //   <A4><FF><02><CRC>  <A4><##><02><CRC>   Request camera number; returns camera number in ##
 //   <A4><##><01><CRC>  <A4><##><01><CRC>   Start stream mode on the camera we were told we are 
 
 int	vrpn_Radamec_SPI::reset(void)
 {
-	struct	timeval	timeout;
 	unsigned char	command[128];
+/* XXX commented out, since the response doesn't come, but the device still works.
+	struct	timeval	timeout;
 	unsigned char	inbuf[128];
 	int	ret;
 	char	errmsg[256];
-
+*/
 	//-----------------------------------------------------------------------
 	// Send the command to request the camera ID and then read the response.
 	// Give it a reasonable amount of time to finish (2 seconds), then timeout
@@ -260,6 +263,7 @@ int	vrpn_Radamec_SPI::reset(void)
 	vrpn_flush_input_buffer(serial_fd);
 	sprintf((char *)command, "%c%c%c", 0xa4, 0xff, 0x02);
 	send_command((unsigned char *)command, 3);
+/* XXX commented out, since the response doesn't come, but the device still works.
 	timeout.tv_sec = 2;
 	timeout.tv_usec = 0;
 	ret = vrpn_read_available_characters(serial_fd, inbuf, 4, &timeout);
@@ -284,13 +288,14 @@ int	vrpn_Radamec_SPI::reset(void)
 	    return -1;
 	}
 	_camera_id = inbuf[1];
-
+*/
 	//-----------------------------------------------------------------------
 	// Send the command to put the camera into stream mode and then read back
 	// to make sure we got a response.
 
 	sprintf((char *)command, "%c%c%c", 0xa4, _camera_id, 0x01);
 	send_command(command, 3);
+/* XXX commented out, since the response doesn't come, but the device still works.
 	timeout.tv_sec = 2;
 	timeout.tv_usec = 0;
 	ret = vrpn_read_available_characters(serial_fd, inbuf, 4, &timeout);
@@ -315,7 +320,7 @@ int	vrpn_Radamec_SPI::reset(void)
 	    SPI_ERROR("reset: Bad response to start stream mode command");
 	    return -1;
 	}
-
+*/
 	// We're now waiting for a response from the box
 	status = STATUS_SYNCING;
 
@@ -370,9 +375,7 @@ void vrpn_Radamec_SPI::get_report(void)
 	      _expected_chars = 26; status = STATUS_READING; break;
 
 	  default:
-	      sprintf(errmsg,"vrpn_Radamec_SPI: Unknown command (%c), resetting\n", _buffer[0]);
-	      SPI_ERROR(errmsg);
-	      status = STATUS_RESETTING;
+	      // Not a recognized command, keep looking
 	      return;
       }
 
@@ -423,16 +426,10 @@ void vrpn_Radamec_SPI::get_report(void)
 
    if (_buffer[_expected_chars-1] != compute_crc(_buffer, _expected_chars-1) ) {
 	   status = STATUS_SYNCING;
-      	   SPI_ERROR("Bad CRC in report");
+      	   SPI_WARNING("Bad CRC in report (ignoring this report)");
 	   return;
    }
-   if (_buffer[1] != _camera_id) {
-	   status = STATUS_SYNCING;
-      	   sprintf(errmsg,"vrpn_Radamec_SPI: Bad camera ID in report (got %d, expected %d)\n",
-	       _buffer[1], _camera_id);
-	   SPI_WARNING(errmsg);
-	   return;
-   }
+   _camera_id = _buffer[1];
 
 #ifdef	VERBOSE
    printf("got a complete report (%d of %d)!\n", _bufcount, _expected_chars);
@@ -477,10 +474,10 @@ void vrpn_Radamec_SPI::get_report(void)
 	 channel[7] = int_to_orientation(convert_16bit_unsigned(&_buffer[25]));
 	 break;
 
-    // Note that case 0xa3 should never happen, since we don't send this.
-    // We'll let the "default" case complain about getting it.
+     case 0xa4: // Response to our reset commands -- ignore them
+	 break;
 
-    // Note that 0xa4 should not happen outside of reset, since we don't send
+    // Note that case 0xa3 should never happen, since we don't send this.
     // We'll let the "default" case complain about getting it.
 
     // Note that 0xa5 should not happen, since we don't send it.
@@ -503,8 +500,8 @@ void vrpn_Radamec_SPI::get_report(void)
 	 break;
 
      default:
-	sprintf(errmsg,"vrpn_Radamec_SPI: Unhandled command (0x%2x), resetting\n", _buffer[0]);
-	SPI_WARNING(errmsg);
+	sprintf(errmsg,"vrpn_Radamec_SPI: Unhandled command (0x%02x), resetting\n", _buffer[0]);
+	SPI_ERROR(errmsg);
 	status = STATUS_RESETTING;
 	return;
    }
