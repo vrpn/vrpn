@@ -87,7 +87,7 @@
 // Load VRPN Phantom library if we are using phantom server as unified server
 // Load SensAble Technologies GHOST library to run the Phantom
 #ifdef	VRPN_USE_PHANTOM_SERVER
-#pragma comment (lib,"C:/Program Files/SensAble/GHOST/v3.1/lib/GHOST31.lib")
+#pragma comment (lib,"C:/Program Files/SensAble/GHOST/v4.0/lib/GHOST40.lib")
 #endif
 
 // Load DirectX SDK libraries and tell which version we need if we are using it.

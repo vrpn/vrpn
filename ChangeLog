@@ -1,3 +1,8 @@
+2003-05-30  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Configure.h:  change the default path for the Ghost library
+	to point to version 4.0.
+
 2003-05-21  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_Connection.C:
