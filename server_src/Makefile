@@ -5,10 +5,6 @@ LFLAGS = -L/afs/unc/proj/hmd/beta/lib/`hw_os` \
 .C.o:
 	g++ $(CFLAGS) -c $*.C
 
-vrpn: vrpn.o vrpn_Tracker.o vrpn_Button.o vrpn_Connection.o vrpn_Sound.o
-	g++ $(LFLAGS) -o vrpn \
-		vrpn.o vrpn_Tracker.o vrpn_Button.o vrpn_Connection.o vrpn_Sound.o -lsdi -lm
-
 sound_server: sound_server.o vrpn_Tracker.o vrpn_Button.o vrpn_Connection.o vrpn_Sound.o
 	g++ $(LFLAGS) -o sound_server \
 		sound_server.o vrpn_Tracker.o vrpn_Button.o vrpn_Connection.o vrpn_Sound.o -lsdi -lm

@@ -370,7 +370,8 @@ int vrpn_Connection::pack_type_description(int which)
 {
    struct timeval now;
    long	len = strlen(my_types[which].name);
-   char	buffer[sizeof(len)+sizeof(cName)];
+   long	net_len = htonl(len);
+   char	buffer[sizeof(net_len)+sizeof(cName)];
 
    // Pack a message with type vrpn_CONNECTION_TYPE_DESCRIPTION
    // whose sender ID is the ID of the type that is being
@@ -381,8 +382,8 @@ int vrpn_Connection::pack_type_description(int which)
    fprintf(stderr,
 	"  vrpn_Connection: Packing type '%s'\n",my_types[which].name);
 #endif
-   memcpy(buffer, &len, sizeof(len));
-   memcpy(&buffer[sizeof(len)], my_types[which].name, (int)len);
+   memcpy(buffer, &net_len, sizeof(net_len));
+   memcpy(&buffer[sizeof(net_len)], my_types[which].name, (int)len);
    gettimeofday(&now,NULL);
    return pack_message((int)(len+sizeof(len)), now,
    	vrpn_CONNECTION_TYPE_DESCRIPTION, which, buffer,
@@ -393,7 +394,8 @@ int vrpn_Connection::pack_sender_description(int which)
 {
    struct timeval now;
    long	len = strlen(my_senders[which]);
-   char	buffer[sizeof(len)+sizeof(cName)];
+   long net_len = htonl(len);
+   char	buffer[sizeof(net_len)+sizeof(cName)];
 
    // Pack a message with type vrpn_CONNECTION_SENDER_DESCRIPTION
    // whose sender ID is the ID of the sender that is being
@@ -404,8 +406,8 @@ int vrpn_Connection::pack_sender_description(int which)
 	fprintf(stderr,
 		"  vrpn_Connection: Packing sender '%s'\n",my_senders[which]);
 #endif
-   memcpy(buffer, &len, sizeof(len));
-   memcpy(&buffer[sizeof(len)], my_senders[which], (int)len);
+   memcpy(buffer, &net_len, sizeof(net_len));
+   memcpy(&buffer[sizeof(net_len)], my_senders[which], (int)len);
    gettimeofday(&now,NULL);
    return pack_message((int)(len+sizeof(len)), now,
    	vrpn_CONNECTION_SENDER_DESCRIPTION, which, buffer,
@@ -1293,7 +1295,7 @@ int	vrpn_Connection::handle_type_message(void *userdata,
 	}
 
 	// Find out the name of the type (skip the length)
-	name_length = htonl( *(long*)(void*)p.buffer );
+	name_length = ntohl( *(long*)(void*)p.buffer );
 	strncpy(type_name, p.buffer+4, name_length);
 	type_name[name_length] = '\0';
 

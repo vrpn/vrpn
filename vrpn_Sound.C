@@ -226,8 +226,9 @@ int vrpn_Linux_Sound::checkpipe(void)
 			play_mode = cbuff[1];
 			ear_mode = cbuff[2];
 			volume = cbuff[3];
-			strncpy(samplename, &cbuff[5], (int) cbuff[4]);
-			samplename[(int) cbuff[4]] = '\0';
+			//cbuff[5] is used for channel #
+			strncpy(samplename, &cbuff[6], (int) cbuff[4]-1);
+	    	samplename[(int) cbuff[4]-1] = '\0';
 			status = vrpn_SND_SAMPLE;
 			{
 				int bar, baz;
@@ -326,7 +327,6 @@ vrpn_Linux_Sound::soundplay()
         if (ioctl(audio_fd, SNDCTL_DSP_SPEED, &speed)==-1)
             fprintf(stderr, "can't set the speed\n");
 		}
-
         fd = open(samplename, O_RDONLY, 0);
        // n = read(fd,  audio_buffer, BUF_SIZE);
         n = read(fd,  audio_buffer, 512);
@@ -596,7 +596,7 @@ void vrpn_Sound_Remote::mainloop(void)
 // this function is used to change all the information to a msg
 // the format used here conforms to the one defined in checkpipe()
 int vrpn_Sound_Remote::encode(char *msgbuf, char *sound, int volume, 
-				int mode, int ear)
+				int mode, int ear, int channel)
 {
 	int i;
 	unsigned long *longbuf = (unsigned long*) (void*)(msgbuf);
@@ -605,6 +605,7 @@ int vrpn_Sound_Remote::encode(char *msgbuf, char *sound, int volume,
 	longbuf[index++] = volume;
 	longbuf[index++] = mode;
 	longbuf[index++] = ear;
+	longbuf[index++] = channel;
 	for ( i = 0; i< strlen(sound); i++)
 		longbuf[index++] = sound[i];
 	for ( i = 0; i< index; i++) 
@@ -649,8 +650,11 @@ int vrpn_Sound_Remote::encode(char *msgbuf, int num, int *instrids)
 	return index*sizeof(unsigned long);
 }
 
-vrpn_Sound_Remote::play_sampled_sound(char *sound, int volume, 
-            int mode, int ear)
+vrpn_Sound_Remote::play_sampled_sound(char *sound, 
+                                      const int volume, 
+                                      const int mode, 
+									  const int ear,
+									  const int channel)
 {
 	struct timeval current_time;
 	//pack the message and send it to the sound server through connection
@@ -660,13 +664,13 @@ vrpn_Sound_Remote::play_sampled_sound(char *sound, int volume,
 	gettimeofday(&current_time, NULL);
 	
 	if (connection) {
-	    len = encode(msgbuf, sound, volume, mode, ear);
+	    len = encode(msgbuf, sound, volume, mode, ear, channel);
 		if (connection->pack_message(len, current_time, playsample_id, my_id, 
 		  msgbuf, vrpn_CONNECTION_RELIABLE))
 		  	fprintf(stderr, "can't write message\n");
 	}
 }
-vrpn_Sound_Remote::play_stop()
+vrpn_Sound_Remote::play_stop(const int channel)
 {
 	struct timeval current_time;
 	char msgbuf[1024];

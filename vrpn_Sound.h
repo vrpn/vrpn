@@ -205,11 +205,14 @@ class vrpn_Sound_Remote: public vrpn_Sound {
 	virtual void mainloop(void);
 
 	// Play a sampled sound immediately in both ears at standard volume
-	play_sampled_sound(char *sound, int volume = 60,
-		int mode = vrpn_SND_SINGLE, int ear = vrpn_SND_BOTH);
-	play_stop();
+	play_sampled_sound(char *sound, 
+	                   const int volume = 60,
+	               	   const int mode = vrpn_SND_SINGLE, 
+					   const int ear = vrpn_SND_BOTH, 
+					   const int channel = 1);
+	play_stop(const int channel = 0);
 
-	encode(char *msgbuf, char *sound, int volume, int mode, int ear);
+	encode(char *msgbuf,char *sound,int volume,int mode,int ear,int channel);
 	encode(char *msgbuf, char *notes, int mode, int ear);
 	encode(char *msgbuf, int set_stop);
 	encode(char *msgbuf, int num, int *instrids);
