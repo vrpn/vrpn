@@ -1026,7 +1026,9 @@ vrpn_Connection::vrpn_Connection (unsigned short listen_port_no) :
     num_other_senders (0),
     num_other_types (0),
     tcp_num_out (0),
-    udp_num_out (0)
+    udp_num_out (0),
+    d_TCPbuflen (0),
+    d_TCPbuf (NULL)
 
 {
    // Initialize the things that must be for any constructor
@@ -1069,7 +1071,9 @@ vrpn_Connection::vrpn_Connection (char * station_name) :
     num_other_senders (0),
     num_other_types (0),
     tcp_num_out (0),
-    udp_num_out (0)
+    udp_num_out (0),
+    d_TCPbuflen (0),
+    d_TCPbuf (NULL)
 
 {
 	// Initialize the things that must be for any constructor
@@ -1344,8 +1348,6 @@ int	vrpn_Connection::handle_tcp_messages(int fd)
 		struct timeval time;
 		int	sender, type;
 		int	len, payload_len, ceil_len;
-		static	int	buflen = 0;
-		static	char	*buf = NULL;
 #ifdef	VERBOSE2
 	printf("vrpn_Connection::handle_tcp_messages() something to read\n");
 #endif
@@ -1354,7 +1356,8 @@ int	vrpn_Connection::handle_tcp_messages(int fd)
 		if (sdi_noint_block_read(fd,(char*)header,sizeof(header)) !=
 			sizeof(header)) {
 		  //perror("vrpn: vrpn_Connection::handle_tcp_messages: Can't read header");
-		  printf("vrpn:vrpn_connection: handle_tcp_messages: Can't read header");
+		  printf("vrpn_connection::handle_tcp_messages:  "
+                         "Can't read header\n");
 			return -1;
 		}
 		len = ntohl(header[0]);
@@ -1372,7 +1375,8 @@ int	vrpn_Connection::handle_tcp_messages(int fd)
 		  if (sdi_noint_block_read(fd,(char*)rgch,sizeof(header_len-sizeof(header))) !=
 		      sizeof(header_len-sizeof(header))) {
 		    //perror("vrpn: vrpn_Connection::handle_tcp_messages: Can't read header");
-		    printf("vrpn:vrpn_connection: handle_tcp_messages: Can't read header");
+		    printf("vrpn_connection::handle_tcp_messages:  "
+                           "Can't read header + alignment\n");
 		    return -1;
 		  }
 		}
@@ -1386,18 +1390,18 @@ int	vrpn_Connection::handle_tcp_messages(int fd)
 
 		// Make sure the buffer is long enough to hold the whole
 		// message body.
-		if (buflen < ceil_len) {
-		  if (buf) { buf = (char*)realloc(buf,ceil_len); }
-		  else { buf = (char*)malloc(ceil_len); }
-		  if (buf == NULL) {
+		if (d_TCPbuflen < ceil_len) {
+		  if (d_TCPbuf) { d_TCPbuf = (char*)realloc(d_TCPbuf,ceil_len); }
+		  else { d_TCPbuf = (char*)malloc(ceil_len); }
+		  if (d_TCPbuf == NULL) {
 		     fprintf(stderr, "vrpn: vrpn_Connection::handle_tcp_messages: Out of memory\n");
 		     return -1;
 		  }
-		  buflen = ceil_len;
+		  d_TCPbuflen = ceil_len;
 		}
 
 		// Read the body of the message 
-		if (sdi_noint_block_read(fd,buf,ceil_len) != ceil_len) {
+		if (sdi_noint_block_read(fd,d_TCPbuf,ceil_len) != ceil_len) {
 		 perror("vrpn: vrpn_Connection::handle_tcp_messages: Can't read body");
 		 return -1;
 		}
@@ -1408,7 +1412,7 @@ int	vrpn_Connection::handle_tcp_messages(int fd)
 		 if (other_types[type].local_id >= 0) {	// Has one been set?
 		  if (do_callbacks_for(other_types[type].local_id,
 				       other_senders[sender].local_id,
-				       time, payload_len, buf)) {
+				       time, payload_len, d_TCPbuf)) {
 			return -1;
 		  }
 		 }
@@ -1422,7 +1426,7 @@ int	vrpn_Connection::handle_tcp_messages(int fd)
 		  p.sender = sender;
 		  p.msg_time = time;
 		  p.payload_len = payload_len;
-		  p.buffer = buf;
+		  p.buffer = d_TCPbuf;
 
 		  if (system_messages[-type](this, p)) {
 			    fprintf(stderr, "vrpn: vrpn_Connection::handle_tcp_messages: Nonzero system handler return\n");
@@ -1455,7 +1459,6 @@ int	vrpn_Connection::handle_udp_messages(int fd)
         fd_set  readfds, exceptfds;
         struct  timeval timeout;
 	int	num_messages_read = 0;
-	static	char	inbuf[vrpn_CONNECTION_UDP_BUFLEN];
 	int	inbuf_len;
 	char	*inbuf_ptr;
 
@@ -1504,21 +1507,21 @@ int	vrpn_Connection::handle_udp_messages(int fd)
 	printf("vrpn_Connection::handle_udp_messages() something to read\n");
 #endif
 		// Read the buffer and reset the buffer pointer
-		inbuf_ptr = inbuf;
-		if ( (inbuf_len = recv(fd, inbuf, sizeof(inbuf), 0)) == -1) {
+		inbuf_ptr = d_UDPinbuf;
+		if ( (inbuf_len = recv(fd, d_UDPinbuf, sizeof(d_UDPinbuf), 0)) == -1) {
 		   perror("vrpn: vrpn_Connection::handle_udp_messages: recv() failed");
 		   return -1;
 		}
 
 	      // Parse each message in the buffer
-	      while ( (inbuf_ptr - inbuf) != inbuf_len) {
+	      while ( (inbuf_ptr - d_UDPinbuf) != inbuf_len) {
 
 		// Read and parse the header
 		// skip up to alignment
 		unsigned int header_len = sizeof(header);
 		if (header_len%vrpn_ALIGN) {header_len += vrpn_ALIGN - header_len%vrpn_ALIGN;}
 		
-		if ( ((inbuf_ptr - inbuf) + header_len) > (unsigned)inbuf_len) {
+		if ( ((inbuf_ptr - d_UDPinbuf) + header_len) > (unsigned)inbuf_len) {
 		   fprintf(stderr, "vrpn: vrpn_Connection::handle_udp_messages: Can't read header");
 		   return -1;
 		}
@@ -1543,7 +1546,7 @@ int	vrpn_Connection::handle_udp_messages(int fd)
 		if (ceil_len%vrpn_ALIGN) {ceil_len += vrpn_ALIGN - ceil_len%vrpn_ALIGN;}
 
 		// Make sure we received enough to cover the entire payload
-		if ( ((inbuf_ptr - inbuf) + ceil_len) > inbuf_len) {
+		if ( ((inbuf_ptr - d_UDPinbuf) + ceil_len) > inbuf_len) {
 		   fprintf(stderr, "vrpn: vrpn_Connection::handle_udp_messages: Can't read payload");
 		   return -1;
 		}

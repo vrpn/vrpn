@@ -56,9 +56,9 @@ vrpn_Button::vrpn_Button(char *name, vrpn_Connection *c): num_buttons(0)
 
    // Set the time to 0 just to have something there.
    timestamp.tv_usec = timestamp.tv_sec = 0;
-   for (int i=0; i< vrpn_BUTTON_MAX_BUTTONS; i++) { 
-	   buttonstate[i] = BUTTON_MOMENTARY; 
-	   lastbuttons[i] = 0; 
+   for (int i=0; i< vrpn_BUTTON_MAX_BUTTONS; i++) {
+	   buttonstate[i] = BUTTON_MOMENTARY;
+	   lastbuttons[i] = 0;
    }
 }
 
@@ -168,8 +168,9 @@ static int client_msg_handler(void *userdata, vrpn_HANDLERPARAM p) {
 }
 
 void	vrpn_Button::report_changes(void)
-{  int	i;
- 
+{
+  int	i;
+
    if (connection) {
       for (i = 0; i < num_buttons; i++) {
 	switch (buttonstate[i]) {
@@ -188,8 +189,8 @@ void	vrpn_Button::report_changes(void)
 	    buttonstate[i] = BUTTON_TOGGLE_ON;
 	    PACK_MESSAGE(i, 1);
 	  }
-	  break; 
-	default: 
+	  break;
+	default:
 		fprintf(stderr,"vrpn_Button::report_changes(): Button %d in invalid state (%d)\n",i,buttonstate[i]);
 	}
 	lastbuttons[i] = buttons[i];

@@ -249,6 +249,13 @@ class vrpn_Connection
 	// (this should really not be here, it should be in adjusted time
 	// connection, but this makes it a lot easier
         struct timeval tvClockOffset;
+
+	// Thread safety modifications - TCH 19 May 98
+
+	// Input buffers
+	int d_TCPbuflen;
+	char * d_TCPbuf;
+	char d_UDPinbuf [vrpn_CONNECTION_UDP_BUFLEN];
 };
 
 // forward decls
