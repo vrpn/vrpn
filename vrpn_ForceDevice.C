@@ -18,6 +18,8 @@
 #include <sys/ioctl.h>
 #endif 
 
+#include <quat.h>  // quaternion for spring stuff
+
 #include "vrpn_ForceDevice.h"
 
 /* cheezy hack to make sure this enum is defined in the case we didn't 
@@ -26,6 +28,33 @@
 // the different types of trimeshes we have available for haptic display
 enum TrimeshType {GHOST,HCOLLIDE};
 #endif
+
+#define CHECK(a) if (a == -1) return -1
+
+// c = a x b
+static void vector_cross (const vrpn_float64 a [3], const vrpn_float64 b [3],
+                          vrpn_float64 c [3]) {
+
+  c[0] = a[1] * b[2] - a[2] * b[1];
+  c[1] = a[2] * b[0] - a[0] * b[2];
+  c[2] = a[0] * b[1] - a[1] * b[0];
+
+}
+
+#if 0
+// vprime = v * T
+static void rotate_vector (const vrpn_float64 v [3], const vrpn_float64 T [9],
+                           vrpn_float64 vprime [3]) {
+  vprime[0] = v[0] * T[0] + v[1] * T[3] + v[2] * T[6];
+  vprime[1] = v[0] * T[1] + v[1] * T[4] + v[2] * T[7];
+  vprime[2] = v[0] * T[2] + v[1] * T[5] + v[2] * T[8];
+}
+#endif
+
+static vrpn_float64 vector_dot (const vrpn_float64 a [3],
+                                const vrpn_float64 b [3]) {
+  return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+}
 
 vrpn_ForceDevice::vrpn_ForceDevice(char *name, vrpn_Connection *c)
 {
@@ -62,10 +91,26 @@ vrpn_ForceDevice::vrpn_ForceDevice(char *name, vrpn_Connection *c)
 	    clearTrimesh_message_id = 
 	      connection->register_message_type("clearTrimesh");
 	    scp_message_id = connection->register_message_type("SCP");
-	    set_constraint_message_id = 
-		    connection->register_message_type("CONSTRAINT");
 	    error_message_id = connection->register_message_type
 				    ("Force Error");
+
+      enableConstraint_message_id =
+            connection->register_message_type("vrpn FDev constraint enable");
+      setConstraintMode_message_id =
+            connection->register_message_type("vrpn FDev constraint mode");
+      setConstraintPoint_message_id =
+            connection->register_message_type("vrpn FDev constraint point");
+      setConstraintLinePoint_message_id =
+            connection->register_message_type("vrpn FDev constraint linept");
+      setConstraintLineDirection_message_id =
+            connection->register_message_type("vrpn FDev constraint linedir");
+      setConstraintPlanePoint_message_id =
+            connection->register_message_type("vrpn FDev constraint plpt");
+      setConstraintPlaneNormal_message_id =
+            connection->register_message_type("vrpn FDev constraint plnorm");
+      setConstraintKSpring_message_id =
+            connection->register_message_type("vrpn FDev constraint KSpring");
+
     }
 
     //set the current time to zero
@@ -120,7 +165,7 @@ char *vrpn_ForceDevice::encode_force(vrpn_int32 &length, const vrpn_float64 *for
 
     // Move the force there
     for (i = 0; i < 3; i++){
-	    buffer(&mptr, &mlen, force[i]);
+	    vrpn_buffer(&mptr, &mlen, force[i]);
     }
 
     return buf;
@@ -130,7 +175,6 @@ vrpn_int32 vrpn_ForceDevice::decode_force (const char *buffer, const vrpn_int32 
 				vrpn_float64 *force)
 {
     int i;
-    int res;
     const char *mptr = buffer;
 
     if (len !=  (3*sizeof(vrpn_float64)) ) {
@@ -141,9 +185,9 @@ vrpn_int32 vrpn_ForceDevice::decode_force (const char *buffer, const vrpn_int32 
     }
 
     for (i = 0; i < 3; i++)
-	    res = unbuffer(&mptr, &(force[i]));
+	    CHECK(vrpn_unbuffer(&mptr, &(force[i])));
 
-    return res;
+    return 0;
 }
 
 char *vrpn_ForceDevice::encode_scp(vrpn_int32 &length, 
@@ -161,10 +205,10 @@ char *vrpn_ForceDevice::encode_scp(vrpn_int32 &length,
     mptr = buf;
 
     for (i = 0; i < 3; i++) {
-        buffer(&mptr, &mlen, pos[i]);
+        vrpn_buffer(&mptr, &mlen, pos[i]);
     }
     for (i = 0; i < 4; i++) {
-        buffer(&mptr, &mlen, quat[i]);
+        vrpn_buffer(&mptr, &mlen, quat[i]);
     }
 
     return buf;
@@ -174,7 +218,6 @@ vrpn_int32 vrpn_ForceDevice::decode_scp(const char *buffer, const vrpn_int32 len
 				 vrpn_float64 *pos, vrpn_float64 *quat)
 {
     int i;
-    int res;
     const char *mptr = buffer;
 
     if (len != 7*sizeof(vrpn_float64)){
@@ -185,11 +228,11 @@ vrpn_int32 vrpn_ForceDevice::decode_scp(const char *buffer, const vrpn_int32 len
     }
 
     for (i = 0; i < 3; i++)
-	    res = unbuffer(&mptr, &(pos[i]));
+	    CHECK(vrpn_unbuffer(&mptr, &(pos[i])));
     for (i = 0; i < 4; i++)
-	    res = unbuffer(&mptr, &(quat[i]));
+	    CHECK(vrpn_unbuffer(&mptr, &(quat[i])));
 
-    return res;
+    return 0;
 }
 
 char *vrpn_ForceDevice::encode_plane(vrpn_int32 &len, const vrpn_float32 *plane, 
@@ -210,15 +253,15 @@ char *vrpn_ForceDevice::encode_plane(vrpn_int32 &len, const vrpn_float32 *plane,
 	mptr = buf;
 
 	for (i = 0; i < 4; i++){
-		buffer(&mptr, &mlen, plane[i]);
+		vrpn_buffer(&mptr, &mlen, plane[i]);
 	}
 
-	buffer(&mptr, &mlen, kspring);
-	buffer(&mptr, &mlen, kdamp);
-	buffer(&mptr, &mlen, fdyn);
-	buffer(&mptr, &mlen, fstat);
-	buffer(&mptr, &mlen, plane_index);
-	buffer(&mptr, &mlen, n_rec_cycles);
+	vrpn_buffer(&mptr, &mlen, kspring);
+	vrpn_buffer(&mptr, &mlen, kdamp);
+	vrpn_buffer(&mptr, &mlen, fdyn);
+	vrpn_buffer(&mptr, &mlen, fstat);
+	vrpn_buffer(&mptr, &mlen, plane_index);
+	vrpn_buffer(&mptr, &mlen, n_rec_cycles);
 
 	return buf;
 }
@@ -240,13 +283,13 @@ vrpn_int32 vrpn_ForceDevice::decode_plane(const char *buffer, const vrpn_int32 l
     }
 
     for (i = 0; i < 4; i++)
-	    unbuffer(&mptr, &(plane[i]));
-    unbuffer(&mptr, kspring);
-    unbuffer(&mptr, kdamp);
-    unbuffer(&mptr, fdyn);
-    unbuffer(&mptr, fstat);
-    unbuffer(&mptr, plane_index);
-    unbuffer(&mptr, n_rec_cycles);
+	    CHECK(vrpn_unbuffer(&mptr, &(plane[i])));
+    CHECK(vrpn_unbuffer(&mptr, kspring));
+    CHECK(vrpn_unbuffer(&mptr, kdamp));
+    CHECK(vrpn_unbuffer(&mptr, fdyn));
+    CHECK(vrpn_unbuffer(&mptr, fstat));
+    CHECK(vrpn_unbuffer(&mptr, plane_index));
+    CHECK(vrpn_unbuffer(&mptr, n_rec_cycles));
 
     return 0;
 }
@@ -267,12 +310,12 @@ char *vrpn_ForceDevice::encode_surface_effects(vrpn_int32 &len,
     buf = new char [len];
     mptr = buf;
 
-    buffer(&mptr, &mlen, k_adhesion_normal);
-	buffer(&mptr, &mlen, k_adhesion_lateral);
-    buffer(&mptr, &mlen, tex_amp);
-    buffer(&mptr, &mlen, tex_wl);
-    buffer(&mptr, &mlen, buzz_amp);
-    buffer(&mptr, &mlen, buzz_freq);
+    vrpn_buffer(&mptr, &mlen, k_adhesion_normal);
+	vrpn_buffer(&mptr, &mlen, k_adhesion_lateral);
+    vrpn_buffer(&mptr, &mlen, tex_amp);
+    vrpn_buffer(&mptr, &mlen, tex_wl);
+    vrpn_buffer(&mptr, &mlen, buzz_amp);
+    vrpn_buffer(&mptr, &mlen, buzz_freq);
 
     return buf;
 }
@@ -292,12 +335,12 @@ vrpn_int32 vrpn_ForceDevice::decode_surface_effects(const char *buffer, const vr
 	return -1;
     }
 
-    unbuffer(&mptr, k_adhesion_normal);
-	unbuffer(&mptr, k_adhesion_lateral);
-    unbuffer(&mptr, tex_amp);
-    unbuffer(&mptr, tex_wl);
-    unbuffer(&mptr, buzz_amp);
-    unbuffer(&mptr, buzz_freq);
+    CHECK(vrpn_unbuffer(&mptr, k_adhesion_normal));
+    CHECK(vrpn_unbuffer(&mptr, k_adhesion_lateral));
+    CHECK(vrpn_unbuffer(&mptr, tex_amp));
+    CHECK(vrpn_unbuffer(&mptr, tex_wl));
+    CHECK(vrpn_unbuffer(&mptr, buzz_amp));
+    CHECK(vrpn_unbuffer(&mptr, buzz_freq));
 
     return 0;
 }
@@ -315,10 +358,10 @@ char *vrpn_ForceDevice::encode_vertex(vrpn_int32 &len,const vrpn_int32 vertNum,
     buf = new char [len];
     mptr = buf;
 
-    buffer(&mptr, &mlen, vertNum);
-    buffer(&mptr, &mlen, x);
-    buffer(&mptr, &mlen, y);
-    buffer(&mptr, &mlen, z);
+    vrpn_buffer(&mptr, &mlen, vertNum);
+    vrpn_buffer(&mptr, &mlen, x);
+    vrpn_buffer(&mptr, &mlen, y);
+    vrpn_buffer(&mptr, &mlen, z);
 
     return buf; 
 }
@@ -335,10 +378,10 @@ vrpn_int32 vrpn_ForceDevice::decode_vertex(const char *buffer,
 	    return -1;
     }
 
-    unbuffer(&mptr, vertNum);
-    unbuffer(&mptr, x);
-    unbuffer(&mptr, y);
-    unbuffer(&mptr, z);
+    CHECK(vrpn_unbuffer(&mptr, vertNum));
+    CHECK(vrpn_unbuffer(&mptr, x));
+    CHECK(vrpn_unbuffer(&mptr, y));
+    CHECK(vrpn_unbuffer(&mptr, z));
 
     return 0;
 }
@@ -355,10 +398,10 @@ char *vrpn_ForceDevice::encode_normal(vrpn_int32 &len,const vrpn_int32 normNum,
 
     buf = new char [len];
     mptr = buf;
-    buffer(&mptr, &mlen, normNum);
-    buffer(&mptr, &mlen, x);
-    buffer(&mptr, &mlen, y);
-    buffer(&mptr, &mlen, z);
+    vrpn_buffer(&mptr, &mlen, normNum);
+    vrpn_buffer(&mptr, &mlen, x);
+    vrpn_buffer(&mptr, &mlen, y);
+    vrpn_buffer(&mptr, &mlen, z);
 
     return buf; 
 }
@@ -375,10 +418,10 @@ vrpn_int32 vrpn_ForceDevice::decode_normal(const char *buffer,const vrpn_int32 l
 	    return -1;
     }
 
-    unbuffer(&mptr, vertNum);
-    unbuffer(&mptr, x);
-    unbuffer(&mptr, y);
-    unbuffer(&mptr, z);
+    CHECK(vrpn_unbuffer(&mptr, vertNum));
+    CHECK(vrpn_unbuffer(&mptr, x));
+    CHECK(vrpn_unbuffer(&mptr, y));
+    CHECK(vrpn_unbuffer(&mptr, z));
 
     return 0;
 }
@@ -396,13 +439,13 @@ char *vrpn_ForceDevice::encode_triangle(vrpn_int32 &len,const vrpn_int32 triNum,
     buf = new char [len];
     mptr = buf;
 
-    buffer(&mptr, &mlen, triNum);
-    buffer(&mptr, &mlen, vert0);
-    buffer(&mptr, &mlen, vert1);
-    buffer(&mptr, &mlen, vert2);
-    buffer(&mptr, &mlen, norm0);
-    buffer(&mptr, &mlen, norm1);
-    buffer(&mptr, &mlen, norm2);
+    vrpn_buffer(&mptr, &mlen, triNum);
+    vrpn_buffer(&mptr, &mlen, vert0);
+    vrpn_buffer(&mptr, &mlen, vert1);
+    vrpn_buffer(&mptr, &mlen, vert2);
+    vrpn_buffer(&mptr, &mlen, norm0);
+    vrpn_buffer(&mptr, &mlen, norm1);
+    vrpn_buffer(&mptr, &mlen, norm2);
 
     return buf; 
 }
@@ -421,13 +464,13 @@ vrpn_int32 vrpn_ForceDevice::decode_triangle(const char *buffer,
 	    return -1;
     }
 
-    unbuffer(&mptr, triNum);
-    unbuffer(&mptr, vert0);
-    unbuffer(&mptr, vert1);
-    unbuffer(&mptr, vert2);
-    unbuffer(&mptr, norm0);
-    unbuffer(&mptr, norm1);
-    unbuffer(&mptr, norm2);
+    CHECK(vrpn_unbuffer(&mptr, triNum));
+    CHECK(vrpn_unbuffer(&mptr, vert0));
+    CHECK(vrpn_unbuffer(&mptr, vert1));
+    CHECK(vrpn_unbuffer(&mptr, vert2));
+    CHECK(vrpn_unbuffer(&mptr, norm0));
+    CHECK(vrpn_unbuffer(&mptr, norm1));
+    CHECK(vrpn_unbuffer(&mptr, norm2));
 
     return 0;
 }
@@ -444,15 +487,13 @@ char *vrpn_ForceDevice::encode_removeTriangle(vrpn_int32 &len,const vrpn_int32 t
     buf = new char [len];
     mptr = buf;
 
-    buffer(&mptr, &mlen, triNum);
+    vrpn_buffer(&mptr, &mlen, triNum);
 
     return buf; 
 }
 
 vrpn_int32 vrpn_ForceDevice::decode_removeTriangle(const char *buffer,
 				const vrpn_int32 len,vrpn_int32 *triNum){
-
-    int res;
     const char *mptr = buffer;
 
     if (len != sizeof(vrpn_int32)){
@@ -462,9 +503,9 @@ vrpn_int32 vrpn_ForceDevice::decode_removeTriangle(const char *buffer,
 	    return -1;
     }
 
-    res = unbuffer(&mptr, triNum);
+    CHECK(vrpn_unbuffer(&mptr, triNum));
 
-    return res;
+    return 0;
 }
 
 // this is where we send down our surface parameters
@@ -482,10 +523,10 @@ char *vrpn_ForceDevice::encode_updateTrimeshChanges(vrpn_int32 &len,
     buf = new char [len];
     mptr = buf;
 
-    buffer(&mptr, &mlen, kspring);
-    buffer(&mptr, &mlen, kdamp);
-    buffer(&mptr, &mlen, fstat);
-    buffer(&mptr, &mlen, fdyn);
+    vrpn_buffer(&mptr, &mlen, kspring);
+    vrpn_buffer(&mptr, &mlen, kdamp);
+    vrpn_buffer(&mptr, &mlen, fstat);
+    vrpn_buffer(&mptr, &mlen, fdyn);
 
     return buf; 
 }
@@ -503,10 +544,10 @@ vrpn_int32 vrpn_ForceDevice::decode_updateTrimeshChanges(const char *buffer,
 	    return -1;
     }
 
-    unbuffer(&mptr, kspring);
-    unbuffer(&mptr, kdamp);
-    unbuffer(&mptr, fstat);
-    unbuffer(&mptr, fdyn);
+    CHECK(vrpn_unbuffer(&mptr, kspring));
+    CHECK(vrpn_unbuffer(&mptr, kdamp));
+    CHECK(vrpn_unbuffer(&mptr, fstat));
+    CHECK(vrpn_unbuffer(&mptr, fdyn));
 
     return 0;
 }
@@ -523,7 +564,7 @@ char *vrpn_ForceDevice::encode_setTrimeshType(vrpn_int32 &len,const vrpn_int32 t
     buf = new char [len];
     mptr = buf;
 
-    buffer(&mptr, &mlen, type);
+    vrpn_buffer(&mptr, &mlen, type);
 
     return buf; 
 }
@@ -531,7 +572,6 @@ char *vrpn_ForceDevice::encode_setTrimeshType(vrpn_int32 &len,const vrpn_int32 t
 vrpn_int32 vrpn_ForceDevice::decode_setTrimeshType(const char *buffer,const vrpn_int32 len,
 					   vrpn_int32 *type){
 
-    int res;
     const char *mptr = buffer;
 
     if (len != sizeof(vrpn_int32)){
@@ -541,9 +581,9 @@ vrpn_int32 vrpn_ForceDevice::decode_setTrimeshType(const char *buffer,const vrpn
 	    return -1;
     }
 
-    res = unbuffer(&mptr, type);
+    CHECK(vrpn_unbuffer(&mptr, type));
 
-    return res;
+    return 0;
 }
 
 char *vrpn_ForceDevice::encode_trimeshTransform(vrpn_int32 &len,
@@ -560,7 +600,7 @@ char *vrpn_ForceDevice::encode_trimeshTransform(vrpn_int32 &len,
 	mptr = buf;
   
 	for(i = 0; i < 16; i++)
-		buffer(&mptr, &mlen, homMatrix[i]);    
+		vrpn_buffer(&mptr, &mlen, homMatrix[i]);    
 
 	return buf; 
 }
@@ -578,51 +618,7 @@ vrpn_int32 vrpn_ForceDevice::decode_trimeshTransform(const char *buffer,
     }
 
     for (i = 0; i < 16; i++)
-	    unbuffer(&mptr, &(homMatrix[i]));
-
-    return 0;
-}
-
-char *vrpn_ForceDevice::encode_constraint(vrpn_int32 &len, const vrpn_int32 enable,
-		const vrpn_float32 x, const vrpn_float32 y, const vrpn_float32 z,const vrpn_float32 kSpr){
-
-    char *buf;
-    char *mptr;
-    vrpn_int32 mlen;
-
-    len = sizeof(vrpn_int32) + 4*sizeof(vrpn_float32);
-    mlen = len;
-
-    buf = new char [len];
-    mptr = buf;
-
-    buffer(&mptr, &mlen, enable);
-    buffer(&mptr, &mlen, x);
-    buffer(&mptr, &mlen, y);
-    buffer(&mptr, &mlen, z);
-    buffer(&mptr, &mlen, kSpr);
-
-    return buf;
-}
-
-vrpn_int32 vrpn_ForceDevice::decode_constraint(const char *buffer, 
-			     const vrpn_int32 len,vrpn_int32 *enable, 
-			     vrpn_float32 *x, vrpn_float32 *y, vrpn_float32 *z, vrpn_float32 *kSpr){
-
-    const char *mptr = buffer;
-
-    if (len != sizeof(vrpn_int32) + 4*sizeof(vrpn_float32)){
-	fprintf(stderr,"vrpn_ForceDevice: constraint message payload error\n");
-	    fprintf(stderr,"             (got %d, expected %d)\n",
-		    len, sizeof(vrpn_int32) + 4*sizeof(vrpn_float32) );
-	    return -1;
-    }
-
-    unbuffer(&mptr, enable);
-    unbuffer(&mptr, x);
-    unbuffer(&mptr, y);
-    unbuffer(&mptr, z);
-    unbuffer(&mptr, kSpr);
+	    CHECK(vrpn_unbuffer(&mptr, &(homMatrix[i])));
 
     return 0;
 }
@@ -642,16 +638,16 @@ char *vrpn_ForceDevice::encode_forcefield(vrpn_int32 &len, const vrpn_float32 or
     mptr = buf;
 
     for (i=0;i<3;i++)
-    buffer(&mptr, &mlen, origin[i]);
+    vrpn_buffer(&mptr, &mlen, origin[i]);
 
     for (i=0;i<3;i++)
-    buffer(&mptr, &mlen, force[i]);
+    vrpn_buffer(&mptr, &mlen, force[i]);
 
     for (i=0;i<3;i++)
 	    for (j=0;j<3;j++)
-		    buffer(&mptr, &mlen, jacobian[i][j]);
+		    vrpn_buffer(&mptr, &mlen, jacobian[i][j]);
 
-    buffer(&mptr, &mlen, radius);
+    vrpn_buffer(&mptr, &mlen, radius);
 
     return buf;
 }
@@ -670,16 +666,16 @@ vrpn_int32 vrpn_ForceDevice::decode_forcefield(const char *buffer,
     }
 
     for (i=0;i<3;i++)
-	    unbuffer(&mptr, &(origin[i]));
+	    CHECK(vrpn_unbuffer(&mptr, &(origin[i])));
 
     for (i=0;i<3;i++)
-	    unbuffer(&mptr, &(force[i]));
+	    CHECK(vrpn_unbuffer(&mptr, &(force[i])));
 
     for (i=0;i<3;i++)
 	    for (j=0;j<3;j++)
-		    unbuffer(&mptr, &(jacobian[i][j]));
+		    CHECK(vrpn_unbuffer(&mptr, &(jacobian[i][j])));
 
-    unbuffer(&mptr, radius);
+    CHECK(vrpn_unbuffer(&mptr, radius));
 
     return 0;
 }
@@ -697,7 +693,7 @@ char *vrpn_ForceDevice::encode_error(vrpn_int32 &len, const vrpn_int32 error_cod
     buf = new char [len];
     mptr = buf;
 
-    buffer(&mptr, &mlen, error_code);
+    vrpn_buffer(&mptr, &mlen, error_code);
 
     return buf;
 }
@@ -715,7 +711,7 @@ vrpn_int32 vrpn_ForceDevice::decode_error(const char *buffer,
 	    return -1;
     }
 
-    unbuffer(&mptr, error_code);
+    CHECK(vrpn_unbuffer(&mptr, error_code));
 
     return 0;
 }
@@ -763,11 +759,286 @@ void vrpn_ForceDevice::sendError(int error_code){
     }
 }
 
+// constraint message encode/decode methods
+
+
+//static
+char * vrpn_ForceDevice::encode_enableConstraint
+                   (vrpn_int32 & len,
+                    vrpn_int32 enable) {
+  char * buf;
+  char * mptr;
+  vrpn_int32 mlen;
+
+  len = sizeof(vrpn_int32);
+  mlen = len;
+
+  buf = new char [len];
+  mptr = buf;
+
+  vrpn_buffer(&mptr, &mlen, enable);
+
+  return buf;
+}
+
+//static
+vrpn_int32 vrpn_ForceDevice::decode_enableConstraint
+                   (const char * buffer,
+                    const vrpn_int32 len,
+                    vrpn_int32 * enable) {
+  const char * mptr = buffer;
+
+  if (len != sizeof(vrpn_int32)) {
+    fprintf(stderr,"vrpn_ForceDevice:  "
+                   "enable constraint message payload error\n"
+                   "             (got %d, expected %d)\n",
+            len, sizeof(vrpn_int32));
+    return -1;
+  }
+  
+  CHECK(vrpn_unbuffer(&mptr, enable));
+
+  return 0;
+}
+
+
+//static
+char * vrpn_ForceDevice::encode_setConstraintMode
+                   (vrpn_int32 & len,
+                    ConstraintGeometry mode) {
+  char * buf;
+  char * mptr;
+  vrpn_int32 modeint;
+  vrpn_int32 mlen;
+
+  len = sizeof(vrpn_int32);
+  mlen = len;
+
+  buf = new char [len];
+  mptr = buf;
+
+  switch (mode) {
+    case NO_CONSTRAINT:  modeint = 0;  break;
+    case POINT_CONSTRAINT:  modeint = 1;  break;
+    case LINE_CONSTRAINT:  modeint = 2;  break;
+    case PLANE_CONSTRAINT:  modeint = 3;  break;
+    default:
+      fprintf(stderr, "vrpn_ForceDevice:  "
+                      "Unknown or illegal constraint mode.\n");
+      modeint = 0;  break;
+  }
+
+  vrpn_buffer(&mptr, &mlen, modeint);
+
+  return buf;
+}
+
+//static
+vrpn_int32 vrpn_ForceDevice::decode_setConstraintMode
+                   (const char * buffer,
+                    const vrpn_int32 len,
+                    ConstraintGeometry * mode) {
+  const char * mptr = buffer;
+  vrpn_int32 modeint;
+
+  if (len != sizeof(vrpn_int32)) {
+    fprintf(stderr,"vrpn_ForceDevice:  "
+                   "constraint mode payload error\n"
+                   "             (got %d, expected %d)\n",
+            len, sizeof(vrpn_int32));
+    return -1;
+  }
+  
+  CHECK(vrpn_unbuffer(&mptr, &modeint));
+
+  switch (modeint) {
+    case 0:  *mode = NO_CONSTRAINT;  break;
+    case 1:  *mode = POINT_CONSTRAINT;  break;
+    case 2:  *mode = LINE_CONSTRAINT;  break;
+    case 3:  *mode = PLANE_CONSTRAINT;  break;
+    default:
+      fprintf(stderr, "vrpn_ForceDevice:  "
+                      "Unknown or illegal constraint mode.\n");
+      *mode = NO_CONSTRAINT;
+      return -1;
+  }
+
+  return 0;
+}
+
+
+//static
+char * vrpn_ForceDevice::encode_setConstraintPoint
+                   (vrpn_int32 & len,
+                    vrpn_float32 x, vrpn_float32 y, vrpn_float32 z) {
+  return encodePoint(len, x, y, z);
+}
+
+//static
+vrpn_int32 vrpn_ForceDevice::decode_setConstraintPoint
+                   (const char * buffer,
+                    const vrpn_int32 len,
+                    vrpn_float32 * x, vrpn_float32 * y, vrpn_float32 * z) {
+  return decodePoint(buffer, len, x, y, z);
+}
+
+
+//static
+char * vrpn_ForceDevice::encode_setConstraintLinePoint
+                   (vrpn_int32 & len,
+                    vrpn_float32 x, vrpn_float32 y, vrpn_float32 z) {
+  return encodePoint(len, x, y, z);
+}
+
+//static
+vrpn_int32 vrpn_ForceDevice::decode_setConstraintLinePoint
+                   (const char * buffer,
+                    const vrpn_int32 len,
+                    vrpn_float32 * x, vrpn_float32 * y, vrpn_float32 * z) {
+  return decodePoint(buffer, len, x, y, z);
+}
+
+
+//static
+char * vrpn_ForceDevice::encode_setConstraintLineDirection
+                   (vrpn_int32 & len,
+                    vrpn_float32 x, vrpn_float32 y, vrpn_float32 z) {
+  return encodePoint(len, x, y, z);
+}
+
+//static
+vrpn_int32 vrpn_ForceDevice::decode_setConstraintLineDirection
+                   (const char * buffer,
+                    const vrpn_int32 len,
+                    vrpn_float32 * x, vrpn_float32 * y, vrpn_float32 * z) {
+  return decodePoint(buffer, len, x, y, z);
+}
+
+//static
+char * vrpn_ForceDevice::encode_setConstraintPlanePoint
+                   (vrpn_int32 & len,
+                    vrpn_float32 x, vrpn_float32 y, vrpn_float32 z) {
+  return encodePoint(len, x, y, z);
+}
+
+//static
+ vrpn_int32 vrpn_ForceDevice::decode_setConstraintPlanePoint
+                   (const char * buffer,
+                    const vrpn_int32 len,
+                    vrpn_float32 * x, vrpn_float32 * y, vrpn_float32 * z) {
+  return decodePoint(buffer, len, x, y, z);
+}
+
+//static
+char * vrpn_ForceDevice::encode_setConstraintPlaneNormal
+                   (vrpn_int32 & len,
+                    vrpn_float32 x, vrpn_float32 y, vrpn_float32 z) {
+  return encodePoint(len, x, y, z);
+}
+
+//static
+ vrpn_int32 vrpn_ForceDevice::decode_setConstraintPlaneNormal
+                   (const char * buffer,
+                    const vrpn_int32 len,
+                    vrpn_float32 * x, vrpn_float32 * y, vrpn_float32 * z) {
+  return decodePoint(buffer, len, x, y, z);
+}
+
+//static
+char * vrpn_ForceDevice::encode_setConstraintKSpring
+                   (vrpn_int32 & len,
+                    vrpn_float32 k) {
+  char * buf;
+  char * mptr;
+  vrpn_int32 mlen;
+
+  len = sizeof(vrpn_float32);
+  mlen = len;
+
+  buf = new char [len];
+  mptr = buf;
+
+  vrpn_buffer(&mptr, &mlen, k);
+
+  return buf;
+}
+
+//static
+vrpn_int32 vrpn_ForceDevice::decode_setConstraintKSpring
+                   (const char * buffer,
+                    const vrpn_int32 len,
+                    vrpn_float32 * k) {
+  const char * mptr = buffer;
+
+  if (len != sizeof(vrpn_float32)) {
+    fprintf(stderr,"vrpn_ForceDevice:  "
+                   "set constraint spring message payload error\n"
+                   "             (got %d, expected %d)\n",
+            len, sizeof(vrpn_float32));
+    return -1;
+  }
+
+  CHECK(vrpn_unbuffer(&mptr, k));
+
+  return 0;
+}
+
+
+//
+//  utility functions
+//
+
+//static
+char * vrpn_ForceDevice::encodePoint (vrpn_int32 & len,
+                vrpn_float32 x, vrpn_float32 y, vrpn_float32 z) {
+  char * buf;
+  char * mptr;
+  vrpn_int32 mlen;
+
+  len = 3 * sizeof(vrpn_float32);
+  mlen = len;
+
+  buf = new char [len];
+  mptr = buf;
+
+  vrpn_buffer(&mptr, &mlen, x);
+  vrpn_buffer(&mptr, &mlen, y);
+  vrpn_buffer(&mptr, &mlen, z);
+
+  return buf;
+}
+
+//static
+vrpn_int32 vrpn_ForceDevice::decodePoint (const char * buffer,
+                const vrpn_int32 len, vrpn_float32 * x, vrpn_float32 * y,
+                vrpn_float32 * z) {
+  const char * mptr = buffer;
+
+  if (len != 3 * sizeof(vrpn_float32)) {
+    fprintf(stderr,"vrpn_ForceDevice:  "
+                   "decode point message payload error\n"
+                   "             (got size %d, expected %d)\n",
+            len, 3 * sizeof(vrpn_float32));
+    return -1;
+  }
+  
+  CHECK(vrpn_unbuffer(&mptr, x));
+  CHECK(vrpn_unbuffer(&mptr, y));
+  CHECK(vrpn_unbuffer(&mptr, z));
+
+  return 0;
+}
+
+
 /* ******************** vrpn_ForceDevice_Remote ********************** */
 
 vrpn_ForceDevice_Remote::vrpn_ForceDevice_Remote(char *name):
-	vrpn_ForceDevice(name,vrpn_get_connection_by_name(name)),
-	change_list(NULL), scp_change_list(NULL), error_change_list(NULL)
+	vrpn_ForceDevice(name, vrpn_get_connection_by_name(name)),
+    change_list (NULL),
+    scp_change_list (NULL),
+    error_change_list (NULL),
+    d_conEnabled (0),
+    d_conMode (POINT_CONSTRAINT)
 {
     which_plane = 0;
 
@@ -1070,35 +1341,140 @@ void vrpn_ForceDevice_Remote::useGhost(void){
 }
 
 
-void vrpn_ForceDevice_Remote::sendConstraint(vrpn_int32 enable, 
-					vrpn_float32 x, vrpn_float32 y, vrpn_float32 z, vrpn_float32 kSpr)
-{
-  char *msgbuf;
-  vrpn_int32	len;
-  struct timeval current_time;
+//
+// constraint methods
+//
 
-  gettimeofday(&current_time, NULL);
-  timestamp.tv_sec = current_time.tv_sec;
-  timestamp.tv_usec = current_time.tv_usec;
 
-  if(connection){
-    msgbuf = encode_constraint(len, enable, x, y, z, kSpr);
-    if (connection->pack_message(len,timestamp,set_constraint_message_id,
-				my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
-	fprintf(stderr,"Phantom: cannot write message: tossing\n");
-    }
-    connection->mainloop();
-    delete []msgbuf;
+#ifdef FD_SPRINGS_AS_FIELDS
+
+#if 0
+void vrpn_ForceDevice_Remote::enableConstraint (vrpn_int32 enable) {
+}
+
+void vrpn_ForceDevice_Remote::setConstraintMode (ConstraintGeometry mode) {
+}
+
+void vrpn_ForceDevice_Remote::setConstraintPoint
+}
+
+void vrpn_ForceDevice_Remote::setConstraintLinePoint
+}
+
+void vrpn_ForceDevice_Remote::setConstraintLineDirection
+}
+
+void vrpn_ForceDevice_Remote::setConstraintPlanePoint
+}
+
+void vrpn_ForceDevice_Remote::setConstraintPlaneNormal
+}
+
+void vrpn_ForceDevice_Remote::setConstraintKSpring (vrpn_float32 k) {
+}
+#endif  // 0
+
+#else
+
+void vrpn_ForceDevice_Remote::enableConstraint (vrpn_int32 enable) {
+  char * msgbuf;
+  vrpn_int32 len;
+
+  if (enable == d_conEnabled) return;
+  d_conEnabled = enable;
+
+  switch (d_conEnabled) {
+    case 0:
+      stopForceField();
+      break;
+    case 1:
+      constraintToForceField();
+      sendForceField();
+      break;
+    default:
+      fprintf(stderr, "vrpn_ForceDevice_Remote::enableConstraint:  "
+                      "Illegal value of enable (%d).\n", enable);
+      break;
   }
 }
 
-void vrpn_ForceDevice_Remote::sendForceField()
+void vrpn_ForceDevice_Remote::setConstraintMode (ConstraintGeometry mode) {
+  char * msgbuf;
+  vrpn_int32 len;
+
+  d_conMode = mode;
+  constraintToForceField();
+  if (d_conEnabled)
+    sendForceField();
+}
+
+void vrpn_ForceDevice_Remote::setConstraintPoint
+                  (vrpn_float32 point [3]) {
+  d_conPoint[0] = normal[0];
+  d_conPoint[1] = normal[1];
+  d_conPoint[2] = normal[2];
+  constraintToForceField();
+  if (d_conEnabled)
+    sendForceField();
+}
+
+void vrpn_ForceDevice_Remote::setConstraintLinePoint
+                  (vrpn_float32 point [3]) {
+  d_conLinePoint[0] = normal[0];
+  d_conLinePoint[1] = normal[1];
+  d_conLinePoint[2] = normal[2];
+  constraintToForceField();
+  if (d_conEnabled)
+    sendForceField();
+}
+
+void vrpn_ForceDevice_Remote::setConstraintLineDirection
+                  (vrpn_float32 direction [3]) {
+  d_conLineDirection[0] = normal[0];
+  d_conLineDirection[1] = normal[1];
+  d_conLineDirection[2] = normal[2];
+  constraintToForceField();
+  if (d_conEnabled)
+    sendForceField();
+}
+
+void vrpn_ForceDevice_Remote::setConstraintPlanePoint
+                  (vrpn_float32 point [3]) {
+  d_conPlanePoint[0] = normal[0];
+  d_conPlanePoint[1] = normal[1];
+  d_conPlanePoint[2] = normal[2];
+  constraintToForceField();
+  if (d_conEnabled)
+    sendForceField();
+}
+
+void vrpn_ForceDevice_Remote::setConstraintPlaneNormal
+                  (vrpn_float32 normal [3]) {
+  d_conPlaneNormal[0] = normal[0];
+  d_conPlaneNormal[1] = normal[1];
+  d_conPlaneNormal[2] = normal[2];
+  constraintToForceField();
+  if (d_conEnabled)
+    sendForceField();
+}
+
+void vrpn_ForceDevice_Remote::setConstraintKSpring (vrpn_float32 k) {
+  d_conKSpring = k;
+  constraintToForceField();
+  if (d_conEnabled)
+    sendForceField();
+}
+
+#endif  // FD_SPRINGS_AS_FIELDS
+
+void vrpn_ForceDevice_Remote::sendForceField (void)
 {
     sendForceField(ff_origin, ff_force, ff_jacobian, ff_radius);
 }
 
-void vrpn_ForceDevice_Remote::sendForceField(vrpn_float32 origin[3],
-	vrpn_float32 force[3], vrpn_float32 jacobian[3][3], vrpn_float32 radius)
+void vrpn_ForceDevice_Remote::sendForceField
+              (vrpn_float32 origin [3], vrpn_float32 force [3],
+               vrpn_float32 jacobian [3][3], vrpn_float32 radius)
 {
   char *msgbuf;
   vrpn_int32   len;
@@ -1115,12 +1491,12 @@ void vrpn_ForceDevice_Remote::sendForceField(vrpn_float32 origin[3],
 	fprintf(stderr,"Phantom: cannot write message: tossing\n");
     }
     connection->mainloop();
-    delete []msgbuf;
+    delete [] msgbuf;
   }
 }
 
 // same as sendForceField but sets force to 0 and sends RELIABLY
-void vrpn_ForceDevice_Remote::stopForceField()
+void vrpn_ForceDevice_Remote::stopForceField (void)
 {
   vrpn_float32 origin[3] = {0,0,0};
   vrpn_float32 force[3] = {0,0,0};
@@ -1396,3 +1772,171 @@ int vrpn_ForceDevice_Remote::handle_error_change_message(void *userdata,
     }
     return 0;
 }
+
+void vrpn_ForceDevice_Remote::send (const char * msgbuf, vrpn_int32 len,
+                      vrpn_int32 type) {
+  struct timeval now;
+
+  gettimeofday(&now, NULL);
+  timestamp.tv_sec = now.tv_sec;
+  timestamp.tv_usec = now.tv_usec;
+
+  if (connection) {
+    if (connection->pack_message(len, now, type,
+                                 my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+      fprintf(stderr, "vrpn_ForceDevice_Remote::send:  Can't pack message.\n");
+    }
+    connection->mainloop();
+  }
+
+  delete [] msgbuf;
+}
+
+
+#ifdef FD_SPRINGS_AS_FIELDS
+
+
+void vrpn_ForceDevice_Remote::constraintToForceField (void) {
+
+  vrpn_float64 a [9];  // scratch matrix
+  vrpn_float32 c [9];  // scratch matrix
+  vrpn_float64 n0 [3], s [3];  // scratch vectors
+  vrpn_float64 theta;
+  q_type rotation;
+
+  // quatlib wants 64-bit reals;  the forcefield code wants 32-bit
+  // reals.  We do most of our math in 64 bits, then copy into 32
+  // for output to force field.
+
+  const float largeRadius = 100.0f;  // infinity
+
+  switch (d_conMode) {
+
+    case POINT_CONSTRAINT:
+      setFF_Origin(d_conPoint);
+      setFF_Force(0.0f, 0.0f,  0.0f);
+      setFF_Jacobian(-d_conKSpring,  0.0f,  0.0f,
+                      0.0f, -d_conKSpring,  0.0f,
+                      0.0f,  0.0f, -d_conKSpring);
+      setFF_Radius(largeRadius);
+      break;
+
+    case LINE_CONSTRAINT:
+      setFF_Origin(d_conLinePoint);
+      setFF_Force(0.0f, 0.0f,  0.0f);
+
+#if 0
+      // find two vectors perpendicular to d_conLineDirection
+      // add the respective Jacobians
+
+      // find the first perpendicular vector by finding an arbitrary
+      // non-parallel vector and taking the cross product.
+
+      s[0] = d_conLineDirection[0] + 100.0;
+      s[1] = d_conLineDirection[1] - 100.0;
+      s[2] = d_conLineDirection[2];
+
+      vector_cross(d_conLineDirection, s, n0);
+      vector_cross(d_conLineDirection, n0, n1);
+
+      // now we sum two plane constraints together
+      // XXX BUG BUG BUG
+
+      setFF_Jacobian(-d_conKSpring * d_conPlaneNormal[0],  0.0f,  0.0f,
+                      0.0f, -d_conKSpring * d_conPlaneNormal[1],  0.0f,
+                      0.0f,  0.0f, -d_conKSpring * d_conPlaneNormal[2]);
+#endif
+
+      // Jacobian matrix for a spring attached to the line in
+      // the direction <0, 0, 1>.
+
+      a[0] = -d_conKSpring;
+      a[1] = 0.0;
+      a[2] = 0.0;
+      a[3] = 0.0;
+      a[4] = -d_conKSpring;
+      a[5] = 0.0;
+      a[6] = 0.0;
+      a[7] = 0.0;
+      a[8] = 0.0;
+
+      // Find the rotation that takes <0, 0, 1> into d_conLineDirection.
+
+      s[0] = 0.0;
+      s[1] = 0.0;
+      s[2] = 1.0;
+      vector_cross(s, d_conLineDirection, n0);
+      theta = acos(vector_dot(s, d_conLineDirection));
+
+      // The rotation we want is by angle theta about the
+      // axis (s x conLineDirection).
+
+      q_make(rotation, n0[0], n0[1], n0[2], theta);
+
+      // apply rotation to a;  that's our Jacobian
+      q_xform(&a[0], rotation, &a[0]);
+      q_xform(&a[3], rotation, &a[3]);
+      q_xform(&a[6], rotation, &a[6]);
+
+      // discard bits
+
+      c[0] = a[0];  c[1] = a[1];  c[2] = a[2];
+      c[3] = a[3];  c[4] = a[4];  c[5] = a[5];
+      c[6] = a[6];  c[7] = a[7];  c[8] = a[0];
+
+      setFF_Jacobian(c[0], c[1], c[2], c[3], c[4], c[5], c[6], c[7], c[8]);
+
+      setFF_Radius(largeRadius);
+      break;
+
+    case PLANE_CONSTRAINT:
+      setFF_Origin(d_conPlanePoint);
+      setFF_Force(0.0f, 0.0f,  0.0f);
+
+      // Jacobian matrix for a spring attached to a plane
+      // with normal <0, 0, 1>.
+
+      a[0] = 0.0;
+      a[1] = 0.0;
+      a[2] = 0.0;
+      a[3] = 0.0;
+      a[4] = 0.0;
+      a[5] = 0.0;
+      a[6] = 0.0;
+      a[7] = 0.0;
+      a[8] = -d_conKSpring;
+
+      // Find rotation matrix b that takes <0, 0, 1> into
+      // d_conLineDirection.
+
+      s[0] = 0.0;
+      s[1] = 0.0;
+      s[2] = 1.0;
+      vector_cross(s, d_conPlaneNormal, n0);
+      theta = acos(vector_dot(s, d_conPlaneNormal));
+
+      // The rotation we want is by angle theta about the
+      // axis (s x conLineDirection).
+
+      q_make(rotation, n0[0], n0[1], n0[2], theta);
+
+      // Apply rotation to a;  that's our Jacobian.
+      q_xform(&a[0], rotation, &a[0]);
+      q_xform(&a[3], rotation, &a[3]);
+      q_xform(&a[6], rotation, &a[6]);
+
+      // discard bits
+
+      c[0] = a[0];  c[1] = a[1];  c[2] = a[2];
+      c[3] = a[3];  c[4] = a[4];  c[5] = a[5];
+      c[6] = a[6];  c[7] = a[7];  c[8] = a[0];
+
+      setFF_Jacobian(c[0], c[1], c[2], c[3], c[4], c[5], c[6], c[7], c[8]);
+
+      setFF_Radius(largeRadius);
+      break;
+  }
+}
+
+
+#endif  // FD_SPRINGS_AS_FIELDS
