@@ -16,6 +16,15 @@ vrpn_RedundantTransmission::~vrpn_RedundantTransmission (void) {
 
 }
 
+vrpn_uint32 vrpn_RedundantTransmission::defaultRetransmissions (void) const {
+  return d_numTransmissions;
+}
+
+timeval vrpn_RedundantTransmission::defaultInterval (void) const {
+  return d_transmissionInterval;
+}
+
+
 // virtual
 void vrpn_RedundantTransmission::mainloop (void) {
 

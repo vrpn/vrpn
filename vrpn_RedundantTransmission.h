@@ -18,6 +18,9 @@ class vrpn_RedundantTransmission {
     vrpn_RedundantTransmission (vrpn_Connection * c);
     ~vrpn_RedundantTransmission (void);
 
+    vrpn_uint32 defaultRetransmissions (void) const;
+    timeval defaultInterval (void) const;
+
     virtual void mainloop (void);
       ///< Determines which messages need to be resent and queues
       ///< them up on the connection for transmission.

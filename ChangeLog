@@ -1,3 +1,8 @@
+2000-10-16  Tom Hudson  <hudson@cs.unc.edu>
+
+	* vrpn_RedundantTransmission.C (defaultInterval) : new function
+        (defaultRetransmissions) : same
+
 2000-10-11  Tom Hudson  <hudson@cs.unc.edu>
 
 	* vrpn_Connection.C (vrpn_TranslationTable::addRemoteEntry) :
