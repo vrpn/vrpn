@@ -1,4 +1,4 @@
-# vrpn.cfg.SAMPLE for VRPN version 06.00
+# vrpn.cfg.SAMPLE for VRPN version 06.03
 
 ################################################################################
 ################################################################################
@@ -121,6 +121,18 @@
 #vrpn_Tracker_Fastrak	Isense900	COM1	115200 /
 #Wand		Wand0		0	-1.0 0.0 0.0 1.0  -1.0 0.0 0.0 1.0 /
 #Stylus	Stylus0	2
+
+################################################################################
+# InterSense tracker using the Intersense-provided library to communicate
+# with the tracker.  This device type is not compiled by default, since it uses
+# a proprietary library.  However, you can get it to compile by defining
+# VRPN_INCLUDE_INTERSENSE when compiling.  Note that the Fastrak driver will
+# run IS-600 and IS-900 trackers without the proprietary library, so you might
+# try that as well.
+#	char	name_of_this_device[]
+#	char	name_of_serial_device[]
+
+#vrpn_Tracker_InterSense Tracker0 COM1
 
 ################################################################################
 # Dynasight Tracker. Runs an Origin System's DynaSight tracker connected to a

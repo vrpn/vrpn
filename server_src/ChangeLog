@@ -1,3 +1,9 @@
+2002-05-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Added code to enable controlling an Intersense tracker
+	* vrpn.cfg : Same
+	* vrpn.cfg.SAMPLE : Same
+
 2002-05-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.C : Added code to enable controlling a Zaber linear actuator.

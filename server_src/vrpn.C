@@ -40,6 +40,8 @@
 #include "vrpn_Wanda.h"
 #include "vrpn_Analog_5dt.h"
 #include "vrpn_Tng3.h"
+#include "vrpn_Tracker_isense.h"
+
 
 #include "vrpn_ForwarderController.h"
 #include <vrpn_RedundantTransmission.h>
@@ -47,6 +49,8 @@
 #ifdef INCLUDE_TIMECODE_SERVER
 #include "timecode_generator_server\vrpn_timecode_generator.h"
 #endif
+
+
 
 #define MAX_TRACKERS 100
 #define MAX_BUTTONS 100
@@ -1380,6 +1384,32 @@ int setup_Tng3 (char * & pch, char * line, FILE * config_file) {
     return 0;
 }
 
+int setup_Tracker_InterSense(char * &pch, char *line, FILE * config_file) {
+  char trackerName[64];
+  char commStr[10];
+  int commPort;
+
+  sscanf(line,"vrpn_Tracker_InterSense %s %s",trackerName,commStr);
+
+  if(!strcmp(commStr,"COM1")) {
+    commPort = 1;
+  } else if(!strcmp(commStr,"COM2")) {
+    commPort = 2;
+  } else if(!strcmp(commStr,"COM3")) {
+    commPort = 3;
+  } else if(!strcmp(commStr,"COM4")) {
+    commPort = 4;
+  } else {
+    fprintf(stderr,"Error determining COM port: %s not should be either COM1, COM2, COM3, or COM4",commStr);
+    return 0;
+  }
+
+  trackers[num_trackers] = new vrpn_Tracker_InterSense(trackerName,connection,commPort);
+  num_trackers++;
+
+  return 0;
+}
+
 
 main (int argc, char * argv[])
 {
@@ -1392,7 +1422,7 @@ main (int argc, char * argv[])
 	int	realparams = 0;
 	int	i;
 	int	port = vrpn_DEFAULT_LISTEN_PORT_NO;
-	int	milli_sleep_time = 0;		// How long to sleep each iteration (default 0ms)
+	int	milli_sleep_time = 1;		// How long to sleep each iteration (default 1ms)
 #ifdef WIN32
 	WSADATA wsaData; 
 	int status;
@@ -1578,7 +1608,9 @@ main (int argc, char * argv[])
 	  } else if (isit("vrpn_Tng3")) {
             CHECK(setup_Tng3);
 	  } else  if (isit("vrpn_TimeCode_Generator")) {
-		  CHECK(setup_Timecode_Generator);
+			CHECK(setup_Timecode_Generator);
+	  } else if (isit("vrpn_Tracker_InterSense")) {
+			CHECK(setup_Tracker_InterSense);
 	  } else {	// Never heard of it
 		sscanf(line,"%511s",s1);	// Find out the class name
 		fprintf(stderr,"vrpn_server: Unknown Device: %s\n",s1);
