@@ -32,7 +32,6 @@
 #define	INCHES_TO_METERS	(2.54/100.0)
 #define PI (3.14159265358979323846)
 #define DEG_TO_RAD (PI/180.)
-#define CM_TO_METERS (0.01) 
 #define	FT_INFO(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_NORMAL) ; if (d_connection) d_connection->send_pending_reports(); }
 #define	FT_WARNING(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_WARNING) ; if (d_connection) d_connection->send_pending_reports(); }
 #define	FT_ERROR(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_ERROR) ; if (d_connection) d_connection->send_pending_reports(); }
@@ -416,15 +415,12 @@ void vrpn_Tracker_InterSense::get_report(void)
 		}
 
 		// Copy the tracker data into our internal storage before sending
-		// nahon@virtools : WATCH, Vrpn wants to report in meter
-		// lets assume that the device reports in cm.
-		// for IS900, it would be safe to have a u command sent in the config file
-		// TODO: is is possible to ask the device in what unit it runs
+		// (no unit problem as the Position vector is already in meters, see ISD_STATION_STATE_TYPE)
 		// Watch: For some reason, to get consistant rotation and translation axis permutations,
 		//        we need non direct mapping
-		pos[0] = - CM_TO_METERS*data.Station[station].Position[2];
-		pos[1] =   CM_TO_METERS*data.Station[station].Position[1];
-		pos[2] = - CM_TO_METERS*data.Station[station].Position[0];
+		pos[0] = - data.Station[station].Position[2];
+		pos[1] =   data.Station[station].Position[1];
+		pos[2] = - data.Station[station].Position[0];
 
 		if(m_StationInfo[station].AngleFormat == ISD_QUATERNION) {	
 			d_quat[0] = data.Station[station].Orientation[0];

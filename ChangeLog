@@ -1,5 +1,10 @@
 2004-02-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Tracker_isense.C : Added change by David Nahon to make
+		the units correct (meters rather than centimeters).
+
+2004-02-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn.dsw : Removed separate library for DTrack.
 	* vrpn_Tracker.DTrack.C : Includes the necessary .c file from
 		dtracklib to avoid having to load a library.
