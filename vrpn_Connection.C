@@ -1356,8 +1356,13 @@ int vrpn_OneConnection::log_message (vrpn_int32 len, struct timeval time,
   }
   lp->data.type = htonl(type);
   lp->data.sender = htonl(sender);
-  lp->data.msg_time.tv_sec = htonl(time.tv_sec);
-  lp->data.msg_time.tv_usec = htonl(time.tv_usec);
+
+  // adjust the time stamp by the clock offset (as in do_callbacks_for)
+  struct timeval tvTemp=vrpn_TimevalSum(time, tvClockOffset);
+  
+  lp->data.msg_time.tv_sec = htonl(tvTemp.tv_sec);
+  lp->data.msg_time.tv_usec = htonl(tvTemp.tv_usec);
+
   lp->data.payload_len = htonl(len);
   lp->data.buffer = new char [len];
   if (!lp->data.buffer) {
