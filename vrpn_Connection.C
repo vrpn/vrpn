@@ -882,7 +882,8 @@ int vrpn_get_a_TCP_socket (SOCKET * listen_sock, int * listen_portnum,
 
   struct hostent *phe;           /* pointer to host information entry   */
 
-  bzero ((char *) &listen_name, sizeof(listen_name));
+  memset((void *) &listen_name, 0, sizeof(listen_name));
+  //bzero ((char *) &listen_name, sizeof(listen_name));
   listen_name.sin_family = AF_INET;
 
   // Map service name to port number
@@ -892,7 +893,8 @@ int vrpn_get_a_TCP_socket (SOCKET * listen_sock, int * listen_portnum,
   if (!IPaddress) {
     listen_name.sin_addr.s_addr = INADDR_ANY;
   } else if (phe = gethostbyname(IPaddress)) {
-    bcopy(phe->h_addr, (char *)&listen_name.sin_addr, phe->h_length);
+    memcpy((void *)&listen_name.sin_addr, (const void *) phe->h_addr, phe->h_length);
+    //bcopy(phe->h_addr, (char *)&listen_name.sin_addr, phe->h_length);
   } else if ((listen_name.sin_addr.s_addr = inet_addr(IPaddress))
               == INADDR_NONE) {
     printf("can't get %s host entry\n", IPaddress);
@@ -2077,7 +2079,8 @@ static	int open_udp_socket (unsigned short * portno,
 
 //fprintf(stderr, "IPaddress is %d (%s).\n", IPaddress, IPaddress);
 
-   bzero((char *) &server_addr, sizeof(server_addr));
+   memset((void *) &server_addr, 0, sizeof(server_addr));
+   //bzero((char *) &server_addr, sizeof(server_addr));
 
    // bind to local address
    server_addr.sin_family = AF_INET;
@@ -2087,7 +2090,8 @@ static	int open_udp_socket (unsigned short * portno,
   if (!IPaddress) {
     server_addr.sin_addr.s_addr = INADDR_ANY;
   } else if (phe = gethostbyname(IPaddress)) {
-    bcopy(phe->h_addr, (char *)&server_addr.sin_addr, phe->h_length);
+    memcpy((void *)&server_addr.sin_addr, (const void *)phe->h_addr, phe->h_length);
+    //bcopy(phe->h_addr, (char *)&server_addr.sin_addr, phe->h_length);
   } else if ((server_addr.sin_addr.s_addr = inet_addr(IPaddress))
               == INADDR_NONE) {
     printf("can't get %s host entry\n", IPaddress);
