@@ -448,7 +448,7 @@ void vrpn_TranslationTable::clear (void) {
 
   for (i = 0; i < d_numEntries; i++) {
     if (d_entry[i].name) {
-      delete d_entry[i].name;
+      delete [] d_entry[i].name;
       d_entry[i].name = NULL;
     }
     d_entry[i].local_id = -1;

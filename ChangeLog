@@ -1,3 +1,9 @@
+2000-09-07  Adam Seeger  <seeger@cs.unc.edu>
+
+	* vrpn_Connection.C (vrpn_TranslationTable::clear) : changed this
+	to do delete [] instead of delete on d_entry[i].name since a
+	cName (its type) is a typedef for an array
+
 2000-09-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Magellan.C (vrpn_write_slowly) : Added parameter for how long
