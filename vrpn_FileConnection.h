@@ -86,6 +86,9 @@ public:
     // returns the timestamp of the earliest in time user message
     timeval get_lowest_user_timestamp();
 
+    // returns the name of the file
+    const char *get_filename();
+
     // jump_to_time sets the current position to the given elapsed time
     int jump_to_time(vrpn_float64 newtime);
     int jump_to_time(timeval newtime);
@@ -161,6 +164,7 @@ protected:
     // }}}
     // {{{ actual mechanics of the logfile
 protected:
+    char *d_fileName;
     FILE * d_file;
 
     void play_to_user_message();

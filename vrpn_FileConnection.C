@@ -43,13 +43,12 @@ vrpn_File_Connection::vrpn_File_Connection (const char * file_name,
     d_reset_type (register_message_type("vrpn File reset")),
     d_play_to_time_type (register_message_type("vrpn File play to time")),
     d_file (NULL),
+    d_fileName (NULL),
     d_logHead (NULL),
     d_logTail (NULL),
     d_currentLogEntry (NULL),
     d_max_message_playback (0)
 {
-    const char * bare_file_name;
-
     register_handler(d_set_replay_rate_type, handle_set_replay_rate,
                      this, d_controllerId);
     register_handler(d_reset_type, handle_reset, this, d_controllerId);
@@ -59,23 +58,20 @@ vrpn_File_Connection::vrpn_File_Connection (const char * file_name,
     // necessary to initialize properly in mainloop()
     d_last_time.tv_usec = d_last_time.tv_sec = 0;
     
-    bare_file_name = vrpn_copy_file_name(file_name);
-    if (!bare_file_name) {
+    d_fileName = vrpn_copy_file_name(file_name);
+    if (!d_fileName) {
         fprintf(stderr, "vrpn_File_Connection:  Out of memory!\n");
         connectionStatus = BROKEN;
         return;
     }
 
-    d_file = fopen(bare_file_name, "rb");
+    d_file = fopen(d_fileName, "rb");
     if (!d_file) {
         fprintf(stderr, "vrpn_File_Connection:  "
-                "Could not open file \"%s\".\n", bare_file_name);
-        delete [] (char *) bare_file_name;
+                "Could not open file \"%s\".\n", d_fileName);
         connectionStatus = BROKEN;
         return;
     }
-
-    delete [] (char *) bare_file_name;
 
     // PRELOAD
     // TCH 16 Sept 1998
@@ -165,6 +161,8 @@ vrpn_File_Connection::~vrpn_File_Connection (void)
         delete d_logHead;
         d_logHead = np;
     }
+    delete [] d_fileName;
+    d_fileName = NULL;
 }
 
 // }}}
@@ -671,6 +669,10 @@ timeval vrpn_File_Connection::get_lowest_user_timestamp()
     return low;
 }
 
+const char *vrpn_File_Connection::get_filename()
+{
+    return d_fileName;
+}
 
 // Returns the time since the connection opened.
 // Some subclasses may redefine time.

@@ -1,3 +1,10 @@
+2000-10-10  Adam Seeger  <seeger@cs.unc.edu>
+
+	* vrpn_FileConnection.hC (vrpn_File_Connection::get_filename) :
+	new function that lets you easily find out what the name of the
+	file was that vrpn opened (you could also do this using
+	vrpn_copy_file_name with the name passed in originally)
+
 2000-10-09  Aron Helser  <helser@cs.unc.edu>
 
 	* vrpn_Connection.C (server_check_for_incoming_connections): A
