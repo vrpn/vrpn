@@ -101,7 +101,7 @@ double ntohd( double d ) {
 
 // This is all based on code extracted from the hiball tracker cib lib
 
-// 200 mhz pentium -- we change this based on our calibration
+// 200 mhz pentium default -- we change this based on our calibration
 static __int64 VRPN_CLOCK_FREQ = 200000000;
 
 // Helium to histidine
@@ -127,7 +127,7 @@ static int vrpn_AdjustFrequency(void)
   const int tPerLoop = 4000; // 1/10 sec in milliseconds for Sleep()
   cerr.precision(4);
   cerr.setf(ios::fixed);
-  cerr << "vrpn gettimeofday: verifying " <<  VRPN_CLOCK_FREQ/1e6 << " MHz clock";
+  cerr << "vrpn gettimeofday: determining clock frequency ...";
 
   LARGE_INTEGER startperf, endperf;
   LARGE_INTEGER perffreq;
@@ -154,6 +154,7 @@ static int vrpn_AdjustFrequency(void)
   double freq = perffreq.QuadPart * (liEnd.QuadPart - liStart.QuadPart) / 
       ((double)(endperf.QuadPart - startperf.QuadPart));
 
+#if 0
   if (fabs(perffreq.QuadPart - freq) < 0.05*freq) {
     VRPN_CLOCK_FREQ = perffreq.QuadPart;
     cerr << "\nvrpn gettimeofday: perf clock is tsc -- using perf clock freq (" 
@@ -162,6 +163,7 @@ static int vrpn_AdjustFrequency(void)
     SetThreadPriority( GetCurrentThread(), iThreadPriority );
     return 0;
   } 
+#endif
 
   // either tcs and perf clock are not the same, or we could not
   // tell accurately enough with the short test. either way we now
@@ -197,16 +199,18 @@ static int vrpn_AdjustFrequency(void)
   
   cerr.precision(5);
 
-  // now, if we are in a uni-processor system, and the freq is within 5% of the expected
-  // then use it
-  if (fabs(freq - VRPN_CLOCK_FREQ) > 0.05 * VRPN_CLOCK_FREQ) {
-    cerr << "vrpn gettimeofday: measured freq is " << freq/1e6 
-	 << " MHz - DOES NOT MATCH" << endl;
-    return -1;
-  }
-  // if we are in a system where the perf clock is the tsc, then use the rate the
-  // perf clock returns (or rather, if the freq we measure is approx the 
-  // perf clock freq)
+  // if we are on a uniprocessor system, then use the freq estimate
+  // This used to check against a 200 mhz assumed clock, but now 
+  // we assume the routine works and trust the result.
+  //  if (fabs(freq - VRPN_CLOCK_FREQ) > 0.05 * VRPN_CLOCK_FREQ) {
+  //    cerr << "vrpn gettimeofday: measured freq is " << freq/1e6 
+  //	 << " MHz - DOES NOT MATCH" << endl;
+  //    return -1;
+  //  }
+
+  // if we are in a system where the perf clock is the tsc, then use the
+  // rate the perf clock returns (or rather, if the freq we measure is
+  // approx the perf clock freq)
   if (fabs(perffreq.QuadPart - freq) < 0.05*freq) {
     VRPN_CLOCK_FREQ = perffreq.QuadPart;
     cerr << "vrpn gettimeofday: perf clock is tsc -- using perf clock freq (" 

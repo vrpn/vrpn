@@ -596,8 +596,9 @@ int vrpn_Connection::marshall_message(
 
    // Compute the length of the message plus its padding to make it
    // an even multiple of vrpn_ALIGN bytes.
-   // Compute the total message length and put it into the
-   // message buffer (if we have room for the whole message)
+
+   // Compute the total message length and put the message
+   // into the message buffer (if we have room for the whole message)
    ceil_len = len; 
    if (len%vrpn_ALIGN) {ceil_len += vrpn_ALIGN - len%vrpn_ALIGN;}
    header_len = 5*sizeof(long);
@@ -607,7 +608,14 @@ int vrpn_Connection::marshall_message(
    	return 0;
    }
    
-   *(unsigned long*)(void*)(&outbuf[curr_out]) = htonl(total_len);
+   // The packet header len field does not include the padding bytes,
+   // these are inferred on the other side.
+   // Later, to make things clearer, we should probably infer the header
+   // len on the other side (in the same way the padding is done)
+   // The reason we don't include the padding in the len is that we
+   // would not be able to figure out the size of the padding on the
+   // far side)
+   *(unsigned long*)(void*)(&outbuf[curr_out]) = htonl(header_len+len);
    curr_out+= sizeof(unsigned long);
 
    // Pack the time (using gettimeofday() format) into the buffer
