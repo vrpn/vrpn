@@ -1,3 +1,25 @@
+2003-01-09  David Marshburn  <marshbur@cs.unc.edu>
+
+	* AnalogOutputRemote.java:  
+	(requestValueChange):  array version, new
+	(getNumActiveChannels):  new
+	(getMaxActiveChannels):  new
+	* AnalogRemote.java:
+	(getNumActiveChannels):  new
+	(getMaxActiveChannels):  new
+	* vrpn_AnalogOutputRemote.cpp:
+	(Java_vrpn_AnalogOutputRemote_requestValueChange__ID):  name change
+	(Java_vrpn_AnalogOutputRemote_requestValueChange___3D): new.
+	implementation of java native function AnalogOutputRemote::
+	requestValueChange (array version).
+	(Java_vrpn_AnalogOutputRemote_getNumActiveChannels):  new.
+	implementation of java native function AnalogOutputRemote::
+	getNumActiveChannels.
+	* vrpn_AnalogRemote.cpp:
+	(Java_vrpn_AnalogRemote_getNumActiveChannels):  new.
+	implementation of java native function AnalogRemote::
+	getNumActiveChannels.
+
 2002-12-16  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_TempImager_Remote.cpp:  changed the names of the vrpn

@@ -46,6 +46,11 @@ public class AnalogOutputRemote extends VRPN implements Runnable
 	}
 	
 	public synchronized native boolean requestValueChange( int channel, double value );
+	public synchronized native boolean requestValueChange( double[] values );
+	
+	public synchronized native int getNumActiveChannels( );
+	public int getMaxActiveChannels( )
+	{  return AnalogRemote.MAX_CHANNELS;  }
 	
 	/**
 	 * Sets the interval between invocations of <code>mainloop()</code>, which checks

@@ -65,6 +65,10 @@ public class AnalogRemote extends VRPN implements Runnable
 	}
 	
 	
+	public synchronized native int getNumActiveChannels( );
+	public int getMaxActiveChannels( )
+	{  return AnalogRemote.MAX_CHANNELS;  }
+
 	public synchronized void addAnalogChangeListener( AnalogChangeListener listener )
 	{
 		changeListeners.addElement( listener );

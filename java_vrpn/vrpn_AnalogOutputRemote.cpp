@@ -100,8 +100,8 @@ JNIEXPORT void JNICALL JNI_OnUnload_AnalogOutput_Remote( JavaVM* jvm, void* rese
 
 
 JNIEXPORT jboolean JNICALL 
-Java_vrpn_AnalogOutputRemote_requestValueChange( JNIEnv* env, jobject jobj, 
-	                                             jint jchannel, jdouble jvalue )
+Java_vrpn_AnalogOutputRemote_requestValueChange__ID( JNIEnv* env, jobject jobj, 
+													 jint jchannel, jdouble jvalue )
 {
   if( jchannel < 0 ) 
   {
@@ -111,7 +111,8 @@ Java_vrpn_AnalogOutputRemote_requestValueChange( JNIEnv* env, jobject jobj,
   jfieldID jfid = env->GetFieldID( jcls, "native_analog_output", "I" );
   if( jfid == NULL )
   {
-    printf( "Error in native method \"requestValueChange\":  unable to ID native analog output field.\n" );
+    printf( "Error in native method \"requestValueChange(double)\":  unable "
+			"to ID native analog output field.\n" );
     return false;
   }
 
@@ -119,7 +120,7 @@ Java_vrpn_AnalogOutputRemote_requestValueChange( JNIEnv* env, jobject jobj,
   vrpn_Analog_Output_Remote* ao = (vrpn_Analog_Output_Remote*) env->GetIntField( jobj, jfid );
   if( ao <= 0 )  // this analog is uninitialized or has been shut down already
   {
-    printf( "Error in native method \"requestValueChange\":  the analog output is "
+    printf( "Error in native method \"requestValueChange(double)\":  the analog output is "
             "uninitialized or has been shut down.\n" );
     return false;
   }
@@ -127,6 +128,82 @@ Java_vrpn_AnalogOutputRemote_requestValueChange( JNIEnv* env, jobject jobj,
   return ao->request_change_channel_value( jchannel, jvalue );
 }
 
+
+JNIEXPORT jboolean JNICALL 
+Java_vrpn_AnalogOutputRemote_requestValueChange___3D( JNIEnv* env, jobject jobj, 
+													  jdoubleArray jvalues )
+{
+  jclass jcls = env->GetObjectClass( jobj );
+  jfieldID jfid = env->GetFieldID( jcls, "native_analog_output", "I" );
+  if( jfid == NULL )
+  {
+    printf( "Error in native method \"requestValueChange(double[])\":  unable "
+			"to ID native analog output field.\n" );
+    return false;
+  }
+
+  // get the analog pointer
+  vrpn_Analog_Output_Remote* ao = (vrpn_Analog_Output_Remote*) env->GetIntField( jobj, jfid );
+  if( ao <= 0 )  // this analog is uninitialized or has been shut down already
+  {
+    printf( "Error in native method \"requestValueChange(double[])\":  the analog output is "
+            "uninitialized or has been shut down.\n" );
+    return false;
+  }
+
+  // check the array length
+  int length = env->GetArrayLength( jvalues );
+  if( length > ao->getNumChannels( ) )
+  {
+	printf( "Error in native method \"requestValueChange(double[])\":  someone tried "
+			"to use an array that was too long.\n" );
+	return false;
+  }
+  if( length == 0 )
+  {
+	return true;
+  }
+
+  // get the array
+  double* values = env->GetDoubleArrayElements( jvalues, NULL );
+  if( values == NULL )
+  {
+	printf( "Error in native method \"requestValueChange(double[])\":  couldn't "
+			"get the array in native form.\n" );
+	env->ReleaseDoubleArrayElements( jvalues, values, JNI_ABORT /*mode*/ );
+	return false;
+  }
+
+  bool retval = ao->request_change_channels( length, values );
+  env->ReleaseDoubleArrayElements( jvalues, values, JNI_ABORT /*mode*/ );
+  return retval;
+
+}
+
+
+JNIEXPORT jint JNICALL 
+Java_vrpn_AnalogOutputRemote_getNumActiveChannels( JNIEnv* env, jobject jobj )
+{
+  jclass jcls = env->GetObjectClass( jobj );
+  jfieldID jfid = env->GetFieldID( jcls, "native_analog_output", "I" );
+  if( jfid == NULL )
+  {
+    printf( "Error in native method \"getNumActiveChannels\":  unable "
+			"to ID native analog output field.\n" );
+    return 0;
+  }
+
+  // get the analog pointer
+  vrpn_Analog_Output_Remote* ao = (vrpn_Analog_Output_Remote*) env->GetIntField( jobj, jfid );
+  if( ao <= 0 )  // this analog is uninitialized or has been shut down already
+  {
+    printf( "Error in native method \"getNumActiveChannels\":  the analog output is "
+            "uninitialized or has been shut down.\n" );
+    return 0;
+  }
+
+  return ao->getNumChannels( );
+}
 
 
 JNIEXPORT void JNICALL 

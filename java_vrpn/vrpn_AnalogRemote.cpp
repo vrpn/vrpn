@@ -234,3 +234,28 @@ Java_vrpn_AnalogRemote_init( JNIEnv *env, jobject jobj, jstring jname,
   return true;
 }
 
+
+JNIEXPORT jint JNICALL Java_vrpn_AnalogRemote_getNumActiveChannels( JNIEnv* env, jobject jobj )
+{
+  jclass jcls = env->GetObjectClass( jobj );
+  jfieldID jfid = env->GetFieldID( jcls, "native_analog", "I" );
+  if( jfid == NULL )
+  {
+    printf( "Error in native method \"getNumActiveChannels\":  unable "
+			"to ID native analog field.\n" );
+    return 0;
+  }
+
+  // get the analog pointer
+  vrpn_Analog_Remote* a = (vrpn_Analog_Remote*) env->GetIntField( jobj, jfid );
+  if( a <= 0 )  // this analog is uninitialized or has been shut down already
+  {
+    printf( "Error in native method \"getNumActiveChannels\":  the analog is "
+            "uninitialized or has been shut down.\n" );
+    return 0;
+  }
+
+  return a->getNumChannels( );
+}
+
+
