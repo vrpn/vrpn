@@ -1185,6 +1185,7 @@ int vrpn_TypeDispatcher::addHandler (vrpn_int32 type,
                                      vrpn_MESSAGEHANDLER handler,
                                      void * userdata, vrpn_int32 sender) {
   vrpnMsgCallbackEntry * new_entry;
+  vrpnMsgCallbackEntry ** ptr;
 
   // Ensure that the type is a valid one (one that has been defined)
   //   OR that it is "any"
@@ -1226,13 +1227,22 @@ int vrpn_TypeDispatcher::addHandler (vrpn_int32 type,
   printf("Adding user handler for type %ld, sender %ld\n",type,sender);
 #endif
 
+  // TCH June 2000 - rewrote to insert at end of list instead of beginning,
+  // to make sure multiple callbacks on the same type are triggered
+  // in the order registered.
+
   if (type == vrpn_ANY_TYPE) {
-    new_entry->next = d_genericCallbacks;
-    d_genericCallbacks = new_entry;
+    ptr = &d_genericCallbacks;
   } else {
-    new_entry->next = d_types[type].who_cares;
-    d_types[type].who_cares = new_entry;
-  };
+    ptr = &d_types[type].who_cares;
+  }
+
+  while (*ptr) {
+    ptr = &((*ptr)->next);
+  }
+  *ptr = new_entry;
+  new_entry->next = NULL;
+
   return 0;
 }
 
