@@ -1,5 +1,6 @@
 import java.io.*;
 import java.util.*;
+import vrpn.*;
 
 public class ButtonListenerTest
 {
@@ -42,9 +43,9 @@ public class ButtonListenerTest
 			
 			if (s.equalsIgnoreCase("c"))
 			{
-				boolean last = buttonListener.getModeButtonUpdate();
+				int last = buttonListener.getModeButtonUpdate();
 				
-				if (last) System.out.println("Current mode is set to last");
+				if (last== ButtonRemoteListener.LAST_UPDATE) System.out.println("Current mode is set to last");
 				else System.out.println("Current mode is set to all");
 			}
 			

@@ -1,5 +1,6 @@
 import java.io.*;
 import java.util.*;
+import vrpn.*;
 
 public class AnalogListenerTest
 {
@@ -46,9 +47,9 @@ public class AnalogListenerTest
 			
 			if (s.equalsIgnoreCase("c"))
 			{
-				boolean last = analogListener.getModeAnalogUpdate();
+				int last = analogListener.getModeAnalogUpdate();
 				
-				if (last) System.out.println("Current mode is set to last");
+				if (last == AnalogRemoteListener.LAST_UPDATE) System.out.println("Current mode is set to last");
 				else System.out.println("Current mode is set to all");
 			}
 			

@@ -1,3 +1,11 @@
+2002-09-12  David Marshburn  <marshbur@cs.unc.edu>
+
+	* AnalogListenerTest.java:  fixed up this example to match recent
+	changes in AnalogRemoteListener.java
+	* ButtonListenerTest.java:  ditto
+	* TempImagerTest.java:  beginning of a test program for TempImager
+	* test.vjp:  adds TempImagerTest
+
 2002-07-25  Tatsuhiro Segi  <segi@email.unc.edu>
 
 	* AnalogListenerTest.java:  new file to test and demonstrate
