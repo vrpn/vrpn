@@ -116,29 +116,28 @@ vrpn_int32 vrpn_BaseConnection::register_local_service(
     vrpn_int32 local_id)
 {
     // iterate through the registered_remote_services array looking
-    // for emtries w/ a local id value of -1. when you find one, then
+    // for entries w/ a local id value of -1. when you find one, then
     // you do a strcmp to see if it is the same service you are
     // registering. if so, fill in the local_id value. if you don't
-    // finad a matching remote service, then do nothing.
+    // find a matching remote service, then do nothing.
 
     if (local_id >= vrpn_CONNECTION_MAX_SERVICES) {
-		fprintf(stderr,"vrpn_BaseConnection::register_local_service:"
-                " Too many services locally (%d)\n",
-                local_id);
-		return -1;
-	}
-
+        fprintf (stderr, "vrpn_BaseConnection::register_local_service:"
+                 " Too many services locally (%d)\n",
+                 local_id);
+        return -1;
+    }
+    
     for( int i=0; i < num_registered_remote_services; i++ ){
-        // service not regiatered locally yet
         if( registered_remote_services[i].local_id == -1 ){
+            // service not regiatered locally yet.
             // is it the one we're registering now?
-            if( strcmp(registered_remote_services[i].name,service_name) == 0 ){
+            if( 0 == strcmp(registered_remote_services[i].name,service_name) ){
                 registered_remote_services[i].local_id = local_id;
                 return 1;
             }
         }
     }
-
     return 0;
 }
 
@@ -150,23 +149,23 @@ vrpn_int32 vrpn_BaseConnection::register_local_type(
     vrpn_int32 local_id)
 {
     // iterate through the registered_remote_types array looking
-    // for emtries w/ a local id value of -1. when you find one, then
+    // for entries w/ a local id value of -1. when you find one, then
     // you do a strcmp to see if it is the same type you are
     // registering. if so, fill in the local_id value. if you don't
-    // finad a matching remote type, then do nothing.
+    // find a matching remote type, then do nothing.
 
     if (local_id >= vrpn_CONNECTION_MAX_TYPES) {
-		fprintf(stderr,"vrpn_BaseConnection::register_local_type:"
-                " Too many types locally (%d)\n",
-                local_id);
-		return -1;
-	}
+        fprintf( stderr, "vrpn_BaseConnection::register_local_type:"
+                 " Too many types locally (%d)\n",
+                 local_id);
+        return -1;
+    }
 
     for( int i=0; i < num_registered_remote_types; i++ ){
-        // type not regiatered locally yet
         if( registered_remote_types[i].local_id == -1 ){
+            // type not regiatered locally yet.
             // is it the one we're registering now?
-            if( strcmp(registered_remote_types[i].name,type_name) == 0 ){
+            if( 0 == strcmp(registered_remote_types[i].name,type_name) ){
                 registered_remote_types[i].local_id = local_id;
                 return 1;
             }
@@ -193,58 +192,58 @@ vrpn_int32 vrpn_BaseConnection::register_remote_service(
     const cName service_name,  // e.g. "tracker0"
     vrpn_int32 remote_id )    // from manager
 {
-	if (num_registered_remote_services >= vrpn_CONNECTION_MAX_SERVICES) {
-		fprintf(stderr,"vrpn: Too many services from other side (%d)\n",
-                        num_registered_remote_services);
-		return -1;
-	}
-
-
-    // sanity check: does remote id match next available space in
-    // array?
-    num_registered_remote_services++;
+    if (num_registered_remote_services >= vrpn_CONNECTION_MAX_SERVICES) {
+        fprintf(stderr,"vrpn: Too many services from other side (%d)\n",
+                num_registered_remote_services);
+        return -1;
+    }
+    
+    // we want to insert at the next available spot in the array
+    // sanity check: does remote id match next available space in array?
     if( remote_id != num_registered_remote_services ){
         fprintf(stderr,"vrpn_BaseConnection::register_remote_service:"
-                ": remote_id does not match next available spot in "
+                " remote_id does not match next available spot in "
                 " array\n");
 		return -1;
     }
 
+    // good.  Now, for convenience, let's alias the slot in the array.
+    cRemoteMapping& slot = registered_remote_services[remote_id];
 
-    // should this be const_iterator?
-    char** service_itr = d_manager_token->services_begin();
-    char** const service_end = d_manager_token->services_end();
-    for (int i=0;  service_itr != service_end;  ++service_itr, ++i) {
-        
-        if( *service_itr ){ // space for service has been allocated
-            if( strcmp(*service_itr, service_name) == 0 ){
-                // we have a match
-                registered_remote_services[remote_id].name = new cName;
-                if( !registered_remote_services[remote_id].name ){
-                    fprintf(stderr,"vrpn_BaseConnection::register_remote_service: "
-                            "Can't allocate memory for new record\n");
-                    return -1;
-                }
-                strncpy(registered_remote_services[remote_id].name, 
-                        service_name, sizeof(cName));
-                registered_remote_services[remote_id].local_id = i;
-                return remote_id;
-            }
-        }  
+    // figure out local id corresponding to this remote id
+    // we use the id -1 if corresponding local id doesn't exist yet
+    slot.local_id = d_manager_token->get_service_id (service_name);
+
+    // allocate space in the array for the name
+    // this pointer should be null (because we never delete and we don't
+    // pre-allocate), but let's check just in case
+    if (slot.name) {
+        fprintf (
+            stderr,
+            "vrpn_BaseConnection::register_remote_service:\n"
+            "    slot->name is non-null; this is unexpected.\n"
+            "    I'm going to delete it.\n"
+            "    Cross your fingers and hope it it's not unintialized.\n");
+        delete [] slot.name;
+        slot.name = 0;
+    }
+
+    // should we instead allocate the exact amount of space?
+    // by switching to std::string, that would be accomplished automatically.
+    slot.name = new cName;
+    if (!slot.name) {
+        fprintf(stderr,"vrpn_BaseConnection::register_remote_service: "
+                "Can't allocate memory for new record\n");
+        return -1;
     }
     
-
-    // service has not been registered locally
-    // make sure entry is blank
-    if (registered_remote_services[remote_id].name) {
-        delete registered_remote_services[remote_id].name;
-        registered_remote_services[remote_id].name = NULL;
-    }
-    registered_remote_services[remote_id].local_id = -1;
+    strncpy(slot.name, service_name, sizeof(cName));
+    
+    ++num_registered_remote_services;
 
     return remote_id;
-
 }
+
 
 // Adds a new remote type/service and returns its index
 // was: newRemoteType
@@ -252,16 +251,14 @@ vrpn_int32 vrpn_BaseConnection::register_remote_type(
     const cName type_name,    // e.g. "tracker_pos"
     vrpn_int32 remote_id )     // from manager
 {
-	if (num_registered_remote_types >= vrpn_CONNECTION_MAX_TYPES) {
-		fprintf(stderr,"vrpn: Too many types from other side (%d)\n",
-                        num_registered_remote_types);
-		return -1;
-	}
-
-
-    // sanity check: does remote id match next available space in
-    // array?
-    num_registered_remote_types++;
+    if (num_registered_remote_types >= vrpn_CONNECTION_MAX_TYPES) {
+        fprintf(stderr,"vrpn: Too many types from other side (%d)\n",
+                num_registered_remote_types);
+        return -1;
+    }
+    
+    // we want to insert at the next available spot in the array
+    // sanity check: does remote id match next available space in array?
     if( remote_id != num_registered_remote_types ){
         fprintf(stderr,"vrpn_BaseConnection::register_remote_type:"
                 ": remote_id does not match next available spot in "
@@ -269,39 +266,41 @@ vrpn_int32 vrpn_BaseConnection::register_remote_type(
 		return -1;
     }
 
+    // good.  Now, for convenience, let's alias the slot in the array.
+    cRemoteMapping& slot = registered_remote_types[remote_id];
 
-    typedef vrpn_BaseConnectionManager::vrpnLocalMapping vrpnLocalMapping;
-    const vrpnLocalMapping*       type_itr = d_manager_token->types_begin();
-    const vrpnLocalMapping* const type_end = d_manager_token->types_end();
-    for (int j=0;  type_itr != type_end;  ++type_itr, ++j ) {
+    // figure out local id corresponding to this remote id
+    // we use the id -1 if corresponding local id doesn't exist yet
+    slot.local_id = d_manager_token->get_message_type_id (type_name);
 
-        if( type_itr ){ // space for type has been allocated
-            if( strcmp(type_itr->name, type_name) == 0 ){
-                // we have a match
-                registered_remote_types[remote_id].name = new cName;
-                if( !registered_remote_types[remote_id].name ){
-                    fprintf(stderr,"vrpn_BaseConnection::register_remote_type: "
-                            "Can't allocate memory for new record\n");
-                    return -1;
-                }
-                strncpy(registered_remote_types[remote_id].name, 
-                        type_name, sizeof(cName));
-                registered_remote_types[remote_id].local_id = j;
-                return remote_id;
-            }
-        }  
+    // allocate space in the array for the name
+    // this pointer should be null (because we never delete and we don't
+    // pre-allocate), but let's check just in case
+    if (slot.name) {
+        fprintf (
+            stderr,
+            "vrpn_BaseConnection::register_remote_type:\n"
+            "    slot->name is non-null; this is unexpected.\n"
+            "    I'm going to delete it.\n"
+            "    Cross your fingers and hope it it's not unintialized.\n");
+        delete [] slot.name;
+        slot.name = 0;
     }
 
-    // type has not been registered locally
-    // make sure entry is blank
-    if (registered_remote_types[remote_id].name) {
-        delete registered_remote_types[remote_id].name;
-        registered_remote_types[remote_id].name = NULL;
+    // should we instead allocate the exact amount of space?
+    // by switching to std::string, that would be accomplished automatically.
+    slot.name = new cName;
+    if (!slot.name) {
+        fprintf(stderr,"vrpn_BaseConnection::register_remote_type: "
+                "Can't allocate memory for new record\n");
+        return -1;
     }
-    registered_remote_types[remote_id].local_id = -1;
+    
+    strncpy(slot.name, type_name, sizeof(cName));
+    
+    ++num_registered_remote_types;
 
     return remote_id;
-
 }
 
 

@@ -303,8 +303,7 @@ $(SOBJECT_DIR):
 ################
 
 .PHONY:	newclient
-newclient: 
-	@echo new objects are: $(NEW_LIB_OBJECTS)
+newclient:
 	@echo 
 	$(MAKE) $(NEW_LIB_OBJECTS)
 

@@ -236,10 +236,9 @@ public:
     // * was: message_type_name
     const char * get_message_type_name( vrpn_int32 type_id ) const;
 
-    // These are const, but the compiler says that type qualifiers
-    // are meaningless here.
-    vrpn_int32 get_num_my_types()    { return num_my_types; }
-    vrpn_int32 get_num_my_services() { return num_my_services; }
+    vrpn_int32 get_num_my_types() const    { return num_my_types; }
+    vrpn_int32 get_num_my_services() const { return num_my_services; }
+
 
 protected:  // these are called by the public functions above
 
@@ -397,14 +396,14 @@ public:  // connection special access stuff
         friend vrpn_BaseConnectionManager;
         
     public:
-        vrpn_int32 do_callbacks_for (vrpn_int32   type, 
+        vrpn_int32 do_callbacks_for (vrpn_int32   type,
                                      vrpn_int32   sender,
-                                     timeval      time, 
+                                     timeval      time,
                                      vrpn_uint32  len,
                                      const char*  buffer)
         {
             return d_manager->do_callbacks_for (type, sender,
-                                                   time, len, buffer);
+                                                time, len, buffer);
         }
         
         vrpn_int32 register_handler(
@@ -414,7 +413,7 @@ public:  // connection special access stuff
             vrpn_int32           service = vrpn_ANY_SERVICE )
         {
             return d_manager->register_handler (type, handler,
-                                                   userdata, service);
+                                                userdata, service);
         }
         
         void got_a_connection (void* pv) {
@@ -429,6 +428,19 @@ public:  // connection special access stuff
         // other user messages are sent
         void synchronize_clocks() {
             d_manager->synchronize_clocks();
+        }
+        
+        
+        // * returns service ID, or -1 if unregistered
+        vrpn_int32 get_service_id( const char * service_name ) const {
+            return d_manager->get_service_id (service_name);
+        }
+        
+        
+        // * returns message type ID, or -1 if unregistered
+        // * was message_type_is_registered  
+        vrpn_int32 get_message_type_id( const char * type_name ) const {
+            return d_manager->get_message_type_id (type_name);
         }
         
         

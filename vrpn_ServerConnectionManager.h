@@ -141,7 +141,7 @@ protected: // initializaton and connection setup
     // get mcast group info from mcast sender
     char* get_mcast_info();
     
-    // helper function
+    // helper function called by listen_for_incoming_connections
     virtual vrpn_int32 connect_to_client( const char *machine,
                                           vrpn_int16 port );
     
