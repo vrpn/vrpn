@@ -99,11 +99,16 @@ ifeq ($(HW_OS),powerpc_macosx)
    LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) ../../isense/MacOSX/dlcompat.o
 endif
 
+.SUFFIXES: .cpp
+
 .C.o:
 	$(CC) $(CFLAGS) -c $*.C
 
 .c.o:
 	$(CC) $(CFLAGS) -c $*.c
+
+.cpp.o:
+	$(CC) $(CFLAGS) -c $*.cpp
 
 $(OBJ_DIR)/%.o:	%.c
 	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
@@ -113,10 +118,14 @@ $(OBJ_DIR)/%.o:	%.C
 	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
+$(OBJ_DIR)/%.o:	%.cpp
+	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
+	$(CC) $(CFLAGS) -o $@ -c $<
+
 
 
 all:  vrpn_server test_vrpn client_and_server test_mutex test_peerMutex \
- test_radamec_spi test_analogfly
+ test_radamec_spi test_analogfly testimager_server
 # testSharedObject
 
 .PHONY:	vrpn_server
@@ -124,6 +133,9 @@ vrpn_server:	$(OBJ_DIR)/vrpn_server
 
 .PHONY:	test_radamec_spi
 test_radamec_spi:	$(OBJ_DIR)/test_radamec_spi
+
+.PHONY:	testimager_server
+testimager_server:	$(OBJ_DIR)/testimager_server
 
 .PHONY:	test_analogfly
 test_analogfly:	$(OBJ_DIR)/test_analogfly
@@ -180,6 +192,12 @@ $(OBJ_DIR)/test_radamec_spi: $(OBJ_DIR)/test_radamec_spi.o  \
 			 $(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/test_radamec_spi \
 		$(OBJ_DIR)/test_radamec_spi.o \
+		-lvrpnserver $(GL) -lquat $(SYSLIBS) -lm
+
+$(OBJ_DIR)/testimager_server: $(OBJ_DIR)/testimager_server.o  \
+			 $(LIB_DIR)/libvrpnserver.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/testimager_server \
+		$(OBJ_DIR)/testimager_server.o \
 		-lvrpnserver $(GL) -lquat $(SYSLIBS) -lm
 
 $(OBJ_DIR)/test_analogfly: $(OBJ_DIR)/test_analogfly.o  \
@@ -249,8 +267,8 @@ clean:
 	rm -f $(OBJ_DIR)/*.o $(OBJ_DIR)/vrpn_server $(OBJ_DIR)/forward \
 	$(OBJ_DIR)/text $(OBJ_DIR)/sample_server $(OBJ_DIR)/test_mutex \
 	$(OBJ_DIR)/test_peerMutex $(OBJ_DIR)/client_and_server \
-	$(OBJ_DIR)/test_analogfly $(OBJ_DIR)/test_radamec_spi \
-	$(OBJ_DIR)/test_vrpn
+	$(OBJ_DIR)/testimager_server $(OBJ_DIR)/test_radamec_spi \
+	$(OBJ_DIR)/test_vrpn test_analogfly
 
 $(OBJ_DIR)/vrpn.o:	vrpn.C
 $(OBJ_DIR)/forward.o:	forward.C
