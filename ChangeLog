@@ -1,5 +1,13 @@
 2004-02-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn.dsp : Told the release version where to find Dtrack.h.
+	* vrpn_Tracker_DTrack.C : Modified the order of includes so that
+		it can compile properly when VRPN_USE_DTRACK is defined.
+		Initialized some member variables correctly.
+	* vrpn_Tracker.DTrack.h : Same.
+
+2004-02-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	Adding changes from David Nahon at Virtools.
 	* vrpn.dsp : Added DTrack files and includes and project.
 	* vrpn.dsw : Same.

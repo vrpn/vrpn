@@ -1,7 +1,6 @@
 #ifndef __TRACKER_DTRACK_H
 #define __TRACKER_DTRACK_H
 
-#ifdef	VRPN_USE_DTRACK
 #include <time.h>
 #include <math.h>
 #include <stdlib.h>
@@ -11,7 +10,6 @@
 #endif
 
 #include "vrpn_Connection.h"
-#include "dtracklib.h"
 #include "vrpn_Tracker.h"
 #include "vrpn_Button.h"
 #include "vrpn_Analog.h"
@@ -19,6 +17,9 @@
 // Globals to store DTrack data:
 
 //// from example_without_remote_control.c
+#ifdef	VRPN_USE_DTRACK
+#include "dtracklib.h"
+
 #define vrpn_DT_MAX_NBODY 10
 #define vrpn_DT_MAX_NFLYSTICK 1
 #define vrpn_DT_MAX_NMARKER 100

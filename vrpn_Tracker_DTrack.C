@@ -1,5 +1,3 @@
-#ifdef	VRPN_USE_DTRACK
-
 //#define TRACEDTRACK
 
 #include <time.h>
@@ -26,6 +24,7 @@
 #include "vrpn_Tracker_DTrack.h"
 #include "vrpn_Shared.h"
 #include "quat.h" 
+#ifdef	VRPN_USE_DTRACK
 
 ///////////////////////////////////////////////////////
 /* This code is based on the dtrack sample code example_without_remote_control.c
@@ -87,8 +86,7 @@ vrpn_Tracker_DTrack::vrpn_Tracker_DTrack(const char *name,
 					 float timeToReachJoy/*=1.0*/) :
 	vrpn_Tracker(name, c),	  
 	vrpn_Button(name, c),
-	vrpn_Analog(name, c), m_first(true), m_x(0.), m_y(0.),m_cumulatedDt(0.),
-	num_buttons(0), num_channel(0)
+	vrpn_Analog(name, c), m_first(true), m_x(0.), m_y(0.),m_cumulatedDt(0.)
 {
 	if (timeToReachJoy != 0) {
 		m_incPerSec = 1./timeToReachJoy;
@@ -113,6 +111,10 @@ vrpn_Tracker_DTrack::vrpn_Tracker_DTrack(const char *name,
 		MessageBox(0,errStr,"vrpn_Tracker_DTrack",MB_ICONSTOP);
 		exit(EXIT_FAILURE);
 	}
+
+	// Dunno how many of these there are yet...
+	num_channel = 0;
+	num_buttons = 0;
 }
  
 vrpn_Tracker_DTrack::~vrpn_Tracker_DTrack()
