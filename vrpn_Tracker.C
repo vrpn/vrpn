@@ -1333,9 +1333,13 @@ int vrpn_Tracker_Remote::handle_change_message(void *userdata,
 		handler->handler(handler->userdata, tp);
 		handler = handler->next;
 	}
-	if (tp.sensor < vrpn_TRACKER_MAX_SENSORS)
+
+	if (tp.sensor < 0) {
+	    fprintf(stderr,"vrpn_Tracker_Rem:pos sensor index is negative!\n");
+	    return -1;
+	} else if (tp.sensor < vrpn_TRACKER_MAX_SENSORS) {
 		handler = me->change_list[tp.sensor];
-	else{
+	} else {
 	    fprintf(stderr,"vrpn_Tracker_Rem:pos sensor index too large\n");
 	    return -1;
 	}

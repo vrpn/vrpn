@@ -61,9 +61,9 @@
                                   (t1.tv_usec > t2.tv_usec)) )
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
-static void **commConnections;
+const  int maxCom = 50;
+static HANDLE	commConnections[maxCom];
 static int curCom = -1;
-static int maxCom = 10;
 #endif
 
 int vrpn_open_commport(char *portname, long baud, int charsize, vrpn_SER_PARITY parity)
@@ -93,18 +93,9 @@ int vrpn_open_commport(char *portname, long baud, int charsize, vrpn_SER_PARITY 
 					 0, // not overlapped I/O 
 					 NULL);  // hTemplate must be NULL for comm devices     );
 
-  if (curCom == -1)
-	  commConnections = (void**)new char[maxCom];
-  else
-  {
-	  if (curCom >= maxCom)
-	  {
-		  void *old = commConnections;
-		  maxCom *= 2;
-		  commConnections = (void**)new char[maxCom];
-		  delete [] old;
-	  }
-
+  if (curCom >= maxCom) {
+      fprintf(stderr, "VRPN: To many communication connections open, edit vrpn_Serial.C and recompile\n");
+      return -1;
   }
   
   if (hCom == INVALID_HANDLE_VALUE) 
@@ -306,16 +297,14 @@ int vrpn_open_commport(char *portname, long baud, int charsize, vrpn_SER_PARITY 
 int vrpn_close_commport(int comm)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
-	return CloseHandle(commConnections[comm]);
+	int ret = CloseHandle(commConnections[comm]);
 
 	for(int i = comm; i < curCom - 1; i++)
 		commConnections[i] = commConnections[i+1];
 
 	commConnections[curCom--] = NULL;
 
-	if (curCom == -1)
-		delete [] commConnections;
-
+	return ret;
 #else
 	return close(comm);
 #endif

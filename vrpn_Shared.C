@@ -137,8 +137,8 @@ timeval vrpn_MsecsTimeval( const double dMsecs )
 
 void vrpn_SleepMsecs( double dMsecs )
 {
-#if defined(_WIN32) && defined(VRPN_USE_WINSOCK_SOCKETS)
-    Sleep(DWORD(dMsecs));
+#if defined(_WIN32)
+    Sleep((DWORD)dMsecs);
 #else
     timeval timeout;
 

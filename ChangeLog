@@ -1,3 +1,11 @@
+2001-06-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * vrpn_Serial.C : Removed dynamic allocation of comm handles,
+            which was causing seg faults.
+	* vrpn_Tracker.C : Added check for negative sensor number in callback
+		handler (this happened when connected to a malfunctioning
+		tracker server).
+
 2001-06-27  Adam Seeger  <seeger@cs.unc.edu>
 
 	* vrpn_Connection.C (vrpn_Endpoint::drop_connection): removed a hack
@@ -773,4 +781,3 @@
 	* vrpn_AnalogFly.C (vrpn_AnalogFly::vrpn_AnalogFly): Sets the reset
 	button to NULL by default so that the code won't blow up if you don't
 	have one.
-
