@@ -10,13 +10,13 @@ Notes on this java implementation:
 - when you build the java_vrpn Java project, it will generate 
   vrpn_*Remote.h, which are used by the C++ project
 
-- when you build the TrackerRemote C++ project, it will create a .dll that 
-        needsto be in your path or executable directory.	
+- when you build the C++ project, it will create a .dll that 
+        needs to be in your path or executable directory.	
 
 - you can only execute this code with a java 1.4.0 JVM, such as the one that
 	comes with the sdk.  Old Microsoft stuff won't work.
 
-- the vrpn directory in .../vrpn/java_vrpn needs to be in your CLASSPATH or
-	moved to be in your CLASSPATH.  Alternatively, you can invoke the Java
+- the resulting vrpn.jar file needs to be in your CLASSPATH or moved to
+	be in your CLASSPATH.  Alternatively, you can invoke the Java
 	VM with the classpath of the java_vrpn directory.
 
