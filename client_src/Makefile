@@ -2,24 +2,25 @@
 # Copied the one from ../server_src here and put the former one
 # in Makefile.old
 
+CC = CC
 CFLAGS = -I../ -g
 LFLAGS = -L../`hw_os` \
 	 -L/afs/unc/proj/hmd/beta/lib/`hw_os` \
          -L/afs/unc/proj/hmd/lib/`hw_os`
 
 .c.o:
-	g++ $(CFLAGS) -c $*.c
+	$(CC) $(CFLAGS) -c $*.c
 
 .C.o:
-	g++ $(CFLAGS) -c $*.C
+	$(CC) $(CFLAGS) -c $*.C
 
 all:  sound_client 
 
 sound_client: sound_client.o ../`hw_os`/libvrpn.a
-	g++ $(LFLAGS) -o sound_client sound_client.o -lvrpn -lsdi -lm
+	$(CC) $(LFLAGS) -o sound_client sound_client.o -lvrpn -lsdi -lm
 
 listen_client: listen_client.o ../`hw_os`/libvrpn.a
-	g++ $(LFLAGS) -o listen_client listen_client.o -lvrpn -lsdi -lm
+	$(CC) $(LFLAGS) -o listen_client listen_client.o -lvrpn -lsdi -lm
 
 
 
