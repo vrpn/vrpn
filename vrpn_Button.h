@@ -21,6 +21,7 @@
 class vrpn_Button {
   public:
 	vrpn_Button(const char *name, vrpn_Connection *c = NULL);
+        virtual ~vrpn_Button (void) { }
 
 	// Print the status of the button
 	void print(void);
@@ -151,8 +152,8 @@ class vrpn_Button_Remote: public vrpn_Button {
 	// The name of the button device to connect to. Optional second
 	// argument is used when you already have an open connection you
 	// want it to listen on.
-	vrpn_Button_Remote(const char *name, vrpn_Connection *cn = NULL);
-	~vrpn_Button_Remote();
+	vrpn_Button_Remote (const char *name, vrpn_Connection *cn = NULL);
+	virtual ~vrpn_Button_Remote (void);
 
 	// This routine calls the mainloop of the connection it's on
 	virtual void mainloop(const struct timeval * timeout = NULL);

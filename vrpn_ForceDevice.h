@@ -37,6 +37,7 @@ class vrpn_ForceDevice {
   public:
 
     vrpn_ForceDevice (char * name, vrpn_Connection *c);
+    virtual ~vrpn_ForceDevice (void);
     virtual void mainloop (const struct timeval * timeout = NULL) = 0;
     void print_report (void);
     void print_plane (void);
@@ -356,7 +357,7 @@ public:
     // The connection argument is used only if you already have a connection
     // the device must listen on (it is not normally used).
     vrpn_ForceDevice_Remote(char *name, vrpn_Connection *cn = NULL);
-    ~vrpn_ForceDevice_Remote();
+    virtual ~vrpn_ForceDevice_Remote (void);
 
     void sendSurface(void);
     void startSurface(void);

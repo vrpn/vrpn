@@ -206,7 +206,8 @@ vrpn_Analog_Remote::vrpn_Analog_Remote (const char * name,
 	gettimeofday(&timestamp, NULL);
 }
 
-vrpn_Analog_Remote::~vrpn_Analog_Remote()
+// virtual
+vrpn_Analog_Remote::~vrpn_Analog_Remote (void)
 {
 	vrpn_ANALOGCHANGELIST	*next;
 

@@ -137,6 +137,11 @@ vrpn_ForceDevice::vrpn_ForceDevice(char *name, vrpn_Connection *c)
         delete [] servicename;
 }
 
+// virtual
+vrpn_ForceDevice::~vrpn_ForceDevice (void) {
+
+}
+
 void vrpn_ForceDevice::print_plane(void)
 {
   printf("plane: %f, %f, %f, %f\n", plane[0], plane[1], plane[2], plane[3]);
@@ -1076,7 +1081,8 @@ vrpn_ForceDevice_Remote::vrpn_ForceDevice_Remote(char *name, vrpn_Connection *cn
      gettimeofday(&timestamp, NULL);
 }
 
-vrpn_ForceDevice_Remote::~vrpn_ForceDevice_Remote()
+// virtual
+vrpn_ForceDevice_Remote::~vrpn_ForceDevice_Remote (void)
 {
 	vrpn_FORCECHANGELIST	*nextforce;
 	vrpn_FORCESCPCHANGELIST	*nextscp;

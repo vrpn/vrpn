@@ -5,18 +5,22 @@
 #include <vrpn_Connection.h>
 
 vrpn_Shared_int32::vrpn_Shared_int32 (const char * name,
-                                      vrpn_int32 defaultValue) :
+                                      vrpn_int32 defaultValue,
+                                      vrpn_int32 mode) :
   d_value (defaultValue),
   d_name (name ? new char [1 + strlen(name)] : NULL),
+  d_mode (mode),
   d_connection (NULL),
   d_myId (-1),
   d_updateFromServer_type (-1),
   d_updateFromRemote_type (-1),
-  d_callbacks (NULL) {
+  d_callbacks (NULL),
+  d_timedCallbacks (NULL) {
 
   if (name) {
     strcpy(d_name, name);
   }
+  gettimeofday(&d_lastUpdate, NULL);
 }
 
 // virtual
@@ -32,6 +36,14 @@ vrpn_int32 vrpn_Shared_int32::value (void) const {
 
 vrpn_Shared_int32::operator int () const {
   return value();
+}
+
+// virtual
+vrpn_Shared_int32 & vrpn_Shared_int32::operator =
+                                            (vrpn_int32 newValue) {
+  struct timeval now;
+  gettimeofday(&now, NULL);
+  return set(newValue, now);
 }
 
 void vrpn_Shared_int32::bindConnection (vrpn_Connection * c) {
@@ -69,10 +81,44 @@ void vrpn_Shared_int32::register_handler (vrpnSharedIntCallback cb,
 }
 
 void vrpn_Shared_int32::unregister_handler (vrpnSharedIntCallback cb,
-                                          void * userdata) {
+                                            void * userdata) {
   callbackEntry * e, ** snitch;
 
   snitch = &d_callbacks;
+  e = *snitch;
+  while (e && (e->handler != cb) && (e->userdata != userdata)) {
+    snitch = &(e->next);
+    e = *snitch;
+  }
+  if (!e) {
+    fprintf(stderr, "vrpn_Shared_int32::unregister_handler:  "
+                    "Handler not found.\n");
+    return;
+  }
+
+  *snitch = e->next;
+  delete e;
+}
+
+void vrpn_Shared_int32::register_handler (vrpnTimedSharedIntCallback cb,
+                                          void * userdata) {
+  timedCallbackEntry * e = new timedCallbackEntry;
+  if (!e) {
+    fprintf(stderr, "vrpn_Shared_int32::register_handler:  "
+                    "Out of memory.\n");
+    return;
+  }
+  e->handler = cb;
+  e->userdata = userdata;
+  e->next = d_timedCallbacks;
+  d_timedCallbacks = e;
+}
+
+void vrpn_Shared_int32::unregister_handler (vrpnTimedSharedIntCallback cb,
+                                            void * userdata) {
+  timedCallbackEntry * e, ** snitch;
+
+  snitch = &d_timedCallbacks;
   e = *snitch;
   while (e && (e->handler != cb) && (e->userdata != userdata)) {
     snitch = &(e->next);
@@ -95,11 +141,34 @@ void vrpn_Shared_int32::decode (const char ** buffer, vrpn_int32 *) {
   vrpn_unbuffer(buffer, &d_value);
 }
 
+void vrpn_Shared_int32::sendUpdate (vrpn_int32 msgType) {
+  char buffer [32];
+  vrpn_int32 buflen = 32;
+  char * bp = buffer;
+
+  if (d_connection) {
+    encode(&bp, &buflen);
+    d_connection->pack_message(32 - buflen, d_lastUpdate,
+                               msgType, d_myId,
+                               buffer, vrpn_CONNECTION_RELIABLE);
+//fprintf(stderr, "vrpn_Shared_int32::sendUpdate:  packed message\n");
+  }
+
+
+}
+
+
 int vrpn_Shared_int32::yankCallbacks (void) {
   callbackEntry * e;
+  timedCallbackEntry * te;
 
   for (e = d_callbacks;  e;  e = e->next) {
     if ((*e->handler)(e->userdata, d_value)) {
+      return -1;
+    }
+  }
+  for (te = d_timedCallbacks;  te;  te = te->next) {
+    if ((*te->handler)(te->userdata, d_value, d_lastUpdate)) {
       return -1;
     }
   }
@@ -114,8 +183,9 @@ int vrpn_Shared_int32::yankCallbacks (void) {
 
 
 vrpn_Shared_int32_Server::vrpn_Shared_int32_Server (const char * name,
-                                                    vrpn_int32 defaultValue) :
-    vrpn_Shared_int32 (name, defaultValue) {
+                                                    vrpn_int32 defaultValue,
+                                                    vrpn_int32 defaultMode) :
+    vrpn_Shared_int32 (name, defaultValue, defaultMode) {
 
 }
 
@@ -131,27 +201,22 @@ vrpn_Shared_int32_Server::~vrpn_Shared_int32_Server (void) {
 }
 
 // virtual
-vrpn_Shared_int32 & vrpn_Shared_int32_Server::operator =
-                                      (vrpn_int32 newValue) {
+vrpn_Shared_int32 & vrpn_Shared_int32_Server::set
+                                      (vrpn_int32 newValue,
+                                       timeval when) {
 
-//fprintf(stderr, "vrpn_Shared_int32_Server::operator = (%d)\n", newValue);
+  if ((d_mode & VRPN_SO_IGNORE_IDEMPOTENT) &&
+      (newValue == d_value)) {
+    return *this;
+  }
+
+//fprintf(stderr, "vrpn_Shared_int32_Server::set (%d)\n", newValue);
 
   d_value = newValue;
+  d_lastUpdate = when;
   yankCallbacks();
 
-  if (d_connection) {
-    struct timeval now;
-    char buffer [32];
-    vrpn_int32 buflen = 32;
-    char * bp = buffer;
-
-    gettimeofday(&now, NULL);
-    encode(&bp, &buflen);
-    d_connection->pack_message(32 - buflen, now,
-                               d_updateFromServer_type, d_myId,
-                               buffer, vrpn_CONNECTION_RELIABLE);
-//fprintf(stderr, "vrpn_Shared_int32_Server::operator =:  packed message\n");
-  }
+  sendUpdate(d_updateFromServer_type);
 
   return *this;
 }
@@ -174,24 +239,15 @@ int vrpn_Shared_int32_Server::handle_updateFromRemote
   vrpn_Shared_int32_Server * s = (vrpn_Shared_int32_Server *) ud;
 
   s->decode(&p.buffer, &p.payload_len);
+  //gettimeofday(&s->d_lastUpdate);
+  s->d_lastUpdate = p.msg_time;
   s->yankCallbacks();
 
-#ifdef VRPN_SO_DEFER_UPDATES
-  // MUST send an update notification back to the originator (if
-  // we accept their update) so that they can reflect it.
-  if (s->d_connection) {
-    timeval now;
-    char buffer [32];
-    vrpn_int32 buflen = 32;
-    char * bp = buffer;
-
-    gettimeofday(&now, NULL);
-    s->encode(&bp, &buflen);
-    s->d_connection->pack_message(32 - buflen, now,
-                                  s->d_updateFromServer_type, s->d_myId,
-                                  buffer, vrpn_CONNECTION_RELIABLE);
+  if (s->d_mode & VRPN_SO_DEFER_UPDATES) {
+    // MUST send an update notification back to the originator (if
+    // we accept their update) so that they can reflect it.
+    s->sendUpdate(s->d_updateFromServer_type);
   }
-#endif
 
 //fprintf(stderr, "vrpn_Shared_int32_Server::handle_updateFromRemote done\n");
   return 0;
@@ -199,8 +255,9 @@ int vrpn_Shared_int32_Server::handle_updateFromRemote
 
 
 vrpn_Shared_int32_Remote::vrpn_Shared_int32_Remote (const char * name,
-                                                    vrpn_int32 defaultValue) :
-    vrpn_Shared_int32 (name, defaultValue) {
+                                                    vrpn_int32 defaultValue,
+                                                    vrpn_int32 defaultMode) :
+    vrpn_Shared_int32 (name, defaultValue, defaultMode) {
 
 }
 
@@ -216,30 +273,24 @@ vrpn_Shared_int32_Remote::~vrpn_Shared_int32_Remote (void) {
 }
 
 // virtual
-vrpn_Shared_int32 & vrpn_Shared_int32_Remote::operator =
-                                            (vrpn_int32 newValue) {
-
-#ifndef VRPN_SO_DEFER_UPDATES
-  // If we're not deferring updates until the server verifies them,
-  // update our local value immediately.
-//fprintf(stderr, "vrpn_Shared_int32_Remote::operator = (%d)\n", newValue);
-  d_value = newValue;
-  yankCallbacks();
-#endif
-
-  if (d_connection) {
-    struct timeval now;
-    char buffer [32];
-    vrpn_int32 buflen = 32;
-    char * bp = buffer;
-
-    gettimeofday(&now, NULL);
-    encode(&bp, &buflen);
-    d_connection->pack_message(32 - buflen, now,
-                               d_updateFromRemote_type, d_myId,
-                               buffer, vrpn_CONNECTION_RELIABLE);
-//fprintf(stderr, "vrpn_Shared_int32_Remote::operator =:  packed message\n");
+vrpn_Shared_int32 & vrpn_Shared_int32_Remote::set
+                                            (vrpn_int32 newValue,
+                                             timeval when) {
+  if ((d_mode & VRPN_SO_IGNORE_IDEMPOTENT) &&
+      (newValue == d_value)) {
+    return *this;
   }
+
+  if (!(d_mode & VRPN_SO_DEFER_UPDATES)) {
+    // If we're not deferring updates until the server verifies them,
+    // update our local value immediately.
+//fprintf(stderr, "vrpn_Shared_int32_Remote::set (%d)\n", newValue);
+    d_value = newValue;
+    d_lastUpdate = when;
+    yankCallbacks();
+  }
+
+  sendUpdate(d_updateFromRemote_type);
 
   return *this;
 }
@@ -261,6 +312,8 @@ int vrpn_Shared_int32_Remote::handle_updateFromServer
              (void * ud, vrpn_HANDLERPARAM p) {
   vrpn_Shared_int32_Remote * s = (vrpn_Shared_int32_Remote *) ud;
   s->decode(&p.buffer, &p.payload_len);
+  //gettimeofday(&s->d_lastUpdate, NULL);
+  s->d_lastUpdate = p.msg_time;
   s->yankCallbacks();
 //fprintf(stderr, "vrpn_Shared_int32_Remote::handle_updateFromServer done\n");
 

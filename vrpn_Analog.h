@@ -147,7 +147,7 @@ class vrpn_Analog_Remote: public vrpn_Analog {
         // Optional argument to be used when the Remote MUST listen on
         // a connection that is already open.
 	vrpn_Analog_Remote (const char * name, vrpn_Connection * c = NULL);
-	~vrpn_Analog_Remote();
+	virtual ~vrpn_Analog_Remote (void);
 
 	// This routine calls the mainloop of the connection it's on
 	virtual void mainloop(const struct timeval * timeout = NULL);

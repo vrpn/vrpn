@@ -550,7 +550,8 @@ vrpn_Button_Remote::vrpn_Button_Remote(const char *name, vrpn_Connection *cn):
 	gettimeofday(&timestamp, NULL);
 }
 
-vrpn_Button_Remote::~vrpn_Button_Remote()
+// virtual
+vrpn_Button_Remote::~vrpn_Button_Remote (void)
 {
 	vrpn_BUTTONCHANGELIST	*next;
 
