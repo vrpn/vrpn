@@ -26,21 +26,24 @@ class vrpn_Shared_int32;
 class vrpn_Shared_float64;
 class vrpn_Shared_String;
 
-typedef int (* vrpnSharedIntCallback) (void * userdata, vrpn_int32 newValue);
+typedef int (* vrpnSharedIntCallback) (void * userdata, vrpn_int32 newValue,
+                                       vrpn_bool isLocal);
 typedef int (* vrpnSharedFloatCallback) (void * userdata,
-                                         vrpn_float64 newValue);
+                                         vrpn_float64 newValue,
+                                       vrpn_bool isLocal);
 typedef int (* vrpnSharedStringCallback)
-                    (void * userdata, const char * newValue);
+                    (void * userdata, const char * newValue,
+                                       vrpn_bool isLocal);
 
 typedef int (* vrpnTimedSharedIntCallback)
                     (void * userdata, vrpn_int32 newValue,
-                     timeval when);
+                     timeval when, vrpn_bool isLocal);
 typedef int (* vrpnTimedSharedFloatCallback)
                     (void * userdata, vrpn_float64 newValue,
-                     timeval when);
+                     timeval when, vrpn_bool isLocal);
 typedef int (* vrpnTimedSharedStringCallback)
                     (void * userdata, const char * newValue,
-                     timeval when);
+                     timeval when, vrpn_bool isLocal);
 
 // Update callbacks should return 0 on successful completion,
 // nonzero on error (which will prevent further update callbacks
@@ -192,7 +195,7 @@ class vrpn_Shared_int32 {
     void decode (const char ** buffer, vrpn_int32 * len,
                  vrpn_int32 * newValue, timeval * when) const;
 
-    int yankCallbacks (void);
+    int yankCallbacks (vrpn_bool isLocal);
       // must set d_lastUpdate BEFORE calling yankCallbacks()
         
     static int handle_becomeSerializer (void *, vrpn_HANDLERPARAM);
@@ -329,7 +332,7 @@ class vrpn_Shared_float64 {
     void decode (const char ** buffer, vrpn_int32 * len,
                  vrpn_float64 * newValue, timeval * when) const;
 
-    int yankCallbacks (void);
+    int yankCallbacks (vrpn_bool isLocal);
       // must set d_lastUpdate BEFORE calling yankCallbacks()
         
     static int handle_becomeSerializer (void *, vrpn_HANDLERPARAM);
@@ -467,7 +470,7 @@ class vrpn_Shared_String {
     void decode (const char ** buffer, vrpn_int32 * len,
                  char * newValue, timeval * when) const;
 
-    int yankCallbacks (void);
+    int yankCallbacks (vrpn_bool isLocal);
       // must set d_lastUpdate BEFORE calling yankCallbacks()
         
     static int handle_becomeSerializer (void *, vrpn_HANDLERPARAM);

@@ -4,20 +4,17 @@
 
 #include <vrpn_Connection.h>
 
-// Uncomment this to put d_lastUpdate in the message header timestamps,
-// which will be modified by the clock synchronization code in
-// vrpn_Synchronized_Connection.  Comment it out to put d_lastUpdate
-// in the message body and ignore clock synchronization.
-//#define USE_CLOCK_SYNCHRONIZATION
-
-// Notes about subtlties:
-//   For clock synchronization, vrpn computes a ONE-WAY synchronization
-// offset.  We can't just blindly use synchronized timestamps in both
-// directions, or what we get is not synchronized.  So the convention
-// adopted is that messages received by the Server are corrected to the
-// local clock, but messages sent at the receiver are left in
-// "native" time.  This is, unfortunately, much more complex in the code
-// than always using clock sync or never using it.
+// We can't put d_lastUpdate in the message header timestamps;  it must
+// go in the body.
+// This is because we're (probably) using a synchronized connection,
+// and VRPN clock sync munges these timestamps.
+// If we send a message from A to B and it gets sent back to A, attempting
+// to preserve the timestamp at both ends, but sending it over a synchronized
+// connection, its timestamp should end up equal to the original timestamp
+// PLUS the network RTT (round-trip time).
+// The original design intent of a vrpn_SharedObject was to be able to use
+// timestamps as message identifiers/sequencers, so they need to be invariant
+// over several network hops.
 
 vrpn_Shared_int32::vrpn_Shared_int32 (const char * name,
                                       vrpn_int32 defaultValue,
@@ -98,7 +95,7 @@ void vrpn_Shared_int32::bindConnection (vrpn_Connection * c) {
   d_becomeSerializer_type = c->register_message_type
           ("vrpn Shared become serializer");
 
-//printf ("My name is %s;  myId %d, ufs type %d, ufr type %d.\n",
+//fprintf (stderr, "My name is %s;  myId %d, ufs type %d, ufr type %d.\n",
 //buffer, d_myId, d_updateFromServer_type, d_updateFromRemote_type);
 
   d_connection->register_handler(d_becomeSerializer_type,
@@ -193,7 +190,7 @@ vrpn_Shared_int32 & vrpn_Shared_int32::set (vrpn_int32 newValue,
   if (acceptedUpdate) {
     d_value = newValue;
     d_lastUpdate = when;
-    yankCallbacks();
+    yankCallbacks(isLocalSet);
   }
 
   if (shouldSendUpdate(isLocalSet, acceptedUpdate)) {
@@ -328,17 +325,17 @@ void vrpn_Shared_int32::sendUpdate (vrpn_int32 msgType,
 }
 
 
-int vrpn_Shared_int32::yankCallbacks (void) {
+int vrpn_Shared_int32::yankCallbacks (vrpn_bool isLocal) {
   callbackEntry * e;
   timedCallbackEntry * te;
 
   for (e = d_callbacks;  e;  e = e->next) {
-    if ((*e->handler)(e->userdata, d_value)) {
+    if ((*e->handler)(e->userdata, d_value, isLocal)) {
       return -1;
     }
   }
   for (te = d_timedCallbacks;  te;  te = te->next) {
-    if ((*te->handler)(te->userdata, d_value, d_lastUpdate)) {
+    if ((*te->handler)(te->userdata, d_value, d_lastUpdate, isLocal)) {
       return -1;
     }
   }
@@ -568,7 +565,7 @@ void vrpn_Shared_float64::bindConnection (vrpn_Connection * c) {
   d_becomeSerializer_type = c->register_message_type
           ("vrpn Shared become serializer");
 
-//printf ("My name is %s;  myId %d, ufs type %d, ufr type %d.\n",
+//fprintf (stderr, "My name is %s;  myId %d, ufs type %d, ufr type %d.\n",
 //buffer, d_myId, d_updateFromServer_type, d_updateFromRemote_type);
 
   d_connection->register_handler(d_becomeSerializer_type,
@@ -663,7 +660,7 @@ vrpn_Shared_float64 & vrpn_Shared_float64::set (vrpn_float64 newValue,
   if (acceptedUpdate) {
     d_value = newValue;
     d_lastUpdate = when;
-    yankCallbacks();
+    yankCallbacks(isLocalSet);
   }
 
   if (shouldSendUpdate(isLocalSet, acceptedUpdate)) {
@@ -774,17 +771,17 @@ void vrpn_Shared_float64::sendUpdate (vrpn_int32 msgType,
 }
 
 
-int vrpn_Shared_float64::yankCallbacks (void) {
+int vrpn_Shared_float64::yankCallbacks (vrpn_bool isLocal) {
   callbackEntry * e;
   timedCallbackEntry * te;
 
   for (e = d_callbacks;  e;  e = e->next) {
-    if ((*e->handler)(e->userdata, d_value)) {
+    if ((*e->handler)(e->userdata, d_value, isLocal)) {
       return -1;
     }
   }
   for (te = d_timedCallbacks;  te;  te = te->next) {
-    if ((*te->handler)(te->userdata, d_value, d_lastUpdate)) {
+    if ((*te->handler)(te->userdata, d_value, d_lastUpdate, isLocal)) {
       return -1;
     }
   }
@@ -1023,7 +1020,7 @@ void vrpn_Shared_String::bindConnection (vrpn_Connection * c) {
   d_becomeSerializer_type = c->register_message_type
           ("vrpn Shared become serializer");
 
-//printf ("My name is %s;  myId %d, ufs type %d, ufr type %d.\n",
+//fprintf (stderr, "My name is %s;  myId %d, ufs type %d, ufr type %d.\n",
 //buffer, d_myId, d_updateFromServer_type, d_updateFromRemote_type);
 
   d_connection->register_handler(d_becomeSerializer_type,
@@ -1127,7 +1124,7 @@ vrpn_Shared_String & vrpn_Shared_String::set (const char * newValue,
     strcpy(d_value, newValue);
 
     d_lastUpdate = when;
-    yankCallbacks();
+    yankCallbacks(isLocalSet);
   }
 
   if (shouldSendUpdate(isLocalSet, acceptedUpdate)) {
@@ -1241,17 +1238,17 @@ void vrpn_Shared_String::sendUpdate (vrpn_int32 msgType,
 }
 
 
-int vrpn_Shared_String::yankCallbacks (void) {
+int vrpn_Shared_String::yankCallbacks (vrpn_bool isLocal) {
   callbackEntry * e;
   timedCallbackEntry * te;
 
   for (e = d_callbacks;  e;  e = e->next) {
-    if ((*e->handler)(e->userdata, d_value)) {
+    if ((*e->handler)(e->userdata, d_value, isLocal)) {
       return -1;
     }
   }
   for (te = d_timedCallbacks;  te;  te = te->next) {
-    if ((*te->handler)(te->userdata, d_value, d_lastUpdate)) {
+    if ((*te->handler)(te->userdata, d_value, d_lastUpdate, isLocal)) {
       return -1;
     }
   }
@@ -1294,6 +1291,8 @@ vrpn_Shared_String_Server::vrpn_Shared_String_Server
                                       const char * defaultValue,
                                       vrpn_int32 defaultMode) :
     vrpn_Shared_String (name, defaultValue, defaultMode) {
+
+  d_isSerializer = vrpn_TRUE;
 
 }
 
