@@ -66,7 +66,7 @@ CFLAGS = -I../ -g
 OBJ_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)
 LIB_DIR := ../$(OBJ_DIR)
 
-LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) \
+LFLAGS = -g -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) \
 	 -L/afs/unc/proj/hmd/beta/lib/$(HW_OS)$(OBJECT_DIR_SUFFIX) \
          -L/afs/unc/proj/hmd/lib/$(HW_OS)$(OBJECT_DIR_SUFFIX)
 
