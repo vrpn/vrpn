@@ -1,3 +1,8 @@
+2002-10-24  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_ForceDeviceRemote.cpp (handle_force_error):  corrected
+	signature for java handleForceError.
+
 2002-10-08  David Marshburn  <marshbur@cs.unc.edu>
 
 	* VRPN.java:  adds a static variable (downInVrpnLock) on which all 

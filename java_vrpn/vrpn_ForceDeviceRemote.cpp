@@ -184,7 +184,7 @@ void handle_force_error( void* userdata, const vrpn_FORCEERRORCB info )
   
   jobject jobj = (jobject) userdata;
   jclass jcls = env->GetObjectClass( jobj );
-  jmethodID jmid = env->GetMethodID( jcls, "handleForceError", "(JJDDI)V" );
+  jmethodID jmid = env->GetMethodID( jcls, "handleForceError", "(JJI)V" );
   if( jmid == NULL )
   {
     printf( "Warning:  vrpn_ForceDeviceRemote library was unable to find the "
