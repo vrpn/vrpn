@@ -89,6 +89,10 @@ SOURCE=.\vrpn_3Space.C
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_ADBox.C
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_Analog.C
 # End Source File
 # Begin Source File
@@ -286,6 +290,10 @@ SOURCE=..\isense\isense.h
 # Begin Source File
 
 SOURCE=.\vrpn_3Space.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_ADBox.h
 # End Source File
 # Begin Source File
 

@@ -1,3 +1,8 @@
+2003-06-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsp : Added support for compiling ADBox/CubicMouse driver.
+	* vrpn_ADBox.C : Removed definitions that exclude Windows.
+
 2003-07-07  Sascha Scholz  <sascha.scholz@imk.fraunhofer.de>
 
 	* Makefile : added ADBox/CubicMouse driver

@@ -15,10 +15,11 @@
 
 #include <stdio.h>
 
-#if defined(linux) || defined(sgi)
 
 #include <string.h>
+#if defined(linux) || defined(sgi)
 #include <unistd.h>
+#endif
 
 vrpn_ADBox::vrpn_ADBox(char* name, vrpn_Connection *c, 
                        char *port, long baud)
@@ -157,18 +158,3 @@ void vrpn_ADBox::mainloop()
         }
     }
 }
-
-
-#else // #if defined(linux) || defined(sgi)
-
-vrpn_ADBox::vrpn_ADBox(char* name, vrpn_Connection *c, 
-                       char *port, long baud)
-  : vrpn_Analog(name, c), vrpn_Button(name, c)
-{ 
-	  fprintf(stderr,"vrpn_ADBox::vrpn_ADBox: platform not supported\n");
-}
-
-void vrpn_ADBox::mainloop() {
-}
-
-#endif // #if defined(linux) || defined(sgi)
