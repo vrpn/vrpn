@@ -23,7 +23,10 @@
 // by data, then always terminated by a carriage return '\r'. Useful
 // commands to send to the device include z\r (zero), vQ\r (query
 // version), b<\r (beep for half a second), 
-
+//	Julien Brisset found a version of the Magellan that did not
+// understand the reset command that works on our version, so sent an
+// alternate reset string that works on his.  This is sent if the
+// 'altreset' parameter is true in the constructor.
 
 #include <string.h>
 #include "vrpn_Magellan.h"
@@ -60,12 +63,13 @@ static	int	vrpn_write_slowly(int fd, unsigned char *buffer, int len, int MsecWai
 // The box seems to autodetect the baud rate when the "T" command is sent
 // to it.
 vrpn_Magellan::vrpn_Magellan (const char * name, vrpn_Connection * c,
-			const char * port, int baud):
+			const char * port, int baud, bool altreset):
 		vrpn_Serial_Analog(name, c, port, baud),
 		vrpn_Button(name, c),
 		_numbuttons(9),
 		_numchannels(6),
-		_null_radius(8)
+		_null_radius(8),
+		_altreset(altreset)
 {
 	// Set the parameters in the parent classes
 	vrpn_Button::num_buttons = _numbuttons;
@@ -107,6 +111,15 @@ int	vrpn_Magellan::reset(void)
 	char	*reset_str = "z\rm3\rc30\rnH\rbH\r";	// Reset string sent to box
 	char	*expect_back = "z\rm3\rc30\rnH\rb\r";	// What we expect back
 	int	ret;
+
+	//-----------------------------------------------------------------------
+	// See if we should be using the alternative reset string.
+	// XXX The "expect_back" string here is almost certainly wrong.  Waiting
+	// to hear back what the correct one should be.
+	if (_altreset) {
+	  reset_str = "z\rm3\rnH\rp?0\rq00\r";
+	  expect_back = "z\rm3\rnH\rp?0\rq00\r";
+	}
 
 	//-----------------------------------------------------------------------
 	// Set the values back to zero for all buttons, analogs and encoders

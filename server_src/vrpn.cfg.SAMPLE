@@ -311,12 +311,23 @@
 # John Stone added support for the SpaceBalls in version 06.03, an example
 # startup is shown below.
 #
+# Julien Brisset discovered how to make this work with a slightly older version
+# of the Magellan.  If the example Magellan line doesn't work, add 'altreset' to
+# the line to use the alternative reset string for the device.
+#
+# NOTE: You should NOT run the driver that comes with the Magellan, since the
+# VRPN driver opens the serial port and communicates with the device directly.
+# If the Magellan driver from the manufacturer is running, then VRPN will not
+# be able to open the port.
+#
 # Arguments:
 #	char	name_of_this_device[]
 #	char	name_of_serial_device[]
 #	int	baud_rate_of_serial_device
+#	char	"altreset"   {Optional, for older Magellans}
 
 #vrpn_Magellan	Magellan0	/dev/ttyS0	9600
+#vrpn_Magellan	Magellan0	/dev/ttyS0	9600	altreset
 #vrpn_Spaceball	Spaceball0	/dev/ttyS0	9600
 
 ################################################################################

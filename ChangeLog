@@ -1,5 +1,10 @@
 2002-09-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Magellan.h : Added 'altreset' paramter to constructor.
+	* vrpn_Magellan.C : Alternate reset command for older Magellans added.
+
+2002-09-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_TempImager.h : Only send region message to user if description gotten.
 	* vrpn_TempImager.C : Same.
 

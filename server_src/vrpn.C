@@ -610,36 +610,47 @@ int setup_CerealBox (char * & pch, char * line, FILE * config_file) {
   return 0;
 }
 
-int setup_Magellan (char * & pch, char * line, FILE * config_file) {
-  char s2 [LINESIZE], s3 [LINESIZE];
+int setup_Magellan (char * & pch, char * line, FILE * config_file)
+{
+  char s2[LINESIZE], s3[LINESIZE], s4[LINESIZE];
   int i1;
+  int ret;
+  bool	altreset = false;
 
-            next();
-            // Get the arguments (class, magellan_name, port, baud
-            if (sscanf(pch,"%511s%511s%d",s2,s3, &i1) != 3)
- {
-              fprintf(stderr,"Bad vrpn_Magellan line: %s\n",line);
-              return -1;
-            }
+  next();
 
-            // Make sure there's room for a new magellan
-            if (num_magellans >= MAX_MAGELLANS) {
-              fprintf(stderr,"Too many Magellans in config file");
-              return -1;
-            }
+  // Get the arguments (class, magellan_name, port, baud, [optionally "altreset"]
+  if ( (ret = sscanf(pch,"%511s%511s%d",s2,s3, &i1, s4)) < 3) {
+    fprintf(stderr,"Bad vrpn_Magellan line: %s\n",line);
+    return -1;
+  }
 
-            // Open the device
-            if (verbose) 
-              printf("Opening vrpn_Magellan: %s on port %s, baud %d\n",
-                    s2,s3,i1);
-            if ((magellans[num_magellans] =
-                  new vrpn_Magellan(s2, connection, s3, i1)) == NULL)               
-              {
-                fprintf(stderr,"Can't create new vrpn_Magellan\n");
-                return -1;
-              } else {
-                num_magellans++;
-              }
+  // See if we are using alternate reset line
+  if (ret == 4) {
+    if (strcmp(s4, "altreset") == 0) {
+      altreset = true;
+    } else {
+      fprintf(stderr,"Bad vrpn_Magellan line: %s\n",line);
+      return -1;
+    }
+  }
+
+  // Make sure there's room for a new magellan
+  if (num_magellans >= MAX_MAGELLANS) {
+    fprintf(stderr,"Too many Magellans in config file");
+    return -1;
+  }
+
+  // Open the device
+  if (verbose) {
+    printf("Opening vrpn_Magellan: %s on port %s, baud %d\n", s2,s3,i1);
+  }
+  if ((magellans[num_magellans] = new vrpn_Magellan(s2, connection, s3, i1, altreset)) == NULL) {
+      fprintf(stderr,"Can't create new vrpn_Magellan\n");
+      return -1;
+  } else {
+    num_magellans++;
+  }
 
   return 0;
 }
