@@ -90,8 +90,6 @@ int gethostname (char *, int);
 char * vrpn_MAGIC = (char *) "vrpn: ver. 04.05";
 const int MAGICLEN = 16;  // Must be a multiple of vrpn_ALIGN bytes!
 
-struct timeval DEFAULT_SELECT_TIMEOUT;// gets set in vrpn_Connection ctor
-
 // Version history:
 //   04.03:  Russ Taylor, Nov/Dec 1998
 //           Put most of what is needed for a connection into OneConnection
@@ -2577,11 +2575,19 @@ int vrpn_Connection::send_pending_reports(void)
    return 0;
 }
 
-int vrpn_Connection::mainloop (const struct timeval * timeout)
+int vrpn_Connection::mainloop (const struct timeval * pTimeout)
 {
   int	tcp_messages_read;
   int	udp_messages_read;
   
+  timeval timeout;
+  if (pTimeout) {
+    timeout = *pTimeout;
+  } else {
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 0;
+  }
+
 #ifdef	VERBOSE2
   printf("vrpn_Connection::mainloop() called (status %d)\n",status);
 #endif
@@ -2608,7 +2614,7 @@ int vrpn_Connection::mainloop (const struct timeval * timeout)
   
   switch (status) {
   case LISTEN:
-    check_connection(timeout);
+    check_connection(pTimeout);
     break;
     
   case CONNECTED:
@@ -2635,7 +2641,7 @@ int vrpn_Connection::mainloop (const struct timeval * timeout)
 
     // Select to see if ready to hear from other side, or exception
     
-    if (select(32, &readfds, NULL ,&exceptfds, (timeval *)timeout) == -1) {
+    if (select(32, &readfds, NULL ,&exceptfds, (timeval *)&timeout) == -1) {
       if (errno == EINTR) { /* Ignore interrupt */
         break;
       } else {
@@ -2833,9 +2839,6 @@ vrpn_Connection::vrpn_Connection (unsigned short listen_port_no) :
    // Initialize the things that must be for any constructor
    init();
 
-	DEFAULT_SELECT_TIMEOUT.tv_sec = 0;
-	DEFAULT_SELECT_TIMEOUT.tv_usec = 0;
-
    if (!d_tcp_buflen || !d_udp_buflen) {
      status = BROKEN;
      fprintf(stderr, "vrpn_Connection couldn't allocate buffers.\n");
@@ -2894,9 +2897,6 @@ vrpn_Connection::vrpn_Connection
   int retval;
   int isfile;
   int isrsh;
-
-  DEFAULT_SELECT_TIMEOUT.tv_sec = 0;
-  DEFAULT_SELECT_TIMEOUT.tv_usec = 0;
 
   isfile = (strstr(station_name, "file:") ? 1 : 0);
   isrsh = (strstr(station_name, "x-vrsh:") ? 1 : 0);
