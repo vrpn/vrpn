@@ -393,7 +393,16 @@ class vrpn_Connection {
 
 	// Users should not create vrpn_Connection directly -- use 
 	// vrpn_Synchronized_Connection (for servers) or 
-	// vrpn_get_connection_by_name (for clients)
+	// vrpn_get_connection_by_name (for clients).  This is here
+	// only for those who KNOW that they want to create
+	// non-time-synchronized connections for servers.
+	vrpn_Connection (unsigned short listen_port_no =
+		         vrpn_DEFAULT_LISTEN_PORT_NO,
+                         const char * local_in_logfile_name = NULL,
+                         const char * local_out_logfile_name = NULL,
+                         const char * NIC_IPaddress = NULL,
+                         vrpn_Endpoint * (* epa) (vrpn_Connection *,
+                           vrpn_int32 *) = allocateEndpoint);
 
 	virtual ~vrpn_Connection (void);
 
@@ -480,10 +489,6 @@ class vrpn_Connection {
     virtual vrpn_File_Connection * get_File_Connection (void);
 
   protected:
-
-    // Users should not create vrpn_Connection directly -- use 
-    // vrpn_Synchronized_Connection (for servers) or 
-    // vrpn_get_connection_by_name (for clients)
 
     static vrpn_Endpoint * allocateEndpoint (vrpn_Connection *,
                                              vrpn_int32 * connectedEC);
@@ -612,20 +617,6 @@ class vrpn_Connection {
       ///< do initialization.  (They can't do so during allocateEndpoint
       ///< because it's called during the Connection constructor when
       ///< their constructors haven't executed yet.)
-
-	// Users should not create vrpn_Connection directly -- use 
-	// vrpn_Synchronized_Connection (for servers) or 
-	// vrpn_get_connection_by_name (for clients)
-
-	// Create a connection to listen for incoming connections on a port
-	vrpn_Connection (unsigned short listen_port_no =
-		         vrpn_DEFAULT_LISTEN_PORT_NO,
-                         const char * local_in_logfile_name = NULL,
-                         const char * local_out_logfile_name = NULL,
-                         const char * NIC_IPaddress = NULL,
-                         vrpn_Endpoint * (* epa) (vrpn_Connection *,
-                           vrpn_int32 *) = allocateEndpoint);
-
 };
 
 

@@ -1,5 +1,10 @@
 2003-11-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Connection.C : Exposing constructor with stern warning
+		against using it.
+
+2003-11-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Flock.C : Added changes so that the use o the extended-range
 		transmitter is optional, rather than required as it was
 		before.
