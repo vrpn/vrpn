@@ -242,6 +242,14 @@ SOURCE=.\vrpn_Joylin.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_LamportClock.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_LamportClock.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_Magellan.C
 # End Source File
 # Begin Source File

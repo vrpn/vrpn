@@ -1,3 +1,7 @@
+2002-02-01  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn.dsp:  added vrpn_LamportClock.[C,h]
+
 2002-01-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Spaceball.C : Code to drive Spaceballs (from John Stone).
