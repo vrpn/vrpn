@@ -1,3 +1,8 @@
+2000-09-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Added vrpn_ping compilation
+	* vrpn_ping.C : New file
+
 2000-09-12  Tom Hudson  <hudson@cs.unc.edu>
 
 	* testSharedObject : added more complete test of features

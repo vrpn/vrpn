@@ -114,12 +114,11 @@ all:	$(OBJ_DIR)/printvals $(OBJ_DIR)/printcereal \
 	$(OBJ_DIR)/ff_client \
 	$(OBJ_DIR)/phan_client \
 	$(OBJ_DIR)/sphere_client $(OBJ_DIR)/bdbox_client \
-	add_vrpn_cookie testLamport test_mutex $(OBJ_DIR)/setrouter
+	add_vrpn_cookie testLamport test_mutex $(OBJ_DIR)/setrouter \
+	vrpn_ping
 #	$(OBJ_DIR)/vrpn_print_messages
 
 # $(OBJ_DIR)/ohm_client
-
-# testSharedObject
 
 .PHONY:	forwarderClient
 forwarderClient:	$(OBJ_DIR)/forwarderClient
@@ -129,6 +128,9 @@ add_vrpn_cookie:	$(OBJ_DIR)/add_vrpn_cookie
 
 .PHONY: testSharedObject
 testSharedObject:	$(OBJ_DIR)/testSharedObject
+
+.PHONY: vrpn_ping
+vrpn_ping:	$(OBJ_DIR)/vrpn_ping
 
 .PHONY: testLamport
 testLamport:	$(OBJ_DIR)/testLamport
@@ -210,6 +212,10 @@ $(OBJ_DIR)/testSharedObject: $(OBJ_DIR)/testSharedObject.o \
 				$(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/testSharedObject \
 		$(OBJ_DIR)/testSharedObject.o -lvrpn $(ARCH_LIBS)
+
+$(OBJ_DIR)/vrpn_ping: $(OBJ_DIR)/vrpn_ping.o $(LIB_DIR)/libvrpn.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/vrpn_ping \
+		$(OBJ_DIR)/vrpn_ping.o -lvrpn $(ARCH_LIBS)
 
 $(OBJ_DIR)/testLamport: $(OBJ_DIR)/vrpn_LamportClock.t.o \
 				$(LIB_DIR)/libvrpn.a
