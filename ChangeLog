@@ -1,3 +1,12 @@
+2003-08-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	*  vrpn_Shared.C : Fixed the code that handles high-resolution
+		Windows timing.  This version always has time moving
+		forwards.
+	* time_test.cpp : Modified to test the monotonicity of time.
+	* time_test.dsp : Same.
+	* vrpn.dsw : Same.
+
 2003-08-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_DirectXFFJoystick.C : Made not crash when it couldn't

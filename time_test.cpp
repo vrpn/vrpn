@@ -4,6 +4,8 @@
 #include <math.h>
 #include <sys/types.h>
 #include <sys/timeb.h>
+#include "vrpn_Types.h"
+#include "vrpn_Shared.h"
 
 /*
 void	get_time_using_GetLocalTime(unsigned long &sec, unsigned long &usec)
@@ -21,7 +23,7 @@ void	get_time_using_GetLocalTime(unsigned long &sec, unsigned long &usec)
 }
 */
 
-void	get_time_using_GetLocalTime(unsigned long &sec, unsigned long &usec)
+static void	get_time_using_GetLocalTime(unsigned long &sec, unsigned long &usec)
 {
     SYSTEMTIME	stime;	    // System time in funky structure
     FILETIME	ftime;	    // Time in 100-nsec intervals since Jan 1 1601
@@ -58,6 +60,7 @@ int main(int argc, char *argv[]) {
     long    dsec, dusec;
     int	    i;
 
+    /* XXX Checking how well the two clocks track each other
     for (i = 0; i < 10; i++) {
 	get_time_using_GetLocalTime(lsec, lusec);
 	get_time_using_ftime(fsec, fusec);
@@ -68,6 +71,27 @@ int main(int argc, char *argv[]) {
 	    lsec, lusec, fsec, fusec, dsec, dusec);
 
 	Sleep(1000);
+    }
+    */
+
+    /* Checking the gettimeofday() function for monotonicity and step size */
+    struct timeval last_time, this_time;
+    double skip;
+    gettimeofday(&last_time, NULL);
+    printf("Should be no further output if things are working\n");
+    while (true) {
+      gettimeofday(&this_time, NULL);
+      skip = vrpn_TimevalMsecs(vrpn_TimevalDiff(this_time, last_time));
+      if (skip > 50) {
+	printf("Skipped forward %lg microseconds\n", skip);
+      }
+      if (skip < 0) {
+	printf("** Backwards %lg microseconds\n", skip);
+      }
+      if (skip == 0) {
+	printf("Twice the same time\n");
+      }
+      last_time = this_time;
     }
 
     return 0;
