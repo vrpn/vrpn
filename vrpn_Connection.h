@@ -307,7 +307,7 @@ class vrpn_Endpoint {
     int getOneUDPMessage (char * buf, int buflen);
       ///< These two functions are ALMOST identical, but hard to combine.
 
-    int tryToMarshall (char * outbuf, int buflen, int numOut,
+    int tryToMarshall (char * outbuf, int &buflen, int &numOut,
                        vrpn_uint32 len, timeval time,
                        vrpn_int32 type, vrpn_int32 sender,
                        const char * buffer, vrpn_uint32 classOfService);

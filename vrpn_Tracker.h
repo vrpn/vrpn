@@ -22,11 +22,12 @@
 #include "vrpn_BaseClass.h"
 
 // tracker status flags
-#define TRACKER_SYNCING		(2)
-#define TRACKER_REPORT_READY 	(1)
-#define TRACKER_PARTIAL 	(0)
-#define TRACKER_RESETTING	(-1)
-#define TRACKER_FAIL 	 	(-2)
+#define TRACKER_SYNCING		    (3)
+#define	TRACKER_AWAITING_STATION    (2)
+#define TRACKER_REPORT_READY 	    (1)
+#define TRACKER_PARTIAL 	    (0)
+#define TRACKER_RESETTING	    (-1)
+#define TRACKER_FAIL 	 	    (-2)
 
 #define TRACKER_MAX_SENSORS	(20)
 // index for the change_list that should be called for all sensors

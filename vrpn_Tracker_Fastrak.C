@@ -5,6 +5,10 @@
 // on the old version of the Fastrak driver, which had been mainly copied
 // from the Trackerlib driver and was very difficult to understand.
 //	This version was written in the Summer of 1999 by Russ Taylor.
+//	Modifications were made to this version to allow it to run the
+// Intersense IS600 tracker; basically, this involved allowing the user
+// to set extra things in the reset routine, and to pause to let the tracker
+// handle the parameter-setting commands.
 
 #include <time.h>
 #include <math.h>
@@ -32,9 +36,12 @@
 #include "vrpn_Serial.h"
 #include "vrpn_Shared.h"
 
-#define	REPORT_LEN		(3 + 3*4 + 4*4)
 #define MAX_TIME_INTERVAL       (2000000) // max time between reports (usec)
 #define	INCHES_TO_METERS	(2.54/100.0)
+
+#define	FT_INFO(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_NORMAL) ; if (d_connection) d_connection->send_pending_reports(); }
+#define	FT_WARNING(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_WARNING) ; if (d_connection) d_connection->send_pending_reports(); }
+#define	FT_ERROR(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_ERROR) ; if (d_connection) d_connection->send_pending_reports(); }
 
 static	unsigned long	duration(struct timeval t1, struct timeval t2)
 {
@@ -42,19 +49,119 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 	       1000000L * (t1.tv_sec - t2.tv_sec);
 }
 
-vrpn_Tracker_Fastrak::vrpn_Tracker_Fastrak(char *name, vrpn_Connection *c, 
-		      char *port, long baud, int enable_filtering, int numstations,
-		      const char *additional_reset_commands) :
+vrpn_Tracker_Fastrak::vrpn_Tracker_Fastrak(const char *name, vrpn_Connection *c, 
+		      const char *port, long baud, int enable_filtering, int numstations,
+		      const char *additional_reset_commands, int is900_timestamps) :
     vrpn_Tracker_Serial(name,c,port,baud),
     do_filter(enable_filtering),
-    num_stations(numstations)
+    num_stations(numstations>vrpn_FASTRAK_MAX_STATIONS ? vrpn_FASTRAK_MAX_STATIONS : numstations),
+    do_is900_timestamps(is900_timestamps)
 {
+	int i;
+
 	reset_time.tv_sec = reset_time.tv_usec = 0;
 	if (additional_reset_commands == NULL) {
 		sprintf(add_reset_cmd, "");
 	} else {
-		strncpy(add_reset_cmd, additional_reset_commands, 1023);
+		strncpy(add_reset_cmd, additional_reset_commands, sizeof(add_reset_cmd)-1);
 	}
+
+	// Initially, set to no buttons or analogs on the stations.  The
+	// methods to add buttons and analogs must be called to add them.
+	for (i = 0; i < num_stations; i++) {
+	    is900_buttons[i] = NULL;
+	    is900_analogs[i] = NULL;
+	}
+}
+
+vrpn_Tracker_Fastrak::~vrpn_Tracker_Fastrak()
+{
+    int i;
+
+    // Delete any button and analog devices that were created
+    for (i = 0; i < num_stations; i++) {
+	if (is900_buttons[i]) {
+	    delete is900_buttons[i];
+	}
+	if (is900_analogs[i]) {
+	    delete is900_analogs[i];
+	}
+    }
+}
+
+/** This routine augments the basic sensor-output setting function of the Fastrak
+    to allow the possibility of requesting timestamp, button data, and/or analog
+    data from the device.  It sets the device for position + quaternion + any of
+    the extended fields.  It puts a space at the end so that we can check to make
+    sure we have complete good records for each report.
+
+    Returns 0 on success and -1 on failure.
+*/
+
+int vrpn_Tracker_Fastrak::set_sensor_output_format(int sensor)
+{
+    char    outstring[64];
+    const char    *timestring;
+    const char    *buttonstring;
+    const char    *analogstring;
+
+    // Set output format for the station to be position and quaternion,
+    // and any of the extended IS900 states (timestamp, button, analog).
+    // This command is a capitol 'o' followed by the number of the
+    // station, then comma-separated values (2 for xyz, 11 for quat, 21 for
+    // timestamp, 22 for buttons, 23 for joystick, 0 for space) that
+    // indicate data sets, followed by character 13 (octal 15).
+    // Note that the sensor number has to be bumped to map to station number.
+
+    timestring = do_is900_timestamps ? ",21" : "";
+    buttonstring = is900_buttons[sensor] ? ",22" : "";
+    analogstring = is900_analogs[sensor] ? ",23" : "";
+    sprintf(outstring, "O%d,2,11%s%s%s,0\015", sensor+1, timestring,
+	buttonstring, analogstring);
+    if (vrpn_write_characters(serial_fd, (const unsigned char *)outstring,
+	    strlen(outstring)) == (int)strlen(outstring)) {
+		vrpn_SleepMsecs(50);	// Sleep for a bit to let command run
+    } else {
+		FT_ERROR("Write failed on format command");
+		status = TRACKER_FAIL;
+		return -1;
+    }
+
+    return 0;
+}
+
+/** This routine augments the standard Fastrak report (3 initial characters +
+    3*4 for position + 4*4 for quaternions) to include the timestamp, button
+    or analog response, if any, for the given sensor.
+
+    It returns the number of characters total to expect for a report for the
+    given sensor.
+*/
+
+int vrpn_Tracker_Fastrak::report_length(int sensor)
+{
+    int	len;
+
+    len = 4;	// Basic report, "0" plus Fastrak station char + status char + space at the end
+    len += 3*4;	// Four bytes/float, 3 floats for position
+    len += 4*4;	// Four bytes/float, 4 floats for quaternion
+
+    // Add in the timestamp (4 bytes of float) if it is present
+    if (do_is900_timestamps) {
+	len += 4;
+    }
+
+    // Add in the buttons (1 byte) if present
+    if (is900_buttons[sensor]) {
+	len += 1;
+    }
+
+    // Add in the joystick (one byte each for two values) if present
+    if (is900_analogs[sensor]) {
+	len += 2*1;
+    }
+
+    return len;
 }
 
 //   This routine will reset the tracker and set it to generate the types
@@ -67,6 +174,7 @@ void vrpn_Tracker_Fastrak::reset()
    static int numResets = 0;	// How many resets have we tried?
    int i,resetLen,ret;
    char reset[10];
+   char errmsg[512];
 
    //--------------------------------------------------------------------
    // This section deals with resetting the tracker to its default state.
@@ -76,7 +184,8 @@ void vrpn_Tracker_Fastrak::reset()
    //--------------------------------------------------------------------
 
    // Send the tracker a string that should reset it.  The first time we
-   // try this, just do the normal ^Y reset.  Later, try to reset
+   // try this, just do the normal 'c' command to put it into polled mode.
+   // after a few tries with this, use the ^Y reset.  Later, try to reset
    // to the factory defaults.  Then toggle the extended mode.
    // Then put in a carriage return to try and break it out of
    // a query mode if it is in one.  These additions are cumulative: by the
@@ -86,18 +195,28 @@ void vrpn_Tracker_Fastrak::reset()
    if (numResets > 1) {	// Try to get it out of a query loop if its in one
    	reset[resetLen++] = (char) (13); // Return key -> get ready
    }
-   if (numResets > 7) {
+   if (numResets > 5) {
 	reset[resetLen++] = 'Y'; // Put tracker into tracking (not point) mode
    }
+   if (numResets > 4) { // Even more aggressive
+       reset[resetLen++] = 't'; // Toggle extended mode (in case it is on)
+   }
+   /* XXX These commands are probably never needed, and can cause real
+      headaches for people who are keeping state in their trackers (especially
+      the InterSense trackers).  Taking them out in version 05.01; you can put
+      them back in if your tracker isn't resetting as well.
    if (numResets > 3) {	// Get a little more aggressive
-   	if (numResets > 4) { // Even more aggressive
-	      	reset[resetLen++] = 't'; // Toggle extended mode (in case it is on)
-	}
 	reset[resetLen++] = 'W'; // Reset to factory defaults
 	reset[resetLen++] = (char) (11); // Ctrl + k --> Burn settings into EPROM
    }
-   reset[resetLen++] = (char) (25); // Ctrl + Y -> reset the tracker
-   fprintf(stderr, "Resetting the Fastrak (attempt #%d)",numResets);
+   */
+   if (numResets > 2) {
+       reset[resetLen++] = (char) (25); // Ctrl + Y -> reset the tracker
+   }
+   reset[resetLen++] = 'c'; // Put it into polled (not continuous) mode
+
+   sprintf(errmsg, "Resetting the tracker (attempt %d)", numResets);
+   FT_WARNING(errmsg);
    for (i = 0; i < resetLen; i++) {
 	if (vrpn_write_characters(serial_fd, (unsigned char*)&reset[i], 1) == 1) {
 		fprintf(stderr,".");
@@ -112,7 +231,10 @@ void vrpn_Tracker_Fastrak::reset()
    // You only need to sleep 10 seconds for an actual Fastrak.
    // For the Intersense trackers, you need to sleep 20. So,
    // sleeping 20 is the more general solution...
-   sleep(20);	// Sleep to let the reset happen
+   if (numResets > 2) {
+       sleep(20);	// Sleep to let the reset happen, if we're doing ^Y
+   }
+
    fprintf(stderr,"\n");
 
    // Get rid of the characters left over from before the reset
@@ -122,7 +244,8 @@ void vrpn_Tracker_Fastrak::reset()
    sleep(2);
    unsigned char scrap[80];
    if ( (ret = vrpn_read_available_characters(serial_fd, scrap, 80)) != 0) {
-     fprintf(stderr,"  Fastrak warning: got >=%d characters after reset:\n",ret);
+     sprintf(errmsg,"Got >=%d characters after reset",ret);
+     FT_WARNING(errmsg);
      for (i = 0; i < ret; i++) {
       	if (isprint(scrap[i])) {
          	fprintf(stderr,"%c",scrap[i]);
@@ -159,10 +282,11 @@ void vrpn_Tracker_Fastrak::reset()
          	fprintf(stderr,"[0x%02X]",statusmsg[i]);
          }
      }
-     fprintf(stderr, ")\n  Bad status report from Fastrak, retrying reset\n");
+     fprintf(stderr,"\n)\n");
+     FT_ERROR("Bad status report from Fastrak, retrying reset");
      return;
    } else {
-     fprintf(stderr, "  Fastrak gives status!\n");
+     FT_WARNING("Fastrak/Isense gives status (this is good)");
      numResets = 0; 	// Success, use simple reset next time
    }
 
@@ -170,28 +294,15 @@ void vrpn_Tracker_Fastrak::reset()
    // Now that the tracker has given a valid status report, set all of
    // the parameters the way we want them. We rely on power-up setting
    // based on the receiver select switches to turn on the receivers that
-   // the user wants. We ask for XYZ+QUAT reports, filtering is enabled on
-   // position and orientation if it is desired, continuous mode in binary
-   // report mode.
+   // the user wants.
    //--------------------------------------------------------------------
 
-   // Set output format for each of the possible stations to be position and
-   // quaternion.  This command is a capitol 'o' followed by the number of the
-   // station, then comma-separated values (2 for xyz, 11 for quat) that
-   // indicate data sets, followed by character 13 (octal 15).
+   // Set output format for each of the possible stations.
 
-   for (i = 1; i <= num_stations; i++) {
-	char	outstring[30];
-	sprintf(outstring, "O%d,2,11\015", i);
-
-	if (vrpn_write_characters(serial_fd, (const unsigned char *)outstring,
-	    strlen(outstring)) == (int)strlen(outstring)) {
-		vrpn_SleepMsecs(50);	// Sleep for a bit to let command run
-	} else {
-		perror("  Fastrak write failed on format command");
-		status = TRACKER_FAIL;
-		return;
-	}
+   for (i = 0; i < num_stations; i++) {
+       if (set_sensor_output_format(i)) {
+	   return;
+       }
    }
 
    // Enable filtering if the constructor parameter said to.
@@ -227,8 +338,8 @@ void vrpn_Tracker_Fastrak::reset()
    // buffer.
    if (strlen(add_reset_cmd) > 0) {
 	char	*next_line;
-	char	add_cmd_copy[1024];
-	char	string_to_send[1024];
+	char	add_cmd_copy[sizeof(add_reset_cmd)];
+	char	string_to_send[sizeof(add_reset_cmd)];
 	int	seconds_to_wait;
 
 	printf("  Fastrak writing extended reset commands...\n");
@@ -266,14 +377,41 @@ void vrpn_Tracker_Fastrak::reset()
    vrpn_write_characters(serial_fd, (const unsigned char *)"f", 1);
 
    // Set tracker to continuous mode
-   if (vrpn_write_characters(serial_fd,(const unsigned char *) "C", 1) != 1)
+   if (vrpn_write_characters(serial_fd,(const unsigned char *) "C", 1) != 1) {
    	perror("  Fastrak write failed");
-   else {
+	status = TRACKER_FAIL;
+	return;
+   } else {
    	fprintf(stderr, "  Fastrak set to continuous mode\n");
    }
 
-   fprintf(stderr, "  (at the end of Fastrak reset routine)\n");
+   // If we are using the IS-900 timestamps, clear the timer on the device and
+   // store the time when we cleared it.  First, drain any characters in the output
+   // buffer to ensure we're sending right away.  Then, send the reset command and
+   // store the time that we sent it, plus the estimated time for the characters to
+   // get across the serial line to the device at the current baud rate.
+   // Set time units to milliseconds (MT) and reset the time (MZ).
+   if (do_is900_timestamps) {
+	char	clear_timestamp_cmd[] = "MT\015MZ\015";
+
+	vrpn_drain_output_buffer(serial_fd);
+
+	if (vrpn_write_characters(serial_fd, (const unsigned char *)clear_timestamp_cmd,
+	        strlen(clear_timestamp_cmd)) != (int)strlen(clear_timestamp_cmd)) {
+	    FT_ERROR("Cannot send command to clear timestamp");
+	    status = TRACKER_FAIL;
+	    return;
+	}
+
+	// Drain the output buffer again, then record the time as the base time from
+	// the tracker.
+	vrpn_drain_output_buffer(serial_fd);
+	gettimeofday(&is900_zerotime, NULL);
+   }
+
+   // Done with reset.
    gettimeofday(&timestamp, NULL);	// Set watchdog now
+   FT_WARNING("Reset Completed (this is good)");
    status = TRACKER_SYNCING;	// We're trying for a new reading
 }
 
@@ -303,25 +441,25 @@ void vrpn_Tracker_Fastrak::swap_endian4(char *buffer)
 // conditions). The report follows, 4 bytes per word in little-endian byte
 // order; each word is an IEEE floating-point binary value. The first three
 // are position in X,Y and Z. The next four are the unit quaternion in the
-// order W, X,Y,Z.
+// order W, X,Y,Z.  There are some optional fields for the Intersense 900
+// tracker, then there is an ASCII space character at the end.
 // If we get a report that is not valid, we assume that we have lost a
 // character or something and re-synchronize with the Fastrak by waiting
 // until the start-of-report character ('0') comes around again.
-// The routine that calls this one
-// makes sure we get a full reading often enough (ie, it is responsible
-// for doing the watchdog timing to make sure the tracker hasn't simply
-// stopped sending characters).
+// The routine that calls this one makes sure we get a full reading often
+// enough (ie, it is responsible for doing the watchdog timing to make sure
+// the tracker hasn't simply stopped sending characters).
    
 void vrpn_Tracker_Fastrak::get_report(void)
 {
+   char errmsg[512];	// Error message to send to VRPN
    int ret;		// Return value from function call to be checked
    int i;		// Loop counter
    char *bufptr;	// Points into buffer at the current value to read
 
    //--------------------------------------------------------------------
-   // The reports are each REPORT_LEN characters long, and each start with an
-   // ASCII '0' character. If we're synching, read a byte at a time until we
-   // find a '0' character.
+   // Each report starts with an ASCII '0' character. If we're synching,
+   // read a byte at a time until we find a '0' character.
    //--------------------------------------------------------------------
 
    if (status == TRACKER_SYNCING) {
@@ -334,21 +472,56 @@ void vrpn_Tracker_Fastrak::get_report(void)
       // need to look at the next one, so just return and stay
       // in Syncing mode so that we will try again next time through.
       if ( buffer[0] != '0') {
-      	fprintf(stderr,"Tracker Fastrak: Syncing (looking for '0', "
-		"got '%c')\n", buffer[0]);
+      	sprintf(errmsg,"While syncing (looking for '0', "
+		"got '%c')", buffer[0]);
+	FT_INFO(errmsg);
       	return;
       }
 
-      // Got the first character of a report -- go into PARTIAL mode
+      // Got the first character of a report -- go into AWAITING_STATION mode
       // and record that we got one character at this time. The next
-      // bit of code will attempt to read the rest of the report.
+      // bit of code will attempt to read the station.
       // The time stored here is as close as possible to when the
-      // report was generated.
+      // report was generated.  For the InterSense 900 in timestamp
+      // mode, this value will be overwritten later.
       bufcount = 1;
       gettimeofday(&timestamp, NULL);
-      status = TRACKER_PARTIAL;
+      status = TRACKER_AWAITING_STATION;
    }
 
+   //--------------------------------------------------------------------
+   // The second character of each report is the station number.  Once
+   // we know this, we can compute how long the report should be for the
+   // given station, based on what values are in its report.
+   // The station number is converted into a VRPN sensor number, where
+   // the first Fastrak station is '1' and the first VRPN sensor is 0.
+   //--------------------------------------------------------------------
+
+   if (status == TRACKER_AWAITING_STATION) {
+      // Try to get a character.  If none, just return.
+      if (vrpn_read_available_characters(serial_fd, &buffer[bufcount], 1) != 1) {
+      	return;
+      }
+
+      d_sensor = buffer[1] - '1';	// Convert ASCII 1 to sensor 0 and so on.
+      if ( (d_sensor < 0) || (d_sensor >= num_stations) ) {
+	   status = TRACKER_SYNCING;
+      	   sprintf(errmsg,"Bad sensor # (%d) in record, re-syncing", d_sensor);
+	   FT_INFO(errmsg);
+	   return;
+      }
+
+      // Figure out how long the current report should be based on the
+      // settings for this sensor.
+      REPORT_LEN = report_length(d_sensor);
+
+      // Got the station report -- to into PARTIAL mode and record
+      // that we got one character at this time.  The next bit of code
+      // will attempt to read the rest of the report.
+      bufcount++;
+      status = TRACKER_PARTIAL;
+   }
+   
    //--------------------------------------------------------------------
    // Read as many bytes of this report as we can, storing them
    // in the buffer.  We keep track of how many have been read so far
@@ -361,8 +534,7 @@ void vrpn_Tracker_Fastrak::get_report(void)
    ret = vrpn_read_available_characters(serial_fd, &buffer[bufcount],
 		REPORT_LEN-bufcount);
    if (ret == -1) {
-	fprintf(stderr,"Fastrak: Error reading\n");
-	//XXX Put out a VRPN text message here, and at other error locations
+	FT_ERROR("Error reading report");
 	status = TRACKER_FAIL;
 	return;
    }
@@ -378,25 +550,22 @@ void vrpn_Tracker_Fastrak::get_report(void)
    // synch mode and ignore this report. A well-formed report has the
    // first character '0', the next character is the ASCII station
    // number, and the third character is either a space or a letter.
-   // The station number is converted into a VRPN sensor number, where
-   // the first station is '1' and the first sensor is 0.
    //--------------------------------------------------------------------
 
    if (buffer[0] != '0') {
 	   status = TRACKER_SYNCING;
-      	   fprintf(stderr,"Tracker Fastrak: Not '0' in record\n");
+	   FT_INFO("Not '0' in record, re-syncing");
 	   return;
    }
-   d_sensor = buffer[1] - '1';	// Convert ASCII 1 to sensor 0 and so on.
-   if ( (d_sensor < 0) || (d_sensor >= num_stations) ) {
-	   status = TRACKER_SYNCING;
-      	   fprintf(stderr,"Tracker Fastrak: Bad sensor # (%d) in record\n",
-		d_sensor);
-	   return;
-   }
+   // Sensor checking was handled when we received the character for it
    if ( (buffer[2] != ' ') && !isalpha(buffer[2]) ) {
 	   status = TRACKER_SYNCING;
-      	   fprintf(stderr,"Tracker Fastrak: Bad 3rd char in record\n");
+	   FT_INFO("Bad 3rd char in record, re-syncing");
+	   return;
+   }
+   if (buffer[bufcount-1] != ' ') {
+	   status = TRACKER_SYNCING;
+	   FT_INFO("No space character at end of report, re-syncing");
 	   return;
    }
 
@@ -414,7 +583,7 @@ void vrpn_Tracker_Fastrak::get_report(void)
    // all architecture-dependent code in the vrpn_Shared.C file.
    //--------------------------------------------------------------------
 
-   // Point at the first value in the buffer (position X)
+   // Point at the first value in the buffer (position of the X value)
    bufptr = (char *)&buffer[3];
 
    // Copy the values into local float32 arrays, then copy these into the
@@ -425,6 +594,7 @@ void vrpn_Tracker_Fastrak::get_report(void)
    swap_endian4(bufptr); vrpn_unbuffer( (const char **)&bufptr, &read_pos[1]);
    swap_endian4(bufptr); vrpn_unbuffer( (const char **)&bufptr, &read_pos[2]);
 
+   // Change the order of the quaternion fields to match quatlib order
    swap_endian4(bufptr); vrpn_unbuffer( (const char **)&bufptr, &read_quat[3]);
    swap_endian4(bufptr); vrpn_unbuffer( (const char **)&bufptr, &read_quat[0]);
    swap_endian4(bufptr); vrpn_unbuffer( (const char **)&bufptr, &read_quat[1]);
@@ -440,13 +610,79 @@ void vrpn_Tracker_Fastrak::get_report(void)
    }
 
    //--------------------------------------------------------------------
+   // If we are doing IS900 timestamps, decode the time, add it to the
+   // time we zeroed the tracker, and update the report time.  Remember
+   // to convert the MILLIseconds from the report into MICROseconds and
+   // seconds.
+   //--------------------------------------------------------------------
+
+   if (do_is900_timestamps) {
+       vrpn_float32 read_time;
+       struct timeval delta_time;   // Time since the clock was reset
+
+       // Read the floating-point value of the time from the record.
+       swap_endian4(bufptr); vrpn_unbuffer( (const char **)&bufptr, &read_time);
+
+       // Convert from the float in MILLIseconds to the struct timeval
+       delta_time.tv_sec = (long)(read_time / 1000);	// Integer trunction to seconds
+       read_time -= delta_time.tv_sec * 1000;	// Subtract out what we just counted
+       delta_time.tv_usec = (long)(read_time * 1000);	// Convert remainder to MICROseconds
+
+       // Store the current time
+       timestamp = vrpn_TimevalSum(is900_zerotime, delta_time);
+   }
+
+   //--------------------------------------------------------------------
+   // If this sensor has an IS900 button on it, decode the button values
+   // into the button device and mainloop the button device so that it
+   // will report any changes.  Each button is stored in one bit of the
+   // byte, with the lowest-numbered button in the lowest bit.
+   //--------------------------------------------------------------------
+
+   if (is900_buttons[d_sensor]) {
+ 
+       for (i = 0; i < is900_buttons[d_sensor]->number_of_buttons(); i++) {
+	   int value = ( (*bufptr) >> i) & 1;
+	   is900_buttons[d_sensor]->set_button(i, value);
+       }
+
+       is900_buttons[d_sensor]->mainloop();
+
+       bufptr++;
+   }
+
+   //--------------------------------------------------------------------
+   // If this sensor has an IS900 analog on it, decode the analog values
+   // into the analog device and mainloop the analog device so that it
+   // will report any changes.  The first byte holds the unsigned char
+   // representation of left/right.  The second holds up/down.  For each,
+   // 0 means min (left or rear), 127 means center and 255 means max.
+   //--------------------------------------------------------------------
+
+   if (is900_analogs[d_sensor]) {
+
+       // Read the raw values for the left/right and top/bottom channels
+       unsigned char raw_lr = *(unsigned char *)bufptr;
+       bufptr++;
+       unsigned char raw_tb = *(unsigned char *)bufptr;
+       bufptr++;
+
+       // Normalize the values to the range -1 to 1
+       is900_analogs[d_sensor]->setChannelValue(0, (raw_lr - 127) / 128.0);
+       is900_analogs[d_sensor]->setChannelValue(1, (raw_tb - 127) / 128.0);
+
+       // Report the new values
+       is900_analogs[d_sensor]->mainloop();
+   }
+
+   //--------------------------------------------------------------------
    // Done with the decoding, set the report to ready
    //--------------------------------------------------------------------
 
    status = TRACKER_REPORT_READY;
    bufcount = 0;
 
-#ifdef VERBOSE
+#ifdef VERBOSE2
       print_latest_report();
 #endif
 }
@@ -459,6 +695,8 @@ void vrpn_Tracker_Fastrak::get_report(void)
 
 void vrpn_Tracker_Fastrak::mainloop()
 {
+  char errmsg[512];
+
   // Call the generic server mainloop, since we are a server
   server_mainloop();
 
@@ -492,6 +730,7 @@ void vrpn_Tracker_Fastrak::mainloop()
       break;
 
     case TRACKER_SYNCING:
+    case TRACKER_AWAITING_STATION:
     case TRACKER_PARTIAL:
       {
 	struct timeval current_time;
@@ -499,7 +738,8 @@ void vrpn_Tracker_Fastrak::mainloop()
 	if ( duration(current_time,timestamp) < MAX_TIME_INTERVAL) {
 		get_report();
 	} else {
-		fprintf(stderr,"Fastrak failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n",current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);
+		sprintf(errmsg,"Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);
+		FT_ERROR(errmsg);
 		status = TRACKER_FAIL;
 	}
       }
@@ -510,10 +750,79 @@ void vrpn_Tracker_Fastrak::mainloop()
 	break;
 
     case TRACKER_FAIL:
-	fprintf(stderr, "Fastrak failed, trying to reset (try power cycle if more than 4 attempts made).\n");
+	FT_WARNING("Tracking failed, trying to reset (try power cycle if more than 4 attempts made)");
 	vrpn_close_commport(serial_fd);
 	serial_fd = vrpn_open_commport(portname, baudrate);
 	status = TRACKER_RESETTING;
 	break;
    }
+}
+
+/** This function indicates to the driver that there is some sort of InterSense IS-900-
+    compatible button device attached to the port (either a Wand or a Stylus).  The driver
+    will configure the device to send reports when buttons are pressed and released.
+
+    This routine returns 0 on success and -1 on failure (due to the sensor number being too
+    large or errors writing to the device or can't create the button).
+*/
+
+int vrpn_Tracker_Fastrak::add_is900_button(const char *button_device_name, int sensor, int numbuttons)
+{
+    // Make sure this is a valid sensor
+    if ( (sensor < 0) || (sensor >= num_stations) ) {
+	return -1;
+    }
+
+    // Add a new button device and set the pointer to point at it.
+    is900_buttons[sensor] = new vrpn_Button_Server(button_device_name, d_connection, numbuttons);
+    if (is900_buttons[sensor] == NULL) {
+	FT_ERROR("Cannot open button device");
+	return -1;
+    }
+
+    // Send a new station-format command to the tracker so it will report the button states.
+    return set_sensor_output_format(sensor);
+}
+
+/** This function indicates to the driver that there is an InterSense IS-900-
+    compatible joystick device attached to the port (a Wand).  The driver
+    will configure the device to send reports indicating the current status of the
+    analogs when they change.  Note that a separate call to add_is900_button must
+    be made in order to enable the buttons on the wand: this routine only handles
+    the analog channels.
+
+    The c0 and c1 parameters specify the clipping and scaling to take the reports
+    from the two joystick axes into the range [-1..1].  The default is unscaled.
+
+    This routine returns 0 on success and -1 on failure (due to the sensor number being too
+    large or errors writing to the device or can't create the analog).
+*/
+
+int vrpn_Tracker_Fastrak::add_is900_analog(const char *analog_device_name, int sensor,
+	    double c0Min, double c0Low, double c0Hi, double c0Max,
+	    double c1Min, double c1Low, double c1Hi, double c1Max)
+{
+    // Make sure this is a valid sensor
+    if ( (sensor < 0) || (sensor >= num_stations) ) {
+	return -1;
+    }
+
+    // Add a new analog device and set the pointer to point at it.
+    is900_analogs[sensor] = new vrpn_Clipping_Analog_Server(analog_device_name, d_connection);
+    if (is900_analogs[sensor] == NULL) {
+	FT_ERROR("Cannot open analog device");
+	return -1;
+    }
+
+    // Set the analog to have two channels, and set its channels to 0 to start with
+    is900_analogs[sensor]->setNumChannels(2);
+    is900_analogs[sensor]->setChannelValue(0, 0.0);
+    is900_analogs[sensor]->setChannelValue(1, 0.0);
+
+    // Set the scaling on the two channels.
+    is900_analogs[sensor]->setClipValues(0, c0Min, c0Low, c0Hi, c0Max);
+    is900_analogs[sensor]->setClipValues(1, c1Min, c1Low, c1Hi, c1Max);
+
+    // Send a new station-format command to the tracker so it will report the analog status
+    return set_sensor_output_format(sensor);
 }

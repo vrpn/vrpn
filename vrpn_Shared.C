@@ -628,7 +628,7 @@ int vrpn_unbuffer (const char ** buffer, vrpn_bool * lval)
 // QueryPerfCounter drifts too much -- others have documented this
 // problem on the net
 
-// This is all based on code extracted from the hiball tracker cib lib
+// This is all based on code extracted from the UNC hiball tracker cib lib
 
 // 200 mhz pentium default -- we change this based on our calibration
 static __int64 VRPN_CLOCK_FREQ = 200000000;
@@ -639,7 +639,7 @@ static __int64 VRPN_CLOCK_FREQ = 200000000;
 // tori -- but queryperfcounter returns this for us
 // __int64 FREQUENCY = 198670000;
 
-// ReaD Time Stamp Counter
+// Read Time Stamp Counter
 #define rdtsc(li) { _asm _emit 0x0f \
   _asm _emit 0x31 \
   _asm mov li.LowPart, eax \
@@ -661,8 +661,13 @@ static int vrpn_AdjustFrequency(void)
     LARGE_INTEGER startperf, endperf;
     LARGE_INTEGER perffreq;
 
-    QueryPerformanceFrequency( &perffreq );
-  
+    // See if the hardware supports the high-resolution performance counter.
+    // If so, get the frequency of it.  If not, we can't use it and so return
+    // -1.
+    if (QueryPerformanceFrequency( &perffreq ) == 0) {
+	return -1;
+    }
+
     // don't optimize away these variables
     double sum = 0;
     volatile LARGE_INTEGER liStart, liEnd;
@@ -673,7 +678,7 @@ static int vrpn_AdjustFrequency(void)
     SetThreadPriority( GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL );
 
     // pull all into cache and do rough test to see if tsc and perf counter
-    // are one in the same
+    // are one and the same
     rdtsc( liStart );
     QueryPerformanceCounter( &startperf );
     Sleep(100);
@@ -737,11 +742,17 @@ static int vrpn_AdjustFrequency(void)
 
     // if we are in a system where the perf clock is the tsc, then use the
     // rate the perf clock returns (or rather, if the freq we measure is
-    // approx the perf clock freq)
+    // approx the perf clock freq).  Otherwise, check to make sure that
+    // the performance count is at least close to what we expect from the
+    // reported frequency.  If not (like happens on Windows 98 on my laptop,
+    // then bail on the whole process).
     if (fabs(perffreq.QuadPart - freq) < 0.05*freq) {
         VRPN_CLOCK_FREQ = perffreq.QuadPart;
         cerr << "vrpn gettimeofday: perf clock is tsc -- using perf clock freq (" 
              << perffreq.QuadPart/1e6 << " MHz)" << endl;
+    } else if (fabs(perffreq.QuadPart - freq) > 0.5*freq) {
+	cerr << "vrpn gettimeofday: perf clock is far from what it should be" << endl;
+	return -1;
     } else {
         cerr << "vrpn gettimeofday: adjusted clock freq to measured freq (" 
              << freq/1e6 << " MHz)" << endl;

@@ -2558,7 +2558,7 @@ int write_vrpn_cookie (char * buffer, int length, long remote_log_mode)
 
 int check_vrpn_cookie (const char * buffer)
 {
-  char * bp;
+  const char * bp;
 
   // Comparison changed 9 Feb 98 by TCH
   //   We don't care if the minor version numbers don't match,
@@ -3060,7 +3060,20 @@ int vrpn_Endpoint::newRemoteSender (cName sender_name, vrpn_int32 remote_id,
   return d_senders->addRemoteEntry(sender_name, remote_id, local_id);
 }
 
+/** Pack a message into the appropriate output buffer (TCP or UDP)
+    depending on the class of service for the message, and handle
+    logging for the message (but not filtering).  This function
+    does not handle semantic checking, local callbacks and filtering.
+    (these must be done in the vrpn_Connection class routine that
+    calls this one).
 
+    Parameters: The length of the message, the local-clock time value
+    for the message, the type and sender IDs for the message, the buffer
+    that holds the message contents, and the class of service (currently,
+    only reliable/unreliable is used).
+
+    Returns 0 on success and -1 on failure.
+*/
 
 int vrpn_Endpoint::pack_message
         (vrpn_uint32 len, timeval time,
@@ -3102,26 +3115,24 @@ int vrpn_Endpoint::pack_message
   if ((d_udpOutboundSocket == -1) ||
       (class_of_service & vrpn_CONNECTION_RELIABLE)) {
 
-    // possible BUG - we probably shouldn't increment sequence number
-    // until we KNOW the marshalling worked.
-    ret = tryToMarshall(d_tcpOutbuf, d_tcpBuflen, d_tcpNumOut,
+    // Ensure that we have an outgoing TCP buffer.  If not, then
+    // we don't have anywhere to send it.
+    if (d_tcpSocket == -1) {
+	ret = 0;
+    } else {
+        ret = tryToMarshall(d_tcpOutbuf, d_tcpBuflen, d_tcpNumOut,
   			len, time, type, sender, buffer,
                         d_tcpSequenceNumber);
-#ifdef VERBOSE4
-    fprintf(stderr, "vrpn_Endpoint::pack_message:  "
-                    "tryToMarshall failed.\n");
-#endif
-
-    d_tcpNumOut += ret;
-    if (ret > 0) {
-      d_tcpSequenceNumber++;
+        d_tcpNumOut += ret;
+        if (ret > 0) {
+          d_tcpSequenceNumber++;
+        }
     }
   } else {
 
     ret = tryToMarshall(d_udpOutbuf, d_udpBuflen, d_udpNumOut,
   			len, time, type, sender, buffer,
                         d_udpSequenceNumber);
-
     d_udpNumOut += ret;
     if (ret > 0) {
       d_udpSequenceNumber++;
@@ -4174,9 +4185,8 @@ int vrpn_Endpoint::getOneUDPMessage (char * inbuf_ptr, int inbuf_len) {
 }
 
 
-
 int vrpn_Endpoint::tryToMarshall
-         (char * outbuf, int buflen, int numOut,
+         (char * outbuf, int &buflen, int &numOut,
           vrpn_uint32 len, timeval time,
           vrpn_int32 type, vrpn_int32 sender,
           const char * buffer, vrpn_uint32 sequenceNumber) {
@@ -4202,8 +4212,11 @@ int vrpn_Endpoint::tryToMarshall
 }
 
 
-// Marshal the message into the buffer if it will fit.  Return the number
-// of characters sent.
+/** Marshal the message into the buffer if it will fit.  Return the number
+    of characters sent (either 0 or the number requested).  This function
+    should not be called directly; rather, call tryToMarshall, which will
+    flush the outgoing buffer if the marshalling attempt fails.
+*/
 
 // TCH 22 Feb 99
 // Marshall the sequence number, but never unmarshall it - it's currently
@@ -5750,7 +5763,7 @@ vrpn_Connection * vrpn_get_connection_by_name (
 
     // Find the relevant part of the name (skip past last '@'
     // if there is one)
-    char *where_at;	// Part of name past last '@'
+    const char *where_at;	// Part of name past last '@'
     if ( (where_at = strrchr(cname, '@')) != NULL) {
         cname = where_at+1;	// Chop off the front of the name
     }

@@ -608,23 +608,39 @@ int setup_Tracker_Dyna (char * & pch, char * line, FILE * config_file) {
 
 int setup_Tracker_Fastrak (char * & pch, char * line, FILE * config_file) {
 
-  char s2 [512], s3 [512];
+  char s2 [512], s3 [512], s4 [512];
   int i1;
+  int numparms;
+  vrpn_Tracker_Fastrak	*mytracker;
+  int do_is900_timing = 0;
 
         char    rcmd[5000];     // Reset command to send to Fastrak
         next();
-        // Get the arguments (class, tracker_name, port, baud)
-        if (sscanf(pch,"%511s%511s%d",s2,s3,&i1) != 3) {
+        // Get the arguments (class, tracker_name, port, baud, [optional IS900time])
+        if ( (numparms = sscanf(pch,"%511s%511s%d%511s",s2,s3,&i1,s4)) < 3) {
           fprintf(stderr,"Bad vrpn_Tracker_Fastrak line: %s\n%s %s\n",
                   line, pch, s3);
           return -1;
         }
 
-                // Make sure there's room for a new tracker
-                if (num_trackers >= MAX_TRACKERS) {
-                  fprintf(stderr,"Too many trackers in config file");
-                  return -1;
-                }
+	// See if we got the optional parameter to enable IS900 timings
+	if (numparms == 4) {
+	    if (strncmp(s4, "IS900time", strlen("IS900time")) == 0) {
+		do_is900_timing = 1;
+		printf(" ...using IS900 timing information\n");
+	    } else if (strcmp(s4, "/") == 0) {
+		// Nothing to do
+	    } else {
+		fprintf(stderr,"Fastrak/Isense: Bad timing optional param (expected 'IS900time', got '%s')\n",s4);
+		return -1;
+	    }
+	}
+
+        // Make sure there's room for a new tracker
+        if (num_trackers >= MAX_TRACKERS) {
+	    fprintf(stderr,"Too many trackers in config file");
+            return -1;
+        }
 
         // If the last character in the line is a backslash, '\', then
         // the following line is an additional command to send to the
@@ -636,7 +652,7 @@ int setup_Tracker_Fastrak (char * & pch, char * line, FILE * config_file) {
         while (line[strlen(line)-2] == '\\') {
           // Read the next line
           if (fgets(line, 512, config_file) == NULL) {
-              fprintf(stderr,"Ran past end of config file in Fastrak\n");
+              fprintf(stderr,"Ran past end of config file in Fastrak/Isense description\n");
                   return -1;
           }
 
@@ -647,13 +663,18 @@ int setup_Tracker_Fastrak (char * & pch, char * line, FILE * config_file) {
           if (rcmd[strlen(rcmd)-2] == '\\') {
                   rcmd[strlen(rcmd)-2] = '\015';
                   rcmd[strlen(rcmd)-1] = '\0';
+          } else if (rcmd[strlen(rcmd)-2] == '/') {
+                  rcmd[strlen(rcmd)-2] = '\015';
+                  rcmd[strlen(rcmd)-1] = '\0';
           } else if (rcmd[strlen(rcmd)-1] == '\n') {
                   rcmd[strlen(rcmd)-1] = '\015';
           } else {        // Add one, we reached the EOF before CR
                   rcmd[strlen(rcmd)+1] = '\0';
                   rcmd[strlen(rcmd)] = '\015';
           }
+
         }
+
         if (strlen(rcmd) > 0) {
                 printf("... additional reset commands follow:\n");
                 printf("%s\n",rcmd);
@@ -666,8 +687,8 @@ int setup_Tracker_Fastrak (char * & pch, char * line, FILE * config_file) {
 
 #if defined(sgi) || defined(linux) || defined(WIN32)
 
-        if ( (trackers[num_trackers] =
-             new vrpn_Tracker_Fastrak(s2, connection, s3, i1, 1, 4, rcmd))
+        if ( (trackers[num_trackers] = mytracker =
+             new vrpn_Tracker_Fastrak(s2, connection, s3, i1, 1, 4, rcmd, do_is900_timing))
                             == NULL){
 
 #endif
@@ -678,6 +699,72 @@ int setup_Tracker_Fastrak (char * & pch, char * line, FILE * config_file) {
 #if defined(sgi) || defined(linux) || defined(WIN32)
 
         } else {
+	  // If the last character in the line is a front slash, '/', then
+	  // the following line is a command to add a Wand or Stylus to one
+	  // of the sensors on the tracker.  Read and parse the line after,
+	  // then add the devices needed to support.  Each line has two
+	  // arguments, the string name of the devices and the integer
+	  // sensor number (starting with 0) to attach the device to.
+          while (line[strlen(line)-2] == '/') {
+	    char lineCommand[512];
+	    char lineName[512];
+	    int	 lineSensor;
+
+            // Read the next line
+            if (fgets(line, 512, config_file) == NULL) {
+              fprintf(stderr,"Ran past end of config file in Fastrak/Isense description\n");
+                  return -1;
+	    }
+
+	    // Parse the line.  Both "Wand" and "Stylus" lines start with the name and sensor #
+	    if (sscanf(line, "%511s%511s%d", lineCommand, lineName, &lineSensor) != 3) {
+		fprintf(stderr,"Bad line in Wand/Stylus description for Fastrak/Isense (%s)\n",line);
+		delete trackers[num_trackers];
+		return -1;
+	    }
+
+	    // See which command it is and act accordingly
+	    if (strcmp(lineCommand, "Wand") == 0) {
+		double c0min, c0lo0, c0hi0, c0max;
+		double c1min, c1lo0, c1hi0, c1max;
+
+		// Wand line has additional scale/clip information; read it in
+		if (sscanf(line, "%511s%511s%d%lf%lf%lf%lf%lf%lf%lf%lf", lineCommand, lineName, &lineSensor,
+			   &c0min, &c0lo0, &c0hi0, &c0max,
+			   &c1min, &c1lo0, &c1hi0, &c1max) != 11) {
+		    fprintf(stderr,"Bad line in Wand description for Fastrak/Isense (%s)\n",line);
+		    delete trackers[num_trackers];
+		    return -1;
+		}
+
+		if (mytracker->add_is900_analog(lineName, lineSensor, c0min, c0lo0, c0hi0, c0max,
+		    c1min, c1lo0, c1hi0, c1max)) {
+		  fprintf(stderr,"Cannot set Wand analog for Fastrak/Isense (%s)\n",line);
+		  delete trackers[num_trackers];
+		  return -1;
+		}
+		if (mytracker->add_is900_button(lineName, lineSensor, 5)) {
+		  fprintf(stderr,"Cannot set Wand buttons for Fastrak/Isense (%s)\n",line);
+		  delete trackers[num_trackers];
+		  return -1;
+		}
+		printf(" ...added Wand (%s) to sensor %d\n", lineName, lineSensor);
+
+	    } else if (strcmp(lineCommand, "Stylus") == 0) {
+		if (mytracker->add_is900_button(lineName, lineSensor, 2)) {
+		  fprintf(stderr,"Cannot set Stylus buttons for Fastrak/Isense (%s)\n",line);
+		  delete trackers[num_trackers];
+		  return -1;
+		}
+		printf(" ...added Stylus (%s) to sensor %d\n", lineName, lineSensor);
+	    } else {
+		fprintf(stderr,"Unknown command in Wand/Stylus description for Fastrak/Isense (%s)\n",lineCommand);
+		delete trackers[num_trackers];
+		return -1;
+	    }
+
+	  }
+
           num_trackers++;
         }
 

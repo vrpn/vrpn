@@ -62,8 +62,8 @@ protected:
 // vrpn_Analog_Server
 // Tom Hudson, March 1999
 //
-// A simple core class to build other servers around;  used for the
-// nMmon network monitor and some test programs.
+/// A simple core class to build other servers around;
+// used for the nMmon network monitor and some test programs.
 //
 // Write whatever values you want into channels(), then call report()
 // or report_changes().  (Original spec only called for report_changes(),
@@ -107,13 +107,47 @@ class vrpn_Analog_Server : public vrpn_Analog {
     vrpn_int32 setNumChannels (vrpn_int32 sizeRequested);
 };
 
+/// Analog server that can scale and clip its range to -1..1.
+// This is useful for joysticks, to allow them to be centered and
+// scaled to cover the whole range.  Rather than writing directly
+// into the channels array, call the setChannel() method.
+
+class	vrpn_Clipping_Analog_Server : public vrpn_Analog_Server {
+  public:
+    vrpn_Clipping_Analog_Server(const char *name, vrpn_Connection *c);
+
+    /// Set the clipping values for the specified channel.
+    /// min maps to -1, values between lowzero and highzero map to 0,
+    /// max maps to 1.  Values less than min map to -1, values larger
+    /// than max map to 1. Default for each channel is -1,0,0,1
+    /// It is possible to compress the range to [0..1] by setting the
+    /// minimum equal to the lowzero.
+    /// Returns 0 on success, -1 on failure.
+    int	setClipValues(int channel, double min, double lowzero, double
+	highzero, double max);
+
+    /// This method should be used to set the value of a channel.
+    /// It will be scaled and clipped as described in setClipValues.
+    /// It returns 0 on success and -1 on failure.
+    int	setChannelValue(int channel, double value);
+
+  protected:
+      typedef	struct {
+	  double    minimum_val;    // Value mapped to -1
+	  double    lower_zero;	    // Minimum value mapped to 0
+	  double    upper_zero;	    // Maximum value mapped to 0
+	  double    maximum_val;    // Value mapped to 1
+      } clipvals_struct;
+
+      clipvals_struct	clipvals[vrpn_CHANNEL_MAX];
+};
 
 //----------------------------------------------------------
 //************** Users deal with the following *************
 
 // User routine to handle a change in analog values.  This is called when
 // the analog callback is called (when a message from its counterpart
-// across the connetion arrives).
+// across the connection arrives).
 
 
 typedef	struct {

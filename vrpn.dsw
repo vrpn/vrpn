@@ -11,6 +11,9 @@ Package=<5>
 
 Package=<4>
 {{{
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
 }}}
 
 ###############################################################################
@@ -38,6 +41,9 @@ Package=<5>
 
 Package=<4>
 {{{
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
 }}}
 
 ###############################################################################
@@ -77,6 +83,9 @@ Package=<5>
 
 Package=<4>
 {{{
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
 }}}
 
 ###############################################################################
@@ -89,6 +98,9 @@ Package=<5>
 
 Package=<4>
 {{{
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
 }}}
 
 ###############################################################################
@@ -101,6 +113,9 @@ Package=<5>
 
 Package=<4>
 {{{
+    Begin Project Dependency
+    Project_Dep_Name quat
+    End Project Dependency
 }}}
 
 ###############################################################################
@@ -125,6 +140,9 @@ Package=<5>
 
 Package=<4>
 {{{
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
 }}}
 
 ###############################################################################

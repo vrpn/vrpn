@@ -1,4 +1,4 @@
-# vrpn.cfg.SAMPLE for VRPN version 04.10
+# vrpn.cfg.SAMPLE for VRPN version 05.01
 
 ################################################################################
 ################################################################################
@@ -64,12 +64,14 @@
 
 ################################################################################
 # Fastrak Tracker. Runs a Polhemus Fastrak tracker that is attached to a serial
-# port on this machine. This driver will also run an InterSense IS600 tracker,
-# but you will want to include extra initialization code (as described below)
-# to set up the ultrasonic pip information and so forth. Arguments:
+# port on this machine. This driver will also run an InterSense IS600 or IS900
+# tracker, but you will want to include extra initialization code (as described
+# below) to set up the ultrasonic pip information, wand devices, stylus devices
+# and so forth. Arguments that go on the first line:
 #	char	name_of_this_device[]
 #	char	name_of_serial_device[]
 #	int	baud_rate_of_serial_device
+#
 # It is possible to add additional commands that will be sent to the tracker
 # by putting the backslash character (\) at the end of the config line. This
 # will cause the following line to be read in and sent to the Fastrak during
@@ -77,12 +79,33 @@
 # end of each command line but the last. Each line will be sent to the Fastrak
 # with a newline at the end of it. If a line starts with an asterisk (*), then
 # it is treated as a line telling how long to sleep, with the integer number of
-# seconds following the *. Note that this backslash-notation can only
-# be used for the Fastrak, not to extend the line for any other type of device.
+# seconds following the *.
+#
+# Commands to add Joysticks (2 buttons) or Wands (5 buttons and 2 analogs) to
+# the various sensors on the Isense900 are done by adding Stylus and
+# Wand command lines before the reset command lines.  Each of these lines
+# takes two arguments: the name of the button (for Stylus) or button and
+# analog (for Wand) servers, and the sensor number (starting from 0).  The
+# Wand line takes eight additional parameters, which specify the scaling
+# and clipping behavior of the two directions on the analog joystick.  Each
+# set of for is the min, lowzero, hizero, and max values: these are mapped
+# to -1, 0,0, and 1 (all values between lowzero and hizero are mapped to 0).
+# Start with these at -1,0,0,1 and use the 'printcereal' program or some other
+# method to read them and see what the range of acheivable values is.  Then,
+# set them to slightly conservative values so that the whole range is covered
+# and the analogs will report zero when the joystick is centered. The
+# presence of these lines is indicated by placing them after any additional
+# reset command lines, by ending the line preceding them with the front slash
+# "/" character.
+#
+# Note that this frontslash and backslash-notation can only be used for the
+# Fastrak/Isense tracker, not to extend the line for any other type of device
+# listed in this configuration file.
 
 #vrpn_Tracker_Fastrak	Fastrak0	/dev/ttyS0	19200
 
-#vrpn_Tracker_Fastrak	Isense0	/dev/ttyS0	19200 \
+# IS600 and its pip settings
+#vrpn_Tracker_Fastrak	Isense600	/dev/ttyS0	19200 \
 #MCc\
 #*5\
 #MCM1,1,0.0900,0.0000,-0.2210,0.00,0.00,-1.00,89\
@@ -93,6 +116,11 @@
 #MCM3,2,0.1237,0.0762,-0.0424,0.00,0.00,-1.00,77\
 #MCe\
 #*10
+
+# IS900 with a wand on the first sensor and a stylus on the third:
+#vrpn_Tracker_Fastrak	Isense900	COM1	115200 /
+#Wand		Wand0		0	-1.0 0.0 0.0 1.0  -1.0 0.0 0.0 1.0 /
+#Stylus	Stylus0	2
 
 ################################################################################
 # Dynasight Tracker. Runs an Origin System's DynaSight tracker connected to a

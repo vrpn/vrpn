@@ -9,6 +9,7 @@
 
 #ifdef linux
 #include <linux/lp.h>
+#include <sys/ioctl.h>
 #endif
 
 // Include vrpn_Shared.h _first_ to avoid conflicts with sys/time.h 
@@ -83,7 +84,7 @@ vrpn_Button::vrpn_Button(const char *name, vrpn_Connection *c)
    // Set the time to 0 just to have something there.
    timestamp.tv_usec = timestamp.tv_sec = 0;
    for (vrpn_int32 i=0; i< vrpn_BUTTON_MAX_BUTTONS; i++) {
-	lastbuttons[i]=0;
+	buttons[i] = lastbuttons[i]=0;
    }
 }
 
@@ -325,6 +326,38 @@ void	vrpn_Button::report_changes(void)
 
 
 #ifndef VRPN_CLIENT_ONLY
+
+vrpn_Button_Server::vrpn_Button_Server(const char *name, vrpn_Connection *c,
+				       int numbuttons) : vrpn_Button_Filter(name, c)
+{
+    if (numbuttons > vrpn_BUTTON_MAX_BUTTONS) {
+	num_buttons = vrpn_BUTTON_MAX_BUTTONS;
+    } else {
+	num_buttons = numbuttons;
+    }
+}
+
+int vrpn_Button_Server::number_of_buttons(void)
+{
+    return num_buttons;
+}
+
+void	vrpn_Button_Server::mainloop(void)
+{
+    server_mainloop();
+    report_changes();
+}
+
+int vrpn_Button_Server::set_button(int button, int new_value)
+{
+    if ( (button < 0) || (button >= num_buttons) ) {
+	return -1;
+    }
+
+    buttons[button] = (unsigned char)(new_value != 0);
+
+    return 0;
+}
 
 static	unsigned long	duration(struct timeval t1, struct timeval t2)
 {

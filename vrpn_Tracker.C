@@ -33,8 +33,10 @@
 #endif
 
 #include "vrpn_Tracker.h"
-#include "vrpn_Serial.h"
 
+#ifndef VRPN_CLIENT_ONLY
+#include "vrpn_Serial.h"
+#endif
 
 static const char *tracker_cfg_file_name = "vrpn_Tracker.cfg";
 

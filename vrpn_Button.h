@@ -6,7 +6,10 @@
 
 #include "vrpn_Connection.h"
 #include "vrpn_BaseClass.h"
+
+#ifndef VRPN_CLIENT_ONLY
 #include "vrpn_Serial.h"
+#endif
 
 #define	vrpn_BUTTON_MAX_BUTTONS	(100)
 const int VRPN_BUTTON_BUF_SIZE = 100;
@@ -50,7 +53,7 @@ class vrpn_Button : public vrpn_BaseClass {
 				     vrpn_int32 state);
 };
 
-class vrpn_Button_Filter:public vrpn_Button{
+class vrpn_Button_Filter:public vrpn_Button {
 	public:
 		vrpn_int32     buttonstate[vrpn_BUTTON_MAX_BUTTONS];
 	        virtual void set_momentary(vrpn_int32 which_button);
@@ -68,6 +71,29 @@ class vrpn_Button_Filter:public vrpn_Button{
 };
 
 #ifndef VRPN_CLIENT_ONLY
+
+// Button server that lets you set the values for the buttons directly and
+// then have it update if needed.  This class should be used by devices that
+// can have several sets of buttons in them and don't want to derive from the
+// Button class themselves.  An example is the InterSense 900 features found in
+// the Fastrak server (which may have several button devices, one for each
+// sensor).
+
+class vrpn_Button_Server: public vrpn_Button_Filter {
+public:
+    vrpn_Button_Server(const char *name, vrpn_Connection *c, int numbuttons = 1);
+
+    /// Tells how many buttons there are (may be clipped to MAX_BUTTONS)
+    int number_of_buttons(void);
+
+    /// Called once each time through the server program's mainloop to handle
+    /// various functions (like setting toggles, reporting changes, etc).
+    virtual void mainloop();
+
+    /// Allows the server program to set current button states (to 0 or 1)
+    int	set_button(int button, int new_value);
+};
+
 
 // Example button server code. This button device causes its buttons to
 // be pressed and released at the interval specified (default 1/sec). It

@@ -5,6 +5,10 @@
 // on the old version of the Fastrak driver, which had been mainly copied
 // from the Trackerlib driver and was very difficult to understand.
 //	This version was written in the Summer of 1999 by Russ Taylor.
+//	Later, it was updated to allow the extended reset commands needed
+// to drive an IS-600 tracker.
+//	Later (Summer of 2000), it was augmented to allow the button, analog,
+// and timestamp capabilities of the InterSense IS-900 tracker.
 
 #ifndef VRPN_TRACKER_FASTRAK_H
 #define VRPN_TRACKER_FASTRAK_H
@@ -18,34 +22,53 @@
 #endif
 
 #include "vrpn_Tracker.h"
+#include "vrpn_Button.h"
+#include "vrpn_Analog.h"
+
+const int vrpn_FASTRAK_MAX_STATIONS = 4;    //< How many stations can exist
 
 class vrpn_Tracker_Fastrak: public vrpn_Tracker_Serial {
   
  public:
 
-  // The constructor is given the name of the tracker (the name of
-  // the sender it should use), the connection on which it is to
-  // send its messages, the name of the serial port it is to open
-  // (default is /dev/ttyS1 (first serial port in Linux)), the baud
-  // rate at which it is to communicate (default 19200), whether
-  // filtering is enabled (default yes), and the number of stations
-  // that are possible on this Fastrak (default 4). The station select
-  // switches on the front of the Fastrak determine which stations are
-  // active. The final parameter is a string that can contain additional
-  // commands that are set to the tracker as part of its reset routine.
-  // These might be used to set the hemisphere or other things that are
-  // not normally included; see the Fastrak manual for a list of these.
-  // There can be multiple lines of them but putting <CR> into the string.
+  /// The constructor is given the name of the tracker (the name of
+  /// the sender it should use), the connection on which it is to
+  /// send its messages, the name of the serial port it is to open
+  /// (default is /dev/ttyS1 (first serial port in Linux)), the baud
+  /// rate at which it is to communicate (default 19200), whether
+  /// filtering is enabled (default yes), and the number of stations
+  /// that are possible on this Fastrak (default 4). The station select
+  /// switches on the front of the Fastrak determine which stations are
+  /// active. The final parameter is a string that can contain additional
+  /// commands that are set to the tracker as part of its reset routine.
+  /// These might be used to set the hemisphere or other things that are
+  /// not normally included; see the Fastrak manual for a list of these.
+  /// There can be multiple lines of them but putting <CR> into the string.
 
-  vrpn_Tracker_Fastrak(char *name, vrpn_Connection *c, 
-		      char *port = "/dev/ttyS1", long baud = 19200,
-		      int enable_filtering = 1, int numstations = 4,
-		      const char *additional_reset_commands = NULL);
+  vrpn_Tracker_Fastrak(const char *name, vrpn_Connection *c, 
+		      const char *port = "/dev/ttyS1", long baud = 19200,
+		      int enable_filtering = 1, int numstations = vrpn_FASTRAK_MAX_STATIONS,
+		      const char *additional_reset_commands = NULL,
+		      int is900_timestamps = 0);
 
-  // This function should be called each time through the main loop
-  // of the server code. It polls for a report from the tracker and
-  // sends it if there is one. It will reset the tracker if there is
-  // no data from it for a few seconds.
+  ~vrpn_Tracker_Fastrak();
+
+  /// Add an IS900 button device to one of the sensors
+  /// This allows configuration of an InterSense IS-900
+  int	add_is900_button(const char *button_device_name, int sensor, int numbuttons = 5);
+
+  /// Add the analog part of an IS900 joystick device to one of the sensors
+  /// This allows configuration of an InterSense IS-900
+  /// The optional parameters specify the clipping and scaling to take the reports
+  /// from the two joystick axes into the range [-1..1].  The default is unscaled.
+  int	add_is900_analog(const char *analog_device_name, int sensor,
+	    double c0Min = -1, double c0Low = 0, double c0Hi = 0, double c0Max = 1,
+	    double c1Min = -1, double c1Low = 0, double c1Hi = 0, double c1Max = 1);
+
+  /// This function should be called each time through the main loop
+  /// of the server code. It polls for a report from the tracker and
+  /// sends it if there is one. It will reset the tracker if there is
+  /// no data from it for a few seconds.
 
   virtual void mainloop();
     
@@ -54,18 +77,32 @@ class vrpn_Tracker_Fastrak: public vrpn_Tracker_Serial {
   virtual void get_report(void);
   virtual void reset();
 
-  // Swap the endian-ness of the 4-byte entry in the buffer.
-  // This is used to make the little-endian IEEE float values
-  // returned by the Fastrak into the big-endian format that is
-  // expected by the VRPN unbuffer routines.
+  /// Swap the endian-ness of the 4-byte entry in the buffer.
+  /// This is used to make the little-endian IEEE float values
+  /// returned by the Fastrak into the big-endian format that is
+  /// expected by the VRPN unbuffer routines.
 
   void swap_endian4(char *buffer);
 
   struct timeval reset_time;
-  int	do_filter;	// Should we turn on filtering for pos/orient?
-  int	num_stations;	// How many stations maximum on this Fastrak?
-  char	add_reset_cmd[1024];	// Additional reset commands to be sent
+  int	do_filter;		//< Should we turn on filtering for pos/orient?
+  int	num_stations;		//< How many stations maximum on this Fastrak?
+  char	add_reset_cmd[2048];	//< Additional reset commands to be sent
 
+  // The following members provide support for the InterSense IS-900 features
+  // that are beyond the standard Fastrak features.
+
+  int	do_is900_timestamps;	    //< Request and process IS-900 timestamps?
+  struct timeval is900_zerotime;    //< When the IS-900 time counter was zeroed
+  vrpn_Button_Server		*is900_buttons[vrpn_FASTRAK_MAX_STATIONS];	//< Pointer to button on each sensor (NULL if none)
+  vrpn_Clipping_Analog_Server	*is900_analogs[vrpn_FASTRAK_MAX_STATIONS];	//< Pointer to analog on each sensor (NULL if none)
+  vrpn_uint32	REPORT_LEN;	    //< The length that the current report should be
+
+  /// Augments the basic Fastrak format to include IS900 features if needed
+  int	set_sensor_output_format(int sensor);
+
+  /// Augments the basic Fastrak report length to include IS900 features if needed
+  int	report_length(int sensor);
 };
 
 #endif

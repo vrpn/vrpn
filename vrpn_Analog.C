@@ -5,7 +5,9 @@
 // and netinet/in.h and ...
 #include "vrpn_Shared.h"
 
+#ifndef VRPN_CLIENT_ONLY
 #include "vrpn_Serial.h"
+#endif
 
 //#define VERBOSE
 
@@ -177,6 +179,83 @@ vrpn_int32 vrpn_Analog_Server::setNumChannels (vrpn_int32 sizeRequested) {
   return num_channel;
 }
 
+vrpn_Clipping_Analog_Server::vrpn_Clipping_Analog_Server(const char *name, vrpn_Connection *c) :
+vrpn_Analog_Server(name, c)
+{
+    int	i;
+
+    for (i = 0; i < vrpn_CHANNEL_MAX; i++) {
+	clipvals[i].minimum_val = -1.0;
+	clipvals[i].lower_zero = 0.0;
+	clipvals[i].upper_zero = 0.0;
+	clipvals[i].maximum_val = 1.0;
+    }
+}
+
+/// Set the clipping values for the specified channel.
+/// min maps to -1, values between lowzero and highzero map to 0,
+/// max maps to 1.  Values less than min map to -1, values larger
+/// than max map to 1. Default for each channel is -1,0,0,1
+/// It is possible to compress the range to [0..1] by setting the
+/// minimum equal to the lowzero.
+/// Returns 0 on success, -1 on failure.
+int vrpn_Clipping_Analog_Server::setClipValues(int chan, double min, double lowzero, double
+	highzero, double max)
+{
+    if ( (chan < 0) || (chan > vrpn_CHANNEL_MAX) ) {
+	cerr << "vrpn_Clipping_Analog_Server::setClipValues: Bad channel" << chan << endl;
+	return -1;
+    }
+    if ( (lowzero < min) || (highzero < lowzero) || (max < highzero) ) {
+	cerr << "vrpn_Clipping_Analog_Server::setClipValues: Out of order mapping" << endl;
+	return -1;
+    }
+
+    clipvals[chan].minimum_val = min;
+    clipvals[chan].lower_zero = lowzero;
+    clipvals[chan].upper_zero = highzero;
+    clipvals[chan].maximum_val = max;
+
+    return 0;
+}
+
+/// This method should be used to set the value of a channel.
+/// It will be scaled and clipped as described in setClipValues.
+/// It returns 0 on success and -1 on failure.
+int vrpn_Clipping_Analog_Server::setChannelValue(int chan, double value)
+{
+    if ( (chan < 0) || (chan > vrpn_CHANNEL_MAX) ) {
+	cerr << "vrpn_Clipping_Analog_Server::setChannelValue: Bad channel" << chan << endl;
+	return -1;
+    }
+
+    // Figure out which clipping values to use
+    clipvals_struct  clips = clipvals[chan];
+
+    // See if it should be clipped to zero, high, or low.  Zero is checked
+    // first so that the range can be compress to [0..1] or [-1..0] by setting
+    // a zero value equal to a clip value.
+    if ( (value >= clips.lower_zero) && (value <= clips.upper_zero) ) {
+	channel[chan] = 0.0;
+    } else if (value <= clips.minimum_val) {
+	channel[chan] = -1.0;
+    } else if (value >= clips.maximum_val) {
+	channel[chan] = 1.0;
+
+    // If we are below the minzero, then we should map to the -1..0 range.
+    // Otherwise, map to the 0..1 range.  Note that if we have reached this
+    // point, the range we are mapped to has not been collapsed, so we won't
+    // get divide-by-zero problems and such.
+    } else if (value > clips.lower_zero) {
+	channel[chan] = (value - clips.upper_zero) / (clips.maximum_val - clips.upper_zero);
+    } else {
+	// Larger negative number (minus smaller negative [net positive]) is negative
+	// Negative number divided by positive number is negative.
+	channel[chan] = (value - clips.lower_zero) / (clips.lower_zero - clips.minimum_val);
+    }
+
+    return 0;
+}
 
 // ************* CLIENT ROUTINES ****************************
 

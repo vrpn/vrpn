@@ -970,11 +970,9 @@ int vrpn_PeerMutex::handle_request (void * userdata, vrpn_HANDLERPARAM p) {
   // of the node with the lowest IP number & port.
 
   if ((me->d_state == AVAILABLE) ||
-      (((me->d_state == HELD_REMOTELY) ||
-        (me->d_state == REQUESTING)) &&
+      (((me->d_state == HELD_REMOTELY) || (me->d_state == REQUESTING)) &&
        ((senderIP < me->d_holderIP) ||
-        (senderIP == me->d_holderIP) &&
-        (senderPort < me->d_holderPort)))) {
+        ((senderIP == me->d_holderIP) && ((vrpn_int32)senderPort < me->d_holderPort))))) {
 
     me->d_holderIP = senderIP;
     me->d_holderPort = senderPort;
@@ -1015,8 +1013,7 @@ int vrpn_PeerMutex::handle_release (void * userdata, vrpn_HANDLERPARAM p) {
           inet_ntoa(nad), senderPort);
 #endif
 
-  if ((senderIP != me->d_holderIP) ||
-      (senderPort != me->d_holderPort)) {
+  if ((senderIP != me->d_holderIP) || ((vrpn_int32)senderPort != me->d_holderPort)) {
     fprintf(stderr, "vrpn_PeerMutex::handle_release:  Got a release from "
                     "somebody who didn't have the lock!?\n");
   }
