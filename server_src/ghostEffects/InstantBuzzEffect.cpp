@@ -1,3 +1,5 @@
+#ifdef	VRPN_USE_PHANTOM_SERVER
+
 #include "InstantBuzzEffect.h"
 #include <gstPHANToM.h>
 #include <windows.h>
@@ -32,3 +34,4 @@ gstVector InstantBuzzEffect::calcEffectForce(void *phantom) {
     return gstVector(0,0,0);
 }
 
+#endif // VRPN_USE_PHANTOM_SERVER

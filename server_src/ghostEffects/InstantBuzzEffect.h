@@ -1,6 +1,7 @@
 #ifndef INSTANT_BUZZ_EFFECT
 #define INSTANT_BUZZ_EFFECT
 
+#ifdef	VRPN_USE_PHANTOM_SERVER
 #include <gstBasic.h>
 #include <math.h>
 #include <gstEffect.h>
@@ -151,5 +152,6 @@ protected:
     LARGE_INTEGER	currentPerformanceFrequency, debut;
 };
 
+#endif // VRPN_USE_PHANTOM_SERVER
 #endif // INSTANT_BUZZ_EFFECT
 
