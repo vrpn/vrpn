@@ -241,6 +241,7 @@ extern "C" {
 
 struct cRemoteMapping {
   char * name;
+  vrpn_int32 remote_id;
   vrpn_int32 local_id;
 };
 
@@ -255,13 +256,16 @@ class vrpn_TranslationTable {
 
     vrpn_int32 numEntries (void) const;
     vrpn_int32 mapToLocalID (vrpn_int32 remote_id) const;
+      ///< BUG:  This used to be a constant-time operation;  now it's
+      ///< more like linear-time.  Oops.
 
     // MANIPULATORS
 
     void clear (void);
       ///< Deletes every entry in the table.
 
-    vrpn_int32 addRemoteEntry (cName name, vrpn_int32 local_id);
+    vrpn_int32 addRemoteEntry (cName name, vrpn_int32 remote_id,
+                               vrpn_int32 local_id);
       ///< Adds a name and local ID to the table, returning its
       ///< remote ID.  This exposes an UGLY hack in the VRPN internals -
       ///< that ID is implicitly carried as the index into this array,
@@ -293,6 +297,7 @@ vrpn_TranslationTable::vrpn_TranslationTable (void) :
 
   for (i = 0; i < vrpn_CONNECTION_MAX_XLATION_TABLE_SIZE; i++) {
     d_entry[i].name = NULL;
+    d_entry[i].remote_id = -1;
     d_entry[i].local_id = -1;
   }
 }
@@ -306,20 +311,45 @@ vrpn_int32 vrpn_TranslationTable::numEntries (void) const {
 }
 
 vrpn_int32 vrpn_TranslationTable::mapToLocalID (vrpn_int32 remote_id) const {
+  int i;
+
   if ((remote_id < 0) || (remote_id > d_numEntries)) {
-//fprintf(stderr, "Remote ID %d is illegal!\n", remote_id);
+    fprintf(stderr, "vrpn_TranslationTable::mapToLocalID:  "
+                    "Remote ID %d is illegal!\n", remote_id);
     return -1;
   }
 
+#if 1
+
 #ifdef VERBOSE
-fprintf(stderr, "Remote ID %d maps to local ID %d (%s).\n", remote_id,
-d_entry[remote_id].local_id, d_entry[remote_id].name);
+  fprintf(stderr, "Remote ID %d maps to local ID %d (%s).\n", remote_id,
+  d_entry[remote_id].local_id, d_entry[remote_id].name);
 #endif
 
   return d_entry[remote_id].local_id;
+
+#else
+
+  for (i = 0; i < d_numEntries; i++) {
+    if (d_entry[i].remote_id == remote_id) {
+
+#ifdef VERBOSE
+  fprintf(stderr, "Remote ID %d maps to local ID %d (%s).\n", remote_id,
+  d_entry[i].local_id, d_entry[i].name);
+#endif
+
+      return d_entry[i].local_id;
+    }
+  }
+
+  fprintf(stderr, "Couldn't find mapping for remote ID %d.\n", remote_id);
+  return -1;
+
+#endif
 }
 
 vrpn_int32 vrpn_TranslationTable::addRemoteEntry (cName name,
+                                                  vrpn_int32 remote_id,
                                                   vrpn_int32 local_id) {
   if (d_numEntries >= vrpn_CONNECTION_MAX_XLATION_TABLE_SIZE) {
     fprintf(stderr, "vrpn_TranslationTable::addRemoteEntry:  " 
@@ -336,12 +366,22 @@ vrpn_int32 vrpn_TranslationTable::addRemoteEntry (cName name,
     }
   }
 
+#if 1
+  if (remote_id != d_numEntries) {
+    fprintf(stderr, "vrpn_TranslationTable::addRemoteEntry:  "
+                   "Our peer isn't sending every type it registers!\n");
+    // Reenable this if we want to go back to a constant-time system.
+    // This should probably force an error return.
+  }
+#endif
+
   memcpy(d_entry[d_numEntries].name, name, sizeof(cName));
+  d_entry[d_numEntries].remote_id = remote_id;
   d_entry[d_numEntries].local_id = local_id;
 
 #ifdef VERBOSE
-fprintf(stderr, "Set up remote ID %d named %s with local equivalent %d.\n",
-d_numEntries, d_entry[d_numEntries].name, d_entry[d_numEntries].local_id);
+  fprintf(stderr, "Set up remote ID %d named %s with local equivalent %d.\n",
+  remote_id, name, local_id);
 #endif
 
   d_numEntries++;
@@ -371,6 +411,7 @@ void vrpn_TranslationTable::clear (void) {
       d_entry[i].name = NULL;
     }
     d_entry[i].local_id = -1;
+    d_entry[i].remote_id = -1;
   }
   d_numEntries = 0;
 }
@@ -1023,8 +1064,8 @@ vrpn_int32 vrpn_TypeDispatcher::getSenderID (const char * name) {
 vrpn_int32 vrpn_TypeDispatcher::addType (const char * name) {
 
   // See if there are too many on the list.  If so, return -1.
-  if (d_numTypes == vrpn_CONNECTION_MAX_TYPES) {
-    fprintf(stderr, "vrpn_Connection::addType:  "
+  if (d_numTypes >= vrpn_CONNECTION_MAX_TYPES) {
+    fprintf(stderr, "vrpn_TypeDispatcher::addType:  "
                     "Too many! (%d)\n", d_numTypes);
     return -1;
   }
@@ -1032,7 +1073,7 @@ vrpn_int32 vrpn_TypeDispatcher::addType (const char * name) {
   if (!d_types[d_numTypes].name) {
     d_types[d_numTypes].name = new cName;
        if (!d_types[d_numTypes].name) {
-         fprintf(stderr, "vrpn_Connection::addType:  "
+         fprintf(stderr, "vrpn_TypeDispatcher::addType:  "
                          "Can't allocate memory for new record.\n");
        return -1;
     }
@@ -2910,13 +2951,15 @@ int vrpn_Endpoint::newLocalType (const char * name, vrpn_int32 which) {
 }
 
 // Adds a new remote type and returns its index.  Returns -1 on error.
-int vrpn_Endpoint::newRemoteType (cName type_name, vrpn_int32 local_id) {
-  return d_types->addRemoteEntry(type_name, local_id);
+int vrpn_Endpoint::newRemoteType (cName type_name, vrpn_int32 remote_id,
+                                  vrpn_int32 local_id) {
+  return d_types->addRemoteEntry(type_name, remote_id, local_id);
 }
 
 // Adds a new remote sender and returns its index.  Returns -1 on error.
-int vrpn_Endpoint::newRemoteSender (cName sender_name, vrpn_int32 local_id) {
-  return d_senders->addRemoteEntry(sender_name, local_id);
+int vrpn_Endpoint::newRemoteSender (cName sender_name, vrpn_int32 remote_id,
+                                    vrpn_int32 local_id) {
+  return d_senders->addRemoteEntry(sender_name, remote_id, local_id);
 }
 
 
@@ -2943,6 +2986,10 @@ int vrpn_Endpoint::pack_message
 
   // TCH 26 April 2000
   if (status != CONNECTED) {
+#ifdef VERBOSE2
+    fprintf(stderr, "vrpn_Endpoint::pack_message:  "
+                    "Not connected, so throwing out message.\n");
+#endif
     return 0;
   }
 
@@ -3720,7 +3767,10 @@ int vrpn_Endpoint::finish_new_connection_setup (void) {
   // packed;  otherwise they're silently discarded in pack_message.
 
   status = CONNECTED;
-//fprintf(stderr, "CONNECTED - vrpn_Endpoint::finish_new_connection_setup.\n");
+
+#ifdef VERBOSE
+  fprintf(stderr, "CONNECTED - vrpn_Endpoint::finish_new_connection_setup.\n");
+#endif
 
   // Tell the other side what port number to send its UDP messages to.
   if (pack_udp_description(udp_portnum) == -1) {
@@ -4146,7 +4196,7 @@ int vrpn_Endpoint::handle_type_message(void *userdata,
   // If not, clear the mapping.
   // Tell that the other side cares about it if found.
   local_id = endpoint->d_dispatcher->getTypeID(type_name);
-  if (endpoint->newRemoteType(type_name, local_id) == -1) {
+  if (endpoint->newRemoteType(type_name, p.sender, local_id) == -1) {
     fprintf(stderr, "vrpn: Failed to add remote type %s\n", type_name);
     return -1;
   }
@@ -4183,7 +4233,7 @@ int vrpn_Endpoint::handle_sender_message(void *userdata,
   // If there is a corresponding local sender defined, find the mapping.
   // If not, clear the mapping.
   local_id = endpoint->d_dispatcher->getSenderID(sender_name);
-  if (endpoint->newRemoteSender(sender_name, local_id) == -1) {
+  if (endpoint->newRemoteSender(sender_name, p.sender, local_id) == -1) {
     fprintf(stderr, "vrpn: Failed to add remote sender %s\n", sender_name);
     return -1;
   }
@@ -4751,6 +4801,14 @@ void vrpn_Connection::init (void) {
 
   d_dispatcher = new vrpn_TypeDispatcher;
 
+  // HACK:  to avoid having to send these over the wire, we just
+  // register them in the same order on every type dispatcher.
+  d_dispatcher->registerSender(vrpn_CONTROL);
+  d_dispatcher->registerType(vrpn_got_first_connection);
+  d_dispatcher->registerType(vrpn_got_connection);
+  d_dispatcher->registerType(vrpn_dropped_connection);
+  d_dispatcher->registerType(vrpn_dropped_last_connection);
+
   d_dispatcher->setSystemHandler
         (vrpn_CONNECTION_SENDER_DESCRIPTION,
          vrpn_Endpoint::handle_sender_message);
@@ -5262,18 +5320,26 @@ vrpn_int32 vrpn_Connection::register_sender (const char * name) {
    vrpn_int32 retval;
    vrpn_int32 i;
 
-fprintf(stderr, "vrpn_Connection::register_sender:  "
-"%d senders;  new name \"%s\"\n", d_dispatcher->numSenders(), name);
+#ifdef VERBOSE
+  fprintf(stderr, "vrpn_Connection::register_sender:  "
+  "%d senders;  new name \"%s\"\n", d_dispatcher->numSenders(), name);
+#endif
 
   // See if the name is already in the list.  If so, return it.
   retval = d_dispatcher->getSenderID(name);
   if (retval != -1) {
+#ifdef VERBOSE
+  fprintf(stderr, "Sender already defined as id %d.\n", retval);
+#endif
     return retval;
   }
 
   retval = d_dispatcher->addSender(name);
 
-fprintf(stderr, "Packing sender description for %s, type %d.\n", name, retval);
+#ifdef VERBOSE
+  fprintf(stderr, "Packing sender description for %s, type %d.\n",
+  name, retval);
+#endif
 
    // Pack the sender description.
    // TCH 24 Jan 00 - Need to do this even if not connected so
@@ -5294,12 +5360,17 @@ vrpn_int32 vrpn_Connection::register_message_type (const char * name) {
   vrpn_int32 retval;
   vrpn_int32 i;
 
-fprintf(stderr, "vrpn_Connection::register_message_type:  "
-"%d type;  new name \"%s\"\n", d_dispatcher->numTypes(), name);
+#ifdef VERBOSE
+  fprintf(stderr, "vrpn_Connection::register_message_type:  "
+  "%d type;  new name \"%s\"\n", d_dispatcher->numTypes(), name);
+#endif
 
   // See if the name is already in the list.  If so, return it.
   retval = d_dispatcher->getTypeID(name);
   if (retval != -1) {
+#ifdef VERBOSE
+  fprintf(stderr, "Type already defined as id %d.\n", retval);
+#endif
     return retval;
   }
 
@@ -5309,7 +5380,9 @@ fprintf(stderr, "vrpn_Connection::register_message_type:  "
   // TCH 24 Jan 00 - Need to do this even if not connected so
   // that it goes into the logs (if we're keeping any).
 
-fprintf(stderr, "Packing type description for %s, type %d.\n", name, retval);
+#ifdef VERBOSE
+  fprintf(stderr, "Packing type description for %s, type %d.\n", name, retval);
+#endif
 
   pack_type_description(retval);
 

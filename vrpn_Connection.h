@@ -195,8 +195,10 @@ class vrpn_Endpoint {
 
     // Adds a new remote type/sender and returns its index.
     // Returns -1 on error.
-    int newRemoteType (cName type_name, vrpn_int32 local_id);
-    int newRemoteSender (cName sender_name, vrpn_int32 local_id);
+    int newRemoteType (cName type_name, vrpn_int32 remote_id,
+                       vrpn_int32 local_id);
+    int newRemoteSender (cName sender_name, vrpn_int32 remote_id,
+                         vrpn_int32 local_id);
 
     // Pack a message that will be sent the next time mainloop() is called.
     // Turn off the RELIABLE flag if you want low-latency (UDP) send.
@@ -357,6 +359,13 @@ class vrpn_Endpoint {
 
     vrpn_TypeDispatcher * d_dispatcher;
     vrpn_int32 * d_connectionCounter;
+
+    //vrpn_Connection * d_parent;
+      ///< Tried to get rid of this, but it's needed in one place:
+      ///< to call register_sender in finish_new_connection_setup()
+      ///< so that the other side has vrpn_CONTROL in its sender table in
+      ///< the same place we do (and the got_connection types in its type
+      ///< table).
 };
 
 class vrpn_Connection {

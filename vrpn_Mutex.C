@@ -1,11 +1,14 @@
 #include "vrpn_Mutex.h"
 
 #include <string.h>  // for memcpy(), strlen(), ...
+
+#ifndef VRPN_USE_WINSOCK_SOCKETS
 #include <unistd.h>  // for gethostname()
 //#include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#endif
 
 #ifdef sparc
 #define INADDR_NONE -1
@@ -292,10 +295,10 @@ int vrpn_Mutex::handle_request (void * userdata, vrpn_HANDLERPARAM p) {
   // This function is where we're n^2.  If we could look up the peer
   // given their IP number we could be 2n instead.
 
-in_addr nad;
-nad.s_addr = senderNetIP;
-fprintf(stderr, "vrpn_Mutex::handle_request:  got one from %s.\n",
-inet_ntoa(nad));
+//in_addr nad;
+//nad.s_addr = senderNetIP;
+//fprintf(stderr, "vrpn_Mutex::handle_request:  got one from %s.\n",
+//inet_ntoa(nad));
 
   // If several nodes request the lock at once, ties are broken in favor
   // of the node with the lowest IP number.
@@ -308,6 +311,7 @@ inet_ntoa(nad));
     for (i = 0; i < me->d_numPeers; i++) {
       me->sendGrantRequest(me->d_peer[i], senderNetIP);
     }
+    return 0;
   }
 
   for (i = 0; i < me->d_numPeers; i++) {
@@ -322,11 +326,9 @@ int vrpn_Mutex::handle_release (void * userdata, vrpn_HANDLERPARAM p) {
   vrpn_Mutex * me = (vrpn_Mutex *) userdata;
   mutexCallback * cb;
 
-fprintf(stderr, "vrpn_Mutex::handle_release:  got one.\n");
+//fprintf(stderr, "vrpn_Mutex::handle_release:  got one.\n");
 
-  // We could do a sanity check here to make sure the IP we receive
-  // matches d_holderIP.
-
+  me->d_state = AVAILABLE;
   me->d_holderIP = 0;
 
   // trigger callbacks
@@ -346,10 +348,10 @@ int vrpn_Mutex::handle_grantRequest (void * userdata, vrpn_HANDLERPARAM p) {
 
   vrpn_unbuffer(&b, &senderIP);
 
-in_addr nad;
-nad.s_addr = senderIP;
-fprintf(stderr, "vrpn_Mutex::handle_grantRequest:  got one from %s.\n",
-inet_ntoa(ntohl(nad)));
+//in_addr nad;
+//nad.s_addr = senderIP;
+//fprintf(stderr, "vrpn_Mutex::handle_grantRequest:  got one from %s.\n",
+//inet_ntoa(ntohl(nad)));
 
   if (senderIP != me->d_netIP) {
     // If ntohl(senderIP) < ntohl(me->d_netIP)
@@ -385,10 +387,10 @@ int vrpn_Mutex::handle_denyRequest (void * userdata, vrpn_HANDLERPARAM p) {
   vrpn_uint32 senderIP;
 
   vrpn_unbuffer(&b, &senderIP);
-in_addr nad;
-nad.s_addr = senderIP;
-fprintf(stderr, "vrpn_Mutex::handle_denyRequest:  got one from %s.\n",
-inet_ntoa(ntohl(nad)));
+//in_addr nad;
+//nad.s_addr = senderIP;
+//fprintf(stderr, "vrpn_Mutex::handle_denyRequest:  got one from %s.\n",
+//inet_ntoa(ntohl(nad)));
   if (senderIP != me->d_netIP) {
     return 0;
   }
