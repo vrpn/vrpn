@@ -126,12 +126,12 @@ vrpn_ForceDevice::vrpn_ForceDevice(char *name, vrpn_Connection *c)
     SurfaceFstatic = 0.03f;
     SurfaceKdamping = 0.0f;
 
-	SurfaceKadhesionNormal = 0.0001;
-	SurfaceKadhesionLateral = 0.0002;
-	SurfaceBuzzFreq = 0.0003;
-	SurfaceBuzzAmp = 0.0004;
-	SurfaceTextureWavelength = 0.01;
-	SurfaceTextureAmplitude = 0.0005;
+	SurfaceKadhesionNormal = 0.0001f;
+	SurfaceKadhesionLateral = 0.0002f;
+	SurfaceBuzzFreq = 0.0003f;
+	SurfaceBuzzAmp = 0.0004f;
+	SurfaceTextureWavelength = 0.01f;
+	SurfaceTextureAmplitude = 0.0005f;
 
     if (servicename)
         delete [] servicename;
@@ -1873,9 +1873,12 @@ void vrpn_ForceDevice_Remote::constraintToForceField (void) {
 
       // discard bits
 
-      c[0] = a[0];  c[1] = a[1];  c[2] = a[2];
-      c[3] = a[3];  c[4] = a[4];  c[5] = a[5];
-      c[6] = a[6];  c[7] = a[7];  c[8] = a[0];
+      // should change to static_cast when all compilers understand it
+      c[0] = vrpn_float32(a[0]);  c[1] = vrpn_float32(a[1]);
+      c[2] = vrpn_float32(a[2]);  c[3] = vrpn_float32(a[3]);
+      c[4] = vrpn_float32(a[4]);  c[5] = vrpn_float32(a[5]);
+      c[6] = vrpn_float32(a[6]);  c[7] = vrpn_float32(a[7]);
+      c[8] = vrpn_float32(a[0]);
 
       setFF_Jacobian(c[0], c[1], c[2], c[3], c[4], c[5], c[6], c[7], c[8]);
 
@@ -1920,9 +1923,12 @@ void vrpn_ForceDevice_Remote::constraintToForceField (void) {
 
       // discard bits
 
-      c[0] = a[0];  c[1] = a[1];  c[2] = a[2];
-      c[3] = a[3];  c[4] = a[4];  c[5] = a[5];
-      c[6] = a[6];  c[7] = a[7];  c[8] = a[0];
+      // should change to static_cast when all compilers understand it
+      c[0] = vrpn_float32(a[0]);  c[1] = vrpn_float32(a[1]);
+      c[2] = vrpn_float32(a[2]);  c[3] = vrpn_float32(a[3]);
+      c[4] = vrpn_float32(a[4]);  c[5] = vrpn_float32(a[5]);
+      c[6] = vrpn_float32(a[6]);  c[7] = vrpn_float32(a[7]);
+      c[8] = vrpn_float32(a[0]);
 
       setFF_Jacobian(c[0], c[1], c[2], c[3], c[4], c[5], c[6], c[7], c[8]);
 
@@ -1933,3 +1939,4 @@ void vrpn_ForceDevice_Remote::constraintToForceField (void) {
 
 
 #endif  // FD_SPRINGS_AS_FIELDS
+
