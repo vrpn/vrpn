@@ -48,6 +48,7 @@
 #include "vrpn_Phantom.h"
 #include "vrpn_ADBox.h"
 #include "vrpn_VPJoystick.h"
+#include "vrpn_Tracker_DTrack.h"
 
 #include "vrpn_ForwarderController.h"
 #include <vrpn_RedundantTransmission.h>
@@ -78,6 +79,8 @@ const int MAX_GLOBALHAPTICSORBS = 8;
 #ifdef	VRPN_USE_PHANTOM_SERVER
 const int MAX_PHANTOMS = 10;
 #endif
+const int MAX_DTRACKS=5;
+
 
 static	int	done = 0;	// Done and should exit?
 
@@ -98,10 +101,14 @@ void Usage (const char * s)
   fprintf(stderr,"       [-client machinename port] [-millisleep n]\n");
   fprintf(stderr,"       [-NIC name] [-li filename] [-lo filename]\n");
   fprintf(stderr,"       -f: Full path to config file (default vrpn.cfg).\n");
-  fprintf(stderr,"       -millisleep: Sleep n milliseconds each loop cycle (default 1).\n");
+  fprintf(stderr,"       -millisleep: Sleep n milliseconds each loop cycle\n"); 
+  fprintf(stderr,"                    (if no option is specified, no sleep is done on Windows\n");
+  fprintf(stderr,"                     and a 1ms sleep is done on all other architectures).\n");
+  fprintf(stderr,"                    -millisleep 0 is recommended when using this server and\n"); 
+  fprintf(stderr,"                    a client on the same uniprocessor CPU Win32 PC.\n");
   fprintf(stderr,"       -warn: Only warn on errors (default is to bail).\n");
   fprintf(stderr,"       -v: Verbose.\n");
-  fprintf(stderr,"	 -q: Quit when last connection is dropped.\n");
+  fprintf(stderr,"       -q: Quit when last connection is dropped.\n");
   fprintf(stderr,"       -client: Where server connects when it starts up.\n");
   fprintf(stderr,"       -NIC: Use NIC with given IP address or DNS name.\n");
   fprintf(stderr,"       -li: Log incoming messages to given filename.\n");
@@ -153,6 +160,10 @@ int		num_GlobalHapticsOrbs = 0;
 #ifdef	VRPN_USE_PHANTOM_SERVER
 vrpn_Phantom	*phantoms[MAX_PHANTOMS];
 int		num_phantoms = 0;
+#endif
+#ifdef	VRPN_USE_DTRACK
+vrpn_Tracker_DTrack *DTracks[MAX_DTRACKS];
+int num_DTracks=0;
 #endif
 
 vrpn_Connection * connection;
@@ -2117,6 +2128,44 @@ int setup_VPJoystick(char* &pch, char *line, FILE *config_file) {
 }
 
 
+int setup_DTrack (char * & pch, char * line, FILE * config_file) {
+  char s2[LINESIZE];
+  int  i1;
+  float timeToReachJoy;
+
+  next();
+  // Get the arguments (name, udpPort)
+  if (sscanf(pch,"%511s%d%f",s2, &i1, &timeToReachJoy) != 3) {
+    fprintf(stderr,"Bad vrpn_Tracker_DTrack line: %s\n",line);
+    return -1;
+  }
+#ifdef	VRPN_USE_DTRACK
+  // Make sure there's room for a new one
+  if (num_DTracks >= MAX_DTRACKS) {
+    fprintf(stderr,"Too many DTracks in config file");
+    return -1;
+  }
+
+  // Open the orb
+  if (verbose) {
+  printf("Opening vrpn_Tracker_DTrack: %s, port %d, timeToReachJoy %f\n",
+	s2, i1, timeToReachJoy);
+  }
+  if ((DTracks[num_DTracks] =
+      new vrpn_Tracker_DTrack(s2, connection, i1, timeToReachJoy)) == NULL)               
+  {
+    fprintf(stderr,"Can't create new vrpn_Tracker_DTrack\n");
+    return -1;
+  } else {
+    num_DTracks++;
+  }
+#else
+  fprintf(stderr,"VRPN_USE_DTRACK not defined in vrpn_Configure.h, can't open DTracks\n");
+#endif
+
+  return 0;
+}
+
 main (int argc, char * argv[])
 {
 	char	* config_file_name = "vrpn.cfg";
@@ -2128,7 +2177,14 @@ main (int argc, char * argv[])
 	int	realparams = 0;
 	int	i;
 	int	port = vrpn_DEFAULT_LISTEN_PORT_NO;
-	int	milli_sleep_time = 1;		// How long to sleep each iteration (default 1ms)
+#ifdef	_WIN32
+	// On Windows, the millisleep with 0 option frees up the CPU time slice for other jobs
+	// but does not sleep for a specific time.  On Unix, this returns immediately and does
+	// not do anything but waste cycles.
+	int	milli_sleep_time = 0;		// How long to sleep each iteration (default: no sleep)
+#else
+	int	milli_sleep_time = 1;		// How long to sleep each iteration (default: 1ms)
+#endif
 #ifdef WIN32
 	WSADATA wsaData; 
 	int status;
@@ -2332,7 +2388,10 @@ main (int argc, char * argv[])
 	  } else if (isit("vrpn_ADBox")) {
 	    CHECK(setup_ADBox);
 	  } else if (isit("vrpn_VPJoystick")) {
-	    CHECK(setup_VPJoystick);				
+	    CHECK(setup_VPJoystick);
+	  } else if (isit("vrpn_Tracker_DTrack")) {
+	    CHECK(setup_DTrack);
+
 	 } else {	// Never heard of it
 		sscanf(line,"%511s",s1);	// Find out the class name
 		fprintf(stderr,"vrpn_server: Unknown Device: %s\n",s1);
@@ -2457,6 +2516,13 @@ main (int argc, char * argv[])
 		  win32joys[i]->mainloop();
 	  }
 #endif
+
+	  // Let all the DTracks do their thing
+#ifdef	VRPN_USE_DTRACK
+	  for (i = 0; i < num_DTracks; i++) {
+	    DTracks[i]->mainloop();
+	  }
+#endif
 	  
 	  // Let all the Orbs do their thing
 	  for (i = 0; i < num_GlobalHapticsOrbs; i++) {
@@ -2475,7 +2541,11 @@ main (int argc, char * argv[])
 	  forwarderServer->mainloop();
 
 	  // Sleep so we don't eat the CPU
+#if defined(_WIN32)
+	  if (milli_sleep_time >= 0) {
+#else
 	  if (milli_sleep_time > 0) {
+#endif
 		  vrpn_SleepMsecs(milli_sleep_time);
 	  }
 	}

@@ -886,3 +886,19 @@
 
 #vrpn_VPJoystick VPJoystick0 /dev/ttyS0 9600
 
+################################################################################
+# Advanced Realtime Tracking GmbH (http://www.ar-tracking.de) DTrack client
+# developped by David Nahon for Virtools VR Pack (http://www.virtools.com)
+# creates as many vrpn_Tracker as there are bodies or flysticks, starting with the bodies
+# creates 2 analogs per flystick
+# creates 8 buttons per flystick
+#
+#       char    name_of_this_device[]
+#       int     udp_port
+#       float   timeToReachJoy
+#
+# NOTE: timeToReachJoy is the time needed to reach the maximum value of the joystick
+# (1.0 or -1.0) when the corresponding button is pressed ( one of the last buttons amongst the 8 )
+
+#vrpn_Tracker_DTrack Dtrack 5000 0.5
+

@@ -1,5 +1,17 @@
 2004-01-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	Added changes from David Nahon at Virtools.
+	* vrpn.C : Adds support for the DTrack tracker from
+		Advanced Realtime Tracking GmbH.
+		Also modifies the way sleep happens on Windows,
+		which will free up the time slice used by the process
+		but not sleep if it is passed 0.  Still the same
+		on Unix.
+	* vrpn.cfg : Adds entry for DTrack.
+	* vrpn.cfg.SAMPLE : Same.
+
+2004-01-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* plane.C : Making this compile with version 3.1 of GHOST
 		(It was supposed to, but a capitalization error kept
 		it from actually working).
