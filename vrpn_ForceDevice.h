@@ -17,6 +17,7 @@
 #define FD_FORCE_ERROR 2	// max force exceeded, or motors overheated
 				// or amplifiers not enabled
 #define FD_MISC_ERROR 3		// everything else
+#define FD_OK 4	// no error
 
 class vrpn_ForceDevice {
 public:
@@ -31,6 +32,18 @@ public:
     void setSurfaceFstatic(vrpn_float32 ks) {SurfaceFstatic = ks;}
     void setSurfaceFdynamic(vrpn_float32 kd) {SurfaceFdynamic =kd;}
     void setRecoveryTime(int rt) {numRecCycles = rt;}
+
+	// additional surface properties
+	void setSurfaceKadhesionNormal(vrpn_float32 k) {SurfaceKadhesionNormal = k;}
+	void setSurfaceKadhesionLateral(vrpn_float32 k) 
+		{SurfaceKadhesionLateral = k;}
+	void setSurfaceBuzzFrequency(vrpn_float32 freq) {SurfaceBuzzFreq = freq;}
+	void setSurfaceBuzzAmplitude(vrpn_float32 amp) {SurfaceBuzzAmp = amp;}
+	void setSurfaceTextureWavelength(vrpn_float32 wl) 
+		{SurfaceTextureWavelength = wl;}
+	void setSurfaceTextureAmplitude(vrpn_float32 amp) 
+		{SurfaceTextureAmplitude = amp;}
+
     void setFF_Origin(vrpn_float32 x, vrpn_float32 y, vrpn_float32 z) {
 	    ff_origin[0] = x;ff_origin[1] = y; ff_origin[2] = z;}
     void setFF_Force(vrpn_float32 fx, vrpn_float32 fy, vrpn_float32 fz) {
@@ -59,6 +72,7 @@ protected:
 
     vrpn_int32 force_message_id;	// ID of force message to connection
     vrpn_int32 plane_message_id;	//ID of plane equation message
+	vrpn_int32 plane_effects_message_id; // additional plane properties
     vrpn_int32 set_constraint_message_id;// ID of constraint force message
     vrpn_int32 forcefield_message_id; 	// ID of force field message
     vrpn_int32 scp_message_id;		// ID of surface contact point message
@@ -79,15 +93,6 @@ protected:
 
     //	virtual void get_report(void) = 0;
 
-    // message encoding/decoding utility routines - probably
-    // would be useful in vrpn base class
-    static int buffer(char **insertPt, vrpn_int32 *buflen, const vrpn_int32 value);
-    static int buffer(char **insertPt, vrpn_int32 *buflen, const vrpn_float32 value);
-    static int buffer(char **insertPt, vrpn_int32 *buflen, const vrpn_float64 value);
-    static int unbuffer(const char **buffer, vrpn_int32 *lval);
-    static int unbuffer(const char **buffer, vrpn_float32 *fval);
-    static int unbuffer(const char **buffer, vrpn_float64 *dval);
-
     // ENCODING
     static char *encode_force(vrpn_int32 &length, const vrpn_float64 *force);
     static char *encode_scp(vrpn_int32 &length,
@@ -96,8 +101,10 @@ protected:
 			    const vrpn_float32 kspring, const vrpn_float32 kdamp,
 			    const vrpn_float32 fdyn, const vrpn_float32 fstat, 
 			    const vrpn_int32 plane_index, const vrpn_int32 n_rec_cycles);
-    static char *encode_surface_effects(vrpn_int32 &len, const vrpn_float32 k_adhesion,
-		    const vrpn_float32 bump_amp, const vrpn_float32 bump_freq,
+    static char *encode_surface_effects(vrpn_int32 &len, 
+			const vrpn_float32 k_adhesion_norm, 
+			const vrpn_float32 k_adhesion_lat,
+		    const vrpn_float32 tex_amp, const vrpn_float32 tex_wl,
 		    const vrpn_float32 buzz_amp, const vrpn_float32 buzz_freq);
     static char *encode_vertex(vrpn_int32 &len, const vrpn_int32 vertNum,
 		const vrpn_float32 x,const vrpn_float32 y,const vrpn_float32 z); 
@@ -131,8 +138,9 @@ protected:
 	    vrpn_float32 *kspring, vrpn_float32 *kdamp,vrpn_float32 *fdyn, vrpn_float32 *fstat, 
 	    vrpn_int32 *plane_index, vrpn_int32 *n_rec_cycles);
     static vrpn_int32 decode_surface_effects(const char *buffer,
-	    const vrpn_int32 len,
-	    vrpn_float32 *k_adhesion,vrpn_float32 *bump_amp, vrpn_float32 *bump_freq,
+	    const vrpn_int32 len, vrpn_float32 *k_adhesion_norm,
+	    vrpn_float32 *k_adhesion_lat,
+		vrpn_float32 *tex_amp, vrpn_float32 *tex_wl,
 	    vrpn_float32 *buzz_amp, vrpn_float32 *buzz_freq);
     static vrpn_int32 decode_vertex(const char *buffer, const vrpn_int32 len,
 		vrpn_int32 *vertNum,
@@ -177,6 +185,13 @@ protected:
     vrpn_float32 SurfaceFdynamic;
     vrpn_int32 numRecCycles;
     vrpn_int32 errorCode;
+
+	vrpn_float32 SurfaceKadhesionLateral;
+	vrpn_float32 SurfaceKadhesionNormal;
+	vrpn_float32 SurfaceBuzzFreq;
+	vrpn_float32 SurfaceBuzzAmp;
+	vrpn_float32 SurfaceTextureWavelength;
+	vrpn_float32 SurfaceTextureAmplitude;
 
 };
 

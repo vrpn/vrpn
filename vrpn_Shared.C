@@ -4,7 +4,13 @@
 #include <iomanip.h>
 #endif
 
+#include <stdio.h>
 #include <math.h>
+#include <sys/types.h>
+
+#ifndef _WIN32
+#include <netinet/in.h>
+#endif
 
 // Calcs the sum of tv1 and tv2.  Returns the sum in a timeval struct.
 // Calcs negative times properly, with the appropriate sign on both tv_sec
@@ -141,6 +147,79 @@ vrpn_float64 htond( vrpn_float64 d ) {
 // they are their own inverses, so ...
 vrpn_float64 ntohd( vrpn_float64 d ) {
   return htond(d);
+}
+
+// utility routines for encoding/decoding messages
+long buffer(char **insertPt, vrpn_int32 *buflen, const vrpn_int32 value)
+{
+    vrpn_int32 netValue = htonl(value);
+    vrpn_int32 length = sizeof(netValue);
+
+    if (length > *buflen) {
+        fprintf(stderr, "buffer: buffer not large enough\n");
+        return -1;
+    }
+
+    memcpy(*insertPt, &netValue, length);
+    *insertPt += length;
+    *buflen -= length;
+
+    return 0;
+}
+
+long buffer(char **insertPt, vrpn_int32 *buflen, const vrpn_float32 value)
+{
+    vrpn_int32 longval = *((vrpn_int32 *)&value);
+
+    return buffer(insertPt, buflen, longval);
+}
+
+long buffer(char **insertPt, vrpn_int32 *buflen, const vrpn_float64 value)
+{
+    vrpn_float64 netValue = htond(value);
+    vrpn_int32 length = sizeof(netValue);
+
+    if (length > *buflen) {
+        fprintf(stderr, "buffer: buffer not large enough\n");
+        return -1;
+    }
+
+    memcpy(*insertPt, &netValue, length);
+    *insertPt += length;
+    *buflen -= length;
+
+    return 0;
+}
+
+long buffer(char **insertPt, long *buflen, const timeval t){
+	if (buffer(insertPt, buflen, t.tv_sec)) return -1;
+	return buffer(insertPt, buflen, t.tv_usec);
+}
+
+long unbuffer(const char **buffer, vrpn_int32 *lval)
+{
+    *lval = ntohl(*((vrpn_int32 *)(*buffer)));
+    *buffer += sizeof(vrpn_int32);
+    return 0;
+}
+
+long unbuffer(const char **buffer, vrpn_float32 *fval)
+{
+    long lval;
+    unbuffer(buffer, &lval);
+    *fval = *((vrpn_float32 *) &lval);
+    return 0;
+}
+
+long unbuffer(const char **buffer, vrpn_float64 *dval){
+    *dval = ntohd(*(vrpn_float64 *)(*buffer));
+    *buffer += sizeof(vrpn_float64);
+    return 0;
+}
+
+long unbuffer(const char **buffer, timeval *t){
+	if (unbuffer(buffer, &(t->tv_sec))) return -1;
+	return unbuffer(buffer, &(t->tv_usec));
 }
 
 #ifdef _WIN32

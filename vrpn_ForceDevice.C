@@ -33,6 +33,8 @@ vrpn_ForceDevice::vrpn_ForceDevice(char *name, vrpn_Connection *c)
     char * servicename;
     servicename = vrpn_copy_service_name(name);
     connection = c;
+	
+	errorCode = FD_OK;
 
     //register this force device and the needed message types
     if(connection) {
@@ -42,6 +44,7 @@ vrpn_ForceDevice::vrpn_ForceDevice(char *name, vrpn_Connection *c)
 		    connection->register_message_type("Force Field");
 
 	    plane_message_id = connection->register_message_type("Plane");
+		plane_effects_message_id = connection->register_message_type("Plane2");
 	    setVertex_message_id = 
 	      connection->register_message_type("setVertex");
 	    setNormal_message_id =
@@ -76,6 +79,13 @@ vrpn_ForceDevice::vrpn_ForceDevice(char *name, vrpn_Connection *c)
     SurfaceFstatic = 0.03f;
     SurfaceKdamping = 0.0f;
 
+	SurfaceKadhesionNormal = 0.0001;
+	SurfaceKadhesionLateral = 0.0002;
+	SurfaceBuzzFreq = 0.0003;
+	SurfaceBuzzAmp = 0.0004;
+	SurfaceTextureWavelength = 0.01;
+	SurfaceTextureAmplitude = 0.0005;
+
     if (servicename)
         delete [] servicename;
 }
@@ -91,68 +101,6 @@ void vrpn_ForceDevice::print_report(void)
   printf("Force    :%lf, %lf, %lf\n", force[0],force[1],force[2]);
 }
 
-
-int vrpn_ForceDevice::buffer(char **insertPt, vrpn_int32 *buflen, const vrpn_int32 value)
-{
-    vrpn_int32 netValue = htonl(value);
-    vrpn_int32 length = sizeof(netValue);
-
-    if (length > *buflen) {
-	    fprintf(stderr, "buffer: buffer not large enough\n");
-	    return -1;
-    }
-
-    memcpy(*insertPt, &netValue, length);
-    *insertPt += length;
-    *buflen -= length;
-
-    return 0;
-}
-
-int vrpn_ForceDevice::buffer(char **insertPt, vrpn_int32 *buflen, const vrpn_float32 value)
-{
-    vrpn_int32 longval = *((vrpn_int32 *)&value);
-
-    return buffer(insertPt, buflen, longval);
-}
-
-int vrpn_ForceDevice::buffer(char **insertPt, vrpn_int32 *buflen,const vrpn_float64 value)
-{
-    vrpn_float64 netValue = htond(value);
-    vrpn_int32 length = sizeof(netValue);
-
-    if (length > *buflen) {
-	    fprintf(stderr, "buffer: buffer not large enough\n");
-	    return -1;
-    }
-
-    memcpy(*insertPt, &netValue, length);
-    *insertPt += length;
-    *buflen -= length;
-
-    return 0;
-}
-
-int vrpn_ForceDevice::unbuffer(const char **buffer, vrpn_int32 *lval)
-{
-    *lval = ntohl(*((vrpn_int32 *)(*buffer)));
-    *buffer += sizeof(vrpn_int32);
-    return 0;
-}
-
-int vrpn_ForceDevice::unbuffer(const char **buffer, vrpn_float32 *fval)
-{
-    vrpn_int32 lval;
-    unbuffer(buffer, &lval);
-    *fval = *((vrpn_float32 *) &lval);
-    return 0;
-}
-
-int vrpn_ForceDevice::unbuffer(const char **buffer, vrpn_float64 *dval){
-    *dval = ntohd(*(vrpn_float64 *)(*buffer));
-    *buffer += sizeof(vrpn_float64);
-    return 0;
-}
 
 char *vrpn_ForceDevice::encode_force(vrpn_int32 &length, const vrpn_float64 *force)
 {
@@ -282,7 +230,6 @@ vrpn_int32 vrpn_ForceDevice::decode_plane(const char *buffer, const vrpn_int32 l
 				vrpn_int32 *plane_index, vrpn_int32 *n_rec_cycles)
 {
     int i;
-    int res;
     const char *mptr = buffer;
 
     if (len != 8*sizeof(vrpn_float32)+2*sizeof(vrpn_int32)){
@@ -293,35 +240,37 @@ vrpn_int32 vrpn_ForceDevice::decode_plane(const char *buffer, const vrpn_int32 l
     }
 
     for (i = 0; i < 4; i++)
-	    res = unbuffer(&mptr, &(plane[i]));
-    res = unbuffer(&mptr, kspring);
-    res = unbuffer(&mptr, kdamp);
-    res = unbuffer(&mptr, fdyn);
-    res = unbuffer(&mptr, fstat);
-    res = unbuffer(&mptr, plane_index);
-    res = unbuffer(&mptr, n_rec_cycles);
+	    unbuffer(&mptr, &(plane[i]));
+    unbuffer(&mptr, kspring);
+    unbuffer(&mptr, kdamp);
+    unbuffer(&mptr, fdyn);
+    unbuffer(&mptr, fstat);
+    unbuffer(&mptr, plane_index);
+    unbuffer(&mptr, n_rec_cycles);
 
-    return res;
+    return 0;
 }
 
 char *vrpn_ForceDevice::encode_surface_effects(vrpn_int32 &len, 
-		    const vrpn_float32 k_adhesion,
-		    const vrpn_float32 bump_amp, const vrpn_float32 bump_freq,
+		    const vrpn_float32 k_adhesion_normal,
+			const vrpn_float32 k_adhesion_lateral,
+		    const vrpn_float32 tex_amp, const vrpn_float32 tex_wl,
 		    const vrpn_float32 buzz_amp, const vrpn_float32 buzz_freq) {
 
     char *buf;
     char *mptr;
     vrpn_int32 mlen;
 
-    len = 5*sizeof(vrpn_float32);
+    len = 6*sizeof(vrpn_float32);
     mlen = len;
 
     buf = new char [len];
     mptr = buf;
 
-    buffer(&mptr, &mlen, k_adhesion);
-    buffer(&mptr, &mlen, bump_amp);
-    buffer(&mptr, &mlen, bump_freq);
+    buffer(&mptr, &mlen, k_adhesion_normal);
+	buffer(&mptr, &mlen, k_adhesion_lateral);
+    buffer(&mptr, &mlen, tex_amp);
+    buffer(&mptr, &mlen, tex_wl);
     buffer(&mptr, &mlen, buzz_amp);
     buffer(&mptr, &mlen, buzz_freq);
 
@@ -329,27 +278,28 @@ char *vrpn_ForceDevice::encode_surface_effects(vrpn_int32 &len,
 }
 
 vrpn_int32 vrpn_ForceDevice::decode_surface_effects(const char *buffer, const vrpn_int32 len,
-					vrpn_float32 *k_adhesion,
-					vrpn_float32 *bump_amp, vrpn_float32 *bump_freq,
+					vrpn_float32 *k_adhesion_normal,
+					vrpn_float32 *k_adhesion_lateral,
+					vrpn_float32 *tex_amp, vrpn_float32 *tex_wl,
 					vrpn_float32 *buzz_amp, vrpn_float32 *buzz_freq) {
 
-    int res;
     const char *mptr = buffer;
 
-    if (len != 5*sizeof(vrpn_float32)){
+    if (len != 6*sizeof(vrpn_float32)){
         fprintf(stderr,"vrpn_ForceDevice: surface effects message payload ");
         fprintf(stderr,"error\n             (got %d, expected %d)\n",
-		    len, 5*sizeof(vrpn_float32) );
+		    len, 6*sizeof(vrpn_float32) );
 	return -1;
     }
 
-    res = unbuffer(&mptr, k_adhesion);
-    res = unbuffer(&mptr, bump_amp);
-    res = unbuffer(&mptr, bump_freq);
-    res = unbuffer(&mptr, buzz_amp);
-    res = unbuffer(&mptr, buzz_freq);
+    unbuffer(&mptr, k_adhesion_normal);
+	unbuffer(&mptr, k_adhesion_lateral);
+    unbuffer(&mptr, tex_amp);
+    unbuffer(&mptr, tex_wl);
+    unbuffer(&mptr, buzz_amp);
+    unbuffer(&mptr, buzz_freq);
 
-    return res;
+    return 0;
 }
 
 char *vrpn_ForceDevice::encode_vertex(vrpn_int32 &len,const vrpn_int32 vertNum,
@@ -376,7 +326,6 @@ char *vrpn_ForceDevice::encode_vertex(vrpn_int32 &len,const vrpn_int32 vertNum,
 vrpn_int32 vrpn_ForceDevice::decode_vertex(const char *buffer, 
 			    const vrpn_int32 len,vrpn_int32 *vertNum,
 			    vrpn_float32 *x,vrpn_float32 *y,vrpn_float32 *z){
-    int res;
     const char *mptr = buffer;
 
     if (len != sizeof(vrpn_int32) + 3*sizeof(vrpn_float32)){
@@ -386,12 +335,12 @@ vrpn_int32 vrpn_ForceDevice::decode_vertex(const char *buffer,
 	    return -1;
     }
 
-    res = unbuffer(&mptr, vertNum);
-    res = unbuffer(&mptr, x);
-    res = unbuffer(&mptr, y);
-    res = unbuffer(&mptr, z);
+    unbuffer(&mptr, vertNum);
+    unbuffer(&mptr, x);
+    unbuffer(&mptr, y);
+    unbuffer(&mptr, z);
 
-    return res;
+    return 0;
 }
 
 char *vrpn_ForceDevice::encode_normal(vrpn_int32 &len,const vrpn_int32 normNum,
@@ -417,7 +366,6 @@ char *vrpn_ForceDevice::encode_normal(vrpn_int32 &len,const vrpn_int32 normNum,
 vrpn_int32 vrpn_ForceDevice::decode_normal(const char *buffer,const vrpn_int32 len,
 			     vrpn_int32 *vertNum,vrpn_float32 *x,vrpn_float32 *y,vrpn_float32 *z){
 
-    int res;
     const char *mptr = buffer;
 
     if (len != sizeof(vrpn_int32) + 3*sizeof(vrpn_float32)){
@@ -427,12 +375,12 @@ vrpn_int32 vrpn_ForceDevice::decode_normal(const char *buffer,const vrpn_int32 l
 	    return -1;
     }
 
-    res = unbuffer(&mptr, vertNum);
-    res = unbuffer(&mptr, x);
-    res = unbuffer(&mptr, y);
-    res = unbuffer(&mptr, z);
+    unbuffer(&mptr, vertNum);
+    unbuffer(&mptr, x);
+    unbuffer(&mptr, y);
+    unbuffer(&mptr, z);
 
-    return res;
+    return 0;
 }
 
 char *vrpn_ForceDevice::encode_triangle(vrpn_int32 &len,const vrpn_int32 triNum,
@@ -464,7 +412,6 @@ vrpn_int32 vrpn_ForceDevice::decode_triangle(const char *buffer,
 			    vrpn_int32 *vert0,vrpn_int32 *vert1,vrpn_int32 *vert2,
 			    vrpn_int32 *norm0,vrpn_int32 *norm1,vrpn_int32 *norm2)
 {
-    int res;
     const char *mptr = buffer;
 
     if (len != 7*sizeof(vrpn_int32)){
@@ -474,15 +421,15 @@ vrpn_int32 vrpn_ForceDevice::decode_triangle(const char *buffer,
 	    return -1;
     }
 
-    res = unbuffer(&mptr, triNum);
-    res = unbuffer(&mptr, vert0);
-    res = unbuffer(&mptr, vert1);
-    res = unbuffer(&mptr, vert2);
-    res = unbuffer(&mptr, norm0);
-    res = unbuffer(&mptr, norm1);
-    res = unbuffer(&mptr, norm2);
+    unbuffer(&mptr, triNum);
+    unbuffer(&mptr, vert0);
+    unbuffer(&mptr, vert1);
+    unbuffer(&mptr, vert2);
+    unbuffer(&mptr, norm0);
+    unbuffer(&mptr, norm1);
+    unbuffer(&mptr, norm2);
 
-    return res;
+    return 0;
 }
 
 char *vrpn_ForceDevice::encode_removeTriangle(vrpn_int32 &len,const vrpn_int32 triNum){
@@ -547,7 +494,6 @@ vrpn_int32 vrpn_ForceDevice::decode_updateTrimeshChanges(const char *buffer,
 			const vrpn_int32 len, vrpn_float32 *kspring, vrpn_float32 *kdamp, 
 			vrpn_float32 *fstat, vrpn_float32 *fdyn){
 
-    int res;
     const char *mptr = buffer;
 
     if (len != 4*sizeof(vrpn_float32)){
@@ -557,12 +503,12 @@ vrpn_int32 vrpn_ForceDevice::decode_updateTrimeshChanges(const char *buffer,
 	    return -1;
     }
 
-    res = unbuffer(&mptr, kspring);
-    res = unbuffer(&mptr, kdamp);
-    res = unbuffer(&mptr, fstat);
-    res = unbuffer(&mptr, fdyn);
+    unbuffer(&mptr, kspring);
+    unbuffer(&mptr, kdamp);
+    unbuffer(&mptr, fstat);
+    unbuffer(&mptr, fdyn);
 
-    return res;
+    return 0;
 }
 
 char *vrpn_ForceDevice::encode_setTrimeshType(vrpn_int32 &len,const vrpn_int32 type){
@@ -622,7 +568,6 @@ char *vrpn_ForceDevice::encode_trimeshTransform(vrpn_int32 &len,
 vrpn_int32 vrpn_ForceDevice::decode_trimeshTransform(const char *buffer,
 				  const vrpn_int32 len, vrpn_float32 homMatrix[16]){
     int i;
-    int res;
     const char *mptr = buffer;
 
     if (len != 16*sizeof(vrpn_float32)){
@@ -633,9 +578,9 @@ vrpn_int32 vrpn_ForceDevice::decode_trimeshTransform(const char *buffer,
     }
 
     for (i = 0; i < 16; i++)
-	    res = unbuffer(&mptr, &(homMatrix[i]));
+	    unbuffer(&mptr, &(homMatrix[i]));
 
-    return res;
+    return 0;
 }
 
 char *vrpn_ForceDevice::encode_constraint(vrpn_int32 &len, const vrpn_int32 enable,
@@ -664,7 +609,6 @@ vrpn_int32 vrpn_ForceDevice::decode_constraint(const char *buffer,
 			     const vrpn_int32 len,vrpn_int32 *enable, 
 			     vrpn_float32 *x, vrpn_float32 *y, vrpn_float32 *z, vrpn_float32 *kSpr){
 
-    int res;
     const char *mptr = buffer;
 
     if (len != sizeof(vrpn_int32) + 4*sizeof(vrpn_float32)){
@@ -674,13 +618,13 @@ vrpn_int32 vrpn_ForceDevice::decode_constraint(const char *buffer,
 	    return -1;
     }
 
-    res = unbuffer(&mptr, enable);
-    res = unbuffer(&mptr, x);
-    res = unbuffer(&mptr, y);
-    res = unbuffer(&mptr, z);
-    res = unbuffer(&mptr, kSpr);
+    unbuffer(&mptr, enable);
+    unbuffer(&mptr, x);
+    unbuffer(&mptr, y);
+    unbuffer(&mptr, z);
+    unbuffer(&mptr, kSpr);
 
-    return res;
+    return 0;
 }
 
 char *vrpn_ForceDevice::encode_forcefield(vrpn_int32 &len, const vrpn_float32 origin[3],
@@ -716,7 +660,6 @@ vrpn_int32 vrpn_ForceDevice::decode_forcefield(const char *buffer,
 			  const vrpn_int32 len,vrpn_float32 origin[3],
 			  vrpn_float32 force[3], vrpn_float32 jacobian[3][3], vrpn_float32 *radius){
     int i,j;
-    int res;
     const char *mptr = buffer;
 
     if (len != 16*sizeof(vrpn_float32)){
@@ -727,18 +670,18 @@ vrpn_int32 vrpn_ForceDevice::decode_forcefield(const char *buffer,
     }
 
     for (i=0;i<3;i++)
-	    res = unbuffer(&mptr, &(origin[i]));
+	    unbuffer(&mptr, &(origin[i]));
 
     for (i=0;i<3;i++)
-	    res = unbuffer(&mptr, &(force[i]));
+	    unbuffer(&mptr, &(force[i]));
 
     for (i=0;i<3;i++)
 	    for (j=0;j<3;j++)
-		    res = unbuffer(&mptr, &(jacobian[i][j]));
+		    unbuffer(&mptr, &(jacobian[i][j]));
 
-    res = unbuffer(&mptr, radius);
+    unbuffer(&mptr, radius);
 
-    return res;
+    return 0;
 }
 
 char *vrpn_ForceDevice::encode_error(vrpn_int32 &len, const vrpn_int32 error_code)
@@ -763,7 +706,6 @@ vrpn_int32 vrpn_ForceDevice::decode_error(const char *buffer,
 				   const vrpn_int32 len,vrpn_int32 *error_code)
 {
 
-    int res;
     const char *mptr = buffer;
 
     if (len != sizeof(vrpn_int32)){
@@ -773,9 +715,9 @@ vrpn_int32 vrpn_ForceDevice::decode_error(const char *buffer,
 	    return -1;
     }
 
-    res = unbuffer(&mptr, error_code);
+    unbuffer(&mptr, error_code);
 
-    return res;
+    return 0;
 }
 
 void vrpn_ForceDevice::set_plane(vrpn_float32 *p)
@@ -877,6 +819,16 @@ void vrpn_ForceDevice_Remote::sendSurface(void)
 		my_id, msgbuf, vrpn_CONNECTION_LOW_LATENCY)) {
       fprintf(stderr,"Phantom: cannot write message: tossing\n");
     }
+	connection->mainloop();
+	delete msgbuf;
+	msgbuf = encode_surface_effects(len, SurfaceKadhesionNormal,
+		SurfaceKadhesionLateral, SurfaceTextureAmplitude,
+		SurfaceTextureWavelength, SurfaceBuzzAmp, 
+		SurfaceBuzzFreq);
+	if(connection->pack_message(len,timestamp,plane_effects_message_id,
+		my_id, msgbuf, vrpn_CONNECTION_LOW_LATENCY)) {
+		fprintf(stderr,"Phantom: cannot write message: tossing\n");
+	}
     connection->mainloop();
     delete msgbuf;
   }

@@ -60,7 +60,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "PC_WIN32/Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /Z7 /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MTd /W3 /GX /Z7 /Od /I "D:\Program Files\PHANToM\Ghost\lib" /I "C:\Program Files\PHANToM\Ghost\lib" /I "..\sdi" /I "..\quat" /I "C:\gregory\vrpn\server_src\quat" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /Fp"C:/temp/seeger/PC_WIN32/Debug/vrpn.pch" /YX /Fo"C:/temp/seeger/PC_WIN32/Debug/" /Fd"C:/temp/seeger/PC_WIN32/Debug/" /FD /TP /c
+# ADD CPP /nologo /MDd /W3 /GX /Z7 /Od /I "../quat" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /TP /c
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo

@@ -87,7 +87,7 @@ void ORPX_SerialComm::reset_orpx(void)
 // saturated - indicates whether the last measurement was saturated
 //		this may be the result of excess noise or an incorrect range
 //		setting
-// measurement - this is an integer in the range 0..65536
+// measurement - this is an integer in the range 0..65535
 //		resistance = range_min*65536/measurement
 //		where range_min is the minimum resistance measureable in the
 //			range sent to the ohmmeter the last time this function
