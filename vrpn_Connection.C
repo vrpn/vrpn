@@ -3,14 +3,18 @@
 #include <stdlib.h>
 #include <memory.h>
 #include <math.h>
+#ifndef	_WIN32_WCE
 #include <errno.h>
+#endif
 #include <string.h>  // for strerror()
 #include <stdio.h>
+#ifndef _WIN32_WCE
 #include <sys/types.h>
 #include <signal.h>
 #include <iostream.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#endif
 
 #ifndef FreeBSD
 // malloc.h is deprecated in FreeBSD;  all the functionality *should*
@@ -24,7 +28,9 @@
 #else
 #define vrpn_closeSocket close
 #include <unistd.h>
+#ifndef _WIN32_WCE
 #include <sys/types.h>
+#endif
   // gethostname() and getdtablesize() should be here on SGIs,
   // but apparently aren't under g++
 #include <strings.h>
@@ -63,6 +69,10 @@
 // cast fourth argument to setsockopt()
 #ifdef VRPN_USE_WINSOCK_SOCKETS
   #define SOCK_CAST (char *)
+#ifdef _WIN32_WCE
+  #define errno WSAGetLastError()
+  #define EINTR WSAEINTR
+#endif
 #else
   #ifdef sparc
     #define SOCK_CAST (const char *)
@@ -1987,7 +1997,9 @@ static SOCKET open_socket (int type,
   sock = socket(AF_INET, type, 0);
   if (sock == -1)  {
     fprintf(stderr, "open_socket: can't open socket.\n");
+#ifndef _WIN32_WCE
     fprintf(stderr, "  -- errno %d (%s).\n", errno, strerror(errno));
+#endif
     return -1;
   }
 
@@ -2026,7 +2038,9 @@ ntohl(name.sin_addr.s_addr) & 0xff);
 
   if (bind(sock, (struct sockaddr *) &name, namelen) < 0){
     fprintf(stderr, "open_socket:  can't bind address");
+#ifndef _WIN32_WCE
     fprintf(stderr, "  --  %d  --  %s\n", errno, strerror(errno));
+#endif
     return -1;
   }
 
@@ -2301,7 +2315,7 @@ int vrpn_poll_for_accept(SOCKET listen_sock, SOCKET *accept_sock, double timeout
 		perror("vrpn_poll_for_accept: accept() failed");
 		return -1;
 	    }
-
+#ifndef	_WIN32_WCE
 	    {	struct	protoent	*p_entry;
 		int	nonzero = 1;
 
@@ -2319,7 +2333,7 @@ int vrpn_poll_for_accept(SOCKET listen_sock, SOCKET *accept_sock, double timeout
 			return(-1);
 		}
 	    }
-
+#endif
 	    return 1;	// Got one!
 	}
 
@@ -2771,7 +2785,9 @@ int vrpn_Endpoint::mainloop (timeval * timeout,
           break;
         } else {
           fprintf(stderr, "vrpn_Endpoint::mainloop: select failed.\n");
+#ifndef _WIN32_WCE
           fprintf(stderr, "  Errno (%d):  %s.\n", errno, strerror(errno));
+#endif
           status = BROKEN;
 	  return -1;
         }
@@ -3078,7 +3094,9 @@ int vrpn_Endpoint::send_pending_reports (void) {
   if (connection) {
     fprintf(stderr, "vrpn_Endpoint::send_pending_reports():  "
                     "select() failed.\n");
+#ifndef _WIN32_WCE
     fprintf(stderr, "Errno (%d):  %s.\n", errno, strerror(errno));
+#endif
     status = BROKEN;
     return -1;
   }
@@ -3447,7 +3465,7 @@ int vrpn_Endpoint::connect_tcp_to (const char * addr, int port) {
   }
 
 	/* Set the socket for TCP_NODELAY */
-
+#ifndef _WIN32_WCE
 	{	struct	protoent	*p_entry;
 		int	nonzero = 1;
 
@@ -3467,7 +3485,7 @@ int vrpn_Endpoint::connect_tcp_to (const char * addr, int port) {
 			return -1;
 		}
 	}
-
+#endif
   status = COOKIE_PENDING;
 
   return 0;

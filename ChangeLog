@@ -1,3 +1,27 @@
+2001-11-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* time_test.cpp : Program to compare two ways of reading time on Windows.
+	* vrpn.dsw : Added project file to compile time_test application.
+	* vrpn_Analog.C : Modify to compile under Windows CE development environment.
+	* vrpn_BaseClass.C : Modify to compile under Windows CE development environment.
+	* vrpn_BaseClass.h : Modify to compile under Windows CE development environment.
+	* vrpn_Button.C : Modify to compile under Windows CE development environment.
+	* vrpn_Button.h : Modify to compile under Windows CE development environment.
+	* vrpn_Clock.C : Modify to compile under Windows CE development environment.
+	* vrpn_Connection.C : Modify to compile under Windows CE development environment.
+	* vrpn_FileConnection.C : Modify to compile under Windows CE development environment.
+	* vrpn_Serial.C : Modify to compile under Windows CE development environment.
+	* vrpn_Shared.C : Modify to compile under Windows CE development environment.
+	* vrpn_Shared.h : Modify to compile under Windows CE development environment.
+		Note that VRPN_NO_STREAMS is defined whenever Windows CE is being
+		used (they don't have I/O streams!)  This same definition can be used
+		at any time to build a VRPN library that uses FILE * rather than streams.
+	* vrpn_Tracker.C : Modify to compile under Windows CE development environment.
+	* vrpn_Tracker.h : Modify to compile under Windows CE development environment.
+	* vrpn_embedded : Directory containing workspace and project files to build
+		VRPN library under Windows CE.  I can't get the application to build,
+		but am checking this in so that it will start to track other changes.
+
 2001-11-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Analog_5dt.C (vrpn_5dt::get_report) :

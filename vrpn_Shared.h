@@ -29,6 +29,11 @@
 #define	SOCKET		int
 #endif
 
+#ifdef	_WIN32_WCE
+#define perror(x) fprintf(stderr,"%s\n",x);
+#define	VRPN_NO_STREAMS
+#endif
+
 // comment from vrpn_Connection.h reads :
 //
 //   gethostbyname() fails on SOME Windows NT boxes, but not all,
@@ -46,14 +51,16 @@
 #else  // winsock sockets
 
   #include <windows.h>
+#ifndef _WIN32_WCE
   #include <sys/timeb.h>
-  #include <winsock.h>   // timeval is defined here
+#endif
+  #include <winsock.h>    // struct timeval is defined here
 
   // If compiling under Cygnus Solutions Cygwin then these get defined by
   // including sys/time.h.  So, we will manually define only for _WIN32
 
-  #ifndef _STRUCT_TIMEVAL
-    #define _STRUCT_TIMEVAL
+  #ifndef _STRUCT_TIMEZONE
+    #define _STRUCT_TIMEZONE
     /* from HP-UX */
     struct timezone {
         int     tz_minuteswest; /* minutes west of Greenwich */
@@ -83,7 +90,7 @@
 
 
 // make sure tv_usec is less than 1,000,000
-timeval vrpn_TimevalNormalize( const timeval & );
+extern struct timeval vrpn_TimevalNormalize( const struct timeval & tv );
 
 extern struct timeval vrpn_TimevalSum( const struct timeval& tv1, 
 				  const struct timeval& tv2 );

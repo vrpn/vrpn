@@ -1,10 +1,14 @@
 #ifndef	VRPN_SERIAL_H
+#ifndef _WIN32_WCE
 #include <time.h>
+#endif
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
 #ifdef _WIN32
+#ifndef _WIN32_WCE
 #include <io.h>
+#endif
 #else
 #include <sys/time.h>
 #endif

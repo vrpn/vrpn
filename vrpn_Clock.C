@@ -19,13 +19,15 @@
 #include <netinet/in.h>
 #endif
 
+#ifndef	VRPN_NO_STREAMS
 #include <iostream.h>
+#endif
 #include <math.h>
 
 #include "vrpn_Clock.h"
 
 void printTime( char *pch, const struct timeval& tv ) {
-  cerr << pch << " " << tv.tv_sec*1000.0 + tv.tv_usec/1000.0 << " msecs." << endl;
+    fprintf(stderr, "%s %g msecs.\n", pch, tv.tv_sec*1000.0 + tv.tv_usec/1000.0);
 }
 
 // both server and client call this constructor
@@ -47,7 +49,7 @@ int vrpn_Clock::register_senders(void)
 
     d_sender_id = d_connection->register_sender(d_servicename);
     if (d_sender_id == -1) {
-      cerr << "vrpn_Clock: Can't register sender ID" << endl;
+      fprintf(stderr,"vrpn_Clock: Can't register sender ID\n");
       d_connection = NULL;
       return -1;
     }
@@ -63,7 +65,7 @@ int vrpn_Clock::register_types(void)
     queryMsg_id = d_connection->register_message_type("vrpn_Clock query");
     replyMsg_id = d_connection->register_message_type("vrpn_Clock reply");
     if ( (queryMsg_id == -1) || (replyMsg_id == -1) ) {
-      cerr << "vrpn_Clock: Can't register type IDs" << endl;
+      fprintf(stderr, "vrpn_Clock: Can't register type IDs\n");
       d_connection = NULL;
       return -1;
     }
@@ -110,7 +112,7 @@ vrpn_Clock_Server::vrpn_Clock_Server(vrpn_Connection *c)
   // Register the callback handler (along with "this" as user data)
   // It will take messages from any sender (no sender arg specified)
   if (register_autodeleted_handler(queryMsg_id, clockQueryHandler, this)) {
-    cerr << "vrpn_Clock: can't register handler\n" << endl;
+    fprintf(stderr, "vrpn_Clock: can't register handler\n");
     d_connection = NULL;
     return;
   }
@@ -133,9 +135,8 @@ int vrpn_Clock_Server::clockQueryHandler(void *userdata, vrpn_HANDLERPARAM p) {
 
   // check clock version
   if ((p.payload_len==0) || (ntohl(*(vrpn_int32 *)p.buffer)!=CLOCK_VERSION)) {
-    cerr << "vrpn_Clock_Server: current version is 0x" << hex << CLOCK_VERSION 
-	 << ", clock query msg uses version 0x" << ntohl(*(vrpn_int32 *)p.buffer) 
-	 << "." << dec << endl;
+    fprintf(stderr, "vrpn_Clock_Server: current version is 0x%x, clock query msg uses version 0x%x.\n",
+	CLOCK_VERSION, ntohl(*(vrpn_int32 *)p.buffer) );
     return -1;
   }
 
@@ -181,15 +182,14 @@ vrpn_Clock_Remote::vrpn_Clock_Remote(const char * name, vrpn_float64 dFreq,
   int i;
   
   if (d_connection==NULL) {
-    cerr << "vrpn_Clock_Remote: unable to connect to clock server \"" 
-	 << name << "\"." << endl;
+    fprintf(stderr, "vrpn_Clock_Remote: unable to connect to clock server (%s)\n", name);
     return;
   }
   sprintf( rgch, "%ld", (long) this );
   clockClient_id = d_connection->register_sender(rgch);
   
   if (clockClient_id == -1) {
-    cerr << "vrpn_Clock_Remote: Can't register ID" << endl;
+    fprintf(stderr,"vrpn_Clock_Remote: Can't register ID\n");
     d_connection = NULL;
     return;
   }
@@ -230,7 +230,7 @@ vrpn_Clock_Remote::vrpn_Clock_Remote(const char * name, vrpn_float64 dFreq,
     if (register_autodeleted_handler(replyMsg_id, 
 				     quickSyncClockServerReplyHandler,
 				     this, d_sender_id)) {
-      cerr << "vrpn_Clock_Remote: Can't register handler" << endl;
+      fprintf(stderr,"vrpn_Clock_Remote: Can't register handler\n");
       d_connection = NULL;
     }
   }
@@ -332,7 +332,7 @@ void vrpn_Clock_Remote::mainloop (const struct timeval *timeout)
       if (d_connection->register_handler(replyMsg_id, 
 				       fullSyncClockServerReplyHandler,
 				       this, d_sender_id)) {
-	cerr << "vrpn_Clock_Remote: Can't register handler" << endl;
+	fprintf(stderr,"vrpn_Clock_Remote: Can't register handler\n");
 	d_connection = NULL;
       }
 
@@ -353,8 +353,8 @@ void vrpn_Clock_Remote::mainloop (const struct timeval *timeout)
       const vrpn_int32 cQueries = (cCalibMsecs/cInterval) + 1;
       vrpn_int32 iQueries = 0;
 
-      cerr << "vrpn_Clock_Remote: performing fullsync calibration, "
-	"this will take " << cCalibMsecs/1000.0 << " seconds." << endl;
+      fprintf(stderr, "vrpn_Clock_Remote: performing fullsync calibration, "
+	"this will take %g seconds.\n", cCalibMsecs/1000.0);
 
 #ifdef USE_REGRESSION
       // save offsets and time of offset calc for regression
@@ -373,12 +373,12 @@ void vrpn_Clock_Remote::mainloop (const struct timeval *timeout)
 
 	// don't let replies overwrite the buffer
 	if (cBounces>=cQueries) {
-	  cerr << "vrpn_Clock_Remote::mainloop: multiple clock servers on "
-	    "connection -- aborting fullSync " <<cBounces<< endl;
+	  fprintf(stderr,"vrpn_Clock_Remote::mainloop: multiple clock servers on "
+	    "connection -- aborting fullSync %d\n", cBounces);
 	  if (d_connection->unregister_handler(replyMsg_id, 
 					     fullSyncClockServerReplyHandler,
 					     this, d_sender_id)) {
-	    cerr << "vrpn_Clock_Remote: Can't unregister handler" << endl;
+	    fprintf(stderr, "vrpn_Clock_Remote: Can't unregister handler\n");
 	    d_connection = NULL;
 	  }
 	  break;
@@ -413,8 +413,8 @@ void vrpn_Clock_Remote::mainloop (const struct timeval *timeout)
       // at least half back already
       
       if (cBounces<((cCalibMsecs/cInterval)/2)) {
-	cerr << "vrpn_Clock_Remote::mainloop: calib error; did not receive "
-	  "replies for at least half of the bounces" << endl;
+	fprintf(stderr,"vrpn_Clock_Remote::mainloop: calib error; did not receive "
+	  "replies for at least half of the bounces\n");
 	return;
       } 
 
@@ -428,7 +428,7 @@ void vrpn_Clock_Remote::mainloop (const struct timeval *timeout)
       if (d_connection->unregister_handler(replyMsg_id, 
 					 fullSyncClockServerReplyHandler,
 					 this, d_sender_id)) {
-	cerr << "vrpn_Clock_Remote: Can't unregister handler" << endl;
+	fprintf(stderr, "vrpn_Clock_Remote: Can't unregister handler\n");
 	d_connection = NULL;
       }
 
@@ -550,15 +550,15 @@ int vrpn_Clock_Remote::register_clock_sync_handler(void *userdata,
   
   // Ensure that the handler is non-NULL
   if (handler == NULL) {
-    cerr << "vrpn_Clock_Remote::register_clock_sync_handler:" 
-	 << " NULL handler" << endl;
+    fprintf(stderr, "vrpn_Clock_Remote::register_clock_sync_handler:" 
+	 " NULL handler\n");
     return -1;
   }
   
   // Allocate and initialize the new entry
   if ( (new_entry = new vrpn_CLOCKSYNCLIST) == NULL) {
-    cerr << "vrpn_Clock_Remote::register_clock_sync_handler:" 
-	 << " out of memory" << endl;
+    fprintf(stderr, "vrpn_Clock_Remote::register_clock_sync_handler:" 
+	 " out of memory\n");
     return -1;
   }
   new_entry->handler = handler;
@@ -655,9 +655,9 @@ int vrpn_Clock_Remote::fullSyncClockServerReplyHandler(void *userdata,
 
   // check clock version
   if ((p.payload_len==0) || (ntohl(*(vrpn_int32 *)p.buffer)!=CLOCK_VERSION)) {
-    cerr << "vrpn_Clock_Remote: current version is 0x" << hex << CLOCK_VERSION 
-	 << ", clock server reply msg uses version 0x" 
-	 << ntohl(*(vrpn_int32 *)p.buffer) << "." << dec << endl;
+    fprintf(stderr, "vrpn_Clock_Remote: current version is 0x%x"
+	", clock server reply msg uses version 0x%x\n", CLOCK_VERSION,
+	 ntohl(*(vrpn_int32 *)p.buffer) );
     return -1;
   }
 
@@ -778,9 +778,9 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
 
   // check clock version
   if ((p.payload_len==0) || (ntohl(*(vrpn_int32 *)p.buffer)!=CLOCK_VERSION)) {
-    cerr << "vrpn_Clock_Remote: current version is 0x" << hex << CLOCK_VERSION 
-	 << ", clock server reply msg uses version 0x" 
-	 << ntohl(*(vrpn_int32 *)p.buffer) << "." << dec << endl;
+    fprintf(stderr, "vrpn_Clock_Remote: current version is 0x%x"
+	", clock server reply msg uses version 0x%x\n", CLOCK_VERSION,
+	 ntohl(*(vrpn_int32 *)p.buffer) );
     return -1;
   }
 

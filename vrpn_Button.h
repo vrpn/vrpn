@@ -1,7 +1,9 @@
 #ifndef	VRPN_BUTTON_H
 
 #ifndef _WIN32
+#ifndef _WIN32_WCE
 #include <sys/time.h>
+#endif
 #endif
 
 #include "vrpn_Connection.h"

@@ -1,12 +1,16 @@
 #include "vrpn_Shared.h"
 
 #ifdef _WIN32
+#ifndef _WIN32_WCE
 #include <iomanip.h>
+#endif
 #endif
 
 #include <stdio.h>
 #include <math.h>
+#ifndef	_WIN32_WCE
 #include <sys/types.h>
+#endif
 
 #include <string.h>  // for memcpy()
 
@@ -684,10 +688,37 @@ int vrpn_unbuffer (const char ** buffer, char * string,
 #ifndef VRPN_UNSAFE_WINDOWS_CLOCK
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
+#ifndef VRPN_NO_STREAMS
 #include <iostream.h>
+#endif
 #include <math.h>
 
 #pragma optimize("", on)
+
+#ifdef _WIN32
+void	get_time_using_GetLocalTime(unsigned long &sec, unsigned long &usec)
+{
+    SYSTEMTIME	stime;	    // System time in funky structure
+    FILETIME	ftime;	    // Time in 100-nsec intervals since Jan 1 1601
+    LARGE_INTEGER   tics;   // ftime stored into a 64-bit quantity
+
+    GetLocalTime(&stime);
+    SystemTimeToFileTime(&stime, &ftime);
+
+    // Copy the data into a structure that can be treated as a 64-bit integer
+    tics.HighPart = ftime.dwHighDateTime;
+    tics.LowPart = ftime.dwLowDateTime;
+
+    // Convert the 64-bit time into seconds and microseconds since July 1 1601
+    sec = (long)( tics.QuadPart / 10000000L );
+    usec = (long)( ( tics.QuadPart - ( ((LONGLONG)(sec)) * 10000000L ) ) / 10 );
+
+    // Translate the time to be based on January 1, 1970 (_ftime base)
+    // The offset here is gotten by using the "time_test" program to report the
+    // difference in seconds between the two clocks.
+    sec -= 3054524608;
+}
+#endif
 
 ///////////////////////////////////////////////////////////////
 // Although VC++ doesn't include a gettimeofday
@@ -700,10 +731,17 @@ int vrpn_unbuffer (const char ** buffer, char * string,
 int gettimeofday(timeval *tp, struct timezone *tzp)
 {
     if (tp != NULL) {
+#ifdef _WIN32_WCE
+	unsigned long sec, usec;
+	get_time_using_GetLocalTime(sec, usec);
+	tp->tv_sec = sec;
+	tp->tv_usec = usec;
+#else
             struct _timeb t;
             _ftime(&t);
             tp->tv_sec = t.time;
             tp->tv_usec = (long)t. millitm * 1000;
+#endif
     }
     if (tzp != NULL) {
             TIME_ZONE_INFORMATION tz;

@@ -1,11 +1,15 @@
+#ifndef _WIN32_WCE
 #include <time.h>
+#endif
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#ifndef	_WIN32_WCE
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#endif
 #include <ctype.h>
 
 
@@ -29,7 +33,9 @@
 #endif
 
 #ifdef	_WIN32
+#ifndef _WIN32_WCE
 #include <io.h>
+#endif
 #endif
 
 #include "vrpn_Tracker.h"

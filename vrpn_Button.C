@@ -1,10 +1,14 @@
+#ifndef _WIN32_WCE
 #include <time.h>
+#endif
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#ifndef _WIN32_WCE
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#endif
 #include <string.h> // for memcpy
 
 #ifdef linux
@@ -19,7 +23,9 @@
 #ifdef _WIN32
 
 #ifndef __CYGWIN__
+#ifndef _WIN32_WCE
 #include <conio.h>  // for _inp()
+#endif
 #endif
 
 #ifndef VRPN_USE_WINSOCK_SOCKETS

@@ -59,7 +59,11 @@ Things to do in the server object (server device) files to convert from 4.XX
 #ifndef VRPN_BASECLASS
 #define VRPN_BASECLASS
 
+#include "vrpn_Shared.h"
+
+#ifndef	VRPN_NO_STREAMS
 #include <iostream.h>
+#endif
 #include "vrpn_Connection.h"
 
 const int vrpn_MAX_BCADRS =	100;
@@ -106,7 +110,11 @@ class vrpn_TextPrinter {
 
     /// Change the ostream that will be used to print messages.  Setting a
     /// NULL ostream results in no printing.
+#ifdef	VRPN_NO_STREAMS
+    void   set_ostream_to_use(FILE *o) { d_ostream = o; };
+#else
     void   set_ostream_to_use(ostream *o) { d_ostream = o; };
+#endif
 
   protected:
     /// Structure to hold the objects that are being watched.
@@ -121,7 +129,11 @@ class vrpn_TextPrinter {
     vrpn_TextPrinter_Watch_Entry	*d_first_watched_object;   
 		///< Head of list of objects being watched
 
+#ifdef	VRPN_NO_STREAMS
+    FILE		*d_ostream;		///< Output stream to use
+#else
     ostream		*d_ostream;		///< Output stream to use
+#endif
     vrpn_TEXT_SEVERITY	d_severity_to_print;	///< Minimum severity to print
     vrpn_uint32		d_level_to_print;	///< Minimum level to print
 

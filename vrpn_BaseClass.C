@@ -1,7 +1,9 @@
 // vrpn_BaseClass.C
 
 #ifdef _WIN32
+#ifndef _WIN32_WCE
 #include <iomanip.h>
+#endif
 #endif
 
 #include "vrpn_BaseClass.h"
@@ -18,7 +20,11 @@ vrpn_TextPrinter    vrpn_System_TextPrinter;
 
 vrpn_TextPrinter::vrpn_TextPrinter() :
 d_first_watched_object(NULL),
+#ifdef VRPN_NO_STREAMS
+d_ostream(stdout),
+#else
 d_ostream(&cout),
+#endif
 d_severity_to_print(vrpn_TEXT_WARNING),
 d_level_to_print(0)
 {
@@ -63,7 +69,7 @@ int vrpn_TextPrinter::add_object(vrpn_BaseClass *o)
 
     // Make sure we have an actual object.
     if (o == NULL) {
-	cerr << "vrpn_TextPrinter::add_object(): NULL pointer passed" << endl;
+	fprintf(stderr, "vrpn_TextPrinter::add_object(): NULL pointer passed\n");
 	return -1;
     }
 
@@ -80,7 +86,7 @@ int vrpn_TextPrinter::add_object(vrpn_BaseClass *o)
     
     // Add the object to the beginning of the list.
     if ( (victim = new vrpn_TextPrinter_Watch_Entry) == NULL) {
-	cerr << "vrpn_TextPrinter::add_object(): out of memory" << endl;
+	fprintf(stderr,"vrpn_TextPrinter::add_object(): out of memory\n");
 	return -1;
     }
     victim->obj = o;
@@ -90,7 +96,7 @@ int vrpn_TextPrinter::add_object(vrpn_BaseClass *o)
 
     // Register a callback for the object
     if (o->d_connection->register_handler(o->d_text_message_id, text_message_handler, victim, o->d_sender_id) != 0) {
-	cerr << "vrpn_TextPrinter::add_object(): Can't register callback" << endl;
+	fprintf(stderr,"vrpn_TextPrinter::add_object(): Can't register callback\n");
 	d_first_watched_object = victim->next;
 	delete victim;
 	return -1;
@@ -114,7 +120,7 @@ void	vrpn_TextPrinter::remove_object(vrpn_BaseClass *o)
 
     // Make sure we have an actual object.
     if (o == NULL) {
-	cerr << "vrpn_TextPrinter::remove_object(): NULL pointer passed" << endl;
+	fprintf(stderr,"vrpn_TextPrinter::remove_object(): NULL pointer passed\n");
 	return;
     }
 
@@ -133,7 +139,7 @@ void	vrpn_TextPrinter::remove_object(vrpn_BaseClass *o)
     if (victim != NULL) {
 	// Unregister the callback for the object
     	if (o->d_connection->unregister_handler(o->d_text_message_id, text_message_handler, victim, o->d_sender_id) != 0) {
-	    cerr << "vrpn_TextPrinter::remove_object(): Can't unregister callback" << endl;
+	    fprintf(stderr,"vrpn_TextPrinter::remove_object(): Can't unregister callback\n");
 	}
 
 	// Remove the entry from the list
@@ -171,7 +177,7 @@ int vrpn_TextPrinter::text_message_handler(void *userdata, vrpn_HANDLERPARAM p)
 
     // Decode the message
     if (vrpn_BaseClass::decode_text_message_from_buffer(message, &severity, &level, p.buffer) != 0) {
-	cerr << "vrpn_TextPrinter::text_message_handler(): Can't decode message" << endl;
+	fprintf(stderr,"vrpn_TextPrinter::text_message_handler(): Can't decode message\n");
 	return -1;
     }
 
@@ -181,6 +187,27 @@ int vrpn_TextPrinter::text_message_handler(void *userdata, vrpn_HANDLERPARAM p)
     if ( (severity > me->d_severity_to_print) ||
 	((severity == me->d_severity_to_print) && (level >= me->d_level_to_print) ) ) {
 
+#ifdef VRPN_NO_STREAMS
+	    fprintf(me->d_ostream, "VRPN ");
+
+	    switch (severity) {
+		case vrpn_TEXT_NORMAL:
+		    fprintf(me->d_ostream, "Message\n");
+		    break;
+		case vrpn_TEXT_WARNING:
+		    fprintf(me->d_ostream, "Warning\n");
+		    break;
+		case vrpn_TEXT_ERROR:
+		    fprintf(me->d_ostream, "Error\n");
+		    break;
+		default:
+		    fprintf(me->d_ostream, "UNKNOWN SEVERITY\n");
+		    break;
+	    }
+
+	    fprintf(me->d_ostream, " (%d) from %s: %s\n", level,
+		 obj->d_connection->sender_name(p.sender), message);
+#else
 	    *me->d_ostream << "VRPN ";
 
 	    switch (severity) {
@@ -203,6 +230,7 @@ int vrpn_TextPrinter::text_message_handler(void *userdata, vrpn_HANDLERPARAM p)
 	    *me->d_ostream << obj->d_connection->sender_name(p.sender) << ": ";
 
 	    *me->d_ostream << message << endl;
+#endif
     }
 
     return 0;
@@ -246,7 +274,7 @@ int vrpn_BaseClass::init(void)
     // for this object to NULL to indicate failure, and print an error message.
     if (d_connection != NULL) {
 	if (register_senders() || register_types()) {
-	    cerr << "vrpn_BaseClass: Can't register IDs" << endl;
+	    fprintf(stderr,"vrpn_BaseClass: Can't register IDs\n");
 	    d_connection = NULL;
 	    return -1;
 	}
@@ -256,19 +284,19 @@ int vrpn_BaseClass::init(void)
     if ( d_connection != NULL ) {
         d_text_message_id  = d_connection->register_message_type("vrpn_Base text_message");
         if (d_text_message_id  == -1) {
-	    cerr << "vrpn_BaseClass: Can't register Text type ID" << endl;
+	    fprintf(stderr,"vrpn_BaseClass: Can't register Text type ID\n");
 	    d_connection = NULL;
 	    return -1;
         }
         d_ping_message_id  = d_connection->register_message_type("vrpn_Base ping_message");
         if (d_ping_message_id  == -1) {
-	    cerr << "vrpn_BaseClass: Can't register ping type ID" << endl;
+	    fprintf(stderr,"vrpn_BaseClass: Can't register ping type ID\n");
 	    d_connection = NULL;
 	    return -1;
         }
         d_pong_message_id  = d_connection->register_message_type("vrpn_Base pong_message");
         if (d_pong_message_id  == -1) {
-	    cerr << "vrpn_BaseClass: Can't register pong type ID" << endl;
+	    fprintf(stderr,"vrpn_BaseClass: Can't register pong type ID\n");
 	    d_connection = NULL;
 	    return -1;
         }
@@ -360,16 +388,16 @@ int vrpn_BaseClassUnique::register_autodeleted_handler(vrpn_int32 type,
 {
     // Make sure we have a Connection
     if (d_connection == NULL) {
-	cerr << "vrpn_BaseClass::register_autodeleted_handler: "
-	    << "No vrpn_Connection." << endl;
+	fprintf(stderr,"vrpn_BaseClass::register_autodeleted_handler: "
+	    "No vrpn_Connection.\n");
 	return -1;
     }
 
     // Make sure we have an empy entry to fill in.
     if (d_num_autodeletions >= vrpn_MAX_BCADRS) {
-	cerr << "vrpn_BaseClass::register_autodeleted_handler: "
-	    << "Too many handlers registered.  Increase vrpn_MAX_BCADRS "
-	    << "and recompile VRPN.  Please report to vrpn@cs.unc.edu." << endl;
+	fprintf(stderr,"vrpn_BaseClass::register_autodeleted_handler: "
+	    "Too many handlers registered.  Increase vrpn_MAX_BCADRS "
+	    "and recompile VRPN.  Please report to vrpn@cs.unc.edu.\n");
 	return -1;
     }
 

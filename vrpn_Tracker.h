@@ -1,12 +1,16 @@
 #ifndef	vrpn_TRACKER_H
 #define vrpn_TRACKER_H
 
+#ifndef _WIN32_WCE
 #include <time.h>
+#endif
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
 #ifndef _WIN32
+#ifndef _WIN32_WCE
 #include <sys/time.h>
+#endif
 #endif
 
 // NOTE: a vrpn tracker must call user callbacks with tracker data (pos and

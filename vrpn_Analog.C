@@ -219,11 +219,11 @@ int vrpn_Clipping_Analog_Server::setClipValues(int chan, double min, double lowz
 	highzero, double max)
 {
     if ( (chan < 0) || (chan > vrpn_CHANNEL_MAX) ) {
-	cerr << "vrpn_Clipping_Analog_Server::setClipValues: Bad channel" << chan << endl;
+	fprintf(stderr,"vrpn_Clipping_Analog_Server::setClipValues: Bad channel (%d)\n", chan);
 	return -1;
     }
     if ( (lowzero < min) || (highzero < lowzero) || (max < highzero) ) {
-	cerr << "vrpn_Clipping_Analog_Server::setClipValues: Out of order mapping" << endl;
+	fprintf(stderr, "vrpn_Clipping_Analog_Server::setClipValues: Out of order mapping\n");
 	return -1;
     }
 
@@ -241,7 +241,7 @@ int vrpn_Clipping_Analog_Server::setClipValues(int chan, double min, double lowz
 int vrpn_Clipping_Analog_Server::setChannelValue(int chan, double value)
 {
     if ( (chan < 0) || (chan > vrpn_CHANNEL_MAX) ) {
-	cerr << "vrpn_Clipping_Analog_Server::setChannelValue: Bad channel" << chan << endl;
+	fprintf(stderr, "vrpn_Clipping_Analog_Server::setChannelValue: Bad channel (%d)\n", chan);
 	return -1;
     }
 

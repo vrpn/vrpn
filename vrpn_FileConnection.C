@@ -4,11 +4,15 @@
 
 #include "vrpn_FileConnection.h"
 
+#ifndef _WIN32_WCE
 #include <fcntl.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
+#ifndef _WIN32_WCE
 #include <sys/types.h>
 #include <sys/stat.h>
+#endif
 #include <limits.h>
 
 // Include vrpn_Shared.h _first_ to avoid conflicts with sys/time.h 
