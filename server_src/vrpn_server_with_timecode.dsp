@@ -65,7 +65,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MDd /W3 /GX /Zi /Od /I ".." /I "../../quat" /I "../../../../Adrienne/AEC_DLL" /D "_CONSOLE" /D "INCLUDE_TIMECODE_SERVER" /D "_DEBUG" /D "_MBCS" /D "WIN32" /D "VRPN_NO_STREAMS" /FR /YX /FD /TP /c
+# ADD CPP /nologo /MDd /W3 /GX /Zi /Od /I ".." /I "../../quat" /I "../../../../Adrienne/AEC_DLL" /D "_CONSOLE" /D "INCLUDE_TIMECODE_SERVER" /D "_MBCS" /D "VRPN_NO_STREAMS" /D "_DEBUG" /D "WIN32" /D "DESKTOP_PHANTOM_DEFAULT" /FR /YX /FD /TP /c
 # SUBTRACT CPP /X
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
