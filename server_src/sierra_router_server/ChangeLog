@@ -1,3 +1,17 @@
+2004-09-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        Adding Chris VanderKnyff's changes that enable DLL linkage
+        for applications.  Heading towards enabling C# and other language
+        support.
+
+	* vrpn_Router_Sierra_Server.C : Adding VRPN_CALLBACK.
+	* vrpn_Router_Sierra_Server.h : same.
+        * sierra_router_server.dsp : Making it depend on the project
+                that causes both VRPN and VRPNDLL projects to be built, rather
+                than on VRPN.  If you try to make it depend on both
+                VRPN and VRPNDLL, you get linking trouble.
+
+
 2004-04-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Router_Sierra_ServerMain.C :

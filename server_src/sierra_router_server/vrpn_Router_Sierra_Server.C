@@ -223,7 +223,7 @@ foundColon:
 // from the client over the VRPN connection.  
 // This message is sent by the C++ or Unix-script interfaces to the server,
 // using text names to set a link between an intput and an output channel.
-int vrpn_Router_Sierra_Server::vrpn_handle_set_named_link_message(void *userdata,
+int VRPN_CALLBACK vrpn_Router_Sierra_Server::vrpn_handle_set_named_link_message(void *userdata,
 	vrpn_HANDLERPARAM p)
 {
 	// Get the "this" pointer passed in userdata.
@@ -241,7 +241,7 @@ int vrpn_Router_Sierra_Server::vrpn_handle_set_named_link_message(void *userdata
 
 	// Unpack data into data structure for this message type.
 	vrpn_ROUTERNAMECB	cp;
-	decode_name_message( p, cp );
+	me->decode_name_message( p, cp );
 	int channelType = cp.channelType;
 	int channelNum  = cp.channelNum;
 	int levelNum    = cp.levelNum;
@@ -282,7 +282,7 @@ int vrpn_Router_Sierra_Server::vrpn_handle_set_named_link_message(void *userdata
 // * talk to the router hardware over a serial line to make the state change
 // * send out a message to all clients with the new router state
 //       (so all clients will get updated with new state info).
-int vrpn_Router_Sierra_Server::vrpn_handle_set_link_message(void *userdata,
+int VRPN_CALLBACK vrpn_Router_Sierra_Server::vrpn_handle_set_link_message(void *userdata,
 	vrpn_HANDLERPARAM p)
 {
 	// Get the "this" pointer passed in userdata.
@@ -297,7 +297,7 @@ int vrpn_Router_Sierra_Server::vrpn_handle_set_link_message(void *userdata,
 	
 	// Unpack data into data structure.
 	vrpn_ROUTERCB	cp;
-	decode_change_message( p, cp );
+	me->decode_change_message( p, cp );
 
 	// Decode message from client 
 	int input_ch  = cp.input_channel;
