@@ -1,3 +1,7 @@
+2001-11-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* daq_server.C : Added ability to set range from command line.
+
 2001-06-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* daq_server.C : Added (runs a D/A server for UNC 3DFM)

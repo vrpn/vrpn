@@ -34,7 +34,7 @@ int verbose = 0;		//< Print the values when setting them?
 int NI_device_number = -1;	//< National Instruments device to use
 int NI_num_channels = 8;	//< Number of channels on the board
 double	min_voltage = 0.0;	//< Minimum voltage allowed on a channel
-double	max_voltage = 1.0;	//< Maximum voltate allowed on a channel
+double	max_voltage = 6.0;	//< Maximum voltate allowed on a channel
 
 /*****************************************************************************
  *
@@ -75,8 +75,14 @@ void	handle_analog (void *, const vrpn_ANALOGCB a)
 
 	// Clip the values to within the minimum and maximum.
 	double voltage = a.channel[i];
-	if (voltage < min_voltage) { voltage = min_voltage; }
-	if (voltage > max_voltage) { voltage = max_voltage; }
+	if (voltage < min_voltage) {
+		fprintf(stderr,"Warning: low voltage clipped to %g\n", min_voltage);
+		voltage = min_voltage;
+	}
+	if (voltage > max_voltage) {
+		fprintf(stderr,"Warning: high voltage clipped to %g\n", max_voltage);
+		voltage = max_voltage;
+	}
 	AO_VWrite(NI_device_number, i, voltage);
     }
 }
@@ -111,12 +117,13 @@ void handle_cntl_c (int) {
 void Usage (const char * s)
 {
   fprintf(stderr,"Usage: %s [-board boardname] [-channels num] [-server servername] [-unipolar]\n",s);
-  fprintf(stderr,"       [-bipolar] [-internal_ref] [-external_ref]\n");
+  fprintf(stderr,"       [-bipolar] [-range min max] [-internal_ref] [-external_ref]\n");
   fprintf(stderr,"       [-ref_voltage voltage] [-verbose]\n");
   fprintf(stderr,"       -channels: Number of channels (default 8).\n");
   fprintf(stderr,"       -board: Name of the NI board to use (default PCI-6713).\n");
   fprintf(stderr,"       -server: Name of the vrpn_Analog_Server to connect to (default MagnetDrive@nobellium-cs).\n");
   fprintf(stderr,"       -bipolar/-unipolar: Polarity (default unipolar).\n");
+  fprintf(stderr,"       -range: Allowable voltage range (default %g to %g).\n", min_voltage, max_voltage);
   fprintf(stderr,"       -internal_ref/-external_ref: Reference source (default internal).\n");
   fprintf(stderr,"       -ref_voltage: Reference voltage (default 0.0).\n");
   fprintf(stderr,"       -verbose: Print each new round of voltages.\n");
@@ -159,6 +166,11 @@ void main (int argc, char * argv [])
       } else if (!strcmp(argv[i], "-ref_voltage")) {
 	    if (++i > argc) { Usage(argv[0]); }
 	    ref_voltage = atof(argv[i]);
+      } else if (!strcmp(argv[i], "-range")) {
+	    if (++i > argc) { Usage(argv[0]); }
+	    min_voltage = atof(argv[i]);
+	    if (++i > argc) { Usage(argv[0]); }
+	    max_voltage = atof(argv[i]);
       } else if (!strcmp(argv[i], "-verbose")) {
 	    verbose = 1;
       } else if (argv[i][0] == '-') {	// Unknown flag
