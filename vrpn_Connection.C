@@ -63,7 +63,7 @@ extern "C" int sdi_udp_request_call(char *machine, int port);
 // string.  Since minor versions should interoperate, MAGIC is only
 // checked through the last period;  characters after that are ignored.
 
-char	*MAGIC = "vrpn: ver. 02.11";
+char	*MAGIC = "vrpn: ver. 02.12";
 const	int	MAGICLEN = 16;	// Must be a multiple of vrpn_ALIGN bytes!
 
 // This is the list of states that a connection can be in
