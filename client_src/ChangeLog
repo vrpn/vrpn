@@ -1,3 +1,7 @@
+2001-11-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_print_devices.C : Modify to compile under Windows CE development environment.
+
 2001-06-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_print_devices.C : Updates to use cleaner Tracker code.

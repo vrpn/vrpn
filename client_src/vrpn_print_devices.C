@@ -9,11 +9,15 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#ifndef	_WIN32_WCE
 #include <signal.h>
+#endif
 #include <string.h>
 
 #ifndef _WIN32
+#ifndef	_WIN32_WCE
 #include <strings.h>
+#endif
 #endif
 
 #include <vrpn_Shared.h>
@@ -296,8 +300,10 @@ int main (int argc, char * argv [])
 	  Usage(argv[0]);
   }
 
+#ifndef	_WIN32_WCE
   // signal handler so logfiles get closed right
   signal(SIGINT, handle_cntl_c);
+#endif
 
 /* 
  * main interactive loop
