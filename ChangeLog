@@ -1,4 +1,30 @@
-2002-07-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
+2002-07-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Serial.C (vrpn_open_commport) : Sets the DTR line to be
+		on while the port is open.  Windows XP turns this off.
+		The TNG3 uses this line for power, so goes dead when
+		opened on XP unless this is done.
+	* vrpn_Serial.C (read_available_characters) : The timeout was
+		coded incorrectly so that it waited zero time when
+		passed a NULL pointer to the timeout; it should wait
+		an infinite time in this case.  Pass it a structure
+		with zeroes to get a zero timeout (or use the other
+		function of the same name).
+	* vrpn_Serial.C (vrpn_flush_output_buffer) : The flush and drain
+		routines were backwards for Windows.  Flush now throws
+		out the characters and drain waits for them to get out
+		the port.
+	* vrpn_Serial.C (vrpn_drain_output_buffer) : The flush and drain
+		routines were backwards for Windows.  Flush now throws
+		out the characters and drain waits for them to get out
+		the port.
+	* vrpn_Tng3.h : Made timeout named _timeout to show that it is
+		a member variable.
+	* vrpn_Tng3.C : Made timout named _timeout to match header.
+		Changed error message to say "TNG3" rather than
+		"Cerealbox" (cut-and-paste error).
+
+2002-07-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Connection.C : Reordered functions (for HP build).
 	* vrpn_Shared.h : Hack to get bools to work on old HP compiler.

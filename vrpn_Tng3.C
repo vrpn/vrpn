@@ -31,9 +31,9 @@
 #define	STATUS_READING		(1)	// Looking for the rest of the report
 #define MAX_TIME_INTERVAL  (2000000) // max time between reports (usec)
 
-#define	VRPN_INFO(msg)	  { send_text_message(msg, timestamp, vrpn_TEXT_NORMAL) ; if (d_connection) d_connection->send_pending_reports(); }
-#define	VRPN_WARNING(msg) { send_text_message(msg, timestamp, vrpn_TEXT_WARNING) ; if (d_connection) d_connection->send_pending_reports(); }
-#define	VRPN_ERROR(msg)	  { send_text_message(msg, timestamp, vrpn_TEXT_ERROR) ; if (d_connection) d_connection->send_pending_reports(); }
+#define	VRPN_INFO(msg)	  { send_text_message(msg, _timestamp, vrpn_TEXT_NORMAL) ; if (d_connection) d_connection->send_pending_reports(); }
+#define	VRPN_WARNING(msg) { send_text_message(msg, _timestamp, vrpn_TEXT_WARNING) ; if (d_connection) d_connection->send_pending_reports(); }
+#define	VRPN_ERROR(msg)	  { send_text_message(msg, _timestamp, vrpn_TEXT_ERROR) ; if (d_connection) d_connection->send_pending_reports(); }
 
 static	unsigned long	duration(struct timeval t1, struct timeval t2)
 {
@@ -117,14 +117,13 @@ int    vrpn_Tng3::reset(void)
 {
 
     //-----------------------------------------------------------------------
-    // Set the values back to zero for all buttons, analogs and encoders
+    // Set the values back to zero for all buttons and analogs
     clear_values();
 
     //-----------------------------------------------------------------------
     // sending an end at this time will force the ibox into the reset mode, if it
     // was not already.  if the box is in the power up mode, nothing will happen because
     // it 'should' be waiting to sync up the baudrate
-
 
     // try to synchronize for 2 seconds
 
@@ -138,7 +137,7 @@ int    vrpn_Tng3::reset(void)
     cout << "TNG3B found" << endl;
 
     status = STATUS_SYNCING;
-    gettimeofday(&timestamp, NULL);	// Set watchdog now
+    gettimeofday(&_timestamp, NULL);	// Set watchdog now
     return 0;
 }
 
@@ -228,7 +227,7 @@ int vrpn_Tng3::get_report(void)
     }
 
     report_changes();
-    gettimeofday(&timestamp, NULL);	// Set watchdog now
+    gettimeofday(&_timestamp, NULL);	// Set watchdog now
 
     status = STATUS_SYNCING;
     return 1;
@@ -236,8 +235,8 @@ int vrpn_Tng3::get_report(void)
 
 void vrpn_Tng3::report_changes(vrpn_uint32 class_of_service)
 {
-    vrpn_Analog::timestamp = timestamp;
-    vrpn_Button::timestamp = timestamp;
+    vrpn_Analog::timestamp = _timestamp;
+    vrpn_Button::timestamp = _timestamp;
 
     vrpn_Analog::report_changes(class_of_service);
     vrpn_Button::report_changes();
@@ -245,8 +244,8 @@ void vrpn_Tng3::report_changes(vrpn_uint32 class_of_service)
 
 void	vrpn_Tng3::report(vrpn_uint32 class_of_service)
 {
-    vrpn_Analog::timestamp = timestamp;
-    vrpn_Button::timestamp = timestamp;
+    vrpn_Analog::timestamp = _timestamp;
+    vrpn_Button::timestamp = _timestamp;
 
     vrpn_Analog::report(class_of_service);
     vrpn_Button::report_changes();
@@ -279,8 +278,8 @@ void vrpn_Tng3::mainloop(void)
 	    while (get_report()) {};	// Keep getting reports as long as they come
 	    struct timeval current_time;
 	    gettimeofday(&current_time, NULL);
-	    if ( duration(current_time,timestamp) > MAX_TIME_INTERVAL) {
-		    fprintf(stderr,"CerealBox failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n",current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);
+	    if ( duration(current_time,_timestamp) > MAX_TIME_INTERVAL) {
+		    fprintf(stderr,"TNG3 failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n",current_time.tv_sec, current_time.tv_usec, _timestamp.tv_sec, _timestamp.tv_usec);
 		    send_text_message("Too long since last report, resetting", current_time, vrpn_TEXT_ERROR);
 		    status = STATUS_RESETTING;
 	    }
@@ -329,7 +328,7 @@ int vrpn_Tng3::syncDatastream (double seconds) {
 	gettimeofday(&current_time, NULL);
 	if (duration(current_time, start_time) > maxDelay ) {
 	    // if we've timed out, go back unhappy
-	    cout << "vrpn_Tng3::syncBaudrate timeout expired: " << seconds 
+	    cout << "vrpn_Tng3::syncDatastream timeout expired: " << seconds 
 		 <<	" secs " << endl;
 	    return 0;  // go back unhappy
 	}

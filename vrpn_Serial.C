@@ -86,12 +86,13 @@ int vrpn_open_commport(char *portname, long baud, int charsize, vrpn_SER_PARITY 
 
 
 #if defined(_WIN32)
-  hCom = CreateFile( portname,    GENERIC_READ | GENERIC_WRITE,
-					 0,    // comm devices must be opened w/exclusive-access 
-					 NULL, // no security attributes 
-					 OPEN_EXISTING, // comm devices must use OPEN_EXISTING 
-					 0, // not overlapped I/O 
-					 NULL);  // hTemplate must be NULL for comm devices     );
+  hCom = CreateFile( portname,
+		     GENERIC_READ | GENERIC_WRITE,
+		     0,    // comm devices must be opened w/exclusive-access 
+		     NULL, // no security attributes 
+		     OPEN_EXISTING, // comm devices must use OPEN_EXISTING 
+		     0, // not overlapped I/O 
+		     NULL);  // hTemplate must be NULL for comm devices     );
 
   if (curCom >= maxCom) {
       fprintf(stderr, "VRPN: To many communication connections open, edit vrpn_Serial.C and recompile\n");
@@ -111,6 +112,10 @@ int vrpn_open_commport(char *portname, long baud, int charsize, vrpn_SER_PARITY 
     return -1;
   }
 
+  // Enable the hardware data-ready line (the TNG-3 uses this for power).
+  dcb.fDtrControl = DTR_CONTROL_ENABLE;
+
+  // Set the baud rate
   switch (baud) {
   case   300: dcb.BaudRate =   CBR_300; break;
   case  1200: dcb.BaudRate =  CBR_1200; break;
@@ -341,7 +346,7 @@ int vrpn_flush_output_buffer(int comm)
 #else
 
 #if defined(_WIN32)
-   return FlushFileBuffers(commConnections[comm]);
+   return PurgeComm(commConnections[comm], PURGE_TXCLEAR);
 #else
    return tcflush(comm, TCOFLUSH);
 #endif
@@ -361,7 +366,7 @@ int vrpn_drain_output_buffer(int comm)
 #else
 
 #if defined(_WIN32)
-   return PurgeComm(commConnections[comm], PURGE_TXCLEAR);
+   return FlushFileBuffers(commConnections[comm]);
 #else
   return tcdrain(comm);
 #endif
@@ -463,7 +468,7 @@ int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes,
 		if (sofar == bytes) { break; }
 		where += ret;
 		gettimeofday(&now, NULL);
-	} while ( (timeout != NULL) && !(time_greater(now,finish)) );
+	} while ( (timeout == NULL) || !(time_greater(now,finish)) );
 
 	return sofar;
 }

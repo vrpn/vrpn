@@ -37,7 +37,7 @@ class vrpn_Tng3: public vrpn_Serial_Analog,
     unsigned char _buffer[512];	// Buffer of characters in report
     int _bufcount;		// How many characters we have so far
 
-    struct timeval timestamp;	// Time of the last report from the device
+    struct timeval _timestamp;	// Time of the last report from the device
 
     virtual void clear_values(void);	// Set all buttons, analogs back to 0
     virtual int reset(void);		// Set device back to starting config
