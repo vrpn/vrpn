@@ -209,14 +209,16 @@ long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
 long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
                   const char value)
 {
-  if (*buflen < 1) {
+  vrpn_int32 length = sizeof(char);
+
+  if (*buflen < length) {
     fprintf(stderr, "vrpn_buffer:  buffer n ot large enough.\n");
     return -1;
   }
 
   **insertPt = value;
-  *insertPt += 1;
-  *buflen -= 1;
+  *insertPt += length;
+  *buflen -= length;
 
   return 0;
 }
@@ -274,7 +276,7 @@ long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
 
 long vrpn_unbuffer (const char ** buffer, char * cval) {
   *cval = **buffer;
-  *buffer++;
+  *buffer += sizeof(char);
   return 0;
 }
 

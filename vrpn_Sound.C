@@ -504,7 +504,8 @@ vrpn_int32 vrpn_Sound_Client::initModel(const vrpn_float64 *eye_f_sensor) {
 
 	setDefModel((vrpn_float64*)eye_f_sensor);
 		
-	len = encodeModelDef((const vrpn_ModelDef) Model, buf);
+	//len = encodeModelDef((const vrpn_ModelDef) Model, buf);
+	len = encodeModelDef(Model, buf);
 
 	gettimeofday(&timestamp, NULL);
 

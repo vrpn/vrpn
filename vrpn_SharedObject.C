@@ -1154,15 +1154,19 @@ vrpn_Shared_String & vrpn_Shared_String::set (const char * newValue,
 
   acceptedUpdate = shouldAcceptUpdate(newValue, when, isLocalSet);
   if (acceptedUpdate) {
-    if (d_value) {
-      delete [] d_value;
+
+    // Hmm...
+    if (d_value != newValue) {
+      if (d_value) {
+        delete [] d_value;
+      }
+      d_value = new char [1 + strlen(newValue)];
+      if (!d_value) {
+        fprintf(stderr, "vrpn_Shared_String::set:  Out of memory.\n");
+        return *this;
+      }
+      strcpy(d_value, newValue);
     }
-    d_value = new char [1 + strlen(newValue)];
-    if (!d_value) {
-      fprintf(stderr, "vrpn_Shared_String::set:  Out of memory.\n");
-      return *this;
-    }
-    strcpy(d_value, newValue);
 
     d_lastUpdate = when;
     yankCallbacks(isLocalSet);
