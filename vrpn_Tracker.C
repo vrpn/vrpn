@@ -977,6 +977,28 @@ int vrpn_Tracker_Remote::request_u2s_xform(void)
 	return 0;
 }
 
+int vrpn_Tracker_Remote::request_workspace(void)
+{
+    char *msgbuf = NULL;
+    vrpn_int32 len = 0; // no payload
+    struct timeval current_time;
+
+    gettimeofday(&current_time, NULL);
+    timestamp.tv_sec = current_time.tv_sec;
+    timestamp.tv_usec = current_time.tv_usec;
+
+    if (d_connection) {
+        if (d_connection->pack_message(len, timestamp, request_workspace_m_id,
+            d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+                fprintf(stderr, 
+                    "vrpn_Tracker_Remote: cannot request workspace\n");
+	    return -1;
+        }
+    }
+
+	return 0;
+}
+
 int vrpn_Tracker_Remote::set_update_rate (vrpn_float64 samplesPerSecond)
 {
   char * msgbuf;
