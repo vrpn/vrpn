@@ -39,9 +39,12 @@ MAKE := $(MAKE) -f $(MAKEFILE)
 ##
 ## WARNING: [juliano 9/99]
 ##   if the user sets MAKE on the commandline, for example
-##      gmake MAKE="gmake -j 2" -j 2
+##      nice gmake MAKE="gmake -j 2" -j 2
 ##   then the -f will get lost.  This is VERY DANGEROUS,
 ##   but until it's decided what to do, I'll leave it this way.
+##
+## incidently, the above works great on multi-CPU winNT boxes
+## running cygwin.  if you nice it, then your other apps don't suffer.
 ##
 
 ifndef	HW_OS
