@@ -2,6 +2,7 @@
 #define	VRPN_TEMPIMAGER_H
 #include  "vrpn_Connection.h"
 #include  "vrpn_BaseClass.h"
+#include  <string.h>
 
 const unsigned vrpn_IMAGER_MAX_CHANNELS = 10;
 const unsigned vrpn_IMAGER_MAX_REGION = vrpn_CONNECTION_TCP_BUFLEN/sizeof(vrpn_int16) - 4;
@@ -44,7 +45,10 @@ public:
   vrpn_float32	offset, scale;	//< Values in units are (raw_values * scale) + offset
 };
 
-/// Holds the data for a sub-region of one channel of the image
+/// Holds the data for a sub-region of one channel of the image.
+// NOTE: This class passes its data LITTLE-ENDIAN, which is
+// backwards from other VRPN wire protocols.  It does this for the sake
+// of speed in the pervasive presence of Intel machines.
 class vrpn_TempImager_Region {
 public:
   vrpn_TempImager_Region(void) { chanIndex = -1; rMin = rMax = cMin = cMax = 0; };
@@ -58,12 +62,18 @@ public:
       return false;
     }
     int cols = cMax-cMin+1;
+    int	linelen = cols * sizeof(vrpn_uint16);
     for (unsigned r = rMin; r <= rMax; r++) {
-      for (unsigned c = cMin; c <= cMax; c++) {
-	if (vrpn_buffer(insertPt, buflen, vals[(c-cMin) + (r-rMin)*cols])) {
-	  return false;
-	}
+      if (*buflen < linelen) {
+	return false;
       }
+      memcpy(*insertPt, &vals[(r-rMin)*cols], linelen);
+      *insertPt += linelen;
+      *buflen -= linelen;
+    }
+    if (vrpn_big_endian) {
+      fprintf(stderr, "XXX TempImager Region needs swapping on Big-endian\n");
+      return false;
     }
     return true;
   }
@@ -77,12 +87,14 @@ public:
       return false;
     }
     int cols = cMax-cMin+1;
+    int	linelen = cols * sizeof(vrpn_uint16);
     for (unsigned r = rMin; r <= rMax; r++) {
-      for (unsigned c = cMin; c <= cMax; c++) {
-	if (vrpn_unbuffer(buffer, &vals[(c-cMin) + (r-rMin)*cols])) {
-	  return false;
-	}
-      }
+      memcpy(&vals[(r-rMin)*cols], *buffer, linelen);
+      *buffer += linelen;
+    }
+    if (vrpn_big_endian) {
+      fprintf(stderr, "XXX TempImager Region needs swapping on Big-endian\n");
+      return false;
     }
     return true;
   }

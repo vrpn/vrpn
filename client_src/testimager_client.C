@@ -69,7 +69,6 @@ void  handle_region_change(void *, const vrpn_IMAGERREGIONCB info)
 			// assuming that there is only one channel.  It also does
 			// not scale or offset the pixels to get them into the
 			// units for the region.
-			// changed from ir to r. The server sends the images inverted
 			uns_pix = region->vals[(c-region->cMin) + RegionOffset];
 #else
 			// This assumes that the pixels are actually 12-bit values
@@ -152,7 +151,7 @@ void myIdleFunc(void)
   // See if there are any more messages from the server and then sleep
   // a little while so that we don't eat the whole CPU.
   g_ti->mainloop();
-//  vrpn_SleepMsecs(1);
+  vrpn_SleepMsecs(5);
 }
 
 int main(int argc, char **argv)
@@ -170,6 +169,7 @@ int main(int argc, char **argv)
   printf("Waiting to hear the image dimensions...\n");
   while (!g_got_dimensions) {
     g_ti->mainloop();
+    vrpn_SleepMsecs(1);
   }
   if ( (g_image = new unsigned char[g_ti->nCols() * g_ti->nRows() * 3]) == NULL) {
     fprintf(stderr,"Out of memory when allocating image!\n");

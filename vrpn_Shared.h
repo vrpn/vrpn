@@ -45,7 +45,8 @@
 #define VRPN_USE_WINDOWS_GETHOSTBYNAME_HACK
 #endif
 
-// {{{ timeval defines
+//--------------------------------------------------------------
+// timeval defines
 #if (!defined(VRPN_USE_WINSOCK_SOCKETS))
 #include <sys/time.h>    // for timeval, timezone, gettimeofday
 #else  // winsock sockets
@@ -72,10 +73,9 @@
   extern "C" int gettimeofday(struct timeval *tp, struct timezone *tzp);
 
 #endif
-// }}} timeval defines
 
-// {{{ vrpn_* timeval utility functions
-//     --------------------------------
+//--------------------------------------------------------------
+// vrpn_* timeval utility functions
 
 // IMPORTANT: timevals must be normalized to make any sense
 //
@@ -108,9 +108,11 @@ extern struct timeval vrpn_MsecsTimeval( const double dMsecs );
 
 extern void vrpn_SleepMsecs( double dMsecs );
 
-// }}}
-// {{{ vrpn_* buffer util functions
-//     ----------------------------
+// Tells whether the maci
+
+//--------------------------------------------------------------
+// vrpn_* buffer util functions and endian-ness related
+// definitions and functions.
 
 // xform a double to/from network order -- like htonl and htons
 extern vrpn_float64 htond( vrpn_float64 d );
@@ -135,9 +137,6 @@ extern int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
 extern int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
                          const char * string, vrpn_int32 length);
 
-//extern int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
-//                         const vrpn_bool value);
-
 extern int vrpn_unbuffer (const char ** buffer, vrpn_int8 * cval);
 extern int vrpn_unbuffer (const char ** buffer, vrpn_int16 * lval);
 extern int vrpn_unbuffer (const char ** buffer, vrpn_uint16 * lval);
@@ -149,8 +148,14 @@ extern int vrpn_unbuffer (const char ** buffer, timeval * t);
 extern int vrpn_unbuffer (const char ** buffer, char * string,
                            vrpn_int32 length);
 
-//extern int vrpn_unbuffer (const char ** buffer, vrpn_bool * lval);
-// }}}
+// From this we get the variable "vrpn_big_endian" set to true if the machine we are
+// on is big endian and to false if it is little endian.  This can be used by
+// custom packing and unpacking code to bypass the buffer and unbuffer routines
+// for cases that have to be particularly fast (like video data).
+static	const   int     vrpn_int_data_for_endian_test = 1;
+static	const   char    *vrpn_char_data_for_endian_test = (char *)(void *)(&vrpn_int_data_for_endian_test);
+static	const   bool    vrpn_big_endian = (vrpn_char_data_for_endian_test[3] == 1);
+
 
 // XXX should this be done in cygwin?
 // No sleep() function, but Sleep(DWORD) defined in winbase.h
