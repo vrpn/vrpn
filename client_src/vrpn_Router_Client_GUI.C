@@ -195,12 +195,12 @@ main( int argc, char *argv[])
 void
 idleFuncUI( void )
 {
+	// sleep during top level so as not to eat 100% of CPU.  
+	vrpn_SleepMsecs( 50 );
+
+
 	// Call the callback funtions, as needed. 
 	if( router )      router->mainloop();
-
-
-	// sleep during top level so as not to eat 100% of CPU.  
-	vrpn_SleepMsecs( 10 );
 
 
 	// When client is starting up, request that the server send the client
