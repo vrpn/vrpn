@@ -2,15 +2,19 @@
 #include <stdio.h>
 #include <signal.h>
 #include <string.h>
-#include <strings.h>
 #include "vrpn_Button.h"
 #include "vrpn_Tracker.h"
-
 #include "vrpn_FileConnection.h"
+#include "vrpn_FileController.h"
+
+#ifndef _WIN32
+#include <strings.h>
+#endif
 
 vrpn_Button_Remote *btn;
 vrpn_Tracker_Remote *tkr;
 vrpn_Connection * c;
+vrpn_File_Controller * fc;
 
 /*****************************************************************************
  *
@@ -87,6 +91,8 @@ fprintf(stderr, "Connecting to host %s.\n", station_name);
 		    remote_logfile, remote_logmode);
 	}
 
+	fc = new vrpn_File_Controller (c);
+
 fprintf(stderr, "Tracker's name is %s.\n", devicename);
 	tkr = new vrpn_Tracker_Remote (devicename);
 
@@ -111,11 +117,44 @@ fprintf(stderr, "Button's name is %s.\n", devicename);
 
 void handle_cntl_c (int) {
 
+  static int invocations = 0;
+  const char * n;
+  long i;
+
   fprintf(stderr, "In control-c handler.\n");
 
-  delete btn;
-  delete tkr;
-  delete c;
+  if (!invocations) {
+    fc->set_replay_rate(2.0f);
+    invocations++;
+    signal(SIGINT, handle_cntl_c);
+    return;
+  }
+  if (invocations == 1) {
+    fc->reset();
+    invocations++;
+    signal(SIGINT, handle_cntl_c);
+    return;
+  }
+
+  // print out sender names
+
+  if (c)
+    for (i = 0L; n = c->sender_name(i); i++)
+      printf("Knew sender \"%s\".\n", n);
+
+  // print out type names
+
+  if (c)
+    for (i = 0L; n = c->message_type_name(i); i++)
+      printf("Knew type \"%s\".\n", n);
+
+
+  if (btn)
+    delete btn;
+  if (tkr)
+    delete tkr;
+  if (c)
+    delete c;
 
   exit(0);
 }
