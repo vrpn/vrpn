@@ -1,10 +1,16 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <signal.h>
+#include <string.h>
+#include <strings.h>
 #include "vrpn_Button.h"
 #include "vrpn_Tracker.h"
 
+#include "vrpn_FileConnection.h"
+
 vrpn_Button_Remote *btn;
 vrpn_Tracker_Remote *tkr;
+vrpn_Connection * c;
 
 /*****************************************************************************
  *
@@ -12,7 +18,7 @@ vrpn_Tracker_Remote *tkr;
  *
  *****************************************************************************/
 
-void	handle_pos(void *userdata, const vrpn_TRACKERCB t)
+void	handle_pos (void *, const vrpn_TRACKERCB t)
 {
 	static	int	count = 0;
 
@@ -27,21 +33,21 @@ void	handle_pos(void *userdata, const vrpn_TRACKERCB t)
 	}
 }
 
-void	handle_vel(void *userdata, const vrpn_TRACKERVELCB t)
+void	handle_vel (void *, const vrpn_TRACKERVELCB t)
 {
-	static	int	count = 0;
+	//static	int	count = 0;
 
 	fprintf(stderr, "%ld/", t.sensor);
 }
 
-void	handle_acc(void *userdata, const vrpn_TRACKERACCCB t)
+void	handle_acc (void *, const vrpn_TRACKERACCCB t)
 {
-	static	int	count = 0;
+	//static	int	count = 0;
 
 	fprintf(stderr, "%ld~", t.sensor);
 }
 
-void	handle_button(void *userdata, const vrpn_BUTTONCB b)
+void	handle_button (void *, const vrpn_BUTTONCB b)
 {
 	printf("B%ld is %ld\n", b.button, b.state);
 }
@@ -52,11 +58,44 @@ void	handle_button(void *userdata, const vrpn_BUTTONCB b)
  *
  *****************************************************************************/
 
-void init(void)
+void init (const char * station_name, 
+           const char * local_logfile, long local_logmode,
+           const char * remote_logfile, long remote_logmode)
 {
+	char devicename [1000];
+	//char * hn;
+	int port;
+
 	//tkr = new vrpn_Tracker_Remote("Tracker0_hiball1");
-	tkr = new vrpn_Tracker_Remote("Tracker0@ioph100");
-	btn = new vrpn_Button_Remote("Button0@ioph100");
+
+	// explicitly open up connections with the proper logging parameters
+	// these will be entered in the table and found by the
+	// vrpn_get_connection_by_name() inside vrpn_Tracker and vrpn_Button
+
+	sprintf(devicename, "Tracker0@%s", station_name);
+	if (!strncmp(station_name, "file:", 5)) {
+fprintf(stderr, "Opening file %s.\n", station_name);
+	  c = new vrpn_File_Connection (station_name);  // now unnecessary!
+          if (local_logfile || local_logmode ||
+              remote_logfile || remote_logmode)
+            fprintf(stderr, "Warning:  Reading from file, so not logging.\n");
+	} else {
+fprintf(stderr, "Connecting to host %s.\n", station_name);
+	  port = vrpn_get_port_number(station_name);
+	  c = new vrpn_Synchronized_Connection
+                   (station_name, port,
+		    local_logfile, local_logmode,
+		    remote_logfile, remote_logmode);
+	}
+
+fprintf(stderr, "Tracker's name is %s.\n", devicename);
+	tkr = new vrpn_Tracker_Remote (devicename);
+
+
+	sprintf(devicename, "Button0@%s", station_name);
+fprintf(stderr, "Button's name is %s.\n", devicename);
+	btn = new vrpn_Button_Remote (devicename);
+
 
 	// Set up the tracker callback handler
 	printf("Tracker update: '.' = pos, '/' = vel, '~' = acc\n");
@@ -71,8 +110,34 @@ void init(void)
 }	/* init */
 
 
-int main(int argc, char *argv[])
-{	int	done = 0;
+void handle_cntl_c (int) {
+
+  fprintf(stderr, "In control-c handler.\n");
+
+  delete btn;
+  delete tkr;
+  delete c;
+
+  exit(0);
+}
+
+int main (int argc, char * argv [])
+{
+
+#ifdef hpux
+  char default_station_name [20];
+  strcpy(default_station_name, "ioph100");
+#else
+  char default_station_name [] = { "ioph100" };
+#endif
+
+  const char * station_name = default_station_name;
+  const char * local_logfile = NULL;
+  const char * remote_logfile = NULL;
+  long local_logmode = vrpn_LOG_NONE;
+  long remote_logmode = vrpn_LOG_NONE;
+  int	done = 0;
+  int i;
 
 #ifdef	_WIN32
   WSADATA wsaData; 
@@ -83,8 +148,45 @@ int main(int argc, char *argv[])
   }
 #endif
 
-	/* initialize the PC/station */
-	init();
+  if (argc < 2) {
+    fprintf(stderr, "Usage:  %s [-ll logfile mode] [-rl logfile mode] "
+                                                             "station_name\n"
+                    "  -ll:  log locally in <logfile>\n" 
+                    "  -rl:  log remotely in <logfile>\n" 
+                    "  <mode> is one of i, o, io\n" 
+                    "  station_name:  VRPN name of data source to contact\n"
+                    "    one of:  <hostname>[:<portnum>]\n"
+                    "             file:<filename>\n",
+            argv[0]);
+    exit(0);
+  }
+
+  // parse args
+
+  for (i = 1; i < argc; i++) {
+    if (!strcmp(argv[i], "-ll")) {
+      i++;
+      local_logfile = argv[i];
+      i++;
+      if (strchr(argv[i], 'i')) local_logmode |= vrpn_LOG_INCOMING;
+      if (strchr(argv[i], 'o')) local_logmode |= vrpn_LOG_OUTGOING;
+    } else if (!strcmp(argv[i], "-rl")) {
+      i++;
+      remote_logfile = argv[i];
+      i++;
+      if (strchr(argv[i], 'i')) remote_logmode |= vrpn_LOG_INCOMING;
+      if (strchr(argv[i], 'o')) remote_logmode |= vrpn_LOG_OUTGOING;
+    } else
+      station_name = argv[i];
+  }
+
+  // initialize the PC/station
+  init(station_name, 
+       local_logfile, local_logmode,
+       remote_logfile, remote_logmode);
+
+  // signal handler so logfiles get closed right
+  signal(SIGINT, handle_cntl_c);
 
 /* 
  * main interactive loop
