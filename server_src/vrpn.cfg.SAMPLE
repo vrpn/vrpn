@@ -189,6 +189,15 @@
 #RZ	*CerealBox0	2	0.0	0.021	3.0	1.0
 #RESET	*CerealBox	3
 
+#vrpn_Tracker_AnalogFly	Tracker0	60.0	relative
+#X	*Magellan0	0	0.0	0.0	2.0	1.0
+#Y	*Magellan0	1	0.0	0.0	2.0	1.0
+#Z	*Magellan0	2	0.0	0.0	2.0	1.0
+#RX	*Magellan0	3	0.0	0.0	2.0	1.0
+#RY	*Magellan0	4	0.0	0.0	2.0	1.0
+#RZ	*Magellan0	5	0.0	0.0	2.0	1.0
+#RESET	NULL	0
+
 #vrpn_Tracker_AnalogFly	Tracker0	60.0	absolute
 #X	NULL		0	0.0	0.0	1.0	1.0
 #Y	NULL		0	0.0	0.0	1.0	1.0
