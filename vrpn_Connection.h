@@ -670,4 +670,13 @@ int vrpn_cookie_size (void);
 
 int write_vrpn_cookie (char * buffer, int length, long remote_log_mode);
 
+// Utility routines for reading from and writing to sockets/file descriptors
+#ifndef VRPN_USE_WINSOCK_SOCKETS
+ int vrpn_noint_block_write (int outfile, const char buffer[], int length);
+ int vrpn_noint_block_read(int infile, char buffer[], int length);
+#else /* winsock sockets */
+ int vrpn_noint_block_write(SOCKET outsock, char *buffer, int length);
+ int vrpn_noint_block_read(SOCKET insock, char *buffer, int length);
+#endif /* VRPN_USE_WINSOCK_SOCKETS */
+
 #endif // VRPN_CONNECTION_H
