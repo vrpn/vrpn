@@ -8,10 +8,11 @@ VRPN Readme:
 	The Virtual-Reality Peripheral Network (VRPN) is the PC-at-a-station
 implementation that will drive trackers, buttons and sound for each VR
 station.
-	It's implemented in Linux (and is being ported to Windows by Phil
-Winston and/or Jun Chen).  linux_src holds the server application for the
-linux boxes.  The current directory holds the library source.
+	It's implemented in Linux and Windows NT.  server_src holds the
+server application for the Linux and NT boxes.  The current directory holds
+the library source.
 
+	vrpn_Shared: Stuff needed by NT to make it work with unix-like code
 	vrpn_Connection: Network layer
 	vrpn_Tracker: Both local and remote tracker code
 	vrpn_Button: Both local and remote button code
@@ -21,6 +22,12 @@ linux boxes.  The current directory holds the library source.
 (server-side) derived classes for each device.  There is a remote device that
 is used by the client-side (user application).
 
+Changes required due to latest upgrade:
+	Change names from Tracker0_ioglab to Tracker0@ioglab.
+	Change .sdi_devices entries from PC_station_ioglab to just ioglab.
+	Change constructor to pass name and connection to vrpn_Tracker constr
+		Take out the my_id and message_id registration
+
 Things to do:
 	Fix ttest/t_diags on PC/linux
 	Get David to make some more python doobies
@@ -28,7 +35,7 @@ Things to do:
 
 Problems:
 
-***	The reports from the tracker are not yet being parsed correctly
+***	The reports from the 3Space tracker are not yet being parsed correctly
 (orientation is wrong when it ends up at the application).
 
 How to reduce latency on the tracker:

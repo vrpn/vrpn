@@ -30,6 +30,26 @@ const unsigned char PORT_ACK = (1 << 6);
 const unsigned char PORT_BUSY = (1 << 7);
 
 
+vrpn_Button::vrpn_Button(char *name, vrpn_Connection *c): num_buttons(0)
+{
+
+   // If the connection is valid, use it to register this button by
+   // name and the button change report by name.
+   connection = c;
+   if (connection != NULL) {
+      my_id = connection->register_sender(name);
+      message_id = connection->register_message_type("Button Toggle");
+      if ( (my_id == -1) || (message_id == -1) ) {
+      	fprintf(stderr,"vrpn_Button: Can't register IDs\n");
+         connection = NULL;
+      }
+   }
+
+   // Set the time to 0 just to have something there.
+   timestamp.tv_sec = timestamp.tv_usec = 0;
+}
+
+
 void	vrpn_Button::print(void)
 {
    int	i;
@@ -84,7 +104,7 @@ void	vrpn_Button::report_changes(void)
 
 #ifndef _WIN32
 vrpn_parallel_Button::vrpn_parallel_Button(char *name, vrpn_Connection *c,
-	int portno)
+	int portno) : vrpn_Button(name, c)
 {
    int	i;
    char *portname;
@@ -96,7 +116,7 @@ vrpn_parallel_Button::vrpn_parallel_Button(char *name, vrpn_Connection *c,
 		case 2: portname = "/dev/lp1";
 			break;
      default:
-	fprintf(stderr,"vrpn_Button:: Bad port number (%d)\n",portno);
+	fprintf(stderr,"vrpn_parallel_Button: Bad port number (%d)\n",portno);
 	status = BUTTON_FAIL;
 	break;
    }
@@ -110,18 +130,6 @@ vrpn_parallel_Button::vrpn_parallel_Button(char *name, vrpn_Connection *c,
 
    // Set the INIT line on the device to provide power to the python
    // XXX apparently, we don't need to do this.
-
-   // If the connection is valid, use it to register this tracker by
-   // name and the tracker message report by name.
-   connection = c;
-   if (connection != NULL) {
-      my_id = connection->register_sender(name);
-      message_id = connection->register_message_type("Button Toggle");
-      if ( (my_id == -1) || (message_id == -1) ) {
-      	fprintf(stderr,"vrpn_Button: Can't register IDs\n");
-         connection = NULL;
-      }
-   }
 
    // Zero the button states
    num_buttons = 5;	//XXX This is specific to the python
@@ -181,34 +189,13 @@ void vrpn_Button_Python::read(void)
 }
 
 
-vrpn_Button_Remote::vrpn_Button_Remote(char *name) : change_list(NULL)
+vrpn_Button_Remote::vrpn_Button_Remote(char *name) : 
+	vrpn_Button(name, vrpn_get_connection_by_name(name)),
+	change_list(NULL)
 {
 	int	i;
 	char	*tail;
 	char	con_name[1024];
-
-	// Look up the connection to use based on the name
-	// XXX Eventually, we want to read the connectivity information
-	// from a configuration file.  For now, strip off everything after
-	// the last underscore '_' character and prepend 'PC_station_' to
-	// it to determine the name of the connection.
-	if (name == NULL) { return; }
-	if ( (tail = strrchr(name, '_')) == NULL) {
-		fprintf(stderr,"vrpn_Button_Remote: Can't parse name\n");
-		return;
-	}
-	strcpy(con_name,"PC_station");
-	strncat(con_name, tail, sizeof(con_name) - strlen("PC_station")-2);
-	con_name[sizeof(con_name)-1] = '\0';
-
-	// Establish the connection
-	if ( (connection = vrpn_get_connection_by_name(con_name)) == NULL) {
-		return;
-	}
-
-	// Register the button device and the needed message types
-	my_id = connection->register_sender(name);
-	message_id = connection->register_message_type("Button Toggle");
 
 	// Register a handler for the change callback from this device.
 	if (connection->register_handler(message_id, handle_change_message,
@@ -322,3 +309,4 @@ int vrpn_Button_Remote::handle_change_message(void *userdata,
 }
 
 #endif // #ifndef _WIN32
+

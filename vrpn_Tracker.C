@@ -119,6 +119,28 @@ static int	flushInputBuffer(int comm)
    return 0;
 }
 
+vrpn_Tracker::vrpn_Tracker(char *name, vrpn_Connection *c) {
+	// Set our connection to the one passed in
+	connection = c;
+
+	// Register this tracker device and the needed message types
+	if (connection) {
+	  my_id = connection->register_sender(name);
+	  message_id = connection->register_message_type("Tracker Pos/Quat");
+	}
+
+	// Set the current time to zero, just to have something there
+	timestamp.tv_sec = 0;
+	timestamp.tv_usec = 0;
+
+	// Set the position to the origin and the orientation to identity
+	// just to have something there in case nobody fills them in later
+	pos[0] = pos[1] = pos[2] = 0.0f;
+	quat[0] = quat[1] = quat[2] = 0.0f;
+	quat[3] = 1.0f;
+}
+
+
 void vrpn_Tracker::print_latest_report(void)
 {
    printf("----------------------------------------------------\n");
@@ -203,23 +225,10 @@ int vrpn_Tracker_Serial::readAvailableCharacters(unsigned char *buffer,
 #endif // #ifndef _WIN32
 
 vrpn_Tracker_NULL::vrpn_Tracker_NULL(char *name, vrpn_Connection *c,
-	int sensors, float Hz) : vrpn_Tracker(c), update_rate(Hz),
+	int sensors, float Hz) : vrpn_Tracker(name, c), update_rate(Hz),
 	num_sensors(sensors)
 {
-	// Set the current time to zero, so we'll do an initial report
-	timestamp.tv_sec = 0;
-	timestamp.tv_usec = 0;
-
-	// Register the tracker device and the needed message types
-      if (connection) {
-	my_id = connection->register_sender(name);
-	message_id = connection->register_message_type("Tracker Pos/Quat");
-      }
-
-	// Set the position to the origin and the orientation to identity
-	pos[0] = pos[1] = pos[2] = 0.0f;
-	quat[0] = quat[1] = quat[2] = 0.0f;
-	quat[3] = 1.0f;
+	// Nothing left to do
 }
 
 void	vrpn_Tracker_NULL::mainloop(void)
@@ -557,7 +566,7 @@ void vrpn_Tracker_3Space::mainloop()
 
 
 vrpn_Tracker_Serial::vrpn_Tracker_Serial(char *name, vrpn_Connection *c,
-	char *port, long baud)
+	char *port, long baud): vrpn_Tracker(name, c)
 {
    // Find out the port name and baud rate
    if (port == NULL) {
@@ -576,50 +585,20 @@ vrpn_Tracker_Serial::vrpn_Tracker_Serial(char *name, vrpn_Connection *c,
 	status = TRACKER_FAIL;
    }
 
-   // If the connection is valid, use it to register this tracker by
-   // name and the tracker message report by name.
-   connection = c;
-   if (connection != NULL) {
-	my_id = connection->register_sender(name);
-	message_id = connection->register_message_type("Tracker Pos/Quat");
-	if ( (my_id == -1) || (message_id == -1) ) {
-		fprintf(stderr,"Tracker_Report: Cannot register IDs\n");
-		status = TRACKER_FAIL;
-	}
-   }
-
    // Reset the tracker and find out what time it is
    status = TRACKER_RESETTING;
    gettimeofday(&timestamp, NULL);
 }
 
-vrpn_Tracker_Remote::vrpn_Tracker_Remote(char *name) : change_list(NULL)
+vrpn_Tracker_Remote::vrpn_Tracker_Remote(char *name) :
+	vrpn_Tracker(name, vrpn_get_connection_by_name(name)) ,
+	change_list(NULL)
 {
-	char	*tail;
-	char	con_name[1024];
-
-	// Look up the connection to use based on the name
-	// XXX Eventually, we want to read the connectivity information
-	// from a configuration file.  For now, strip off everything after
-	// the last underscore '_' character and prepend 'PC_station_' to
-	// it to determine the name of the connection.
-	if (name == NULL) { return; }
-	if ( (tail = strrchr(name, '_')) == NULL) {
-		fprintf(stderr,"vrpn_Tracker_Remote: Can't parse name\n");
+	// Make sure that we have a valid connection
+	if (connection == NULL) {
+		fprintf(stderr,"vrpn_Tracker_Remote: No connection\n");
 		return;
 	}
-	strcpy(con_name,"PC_station");
-	strncat(con_name, tail, sizeof(con_name) - strlen("PC_station")-2);
-	con_name[sizeof(con_name)-1] = '\0';
-
-	// Establish the connection
-	if ( (connection = vrpn_get_connection_by_name(con_name)) == NULL) {
-		return;
-	}
-
-	// Register the tracker device and the needed message types
-	my_id = connection->register_sender(name);
-	message_id = connection->register_message_type("Tracker Pos/Quat");
 
 	// Register a handler for the change callback from this device.
 	if (connection->register_handler(message_id, handle_change_message,
@@ -628,7 +607,7 @@ vrpn_Tracker_Remote::vrpn_Tracker_Remote(char *name) : change_list(NULL)
 		connection = NULL;
 	}
 
-	// Find out what time it is
+	// Find out what time it is and put this into the timestamp
 	gettimeofday(&timestamp, NULL);
 }
 

@@ -11,7 +11,7 @@
 
 class vrpn_Tracker {
   public:
-   vrpn_Tracker(vrpn_Connection *c = NULL) : connection(c) {};
+   vrpn_Tracker(char *name, vrpn_Connection *c = NULL);
    virtual void mainloop(void) = 0;	// Handle getting any reports
 
    void print_latest_report(void);

@@ -460,7 +460,6 @@ int vrpn_Connection::handle_UDP_message(void *userdata,
 	    perror("vrpn: vrpn_Connection: Couldn't open outbound UDP link");
 	    return -1;
 	}
-	fprintf(stderr, "  Opened UDP channel to %s:%d\n", rhostname, p.sender);
 #ifdef	VERBOSE
 	printf("  Opened UDP channel to %s:%d\n", rhostname, p.sender);
 #endif
@@ -1493,10 +1492,27 @@ static vrpn_KNOWN_CONNECTION *known = NULL;
 // name, it will return the same pointer, rather than trying to make
 // multiple of the same connection.  If the connection is in a bad way,
 // it returns NULL.
+//	This routine will strip off any part of the string before and
+// including the '@' character, considering this to be the local part
+// of a device name, rather than part of the connection name.  This allows
+// the opening of a connection to "Tracker0@ioglab" for example, which will
+// open a connection to ioglab.
 #ifndef _WIN32
 vrpn_Connection *vrpn_get_connection_by_name(char *cname)
 {
-	vrpn_KNOWN_CONNECTION *curr = known;
+	vrpn_KNOWN_CONNECTION	*curr = known;
+	char			*where_at;	// Part of name past last '@'
+
+	if (cname == NULL) {
+		fprintf(stderr,"vrpn_get_connection_by_name(): NULL name\n");
+		return NULL;
+	}
+
+	// Find the relevant part of the name (skip past last '@'
+	// if there is one)
+	if ( (where_at = strrchr(cname, '@')) != NULL) {
+		cname = where_at+1;	// Chop off the front of the name
+	}
 
 	// See if the connection is one that is already open.
 	// Leave curr pointing to it if so, or to NULL if not.

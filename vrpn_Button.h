@@ -13,7 +13,7 @@
 
 class vrpn_Button {
   public:
-	vrpn_Button(): connection(NULL), num_buttons(0) {};
+	vrpn_Button(char *name, vrpn_Connection *c = NULL);
 
 	// Print the status of the button
 	void print(void);
