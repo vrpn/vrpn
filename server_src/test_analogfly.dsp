@@ -41,7 +41,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "../pc_win32/server_src/test_analogfly/Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I ".." /I "../../quat" /D "_CONSOLE" /D "NDEBUG" /D "_MBCS" /D "WIN32" /YX /FD /c /Tp
+# ADD CPP /nologo /MD /W3 /GX /O2 /I ".." /I "../../quat" /D "_CONSOLE" /D "NDEBUG" /D "_MBCS" /D "WIN32" /FR /YX /FD /c /Tp
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe

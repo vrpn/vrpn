@@ -93,7 +93,7 @@ void	create_and_link_analog_remote(void)
 	rana->register_change_handler(NULL, handle_analog);
 }
 
-void main (int argc, char * argv [])
+int main (int argc, char * argv [])
 {
 	if (argc != 1) {
 		fprintf(stderr, "Usage: %s\n", argv[0]);
@@ -161,7 +161,12 @@ void main (int argc, char * argv [])
 
 	printf("You should see tracker1 positions increasing by 2 per 2 seconds\n");
 	printf("You should see tracker2 positions remaining at 1\n");
-	while ( 1 ) {
+
+	struct timeval start, now, diff;
+	gettimeofday(&start, NULL);
+	gettimeofday(&now, NULL);
+	diff = vrpn_TimevalDiff(now, start);
+	while ( diff.tv_sec <= 10 ) {
 
 	    // Make sure that we are getting analog values
 	    {	static	struct	timeval	last_report;
@@ -193,7 +198,16 @@ void main (int argc, char * argv [])
 
 	    // Sleep for 1ms each iteration so we don't eat the CPU
 	    vrpn_SleepMsecs(1);
+	    gettimeofday(&now, NULL);
+	    diff = vrpn_TimevalDiff(now, start);
 	}
 
-}   /* main */
+	delete sana;
+	delete rtkr1;
+	delete rtkr2;
+	delete stkr1;
+	delete stkr2;
+	delete connection;
 
+	return 0;
+}   /* main */
