@@ -25,11 +25,14 @@
  * Update Count    : 414
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Tracker_Fastrak.C,v $
- * $Date: 1998/06/05 17:13:15 $
+ * $Date: 1998/06/05 19:30:47 $
  * $Author: taylorr $
- * $Revision: 1.10 $
+ * $Revision: 1.11 $
  * 
  * $Log: vrpn_Tracker_Fastrak.C,v $
+ * Revision 1.11  1998/06/05 19:30:47  taylorr
+ * Slightly cleaner Fastrak driver.  It should work on SGIs as well as Linux.
+ *
  * Revision 1.10  1998/06/05 17:13:15  taylorr
  * This version works on machines where float cannot be accessed on
  * unaligned memory boundaries.
@@ -74,7 +77,6 @@
  * HISTORY
  */
 
-static char rcsid[] = "$Id: vrpn_Tracker_Fastrak.C,v 1.10 1998/06/05 17:13:15 taylorr Exp $";
 #include <time.h>
 #include <math.h>
 #include <stdlib.h>
@@ -125,6 +127,14 @@ static char rcsid[] = "$Id: vrpn_Tracker_Fastrak.C,v 1.10 1998/06/05 17:13:15 ta
 
 #undef VERBOSE
 
+
+#if defined(sun) || defined(sgi) || defined(hpux) || defined(__hpux)
+#   define T_F_REVERSE_BYTES(dest, src, size, num) \
+                                t_reverse_bytes(dest, src, size, num)
+#else
+#   define T_F_REVERSE_BYTES(dest, src, size, num) \
+		memcpy(dest, src, size*num)
+#endif
 
 
 /*****************************************************************************
@@ -348,9 +358,6 @@ void vrpn_Tracker_Fastrak::reset()
 
 void vrpn_Tracker_Fastrak::get_report(void) {
   int ret;
-  int full=0, readchar=0;
-  int i;
-  unsigned char tempbuf[1024*2];
   
   //fprintf(stderr,"get report %p\t%s:%d\n",this,  __FILE__, __LINE__);
   if (status == TRACKER_SYNCING) {
@@ -1074,22 +1081,10 @@ int vrpn_Tracker_Fastrak::valid_report()
 {
 
     static char	    correctStatusBytes[] = T_F_STATUS_BYTES;    
-    char    	    prevStationNum;
-    int	    	    prevUnitIndex;  	/* index into unitsOn array */
-    int	    	    prevUnitBufIndex;	/* buf index for prev unit  */
-
-
-
-    //printChar((char *)(buffer), 3);
-
-    //fprintf(stderr, "valid_report\t%s:%d\n", __FILE__, __LINE__);
-
 
     /* is first byte an ascii 0?	*/
     if ( buffer[0] != correctStatusBytes[0] )
       return (T_FALSE);
-
-
 
     /*   see if the station number byte is past the end of this buffer   */
     if (buffer[1] < '1' || buffer[1] >'4' )
@@ -1097,9 +1092,7 @@ int vrpn_Tracker_Fastrak::valid_report()
     if (!(buffer[2] == correctStatusBytes[2] || isalpha(buffer[2]))) 
 	// should be a space or D-F;
       return(T_FALSE);
-    //printf("I am returning ture\n");  
     return T_TRUE;
-      //( checkSubType(bufIndex, bufferLength) );
 
 }	/* t_f_valid_report */
 
@@ -1134,10 +1127,7 @@ int vrpn_Tracker_Fastrak::valid_report()
 int vrpn_Tracker_Fastrak::checkSubType(int bufIndex, int bufferLength)
 {
     static char	    correctStatusBytes[] = T_F_STATUS_BYTES;    
-    int	    	    prevUnitBufIndex;	/* buf index for prev unit  */
     int	    	    index;
-    static int	    printedWarning = T_FALSE;
-
 
     /* get the index to the status subtype byte */
     if ( bufIndex+2 < bufferLength )
@@ -1157,55 +1147,45 @@ int vrpn_Tracker_Fastrak::checkSubType(int bufIndex, int bufferLength)
 
 /*****************************************************************************
  *
-   t_f_xyz_quat_interpret - interpret ascii report
+   xyz_quat_interpret - interpret report
  *
  *****************************************************************************/
 
-int vrpn_Tracker_Fastrak::xyz_quat_interpret()
+const	int	STATUS_LENGTH = 3;	// Length of the status report, in bytes
+
+int vrpn_Tracker_Fastrak::xyz_quat_interpret(void)
 {
+	int	i;
+	float	dataList[50];	// Float list filled in from raw data
+	float	*dataPtr;	// Goes through converted float list
+	int	numDataItems = (reportLength-STATUS_LENGTH) / sizeof(float);
 
-    int	    	    i, j,k;
-    double  	    mag;
-    unsigned char   *rawPtr;
-    float   *dataPtr;
-    float xyzQuat[4];	    /* temporary var   */
+	// Find out which sensor the report is from by looking in status
+	// The number is stored as an ASCII character, with 1 being the first
+	// VRPN uses an integer with 0 being the first.
+	sensor = buffer[1] - '0' - 1;
 
-    int	    	    numDataItems;
+	// Skip the header and copy the floats from the raw buffer into the
+	// data array, switching endian-ness if needed.
+	T_F_REVERSE_BYTES( (unsigned char *)dataList, buffer+STATUS_LENGTH,
+		sizeof(float), numDataItems);
 
-    /* subtract off the status length, since we want to know how many numbers
-     *  there are for processing.
-     */
-    numDataItems = (int) 
-      (reportLength-T_F_STATUS_LENGTH) / T_F_FULL_WORD_SIZE;
+	// Point dataPtr at the head of the list, pass through and retrieve
+	// the position and orientation
+	dataPtr = dataList;
 
-    rawPtr = buffer +3;
+	for (i = 0; i < 3; i++) {	// read position
+		pos[i] = *dataPtr++;
+	}
 
-    sensor = buffer[1]-'0'-1;
-    dataPtr = (float *)(buffer+3);
+	// Q_W is first in the list, but last in the quat array
+	quat[Q_W] = *dataPtr++;
+	for (i = 0; i < 3; i++) {
+		quat[i] = *dataPtr++;
+	}
 
-
-    // get position ;
-    for ( j = 0; j < 3; j++, dataPtr++ ){
-	// Use memcpy to avoid problems with unaligned floats
-	memcpy(&pos[j], dataPtr, sizeof(pos[j]));
-    }
-      
-    // on to orientation quaternion;  NOTE:  Q_W is read FIRST!   
-    // Use memcpy to avoid problems with unaligned floats
-    memcpy(&quat[Q_W], dataPtr, sizeof(quat[Q_W]));
-    dataPtr++;
-      
-    // get rest of orientation quat ;
-    for ( j = 0; j < 3; j++, dataPtr++ ){
-	// Use memcpy to avoid problems with unaligned floats
-	memcpy(&quat[j], dataPtr, sizeof(quat[j]));
-    }
-
-    return(T_OK);
-}	/* t_f_xyz_quat_interpret */
-
-
-
+	return 0;
+}
 
 /*****************************************************************************
  *

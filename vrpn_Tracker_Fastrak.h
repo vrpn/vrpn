@@ -25,11 +25,14 @@
  * Update Count    : 45
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Tracker_Fastrak.h,v $
- * $Date: 1998/06/01 20:12:12 $
- * $Author: kumsu $
- * $Revision: 1.6 $
+ * $Date: 1998/06/05 19:30:48 $
+ * $Author: taylorr $
+ * $Revision: 1.7 $
  * 
  * $Log: vrpn_Tracker_Fastrak.h,v $
+ * Revision 1.7  1998/06/05 19:30:48  taylorr
+ * Slightly cleaner Fastrak driver.  It should work on SGIs as well as Linux.
+ *
  * Revision 1.6  1998/06/01 20:12:12  kumsu
  * changed to ANSI to compile with aCC for hp
  *
@@ -91,12 +94,6 @@
  *
  * (check the typedefs section for other machine-dependent definitions)
  */
-#if defined(sun) || defined(sgi) || defined(hpux) || defined(__hpux)
-#   define T_F_REVERSE_BYTES(dest, src, size, num) \
-    	    	    	    	t_reverse_bytes(dest, src, size, num)
-#else
-#   define T_F_REVERSE_BYTES(dest, src, size, num)
-#endif
 
 /* return codes for status check    */
 #define T_F_SPEW_MODE   (-70)
