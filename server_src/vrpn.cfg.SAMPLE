@@ -255,6 +255,21 @@
 #vrpn_Magellan	Magellan	/dev/cua0	9600
 
 ################################################################################
+# NRL Immersion Box dial/button/analog. Runs a Immersion Interface Box device
+# attached to a serial port. As of March 28, 2000 code to read the analog and
+# angle encoders has not been implemented.  Also, baud rate on many SGI's is
+# limited to 38400, but I have run the ibox at 115200 on PCs.
+#       char    name_of_this_device[]
+#       char    name_of_serial_device[]
+#       int     baud_rate_of_serial_device
+#       int     number_of_buttons_to_read (i.e. 4 ==> 0,1,2,3)
+#       int     number_of_analogs_to_read
+#       int     number_of_encoders_to_read
+
+#vrpn_ImmersionBox      ibox    /dev/ttyd2      38400   4 0 0
+#vrpn_ImmersionBox      ibox    com1            115200  4 0 0
+
+################################################################################
 # SGI Dial and Button box, raw interface. Runs a dial-and-button box from SGI,
 # talking to it through the raw serial interface (not using the GL interface
 # supplied by SGI). This allows the box to be opened even if there is nobody

@@ -32,6 +32,7 @@
 #include "vrpn_CerealBox.h"
 #include "vrpn_Tracker_AnalogFly.h"
 #include "vrpn_Magellan.h"
+#include "vrpn_ImmersionBox.h"
 
 #include "vrpn_ForwarderController.h"
 
@@ -42,6 +43,7 @@
 #define	MAX_SGIBOX 2
 #define	MAX_CEREALS 8
 #define	MAX_MAGELLANS 8
+#define MAX_IBOXES 8
 #define MAX_DIALS 8
 
 #define CHECK(s) \
@@ -88,6 +90,8 @@ vrpn_CerealBox	* cereals [MAX_CEREALS];
 int		num_cereals = 0;
 vrpn_Magellan	* magellans [MAX_MAGELLANS];
 int		num_magellans = 0;
+vrpn_ImmersionBox  *iboxes[MAX_IBOXES];
+int             num_iboxes = 0;
 vrpn_Dial	* dials [MAX_DIALS];
 int		num_dials = 0;
 
@@ -568,6 +572,38 @@ int setup_Magellan (char * & pch, char * line, FILE * config_file) {
   return 0;
 }
 
+int setup_ImmersionBox (char * & pch, char * line, FILE * config_file) {
+    char s2 [512], s3 [512];
+    int i1, i2, i3, i4;
+    vrpn_ImmersionBox * ibox;
+    next();
+    // Get the arguments (class, iboxbox_name, port, baud, numdig,
+    // numana, numenc)
+    if (sscanf(pch,"%511s%511s%d%d%d%d",s2,s3, &i1, &i2, &i3, &i4) != 6) {
+        fprintf(stderr,"Bad vrpn_ImmersionBox line: %s\n",line);
+        return -1;
+    }
+
+    // Make sure there's room for a new box
+    if (num_iboxes >= MAX_IBOXES) {
+        fprintf(stderr,"Too many Immersion boxes in config file");
+        return -1;
+    }
+
+    // Open the box
+    if (verbose)
+        printf("Opening vrpn_ImmersionBox: %s on port %s, baud %d, %d digital, "
+               " %d analog, %d encoders\n",s2,s3,i1, i2,i3,i4);
+
+    ibox = new vrpn_ImmersionBox(s2, connection, s3, i1, i2, i3, i4);
+    if (NULL == ibox) {
+        fprintf(stderr,"Can't create new vrpn_ImmersionBox\n");
+        return -1;
+    }
+    iboxes[num_iboxes++] = ibox;
+    return 0;
+}
+
 int setup_Tracker_Dyna (char * & pch, char * line, FILE * config_file) {
 
   char s2 [512], s3 [512];
@@ -1014,7 +1050,6 @@ main (int argc, char * argv[])
 	int	auto_quit = 0;
 	int	realparams = 0;
 	int	i;
-	int 	loop = 0;
 	int	port = vrpn_DEFAULT_LISTEN_PORT_NO;
 	int	milli_sleep_time = 0;		// How long to sleep each iteration?
 #ifdef WIN32
@@ -1160,6 +1195,8 @@ main (int argc, char * argv[])
             CHECK(setup_CerealBox);
 	  } else if (isit("vrpn_Magellan")) {
             CHECK(setup_Magellan);
+          } else if (isit("vrpn_ImmersionBox")) {
+            CHECK(setup_ImmersionBox);
 	  } else if (isit("vrpn_Tracker_Dyna")) {
             CHECK(setup_Tracker_Dyna);
 	  } else if (isit("vrpn_Tracker_Fastrak")) {
@@ -1191,7 +1228,6 @@ main (int argc, char * argv[])
 	// Open the Forwarder Server
         forwarderServer = new vrpn_Forwarder_Server (connection);
 
-	loop = 0;
 	if (auto_quit) {
 		int dlc_m_id = connection->register_message_type(
 					vrpn_dropped_last_connection);
@@ -1254,6 +1290,11 @@ main (int argc, char * argv[])
 		for (i=0; i< num_magellans; i++) {
 			magellans[i]->mainloop();
 		}
+
+                // Let all the Immersion boxes do their thing
+                for (i=0; i< num_iboxes; i++) {
+                        iboxes[i]->mainloop();
+                }
 
 		// Let all of the SGI button/knob boxes do their thing
 		for (i=0; i < num_sgiboxes; i++) {
