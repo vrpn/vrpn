@@ -198,6 +198,8 @@ vrpn_Tracker::vrpn_Tracker(char *name, vrpn_Connection *c) {
 						"Request Tracker Workspace");
 	  update_rate_id = connection->register_message_type
 				("vrpn Tracker set update rate");
+	  reset_origin_m_id = connection->register_message_type(
+						"Reset Origin");
 	}
 
 	// Set the current time to zero, just to have something there
@@ -948,6 +950,7 @@ vrpn_Tracker_Remote::vrpn_Tracker_Remote(char *name ) :
                 connection = NULL;
         }
 
+
 	// Find out what time it is and put this into the timestamp
 	gettimeofday(&timestamp, NULL);
 }
@@ -1077,6 +1080,22 @@ int vrpn_Tracker_Remote::set_update_rate (double samplesPerSecond) {
   return 0;
 
 
+}
+
+int vrpn_Tracker_Remote::reset_origin() {
+  struct timeval current_time;
+  gettimeofday(&current_time, NULL);
+  timestamp.tv_sec = current_time.tv_sec;
+  timestamp.tv_usec = current_time.tv_usec;
+
+  if(connection){
+    if (connection->pack_message(0, timestamp, reset_origin_m_id,
+                                my_id, NULL, vrpn_CONNECTION_RELIABLE)) {
+        fprintf(stderr,"vrpn_Tracker_Remote: cannot write message: tossing\n");
+    }
+    connection->mainloop();
+  }
+  return 0;
 }
 
 void	vrpn_Tracker_Remote::mainloop(void)
@@ -1821,5 +1840,5 @@ int vrpn_Tracker_Remote::handle_workspace_change_message(void *userdata,
                 handler = handler->next;
         }
 
-    return 0;
+	return 0;
 }

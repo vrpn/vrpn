@@ -17,11 +17,19 @@
 // number of floating point values encoded in a message
 #define NUM_MESSAGE_PARAMETERS (10)
 
+// possible values for errorCode:
+#define FD_VALUE_OUT_OF_RANGE 0	// surface parameter out of range
+#define FD_DUTY_CYCLE_ERROR 1	// servo loop is taking too long
+#define FD_FORCE_ERROR 2	// max force exceeded, or motors overheated
+				// or amplifiers not enabled
+#define FD_MISC_ERROR 3		// everything else
+
 class vrpn_ForceDevice {
 public:
 	vrpn_ForceDevice(char * name, vrpn_Connection *c);
 	virtual void mainloop(void) = 0;
 	void print_report(void);
+	void print_plane(void);
 
 	void setSurfaceKspring(float k) { 
 					SurfaceKspring = k; }
@@ -38,12 +46,18 @@ protected:
 //	virtual void get_report(void) = 0;
 	virtual int encode_to(char *buf);
 	virtual int encode_scp_to(char *buf);
-	
+	virtual int encode_error_to(char *buf);
+
 	struct timeval timestamp;
 	long my_id;		// ID of this force device to connection
 	long force_message_id;	// ID of force message to connection
 	long plane_message_id;  //ID of plane equation message
 	long scp_message_id;	// ID of surface contact point message
+
+	// XXX - error messages should be put into the vrpn base class 
+	// whenever someone makes one
+	long error_message_id;	// ID of force device error message
+
         // IDs for trimesh messages
         long startTrimesh_message_id;   
         long setVertex_message_id;   
@@ -64,6 +78,7 @@ protected:
 	float SurfaceFstatic;
 	float SurfaceFdynamic;
 	int numRecCycles;
+	int errorCode;
 
 };
 
@@ -88,6 +103,14 @@ typedef	struct {
 } vrpn_FORCECB;
 typedef void (*vrpn_FORCECHANGEHANDLER)(void *userdata,
 					 const vrpn_FORCECB info);
+
+typedef struct {
+	struct		timeval msg_time;	// time of the report
+	int		error_code;		// type of error
+} vrpn_FORCEERRORCB;
+typedef void (*vrpn_FORCEERRORHANDLER) (void *userdata,
+					const vrpn_FORCEERRORCB info);
+
 class vrpn_ForceDevice_Remote: public vrpn_ForceDevice {
 public:
 
@@ -138,6 +161,10 @@ public:
         virtual int unregister_scp_change_handler(void *userdata,
                 vrpn_FORCESCPHANDLER handler);
 
+	virtual int register_error_handler(void *userdata,
+		vrpn_FORCEERRORHANDLER handler);
+	virtual int unregister_error_handler(void *userdata,
+		vrpn_FORCEERRORHANDLER handler);
 protected:
 
 	typedef	struct vrpn_RFCS {
@@ -146,7 +173,6 @@ protected:
 		struct vrpn_RFCS		*next;
 	} vrpn_FORCECHANGELIST;
 	vrpn_FORCECHANGELIST	*change_list;
-
 	static int handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
 
         typedef struct vrpn_RFSCPCS {
@@ -157,7 +183,14 @@ protected:
 	vrpn_FORCESCPCHANGELIST	*scp_change_list;
         static int handle_scp_change_message(void *userdata,
                                                         vrpn_HANDLERPARAM p);
-
+	typedef struct vrpn_RFERRCS {
+		void				*userdata;
+		vrpn_FORCEERRORHANDLER handler;
+		struct vrpn_RFERRCS		*next;
+	} vrpn_FORCEERRORCHANGELIST;
+	vrpn_FORCEERRORCHANGELIST *error_change_list;
+	static int handle_error_change_message(void *userdata,
+							vrpn_HANDLERPARAM p);
 };
 
 #endif

@@ -75,7 +75,8 @@ class vrpn_Tracker {
    long request_workspace_m_id;		// ID of workspace request message
    long workspace_m_id;			// ID of workspace message
    long update_rate_id;			// ID of update rate message
-					
+   long connection_dropped_m_id;	// ID of connection dropped message
+   long reset_origin_m_id;		// ID of reset origin message					
 
    // Description of the next report to go out
    int sensor;			// Current sensor
@@ -218,6 +219,7 @@ typedef struct {
 } vrpn_TRACKERWORKSPACECB;
 typedef void (*vrpn_TRACKERWORKSPACECHANGEHANDLER)(void *userdata,
 					const vrpn_TRACKERWORKSPACECB info);
+
 #ifndef VRPN_CLIENT_ONLY
 
 
@@ -274,6 +276,10 @@ class vrpn_Tracker_Remote: public vrpn_Tracker {
 
 	// set rate of p/v/a updates from the tracker
 	int set_update_rate (double samplesPerSecond);
+
+	// reset origin to current tracker location (e.g. - to reinitialize
+	// a PHANToM in its reset position)
+	int reset_origin(void);
 
 	// This routine calls the mainloop of the connection it's on
 	virtual void mainloop(void);
@@ -343,6 +349,7 @@ class vrpn_Tracker_Remote: public vrpn_Tracker {
 	virtual int unregister_change_handler(void *userdata,
 		vrpn_TRACKERWORKSPACECHANGEHANDLER handler);
 
+
   protected:
 	typedef	struct vrpn_RTCS {
 		void				*userdata;
@@ -397,6 +404,7 @@ class vrpn_Tracker_Remote: public vrpn_Tracker {
                         vrpn_HANDLERPARAM p);
 	static int handle_workspace_change_message(void *userdata,
 			vrpn_HANDLERPARAM p);
+
 };
 
 
