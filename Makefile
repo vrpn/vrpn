@@ -85,7 +85,7 @@ CC := g++
 AR := ar
 
 ifeq ($(FORCE_GPP),1)
-  CC := g++
+  CC := g++ -fhuge-objects
 else
 
   ifeq ($(HW_OS),sgi_irix)

@@ -18,75 +18,74 @@
 
 
 vrpn_NewFileConnection::vrpn_NewFileConnection (
-	vrpn_ConnectionControllerCallbackInterface* ccci,
-	const char * file_name,
+    vrpn_BaseConnectionController::SpecialAccessToken * spat,
+    const char * file_name,
     const char * local_logfile_name,
-    vrpn_int32 local_log_mode) :
-    vrpn_BaseConnection(ccci,local_logfile_name,local_log_mode),
-    d_rate (1.0f),
-    d_file (NULL),
-    d_logHead (NULL),
-    d_logTail (NULL),
-    d_currentLogEntry (NULL),
-	d_callback_interface_ptr(ccci)
+    vrpn_int32   local_log_mode)
+    : vrpn_BaseConnection (spat, local_logfile_name, local_log_mode),
+      d_rate (1.0f),
+      d_file (NULL),
+      d_logHead (NULL),
+      d_logTail (NULL),
+      d_currentLogEntry (NULL)
 {
-	const char * bare_file_name;
-	
+    const char * bare_file_name;
+    
     // necessary to initialize properly in mainloop()
-	d_last_time.tv_usec = d_last_time.tv_sec = 0;
-	
-	bare_file_name = vrpn_copy_file_name(file_name);
-	if (!bare_file_name) {
-		fprintf(stderr, "vrpn_NewFileConnection:  Out of memory!\n");
-		status = vrpn_CONNECTION_BROKEN;
-		return;
-	}
+    d_last_time.tv_usec = d_last_time.tv_sec = 0;
+    
+    bare_file_name = vrpn_copy_file_name(file_name);
+    if (!bare_file_name) {
+        fprintf(stderr, "vrpn_NewFileConnection:  Out of memory!\n");
+        status = vrpn_CONNECTION_BROKEN;
+        return;
+    }
+    
+    d_file = fopen(bare_file_name, "rb");
+    if (!d_file) {
+        fprintf(stderr, "vrpn_NewFileConnection:  "
+                "Could not open file \"%s\".\n", bare_file_name);
+        delete [] (char *) bare_file_name;
+        status = vrpn_CONNECTION_BROKEN;
+        return;
+    } else {
+        status = vrpn_CONNECTION_CONNECTED;
+    }
+    
+    delete [] (char *) bare_file_name;
+    
+    // PRELOAD
+    // TCH 16 Sept 1998
+    
+    //fprintf(stderr, "vrpn_NewFileConnection::vrpn_NewFileConnection: Preload...\n");
+    
+    if (read_cookie() < 0) {
+        status = vrpn_CONNECTION_BROKEN;
+        return;
+    }
+    while (!read_entry());
+    d_currentLogEntry = d_logHead;
+    
+    //fprintf(stderr, "vrpn_NewFileConnection::vrpn_NewFileConnection: Done preload.\n");
 
-	d_file = fopen(bare_file_name, "rb");
-	if (!d_file) {
-		fprintf(stderr, "vrpn_NewFileConnection:  "
-				"Could not open file \"%s\".\n", bare_file_name);
-		delete [] (char *) bare_file_name;
-		status = vrpn_CONNECTION_BROKEN;
-		return;
-	} else {
-		status = vrpn_CONNECTION_CONNECTED;
-	}
-
-	delete [] (char *) bare_file_name;
-	
-	// PRELOAD
-	// TCH 16 Sept 1998
-
-	//fprintf(stderr, "vrpn_NewFileConnection::vrpn_NewFileConnection: Preload...\n");
-
-	if (read_cookie() < 0) {
-		status = vrpn_CONNECTION_BROKEN;
-		return;
-	}
-	while (!read_entry());
-	d_currentLogEntry = d_logHead;
-
-	//fprintf(stderr, "vrpn_NewFileConnection::vrpn_NewFileConnection: Done preload.\n");
-
-	d_startEntry = d_logHead;
-	d_start_time = d_startEntry->data.msg_time;  
-	d_time = d_start_time;
-	
-	// this needs to be a parameter if we want this to be optional
-	vrpn_int32 fPlayToFirstUserMessage = 1;
+    d_startEntry = d_logHead;
+    d_start_time = d_startEntry->data.msg_time;  
+    d_time = d_start_time;
+    
+    // this needs to be a parameter if we want this to be optional
+    vrpn_int32 fPlayToFirstUserMessage = 1;
     // This is useful to play the initial system messages
     //(the sender/type ones) automatically.  These might not be
     // time synched so if we don't play them automatically they
     // can mess up playback if their timestamps are later then
     // the first user message.
-	if (fPlayToFirstUserMessage) {
-		play_to_user_message();
-		d_startEntry = d_currentLogEntry;
-		if (d_startEntry) {
-			d_start_time = d_startEntry->data.msg_time;
-		}
-	}
+    if (fPlayToFirstUserMessage) {
+        play_to_user_message();
+        d_startEntry = d_currentLogEntry;
+        if (d_startEntry) {
+            d_start_time = d_startEntry->data.msg_time;
+        }
+    }
 }
 
 
@@ -233,17 +232,17 @@ vrpn_int32 vrpn_NewFileConnection::register_local_type(
 
     // register handlers if these types are being registered
     if( strcmp("vrpn File set replay rate",type_name) == 0 ){
-        d_callback_interface_ptr->register_handler(
+        d_controller_token->register_handler(
             type_id, handle_set_replay_rate,
             this, d_controllerId);
     } 
     else if( strcmp("vrpn File reset",type_name) == 0 ){
-        d_callback_interface_ptr->register_handler(
+        d_controller_token->register_handler(
             type_id, handle_reset, 
             this, d_controllerId);
     } 
     else if( strcmp("vrpn File play to time",type_name) == 0 ){
-        d_callback_interface_ptr->register_handler(
+        d_controller_token->register_handler(
             type_id, handle_play_to_time,
             this, d_controllerId);
     }
@@ -446,7 +445,7 @@ vrpn_int32 vrpn_NewFileConnection::playone_to_filetime(timeval end_filetime)
 	// Handle this log entry
     if (header.type >= 0) {
         if (translate_remote_type_to_local(header.type) >= 0) {
-            if (d_callback_interface_ptr->do_callbacks_for(
+            if (d_controller_token->do_callbacks_for(
                 translate_remote_type_to_local(header.type),
                 translate_remote_service_to_local(header.service),
                 header.msg_time, header.payload_len,

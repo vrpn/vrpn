@@ -4,7 +4,6 @@
 #include "vrpn_FileConnectionInterface.h"
 #include "vrpn_BaseConnection.h"
 
-
 // vrpn_NewFileConnection
 //
 // MODIFIED
@@ -36,20 +35,19 @@
 // make sense.
 
 class vrpn_NewFileConnection 
-	: public vrpn_BaseConnection, 
-	  protected vrpn_FileConnectionInterface 
+    : public vrpn_BaseConnection,
+      protected vrpn_FileConnectionInterface 
 {
-
-	friend class vrpn_NewFileController;
-
+    friend class vrpn_NewFileController;
+    
     // {{{ c'tors, d'tors
 public: // c'tors & d'tors
-
+    
     vrpn_NewFileConnection(
-		vrpn_ConnectionControllerCallbackInterface* ccci,
-		const char * file_name,
-		const char * local_logfile_name = NULL,
-		vrpn_int32 local_log_mode = vrpn_LOG_NONE);
+        vrpn_BaseConnectionController::SpecialAccessToken *,
+        const char *  file_name,
+        const char *  local_logfile_name = NULL,
+        vrpn_int32    local_log_mode     = vrpn_LOG_NONE);
 
     virtual ~vrpn_NewFileConnection ();
 
@@ -84,7 +82,7 @@ public:
         vrpn_int32 local_id );   // from controller
 
     // }}}
-    // {{{ status ...
+    // {{{ status
 public:  
     
     // a connection was made
@@ -98,7 +96,7 @@ public:
     vrpn_int32 get_status() const { return status; }
     
     // }}}
-    // {{{ sending and receiving ...
+    // {{{ sending and receiving
 public:  
 
 
@@ -115,28 +113,27 @@ public:
     // the ConnectionController will call these functions
 
     vrpn_int32 queue_outgoing_message(
-		vrpn_uint32 len, 
-        struct timeval time,
-        vrpn_int32 type, 
-        vrpn_int32 service, 
+        vrpn_uint32  len, 
+        timeval      time,
+        vrpn_int32   type, 
+        vrpn_int32   service, 
         const char * buffer,
-        vrpn_uint32 class_of_service, 
-        vrpn_bool sent_mcast );
+        vrpn_uint32  class_of_service, 
+        vrpn_bool    sent_mcast );
 
 
-    vrpn_int32 handle_incoming_messages( const struct timeval * pTimeout = NULL );
+    vrpn_int32 handle_incoming_messages (const timeval * pTimeout = NULL);
 
-    virtual vrpn_int32 handle_incoming_udp_message(
-        void * userdata, vrpn_HANDLERPARAM p);
+    virtual vrpn_int32 handle_incoming_udp_message (void * userdata, 
+                                                    vrpn_HANDLERPARAM p);
 
-    
     // * send pending report (that have been packed), and clear the buffer
     // * this function was protected, now is public, so we can use
     //   it to send out intermediate results without calling mainloop
     virtual vrpn_int32 send_pending_reports(){ return 0;}
     
     // }}}
-    // {{{ playback functions - are public in base class ...
+    // {{{ playback functions - are public in base class
 protected: 
 
 	// rate of 0.0 is paused, 1.0 is normal speed
@@ -176,7 +173,7 @@ protected:
     vrpn_int32 jump_to_time(timeval newtime);
 
     // }}}
-    // {{{ playback functions ...
+    // {{{ playback functions
 protected: 
 
     void play_to_user_message();
@@ -197,18 +194,15 @@ protected:
 
     // handlers for VRPN control messages
     static vrpn_int32 handle_set_replay_rate (void *, vrpn_HANDLERPARAM);
-    static vrpn_int32 handle_reset (void *, vrpn_HANDLERPARAM);
-    static vrpn_int32 handle_play_to_time (void *, vrpn_HANDLERPARAM);
+    static vrpn_int32 handle_reset           (void *, vrpn_HANDLERPARAM);
+    static vrpn_int32 handle_play_to_time    (void *, vrpn_HANDLERPARAM);
 
     // }}}	
-    // {{{ data members ...
+    // {{{ data members
 protected: 
 
-	// pointer to let NetConnection do callbacks
-	vrpn_ConnectionControllerCallbackInterface* d_callback_interface_ptr;
-
-	vrpn_int32 status;
-
+    vrpn_int32 status;
+    
     // tokens for VRPN control messages
 
     vrpn_int32 d_controllerId;
@@ -251,7 +245,5 @@ public:
     }
 #endif
 };
-
-
 
 #endif  // VRPN_FILE_CONNECTION_H

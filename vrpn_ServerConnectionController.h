@@ -23,6 +23,7 @@
 // Stefan Sain, 8/99
 
 #include "vrpn_BaseConnectionController.h"
+#include "vrpn_BaseConnection.h"
 #include "vrpn_UnreliableMulticastSender.h"
 
 class vrpn_ServerConnectionController

@@ -11,7 +11,7 @@
 
 
 vrpn_NetConnection::vrpn_NetConnection(
-    vrpn_ConnectionControllerCallbackInterface* ccci, // callback hook
+    vrpn_BaseConnectionController::SpecialAccessToken * spat,
     const char * local_logfile,
     vrpn_int32 local_logmode,
     const char * remote_logfile,
@@ -19,11 +19,10 @@ vrpn_NetConnection::vrpn_NetConnection(
     vrpn_int32 tcp_inbuflen,
     vrpn_int32 tcp_outbuflen,
     //  vrpn_int32 udp_inbuflen,
-    vrpn_int32 udp_outbuflen
+    vrpn_int32 udp_outbuflen)
     // add multicast arguments later
-    ):
-    vrpn_BaseConnection(
-        ccci,
+    : vrpn_BaseConnection(
+        spat,
         local_logfile,
         local_logmode,
         remote_logfile,
@@ -98,7 +97,7 @@ vrpn_NetConnection::~vrpn_NetConnection(void)
     delete d_udp_inbuf;
     delete d_udp_outbuf;
     
-    d_callback_interface_ptr->dropped_a_connection(this);
+    d_controller_token->dropped_a_connection(this);
 }
 
 // }}} end vrpn_NetConnection: public: c'tors, d'tors, init
@@ -547,206 +546,230 @@ vrpn_int32 vrpn_NetConnection::send_pending_reports()
 // Handle each message that is received.
 // Return the number of messages read, or -1 on failure.
 
-vrpn_int32 vrpn_NetConnection::handle_tcp_messages (vrpn_int32 fd,
-                                                    const struct timeval * timeout)
-{   vrpn_int32  sel_ret;
-        fd_set  readfds, exceptfds;
-        struct  timeval localTimeout;
+vrpn_int32 vrpn_NetConnection::handle_tcp_messages (
+    vrpn_int32 fd,
+    const timeval * timeout)
+{
+    vrpn_int32  sel_ret;
+    fd_set      readfds, exceptfds;
+    timeval     localTimeout;
     vrpn_int32  num_messages_read = 0;
 
 #ifdef  VERBOSE2
     printf("vrpn_NetConnection::handle_tcp_messages() called\n");
 #endif
-
-        if (timeout) {
-      localTimeout.tv_sec = timeout->tv_sec;
-      localTimeout.tv_usec = timeout->tv_usec;
-        } else {
-      localTimeout.tv_sec = 0L;
-      localTimeout.tv_usec = 0L;
-        }
-        
+    
+    if (timeout) {
+        localTimeout.tv_sec = timeout->tv_sec;
+        localTimeout.tv_usec = timeout->tv_usec;
+    } else {
+        localTimeout.tv_sec = 0L;
+        localTimeout.tv_usec = 0L;
+    }
+    
     // Read incoming messages until there are no more characters to
     // read from the other side.  For eachselect message, determine what
     // type it is and then pass it off to the appropriate handler
     // routine.
-
+    
     do {
-      // Select to see if ready to hear from other side, or exception
-      FD_ZERO(&readfds);              /* Clear the descriptor sets */
-      FD_ZERO(&exceptfds);
-      FD_SET(fd, &readfds);     /* Check for read */
-      FD_SET(fd, &exceptfds);   /* Check for exceptions */
-      sel_ret = select(32,&readfds,NULL,&exceptfds, &localTimeout);
-      if (sel_ret == -1) {
-        if (errno == EINTR) { /* Ignore interrupt */
-        continue;
-        } else {
-        perror(
-          "vrpn: vrpn_NetConnection::handle_tcp_messages: select failed");
-        return(-1);
-        }
-      }
-
-      // See if exceptional condition on socket
-      if (FD_ISSET(fd, &exceptfds)) {
-        fprintf(stderr, "vrpn: vrpn_NetConnection::handle_tcp_messages: Exception on socket\n");
-        return(-1);
-      }
-
-      // If there is anything to read, get the next message
-      if (FD_ISSET(fd, &readfds)) {
-        vrpn_int32  header[5];
-        struct timeval time;
-        vrpn_int32  service, type;
-        vrpn_int32  len, payload_len, ceil_len;
-#ifdef  VERBOSE2
-    printf("vrpn_NetConnection::handle_tcp_messages() something to read\n");
-#endif
-
-        // Read and parse the header
-        if (vrpn_noint_block_read(fd,(char*)header,sizeof(header)) !=
-            sizeof(header)) {
-          printf("vrpn_connection::handle_tcp_messages:  "
-                         "Can't read header\n");
-            return -1;
-        }
-        len = ntohl(header[0]);
-        time.tv_sec = ntohl(header[1]);
-        time.tv_usec = ntohl(header[2]);
-        service = ntohl(header[3]);
-        type = ntohl(header[4]);
-#ifdef  VERBOSE2
-    printf("  header: Len %d, Service %d, Type %d\n",
-        (int)len, (int)service, (int)type);
-#endif
-
-        // skip up to alignment
-        vrpn_int32 header_len = sizeof(header);
-        if (header_len%vrpn_ALIGN) {header_len += vrpn_ALIGN - header_len%vrpn_ALIGN;}
-        if (header_len > sizeof(header)) {
-          // the difference can be no larger than this
-          char rgch[vrpn_ALIGN];
-          if (vrpn_noint_block_read(fd,(char*)rgch,header_len-sizeof(header)) !=
-              (vrpn_int32)(header_len-sizeof(header))) {
-            printf("vrpn_NetConnection::handle_tcp_messages:  "
-                           "Can't read header + alignment\n");
-            return -1;
-          }
+        // Select to see if ready to hear from other side, or exception
+        FD_ZERO(&readfds);              /* Clear the descriptor sets */
+        FD_ZERO(&exceptfds);
+        FD_SET(fd, &readfds);     /* Check for read */
+        FD_SET(fd, &exceptfds);   /* Check for exceptions */
+        sel_ret = select(32,&readfds,NULL,&exceptfds, &localTimeout);
+        if (sel_ret == -1) {
+            if (errno == EINTR) { /* Ignore interrupt */
+                continue;
+            } else {
+                perror("vrpn: vrpn_NetConnection::handle_tcp_messages:"
+                       " select failed");
+                return(-1);
+            }
         }
         
-        // Figure out how long the message body is, and how long it
-        // is including any padding to make sure that it is a
-        // multiple of four bytes long.
-        payload_len = len - header_len;
-        ceil_len = payload_len;
-        if (ceil_len%vrpn_ALIGN) {ceil_len += vrpn_ALIGN - ceil_len%vrpn_ALIGN;}
-
-        // Make sure the buffer is long enough to hold the whole
-        // message body.
-        if ((vrpn_int32)d_tcp_inbuflen < ceil_len) {
-          if (d_tcp_inbuf) { d_tcp_inbuf = (char*)realloc(d_tcp_inbuf,ceil_len); }
-          else { d_tcp_inbuf = (char*)malloc(ceil_len); }
-          if (d_tcp_inbuf == NULL) {
-             fprintf(stderr, "vrpn: vrpn_NetConnection::handle_tcp_messages: Out of memory\n");
-             return -1;
-          }
-          d_tcp_inbuflen = ceil_len;
+        // See if exceptional condition on socket
+        if (FD_ISSET(fd, &exceptfds)) {
+            fprintf(stderr,
+                    "vrpn: vrpn_NetConnection::handle_tcp_messages:"
+                    " Exception on socket\n");
+            return(-1);
         }
-
-        // Read the body of the message 
-        if (vrpn_noint_block_read(fd,d_tcp_inbuf,ceil_len) != ceil_len) {
-         perror("vrpn: vrpn_NetConnection::handle_tcp_messages: Can't read body");
-         return -1;
-        }
-
-        // Call the handler(s) for this message type
-        // If one returns nonzero, return an error.
-        if (type >= 0) {    // User handler, map to local id
-
-
-            // adjust timestamp before sending to vrpn_FileLogger,
-            // because that is no longer done in there
-            timeval tvTemp = vrpn_TimevalSum(time, tvClockOffset);
-
-            // log regardless of whether local id is set,
-            // but only process if it has been (ie, log ALL
-            // incoming data -- use a filter on the log
-            // if you don't want some of it).
-            if (d_local_logmode & vrpn_LOG_INCOMING) {
-                if (d_logger_ptr->log_message(payload_len, tvTemp,
-                                        translate_remote_type_to_local(type),
-                                        translate_remote_service_to_local(service),
-                                        d_tcp_inbuf)) {
-                    return -1;
-                }
+        
+        // If there is anything to read, get the next message
+        if (FD_ISSET(fd, &readfds)) {
+            vrpn_int32  header[5];
+            struct timeval time;
+            vrpn_int32  service, type;
+            vrpn_int32  len, payload_len, ceil_len;
+#ifdef  VERBOSE2
+            printf("vrpn_NetConnection::handle_tcp_messages()"
+                   " something to read\n");
+#endif
+            
+            // Read and parse the header
+            if (vrpn_noint_block_read(fd,(char*)header,sizeof(header)) !=
+                sizeof(header)) {
+                printf("vrpn_connection::handle_tcp_messages:  "
+                       "Can't read header\n");
+                return -1;
             }
-                  
-            if (translate_remote_type_to_local(type) >= 0) {
-                if (d_callback_interface_ptr->do_callbacks_for(translate_remote_type_to_local(type),
-                                     translate_remote_service_to_local(service),
-                                     time, payload_len, d_tcp_inbuf)) {
+            len = ntohl(header[0]);
+            time.tv_sec = ntohl(header[1]);
+            time.tv_usec = ntohl(header[2]);
+            service = ntohl(header[3]);
+            type = ntohl(header[4]);
+#ifdef  VERBOSE2
+            printf("  header: Len %d, Service %d, Type %d\n",
+                   (int)len, (int)service, (int)type);
+#endif
+            
+            // skip up to alignment
+            vrpn_int32 header_len = sizeof(header);
+            if (header_len%vrpn_ALIGN) {
+                header_len += vrpn_ALIGN - header_len%vrpn_ALIGN;
+            }
+            if (header_len > sizeof(header)) {
+                // the difference can be no larger than this
+                char rgch[vrpn_ALIGN];
+                if (vrpn_noint_block_read (fd, (char*)rgch,
+                                           header_len-sizeof(header))
+                    != (vrpn_int32)(header_len-sizeof(header)))
+                {
+                    printf("vrpn_NetConnection::handle_tcp_messages:  "
+                           "Can't read header + alignment\n");
                     return -1;
                 }
             }
             
-        } else {    // Call system handler if there is one
-
-            // Special cases have been added to handle Clock
-            // synchronization messages because their handlers are in
-            // the ConnectionControllers and not BaseConnection like
-            // the others [sain:11/99]
-            if (system_messages[-type] != NULL || type == vrpn_CONNECTION_CLOCK_QUERY ||
-                type == vrpn_CONNECTION_CLOCK_REPLY ) {
+            // Figure out how long the message body is, and how long it
+            // is including any padding to make sure that it is a
+            // multiple of four bytes long.
+            payload_len = len - header_len;
+            ceil_len = payload_len;
+            if (ceil_len%vrpn_ALIGN) {
+                ceil_len += vrpn_ALIGN - ceil_len%vrpn_ALIGN;
+            }
+            
+            // Make sure the buffer is long enough to hold the whole
+            // message body.
+            if ((vrpn_int32)d_tcp_inbuflen < ceil_len) {
+                if (d_tcp_inbuf) {
+                    d_tcp_inbuf = (char*)realloc(d_tcp_inbuf,ceil_len);
+                }
+                else {
+                    d_tcp_inbuf = (char*)malloc(ceil_len);
+                }
+                if (d_tcp_inbuf == NULL) {
+                    fprintf(stderr,
+                            "vrpn: vrpn_NetConnection::handle_tcp_messages:"
+                            " Out of memory\n");
+                    return -1;
+                }
+                d_tcp_inbuflen = ceil_len;
+            }
+            
+            // Read the body of the message 
+            if (vrpn_noint_block_read(fd,d_tcp_inbuf,ceil_len) != ceil_len) {
+                perror("vrpn: vrpn_NetConnection::handle_tcp_messages:"
+                       " Can't read body");
+                return -1;
+            }
+            
+            // Call the handler(s) for this message type
+            // If one returns nonzero, return an error.
+            if (type >= 0) {    // User handler, map to local id
                 
                 // adjust timestamp before sending to vrpn_FileLogger,
                 // because that is no longer done in there
                 timeval tvTemp = vrpn_TimevalSum(time, tvClockOffset);
-
-                if (d_local_logmode & vrpn_LOG_INCOMING)
-                    if (d_logger_ptr->log_message(payload_len, tvTemp, 
-                                            translate_remote_type_to_local(type),
-                                            translate_remote_service_to_local(service),
-                                            d_tcp_inbuf))
-                        return -1;
                 
-                // Fill in the parameter to be passed to the routines
-                vrpn_HANDLERPARAM p;
-                p.type = type;
-                p.service = service;
-                p.msg_time = time;
-                p.payload_len = payload_len;
-                p.buffer = d_tcp_inbuf;
-                
-                // if it is a clocl synchronization message invoke the
-                // registered non-system handler, otherwise call the
-                // system handler
-                if( type == vrpn_CONNECTION_CLOCK_QUERY ||
-                    type == vrpn_CONNECTION_CLOCK_REPLY ) {
-                    if (d_callback_interface_ptr->do_callbacks_for(type,service,time, 
-                                                                   payload_len,d_tcp_inbuf)) {
-                    return -1;
-                    }
-                }
-                else {
-                    if (system_messages[-type](this, p)) {
-                        fprintf(stderr, 
-                                "vrpn: vrpn_NetConnection::handle_tcp_messages: Nonzero system handler return\n");
+                // log regardless of whether local id is set,
+                // but only process if it has been (ie, log ALL
+                // incoming data -- use a filter on the log
+                // if you don't want some of it).
+                if (d_local_logmode & vrpn_LOG_INCOMING) {
+                    if (d_logger_ptr->log_message(
+                        payload_len, tvTemp,
+                        translate_remote_type_to_local(type),
+                        translate_remote_service_to_local(service),
+                        d_tcp_inbuf))
+                    {
                         return -1;
                     }
                 }
-
-
+                
+                if (translate_remote_type_to_local(type) >= 0) {
+                    if (d_controller_token->do_callbacks_for(
+                        translate_remote_type_to_local(type),
+                        translate_remote_service_to_local(service),
+                        time, payload_len, d_tcp_inbuf))
+                    {
+                        return -1;
+                    }
+                }
+                
+            } else {    // Call system handler if there is one
+                
+                // Special cases have been added to handle Clock
+                // synchronization messages because their handlers are in
+                // the ConnectionControllers and not BaseConnection like
+                // the others [sain:11/99]
+                if (system_messages[-type] != NULL
+                    || type == vrpn_CONNECTION_CLOCK_QUERY ||
+                    type == vrpn_CONNECTION_CLOCK_REPLY)
+                {
+                    // adjust timestamp before sending to vrpn_FileLogger,
+                    // because that is no longer done in there
+                    timeval tvTemp = vrpn_TimevalSum(time, tvClockOffset);
+                    
+                    if (d_local_logmode & vrpn_LOG_INCOMING) {
+                        if (d_logger_ptr->log_message(
+                            payload_len, tvTemp, 
+                            translate_remote_type_to_local(type),
+                            translate_remote_service_to_local(service),
+                            d_tcp_inbuf))
+                        {
+                            return -1;
+                        }
+                    }
+                
+                    // Fill in the parameter to be passed to the routines
+                    vrpn_HANDLERPARAM p;
+                    p.type = type;
+                    p.service = service;
+                    p.msg_time = time;
+                    p.payload_len = payload_len;
+                    p.buffer = d_tcp_inbuf;
+                    
+                    // if it is a clocl synchronization message invoke the
+                    // registered non-system handler, otherwise call the
+                    // system handler
+                    if( type == vrpn_CONNECTION_CLOCK_QUERY ||
+                        type == vrpn_CONNECTION_CLOCK_REPLY )
+                    {
+                        if (d_controller_token->do_callbacks_for(
+                            type,service,time, 
+                            payload_len,d_tcp_inbuf))
+                        {
+                            return -1;
+                        }
+                    }
+                    else {
+                        if (system_messages[-type](this, p)) {
+                            fprintf(stderr, 
+                                    "vrpn: vrpn_NetConnection::handle_tcp_messages: Nonzero system handler return\n");
+                            return -1;
+                        }
+                    }
+                }
             }
-            
+            // Got one more message
+            num_messages_read++;
         }
-
-        // Got one more message
-        num_messages_read++;
-      }
-
     } while (sel_ret);
-
+    
     return num_messages_read;
 }
 
@@ -886,7 +909,7 @@ vrpn_int32  vrpn_NetConnection::handle_udp_messages (vrpn_int32 fd,
             }
 
             if (translate_remote_type_to_local(type) >= 0) {
-                if (d_callback_interface_ptr->do_callbacks_for(translate_remote_type_to_local(type),
+                if (d_controller_token->do_callbacks_for(translate_remote_type_to_local(type),
                                      translate_remote_service_to_local(service),
                                      time, payload_len, inbuf_ptr)) {
                     return -1;
@@ -1029,7 +1052,7 @@ vrpn_int32 vrpn_NetConnection::handle_mcast_messages(/* XXX */){
                 }
                 
                 if (translate_remote_type_to_local(type) >= 0) {
-                    if (d_callback_interface_ptr->do_callbacks_for(translate_remote_type_to_local(type),
+                    if (d_controller_token->do_callbacks_for(translate_remote_type_to_local(type),
                                          translate_remote_service_to_local(service),
                                          time, payload_len, inbuf_ptr)) {
                         return -1;
@@ -2044,7 +2067,7 @@ void vrpn_NetConnection::handle_connection()
 
    // adds connection to list of connections and invokes callbacks for
    // got_connection, and got_first_connection if any
-   d_callback_interface_ptr->got_a_connection(this);
+   d_controller_token->got_a_connection(this);
 }
 
 // network initialization
@@ -2098,7 +2121,7 @@ vrpn_int32 vrpn_NetConnection::setup_new_connection (
   // Synchronize clocks before any other user messages are sent. On
   // the server side, synchronize_clocks() is an empty function and
   // will not do anything.
-  d_callback_interface_ptr->synchronize_clocks();
+  d_controller_token->synchronize_clocks();
 
     // Find out what log mode they want us to be in BEFORE we pack
     // type, service, and udp descriptions!  If it's nonzero, the
@@ -2181,7 +2204,7 @@ void vrpn_NetConnection::drop_connection()
         udp_inbound = INVALID_SOCKET;
     }
 
-  d_callback_interface_ptr->dropped_a_connection(this);
+  d_controller_token->dropped_a_connection(this);
 
   if (d_local_logname) {
       close_log();

@@ -1,5 +1,6 @@
 #include "vrpn_ServerConnectionController.h"
 
+#include "vrpn_NetConnection.h"
 
 
 //==========================================================================
@@ -11,53 +12,52 @@
 //==========================================================================
 
 vrpn_ServerConnectionController::vrpn_ServerConnectionController(
-	vrpn_uint16 port,
-	char * local_logfile_name,
-	vrpn_int32 local_log_mode,
-	vrpn_int32 tcp_inbuflen,
-	vrpn_int32 tcp_outbuflen,
-	vrpn_int32 udp_inbuflen,
-	vrpn_int32 udp_outbuflen,
-	vrpn_float64 dFreq,
-	vrpn_int32 cSyncWindow ):
-	// add multicast arguments later
-	vrpn_BaseConnectionController(
-		local_logfile_name,
-		local_log_mode,
-		NULL,
-		vrpn_LOG_NONE,
-		dFreq,
-		cSyncWindow),
+    vrpn_uint16  port,
+    char *       local_logfile_name,
+    vrpn_int32   local_log_mode,
+    vrpn_int32   tcp_inbuflen,
+    vrpn_int32   tcp_outbuflen,
+    vrpn_int32   udp_inbuflen,
+    vrpn_int32   udp_outbuflen,
+    vrpn_float64 dFreq,
+    vrpn_int32   cSyncWindow )
+    // add multicast arguments later
+    : vrpn_BaseConnectionController (local_logfile_name,
+                                     local_log_mode,
+                                     NULL,
+                                     vrpn_LOG_NONE,
+                                     dFreq,
+                                     cSyncWindow),
     // d_connection_list(NULL),
-	num_live_connections(0),
-	status(vrpn_CONNECTION_LISTEN),
-	listen_udp_sock(INVALID_SOCKET),
-	listen_port_no(port),
-	// pass following on to {File,Net}Connection
+    num_live_connections(0),
+    status(vrpn_CONNECTION_LISTEN),
+    listen_udp_sock(INVALID_SOCKET),
+    listen_port_no(port),
+    // pass following on to {File,Net}Connection
     //	d_local_logfile_name(local_logfile_name),
     //	d_local_log_mode(local_log_mode),
-	d_tcp_inbuflen(tcp_inbuflen),
-	d_tcp_outbuflen(tcp_outbuflen),	
-	d_udp_inbuflen(udp_inbuflen),
-	d_udp_outbuflen(udp_outbuflen)
+    d_tcp_inbuflen(tcp_inbuflen),
+    d_tcp_outbuflen(tcp_outbuflen),	
+    d_udp_inbuflen(udp_inbuflen),
+    d_udp_outbuflen(udp_outbuflen)
 {
-
+    
     // i think that this belongs in vrpn_BaseConnection
-//      // Set all of the local IDs to -1, in case the other side
-//      // sends a message of a type that it has not yet defined.
-//      // (for example, arriving on the UDP line ahead of its TCP
-//      // definition).
-//      num_other_services = 0;
-//      for (i = 0; i < vrpn_CONNECTION_MAX_SERVICES; i++) {
-//          other_services[i].local_id = -1;
-//          other_services[i].name = NULL;
-//      }
+    //      // Set all of the local IDs to -1, in case the other side
+    //      // sends a message of a type that it has not yet defined.
+    //      // (for example, arriving on the UDP line ahead of its TCP
+    //      // definition).
+    //      num_other_services = 0;
+    //      for (i = 0; i < vrpn_CONNECTION_MAX_SERVICES; i++) {
+    //          other_services[i].local_id = -1;
+    //          other_services[i].name = NULL;
+    //      }
 
-//      num_other_types = 0;
-//      for (i = 0; i < vrpn_CONNECTION_MAX_TYPES; i++) {
-//          other_types[i].local_id = -1;
-//          other_types[i].name = NULL;
-//      }
+    //      num_other_types = 0;
+    //      for (i = 0; i < vrpn_CONNECTION_MAX_TYPES; i++) {
+    //          other_types[i].local_id = -1;
+    //          other_types[i].name = NULL;
+    //      }
     
     
     // create socket  to listen for incoming connections on 
@@ -71,25 +71,25 @@ vrpn_ServerConnectionController::vrpn_ServerConnectionController(
     
     
     /*============
-        Multicast not being implemented in first release
+      Multicast not being implemented in first release
 
-    // try and create multicast sender. if it fails, we are not
-    // multicast capable
-    mcast_sender = new UnreliableMulticastSender(XXX);
-    if( mcast_sender->created_correctly() ){
-        vrpn_Mcast_Capable = vrpn_true;
-    }
-    else {
-        vrpn_Mcast_Capable = vrpn_false;
-    }
+      // try and create multicast sender. if it fails, we are not
+      // multicast capable
+      mcast_sender = new UnreliableMulticastSender(XXX);
+      if( mcast_sender->created_correctly() ){
+      vrpn_Mcast_Capable = vrpn_true;
+      }
+      else {
+      vrpn_Mcast_Capable = vrpn_false;
+      }
 
-    // get mcast group info to pass to 
-    // new connections
-    if( vrpn_Mcast_Capable ){
-        d_mcast_info = new char[sizeof(McastGroupDescrp)];
-        mcast_sender->get_mcast_description(d_mcast_info);
-    }
-    =========*/
+      // get mcast group info to pass to 
+      // new connections
+      if( vrpn_Mcast_Capable ){
+      d_mcast_info = new char[sizeof(McastGroupDescrp)];
+      mcast_sender->get_mcast_description(d_mcast_info);
+      }
+      =========*/
 
     // create logging object
     if( get_local_logmode() != vrpn_LOG_NONE ){
@@ -107,16 +107,17 @@ vrpn_ServerConnectionController::vrpn_ServerConnectionController(
     // by name
     clockServer_id = register_service("clockServer");
     
-//      queryMsg_id = vrpn_CLOCK_QUERY;
-//      replyMsg_id = vrpn_CLOCK_REPLY;
+    //      queryMsg_id = vrpn_CLOCK_QUERY;
+    //      replyMsg_id = vrpn_CLOCK_REPLY;
     queryMsg_id = register_message_type("clock query");
     replyMsg_id = register_message_type("clock reply");
-    if ( (clockServer_id == -1) || (queryMsg_id == -1) || (replyMsg_id == -1) ) {
-        cerr << "vrpn_ServerConnectionController: Can't register IDs for synch clocks" 
+    if ( (clockServer_id == -1)
+         || (queryMsg_id == -1) || (replyMsg_id == -1) ) {
+        cerr << "vrpn_ServerConnectionController:"
+            " Can't register IDs for synch clocks" 
              << endl;
         return;
     }
-
     
     //------------------------------------
     // server specific synch clock inits
@@ -124,12 +125,11 @@ vrpn_ServerConnectionController::vrpn_ServerConnectionController(
     // Register the callback handler for clock server queries 
     // (along with "this" as user data)
     // It will take messages from any service (no service arg specified)
-    if (register_handler(vrpn_CLOCK_QUERY, clockQueryHandler, this)) {
+    if (register_handler(queryMsg_id, clockQueryHandler, this)) {
         cerr << "vrpn_ServerConnectionController: can't register handler\n"
              << endl;
         return;
     }
-
 }
 
 
@@ -215,7 +215,9 @@ void vrpn_ServerConnectionController::listen_for_incoming_connections(
         
         // create new NetConnection
         // logging options will be set by other side.
-        vrpn_BaseConnection* new_connection = new vrpn_NetConnection(this);
+        vrpn_BaseConnection* new_connection
+            = new vrpn_NetConnection(
+                this->new_SpecialAccessToken(this));
 
         // Check to see that the connection is connected
         new_connection->connect_to_client(msg);

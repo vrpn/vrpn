@@ -3,85 +3,89 @@
 
 
 vrpn_BaseConnection::vrpn_BaseConnection(
-	vrpn_ConnectionControllerCallbackInterface* ccci,
-	const char * local_logfile_name,
-	vrpn_int32 local_log_mode,
-	const char * remote_logfile_name,
-	vrpn_int32 remote_log_mode
-	):
-	d_callback_interface_ptr(ccci),
-	d_local_logmode(local_log_mode),
-	d_remote_logmode(remote_log_mode),
-	num_registered_remote_services (0),
-    num_registered_remote_types (0)
+    // takes ownership of spat, and deletes in destructor
+    vrpn_BaseConnectionController::SpecialAccessToken * spat,
+    
+    const char *  local_logfile_name,
+    vrpn_int32    local_log_mode,
+    
+    const char *  remote_logfile_name,
+    vrpn_int32    remote_log_mode
+    )
+    
+    : d_controller_token             (spat),
+      d_local_logmode                (local_log_mode),
+      d_remote_logmode               (remote_log_mode),
+      num_registered_remote_services (0),
+      num_registered_remote_types    (0)
 {
+    vrpn_int32 i;
+    
+    // Set all of the local IDs to -1, in case the other side
+    // sends a message of a type that it has not yet defined.
+    // (for example, arriving on the UDP line ahead of its TCP
+    // definition).
+    num_registered_remote_services = 0;
+    for (i = 0; i < vrpn_CONNECTION_MAX_SERVICES; i++) {
+        registered_remote_services[i].local_id = -1;
+        registered_remote_services[i].name = NULL;
+    }
+    
+    num_registered_remote_types = 0;
+    for (i = 0; i < vrpn_CONNECTION_MAX_TYPES; i++) {
+        registered_remote_types[i].local_id = -1;
+        registered_remote_types[i].name = NULL;
+    }
+    
+    
+    // Set up the handlers for the system messages.  Skip any ones
+    // that we don't know how to handle.
+    for (i = 0; i < vrpn_CONNECTION_MAX_TYPES; i++) {
+        system_messages[i] = NULL;
+    }
+    system_messages[-vrpn_CONNECTION_SERVICE_DESCRIPTION] =
+        handle_incoming_service_message;
 
-	vrpn_int32 i;
+    system_messages[-vrpn_CONNECTION_TYPE_DESCRIPTION] =
+        handle_incoming_type_message;
 
-	// Set all of the local IDs to -1, in case the other side
-	// sends a message of a type that it has not yet defined.
-	// (for example, arriving on the UDP line ahead of its TCP
-	// definition).
-	num_registered_remote_services = 0;
-	for (i = 0; i < vrpn_CONNECTION_MAX_SERVICES; i++) {
-		registered_remote_services[i].local_id = -1;
-		registered_remote_services[i].name = NULL;
-	}
-
-	num_registered_remote_types = 0;
-	for (i = 0; i < vrpn_CONNECTION_MAX_TYPES; i++) {
-		registered_remote_types[i].local_id = -1;
-		registered_remote_types[i].name = NULL;
-	}
-
-
-	// Set up the handlers for the system messages.  Skip any ones
-	// that we don't know how to handle.
-	for (i = 0; i < vrpn_CONNECTION_MAX_TYPES; i++) {
-		system_messages[i] = NULL;
-	}
-	system_messages[-vrpn_CONNECTION_SERVICE_DESCRIPTION] =
-		handle_incoming_service_message;
-	system_messages[-vrpn_CONNECTION_TYPE_DESCRIPTION] =
-		handle_incoming_type_message;
-	system_messages[-vrpn_CONNECTION_LOG_DESCRIPTION] =
-	    handle_incoming_log_message;
-
-  
-	// initialize logging data member values
-   if (local_logfile_name) {
-	   d_local_logname = new char [1 + strlen(local_logfile_name)];
-	   if (!d_local_logname) {
-		   fprintf(stderr, "vrpn_BaseConnection::vrpn_Connection:  "
-				   "Out of memory!\n");
-		   return;
-	   }
-	   strcpy(d_local_logname, local_logfile_name);
-   }
-
-   if (remote_logfile_name) {
-	   d_remote_logname = new char [1 + strlen(remote_logfile_name)];
-	   if (!d_remote_logname) {
-		   fprintf(stderr, "vrpn_BaseConnection::vrpn_Connection:  "
-				   "Out of memory!\n");
-		   return;
-	   }
-	   strcpy(d_remote_logname, remote_logfile_name);
-   }
-
+    system_messages[-vrpn_CONNECTION_LOG_DESCRIPTION] =
+        handle_incoming_log_message;
+    
+    
+    // initialize logging data member values
+    if (local_logfile_name) {
+        d_local_logname = new char [1 + strlen(local_logfile_name)];
+        if (!d_local_logname) {
+            fprintf(stderr, "vrpn_BaseConnection::vrpn_Connection:  "
+                    "Out of memory!\n");
+            return;
+        }
+        strcpy(d_local_logname, local_logfile_name);
+    }
+    
+    if (remote_logfile_name) {
+        d_remote_logname = new char [1 + strlen(remote_logfile_name)];
+        if (!d_remote_logname) {
+            fprintf(stderr, "vrpn_BaseConnection::vrpn_Connection:  "
+                    "Out of memory!\n");
+            return;
+        }
+        strcpy(d_remote_logname, remote_logfile_name);
+    }
+    
 }
 
 vrpn_BaseConnection::~vrpn_BaseConnection()
 {
-
-	// close logging and delete dynamically allocated memory
+    // close logging and delete dynamically allocated memory
     if (d_local_logname)
         close_log();
-	if(d_local_logname)
-		delete d_local_logname;
-	if(d_remote_logname)
-		delete d_remote_logname;
-
+    if(d_local_logname)
+        delete d_local_logname;
+    if(d_remote_logname)
+        delete d_remote_logname;
+    delete d_controller_token;
 }
 
 //==========================================================================

@@ -16,6 +16,10 @@
 //
 #include "vrpn_Shared.h"
 
+#if 1 // temporary hack
+    struct vrpn_MsgCallbackEntry;
+#endif
+
 struct vrpn_ConnectionControllerCallbackInterface
 {
     virtual vrpn_int32 do_callbacks_for( 
@@ -44,6 +48,33 @@ struct vrpn_ConnectionControllerCallbackInterface
     // other user messages are sent
     virtual void synchronize_clocks();
 
+
+    // The Connections need a way to get at the list of services/types in the
+    // Controller.  We will use STL-style sequences, by returning
+    // const_iterators to the front and end of the sequence.  The iterators
+    // are simply const pointers.
+    
+    // iterator to the first service in sequence of local services
+    virtual const char* service_begin();
+
+    // iterator to one-past-the-end service in sequence of local services
+    virtual const char* service_end();
+
+#if 0 // doesn't work
+    typedef vrpn_BaseConnectionController::vrpnLocalMapping LM;
+#else
+    struct vrpnLocalMapping {
+        char *                  name;       // Name of type
+        vrpn_MsgCallbackEntry *  who_cares;  // Callbacks
+        vrpn_int32              cCares;     // TCH 28 Oct 97
+    };
+#endif
+
+    // iterator to the first type in sequence of local types
+    virtual const vrpnLocalMapping* type_begin();
+
+    // iterator to one-past-the-end type in sequence of local types
+    virtual const vrpnLocalMapping* type_end();
 };
 //
 // end of our ugly hack

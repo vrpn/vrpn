@@ -17,6 +17,7 @@
 //
 
 #include "vrpn_BaseConnectionController.h"
+#include "vrpn_BaseConnection.h"
 
 // {{{ class vrpn_ClientConnectionController
 
@@ -31,51 +32,54 @@ public:
 
     // constructors ...XXX...
     vrpn_ClientConnectionController(
-		const char * local_logfile_name = NULL, 
-		vrpn_int32 local_log_mode = vrpn_LOG_NONE,
-		const char * remote_logfile_name = NULL, 
-		vrpn_int32 remote_log_mode = vrpn_LOG_NONE,
-		vrpn_float64 dFreq = 4.0, 
-		vrpn_int32 cSyncWindow = 2);
+        const char * local_logfile_name  = NULL, 
+        vrpn_int32   local_log_mode      = vrpn_LOG_NONE,
+        const char * remote_logfile_name = NULL, 
+        vrpn_int32   remote_log_mode     = vrpn_LOG_NONE,
+        vrpn_float64 dFreq               = 4.0, 
+        vrpn_int32   cSyncWindow         = 2);
 
     // Used to initialize connection. Since vrpn_NetConnection c'tor
     // makes callbacks to Controller, we had to move this outside of
     // the ClientConnectionController c'tor. called by
     // vrpn_get_connection_by_name()
     virtual vrpn_int32 connect_to_server(
-		const char * cname, 
-		vrpn_int16 port = vrpn_DEFAULT_LISTEN_PORT_NO,
-		const char * local_logfile_name = NULL, 
-		vrpn_int32 local_log_mode = vrpn_LOG_NONE,
-		const char * remote_logfile_name = NULL, 
-		vrpn_int32 remote_log_mode = vrpn_LOG_NONE,
-		vrpn_int32 tcp_inbuflen = vrpn_CONNECTION_TCP_BUFLEN,
-		vrpn_int32 tcp_outbuflen = vrpn_CONNECTION_TCP_BUFLEN,
-		vrpn_int32 udp_outbuflen = vrpn_CONNECTION_UDP_BUFLEN);
+        const char * cname, 
+        vrpn_int16   port                = vrpn_DEFAULT_LISTEN_PORT_NO,
+
+        const char * local_logfile_name  = NULL, 
+        vrpn_int32   local_log_mode      = vrpn_LOG_NONE,
+
+        const char * remote_logfile_name = NULL, 
+        vrpn_int32   remote_log_mode     = vrpn_LOG_NONE,
+
+        vrpn_int32   tcp_inbuflen        = vrpn_CONNECTION_TCP_BUFLEN,
+        vrpn_int32   tcp_outbuflen       = vrpn_CONNECTION_TCP_BUFLEN,
+        vrpn_int32   udp_outbuflen       = vrpn_CONNECTION_UDP_BUFLEN);
 
     // called by NewFileController to get an interface to a FileConnection.
     //
     // XXX it would be nice if this were private for now, it's public.  it's
     // only needed by FileConnection for now, by may be needed by other stuff
     // in the future.  An alternative is to make it a friend.
-    virtual vrpn_BaseConnection* get_BaseConnection()
+    vrpn_BaseConnection* get_BaseConnection()
     { return d_connection_ptr; }
 
     // }}} end c'tors and d'tors
 
 public: // mainloop
 
-    virtual vrpn_int32 mainloop( const timeval * timeout = NULL );
+    virtual vrpn_int32 mainloop (const timeval * timeout = NULL);
 
     // {{{ services and types
 
 protected: // called by methods in the base class
 
     virtual void register_service_with_connections(
-        const char * service_name, vrpn_int32 service_id );
+        const char * service_name, vrpn_int32 service_id);
     
     virtual void register_type_with_connections(
-        const char * type_name, vrpn_int32 type_id );
+        const char * type_name, vrpn_int32 type_id);
 
     // }}} end services and types
 
@@ -90,13 +94,13 @@ public: // sending and receving
     // * pack a message that will be sent the next time mainloop() is called
     // * turn off the RELIABLE flag if you want low-latency (UDP) send
     // * was: pack_message
-    virtual vrpn_int32 queue_outgoing_message(
-        vrpn_uint32 len, 
-        timeval time,
-        vrpn_int32 type,
-        vrpn_int32 service,
+    virtual vrpn_int32 queue_outgoing_message (
+        vrpn_uint32  len, 
+        timeval      time,
+        vrpn_int32   type,
+        vrpn_int32   service,
         const char * buffer,
-        vrpn_uint32 class_of_service );
+        vrpn_uint32  class_of_service);
 
 public: // logging
 
@@ -124,11 +128,6 @@ public: // status
     // number of connections
     virtual vrpn_int32 num_connections() const { return (d_connection_ptr ? 1 : 0); }
 
-    // these are only needed by the Server, but they had to be
-    // included in vrpn_ConnectionControllerCallbackInterface
-    virtual void got_a_connection(void *) {}
-    virtual void dropped_a_connection(void *) {}
-    
 private: // the connection
     vrpn_BaseConnection * d_connection_ptr;
 
@@ -253,25 +252,26 @@ class vrpn_ConnectionControllerManager {
 
   public:
 
-    ~vrpn_ConnectionControllerManager (void);
+    ~vrpn_ConnectionControllerManager ();
 
-    static vrpn_ConnectionControllerManager & instance (void);
-      // The only way to get access to an instance of this class.
-      // Guarantees that there is only one, global object.
-      // Also guarantees that it will be constructed the first time
-      // this function is called, and (hopefully?) destructed when
-      // the program terminates.
+    // The only way to get access to an instance of this class.
+    // Guarantees that there is only one, global object.
+    // Also guarantees that it will be constructed the first time
+    // this function is called, and (hopefully?) destructed when
+    // the program terminates.
+    static vrpn_ConnectionControllerManager & instance ();
 
     void addController (
         vrpn_ClientConnectionController *, 
         const char * name);
-    void deleteController (vrpn_ClientConnectionController *);
-      // NB implementation is not particularly efficient;  we expect
-      // to have O(10) connections, not O(1000).
 
+    // NB implementation is not particularly efficient;  we expect
+    // to have O(10) connections, not O(1000).
+    void deleteController (vrpn_ClientConnectionController *);
+
+    // Searches through d_kcList but NOT d_anonList
+    // (Connections constructed with no name)
     vrpn_ClientConnectionController * getByName (const char * name);
-      // Searches through d_kcList but NOT d_anonList
-      // (Connections constructed with no name)
 
     vrpn_int32 numControllers();
 
@@ -283,18 +283,19 @@ class vrpn_ConnectionControllerManager {
       knownController * next;
     };
 
+    // named Controllers
     knownController * d_kcList;
-      // named Controllers
 
+    // unnamed (server) Controllers
     knownController * d_anonList;
-      // unnamed (server) Controllers
 
-    vrpn_ConnectionControllerManager (void);
+    vrpn_ConnectionControllerManager ();
 
-    vrpn_ConnectionControllerManager (const vrpn_ConnectionControllerManager &);
-      // copy constructor undefined to prevent instantiations
+    // copy constructor undefined to prevent instantiations
+    vrpn_ConnectionControllerManager (const vrpn_ConnectionControllerManager&);
 
-    static void deleteController (vrpn_ClientConnectionController *, knownController **);
+    static void deleteController (vrpn_ClientConnectionController *,
+                                  knownController **);
 
     vrpn_int32 d_numControllers;
 };

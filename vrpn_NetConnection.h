@@ -32,23 +32,24 @@ class vrpn_NetConnection
 
 public:  // c'tors and d'tors
 
-	vrpn_NetConnection(
-		vrpn_ConnectionControllerCallbackInterface* ccci, // callback hook
-		const char * local_logfile = NULL,
-		vrpn_int32 local_logmode = vrpn_LOG_NONE,
-		const char * remote_logfile = NULL,
-		vrpn_int32 remote_logmode = vrpn_LOG_NONE,
-		vrpn_int32 tcp_inbuflen = vrpn_CONNECTION_TCP_BUFLEN,
-		vrpn_int32 tcp_outbuflen = vrpn_CONNECTION_TCP_BUFLEN,
-        //		vrpn_int32 udp_inbuflen = vrpn_CONNECTION_UDP_BUFLEN,
-		vrpn_int32 udp_outbuflen = vrpn_CONNECTION_UDP_BUFLEN
-		// add multicast arguments later
-		);
+    vrpn_NetConnection(
+        vrpn_BaseConnectionController::SpecialAccessToken *,
+        const char*  local_logfile  = NULL,
+        vrpn_int32   local_logmode  = vrpn_LOG_NONE,
 
-		
+        const char*  remote_logfile = NULL,
+        vrpn_int32   remote_logmode = vrpn_LOG_NONE,
+
+        vrpn_int32   tcp_inbuflen   = vrpn_CONNECTION_TCP_BUFLEN,
+        vrpn_int32   tcp_outbuflen  = vrpn_CONNECTION_TCP_BUFLEN,
+        // vrpn_int32   udp_inbuflen  = vrpn_CONNECTION_UDP_BUFLEN,
+        vrpn_int32   udp_outbuflen  = vrpn_CONNECTION_UDP_BUFLEN
+        // add multicast arguments later
+        );
+    
     virtual ~vrpn_NetConnection();
-
-
+    
+    
 public:  // sending and receiving
 
 
@@ -263,4 +264,4 @@ private: // data members
 
 
 
-#endif VRPN_NETCONNECTION_INCLUDED
+#endif // VRPN_NETCONNECTION_INCLUDED

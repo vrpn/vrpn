@@ -16,9 +16,8 @@
 
 #include "vrpn_CommonSystemIncludes.h"
 #include "vrpn_ConnectionCommonStuff.h"
-#include "vrpn_ConnectionControllerCallbackInterface.h"
 #include "vrpn_FileLogger.h"
-//#include "vrpn_BaseConnectionController.h"
+#include "vrpn_BaseConnectionController.h"
 
 
 #ifndef VRPN_HAVE_DYNAMIC_CAST
@@ -29,13 +28,15 @@ class vrpn_BaseConnection
 {
 public:  // c'tors and d'tors
     vrpn_BaseConnection(
-        vrpn_ConnectionControllerCallbackInterface * ccci,
-		const char * local_logfile_name = NULL,
-		vrpn_int32 local_log_mode = vrpn_LOG_NONE,
-		const char * remote_logfile_name = NULL,
-		vrpn_int32 remote_logmode = vrpn_LOG_NONE
-		);
+        vrpn_BaseConnectionController::SpecialAccessToken *,
 
+        const char * local_logfile_name  = NULL,
+        vrpn_int32   local_log_mode      = vrpn_LOG_NONE,
+
+        const char * remote_logfile_name = NULL,
+        vrpn_int32   remote_logmode      = vrpn_LOG_NONE
+        );
+    
     virtual ~vrpn_BaseConnection();
 
 public:  // status
@@ -65,11 +66,18 @@ public: // initiating connection
 
     virtual vrpn_int32 connect_to_server(
         const char* machine, 
-        vrpn_int16 port) { return 0; }
-	virtual vrpn_int32 start_server(
-        const char *machine, 
-        char *server_name, 
-        char *args) { return 0; }
+        vrpn_int16  port)
+    {
+        return 0;
+    }
+    
+    virtual vrpn_int32 start_server(
+        const char* machine,
+        char*       server_name, 
+        char*       args)
+    {
+        return 0;
+    }
 
     // This is similar to check connection except that it can be
     // used to receive requests from before a server starts up
@@ -92,10 +100,10 @@ public:  // sending and receiving
     // functions for sending messages
     // the ConnectionController calls it
     virtual vrpn_int32 queue_outgoing_message(
-		vrpn_uint32 len, struct timeval time,
+        vrpn_uint32 len, struct timeval time,
         vrpn_int32 type, vrpn_int32 sender, const char * buffer,
         vrpn_uint32 class_of_service, vrpn_bool sent_mcast ) = 0;
-
+    
     // functions for receiving messages
     // the ConnectionController calls it
     virtual vrpn_int32 handle_incoming_messages( const struct timeval * pTimeout = NULL  ) = 0;
@@ -131,14 +139,14 @@ public:  // public type_id and service_id stuff
 
     // was: newLocalSender
     virtual vrpn_int32 register_local_service(
-        const char *service_name,  // e.g. "tracker0"
-        vrpn_int32 local_id );    // from controller
+        const char * service_name,   // e.g. "tracker0"
+        vrpn_int32   local_id);      // from controller
     
     // was: newLocalType
     virtual vrpn_int32 register_local_type(
-        const char *type_name,   // e.g. "tracker_pos"
-        vrpn_int32 local_id );   // from controller
-
+        const char * type_name,   // e.g. "tracker_pos"
+        vrpn_int32   local_id);   // from controller
+    
 
     // Adds a new remote type/service and returns its index.
     // Returns -1 on error.
@@ -190,10 +198,7 @@ public:  // public type_id and service_id stuff
 
 protected: // protected type_id and service_id stuff
 
-
-
-	// pointer to let NetConnection do callbacks
-	vrpn_ConnectionControllerCallbackInterface* d_callback_interface_ptr;
+    vrpn_BaseConnectionController::SpecialAccessToken* const d_controller_token;
 
     // Holds one entry for a mapping of remote strings to local IDs
     struct cRemoteMapping {
@@ -280,19 +285,19 @@ protected: // logging function
     //
     // what kinds of logging go here, and with what interface?
 
-	virtual vrpn_int32 open_log();
-	virtual vrpn_int32 close_log();
-
+    virtual vrpn_int32 open_log();
+    virtual vrpn_int32 close_log();
+    
 protected: // logging data members
 
     // logging object
     vrpn_FileLogger* d_logger_ptr;
 
-	char * d_local_logname;
-	vrpn_int32 d_local_logmode;
-	char * d_remote_logname;
-	vrpn_int32 d_remote_logmode;
-
+    char * d_local_logname;
+    vrpn_int32 d_local_logmode;
+    char * d_remote_logname;
+    vrpn_int32 d_remote_logmode;
+    
 #ifndef VRPN_HAVE_DYNAMIC_CAST
 public:
     // this is a temporary measure until you can assume
@@ -305,10 +310,10 @@ public:
 #endif
     
 public: // todo items
-
+    
     // * some way to querry the name of a connection, for display
     //   purposes in the hiball control panel, etc.
-
+    
 };
 
 

@@ -70,4 +70,4 @@ private: // data members
     
 };
 
-#endif VRPN_FILE_LOGGER_H
+#endif // VRPN_FILE_LOGGER_H

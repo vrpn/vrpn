@@ -5,10 +5,6 @@
 #include "vrpn_CommonSystemIncludes.h"
 #include "vrpn_Shared.h"
 #include "vrpn_ConnectionCommonStuff.h"
-#include "vrpn_ConnectionControllerCallbackInterface.h"
-//#include "vrpn_BaseConnection.h"
-#include "vrpn_NewFileConnection.h"
-#include "vrpn_NetConnection.h"
 
 //
 // In this file, we define the classes
@@ -97,22 +93,6 @@ struct vrpn_MsgCallbackEntry {
     vrpn_MsgCallbackEntry  * next;      // Next handler
 };
 
-
-//  // This is the interface that we provide to the Connection
-//  // classes so that they can invoke callbacks. The only function
-//  // of the ConnectionControllers that we want the Connection
-//  // classes to have access to is do_callbacks_for
-//  struct vrpn_ConnectionControllerCallbackInterface
-//  {
-//      virtual vrpn_int32 do_callbacks_for( 
-//  		vrpn_int32 type, 
-//  		vrpn_int32 sender,
-//  		timeval time, 
-//  		vrpn_uint32 len,
-//  		const char * buffer) = 0;
-
-//  };
-
 // }}}
 
 // {{{ class vrpn_BaseConnectionController
@@ -125,7 +105,7 @@ struct vrpn_MsgCallbackEntry {
 // ClientConnectionController
 //
 
-class vrpn_BaseConnectionController: public vrpn_ConnectionControllerCallbackInterface
+class vrpn_BaseConnectionController
 {
     // {{{ c'tors, and d'tors
 public:
@@ -170,8 +150,9 @@ public:
     // number of connections
     virtual vrpn_int32 num_connections() const = 0;
 
-    virtual void got_a_connection(void *) = 0;
-    virtual void dropped_a_connection(void *) = 0; 
+    // these are for the server
+    virtual void got_a_connection(void *) {};
+    virtual void dropped_a_connection(void *) {}; 
     
     // some way to get a list of open connection names
     // (one need is for the hiball control panel)
@@ -257,8 +238,8 @@ public:
 
     // These are const, but the compiler says that type qualifiers
     // are meaningless here.
-    vrpn_int32 get_num_my_types( void ){ return num_my_types; }
-    vrpn_int32 get_num_my_services( void ){ return num_my_services; }
+    vrpn_int32 get_num_my_types()    { return num_my_types; }
+    vrpn_int32 get_num_my_services() { return num_my_services; }
 
 protected:  // these are called by the public functions above
 
@@ -280,12 +261,14 @@ protected: // changed from private because derived classes need acess
     
     struct vrpnLocalMapping {
         char *                  name;       // Name of type
-        vrpn_MsgCallbackEntry *  who_cares;  // Callbacks
+        vrpn_MsgCallbackEntry * who_cares;  // Callbacks
         vrpn_int32              cCares;     // TCH 28 Oct 97
     };
+
+protected:
     char *              my_services [vrpn_CONNECTION_MAX_SERVICES];
     vrpn_int32          num_my_services;
-    vrpnLocalMapping    my_types [vrpn_CONNECTION_MAX_TYPES];
+    vrpnLocalMapping    my_types    [vrpn_CONNECTION_MAX_TYPES];
     vrpn_int32          num_my_types;
 
     // }}}
@@ -323,7 +306,8 @@ public:
         vrpn_MESSAGEHANDLER handler,
         void *userdata,
         vrpn_int32 service = vrpn_ANY_SERVICE );
-    
+
+protected:
     // * invoke callbacks that have registered
     //   for messages with this (type and service)
     virtual vrpn_int32 do_callbacks_for(
@@ -385,7 +369,110 @@ public:  // clock
     vrpn_int32 queryMsg_id;
     vrpn_int32 replyMsg_id;
     // }}}
+
+public:  // connection special access stuff
+
+    // each connection gets one of these so that it can call
+    // special members that are not accessible to anything else.
+    class SpecialAccessToken
+    {
+        // all methods forward to d_controller
+        vrpn_BaseConnectionController * d_controller;
+        
+        // private constructor.  you shouldn't make one of these yourself.
+        // ConnectionController makes one when it creates a Connection.
+        SpecialAccessToken (vrpn_BaseConnectionController* bcc)
+            : d_controller(bcc) 
+        {}
+
+        // friend so that the constructor is accessible
+        friend vrpn_BaseConnectionController;
+        
+    public:
+        vrpn_int32 do_callbacks_for (vrpn_int32   type, 
+                                     vrpn_int32   sender,
+                                     timeval      time, 
+                                     vrpn_uint32  len,
+                                     const char*  buffer)
+        {
+            return d_controller->do_callbacks_for (type, sender,
+                                                   time, len, buffer);
+        }
+        
+        vrpn_int32 register_handler(
+            vrpn_int32           type,
+            vrpn_MESSAGEHANDLER  handler,
+            void*                userdata,
+            vrpn_int32           service = vrpn_ANY_SERVICE )
+        {
+            return d_controller->register_handler (type, handler,
+                                                   userdata, service);
+        }
+        
+        void got_a_connection (void* pv) {
+            d_controller->got_a_connection (pv);
+        }
+        
+        void dropped_a_connection (void* pv) {
+            d_controller->dropped_a_connection (pv);
+        }
+        
+        // used in vrpn_NetConnection to synchronize clocks before any
+        // other user messages are sent
+        void synchronize_clocks() {
+            d_controller->synchronize_clocks();
+        }
+        
+        
+        // The Connections need a way to get at the list of services/types in
+        // the Controller.  We will use STL-style sequences, by returning
+        // const_iterators to the front and end of the sequence.  The
+        // iterators are simply pointers to const objects.
+        
+#define LOCAL_HAVE_CONST_CAST
+
+        // iterator to the first service in sequence of local services
+        const char** services_begin() {
+#ifdef LOCAL_HAVE_CONST_CAST
+            return const_cast<const char**>(d_controller->my_services);
+#else
+            return (d_controller->my_services);
+#endif
+        }
+        
+        // iterator to one-past-the-end service in sequence of local services
+        const char** services_end() {
+#ifdef LOCAL_HAVE_CONST_CAST
+            return const_cast<const char**>(
+                d_controller->my_services + d_controller->num_my_services);
+#else
+            return (d_controller->my_services + d_controller->num_my_services);
+#endif
+        }
+
+#undef LOCAL_HAVE_CONST_CAST
+        
+        typedef vrpn_BaseConnectionController::vrpnLocalMapping LM;
+
+        // iterator to the first type in sequence of local types
+        const LM* types_begin() {
+            return d_controller->my_types;
+        }
+        
+        // iterator to one-past-the-end type in sequence of local types
+        const LM* type_end() {
+            return (d_controller->my_types + d_controller->num_my_types);
+        }
+    };
     
+    // give the token special access to myself
+    friend class SpecialAccessToken;
+
+    // need a way to create a token.  This is non-virtual on purpose
+    SpecialAccessToken*
+    new_SpecialAccessToken (vrpn_BaseConnectionController* pbcc) {
+        return new SpecialAccessToken (pbcc);
+    }
 };
 
 // }}}
