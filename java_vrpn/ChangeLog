@@ -1,3 +1,12 @@
+2002-08-01  David Marshburn  <marshbur@cs.unc.edu>
+
+	* AnalogRemote.java (stopRunning):  new; let's the vrpn device
+	be shut down nicely if you need to disconnect from one device
+	and connect to another while your program is still running.
+	* ButtonRemote.java:  same
+	* ForceDeviceRemote.java:  same
+	* TrackerRemote.java:  same
+
 2002-07-25  Tatsuhiro Segi  <segi@email.unc.edu>
 
 	* AnalogRemoteListener.java:  revised and commented

@@ -1,7 +1,7 @@
 package vrpn;
 import java.util.*;
 
-public class ButtonRemote extends TimerTask
+public class ButtonRemote implements Runnable
 {
 	
 	//////////////////
@@ -72,6 +72,15 @@ public class ButtonRemote extends TimerTask
 		return mainloopPeriod;
 	}
 	
+	
+	/**
+	 * Stops the button device thread
+	 */
+	public void stopRunning( )
+	{
+		keepRunning = false;
+	}
+
 	
 	/**
 	 * This should <b>not</b> be called by user code.

@@ -2,7 +2,7 @@
 package vrpn;
 import java.util.*;
 
-public class AnalogRemote extends TimerTask
+public class AnalogRemote implements Runnable
 {
 	
 	//////////////////
@@ -79,6 +79,15 @@ public class AnalogRemote extends TimerTask
 	}
 	
 
+	/**
+	 * Stops the analog thread
+	 */
+	public void stopRunning( )
+	{
+		keepRunning = false;
+	}
+
+	
 	/**
 	 * This should <b>not</b> be called by user code.
 	 */

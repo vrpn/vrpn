@@ -3,7 +3,7 @@ import java.util.*;
 
 
 
-public class ForceDeviceRemote extends TimerTask
+public class ForceDeviceRemote implements Runnable
 {
 	
 	//////////////////
@@ -171,6 +171,15 @@ public class ForceDeviceRemote extends TimerTask
 		return mainloopPeriod;
 	}
 	
+	
+	/**
+	 * Stops the force device thread
+	 */
+	public void stopRunning( )
+	{
+		keepRunning = false;
+	}
+
 	
 	/**
 	 * This should <b>not</b> be called by user code.

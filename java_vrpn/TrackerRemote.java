@@ -3,7 +3,7 @@ package vrpn;
 import java.util.*;
 
 
-public class TrackerRemote extends TimerTask
+public class TrackerRemote implements Runnable
 {
 	//////////////////
 	// Public structures and interfaces
@@ -145,6 +145,15 @@ public class TrackerRemote extends TimerTask
 		return mainloopPeriod;
 	}
 	
+	
+	/**
+	 * Stops the tracker thread
+	 */
+	public void stopRunning( )
+	{
+		keepRunning = false;
+	}
+
 	
 	/**
 	 * This should <b>not</b> be called by user code.
