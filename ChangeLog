@@ -1,3 +1,8 @@
+2000-09-21  Tom Hudson  <hudson@cs.unc.edu>
+
+        (vrpn_SharedObject::handle_gotConnection) : small fix for
+        non-serialized use
+
 2000-09-18  Tom Hudson  <hudson@cs.unc.edu>
 
         * vrpn_SharedObject.C:

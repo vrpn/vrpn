@@ -154,7 +154,7 @@ void vrpn_SharedObject::becomeSerializer (void) {
 
   }
 
-fprintf(stderr, "sent requestSerializer\n");
+//fprintf(stderr, "sent requestSerializer\n");
 }
 
 
@@ -245,7 +245,7 @@ int vrpn_SharedObject::handle_requestSerializer (void * userdata,
 
   s->d_queueSets = vrpn_TRUE;
 
-fprintf(stderr, "sent grantSerializer\n");
+//fprintf(stderr, "sent grantSerializer\n");
   return 0;
 }
 
@@ -269,7 +269,7 @@ int vrpn_SharedObject::handle_grantSerializer (void * userdata,
 
   }
 
-fprintf(stderr, "sent assumeSerializer\n");
+//fprintf(stderr, "sent assumeSerializer\n");
   return 0;
 }
 
@@ -327,6 +327,11 @@ int vrpn_SharedObject::handle_gotConnection
 
   if (s->d_isSerializer) {
     s->sendUpdate();
+//fprintf(stderr, "%s: set client's value.\n", s->d_name);
+  } else if (!(s->d_mode & VRPN_SO_DEFER_UPDATES) &&
+             (s->d_myId == s->d_serverId)) {
+    s->sendUpdate();
+//fprintf(stderr, "%s: set remote's value.\n", s->d_name);
   }
 
   return 0;
@@ -685,8 +690,8 @@ int vrpn_Shared_int32::handleUpdate (vrpn_HANDLERPARAM p) {
 
   decode(&p.buffer, &p.payload_len, &newValue, &when);
 
-//fprintf(stderr, "vrpn_Shared_int32::handleUpdate to %d at %d:%d.\n",
-//newValue, when.tv_sec, when.tv_usec);
+//fprintf(stderr, "%s::handleUpdate to %d at %d:%d.\n",
+//d_name, newValue, when.tv_sec, when.tv_usec);
 
   set(newValue, when, vrpn_FALSE);
 
