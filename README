@@ -2,7 +2,9 @@ IMPORTANT LEGAL INFORMATION for offsite use is in README.Legal
 Compile using 'gmake'
 Compile for flow using 'gmake flow'
 
-NOTE:	See http://www.cs.unc.edu/Research/nano/manual/vrpn.
+NOTE:	See http://www.cs.unc.edu/Research/nano/manual/vrpn for
+information on VRPN.
+
 	The source code here has been checked into CVS under the
 root /afs/cs.unc.edu/project/stm/src/CVS_repository.  To get a
 copy of the source, do:
