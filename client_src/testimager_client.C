@@ -124,7 +124,7 @@ void myIdleFunc(void)
 
 int main(int argc, char **argv)
 {
-  char	*device_name = "TestImage@localhos:4511";
+  char	*device_name = "TestImage@cuprum-cs:4511";
 
   // Open the TempImager client and set the callback
   // for new data and for information about the size of
