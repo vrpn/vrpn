@@ -1,3 +1,12 @@
+2000-11-01  Aron Helser  <helser@cs.unc.edu>
+
+	* vrpn_Connection.Ch (vrpn_Log::close): calls saveLogSoFar then
+	closes file. 
+	(vrpn_Log::saveLogSoFar): Incremental save of log file whenever
+	called. 
+	(vrpn_Connection::save_log_so_far): calls vrpn_Log::saveLogSoFar
+	on all open endpoints. 
+
 2000-10-20  Aron Helser  <helser@cs.unc.edu>
 
 	* vrpn_Connection.C (connect_tcp_to): Don't call gethostbyname if

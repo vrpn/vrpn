@@ -451,6 +451,10 @@ class vrpn_Connection {
         virtual int register_log_filter (vrpn_LOGFILTER filter,
                                          void * userdata);
 
+        // Save any messages on any endpoints which have been logged so far.
+        virtual int save_log_so_far();
+
+
     // vrpn_File_Connection implements this as "return this" so it
     // can be used to detect a File_Connection and get the pointer for it
     virtual vrpn_File_Connection * get_File_Connection (void);

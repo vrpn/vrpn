@@ -480,7 +480,10 @@ class vrpn_Log {
       ///< Opens the log file.
 
     int close (void);
-      ///< Closes the log file.
+      ///< Closes and saves the log file.
+
+    int saveLogSoFar(void);
+      ///< Saves any messages logged so far.
 
     int logIncomingMessage (vrpn_int32 payloadLen, struct timeval time,
                     vrpn_int32 type, vrpn_int32 sender, const char * buffer);
@@ -534,6 +537,8 @@ class vrpn_Log {
 
     char * d_magicCookie;
 
+    vrpn_bool d_wroteMagicCookie;
+
     vrpnLogFilterEntry * d_filters;
 
     vrpn_TranslationTable * d_senders;
@@ -554,6 +559,7 @@ vrpn_Log::vrpn_Log (vrpn_TranslationTable * senders,
     d_firstEntry (NULL),
     d_file (NULL),
     d_magicCookie (NULL),
+    d_wroteMagicCookie(vrpn_FALSE),
     d_filters (NULL),
     d_senders (senders),
     d_types (types)
@@ -642,43 +648,37 @@ int vrpn_Log::open (void) {
 }
 
 int vrpn_Log::close (void) {
+  int final_retval = 0;
+  final_retval = saveLogSoFar();
+
+  if ( fclose(d_file)) {
+    fprintf(stderr, "vrpn_Connection::close_log:  "
+                    "close of log file failed!\n");
+    final_retval = -1;
+  }
+  d_file = NULL;
+
+  if (d_logFileName) {
+    delete [] d_logFileName;
+    d_logFileName = NULL;
+  }
+
+
+  return final_retval;
+}
+
+int vrpn_Log::saveLogSoFar(void) {
   vrpn_LOGLIST * lp;
   int host_len;
   int final_retval = 0;
   int retval;
 
+  // If we aren't supposed to be logging, return with no error.
+  if(!logMode()) return 0;
+
   // Make sure the file is open. If not, then error.
   if (!d_file) {
-        fprintf(stderr,
-                "vrpn_Log::close_log: File not open (can't write!)\n");
-        return -1;
-  }
-
-  // Write out the log header (magic cookie)
-  // TCH 20 May 1999
-
-  // There's at least one hack here:
-  //   What logging mode should a client that plays back the log at a
-  // later time be forced into?  I believe NONE, but there might be
-  // arguments the other way? So, you may want to adjust the cookie
-  // to make the log mode 0.
-
-  retval = fwrite(d_magicCookie, 1, vrpn_cookie_size(), d_file);
-  if (retval != vrpn_cookie_size()) {
-    fprintf(stderr, "vrpn_Log::close_log:  "
-                    "Couldn't write magic cookie to log file "
-                    "(got %d, expected %d).\n",
-            retval, vrpn_cookie_size());
-    lp = d_logTail;
-    final_retval = -1;
-  }
-
-
-  // Write out the messages in the log,
-  // starting at d_firstEntry and working backwards
-
-  if (!d_file) {
-    fprintf(stderr, "vrpn_Log::close_log:  "
+    fprintf(stderr, "vrpn_Log::saveLogSoFar:  "
                     "Log file is not open!\n");
 
     // Abort writing out log without destroying data needed to
@@ -688,12 +688,36 @@ int vrpn_Log::close (void) {
     final_retval = -1;
   }
 
+  if(!d_wroteMagicCookie) {
+    // Write out the log header (magic cookie)
+    // TCH 20 May 1999
+    
+    // There's at least one hack here:
+    //   What logging mode should a client that plays back the log at a
+    // later time be forced into?  I believe NONE, but there might be
+    // arguments the other way? So, you may want to adjust the cookie
+    // to make the log mode 0.
+    
+    retval = fwrite(d_magicCookie, 1, vrpn_cookie_size(), d_file);
+    if (retval != vrpn_cookie_size()) {
+      fprintf(stderr, "vrpn_Log::saveLogSoFar:  "
+              "Couldn't write magic cookie to log file "
+              "(got %d, expected %d).\n",
+              retval, vrpn_cookie_size());
+      lp = d_logTail;
+      final_retval = -1;
+    }
+    d_wroteMagicCookie = vrpn_TRUE;
+  }
+
+  // Write out the messages in the log,
+  // starting at d_firstEntry and working backwards
   for (lp = d_firstEntry; lp && !final_retval; lp = lp->prev) {
 
     retval = fwrite(&lp->data, 1, sizeof(lp->data), d_file);
     
     if (retval != sizeof(lp->data)) {
-      fprintf(stderr, "vrpn_Log::close_log:  "
+      fprintf(stderr, "vrpn_Log::saveLogSoFar:  "
                       "Couldn't write log file (got %d, expected %d).\n",
               retval, sizeof(lp->data));
       lp = d_logTail;
@@ -709,23 +733,12 @@ int vrpn_Log::close (void) {
     retval = fwrite(lp->data.buffer, 1, host_len, d_file);
 
     if (retval != host_len) {
-      fprintf(stderr, "vrpn_Connection::close_log:  "
+      fprintf(stderr, "vrpn_Connection::saveLogSoFar:  "
                       "Couldn't write log file.\n");
       lp = d_logTail;
       final_retval = -1;
       continue;
     }
-  }
-
-  retval = fclose(d_file);
-  if (retval) {
-    fprintf(stderr, "vrpn_Connection::close_log:  "
-                    "close of log file failed!\n");
-    final_retval = -1;
-  }
-
-  if (d_logFileName) {
-    delete [] d_logFileName;
   }
 
   // clean up the linked list
@@ -738,13 +751,11 @@ int vrpn_Log::close (void) {
     d_logTail = lp;
   }
 
-  d_logFileName = NULL;
   d_firstEntry = NULL;
-
-  d_file = NULL;
 
   return final_retval;
 }
+
 
 int vrpn_Log::logIncomingMessage
                    (vrpn_int32 payloadLen, struct timeval time,
@@ -4843,6 +4854,16 @@ int vrpn_Connection::register_log_filter (vrpn_LOGFILTER filter,
   // XXXX
   //return endpoint.d_log->addFilter(filter, userdata);
   return 0;
+}
+
+// virtual
+int vrpn_Connection::save_log_so_far() {
+  int i;
+  int final_retval = 0;
+  for (i = 0; i < d_numEndpoints; i++) {
+    final_retval |= d_endpoints[i]->d_log->saveLogSoFar();
+  }
+  return final_retval;
 }
 
 // virtual
