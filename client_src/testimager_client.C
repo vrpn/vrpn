@@ -23,6 +23,7 @@ vrpn_TempImager_Remote  *g_ti;		//< TempImager client object
 bool g_got_dimensions = false;		//< Heard image dimensions from server?
 bool g_ready_for_region = false;	//< Everything set up to handle a region?
 unsigned char *g_image = NULL;		//< Pointer to the storage for the image
+bool g_already_posted = false;		//< Posted redisplay since the last display?
 
 //----------------------------------------------------------------------------
 // TempImager callback handlers.
@@ -88,24 +89,15 @@ void  handle_region_change(void *, const vrpn_IMAGERREGIONCB info)
     // Capture timing information and print out how many frames per second
     // are coming across the wire.
 
-    if (region->rMin==0){
-		fps[0]++;
-	}
-    DWORD CurTime=timeGetTime();
-    if (lastCallTime[0]!=0) {
-		if (CurTime-lastCallTime[0]>ReportInterval) {
-			printf("Received frames per second = %lg\n", 1000.f*fps[0]/(CurTime-lastCallTime[0]));
-			fps[0]=0;
-			lastCallTime[0]=CurTime;
-		}
-    }
-    else {
-		lastCallTime[0]=CurTime;
-	}
-	
-	// Force to redraw the display. GLUT seems to have a problem with its mainloop
-    if (info.region->rMin==0)
-		myDisplayFunc();
+  // Tell Glut it is time to draw.  Make sure that we don't post the redisplay
+  // operation more than once by checking to make sure that it has been handled
+  // since the last time we posted it.  If we don't do this check, it gums
+  // up the works with tons of redisplay requests and the program won't
+  // even handle windows events.
+  if (!g_already_posted) {
+    glutPostRedisplay();
+    g_already_posted = true;
+  }
 }
 
 //----------------------------------------------------------------------------
@@ -130,18 +122,29 @@ void myDisplayFunc(void)
   // Capture timing information and print out how many frames per second
   // are being drawn.
 
-  fps[1]++;
-  DWORD CurTime=timeGetTime();
-  if (lastCallTime[1]!=0) {
-    if (CurTime-lastCallTime[1]>ReportInterval) {
-       printf("Drawn frames per second = %lg\n", 1000.f*fps[1]/(CurTime-lastCallTime[1]));
-       fps[1]=0;
-       lastCallTime[1]=CurTime;
-    } 
+  { static struct timeval last_print_time;
+    struct timeval now;
+    static bool first_time = true;
+    static int frame_count = 0;
+
+    if (first_time) {
+      gettimeofday(&last_print_time, NULL);
+      first_time = false;
+    } else {
+      frame_count++;
+      gettimeofday(&now, NULL);
+      double timesecs = 0.001 * vrpn_TimevalMsecs(vrpn_TimevalDiff(now, last_print_time));
+      if (timesecs >= 5) {
+	double frames_per_sec = frame_count / timesecs;
+	frame_count = 0;
+	printf("Displayed frames per second = %lg\n", frames_per_sec);
+	last_print_time = now;
+      }
+    }
   }
-  else {
-    lastCallTime[1]=CurTime;
-  }
+
+  // Have no longer posted redisplay since the last display.
+  g_already_posted = false;
 }
 
 void myIdleFunc(void)
@@ -154,7 +157,7 @@ void myIdleFunc(void)
 
 int main(int argc, char **argv)
 {
-  char	*device_name = "TestImage@copper-cs:4511";
+  char	*device_name = "TestImage@localhost:4511";
 
   // Open the TempImager client and set the callback
   // for new data and for information about the size of

@@ -1,3 +1,13 @@
+2002-10-30  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* testimager_client.C : Only post redisplay to Glut once before it
+		actually calls the display function.  Otherwise, the calls
+		bunch up and the application even stops responding to windows
+		events.
+	* test_tempimager.dsp : Enables build for Release.
+	* test_zaber.dsp : Same.
+	* testimager_client.dsp : Same.
+
 2002-10-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* testimager_client.C : Scales faster, puts in more timing info.
