@@ -1,3 +1,7 @@
+2004-09-07  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Serial.C : Added John Stone's fix to make it compile on macs.
+
 2004-09-01  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_FunctionGenerator.[h,C]:  first commit of a new device

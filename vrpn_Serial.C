@@ -325,6 +325,9 @@ int vrpn_close_commport(int comm)
 // Set the RTS ("ready to send") bit on an open commport.
 int vrpn_set_rts(int comm)
 {
+#if defined(hpux) || defined(__hpux) || defined(ultrix) || defined(FreeBSD) || defined(__CYGWIN__) || defined(__APPLE__)
+  return -1;
+#else
 #if defined(_WIN32)
   // Determine the handle for this serial port by looking it
   // up in our list.  Then make the system call that Kyle from
@@ -360,11 +363,15 @@ int vrpn_set_rts(int comm)
 
   return 0;
 #endif
+#endif
 }
 
 // Clear the RTS ("ready to send") bit on an open commport.
 int vrpn_clear_rts(int comm)
 {
+#if defined(hpux) || defined(__hpux) || defined(ultrix) || defined(FreeBSD) || defined(__CYGWIN__) || defined(__APPLE__)
+  return -1;
+#else
 #if defined(_WIN32)
   // Determine the handle for this serial port by looking it
   // up in our list.  Then make the system call that Kyle from
@@ -399,6 +406,7 @@ int vrpn_clear_rts(int comm)
   }
 
   return 0;
+#endif
 #endif
 }
 
@@ -594,3 +602,4 @@ int vrpn_write_characters(int comm, const unsigned char *buffer, int bytes)
 	return write(comm, buffer, bytes);
 #endif
 }
+
