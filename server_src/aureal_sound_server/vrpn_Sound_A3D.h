@@ -5,6 +5,7 @@
 
 #define INITGUID
 
+
 #include <objbase.h>
 #include <stdlib.h>
 #include <cguid.h>
@@ -55,6 +56,7 @@ public:
 						If the sound is playing changes take place immediately.  
 						If not nothing happens. */
 	void        initModel(vrpn_ModelDef modelDef);
+	void        DrawModel(char * filename);
 	
 	void        changeE_f_S_m(qogl_matrix_type newmatrix); // sets the eye_from_sensor matrix
 

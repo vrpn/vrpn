@@ -6,28 +6,29 @@
 --------------------Configuration: aureal_sound_server - Win32 Debug--------------------
 </h3>
 <h3>Command Lines</h3>
-Creating temporary file "C:\TEMP\RSP711.tmp" with contents
+Creating temporary file "C:\TEMP\RSP1C.tmp" with contents
 [
 /nologo /MTd /W3 /Gm /GX /ZI /Od /I "../.." /I "../quat" /I "c:/Program Files/Aureal/A3D 2.0 SDK/sdk/inc" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"Debug/aureal_sound_server.pch" /YX /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
 "E:\Public\vrpn\server_src\aureal_sound_server\vrpn_Sound_A3D.cpp"
 ]
-Creating command line "cl.exe @C:\TEMP\RSP711.tmp" 
-Creating temporary file "C:\TEMP\RSP712.tmp" with contents
+Creating command line "cl.exe @C:\TEMP\RSP1C.tmp" 
+Creating temporary file "C:\TEMP\RSP1D.tmp" with contents
 [
 winmm.lib wsock32.lib comctl32.lib ..\quat\Debug\quat.lib ../../pc_win32/Debug/vrpn.lib "c:\Program Files\Aureal\A3D 2.0 SDK\sdk\lib\ia3dutild.lib" opengl32.lib glu32.lib glaux.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:yes /pdb:"Debug/aureal_sound_server.pdb" /debug /machine:I386 /nodefaultlib:"libcmtd.lib" /out:"Debug/aureal_sound_server.exe" /pdbtype:sept 
 .\Debug\vrpn_Sound_A3D.obj
+.\Debug\aurealss.res
 ]
-Creating command line "link.exe @C:\TEMP\RSP712.tmp"
+Creating command line "link.exe @C:\TEMP\RSP1D.tmp"
 <h3>Output Window</h3>
 Compiling...
-Skipping... (no relevant changes detected)
 vrpn_Sound_A3D.cpp
-Linking...
+e:\public\vrpn\server_src\aureal_sound_server\vrpn_sound_a3d.h(20) : fatal error C1083: Cannot open include file: 'quat.h': No such file or directory
+Error executing cl.exe.
 
 
 
 <h3>Results</h3>
-aureal_sound_server.exe - 0 error(s), 0 warning(s)
+aureal_sound_server.exe - 1 error(s), 0 warning(s)
 </pre>
 </body>
 </html>
