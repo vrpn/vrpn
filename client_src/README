@@ -38,3 +38,13 @@ sound_client.c:
 
 vrpnTrackerClient.cpp:
 
+bdbox_client.C:	connects to a button box server using vrpn_Analog and 
+	vrpn_Button; includes example of vrpn rsh server startup
+
+phan_client.C: simple phantom client that makes a flat surface
+
+sphere_client.C: phantom client that makes a sphere
+
+ff_client.C: phantom client that makes a force field
+
+ohm_client.C: vrpn ohmmeter client for ORPX2 ohmmeter
