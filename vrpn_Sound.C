@@ -48,7 +48,7 @@ vrpn_Sound::~vrpn_Sound()
 
 //Used to send the filename to load and the index to be used to refer 
 //to the sound by the client from now on
-vrpn_int32 vrpn_Sound::encodeSound(char *filename, vrpn_SoundID id, char **buf)
+vrpn_int32 vrpn_Sound::encodeSound(const char *filename, const vrpn_SoundID id, char **buf)
 {
 	vrpn_int32 len = sizeof(vrpn_SoundID) + strlen(filename) + 1;
 	vrpn_int32 ret = len;
@@ -64,7 +64,7 @@ vrpn_int32 vrpn_Sound::encodeSound(char *filename, vrpn_SoundID id, char **buf)
 }
 
 //Decodes the file and Client Index number
-vrpn_int32 vrpn_Sound::decodeSound(char *buf, char **filename, vrpn_SoundID *id, int payload)
+vrpn_int32 vrpn_Sound::decodeSound(const char *buf, char **filename, vrpn_SoundID *id, const int payload)
 {
 	const char *mptr = buf;
 
@@ -77,7 +77,7 @@ vrpn_int32 vrpn_Sound::decodeSound(char *buf, char **filename, vrpn_SoundID *id,
 }
 
 //Encodes the client sound ID 
-vrpn_int32 vrpn_Sound::encodeSoundID(vrpn_SoundID id, char* buf)
+vrpn_int32 vrpn_Sound::encodeSoundID(const vrpn_SoundID id, char* buf)
 {
 	char* mptr = buf;
 	vrpn_int32 len = sizeof(vrpn_SoundID);
@@ -88,7 +88,7 @@ vrpn_int32 vrpn_Sound::encodeSoundID(vrpn_SoundID id, char* buf)
 }
 
 //Decodes the client sound ID 
-vrpn_int32 vrpn_Sound::decodeSoundID(char* buf, vrpn_SoundID *id)
+vrpn_int32 vrpn_Sound::decodeSoundID(const char* buf, vrpn_SoundID *id)
 {
 	const char* mptr = buf;
 
@@ -99,7 +99,7 @@ vrpn_int32 vrpn_Sound::decodeSoundID(char* buf, vrpn_SoundID *id)
 
 //Sends all the information necessary to play a sound appropriately.
 //IE, The sounds position, orientation, velocity, volume and repeat count
-vrpn_int32 vrpn_Sound::encodeSoundDef(vrpn_SoundDef sound, vrpn_SoundID id, vrpn_int32 repeat, char* buf)
+vrpn_int32 vrpn_Sound::encodeSoundDef(const vrpn_SoundDef sound, const vrpn_SoundID id, const vrpn_int32 repeat, char* buf)
 {
 	char *mptr = buf;
 	vrpn_int32 len = sizeof(vrpn_SoundDef) + sizeof(vrpn_SoundID) + sizeof(vrpn_int32);
@@ -117,21 +117,26 @@ vrpn_int32 vrpn_Sound::encodeSoundDef(vrpn_SoundDef sound, vrpn_SoundID id, vrpn
 
 	for(i = 0; i < 4; i++)
 		vrpn_buffer(&mptr, &len, sound.velocity[i]);
-
+	
 	vrpn_buffer(&mptr, &len, sound.volume);
+
+	vrpn_buffer(&mptr, &len, sound.max_front_dist);
+	vrpn_buffer(&mptr, &len, sound.min_front_dist);
+	vrpn_buffer(&mptr, &len, sound.max_back_dist);
+	vrpn_buffer(&mptr, &len, sound.max_back_dist);
 
 	return ret;
 	
 }
 
-vrpn_int32 vrpn_Sound::decodeSoundDef(char* buf, vrpn_SoundDef *sound, vrpn_SoundID *id, vrpn_int32 *repeat)
+vrpn_int32 vrpn_Sound::decodeSoundDef(const char* buf, vrpn_SoundDef *sound, vrpn_SoundID *id, vrpn_int32 *repeat)
 {
 	const char *mptr = buf;
 	int i;
 
 	vrpn_unbuffer(&mptr, repeat);
 	vrpn_unbuffer(&mptr, id);
-
+	
 	for(i = 0; i < 3; i++)
 		vrpn_unbuffer(&mptr, &(sound->pose.position[i]));
 
@@ -143,11 +148,17 @@ vrpn_int32 vrpn_Sound::decodeSoundDef(char* buf, vrpn_SoundDef *sound, vrpn_Soun
 
 	vrpn_unbuffer(&mptr, &(sound->volume));
 
+	vrpn_unbuffer(&mptr, &(sound->max_front_dist));
+	vrpn_unbuffer(&mptr, &(sound->min_front_dist));
+	vrpn_unbuffer(&mptr, &(sound->max_back_dist));
+	vrpn_unbuffer(&mptr, &(sound->min_back_dist));
+
+
 	return 0;
 }
 
 //Sends information about the listener. IE  position, orientation and velocity
-vrpn_int32 vrpn_Sound::encodeListener(vrpn_ListenerDef Listener, char* buf)
+vrpn_int32 vrpn_Sound::encodeListener(const vrpn_ListenerDef Listener, char* buf)
 {
 	char *mptr = buf;
 	vrpn_int32 len = sizeof(vrpn_ListenerDef);
@@ -168,7 +179,7 @@ vrpn_int32 vrpn_Sound::encodeListener(vrpn_ListenerDef Listener, char* buf)
 	return ret;
 }
 
-vrpn_int32 vrpn_Sound::decodeListener(char* buf, vrpn_ListenerDef *Listener)
+vrpn_int32 vrpn_Sound::decodeListener(const char* buf, vrpn_ListenerDef *Listener)
 {
 	const char *mptr = buf;
 	int i;
@@ -236,6 +247,11 @@ vrpn_SoundID vrpn_Sound_Client::addSoundDef(vrpn_SoundDef sound)
 
 	soundDefs[Defs_CurNum].volume = sound.volume;
 
+	soundDefs[Defs_CurNum].max_front_dist = sound.max_front_dist;
+	soundDefs[Defs_CurNum].min_front_dist = sound.min_front_dist;
+	soundDefs[Defs_CurNum].max_back_dist = sound.max_back_dist;
+	soundDefs[Defs_CurNum].min_back_dist = sound.min_back_dist;
+
 	returnVal = Defs_CurNum;
 	Defs_CurNum++;
 
@@ -247,7 +263,10 @@ vrpn_SoundID vrpn_Sound_Client::addSoundDef(vrpn_SoundDef sound)
   volume = 100%
   position = (0, 0, 0)
   orientation = (0, 0, 0, 0)
-  velocity = (0, 0, 0)*/
+  velocity = (0, 0, 0)
+  distances:
+    max=10, min=0
+*/
 void vrpn_Sound_Client::initSoundDef(vrpn_SoundDef* soundDef)
 {
 	int i;
@@ -262,11 +281,17 @@ void vrpn_Sound_Client::initSoundDef(vrpn_SoundDef* soundDef)
 
 	for(i = 0; i < 4; i++)
 		soundDef->velocity[i] = 0;
+
+	soundDef->max_front_dist = 10;
+	soundDef->min_front_dist = 0;
+	soundDef->max_back_dist  = 0;
+	soundDef->min_back_dist  = 10;
+
 }
 
 /*Sends a play sound message to the server.  Sends the id of the sound to play
   and the repeat value.  If 0 then it plays it continuously*/
-vrpn_int32 vrpn_Sound_Client::playSound(vrpn_SoundID id, vrpn_int32 repeat)
+vrpn_int32 vrpn_Sound_Client::playSound(const vrpn_SoundID id, vrpn_int32 repeat)
 {
 	char* buf = new char[sizeof(vrpn_SoundDef) + sizeof(vrpn_SoundID) + sizeof(vrpn_int32)];
 	vrpn_int32 len;
@@ -283,7 +308,7 @@ vrpn_int32 vrpn_Sound_Client::playSound(vrpn_SoundID id, vrpn_int32 repeat)
 }
 
 /*Stops a playing sound*/
-vrpn_int32 vrpn_Sound_Client::stopSound(vrpn_SoundID id)
+vrpn_int32 vrpn_Sound_Client::stopSound(const vrpn_SoundID id)
 {
 	char* buf = new char[sizeof(vrpn_SoundID)];
 	vrpn_int32 len;
@@ -301,7 +326,7 @@ vrpn_int32 vrpn_Sound_Client::stopSound(vrpn_SoundID id)
 
 /*Loads a sound file on the server machine for playing.  Returns a vrpn_SoundID to
   be used to refer to that sound from now on*/
-vrpn_SoundID vrpn_Sound_Client::loadSound(char* sound)
+vrpn_SoundID vrpn_Sound_Client::loadSound(const char* sound)
 {
 	vrpn_int32 len, curIndex;
 	char* buf;
@@ -322,7 +347,7 @@ vrpn_SoundID vrpn_Sound_Client::loadSound(char* sound)
 }
 
 /*Unloads a sound file on the server side*/
-vrpn_int32 vrpn_Sound_Client::unloadSound(vrpn_SoundID id)
+vrpn_int32 vrpn_Sound_Client::unloadSound(const vrpn_SoundID id)
 {
 	vrpn_int32 len;
 	char *buf = new char[sizeof(vrpn_SoundID)];
@@ -339,7 +364,7 @@ vrpn_int32 vrpn_Sound_Client::unloadSound(vrpn_SoundID id)
 }
 
 
-vrpn_int32 vrpn_Sound_Client::changeSoundVolume(vrpn_SoundID id, vrpn_int32 volume)
+vrpn_int32 vrpn_Sound_Client::changeSoundVolume(const vrpn_SoundID id, const vrpn_int32 volume)
 {
 	char* buf = new char[sizeof(vrpn_SoundDef) + sizeof(vrpn_SoundID) + sizeof(vrpn_int32)];
 	vrpn_int32 len;
@@ -358,7 +383,7 @@ vrpn_int32 vrpn_Sound_Client::changeSoundVolume(vrpn_SoundID id, vrpn_int32 volu
 	return 0;
 }
 
-vrpn_int32 vrpn_Sound_Client::changeSoundPose(vrpn_SoundID id, vrpn_float64 position[3], vrpn_float64 orientation[4])
+vrpn_int32 vrpn_Sound_Client::changeSoundPose(const vrpn_SoundID id, vrpn_float64 position[3], vrpn_float64 orientation[4])
 {
 	char* buf = new char[sizeof(vrpn_SoundDef) + sizeof(vrpn_SoundID) + sizeof(vrpn_int32)];
 	vrpn_int32 len;
@@ -377,7 +402,7 @@ vrpn_int32 vrpn_Sound_Client::changeSoundPose(vrpn_SoundID id, vrpn_float64 posi
 	return 0;
 }
 
-vrpn_int32 vrpn_Sound_Client::changeSoundVelocity(vrpn_SoundID id, vrpn_float64 velocity[4])
+vrpn_int32 vrpn_Sound_Client::changeSoundVelocity(const vrpn_SoundID id, vrpn_float64 velocity[4])
 {
 	char* buf = new char[sizeof(vrpn_SoundDef) + sizeof(vrpn_SoundID) + sizeof(vrpn_int32)];
 	vrpn_int32 len;
@@ -397,7 +422,7 @@ vrpn_int32 vrpn_Sound_Client::changeSoundVelocity(vrpn_SoundID id, vrpn_float64 
 }
 
 
-vrpn_int32 vrpn_Sound_Client::changeListenerPose(vrpn_float64 position[3], vrpn_float64 orientation[4])
+vrpn_int32 vrpn_Sound_Client::changeListenerPose(const vrpn_float64 position[3], const vrpn_float64 orientation[4])
 {
 	char* buf = new char[sizeof(vrpn_SoundDef) + sizeof(vrpn_SoundID) + sizeof(vrpn_int32)];
 	vrpn_int32 len;
@@ -417,7 +442,7 @@ vrpn_int32 vrpn_Sound_Client::changeListenerPose(vrpn_float64 position[3], vrpn_
 	return 0;
 }
 
-vrpn_int32 vrpn_Sound_Client::changeListenerVelocity(vrpn_float64 velocity[4])
+vrpn_int32 vrpn_Sound_Client::changeListenerVelocity(const vrpn_float64 velocity[4])
 {
 	char* buf = new char[sizeof(vrpn_SoundDef) + sizeof(vrpn_SoundID) + sizeof(vrpn_int32)];
 	vrpn_int32 len;
@@ -426,6 +451,23 @@ vrpn_int32 vrpn_Sound_Client::changeListenerVelocity(vrpn_float64 velocity[4])
 	for(i = 0; i < 4; i++) Listener.velocity[i] = velocity[i];
 	
 	len = encodeListener(Listener, buf);
+
+	gettimeofday(&timestamp, NULL);
+
+	if (connection->pack_message(len, timestamp, change_listener_status, my_id, buf, vrpn_CONNECTION_RELIABLE))
+      fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
+
+	delete [] buf;
+	return 0;
+}
+
+vrpn_int32 vrpn_Sound_Client::changeSoundDistances(const vrpn_SoundID id, const vrpn_float64 max_front_dist, const vrpn_float64 min_front_dist, const vrpn_float64 max_back_dist, const vrpn_float64 min_back_dist) {
+	char* buf = new char[sizeof(vrpn_SoundDef) + sizeof(vrpn_SoundID) + sizeof(vrpn_int32)];
+	vrpn_int32 len;
+
+	setDefDistances(id, max_front_dist, min_front_dist, max_back_dist, min_back_dist);
+	
+	len = encodeSoundDef(getSoundDef(id), id, 0, buf);
 
 	gettimeofday(&timestamp, NULL);
 

@@ -23,6 +23,10 @@ public:
 	{
 	  vrpn_PoseDef pose;
 	  vrpn_float64 velocity[4];
+	  vrpn_float64 max_front_dist;
+	  vrpn_float64 min_front_dist;
+	  vrpn_float64 max_back_dist;
+	  vrpn_float64 min_back_dist;
 	  vrpn_int32 volume;
 	} vrpn_SoundDef;
 
@@ -54,16 +58,16 @@ protected:
 
 	/*Note encodeSound allocates space dynamically for buf, it is your
 	  responsibility to free it up*/
-	vrpn_int32 encodeSound(char *filename, vrpn_SoundID id, char **buf);
+	vrpn_int32 encodeSound(const char *filename, const vrpn_SoundID id, char **buf);
 	/*Note decodeSound allocates space dynamically for filename, it is your
 	  responsibility to free it up*/
-	vrpn_int32 decodeSound(char *buf, char **filename, vrpn_SoundID *id, int payload);
-	vrpn_int32 encodeSoundID(vrpn_SoundID id, char* buf);
-	vrpn_int32 decodeSoundID(char* buf, vrpn_SoundID *id);
-	vrpn_int32 encodeSoundDef(vrpn_SoundDef sound, vrpn_SoundID id, vrpn_int32 repeat, char* buf);
-	vrpn_int32 decodeSoundDef(char* buf, vrpn_SoundDef *sound, vrpn_SoundID *id, vrpn_int32 *repeat);
-	vrpn_int32 encodeListener(vrpn_ListenerDef Listener, char* buf);
-	vrpn_int32 decodeListener(char* buf, vrpn_ListenerDef *Listener);
+	vrpn_int32 decodeSound(const char *buf, char **filename, vrpn_SoundID *id, const int payload);
+	vrpn_int32 encodeSoundID(const vrpn_SoundID id, char* buf);
+	vrpn_int32 decodeSoundID(const char* buf, vrpn_SoundID *id);
+	vrpn_int32 encodeSoundDef(const vrpn_SoundDef sound, const vrpn_SoundID id, const vrpn_int32 repeat, char* buf);
+	vrpn_int32 decodeSoundDef(const char* buf, vrpn_SoundDef *sound, vrpn_SoundID *id, vrpn_int32 *repeat);
+	vrpn_int32 encodeListener(const vrpn_ListenerDef Listener, char* buf);
+	vrpn_int32 decodeListener(const char* buf, vrpn_ListenerDef *Listener);
 
 public:
 	vrpn_Sound(const char * name, vrpn_Connection * c);
@@ -79,22 +83,29 @@ public:
 
 	//This command starts a sound playing, the repeat value indicates how
 	//many times to play it.  Continuously if repeat is set to 0
-	vrpn_int32 playSound(vrpn_SoundID id, vrpn_int32 repeat);
-	vrpn_int32 stopSound(vrpn_SoundID id);
+	vrpn_int32 playSound(const vrpn_SoundID id, vrpn_int32 repeat);
+	vrpn_int32 stopSound(const vrpn_SoundID id);
 	//Loads a sound into memory on the server side, returns the ID value to be
 	//used to refer to the sound from now on.  Pass in the path and filename
-	vrpn_SoundID loadSound(char* sound);
-	vrpn_int32 unloadSound(vrpn_SoundID id);
+	vrpn_SoundID loadSound(const char* sound);
+	vrpn_int32 unloadSound(const vrpn_SoundID id);
 
 	//All the functions with change and sound in them, can change either an
 	//already playing sound or one yet to be played
-	vrpn_int32 changeSoundVolume(vrpn_SoundID id, vrpn_int32 volume);
-	vrpn_int32 changeSoundPose(vrpn_SoundID id, vrpn_float64 position[3], vrpn_float64 orientation[4]);
-	vrpn_int32 changeSoundVelocity(vrpn_SoundID id, vrpn_float64 velocity[4]);
+	vrpn_int32 changeSoundVolume(const vrpn_SoundID id, const vrpn_int32 volume);
+	vrpn_int32 changeSoundPose(const vrpn_SoundID id, vrpn_float64 position[3], vrpn_float64 orientation[4]);
+	vrpn_int32 changeSoundVelocity(const vrpn_SoundID id, vrpn_float64 velocity[4]);
+	
+	// set min/max distances for a specific sound
+	  // the max_front_dist is distance at which sound will be completely silent when sound in front of listener
+	  // the min_front_dist is distance at which sound will be at max volume when sound in front of listener
+	  // the max_back_dist is distance at which sound will be completely silent when sound behind listener
+	  // the min_back_dist is distance at which sound will be completely silent when sound behind listener
+	vrpn_int32 changeSoundDistances(const vrpn_SoundID id, const vrpn_float64 max_front_dist, const vrpn_float64 min_front_dist, const vrpn_float64 max_back_dist, const vrpn_float64 min_back_dist);
 
 	//The position, orientation and velocity of the listener can change how it sounds
-	vrpn_int32 changeListenerPose(vrpn_float64 position[3], vrpn_float64 orientation[4]);
-	vrpn_int32 changeListenerVelocity(vrpn_float64 velocity[4]);
+	vrpn_int32 changeListenerPose(const vrpn_float64 position[3], const vrpn_float64 orientation[4]);
+	vrpn_int32 changeListenerVelocity(const vrpn_float64 velocity[4]);
 
 	void mainloop(const struct timeval * timeout=NULL);
 
@@ -123,13 +134,19 @@ protected:
 	inline void setDefPose(vrpn_SoundID id, vrpn_float64 position[3], vrpn_float64 orientation[4])
 	{
 		int i;
-		for(i = 0; i < 3; i++) soundDefs[i].pose.position[i] = position[i];
-		for(i = 0; i < 4; i++) soundDefs[i].pose.orientation[i] = orientation[i];
+		for(i = 0; i < 3; i++) soundDefs[id].pose.position[i] = position[i];
+		for(i = 0; i < 4; i++) soundDefs[id].pose.orientation[i] = orientation[i];
 	};
 	inline void setDefVelocity(vrpn_SoundID id, vrpn_float64 velocity[4])
 	{
 		int i;
-		for(i = 0; i < 4; i++) soundDefs[i].velocity[i] = velocity[i];
+		for(i = 0; i < 4; i++) soundDefs[id].velocity[i] = velocity[i];
+	};
+	inline void setDefDistances(vrpn_SoundID id, vrpn_float64 max_front_dist,vrpn_float64 min_front_dist,vrpn_float64 max_back_dist,vrpn_float64 min_back_dist) {
+		soundDefs[id].max_front_dist = max_front_dist;
+		soundDefs[id].min_front_dist = min_front_dist;
+		soundDefs[id].max_back_dist  = max_back_dist;
+		soundDefs[id].min_back_dist  = min_back_dist;
 	};
 
 private:
