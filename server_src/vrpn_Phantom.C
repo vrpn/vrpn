@@ -1,3 +1,5 @@
+#include  "vrpn_Configure.h"
+#ifdef	VRPN_USE_PHANTOM_SERVER
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -1004,4 +1006,4 @@ void phantomErrorHandler( int errnum, char *description, void *userdata)
 	}
 }
 
-
+#endif

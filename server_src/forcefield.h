@@ -1,6 +1,9 @@
 #ifndef FORCEFIELD_H
 #define FORCEFIELD_H
 
+#include  "vrpn_Configure.h"
+#ifdef	VRPN_USE_PHANTOM_SERVER
+
 #include "ghost.h"
 //#include "gstEffect.h"
 #include <math.h>
@@ -71,4 +74,5 @@ class  ForceFieldEffect:public gstEffect
 	double jacobian[3][3];	//< Describes increase in force away from origin in different directions
 };
 
+#endif
 #endif

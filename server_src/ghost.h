@@ -1,6 +1,5 @@
-// SensAble Technologies, Inc. Copyright 1996-1999
-// All rights reserved.
-
+#include  "vrpn_Configure.h"
+#ifdef	VRPN_USE_PHANTOM_SERVER
 
 #include <fstream.h>
 #include <gstBasic.h>
@@ -20,5 +19,7 @@
 #include <gstCube.h>
 #include <gstSphere.h>
 
-//we added this include
 #include <gstForceField.h>
+
+#endif
+

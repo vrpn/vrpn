@@ -1,6 +1,9 @@
 #ifndef CONSTRAINT_H
 #define CONSTRAINT_H
 
+#include  "vrpn_Configure.h"
+#ifdef	VRPN_USE_PHANTOM_SERVER
+
 #include "ghost.h"
 #include <math.h>
 
@@ -60,6 +63,5 @@ class  ConstraintEffect:public gstEffect
 	double kSpring;
 };
 
-
-
+#endif
 #endif

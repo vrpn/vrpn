@@ -1,3 +1,5 @@
+#include  "vrpn_Configure.h"
+#ifdef	VRPN_USE_PHANTOM_SERVER
 #include "plane.h"
 
 //#define VERBOSE
@@ -219,3 +221,4 @@ gstBoolean Plane::collisionDetect(gstPHANToM *PHANToM)
 	return inContact;
 }
 
+#endif

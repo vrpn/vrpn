@@ -6,6 +6,9 @@
 
 #ifndef PLANE_H
 #define PLANE_H
+
+#include  "vrpn_Configure.h"
+#ifdef	VRPN_USE_PHANTOM_SERVER
 /*
 #include <gstPHANToM.h>
 #include <gstShape.h>
@@ -118,4 +121,5 @@ private:
 	static gstType PlaneClassTypeId;
 };
 
+#endif
 #endif

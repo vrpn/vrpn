@@ -1,3 +1,5 @@
+#include  "vrpn_Configure.h"
+#ifdef	VRPN_USE_PHANTOM_SERVER
 #include "trimesh.h"
 
 //pre: NULL==gstMesh; && NULL==ghostPolyMesh
@@ -345,6 +347,4 @@ void Trimesh::setTransformMatrix(float xfMat[16]){
   }
 }
 
-
-
-
+#endif

@@ -1,6 +1,9 @@
 #ifndef BUZZFORCEFIELD_H
 #define BUZZFORCEFIELD_H
 
+#include  "vrpn_Configure.h"
+#ifdef	VRPN_USE_PHANTOM_SERVER
+
 /*
 	BuzzForceField :
 		This is a buzzing effect that may be tied to a particular surface to make
@@ -86,6 +89,8 @@ private:
 	TexturePlane *_tex_plane;	// we use this to modulate height of _plane by
 								// the height of the texture
 };
+
+#endif
 
 #endif
 

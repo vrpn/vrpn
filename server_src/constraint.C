@@ -1,3 +1,6 @@
+#include  "vrpn_Configure.h"
+#ifdef	VRPN_USE_PHANTOM_SERVER
+
 #include <gstPHANToM.h>
 #include "constraint.h"
 
@@ -50,3 +53,4 @@ gstVector ConstraintEffect::calcEffectForce(void *PHANToM){
 
 }
 
+#endif

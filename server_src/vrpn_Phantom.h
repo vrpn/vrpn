@@ -1,6 +1,9 @@
 #ifndef VRPN_PHANTOM_H
 #define VRPN_PHANTOM_H
 
+#include  "vrpn_Configure.h"
+#ifdef	VRPN_USE_PHANTOM_SERVER
+
 class gstScene;
 class gstSeparator;
 class gstPHANToM;
@@ -112,7 +115,4 @@ public:
 };
 
 #endif
-
-
-
-
+#endif

@@ -1,3 +1,5 @@
+#include  "vrpn_Configure.h"
+#ifdef	VRPN_USE_PHANTOM_SERVER
 #include "gstPHANToM.h"
 #include "forcefield.h"
 
@@ -59,3 +61,4 @@ gstVector ForceFieldEffect::calcEffectForce(void *PHANToM) {
 	return effectForce;
 }
 
+#endif

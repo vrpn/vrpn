@@ -1,3 +1,5 @@
+#include  "vrpn_Configure.h"
+#ifdef	VRPN_USE_PHANTOM_SERVER
 #include "buzzForceField.h"
 #include "texture_plane.h"
 
@@ -112,3 +114,5 @@ gstVector BuzzForceField::calculateForceFieldForce(gstPHANToM *phantom){
 	else
 		return gstVector(0,0,0);
 }
+
+#endif

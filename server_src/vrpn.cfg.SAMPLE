@@ -4,8 +4,7 @@
 ################################################################################
 # This file provides comments and examples for the vrpn.cfg file that is read
 # by the vrpn_server application when it starts up. This is a generic server
-# application that can start up many but not all servers (not the Phantom
-# server, for example).
+# application that can start up many but maybe not all servers.
 #
 # This has sample lines for a vrpn.cfg file.  If you get a new device working,
 # add a line for it here.  DO NOT remove lines from this file (unless
@@ -659,3 +658,14 @@
 
 #vrpn_GlobalHapticsOrb	Orb0	COM1	19200
 
+################################################################################
+# SensAble Technologies Phantom force-feedback device opened using the
+# GHOST software developer's kit.  For Phantom Desktop systems, you don't
+# need to have the user establish the reset position.  For the Premium models,
+# you do.
+# Arguments:
+#	char	name_of_this_device[]
+#	int	establish_reset_position	(0 or 1)
+#	float	rate_to_send_tracker_reports
+
+#vrpn_Phantom	Phantom	0	60.0

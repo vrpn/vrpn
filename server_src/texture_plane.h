@@ -6,6 +6,10 @@
 
 #ifndef TEXTURE_PLANE_H
 #define TEXTURE_PLANE_H
+
+#include  "vrpn_Configure.h"
+#ifdef	VRPN_USE_PHANTOM_SERVER
+
 /*
 #include <gstPHANToM.h>
 #include <gstShape.h>
@@ -445,6 +449,5 @@ class DynamicPlane: public gstDynamic {
 	int _is_new_plane;
 };
 
-
-
+#endif
 #endif

@@ -43,6 +43,7 @@
 #include "vrpn_Tracker_isense.h"
 #include "vrpn_DirectXFFJoystick.h"
 #include "vrpn_GlobalHapticsOrb.h"
+#include "vrpn_Phantom.h"
 
 #include "vrpn_ForwarderController.h"
 #include <vrpn_RedundantTransmission.h>
@@ -69,6 +70,9 @@ const int MAX_TNG3S = 8;
 const int MAX_DIRECTXJOYS = 8;
 #endif
 const int MAX_GLOBALHAPTICSORBS = 8;
+#ifdef	VRPN_USE_PHANTOM_SERVER
+const int MAX_PHANTOMS = 10;
+#endif
 
 static	int	done = 0;	// Done and should exit?
 
@@ -137,6 +141,10 @@ int		num_DirectXJoys = 0;
 #endif
 vrpn_GlobalHapticsOrb *ghos[MAX_GLOBALHAPTICSORBS];
 int		num_GlobalHapticsOrbs = 0;
+#ifdef	VRPN_USE_PHANTOM_SERVER
+vrpn_Phantom	*phantoms[MAX_PHANTOMS];
+int		num_phantoms = 0;
+#endif
 
 vrpn_Connection * connection;
 
@@ -163,6 +171,12 @@ void closeDevices (void) {
     fprintf(stderr, "\nClosing tracker %d ...", i);
     delete trackers[i];
   }
+#ifdef VRPN_USE_PHANTOM_SERVER
+  for (i=0;i < num_phantoms; i++) {
+    fprintf(stderr, "\nClosing Phantom %d ...", i);
+    delete phantoms[i];
+  }
+#endif
   //XXX Get the other types of devices too...
   fprintf(stderr, "\nAll devices closed...\n");
 }
@@ -371,6 +385,48 @@ int setup_Timecode_Generator (char * & pch, char * line, FILE * config_file) {
 #endif
 }
 
+int setup_Phantom(char * &pch, char *line, FILE * config_file) {
+#ifdef VRPN_USE_PHANTOM_SERVER
+	char	s2[512];	// String parameters
+	int	i1;		// Integer parameters
+	float	f1;		// Float parameters
+
+	next();
+	if (sscanf(pch, "%511s%d%f",s2,&i1,&f1) != 3) {
+		fprintf(stderr,"Bad vrpn_Phantom line: %s\n",line);
+		return -1;
+	}
+
+	if (num_phantoms >= MAX_PHANTOMS) {
+		fprintf(stderr,"Too many Phantoms in config file");
+		return -1;
+	}
+
+	if (verbose) {
+		printf("Opening vrpn_Phantom:\n");
+	}
+
+	// i1 is a boolean that tells whether to let the user establish the reset
+	// position or not.
+	if (i1) {
+	  printf("Initializing phantom, you have 10 seconds to establish reset position\n");
+	  vrpn_SleepMsecs(10000);
+	}
+
+	phantoms[num_phantoms] =  new vrpn_Phantom(s2, connection, f1);  
+	if (phantoms[num_phantoms] == NULL) {
+	  fprintf(stderr,"Can't create new vrpn_Phantom\n");
+	  return -1;
+	}
+
+	num_phantoms++;
+
+	return 0;
+#else
+	fprintf(stderr, "vrpn_server: Can't open Phantom server: VRPN_USE_PHANTOM_SERVER not defined in vrpn_Configure.h!\n");
+	return -1;
+#endif
+}
 
 int setup_JoyFly (char * & pch, char * line, FILE * config_file) {
   char s2 [LINESIZE], s3 [LINESIZE], s4 [LINESIZE];
@@ -1857,6 +1913,8 @@ main (int argc, char * argv[])
 	    CHECK(setup_DirectXFFJoystick);
 	  } else if (isit("vrpn_GlobalHapticsOrb")) {
 	    CHECK(setup_GlobalHapticsOrb);
+	  } else if (isit("vrpn_Phantom")) {
+	    CHECK(setup_Phantom);
 	  } else {	// Never heard of it
 		sscanf(line,"%511s",s1);	// Find out the class name
 		fprintf(stderr,"vrpn_server: Unknown Device: %s\n",s1);
@@ -1909,7 +1967,6 @@ main (int argc, char * argv[])
 	  for (i = 0; i < num_trackers; i++) {
 		  trackers[i]->mainloop();
 	  }
-
 	  // Let all the sound servers do their thing 
 	  for (i = 0; i < num_sounds; i++) {
 		  sounds[i]->mainloop();
@@ -1958,7 +2015,12 @@ main (int argc, char * argv[])
 		  timecode_generators[i]->mainloop();
 	  }
 #endif
-
+#ifdef VRPN_USE_PHANTOM_SERVER
+	  // Let all the Phantoms do their thing
+	  for (i=0; i< num_phantoms; i++) {
+	      phantoms[i]->mainloop();
+	  }
+#endif
 	  // Let all the TNG3 do their thing
           for (i=0; i< num_tng3s; i++) {
 		  tng3s[i]->mainloop();

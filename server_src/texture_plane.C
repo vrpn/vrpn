@@ -1,3 +1,5 @@
+#include  "vrpn_Configure.h"
+#ifdef	VRPN_USE_PHANTOM_SERVER
 #include "texture_plane.h"
 
 // macros for printing something out x times out of a thousand (i.e. x times per second)
@@ -931,3 +933,5 @@ void TexturePlane::getTextureShape(int nsamples, float *surface)
 		}
 	}
 }
+
+#endif

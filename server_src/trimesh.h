@@ -4,6 +4,10 @@
 
 #ifndef TRIMESH_H
 #define TRIMESH_H
+
+#include  "vrpn_Configure.h"
+#ifdef	VRPN_USE_PHANTOM_SERVER
+
 /*
 #include <gstPHANToM.h>
 #include <gstShape.h>
@@ -104,11 +108,5 @@ public:
   void setTransformMatrix(float xFormMat[16]);
 };
 
+#endif
 #endif  // TRIMESH_H
-
-
-
-
-
-
-
