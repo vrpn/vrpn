@@ -113,20 +113,6 @@ static vrpn_uint32 getmyIP (const char * NICaddress = NULL) {
   return ntohl(in.s_addr);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 vrpn_Mutex::vrpn_Mutex (const char * name, vrpn_Connection * c) :
     d_connection (c) {
   char * servicename;
@@ -134,6 +120,7 @@ vrpn_Mutex::vrpn_Mutex (const char * name, vrpn_Connection * c) :
   servicename = vrpn_copy_service_name(name);
 
   if (c) {
+    d_connection->addReference();
     d_myId = c->register_sender(servicename);
     d_requestIndex_type = c->register_message_type(requestIndex_type);
     d_requestMutex_type = c->register_message_type(requestMutex_type);
@@ -152,7 +139,9 @@ vrpn_Mutex::vrpn_Mutex (const char * name, vrpn_Connection * c) :
 
 // virtual
 vrpn_Mutex::~vrpn_Mutex (void) {
-
+  if (d_connection) {
+    d_connection->removeReference();	// possibly destroy connection.
+  }
 }
 
 void vrpn_Mutex::mainloop (void) {
@@ -395,6 +384,7 @@ vrpn_Mutex_Remote::vrpn_Mutex_Remote (const char * name, vrpn_Connection * c) :
     d_releaseCB (NULL) {
 
   if (d_connection) {
+      d_connection->addReference();
       d_connection->register_handler(d_grantRequest_type,
                                  handle_grantRequest, this);
       d_connection->register_handler(d_denyRequest_type,
@@ -407,7 +397,6 @@ vrpn_Mutex_Remote::vrpn_Mutex_Remote (const char * name, vrpn_Connection * c) :
       }
       vrpn_int32 got = d_connection->register_message_type(vrpn_got_connection);
       d_connection->register_handler(got, handle_gotConnection, this);
-
   }
 }
 
@@ -427,6 +416,7 @@ vrpn_Mutex_Remote::~vrpn_Mutex_Remote (void) {
       d_connection->unregister_handler(d_initialize_type, handle_initialize, this);
       vrpn_int32 got = d_connection->register_message_type(vrpn_got_connection);
       d_connection->unregister_handler(got, handle_gotConnection, this);
+      d_connection->removeReference();	// possibly destroy d_connection.
   }
 }
 
@@ -829,6 +819,8 @@ vrpn_PeerMutex::vrpn_PeerMutex (const char * name, vrpn_Connection * server) :
   if (!server) {
     fprintf(stderr, "vrpn_PeerMutex:  NULL connection!\n");
     return;
+  } else {
+    d_server->addReference();
   }
 
   init(name);
@@ -856,16 +848,19 @@ vrpn_PeerMutex::~vrpn_PeerMutex (void) {
   if (d_mutexName) {
     delete [] d_mutexName;
   }
+  for (int i = 0; i < d_numPeers; ++i) {
+    if (d_peer[i]) {
+      d_peer[i]->removeReference();
+    }
+  }
   if (d_peer) {
     delete [] d_peer;
   }
+
+  if (d_server) {
+    d_server->removeReference();
+  }
 }
-
-
-
-
-
-
 
 vrpn_bool vrpn_PeerMutex::isAvailable (void) const {
   return (d_state == AVAILABLE);
@@ -981,8 +976,9 @@ void vrpn_PeerMutex::addPeer (const char * stationName) {
   if (d_numPeers >= d_numConnectionsAllocated) {
 
     // reallocate arrays
-    newc = new vrpn_Connection * [2 + 2 * d_numConnectionsAllocated];
-    newg = new peerData [2 + 2 * d_numConnectionsAllocated];
+    d_numConnectionsAllocated = 2 * (d_numConnectionsAllocated + 1);
+    newc = new vrpn_Connection * [d_numConnectionsAllocated];
+    newg = new peerData [d_numConnectionsAllocated];
     if (!newc || !newg) {
       fprintf(stderr, "vrpn_PeerMutex::addPeer:  Out of memory.\n");
       return;
@@ -1250,6 +1246,9 @@ int vrpn_PeerMutex::handle_losePeer (void * userdata, vrpn_HANDLERPARAM) {
 
 fprintf(stderr, "vrpn_PeerMutex::handle_losePeer:  lost peer #%d.\n", i);
 
+  if (me->d_peer[i]) {
+    me->d_peer[i]->removeReference();
+  }
   me->d_numPeers--;
   me->d_peer[i] = me->d_peer[me->d_numPeers];
 

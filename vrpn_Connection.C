@@ -5165,7 +5165,8 @@ vrpn_Connection::vrpn_Connection
           (local_out_logfile_name ? vrpn_LOG_OUTGOING : vrpn_LOG_NONE)),
     d_serverLogName (NULL),
     d_endpointAllocator (epa),
-    d_updateEndpoint (vrpn_FALSE)
+    d_updateEndpoint (vrpn_FALSE),
+    d_references (0)
 {
   vrpn_Endpoint * endpoint;  // shorthand for d_endpoints[0]
   int retval;
@@ -5265,7 +5266,8 @@ vrpn_Connection::vrpn_Connection
     d_serverLogMode (vrpn_LOG_NONE),
     d_serverLogName (NULL),
     d_endpointAllocator (epa),
-    d_updateEndpoint (vrpn_FALSE)
+    d_updateEndpoint (vrpn_FALSE),
+    d_references (0)
 {
   vrpn_Endpoint * endpoint;
   vrpn_bool isfile;
@@ -5586,6 +5588,25 @@ vrpn_Connection::~vrpn_Connection (void) {
   // Clean up types, senders, and callbacks.
   delete d_dispatcher;
 }
+
+// Some object is using this connection.
+void vrpn_Connection::addReference()
+{
+    d_references++;
+}
+
+// Some object has stopped using this connection.
+// if there weren't any references, this must have been the original.
+//  so destroy it.
+void vrpn_Connection::removeReference()
+{
+  if (d_references == 0) {
+    delete this;
+  } else {
+    d_references--;
+  }
+}
+
 
 vrpn_int32 vrpn_Connection::register_sender (const char * name) {
    vrpn_int32 retval;
@@ -5974,11 +5995,11 @@ vrpn_Connection * vrpn_get_connection_by_name (
 
         int is_file = !strncmp(cname, "file:", 5);
 
-        if (is_file)
+        if (is_file) {
             c = new vrpn_File_Connection (cname, 
                                           local_in_logfile_name,
                                           local_out_logfile_name);
-        else {
+        } else {
             int port = vrpn_get_port_number(cname);
             c = new vrpn_Synchronized_Connection
                 (cname, port,
@@ -5986,6 +6007,8 @@ vrpn_Connection * vrpn_get_connection_by_name (
                  remote_in_logfile_name, remote_out_logfile_name,
                  dFreq, cSyncWindow, NIC_IPaddress);
         }
+    } else {	// connection was already open.
+	c->addReference();
     }
 
     // Return a pointer to the connection, even if it is not doing

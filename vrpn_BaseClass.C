@@ -262,13 +262,23 @@ vrpn_BaseClass::vrpn_BaseClass (const char * name, vrpn_Connection * c)
     // NULL connection object, then we determine the connection from the name of
     // the object itself (for example, Tracker0@mumble.cs.unc.edu will make a
     // connection to the machine mumble on the standard VRPN port).
-    d_connection = c ? c : vrpn_get_connection_by_name(name);
+    if (c) {	// using existing connection.
+	d_connection = c;
+	d_connection->addReference();
+    } else {
+	d_connection = vrpn_get_connection_by_name(name);
+    }
 }
 
 vrpn_BaseClass::~vrpn_BaseClass()
 {
     // Remove us from the list of objects with messages to be printed
     vrpn_System_TextPrinter.remove_object(this);
+
+    // notify the connection that this object is no longer using it.
+    if (d_connection) {
+	d_connection->removeReference();
+    }
 }
 
 /** This would normally be found in the constructor, but the constructor

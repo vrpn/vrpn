@@ -580,6 +580,14 @@ class vrpn_Connection {
 
     const char * d_NIC_IP;
 
+	//
+	// Counting references to this connection.
+  public:
+    void addReference();
+    void removeReference();
+  private:
+    int d_references;
+
   public:
 
     // Derived classes need access to d_dispatcher in their

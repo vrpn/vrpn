@@ -262,7 +262,13 @@ vrpn_Clock_Remote::~vrpn_Clock_Remote (void)
     delete curr;
     curr = next;
   }
-  
+
+  // must remove a reference from the connection, because
+  //  we call vrpn_get_connection_by_name in the constructor.
+  if (d_connection) {
+    d_connection->removeReference();
+  }
+
   // release the quick arrays
   if (rgtvHalfRoundTrip) {
     delete [] rgtvHalfRoundTrip;

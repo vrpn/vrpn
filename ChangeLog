@@ -1,4 +1,18 @@
+2004-08-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	Adding changes made by Jeff Feasel to include reference counting
+	in the vrpn_Connection object so that they would be deleted when
+	all objects using them are deleted (and when all objects opening
+	them with vrpn_get_connection_by_name() remove their references.
+	* vrpn_BaseClass.C : Adds reference-counting for vrpn_Connections.
+	* vrpn_Clock.C : Same.
+	* vrpn_Connection.C : Same.
+	* vrpn_Connection.h : Same.
+	* vrpn_Mutex.h : Same.  Also fixed a bug whereby the number of
+		allocated connections was not being properly incremented.
+
 2004-08-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn.dsp : Adds possibility that NI files are on D:
 	* vrpn_Button.C : Moving global constants not starting with vrpn_
 		from header file to source file.
