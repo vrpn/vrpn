@@ -1,26 +1,32 @@
 #include <fcntl.h>
-#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <netinet/in.h>
+#ifndef _WIN32
+    #include <unistd.h>
+    #include <netinet/in.h>
+#else
+    #include <io.h>
+#endif
 
 #include <vrpn_Connection.h>  // for vrpn_ALIGN
+
 
 const int buflen = 8000;
 
 void Usage (const char * name) {
-  fprintf(stderr, "Usage:  %s [-n] <filename>\n", name);
+  fprintf(stderr, "Usage:  %s [-n|-s] <filename>\n", name);
   fprintf(stderr,"    -n:  Print names instead of numbers.\n");
+  fprintf(stderr,"    -s:  Sumary only, start/end/duration");
 }
 
 
 int main (int argc, char ** argv) {
 
   char * filename;
-  int name_mode = 0;
+  int name_mode = 0, summary_mode = 0;
 
   char buffer [buflen];
   vrpn_HANDLERPARAM header;
@@ -38,42 +44,81 @@ int main (int argc, char ** argv) {
     name_mode = 1;
     fprintf(stderr, "FATAL ERROR:  Name mode not implemented.\n");
     exit(0);
+  } else if (!strcmp(argv[1], "-s")) {
+    filename = argv[2];
+    summary_mode = 1;
   }
 
-  file = open(filename, O_RDONLY);
+  #ifdef _WIN32
+      // blech
+    const int oflag = O_RDONLY | O_BINARY;
+  #else
+    const int oflag = O_RDONLY;
+  #endif
+  file = open(filename, oflag);
   if (file == -1) {
     fprintf(stderr, "Couldn't open \"%s\".\n", filename);
     exit(0);
   }
 
-  while (1) {
+  struct timeval tvFirst, time;
+  int cEntries = 0;
 
+  while (1) {
     int len;
-    struct timeval time;
     long sender;
     long type;
     int len2;
 
     retval = read(file, &header, sizeof(header));
     if (retval < 0) { printf("ERROR\n"); close(file); exit(0); }
-    if (!retval) { printf("EOF\n"); close(file); exit(0); }
+    if (!retval) {
+        if (summary_mode) {
+            printf("Last timestamp in file: %ld:%ld\n", time.tv_sec, time.tv_usec);
+            timeval tvDuration = vrpn_TimevalDiff(time, tvFirst);
+            double dDuration = vrpn_TimevalMsecs(tvDuration) / 1000.0;
+            printf("Duration: %ld:%ld\n", tvDuration.tv_sec, tvDuration.tv_usec);
+            printf("%d enties over %gs = %.3fHz\n",
+                cEntries, dDuration, cEntries/dDuration);
+        } else {
+            printf("EOF\n");
+        }
+        close(file);
+        exit(0);
+    }
+    cEntries++;
 
     len = ntohl(header.payload_len);
     time.tv_sec = ntohl(header.msg_time.tv_sec);
     time.tv_usec = ntohl(header.msg_time.tv_usec);
     sender = ntohl(header.sender);
     type = ntohl(header.type);
+    
+    if (summary_mode) {
+        static int first = 1;
+        if (first) {
+            printf("First timestamp in file: %ld:%ld\n", time.tv_sec, time.tv_usec);
+            tvFirst = time;
+            first = 0;
+        }
+    }
 
-    if (name_mode)
-      printf("%s from %s, payload length %d\n",
-              type, sender, len);
-    else
-      printf("Message type %ld, sender %ld, payload length %d\n",
-            type, sender, len);
+    if (!summary_mode) {
+        if (name_mode)
+          printf("%s from %s, payload length %d\n",
+                  type, sender, len);
+        else
+          printf("Message type %ld, sender %ld, payload length %d\n",
+                type, sender, len);
+    }
 
     retval = read(file, buffer, len);
     if (retval < 0) { printf("ERROR\n"); close(file); exit(0); }
     if (!retval) { printf("EOF\n"); close(file); exit(0); }
+
+    if (summary_mode) {
+        continue;
+    }
 
     printf(" <%d bytes> at %ld:%ld\n", retval, time.tv_sec, time.tv_usec);
 
@@ -82,13 +127,13 @@ int main (int argc, char ** argv) {
       case vrpn_CONNECTION_SENDER_DESCRIPTION:
         len2 = ntohl(* ((int *) buffer));
         buffer[len2 + sizeof(int)] = 0;
-	printf(" The name of sender #%d is \"%s\".\n", sender, buffer + sizeof(int));
+	    printf(" The name of sender #%d is \"%s\".\n", sender, buffer + sizeof(int));
         break;
 
       case vrpn_CONNECTION_TYPE_DESCRIPTION:
         len2 = ntohl(* ((int *) buffer));
         buffer[len2 + sizeof(int)] = 0;
-	printf(" The name of type #%d is \"%s\".\n", sender, buffer + sizeof(int));
+	    printf(" The name of type #%d is \"%s\".\n", sender, buffer + sizeof(int));
         break;
 
       case vrpn_CONNECTION_UDP_DESCRIPTION:
@@ -100,8 +145,9 @@ int main (int argc, char ** argv) {
         buffer[len] = 0;
         printf(" Log to file \"%s\".\n", buffer);
         break;
-
     }
   }
+
+  return 0;
 }
 
