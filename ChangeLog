@@ -1,3 +1,9 @@
+2000-09-01  Adam Seeger  <seeger@cs.unc.edu>
+
+        * vrpn_Connection.h (check_vrpn_file_cookie) : This only worked if
+	the version was 4.0, now it works if the version is the current one
+	or less
+
 2000-08-31  Tom Hudson  <hudson@cs.unc.edu>
 
 	* vrpn_Connection.C (vrpn_TranslationTable):  Removed a lot of
