@@ -39,7 +39,7 @@ class vrpn_File_Connection : public vrpn_Connection {
     struct timeval d_start_time;  // time of first record in file
     struct timeval d_runtime;  // elapsed file time (d_time - d_start_time)
 
-    struct timeval d_now_time;  // wallclock time of last read
+    struct timeval d_now_time;  // wallclock time of last call to mainloop
     struct timeval d_next_time;  // elapsed wallclock time
 
     float d_rate;  // scale factor for wallclock time

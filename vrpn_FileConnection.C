@@ -98,7 +98,7 @@ int vrpn_File_Connection::mainloop (void) {
   if (!d_file)
     return 0;
 
-  // compute elapsed time and when to read
+  // compute time elapsed since last call to mainloop()
 
   last_time = d_now_time;
   gettimeofday(&d_now_time, NULL);
@@ -106,13 +106,19 @@ int vrpn_File_Connection::mainloop (void) {
       (last_time.tv_usec == 0L))
     last_time = d_now_time;
 
-  // scale elapsed time by d_rate
+  // scale elapsed time by d_rate (rate of replay);
+  // this gives us the time to advance (skip_time)
+  // our clock (d_next_time).
 
   skip_time = vrpn_TimevalDiff(d_now_time, last_time);
   skip_time = vrpn_TimevalScale(skip_time, d_rate);
   d_next_time = vrpn_TimevalSum(d_next_time, skip_time);
 
   // are we ready for the next message?
+  // XXX This should really look ahead at the next message
+  // (if there is one) and see if it is too soon to play it,
+  // rather than reading and sending the message then seeing
+  // that it is too late.
 
   if (vrpn_TimevalGreater(d_runtime, d_next_time))
     return 0;
@@ -175,6 +181,8 @@ int vrpn_File_Connection::mainloop (void) {
   }
 
   // keep track of the time
+  // Set the start time if it hasn't been set yet and then figure
+  // out how long in file time we have been running.
 
   if (!d_start_time.tv_sec && !d_start_time.tv_usec)
     d_start_time = d_time;
