@@ -12,6 +12,11 @@
 #include "vrpn_Phantom.h"
 
 #include "ghost.h"
+#ifdef	VRPN_USE_HDAPI
+  #include <HD/hd.h>
+  #include <HDU/hduError.h>
+#endif
+
 #include "plane.h"
 #include "texture_plane.h"
 #include "trimesh.h"

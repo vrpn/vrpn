@@ -1,6 +1,19 @@
+2004-07-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* constraint.h : Hiding the HDAPI include files to avoid exposing
+		the old-style stream header includes to apps that have to
+		include the server.
+	* forcefield.h : Same.
+	* ghost.h : Same.
+	* plane.C : Same.
+	* vrpn_Phantom.C : Same.
+	* vrpn_Phantom.h : Same.
+	* vrpn_phantom.dsp : Removing GHOST include directories.
+	* vrpn_server.dsp : Same.
+
 2004-07-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
-	* BuzzForceField.C : Modified to work with GHOST or HDAPI (partial port).
+	* BuzzForceField.C : Modified to work with GHOST or HDAPI (partial port)
 	* BuzzForceField.h : Same.
 	* constraint.C : Modified to work with GHOST or HDAPI (full port).
 	* constraint.h : Same.

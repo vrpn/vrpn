@@ -20,7 +20,7 @@ class  ConstraintEffect:public gstEffect
 
 	// Constructor.
 #ifdef	VRPN_USE_HDAPI
-    ConstraintEffect(): active(FALSE), time(0) { }
+    ConstraintEffect(): active(false), time(0) { }
 #else
     ConstraintEffect(): gstEffect() {}
 #endif
@@ -42,13 +42,13 @@ class  ConstraintEffect:public gstEffect
 	// generate unexpectedly large forces.
 	virtual vrpn_HapticBoolean start() { 
 //		if (!active) printf("starting force\n");
-		active = TRUE; time = 0.0; return TRUE;}
+		active = true; time = 0.0; return true;}
 
 	// FOR_GHOST_EXTENSION:
 	// Stop the effect.
 	virtual void stop() { 
 //		if (active) printf("stopping force\n");
-		active = FALSE;}
+		active = false;}
 
 	// FOR_GHOST_EXTENSION:
 	// Calculate the force.  Force is returned in parent 

@@ -19,7 +19,7 @@ class  ForceFieldEffect:public gstEffect
 
 	/// Constructor.
 #ifdef	VRPN_USE_HDAPI
-    ForceFieldEffect(): active(FALSE), time(0) {}
+    ForceFieldEffect(): active(false), time(0) {}
 #else
     ForceFieldEffect():gstEffect() {}
 #endif
@@ -49,14 +49,14 @@ class  ForceFieldEffect:public gstEffect
 	/// Start the application of forces based on the field.
 	virtual vrpn_HapticBoolean start() { 
 //	    if (!active) { printf("starting ForceFieldEffect\n"); }
-	    active = TRUE; time = 0.0; return TRUE;
+	    active = true; time = 0.0; return true;
 	}
 
 	// FOR_GHOST_EXTENSION:
 	/// Stop the application of force based on the field.
 	virtual void stop() { 
 //	    if (active) { printf("stopping ForceFieldEffect\n"); }
-	    active = FALSE;
+	    active = false;
 	}
 
 #ifdef	VRPN_USE_HDAPI

@@ -5,7 +5,6 @@
 #ifdef	VRPN_USE_PHANTOM_SERVER
 
 #include <math.h>
-#include <fstream.h>
 #include <stdio.h>
 #include <quat.h>
 #include <vector>
@@ -23,9 +22,6 @@
 // ability to do what was needed.
 
 #ifdef	VRPN_USE_HDAPI
-  #include <HD/hd.h>
-  #include <HDU/hduError.h>
-
   #ifndef M_PI
   #define M_PI (3.14159265358979323846)
   #endif

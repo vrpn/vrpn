@@ -4,6 +4,11 @@
 
 //#define VERBOSE
   
+#ifdef	VRPN_USE_HDAPI
+  #include <HD/hd.h>
+  #include <HDU/hduError.h>
+#endif
+
 #ifndef	VRPN_USE_HDAPI
 gstType Plane::PlaneClassTypeId;
 static int temp = Plane::initClass();
