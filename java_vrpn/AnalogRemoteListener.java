@@ -1,13 +1,17 @@
 /***************************************************************************
- * Use this class to store updates in a vector and get them when you want
+ * Use this class to store updates in a vector and get them when you want.
+ * It is most useful if you don't want to worry about your code running
+ * in a multi-threaded environment and about vrpn possibly delivering 
+ * device updates at arbitrary times.
  *
- * How it is currently set up...
+ * The Listener can be configured to buffer and return either all
+ * updates or only the last (the most recent) update.
  * 
- * 1. The vector is emptied when all the updates are returned
- * 2. The vector keeps only the latest update when the mode is set to last
- * 
- * It's easy to change these settings, but if you're too lazy to do it,
- * contact Tatsuhiro Segi (segi@email.unc.edu)
+ * It is not intended that Listeners be shared among objects.  Each 
+ * entity in a program that is interested in hearing about updates 
+ * from some vrpn Analog device (and which wishes to use this Listener
+ * mechanism) should create its own listener (even if multiple entities 
+ * wish to hear from the same device).
  ***************************************************************************/
 
 package vrpn;
@@ -17,25 +21,24 @@ import java.util.Vector;
 
 public class AnalogRemoteListener implements AnalogRemote.AnalogChangeListener
 {
-	Vector analogUpdates;
-	
-	boolean returnLastAnalog;
-	
+	public static final int ALL_UPDATES = 0;
+	public static final int LAST_UPDATE = 1;
 	
 	public AnalogRemoteListener(AnalogRemote analog)
 	{
+		analogUpdates = new Vector();		
+		bufferMode = LAST_UPDATE;
 		analog.addAnalogChangeListener(this);
-		
-		analogUpdates = new Vector();
-		
-		returnLastAnalog = true;
 	}
 	
 	
-	//** Empty the vector when the mode is set to last
+	/**
+	 * Sets the buffering mode of the Listener to record and return only 
+	 * the most recent (the last, the latest) AnalogUpdate.
+	 */
 	public synchronized void setModeLastAnalogUpdate()
 	{
-		returnLastAnalog = true;
+		bufferMode = LAST_UPDATE;
 		
 		if (!analogUpdates.isEmpty())
 		{
@@ -47,67 +50,101 @@ public class AnalogRemoteListener implements AnalogRemote.AnalogChangeListener
 	}
 	
 	
+	/**
+	 * Sets the buffering mode of the Listener to record and return all 
+	 * AnalogUpdates, beginning at the time this mode is first enabled.
+	 */
 	public synchronized void setModeAllAnalogUpdates()
 	{
-		returnLastAnalog = false;
+		if( bufferMode == LAST_UPDATE )
+		{
+			analogUpdates.removeAllElements( );
+		}
+		bufferMode = ALL_UPDATES;
 	}
 	
-	
-	public synchronized boolean getModeAnalogUpdate()
+
+	/**
+	 * @return AnalogRemoteListener.ALL_UPDATES if the Listener is recording and 
+	 * returning all AnalogUpdates; AnalogRemoteListener.LAST_UPDATE if only the 
+	 * latest AnalogUpdate.
+	 */
+	public synchronized int getModeAnalogUpdate()
 	{
-		return returnLastAnalog;
+		return bufferMode;
 	}
 	
 	
-	//** Empty the vector when all the updates are returned
+	/**
+	 * This method retreives the buffered AnalogUpdates from the Listener.
+	 * If the buffering mode is LAST_UPDATE, the last update received will
+	 * be returned (note that, in this mode, successive calls to getAnalogUpdate()
+	 * may return the same AnalogUpdate if no new updates were received in the 
+	 * interim).  If the buffering mode is ALL_UPDATES, all updates 
+	 * received since the last call to getAnalogUpdate() (or since ALL_UPDATES
+	 * mode was enabled) will be returned.
+	 * @return A Vector containing the buffered AnalogUpdates.  The number of
+	 * AnalogUpdates returned will depend on the buffering mode.  If there are
+	 * no AnalogUpdates buffered, an empty Vector will be returned.
+	 * @see AnalogRemoteListener.setModeLastAnalogUpdate
+	 * @see AnalogRemoteListener.setModeAllAnalogUpdates
+	 */
 	public synchronized Vector getAnalogUpdate()
 	{
-		if (analogUpdates.isEmpty())
+		Vector v = new Vector( );
+		if( analogUpdates.isEmpty() )
 		{
-			return null;
+			return v;
 		}
 		
-		if (returnLastAnalog)
+		if( bufferMode == LAST_UPDATE )
 		{
-			Vector last = new Vector();
-			
-			last.addElement(analogUpdates.lastElement());
-			
-			return last;
+			v.addElement(analogUpdates.lastElement());
 		}
-		
-		else
+		else if( bufferMode == ALL_UPDATES )
 		{
-			Vector all = new Vector();
-			
-			for (int i=0; i<analogUpdates.size(); i++)
+			for( int i = 0; i < analogUpdates.size(); i++ )
 			{
-				all.addElement(analogUpdates.elementAt(i));
+				v.addElement( analogUpdates.elementAt(i) );
 			}
-			
 			analogUpdates.removeAllElements();
-			
-			return all;
 		}
+		return v;
 	}
+
 	
-	
+	/**
+	 * @return The last (most recent, latest) AnalogUpdate received.  This function 
+	 * returns <code>null</code> if no updates have been recieved.  Note that
+	 * successive calls to getLastAnalogUpdate() may return the same AnalogUpdate
+	 * if no updates were received in the interim.
+	 */
 	public synchronized AnalogRemote.AnalogUpdate getLastAnalogUpdate()
 	{
-		AnalogRemote.AnalogUpdate analog = (AnalogRemote.AnalogUpdate)(analogUpdates.lastElement());
+		if( analogUpdates.isEmpty( ) )
+			return null;
 		
-		return analog;
+		return (AnalogRemote.AnalogUpdate) analogUpdates.lastElement();
 	}
 	
 	
-	//** Keep only the last update if the mode is set to last
+	/**
+	 * This is the handler that the AnalogRemote instance will call to deliver updates.
+	 * This method is not intended to be called by user code.
+	 */
 	public synchronized void analogUpdate (AnalogRemote.AnalogUpdate u, AnalogRemote analog)
 	{
-		if (returnLastAnalog)
+		if( bufferMode == LAST_UPDATE )
 		{
 			analogUpdates.removeAllElements();
 		}
 		
 		analogUpdates.addElement(u);
 	}
+
+	
+	protected Vector analogUpdates;
+	protected int bufferMode;
+	
+	
 }
