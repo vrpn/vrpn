@@ -25,6 +25,10 @@
 #include "vrpn_Shared.h"
 #include "quat.h" 
 
+#ifdef  VRPN_INCLUDE_INTERSENSE
+#include "isense.c"
+#endif
+
 #define MAX_TIME_INTERVAL       (5000000) // max time between reports (usec)
 #define	INCHES_TO_METERS	(2.54/100.0)
 #define PI (3.14159265358979323846)

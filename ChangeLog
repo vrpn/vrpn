@@ -1,3 +1,12 @@
+2003-05-01  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Added configuration entry for Intersense driver.
+	* vrpn_Tracker_isense.C : Made it include the Intersense-supplied
+		C file that interacts with the DLL code.  Note that this
+		does not compile with the currently-supplied SDK from
+		InterSense.  I don't have any trackers to test it on if I
+		mess with it, so decided to leave it alone.
+
 2003-04-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_raw_sgibox.C : Fixed bug on analog code that read from the
