@@ -1351,15 +1351,6 @@ int vrpn_Tracker_Remote::handle_change_message(void *userdata,
 	// Go down the list of callbacks that have been registered.
 	// Fill in the parameter and call each.
 	while (handler != NULL) {
-		void *x = handler->handler;
-		int sensor = tp.sensor;
-		double dummy;
-		struct timeval t = tp.msg_time;
-		for (i = 0; i < 3; i++) {
- 		  dummy = tp.pos[i];
-		  dummy = tp.quat[i];
-		}
-		dummy = tp.quat[3];
 		handler->handler(handler->userdata, tp);
 		handler = handler->next;
 	}
