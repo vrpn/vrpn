@@ -3097,6 +3097,7 @@ int vrpn_Connection::mainloop (const struct timeval * pTimeout)
 		      status = BROKEN;
 		      break;
 		  }
+		  break;
 		}
 
 		// Lob a request-to-connect packet every couple of seconds
@@ -3358,7 +3359,7 @@ vrpn_Connection::vrpn_Connection
 	  }
 	  if (retval == 1) {	// Got one!
 	    status = CONNECTED;
-	    printf("vrpn: Connection established\n");
+	    printf("vrpn: Connection established on initial try\n");
 
 	    // Set up the things that need to happen when a new connection
 	    // is established.
