@@ -10,7 +10,10 @@
 #	  
 # modified:
 # * Jeff Juliano, 10/99
-#     added "make depend"  (see comments at end of this makefile)
+#    * added "make depend"  (see comments at end of this makefile)
+#    * changed to use RM, RMF, MV, and MVF
+#      these are overridable as follows:
+#          gmake RM=/mybin/rm,  or  gmake RMF="/bin/rm -option"
 # * Jeff Juliano, 9/1999
 #     support for parallel make (see WARNING below)
 # * Tom Hudson, 25 Jun 1998
@@ -37,7 +40,10 @@
 ##########################
 
 MV = /bin/mv
-MVF = /bin/mv -f
+MVF = $(MV) -f
+
+RM = /bin/rm
+RMF = $(RM) -f
 
 ifndef	HW_OS
 # hw_os does not exist on FreeBSD at UNC
@@ -268,12 +274,12 @@ n32:
 .PHONY:	client_g++
 client_g++:
 	$(MAKE) FORCE_GPP=1 $(UNQUAL_OBJECT_DIR)/g++/libvrpn.a
-	mv $(UNQUAL_OBJECT_DIR)/g++/libvrpn.a $(UNQUAL_OBJECT_DIR)/libvrpn_g++.a
+	$(MV) $(UNQUAL_OBJECT_DIR)/g++/libvrpn.a $(UNQUAL_OBJECT_DIR)/libvrpn_g++.a
 
 .PHONY:	server_g++
 server_g++:
 	$(MAKE) FORCE_GPP=1 $(UNQUAL_OBJECT_DIR)/g++/libvrpnserver.a
-	mv $(UNQUAL_OBJECT_DIR)/g++/libvrpnserver.a $(UNQUAL_OBJECT_DIR)/libvrpnserver_g++.a
+	$(MV) $(UNQUAL_OBJECT_DIR)/g++/libvrpnserver.a $(UNQUAL_OBJECT_DIR)/libvrpnserver_g++.a
 
 .PHONY:	client
 client: $(OBJECT_DIR)/libvrpn.a
@@ -395,7 +401,7 @@ $(OBJECT_DIR)/libvrpnserver.a: $(MAKEFILE) $(SOBJECT_DIR) $(SLIB_OBJECTS) \
 
 .PHONY:	clean
 clean:
-	\rm -f $(LIB_OBJECTS) $(OBJECT_DIR)/libvrpn.a \
+	$(RMF) $(LIB_OBJECTS) $(OBJECT_DIR)/libvrpn.a \
                $(OBJECT_DIR)/libvrpn_g++.a $(SLIB_OBJECTS) \
                $(OBJECT_DIR)/libvrpnserver.a \
                $(OBJECT_DIR)/libvrpnserver_g++.a \
@@ -422,29 +428,29 @@ clean_g++:
 
 .PHONY:	clobberall
 clobberall:	clobberwin32
-	\rm -rf $(SAFE_KNOWN_ARCHITECTURES)
-	\rm -rf $(CLIENT_SKA)
-	\rm -rf $(SERVER_SKA)
-	\rm -f .#* server_src/.#* client_src/.#*
+	$(RMF) -r $(SAFE_KNOWN_ARCHITECTURES)
+	$(RMF) -r $(CLIENT_SKA)
+	$(RMF) -r $(SERVER_SKA)
+	$(RMF) .#* server_src/.#* client_src/.#*
 
 .PHONY:	clobberwin32
 clobberwin32:
-	\rm -rf pc_win32/DEBUG/*
-	\rm -rf pc_win32/vrpn/Debug/*
-	\rm -rf client_src/pc_win32/printvals/Debug/*
-	\rm -rf server_src/pc_win32/vrpn_server/Debug/*
+	$(RMF) -r pc_win32/DEBUG/*
+	$(RMF) -r pc_win32/vrpn/Debug/*
+	$(RMF) -r client_src/pc_win32/printvals/Debug/*
+	$(RMF) -r server_src/pc_win32/vrpn_server/Debug/*
 
 
 .PHONY:	beta
 beta :
 	$(MAKE) clean
 	$(MAKE) all
-	-mv $(OBJECT_DIR)/libvrpn.a $(OBJECT_DIR)/libvrpn_g++.a \
+	-$(MV) $(OBJECT_DIR)/libvrpn.a $(OBJECT_DIR)/libvrpn_g++.a \
 	    $(OBJECT_DIR)/libvrpnserver.a $(OBJECT_DIR)/libvrpnserver_g++.a \
             $(BETA_LIB_DIR)/$(OBJECT_DIR)
 	-ranlib $(BETA_LIB_DIR)/$(OBJECT_DIR)/libvrpn.a
 	-ranlib $(BETA_LIB_DIR)/$(OBJECT_DIR)/libvrpnserver.a
-	-( cd $(BETA_INCLUDE_DIR); /bin/rm -f $(SLIB_INCLUDES) )
+	-( cd $(BETA_INCLUDE_DIR); $(RMF) $(SLIB_INCLUDES) )
 	cp $(SLIB_INCLUDES) $(BETA_INCLUDE_DIR) 
 
 #############################################################################
@@ -458,6 +464,9 @@ beta :
 #   to recreate a dependencies file, type  "make depend"
 #   do this any time you add a file to the project,
 #   or add/remove #include lines from a source file
+#
+#   if you are on an SGI and want g++ to make the dependency file,
+#   then type:    gmake CC=g++ depend
 #
 #   if you don't want a dependency file, then remove .depend if it exists,
 #   and type "touch .depend".  if it exists (and is empty), make will not
@@ -504,24 +513,3 @@ else
   endif
 endif
 	@echo ----------------------------------------------------------------
-
-##############
-### this way doesn't work as well
-###    you don't have to type anything special, but you may have
-###    to type make twice to get the right behavior.  I can't
-###    figure out how to fix that without changing the rest of the
-###    makefile a little.  (not difficult to do, but more work than
-###    I'm willing to do right now)
-########
-#
-#%.d: %.C
-#	$(SHELL) -ec '$(CC) -M $(CFLAGS) $< \
-#	    | sed '\''s/\($*\)\.o[ :]*/\1\.o $@ : /g'\'' > $@'
-#
-#LIB_DEPENDS := $(LIB_FILES:.C=.d)
-#
-#lib_depends: $(LIB_DEPENDS)
-#
-#sinclude $(LIB_DEPENDS)
-#
-##############
