@@ -1,4 +1,4 @@
-Microsoft Developer Studio Workspace File, Format Version 5.00
+Microsoft Developer Studio Workspace File, Format Version 6.00
 # WARNING: DO NOT EDIT OR DELETE THIS WORKSPACE FILE!
 
 ###############################################################################
@@ -41,9 +41,6 @@ Package=<4>
     Begin Project Dependency
     Project_Dep_Name vrpn
     End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name quat
-    End Project Dependency
 }}}
 
 ###############################################################################
@@ -75,7 +72,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "quat"=.\server_src\quat\quat.dsp - Package Owner=<4>
+Project: "quat"=.\pc_win32\quat\quat.dsp - Package Owner=<4>
 
 Package=<5>
 {{{

@@ -43,8 +43,6 @@ ifeq ($(HW_OS),sparc_solaris)
   ARCH_LIBS := -lsocket -lnsl $(ARCH_LIBS)
 endif
 
-OBJ_DIR := $(HW_OS)
-
 CFLAGS = -I../ -g
 LFLAGS = -L../$(HW_OS) -L../../quat/$(HW_OS) \
 	 -L/afs/unc/proj/hmd/beta/lib/$(HW_OS) \
@@ -56,7 +54,9 @@ LFLAGS = -L../$(HW_OS) -L../../quat/$(HW_OS) \
 .C.o:
 	$(CC) $(CFLAGS) -c $*.C
 
-$(OBJ_DIR)/%.o: %.c
+OBJ_DIR := $(HW_OS)
+
+$(OBJ_DIR)/%.o: %.c $(OBJ_DIR)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 $(OBJ_DIR)/%.o: %.C
@@ -70,6 +70,9 @@ all:	$(OBJ_DIR)/printvals $(OBJ_DIR)/printcereal \
 	$(OBJ_DIR)/ohm_client $(OBJ_DIR)/phan_client \
 	$(OBJ_DIR)/sphere_client $(OBJ_DIR)/bdbox_client \
 	$(OBJ_DIR)/vrpn_print_messages add_vrpn_cookie
+
+$(OBJ_DIR):
+	mkdir $(OBJ_DIR)
 
 # testSharedObject
 
