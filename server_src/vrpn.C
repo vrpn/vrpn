@@ -12,10 +12,12 @@
 #include "vrpn_Flock_Master.h"
 #include "vrpn_Flock_Slave.h"
 #include "vrpn_Dyna.h"
+#include "vrpn_Sound.h"
 
 
 #define MAX_TRACKERS 100
 #define MAX_BUTTONS 100
+#define MAX_SOUNDS 2
 
 void	Usage(char *s)
 {
@@ -30,6 +32,8 @@ vrpn_Tracker	*trackers[MAX_TRACKERS];
 int		num_trackers = 0;
 vrpn_Button	*buttons[MAX_BUTTONS];
 int		num_buttons = 0;
+vrpn_Sound	*sounds[MAX_SOUNDS];
+int		num_sounds = 0;
 
 // install a signal handler to shut down the trackers and buttons
 #ifndef WIN32
@@ -147,7 +151,34 @@ main (int argc, char *argv[])
 
 	  // Figure out the device from the name and handle appropriately
 	  #define isit(s) !strncmp(line,s,strlen(s))
-	  if (isit("vrpn_Tracker_Dyna")) {
+	  if (isit("vrpn_Linux_Sound")) {
+	    // Get the arguments (sound_name)
+	    if (sscanf(line,"%511s%511s",s1,s2) != 2) {
+	      fprintf(stderr,"Bad vrpn_Linux_Sound line: %s\n",line);
+	      if (bail_on_error) { return -1; }
+	      else { continue; }	// Skip this line
+	    }
+
+	    // Make sure there's room for a new sound server
+	    if (num_sounds >= MAX_SOUNDS) {
+	      fprintf(stderr,"Too many sound servers in config file");
+	      if (bail_on_error) { return -1; }
+	      else { continue; }	// Skip this line
+	    }
+
+	    // Open the sound server
+	    if (verbose) 
+	      printf("Opening vrpn_Linux_Sound: %s\n", s2);
+	    if ((sounds[num_sounds] =
+		  new vrpn_Linux_Sound(s2, &connection)) == NULL) {
+		fprintf(stderr,"Can't create new vrpn_Linux_Sound\n");
+		if (bail_on_error) { return -1; }
+		else { continue; }	// Skip this line
+	    } else {
+		num_sounds++;
+	    }
+
+	  } else if (isit("vrpn_Tracker_Dyna")) {
 	    // Get the arguments (class, tracker_name, sensors,port, baud)
 	    if (sscanf(line,"%511s%511s%d%511s%d",s1,s2,&i2, s3, &i1) != 5) {
 	      fprintf(stderr,"Bad vrpn_Tracker_Dyan line: %s\n",line);
@@ -402,6 +433,11 @@ main (int argc, char *argv[])
 		// Let all the trackers generate reports
 		for (i = 0; i < num_trackers; i++) {
 			trackers[i]->mainloop();
+		}
+
+		// Let all the sound servers do their thing 
+		for (i = 0; i < num_sounds; i++) {
+			sounds[i]->mainloop();
 		}
 
 		// Send and receive all messages
