@@ -268,8 +268,8 @@ static int client_msg_handler(void *userdata, vrpn_HANDLERPARAM p) {
   vrpn_int32 event;
   vrpn_int32 buttonid;
 
-  vrpn_unbuffer(&bufptr, &event);
   vrpn_unbuffer(&bufptr, &buttonid);
+  vrpn_unbuffer(&bufptr, &event);
 
   if (event== vrpn_BUTTON_MOMENTARY) {
     if (buttonid == vrpn_ALL_ID)

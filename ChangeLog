@@ -1,3 +1,10 @@
+2001-12-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Button.C (client_msg_handler) : Made the parsing of the admin
+		message match the encoding of it, so that filtered buttons
+		will respond to requests to set buttons toggle/momentary.
+		This fixes a bug.
+
 2001-12-10  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_Connection.C (vrpn_Log::open):  added some more diagnostic
