@@ -147,6 +147,9 @@ void main (unsigned argc, char *argv[])
 			}
 		}
 
+		// Sleep for a short while to make sure we don't eat the whole CPU
+		vrpn_SleepMsecs(1);
+
 	}
 
 }
