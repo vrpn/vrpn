@@ -200,6 +200,7 @@ ifeq ($(HW_OS),pc_linux_arm)
 #   -I/usr/local/contrib/include \
 #	  	 -I/usr/local/contrib/mod/include -I/usr/include/bsd \
 #		 -I/usr/include/g++
+endif
 
 ifeq ($(HW_OS),sgi_irix)
 #  SYS_INCLUDE := -I/usr/local/contrib/mod/include
