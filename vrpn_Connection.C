@@ -68,7 +68,9 @@
 //  NOT SUPPORTED ON SPARC_SOLARIS
 //  gethostname() doesn't seem to want to link out of stdlib
 #ifdef sparc
+extern "C" {
 int gethostname (char *, int);
+}
 #endif
 
 #include "vrpn_Connection.h"
@@ -149,10 +151,10 @@ const int vrpn_MAGICLEN = 16;  // Must be a multiple of vrpn_ALIGN bytes!
 // On capefear and swift, getdtablesize() isn't declared in unistd.h
 // even though the man page says it should be.  Similarly, wait3()
 // isn't declared in sys/{wait,time,resource}.h.
-
+extern "C" {
 extern int getdtablesize (void);
 pid_t wait3 (int * statusp, int options, struct rusage * rusage);
-
+}
 #endif
 
 /* On HP's, this defines how many possible open file descriptors can be
@@ -594,7 +596,7 @@ int vrpn_udp_request_call(const char * machine, int port)
 {
 	struct sockaddr_in listen_name;	/* The listen socket binding name */
 	int	listen_namelen;
-#ifdef	_WIN32
+#ifdef	WIN32
 	SOCKET	listen_sock;		/* The socket to listen on */
 	SOCKET	accept_sock;		/* The socket we get when accepting */
 	SOCKET	udp_sock;		/* We lob datagrams from here */
@@ -1290,8 +1292,8 @@ int vrpn_OneConnection::connect_tcp_to (const char * msg)
 #else
 	SOCKET server_sock;
 #endif
-        struct	sockaddr_in client;     /* The name of the client */
-        struct	hostent *host;          /* The host to connect to */
+    struct	sockaddr_in client;     /* The name of the client */
+    struct	hostent *host;          /* The host to connect to */
 
 	// Find the machine name and port number
 	if (sscanf(msg, "%s %d", machine, &port) != 2) {
@@ -1308,30 +1310,28 @@ int vrpn_OneConnection::connect_tcp_to (const char * msg)
 	}
 	client.sin_family = AF_INET;
 	host = gethostbyname(machine);
-        if (host) {
+    if (host) {
 
 #ifdef CRAY
-
-          { int i;
-            u_long foo_mark = 0;
-            for  (i = 0; i < 4; i++) {
-                u_long one_char = host->h_addr_list[0][i];
-                foo_mark = (foo_mark << 8) | one_char;
-            }
-            client.sin_addr.s_addr = foo_mark;
-          }
-
+		{ 
+			int i;
+			u_long foo_mark = 0;
+			for  (i = 0; i < 4; i++) {
+				u_long one_char = host->h_addr_list[0][i];
+				foo_mark = (foo_mark << 8) | one_char;
+			}
+			client.sin_addr.s_addr = foo_mark;
+		}
 #else
 
-
-	  memcpy(&(client.sin_addr.s_addr), host->h_addr,  host->h_length);
+		memcpy(&(client.sin_addr.s_addr), host->h_addr,  host->h_length);
 #endif
 
-        } else {
+	} else {
 
-			perror("gethostbyname error:");
-#if !defined(hpux) && !defined(__hpux) && !defined(_WIN32) 
-			herror("gethostbyname error:");
+		perror("gethostbyname error:");
+#if !defined(hpux) && !defined(__hpux) && !defined(_WIN32)  && !defined(sparc)
+		herror("gethostbyname error:");
 #endif
 
 #ifdef _WIN32
@@ -1342,36 +1342,59 @@ int vrpn_OneConnection::connect_tcp_to (const char * msg)
 // It probably wouldn't hurt to enable it for non-NT systems
 // as well.
 
-          int retval;
-          unsigned int a, b, c, d;
-          retval = sscanf(machine, "%u.%u.%u.%u", &a, &b, &c, &d);
-          if (retval != 4) {
-
-#endif  // _WIN32
+		int retval;
+		unsigned int a, b, c, d;
+		retval = sscanf(machine, "%u.%u.%u.%u", &a, &b, &c, &d);
+		if (retval != 4) {
+			fprintf(stderr,
+				"vrpn_OneConnection::connect_tcp_to:  "
+					"error: bad address string\n");
+			return -1;
+		}
+#else	// not _WIN32
 
 // Note that this is the failure clause of gethostbyname() on
-// non-WIN32 systems, but of the sscanf() on WIN32 systems.
-
+// non-WIN32 systems
+		
 		fprintf(stderr,
 			"vrpn_OneConnection::connect_tcp_to:  "
-                        "error finding host by name\n");
+							"error finding host by name\n");
 		return -1;
-
+	}
+#endif
 #ifdef _WIN32
-
-          }
-
 // XXX OK, so this doesn't work.  What's wrong???
 
-          client.sin_addr.s_addr = (a << 24) + (b << 16) + (c << 8) + d;
-          //client.sin_addr.s_addr = (d << 24) + (c << 16) + (b << 8) + a;
-          fprintf(stderr, "vrpn_OneConnection::connect_tcp_to:  "
-                          "gethostname() failed;  we think we're\n"
-                          "looking for %d.%d.%d.%d.\n", a, b, c, d);
+		client.sin_addr.s_addr = (a << 24) + (b << 16) + (c << 8) + d;
+		//client.sin_addr.s_addr = (d << 24) + (c << 16) + (b << 8) + a;
+		fprintf(stderr, "vrpn_OneConnection::connect_tcp_to:  "
+					  "gethostname() failed;  we think we're\n"
+					  "looking for %d.%d.%d.%d.\n", a, b, c, d);
 
+		// here we can try an alternative strategy:
+		unsigned long addr = inet_addr(machine);
+		if (addr == INADDR_NONE) {	// that didn't work either
+			fprintf(stderr, "vrpn_OneConnection::connect_tcp_to:  "
+					"error reading address format\n");
+
+			return -1;
+		} else {
+			host = gethostbyaddr((char *)&addr,sizeof(addr), AF_INET);
+			if (host){
+				printf("gethostbyaddr() was successful\n");
+				memcpy(&(client.sin_addr.s_addr), host->h_addr,  host->h_length);
+			}
+			else{
+				fprintf(stderr, "vrpn_OneConnection::connect_tcp_to:  "
+							" gethostbyaddr() failed\n");
+				return -1;
+			}
+		}
+	}
+
+		
 #endif
 
-        }
 
 #ifndef _WIN32
 	client.sin_port = htons(port);
@@ -1382,6 +1405,10 @@ int vrpn_OneConnection::connect_tcp_to (const char * msg)
 	if (connect(server_sock,(struct sockaddr*)&client,sizeof(client)) < 0 ){
 		fprintf(stderr,
 		     "vrpn_OneConnection::connect_tcp_to: Could not connect\n");
+#ifdef _WIN32
+		int error = WSAGetLastError();
+		fprintf(stderr, "Winsock error: %d\n", error);
+#endif
 		close(server_sock);
 		return(-1);
 	}
@@ -1447,9 +1474,7 @@ int vrpn_OneConnection::log_message (vrpn_int32 len, struct timeval time,
   }
     // need to explicitly override the const
   // NOTE: then this should probably not be a const char * (weberh 9/14/98)
-  if (buffer != NULL) {
-	  memcpy((char *) lp->data.buffer, buffer, len);
-  }
+  memcpy((char *) lp->data.buffer, buffer, len);
 
   // filter (user) messages
 
@@ -1839,10 +1864,28 @@ static	int connect_udp_to (char * machine, int portno)
    // Connect it to the specified port on the specified machine
 	client.sin_family = AF_INET;
 	if ( (host=gethostbyname(machine)) == NULL ) {
+#ifndef _WIN32
 		close(sock);
 		fprintf(stderr,
 			 "vrpn: connect_udp_to: error finding host by name\n");
 		return(INVALID_SOCKET);
+#else
+		unsigned long addr = inet_addr(machine);
+		if (addr == INADDR_NONE){
+			close(sock);
+			fprintf(stderr,
+				 "vrpn: connect_udp_to: error finding host by name\n");
+			return(INVALID_SOCKET);
+		} else{
+			host = gethostbyaddr((char *)&addr,sizeof(addr), AF_INET);
+			if (!host){
+				close(sock);
+				fprintf(stderr,
+					 "vrpn: connect_udp_to: error finding host by name\n");
+				return(INVALID_SOCKET);
+			}
+		}
+#endif
 	}
 #ifdef CRAY
         { int i;
@@ -1861,6 +1904,10 @@ static	int connect_udp_to (char * machine, int portno)
 	client.sin_port = htons(portno);
 	if (connect(sock,(struct sockaddr*)&client,sizeof(client)) < 0 ){
 		perror("vrpn: connect_udp_to: Could not connect to client");
+#ifdef _WIN32
+		int error = WSAGetLastError();
+		fprintf(stderr, "Winsock error: %d\n", error);
+#endif
 		close(sock);
 		return(INVALID_SOCKET);
 	}
@@ -2674,12 +2721,9 @@ int vrpn_Connection::mainloop (const struct timeval * pTimeout)
   if (pTimeout) {
     timeout = *pTimeout;
   } else {
-    timeout.tv_sec = 0L;
-    timeout.tv_usec = 0L;
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 0;
   }
-
-//fprintf(stderr, "Timeout is %ld:%ld (status %d).\n",
-//timeout.tv_sec, timeout.tv_usec, status);
 
 #ifdef	VERBOSE2
   printf("vrpn_Connection::mainloop() called (status %d)\n",status);
@@ -2890,7 +2934,7 @@ void	vrpn_Connection::init (void)
 
 	gettimeofday(&start_time, NULL);
 
-#ifdef _WIN32
+#ifdef WIN32
 
   // Make sure sockets are set up
   // TCH 2 Nov 98 after Phil Winston
@@ -2906,7 +2950,7 @@ void	vrpn_Connection::init (void)
     exit(0);
   }
 
-#endif  // _WIN32
+#endif  // WIN32
 
 }
 
@@ -3120,7 +3164,7 @@ vrpn_Connection::~vrpn_Connection (void) {
 
   //fprintf(stderr, "In vrpn_Connection destructor.\n");
 
-#ifdef _WIN32
+#ifdef WIN32
 
 	if (WSACleanup() == SOCKET_ERROR) {
     fprintf(stderr, "~vrpn_Connection():  "
@@ -3128,7 +3172,7 @@ vrpn_Connection::~vrpn_Connection (void) {
             WSAGetLastError());
 	}
 
-#endif  // _WIN32
+#endif  // WIN32
 	vrpn_int32 i;
 	vrpnMsgCallbackEntry *pVMCB, *pVMCB_Del;
 	for (i=0;i<num_my_types;i++) {
