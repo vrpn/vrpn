@@ -1,3 +1,8 @@
+2000-08-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* sierra_router_server : New directory with router server in it
+		This server only compiles on PCs
+
 2000-08-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Makefile : Added test_analogfly compile
