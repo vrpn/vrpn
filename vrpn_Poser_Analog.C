@@ -19,6 +19,28 @@ vrpn_Poser_Analog::vrpn_Poser_Analog(const char* name, vrpn_Connection* c, vrpn_
 {
     int i;
 
+    //	register_server_handlers();
+
+    // Make sure that we have a valid connection
+    if (d_connection == NULL) {
+		fprintf(stderr,"vrpn_Poser_Analog: No connection\n");
+		return;
+	}
+
+    // Register a handler for the position change callback for this device
+ 	if (register_autodeleted_handler(req_position_m_id,
+			handle_change_message, this, d_sender_id)) {
+		fprintf(stderr,"vrpn_Poser_Analog: can't register position handler\n");
+		d_connection = NULL;
+	}
+
+    // Register a handler for the velocity change callback for this device
+    if (register_autodeleted_handler(req_velocity_m_id,
+			handle_vel_change_message, this, d_sender_id)) {
+		fprintf(stderr,"vrpn_Poser_Analog: can't register velocity handler\n");
+		d_connection = NULL;
+	}
+
     // Set up the axes
     x = p->x;
     y = p->y;

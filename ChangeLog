@@ -1,3 +1,9 @@
+2002-09-18  David Borland <borland@cs.unc.edu>
+
+        * vrpn_Poser.C : cosmetic changes
+
+        * vrpn_Poser_Analog.C : wasn't regestering callbacks.  Changed this.
+
 2002-09-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Serial.C (vrpn_flush_input_buffer) : Changed to return 0 or -1

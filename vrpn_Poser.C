@@ -250,7 +250,6 @@ vrpn_Poser_Server::vrpn_Poser_Server (const char* name, vrpn_Connection* c) :
 //	register_server_handlers();
 
     // Make sure that we have a valid connection
-
     if (d_connection == NULL) {
 		fprintf(stderr,"vrpn_Poser_Server: No connection\n");
 		return;
@@ -259,14 +258,14 @@ vrpn_Poser_Server::vrpn_Poser_Server (const char* name, vrpn_Connection* c) :
     // Register a handler for the position change callback for this device
  	if (register_autodeleted_handler(req_position_m_id,
 			handle_change_message, this, d_sender_id)) {
-		fprintf(stderr,"vrpn_Poser_Server:can't register position handler\n");
+		fprintf(stderr,"vrpn_Poser_Server: can't register position handler\n");
 		d_connection = NULL;
 	}
 
     // Register a handler for the velocity change callback for this device
     if (register_autodeleted_handler(req_velocity_m_id,
 			handle_vel_change_message, this, d_sender_id)) {
-		fprintf(stderr,"vrpn_Poser_Server:can't register velocity handler\n");
+		fprintf(stderr,"vrpn_Poser_Server: can't register velocity handler\n");
 		d_connection = NULL;
 	}
 }
