@@ -275,28 +275,32 @@ void vrpn_Sound_Server_DX9::loadSoundLocal(char* filename, vrpn_SoundID id, vrpn
     g_dsBufferParams.dwMode = DS3DMODE_NORMAL;
 
 	// Set up sound parameters
-	g_dsBufferParams.vPosition.x = (float)soundDef.pose.position[0];
-	g_dsBufferParams.vPosition.y = (float)soundDef.pose.position[1];
-	g_dsBufferParams.vPosition.z = (float)soundDef.pose.position[2];
- 
-	g_dsBufferParams.vConeOrientation.x = (float)soundDef.pose.orientation[0];
-	g_dsBufferParams.vConeOrientation.y = (float)soundDef.pose.orientation[1];
-	g_dsBufferParams.vConeOrientation.z = (float)soundDef.pose.orientation[2];
+	D3DVALUE pos_x = (float)soundDef.pose.position[0];
+	D3DVALUE pos_y = (float)soundDef.pose.position[1];
+	D3DVALUE pos_z = (float)soundDef.pose.position[2];
+	g_pDS3DBuffer->SetPosition( pos_x, pos_y, pos_z, DS3D_IMMEDIATE );
 
-	g_dsBufferParams.dwInsideConeAngle = (long)soundDef.cone_inner_angle;
-	g_dsBufferParams.dwOutsideConeAngle = (long)soundDef.cone_outer_angle;
+	D3DVALUE ori_x = (float)soundDef.pose.orientation[0];
+	D3DVALUE ori_y = (float)soundDef.pose.orientation[1];
+	D3DVALUE ori_z = (float)soundDef.pose.orientation[2];
+	g_pDS3DBuffer->SetConeOrientation(ori_x,ori_y,ori_z, DS3D_IMMEDIATE );
 
-	g_dsBufferParams.lConeOutsideVolume = (long)soundDef.cone_gain;
+	long InsideConeAngle = (long)soundDef.cone_inner_angle;
+	long OutsideConeAngle = (long)soundDef.cone_outer_angle;
+	g_pDS3DBuffer->SetConeAngles(InsideConeAngle, OutsideConeAngle, DS3D_IMMEDIATE);
 
-	g_dsBufferParams.flMinDistance = (float)soundDef.min_front_dist;
-	g_dsBufferParams.flMaxDistance = (float)soundDef.max_front_dist;
+	long OutsideVolume = (long)soundDef.cone_gain;
+	g_pDS3DBuffer->SetConeOutsideVolume(OutsideVolume, DS3D_IMMEDIATE);
 
-	g_dsBufferParams.vVelocity.x = (float)soundDef.velocity[0];
-	g_dsBufferParams.vVelocity.y = (float)soundDef.velocity[1];
-	g_dsBufferParams.vVelocity.z = (float)soundDef.velocity[2];
+	float MinDistance = (float)soundDef.min_front_dist;
+	float MaxDistance = (float)soundDef.max_front_dist;
+	g_pDS3DBuffer->SetMinDistance(MinDistance, DS3D_IMMEDIATE);
+	g_pDS3DBuffer->SetMaxDistance(MaxDistance, DS3D_IMMEDIATE);
 
-	// Now apply all parameters.	
-    hr = g_pDS3DBuffer->SetAllParameters( &g_dsBufferParams, DS3D_IMMEDIATE );
+	D3DVALUE velocity_x = (float)soundDef.velocity[0];
+	D3DVALUE velocity_y = (float)soundDef.velocity[1];
+	D3DVALUE velocity_z = (float)soundDef.velocity[2];
+	g_pDS3DBuffer->SetVelocity(velocity_x, velocity_y, velocity_z, DS3D_IMMEDIATE);
 
     DSBCAPS dsbcaps;
     ZeroMemory( &dsbcaps, sizeof(DSBCAPS) );
@@ -384,35 +388,33 @@ void vrpn_Sound_Server_DX9::unloadSound(vrpn_SoundID id) {
 // Use setListenerPosition and setListenerOrientation instead.
 void vrpn_Sound_Server_DX9::setListenerPose(vrpn_PoseDef pose) {
 
-	send_message("setListenerPose not supported",vrpn_TEXT_WARNING,0);
-
-	return;
-}
-
-
-
-void vrpn_Sound_Server_DX9::setListenerPosition(vrpn_float64 position[3] ) {
-	
-	D3DVALUE pos_x = (float)position[0];
-	D3DVALUE pos_y = (float)position[1];
-	D3DVALUE pos_z = (float)position[2];
+	D3DVALUE pos_x = (float)pose.position[0];
+	D3DVALUE pos_y = (float)pose.position[1];
+	D3DVALUE pos_z = (float)pose.position[2];
 
 	g_pDSListener->SetPosition( pos_x, pos_y, pos_z, DS3D_IMMEDIATE );
 
+	D3DVECTOR up,at;
+	q_matrix_type mat;
+
+	q_to_col_matrix( mat, pose.orientation );
+
+	at.x = -(float)mat[0][1];
+	at.y = -(float)mat[1][1];
+	at.z = (float)mat[2][1];
+
+	up.x = (float)mat[0][2];
+	up.y = (float)mat[1][2];
+	up.z = -(float)mat[2][2];
+
+//	printf("DEBUG: %f %f %f %f %f %f\n",
+//			at.x,at.y, at.z, up.x, up.y, up.z);
+
+	g_pDSListener->SetOrientation( at.x, at.y, at.z, up.x, up.y, up.z, DS3D_IMMEDIATE );
+
 	return;
 }
 
-
-
-void vrpn_Sound_Server_DX9::setListenerOrientation(vrpn_float64 at[3], vrpn_float64 up[3] ) {
-	
-	D3DVECTOR front = { (float)at[0], (float)at[1], (float)at[2] };
-	D3DVECTOR top = { (float)up[0], (float)up[1], (float)up[2] };
-
-	g_pDSListener->SetOrientation( front.x, front.y, front.z, top.x, top.y, top.z, DS3D_IMMEDIATE );
-
-	return;
-}
 
 
 
@@ -941,6 +943,8 @@ void vrpn_Sound_Server_DX9::GetListenerPosition(float* X_val, float* Y_val, floa
 	D3DVECTOR pos;
 
 	hr = g_pDSListener->GetPosition( &pos );
+
+	printf("DEBUG: %f %f %f \n\n",pos.x, pos.y, pos.z);
 
 	*X_val = pos.x;
 	*Y_val = pos.y;

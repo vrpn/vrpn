@@ -58,12 +58,9 @@ public:
 	void		loadSoundRemote(char* file, vrpn_SoundID id, vrpn_SoundDef soundDef); // not supported
 	void		unloadSound(vrpn_SoundID id);
 	void		changeSoundStatus(vrpn_SoundID id, vrpn_SoundDef soundDef);
-	
+
 	void		setListenerPose(vrpn_PoseDef pose);
 	void		setListenerVelocity(vrpn_float64 *velocity);
-
-	void		setListenerPosition(vrpn_float64 *position );
-	void		setListenerOrientation(vrpn_float64 *at, vrpn_float64 *up );
 
 	void		setSoundPose(vrpn_SoundID id, vrpn_PoseDef pose);
 	void		setSoundVelocity(vrpn_SoundID id, vrpn_float64 *velocity);
