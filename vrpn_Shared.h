@@ -158,4 +158,13 @@ extern int vrpn_unbuffer (const char ** buffer, char * string,
 #define	sleep(x)	Sleep( DWORD(1000.0 * x) )
 #endif
 
+// Horrible hack for old HPUX compiler
+#ifdef	hpux
+#ifndef	true
+#define	bool	int
+#define	true	1
+#define	false	0
+#endif
+#endif
+
 #endif  // VRPN_SHARED_H

@@ -488,6 +488,14 @@ class vrpn_Connection {
     // vrpn_Synchronized_Connection (for servers) or 
     // vrpn_get_connection_by_name (for clients)
 
+    static vrpn_Endpoint * allocateEndpoint (vrpn_Connection *,
+                                             vrpn_int32 * connectedEC);
+      ///< Redefining this and passing it to constructors
+      ///< allows a subclass to use a different subclass of Endpoint.
+      ///< It should do NOTHING but return an endpoint
+      ///< of the appropriate class;  it may not access subclass data,
+      ///< since it'll be called from a constructor
+
 	// Create a connection to listen for incoming connections on a port
 	vrpn_Connection (unsigned short listen_port_no =
 		         vrpn_DEFAULT_LISTEN_PORT_NO,
@@ -616,13 +624,6 @@ class vrpn_Connection {
       ///< because it's called during the Connection constructor when
       ///< their constructors haven't executed yet.)
 
-    static vrpn_Endpoint * allocateEndpoint (vrpn_Connection *,
-                                             vrpn_int32 * connectedEC);
-      ///< Redefining this and passing it to constructors
-      ///< allows a subclass to use a different subclass of Endpoint.
-      ///< It should do NOTHING but return an endpoint
-      ///< of the appropriate class;  it may not access subclass data,
-      ///< since it'll be called from a constructor
 };
 
 

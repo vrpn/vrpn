@@ -1,5 +1,10 @@
 2002-07-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Connection.C : Reordered functions (for HP build).
+	* vrpn_Shared.h : Hack to get bools to work on old HP compiler.
+
+2002-07-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_FileConnection.C : Include needed for Linux.
 
 2002-07-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
