@@ -72,7 +72,7 @@ void vrpn_SleepMsecs( double dMsecs ) {
   } while (vrpn_TimevalMsecs(vrpn_TimevalDiff( tvNow, tvStart ))<dMsecs);
 }
 
-static const long lTestEndian = 0x1;
+static long lTestEndian = 0x1;
 static const int fLittleEndian = (*((char *)&lTestEndian) == 0x1);
 
 // convert doubles to/from network order

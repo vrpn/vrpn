@@ -1,13 +1,18 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <errno.h>
+
 #ifndef __STDC__
+#ifndef	__hpux
 #include <getopt.h>
+#endif
 #endif /* __STDC__ */
+
 #ifdef	linux
 #include <sys/soundcard.h>
 

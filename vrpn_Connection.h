@@ -255,7 +255,9 @@ class vrpn_Connection
 	// Input buffers
 	int d_TCPbuflen;
 	char * d_TCPbuf;
-	char d_UDPinbuf [vrpn_CONNECTION_UDP_BUFLEN];
+	double d_UDPinbufToAlignRight
+			[vrpn_CONNECTION_UDP_BUFLEN/sizeof(double)+1];
+	char *d_UDPinbuf;
 };
 
 // forward decls

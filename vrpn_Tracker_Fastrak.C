@@ -25,11 +25,17 @@
  * Update Count    : 414
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Tracker_Fastrak.C,v $
- * $Date: 1998/04/07 17:27:15 $
- * $Author: ryang $
- * $Revision: 1.8 $
+ * $Date: 1998/06/04 16:05:53 $
+ * $Author: taylorr $
+ * $Revision: 1.9 $
  * 
  * $Log: vrpn_Tracker_Fastrak.C,v $
+ * Revision 1.9  1998/06/04 16:05:53  taylorr
+ * This version should compile at remote locations.
+ * This version no longer requires the SDI library to run.  It does all
+ * 	lookups by UDP callback based on host name for remote connections.
+ * Some bug fixes.
+ *
  * Revision 1.8  1998/04/07 17:27:15  ryang
  * change sensor id number starting from zeor
  *
@@ -64,7 +70,7 @@
  * HISTORY
  */
 
-static char rcsid[] = "$Id: vrpn_Tracker_Fastrak.C,v 1.8 1998/04/07 17:27:15 ryang Exp $";
+static char rcsid[] = "$Id: vrpn_Tracker_Fastrak.C,v 1.9 1998/06/04 16:05:53 taylorr Exp $";
 #include <time.h>
 #include <math.h>
 #include <stdlib.h>
@@ -1622,15 +1628,6 @@ int vrpn_Tracker_Fastrak::get_output_list(int unitNum, char * curOutputList)
 
 }	/* t_f_get_output_list */
 
-
-
-
-
-
 #endif  // defined(sgi) || defined(linux)
 #endif  // VRPN_CLIENT_ONLY
-
-
-
-
 

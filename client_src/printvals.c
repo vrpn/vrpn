@@ -51,8 +51,8 @@ void	handle_button(void *userdata, const vrpn_BUTTONCB b)
 void init(void)
 {
 	//tkr = new vrpn_Tracker_Remote("Tracker0_hiball1");
-	tkr = new vrpn_Tracker_Remote("Tracker0@ioglab");
-	btn = new vrpn_Button_Remote("Button0@ioglab");
+	tkr = new vrpn_Tracker_Remote("Tracker0@daytona");
+	btn = new vrpn_Button_Remote("Button0@daytona");
 
 	// Set up the tracker callback handler
 	printf("Tracker update: '.' = pos, '/' = vel, '~' = acc\n");

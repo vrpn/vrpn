@@ -1,9 +1,8 @@
 # this is a gmake file
 
-################################
-# Tell it where sdi and quat libs live
+######################################################################
+# Tell it where quat libs live
 
-SDI_DIR		:= ../../sdi
 QUAT_DIR	:= ../../quat
 
 ################################
@@ -11,7 +10,7 @@ QUAT_DIR	:= ../../quat
 
 HW_OS := sgi_irix
 #HW_OS := pc_linux
-#HW_OS := hp700_hpux
+#HW_OS := hp700_hpux10
 
 # Figure out which compiler based on the operating system
 
@@ -23,8 +22,16 @@ ifeq ($(HW_OS),hp700_hpux10)
 	CC := CC +a1
 endif
 
-CFLAGS = -I../ -I$(SDI_DIR) -I$(QUAT_DIR) -g
-LFLAGS = -L../$(HW_OS) -L$(SDI_DIR) -L$(QUAT_DIR)
+# ** You should not have to change things below this line
+######################################################################
+
+CFLAGS = -I../ -I$(QUAT_DIR) -g
+LFLAGS = -L../$(HW_OS) -L$(QUAT_DIR)
+
+# Figure out libraries based on the architecture
+ifeq ($(HW_OS),sgi_irix)
+  ARCH_LIBS := -lgl
+endif
 
 .C.o:
 	$(CC) $(CFLAGS) -c $*.C
@@ -35,7 +42,7 @@ LFLAGS = -L../$(HW_OS) -L$(SDI_DIR) -L$(QUAT_DIR)
 all:  vrpn_server 
 
 vrpn_server: vrpn.o  midi.o ../$(HW_OS)/libvrpnserver.a
-	$(CC) $(LFLAGS) -o vrpn_server vrpn.o midi.o -lvrpnserver -lgl -lsdi -lm -lquat
+	$(CC) $(LFLAGS) -o vrpn_server vrpn.o midi.o -lvrpnserver $(ARCH_LIBS) -lquat -lm
 
 clean:
 	rm -f *.o vrpn_server

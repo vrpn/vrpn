@@ -377,8 +377,10 @@ int vrpn_Tracker::handle_t2r_request(void *userdata, vrpn_HANDLERPARAM p)
     struct timeval current_time;
     char    msgbuf[1000];
     int     len;
-
     vrpn_Tracker *me = (vrpn_Tracker *)userdata; // == this normally
+
+    p = p; // Keep the compiler from complaining
+
     gettimeofday(&current_time, NULL);
     me->timestamp.tv_sec = current_time.tv_sec;
     me->timestamp.tv_usec = current_time.tv_usec;
@@ -403,8 +405,10 @@ int vrpn_Tracker::handle_u2s_request(void *userdata, vrpn_HANDLERPARAM p)
     char    msgbuf[1000];
     int     len;
     int i;
-
     vrpn_Tracker *me = (vrpn_Tracker *)userdata;
+
+    p = p; // Keep the compiler from complaining
+
     gettimeofday(&current_time, NULL);
     me->timestamp.tv_sec = current_time.tv_sec;
     me->timestamp.tv_usec = current_time.tv_usec;
@@ -431,9 +435,10 @@ int vrpn_Tracker::handle_workspace_request(void *userdata, vrpn_HANDLERPARAM p)
     struct timeval current_time;
     char    msgbuf[1000];
     int     len;
-    int i;
-
     vrpn_Tracker *me = (vrpn_Tracker *)userdata;
+
+    p = p; // Keep the compiler from complaining
+
     gettimeofday(&current_time, NULL);
     me->timestamp.tv_sec = current_time.tv_sec;
     me->timestamp.tv_usec = current_time.tv_usec;

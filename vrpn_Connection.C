@@ -22,12 +22,16 @@
 #include <netdb.h>
 #endif
 
-#include "sdi.h"
-
-extern int sdi_noint_block_write(int outfile, char buffer[], int length);
-
 #ifdef	sgi
 #include <bstring.h>
+#endif
+
+#ifdef _WIN32
+#include <winsock.h>
+#include <sys/timeb.h>
+#else
+#include <sys/wait.h>
+#include <netinet/tcp.h>
 #endif
 
 #include "vrpn_Connection.h"
@@ -49,7 +53,7 @@ extern int sdi_noint_block_write(int outfile, char buffer[], int length);
 // string.  Since minor versions should interoperate, MAGIC is only
 // checked through the last period;  characters after that are ignored.
 
-char	*MAGIC = "vrpn: ver. 02.12";
+char	*MAGIC = "vrpn: ver. 02.14";
 const	int	MAGICLEN = 16;	// Must be a multiple of vrpn_ALIGN bytes!
 
 // This is the list of states that a connection can be in
@@ -59,6 +63,577 @@ const	int	MAGICLEN = 16;	// Must be a multiple of vrpn_ALIGN bytes!
 #define CONNECTION_FAIL		(-1)
 #define BROKEN			(-2)
 #define DROPPED			(-3)
+
+
+#ifdef	_WIN32
+struct timezone { int tz_minuteswest; int tz_dsttime; };
+
+int gettimeofday(struct timeval *tp, struct timezone *tzp)
+{
+        struct _timeb timeb;
+        _ftime(&timeb);
+        tp->tv_sec  = timeb.time;
+        tp->tv_usec = timeb.millitm*1000;  // milli to micro secs
+        return 0;
+}
+
+#define	close	closesocket
+#endif
+
+//**********************************************************************
+//**  This section has been pulled from the "SDI" library and had its
+//**  functions renamed to vrpn_ from sdi_.  This removes our dependence
+//**  on libsdi.a for VRPN.
+
+
+/* On HP's, this defines how many possible open file descriptors can be
+ * open at once.  This is what is returned by the getdtablesize() function
+ * on other architectures. */
+#ifdef  hpux
+#define getdtablesize() MAXFUPLIM
+#endif
+
+#ifdef __hpux
+#define getdtablesize() MAXFUPLIM
+#endif
+
+/* How long to wait for a UDP packet to cause a callback connection,
+ * and how many times to retry. */
+#define	UDP_CALL_TIMEOUT	(2)
+#define	UDP_CALL_RETRIES	(5)
+
+#define time_greater(t1,t2)     ( (t1.tv_sec > t2.tv_sec) || \
+                                 ((t1.tv_sec == t2.tv_sec) && \
+                                  (t1.tv_usec > t2.tv_usec)) )
+#define time_add(t1,t2, tr)     { (tr).tv_sec = (t1).tv_sec + (t2).tv_sec ; \
+                                  (tr).tv_usec = (t1).tv_usec + (t2).tv_usec ; \
+                                  if ((tr).tv_usec >= 1000000L) { \
+                                        (tr).tv_sec++; \
+                                        (tr).tv_usec -= 1000000L; \
+                                  } }
+#define	time_subtract(t1,t2, tr) { (tr).tv_sec = (t1).tv_sec - (t2).tv_sec ; \
+				   (tr).tv_usec = (t1).tv_usec - (t2).tv_usec ;\
+				   if ((tr).tv_usec < 0) { \
+					(tr).tv_sec--; \
+					(tr).tv_usec += 1000000L; \
+				   } }
+
+/**********************
+ *	This routine will perform like a normal select() call, but it will
+ * restart if it quit because of an interrupt.  This makes it more robust
+ * in its function, and allows this code to perform properly on pxpl5, which
+ * sends USER1 interrupts while rendering an image.
+ **********************/
+int vrpn_noint_select(int width, fd_set *readfds, fd_set *writefds, 
+		     fd_set *exceptfds, struct timeval *timeout)
+{
+	fd_set	tmpread, tmpwrite, tmpexcept;
+	int	ret;
+	int	done = 0;
+        struct	timeval timeout2;
+        struct	timeval *timeout2ptr;
+	struct	timeval	start, stop, now;
+	struct	timezone zone;
+
+	/* If the timeout parameter is non-NULL and non-zero, then we
+	 * may have to adjust it due to an interrupt.  In these cases,
+	 * we will copy the timeout to timeout2, which will be used
+	 * to keep track.  Also, the current time is found so that we
+	 * can track elapsed time. */
+	if ( (timeout != NULL) && 
+	     ((timeout->tv_sec != 0) || (timeout->tv_usec != 0)) ) {
+		timeout2 = *timeout;
+		timeout2ptr = &timeout2;
+		gettimeofday(&start, &zone);	/* Find start time */
+		time_add(start,*timeout,stop);	/* Find stop time */
+	} else {
+		timeout2ptr = timeout;
+	}
+
+	/* Repeat selects until it returns for a reason other than interrupt */
+	do {
+		/* Set the temp file descriptor sets to match parameters */
+		if (readfds != NULL) {
+			tmpread = *readfds;
+		} else {
+			FD_ZERO(&tmpread);
+		}
+		if (writefds != NULL) {
+			tmpwrite = *writefds;
+		} else {
+			FD_ZERO(&tmpwrite);
+		}
+		if (exceptfds != NULL) {
+			tmpexcept = *exceptfds;
+		} else {
+			FD_ZERO(&tmpexcept);
+		}
+
+		/* Do the select on the temporary sets of descriptors */
+		ret = select(width, &tmpread,&tmpwrite,&tmpexcept, timeout2ptr);
+		if (ret >= 0) {	/* We are done if timeout or found some */
+			done = 1;
+		} else if (errno != EINTR) {	/* Done if non-intr error */
+			done = 1;
+		} else if ( (timeout != NULL) &&
+		  ((timeout->tv_sec != 0) || (timeout->tv_usec != 0))) {
+
+		    /* Interrupt happened.  Find new time timeout value */
+		    gettimeofday(&now, &zone);
+		    if (time_greater(now,stop)) {	/* Past stop time */
+			done = 1;
+		    } else {	/* Still time to go. */
+			unsigned long	usec_left;
+			usec_left = (stop.tv_sec - now.tv_sec) * 1000000L;
+			usec_left += stop.tv_usec - now.tv_usec;
+			timeout2.tv_sec = usec_left / 1000000L;
+			timeout2.tv_usec = usec_left % 1000000L;
+		    }
+		}
+	} while (!done);
+
+	/* Copy the temporary sets back to the parameter sets */
+	if (readfds != NULL) {
+		*readfds = tmpread;
+	}
+	if (writefds != NULL) {
+		*writefds = tmpwrite;
+	}
+	if (exceptfds != NULL) {
+		*exceptfds = tmpexcept;
+	}
+
+	return(ret);
+}
+
+
+/*      This routine will write a block to a file descriptor.  It acts just
+ * like the write() system call does on files, but it will keep sending to
+ * a socket until an error or all of the data has gone.
+ *      This will also take care of problems caused by interrupted system
+ * calls, retrying the write when they occur.  It will also work when
+ * sending large blocks of data through socket connections, since it will
+ * send all of the data before returning.
+ *	This routine will either write the requested number of bytes and
+ * return that or return -1 (in the case of an error) or 0 (in the case
+ * of EOF being reached before all the data is sent). */
+
+#ifndef _WIN32
+
+int vrpn_noint_block_write(int outfile, char  buffer[], int length)
+{
+        register int    sofar;          /* How many characters sent so far */
+        register int    ret;            /* Return value from write() */
+
+        sofar = 0;
+        do {
+                /* Try to write the remaining data */
+                ret = write(outfile, buffer+sofar, length-sofar);
+                sofar += ret;
+
+                /* Ignore interrupted system calls - retry */
+                if ( (ret == -1) && (errno == EINTR) ) {
+                        ret = 1;	/* So we go around the loop again */
+                        sofar += 1;	/* Restoring it from above -1 */
+                }
+
+        } while ( (ret > 0) && (sofar < length) );
+
+        if (ret == -1) return(-1);	/* Error during write */
+	if (ret == 0) return(0);	/* EOF reached */
+
+        return(sofar);			/* All bytes written */
+}
+
+
+/*      This routine will read in a block from the file descriptor.
+ * It acts just like the read() routine does on normal files, so that
+ * it hides the fact that the descriptor may point to a socket.
+ *      This will also take care of problems caused by interrupted system
+ * calls, retrying the read when they occur.
+ *	This routine will either read the requested number of bytes and
+ * return that or return -1 (in the case of an error) or 0 (in the case
+ * of EOF being reached before all the data arrives). */
+
+int vrpn_noint_block_read(int infile, char buffer[], int length)
+{
+        register int    sofar;          /* How many we read so far */
+        register int    ret;            /* Return value from the read() */
+
+        sofar = 0;
+        do {
+		/* Try to read all remaining data */
+                ret = read(infile, buffer+sofar, length-sofar);
+                sofar += ret;
+
+                /* Ignore interrupted system calls - retry */
+                if ( (ret == -1) && (errno == EINTR) ) {
+                        ret = 1;	/* So we go around the loop again */
+                        sofar += 1;	/* Restoring it from above -1 */
+                }
+        } while ((ret > 0) && (sofar < length));
+
+        if (ret == -1) return(-1);	/* Error during read */
+	if (ret == 0) return(0);	/* EOF reached */
+
+        return(sofar);			/* All bytes read */
+}
+
+#else /* _WIN32 */
+
+int vrpn_noint_block_write(SOCKET outsock, char *buffer, int length)
+{
+	int nwritten, sofar = 0;
+	do {
+		    /* Try to write the remaining data */
+		nwritten = send(outsock, buffer+sofar, length-sofar, 0);
+
+		if (nwritten == SOCKET_ERROR) {
+			return -1;
+        }
+
+		sofar += nwritten;		
+	} while ( sofar < length );
+	
+	return(sofar);			/* All bytes written */
+}
+
+int vrpn_noint_block_read(SOCKET insock, char *buffer, int length)
+{
+    int nread, sofar = 0;  
+    do {
+            /* Try to read all remaining data */
+        nread = recv(insock, buffer+sofar, length-sofar, 0);
+
+		if (nread == SOCKET_ERROR) {
+            return -1;
+        }
+		if (nread == 0) {   /* socket closed */
+			return 0;
+		}
+        
+        sofar += nread;        
+    } while (sofar < length);
+	    
+    return(sofar);			/* All bytes read */
+}
+
+#endif /* _WIN32 */
+
+
+/*	This routine will read in a block from the file descriptor.
+ * It acts just like the read() routine on normal files, except that
+ * it will time out if the read takes too long.
+ *      This will also take care of problems caused by interrupted system
+ * calls, retrying the read when they occur.
+ *	This routine will either read the requested number of bytes and
+ * return that or return -1 (in the case of an error) or 0 (in the case
+ * of EOF being reached before all the data arrives), or return the number
+ * of characters read before timeout (in the case of a timeout). */
+
+#ifdef _WIN32
+int vrpn_noint_block_read_timeout(SOCKET infile, char buffer[], 
+				 int length, struct timeval *timeout)
+#else
+int vrpn_noint_block_read_timeout(int infile, char buffer[], 
+				 int length, struct timeval *timeout)
+#endif
+{
+        register int    sofar;          /* How many we read so far */
+        register int    ret;            /* Return value from the read() */
+        struct	timeval timeout2;
+        struct	timeval *timeout2ptr;
+	struct	timeval	start, stop, now;
+	struct	timezone zone;
+
+	/* If the timeout parameter is non-NULL and non-zero, then we
+	 * may have to adjust it due to an interrupt.  In these cases,
+	 * we will copy the timeout to timeout2, which will be used
+	 * to keep track.  Also, the current time is found so that we
+	 * can track elapsed time. */
+	if ( (timeout != NULL) && 
+	     ((timeout->tv_sec != 0) || (timeout->tv_usec != 0)) ) {
+		timeout2 = *timeout;
+		timeout2ptr = &timeout2;
+		gettimeofday(&start, &zone);	/* Find start time */
+		time_add(start,*timeout,stop);	/* Find stop time */
+	} else {
+		timeout2ptr = timeout;
+	}
+
+        sofar = 0;
+        do {	
+		int	sel_ret;
+		fd_set	readfds, exceptfds;
+
+		/* See if there is a character ready for read */
+		FD_ZERO(&readfds);
+		FD_SET(infile, &readfds);
+		FD_ZERO(&exceptfds);
+		FD_SET(infile, &exceptfds);
+		sel_ret = vrpn_noint_select(32, &readfds, NULL, &exceptfds,
+					   timeout2ptr);
+		if (sel_ret == -1) {	/* Some sort of error on select() */
+			return -1;
+		}
+		if (FD_ISSET(infile, &exceptfds)) {	/* Exception */
+			return -1;
+		}
+		if (!FD_ISSET(infile, &readfds)) {	/* No characters */
+			if ( (timeout != NULL) &&
+			     (timeout->tv_sec == 0) &&
+			     (timeout->tv_usec == 0) ) {	/* Quick poll */
+				return sofar;	/* Timeout! */
+			}
+		}
+
+		/* See what time it is now and how long we have to go */
+		if (timeout2ptr) {
+			gettimeofday(&now, &zone);
+			if (time_greater(now, stop)) {	/* Timeout! */
+				return sofar;
+			} else {
+				time_subtract(stop,now, timeout2);
+			}
+		}
+
+		if (!FD_ISSET(infile, &readfds)) {	/* No chars yet */
+			continue;
+		}
+
+		/* Try to read one character if there is one */
+		/* We read one at a time because that's all that we are
+		 * guaranteed to have available.  On a socket, this is
+		 * not a problem because it won't block, but on a file it
+		 * will. */
+#ifndef _WIN32
+                ret = read(infile, buffer+sofar, 1);
+                sofar += ret;
+
+                /* Ignore interrupted system calls - retry */
+                if ( (ret == -1) && (errno == EINTR) ) {
+                        ret = 1;	/* So we go around the loop again */
+                        sofar += 1;	/* Restoring it from above -1 */
+                }
+#else
+                {
+                    int nread;
+                    nread = recv(infile, buffer+sofar, length-sofar, 0);
+                    sofar += nread;
+                    ret = nread;
+                }
+#endif
+
+        } while ((ret > 0) && (sofar < length));
+
+#ifndef _WIN32
+        if (ret == -1) return(-1);	/* Error during read */
+#endif
+	    if (ret == 0) return(0);	/* EOF reached */
+
+        return(sofar);			/* All bytes read */
+}
+
+
+/***************************
+ *	This routine will send UDP packets requesting a TCP callback from
+ * a remote server given the name of the machine and the socket number to
+ * send the requests to.
+ *	This routine returns the file descriptor of the socket on success
+ * and -1 on failure.
+ ***************************/
+int vrpn_udp_request_call(char *machine, int port)
+{
+	struct sockaddr_in listen_name;	/* The listen socket binding name */
+	int	listen_namelen;
+#ifdef	WIN32
+	SOCKET	listen_sock;		/* The socket to listen on */
+	SOCKET	accept_sock;		/* The socket we get when accepting */
+	SOCKET	udp_sock;		/* We lob datagrams from here */
+#else
+	int	listen_sock;		/* The socket to listen on */
+	int	accept_sock;		/* The socket we get when accepting */
+	int	udp_sock;		/* We lob datagrams from here */
+#endif
+	struct sockaddr_in udp_name;	/* The UDP socket binding name */
+	int	udp_namelen;
+	int	listen_portnum;		/* Port number we're listening on */
+        struct	hostent *host;          /* The host to connect to */
+	char	msg[150];		/* Message to send */
+	int	msglen;			/* How long it is (including \0) */
+	char	myname[100];		/* Name of this host */
+	int	try_connect;
+
+	/* Create a TCP socket to listen for incoming connections from the
+	 * remote server. */
+
+        listen_name.sin_family = AF_INET;		/* Internet socket */
+        listen_name.sin_addr.s_addr = INADDR_ANY;	/* Accept any port */
+        listen_name.sin_port = htons(0);
+        listen_sock = socket(AF_INET,SOCK_STREAM,0);
+	listen_namelen = sizeof(listen_name);
+        if (listen_sock < 0) {
+		fprintf(stderr,"vrpn_udp_request_call: can't open socket().\n");
+                return(-1);
+        }
+        if ( bind(listen_sock,(struct sockaddr*)&listen_name,listen_namelen) ) {
+		fprintf(stderr,"vrpn_udp_request_call: can't bind socket().\n");
+                close(listen_sock);
+                return(-1);
+        }
+        if ( getsockname(listen_sock,
+	     (struct sockaddr*)&listen_name,&listen_namelen) ) {
+		fprintf(stderr,
+			"vrpn_udp_request_call: cannot get socket name.\n");
+                close(listen_sock);
+                return(-1);
+        }
+	listen_portnum = ntohs(listen_name.sin_port);
+	if ( listen(listen_sock,2) ) {
+		fprintf(stderr,"vrpn_udp_request_call: listen() failed.\n");
+		close(listen_sock);
+		return(-1);
+	}
+
+	/* Create a UDP socket and connect it to the port on the remote
+	 * machine. */
+
+        udp_sock = socket(AF_INET,SOCK_DGRAM,0);
+        if (udp_sock < 0) {
+	    fprintf(stderr,"vrpn_udp_request_call: can't open udp socket().\n");
+	    close(listen_sock);
+            return(-1);
+        }
+	udp_name.sin_family = AF_INET;
+	udp_namelen = sizeof(udp_name);
+	if ( (host=gethostbyname(machine)) == NULL ) {
+		close(listen_sock);
+		fprintf(stderr,
+			"vrpn_udp_request_call: error finding host by name\n");
+		return(-1);
+	}
+#ifdef CRAY
+        { int i;
+          u_long foo_mark = 0;
+          for  (i = 0; i < 4; i++) {
+              u_long one_char = host->h_addr_list[0][i];
+              foo_mark = (foo_mark << 8) | one_char;
+          }
+          udp_name.sin_addr.s_addr = foo_mark;
+        }
+#else
+	memcpy(&(udp_name.sin_addr.s_addr), host->h_addr,  host->h_length);
+#endif
+#ifndef _WIN32
+	udp_name.sin_port = htons(port);
+#else
+	udp_name.sin_port = htons((u_short)port);
+#endif
+        if ( connect(udp_sock,(struct sockaddr*)&udp_name,udp_namelen) ) {
+	    fprintf(stderr,"vrpn_udp_request_call: can't bind udp socket().\n");
+	    close(listen_sock);
+	    close(udp_sock);
+	    return(-1);
+        }
+
+	/* Fill in the request message, telling the machine and port that
+	 * the remote server should connect to.  These are ASCII, separated
+	 * by a space. */
+
+	if (gethostname(myname,sizeof(myname))) {
+		fprintf(stderr,
+		   "vrpn_udp_request_call: Error finding local hostname\n");
+		close(listen_sock);
+		close(udp_sock);
+		return(-1);
+	}
+	sprintf(msg, "%s %d", myname, listen_portnum);
+	msglen = strlen(msg) + 1;	/* Include the terminating 0 char */
+
+	/* Repeat sending the request to the server and checking for it
+	 * to call back until either there is a connection request from the
+	 * server or it times out as many times as we're supposed to try. */
+
+	for (try_connect = 0; try_connect < UDP_CALL_RETRIES; try_connect++) {
+		fd_set	rfds;
+		struct	timeval t;
+
+		/* Send a packet to the server asking for a connection. */
+		if (send(udp_sock, msg, msglen, 0) == -1) {
+		  perror("vrpn_udp_request_call: send() failed");
+		  close(listen_sock);
+		  close(udp_sock);
+		  return -1;
+		}
+
+		/* See if we get a connection attempt within the timeout */
+		FD_ZERO(&rfds);
+		FD_SET(listen_sock, &rfds);	/* Check for read (connect) */
+		t.tv_sec = UDP_CALL_TIMEOUT;
+		t.tv_usec = 0;
+		if (select(32, &rfds, NULL, NULL, &t) == -1) {
+		  perror("vrpn_udp_request_call: select() failed");
+		  close(listen_sock);
+		  close(udp_sock);
+		  return -1;
+		}
+		if (FD_ISSET(listen_sock, &rfds)) {	/* Got one! */
+			break;	/* Break out of the for loop */
+		}
+	}
+	if (try_connect == UDP_CALL_RETRIES) {	/* We didn't get an answer */
+		fprintf(stderr,"vrpn_udp_request_call: No reply from server\n");
+		fprintf(stderr,"                      (Server down or busy)\n");
+		close(listen_sock);
+		close(udp_sock);
+		return -1;
+	}
+
+	/* Accept the connection from the remote machine and set TCP_NODELAY
+	 * on the socket. */
+	if ( (accept_sock = accept(listen_sock,0,0)) == -1 ) {
+		perror("vrpn_udp_request_call: accept() failed");
+		close(listen_sock);
+		close(udp_sock);
+		return -1;
+	}
+
+	{	struct	protoent	*p_entry;
+		static	int	nonzero = 1;
+
+		if ( (p_entry = getprotobyname("TCP")) == NULL ) {
+			fprintf(stderr,
+			  "vrpn_udp_request_call: getprotobyname() failed.\n");
+			close(accept_sock);
+			close(listen_sock);
+			close(udp_sock);
+			return(-1);
+		}
+
+		if (setsockopt(accept_sock, p_entry->p_proto,
+#ifdef	WIN32
+		    TCP_NODELAY, &(const char)nonzero, sizeof(nonzero))==-1){
+#else
+		    TCP_NODELAY, &nonzero, sizeof(nonzero))==-1) {
+#endif
+			perror("vrpn_udp_request_call: setsockopt() failed");
+			close(accept_sock);
+			close(listen_sock);
+			close(udp_sock);
+			return(-1);
+		}
+	}
+
+	close(listen_sock);	/* Don't need this now */
+	close(udp_sock);	/* Don't need this now */
+
+	return accept_sock;
+}
+
+
+//**  End of section pulled from SDI library
+//*********************************************************************
+
 
 
 vrpn_Connection::vrpn_OneConnection::vrpn_OneConnection (void) :
@@ -260,20 +835,89 @@ static	int connect_udp_to (char * machine, int portno)
 int vrpn_Connection::connect_tcp_to (const char * msg)
 {	char	machine [5000];
 	int	port;
+#ifndef _WIN32
+	int	server_sock;		/* Socket on this host */
+#else
+	SOCKET server_sock;
+#endif
+        struct	sockaddr_in client;     /* The name of the client */
+        struct	hostent *host;          /* The host to connect to */
 
 	// Find the machine name and port number
 	if (sscanf(msg, "%s %d", machine, &port) != 2) {
 		return -1;
 	}
-	// Save the remote machine name
-	// No longer done here because this only works for half the
-	// endponts;  EVERY system involved does it
-	// during exchange of UDP ports
-	//strncpy(endpoint.rhostname, machine, sizeof(endpoint.rhostname));
-	//endpoint.rhostname[sizeof(endpoint.rhostname)-1] = '\0';
 
-	// Open the socket
-	return sdi_connect_to_client(machine, port);
+	/* set up the socket */
+
+	server_sock = socket(AF_INET,SOCK_STREAM,0);
+	if ( server_sock < 0 ) {
+		fprintf(stderr,
+		      "vrpn_Connection::connect_tcp_to: can't open socket\n");
+		return(-1);
+	}
+	client.sin_family = AF_INET;
+	if ( (host=gethostbyname(machine)) == NULL ) {
+		close(server_sock);
+		fprintf(stderr,
+			"vrpn_Connection::connect_tcp_to: error finding host by name\n");
+		return(-1);
+	}
+#ifdef CRAY
+        {
+          int i;
+          u_long foo_mark = 0;
+          for  (i = 0; i < 4; i++)
+            {
+              u_long one_char = host->h_addr_list[0][i];
+              foo_mark = (foo_mark << 8) | one_char;
+            }
+          client.sin_addr.s_addr = foo_mark;
+        }
+#else
+    memcpy(&(client.sin_addr.s_addr), host->h_addr, host->h_length);
+#endif
+
+#ifndef _WIN32
+	client.sin_port = htons(port);
+#else
+	client.sin_port = htons((u_short)port);
+#endif
+
+	if (connect(server_sock,(struct sockaddr*)&client,sizeof(client)) < 0 ){
+		fprintf(stderr,
+		     "vrpn_Connection::connect_tcp_to: Could not connect\n");
+		close(server_sock);
+		return(-1);
+	}
+
+	/* Set the socket for TCP_NODELAY */
+
+	{	struct	protoent	*p_entry;
+		static	int	nonzero = 1;
+
+		if ( (p_entry = getprotobyname("TCP")) == NULL ) {
+			fprintf(stderr,
+			  "vrpn_Connection::connect_tcp_to: getprotobyname() failed.\n");
+			close(server_sock);
+			return(-1);
+		}
+
+#ifndef _WIN32
+		if (setsockopt(server_sock, p_entry->p_proto,
+			TCP_NODELAY, &nonzero, sizeof(nonzero))==-1) {
+#else
+		if (setsockopt(server_sock, p_entry->p_proto,
+			TCP_NODELAY, (const char *)&nonzero, sizeof(nonzero))==SOCKET_ERROR) {
+#endif
+
+			perror("vrpn_Connection::connect_tcp_to: setsockopt() failed");
+			close(server_sock);
+			return(-1);
+		}
+	}
+
+	return(server_sock);
 }
 
 //---------------------------------------------------------------------------
@@ -419,7 +1063,7 @@ int vrpn_Connection::setup_for_new_connection(void)
 	}
 
 	// Write the magic cookie header to the server
-	if (sdi_noint_block_write(endpoint.tcp_sock, MAGIC, MAGICLEN)
+	if (vrpn_noint_block_write(endpoint.tcp_sock, MAGIC, MAGICLEN)
             != MAGICLEN) {
 	  perror(
 	    "vrpn_Connection::setup_for_new_connection: Can't write cookie");
@@ -427,7 +1071,7 @@ int vrpn_Connection::setup_for_new_connection(void)
 	}
 
 	// Read the magic cookie from the server
-	if (sdi_noint_block_read(endpoint.tcp_sock, buf, MAGICLEN)
+	if (vrpn_noint_block_read(endpoint.tcp_sock, buf, MAGICLEN)
             != MAGICLEN) {
 	  perror(
 	    "vrpn_Connection::setup_for_new_connection: Can't read cookie");
@@ -1014,7 +1658,8 @@ vrpn_Connection::vrpn_Connection (unsigned short listen_port_no) :
     tcp_num_out (0),
     udp_num_out (0),
     d_TCPbuflen (0),
-    d_TCPbuf (NULL)
+    d_TCPbuf (NULL),
+    d_UDPinbuf ((char*)(&d_UDPinbufToAlignRight[0]))
 
 {
    // Initialize the things that must be for any constructor
@@ -1059,7 +1704,8 @@ vrpn_Connection::vrpn_Connection (char * station_name) :
     tcp_num_out (0),
     udp_num_out (0),
     d_TCPbuflen (0),
-    d_TCPbuf (NULL)
+    d_TCPbuf (NULL),
+    d_UDPinbuf ((char*)(&d_UDPinbufToAlignRight[0]))
 
 {
 	// Initialize the things that must be for any constructor
@@ -1076,12 +1722,8 @@ vrpn_Connection::vrpn_Connection (char * station_name) :
 	//}
 
 	// Open a connection to the station using SDI
-#ifdef	_WIN32
-	endpoint.tcp_sock = sdi_udp_request_call(station_name,
+	endpoint.tcp_sock = vrpn_udp_request_call(station_name,
 					vrpn_DEFAULT_LISTEN_PORT_NO);
-#else
-	endpoint.tcp_sock = sdi_connect_to_device(station_name);
-#endif
 	if (endpoint.tcp_sock < 0) {
 	    fprintf(stderr, "vrpn_Connection:  Can't open %s\n", station_name);
 	    status = BROKEN;
@@ -1339,7 +1981,7 @@ int	vrpn_Connection::handle_tcp_messages(int fd)
 #endif
 
 		// Read and parse the header
-		if (sdi_noint_block_read(fd,(char*)header,sizeof(header)) !=
+		if (vrpn_noint_block_read(fd,(char*)header,sizeof(header)) !=
 			sizeof(header)) {
 		  //perror("vrpn: vrpn_Connection::handle_tcp_messages: Can't read header");
 		  printf("vrpn_connection::handle_tcp_messages:  "
@@ -1358,7 +2000,7 @@ int	vrpn_Connection::handle_tcp_messages(int fd)
 		if (header_len > sizeof(header)) {
 		  // the difference can be no larger than this
 		  char rgch[vrpn_ALIGN];
-		  if (sdi_noint_block_read(fd,(char*)rgch,sizeof(header_len-sizeof(header))) !=
+		  if (vrpn_noint_block_read(fd,(char*)rgch,sizeof(header_len-sizeof(header))) !=
 		      sizeof(header_len-sizeof(header))) {
 		    //perror("vrpn: vrpn_Connection::handle_tcp_messages: Can't read header");
 		    printf("vrpn_connection::handle_tcp_messages:  "
@@ -1387,7 +2029,7 @@ int	vrpn_Connection::handle_tcp_messages(int fd)
 		}
 
 		// Read the body of the message 
-		if (sdi_noint_block_read(fd,d_TCPbuf,ceil_len) != ceil_len) {
+		if (vrpn_noint_block_read(fd,d_TCPbuf,ceil_len) != ceil_len) {
 		 perror("vrpn: vrpn_Connection::handle_tcp_messages: Can't read body");
 		 return -1;
 		}
@@ -1494,7 +2136,7 @@ int	vrpn_Connection::handle_udp_messages(int fd)
 #endif
 		// Read the buffer and reset the buffer pointer
 		inbuf_ptr = d_UDPinbuf;
-		if ( (inbuf_len = recv(fd, d_UDPinbuf, sizeof(d_UDPinbuf), 0)) == -1) {
+		if ( (inbuf_len = recv(fd, d_UDPinbuf, sizeof(d_UDPinbufToAlignRight), 0)) == -1) {
 		   perror("vrpn: vrpn_Connection::handle_udp_messages: recv() failed");
 		   return -1;
 		}
