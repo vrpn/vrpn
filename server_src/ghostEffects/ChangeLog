@@ -1,3 +1,8 @@
+2004-07-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* InstantBuzzEffect.h : Port to use GHOST or HDAPI (full port).
+	* InstantBuzzEffect.cpp : Same.
+
 2004-03-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* InstantBuzzEffect.h : Adding credits.
