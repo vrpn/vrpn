@@ -18,9 +18,9 @@ vrpn_Tracker_AnalogFly::vrpn_Tracker_AnalogFly
          (const char * name, vrpn_Connection * trackercon,
           vrpn_Tracker_AnalogFlyParam * params, float update_rate) :
 	vrpn_Tracker (name, trackercon),
-	d_update_interval (update_rate ? (1/update_rate) : 1.0),
-        d_reset_button(NULL),
-	d_which_button (params->reset_which)
+	d_reset_button(NULL),
+	d_which_button (params->reset_which),
+	d_update_interval (update_rate ? (1/update_rate) : 1.0)
 {
 	int i;
 

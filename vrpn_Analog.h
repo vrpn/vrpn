@@ -11,6 +11,10 @@
 #include "vrpn_Connection.h"
 #include "vrpn_BaseClass.h"
 
+#ifndef	VRPN_CLIENT_ONLY
+#include "vrpn_Serial.h"
+#endif
+
 // Contention:  vrpn_Analog shouldn't have a mainloop() function.
 //   (Neither should other similar base classes).  There isn't any
 //   reason for some derived classes to implement one, and there may
@@ -44,10 +48,11 @@ public:
                              = vrpn_CONNECTION_LOW_LATENCY);
 };
 
+#ifndef	VRPN_CLIENT_ONLY
 class vrpn_Serial_Analog: public vrpn_Analog {
 public:
   vrpn_Serial_Analog(const char * name, vrpn_Connection * connection,
-		     const char * port, int baud);
+		     const char * port, int baud, int bits = 8, vrpn_SER_PARITY parity = vrpn_SER_PARITY_NONE);
 protected:
   int serial_fd;
   char portname[1024];
@@ -58,6 +63,7 @@ protected:
   int read_available_characters(char *buffer,
 	int bytes);
 };
+#endif
 
 // vrpn_Analog_Server
 // Tom Hudson, March 1999

@@ -1,0 +1,15 @@
+taylorr	vrpn.dsp ( ), vrpn.dsw ( ), vrpn_Analog_Radamec_SPI.h (), vrpn_Analog_Radamec_SPI.C ()
+Adds a driver for the Radamec Serial Position Interface (camera tracker).
+
+taylorr	vrpn_Serial.h (vrpn_open_commport), vrpn_Serial.C (vrpn_open_commport), vrpn_Analog.C (vrpn_Serial_Analog::vrpn_Serial_Analog), vrpn_Analog.h (vrpn_Serial_Analog::vrpn_Serial_Analog)
+Adds bit length and parity to the optional parameters to the serial-port open.
+
+taylorr	vrpn_Tracker.C ( ), vrpn_Tracker.h ( )
+Modified the packing code to use vrpn_buffer() and vrpn_unbufer().
+Removed the redundant change handlers for all sensors, by replacing them with
+ones that have optional parameters.
+
+taylorr	vrpn_AnalogFly.C (vrpn_AnalogFly::vrpn_AnalogFly)
+Sets the reset button to NULL by default so that the code won't blow up if
+you don't have one.
+

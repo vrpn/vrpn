@@ -5112,6 +5112,7 @@ vrpn_Connection::vrpn_Connection
   listen_udp_sock = ::open_udp_socket(&listen_port_no, NIC_IPaddress);
   if (listen_udp_sock == INVALID_SOCKET) {
     connectionStatus = BROKEN;
+    return;
 //fprintf(stderr, "BROKEN - vrpn_Connection::vrpn_Connection.\n");
   } else {
     connectionStatus = LISTEN;

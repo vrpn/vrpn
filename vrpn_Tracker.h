@@ -278,63 +278,32 @@ class vrpn_Tracker_Remote: public vrpn_Tracker {
 	// This routine calls the mainloop of the connection it's on
 	virtual void mainloop();
 
-	// **** to register handlers for all sensors: ****
-
-	// (un)Register a callback handler to handle a position change
-	virtual int register_change_handler(void *userdata,
-		vrpn_TRACKERCHANGEHANDLER handler);
-	virtual int unregister_change_handler(void *userdata,
-		vrpn_TRACKERCHANGEHANDLER handler);
-
-	// (un)Register a callback handler to handle a velocity change
-	virtual int register_change_handler(void *userdata,
-		vrpn_TRACKERVELCHANGEHANDLER handler);
-	virtual int unregister_change_handler(void *userdata,
-		vrpn_TRACKERVELCHANGEHANDLER handler);
-
-	// (un)Register a callback handler to handle an acceleration change
-	virtual int register_change_handler(void *userdata,
-		vrpn_TRACKERACCCHANGEHANDLER handler);
-	virtual int unregister_change_handler(void *userdata,
-		vrpn_TRACKERACCCHANGEHANDLER handler);
-
-	// (un)Register a callback handler to handle a tracker2room change
-	virtual int register_change_handler(void *userdata,
-		vrpn_TRACKERTRACKER2ROOMCHANGEHANDLER handler);
-	virtual int unregister_change_handler(void *userdata,
-		vrpn_TRACKERTRACKER2ROOMCHANGEHANDLER handler);
-
-	// (un)Register a callback handler to handle a unit2sensor change
-	virtual int register_change_handler(void *userdata,
-		vrpn_TRACKERUNIT2SENSORCHANGEHANDLER handler);
-	virtual int unregister_change_handler(void *userdata,
-		vrpn_TRACKERUNIT2SENSORCHANGEHANDLER handler);
-
-	// **** to register handlers for specific sensors: ****
+	// **** to register handlers for sensor-specific messages: ****
+	// Default is to register them for all sensors.
 
         // (un)Register a callback handler to handle a position change
         virtual int register_change_handler(void *userdata,
-                vrpn_TRACKERCHANGEHANDLER handler, vrpn_int32 sensor);
+                vrpn_TRACKERCHANGEHANDLER handler, vrpn_int32 sensor = ALL_SENSORS);
         virtual int unregister_change_handler(void *userdata,
-                vrpn_TRACKERCHANGEHANDLER handler, vrpn_int32 sensor);
+                vrpn_TRACKERCHANGEHANDLER handler, vrpn_int32 sensor = ALL_SENSORS);
 
         // (un)Register a callback handler to handle a velocity change
         virtual int register_change_handler(void *userdata,
-                vrpn_TRACKERVELCHANGEHANDLER handler, vrpn_int32 sensor);
+                vrpn_TRACKERVELCHANGEHANDLER handler, vrpn_int32 sensor = ALL_SENSORS);
         virtual int unregister_change_handler(void *userdata,
-                vrpn_TRACKERVELCHANGEHANDLER handler, vrpn_int32 sensor);
+                vrpn_TRACKERVELCHANGEHANDLER handler, vrpn_int32 sensor = ALL_SENSORS);
 
         // (un)Register a callback handler to handle an acceleration change
         virtual int register_change_handler(void *userdata,
-                vrpn_TRACKERACCCHANGEHANDLER handler, vrpn_int32 sensor);
+                vrpn_TRACKERACCCHANGEHANDLER handler, vrpn_int32 sensor = ALL_SENSORS);
         virtual int unregister_change_handler(void *userdata,
-                vrpn_TRACKERACCCHANGEHANDLER handler, vrpn_int32 sensor);
+                vrpn_TRACKERACCCHANGEHANDLER handler, vrpn_int32 sensor = ALL_SENSORS);
 
         // (un)Register a callback handler to handle a unit2sensor change
         virtual int register_change_handler(void *userdata,
-                vrpn_TRACKERUNIT2SENSORCHANGEHANDLER handler, vrpn_int32 sensor);
+                vrpn_TRACKERUNIT2SENSORCHANGEHANDLER handler, vrpn_int32 sensor = ALL_SENSORS);
         virtual int unregister_change_handler(void *userdata,
-                vrpn_TRACKERUNIT2SENSORCHANGEHANDLER handler, vrpn_int32 sensor);
+                vrpn_TRACKERUNIT2SENSORCHANGEHANDLER handler, vrpn_int32 sensor = ALL_SENSORS);
 
 	// **** to get workspace information ****
 	// (un)Register a callback handler to handle a workspace change
@@ -343,6 +312,11 @@ class vrpn_Tracker_Remote: public vrpn_Tracker {
 	virtual int unregister_change_handler(void *userdata,
 		vrpn_TRACKERWORKSPACECHANGEHANDLER handler);
 
+	// (un)Register a callback handler to handle a tracker2room change
+	virtual int register_change_handler(void *userdata,
+		vrpn_TRACKERTRACKER2ROOMCHANGEHANDLER handler);
+	virtual int unregister_change_handler(void *userdata,
+		vrpn_TRACKERTRACKER2ROOMCHANGEHANDLER handler);
 
   protected:
 	typedef	struct vrpn_RTCS {

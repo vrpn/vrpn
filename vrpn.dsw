@@ -90,6 +90,18 @@ Package=<4>
 
 ###############################################################################
 
+Project: "test_radamec_spi"=.\server_src\pc_win32\test_radamec_spi\test_radamec_spi.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "test_vrpn"=.\server_src\pc_win32\test_vrpn\test_vrpn.dsp - Package Owner=<4>
 
 Package=<5>
@@ -115,6 +127,9 @@ Package=<4>
 {{{
     Begin Project Dependency
     Project_Dep_Name quat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name test_radamec_spi
     End Project Dependency
 }}}
 

@@ -98,6 +98,14 @@ SOURCE=.\vrpn_Analog.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_Analog_Radamec_SPI.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Analog_Radamec_SPI.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_BaseClass.C
 # End Source File
 # Begin Source File

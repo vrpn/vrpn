@@ -406,121 +406,96 @@ int	vrpn_Tracker::encode_unit2sensor_to(char *buf)
 
 int	vrpn_Tracker::encode_workspace_to(char *buf)
 {
-    int i;
-    vrpn_float64 *dBuf = (vrpn_float64 *)buf;
-    int index = 0;
+   char *bufptr = buf;
+   int  buflen = 1000;
 
-    for (i = 0; i < 3; i++) {
-        dBuf[index++] = *(vrpn_float64 *)(&workspace_min[i]);
-    }
-    for (i = 0; i < 3; i++) {
-        dBuf[index++] = *(vrpn_float64 *)(&workspace_max[i]);
-    }
+   vrpn_buffer(&bufptr, &buflen, workspace_min[0]);
+   vrpn_buffer(&bufptr, &buflen, workspace_min[1]);
+   vrpn_buffer(&bufptr, &buflen, workspace_min[2]);
 
-    // convert the vrpn_float64
-    for (i = 1; i < index; i++) {
-        dBuf[i] = htond(dBuf[i]);
-    }
-    return index*sizeof(vrpn_float64);
+   vrpn_buffer(&bufptr, &buflen, workspace_max[0]);
+   vrpn_buffer(&bufptr, &buflen, workspace_max[1]);
+   vrpn_buffer(&bufptr, &buflen, workspace_max[2]);
+
+   return 1000 - buflen;
 }
 
 // NOTE: you need to be sure that if you are sending vrpn_float64 then 
 //       the entire array needs to remain aligned to 8 byte boundaries
 //	 (malloced data and static arrays are automatically alloced in
-//	  this way)
+//	  this way).  Assumes that there is enough room to store the
+//	 entire message.  Returns the number of characters sent.
 int	vrpn_Tracker::encode_to(char *buf)
 {
-   // Message includes: long unitNum, vrpn_float64 pos[3], vrpn_float64 quat[4]
+   char *bufptr = buf;
+   int  buflen = 1000;
+
+   // Message includes: long sensor, long scrap, vrpn_float64 pos[3], vrpn_float64 quat[4]
    // Byte order of each needs to be reversed to match network standard
-   // This moving is done by horrible typecast hacks.  Please forgive.
 
-   int i;
-   vrpn_float64 *dBuf = (vrpn_float64 *)buf;
-   int	index = 0;
+   vrpn_buffer(&bufptr, &buflen, d_sensor);
+   vrpn_buffer(&bufptr, &buflen, d_sensor); // This is just to take up space to align
 
-   // Move the sensor, position, quaternion there
-   *(vrpn_int32 *)dBuf = htonl(d_sensor);
+   vrpn_buffer(&bufptr, &buflen, pos[0]);
+   vrpn_buffer(&bufptr, &buflen, pos[1]);
+   vrpn_buffer(&bufptr, &buflen, pos[2]);
 
-   // re-align to vrpn_float64
-   index++;
+   vrpn_buffer(&bufptr, &buflen, d_quat[0]);
+   vrpn_buffer(&bufptr, &buflen, d_quat[1]);
+   vrpn_buffer(&bufptr, &buflen, d_quat[2]);
+   vrpn_buffer(&bufptr, &buflen, d_quat[3]);
 
-   for (i = 0; i < 3; i++) {
-   	dBuf[index++] = *(vrpn_float64 *)(&pos[i]);
-   }
-   for (i = 0; i < 4; i++) {
-   	dBuf[index++] = *(vrpn_float64 *)(&d_quat[i]);
-   }
-
-   // convert the vrpn_float64
-   for (i = 1; i < index; i++) {
-   	dBuf[i] = htond(dBuf[i]);
-   }
-
-   return index*sizeof(vrpn_float64);
+   return 1000 - buflen;
 }
 
 int	vrpn_Tracker::encode_vel_to(char *buf)
 {
+   char *bufptr = buf;
+   int  buflen = 1000;
+
    // Message includes: long unitNum, vrpn_float64 vel[3], vrpn_float64 vel_quat[4]
    // Byte order of each needs to be reversed to match network standard
-   // This moving is done by horrible typecast hacks.  Please forgive.
 
-   int i;
-   vrpn_float64 *dBuf = (vrpn_float64 *)buf;
-   int	index = 0;
+   vrpn_buffer(&bufptr, &buflen, d_sensor);
+   vrpn_buffer(&bufptr, &buflen, d_sensor); // This is just to take up space to align
 
-   // Move the sensor, velocity, quaternion there
-   *(vrpn_int32 *)dBuf = htonl(d_sensor);
+   vrpn_buffer(&bufptr, &buflen, vel[0]);
+   vrpn_buffer(&bufptr, &buflen, vel[1]);
+   vrpn_buffer(&bufptr, &buflen, vel[2]);
 
-   // re-align to vrpn_float64
-   index++;
+   vrpn_buffer(&bufptr, &buflen, vel_quat[0]);
+   vrpn_buffer(&bufptr, &buflen, vel_quat[1]);
+   vrpn_buffer(&bufptr, &buflen, vel_quat[2]);
+   vrpn_buffer(&bufptr, &buflen, vel_quat[3]);
 
-   for (i = 0; i < 3; i++) {
-   	dBuf[index++] = *(vrpn_float64*)(&vel[i]);
-   }
-   for (i = 0; i < 4; i++) {
-   	dBuf[index++] = *(vrpn_float64*)(&vel_quat[i]);
-   }
-   dBuf[index++] = vel_quat_dt;
+   vrpn_buffer(&bufptr, &buflen, vel_quat_dt);
 
-   // convert the vrpn_float64
-   for (i = 1; i < index; i++) {
-   	dBuf[i] = htond(dBuf[i]);
-   }
-   
-   return index*sizeof(vrpn_float64);
+   return 1000 - buflen;
 }
 
 int	vrpn_Tracker::encode_acc_to(char *buf)
 {
+   char *bufptr = buf;
+   int  buflen = 1000;
+
    // Message includes: long unitNum, vrpn_float64 acc[3], vrpn_float64 acc_quat[4]
    // Byte order of each needs to be reversed to match network standard
-   // This moving is done by horrible typecast hacks.  Please forgive.
 
-   int i;
-   vrpn_float64 *dBuf = (vrpn_float64*)(buf);
-   int	index = 0;
+   vrpn_buffer(&bufptr, &buflen, d_sensor);
+   vrpn_buffer(&bufptr, &buflen, d_sensor); // This is just to take up space to align
 
-   // Move the sensor, acceleration, quaternion there
-   *(vrpn_int32 *)dBuf = htonl(d_sensor);
-   // re-align to vrpn_float64
-   index++;
+   vrpn_buffer(&bufptr, &buflen, acc[0]);
+   vrpn_buffer(&bufptr, &buflen, acc[1]);
+   vrpn_buffer(&bufptr, &buflen, acc[2]);
 
-   for (i = 0; i < 3; i++) {
-   	dBuf[index++] = *(vrpn_float64 *)(&acc[i]);
-   }
-   for (i = 0; i < 4; i++) {
-   	dBuf[index++] = *(vrpn_float64 *)(&acc_quat[i]);
-   }
+   vrpn_buffer(&bufptr, &buflen, acc_quat[0]);
+   vrpn_buffer(&bufptr, &buflen, acc_quat[1]);
+   vrpn_buffer(&bufptr, &buflen, acc_quat[2]);
+   vrpn_buffer(&bufptr, &buflen, acc_quat[3]);
 
-   dBuf[index++] = acc_quat_dt;
+   vrpn_buffer(&bufptr, &buflen, acc_quat_dt);
 
-   // convert the vrpn_float64
-   for (i = 1; i < index; i++) {
-   	dBuf[i] = htond(dBuf[i]);
-   }
-
-   return index*sizeof(vrpn_float64);
+   return 1000 - buflen;
 }
 
 #ifndef VRPN_CLIENT_ONLY
@@ -882,11 +857,6 @@ void	vrpn_Tracker_Remote::mainloop()
 	client_mainloop();
 }
 
-int vrpn_Tracker_Remote::register_change_handler(void *userdata,
-			vrpn_TRACKERCHANGEHANDLER handler)
-{
-	return register_change_handler(userdata, handler, ALL_SENSORS);
-}
 
 int vrpn_Tracker_Remote::register_change_handler(void *userdata,
 		vrpn_TRACKERCHANGEHANDLER handler, vrpn_int32 whichSensor)
@@ -922,11 +892,6 @@ int vrpn_Tracker_Remote::register_change_handler(void *userdata,
         return 0;
 }
 
-int vrpn_Tracker_Remote::register_change_handler(void *userdata,
-                        vrpn_TRACKERVELCHANGEHANDLER handler)
-{
-	return register_change_handler(userdata, handler, ALL_SENSORS);
-}
 
 int vrpn_Tracker_Remote::register_change_handler(void *userdata,
 		vrpn_TRACKERVELCHANGEHANDLER handler, vrpn_int32 whichSensor)
@@ -962,12 +927,6 @@ int vrpn_Tracker_Remote::register_change_handler(void *userdata,
 	return 0;
 }
 
-
-int vrpn_Tracker_Remote::register_change_handler(void *userdata,
-                        vrpn_TRACKERACCCHANGEHANDLER handler)
-{
-	return register_change_handler(userdata, handler, ALL_SENSORS);
-}
 
 int vrpn_Tracker_Remote::register_change_handler(void *userdata,
 		vrpn_TRACKERACCCHANGEHANDLER handler, vrpn_int32 whichSensor)
@@ -1032,11 +991,6 @@ int vrpn_Tracker_Remote::register_change_handler(void *userdata,
         return 0;
 }
 
-int vrpn_Tracker_Remote::register_change_handler(void *userdata,
-                        vrpn_TRACKERUNIT2SENSORCHANGEHANDLER handler)
-{
-	return register_change_handler(userdata, handler, ALL_SENSORS);
-}
 
 int vrpn_Tracker_Remote::register_change_handler(void *userdata,
 	vrpn_TRACKERUNIT2SENSORCHANGEHANDLER handler, vrpn_int32 whichSensor)
@@ -1102,11 +1056,6 @@ int vrpn_Tracker_Remote::register_change_handler(void *userdata,
         return 0;
 }
 
-int vrpn_Tracker_Remote::unregister_change_handler(void *userdata,
-                        vrpn_TRACKERCHANGEHANDLER handler)
-{
-	return unregister_change_handler(userdata, handler, ALL_SENSORS);
-}
 
 int vrpn_Tracker_Remote::unregister_change_handler(void *userdata,
 		vrpn_TRACKERCHANGEHANDLER handler, vrpn_int32 whichSensor)
@@ -1145,11 +1094,6 @@ int vrpn_Tracker_Remote::unregister_change_handler(void *userdata,
 	return 0;
 }
 
-int vrpn_Tracker_Remote::unregister_change_handler(void *userdata,
-                        vrpn_TRACKERVELCHANGEHANDLER handler)
-{
-	return unregister_change_handler(userdata, handler, ALL_SENSORS);
-}
 
 int vrpn_Tracker_Remote::unregister_change_handler(void *userdata,
 		vrpn_TRACKERVELCHANGEHANDLER handler, vrpn_int32 whichSensor)
@@ -1188,11 +1132,6 @@ int vrpn_Tracker_Remote::unregister_change_handler(void *userdata,
 	return 0;
 }
 
-int vrpn_Tracker_Remote::unregister_change_handler(void *userdata,
-                        vrpn_TRACKERACCCHANGEHANDLER handler)
-{
-	return unregister_change_handler(userdata, handler, ALL_SENSORS);
-}
 
 int vrpn_Tracker_Remote::unregister_change_handler(void *userdata,
 	vrpn_TRACKERACCCHANGEHANDLER handler, vrpn_int32 whichSensor)
@@ -1262,11 +1201,6 @@ int vrpn_Tracker_Remote::unregister_change_handler(void *userdata,
         return 0;
 }
 
-int vrpn_Tracker_Remote::unregister_change_handler(void *userdata,
-                        vrpn_TRACKERUNIT2SENSORCHANGEHANDLER handler)
-{
-	return unregister_change_handler(userdata, handler, ALL_SENSORS);
-}
 
 int vrpn_Tracker_Remote::unregister_change_handler(void *userdata,
 	vrpn_TRACKERUNIT2SENSORCHANGEHANDLER handler, vrpn_int32 whichSensor)
@@ -1340,7 +1274,8 @@ int vrpn_Tracker_Remote::handle_change_message(void *userdata,
 	vrpn_HANDLERPARAM p)
 {
 	vrpn_Tracker_Remote *me = (vrpn_Tracker_Remote *)userdata;
-	vrpn_float64 *params = (vrpn_float64*)(p.buffer);
+	const char *params = (p.buffer);
+	vrpn_int32  padding;
 	vrpn_TRACKERCB	tp;
 	vrpn_TRACKERCHANGELIST *handler;
 	int	i;
@@ -1353,16 +1288,14 @@ int vrpn_Tracker_Remote::handle_change_message(void *userdata,
 		return -1;
 	}
 	tp.msg_time = p.msg_time;
-	tp.sensor = ntohl(*((vrpn_int32 *)params));
-	params++;
+	vrpn_unbuffer(&params, &tp.sensor);
+	vrpn_unbuffer(&params, &padding);
 
-	// Typecasting used to get the byte order correct on the vrpn_float64
-	// that are coming from the other side.
 	for (i = 0; i < 3; i++) {
-	 	tp.pos[i] = ntohd(*params++);
+	 	vrpn_unbuffer(&params, &tp.pos[i]);
 	}
 	for (i = 0; i < 4; i++) {
-		tp.quat[i] = ntohd(*params++);
+		vrpn_unbuffer(&params, &tp.quat[i]);
 	}
 
 	handler = me->change_list[ALL_SENSORS];
@@ -1391,7 +1324,8 @@ int vrpn_Tracker_Remote::handle_vel_change_message(void *userdata,
 	vrpn_HANDLERPARAM p)
 {
 	vrpn_Tracker_Remote *me = (vrpn_Tracker_Remote *)userdata;
-	vrpn_float64 *params = (vrpn_float64*)(p.buffer);
+	const char *params = p.buffer;
+	vrpn_int32  padding;
 	vrpn_TRACKERVELCB tp;
 	vrpn_TRACKERVELCHANGELIST *handler;
 	int	i;
@@ -1404,19 +1338,17 @@ int vrpn_Tracker_Remote::handle_vel_change_message(void *userdata,
 		return -1;
 	}
 	tp.msg_time = p.msg_time;
-	tp.sensor = ntohl(*(vrpn_int32 *)params);
-	params++;
+	vrpn_unbuffer(&params, &tp.sensor);
+	vrpn_unbuffer(&params, &padding);
 
-	// Typecasting used to get the byte order correct on the vrpn_float64
-	// that are coming from the other side.
 	for (i = 0; i < 3; i++) {
-		tp.vel[i] = ntohd(*params++);
+	    vrpn_unbuffer(&params, &tp.vel[i]);
 	}
 	for (i = 0; i < 4; i++) {
-		tp.vel_quat[i] = ntohd(*params++);
+	    vrpn_unbuffer(&params, &tp.vel_quat[i]);
 	}
 
-	tp.vel_quat_dt = ntohd(*params++);
+	vrpn_unbuffer(&params, &tp.vel_quat_dt);
 
 	handler = me->velchange_list[ALL_SENSORS];
 	// Go down the list of callbacks that have been registered.
@@ -1445,7 +1377,8 @@ int vrpn_Tracker_Remote::handle_acc_change_message(void *userdata,
 	vrpn_HANDLERPARAM p)
 {
 	vrpn_Tracker_Remote *me = (vrpn_Tracker_Remote *)userdata;
-	vrpn_float64 *params = (vrpn_float64*)(p.buffer);
+	const char *params = p.buffer;
+	vrpn_int32  padding;
 	vrpn_TRACKERACCCB tp;
 	vrpn_TRACKERACCCHANGELIST *handler;
 	int	i;
@@ -1458,19 +1391,17 @@ int vrpn_Tracker_Remote::handle_acc_change_message(void *userdata,
 		return -1;
 	}
 	tp.msg_time = p.msg_time;
-	tp.sensor = ntohl(*(vrpn_int32 *)params);
-	params++;
+	vrpn_unbuffer(&params, &tp.sensor);
+	vrpn_unbuffer(&params, &padding);
 
-	// Typecasting used to get the byte order correct on the vrpn_float64
-	// that are coming from the other side.
 	for (i = 0; i < 3; i++) {
-		tp.acc[i] = ntohd(*params++);
+		vrpn_unbuffer(&params, &tp.acc[i]);
 	}
 	for (i = 0; i < 4; i++) {
-		tp.acc_quat[i] =  ntohd(*params++);
+		vrpn_unbuffer(&params, &tp.acc_quat[i]);
 	}
 
-	tp.acc_quat_dt = ntohd(*params++);
+	vrpn_unbuffer(&params, &tp.acc_quat_dt);
 
 	handler = me->accchange_list[ALL_SENSORS];
 	// Go down the list of callbacks that have been registered.
@@ -1499,7 +1430,7 @@ int vrpn_Tracker_Remote::handle_tracker2room_change_message(void *userdata,
 	vrpn_HANDLERPARAM p)
 {
 	vrpn_Tracker_Remote *me = (vrpn_Tracker_Remote *)userdata;
-	vrpn_float64 *params = (vrpn_float64*)(p.buffer);
+	const char *params = p.buffer;
 	vrpn_TRACKERTRACKER2ROOMCB tp;
 	vrpn_TRACKERTRACKER2ROOMCHANGELIST *handler = 
 						me->tracker2roomchange_list;
@@ -1513,13 +1444,12 @@ int vrpn_Tracker_Remote::handle_tracker2room_change_message(void *userdata,
 		return -1;
 	}
 	tp.msg_time = p.msg_time;
-	// Typecasting used to get the byte order correct on the vrpn_float64
-	// that are coming from the other side.
+
         for (i = 0; i < 3; i++) {
-                tp.tracker2room[i] = ntohd(*params++);
+                vrpn_unbuffer(&params, &tp.tracker2room[i]);
         }
         for (i = 0; i < 4; i++) {
-                tp.tracker2room_quat[i] =  ntohd(*params++);
+                vrpn_unbuffer(&params, &tp.tracker2room_quat[i]);
         }
 
         // Go down the list of callbacks that have been registered.
@@ -1536,7 +1466,8 @@ int vrpn_Tracker_Remote::handle_unit2sensor_change_message(void *userdata,
         vrpn_HANDLERPARAM p)
 {
         vrpn_Tracker_Remote *me = (vrpn_Tracker_Remote *)userdata;
-        vrpn_float64 *params = (vrpn_float64*)(p.buffer);
+	const char *params = p.buffer;
+	vrpn_int32 padding;
         vrpn_TRACKERUNIT2SENSORCB tp;
         vrpn_TRACKERUNIT2SENSORCHANGELIST *handler;
         int i;
@@ -1549,16 +1480,16 @@ int vrpn_Tracker_Remote::handle_unit2sensor_change_message(void *userdata,
                 return -1;
         }
         tp.msg_time = p.msg_time;
-	tp.sensor = ntohl(*((vrpn_int32 *)params));
-        params++;
+	vrpn_unbuffer(&params, &tp.sensor);
+	vrpn_unbuffer(&params, &padding);
 	
         // Typecasting used to get the byte order correct on the vrpn_float64
         // that are coming from the other side.
         for (i = 0; i < 3; i++) {
-                tp.unit2sensor[i] = ntohd(*params++);
+                vrpn_unbuffer(&params, &tp.unit2sensor[i]);
         }
         for (i = 0; i < 4; i++) {
-                tp.unit2sensor_quat[i] =  ntohd(*params++);
+                vrpn_unbuffer(&params, &tp.unit2sensor_quat[i]);
         }
 	
 	handler = me->unit2sensorchange_list[ALL_SENSORS];
@@ -1589,7 +1520,7 @@ int vrpn_Tracker_Remote::handle_workspace_change_message(void *userdata,
 	vrpn_HANDLERPARAM p)
 {
 	vrpn_Tracker_Remote *me = (vrpn_Tracker_Remote *)userdata;
-	vrpn_float64 *params = (vrpn_float64*)(p.buffer);
+	const char *params = p.buffer;
 	vrpn_TRACKERWORKSPACECB tp;
 	vrpn_TRACKERWORKSPACECHANGELIST *handler = 
 						me->workspacechange_list;
@@ -1603,13 +1534,12 @@ int vrpn_Tracker_Remote::handle_workspace_change_message(void *userdata,
 		return -1;
 	}
 	tp.msg_time = p.msg_time;
-	// Typecasting used to get the byte order correct on the vrpn_float64
-	// that are coming from the other side.
+
         for (i = 0; i < 3; i++) {
-                tp.workspace_min[i] = ntohd(*params++);
+                vrpn_unbuffer(&params, &tp.workspace_min[i]);
         }
         for (i = 0; i < 3; i++) {
-                tp.workspace_max[i] =  ntohd(*params++);
+                vrpn_unbuffer(&params, &tp.workspace_max[i]);
         }
 
         // Go down the list of callbacks that have been registered.

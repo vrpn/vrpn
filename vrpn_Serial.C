@@ -71,7 +71,7 @@ static int curCom = -1;
 static int maxCom = 10;
 #endif
 
-int vrpn_open_commport(char *portname, long baud)
+int vrpn_open_commport(char *portname, long baud, int charsize, vrpn_SER_PARITY parity)
 {
 #if defined(sparc) || defined(hpux) || defined(__hpux) || defined(ultrix) || defined(FreeBSD) || defined(__CYGWIN__)
 	fprintf(stderr,
@@ -141,10 +141,43 @@ int vrpn_open_commport(char *portname, long baud)
     return -1;
   }   
 
-  dcb.fParity = FALSE;
-  dcb.Parity = NOPARITY;
+  switch (parity) {
+  case vrpn_SER_PARITY_NONE:
+      dcb.fParity = FALSE;
+      dcb.Parity = NOPARITY;
+      break;
+  case vrpn_SER_PARITY_ODD:
+      dcb.fParity = TRUE;
+      dcb.Parity = 1;
+      break;
+  case vrpn_SER_PARITY_EVEN:
+      dcb.fParity = TRUE;
+      dcb.Parity = 2;
+      break;
+  case vrpn_SER_PARITY_MARK:
+      dcb.fParity = TRUE;
+      dcb.Parity = 3;
+      break;
+  case vrpn_SER_PARITY_SPACE:
+      dcb.fParity = TRUE;
+      dcb.Parity = 3;
+      break;
+  default:
+      fprintf(stderr,"vrpn_open_commport: unknown parity setting\n");
+      CloseHandle(hCom);
+      return -1;
+  }
+
   dcb.StopBits = ONESTOPBIT;
-  dcb.ByteSize = 8;
+  if (charsize == 8)
+     dcb.ByteSize = 8;
+  else if (charsize == 7)
+     dcb.ByteSize = 7;
+  else {
+     fprintf(stderr, "vrpn_open_commport: unknown character size (charsize = %d)\n", charsize); 
+     CloseHandle(hCom);
+     return -1;
+  }
 
   if (!(fSuccess = SetCommState(hCom, &dcb)))
   {
@@ -225,9 +258,35 @@ int vrpn_open_commport(char *portname, long baud)
   sttyArgs.c_oflag = 0;                  /* Raw output, leave tabs alone */
   sttyArgs.c_lflag = 0;              /* Raw input (no KILL, etc.), no echo */
   
-  sttyArgs.c_cflag |= CS8;	/* 8 bits */
+  sttyArgs.c_cflag &= ~CSIZE;
+  if (charsize == 8)
+     sttyArgs.c_cflag |= CSIZE & CS8;  /* 8 bits */
+  else if (charsize == 7)
+     sttyArgs.c_cflag |= CSIZE & CS7;  /* 7 bits */
+  else {
+     fprintf(stderr, "vrpn_open_commport: unknown character size (charsize = %d)\n", charsize);
+     return -1;
+  }
   sttyArgs.c_cflag &= ~CSTOPB;	/* One stop bit */
-  sttyArgs.c_cflag &= ~PARENB;	/* No parity */
+
+  switch (parity) {
+  case vrpn_SER_PARITY_NONE:
+      sttyArgs.c_cflag &= ~PARENB;	/* No parity */
+      break;
+  case vrpn_SER_PARITY_ODD:
+      sttyArgs.c_cflag |= PARENB | PARODD; 
+      break;
+  case vrpn_SER_PARITY_EVEN:
+      sttyArgs.c_cflag |= PARENB;
+      sttyArgs.c_cflag &= ~PARODD;
+      break;
+  case vrpn_SER_PARITY_MARK:
+  case vrpn_SER_PARITY_SPACE:
+  default:
+      fprintf(stderr,"vrpn_open_commport: unsupported parity setting (only none, odd and even)\n");
+      return -1;
+  }
+
   sttyArgs.c_cflag |= CREAD;	/* Allow reading */
   sttyArgs.c_cflag |= CLOCAL;	/* No modem between us and device */
 
