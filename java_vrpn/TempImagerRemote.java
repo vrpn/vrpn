@@ -122,7 +122,7 @@ public class TempImagerRemote implements Runnable
 	/**
 	 * @return true on success; false on failure
 	 */
-	public synchronized boolean removeDescritpionChangeListener( DescriptionChangeListener listener )
+	public synchronized boolean removeDescriptionChangeListener( DescriptionChangeListener listener )
 	{
 		return descriptionListeners.removeElement( listener );
 	}
