@@ -27,10 +27,11 @@
 
 void	Usage(char *s)
 {
-  fprintf(stderr,"Usage: %s [-f filename] [-warn] [-v] [port]\n",s);
+  fprintf(stderr,"Usage: %s [-f filename] [-warn] [-v] [port] [-q]\n",s);
   fprintf(stderr,"       -f: Full path to config file (default vrpn.cfg)\n");
   fprintf(stderr,"       -warn: Only warn on errors (default is to bail)\n");
   fprintf(stderr,"       -v: Verbose\n");
+  fprintf(stderr,"	 -q: quit when last connection is dropped\n");
   exit(-1);
 }
 
@@ -65,6 +66,22 @@ void sighandler( int signal )
     exit(0);
 }
 
+int handle_dlc(void *userdata, vrpn_HANDLERPARAM p)
+{
+    closeDevices();
+    delete connection;
+    exit(0);
+    return 0;
+}
+
+void shutDown()
+{
+    closeDevices();
+    delete connection;
+    exit(0);
+    return;
+}
+
 void closeDevices() {
   int i;
   for (i=0;i < num_buttons; i++) {
@@ -86,6 +103,7 @@ main (int argc, char *argv[])
 	FILE	*config_file;
 	int	bail_on_error = 1;
 	int	verbose = 1;
+	int	auto_quit = 0;
 	int	realparams = 0;
 	int	i;
 	int 	loop=0;
@@ -121,6 +139,8 @@ main (int argc, char *argv[])
 		bail_on_error = 0;
 	  } else if (!strcmp(argv[i], "-v")) {	// Verbose
 		verbose = 1;
+	  } else if (!strcmp(argv[i], "-q")) {  // quit on dropped last con
+		auto_quit = 1;
 	  } else if (argv[i][0] == '-') {	// Unknown flag
 		Usage(argv[0]);
 	  } else switch (realparams) {		// Non-flag parameters
@@ -139,7 +159,7 @@ main (int argc, char *argv[])
 	// in the signal handler (so we can close any open logfiles.)
 	//vrpn_Synchronized_Connection	connection;
 	connection = new vrpn_Synchronized_Connection (port);
-
+	
 	// Open the configuration file
 	if (verbose) printf("Reading from config file %s\n", config_file_name);
 	if ( (config_file = fopen(config_file_name, "r")) == NULL) {
@@ -535,6 +555,11 @@ main (int argc, char *argv[])
 	// Close the configuration file
 	fclose(config_file);
 	loop = 0;
+	if (auto_quit) {
+		int dlc_m_id = connection->register_message_type(
+					vrpn_dropped_last_connection);
+		connection->register_handler(dlc_m_id, handle_dlc, NULL);
+	}
 	// Loop forever calling the mainloop()s for all devices
 #ifdef	sgi
 	fprintf(stderr, "sgibox: %p\n", vrpn_special_sgibox);
@@ -566,6 +591,7 @@ main (int argc, char *argv[])
 #endif
 		// Send and receive all messages
 		connection->mainloop();
+		if (!connection->doing_okay()) shutDown();
 	}
 }
 
