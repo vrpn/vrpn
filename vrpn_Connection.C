@@ -53,7 +53,7 @@
 // string.  Since minor versions should interoperate, MAGIC is only
 // checked through the last period;  characters after that are ignored.
 
-char	*MAGIC = "vrpn: ver. 02.14";
+char	*vrpn_MAGIC = "vrpn: ver. 02.14";
 const	int	MAGICLEN = 16;	// Must be a multiple of vrpn_ALIGN bytes!
 
 // This is the list of states that a connection can be in
@@ -1054,7 +1054,7 @@ int vrpn_Connection::setup_for_new_connection(void)
 	}
 
 	// Write the magic cookie header to the server
-	if (vrpn_noint_block_write(endpoint.tcp_sock, MAGIC, MAGICLEN)
+	if (vrpn_noint_block_write(endpoint.tcp_sock, vrpn_MAGIC, MAGICLEN)
             != MAGICLEN) {
 	  perror(
 	    "vrpn_Connection::setup_for_new_connection: Can't write cookie");
@@ -1079,14 +1079,14 @@ int vrpn_Connection::setup_for_new_connection(void)
         //   This pointer arithmetic isn't completely safe.
 
 	bp = strrchr(buf, '.');
-	if (strncmp(buf, MAGIC,
+	if (strncmp(buf, vrpn_MAGIC,
             (bp == NULL ? MAGICLEN : bp + 1 - buf))) {
 	  fprintf(stderr, "vrpn_Connection::setup_for_new_connection:  "
-                  "bad cookie (wanted '%s', got '%s'\n", MAGIC, buf);
+                  "bad cookie (wanted '%s', got '%s'\n", vrpn_MAGIC, buf);
 	  return -1;
 	}
 
-	if (strncmp(buf, MAGIC, MAGICLEN)) {
+	if (strncmp(buf, vrpn_MAGIC, MAGICLEN)) {
 	  fprintf(stderr, "vrpn_Connection:  "
               "Warning:  minor version number doesn't match.\n");
 	}
