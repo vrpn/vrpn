@@ -3189,7 +3189,7 @@ int	vrpn_Connection::handle_tcp_messages (int fd,
 
         if (timeout) {
 	  localTimeout.tv_sec = timeout->tv_sec;
-	  localTimeout.tv_sec = timeout->tv_usec;
+	  localTimeout.tv_usec = timeout->tv_usec;
         } else {
 	  localTimeout.tv_usec = 0L;
 	  localTimeout.tv_usec = 0L;
