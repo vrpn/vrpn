@@ -3,9 +3,8 @@
 #endif
 // SGI_BDBOX is a SGI Button & dial BOX connected to an SGI.
 // This is also refered to a 'special sgibox' in the code.
-// The alternative is SGI BDBOX connected to a linix PC.
+// The alternative is SGI BDBOX connected to a linux PC.
 // confusing eh?
-
 
 #include <math.h>
 #include <stdlib.h>
@@ -358,7 +357,7 @@ int setup_Timecode_Generator (char * & pch, char * line, FILE * config_file) {
 	}
 	return 0; // successful completion
 #else
-	fprintf(stderr, "vrpn_server: Can't open Timecode Generator: INCLUDE_TIMECODE_GENERATOR not defined at compile time!\n");
+	fprintf(stderr, "vrpn_server: Can't open Timecode Generator: INCLUDE_TIMECODE_GENERATOR not defined in vrpn_Configure.h!\n");
 	return -1;
 #endif
 }
@@ -1426,8 +1425,8 @@ int setup_Tracker_InterSense(char * &pch, char *line, FILE * config_file) {
 }
 
 //================================
-#ifdef	VRPN_USE_DIRECTINPUT
 int setup_DirectXFFJoystick (char * & pch, char * line, FILE * config_file) {
+#ifdef	VRPN_USE_DIRECTINPUT
   char s2 [LINESIZE];
   float f1, f2;
 
@@ -1459,8 +1458,11 @@ int setup_DirectXFFJoystick (char * & pch, char * line, FILE * config_file) {
   }
 
   return 0;
-}
+#else
+  fprintf(stderr, "vrpn_server: Can't open DirectXFFJoystick: VRPN_USE_DIRECTINPUT not defined in vrpn_Configure.h!\n");
+  return -1;
 #endif
+}
 
 main (int argc, char * argv[])
 {
@@ -1662,10 +1664,8 @@ main (int argc, char * argv[])
 			CHECK(setup_Timecode_Generator);
 	  } else if (isit("vrpn_Tracker_InterSense")) {
 			CHECK(setup_Tracker_InterSense);
-#ifdef	VRPN_USE_DIRECTINPUT
 	  } else if (isit("vrpn_DirectXFFJoystick")) {
 			CHECK(setup_DirectXFFJoystick);
-#endif
 	  } else {	// Never heard of it
 		sscanf(line,"%511s",s1);	// Find out the class name
 		fprintf(stderr,"vrpn_server: Unknown Device: %s\n",s1);

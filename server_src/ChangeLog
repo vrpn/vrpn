@@ -1,7 +1,26 @@
+2002-12-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * client_and_server.dsp : DSP files have been modified to not do
+		definitions of VRPN_NO_STREAMS and other constants directly,
+		rather these are now set by editing vprn_Configure.h.  Also,
+		made projects compile in both debug and release versions.
+	* daq_server.dsp : Same.
+	* phan_server.dsp : Same.
+	* test_analogfly.dsp : Same.
+	* test_radamec_spi.dsp : Same.
+	* test_vrpn.dsp : Same.
+	* vrpn_phantom.dsp : Same.
+	* vrpn_server.dsp : Same.
+	* vrpn.C : Comment fix.  More useful error messages.  Whitespace
+		changes.
+	* vrpn.cfg.SAMPLE : Comment fixes for vrpn_AnalogFly.
+ 
+
 2002-09-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.C : Added "altreset" parameter to Magellan startup.
-	* vrpn.cfg.SAMPLE : Added example of alt reset and more info for Magellan.
+	* vrpn.cfg.SAMPLE : Added example of alt reset and more info for
+		Magellan.
 
 2002-08-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
@@ -11,11 +30,12 @@
 
 2002-08-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
-        * vrpn_server.dsp : Adds in definition of VRPN_USE_DIRECTINPUT to enable the
-                compilation of force-feedback joystick code under DirectX (this
-                first implementation doesn't use force feedback, just reads from
-                the joystick).  Remove this definition from VRPN and from 
-                vrpn_server to compile without the DirectX 8.0 SDK.
+        * vrpn_server.dsp : Adds in definition of VRPN_USE_DIRECTINPUT to
+		enable the compilation of force-feedback joystick code under
+		DirectX (this first implementation doesn't use force feedback,
+		just reads from the joystick).  Remove this definition from
+		VRPN and from vrpn_server to compile without the DirectX 8.0
+		SDK.
 	* vrpn.C : Adds in code to read and control a DirectX Force Feedback
 		joystick.
 
