@@ -3,7 +3,19 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
-Project: "client_and_server"=.\server_src\client_and_server.dsp - Package Owner=<4>
+Project: "DTrack"=".\DTrack\DTrack.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "client_and_server"=".\server_src\client_and_server.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -21,7 +33,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "daq_server"=.\server_src\daq_server.dsp - Package Owner=<4>
+Project: "daq_server"=".\server_src\daq_server.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -36,7 +48,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "printcereal"=.\client_src\printcereal.dsp - Package Owner=<4>
+Project: "printcereal"=".\client_src\printcereal.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -51,7 +63,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "printvals"=.\client_src\printvals.dsp - Package Owner=<4>
+Project: "printvals"=".\client_src\printvals.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -66,7 +78,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "quatlib"=..\quat\quatlib.dsp - Package Owner=<4>
+Project: "quatlib"="..\quat\quatlib.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -78,22 +90,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "setrouter"=.\client_src\setrouter.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name vrpn
-    End Project Dependency
-}}}
-
-###############################################################################
-
-Project: "sierra_router_server"=.\server_src\sierra_router_server\sierra_router_server.dsp - Package Owner=<4>
+Project: "setrouter"=".\client_src\setrouter.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -108,7 +105,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "sphere_client"=.\client_src\sphere_client.dsp - Package Owner=<4>
+Project: "sierra_router_server"=".\server_src\sierra_router_server\sierra_router_server.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -123,25 +120,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "test_analogfly"=.\server_src\test_analogfly.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name vrpn
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name quatlib
-    End Project Dependency
-}}}
-
-###############################################################################
-
-Project: "test_gen_rpc"=.\UTIL\gen_rpc\test_gen_rpc.dsp - Package Owner=<4>
+Project: "sphere_client"=".\client_src\sphere_client.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -156,52 +135,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "test_radamec_spi"=.\server_src\test_radamec_spi.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name vrpn
-    End Project Dependency
-}}}
-
-###############################################################################
-
-Project: "test_tempimager"=.\CLIENT_SRC\test_tempimager.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name vrpn
-    End Project Dependency
-}}}
-
-###############################################################################
-
-Project: "test_vrpn"=.\server_src\test_vrpn.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name vrpn
-    End Project Dependency
-}}}
-
-###############################################################################
-
-Project: "test_zaber"=.\client_src\test_zaber.dsp - Package Owner=<4>
+Project: "test_analogfly"=".\server_src\test_analogfly.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -219,7 +153,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "testimager_client"=.\client_src\testimager_client.dsp - Package Owner=<4>
+Project: "test_gen_rpc"=".\UTIL\gen_rpc\test_gen_rpc.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -234,7 +168,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "time_test"=.\time_test.dsp - Package Owner=<4>
+Project: "test_radamec_spi"=".\server_src\test_radamec_spi.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -249,7 +183,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "timecode_generator"=.\server_src\timecode_generator_server\timecode_generator.dsp - Package Owner=<4>
+Project: "test_tempimager"=".\CLIENT_SRC\test_tempimager.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -264,7 +198,85 @@ Package=<4>
 
 ###############################################################################
 
-Project: "vrpn"=.\vrpn.dsp - Package Owner=<4>
+Project: "test_vrpn"=".\server_src\test_vrpn.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "test_zaber"=".\client_src\test_zaber.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name quatlib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "testimager_client"=".\client_src\testimager_client.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "time_test"=".\time_test.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "timecode_generator"=".\server_src\timecode_generator_server\timecode_generator.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "vrpn"=".\vrpn.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -275,11 +287,14 @@ Package=<4>
     Begin Project Dependency
     Project_Dep_Name quatlib
     End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name DTrack
+    End Project Dependency
 }}}
 
 ###############################################################################
 
-Project: "vrpn_Router_Client_GUI"=.\client_src\vrpn_Router_Client_GUI.dsp - Package Owner=<4>
+Project: "vrpn_Router_Client_GUI"=".\client_src\vrpn_Router_Client_GUI.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -294,7 +309,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "vrpn_phantom"=.\server_src\vrpn_phantom.dsp - Package Owner=<4>
+Project: "vrpn_phantom"=".\server_src\vrpn_phantom.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -306,7 +321,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "vrpn_print_devices"=.\client_src\vrpn_print_devices.dsp - Package Owner=<4>
+Project: "vrpn_print_devices"=".\client_src\vrpn_print_devices.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -321,7 +336,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "vrpn_server"=.\server_src\vrpn_server.dsp - Package Owner=<4>
+Project: "vrpn_server"=".\server_src\vrpn_server.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{

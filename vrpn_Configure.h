@@ -95,8 +95,14 @@
 // at the same level as the vrpn directory.  The isense.dll should
 // be put either in Windows/system32 or in the location where the
 // executable lives or somewhere on the path.
- 
 //#define VRPN_INCLUDE_INTERSENSE
+
+//-----------------------
+// Includes driver for the Advanced Realtime Tracking CmbH
+// DTrack tracker, based on the library released by that
+// company.  It expects to find their library in a directory
+// on the same level as the vrpn and quat source directories.
+//#define VRPN_USE_DTRACK
 
 //---------------------------------------------------------------//
 // DO NOT EDIT BELOW THIS LINE FOR NORMAL CONFIGURATION SETTING. //

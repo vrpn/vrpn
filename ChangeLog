@@ -1,9 +1,21 @@
+2004-02-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	Adding changes from David Nahon at Virtools.
+	* vrpn.dsp : Added DTrack files and includes and project.
+	* vrpn.dsw : Same.
+	* vrpn_Configure.h : Added configuration setting to enable
+		building the DTrack code from Advanced Realtime
+		Tracking CmbH.
+	* vrpn_Tracker_isense.C : Modified this to return the orientation
+		with the axes permuted in a way that makes it match
+		what other trackers report.
+
 2004-02-04  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_Connection.C (handle_sender_message):  auto-registers
 	unknown senders.
 
-2004-1-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+2004-01-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Tracker.C : Added initialization of the watchdog timer
 		in the constructor to keep it from accidentally taking

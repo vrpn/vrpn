@@ -41,7 +41,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "pc_win32/Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I "../quat" /I "../isense" /D "_LIB" /D "_WINDOWS" /D "NDEBUG" /D "_MBCS" /D "WIN32" /FR /YX /FD /c /Tp
+# ADD CPP /nologo /MD /W3 /GX /O2 /I "../quat" /I "../isense" /I "../dtrack" /D "_LIB" /D "_WINDOWS" /D "NDEBUG" /D "_MBCS" /D "WIN32" /FR /YX /FD /c /Tp
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409
 BSC32=bscmake.exe
@@ -265,6 +265,10 @@ SOURCE=.\vrpn_Tracker_ButtonFly.C
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_Tracker_DTrack.C
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_Tracker_Fastrak.C
 # End Source File
 # Begin Source File
@@ -482,6 +486,10 @@ SOURCE=.\vrpn_Tracker_AnalogFly.h
 # Begin Source File
 
 SOURCE=.\vrpn_Tracker_ButtonFly.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Tracker_DTrack.h
 # End Source File
 # Begin Source File
 
