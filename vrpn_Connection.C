@@ -3583,50 +3583,20 @@ int vrpn_Endpoint::connect_tcp_to (const char * msg) {
   		client.sin_addr.s_addr = foo_mark;
           }
 #else
-
           memcpy(&(client.sin_addr.s_addr), host->h_addr,  host->h_length);
 #endif
 
       } else {
 
-          perror("gethostbyname error:");
 #if !defined(hpux) && !defined(__hpux) && !defined(_WIN32)  && !defined(sparc)
           herror("gethostbyname error:");
+#else
+          perror("gethostbyname error:");
 #endif
-
-          fprintf(stderr,
-                  "vrpn_Endpoint::connect_tcp_to:  "
+          fprintf(stderr, "vrpn_Endpoint::connect_tcp_to:  "
                   "error finding host by name\n");
           return -1;
       }
-
-//  #ifdef VRPN_USE_WINDOWS_GETHOSTBYNAME_HACK
-//  // XXX OK, so this doesn't work.  What's wrong???
-//      client.sin_addr.s_addr = (a << 24) + (b << 16) + (c << 8) + d;
-//      //client.sin_addr.s_addr = (d << 24) + (c << 16) + (b << 8) + a;
-//      fprintf(stderr, "vrpn_Endpoint::connect_tcp_to:  "
-//      			  "getbyhostname() failed;  we think we're\n"
-//      			  "looking for %d.%d.%d.%d.\n", a, b, c, d);
-
-//      // here we can try an alternative strategy:
-//      unsigned long addr = inet_addr(machine);
-//      if (addr == INADDR_NONE) {	// that didn't work either
-//        fprintf(stderr, "vrpn_Endpoint::connect_tcp_to:  "
-//      			"error reading address format\n");
-//        return -1;
-//      } else {
-//        host = gethostbyaddr((char *)&addr,sizeof(addr), AF_INET);
-//        if (host) {
-//          printf("gethostbyaddr() was successful\n");
-//          memcpy(&(client.sin_addr.s_addr), host->h_addr,  host->h_length);
-//        } else {
-//          fprintf(stderr, "vrpn_Endpoint::connect_tcp_to:  "
-//          			" gethostbyaddr() failed\n");
-//          return -1;
-//        }
-//      }
-//    }
-//  #endif
   }
 
 #ifndef VRPN_USE_WINSOCK_SOCKETS
@@ -5870,24 +5840,11 @@ int vrpn_Synchronized_Connection::mainloop (const struct timeval * timeout)
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 //------------------------------------------------------------------------
 //	This section holds data structures and functions to open
 // connections by name.
 //	The intention of this section is that it can open connections for
-// objects that are in different libraries (trackers, buttons and sound),
+// objects that are of different types (trackers, buttons and sound),
 // even if they all refer to the same connection.
 
 //	This routine will return a pointer to the connection whose name
@@ -5903,7 +5860,7 @@ int vrpn_Synchronized_Connection::mainloop (const struct timeval * timeout)
 
 // this now always creates synchronized connections, but that is ok
 // because they are derived from connections, and the default 
-// args of freq=-1 makes it behave like a regular connection
+// args of freq=-1 makes it behave like a regular connection.
 
 vrpn_Connection * vrpn_get_connection_by_name (
     const char * cname,
@@ -5951,7 +5908,6 @@ vrpn_Connection * vrpn_get_connection_by_name (
                  remote_logfile_name, remote_log_mode,
                  dFreq, cSyncWindow, NIC_IPaddress);
         }
-
     }
 
     // Return a pointer to the connection, even if it is not doing
@@ -6002,7 +5958,6 @@ char * vrpn_copy_file_name (const char * filespecifier)
 
   if (!strncmp(fp, "file://", 7)) {
     fp += 7;
-    fp = strchr(fp, '/') + 1;
   } else if (!strncmp(fp, "file:", 5)) {
     fp += 5;
   }
@@ -6014,7 +5969,6 @@ char * vrpn_copy_file_name (const char * filespecifier)
   else {
     strncpy(filename, fp, len - 1);
     filename[len - 1] = 0;
-//fprintf(stderr, "Filename:  %s.\n", filename);
   }
   return filename;
 }

@@ -194,18 +194,19 @@ private:
 
 // User routine to handle a change in button state.  This is called when
 // the button callback is called (when a message from its counterpart
-// across the connetion arrives). The pinch glove has 5 different state of on
-// since it knows which fingers are touching.
+// across the connection arrives). The pinch glove has 5 different state of on
+// since it knows which fingers are touching.  This pinch glove behavior is
+// non-standard and will be removed in a future version.  Button states should
+// be considered like booleans.
 #define VRPN_BUTTON_OFF	(0)
 #define VRPN_BUTTON_ON	(1)
 
 typedef	struct {
 	struct timeval	msg_time;	// Time of button press/release
 	vrpn_int32	button;		// Which button (numbered from zero)
-   // button state (0 = off, 1 = on) 
-   // If the button is the type of vrpn_Button_PinchGlove there are upto 5
-   // different kinds of on state since it knows which fingers are touching
-   vrpn_int32	state;		
+	vrpn_int32	state;		// button state (0 = off, 1 = on) 
+	    // If the button is the type of vrpn_Button_PinchGlove there are up to 5
+	    // different kinds of on state since it knows which fingers are touching
 } vrpn_BUTTONCB;
 typedef void (*vrpn_BUTTONCHANGEHANDLER)(void *userdata,
 					 const vrpn_BUTTONCB info);
