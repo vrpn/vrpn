@@ -561,7 +561,7 @@ int setup_Magellan (char * & pch, char * line, FILE * config_file) {
             }
 
             // Make sure there's room for a new magellan
-            if (num_cereals >= MAX_MAGELLANS) {
+            if (num_magellans >= MAX_MAGELLANS) {
               fprintf(stderr,"Too many Magellans in config file");
               return -1;
             }

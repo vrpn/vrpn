@@ -1,3 +1,8 @@
+2001-05-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C (setup_Magellan) : Counts the number of magellans, rather
+		than the number of cereals.
+
 2001-02-14  Tom Hudson <hudson@cs.unc.edu>
 
 	* vrpn.C : remove g_logMode, change g_logName to g_inLogName,
