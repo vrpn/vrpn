@@ -212,7 +212,7 @@ long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const timeval t) {
 
 long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const char * string,
                   vrpn_uint32 length) {
-  CHECK(length < *buflen);
+  CHECK(length < (unsigned)*buflen);
 
   memcpy(*insertPt, string, length);
   *insertPt += length;

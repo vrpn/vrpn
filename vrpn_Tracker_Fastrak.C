@@ -1,3 +1,11 @@
+// vrpn_Tracker_Fastrak.C
+//	This file contains the code to operate a Polhemus Fastrak Tracker.
+// This file is based on the vrpn_3Space.C file, with modifications made
+// to allow it to operate a Fastrak instead. The modifications are based
+// on the old version of the Fastrak driver, which had been mainly copied
+// from the Trackerlib driver and was very difficult to understand.
+//	This version was written in the Summer of 1999 by Russ Taylor.
+
 #include <time.h>
 #include <math.h>
 #include <stdlib.h>
@@ -22,106 +30,36 @@
 #include "vrpn_Tracker.h"
 #include "vrpn_Tracker_Fastrak.h"
 #include "vrpn_Serial.h"
+#include "vrpn_Shared.h"
 
-#ifndef VRPN_CLIENT_ONLY
-#if defined(sgi) || defined(linux)
-
-#define READ_HISTOGRAM
-
-#define MAX_LENGTH              (512)
-
+#define	REPORT_LEN		(3 + 3*4 + 4*4)
 #define MAX_TIME_INTERVAL       (2000000) // max time between reports (usec)
-
-#define TRACKER_SYNCING         (2)
-#define TRACKER_REPORT_READY    (1)
-#define TRACKER_PARTIAL         (0)
-#define TRACKER_RESETTING       (-1)
-#define TRACKER_FAIL            (-2)
-
-// This constant turns the tracker binary values in the range -32768 to
-// 32768 to meters.
-#define T_3_DATA_MAX            (32768.0)
-#define T_3_INCH_RANGE          (65.48)
-#define T_3_CM_RANGE            (T_3_INCH_RANGE * 2.54)
-#define T_3_METER_RANGE         (T_3_CM_RANGE / 100.0)
-#define T_3_BINARY_TO_METERS    (T_3_METER_RANGE / T_3_DATA_MAX)
-
-#undef VERBOSE
-
-
-#if defined(sun) || defined(sgi) || defined(hpux) || defined(__hpux)
-#   define T_F_REVERSE_BYTES(dest, src, size, num) \
-                                t_reverse_bytes(dest, src, size, num)
-#else
-#   define T_F_REVERSE_BYTES(dest, src, size, num) \
-		memcpy(dest, src, size*num)
-#endif
-
-
-/*****************************************************************************
- *
-   t_reverse_bytes - reverse the byte order of words in a buffer
- 
-    input:
-        - pointer to dest buffer
-        -   ''    '' src    ''
-        - size of words in buffer (can be odd)
-        - number of words in buffer
-    
-    output:
-        - src buffer's bytes are reversed in words in dest buffer
- 
-    notes:
-        - also works for swapping bytes, but slightly less efficient
-            and I didn't feel like changing all of the other drivers.
-        
-        - the dest and src buffers must be distinct!  (done this way
-            for speed, although it could be modified)
- *
- *****************************************************************************/
-
-static void
-t_reverse_bytes(unsigned char destBuffer[], unsigned char srcBuffer[], 
-		int wordSize, int numWords)
-{
-    int             i, j;
-    unsigned char   *srcPtr, *destPtr;
-
-
-srcPtr = srcBuffer;
-destPtr = destBuffer;
-for ( i = 0; i < numWords; i++ )
-    {
-    /* swap bytes at from ends of word and work toward the middle   */
-    for ( j = 0; j < wordSize; j++ )
-        destPtr[j] = srcPtr[wordSize-j-1];
-
-    srcPtr += wordSize;
-    destPtr += wordSize;
-    }
-
-}       /* t_reverse_bytes */
+#define	INCHES_TO_METERS	(2.54/100.0)
 
 static	unsigned long	duration(struct timeval t1, struct timeval t2)
 {
-  if (t2.tv_sec == -1) return 0;
-  return (t1.tv_usec - t2.tv_usec) +
-    1000000L * (t1.tv_sec - t2.tv_sec);
+	return (t1.tv_usec - t2.tv_usec) +
+	       1000000L * (t1.tv_sec - t2.tv_sec);
 }
 
-// Read from the input buffer on the specified handle until all of the
-//  characters are read.  Return 0 on success, -1 on failure.
-static int	vrpn_flushInputBuffer(int comm)
-{
-   tcflush(comm, TCIFLUSH);
-   return 0;
-}
+
+//   This routine will reset the tracker and set it to generate the types
+// of reports we want. It relies on the power-on configuration to set the
+// active sensors based on the 'Rcvr Select Switch', as described on page
+// 128 of the Fastrak manual printed November 1993.
 
 void vrpn_Tracker_Fastrak::reset()
 {
    static int numResets = 0;	// How many resets have we tried?
    int i,resetLen,ret;
    char reset[10];
+
+   //--------------------------------------------------------------------
+   // This section deals with resetting the tracker to its default state.
+   // Multiple attempts are made to reset, getting more aggressive each
+   // time. This section completes when the tracker reports a valid status
+   // message after the reset has completed.
+   //--------------------------------------------------------------------
 
    // Send the tracker a string that should reset it.  The first time we
    // try this, just do the normal ^Y reset.  Later, try to reset
@@ -139,28 +77,29 @@ void vrpn_Tracker_Fastrak::reset()
    }
    if (numResets > 3) {	// Get a little more aggressive
    	if (numResets > 4) { // Even more aggressive
-      	reset[resetLen++] = 't'; // Toggle extended mode (in case it is on)
-   }
-   reset[resetLen++] = 'W'; // Reset to factory defaults
-   reset[resetLen++] = (char) (11); // Ctrl + k --> Burn settings into EPROM
+	      	reset[resetLen++] = 't'; // Toggle extended mode (in case it is on)
+	}
+	reset[resetLen++] = 'W'; // Reset to factory defaults
+	reset[resetLen++] = (char) (11); // Ctrl + k --> Burn settings into EPROM
    }
    reset[resetLen++] = (char) (25); // Ctrl + Y -> reset the tracker
    fprintf(stderr, "Resetting the Fastrak (attempt #%d)",numResets);
    for (i = 0; i < resetLen; i++) {
 	if (vrpn_write_characters(serial_fd, (unsigned char*)&reset[i], 1) == 1) {
 		fprintf(stderr,".");
-		sleep(1);  // Wait 2 seconds each character
+		sleep(2);  // Wait after each character to give it time to respond
    	} else {
 		perror("Fastrak: Failed writing to tracker");
 		status = TRACKER_FAIL;
 		return;
 	}
    }
+   //XXX Take out the sleep and make it keep spinning quickly
    sleep(10);	// Sleep to let the reset happen
    fprintf(stderr,"\n");
 
    // Get rid of the characters left over from before the reset
-   vrpn_flushInputBuffer(serial_fd);
+   vrpn_flush_input_buffer(serial_fd);
 
    // Make sure that the tracker has stopped sending characters
    sleep(2);
@@ -175,11 +114,11 @@ void vrpn_Tracker_Fastrak::reset()
          }
      }
      fprintf(stderr, "\n");
-     vrpn_flushInputBuffer(serial_fd);		// Flush what's left
+     vrpn_flush_input_buffer(serial_fd);		// Flush what's left
    }
 
    // Asking for tracker status
-   if (vrpn_write_characters(serial_fd, "S", 1) == 1) {
+   if (vrpn_write_characters(serial_fd, (const unsigned char *) "S", 1) == 1) {
       sleep(1); // Sleep for a second to let it respond
    } else {
 	perror("  Fastrak write failed");
@@ -195,165 +134,280 @@ void vrpn_Tracker_Fastrak::reset()
    if ( (statusmsg[0]!='2') || (statusmsg[54]!=(char)(10)) ) {
      int i;
      statusmsg[55] = '\0';	// Null-terminate the string
-     fprintf(stderr, "  Tracker: status is (");
-     for (i = 0; i < 55; i++) {
+     fprintf(stderr, "  Fastrak: status is (");
+     for (i = 0; i < ret; i++) {
       	if (isprint(statusmsg[i])) {
          	fprintf(stderr,"%c",statusmsg[i]);
          } else {
          	fprintf(stderr,"[0x%02X]",statusmsg[i]);
          }
      }
-     fprintf(stderr, ")\n  Bad status report from tracker, retrying reset\n");
+     fprintf(stderr, ")\n  Bad status report from Fastrak, retrying reset\n");
      return;
    } else {
      fprintf(stderr, "  Fastrak gives status!\n");
-     //printChar((char *)statusmsg, 55);
      numResets = 0; 	// Success, use simple reset next time
    }
 
+   //--------------------------------------------------------------------
+   // Now that the tracker has given a valid status report, set all of
+   // the parameters the way we want them. We rely on power-up setting
+   // based on the receiver select switches to turn on the receivers that
+   // the user wants. We ask for XYZ+QUAT reports, filtering is enabled on
+   // position and orientation if it is desired, continuous mode in binary
+   // report mode.
+   //--------------------------------------------------------------------
 
-   /* set all stations except first station 
-(since we can't turn it off) */
-				
-      stationArray[0] = T_F_ON;
-      stationArray[1] = T_F_ON;
-      stationArray[2] = T_F_ON;
-      stationArray[3] = T_F_ON;
-    numUnits = 4;
-    mode = T_F_M_POLLING;
+   // Set output format for each of the possible stations to be position and
+   // quaternion.  This command is a capitol 'o' followed by the number of the
+   // station, then comma-separated values (2 for xyz, 11 for quat) that
+   // indicate data sets, followed by character 13 (octal 15).
 
-    if ( set_all_units() == T_ERROR ) {
-      fprintf(stderr,"can't set all units\n");
-      return;
-    }
+   for (i = 1; i <= num_stations; i++) {
+	char	outstring[30];
+	sprintf(outstring, "O%d,2,11\015", i);
 
+	if (vrpn_write_characters(serial_fd, (const unsigned char *)outstring,
+	    strlen(outstring)) == (int)strlen(outstring)) {
+		vrpn_SleepMsecs(50);	// Sleep for a bit to let command run
+	} else {
+		perror("  Fastrak write failed on format command");
+		status = TRACKER_FAIL;
+		return;
+	}
+   }
 
+   // Enable filtering if the constructor parameter said to.
+   // Set filtering for both position (x command) and orientation (v command)
+   // to the values that are recommended as a "jumping off point" in the
+   // Fastrak manual.
 
-    /* set binary mode  */
-    ms_sleep(50);
-    bin_ascii(T_F_M_BINARY);
+   if (do_filter) {
+     if (vrpn_write_characters(serial_fd,
+	     (const unsigned char *)"x0.2,0.2,0.8,0.8\015", 17) == 17) {
+	sleep(1); // Sleep for a second to let it respond
+     } else {
+	perror("  Fastrak write position filter failed");
+	status = TRACKER_FAIL;
+	return;
+     }
+     if (vrpn_write_characters(serial_fd,
+	     (const unsigned char *)"v0.2,0.2,0.8,0.8\015", 17) == 17) {
+	sleep(1); // Sleep for a second to let it respond
+     } else {
+	perror("  Fastrak write orientation filter failed");
+	status = TRACKER_FAIL;
+	return;
+     }
+   }
+   
+   // Set data format to BINARY mode
+   vrpn_write_characters(serial_fd, (const unsigned char *)"f", 1);
 
-    /* set up the data format stuff in the tracker table;  setting it in
-     *  the fastrak itself will be done when enable is called for that unit
-     */
-    dataFormat = T_DEFAULT_DATA_FORMAT;
+   // Set tracker to continuous mode
+   if (vrpn_write_characters(serial_fd,(const unsigned char *) "C", 1) != 1)
+   	perror("  Fastrak write failed");
+   else {
+   	fprintf(stderr, "  Fastrak set to continuous mode\n");
+   }
 
-    /* use quaternions for all formats, then convert later in read
-       routines	*/
+   fprintf(stderr, "  (at the end of Fastrak reset routine)\n");
+   gettimeofday(&timestamp, NULL);	// Set watchdog now
+   status = TRACKER_SYNCING;	// We're trying for a new reading
+}
 
-    reportLength = T_F_XYZ_QUAT_LENGTH;
+// Swap the endian-ness of the 4-byte entry in the buffer.
+// This is used to make the little-endian IEEE float values
+// returned by the Fastrak into the big-endian format that is
+// expected by the VRPN unbuffer routines.
 
-    /* totalReportLength is updated by the enable/disable units routines */
-    totalReportLength = reportLength * numUnits;
+void vrpn_Tracker_Fastrak::swap_endian4(char *buffer)
+{
+	char c;
 
-    /* set up filtering; don't worry about return code from this fn since
-     *   it's not tragic if filter setting fails (but error message is printed
-     *   by t_f_filter)
-     */
-    filter();
-
-    // ok now turn on Station 0;
-
-
-    //enable(0);
-    //enable(1);
-
-    fprintf(stderr, "  (at the end of Fastrak reset routine)\n");
-    for (i=0; i< 4; i++) 
-      if (stationArray[i] == T_F_ON) 
-	printf("Station [%d] is ON\n", i);
-      else printf("Station [%d] is OFF\n",i);
-
-    printf("totalReportLength = %d, numUnits = %d\n", 
-	   totalReportLength, numUnits);
-
-    mode = T_F_M_CONTINUOUS;
-    cont_mode();
-    //sleep(5);
-    //gettimeofday(&timestamp, NULL);	// Set watchdog now;
-    status = TRACKER_SYNCING;	// We are trying for a new reading;
-    timestamp.tv_sec = -1;
-    return;
+	c = buffer[0]; buffer[0] = buffer[3]; buffer[3] = c;
+	c = buffer[1]; buffer[1] = buffer[2]; buffer[2] = c;
 }
 
 
+
+// This function will read characters until it has a full report, then
+// put that report into the time, sensor, pos and quat fields so that it can
+// be sent the next time through the loop. The time stored is that of
+// the first character received as part of the report. Reports start with
+// the header "0xy", where x is the station number and y is either the
+// space character or else one of the characters "A-F". Characters "A-F"
+// indicate weak signals and so forth, but in practice it is much harder
+// to deal with them than to ignore them (they don't indicate hard error
+// conditions). The report follows, 4 bytes per word in little-endian byte
+// order; each word is an IEEE floating-point binary value. The first three
+// are position in X,Y and Z. The next four are the unit quaternion in the
+// order W, X,Y,Z.
+// If we get a report that is not valid, we assume that we have lost a
+// character or something and re-synchronize with the Fastrak by waiting
+// until the start-of-report character ('0') comes around again.
+// The routine that calls this one
+// makes sure we get a full reading often enough (ie, it is responsible
+// for doing the watchdog timing to make sure the tracker hasn't simply
+// stopped sending characters).
+   
 void vrpn_Tracker_Fastrak::get_report(void)
 {
-  int ret;
-  
-  //fprintf(stderr,"get report %p\t%s:%d\n",this,  __FILE__, __LINE__);
-  if (status == TRACKER_SYNCING) {
-    
-    if ((ret=vrpn_read_available_characters(serial_fd, buffer, 1)) !=  1 ||
-	buffer[0] != '0') {
-      return;
-    }
+   int ret;		// Return value from function call to be checked
+   int i;		// Loop counter
+   char *bufptr;	// Points into buffer at the current value to read
 
-    gettimeofday(&timestamp, NULL);
-    status = TRACKER_PARTIAL;
-    bufcount= ret;
-  }
+   //--------------------------------------------------------------------
+   // The reports are each REPORT_LEN characters long, and each start with an
+   // ASCII '0' character. If we're synching, read a byte at a time until we
+   // find a '0' character.
+   //--------------------------------------------------------------------
 
-  /* Read as many bytes of the remaining as we can, storing them;
-  // in the buffer.  We keep track of how many have been read so far;
-  // and only try to read the rest.  The routine that calls this one;
-  // makes sure we get a full reading often enough (ie, it is responsible;
-  // for doing the watchdog timing to make sure the tracker hasn't simply;
-  // stopped sending characters).;*/	
-  if (status == TRACKER_PARTIAL) {
-    if (reportLength < 0 || reportLength > 100) exit(-1);
-    //fprintf(stderr, "reportLength = %d,bufC= %d\n", reportLength,bufcount);
-    ret=vrpn_read_available_characters(serial_fd, &(buffer[bufcount]),
-	reportLength-bufcount);
-    if (ret < 0) {
-      fprintf(stderr,"%s@%d: Error reading\n", __FILE__, __LINE__);
-      status = TRACKER_FAIL;
-      return;
-    }
-    //fprintf(stderr,"get report:get %d bytes\t%s:%d\n", 
-	//   bufcount, __FILE__, __LINE__);
-    bufcount += ret;
-    if (bufcount < reportLength) {	// Not done -- go back for more
-      return;
-    }	
-    //fprintf(stderr, "this time read: %d rL= %d, \n", ret, reportLength);
-  }
-  
-  // now decode the report;
-  //fprintf(stderr, "get_report: start decode %d\t%s:%d\n", 
-	//  reportLength, __FILE__, __LINE__);
+   if (status == TRACKER_SYNCING) {
+      // Try to get a character.  If none, just return.
+      if (vrpn_read_available_characters(serial_fd, buffer, 1) != 1) {
+      	return;
+      }
 
+      // If it is not an '0', we don't want it but we
+      // need to look at the next one, so just return and stay
+      // in Syncing mode so that we will try again next time through.
+      if ( buffer[0] != '0') {
+      	fprintf(stderr,"Tracker Fastrak: Syncing (looking for '0', "
+		"got '%c')\n", buffer[0]);
+      	return;
+      }
 
-  if (!valid_report()) {
-    bufcount = 0;
-    status = TRACKER_SYNCING;
-    return;
-  }
-  //fprintf(stderr, "get_report: valid list, %d\t%s:%d\n", 
-	//  reportLength, __FILE__, __LINE__);
-  xyz_quat_interpret();
+      // Got the first character of a report -- go into PARTIAL mode
+      // and record that we got one character at this time. The next
+      // bit of code will attempt to read the rest of the report.
+      // The time stored here is as close as possible to when the
+      // report was generated.
+      bufcount = 1;
+      gettimeofday(&timestamp, NULL);
+      status = TRACKER_PARTIAL;
+   }
 
-  status = TRACKER_REPORT_READY;
-  bufcount=0;
+   //--------------------------------------------------------------------
+   // Read as many bytes of this report as we can, storing them
+   // in the buffer.  We keep track of how many have been read so far
+   // and only try to read the rest.  The routine that calls this one
+   // makes sure we get a full reading often enough (ie, it is responsible
+   // for doing the watchdog timing to make sure the tracker hasn't simply
+   // stopped sending characters).
+   //--------------------------------------------------------------------
+
+   ret = vrpn_read_available_characters(serial_fd, &buffer[bufcount],
+		REPORT_LEN-bufcount);
+   if (ret == -1) {
+	fprintf(stderr,"Fastrak: Error reading\n");
+	//XXX Put out a VRPN text message here, and at other error locations
+	status = TRACKER_FAIL;
+	return;
+   }
+   bufcount += ret;
+   if (bufcount < REPORT_LEN) {	// Not done -- go back for more
+	return;
+   }
+
+   //--------------------------------------------------------------------
+   // We now have enough characters to make a full report. Check to make
+   // sure that its format matches what we expect. If it does, the next
+   // section will parse it. If it does not, we need to go back into
+   // synch mode and ignore this report. A well-formed report has the
+   // first character '0', the next character is the ASCII station
+   // number, and the third character is either a space or a letter.
+   // The station number is converted into a VRPN sensor number, where
+   // the first station is '1' and the first sensor is 0.
+   //--------------------------------------------------------------------
+
+   if (buffer[0] != '0') {
+	   status = TRACKER_SYNCING;
+      	   fprintf(stderr,"Tracker Fastrak: Not '0' in record\n");
+	   return;
+   }
+   sensor = buffer[1] - '1';	// Convert ASCII 1 to sensor 0 and so on.
+   if ( (sensor < 0) || (sensor >= num_stations) ) {
+	   status = TRACKER_SYNCING;
+      	   fprintf(stderr,"Tracker Fastrak: Bad sensor # (%d) in record\n",
+		sensor);
+	   return;
+   }
+   if ( (buffer[2] != ' ') && !isalpha(buffer[2]) ) {
+	   status = TRACKER_SYNCING;
+      	   fprintf(stderr,"Tracker Fastrak: Bad 3rd char in record\n");
+	   return;
+   }
+
+   //--------------------------------------------------------------------
+   // Decode the X,Y,Z of the position and the W,X,Y,Z of the quaternion
+   // (keeping in mind that we store quaternions as X,Y,Z, W).
+   //--------------------------------------------------------------------
+   // The reports coming from the Fastrak are in little-endian order,
+   // which is the opposite of the network-standard byte order that is
+   // used by VRPN. Here we swap the order to big-endian so that the
+   // routines below can pull out the values in the correct order.
+   // This is slightly inefficient on machines that have little-endian
+   // order to start with, since it means swapping the values twice, but
+   // that is more than outweighed by the cleanliness gained by keeping
+   // all architecture-dependent code in the vrpn_Shared.C file.
+   //--------------------------------------------------------------------
+
+   // Point at the first value in the buffer (position X)
+   bufptr = (char *)&buffer[3];
+
+   // Copy the values into local float32 arrays, then copy these into the
+   // tracker's fields (which are float64s)
+   vrpn_float32	read_pos[3], read_quat[4];
+
+   swap_endian4(bufptr); vrpn_unbuffer( (const char **)&bufptr, &read_pos[0]);
+   swap_endian4(bufptr); vrpn_unbuffer( (const char **)&bufptr, &read_pos[1]);
+   swap_endian4(bufptr); vrpn_unbuffer( (const char **)&bufptr, &read_pos[2]);
+
+   swap_endian4(bufptr); vrpn_unbuffer( (const char **)&bufptr, &read_quat[3]);
+   swap_endian4(bufptr); vrpn_unbuffer( (const char **)&bufptr, &read_quat[0]);
+   swap_endian4(bufptr); vrpn_unbuffer( (const char **)&bufptr, &read_quat[1]);
+   swap_endian4(bufptr); vrpn_unbuffer( (const char **)&bufptr, &read_quat[2]);
+
+   // When copying the positions, convert from inches to meters, since the
+   // Fastrak reports in inches and VRPN reports in meters.
+   for (i = 0; i < 3; i++) {
+	pos[i] = read_pos[i] * INCHES_TO_METERS;
+   }
+   for (i = 0; i < 4; i++) {
+	quat[i] = read_quat[i];
+   }
+
+   //--------------------------------------------------------------------
+   // Done with the decoding, set the report to ready
+   //--------------------------------------------------------------------
+
+   status = TRACKER_REPORT_READY;
+   bufcount = 0;
 
 #ifdef VERBOSE
-      print();
+      print_latest_report();
 #endif
 }
 
+
+// This function should be called each time through the main loop
+// of the server code. It polls for a report from the tracker and
+// sends it if there is one. It will reset the tracker if there is
+// no data from it for a few seconds.
 
 void vrpn_Tracker_Fastrak::mainloop(const struct timeval * /*timeout*/ )
 {
   switch (status) {
     case TRACKER_REPORT_READY:
       {
-
+#ifdef	VERBOSE
 	static int count = 0;
 	if (count++ == 120) {
-		//printf("  vrpn_Tracker_Fastrak: Got report\n");
+		printf("  vrpn_Tracker_Fastrak: Got report\n"); print_latest_report();
 		count = 0;
 	}
-
+#endif            
 
 	// Send the message on the connection
 	if (connection) {
@@ -362,7 +416,7 @@ void vrpn_Tracker_Fastrak::mainloop(const struct timeval * /*timeout*/ )
 		if (connection->pack_message(len, timestamp,
 			position_m_id, my_id, msgbuf,
 			vrpn_CONNECTION_LOW_LATENCY)) {
-		  fprintf(stderr,"Tracker: cannot write message: tossing\n");
+		  fprintf(stderr,"Fastrak: cannot write message: tossing\n");
 		}
 	} else {
 		fprintf(stderr,"Tracker Fastrak: No valid connection\n");
@@ -381,7 +435,7 @@ void vrpn_Tracker_Fastrak::mainloop(const struct timeval * /*timeout*/ )
 	if ( duration(current_time,timestamp) < MAX_TIME_INTERVAL) {
 		get_report();
 	} else {
-		fprintf(stderr,"Tracker failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n",current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);
+		fprintf(stderr,"Fastrak failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n",current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);
 		status = TRACKER_FAIL;
 	}
       }
@@ -392,1150 +446,10 @@ void vrpn_Tracker_Fastrak::mainloop(const struct timeval * /*timeout*/ )
 	break;
 
     case TRACKER_FAIL:
-	fprintf(stderr, "Tracker failed, trying to reset (Try power cycle if more than 4 attempts made)\n");
+	fprintf(stderr, "Fastrak failed, trying to reset (try power cycle if more than 4 attempts made).\n");
 	vrpn_close_commport(serial_fd);
 	serial_fd = vrpn_open_commport(portname, baudrate);
 	status = TRACKER_RESETTING;
 	break;
    }
 }
-
-/* %%%%%%%%%%%%%%%%%% private member functions %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
-
-/*****************************************************************************
- *
-   set_all_units - higher-level function that sets on or off each of the
-    	    	      units specified in setArray.
- 
-    output:
-    	- each unit is turned on/off as specified (this is verified by 
-	    t_f_set_unit())
-    
-    notes:
-    	turn on any new units before trying to turn off any old units, 
-    	since turning off the last unit is not allowed.
- *
- *****************************************************************************/
-
-int vrpn_Tracker_Fastrak::set_all_units()
-{
-
-    int	    i;
-
-
-    /* turn ON new ones	*/
-    for ( i = 0; i < T_F_MAX_NUM_STATIONS; i++ )
-      {
-	/* if station should be on, turn it on	*/
-	if ( stationArray[i] == T_F_ON ) {
-	  if ( set_unit(i, T_F_ON) == T_ERROR )
-	    return (T_ERROR);
-	  /* set hemisphere to be the normal +X	*/
-	  set_hemisphere(i, Q_X, 1);
-	  set_data_format(i);
-
-	}
-	
-    }
-
-    /* turn OFF old ones	*/
-    for ( i = 0; i < T_F_MAX_NUM_STATIONS; i++ )
-    {
-      /* if station should be off, turn it off	*/
-      if ( stationArray[i] == T_F_OFF )
-    	if ( set_unit(i, T_F_OFF) == T_ERROR )
-	    return(T_ERROR);
-    }
-
-    return(T_OK);
-
-}	/* set_all_units */
-
-
-
-/*****************************************************************************
- *
-   set_unit - turns on or off a Fastrak station/unit, depending on the
-    	    	    	onOff parameter
-    
-    input:
-	- which unit is to be turned on/off
-	- on or off
-
-    output:
-    	- T_OK on success
-	- T_ERROR on failure after 5 tries
- 
-    notes:  this routine knows nothing about the tracker table's unitsOn
-    	    array, nor about numUnits;  it just communicates w/ the fastrak
- *
- *****************************************************************************/
-
-int
-vrpn_Tracker_Fastrak::set_unit(int whichUnit, int onOff)
-
-{
-    
-    char     stationString[] = T_F_C_STATION_TOGGLE;
-    int	    	    unitOnArray[T_F_MAX_NUM_STATIONS];
-    int	    	    numTries = 0;
-
-    
-    //fprintf(stderr, "here %p, %s:%d\n", this,__FILE__, __LINE__);
-    /* figure out how many and which units are already REALLY on	*/
-    if ( get_units(unitOnArray) < 0 )
-      return(T_ERROR);
-
-    //fprintf(stderr, "Here \t%s:%d\n", __FILE__, __LINE__);
-    /* is unit already on or off?  */
-    if ( unitOnArray[whichUnit] == onOff )
-      return(T_OK);
-
-    /*
-     * replace the '#' placeholder with the number of the unit/station;
-     *  add 1 to whichUnit since Fastrak units start from 1
-     */
-    stationString[1] = (char) ((int) '0' + (whichUnit+1));
-
-    /* replace the '%' placeholder with a '0' for off and '1' for on */
-    if ( onOff == 0 )
-      stationString[3] = '0';
-    else
-      stationString[3] = '1';
-
-    /* turn it off/on */
-    do { 
-      
-
-    /* send enable command for this unit to fastrak	*/
-      vrpn_write_characters(serial_fd, (const unsigned char *) stationString, 
-	    strlen(stationString));
-      ms_sleep(50);
-
-      numTries++;
-    
-    }
-    while ((verify_unit_status(whichUnit, onOff) == T_ERROR) &&
-    	(numTries < 5) );
-
-    if ( numTries >= 5 )
-      return(T_ERROR);
-
-    return(T_OK);
-
-}	/* t_f_set_unit */
-
-
-
-/*****************************************************************************
- *
-   get1_units - low-level workhorse;  returns the number of 
-    	    	      stations that are on, plus a vector indicating 
-		      which ones are on.  
-
-    called by: 
-       	t_f_set_all_units()
-       	t_f_verify_unit_status()
-    	t_f_enable()
-	t_f_disable()
-
-
-   
-   station record typically looks something like: "21l11000000";  the first
-   T_F_STATUS_LENGTH bytes are status bytes (usually 3) followed by n chars
-   representing the n different stations (here, n=8).  '1' signifies that
-   the station is on, '0', off. 
-    
-    If the fastrak gives an error message in response to the stations
-    status request, the routine assumes that this is a single station
-    fastrak and just reports all stations off except #1.
- *
- *****************************************************************************/
-
-int vrpn_Tracker_Fastrak::get_units(int stationVector[T_F_MAX_NUM_STATIONS])
-{
-
-
-    char    this_buffer[T_MAX_READ_BUFFER_SIZE];
-    
-    int	    numStationsOn;
-    int	    numTries = 0;
-    int	    i;
-
-
-    //fprintf(stderr, "get_units %p, \t%s:%d\n", this, __FILE__, __LINE__);
-    /* pause continuous mode if on	*/
-    if ( poll_mode() == T_ERROR )
-      return(T_ERROR);
-    //fprintf(stderr, "get_units %p,\t%s:%d\n", this, __FILE__, __LINE__);
-
-    /* find out which stations are on:  ask fastrak for station record  
-     *   we expect either a valid stations record or an error record (ie., from
-     *   a 1-station Isotrak unit);  if we get garbage, we'll
-     *   do this up to 5 times, then quit if no success
-     */
-    do { 
-      my_flush();
-      if ( numTries > 0 )
-	/* this error may be caused by fastrak ignoring poll mode command */
-	poll_mode();
-
-      vrpn_write_characters(serial_fd, (const unsigned char *) T_F_C_RETRIEVE_STATIONS, 
-    	    	    	    	strlen(T_F_C_RETRIEVE_STATIONS));
-      ms_sleep(500);
-      vrpn_read_available_characters(serial_fd, (unsigned char *) this_buffer, 
-			      T_F_STATIONS_RECORD_LENGTH);
-    
-      numTries++;
-    }while ( (this_buffer[T_F_RECORD_SUBTYPE] != T_F_STATIONS_SUBTYPE) &&
-    	(this_buffer[T_F_RECORD_SUBTYPE] != T_F_ERROR_SUBTYPE) &&
-	(numTries < 5) );
-
-    /* resume continuous mode if nec    */
-    if ( mode == T_F_M_CONTINUOUS )
-      cont_mode();
-
-    /* if we did 5 passes, probably didn't succeed, 
-       so quit with error message  */
-    if ( numTries >= 5 ) 
-    {
-      fprintf(stderr, "%s@%d: couldn't get valid stations report;\n",
-	      __FILE__, __LINE__);
-      fprintf(stderr, "   try cycling the power on the Fastrak.\n");
-      return(T_ERROR);
-    }
-
-    /* check for error message-  some polhemi don't support this command*/
-    if ( this_buffer[T_F_RECORD_SUBTYPE] == T_F_ERROR_SUBTYPE )
-      {
-	fprintf(stderr,"get_units: only one station is on\n");
-	/* fill out vector of active stations   */
-	stationVector[0] = T_F_ON;
-
-	for ( i = 1; i < T_F_MAX_NUM_STATIONS; i++ )
-	  stationVector[i] = T_F_OFF;
-
-	/* tell caller that only one station is active, since this is the 
-	 *  case for polhemi that don't support the stations command
-	 */
-	return(1);
-      }
-
-    /* buffer seems ok- parse return string to find out which units are on.  */
-    numStationsOn = 0;
-    for ( i = 0; i < T_F_MAX_NUM_STATIONS; i++ )
-    {
-    /* is this station on?  */
-      if ( this_buffer[T_F_STATUS_LENGTH+i] == '1' )
-	{
-	/* station is already on	*/
-    	stationVector[i] = T_F_ON;
-	numStationsOn++;
-	}
-      else
-    	stationVector[i] = T_F_OFF;
-    }
-    fprintf(stderr, "get_units: %d stations are on %p\t%s:%d\n", 
-	    numStationsOn, this, __FILE__, __LINE__);
-    return(numStationsOn);
-
-}	/* get_units */
-
-
-
-
-/*****************************************************************************
- *
-   t_f_verify_unit_status - verify that the specified unit is on/off
- 
-    input:
-	- which unit is to be checked
-	- on or off (T_F_ON or T_F_OFF)
-
-    output:
-    	- T_OK if whichUnit is on/off 
-	- T_ERROR is returned if unit status is incorrect;  also if there
-	    is an error in the unit specified or in getting the stations
-	    report
- *
- *****************************************************************************/
-
-int vrpn_Tracker_Fastrak::verify_unit_status(int whichUnit, int unitOn)
-     /* int	    	    unitOn; 	 should unit be on or off?  */
-{
-    int	    onArray[T_F_MAX_NUM_STATIONS];
-
-
-    if ( get_units(onArray) < 0 )
-      return(T_ERROR);
-    
-    if ( onArray[whichUnit] == unitOn )
-      return(T_OK);
-    else
-      return(T_ERROR);
-
-}	/* verify_unit_status */
-
-
-
-/*****************************************************************************
- *
-   filter - set up filtering parameters for fastrak
-    output:
-    	- filtering is set according to #defines at top of file
- *
- *****************************************************************************/
-
-int vrpn_Tracker_Fastrak::filter()
-{
-
-    char    buffer[T_MAX_READ_BUFFER_SIZE];
-
-
-    /* clear buffer and set extended command mode	*/
-    my_flush();
-
-    /* try to turn off pos'n filtering  */
-    vrpn_write_characters(serial_fd, (const unsigned char *) T_F_C_SET_POSITION_FILTER, 
-	  strlen(T_F_C_SET_POSITION_FILTER));
-
-    /* any output here probably indicates an error message, so just quit */
-    if ((vrpn_read_available_characters(serial_fd, (unsigned char *) buffer, 
-	    T_READ_BUFFER_SIZE) != 0) &&
-     (buffer[T_F_RECORD_SUBTYPE] == T_F_ERROR_SUBTYPE) )
-	{
-	/* hey, we tried.	*/
-	my_flush();
-	fprintf(stderr,
-		"%s@%d: couldn't set position filter values.\n", 
-		__FILE__, __LINE__);
-	return(T_ERROR);
-	}
-
-    /* otherwise, it took the command; now disable orientation filter   */
-    my_flush();
-
-    vrpn_write_characters(serial_fd, (unsigned char *) T_F_C_SET_ORIENTATION_FILTER, 
-				    strlen(T_F_C_SET_ORIENTATION_FILTER));
-
-    if((vrpn_read_available_characters(serial_fd, (unsigned char *) buffer, 
-		    T_READ_BUFFER_SIZE) != 0) &&
-     (buffer[T_F_RECORD_SUBTYPE] == T_F_ERROR_SUBTYPE) )
-	{
-	my_flush();
-	fprintf(stderr, 
-		"%s@%d: couldn't set orientation filter values.\n",
-		__FILE__, __LINE__);
-	return(T_ERROR);
-	}
-
-    my_flush();
-
-    return(T_OK);
-
-}	/* t_f_filter */
-
-
-
-/*****************************************************************************
- *
-   get_status - get a status record from the fastrak
-
-    input:
-        NULL
-    
-    output:
-    	- the status buffer is filled w/ status record and checked
-    	- returns:
-	     T_OK if buffer is OK
-	     T_F_SPEW_MODE if it seems to be in continuous mode
-	     T_F_NO_DATA if no data on read
-	     T_ERROR otherwise
- *
- *****************************************************************************/
-
-int vrpn_Tracker_Fastrak::get_status()
-{
-    int	    	bytesRead;
-    char    	statusBuffer[T_MAX_READ_BUFFER_SIZE];
-    
-    
-
-    bufcount=0; // clear the buffer;
-
-
-    /* send request for status record   */
-    vrpn_write_characters(serial_fd, (unsigned char *) T_F_C_GET_STATUS, 
-    	    	    	    	   strlen(T_F_C_GET_STATUS));
-    sleep(1);
-    /* do non-blocking read of status record    */
-    bytesRead = vrpn_read_available_characters(serial_fd,
-	(unsigned char *) statusBuffer, T_F_STATUS_RECORD_LENGTH);
-    if ( bytesRead == T_F_STATUS_RECORD_LENGTH )
-    {
-      //printChar(statusBuffer, bytesRead); 
-      /* we have correct length-  check a few chars to make sure 
-	 this is a valid record */
-	if ( (statusBuffer[T_F_RECORD_TYPE] != T_F_RETRIEVE_RECORD) ||
-	 (statusBuffer[T_F_RECORD_SUBTYPE] != T_F_STATUS_SUBTYPE) )
-	return(T_ERROR);
-    //fprintf(stderr, "See here it is ok \t%s:%d\n", __FILE__, __LINE__);
-    /* otherwise, all is well   */
-    return(T_OK);
-    }
-
-    fprintf(stderr, "get_status %d \t%s:%d\n",bytesRead, __FILE__, __LINE__);
-    /* if we get here, we either got too much data or not enough	*/
-
-    /* no data means it's probably disconnected or not turned on */
-
-    if ( bytesRead == 0 )
-      return(T_F_NO_DATA);
-
-    /* if we got too much data, chances are that it's in continuous mode */
-    if ( bytesRead > T_F_STATUS_RECORD_LENGTH )
-      return(T_F_SPEW_MODE);
-
-    /* if we get here, i have no idea what's going on-  could be garbage on the
-     *  serial line, wrong baud rate, or that the fastrak is flaking out.
-     */
-    return(T_ERROR);
-
-}	/* get_status */
-
-
-#define MAX_TRIES   5
-
-int vrpn_Tracker_Fastrak::poll_mode()	{
-    int	    	status;
-    int		done = 0;
-    int	    	numTries = 0;
-    char    	statusBuffer[T_MAX_READ_BUFFER_SIZE];
-
-    if (mode != T_F_M_CONTINUOUS) return T_OK;
-
-    /* 
-     *   keep trying to pause the fastrak til it shuts up.  we know the beast
-     *   is truly paused if we get back a successful status record.
-     */
-    do {
-      //fprintf(stderr, "poll_mode:try...%d,%p  \t%s:%d\n", 
-	//      numTries, this, __FILE__, __LINE__);
-
-      /* on second pass, there is a problem.  try sending a retrieve_stations
-       *  request to wake it up.  there is no logic to sending this particular
-       *  command-  I just found by experimentation that it worked for the
-       *  polhemus, so try the same thing for fastrak.
-       */
-      if ( numTries > 0 ){
-	
-	/* we often seem to get trouble on the first try, so don't even
-	 *  report it until we've tried a few times
-	 */
-	if ( numTries == 4 )
-	    {
-	      fprintf(stderr, "having trouble pausing Fastrak;%p\n  ",
-		     this);
-		fprintf(stderr, "still trying...\n");
-	    }
-
-    	vrpn_write_characters(serial_fd, (unsigned char *) T_F_C_RETRIEVE_STATIONS, 
-	    	    	    	strlen(T_F_C_RETRIEVE_STATIONS));
-	vrpn_read_available_characters(serial_fd,
-		(unsigned char *) statusBuffer, T_F_STATIONS_RECORD_LENGTH);
-      }
-
-      /* try to set in poll mode	*/
-      vrpn_write_characters(serial_fd, (unsigned char *) T_F_C_POLLING, 
-    	    	    	    	       strlen(T_F_C_POLLING));
-
-      /* pause 50 ms to allow fastrak buffer to stabilize	*/
-      ms_sleep(50);
-    
-      numTries++;
-
-      status = get_status();
-    
-      if ( status == T_OK )
-    	done = 1;
-    
-      /* if no data, tracker probably not connected.  just bag it.    */
-      else if ( status == T_F_NO_DATA )
-    	return(T_ERROR);
-    } while ( ( ! done ) && (numTries <= MAX_TRIES) );
-    //fprintf(stderr, "poll_mode %p \t%s:%d\n", this, __FILE__, __LINE__);
-    /* clear any leftover reports	*/
-    my_flush();
-    /* bad news */
-    if ( numTries > MAX_TRIES )
-    {
-      fprintf(stderr, "%s@%d: pause of Fastrak failed.\n", 
-	      __FILE__, __LINE__);
-      return(T_ERROR);
-    }
-
-    return(T_OK);
-
-}	/* poll_mode */
-
-/*****************************************************************************
- *
-   bin_ascii - sets fastrak into binary or ascii mode
- 
-    input:
-    	- mode constant indicating binary or ascii
-    
-    output:
-    	- fastrak is sent command to switch it into appropriate mode
-    
-    notes:
-    	- no checking is done to make sure fastrak enters indicated mode
- *
- *****************************************************************************/
-
-int vrpn_Tracker_Fastrak::bin_ascii(int binAscii)
-{
-
-  if ( binAscii == T_F_M_ASCII )
-    vrpn_write_characters(serial_fd, (unsigned char *) T_F_C_ASCII, 
-    	    	    	    	       strlen(T_F_C_ASCII));
-
-  else if ( binAscii == T_F_M_BINARY )
-    vrpn_write_characters(serial_fd, (unsigned char *) T_F_C_BINARY, 
-    	    	    	    	       strlen(T_F_C_BINARY));
-  
-  else
-    {
-    fprintf(stderr, 
-	    "%s@%d:  bogus bin/ascii mode (%d) to bin_ascii\n", 
-	    __FILE__, __LINE__, binAscii);
-    
-    return(T_ERROR);
-    }
-
-return(T_OK);
-
-}	/* t_f_bin_ascii */
-
-
-void vrpn_Tracker_Fastrak::ms_sleep(int ms) {
-  struct timeval timeout;
-  timeout.tv_usec = ms*1000; // 1 ms = 1000 us;
-  timeout.tv_sec =0;
-  select(0, NULL, NULL, NULL, &timeout);
-  
-}
-
-/*****************************************************************************
- *
-   t_f_cont_mode - set Fastrak into continuous mode
- 
-    input:
-    	- pointer to current tracker table entry
-    
-    output:
-    	- fastrak is put into continuous mode
-
- *
- *****************************************************************************/
-
-void vrpn_Tracker_Fastrak::cont_mode()
-{
-
-
-  /* clear any leftover data	*/
-  my_flush();
-
-  /* set Fastrak to continous mode    */
-  vrpn_write_characters(serial_fd, (unsigned char *) T_F_C_CONTINUOUS, 
-    	    	    	    	   strlen(T_F_C_CONTINUOUS));
-  ms_sleep(50);
-
-}	/* cont_mode */
-
-
-
-
-
-/*****************************************************************************
- *
-   t_f_valid_report - tells whether the byte pointed to in the given buffer
-    	    	    	is the beginning of a valid record for the given
-			unit
- 
-    input:
-	- pointer to beginning of buffer to check
-	- index into buffer where data record starts
-	- length of buffer
-	
-	- the index into trackerPtr->unitsOn for the unit that this
-		should be the report for.  Ie., check for the station
-		corresponding to trackerPtr->unitsOn[unitIndex].
-
-		For example, if we're checking for the first unit
-		(unitIndex == 0) on when stations 2 and 7 are enabled,
-		unitsOn[0] = 1 and unitsOn[1] = 6 (since unit numbers
-		start from 0 and stations start from 1).
-
-
-    output:
-    	- returns T_TRUE if record is valid, T_FALSE otherwise
-    
-    overview:
-
-    	- check and see if the first three bytes are in the following format:
-    	    '01 ', or more generally, xyz, where x = 0, y = station number, and
-    	    z = ascii space char
-	- Actually, we are now allowing lines of the form xyz, where z =
-	    either the space character or the letters A-F, which indicate
-	    scaled readings or out-of-range but are otherwise more of a pain
-	    to notice than they are to ignore.
- 
-    	- once in a blue moon, the 0 byte will be the last in the buffer,
-	    and we won't know which station's record we're looking at,
-	    since that is normally the following byte.  in this case,
-	    we look at the previous station's number.
- 
- *
- *****************************************************************************/
-
-int vrpn_Tracker_Fastrak::valid_report()
-{
-
-    static char	    correctStatusBytes[] = T_F_STATUS_BYTES;    
-
-    /* is first byte an ascii 0?	*/
-    if ( buffer[0] != correctStatusBytes[0] )
-      return (T_FALSE);
-
-    /*   see if the station number byte is past the end of this buffer   */
-    if (buffer[1] < '1' || buffer[1] >'4' )
-      return(T_FALSE);
-    if (!(buffer[2] == correctStatusBytes[2] || isalpha(buffer[2]))) 
-	// should be a space or D-F;
-      return(T_FALSE);
-    return T_TRUE;
-
-}	/* t_f_valid_report */
-
-
-
-/*****************************************************************************
- *
-   checkSubType - check third status byte for anything fishy
- 
-    input:
-    	- tracker pointer
-	- buffer of raw data
-	- index into buffer
-	- length of buffer
-    
-    output:
-    	- true if sub-type byte is ok, false otherwise
-    
-    notes:
-    	- the UNC fastrak occasionally outputs built-in test (BIT) information
-	    in the third status byte.  normally, this byte is just a space
-	    character;  if BIT information is output, then this char may be
-	    a-z or A-Z.  we have seen D-F, which is apparently caused by
-	    the sensor being too close to the source.  this routine just
-	    checks to make sure that if the character isn't a space that
-	    it is at least an ascii character.  a more exhaustive test may
-	    have to be done if this generous test causes problems in 
-	    parsing records.
- *
- *****************************************************************************/
-
-int vrpn_Tracker_Fastrak::checkSubType(int bufIndex, int bufferLength)
-{
-    static char	    correctStatusBytes[] = T_F_STATUS_BYTES;    
-    int	    	    index;
-
-    /* get the index to the status subtype byte */
-    if ( bufIndex+2 < bufferLength )
-      index = bufIndex + 2;
-    else
-      index = bufIndex+2 - reportLength;
-
-    /* try checking for space char	*/
-    if ( (buffer[index] == correctStatusBytes[2]) || isalpha(buffer[index]) )
-      /* normal case  */
-      return(T_TRUE);
-    else 
-      return(T_FALSE);
-
-}	/* checkSubType */
-
-
-/*****************************************************************************
- *
-   xyz_quat_interpret - interpret report from the tracker and put into
-	the VRPN standard report format.  This includes changing the
-	inches to meters and converting the order of the quaternion
-	elements.
- *
- *****************************************************************************/
-
-const	int	STATUS_LENGTH = 3;	// Length of the status report, in bytes
-
-int vrpn_Tracker_Fastrak::xyz_quat_interpret(void)
-{
-	int	i;
-	float	dataList[50];	// Float list filled in from raw data
-	float	*dataPtr;	// Goes through converted float list
-	int	numDataItems = (reportLength-STATUS_LENGTH) / sizeof(float);
-
-	// Find out which sensor the report is from by looking in status
-	// The number is stored as an ASCII character, with 1 being the first
-	// VRPN uses an integer with 0 being the first.
-	sensor = buffer[1] - '0' - 1;
-
-	// Skip the header and copy the floats from the raw buffer into the
-	// data array, switching endian-ness if needed.
-	T_F_REVERSE_BYTES( (unsigned char *)dataList, buffer+STATUS_LENGTH,
-		sizeof(float), numDataItems);
-
-	// Point dataPtr at the head of the list, pass through and retrieve
-	// the position and orientation
-	dataPtr = dataList;
-
-	// Read the position and convert from inches to meters.
-	for (i = 0; i < 3; i++) {
-		pos[i] = *dataPtr++;
-		pos[i] *= 0.0254;
-	}
-
-	// Q_W is first in the list, but last in the quat array
-	quat[Q_W] = *dataPtr++;
-	for (i = 0; i < 3; i++) {
-		quat[i] = *dataPtr++;
-	}
-
-	return 0;
-}
-
-/*****************************************************************************
- *
-   printBuffer - prints a buffer in hex.  debug routine, should be removed
-    in the long run.
- *
- *****************************************************************************/
-
-void vrpn_Tracker_Fastrak::printBuffer()
-{
-    int	    i;
-
-    fprintf(stderr, "Buffer (%d bytes):", reportLength);
-
-    for ( i = 0; i < totalReportLength; i++ )
-      {
-	if ( i % 15 == 0 )
-	  fprintf(stderr, "\n");
-    
-	fprintf(stderr, "%3x", (unsigned) buffer[i]);
-    }
-
-    fprintf(stderr, "\n");
-
-}	/* printBuffer */
-
-
-
-
-void vrpn_Tracker_Fastrak::printChar(char *buf, int size) {
-  int	    i;
-
-  fprintf(stderr, "Buffer (%d bytes):", size);
-  
-  for ( i = 0; i < size; i++ )
-    {
-      if ( i % 15 == 0 )
-	fprintf(stderr, "\n");
-      
-      fprintf(stderr, "[%c]", buf[i]);
-    }
-
-  fprintf(stderr, "\n");
-}
-
-/*****************************************************************************
- *
-   t_f_replace_station_char - replace the char for which station in cmd string
- 
-    input:
-	- trackerPtr
-    	- command string
-	- unit number
-	- index into string
-    
-    output:
-    	- string has correct station number
-    
- *
- *****************************************************************************/
-
-void vrpn_Tracker_Fastrak::replace_station_char(char* cmdString, 
-					       int unitNum, int index)
-
-{
-
-  cmdString[index] = '0'+ (unitNum + 1);
-
-}	/* t_f_replace_station_char */
-
-/*****************************************************************************
- *
-   t_f_enable - turn on a specified station/unit of the fastrak;  
-    	updates the list and count of open units,  as well as adjusting
-	the totalReportLength field for the tracker.
-   
-    input:
-    	- pointer to current tracker table entry
-	- which unit to enable
-    
-    output:
-    	- station is turned on in fastrak
-	- the tracker table variables totalReportLength, unitsOn, 
-	    and numUnits are updated accordingly
-   
-    notes:
-       
-    	if the number of units == 0, then this is the first call to enable
-   a unit. t_f_init() can't turn off station 1 (unit 0), so it's on, even 
-   though nothing has been explicitly turned on.  if whichUnit != 0
-   and numUnits == 0, then we have to turn on that unit,
-   then turn off station 1.  (if whichUnit == 1, we'll see that it's already
-   turned on and do the right thing.)
-   
- *
- *****************************************************************************/
-
-
-int vrpn_Tracker_Fastrak::enable(int whichUnit)
-{
-    int	    killStationOne = T_FALSE;
-
-    
-    /* at startup, there is at least one unit on, which the Fastrak refuses to
-     *  turn off.  set a flag if it's startup time so that we'll know to turn
-     *  off the 1st station later if necessary.  this flag is necessary because
-     *  t_add_unit() updates trackerPtr->numUnits.
-     */
-    if ( (numUnits == 0) && (whichUnit != 0) )
-      killStationOne = T_TRUE;
-
-    fprintf(stderr, "enable \t%s:%d\n", __FILE__, __LINE__);
-    /* turn this station on  and set its hemisphere to the default	*/
-    if ( set_unit(whichUnit, T_F_ON) == T_ERROR )
-      return(T_ERROR);
-
-    /* set hemisphere to be the normal +X	*/
-    set_hemisphere(whichUnit, Q_X, 1);
-    
-
-    /* update the list of units that are active */
-    numUnits++;
-    stationArray[whichUnit]= T_F_ON;
-
-    /* update the totalReportLength to reflect this unit's status	*/
-    totalReportLength += reportLength;
-
-      /* now that the requested station is on, we can turn off station 1 if it
-       *  wasn't really supposed to be on.  this is only true right at startup.
-       */
-      if ( killStationOne )
-	{
-	  /* at this point, the Fastrak has station 1 on by default, so
-	   *  make the tracker table reflect this;  then turn it off w/ 
-	   * t_f_disable().  We can't do this before this point because
-	   * the Fastrak won't allow you to turn off all of the stations.
-	   * t_f_disable() will update the tracker table appropriately.
-	   */
-
-	  /* update the list of units that are active */
-	  numUnits++; totalReportLength += reportLength;
-
-	  if (disable(0) == T_ERROR )
-	    return(T_ERROR);
-	}
-    fprintf(stderr,"enable \t%s@%d\n", __FILE__, __LINE__);
-    set_data_format(whichUnit);
-    fprintf(stderr,"enable \t%s@%d\n", __FILE__, __LINE__);
-    return(T_OK);
-
-}	/* t_f_enable */
-
-/*****************************************************************************
- *
-   t_f_disable -  turn off a specified station/unit of the fastrak;  
-    	updates the list and count of open units,  as well as adjusting
-	the totalReportLength field for the tracker.
-   
-    input:
-    	- pointer to current tracker table entry
-	- which unit to disable
-    
-    output:
-    	- station is turned off in fastrak unless it's the last station, 
-	    which can't be turned off
-	- the tracker table variables totalReportLength, unitsOn, 
-	    and numUnits are updated accordingly
-   
- *
- *****************************************************************************/
-
-int vrpn_Tracker_Fastrak::disable(int whichUnit)
-{
-
-  /* turn this station off if it's not the last one; in which case we can't  */
-  if (numUnits > 1 )
-    if ( set_unit(whichUnit, T_F_OFF) == T_ERROR )
-	return(T_ERROR);
-
-  /* update the list of units that should be active, even if we didn't 
-   *   actually turn off that last unit
-   */
-  stationArray[whichUnit] = T_F_OFF;
-
-  /* update the totalReportLength to reflect this unit's status	*/
-  totalReportLength -= reportLength;
-
-  return(T_OK);
-
-}	/* t_f_disable */
-
-
-/*****************************************************************************
- *
-   t_f_set_data_format - set data format for unit in fastrak to quaternions
- 
-    input:
-    	- pointer to current tracker table entry
-	- unit number
-    
-    output:
-    	- fastrak is set to report T_F_C_XYZ_QUAT regardless of the value
-	    of the tracker's dataFormat (conversion to the correct type
-	    will be done later by read routine)
-    
-    notes:
-    	- this should only be called by the enable routine
- *
- *****************************************************************************/
-
-int vrpn_Tracker_Fastrak::set_data_format(int unitNum)
-{
-
-    int	    	numTries = 1;
-    char	formatString[64] = T_F_C_XYZ_QUAT;
-    strcpy(formatString, T_F_C_XYZ_QUAT);
-    
-
-
-    /* pause continuous mode if on	*/
-    if ( poll_mode() == T_ERROR )
-      return(T_ERROR);
-
-    /* create format string for this station; station number is 2nd char   */
-    replace_station_char(formatString, unitNum, 1);
-    fprintf(stderr,"set_data_format \t%s@%d\n", __FILE__, __LINE__);
-
-    do 
-      {
-
-	vrpn_write_characters(serial_fd, (unsigned char *) formatString, 
-    	    	    	    	    	    strlen(T_F_C_XYZ_QUAT));
-	ms_sleep(50);
-
-	numTries++;
-    }
-    while ((verify_output_list(unitNum) == T_ERROR) &&
-	(numTries <= 5) );
-
-    if ( numTries > 5 )
-    {
-    fprintf(stderr, "%s:%d:  could not initialize data format in Fastrak.\n",
-    	    __FILE__, __LINE__);
-    fprintf(stderr, "  Try cycling the power on Fastrak\n");
-    return(T_ERROR);
-    }
-
-    /* resume continuous mode if nec    */
-    if (mode == T_F_M_CONTINUOUS )
-      cont_mode();
-
-    return(T_OK);
-
-}	/* t_f_set_data_format */
-
-/*****************************************************************************
- *
-   t_f_set_hemisphere - sets the hemisphere for a given unit
-   
-    input:
-    	- pointer to current tracker table entry
-	- which unit to set the hemisphere for    
-    
-    output:
-    	- station's hemisphere is set in fastrak 
-
- *
- *****************************************************************************/
-
-void vrpn_Tracker_Fastrak::set_hemisphere(int whichUnit, int axis, 
-					  int sign)
-{
-    int	    	    i;
-    static char     hemisphereString[100];
-    
-    /* these should be treated as read-only */
-    static int	    XYZaxes[3][3] = { {1, 0, 0}, {0, 1, 0}, {0, 0, 1} };
-    int	    	    hemiAxis[3];
-
-
-    /* select which axis via the axis arg, then multiply each element by sign   */
-    for ( i = 0; i < 3; i++ )
-    hemiAxis[i] = XYZaxes[axis][i] * sign;
-
-
-    /* set hemisphere for enabled station; see fastrak.h for doc on format    */
-    sprintf(hemisphereString, T_F_C_SET_HEMISPHERE, 
-    	    	   whichUnit+1, hemiAxis[Q_X], hemiAxis[Q_Y], hemiAxis[Q_Z]);
-
-    vrpn_write_characters(serial_fd, (unsigned char *) hemisphereString, 
-    	    	    	    	    	    	strlen(hemisphereString));
-    ms_sleep(50);
-
-}	/* t_f_set_hemisphere */
-
-/*****************************************************************************
- *
-   t_f_verify_output_list - verifies that output is set to x,y,z and 
-    	    	    	    quaternions
- 
-    input:
-    	- pointer to current tracker table entry
-    
-    output:
-    	- T_TRUE if output is set to x,y,z and quaternions
-	- T_FALSE otherwise
-    
-    notes:  this only verifies that the output list is set to the type
-    	    defined in fastrak.h as T_F_C_XYZ_QUAT;  to be general, 
-	    it should check accept a string as an input parameter 
-	    and parse the fastrak output and then compare them.
- *
- *****************************************************************************/
-
-int vrpn_Tracker_Fastrak::verify_output_list(int unitNum)
-{
-
-    char    	curOutputList[T_F_MAX_CMD_STRING_LENGTH];
-
-    
-    //fprintf(stderr,"verify_output_list %p, \t%s:%d\n",this, __FILE__,
-	//    __LINE__);
-
-    if ( get_output_list(unitNum, curOutputList) == T_ERROR )
-      return(T_ERROR);
-
-    /* note that the station number is not included in either of these strings,
-     *  so no need to do a replacement of the unit/station number
-     */
-
-    if ( strncmp(curOutputList, T_F_XYZ_QUAT_OUTPUT_LIST, 
-		 strlen(T_F_XYZ_QUAT_OUTPUT_LIST)) == 0)
-      {     
-	return(T_OK);}
-    else
-    {
-      fprintf(stderr, "verify list failed%p, \t%s:%d\n",this, __FILE__, __LINE__);
-      /* comparison failed:  see what we got  */
-      return(T_ERROR);
-    }
-
-}	/* t_f_verify_output_list */
-
-
-/*****************************************************************************
- *
-   t_f_get_output_list -  returns the fastrak's output list, minus status 
-    	    	    	    bytes (including station/unit number)
- 
-    input:
-    	- pointer to current tracker table entry
-    
-    output:
-    	- the fastrak's output list, minus status bytes;  eg., " 211"
-    
-    notes:
-    	- verifies that record read in is in fact an output list record
- *
- *****************************************************************************/
-
-int vrpn_Tracker_Fastrak::get_output_list(int unitNum, char * curOutputList)
-{
-    int	    	    bufLength;
-    char    	    this_buffer[T_MAX_READ_BUFFER_SIZE];
-    int	    	    numTries = 1;
-    int	    	    i;
-    char	    retrieveListCmd[64];
-    int byteread =0;
-
-    strcpy(retrieveListCmd, T_F_C_RETRIEVE_OUTPUT_LIST);
-    //fprintf(stderr,"get_output_list %p, \t%s@%d\n", this, __FILE__, __LINE__);
-    bufLength = strlen(T_F_XYZ_QUAT_OUTPUT_LIST) + T_F_STATUS_LENGTH;
-
-/* 
- * loop until success or 5 failures-  send request for output list, verify
- *  number of bytes returned and record type.
- */
-
-    /* get output list:  station number index == 1	*/
-    //replace_station_char(retrieveListCmd, unitNum, 1);
-    sprintf(retrieveListCmd,"O%d\r", unitNum+1);
-    //printf("cmd = [%s], len= %d\n", retrieveListCmd, strlen(retrieveListCmd));
-    byteread=0;
-    do
-    {
-      my_flush(); 
-      //vrpn_flushInputBuffer(serial_fd);
-      //fprintf(stderr, "get_output_list: %d \t%s:%d\n",
-	//    numTries, __FILE__, __LINE__);
-      if (vrpn_write_characters(serial_fd,  (unsigned char*)retrieveListCmd, 
-	  strlen(retrieveListCmd))!=3)
-	  printf("bad write\n");
-
-      //sleep(1);
-      ms_sleep(50);
-      byteread = vrpn_read_available_characters(serial_fd,
-	(unsigned char *)this_buffer, bufLength);
-      if ((byteread == bufLength) && 
-      	 (this_buffer[T_F_RECORD_SUBTYPE] == T_F_OUTPUT_LIST_SUBTYPE))
-	 break;
-      numTries++;	
-      printChar(this_buffer, byteread);
-    } while (numTries <= 5);
-    
-    if ( numTries > 5 )
-    {
-      fprintf(stderr, 
-	    " Fastrak is acting up-  could not get output list.\n");
-      fprintf(stderr, "  Try cycling the power and trying again.\n"); 
-      return(T_ERROR);
-    }
-
-    /* otherwise, all is well- copy output list to curOutputList, skipping
-     * status bytes (which include station/unit number)
-     */
-
-    for ( i = 0; i < bufLength-T_F_STATUS_LENGTH; i++ )
-      curOutputList[i] = this_buffer[T_F_STATUS_LENGTH+i];
-    curOutputList[i]=0;
-    return(T_OK);
-
-}	/* t_f_get_output_list */
-
-#endif  // defined(sgi) || defined(linux)
-#endif  // VRPN_CLIENT_ONLY
-

@@ -313,7 +313,7 @@ int vrpn_drain_output_buffer(int comm)
 // than the requested number may be returned.
 int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes)
 {
-#ifdef	_WIN32
+#if defined(_WIN32) && !defined(__CYGWIN__)
    BOOL fSuccess;
    DWORD numRead;
    COMSTAT cstat;

@@ -118,7 +118,7 @@ class vrpn_Analog_Server : public vrpn_Analog {
 //----------------------------------------------------------
 //************** Users deal with the following *************
 
-// User routine to handle a change in button state.  This is called when
+// User routine to handle a change in analog values.  This is called when
 // the analog callback is called (when a message from its counterpart
 // across the connetion arrives).
 
@@ -132,13 +132,13 @@ typedef	struct {
 typedef void (*vrpn_ANALOGCHANGEHANDLER) (void * userdata,
 					  const vrpn_ANALOGCB info);
 
-// Open a analog device that is on the other end of a connection
+// Open an analog device that is on the other end of a connection
 // and handle updates from it.  This is the type of analog device
 // that user code will deal with.
 
 class vrpn_Analog_Remote: public vrpn_Analog {
   public:
-	// The name of the button device to connect to
+	// The name of the analog device to connect to
         // Optional argument to be used when the Remote MUST listen on
         // a connection that is already open.
 	vrpn_Analog_Remote (const char * name, vrpn_Connection * c = NULL);
@@ -146,7 +146,7 @@ class vrpn_Analog_Remote: public vrpn_Analog {
 	// This routine calls the mainloop of the connection it's on
 	virtual void mainloop(const struct timeval * timeout = NULL);
 
-	// (un)Register a callback handler to handle a button state change
+	// (un)Register a callback handler to handle analog value change
 	virtual int register_change_handler(void *userdata,
 		vrpn_ANALOGCHANGEHANDLER handler);
 	virtual int unregister_change_handler(void *userdata,
