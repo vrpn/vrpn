@@ -6,7 +6,7 @@
 // error message.  
 //------------------------------------------------------------------
 #ifndef __cplusplus
-XXX     Need to compile with a C++ compiler, not a C compiler
+// XXX     Need to compile with a C++ compiler, not a C compiler
 #endif
 
 //------------------------------------------------------------------
