@@ -250,7 +250,9 @@ $(OBJ_DIR)/testSharedObject:	$(OBJ_DIR)/testSharedObject.o \
 clean:
 	rm -f $(OBJ_DIR)/*.o $(OBJ_DIR)/vrpn_server $(OBJ_DIR)/forward \
 	$(OBJ_DIR)/text $(OBJ_DIR)/sample_server $(OBJ_DIR)/test_mutex \
-	$(OBJ_DIR)/test_peerMutex
+	$(OBJ_DIR)/test_peerMutex $(OBJ_DIR)/client_and_server \
+	$(OBJ_DIR)/test_analogfly $(OBJ_DIR)/test_radamec_spi \
+	$(OBJ_DIR)/test_vrpn
 
 $(OBJ_DIR)/vrpn.o:	vrpn.C
 $(OBJ_DIR)/forward.o:	forward.C
