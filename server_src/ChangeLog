@@ -1,3 +1,9 @@
+2003-09-16  Blair MacIntyre     <blair@cc.gatech.edu>
+
+	* vrpn.C : Added handlers for wands and other things attached
+		to the native isense tracker driver to match the ones
+		that could be connected to the Fastrak version.
+
 2003-08-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.C : Added changes by Sebastien Maraux to include

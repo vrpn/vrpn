@@ -1653,11 +1653,25 @@ int setup_Tng3 (char * & pch, char * line, FILE * config_file) {
 
 //================================
 int setup_Tracker_InterSense(char * &pch, char *line, FILE * config_file) {
-  char trackerName[64];
-  char commStr[10];
+  char trackerName[LINESIZE];
+  char commStr[100];
   int commPort;
 
+  char s4 [LINESIZE];
+  int numparms;
+  vrpn_Tracker_InterSense	*mytracker;
+  int do_is900_timing = 0;
+  char    rcmd[5000];     // Reset command to send to Intersense
+		
+  next();
+
+  // Get the arguments (class, tracker_name, port, [optional IS900time])
   sscanf(line,"vrpn_Tracker_InterSense %s %s",trackerName,commStr);
+  if ( (numparms = sscanf(pch,"%511s%511s%511s",trackerName,commStr,s4)) < 2) {
+	fprintf(stderr,"Bad vrpn_Tracker_InterSense line: %s\n%s %s\n",
+            line, pch, trackerName);
+    return -1;
+  }
 
   if(!strcmp(commStr,"COM1")) {
     commPort = 1;
@@ -1671,11 +1685,155 @@ int setup_Tracker_InterSense(char * &pch, char *line, FILE * config_file) {
     commPort = 0; //the intersense SDK will find the tracker on any COM or USB port.
   } else {
     fprintf(stderr,"Error determining COM port: %s not should be either COM1, COM2, COM3, or COM4",commStr);
-    return 0;
+    return -1;
   }
 
-  trackers[num_trackers] = new vrpn_Tracker_InterSense(trackerName,connection,commPort);
-  num_trackers++;
+  // See if we got the optional parameter to enable IS900 timings
+  if (numparms == 3) {
+	    if (strncmp(s4, "IS900time", strlen("IS900time")) == 0) {
+  			do_is900_timing = 1;
+			printf(" ...using IS900 timing information\n");
+	    } else if (strcmp(s4, "/") == 0) {
+			// Nothing to do
+	    } else if (strcmp(s4, "\\") == 0) {
+			// Nothing to do
+	    } else {
+			fprintf(stderr,"InterSense: Bad timing optional param (expected 'IS900time', got '%s')\n",s4);
+			return -1;
+	    }
+	}
+
+    // Make sure there's room for a new tracker
+    if (num_trackers >= MAX_TRACKERS) {
+	    fprintf(stderr,"Too many trackers in config file");
+            return -1;
+    }
+
+    // If the last character in the line is a backslash, '\', then
+    // the following line is an additional command to send to the
+    // Fastrak at reset time. So long as we find lines with slashes
+    // at the ends, we add them to the command string to send. Note
+    // that there is a newline at the end of the line, following the
+    // backslash.
+    sprintf(rcmd, "");
+    while (line[strlen(line)-2] == '\\') {
+          // Read the next line
+          if (fgets(line, LINESIZE, config_file) == NULL) {
+              fprintf(stderr,"Ran past end of config file in Fastrak/Isense description\n");
+                  return -1;
+          }
+
+          // Copy the line into the remote command,
+          // then replace \ with \015 if present
+          // In any case, make sure we terminate with \015.
+          strncat(rcmd, line, LINESIZE);
+          if (rcmd[strlen(rcmd)-2] == '\\') {
+                  rcmd[strlen(rcmd)-2] = '\015';
+                  rcmd[strlen(rcmd)-1] = '\0';
+          } else if (rcmd[strlen(rcmd)-2] == '/') {
+                  rcmd[strlen(rcmd)-2] = '\015';
+                  rcmd[strlen(rcmd)-1] = '\0';
+          } else if (rcmd[strlen(rcmd)-1] == '\n') {
+                  rcmd[strlen(rcmd)-1] = '\015';
+          } else {        // Add one, we reached the EOF before CR
+                  rcmd[strlen(rcmd)+1] = '\0';
+                  rcmd[strlen(rcmd)] = '\015';
+          }
+    }
+
+    if (strlen(rcmd) > 0) {
+                printf("... additional reset commands follow:\n");
+                printf("%s\n",rcmd);
+    }
+
+
+    // Open the tracker
+    if (verbose) 
+		printf("Opening vrpn_Tracker_InterSense: %s on port %s\n",
+               trackerName, commStr);
+
+#if defined(sgi) || defined(linux) || defined(WIN32) || defined(MACOSX)
+
+     if ( (trackers[num_trackers] = mytracker =
+             new vrpn_Tracker_InterSense(trackerName, connection, commPort, rcmd, do_is900_timing))
+                            == NULL){
+#endif
+
+          fprintf(stderr,"Can't create new vrpn_Tracker_InterSense\n");
+          return -1;
+
+#if defined(sgi) || defined(linux) || defined(WIN32) || defined(MACOSX)
+
+     } else {
+		// If the last character in the line is a front slash, '/', then
+		// the following line is a command to add a Wand or Stylus to one
+		// of the sensors on the tracker.  Read and parse the line after,
+		// then add the devices needed to support.  Each line has two
+		// arguments, the string name of the devices and the integer
+		// sensor number (starting with 0) to attach the device to.
+        while (line[strlen(line)-2] == '/') {
+			char lineCommand[LINESIZE];
+			char lineName[LINESIZE];
+			int	 lineSensor;
+
+            // Read the next line
+            if (fgets(line, LINESIZE, config_file) == NULL) {
+              fprintf(stderr,"Ran past end of config file in InterSense description\n");
+                  return -1;
+		    }
+
+			// Parse the line.  Both "Wand" and "Stylus" lines start with the name and sensor #
+			if (sscanf(line, "%511s%511s%d", lineCommand, lineName, &lineSensor) != 3) {
+				fprintf(stderr,"Bad line in Wand/Stylus description for InterSense (%s)\n",line);
+				delete trackers[num_trackers];
+				return -1;
+			}
+
+			// See which command it is and act accordingly
+			if (strcmp(lineCommand, "Wand") == 0) {
+				double c0min, c0lo0, c0hi0, c0max;
+				double c1min, c1lo0, c1hi0, c1max;
+
+				// Wand line has additional scale/clip information; read it in
+				if (sscanf(line, "%511s%511s%d%lf%lf%lf%lf%lf%lf%lf%lf", lineCommand, lineName, &lineSensor,
+							&c0min, &c0lo0, &c0hi0, &c0max,
+							&c1min, &c1lo0, &c1hi0, &c1max) != 11) {
+					fprintf(stderr,"Bad line in Wand description for InterSense (%s)\n",line);
+					delete trackers[num_trackers];
+					return -1;
+				}
+
+				if (mytracker->add_is900_analog(lineName, lineSensor, c0min, c0lo0, c0hi0, c0max,
+												c1min, c1lo0, c1hi0, c1max)) {
+					fprintf(stderr,"Cannot set Wand analog for InterSense (%s)\n",line);
+					delete trackers[num_trackers];
+					return -1;
+				}
+				if (mytracker->add_is900_button(lineName, lineSensor, 5)) {
+					fprintf(stderr,"Cannot set Wand buttons for InterSense (%s)\n",line);
+					delete trackers[num_trackers];
+					return -1;
+				}
+				printf(" ...added Wand (%s) to sensor %d\n", lineName, lineSensor);
+
+			} else if (strcmp(lineCommand, "Stylus") == 0) {
+				if (mytracker->add_is900_button(lineName, lineSensor, 2)) {
+					fprintf(stderr,"Cannot set Stylus buttons for InterSense (%s)\n",line);
+					delete trackers[num_trackers];
+					return -1;
+				}
+				printf(" ...added Stylus (%s) to sensor %d\n", lineName, lineSensor);
+			} else {
+				fprintf(stderr,"Unknown command in Wand/Stylus description for InterSense (%s)\n",lineCommand);
+				delete trackers[num_trackers];
+				return -1;
+			}
+	  }
+
+      num_trackers++;
+  }
+
+#endif
 
   return 0;
 }
