@@ -218,6 +218,34 @@ main (int argc, char *argv[])
 	      } else {
 		num_trackers++;
 	      }
+	  }else if (isit("vrpn_Tracker_Fastrak")) {
+	    next();
+	    // Get the arguments (class, tracker_name, port, baud)
+		if (sscanf(pch,"%511s%511s%d",s2,s3,&i1) != 3) {
+		  fprintf(stderr,"Bad vrpn_Tracker_Fastrak line: %s\n%s %s\n",line, pch, s3);
+		  if (bail_on_error) { return -1; }
+		  else { continue; }	// Skip this line
+		}
+
+		// Make sure there's room for a new tracker
+		if (num_trackers >= MAX_TRACKERS) {
+		  fprintf(stderr,"Too many trackers in config file");
+		  if (bail_on_error) { return -1; }
+		  else { continue; }	// Skip this line
+		}
+
+		// Open the tracker
+		if (verbose) printf(
+		    "Opening vrpn_Tracker_Fastrak: %s on port %s, baud %d\n",
+		    s2,s3,i1);
+		if ( (trackers[num_trackers] =
+		     new vrpn_Tracker_Fastrak(s2, &connection, s3, i1)) == NULL){
+		  fprintf(stderr,"Can't create new vrpn_Tracker_Fastrak\n");
+		  if (bail_on_error) { return -1; }
+		  else { continue; }	// Skip this line
+		} else {
+		  num_trackers++;
+		}
 	  }
 	  else if (isit("vrpn_Tracker_3Space")) {
 	    next();
