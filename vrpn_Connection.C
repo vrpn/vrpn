@@ -329,38 +329,29 @@ vrpn_int32 vrpn_TranslationTable::mapToLocalID (vrpn_int32 remote_id) const {
 
   return d_entry[remote_id].local_id;
 
-#else
-
-  for (i = 0; i < d_numEntries; i++) {
-    if (d_entry[i].remote_id == remote_id) {
-
-#ifdef VERBOSE
-  fprintf(stderr, "Remote ID %d maps to local ID %d (%s).\n", remote_id,
-  d_entry[i].local_id, d_entry[i].name);
-#endif
-
-      return d_entry[i].local_id;
-    }
-  }
-
-  fprintf(stderr, "Couldn't find mapping for remote ID %d.\n", remote_id);
-  return -1;
-
 #endif
 }
 
 vrpn_int32 vrpn_TranslationTable::addRemoteEntry (cName name,
                                                   vrpn_int32 remote_id,
                                                   vrpn_int32 local_id) {
-  if (d_numEntries >= vrpn_CONNECTION_MAX_XLATION_TABLE_SIZE) {
+  vrpn_int32 useEntry;
+
+#if 0
+  useEntry = d_numEntries;
+#else
+  useEntry = remote_id;
+#endif
+
+  if (useEntry >= vrpn_CONNECTION_MAX_XLATION_TABLE_SIZE) {
     fprintf(stderr, "vrpn_TranslationTable::addRemoteEntry:  " 
                     "Too many entries in table (%d).\n", d_numEntries);
     return -1;
   }
 
-  if (!d_entry[d_numEntries].name) {
-    d_entry[d_numEntries].name = new cName;
-    if (!d_entry[d_numEntries].name) {
+  if (!d_entry[useEntry].name) {
+    d_entry[useEntry].name = new cName;
+    if (!d_entry[useEntry].name) {
       fprintf(stderr, "vrpn_TranslationTable::addRemoteEntry:  "
                       "Out of memory.\n");
       return -1;
@@ -376,17 +367,24 @@ vrpn_int32 vrpn_TranslationTable::addRemoteEntry (cName name,
   }
 #endif
 
-  memcpy(d_entry[d_numEntries].name, name, sizeof(cName));
-  d_entry[d_numEntries].remote_id = remote_id;
-  d_entry[d_numEntries].local_id = local_id;
+  memcpy(d_entry[useEntry].name, name, sizeof(cName));
+  d_entry[useEntry].remote_id = remote_id;
+  d_entry[useEntry].local_id = local_id;
 
 #ifdef VERBOSE
   fprintf(stderr, "Set up remote ID %d named %s with local equivalent %d.\n",
   remote_id, name, local_id);
 #endif
 
+#if 0
   d_numEntries++;
-  return d_numEntries - 1;
+#else
+  if (d_numEntries <= useEntry) {
+    d_numEntries = useEntry + 1;
+  }
+#endif
+
+  return useEntry;
 }
 
 
@@ -2856,57 +2854,60 @@ int vrpn_Endpoint::mainloop (timeval * timeout,
 
         break;
 
-      case TRYING_TO_CONNECT:
-	{	struct timeval	now;
-		int ret;
+    case TRYING_TO_CONNECT:
+      struct timeval	now;
+      	int ret;
 
 #ifdef	VERBOSE
-		printf("TRYING_TO_CONNECT\n");
+      	printf("TRYING_TO_CONNECT\n");
 #endif
-		// See if we have a connection yet (nonblocking select).
-		ret = vrpn_poll_for_accept(d_tcpListenSocket,
+      	// See if we have a connection yet (nonblocking select).
+      	ret = vrpn_poll_for_accept(d_tcpListenSocket,
 					 &d_tcpSocket);
-		if (ret  == -1) {
-			fprintf(stderr,
-			  "vrpn_Endpoint: mainloop: Can't poll for accept\n");
-			status = BROKEN;
+      	if (ret  == -1) {
+      		fprintf(stderr,
+      		  "vrpn_Endpoint: mainloop: Can't poll for accept\n");
+      		status = BROKEN;
 //fprintf(stderr, "BROKEN - vrpn_Endpoint::mainloop.\n");
-			break;
-		}
-		if (ret == 1) {	// Got one!
-		  status = COOKIE_PENDING;
+      		break;
+      	}
+      	if (ret == 1) {	// Got one!
+      	  status = COOKIE_PENDING;
 //fprintf(stderr, "COOKIE_PENDING - vrpn_Endpoint::mainloop.\n");
-		  printf("vrpn: Connection established\n");
+      	  printf("vrpn: Connection established\n");
 
-		  // Set up the things that need to happen when a new connection
-		  // is established.
-		  if (setup_new_connection()) {
-		      fprintf(stderr, "vrpn_Endpoint: mainloop: "
-				      "Can't set up new connection!\n");
-		      status = BROKEN;
+      	  // Set up the things that need to happen when a new connection
+      	  // is established.
+      	  if (setup_new_connection()) {
+      	      fprintf(stderr, "vrpn_Endpoint: mainloop: "
+      			      "Can't set up new connection!\n");
+      	      status = BROKEN;
 //fprintf(stderr, "BROKEN - vrpn_Endpoint::mainloop.\n");
-		      break;
-		  }
-		  break;
-		}
+      	      break;
+      	  }
+      	  break;
+      	}
 
-		// Lob a request-to-connect packet every couple of seconds
-		gettimeofday(&now, NULL);
-		if (now.tv_sec - last_UDP_lob.tv_sec >= 2) {
+      	// Lob a request-to-connect packet every couple of seconds
+        // If we don't wait a while between these we flood buffers and
+        // do BAD THINGS (TM).
 
-		  if (vrpn_udp_request_lob_packet(remote_machine_name,
-					remote_UDP_port,
-					d_tcpListenPort,
-                                        NICaddress) == -1){
-			fprintf(stderr,
-			  "vrpn_Endpoint: mainloop: Can't lob UDP request\n");
-			status = BROKEN;
+      	gettimeofday(&now, NULL);
+      	if (now.tv_sec - last_UDP_lob.tv_sec >= 2) {
+          last_UDP_lob.tv_sec = now.tv_sec;
+
+          if (vrpn_udp_request_lob_packet(remote_machine_name,
+					  remote_UDP_port,
+					  d_tcpListenPort,
+                                          NICaddress) == -1) {
+            fprintf(stderr,
+            "vrpn_Endpoint: mainloop: Can't lob UDP request\n");
+            status = BROKEN;
 //fprintf(stderr, "BROKEN - vrpn_Endpoint::mainloop.\n");
-			break;
-		  }
-		}
-	}
-	break;
+	            break;
+          }
+        }
+      break;
 
     case BROKEN:
       //fprintf(stderr, "vrpn: Fatal connection failure.  Giving up!\n");
@@ -4701,8 +4702,8 @@ void vrpn_Connection::init (void) {
 
   d_dispatcher = new vrpn_TypeDispatcher;
 
-  // HACK:  to avoid having to send these over the wire, we just
-  // register them in the same order on every type dispatcher.
+  // These should be among the first senders & types sent over the wire
+
   d_dispatcher->registerSender(vrpn_CONTROL);
   d_dispatcher->registerType(vrpn_got_first_connection);
   d_dispatcher->registerType(vrpn_got_connection);

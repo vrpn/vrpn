@@ -251,6 +251,11 @@ void vrpn_Mutex::request (void) {
   // this looks like a silent failure.
   if (!isAvailable()) {
     triggerDenyCallbacks();
+
+#ifdef VERBOSE
+  fprintf(stderr, "vrpn_Mutex::request:  the mutex isn't available.\n");
+#endif
+
     return;
   }
 
@@ -274,6 +279,11 @@ void vrpn_Mutex::request (void) {
   // that we have the mutex.
 
   checkGrantMutex();
+
+#ifdef VERBOSE
+  fprintf(stderr, "vrpn_Mutex::request:  requested the mutex "
+                  "(from %d peers).\n", d_numPeers);
+#endif
 }
 
 void vrpn_Mutex::release (void) {
@@ -282,6 +292,11 @@ void vrpn_Mutex::release (void) {
   // Can't release it if we don't already have it.
   // There aren't any appropriate callbacks to trigger here.  :)
   if (!isHeldLocally()) {
+
+#ifdef VERBOSE
+  fprintf(stderr, "vrpn_Mutex::release:  we don't hold the mutex.\n");
+#endif
+
     return;
   }
 
@@ -293,6 +308,10 @@ void vrpn_Mutex::release (void) {
   }
 
   triggerReleaseCallbacks();
+
+#ifdef VERBOSE
+  fprintf(stderr, "vrpn_Mutex::release:  released the mutex.\n");
+#endif
 }
 
 void vrpn_Mutex::addPeer (const char * stationName) {
@@ -339,6 +358,10 @@ void vrpn_Mutex::addPeer (const char * stationName) {
   control = d_peer[d_numPeers]->register_sender(vrpn_CONTROL);
   drop = d_peer[d_numPeers]->register_message_type(vrpn_dropped_connection);
   d_peer[d_numPeers]->register_handler(drop, handle_losePeer, d, control);
+
+#ifdef VERBOSE
+  fprintf(stderr, "vrpn_Mutex::addPeer:  added peer named %s.\n", stationName);
+#endif
 
   d_numPeers++;
 }
