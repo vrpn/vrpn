@@ -20,7 +20,7 @@ void main (unsigned argc, char *argv[])
 	int	verbose = 0;
 	int	realparams = 0;
 	unsigned int	i;
-
+	
 	// Parse the command line
 	i = 1;
 	while (i < argc) {
@@ -101,7 +101,7 @@ void main (unsigned argc, char *argv[])
 		}
 		//open the phantom
 		if(verbose) printf(
-			"Opening vrpn_phantom: %s on port %d\n", s2,i1);
+			"Opening vrpn_phantom: %s on port %d with update rate %f\n", s2,i1,f1);
 		if ( (phantoms[num_phantoms] =
 		     new vrpn_Phantom(s2, &connection, f1)) == NULL){
 		  fprintf(stderr,"Can't create new vrpn_phantom\n");
@@ -110,6 +110,7 @@ void main (unsigned argc, char *argv[])
 		} else {
 		  num_phantoms++;
 		}
+
 	  }
 	  else {	// Never heard of it
 		sscanf(line,"%511s",s1);	// Find out the class name
@@ -140,6 +141,7 @@ void main (unsigned argc, char *argv[])
 				phantoms[i]->reset();
 			}
 		}
+
 	}
 
 }

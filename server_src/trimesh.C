@@ -1,5 +1,30 @@
 #include "trimesh.h"
 
+//pre: NULL==gstMesh; && NULL==ghostPolyMesh
+void Trimesh::getGstMesh(){
+  if(GHOST==ourType){
+    ghostPolyMesh=new gstTriPolyMesh();
+    gstMesh=new gstTriPolyMeshHaptic(ghostPolyMesh);
+  }
+#ifdef USING_HCOLLIDE
+  else if(HCOLLIDE==ourType){
+    gstMesh=new gstHybridHashGridTriMesh(minX,minY,minZ,maxX,maxY,maxZ);      
+  }
+#endif
+  else {
+    fprintf(stderr,"ERROR: unreckognized type: %d\n",ourType);
+  }
+
+  if(NULL!=gstMesh){
+    // it appears that ghost prefers column major order
+    gstMesh->setTransformMatrix(
+				gstTransformMatrix(xFormMat[0],xFormMat[4],xFormMat[8],xFormMat[12],
+						   xFormMat[1],xFormMat[5],xFormMat[9],xFormMat[13],
+						   xFormMat[2],xFormMat[6],xFormMat[10],xFormMat[14],
+						   xFormMat[3],xFormMat[7],xFormMat[11],xFormMat[15])); 
+  }
+}
+
 Trimesh::Trimesh(TrimeshType oT){
   ourType=oT;
 
@@ -15,9 +40,18 @@ Trimesh::Trimesh(TrimeshType oT){
   maxX=500;
   maxY=500;
   maxZ=500;
+
+  for(int i=1;i<16;i++)
+    xFormMat[i]=0;
+  xFormMat[0]=xFormMat[5]=xFormMat[10]=xFormMat[15]=1;
+
+  scpWarn=normWarn=false;
 }
 
 void Trimesh::clear(){
+  for(int i=1;i<16;i++)
+    xFormMat[i]=0;
+  xFormMat[0]=xFormMat[5]=xFormMat[10]=xFormMat[15]=1;
 
   if(NULL!=ourNode && inNode){
     ourNode->removeChild(gstMesh);
@@ -30,6 +64,8 @@ void Trimesh::clear(){
   delete ghostPolyMesh;
   ghostPolyMesh=NULL;
 
+  // return ourType back to the default
+  setType(GHOST);
 }
 
 // true if there is a mesh being displayed
@@ -39,6 +75,33 @@ bool Trimesh::displayStatus(){
   }
   else 
     return false;
+}
+
+void Trimesh::startRecording(){
+  if(NULL==gstMesh)
+    return;
+#ifdef MONITOR_TRIMESH
+  else if(HCOLLIDE==ourType){
+    ((gstHybridHashGridTriMesh *)gstMesh)->startRecordSession();
+  }
+#endif
+  else 
+    fprintf(stderr,
+	    "trimesh force interaction recording is not supported in this compile of this server\n");
+}
+
+void Trimesh::stopRecording(){
+  if(NULL==gstMesh)
+    return;
+#ifdef MONITOR_TRIMESH
+  else if(HCOLLIDE==ourType){
+    ((gstHybridHashGridTriMesh *)gstMesh)->stopRecordSession();
+    return;
+  }
+#endif
+  else 
+    fprintf(stderr,
+	    "trimesh force interaction recording is not supported in this compile of this server\n");
 }
 
 // set the new bounding volume for this object, 
@@ -54,10 +117,9 @@ void Trimesh::setBoundingVolume(const float &nMinX,const float &nMinY,const floa
   maxX=nMaxX;
   maxY=nMaxY;
   maxZ=nMaxZ;
-
 }
 
-bool Trimesh::getVertex(int vertNum,double &x,double &y,double &z){
+bool Trimesh::getVertex(int vertNum,float &x,float &y,float &z){
   if(GHOST==ourType){
     gstVertex *curVert;
     if(NULL==ghostPolyMesh || NULL==(curVert=ghostPolyMesh->getVertex(vertNum)))
@@ -73,7 +135,7 @@ bool Trimesh::getVertex(int vertNum,double &x,double &y,double &z){
   else if(HCOLLIDE==ourType){
     if(NULL==gstMesh)
       return false;
-    else
+    else 
       return ((gstHybridHashGridTriMesh *)gstMesh)->getVertex(vertNum,x,y,z);
   }
 #endif
@@ -83,15 +145,35 @@ bool Trimesh::getVertex(int vertNum,double &x,double &y,double &z){
   }
 }
 
+// if HCOLLIDE = ourType, returns the id of the triangle the probe is contacting
+//    otherwise it returns -1
+int Trimesh::getScpTriId(){
+#ifdef USING_HCOLLIDE
+  if(HCOLLIDE==ourType){
+    if(NULL==gstMesh)
+      return -1;
+    else
+      return ((gstHybridHashGridTriMesh *)gstMesh)->getScpTriId();
+  } 
+#endif
+
+  // this is not really an error since scp triId is not necessary for haptic display
+  if(!scpWarn){
+    /* temp disaple:
+    fprintf(stderr,
+	    "Trimesh::WARNING: getScpId is not implemented for the current primitive type\n");
+	    */
+    scpWarn=true;
+  }
+  return true;
+
+}
 
 bool Trimesh::setVertex(int vertNum,double x,double y,double z){
+  if(NULL==gstMesh)
+    getGstMesh();
 
   if(GHOST==ourType){
-    if(NULL==gstMesh){
-      //gstMesh=new gstPolyMesh(numVerts,vert,numTris,tri);
-      ghostPolyMesh=new gstTriPolyMesh();
-      gstMesh=new gstTriPolyMeshHaptic(ghostPolyMesh);
-    }
     
     gstVertex *curVert=ghostPolyMesh->getVertex(vertNum);
     if(NULL==curVert){
@@ -120,17 +202,14 @@ bool Trimesh::setVertex(int vertNum,double x,double y,double z){
   }
 #ifdef USING_HCOLLIDE
   else if(HCOLLIDE==ourType){
-    if(NULL==gstMesh){
-      gstMesh=new gstHybridHashGridTriMesh(minX,minY,minZ,maxX,maxY,maxZ);      
-    }
-	bool retVal=true;
+    bool retVal=true;
     if(x<minX || x>maxX || y<minY || y>maxY || z<minZ || z>maxZ){
       fprintf(stderr,"ERROR: vertex: <%lf,%lf,%lf> is outside the bounding volume\n",x,y,z);
-	  retVal=false;
+      retVal=false;
     }
-
+    
     ((gstHybridHashGridTriMesh *)gstMesh)->setVertex(vertNum,x,y,z);
-	return retVal;
+    return retVal;
   }
 #endif
   else {
@@ -139,13 +218,26 @@ bool Trimesh::setVertex(int vertNum,double x,double y,double z){
   }
 }
 
-bool Trimesh::setNormal(int,double,double,double){
-  fprintf(stderr,"Trimesh::ERROR: norms no longer implemented\n");
-  return false;
+bool Trimesh::setNormal(int normNum,double x,double y,double z){
+  if(NULL==gstMesh)
+    getGstMesh();
+
+#ifdef USING_HCOLLIDE
+  if(HCOLLIDE==ourType){
+    ((gstHybridHashGridTriMesh *)gstMesh)->setNormal(normNum,x,y,z);
+    return true;
+  }
+#endif
+  // this is not really an error since norms are not necessary for haptic display
+  if(!normWarn){
+    fprintf(stderr,"Trimesh::WARNING: norms not implemented for the current primitive type\n");
+    normWarn=true;
+  }
+  return true;
 }
 
 bool Trimesh::setTriangle(int triNum,int vert0,int vert1,int vert2,
-			  int,int,int){
+			  int norm0,int norm1,int norm2){
   if(GHOST==ourType){
     if(NULL==ghostPolyMesh)
       return false;
@@ -161,7 +253,8 @@ bool Trimesh::setTriangle(int triNum,int vert0,int vert1,int vert2,
     if(NULL==gstMesh)
       return false;
     else {
-      ((gstHybridHashGridTriMesh *)gstMesh)->setTriangle(triNum,vert0,vert1,vert2);
+      ((gstHybridHashGridTriMesh *)gstMesh)->setTriangle(triNum,vert0,vert1,vert2,
+							 norm0,norm1,norm2);
 	  return true;
     }
   }
@@ -236,7 +329,21 @@ void Trimesh::addToScene(gstSeparator *ourScene){
   }
 }
 
+// set the transformatrix for the mesh (xFormMat is in row major order)
+void Trimesh::setTransformMatrix(float xfMat[16]){
+ 
+  for(int i=0;i<16;i++)
+    xFormMat[i]=xfMat[i];
 
+  if(NULL!=gstMesh){
+    // it appears that ghost prefers column major order
+    gstMesh->setTransformMatrix(
+				gstTransformMatrix(xFormMat[0],xFormMat[4],xFormMat[8],xFormMat[12],
+						   xFormMat[1],xFormMat[5],xFormMat[9],xFormMat[13],
+						   xFormMat[2],xFormMat[6],xFormMat[10],xFormMat[14],
+						   xFormMat[3],xFormMat[7],xFormMat[11],xFormMat[15])); 
+  }
+}
 
 
 

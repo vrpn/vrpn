@@ -140,12 +140,15 @@ class vrpn_ForceDevice {
     vrpn_int32 setTrimeshType_message_id;    
     vrpn_int32 clearTrimesh_message_id;    
 
+    // ID for start/stop force interaction recording message
+    vrpn_int32 record_message_id;
+
     //	virtual void get_report(void) = 0;
 
     // ENCODING
     static char *encode_force(vrpn_int32 &length, const vrpn_float64 *force);
     static char *encode_scp(vrpn_int32 &length,
-	    const vrpn_float64 *pos, const vrpn_float64 *quat);
+	    const vrpn_float64 *pos, const vrpn_float64 *quat,const vrpn_int32 triId);
     static char *encode_plane(vrpn_int32 &length,const vrpn_float32 *plane, 
 			    const vrpn_float32 kspring, const vrpn_float32 kdamp,
 			    const vrpn_float32 fdyn, const vrpn_float32 fstat, 
@@ -170,6 +173,8 @@ class vrpn_ForceDevice {
     static char *encode_trimeshTransform(vrpn_int32 &len,
 		const vrpn_float32 homMatrix[16]);
 
+    static char *encode_setRecordStatus(vrpn_int32 &len,const vrpn_int32 type);
+
     static char *encode_forcefield(vrpn_int32 &len, const vrpn_float32 origin[3],
 	const vrpn_float32 force[3], const vrpn_float32 jacobian[3][3], const vrpn_float32 radius);
     static char *encode_error(vrpn_int32 &len, const vrpn_int32 error_code);
@@ -179,7 +184,7 @@ class vrpn_ForceDevice {
     static vrpn_int32 decode_force (const char *buffer, const vrpn_int32 len, 
 							vrpn_float64 *force);
     static vrpn_int32 decode_scp(const char *buffer, const vrpn_int32 len,
-					vrpn_float64 *pos, vrpn_float64 *quat);
+					vrpn_float64 *pos, vrpn_float64 *quat,vrpn_int32 &triId);
     static vrpn_int32 decode_plane(const char *buffer, const vrpn_int32 len,
 	    vrpn_float32 *plane, 
 	    vrpn_float32 *kspring, vrpn_float32 *kdamp,vrpn_float32 *fdyn, vrpn_float32 *fstat, 
@@ -205,6 +210,9 @@ class vrpn_ForceDevice {
 						vrpn_int32 *type);
     static vrpn_int32 decode_trimeshTransform(const char *buffer,const vrpn_int32 len,
 						vrpn_float32 homMatrix[16]);
+
+    static vrpn_int32 decode_setRecordStatus(const char *buffer,const vrpn_int32 len,
+					     vrpn_int32 *action);
 
     static vrpn_int32 decode_forcefield(const char *buffer,const vrpn_int32 len,
 	vrpn_float32 origin[3], vrpn_float32 force[3], vrpn_float32 jacobian[3][3], vrpn_float32 *radius);
@@ -297,6 +305,8 @@ class vrpn_ForceDevice {
     vrpn_float64 force[3];
     vrpn_float64 scp_pos[3];
     vrpn_float64 scp_quat[4];  // for torque
+    // if displaying a HCOLLIDE trimesh, the id of the triangle we are feeling
+    vrpn_int32   scp_triId;
     vrpn_float32 plane[4];
 
     vrpn_float32 ff_origin[3];
@@ -331,7 +341,10 @@ typedef struct {
 	struct		timeval msg_time;	// Time of the report
 	vrpn_float64	pos[3];			// position of SCP
 	vrpn_float64	quat[4];		// orientation of SCP
+  // if displaying a HCOLLIDE trimesh, the id of the triangle we are feeling
+  vrpn_int32      triId;                  
 } vrpn_FORCESCPCB;
+
 typedef void (*vrpn_FORCESCPHANDLER) (void *userdata,
 					const vrpn_FORCESCPCB info);
 
@@ -361,8 +374,7 @@ public:
 
     // vertNum normNum and triNum start at 0
     void setVertex(vrpn_int32 vertNum,vrpn_float32 x,vrpn_float32 y,vrpn_float32 z);
-    // NOTE: ghost dosen't take normals, 
-    //       and normals still aren't implemented for Hcollide
+    // NOTE: ghost dosen't accept normals
     void setNormal(vrpn_int32 normNum,vrpn_float32 x,vrpn_float32 y,vrpn_float32 z);
     void setTriangle(vrpn_int32 triNum,vrpn_int32 vert0,vrpn_int32 vert1,vrpn_int32 vert2,
 		  vrpn_int32 norm0=-1,vrpn_int32 norm1=-1,vrpn_int32 norm2=-1);
@@ -377,6 +389,10 @@ public:
     // the next time we send a trimesh we will use the following type
     void useHcollide();
     void useGhost();
+  
+    // start/stop recording a force session (generally for debugging)
+    void startRecording();
+    void stopRecording();
 
     // Generalized constraint code.
     // Constrains as a spring connected to a point, sliding along a line

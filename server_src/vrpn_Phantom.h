@@ -42,7 +42,10 @@ protected:
 	struct timeval timestamp;
 	DynamicPlane *planes[MAXPLANE];
 	Trimesh *trimesh;
-				       
+					  
+	// true if we should reset the phantom on the next main loop
+	bool resetPhan;
+					  
 	ConstraintEffect *pointConstraint; // this is a force appended to
 					// other forces exerted by phantom
 	ForceFieldEffect *forceField; // general purpose force field 
@@ -83,6 +86,10 @@ protected:
 					 vrpn_HANDLERPARAM p);
 	static int handle_forcefield_change_message(void *userdata,
 						vrpn_HANDLERPARAM p);
+
+	static int handle_record_message(void *userdata, 
+					 vrpn_HANDLERPARAM p);
+
 
 #if 0
 
@@ -140,6 +147,8 @@ public:
 	static void handle_plane(void *userdata,const vrpn_Plane_PHANTOMCB &p);
     static void check_parameters(vrpn_Plane_PHANTOMCB *p);
 
+					
+    friend void phantomErrorHandler( int, char*, void* );
 };
 
 #endif

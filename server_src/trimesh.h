@@ -31,8 +31,17 @@ protected:
   bool inNode;
 
   float minX,minY,minZ,maxX,maxY,maxZ;
+
+  //pre: NULL==gstMesh; && NULL==ghostPolyMesh
+  void getGstMesh();
+
+  float xFormMat[16];
+
+  // flags to only print warnings once
+  bool scpWarn,normWarn;
 public:
-  
+
+  // display with ghost by default
   Trimesh(TrimeshType oT=GHOST);
 
   ~Trimesh(){ clear(); }
@@ -42,7 +51,13 @@ public:
   // true if there is a mesh being displayed
   bool displayStatus();
 
-  void setType(TrimeshType newType){ ourType=newType; }
+  void setType(TrimeshType newType){ 
+    ourType=newType; 
+    scpWarn=normWarn=false;
+  }
+
+  void startRecording();
+  void stopRecording();
 
   // set the new bounding volume for this object, 
   //     that is the smallest cube which will contain all the verts 
@@ -57,13 +72,18 @@ public:
   // vertNum normNum & triNum start at 0, true on success
   bool setVertex(int vertNum,double x,double y,double z);
   bool setNormal(int normNum,double x,double y,double z);
+  // pre: specified verts and norms have already been set
   bool setTriangle(int triNum,int vert0,int vert1,int vert2,
 		   int norm0=-1,int norm1=-1,int norm2=-1);
   bool removeTriangle(int triNum);
   bool updateChanges();
   // --------------------------------------------------
 
-  bool getVertex(int vertNum, double &x,double &y,double &z);
+  bool getVertex(int vertNum, float &x,float &y,float &z);
+
+  // if HCOLLIDE = ourType, returns the id of the triangle the probe is contacting
+  //    otherwise it returns -1
+  int getScpTriId();
 
   void addToScene(gstSeparator *ourScene);
 
@@ -81,14 +101,7 @@ public:
   }
 
   // set the transformatrix for the mesh (xFormMat is in row major order)
-  void setTransformMatrix(float xFormMat[16]){
-	// it appears that ghost prefers column major order
-	gstMesh->setTransformMatrix(
-		gstTransformMatrix(xFormMat[0],xFormMat[4],xFormMat[8],xFormMat[12],
-				   xFormMat[1],xFormMat[5],xFormMat[9],xFormMat[13],
-				   xFormMat[2],xFormMat[6],xFormMat[10],xFormMat[14],
-				   xFormMat[3],xFormMat[7],xFormMat[11],xFormMat[15])); 
-  }
+  void setTransformMatrix(float xFormMat[16]);
 };
 
 #endif  // TRIMESH_H

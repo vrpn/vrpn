@@ -163,6 +163,8 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
 
   scene = new gstScene;
 
+  resetPhan=false;
+
   /* make it so simulation loop doesn't exit if remote switch is released */
   scene->setQuitOnDevFault((gstBoolean)FALSE);
 
@@ -276,6 +278,12 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
 		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
 		vrpn_ForceDevice::connection = NULL;
   }
+  if (vrpn_ForceDevice::connection->register_handler(record_message_id, 
+	handle_record_message, this, vrpn_ForceDevice::my_id)) {
+		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
+		vrpn_ForceDevice::connection = NULL;
+  }
+
   if (vrpn_ForceDevice::connection->register_handler(forcefield_message_id,
 	handle_forcefield_change_message, this, vrpn_ForceDevice::my_id)) {
 		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
@@ -286,8 +294,6 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
                 fprintf(stderr,"vrpn_Phantom:can't register handler\n");
                 vrpn_Tracker::connection = NULL;
   }
-
-
   this->register_plane_change_handler(this, handle_plane);
 
   if (vrpn_Tracker::register_server_handlers())
@@ -323,8 +329,7 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
       fprintf(stderr, "vrpn_Phantom registered new update-rate handler.\n");
 
   scene->startServoLoop();
-
-  }
+}
 
 
 void vrpn_Phantom::print_report(void)
@@ -332,7 +337,7 @@ void vrpn_Phantom::print_report(void)
    printf("----------------------------------------------------\n");
    vrpn_ForceDevice::print_report();
 
- //  printf("Timestamp:%ld:%ld\n",timestamp.tv_sec, timestamp.tv_usec);
+   //  printf("Timestamp:%ld:%ld\n",timestamp.tv_sec, timestamp.tv_usec);
    printf("Pos      :%lf, %lf, %lf\n", pos[0],pos[1],pos[2]);
    printf("Quat     :%lf, %lf, %lf, %lf\n", quat[0],quat[1],quat[2],quat[3]);
    //printf("Force	:%lf, %lf, %lf\n", force[0],force[1], force[2]);
@@ -410,6 +415,11 @@ void vrpn_Phantom::get_report(void)
 	}
 	scp_quat[3] = 1.0;
 
+	if(NULL!=trimesh)
+	  scp_triId=trimesh->getScpTriId();
+	else
+	  scp_triId=-1;
+
 	vel_quat_dt = dt_vel;
 //printf("get report pos = %lf, %lf, %lf\n",pos[0],pos[1],pos[2]);
 }
@@ -425,10 +435,18 @@ void vrpn_Phantom::get_report(void)
 //      send force message
 
 void vrpn_Phantom::mainloop(void) {
+  if(resetPhan){
+    resetPHANToM();
+    resetPhan=false;
+    printf("reset phantom\n");
+  }
+
 	struct timeval current_time;
 	char	msgbuf[1000];
 	char    *buf;
+
 	vrpn_int32	len;
+
 
     //check button status
     if(phantom->getStylusSwitch() ) {
@@ -494,25 +512,27 @@ void vrpn_Phantom::mainloop(void) {
 			delete buf;
         }
 	// Encode the SCP if there is a connection
-		if (vrpn_ForceDevice::connection) {
-			buf = vrpn_ForceDevice::encode_scp(len, scp_pos, scp_quat);
-			if (vrpn_ForceDevice::connection->pack_message(len, timestamp,
-				scp_message_id, vrpn_ForceDevice::my_id,
-				buf, vrpn_CONNECTION_LOW_LATENCY)) {
-					fprintf(stderr,"Phantom: cannot write message: tossing\n");
-			}
-			delete buf;
-		}
+	if (vrpn_ForceDevice::connection) {
+	  buf = vrpn_ForceDevice::encode_scp(len, scp_pos, scp_quat,scp_triId);
+	  if (vrpn_ForceDevice::connection->pack_message(len, timestamp,
+							 scp_message_id, vrpn_ForceDevice::my_id,
+							 buf, vrpn_CONNECTION_LOW_LATENCY)) {
+	    fprintf(stderr,"Phantom: cannot write message: tossing\n");
+	  }
+	  delete buf;
+	}
 	
-  //      print_report();
+	//      print_report();
     }
 }
 
 
 
 void vrpn_Phantom::reset(){
-	if(trimesh->displayStatus())
-		trimesh->clear();
+  if(trimesh->displayStatus()){
+    trimesh->clear();
+
+  }
 	for (int i = 0; i < MAXPLANE; i++)
 	   if (planes[i]) planes[i]->setActive(FALSE);
 	phantom->stopEffect();
@@ -784,6 +804,25 @@ int vrpn_Phantom::handle_transformTrimesh_message(void *userdata,
   return 0;
 }
 
+int vrpn_Phantom::handle_record_message(void *userdata, 
+					vrpn_HANDLERPARAM p){
+  vrpn_Phantom *me = (vrpn_Phantom *)userdata;
+  
+  long	temp;
+
+  decode_setRecordStatus(p.buffer, p.payload_len, &temp);
+
+  Trimesh *myTrimesh=me->trimesh;
+  
+  if(temp)
+    myTrimesh->startRecording();
+  else
+    myTrimesh->stopRecording();
+
+  return 0;
+}
+
+
 int vrpn_Phantom::handle_forcefield_change_message(void *userdata,
 						vrpn_HANDLERPARAM p){
 
@@ -969,6 +1008,12 @@ int vrpn_Phantom::handle_update_rate_request (void * userdata,
 void phantomErrorHandler( int errnum, char *description, void *userdata)
 {
 	vrpn_Phantom *me = (vrpn_Phantom *) userdata;
+
+	// simply restart the phantom instead of sending an error
+	// this really only works for the new phantom model
+	//printf("  restarting phantom \n");
+	//me->resetPhan=true;
+
 	fprintf(stderr, "PHANTOM ERROR: %s\n", description);
 	int i;
 	for (i = 0; i < MAXPLANE; i++){
@@ -994,5 +1039,7 @@ void phantomErrorHandler( int errnum, char *description, void *userdata)
 			break;
 	}
 }
+
+
 
 
