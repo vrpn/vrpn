@@ -9,7 +9,7 @@
   Revised: Wed Apr  1 13:23:40 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.C,v $
   $Locker:  $
-  $Revision: 1.17 $
+  $Revision: 1.18 $
   \*****************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
@@ -593,7 +593,7 @@ struct timeval vrpn_Clock_Remote::currentRTT (void) const {
   while (last < 0)
     last += cMaxQuickRecords;
   retval = vrpn_TimevalScale(this->rgtvHalfRoundTrip[last], 2.0);
-fprintf(stderr, "Record %d is %ld:%ld.\n", last, retval.tv_sec, retval.tv_usec);
+  //fprintf(stderr, "Record %d is %ld:%ld.\n", last, retval.tv_sec, retval.tv_usec);
 
   return retval;
 }
@@ -858,6 +858,9 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
 
 /*****************************************************************************\
   $Log: vrpn_Clock.C,v $
+  Revision 1.18  1999/04/11 19:54:56  helser
+  Removed an annoying printf.
+
   Revision 1.17  1999/04/08 12:49:00  hudson
   Exposed round-trip-time estimation in vrpn_Clock.
   More details for FreeBSD port.

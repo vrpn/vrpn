@@ -1785,6 +1785,7 @@ void vrpn_ForceDevice_Remote::send (const char * msgbuf, vrpn_int32 len,
     connection->mainloop();
   }
 
+  // HP compiler won't let you delete a const argument.
   delete [] (char *) msgbuf;
 }
 
