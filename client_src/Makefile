@@ -132,7 +132,7 @@ all:	$(OBJ_DIR)/printvals $(OBJ_DIR)/printcereal \
 	$(OBJ_DIR)/forcedevice_test_client \
 	$(OBJ_DIR)/sphere_client $(OBJ_DIR)/bdbox_client \
 	add_vrpn_cookie testLamport test_mutex \
-	vrpn_ping test_tempimager
+	vrpn_ping test_imager
 #	$(OBJ_DIR)/vrpn_print_messages
 
 # $(OBJ_DIR)/ohm_client
@@ -155,8 +155,8 @@ testLamport:	$(OBJ_DIR)/testLamport
 .PHONY: test_mutex
 test_mutex:	$(OBJ_DIR)/test_mutex
 
-.PHONY: test_tempimager
-test_tempimager:	$(OBJ_DIR)/test_tempimager
+.PHONY: test_imager
+test_imager:	$(OBJ_DIR)/test_imager
 
 .PHONY:	text
 text:	$(OBJ_DIR)/text
@@ -254,9 +254,9 @@ $(OBJ_DIR)/test_mutex: $(OBJ_DIR)/test_mutex.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/test_mutex \
 		$(OBJ_DIR)/test_mutex.o -lvrpn $(ARCH_LIBS)
 
-$(OBJ_DIR)/test_tempimager: $(OBJ_DIR)/test_tempimager.o $(LIB_DIR)/libvrpn.a
-	$(CC) $(LFLAGS) -o $(OBJ_DIR)/test_tempimager \
-		$(OBJ_DIR)/test_tempimager.o -lvrpn $(ARCH_LIBS)
+$(OBJ_DIR)/test_imager: $(OBJ_DIR)/test_imager.o $(LIB_DIR)/libvrpn.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/test_imager \
+		$(OBJ_DIR)/test_imager.o -lvrpn $(ARCH_LIBS)
 
 
 # These utilities actually DON'T use libvrpn

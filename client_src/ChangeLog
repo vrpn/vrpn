@@ -1,5 +1,13 @@
 2004-12-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* Makefile : Swapped out test_tempimager for test_imager.
+	* test_imager.dsp : Same.
+	* test_imager.C : Same.
+	* test_tempimager.dsp : Same.
+	* test_tempimager.C : Same.
+
+2004-12-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* Modified to use vrpn_Imager rather than vrpn_TempImager.
 
 2004-11-03  Russell M. Taylor II  <taylorr@cs.unc.edu>

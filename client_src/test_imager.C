@@ -2,7 +2,7 @@
 #include  <stdlib.h>
 #include  <stdio.h>
 #include  "vrpn_Connection.h"
-#include  "vrpn_TempImager.h"
+#include  "vrpn_Imager.h"
 
 //-----------------------------------------------------------------
 // This section contains a copy of an image that is shared between
@@ -37,7 +37,7 @@ bool  init_test_image(void)
 // This section contains code that does what the server should do
 
 vrpn_Synchronized_Connection  *svrcon;	//< Connection for server to talk on
-vrpn_TempImager_Server	      *svr;	//< Image server to be used to send
+vrpn_Imager_Server	      *svr;	//< Image server to be used to send
 int			      svrchan;	//< Server channel index for image data
 
 bool  init_server_code(void)
@@ -46,9 +46,9 @@ bool  init_server_code(void)
     fprintf(stderr, "Could not open server connection\n");
     return false;
   }
-  if ( (svr = new vrpn_TempImager_Server("TestImage", svrcon,
+  if ( (svr = new vrpn_Imager_Server("TestImage", svrcon,
     image_x_size, image_y_size)) == NULL) {
-    fprintf(stderr, "Could not open TempImager Server\n");
+    fprintf(stderr, "Could not open Imager Server\n");
     return false;
   }
   if ( (svrchan = svr->add_channel("value", "unsigned16bit", 0, (float)(pow(2.0,16)-1))) == -1) {
@@ -80,7 +80,7 @@ void  mainloop_server_code(void)
 // It listens until it has gotten twice as many rows as there are in
 // the image and then indicates that it is done.
 
-vrpn_TempImager_Remote	*clt;	  //< Client imager
+vrpn_Imager_Remote	*clt;	  //< Client imager
 int   client_rows_gotten = 0;	  //< Keeps track of how many rows we've gotten
 bool  client_done = false;	  //< Lets us know if the client wants to quit
 
@@ -90,7 +90,7 @@ bool  client_done = false;	  //< Lets us know if the client wants to quit
 void  VRPN_CALLBACK handle_region_data(void *, const vrpn_IMAGERREGIONCB info)
 {
   unsigned x,y;
-  const	vrpn_TempImager_Channel *chan;
+  const	vrpn_Imager_Channel *chan;
 
   // Find out the scale and offset for this channel.
   if ( (chan = clt->channel(info.region->d_chanIndex)) == NULL) {
@@ -130,7 +130,7 @@ void  VRPN_CALLBACK handle_region_data(void *, const vrpn_IMAGERREGIONCB info)
 bool  init_client_code(void)
 {
   // Open the client object and set the callback handler for new region data
-  if ( (clt = new vrpn_TempImager_Remote("TestImage@localhost")) == NULL) {
+  if ( (clt = new vrpn_Imager_Remote("TestImage@localhost")) == NULL) {
     fprintf(stderr, "Error: Cannot create remote image object\n");
     return false;
   }
