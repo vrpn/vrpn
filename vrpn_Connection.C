@@ -3098,7 +3098,7 @@ int vrpn_Connection::mainloop (const struct timeval * pTimeout)
     if (FD_ISSET(endpoint.tcp_sock, &exceptfds) ||
         ((endpoint.udp_inbound!=-1) && 
          FD_ISSET(endpoint.udp_inbound, &exceptfds))) {
-      fprintf(stderr, "vrpn_Connection::mainloop: Exception on socket\n");
+      perror("vrpn_Connection::mainloop: Exception on socket");
       return(-1);
     }
 
@@ -3205,7 +3205,7 @@ int vrpn_Connection::mainloop (const struct timeval * pTimeout)
 
     // See if exceptional condition on either socket
     if (FD_ISSET(endpoint.tcp_sock, &exceptfds)) {
-      fprintf(stderr, "vrpn_Connection::mainloop: Exception on socket\n");
+      perror("vrpn_Connection::mainloop: Exception on socket");
       return(-1);
     }
 
