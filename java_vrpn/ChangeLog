@@ -1,3 +1,13 @@
+2003-04-01  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* java_vrpn.cpp : Removed ^Ms.
+	* vrpn_AnalogOutputRemote.cpp : Same.
+	* vrpn_AnalogRemote.cpp : Same.
+	* vrpn_ButtonRemote.cpp : Same.
+	* vrpn_ForceDeviceRemote.cpp : Same.
+	* vrpn_TempImagerRemote.cpp : Same.
+	* vrpn_TrackerRemote.cpp : Same.
+
 2003-01-15  David Marshburn  <marshbur@cs.unc.edu>
 
 	* AnalogOutputRemote.java:
