@@ -1,5 +1,5 @@
-#include "../vrpn_Sound.h"
-#include <string.h>
+#include "vrpn_Sound.h"
+#include <string>
 #include <math.h>
 
 #define FASTSPEED 100
