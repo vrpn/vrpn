@@ -113,8 +113,14 @@ void vrpn_Analog::report (vrpn_uint32 class_of_service) {
 vrpn_Serial_Analog::vrpn_Serial_Analog (const char * name, vrpn_Connection * c,
 				        const char * port, int baud, int bits,
 					vrpn_SER_PARITY parity) :
-         vrpn_Analog(name, c)
+    vrpn_Analog(name, c),
+    serial_fd(-1),
+    baudrate(0),
+    bufcounter(0)
 {
+    // Initialize
+    portname[0] = '\0';
+    buffer[0] = '\0';
    // Find out the port name and baud rate;
    if (port == NULL) {
 	fprintf(stderr,"vrpn_Serial_Analog: NULL port name\n");
@@ -136,6 +142,15 @@ vrpn_Serial_Analog::vrpn_Serial_Analog (const char * name, vrpn_Connection * c,
    status = ANALOG_RESETTING;
    gettimeofday(&timestamp, NULL);
 }
+
+vrpn_Serial_Analog::~vrpn_Serial_Analog () 
+{
+    // Close com port when destroyed. 
+    if (serial_fd != -1) {
+        vrpn_close_commport(serial_fd);
+    }
+}
+
 #endif  // VRPN_CLIENT_ONLY
 
 

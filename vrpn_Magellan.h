@@ -17,6 +17,8 @@ public:
 	/// Called once through each main loop iteration to handle updates.
 	virtual void mainloop ();
 
+	virtual int reset(void);	///< Set device back to starting config
+
   protected:
 	int _status;			///< Used by mainloop() and get_report()
 	int _numbuttons;		///< How many buttons to open
@@ -31,7 +33,6 @@ public:
 	struct timeval timestamp;	///< Time of the last report from the device
 
 	virtual	void clear_values(void);///< Set all buttons, analogs and encoders back to 0
-	virtual int reset(void);	///< Set device back to starting config
 
 	/// Try to read a report from the device.  Returns 1 if complete report received,
 	/// 0 otherwise.  Sets _status to match current status.

@@ -108,7 +108,7 @@ void	vrpn_Magellan::clear_values(void)
 
 int	vrpn_Magellan::reset(void)
 {
-	struct	timeval	timeout;
+	struct	timeval	timeout, now;
 	unsigned char	inbuf[45];
 	char	*reset_str = "z\rm3\rc30\rnH\rbH\r";	// Reset string sent to box
 	char	*expect_back = "z\rm3\rc30\rnH\rb\r";	// What we expect back
@@ -128,24 +128,26 @@ int	vrpn_Magellan::reset(void)
 	timeout.tv_usec = 0;
 	ret = vrpn_read_available_characters(serial_fd, inbuf, strlen(expect_back), &timeout);
 	inbuf[strlen(expect_back)] = 0;		// Make sure string is NULL-terminated
+
+	gettimeofday(&now, NULL);
 	if (ret < 0) {
-		perror("vrpn_Magellan reset: Error reading from device\n");
+		send_text_message("vrpn_Magellan reset: Error reading from device", now);
 		return -1;
 	}
 	if (ret == 0) {
-		fprintf(stderr,"vrpn_Magellan reset: No response from device\n");
+		send_text_message("vrpn_Magellan reset: No response from device", now);
 		return -1;
 	}
 	if (ret != (int)strlen(expect_back)) {
-		fprintf(stderr,"vrpn_Magellan reset: Got %d of %d expected characters\n",ret,
-		    strlen(expect_back));
+            send_text_message("vrpn_Magellan reset: Got less than expected number of characters", now);
+                             //,ret,    strlen(expect_back));
 		return -1;
 	}
 
 	// Make sure the string we got back is what we expected
 	if ( strcmp((char *)inbuf, expect_back) != 0 ) {
-		fprintf(stderr, "vrpn_Magellan reset: Bad reset string (want %s, got %s)\n",
-			expect_back, inbuf);
+		send_text_message("vrpn_Magellan reset: Bad reset string", now);
+                //(want %s, got %s)\n",	expect_back, inbuf);
 		return -1;
 	}
 

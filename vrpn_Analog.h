@@ -52,7 +52,9 @@ public:
 class vrpn_Serial_Analog: public vrpn_Analog {
 public:
   vrpn_Serial_Analog(const char * name, vrpn_Connection * connection,
-		     const char * port, int baud, int bits = 8, vrpn_SER_PARITY parity = vrpn_SER_PARITY_NONE);
+		     const char * port, int baud, int bits = 8, 
+                     vrpn_SER_PARITY parity = vrpn_SER_PARITY_NONE);
+  ~vrpn_Serial_Analog();
 protected:
   int serial_fd;
   char portname[1024];
