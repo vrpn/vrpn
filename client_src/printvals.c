@@ -13,7 +13,7 @@
 #include <vrpn_FileConnection.h>
 #include <vrpn_FileController.h>
 #include <vrpn_RedundantTransmission.h>
-#include <vrpn_DelayedConnection.h>
+//#include <vrpn_DelayedConnection.h>
 
 vrpn_Button_Remote *btn,*btn2;
 vrpn_Tracker_Remote *tkr;
@@ -129,17 +129,17 @@ fprintf(stderr, "Opening file %s.\n", station_name);
 	} else {
 fprintf(stderr, "Connecting to host %s.\n", station_name);
 	  port = vrpn_get_port_number(station_name);
-	  //c = new vrpn_Synchronized_Connection
-	  c = new vrpn_DelayedConnection
-                   (vrpn_MsecsTimeval(0.0),
-                    station_name, port,
+	  c = new vrpn_Synchronized_Connection
+	  //c = new vrpn_DelayedConnection
+                   //(vrpn_MsecsTimeval(0.0),
+                    (station_name, port,
 		    local_logfile, local_logmode,
 		    remote_logfile, remote_logmode,
                     1.0, 3, NIC);
           if (delayTime > 0.0) {
-            ((vrpn_DelayedConnection *) c)->setDelay
-                              (vrpn_MsecsTimeval(delayTime * 1000.0));
-            ((vrpn_DelayedConnection *) c)->delayAllTypes(vrpn_TRUE);
+            //((vrpn_DelayedConnection *) c)->setDelay
+                              //(vrpn_MsecsTimeval(delayTime * 1000.0));
+            //((vrpn_DelayedConnection *) c)->delayAllTypes(vrpn_TRUE);
           }
 	}
 
