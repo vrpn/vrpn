@@ -14,7 +14,7 @@
 #include <string.h>
 
 char	*TRACKER_NAME = "Tracker0";
-int	CONNECTION_PORT = 4500;	// Port for connection to listen on
+int	CONNECTION_PORT = vrpn_DEFAULT_LISTEN_PORT_NO;	// Port for connection to listen on
 
 vrpn_Tracker_NULL	*ntkr;
 vrpn_Tracker_Remote	*tkr;

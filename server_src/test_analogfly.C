@@ -18,7 +18,7 @@
 char	*TRACKER1_NAME = "Tracker1";
 char	*TRACKER2_NAME = "Tracker2";
 char	*ANALOG_NAME = "Analog0";
-int	CONNECTION_PORT = 4500;	// Port for connection to listen on
+int	CONNECTION_PORT = vrpn_DEFAULT_LISTEN_PORT_NO;	// Port for connection to listen on
 
 int getting_analog_values = 0;	//< Are we getting analog reports?
 

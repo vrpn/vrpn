@@ -7,7 +7,7 @@ int main (int argc, char ** argv) {
 
   vrpn_Synchronized_Connection * c;
   vrpn_Mutex_Server * me;
-  int portno = 4500;
+  int portno = vrpn_DEFAULT_LISTEN_PORT_NO;
 
   if (argc > 2) {
     portno = atoi(argv[2]);

@@ -32,7 +32,7 @@
  *
  *  VRPN Connection setup sequence
  *
- * Server opens a TCP socket and listens() on port - default 4500
+ * Server opens a TCP socket and listens() on port - default vrpn_DEFAULT_LISTEN_PORT_NO
  * Client connects() to port
  * Server and client both write a COOKIE
  * Server and client both wait (nonblocking) for a COOKIE and

@@ -32,7 +32,7 @@ char	*TRACKER_NAME = "Tracker0";
 char	*TEXT_NAME = "Text0";
 char	*ANALOG_NAME = "Analog0";
 char	*BUTTON_NAME = "Button0";
-int	CONNECTION_PORT = 4500;	// Port for connection to listen on
+int	CONNECTION_PORT = vrpn_DEFAULT_LISTEN_PORT_NO;	// Port for connection to listen on
 
 // The connection that is used by all of the servers and remotes
 vrpn_Connection		*connection;

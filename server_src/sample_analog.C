@@ -9,7 +9,7 @@
 // sample_analog
 // Tom Hudson, February 1999
 //
-// Server program that opens up a port (4500) and reports over it
+// Server program that opens up a port and reports over it
 // any changes to the array of doubles exposed as
 // vrpn_Analog_Server::channels().  The size of this array is
 // defined in vrpn_Analog.h;  currently 128.
@@ -76,7 +76,7 @@ int main (int argc, char ** argv) {
   vts = new vrpn_Analog_Server ("video_throughput", c);
   vts->setNumChannels(1);
 
-  printf("Services named audio-throughput and video-throughput now listening on port 4500.\n");
+  printf("Services named audio-throughput and video-throughput now listening on port %d.\n", vrpn_DEFAULT_LISTEN_PORT_NO);
 
   delay.tv_sec = 1L;
   delay.tv_usec = 0L;
