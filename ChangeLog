@@ -1,3 +1,10 @@
+2003-08-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Serial.C : Added include needed on Linux
+	* vrpn_Joywin32.C : Code from Sebastien Maraux to read
+		from joysticks without going through DirectX.
+	* vrpn_Joywin32.h : Same.
+
 2003-08-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Shared.C : Removed #ifdef'd out code.
