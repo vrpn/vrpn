@@ -848,17 +848,11 @@ static int vrpn_AdjustFrequency(void)
 
     // if we are in a system where the perf clock is the tsc, then use the
     // rate the perf clock returns (or rather, if the freq we measure is
-    // approx the perf clock freq).  Otherwise, check to make sure that
-    // the performance count is at least close to what we expect from the
-    // reported frequency.  If not (like happens on Windows 98 on my laptop,
-    // then bail on the whole process).
+    // approx the perf clock freq).
     if (fabs(perffreq.QuadPart - freq) < 0.05*freq) {
         VRPN_CLOCK_FREQ = perffreq.QuadPart;
         cerr << "vrpn gettimeofday: perf clock is tsc -- using perf clock freq (" 
              << perffreq.QuadPart/1e6 << " MHz)" << endl;
-    } else if (fabs(perffreq.QuadPart - freq) > 0.5*freq) {
-	cerr << "vrpn gettimeofday: perf clock is far from what it should be" << endl;
-	return -1;
     } else {
         cerr << "vrpn gettimeofday: adjusted clock freq to measured freq (" 
              << freq/1e6 << " MHz)" << endl;
@@ -896,7 +890,7 @@ int gettimeofday(timeval *tp, struct timezone *tzp)
     static LARGE_INTEGER liDiff;
     timeval tvDiff;
 
-      if (!fHasPerfCounter) {
+    if (!fHasPerfCounter) {
         _ftime(&tbInit);
         tp->tv_sec  = tbInit.time;
         tp->tv_usec = tbInit.millitm*1000;
@@ -908,10 +902,32 @@ int gettimeofday(timeval *tp, struct timezone *tzp)
         // establish a time base
         fFirst=0;
 
+	// Check to see if we are on a Windows NT machine (as opposed to a
+	// Windows 95/98 machine).  If we are not, then use the _ftime code
+	// because the hi-perf clock does not work under Windows 98SE on my
+	// laptop, although the query for one seems to indicate that it is
+	// available.
+
+	{   OSVERSIONINFO osvi;
+
+	    memset(&osvi, 0, sizeof(OSVERSIONINFO));
+	    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+	    GetVersionEx(&osvi);
+
+	    if (osvi.dwPlatformId != VER_PLATFORM_WIN32_NT) {
+                cerr << "\nvrpn gettimeofday: disabling hi performance clock on non-NT system. " 
+	             << "Defaulting to _ftime (~6 ms resolution) ..." << endl;
+		fHasPerfCounter=0;
+	        gettimeofday( tp, tzp );
+		return 0;
+	    }
+	}
+
         // check that hi-perf clock is available
         if ( !(fHasPerfCounter = QueryPerformanceFrequency( &liTemp )) ) {
             cerr << "\nvrpn gettimeofday: no hi performance clock available. " 
                  << "Defaulting to _ftime (~6 ms resolution) ..." << endl;
+            fHasPerfCounter=0;
             gettimeofday( tp, tzp );
             return 0;
         }

@@ -180,15 +180,22 @@ void vrpn_Tracker_Flock_Parallel::mainloop()
 	    "\nvrpn_Tracker_Flock_Parallel: tracker failed, trying to reset ...");
 
     // reset master serial i/o
+/*XXX This causes Linux with a Cyclades to hang up on the close, for some
+      reason.  Removing it for now to see if the reset works without doing
+      the close and re-open.
     vrpn_close_commport(serial_fd);
     serial_fd = vrpn_open_commport(portname, baudrate);
+*/
 
     // reset slave serial i/o
     for (i=0;i<cSensors;i++) {
+/*XXX This causes Linux with a Cyclades to hang up on the close, for some
+      reason.  Removing it for now to see if the reset works without doing
+      the close and re-open.
       vrpn_close_commport(rgSlaves[i]->serial_fd);
       rgSlaves[i]->serial_fd = vrpn_open_commport(rgSlaves[i]->portname, 
 						  rgSlaves[i]->baudrate);
-      rgSlaves[i]->status = TRACKER_RESETTING;
+*/      rgSlaves[i]->status = TRACKER_RESETTING;
     }
     status = TRACKER_RESETTING;
     break;
@@ -489,6 +496,17 @@ void vrpn_Tracker_Flock_Parallel_Slave::mainloop()
 
 /*****************************************************************************\
   $Log: vrpn_Flock_Parallel.C,v $
+  Revision 1.10  2000/11/06 19:38:27  taylorr
+  2000-11-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+          * vrpn_Shared.C (gettimeofday) : Turned off hi-perf clock for Win98
+                  (vrpn_AdjustFrequency) : Removed buggy clock-check code
+
+  2000-11-01  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+          * vrpn_FileConnection.C : Fixed parsing of file://.
+          * vrpn_Connection.C : Removed more of the WINDOWS_GETHOSTBYNAME hack
+
   Revision 1.9  2000/08/28 16:24:52  taylorr
   2000-08-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
 

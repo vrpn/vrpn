@@ -7,33 +7,11 @@ Compile using 'gmake'
 NOTE:	See http://www.cs.unc.edu/Research/vrpn for
 information on VRPN.
 
-	The source code here has been checked into CVS under the
-root /afs/cs.unc.edu/project/stm/src/CVS_repository.  To get a
-copy of the source, do:
-	cvs -d /afs/cs.unc.edu/project/stm/src/CVS_repository checkout vrpn
-
-VRPN Readme:
-	The Virtual-Reality Peripheral Network (VRPN) is the PC-at-a-station
-implementation that will drive trackers, buttons and sound for each VR
-station.
-	It's implemented in Linux, Irix and Windows NT.  server_src holds the
-server application for the Linux and NT boxes.  The current directory holds
-the library source.
-
-	vrpn_Shared: Stuff needed by NT to make it work with unix-like code
-	vrpn_Connection: Network layer
-	vrpn_Tracker: Both local and remote tracker code
-	vrpn_Button: Both local and remote button code
-	vrpn_Sound: Both local and remote sound code
-
-	In all cases, base class is not what you instance.  There are local
-(server-side) derived classes for each device.  There is a remote device that
-is used by the client-side (user application).
-
 Problems:
 
 ***	The reports from the 3Space tracker are not yet being parsed correctly
-(orientation is wrong when it ends up at the application).
+(orientation is wrong when it ends up at the application).  Fastrak trackers
+work fine.
 
 How to reduce latency on the tracker:
     In any case:
@@ -75,4 +53,4 @@ up to 1000 and don't change the serial driver, then this doesn't really do
 anything.  With both changes, serial loopbacks respond within tenths of a
 ms.
 
-(weberh 1/19/98)
+(Russ Taylor, November 2000)

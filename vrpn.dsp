@@ -146,6 +146,14 @@ SOURCE=.\vrpn_Connection.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_DelayedConnection.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_DelayedConnection.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_Dial.C
 # End Source File
 # Begin Source File
@@ -247,6 +255,14 @@ SOURCE=.\vrpn_raw_sgibox.C
 # Begin Source File
 
 SOURCE=.\vrpn_raw_sgibox.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_RedundantTransmission.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_RedundantTransmission.h
 # End Source File
 # Begin Source File
 

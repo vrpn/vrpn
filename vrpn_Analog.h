@@ -15,14 +15,6 @@
 #include "vrpn_Serial.h"
 #endif
 
-// Contention:  vrpn_Analog shouldn't have a mainloop() function.
-//   (Neither should other similar base classes).  There isn't any
-//   reason for some derived classes to implement one, and there may
-//   not even be any meaningful semantics.  (qv vrpn_Analog_Server below)
-// Instead, declare a virtual destructor = 0 to force it to be an abstract
-//   class.
-// TCH March 1999
-
 class vrpn_Analog : public vrpn_BaseClass {
 public:
 	vrpn_Analog (const char * name, vrpn_Connection * c = NULL);
@@ -102,7 +94,7 @@ class vrpn_Analog_Server : public vrpn_Analog {
     /// communication.  Note that this will cause very rapid sending
     /// of reports if this is called each time through a loop whose
     /// rate is unchecked.
-    virtual void mainloop () { server_mainloop(); report(); };
+    virtual void mainloop () { server_mainloop(); };
 
     /// Exposes an array of values for the user to write into.
     vrpn_float64 * channels (void);

@@ -1,3 +1,8 @@
+2000-11-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Shared.C (gettimeofday) : Turned off hi-perf clock for Win98
+		(vrpn_AdjustFrequency) : Removed buggy clock-check code
+
 2000-11-01  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_FileConnection.C : Fixed parsing of file://.
