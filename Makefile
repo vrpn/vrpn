@@ -26,7 +26,7 @@
 #
 
 MAKEFILE := Makefile
-MAKE := make -f $(MAKEFILE)
+MAKE := gmake -f $(MAKEFILE)
 
 # hw_os does not exist on FreeBSD at UNC
 UNAME := $(shell uname -s)
