@@ -285,7 +285,9 @@ class VRPN_API vrpn_BaseClass : virtual public vrpn_BaseClassUnique {
 // have DLL linkage, the code below asks for (but apparently does not
 // get) DLL linkage, and the DLL-linked test programs work when things
 // are as they are.  Do not use this class outside of a derived class.
+#ifdef	_WIN32
 #pragma warning( disable : 4251 )
+#endif
 template<class CALLBACK_STRUCT> class VRPN_API vrpn_Callback_List {
 public:
   typedef void (VRPN_CALLBACK *HANDLER_TYPE)(void *userdata, const CALLBACK_STRUCT info);

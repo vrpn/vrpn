@@ -1,5 +1,12 @@
 2004-12-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_BaseClass.h : Guarding the #pragma that turns off
+		the warning so that it only happens on Windows,
+		so that the SGI compiler doesn't complain about
+		every file.
+
+2004-12-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_BaseClass.h : Added a template class to deal with
 		callback list handling.  This does not use STL, to
 		avoid the problems with having incompatible STL
