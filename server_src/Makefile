@@ -1,4 +1,16 @@
-CC = CC
+
+
+CC := g++
+ifeq ($(HW_OS),sgi_irix)
+	CC := CC
+endif
+ifeq ($(HW_OS),hp700_hpux10)
+	CC := CC +a1
+endif
+ifeq ($(HW_OS),sparc_sunos)
+	CC := /usr/local/lib/CenterLine/bin/CC
+endif
+
 CFLAGS = -I../ -g
 LFLAGS = -L../`hw_os` \
 	 -L/afs/unc/proj/hmd/beta/lib/`hw_os` \
