@@ -105,7 +105,7 @@ all:	$(OBJ_DIR)/printvals $(OBJ_DIR)/printcereal \
 	$(OBJ_DIR)/ff_client \
 	$(OBJ_DIR)/phan_client \
 	$(OBJ_DIR)/sphere_client $(OBJ_DIR)/bdbox_client \
-	add_vrpn_cookie testLamport
+	add_vrpn_cookie testLamport test_mutex
 #	$(OBJ_DIR)/vrpn_print_messages
 
 # $(OBJ_DIR)/ohm_client
@@ -126,6 +126,9 @@ testSharedObject:	$(OBJ_DIR)/testSharedObject
 
 .PHONY: testLamport
 testLamport:	$(OBJ_DIR)/testLamport
+
+.PHONY: test_mutex
+test_mutex:	$(OBJ_DIR)/test_mutex
 
 .PHONY:	text
 text:	$(OBJ_DIR)/text
@@ -195,6 +198,10 @@ $(OBJ_DIR)/testLamport: $(OBJ_DIR)/vrpn_LamportClock.t.o \
 				$(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/testLamport \
 		$(OBJ_DIR)/vrpn_LamportClock.t.o -lvrpn $(ARCH_LIBS)
+
+$(OBJ_DIR)/test_mutex: $(OBJ_DIR)/test_mutex.o $(LIB_DIR)/libvrpn.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/test_mutex \
+		$(OBJ_DIR)/test_mutex.o -lvrpn $(ARCH_LIBS)
 
 
 # These utilities actually DON'T use libvrpn
