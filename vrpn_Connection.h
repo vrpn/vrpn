@@ -89,7 +89,7 @@ const	long	vrpn_LOG_OUTGOING	= (1<<1);
 
 // If defined, will filter out messages:  if the remote side hasn't
 // registered a type, messages of that type won't be sent over the
-// link.
+// link.  WARNING:  auto-type-registration breaks this.
 //#define vrpn_FILTER_MESSAGES
 
 // These are the strings that define the system-generated message
@@ -311,6 +311,11 @@ class vrpn_Endpoint {
     // Visible so that vrpn_Connection can pass them to the Dispatcher
     static int handle_sender_message (void * userdata, vrpn_HANDLERPARAM p);
     static int handle_type_message (void * userdata, vrpn_HANDLERPARAM p);
+	
+	// Routines to inform the endpoing of the connection of 
+	// which it is a part.
+	void setConnection( vrpn_Connection* conn ) {  d_parent = conn;  }
+	vrpn_Connection* getConnection( ) {  return d_parent;  }
 
   protected:
 
@@ -376,13 +381,9 @@ class vrpn_Endpoint {
     vrpn_TypeDispatcher * d_dispatcher;
     vrpn_int32 * d_connectionCounter;
 
-    //vrpn_Connection * d_parent;
-      ///< Tried to get rid of this, but it's needed in one place:
-      ///< to call register_sender in finish_new_connection_setup()
-      ///< so that the other side has vrpn_CONTROL in its sender table in
-      ///< the same place we do (and the got_connection types in its type
-      ///< table).
+    vrpn_Connection * d_parent;
 };
+
 
 class vrpn_Connection {
 

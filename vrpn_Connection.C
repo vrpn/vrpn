@@ -4170,7 +4170,8 @@ int vrpn_Endpoint::handle_type_message(void *userdata,
   vrpn_int32	local_id;
 
   if (p.payload_len > sizeof(cName)) {
-    fprintf(stderr,"vrpn: vrpn_Connection::Type name too long\n");
+    fprintf(stderr,"vrpn: vrpn_Endpoint::handle_type_message:  "
+			"Type name too long\n");
     return -1;
   }
 
@@ -4187,9 +4188,22 @@ int vrpn_Endpoint::handle_type_message(void *userdata,
   printf("Registering other-side type: '%s'\n", type_name);
 #endif
   // If there is a corresponding local type defined, find the mapping.
-  // If not, clear the mapping.
-  // Tell that the other side cares about it if found.
   local_id = endpoint->d_dispatcher->getTypeID(type_name);
+  // If not, add this type locally
+  if( local_id = -1 )
+  {
+	  if( endpoint->d_parent != NULL )
+	  {
+		  local_id = endpoint->d_parent->register_message_type( type_name );
+	  }
+#ifdef VERBOSE
+	  else
+	  {
+		  printf( "vrpn_Endpoint::handle_type_message:  NULL d_parent"
+				  "when trying to auto-register remote message type %s.\n", type_name );
+	  }
+#endif
+  }
   if (endpoint->newRemoteType(type_name, p.sender, local_id) == -1) {
     fprintf(stderr, "vrpn: Failed to add remote type %s\n", type_name);
     return -1;
@@ -4197,6 +4211,7 @@ int vrpn_Endpoint::handle_type_message(void *userdata,
 
   return 0;
 }
+
 
 void vrpn_Endpoint::setLogNames (const char * inName, const char * outName) 
 {
@@ -4402,9 +4417,10 @@ int vrpn_Connection::connect_to_client (const char *machine, int port)
 	  return -1;
 	}
 
-	d_endpoints[which_end] = (*d_endpointAllocator)(this,
-                                                  &d_numConnectedEndpoints);
-        d_updateEndpoint = vrpn_TRUE;
+	d_endpoints[which_end] 
+		= (*d_endpointAllocator)(this, &d_numConnectedEndpoints);
+	d_endpoints[which_end]->setConnection( this );
+	d_updateEndpoint = vrpn_TRUE;
 	vrpn_Endpoint * endpoint = d_endpoints[which_end];
 
 	if (!endpoint) {
@@ -4839,8 +4855,9 @@ void vrpn_Connection::server_check_for_incoming_connections
 
       // Create a new endpoint and start trying to connect it to
       // the client.
-    d_endpoints[which_end] = (*d_endpointAllocator)(this,
-                                              &d_numConnectedEndpoints);
+    d_endpoints[which_end] 
+		= (*d_endpointAllocator)(this, &d_numConnectedEndpoints);
+	d_endpoints[which_end]->setConnection( this );
     d_updateEndpoint = vrpn_TRUE;
     endpoint = d_endpoints[which_end];
     if (!endpoint) {
@@ -4916,8 +4933,9 @@ void vrpn_Connection::server_check_for_incoming_connections
         return;
     }
 
-    d_endpoints[which_end] = (*d_endpointAllocator)(this,
-                                              &d_numConnectedEndpoints);
+    d_endpoints[which_end] 
+		= (*d_endpointAllocator)(this, &d_numConnectedEndpoints);
+	d_endpoints[which_end]->setConnection( this );
     d_updateEndpoint = vrpn_TRUE;
     endpoint = d_endpoints[which_end];
     if (!endpoint) {
@@ -5146,6 +5164,7 @@ vrpn_Connection::vrpn_Connection
 
   if (local_out_logfile_name) {
     d_endpoints[0] = (*d_endpointAllocator)(this, NULL);
+	d_endpoints[0]->setConnection( this );
     d_updateEndpoint = vrpn_TRUE;
     endpoint = d_endpoints[0];
     if (!endpoint) {
@@ -5225,6 +5244,7 @@ vrpn_Connection::vrpn_Connection
 
   // We're a client;  create our single endpoint and initialize it.
   d_endpoints[0] = (*d_endpointAllocator)(this, &d_numConnectedEndpoints);
+  d_endpoints[0]->setConnection( this );
   d_updateEndpoint = vrpn_TRUE;
   if (!d_endpoints[0]) {
     fprintf(stderr, "vrpn_Connection:  Out of memory.\n");

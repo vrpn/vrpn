@@ -1,7 +1,20 @@
+2003-10-31  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Connection.h (vrpn_Endpoint):  new methods setConnection and
+	getConnection, and a new data member d_parent of type vrpn_Connection*.
+	* vrpn_Connection.C (vrpn_Endpoint::handle_type_message):  message
+	type auto-registration.  If the type from the remote side is unknown,
+	register the type locally.  This enables generic stream examiners
+	and editors.
+	(vrpn_Connection::connect_to_client):  call vrpn_Endpoint::
+	setConnection after creating an endpoint.
+	(vrpn_Connection::vrpn_Connection):  same
+	(vrpn_Connection::server_check_for_incoming_connections):  same
+
 2003-10-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Tracker.C : Fixed a bug that was added in the code that
-		unregisters handlers in the descructor.  It needed to pass
+		unregisters handlers in the destructor.  It needed to pass
 		another parameter, which it does here, to work in the
 		general case.  This bug caused nano to hang at exit,
 		repeatedly tryin to unregister the same (wrong) handler.
