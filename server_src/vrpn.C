@@ -27,7 +27,7 @@
 #endif
 
 #include "vrpn_Analog.h"
-#include "vrpn_Joystick.h"
+#include "vrpn_UNC_Joystick.h"
 #include "vrpn_JoyFly.h"
 #include "vrpn_CerealBox.h"
 #include "vrpn_Tracker_AnalogFly.h"
@@ -455,10 +455,6 @@ int setup_Joystick (char * & pch, char * line, FILE * config_file) {
       return -1;
     }
 
-#ifdef  _WIN32
-    fprintf(stderr,"Joystick not yet defined for NT\n");
-#else
-
     // Make sure there's room for a new joystick server
     if (num_analogs >= MAX_ANALOG) {
       fprintf(stderr, "Too many analog devices in config file");
@@ -477,7 +473,6 @@ int setup_Joystick (char * & pch, char * line, FILE * config_file) {
     } else {
         num_analogs++;
     }
-#endif
 
   return 0;
 }
