@@ -124,7 +124,7 @@ void myIdleFunc(void)
 
 int main(int argc, char **argv)
 {
-  char	*device_name = "TestImage@localhost";
+  char	*device_name = "TestImage@localhost:4511";
 
 #if 0
   // Create a log file of the video

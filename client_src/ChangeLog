@@ -1,3 +1,9 @@
+2004-07-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* testimager_client.C : Changed default port number.
+	* test_force_device_client.cpp : Test program for vrpn_ForceDevice/
+	* test_force_device_client.dsp : Project file to build this.
+
 2004-05-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* tracker_to_poser.cpp : Can specify name of tracker and poser
