@@ -235,6 +235,10 @@ SOURCE=.\vrpn_UNC_Joystick.C
 
 SOURCE=.\vrpn_Wanda.C
 # End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Zaber.C
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -394,6 +398,10 @@ SOURCE=.\vrpn_UNC_Joystick.h
 # Begin Source File
 
 SOURCE=.\vrpn_Wanda.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Zaber.h
 # End Source File
 # End Group
 # End Target

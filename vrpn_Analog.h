@@ -29,10 +29,14 @@ public:
 	vrpn_float64	last[vrpn_CHANNEL_MAX];
 	vrpn_int32	num_channel;
 	struct timeval	timestamp;
-	vrpn_int32 channel_m_id;	// channel message id
+	vrpn_int32	channel_m_id;	//< channel message id (message from server)
+	vrpn_int32	request_m_id;	//< Request to change message from client
 	int status; 
 
 	virtual	int register_types(void);
+
+	//------------------------------------------------------------------
+	// Routines used to send data from the server
 	virtual vrpn_int32 encode_to(char *buf);
 	/// Send a report only if something has changed (for servers)
         virtual void report_changes (vrpn_uint32 class_of_service
@@ -46,7 +50,7 @@ public:
 class vrpn_Serial_Analog: public vrpn_Analog {
 public:
   vrpn_Serial_Analog(const char * name, vrpn_Connection * connection,
-		     const char * port, int baud, int bits = 8, 
+		     const char * port, int baud = 9600, int bits = 8, 
                      vrpn_SER_PARITY parity = vrpn_SER_PARITY_NONE);
   ~vrpn_Serial_Analog();
 protected:
@@ -56,8 +60,7 @@ protected:
   unsigned char buffer[1024];
   int bufcounter;
 
-  int read_available_characters(char *buffer,
-	int bytes);
+  int read_available_characters(char *buffer, int bytes);
 };
 #endif
 
@@ -107,6 +110,11 @@ class vrpn_Analog_Server : public vrpn_Analog {
     /// Sets the size of the array;  returns the size actually set.
     /// (May be clamped to vrpn_CHANNEL_MAX)
     vrpn_int32 setNumChannels (vrpn_int32 sizeRequested);
+
+    /// Responds to a request to change one of the values by
+    /// setting the channel to that value.
+    static int handle_request_message(void *userdata,
+	vrpn_HANDLERPARAM p);
 };
 
 /// Analog server that can scale and clip its range to -1..1.
@@ -182,6 +190,11 @@ class vrpn_Analog_Remote: public vrpn_Analog {
 	virtual int unregister_change_handler(void *userdata,
 		vrpn_ANALOGCHANGEHANDLER handler);
 
+	// Request the analog to change its value to the one specified.
+	// Returns false on failure.
+	virtual	bool request_change_channel_value(unsigned chan, vrpn_float64 val,
+	  vrpn_uint32 class_of_service = vrpn_CONNECTION_RELIABLE);
+
   protected:
 	typedef	struct vrpn_RBCS {
 		void				*userdata;
@@ -191,6 +204,10 @@ class vrpn_Analog_Remote: public vrpn_Analog {
 	vrpn_ANALOGCHANGELIST	*change_list;
 
 	static int handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
+
+	//------------------------------------------------------------------
+	// Routines used to send requests from the client
+	virtual vrpn_int32 encode_change_to(char *buf, vrpn_int32 chan, vrpn_float64 val);
 };
 
 #endif

@@ -1,13 +1,26 @@
+2002-05-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Analog.C : Added capability to send requests from an analog remote
+		to an analog server for it to change a channel to the requested
+		value.  Modified the example server to respond by setting its
+		channels to this.  This is done to enable the Zaber linear
+		actuator to be moved to requested positions.
+	* vrpn_Analog.h : Same.
+	* vrpn_Zaber.h : Code to control a Zaber linear actuator.
+	* vrpn_Zaber.C : Code to control a Zaber linear actuator.
+	* vrpn.dsw : Added vrpn_Zaber.[hC] to compile code for Windows.  It should work
+		for any architecture.
+
 2002-04-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
-	* vrpn_Dial.C (vrpn_Dial_Remote::mainloop): Calls client_mainloop()
+	* vrpn_Dial.C (vrpn_Dial_Remote::mainloop) : Calls client_mainloop()
 
 2002-03-20  Aron Helser  <helser@cs.unc.edu>
 
-	* time_test.dsp: Moved here so it is next to the code it
+	* time_test.dsp : Moved here so it is next to the code it
 	compiles. Standardized settings, see below.
-	* vrpn.dsp: standardized settings, see below. 
-	* vrpn.dsw: Changed location of many dsp files, and made
+	* vrpn.dsp : standardized settings, see below. 
+	* vrpn.dsw : Changed location of many dsp files, and made
 	standardized settings for all Debug and Release
 	builds. VRPN_NO_STREAMS defined by default. All object files and
 	compiler-generated files go in vrpn/pc_win32 directory, in a
