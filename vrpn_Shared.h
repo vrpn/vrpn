@@ -39,7 +39,7 @@ extern int gettimeofday(struct timeval *tp, struct timezone *tzp);
 #include <winsock.h>     // timeval is actually defined here
 #endif
 
-#include <sys/time.h>    // for struct timeval
+#include <sys/time.h>    // for timeval, timezone, gettimeofday
 
 #endif
 // }}} timeval defines
