@@ -31,6 +31,7 @@
 #include "vrpn_JoyFly.h"
 #include "vrpn_CerealBox.h"
 #include "vrpn_Tracker_AnalogFly.h"
+#include "vrpn_Tracker_ButtonFly.h"
 #include "vrpn_Magellan.h"
 #include "vrpn_Spaceball.h"
 #include "vrpn_ImmersionBox.h"
@@ -41,6 +42,7 @@
 #include "vrpn_Tng3.h"
 #include "vrpn_Tracker_isense.h"
 #include "vrpn_DirectXFFJoystick.h"
+#include "vrpn_GlobalHapticsOrb.h"
 
 #include "vrpn_ForwarderController.h"
 #include <vrpn_RedundantTransmission.h>
@@ -59,9 +61,14 @@ const int MAX_MAGELLANS =  8;
 const int MAX_SPACEBALLS = 8;
 const int MAX_IBOXES =     8;
 const int MAX_DIALS =      8;
+#ifdef INCLUDE_TIMECODE_SERVER
 const int MAX_TIMECODE_GENERATORS = 8;
+#endif
 const int MAX_TNG3S = 8;
+#ifdef	VRPN_USE_DIRECTINPUT
 const int MAX_DIRECTXJOYS = 8;
+#endif
+const int MAX_GLOBALHAPTICSORBS = 8;
 
 static	int	done = 0;	// Done and should exit?
 
@@ -128,6 +135,8 @@ int             num_tng3s = 0;
 vrpn_DirectXFFJoystick	* DirectXJoys [MAX_DIRECTXJOYS];
 int		num_DirectXJoys = 0;
 #endif
+vrpn_GlobalHapticsOrb *ghos[MAX_GLOBALHAPTICSORBS];
+int		num_GlobalHapticsOrbs = 0;
 
 vrpn_Connection * connection;
 
@@ -416,92 +425,229 @@ int setup_Tracker_AnalogFly (char * & pch, char * line, FILE * config_file) {
     vrpn_Tracker_AnalogFlyParam     p;
     vrpn_bool	absolute;
 
-                next();
-                if (sscanf(pch, "%511s%g%511s",s2,&f1,s3) != 3) {
-                        fprintf(stderr, "Bad vrpn_Tracker_AnalogFly line: %s\n",
-			    line);
-                        return -1;
-                }
+    next();
+    if (sscanf(pch, "%511s%g%511s",s2,&f1,s3) != 3) {
+            fprintf(stderr, "Bad vrpn_Tracker_AnalogFly line: %s\n",
+		line);
+            return -1;
+    }
 
-		// See if this should be absolute or differential
-		if (strcmp(s3, "absolute") == 0) {
-		    absolute = vrpn_true;
-		} else if (strcmp(s3, "differential") == 0) {
-		    absolute = vrpn_false;
-		} else {
-		    fprintf(stderr,"vrpn_Tracker_AnalogFly: Expected 'absolute' or 'differential'\n");
-		    fprintf(stderr,"   but got '%s'\n",s3);
-		    return -1;
-		}
+    // See if this should be absolute or differential
+    if (strcmp(s3, "absolute") == 0) {
+	absolute = vrpn_true;
+    } else if (strcmp(s3, "differential") == 0) {
+	absolute = vrpn_false;
+    } else {
+	fprintf(stderr,"vrpn_Tracker_AnalogFly: Expected 'absolute' or 'differential'\n");
+	fprintf(stderr,"   but got '%s'\n",s3);
+	return -1;
+    }
 
-                // Make sure there's room for a new tracker
-                if (num_trackers >= MAX_TRACKERS) {
-                  fprintf(stderr,"Too many trackers in config file");
-                  return -1;
-                }
+    // Make sure there's room for a new tracker
+    if (num_trackers >= MAX_TRACKERS) {
+      fprintf(stderr,"Too many trackers in config file");
+      return -1;
+    }
 
-                if (verbose) {
-                  printf("Opening vrpn_Tracker_AnalogFly: "
-                         "%s with update rate %g\n",s2,f1);
-                }
+    if (verbose) {
+      printf("Opening vrpn_Tracker_AnalogFly: "
+             "%s with update rate %g\n",s2,f1);
+    }
 
-                // Scan the following lines in the configuration file to fill
-                // in the start-up parameters for the different axis.
+    // Scan the following lines in the configuration file to fill
+    // in the start-up parameters for the different axis.
 
-                if (get_AFline(config_file,"X", &p.x)) {
-                        fprintf(stderr,"Can't read X line for AnalogFly\n");
-                        return -1;
-                }
-                
-                if (get_AFline(config_file,"Y", &p.y)) {
-                        fprintf(stderr,"Can't read Y line for AnalogFly\n");
-                        return -1;
-                }
+    if (get_AFline(config_file,"X", &p.x)) {
+            fprintf(stderr,"Can't read X line for AnalogFly\n");
+            return -1;
+    }
+    
+    if (get_AFline(config_file,"Y", &p.y)) {
+            fprintf(stderr,"Can't read Y line for AnalogFly\n");
+            return -1;
+    }
 
-                if (get_AFline(config_file,"Z", &p.z)) {
-                        fprintf(stderr,"Can't read Z line for AnalogFly\n");
-                        return -1;
-                }
+    if (get_AFline(config_file,"Z", &p.z)) {
+            fprintf(stderr,"Can't read Z line for AnalogFly\n");
+            return -1;
+    }
 
-                if (get_AFline(config_file,"RX", &p.sx)) {
-                        fprintf(stderr,"Can't read RX line for AnalogFly\n");
-                        return -1;
-                }
+    if (get_AFline(config_file,"RX", &p.sx)) {
+            fprintf(stderr,"Can't read RX line for AnalogFly\n");
+            return -1;
+    }
 
-                if (get_AFline(config_file,"RY", &p.sy)) {
-                        fprintf(stderr,"Can't read RY line for AnalogFly\n");
-                        return -1;
-                }
+    if (get_AFline(config_file,"RY", &p.sy)) {
+            fprintf(stderr,"Can't read RY line for AnalogFly\n");
+            return -1;
+    }
 
-                if (get_AFline(config_file,"RZ", &p.sz)) {
-                        fprintf(stderr,"Can't read RZ line for AnalogFly\n");
-                        return -1;
-                }
+    if (get_AFline(config_file,"RZ", &p.sz)) {
+            fprintf(stderr,"Can't read RZ line for AnalogFly\n");
+            return -1;
+    }
 
-        // Read the reset line
-        if (fgets(line, LINESIZE, config_file) == NULL) {
-                fprintf(stderr,"Ran past end of config file in AnalogFly\n");
-                return -1;
-        }
-        if (sscanf(line, "RESET %511s%d", s3, &i1) != 2) {
-                fprintf(stderr,"Bad RESET line in AnalogFly: %s\n",line);
-                return -1;
-        }
-        if (strcmp(s3,"NULL") != 0) {
-                p.reset_name = s3;
-                p.reset_which = i1;
-        }
+    // Read the reset line
+    if (fgets(line, LINESIZE, config_file) == NULL) {
+            fprintf(stderr,"Ran past end of config file in AnalogFly\n");
+            return -1;
+    }
+    if (sscanf(line, "RESET %511s%d", s3, &i1) != 2) {
+            fprintf(stderr,"Bad RESET line in AnalogFly: %s\n",line);
+            return -1;
+    }
+    if (strcmp(s3,"NULL") != 0) {
+            p.reset_name = s3;
+            p.reset_which = i1;
+    }
 
-        trackers[num_trackers] = new
-           vrpn_Tracker_AnalogFly (s2, connection, &p, f1, absolute);
+    trackers[num_trackers] = new
+       vrpn_Tracker_AnalogFly (s2, connection, &p, f1, absolute);
 
-                if (!trackers[num_trackers]) {
-                  fprintf(stderr,"Can't create new vrpn_Tracker_AnalogFly\n");
-                  return -1;
-                } else {
-                  num_trackers++;
-                }
-  return 0;
+    if (!trackers[num_trackers]) {
+      fprintf(stderr,"Can't create new vrpn_Tracker_AnalogFly\n");
+      return -1;
+    } else {
+      num_trackers++;
+    }
+
+    return 0;
+}
+
+int setup_Tracker_ButtonFly (char * & pch, char * line, FILE * config_file) {
+    char s2 [LINESIZE], s3 [LINESIZE];
+    float f1;
+    vrpn_Tracker_ButtonFlyParam     p;
+
+    next();
+    if (sscanf(pch, "%511s%g",s2,&f1) != 2) {
+            fprintf(stderr, "Bad vrpn_Tracker_ButtonFly line: %s\n", line);
+            return -1;
+    }
+
+    // Make sure there's room for a new tracker
+    if (num_trackers >= MAX_TRACKERS) {
+      fprintf(stderr,"Too many trackers in config file");
+      return -1;
+    }
+
+    if (verbose) {
+      printf("Opening vrpn_Tracker_ButtonFly "
+             "%s with update rate %g\n",s2,f1);
+    }
+
+    // Scan the following lines in the configuration file to fill
+    // in the start-up parameters for the different axes and the
+    // analog velocity and rotational velocity setters.  The last
+    // line is "end".
+
+    while (1) {
+      if (fgets(line, LINESIZE, config_file) == NULL) {
+	fprintf(stderr,"Ran past end of config file in ButtonFly\n");
+	return -1;
+      }
+      if (sscanf(line, "%511s", s3) != 1) {
+	fprintf(stderr,"Bad line in config file in ButtonFly\n");
+	return -1;
+      }
+      if (strcmp(s3, "end") == 0) {
+	break;	// Done with reading the parameters
+      } else if (strcmp(s3, "absolute") == 0) {
+	char  name[200];	//< Name of the button device to read from
+	int   which;		//< Which button to read from
+	float x,y,z, rx,ry,rz;	//< Position and orientation
+	vrpn_TBF_axis axis;	//< Axis to add to the ButtonFly
+
+	if (sscanf(line, "absolute %199s%d%g%g%g%g%g%g", name,
+		&which, &x,&y,&z, &rx,&ry,&rz) != 8) {
+	  fprintf(stderr,"ButtonFly: Bad absolute line\n");
+	  return -1;
+	}
+
+	float vec[3], rot[3];
+	vec[0] = x; vec[1] = y; vec[2] = z;
+	rot[0] = rx; rot[1] = ry; rot[2] = rz;
+	axis.absolute = true;
+	memcpy(axis.name, name, sizeof(axis.name));
+	axis.channel = which;
+	memcpy(axis.vec, vec, sizeof(axis.vec));
+	memcpy(axis.rot, rot, sizeof(axis.rot));
+
+	if (!p.add_axis(axis)) {
+	  fprintf(stderr,"ButtonFly: Could not add absolute axis to parameters\n");
+	  return -1;
+	}
+      } else if (strcmp(s3, "differential") == 0) {
+	char  name[200];	//< Name of the button device to read from
+	int   which;		//< Which button to read from
+	float x,y,z, rx,ry,rz;	//< Position and orientation
+	vrpn_TBF_axis axis;	//< Axis to add to the ButtonFly
+
+	if (sscanf(line, "differential %199s%d%g%g%g%g%g%g", name,
+		&which, &x,&y,&z, &rx,&ry,&rz) != 8) {
+	  fprintf(stderr,"ButtonFly: Bad differential line\n");
+	  return -1;
+	}
+
+	float vec[3], rot[3];
+	vec[0] = x; vec[1] = y; vec[2] = z;
+	rot[0] = rx; rot[1] = ry; rot[2] = rz;
+	axis.absolute = false;
+	memcpy(axis.name, name, sizeof(axis.name));
+	axis.channel = which;
+	memcpy(axis.vec, vec, sizeof(axis.vec));
+	memcpy(axis.rot, rot, sizeof(axis.rot));
+
+	if (!p.add_axis(axis)) {
+	  fprintf(stderr,"ButtonFly: Could not add differential axis to parameters\n");
+	  return -1;
+	}
+      } else if (strcmp(s3, "vel_scale") == 0) {
+	char  name[200];	//< Name of the analog device to read from
+	int   channel;		//< Which analog channel to read from
+	float offset, scale, power; //< Parameters to apply
+
+	if (sscanf(line, "vel_scale %199s%d%g%g%g", name,
+		&channel, &offset, &scale, &power) != 5) {
+	  fprintf(stderr,"ButtonFly: Bad vel_scale line\n");
+	  return -1;
+	}
+
+	memcpy(p.vel_scale_name, name, sizeof(p.vel_scale_name));
+	p.vel_scale_channel = channel;
+	p.vel_scale_offset = offset;
+	p.vel_scale_scale = scale;
+	p.vel_scale_power = power;
+      } else if (strcmp(s3, "rot_scale") == 0) {
+	char  name[200];	//< Name of the analog device to read from
+	int   channel;		//< Which analog channel to read from
+	float offset, scale, power; //< Parameters to apply
+
+	if (sscanf(line, "rot_scale %199s%d%g%g%g", name,
+		&channel, &offset, &scale, &power) != 5) {
+	  fprintf(stderr,"ButtonFly: Bad rot_scale line\n");
+	  return -1;
+	}
+
+	memcpy(p.rot_scale_name, name, sizeof(p.rot_scale_name));
+	p.rot_scale_channel = channel;
+	p.rot_scale_offset = offset;
+	p.rot_scale_scale = scale;
+	p.rot_scale_power = power;
+      }
+    }
+
+    trackers[num_trackers] = new
+       vrpn_Tracker_ButtonFly (s2, connection, &p, f1);
+
+    if (!trackers[num_trackers]) {
+      fprintf(stderr,"Can't create new vrpn_Tracker_ButtonFly\n");
+      return -1;
+    } else {
+      num_trackers++;
+    }
+
+    return 0;
 }
 
 int setup_Joystick (char * & pch, char * line, FILE * config_file) {
@@ -619,7 +765,7 @@ int setup_Magellan (char * & pch, char * line, FILE * config_file)
   next();
 
   // Get the arguments (class, magellan_name, port, baud, [optionally "altreset"]
-  if ( (ret = sscanf(pch,"%511s%511s%d",s2,s3, &i1, s4)) < 3) {
+  if ( (ret = sscanf(pch,"%511s%511s%d%511s",s2,s3, &i1, s4)) < 3) {
     fprintf(stderr,"Bad vrpn_Magellan line: %s\n",line);
     return -1;
   }
@@ -1471,6 +1617,40 @@ int setup_DirectXFFJoystick (char * & pch, char * line, FILE * config_file) {
 #endif
 }
 
+int setup_GlobalHapticsOrb (char * & pch, char * line, FILE * config_file) {
+  char s2[LINESIZE], s3[LINESIZE];
+  int  i1;
+
+  next();
+  // Get the arguments (orb_name, port name, baud rate)
+  if (sscanf(pch,"%511s%s%d",s2,s3, &i1) != 3) {
+    fprintf(stderr,"Bad vrpn_GlobalHapticsOrb line: %s\n",line);
+    return -1;
+  }
+
+  // Make sure there's room for a new orb
+  if (num_GlobalHapticsOrbs >= MAX_GLOBALHAPTICSORBS) {
+    fprintf(stderr,"Too many Global Haptics Orbs in config file");
+    return -1;
+  }
+
+  // Open the orb
+  if (verbose) {
+  printf("Opening vrpn_GlobalHapticsOrb: %s, port %s, baud rate %d\n",
+	s2, s3, i1);
+  }
+  if ((ghos[num_GlobalHapticsOrbs] =
+      new vrpn_GlobalHapticsOrb(s2, connection, s3, i1)) == NULL)               
+  {
+    fprintf(stderr,"Can't create new vrpn_GlobalHapticsOrb\n");
+    return -1;
+  } else {
+    num_GlobalHapticsOrbs++;
+  }
+
+  return 0;
+}
+
 main (int argc, char * argv[])
 {
 	char	* config_file_name = "vrpn.cfg";
@@ -1501,8 +1681,8 @@ main (int argc, char * argv[])
   signal( SIGKILL, sighandler );
   signal( SIGTERM, sighandler );
   signal( SIGPIPE, sighandler );
-#endif // sgi
-#endif
+#endif // not sgi
+#endif // not WIN32
 
 	// Parse the command line
 	i = 1;
@@ -1625,6 +1805,8 @@ main (int argc, char * argv[])
             CHECK(setup_JoyFly);
 	  } else if (isit("vrpn_Tracker_AnalogFly")) {
             CHECK(setup_Tracker_AnalogFly);
+	  } else if (isit("vrpn_Tracker_ButtonFly")) {
+            CHECK(setup_Tracker_ButtonFly);
 	  } else  if (isit("vrpn_Joystick")) {
             CHECK(setup_Joystick);
 	  } else  if (isit("vrpn_Joylin")) {
@@ -1668,11 +1850,13 @@ main (int argc, char * argv[])
 	  } else if (isit("vrpn_Tng3")) {
             CHECK(setup_Tng3);
 	  } else  if (isit("vrpn_TimeCode_Generator")) {
-			CHECK(setup_Timecode_Generator);
+	    CHECK(setup_Timecode_Generator);
 	  } else if (isit("vrpn_Tracker_InterSense")) {
-			CHECK(setup_Tracker_InterSense);
+	    CHECK(setup_Tracker_InterSense);
 	  } else if (isit("vrpn_DirectXFFJoystick")) {
-			CHECK(setup_DirectXFFJoystick);
+	    CHECK(setup_DirectXFFJoystick);
+	  } else if (isit("vrpn_GlobalHapticsOrb")) {
+	    CHECK(setup_GlobalHapticsOrb);
 	  } else {	// Never heard of it
 		sscanf(line,"%511s",s1);	// Find out the class name
 		fprintf(stderr,"vrpn_server: Unknown Device: %s\n",s1);
@@ -1786,6 +1970,11 @@ main (int argc, char * argv[])
 	    DirectXJoys[i]->mainloop();
 	  }
 #endif
+
+	  // Let all the Orbs do their thing
+	  for (i = 0; i < num_GlobalHapticsOrbs; i++) {
+	    ghos[i]->mainloop();
+	  }
 
           redundantController->mainloop();
           redundancy->mainloop();

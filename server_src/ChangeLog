@@ -1,3 +1,12 @@
+2003-01-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Added code to use a ButtonFly and Global Haptics GeoOrb.
+			Fixed string format conversion for Magellan so that
+			it will accept the alternative reset string.
+			Guarded const definitions to avoid compiler warnings.
+	* vrpn.cfg : Added sample description of ButtonFly and Orb.
+	* vrpn.cfg.SAMPLE : Same.
+
 2002-12-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.C : Added Deepak's code to run fastraks that have a stylus
