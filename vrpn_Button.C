@@ -16,6 +16,10 @@
 #include <sys/ioctl.h>
 #endif 
 
+#ifdef	_WIN32
+#include <io.h>
+#endif
+
 #include "vrpn_Button.h"
 
 
@@ -102,7 +106,6 @@ void	vrpn_Button::report_changes(void)
    }
 }
 
-#ifndef _WIN32
 vrpn_parallel_Button::vrpn_parallel_Button(char *name, vrpn_Connection *c,
 	int portno) : vrpn_Button(name, c)
 {
@@ -308,5 +311,4 @@ int vrpn_Button_Remote::handle_change_message(void *userdata,
 	return 0;
 }
 
-#endif // #ifndef _WIN32
 

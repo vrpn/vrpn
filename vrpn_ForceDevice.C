@@ -77,6 +77,7 @@ int vrpn_ForceDevice::encode_to(char *buf)
 
 
 #ifdef _WIN32
+#ifndef	VRPN_CLIENT_ONLY
 
 void vrpn_Phantom::handle_plane(void *userdata,const vrpn_PHANTOMCB p)
 {
@@ -387,9 +388,8 @@ int vrpn_Phantom::handle_change_message(void *userdata,
 
 
 #endif
+#endif
 
-
-#ifndef _WIN32
 
 vrpn_ForceDevice_Remote::vrpn_ForceDevice_Remote(char *name):
 	vrpn_ForceDevice(name,vrpn_get_connection_by_name(name)),
@@ -638,4 +638,3 @@ int vrpn_ForceDevice_Remote::handle_change_message(void *userdata,
 
 	return 0;
 }
-#endif

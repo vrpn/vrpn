@@ -1,5 +1,7 @@
 #include "vrpn_Shared.h"
+#ifdef _WIN32
 #include <iomanip.h>
+#endif
 
 // Calcs the sum of tv1 and tv2.  Returns the sum in a timeval struct.
 // Calcs negative times properly, with the appropriate sign on both tv_sec

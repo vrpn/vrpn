@@ -56,10 +56,8 @@ class vrpn_Connection
 	vrpn_Connection(unsigned short listen_port_no =
 		vrpn_DEFAULT_LISTEN_PORT_NO);
 
-#ifndef _WIN32
 	// Create a connection  makes an SDI connection to a remote server
 	vrpn_Connection(char *server_name);
-#endif
 
 	//XXX Destructor should delete all entries from callback lists
 
@@ -186,12 +184,11 @@ class vrpn_Connection
 	// connection, but this makes it a lot easier
         struct timeval tvClockOffset;
 };
-#ifndef _WIN32
+
 // 1hz sync connection by default, windowed over last three bounces 
 extern	vrpn_Connection *vrpn_get_connection_by_name(char *cname,
 						     double dFreq=1,
 						     int cSyncWindow=3 );
-#endif
 
 // forward decls
 class vrpn_Clock_Server;
@@ -207,26 +204,25 @@ class vrpn_Clock_Remote;
 //       rather than a separate class, but right now i don't have time
 //       for that.
 
-class vrpn_Synchronized_Connection : public vrpn_Connection {
-public:
-  // Create a connection to listen for incoming connections on a port
-  // server call
-  vrpn_Synchronized_Connection(unsigned short listen_port_no =
+class vrpn_Synchronized_Connection : public vrpn_Connection
+{
+  public:
+    // Create a connection to listen for incoming connections on a port
+    // server call
+    vrpn_Synchronized_Connection(unsigned short listen_port_no =
 		  vrpn_DEFAULT_LISTEN_PORT_NO);
-  vrpn_Clock_Server *pClockServer;
+    vrpn_Clock_Server *pClockServer;
 
-#ifndef _WIN32
-  // Create a connection makes an SDI connection to a remote server
-  // client call
-  // freq is the frequency of clock syncs (<0 means only on user request)
-  // cOffsetWindow is how many syncs to include in search window for min
-  // roundtrip.  Higher values are more accurate but result in a sync
-  // which accumulates drift error more quickly.
-  vrpn_Synchronized_Connection(char *server_name, double dFreq=4, 
+    // Create a connection makes an SDI connection to a remote server
+    // client call
+    // freq is the frequency of clock syncs (<0 means only on user request)
+    // cOffsetWindow is how many syncs to include in search window for min
+    // roundtrip.  Higher values are more accurate but result in a sync
+    // which accumulates drift error more quickly.
+    vrpn_Synchronized_Connection(char *server_name, double dFreq=4, 
 			       int cOffsetWindow=2);
-  vrpn_Clock_Remote *pClockRemote;
-#endif
-  virtual int mainloop(void);
+    vrpn_Clock_Remote *pClockRemote;
+    virtual int mainloop(void);
 };
 
 #endif

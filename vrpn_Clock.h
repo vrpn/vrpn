@@ -16,7 +16,7 @@
   Revised: Sat Dec 20 08:25:44 1997 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.h,v $
   $Locker:  $
-  $Revision: 1.2 $
+  $Revision: 1.3 $
 \*****************************************************************************/
 #ifndef _VRPN_CLOCK_H_
 #define _VRPN_CLOCK_H_
@@ -84,8 +84,6 @@ typedef void (*vrpn_CLOCKSYNCHANDLER)(void *userdata,
 // desired frequency (in hz) of clock sync updates.  IF THE FREQ IS
 // NEGATIVE, THEN YOU WILL GET NO AUTOMATIC SYNCS. At any time you
 // can get a very accurate sync by calling fullSync();
-
-#ifndef _WIN32
 
 // special message identifiers for remote clock syncs
 #define VRPN_CLOCK_FULL_SYNC 1
@@ -168,7 +166,6 @@ class vrpn_Clock_Remote: public vrpn_Clock {
   static int fullSyncClockServerReplyHandler(void *userdata, 
 					     vrpn_HANDLERPARAM p);
 };
-#endif // ifndef _WIN32
 
 #endif // ifndef _VRPN_CLOCK_H_
 
@@ -176,6 +173,9 @@ class vrpn_Clock_Remote: public vrpn_Clock {
 
 /*****************************************************************************\
   $Log: vrpn_Clock.h,v $
+  Revision 1.3  1998/01/20 15:53:27  taylorr
+  	This version allows the client-side compilation of VRPN on NT.
+
   Revision 1.2  1998/01/08 23:32:49  weberh
   Summary of changes
   1) vrpn_Tracker_Ceiling is now in the cvs repository instead of just

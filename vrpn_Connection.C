@@ -49,10 +49,12 @@ extern "C" int sdi_noint_block_write(int file, char *buf, int len);
 extern "C" int sdi_noint_block_read_timeout(int filedes, char *buffer,
 					int len, struct timeval *timeout);
 #else
+extern "C" int sdi_connect_to_device(char *s);
 extern "C" int sdi_noint_block_read(SOCKET outsock, char *buffer, int length);
 extern "C" int sdi_noint_block_write(SOCKET insock, char *buffer, int length);
 extern "C" int sdi_noint_block_read_timeout(SOCKET tcp_sock, char *buffer,
 					int len, struct timeval *timeout);
+extern "C" int sdi_udp_request_call(char *machine, int port);
 #endif
 
 char	*MAGIC = "vrpn: ver. 02.00";
@@ -83,12 +85,9 @@ vrpn_Synchronized_Connection(unsigned short listen_port_no) :
 {
    pClockServer = new vrpn_Clock_Server(this);
 
-#ifndef _WIN32
    pClockRemote = (vrpn_Clock_Remote *) NULL;
-#endif
 }
 
-#ifndef _WIN32
 // register the base connection name so that vrpn_Clock_Remote can use it
 vrpn_Synchronized_Connection::
 vrpn_Synchronized_Connection(char *server_name, double dFreq, 
@@ -105,7 +104,6 @@ vrpn_Synchronized_Connection(char *server_name, double dFreq,
    pClockRemote->register_clock_sync_handler( &tvClockOffset, 
 					      setClockOffset );
 }
-#endif
 
 int vrpn_Synchronized_Connection::mainloop(void) {
   if (pClockServer) {
@@ -113,12 +111,10 @@ int vrpn_Synchronized_Connection::mainloop(void) {
     // call the base class mainloop
     return vrpn_Connection::mainloop();
   } 
-#ifndef _WIN32
 else if (pClockRemote) {
     // the remote device always calls the base class connection mainloop already
     pClockRemote->mainloop();
   } 
-#endif
 else {
     perror("vrpn_Synchronized_Connection::mainloop: no clock client or server");
     return -1;
@@ -906,14 +902,18 @@ typedef	struct vrpn_KNOWN_CONS_STRUCT {
 static vrpn_KNOWN_CONNECTION *known = NULL;
 
 
-#ifndef _WIN32
 vrpn_Connection::vrpn_Connection(char *station_name)
 {
 	// Initialize the things that must be for any constructor
 	init();
 
 	// Open a connection to the station using SDI
+#ifdef	_WIN32
+	tcp_sock = sdi_udp_request_call(station_name,
+					vrpn_DEFAULT_LISTEN_PORT_NO);
+#else
 	tcp_sock = sdi_connect_to_device(station_name);
+#endif
 	if (tcp_sock < 0) {
 	    fprintf(stderr,
 		"vrpn: vrpn_Connection::vrpn_Connection(): Can't open %s\n",
@@ -942,7 +942,6 @@ vrpn_Connection::vrpn_Connection(char *station_name)
 	curr->next = known;
 	known = curr;
 }
-#endif
 
 long vrpn_Connection::register_sender(char *name)
 {
@@ -1589,7 +1588,6 @@ int vrpn_Connection::unregister_handler(long type, vrpn_MESSAGEHANDLER handler,
 // of a device name, rather than part of the connection name.  This allows
 // the opening of a connection to "Tracker0@ioglab" for example, which will
 // open a connection to ioglab.
-#ifndef _WIN32
 
 // this now always creates synchronized connections, but that is ok
 // because they are derived from connections, and the default 
@@ -1638,4 +1636,3 @@ vrpn_Connection *vrpn_get_connection_by_name(char *cname, double dFreq,
 		return NULL;
 	}
 }
-#endif

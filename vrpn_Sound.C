@@ -6,7 +6,9 @@
 
 #ifndef __STDC__
 #ifndef	hpux
+#ifndef	_WIN32
 #include <getopt.h>
+#endif
 #endif
 #endif
 
@@ -16,14 +18,20 @@
 #include <sys/soundcard.h>
 #endif
 
+#ifdef	_WIN32
+#include <io.h>
+#endif
+
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifndef	_WIN32
 #include <sys/ioctl.h>
-#include <fcntl.h>
 #include <sys/time.h>
 #include <unistd.h>
-#include <ctype.h>
 #include <netinet/in.h>
+#endif
+#include <fcntl.h>
+#include <ctype.h>
 #include "vrpn_Sound.h"
 
 #define BUF_SIZE 4096
@@ -451,6 +459,7 @@ void vrpn_Linux_Sound::mainloop(void)
 }
 // The following are the part the users are concerned with
 
+#ifndef	_WIN32
 vrpn_Sound_Remote::vrpn_Sound_Remote(char *name)
 {
 	//Establish the connection
@@ -462,6 +471,7 @@ vrpn_Sound_Remote::vrpn_Sound_Remote(char *name)
 	my_id = connection->register_sender(name);
 	playsample_id = connection->register_message_type("play_sample");
 }
+#endif
 
 void vrpn_Sound_Remote::mainloop(void)
 {
@@ -475,9 +485,9 @@ int vrpn_Sound_Remote::encode(char *msgbuf, const char *sound,
 							  const int ear, 
 							  const int channel)
 {
-	int i;
+	unsigned i;
 	unsigned long *longbuf = (unsigned long*) (void*)(msgbuf);
-	int index = 0;
+	unsigned index = 0;
 	longbuf[index++] = vrpn_SND_SAMPLE;
 	longbuf[index++] = volume;
 	longbuf[index++] = mode;
@@ -502,9 +512,9 @@ int vrpn_Sound_Remote::encode(char *msgbuf, int set_stop, int channel)
 }
 int vrpn_Sound_Remote::encode(char *msgbuf, int set_load, const char *sound)
 {
-	int i;
+	unsigned i;
 	unsigned long *longbuf = (unsigned long*) (void*)(msgbuf);
-	int index = 0;
+	unsigned index = 0;
 	longbuf[index++] = set_load;
 	for ( i = 0; i< strlen(sound); i++)
 		longbuf[index++] = sound[i];

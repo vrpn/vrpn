@@ -78,8 +78,7 @@ class vrpn_Tracker_Serial : public vrpn_Tracker {
    virtual void get_report(void) = 0;
    virtual void reset(void) = 0;
 };
-
-#endif  
+#endif
 
 class vrpn_Tracker_NULL: public vrpn_Tracker {
   public:
@@ -140,7 +139,6 @@ typedef void (*vrpn_TRACKERACCCHANGEHANDLER)(void *userdata,
 // Open a tracker that is on the other end of a connection
 // and handle updates from it.  This is the type of tracker that user code will
 // deal with.
-#ifndef _WIN32
 
 class vrpn_Tracker_Remote: public vrpn_Tracker {
   public:
@@ -197,7 +195,6 @@ class vrpn_Tracker_Remote: public vrpn_Tracker {
 			vrpn_HANDLERPARAM p);
 };
 
-#endif /* ifndef _WIN32 */
 
 #define TRACKER_H
 #endif

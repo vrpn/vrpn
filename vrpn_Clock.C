@@ -9,13 +9,13 @@
   Revised: Sun Dec 21 02:18:01 1997 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.C,v $
   $Locker:  $
-  $Revision: 1.2 $
+  $Revision: 1.3 $
   \*****************************************************************************/
 #include <stdlib.h>
-#include <unistd.h>
 #include <stdio.h>
 
 #ifndef WIN32
+#include <unistd.h>
 #include <sys/types.h>
 #include <netinet/in.h>
 #endif
@@ -47,11 +47,9 @@ vrpn_Clock::vrpn_Clock(char *name, vrpn_Connection *c) {
     return;
   }
 
-#ifdef WIN32
   // need to init gettimeofday for the pc
   struct timeval tv;
   gettimeofday(&tv, NULL);
-#endif
 }
 
 // packs time of message sent and all data sent to it back into buffer
@@ -124,7 +122,6 @@ void vrpn_Clock_Server::mainloop() {};
 
 // This next part is the class for users (client class)
 
-#ifndef _WIN32
 
 vrpn_Clock_Remote::vrpn_Clock_Remote(char *name, double dFreq, int cOffsetWindow ) : 
   vrpn_Clock("clockServer", vrpn_get_connection_by_name(name)), change_list(NULL)
@@ -218,11 +215,9 @@ void vrpn_Clock_Remote::mainloop(void)
 	// yes, we have, so pack a message and reset clock
 
 	// send a clock query with this clock client's unique id
-	// not converted using htonl because it is never interpreted
-	// by the server -- only by the client.
-	rgl[0]=CLOCK_VERSION;
-	rgl[1]=(long)this;
-	rgl[2]=(long)VRPN_CLOCK_QUICK_SYNC;
+	rgl[0]=htonl(CLOCK_VERSION);
+	rgl[1]=htonl((long)this);	// An easy, unique ID, NOT USED as ptr
+	rgl[2]=htonl((long)VRPN_CLOCK_QUICK_SYNC);
 	gettimeofday(&tv, NULL);
 	connection->pack_message(3*sizeof(long), tv, queryMsg_id, 
 				 clockClient_id, (char *)rgl, 
@@ -271,9 +266,9 @@ void vrpn_Clock_Remote::mainloop(void)
 	  // send a clock query with this clock client's unique id
 	  // not converted using htonl because it is never interpreted
 	  // by the server -- only by the client.
-	  rgl[0]=CLOCK_VERSION;
-	  rgl[1]=(long)this;
-	  rgl[2]=(long)VRPN_CLOCK_FULL_SYNC;
+	  rgl[0]=htonl(CLOCK_VERSION);
+	  rgl[1]=htonl((long)this);	// An easy, unique ID, NOT USED as ptr
+	  rgl[2]=htonl((long)VRPN_CLOCK_FULL_SYNC);
 	  gettimeofday(&tv, NULL);
 	  connection->pack_message(3*sizeof(long), tv, queryMsg_id, 
 				   clockClient_id, (char *)rgl, 
@@ -419,7 +414,7 @@ int vrpn_Clock_Remote::fullSyncClockServerReplyHandler(void *userdata,
   }
 
   // now grab the id from the message to check that is is correct
-  if (me!=(vrpn_Clock_Remote *)plTimeData[5]) {
+  if (me!=(vrpn_Clock_Remote *)ntohl(plTimeData[5])) {
     cerr << "vrpn_Clock_Remote: warning, server entertaining multiple clock" 
 	 << " sync requests simultaneously -- results may be inaccurate." 
 	 << endl;
@@ -427,7 +422,7 @@ int vrpn_Clock_Remote::fullSyncClockServerReplyHandler(void *userdata,
   }
   
   // check that it is our type
-  if (plTimeData[6]!=VRPN_CLOCK_FULL_SYNC) {
+  if (plTimeData[6]!=ntohl(VRPN_CLOCK_FULL_SYNC)) {
     // ignore quick sync messages if they are going at same time
     //    cerr << "not full sync:temporary message to check that it is working" << endl;
     return 0;
@@ -533,7 +528,7 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
   }
 
   // now grab the id from the message to check that is is correct
-  if (me!=(vrpn_Clock_Remote *)plTimeData[5]) {
+  if (me!=(vrpn_Clock_Remote *)ntohl(plTimeData[5])) {
     cerr << "vrpn_Clock_Remote: warning, server entertaining multiple clock" 
 	 << " sync requests simultaneously -- results may be inaccurate." 
 	 << endl;
@@ -541,7 +536,7 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
   }
   
   // check that it is our type
-  if (plTimeData[6]!=VRPN_CLOCK_QUICK_SYNC) {
+  if (plTimeData[6]!=ntohl(VRPN_CLOCK_QUICK_SYNC)) {
     // ignore full sync messages if they are going at the same time
     // cerr << "not quick sync:temporary message to check that it is working" << endl;
     return 0;
@@ -638,11 +633,12 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
   return 0;
 }
 
-#endif // ifdef _WIN32
-
 
 /*****************************************************************************\
   $Log: vrpn_Clock.C,v $
+  Revision 1.3  1998/01/20 15:53:26  taylorr
+  	This version allows the client-side compilation of VRPN on NT.
+
   Revision 1.2  1998/01/08 23:32:48  weberh
   Summary of changes
   1) vrpn_Tracker_Ceiling is now in the cvs repository instead of just

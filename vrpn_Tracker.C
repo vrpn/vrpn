@@ -19,6 +19,10 @@
 #include <netinet/in.h>
 #endif
 
+#ifdef	_WIN32
+#include <io.h>
+#endif
+
 #include "vrpn_Tracker.h"
 
 //#define VERBOSE
@@ -32,6 +36,10 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 
 int vrpn_open_commport(char *portname, long baud)
 {
+#ifdef	_WIN32
+	fprintf(stderr,"vrpn_open_commport: Not implemented in NT\n");
+	return -1;
+#else
   int fileDescriptor;
   struct termio   sttyArgs;
   
@@ -97,27 +105,43 @@ int vrpn_open_commport(char *portname, long baud)
   }
   
   return(fileDescriptor);
+#endif
 }
 
 // empty the input buffer (discarding the chars)
 // Return 0 on success, -1 on failure.
 int vrpn_flush_input_buffer(int comm)
 {
+#ifdef	_WIN32
+   fprintf(stderr,"vrpn_flush_input_buffer: Not impemented on NT\n");
+   return -1;
+#else
    return tcflush(comm, TCIFLUSH);
+#endif
 }
 
 // empty the output buffer, discarding all of the chars
 // Return 0 on success, tc err codes other on failure.
 int vrpn_flush_output_buffer(int comm)
 {
+#ifdef	_WIN32
+   fprintf(stderr,"vrpn_flush_output_buffer: Not impemented on NT\n");
+   return -1;
+#else
    return tcflush(comm, TCOFLUSH);
+#endif
 }
 
 // empty the output buffer, discarding all of the chars
 // Return 0 on success, tc err codes on failure.
 int vrpn_drain_output_buffer(int comm)
 {
+#ifdef	_WIN32
+   fprintf(stderr,"vrpn_drain_output_buffer: Not impemented on NT\n");
+   return -1;
+#else
    return tcdrain(comm);
+#endif
 }
 
 
@@ -332,7 +356,7 @@ int vrpn_Tracker_Serial::read_available_characters(unsigned char *buffer,
 
    return bRead;
 }
-#endif // #ifndef _WIN32
+#endif
 
 vrpn_Tracker_NULL::vrpn_Tracker_NULL(char *name, vrpn_Connection *c,
 	int sensors, float Hz) : vrpn_Tracker(name, c), update_rate(Hz),
@@ -388,8 +412,7 @@ void	vrpn_Tracker_NULL::mainloop(void)
 	}
 }
 
-#ifndef _WIN32
-
+#ifndef	_WIN32
 vrpn_Tracker_Serial::vrpn_Tracker_Serial(char *name, vrpn_Connection *c,
 	char *port, long baud): vrpn_Tracker(name, c)
 {
@@ -414,6 +437,7 @@ vrpn_Tracker_Serial::vrpn_Tracker_Serial(char *name, vrpn_Connection *c,
    status = TRACKER_RESETTING;
    gettimeofday(&timestamp, NULL);
 }
+#endif
 
 vrpn_Tracker_Remote::vrpn_Tracker_Remote(char *name ) :
 	vrpn_Tracker(name, vrpn_get_connection_by_name(name)) ,
@@ -648,7 +672,6 @@ int vrpn_Tracker_Remote::handle_change_message(void *userdata,
 	double *params = (double*)(p.buffer);
 	vrpn_TRACKERCB	tp;
 	vrpn_TRACKERCHANGELIST *handler = me->change_list;
-	long	temp;
 	int	i;
 
 	// Fill in the parameters to the tracker from the message
@@ -688,7 +711,6 @@ int vrpn_Tracker_Remote::handle_vel_change_message(void *userdata,
 	double *params = (double*)(p.buffer);
 	vrpn_TRACKERVELCB tp;
 	vrpn_TRACKERVELCHANGELIST *handler = me->velchange_list;
-	long	temp;
 	int	i;
 
 	// Fill in the parameters to the tracker from the message
@@ -730,7 +752,6 @@ int vrpn_Tracker_Remote::handle_acc_change_message(void *userdata,
 	double *params = (double*)(p.buffer);
 	vrpn_TRACKERACCCB tp;
 	vrpn_TRACKERACCCHANGELIST *handler = me->accchange_list;
-	long	temp;
 	int	i;
 
 	// Fill in the parameters to the tracker from the message
@@ -764,7 +785,4 @@ int vrpn_Tracker_Remote::handle_acc_change_message(void *userdata,
 
 	return 0;
 }
-
-
-#endif 
 

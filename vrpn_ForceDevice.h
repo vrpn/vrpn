@@ -1,13 +1,16 @@
 
 #ifndef FORCEDEVICE_H
+#define  FORCEDEVICE_H
 
+#include "vrpn_Connection.h"
 #include "vrpn_Tracker.h"
 #include "vrpn_Button.h"
-#include "vrpn_Connection.h"
 
 #ifdef _WIN32
+#ifndef	VRPN_CLIENT_ONLY
 #include "ghost.h"
 #include "plane.h"
+#endif
 #include <quat.h>
 #endif
 
@@ -60,6 +63,7 @@ protected:
 };
 
 #ifdef _WIN32
+#ifndef	VRPN_CLIENT_ONLY
 
 typedef	struct {
 	struct		timeval	msg_time;// Time of the report
@@ -118,7 +122,7 @@ protected:
 
 };
 #endif
-
+#endif
 
 
 typedef	struct {
@@ -128,7 +132,6 @@ typedef	struct {
 typedef void (*vrpn_FORCECHANGEHANDLER)(void *userdata,
 					 const vrpn_FORCECB info);
 
-#ifndef _WIN32
 class vrpn_ForceDevice_Remote: public vrpn_ForceDevice {
 public:
 
@@ -165,13 +168,6 @@ public:
 	static int handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
 
 };
-#endif
-
-
-
-
-
-#define  FORCEDEVICE_H
 
 #endif
 

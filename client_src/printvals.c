@@ -51,8 +51,8 @@ void	handle_button(void *userdata, const vrpn_BUTTONCB b)
 void init(void)
 {
 	//tkr = new vrpn_Tracker_Remote("Tracker0_hiball1");
-	tkr = new vrpn_Tracker_Remote("Tracker0@ioglab");
-	btn = new vrpn_Button_Remote("Button0@ioglab");
+	tkr = new vrpn_Tracker_Remote("Tracker0@iron");
+	btn = new vrpn_Button_Remote("Button0@iron");
 
 	// Set up the tracker callback handler
 	printf("Tracker update: '.' = pos, '/' = vel, '~' = acc\n");
@@ -70,6 +70,15 @@ void init(void)
 int main(int argc, char *argv[])
 {	int	done = 0;
 
+#ifdef	_WIN32
+  WSADATA wsaData; 
+  int status;
+  if ((status = WSAStartup(MAKEWORD(1,1), &wsaData)) != 0) {
+    fprintf(stderr, "WSAStartup failed with %d\n", status);
+    exit(1);
+  }
+#endif
+
 	/* initialize the PC/station */
 	init();
 
@@ -79,7 +88,7 @@ int main(int argc, char *argv[])
 while ( ! done )
     {
 	// Let the tracker and button do their things
-	// btn->mainloop();
+	btn->mainloop();
 	tkr->mainloop();
 
 	// XXX Sleep a tiny bit to free up the other process
