@@ -1789,7 +1789,7 @@ void vrpn_ForceDevice_Remote::send (const char * msgbuf, vrpn_int32 len,
     connection->mainloop();
   }
 
-  delete [] msgbuf;
+  delete [] (char *) msgbuf;
 }
 
 
