@@ -32,7 +32,7 @@ static void handle_cntl_c(int )
 int handle_any_print (void * userdata, vrpn_HANDLERPARAM p) 
 {
 	static unsigned long msg_number = 0 ;
-	if( msg_number > msgs_to_print - 1 )
+	if( doHead && ( msg_number > msgs_to_print - 1 ) )
 	{  return 0;  }
 	vrpn_Connection * c = (vrpn_Connection *) userdata;
     struct timeval el;

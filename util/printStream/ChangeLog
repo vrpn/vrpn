@@ -1,0 +1,5 @@
+2004-04-13  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_streamPrint.cpp:  correctly handles the -head option
+	
+
