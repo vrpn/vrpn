@@ -44,6 +44,9 @@ public:
       /// setting the channel to that value.
       static int handle_request_message(void *userdata, vrpn_HANDLERPARAM p);
 
+      /// Responds to a request to change multiple channels at once.
+      static int handle_request_channels_message(void *userdata, vrpn_HANDLERPARAM p);
+
       /// Responds to a connection request with a report of the values
       static int handle_connect_message(void *userdata, vrpn_HANDLERPARAM p);
 };

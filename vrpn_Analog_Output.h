@@ -23,14 +23,14 @@ class vrpn_Analog_Output : public vrpn_BaseClass {
         void o_print(void);
 
     protected:
-	    vrpn_float64	o_channel[vrpn_CHANNEL_MAX];
+	    vrpn_float64    o_channel[vrpn_CHANNEL_MAX];
 	    vrpn_int32	    o_num_channel;
-	    struct timeval	o_timestamp;
+	    struct timeval  o_timestamp;
 	    vrpn_int32	    request_m_id;	        //< Request to change message from client
-        vrpn_int32      request_channels_m_id;  //< Request to change channels message from client
+            vrpn_int32      request_channels_m_id;	//< Request to change channels message from client
 	    int             o_status; 
 
-	    virtual	int     register_types(void);
+	    virtual	int register_types(void);
 
 	    //------------------------------------------------------------------
 	    // Routines used to send data from the client
@@ -52,13 +52,21 @@ class vrpn_Analog_Output_Server : public vrpn_Analog_Output {
         vrpn_int32 setNumChannels (vrpn_int32 sizeRequested);
 
         /// Responds to a request to change one of the values by
-        /// setting the channel to that value.
+        /// setting the channel to that value.  Derived class must
+	/// either install handlers for this routine or else make
+	/// its own routines to handle the request message.
         static int handle_request_message(void *userdata,
 	        vrpn_HANDLERPARAM p);
 
         /// Responds to a request to change a number of channels
+	/// Derived class must either install handlers for this
+	/// routine or else make its own routines to handle the
+	/// multi-channel request message.
         static int handle_request_channels_message(void* userdata,
             vrpn_HANDLERPARAM p);
+
+	/// Exposes an array of values for the user to read from.
+	const vrpn_float64* o_channels (void) const { return o_channel; };
 };
 
 // Open an analog device that is on the other end of a connection

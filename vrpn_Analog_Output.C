@@ -5,6 +5,8 @@ vrpn_Analog_Output::vrpn_Analog_Output(const char* name, vrpn_Connection* c) :
 	vrpn_BaseClass(name, c),
 	o_num_channel(0)
 {
+   int	i;
+
    // Call the base class' init routine
    vrpn_BaseClass::init();
 
@@ -13,7 +15,7 @@ vrpn_Analog_Output::vrpn_Analog_Output(const char* name, vrpn_Connection* c) :
    // Initialize the values in the channels, 
    // gets rid of uninitialized memory read error in Purify
    // and makes sure any initial value change gets reported. 
-   for (vrpn_int32 i=0; i< vrpn_CHANNEL_MAX; i++) {
+   for (i=0; i< vrpn_CHANNEL_MAX; i++) {
        o_channel[i] = 0;
    }
 }
@@ -109,24 +111,20 @@ int vrpn_Analog_Output_Server::handle_request_channels_message(void* userdata,
 {
     int i;
     const char* bufptr = p.buffer;
-	vrpn_int32 num;
-	vrpn_int32 pad;
+    vrpn_int32 num;
+    vrpn_int32 pad;
     vrpn_Analog_Output_Server* me = (vrpn_Analog_Output_Server*)userdata;
 
     // Read the values from the buffer
-	vrpn_unbuffer(&bufptr, &num);
-	vrpn_unbuffer(&bufptr, &pad);
-	if (num > me->o_num_channel) num = me->o_num_channel;
+    vrpn_unbuffer(&bufptr, &num);
+    vrpn_unbuffer(&bufptr, &pad);
+    if (num > me->o_num_channel) num = me->o_num_channel;
     for (i = 0; i < num; i++) {
         vrpn_unbuffer(&bufptr, &(me->o_channel[i]));
     }
 
     return 0;
 }
-
-
-
-
 
 
 vrpn_Analog_Output_Remote::vrpn_Analog_Output_Remote(const char* name, vrpn_Connection* c) :

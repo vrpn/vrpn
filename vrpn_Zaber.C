@@ -48,6 +48,7 @@ vrpn_Zaber::vrpn_Zaber (const char * name, vrpn_Connection * c,
         vrpn_Analog_Output(name, c)
 {
   num_channel = 0;	// This is an estimate; will change when the reset happens
+  o_num_channel = 0;
 
   // Set the mode to reset
   _status = STATUS_RESETTING;
@@ -56,6 +57,11 @@ vrpn_Zaber::vrpn_Zaber (const char * name, vrpn_Connection * c,
   // messages.
   if (d_connection != NULL) {
     if (register_autodeleted_handler(request_m_id, handle_request_message,
+      this, d_sender_id)) {
+	  fprintf(stderr,"vrpn_Zaber: can't register handler\n");
+	  d_connection = NULL;
+    }
+    if (register_autodeleted_handler(request_channels_m_id, handle_request_channels_message,
       this, d_sender_id)) {
 	  fprintf(stderr,"vrpn_Zaber: can't register handler\n");
 	  d_connection = NULL;
@@ -159,6 +165,7 @@ int	vrpn_Zaber::reset(void)
 	// to be slower than the defaults to hopefully give more torque.
 
 	num_channel = 0;
+	o_num_channel = 0;
 	do {
 	  int expected_chars = 4*6;
 	  vrpn_flush_input_buffer(serial_fd);
@@ -192,6 +199,7 @@ int	vrpn_Zaber::reset(void)
 	  channel[num_channel] = convert_bytes_to_reading(&inbuf[2]);
 
 	  num_channel++;
+	  o_num_channel++;
 	} while (true);
 	sprintf(errmsg,"found %d devices",num_channel);
 	ZAB_WARNING(errmsg);
@@ -334,14 +342,41 @@ int vrpn_Zaber::handle_request_message(void *userdata, vrpn_HANDLERPARAM p)
 
     // Set the position to the appropriate value, if the channel number is in the
     // range of the ones we have.
-    if ( (chan_num < 0) || (chan_num >= me->num_channel) ) {
+    if ( (chan_num < 0) || (chan_num >= me->o_num_channel) ) {
       char msg[1024];
       sprintf(msg,"vrpn_Zaber::handle_request_message(): Index out of bounds (%d of %d), value %lg\n",
 	chan_num, me->num_channel, value);
-        me->send_text_message(msg, me->timestamp, vrpn_TEXT_ERROR);
+      me->send_text_message(msg, me->timestamp, vrpn_TEXT_ERROR);
       return 0;
     }
+    me->channel[chan_num] = value;
     me->send_command(chan_num+1,20,(vrpn_int32)value);
+
+    return 0;
+}
+
+int vrpn_Zaber::handle_request_channels_message(void* userdata, vrpn_HANDLERPARAM p)
+{
+    int i;
+    const char* bufptr = p.buffer;
+    vrpn_int32 num;
+    vrpn_int32 pad;
+    vrpn_Zaber* me = (vrpn_Zaber *)userdata;
+
+    // Read the values from the buffer
+    vrpn_unbuffer(&bufptr, &num);
+    vrpn_unbuffer(&bufptr, &pad);
+    if (num > me->o_num_channel) {
+      char msg[1024];
+      sprintf(msg,"vrpn_Zaber::handle_request_channels_message(): Index out of bounds (%d of %d), clipping\n",
+	num, me->o_num_channel);
+      me->send_text_message(msg, me->timestamp, vrpn_TEXT_ERROR);
+      num = me->o_num_channel;
+    }
+    for (i = 0; i < num; i++) {
+        vrpn_unbuffer(&bufptr, &(me->o_channel[i]));
+	me->send_command(i+1,20,(vrpn_int32)me->o_channel[i]);
+    }
 
     return 0;
 }

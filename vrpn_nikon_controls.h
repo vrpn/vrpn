@@ -20,6 +20,7 @@ protected:
 
   virtual int reset(void);		//< Set device back to starting config
   virtual int get_report(void);		//< Try to read a report from the device
+  virtual int set_channel(unsigned chan_num, vrpn_float64 value); //< Try to set the focus to this
 
   /// Send changes since the last time
   virtual void report_changes (vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
@@ -27,12 +28,14 @@ protected:
   /// Send values whether or not they have changed.
   virtual void report (vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
 
+  /// Responds to a connection request with a report of the values
+  static int handle_connect_message(void *userdata, vrpn_HANDLERPARAM p);
+
   /// Responds to a request to change one of the values by
   /// setting the channel to that value.
   static int handle_request_message(void *userdata, vrpn_HANDLERPARAM p);
 
-  /// Responds to a connection request with a report of the values
-  static int handle_connect_message(void *userdata, vrpn_HANDLERPARAM p);
-
+  /// Responds to a request to change multiple channels at once.
+  static int handle_request_channels_message(void *userdata, vrpn_HANDLERPARAM p);
 };
 

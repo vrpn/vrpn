@@ -35,6 +35,7 @@ vrpn_Nikon_Controls::vrpn_Nikon_Controls(const char *device_name, vrpn_Connectio
   vrpn_Analog_Output(device_name, con)
 {
   num_channel = 1;	// Focus control
+  o_num_channel = 1;	// Focus control
 
   // Set the mode to reset
   _status = STATUS_RESETTING;
@@ -43,6 +44,11 @@ vrpn_Nikon_Controls::vrpn_Nikon_Controls(const char *device_name, vrpn_Connectio
   // messages.
   if (d_connection != NULL) {
     if (register_autodeleted_handler(request_m_id, handle_request_message,
+      this, d_sender_id)) {
+	  fprintf(stderr,"vrpn_Zaber: can't register handler\n");
+	  d_connection = NULL;
+    }
+    if (register_autodeleted_handler(request_channels_m_id, handle_request_channels_message,
       this, d_sender_id)) {
 	  fprintf(stderr,"vrpn_Zaber: can't register handler\n");
 	  d_connection = NULL;
@@ -331,6 +337,40 @@ int vrpn_Nikon_Controls::get_report(void)
    return 1;
 }
 
+/** Set the channel associated with the index to the specified value.
+    Channel 0 controls the focus.
+    **/
+
+int vrpn_Nikon_Controls::set_channel(unsigned chan_num, vrpn_float64 value)
+{
+  // Ask to change the focus if this was channel 0.  Also, store away where we
+  // asked the focus to go to so that we can know where we are when we get there
+  // (the response from the microscope just says "we got here!).
+  if ( (int)chan_num >= o_num_channel ) {
+    char msg[1024];
+    sprintf(msg,"vrpn_Nikon_Controls::set_channel(): Index out of bounds (%d of %d), value %lg\n",
+      chan_num, o_num_channel, value);
+    gettimeofday(&o_timestamp, NULL);
+    send_text_message(msg, o_timestamp, vrpn_TEXT_ERROR);
+  }
+
+  char  msg[256];
+  sprintf(msg, "fSMV%ld\r", (long)value);
+#ifdef	VERBOSE
+  printf("Nikon Control: Asking to move to %ld with command %s\n", (long)value, msg);
+#endif
+  if (vrpn_write_characters(serial_fd, (unsigned char *)msg, strlen(msg)) != (int)strlen(msg)) {
+    fprintf(stderr, "vrpn_Nikon_Controls::set_channel(): Can't write command\n");
+    return -1;
+  }
+  if (vrpn_drain_output_buffer(serial_fd)) {
+    fprintf(stderr, "vrpn_Nikon_Controls::set_channel(): Can't drain command\n");
+    return -1;
+  }
+  _requested_focus = value;
+
+  return 0;
+}
 
 // If the client requests a value for the focus control, then try to set the
 // focus to the requested value.
@@ -348,33 +388,31 @@ int vrpn_Nikon_Controls::handle_request_message(void *userdata, vrpn_HANDLERPARA
     vrpn_unbuffer(&bufptr, &value);
 
     // Set the position to the appropriate value, if the channel number is in the
-    // range of the ones we have.
-    if ( (chan_num < 0) || (chan_num >= me->num_channel) ) {
-      char msg[1024];
-      sprintf(msg,"vrpn_Nikon_Controls::handle_request_message(): Index out of bounds (%d of %d), value %lg\n",
-	chan_num, me->num_channel, value);
-        me->send_text_message(msg, me->timestamp, vrpn_TEXT_ERROR);
-      return 0;
-    }
+    me->set_channel(chan_num, value);
+    return 0;
+}
 
-    // Ask to change the focus if this was channel 0.  Also, store away where we
-    // asked the focus to go to so that we can know where we are when we get there
-    // (the response from the microscope just says "we got here!).
-    if (chan_num == 0) {
-      char  msg[256];
-      sprintf(msg, "fSMV%ld\r", (long)value);
-#ifdef	VERBOSE
-      printf("Nikon Control: Asking to move to %ld with command %s\n", (long)value, msg);
-#endif
-      if (vrpn_write_characters(me->serial_fd, (unsigned char *)msg, strlen(msg)) != (int)strlen(msg)) {
-	fprintf(stderr, "vrpn_Nikon_Controls::handle_request_message(): Can't write command\n");
-	return 0;
-      }
-      if (vrpn_drain_output_buffer(me->serial_fd)) {
-	fprintf(stderr, "vrpn_Nikon_Controls::handle_request_message(): Can't drain command\n");
-	return 0;
-      }
-      me->_requested_focus = value;
+int vrpn_Nikon_Controls::handle_request_channels_message(void* userdata, vrpn_HANDLERPARAM p)
+{
+    int i;
+    const char* bufptr = p.buffer;
+    vrpn_int32 num;
+    vrpn_int32 pad;
+    vrpn_Nikon_Controls* me = (vrpn_Nikon_Controls *)userdata;
+
+    // Read the values from the buffer
+    vrpn_unbuffer(&bufptr, &num);
+    vrpn_unbuffer(&bufptr, &pad);
+    if (num > me->o_num_channel) {
+      char msg[1024];
+      sprintf(msg,"vrpn_Nikon_Controls::handle_request_channels_message(): Index out of bounds (%d of %d), clipping\n",
+	num, me->o_num_channel);
+      me->send_text_message(msg, me->timestamp, vrpn_TEXT_ERROR);
+      num = me->o_num_channel;
+    }
+    for (i = 0; i < num; i++) {
+        vrpn_unbuffer(&bufptr, &(me->o_channel[i]));
+	me->set_channel(i, me->o_channel[i]);
     }
 
     return 0;
@@ -447,7 +485,7 @@ void	vrpn_Nikon_Controls::mainloop()
 		char  msg[256];
 		sprintf(msg, "rSPR\r");
 		if (vrpn_write_characters(serial_fd, (unsigned char *)msg, strlen(msg)) != (int)strlen(msg)) {
-		  fprintf(stderr, "vrpn_Nikon_Controls::handle_request_message(): Can't write focus request command\n");
+		  fprintf(stderr, "vrpn_Nikon_Controls::mainloop(): Can't write focus request command\n");
 		  status = STATUS_RESETTING;
 		  return;
 		}
