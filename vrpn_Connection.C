@@ -90,6 +90,8 @@ int gethostname (char *, int);
 char * vrpn_MAGIC = (char *) "vrpn: ver. 04.05";
 const int MAGICLEN = 16;  // Must be a multiple of vrpn_ALIGN bytes!
 
+struct timeval DEFAULT_SELECT_TIMEOUT;// gets set in vrpn_Connection ctor
+
 // Version history:
 //   04.03:  Russ Taylor, Nov/Dec 1998
 //           Put most of what is needed for a connection into OneConnection
@@ -2829,6 +2831,9 @@ vrpn_Connection::vrpn_Connection (unsigned short listen_port_no) :
    // Initialize the things that must be for any constructor
    init();
 
+	DEFAULT_SELECT_TIMEOUT.tv_sec = 0;
+	DEFAULT_SELECT_TIMEOUT.tv_usec = 0;
+
    if (!d_tcp_buflen || !d_udp_buflen) {
      status = BROKEN;
      fprintf(stderr, "vrpn_Connection couldn't allocate buffers.\n");
@@ -2887,6 +2892,9 @@ vrpn_Connection::vrpn_Connection
   int retval;
   int isfile;
   int isrsh;
+
+  DEFAULT_SELECT_TIMEOUT.tv_sec = 0;
+  DEFAULT_SELECT_TIMEOUT.tv_usec = 0;
 
   isfile = (strstr(station_name, "file:") ? 1 : 0);
   isrsh = (strstr(station_name, "x-vrsh:") ? 1 : 0);

@@ -243,6 +243,8 @@ protected:
 	vrpn_int32	num_other_types;
 };
 
+extern struct timeval DEFAULT_SELECT_TIMEOUT;// gets set in vrpn_Connection ctor
+
 class vrpn_Connection
 {
   public:
@@ -273,7 +275,7 @@ class vrpn_Connection
         // Optional argument is TOTAL time to block on select() calls;
         // there may be multiple calls to select() per call to mainloop(),
         // and this timeout will be divided evenly between them.
-	virtual int mainloop (const struct timeval * timeout = NULL);
+	virtual int mainloop (const struct timeval * timeout = &DEFAULT_SELECT_TIMEOUT);
 
 	// Get a token to use for the string name of the sender or type.
 	// Remember to check for -1 meaning failure.
