@@ -1003,7 +1003,7 @@ vrpn_TypeDispatcher::~vrpn_TypeDispatcher (void) {
 
   for (i = 0; i < d_numTypes; i++) {
     if (d_types[i].name) {
-      delete d_types[i].name;
+      delete [] d_types[i].name;
     }
     pVMCB = d_types[i].who_cares;
     while (pVMCB) {
@@ -3016,6 +3016,10 @@ int vrpn_Endpoint::pack_message
     ret = tryToMarshall(d_tcpOutbuf, d_tcpBuflen, d_tcpNumOut,
   			len, time, type, sender, buffer,
                         d_tcpSequenceNumber);
+#ifdef VERBOSE4
+    fprintf(stderr, "vrpn_Endpoint::pack_message:  "
+                    "tryToMarshall failed.\n");
+#endif
 
     d_tcpNumOut += ret;
     if (ret > 0) {
