@@ -161,8 +161,8 @@ extern long vrpn_unbuffer (const char ** buffer, vrpn_float32 * fval);
 extern long vrpn_unbuffer (const char ** buffer, vrpn_float64 * dval);
 extern long vrpn_unbuffer (const char ** buffer, timeval * t);
 
-#ifdef	_WIN32	// No sleep() function 
-#define	sleep(x)	Sleep(1000.0 * x)
+#ifdef	_WIN32	// No sleep() function, but Sleep(DWORD) defined in winbase.h
+#define	sleep(x)	Sleep( DWORD(1000.0 * x) )
 #endif
 
 #endif  // VRPN_SHARED_H
