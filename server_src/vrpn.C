@@ -15,6 +15,7 @@
 
 #include "vrpn_Analog.h"
 #include "vrpn_Joystick.h"
+#include "vrpn_JoyFly.h"
 
 #define MAX_TRACKERS 100
 #define MAX_BUTTONS 100
@@ -136,7 +137,7 @@ main (int argc, char *argv[])
       {	char	line[512];	// Line read from the input file
         char *pch;
 	char    scrap[512];
-	char	s1[512],s2[512],s3[512];	// String parameters
+	char	s1[512],s2[512],s3[512], s4[512];	// String parameters
 	int	i1, i2;				// Integer parameters
 	float	f1;				// Float parameters
 
@@ -165,7 +166,35 @@ main (int argc, char *argv[])
 	  //	  #define isit(s) !strncmp(line,s,strlen(s))
 #define isit(s) !strcmp(pch=strtok(scrap," \t"),s)
 #define next() pch += strlen(pch) + 1
-	  if (isit("vrpn_Joystick")) {
+	  if (isit("vrpn_JoyFly")) {
+	    next();
+	    if (sscanf(pch,"%511s%511s%511s",s2,s3,s4) != 3) {
+	      fprintf(stderr,"Bad vrpn_JoyFly line: %s\n",line);
+	      if (bail_on_error) { return -1; }
+	      else { continue; }	// Skip this line
+	    }
+
+	    // Make sure there's room for a new tracker
+		if (num_trackers >= MAX_TRACKERS) {
+		  fprintf(stderr,"Too many trackers in config file");
+		  if (bail_on_error) { return -1; }
+		  else { continue; }	// Skip this line
+		}
+
+		// Open the tracker
+	      if (verbose) printf(
+	       "Opening vrpn_Tracker_JoyFly: %s on server %s config_file %s\n",
+		    s2,s3,s4);
+		if ( (trackers[num_trackers] =
+		  new vrpn_Tracker_JoyFly(s2, &connection, s3, s4)) == NULL){
+		  fprintf(stderr,"Can't create new vrpn_Tracker_JoyFly\n");
+		  if (bail_on_error) { return -1; }
+		  else { continue; }	// Skip this line
+		} else {
+		  num_trackers++;
+		}
+
+	  } else  if (isit("vrpn_Joystick")) {
 	    float fhz;
 	    // Get the arguments (sound_name)
 	    next();

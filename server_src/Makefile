@@ -12,7 +12,7 @@ ifeq ($(HW_OS),sparc_sunos)
 	CC := /usr/local/lib/CenterLine/bin/CC
 endif
 
-CFLAGS = -I../ -g
+CFLAGS = -I../ -g -I/afs/unc/proj/hmd/beta/include
 LFLAGS = -L../$(HW_OS) \
 	 -L/afs/unc/proj/hmd/beta/lib/$(HW_OS) \
          -L/afs/unc/proj/hmd/lib/$(HW_OS)
@@ -26,7 +26,7 @@ all:  vrpn_server sound_server
 # 	$(CC) $(LFLAGS) -o player vrpn_player.o -lvrpnserver -lsdi -lm
 
 vrpn_server: vrpn.o  ../$(HW_OS)/libvrpnserver.a
-	$(CC) $(LFLAGS) -o vrpn_server vrpn.o -lvrpnserver -lsdi -lm
+	$(CC) $(LFLAGS) -o vrpn_server vrpn.o -lvrpnserver -lsdi -lm -lquat
 
 
 client: client.C
@@ -45,7 +45,9 @@ clean:
 vprn.o: vrpn.C 
 vrpn.C: ../ghost.h ../plane.h ../vrpn_3Space.h ../vrpn_Button.h ../vrpn_Clock.h ../vrpn_Connection.h ../vrpn_Dyna.h \
 ../vrpn_Flock.h ../vrpn_Flock_Parallel.h ../vrpn_ForceDevice.h ../vrpn_Shared.h \
-../vrpn_Sound.h ../vrpn_Tracker.h ../vrpn_Tracker_Ceiling.h ../vrpn_Tracker_Fastrak.h
+../vrpn_Sound.h ../vrpn_Tracker.h  ../vrpn_Tracker_Fastrak.h
+
+
 
 
 
