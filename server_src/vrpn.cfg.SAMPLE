@@ -1,4 +1,4 @@
-# vrpn.cfg.SAMPLE for VRPN version 06.03
+# vrpn.cfg.SAMPLE for VRPN version 06.04
 
 ################################################################################
 ################################################################################
@@ -488,3 +488,13 @@
 
 #vrpn_Tng3      tng3name    /dev/ttyd2  4 0 
 #vrpn_Tng3      tng3name    com1        8 8
+
+################################################################################
+# Microsoft DirectX compatible force-feedback joystick (or non-force-feedback
+# joystick).
+#       char    name_of_this_device[]
+#       float   number of times per second to read from the device
+#       float   number of times per second to update force (0 for non-force device)
+
+#vrpn_DirectXFFJoystick	Joystick0	60	0
+#vrpn_DirectXFFJoystick	Joystick0	60	200

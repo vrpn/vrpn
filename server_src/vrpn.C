@@ -41,7 +41,7 @@
 #include "vrpn_Analog_5dt.h"
 #include "vrpn_Tng3.h"
 #include "vrpn_Tracker_isense.h"
-
+#include "vrpn_DirectXFFJoystick.h"
 
 #include "vrpn_ForwarderController.h"
 #include <vrpn_RedundantTransmission.h>
@@ -52,18 +52,19 @@
 
 
 
-#define MAX_TRACKERS 100
-#define MAX_BUTTONS 100
-#define MAX_SOUNDS 2
-#define MAX_ANALOG 4
-#define	MAX_SGIBOX 2
-#define	MAX_CEREALS 8
-#define	MAX_MAGELLANS 8
-#define MAX_SPACEBALLS 8
-#define MAX_IBOXES 8
-#define MAX_DIALS 8
-#define MAX_TIMECODE_GENERATORS 8
-#define MAX_TNG3S 8
+const int MAX_TRACKERS = 100;
+const int MAX_BUTTONS =  100;
+const int MAX_SOUNDS =     2;
+const int MAX_ANALOG =     4;
+const int MAX_SGIBOX =     2;
+const int MAX_CEREALS =    8;
+const int MAX_MAGELLANS =  8;
+const int MAX_SPACEBALLS = 8;
+const int MAX_IBOXES =     8;
+const int MAX_DIALS =      8;
+const int MAX_TIMECODE_GENERATORS = 8;
+const int MAX_TNG3S = 8;
+const int MAX_DIRECTXJOYS = 8;
 
 static	int	done = 0;	// Done and should exit?
 
@@ -126,6 +127,10 @@ int		num_generators = 0;
 #endif
 vrpn_Tng3       *tng3s[MAX_TNG3S];
 int             num_tng3s = 0;
+#ifdef	VRPN_USE_DIRECTINPUT
+vrpn_DirectXFFJoystick	* DirectXJoys [MAX_DIRECTXJOYS];
+int		num_DirectXJoys = 0;
+#endif
 
 vrpn_Connection * connection;
 
@@ -1384,6 +1389,7 @@ int setup_Tng3 (char * & pch, char * line, FILE * config_file) {
     return 0;
 }
 
+//================================
 int setup_Tracker_InterSense(char * &pch, char *line, FILE * config_file) {
   char trackerName[64];
   char commStr[10];
@@ -1410,6 +1416,42 @@ int setup_Tracker_InterSense(char * &pch, char *line, FILE * config_file) {
   return 0;
 }
 
+//================================
+#ifdef	VRPN_USE_DIRECTINPUT
+int setup_DirectXFFJoystick (char * & pch, char * line, FILE * config_file) {
+  char s2 [LINESIZE];
+  float f1, f2;
+
+  next();
+  // Get the arguments (joystick_name, read update rate, force update rate)
+  if (sscanf(pch,"%511s%g%g",s2,&f1, &f2) != 3) {
+    fprintf(stderr,"Bad vrpn_DirectXFFJoystick line: %s\n",line);
+    return -1;
+  }
+
+  // Make sure there's room for a new joystick
+  if (num_DirectXJoys >= MAX_DIRECTXJOYS) {
+    fprintf(stderr,"Too many Direct X FF Joysticks in config file");
+    return -1;
+  }
+
+  // Open the joystick
+  if (verbose) {
+  printf("Opening vrpn_DirectXFFJoystick: %s, read rate %g, force rate %g\n",
+	s2, f1,f2);
+  }
+  if ((DirectXJoys[num_DirectXJoys] =
+      new vrpn_DirectXFFJoystick(s2, connection, f1, f2)) == NULL)               
+  {
+    fprintf(stderr,"Can't create new vrpn_DirectXFFJoystick\n");
+    return -1;
+  } else {
+    num_DirectXJoys++;
+  }
+
+  return 0;
+}
+#endif
 
 main (int argc, char * argv[])
 {
@@ -1611,6 +1653,10 @@ main (int argc, char * argv[])
 			CHECK(setup_Timecode_Generator);
 	  } else if (isit("vrpn_Tracker_InterSense")) {
 			CHECK(setup_Tracker_InterSense);
+#ifdef	VRPN_USE_DIRECTINPUT
+	  } else if (isit("vrpn_DirectXFFJoystick")) {
+			CHECK(setup_DirectXFFJoystick);
+#endif
 	  } else {	// Never heard of it
 		sscanf(line,"%511s",s1);	// Find out the class name
 		fprintf(stderr,"vrpn_server: Unknown Device: %s\n",s1);
@@ -1717,6 +1763,13 @@ main (int argc, char * argv[])
           for (i=0; i< num_tng3s; i++) {
 		  tng3s[i]->mainloop();
           }
+
+#ifdef	VRPN_USE_DIRECTINPUT
+	  // Let all the FF joysticks do their thing
+	  for (i = 0; i < num_DirectXJoys; i++) {
+	    DirectXJoys[i]->mainloop();
+	  }
+#endif
 
           redundantController->mainloop();
           redundancy->mainloop();

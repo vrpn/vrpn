@@ -1,3 +1,13 @@
+2002-08-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * vrpn_server.dsp : Adds in definition of VRPN_USE_DIRECTINPUT to enable the
+                compilation of force-feedback joystick code under DirectX (this
+                first implementation doesn't use force feedback, just reads from
+                the joystick).  Remove this definition from VRPN and from 
+                vrpn_server to compile without the DirectX 8.0 SDK.
+	* vrpn.C : Adds in code to read and control a DirectX Force Feedback
+		joystick.
+
 2002-07-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* phantom.C : Making the Phantom server sleep 1ms between
