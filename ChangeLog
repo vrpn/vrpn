@@ -1,3 +1,9 @@
+2004-07-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsw : Added project file for forcedevice test client.
+	* vrpn_Configure.h : Added entry for using the HDAPI library from
+		SensAble Technologies in place of the older GHOST library.
+
 2004-07-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
         * vrpn_Connection.C : Added port number to printed comment.

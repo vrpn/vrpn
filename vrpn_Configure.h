@@ -57,6 +57,16 @@
 //#define	VRPN_USE_PHANTOM_SERVER
 
 //------------------------
+// Instructs vrpn to use SensAble's HDAPI rather than GHOST library.
+// Only used in conjuntion with VRPN_USE_PHANTOM_SERVER.
+// PLEASE SPECIFY PATH TO HDAPI IN NEXT SECTION IF YOU USE THIS.
+// Also, you need to go to the vrpn_phantom and vrpn_server projects
+// and remove the GHOST include directories from the include paths.
+// Yes, HDAPI fails if it even has them in the path (as so many other
+// things also fail).  At least we're rid of them now.
+//#define VRPN_USE_HDAPI
+
+//------------------------
 // Instructs vrpn to use Ghost 3.1 instead of Ghost 3.4.
 // Only used in conjuntion with VRPN_USE_PHANTOM_SERVER.
 // PLEASE SPECIFY PATH TO GHOSTLIB IN NEXT SECTION IF YOU USE THIS
@@ -139,12 +149,21 @@
 // Load VRPN Phantom library if we are using phantom server as unified server
 // Load SensAble Technologies GHOST library to run the Phantom
 #ifdef VRPN_USE_PHANTOM_SERVER
-#define	VRPN_NO_STREAMS
-#ifdef VRPN_USE_GHOST_31
-#pragma comment (lib,"C:/Program Files/SensAble/GHOST/v3.1/lib/GHOST31.lib")
-#else
-#pragma comment (lib,"C:/Program Files/SensAble/GHOST/v4.0/lib/GHOST40.lib")
-#endif
+  #define	VRPN_NO_STREAMS
+  #ifdef VRPN_USE_HDAPI
+    #pragma comment (lib,"C:/Program Files/SensAble/3DTouch/lib/hd.lib")
+    #ifdef	_DEBUG
+      #pragma comment (lib,"C:/Program Files/SensAble/3DTouch/utilities/lib/hdud.lib")
+    #else
+      #pragma comment (lib,"C:/Program Files/SensAble/3DTouch/utilities/lib/hdu.lib")
+    #endif
+  #else
+    #ifdef VRPN_USE_GHOST_31
+      #pragma comment (lib,"C:/Program Files/SensAble/GHOST/v3.1/lib/GHOST31.lib")
+    #else
+      #pragma comment (lib,"C:/Program Files/SensAble/GHOST/v4.0/lib/GHOST40.lib")
+    #endif
+  #endif
 #endif
 
 // Load DirectX SDK libraries and tell which version we need if we are using it.
