@@ -150,8 +150,12 @@ main (int argc, char *argv[])
 	  }
 
 	  // Figure out the device from the name and handle appropriately
+
+	  // WARNING: SUBSTRINGS WILL MATCH THE EARLIER STRING, SO 
+	  // ADD AN EMPTY SPACE TO THE END OF STATIC STRINGS!!!!
+
 	  #define isit(s) !strncmp(line,s,strlen(s))
-	  if (isit("vrpn_Linux_Sound")) {
+	  if (isit("vrpn_Linux_Sound ")) {
 	    // Get the arguments (sound_name)
 	    if (sscanf(line,"%511s%511s",s1,s2) != 2) {
 	      fprintf(stderr,"Bad vrpn_Linux_Sound line: %s\n",line);
@@ -178,7 +182,7 @@ main (int argc, char *argv[])
 		num_sounds++;
 	    }
 
-	  } else if (isit("vrpn_Tracker_Dyna")) {
+	  } else if (isit("vrpn_Tracker_Dyna ")) {
 	    // Get the arguments (class, tracker_name, sensors,port, baud)
 	    if (sscanf(line,"%511s%511s%d%511s%d",s1,s2,&i2, s3, &i1) != 5) {
 	      fprintf(stderr,"Bad vrpn_Tracker_Dyan line: %s\n",line);
@@ -207,11 +211,11 @@ main (int argc, char *argv[])
 	      } else {
 		num_trackers++;
 	      }
-	  } else if (isit("vrpn_Tracker_FlockMaster")) {
+	  } else if (isit("vrpn_Tracker_Flock_Master ")) {
 
 	    // Get the arguments (class, tracker_name, sensors,port, baud)
 	    if (sscanf(line,"%511s%511s%d%511s%d",s1,s2,&i2,s3, &i1) != 5) {
-	      fprintf(stderr,"Bad vrpn_Tracker_FlockMaster line: %s\n",line);
+	      fprintf(stderr,"Bad vrpn_Tracker_Flock_Master line: %s\n",line);
 	      if (bail_on_error) { return -1; }
 	      else { continue; }	// Skip this line
 	    }
@@ -226,22 +230,22 @@ main (int argc, char *argv[])
 
 	    // Open the tracker
 	    if (verbose) 
-	      printf("Opening vrpn_Tracker_FlockMaster: %s on port %s, baud %d, %d sensors\n",
+	      printf("Opening vrpn_Tracker_Flock_Master: %s on port %s, baud %d, %d sensors\n",
 		    s2,s3,i1, i2);
 	    if ((trackers[num_trackers] =
 		  new vrpn_Tracker_Flock_Master(s2, &connection, i2, s3, i1)) == NULL)               
 	      {
-		fprintf(stderr,"Can't create new vrpn_Tracker_FlockMaster\n");
+		fprintf(stderr,"Can't create new vrpn_Tracker_Flock_Master\n");
 		if (bail_on_error) { return -1; }
 		else { continue; }	// Skip this line
 	      } else {
 		num_trackers++;
 	      }
-	  }else if( isit("vrpn_Tracker_FlockSlave")) {
+	  }else if( isit("vrpn_Tracker_Flock_Slave ")) {
 
 	    // Get the arguments (class, tracker_name, sensors,port, baud)
 	    if (sscanf(line,"%511s%511s%d%511s%d",s1,s2,&i2,s3, &i1) != 5) {
-	      fprintf(stderr,"Bad vrpn_Tracker_FlockSlave line: %s\n",line);
+	      fprintf(stderr,"Bad vrpn_Tracker_Flock_Slave line: %s\n",line);
 	      if (bail_on_error) { return -1; }
 	      else { continue; }	// Skip this line
 	    }
@@ -255,18 +259,18 @@ main (int argc, char *argv[])
 
 	    // Open the tracker
 	    if (verbose) 
-	      printf("Opening vrpn_Tracker_FlockSlave: %s on port %s, baud %d,  sensors Id = %d\n",
+	      printf("Opening vrpn_Tracker_Flock_Slave: %s on port %s, baud %d,  sensors Id = %d\n",
 		    s2,s3,i1, i2);
 	    if ((trackers[num_trackers] =
 		  new vrpn_Tracker_Flock_Slave(s2, &connection, i2, s3, i1)) == NULL)
 	      {
-		fprintf(stderr,"Can't create new vrpn_Tracker_FlockSlave\n");
+		fprintf(stderr,"Can't create new vrpn_Tracker_Flock_Slave\n");
 		if (bail_on_error) { return -1; }
 		else { continue; }	// Skip this line
 	      } else {
 		num_trackers++;
 	      }
-	  } else if (isit("vrpn_Tracker_Fastrak")) {
+	  } else if (isit("vrpn_Tracker_Fastrak ")) {
 	    // Get the arguments (class, tracker_name, port, baud)
 	    if (sscanf(line,"%511s%511s%511s%d",s1,s2,s3,&i1) != 4) {
 	      fprintf(stderr,"Bad vrpn_Tracker_Fastrak line: %s\n",line);
@@ -295,7 +299,7 @@ main (int argc, char *argv[])
 		num_trackers++;
 	      }
 	  }
-	  else if (isit("vrpn_Tracker_3Space")) {
+	  else if (isit("vrpn_Tracker_3Space ")) {
 
 		// Get the arguments (class, tracker_name, port, baud)
 		if (sscanf(line,"%511s%511s%511s%d",s1,s2,s3,&i1) != 4) {
@@ -323,7 +327,7 @@ main (int argc, char *argv[])
 		} else {
 		  num_trackers++;
 		}
-	  } else if (isit("vrpn_Tracker_Flock")) {
+	  } else if (isit("vrpn_Tracker_Flock ")) {
 
 		// Get the arguments (class, tracker_name, sensors, port, baud)
 		if (sscanf(line,"%511s%511s%d%511s%d", s1, s2, 
@@ -352,7 +356,7 @@ main (int argc, char *argv[])
 		} else {
 		  num_trackers++;
 		}
-	  } else if (isit("vrpn_Tracker_NULL")) {
+	  } else if (isit("vrpn_Tracker_NULL ")) {
 
 		// Get the arguments (class, tracker_name, sensors, rate)
 		if (sscanf(line,"%511s%511s%d%g",s1,s2,&i1,&f1) != 4) {
@@ -381,7 +385,7 @@ main (int argc, char *argv[])
 		  num_trackers++;
 		}
 
-	  } else if (isit("vrpn_Button_Python")) {
+	  } else if (isit("vrpn_Button_Python ")) {
 
 		// Get the arguments (class, button_name, portno)
 		if (sscanf(line,"%511s%511s%d",s1,s2,&i1) != 3) {
