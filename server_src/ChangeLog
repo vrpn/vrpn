@@ -1,3 +1,9 @@
+2003-06-20  David Marshburn  <marshbur@cs.unc.edu>
+
+	* plane.C:  uses Ghost 4.0/3.1 syntax depending on VRPN_USE_GHOST_31
+	* texture_plane.C:  same
+	* vrpn_Phantom.C:  same
+
 2003-06-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_server.dsp : Removed isense.c file (this file is included

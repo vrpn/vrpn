@@ -606,7 +606,11 @@ gstBoolean TexturePlane::collisionDetect(gstPHANToM *PHANToM)
 
 	inContact = getStateForPHANToM(PHANToM);
 
+#ifdef VRPN_USE_GHOST_31
+	if(!_TouchableByPHANToM || _resetPHANToMContacts) {
+#else // Ghost 4.0 (and the default case)
 	if(!isTouchableByPHANToM() || _resetPHANToMContacts) {
+#endif
 		_resetPHANToMContacts = FALSE;
 		
 		inContact = FALSE;
