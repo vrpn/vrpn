@@ -18,7 +18,7 @@ const int CHAR_BUF_SIZE = 1024;
 // Some globals for mapping sounds
 int						g_numSounds				= 0;
 SoundMap				g_soundMap[MAX_NUM_SOUNDS];	
-Sound				g_Sound[MAX_NUM_SOUNDS];			// wrapper for ASMSound obj
+Sound					g_Sound[MAX_NUM_SOUNDS];		// wrapper for ASMSound obj
 Listener*				g_pListener;
 
 		
@@ -60,6 +60,7 @@ void vrpn_Sound_Server_ASM::playSound(vrpn_SoundID id, vrpn_int32 repeat, vrpn_S
 		return;
 	}
 
+	// get sound id from the sound map
 	int myid = g_soundMap[id].m_iSoundNum;
 
 	g_Sound[myid].repeat = repeat;
@@ -68,9 +69,9 @@ void vrpn_Sound_Server_ASM::playSound(vrpn_SoundID id, vrpn_int32 repeat, vrpn_S
 		
 		if(g_Sound[id].m_pSound != NULL){
 
-			if (repeat == 0)
+			if (repeat == 0)	// loop continuously
 				g_Sound[myid].m_pSound->Play(myid, 0 , g_Sound[myid].m_pSound->m_fVolume );
-			else {
+			else {				// decrement the repeat count
 				g_Sound[myid].m_pSound->Play(myid, g_Sound[myid].repeat, g_Sound[myid].m_pSound->m_fVolume );
 				g_Sound[myid].repeat--;
 				
@@ -113,9 +114,10 @@ void vrpn_Sound_Server_ASM::loadSoundLocal(char* filename, vrpn_SoundID id, vrpn
 	char tempbuf[1024];	
 
     // Free any previous sound, and make a new one
-   // SAFE_DELETE( g_Sound[id].m_pSound );
+	// SAFE_DELETE( g_Sound[id].m_pSound );
 
     wavFt* waveFile;
+
 	if( !(waveFile = cre_open_wave(filename, NULL))) {
 
 		printf("Error opening waveFile: %s\n",waveFile);
@@ -133,7 +135,7 @@ void vrpn_Sound_Server_ASM::loadSoundLocal(char* filename, vrpn_SoundID id, vrpn
 	int myid = g_soundMap[g_numSounds].m_iSoundNum;
 
 	g_numSounds++;
-
+	
 	// Set up sound parameters
 	float loc[6];
 
@@ -155,9 +157,9 @@ void vrpn_Sound_Server_ASM::loadSoundLocal(char* filename, vrpn_SoundID id, vrpn
 	// 2: roll
 	q_to_euler(tempeuler, tempquat);
 	
-	loc[3] = (float)tempeuler[0];
-	loc[4] = (float)tempeuler[1];
-	loc[5] = (float)tempeuler[2];
+	loc[3] = -(float)tempeuler[0];
+	loc[4] = -(float)tempeuler[1];
+	loc[5] = -(float)tempeuler[2];
 
 	cre_locate_source( (int)id, loc );
 	cre_update_audio();
@@ -248,10 +250,11 @@ void vrpn_Sound_Server_ASM::setListenerPose(vrpn_PoseDef pose) {
 	// 1: pitch
 	// 2: roll
 	q_to_euler(tempeuler, tempquat);
+
 	
-	loc[3] = (float)tempeuler[0];
-	loc[4] = (float)tempeuler[1];
-	loc[5] = (float)tempeuler[2];
+	loc[3] = -(float)tempeuler[0];
+	loc[4] = -(float)tempeuler[1];
+	loc[5] = -(float)tempeuler[2];
 
 	cre_locate_head( 0, loc );
 	cre_update_audio();
@@ -259,23 +262,6 @@ void vrpn_Sound_Server_ASM::setListenerPose(vrpn_PoseDef pose) {
 	return;
 }
 
-
-
-void vrpn_Sound_Server_ASM::setListenerPosition(vrpn_float64 position[3] ) {
-	
-	send_message("setListenerPosition not supported: use setListenerPose",vrpn_TEXT_WARNING,0);
-
-	return;
-}
-
-
-
-void vrpn_Sound_Server_ASM::setListenerOrientation(vrpn_float64 at[3], vrpn_float64 up[3] ) {
-
-	send_message("setListenerOrientation not supported: use setListenerPose",vrpn_TEXT_WARNING,0);
-
-	return;
-}
 
 
 
@@ -329,9 +315,9 @@ void vrpn_Sound_Server_ASM::changeSoundStatus(vrpn_SoundID id, vrpn_SoundDef sou
 	// 2: roll
 	q_to_euler(tempeuler, tempquat);
 	
-	loc[3] = (float)tempeuler[0];
-	loc[4] = (float)tempeuler[1];
-	loc[5] = (float)tempeuler[2];
+	loc[3] = -(float)tempeuler[0];
+	loc[4] = -(float)tempeuler[1];
+	loc[5] = -(float)tempeuler[2];
 
 	cre_locate_source( (int)id, loc );
 	cre_update_audio();
@@ -381,9 +367,9 @@ void vrpn_Sound_Server_ASM::setSoundPose(vrpn_SoundID id, vrpn_PoseDef pose) {
 	// 2: roll
 	q_to_euler(tempeuler, tempquat);
 	
-	loc[3] = (float)tempeuler[0];
-	loc[4] = (float)tempeuler[1];
-	loc[5] = (float)tempeuler[2];
+	loc[3] = -(float)tempeuler[0];
+	loc[4] = -(float)tempeuler[1];
+	loc[5] = -(float)tempeuler[2];
 
 	cre_locate_source( (int)id, loc );
 	cre_update_audio();
@@ -426,7 +412,7 @@ void vrpn_Sound_Server_ASM::setSoundDistInfo(vrpn_SoundID id, vrpn_float64 *dist
 	char tempbuf[1024];
 
 	if (myid==-1) {
-		sprintf(tempbuf,"Error: setSoundConeInfo(Invalid id)");
+		sprintf(tempbuf,"Error: setSoundDistInfo(Invalid id)");
 		printf("%s\n", tempbuf);
 		send_message((const char *) tempbuf,vrpn_TEXT_ERROR,0);
 
@@ -464,7 +450,7 @@ void vrpn_Sound_Server_ASM::setSoundConeInfo(vrpn_SoundID id, vrpn_float64 *cone
 		return;
 	}
 
-	float loc[3];
+	float loc[6];
 
 	// Set up sound parameters
 
@@ -771,7 +757,7 @@ vrpn_int32  vrpn_Sound_Server_ASM::GetCurrentPlaybackRate(const vrpn_int32 Curre
 
 
 
-
+// This returns the position for a sound
 void vrpn_Sound_Server_ASM::GetCurrentPosition(const vrpn_int32 id, float* X_val, float* Y_val, float* Z_val) {
 
 	if(id<0 || id>g_numSounds){
@@ -1084,7 +1070,7 @@ void main(int argc, char **argv) {
 	char*	config_file_name = "vrpn.cfg";
 	FILE*	config_file;
 	char*	client_name   = NULL;
-	int	    client_port   = 4501;
+	int	    client_port   = 4502;
 	int	    bail_on_error = 1;
 	int	    verbose       = 0;
 	int	    auto_quit     = 0;

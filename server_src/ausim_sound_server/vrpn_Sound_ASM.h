@@ -70,9 +70,6 @@ public:
 	void		setListenerPose(vrpn_PoseDef pose);
 	void		setListenerVelocity(vrpn_float64 *velocity);
 
-	void		setListenerPosition(vrpn_float64 *position );
-	void		setListenerOrientation(vrpn_float64 *at, vrpn_float64 *up );
-
 	void		setSoundPose(vrpn_SoundID id, vrpn_PoseDef pose);
 	void		setSoundVelocity(vrpn_SoundID id, vrpn_float64 *velocity);
 	void		setSoundDistInfo(vrpn_SoundID id, vrpn_float64 *distinfo);
