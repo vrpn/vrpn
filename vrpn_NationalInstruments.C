@@ -30,10 +30,10 @@ vrpn_National_Instruments_Server::vrpn_National_Instruments_Server (const char* 
   short i;
   short	  update_mode = 0;	//< Mode 0 is immediate
   short	  ref_source = 0;	//< Reference source, 0 = internal, 1 = external
-  double  ref_voltage = 0.0;
+  double  ref_voltage = 10.0;
 
-  // Set the polarity
-   if (inBipolar) {
+  // Set the polarity.  0 is bipolar, 1 is unipolar.
+  if (inBipolar) {
     d_in_polarity = 0;
   } else {
     d_in_polarity = 1;
@@ -75,8 +75,11 @@ vrpn_National_Instruments_Server::vrpn_National_Instruments_Server (const char* 
   for (i = 0; i < d_out_num_channels; i++) {
 
     int ret = AO_Configure(d_device_number, i, d_out_polarity, ref_source, ref_voltage, update_mode);
-    if (ret < 0) {
+    // Code -10403 shows up but did not cause problems for the NI server, so we ignore it (probably at our peril)
+    if ( (ret < 0) && (ret != -10403) ) {
       fprintf(stderr,"vrpn_National_Instruments_Server: Cannot configure output channel %d (error %d)\n", i, ret);
+      fprintf(stderr,"     polarity: %d, reference source: %d, reference_voltage: %lg, update_mode: %d\n",
+          d_out_polarity, ref_source, ref_voltage, update_mode);
       setNumOutChannels(0);
       break;
     }
@@ -144,7 +147,8 @@ void vrpn_National_Instruments_Server::mainloop(void)
     i16 value;
     int i;
     for (i = 0; i < vrpn_Analog::num_channel; i++) {
-      if (AI_Read(d_device_number, i, d_in_gain, &value)) {
+      int ret = AI_Read(d_device_number, i, d_in_gain, &value);
+      if (ret != 0) {
         send_text_message("vrpn_National_Instruments_Server::mainloop(): Cannot read channel", now, vrpn_TEXT_ERROR);
         setNumInChannels(0);
         return;
@@ -354,6 +358,10 @@ vrpn_Analog_Output_Server_NI::vrpn_Analog_Output_Server_NI(const char* name, vrp
   for (i = 0; i < NI_num_channels; i++) {
       AO_Configure(NI_device_number, i, polarity, ref_source, ref_voltage,
 	  update_mode);
+/*XXX
+      fprintf(stderr,"XXX Configuring channel %d, polarity: %d, reference source: %d, reference_voltage: %lg, update_mode: %d\n",
+          i, polarity, ref_source, ref_voltage, update_mode);
+*/
       AO_VWrite(NI_device_number, i, min_voltage);
   }
 

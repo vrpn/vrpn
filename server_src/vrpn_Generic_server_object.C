@@ -858,6 +858,9 @@ int vrpn_Generic_Server_Object::setup_NationalInstruments (char * & pch, char * 
   // Open the device
   if (verbose) {
     printf("Opening vrpn_National_Instruments_Server: %s with %d in and %d out channels\n", s2, num_in_channels, num_out_channels);
+    printf("  MinDelay %f, In polarity %d, In mode %d, In range %d\n", minimum_delay, in_polarity, in_mode, in_range);
+    printf("  In driveAIS %d, In gain %d\n", in_drive_ais, in_gain);
+    printf("  Out polarity %d, Min out voltage %f, Max out voltage %f\n", out_polarity, min_out_voltage, max_out_voltage);
   }
   if ((analogs[num_analogs] =
   new vrpn_National_Instruments_Server(s2, connection, s3, num_in_channels, num_out_channels,

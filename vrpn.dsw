@@ -192,7 +192,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "test_radamec_spi"=.\server_src\test_radamec_spi.dsp - Package Owner=<4>
+Project: "test_imager"=.\CLIENT_SRC\test_imager.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -207,7 +207,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "test_imager"=.\CLIENT_SRC\test_imager.dsp - Package Owner=<4>
+Project: "test_radamec_spi"=.\server_src\test_radamec_spi.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -409,6 +409,12 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name make_vrpn_libs_build
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vrpndll
     End Project Dependency
 }}}
 

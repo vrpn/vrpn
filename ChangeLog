@@ -1,3 +1,13 @@
+2005-04-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_NationalInstruments.C : Marked one particular
+		error return code as not a problem for AO_Configure.
+		This makes the new NI module work like the old
+		NI_Output.  It is almost certainly something to
+		fix for real later.
+	* vrpn.dsw : Added dependencies to make the server
+		rebuild when library does.
+
 2005-02-25  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Makefile : Removed -LANG:std from compile, no streams
