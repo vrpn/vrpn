@@ -12,6 +12,8 @@
 
 #include <vrpn_Connection.h>  // for vrpn_HANDLERPARAM
 
+class vrpn_LamportClock;  // from "vrpn_LamportClock.h"
+
 // It's increasingly clear that we could handle all this with
 // a template, except for the fact that vrpn_Shared_String is
 // based on char *.  All we need is a String base class.
@@ -120,6 +122,7 @@ class vrpn_SharedObject {
     // MANIPULATORS
 
     virtual void bindConnection (vrpn_Connection *);
+    void useLamportClock (vrpn_LamportClock *);
 
   protected:
 
@@ -145,6 +148,8 @@ class vrpn_SharedObject {
       // must set d_lastUpdate BEFORE calling yankCallbacks()
         
     static int handle_becomeSerializer (void *, vrpn_HANDLERPARAM);
+
+    vrpn_LamportClock * d_lClock;
 
   private:
 
