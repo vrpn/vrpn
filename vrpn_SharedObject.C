@@ -96,7 +96,7 @@ vrpn_Shared_int32 & vrpn_Shared_int32_Server::operator =
 
   if (d_connection) {
     char buffer [32];
-    int buflen = 32;
+    vrpn_int32 buflen = 32;
 
     gettimeofday(&now, NULL);
     encode((char **) &buffer, &buflen);
@@ -156,7 +156,7 @@ vrpn_Shared_int32 & vrpn_Shared_int32_Remote::operator =
 
   if (d_connection) {
     char buffer [32];
-    int buflen = 32;
+    vrpn_int32 buflen = 32;
 
     gettimeofday(&now, NULL);
     encode((char **) &buffer, &buflen);
