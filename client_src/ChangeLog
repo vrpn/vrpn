@@ -1,3 +1,8 @@
+2000-10-17  Tom Hudson  <hudson@cs.unc.edu>
+
+	* printvals.c (handle_gotConnection) : new function
+	(init) : register handle_gotConnection
+
 2000-10-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Makefile : Added vrpn_ping test program

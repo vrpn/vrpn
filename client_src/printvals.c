@@ -72,6 +72,17 @@ void	handle_button (void *, const vrpn_BUTTONCB b)
 	printf("B%ld is %ld\n", b.button, b.state);
 }
 
+int handle_gotConnection (void *, vrpn_HANDLERPARAM) {
+
+  if (beRedundant) {
+    fprintf(stderr, "printvals got connection;  "
+            "initializing redundant xmission.\n");
+    rc->set(redNum, vrpn_MsecsTimeval(redTime));
+  }
+
+  return 0;
+}
+
 int filter_pos (void * userdata, vrpn_HANDLERPARAM p) {
 
   vrpn_Connection * c = (vrpn_Connection *) userdata;
@@ -98,6 +109,7 @@ void init (const char * station_name,
 	//char * hn;
 	int port;
 
+  vrpn_int32 gotConn_type;
 
 	// explicitly open up connections with the proper logging parameters
 	// these will be entered in the table and found by the
@@ -146,6 +158,10 @@ fprintf(stderr, "Button 2's name is %s.\n", devicename);
 	printf("Button update: B<number> is <newstate>\n");
 	btn->register_change_handler(NULL, handle_button);
 	btn2->register_change_handler(NULL, handle_button);
+
+  gotConn_type = c->register_message_type(vrpn_got_connection);
+
+  c->register_handler(gotConn_type, handle_gotConnection, NULL);
 
 }	/* init */
 
@@ -303,8 +319,9 @@ void main (int argc, char * argv [])
   signal(SIGINT, handle_cntl_c);
 
   // filter the log if requested
-  if (filter && c)
+  if (filter && c) {
     c->register_log_filter(filter_pos, c);
+  }
 
   if (beQuiet) {
     vrpn_System_TextPrinter.remove_object(btn);
