@@ -2,6 +2,14 @@
 #define VRPN_TYPES_H
 
 //------------------------------------------------------------------
+// do the test for a C++ compiler first, to insure it's the first
+// error message.  
+//------------------------------------------------------------------
+#ifndef __cplusplus
+XXX     Need to compile with a C++ compiler, not a C compiler
+#endif
+
+//------------------------------------------------------------------
 //   This section contains definitions for architecture-dependent
 // types.  It is important that the data sent over a vrpn_Connection
 // be of the same size on all hosts sending and receiving it.  Since
@@ -86,11 +94,14 @@ typedef  double          vrpn_float64;
 // back into a single compiler (starting with gcc-2.95), we should probably
 // start to use __GNUC__, since that's the official GNU C macro. XXX
 //
-//   WIN32 is defined only by the Windows VC++ compiler
-//   DO NOT EVER USE WIN32.  It is too hard to differentiate
-//   from _WIN32.  If you use it to distinguish between
-//   VC++ and g++, may your wrists quickly develop a nerve
-//   disorder that prevents you from ever typing again  :)
+// WIN32 (sans underline) is defined only by the Windows VC++ compiler.
+//
+//     DO NOT EVER USE WIN32
+//
+// It is too hard to differentiate from _WIN32, and may not actually be
+// defined by VC++ (it's a project option).  If you use WIN32 to distinguish
+// between VC++ and cygwin/g++, may your wrists quickly develop a nerve
+// disorder that prevents you from ever typing again ;)
 // 
 #ifdef  _WIN32
 #define  VRPN_ARCH  _WIN32
@@ -117,11 +128,7 @@ typedef  double          vrpn_float64;
 #endif
 
 #ifndef VRPN_ARCH
-XXX     Need to define architecture-dependent sizes here
-#endif
-
-#ifndef __cplusplus
-XXX     Need to compile with a C++ compiler
+XXX     Need to define architecture-dependent sizes in this file
 #endif
 
 // prevent use of these macros outside this file
@@ -144,12 +151,6 @@ XXX     Need to compile with a C++ compiler
 //   restricted to that already?
 //
 #undef  VRPN_ARCH
-#undef  VRPN_ARCH
-#undef  VRPN_ARCH
-#undef  VRPN_ARCH
-#undef  VRPN_ARCH
-#undef  VRPN_ARCH
-#undef  VRPN_ARCH
 
 // *******************************************************
 // you should NOT need to modify anything below this point
@@ -171,8 +172,11 @@ const vrpn_int16 VRPN_FALSE = 0;
 // optimized away, because the compiler is not allowed to assume their
 // values don't change.
 //
-// If you are willing to assume templates, I think there is a
-// clean alternative that does allow the optimization.
+//   [juliano 11/28/99] Perhaps the optimization can be done if they are
+//   static?  I don't know enough about what compilers can/cannot do today.
+//
+// If you are willing to assume templates, there is an alternative using
+// a traits class that does make the optimization possible (and likely).
 //
 // If you don't want to use templates, but still want the sizeof
 // these things be vrpn_int16, you can use macros like this.
