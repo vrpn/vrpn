@@ -1,5 +1,11 @@
 2001-04-30  Tom Hudson  <hudson@cs.unc.edu>
 
+	* vrpn_Mutex.C (handle_gotConnection) : Fix logic error to request
+	a new ID if one hasn't been set already.  Has known failure modes
+	(?), but fewer than when this was incorrect.
+
+2001-04-30  Tom Hudson  <hudson@cs.unc.edu>
+
 	* vrpn_Tracker_AnalogFly.C (d_reportChanges) : new member variable
 	recording whether we're reporting at the full update_rate or at the
 	rate at which changes actually happen

@@ -632,7 +632,7 @@ int vrpn_Mutex_Remote::handle_initialize (void * userdata,
 int vrpn_Mutex_Remote::handle_gotConnection (void * userdata,
                                              vrpn_HANDLERPARAM p) {
   vrpn_Mutex_Remote * me = (vrpn_Mutex_Remote *) userdata;
-  if (me->d_myIndex != -1) {
+  if (me->d_myIndex == -1) {
     me->requestIndex();
   }
   return 0;
