@@ -1,11 +1,12 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <signal.h>
-#include <string.h>
+#include "vrpn_Shared.h"
 #include "vrpn_Button.h"
 #include "vrpn_Tracker.h"
 #include "vrpn_FileConnection.h"
 #include "vrpn_FileController.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <signal.h>
+#include <string.h>
 
 #ifndef _WIN32
 #include <strings.h>

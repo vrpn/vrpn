@@ -7,7 +7,6 @@
 # that defines hw_os for the machine you are on in the section just
 # below. Then, the code should compile in your environment.
 #
-HW_OS := $(shell hw_os)
 #HW_OS := sgi_irix
 #HW_OS := sparc_solaris
 #HW_OS := hp700_hpux10
@@ -15,6 +14,25 @@ HW_OS := $(shell hw_os)
 #HW_OS := pc_cygwin
 #HW_OS := pc_FreeBSD
 ##########################
+
+ifndef	HW_OS
+# hw_os does not exist on FreeBSD at UNC
+UNAME := $(shell uname -s)
+ifeq ($(UNAME), FreeBSD)
+  HW_OS := pc_FreeBSD
+else
+  # pc_cygwin doesn't have HW_OS
+  ifeq ($(UNAME), CYGWIN_NT-4.0)
+    HW_OS := pc_cygwin
+  else
+    ifeq ($(UNAME), CYGWIN_98-4.10)
+      HW_OS := pc_cygwin
+    else
+      HW_OS := $(shell hw_os)
+    endif
+  endif
+endif
+endif
 
 
 # check if its for pxfl
@@ -54,6 +72,10 @@ endif
 ifeq ($(HW_OS),sparc_solaris)
   CC := /opt/SUNWspro/bin/CC
   ARCH_LIBS := -lsocket -lnsl $(ARCH_LIBS)
+endif
+
+ifeq ($(HW_OS),pc_cygwin)
+  ARCH_LIBS := -lcygwin -luser32 -lgdi32 -lcomdlg32 -lwsock32
 endif
 
 CFLAGS = -I../ -g
