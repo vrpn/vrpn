@@ -334,17 +334,7 @@ public class ForceDeviceRemote implements Runnable
 	protected Vector errorListeners = new Vector( );
 	
 	/**
-	 * these notifying*ListenersLock variables are used to ensure that multiple
-	 * ForceDeviceRemote objects running in multiple threads don't call the 
-	 * forceUpdate, et al, method of some single object concurrently.
-	 * For example, the handleForceChange(...) method, which is invoked from native 
-	 * code, gets a lock on the notifyingForceListenersLock object.  Since that object
-	 * is static, all other instances of ForceDeviceRemote must wait before notifying 
-	 * their listeners and completing their handleForceChange(...) methods.
-	 * They are necessary, in part, because methods in an interface can't be declared
-	 * synchronized (and the semantics of the keyword 'synchronized' aren't what's
-	 * wanted here, anyway -- we want synchronization across all instances, not just a 
-	 * single object).
+	 * @see vrpn.TrackerRemote#notifyingChangeListenersLock
 	 */
 	protected final static Object notifyingForceListenersLock = new Object( );
 	protected final static Object notifyingSCPListenersLock = new Object( );
