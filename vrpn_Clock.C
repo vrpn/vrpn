@@ -9,7 +9,7 @@
   Revised: Wed Apr  1 13:23:40 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.C,v $
   $Locker:  $
-  $Revision: 1.11 $
+  $Revision: 1.12 $
   \*****************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
@@ -39,8 +39,8 @@ vrpn_Clock::vrpn_Clock(const char * name, vrpn_Connection *c) {
   if (connection == NULL) {
     return;
   }
-
   clockServer_id = connection->register_sender(servicename);
+
   queryMsg_id = connection->register_message_type("clock query");
   replyMsg_id = connection->register_message_type("clock reply");
   if ( (clockServer_id == -1) || (queryMsg_id == -1) || (replyMsg_id == -1) ) {
@@ -811,6 +811,11 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
 
 /*****************************************************************************\
   $Log: vrpn_Clock.C,v $
+  Revision 1.12  1998/09/24 04:29:34  gregory
+  Updated the forceDevice to handle dynamic triangular meshes,
+  as well as to allow for the user to chose between the Ghost
+  and Hcollide libraries for the collision detection.
+
   Revision 1.11  1998/06/26 15:48:53  hudson
   Wrote vrpn_FileConnection.
   Changed connection naming convention.

@@ -92,11 +92,7 @@ typedef int (* vrpn_LOGFILTER) (void * userdata, vrpn_HANDLERPARAM p);
 
 #define vrpn_CONTROL "VRPN Control"
 
-
-
 typedef char cName [100];
-
-
 
 // Placed here so vrpn_FileConnection can use it too.
 struct vrpn_LOGLIST {
@@ -123,8 +119,6 @@ struct vrpnLogFilterEntry {
   void * userdata;         // passed along
   vrpnLogFilterEntry * next;
 };
-
-
 
 
 class vrpn_Connection
@@ -344,6 +338,7 @@ class vrpn_Connection
 	vrpn_LOGLIST * d_first_log_entry;  // first entry in log
 	char * d_logname;            // name of file to write log to
 	long d_logmode;              // logging incoming, outgoing, or both
+
 	int d_logfile_handle;
 	FILE * d_logfile;
 

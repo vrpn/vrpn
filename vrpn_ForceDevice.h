@@ -59,7 +59,6 @@ protected:
 //	virtual void get_report(void) = 0;
 	virtual int encode_to(char *buf);
 	virtual int encode_scp_to(char *buf);
-	virtual int encode_error_to(char *buf);
 
 	struct timeval timestamp;
 	long my_id;		// ID of this force device to connection
@@ -73,11 +72,14 @@ protected:
 	long error_message_id;	// ID of force device error message
 
         // IDs for trimesh messages
-        long startTrimesh_message_id;   
         long setVertex_message_id;   
+        long setNormal_message_id;   
         long setTriangle_message_id;   
-        long finishTrimesh_message_id;   
-        long transformTrimesh_message_id;   
+        long removeTriangle_message_id;   
+        long updateTrimeshChanges_message_id;   
+        long transformTrimesh_message_id;    
+        long setTrimeshType_message_id;    
+        long clearTrimesh_message_id;    
 
 	long set_constraint_message_id;
 
@@ -143,14 +145,23 @@ public:
 	void startSurface(void);
 	void stopSurface(void);
 
-	void startSendingTrimesh(int numVerts,int numTris);
-        // vertNum and triNum start at 0
-        void sendVertex(int vertNum,float x,float y,float z);
-        void sendTriangle(int triNum,int vert0,int vert1,int vert2);
-        void finishSendingTrimesh();
+        // vertNum normNum and triNum start at 0
+        void setVertex(int vertNum,float x,float y,float z);
+        // NOTE: ghost dosen't take normals, 
+        //       and normals still aren't implemented for Hcollide
+        void setNormal(int normNum,float x,float y,float z);
+        void setTriangle(int triNum,int vert0,int vert1,int vert2,
+			  int norm0=-1,int norm1=-1,int norm2=-1);
+        void removeTriangle(int triNum); 
+        // should be called to incorporate the above changes into the displayed trimesh 
+        void updateTrimeshChanges();
         // set the trimesh's homogen transform matrix (in row major order)
-        void sendTrimeshTransform(float homMatrix[16]);
-  	void stopTrimesh(void);
+        void setTrimeshTransform(float homMatrix[16]);
+  	void clearTrimesh(void);
+  
+        // the next time we send a trimesh we will use the following type
+        void useHcollide();
+        void useGhost();
 
 	void sendConstraint(int enable, float x, float y, float z, float kSpr);
 
@@ -160,13 +171,16 @@ public:
 	void stopForceField();
 
 	char *encode_plane(int &len);
-	char *encode_startTrimesh(int &len,int numVerts,int numTris);
         char *encode_vertex(int &len,int vertNum,float x,float y,float z); 
+        char *encode_normal(int &len,int vertNum,float x,float y,float z); 
         char *encode_triangle(int &len,int triNum,
-			      int vert0,int vert1,int vert2);	       
-        char *encode_finishTrimesh(int &len);
-
+			      int vert0,int vert1,int vert2,
+			      int norm0,int norm1,int norm2);	       
+        char *encode_removeTriangle(int &len,int triNum);
+        char *encode_updateTrimeshChanges(int &len);
+        char *encode_setTrimeshType(int &len,int type);
         char *encode_trimeshTransform(int &len,float homMatrix[16]);
+
 	char *encode_constraint(int &len, int enable, float x, float y, float z,
 				float kSpr);
 	char *encode_forcefield(int &len, float origin[3],

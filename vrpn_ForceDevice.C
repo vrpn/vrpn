@@ -20,6 +20,13 @@
 
 #include "vrpn_ForceDevice.h"
 
+/* cheezy hack to make sure this enum is defined in the case we didn't 
+   include trimesh.h */
+#ifndef TRIMESH_H
+// the different types of trimeshes we have available for haptic display
+enum TrimeshType {GHOST,HCOLLIDE};
+#endif
+
 vrpn_ForceDevice::vrpn_ForceDevice(char *name, vrpn_Connection *c)
 {
 	//set connection to the one passed in
@@ -35,16 +42,22 @@ vrpn_ForceDevice::vrpn_ForceDevice(char *name, vrpn_Connection *c)
 			connection->register_message_type("Force Field");
 
 		plane_message_id = connection->register_message_type("Plane");
-		startTrimesh_message_id = 
-		  connection->register_message_type("startTrimesh");
 		setVertex_message_id = 
 		  connection->register_message_type("setVertex");
+		setNormal_message_id =
+		  connection->register_message_type("setNormal");
 		setTriangle_message_id = 
 		  connection->register_message_type("setTriangle");
-		finishTrimesh_message_id = 
-		  connection->register_message_type("finishTrimesh");
+		removeTriangle_message_id = 
+		  connection->register_message_type("removeTriangle");
+		updateTrimeshChanges_message_id = 
+		  connection->register_message_type("updateTrimeshChanges");
 		transformTrimesh_message_id = 
 		  connection->register_message_type("transformTrimesh");
+		setTrimeshType_message_id = 
+		  connection->register_message_type("setTrimeshType");
+		clearTrimesh_message_id = 
+		  connection->register_message_type("clearTrimesh");
 		scp_message_id = connection->register_message_type("SCP");
 		set_constraint_message_id = 
 			connection->register_message_type("CONSTRAINT");
@@ -114,14 +127,6 @@ int vrpn_ForceDevice::encode_scp_to(char *buf)
         dBuf[i] = htond(dBuf[i]);
     }
     return index*sizeof(double);
-}
-
-int vrpn_ForceDevice::encode_error_to(char *buf)
-{
-    long *lBuf = (long *)buf;
-    lBuf[0] = errorCode;
-    lBuf[0] = htonl(lBuf[0]);
-    return sizeof(int);
 }
 
 vrpn_ForceDevice_Remote::vrpn_ForceDevice_Remote(char *name):
@@ -197,31 +202,6 @@ char *vrpn_ForceDevice_Remote::encode_plane(int &len){
    return buf;
 }
 
-char *vrpn_ForceDevice_Remote::encode_startTrimesh(int &len,
-						int numVerts,int numTris){
-  // Byte order of each needs to be reversed to match network standard
-  // This moving is done by horrible typecast hacks. 
-  // someone did this in the encode_plane(), so I just moused it on down (AG)
-
-  // count the number of parameters we're sending
-  len = (2)*sizeof(unsigned long);
-  // allocate the buffer for the message
-  char *buf=new char[len];
-
-  int i;
-  unsigned long *longbuf = (unsigned long*)(void*)(buf);
-  int	index = 0;
-
-  longbuf[index++] = *(unsigned long*)(void*)(&numVerts);
-  longbuf[index++] = *(unsigned long*)(void*)(&numTris);
- 
-  for (i = 0; i < index; i++) {
-    longbuf[i] = htonl(longbuf[i]);
-  }
-
-  return buf; 
-}
-
 char *vrpn_ForceDevice_Remote::encode_vertex(int &len,int vertNum,
 					     float x,float y,float z){
   // Byte order of each needs to be reversed to match network standard
@@ -248,8 +228,8 @@ char *vrpn_ForceDevice_Remote::encode_vertex(int &len,int vertNum,
   return buf; 
 }
 
-char *vrpn_ForceDevice_Remote::encode_triangle(int &len,int triNum,
-					       int vert0,int vert1,int vert2){
+char *vrpn_ForceDevice_Remote::encode_normal(int &len,int normNum,
+					     float x,float y,float z){
   // Byte order of each needs to be reversed to match network standard
   // This moving is done by horrible typecast hacks. 
   // someone did this in the encode_plane(), so I just moused it on down (AG)
@@ -263,10 +243,62 @@ char *vrpn_ForceDevice_Remote::encode_triangle(int &len,int triNum,
   unsigned long *longbuf = (unsigned long*)(void*)(buf);
   int	index = 0;
 
+  longbuf[index++] = *(unsigned long*)(void*)(&normNum);
+  longbuf[index++] = *(unsigned long*)(void*)(&x);
+  longbuf[index++] = *(unsigned long*)(void*)(&y);
+  longbuf[index++] = *(unsigned long*)(void*)(&z);
+ 
+  for (i = 0; i < index; i++) {
+    longbuf[i] = htonl(longbuf[i]);
+  }
+  return buf; 
+}
+
+char *vrpn_ForceDevice_Remote::encode_triangle(int &len,int triNum,
+					       int vert0,int vert1,int vert2,
+					       int norm0,int norm1,int norm2){
+  // Byte order of each needs to be reversed to match network standard
+  // This moving is done by horrible typecast hacks. 
+  // someone did this in the encode_plane(), so I just moused it on down (AG)
+
+  // count the number of parameters we're sending
+  len = (7)*sizeof(unsigned long);
+  // allocate the buffer for the message
+  char *buf=new char[len];
+
+  int i;
+  unsigned long *longbuf = (unsigned long*)(void*)(buf);
+  int	index = 0;
+
   longbuf[index++] = *(unsigned long*)(void*)(&triNum);
   longbuf[index++] = *(unsigned long*)(void*)(&vert0);
   longbuf[index++] = *(unsigned long*)(void*)(&vert1);
   longbuf[index++] = *(unsigned long*)(void*)(&vert2);
+  longbuf[index++] = *(unsigned long*)(void*)(&norm0);
+  longbuf[index++] = *(unsigned long*)(void*)(&norm1);
+  longbuf[index++] = *(unsigned long*)(void*)(&norm2);
+ 
+  for (i = 0; i < index; i++) {
+    longbuf[i] = htonl(longbuf[i]);
+  }
+  return buf; 
+}
+
+char *vrpn_ForceDevice_Remote::encode_removeTriangle(int &len,int triNum){
+  // Byte order of each needs to be reversed to match network standard
+  // This moving is done by horrible typecast hacks. 
+  // someone did this in the encode_plane(), so I just moused it on down (AG)
+
+  // count the number of parameters we're sending
+  len = (1)*sizeof(unsigned long);
+  // allocate the buffer for the message
+  char *buf=new char[len];
+
+  int i;
+  unsigned long *longbuf = (unsigned long*)(void*)(buf);
+  int	index = 0;
+
+  longbuf[index++] = *(unsigned long*)(void*)(&triNum);
  
   for (i = 0; i < index; i++) {
     longbuf[i] = htonl(longbuf[i]);
@@ -275,7 +307,7 @@ char *vrpn_ForceDevice_Remote::encode_triangle(int &len,int triNum,
 }
 
 // this is where we send down our surface parameters
-char *vrpn_ForceDevice_Remote::encode_finishTrimesh(int &len){
+char *vrpn_ForceDevice_Remote::encode_updateTrimeshChanges(int &len){
   // Byte order of each needs to be reversed to match network standard
   // This moving is done by horrible typecast hacks. 
   // someone did this in the encode_plane(), so I just moused it on down (AG)
@@ -294,6 +326,28 @@ char *vrpn_ForceDevice_Remote::encode_finishTrimesh(int &len){
   longbuf[index++] = *(unsigned long*)(void*)(&SurfaceFdynamic);
   longbuf[index++] = *(unsigned long*)(void*)(&SurfaceFstatic);
   
+  for (i = 0; i < index; i++) {
+    longbuf[i] = htonl(longbuf[i]);
+  }
+  return buf; 
+}
+
+char *vrpn_ForceDevice_Remote::encode_setTrimeshType(int &len,int type){
+  // Byte order of each needs to be reversed to match network standard
+  // This moving is done by horrible typecast hacks. 
+  // someone did this in the encode_plane(), so I just moused it on down (AG)
+
+  // count the number of parameters we're sending
+  len = sizeof(unsigned long);
+  // allocate the buffer for the message
+  char *buf=new char[len];
+
+  int i;
+  unsigned long *longbuf = (unsigned long*)(void*)(buf);
+  int	index = 0;
+
+  longbuf[index++] = *(unsigned long*)(void*)(&type);
+
   for (i = 0; i < index; i++) {
     longbuf[i] = htonl(longbuf[i]);
   }
@@ -462,30 +516,7 @@ void vrpn_ForceDevice_Remote::stopSurface(void)
     }
 }
 
-
-
-void vrpn_ForceDevice_Remote::startSendingTrimesh(int numVerts,int numTris){
-
-  char	*msgbuf;
-  int		len;
-  struct timeval current_time;
-  
-  gettimeofday(&current_time, NULL);
-  timestamp.tv_sec = current_time.tv_sec;
-  timestamp.tv_usec = current_time.tv_usec;
-
-  if(connection){
-    msgbuf = encode_startTrimesh(len,numVerts,numTris);
-    if (connection->pack_message(len,timestamp,startTrimesh_message_id,
-				 my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
-      fprintf(stderr,"Phantom: cannot write message: tossing\n");
-    }
-    connection->mainloop();
-    delete msgbuf;
-  }
-}
-
-void vrpn_ForceDevice_Remote::sendVertex(int vertNum,float x,float y,float z){
+void vrpn_ForceDevice_Remote::setVertex(int vertNum,float x,float y,float z){
 
   char	*msgbuf;
   int		len;
@@ -502,12 +533,33 @@ void vrpn_ForceDevice_Remote::sendVertex(int vertNum,float x,float y,float z){
       fprintf(stderr,"Phantom: cannot write message: tossing\n");
     }
     connection->mainloop();
-    delete msgbuf;
+    delete []msgbuf;
   }
 }
 
-void vrpn_ForceDevice_Remote::sendTriangle(int triNum,
-					   int vert0,int vert1,int vert2){
+void vrpn_ForceDevice_Remote::setNormal(int normNum,float x,float y,float z){
+  char	*msgbuf;
+  int		len;
+  struct timeval current_time;
+  
+  gettimeofday(&current_time, NULL);
+  timestamp.tv_sec = current_time.tv_sec;
+  timestamp.tv_usec = current_time.tv_usec;
+
+  if(connection){
+    msgbuf = encode_normal(len,normNum,x,y,z);
+    if (connection->pack_message(len,timestamp,setNormal_message_id,
+				 my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+      fprintf(stderr,"Phantom: cannot write message: tossing\n");
+    }
+    connection->mainloop();
+    delete []msgbuf;
+  }
+}
+
+void vrpn_ForceDevice_Remote::setTriangle(int triNum,
+					  int vert0,int vert1,int vert2,
+					  int norm0,int norm1,int norm2){
 
   char	*msgbuf;
   int		len;
@@ -518,17 +570,17 @@ void vrpn_ForceDevice_Remote::sendTriangle(int triNum,
   timestamp.tv_usec = current_time.tv_usec;
 
   if(connection){
-    msgbuf = encode_triangle(len,triNum,vert0,vert1,vert2);
+    msgbuf = encode_triangle(len,triNum,vert0,vert1,vert2,norm0,norm1,norm2);
     if (connection->pack_message(len,timestamp,setTriangle_message_id,
 				 my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
       fprintf(stderr,"Phantom: cannot write message: tossing\n");
     }
     connection->mainloop();
-    delete msgbuf;
+    delete []msgbuf;
   }
 }
 
-void vrpn_ForceDevice_Remote::finishSendingTrimesh(){
+void vrpn_ForceDevice_Remote::removeTriangle(int triNum){
 
   char	*msgbuf;
   int		len;
@@ -539,18 +591,39 @@ void vrpn_ForceDevice_Remote::finishSendingTrimesh(){
   timestamp.tv_usec = current_time.tv_usec;
 
   if(connection){
-    msgbuf = encode_finishTrimesh(len);
-    if (connection->pack_message(len,timestamp,finishTrimesh_message_id,
+    msgbuf = encode_removeTriangle(len,triNum);
+    if (connection->pack_message(len,timestamp,removeTriangle_message_id,
 				 my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
       fprintf(stderr,"Phantom: cannot write message: tossing\n");
     }
     connection->mainloop();
-    delete msgbuf;
+    delete []msgbuf;
+  }
+}
+
+void vrpn_ForceDevice_Remote::updateTrimeshChanges(){
+
+  char	*msgbuf;
+  int		len;
+  struct timeval current_time;
+  
+  gettimeofday(&current_time, NULL);
+  timestamp.tv_sec = current_time.tv_sec;
+  timestamp.tv_usec = current_time.tv_usec;
+
+  if(connection){
+    msgbuf = encode_updateTrimeshChanges(len);
+    if (connection->pack_message(len,timestamp,updateTrimeshChanges_message_id,
+				 my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+      fprintf(stderr,"Phantom: cannot write message: tossing\n");
+    }
+    connection->mainloop();
+    delete []msgbuf;
   }
 }
 
 // set the trimesh's homogen transform matrix (in row major order)
-void vrpn_ForceDevice_Remote::sendTrimeshTransform(float homMatrix[16]){
+void vrpn_ForceDevice_Remote::setTrimeshTransform(float homMatrix[16]){
   char	*msgbuf;
   int		len;
   struct timeval current_time;
@@ -566,13 +639,32 @@ void vrpn_ForceDevice_Remote::sendTrimeshTransform(float homMatrix[16]){
       fprintf(stderr,"Phantom: cannot write message: tossing\n");
     }
     connection->mainloop();
-    delete msgbuf;
+    delete []msgbuf;
   }
 }
 
-// stop the triMesh if connection
-void vrpn_ForceDevice_Remote::stopTrimesh(void){
+// clear the triMesh if connection
+void vrpn_ForceDevice_Remote::clearTrimesh(void){
+  char	*msgbuf=NULL;
+  int		len=0;
+  struct timeval current_time;
   
+  gettimeofday(&current_time, NULL);
+  timestamp.tv_sec = current_time.tv_sec;
+  timestamp.tv_usec = current_time.tv_usec;
+
+  if(connection){
+    if (connection->pack_message(len,timestamp,clearTrimesh_message_id,
+				 my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+      fprintf(stderr,"Phantom: cannot write message: tossing\n");
+    }
+    connection->mainloop();
+    delete []msgbuf;
+  }
+}
+
+// the next time we send a trimesh we will use the following type
+void vrpn_ForceDevice_Remote::useHcollide(void){
   char	*msgbuf;
   int		len;
   struct timeval current_time;
@@ -582,15 +674,36 @@ void vrpn_ForceDevice_Remote::stopTrimesh(void){
   timestamp.tv_usec = current_time.tv_usec;
 
   if(connection){
-    msgbuf = encode_startTrimesh(len,0,0);
-    if (connection->pack_message(len,timestamp,startTrimesh_message_id,
+    msgbuf = encode_setTrimeshType(len,HCOLLIDE);
+    if (connection->pack_message(len,timestamp,setTrimeshType_message_id,
 				 my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
       fprintf(stderr,"Phantom: cannot write message: tossing\n");
     }
     connection->mainloop();
-    delete msgbuf;
+    delete []msgbuf;
   }
 }
+
+void vrpn_ForceDevice_Remote::useGhost(void){
+  char	*msgbuf;
+  int		len;
+  struct timeval current_time;
+  
+  gettimeofday(&current_time, NULL);
+  timestamp.tv_sec = current_time.tv_sec;
+  timestamp.tv_usec = current_time.tv_usec;
+
+  if(connection){
+    msgbuf = encode_setTrimeshType(len,GHOST);
+    if (connection->pack_message(len,timestamp,setTrimeshType_message_id,
+				 my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+      fprintf(stderr,"Phantom: cannot write message: tossing\n");
+    }
+    connection->mainloop();
+    delete []msgbuf;
+  }
+}
+
 
 void vrpn_ForceDevice_Remote::sendConstraint(int enable, 
 					float x, float y, float z, float kSpr)

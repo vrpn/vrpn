@@ -2441,13 +2441,14 @@ long vrpn_Connection::register_sender (const char * name)
 {
    int	i;
 
-//fprintf(stderr, "vrpn_Connection::register_sender:  "
-//"%d senders;  new name \"%s\"\n", num_my_senders, name);
+   /*fprintf(stderr, "vrpn_Connection::register_sender:  "
+     "%d senders;  new name \"%s\"\n", num_my_senders, name);
+     */
 
    // See if the name is already in the list.  If so, return it.
    for (i = 0; i < num_my_senders; i++) {
       if (strcmp((char *) my_senders[i], name) == 0) {
-//fprintf(stderr, "It's already there, #%d\n", i);
+	// fprintf(stderr, "It's already there, #%d\n", i);
       	return i;
       }
    }
@@ -2461,7 +2462,7 @@ long vrpn_Connection::register_sender (const char * name)
 
    if (!my_senders[num_my_senders]) {
 
-//fprintf(stderr, "Allocating a new name entry\n");
+     //  fprintf(stderr, "Allocating a new name entry\n");
 
      my_senders[num_my_senders] = (cName *) new cName;
      if (!my_senders[num_my_senders]) {
