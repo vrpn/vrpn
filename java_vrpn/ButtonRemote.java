@@ -130,7 +130,7 @@ public class ButtonRemote extends VRPN implements Runnable
 		synchronized( notifyingChangeListenersLock )
 		{
 			ButtonUpdate b = new ButtonUpdate();
-			b.msg_time.setTime( tv_sec * 1000 + tv_usec );
+			b.msg_time.setTime( tv_sec * 1000 + (int) (tv_usec/1000.0) );
 			b.button = button;
 			b.state = state;
 			

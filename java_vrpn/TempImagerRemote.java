@@ -218,7 +218,7 @@ public class TempImagerRemote extends VRPN implements Runnable
 		synchronized( notifyingDescriptionListenersLock )
 		{
 			TempImagerDescriptionUpdate d = new TempImagerDescriptionUpdate();
-			d.msg_time.setTime( tv_sec * 1000 + tv_usec );
+			d.msg_time.setTime( tv_sec * 1000 + (int) (tv_usec/1000.0) );
 			
 			// notify all listeners
 			Enumeration e = descriptionListeners.elements( );
@@ -241,7 +241,7 @@ public class TempImagerRemote extends VRPN implements Runnable
 		synchronized( notifyingRegionListenersLock )
 		{
 			TempImagerRegionUpdate r = new TempImagerRegionUpdate( );
-			r.msg_time.setTime( tv_sec * 1000 + tv_usec );
+			r.msg_time.setTime( tv_sec * 1000 + (int) (tv_usec/1000.0) );
 			r.region = new TempImagerRegion( );
 			r.region.channelIndex = channelIndex;
 			r.region.columnMin = columnMin;

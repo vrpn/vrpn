@@ -213,7 +213,7 @@ public class TrackerRemote extends VRPN implements Runnable
 		synchronized( notifyingChangeListenersLock )
 		{
 			TrackerUpdate t = new TrackerUpdate();
-			t.msg_time.setTime( tv_sec * 1000 + tv_usec );
+			t.msg_time.setTime( tv_sec * 1000 + (int) (tv_usec/1000.0) );
 			t.sensor = sensor;
 			t.pos[0] = x;  t.pos[1] = y;  t.pos[2] = z;
 			t.quat[0] = quat0;  t.quat[1] = quat1;  t.quat[2] = quat2;  t.quat[3] = quat3;
@@ -240,7 +240,7 @@ public class TrackerRemote extends VRPN implements Runnable
 		synchronized( notifyingVelocityListenersLock )
 		{
 			VelocityUpdate v = new VelocityUpdate();
-			v.msg_time.setTime( tv_sec * 1000 + tv_usec );
+			v.msg_time.setTime( tv_sec * 1000 + (int) (tv_usec/1000.0) );
 			v.sensor = sensor;
 			v.vel[0] = x;  v.vel[1] = y;  v.vel[2] = z;
 			v.vel_quat[0] = quat0;  v.vel_quat[1] = quat1;  v.vel_quat[2] = quat2;  
@@ -269,7 +269,7 @@ public class TrackerRemote extends VRPN implements Runnable
 		synchronized( notifyingAccelerationListenersLock )
 		{
 			AccelerationUpdate a = new AccelerationUpdate();
-			a.msg_time.setTime( tv_sec * 1000 + tv_usec );
+			a.msg_time.setTime( tv_sec * 1000 + (int) (tv_usec/1000.0) );
 			a.sensor = sensor;
 			a.acc[0] = x;  a.acc[1] = y;  a.acc[2] = z;
 			a.acc_quat[0] = quat0;  a.acc_quat[1] = quat1;  a.acc_quat[2] = quat2;

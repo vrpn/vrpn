@@ -229,7 +229,7 @@ public class ForceDeviceRemote extends VRPN implements Runnable
 		synchronized( notifyingForceListenersLock )
 		{
 			ForceChange f = new ForceChange();
-			f.msg_time.setTime( tv_sec * 1000 + tv_usec );
+			f.msg_time.setTime( tv_sec * 1000 + (int) (tv_usec/1000.0) );
 			f.force[0] = x;  f.force[1] = y;  f.force[2] = z;
 			
 			// notify all listeners
@@ -253,7 +253,7 @@ public class ForceDeviceRemote extends VRPN implements Runnable
 		synchronized( notifyingSCPListenersLock )
 		{
 			SCPChange s = new SCPChange();
-			s.msg_time.setTime( tv_sec * 1000 + tv_usec );
+			s.msg_time.setTime( tv_sec * 1000 + (int) (tv_usec/1000.0) );
 			s.pos[0] = x;  s.pos[1] = y;  s.pos[2] = z;
 			s.quat[0] = quat0;  s.quat[1] = quat1;  s.quat[2] = quat2;  
 			s.quat[3] = quat3;
@@ -277,7 +277,7 @@ public class ForceDeviceRemote extends VRPN implements Runnable
 		synchronized( notifyingErrorListenersLock )
 		{
 			ForceError u = new ForceError();
-			u.msg_time.setTime( tv_sec * 1000 + tv_usec );
+			u.msg_time.setTime( tv_sec * 1000 + (int) (tv_usec/1000.0) );
 			u.errorCode = errorCode;
 			
 			// notify all listeners

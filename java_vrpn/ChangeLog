@@ -1,3 +1,11 @@
+2004-04-20  David Marshburn  <marshbur@cs.unc.edu>
+
+	* *Remote.java:  time was being calculated/presented incorrectly
+	in all cases for message delivery in java.  i'd incorrectly 
+	used the tv_usec number of messages as milliseconds instead of 
+	microseconds when putting it into the Date member of the various
+	*Update structures.
+
 2003-10-24  Oliver Otto <o.otto@reading.ac.uk>
 
 	* makefile:  builds java_vrpn on unix (linux and iris tested)

@@ -150,7 +150,7 @@ public class AnalogRemote extends VRPN implements Runnable
 		synchronized( notifyingChangeListenersLock )
 		{
 			AnalogUpdate a = new AnalogUpdate();
-			a.msg_time.setTime( tv_sec * 1000 + tv_usec );
+			a.msg_time.setTime( tv_sec * 1000 + (int) (tv_usec/1000.0) );
 			a.channel = (double[]) channel.clone( );
 			
 			// notify all listeners
