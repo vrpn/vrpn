@@ -18,7 +18,7 @@
 #include <sys/errno.h>
 #endif
 
-#if defined(sgi)
+#if defined(sgi) || defined(__sparc)
 #include <errno.h>
 #endif
 

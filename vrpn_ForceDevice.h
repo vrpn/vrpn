@@ -147,7 +147,7 @@ class vrpn_ForceDevice : public vrpn_BaseClass {
     // ENCODING
     // ajout ONDIM
     static char *encode_custom_effect(vrpn_int32 &len, vrpn_uint32 effectId, 
-		const vrpn_float32 *params, const vrpn_uint32 nbParams);
+		const vrpn_float32 *params, vrpn_uint32 nbParams);
     // fin ajout ONDIM
     static char *encode_force(vrpn_int32 &length, const vrpn_float64 *force);
     static char *encode_scp(vrpn_int32 &length,

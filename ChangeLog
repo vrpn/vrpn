@@ -1,5 +1,13 @@
 2003-09-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Connection.h : Rearranged order of functions so that
+		it would compile on HPUX.
+	* vrpn_ForceDevice.C : Made it compile on HPUX.
+	* vrpn_ForceDevice.h : Rationalized const vs. non-const params.
+	* vrpn_Shared.h : Moved hack to make it compile on HPUX.
+
+2003-09-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* time_test.cpp : Compiles without warnings (commented out
 		unused variables).
 	* time_test.dsp : Making it build on Release setting.

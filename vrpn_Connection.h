@@ -390,18 +390,9 @@ class vrpn_Connection {
 
   public:
 
-    // Users should not create vrpn_Connection directly -- use 
-    // vrpn_Synchronized_Connection (for servers) or 
-    // vrpn_get_connection_by_name (for clients)
-
-	// Create a connection to listen for incoming connections on a port
-	vrpn_Connection (unsigned short listen_port_no =
-		         vrpn_DEFAULT_LISTEN_PORT_NO,
-                         const char * local_in_logfile_name = NULL,
-                         const char * local_out_logfile_name = NULL,
-                         const char * NIC_IPaddress = NULL,
-                         vrpn_Endpoint * (* epa) (vrpn_Connection *,
-                           vrpn_int32 *) = allocateEndpoint);
+	// Users should not create vrpn_Connection directly -- use 
+	// vrpn_Synchronized_Connection (for servers) or 
+	// vrpn_get_connection_by_name (for clients)
 
 	virtual ~vrpn_Connection (void);
 
@@ -495,6 +486,7 @@ class vrpn_Connection {
 
     static vrpn_Endpoint * allocateEndpoint (vrpn_Connection *,
                                              vrpn_int32 * connectedEC);
+
       ///< Redefining this and passing it to constructors
       ///< allows a subclass to use a different subclass of Endpoint.
       ///< It should do NOTHING but return an endpoint
@@ -619,6 +611,19 @@ class vrpn_Connection {
       ///< do initialization.  (They can't do so during allocateEndpoint
       ///< because it's called during the Connection constructor when
       ///< their constructors haven't executed yet.)
+
+	// Users should not create vrpn_Connection directly -- use 
+	// vrpn_Synchronized_Connection (for servers) or 
+	// vrpn_get_connection_by_name (for clients)
+
+	// Create a connection to listen for incoming connections on a port
+	vrpn_Connection (unsigned short listen_port_no =
+		         vrpn_DEFAULT_LISTEN_PORT_NO,
+                         const char * local_in_logfile_name = NULL,
+                         const char * local_out_logfile_name = NULL,
+                         const char * NIC_IPaddress = NULL,
+                         vrpn_Endpoint * (* epa) (vrpn_Connection *,
+                           vrpn_int32 *) = allocateEndpoint);
 
 };
 

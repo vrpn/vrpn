@@ -1,6 +1,15 @@
 #ifndef VRPN_SHARED_H
 #define VRPN_SHARED_H
 
+// Horrible hack for old HPUX compiler
+#ifdef	hpux
+#ifndef	true
+#define	bool	int
+#define	true	1
+#define	false	0
+#endif
+#endif
+
 #include "vrpn_Types.h"
 
 // Oct 2000: Sang-Uok changed becuase vrpn code was compiling but giving 
@@ -161,15 +170,6 @@ static	const   bool    vrpn_big_endian = (vrpn_char_data_for_endian_test[3] == 1
 // No sleep() function, but Sleep(DWORD) defined in winbase.h
 #if defined(_WIN32) && (!defined(__CYGWIN__))
 #define	sleep(x)	Sleep( DWORD(1000.0 * x) )
-#endif
-
-// Horrible hack for old HPUX compiler
-#ifdef	hpux
-#ifndef	true
-#define	bool	int
-#define	true	1
-#define	false	0
-#endif
 #endif
 
 #endif  // VRPN_SHARED_H

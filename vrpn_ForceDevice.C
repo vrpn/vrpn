@@ -7,9 +7,10 @@
 #include <fcntl.h>
 #include <ctype.h>
 
-
-#ifdef linux
+#ifdef	linux
 #include <linux/lp.h>
+#endif
+#if defined(linux) || defined(__sparc) || defined(hpux)
 #include <string.h>
 #endif
 
@@ -224,8 +225,8 @@ vrpn_int32 vrpn_ForceDevice::decode_force (const char *buffer, const vrpn_int32 
 }
 
 // ajout ONDIM
-char *vrpn_ForceDevice::encode_custom_effect(vrpn_int32 &len, const vrpn_uint32 effectId,
-					const vrpn_float32 *params, const vrpn_uint32 nbParams)
+char *vrpn_ForceDevice::encode_custom_effect(vrpn_int32 &len, vrpn_uint32 effectId,
+					const vrpn_float32 *params, vrpn_uint32 nbParams)
 {
 	char *buf;
 	char *mptr;
