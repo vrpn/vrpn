@@ -59,7 +59,7 @@ void Usage (const char * s)
   fprintf(stderr,"       -f: Full path to config file (default vrpn.cfg).\n");
   fprintf(stderr,"       -warn: Only warn on errors (default is to bail).\n");
   fprintf(stderr,"       -v: Verbose.\n");
-  fprintf(stderr,"	 -q: Quit when last connection is dropped\.n");
+  fprintf(stderr,"	 -q: Quit when last connection is dropped.\n");
   fprintf(stderr,"       -client: Where server connects when it starts up.\n");
   fprintf(stderr,"       -millisleep: Sleep n milliseconds each loop cycle.\n");
   fprintf(stderr,"       -NIC: Use NIC with given IP address or DNS name.\n");
