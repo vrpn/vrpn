@@ -42,6 +42,7 @@ class vrpn_Tracker {
 
    int read_config_file(FILE *config_file, char *tracker_name);
    void print_latest_report(void);
+   vrpn_Connection *connectionPtr();
 
   protected:
    vrpn_Connection *connection;         // Used to send messages

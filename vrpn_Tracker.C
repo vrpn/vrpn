@@ -119,7 +119,7 @@ int vrpn_open_commport(char *portname, long baud)
 
 // empty the input buffer (discarding the chars)
 // Return 0 on success, -1 on failure.
-// NOT CALLED!  OBSOLETE?
+// NOT CALLED!  OBSOLETE? -- no ... used by vrpn_Flock
 int vrpn_flush_input_buffer(int comm)
 {
 #if defined(_WIN32) || defined(sparc) || defined(hpux)
@@ -133,7 +133,7 @@ int vrpn_flush_input_buffer(int comm)
 
 // empty the output buffer, discarding all of the chars
 // Return 0 on success, tc err codes other on failure.
-// NOT CALLED!  OBSOLETE?
+// NOT CALLED!  OBSOLETE? -- no ... used by vrpn_Flock
 int vrpn_flush_output_buffer(int comm)
 {
 #if defined(_WIN32) || defined(sparc) || defined(hpux)
@@ -145,9 +145,9 @@ int vrpn_flush_output_buffer(int comm)
 #endif
 }
 
-// empty the output buffer, discarding all of the chars
+// empty the output buffer, waiting for all of the chars to be delivered
 // Return 0 on success, tc err codes on failure.
-// NOT CALLED!  OBSOLETE?
+// NOT CALLED!  OBSOLETE? -- no ... used by vrpn_Flock
 int vrpn_drain_output_buffer(int comm)
 {
 #if defined(_WIN32) || defined(sparc) || defined(hpux)
@@ -297,6 +297,10 @@ void vrpn_Tracker::print_latest_report(void)
    printf("Timestamp:%ld:%ld\n", timestamp.tv_sec, timestamp.tv_usec);
    printf("Pos      :%lf, %lf, %lf\n", pos[0],pos[1],pos[2]);
    printf("Quat     :%lf, %lf, %lf, %lf\n", quat[0],quat[1],quat[2],quat[3]);
+}
+
+vrpn_Connection *vrpn_Tracker::connectionPtr() {
+  return connection;
 }
 
 int     vrpn_Tracker::encode_tracker2room_to(char *buf)
