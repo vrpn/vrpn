@@ -1,7 +1,11 @@
 #ifndef VRPN_SHARED_OBJECT
 #define VRPN_SHARED_OBJECT
 
+#ifdef _WIN32
+#include <winsock.h>
+#else
 #include <sys/time.h>  // for struct timeval
+#endif
 
 #include <vrpn_Shared.h>  // for types
 
