@@ -1,5 +1,11 @@
 2001-06-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* daq_server.C : Added (runs a D/A server for UNC 3DFM)
+	* NIUtil.h : Added, support files
+	* NIUtil.cpp : Added, support files
+
+2001-06-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* constraint.h : Massive cleanup
 	* forcefield.C : Massive cleanup
 	* forcefield.h : Massive cleanup
