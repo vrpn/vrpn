@@ -1,3 +1,9 @@
+2001-11-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C (vrpn_TranslationTable::addRemoteEntry) :
+		Check added to see if there is already an entry in the
+		table.  If so, error printed and returned.
+
 2001-10-23  Adam Seeger  <seeger@cs.unc.edu>
 
 	* vrpn_SharedObject.C (vrpn_Shared_String::set): fixed some bad

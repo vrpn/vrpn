@@ -405,6 +405,12 @@ vrpn_int32 vrpn_TranslationTable::addRemoteEntry (cName name,
     return -1;
   }
 
+  // Check to see if there is already an entry here.
+  if (d_entry[useEntry].remote_id != -1) {
+    fprintf(stderr,"Warning: Duplicate entry in translation table (%s) -- ignoring\n",name);
+    return -1;
+  }
+
   if (!d_entry[useEntry].name) {
     d_entry[useEntry].name = new cName;
     if (!d_entry[useEntry].name) {
