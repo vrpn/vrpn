@@ -1,3 +1,13 @@
+2001-07-25  Tom Hudson  <hudson@cs.unc.edu>
+
+	* vrpn_Log.h : New file.
+	* vrpn_Connection.C (vrpn_Log declaration) : Moved to new file.
+
+	* vrpn_File_Connection.C (play_to_user_message) : Log "incoming"
+	messages.
+	(playone_to_filetime) : Same.
+	(read_cookie) : Log cookie.
+
 2001-07-03  David Marshburn  <marshbur@tungsten-cs.cs.unc.edu>
 
 	* vrpn_Shared.h, C: added vrpn_TimevalEqual

@@ -20,6 +20,8 @@
 
 #define CHECK(x) if (x == -1) return -1
 
+#include "vrpn_Log.h"
+
 // this should be a shared declaration with those
 // at the top of vrpn_Connection.C!
 static const int BROKEN = (-3);
@@ -119,6 +121,8 @@ vrpn_File_Connection::vrpn_File_Connection (const char * file_name,
 void vrpn_File_Connection::play_to_user_message (void)
 {
   vrpn_Endpoint * endpoint = d_endpoints[0];
+  timeval now;
+  int retval;
 
     if (!d_currentLogEntry) {
         return;
@@ -127,6 +131,20 @@ void vrpn_File_Connection::play_to_user_message (void)
     while (d_currentLogEntry != NULL && d_currentLogEntry->data.type < 0) {
 
         vrpn_HANDLERPARAM &header = d_currentLogEntry->data;
+
+        // TCH July 2001
+        // A big design decision:  do we reproduce messages exactly,
+        // or do we mark them with the time they were played back?
+        // Maybe this should be switchable, but the latter is what
+        // I need yesterday.
+        gettimeofday(&now, NULL);
+        retval = endpoint->d_inLog->logIncomingMessage
+                        (header.payload_len, now, header.type,
+                         header.sender, header.buffer);
+        if (retval) {
+          fprintf(stderr, "Couldn't log \"incoming\" message during replay!\n");
+          return;
+        }
 
         if (header.type != vrpn_CONNECTION_UDP_DESCRIPTION) {
             if (doSystemCallbacksFor(header, endpoint)) {
@@ -575,6 +593,8 @@ int vrpn_File_Connection::playone()
 int vrpn_File_Connection::playone_to_filetime( timeval end_filetime )
 {
   vrpn_Endpoint * endpoint = d_endpoints[0];
+  timeval now;
+  int retval;
 
     // read from disk if not in memory
     if (!d_currentLogEntry) {
@@ -590,6 +610,20 @@ int vrpn_File_Connection::playone_to_filetime( timeval end_filetime )
         // there are no entries to play after the current
         // but before end_filetime
         return 1;
+    }
+
+    // TCH July 2001
+    // A big design decision:  do we reproduce messages exactly,
+    // or do we mark them with the time they were played back?
+    // Maybe this should be switchable, but the latter is what
+    // I need yesterday.
+    gettimeofday(&now, NULL);
+    retval = endpoint->d_inLog->logIncomingMessage
+                    (header.payload_len, now, header.type,
+                     header.sender, header.buffer);
+    if (retval) {
+      fprintf(stderr, "Couldn't log \"incoming\" message during replay!\n");
+      return -1;
     }
 
     // advance current file position
@@ -714,8 +748,17 @@ int vrpn_File_Connection::read_cookie (void)
     }
 
     retval = check_vrpn_file_cookie(readbuf);
-    if (retval < 0)
+    if (retval < 0) {
         return -1;
+    }
+
+    // TCH July 2001
+    if (!d_endpoints[0]) {
+      fprintf(stderr, "vrpn_File_Connection::read_cookie:  "
+              "No endpoints[0].  Internal failure.\n");
+      return -1;
+    }
+    d_endpoints[0]->d_inLog->setCookie(readbuf);
 
     return 0;
 }
