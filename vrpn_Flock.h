@@ -52,8 +52,17 @@ class vrpn_Tracker_Flock: public vrpn_Tracker_Serial {
   virtual void reset();
   void printError(unsigned char uchErrCode, unsigned char uchExpandedErrCode);
   int checkError();
-  int cResets;
   int cSensors;
+
+  // class members used to help with error recovery
+  int cResets;
+  int cSyncs;
+
+  // class members used for statistics only
+  int fFirstStatusReport;
+  struct timeval tvLastStatusReport;
+  int cReports;
+  int cStatusInterval;
 };
 
 #endif  // #ifndef _WIN32

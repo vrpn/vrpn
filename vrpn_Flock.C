@@ -12,6 +12,8 @@
 //     specification commands with the RS232TOFBB command.
 //   (weberh 1/11/98)
 
+// If you want to try polling instead of stream mode, just set define POLL
+// #define POLL
 #include <time.h>
 #include <math.h>
 #include <stdlib.h>
@@ -38,7 +40,7 @@
 
 // output a status msg every status_msg_secs
 #define STATUS_MSG
-#define STATUS_MSG_SECS 600
+#define STATUS_MSG_SECS 3
 
 void vrpn_Tracker_Flock::printError( unsigned char uchErrCode, 
 			unsigned char uchExpandedErrCode ) {
@@ -88,14 +90,9 @@ void vrpn_Tracker_Flock::printError( unsigned char uchErrCode,
     fprintf(stderr,"...FBB Receive Error - FBB Host Bus");
     break;
   case 13:
-    fprintf(stderr,"...No FBB Command Response from Device at address %d",
+    fprintf(stderr,
+	    "...No FBB Command Response from Device at address %d (decimal)",
 	    uchExpandedErrCode & 0x0f);
-    fprintf(stderr,"\n\rExpanded Error Code Address is %u (decimal)",
-	    uchExpandedErrCode & 0x0f);
-    //    fprintf(stderr,"\n\rExpanded Error Code Command is %u (decimal)\n\r",
-    //	    (unsigned char) ((exterrnum & ~fbbaddrbits) >> cmdbitshft));
-    fprintf(stderr,"\n\rExpanded Error Code Command is %u (decimal)\n\r",
-    	    (unsigned char) ((uchExpandedErrCode & ~0x0f) >> 4));
     break;
   case 14:
     fprintf(stderr,"...Invalid FBB Host Command");
@@ -178,14 +175,14 @@ int vrpn_Tracker_Flock::checkError() {
 
   //unsigned char rguch[4]={'B','G','O',10};
 
-  unsigned char rguch [4];
-  rguch[0] = 'B';
-  rguch[1] = 'G';
-  rguch[2] = 'O';
-  rguch[3] = 10;
+  int cLen=0;
+  unsigned char rguch[2];
+  rguch[cLen++] = 'B';
+  rguch[cLen++] = 'G';
 
   // put the flock to sleep (B to get out of stream mode, G to sleep)
-  if (write(serial_fd, (const char *) &rguch, 2 )!=2) {
+
+  if (write(serial_fd, (const char *) &rguch, cLen )!=cLen) {
     perror("\nvrpn_Tracker_Flock: failed writing cmds to tracker");
     return -1;
   }
@@ -193,13 +190,18 @@ int vrpn_Tracker_Flock::checkError() {
   // make sure the command is sent out
   vrpn_drain_output_buffer( serial_fd );
 
-  sleep(1);
+  vrpn_SleepMsecs(500);
 
   // clear in buffer
   vrpn_flush_input_buffer( serial_fd );
 
-  // now get error code
-  if (write(serial_fd, (const char *) &(rguch[2]), 2 )!=2) {
+  // now get error code and clear error status
+  // we want error code 16, not 10 -- we want the expanded error code
+  // prepare error status query (expanded error codes)
+  cLen=0;
+  rguch[cLen++] = 'O';
+  rguch[cLen++] = 16;
+  if (write(serial_fd, (const char *)rguch, cLen )!=cLen) {
     perror("\nvrpn_Tracker_Flock: failed writing cmds to tracker");
     return -1;
   }
@@ -207,9 +209,10 @@ int vrpn_Tracker_Flock::checkError() {
   // make sure the command is sent out
   vrpn_drain_output_buffer( serial_fd );
 
-  sleep(1);
+  vrpn_SleepMsecs(500);
 
-  // read response
+  // read response (2 char response to error query 16),
+  // 1 char response to 10
   int cRet;
   if ((cRet=read_available_characters(rguch, 2))!=2) {
     fprintf(stderr, 
@@ -218,15 +221,17 @@ int vrpn_Tracker_Flock::checkError() {
     return -1;
   }
 
-  if (rguch[0]) {
-    printError( rguch[0], rguch[1] );
-  }
+  // if first byte is 0, there is no error
+  //  if (rguch[0]) {
+  printError( rguch[0], rguch[1] );
+  //  }
   return rguch[0];
 }
 
 vrpn_Tracker_Flock::vrpn_Tracker_Flock(char *name, vrpn_Connection *c, 
 				       int cSensors, char *port, long baud):
-  vrpn_Tracker_Serial(name,c,port,baud), cSensors(cSensors), cResets(0) {
+  vrpn_Tracker_Serial(name,c,port,baud), cSensors(cSensors), cResets(0),
+  cSyncs(0), fFirstStatusReport(1) {
     if (cSensors>MAX_SENSORS) {
       fprintf(stderr, "\nvrpn_Tracker_Flock: too many sensors requested ... only %d allowed (%d specified)", MAX_SENSORS, cSensors );
       cSensors = MAX_SENSORS;
@@ -240,18 +245,18 @@ vrpn_Tracker_Flock::~vrpn_Tracker_Flock() {
   // Some compilers (CenterLine CC on sunos!?) still don't support 
   // automatic aggregate initialization
 
-  int cChars=2;
+  int cLen=0;
   //unsigned char rgch[2]={'B','G'};
   unsigned char rgch [2];
-  rgch[0] = 'B';
-  rgch[1] = 'G';
+  rgch[cLen++] = 'B';
+  rgch[cLen++] = 'G';
 
   fprintf(stderr,"\nvrpn_Tracker_Flock: shutting down ...");
   // clear output buffer
   vrpn_flush_output_buffer( serial_fd );
 
   // put the flock to sleep (B to get out of stream mode, G to sleep)
-  if (write(serial_fd, (const char *) &rgch, cChars )!=cChars) {
+  if (write(serial_fd, (const char *) rgch, cLen )!=cLen) {
     perror("\nvrpn_Tracker_Flock: failed writing sleep cmd to tracker");
     status = TRACKER_FAIL;
     return;
@@ -262,22 +267,15 @@ vrpn_Tracker_Flock::~vrpn_Tracker_Flock() {
 }
 
 
-#define MAX_TIME_INTERVAL       (2000000) // max time between reports (usec)
-
-static	unsigned long	duration(struct timeval t1, struct timeval t2)
-{
-	return (t1.tv_usec - t2.tv_usec) +
-	       1000000L * (t1.tv_sec - t2.tv_sec);
-}
-
 void vrpn_Tracker_Flock::reset()
 {
+   int i;
    int resetLen;
    unsigned char reset[6*(MAX_SENSORS+1)+10];
 
    // Get rid of the characters left over from before the reset
-   vrpn_flush_input_buffer(serial_fd);
-   vrpn_flush_output_buffer(serial_fd);
+   // (make sure they are processed)
+   vrpn_drain_output_buffer(serial_fd);
 
    // put back into polled mode (need to stop stream mode
    // before doing an auto-config)
@@ -292,6 +290,9 @@ void vrpn_Tracker_Flock::reset()
    }
    // make sure the command is sent out
    vrpn_drain_output_buffer( serial_fd );
+
+   // wait for tracker to respond and flush buffers
+   vrpn_SleepMsecs(500);
 
    // Send the tracker a string that should reset it.
 
@@ -312,9 +313,8 @@ void vrpn_Tracker_Flock::reset()
    reset[resetLen++]= cSensors+1;
 
    // as per pg 59 of the jan 31, 1995 FOB manual, we need to pause at
-   // least 300 ms before and after sending the autoconfig
+   // least 300 ms before and after sending the autoconfig (paused above)
 
-   sleep(1);
    // send the reset command (cmd and cmd_size are args)
    if (write(serial_fd, (const char *) reset, resetLen )!=resetLen) {
      perror("\nvrpn_Tracker_Flock: failed writing auto-config to tracker");
@@ -323,14 +323,49 @@ void vrpn_Tracker_Flock::reset()
    }
    // make sure the command is sent out
    vrpn_drain_output_buffer( serial_fd );
-   sleep(1);
 
+   // wait for auto reconfig
+   vrpn_SleepMsecs(500);
+
+   // now set modes: pos/quat, group, stream
    resetLen=0;
 
+   // group mode
+   reset[resetLen++] = 'P';
+   reset[resetLen++] = 35;
+   reset[resetLen++] = 1;
+   // pos/quat mode sent to each receiver (transmitter is unit 1)
+   // 0xf0 + addr is the cmd to tell the master to forward a cmd
+   for (i=1;i<=cSensors;i++) {
+     reset[resetLen++] = 0xf0 + i + 1;
+     reset[resetLen++] = ']';
+   }
+
+   // set to lower hemisphere, send cmd to each receiver
+   // as above, first part is rs232 to fbb, 'L' is hemisphere
+   // 0xC is the 'axis' (lower), and 0x0 is the 'sign' (lower)
+   for (i=1;i<=cSensors;i++) {
+     reset[resetLen++] = 0xf0 + i + 1;
+     reset[resetLen++] = 'L';
+     reset[resetLen++] = 0xc;
+     reset[resetLen++] = 0;
+   }
+
+   // write it all out
+   if (write(serial_fd, (const char *) reset, resetLen )!=resetLen) {
+     perror("\nvrpn_Tracker_Flock: failed writing set mode cmds to tracker");
+     status = TRACKER_FAIL;
+     return;
+   }
+   
+   // make sure the commands are sent out
+   vrpn_drain_output_buffer( serial_fd );
+
    // clear the input buffer (it will contain a single point 
-   // record from the poll command above)
+   // record from the poll command above and garbage from before reset)
    vrpn_flush_input_buffer(serial_fd);
 
+   resetLen=0;
    // get the system status to check that it opened correctly
    // examine value cmd is 'O'
    reset[resetLen++]='O';
@@ -349,9 +384,9 @@ void vrpn_Tracker_Flock::reset()
    vrpn_drain_output_buffer( serial_fd );
 
    // let the tracker respond
-   sleep(1);
+   vrpn_SleepMsecs(500);
 
-   static unsigned char response[14];
+   unsigned char response[14];
    int cRet;
    if ((cRet=read_available_characters(response, 14))!=14) {
      fprintf(stderr, 
@@ -363,7 +398,6 @@ void vrpn_Tracker_Flock::reset()
    
    // check the configuration ...
    int fOk=1;
-   int i;
 
    for (i=0;i<=cSensors;i++) {
      fprintf(stderr, "\nvrpn_Tracker_Flock: unit %d", i);
@@ -394,32 +428,12 @@ void vrpn_Tracker_Flock::reset()
      return;
    }
 
-   // now set modes: pos/quat, group, stream
-   resetLen=0;
-   // group mode
-   reset[resetLen++] = 'P';
-   reset[resetLen++] = 35;
-   reset[resetLen++] = 1;
-   // pos/quat mode sent to each receiver (transmitter is unit 1)
-   // 0xf0 + addr is the cmd to tell the master to forward a cmd
-   for (i=1;i<=cSensors;i++) {
-     reset[resetLen++] = 0xf0 + i + 1;
-     reset[resetLen++] = ']';
-   }
-
+   // now start it running
+   resetLen = 0;
+#ifndef POLL
    // stream mode
    reset[resetLen++] = '@';
-
-   // point mode for now
-   //   reset[resetLen++]='B';
-
-   // set to lower hemisphere, send cmd to each receiver
-   for (i=1;i<=cSensors;i++) {
-     reset[resetLen++] = 0xf0 + i + 1;
-     reset[resetLen++] = 'L';
-     reset[resetLen++] = 0xc;
-     reset[resetLen++] = 0;
-   }
+#endif
 
    if (write(serial_fd, (const char *) reset, resetLen )!=resetLen) {
      perror("\nvrpn_Tracker_Flock: failed writing set mode cmds to tracker");
@@ -430,18 +444,16 @@ void vrpn_Tracker_Flock::reset()
    // make sure the commands are sent out
    vrpn_drain_output_buffer( serial_fd );
 
-   fprintf(stderr,"\nvrpn_Tracker_Flock: running.\n");
+   fprintf(stderr,"\nvrpn_Tracker_Flock: done with reset ... running.\n");
 
    gettimeofday(&timestamp, NULL);	// Set watchdog now
    status = TRACKER_SYNCING;	// We're trying for a new reading
-   cResets=0;
 }
 
 
 void vrpn_Tracker_Flock::get_report(void)
 {
    int ret;
-   static int cSyncs=0;
 
    // The reports are 15 bytes long each (Pos/Quat format plus
    // group address), with a phasing bit set in the first byte 
@@ -581,12 +593,44 @@ void vrpn_Tracker_Flock::get_report(void)
 #endif
 }
 
+#ifdef POLL
+#define poll() { \
+char chPoint = 'B';\
+fprintf(stderr,"."); \
+if (write(serial_fd, (const char *) &chPoint, 1 )!=1) {\
+  perror("\nvrpn_Tracker_Flock: failed writing set mode cmds to tracker");\
+  status = TRACKER_FAIL;\
+  return;\
+} \
+gettimeofday(&timestamp, NULL);\
+}   
+#endif
+
+// max time between start of a report and the finish (or time to 
+// wait for first report)
+#define MAX_TIME_INTERVAL       (2000000)
+
+static	unsigned long	duration(struct timeval t1, struct timeval t2)
+{
+	return (t1.tv_usec - t2.tv_usec) +
+	       1000000L * (t1.tv_sec - t2.tv_sec);
+}
 
 void vrpn_Tracker_Flock::mainloop()
 {
   switch (status) {
   case TRACKER_REPORT_READY:
     {
+#ifdef POLL
+      // NOTE: the flock behavior is very finicky -- if you try to poll
+      //       again before most of the last response has been read, then
+      //       it will complain.  You need to wait and issue the next
+      //       group poll only once you have read out the previous one entirely
+      //       As a result, polling is very slow with multiple sensors.
+      if (sensor==(cSensors-1)) { 
+	poll();
+      }
+#endif
 #ifdef	VERBOSE
       static int count = 0;
       if (count++ == 10) {
@@ -594,42 +638,47 @@ void vrpn_Tracker_Flock::mainloop()
 	count = 0;
       }
 #endif            
-      
+      // successful read, so reset the reset count
+      cResets = 0;
+
       // Send the message on the connection
       if (connection) {
-	static int cSeconds = 3;
-	static int fFirst = 1;
-	static char	msgbuf[1000];
-	int	len = encode_to(msgbuf);
-
-	// data to calc report rate 
-	static struct timeval tvNow;
-	gettimeofday(&tvNow, NULL);
-	static struct timeval tvLastPrint=tvNow;
-	static int cReports=0;
-	
-	cReports++;
 
 #ifdef STATUS_MSG
-	if (vrpn_TimevalMsecs(vrpn_TimevalDiff(tvNow, tvLastPrint)) > cSeconds*1000){
+	// data to calc report rate 
+	struct timeval tvNow;
 
-	  if (fFirst) {
-	    fprintf(stderr, "\nFlock: status will be printed every %d seconds",
-		    STATUS_MSG_SECS);
-	    fFirst = 0;
-	  }
+	// get curr time
+	gettimeofday(&tvNow, NULL);
+
+	if (fFirstStatusReport) {
+	  // print a status message in cStatusInterval seconds
+	  cStatusInterval=3;
+	  tvLastStatusReport=tvNow;
+	  cReports=0;
+	  fFirstStatusReport=0;
+	  fprintf(stderr, "\nFlock: status will be printed every %d seconds.",
+		  STATUS_MSG_SECS);
+	}
+
+	cReports++;
+
+	if (vrpn_TimevalMsecs(vrpn_TimevalDiff(tvNow, tvLastStatusReport)) > 
+	    cStatusInterval*1000){
 
 	  double dRate = cReports / 
-	    (vrpn_TimevalMsecs(vrpn_TimevalDiff(tvNow, tvLastPrint))/1000.0);
+	    (vrpn_TimevalMsecs(vrpn_TimevalDiff(tvNow, 
+						tvLastStatusReport))/1000.0);
 	  time_t tNow = time(NULL);
 	  char *pch = ctime(&tNow);
 	  pch[24]='\0';
-	  fprintf(stderr, "\nFlock: reports being sent at %6.2lf hz (%d sensors, so ~%6.2lf hz per sensor) ( %s )", 
+	  fprintf(stderr, "\nFlock: reports being sent at %6.2lf hz "
+		  "(%d sensors, so ~%6.2lf hz per sensor) ( %s )", 
 		  dRate, cSensors, dRate/cSensors, pch);
-	  tvLastPrint = tvNow;
+	  tvLastStatusReport = tvNow;
 	  cReports=0;
-	  // display the rate every X seconds
-	  cSeconds=STATUS_MSG_SECS;
+	  // display the rate every STATUS_MSG_SECS seconds
+	  cStatusInterval=STATUS_MSG_SECS;
 	}
 #endif
 
@@ -640,6 +689,9 @@ void vrpn_Tracker_Flock::mainloop()
 		quat[3], quat[0], quat[1], quat[2] );
 #endif
 
+	// pack and deliver tracker report
+	static char msgbuf[1000];
+	int	    len = encode_to(msgbuf);
 	if (connection->pack_message(len, timestamp,
 				     position_m_id, my_id, msgbuf,
 				     vrpn_CONNECTION_LOW_LATENCY)) {
@@ -696,16 +748,19 @@ void vrpn_Tracker_Flock::mainloop()
   
   case TRACKER_RESETTING:
     reset();
+    cResets++;
+    cSyncs=0;
+    fFirstStatusReport=1;
+#ifdef POLL
+    poll();
+#endif
     break;
     
   case TRACKER_FAIL:
+    checkError();
     if (cResets==4) {
-      char ch;
-      checkError();
-      fprintf(stderr, "\nvrpn_Tracker_Flock: problems resetting ... check that: a) all cables are attached, b) all units have FLY/STANDBY switches in FLY mode, and c) no receiver is laying too close to the transmitter.  When done checking, power cycle the flock.\nWill attempt to reset in 30 seconds.\n");
-      sleep(30);
-      // "press return when the flock is ready to be re-started. ");
-      //      fscanf(stdin, "%c", &ch);
+      fprintf(stderr, "\nvrpn_Tracker_Flock: problems resetting ... check that: a) all cables are attached, b) all units have FLY/STANDBY switches in FLY mode, and c) no receiver is laying too close to the transmitter.  When done checking, power cycle the flock.\nWill attempt to reset in 15 seconds.\n");
+      sleep(15);
       cResets=0;
     }
     fprintf(stderr, 
@@ -713,7 +768,6 @@ void vrpn_Tracker_Flock::mainloop()
     close(serial_fd);
     serial_fd = vrpn_open_commport(portname, baudrate);
     status = TRACKER_RESETTING;
-    cResets++;
     break;
   }
 }
