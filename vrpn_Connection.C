@@ -46,7 +46,7 @@ extern "C" int sdi_connect_to_client(char *machine, int port);
 #ifndef _WIN32
 extern "C" int sdi_connect_to_device(char *s);
 extern "C" int sdi_noint_block_read(int file, char *buf, int len);
-extern "C" int sdi_noint_block_write(int file, const char *buf, int len);
+extern "C" int sdi_noint_block_write(int file, char *buf, int len);
 extern "C" int sdi_noint_block_read_timeout(int filedes, char *buffer,
 					int len, struct timeval *timeout);
 #else
@@ -56,7 +56,7 @@ extern "C" int sdi_noint_block_read_timeout(SOCKET tcp_sock, char *buffer,
 					int len, struct timeval *timeout);
 #endif
 
-const	char	*MAGIC = "vrpn: ver. 01.00";
+char	*MAGIC = "vrpn: ver. 01.00";
 const	int	MAGICLEN = 16;	// Must be a multiple of 4 bytes!
 
 // This is the list of states that a connection can be in
@@ -500,7 +500,8 @@ int vrpn_Connection::pack_message(int len, struct timeval time,
 	    ret = marshall_message(tcp_outbuf, sizeof(tcp_outbuf), tcp_num_out,
 				   len, time, type, sender, buffer);
 	    tcp_num_out += ret;
-	    return -(ret==0);
+	    //	    return -(ret==0);
+	    return (ret==0) ? -1 : 0;
 	}
 
 	// Determine the class of service and pass it off to the
@@ -509,12 +510,14 @@ int vrpn_Connection::pack_message(int len, struct timeval time,
 	    ret = marshall_message(tcp_outbuf, sizeof(tcp_outbuf), tcp_num_out,
 				   len, time, type, sender, buffer);
 	    tcp_num_out += ret;
-	    return -(ret==0);
+	    //	    return -(ret==0);
+	    return (ret==0) ? -1 : 0;
 	} else {
 	    ret = marshall_message(udp_outbuf, sizeof(udp_outbuf), udp_num_out,
 				   len, time, type, sender, buffer);
 	    udp_num_out += ret;
-	    return -(ret==0);
+	    //	    return -(ret==0);
+	    return (ret==0) ? -1 : 0;
 	}
 }
 
