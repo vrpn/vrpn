@@ -40,12 +40,14 @@ vrpn_DirectXFFJoystick::vrpn_DirectXFFJoystick (const char * name, vrpn_Connecti
 		_numbuttons(min(128,vrpn_BUTTON_MAX_BUTTONS)),     // Maximum available
 		_numforceaxes(0)				   // Filles in later.
 {
+  // In case we exit early for some reason.
+  _status = STATUS_BROKEN;
+  
   // Set the parameters in the parent classes
   vrpn_Button::num_buttons = _numbuttons;
   vrpn_Analog::num_channel = _numchannels;
   if (_numchannels < 12) {
     fprintf(stderr,"vrpn_DirectXFFJoystick::vrpn_DirectXFFJoystick(): Not enough analog channels!\n");
-    _status = STATUS_BROKEN;
     _hWnd = NULL;
     return;
   }
@@ -68,7 +70,6 @@ vrpn_DirectXFFJoystick::vrpn_DirectXFFJoystick (const char * name, vrpn_Connecti
 #endif
   if( FAILED( InitDirectJoystick() ) ) {
     fprintf(stderr,"vrpn_DirectXFFJoystick::vrpn_DirectXFFJoystick(): Failed to open direct joystick\n");
-    _status = STATUS_BROKEN;
     _hWnd = NULL;
     return;
   }
@@ -88,8 +89,8 @@ vrpn_DirectXFFJoystick::vrpn_DirectXFFJoystick (const char * name, vrpn_Connecti
   if (_force_rate > 0) {
     if (register_autodeleted_handler(plane_message_id, 
 	  handle_plane_change_message, this, vrpn_ForceDevice::d_sender_id)) {
-		  fprintf(stderr,"vrpn_DirectXFFJoystick:can't register plane handler\n");
-		  _status = STATUS_BROKEN;
+	fprintf(stderr,"vrpn_DirectXFFJoystick:can't register plane handler\n");
+	return;
     }
   }
 
@@ -152,7 +153,7 @@ HRESULT vrpn_DirectXFFJoystick::InitDirectJoystick( void )
     if( NULL == _Joystick ) {
 	fprintf(stderr, "vrpn_DirectXFFJoystick::InitDirectJoystick(): No joystick found\n");
 	_status = STATUS_BROKEN;
-        return S_OK;
+        return E_FAIL;
     }
 
     // Set the data format to "simple joystick" - a predefined data format 

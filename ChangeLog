@@ -1,3 +1,8 @@
+2003-08-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_DirectXFFJoystick.C : Made not crash when it couldn't
+		open a joystick.
+
 2003-07-31  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Connection.C : Prints a more useful error message when
