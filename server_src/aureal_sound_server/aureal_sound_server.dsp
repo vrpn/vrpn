@@ -67,7 +67,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../.." /I "e:/public/quat" /I "c:/Program Files/Aureal/A3D 3.0 SDK/sdk/inc" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../.." /I "../../../quat" /I "c:/Program Files/Aureal/A3D 3.0 SDK/sdk/inc" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -103,22 +103,6 @@ SOURCE=.\vrpn_Sound_A3D.h
 # Begin Group "Resource Files"
 
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
-# Begin Source File
-
-SOURCE=.\aurealicon.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\aurealss.rc
-# End Source File
 # End Group
-# Begin Source File
-
-SOURCE=.\model.dat
-# End Source File
-# Begin Source File
-
-SOURCE=.\temp.txt
-# End Source File
 # End Target
 # End Project

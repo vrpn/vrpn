@@ -181,24 +181,33 @@ void vrpn_Sound_Server_A3D::loadSoundLocal(char* filename, vrpn_SoundID id, vrpn
   // default RenderMode uses occlusion, reflection, a3d (??)
   // default TransformMode is relative to origin
    
-  lasterror=a3dsamples[numSounds]->SetMinMaxDistance(soundDef.min_front_dist, soundDef.max_front_dist, A3D_MUTE);
+  lasterror=a3dsamples[numSounds]->SetMinMaxDistance((float) soundDef.min_front_dist, (float)soundDef.max_front_dist, A3D_MUTE);
   lasterror=a3dsamples[numSounds]->SetGain(soundDef.volume);
 
   // default position is at the origin
-  lasterror=a3dsamples[numSounds]->SetPosition3f(soundDef.pose.position[0],soundDef.pose.position[1],soundDef.pose.position[2]);
-	q_vec_type 	   angles;
-	q_matrix_type  colMatrix;
-	A3DVAL         y_val, p_val, r_val;
+  lasterror=a3dsamples[numSounds]->SetPosition3f((float)soundDef.pose.position[0],(float)soundDef.pose.position[1],(float)soundDef.pose.position[2]);
+   
+qogl_matrix_type eye_f_world_mat;
+  qogl_matrix_type eye_axis_vectors_in_world;
 
-
-	q_to_col_matrix (colMatrix, soundDef.pose.orientation);
-	q_col_matrix_to_euler(angles,colMatrix);
-
-	y_val = angles[0]*180.0/Q_PI;
-	p_val = angles[1]*180.0/Q_PI;
-	r_val = angles[2]*180.0/Q_PI;
-  
-  lasterror=a3dsamples[numSounds]->SetOrientationAngles3f(y_val,p_val,r_val);
+  q_to_ogl_matrix (eye_f_world_mat, soundDef.pose.orientation);
+  qogl_matrix_type eye_axis_vectors=// we put the up and forward
+	// as the first two columns in the matrix.
+	//NOTE: these columns in the matrix
+	//appear as rows here since the number starts in the upper left corner
+	//as goes down!
+  { 0,0,-1,1, //the forward normal vector in eye space
+	  0,1,0,1, //the up normal vector in eye space
+	  0,0,0,0, //unused
+	  0,0,0,0 } ; //unused
+      
+  qogl_matrix_mult(eye_axis_vectors_in_world,eye_axis_vectors,eye_f_world_mat);
+        
+    
+  // takes front vector then up vector
+  lasterror = a3dlis->SetOrientation6f((float)eye_axis_vectors_in_world[0], (float)eye_axis_vectors_in_world[1],
+                         	             (float)eye_axis_vectors_in_world[2], (float)eye_axis_vectors_in_world[4], (float)eye_axis_vectors_in_world[5],
+	                     			           (float)eye_axis_vectors_in_world[6]);    
 
   soundMap[id] = numSounds;
   }
@@ -248,87 +257,30 @@ void vrpn_Sound_Server_A3D::unloadSound(vrpn_SoundID id) {
 }
 
 void vrpn_Sound_Server_A3D::setListenerPose(vrpn_PoseDef pose) {
-	q_vec_type 	   angles;
-	q_matrix_type  colMatrix;
-	A3DVAL         y_val, p_val, r_val;
-/*
-  // we will change the unit up vector (in model space) into w_f_e coords [and same for look @]
-  q_xyz_quat_type up_eye_space;
-  q_xyz_quat_type look_eye_space;
-  q_xyz_quat_type world_f_eye;
-  q_xyz_quat_type up_model_space;
-  q_xyz_quat_type look_model_space;
+	 
+qogl_matrix_type eye_f_world_mat;
+  qogl_matrix_type eye_axis_vectors_in_world;
 
-  up_eye_space.xyz[0] = 0.0;
-  up_eye_space.xyz[1] = 1.0;
-  up_eye_space.xyz[2] = 0.0;
-  up_eye_space.quat[0] = 0.0;
-  up_eye_space.quat[1] = 0.0;
-  up_eye_space.quat[2] = 0.0;
-  up_eye_space.quat[3] = 1.0;
+  q_to_ogl_matrix (eye_f_world_mat, pose.orientation);
+  qogl_matrix_type eye_axis_vectors=// we put the up and forward
+	// as the first two columns in the matrix.
+	//NOTE: these columns in the matrix
+	//appear as rows here since the number starts in the upper left corner
+	//as goes down!
+  { 0,0,-1,1, //the forward normal vector in eye space
+	  0,1,0,1, //the up normal vector in eye space
+	  0,0,0,0, //unused
+	  0,0,0,0 } ; //unused
+      
+  qogl_matrix_mult(eye_axis_vectors_in_world,eye_axis_vectors,eye_f_world_mat);
+        
+    
+  // takes front vector then up vector
+  lasterror = a3dlis->SetOrientation6f((float)eye_axis_vectors_in_world[0], (float)eye_axis_vectors_in_world[1],
+                         	             (float)eye_axis_vectors_in_world[2], (float)eye_axis_vectors_in_world[4], (float)eye_axis_vectors_in_world[5],
+	                     			           (float)eye_axis_vectors_in_world[6]);
 
-  look_eye_space.xyz[0] = 0.0;
-  look_eye_space.xyz[1] = 0.0;
-  look_eye_space.xyz[2] = -1.0;
-  look_eye_space.quat[0] = 0.0;
-  look_eye_space.quat[1] = 0.0;
-  look_eye_space.quat[2] = 0.0;
-  look_eye_space.quat[3] = 1.0;
-
-  world_f_eye.xyz[0] = pose.position[0];
-  world_f_eye.xyz[1] = pose.position[1];
-  world_f_eye.xyz[2] = pose.position[2];
-  world_f_eye.quat[0] = pose.orientation[0];
-  world_f_eye.quat[1] = pose.orientation[1];
-  world_f_eye.quat[2] = pose.orientation[2];
-  world_f_eye.quat[3] = pose.orientation[3];
-
-  q_xyz_quat_compose(&up_model_space, &world_f_eye,&up_eye_space);
-  q_xyz_quat_compose(&look_model_space, &world_f_eye, &look_eye_space);
-  
-  // we now have up_eye_space points which we make a vector be subtracting from persons position
-
-  up_model_space.xyz[0] = up_model_space.xyz[0] - world_f_eye.xyz[0];
-  up_model_space.xyz[1] = up_model_space.xyz[1] - world_f_eye.xyz[1];
-  up_model_space.xyz[2] = up_model_space.xyz[2] - world_f_eye.xyz[2];
-
-  look_model_space.xyz[0] = look_model_space.xyz[0] - world_f_eye.xyz[0];
-  look_model_space.xyz[1] = look_model_space.xyz[1] - world_f_eye.xyz[1];
-  look_model_space.xyz[2] = look_model_space.xyz[2] - world_f_eye.xyz[2];
-
-  // we normalize
-  q_vec_normalize(up_model_space.xyz,up_model_space.xyz);
-  q_vec_normalize(look_model_space.xyz,look_model_space.xyz);
-
-  printf("up: %f %f %f\n", up_model_space.xyz[0],up_model_space.xyz[1],up_model_space.xyz[2]); 
-  printf("look: %f %f %f\n", look_model_space.xyz[0],look_model_space.xyz[1],look_model_space.xyz[2]);
-
-  lasterror = a3dlis->SetOrientation6f(look_model_space.xyz[0],look_model_space.xyz[1],look_model_space.xyz[2], up_model_space.xyz[0],up_model_space.xyz[1],up_model_space.xyz[2]); 
-
-  a3dlis->GetOrientationAngles3f(&y_val, &p_val,&r_val);
-
-  printf("we get %f %f %f\n", y_val, p_val, r_val);
-  
-  // ignore orientation and put in 0,1,0 as up and 1,0,0 as look at 
-  //lasterror = a3dlis->SetOrientation6f(0.0,1.0,0.0,1.0,0.0,0.0); 
-*/
-  
-	// go from the listeners orientation quaternion to euler angles
-	// A3D wants angles in DEGREES!!
-
-	q_to_col_matrix (colMatrix, pose.orientation);
-	q_col_matrix_to_euler(angles,colMatrix);
-
-	y_val = angles[0]*180.0/Q_PI;
-	p_val = angles[1]*180.0/Q_PI;
-	r_val = angles[2]*180.0/Q_PI;
-  
-  printf("we get %f %f %f\n", y_val, p_val, r_val);
-  printf("quat is: %f %f %f %f\n", pose.orientation[0],pose.orientation[1],pose.orientation[2],pose.orientation[3]);
-
-  lasterror = a3dlis->SetOrientationAngles3f(y_val,p_val,r_val);
-  
-  lasterror = a3dlis->SetPosition3f(pose.position[0],pose.position[1],pose.position[2]);
+  lasterror = a3dlis->SetPosition3f((float)pose.position[0],(float)pose.position[1],(float)pose.position[2]);
 
   // dont send back a message here because there are a bunch of them
 }
@@ -348,9 +300,6 @@ void vrpn_Sound_Server_A3D::setListenerVelocity(vrpn_float64 velocity[4]) {
 }
 
 void vrpn_Sound_Server_A3D::changeSoundStatus(vrpn_SoundID id, vrpn_SoundDef soundDef) {
-  q_vec_type 	   angles;
-  q_matrix_type  colMatrix;
-  A3DVAL         y_val, p_val, r_val;
   vrpn_int32     myid = soundMap[id];
   char tempbuf[1024];
    
@@ -361,29 +310,41 @@ void vrpn_Sound_Server_A3D::changeSoundStatus(vrpn_SoundID id, vrpn_SoundDef sou
     return;
   }
 
-  lasterror = a3dsamples[id]->SetPosition3f(soundDef.pose.position[0],soundDef.pose.position[1],soundDef.pose.position[2]);
+  lasterror = a3dsamples[id]->SetPosition3f((float)soundDef.pose.position[0],(float)soundDef.pose.position[1],(float)soundDef.pose.position[2]);
 
-  // do angles as in listener.. look there for a bit more commentation
-  q_to_col_matrix (colMatrix, soundDef.pose.orientation);
-  q_col_matrix_to_euler(angles,colMatrix);
+  qogl_matrix_type eye_f_world_mat;
+  qogl_matrix_type eye_axis_vectors_in_world;
 
-  y_val = angles[0]*180.0/Q_PI;
-  p_val = angles[1]*180.0/Q_PI;
-  r_val = angles[2]*180.0/Q_PI;
-  lasterror = a3dsamples[myid]->SetOrientationAngles3f(y_val, p_val, r_val);
-
+  q_to_ogl_matrix (eye_f_world_mat, soundDef.pose.orientation);
+  qogl_matrix_type eye_axis_vectors=// we put the up and forward
+	// as the first two columns in the matrix.
+	//NOTE: these columns in the matrix
+	//appear as rows here since the number starts in the upper left corner
+	//as goes down!
+  { 0,0,-1,1, //the forward normal vector in eye space
+	  0,1,0,1, //the up normal vector in eye space
+	  0,0,0,0, //unused
+	  0,0,0,0 } ; //unused
+      
+  qogl_matrix_mult(eye_axis_vectors_in_world,eye_axis_vectors,eye_f_world_mat);
+        
+    
+  // takes front vector then up vector
+  lasterror = a3dsamples[id]->SetOrientation6f((float)eye_axis_vectors_in_world[0], (float)eye_axis_vectors_in_world[1],
+                         	             (float)eye_axis_vectors_in_world[2], (float)eye_axis_vectors_in_world[4], (float)eye_axis_vectors_in_world[5],
+	                     			           (float)eye_axis_vectors_in_world[6]);
   q_vec_type velocity_vec;
 
   q_to_vec(velocity_vec, soundDef.velocity);
   lasterror = a3dsamples[myid]->SetVelocity3fv((A3DVAL*) velocity_vec);
   
   // we only use front_min and front_back
-  lasterror = a3dsamples[myid]->SetMinMaxDistance(soundDef.min_front_dist, soundDef.max_front_dist, A3D_AUDIBLE);
-  lasterror = a3dsamples[myid]->SetCone(soundDef.cone_inner_angle, soundDef.cone_outer_angle, soundDef.cone_gain);
-  lasterror = a3dsamples[myid]->SetDopplerScale(soundDef.dopler_scale);
-  lasterror = a3dsamples[myid]->SetEq(soundDef.equalization_val);
-  lasterror = a3dsamples[myid]->SetPitch(soundDef.pitch);
-  lasterror = a3dsamples[myid]->SetGain(soundDef.volume);
+  lasterror = a3dsamples[myid]->SetMinMaxDistance((float)soundDef.min_front_dist, (float)soundDef.max_front_dist, A3D_AUDIBLE);
+  lasterror = a3dsamples[myid]->SetCone((float)soundDef.cone_inner_angle, (float)soundDef.cone_outer_angle, (float)soundDef.cone_gain);
+  lasterror = a3dsamples[myid]->SetDopplerScale((float)soundDef.dopler_scale);
+  lasterror = a3dsamples[myid]->SetEq((float)soundDef.equalization_val);
+  lasterror = a3dsamples[myid]->SetPitch((float)soundDef.pitch);
+  lasterror = a3dsamples[myid]->SetGain((float)soundDef.volume);
 
   sprintf(tempbuf,"Setting sound definition ");
   printf("%s\n", tempbuf);
@@ -393,9 +354,6 @@ void vrpn_Sound_Server_A3D::changeSoundStatus(vrpn_SoundID id, vrpn_SoundDef sou
 }
 						
 void vrpn_Sound_Server_A3D::setSoundPose(vrpn_SoundID id, vrpn_PoseDef pose) {
-  q_vec_type 	   angles;
-  q_matrix_type  colMatrix;
-  A3DVAL         y_val, p_val, r_val;
   vrpn_int32     myid = soundMap[id];
   char tempbuf[1024];
    
@@ -406,17 +364,29 @@ void vrpn_Sound_Server_A3D::setSoundPose(vrpn_SoundID id, vrpn_PoseDef pose) {
     return;
   }
     
-  lasterror = a3dsamples[id]->SetPosition3f(pose.position[0],pose.position[1],pose.position[2]);
+  lasterror = a3dsamples[id]->SetPosition3f((float)pose.position[0],(float)pose.position[1],(float)pose.position[2]);
 
-  // do angles as in listener.. look there for a bit more commentary
-  q_to_col_matrix (colMatrix, pose.orientation);
-  q_col_matrix_to_euler(angles,colMatrix);
+  qogl_matrix_type eye_f_world_mat;
+  qogl_matrix_type eye_axis_vectors_in_world;
 
-  y_val = angles[0]*180.0/Q_PI;
-  p_val = angles[1]*180.0/Q_PI;
-  r_val = angles[2]*180.0/Q_PI;
-  lasterror = a3dsamples[myid]->SetOrientationAngles3f(y_val, p_val, r_val);
-  
+  q_to_ogl_matrix (eye_f_world_mat, pose.orientation);
+  qogl_matrix_type eye_axis_vectors=// we put the up and forward
+	// as the first two columns in the matrix.
+	//NOTE: these columns in the matrix
+	//appear as rows here since the number starts in the upper left corner
+	//as goes down!
+  { 0,0,-1,1, //the forward normal vector in eye space
+	  0,1,0,1, //the up normal vector in eye space
+	  0,0,0,0, //unused
+	  0,0,0,0 } ; //unused
+      
+  qogl_matrix_mult(eye_axis_vectors_in_world,eye_axis_vectors,eye_f_world_mat);
+        
+    
+  // takes front vector then up vector
+  lasterror = a3dsamples[id]->SetOrientation6f((float)eye_axis_vectors_in_world[0], (float)eye_axis_vectors_in_world[1],
+                         	             (float)eye_axis_vectors_in_world[2], (float)eye_axis_vectors_in_world[4], (float)eye_axis_vectors_in_world[5],
+	                     			           (float)eye_axis_vectors_in_world[6]);  
   sprintf(tempbuf,"Setting sound pose ");
   printf("%s\n", tempbuf);
   send_message((const char *) tempbuf,vrpn_TEXT_NORMAL,0);
@@ -455,7 +425,7 @@ void vrpn_Sound_Server_A3D::setSoundDistInfo(vrpn_SoundID id, vrpn_float64 *dist
     return;
   }
   
-  lasterror = a3dsamples[myid]->SetMinMaxDistance(distinfo[2], distinfo[3], A3D_AUDIBLE);
+  lasterror = a3dsamples[myid]->SetMinMaxDistance((float)distinfo[2], (float)distinfo[3], A3D_AUDIBLE);
   
   sprintf(tempbuf,"Setting distance information for sound %d to min: %f; max: %f",id,distinfo[2],distinfo[3]);
   printf("%s\n", tempbuf);
@@ -475,7 +445,7 @@ void vrpn_Sound_Server_A3D::setSoundConeInfo(vrpn_SoundID id, vrpn_float64 *cone
   coneinfo[0] = coneinfo[0] * 180.0/Q_PI;
   coneinfo[1] = coneinfo[1] * 180.0/Q_PI;
 
-  lasterror = a3dsamples[myid]->SetCone(coneinfo[0], coneinfo[1], coneinfo[2]);
+  lasterror = a3dsamples[myid]->SetCone((float)coneinfo[0], (float)coneinfo[1], (float)coneinfo[2]);
   
   sprintf(tempbuf,"Setting sound cone information for sound %d to inner: %f; outer: %f; gain: %f",coneinfo[0], coneinfo[1], coneinfo[2]);
   printf("%s\n", tempbuf);
@@ -495,7 +465,7 @@ void vrpn_Sound_Server_A3D::setSoundDoplerFactor(vrpn_SoundID id, vrpn_float64 d
     return;
   }
   
-  lasterror = a3dsamples[myid]->SetDopplerScale(doplerfactor);
+  lasterror = a3dsamples[myid]->SetDopplerScale((float)doplerfactor);
   
   sprintf(tempbuf,"Setting sound dopler scale");
   printf("%s\n", tempbuf);
@@ -513,7 +483,7 @@ void vrpn_Sound_Server_A3D::setSoundEqValue(vrpn_SoundID id, vrpn_float64 eqvalu
     return;
   }
   
-  lasterror = a3dsamples[myid]->SetEq(eqvalue);
+  lasterror = a3dsamples[myid]->SetEq((float)eqvalue);
   
   sprintf(tempbuf,"Setting sound equalization value");
   printf("%s\n", tempbuf);
@@ -531,7 +501,7 @@ void vrpn_Sound_Server_A3D::setSoundPitch(vrpn_SoundID id, vrpn_float64 pitch) {
     return;
   }
   
-  lasterror = a3dsamples[myid]->SetPitch(pitch);
+  lasterror = a3dsamples[myid]->SetPitch((float)pitch);
   sprintf(tempbuf,"Setting sound pitch");
   printf("%s\n", tempbuf);
   send_message((const char *) tempbuf,vrpn_TEXT_NORMAL,0);
@@ -547,7 +517,7 @@ void vrpn_Sound_Server_A3D::setSoundVolume(vrpn_SoundID id, vrpn_float64 volume)
     send_message((const char *) tempbuf,vrpn_TEXT_ERROR,0);
     return;
   }
-  lasterror = a3dsamples[myid]->SetGain(volume);
+  lasterror = a3dsamples[myid]->SetGain((float)volume);
     
   sprintf(tempbuf,"Setting sound volume");
   printf("%s\n", tempbuf);
@@ -858,14 +828,14 @@ void vrpn_Sound_Server_A3D::loadPolyQuad(vrpn_QuadDef * quad) {
   lasterror = a3dgeom->PushMatrix();
   if (quad->subQuad) {
     lasterror = a3dgeom->Begin(A3D_SUB_QUADS);
-    lasterror = a3dgeom->SetOpeningFactorf(quad->openingFactor); 
+    lasterror = a3dgeom->SetOpeningFactorf((float)quad->openingFactor); 
   }
   else
     lasterror = a3dgeom->Begin(A3D_QUADS);
   
   lasterror = a3dgeom->Tag(quad->tag);
   for (i=0; i<4; i++)
-    lasterror = a3dgeom->Vertex3f(quad->vertices[i][0],quad->vertices[i][1],quad->vertices[i][2]);
+    lasterror = a3dgeom->Vertex3f((float)quad->vertices[i][0],(float)quad->vertices[i][1],(float)quad->vertices[i][2]);
   lasterror = a3dgeom->End();
   lasterror = a3dgeom->PopMatrix();
 
@@ -887,14 +857,14 @@ void vrpn_Sound_Server_A3D::loadPolyTri(vrpn_TriDef * tri) {
   lasterror = a3dgeom->PushMatrix();
   if (tri->subTri) {
     lasterror = a3dgeom->Begin(A3D_SUB_TRIANGLES);
-    lasterror = a3dgeom->SetOpeningFactorf(tri->openingFactor); 
+    lasterror = a3dgeom->SetOpeningFactorf((float)tri->openingFactor); 
   }
   else
     lasterror = a3dgeom->Begin(A3D_TRIANGLES);
   
   lasterror = a3dgeom->Tag(tri->tag);
   for (i=0; i<3; i++)
-    lasterror = a3dgeom->Vertex3f(tri->vertices[i][0],tri->vertices[i][1],tri->vertices[i][2]);
+    lasterror = a3dgeom->Vertex3f((float)tri->vertices[i][0],(float)tri->vertices[i][1],(float)tri->vertices[i][2]);
   lasterror = a3dgeom->End();
   lasterror = a3dgeom->PopMatrix();
 
@@ -919,8 +889,8 @@ void vrpn_Sound_Server_A3D::loadMaterial(vrpn_MaterialDef * material, vrpn_int32
 	// copy the name to the name array
 	strcpy(mat_names[numMaterials], material->material_name);
 	a3dgeom->NewMaterial(&materials[numMaterials]);
-	materials[numMaterials]->SetTransmittance(material->transmittance_highfreq, material->transmittance_gain);
-	materials[numMaterials]->SetReflectance(material->reflectance_highfreq, material->reflectance_gain);
+	materials[numMaterials]->SetTransmittance((float)material->transmittance_highfreq, (float)material->transmittance_gain);
+	materials[numMaterials]->SetReflectance((float)material->reflectance_highfreq, (float)material->reflectance_gain);
 	numMaterials++;
 	printf("Material %d is %s\n", numMaterials-1, mat_names[numMaterials-1]);
 	maxMaterials = numMaterials;
@@ -962,10 +932,11 @@ void vrpn_Sound_Server_A3D::setPolyMaterial(const char * material, vrpn_int32 ta
 }
 
 	
-void vrpn_Sound_Server_A3D::mainloop(const struct timeval * timeout) {
+void vrpn_Sound_Server_A3D::mainloop() {
   vrpn_Text_Sender::mainloop();
-  vrpn_Sound::connection->mainloop(timeout);
+  vrpn_Sound::d_connection->mainloop();
 	lasterror = a3droot->Flush();
+  server_mainloop();
 }
 
 bool vrpn_Sound_Server_A3D::noSounds(void) {return 0;}
@@ -1003,7 +974,6 @@ void vrpn_Sound_Server_A3D::shutDown() {
   
   a3droot->Clear();
   printf("End cleanup\n");
-
 }
 
 vrpn_float64  vrpn_Sound_Server_A3D::GetCurrentVolume(const vrpn_int32 CurrentSoundId) {
@@ -1013,14 +983,13 @@ vrpn_float64  vrpn_Sound_Server_A3D::GetCurrentVolume(const vrpn_int32 CurrentSo
 	return val;
 }
 
-char * vrpn_Sound_Server_A3D::GetLastError() {
-	char buf[1024];
+void vrpn_Sound_Server_A3D::GetLastError(char *buf) {
 	strcpy(buf,"");
   if (FAILED(lasterror)) {
     sprintf(buf,"ERROR: %d",lasterror);
     send_message((const char *) buf,vrpn_TEXT_ERROR,0);
   }
-	return buf;
+	return;
 }
 
 vrpn_int32  vrpn_Sound_Server_A3D::GetCurrentPlaybackRate(const vrpn_int32 CurrentSoundId) {
@@ -1236,14 +1205,17 @@ float fTime;
 int counter = 0;
 int stopNow = 0;
 int numconnections = 0;
+char buf[1024];
+
 	printf("Begin main loop\n");
 
 	while (!stopNow && 	!_kbhit()) {
 
-    if (!strncmp(soundServer->GetLastError(),"ERROR",5)) {
-		  printf("%s", soundServer->GetLastError());
-    }
+    soundServer->GetLastError(buf);
 
+    if (!strncmp(buf,"ERROR",5)) {
+		  printf("%s", buf);
+    }
       counter++;
 
   	  // record time since last frame 
@@ -1258,7 +1230,7 @@ int numconnections = 0;
         fPrevTime = fTime;
       }
 
-	    soundServer->mainloop();
+	  soundServer->mainloop();
 						
 		// ensure we get a new report!
 		if (USE_TRACKER) {
@@ -1273,7 +1245,7 @@ int numconnections = 0;
 		connection->mainloop();
 		if (numconnections==0 && connection->connected())
            numconnections++;
-		
+	
 		if (((numconnections!=0) & (!connection->connected())) | !connection->doing_okay())  {
 			soundServer->shutDown();
 		  numconnections=0;
@@ -1281,6 +1253,6 @@ int numconnections = 0;
 	}
 
 	printf("about to shutdown\n");
-	delete connection;
-  delete soundServer;
+//	delete connection;
+   delete soundServer;
 }

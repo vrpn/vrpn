@@ -54,13 +54,13 @@ public:
 	void		setPolyOF(vrpn_float64 OF, vrpn_int32 tag);
 	void		setPolyMaterial(const char * material, vrpn_int32 tag);
 	
-	void		mainloop(const struct timeval * timeout=NULL);
+	void		mainloop();
 	bool		noSounds(void);
 	void		stopAllSounds();
 	void		shutDown();
 
 	vrpn_float64 GetCurrentVolume(const vrpn_int32 CurrentSoundId);
-	char       * GetLastError();
+	void         GetLastError(char * buf);
 	vrpn_int32   GetCurrentPlaybackRate(const vrpn_int32 CurrentSoundId);
 	void         GetCurrentPosition(const vrpn_int32 CurrentSoundId, float* X_val, float* Y_val, float* Z_val);
 	void         GetListenerPosition(float* X_val, float* Y_val, float* Z_val);
