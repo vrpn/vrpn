@@ -53,7 +53,6 @@ public:
 	void		setPolyTriVertices(vrpn_float64 vertices[3][3], const vrpn_int32 id);
 	void		setPolyOF(vrpn_float64 OF, vrpn_int32 tag);
 	void		setPolyMaterial(const char * material, vrpn_int32 tag);
-
 	
 	void		mainloop(const struct timeval * timeout=NULL);
 	bool		noSounds(void);
@@ -71,14 +70,16 @@ public:
 	
 	vrpn_int32  LastSoundId;		//ID of last played sound	
 private:
-
-  
+ 
+  // these are specific to A3D 3.0
 	IA3d5        * a3droot;
 	IA3dListener * a3dlis;
 	IA3dSource2 ** a3dsamples;
 	IA3dGeom2    * a3dgeom;
 	HRESULT        lasterror;
 
+  // the idea of a map is to have a way to go from the unique id being passed in
+  //   by the user to an internal identifier...
 	vrpn_int32     maxSounds;
 	vrpn_int32     numSounds;
 	vrpn_int32     soundMap[MAX_NUMBER_SOUNDS];
@@ -89,7 +90,7 @@ private:
   IA3dMaterial * materials[MAX_NUMBER_MATERIALS];
   char 		       mat_names[MAX_NUMBER_MATERIALS][MAX_MATERIAL_NAME_LENGTH];
 
-  vrpn_int32    numconnections; // number of times server has been connected to..
+  vrpn_int32     numconnections; // number of times server has been connected to..
 
 };
 

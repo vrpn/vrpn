@@ -11,7 +11,7 @@ vrpn_Sound_Server_A3D::vrpn_Sound_Server_A3D(const char      * name,
 
   try {
 
-	// initialize the goodies
+	// initialize the sound goodies
   	a3droot     = NULL;
     a3dgeom     = NULL;
     a3dlis      = NULL;
@@ -29,66 +29,68 @@ vrpn_Sound_Server_A3D::vrpn_Sound_Server_A3D(const char      * name,
 			throw "Failed to Set the Cooperative Level";
 		}
 
-	lasterror = a3droot->QueryInterface(IID_IA3dListener, (void **)&a3dlis);
+	  lasterror = a3droot->QueryInterface(IID_IA3dListener, (void **)&a3dlis);
 
     if (FAILED(lasterror)) {
-		throw "Couldnt get Listener in constructor\n";
-	}
+		  throw "Couldnt get Listener in constructor\n";
+    }
 
-	lasterror = a3droot->QueryInterface(IID_IA3dGeom, (void **)&a3dgeom);
-	if (FAILED(lasterror)) {
-		throw "Couldnt get Geometry in constructor";
-	}
+	  lasterror = a3droot->QueryInterface(IID_IA3dGeom, (void **)&a3dgeom);
+	  
+    if (FAILED(lasterror)) {
+		  throw "Couldnt get Geometry in constructor";
+    }
 
-  // check on status of requested features:
+    // check on status of requested features:
 
-  if (a3droot->IsFeatureAvailable(A3D_1ST_REFLECTIONS)) 
-    printf("Reflections available\n");
-  else printf("Reflections NOT available\n");
-  if (a3droot->IsFeatureAvailable(A3D_OCCLUSIONS)) 
-    printf("Occlusions available\n");
-  else printf("Occlusions NOT available\n");
+    if (a3droot->IsFeatureAvailable(A3D_1ST_REFLECTIONS)) 
+      printf("Reflections available\n");
+    else printf("Reflections NOT available\n");
+    
+    if (a3droot->IsFeatureAvailable(A3D_OCCLUSIONS)) 
+      printf("Occlusions available\n");
+    else printf("Occlusions NOT available\n");
 
-	// set some global default values
-	// default DistanceModelScale is 1.0 which means gain is reducded 6dB for doubling in distance from listener
-	// default DopplerScale is 1.0 (340m/s)
-	// default Equalization is 1.0
-	// default MaxReflectionDelayTime is .3 seconds which, according to
-	//   the A3D document, is adequate for models smaller than a football stadium
-	// default NumFallBackSources is 12 (more than 12 sources and we go to software)
-	// default RMPriorityBias is .5 means we equally weigh audibility and priority when deciding whether to play source
-	// default UnitsPerMeter is 1.0 (we use meters)
+	  // set some global default values
+	  // default DistanceModelScale is 1.0 which means gain is reducded 6dB for doubling in distance from listener
+	  // default DopplerScale is 1.0 (340m/s)
+	  // default Equalization is 1.0
+	  // default MaxReflectionDelayTime is .3 seconds which, according to
+	  //   the A3D document, is adequate for models smaller than a football stadium
+	  // default NumFallBackSources is 12 (more than 12 sources and we go to software)
+	  // default RMPriorityBias is .5 means we equally weigh audibility and priority when deciding whether to play source
+	  // default UnitsPerMeter is 1.0 (we use meters)
 
-	// default coordinate system is RIGHT HANDED
+	  // default coordinate system is RIGHT HANDED
 
-	lasterror = a3droot->SetCoordinateSystem(A3D_RIGHT_HANDED_CS);
+	  lasterror = a3droot->SetCoordinateSystem(A3D_RIGHT_HANDED_CS);
 
-	lasterror = a3droot->SetOutputGain(1.0);  // max gain
+	  lasterror = a3droot->SetOutputGain(1.0);  // max gain
 	
-	// default to using headphones
-	lasterror = a3droot->SetOutputMode(OUTPUT_HEADPHONES,OUTPUT_HEADPHONES,OUTPUT_MODE_STEREO);
+	  // default to using headphones
+	  lasterror = a3droot->SetOutputMode(OUTPUT_HEADPHONES,OUTPUT_HEADPHONES,OUTPUT_MODE_STEREO);
 
-	// set up our playlist
-	maxSounds = 15;
-	numSounds = -1;
-  numMaterials = 0;
-  maxMaterials = 0;
+	  // set up our playlist
+	  maxSounds = 15;
+	  numSounds = -1;
+    numMaterials = 0;
+    maxMaterials = 0;
 	
-  a3dsamples = (IA3dSource2**) new IA3dSource2* [maxSounds];
+    a3dsamples = (IA3dSource2**) new IA3dSource2* [maxSounds];
 
-	// initialize playlist
-	for (int i(0); i < maxSounds; i++) {
-		a3dsamples[i] = NULL;
-    soundMap[i]=-1;
+	  // initialize playlist
+	  for (int i(0); i < maxSounds; i++) {
+	  	a3dsamples[i] = NULL;
+      soundMap[i]=-1;
+    }
+
+	  a3droot->Clear();
 	}
 
-	a3droot->Clear();
-	}
-
-	catch(char* szError)
-	{
+	catch(char* szError) {
 		// Display the message.
 		printf("AudioInit() - %s.\n", szError);
+    send_message("Error initializing sound card.. sound server did not start.",vrpn_TEXT_ERROR,0);
 		exit(0);
 	}
 
@@ -118,10 +120,10 @@ void vrpn_Sound_Server_A3D::playSound(vrpn_SoundID id, vrpn_int32 repeat, vrpn_S
     send_message("Playing sound",vrpn_TEXT_NORMAL,0);
 	}
   else send_message("Error: playSound (Sound not loaded)",vrpn_TEXT_WARNING,0);
-  
 }
 
 void vrpn_Sound_Server_A3D::stopSound(vrpn_SoundID id) {
+
 	vrpn_int32 myid = soundMap[id];
   if (myid!=-1) {
 	  printf("Stopping sound %d\n",myid);
@@ -186,19 +188,17 @@ void vrpn_Sound_Server_A3D::loadSoundLocal(char* filename, vrpn_SoundID id, vrpn
   lasterror=a3dsamples[numSounds]->SetPosition3f(soundDef.pose.position[0],soundDef.pose.position[1],soundDef.pose.position[2]);
 	q_vec_type 	   angles;
 	q_matrix_type  colMatrix;
-	A3DVAL         X_val, Y_val, Z_val;
+	A3DVAL         y_val, p_val, r_val;
 
-	// go from the listeners orientation quaternion to euler angles
-	// A3D wants angles in DEGREES!!
 
 	q_to_col_matrix (colMatrix, soundDef.pose.orientation);
 	q_col_matrix_to_euler(angles,colMatrix);
 
-	X_val = angles[0]*180.0/Q_PI;
-	Y_val = angles[1]*180.0/Q_PI;
-	Z_val = angles[2]*180.0/Q_PI;
-
-  lasterror=a3dsamples[numSounds]->SetOrientationAngles3f(X_val,Y_val,Z_val);
+	y_val = angles[0]*180.0/Q_PI;
+	p_val = angles[1]*180.0/Q_PI;
+	r_val = angles[2]*180.0/Q_PI;
+  
+  lasterror=a3dsamples[numSounds]->SetOrientationAngles3f(y_val,p_val,r_val);
 
   soundMap[id] = numSounds;
   }
@@ -209,9 +209,10 @@ void vrpn_Sound_Server_A3D::loadSoundLocal(char* filename, vrpn_SoundID id, vrpn
     sprintf(tempbuf,"Error: loadSoundLocal (%s) [file: %s]",szError,filename);
 		printf("%s\n", tempbuf);
     send_message((const char *) tempbuf,vrpn_TEXT_ERROR,0);
+	return;
 	}
 
-    sprintf(tempbuf,"Loading sound #%d: %s; ",numSounds,filename);
+    sprintf(tempbuf,"Loading sound #%d: %s \n",numSounds,filename);
 		printf("%s\n", tempbuf);
     send_message((const char *) tempbuf,vrpn_TEXT_NORMAL,0);
     return;
@@ -220,9 +221,12 @@ void vrpn_Sound_Server_A3D::loadSoundLocal(char* filename, vrpn_SoundID id, vrpn
 
 // not supported
 void vrpn_Sound_Server_A3D::loadSoundRemote(char* filename, vrpn_SoundID id, vrpn_SoundDef soundDef) {
+
+  send_message("loadSoundRemote not supported",vrpn_TEXT_WARNING,0);
 }
 
 void vrpn_Sound_Server_A3D::unloadSound(vrpn_SoundID id) {
+
   vrpn_int32 myid = soundMap[id];
   char tempbuf[1024];
    
@@ -246,21 +250,85 @@ void vrpn_Sound_Server_A3D::unloadSound(vrpn_SoundID id) {
 void vrpn_Sound_Server_A3D::setListenerPose(vrpn_PoseDef pose) {
 	q_vec_type 	   angles;
 	q_matrix_type  colMatrix;
-	A3DVAL         X_val, Y_val, Z_val;
+	A3DVAL         y_val, p_val, r_val;
+/*
+  // we will change the unit up vector (in model space) into w_f_e coords [and same for look @]
+  q_xyz_quat_type up_eye_space;
+  q_xyz_quat_type look_eye_space;
+  q_xyz_quat_type world_f_eye;
+  q_xyz_quat_type up_model_space;
+  q_xyz_quat_type look_model_space;
 
+  up_eye_space.xyz[0] = 0.0;
+  up_eye_space.xyz[1] = 1.0;
+  up_eye_space.xyz[2] = 0.0;
+  up_eye_space.quat[0] = 0.0;
+  up_eye_space.quat[1] = 0.0;
+  up_eye_space.quat[2] = 0.0;
+  up_eye_space.quat[3] = 1.0;
+
+  look_eye_space.xyz[0] = 0.0;
+  look_eye_space.xyz[1] = 0.0;
+  look_eye_space.xyz[2] = -1.0;
+  look_eye_space.quat[0] = 0.0;
+  look_eye_space.quat[1] = 0.0;
+  look_eye_space.quat[2] = 0.0;
+  look_eye_space.quat[3] = 1.0;
+
+  world_f_eye.xyz[0] = pose.position[0];
+  world_f_eye.xyz[1] = pose.position[1];
+  world_f_eye.xyz[2] = pose.position[2];
+  world_f_eye.quat[0] = pose.orientation[0];
+  world_f_eye.quat[1] = pose.orientation[1];
+  world_f_eye.quat[2] = pose.orientation[2];
+  world_f_eye.quat[3] = pose.orientation[3];
+
+  q_xyz_quat_compose(&up_model_space, &world_f_eye,&up_eye_space);
+  q_xyz_quat_compose(&look_model_space, &world_f_eye, &look_eye_space);
+  
+  // we now have up_eye_space points which we make a vector be subtracting from persons position
+
+  up_model_space.xyz[0] = up_model_space.xyz[0] - world_f_eye.xyz[0];
+  up_model_space.xyz[1] = up_model_space.xyz[1] - world_f_eye.xyz[1];
+  up_model_space.xyz[2] = up_model_space.xyz[2] - world_f_eye.xyz[2];
+
+  look_model_space.xyz[0] = look_model_space.xyz[0] - world_f_eye.xyz[0];
+  look_model_space.xyz[1] = look_model_space.xyz[1] - world_f_eye.xyz[1];
+  look_model_space.xyz[2] = look_model_space.xyz[2] - world_f_eye.xyz[2];
+
+  // we normalize
+  q_vec_normalize(up_model_space.xyz,up_model_space.xyz);
+  q_vec_normalize(look_model_space.xyz,look_model_space.xyz);
+
+  printf("up: %f %f %f\n", up_model_space.xyz[0],up_model_space.xyz[1],up_model_space.xyz[2]); 
+  printf("look: %f %f %f\n", look_model_space.xyz[0],look_model_space.xyz[1],look_model_space.xyz[2]);
+
+  lasterror = a3dlis->SetOrientation6f(look_model_space.xyz[0],look_model_space.xyz[1],look_model_space.xyz[2], up_model_space.xyz[0],up_model_space.xyz[1],up_model_space.xyz[2]); 
+
+  a3dlis->GetOrientationAngles3f(&y_val, &p_val,&r_val);
+
+  printf("we get %f %f %f\n", y_val, p_val, r_val);
+  
+  // ignore orientation and put in 0,1,0 as up and 1,0,0 as look at 
+  //lasterror = a3dlis->SetOrientation6f(0.0,1.0,0.0,1.0,0.0,0.0); 
+*/
+  
 	// go from the listeners orientation quaternion to euler angles
 	// A3D wants angles in DEGREES!!
 
 	q_to_col_matrix (colMatrix, pose.orientation);
 	q_col_matrix_to_euler(angles,colMatrix);
 
-	X_val = angles[0]*180.0/Q_PI;
-	Y_val = angles[1]*180.0/Q_PI;
-	Z_val = angles[2]*180.0/Q_PI;
+	y_val = angles[0]*180.0/Q_PI;
+	p_val = angles[1]*180.0/Q_PI;
+	r_val = angles[2]*180.0/Q_PI;
+  
+  printf("we get %f %f %f\n", y_val, p_val, r_val);
+  printf("quat is: %f %f %f %f\n", pose.orientation[0],pose.orientation[1],pose.orientation[2],pose.orientation[3]);
 
-	// uses Y(up),X(right),Z(out)
-	lasterror = a3dlis->SetOrientationAngles3f(Y_val,X_val,Z_val);
-	lasterror = a3dlis->SetPosition3f(pose.position[0],pose.position[1],pose.position[2]);
+  lasterror = a3dlis->SetOrientationAngles3f(y_val,p_val,r_val);
+  
+  lasterror = a3dlis->SetPosition3f(pose.position[0],pose.position[1],pose.position[2]);
 
   // dont send back a message here because there are a bunch of them
 }
@@ -282,7 +350,7 @@ void vrpn_Sound_Server_A3D::setListenerVelocity(vrpn_float64 velocity[4]) {
 void vrpn_Sound_Server_A3D::changeSoundStatus(vrpn_SoundID id, vrpn_SoundDef soundDef) {
   q_vec_type 	   angles;
   q_matrix_type  colMatrix;
-  A3DVAL         X_val, Y_val, Z_val;
+  A3DVAL         y_val, p_val, r_val;
   vrpn_int32     myid = soundMap[id];
   char tempbuf[1024];
    
@@ -299,10 +367,10 @@ void vrpn_Sound_Server_A3D::changeSoundStatus(vrpn_SoundID id, vrpn_SoundDef sou
   q_to_col_matrix (colMatrix, soundDef.pose.orientation);
   q_col_matrix_to_euler(angles,colMatrix);
 
-  X_val = angles[0]*180.0/Q_PI;
-  Y_val = angles[1]*180.0/Q_PI;
-  Z_val = angles[2]*180.0/Q_PI;
-  lasterror = a3dsamples[myid]->SetOrientationAngles3f(Y_val, X_val, Z_val);
+  y_val = angles[0]*180.0/Q_PI;
+  p_val = angles[1]*180.0/Q_PI;
+  r_val = angles[2]*180.0/Q_PI;
+  lasterror = a3dsamples[myid]->SetOrientationAngles3f(y_val, p_val, r_val);
 
   q_vec_type velocity_vec;
 
@@ -327,7 +395,7 @@ void vrpn_Sound_Server_A3D::changeSoundStatus(vrpn_SoundID id, vrpn_SoundDef sou
 void vrpn_Sound_Server_A3D::setSoundPose(vrpn_SoundID id, vrpn_PoseDef pose) {
   q_vec_type 	   angles;
   q_matrix_type  colMatrix;
-  A3DVAL         X_val, Y_val, Z_val;
+  A3DVAL         y_val, p_val, r_val;
   vrpn_int32     myid = soundMap[id];
   char tempbuf[1024];
    
@@ -344,10 +412,10 @@ void vrpn_Sound_Server_A3D::setSoundPose(vrpn_SoundID id, vrpn_PoseDef pose) {
   q_to_col_matrix (colMatrix, pose.orientation);
   q_col_matrix_to_euler(angles,colMatrix);
 
-  X_val = angles[0]*180.0/Q_PI;
-  Y_val = angles[1]*180.0/Q_PI;
-  Z_val = angles[2]*180.0/Q_PI;
-  lasterror = a3dsamples[myid]->SetOrientationAngles3f(Y_val, X_val, Z_val);
+  y_val = angles[0]*180.0/Q_PI;
+  p_val = angles[1]*180.0/Q_PI;
+  r_val = angles[2]*180.0/Q_PI;
+  lasterror = a3dsamples[myid]->SetOrientationAngles3f(y_val, p_val, r_val);
   
   sprintf(tempbuf,"Setting sound pose ");
   printf("%s\n", tempbuf);
@@ -388,7 +456,6 @@ void vrpn_Sound_Server_A3D::setSoundDistInfo(vrpn_SoundID id, vrpn_float64 *dist
   }
   
   lasterror = a3dsamples[myid]->SetMinMaxDistance(distinfo[2], distinfo[3], A3D_AUDIBLE);
-
   
   sprintf(tempbuf,"Setting distance information for sound %d to min: %f; max: %f",id,distinfo[2],distinfo[3]);
   printf("%s\n", tempbuf);
@@ -507,6 +574,7 @@ void vrpn_Sound_Server_A3D::loadModelLocal(const char * filename) {
   try
   {
     sprintf(tempbuf, "Working from model file: %s", filename);
+    printf("%s\n",tempbuf);
     send_message((const char *) tempbuf,vrpn_TEXT_NORMAL,0);
    
     if ( (model_file = fopen(filename, "r")) == NULL) {
@@ -911,12 +979,14 @@ void vrpn_Sound_Server_A3D::stopAllSounds() {
 void vrpn_Sound_Server_A3D::shutDown() {
 
   // reinitialize playlist
+  printf("Begin cleanup\n");
 	for (int i(0); i < maxSounds; i++) {
     if (i<=numSounds)
       a3dsamples[i]->FreeAudioData();
 
 		a3dsamples[i] = NULL;
     soundMap[i]=-1;
+
 	}
 
   for (int j(0); j<maxMaterials;j++) {
@@ -932,6 +1002,7 @@ void vrpn_Sound_Server_A3D::shutDown() {
   maxMaterials = 0;
   
   a3droot->Clear();
+  printf("End cleanup\n");
 
 }
 
@@ -974,16 +1045,16 @@ void vrpn_Sound_Server_A3D::GetCurrentDistances(const vrpn_int32 CurrentSoundId,
 	return;
 }
 
-void vrpn_Sound_Server_A3D::GetListenerOrientation(float* X_val, float *Y_val, float *Z_val) {
+void vrpn_Sound_Server_A3D::GetListenerOrientation(float* y_val, float *p_val, float *r_val) {
 	// z y x is what we expect to get back..  these arent named right but deal for now
-	lasterror =  a3dlis->GetOrientationAngles3f(Y_val, Z_val, X_val);
+	lasterror =  a3dlis->GetOrientationAngles3f(y_val, p_val, r_val);
 	return;
 }
 
-void vrpn_Sound_Server_A3D::GetCurrentOrientation(const vrpn_int32 CurrentSoundId,float *X_val, float *Y_val, float *Z_val) {
-	// z y x is what we expect to get back..  these arent named right but deal for now
+void vrpn_Sound_Server_A3D::GetCurrentOrientation(const vrpn_int32 CurrentSoundId,float *y_val, float *p_val, float *r_val) {
+	
 	vrpn_int32 myid = soundMap[CurrentSoundId];
-	lasterror =  a3dsamples[myid]->GetOrientationAngles3f(Y_val, Z_val, X_val);
+	lasterror =  a3dsamples[myid]->GetOrientationAngles3f(y_val, p_val, r_val);
 	return;
 }
 	
