@@ -70,6 +70,7 @@ typedef void (*vrpn_ROUTERNAMEHANDLER) (void * userdata, const vrpn_ROUTERNAMECB
 class vrpn_Router : public vrpn_BaseClass {
 public:
 	vrpn_Router( const char * name, vrpn_Connection * c = NULL);
+        ~vrpn_Router();
 	virtual void set_router( const char* channelName1, 
 		                     const char* channelName2 );//client sends names of 2 channels to link
 	virtual void set_link( vrpn_int32 output_ch, 
@@ -87,13 +88,11 @@ public:
 	virtual void setOutputChannelName( int levelNum, int channelNum, const char* channelNameCStr);
 
 
-	vrpn_int32	router_state[ vrpn_OUTPUT_CHANNEL_MAX ][ vrpn_LEVEL_MAX ];
+	vrpn_int32  **router_state;
 		// The indices to the array is an output channel # and level #.
 		// The value of the array is the associated input channel.
-	char	input_channel_name
-				[ vrpn_LEVEL_MAX ][ vrpn_INPUT_CHANNEL_MAX ] [ vrpn_NAME_MAX ];
-	char	output_channel_name
-				[ vrpn_LEVEL_MAX ][ vrpn_OUTPUT_CHANNEL_MAX ][ vrpn_NAME_MAX ];
+	char	***input_channel_name;
+	char	***output_channel_name;
 		// Each input and output channel has a text name.
 		// These names are the primary means of referring to channels.
 		// They are defined in the configuration file "router.config"

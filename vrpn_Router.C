@@ -17,15 +17,36 @@ vrpn_Router::vrpn_Router (const char * name, vrpn_Connection * c) :
 
 	// Set the time to 0 just to have something there.
 	timestamp.tv_usec = timestamp.tv_sec = 0;
+        
+        int i, j;
+	router_state = new vrpn_int32*[vrpn_OUTPUT_CHANNEL_MAX];
+        for (i = 0; i < vrpn_OUTPUT_CHANNEL_MAX; i++) {
+            router_state[i] = new vrpn_int32[vrpn_LEVEL_MAX];
+        }
+        input_channel_name = new char**[vrpn_LEVEL_MAX];
+        for (i = 0; i < vrpn_LEVEL_MAX; i++){
+            input_channel_name[i] = new char*[vrpn_INPUT_CHANNEL_MAX];
+	    for (j = 0; j < vrpn_INPUT_CHANNEL_MAX; j++){
+                input_channel_name[i][j] = new char[vrpn_NAME_MAX];
+            }
+        }
+	output_channel_name = new char**[vrpn_LEVEL_MAX];
+	for (i = 0; i < vrpn_LEVEL_MAX; i++){
+            output_channel_name[i] = new char*[vrpn_OUTPUT_CHANNEL_MAX];
+            for (j = 0; j < vrpn_OUTPUT_CHANNEL_MAX; j++){
+                input_channel_name[i][j] = new char[vrpn_NAME_MAX];
+            }
+        }
 
-	
+
+
 	// Clear the router state array.
 	// Initialize all channels to vrpn_UNKNOWN_CHANNEL so that we know
 	// the status is unknown until we get a message from some source
 	// telling us the channel status.  
 	// (The server gets messages from the router hardware;
 	// the client gets messages from the server.)
-	for (int i = vrpn_OUTPUT_CHANNEL_MIN; i < vrpn_OUTPUT_CHANNEL_MAX; i++) {
+	for (i = vrpn_OUTPUT_CHANNEL_MIN; i < vrpn_OUTPUT_CHANNEL_MAX; i++) {
 		for( int level=vrpn_LEVEL_MIN; level<vrpn_LEVEL_MAX; level++ ) {
 			router_state[i][level] = vrpn_UNKNOWN_CHANNEL;
 		}
@@ -46,6 +67,31 @@ vrpn_Router::vrpn_Router (const char * name, vrpn_Connection * c) :
 	}
 }
 
+vrpn_Router::~vrpn_Router(void)
+{
+        int i, j;
+        for (i = 0; i < vrpn_OUTPUT_CHANNEL_MAX; i++) {
+            delete [] router_state[i];
+        }
+        delete [] router_state;
+
+        for (i = 0; i < vrpn_LEVEL_MAX; i++){
+            for (j = 0; j < vrpn_INPUT_CHANNEL_MAX; j++){
+                delete [] input_channel_name[i][j];
+            }
+	    delete [] input_channel_name[i];
+        }
+        delete [] input_channel_name;
+
+        for (i = 0; i < vrpn_LEVEL_MAX; i++){
+            for (j = 0; j < vrpn_OUTPUT_CHANNEL_MAX; j++){
+                delete [] input_channel_name[i][j];
+            }
+	    delete [] output_channel_name[i];
+        }
+	delete [] output_channel_name;
+
+}
 
 /**************************************************************************************/
 // Define all message types used by router server or client.
