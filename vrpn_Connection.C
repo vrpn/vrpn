@@ -1390,7 +1390,9 @@ int vrpn_OneConnection::log_message (vrpn_int32 len, struct timeval time,
   }
     // need to explicitly override the const
   // NOTE: then this should probably not be a const char * (weberh 9/14/98)
-  memcpy((char *) lp->data.buffer, buffer, len);
+  if (buffer != NULL) {
+	  memcpy((char *) lp->data.buffer, buffer, len);
+  }
 
   // filter (user) messages
 
