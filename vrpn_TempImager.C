@@ -858,3 +858,76 @@ bool  vrpn_TempImager_Region::decode_unscaled_region_using_base_pointer(vrpn_uin
   // No need to swap endianness on single-byte entities.
   return true;
 }
+
+bool  vrpn_TempImager_Region::decode_unscaled_region_using_base_pointer(vrpn_float32 *data,
+    vrpn_uint32 colStride, vrpn_uint32 rowStride, vrpn_uint32 nRows, bool invert_y,
+    unsigned repeat) const
+{
+  // Make sure the parameters are reasonable
+  if (colStride < repeat) {
+    fprintf(stderr,"vrpn_TempImager_Region::decode_unscaled_region_using_base_pointer(): colStride must be >= repeat\n");
+    return false;
+  }
+
+  // If the type of data in the buffer doesn't match the type of data the user
+  // wants, we need to convert each element along the way.
+  if (d_valType != vrpn_IMAGER_VALTYPE_FLOAT32) {
+    printf("vrpn_TempImager_Region::decode_unscaled_region_using_base_pointer(): Transcoding not implemented yet\n");
+    // XXX need to swap endianness on multi-byte entities.
+    return false;
+  }
+  if ( invert_y && (nRows < d_rMax) ) {
+    fprintf(stderr,"vrpn_TempImager_Region::decode_unscaled_region_using_base_pointer(): nRows must not be less than _rMax\n");
+    return false;
+  }
+
+  // The data type matches what we the user is asking for.  No transcoding needed.
+  // Insert the data into the buffer, copying it as efficiently as possible
+  // from the network buffer into the caller's buffer .  Note that
+  // the network buffer is little-endian.  The code looks a little
+  // complicated because it short-circuits the copying for the case where the
+  // column stride and repeat are one element long (using memcpy() on each row) but has to
+  // copy one element at a time otherwise.
+  int cols = d_cMax - d_cMin+1;
+  int linelen = cols * sizeof(data[0]);
+  if ( (colStride == 1) && (repeat == 1) ) {
+    const vrpn_float32  *msgbuf = (const vrpn_float32 *)d_valBuf;
+    for (unsigned r = d_rMin; r <= d_rMax; r++) {
+      unsigned rActual;
+      if (invert_y) {
+	rActual = (nRows-1)-r;
+      } else {
+	rActual = r;
+      }
+      memcpy(&data[rActual*rowStride+d_cMin], msgbuf, linelen);
+      msgbuf += linelen;
+    }
+  } else {
+    const vrpn_float32  *msgbuf = (const vrpn_float32 *)d_valBuf;
+    vrpn_float32 *rowStart = &data[d_rMin*rowStride + d_cMin];
+    if (invert_y) {
+      rowStart = &data[(nRows-1 - d_rMin)*rowStride + d_cMin];
+      rowStride *= -1;
+    }
+    vrpn_float32 *copyTo = rowStart;
+    for (unsigned r = d_rMin; r <= d_rMax; r++) {
+      for (unsigned c = d_cMin; c <= d_cMax; c++) {
+	for (unsigned rpt = 0; rpt < repeat; rpt++) {
+	  *(copyTo+rpt) = *msgbuf;  //< Copy the current element
+	}
+	msgbuf++;		    //< Skip to the next buffer location
+	copyTo += colStride;	    //< Skip appropriate number of elements
+      }
+      rowStart += rowStride;	//< Skip to the start of the next row
+      copyTo = rowStart;
+    }
+  }
+
+  // Swap endian-ness of the buffer if we are on a big-endian machine.
+  if (vrpn_big_endian) {
+    fprintf(stderr, "XXX TempImager Region needs swapping on Big-endian\n");
+    return false;
+  }
+
+  return true;
+}
