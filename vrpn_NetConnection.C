@@ -295,11 +295,11 @@ vrpn_int32 vrpn_NetConnection::pack_message(vrpn_uint32 len,
 	// Logging must come before filtering and should probably come before
 	// any other failure-prone action (such as do_callbacks_for()).  Only
 	// semantic checking should precede it.
-	/*
-	if (d_logmode & vrpn_LOG_OUTGOING)
-	if (log_message(len, time, type, sender, buffer))
-	return -1;
-	*/
+	
+	if (d_logmode & vrpn_LOG_OUTGOING) // FileLogger object exists
+		if (logger->log_message(len, time, type, sender, buffer))
+			return -1;
+	
 
 	// See if there are any local handlers for this message type from
 	// this sender.  If so, yank the callbacks.
@@ -584,54 +584,57 @@ vrpn_int32 vrpn_NetConnection::handle_tcp_messages (vrpn_int32 fd,
 		// If one returns nonzero, return an error.
 		if (type >= 0) {	// User handler, map to local id
 
-			/*
+			
 			// *** N.B. ***
 			// This is where we'll do our logging/filtering
 			//
-                  // log regardless of whether local id is set,
-                  // but only process if it has been (ie, log ALL
-                  // incoming data -- use a filter on the log
-                  // if you don't want some of it).
-                  if (d_logmode & vrpn_LOG_INCOMING) {
-                    if (log_message(payload_len, time,
-                                             type,
-                                             sender,
-                                             d_TCPbuf, 1)) {
-                      return -1;
-                    }
-                  }
-				  */
-		  if (local_type_id(type) >= 0) {
-		    if (do_callbacks_for(local_type_id(type),
-				         local_sender_id(sender),
-				         time, payload_len, d_TCPbuf)) {
-		      return -1;
-                    }
-		  }
-
+			// log regardless of whether local id is set,
+			// but only process if it has been (ie, log ALL
+			// incoming data -- use a filter on the log
+			// if you don't want some of it).
+			if (d_logmode & vrpn_LOG_INCOMING) {
+				if (logger->log_message(payload_len, time,
+										translate_remote_type_to_local(type),
+										translate_remote_sender_to_local(sender),
+										d_TCPbuf)) {
+					return -1;
+				}
+			}
+				  
+			if (local_type_id(type) >= 0) {
+				if (do_callbacks_for(local_type_id(type),
+									 local_sender_id(sender),
+									 time, payload_len, d_TCPbuf)) {
+					return -1;
+				}
+			}
+			
 		} else {	// Call system handler if there is one
 
-		 if (system_messages[-type] != NULL) {
-			 /*
-		  if (d_logmode & vrpn_LOG_INCOMING)
-		    if (log_message(payload_len, time, type, sender,
-                                    d_TCPbuf, 1))
-		      return -1;
-			  */
-		  // Fill in the parameter to be passed to the routines
-		  vrpn_HANDLERPARAM p;
-		  p.type = type;
-		  p.sender = sender;
-		  p.msg_time = time;
-		  p.payload_len = payload_len;
-		  p.buffer = d_TCPbuf;
-
-		  if (system_messages[-type](this, p)) {
-			    fprintf(stderr, "vrpn: vrpn_NetConnection::handle_tcp_messages: Nonzero system handler return\n");
-			    return -1;
-		  }
-		 }
-
+			if (system_messages[-type] != NULL) {
+				
+				if (d_logmode & vrpn_LOG_INCOMING)
+					if (logger->log_message(payload_len, time, 
+											translate_remote_type_to_local(type),
+											translate_remote_sender_to_local(sender),
+											d_TCPbuf))
+						return -1;
+				
+				// Fill in the parameter to be passed to the routines
+				vrpn_HANDLERPARAM p;
+				p.type = type;
+				p.sender = sender;
+				p.msg_time = time;
+				p.payload_len = payload_len;
+				p.buffer = d_TCPbuf;
+				
+				if (system_messages[-type](this, p)) {
+					fprintf(stderr, 
+							"vrpn: vrpn_NetConnection::handle_tcp_messages: Nonzero system handler return\n");
+					return -1;
+				}
+			}
+			
 		}
 
 		// Got one more message
@@ -760,57 +763,59 @@ vrpn_int32	vrpn_NetConnection::handle_udp_messages (vrpn_int32 fd,
 		// If it returns nonzero, return an error.
 		if (type >= 0) {	// User handler, map to local id
 
-			/*
+
 			// *** N.B. ***
 			// This is where we'll do our logging/filtering
 			//
-                  // log regardless of whether local id is set,
-                  // but only process if it has been (ie, log ALL
-                  // incoming data -- use a filter on the log
-                  // if you don't want some of it).
+			// log regardless of whether local id is set,
+			// but only process if it has been (ie, log ALL
+			// incoming data -- use a filter on the log
+			// if you don't want some of it).
 
-                  if (d_logmode & vrpn_LOG_INCOMING) {
-		      if (log_message(payload_len, time,
-                                      type,
-                                      sender,
-                                               inbuf_ptr, 1)) {
-                        return -1;
-                      }
-                  }
-				  */
-		  if (local_type_id(type) >= 0) {
-		    if (do_callbacks_for(local_type_id(type),
-				         local_sender_id(sender),
-				         time, payload_len, inbuf_ptr)) {
-		      return -1;
-                    }
-		  }
+			if (d_logmode & vrpn_LOG_INCOMING) {
+				if (logger->log_message(payload_len, time,
+										translate_remote_type_to_local(type),
+										translate_remote_sender_to_local(sender),
+										inbuf_ptr)) {
+					return -1;
+				}
+			}
 
+			if (local_type_id(type) >= 0) {
+				if (do_callbacks_for(local_type_id(type),
+									 local_sender_id(sender),
+									 time, payload_len, inbuf_ptr)) {
+					return -1;
+				}
+			}
+			
 		} else {	// System handler
-			/*
-		  if (d_logmode & vrpn_LOG_INCOMING)
-		    if (log_message(payload_len, time, type, sender,
-                                    inbuf_ptr, 1))
-		      return -1;
-			  */
-		  // Fill in the parameter to be passed to the routines
-		  vrpn_HANDLERPARAM p;
-		  p.type = type;
-		  p.sender = sender;
-		  p.msg_time = time;
-		  p.payload_len = payload_len;
-		  p.buffer = inbuf_ptr;
-
-		  if (system_messages[-type](this, p)) {
-		    fprintf(stderr, "vrpn: vrpn_NetConnection::handle_udp_messages: Nonzero system return\n");
-		    return -1;
-		  }
+		  
+			if (d_logmode & vrpn_LOG_INCOMING)
+				if (log_message(payload_len, time,
+								translate_remote_type_to_local(type),
+								translate_remote_sender_to_local(sender),
+								inbuf_ptr))
+					return -1;
+			
+			// Fill in the parameter to be passed to the routines
+			vrpn_HANDLERPARAM p;
+			p.type = type;
+			p.sender = sender;
+			p.msg_time = time;
+			p.payload_len = payload_len;
+			p.buffer = inbuf_ptr;
+			
+			if (system_messages[-type](this, p)) {
+				fprintf(stderr, "vrpn: vrpn_NetConnection::handle_udp_messages: Nonzero system return\n");
+				return -1;
+			}
 		}
 		inbuf_ptr += ceil_len;
-
+		
 		// Got one more message
 		num_messages_read++;
-	    }
+		  }
 	  }
 
 	} while (sel_ret);
@@ -886,24 +891,24 @@ vrpn_int32 vrpn_NetConnection::handle_mcast_messages(/* XXX */){
 			// Call the handler for this message type
 			// If it returns nonzero, return an error.
 			if (type >= 0) {	// User handler, map to local id
-				/*
+				
 				// *** N.B. ***
 				// This is where we'll do our logging/filtering
 				//
-                  // log regardless of whether local id is set,
-                  // but only process if it has been (ie, log ALL
-                  // incoming data -- use a filter on the log
-                  // if you don't want some of it).
+				// log regardless of whether local id is set,
+				// but only process if it has been (ie, log ALL
+				// incoming data -- use a filter on the log
+				// if you don't want some of it).
 
                 if (d_logmode & vrpn_LOG_INCOMING) {
 					if (log_message(payload_len, time,
-                		                     type,
-                    		                 sender,
-                                             inbuf_ptr, 1)) {
+									translate_remote_type_to_local(type),
+									translate_remote_sender_to_local(sender),
+									inbuf_ptr)) {
                  		return -1;
                     }
                 }
-                */
+                
 				if (local_type_id(type) >= 0) {
 			    	if (do_callbacks_for(local_type_id(type),
 								         local_sender_id(sender),
@@ -914,12 +919,16 @@ vrpn_int32 vrpn_NetConnection::handle_mcast_messages(/* XXX */){
 		  		
 			}
 			else {	// System handler
-				/*
-				if (d_logmode & vrpn_LOG_INCOMING)
-		    		if (log_message(payload_len, time, type, sender,
-                	                    inbuf_ptr, 1))
-		    			return -1;
-						*/
+				
+                if (d_logmode & vrpn_LOG_INCOMING) {
+					if (log_message(payload_len, time,
+									translate_remote_type_to_local(type),
+									translate_remote_sender_to_local(sender),
+									inbuf_ptr, 1)) {
+                 		return -1;
+                    }
+                }
+
 			  	// Fill in the parameter to be passed to the routines
 			  	vrpn_HANDLERPARAM p;
 			  	p.type = type;
@@ -1240,9 +1249,26 @@ vrpn_int32 NetConnection::handle_mcast_reply(){
 // get mcast info from mcast sender and pack into message
 vrpn_int32 NetConnection::pack_mcast_description(vrpn_int32 sender){
 
+	vrpn_uint32 pid;
+	vrpn_uint32 ip;
+	char temp_buf[20];
 	struct timeval now;
+	char ** insertPt;
+	vrpn_int32 buflen = sizeof(d_mcast_cookie);
 
 	gettimeofday(&now, NULL);
+
+	// pack magic mcast cookie
+	// first ip addr as 32 bit u_int
+	// then pid as 32 bit u_int
+	vrpn_getmyIP(temp_buf,sizeof(temp_buf));
+	ip = inet_addr(temp_buf);
+	pid = getpid();
+	insertPt = d_mcast_cookie;
+	vrpn_buffer(insertPt,&buflen,ip);
+	vrpn_buffer(insertPt,&buflen,pid);
+	
+
 	return pack_message((vrpn_uint32)sizeof(McastGroupDescrp), 
 						now, vrpn_CONNECTION_MCAST_DESCRIPTION,
 						sender, controller->get_mcast_info(),
@@ -1832,6 +1858,10 @@ void vrpn_NetConnection::drop_connection(void)
 
   if (d_logname) {
       close_log();
+  }
+
+  if( mcast_capable() ){
+	  delete mcast_recvr;
   }
 
 }

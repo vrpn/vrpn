@@ -141,11 +141,18 @@ protected: // setting up connections
 	virtual vrpn_int32	pack_log_description (vrpn_int32 mode, const char * filename);
  
 private: // data members
+	
+	// magic cookie so clients can make sure
+	// mcast packet came from correct sender
+	// contains pid and ip addr of server
+	char d_mcast_cookie[8];
 
+	// multicast capability flags
 	vrpn_bool d_mcast_capable;
 	vrpn_bool d_peer_mcast_capable;
 
-	vrpn_int32	status;			// Status of the connection
+	// Status of the connection
+	vrpn_int32	status;	 
 
 	/*
 	// perhaps we should move to enums 
@@ -222,6 +229,20 @@ private: // data members
 	vrpn_int32	num_other_senders;
 	cRemoteMapping	other_types [vrpn_CONNECTION_MAX_TYPES];
 	vrpn_int32	num_other_types;
+
+	// logging data memnbers, passed to FileLogger
+	FileLogger* logger;
+
+
+	vrpn_LOGLIST * d_logbuffer;  // last entry in log
+	vrpn_LOGLIST * d_first_log_entry;  // first entry in log
+	char * d_logname;            // name of file to write log to
+	vrpn_int32 d_logmode;              // logging incoming, outgoing, or both
+	
+	vrpn_in32 d_logfile_handle;
+	FILE * d_logfile;
+	vrpnLogFilterEntry *d_logfilters;
+
 
 };
 
