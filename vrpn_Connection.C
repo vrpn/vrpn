@@ -81,7 +81,7 @@
 #ifdef _AIX
  #define GSN_CAST (socklen_t *)
 #else
- #ifdef linux
+ #if defined(linux) || defined(FreeBSD)
   #define GSN_CAST (unsigned int *)
  #else
   #define GSN_CAST

@@ -131,14 +131,17 @@ typedef  float           vrpn_float32;
 typedef  double          vrpn_float64;
 #endif
 
-#ifdef  FreeBSD
+#if defined(FreeBSD) || defined(__FreeBSD__)
+#ifndef FreeBSD
+#define FreeBSD
+#endif
 #define  VRPN_ARCH  FreeBSD
 typedef  char            vrpn_int8;
 typedef  unsigned char   vrpn_uint8;
 typedef  short           vrpn_int16;
 typedef  unsigned short  vrpn_uint16;
-typedef  long            vrpn_int32;
-typedef  unsigned long   vrpn_uint32;
+typedef  int		 vrpn_int32;
+typedef  unsigned int    vrpn_uint32;
 typedef  float           vrpn_float32;
 typedef  double          vrpn_float64;
 #endif

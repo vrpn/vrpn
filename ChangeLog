@@ -1,3 +1,9 @@
+2004-12-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Changes from Patrick Hartling to make
+		VRPN compile under FreeBSD.
+	* vrpn_Types.h : Same.
+
 2004-12-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Makefile : Switched out TempImager for Imager
