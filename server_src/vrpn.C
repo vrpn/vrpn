@@ -36,6 +36,7 @@
 #include "vrpn_Spaceball.h"
 #include "vrpn_ImmersionBox.h"
 #include "vrpn_Analog_Radamec_SPI.h"
+#include "vrpn_Zaber.h"
 #include "vrpn_Wanda.h"
 #include "vrpn_Analog_5dt.h"
 #include "vrpn_Tng3.h"
@@ -701,6 +702,37 @@ int setup_Radamec_SPI (char * & pch, char * line, FILE * config_file) {
               } else {
                 num_analogs++;
               }
+
+  return 0;
+}
+
+int setup_Zaber (char * & pch, char * line, FILE * config_file) {
+  char s2 [LINESIZE], s3 [LINESIZE];
+
+  next();
+  // Get the arguments (class, Radamec_name, port, baud
+  if (sscanf(pch,"%511s%511s",s2,s3) != 2) {
+    fprintf(stderr,"Bad vrpn_Zaber: %s\n",line);
+    return -1;
+  }
+
+  // Make sure there's room for a new analog
+  if (num_analogs >= MAX_ANALOG) {
+    fprintf(stderr,"Too many Analogs in config file");
+    return -1;
+  }
+
+  // Open the device
+  if (verbose) {
+    printf("Opening vrpn_Zaber: %s on port %s\n", s2,s3);
+  }
+  if ((analogs[num_analogs] =
+  new vrpn_Zaber(s2, connection, s3)) == NULL) {
+    fprintf(stderr,"Can't create new vrpn_Zaber\n");
+    return -1;
+  } else {
+    num_analogs++;
+  }
 
   return 0;
 }
@@ -1517,6 +1549,8 @@ main (int argc, char * argv[])
             CHECK(setup_Spaceball);
 	  } else if (isit("vrpn_Radamec_SPI")) {
             CHECK(setup_Radamec_SPI);
+	  } else if (isit("vrpn_Zaber")) {
+            CHECK(setup_Zaber);
 	  } else if (isit("vrpn_5dt")) {
             CHECK(setup_5dt);
 	  } else if (isit("vrpn_ImmersionBox")) {
