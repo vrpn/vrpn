@@ -14,7 +14,7 @@
 // only 13 receivers allowed in normal addressing mode
 #define MAX_SENSORS 13
 
-// This is a class which provides a server for an ascension 
+// This is a class which provides a server for an Ascension 
 // Flock of Birds tracker.  The server will send out messages
 // at whatever rate the flock of bird's stream mode feeds them.
 // Default filtering is active.
@@ -34,14 +34,17 @@
 // If this is running on a non-linux system, then the serial port driver
 // is probably adding more latency -- see the vrpn README for more info.
 
+// The FOB now doesn't need to be used in a chain starting with an Exteded
+// range controller.  You may use the optionnal useERT to set whether this
+// is the case or not.  Added by David Nahon, for Virtools VR Pack,
+// david@z-a.net, support@virtools.com
+
 class vrpn_Tracker_Flock: public vrpn_Tracker_Serial {
   
  public:
-  
   vrpn_Tracker_Flock(char *name, vrpn_Connection *c, int cSensors=1,
 		     char *port = "/dev/ttyd3", long baud = 38400,
-		     int fStreamMode = 1);
-    
+		     int fStreamMode = 1, int useERT=1);
   virtual ~vrpn_Tracker_Flock();
     
  protected:
@@ -54,6 +57,8 @@ class vrpn_Tracker_Flock: public vrpn_Tracker_Serial {
   int cSensors;
   int fStream;  // stream or polled mode
   int fGroupMode; // for get_report -- group report mode or individual
+
+  int useERT;	// do we have an extended range transmitter, this was the default
 
   // class members used to help with error recovery
   int cResets;

@@ -229,14 +229,14 @@ int vrpn_Tracker_Flock::checkError() {
 
 vrpn_Tracker_Flock::vrpn_Tracker_Flock(char *name, vrpn_Connection *c, 
 				       int cSensors, char *port, long baud,
-				       int fStreamMode ) :
+				       int fStreamMode, int useERT ) :
   vrpn_Tracker_Serial(name,c,port,baud), cSensors(cSensors), cResets(0),
-  fStream(fStreamMode), fGroupMode(1), cSyncs(0), fFirstStatusReport(1) {
+  fStream(fStreamMode), fGroupMode(1), cSyncs(0), fFirstStatusReport(1), useERT(useERT) {
     if (cSensors>MAX_SENSORS) {
       fprintf(stderr, "\nvrpn_Tracker_Flock: too many sensors requested ... only %d allowed (%d specified)", MAX_SENSORS, cSensors );
       cSensors = MAX_SENSORS;
     }
-    fprintf(stderr, "\nvrpn_Tracker_Flock: starting up ...");
+    fprintf(stderr, "\nvrpn_Tracker_Flock: starting up (FOBHack)...");
 }
 
 
@@ -355,8 +355,7 @@ void vrpn_Tracker_Flock::reset()
    reset[resetLen++]=50;
 
    // number of units (xmitter + receivers)
-   // eventually this will be an arg of some sort
-   reset[resetLen++]= cSensors+1;
+   reset[resetLen++]= cSensors+useERT;
 
    // as per pg 59 of the jan 31, 1995 FOB manual, we need to pause at
    // least 300 ms before and after sending the autoconfig (paused above)
@@ -384,7 +383,7 @@ void vrpn_Tracker_Flock::reset()
    // pos/quat mode sent to each receiver (transmitter is unit 1)
    // 0xf0 + addr is the cmd to tell the master to forward a cmd
    for (i=1;i<=cSensors;i++) {
-     reset[resetLen++] = 0xf0 + i + 1;
+     reset[resetLen++] = 0xf0 + i + useERT;
      reset[resetLen++] = ']';
    }
 
@@ -392,7 +391,7 @@ void vrpn_Tracker_Flock::reset()
    // as above, first part is rs232 to fbb, 'L' is hemisphere
    // 0xC is the 'axis' (lower), and 0x0 is the 'sign' (lower)
    for (i=1;i<=cSensors;i++) {
-     reset[resetLen++] = 0xf0 + i + 1;
+     reset[resetLen++] = 0xf0 + i + useERT;
      reset[resetLen++] = 'L';
      reset[resetLen++] = 0xc;
      reset[resetLen++] = 0;
@@ -447,19 +446,19 @@ void vrpn_Tracker_Flock::reset()
    
    // check the configuration ...
    int fOk=1;
-
-   for (i=0;i<=cSensors;i++) {
+   for (i=0;i<=cSensors-1+useERT;i++) {
      fprintf(stderr, "\nvrpn_Tracker_Flock: unit %d", i);
      if (response[i] & 0x20) {
        fprintf(stderr," (a receiver)");
      } else {
        fprintf(stderr," (a transmitter)");
-       if (i != 0) {
-	   fprintf(stderr,"\nError: VRPN Flock driver can only accept transmitter as first unit\n");
-	   status = vrpn_TRACKER_FAIL;
-	   fOk=0;
-	   return;
-       }
+// now we allow non transmitters at fisrt adress !!!!
+//       if (i != 0) {
+//	   fprintf(stderr,"\nError: VRPN Flock driver can only accept transmitter as first unit\n");
+//	   status = vrpn_TRACKER_FAIL;
+//	   fOk=0;
+//	   return;
+//     }
      }
      if (response[i] & 0x80) {
        fprintf(stderr," is accessible");
@@ -650,7 +649,8 @@ int vrpn_Tracker_Flock::get_report(void)
    if (fGroupMode) {
      // sensor addr are 0 indexed in vrpn, but start at 2 in the flock 
      // (1 is the transmitter)
-     d_sensor = buffer[RECORD_SIZE-1]-2;
+//     d_sensor = buffer[RECORD_SIZE-1]-2;
+     d_sensor = buffer[RECORD_SIZE-1]-1-useERT;
    }      
 
    // all set for this sensor, so cycle
