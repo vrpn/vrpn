@@ -14,6 +14,8 @@
 #define vrpn_BUTTON_MOMENTARY	10
 #define vrpn_BUTTON_TOGGLE_OFF	20
 #define vrpn_BUTTON_TOGGLE_ON	21
+#define vrpn_BUTTON_LIGHT_OFF	30
+#define vrpn_BUTTON_LIGHT_ON	31
 #define vrpn_ALL_ID		-99
 
 class vrpn_Button {
@@ -29,23 +31,39 @@ class vrpn_Button {
 
         vrpn_Connection *connectionPtr();
 
-	void set_momentary(int which_button);
-        void set_toggle(int which_button, int current_state);
-        void set_all_momentary(void);
-        void set_all_toggle(int default_state);
+	virtual void set_momentary(int which_button);
+        virtual void set_toggle(int which_button, int current_state);
+        virtual void set_all_momentary(void);
+        virtual void set_all_toggle(int default_state);
 
   protected:
 	vrpn_Connection *connection;
 	unsigned char	buttons[vrpn_BUTTON_MAX_BUTTONS];
-	unsigned char	lastbuttons[vrpn_BUTTON_MAX_BUTTONS];
-	int     buttonstate[vrpn_BUTTON_MAX_BUTTONS];
+        unsigned char	lastbuttons[vrpn_BUTTON_MAX_BUTTONS];
 	long     minrate[vrpn_BUTTON_MAX_BUTTONS];
 	int	num_buttons;
 	struct timeval	timestamp;
 	long my_id;			// ID of this button to connection
-	long message_id;		// ID of button message to connection
+	long change_message_id;		// ID of change button message to connection
+	long admin_message_id;		// ID of admin button message to connection
 	virtual void report_changes();
 	virtual int encode_to(char *buf, int button, int state);
+};
+
+class vrpn_Button_Filter:public vrpn_Button{
+	public:
+		int     buttonstate[vrpn_BUTTON_MAX_BUTTONS];
+	        virtual void set_momentary(int which_button);
+       		virtual void set_toggle(int which_button, int current_state);
+		virtual void set_all_momentary(void);
+		virtual void set_all_toggle(int default_state);
+		void set_alerts(int);
+
+	protected:
+		int send_alerts;
+		vrpn_Button_Filter(char *,vrpn_Connection *c=NULL);
+		long alert_message_id;   //used to send back to alert button box for lights
+		void report_changes(void);
 };
 
 #ifndef VRPN_CLIENT_ONLY
@@ -53,7 +71,7 @@ class vrpn_Button {
 // Button device that is connected to a parallel port and uses the
 // status bits to read from the buttons.  There can be up to 5 buttons
 // read this way.
-class vrpn_parallel_Button: public vrpn_Button {
+class vrpn_parallel_Button: public vrpn_Button_Filter {
   public:
 	// Open a button connected to the local machine, talk to the
 	// outside world through the connection.
@@ -115,8 +133,6 @@ class vrpn_Button_Remote: public vrpn_Button {
 		vrpn_BUTTONCHANGEHANDLER handler);
 	virtual int unregister_change_handler(void *userdata,
 		vrpn_BUTTONCHANGEHANDLER handler);
-
-	int set_button_mode(int mode, int button_id);
 
   protected:
 	typedef	struct vrpn_RBCS {

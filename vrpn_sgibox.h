@@ -8,11 +8,14 @@
  * Update Count    : 13
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_sgibox.h,v $
- * $Date: 1998/06/26 15:49:03 $
- * $Author: hudson $
- * $Revision: 1.3 $
+ * $Date: 1998/08/31 14:04:44 $
+ * $Author: taylorr $
+ * $Revision: 1.4 $
  * 
  * $Log: vrpn_sgibox.h,v $
+ * Revision 1.4  1998/08/31 14:04:44  taylorr
+ * This version fixes the button toggle code.
+ *
  * Revision 1.3  1998/06/26 15:49:03  hudson
  * Wrote vrpn_FileConnection.
  * Changed connection naming convention.
@@ -37,19 +40,26 @@
 
 #include "vrpn_Analog.h"
 #include "vrpn_Button.h"
+#ifndef WIN32
+#include <netinet/in.h>
+#include <sys/ioctl.h>
+#endif
+#ifndef MICROSCAPE_H
 #include <gl/gl.h>
 #include <gl/device.h>
+#endif
 
 /* Number of buttons and number of dials on sgi button/dial boxes */
 #define NUM_BUTTONS (32)
 #define NUM_DIALS   (8)
 #define NUMDEVS (NUM_BUTTONS+NUM_DIALS)
 
-class vrpn_SGIBox :public vrpn_Analog, public vrpn_Button {
+class vrpn_SGIBox :public vrpn_Analog, public vrpn_Button_Filter {
 public:
   vrpn_SGIBox(char * name, vrpn_Connection * c);
   void mainloop();
   void reset();
+
 
 protected:
   void get_report();

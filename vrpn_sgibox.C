@@ -8,11 +8,14 @@
  * Update Count    : 50
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_sgibox.C,v $
- * $Date: 1998/07/09 15:47:20 $
- * $Author: hudson $
- * $Revision: 1.5 $
+ * $Date: 1998/08/31 14:04:44 $
+ * $Author: taylorr $
+ * $Revision: 1.6 $
  * 
  * $Log: vrpn_sgibox.C,v $
+ * Revision 1.6  1998/08/31 14:04:44  taylorr
+ * This version fixes the button toggle code.
+ *
  * Revision 1.5  1998/07/09 15:47:20  hudson
  * Fixed bugs in vrpn_ForceDevice.
  * Implemented vrpn_FileController and its interface in vrpn_FileConnection.
@@ -36,7 +39,7 @@
 
 #ifdef sgi
 
-static char rcsid[] = "$Id: vrpn_sgibox.C,v 1.5 1998/07/09 15:47:20 hudson Exp $";
+static char rcsid[] = "$Id: vrpn_sgibox.C,v 1.6 1998/08/31 14:04:44 taylorr Exp $";
 
 #include "vrpn_sgibox.h"
 #include <stdio.h>
@@ -44,10 +47,11 @@ static char rcsid[] = "$Id: vrpn_sgibox.C,v 1.5 1998/07/09 15:47:20 hudson Exp $
 // all for gethostbyname();
 #include <unistd.h>
 static int sgibox_con_cb(void * userdata, vrpn_HANDLERPARAM p);
+static int sgibox_alert_handler(void * userdata, vrpn_HANDLERPARAM);
 
 
 vrpn_SGIBox::vrpn_SGIBox(char * name, vrpn_Connection * c):
-  vrpn_Analog(name, c), vrpn_Button(name, c) {
+  vrpn_Analog(name, c), vrpn_Button_Filter(name, c) {
     int ret;
     char hn[128];
     sid  = -1;
@@ -76,8 +80,10 @@ vrpn_SGIBox::vrpn_SGIBox(char * name, vrpn_Connection * c):
     num_channel = NUM_DIALS;
     num_buttons = NUM_BUTTONS;
     
-    c->register_handler(c->register_message_type( vrpn_got_first_connection),
-		      sgibox_con_cb, this);
+    c->register_handler(c->register_message_type( vrpn_got_first_connection), sgibox_con_cb, this);
+    c->register_handler(alert_message_id,sgibox_alert_handler, this);
+    set_alerts(1);	//turn on alerts from toggle filter class to notify
+			//local sgibox that lights should be turned on/off
 }
 
 void vrpn_SGIBox::reset() {  /* Button/Dial box setup */
@@ -103,9 +109,7 @@ void vrpn_SGIBox::get_report() {
   //fprintf(stderr, "Button=");
   for (i=0; i< NUM_BUTTONS; i++) {
     buttons[i] = vals1[NUM_DIALS+i];
-    //fprintf(stderr, " %d", buttons[i]);
   }
-  //fprintf(stderr, "\nChannel=");
   for (i=0; i< NUM_DIALS; i++) {
     int temp = vals1[i] -mid_values[i];
     if (temp > 200) channel[i] = 0.5, mid_values[i] = vals1[i] - 200; 
@@ -118,12 +122,30 @@ void vrpn_SGIBox::get_report() {
   //fprintf(stderr, "\n");
 
   vrpn_Analog::report_changes();
-  vrpn_Button::report_changes();
+  vrpn_Button_Filter::report_changes();
 }
 
 void vrpn_SGIBox::mainloop() {
   get_report();
 }
+
+
+static int sgibox_alert_handler(void * userdata, vrpn_HANDLERPARAM){
+  int i;
+  long lights;
+  vrpn_SGIBox*me=(vrpn_SGIBox *)userdata;
+
+  lights=0;
+  for(i=0;i<NUM_BUTTONS;i++){
+    fprintf(stderr,"%d ",me->buttonstate[i]);
+    if(me->buttonstate[i]==vrpn_BUTTON_TOGGLE_ON) lights=lights|1<<i;
+  }
+  fprintf(stderr," %p\n",me);
+  setdblights(lights);
+  return 0;
+
+}
+
 static int sgibox_con_cb(void * userdata, vrpn_HANDLERPARAM)
 {
      
@@ -133,10 +155,5 @@ static int sgibox_con_cb(void * userdata, vrpn_HANDLERPARAM)
 }
 
 #endif  // sgi
-
-
-
-
-
 
 
