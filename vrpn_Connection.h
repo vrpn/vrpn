@@ -177,6 +177,9 @@ class vrpn_Endpoint {
 
     void init (void);
 
+    int mainloop (const timeval * timeout,
+                  const char * NICaddress);
+
     // Clear out the remote mapping list. This is done when a
     // connection is dropped and we want to try and re-establish
     // it.
@@ -205,7 +208,8 @@ class vrpn_Endpoint {
     virtual int send_pending_reports (void);
 
     virtual int pack_udp_description (int portno);
-    virtual int pack_log_description (long mode, const char * filename);
+    virtual int pack_log_description (void);
+      ///< Packs the log description set by setup_new_connection().
 
     int handle_tcp_messages (const timeval * timeout);
     int handle_udp_messages (const timeval * timeout);
@@ -215,6 +219,25 @@ class vrpn_Endpoint {
                                 const char * NIC_IPaddress);
 
     vrpn_int32 set_tcp_outbuf_size (vrpn_int32 bytecount);
+
+    int setup_new_connection (void);
+      ///< Sends the magic cookie and other information to its
+      ///< peer.  It is called by both the client and server setup routines.
+
+    void poll_for_cookie (const timeval * timeout = NULL);
+
+    int finish_new_connection_setup (const char * NICaddress);
+      ///< Should only be called by
+      ///< vrpn_Connection::finish_new_connection_setup(),
+      ///< since there's more housecleaning to do at that level.  I suppose
+      ///< that argues against separating this function out, but we can/will
+      ///< migrate that housecleaning down to a level where it can be done
+      ///< here.
+
+    void drop_connection (void);
+      ///< Should only be called by vrpn_Connection::drop_connection(),
+      ///< since there's more housecleaning to do at that level.  I suppose
+      ///< that argues against separating this function out.
 
     int status;
 
@@ -280,9 +303,12 @@ class vrpn_Endpoint {
     char * d_tcpInbuf;
     char * d_udpInbuf;
 
-    // Logging - TCH 11 June 98
+    // Logging - TCH 19 April 00
 
     vrpn_Log * d_log;
+
+    long d_pendingLogmode;
+    char * d_pendingLogname;
 
   protected:
 
@@ -490,18 +516,9 @@ class vrpn_Connection {
     // has been connected to it.
     virtual void handle_connection (int whichEndpoint);
 
-    // This sends the magic cookie and other information to its
-    // peer.  It is called by both the client and server setup routines.
-    virtual int setup_new_connection (int whichEndpoint, long logmode = 0L,
-	                                      const char * logfile = NULL);
-
     // This receives the peer's cookie. It is called by both
     // the client and server setup routines.
     virtual int finish_new_connection_setup (vrpn_Endpoint *);
-    void poll_for_cookie (int whichEndpoint, const timeval * pTimeout = NULL);
-
-    long d_pendingLogmode;
-    char * d_pendingLogname;
 
     // set up network
     virtual void drop_connection (int whichEndpoint);
