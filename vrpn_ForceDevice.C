@@ -1050,7 +1050,6 @@ int vrpn_ForceDevice_Remote::handle_error_change_message(void *userdata,
 	long *params = (long *)(p.buffer);
 	vrpn_FORCEERRORCB tp;
 	vrpn_FORCEERRORCHANGELIST *handler = me->error_change_list;
-	int i;
 
 	if (p.payload_len != sizeof(long)) {
 		fprintf(stderr, "vrpn_ForceDevice: error message payload",

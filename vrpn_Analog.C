@@ -25,11 +25,18 @@
  * Update Count    : 47
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Analog.C,v $
- * $Date: 1998/06/26 15:48:50 $
- * $Author: hudson $
- * $Revision: 1.4 $
+ * $Date: 1998/11/05 22:45:41 $
+ * $Author: taylorr $
+ * $Revision: 1.5 $
  * 
  * $Log: vrpn_Analog.C,v $
+ * Revision 1.5  1998/11/05 22:45:41  taylorr
+ * This version strips out the serial-port code into vrpn_Serial.C.
+ *
+ * It also makes it so all the library files compile under NT.
+ *
+ * It also fixes an insidious initialization bug in the forwarder code.
+ *
  * Revision 1.4  1998/06/26 15:48:50  hudson
  * Wrote vrpn_FileConnection.
  * Changed connection naming convention.
@@ -51,7 +58,7 @@
  * HISTORY
  */
 
-static char rcsid[] = "$Id: vrpn_Analog.C,v 1.4 1998/06/26 15:48:50 hudson Exp $";
+static char rcsid[] = "$Id: vrpn_Analog.C,v 1.5 1998/11/05 22:45:41 taylorr Exp $";
 
 #include "vrpn_Analog.h"
 #include <stdio.h>
@@ -158,49 +165,6 @@ vrpn_Serial_Analog::vrpn_Serial_Analog(char *name, vrpn_Connection *c,
 #endif  // _WIN32
 #endif  // VRPN_CLIENT_ONLY
 
-
-#ifndef VRPN_CLIENT_ONLY
-
-// This routine will read any available characters from the handle into
-// the buffer specified, up to the number of bytes requested.  It returns
-// the number of characters read or -1 on failure.  Note that it only
-// reads characters that are available at the time of the read, so less
-// than the requested number may be returned.
-#ifndef _WIN32
-int vrpn_Serial_Analog::read_available_characters(char *buffer,
-	int bytes)
-{
-   int bRead;
-
-   // on sgi's (and possibly other architectures) the folks from 
-   // ascension have noticed that a read command will not necessarily
-   // read everything available in the read buffer (see the following file:
-   // ~hmd/src/libs/tracker/apps/ascension/FLOCK232/C/unix.txt
-   // For this reason, we loop and try to fill the buffer, stopping our
-   // loop whenever no chars are available.
-   int cReadThisTime = 0;
-   int cSpaceLeft = bytes;
-   char *pch = buffer;
-
-   do {
-     if ( (cReadThisTime = read(serial_fd, (char *)pch, cSpaceLeft)) == -1) {
-       perror("Tracker: cannot read from serial port");
-       fprintf(stderr, "this = %p, buffer = %p, %d\n", this, pch, bytes);  
-       return -1;
-     }
-     cSpaceLeft -= cReadThisTime;
-     pch += cReadThisTime;
-   }  while ((cReadThisTime!=0) && (cSpaceLeft>0));
-   bRead = pch - buffer;
- 
-
-   if (bRead > 100 || bRead < 0) 
-     fprintf(stderr, "  vrpn_Serial_Analog: Read %d bytes\n",bRead);
-
-   return bRead;
-}
-#endif  // _WIN32
-#endif // vrpn_client_only
 
 // ************* CLIENT ROUTINES ****************************
 

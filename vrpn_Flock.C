@@ -35,6 +35,7 @@
 
 #include "vrpn_Tracker.h"
 #include "vrpn_Flock.h"
+#include "vrpn_Serial.h"
 
 // output a status msg every status_msg_secs
 #define STATUS_MSG
@@ -212,7 +213,7 @@ int vrpn_Tracker_Flock::checkError() {
   // read response (2 char response to error query 16),
   // 1 char response to 10
   int cRet;
-  if ((cRet=read_available_characters(rguch, 2))!=2) {
+  if ((cRet=vrpn_read_available_characters(serial_fd, rguch, 2))!=2) {
     fprintf(stderr, 
 	    "\nvrpn_Tracker_Flock: received only %d of 2 chars for err code", 
 	    cRet);
@@ -264,7 +265,7 @@ double vrpn_Tracker_Flock::getMeasurementRate() {
   vrpn_SleepMsecs(500);
   
   int cRetF;
-   if ((cRetF=read_available_characters(response, 4))!=4) {
+   if ((cRetF=vrpn_read_available_characters(serial_fd, response, 4))!=4) {
      fprintf(stderr, 
 	     "\nvrpn_Tracker_Flock: received only %d of 4 chars as freq", 
 	     cRetF);
@@ -432,7 +433,7 @@ void vrpn_Tracker_Flock::reset()
 
    unsigned char response[14];
    int cRet;
-   if ((cRet=read_available_characters(response, 14))!=14) {
+   if ((cRet=vrpn_read_available_characters(serial_fd, response, 14))!=14) {
      fprintf(stderr, 
 	     "\nvrpn_Tracker_Flock: received only %d of 14 chars as status", 
 	     cRet);
@@ -524,7 +525,7 @@ void vrpn_Tracker_Flock::get_report(void)
 
    if (status == TRACKER_SYNCING) {
      // Try to get a character.  If none, just return.
-     if (read_available_characters(buffer, 1) != 1) {
+     if (vrpn_read_available_characters(serial_fd, buffer, 1) != 1) {
        return;
      }
      
@@ -554,7 +555,8 @@ void vrpn_Tracker_Flock::get_report(void)
    // makes sure we get a full reading often enough (ie, it is responsible
    // for doing the watchdog timing to make sure the tracker hasn't simply
    // stopped sending characters).
-   ret = read_available_characters(&buffer[bufcount], RECORD_SIZE-bufcount);
+   ret = vrpn_read_available_characters(serial_fd, &buffer[bufcount],
+		RECORD_SIZE-bufcount);
    if (ret == -1) {
      fprintf(stderr,"\nvrpn_Tracker_Flock: Error reading");
      status = TRACKER_FAIL;

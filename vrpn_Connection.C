@@ -77,7 +77,7 @@ int gethostname (char *, int);
 // string.  Since minor versions should interoperate, MAGIC is only
 // checked through the last period;  characters after that are ignored.
 
-char * vrpn_MAGIC = (char *) "vrpn: ver. 04.01";
+char * vrpn_MAGIC = (char *) "vrpn: ver. 04.02";
 const int MAGICLEN = 16;  // Must be a multiple of vrpn_ALIGN bytes!
 
 // Version history:
@@ -2109,6 +2109,25 @@ void	vrpn_Connection::init (void)
 	}
 
 	gettimeofday(&start_time, NULL);
+
+#ifdef WIN32
+
+  // Make sure sockets are set up
+  // TCH 2 Nov 98 after Phil Winston
+
+  WSADATA wsaData;
+  int status;
+
+  status = WSAStartup(MAKEWORD(1, 1), &wsaData);
+  if (status) {
+    fprintf(stderr, "vrpn_Connection::init():  "
+                    "Failed to set up sockets.\n");
+    fprintf(stderr, "WSAStartup failed with error code %d\n", status);
+    exit(0);
+  }
+
+#endif  // WIN32
+
 }
 
 vrpn_Connection::~vrpn_Connection (void) {
@@ -2126,6 +2145,16 @@ vrpn_Connection::~vrpn_Connection (void) {
       d_log_filters = next;
     }
   }
+
+#ifdef WIN32
+
+  if (WSACleanup() == SOCKET_ERROR)
+    fprintf(stderr, "~vrpn_Connection():  "
+                    "WSACleanup() failed with error code %d\n",
+            WSAGetLastError());
+
+#endif  // WIN32
+
 }
 
 int vrpn_Connection::open_log (void) {

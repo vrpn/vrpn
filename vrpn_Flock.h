@@ -14,8 +14,6 @@
 // only 13 receivers allowed in normal addressing mode
 #define MAX_SENSORS 13
 
-#ifndef _WIN32
-
 // This is a class which provides a server for an ascension 
 // Flock of Birds tracker.  The server will send out messages
 // at whatever rate the flock of bird's stream mode feeds them.
@@ -69,10 +67,5 @@ class vrpn_Tracker_Flock: public vrpn_Tracker_Serial {
   double getMeasurementRate();
 };
 
-#endif  // #ifndef _WIN32
-
 #endif
-
-
-
 

@@ -25,11 +25,18 @@
  * Update Count    : 36
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Dyna.C,v $
- * $Date: 1998/05/13 17:32:26 $
+ * $Date: 1998/11/05 22:45:45 $
  * $Author: taylorr $
- * $Revision: 1.5 $
+ * $Revision: 1.6 $
  * 
  * $Log: vrpn_Dyna.C,v $
+ * Revision 1.6  1998/11/05 22:45:45  taylorr
+ * This version strips out the serial-port code into vrpn_Serial.C.
+ *
+ * It also makes it so all the library files compile under NT.
+ *
+ * It also fixes an insidious initialization bug in the forwarder code.
+ *
  * Revision 1.5  1998/05/13 17:32:26  taylorr
  * This version doesn't print so many messages and has the sensor as
  * unit 0.
@@ -51,12 +58,18 @@
  * HISTORY
  */
 
-static char rcsid[] = "$Id: vrpn_Dyna.C,v 1.5 1998/05/13 17:32:26 taylorr Exp $";
+static char rcsid[] = "$Id: vrpn_Dyna.C,v 1.6 1998/11/05 22:45:45 taylorr Exp $";
 
-#include <termios.h> // for tcdrain
+#ifdef	_WIN32
+#include <io.h>
+#else
 #include <unistd.h>
+#endif
+#include <stdio.h>
 #include <string.h>
 #include "vrpn_Dyna.h"
+#include "vrpn_Serial.h"
+
 #define T_ERROR (-1)
 #define T_OK 	(0)
 
@@ -104,11 +117,11 @@ int vrpn_Tracker_Dyna::get_status()
     /* send request for status record   */
 
     write(serial_fd, "\021", 1);
-    tcdrain(serial_fd);
+    vrpn_drain_output_buffer(serial_fd);
     sleep(2);
 
     /* do non-blocking read of status record    */
-    bytesRead = read_available_characters(statusBuffer, 8);
+    bytesRead = vrpn_read_available_characters(serial_fd, statusBuffer, 8);
     // T_PDYN_STATUS_RECORD_LENGTH =8;
 
     if ( bytesRead == 8 )
@@ -198,7 +211,7 @@ void vrpn_Tracker_Dyna::reset() {
 void vrpn_Tracker_Dyna::get_report(void) {
   int ret;
   if (status == TRACKER_SYNCING) {
-    if ((ret=read_available_characters(buffer, 1)) !=  1 || 
+    if ((ret=vrpn_read_available_characters(serial_fd, buffer, 1)) !=  1 || 
 	(buffer[0] & llll_OOOO) != lOOO_OOOO) {
       return;
     }
@@ -207,7 +220,8 @@ void vrpn_Tracker_Dyna::get_report(void) {
     bufcount= ret;
   }
   if (status == TRACKER_PARTIAL) {
-    ret=read_available_characters(&(buffer[bufcount]), reportLength-bufcount);
+    ret=vrpn_read_available_characters(serial_fd, &(buffer[bufcount]),
+		reportLength-bufcount);
     if (ret < 0) {
       fprintf(stderr,"%s@%d: Error reading\n", __FILE__, __LINE__);
       status = TRACKER_FAIL;
@@ -288,8 +302,6 @@ int vrpn_Tracker_Dyna::valid_report() {
    decode_record - decodes a continuous binary encoded record
     	    	    	    for one station.
  
-
-    
     output:
     	decodedMatrix- represents the row_matrix to transform the receiver
 	               coordinates to tracker coordinates
@@ -303,7 +315,6 @@ int vrpn_Tracker_Dyna::decode_record()
 {
    int           i;
    int	         bufLength;
-   int           encodedReportLength;
 
    unsigned char exp;
    signed char   x_high,

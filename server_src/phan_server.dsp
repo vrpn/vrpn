@@ -26,7 +26,7 @@ CFG=phan_server - Win32 Debug
 # Begin Project
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
-CPP=xicl.exe
+CPP=cl.exe
 RSC=rc.exe
 
 !IF  "$(CFG)" == "phan_server - Win32 Release"
@@ -43,13 +43,13 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I ".." /I "../ghostlib" /I "../../quat" /I "../quat" /I "./quat" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c /Tp
+# ADD CPP /nologo /MT /W3 /GX /O2 /I ".." /I "../ghostlib" /I "../../quat" /I "../quat" /I "./quat" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c /Tp
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LINK32=xilink.exe
+LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib winmm.lib ghost.lib vrpn.lib sdi.lib quat.lib /nologo /subsystem:console /machine:I386 /nodefaultlib:"msvcrt.lib" /nodefaultlib:"LIBCMTD.lib" /libpath:"../ghostlib" /libpath:"..\..\sdi_pc\pc_win32" /libpath:"..\pc_win32\debug" /libpath:".\quat\debug"
 # SUBTRACT LINK32 /pdb:none
@@ -74,7 +74,7 @@ LINK32=xilink.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo /o"pc_win32/Debug/phan_server.bsc"
-LINK32=xilink.exe
+LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib winmm.lib vrpn.lib quat.lib ghost.lib /nologo /subsystem:console /pdb:none /debug /machine:I386 /out:"pc_win32/Debug/phan_server.exe" /libpath:"C:\Program Files\PHANToM\Ghost\lib" /libpath:"D:\Program Files\PHANToM\Ghost\lib" /libpath:"../../vrpn/pc_win32/debug" /libpath:"../../quat/pc_win32/debug" /libpath:"\\zeta\hudson\stm\src\hudson\quat\pc_win32\debug"
 

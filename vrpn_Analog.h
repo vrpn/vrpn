@@ -9,11 +9,18 @@
  * Update Count    : 26
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Analog.h,v $
- * $Date: 1998/05/06 18:00:37 $
- * $Author: ryang $
- * $Revision: 1.2 $
+ * $Date: 1998/11/05 22:45:42 $
+ * $Author: taylorr $
+ * $Revision: 1.3 $
  * 
  * $Log: vrpn_Analog.h,v $
+ * Revision 1.3  1998/11/05 22:45:42  taylorr
+ * This version strips out the serial-port code into vrpn_Serial.C.
+ *
+ * It also makes it so all the library files compile under NT.
+ *
+ * It also fixes an insidious initialization bug in the forwarder code.
+ *
  * Revision 1.2  1998/05/06 18:00:37  ryang
  * v0.1 of vrpn_sgibox
  *
@@ -73,7 +80,7 @@ protected:
   int serial_fd;
   char portname[1024];
   int baudrate;
-  char buffer[1024];
+  unsigned char buffer[1024];
   int bufcounter;
 
   int read_available_characters(char *buffer,

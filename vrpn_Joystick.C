@@ -25,11 +25,18 @@
  * Update Count    : 83
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Joystick.C,v $
- * $Date: 1998/04/06 21:43:52 $
- * $Author: ryang $
- * $Revision: 1.5 $
+ * $Date: 1998/11/05 22:45:51 $
+ * $Author: taylorr $
+ * $Revision: 1.6 $
  * 
  * $Log: vrpn_Joystick.C,v $
+ * Revision 1.6  1998/11/05 22:45:51  taylorr
+ * This version strips out the serial-port code into vrpn_Serial.C.
+ *
+ * It also makes it so all the library files compile under NT.
+ *
+ * It also fixes an insidious initialization bug in the forwarder code.
+ *
  * Revision 1.5  1998/04/06 21:43:52  ryang
  * report only one change at a time
  *
@@ -51,9 +58,10 @@
  * HISTORY
  */
 
-static char rcsid[] = "$Id: vrpn_Joystick.C,v 1.5 1998/04/06 21:43:52 ryang Exp $";
+static char rcsid[] = "$Id: vrpn_Joystick.C,v 1.6 1998/11/05 22:45:51 taylorr Exp $";
 
 #include "vrpn_Joystick.h"
+#include "vrpn_Serial.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -165,7 +173,7 @@ void vrpn_Joystick::reset() {
     }
     sleep(1);
     
-    bytesread= read_available_characters(buffer, 16);
+    bytesread= vrpn_read_available_characters(serial_fd, buffer, 16);
     if (bytesread != 16) {
       fprintf(stderr, "vrpn_Joystick::reset: got only %d char from \
 joystick, should be 16, trying again\n", bytesread);
@@ -185,20 +193,20 @@ joystick, should be 16, trying again\n", bytesread);
 void vrpn_Joystick::get_report() {
   int bytesread =0;
   if (status == ANALOG_SYNCING) { 
-    bytesread =read_available_characters(buffer, 1);
+    bytesread =vrpn_read_available_characters(serial_fd, buffer, 1);
     if (bytesread == 1 && (buffer[0] >> 7) == 0) {
       status = ANALOG_PARTIAL;
     }
   }
-  bytesread = read_available_characters(buffer+1, 1);
+  bytesread = vrpn_read_available_characters(serial_fd, buffer+1, 1);
   if (bytesread  ==0)  
 	return;
   parse(0);
   /*
-  bytesread = read_available_characters(buffer, 2);
+  bytesread = vrpn_read_available_characters(serial_fd, buffer, 2);
   while (bytesread ==2) {
     parse(0);
-    bytesread = read_available_characters(buffer, 2);
+    bytesread = vrpn_read_available_characters(serial_fd, buffer, 2);
   }*/
 
   status = ANALOG_REPORT_READY;

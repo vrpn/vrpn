@@ -1,7 +1,9 @@
 #include "vrpn_Text.h"
 #include <stdio.h>
 #include <string.h>
+#ifndef	_WIN32
 #include <netinet/in.h>
+#endif
 
 vrpn_Text::vrpn_Text(char *name, vrpn_Connection *c){
 	char* servicename;

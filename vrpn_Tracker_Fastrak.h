@@ -25,11 +25,18 @@
  * Update Count    : 45
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Tracker_Fastrak.h,v $
- * $Date: 1998/09/11 19:47:24 $
- * $Author: hudson $
- * $Revision: 1.8 $
+ * $Date: 1998/11/05 22:45:57 $
+ * $Author: taylorr $
+ * $Revision: 1.9 $
  * 
  * $Log: vrpn_Tracker_Fastrak.h,v $
+ * Revision 1.9  1998/11/05 22:45:57  taylorr
+ * This version strips out the serial-port code into vrpn_Serial.C.
+ *
+ * It also makes it so all the library files compile under NT.
+ *
+ * It also fixes an insidious initialization bug in the forwarder code.
+ *
  * Revision 1.8  1998/09/11 19:47:24  hudson
  * Version 4.02:  added filtering of log files to vrpn_Connection
  *
@@ -76,6 +83,7 @@
 #endif
 
 #include "vrpn_Tracker.h"
+#include "vrpn_Serial.h"
 
 #ifndef VRPN_CLIENT_ONLY
 //#ifndef _WIN32
@@ -383,7 +391,7 @@ private:
     // clear the input data buffer 
     unsigned char foo[128];
     //fprintf(stderr, "flush...");
-    while (read_available_characters(foo, 1) > 0) {
+    while (vrpn_read_available_characters(serial_fd, foo, 1) > 0) {
       //fprintf(stderr, "X");
     } ;
     //fprintf(stderr, "\n");

@@ -43,5 +43,9 @@ extern double htond( double d );
 extern double ntohd( double d );
 
 
+#ifdef	_WIN32	// No sleep() function ?!?!?!?!?
+#define	sleep(x)	vrpn_SleepMsecs(1000.0 * x)
+#endif
+
 #endif  // VRPN_SHARED_H
 

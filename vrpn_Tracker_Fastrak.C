@@ -25,11 +25,18 @@
  * Update Count    : 414
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Tracker_Fastrak.C,v $
- * $Date: 1998/06/05 19:30:47 $
+ * $Date: 1998/11/05 22:45:55 $
  * $Author: taylorr $
- * $Revision: 1.11 $
+ * $Revision: 1.12 $
  * 
  * $Log: vrpn_Tracker_Fastrak.C,v $
+ * Revision 1.12  1998/11/05 22:45:55  taylorr
+ * This version strips out the serial-port code into vrpn_Serial.C.
+ *
+ * It also makes it so all the library files compile under NT.
+ *
+ * It also fixes an insidious initialization bug in the forwarder code.
+ *
  * Revision 1.11  1998/06/05 19:30:47  taylorr
  * Slightly cleaner Fastrak driver.  It should work on SGIs as well as Linux.
  *
@@ -99,8 +106,8 @@
 #endif
 
 #include "vrpn_Tracker.h"
-
 #include "vrpn_Tracker_Fastrak.h"
+#include "vrpn_Serial.h"
 
 #ifndef VRPN_CLIENT_ONLY
 #if defined(sgi) || defined(linux)
@@ -244,7 +251,7 @@ void vrpn_Tracker_Fastrak::reset()
    // Make sure that the tracker has stopped sending characters
    sleep(2);
    unsigned char scrap[80];
-   if ( (ret = read_available_characters(scrap, 80)) != 0) {
+   if ( (ret = vrpn_read_available_characters(serial_fd, scrap, 80)) != 0) {
      fprintf(stderr,"  Fastrak warning: got >=%d characters after reset:\n",ret);
      for (i = 0; i < ret; i++) {
       	if (isprint(scrap[i])) {
@@ -268,7 +275,7 @@ void vrpn_Tracker_Fastrak::reset()
 
    // Read Status
    unsigned char statusmsg[56];
-   if ( (ret = read_available_characters(statusmsg, 55)) != 55) {
+   if ( (ret = vrpn_read_available_characters(serial_fd, statusmsg, 55)) != 55){
   	fprintf(stderr, "  Got %d of 55 characters for status\n",ret);
    }
    if ( (statusmsg[0]!='2') || (statusmsg[54]!=(char)(10)) ) {
@@ -362,8 +369,8 @@ void vrpn_Tracker_Fastrak::get_report(void) {
   //fprintf(stderr,"get report %p\t%s:%d\n",this,  __FILE__, __LINE__);
   if (status == TRACKER_SYNCING) {
     
-    if ((ret=read_available_characters(buffer, 1)) !=  1 || buffer[0]
-	!= '0') {
+    if ((ret=vrpn_read_available_characters(serial_fd, buffer, 1)) !=  1 ||
+	buffer[0] != '0') {
       return;
     }
 
@@ -381,7 +388,8 @@ void vrpn_Tracker_Fastrak::get_report(void) {
   if (status == TRACKER_PARTIAL) {
     if (reportLength < 0 || reportLength > 100) exit(-1);
     //fprintf(stderr, "reportLength = %d,bufC= %d\n", reportLength,bufcount);
-    ret=read_available_characters(&(buffer[bufcount]), reportLength-bufcount);
+    ret=vrpn_read_available_characters(serial_fd, &(buffer[bufcount]),
+	reportLength-bufcount);
     if (ret < 0) {
       fprintf(stderr,"%s@%d: Error reading\n", __FILE__, __LINE__);
       status = TRACKER_FAIL;
@@ -660,7 +668,7 @@ int vrpn_Tracker_Fastrak::get_units(int stationVector[T_F_MAX_NUM_STATIONS])
       write(serial_fd, (const unsigned char *) T_F_C_RETRIEVE_STATIONS, 
     	    	    	    	strlen(T_F_C_RETRIEVE_STATIONS));
       ms_sleep(500);
-      read_available_characters((unsigned char *) this_buffer, 
+      vrpn_read_available_characters(serial_fd, (unsigned char *) this_buffer, 
 			      T_F_STATIONS_RECORD_LENGTH);
     
       numTries++;
@@ -777,7 +785,7 @@ int vrpn_Tracker_Fastrak::filter()
 	  strlen(T_F_C_SET_POSITION_FILTER));
 
     /* any output here probably indicates an error message, so just quit */
-    if ((read_available_characters((unsigned char *) buffer, 
+    if ((vrpn_read_available_characters(serial_fd, (unsigned char *) buffer, 
 	    T_READ_BUFFER_SIZE) != 0) &&
      (buffer[T_F_RECORD_SUBTYPE] == T_F_ERROR_SUBTYPE) )
 	{
@@ -795,7 +803,7 @@ int vrpn_Tracker_Fastrak::filter()
     write(serial_fd, (unsigned char *) T_F_C_SET_ORIENTATION_FILTER, 
 				    strlen(T_F_C_SET_ORIENTATION_FILTER));
 
-    if((read_available_characters((unsigned char *) buffer, 
+    if((vrpn_read_available_characters(serial_fd, (unsigned char *) buffer, 
 		    T_READ_BUFFER_SIZE) != 0) &&
      (buffer[T_F_RECORD_SUBTYPE] == T_F_ERROR_SUBTYPE) )
 	{
@@ -846,9 +854,8 @@ int vrpn_Tracker_Fastrak::get_status()
     	    	    	    	   strlen(T_F_C_GET_STATUS));
     sleep(1);
     /* do non-blocking read of status record    */
-    bytesRead = read_available_characters((unsigned char *) statusBuffer,
-					T_F_STATUS_RECORD_LENGTH);
-
+    bytesRead = vrpn_read_available_characters(serial_fd,
+	(unsigned char *) statusBuffer, T_F_STATUS_RECORD_LENGTH);
     if ( bytesRead == T_F_STATUS_RECORD_LENGTH )
     {
       //printChar(statusBuffer, bytesRead); 
@@ -919,8 +926,8 @@ int vrpn_Tracker_Fastrak::poll_mode()	{
 
     	write(serial_fd, (unsigned char *) T_F_C_RETRIEVE_STATIONS, 
 	    	    	    	strlen(T_F_C_RETRIEVE_STATIONS));
-	read_available_characters((unsigned char *) statusBuffer,
-			       T_F_STATIONS_RECORD_LENGTH);
+	vrpn_read_available_characters(serial_fd,
+		(unsigned char *) statusBuffer, T_F_STATIONS_RECORD_LENGTH);
       }
 
       /* try to set in poll mode	*/
@@ -1581,8 +1588,8 @@ int vrpn_Tracker_Fastrak::get_output_list(int unitNum, char * curOutputList)
 
       //sleep(1);
       ms_sleep(50);
-      byteread = 
-       read_available_characters((unsigned char *)this_buffer, bufLength);
+      byteread = vrpn_read_available_characters(serial_fd,
+	(unsigned char *)this_buffer, bufLength);
       if ((byteread == bufLength) && 
       	 (this_buffer[T_F_RECORD_SUBTYPE] == T_F_OUTPUT_LIST_SUBTYPE))
 	 break;

@@ -11,8 +11,6 @@
 
 #include "vrpn_Tracker.h"
 
-#ifndef _WIN32
-
 class vrpn_Tracker_3Space: public vrpn_Tracker_Serial {
   
  public:
@@ -30,8 +28,5 @@ class vrpn_Tracker_3Space: public vrpn_Tracker_Serial {
   virtual void reset();
 
 };
-
-#endif  // #ifndef _WIN32
-
 
 #endif

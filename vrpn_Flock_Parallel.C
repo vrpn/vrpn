@@ -11,7 +11,7 @@
   Revised: Tue Mar 10 14:24:35 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Flock_Parallel.C,v $
   $Locker:  $
-  $Revision: 1.1 $
+  $Revision: 1.2 $
 \*****************************************************************************/
 
 // The structure of this code came from vrpn_3Space.[Ch]
@@ -54,6 +54,7 @@
 
 #include "vrpn_Tracker.h"
 #include "vrpn_Flock_Parallel.h"
+#include "vrpn_Serial.h"
 
 // output a status msg every status_msg_secs
 #define STATUS_MSG
@@ -484,6 +485,13 @@ void vrpn_Tracker_Flock_Parallel_Slave::mainloop()
 
 /*****************************************************************************\
   $Log: vrpn_Flock_Parallel.C,v $
+  Revision 1.2  1998/11/05 22:45:48  taylorr
+  This version strips out the serial-port code into vrpn_Serial.C.
+
+  It also makes it so all the library files compile under NT.
+
+  It also fixes an insidious initialization bug in the forwarder code.
+
   Revision 1.1  1998/03/10 19:35:45  weberh
   The original parallel flock structure was a pain, so I redid it from
   scratch. The result is a new vrpn_Tracker_Flock_Parallel class and

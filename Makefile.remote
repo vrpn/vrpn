@@ -165,7 +165,9 @@ ifeq ($(HW_OS),sgi_irix)
 endif
 LIB_FILES =  vrpn_Connection.C vrpn_Tracker.C vrpn_Button.C \
 	     vrpn_Sound.C vrpn_ForceDevice.C vrpn_Clock.C vrpn_Shared.C \
-	     vrpn_Ohmmeter.C vrpn_Analog.C vrpn_JoyFly.C $(ARCH_LIB_FILES)
+	     vrpn_Ohmmeter.C vrpn_Analog.C vrpn_JoyFly.C $(ARCH_LIB_FILES) \
+             vrpn_Serial.C vrpn_FileConnection.C vrpn_FileController.C \
+             vrpn_Forwarder.C vrpn_Text.C vrpn_ForwarderController.C
 
 LIB_OBJECTS = $(patsubst %,$(OBJECT_DIR)/%,$(LIB_FILES:.C=.o))
 
@@ -174,13 +176,16 @@ ifeq ($(HW_OS),sgi_irix)
 endif
 LIB_INCLUDES = vrpn_Connection.h vrpn_Tracker.h vrpn_Button.h \
 	       vrpn_Sound.h vrpn_ForceDevice.h vrpn_Clock.h vrpn_Shared.h \
-	       vrpn_Ohmmeter.h vrpn_Analog.h $(ARCH_LIB_INCLUDES)
+	       vrpn_Ohmmeter.h vrpn_Analog.h $(ARCH_LIB_INCLUDES) \
+               vrpn_Serial.h
 
 SLIB_FILES = vrpn_Connection.C vrpn_Tracker.C vrpn_3Space.C vrpn_Button.C \
 	     vrpn_Sound.C vrpn_ForceDevice.C vrpn_Clock.C vrpn_Shared.C \
 	     vrpn_Flock.C vrpn_Tracker_Fastrak.C vrpn_Dyna.C \
 	     vrpn_Flock_Parallel.C vrpn_Joystick.C vrpn_Analog.C \
-	     vrpn_JoyFly.C $(ARCH_LIB_FILES)
+	     vrpn_JoyFly.C $(ARCH_LIB_FILES) vrpn_Serial.C \
+             vrpn_FileConnection.C vrpn_FileController.C \
+             vrpn_Forwarder.C vrpn_Text.C vrpn_ForwarderController.C
 
 # Until we have tracker.h, we can't compile vrpn_Tracker_Ceiling
 

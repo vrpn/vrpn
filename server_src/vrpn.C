@@ -73,6 +73,21 @@ void sighandler( int signal )
     //return;
     exit(0);
 }
+#endif
+
+void closeDevices() {
+  int i;
+  for (i=0;i < num_buttons; i++) {
+    fprintf(stderr, "\nClosing button %d ...", i);
+    delete buttons[i];
+  }
+  for (i=0;i < num_trackers; i++) {
+    fprintf(stderr, "\nClosing tracker %d ...", i);
+    delete trackers[i];
+  }
+  fprintf(stderr, "\nAll devices closed. Exiting ...\n");
+  //exit(0);
+}
 
 int handle_dlc(void *userdata, vrpn_HANDLERPARAM p)
 {
@@ -89,21 +104,6 @@ void shutDown()
     exit(0);
     return;
 }
-
-void closeDevices() {
-  int i;
-  for (i=0;i < num_buttons; i++) {
-    fprintf(stderr, "\nClosing button %d ...", i);
-    delete buttons[i];
-  }
-  for (i=0;i < num_trackers; i++) {
-    fprintf(stderr, "\nClosing tracker %d ...", i);
-    delete trackers[i];
-  }
-  fprintf(stderr, "\nAll devices closed. Exiting ...\n");
-  //exit(0);
-}
-#endif
 
 main (int argc, char *argv[])
 {
@@ -269,6 +269,9 @@ main (int argc, char *argv[])
 	      else { continue; }	// Skip this line
 	    }
 
+#ifdef	_WIN32
+	    fprintf(stderr,"Joytracker not yet defined for NT\n");
+#else
 	    // Make sure there's room for a new tracker
 		if (num_trackers >= MAX_TRACKERS) {
 		  fprintf(stderr,"Too many trackers in config file");
@@ -288,6 +291,7 @@ main (int argc, char *argv[])
 		} else {
 		  num_trackers++;
 		}
+#endif
 	  } else  if (isit("vrpn_Joystick")) {
 	    float fhz;
 	    // Get the arguments (sound_name)
@@ -297,6 +301,10 @@ main (int argc, char *argv[])
 	      if (bail_on_error) { return -1; }
 	      else { continue; }	// Skip this line
 	    }
+
+#ifdef	_WIN32
+	    fprintf(stderr,"Joystick not yet defined for NT\n");
+#else
 
 	    // Make sure there's room for a new sound server
 	    if (num_analogs >= MAX_ANALOG) {
@@ -317,7 +325,7 @@ main (int argc, char *argv[])
 	    } else {
 		num_analogs++;
 	    }
-
+#endif
 	  } else if (isit("vrpn_Linux_Sound")) {
 	    // Get the arguments (sound_name)
 	    next();
@@ -651,9 +659,7 @@ main (int argc, char *argv[])
 		// on auxiliary connections
 		forwarderServer->mainloop();
 	}
+
+	return 0;
 }
-
-
-
-
 

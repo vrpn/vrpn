@@ -10,7 +10,7 @@
   Revised: Tue Mar 10 14:09:55 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Flock_Parallel.h,v $
   $Locker:  $
-  $Revision: 1.3 $
+  $Revision: 1.4 $
 \*****************************************************************************/
 #ifndef _VRPN_FLOCK_PARALLEL_H_
 #define _VRPN_FLOCK_PARALLEL_H_
@@ -25,8 +25,6 @@
 
 #include "vrpn_Tracker.h"
 #include "vrpn_Flock.h"
-
-#ifndef _WIN32
 
 // This is a class which provides a server for an ascension 
 // Flock of Birds tracker.  The server will send out messages
@@ -99,14 +97,18 @@ public:
 };
 
 
-#endif  // #ifndef _WIN32
-
-
 #endif // _VRPN_FLOCK_PARALLEL_H_
 
 
 /*****************************************************************************\
   $Log: vrpn_Flock_Parallel.h,v $
+  Revision 1.4  1998/11/05 22:45:49  taylorr
+  This version strips out the serial-port code into vrpn_Serial.C.
+
+  It also makes it so all the library files compile under NT.
+
+  It also fixes an insidious initialization bug in the forwarder code.
+
   Revision 1.3  1998/06/01 20:12:10  kumsu
   changed to ANSI to compile with aCC for hp
 

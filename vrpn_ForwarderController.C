@@ -1,7 +1,10 @@
 #include "vrpn_ForwarderController.h"
 
+#include <string.h>
 #include <sys/types.h>
+#ifndef	_WIN32
 #include <netinet/in.h>  // for ntohl()/htonl()
+#endif
 
 #include "vrpn_Forwarder.h"
 
@@ -130,7 +133,7 @@ void vrpn_Forwarder_Brain::decode_forward_message_type
 
 
 vrpn_Forwarder_Server::vrpn_Forwarder_Server (vrpn_Connection * c) :
-    vrpn_Forwarder_Brain (c) {
+    vrpn_Forwarder_Brain (c) , d_myForwarders(NULL) {
 
   if (!c) return;
 

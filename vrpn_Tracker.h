@@ -20,13 +20,6 @@
 
 #include "vrpn_Connection.h"
 
-// flush discards characters in buffer
-// drain blocks until they are written
-extern int vrpn_open_commport(char *portname, long baud);
-extern int vrpn_flush_input_buffer( int comm );
-extern int vrpn_flush_output_buffer( int comm );
-extern int vrpn_drain_output_buffer( int comm );
-
 // tracker status flags
 #define TRACKER_SYNCING		(2)
 #define TRACKER_REPORT_READY 	(1)
@@ -110,7 +103,6 @@ class vrpn_Tracker {
 };
 
 #ifndef VRPN_CLIENT_ONLY
-#ifndef _WIN32
 #define VRPN_TRACKER_BUF_SIZE 100
 
 class vrpn_Tracker_Serial : public vrpn_Tracker {
@@ -125,11 +117,9 @@ class vrpn_Tracker_Serial : public vrpn_Tracker {
    unsigned char buffer[VRPN_TRACKER_BUF_SIZE];// Characters read in from the tracker so far
    unsigned bufcount;		// How many characters in the buffer?
 
-   int read_available_characters(unsigned char *buffer, int count);
    virtual void get_report(void) = 0;
    virtual void reset(void) = 0;
 };
-#endif  // _WIN32
 #endif  // VRPN_CLIENT_ONLY
 
 

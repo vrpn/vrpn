@@ -25,11 +25,18 @@
  * Update Count    : 4
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Dyna.h,v $
- * $Date: 1998/02/19 21:00:45 $
- * $Author: ryang $
- * $Revision: 1.1 $
+ * $Date: 1998/11/05 22:45:46 $
+ * $Author: taylorr $
+ * $Revision: 1.2 $
  * 
  * $Log: vrpn_Dyna.h,v $
+ * Revision 1.2  1998/11/05 22:45:46  taylorr
+ * This version strips out the serial-port code into vrpn_Serial.C.
+ *
+ * It also makes it so all the library files compile under NT.
+ *
+ * It also fixes an insidious initialization bug in the forwarder code.
+ *
  * Revision 1.1  1998/02/19 21:00:45  ryang
  * drivers for DynaSight
  *
@@ -42,10 +49,10 @@
 #define INCLUDED_DYNA
 
 #include "vrpn_Tracker.h"
+#include "vrpn_Serial.h"
+
 // only 13 receivers allowed in normal addressing mode
 #define MAX_SENSORS 13
-
-#ifndef _WIN32
 
 // This is a class which provides a server for an ascension 
 // DynaSight.  The server will send out messages
@@ -73,7 +80,7 @@ private:
   void my_flush() {
     // clear the input data buffer 
     unsigned char foo[128];
-    while (read_available_characters(foo, 1) > 0) ;
+    while (vrpn_read_available_characters(serial_fd, foo, 1) > 0) ;
   }
   int valid_report();
   int decode_record();
@@ -87,8 +94,6 @@ private:
   int cResets;
   int cSensors;
 };
-
-#endif  // #ifndef _WIN32
 
 
 #endif

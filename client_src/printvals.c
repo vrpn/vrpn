@@ -135,12 +135,14 @@ void handle_cntl_c (int) {
   fprintf(stderr, "In control-c handler.\n");
 
   if (!invocations) {
+    printf("(First press -- setting replay rate to 2.0 -- 2 more to exit)\n");
     fc->set_replay_rate(2.0f);
     invocations++;
     signal(SIGINT, handle_cntl_c);
     return;
   }
   if (invocations == 1) {
+    printf("(Second press -- Starting replay over -- 1 more to exit)\n");
     fc->reset();
     invocations++;
     signal(SIGINT, handle_cntl_c);

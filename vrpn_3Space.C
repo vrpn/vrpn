@@ -20,8 +20,8 @@
 #endif
 
 #include "vrpn_Tracker.h"
-
 #include "vrpn_3Space.h"
+#include "vrpn_Serial.h"
 
 #define MAX_TIME_INTERVAL       (2000000) // max time between reports (usec)
 
@@ -88,7 +88,7 @@ void vrpn_Tracker_3Space::reset()
    // Make sure that the tracker has stopped sending characters
    sleep(2);
    unsigned char scrap[80];
-   if ( (ret = read_available_characters(scrap, 80)) != 0) {
+   if ( (ret = vrpn_read_available_characters(serial_fd, scrap, 80)) != 0) {
      fprintf(stderr,"  3Space warning: got >=%d characters after reset:\n",ret);
      for (i = 0; i < ret; i++) {
       	if (isprint(scrap[i])) {
@@ -112,7 +112,7 @@ void vrpn_Tracker_3Space::reset()
 
    // Read Status
    unsigned char statusmsg[56];
-   if ( (ret = read_available_characters(statusmsg, 55)) != 55) {
+   if ( (ret = vrpn_read_available_characters(serial_fd, statusmsg, 55)) != 55){
   	fprintf(stderr, "  Got %d of 55 characters for status\n",ret);
    }
    if ( (statusmsg[0]!='2') || (statusmsg[54]!=(char)(10)) ) {
@@ -171,7 +171,7 @@ void vrpn_Tracker_3Space::get_report(void)
    // one with the high bit set.
    if (status == TRACKER_SYNCING) {
       // Try to get a character.  If none, just return.
-      if (read_available_characters(buffer, 1) != 1) {
+      if (vrpn_read_available_characters(serial_fd, buffer, 1) != 1) {
       	return;
       }
 
@@ -195,7 +195,8 @@ void vrpn_Tracker_3Space::get_report(void)
    // makes sure we get a full reading often enough (ie, it is responsible
    // for doing the watchdog timing to make sure the tracker hasn't simply
    // stopped sending characters).
-   ret = read_available_characters(&buffer[bufcount], 20-bufcount);
+   ret = vrpn_read_available_characters(serial_fd, &buffer[bufcount],
+		20-bufcount);
    if (ret == -1) {
 	fprintf(stderr,"3Space: Error reading\n");
 	status = TRACKER_FAIL;

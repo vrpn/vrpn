@@ -39,7 +39,7 @@ CPP=cl.exe
 # PROP Intermediate_Dir "PC_WIN32/Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I ".." /I "ghostlib" /I "../quat" /I "server_src/quat" /I "../server_src/quat" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c /Tp
+# ADD CPP /nologo /MT /W3 /GX /O2 /I ".." /I "ghostlib" /I "../quat" /I "server_src/quat" /I "../server_src/quat" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c /Tp
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -60,7 +60,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "PC_WIN32/Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /Z7 /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MTd /W3 /GX /Z7 /Od /I "D:\Program Files\PHANToM\Ghost\lib" /I "C:\Program Files\PHANToM\Ghost\lib" /I "..\sdi" /I "..\quat" /I "C:\gregory\vrpn\server_src\quat" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /Fp"C:/temp/seeger/PC_WIN32/Debug/vrpn.pch" /YX /Fo"C:/temp/seeger/PC_WIN32/Debug/" /Fd"C:/temp/seeger/PC_WIN32/Debug/" /FD /c /Tp
+# ADD CPP /nologo /MTd /W3 /GX /Z7 /Od /I "D:\Program Files\PHANToM\Ghost\lib" /I "C:\Program Files\PHANToM\Ghost\lib" /I "..\sdi" /I "..\quat" /I "C:\gregory\vrpn\server_src\quat" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /Fp"C:/temp/seeger/PC_WIN32/Debug/vrpn.pch" /YX /Fo"C:/temp/seeger/PC_WIN32/Debug/" /Fd"C:/temp/seeger/PC_WIN32/Debug/" /FD /TP /c
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -81,6 +81,14 @@ SOURCE=.\orpx.C
 # Begin Source File
 
 SOURCE=.\orpx.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_3Space.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_3Space.h
 # End Source File
 # Begin Source File
 
@@ -108,6 +116,14 @@ SOURCE=.\vrpn_Connection.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_Dyna.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Dyna.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_FileConnection.C
 # End Source File
 # Begin Source File
@@ -124,6 +140,22 @@ SOURCE=.\vrpn_FileController.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_Flock.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Flock.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Flock_Parallel.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Flock_Parallel.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_ForceDevice.C
 # End Source File
 # Begin Source File
@@ -132,11 +164,35 @@ SOURCE=.\vrpn_ForceDevice.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_Forwarder.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Forwarder.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_ForwarderController.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_ForwarderController.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_Ohmmeter.C
 # End Source File
 # Begin Source File
 
 SOURCE=.\vrpn_Ohmmeter.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Serial.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Serial.h
 # End Source File
 # Begin Source File
 
@@ -156,11 +212,27 @@ SOURCE=.\vrpn_Sound.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_Text.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Text.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_Tracker.C
 # End Source File
 # Begin Source File
 
 SOURCE=.\vrpn_Tracker.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Tracker_Fastrak.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Tracker_Fastrak.h
 # End Source File
 # End Target
 # End Project
