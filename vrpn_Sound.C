@@ -5,8 +5,7 @@
 
 
 //vrpn_Sound constructor.
-vrpn_Sound::vrpn_Sound(const char * name, vrpn_Connection * c)
-{
+vrpn_Sound::vrpn_Sound(const char * name, vrpn_Connection * c) {
 	char * servicename;
   
 	servicename = vrpn_copy_service_name(name);
@@ -22,25 +21,36 @@ vrpn_Sound::vrpn_Sound(const char * name, vrpn_Connection * c)
 	my_id = connection->register_sender(servicename);
 
 	//Register the types
-	load_sound = connection->register_message_type("Sound Load");
+	load_sound_local = connection->register_message_type("Sound Load Local");
+	load_sound_remote = connection->register_message_type("Sound Load Remote");
 	unload_sound = connection->register_message_type("Sound Unload");
 	play_sound = connection->register_message_type("Sound Play");
 	stop_sound = connection->register_message_type("Sound Stop");
 	change_sound_status = connection->register_message_type("Sound Status");
-	change_listener_status = connection->register_message_type("Listener");
-	set_listener_quat = connection->register_message_type("Tracker Pos/Quat");
-	init_model = connection->register_message_type("Init Sound Model");
 
-	// Set the current time to zero, just to have something there
-	timestamp.tv_sec = 0;
-	timestamp.tv_usec = 0;
+	set_listener_pose = connection->register_message_type("Listener Pose");
+	set_listener_velocity = connection->register_message_type("Listener Velocity");
 
-	/*Values used for determining whether to grow the array of sound definitions or not*/
-	//Defs_MaxNum = vrpn_Sound_START;
-	//Defs_CurNum = 0;
+	set_sound_pose = connection->register_message_type("Sound Pose");
+	set_sound_velocity = connection->register_message_type("Sound Velocity");
+	set_sound_distanceinfo = connection->register_message_type("Sound DistInfo");
+	set_sound_coneinfo = connection->register_message_type("Sound ConeInfo");
 
-	/*The array of sound definitions needs to be initialized with some starting space*/
-	//soundDefs = new vrpn_SoundDef[Defs_MaxNum];
+  set_sound_doplerfactor = connection->register_message_type("Sound DopFac");
+	set_sound_eqvalue = connection->register_message_type("Sound EqVal");
+	set_sound_pitch = connection->register_message_type("Sound Pitch");
+  set_sound_volume = connection->register_message_type("Sound Volume");
+
+	load_model_local = connection->register_message_type("Load Model Local");
+	load_model_remote = connection->register_message_type("Load Model Remote");
+	load_polyquad = connection->register_message_type("Load Poly Quad");
+	load_polytri = connection->register_message_type("Load Poly Tri");
+	load_material = connection->register_message_type("Load Material");
+	set_polyquad_vertices = connection->register_message_type("Quad Vertices");
+	set_polytri_vertices = connection->register_message_type("Tri Vertices");
+	set_poly_openingfactor = connection->register_message_type("Poly OF");
+	set_poly_material = connection->register_message_type("Poly Material");
+	
 
 	if (servicename)
        delete [] servicename;
@@ -50,33 +60,91 @@ vrpn_Sound::~vrpn_Sound()
 {
 }
 
-//Used to send the filename to load and the index to be used to refer 
-//to the sound by the client from now on
-vrpn_int32 vrpn_Sound::encodeSound(const char *filename, const vrpn_SoundID id, char **buf)
-{
-	vrpn_int32 len = sizeof(vrpn_SoundID) + strlen(filename) + 1;
+vrpn_int32 vrpn_Sound::encodeSound_local(const char *filename, const vrpn_SoundID id, const vrpn_SoundDef sound, char **buf) {
+	vrpn_int32 len = sizeof(vrpn_SoundID) + strlen(filename) + sizeof(vrpn_SoundDef) +1;
 	vrpn_int32 ret = len;
 	char *mptr;
+  int i;
 
-	*buf = new char[strlen(filename) + sizeof(vrpn_SoundID) + 1];
+	*buf = new char[len];
 
 	mptr = *buf;
 	vrpn_buffer(&mptr, &len, id);
+
+  for(i = 0; i < 3; i++)
+		vrpn_buffer(&mptr, &len, sound.pose.position[i]);
+
+	for(i = 0; i < 4; i++)
+		vrpn_buffer(&mptr, &len, sound.pose.orientation[i]);
+
+	for(i = 0; i < 4; i++)
+		vrpn_buffer(&mptr, &len, sound.velocity[i]);
+	
+	vrpn_buffer(&mptr, &len, sound.volume);
+
+	vrpn_buffer(&mptr, &len, sound.max_back_dist);
+	vrpn_buffer(&mptr, &len, sound.min_back_dist);
+	vrpn_buffer(&mptr, &len, sound.max_front_dist);
+	vrpn_buffer(&mptr, &len, sound.min_front_dist);
+
+	vrpn_buffer(&mptr, &len, sound.cone_inner_angle);
+	vrpn_buffer(&mptr, &len, sound.cone_outer_angle);
+	vrpn_buffer(&mptr, &len, sound.cone_gain);
+	vrpn_buffer(&mptr, &len, sound.dopler_scale);
+	vrpn_buffer(&mptr, &len, sound.equalization_val);
+	vrpn_buffer(&mptr, &len, sound.pitch);
+
 	vrpn_buffer(&mptr, &len, filename, strlen(filename)+1);
 
 	return ret;
 }
 
 //Decodes the file and Client Index number
-vrpn_int32 vrpn_Sound::decodeSound(const char *buf, char **filename, vrpn_SoundID *id, const int payload)
+vrpn_int32 vrpn_Sound::decodeSound_local(const char *buf, char **filename, vrpn_SoundID *id, vrpn_SoundDef * sound, const int payload)
 {
 	const char *mptr = buf;
+  int i;
 
-	*filename = new char[payload - sizeof(vrpn_SoundID)];
+	*filename = new char[payload - sizeof(vrpn_SoundID)- sizeof(vrpn_SoundDef)];
 	
 	vrpn_unbuffer(&mptr, id);
-	vrpn_unbuffer(&mptr, *filename, payload - sizeof(vrpn_SoundID));
 	
+	for(i = 0; i < 3; i++)
+		vrpn_unbuffer(&mptr, &(sound->pose.position[i]));
+
+	for(i = 0; i < 4; i++)
+		vrpn_unbuffer(&mptr, &(sound->pose.orientation[i]));
+
+	for(i = 0; i < 4; i++)
+		vrpn_unbuffer(&mptr, &(sound->velocity[i]));
+
+	vrpn_unbuffer(&mptr, &(sound->volume));
+
+	vrpn_unbuffer(&mptr, &(sound->max_back_dist));
+	vrpn_unbuffer(&mptr, &(sound->min_back_dist));
+	vrpn_unbuffer(&mptr, &(sound->max_front_dist));
+	vrpn_unbuffer(&mptr, &(sound->min_front_dist));
+
+	vrpn_unbuffer(&mptr, &(sound->cone_inner_angle));
+	vrpn_unbuffer(&mptr, &(sound->cone_outer_angle));
+	vrpn_unbuffer(&mptr, &(sound->cone_gain));
+	vrpn_unbuffer(&mptr, &(sound->dopler_scale));
+	vrpn_unbuffer(&mptr, &(sound->equalization_val));
+	vrpn_unbuffer(&mptr, &(sound->pitch));
+
+	vrpn_unbuffer(&mptr, *filename, payload - sizeof(vrpn_SoundID)- sizeof(vrpn_SoundDef));
+	
+	return 0;
+}
+
+// not supported
+vrpn_int32 vrpn_Sound::encodeSound_remote(const char *filename, const vrpn_SoundID id, char **buf)
+{
+	return 0;
+}
+// not supported yet
+vrpn_int32 vrpn_Sound::decodeSound_remote(const char *buf, char **filename, vrpn_SoundID *id, const int payload)
+{
 	return 0;
 }
 
@@ -129,8 +197,14 @@ vrpn_int32 vrpn_Sound::encodeSoundDef(const vrpn_SoundDef sound, const vrpn_Soun
 	vrpn_buffer(&mptr, &len, sound.max_front_dist);
 	vrpn_buffer(&mptr, &len, sound.min_front_dist);
 
+	vrpn_buffer(&mptr, &len, sound.cone_inner_angle);
+	vrpn_buffer(&mptr, &len, sound.cone_outer_angle);
+	vrpn_buffer(&mptr, &len, sound.cone_gain);
+	vrpn_buffer(&mptr, &len, sound.dopler_scale);
+	vrpn_buffer(&mptr, &len, sound.equalization_val);
+	vrpn_buffer(&mptr, &len, sound.pitch);
+
 	return ret;
-	
 }
 
 vrpn_int32 vrpn_Sound::decodeSoundDef(const char* buf, vrpn_SoundDef *sound, vrpn_SoundID *id, vrpn_int32 *repeat)
@@ -157,11 +231,18 @@ vrpn_int32 vrpn_Sound::decodeSoundDef(const char* buf, vrpn_SoundDef *sound, vrp
 	vrpn_unbuffer(&mptr, &(sound->max_front_dist));
 	vrpn_unbuffer(&mptr, &(sound->min_front_dist));
 
+	vrpn_unbuffer(&mptr, &(sound->cone_inner_angle));
+	vrpn_unbuffer(&mptr, &(sound->cone_outer_angle));
+	vrpn_unbuffer(&mptr, &(sound->cone_gain));
+	vrpn_unbuffer(&mptr, &(sound->dopler_scale));
+	vrpn_unbuffer(&mptr, &(sound->equalization_val));
+	vrpn_unbuffer(&mptr, &(sound->pitch));
+
 	return 0;
 }
 
 //Sends information about the listener. IE  position, orientation and velocity
-vrpn_int32 vrpn_Sound::encodeListener(const vrpn_ListenerDef Listener, char* buf)
+vrpn_int32 vrpn_Sound::encodeListenerPose(const vrpn_PoseDef pose, char* buf)
 {
 	char *mptr = buf;
 	vrpn_int32 len = sizeof(vrpn_ListenerDef);
@@ -169,52 +250,512 @@ vrpn_int32 vrpn_Sound::encodeListener(const vrpn_ListenerDef Listener, char* buf
 	int i;
 
 	for(i = 0; i < 3; i++)
-		vrpn_buffer(&mptr, &len, Listener.pose.position[i]);
+		vrpn_buffer(&mptr, &len, pose.position[i]);
 
 	for(i = 0; i < 4; i++)
-		vrpn_buffer(&mptr, &len, Listener.pose.orientation[i]);
+		vrpn_buffer(&mptr, &len, pose.orientation[i]);
 
-	for(i = 0; i < 4; i++)
-		vrpn_buffer(&mptr, &len, Listener.velocity[i]);
 	return ret;
 }
 
-vrpn_int32 vrpn_Sound::decodeListener(const char* buf, vrpn_ListenerDef *Listener)
+vrpn_int32 vrpn_Sound::decodeListenerPose(const char* buf, vrpn_PoseDef *pose)
 {
 	const char *mptr = buf;
 	int i;
 
 	for(i = 0; i < 3; i++)
-		vrpn_unbuffer(&mptr, &(Listener->pose.position[i]));
+		vrpn_unbuffer(&mptr, &pose->position[i]);
 
 	for(i = 0; i < 4; i++)
-		vrpn_unbuffer(&mptr, &(Listener->pose.orientation[i]));
-
-	for(i = 0; i < 4; i++)
-		vrpn_unbuffer(&mptr, &(Listener->velocity[i]));
+		vrpn_unbuffer(&mptr, &pose->orientation[i]);
 
 	return 0;
 }
 
-vrpn_int32 vrpn_Sound::encodeModelDef(const vrpn_ModelDef model, char* buf) {
-	char *mptr = buf;
-	vrpn_int32 len = sizeof(vrpn_ModelDef);
+vrpn_int32 vrpn_Sound::encodeSoundPlay(const vrpn_SoundID id, 
+									   const vrpn_int32 repeat, 
+									   char* buf) {
+    char *mptr = buf;
+	vrpn_int32 len = sizeof(vrpn_SoundID) + sizeof(vrpn_int32);
 	vrpn_int32 ret = len;
-	int i;
 
-	for(i = 0; i < 15; i++)
-		vrpn_buffer(&mptr, &len, model.eye_from_sensor_matrix[i]);
+	vrpn_buffer(&mptr, &len, repeat);
+	vrpn_buffer(&mptr, &len, id);
 	return ret;
 }
 
-vrpn_int32 vrpn_Sound::decodeModelDef(const char* buf, vrpn_ModelDef *model) {
+vrpn_int32 vrpn_Sound::decodeSoundPlay(const char* buf, vrpn_SoundID *id, vrpn_int32 *repeat) {
+	const char *mptr = buf;
+	
+	vrpn_unbuffer(&mptr, repeat);
+	vrpn_unbuffer(&mptr, id);
+	return 0;
+	
+}
+
+vrpn_int32 vrpn_Sound::encodeListenerVelocity(const vrpn_float64 *velocity, char* buf) {
+	char *mptr = buf;
+	vrpn_int32 len = sizeof(vrpn_float64)*4;
+	vrpn_int32 ret = len;
+	int i;
+
+	for (i=0;i<4;i++)
+	  vrpn_buffer(&mptr, &len, velocity[i]);
+	
+	return ret;
+}
+
+vrpn_int32 vrpn_Sound::decodeListenerVelocity(const char* buf, vrpn_float64 *velocity) {
+	const char *mptr = buf;
+	
+	for (int i=0;i<4;i++)
+	  vrpn_unbuffer(&mptr, &velocity[i]);
+	
+	return 0;
+}
+
+vrpn_int32 vrpn_Sound::encodeSoundPose(const vrpn_PoseDef pose, const vrpn_SoundID id, char* buf) {
+	char *mptr = buf;
+	vrpn_int32 len = sizeof(vrpn_SoundID) + sizeof(vrpn_PoseDef);
+	vrpn_int32 ret = len;
+	int i;
+
+	vrpn_buffer(&mptr, &len, id);
+	
+	for (i=0;i<4;i++)
+	  vrpn_buffer(&mptr, &len, pose.orientation[i]);
+	
+	for (i=0;i<3;i++)
+	  vrpn_buffer(&mptr, &len, pose.position[i]);
+
+	return ret;
+}
+
+vrpn_int32 vrpn_Sound::decodeSoundPose(const char* buf, vrpn_PoseDef *pose, vrpn_SoundID *id) {
 	const char *mptr = buf;
 	int i;
 
-	for(i = 0; i < 15; i++)
-		vrpn_unbuffer(&mptr, &(model->eye_from_sensor_matrix[i]));
+	vrpn_unbuffer(&mptr, id);
+	
+	for (i=0;i<4;i++)
+	  vrpn_unbuffer(&mptr, &pose->orientation[i]);
+	
+	for (i=0;i<3;i++)
+	  vrpn_unbuffer(&mptr, &pose->position[i]);
+
+	return 0;
+}
+
+vrpn_int32 vrpn_Sound::encodeSoundVelocity(const vrpn_float64 *velocity, const vrpn_SoundID id, char* buf) {
+	char *mptr = buf;
+	vrpn_int32 len = sizeof(vrpn_SoundID) + sizeof(vrpn_float64)*4;
+	vrpn_int32 ret = len;
+	int i;
+
+	vrpn_buffer(&mptr, &len, id);
+	
+	for (i=0;i<4;i++)
+	  vrpn_buffer(&mptr, &len, velocity[i]);
+	
+	return ret;
+}
+
+vrpn_int32 vrpn_Sound::decodeSoundVelocity(const char* buf, vrpn_float64 *velocity, vrpn_SoundID *id) {
+	const char *mptr = buf;
+	int i;
+
+
+	vrpn_unbuffer(&mptr, id);
+	
+  for (i=0;i<4;i++) 
+	  vrpn_unbuffer(&mptr, &velocity[i]);
+
+
 	
 	return 0;
+}
+
+vrpn_int32 vrpn_Sound::encodeSoundDistInfo(const  vrpn_float64 min_back, 
+ 	                                         const  vrpn_float64 max_back, 
+ 							                             const  vrpn_float64 min_front, 
+							                             const  vrpn_float64 max_front, 
+										                       const  vrpn_SoundID id, 
+										                       char * buf) {
+	char *mptr = buf;
+	vrpn_int32 len = sizeof(vrpn_SoundID) + sizeof(vrpn_float64)*4;
+	vrpn_int32 ret = len;
+
+	vrpn_buffer(&mptr, &len, id);
+	
+	vrpn_buffer(&mptr, &len, min_back);
+	vrpn_buffer(&mptr, &len, max_back);
+	vrpn_buffer(&mptr, &len, min_front);
+	vrpn_buffer(&mptr, &len, max_front);
+
+	return ret;
+}
+vrpn_int32 vrpn_Sound::decodeSoundDistInfo(const char* buf, vrpn_float64 * min_back,
+	                                                          vrpn_float64 * max_back,
+												                                    vrpn_float64 * min_front,
+												                                    vrpn_float64 * max_front, 
+                                                            vrpn_SoundID * id) {
+	const char *mptr = buf;
+	vrpn_unbuffer(&mptr, id);
+	
+	vrpn_unbuffer(&mptr, min_back);
+	vrpn_unbuffer(&mptr, max_back);
+	vrpn_unbuffer(&mptr, min_front);
+	vrpn_unbuffer(&mptr, max_front);
+
+	return 0;
+}
+
+vrpn_int32 vrpn_Sound::encodeSoundConeInfo(const  vrpn_float64 cone_inner_angle,
+	                                         const  vrpn_float64 cone_outer_angle,
+							                             const  vrpn_float64 cone_gain, 
+							                             const  vrpn_SoundID id, 
+										                       char * buf) {
+	char *mptr = buf;
+	vrpn_int32 len = sizeof(vrpn_SoundID) + sizeof(vrpn_float64)*3;
+	vrpn_int32 ret = len;
+
+	vrpn_buffer(&mptr, &len, id);
+	
+	vrpn_buffer(&mptr, &len, cone_inner_angle);
+	vrpn_buffer(&mptr, &len, cone_outer_angle);
+	vrpn_buffer(&mptr, &len, cone_gain);
+	
+	return ret;
+}
+
+vrpn_int32 vrpn_Sound::decodeSoundConeInfo(const char   * buf, 
+                                           vrpn_float64 * cone_inner_angle,
+	                                         vrpn_float64 * cone_outer_angle,
+												                   vrpn_float64 * cone_gain, 
+                                           vrpn_SoundID * id) {
+	const char *mptr = buf;
+	
+	vrpn_unbuffer(&mptr, id);
+	
+	vrpn_unbuffer(&mptr, cone_inner_angle);
+	vrpn_unbuffer(&mptr, cone_outer_angle);
+	vrpn_unbuffer(&mptr, cone_gain);
+	
+	return 0;
+}
+
+
+
+vrpn_int32 vrpn_Sound::encodeSoundDoplerScale(const vrpn_float64 doplerfactor, 
+                                              const vrpn_SoundID id, 
+                                              char             * buf) {
+	char *mptr = buf;
+	vrpn_int32 len = sizeof(vrpn_SoundID) + sizeof(vrpn_float64);
+	vrpn_int32 ret = len;
+
+	vrpn_buffer(&mptr, &len, id);
+	
+	vrpn_buffer(&mptr, &len, doplerfactor);
+	
+	return ret;
+}
+
+vrpn_int32 vrpn_Sound::decodeSoundDoplerScale(const char   * buf, 
+                                              vrpn_float64 * doplerfactor, 
+                                              vrpn_SoundID * id) {
+	const char *mptr = buf;
+
+  vrpn_unbuffer(&mptr, id);
+	vrpn_unbuffer(&mptr, doplerfactor);
+	
+	return 0;
+}
+
+vrpn_int32 vrpn_Sound::encodeSoundEqFactor(const vrpn_float64 eqfactor, 
+                                           const vrpn_SoundID id, 
+                                           char             * buf) {
+	char *mptr = buf;
+	vrpn_int32 len = sizeof(vrpn_SoundID) + sizeof(vrpn_float64);
+	vrpn_int32 ret = len;
+
+	vrpn_buffer(&mptr, &len, id);
+	
+	vrpn_buffer(&mptr, &len, eqfactor);
+	
+	return ret;
+}
+
+vrpn_int32 vrpn_Sound::decodeSoundEqFactor(const char* buf, vrpn_float64 *eqfactor, vrpn_SoundID *id) {
+	const char *mptr = buf;
+	
+	vrpn_unbuffer(&mptr, id);
+	
+	vrpn_unbuffer(&mptr, eqfactor);
+	
+	return 0;
+
+}
+
+vrpn_int32 vrpn_Sound::encodeSoundPitch(const vrpn_float64 pitch, const vrpn_SoundID id, char* buf) {
+	char *mptr = buf;
+	vrpn_int32 len = sizeof(vrpn_SoundID) + sizeof(vrpn_float64);
+	vrpn_int32 ret = len;
+
+	vrpn_buffer(&mptr, &len, id);
+	
+	vrpn_buffer(&mptr, &len, pitch);
+	
+	return ret;
+}
+
+vrpn_int32 vrpn_Sound::decodeSoundPitch(const char* buf, vrpn_float64 *pitch, vrpn_SoundID *id) {
+	const char *mptr = buf;
+	
+	vrpn_unbuffer(&mptr, id);
+	
+	vrpn_unbuffer(&mptr, pitch);
+	
+	return 0;
+}
+
+vrpn_int32 vrpn_Sound::encodeSoundVolume(const vrpn_float64 volume, const vrpn_SoundID id, char* buf) {
+	char *mptr = buf;
+	vrpn_int32 len = sizeof(vrpn_SoundID) + sizeof(vrpn_float64);
+	vrpn_int32 ret = len;
+
+	vrpn_buffer(&mptr, &len, id);
+	
+	vrpn_buffer(&mptr, &len, volume);
+	
+	return ret;
+}
+
+vrpn_int32 vrpn_Sound::decodeSoundVolume(const char   * buf, 
+										                     vrpn_float64 * volume, 
+										                     vrpn_SoundID * id) {
+	const char *mptr = buf;
+
+	vrpn_unbuffer(&mptr, id);
+	vrpn_unbuffer(&mptr, volume);
+	
+	return 0;
+}
+
+vrpn_int32 vrpn_Sound::encodeLoadModel_local(const char *filename, char **buf) {
+	vrpn_int32 len = sizeof(vrpn_SoundID) + strlen(filename) + 1;
+	vrpn_int32 ret = len;
+	char *mptr;
+
+	*buf = new char[strlen(filename) + sizeof(vrpn_SoundID) + 1];
+
+	mptr = *buf;
+	vrpn_buffer(&mptr, &len, filename, strlen(filename)+1);
+
+	return ret;
+}
+
+vrpn_int32 vrpn_Sound::decodeLoadModel_local(const char *buf, char **filename, const int payload) {
+	const char *mptr = buf;
+
+	*filename = new char[payload - sizeof(vrpn_SoundID)];
+	
+	vrpn_unbuffer(&mptr, *filename, payload - sizeof(vrpn_SoundID));
+	
+	return 0;
+}
+
+// Remote stuff not supported yet!
+vrpn_int32 vrpn_Sound::encodeLoadModel_remote(const char *filename, char **buf) {return 0;}
+vrpn_int32 vrpn_Sound::decodeLoadModel_remote(const char *buf, char **filename, const int payload) {return 0;}
+   
+vrpn_int32 vrpn_Sound::encodeLoadPolyQuad(const vrpn_QuadDef quad, char* buf) {
+	char *mptr = buf;
+	vrpn_int32 len = sizeof(vrpn_QuadDef);
+	vrpn_int32 ret = len;
+	int i;
+
+	vrpn_buffer(&mptr, &len, quad.subQuad);
+	vrpn_buffer(&mptr, &len, quad.openingFactor);
+	vrpn_buffer(&mptr, &len, quad.tag);
+	for (i=0;i<4;i++)
+		for (int j(0); j<3;j++) 
+			vrpn_buffer(&mptr, &len, quad.vertices[i][j]);
+
+	vrpn_buffer(&mptr, &len, quad.material_name, MAX_MATERIAL_NAME_LENGTH);
+	
+	return ret;
+}
+
+vrpn_int32 vrpn_Sound::decodeLoadPolyQuad(const char* buf, vrpn_QuadDef * quad) {
+	const char *mptr = buf;
+	int i;
+
+	vrpn_unbuffer(&mptr, &quad->subQuad);
+	vrpn_unbuffer(&mptr, &quad->openingFactor);
+	vrpn_unbuffer(&mptr, &quad->tag);
+	for (i=0;i<4;i++)
+		for (int j(0); j<3;j++) 
+			vrpn_unbuffer(&mptr, &quad->vertices[i][j]);
+	vrpn_unbuffer(&mptr, quad->material_name, MAX_MATERIAL_NAME_LENGTH);
+	
+	return 0;
+}
+
+vrpn_int32 vrpn_Sound::encodeLoadPolyTri(const vrpn_TriDef tri, char* buf) {
+	char *mptr = buf;
+	vrpn_int32 len = sizeof(vrpn_int32) + sizeof(vrpn_TriDef);
+	vrpn_int32 ret = len;
+	int i;
+
+	vrpn_buffer(&mptr, &len, tri.subTri);
+	vrpn_buffer(&mptr, &len, tri.openingFactor);
+	vrpn_buffer(&mptr, &len, tri.tag);
+	for (i=0;i<3;i++)
+		for (int j(0); j<3;j++) 
+			vrpn_buffer(&mptr, &len, tri.vertices[i][j]);
+	vrpn_buffer(&mptr, &len, tri.material_name, MAX_MATERIAL_NAME_LENGTH);
+	
+	return ret;
+}
+
+vrpn_int32 vrpn_Sound::decodeLoadPolyTri(const char* buf, vrpn_TriDef * tri) {
+	const char *mptr = buf;
+	int i;
+
+	vrpn_unbuffer(&mptr, &tri->subTri);
+	vrpn_unbuffer(&mptr, &tri->openingFactor);
+	vrpn_unbuffer(&mptr, &tri->tag);
+	for (i=0;i<3;i++)
+		for (int j(0); j<3;j++) 
+			vrpn_unbuffer(&mptr, &tri->vertices[i][j]);
+	vrpn_unbuffer(&mptr, tri->material_name, MAX_MATERIAL_NAME_LENGTH);
+	
+	return 0;
+}
+
+vrpn_int32 vrpn_Sound::encodeLoadMaterial(const vrpn_int32 id, const vrpn_MaterialDef material, char* buf) {
+	char *mptr = buf;
+	vrpn_int32 len = sizeof(vrpn_int32) + sizeof(vrpn_MaterialDef);
+	vrpn_int32 ret = len;
+	
+	vrpn_buffer(&mptr, &len, id);
+	
+	vrpn_buffer(&mptr, &len, material.material_name, MAX_MATERIAL_NAME_LENGTH);
+	vrpn_buffer(&mptr, &len, material.transmittance_gain);
+	vrpn_buffer(&mptr, &len, material.transmittance_highfreq);
+	vrpn_buffer(&mptr, &len, material.reflectance_gain);
+	vrpn_buffer(&mptr, &len, material.reflectance_highfreq);
+		
+	return ret;
+}
+
+vrpn_int32 vrpn_Sound::decodeLoadMaterial(const char* buf, vrpn_MaterialDef * material, vrpn_int32 *id) {
+	const char *mptr = buf;
+
+	vrpn_unbuffer(&mptr, id);
+	
+	vrpn_unbuffer(&mptr, material->material_name, MAX_MATERIAL_NAME_LENGTH);
+	vrpn_unbuffer(&mptr, &material->transmittance_gain);
+	vrpn_unbuffer(&mptr, &material->transmittance_highfreq);
+	vrpn_unbuffer(&mptr, &material->reflectance_gain);
+	vrpn_unbuffer(&mptr, &material->reflectance_highfreq);
+		
+	return 0;
+}
+
+vrpn_int32 vrpn_Sound::encodeSetQuadVert(const vrpn_float64 vertices[4][3], const vrpn_int32 tag, char* buf) {
+	char *mptr = buf;
+	vrpn_int32 len = sizeof(vrpn_int32) + sizeof(vrpn_float64)*12;
+	vrpn_int32 ret = len;
+	
+	vrpn_buffer(&mptr, &len, tag);
+	
+	for (int i=0;i<4;i++)
+		for (int j(0); j<3;j++) 
+			vrpn_buffer(&mptr, &len, vertices[i][j]);
+		
+	return ret;
+}
+
+vrpn_int32 vrpn_Sound::decodeSetQuadVert(const char* buf, vrpn_float64 (*vertices)[4][3], vrpn_int32 *tag) {
+	const char *mptr = buf;
+		
+	vrpn_unbuffer(&mptr, tag);
+	
+	for (int i=0;i<4;i++)
+		for (int j(0); j<3;j++) 
+			vrpn_unbuffer(&mptr, vertices[i][j]);
+		
+	return 0;
+}
+
+vrpn_int32 vrpn_Sound::encodeSetTriVert(const vrpn_float64 vertices[4][3], const vrpn_int32 tag, char* buf) {
+	char *mptr = buf;
+	vrpn_int32 len = sizeof(vrpn_int32) + sizeof(vrpn_float64)*9;
+	vrpn_int32 ret = len;
+	
+	vrpn_buffer(&mptr, &len, tag);
+	
+	for (int i=0;i<3;i++)
+		for (int j(0); j<3;j++) 
+			vrpn_buffer(&mptr, &len, vertices[i][j]);
+		
+	return ret;
+}
+
+vrpn_int32 vrpn_Sound::decodeSetTriVert(const char* buf, vrpn_float64 (*vertices)[3][3], vrpn_int32 *tag) {
+	const char *mptr = buf;
+		
+	vrpn_unbuffer(&mptr, tag);
+	
+	for (int i=0;i<3;i++)
+		for (int j(0); j<3;j++) 
+			vrpn_unbuffer(&mptr, vertices[i][j]);
+		
+	return 0;
+}
+
+vrpn_int32 vrpn_Sound::encodeSetPolyOF(const vrpn_float64 openingfactor, const vrpn_int32 tag, char* buf) {
+	char *mptr = buf;
+	vrpn_int32 len = sizeof(vrpn_SoundID) + sizeof(vrpn_float64);
+	vrpn_int32 ret = len;
+
+	vrpn_buffer(&mptr, &len, tag);
+	
+	vrpn_buffer(&mptr, &len, openingfactor);
+	
+	return ret;
+}
+
+vrpn_int32 vrpn_Sound::decodeSetPolyOF(const char* buf, vrpn_float64 * openingfactor, vrpn_int32 *tag) {
+	const char *mptr = buf;
+	
+	vrpn_unbuffer(&mptr, tag);
+	
+	vrpn_unbuffer(&mptr, openingfactor);
+	
+	return 0;
+}
+
+vrpn_int32 vrpn_Sound::encodeSetPolyMaterial(const char * material, const vrpn_int32 tag, char* buf) {
+	vrpn_int32 len = sizeof(vrpn_SoundID) + 128;
+	vrpn_int32 ret = len;
+	char *mptr;
+
+	vrpn_buffer(&mptr, &len, tag);
+	vrpn_buffer(&mptr, &len, material, 128);
+
+	return ret;
+}
+
+vrpn_int32 vrpn_Sound::decodeSetPolyMaterial(const char* buf, char ** material, vrpn_int32 *tag, const int payload) {
+	const char *mptr;
+	
+	vrpn_unbuffer(&mptr, tag);
+	vrpn_unbuffer(&mptr, *material, 128);
+
+	return 0;
+
 }
 
 
@@ -222,103 +763,15 @@ vrpn_int32 vrpn_Sound::decodeModelDef(const char* buf, vrpn_ModelDef *model) {
  Begin vrpn_Sound_Client
  *******************************************************************************************/
 vrpn_Sound_Client::vrpn_Sound_Client(const char * name, vrpn_Connection * c) 
-				  : vrpn_Sound(name, c)
+				  : vrpn_Sound(name, c) , vrpn_Text_Receiver((char *) name, c)
 {
-	/*Values used for determining whether to grow the array of sound definitions or not*/
-	Defs_MaxNum = vrpn_Sound_START;
-	Defs_CurNum = 0;
-
-	/*The array of sound definitions needs to be initialized with some starting space*/
-	soundDefs = new vrpn_SoundDef[Defs_MaxNum];
-
-
+  vrpn_Text_Receiver::register_message_handler(this, handle_receiveTextMessage);
 }
 
 vrpn_Sound_Client::~vrpn_Sound_Client()
 {
-	delete [] soundDefs;
-}
-
-//Add a new sound def to the array.  If adding it would overflow
-//the current allocated space, then double the available space and then add
-vrpn_SoundID vrpn_Sound_Client::addSoundDef(vrpn_SoundDef sound)
-{
-	int i;
-	vrpn_SoundID returnVal;
-	vrpn_SoundDef *oldsounds;
-
-	if (Defs_CurNum >= Defs_MaxNum)
-	{
-		oldsounds = soundDefs;
-		Defs_MaxNum *= 2;
-		soundDefs = new vrpn_SoundDef[Defs_MaxNum];
-		for(i = 0; i < Defs_CurNum; i++);
-		    soundDefs[i] = oldsounds[i];
-		delete [] oldsounds;
-	}
-
-	//Copy all information into the current free spot in the array
-	for(i = 0; i < 3; i++)
-		soundDefs[Defs_CurNum].pose.position[i] = sound.pose.position[i];
-
-	for(i = 0; i < 4; i++)
-		soundDefs[Defs_CurNum].pose.orientation[i] = sound.pose.orientation[i];
-
-	for(i = 0; i < 4; i++)
-		soundDefs[Defs_CurNum].velocity[i] = sound.velocity[i];
-
-	soundDefs[Defs_CurNum].volume = sound.volume;
-
-	soundDefs[Defs_CurNum].max_front_dist = sound.max_front_dist;
-	soundDefs[Defs_CurNum].min_front_dist = sound.min_front_dist;
-	soundDefs[Defs_CurNum].max_back_dist  = sound.max_back_dist;
-	soundDefs[Defs_CurNum].min_back_dist  = sound.min_back_dist;
-
-	returnVal = Defs_CurNum;
-	Defs_CurNum++;
-
-	return returnVal;
-}
-
-// Moved out-of-line by TCH on 8 Feb 2000 to avoid compiler crashes on O2s.
-
-vrpn_SoundDef vrpn_Sound_Client::getSoundDef (vrpn_SoundID id) {
-  vrpn_SoundDef soundDef;
-  initSoundDef(&soundDef);
-  return (id < Defs_MaxNum) ? soundDefs[id] : soundDef;
-};
-
-
-/*Sounds when loaded default to certain settings.
-  volume = 100%
-  position = (0, 0, 0)
-  orientation = (0, 0, 0, 0)
-  velocity = (0, 0, 0)
-  distances:
-    max=200, min=20
-*/
-void vrpn_Sound_Client::initSoundDef(vrpn_SoundDef* soundDef)
-{
-	int i;
-
-	soundDef->volume = 100;
-	
-	for(i = 0; i < 3; i++)
-		soundDef->pose.position[i] = 0;
-
-	for(i = 0; i < 4; i++)
-		soundDef->pose.orientation[i] = 0;
-
-	for(i = 0; i < 4; i++)
-		soundDef->velocity[i] = 0;
-
-	soundDef->max_front_dist = 200;
-	soundDef->min_front_dist = 20;
-	soundDef->max_back_dist  = 200;
-	soundDef->min_back_dist  = 20;
 
 }
-
 
 
 /*Sends a play sound message to the server.  Sends the id of the sound to play
@@ -326,19 +779,15 @@ void vrpn_Sound_Client::initSoundDef(vrpn_SoundDef* soundDef)
 vrpn_int32 vrpn_Sound_Client::playSound(const vrpn_SoundID id, vrpn_int32 repeat)
 {
 
-	char* buf = new char[sizeof(vrpn_SoundDef) + sizeof(vrpn_SoundID) + sizeof(vrpn_int32)];
+ 	char buf[sizeof(vrpn_SoundID) + sizeof(vrpn_int32)];
 	vrpn_int32 len;
 
+	len = encodeSoundPlay(id, repeat, buf);
 
-	len = encodeSoundDef(getSoundDef(id), id, repeat, buf);
+  gettimeofday(&timestamp, NULL);
 
-	gettimeofday(&timestamp, NULL);
-
-	if (connection->pack_message(len, timestamp, play_sound, my_id, buf, vrpn_CONNECTION_RELIABLE))
+	if (vrpn_Sound::connection->pack_message(len, timestamp, play_sound, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message play: tossing\n");
-
-	delete [] buf;
-
 
 	return 0;
 }
@@ -347,40 +796,35 @@ vrpn_int32 vrpn_Sound_Client::playSound(const vrpn_SoundID id, vrpn_int32 repeat
 /*Stops a playing sound*/
 vrpn_int32 vrpn_Sound_Client::stopSound(const vrpn_SoundID id)
 {
-	char* buf = new char[sizeof(vrpn_SoundID)];
+	char buf[sizeof(vrpn_SoundID)];
 	vrpn_int32 len;
 
 	len = encodeSoundID(id, buf);
 
 	gettimeofday(&timestamp, NULL);
 
-	if (connection->pack_message(len, timestamp, stop_sound, my_id, buf, vrpn_CONNECTION_RELIABLE))
+	if (vrpn_Sound::connection->pack_message(len, timestamp, stop_sound, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message play: tossing\n");
 
-	delete [] buf;
 	return 0;
 }
 
 /*Loads a sound file on the server machine for playing.  Returns a vrpn_SoundID to
   be used to refer to that sound from now on*/
-vrpn_SoundID vrpn_Sound_Client::loadSound(const char* sound)
+vrpn_SoundID vrpn_Sound_Client::loadSound(const char* sound, const vrpn_SoundID id, const vrpn_SoundDef soundDef)
 {
-	vrpn_int32 len, curIndex;
-	char* buf;
-	vrpn_SoundDef soundDef;
-
-	initSoundDef(&soundDef);
-	curIndex = addSoundDef(soundDef);
-
-	len = encodeSound(sound, curIndex, &buf);
+	vrpn_int32 len;
+	char *buf;
+  
+  len = encodeSound_local(sound, id,  soundDef, &buf);
 	
-	gettimeofday(&timestamp, NULL);
+  gettimeofday(&timestamp, NULL);
 
-	if (connection->pack_message(len, timestamp, load_sound, my_id, buf, vrpn_CONNECTION_RELIABLE))
+	if (vrpn_Sound::connection->pack_message(len, timestamp, load_sound_local, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message load: tossing\n");
-
-	delete [] buf;
-	return curIndex;
+  
+  delete [] buf;
+	return id;
 }
 
 
@@ -388,165 +832,351 @@ vrpn_SoundID vrpn_Sound_Client::loadSound(const char* sound)
 vrpn_int32 vrpn_Sound_Client::unloadSound(const vrpn_SoundID id)
 {
 	vrpn_int32 len;
-	char *buf = new char[sizeof(vrpn_SoundID)];
+	char buf[sizeof(vrpn_SoundID)];
 
 	len = encodeSoundID(id, buf);
 
 	gettimeofday(&timestamp, NULL);
 
-	if (connection->pack_message(len, timestamp, unload_sound, my_id, buf, vrpn_CONNECTION_RELIABLE))
+	if (vrpn_Sound::connection->pack_message(len, timestamp, unload_sound, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message unload: tossing\n");
 
-	delete [] buf;
-	return 0;
-}
-
-
-vrpn_int32 vrpn_Sound_Client::changeSoundVolume(const vrpn_SoundID id, const vrpn_int32 volume)
-{
-	char* buf = new char[sizeof(vrpn_SoundDef) + sizeof(vrpn_SoundID) + sizeof(vrpn_int32)];
-	vrpn_int32 len;
-
-	setDefVolume(id, volume);
-	//The repeat value is ignored when changing the status of a sound
-	//so just put 0 in
-	len = encodeSoundDef(getSoundDef(id), id, 0, buf);
-
-	gettimeofday(&timestamp, NULL);
-
-	if (connection->pack_message(len, timestamp, change_sound_status, my_id, buf, vrpn_CONNECTION_RELIABLE))
-      fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
-
-	delete [] buf;
-	return 0;
-}
-
-vrpn_int32 vrpn_Sound_Client::changeSoundPose(const vrpn_SoundID id, vrpn_float64 position[3], vrpn_float64 orientation[4])
-{
-	char* buf = new char[sizeof(vrpn_SoundDef) + sizeof(vrpn_SoundID) + sizeof(vrpn_int32)];
-	vrpn_int32 len;
-
-	setDefPose(id, position, orientation);
-	//The repeat value is ignored when changing the status of a sound
-	//so just put 0 in
-	len = encodeSoundDef(getSoundDef(id), id, 0, buf);
-
-	gettimeofday(&timestamp, NULL);
-
-	if (connection->pack_message(len, timestamp, change_sound_status, my_id, buf, vrpn_CONNECTION_RELIABLE))
-      fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
-
-	delete [] buf;
-	return 0;
-}
-
-vrpn_int32 vrpn_Sound_Client::changeSoundVelocity(const vrpn_SoundID id, vrpn_float64 velocity[4])
-{
-	char* buf = new char[sizeof(vrpn_SoundDef) + sizeof(vrpn_SoundID) + sizeof(vrpn_int32)];
-	vrpn_int32 len;
-
-	setDefVelocity(id, velocity);
-	//The repeat value is ignored when changing the status of a sound
-	//so just put 0 in
-	len = encodeSoundDef(getSoundDef(id), id, 0, buf);
-
-	gettimeofday(&timestamp, NULL);
-
-	if (connection->pack_message(len, timestamp, change_sound_status, my_id, buf, vrpn_CONNECTION_RELIABLE))
-      fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
-
-	delete [] buf;
-	return 0;
-}
-
-
-
-vrpn_int32 vrpn_Sound_Client::changeListenerPose(const vrpn_float64 position[3], const vrpn_float64 orientation[4])
-{
-	char* buf = new char[sizeof(vrpn_SoundDef) + sizeof(vrpn_SoundID) + sizeof(vrpn_int32)];
-	vrpn_int32 len;
-	int i;
-
-	for(i = 0; i < 3; i++) d_Listener.pose.position[i] = position[i];
-	for(i = 0; i < 4; i++) d_Listener.pose.orientation[i] = orientation[i];
 	
-	len = encodeListener(d_Listener, buf);
-
-	gettimeofday(&timestamp, NULL);
-
-	if (connection->pack_message(len, timestamp, change_listener_status, my_id, buf, vrpn_CONNECTION_RELIABLE))
-      fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
-
-	delete [] buf;
 	return 0;
 }
 
-vrpn_int32 vrpn_Sound_Client::changeListenerVelocity(const vrpn_float64 velocity[4])
+
+vrpn_int32 vrpn_Sound_Client::setSoundVolume(const vrpn_SoundID id, const vrpn_float64 volume)
 {
-	char* buf = new char[sizeof(vrpn_SoundDef) + sizeof(vrpn_SoundID) + sizeof(vrpn_int32)];
+	char buf[sizeof(vrpn_SoundID) + sizeof(vrpn_float64)];
 	vrpn_int32 len;
-	int i;
 
-	for(i = 0; i < 4; i++) d_Listener.velocity[i] = velocity[i];
-	
-	len = encodeListener(d_Listener, buf);
+	len = encodeSoundVolume(volume, id, buf);
 
 	gettimeofday(&timestamp, NULL);
 
-	if (connection->pack_message(len, timestamp, change_listener_status, my_id, buf, vrpn_CONNECTION_RELIABLE))
+	if (vrpn_Sound::connection->pack_message(len, timestamp, set_sound_volume, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
 
-	delete [] buf;
+	
+	return 0;
+}
+
+vrpn_int32 vrpn_Sound_Client::setSoundPose(const vrpn_SoundID id, vrpn_float64 position[3], vrpn_float64 orientation[4])
+{
+	char buf[sizeof(vrpn_PoseDef) + sizeof(vrpn_SoundID)];
+	vrpn_int32 len;
+	vrpn_PoseDef tempdef;
+        int i;
+	for (i=0; i<4; i++)
+	  tempdef.orientation[i] = orientation[i];
+    for (i=0; i<3; i++) 
+	  tempdef.position[i] = position[i];
+
+	len = encodeSoundPose(tempdef, id, buf);
+
+	gettimeofday(&timestamp, NULL);
+
+	if (vrpn_Sound::connection->pack_message(len, timestamp, set_sound_pose, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+      fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
+
+	
+	return 0;
+}
+
+vrpn_int32 vrpn_Sound_Client::setSoundVelocity(const vrpn_SoundID id, const vrpn_float64 velocity[4])
+{
+	char buf[sizeof(vrpn_float64)*4 + sizeof(vrpn_SoundID)];
+	vrpn_int32 len;
+	
+	len = encodeSoundVelocity(velocity, id, buf);
+
+	gettimeofday(&timestamp, NULL);
+ 
+	if (vrpn_Sound::connection->pack_message(len, timestamp, set_sound_velocity, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+      fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
+	
+	return 0;
+}
+
+vrpn_int32 vrpn_Sound_Client::setSoundDistances(const vrpn_SoundID id, const vrpn_float64 max_front_dist, const vrpn_float64 min_front_dist, const vrpn_float64 max_back_dist, const vrpn_float64 min_back_dist) {
+	char buf[sizeof(vrpn_float64)*4 + sizeof(vrpn_SoundID)];
+	vrpn_int32 len;
+	
+	len = encodeSoundDistInfo(max_front_dist, min_front_dist, max_back_dist, min_back_dist, id, buf);
+
+	gettimeofday(&timestamp, NULL);
+
+	if (vrpn_Sound::connection->pack_message(len, timestamp, set_sound_distanceinfo, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+      fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
+
+	
 	return 0;
 }
 
 
-vrpn_int32 vrpn_Sound_Client::changeSoundDistances(const vrpn_SoundID id, const vrpn_float64 max_front_dist, const vrpn_float64 min_front_dist, const vrpn_float64 max_back_dist, const vrpn_float64 min_back_dist) {
-	char* buf = new char[sizeof(vrpn_SoundDef) + sizeof(vrpn_SoundID) + sizeof(vrpn_int32)];
+vrpn_int32 vrpn_Sound_Client::setSoundConeInfo(const vrpn_SoundID id,
+  	                                           const vrpn_float64 inner_angle,
+							                   const vrpn_float64 outer_angle,
+											   const vrpn_float64 gain) {
+
+	char buf[sizeof(vrpn_float64)*3 + sizeof(vrpn_SoundID)];
 	vrpn_int32 len;
 
-	setDefDistances(id, max_front_dist, min_front_dist, max_back_dist, min_back_dist);
-	
-	len = encodeSoundDef(getSoundDef(id), id, 0, buf);
+	len = encodeSoundConeInfo(inner_angle, outer_angle, gain, id, buf);
 
 	gettimeofday(&timestamp, NULL);
 
-	if (connection->pack_message(len, timestamp, change_sound_status, my_id, buf, vrpn_CONNECTION_RELIABLE))
+	if (vrpn_Sound::connection->pack_message(len, timestamp, set_sound_coneinfo, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
 
-	delete [] buf;
+	
 	return 0;
 }
 
 
-vrpn_int32 vrpn_Sound_Client::initModel(const vrpn_float64 *eye_f_sensor) {
-	char* buf = new char[sizeof(vrpn_ModelDef)];
+vrpn_int32 vrpn_Sound_Client::setSoundDopScale(const vrpn_SoundID id, vrpn_float64 dopfactor) {
+	
+	char buf[sizeof(vrpn_float64) + sizeof(vrpn_SoundID)];
 	vrpn_int32 len;
 
-	setDefModel((vrpn_float64*)eye_f_sensor);
+
+	len = encodeSoundDoplerScale(dopfactor, id, buf);
+
+	gettimeofday(&timestamp, NULL);
+
+	if (vrpn_Sound::connection->pack_message(len, timestamp, set_sound_doplerfactor, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+      fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
+
+	
+	return 0;
+}
+
+vrpn_int32 vrpn_Sound_Client::setSoundEqValue(const vrpn_SoundID id, vrpn_float64 eq_value) {
+	char buf[sizeof(vrpn_float64) + sizeof(vrpn_SoundID)];
+	vrpn_int32 len;
+
+
+	len = encodeSoundEqFactor(eq_value, id, buf);
+
+	gettimeofday(&timestamp, NULL);
+
+	if (vrpn_Sound::connection->pack_message(len, timestamp, set_sound_eqvalue, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+      fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
+
+	
+	return 0;
+}
+
+vrpn_int32 vrpn_Sound_Client::setSoundPitch(const vrpn_SoundID id, vrpn_float64 pitch) {
+	char buf[sizeof(vrpn_float64) + sizeof(vrpn_SoundID)];
+	vrpn_int32 len;
+
+
+	len = encodeSoundPitch(pitch, id, buf);
+
+	gettimeofday(&timestamp, NULL);
+
+	if (vrpn_Sound::connection->pack_message(len, timestamp, set_sound_pitch, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+      fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
+
+	
+	return 0;
+}
+
+vrpn_int32 vrpn_Sound_Client::setListenerPose(const vrpn_float64 position[3], const vrpn_float64 orientation[4])
+{
+	char buf[sizeof(vrpn_PoseDef)];
+	vrpn_int32 len;
+	vrpn_PoseDef tempdef;
+        int i;
+
+	for (i=0; i<4; i++)
+	  tempdef.orientation[i] = orientation[i];
+    for (i=0; i<3; i++) 
+	  tempdef.position[i] = position[i];
+
 		
-	//len = encodeModelDef((const vrpn_ModelDef) d_Model, buf);
-	len = encodeModelDef(d_Model, buf);
+	len = encodeListenerPose(tempdef, buf);
 
 	gettimeofday(&timestamp, NULL);
 
-	if (connection->pack_message(len, timestamp, change_sound_status, my_id, buf, vrpn_CONNECTION_RELIABLE))
+	if (vrpn_Sound::connection->pack_message(len, timestamp, set_listener_pose, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
 
-	delete [] buf;
+	
 	return 0;
 }
+
+vrpn_int32 vrpn_Sound_Client::setListenerVelocity(const vrpn_float64 velocity[4])
+{
+	char buf[sizeof(vrpn_float64)*4];
+	vrpn_int32 len;
+ 
+	
+	len = encodeListenerVelocity(velocity, buf);
+
+	gettimeofday(&timestamp, NULL);
+
+	if (vrpn_Sound::connection->pack_message(len, timestamp, set_listener_velocity, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+      fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
+
+	
+	return 0;
+}
+
+vrpn_int32 vrpn_Sound_Client::LoadModel_local(const char *filename) {
+ 	vrpn_int32 len;
+	char* buf;
+ 
+
+	len = encodeLoadModel_local(filename, &buf);
+	
+	gettimeofday(&timestamp, NULL);
+
+	if (vrpn_Sound::connection->pack_message(len, timestamp, load_model_local, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+      fprintf(stderr,"vrpn_Sound_Client: cannot write message load: tossing\n");
+
+	
+	return 1;
+}
+
+	
+// Remote stuff not supported yet!
+vrpn_int32 vrpn_Sound_Client::LoadModel_remote(const char *data) {
+return 0;
+}
+	   
+vrpn_int32 vrpn_Sound_Client::LoadPolyQuad(const vrpn_QuadDef quad) {
+ 	vrpn_int32 len;
+	char buf[sizeof(vrpn_QuadDef)];
+ 
+
+	len = encodeLoadPolyQuad(quad, buf);
+	
+	gettimeofday(&timestamp, NULL);
+
+	if (vrpn_Sound::connection->pack_message(len, timestamp, load_polyquad, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+      fprintf(stderr,"vrpn_Sound_Client: cannot write message load: tossing\n");
+
+	
+	return quad.tag;
+}
+
+
+vrpn_int32 vrpn_Sound_Client::LoadPolyTri(const vrpn_TriDef tri) {
+vrpn_int32 len;
+	char buf[sizeof(vrpn_TriDef)];
+
+
+	len = encodeLoadPolyTri(tri, buf);
+	
+	gettimeofday(&timestamp, NULL);
+
+	if (vrpn_Sound::connection->pack_message(len, timestamp, load_polytri, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+      fprintf(stderr,"vrpn_Sound_Client: cannot write message load: tossing\n");
+
+	
+	return tri.tag;
+}
+
+vrpn_int32 vrpn_Sound_Client::LoadMaterial(const vrpn_int32 id, 
+                                           const vrpn_MaterialDef material) {
+  vrpn_int32 len;
+	char buf[sizeof(vrpn_MaterialDef)+sizeof(vrpn_int32)];
+ 
+
+	len = encodeLoadMaterial(id, material, buf);
+	
+	gettimeofday(&timestamp, NULL);
+
+	if (vrpn_Sound::connection->pack_message(len, timestamp, load_material, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+      fprintf(stderr,"vrpn_Sound_Client: cannot write message load: tossing\n");
+
+	
+	return id;
+
+}
+
+vrpn_int32 vrpn_Sound_Client::setPolyOF(const int id, const vrpn_float64 OF) {
+  char buf[sizeof(vrpn_int32) + sizeof(vrpn_float64)];
+	vrpn_int32 len;
+ 
+	
+	len = encodeSetPolyOF(OF, id, buf);
+
+	gettimeofday(&timestamp, NULL);
+
+	if (vrpn_Sound::connection->pack_message(len, timestamp, set_poly_openingfactor, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+      fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
+
+	
+	return 0;
+}
+
+vrpn_int32 vrpn_Sound_Client::setQuadVertices(const int id, const vrpn_float64 vertices[4][3]) {
+  char buf[sizeof(vrpn_int32) + sizeof(vrpn_float64)*12];
+	vrpn_int32 len;
+ 
+	
+	len = encodeSetQuadVert(vertices, id, buf);
+
+	gettimeofday(&timestamp, NULL);
+
+	if (vrpn_Sound::connection->pack_message(len, timestamp, set_polyquad_vertices, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+      fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
+
+	return 0;
+}
+
+vrpn_int32 vrpn_Sound_Client::setPolyMaterialName(const int id, const char * material_name) {
+  char buf[sizeof(vrpn_int32) + sizeof(material_name)];
+	vrpn_int32 len;
+ 
+	
+	len = encodeSetPolyMaterial(material_name, id, buf);
+
+	gettimeofday(&timestamp, NULL);
+
+	if (vrpn_Sound::connection->pack_message(len, timestamp, set_poly_material, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+      fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
+
+	
+	return 0;
+}
+vrpn_int32 vrpn_Sound_Client::setTriVertices(const int id, const vrpn_float64 vertices[3][3]) {
+  char buf[sizeof(vrpn_int32) + sizeof(vrpn_float64)*9];
+  vrpn_int32 len;
+	
+ 
+
+	len = encodeSetTriVert(vertices, id, buf);
+
+	gettimeofday(&timestamp, NULL);
+
+	if (vrpn_Sound::connection->pack_message(len, timestamp, set_polytri_vertices, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+      fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
+
+	
+	return 0;
+}
+
 
 void vrpn_Sound_Client::mainloop(const timeval *timeout)
 {
-	connection->mainloop(timeout);
+  vrpn_Sound::connection->mainloop(timeout);
 }
 
-void vrpn_Sound_Client::setDefModel(vrpn_float64 *eye_f_sensor) {
-	qogl_matrix_copy(d_Model.eye_from_sensor_matrix,eye_f_sensor);
+void	vrpn_Sound_Client::handle_receiveTextMessage(void *userdata, const vrpn_TEXTCB t)
+{
+  vrpn_Sound_Client *me = (vrpn_Sound_Client*)userdata;
+  me->receiveTextMessage(t.message, t.type, t.level, t.msg_time);
 }
 
-
+void vrpn_Sound_Client::receiveTextMessage(const char * message, vrpn_uint32 type,vrpn_uint32 level, struct timeval msg_time) {
+  printf("Virtual: %s\n", message);
+  return;
+}
 
 
 /********************************************************************************************
@@ -554,77 +1184,70 @@ void vrpn_Sound_Client::setDefModel(vrpn_float64 *eye_f_sensor) {
  *******************************************************************************************/
 #ifndef VRPN_CLIENT_ONLY
 vrpn_Sound_Server::vrpn_Sound_Server(const char * name, vrpn_Connection * c) 
-				  : vrpn_Sound(name, c)
+				  : vrpn_Sound(name, c) , vrpn_Text_Sender((char *) name, c)
 {
-	/*Values used for determining whether to grow the array of client sound it to 
-	  server id map or not*/
-	CSMap_MaxNum = vrpn_Sound_START;
-
-	/*The mapping array*/
-	CSMap = new vrpn_int32[CSMap_MaxNum];
-
-	for(int i = 0; i < CSMap_MaxNum; i++) 
-		CSMap[i] = vrpn_Sound_FAIL;
 
 	/*Register the handlers*/
-	connection->register_handler(load_sound, handle_loadSound, this, my_id);
-	connection->register_handler(unload_sound, handle_unloadSound, this, my_id);
-	connection->register_handler(play_sound, handle_playSound, this, my_id);
-	connection->register_handler(stop_sound, handle_stopSound, this, my_id);
-	connection->register_handler(change_sound_status, handle_soundStatus, this, my_id);
-	connection->register_handler(change_listener_status, handle_listener, this, my_id);
-	connection->register_handler(init_model, handle_initialize, this, my_id);
+	vrpn_Sound::connection->register_handler(load_sound_local, handle_loadSoundLocal, this, vrpn_Sound::my_id);
+	vrpn_Sound::connection->register_handler(load_sound_remote, handle_loadSoundRemote, this, vrpn_Sound::my_id);
+	vrpn_Sound::connection->register_handler(unload_sound, handle_unloadSound, this, vrpn_Sound::my_id);
+	vrpn_Sound::connection->register_handler(play_sound, handle_playSound, this, vrpn_Sound::my_id);
+	vrpn_Sound::connection->register_handler(stop_sound, handle_stopSound, this, vrpn_Sound::my_id);
+	vrpn_Sound::connection->register_handler(change_sound_status, handle_changeSoundStatus, this, vrpn_Sound::my_id);
+
+	vrpn_Sound::connection->register_handler(set_listener_pose, handle_setListenerPose,this, vrpn_Sound::my_id);
+	vrpn_Sound::connection->register_handler(set_listener_velocity, handle_setListenerVelocity,this, vrpn_Sound::my_id);
+	vrpn_Sound::connection->register_handler(set_sound_pose, handle_setSoundPose,this, vrpn_Sound::my_id);
+	vrpn_Sound::connection->register_handler(set_sound_velocity, handle_setSoundVelocity,this, vrpn_Sound::my_id);
+	vrpn_Sound::connection->register_handler(set_sound_distanceinfo,  handle_setSoundDistanceinfo,this, vrpn_Sound::my_id);
+	vrpn_Sound::connection->register_handler(set_sound_coneinfo, handle_setSoundConeinfo,this, vrpn_Sound::my_id);
+
+  vrpn_Sound::connection->register_handler(set_sound_doplerfactor, handle_setSoundDoplerfactor,this, vrpn_Sound::my_id);
+	vrpn_Sound::connection->register_handler(set_sound_eqvalue, handle_setSoundEqvalue,this, vrpn_Sound::my_id);
+	vrpn_Sound::connection->register_handler(set_sound_pitch, handle_setSoundPitch,this, vrpn_Sound::my_id);
+  vrpn_Sound::connection->register_handler(set_sound_volume, handle_setSoundVolume,this, vrpn_Sound::my_id);
+
+	vrpn_Sound::connection->register_handler(load_model_local, handle_loadModelLocal,this, vrpn_Sound::my_id);
+	vrpn_Sound::connection->register_handler(load_model_remote, handle_loadModelRemote,this, vrpn_Sound::my_id);
+	vrpn_Sound::connection->register_handler(load_polyquad, handle_loadPolyquad,this, vrpn_Sound::my_id);
+	vrpn_Sound::connection->register_handler(load_polytri, handle_loadPolytri,this, vrpn_Sound::my_id);
+	vrpn_Sound::connection->register_handler(load_material, handle_loadMaterial,this, vrpn_Sound::my_id);
+	vrpn_Sound::connection->register_handler(set_polyquad_vertices, handle_setPolyquadVertices,this, vrpn_Sound::my_id);		
+	vrpn_Sound::connection->register_handler(set_polytri_vertices, handle_setPolytriVertices,this, vrpn_Sound::my_id);
+	vrpn_Sound::connection->register_handler(set_poly_openingfactor, handle_setPolyOpeningfactor,this, vrpn_Sound::my_id);
+	vrpn_Sound::connection->register_handler(set_poly_material, handle_setPolyMaterial,this, vrpn_Sound::my_id);
 }
 
 vrpn_Sound_Server::~vrpn_Sound_Server()
 {
-	delete [] CSMap;
+
 }
 
-/*Function to map the client's index number to the server's index number
-  This indirection is necessary, since the client doesn't know if the server
-  fails to load a sound or not.  So it assumes that everything is succesful.
-  So this allows the server to be able to determine if this index was succesfully
-  loaded previously or not*/
-void vrpn_Sound_Server::set_CIndex_To_SIndex(vrpn_int32 CIndex, vrpn_int32 SIndex)
-{
-	if (CIndex >= CSMap_MaxNum)
-	{
-		vrpn_int32 *oldcsmap;
-		int i;
-
-		oldcsmap = CSMap;
-		CSMap_MaxNum *= 2;
-		CSMap = new vrpn_int32[CSMap_MaxNum];
-
-		for(i = 0; i < CIndex; i++)
-			CSMap[i] = oldcsmap[i];
-
-		delete [] oldcsmap;
-	}
-
-	CSMap[CIndex] = SIndex;
-}
 /******************************************************************************
  Callback Handler routines.
  ******************************************************************************/
 
-int vrpn_Sound_Server::handle_loadSound(void *userdata, vrpn_HANDLERPARAM p)
+int vrpn_Sound_Server::handle_loadSoundLocal(void *userdata, vrpn_HANDLERPARAM p)
 {
-	vrpn_Sound_Server *me = (vrpn_Sound_Server*)userdata;
-	vrpn_SoundID id;
-	char * filename;
+  vrpn_Sound_Server *me = (vrpn_Sound_Server*)userdata;
+	vrpn_SoundID  id;
+  vrpn_SoundDef soundDef;
+	char        * filename;
 
-	me->decodeSound((char*)p.buffer,&filename, &id, p.payload_len);
-	me->loadSound(filename, id);
+	me->decodeSound_local((char*)p.buffer,&filename, &id, &soundDef, p.payload_len);
+  me->loadSoundLocal(filename, id, soundDef);
 	delete [] filename;
 	return 0;
 }
 
+// not supported
+int vrpn_Sound_Server::handle_loadSoundRemote(void *userdata, vrpn_HANDLERPARAM p) {
+  return 0;
+}
 int vrpn_Sound_Server::handle_playSound(void *userdata, vrpn_HANDLERPARAM p)
 {
+  printf("Got playSound\n");
 	vrpn_Sound_Server *me = (vrpn_Sound_Server*)userdata;
-	vrpn_int32 return_value = 0;
 	vrpn_SoundID id;
 	vrpn_SoundDef soundDef;
 	vrpn_int32 repeat;
@@ -655,40 +1278,201 @@ int vrpn_Sound_Server::handle_unloadSound(void *userdata, vrpn_HANDLERPARAM p)
 	return 0;
 }
 
-int vrpn_Sound_Server::handle_soundStatus(void *userdata, vrpn_HANDLERPARAM p)
-{
+int vrpn_Sound_Server::handle_changeSoundStatus(void *userdata, vrpn_HANDLERPARAM p){
 	vrpn_Sound_Server *me = (vrpn_Sound_Server*)userdata;
-	vrpn_int32 return_value = 0;
 	vrpn_SoundID id;
 	vrpn_SoundDef soundDef;
 	vrpn_int32 repeat;
 
 	me->decodeSoundDef((char*)p.buffer, &soundDef, &id, &repeat);
-	fprintf(stderr,"%f %f %f %f\n",soundDef.max_front_dist,soundDef.min_front_dist,soundDef.max_back_dist,soundDef.min_back_dist);
 	me->changeSoundStatus(id, soundDef);
 	return 0;
+
 }
 
-int vrpn_Sound_Server::handle_listener(void *userdata, vrpn_HANDLERPARAM p)
-{
+int vrpn_Sound_Server::handle_setListenerPose(void *userdata, vrpn_HANDLERPARAM p){
 	vrpn_Sound_Server *me = (vrpn_Sound_Server*)userdata;
-	vrpn_ListenerDef listener;
+	vrpn_PoseDef pose;
 
-	me->decodeListener((char*)p.buffer, &listener);
-	me->changeListenerStatus(listener);
+	me->decodeListenerPose((char*)p.buffer, &pose);
+	me->setListenerPose(pose);
 	return 0;
 }
 
-int vrpn_Sound_Server::handle_initialize(void *userdata, vrpn_HANDLERPARAM p)
-{
+int vrpn_Sound_Server::handle_setListenerVelocity(void *userdata, vrpn_HANDLERPARAM p){
 	vrpn_Sound_Server *me = (vrpn_Sound_Server*)userdata;
-	vrpn_ModelDef model;
+	vrpn_float64 velocity[4];
 
-	me->decodeModelDef((const char*)p.buffer, &model);
-	me->initModel(model);
+	me->decodeListenerVelocity((char*)p.buffer, velocity);
+	me->setListenerVelocity(velocity);
 	return 0;
 }
 
+int vrpn_Sound_Server::handle_setSoundPose(void *userdata, vrpn_HANDLERPARAM p){
+	vrpn_Sound_Server *me = (vrpn_Sound_Server*)userdata;
+	vrpn_PoseDef pose;
+	vrpn_int32   id;
+
+	me->decodeSoundPose((char*)p.buffer, &pose, &id);
+	me->setSoundPose(id, pose);
+	return 0;
+}
+
+int vrpn_Sound_Server::handle_setSoundVelocity(void *userdata, vrpn_HANDLERPARAM p){
+	vrpn_Sound_Server *me = (vrpn_Sound_Server*)userdata;
+	vrpn_float64 velocity[4];
+	vrpn_int32   id;
+
+	me->decodeSoundVelocity((char*)p.buffer, velocity, &id);
+	me->setSoundVelocity(id, velocity);
+	return 0;
+}
+
+int vrpn_Sound_Server::handle_setSoundDistanceinfo(void *userdata, vrpn_HANDLERPARAM p){
+	vrpn_Sound_Server *me = (vrpn_Sound_Server*)userdata;
+	vrpn_float64 dist[4];
+	vrpn_int32   id;
+  // order is min_back, max_back, min_front, max_front
+	me->decodeSoundDistInfo((char*)p.buffer, &dist[0], &dist[1], &dist[2], &dist[3], &id);
+	me->setSoundDistInfo(id, dist);
+	return 0;
+
+}
+
+int vrpn_Sound_Server::handle_setSoundConeinfo(void *userdata, vrpn_HANDLERPARAM p){
+	vrpn_Sound_Server *me = (vrpn_Sound_Server*)userdata;
+	vrpn_float64 cinfo[3];
+	vrpn_int32   id;
+
+	me->decodeSoundConeInfo((char*)p.buffer, &cinfo[0], &cinfo[1], &cinfo[2], &id);
+	me->setSoundConeInfo(id, cinfo);
+	return 0;
+}
+
+int vrpn_Sound_Server::handle_setSoundDoplerfactor(void *userdata, vrpn_HANDLERPARAM p){
+	vrpn_Sound_Server *me = (vrpn_Sound_Server*)userdata;
+	vrpn_float64 df;
+	vrpn_int32   id;
+
+	me->decodeSoundDoplerScale((char*)p.buffer, &df, &id);
+	me->setSoundDoplerFactor(id, df);
+	return 0;
+}
+
+int vrpn_Sound_Server::handle_setSoundEqvalue(void *userdata, vrpn_HANDLERPARAM p){
+	vrpn_Sound_Server *me = (vrpn_Sound_Server*)userdata;
+	vrpn_float64 val;
+	vrpn_int32   id;
+
+	me->decodeSoundEqFactor((char*)p.buffer, &val, &id);
+	me->setSoundEqValue(id, val);
+	return 0;
+}
+
+int vrpn_Sound_Server::handle_setSoundPitch(void *userdata, vrpn_HANDLERPARAM p){
+	vrpn_Sound_Server *me = (vrpn_Sound_Server*)userdata;
+	vrpn_float64 pitch;
+	vrpn_int32   id;
+
+	me->decodeSoundPitch((char*)p.buffer, &pitch, &id);
+	me->setSoundPitch(id, pitch);
+	return 0;
+}
+
+int vrpn_Sound_Server::handle_setSoundVolume(void *userdata, vrpn_HANDLERPARAM p){
+	vrpn_Sound_Server *me = (vrpn_Sound_Server*)userdata;
+	vrpn_float64 vol;
+	vrpn_int32   id;
+
+	me->decodeSoundVolume((char*)p.buffer, &vol, &id);
+	me->setSoundVolume(id, vol);
+	return 0;
+}
+
+
+int vrpn_Sound_Server::handle_loadModelLocal(void *userdata, vrpn_HANDLERPARAM p){
+	vrpn_Sound_Server *me = (vrpn_Sound_Server*)userdata;
+	char * filename;
+
+	me->decodeLoadModel_local((char*)p.buffer,&filename, p.payload_len);
+	me->loadModelLocal(filename);
+	delete [] filename;
+	return 0;
+}
+
+// not handled yet
+int vrpn_Sound_Server::handle_loadModelRemote(void *userdata, vrpn_HANDLERPARAM p){
+return 0;
+}
+
+int vrpn_Sound_Server::handle_loadPolyquad(void *userdata, vrpn_HANDLERPARAM p){
+	vrpn_Sound_Server *me = (vrpn_Sound_Server*)userdata;
+	vrpn_QuadDef quad;
+	
+	me->decodeLoadPolyQuad((char*)p.buffer, &quad);
+	me->loadPolyQuad(&quad);
+	return 0;
+}
+
+int vrpn_Sound_Server::handle_loadPolytri(void *userdata, vrpn_HANDLERPARAM p){
+	vrpn_Sound_Server *me = (vrpn_Sound_Server*)userdata;
+	vrpn_TriDef tri;
+	
+	me->decodeLoadPolyTri((char*)p.buffer, &tri);
+	me->loadPolyTri(&tri);
+	return 0;
+}
+
+int vrpn_Sound_Server::handle_loadMaterial(void *userdata, vrpn_HANDLERPARAM p){
+	vrpn_Sound_Server *me = (vrpn_Sound_Server*)userdata;
+	vrpn_MaterialDef material;
+	vrpn_int32       id;
+	
+	me->decodeLoadMaterial((char*)p.buffer, &material, &id);
+
+	me->loadMaterial(&material, id);
+	return 0;
+}
+
+int vrpn_Sound_Server::handle_setPolyquadVertices(void *userdata, vrpn_HANDLERPARAM p){
+	vrpn_Sound_Server *me = (vrpn_Sound_Server*)userdata;
+	vrpn_float64 (*vertices)[4][3];
+	vrpn_int32 id;
+	
+	me->decodeSetQuadVert((char*)p.buffer, vertices, &id);
+	me->setPolyQuadVertices(*vertices, id);
+	return 0;
+}
+
+int vrpn_Sound_Server::handle_setPolytriVertices(void *userdata, vrpn_HANDLERPARAM p){
+	vrpn_Sound_Server *me = (vrpn_Sound_Server*)userdata;
+	vrpn_float64 (* vertices)[3][3];
+	vrpn_int32 id;
+	
+	me->decodeSetTriVert((char*)p.buffer, vertices, &id);
+	me->setPolyTriVertices(*vertices, id);
+	return 0;
+}
+
+int vrpn_Sound_Server::handle_setPolyOpeningfactor(void *userdata, vrpn_HANDLERPARAM p){
+	vrpn_Sound_Server *me = (vrpn_Sound_Server*)userdata;
+	vrpn_float64 of;
+	vrpn_int32 id;
+	
+	me->decodeSetPolyOF((char*)p.buffer, &of, &id);
+	me->setPolyOF(of, id);
+	return 0;
+}
+
+int vrpn_Sound_Server::handle_setPolyMaterial(void *userdata, vrpn_HANDLERPARAM p) {
+	vrpn_Sound_Server *me = (vrpn_Sound_Server*)userdata;
+	char **material;
+	vrpn_int32 id;
+	
+	me->decodeSetPolyMaterial((char*)p.buffer, material, &id, p.payload_len);
+	me->setPolyMaterial(*material, id);
+	return 0;
+}
 
 #endif //#ifndef VRPN_CLIENT_ONLY
 
