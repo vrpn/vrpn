@@ -299,6 +299,9 @@ int vrpn_Mutex_Server::handle_gotConnection (void * userdata,
                                              vrpn_HANDLERPARAM) {
   vrpn_Mutex_Server * me = (vrpn_Mutex_Server *) userdata;
   timeval now;
+  char buffer [32];
+  char * b = buffer;
+  vrpn_int32 bl = 32;
 
 #ifdef VERBOSE
   fprintf(stderr, "vrpn_Mutex_Server::handle_gotConnection:  "
@@ -307,9 +310,10 @@ int vrpn_Mutex_Server::handle_gotConnection (void * userdata,
 
   if (me->d_connection) {
     gettimeofday(&now, NULL);
-    me->d_connection->pack_message(sizeof(me->d_remoteIndex), now,
+    vrpn_buffer(&b, &bl, (me->d_remoteIndex));
+    me->d_connection->pack_message(32-bl, now,
                                    me->d_initialize_type, me->d_myId,
-                                   (const char *) &(me->d_remoteIndex),
+                                   buffer,
                                    vrpn_CONNECTION_RELIABLE);
   }
 
