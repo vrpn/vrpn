@@ -50,9 +50,11 @@
 // Load DirectX SDK libraries and tell which version we need if we are using it.
 #ifdef	VRPN_USE_DIRECTINPUT
 #define	DIRECTINPUT_VERSION 0x0800
-#pragma comment (lib, "C:/DXSDK/lib/dxguid.lib")
-#pragma comment (lib, "C:/DXSDK/lib/dxerr8.lib")
-#pragma comment (lib, "C:/DXSDK/lib/dinput8.lib")
+// Since this probably doesn't match your file system, add them to 
+// your project settings, if needed. 
+//#pragma comment (lib, "C:/DXSDK/lib/dxguid.lib")
+//#pragma comment (lib, "C:/DXSDK/lib/dxerr8.lib")
+//#pragma comment (lib, "C:/DXSDK/lib/dinput8.lib")
 #endif
 
 // Load Adrienne libraries if we are using the timecode generator.

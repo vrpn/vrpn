@@ -215,11 +215,19 @@ HRESULT vrpn_DirectXFFJoystick::InitDirectJoystick( void )
 	  LONG            rglDirection[2] = { 0, 0 };
 	  DICONSTANTFORCE cf              = { 0 };
 
+	  DIENVELOPE diEnvelope;      // envelope
+	  diEnvelope.dwSize = sizeof(DIENVELOPE);
+	  diEnvelope.dwAttackLevel = 0; 
+	  diEnvelope.dwAttackTime = (DWORD)(0.005 * DI_SECONDS); 
+	  diEnvelope.dwFadeLevel = 0; 
+	  diEnvelope.dwFadeTime = (DWORD)(0.005 * DI_SECONDS); 
+
 	  DIEFFECT eff;
 	  ZeroMemory( &eff, sizeof(eff) );
 	  eff.dwSize                  = sizeof(DIEFFECT);
 	  eff.dwFlags                 = DIEFF_CARTESIAN | DIEFF_OBJECTOFFSETS;
-	  eff.dwDuration              = INFINITE;
+	  //	  eff.dwDuration              = INFINITE;
+	  eff.dwDuration              = (DWORD)(0.02 * DI_SECONDS); 
 	  eff.dwSamplePeriod          = 0;
 	  eff.dwGain                  = DI_FFNOMINALMAX;
 	  eff.dwTriggerButton         = DIEB_NOTRIGGER;
@@ -227,10 +235,12 @@ HRESULT vrpn_DirectXFFJoystick::InitDirectJoystick( void )
 	  eff.cAxes                   = _numforceaxes;
 	  eff.rgdwAxes                = rgdwAxes;
 	  eff.rglDirection            = rglDirection;
-	  eff.lpEnvelope              = 0;
+	  eff.lpEnvelope              = &diEnvelope;
+	  //	  eff.lpEnvelope              = 0;
 	  eff.cbTypeSpecificParams    = sizeof(DICONSTANTFORCE);
 	  eff.lpvTypeSpecificParams   = &cf;
 	  eff.dwStartDelay            = 0;
+
 
 	  // Create the prepared effect
 	  if( FAILED( hr = _Joystick->CreateEffect( GUID_ConstantForce, &eff, &_ForceEffect, NULL ) ) ||
@@ -262,7 +272,6 @@ HRESULT vrpn_DirectXFFJoystick::InitDirectJoystick( void )
       _status = STATUS_BROKEN;
       return hr;
     }
-
     return S_OK;
 }
 
@@ -372,7 +381,6 @@ int vrpn_DirectXFFJoystick::get_report(void)
   if (duration(reporttime, _timestamp) < 1000000.0 / _read_rate) {
     return 0;
   }
-
 #ifdef	VERBOSE
   printf(" now: %ld:%ld,   last %ld:%ld\n", reporttime.tv_sec, reporttime.tv_usec,
     _timestamp.tv_sec, _timestamp.tv_usec);
@@ -467,6 +475,9 @@ void	vrpn_DirectXFFJoystick::report(vrpn_uint32 class_of_service)
 // A force of 1 goes the the right in X and up in Y
 void  vrpn_DirectXFFJoystick::send_normalized_force(double fx, double fy)
 {
+
+  static double fx_1 = 0, fx_2 = 0, fy_1 = 0, fy_2 = 0;
+
   // Make sure we have force capability.  If not, then set our status to
   // broken.
   if ( (_force_rate <= 0) || (_ForceEffect == NULL) ) {
@@ -485,18 +496,36 @@ void  vrpn_DirectXFFJoystick::send_normalized_force(double fx, double fy)
     fy /= len;
   }
 
+
+  double fx_avg = (fx + fx_1 + fx_2 )/3.0;
+  double fy_avg = (fy + fy_1 + fy_2 )/3.0;
+
   // Convert the force from (-1..1) into the maximum range for each axis and then send it to
   // the device.
-  INT xForce = (INT)(fx * DI_FFNOMINALMAX);
-  INT yForce = (INT)(fy * DI_FFNOMINALMAX);
+/*    INT xForce = (INT)(fx * DI_FFNOMINALMAX); */
+/*    INT yForce = (INT)(fy * DI_FFNOMINALMAX); */
+
+  INT xForce = (INT)(fx_avg * DI_FFNOMINALMAX);
+  INT yForce = (INT)(fy_avg * DI_FFNOMINALMAX);
+
+  fx_2 = fx_1;  fy_2 = fy_1;
+  fx_1 = fx;    fy_1 = fy;
 
   LONG rglDirection[2];	  // Direction for the force (does not carry magnitude)
   DICONSTANTFORCE cf;	  // Magnitude of the force
 
   rglDirection[0] = xForce;
   rglDirection[1] = yForce;
-  cf.lMagnitude = (DWORD)sqrt( (double)xForce * (double)xForce +
-			       (double)yForce * (double)yForce );
+  cf.lMagnitude = (DWORD)(sqrt( (double)xForce * (double)xForce +
+				(double)yForce * (double)yForce ));
+
+	  DIENVELOPE diEnvelope;      // envelope
+	  diEnvelope.dwSize = sizeof(DIENVELOPE);
+	  diEnvelope.dwAttackLevel = 0; 
+	  diEnvelope.dwAttackTime = (DWORD)(0.005 * DI_SECONDS); 
+	  diEnvelope.dwFadeLevel = 0; 
+	  diEnvelope.dwFadeTime = (DWORD)(0.005 * DI_SECONDS); 
+
 
   DIEFFECT eff;
   ZeroMemory( &eff, sizeof(eff) );
@@ -504,15 +533,16 @@ void  vrpn_DirectXFFJoystick::send_normalized_force(double fx, double fy)
   eff.dwFlags               = DIEFF_CARTESIAN | DIEFF_OBJECTOFFSETS;
   eff.cAxes                 = _numforceaxes;
   eff.rglDirection          = rglDirection;
-  eff.lpEnvelope            = 0;
+  //eff.lpEnvelope            = 0;
+  eff.lpEnvelope            = &diEnvelope;
   eff.cbTypeSpecificParams  = sizeof(DICONSTANTFORCE);
   eff.lpvTypeSpecificParams = &cf;
   eff.dwStartDelay            = 0;
 
   // Now set the new parameters and start the effect immediately.
-  if ( FAILED ( _ForceEffect->SetParameters( &eff, DIEP_DIRECTION |
-                                         DIEP_TYPESPECIFICPARAMS |
-                                         DIEP_START) ) ) {
+   if ( FAILED ( _ForceEffect->SetParameters( &eff, DIEP_DIRECTION |
+					      DIEP_TYPESPECIFICPARAMS |
+					      DIEP_START) ) ) {
     send_text_message("Can't send force", _timestamp, vrpn_TEXT_ERROR);
     return;
   }
