@@ -36,7 +36,7 @@ void loopSound(vrpn_SoundID id)
 	  //save old settings
 	  position[0] = X; position[1] = Y; position[2] = Z;
 	  orientation[0] = -X; orientation[1] = -Y; orientation[2] = -Z; orientation[3] = 1;
-	  (void)soundClient->changeSoundPose(id, position, orientation);
+	  (void)soundClient->setSoundPose(id, position, orientation);
 
       // move the sample values
 	  move_sample_values();
@@ -52,11 +52,11 @@ void loopSound(vrpn_SoundID id)
 	 //Z=sZ;
 	 //adj=sA;
 
-	 (void)soundClient->changeSoundVelocity(id,velocity);
+	 (void)soundClient->setSoundVelocity(id,velocity);
 	 soundClient->mainloop();
      if (X == 25.0F)
    	   break;
-	 Sleep(50);
+	 vrpn_SleepMsecs(1);
   }
 }
 
@@ -127,7 +127,8 @@ int main(int argc, char** argv)
 		case 1:
 			printf("Enter path and file to load\n");
 			scanf("%s", dummy);
-			ids[curID] = soundClient->loadSound(dummy);
+			vrpn_SoundDef SoundDef;
+			ids[curID] = soundClient->loadSound(dummy, curID, SoundDef);
 			strcpy(files[curID++], dummy);
 			soundClient->mainloop();
 			break;
@@ -158,7 +159,7 @@ int main(int argc, char** argv)
 			scanf("%d", &id);
 			printf("Enter value to change volume to ");
 			scanf("%d", &volume);
-			(void)soundClient->changeSoundVolume(id, volume);
+			(void)soundClient->setSoundVolume(id, volume);
 			soundClient->mainloop();
 			break;
 		case 6:
@@ -166,7 +167,7 @@ int main(int argc, char** argv)
 			scanf("%d", &id);
 			printf("Enter the new X,Y, and Z position coordinates for the sound\n");
 			scanf("%lf %lf %lf", &position[0], &position[1], &position[2]);
-			(void)soundClient->changeSoundPose(id, position, orientation);
+			(void)soundClient->setSoundPose(id, position, orientation);
 			soundClient->mainloop();
 			break;
 		case 7:
@@ -174,7 +175,7 @@ int main(int argc, char** argv)
 			scanf("%d", &id);
 			printf("Enter the new X,Y, Z, and W orientation coordinates for the sound\n");
 			scanf("%lf %lf %lf %lf", &orientation[0], &orientation[1], &orientation[2], &orientation[3]);
-			(void)soundClient->changeSoundPose(id, position, orientation);
+			(void)soundClient->setSoundPose(id, position, orientation);
 			soundClient->mainloop();
 			break;
 		case 8:
@@ -182,25 +183,25 @@ int main(int argc, char** argv)
 			scanf("%d", &id);
 			printf("Enter the new X,Y, and Z velocity coordinates for the sound and magnitude\n");
 			scanf("%lf %lf %lf %lf", &velocity[0], &velocity[1], &velocity[2], &velocity[3]);
-			(void)soundClient->changeSoundVelocity(id,velocity);
+			(void)soundClient->setSoundVelocity(id,velocity);
 			soundClient->mainloop();
 			break;
 		case 9:
 			printf("Enter the new X,Y, and Z position coordinates for the listener\n");
 			scanf("%lf %lf %lf", &Lposition[0], &Lposition[1], &Lposition[2]);
-			(void)soundClient->changeListenerPose(Lposition, Lorientation);
+			(void)soundClient->setListenerPose(Lposition, Lorientation);
 			soundClient->mainloop();
 			break;
 		case 10:
 			printf("Enter the new X,Y, Z, and W orientation coordinates for the listener\n");
 			scanf("%lf %lf %lf %lf", &Lorientation[0], &Lorientation[1], &Lorientation[2], &Lorientation[3]);
-			(void)soundClient->changeListenerPose(Lposition, Lorientation);
+			(void)soundClient->setListenerPose(Lposition, Lorientation);
 			soundClient->mainloop();
 			break;
 		case 11:
 			printf("Enter the new X,Y, and Z velocity coordinates for the listener and magnitude\n");
 			scanf("%lf %lf %lf %lf", &Lvelocity[0], &Lvelocity[1], &Lvelocity[2], &Lvelocity[3]);
-			(void)soundClient->changeListenerVelocity(Lvelocity);
+			(void)soundClient->setListenerVelocity(Lvelocity);
 			soundClient->mainloop();
 			break;
 		case 12:
