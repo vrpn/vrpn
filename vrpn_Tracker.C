@@ -38,8 +38,9 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 
 int vrpn_open_commport(char *portname, long baud)
 {
-#ifdef	_WIN32
-	fprintf(stderr,"vrpn_open_commport: Not implemented in NT\n");
+#if defined(_WIN32) || defined(sparc) || defined(hpux)
+	fprintf(stderr,
+		"vrpn_open_commport: Not implemented in NT, sparc or HP\n");
 	return -1;
 #else
   int fileDescriptor;
@@ -115,8 +116,9 @@ int vrpn_open_commport(char *portname, long baud)
 // Return 0 on success, -1 on failure.
 int vrpn_flush_input_buffer(int comm)
 {
-#ifdef	_WIN32
-   fprintf(stderr,"vrpn_flush_input_buffer: Not impemented on NT\n");
+#if defined(_WIN32) || defined(sparc) || defined(hpux)
+   fprintf(stderr,
+	"vrpn_flush_input_buffer: Not impemented on NT, sparc or HP\n");
    return -1;
 #else
    return tcflush(comm, TCIFLUSH);
@@ -127,8 +129,9 @@ int vrpn_flush_input_buffer(int comm)
 // Return 0 on success, tc err codes other on failure.
 int vrpn_flush_output_buffer(int comm)
 {
-#ifdef	_WIN32
-   fprintf(stderr,"vrpn_flush_output_buffer: Not impemented on NT\n");
+#if defined(_WIN32) || defined(sparc) || defined(hpux)
+   fprintf(stderr,
+	"vrpn_flush_output_buffer: Not impemented on NT, sparc or HP\n");
    return -1;
 #else
    return tcflush(comm, TCOFLUSH);
@@ -139,8 +142,9 @@ int vrpn_flush_output_buffer(int comm)
 // Return 0 on success, tc err codes on failure.
 int vrpn_drain_output_buffer(int comm)
 {
-#ifdef	_WIN32
-   fprintf(stderr,"vrpn_drain_output_buffer: Not impemented on NT\n");
+#if defined(_WIN32) || defined(sparc) || defined(hpux)
+   fprintf(stderr,
+	"vrpn_drain_output_buffer: Not impemented on NT, sparc or HP\n");
    return -1;
 #else
    return tcdrain(comm);
