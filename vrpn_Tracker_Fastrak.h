@@ -54,7 +54,8 @@ class vrpn_Tracker_Fastrak: public vrpn_Tracker_Serial {
   ~vrpn_Tracker_Fastrak();
 
   // is the version modified (debug@cs.unc.edu, 5/20/01) to handle Pol.Fastrak stylus buttons
-  add_fastrak_stylus_button(const char *button_device_name, int sensor, int numbuttons = 1);
+  int add_fastrak_stylus_button(const char *button_device_name,
+				int sensor, int numbuttons = 1);
 
   /// Add an IS900 button device to one of the sensors
   /// This allows configuration of an InterSense IS-900

@@ -1,5 +1,10 @@
 2002-12-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Tracker_Fastrak.h : Added return type to member function.
+	* vrpn_DirectXFFJoystick.h : Added newline at end of file.
+
+2002-12-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
         * vrpn_Tracker_Fastrak.h : Added Deepak's code to handle the fastrak
                 with a stylus that has a button.
         * vrpn_Tracker_Fastrak.C : Same.
