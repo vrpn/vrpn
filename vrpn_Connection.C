@@ -857,7 +857,7 @@ static SOCKET vrpn_connect_udp_port
 // as well.
 
       int retval;
-      retval = sscanf(machine, "%u.%u.%u.%u",
+      retval = sscanf(machineName, "%u.%u.%u.%u",
                       ((char *) &udp_name.sin_addr.s_addr)[0],
                       ((char *) &udp_name.sin_addr.s_addr)[1],
                       ((char *) &udp_name.sin_addr.s_addr)[2],
@@ -882,7 +882,7 @@ static SOCKET vrpn_connect_udp_port
 #ifndef VRPN_USE_WINSOCK_SOCKETS
   udp_name.sin_port = htons(remotePort);
 #else
-  udp_name.sin_port = htons((u_short)remote_port);
+  udp_name.sin_port = htons((u_short)remotePort);
 #endif
 
   if ( connect(udp_socket,(struct sockaddr *) &udp_name,udp_namelen) ) {
