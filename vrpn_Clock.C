@@ -9,7 +9,7 @@
   Revised: Wed Apr  1 13:23:40 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.C,v $
   $Locker:  $
-  $Revision: 1.15 $
+  $Revision: 1.16 $
   \*****************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
@@ -121,7 +121,7 @@ int vrpn_Clock_Server::clockQueryHandler(void *userdata, vrpn_HANDLERPARAM p) {
 // the clock server only responds to requests. since the connection
 // mainloop will handle routing the callback (and the general server
 // program always has to call that), this mainloop does nothing.
-void vrpn_Clock_Server::mainloop() {};
+void vrpn_Clock_Server::mainloop(const struct timeval * timeout) {};
 
 
 // This next part is the class for users (client class)
@@ -234,14 +234,14 @@ static vrpn_int32 dCompare( const void *pd1, const void *pd2 ) {
 
 // this will take 1 second to run (sync's the clocks)
 // when it is in fullSync mode
-void vrpn_Clock_Remote::mainloop(void)
+void vrpn_Clock_Remote::mainloop(const struct timeval * timeout)
 {
   if (connection) { 
     // always do this -- the first time it will register senders & msg_types
     // Also, we don't want to call the Synchronized version (if this is
     // a sync connection) since we are already in that loop (this is 
     // the routine that does the synchronization)
-    connection->vrpn_Connection::mainloop();
+    connection->vrpn_Connection::mainloop(timeout);
     
     if (fDoQuickSyncs) {
       // just a quick sync
@@ -815,6 +815,11 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
 
 /*****************************************************************************\
   $Log: vrpn_Clock.C,v $
+  Revision 1.16  1999/04/01 19:43:13  winston
+  Finished changes so that the timeout given as a parameter to mainloop
+  is meaningful for clients (remote devices).  Before it wasn't getting
+  passed by the synchronized connection's mainloop.
+
   Revision 1.15  1999/03/13 17:00:56  winston
   Bug fix, initialize things to NULL that aren't used in fullsync mode
 

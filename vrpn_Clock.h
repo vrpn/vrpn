@@ -16,7 +16,7 @@
   Revised: Mon Mar 23 11:34:26 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.h,v $
   $Locker:  $
-  $Revision: 1.9 $
+  $Revision: 1.10 $
 \*****************************************************************************/
 #ifndef _VRPN_CLOCK_H_
 #define _VRPN_CLOCK_H_
@@ -32,8 +32,8 @@ class vrpn_Connection;
 class vrpn_Clock {
 public:
   vrpn_Clock(const char *name, vrpn_Connection *c = NULL);
-  
-  virtual void mainloop(void) = 0;	// Report changes to connection
+    // Report changes to connection
+  virtual void mainloop(const struct timeval * timeout) = 0;
   
 protected:
   vrpn_Connection *connection;
@@ -52,7 +52,8 @@ public:
 
   // Called once through each main loop iteration to handle
   // clock updates.
-  virtual void mainloop(void);	// Report changes to connection
+    // Report changes to connection
+  virtual void mainloop(const struct timeval * timeout = NULL);	
   static int clockQueryHandler( void *userdata, vrpn_HANDLERPARAM p );
 };
 
@@ -110,7 +111,7 @@ class vrpn_Clock_Remote: public vrpn_Clock {
 
   // This routine calls does the sync and calls the mainloop of the 
   // connection it's on
-  virtual void mainloop(void);
+  virtual void mainloop(const struct timeval * timeout);
 
   // (un)Register a callback to handle a clock sync
   virtual int register_clock_sync_handler(void *userdata,
@@ -183,6 +184,11 @@ class vrpn_Clock_Remote: public vrpn_Clock {
 
 /*****************************************************************************\
   $Log: vrpn_Clock.h,v $
+  Revision 1.10  1999/04/01 19:43:14  winston
+  Finished changes so that the timeout given as a parameter to mainloop
+  is meaningful for clients (remote devices).  Before it wasn't getting
+  passed by the synchronized connection's mainloop.
+
   Revision 1.9  1999/02/24 15:58:27  taylorr
   BIG CHANGES.
   I modified the code so that it can compile on 64-bit SGI machines.

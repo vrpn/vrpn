@@ -1669,7 +1669,7 @@ int vrpn_Synchronized_Connection::mainloop (const struct timeval * timeout)
   } 
   else if (pClockRemote) {
     // the remote device always calls the base class connection mainloop already
-    pClockRemote->mainloop();
+    pClockRemote->mainloop(timeout);
   } 
   else {
     perror("vrpn_Synchronized_Connection::mainloop: no clock client or server");
