@@ -903,13 +903,15 @@ int vrpn_get_a_TCP_socket (SOCKET * listen_sock, int * listen_portnum,
 
   // We're using TCP
   if ((*listen_sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-    fprintf(stderr, "can't create socket: %s\n", sys_errlist[errno]);
+    fprintf(stderr, "vrpn_get_a_TCP_socket:  can't create socket.\n");
+    fprintf(stderr, "  -- errno %d (%s).\n", errno, strerror(errno));
     return -1;
   }
   // Bind the socket
   if (bind (*listen_sock, (struct sockaddr *) &listen_name,
             listen_namelen) < 0) {
-    perror ("bind");
+    fprintf(stderr, "vrpn_get_a_TCP_socket:  can't bind socket.\n");
+    fprintf(stderr, "  -- errno %d (%s).\n", errno, strerror(errno));
     return -1;
   }
 
@@ -2068,7 +2070,8 @@ static	int open_udp_socket (unsigned short * portno,
 
    // create an internet datagram socket
    if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1)  {
-	perror("vrpn: vrpn_Connection: can't open socket");
+    fprintf(stderr, "open_udp_socket: can't open socket.\n");
+    fprintf(stderr, "  -- errno %d (%s).\n", errno, strerror(errno));
 	return -1;
    }
 
@@ -2133,7 +2136,8 @@ static	int connect_udp_to (char * machine, int portno)
 
    // create an internet datagram socket
    if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == INVALID_SOCKET)  {
-	perror("vrpn: vrpn_Connection: can't open socket");
+	fprintf(stderr, "connect_udp_to: can't open socket.\n");
+    fprintf(stderr, "  -- errno %d (%s).\n", errno, strerror(errno));
 	return INVALID_SOCKET;
    }
 
