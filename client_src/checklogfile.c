@@ -84,7 +84,7 @@ int main (int argc, char ** argv) {
             printf("EOF\n");
         }
         close(file);
-        exit(0);
+        break;
     }
     cEntries++;
 
