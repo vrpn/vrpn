@@ -24,7 +24,7 @@
 // server, using phantom as a common device, and phantom 
 // configuration in .cfg file.
 // PLEASE SPECIFY PATH TO GHOSTLIB IN NEXT SECTION IF YOU USE THIS
-#define	VRPN_USE_PHANTOM_SERVER
+//#define	VRPN_USE_PHANTOM_SERVER
 
 //-----------------------
 // Instructs VRPN to use the high-performance timer code on
