@@ -18,6 +18,11 @@
 #include "forcefield.h"
 #include "quat.h"
 
+// ajout ONDIM
+// add each ghost effect header
+#include "ghostEffects/InstantBuzzEffect.h"
+// fin ajout ONDIM
+
 #ifndef	_WIN32
 #include <netinet/in.h>
 #include <sys/ioctl.h>
@@ -166,7 +171,12 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
                  trimesh(NULL),
                  pointConstraint(NULL),
                  forceField(NULL),
-		 plane_change_list(NULL){  
+				 plane_change_list(NULL),
+				 // ajout ONDIM
+				 // add each effect
+				 instantBuzzEffect(NULL)
+				// fin ajout ONDIM
+{  
   num_buttons = 1;  // only has one button
 
   timestamp.tv_sec = 0;
@@ -193,7 +203,6 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
 		desired (by creating your own error handler)."
   */
 
-  
   /* disable popup error dialogs */
   printErrorMessages(FALSE);
   setErrorCallback(phantomErrorHandler, (void *)this);
@@ -221,6 +230,10 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
   pointConstraint = new ConstraintEffect();
   phantom->setEffect(pointConstraint);
   forceField = new ForceFieldEffect();
+  // ajout ONDIM
+  // add each custom effect instance here
+  instantBuzzEffect = new InstantBuzzEffect();
+  // fin ajout ONDIM
 
   SurfaceKspring= 0.29f;
   SurfaceFdynamic = 0.02f;
@@ -317,7 +330,11 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
                 fprintf(stderr,"vrpn_Phantom:can't register handler\n");
                 vrpn_Tracker::d_connection = NULL;
   }
-
+  if (register_autodeleted_handler(custom_effect_message_id,
+	handle_custom_effect_change_message, this, vrpn_ForceDevice::d_sender_id)) {
+		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
+		vrpn_ForceDevice::d_connection = NULL;
+  }
 
   this->register_plane_change_handler(this, handle_plane);
 
@@ -838,6 +855,48 @@ int vrpn_Phantom::handle_resetOrigin_change_message(void * userdata,
   return 0;
 
 }
+
+// ajout ONDIM
+// check processing of each effect
+int vrpn_Phantom::handle_custom_effect_change_message(void *userdata,
+						vrpn_HANDLERPARAM p){
+
+  vrpn_Phantom *me = (vrpn_Phantom *)userdata;
+
+  vrpn_uint32 effectId;
+  vrpn_float32* params = NULL;
+  vrpn_uint32 nbParams;
+
+  decode_custom_effect(p.buffer, p.payload_len,&effectId,&params,&nbParams);
+
+  switch(effectId) {
+	case BUZZ_EFFECT_ID:
+		if (nbParams >= 1) {
+			me->instantBuzzEffect->setAmplitude(params[0]);
+		}
+		if (nbParams >= 2) {
+			me->instantBuzzEffect->setFrequency(params[1]);
+		}
+		if (nbParams >= 3) {
+			me->instantBuzzEffect->setDuration(params[2]);
+		}
+		if (nbParams >= 6) {
+			me->instantBuzzEffect->setDirection(params[3], params[4], params[5]);
+		}
+
+		me->phantom->setEffect(me->instantBuzzEffect);
+		me->phantom->startEffect();	
+
+		break;
+	default:
+		me->phantom->stopEffect();
+		break;
+  }
+
+  return 0;
+}
+
+// fin ajout ONDIM
 
 #if 0
 

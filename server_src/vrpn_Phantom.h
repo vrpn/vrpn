@@ -12,6 +12,12 @@ class Trimesh;
 class ConstraintEffect;
 class ForceFieldEffect;
 
+// ajout ONDIM
+const unsigned int NB_CUSTOM_EFFECTS = 1;
+class InstantBuzzEffect;
+const unsigned BUZZ_EFFECT_ID = 0;
+// fin ajout ONDIM
+
 #include "vrpn_Button.h"
 #include "vrpn_Tracker.h"
 #include "vrpn_ForceDevice.h"
@@ -52,6 +58,11 @@ protected:
 					// (Superceded by ForceFieldEffect)
 	ForceFieldEffect *forceField; //< general purpose force field approximation
 
+	// ajout ONDIM
+	// add each effect pointer
+	InstantBuzzEffect *instantBuzzEffect;
+	// fin ajout ONDIM
+	
 	virtual void get_report(void);
 	
 	typedef	struct vrpn_RPCS {
@@ -82,6 +93,8 @@ protected:
 	static int handle_clearTrimesh_message(void *userdata, 
 					 vrpn_HANDLERPARAM p);
 	static int handle_forcefield_change_message(void *userdata,
+						vrpn_HANDLERPARAM p);
+	static int handle_custom_effect_change_message(void *userdata,
 						vrpn_HANDLERPARAM p);
 
 	// from vrpn_Tracker

@@ -83,6 +83,14 @@ LIB32=link.exe -lib
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+# Begin Group "Ghost effects"
+
+# PROP Default_Filter ".cpp"
+# Begin Source File
+
+SOURCE=.\ghostEffects\InstantBuzzEffect.cpp
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\buzzForceField.C
@@ -115,6 +123,14 @@ SOURCE=.\vrpn_Phantom.C
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
+# Begin Group "Ghost Effects headers"
+
+# PROP Default_Filter ".h"
+# Begin Source File
+
+SOURCE=.\ghostEffects\InstantBuzzEffect.h
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\buzzForceField.h

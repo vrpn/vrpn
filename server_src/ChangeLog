@@ -1,3 +1,9 @@
+2003-09-26  Sebastien MARAUX  <maraux@ondim.fr>
+
+	* vrpn_Phantom.C : Added support for InstantBuzzEffect.
+	* vrpn_Phantom.h : Same.
+	* vrpn_phantom.dsp : Same.
+
 2003-09-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
         * vrpn.C : Fixing things that broke the build.
