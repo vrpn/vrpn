@@ -76,10 +76,13 @@ int gethostname (char *, int);
 // string.  Since minor versions should interoperate, MAGIC is only
 // checked through the last period;  characters after that are ignored.
 
-char	*vrpn_MAGIC = "vrpn: ver. 03.00";
+char	*vrpn_MAGIC = "vrpn: ver. 03.01";
 const	int	MAGICLEN = 16;	// Must be a multiple of vrpn_ALIGN bytes!
 
 // Version history:
+//   03.01:  Tom Hudson, July 1998
+//           Bugfixes.  Changes to vrpn_ForceDevice.  Wrote
+//           vrpn_File_Controller.
 //   03.00:  Tom Hudson, June 1998
 //           Added logging.  This changed the format of the magic cookie,
 //           so major version number had to increment.  NULL server_name
@@ -122,6 +125,8 @@ const	int	MAGICLEN = 16;	// Must be a multiple of vrpn_ALIGN bytes!
 #define	UDP_CALL_TIMEOUT	(2)
 #define	UDP_CALL_RETRIES	(5)
 
+#if 0
+
 #define time_greater(t1,t2)     ( (t1.tv_sec > t2.tv_sec) || \
                                  ((t1.tv_sec == t2.tv_sec) && \
                                   (t1.tv_usec > t2.tv_usec)) )
@@ -137,6 +142,7 @@ const	int	MAGICLEN = 16;	// Must be a multiple of vrpn_ALIGN bytes!
 					(tr).tv_sec--; \
 					(tr).tv_usec += 1000000L; \
 				   } }
+#endif  // 0
 
 /**********************
  *	This routine will perform like a normal select() call, but it will
@@ -165,7 +171,8 @@ int vrpn_noint_select(int width, fd_set *readfds, fd_set *writefds,
 		timeout2 = *timeout;
 		timeout2ptr = &timeout2;
 		gettimeofday(&start, &zone);	/* Find start time */
-		time_add(start,*timeout,stop);	/* Find stop time */
+		//time_add(start,*timeout,stop);	/* Find stop time */
+		stop = vrpn_TimevalSum(start, *timeout);/* Find stop time */
 	} else {
 		timeout2ptr = timeout;
 	}
@@ -200,7 +207,7 @@ int vrpn_noint_select(int width, fd_set *readfds, fd_set *writefds,
 
 		    /* Interrupt happened.  Find new time timeout value */
 		    gettimeofday(&now, &zone);
-		    if (time_greater(now,stop)) {	/* Past stop time */
+		    if (vrpn_TimevalGreater(now, stop)) {/* Past stop time */
 			done = 1;
 		    } else {	/* Still time to go. */
 			unsigned long	usec_left;
@@ -376,7 +383,7 @@ int vrpn_noint_block_read_timeout(int infile, char buffer[],
 		timeout2 = *timeout;
 		timeout2ptr = &timeout2;
 		gettimeofday(&start, &zone);	/* Find start time */
-		time_add(start,*timeout,stop);	/* Find stop time */
+		stop = vrpn_TimevalSum(start, *timeout);/* Find stop time */
 	} else {
 		timeout2ptr = timeout;
 	}
@@ -410,10 +417,10 @@ int vrpn_noint_block_read_timeout(int infile, char buffer[],
 		/* See what time it is now and how long we have to go */
 		if (timeout2ptr) {
 			gettimeofday(&now, &zone);
-			if (time_greater(now, stop)) {	/* Timeout! */
+			if (vrpn_TimevalGreater(now, stop)) {	/* Timeout! */
 				return sofar;
 			} else {
-				time_subtract(stop,now, timeout2);
+				timeout2 = vrpn_TimevalDiff(stop, now);
 			}
 		}
 
@@ -1468,7 +1475,7 @@ int vrpn_Connection::time_since_connection_open
                                 (struct timeval * elapsed_time) {
   struct timeval now;
   gettimeofday(&now, NULL);
-  time_subtract(now, start_time, *elapsed_time);
+  *elapsed_time = vrpn_TimevalDiff(now, start_time);
 
   return 0;
 }

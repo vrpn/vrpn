@@ -91,7 +91,7 @@ typedef	int  (*vrpn_MESSAGEHANDLER)(void *userdata, vrpn_HANDLERPARAM p);
 
 #define vrpn_CONTROL "VRPN Control"
 
-typedef char cName[100];
+typedef char cName [100];
 
 
 // Description of a callback entry for a user type.
@@ -311,7 +311,7 @@ class vrpn_Connection
 	char * d_logname;            // name of file to write log to
 	long d_logmode;              // logging incoming, outgoing, or both
 	int d_logfile_handle;
-    FILE * d_logfile;
+	FILE * d_logfile;
 
 	virtual int log_message (int payload_len, struct timeval time,
 	                         long type, long sender, const char * buffer);

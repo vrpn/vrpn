@@ -46,7 +46,6 @@ class vrpn_File_Connection : public vrpn_Connection {
 
     // the actual mechanics of the logfile
 
-    //int d_file_handle;
     FILE * d_file;
 
     virtual int close_file (void);

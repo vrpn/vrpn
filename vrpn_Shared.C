@@ -1,7 +1,10 @@
 #include "vrpn_Shared.h"
+
 #ifdef _WIN32
 #include <iomanip.h>
 #endif
+
+#include <math.h>
 
 // Calcs the sum of tv1 and tv2.  Returns the sum in a timeval struct.
 // Calcs negative times properly, with the appropriate sign on both tv_sec
@@ -47,6 +50,7 @@ struct timeval vrpn_TimevalSum( const struct timeval& tv1,
 }
 
 
+
 // Calcs the diff between tv1 and tv2.  Returns the diff in a timeval struct.
 // Calcs negative times properly, with the appropriate sign on both tv_sec
 // and tv_usec (these signs will match unless one of them is 0)
@@ -60,9 +64,40 @@ struct timeval vrpn_TimevalDiff( const struct timeval& tv1,
   return vrpn_TimevalSum( tv1, tv );
 }
 
+
+
+struct timeval vrpn_TimevalScale (const struct timeval & tv,
+                                  double scale) {
+  struct timeval result;
+
+  result.tv_sec = (int) tv.tv_sec * scale;
+  result.tv_usec = (int) tv.tv_usec * scale
+                 + fmod(tv.tv_sec * scale, 1.0) * 1000000.0;
+
+  return result;
+}
+
+
+
+
+// returns 1 if tv1 is greater than tv2;  0 otherwise
+
+int vrpn_TimevalGreater (const struct timeval & tv1,
+                         const struct timeval & tv2) {
+  if (tv1.tv_sec > tv2.tv_sec) return 1;
+  if ((tv1.tv_sec == tv2.tv_sec) &&
+      (tv1.tv_usec > tv2.tv_usec)) return 1;
+  return 0;
+}
+
+
+
+
 double vrpn_TimevalMsecs( const struct timeval& tv ) {
   return tv.tv_sec*1000.0 + tv.tv_usec/1000.0;
 }
+
+
 
 void vrpn_SleepMsecs( double dMsecs ) {
   struct timeval tvStart, tvNow;
@@ -71,6 +106,8 @@ void vrpn_SleepMsecs( double dMsecs ) {
     gettimeofday(&tvNow, NULL);
   } while (vrpn_TimevalMsecs(vrpn_TimevalDiff( tvNow, tvStart ))<dMsecs);
 }
+
+
 
 static long lTestEndian = 0x1;
 static const int fLittleEndian = (*((char *)&lTestEndian) == 0x1);

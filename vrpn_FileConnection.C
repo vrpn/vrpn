@@ -13,6 +13,7 @@
 
 
 
+#if 0
 #define time_greater(t1,t2)     ( (t1.tv_sec > t2.tv_sec) || \
                                  ((t1.tv_sec == t2.tv_sec) && \
                                   (t1.tv_usec > t2.tv_usec)) )
@@ -41,6 +42,7 @@
       (tr).tv_usec %= 1000000L; \
     } \
   }
+#endif  // 0
 
 vrpn_File_Connection::vrpn_File_Connection (const char * file_name) :
     vrpn_Connection (file_name),
@@ -106,13 +108,13 @@ int vrpn_File_Connection::mainloop (void) {
 
   // scale elapsed time by d_rate
 
-  time_subtract(d_now_time, last_time, skip_time);
-  time_multiply(skip_time, d_rate, skip_time);
-  time_add(d_next_time, skip_time, d_next_time);
+  skip_time = vrpn_TimevalDiff(d_now_time, last_time);
+  skip_time = vrpn_TimevalScale(skip_time, d_rate);
+  d_next_time = vrpn_TimevalSum(d_next_time, skip_time);
 
   // are we ready for the next message?
 
-  if (time_greater(d_runtime, d_next_time))
+  if (vrpn_TimevalGreater(d_runtime, d_next_time))
     return 0;
 
   // get the header of the next message
@@ -177,7 +179,7 @@ int vrpn_File_Connection::mainloop (void) {
   if (!d_start_time.tv_sec && !d_start_time.tv_usec)
     d_start_time = d_time;
 
-  time_subtract(d_time, d_start_time, d_runtime);
+  d_runtime = vrpn_TimevalDiff(d_time, d_start_time);
 
   return 0;
 }

@@ -140,6 +140,14 @@ SOURCE=.\vrpn_FileConnection.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_FileController.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_FileController.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_ForceDevice.C
 # End Source File
 # Begin Source File
