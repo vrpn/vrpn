@@ -248,24 +248,32 @@ int main (int argc, char * argv [])
 	if (print_for_tracker) {
 	    int j;
 	    vrpn_Tracker_Remote *tkr = dev->tkr;
-	    t_user_callback *tc = new t_user_callback;
+	    t_user_callback *tc1 = new t_user_callback;
+	    t_user_callback *tc2 = new t_user_callback;
+	    t_user_callback *tc3 = new t_user_callback;
 
-	    if (tc == NULL) {
+	    if ( (tc1 == NULL) || (tc2 == NULL) || (tc3 == NULL) ) {
 		fprintf(stderr,"Out of memory\n");
 	    }
 	    printf(" Tracker");
 
 	    // Fill in the user-data callback information
-	    strncpy(tc->t_name, dev->name, sizeof(tc->t_name));
+	    strncpy(tc1->t_name, dev->name, sizeof(tc1->t_name));
+	    strncpy(tc2->t_name, dev->name, sizeof(tc2->t_name));
+	    strncpy(tc3->t_name, dev->name, sizeof(tc3->t_name));
 	    for (j = 0; j < vrpn_TRACKER_MAX_SENSORS; j++) {
-		tc->t_sensor_list[j].count = 0;
-		tc->t_sensor_list[j].stride = tracker_stride;
+		tc1->t_sensor_list[j].count = 0;
+		tc1->t_sensor_list[j].stride = tracker_stride;
+		tc2->t_sensor_list[j].count = 0;
+		tc2->t_sensor_list[j].stride = tracker_stride;
+		tc3->t_sensor_list[j].count = 0;
+		tc3->t_sensor_list[j].stride = tracker_stride;
 	    }
 
 	    // Set up the tracker callback handlers
-	    tkr->register_change_handler(tc, handle_tracker_pos_quat);
-	    tkr->register_change_handler(tc, handle_tracker_vel);
-	    tkr->register_change_handler(tc, handle_tracker_acc);
+	    tkr->register_change_handler(tc1, handle_tracker_pos_quat);
+	    tkr->register_change_handler(tc2, handle_tracker_vel);
+	    tkr->register_change_handler(tc3, handle_tracker_acc);
 	}
 
 	if (print_for_button) {

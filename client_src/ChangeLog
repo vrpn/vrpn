@@ -1,3 +1,8 @@
+2002-07-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_print_devices.C : Added handlers for velocity and
+		acceleration to the tracker device.
+
 2002-05-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* haptic : New directory with examples of using a Phantom.
