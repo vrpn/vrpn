@@ -124,7 +124,7 @@ int		num_dials = 0;
 vrpn_Timecode_Generator * timecode_generators[MAX_TIMECODE_GENERATORS];
 int		num_generators = 0;
 #endif
-vrpn_Tng3  *tng3s[MAX_TNG3S];
+vrpn_Tng3       *tng3s[MAX_TNG3S];
 int             num_tng3s = 0;
 
 vrpn_Connection * connection;
@@ -775,7 +775,7 @@ int setup_ImmersionBox (char * & pch, char * line, FILE * config_file) {
 
 int setup_5dt (char * & pch, char * line, FILE * config_file)
 {
-  char name [512], device [512];
+  char name [LINESIZE], device [LINESIZE];
   int baud_rate, mode;
 
   next();
@@ -1250,8 +1250,8 @@ int setup_Button_Python (char * & pch, char * line, FILE * config_file) {
 //================================
 int setup_Button_SerialMouse (char * & pch, char * line, FILE * config_file) {
 
-    char s2 [512];
-    char s3 [512];
+    char s2 [LINESIZE];
+    char s3 [LINESIZE];
     char s4 [32];
     vrpn_MOUSETYPE mType = MAX_MOUSE_TYPES;
     
@@ -1323,8 +1323,8 @@ int setup_Button_PinchGlove(char* &pch, char *line, FILE *config_file) {
 
 //================================
 int setup_Joylin (char * & pch, char * line, FILE * config_file) {
-  char s2[512];
-  char s3[512];
+  char s2[LINESIZE];
+  char s3[LINESIZE];
   
   // Get the arguments
   next();
@@ -1652,87 +1652,87 @@ main (int argc, char * argv[])
 	// **                                                                **
 	// ********************************************************************
 	while (!done) {
-		int	i;
+	  int	i;
 
-		// Let all the buttons generate reports
-		for (i = 0; i < num_buttons; i++) {
-			buttons[i]->mainloop();
-		}
+	  // Let all the buttons generate reports
+	  for (i = 0; i < num_buttons; i++) {
+		  buttons[i]->mainloop();
+	  }
 
-		// Let all the trackers generate reports
-		for (i = 0; i < num_trackers; i++) {
-			trackers[i]->mainloop();
-		}
+	  // Let all the trackers generate reports
+	  for (i = 0; i < num_trackers; i++) {
+		  trackers[i]->mainloop();
+	  }
 
-		// Let all the sound servers do their thing 
-		for (i = 0; i < num_sounds; i++) {
-			sounds[i]->mainloop();
-		}
+	  // Let all the sound servers do their thing 
+	  for (i = 0; i < num_sounds; i++) {
+		  sounds[i]->mainloop();
+	  }
 
-		// Let all the analogs do their thing
-		for (i=0; i< num_analogs; i++) {
-			analogs[i]->mainloop();
-		}
+	  // Let all the analogs do their thing
+	  for (i=0; i< num_analogs; i++) {
+		  analogs[i]->mainloop();
+	  }
 
-		// Let all the dials do their thing
-		for (i=0; i< num_dials; i++) {
-			dials[i]->mainloop();
-		}
+	  // Let all the dials do their thing
+	  for (i=0; i< num_dials; i++) {
+		  dials[i]->mainloop();
+	  }
 
-		// Let all the cereal boxes do their thing
-		for (i=0; i< num_cereals; i++) {
-			cereals[i]->mainloop();
-		}
+	  // Let all the cereal boxes do their thing
+	  for (i=0; i< num_cereals; i++) {
+		  cereals[i]->mainloop();
+	  }
 
-		// Let all the Magellans do their thing
-		for (i=0; i< num_magellans; i++) {
-			magellans[i]->mainloop();
-		}
+	  // Let all the Magellans do their thing
+	  for (i=0; i< num_magellans; i++) {
+		  magellans[i]->mainloop();
+	  }
 
-                // Let all the Spaceballs do their thing
-                for (i=0; i< num_spaceballs; i++) {
-                        spaceballs[i]->mainloop();
-                }
+          // Let all the Spaceballs do their thing
+          for (i=0; i< num_spaceballs; i++) {
+                  spaceballs[i]->mainloop();
+          }
 
-                // Let all the Immersion boxes do their thing
-                for (i=0; i< num_iboxes; i++) {
-                        iboxes[i]->mainloop();
-                }
+          // Let all the Immersion boxes do their thing
+          for (i=0; i< num_iboxes; i++) {
+                  iboxes[i]->mainloop();
+          }
 
-		// Let all of the SGI button/knob boxes do their thing
-		for (i=0; i < num_sgiboxes; i++) {
-			sgiboxes[i]->mainloop();
-		}
+	  // Let all of the SGI button/knob boxes do their thing
+	  for (i=0; i < num_sgiboxes; i++) {
+		  sgiboxes[i]->mainloop();
+	  }
 #ifdef SGI_BDBOX
-		if (vrpn_special_sgibox) 
-		  vrpn_special_sgibox->mainloop();
+	  if (vrpn_special_sgibox) 
+	    vrpn_special_sgibox->mainloop();
 #endif
 #ifdef INCLUDE_TIMECODE_SERVER
-		for (i=0; i < num_generators; i++) {
-			timecode_generators[i]->mainloop();
-		}
+	  for (i=0; i < num_generators; i++) {
+		  timecode_generators[i]->mainloop();
+	  }
 #endif
 
-		// Let all the TNG3 do their thing
-        for (i=0; i< num_tng3s; i++) {
-			tng3s[i]->mainloop();
-        }
+	  // Let all the TNG3 do their thing
+          for (i=0; i< num_tng3s; i++) {
+		  tng3s[i]->mainloop();
+          }
 
-        redundantController->mainloop();
-        redundancy->mainloop();
+          redundantController->mainloop();
+          redundancy->mainloop();
 
-		// Send and receive all messages
-		connection->mainloop();
-		if (!connection->doing_okay()) shutDown();
+	  // Send and receive all messages
+	  connection->mainloop();
+	  if (!connection->doing_okay()) shutDown();
 
-		// Handle forwarding requests;  send messages
-		// on auxiliary connections
-		forwarderServer->mainloop();
+	  // Handle forwarding requests;  send messages
+	  // on auxiliary connections
+	  forwarderServer->mainloop();
 
-		// Sleep so we don't eat the CPU
-		if (milli_sleep_time > 0) {
-			vrpn_SleepMsecs(milli_sleep_time);
-		}
+	  // Sleep so we don't eat the CPU
+	  if (milli_sleep_time > 0) {
+		  vrpn_SleepMsecs(milli_sleep_time);
+	  }
 	}
 
 	shutDown();
