@@ -1,0 +1,201 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: quat - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "E:\DOCUME~1\kskinner\LOCALS~1\Temp\RSP69.tmp" with contents
+[
+/nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /FR"Debug/" /Fp"Debug/quat.pch" /YX /Fo"Debug/" /Fd"Debug/" /FD /GZ /c     
+/Tp "E:\Documents and Settings\kskinner\Desktop\quat\matrix.c"
+/Tp "E:\Documents and Settings\kskinner\Desktop\quat\quat.c"
+/Tp "E:\Documents and Settings\kskinner\Desktop\quat\vector.c"
+/Tp "E:\Documents and Settings\kskinner\Desktop\quat\xyzquat.c"
+]
+Creating command line "cl.exe @E:\DOCUME~1\kskinner\LOCALS~1\Temp\RSP69.tmp" 
+Creating command line "link.exe -lib /nologo /out:"..\Debug\quat.lib"  ".\Debug\matrix.obj" ".\Debug\quat.obj" ".\Debug\vector.obj" ".\Debug\xyzquat.obj" "
+<h3>Output Window</h3>
+Compiling...
+matrix.c
+e:\documents and settings\kskinner\desktop\quat\matrix.c(247) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+e:\documents and settings\kskinner\desktop\quat\matrix.c(248) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+e:\documents and settings\kskinner\desktop\quat\matrix.c(249) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+e:\documents and settings\kskinner\desktop\quat\matrix.c(250) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+e:\documents and settings\kskinner\desktop\quat\matrix.c(252) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+e:\documents and settings\kskinner\desktop\quat\matrix.c(253) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+e:\documents and settings\kskinner\desktop\quat\matrix.c(254) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+e:\documents and settings\kskinner\desktop\quat\matrix.c(255) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+e:\documents and settings\kskinner\desktop\quat\matrix.c(257) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+e:\documents and settings\kskinner\desktop\quat\matrix.c(258) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+e:\documents and settings\kskinner\desktop\quat\matrix.c(259) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+e:\documents and settings\kskinner\desktop\quat\matrix.c(260) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+quat.c
+E:\Documents and Settings\kskinner\Desktop\quat\quat.c(541) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+E:\Documents and Settings\kskinner\Desktop\quat\quat.c(542) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+E:\Documents and Settings\kskinner\Desktop\quat\quat.c(543) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+E:\Documents and Settings\kskinner\Desktop\quat\quat.c(546) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+E:\Documents and Settings\kskinner\Desktop\quat\quat.c(547) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+E:\Documents and Settings\kskinner\Desktop\quat\quat.c(548) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+E:\Documents and Settings\kskinner\Desktop\quat\quat.c(551) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+E:\Documents and Settings\kskinner\Desktop\quat\quat.c(552) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+E:\Documents and Settings\kskinner\Desktop\quat\quat.c(553) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+E:\Documents and Settings\kskinner\Desktop\quat\quat.c(838) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+E:\Documents and Settings\kskinner\Desktop\quat\quat.c(839) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+E:\Documents and Settings\kskinner\Desktop\quat\quat.c(840) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+E:\Documents and Settings\kskinner\Desktop\quat\quat.c(843) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+E:\Documents and Settings\kskinner\Desktop\quat\quat.c(844) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+E:\Documents and Settings\kskinner\Desktop\quat\quat.c(845) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+E:\Documents and Settings\kskinner\Desktop\quat\quat.c(848) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+E:\Documents and Settings\kskinner\Desktop\quat\quat.c(849) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+E:\Documents and Settings\kskinner\Desktop\quat\quat.c(850) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+vector.c
+e:\documents and settings\kskinner\desktop\quat\vector.c(326) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+e:\documents and settings\kskinner\desktop\quat\vector.c(327) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+e:\documents and settings\kskinner\desktop\quat\vector.c(328) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+xyzquat.c
+E:\Documents and Settings\kskinner\Desktop\quat\xyzquat.c(189) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+Creating library...
+<h3>
+--------------------Configuration: vrpn - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "E:\DOCUME~1\kskinner\LOCALS~1\Temp\RSP6A.tmp" with contents
+[
+/nologo /MDd /W3 /GX /Z7 /Od /I "../quat" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /Fp"PC_WIN32/Debug/vrpn.pch" /YX /Fo"PC_WIN32/Debug/" /Fd"PC_WIN32/Debug/" /FD /TP /c 
+"E:\Documents and Settings\kskinner\Desktop\vrpn\vrpn_3Space.C"
+"E:\Documents and Settings\kskinner\Desktop\vrpn\vrpn_Analog.C"
+"E:\Documents and Settings\kskinner\Desktop\vrpn\vrpn_Analog_Radamec_SPI.C"
+"E:\Documents and Settings\kskinner\Desktop\vrpn\vrpn_BaseClass.C"
+"E:\Documents and Settings\kskinner\Desktop\vrpn\vrpn_Button.C"
+"E:\Documents and Settings\kskinner\Desktop\vrpn\vrpn_CerealBox.C"
+"E:\Documents and Settings\kskinner\Desktop\vrpn\vrpn_Clock.C"
+"E:\Documents and Settings\kskinner\Desktop\vrpn\vrpn_Connection.C"
+"E:\Documents and Settings\kskinner\Desktop\vrpn\vrpn_DelayedConnection.C"
+"E:\Documents and Settings\kskinner\Desktop\vrpn\vrpn_Dial.C"
+"E:\Documents and Settings\kskinner\Desktop\vrpn\vrpn_Dyna.C"
+"E:\Documents and Settings\kskinner\Desktop\vrpn\vrpn_FileConnection.C"
+"E:\Documents and Settings\kskinner\Desktop\vrpn\vrpn_FileController.C"
+"E:\Documents and Settings\kskinner\Desktop\vrpn\vrpn_Flock.C"
+"E:\Documents and Settings\kskinner\Desktop\vrpn\vrpn_Flock_Parallel.C"
+"E:\Documents and Settings\kskinner\Desktop\vrpn\vrpn_ForceDevice.C"
+"E:\Documents and Settings\kskinner\Desktop\vrpn\vrpn_Forwarder.C"
+"E:\Documents and Settings\kskinner\Desktop\vrpn\vrpn_ForwarderController.C"
+"E:\Documents and Settings\kskinner\Desktop\vrpn\vrpn_ImmersionBox.C"
+"E:\Documents and Settings\kskinner\Desktop\vrpn\vrpn_Magellan.C"
+"E:\Documents and Settings\kskinner\Desktop\vrpn\vrpn_Mutex.C"
+"E:\Documents and Settings\kskinner\Desktop\vrpn\vrpn_raw_sgibox.C"
+"E:\Documents and Settings\kskinner\Desktop\vrpn\vrpn_RedundantTransmission.C"
+"E:\Documents and Settings\kskinner\Desktop\vrpn\vrpn_Router.C"
+"E:\Documents and Settings\kskinner\Desktop\vrpn\vrpn_Serial.C"
+"E:\Documents and Settings\kskinner\Desktop\vrpn\vrpn_Shared.C"
+"E:\Documents and Settings\kskinner\Desktop\vrpn\vrpn_SharedObject.C"
+"E:\Documents and Settings\kskinner\Desktop\vrpn\vrpn_Sound.C"
+"E:\Documents and Settings\kskinner\Desktop\vrpn\vrpn_Text.C"
+"E:\Documents and Settings\kskinner\Desktop\vrpn\vrpn_Tracker.C"
+"E:\Documents and Settings\kskinner\Desktop\vrpn\vrpn_Tracker_AnalogFly.C"
+"E:\Documents and Settings\kskinner\Desktop\vrpn\vrpn_Tracker_Fastrak.C"
+"E:\Documents and Settings\kskinner\Desktop\vrpn\vrpn_Wanda.C"
+]
+Creating command line "cl.exe @E:\DOCUME~1\kskinner\LOCALS~1\Temp\RSP6A.tmp" 
+Creating temporary file "E:\DOCUME~1\kskinner\LOCALS~1\Temp\RSP6B.tmp" with contents
+[
+/nologo /out:"PC_WIN32/DEBUG\vrpn.lib" 
+".\PC_WIN32\Debug\vrpn_3Space.obj"
+".\PC_WIN32\Debug\vrpn_Analog.obj"
+".\PC_WIN32\Debug\vrpn_Analog_Radamec_SPI.obj"
+".\PC_WIN32\Debug\vrpn_BaseClass.obj"
+".\PC_WIN32\Debug\vrpn_Button.obj"
+".\PC_WIN32\Debug\vrpn_CerealBox.obj"
+".\PC_WIN32\Debug\vrpn_Clock.obj"
+".\PC_WIN32\Debug\vrpn_Connection.obj"
+".\PC_WIN32\Debug\vrpn_DelayedConnection.obj"
+".\PC_WIN32\Debug\vrpn_Dial.obj"
+".\PC_WIN32\Debug\vrpn_Dyna.obj"
+".\PC_WIN32\Debug\vrpn_FileConnection.obj"
+".\PC_WIN32\Debug\vrpn_FileController.obj"
+".\PC_WIN32\Debug\vrpn_Flock.obj"
+".\PC_WIN32\Debug\vrpn_Flock_Parallel.obj"
+".\PC_WIN32\Debug\vrpn_ForceDevice.obj"
+".\PC_WIN32\Debug\vrpn_Forwarder.obj"
+".\PC_WIN32\Debug\vrpn_ForwarderController.obj"
+".\PC_WIN32\Debug\vrpn_ImmersionBox.obj"
+".\PC_WIN32\Debug\vrpn_Magellan.obj"
+".\PC_WIN32\Debug\vrpn_Mutex.obj"
+".\PC_WIN32\Debug\vrpn_raw_sgibox.obj"
+".\PC_WIN32\Debug\vrpn_RedundantTransmission.obj"
+".\PC_WIN32\Debug\vrpn_Router.obj"
+".\PC_WIN32\Debug\vrpn_Serial.obj"
+".\PC_WIN32\Debug\vrpn_Shared.obj"
+".\PC_WIN32\Debug\vrpn_SharedObject.obj"
+".\PC_WIN32\Debug\vrpn_Sound.obj"
+".\PC_WIN32\Debug\vrpn_Text.obj"
+".\PC_WIN32\Debug\vrpn_Tracker.obj"
+".\PC_WIN32\Debug\vrpn_Tracker_AnalogFly.obj"
+".\PC_WIN32\Debug\vrpn_Tracker_Fastrak.obj"
+".\PC_WIN32\Debug\vrpn_Wanda.obj"
+".\pc_win32\Debug\quat.lib"
+]
+Creating command line "link.exe -lib @E:\DOCUME~1\kskinner\LOCALS~1\Temp\RSP6B.tmp"
+<h3>Output Window</h3>
+Compiling...
+vrpn_3Space.C
+vrpn_Analog.C
+vrpn_Analog_Radamec_SPI.C
+vrpn_BaseClass.C
+vrpn_Button.C
+vrpn_CerealBox.C
+vrpn_Clock.C
+vrpn_Connection.C
+vrpn_DelayedConnection.C
+E:\Documents and Settings\kskinner\Desktop\vrpn\vrpn_DelayedConnection.C(68) : warning C4101: 'p' : unreferenced local variable
+vrpn_Dial.C
+vrpn_Dyna.C
+vrpn_FileConnection.C
+vrpn_FileController.C
+vrpn_Flock.C
+vrpn_Flock_Parallel.C
+vrpn_ForceDevice.C
+vrpn_Forwarder.C
+vrpn_ForwarderController.C
+vrpn_ImmersionBox.C
+vrpn_Magellan.C
+vrpn_Mutex.C
+vrpn_raw_sgibox.C
+vrpn_RedundantTransmission.C
+vrpn_Router.C
+vrpn_Serial.C
+vrpn_Shared.C
+vrpn_SharedObject.C
+E:\Documents and Settings\kskinner\Desktop\vrpn\vrpn_SharedObject.C(635) : warning C4018: '<' : signed/unsigned mismatch
+vrpn_Sound.C
+vrpn_Text.C
+vrpn_Tracker.C
+vrpn_Tracker_AnalogFly.C
+vrpn_Tracker_Fastrak.C
+vrpn_Wanda.C
+Creating library...
+<h3>
+--------------------Configuration: timecode_generator - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "E:\DOCUME~1\kskinner\LOCALS~1\Temp\RSP6C.tmp" with contents
+[
+/nologo /MLd /W3 /Gm /GX /ZI /Od /I "..\.." /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /Fp"Debug/timecode_generator.pch" /YX /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"E:\Documents and Settings\kskinner\Desktop\vrpn\server_src\timecode_generator_server\vrpn_timecode_generator.cpp"
+]
+Creating command line "cl.exe @E:\DOCUME~1\kskinner\LOCALS~1\Temp\RSP6C.tmp" 
+Creating command line "link.exe -lib /nologo /out:"Debug\timecode_generator.lib"  ".\Debug\vrpn_timecode_generator.obj" "\Documents and Settings\kskinner\Desktop\vrpn\PC_WIN32\DEBUG\vrpn.lib" "
+<h3>Output Window</h3>
+Compiling...
+vrpn_timecode_generator.cpp
+Creating library...
+
+
+
+<h3>Results</h3>
+timecode_generator.lib - 0 error(s), 36 warning(s)
+</pre>
+</body>
+</html>

@@ -392,3 +392,12 @@
 #	int	baud_rate_of_serial_device
  
 # vrpn_Button_PinchGlove	PinchGlove0		COM1		9600
+
+################################################################################
+# Adrienne Electronics Corporation PCI time code driver.  The PCI-VITC board
+# for which this driver was developed reads in VITC time codes from an input
+# signal.  This will drive one of these devices.
+# Arguments:
+# char name_of_this_device[]
+
+# vrpn_TimeCode_Generator	TimeGen0

@@ -1,0 +1,1 @@
+To compile this project, make sure the aec_nttc.lib and AECiNTTC.H header files both reside in this directory, along with the corresponding .dll file in the system's path (e.g. \winnt\system32).  Build the debug project as normal.
