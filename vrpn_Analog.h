@@ -151,7 +151,7 @@ class	vrpn_Clipping_Analog_Server : public vrpn_Analog_Server {
 // across the connection arrives).
 
 
-typedef	struct {
+typedef	struct _vrpn_ANALOGCB {
 	struct timeval	msg_time;	// Timestamp of analog data
 	vrpn_int32	num_channel;    // how many channels
 	vrpn_float64	channel[vrpn_CHANNEL_MAX];  // analog values
@@ -182,10 +182,10 @@ class vrpn_Analog_Remote: public vrpn_Analog {
 	        vrpn_ANALOGCHANGEHANDLER handler);
 
     protected:
-        typedef struct vrpn_RBCS {
+        typedef struct vrpn_RACS {
 	    void				*userdata;
 	    vrpn_ANALOGCHANGEHANDLER	handler;
-	    struct vrpn_RBCS		*next;
+	    struct vrpn_RACS		*next;
         } vrpn_ANALOGCHANGELIST;
         vrpn_ANALOGCHANGELIST *change_list;
 

@@ -15,12 +15,15 @@
 
 #include "vrpn_Poser.h"
 #include "vrpn_Analog_Output.h"
+#include "vrpn_Tracker.h"
 
 
-// This code is for a Poser server that uses a vrpn_Analog to drive a device.
+// This code is for a Poser server that uses a vrpn_Analog_Output to drive a device.
 // It is basically the inverse of a vrpn_Tracker_AnalogFly.
 // We are assuming that one Analog device will be used to drive all axes.  This could be
 // Changed by storing an Analog device per axis.
+// This class also acts as a vrpn_Tracker so that it can report back the new positions
+// and velocities to the client when the requests are within the bounds.
 
 
 // Class for holding data used in transforming pose data to analog values for each axis
@@ -53,7 +56,7 @@ class vrpn_Poser_AnalogParam {
                         vel_min[3], vel_max[3], vel_rot_min[3], vel_rot_max[3];
 };
 
-class vrpn_Poser_Analog : public vrpn_Poser {
+class vrpn_Poser_Analog : public vrpn_Poser, public vrpn_Tracker {
     public:
         vrpn_Poser_Analog(const char* name, vrpn_Connection* c, vrpn_Poser_AnalogParam* p);
 

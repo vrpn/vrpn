@@ -657,8 +657,8 @@ class vrpn_Synchronized_Connection : public vrpn_Connection
                              vrpn_int32 *) = allocateEndpoint);
     vrpn_Clock_Server * pClockServer;
 
-    // Create a connection makes aconnection to a remote server
-    // client call
+    // Makes a connection to a remote server or to a file, depending on
+    // the portion of the server_name argument after the "@" sign.
     // freq is the frequency of clock syncs (<0 means only on user request)
     // cOffsetWindow is how many syncs to include in search window for min
     // roundtrip.  Higher values are more accurate but result in a sync

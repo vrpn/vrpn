@@ -1,22 +1,12 @@
-#if defined(_WIN32) && defined(VRPN_USE_DIRECTINPUT)
-// vrpn_DirectXFFJoystick.C
-//	This is a driver for the BG Systems CerealBox controller.
-// This box is a serial-line device that allows the user to connect
-// analog inputs, digital inputs, digital outputs, and digital
-// encoders and read from them over RS-232. You can find out more
-// at www.bgsystems.com. This code is written for version 3.07 of
-// the EEPROM code.
-//	This code is based on their driver code, which was posted
-// on their web site as of the summer of 1999. This code reads the
-// characters as they arrive, rather than waiting "long enough" for
-// them to get here; this should allow the CerealBox to be used at
-// the same time as a tracking device without slowing the tracker
-// down.
-//	The driver portions of this code are based on the Microsoft
-// DirectInput example code from the DirectX SDK.
-
 #include <math.h>
 #include "vrpn_DirectXFFJoystick.h"
+#if defined(_WIN32) && defined(VRPN_USE_DIRECTINPUT)
+
+// vrpn_DirectXFFJoystick.C
+//	This is a driver for joysticks being used through the
+// DirectX interface, both for input and for force feedback.
+//	The driver portions of this code are based on the Microsoft
+// DirectInput example code from the DirectX SDK.
 
 #undef	DEBUG
 #undef VERBOSE
@@ -179,10 +169,9 @@ HRESULT vrpn_DirectXFFJoystick::InitDirectJoystick( void )
     // Set the cooperative level to let DInput know how this device should
     // interact with the system and with other DInput applications.
     // Exclusive access is required in order to perform force feedback.
-    long access_type = DISCL_NONEXCLUSIVE | DISCL_BACKGROUND;
-    if (_force_rate > 0) {
-      access_type = DISCL_EXCLUSIVE | DISCL_BACKGROUND;
-    }
+    // Exclusive access is also required to keep other applications (live VMD)
+    // from opening the same joystick, so we'll use it all the time.
+    long access_type = DISCL_EXCLUSIVE | DISCL_BACKGROUND;
     if( FAILED( hr = _Joystick->SetCooperativeLevel( _hWnd, access_type) ) ) {
         fprintf(stderr, "vrpn_DirectXFFJoystick::InitDirectJoystick(): Cannot set cooperative level\n");
 	_status = STATUS_BROKEN;
@@ -401,6 +390,7 @@ int vrpn_DirectXFFJoystick::get_report(void)
       hr = _Joystick->Acquire();
       if ( hr == DIERR_INPUTLOST ) {
 	  struct timeval resettime;
+	  gettimeofday(&resettime, NULL);
 	  while ( ( hr == DIERR_INPUTLOST) && (duration(resettime, reporttime) <= MAX_TIME_INTERVAL) ) {
 	    gettimeofday(&resettime, NULL);
 	    hr = _Joystick->Acquire();

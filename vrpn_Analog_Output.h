@@ -69,8 +69,8 @@ class vrpn_Analog_Output_Server : public vrpn_Analog_Output {
 	const vrpn_float64* o_channels (void) const { return o_channel; };
 };
 
-// Open an analog device that is on the other end of a connection
-// and handle updates from it.  This is the type of analog device
+// Open an analog output device that is on the other end of a connection
+// and send updates to it.  This is the type of analog output device
 // that user code will deal with.
 class vrpn_Analog_Output_Remote : public vrpn_Analog_Output {
     public:

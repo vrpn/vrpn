@@ -1,3 +1,7 @@
+//XXX Adam has code in the SEM simulator whereby the client requests a number
+// of images from the server.  Once some have come in, it requests more.  This
+// keeps the network pipeline from filling up with a bunch of images.  Could
+// be a generally useful feature to keep the latency down.
 #ifndef	VRPN_TEMPIMAGER_H
 #define	VRPN_TEMPIMAGER_H
 #include  "vrpn_Connection.h"
@@ -57,18 +61,18 @@ public:
   vrpn_TempImager(const char *name, vrpn_Connection *c = NULL);
 
 protected:
-  vrpn_int32	_nRows;		//< Number of rows in the image
-  vrpn_int32	_nCols;		//< Number of columns in the image
-  vrpn_float32	_minX,_maxX;	//< Real-space range of X pixel centers in meters
-  vrpn_float32	_minY,_maxY;	//< Real-space range of Y pixel centers in meters
-  vrpn_int32	_nChannels;	//< Number of image data channels
-  vrpn_TempImager_Channel _channels[vrpn_IMAGER_MAX_CHANNELS];
+  vrpn_int32	d_nRows;	//< Number of rows in the image
+  vrpn_int32	d_nCols;	//< Number of columns in the image
+  vrpn_float32	d_minX,d_maxX;	//< Real-space range of X pixel centers in units (meters, radians)
+  vrpn_float32	d_minY,d_maxY;	//< Real-space range of Y pixel centers in units (meters, radians)
+  vrpn_int32	d_nChannels;	//< Number of image data channels
+  vrpn_TempImager_Channel d_channels[vrpn_IMAGER_MAX_CHANNELS];
 
   virtual int register_types(void);
-  vrpn_int32	_description_m_id;  //< ID of the message type describing the range and channels
-  vrpn_int32	_regionu8_m_id;	    //< ID of the message type describing a region with 8-bit unsigned entries
-  vrpn_int32	_regionu16_m_id;    //< ID of the message type describing a region with 16-bit unsigned entries
-  vrpn_int32	_regionf32_m_id;    //< ID of the message type describing a region with 32-bit float entries
+  vrpn_int32	d_description_m_id; //< ID of the message type describing the range and channels
+  vrpn_int32	d_regionu8_m_id;    //< ID of the message type describing a region with 8-bit unsigned entries
+  vrpn_int32	d_regionu16_m_id;   //< ID of the message type describing a region with 16-bit unsigned entries
+  vrpn_int32	d_regionf32_m_id;   //< ID of the message type describing a region with 32-bit float entries
 };
 
 class vrpn_TempImager_Server: public vrpn_TempImager {
@@ -104,7 +108,7 @@ public:
   virtual void	mainloop(void);
 
 protected:
-  bool	_description_sent;    //< Has the description message been sent?
+  bool	d_description_sent;    //< Has the description message been sent?
   /// Sends a description of the imager so the remote can process the region messages
   bool	send_description(void);
 
@@ -143,28 +147,28 @@ class vrpn_TempImager_Region {
   friend void java_vrpn_handle_region_change( void * userdata, const vrpn_IMAGERREGIONCB info );
 
 public:
-  vrpn_TempImager_Region(void) { _chanIndex = -1; _rMin = _rMax = _cMin = _cMax = 0; 
-				 _valBuf = NULL; _valType = vrpn_IMAGER_VALTYPE_UNKNOWN;
-				 _valid = false; }
+  vrpn_TempImager_Region(void) { d_chanIndex = -1; d_rMin = d_rMax = d_cMin = d_cMax = 0; 
+				 d_valBuf = NULL; d_valType = vrpn_IMAGER_VALTYPE_UNKNOWN;
+				 d_valid = false; }
 
   /// Returns the number of values in the region.
   inline vrpn_uint32 getNumVals( ) const {
-    if (!_valid) { return 0;
-    } else { return ( _rMax - _rMin + 1 ) * ( _cMax - _cMin + 1 ); }
+    if (!d_valid) { return 0;
+    } else { return ( d_rMax - d_rMin + 1 ) * ( d_cMax - d_cMin + 1 ); }
   }
 
   /// Reads pixel from the region with no scale and offset applied to the value.  Not
   /// the most efficient way to read the pixels out -- use the block read routines.
   inline  bool	read_unscaled_pixel(vrpn_uint16 c, vrpn_uint16 r, vrpn_uint8 &val) const {
-    if ( !_valid || (c < _cMin) || (c > _cMax) || (r < _rMin) || (r > _rMax) ) {
+    if ( !d_valid || (c < d_cMin) || (c > d_cMax) || (r < d_rMin) || (r > d_rMax) ) {
       fprintf(stderr, "vrpn_TempImager_Region::read_unscaled_pixel(): Invalid region or out of range\n");
       return false;
     } else {
-      if (_valType != vrpn_IMAGER_VALTYPE_UINT8) {
+      if (d_valType != vrpn_IMAGER_VALTYPE_UINT8) {
 	fprintf(stderr, "XXX vrpn_TempImager_Region::read_unscaled_pixel(): Transcoding not implemented yet\n");
 	return false;
       } else {
-	val = ((vrpn_uint8 *)_valBuf)[(c - _cMin) + (r - _rMin)*(_cMax - _cMin+1)];
+	val = ((vrpn_uint8 *)d_valBuf)[(c - d_cMin) + (r - d_rMin)*(d_cMax - d_cMin+1)];
       }
     }
     return true;
@@ -173,18 +177,18 @@ public:
   /// Reads pixel from the region with no scale and offset applied to the value.  Not
   /// the most efficient way to read the pixels out -- use the block read routines.
   inline  bool	read_unscaled_pixel(vrpn_uint16 c, vrpn_uint16 r, vrpn_uint16 &val) const {
-    if ( !_valid || (c < _cMin) || (c > _cMax) || (r < _rMin) || (r > _rMax) ) {
+    if ( !d_valid || (c < d_cMin) || (c > d_cMax) || (r < d_rMin) || (r > d_rMax) ) {
       fprintf(stderr, "vrpn_TempImager_Region::read_unscaled_pixel(): Invalid region or out of range\n");
       return false;
     } else {
-      if (_valType != vrpn_IMAGER_VALTYPE_UINT16) {
+      if (d_valType != vrpn_IMAGER_VALTYPE_UINT16) {
 	fprintf(stderr, "XXX vrpn_TempImager_Region::read_unscaled_pixel(): Transcoding not implemented yet\n");
 	return false;
       } else if (vrpn_big_endian) {
 	fprintf(stderr, "XXX vrpn_TempImager_Region::read_unscaled_pixel(): Not implemented on big-endian yet\n");
 	return false;
       } else {
-	val = ((vrpn_uint16 *)_valBuf)[(c - _cMin) + (r - _rMin)*(_cMax - _cMin+1)];
+	val = ((vrpn_uint16 *)d_valBuf)[(c - d_cMin) + (r - d_rMin)*(d_cMax - d_cMin+1)];
       }
     }
     return true;
@@ -203,16 +207,25 @@ public:
     vrpn_uint32 colStride, vrpn_uint32 rowStride,
     vrpn_uint32 nRows = 0, bool invert_y = false, unsigned repeat = 1) const;
 
-  vrpn_int16  _chanIndex;	//< Which channel this region holds data for 
-  vrpn_uint16 _rMin, _rMax;	//< Range of indices for the rows
-  vrpn_uint16 _cMin, _cMax;	//< Range of indices for the columns
+  vrpn_int16  d_chanIndex;	//< Which channel this region holds data for 
+  vrpn_uint16 d_rMin, d_rMax;	//< Range of indices for the rows
+  vrpn_uint16 d_cMin, d_cMax;	//< Range of indices for the columns
 
 protected:
-  const	void  *_valBuf;		//< Pointer to the buffer of values
-  vrpn_uint16 _valType;		//< Type of the values in the buffer
-  bool	      _valid;		//< Tells whether the helper can be used.
+  const	void  *d_valBuf;	//< Pointer to the buffer of values
+  vrpn_uint16 d_valType;	//< Type of the values in the buffer
+  bool	      d_valid;		//< Tells whether the helper can be used.
 };
 
+typedef struct _vrpn_IMAGERREGIONCB {
+  struct timeval		msg_time; //< Timestamp of the region data's change
+  const vrpn_TempImager_Region	*region;  //< New region of the image
+} vrpn_IMAGERREGIONCB;
+
+typedef void (*vrpn_IMAGERREGIONHANDLER) (void * userdata,
+					  const vrpn_IMAGERREGIONCB info);
+typedef void (*vrpn_IMAGERDESCRIPTIONHANDLER) (void * userdata,
+					       const struct timeval msg_time);
 
 /// This is the class users deal with: it tells the format and the region data when it arrives.
 class vrpn_TempImager_Remote: public vrpn_TempImager {
@@ -231,31 +244,31 @@ public:
   virtual void	mainloop(void);
 
   /// Accessors for the member variables: can be queried in the handler for object changes
-  vrpn_int32	nRows(void) const { return _nRows; };
-  vrpn_int32	nCols(void) const { return _nCols; };
-  vrpn_float32	minX(void) const { return _minX; };
-  vrpn_float32	maxX(void) const { return _maxX; };
-  vrpn_float32	minY(void) const { return _minY; };
-  vrpn_float32	maxY(void) const { return _maxY; };
-  vrpn_int32	nChannels(void) const { return _nChannels; };
+  vrpn_int32	nRows(void) const { return d_nRows; };
+  vrpn_int32	nCols(void) const { return d_nCols; };
+  vrpn_float32	minX(void) const { return d_minX; };
+  vrpn_float32	maxX(void) const { return d_maxX; };
+  vrpn_float32	minY(void) const { return d_minY; };
+  vrpn_float32	maxY(void) const { return d_maxY; };
+  vrpn_int32	nChannels(void) const { return d_nChannels; };
   const vrpn_TempImager_Channel *channel(unsigned chanNum) const;
 
 protected:
-  bool	  _got_description;	//< Have we gotten a description yet?
+  bool	  d_got_description;	//< Have we gotten a description yet?
   // Lists to keep track of registered user handlers.
   typedef struct vrpn_TIDCS {
       void			    *userdata;
       vrpn_IMAGERDESCRIPTIONHANDLER handler;
       struct vrpn_TIDCS		    *next;
   } vrpn_DESCRIPTIONLIST;
-  vrpn_DESCRIPTIONLIST *_description_list;
+  vrpn_DESCRIPTIONLIST *d_description_list;
 
   typedef struct vrpn_TIRCS {
       void			    *userdata;
       vrpn_IMAGERREGIONHANDLER	    handler;
       struct vrpn_TIRCS		    *next;
   } vrpn_REGIONLIST;
-  vrpn_REGIONLIST *_region_list;
+  vrpn_REGIONLIST *d_region_list;
 
   /// Handler for description change message from the server.
   static int handle_region_message(void *userdata, vrpn_HANDLERPARAM p);

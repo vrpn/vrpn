@@ -15,7 +15,8 @@ vrpn_Poser_AnalogParam::vrpn_Poser_AnalogParam() {
 }
 
 vrpn_Poser_Analog::vrpn_Poser_Analog(const char* name, vrpn_Connection* c, vrpn_Poser_AnalogParam* p) :
-    vrpn_Poser(name, c) 
+    vrpn_Poser(name, c),
+    vrpn_Tracker(name, c)
 {
     int i;
 
@@ -49,7 +50,7 @@ vrpn_Poser_Analog::vrpn_Poser_Analog(const char* name, vrpn_Connection* c, vrpn_
     ry = p->ry;
     rz = p->rz;
 
-    // Create the Analog Remote 
+    // Create the Analog Output Remote 
     // If the name starts with the '*' character, use the server
     // connection rather than making a new one.
     if (p->ana_name != NULL) {
@@ -116,7 +117,7 @@ int vrpn_Poser_Analog::handle_change_message(void* userdata,
 			p.payload_len, 7 * sizeof(vrpn_float64) );
 		return -1;
 	}
-    me->p_timestamp = p.msg_time;
+	me->p_timestamp = p.msg_time;
 
 	for (i = 0; i < 3; i++) {
 	 	vrpn_unbuffer(&params, &me->p_pos[i]);
@@ -137,13 +138,28 @@ int vrpn_Poser_Analog::handle_change_message(void* userdata,
         }
     }
 
-    if (outside_bounds) {
-        // Requested pose not available.  Ack the client of the given pose.
-        me->send_pose();
-    }
-
     // XXX 
     // SHOULD WE UPDATE ANALOG VALUES NOW, OR DO THIS IN THE MAINLOOP???
+
+    // Tell the client where we actually went (clipped position and orientation).
+    // using sensor 0 as the one to use to report.
+    me->d_sensor = 0;
+    me->pos[0] = me->p_pos[0];
+    me->pos[1] = me->p_pos[1];
+    me->pos[2] = me->p_pos[2];
+    me->d_quat[0] = me->p_quat[0];
+    me->d_quat[1] = me->p_quat[1];
+    me->d_quat[2] = me->p_quat[2];
+    me->d_quat[3] = me->p_quat[3];
+    gettimeofday(&me->vrpn_Tracker::timestamp, NULL);
+    char	msgbuf[1000];
+    vrpn_int32	len;
+    len = me->vrpn_Tracker::encode_to(msgbuf);
+    if (me->d_connection->pack_message(len, me->vrpn_Tracker::timestamp,
+      me->position_m_id, me->d_sender_id, msgbuf, vrpn_CONNECTION_LOW_LATENCY)) {
+       fprintf(stderr,"vrpn_Poser_Analog::handle_change_message(): can't write message: tossing\n");
+       return -1;
+    }
 
     return 0;
 }
@@ -185,13 +201,28 @@ int vrpn_Poser_Analog::handle_vel_change_message(void* userdata,
         }
     }
 
-    if (outside_bounds) {
-        // Requested velocity not available.  Ack the client of the given velocity.
-        me->send_pose_velocity();
-    }
-
     // XXX 
     // SHOULD WE UPDATE ANALOG VALUES NOW, OR DO THIS IN THE MAINLOOP???
+
+    // Tell the client where we actually went (clipped position and orientation).
+    // using sensor 0 as the one to use to report.
+    me->d_sensor = 0;
+    me->vel[0] = me->p_vel[0];
+    me->vel[1] = me->p_vel[1];
+    me->vel[2] = me->p_vel[2];
+    me->vel_quat[0] = me->p_vel_quat[0];
+    me->vel_quat[1] = me->p_vel_quat[1];
+    me->vel_quat[2] = me->p_vel_quat[2];
+    me->vel_quat[3] = me->p_vel_quat[3];
+    gettimeofday(&me->vrpn_Tracker::timestamp, NULL);
+    char	msgbuf[1000];
+    vrpn_int32	len;
+    len = me->vrpn_Tracker::encode_vel_to(msgbuf);
+    if (me->d_connection->pack_message(len, me->vrpn_Tracker::timestamp,
+      me->velocity_m_id, me->d_sender_id, msgbuf, vrpn_CONNECTION_LOW_LATENCY)) {
+       fprintf(stderr,"vrpn_Poser_Analog::handle_vel_change_message(): can't write message: tossing\n");
+       return -1;
+    }
 
     return 0;
 }

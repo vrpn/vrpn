@@ -103,8 +103,6 @@ int vrpn_Poser::register_types(void)
 	if (d_connection) {
         req_position_m_id = d_connection->register_message_type("vrpn_Poser Request Pos_Quat");
         req_velocity_m_id = d_connection->register_message_type("vrpn_Poser Request Velocity");
-        ack_position_m_id = d_connection->register_message_type("vrpn_Poser Ack Pos_Quat");
-        ack_velocity_m_id = d_connection->register_message_type("vrpn_Poser Ack Velocity");
 	}
 	return 0;
 }
@@ -202,44 +200,6 @@ void vrpn_Poser::set_pose_velocity(timeval t, vrpn_float64 velocity[3], vrpn_flo
 }
 
 
-int vrpn_Poser::send_pose() 
-{
-    char msgbuf[1000];
-    vrpn_int32 len;
-
-    // Pack pose
-    len = encode_to(msgbuf);
-    if (d_connection->pack_message(len, p_timestamp,
-        ack_position_m_id, d_sender_id, msgbuf,
-        vrpn_CONNECTION_LOW_LATENCY)) {
-        fprintf(stderr, "vrpn_Poser: can't write a message: tossing\n");
-        return -1;
-    }
-
-    return 0;
-}
-
-int vrpn_Poser::send_pose_velocity() 
-{
-    char msgbuf[1000];
-    vrpn_int32 len;
-
-    // Pack velocity
-    len = encode_vel_to(msgbuf);
-    if (d_connection->pack_message(len, p_timestamp,
-        ack_velocity_m_id, d_sender_id, msgbuf,
-        vrpn_CONNECTION_LOW_LATENCY)) {
-        fprintf(stderr, "vrpn_Poser: can't write a message: tossing\n");
-        return -1;
-    }
-
-    return 0;
-}
-
-
-
-
-
 
 //////////////////////////////////////////////////////////////////////////////////////
 // Server Code
@@ -312,11 +272,6 @@ int vrpn_Poser_Server::handle_change_message(void* userdata,
         }
     }
 
-    if (outside_bounds) {
-        // Requested pose not available.  Ack the client of the given pose.
-        me->send_pose();
-    }
-
     return 0;
 }
 
@@ -356,12 +311,6 @@ int vrpn_Poser_Server::handle_vel_change_message(void* userdata,
             outside_bounds = true;
         }
     }
-
-    if (outside_bounds) {
-        // Requested velocity not available.  Ack the client of the given velocity.
-        me->send_pose_velocity();
-    }
-
     return 0;
 }
 
@@ -372,27 +321,10 @@ int vrpn_Poser_Server::handle_vel_change_message(void* userdata,
 vrpn_Poser_Remote::vrpn_Poser_Remote (const char* name, vrpn_Connection* c) :
 	vrpn_Poser (name, c)
 {
-    change_list = NULL;
-    velchange_list = NULL;
-
 	// Make sure that we have a valid connection
 	if (d_connection == NULL) {
 		fprintf(stderr,"vrpn_Poser_Remote: No connection\n");
 		return;
-	}
-
-    // Register a handler for the position change callback for this device
- 	if (register_autodeleted_handler(ack_position_m_id,
-			handle_change_message, this, d_sender_id)) {
-		fprintf(stderr,"vrpn_Poser_Remote:can't register position handler\n");
-		d_connection = NULL;
-	}
-
-    // Register a handler for the velocity change callback for this device
-    if (register_autodeleted_handler(ack_velocity_m_id,
-			handle_vel_change_message, this, d_sender_id)) {
-		fprintf(stderr,"vrpn_Poser_Remote:can't register velocity handler\n");
-		d_connection = NULL;
 	}
 }
 
@@ -444,205 +376,6 @@ int vrpn_Poser_Remote::request_pose_velocity(struct timeval t,
     }
 
     return 1;
-}
-
-int vrpn_Poser_Remote::register_change_handler(void* userdata,
-        vrpn_POSERCHANGEHANDLER handler)
-{
-    vrpn_POSERCHANGELIST* new_entry;
-
-    // Ensure that the handler is non-NULL
-    if (handler == NULL) {
-        fprintf(stderr, 
-            "vrpn_Poser::register_handler: NULL handler\n");
-        return -1;
-    }
-
-    // Allocate and initialize the new entry
-    if ((new_entry = new vrpn_POSERCHANGELIST) == NULL) {
-        fprintf(stderr,
-            "vrpn_Poser::register_handler: Out of memory\n");
-        return -1;
-    }
-    new_entry->handler = handler;
-    new_entry->userdata = userdata;
-
-    // Add this handler to the chain at the beginning (don't check to see
-    // if it is already there, since duplication is okay).
-    new_entry->next = change_list;
-    change_list = new_entry;
-
-    return 0;
-}
-
-int vrpn_Poser_Remote::register_change_handler(void* userdata,
-        vrpn_POSERVELCHANGEHANDLER handler)
-{
-    vrpn_POSERVELCHANGELIST* new_entry;
-
-    // Ensure that the handler is non-NULL
-    if (handler == NULL) {
-        fprintf(stderr,
-            "vrpn_Poser::register_handler: NULL handler\n");
-        return -1;
-    }
-
-    // Allocate and initialize the new entry
-    if ((new_entry = new vrpn_POSERVELCHANGELIST) == NULL) {
-        fprintf(stderr,
-            "vrpn_Poser::register_handler: Out of memory\n");
-        return -1;
-    }
-    new_entry->handler = handler;
-    new_entry->userdata = userdata;
-
-    // Add this handler to the chain at the beginning (don't check to see
-    // if it is already there, since duplication is okay).
-    new_entry->next = velchange_list;
-    velchange_list = new_entry;
-
-    return 0;
-}
-
-int vrpn_Poser_Remote::unregister_change_handler(void* userdata,
-        vrpn_POSERCHANGEHANDLER handler)
-{
-	// The pointer at *snitch points to victim
-	vrpn_POSERCHANGELIST *victim, **snitch;
-
-	// Find a handler with this registry in the list (any one will do,
-	// since all duplicates are the same).
-	snitch = &(change_list);
-	victim = *snitch;
-	while ((victim != NULL) &&
-            ((victim->handler != handler) ||
-            (victim->userdata != userdata) )) {
-	    snitch = &((*snitch)->next);
-	    victim = victim->next;
-	}
-
-	// Make sure we found one
-	if (victim == NULL) {
-		fprintf(stderr,
-		  "vrpn_Poser::unregister_handler: No such handler\n");
-		return -1;
-	}
-
-	// Remove the entry from the list
-	*snitch = victim->next;
-	delete victim;
-
-	return 0;
-}
-
-int vrpn_Poser_Remote::unregister_change_handler(void* userdata,
-        vrpn_POSERVELCHANGEHANDLER handler)
-{
-    // The pointer at *snitch points to victim
-	vrpn_POSERVELCHANGELIST *victim, **snitch;
-
-	// Find a handler with this registry in the list (any one will do,
-	// since all duplicates are the same).
-	snitch = &(velchange_list);
-	victim = *snitch;
-	while ((victim != NULL) &&
-            ((victim->handler != handler) ||
-            (victim->userdata != userdata) )) {
-	    snitch = &((*snitch)->next);
-	    victim = victim->next;
-	}
-
-	// Make sure we found one
-	if (victim == NULL) {
-		fprintf(stderr,
-		  "vrpn_Poser::unregister_handler: No such handler\n");
-		return -1;
-	}
-
-	// Remove the entry from the list
-	*snitch = victim->next;
-	delete victim;
-
-	return 0;
-}
-
-int vrpn_Poser_Remote::handle_change_message(void* userdata,
-	    vrpn_HANDLERPARAM p)
-{
-	vrpn_Poser_Remote* me = (vrpn_Poser_Remote*)userdata;
-	const char* params = (p.buffer);
-	vrpn_POSERCB pp;
-	vrpn_POSERCHANGELIST *handler;
-	int	i;
-
-	// Fill in the parameters to the poser from the message
-	if (p.payload_len != (7 * sizeof(vrpn_float64)) ) {
-		fprintf(stderr,"vrpn_Poser: change message payload error\n");
-		fprintf(stderr,"             (got %d, expected %d)\n",
-			p.payload_len, 7 * sizeof(vrpn_float64) );
-		return -1;
-	}
-	pp.msg_time = p.msg_time;
-
-	for (i = 0; i < 3; i++) {
-	 	vrpn_unbuffer(&params, &pp.pos[i]);
-	}
-	for (i = 0; i < 4; i++) {
-		vrpn_unbuffer(&params, &pp.quat[i]);
-	}
-
-    // Set the local pose
-    me->set_pose(pp.msg_time, pp.pos, pp.quat);
-
-	handler = me->change_list;
-	// Go down the list of callbacks that have been registered.
-	// Fill in the parameter and call each.
-	while (handler != NULL) {
-		handler->handler(handler->userdata, pp);
-		handler = handler->next;
-	}
-
-    return 0;
-}
-
-int vrpn_Poser_Remote::handle_vel_change_message(void* userdata,
-        vrpn_HANDLERPARAM p)
-{
-    vrpn_Poser_Remote* me = (vrpn_Poser_Remote*)userdata;
-	const char* params = (p.buffer);
-	vrpn_POSERVELCB pp;
-	vrpn_POSERVELCHANGELIST *handler;
-	int	i;
-
-	// Fill in the parameters to the poser from the message
-	if (p.payload_len != (8 * sizeof(vrpn_float64)) ) {
-		fprintf(stderr,"vrpn_Poser: velocity message payload error\n");
-		fprintf(stderr,"             (got %d, expected %d)\n",
-			p.payload_len, 8 * sizeof(vrpn_float64) );
-		return -1;
-	}
-	pp.msg_time = p.msg_time;
-
-	for (i = 0; i < 3; i++) {
-	 	vrpn_unbuffer(&params, &pp.vel[i]);
-	}
-	for (i = 0; i < 4; i++) {
-		vrpn_unbuffer(&params, &pp.vel_quat[i]);
-	}
-    vrpn_unbuffer(&params, &pp.vel_quat_dt);
-
-    // Set the local velocity
-    me->set_pose_velocity(pp.msg_time, pp.vel, pp.vel_quat, pp.vel_quat_dt);
-
-	handler = me->velchange_list;
-	// Go down the list of callbacks that have been registered.
-	// Fill in the parameter and call each.
-	while (handler != NULL) {
-		handler->handler(handler->userdata, pp);
-		handler = handler->next;
-	}
-
-    return 0;
 }
 
 int vrpn_Poser_Remote::client_send_pose() 

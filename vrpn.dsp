@@ -41,7 +41,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "pc_win32/Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I "../quat" /D "_LIB" /D "_WINDOWS" /D "DESKTOP_PHANTOM_DEFAULTS" /D "NDEBUG" /D "_MBCS" /D "WIN32" /D "VRPN_NO_STREAMS" /FR /YX /FD /c /Tp
+# ADD CPP /nologo /MD /W3 /GX /O2 /I "../quat" /D "_LIB" /D "_WINDOWS" /D "NDEBUG" /D "_MBCS" /D "WIN32" /FR /YX /FD /c /Tp
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409
 BSC32=bscmake.exe
@@ -64,7 +64,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "pc_win32/Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /Z7 /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MDd /W3 /GX /Zi /Od /I "../quat" /D "VRPN_NO_STREAMS" /D "DESKTOP_PHANTOM_DEFAULTS" /D "_LIB" /D "_WINDOWS" /D "_DEBUG" /D "_MBCS" /D "WIN32" /FR /YX /FD /TP /c
+# ADD CPP /nologo /MDd /W3 /GX /Zi /Od /I "../quat" /D "_LIB" /D "_WINDOWS" /D "_DEBUG" /D "_MBCS" /D "WIN32" /FR /YX /FD /TP /c
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409
 BSC32=bscmake.exe
@@ -306,6 +306,10 @@ SOURCE=.\vrpn_CerealBox.h
 # Begin Source File
 
 SOURCE=.\vrpn_Clock.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Configure.h
 # End Source File
 # Begin Source File
 

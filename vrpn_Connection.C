@@ -1949,13 +1949,8 @@ int vrpn_noint_block_read_timeout(int infile, char buffer[],
 			continue;
 		}
 
-		/* Try to read one character if there is one */
-		/* We read one at a time because that's all that we are
-		 * guaranteed to have available.  On a socket, this is
-		 * not a problem because it won't block, but on a file it
-		 * will. */
 #ifndef VRPN_USE_WINSOCK_SOCKETS
-                ret = read(infile, buffer+sofar, 1);
+                ret = read(infile, buffer+sofar, length-sofar);
                 sofar += ret;
 
                 /* Ignore interrupted system calls - retry */
@@ -3638,8 +3633,6 @@ int vrpn_Endpoint::setup_new_connection (void) {
   vrpn_int32 sendlen;
   int retval;
 
-//fprintf(stderr, "vrpn_Endpoint::setup_new_connection().\n");
-
   retval = write_vrpn_cookie(sendbuf, vrpn_cookie_size() + 1,
                              d_remoteLogMode);
   if (retval < 0) {
@@ -3655,15 +3648,10 @@ int vrpn_Endpoint::setup_new_connection (void) {
     fprintf(stderr, "vrpn_Endpoint::setup_new_connection:  "
                     "Can't write cookie.\n");
     status = BROKEN;
-//fprintf(stderr, "BROKEN - vrpn_Endpoint::setup_new_connection.\n");
     return -1;
   }
 
   status = COOKIE_PENDING;
-//fprintf(stderr, "COOKIE_PENDING - vrpn_Endpoint::setup_new_connection.\n");
-
-//fprintf(stderr, "Leaving setup_new_connection().\n");
-
   poll_for_cookie();
 
   return 0;
@@ -3671,8 +3659,6 @@ int vrpn_Endpoint::setup_new_connection (void) {
 
 void vrpn_Endpoint::poll_for_cookie (const timeval * pTimeout) {
   timeval timeout;
-
-//fprintf(stderr, "vrpn_Endpoint::poll_for_cookie().\n");
 
   if (pTimeout) {
     timeout = *pTimeout;
@@ -3701,7 +3687,6 @@ void vrpn_Endpoint::poll_for_cookie (const timeval * pTimeout) {
 
   if (select(32, &readfds, NULL ,&exceptfds, (timeval *)&timeout) == -1) {
     if (errno == EINTR) { /* Ignore interrupt */
-//fprintf(stderr, "vrpn_Endpoint::poll_for_cookie():  interrupted.\n");
       status = COOKIE_PENDING;
       return;
     } else {
@@ -3728,7 +3713,7 @@ void vrpn_Endpoint::poll_for_cookie (const timeval * pTimeout) {
       return;
     }
 #ifdef VERBOSE3
-    else {
+    else if (status == CONNECTED) {
       printf("vrpn_Endpoint::poll_for_cookie() got cookie\n");
     }
 #endif
@@ -3742,23 +3727,20 @@ int vrpn_Endpoint::finish_new_connection_setup (void) {
   unsigned short udp_portnum;
   int i;
 
-//fprintf(stderr, "vrpn_Endpoint:: finish_new_connection_setup().\n");
-
   sendlen = vrpn_cookie_size();
 
-  // Read the magic cookie from the server
-  if (vrpn_noint_block_read(d_tcpSocket, recvbuf, sendlen) != sendlen) {
+  // Try to read the magic cookie from the server.
+  int ret = vrpn_noint_block_read(d_tcpSocket, recvbuf, sendlen);
+  if ( ret != sendlen) {
     perror(
       "vrpn_Endpoint::finish_new_connection_setup: Can't read cookie");
     status = BROKEN;
-//fprintf(stderr, "BROKEN - vrpn_Endpoint::finish_new_connection_setup.\n");
     return -1;
   }
 
   if (check_vrpn_cookie(recvbuf) < 0) {
     status = BROKEN;
-//fprintf(stderr, "BROKEN - vrpn_Endpoint::finish_new_connection_setup.\n");
-          return -1;
+    return -1;
   }
 
   // Store the magic cookie from the other side into a buffer so
@@ -3775,7 +3757,6 @@ int vrpn_Endpoint::finish_new_connection_setup (void) {
     fprintf(stderr, "vrpn_Endpoint::finish_new_connection_setup:  "
                     "Got invalid log mode %d\n", received_logmode);
     status = BROKEN;
-//fprintf(stderr, "BROKEN - vrpn_Endpoint::finish_new_connection_setup.\n");
     return -1;
   }
   if (received_logmode & vrpn_LOG_INCOMING) {
@@ -3868,8 +3849,6 @@ int vrpn_Endpoint::finish_new_connection_setup (void) {
   if (d_connectionCounter) {
     (*d_connectionCounter)++;
   }
-
-//fprintf(stderr, "Leaving finish_new_connection_setup().\n");
 
   return 0;
 }

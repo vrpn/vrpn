@@ -1,13 +1,14 @@
-#if defined(_WIN32) && defined(VRPN_USE_DIRECTINPUT)
 #ifndef VRPN_DIRECTXFFJOYSTICK_H
 #define VRPN_DIRECTXFFJOYSTICK_H
 
-#include <basetsd.h>
-#include <dinput.h>
 #include "vrpn_Connection.h"
 #include "vrpn_Analog.h"
 #include "vrpn_Button.h"
 #include "vrpn_ForceDevice.h"
+
+#if defined(_WIN32) && defined(VRPN_USE_DIRECTINPUT)
+#include <basetsd.h>
+#include <dinput.h>
 
 class vrpn_DirectXFFJoystick: public vrpn_Analog
 			     ,public vrpn_Button

@@ -324,7 +324,7 @@ class vrpn_ForceDevice : public vrpn_BaseClass {
 // rather than the tracker position for graphics so the hand position
 // doesn't appear to go below the surface making the surface look very
 // compliant. 
-typedef struct {
+typedef struct _vrpn_FORCESCPCB {
 	struct		timeval msg_time;	// Time of the report
 	vrpn_float64	pos[3];			// position of SCP
 	vrpn_float64	quat[4];		// orientation of SCP
@@ -332,14 +332,14 @@ typedef struct {
 typedef void (*vrpn_FORCESCPHANDLER) (void *userdata,
 					const vrpn_FORCESCPCB info);
 
-typedef	struct {
+typedef	struct _vrpn_FORCECB {
 	struct		timeval	msg_time;	// Time of the report
 	vrpn_float64	force[3];		// force value
 } vrpn_FORCECB;
 typedef void (*vrpn_FORCECHANGEHANDLER)(void *userdata,
 					 const vrpn_FORCECB info);
 
-typedef struct {
+typedef struct _vrpn_FORCEERRORCB {
 	struct		timeval msg_time;	// time of the report
 	vrpn_int32		error_code;		// type of error
 } vrpn_FORCEERRORCB;

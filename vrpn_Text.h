@@ -15,7 +15,7 @@
 #include "vrpn_BaseClass.h"
 
 /// Structure passed back to user-level code from a vrpn_Text_Receiver.
-typedef	struct {
+typedef	struct _vrpn_TEXTCB {
 	struct timeval	msg_time;	// Time of the message
 	char		message[vrpn_MAX_TEXT_LEN];	// The message
 	vrpn_TEXT_SEVERITY	type;

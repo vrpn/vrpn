@@ -1,6 +1,8 @@
 #ifndef VRPN_TYPES_H
 #define VRPN_TYPES_H
 
+#include  "vrpn_Configure.h"
+
 //------------------------------------------------------------------
 // do the test for a C++ compiler first, to ensure it's the first
 // error message.  

@@ -4,24 +4,24 @@
 
 vrpn_TempImager::vrpn_TempImager(const char *name, vrpn_Connection *c) :
   vrpn_BaseClass(name, c),
-  _nRows(0), _nCols(0),
-  _minX(0), _maxX(0),
-  _minY(0), _maxY(0),
-  _nChannels(0)
+  d_nRows(0), d_nCols(0),
+  d_minX(0), d_maxX(0),
+  d_minY(0), d_maxY(0),
+  d_nChannels(0)
 {
     vrpn_BaseClass::init();
 }
 
 int vrpn_TempImager::register_types(void)
 {
-  _description_m_id = d_connection->register_message_type("vrpn_TempImager Description");
-  _regionu8_m_id = d_connection->register_message_type("vrpn_TempImager Regionu8");
-  _regionu16_m_id = d_connection->register_message_type("vrpn_TempImager Regionu16");
-  _regionf32_m_id = d_connection->register_message_type("vrpn_TempImager Regionf32");
-  if ((_description_m_id == -1) ||
-      (_regionu8_m_id == -1) ||
-      (_regionu16_m_id == -1) ||
-      (_regionf32_m_id == -1) ) {
+  d_description_m_id = d_connection->register_message_type("vrpn_TempImager Description");
+  d_regionu8_m_id = d_connection->register_message_type("vrpn_TempImager Regionu8");
+  d_regionu16_m_id = d_connection->register_message_type("vrpn_TempImager Regionu16");
+  d_regionf32_m_id = d_connection->register_message_type("vrpn_TempImager Regionf32");
+  if ((d_description_m_id == -1) ||
+      (d_regionu8_m_id == -1) ||
+      (d_regionu16_m_id == -1) ||
+      (d_regionf32_m_id == -1) ) {
     return -1;
   } else {
     return 0;
@@ -33,12 +33,12 @@ vrpn_TempImager_Server::vrpn_TempImager_Server(const char *name, vrpn_Connection
 			 vrpn_float32 minX, vrpn_float32 maxX,
 			 vrpn_float32 minY, vrpn_float32 maxY) :
     vrpn_TempImager(name, c),
-    _description_sent(false)
+    d_description_sent(false)
 {
-    _nRows = nRows;
-    _nCols = nCols;
-    _minX = minX; _maxX = maxX;
-    _minY = minY; _maxY = maxY;
+    d_nRows = nRows;
+    d_nCols = nCols;
+    d_minX = minX; d_maxX = maxX;
+    d_minY = minY; d_maxY = maxY;
 
     // Set up callback handler for ping message from client so that it
     // sends the description.  This will make sure that the other side has
@@ -53,24 +53,24 @@ int vrpn_TempImager_Server::add_channel(const char *name, const char *units,
 		    vrpn_float32 minVal, vrpn_float32 maxVal,
 		    vrpn_float32 scale, vrpn_float32 offset)
 {
-  if (_nChannels >= vrpn_IMAGER_MAX_CHANNELS) {
+  if (d_nChannels >= vrpn_IMAGER_MAX_CHANNELS) {
     return -1;
   }
-  strncpy(_channels[_nChannels].name, name, sizeof(cName));
-  strncpy(_channels[_nChannels].units, units, sizeof(cName));
-  _channels[_nChannels].minVal = minVal;
-  _channels[_nChannels].maxVal = maxVal;
+  strncpy(d_channels[d_nChannels].name, name, sizeof(cName));
+  strncpy(d_channels[d_nChannels].units, units, sizeof(cName));
+  d_channels[d_nChannels].minVal = minVal;
+  d_channels[d_nChannels].maxVal = maxVal;
   if (scale == 0) {
     fprintf(stderr,"vrpn_TempImager_Server::add_channel(): Scale was zero, set to 1\n");
     scale = 1;
   }
-  _channels[_nChannels].scale = scale;
-  _channels[_nChannels].offset = offset;
-  _nChannels++;
+  d_channels[d_nChannels].scale = scale;
+  d_channels[d_nChannels].offset = offset;
+  d_nChannels++;
 
   // We haven't set a proper description now
-  _description_sent = false;
-  return _nChannels-1;
+  d_description_sent = false;
+  return d_nChannels-1;
 }
 
 /** As efficiently as possible, pull the values out of the array whose pointer is passed
@@ -104,15 +104,15 @@ bool  vrpn_TempImager_Server::send_region_using_base_pointer(vrpn_int16 chanInde
   // within the image size, and is not too large to fit into the data
   // array (which is sized the way it is to make sure it can be sent in
   // one VRPN reliable message).
-  if ( (chanIndex < 0) || (chanIndex >= _nChannels) ) {
+  if ( (chanIndex < 0) || (chanIndex >= d_nChannels) ) {
     fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): Invalid channel index (%d)\n", chanIndex);
     return false;
   }
-  if ( (rMax >= _nRows) || (rMin > rMax) ) {
+  if ( (rMax >= d_nRows) || (rMin > rMax) ) {
     fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): Invalid row range (%d..%d)\n", rMin, rMax);
     return false;
   }
-  if ( (cMax >= _nCols) || (cMin > cMax) ) {
+  if ( (cMax >= d_nCols) || (cMin > cMax) ) {
     fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): Invalid column range (%d..%d)\n", cMin, cMax);
     return false;
   }
@@ -195,7 +195,7 @@ bool  vrpn_TempImager_Server::send_region_using_base_pointer(vrpn_int16 chanInde
   // Pack the message
   vrpn_int32  len = sizeof(fbuf) - buflen;
   if (d_connection && d_connection->pack_message(len, timestamp,
-                               _regionu8_m_id, d_sender_id, (char*)(void*)fbuf,
+                               d_regionu8_m_id, d_sender_id, (char*)(void*)fbuf,
                                vrpn_CONNECTION_RELIABLE)) {
     fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): cannot write message: tossing\n");
     return false;
@@ -236,15 +236,15 @@ bool  vrpn_TempImager_Server::send_region_using_base_pointer(vrpn_int16 chanInde
   // within the image size, and is not too large to fit into the data
   // array (which is sized the way it is to make sure it can be sent in
   // one VRPN reliable message).
-  if ( (chanIndex < 0) || (chanIndex >= _nChannels) ) {
+  if ( (chanIndex < 0) || (chanIndex >= d_nChannels) ) {
     fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): Invalid channel index (%d)\n", chanIndex);
     return false;
   }
-  if ( (rMax >= _nRows) || (rMin > rMax) ) {
+  if ( (rMax >= d_nRows) || (rMin > rMax) ) {
     fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): Invalid row range (%d..%d)\n", rMin, rMax);
     return false;
   }
-  if ( (cMax >= _nCols) || (cMin > cMax) ) {
+  if ( (cMax >= d_nCols) || (cMin > cMax) ) {
     fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): Invalid column range (%d..%d)\n", cMin, cMax);
     return false;
   }
@@ -331,7 +331,7 @@ bool  vrpn_TempImager_Server::send_region_using_base_pointer(vrpn_int16 chanInde
   // Pack the message
   vrpn_int32  len = sizeof(fbuf) - buflen;
   if (d_connection && d_connection->pack_message(len, timestamp,
-                               _regionu16_m_id, d_sender_id, (char*)(void*)fbuf,
+                               d_regionu16_m_id, d_sender_id, (char*)(void*)fbuf,
                                vrpn_CONNECTION_RELIABLE)) {
     fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): cannot write message: tossing\n");
     return false;
@@ -371,15 +371,15 @@ bool  vrpn_TempImager_Server::send_region_using_base_pointer(vrpn_int16 chanInde
   // within the image size, and is not too large to fit into the data
   // array (which is sized the way it is to make sure it can be sent in
   // one VRPN reliable message).
-  if ( (chanIndex < 0) || (chanIndex >= _nChannels) ) {
+  if ( (chanIndex < 0) || (chanIndex >= d_nChannels) ) {
     fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): Invalid channel index (%d)\n", chanIndex);
     return false;
   }
-  if ( (rMax >= _nRows) || (rMin > rMax) ) {
+  if ( (rMax >= d_nRows) || (rMin > rMax) ) {
     fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): Invalid row range (%d..%d)\n", rMin, rMax);
     return false;
   }
-  if ( (cMax >= _nCols) || (cMin > cMax) ) {
+  if ( (cMax >= d_nCols) || (cMin > cMax) ) {
     fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): Invalid column range (%d..%d)\n", cMin, cMax);
     return false;
   }
@@ -466,7 +466,7 @@ bool  vrpn_TempImager_Server::send_region_using_base_pointer(vrpn_int16 chanInde
   // Pack the message
   vrpn_int32  len = sizeof(fbuf) - buflen;
   if (d_connection && d_connection->pack_message(len, timestamp,
-                               _regionf32_m_id, d_sender_id, (char*)(void*)fbuf,
+                               d_regionf32_m_id, d_sender_id, (char*)(void*)fbuf,
                                vrpn_CONNECTION_RELIABLE)) {
     fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): cannot write message: tossing\n");
     return false;
@@ -487,18 +487,18 @@ bool  vrpn_TempImager_Server::send_description(void)
 
   // Pack the description of all of the fields in the imager into the buffer,
   // including the channel descriptions.
-  if (vrpn_buffer(&msgbuf, &buflen, _minX) ||
-      vrpn_buffer(&msgbuf, &buflen, _maxX) ||
-      vrpn_buffer(&msgbuf, &buflen, _minY) ||
-      vrpn_buffer(&msgbuf, &buflen, _maxY) ||
-      vrpn_buffer(&msgbuf, &buflen, _nRows) ||
-      vrpn_buffer(&msgbuf, &buflen, _nCols) ||
-      vrpn_buffer(&msgbuf, &buflen, _nChannels) ) {
+  if (vrpn_buffer(&msgbuf, &buflen, d_minX) ||
+      vrpn_buffer(&msgbuf, &buflen, d_maxX) ||
+      vrpn_buffer(&msgbuf, &buflen, d_minY) ||
+      vrpn_buffer(&msgbuf, &buflen, d_maxY) ||
+      vrpn_buffer(&msgbuf, &buflen, d_nRows) ||
+      vrpn_buffer(&msgbuf, &buflen, d_nCols) ||
+      vrpn_buffer(&msgbuf, &buflen, d_nChannels) ) {
     fprintf(stderr,"vrpn_TempImager_Server::send_description(): Can't pack message header, tossing\n");
     return false;
   }
-  for (i = 0; i < _nChannels; i++) {
-    if (!_channels[i].buffer(&msgbuf, &buflen)) {
+  for (i = 0; i < d_nChannels; i++) {
+    if (!d_channels[i].buffer(&msgbuf, &buflen)) {
       fprintf(stderr,"vrpn_TempImager_Server::send_description(): Can't pack message channel, tossing\n");
       return false;
     }
@@ -509,13 +509,13 @@ bool  vrpn_TempImager_Server::send_description(void)
   vrpn_int32  len = sizeof(fbuf) - buflen;
   gettimeofday(&timestamp, NULL);
   if (d_connection && d_connection->pack_message(len, timestamp,
-                               _description_m_id, d_sender_id, (char *)(void*)fbuf,
+                               d_description_m_id, d_sender_id, (char *)(void*)fbuf,
                                vrpn_CONNECTION_RELIABLE)) {
     fprintf(stderr,"vrpn_TempImager_Server::send_description(): cannot write message: tossing\n");
     return false;
   }
 
-  _description_sent = true;
+  d_description_sent = true;
   return true;
 }
 
@@ -533,19 +533,19 @@ int  vrpn_TempImager_Server::handle_ping_message(void *userdata, vrpn_HANDLERPAR
 
 vrpn_TempImager_Remote::vrpn_TempImager_Remote(const char *name, vrpn_Connection *c) :
   vrpn_TempImager(name, c),
-  _got_description(false),
-  _region_list(NULL),
-  _description_list(NULL)
+  d_got_description(false),
+  d_region_list(NULL),
+  d_description_list(NULL)
 {
   // Register the handlers for the description message and the region change messages
-  register_autodeleted_handler(_description_m_id, handle_description_message, this, d_sender_id);
+  register_autodeleted_handler(d_description_m_id, handle_description_message, this, d_sender_id);
 
   // Register the region-handling messages for the different message types.
   // All of the types use the same handler, since the type of region is encoded
   // in one of the parameters of the region function.
-  register_autodeleted_handler(_regionu8_m_id, handle_region_message, this, d_sender_id);
-  register_autodeleted_handler(_regionu16_m_id, handle_region_message, this, d_sender_id);
-  register_autodeleted_handler(_regionf32_m_id, handle_region_message, this, d_sender_id);
+  register_autodeleted_handler(d_regionu8_m_id, handle_region_message, this, d_sender_id);
+  register_autodeleted_handler(d_regionu16_m_id, handle_region_message, this, d_sender_id);
+  register_autodeleted_handler(d_regionf32_m_id, handle_region_message, this, d_sender_id);
 
   // Register the handler for the connection dropped message
   register_autodeleted_handler(d_connection->register_message_type(vrpn_dropped_connection), handle_connection_dropped_message, this);
@@ -559,10 +559,10 @@ void  vrpn_TempImager_Remote::mainloop(void)
 
 const vrpn_TempImager_Channel *vrpn_TempImager_Remote::channel(unsigned chanNum) const
 {
-  if (chanNum >= (unsigned)_nChannels) {
+  if (chanNum >= (unsigned)d_nChannels) {
     return NULL;
   }
-  return &_channels[chanNum];
+  return &d_channels[chanNum];
 }
 
 int vrpn_TempImager_Remote::register_description_handler(void *userdata,
@@ -586,10 +586,10 @@ int vrpn_TempImager_Remote::register_description_handler(void *userdata,
 
   // Add this handler to the chain at the beginning (don't check to see
   // if it is already there, since duplication is okay).
-  new_entry->next = _description_list;
-  _description_list = new_entry;
+  new_entry->next = d_description_list;
+  d_description_list = new_entry;
 
-  _got_description = true;
+  d_got_description = true;
   return 0;
 }
 
@@ -601,7 +601,7 @@ int vrpn_TempImager_Remote::unregister_description_handler(void *userdata,
 
   // Find a handler with this registry in the list (any one will do,
   // since all duplicates are the same).
-  snitch = &_description_list;
+  snitch = &d_description_list;
   victim = *snitch;
   while ( (victim != NULL) &&
 	  ( (victim->handler != handler) ||
@@ -644,8 +644,8 @@ int vrpn_TempImager_Remote::register_region_handler(void *userdata,
 
   // Add this handler to the chain at the beginning (don't check to see
   // if it is already there, since duplication is okay).
-  new_entry->next = _region_list;
-  _region_list = new_entry;
+  new_entry->next = d_region_list;
+  d_region_list = new_entry;
 
   return 0;
 }
@@ -658,7 +658,7 @@ int vrpn_TempImager_Remote::unregister_region_handler(void *userdata,
 
   // Find a handler with this registry in the list (any one will do,
   // since all duplicates are the same).
-  snitch = &_region_list;
+  snitch = &d_region_list;
   victim = *snitch;
   while ( (victim != NULL) &&
 	  ( (victim->handler != handler) ||
@@ -685,21 +685,21 @@ int vrpn_TempImager_Remote::handle_description_message(void *userdata,
 {
   const char *bufptr = p.buffer;
   vrpn_TempImager_Remote *me = (vrpn_TempImager_Remote *)userdata;
-  vrpn_DESCRIPTIONLIST *handler = me->_description_list;
+  vrpn_DESCRIPTIONLIST *handler = me->d_description_list;
   int i;
 
   // Get my new information from the buffer
-  if (vrpn_unbuffer(&bufptr, &me->_minX) ||
-      vrpn_unbuffer(&bufptr, &me->_maxX) ||
-      vrpn_unbuffer(&bufptr, &me->_minY) ||
-      vrpn_unbuffer(&bufptr, &me->_maxY) ||
-      vrpn_unbuffer(&bufptr, &me->_nRows) ||
-      vrpn_unbuffer(&bufptr, &me->_nCols) ||
-      vrpn_unbuffer(&bufptr, &me->_nChannels) ) {
+  if (vrpn_unbuffer(&bufptr, &me->d_minX) ||
+      vrpn_unbuffer(&bufptr, &me->d_maxX) ||
+      vrpn_unbuffer(&bufptr, &me->d_minY) ||
+      vrpn_unbuffer(&bufptr, &me->d_maxY) ||
+      vrpn_unbuffer(&bufptr, &me->d_nRows) ||
+      vrpn_unbuffer(&bufptr, &me->d_nCols) ||
+      vrpn_unbuffer(&bufptr, &me->d_nChannels) ) {
     return -1;
   }
-  for (i = 0; i < me->_nChannels; i++) {
-    if (!me->_channels[i].unbuffer(&bufptr)) {
+  for (i = 0; i < me->d_nChannels; i++) {
+    if (!me->d_channels[i].unbuffer(&bufptr)) {
       return -1;
     }
   }
@@ -719,7 +719,7 @@ int vrpn_TempImager_Remote::handle_region_message(void *userdata,
 {
   const char *bufptr = p.buffer;
   vrpn_TempImager_Remote *me = (vrpn_TempImager_Remote *)userdata;
-  vrpn_REGIONLIST *handler = me->_region_list;
+  vrpn_REGIONLIST *handler = me->d_region_list;
   vrpn_IMAGERREGIONCB rp;
   vrpn_TempImager_Region  reg;
 
@@ -728,17 +728,17 @@ int vrpn_TempImager_Remote::handle_region_message(void *userdata,
   // the start of the data in the buffer).  Set it to valid and then
   // call the user callback and then set it to invalid before
   // deleting it.
-  if (vrpn_unbuffer(&bufptr, &reg._chanIndex) ||
-      vrpn_unbuffer(&bufptr, &reg._rMin) ||
-      vrpn_unbuffer(&bufptr, &reg._rMax) ||
-      vrpn_unbuffer(&bufptr, &reg._cMin) ||
-      vrpn_unbuffer(&bufptr, &reg._cMax) ||
-      vrpn_unbuffer(&bufptr, &reg._valType) )  {
+  if (vrpn_unbuffer(&bufptr, &reg.d_chanIndex) ||
+      vrpn_unbuffer(&bufptr, &reg.d_rMin) ||
+      vrpn_unbuffer(&bufptr, &reg.d_rMax) ||
+      vrpn_unbuffer(&bufptr, &reg.d_cMin) ||
+      vrpn_unbuffer(&bufptr, &reg.d_cMax) ||
+      vrpn_unbuffer(&bufptr, &reg.d_valType) )  {
     fprintf(stderr, "vrpn_TempImager_Remote::handle_region_message(): Can't unbuffer parameters!\n");
     return -1;
   }
-  reg._valBuf = bufptr;
-  reg._valid = true;
+  reg.d_valBuf = bufptr;
+  reg.d_valid = true;
 
   // Fill in a user callback structure with the data
   rp.msg_time = p.msg_time;
@@ -747,12 +747,12 @@ int vrpn_TempImager_Remote::handle_region_message(void *userdata,
   // ONLY if we have gotten a description message,
   // Go down the list of callbacks that have been registered.
   // Fill in the parameter and call each.
-  if (me->_got_description) while (handler != NULL) {
+  if (me->d_got_description) while (handler != NULL) {
 	  handler->handler(handler->userdata, rp);
 	  handler = handler->next;
   }
 
-  reg._valid = false;
+  reg.d_valid = false;
   return 0;
 }
 
@@ -762,7 +762,7 @@ int vrpn_TempImager_Remote::handle_connection_dropped_message(void *userdata,
   vrpn_TempImager_Remote *me = (vrpn_TempImager_Remote *)userdata;
 
   // We have no description message, so don't call region callbacks
-  me->_got_description = false;
+  me->d_got_description = false;
 
   return 0;
 }
@@ -800,12 +800,12 @@ bool  vrpn_TempImager_Region::decode_unscaled_region_using_base_pointer(vrpn_uin
 
   // If the type of data in the buffer doesn't match the type of data the user
   // wants, we need to convert each element along the way.
-  if (_valType != vrpn_IMAGER_VALTYPE_UINT8) {
+  if (d_valType != vrpn_IMAGER_VALTYPE_UINT8) {
     printf("vrpn_TempImager_Region::decode_unscaled_region_using_base_pointer(): Transcoding not implemented yet\n");
     // No need to swap endianness on single-byte entities.
     return false;
   }
-  if ( invert_y && (nRows < _rMax) ) {
+  if ( invert_y && (nRows < d_rMax) ) {
     fprintf(stderr,"vrpn_TempImager_Region::decode_unscaled_region_using_base_pointer(): nRows must not be less than _rMax\n");
     return false;
   }
@@ -817,30 +817,30 @@ bool  vrpn_TempImager_Region::decode_unscaled_region_using_base_pointer(vrpn_uin
   // complicated because it short-circuits the copying for the case where the
   // column stride and repeat are one element long (using memcpy() on each row) but has to
   // copy one element at a time otherwise.
-  int cols = _cMax - _cMin+1;
+  int cols = d_cMax - d_cMin+1;
   int linelen = cols * sizeof(data[0]);
   if ( (colStride == 1) && (repeat == 1) ) {
-    const vrpn_uint8  *msgbuf = (const vrpn_uint8 *)_valBuf;
-    for (unsigned r = _rMin; r <= _rMax; r++) {
+    const vrpn_uint8  *msgbuf = (const vrpn_uint8 *)d_valBuf;
+    for (unsigned r = d_rMin; r <= d_rMax; r++) {
       unsigned rActual;
       if (invert_y) {
 	rActual = (nRows-1)-r;
       } else {
 	rActual = r;
       }
-      memcpy(&data[rActual*rowStride+_cMin], msgbuf, linelen);
+      memcpy(&data[rActual*rowStride+d_cMin], msgbuf, linelen);
       msgbuf += linelen;
     }
   } else {
-    const vrpn_uint8  *msgbuf = (const vrpn_uint8 *)_valBuf;
-    vrpn_uint8 *rowStart = &data[_rMin*rowStride + _cMin];
+    const vrpn_uint8  *msgbuf = (const vrpn_uint8 *)d_valBuf;
+    vrpn_uint8 *rowStart = &data[d_rMin*rowStride + d_cMin];
     if (invert_y) {
-      rowStart = &data[(nRows-1 - _rMin)*rowStride + _cMin];
+      rowStart = &data[(nRows-1 - d_rMin)*rowStride + d_cMin];
       rowStride *= -1;
     }
     vrpn_uint8 *copyTo = rowStart;
-    for (unsigned r = _rMin; r <= _rMax; r++) {
-      for (unsigned c = _cMin; c <= _cMax; c++) {
+    for (unsigned r = d_rMin; r <= d_rMax; r++) {
+      for (unsigned c = d_cMin; c <= d_cMax; c++) {
 	for (unsigned rpt = 0; rpt < repeat; rpt++) {
 	  *(copyTo+rpt) = *msgbuf;  //< Copy the current element
 	}

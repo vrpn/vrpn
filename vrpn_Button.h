@@ -246,7 +246,7 @@ protected:
 #define VRPN_BUTTON_OFF	(0)
 #define VRPN_BUTTON_ON	(1)
 
-typedef	struct {
+typedef	struct _vrpn_BUTTONCB {
 	struct timeval	msg_time;	// Time of button press/release
 	vrpn_int32	button;		// Which button (numbered from zero)
 	vrpn_int32	state;		// button state (0 = off, 1 = on) 

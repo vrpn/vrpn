@@ -67,7 +67,7 @@ public:
 // other messages.
 // The clock sync procedure takes 1 second to run.
 
-typedef	struct {
+typedef	struct _vrpn_CLOCKCB {
 	struct timeval	msg_time;	// Local time of this sync message
 	struct timeval  tvClockOffset;  // Local time - remote time in msecs
 	struct timeval  tvHalfRoundTrip;  // half of the roundtrip time

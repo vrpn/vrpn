@@ -45,7 +45,7 @@
 // router state, one change message is sent by the server for each router
 // output channel.  
 
-typedef	struct {
+typedef	struct _vrpn_ROUTERCB {
 	struct timeval	msg_time;			// Timestamp when change happened
 	vrpn_int32	input_channel;			// Input channel #
 	vrpn_int32	output_channel;			// Output channel #
@@ -54,7 +54,7 @@ typedef	struct {
 typedef void (*vrpn_ROUTERCHANGEHANDLER) (void * userdata, const vrpn_ROUTERCB info);
 
 
-typedef	struct {
+typedef	struct _vrpn_ROUTERNAMECB {
 	struct timeval	msg_time;			// Timestamp when change happened
 	vrpn_int32	channelType;
 	vrpn_int32	channelNum;

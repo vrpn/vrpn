@@ -1,3 +1,51 @@
+2002-12-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* time_test.dsp : DSP files have been modified to not do definitions of
+		VRPN_NO_STREAMS and other constants directly, rather these are
+		now set by editing vprn_Configure.h.  Also, made projects
+		compile in both debug and release versions.
+	* vprn.dsp : Same.
+	* vrpn.dsw : Removed vrpn_server_with_timecode project because you
+		can now build vrpn_server.exe with the proper definition in
+		the vrpn_Configure.h file to do this.
+	* vrpn_Analog.h : Added structure names to help offsite users not
+		have to include all of the VRPN header files when building.
+	* vrpn_Button.h : Same.
+	* vrpn_Clock.h : Same.
+	* vrpn_Dial.h : Same.
+	* vrpn_ForceDevice.h : Same.
+	* vrpn_Router.h : Same.
+	* vrpn_Text.h : Same.
+	* vrpn_Tracker.h : Same.
+	* vrpn_Analog_Output.h : White space changes.
+	* vrpn_Connection.C : Modified the read-with-timeout routine to try
+		and read all characters at once; should only be used with
+		a socket.  Removed commented-out printfs.  Whitespace changes.
+	* vrpn_Connecton.h : Comment change.
+	* vrpn_DirectXFFJoystick.C : Reordered #includes to work with the
+		vrpn_Configure.h file.  Comment corrections.  Made the
+		joystick opened for exclusive access even if it is only going
+		to be used as a joystick (was causing problems with VMD, which
+		also opened the joystick and then the two programs would fight
+		over it.
+	* vrpn_DirectXFFJoystick.h : Reordered #includes to work with
+		vrpn_Configure.h.
+	* vrpn_Poser.C : Removed reporting calls that were duplicates of the
+		vrpn_Tracker calls.  Now a server that wants to report its
+		poses should use a vrpn_Tracker to report them and the Poser
+		only to set them.
+	* vrpn_Poser.h : Same.  Whitespace changes.
+	* vrpn_Poser_Analog.C : Modified to work with the reduced-function
+		vrpn_Poser class: now opens a vrpn_Tracker as well to report
+		the new poses.
+	* vrpn_Poser_Analog.h : Same.
+	* vrpn_TempImager.C : Changed all member variables to begin with
+		"d_" rather than just "_" ("_" violates C++ rules).
+	* vrpn_TempImager.h : Same.
+	* vrpn_Types.h : Includes vrpn_Configure.h (so that it will be included
+		by every VRPN include file).
+
+
 2002-11-25    <marshbur@cs.unc.edu>
 
 	* vrpn_TempImager.C:  makes the function java_vrpn_handle_region_change

@@ -58,12 +58,12 @@ protected:
 //----------------------------------------------------------
 //************** Users deal with the following *************
 
-// User routine to handle a change in analog values.  This is called when
-// the analog callback is called (when a message from its counterpart
+// User routine to handle a change in dial values.  This is called when
+// the dial callback is called (when a message from its counterpart
 // across the connetion arrives).
 
 
-typedef	struct {
+typedef	struct _vrpn_DIALCB {
 	struct timeval	msg_time;	// Timestamp when change happened
 	vrpn_int32	dial;		// which dial changed
 	vrpn_float64	change;		// Fraction of a revolution it changed

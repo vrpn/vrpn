@@ -209,7 +209,7 @@ class vrpn_Tracker_Server: public vrpn_Tracker {
 // the tracker callback is called (when a message from its counterpart
 // across the connection arrives).
 
-typedef	struct {
+typedef	struct _vrpn_TRACKERCB {
 	struct timeval	msg_time;	// Time of the report
 	vrpn_int32	sensor;		// Which sensor is reporting
 	vrpn_float64	pos[3];		// Position of the sensor
@@ -222,7 +222,7 @@ typedef void (*vrpn_TRACKERCHANGEHANDLER)(void *userdata,
 // the tracker callback is called (when a message from its counterpart
 // across the connetion arrives).
 
-typedef	struct {
+typedef	struct _vrpn_TRACKERVELCB {
 	struct timeval	msg_time;	// Time of the report
 	vrpn_int32	sensor;		// Which sensor is reporting
 	vrpn_float64	vel[3];		// Velocity of the sensor
@@ -236,7 +236,7 @@ typedef void (*vrpn_TRACKERVELCHANGEHANDLER)(void *userdata,
 // the tracker callback is called (when a message from its counterpart
 // across the connetion arrives).
 
-typedef	struct {
+typedef	struct _vrpn_TRACKERACCCB {
 	struct timeval	msg_time;	// Time of the report
 	vrpn_int32	sensor;		// Which sensor is reporting
 	vrpn_float64	acc[3];		// Acceleration of the sensor
@@ -251,7 +251,7 @@ typedef void (*vrpn_TRACKERACCCHANGEHANDLER)(void *userdata,
 // when the tracker callback is called (when a message from its counterpart
 // across the connection arrives).
 
-typedef struct {
+typedef struct _vrpn_TRACKERTRACKER2ROOMCB {
 	struct timeval	msg_time;		// Time of the report
 	vrpn_float64	tracker2room[3];	// position offset
 	vrpn_float64	tracker2room_quat[4];	// orientation offset
@@ -259,7 +259,7 @@ typedef struct {
 typedef void (*vrpn_TRACKERTRACKER2ROOMCHANGEHANDLER)(void *userdata,
 					const vrpn_TRACKERTRACKER2ROOMCB info);
 
-typedef struct {
+typedef struct _vrpn_TRACKERUNIT2SENSORCB {
         struct timeval  msg_time;       	// Time of the report
 	vrpn_int32	sensor;			// Which sensor this is for
         vrpn_float64  unit2sensor[3];		// position offset
@@ -268,7 +268,7 @@ typedef struct {
 typedef void (*vrpn_TRACKERUNIT2SENSORCHANGEHANDLER)(void *userdata,
                                         const vrpn_TRACKERUNIT2SENSORCB info);
 
-typedef struct {
+typedef struct _vrpn_TRACKERWORKSPACECB {
 	struct timeval  msg_time;       // Time of the report
 	vrpn_float64 workspace_min[3];	// minimum corner of box (tracker CS)
 	vrpn_float64 workspace_max[3];	// maximum corner of box (tracker CS)
