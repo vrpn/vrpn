@@ -1,13 +1,18 @@
-2004-10-14  David Marshburn  <marshbur@cs.unc.edu>
+2004-10-20  David Marshburn  <marshbur@cs.unc.edu>
 
-	* java_vrpn.vjp:  added back the custom build rule for the post-build
-	step.  these create the .jar file, build the javadoc documentation
-	and generate the native-code header files.
+	* java_vrpn.dsp:  rolled this back to before Oct. 2004.  Something
+	had been corrupted in it (perhaps newline characters).
 
 2004-10-15	Ben Wilde	<wilde@cs.unc.edu>
 
 	* Added the line 'VRPN_CALLBACK' in front of handler functions
 	so that java_vrpn would compile.
+
+2004-10-14  David Marshburn  <marshbur@cs.unc.edu>
+
+	* java_vrpn.vjp:  added back the custom build rule for the post-build
+	step.  these create the .jar file, build the javadoc documentation
+	and generate the native-code header files.
 
 2004-07-22  David Marshburn  <marshbur@cs.unc.edu>
 
