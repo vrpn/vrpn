@@ -27,7 +27,7 @@ class vrpn_Tracker_InterSense : public vrpn_Tracker {
   vrpn_Tracker_InterSense(const char *name, 
                           vrpn_Connection *c,
                           int commPort, const char *additional_reset_commands = NULL,
-					      int is900_timestamps = 0);
+					      int is900_timestamps = 0, int reset_at_start=0);
 
   ~vrpn_Tracker_InterSense();
 
@@ -64,6 +64,8 @@ class vrpn_Tracker_InterSense : public vrpn_Tracker {
   ISD_STATION_INFO_TYPE m_StationInfo[ISD_MAX_STATIONS];
 
   int	do_is900_timestamps;	    //< Request and process IS-900 timestamps?
+  int	m_reset_at_start;			//< should the tracker reset at startup
+
   struct timeval is900_zerotime;    //< When the IS-900 time counter was zeroed
   vrpn_Button_Server		*is900_buttons[ISD_MAX_STATIONS];	//< Pointer to button on each sensor (NULL if none)
   vrpn_Clipping_Analog_Server	*is900_analogs[ISD_MAX_STATIONS];	//< Pointer to analog on each sensor (NULL if none)

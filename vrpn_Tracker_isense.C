@@ -31,6 +31,8 @@
 #define MAX_TIME_INTERVAL       (5000000) // max time between reports (usec)
 #define	INCHES_TO_METERS	(2.54/100.0)
 #define PI (3.14159265358979323846)
+#define DEG_TO_RAD (PI/180.)
+#define CM_TO_METERS (0.01) 
 #define	FT_INFO(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_NORMAL) ; if (d_connection) d_connection->send_pending_reports(); }
 #define	FT_WARNING(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_WARNING) ; if (d_connection) d_connection->send_pending_reports(); }
 #define	FT_ERROR(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_ERROR) ; if (d_connection) d_connection->send_pending_reports(); }
@@ -109,8 +111,10 @@ void vrpn_Tracker_InterSense::getTrackerInfo(char *msg)
 
 vrpn_Tracker_InterSense::vrpn_Tracker_InterSense(const char *name, 
                                          vrpn_Connection *c,
-                                         int commPort, const char *additional_reset_commands, int is900_timestamps) :
-vrpn_Tracker(name,c), do_is900_timestamps(is900_timestamps)
+                                         int commPort, const char *additional_reset_commands, 
+										 int is900_timestamps, int reset_at_start) :
+vrpn_Tracker(name,c), do_is900_timestamps(is900_timestamps), 
+m_reset_at_start(reset_at_start)
 {
 #ifdef  VRPN_INCLUDE_INTERSENSE
   char errStr[1024];
@@ -144,7 +148,6 @@ vrpn_Tracker(name,c), do_is900_timestamps(is900_timestamps)
   //  ISD_TRACKER_INFO_TYPE trackerInfo;
 
   ISD_GetTrackerConfig(m_Handle,&m_TrackerInfo,FALSE);
-  //ISD_ResetAngles(m_Handle,0.0,0.0,0.0);
 
   for (i = 0; i < ISD_MAX_STATIONS; i++) {
        if (set_sensor_output_format(i)) {
@@ -206,6 +209,10 @@ int vrpn_Tracker_InterSense::set_sensor_output_format(int station)
         ISD_GetStationConfig(m_Handle,&m_StationInfo[station],station+1,0);
 
     	//ISD_ResetHeading(m_Handle,station+1); //Not sure if this is needed
+		// nahon@virtools.com - 
+		if (m_reset_at_start)
+		  ISD_Boresight(m_Handle, station+1, true); // equivalent to ISD_ResetHeading for itrax, see isense.h
+
 
 	    // First, try to set the orientation reporting format to quaternions if possible.
 		// But, some models of intersense trackers (like the intertrax series) will only report
@@ -213,7 +220,10 @@ int vrpn_Tracker_InterSense::set_sensor_output_format(int station)
 
 	    // Try to set the tracker to report in quaternion format
 		// (to avoid gimbal lock)
-		if (m_TrackerInfo.TrackerType == ISD_PRECISION_SERIES && 
+		// nahon@virtools.com : Let's try, even if we are not a precision series
+		// It seems that this is OK with Intertrax2, what would happen to old Intertrax ?
+//		if (m_TrackerInfo.TrackerType == ISD_PRECISION_SERIES &&
+		if (
 			m_StationInfo[station].AngleFormat == ISD_EULER)
 	    {
 			m_StationInfo[station].AngleFormat = ISD_QUATERNION;
@@ -347,7 +357,7 @@ void vrpn_Tracker_InterSense::get_report(void)
     for(int station=0;station<ISD_MAX_STATIONS;station++) {
       if(data.Station[station].NewData == TRUE) {
 
-       d_sensor = station+1;
+       d_sensor = station;
 
         //--------------------------------------------------------------------
 		// If we are doing IS900 timestamps, decode the time, add it to the
@@ -406,9 +416,13 @@ void vrpn_Tracker_InterSense::get_report(void)
 		}
 
 		// Copy the tracker data into our internal storage before sending
-		pos[0] = data.Station[station].Position[0];
-		pos[1] = data.Station[station].Position[1];
-		pos[2] = data.Station[station].Position[2];
+		// nahon@virtools : WATCH, Vrpn wants to report in meter
+		// lets assume that the device reports in cm.
+		// for IS900, it would be safe to have a u command sent in the config file
+		// TODO: is is possible to ask the device in what unit it runs
+		pos[0] = CM_TO_METERS*data.Station[station].Position[0];
+		pos[1] = CM_TO_METERS*data.Station[station].Position[1];
+		pos[2] = CM_TO_METERS*data.Station[station].Position[2];
 
 		if(m_StationInfo[station].AngleFormat == ISD_QUATERNION) {	
 			d_quat[0] = data.Station[station].Orientation[0];
@@ -417,10 +431,10 @@ void vrpn_Tracker_InterSense::get_report(void)
 			d_quat[3] = data.Station[station].Orientation[3];
         } else {
 		  // Just return Euler for now...
-  
-			angles[0] = data.Station[station].Orientation[0];
-			angles[1] = data.Station[station].Orientation[1];
-			angles[2] = data.Station[station].Orientation[2];
+		  // nahon@virtools needs to convert to radians
+			angles[0] = DEG_TO_RAD*data.Station[station].Orientation[0];
+			angles[1] = DEG_TO_RAD*data.Station[station].Orientation[1];
+			angles[2] = DEG_TO_RAD*data.Station[station].Orientation[2];
 
 			q_from_euler(d_quat, angles[0], angles[1], angles[2]);	
 		}

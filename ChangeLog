@@ -1,3 +1,12 @@
+2003-11-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_isense.C : Added changed by David Nahon that lets
+		the user specify whether to do a boresight reset at startup.
+		Also changes the sensor numbers to be zero-indexed like all
+		other VRPN trackers.  Also changes units to meters and
+		radians to match other VPRN trackers.
+	* vrpn_Tracker_isense.h : Same.
+
 2003-11-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Configure.h : Changes the default port number one more time,
