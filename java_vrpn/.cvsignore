@@ -2,6 +2,7 @@
 vrpn_ButtonRemote.h
 vrpn_TrackerRemote.h
 vrpn_AnalogRemote.h
+vrpn_AnalogOutputRemote.h
 vrpn_ForceDeviceRemote.h
 vrpn_TempImagerRemote.h
 codebase.dat

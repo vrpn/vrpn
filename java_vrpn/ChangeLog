@@ -1,3 +1,20 @@
+2002-09-18  David Marshburn  <marshbur@cs.unc.edu>
+
+	* .cvsignore:  ignore vrpn_AnalogOutputRemote.h (generated)
+	* AnalogOutputRemote.dsp:  new, project file for AnalogOutput
+	* AnalogOutputRemote.java:  new, first implementation of AnalogOutput.
+		This includes logging.
+	* AnalogRemote.java:  removed AnalogOutput stuff and the
+		function requestChannelChange.  Also, added logging
+		functionality (init) and (AnalogRemote).
+	* java_vrpn.dsw:  added AnalogRemoteOutput project
+	* java_vrpn.vjp:  added AnalogRemoteOutput class
+	* vrpn_AnalogOutputRemote.cpp:  new, implementation of native 
+		Java functions.  This includes logging.
+	* vrpn_AnalogRemote.cpp:  removed AnalogOutput stuff and function
+		Java_vrpn_AnalogRemote_requestChannelChange.  Also added
+		logging functionality (Java_vrpn_AnalogRemote_init)
+
 2002-09-16  David Marshburn  <marshbur@cs.unc.edu>
 
 	* ButtonRemote.java (init):  takes extra params for log file names

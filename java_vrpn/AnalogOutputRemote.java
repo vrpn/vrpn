@@ -2,7 +2,7 @@
 package vrpn;
 import java.util.*;
 
-public class AnalogRemote implements Runnable
+public class AnalogOutputRemote implements Runnable
 {
 	
 	//////////////////
@@ -10,17 +10,6 @@ public class AnalogRemote implements Runnable
 	
 	public static final int MAX_CHANNELS = 128;
 	
-	public class AnalogUpdate
-	{
-		public Date msg_time = new Date( );
-		public double channel[];
-	}
-	
-	public interface AnalogChangeListener
-	{
-		public void analogUpdate( AnalogUpdate a, AnalogRemote analog );
-	}
-
 	// end of the public structures and interfaces
 	///////////////////
 	
@@ -29,10 +18,10 @@ public class AnalogRemote implements Runnable
 	
 	/**
 	 * @exception java.lang.InstantiationException
-	 *		If the analog could not be created because of problems with
+	 *		If the analogOutput could not be created because of problems with
 	 *      its native code and linking.
 	 */
-	public AnalogRemote( String name, String localInLogfileName, String localOutLogfileName,
+	public AnalogOutputRemote( String name, String localInLogfileName, String localOutLogfileName,
 						  String remoteInLogfileName, String remoteOutLogfileName ) 
 		throws InstantiationException
 	{
@@ -43,27 +32,17 @@ public class AnalogRemote implements Runnable
 		}
 		catch( java.lang.UnsatisfiedLinkError e )
 		{  
-			System.out.println( "Error initializing remote analog device " + name + "." );
+			System.out.println( "Error initializing remote analogOutput device " + name + "." );
 			System.out.println( " -- Unable to find the right functions.  This may be a version problem." );
 			throw new InstantiationException( e.getMessage( ) );
 		}
 		
-		this.analogThread = new Thread( this );
-		this.analogThread.start( );
+		this.analogOutputThread = new Thread( this );
+		this.analogOutputThread.start( );
+
 	}
 	
-	
-	public synchronized void addAnalogChangeListener( AnalogChangeListener listener )
-	{
-		changeListeners.addElement( listener );
-	}
-	
-	
-	public synchronized boolean removeAnalogChangeListener( AnalogChangeListener listener )
-	{
-		return changeListeners.removeElement( listener );
-	}
-	
+	public synchronized native boolean requestValueChange( int channel, double value );
 	
 	/**
 	 * Sets the interval between invocations of <code>mainloop()</code>, which checks
@@ -76,7 +55,6 @@ public class AnalogRemote implements Runnable
 		mainloopPeriod = period;
 	}
 	
-	
 	/**
 	 * @return The period, in milliseconds.
 	 */
@@ -87,7 +65,7 @@ public class AnalogRemote implements Runnable
 	
 
 	/**
-	 * Stops the analog thread
+	 * Stops the analogOutput thread
 	 */
 	public void stopRunning( )
 	{
@@ -115,40 +93,11 @@ public class AnalogRemote implements Runnable
 	////////////////////////
 	// Protected methods
 	//
-	
+		
 	/**
-	 * Should be called only by mainloop(), a native method which is itself
-	 * synchronized.  By extension, this method is synchronized (in that, for
-	 * a given AnalogRemote object, this method can only be called from one
-	 * thread at a time).
-	 */
-	protected void handleAnalogChange( long tv_sec, long tv_usec, 
-									   double[] channel )
-	{
-		// putting the body of this function into a synchronized block prevents
-		// other instances of AnalogRemote from calling listeners' analogUpdate
-		// method concurrently.
-		synchronized( notifyingChangeListenersLock )
-		{
-			AnalogUpdate a = new AnalogUpdate();
-			a.msg_time.setTime( tv_sec * 1000 + tv_usec );
-			a.channel = (double[]) channel.clone( );
-			
-			// notify all listeners
-			Enumeration e = changeListeners.elements( );
-			while( e.hasMoreElements( ) )
-			{
-				AnalogChangeListener l = (AnalogChangeListener) e.nextElement( );
-				l.analogUpdate( a, this );
-			}
-		} // end synchronized( notifyingChangeListenersLock )
-	} // end method handleAnalogChange
-	
-	
-	/**
-	 * Initialize the native analog object
-	 * @param name The name of the analog and host (e.g., <code>"Analog0@myhost.edu"</code>).
-	 * @return <code>true</code> if the analog was connected successfully, 
+	 * Initialize the native analogOutput object
+	 * @param name The name of the analogOutput and host (e.g., <code>"Analog0@myhost.edu"</code>).
+	 * @return <code>true</code> if the analogOutput was connected successfully, 
 	 *			<code>false</code> otherwise.
 	 */
 	protected native boolean init( String name, String localInLogfileName, 
@@ -158,20 +107,20 @@ public class AnalogRemote implements Runnable
 	/**
 	 * This should only be called from the method finalize()
 	 */
-	protected native void shutdownAnalog( );
+	protected native void shutdownAnalogOutput( );
 	
 	protected synchronized native void mainloop( );
 	
 	protected void finalize( ) throws Throwable
 	{
 		keepRunning = false;
-		while( analogThread.isAlive( ) )
+		while( analogOutputThread.isAlive( ) )
 		{
-			try { analogThread.join( ); }
+			try { analogOutputThread.join( ); }
 			catch( InterruptedException e ) { }
 		}
 		changeListeners.removeAllElements( );
-		this.shutdownAnalog( );
+		this.shutdownAnalogOutput( );
 	}
 	
 	
@@ -182,15 +131,15 @@ public class AnalogRemote implements Runnable
 	// data members
 	
 	// this is used by the native code to store a C++ pointer to the 
-	// native vrpn_AnalogRemote object
-	protected int native_analog = -1;
+	// native vrpn_Analog_Output_Remote object
+	protected int native_analog_output = -1;
 	
 	// this is used to stop and to keep running the tracking thread
 	// in an orderly fashion.
 	protected boolean keepRunning = true;
 	
-	// the analog thread
-	Thread analogThread = null;
+	// the analogOutput thread
+	Thread analogOutputThread = null;
 
 	// how long the thread sleeps between checking for messages
 	protected long mainloopPeriod = 100; // milliseconds
@@ -206,17 +155,17 @@ public class AnalogRemote implements Runnable
 	// static initialization
 	static 
 	{
-		try { System.loadLibrary( "AnalogRemote" ); }
+		try { System.loadLibrary( "AnalogOutputRemote" ); }
 		catch( UnsatisfiedLinkError e )
 		{
 			System.out.println( e.getMessage( ) );
-			System.out.println( "Error initializing remote analog device." );
+			System.out.println( "Error initializing remote analogOutput device." );
 			System.out.println( " -- Unable to find native library." );
 		}
 		catch( SecurityException e )
 		{
 			System.out.println( e.getMessage( ) );
-			System.out.println( "Security exception:  you couldn't load the native analog remote dll." );
+			System.out.println( "Security exception:  you couldn't load the native analogOutput output remote dll." );
 		}
 	}
 	
