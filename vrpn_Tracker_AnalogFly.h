@@ -102,7 +102,6 @@ class vrpn_Tracker_AnalogFly : public vrpn_Tracker {
 
   protected:
 
-    vrpn_Connection	* d_connection;	// Connection to send reports on
     double	d_update_interval;	// How long to wait between sends
     struct timeval d_prevtime;		// Time of the previous report
 
