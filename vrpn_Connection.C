@@ -26,7 +26,8 @@
 #include "vrpn_Connection.h"
 #include "vrpn_Shared.h"		// defines gettimeofday for WIN32
 
-//#define	VERBOSE
+//#define VERBOSE
+//#define	VERBOSE3
 //#define	VERBOSE2
 //#define	PRINT_READ_HISTOGRAM
 
@@ -227,7 +228,7 @@ void vrpn_Connection::check_connection(void)
 		return;
 	}
 
-	fprintf(stderr,"vrpn: Connection request received: %s\n", msg);
+	printf("vrpn: Connection request received: %s\n", msg);
 	tcp_sock = connect_tcp_to(msg);
 	if (tcp_sock != -1) {
 		status = CONNECTED;
@@ -370,8 +371,7 @@ int vrpn_Connection::pack_type_description(int which)
 {
    struct timeval now;
    long	len = strlen(my_types[which].name);
-   long	net_len = htonl(len);
-   char	buffer[sizeof(net_len)+sizeof(cName)];
+   char	buffer[sizeof(len)+sizeof(cName)];
 
    // Pack a message with type vrpn_CONNECTION_TYPE_DESCRIPTION
    // whose sender ID is the ID of the type that is being
@@ -379,11 +379,10 @@ int vrpn_Connection::pack_type_description(int which)
    // and then the name of the type.
 
 #ifdef	VERBOSE
-   fprintf(stderr,
-	"  vrpn_Connection: Packing type '%s'\n",my_types[which].name);
+   printf("  vrpn_Connection: Packing type '%s'\n",my_types[which].name);
 #endif
-   memcpy(buffer, &net_len, sizeof(net_len));
-   memcpy(&buffer[sizeof(net_len)], my_types[which].name, (int)len);
+   memcpy(buffer, &len, sizeof(len));
+   memcpy(&buffer[sizeof(len)], my_types[which].name, (int)len);
    gettimeofday(&now,NULL);
    return pack_message((int)(len+sizeof(len)), now,
    	vrpn_CONNECTION_TYPE_DESCRIPTION, which, buffer,
@@ -394,8 +393,7 @@ int vrpn_Connection::pack_sender_description(int which)
 {
    struct timeval now;
    long	len = strlen(my_senders[which]);
-   long net_len = htonl(len);
-   char	buffer[sizeof(net_len)+sizeof(cName)];
+   char	buffer[sizeof(len)+sizeof(cName)];
 
    // Pack a message with type vrpn_CONNECTION_SENDER_DESCRIPTION
    // whose sender ID is the ID of the sender that is being
@@ -403,11 +401,11 @@ int vrpn_Connection::pack_sender_description(int which)
    // and then the name of the sender.
 
 #ifdef	VERBOSE
-	fprintf(stderr,
+	printf(
 		"  vrpn_Connection: Packing sender '%s'\n",my_senders[which]);
 #endif
-   memcpy(buffer, &net_len, sizeof(net_len));
-   memcpy(&buffer[sizeof(net_len)], my_senders[which], (int)len);
+   memcpy(buffer, &len, sizeof(len));
+   memcpy(&buffer[sizeof(len)], my_senders[which], (int)len);
    gettimeofday(&now,NULL);
    return pack_message((int)(len+sizeof(len)), now,
    	vrpn_CONNECTION_SENDER_DESCRIPTION, which, buffer,
@@ -432,7 +430,7 @@ int vrpn_Connection::pack_udp_description(int portno)
    // name of the host to contact.
 
 #ifdef	VERBOSE
-	fprintf(stderr,"  vrpn_Connection: Packing UDP %s:%d\n", hostname,
+	printf("  vrpn_Connection: Packing UDP %s:%d\n", hostname,
 		portno);
 #endif
    gettimeofday(&now,NULL);
@@ -476,7 +474,7 @@ int vrpn_Connection::pack_message(int len, struct timeval time,
 
 	// Make sure type is either a system type (-) or a legal user type
 	if ( type >= num_my_types ) {
-	    fprintf(stderr,"vrpn_Connection::pack_message: bad type (%ld)\n",
+	    printf("vrpn_Connection::pack_message: bad type (%ld)\n",
 		type);
 	    return -1;
 	}
@@ -484,7 +482,7 @@ int vrpn_Connection::pack_message(int len, struct timeval time,
 	// If this is not a system message, make sure the sender is legal.
 	if (type >= 0) {
 	  if ( (sender < 0) || (sender >= num_my_senders) ) {
-	    fprintf(stderr,"vrpn_Connection::pack_message: bad sender (%ld)\n",
+	    printf("vrpn_Connection::pack_message: bad sender (%ld)\n",
 		sender);
 	    return -1;
 	  }
@@ -581,7 +579,7 @@ int vrpn_Connection::marshall_message(
 void vrpn_Connection::drop_connection(void)
 {
 	//XXX Store name when opening, say which dropped here
-	fprintf(stderr,"vrpn: Connection dropped\n");
+	printf("vrpn: Connection dropped\n");
 	if (tcp_sock != INVALID_SOCKET) {
 		close(tcp_sock);
 		tcp_sock = INVALID_SOCKET;
@@ -636,7 +634,7 @@ int vrpn_Connection::send_pending_reports(void)
    printf("TCP Sent %d bytes\n",ret);
 #endif
       if (ret == -1) {
-	fprintf(stderr,"vrpn: TCP send failed\n");
+	printf("vrpn: TCP send failed\n");
 	drop_connection();
 	return -1;
       }
@@ -653,7 +651,7 @@ int vrpn_Connection::send_pending_reports(void)
    printf("UDP Sent %d bytes\n",ret);
 #endif SOCKET_ERROR
       if (ret == -1) {
-	fprintf(stderr,"vrpn: UDP send failed\n");
+	printf("vrpn: UDP send failed\n");
 	drop_connection();
 	return -1;
       }
@@ -695,11 +693,15 @@ int vrpn_Connection::mainloop(void)
 		}
 		break;
 	  }
+#ifdef VERBOSE3
+	  if(udp_messages_read != 0 )
+	    printf("udp message read = %d\n",udp_messages_read);
+#endif
 	}
 
 	// Read incoming messages from the TCP channel
 	if ( (tcp_messages_read = handle_tcp_messages(tcp_sock)) == -1) {
-		fprintf(stderr,
+		printf(
 			"vrpn: TCP handling failed, dropping connection\n");
 		drop_connection();
 		if (status != LISTEN) {
@@ -708,7 +710,12 @@ int vrpn_Connection::mainloop(void)
 		}
 		break;
 	}
-	
+#ifdef VERBOSE3
+	else {
+	  if(tcp_messages_read!=0)
+		printf("tcp_message_read %d bytes\n",tcp_messages_read);
+	}
+#endif
 #ifdef	PRINT_READ_HISTOGRAM
 #define      HISTSIZE 25
    {
@@ -804,8 +811,7 @@ vrpn_Connection::vrpn_Connection(unsigned short listen_port_no)
       status = BROKEN;
    } else {
       status = LISTEN;
-      fprintf(stderr,
-	"vrpn: Listening for requests on port %d\n",listen_port_no);
+   printf("vrpn: Listening for requests on port %d\n",listen_port_no);
    }
 }
 
@@ -1073,8 +1079,9 @@ int	vrpn_Connection::handle_tcp_messages(int fd)
 		// Read and parse the header
 		if (sdi_noint_block_read(fd,(char*)header,sizeof(header)) !=
 			sizeof(header)) {
-		  perror("vrpn: vrpn_Connection::handle_tcp_messages: Can't read header");
-		  return -1;
+		  //perror("vrpn: vrpn_Connection::handle_tcp_messages: Can't read header");
+		  printf("vrpn:vrpn_connection: handle_tcp_messages: Can't read header");
+			return -1;
 		}
 		len = htonl(header[0]);
 		time.tv_sec = htonl(header[1]);
@@ -1231,6 +1238,11 @@ int	vrpn_Connection::handle_udp_messages(int fd)
 		sender = htonl(header[3]);
 		type = htonl(header[4]);
 
+#ifdef VERBOSE
+		printf("Message type %ld (local type %ld), sender %ld received\n",
+			type,other_types[type].local_id,sender);
+#endif
+		
 		// Figure out how long the message body is, and how long it
 		// is including any padding to make sure that it is a
 		// multiple of four bytes long.
@@ -1287,7 +1299,6 @@ int	vrpn_Connection::handle_type_message(void *userdata,
 	vrpn_Connection *me = (vrpn_Connection*)userdata;
 	cName	type_name;
 	int	i;
-        long name_length;
 
 	if (p.payload_len > sizeof(type_name)) {
 		fprintf(stderr,"vrpn: vrpn_Connection::Type name too long\n");
@@ -1295,9 +1306,8 @@ int	vrpn_Connection::handle_type_message(void *userdata,
 	}
 
 	// Find out the name of the type (skip the length)
-	name_length = ntohl( *(long*)(void*)p.buffer );
-	strncpy(type_name, p.buffer+4, name_length);
-	type_name[name_length] = '\0';
+	strncpy(type_name, p.buffer+4, p.payload_len-4);
+	type_name[p.payload_len-4] = '\0';
 
 #ifdef	VERBOSE
 	printf("Registering other-side type: '%s'\n", type_name);
@@ -1310,7 +1320,7 @@ int	vrpn_Connection::handle_type_message(void *userdata,
 		return -1;
 	}
 #ifdef _WIN32
-	memcpy(type_name, me->other_types[me->num_other_types].name,
+	memcpy(me->other_types[me->num_other_types].name, type_name, 
 		 sizeof(type_name));
 #else
 	bcopy(type_name, me->other_types[me->num_other_types].name,
@@ -1342,17 +1352,15 @@ int	vrpn_Connection::handle_sender_message(void *userdata,
 	vrpn_Connection *me = (vrpn_Connection*)userdata;
 	cName	sender_name;
 	int	i;
-	long	name_length;
 
 	if (p.payload_len > sizeof(sender_name)) {
 		fprintf(stderr,"vrpn: vrpn_Connection::Type name too long\n");
 		return -1;
 	}
 
-	// Find out the name of the sender and then copy the name.
-	name_length = htonl( *(long*)(void*)p.buffer );
-	strncpy(sender_name, p.buffer+4, name_length);
-	sender_name[name_length] = '\0';
+	// Find out the name of the sender (skip the length)
+	strncpy(sender_name, p.buffer+4, p.payload_len-4);
+	sender_name[p.payload_len-4] = '\0';
 
 #ifdef	VERBOSE
 	printf("Registering other-side sender: '%s'\n", sender_name);
@@ -1365,7 +1373,7 @@ int	vrpn_Connection::handle_sender_message(void *userdata,
 		return -1;
 	}
 #ifdef _WIN32
-	memcpy(sender_name, me->other_senders[me->num_other_senders].name,
+	memcpy(me->other_senders[me->num_other_senders].name, sender_name, 
 		sizeof(sender_name));
 #else
 	bcopy(sender_name, me->other_senders[me->num_other_senders].name,
@@ -1431,7 +1439,7 @@ int vrpn_Connection::register_handler(long type, vrpn_MESSAGEHANDLER handler,
 	// Add this handler to the chain at the beginning (don't check to see
 	// if it is already there, since duplication is okay).
 #ifdef	VERBOSE
-	printf("Adding user handler for type %ld\n",type);
+	printf("Adding user handler for type %ld, sender %ld\n",type,sender);
 #endif
 	new_entry->next = my_types[type].who_cares;
 	my_types[type].who_cares = new_entry;

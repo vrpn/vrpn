@@ -51,7 +51,7 @@ class vrpn_Connection
 	vrpn_Connection(unsigned short listen_port_no =
 		vrpn_DEFAULT_LISTEN_PORT_NO);
 #ifndef _WIN32
-	// Create a connection that makes an SDI connection to a remote server
+	// Create a connection  makes an SDI connection to a remote server
 	vrpn_Connection(char *server_name);
 #endif
 
