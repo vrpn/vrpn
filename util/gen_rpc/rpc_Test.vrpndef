@@ -1,0 +1,52 @@
+/* This is a group of test message definitions,
+   used in the test suite for vrpn RPC generator.
+*/
+
+// MESSAGE_GROUP must come first, before any VRPN_MESSAGE directives. 
+MESSAGE_GROUP rpc_Test
+
+DEFINE NAME_LENGTH 16
+
+// Empty message
+VRPN_MESSAGE Empty {
+}
+
+VRPN_MESSAGE Simple {
+  int32 num
+  float32 P
+  float32 setpoint
+}
+
+/* Another comment */
+VRPN_MESSAGE CharArray {
+  int32 cnt
+  char nm [NAME_LENGTH]
+  char nm2 [cnt]
+  char doublenm [4][NAME_LENGTH]
+  char triplenm [4][cnt][cnt]
+}
+
+VRPN_MESSAGE IntArray {
+  int32 cnt
+  int32 shortstuff [cnt]
+  int32 constdouble [6][4]
+  int32 triple [4][NAME_LENGTH][cnt]
+}
+
+VRPN_MESSAGE WindowLineData {
+  int32 reports
+  int32 fields
+  float32 data [reports][fields]
+}
+
+VRPN_MESSAGE ReportScanDatasets {
+  int32 count
+  struct ScanDataset {
+    char name [64]
+    char units [64]
+    float32 offset
+    float32 scale
+  } datasets [count]
+}
+
+

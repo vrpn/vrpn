@@ -1,0 +1,34 @@
+OUTPUT_FILENAME rpc_Test_Remote.C
+/*===3rdtech===
+  Copyright (c) 2001 by 3rdTech, Inc.
+  All Rights Reserved.
+
+  This file may not be distributed without the permission of 
+  3rdTech, Inc. 
+  ===3rdtech===*/
+#include <stdio.h>
+#include <vrpn_Connection.h>
+#include "rpc_Test_Remote.h"
+
+USE_MSG_GROUP rpc_Test
+
+CLASSNAME rpc_Test_Remote
+
+rpc_Test_Remote::rpc_Test_Remote (
+    vrpn_Connection * connection) :
+    rpc_Test(connection), 
+    d_connection(connection)
+{
+  if (!d_connection) {
+    return;
+  }
+  REGISTER rpc_Test;
+}
+
+rpc_Test_Remote::~rpc_Test_Remote () { } 
+
+RECEIVERS rpc_Test;
+
+HANDLERS rpc_Test;
+
+NO CLASS 

@@ -1,0 +1,10 @@
+2001-03-01  Aron Helser  <helser@cs.unc.edu>
+
+	* gen_vrpn_rpc.pl: new. Perl script. Generates vrpn rpc .C and .h
+	files from message lists or def files.
+
+	* main_test.C: new. Tests rpn generation
+	* rpc_Test_Remote.hdef: new. Test rpc generation
+	* rpc_Test_Remote.Cdef: new. Test rpc generation
+
+
