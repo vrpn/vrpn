@@ -32,6 +32,7 @@ vrpn_SharedObject::vrpn_SharedObject (const char * name, const char * tname,
   d_assumeSerializer_type (-1),
   d_lamportUpdate_type (-1),
   d_isSerializer (vrpn_FALSE),
+  d_isNegotiatingSerializer (vrpn_FALSE),
   d_queueSets (vrpn_FALSE),
   d_lClock (NULL),
   d_lastLamportUpdate (NULL),
@@ -57,8 +58,8 @@ vrpn_SharedObject::~vrpn_SharedObject (void) {
     delete [] d_typename;
   }
   if (d_connection) {
-    d_connection->unregister_handler (d_update_type,
-                                      handle_update, this, d_peerId);
+    d_connection->unregister_handler(d_update_type,
+                                     handle_update, this, d_peerId);
     d_connection->unregister_handler(d_requestSerializer_type,
                                      handle_requestSerializer, this, d_peerId);
     d_connection->unregister_handler(d_grantSerializer_type,
@@ -69,7 +70,7 @@ vrpn_SharedObject::~vrpn_SharedObject (void) {
     gotConnection_type =
         d_connection->register_message_type(vrpn_got_connection);
     d_connection->unregister_handler(gotConnection_type,
-                                     handle_gotConnectionToRemote,
+                                     handle_gotConnection,
                                      this, d_myId);
   }
 }
@@ -134,6 +135,14 @@ void vrpn_SharedObject::useLamportClock (vrpn_LamportClock * l) {
 
 void vrpn_SharedObject::becomeSerializer (void) {
   timeval now;
+
+  // Make sure only one request is outstanding
+
+  if (d_isNegotiatingSerializer) {
+    return;
+  }
+
+  d_isNegotiatingSerializer = vrpn_TRUE;
 
   // send requestSerializer
 
@@ -207,11 +216,13 @@ int vrpn_SharedObject::handle_requestSerializer (void * userdata,
   vrpn_SharedObject * s = (vrpn_SharedObject *) userdata;
   timeval now;
 
-  if (!s->isSerializer()) {
+  if (!s->isSerializer() || s->d_isNegotiatingSerializer) {
     // ignore this
     // we should probably return failure or error?
     return 0;
   }
+
+  s->d_isNegotiatingSerializer = vrpn_TRUE;
 
   if (s->d_connection) {
 
@@ -246,7 +257,7 @@ int vrpn_SharedObject::handle_grantSerializer (void * userdata,
   timeval now;
 
   s->d_isSerializer = vrpn_TRUE;
-
+  s->d_isNegotiatingSerializer = vrpn_FALSE;
 
   // send assumeSerializer
 
@@ -269,6 +280,7 @@ int vrpn_SharedObject::handle_assumeSerializer (void * userdata,
   vrpn_SharedObject * s = (vrpn_SharedObject *) userdata;
 
   s->d_isSerializer = vrpn_FALSE;
+  s->d_isNegotiatingSerializer = vrpn_FALSE;
 
   // TODO:  send queued set()s
 
@@ -291,16 +303,8 @@ int vrpn_SharedObject::yankDeferredUpdateCallbacks (void) {
 
 
 void vrpn_SharedObject::serverPostBindCleanup (void) {
-  vrpn_int32 gotConnection_type;
-
   d_myId = d_serverId;
   d_peerId = d_remoteId;
-
-  gotConnection_type =
-      d_connection->register_message_type(vrpn_got_connection);
-  d_connection->register_handler(gotConnection_type,
-                                 handle_gotConnectionToRemote,
-                                 this, d_myId);
   postBindCleanup();
 }
 
@@ -312,7 +316,7 @@ void vrpn_SharedObject::remotePostBindCleanup (void) {
 
 
 // static
-int vrpn_SharedObject::handle_gotConnectionToRemote
+int vrpn_SharedObject::handle_gotConnection
              (void * userdata, vrpn_HANDLERPARAM) {
   vrpn_SharedObject * s = (vrpn_SharedObject *) userdata;
 
@@ -321,7 +325,10 @@ int vrpn_SharedObject::handle_gotConnectionToRemote
   // something will assume we're at our initial value until our value
   // changes, which is an error.
 
-  s->sendUpdate();
+  if (s->d_isSerializer) {
+    s->sendUpdate();
+  }
+
   return 0;
 }
 
@@ -333,6 +340,11 @@ int vrpn_SharedObject::handle_update (void * userdata, vrpn_HANDLERPARAM p) {
 }
 
 void vrpn_SharedObject::postBindCleanup (void) {
+  vrpn_int32 gotConnection_type;
+
+  if (!d_connection) {
+    return;
+  }
 
   // listen for update
 
@@ -352,6 +364,11 @@ void vrpn_SharedObject::postBindCleanup (void) {
                                  handle_assumeSerializer,
                                  this, d_peerId);
 
+  gotConnection_type =
+      d_connection->register_message_type(vrpn_got_connection);
+  d_connection->register_handler(gotConnection_type,
+                                 handle_gotConnection,
+                                 this, d_myId);
 }
 
 

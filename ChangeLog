@@ -1,3 +1,21 @@
+2000-09-18  Tom Hudson  <hudson@cs.unc.edu>
+
+        * vrpn_SharedObject.C:
+        (class vrpn_SharedObject)
+        d_isNegotiatingSerializer : new data member
+        (vrpn_SharedObject::becomeSerializer) : test & set
+        d_isNegotiatingSerializer
+        (vrpn_SharedObject::handle_requestSerializer) : same
+        (vrpn_SharedObject::handle_grantSerializer) : clear
+        d_isNegotiatingSerializer
+        (vrpn_SharedObject::handle_assumeSerializer) : same
+        (vrpn_SharedObject::postBindConnection) : check for NULL connection,
+        moved code from serverPostBindConnection
+        (vrpn_SharedObject::serverPostBindConnection) : same
+        (vrpn_SharedObject::handle_gotConnection) : generalized,
+        renamed from handle_gotConnectionToRemote
+
+
 2000-09-17  Tom Hudson  <hudson@cs.unc.edu>
 
         * vrpn_SharedObject.C:

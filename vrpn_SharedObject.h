@@ -188,6 +188,9 @@ class vrpn_SharedObject {
 
     vrpn_bool d_isSerializer;
       ///< default to vrpn_TRUE for servers, FALSE for remotes
+    vrpn_bool d_isNegotiatingSerializer;
+      ///< As long as we have inorder delivery, this should be
+      ///< sufficient to keep us from getting many at once.
 
     virtual vrpn_bool shouldSendUpdate (vrpn_bool isLocalSet,
                                         vrpn_bool acceptedUpdate);
@@ -225,8 +228,8 @@ class vrpn_SharedObject {
       ///< Should invoke default sendUpdate() for this derived type.
     virtual int handleUpdate (vrpn_HANDLERPARAM) = 0;
 
-    static int handle_gotConnectionToRemote (void *, vrpn_HANDLERPARAM);
-      ///< Servers will register this handler in serverPostBindCleanup();
+    static int handle_gotConnection (void *, vrpn_HANDLERPARAM);
+      ///< Register this handler in postBindCleanup();
       ///< it calls sendUpdate() to make sure the remote has the
       ///< correct value on first connection.
     static int handle_update (void *, vrpn_HANDLERPARAM);
