@@ -83,6 +83,17 @@
 #define	vrpn_float64	double
 #endif
 
+#ifdef	FreeBSD
+#define	vrpn_int8	char
+#define	vrpn_uint8	unsigned char
+#define	vrpn_int16	short
+#define	vrpn_uint16	unsigned short
+#define	vrpn_int32	long
+#define	vrpn_uint32	unsigned long
+#define	vrpn_float32	float
+#define	vrpn_float64	double
+#endif
+
 #ifndef	vrpn_int8
 XXX	Need to define architecture-dependent sizes here
 #endif

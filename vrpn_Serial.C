@@ -23,6 +23,10 @@
 #include <io.h>
 #endif
 
+#ifdef FreeBSD
+#include <termios.h>
+#endif
+
 #include "vrpn_Serial.h"
 
 //#define VERBOSE
@@ -31,7 +35,7 @@
 
 int vrpn_open_commport(char *portname, long baud)
 {
-#if defined(_WIN32) || defined(sparc) || defined(hpux) || defined(__hpux) || defined(ultrix)
+#if defined(_WIN32) || defined(sparc) || defined(hpux) || defined(__hpux) || defined(ultrix) || defined(FreeBSD)
 	fprintf(stderr,
 		"vrpn_open_commport: Not implemented in NT, sparc, ultrix, or HP\n");
 	return -1;

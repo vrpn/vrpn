@@ -84,13 +84,22 @@ vrpn_File_Connection::~vrpn_File_Connection (void) {
 // virtual
 int vrpn_File_Connection::mainloop (const struct timeval * timeout) {
 
+  struct timeval wait_time;
   struct timeval last_time;
   struct timeval skip_time;
   int retval;
 
+  if (timeout) {
+    wait_time.tv_sec = timeout->tv_sec;
+    wait_time.tv_usec = timeout->tv_usec;
+  } else {
+    wait_time.tv_sec = 0L;
+    wait_time.tv_usec = 0L;
+  }
+
   if (!d_file) {
     if (timeout)  // block for the requested time
-      select(0, NULL, NULL, NULL, timeout);
+      select(0, NULL, NULL, NULL, &wait_time);
     return 0;
   }
 
@@ -131,7 +140,7 @@ int vrpn_File_Connection::mainloop (const struct timeval * timeout) {
     next_plus = vrpn_TimevalSum(d_next_time, skip_time);
 
     if (vrpn_TimevalGreater(d_runtime, next_plus)) {
-      select(0, NULL, NULL, NULL, timeout);  // block
+      select(0, NULL, NULL, NULL, &wait_time);  // block
       return 0;
     }
 

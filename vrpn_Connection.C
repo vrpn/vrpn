@@ -925,8 +925,8 @@ int vrpn_start_server(const char *machine, char *server_name, char *args)
 
                 for (waitloop = 0; waitloop < (SERVCOUNT-1); waitloop++) {
                     pid_t deadkid;
-#ifdef sparc
-                    int status;  // doesn't exist on sparc_solaris
+#if defined(sparc) || defined(FreeBSD)
+                    int status;  // doesn't exist on sparc_solaris or FreeBSD
 #else
                     union wait status;
 #endif
@@ -2583,10 +2583,16 @@ int vrpn_Connection::mainloop (const struct timeval * timeout)
 #endif
 
    // divide timeout over all selects()
-   perSocketTimeout.tv_sec = timeout->tv_sec / numSockets;
-   perSocketTimeout.tv_usec = timeout->tv_usec / numSockets
-                              + (timeout->tv_sec % numSockets) *
-                                (1000000L / numSockets);
+   if (timeout) {
+     perSocketTimeout.tv_sec = timeout->tv_sec / numSockets;
+     perSocketTimeout.tv_usec = timeout->tv_usec / numSockets
+                                + (timeout->tv_sec % numSockets) *
+                                  (1000000L / numSockets);
+   } else {
+     perSocketTimeout.tv_sec = 0L;
+     perSocketTimeout.tv_usec = 0L;
+   }
+
 
    switch (status) {
       case LISTEN:

@@ -100,6 +100,14 @@ OBJECT_DIR	 := $(HW_OS)$(OBJECT_DIR_SUFFIX)
 SOBJECT_DIR      := $(HW_OS)$(OBJECT_DIR_SUFFIX)/server
 endif
 
+# directories that we can do an rm -f on because they only contain
+# object files and executables
+SAFE_KNOWN_ARCHITECTURES :=	hp700_hpux/* hp700_hpux10/* mips_ultrix/* \
+	pc_linux/* sgi_irix/* sgi_irix.n32/* sparc_solaris/* sparc_sunos/*
+
+CLIENT_SKA = $(patsubst %,client_src/%,$(SAFE_KNOWN_ARCHITECTURES))
+SERVER_SKA = $(patsubst %,server_src/%,$(SAFE_KNOWN_ARCHITECTURES))
+
 ##########################
 # Include flags
 #
@@ -297,6 +305,7 @@ $(OBJECT_DIR)/libvrpnserver.a: $(MAKEFILE) $(SOBJECT_DIR) $(SLIB_OBJECTS) \
 #
 #############################################################################
 
+.PHONY:	clean
 clean:
 	\rm -f $(LIB_OBJECTS) $(OBJECT_DIR)/libvrpn.a $(OBJECT_DIR)/libvrpn_g++.a \
 		$(SLIB_OBJECTS) $(OBJECT_DIR)/libvrpnserver.a $(OBJECT_DIR)/libvrpnserver_g++.a
@@ -304,6 +313,27 @@ ifneq ($(CC), g++)
 	$(MAKE) FORCE_GPP=1 clean
 endif
 
+# clobberall removes the object directory for EVERY architecture.
+# One problem - the object directory for pc_win32 also contains files
+# that must be saved.
+# clobberall also axes left-over CVS cache files.
+
+.PHONY:	clobberall
+clobberall:	clobberwin32
+	\rm -rf $(SAFE_KNOWN_ARCHITECTURES)
+	\rm -rf $(CLIENT_SKA)
+	\rm -rf $(SERVER_SKA)
+	\rm -f .#* server_src/.#* client_src/.#*
+
+.PHONY:	clobberwin32
+clobberwin32:
+	\rm -rf pc_win32/DEBUG/*
+	\rm -rf pc_win32/vrpn/Debug/*
+	\rm -rf client_src/pc_win32/printvals/Debug/*
+	\rm -rf server_src/pc_win32/vrpn_server/Debug/*
+
+
+.PHONY:	beta
 beta :
 	$(MAKE) clean
 	$(MAKE) all

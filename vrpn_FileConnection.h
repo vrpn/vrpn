@@ -30,7 +30,7 @@ class vrpn_File_Connection : public vrpn_Connection {
     vrpn_File_Connection (const char * file_name);
     virtual ~vrpn_File_Connection (void);
 
-    virtual int mainloop (struct timeval * timeout = NULL);
+    virtual int mainloop (const struct timeval * timeout = NULL);
 
     virtual int time_since_connection_open (struct timeval * elapsed_time);
 
