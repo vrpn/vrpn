@@ -63,7 +63,7 @@ void svrpn_FileController::et_replay_rate(vrpn_float32 rate)
 }
 	
 // resets to the beginning of the file
-vrpn_int32 vrpn_FileController::reset (void)      
+vrpn_int32 vrpn_FileController::reset ()      
 {
 	return p_pfcci->reset();
 }

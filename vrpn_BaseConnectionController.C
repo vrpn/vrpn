@@ -2,20 +2,97 @@
 
 
 
+
 ////////////////////////////////////////////////////////
 // vrpn_ConnectionController constructors and destructor
 //
 
 vrpn_BaseConnectionController::vrpn_BaseConnectionController(
+	char * local_logfile,
+	vrpn_int32 local_logmode,
+	char * remote_logfile,
+	vrpn_int32 remote_logmode,
     vrpn_float64 dFreq, 
-    vrpn_int32 cOffsetWindow)
+    vrpn_int32 cOffsetWindow
+	):
+	d_local_logmode(local_logmode),
+	d_remote_logmode(remote_logmode)
 {
-    // ...XXX...
 
     // init for clock server/client
     // need to init gettimeofday for the pc
     struct timeval tv;
     gettimeofday(&tv, NULL);
+
+	vrpn_int32	i;
+
+	// Lots of constants used to be set up here.  They were moved
+	// into the constructors in 02.10;  this will create a slight
+        // increase in maintenance burden keeping the constructors consistient.
+
+	// offset of clocks on connected machines -- local - remote
+	// (this should really not be here, it should be in adjusted time
+	// connection, but this makes it a lot easier
+	tvClockOffset.tv_sec=0;
+	tvClockOffset.tv_usec=0;
+
+	// Set up the default handlers for the different types of user
+	// incoming messages.  Initially, they are all set to the
+	// NULL handler, which tosses them out.
+	// Note that system messages always have negative indices.
+	for (i = 0; i < vrpn_CONNECTION_MAX_TYPES; i++) {
+		my_types[i].who_cares = NULL;
+		my_types[i].cCares = 0;
+		my_types[i].name = NULL;
+	}
+
+
+	for (i = 0; i < vrpn_CONNECTION_MAX_SERVICES; i++) {
+		my_services[i] = NULL;
+	}
+
+	gettimeofday(&start_time, NULL);
+
+	// copy logfile names
+	if( local_logfile ){
+		d_local_logname = new char [1 + strlen(local_logfile)];
+		if (!d_local_logname) {
+			fprintf(stderr, "vrpn_BaseConnectionController::vrpn_BaseConnectionController:  "
+					"Out of memory!\n");
+			status = BROKEN;
+			return;
+		}
+		strcpy(d_local_logname,local_logfile,strlen(local_logfile)+1);
+	}
+	if( remote_logfile ){
+		d_remote_logname = new char [1 + strlen(remote_logfile)];
+		if (!d_remote_logname) {
+			fprintf(stderr, "vrpn_BaseConnectionController::vrpn_BaseConnectionController:  "
+					"Out of memory!\n");
+			status = BROKEN;
+			return;
+		}
+		strcpy(d_remote_logname,remote_logfile,strlen(remote_logfile)+1);
+	}
+
+#ifdef _WIN32
+
+  // Make sure sockets are set up
+  // TCH 2 Nov 98 after Phil Winston
+
+  WSADATA wsaData;
+  int status;
+
+  status = WSAStartup(MAKEWORD(1, 1), &wsaData);
+  if (status) {
+    fprintf(stderr, "vrpn_Connection::init():  "
+                    "Failed to set up sockets.\n");
+    fprintf(stderr, "WSAStartup failed with error code %d\n", status);
+    exit(0);
+  }
+
+#endif  // _WIN32
+
 }
 
 vrpn_BaseConnectionController::~vrpn_BaseConnectionController()
@@ -216,7 +293,7 @@ vrpn_BaseConnectionController::get_message_type_name(
 //**************************************************************************
 //**************************************************************************
 
-vrpn_int32 vrpn_BaseConnectionController::get_local_logmode(void)
+vrpn_int32 vrpn_BaseConnectionController::get_local_logmode()
 {
     return d_local_logmode;
 }
@@ -229,7 +306,7 @@ void vrpn_BaseConnectionController::get_local_logfile_name(char * logname_copy)
              strlen(d_local_logname)+1 );
 }
 
-vrpn_int32 vrpn_BaseConnectionController::get_remote_logmode(void)
+vrpn_int32 vrpn_BaseConnectionController::get_remote_logmode()
 {
     return d_remote_logmode;
 }

@@ -102,6 +102,20 @@ struct vrpnMsgCallbackEntry {
 };
 
 
+// This is the interface that we provide to the Connection
+// classes so that they can invoke callbacks. The only function
+// of the ConnectionControllers that we want the Connection
+// classes to have access to is do_callbacks_for
+struct ConnectionControllerCallbackInterface
+{
+    virtual vrpn_int32 do_callbacks_for( 
+		vrpn_int32 type, 
+		vrpn_int32 sender,
+		timeval time, 
+		vrpn_uint32 len,
+		const char * buffer) = 0;
+
+};
 
 
 
@@ -115,7 +129,7 @@ struct vrpnMsgCallbackEntry {
 // ClientConnectionController
 //
 
-class vrpn_BaseConnectionController
+class vrpn_BaseConnectionController: public ConnectionControllerCallbackInterface
 {
 public:  // c'tors and d'tors
 
@@ -131,12 +145,14 @@ public:  // c'tors and d'tors
 
 protected:  // c'tors and init
 
-    // constructors ...XXX...
     // constructor should include these for clock synch
-    vrpn_BaseConnectionController(  vrpn_float64 dFreq = 4.0, 
-                                    vrpn_int32 cOffsetWindow = 2);
-
-    virtual void init(void) = 0;
+    vrpn_BaseConnectionController(  
+		char * local_logfile = NULL,
+		vrpn_int32 local_logmode = vrpn_LOG_NONE,
+		char * remote_logfile = NULL,
+		vrpn_int32 remote_logmode = vrpn_LOG_NONE,
+		vrpn_float64 dFreq = 4.0, 
+		vrpn_int32 cOffsetWindow = 2);
 
 public:  // status
 
@@ -179,6 +195,7 @@ public:  // handling incoming and outgoing messages
         vrpn_uint32 class_of_service ) = 0;
     
 
+
 public:  // services and types
     // * messages in vrpn are identified by two different ID's
     // * one is the service id.  It will be renamed.  An example is
@@ -219,6 +236,7 @@ public:  // services and types
     // * only works for user messages (type_id >= 0)
     // * was: message_type_name
     const char * get_message_type_name( vrpn_int32 type_id ) const;
+
 
 protected: // implementation of services and types
     //        these are called by the public functions above
@@ -288,7 +306,7 @@ public:  // callbacks
         vrpn_int32 type, vrpn_int32 service,
         timeval time,
         vrpn_uint32 len, const char * buffer);
-    
+
 private:  // implementation of callbacks
 
     // Callbacks on vrpn_ANY_TYPE
@@ -297,10 +315,10 @@ private:  // implementation of callbacks
 
 public: // logging functions
 
-    virtual vrpn_int32 get_local_logmode(void);
+    virtual vrpn_int32 get_local_logmode();
     virtual void get_local_logfile_name(char *);
     
-    virtual vrpn_int32 get_remote_logmode(void);
+    virtual vrpn_int32 get_remote_logmode();
     virtual void get_remote_logfile_name(char *);
 
 private: // logging data members
@@ -314,36 +332,9 @@ private: // logging data members
 public: // clock functions
 
     // offset of clocks on connected machines -- local - remote
-    // (this should really not be here, it should be in adjusted time
-    // connection, but this makes it a lot easier
     struct timeval tvClockOffset;
 
 };
 
-
-#ifdef 0  // XXX these have to go into the subclasses
-protected:  // handling incoming and outgoing messages
-    //         wrappers that forwards the functioncall to each open connection
-
-    virtual int pack_service_description( vrpn_int32 which_service ) = 0;
-    virtual int pack_type_description( vrpn_int32 which_type ) = 0;
-    virtual int pack_udp_description( int portno ) = 0;
-    //virtual int pack_log_description( long mode, const char * filename );
-
-    // Routines to handle incoming messages on file descriptors
-    int handle_incoming_udp_messages (int fd, const timeval * timeout);
-    int handle_incoming_tcp_messages (int fd, const timeval * timeout);
-    
-    // Routines that handle system messages
-    // these are registered as callbacks
-    static int handle_incoming_service_message(
-        void * userdata, vrpn_HANDLERPARAM p);
-    static int handle_incoming_type_message(
-        void * userdata, vrpn_HANDLERPARAM p);
-    static int handle_incoming_udp_message(
-        void * userdata, vrpn_HANDLERPARAM p);
-    static int handle_incoming_log_message(
-        void * userdata, vrpn_HANDLERPARAM p);
-#endif
 
 #endif

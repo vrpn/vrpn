@@ -14,6 +14,14 @@
 //  * multicast sending
 //
 
+// NOTE:
+// multicast will not be supported for the first release of the new
+// connection system. all multicast funtonality will either be 
+// commented out or rendered inactive by a setting d_mcast_capable
+// to false dutring initialization of the system.
+//
+// Stefan Sain, 8/99
+
 #include "vrpn_BaseConnectionController.h"
 
 class vrpn_ServerConnectionController
@@ -27,11 +35,21 @@ public:  // c'tors and d'tors
 protected:  // c'tors and init
         
     // constructors ...XXX...
-    vrpn_ServerConnectionController();
+    vrpn_ServerConnectionController(
+		vrpn_uint16 port = vrpn_DEFAULT_LISTEN_PORT_NO,
+		char * local_logfile_name = NULL, 
+		vrpn_int32 local_log_mode = vrpn_LOG_NONE,
+		vrpn_int32 tcp_inbuflen = vrpn_CONNECTION_TCP_BUFLEN,
+		vrpn_int32 tcp_outbuflen = vrpn_CONNECTION_TCP_BUFLEN,
+		vrpn_int32 udp_inbuflen = vrpn_CONNECTION_UDP_BUFLEN,
+		vrpn_int32 udp_outbuflen = vrpn_CONNECTION_UDP_BUFLEN,
+		vrpn_float64 dFreq = 4.0, 
+		vrpn_in32 cSyncWindow = 2
+		// add multicast arguments later
+		);
 
-    virtual void init(void);
 
-public: // sending and receving mesages
+public: // sending and receving messages
 
     // * call each time through the program main loop
     // * handles receiving any incoming messages
@@ -43,9 +61,22 @@ public: // sending and receving mesages
     //   and this timeout will be divided evenly between them.
     virtual vrpn_int32 mainloop( const timeval * timeout = NULL );
 
+    
+    // * pack a message that will be sent the next time mainloop() is called
+    // * turn off the RELIABLE flag if you want low-latency (UDP) send
+    // * was: pack_message
+    virtual vrpn_int32 handle_outgoing_message(
+        vrpn_uint32 len, 
+        timeval time,
+        vrpn_int32 type,
+        vrpn_int32 service,
+        const char * buffer,
+        vrpn_uint32 class_of_service );
+
 
 private: // the connections
-    //list <vrpn_BaseConnection *> connection_list;
+
+	vrpn_CONNECTION_LIST *d_connection_list = NULL;
 
 protected: // initializaton and connection setup
 
@@ -57,7 +88,6 @@ protected: // initializaton and connection setup
     char* get_mcast_info();
     
     // helper function
-    // XXX if this doesn't go away, give a more descriptive comment
     virtual vrpn_int32 connect_to_client( const char *machine,
                                           vrpn_int16 port );
         
@@ -76,13 +106,21 @@ private: // data members
     
     // Only used for a vrpn_Connection that awaits incoming connections
     vrpn_int32  listen_udp_sock;        // Connect requests come here
+	vrpn_uint16 listen_port_no;
 
     // logging object
-    vrpn_FileLogger* logger;
+    vrpn_FileLogger* d_logger_ptr;
+
+	// data needed to pass to Connection c'tor
+	vrpn_int32 d_tcp_inbuflen;
+	vrpn_int32 d_tcp_outbuflen;
+	vrpn_int32 d_udp_inbuflen;
+	vrpn_int32 d_udp_outbuflen;
+
 
 public: // logging functions
 
-    virtual vrpn_int32 get_remote_logmode(void);
+    virtual vrpn_int32 get_remote_logmode();
     virtual void get_remote_logfile_name(char *);
 
 public: // clock server functions

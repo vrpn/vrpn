@@ -19,7 +19,7 @@ public:
   //-------------------------------------------------------------------
   // constructor
   //-------------------------------------------------------------------
-  vrpn_McastGroupDescrp(void){};
+  vrpn_McastGroupDescrp(){};
 
   //-------------------------------------------------------------------
   // data members
@@ -51,21 +51,21 @@ public:
 	// constructors and destructor
 	//-------------------------------------------------------------------
 	vrpn_BaseMulticastChannel( char* group_name, vrpn_uint16 port);
-	~vrpn_BaseMulticastChannel(void){};
+	~vrpn_BaseMulticastChannel();
 
 	//-------------------------------------------------------------------
 	// status functions
 	//-------------------------------------------------------------------
-	virtual vrpn_bool created_correctly(void);
+	virtual vrpn_bool created_correctly();
 
 	//-------------------------------------------------------------------
 	// get functions
 	//-------------------------------------------------------------------
 	virtual vrpn_int32 get_mcast_info(char *info_buffer) = 0;
-	char* get_mcast_group_name(void);
-	vrpn_int32 get_mcast_addr(void);
-	vrpn_uint16 get_mcast_port_num(void);
-	vrpn_int32 get_mcast_sock(void);
+	char* get_mcast_group_name();
+	vrpn_int32 get_mcast_addr();
+	vrpn_uint16 get_mcast_port_num();
+	vrpn_int32 get_mcast_sock();
 	
 
 protected:
@@ -78,7 +78,7 @@ protected:
 	vrpn_int32 set_mcast_sock(vrpn_int32);
 	void set_created_correctly(vrpn_bool);
 
-	virtual void init_mcast_channel(void) = 0;  // implement in subclasses
+	virtual void init_mcast_channel() = 0;  // implement in subclasses
 
   
 private:
@@ -88,7 +88,7 @@ private:
 	//-------------------------------------------------------------------
 	vrpn_int32 d_mcast_sock;
 	vrpn_uint16 d_mcast_port;
-	char d_mcast_group[20];
+	char * d_mcast_group;
 	vrpn_int32 d_mcast_ttl;
 	vrpn_bool d_created_correctly;
 };

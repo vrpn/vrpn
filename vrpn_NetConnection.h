@@ -10,6 +10,13 @@
 //
 // NetConnection replaces the OneConnection class.
 
+// NOTE:
+// multicast will not be supported for the first release of the new
+// connection system. all multicast funtonality will either be 
+// commented out or rendered inactive by a setting d_mcast_capable
+// to false dutring initialization of the system.
+//
+// Stefan Sain, 8/99
 
 #ifndef VRPN_NETCONNECTION_INCLUDED
 #define VRPN_NETCONNECTION_INCLUDED
@@ -17,19 +24,32 @@
 //#include "vrpn_ConnectionOldCommonStuff.h"
 #include "vrpn_ConnectionCommonStuff.h"
 #include "vrpn_BaseConnection.h"
+#include "vrpn_BaseConnectionController.h"
 #include "vrpn_UnreliableMulticastRecvr.h"
 #include "vrpn_FileLogger.h"
-
+#include "vrpn_CommonSystemIncludes.h"
 
 class vrpn_NetConnection
     : public vrpn_BaseConnection {
 
 public:  // c'tors and d'tors
-    vrpn_NetConnection();   
+
+	vrpn_NetConnection(
+		ConnectionControllerCallbackInterface* ccci, // callback hook
+		char * local_logfile = NULL,
+		vrpn_int32 local_logmode = vrpn_LOG_NONE,
+		char * remote_logfile = NULL,
+		vrpn_int32 remote_logmode = vrpn_LOG_NONE,
+		vrpn_int32 tcp_inbuflen = vrpn_CONNECTION_TCP_BUFLEN,
+		vrpn_int32 tcp_outbuflen = vrpn_CONNECTION_TCP_BUFLEN,
+		vrpn_int32 udp_inbuflen = vrpn_CONNECTION_UDP_BUFLEN,
+		vrpn_int32 udp_outbuflen = vrpn_CONNECTION_UDP_BUFLEN
+		// add multicast arguments later
+		);
+
+		
     virtual ~vrpn_NetConnection();
 
-protected: //init
-    virtual void init(void);
 
 public:  // sending and receiving
 
@@ -46,7 +66,9 @@ public:  // sending and receiving
     // functions for sending messages and receiving messages
     // the ConnectionController will call these functions
   
-    vrpn_int32 handle_outgoing_messages( const struct timeval * pTimeout = NULL );
+    vrpn_int32 handle_outgoing_messages(vrpn_uint32 len, struct timeval time,
+        vrpn_int32 type, vrpn_int32 sender, const char * buffer,
+        vrpn_uint32 class_of_service, vrpn_bool sent_mcast);
 
     vrpn_int32 handle_incoming_messages( const struct timeval * pTimeout = NULL );
 
@@ -55,7 +77,7 @@ public:  // sending and receiving
     // Turn off the RELIABLE flag if you want low-latency (UDP) send.
     virtual vrpn_int32 pack_message(vrpn_uint32 len, struct timeval time,
         vrpn_int32 type, vrpn_int32 sender, const char * buffer,
-        vrpn_uint32 class_of_service, vrpn_bool sent_mcast);
+        vrpn_uint32 class_of_service);
 
     // send pending report, clear the buffer.
     // This function was protected, now is public, so we can use it
@@ -74,18 +96,18 @@ protected:  // sending and receiving
 public: // status
 
     // Routines that report status of connections
-    inline vrpn_int32 outbound_udp_open (void) const
+    inline vrpn_int32 outbound_udp_open () const
       { return udp_outbound != -1; }
-    inline vrpn_int32 outbound_mcast_open (void) const
+    inline vrpn_int32 outbound_mcast_open () const
       { return mcast_recvr ? 1 : 0; } // if multicast recvr ptr non-null
 
-public:  // buffer sizes.  XXX don't know if these belong here or not
-    //                         no, they don't
+public:  // buffer sizes. 
+
     // Applications that need to send very large messages may want to
     // know the buffer size used or to change its size.  Buffer size
     // is returned in bytes.
-    vrpn_int32 tcp_outbuf_size () const { return d_tcp_buflen; }
-    vrpn_int32 udp_outbuf_size () const { return d_udp_buflen; }
+    vrpn_int32 tcp_outbuf_size () const { return d_tcp_outbuflen; }
+    vrpn_int32 udp_outbuf_size () const { return d_udp_outbuflen; }
 
     // Allows the application to attempt to reallocate the buffer.
     // If allocation fails (error or out-of-memory), -1 will be returned.
@@ -105,15 +127,27 @@ public: // setting up connections
     // used to receive requests from before a server starts up
     // Returns the name of the service that the connection was first
     // constructed to talk to, or NULL if it was built as a server.
-    //inline const char * name (void) const { return my_name; }
+    //inline const char * name () const { return my_name; }
     virtual vrpn_int32 connect_to_client(const char* msg);
+
+    // set up network
+    vrpn_int32 mcast_reply_handler();
+    vrpn_int32 pack_mcast_description(vrpn_int32 sender);
+    inline vrpn_bool peer_mcast_capable(){return d_peer_mcast_capable;}
+    inline void set_peer_mcast_capable(vrpn_bool capable){ d_peer_mcast_capable = capable;}
 
     //-----------------------------
     // client side
 
-    // doesn't exst yet, but seems to be a natural counterpart
-    // for connect_to_client
+
     virtual vrpn_int32 connect_to_server(const char* machine, vrpn_int16 port);
+	virtual vrpn_int32 start_server(const char *machine, char *server_name, char *args);
+
+    // setting up network
+    vrpn_int32 mcast_description_handler(char* message);
+    vrpn_int32 pack_mcast_reply(/* XXX */);
+	inline vrpn_bool mcast_capable(){return d_mcast_capable;}
+    inline void set_mcast_capable(vrpn_bool capable){ d_mcast_capable = capable;}
 
 protected: // setting up connections
 
@@ -121,14 +155,7 @@ protected: // setting up connections
     // server side
 
     vrpn_int32 connect_udp_to(const char* machine, vrpn_int16 port);
-    // i think the arg list on this should be (machine,port)
     virtual vrpn_int32 connect_tcp_to(const char* msg);
-
-    // set up network
-    vrpn_int32 handle_mcast_reply();
-    vrpn_int32 pack_mcast_description(vrpn_int32 sender);
-    inline vrpn_bool peer_mcast_capable(void){return d_peer_mcast_capable;}
-    inline void set_peer_mcast_capable(vrpn_bool capable){ d_peer_mcast_capable = capable;}
 
     //-----------------------------
     // client side
@@ -137,34 +164,34 @@ protected: // setting up connections
     vrpn_int32 udp_request_connection_call(const char* machine, vrpn_int16 port);
     vrpn_int32 open_udp_socket(vrpn_int16 port);
 
-    // setting up network
-    vrpn_int32 handle_mcast_description(char* message);
-    vrpn_int32 pack_mcast_reply(/* XXX */);
-    inline vrpn_bool mcast_capable() {return d_mcast_capable;}
-    inline void set_mcast_capable( vrpn_bool capable) {
-        d_mcast_capable = capable;
-    }
-    
     //-----------------------------
     // common functions
 
-    // i think that these are common functions. not sure yet.
-    virtual void    handle_connection(void);
+    virtual void    handle_connection();
     // set up data
-    virtual vrpn_int32  setup_new_connection (vrpn_int32 logmode = 0L,
+    virtual vrpn_int32  setup_new_connection (vrpn_int32 logmode = vrpn_LOG_NONE,
                                               const char * logfile = NULL);
-    // set up network
-    virtual void    drop_connection (void);
-    virtual vrpn_int32  pack_sender_description (vrpn_int32 which);
-    virtual vrpn_int32  pack_type_description (vrpn_int32 which);
-    virtual vrpn_int32  pack_udp_description (vrpn_int16 portno);
-    virtual vrpn_int32  pack_log_description (vrpn_int32 mode, const char * filename);
+    // tear down network
+    virtual void    drop_connection ();
+
+protected: // opening and closing logs
+
+	virtual vrpn_int32 open_log();
+	virtual vrpn_int32 close_log();
  
 private: // data members
+
+    // logging object
+    vrpn_FileLogger* d_logger_ptr;
     
     // magic cookie so clients can make sure
     // mcast packet came from correct sender
     // contains pid and ip addr of server
+	//
+	// cookie used to determine if mcast message came from
+	// who we expected it from. since we are using random
+	// mulitcast addresses, we could theoretically get
+	// messages from unwanted sources
     char d_mcast_cookie[8];
 
     // multicast capability flags
@@ -174,15 +201,7 @@ private: // data members
     // Status of the connection
     vrpn_int32  status;  
 
-    /*
-    // perhaps we should move to enums 
-    //typedef and move to header
-    enum ConnectionStatus = { CONNECTED, CONNECTION_FAIL, BROKEN, DROPPED };
-    ConnectionStatus status;
-    */
-
-
-    // temporary name
+    // mulitcast receiver object
     vrpn_UnreliableMulticastRecvr* mcast_recvr;
 
     // Output buffers storing messages to be sent
@@ -204,6 +223,7 @@ private: // data members
     vrpn_uint32 d_tcp_inbuflen;
     char * d_tcp_inbuf;
     char * d_udp_inbuf;
+	char * d_mcast_inbuf;
     // used to know how many bytes to read from the udp socket
     vrpn_float64 d_UDPinbufToAlignRight
         [vrpn_CONNECTION_UDP_BUFLEN / sizeof(vrpn_float64) + 1];
@@ -218,51 +238,6 @@ private: // data members
     // Need one for each due to different
     // clock synchronization for each; we
     // need to know which server each message is from
-
-
-    // offset of clocks on connected machines -- local - remote
-    // (this should really not be here, it should be in adjusted time
-    // connection, but this makes it a lot easier
-    struct timeval tvClockOffset;
-
-    // Timekeeping - TCH 30 June 98
-    struct timeval start_time;
-
-    // Name of the remote host we are connected to.  This is kept for
-    // informational purposes.  It is printed by the ceiling server,
-    // for example.
-    char rhostname [150];
-
-
-    // Holds one entry for a mapping of remote strings to local IDs.
-    struct cRemoteMapping {
-        char        * name;
-        vrpn_int32  local_id;
-    };
-
-    // The senders and types we know about that have been described by
-    // the other end of the connection.  Also, record the local mapping
-    // for ones that have been described with the same name locally.
-    // The arrays are indexed by the ID from the other side, and store
-    // the name and local ID that corresponds to each.
-    cRemoteMapping  other_senders [vrpn_CONNECTION_MAX_SENDERS];
-    vrpn_int32  num_other_senders;
-    cRemoteMapping  other_types [vrpn_CONNECTION_MAX_TYPES];
-    vrpn_int32  num_other_types;
-
-    // logging data memnbers, passed to FileLogger
-    vrpn_FileLogger* logger;
-
-
-    vrpn_LOGLIST * d_logbuffer;  // last entry in log
-    vrpn_LOGLIST * d_first_log_entry;  // first entry in log
-    char * d_logname;            // name of file to write log to
-    vrpn_int32 d_logmode;              // logging incoming, outgoing, or both
-    
-    vrpn_int32 d_logfile_handle;
-    FILE * d_logfile;
-    vrpnLogFilterEntry *d_logfilters;
-
 
 };
 

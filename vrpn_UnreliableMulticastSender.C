@@ -21,6 +21,16 @@
 //-------------------------------------------------------------------
 // constructors and destuctors
 //-------------------------------------------------------------------
+
+// if a NULL pointer is passed in for group_name, a random
+// multicast address will be chosen from a range of unassigned
+// multicast addresses
+//
+// unassigned ranges:
+// 224.0.1.140 - 224.0.1.255
+// 224.0.5.192 - 224.0.5.255
+// 224.0.6.128 - 224.0.6.255
+//  
 vrpn_UnreliableMulticastSender::vrpn_UnreliableMulticastSender(
 char* group_name, vrpn_uint16 port, vrpn_int32 ttl)
   :vrpn_BaseMulticastChannel(group_name,port),d_mcast_ttl(ttl),d_mcast_num_out(0){
@@ -28,7 +38,7 @@ char* group_name, vrpn_uint16 port, vrpn_int32 ttl)
 	  init_mcast_channel();
 }
 
-vrpn_UnreliableMulticastSender::~vrpn_UnreliableMulticastSender(void){}
+vrpn_UnreliableMulticastSender::~vrpn_UnreliableMulticastSender(){}
 
 
 
@@ -60,7 +70,7 @@ vrpn_int32 vrpn_UnreliableMulticastSender::get_mcast_info(char *info_buffer){
 
 
 // get time-to-live for multicast packets
-vrpn_int32 vrpn_UnreliableMulticastSender::get_mcast_ttl(void){
+vrpn_int32 vrpn_UnreliableMulticastSender::get_mcast_ttl(){
   return d_mcast_ttl;
 }
 
@@ -141,7 +151,7 @@ vrpn_int32 vrpn_UnreliableMulticastSender::marshall_message(vrpn_uint32 len,
 
 // send current multicast message buffer out onto the network
 // many reports are packed into the same multicast message 
-vrpn_int32 vrpn_UnreliableMulticastSender::send_pending_reports(void) {
+vrpn_int32 vrpn_UnreliableMulticastSender::send_pending_reports() {
 
    vrpn_int32 ret, sent = 0;
 
@@ -193,7 +203,7 @@ vrpn_int32 vrpn_UnreliableMulticastSender::send_pending_reports(void) {
 
 // initialize multicast socket
 // only called by constructor
-void vrpn_UnreliableMulticastSender::init_mcast_channel(void){
+void vrpn_UnreliableMulticastSender::init_mcast_channel(){
 
 	vrpn_int32 no_loopback = 0;
 	
@@ -202,12 +212,49 @@ void vrpn_UnreliableMulticastSender::init_mcast_channel(void){
     	perror("error: socket failure in multicast sender");
 		set_created_correctly(vrpn_false);
   	}
-  
+
+
+	// if a NULL pointer is passed in for group_name, a random
+	// multicast address will be chosen from a range of unassigned
+	// multicast addresses
+	//
+	// unassigned ranges:
+	// 224.0.1.140 - 224.0.1.255
+	// 224.0.5.192 - 224.0.5.255
+	// 224.0.6.128 - 224.0.6.255
+	//  
+
   	// set up destination address 
   	memset(&d_mcast_addr,0,sizeof(d_mcast_addr));
   	d_mcast_addr.sin_family=AF_INET;
-  	d_mcast_addr.sin_addr.s_addr=inet_addr(get_mcast_group_name());
+
+	// right now a multicast  address is chosen from the first range
+	if( get_mcast_group_name() == NULL ){
+#ifdef WIN32
+		srand(_getpid());
+#else
+		srand(getpid());
+#endif
+		vrpn_uint32 first_three = inet_addr("224.0.1.0");
+		vrpn_uint32 last_octet = 140 + rand()%115; // get random # in range 140-255
+		vrpn_uint32 all_four = first_three + last_octet;
+		d_mcast_addr.sin_addr.s_addr = all_four;
+	} else
+		d_mcast_addr.sin_addr.s_addr=inet_addr(get_mcast_group_name());
+
   	d_mcast_addr.sin_port=htons(get_mcast_port_num());
+	if (bind(get_mcast_sock(), (struct sockaddr*)&d_mcast_addr, sizeof (d_mcast_addr)) < 0){
+		perror("vrpn: vrpn_UnreliableMulticastSender: can't bind address");
+		set_created_correctly(vrpn_false);
+	}
+
+	// Find out which port was actually bound
+	vrpn_int32 addr_len = sizeof(d_mcast_addr);
+	if (getsockname(get_mcast_sock(), (struct sockaddr *) &d_mcast_addr, (int *) &addr_len)) {
+		fprintf(stderr, "vrpn: vrpn_UnreliableMulticastSender: cannot get socket name.\n");
+		set_created_correctly(vrpn_false);
+	}
+	set_mcast_port_num(ntohs(d_mcast_addr.sin_port));
 
 	if( this->set_mcast_loopback(no_loopback) < 0 ){
 		perror("error: set loopback failed in mcast sender init");

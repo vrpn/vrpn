@@ -26,7 +26,7 @@ vrpn_UnreliableMulticastRecvr::vrpn_UnreliableMulticastRecvr( char* group_name,
 	init_mcast_channel();
 }
 		
-vrpn_UnreliableMulticastRecvr::~vrpn_UnreliableMulticastRecvr(void){}
+vrpn_UnreliableMulticastRecvr::~vrpn_UnreliableMulticastRecvr(){}
 
 
 //-----------------------------------------------------------------------
@@ -189,7 +189,7 @@ vrpn_int32 vrpn_UnreliableMulticastRecvr::leave_mcast_group(char* group){
 
 // initialize multicast channel.
 // only called by constructor
-void vrpn_UnreliableMulticastRecvr::init_mcast_channel(void){
+void vrpn_UnreliableMulticastRecvr::init_mcast_channel(){
 	
   	vrpn_int32 one = 1; // used in first setsockopt, but not sure why
 
@@ -214,7 +214,8 @@ void vrpn_UnreliableMulticastRecvr::init_mcast_channel(void){
   	}
 #else
   	// set up socket so multiple sockets can bind to the same port
-	// useful for machines like evans, where there might be multiple clients 
+	// useful for big machines like evans.cs.unc.edu, 
+	// where there might be multiple clients 
   	if (setsockopt(get_mcast_sock(),SOL_SOCKET,SO_REUSEPORT,&one,sizeof(one)) < 0) {
 		perror("error: setsockopt failed in multicast recvr init");
 		set_created_correctly(vrpn_false);
@@ -228,6 +229,20 @@ void vrpn_UnreliableMulticastRecvr::init_mcast_channel(void){
 		set_created_correctly(vrpn_false);
   	}
   
+	// Find out which port was actually bound
+	vrpn_int32 addr_len = sizeof(d_mcast_addr);
+	if (getsockname(get_mcast_sock(), (struct sockaddr *) &d_mcast_addr,(int *) &addr_len)) {
+		fprintf(stderr, "vrpn: vrpn_UnreliableMulticastSender: cannot get socket name.\n");
+		set_created_correctly(vrpn_false);
+	}
+	
+	// if port actually bound different from requested
+	// set created_correctly to false
+	if( get_mcast_port_num() != ntohs(d_mcast_addr.sin_port) ){
+		perror("error: failed to get requested port");
+		set_created_correctly(vrpn_false);
+	}
+
 	if( this->join_mcast_group(get_mcast_group_name()) < 0 ){
 		perror("error: failed to join multicast group");
 		set_created_correctly(vrpn_false);

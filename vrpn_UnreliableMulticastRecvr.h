@@ -17,7 +17,7 @@ public:
   //-------------------------------------------------------------------
   vrpn_UnreliableMulticastRecvr( char* group_name,
 								 vrpn_uint16 port);
-  ~vrpn_UnreliableMulticastRecvr(void);
+  ~vrpn_UnreliableMulticastRecvr();
 
 
   //-------------------------------------------------------------------
@@ -38,7 +38,7 @@ public:
   vrpn_int32 handle_incoming_message(char*, const struct timeval*);
 
 protected:
-  void init_mcast_channel(void);
+  void init_mcast_channel();
 
 private:
 

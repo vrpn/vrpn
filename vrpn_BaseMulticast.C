@@ -15,82 +15,7 @@
 //
 // In the future someone might implement a reliable multicast class.
 //
-
-#include <stdlib.h>
-#include <memory.h>
-#include <math.h>
-#include <errno.h>
-#include <stdio.h>
-#include <sys/types.h>
-#include <signal.h>
-#include <iostream.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-
-#ifndef FreeBSD
-// malloc.h is deprecated in FreeBSD;  all the functionality *should*
-// be in stdlib.h
-#include <malloc.h>
-#endif
-
-#ifdef _WIN32
-#include <winsock.h>
-// a socket in windows can not be closed like it can in unix-land
-#define close closesocket
-#else
-#include <unistd.h>
-#include <strings.h>
-#include <sys/time.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#endif
-
-#ifdef	sgi
-#include <bstring.h>
-#endif
-
-#ifdef hpux
-#include <arpa/nameser.h>
-#include <resolv.h>  // for herror() - but it isn't there?
-#endif
-
-#ifdef _WIN32
-#include <winsock.h>
-#include <sys/timeb.h>
-#else
-#include <sys/wait.h>
-#include <sys/resource.h>  // for wait3() on sparc_solaris
-#include <netinet/tcp.h>
-#endif
-
-#include "vrpn_cygwin_hack.h"
-
-// cast fourth argument to setsockopt()
-#ifdef _WIN32
-#define SOCK_CAST (char *)
-#else
- #ifdef sparc
-#define SOCK_CAST (const char *)
- #else
-#define SOCK_CAST
- #endif
-#endif
-
-#ifdef linux
-#define GSN_CAST (unsigned int *)
-#else
-#define GSN_CAST
-#endif
-
-//  NOT SUPPORTED ON SPARC_SOLARIS
-//  gethostname() doesn't seem to want to link out of stdlib
-#ifdef sparc
-extern "C" {
-int gethostname (char *, int);
-}
-#endif
-
+#include "vrpn_CommonSystemIncludes.h"
 #include "vrpn_BaseMulticast.h"
 
 
@@ -118,17 +43,23 @@ int gethostname (char *, int);
 //-----------------------------------------------------------------
 vrpn_BaseMulticastChannel::vrpn_BaseMulticastChannel( char* group_name, 
 							   vrpn_uint16 port)
-  :d_mcast_port(port){
+  :d_mcast_group(NULL),d_mcast_port(port)
+{
   
-  strcpy(d_mcast_group,group_name);
+  set_mcast_group_name(group_name);
 
 }
 
+vrpn_BaseMulticastChannel::~vrpn_BaseMulticastChannel()
+{
+	if( d_mcast_group )
+		delete d_mcast_group;
+}
 
 //-------------------------------------------------------------------
 // status functions
 //-------------------------------------------------------------------
-vrpn_bool vrpn_BaseMulticastChannel::created_correctly(void){
+vrpn_bool vrpn_BaseMulticastChannel::created_correctly(){
 	return d_created_correctly;
 }
 
@@ -139,18 +70,18 @@ vrpn_bool vrpn_BaseMulticastChannel::created_correctly(void){
 
 
 // get multicast group name as a string in dotted decimal form
-char* vrpn_BaseMulticastChannel::get_mcast_group_name(void){
+char* vrpn_BaseMulticastChannel::get_mcast_group_name(){
   return d_mcast_group;
 }
 
 // get port number used of multicast messages
-vrpn_uint16 vrpn_BaseMulticastChannel::get_mcast_port_num(void){
+vrpn_uint16 vrpn_BaseMulticastChannel::get_mcast_port_num(){
   return d_mcast_port;
 }
 
 // get socket number of multicast socket
 
-vrpn_int32 vrpn_BaseMulticastChannel::get_mcast_sock(void){
+vrpn_int32 vrpn_BaseMulticastChannel::get_mcast_sock(){
 
 	return d_mcast_sock;
 
@@ -171,7 +102,11 @@ vrpn_int32 vrpn_BaseMulticastChannel::get_mcast_sock(void){
 
 // set multicast group name
 // name is string in dotted decimal format
-void vrpn_BaseMulticastChannel::set_mcast_group_name(char *group){
+void vrpn_BaseMulticastChannel::set_mcast_group_name(char *group)
+{
+	if( d_mcast_group )
+		delete d_mcast_group;
+	d_mcast_group = new char[strlen(group)+1];
 	strcpy(d_mcast_group,group);
 }
 

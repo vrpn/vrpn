@@ -8,83 +8,6 @@
 #ifndef VRPN_CONNECTIONOLDCOMMONSTUFF_H
 #define VRPN_CONNECTIONOLDCOMMONSTUFF_H
 
-//--------------------------------------
-// bunch of includes from Connection.C
-#include <stdlib.h>
-#include <memory.h>
-#include <math.h>
-#include <errno.h>
-#include <stdio.h>
-#include <sys/types.h>
-#include <signal.h>
-#include <iostream.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-
-#ifndef FreeBSD
-// malloc.h is deprecated in FreeBSD;  all the functionality *should*
-// be in stdlib.h
-#include <malloc.h>
-#endif
-
-#ifdef _WIN32
-#include <winsock.h>
-// a socket in windows can not be closed like it can in unix-land
-#define close closesocket
-#else
-#include <unistd.h>
-#include <strings.h>
-#include <sys/time.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#endif
-
-#ifdef  sgi
-#include <bstring.h>
-#endif
-
-#ifdef hpux
-#include <arpa/nameser.h>
-#include <resolv.h>  // for herror() - but it isn't there?
-#endif
-
-#ifdef _WIN32
-#include <winsock.h>
-#include <sys/timeb.h>
-#else
-#include <sys/wait.h>
-#include <sys/resource.h>  // for wait3() on sparc_solaris
-#include <netinet/tcp.h>
-#endif
-
-#include "vrpn_cygwin_hack.h"
-
-// cast fourth argument to setsockopt()
-#ifdef _WIN32
-#define SOCK_CAST (char *)
-#else
- #ifdef sparc
-#define SOCK_CAST (const char *)
- #else
-#define SOCK_CAST
- #endif
-#endif
-
-#ifdef linux
-#define GSN_CAST (unsigned int *)
-#else
-#define GSN_CAST
-#endif
-
-//  NOT SUPPORTED ON SPARC_SOLARIS
-//  gethostname() doesn't seem to want to link out of stdlib
-#ifdef sparc
-extern "C" {
-int gethostname (char *, int);
-}
-#endif
-
 #include "vrpn_ConnectionCommonStuff.h"
 #include "vrpn_Shared.h"
 
@@ -94,7 +17,7 @@ class vrpn_File_Connection;  // for get_File_Connection()
 // class rather than the default connection class (either will work,
 // a regular connection just has 0 as the client-server time offset)
 
-typedef int (* vrpn_LOGFILTER) (void * userdata, vrpn_HANDLERPARAM p);
+typedef vrpn_int32 (* vrpn_LOGFILTER) (void * userdata, vrpn_HANDLERPARAM p);
 
 // Buffer lengths for TCP and UDP.
 // TCP is an arbitrary number that can be changed by the user
@@ -116,6 +39,12 @@ typedef int (* vrpn_LOGFILTER) (void * userdata, vrpn_HANDLERPARAM p);
 #define BROKEN          (-2)
 #define DROPPED         (-3)
 
+
+// different possible statuses
+//#define CONNECTED (1)
+#define NOT_CONNECTED (0)
+//#define ERROR (-1) already defined in some windows lib
+	
 
 // System message types
 #define vrpn_CONNECTION_SENDER_DESCRIPTION  (-1)
@@ -179,17 +108,18 @@ vrpn_uint32 vrpn_marshall_message (char * outbuf,vrpn_uint32 outbuf_size,
                        vrpn_uint32 len, struct timeval time,
                        vrpn_int32 type, vrpn_int32 sender,
                        const char * buffer);
-/*
+
 // 1hz sync connection by default, windowed over last three bounces 
 // WARNING:  vrpn_get_connection_by_name() may not be thread safe.
-vrpn_Connection * vrpn_get_connection_by_name
-         (const char * cname,
-          const char * local_logfile_name = NULL,
-          long local_log_mode = vrpn_LOG_NONE,
-          const char * remote_logfile_name = NULL,
-          long remote_log_mode = vrpn_LOG_NONE,
-      double dFreq = 1.0, int cSyncWindow = 3);
-*/
+vrpn_ClientConnectionController * vrpn_get_connection_by_name(
+	const char * cname,
+	const char * local_logfile_name = NULL,
+	vrpn_int32 local_log_mode = vrpn_LOG_NONE,
+	const char * remote_logfile_name = NULL,
+	vrpn_int32 remote_log_mode = vrpn_LOG_NONE,
+	vrpn_float64 dFreq = 1.0, 
+	vrpn_int32 cSyncWindow = 3);
+
 
 // Utility routines to parse names (<service>@<location specifier>)
 // Both return new char [], and it is the caller's responsibility
@@ -210,7 +140,7 @@ char * vrpn_copy_file_name (const char * filespecifier);
 //   x-vrpn://<hostname>:<port number>
 //   x-vrsh://<hostname>/<server program>,<comma-separated server arguments>
 char * vrpn_copy_machine_name (const char * hostspecifier);
-int vrpn_get_port_number (const char * hostspecifier);
+vrpn_int32 vrpn_get_port_number (const char * hostspecifier);
 char * vrpn_copy_rsh_program (const char * hostspecifier);
 char * vrpn_copy_rsh_arguments (const char * hostspecifier);
 
@@ -218,11 +148,14 @@ char * vrpn_copy_rsh_arguments (const char * hostspecifier);
 // Returns -1 on total mismatch,
 // 1 on minor version mismatch or other acceptable difference,
 // and 0 on exact match.
-int check_vrpn_cookie (const char * buffer);
+vrpn_int32 check_vrpn_cookie (const char * buffer);
 
 // Returns the size of the magic cookie buffer, plus any alignment overhead.
-int vrpn_cookie_size (void);
+vrpn_int32 vrpn_cookie_size ();
 
-int write_vrpn_cookie (char * buffer, int length, long remote_log_mode);
+vrpn_int32 write_vrpn_cookie (
+	char * buffer, 
+	vrpn_int32 length, 
+	vrpn_int32 remote_log_mode);
 
 #endif

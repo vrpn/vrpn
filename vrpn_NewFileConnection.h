@@ -42,12 +42,31 @@ class vrpn_FileConnection
 
 public: // c'tors & d'tors
 
-    vrpn_FileConnection (const char * file_name);
-    virtual ~vrpn_FileConnection (void);
+    vrpn_FileConnection (ConnectionControllerCallbackInterface* ccci,
+						 const char * file_name);
+    virtual ~vrpn_FileConnection ();
 
     virtual vrpn_int32 time_since_connection_open (struct timeval * elapsed_time);
 
     virtual vrpn_FileConnection *get_FileConnection() { return this; }
+
+protected: // opening and closing logs
+
+	// these are empty functions because we do not want to log 
+	// the replay of a streamfile
+	virtual vrpn_int32 open_log(){return 0;}
+	virtual vrpn_int32 close_log(){return 0;}
+   
+public:  // status
+    
+    // a connection was made
+    inline vrpn_bool connected() const { return (status == CONNECTED); }
+
+    // no errors
+    inline vrpn_bool doing_okay() const { return (status >= 0); }
+
+    // get status of connection
+    inline vrpn_int32 get_status() const { return status; }
 
 public:  // sending and receiving
 
@@ -77,7 +96,7 @@ protected: // playback functions - are public in base class
     void set_replay_rate(vrpn_float32 rate);
 
 	// resets to the beginning of the file
-    vrpn_int32 reset (void);      
+    vrpn_int32 reset ();      
 
 	// returns 1 if we're at the end of file
     vrpn_int32 eof();
@@ -120,13 +139,13 @@ protected: // playback functions
 	// checks the cookie at
 	// the head of the log file;
 	//  exit on error!
-    virtual vrpn_int32 read_cookie (void); 
+    virtual vrpn_int32 read_cookie (); 
     
 	// appends entry to d_logTail
-	virtual vrpn_int32 read_entry (void);  
+	virtual vrpn_int32 read_entry ();  
 
 	// returns 0 on success, 1 on EOF, -1 on error
-    virtual vrpn_int32 close_file (void);
+    virtual vrpn_int32 close_file ();
 
     // handlers for VRPN control messages
     static vrpn_int32 handle_set_replay_rate (void *, vrpn_HANDLERPARAM);
@@ -135,13 +154,11 @@ protected: // playback functions
 	
 protected: // data members
 
+	// pointer to let NetConnection do callbacks
+	ConnectionControllerCallbackInterface* d_callback_interface_ptr;
+
 	vrpn_int32 status;
 
-	// different possible statuses
-#define CONNECTED (1)
-#define UNCONNECTED (0)
-#define ERROR (-1)
-	
     // tokens for VRPN control messages
 
     vrpn_int32 d_controllerId;

@@ -62,7 +62,8 @@
 
 struct vrpn_HANDLERPARAM {
     vrpn_int32  type;
-    vrpn_int32  sender;
+    //vrpn_int32  sender;
+    vrpn_int32  service;
     struct timeval  msg_time;
     vrpn_int32  payload_len;
     const char  *buffer;
@@ -71,6 +72,11 @@ typedef int  (*vrpn_MESSAGEHANDLER)(void *userdata, vrpn_HANDLERPARAM p);
 
 typedef char cName [100];
 
+
+// On Win32, this constant is defined as ~0 (sockets are unsigned ints)
+#ifndef	_WIN32
+#define	INVALID_SOCKET	-1
+#endif
 
 
 #endif

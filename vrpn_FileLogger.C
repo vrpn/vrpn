@@ -10,18 +10,12 @@
 //**************************************************************************
 //**************************************************************************
 
-vrpn_FileLogger::vrpn_FileLogger(char *_d_logname,
-								 vrpn_int32 _d_logmode, 
-								 vrpn_int32 _d_logfilehandle,
-								 FILE *_d_logfile,
-								 vrpn_LOGLIST *_d_logbuffer,
-								 vrpn_LOGLIST *_d_firstlogentry,
-								 vrpnLogFilterEntry *_d_logfilters) :
-    d_logbuffer (_d_logbuffer),
-    d_first_log_entry (_d_firstlogentry),
+vrpn_FileLogger::vrpn_FileLogger(
+	char *_d_logname,
+	vrpn_int32 _d_logmode, 
+	vrpnLogFilterEntry *_d_logfilters
+	) :
     d_logmode (_d_logmode),
-    d_logfile_handle (_d_logfilehandle),
-    d_logfile (_d_logfile),
     d_log_filters (_d_logfilters)
 {
 
@@ -30,7 +24,7 @@ vrpn_FileLogger::vrpn_FileLogger(char *_d_logname,
 		open_log();
 }
 
-vrpn_FileLogger::~vrpn_FileLogger(void)
+vrpn_FileLogger::~vrpn_FileLogger()
 {
 	close_log();
 }
@@ -46,98 +40,102 @@ vrpn_FileLogger::~vrpn_FileLogger(void)
 
 // differs a bit from old log_message found in OneConnection. 
 // type translation from remote to local is done outside this class
-vrpn_int32 vrpn_FileLogger::log_message (vrpn_int32 len, struct timeval time,
-                vrpn_int32 type, vrpn_int32 sender, const char * buffer)
+vrpn_int32 vrpn_FileLogger::log_message (vrpn_int32 len, 
+										 struct timeval time,
+										 vrpn_int32 type, 
+										 vrpn_int32 sender, 
+										 const char * buffer)
 {
-  vrpn_LOGLIST * lp;
-  vrpn_HANDLERPARAM p;
+	vrpn_LOGLIST * lp;
+	vrpn_HANDLERPARAM p;
 
-  lp = new vrpn_LOGLIST;
-  if (!lp) {
-    fprintf(stderr, "vrpn_FileLogger::log_message:  "
-                    "Out of memory!\n");
-    return -1;
-  }
-  lp->data.type = htonl(type);
-  lp->data.sender = htonl(sender);
+	lp = new vrpn_LOGLIST;
+	if (!lp) {
+		fprintf(stderr, "vrpn_FileLogger::log_message:  "
+				"Out of memory!\n");
+		return -1;
+	}
+	lp->data.type = htonl(type);
+	lp->data.sender = htonl(sender);
 
-  // adjust the time stamp by the clock offset (as in do_callbacks_for)
-  struct timeval tvTemp = vrpn_TimevalSum(time, tvClockOffset);
+	// adjust the time stamp by the clock offset (as in do_callbacks_for)
+	struct timeval tvTemp = vrpn_TimevalSum(time, tvClockOffset);
   
-  lp->data.msg_time.tv_sec = htonl(tvTemp.tv_sec);
-  lp->data.msg_time.tv_usec = htonl(tvTemp.tv_usec);
+	lp->data.msg_time.tv_sec = htonl(tvTemp.tv_sec);
+	lp->data.msg_time.tv_usec = htonl(tvTemp.tv_usec);
 
-  lp->data.payload_len = htonl(len);
-  lp->data.buffer = new char [len];
-  if (!lp->data.buffer) {
-    fprintf(stderr, "vrpn_FileLogger::log_message:  "
-                    "Out of memory!\n");
-    delete lp;
-    return -1;
-  }
-  // need to explicitly override the const
-  // NOTE: then this should probably not be a const char * (weberh 9/14/98)
-  memcpy((char *) lp->data.buffer, buffer, len);
+	lp->data.payload_len = htonl(len);
+	lp->data.buffer = new char [len];
+	if (!lp->data.buffer) {
+		fprintf(stderr, "vrpn_FileLogger::log_message:  "
+				"Out of memory!\n");
+		delete lp;
+		return -1;
+	}
+	// need to explicitly override the const
+	// NOTE: then this should probably not be a const char * (weberh 9/14/98)
+	memcpy((char *) lp->data.buffer, buffer, len);
 
-  // filter (user) messages
-  if (type >= 0) {  // do not filter system messages
+	// filter (user) messages
+	if (type >= 0) {  // do not filter system messages
 
-      p.type = local_type_id(type);
-      p.sender = local_sender_id(sender);
-	  
+		p.type = local_type_id(type);
+		p.sender = local_sender_id(sender);
+		
 
-	  p.msg_time.tv_sec = time.tv_sec;
-	  p.msg_time.tv_usec = time.tv_usec;
-	  p.payload_len = len;
-	  p.buffer = lp->data.buffer;
+		p.msg_time.tv_sec = time.tv_sec;
+		p.msg_time.tv_usec = time.tv_usec;
+		p.payload_len = len;
+		p.buffer = lp->data.buffer;
 
-	  if (check_log_filters(p)) {  // abort logging
-		  delete [] (char *) lp->data.buffer;
-		  delete lp;
-		  return 0;  // this is not a failure - do not return nonzero!
-	  }
-  }
+		if (check_log_filters(p)) {  // abort logging
+			delete [] (char *) lp->data.buffer;
+			delete lp;
+			return 0;  // this is not a failure - do not return nonzero!
+		}
+	}
+	
+	lp->next = d_logbuffer;
+	lp->prev = NULL;
+	if (d_logbuffer)
+		d_logbuffer->prev = lp;
+	d_logbuffer = lp;
+	if (!d_first_log_entry)
+		d_first_log_entry = lp;
 
-  lp->next = d_logbuffer;
-  lp->prev = NULL;
-  if (d_logbuffer)
-    d_logbuffer->prev = lp;
-  d_logbuffer = lp;
-  if (!d_first_log_entry)
-    d_first_log_entry = lp;
-
-  return 0;
+	return 0;
 }
 
 
 // virtual
 vrpn_int32 vrpn_FileLogger::register_log_filter (vrpn_LOGFILTER filter,
-												 void * userdata) {
-  vrpnLogFilterEntry * newEntry;
+												 void * userdata) 
+{
+	vrpnLogFilterEntry * newEntry;
+	
+	newEntry = new vrpnLogFilterEntry;
+	if (!newEntry) {
+		fprintf(stderr, "vrpn_FileLogger::register_log_filter:  "
+				"Out of memory.\n");
+		return -1;
+	}
 
-  newEntry = new vrpnLogFilterEntry;
-  if (!newEntry) {
-    fprintf(stderr, "vrpn_FileLogger::register_log_filter:  "
-                    "Out of memory.\n");
-    return -1;
-  }
-
-  newEntry->filter = filter;
-  newEntry->userdata = userdata;
-  newEntry->next = endpoint.d_log_filters;
-  endpoint.d_log_filters = newEntry;
-
-  return 0;
+	newEntry->filter = filter;
+	newEntry->userdata = userdata;
+	newEntry->next = endpoint.d_log_filters;
+	endpoint.d_log_filters = newEntry;
+	
+	return 0;
 }
 
-vrpn_int32 vrpn_OneConnection::check_log_filters (vrpn_HANDLERPARAM message) {
-
+vrpn_int32 vrpn_OneConnection::check_log_filters (vrpn_HANDLERPARAM message) 
+{
 	vrpnLogFilterEntry * nextFilter;
-
+	
 	for (nextFilter = d_log_filters; nextFilter; nextFilter = nextFilter->next)
 		if ((*nextFilter->filter)(nextFilter->userdata, message))
 			return 1;  // don't log
-
+	
 	return 0;
 }
 
@@ -149,65 +147,66 @@ vrpn_int32 vrpn_OneConnection::check_log_filters (vrpn_HANDLERPARAM message) {
 //**************************************************************************
 //**************************************************************************
 
-vrpn_int32 vrpn_FileLogger::open_log (void) {
+vrpn_int32 vrpn_FileLogger::open_log () 
+{
+	if (!d_logname) {
+		fprintf(stderr, "vrpn_FileLogger::open_log:  "
+				"Log file has no name.\n");
+		return -1;
+	}
+	if (d_logfile) {
+		fprintf(stderr, "vrpn_FileLogger::open_log:  "
+				"Log file is already open.\n");
+		return 0;  // not a catastrophic failure
+	}
 
-  if (!d_logname) {
-	  fprintf(stderr, "vrpn_FileLogger::open_log:  "
-			  "Log file has no name.\n");
-	  return -1;
-  }
-  if (d_logfile) {
-	  fprintf(stderr, "vrpn_FileLogger::open_log:  "
-			  "Log file is already open.\n");
-	  return 0;  // not a catastrophic failure
-  }
+	// Can't use this because MICROSOFT doesn't support Unix standards!
 
-  // Can't use this because MICROSOFT doesn't support Unix standards!
+	// Create the file in write-only mode.
+	// Permissions are 744 (user read/write, group & others read)
+	// Return an error if it already exists (on some filesystems;
+	// O_EXCL doesn't work on linux)
 
-  // Create the file in write-only mode.
-  // Permissions are 744 (user read/write, group & others read)
-  // Return an error if it already exists (on some filesystems;
-  // O_EXCL doesn't work on linux)
-
-  //d_logfile_handle = open(d_logname, O_WRONLY | O_CREAT | O_EXCL,
-  //                        S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+	//d_logfile_handle = open(d_logname, O_WRONLY | O_CREAT | O_EXCL,
+	//                        S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
   
-  // check to see if it exists
-  d_logfile = fopen(d_logname, "r");
-  if (d_logfile) {
-	  fprintf(stderr, "vrpn_FileLogger::open_log:  "
-			  "Log file \"%s\" already exists.\n", d_logname);
-	  d_logfile = NULL;
-  } else
-	  d_logfile = fopen(d_logname, "wb");
+	// check to see if it exists
+	d_logfile = fopen(d_logname, "r");
+	if (d_logfile) {
+		fprintf(stderr, "vrpn_FileLogger::open_log:  "
+				"Log file \"%s\" already exists.\n", d_logname);
+		d_logfile = NULL;
+	} else
+		d_logfile = fopen(d_logname, "wb");
   
-  if (!d_logfile) {
-	  fprintf(stderr, "vrpn_FileLogger::open_log:  "
-			  "Couldn't open log file \"%s\".\n", d_logname);
-
-	  // Try to write to "/tmp/vrpn_emergency_log"
-	  d_logfile = fopen("/tmp/vrpn_emergency_log", "r");
-	  if (d_logfile)
-		  d_logfile = NULL;
-	  else
-		  d_logfile = fopen("/tmp/vrpn_emergency_log", "wb");
-
-	  if (!d_logfile) {
-		  fprintf(stderr, "vrpn_FileLogger::open_log:\n  "
-				  "Couldn't open emergency log file "
-				  "\"/tmp/vrpn_emergency_log\".\n");
+	if (!d_logfile) {
+		fprintf(stderr, "vrpn_FileLogger::open_log:  "
+				"Couldn't open log file \"%s\".\n", d_logname);
+		
+		// Try to write to "/tmp/vrpn_emergency_log"
+		d_logfile = fopen("/tmp/vrpn_emergency_log", "r");
+		if (d_logfile)
+			d_logfile = NULL;
+		else
+			d_logfile = fopen("/tmp/vrpn_emergency_log", "wb");
+		
+		if (!d_logfile) {
+			fprintf(stderr, "vrpn_FileLogger::open_log:\n  "
+					"Couldn't open emergency log file "
+					"\"/tmp/vrpn_emergency_log\".\n");
 		  
-		  return -1;
-	  } else
-		  fprintf(stderr, "Writing to /tmp/vrpn_emergency_log instead.\n");
-	  
-  }
+			return -1;
+		} else
+			fprintf(stderr, "Writing to /tmp/vrpn_emergency_log instead.\n");
+		
+	}
   
-  return 0;
+	return 0;
 }
 
 
-vrpn_int32 vrpn_FileLogger::close_log (void) {
+vrpn_int32 vrpn_FileLogger::close_log () 
+{
 
   char magicbuf [501];  // HACK
   vrpn_LOGLIST * lp;

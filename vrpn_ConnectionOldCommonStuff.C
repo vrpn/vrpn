@@ -96,16 +96,16 @@ vrpn_uint32 vrpn_marshall_message(
 // because they are derived from connections, and the default 
 // args of freq=-1 makes it behave like a regular connection
 
-vrpn_Connection * vrpn_get_connection_by_name
-	 (const char * cname,
-          const char * local_logfile_name,
-          vrpn_int32 local_log_mode,
-          const char * remote_logfile_name,
-          vrpn_int32 remote_log_mode,
-	  vrpn_float64 dFreq,
-	  vrpn_int32 cSyncWindow)
+vrpn_ClientConnectionController * vrpn_get_connection_by_name(
+	const char * cname,
+	const char * local_logfile_name,
+	vrpn_int32 local_log_mode,
+	const char * remote_logfile_name,
+	vrpn_int32 remote_log_mode,
+	vrpn_float64 dFreq,
+	vrpn_int32 cSyncWindow)
 {
-	vrpn_KNOWN_CONNECTION	*curr = known;
+	vrpn_KNOWN_CONTROLLER	*curr = known_controllers;
 	char			*where_at;	// Part of name past last '@'
 	vrpn_int32 port;
 	vrpn_int32 is_file = 0;
@@ -133,19 +133,23 @@ vrpn_Connection * vrpn_get_connection_by_name
 		// connections now self-register in the known list --
 		// this is kind of odd, but oh well (can probably be done
 		// more cleanly later).
-
-		is_file = !strncmp(cname, "file:", 5);
-
-                if (is_file)
-                        new vrpn_File_Connection (cname);
-                else {
-			port = vrpn_get_port_number(cname);
-                        new vrpn_Synchronized_Connection
-                                (cname, port,
-                                 local_logfile_name, local_log_mode,
-                                 remote_logfile_name, remote_log_mode,
-                                 dFreq, cSyncWindow);
-		}
+		
+		// Just create a ClientConnectionController, it will decided
+		// whether to create a vrpn_FileConnection or vrpn_NetConnection
+		new vrpn_ClientConnectionController(
+			cname, 
+			port,
+			local_logfile_name,
+			local_log_mode,
+			remote_logfile_name, 
+			remote_log_mode,
+		    vrpn_CONNECTION_TCP_BUFLEN,
+			vrpn_CONNECTION_TCP_BUFLEN,
+			vrpn_CONNECTION_UDP_BUFLEN,
+			vrpn_CONNECTION_UDP_BUFLEN,
+			dFreq, 
+			cSyncWindow
+			);
 
 		// and now set curr properly (it will have been added to list
 		// by the vrpn_Connection constructor)
@@ -161,7 +165,7 @@ vrpn_Connection * vrpn_get_connection_by_name
 	}
 
 	// See if the connection is okay.  If so, return it.  If not, NULL
-	if (curr->c->doing_okay()) {
+	if (curr->c->all_connections_doing_okay()) {
 		return curr->c;
 	} else {
 		return NULL;
@@ -336,10 +340,10 @@ char * vrpn_copy_rsh_arguments (const char * hostspecifier)
 // check if the network interface supports multicast.
 // uses system calls and unix utilites to determine
 // whether interface supports multicast. not the most
-// efficient methid, i admit. also, haven't figured out how
+// efficient method, i admit. also, haven't figured out how
 // to do it in windows yet, so it always returns false.
 // - sain 7/99
-vrpn_bool vrpn_am_i_mcast_capable(void){
+vrpn_bool vrpn_am_i_mcast_capable(){
 
 	// #include <fcntl.h>
 
@@ -363,3 +367,4 @@ vrpn_bool vrpn_am_i_mcast_capable(void){
 	}
 #endif
 }
+

@@ -20,12 +20,8 @@ public: // c'tors and d'tors
 
     vrpn_FileLogger(char *_d_logname,
                     vrpn_int32 _d_logmode, 
-                    vrpn_int32 _d_logfilehandle = 0,
-                    FILE *_d_logfile = NULL,
-                    vrpn_LOGLIST *_d_logbuffer = NULL,
-                    vrpn_LOGLIST *_d_firstlogentry = NULL, 
                     vrpnLogFilterEntry *_d_logfilters  = NULL);
-    ~vrpn_FileLogger(void);
+    ~vrpn_FileLogger();
 
 public: // logging functions
 
@@ -51,8 +47,8 @@ public: // logging functions
 
 protected: // setup and teardown
 
-    virtual vrpn_int32 open_log(void);
-    virtual vrpn_int32 close_log(void);
+    virtual vrpn_int32 open_log();
+    virtual vrpn_int32 close_log();
 
 private: // data members
 

@@ -3,6 +3,107 @@
 //**************************************************************************
 //**************************************************************************
 //
+// vrpn_NetConnection: public: c'tors, d'tors, init
+//
+//**************************************************************************
+//**************************************************************************
+
+
+vrpn_NetConnection::vrpn_NetConnection(
+	ConnectionControllerCallbackInterface* ccci, // callback hook
+	char * local_logfile,
+	vrpn_int32 local_logmode,
+	char * remote_logfile,
+	vrpn_int32 remote_logmode,
+	vrpn_int32 tcp_inbuflen,
+	vrpn_int32 tcp_outbuflen,
+	vrpn_int32 udp_inbuflen,
+	vrpn_int32 udp_outbuflen
+	// add multicast arguments later
+	):
+	status(NOT_CONNECTED),
+	d_tcp_outbuflen(tcp_outbuflen),
+	d_tcp_inbuflen(tcp_inbuflen),
+	d_udp_outbuflen(udp_outbuflen),
+	d_udp_inbuflen(udp_inbuflen),
+	tcp_sock(INVALID_SOCKET)
+	udp_outbound(INVALID_SOCKET),
+	udp_inbound(INVALID_SOCKET)
+	// add logging stuff later
+{
+	// make sure multicast code is not used
+	set_mcast_capable(vrpn_false);
+	set_peer_mcast_capable(vrpn_false);
+
+	if (!d_tcp_buflen || !d_udp_buflen) {
+		status = BROKEN;
+		fprintf(stderr, "vrpn_NetConnection couldn't allocate buffers.\n");
+		return;
+	}
+
+	// create message buffers
+	d_tcp_inbuf = new char[d_tcp_buflen];
+	d_tcp_outbuf = new char[d_tcp_buflen];
+	d_udp_inbuf = new char[d_udp_buflen];
+	d_udp_outbuf = new char[d_udp_buflen];
+
+	if (!d_tcp_outbuf || !d_udp_outbuf || !d_tcp_inbuf || !d_udp_inbuf) {
+		status = BROKEN;
+		fprintf(stderr, "vrpn_NetConnection couldn't allocate buffers.\n");
+		return;
+	}
+  
+   // initialize loggin
+   if (local_logfile_name) {
+	   retval = open_log();
+	   if (retval == -1) {
+		   fprintf(stderr, "vrpn_NetConnection::vrpn_NetConnection:  "
+				   "Couldn't open log file.\n");
+		   status = BROKEN;
+		   return;
+	   }
+   }
+
+} // end NetConnection c'tor
+
+
+
+
+
+vrpn_NetConnection::~vrpn_NetConnection(void)
+{
+	vrpn_int32 i;
+	for (i=0;i< num_registered_remote_types;i++) {
+		delete registered_remote_types[i].name;
+	}	
+	for (i=0;i< num_registered_remote_services;i++) {
+		delete registered_remote_services[i].name;
+	}
+
+	// delete message buffers
+	delete d_tcp_inbuf;
+	delete d_tcp_outbuf;
+	delete d_udp_inbuf;
+	delete d_udp_outbuf;
+
+	if (d_local_logname)
+		close_log();
+
+	// XXX - need to decide where log filters go. NetConnection vs. FileLogger
+	if (d_log_filters) {
+		vrpnLogFilterEntry * next;
+		while (d_log_filters) {
+			next = d_log_filters->next;
+			delete d_log_filters;
+			d_log_filters = next;
+		}
+	}
+}
+
+
+//**************************************************************************
+//**************************************************************************
+//
 // vrpn_NetConnection: public: send and receive functions
 //
 //**************************************************************************
@@ -14,7 +115,9 @@ vrpn_int32 vrpn_NetConnection::mainloop (const struct timeval * timeout){
 	switch(status){
 	case CONNECTED:
 		handle_incoming_messages(timeout);
-		handle_outgoing_messages(timeout);
+		// handle_outgoing_messages replaces pack_message,
+		// not called from mainloop
+		//handle_outgoing_messages(timeout);
 		break;
 	case CONNECTION_FAIL:
 	case BROKEN:
@@ -30,16 +133,17 @@ vrpn_int32 vrpn_NetConnection::mainloop (const struct timeval * timeout){
 
 
 // This function gets called by the ConnectionController
-// i view it as a replacement for pack_message() although they
-// will probably have alot of the same functionality.
-vrpn_int32 vrpn_NetConnection::handle_outgoing_messages(const struct timeval* pTimeout){
+// replaces pack_message in the interface, but calls it internally
+vrpn_int32 vrpn_NetConnection::handle_outgoing_messages(vrpn_uint32 len, struct timeval time,
+        vrpn_int32 type, vrpn_int32 service, const char * buffer,
+        vrpn_uint32 class_of_service, vrpn_bool sent_mcast)
+{
 
-	// log message if necessary
-	
+	// if mcast capable and message sent_mcast, log message and return
+	// mulitcast functions not implemented
 
-	// if not multicasted, marshall into appropriate buffer
+	return pack_message(len,time,type,service,buffer,class_of_service);
 
-	return 0;
 }
 
 
@@ -51,7 +155,7 @@ vrpn_int32 vrpn_NetConnection::handle_incoming_messages( const struct timeval* p
 
 	vrpn_int32	tcp_messages_read;
 	vrpn_int32	udp_messages_read;
-	vrpn_int32	mcast_messages_read;
+	vrpn_int32	mcast_messages_read = 0; // mcast not implemented
 
 	timeval timeout;
 	if (pTimeout) {
@@ -111,6 +215,9 @@ vrpn_int32 vrpn_NetConnection::handle_incoming_messages( const struct timeval* p
 			FD_SET(udp_inbound, &readfds); /* Check for read */
 			FD_SET(udp_inbound, &exceptfds);/* Check for exceptions */
 		}
+		// *********
+		// mcast_capable should always return false, because
+		// multicast is not yet fully implemented
 		if( mcast_capable() ) { // if there is a multicast receiver
 			FD_SET(mcast_recvr->get_mcast_sock(), &readfds);
 			FD_SET(mcast_recvr->get_mcast_sock(), &exceptfds);
@@ -137,7 +244,7 @@ vrpn_int32 vrpn_NetConnection::handle_incoming_messages( const struct timeval* p
 		// See if exceptional condition on any socket
 		if (FD_ISSET(tcp_sock, &exceptfds) ||
 			((udp_inbound!=-1) && FD_ISSET(udp_inbound, &exceptfds)) ||
-			( mcast_recvr && FD_ISSET(mcast_recvr->get_mcast_sock(), &exceptfds) ) ){
+			( mcast_capable() && FD_ISSET(mcast_recvr->get_mcast_sock(), &exceptfds) ) ){
     		fprintf(stderr, "vrpn_NetConnection::handle_incoming_messages: Exception on socket\n");
  	    	return(-1);
 		}
@@ -161,6 +268,9 @@ vrpn_int32 vrpn_NetConnection::handle_incoming_messages( const struct timeval* p
 		}
 
 		// Read incoming messages from the Multicast channel
+		// *********
+		// mcast_capable should always return false, because
+		// multicast is not yet fully implemented
 		if ( mcast_capable() ){
 			if( FD_ISSET(mcast_recvr->get_mcast_sock(),&readfds)) {
 				if ( (mcast_messages_read = handle_mcast_messages(/* XXX */)) == -1) {
@@ -260,48 +370,24 @@ vrpn_int32 vrpn_NetConnection::handle_incoming_messages( const struct timeval* p
 }
 	
   
-// pack message into send buffer. buffer contains
-// many messages
+// pack message into send buffer. the buffer contains
+// many messages/reports
 vrpn_int32 vrpn_NetConnection::pack_message(vrpn_uint32 len, 
 											struct timeval time,
 											vrpn_int32 type, 
-											vrpn_int32 sender, 
+											vrpn_int32 service, 
 											const char * buffer,
-											vrpn_uint32 class_of_service,
-											vrpn_bool sent_mcast)
+											vrpn_uint32 class_of_service)
 {
 	vrpn_int32	ret;
-
-	// Make sure type is either a system type (-) or a legal user type
-	if ( type >= num_my_types ) {
-	    printf("vrpn_NetConnection::pack_message: bad type (%ld)\n",
-		type);
-	    return -1;
-	}
-
-	// If this is not a system message, make sure the sender is legal.
-	if (type >= 0) {
-	  if ( (sender < 0) || (sender >= num_my_senders) ) {
-	    printf("vrpn_NetConnection::pack_message: bad sender (%ld)\n",
-		sender);
-	    return -1;
-	  }
-	}
 
 	// Logging must come before filtering and should probably come before
 	// any other failure-prone action (such as do_callbacks_for()).  Only
 	// semantic checking should precede it.
 	
 	if (d_logmode & vrpn_LOG_OUTGOING) // FileLogger object exists
-		if (logger->log_message(len, time, type, sender, buffer))
+		if (d_logger_ptr->log_message(len, time, type, service, buffer))
 			return -1;
-	
-
-	// See if there are any local handlers for this message type from
-	// this sender.  If so, yank the callbacks.
-	if (do_callbacks_for(type, sender, time, len, buffer)) {
-		return -1;
-	}
 
 	// If we're not connected, nowhere to send the message so just
 	// toss it out.
@@ -322,7 +408,7 @@ vrpn_int32 vrpn_NetConnection::pack_message(vrpn_uint32 len,
 	// If we don't have a UDP outbound channel, send everything TCP
 	if (udp_outbound == -1) {
 	    ret = vrpn_marshall_message(d_tcp_outbuf, d_tcp_outbuflen, d_tcp_num_out,
-				   len, time, type, sender, buffer);
+				   len, time, type, service, buffer);
 	    d_tcp_num_out += ret;
 	    //	    return -(ret==0);
 
@@ -330,10 +416,10 @@ vrpn_int32 vrpn_NetConnection::pack_message(vrpn_uint32 len,
 	    // by sending the stuff in them to see if this makes enough
 	    // room.  If not, we'll have to give up.
 	    if (ret == 0) {
-		if (send_pending_reports() != 0) { return -1; }
-		ret = vrpn_marshall_message(d_tcp_outbuf, d_tcp_outbuflen,
-				d_tcp_num_out, len, time, type, sender, buffer);
-		d_tcp_num_out += ret;
+			if (send_pending_reports() != 0) { return -1; }
+			ret = vrpn_marshall_message(d_tcp_outbuf, d_tcp_outbuflen,
+										d_tcp_num_out, len, time, type, service, buffer);
+			d_tcp_num_out += ret;
 	    }
 	    return (ret==0) ? -1 : 0;
 	}
@@ -342,7 +428,7 @@ vrpn_int32 vrpn_NetConnection::pack_message(vrpn_uint32 len,
 	// appropriate service (TCP for reliable, UDP for everything else).
 	if (class_of_service & vrpn_CONNECTION_RELIABLE) {
 	    ret = vrpn_marshall_message(d_tcp_outbuf, d_tcp_outbuflen, d_tcp_num_out,
-				   len, time, type, sender, buffer);
+				   len, time, type, service, buffer);
 	    d_tcp_num_out += ret;
 	    //	    return -(ret==0);
 
@@ -352,13 +438,13 @@ vrpn_int32 vrpn_NetConnection::pack_message(vrpn_uint32 len,
 	    if (ret == 0) {
 		if (send_pending_reports() != 0) { return -1; }
 		ret = vrpn_marshall_message(d_tcp_outbuf, d_tcp_outbuflen,
-				d_tcp_num_out, len, time, type, sender, buffer);
+				d_tcp_num_out, len, time, type, service, buffer);
 		d_tcp_num_out += ret;
 	    }
 	    return (ret==0) ? -1 : 0;
 	} else {
 	    ret = vrpn_marshall_message(d_udp_outbuf, d_udp_outbuflen, d_udp_num_out,
-				   len, time, type, sender, buffer);
+				   len, time, type, service, buffer);
 	    d_udp_num_out += ret;
 	    //	    return -(ret==0);
 
@@ -368,7 +454,7 @@ vrpn_int32 vrpn_NetConnection::pack_message(vrpn_uint32 len,
 	    if (ret == 0) {
 		if (send_pending_reports() != 0) { return -1; }
 		ret = vrpn_marshall_message(d_udp_outbuf, d_udp_outbuflen,
-				d_udp_num_out, len, time, type, sender, buffer);
+				d_udp_num_out, len, time, type, service, buffer);
 		d_udp_num_out += ret;
 	    }
 	    return (ret==0) ? -1 : 0;
@@ -376,8 +462,8 @@ vrpn_int32 vrpn_NetConnection::pack_message(vrpn_uint32 len,
 }
 
 
-// sends out mesasge buffers over the network
-vrpn_int32 vrpn_NetConnection::send_pending_reports(void)
+// sends out message buffers over the network
+vrpn_int32 vrpn_NetConnection::send_pending_reports()
 {
    vrpn_int32	ret, sent = 0;
 
@@ -514,7 +600,7 @@ vrpn_int32 vrpn_NetConnection::handle_tcp_messages (vrpn_int32 fd,
 	  if (FD_ISSET(fd, &readfds)) {
 		vrpn_int32	header[5];
 		struct timeval time;
-		vrpn_int32	sender, type;
+		vrpn_int32	service, type;
 		vrpn_int32	len, payload_len, ceil_len;
 #ifdef	VERBOSE2
 	printf("vrpn_NetConnection::handle_tcp_messages() something to read\n");
@@ -530,11 +616,11 @@ vrpn_int32 vrpn_NetConnection::handle_tcp_messages (vrpn_int32 fd,
 		len = ntohl(header[0]);
 		time.tv_sec = ntohl(header[1]);
 		time.tv_usec = ntohl(header[2]);
-		sender = ntohl(header[3]);
+		service = ntohl(header[3]);
 		type = ntohl(header[4]);
 #ifdef	VERBOSE2
-	printf("  header: Len %d, Sender %d, Type %d\n",
-		(int)len, (int)sender, (int)type);
+	printf("  header: Len %d, Service %d, Type %d\n",
+		(int)len, (int)service, (int)type);
 #endif
 
 		// skip up to alignment
@@ -586,17 +672,17 @@ vrpn_int32 vrpn_NetConnection::handle_tcp_messages (vrpn_int32 fd,
 			// incoming data -- use a filter on the log
 			// if you don't want some of it).
 			if (d_logmode & vrpn_LOG_INCOMING) {
-				if (logger->log_message(payload_len, time,
+				if (d_logger_ptr->log_message(payload_len, time,
 										translate_remote_type_to_local(type),
-										translate_remote_sender_to_local(sender),
+										translate_remote_service_to_local(service),
 										d_tcp_inbuf)) {
 					return -1;
 				}
 			}
 				  
 			if (local_type_id(type) >= 0) {
-				if (do_callbacks_for(local_type_id(type),
-									 local_sender_id(sender),
+				if (d_callback_interface_ptr->do_callbacks_for(local_type_id(type),
+									 local_service_id(service),
 									 time, payload_len, d_tcp_inbuf)) {
 					return -1;
 				}
@@ -607,16 +693,16 @@ vrpn_int32 vrpn_NetConnection::handle_tcp_messages (vrpn_int32 fd,
 			if (system_messages[-type] != NULL) {
 				
 				if (d_logmode & vrpn_LOG_INCOMING)
-					if (logger->log_message(payload_len, time, 
+					if (d_logger_ptr->log_message(payload_len, time, 
 											translate_remote_type_to_local(type),
-											translate_remote_sender_to_local(sender),
+											translate_remote_service_to_local(service),
 											d_tcp_inbuf))
 						return -1;
 				
 				// Fill in the parameter to be passed to the routines
 				vrpn_HANDLERPARAM p;
 				p.type = type;
-				p.sender = sender;
+				p.service = service;
 				p.msg_time = time;
 				p.payload_len = payload_len;
 				p.buffer = d_tcp_inbuf;
@@ -701,7 +787,7 @@ vrpn_int32	vrpn_NetConnection::handle_udp_messages (vrpn_int32 fd,
 	  if (FD_ISSET(fd, &readfds)) {
 		vrpn_int32	header[5];
 		struct timeval	time;
-		vrpn_int32	sender, type;
+		vrpn_int32	service, type;
 		vrpn_uint32	len, payload_len, ceil_len;
 
 #ifdef	VERBOSE2
@@ -709,7 +795,7 @@ vrpn_int32	vrpn_NetConnection::handle_udp_messages (vrpn_int32 fd,
 #endif
 		// Read the buffer and reset the buffer pointer
 		inbuf_ptr = d_udp_inbuf;
-		if ( (inbuf_len = recv(fd, d_udp_inbuf, sizeof(d_udp_inbufToAlignRight), 0)) == -1) {
+		if ( (inbuf_len = recv(fd, d_udp_inbuf, sizeof(d_UDPinbufToAlignRight), 0)) == -1) {
 		   perror("vrpn: vrpn_NetConnection::handle_udp_messages: recv() failed");
 		   return -1;
 		}
@@ -731,12 +817,12 @@ vrpn_int32	vrpn_NetConnection::handle_udp_messages (vrpn_int32 fd,
 		len = ntohl(header[0]);
 		time.tv_sec = ntohl(header[1]);
 		time.tv_usec = ntohl(header[2]);
-		sender = ntohl(header[3]);
+		service = ntohl(header[3]);
 		type = ntohl(header[4]);
 
 #ifdef VERBOSE
-		printf("Message type %ld (local type %ld), sender %ld received\n",
-			type,local_type_id(type),sender);
+		printf("Message type %ld (local type %ld), service %ld received\n",
+			type,local_type_id(type),service);
 #endif
 		
 		// Figure out how long the message body is, and how long it
@@ -763,17 +849,17 @@ vrpn_int32	vrpn_NetConnection::handle_udp_messages (vrpn_int32 fd,
 			// if you don't want some of it).
 
 			if (d_logmode & vrpn_LOG_INCOMING) {
-				if (logger->log_message(payload_len, time,
+				if (d_logger_ptr->log_message(payload_len, time,
 										translate_remote_type_to_local(type),
-										translate_remote_sender_to_local(sender),
+										translate_remote_service_to_local(service),
 										inbuf_ptr)) {
 					return -1;
 				}
 			}
 
 			if (local_type_id(type) >= 0) {
-				if (do_callbacks_for(local_type_id(type),
-									 local_sender_id(sender),
+				if (d_callback_interface_ptr->do_callbacks_for(local_type_id(type),
+									 local_service_id(service),
 									 time, payload_len, inbuf_ptr)) {
 					return -1;
 				}
@@ -782,16 +868,16 @@ vrpn_int32	vrpn_NetConnection::handle_udp_messages (vrpn_int32 fd,
 		} else {	// System handler
 		  
 			if (d_logmode & vrpn_LOG_INCOMING)
-				if (log_message(payload_len, time,
+				if (d_logger_ptr->log_message(payload_len, time,
 								translate_remote_type_to_local(type),
-								translate_remote_sender_to_local(sender),
+								translate_remote_service_to_local(service),
 								inbuf_ptr))
 					return -1;
 			
 			// Fill in the parameter to be passed to the routines
 			vrpn_HANDLERPARAM p;
 			p.type = type;
-			p.sender = sender;
+			p.service = service;
 			p.msg_time = time;
 			p.payload_len = payload_len;
 			p.buffer = inbuf_ptr;
@@ -824,31 +910,41 @@ vrpn_int32 vrpn_NetConnection::handle_mcast_messages(/* XXX */){
 	// i think that the multicast handle_incoming_message should only read one
 	// message from the multicast channel at a time. it should be called in a loop
 	// to process all messages that might be waiting on that socket
-	
-	while( (ret_val = mcast_recvr->handle_incoming_message(/* d_MCASTinbuf, ... */)) != -1 ){
+
+		
+	vrpn_int32	header[5];
+	struct timeval	time;
+	vrpn_int32	service, type;
+	vrpn_uint32	len, payload_len, ceil_len;
+
+	// XXX where do these really come from?
+	char * inbuf_ptr;
+	vrpn_int32 inbuf_len;
+
+	// HACK - declared time_arg so this would compile. multicast code is inactive
+	timeval *time_arg;
+
+
+	while( (ret_val = mcast_recvr->handle_incoming_message(d_mcast_inbuf,time_arg)) != -1 ){
 	// could be a different return code for no message versus an error
 
 		// parse message into reports
-		vrpn_int32	header[5];
-		struct timeval	time;
-		vrpn_int32	sender, type;
-		vrpn_uint32	len, payload_len, ceil_len;
 
 #ifdef	VERBOSE2
 	printf("vrpn_NetConnection::handle_mcast_messages() something to read\n");
 #endif
 		// Reset the buffer pointer
-		inbuf_ptr = d_MCASTinbuf;
+		inbuf_ptr = d_mcast_inbuf;
 
 	    // Parse each report in the buffer
-	    while ( (inbuf_ptr - d_MCASTinbuf) != (vrpn_int32)inbuf_len) {
+	    while ( (inbuf_ptr - d_mcast_inbuf) != (vrpn_int32)inbuf_len) {
 
 			// Read and parse the header
 			// skip up to alignment
 			vrpn_uint32 header_len = sizeof(header);
 			if (header_len%vrpn_ALIGN) {header_len += vrpn_ALIGN - header_len%vrpn_ALIGN;}
 		
-			if ( ((inbuf_ptr - d_MCASTinbuf) + header_len) > (vrpn_uint32)inbuf_len) {
+			if ( ((inbuf_ptr - d_mcast_inbuf) + header_len) > (vrpn_uint32)inbuf_len) {
 		   		fprintf(stderr, "vrpn: vrpn_NetConnection::handle_udp_messages: Can't read header");
 		   		return -1;
 			}
@@ -857,12 +953,12 @@ vrpn_int32 vrpn_NetConnection::handle_mcast_messages(/* XXX */){
 			len = ntohl(header[0]);
 			time.tv_sec = ntohl(header[1]);
 			time.tv_usec = ntohl(header[2]);
-			sender = ntohl(header[3]);
+			service = ntohl(header[3]);
 			type = ntohl(header[4]);
 
 #ifdef VERBOSE
-		printf("Message type %ld (local type %ld), sender %ld received\n",
-			type,local_type_id(type),sender);
+		printf("Message type %ld (local type %ld), service %ld received\n",
+			type,local_type_id(type),service);
 #endif
 		
 			// Figure out how long the message body is, and how long it
@@ -888,17 +984,17 @@ vrpn_int32 vrpn_NetConnection::handle_mcast_messages(/* XXX */){
 				// if you don't want some of it).
 
                 if (d_logmode & vrpn_LOG_INCOMING) {
-					if (log_message(payload_len, time,
+					if (d_logger_ptr->log_message(payload_len, time,
 									translate_remote_type_to_local(type),
-									translate_remote_sender_to_local(sender),
+									translate_remote_service_to_local(service),
 									inbuf_ptr)) {
                  		return -1;
                     }
                 }
                 
 				if (local_type_id(type) >= 0) {
-			    	if (do_callbacks_for(local_type_id(type),
-								         local_sender_id(sender),
+			    	if (d_callback_interface_ptr->do_callbacks_for(local_type_id(type),
+								         local_service_id(service),
 				    				     time, payload_len, inbuf_ptr)) {
 				      	return -1;
 					}
@@ -908,9 +1004,9 @@ vrpn_int32 vrpn_NetConnection::handle_mcast_messages(/* XXX */){
 			else {	// System handler
 				
                 if (d_logmode & vrpn_LOG_INCOMING) {
-					if (log_message(payload_len, time,
+					if (d_logger_ptr->log_message(payload_len, time,
 									translate_remote_type_to_local(type),
-									translate_remote_sender_to_local(sender),
+									translate_remote_service_to_local(service),
 									inbuf_ptr, 1)) {
                  		return -1;
                     }
@@ -919,7 +1015,7 @@ vrpn_int32 vrpn_NetConnection::handle_mcast_messages(/* XXX */){
 			  	// Fill in the parameter to be passed to the routines
 			  	vrpn_HANDLERPARAM p;
 			  	p.type = type;
-		 		p.sender = sender;
+		 		p.service = service;
 		 		p.msg_time = time;
 		  		p.payload_len = payload_len;
 		  		p.buffer = inbuf_ptr;
@@ -953,7 +1049,7 @@ vrpn_int32 vrpn_NetConnection::handle_mcast_messages(/* XXX */){
 //**************************************************************************
 
 
-vrpn_int32 vrpn_NetConnection::connect_to_client (char *msg)
+vrpn_int32 vrpn_NetConnection::connect_to_client (const char *msg)
 {
 
     if (status != LISTEN) return -1;
@@ -1221,7 +1317,7 @@ static	vrpn_int32 connect_udp_to (char * machine, vrpn_int16 portno)
 
 // handle system message from peer connection
 // informing if it is multicast capable
-vrpn_int32 NetConnection::handle_mcast_reply(){
+vrpn_int32 vrpn_NetConnection::mcast_reply_handler(){
 
 	// unpack message
 
@@ -1234,19 +1330,25 @@ vrpn_int32 NetConnection::handle_mcast_reply(){
 	return 0;
 }
 
-// get mcast info from mcast sender and pack into message
-vrpn_int32 NetConnection::pack_mcast_description(vrpn_int32 sender){
+// get mcast info from mcast service and pack into message
+vrpn_int32 vrpn_NetConnection::pack_mcast_description(vrpn_int32 service){
 
+	/************************* INACTIVE MCAST CODE ************************
 	vrpn_uint32 pid;
 	vrpn_uint32 ip;
 	char temp_buf[20];
 	struct timeval now;
 	char ** insertPt;
-	vrpn_int32 buflen = sizeof(d_mcast_cookie);
+	vrpn_int32 buflen = siseof(d_mcast_cookie);
 
 	gettimeofday(&now, NULL);
 
 	// pack magic mcast cookie
+	// cookie used to determine if mcast message came from
+	// who we expected it from. since we are using random
+	// mulitcast addresses, we could theoretically get
+	// messages from unwanted sources
+	// 
 	// first ip addr as 32 bit u_int
 	// then pid as 32 bit u_int
 	vrpn_getmyIP(temp_buf,sizeof(temp_buf));
@@ -1256,12 +1358,15 @@ vrpn_int32 NetConnection::pack_mcast_description(vrpn_int32 sender){
 	vrpn_buffer(insertPt,&buflen,ip);
 	vrpn_buffer(insertPt,&buflen,pid);
 	
-	// need to pack d_mcast_cookie into first part of message
+	// NOT DONE - need to pack d_mcast_cookie into first part of message
 
 	return pack_message((vrpn_uint32)sizeof(McastGroupDescrp), 
 						now, vrpn_CONNECTION_MCAST_DESCRIPTION,
-						sender, controller->get_mcast_info(),
+						service, controller->get_mcast_info(),
 						vrpn_CONNECTION_RELIABLE, vrpn_false);
+
+	*******************************/
+	return 0;
 }
 
 
@@ -1275,23 +1380,233 @@ vrpn_int32 NetConnection::pack_mcast_description(vrpn_int32 sender){
 
 
 // make connection to server
-// this is just a rough outline
-vrpn_int32 vrpn_NetConnection::connect_to_server(const char* machine, 
-												 vrpn_int16 port)
+vrpn_int32 vrpn_NetConnection::connect_to_server(
+	const char* machine, 
+	vrpn_int16 port)
 {
 	vrpn_int32 retval = 0;
 
 	// initiate connection by sending message to well
 	// known port on server
 	retval = udp_request_connection_call(machine,port);
-	if( retval == -1 )
+	if( retval == -1 ){
+		fprintd(stderr,"vrpn_NetConnection::udp_request_connection_call :",
+				" error connecting to server.\n")
 		return retval;
+	}
 	else
 		tcp_sock = retval;
 
 	// setup rest of connection
 	handle_connection();
 	return retval;
+}
+
+/**********************************
+ *      This routine will start up a given server on a given machine.  The
+ * name of the machine requesting service and the socket number to connect to
+ * are supplied after the -client argument. The "args" parameters are
+ * passed next.  They should be space-separated arguments, each of which is
+ * passed separately.  It is NOT POSSIBLE to send parameters with embedded
+ * spaces.
+ *      This routine returns a 0 on success and -1 on failure.
+ **********************************/
+vrpn_int32 vrpn_NetConnection::start_server(
+	const char *machine, 
+	char *server_name, 
+	char *args)
+{
+#ifdef  _WIN32
+        fprintf(stderr,"VRPN: vrpn_NetConnection::start_server not ported to NT!\n");
+        return -1;
+#else
+        vrpn_int32     pid;    /* Child's process ID */
+        vrpn_int32     inmask, zero;   /* Used in select() */
+        vrpn_int32     server_sock;    /* Where the accept returns */
+        vrpn_int32     child_socket;   /* Where the final socket is */
+        struct sockaddr_in name;/* The socket to listen to */
+        vrpn_int32     PortNum;        /* Port number we got */
+        vrpn_int32     scrap;
+
+        /* Open a socket and insure we can bind it */
+
+        name.sin_family = AF_INET;                      /* Internet socket */
+        name.sin_addr.s_addr = INADDR_ANY;              /* Accept any port */
+        name.sin_port = htons(0);
+        server_sock = socket(AF_INET,SOCK_STREAM,0);
+        if (server_sock < 0) {
+                fprintf(stderr,"vrpn_NetConnection::start_server: cannot open socket().\n");
+                return(-1);
+        }
+        if ( bind(server_sock,(struct sockaddr*)&name,sizeof(name)) ) {
+                fprintf(stderr,"vrpn_NetConnection::start_server: cannot bind socket().\n");
+                close(server_sock);
+                return(-1);
+        }
+        scrap = sizeof(name);
+        if (getsockname(server_sock, (struct sockaddr *) &name,
+                        GSN_CAST &scrap)) {
+                fprintf(stderr,"vrpn_NetConnection::start_server: cannot get socket name.\n");
+                close(server_sock);
+                return(-1);
+        }
+        PortNum = ntohs(name.sin_port);
+
+        if ( (pid = fork()) == -1) {
+                fprintf(stderr,"vrpn_NetConnection::start_server: cannot fork().\n");
+                close(server_sock);
+                return(-1);
+        }
+        if (pid == 0) {  /* CHILD */
+                vrpn_int32     loop;
+                vrpn_int32     ret;
+                vrpn_int32     num_descriptors;/* Number of available file descr */
+                char    myIPchar[100];    /* Host name of this host */
+                char    command[600];   /* Command passed to system() call */
+                char    *rsh_to_use;    /* Full path to Rsh command. */
+
+                if (vrpn_getmyIP(myIPchar,sizeof(myIPchar))) {
+                        fprintf(stderr,
+								"vrpn_NetConnection::start_server: Error finding my IP\n");
+                        close(server_sock);
+                        return(-1);
+                }
+
+                /* Close all files except stdout and stderr. */
+                /* This prevents a hung child from keeping devices open */
+                num_descriptors = getdtablesize();
+                for (loop = 0; loop < num_descriptors; loop++) {
+                  if ( (loop != 1) && (loop != 2) ) {
+                        close(loop);
+                  }
+                }
+
+                /* Find the RSH command, either from the environment
+                 * variable or the default, and use it to start up the
+                 * remote server. */
+
+                if ( (rsh_to_use =(char *)getenv("VRPN_RSH")) == NULL) {
+                        rsh_to_use = RSH;
+                }
+                sprintf(command,"%s %s %s %s -client %s %d",rsh_to_use, machine,
+                        server_name, args, myIPchar, PortNum);
+                ret = system(command);
+                if ( (ret == 127) || (ret == -1) ) {
+                        fprintf(stderr,
+                                "vrpn_NetConnection::start_server: system() failed !!!!!\n");
+                        perror("Error");
+                        fprintf(stderr, "Attempted command was: '%s'\n",
+                                command);
+                        close(server_sock);
+                        exit(-1);  /* This should never occur */
+                }
+                exit(0);
+
+        } else {  /* PARENT */
+                vrpn_int32     waitloop;
+
+                /* Listen on the socket for the server to call */
+
+                if ( listen(server_sock,2) ) {
+                        fprintf(stderr,"vrpn_NetConnection::start_server: listen() failed.\n");
+                        close(server_sock);
+                        return(-1);
+                }
+
+                /* Use select() on the file descriptor to see if the child
+                 * is trying to call us back.  Do SERVCOUNT waits, each of
+                 * which is SERVWAIT long.  Only SERVCOUNT-1 of these are
+                 * done in the first loop.  The last one is done after, so
+                 * that it can timeout and exit. */
+                /* If the child dies while we are waiting, then we can be
+                 * sure that they will not be calling us back.  Check for
+                 * this at smaller intervals while waiting for the callback. */
+
+                for (waitloop = 0; waitloop < (SERVCOUNT-1); waitloop++) {
+                    pid_t deadkid;
+#if defined(sparc) || defined(FreeBSD)
+                    vrpn_int32 status;  // doesn't exist on sparc_solaris or FreeBSD
+#else
+                    union wait status;
+#endif
+		    
+                    /* Check to see if they called back yet. */
+                    inmask = (1 << server_sock);
+                    zero = 0;
+                    if (vrpn_noint_select(32,(fd_set *)&inmask,(fd_set *)&zero,
+                                         (fd_set *)&zero,&longtime)==1) {
+                      break;    /* Jump out of the loop */
+                    }
+
+                    /* Check to see if the child is dead yet */
+#if defined(hpux) || defined(sgi) || defined(__hpux)
+                    /* hpux include files have the wrong declaration */
+                    deadkid = wait3((int*)&status, WNOHANG, NULL);
+#else
+                    deadkid = wait3(&status, WNOHANG, NULL);
+#endif
+                    if (deadkid == pid) {
+                        fprintf(stderr,
+                                "vrpn_NetConnection::start_server: server process exited\n");
+                        close(server_sock);
+                        return(-1);
+                    }
+                }
+                /* This is the last wait.  If it fails, then it has been
+                 * too long and assume the child is not going to call us.
+                 * If the above select has succeeded, then this one should
+                 * return very quickly. */
+
+                if (vrpn_noint_select(32,(fd_set *)&inmask,(fd_set *)&zero,
+                                     (fd_set *)&zero,&longtime) != 1) {
+                    fprintf(stderr,
+                        "vrpn_NetConnection::start_server: server failed to connect in time\n");
+                    fprintf(stderr,
+							"                  (took more than %d seconds)\n",
+							SERVWAIT);
+                    close(server_sock);
+                    kill(pid,SIGKILL);
+                    wait(0);
+                    return(-1);
+                }
+
+                /* Accept the connection from the server */
+
+                if ( (child_socket = accept(server_sock,0,0)) == -1 ) {
+                        fprintf(stderr,"vrpn_NetConnection::start_server: accept() failed.\n");
+                        close(server_sock);
+                        return(-1);
+                }
+                close(server_sock);
+
+                /* Set the socket for TCP_NODELAY */
+
+                {       struct  protoent        *p_entry;
+				        static  vrpn_int32     nonzero = 1;
+
+                        if ( (p_entry = getprotobyname("TCP")) == NULL ) {
+                                fprintf(stderr,
+										"vrpn_NetConnection::start_server: getprotobyname() failed.\n");
+                                close(child_socket);
+                                return(-1);
+                        }
+
+                        if (setsockopt(child_socket, p_entry->p_proto,
+                                TCP_NODELAY, SOCK_CAST &nonzero,
+                                sizeof(nonzero)) == -1) {
+                                perror("vrpn_NetConnection::start_server: setsockopt() failed");
+                                close(child_socket);
+                                return(-1);
+                        }
+                }
+
+				// assign socket to tcp_sock and setup rest of connection
+				tcp_sock = child_socket;
+				handle_connection();
+                return(0);
+        }
+        return 0;
+#endif
 }
 
 
@@ -1582,7 +1897,7 @@ static	vrpn_int32 open_udp_socket (vrpn_uint16 * portno)
 // respond to system message vrpn_CONNECTION_MCAST_DESCRIPTION
 // if mcast capable, create a mcast recvr w/ info from server
 // then call pack_mcast_reply
-vrpn_int32 NetConnection::handle_mcast_description(char* message){
+vrpn_int32 NetConnection::mcast_description_handler(char* message){
 	
 	if( message ){ // if message is not NULL i.e. server is mcast capable
 		McastGroupDescrp descrp = new McastGroupDescrp();
@@ -1610,6 +1925,7 @@ vrpn_int32 NetConnection::handle_mcast_description(char* message){
 vrpn_int32 NetConnection::pack_mcast_reply(){
 
 	// pack value of d_mcast_capable into buffer
+	return 0;
 }
 
 //**************************************************************************
@@ -1620,10 +1936,8 @@ vrpn_int32 NetConnection::pack_mcast_reply(){
 //**************************************************************************
 //**************************************************************************
 
-// i think that these are common functons. not sure yet though
-
 // called when new client is trying to connect
-void vrpn_NetConnection::handle_connection(void)
+void vrpn_NetConnection::handle_connection()
 {
 
    // Set TCP_NODELAY on the socket
@@ -1686,13 +2000,13 @@ void vrpn_NetConnection::handle_connection(void)
   gettimeofday(&now, NULL);
 
   if (!num_live_connections) {
-    do_callbacks_for(register_message_type(vrpn_got_first_connection),
-                     register_sender(vrpn_CONTROL),
+    d_callback_interface_ptr->do_callbacks_for(register_message_type(vrpn_got_first_connection),
+                     register_service(vrpn_CONTROL),
                      now, 0, NULL);
   }
 
-  do_callbacks_for(register_message_type(vrpn_got_connection),
-                   register_sender(vrpn_CONTROL),
+  d_callback_interface_ptr->do_callbacks_for(register_message_type(vrpn_got_connection),
+                   register_service(vrpn_CONTROL),
                    now, 0, NULL);
 
   num_live_connections++;
@@ -1702,7 +2016,7 @@ void vrpn_NetConnection::handle_connection(void)
 // i think this is called by both the client and server sides
 // i could be wrong though. it handles aspects of a new connection
 // like checking version numbers, telling the other side what udp
-// port to send to, and transfering sender and types to the other
+// port to send to, and transfering service and types to the other
 // side
 int vrpn_NetConnection::setup_new_connection
          (vrpn_int32 remote_log_mode, const char * remote_logfile_name)
@@ -1747,7 +2061,7 @@ int vrpn_NetConnection::setup_new_connection
     return -1;
 
 	// Find out what log mode they want us to be in BEFORE we pack
-	// type, sender, and udp descriptions!  If it's nonzero, the
+	// type, service, and udp descriptions!  If it's nonzero, the
 	// filename to use should come in a log_description message later.
 
 	received_logmode = recvbuf[vrpn_MAGICLEN + 2] - '0';
@@ -1784,19 +2098,19 @@ int vrpn_NetConnection::setup_new_connection
 	  return -1;
 	}
 
-	// Pack messages that describe the types of messages and sender
+	// Pack messages that describe the types of messages and service
 	// ID mappings that have been described to this connection.  These
 	// messages use special IDs (negative ones).
-	for (i = 0; i < num_my_senders; i++) {
-		pack_sender_description(i);
+	for (i = 0; i < num_my_services; i++) {
+		pack_service_description(i);
 	}
 	for (i = 0; i < num_my_types; i++) {
 		pack_type_description(i);
 	}
 
-
+	//***********************
 	// This is where we would pass all the multicast capability stuff to
-	// the other side. this will be done if i have time.
+	// the other side. this is yet to be implemented
 
 	// Send the messages
 	if (send_pending_reports() == -1) {
@@ -1809,10 +2123,10 @@ int vrpn_NetConnection::setup_new_connection
 }
 
 // drop a connection with another machine
-void vrpn_NetConnection::drop_connection(void)
+void vrpn_NetConnection::drop_connection()
 {
 	//XXX Store name when opening, say which dropped here
-	printf("vrpn: Connection dropped\n");
+	printf("vrpn: NetConnection dropped\n");
 	if (tcp_sock != INVALID_SOCKET) {
 		close(tcp_sock);
 		tcp_sock = INVALID_SOCKET;
@@ -1838,17 +2152,17 @@ void vrpn_NetConnection::drop_connection(void)
   struct timeval now;
   gettimeofday(&now, NULL);
 
-  do_callbacks_for(register_message_type(vrpn_dropped_connection),
-                   register_sender(vrpn_CONTROL),
+  d_callback_interface_ptr->do_callbacks_for(register_message_type(vrpn_dropped_connection),
+                   register_service(vrpn_CONTROL),
                    now, 0, NULL);
 
   if (!num_live_connections) {
-    do_callbacks_for(register_message_type(vrpn_dropped_last_connection),
-                     register_sender(vrpn_CONTROL),
+	  d_callback_interface_ptr->do_callbacks_for(register_message_type(vrpn_dropped_last_connection),
+                     register_service(vrpn_CONTROL),
                      now, 0, NULL);
   }
 
-  if (d_logname) {
+  if (d_local_logname) {
       close_log();
   }
 
@@ -1858,115 +2172,30 @@ void vrpn_NetConnection::drop_connection(void)
 
 }
 
-// pack type description into a message buffer. used in the 
-// initialization of a connection when the two sides exchange
-// sender and type information
-vrpn_int32 vrpn_NetConnection::pack_type_description(vrpn_int32 which)
+
+//**************************************************************************
+//**************************************************************************
+//
+// vrpn_NetConnection: protected: opening and closing logs
+//
+//**************************************************************************
+//**************************************************************************
+
+vrpn_int32 vrpn_NetConnection::open_log()
 {
-   struct timeval now;
-
-   // need to pack the null char as well
-   vrpn_uint32	len = strlen(my_types[which].name) + 1;
-   vrpn_uint32 netlen;
-   char buffer [sizeof(len) + sizeof(cName)];
-
-   netlen = htonl(len);
-   // Pack a message with type vrpn_CONNECTION_TYPE_DESCRIPTION
-   // whose sender ID is the ID of the type that is being
-   // described and whose body contains the length of the name
-   // and then the name of the type.
-
-#ifdef	VERBOSE
-   printf("  vrpn_NetConnection: Packing type '%s'\n",my_types[which].name);
-#endif
-   memcpy(buffer, &netlen, sizeof(netlen));
-   memcpy(&buffer[sizeof(len)], my_types[which].name, (vrpn_int32) len);
-   gettimeofday(&now,NULL);
-
-   return pack_message((vrpn_uint32) (len + sizeof(len)), now,
-   	vrpn_CONNECTION_TYPE_DESCRIPTION, which, buffer,
-	vrpn_CONNECTION_RELIABLE, vrpn_false);
+	d_logger_ptr = NULL;
+	// HACKISH - d_local_{logname,logmode} are protected members of
+	// vrpn_BaseConnection
+	d_logger_ptr = new vrpn_FileLogger(d_local_logname, d_local_logmode);
+	if( !d_logger_ptr ){
+		cout << endl << "vrpn_NetConnection: error opening logfile" << endl;
+		return -1;
+	}
+	return 0;
 }
 
-
-// pack sender description into a message buffer. used in the 
-// initialization of a connection when the two sides exchange
-// sender and type information
-vrpn_int32 vrpn_NetConnection::pack_sender_description(vrpn_int32 which)
+vrpn_int32 vrpn_NetConnection::close_log()
 {
-   struct timeval now;
-
-   // need to pack the null char as well
-   vrpn_uint32	len = strlen(my_senders[which]) + 1;
-   vrpn_uint32 netlen;
-   char buffer [sizeof(len) + sizeof(cName)];
-
-   netlen = htonl(len);
-   // Pack a message with type vrpn_CONNECTION_SENDER_DESCRIPTION
-   // whose sender ID is the ID of the sender that is being
-   // described and whose body contains the length of the name
-   // and then the name of the sender.
-
-#ifdef	VERBOSE
-	printf("  vrpn_NetConnection: Packing sender '%s'\n", my_senders[which]);
-#endif
-   memcpy(buffer, &netlen, sizeof(netlen));
-   memcpy(&buffer[sizeof(len)], my_senders[which], (vrpn_int32) len);
-   gettimeofday(&now,NULL);
-
-   return pack_message((vrpn_uint32)(len + sizeof(len)), now,
-   	vrpn_CONNECTION_SENDER_DESCRIPTION, which, buffer,
-	vrpn_CONNECTION_RELIABLE,vrpn_false);
-}
-
-
-// pack udp description into a message buffer. used in the 
-// initialization of a connection when the two sides exchange
-// what upd port the other side should send messages to
-vrpn_int32 vrpn_NetConnection::pack_udp_description(vrpn_int32 portno)
-{
-   struct timeval now;
-   vrpn_uint32	portparam = portno;
-   char myIPchar[1000];
-
-   // Find the local host name
-   if (vrpn_getmyIP(myIPchar, sizeof(myIPchar))) {
-	perror("vrpn_NetConnection::pack_udp_description: can't get host name");
-	return -1;
-   }
-
-   // Pack a message with type vrpn_CONNECTION_UDP_DESCRIPTION
-   // whose sender ID is the ID of the port that is to be
-   // used and whose body holds the zero-terminated string
-   // name of the host to contact.
-
-#ifdef	VERBOSE
-	printf("  vrpn_NetConnection: Packing UDP %s:%d\n", myIPchar,
-		portno);
-#endif
-   gettimeofday(&now, NULL);
-
-   return pack_message(strlen(myIPchar) + 1, now,
-        vrpn_CONNECTION_UDP_DESCRIPTION,
-	portparam, myIPchar, vrpn_CONNECTION_RELIABLE, vrpn_false);
-}
-
-
-// pack log description into a message buffer. used in the 
-// initialization of a connection when the two sides exchange
-// what type of logging to do. Not sure if this will maek it
-// into the final wersion.
-vrpn_int32 vrpn_NetConnection::pack_log_description (vrpn_int32 logmode,
-                                           const char * logfile) {
-  struct timeval now;
-
-  // Pack a message with type vrpn_CONNECTION_LOG_DESCRIPTION whose
-  // sender ID is the logging mode to be used by the remote connection
-  // and whose body holds the zero-terminated string name of the file
-  // to write to.
-
-  gettimeofday(&now, NULL);
-  return pack_message(strlen(logfile) + 1, now,
-                      vrpn_CONNECTION_LOG_DESCRIPTION, logmode, logfile,
-                      vrpn_CONNECTION_RELIABLE, vrpn_false);
+	delete d_logger_ptr;
+	return 0;
 }

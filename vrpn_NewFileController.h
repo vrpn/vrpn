@@ -15,7 +15,7 @@ class vrpn_FileConnection_ControllerInterface
 public:
 
     vrpn_FileConnection_ControllerInterface();
-    virtual ~vrpn_FileConnection_ControllerInterface(void);
+    virtual ~vrpn_FileConnection_ControllerInterface();
 	
     virtual vrpn_int32 time_since_connection_open (struct timeval * elapsed_time) = 0;
 	
@@ -23,7 +23,7 @@ public:
     virtual void set_replay_rate(vrpn_float32 rate) = 0;
 	
 	// resets to the beginning of the file
-    virtual vrpn_int32 reset (void) = 0;      
+    virtual vrpn_int32 reset () = 0;      
 
 	// returns 1 if we're at the end of file
 	virtual vrpn_int32 eof() = 0;
@@ -66,13 +66,13 @@ protected:
 	// checks the cookie at
 	// the head of the log file;
 	//  exit on error!
-    virtual vrpn_int32 read_cookie (void) = 0;
+    virtual vrpn_int32 read_cookie () = 0;
     
 	// appends entry to d_logTail
-	virtual vrpn_int32 read_entry (void) = 0; 
+	virtual vrpn_int32 read_entry () = 0; 
 
 	// returns 0 on success, 1 on EOF, -1 on error
-    virtual vrpn_int32 close_file (void) = 0;
+    virtual vrpn_int32 close_file () = 0;
 
     // handlers for VRPN control messages
     virtual static vrpn_int32 handle_set_replay_rate (void *, vrpn_HANDLERPARAM) = 0;
@@ -111,7 +111,7 @@ public: // playback functions
     virtual void set_replay_rate(vrpn_float32 rate);
 	
 	// resets to the beginning of the file
-    virtual vrpn_int32 reset (void);      
+    virtual vrpn_int32 reset ();      
 
 	// returns 1 if we're at the end of file
 	virtual vrpn_int32 eof();

@@ -7,7 +7,37 @@
 //**************************************************************************
 //**************************************************************************
 
-void vrpn_ServerConnectionController::init(void)
+void vrpn_ServerConnectionController::ServerConnectionController(
+	char * cname, 
+	vrpn_uint16 port,
+	char * local_logfile_name,
+	vrpn_int32 local_log_mode,
+	vrpn_int32 tcp_inbuflen,
+	vrpn_int32 tcp_outbuflen,
+	vrpn_int32 udp_inbuflen,
+	vrpn_int32 udp_outbuflen,
+	vrpn_float64 dFreq,
+	vrpn_in32 cSyncWindow
+	// add multicast arguments later
+	):
+	BaseConnectionController(
+		local_logfile_name,
+		local_log_mode,
+		NULL,
+		vrpn_LOG_NONE,
+		dFreq,
+		cSyncWindow),
+	num_live_connections(0),
+	status(NOT_CONNECTED),
+	listen_udp_sock(INVALID_SOCKET),
+	listen_port_no(port),
+	// pass following on to Connection
+	d_local_logfile_name(local_logfile_name),
+	d_local_log_mode(local_log_mode),
+	d_tcp_inbuflen(tcp_inbuflen),
+	d_tcp_outbuflen(tcp_outbuflen),	
+	d_udp_inbuflen(udp_inbuflen),
+	d_udp_outbuflen(udp_outbuflen)
 {
     vrpn_int32 i;
 
@@ -27,16 +57,28 @@ void vrpn_ServerConnectionController::init(void)
         other_types[i].name = NULL;
     }
 
-    // create list for connections
+
+	// create socket  to listen for incoming connections on 
+	if ( (listen_udp_sock = open_udp_socket(&listen_port_no))
+		 == INVALID_SOCKET) {
+		status = BROKEN;
+	} else {
+		status = LISTEN;
+		printf("vrpn: Listening for requests on port %d\n",listen_port_no);
+	}
+
+
+	/************
+	Multicast not being implemented in first release
 
     // try and create multicast sender. if it fails, we are not
     // multicast capable
-    mcast_sender = new UnreliableMulticastSender(/* xxx */);
+    mcast_sender = new UnreliableMulticastSender(XXX);
     if( mcast_sender->created_correctly() ){
-        vrpn_Mcast_Capable = vrpn_true;
+	vrpn_Mcast_Capable = vrpn_true;
     }
     else {
-        vrpn_Mcast_Capable = vrpn_false;
+	vrpn_Mcast_Capable = vrpn_false;
     }
 
     // get mcast group info to pass to 
@@ -45,12 +87,14 @@ void vrpn_ServerConnectionController::init(void)
         d_mcast_info = new char[sizeof(McastGroupDescrp)];
         mcast_sender->get_mcast_description(d_mcast_info);
     }
+	**********/
 
     // create logging object
-    char temp_logname_buf[150]; // should be long enough for any filename
-    get_local_logfile_name(temp_logname_buf);
-    logger = new vrpn_FileLogger(temp_logname_buf,get_local_logmode());
-
+	if( d_local_log_mode != vrpn_LOG_NONE ){
+		char temp_log_ptr[150];
+		get_local_logfile_name(temp_log_ptr);
+		d_logger_ptr = new vrpn_FileLogger(temp_log_ptr,get_local_logmode());
+	}
         
     // Register the callback handler for clock server queries 
     // (along with "this" as user data)
@@ -67,6 +111,7 @@ void vrpn_ServerConnectionController::init(void)
 //**************************************************************************
 //
 // vrpn_ServerConnectionController: public: connection setup
+
 //
 //**************************************************************************
 //**************************************************************************
@@ -119,10 +164,20 @@ listen_for_incoming_connections(const struct timeval * pTimeout){
 
        
        // create new NetConnection
-       BaseConnection* new_connection = new NetConnection;
+       BaseConnection* new_connection = new NetConnection(/* xxx */);
        
        // add it to the connection list
+	   vrpn_CONNECTION_LIST *curr;
+	   
+	   if ( (curr = new(vrpn_CONNECTION_LIST)) == NULL) {
+		   fprintf(stderr, "vrpn_ServerConnectionController:  Out of memory.\n");
+		   return;
+	   }
+	   strncpy(curr->name, station_name, sizeof(curr->name));
+	   curr->c = this;
+	   curr->next = d_connection_list;
        
+
        // NetConnection will handle rest
        new_connection->connect_to_client(msg);
 
@@ -146,24 +201,78 @@ char* ServerConnectionController::get_mcast_info(){
 //**************************************************************************
 
 // rough draft of mainloop function
-vrpn_int32 mainloop( const timeval * timeout){
+vrpn_int32 vrpn_ServerConnectionController::mainloop( const timeval * timeout){
     
     switch( status ){
     case NOTCONNECTED:
         listen_for_incoming_connections();
         break;
     case CONNECTED:
-        ListItr itr = ConnectionList; // create list iterator
-        for( ; itr != NULL; itr++){
-            itr->handle_incoming_messages(/* xxx */);
-            itr->handle_outgoing_messages(/* xxx */);
-        }
+		// go through list of connections, then check for any
+		// new incoming connections
+		vrpn_CONNECTION_LIST *itr;
+		itr = d_connection_list;
+        do{
+            itr->c->mainloop(timeout); // XXX - should timeval arg b divided evenly among connections?
+			itr = itr->next;
+        } while( itr->next != NULL );
         listen_for_incoming_connections();
         break;
     }
 }
 
+    
+// * pack a message that will be sent the next time mainloop() is called
+// * turn off the RELIABLE flag if you want low-latency (UDP) send
+// * was: pack_message
+virtual vrpn_int32 vrpn_ServerConnectionController::handle_outgoing_message(
+        vrpn_uint32 len, 
+        timeval time,
+        vrpn_int32 type,
+        vrpn_int32 service,
+        const char * buffer,
+        vrpn_uint32 class_of_service )
+{
+	vrpn_int32 ret;
 
+	// Make sure type is either a system type (-) or a legal user type
+	if ( type >= num_my_types ) {
+	    printf("vrpn_ServerConnectionController::handle_outgoing_messages: bad type (%ld)\n",
+			   type);
+	    return -1;
+	}
+
+	// If this is not a system message, make sure the service is legal.
+	if (type >= 0) {
+	  if ( (service < 0) || (service >= num_my_services) ) {
+	    printf("vrpn_ServerConnectionController::handle_outgoing_messages: bad service (%ld)\n",
+			   service);
+	    return -1;
+	  }
+	}
+
+	// when implemented send message out multicast channel
+	// if appropriate
+
+	// See if there are any local handlers for this message type from
+	// this sender.  If so, yank the callbacks.
+	if (do_callbacks_for(type, sender, time, len, buffer)) {
+		return -1;
+	}
+
+	// iterate over list of Connections and pass message to 
+	// them
+	while( conn_list_ptr != NULL ){
+		ret = conn_list_ptr->handle_outgoing_messages(
+			len,time,
+			type,service,
+			buffer,vrpn_false);
+		if( ret = -1 ) return -1; 
+	}
+
+	return 0;
+	
+}
 
 //**************************************************************************
 //**************************************************************************
@@ -175,7 +284,7 @@ vrpn_int32 mainloop( const timeval * timeout){
 
 // ServerConnectionController doesn't have remote logfiles or logmodes
 
-vrpn_int32 vrpn_ServerConnectionController::get_remote_logmode(void)
+vrpn_int32 vrpn_ServerConnectionController::get_remote_logmode()
 {
     return -1;
 }
@@ -248,5 +357,19 @@ vrpn_int32 vrpn_ServerConnectionController::clockQueryHandler(void *userdata,
                                  rgch, vrpn_CONNECTION_RELIABLE);
   return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

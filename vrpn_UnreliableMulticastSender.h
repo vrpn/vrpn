@@ -18,14 +18,14 @@ public:
 	//-------------------------------------------------------------------
 	vrpn_UnreliableMulticastSender( char* group_name, vrpn_uint16 port,
 									vrpn_int32 ttl = 32);
-	~vrpn_UnreliableMulticastSender(void);
+	~vrpn_UnreliableMulticastSender();
 
 
 	//-------------------------------------------------------------------
 	// get functions
 	//-------------------------------------------------------------------
 	vrpn_int32 get_mcast_info(char *info_buffer);
-	vrpn_int32 get_mcast_ttl(void);
+	vrpn_int32 get_mcast_ttl();
 	
 
 	//-------------------------------------------------------------------
@@ -45,7 +45,7 @@ public:
 	
 protected:
 	
-	void init_mcast_channel(void);
+	void init_mcast_channel();
 
 private:
 
