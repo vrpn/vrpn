@@ -22,14 +22,14 @@ public:
 	typedef struct _vrpn_SoundDef
 	{
 	  vrpn_PoseDef pose;
-	  vrpn_float64 velocity[3];
+	  vrpn_float64 velocity[4];
 	  vrpn_int32 volume;
 	} vrpn_SoundDef;
 
 	typedef struct _vrpn_ListenerDef
 	{
 	  vrpn_PoseDef pose;
-	  vrpn_float64 velocity[3];
+	  vrpn_float64 velocity[4];
 	} vrpn_ListenerDef;
 
 protected:
@@ -42,6 +42,7 @@ protected:
 	vrpn_int32 unload_sound;				 // ID of message to unload a sound
 	vrpn_int32 play_sound;					 // ID of message to play a sound
 	vrpn_int32 stop_sound;					 // ID of message to stop a sound
+	vrpn_int32 change_sound_status;			 // ID of message to change the sound's status
 	vrpn_int32 change_listener_status;		 // ID of message to change the listener's status
 	struct timeval timestamp;				 // Current timestamp
 	
@@ -64,30 +65,10 @@ protected:
 	vrpn_int32 encodeListener(vrpn_ListenerDef Listener, char* buf);
 	vrpn_int32 decodeListener(char* buf, vrpn_ListenerDef *Listener);
 
-	/* Since there can be multiple sounds, we need to keep track of
-	   all the defintion structures for each file.  Since there is no
-	   set limit to how many sounds can be loaded at once, these functions
-	   are here for the purpose of controlling the array of those soundDefs.
-	   All dynamic allocation is handled by them.*/
-	vrpn_SoundID addSoundDef(vrpn_SoundDef sound);
-	inline vrpn_SoundDef getSoundDef(vrpn_SoundID id)
-	{
-		return soundDefs[id];
-	};
-	inline void unloadSoundDefs() 
-	{
-		Defs_CurNum = 0;
-	};
-
 public:
 	vrpn_Sound(const char * name, vrpn_Connection * c);
 	~vrpn_Sound();
 	virtual void mainloop(const struct timeval * timeout=NULL) = 0;
-
-private:
-	vrpn_SoundDef *soundDefs;
-	vrpn_int32 Defs_MaxNum;
-	vrpn_int32 Defs_CurNum;
 };
 
 class vrpn_Sound_Client : public vrpn_Sound
@@ -108,19 +89,61 @@ public:
 	//All the functions with change and sound in them, can change either an
 	//already playing sound or one yet to be played
 	vrpn_int32 changeSoundVolume(vrpn_SoundID id, vrpn_int32 volume);
-	vrpn_int32 changeSoundPose(vrpn_SoundID id, vrpn_float32 position[3], vrpn_float32 orientation[4]);
-	vrpn_int32 changeSoundVelocity(vrpn_SoundID id, vrpn_float32 velocity[3]);
+	vrpn_int32 changeSoundPose(vrpn_SoundID id, vrpn_float64 position[3], vrpn_float64 orientation[4]);
+	vrpn_int32 changeSoundVelocity(vrpn_SoundID id, vrpn_float64 velocity[4]);
 
 	//The position, orientation and velocity of the listener can change how it sounds
-	vrpn_int32 changeListenerPose(vrpn_float32 position[3], vrpn_float32 orientation[4]);
-	vrpn_int32 changeListenerVelocity(vrpn_float32 velocity[3]);
+	vrpn_int32 changeListenerPose(vrpn_float64 position[3], vrpn_float64 orientation[4]);
+	vrpn_int32 changeListenerVelocity(vrpn_float64 velocity[4]);
 
 	void mainloop(const struct timeval * timeout=NULL);
 
 protected:
 	void initSoundDef(vrpn_SoundDef* soundDef);
+	/* Since there can be multiple sounds, we need to keep track of
+	   all the defintion structures for each file.  Since there is no
+	   set limit to how many sounds can be loaded at once, these functions
+	   are here for the purpose of controlling the array of those soundDefs.
+	   All dynamic allocation is handled by them.*/
+	vrpn_SoundID addSoundDef(vrpn_SoundDef sound);
+	inline vrpn_SoundDef getSoundDef(vrpn_SoundID id)
+	{
+		vrpn_SoundDef soundDef;
+		initSoundDef(&soundDef);
+		return (id < Defs_MaxNum) ? soundDefs[id] : soundDef;
+	};
+	inline void unloadSoundDefs() 
+	{
+		Defs_CurNum = 0;
+	};
+	inline void setDefVolume(vrpn_SoundID id, vrpn_int32 volume)
+	{
+		soundDefs[id].volume = volume;
+	};
+	inline void setDefPose(vrpn_SoundID id, vrpn_float64 position[3], vrpn_float64 orientation[4])
+	{
+		int i;
+		for(i = 0; i < 3; i++) soundDefs[i].pose.position[i] = position[i];
+		for(i = 0; i < 4; i++) soundDefs[i].pose.orientation[i] = orientation[i];
+	};
+	inline void setDefVelocity(vrpn_SoundID id, vrpn_float64 velocity[4])
+	{
+		int i;
+		for(i = 0; i < 4; i++) soundDefs[i].velocity[i] = velocity[i];
+	};
+
+private:
+	vrpn_SoundDef *soundDefs;
+	vrpn_int32 Defs_MaxNum;
+	vrpn_int32 Defs_CurNum;
 };
 
+/*Note on the server design
+  The server is designed in such a way that it expects a sub-class that is implemented
+  that actually implements sound functionality to have certain functions that it can
+  call to tell the child to play, load, whatever.   This parent server class, handles
+  all of the callback functionality and decoding, allowing child classes to only have 
+  to worry about sound functionality*/
 #ifndef VRPN_CLIENT_ONLY
 class vrpn_Sound_Server : public vrpn_Sound
 {
@@ -132,6 +155,8 @@ public:
 	virtual void loadSound(char* filename, vrpn_SoundID id) = 0;
 	virtual void stopSound(vrpn_SoundID id) = 0;
 	virtual void unloadSound(vrpn_SoundID id) = 0;
+	virtual void changeSoundStatus(vrpn_SoundID id, vrpn_SoundDef soundDef) = 0;
+	virtual void changeListenerStatus(vrpn_ListenerDef listener) = 0;
 	
 protected:
 #define vrpn_Sound_FAIL -1								//To be set when in in the Mapping
@@ -139,7 +164,7 @@ protected:
 
 	inline vrpn_int32 map_CIndex_To_SIndex(vrpn_int32 CIndex)
 	{
-		return CSMap[CIndex];
+		return (CIndex < CSMap_MaxNum) ? CSMap[CIndex] : FAIL;
 	};
 	void set_CIndex_To_SIndex(vrpn_int32 CIndex, vrpn_int32 SIndex);
 
@@ -157,6 +182,8 @@ private:
 	static int handle_stopSound(void *userdata, vrpn_HANDLERPARAM p);
 	static int handle_loadSound(void *userdata, vrpn_HANDLERPARAM p);
 	static int handle_unloadSound(void *userdata, vrpn_HANDLERPARAM p);
+	static int handle_soundStatus(void *userdata, vrpn_HANDLERPARAM p);
+	static int handle_listener(void *userdata, vrpn_HANDLERPARAM p);
 };
 #endif //#ifndef VRPN_CLIENT_ONLY
 
