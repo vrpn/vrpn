@@ -19,7 +19,7 @@ const int buflen = 8000;
 void Usage (const char * name) {
   fprintf(stderr, "Usage:  %s [-n|-s] <filename>\n", name);
   fprintf(stderr,"    -n:  Print names instead of numbers.\n");
-  fprintf(stderr,"    -s:  Sumary only, start/end/duration");
+  fprintf(stderr,"    -s:  Summary only, start/end/duration\n");
 }
 
 
