@@ -1,3 +1,12 @@
+2004-05-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* NIUtil.cpp : Added description for another board.
+	* vrpn.C : Added handlers for vrpn_Analog_Output_NI and
+		vrpn_Poser_Analog.
+	* vrpn.cfg : Added entries for vrpn_Analog_Output_NI and
+		vrpn_Poser_Analog.  Added entry for settings needed
+		at DTU/MIC for their optical nanohand control.
+
 2004-04-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Makefile : Adding flag to SGI compile in the hope that it would

@@ -23,12 +23,13 @@ namespace NIUtil
       {
          // The folling table comes from:
          // National Instruments(TM)
-         // NI-DAQ(TM) Function Reference Manual fo PC Compatibles
+         // NI-DAQ(TM) Function Reference Manual for PC Compatibles
          // Version 6.6
          // August 1999 Edition
          // Part Number 321645E-01
          // Chapter 2 Function Reference
          // Init_DA_Brds : pages 2-274 - 2-277
+	 // Entries were added based on later versions of the manual.
 
          case  -1: name = "Not a National Instruments DAQ device"; break;
          case   7: name = "PC-DIO-24"; break;
@@ -136,6 +137,7 @@ namespace NIUtil
          case 319: name = "PXI-6608"; break;
          case 320: name = "PCI-4453"; break;
          case 321: name = "PCI-4454"; break;
+	 case 348: name = "DAQCard-6036E"; break;
          default :
             cerr << "NIUtil::nameCodeToString: Unknown code " << code << "!\n";
             name = "Unknown";

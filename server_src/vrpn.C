@@ -14,6 +14,9 @@
 #include "vrpn_Connection.h"
 #include "vrpn_Button.h"
 #include "vrpn_Tracker.h"
+#include "vrpn_Analog.h"
+#include "vrpn_Analog_Output.h"
+#include "vrpn_Poser.h"
 #include "vrpn_3Space.h"
 #include "vrpn_Tracker_Fastrak.h"
 #include "vrpn_Tracker_Liberty.h"
@@ -26,7 +29,6 @@
 #include "vrpn_sgibox.h" //for access to the B&D box connected to an SGI via the IRIX GL drivers
 #endif
 
-#include "vrpn_Analog.h"
 #include "vrpn_UNC_Joystick.h"
 #include "vrpn_Joylin.h"
 #include "vrpn_JoyFly.h"
@@ -49,11 +51,13 @@
 #include "vrpn_ADBox.h"
 #include "vrpn_VPJoystick.h"
 #include "vrpn_Tracker_DTrack.h"
+#include "vrpn_Analog_Output_NI.h"
+#include "vrpn_Poser_Analog.h"
 
 #include "vrpn_ForwarderController.h"
 #include <vrpn_RedundantTransmission.h>
 
-#ifdef INCLUDE_TIMECODE_SERVER
+#ifdef VRPN_INCLUDE_TIMECODE_SERVER
 #include "timecode_generator_server\vrpn_timecode_generator.h"
 #endif
 
@@ -61,26 +65,27 @@ const int MAX_TRACKERS = 100;
 const int MAX_BUTTONS =  100;
 const int MAX_SOUNDS =     2;
 const int MAX_ANALOG =     4;
+const int MAX_ANALOGOUT =  4;
 const int MAX_SGIBOX =     2;
 const int MAX_CEREALS =    8;
 const int MAX_MAGELLANS =  8;
 const int MAX_SPACEBALLS = 8;
 const int MAX_IBOXES =     8;
 const int MAX_DIALS =      8;
-#ifdef INCLUDE_TIMECODE_SERVER
+#ifdef VRPN_INCLUDE_TIMECODE_SERVER
 const int MAX_TIMECODE_GENERATORS = 8;
 #endif
-const int MAX_TNG3S = 8;
+const int MAX_TNG3S =	   8;
 #ifdef	VRPN_USE_DIRECTINPUT
-const int MAX_DIRECTXJOYS = 8;
+const int MAX_DIRECTXJOYS= 8;
 #endif
-const int MAX_WIN32JOYS = 2;
+const int MAX_WIN32JOYS =  2;
 const int MAX_GLOBALHAPTICSORBS = 8;
 #ifdef	VRPN_USE_PHANTOM_SERVER
-const int MAX_PHANTOMS = 10;
+const int MAX_PHANTOMS =  10;
 #endif
-const int MAX_DTRACKS=5;
-
+const int MAX_DTRACKS =	   5;
+const int MAX_POSER =	   4;
 
 static	int	done = 0;	// Done and should exit?
 
@@ -145,7 +150,7 @@ vrpn_ImmersionBox  *iboxes[MAX_IBOXES];
 int             num_iboxes = 0;
 vrpn_Dial	* dials [MAX_DIALS];
 int		num_dials = 0;
-#ifdef INCLUDE_TIMECODE_SERVER
+#ifdef VRPN_INCLUDE_TIMECODE_SERVER
 vrpn_Timecode_Generator * timecode_generators[MAX_TIMECODE_GENERATORS];
 int		num_generators = 0;
 #endif
@@ -169,6 +174,10 @@ int		num_phantoms = 0;
 vrpn_Tracker_DTrack *DTracks[MAX_DTRACKS];
 int num_DTracks=0;
 #endif
+vrpn_Analog_Output	* analogouts [MAX_ANALOG];
+int		num_analogouts = 0;
+vrpn_Poser	* posers [MAX_POSER];
+int		num_posers = 0;
 
 vrpn_Connection * connection;
 
@@ -231,53 +240,6 @@ void sighandler (int)
 	done = 1;
 }
 #endif
-
-// This function will read one line of the vrpn_AnalogFly configuration (matching
-// one axis) and fill in the data for that axis. The axis name, the file to read
-// from, and the axis to fill in are passed as parameters. It returns 0 on success
-// and -1 on failure.
-
-int	get_AFline(FILE *config_file, char *axis_name, vrpn_TAF_axis *axis)
-{
-	char	line[LINESIZE];
-	char	_axis_name[LINESIZE];
-	char	*name = new char[LINESIZE];	// We need this to stay around for the param
-	int	channel;
-	float	offset, thresh, power, scale;
-
-	// Read in the line
-	if (fgets(line, LINESIZE, config_file) == NULL) {
-		perror("AnalogFly Axis: Can't read axis");
-		return -1;
-	}
-
-	// Get the values from the line
-	if (sscanf(line, "%511s%511s%d%g%g%g%g", _axis_name, name,
-			&channel, &offset, &thresh,&scale,&power) != 7) {
-		fprintf(stderr,"AnalogFly Axis: Bad axis line\n");
-		return -1;
-	}
-
-	// Check to make sure the name of the line matches
-	if (strcmp(_axis_name, axis_name) != 0) {
-		fprintf(stderr,"AnalogFly Axis: wrong axis: wanted %s, got %s)\n",
-			axis_name, name);
-		return -1;
-	}
-
-	// Fill in the values if we didn't get the name "NULL". Otherwise, just
-	// leave them as they are, and they will have no effect.
-	if (strcmp(name,"NULL") != 0) {
-		axis->name = name;
-		axis->channel = channel;
-		axis->offset = offset;
-		axis->thresh = thresh;
-		axis->scale = scale;
-		axis->power = power;
-	}
-
-	return 0;
-}
 
 // setup_raw_SGIBox
 // uses globals:  num_sgiboxes, sgiboxes[], verbose
@@ -377,7 +339,7 @@ int setup_SGIBOX (char * & pch, char * line, FILE * config_file) {
 
 
 int setup_Timecode_Generator (char * & pch, char * line, FILE * config_file) {
-#ifdef INCLUDE_TIMECODE_SERVER
+#ifdef VRPN_INCLUDE_TIMECODE_SERVER
 	char s2 [LINESIZE];
 
 	next();
@@ -496,6 +458,53 @@ int setup_JoyFly (char * & pch, char * line, FILE * config_file) {
 #endif
 
   return 0;
+}
+
+// This function will read one line of the vrpn_AnalogFly configuration (matching
+// one axis) and fill in the data for that axis. The axis name, the file to read
+// from, and the axis to fill in are passed as parameters. It returns 0 on success
+// and -1 on failure.
+
+int	get_AFline(FILE *config_file, char *axis_name, vrpn_TAF_axis *axis)
+{
+	char	line[LINESIZE];
+	char	_axis_name[LINESIZE];
+	char	*name = new char[LINESIZE];	// We need this to stay around for the param
+	int	channel;
+	float	offset, thresh, power, scale;
+
+	// Read in the line
+	if (fgets(line, LINESIZE, config_file) == NULL) {
+		perror("AnalogFly Axis: Can't read axis");
+		return -1;
+	}
+
+	// Get the values from the line
+	if (sscanf(line, "%511s%511s%d%g%g%g%g", _axis_name, name,
+			&channel, &offset, &thresh,&scale,&power) != 7) {
+		fprintf(stderr,"AnalogFly Axis: Bad axis line\n");
+		return -1;
+	}
+
+	// Check to make sure the name of the line matches
+	if (strcmp(_axis_name, axis_name) != 0) {
+		fprintf(stderr,"AnalogFly Axis: wrong axis: wanted %s, got %s)\n",
+			axis_name, name);
+		return -1;
+	}
+
+	// Fill in the values if we didn't get the name "NULL". Otherwise, just
+	// leave them as they are, and they will have no effect.
+	if (strcmp(name,"NULL") != 0) {
+		axis->name = name;
+		axis->channel = channel;
+		axis->offset = offset;
+		axis->thresh = thresh;
+		axis->scale = scale;
+		axis->power = power;
+	}
+
+	return 0;
 }
 
 int setup_Tracker_AnalogFly (char * & pch, char * line, FILE * config_file) {
@@ -975,6 +984,39 @@ int setup_Zaber (char * & pch, char * line, FILE * config_file) {
     return -1;
   } else {
     num_analogs++;
+  }
+
+  return 0;
+}
+
+int setup_NI (char * & pch, char * line, FILE * config_file) {
+  char s2 [LINESIZE], s3 [LINESIZE];
+  int i1, i2;
+  float f1, f2;
+
+  next();
+  // Get the arguments (vrpn_name, NI_board_type, num_channels, polarity, min_voltage, max_voltage
+  if (sscanf(pch,"%511s%511s%d%d%f%f",s2,s3, &i1, &i2, &f1, &f2) != 6) {
+    fprintf(stderr,"Bad vrpn_NI_Analog_Output: %s\n",line);
+    return -1;
+  }
+
+  // Make sure there's room for a new analog
+  if (num_analogouts >= MAX_ANALOGOUT) {
+    fprintf(stderr,"Too many Analog Outputs in config file");
+    return -1;
+  }
+
+  // Open the device
+  if (verbose) {
+    printf("Opening vrpn_NI_Analog_Output: %s with %d channels\n", s2, i1);
+  }
+  if ((analogouts[num_analogouts] =
+  new vrpn_Analog_Output_Server_NI(s2, connection, s3, i1, i2 != 0, f1, f2)) == NULL) {
+    fprintf(stderr,"Can't create new vrpn_NI_Analog_Output\n");
+    return -1;
+  } else {
+    num_analogouts++;
   }
 
   return 0;
@@ -2170,6 +2212,114 @@ int setup_DTrack (char * & pch, char * line, FILE * config_file) {
   return 0;
 }
 
+// This function will read one line of the vrpn_Poser_Analog configuration (matching
+// one axis) and fill in the data for that axis. The axis name, the file to read
+// from, and the axis to fill in are passed as parameters. It returns 0 on success
+// and -1 on failure.
+
+int	get_poser_axis_line(FILE *config_file, char *axis_name, vrpn_PA_axis *axis, vrpn_float64 *min, vrpn_float64 *max)
+{
+	char	line[LINESIZE];
+	char	_axis_name[LINESIZE];
+	char	*name = new char[LINESIZE];	// We need this to stay around for the param
+	int	channel;
+	float	offset, scale;
+
+	// Read in the line
+	if (fgets(line, LINESIZE, config_file) == NULL) {
+		perror("Poser Analog Axis: Can't read axis");
+		return -1;
+	}
+
+	// Get the values from the line
+	if (sscanf(line, "%511s%d%g%g%lg%lg", _axis_name,
+			&channel, &offset, &scale, min, max) != 6) {
+		fprintf(stderr,"Poser Analog Axis: Bad axis line\n");
+		return -1;
+	}
+
+	// Check to make sure the name of the line matches
+	if (strcmp(_axis_name, axis_name) != 0) {
+		fprintf(stderr,"Poser Analog Axis: wrong axis: wanted %s, got %s)\n",
+			axis_name, name);
+		return -1;
+	}
+
+	// Fill in the values if we didn't get the name "NULL". Otherwise, just
+	// leave them as they are, and they will have no effect.
+	if (strcmp(name,"NULL") != 0) {
+		axis->channel = channel;
+		axis->offset = offset;
+		axis->scale = scale;
+	}
+
+	return 0;
+}
+
+int setup_Poser_Analog (char * & pch, char * line, FILE * config_file) {
+    char s2 [LINESIZE], s3 [LINESIZE];
+    vrpn_Poser_AnalogParam     p;
+
+    next();
+    if (sscanf(pch, "%511s%511s",s2,s3) != 2) {
+            fprintf(stderr, "Bad vrpn_Poser_Analog line: %s\n",
+		line);
+            return -1;
+    }
+    p.ana_name = s3;
+
+    // Make sure there's room for a new poser
+    if (num_posers >= MAX_POSER) {
+      fprintf(stderr,"Too many posers in config file");
+      return -1;
+    }
+
+    if (verbose) {
+      printf("Opening vrpn_Poser_Analog: "
+             "%s using analog output %s\n",s2,s3);
+    }
+
+    // Scan the following lines in the configuration file to fill
+    // in the start-up parameters for the different axis.
+
+    if (get_poser_axis_line(config_file,"X", &p.x, &p.pos_min[0], &p.pos_max[0])) {
+            fprintf(stderr,"Can't read X line for Poser Analog\n");
+            return -1;
+    }
+    if (get_poser_axis_line(config_file,"Y", &p.y, &p.pos_min[1], &p.pos_max[1])) {
+            fprintf(stderr,"Can't read y line for Poser Analog\n");
+            return -1;
+    }
+    if (get_poser_axis_line(config_file,"Z", &p.z, &p.pos_min[2], &p.pos_max[2])) {
+            fprintf(stderr,"Can't read Z line for Poser Analog\n");
+            return -1;
+    }
+    if (get_poser_axis_line(config_file,"RX", &p.rx, &p.pos_rot_min[0], &p.pos_rot_max[0])) {
+            fprintf(stderr,"Can't read RX line for Poser Analog\n");
+            return -1;
+    }
+    if (get_poser_axis_line(config_file,"RY", &p.ry, &p.pos_rot_min[1], &p.pos_rot_max[1])) {
+            fprintf(stderr,"Can't read RY line for Poser Analog\n");
+            return -1;
+    }
+    if (get_poser_axis_line(config_file,"RZ", &p.rz, &p.pos_rot_min[2], &p.pos_rot_max[2])) {
+            fprintf(stderr,"Can't read RZ line for Poser Analog\n");
+            return -1;
+    }
+    
+    posers[num_posers] = new
+       vrpn_Poser_Analog(s2, connection, &p);
+
+    if (!posers[num_posers]) {
+      fprintf(stderr,"Can't create new vrpn_Poser_Analog\n");
+      return -1;
+    } else {
+      num_posers++;
+    }
+
+    return 0;
+}
+
 main (int argc, char * argv[])
 {
 	char	* config_file_name = "vrpn.cfg";
@@ -2395,6 +2545,10 @@ main (int argc, char * argv[])
 	    CHECK(setup_VPJoystick);
 	  } else if (isit("vrpn_Tracker_DTrack")) {
 	    CHECK(setup_DTrack);
+	  } else if (isit("vrpn_NI_Analog_Output")) {
+            CHECK(setup_NI);
+	  } else if (isit("vrpn_Poser_Analog")) {
+            CHECK(setup_Poser_Analog);
 
 	 } else {	// Never heard of it
 		sscanf(line,"%511s",s1);	// Find out the class name
@@ -2458,6 +2612,11 @@ main (int argc, char * argv[])
 		  analogs[i]->mainloop();
 	  }
 
+	  // Let all the analog outputs do their thing
+	  for (i=0; i< num_analogouts; i++) {
+		  analogouts[i]->mainloop();
+	  }
+
 	  // Let all the dials do their thing
 	  for (i=0; i< num_dials; i++) {
 		  dials[i]->mainloop();
@@ -2491,7 +2650,7 @@ main (int argc, char * argv[])
 	  if (vrpn_special_sgibox) 
 	    vrpn_special_sgibox->mainloop();
 #endif
-#ifdef INCLUDE_TIMECODE_SERVER
+#ifdef VRPN_INCLUDE_TIMECODE_SERVER
 	  for (i=0; i < num_generators; i++) {
 		  timecode_generators[i]->mainloop();
 	  }
@@ -2531,6 +2690,11 @@ main (int argc, char * argv[])
 	  // Let all the Orbs do their thing
 	  for (i = 0; i < num_GlobalHapticsOrbs; i++) {
 	    ghos[i]->mainloop();
+	  }
+
+	  // Let all the Posers do their thing
+	  for (i=0; i< num_posers; i++) {
+		  posers[i]->mainloop();
 	  }
 
           redundantController->mainloop();
