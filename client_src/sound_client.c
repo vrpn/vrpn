@@ -3,7 +3,7 @@
 main()
 {
 	vrpn_Sound_Remote *remote;
-	remote = new vrpn_Sound_Remote("sound@carbon");
+	remote = new vrpn_Sound_Remote("sound0@ioph100");
 
 	remote->preload_sampled_sound("/net/nano/nano3/sounds/sfx-4/4-3.au");
 	remote->mainloop();
