@@ -101,7 +101,7 @@ int vrpn_Tracker_Dyna::get_status()
 #define MAX_TRIAL 10
 
 void vrpn_Tracker_Dyna::reset() {
-  static int numResets = 0;	// How many resets have we tried?;
+    //static int numResets = 0;	// How many resets have we tried?;
   static char T_PDYN_C_CTL_C[4] ="\003\003\003";
   static int T_PDYN_RECORD_LENGTH = 8;
 
@@ -304,14 +304,14 @@ int vrpn_Tracker_Dyna::decode_record()
 }	/* t_pdyn_decode_record */
 
 
-void vrpn_Tracker_Dyna::mainloop(const struct timeval * timeout)
+void vrpn_Tracker_Dyna::mainloop(const struct timeval * /*timeout*/ )
 {
   switch (status) {
     case TRACKER_REPORT_READY:
       {
 
-	static int count = 0;
-	/*if (count++ % 100 ==0) {
+	/*static int count = 0;
+	if (count++ % 100 ==0) {
 	  fprintf(stderr, ".");
 	  if(count == 5000) {
 	    fprintf(stderr, "\nReport(%f, %f, %f)", pos[0], pos[1],pos[2]);

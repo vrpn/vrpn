@@ -3585,7 +3585,7 @@ int	vrpn_Connection::handle_udp_messages (int fd,
         fd_set  readfds, exceptfds;
         struct  timeval localTimeout;
 	int	num_messages_read = 0;
-	vrpn_uint32	inbuf_len;
+	vrpn_int32	inbuf_len;
 	char	*inbuf_ptr;
 
 #ifdef	VERBOSE2
@@ -3678,7 +3678,7 @@ int	vrpn_Connection::handle_udp_messages (int fd,
 		if (ceil_len%vrpn_ALIGN) {ceil_len += vrpn_ALIGN - ceil_len%vrpn_ALIGN;}
 
 		// Make sure we received enough to cover the entire payload
-		if ( ((inbuf_ptr - d_UDPinbuf) + ceil_len) > inbuf_len) {
+		if ( ((inbuf_ptr - d_UDPinbuf) + ceil_len) > (vrpn_uint32)inbuf_len) {
 		   fprintf(stderr, "vrpn: vrpn_Connection::handle_udp_messages: Can't read payload");
 		   return -1;
 		}

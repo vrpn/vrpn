@@ -84,7 +84,7 @@ void vrpn_SGIBox::get_report() {
   vrpn_Button_Filter::report_changes();
 }
 
-void vrpn_SGIBox::mainloop(const struct timeval * timeout) {
+void vrpn_SGIBox::mainloop(const struct timeval * /*timeout*/ ) {
   get_report();
 }
 

@@ -12,12 +12,6 @@
 
 #define ASSERT(x)	assert(x)
 
-static	unsigned long	duration(struct timeval t1, struct timeval t2)
-{
-	return (t1.tv_usec - t2.tv_usec) +
-	       1000000L * (t1.tv_sec - t2.tv_sec);
-}
-
 vrpn_Ohmmeter::vrpn_Ohmmeter(char *name, vrpn_Connection *c)
 {
     // Set our connection to the one passed in 
@@ -122,6 +116,12 @@ vrpn_int32 vrpn_Ohmmeter::encode_channelset_to(char *buf)
 // Should this only be in the client?
 #ifndef VRPN_CLIENT_ONLY
 #ifdef _WIN32
+static	unsigned long	duration(struct timeval t1, struct timeval t2)
+{
+	return (t1.tv_usec - t2.tv_usec) +
+	       1000000L * (t1.tv_sec - t2.tv_sec);
+}
+
 vrpn_Ohmmeter_ORPX2::vrpn_Ohmmeter_ORPX2(char *name, vrpn_Connection *c = NULL, 
 	vrpn_float32 hz):vrpn_Ohmmeter(name,c)
 {

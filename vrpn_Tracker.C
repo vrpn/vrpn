@@ -555,7 +555,7 @@ vrpn_Tracker_Canned::~vrpn_Tracker_Canned (void) {
 }
 
 
-void vrpn_Tracker_Canned::mainloop (const struct timeval * tvTimeout) {
+void vrpn_Tracker_Canned::mainloop (const struct timeval * /*tvTimeout*/ ) {
   // Send the message on the connection;
   if (connection) {
     char	msgbuf[1000];
@@ -623,7 +623,7 @@ vrpn_Tracker_NULL::vrpn_Tracker_NULL
 	// Nothing left to do
 }
 
-void	vrpn_Tracker_NULL::mainloop(const struct timeval * timeout)
+void	vrpn_Tracker_NULL::mainloop(const struct timeval * /*timeout*/ )
 {
 	struct timeval current_time;
 	char	msgbuf[1000];

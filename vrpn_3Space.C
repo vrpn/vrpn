@@ -286,7 +286,7 @@ void vrpn_Tracker_3Space::get_report(void)
 }
 
 
-void vrpn_Tracker_3Space::mainloop(const struct timeval * timeout)
+void vrpn_Tracker_3Space::mainloop(const struct timeval * /*timeout*/ )
 {
   switch (status) {
     case TRACKER_REPORT_READY:

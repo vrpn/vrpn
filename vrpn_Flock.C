@@ -673,7 +673,7 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 	       1000000L * (t1.tv_sec - t2.tv_sec);
 }
 
-void vrpn_Tracker_Flock::mainloop(const struct timeval * timeout)
+void vrpn_Tracker_Flock::mainloop(const struct timeval * /*timeout*/ )
 {
   switch (status) {
   case TRACKER_REPORT_READY:

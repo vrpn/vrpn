@@ -238,13 +238,14 @@ vrpn_int32	vrpn_Button::encode_to(char *buf, vrpn_int32 button, vrpn_int32 state
    return index*sizeof(vrpn_uint32);
 }
 
-
+/*
 static	unsigned long	duration(struct timeval t1, struct timeval t2)
 {
   if (t2.tv_sec == -1) return 0;
   return (t1.tv_usec - t2.tv_usec) +
     1000000L * (t1.tv_sec - t2.tv_sec);
 }
+*/
 
 static int client_msg_handler(void *userdata, vrpn_HANDLERPARAM p) {
   vrpn_Button_Filter * instance = (vrpn_Button_Filter *) userdata;
@@ -394,7 +395,7 @@ vrpn_parallel_Button::vrpn_parallel_Button(const char *name,
 #endif
 }
 
-void vrpn_Button_Python::mainloop(const struct timeval * timeout)
+void vrpn_Button_Python::mainloop(const struct timeval * /*timeout*/ )
 {
   switch (status) {
       case BUTTON_READY:

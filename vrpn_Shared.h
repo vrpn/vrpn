@@ -98,7 +98,7 @@
 XXX	Need to define architecture-dependent sizes here
 #endif
 
-typedef nm_int16 vrpn_boolean;
+typedef vrpn_int16 vrpn_boolean;
 const vrpn_int16 vrpn_TRUE=1;
 const vrpn_int16 vrpn_FALSE=0;
 

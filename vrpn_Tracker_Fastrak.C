@@ -342,7 +342,7 @@ void vrpn_Tracker_Fastrak::get_report(void)
 }
 
 
-void vrpn_Tracker_Fastrak::mainloop(const struct timeval * timeout)
+void vrpn_Tracker_Fastrak::mainloop(const struct timeval * /*timeout*/ )
 {
   switch (status) {
     case TRACKER_REPORT_READY:
