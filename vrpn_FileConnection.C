@@ -1,3 +1,7 @@
+// vrpn_FileConnection.C
+
+// {{{ includes and defines
+
 #include "vrpn_FileConnection.h"
 
 #include <fcntl.h>
@@ -26,15 +30,16 @@
 // both modes were not tested as features were added.  It shouldn't
 // be hard to go back, but... -PBW 3/99
 
+// }}}
+// {{{ constructor
 
 vrpn_File_Connection::vrpn_File_Connection (const char * file_name) :
     vrpn_Connection (file_name),
     d_controllerId (register_sender("vrpn File Controller")),
-    d_set_replay_rate_type
-(register_message_type("vrpn File set replay rate")),
+    d_set_replay_rate_type(
+        register_message_type("vrpn File set replay rate")),
     d_reset_type (register_message_type("vrpn File reset")),
     d_play_to_time_type (register_message_type("vrpn File play to time")),
-    d_rate (1.0f),
     d_file (NULL),
     d_logHead (NULL),
     d_logTail (NULL),
@@ -50,7 +55,7 @@ vrpn_File_Connection::vrpn_File_Connection (const char * file_name) :
 
     // necessary to initialize properly in mainloop()
     d_last_time.tv_usec = d_last_time.tv_sec = 0;
-
+    
     bare_file_name = vrpn_copy_file_name(file_name);
     if (!bare_file_name) {
         fprintf(stderr, "vrpn_File_Connection:  Out of memory!\n");
@@ -103,6 +108,9 @@ vrpn_File_Connection::vrpn_File_Connection (const char * file_name) :
     }
 }
 
+// }}}
+// {{{ play_to_user_message
+
 // Advances through the file, calling callbacks, up until
 // a user message (type >= 0) is encountered)
 // NOTE: assumes pre-load (could be changed to not)
@@ -133,6 +141,9 @@ void vrpn_File_Connection::play_to_user_message()
     }
 }
 
+// }}}
+// {{{ destructor
+
 // virtual
 vrpn_File_Connection::~vrpn_File_Connection (void)
 {
@@ -149,6 +160,8 @@ vrpn_File_Connection::~vrpn_File_Connection (void)
     }
 }
 
+// }}}
+// {{{ jump_to_time
 
 int vrpn_File_Connection::jump_to_time(vrpn_float64 newtime)
 {
@@ -159,11 +172,11 @@ int vrpn_File_Connection::jump_to_time(vrpn_float64 newtime)
 int vrpn_File_Connection::jump_to_time(timeval newtime)
 {
     d_time = vrpn_TimevalSum(d_start_time, newtime);
-
+    
     if (!d_currentLogEntry) {
         d_currentLogEntry = d_logTail;
     }
-
+    
     // search backwards
     while (vrpn_TimevalGreater(d_currentLogEntry->data.msg_time, d_time)) {
         if (d_currentLogEntry->prev) {
@@ -172,7 +185,7 @@ int vrpn_File_Connection::jump_to_time(timeval newtime)
             return 1;
         }
     }
-
+    
     // or forwards, as needed
     while (vrpn_TimevalGreater(d_time, d_currentLogEntry->data.msg_time)) {
         if (d_currentLogEntry->next) {
@@ -181,14 +194,70 @@ int vrpn_File_Connection::jump_to_time(timeval newtime)
             return 1;
         }        
     }
-
+    
     return 0;
 }
 
+// }}}
+// {{{ vrpn_File_Connection::FileTime_Accumulator
 
-// XXX juliano 8/26/99
-//     
-//     I beleive there to be a bug in mainloop.
+vrpn_File_Connection::FileTime_Accumulator::FileTime_Accumulator()
+    : d_replay_rate( 1.0 )
+{
+    d_filetime_accum_since_last_playback.tv_sec = 0;
+    d_filetime_accum_since_last_playback.tv_usec = 0;
+    
+    d_time_of_last_accum.tv_sec = 0;
+    d_time_of_last_accum.tv_usec = 0;
+}
+
+
+void vrpn_File_Connection::FileTime_Accumulator::accumulate_to(
+    const timeval & now_time )
+{
+    timeval & accum       = d_filetime_accum_since_last_playback;
+    timeval & last_accum  = d_time_of_last_accum;
+    
+    accum  // updated elapsed filetime
+        = vrpn_TimevalSum (         // summed with previous elapsed time
+            accum,
+            vrpn_TimevalScale(      // scaled by replay rate
+                vrpn_TimevalDiff(   // elapsed wallclock time
+                    now_time,
+                    d_time_of_last_accum ),
+                d_replay_rate));
+    last_accum = now_time;          // wallclock time of this whole mess
+}
+
+
+void vrpn_File_Connection::FileTime_Accumulator::set_replay_rate(
+    vrpn_float32 new_rate)
+{
+    timeval now_time;
+    gettimeofday(&now_time, NULL);
+    accumulate_to( now_time );
+
+    d_replay_rate = new_rate;
+    //fprintf(stderr, "Set replay rate!\n");
+}
+
+
+void vrpn_File_Connection::FileTime_Accumulator::reset_at_time(
+    const timeval & now_time )
+{
+    d_filetime_accum_since_last_playback.tv_sec = 0;
+    d_filetime_accum_since_last_playback.tv_usec = 0;
+    d_time_of_last_accum = now_time;
+}
+
+
+// }}}
+// {{{ mainloop
+
+// {{{ -- comment
+
+// [juliano 10/11/99] the problem described below is now fixed
+// [juliano 8/26/99]  I beleive there to be a bug in mainloop.
 //     
 //     Essentially, the computation of end_time is sample-and-hold
 //     integration, using the value of d_rate at the end of the integration
@@ -226,14 +295,11 @@ int vrpn_File_Connection::jump_to_time(timeval newtime)
 //     event is played from the file, d_last_time will be set to now_time and
 //     d_virtual_time_elapsed_since_last_event will be zero'd.
 
-// XXX debugging
-enum {
-    JJ_PRINT, JJ_DO_NOT_PRINT
-} debug_jj_print_state = JJ_DO_NOT_PRINT;
-//} debug_jj_print_state = JJ_PRINT;
+// }}}
 
 // virtual
-int vrpn_File_Connection::mainloop( const timeval * /*timeout*/ ) {
+int vrpn_File_Connection::mainloop( const timeval * /*timeout*/ )
+{
 
     // XXX timeout ignored for now, needs to be added
 
@@ -243,9 +309,10 @@ int vrpn_File_Connection::mainloop( const timeval * /*timeout*/ ) {
     if ((d_last_time.tv_sec == 0) && (d_last_time.tv_usec == 0)) {
         // If first iteration, consider 0 time elapsed
         d_last_time = now_time;
+        d_filetime_accum.reset_at_time( now_time );
         return 0;
     }
-
+    
     // now_time:    current wallclock time (on method entry)
     // d_last_time: wallclock time of last call to mainloop
     //              (juliano-8/26/99) NO!  It is the time the
@@ -263,26 +330,33 @@ int vrpn_File_Connection::mainloop( const timeval * /*timeout*/ ) {
     // scale elapsed time by d_rate (rate of replay);
     // this gives us the time to advance (skip_time)
     // our clock to (next_time).
-    // XXX(jj) - see note above!
-    const timeval real_elapsed_time  // amount of ellapsed wallclock time
-        = vrpn_TimevalDiff( now_time, d_last_time );
-    const timeval skip_time          // scale it by d_rate
-        = vrpn_TimevalNormalize( vrpn_TimevalScale( real_elapsed_time, d_rate ) );
-    const timeval end_time           // add it to the last file-time
-        = vrpn_TimevalSum( d_time, skip_time );
+    // -- see note above!
+    //
+    //const timeval real_elapsed_time  // amount of ellapsed wallclock time
+    //  = vrpn_TimevalDiff( now_time, d_last_time );
+    //const timeval skip_time          // scale it by d_rate
+    //    = vrpn_TimevalScale( real_elapsed_time, d_rate );
+    //const timeval end_time           // add it to the last file-time
+    //    = vrpn_TimevalSum( d_time, skip_time );
+    //
+    // ------ new way of calculating end_time ------------
+
+    d_filetime_accum.accumulate_to( now_time );
+    const timeval end_time = vrpn_TimevalSum(
+        d_time, d_filetime_accum.accumulated() );
     
     // (winston) Had to add need_to_play() because at fractional rates
     // (even just 1/10th) the d_time didn't accumulate properly
     // because tiny intervals after scaling were too small for
     // for a timeval to represent (1us minimum).
-    //
+    // 
     // (juliano-8/26/99) if ((end_time - timestamp of next event) < 1us)
     // then you have run out of precision in the struct timeval when
     // need_to_play differences those two timevals.  I.e., they 
     // appear to be the same time.
     // need_to_play will return n:n>1 only if this difference
     // is non-zero.
-    //
+    // 
     // (juliano-8/25/99) need_to_play is not a boolean function!
     // it returns n:n>0 if you need to play
     //            n=0   if the timevals compare equal
@@ -290,29 +364,10 @@ int vrpn_File_Connection::mainloop( const timeval * /*timeout*/ ) {
     //                  from the log file
     const int need_to_play_retval = need_to_play(end_time);
 
-    if( (debug_jj_print_state == JJ_DO_NOT_PRINT) && (d_rate > 0) ) {
-        //debug_jj_print_state = JJ_PRINT;
-    }
-    if( debug_jj_print_state == JJ_PRINT ) {
-        fprintf( stderr, "(_________________\n" );
-        fprintf( stderr,
-                 "d_rate = %g\t"
-                 "skip_time = [%d, %d]\t"
-                 "%d <- need_to_play()\n",
-                 d_rate,
-                 skip_time.tv_sec, skip_time.tv_usec,
-                 need_to_play_retval );
-    }
-    
     if (need_to_play_retval > 0) {
         d_last_time = now_time;
+        d_filetime_accum.reset_at_time( now_time );
         const int rv = play_to_filetime(end_time);
-        if( debug_jj_print_state == JJ_PRINT ) {
-            fprintf( stderr, "-----------------------)\n");
-            if( d_rate == 0 ) {
-                debug_jj_print_state = JJ_DO_NOT_PRINT;
-            }
-        }
         return rv;
     } else if (need_to_play_retval == 0) {
         // (winston) we don't set d_last_time so that we can more
@@ -325,12 +380,6 @@ int vrpn_File_Connection::mainloop( const timeval * /*timeout*/ ) {
         // The tracker group does this to run the hybrid tracking
         // algorithm on both an inertial data file and a hiball
         // tracker file that were recorded with synchronized clocks.
-        if( debug_jj_print_state == JJ_PRINT ) {
-            fprintf( stderr, "=======================)\n");
-            if( d_rate == 0 ) {
-                debug_jj_print_state = JJ_DO_NOT_PRINT;
-            }
-        }
         return 0;
     } else {
         // an error occurred while reading the next event from the file
@@ -339,21 +388,29 @@ int vrpn_File_Connection::mainloop( const timeval * /*timeout*/ ) {
         // XXX(jj) for now, let's leave it how it was
         // XXX(jj) come back to this and do it right
         fprintf( stderr, "vrpn_File_Connection::mainloop(): error reading "
-                 "next event from file.  Skipping to end of file\n" );
+                 "next event from file.  Skipping to end of file. "
+                 "XXX Please edit this function and fix it.  It should probably"
+                 " close the connection right here and now.\n");
         d_last_time = now_time;
+        d_filetime_accum.reset_at_time( now_time );
         return play_to_filetime(end_time);
     }
 }
 
+// }}}
+// {{{ need_to_play
 
 // checks if there is at least one log entry that occurs
 // between the current d_time and the given filetime
 //
-// XXX [juliano 9/24/99] the above comment makes no sense to me
+// [juliano 9/24/99] the above comment is almost right
+//     the upper bound of the interval is not open,
+//     but closed at time_we_want_to_play_to.
+//
 //     this function checks if the next message to play back
-//     from the stream file has a timestamp GREATER than
+//     from the stream file has a timestamp LESSTHAN OR EQUAL TO
 //     the argument to this function (which is the time that we
-//     wish to play to)
+//     wish to play to).  If it does, then a pos value is returned
 //
 //     you can pause playback of a streamfile by ceasing to increment
 //     the value that is passed to this function.  However, if the next
@@ -378,7 +435,7 @@ int vrpn_File_Connection::need_to_play( timeval time_we_want_to_play_to )
 
     vrpn_HANDLERPARAM & header = d_currentLogEntry->data;
 
-    // XXX [juliano 9/24/99]  is this right?
+    // [juliano 9/24/99]  is this right?
     //   this is a ">" test, not a ">=" test
     //   consequently, this function keeps returning true until the
     //   next message is timestamped greater.  So, if a group of
@@ -389,14 +446,11 @@ int vrpn_File_Connection::need_to_play( timeval time_we_want_to_play_to )
     //   such a group?  This was a problem prior to fixing the
     //   timeval overflow bug, but now that it's fixed, (who cares?)
     
-    if( debug_jj_print_state == JJ_PRINT ) {
-        fprintf( stderr, "message_time = [%d, %d]\n",
-                 header.msg_time.tv_sec,
-                 header.msg_time.tv_usec );
-    }
-    
     return vrpn_TimevalGreater( time_we_want_to_play_to, header.msg_time );
 }
+
+// }}}
+// {{{ play_to_time and play_to_filetime
 
 // plays to an elapsed end_time (in seconds)
 int vrpn_File_Connection::play_to_time(vrpn_float64 end_time)
@@ -424,7 +478,6 @@ int vrpn_File_Connection::play_to_filetime(timeval end_filetime)
         // juliano(8/25/99)
         //   * you get here ONLY IF playone_to_filetime returned 0
         //   * that means that it played one entry
-        // XXX debug fprintf( stderr, "." );
     }
     
     if (ret == 1) {
@@ -437,6 +490,9 @@ int vrpn_File_Connection::play_to_filetime(timeval end_filetime)
     
     return ret;
 }
+
+// }}}
+// {{{ rest
 
 // returns 1 if we're at the EOF, -1 on error
 int vrpn_File_Connection::eof()
@@ -477,7 +533,7 @@ int vrpn_File_Connection::playone()
 //   -1 on error (including EOF, call eof() to test)
 //    0 for normal result (played one entry)
 //    1 if we hit end_filetime
-int vrpn_File_Connection::playone_to_filetime(timeval end_filetime)
+int vrpn_File_Connection::playone_to_filetime( timeval end_filetime )
 {
     // read from disk if not in memory
     if (!d_currentLogEntry) {
@@ -572,13 +628,15 @@ timeval vrpn_File_Connection::get_lowest_user_timestamp()
 // Some subclasses may redefine time.
 
 // virtual
-int vrpn_File_Connection::time_since_connection_open(timeval * elapsed_time)
+int vrpn_File_Connection::time_since_connection_open( timeval * elapsed_time )
 {
 
     *elapsed_time = vrpn_TimevalDiff(d_time, d_start_time);
 
     return 0;
 }
+
+// {{{ read_cookie and read_entry
 
 // Reads a cookie from the logfile and calls check_vrpn_cookie()
 // (from vrpn_Connection.C) to check it.
@@ -609,7 +667,6 @@ int vrpn_File_Connection::read_cookie (void)
 // virtual
 int vrpn_File_Connection::read_entry (void)
 {
-
     vrpn_LOGLIST * newEntry;
     int retval;
 
@@ -675,9 +732,10 @@ int vrpn_File_Connection::read_entry (void)
 
     return 0;
 }
+// }}}
 
 // virtual
-int vrpn_File_Connection::close_file (void)
+int vrpn_File_Connection::close_file()
 {
     if (d_file) {
         fclose(d_file);
@@ -693,20 +751,17 @@ int vrpn_File_Connection::reset()
     d_time = d_startEntry->data.msg_time;
     // reset for mainloop()
     d_last_time.tv_usec = d_last_time.tv_sec = 0;
-
+    d_filetime_accum.reset_at_time( d_last_time );
+        
     return 0;
 }
 
-
-void vrpn_File_Connection::set_replay_rate(vrpn_float32 rate)
-{
-    d_rate = rate;
-//fprintf(stderr, "Set replay rate!\n");
-}
+// }}}
+// {{{ static handlers
 
 // static
-int vrpn_File_Connection::handle_set_replay_rate
-(void * userdata, vrpn_HANDLERPARAM p)
+int vrpn_File_Connection::handle_set_replay_rate(
+    void * userdata, vrpn_HANDLERPARAM p )
 {
     vrpn_File_Connection * me = (vrpn_File_Connection *) userdata;
 
@@ -717,7 +772,7 @@ int vrpn_File_Connection::handle_set_replay_rate
 }
 
 // static
-int vrpn_File_Connection::handle_reset (void * userdata, vrpn_HANDLERPARAM)
+int vrpn_File_Connection::handle_reset( void * userdata, vrpn_HANDLERPARAM )
 {
     vrpn_File_Connection * me = (vrpn_File_Connection *) userdata;
 
@@ -727,8 +782,8 @@ int vrpn_File_Connection::handle_reset (void * userdata, vrpn_HANDLERPARAM)
 }
 
 // static
-int vrpn_File_Connection::handle_play_to_time
-(void * userdata, vrpn_HANDLERPARAM p)
+int vrpn_File_Connection::handle_play_to_time(
+    void * userdata, vrpn_HANDLERPARAM p )
 {
     vrpn_File_Connection * me = (vrpn_File_Connection *) userdata;
     timeval newtime;
@@ -738,3 +793,5 @@ int vrpn_File_Connection::handle_play_to_time
 
     return me->play_to_time(newtime);
 }
+
+// }}}
