@@ -232,8 +232,10 @@ vrpn_Tracker::vrpn_Tracker(char *name, vrpn_Connection *c) {
 	else if (read_config_file(config_file, name)){
 		fprintf(stderr, "Found but cannot read config file %s\n",
 				tracker_cfg_file_name);
-	fclose(config_file);
+		fclose(config_file);
 	}
+	else	// no problems
+		fclose(config_file);
 }
 
 int vrpn_Tracker::read_config_file(FILE *config_file, char *tracker_name)
@@ -299,6 +301,100 @@ void vrpn_Tracker::print_latest_report(void)
    printf("Quat     :%lf, %lf, %lf, %lf\n", quat[0],quat[1],quat[2],quat[3]);
 }
 
+int vrpn_Tracker::register_xform_request_handlers(void)
+{
+    if (connection){
+ 	if (connection->register_handler(request_t2r_m_id,
+            handle_t2r_request, this, my_id)){
+                fprintf(stderr,"vrpn_Tracker:can't register t2r handler\n");
+		return -1;
+	}
+        if (connection->register_handler(request_u2s_m_id,
+            handle_u2s_request, this, my_id)){
+                fprintf(stderr,"vrpn_Tracker:can't register u2s handler\n");
+		return -1;
+	}
+    }
+    else
+	return -1;
+    return 0;
+}
+
+// put copies of vector and quat into arrays passed in
+void vrpn_Tracker::get_local_t2r(double *vec, double *quat)
+{
+    int i;
+    for (i = 0; i < 3; i++)
+	vec[i] = tracker2room[i];
+    for (i = 0; i < 4; i++)
+	quat[i] = tracker2room_quat[i];
+
+}
+
+// put copies of vector and quat into arrays passed in
+void vrpn_Tracker::get_local_u2s(int sensor, double *vec, double *quat)
+{
+    int i;
+    for (i = 0; i < 3; i++)
+	vec[i] = unit2sensor[sensor][i];
+    for (i = 0; i < 4; i++)
+	quat[i] = unit2sensor_quat[sensor][i];
+}
+
+int vrpn_Tracker::handle_t2r_request(void *userdata, vrpn_HANDLERPARAM p)
+{
+    struct timeval current_time;
+    char    msgbuf[1000];
+    int     len;
+
+    vrpn_Tracker *me = (vrpn_Tracker *)userdata; // == this normally
+    gettimeofday(&current_time, NULL);
+    me->timestamp.tv_sec = current_time.tv_sec;
+    me->timestamp.tv_usec = current_time.tv_usec;
+
+    // our t2r transform was read in by the constructor
+
+    // send t2r transform
+    if (me->connection) {
+        len = me->encode_tracker2room_to(msgbuf);
+        if (me->connection->pack_message(len, me->timestamp,
+            me->tracker2room_m_id, me->my_id,
+            msgbuf, vrpn_CONNECTION_RELIABLE)) {
+            fprintf(stderr, "vrpn_Tracker: cannot write t2r message\n");
+        }
+    }
+    return 0;
+}
+
+int vrpn_Tracker::handle_u2s_request(void *userdata, vrpn_HANDLERPARAM p)
+{
+    struct timeval current_time;
+    char    msgbuf[1000];
+    int     len;
+    int i;
+
+    vrpn_Tracker *me = (vrpn_Tracker *)userdata;
+    gettimeofday(&current_time, NULL);
+    me->timestamp.tv_sec = current_time.tv_sec;
+    me->timestamp.tv_usec = current_time.tv_usec;
+
+    // our u2s transforms were read in by the constructor
+
+    if (me->connection){
+	for (i = 0; i < me->num_sensors; i++){
+	    me->sensor = i;
+            // send u2s transform
+            len = me->encode_unit2sensor_to(msgbuf);
+            if (me->connection->pack_message(len, me->timestamp,
+                me->unit2sensor_m_id, me->my_id,
+                msgbuf, vrpn_CONNECTION_RELIABLE)) {
+                fprintf(stderr, "vrpn_Tracker: cannot write u2s message\n");
+	    }
+        }
+    }
+    return 0;
+}
+
 vrpn_Connection *vrpn_Tracker::connectionPtr() {
   return connection;
 }
@@ -322,7 +418,7 @@ int     vrpn_Tracker::encode_tracker2room_to(char *buf)
     return index*sizeof(double);
 }
 
-
+// WARNING: make sure sensor is set to desired value before sending this message
 int	vrpn_Tracker::encode_unit2sensor_to(char *buf)
 {
     int i;

@@ -189,7 +189,7 @@ gstBoolean Plane::collisionDetect(gstPHANToM *PHANToM)
 		    plane = gstPlane(originalPlane.a(),originalPlane.b(),
 			originalPlane.c(), d_new);
 		    if (numRecoveryCycles < 1) {
-			printf("Error: invalid recovery time.\n");
+			//printf("Error: invalid recovery time.\n");
 			numRecoveryCycles = 1;
 		    }
 		    dIncrement = (d_goal - d_new)/(float)numRecoveryCycles;

@@ -45,14 +45,18 @@ protected:
 	int status;  //status of force device
 //	virtual void get_report(void) = 0;
 	virtual int encode_to(char *buf);
+	virtual int encode_scp_to(char *buf);
 	
 	struct timeval timestamp;
 	long my_id;		// ID of this force device to connection
 	long force_message_id;	// ID of force message to connection
 	long plane_message_id;  //ID of plane equation message
+	long scp_message_id;	// ID of surface contact point message
 
 	int   which_plane;
-	float force[3];
+	double force[3];
+	double scp_pos[3];
+	double scp_quat[4];  // I think this would only be used on 6DOF device
 	float plane[4];
 	float SurfaceKspring;
 	float SurfaceKdamping;
@@ -92,8 +96,6 @@ public:
 
 	static void handle_plane(void *userdata,const vrpn_PHANTOMCB p);
         static void check_parameters(vrpn_PHANTOMCB *p);
-	static int handle_t2r_request(void *userdata, vrpn_HANDLERPARAM p);
-	static int handle_u2s_request(void *userdata, vrpn_HANDLERPARAM p);
 
 protected:
 	float update_rate;
@@ -127,10 +129,24 @@ protected:
 #endif  // VRPN_CLIENT_ONLY
 #endif  // _WIN32
 
+// User routine to handle position reports for surface contact point (SCP)
+// This is in vrpn_ForceDevice rather than vrpn_Tracker because only
+// a force feedback device should know anything about SCPs as this is a
+// part of the force feedback model. It may be preferable to use the SCP
+// rather than the tracker position for graphics so the hand position
+// doesn't appear to go below the surface making the surface look very
+// compliant. 
+typedef struct {
+	struct		timeval msg_time;	// Time of the report
+	double		pos[3];			// position of SCP
+	double		quat[4];		// orientation of SCP
+} vrpn_FORCESCPCB;
+typedef void (*vrpn_FORCESCPHANDLER) (void *userdata,
+					const vrpn_FORCESCPCB info);
 
 typedef	struct {
 	struct		timeval	msg_time;	// Time of the report
-	float		force[3];		// force value
+	double		force[3];		// force value
 } vrpn_FORCECB;
 typedef void (*vrpn_FORCECHANGEHANDLER)(void *userdata,
 					 const vrpn_FORCECB info);
@@ -158,6 +174,11 @@ public:
 	virtual int unregister_change_handler(void *userdata,
 		vrpn_FORCECHANGEHANDLER handler);
 
+	virtual int register_scp_change_handler(void *userdata,
+                vrpn_FORCESCPHANDLER handler);
+        virtual int unregister_scp_change_handler(void *userdata,
+                vrpn_FORCESCPHANDLER handler);
+
   protected:
 	typedef	struct vrpn_RFCS {
 		void				*userdata;
@@ -167,6 +188,15 @@ public:
 	vrpn_FORCECHANGELIST	*change_list;
 
 	static int handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
+
+        typedef struct vrpn_RFSCPCS {
+                void                            *userdata;
+                vrpn_FORCESCPHANDLER handler;
+		struct vrpn_RFSCPCS		*next;
+	} vrpn_FORCESCPCHANGELIST;
+	vrpn_FORCESCPCHANGELIST	*scp_change_list;
+        static int handle_scp_change_message(void *userdata,
+                                                        vrpn_HANDLERPARAM p);
 
 };
 

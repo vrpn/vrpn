@@ -30,7 +30,7 @@ void main (unsigned argc, char *argv[])
 	int	bail_on_error = 1;
 	int	verbose = 0;
 	int	realparams = 0;
-	int	i;
+	unsigned int	i;
 
 	// Parse the command line
 	i = 1;
@@ -45,6 +45,7 @@ void main (unsigned argc, char *argv[])
 	  } else if (argv[i][0] == '-') {	// Unknown flag
 		Usage(argv[0]);
 	  } else switch (realparams) {		// Non-flag parameters
+	    case 0:
 	    default:
 		Usage(argv[0]);
 	  }
@@ -61,7 +62,7 @@ void main (unsigned argc, char *argv[])
 	}
 #endif
 
-	vrpn_Connection	connection;
+	vrpn_Synchronized_Connection	connection;
 	vrpn_Phantom	*trackers[MAX_TRACKERS];
 	int		num_trackers = 0;
 	vrpn_Button	*buttons[MAX_BUTTONS];
@@ -80,7 +81,7 @@ void main (unsigned argc, char *argv[])
 	// If we fail to open a certain device, print a message and decide
 	//  whether we should bail.
       {	char	line[512];	// Line read from the input file
-	char	s1[512],s2[512],s3[512];	// String parameters
+	char	s1[512],s2[512];	// String parameters
 	int	i1;				// Integer parameters
 	float	f1;				// Float parameters
 
@@ -99,7 +100,7 @@ void main (unsigned argc, char *argv[])
 	  
 	  if (isit("vrpn_Phantom")) {
 		// Get the arguments (class, button_name, portno)
-		if (sscanf(line,"%511s%511s%d",s1,s2,&i1) != 3) {
+		if (sscanf(line,"%511s%511s%d%f",s1,s2,&i1,&f1) != 4) {
 		  fprintf(stderr,"Bad vrpn_Phantom line: %s\n",line);
 		  if (bail_on_error) { return; /*return -1;*/ }
 		  else { continue; }	// Skip this line
@@ -115,7 +116,7 @@ void main (unsigned argc, char *argv[])
 		if(verbose) printf(
 			"Opening vrpn_phantom: %s on port %d\n", s2,i1);
 		if ( (trackers[num_buttons] =
-		     new vrpn_Phantom(s2, &connection, i1)) == NULL){
+		     new vrpn_Phantom(s2, &connection, f1)) == NULL){
 		  fprintf(stderr,"Can't create new vrpn_phantom\n");
 		  if (bail_on_error) { return; /*return -1;*/ }
 		  else { continue; }	// Skip this line

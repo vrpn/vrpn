@@ -39,7 +39,11 @@ public:
 
 	void setInEffect(gstBoolean effect) {inEffect = effect;}
 
-	void setNumRecCycles(int nrc) {numRecoveryCycles = nrc;}
+	void setNumRecCycles(int nrc) {
+			if (nrc < 1) 
+			   printf("Error: setRecCycles(cycles < 1): %d\n",nrc);
+			else
+			   numRecoveryCycles = nrc;}
 
 	// Get type of this class.  No instance needed.
 	static gstType	getClassTypeId() { return PlaneClassTypeId; }

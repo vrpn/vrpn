@@ -42,6 +42,13 @@ class vrpn_Tracker {
 
    int read_config_file(FILE *config_file, char *tracker_name);
    void print_latest_report(void);
+   // a tracker server should call the following to register the
+   // default xform request handlers
+   int register_xform_request_handlers(void);
+   void get_local_t2r(double *vec, double *quat);
+   void get_local_u2s(int sensor, double *vec, double *quat);
+   static int handle_t2r_request(void *userdata, vrpn_HANDLERPARAM p);
+   static int handle_u2s_request(void *userdata, vrpn_HANDLERPARAM p);
    vrpn_Connection *connectionPtr();
 
   protected:

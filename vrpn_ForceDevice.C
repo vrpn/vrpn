@@ -36,6 +36,7 @@ vrpn_ForceDevice::vrpn_ForceDevice(char *name, vrpn_Connection *c)
 		my_id = connection->register_sender(name);
 		force_message_id = connection->register_message_type("Force");
 		plane_message_id = connection->register_message_type("Plane");
+		scp_message_id = connection->register_message_type("SCP");
 	}
 
 	//set the current time to zero
@@ -54,26 +55,41 @@ void vrpn_ForceDevice::print_report(void)
 
 int vrpn_ForceDevice::encode_to(char *buf)
 {
-   // Message includes: float force[3]
+   // Message includes: double force[3]
    // Byte order of each needs to be reversed to match network standard
-   // This moving is done by horrible typecast hacks.  Please forgive.
 
    int i;
-   unsigned long *longbuf = (unsigned long*)(void*)(buf);
+   double *dBuf = (double *)buf;
    int	index = 0;
 
    // Move the force there
    for (i = 0; i < 3; i++){
-   	longbuf[index++] = *(unsigned long*)(void*)(&force[i]);
+	dBuf[index++] = *(double *)(&force[i]);
    }
    for (i = 0; i < index; i++) {
-   	longbuf[i] = htonl(longbuf[i]);
+   	dBuf[i] = htond(dBuf[i]);
    }
-   return index*sizeof(unsigned long);
+   return index*sizeof(double);
 }
 
+int vrpn_ForceDevice::encode_scp_to(char *buf)
+{
+    int i;
+    double *dBuf = (double *)buf;
+    int index = 0;
+    for (i = 0; i < 3; i++) {
+        dBuf[index++] = *(double *)(&scp_pos[i]);
+    }
+    for (i = 0; i < 4; i++) {
+        dBuf[index++] = *(double *)(&scp_quat[i]);
+    }
 
-
+    // convert the doubles
+    for (i = 0; i < index; i++) {
+        dBuf[i] = htond(dBuf[i]);
+    }
+    return index*sizeof(double);
+}
 
 
 #ifdef _WIN32
@@ -207,18 +223,11 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
 		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
 		vrpn_ForceDevice::connection = NULL;
   }
-  if (vrpn_Tracker::connection->register_handler(request_t2r_m_id,
-	handle_t2r_request, this, vrpn_Tracker::my_id)) {
-		fprintf(stderr,"vrpn_Phantom:can't register t2r handler\n");
-		vrpn_Tracker::connection = NULL;
-  }
-  if (vrpn_Tracker::connection->register_handler(request_u2s_m_id,
-	handle_u2s_request, this, vrpn_Tracker::my_id)) {
-		fprintf(stderr,"vrpn_Phantom:can't register u2s handler\n");
-		vrpn_Tracker::connection = NULL;
-  }
 
   this->register_change_handler(this, handle_plane);
+  if (vrpn_Tracker::register_xform_request_handlers())
+    fprintf(stderr, "vrpn_Phantom: couldn't register xform request handlers\n");
+
 
   scene->startServoLoop();
 
@@ -244,8 +253,15 @@ void vrpn_Phantom::get_report(void)
 	double angVelNorm, angAccNorm;
 	int i,j;
 
+	gstPoint scpt;
 	gstPoint pt;
 	phantom->getPosition_WC(pt);
+	phantom->getSCP_WC(scpt);
+
+	scpt.getValue(x,y,z);
+	scp_pos[0] = x/1000.0;	// convert from mm to m
+	scp_pos[1] = y/1000.0;
+	scp_pos[2] = z/1000.0;
 
 	pt.getValue(x,y,z);
 	pos[0] = x/1000.0;  //converts from millimeter to meter
@@ -273,14 +289,13 @@ void vrpn_Phantom::get_report(void)
 	gstTransformMatrix PhantomRot=phantom->getRotationMatrix();	
 	
 	for(i=0; i<4; i++) {
-		for(j=0;j<4;j++) {
-			rot_matrix[i][j] = PhantomRot.get(i,j);
-		}
+	    for(j=0;j<4;j++) {
+		rot_matrix[i][j] = PhantomRot.get(i,j);
+	    }
 	}
 	q_from_row_matrix(p_quat,rot_matrix);
 
-	// at this point (1/21/98) we don't know how to calculate acceleration
-	// quaternion
+	// need to work out expression for acceleration quaternion
 
 	//gstVector phantomAngAcc = phantom->getAngularAccel();//rad/sec^2
         gstVector phantomAngVel = phantom->getAngularVelocity();//rad/sec
@@ -297,11 +312,15 @@ void vrpn_Phantom::get_report(void)
 	for(i=0;i<4;i++ ) {
 		quat[i] = p_quat[i];
 		vel_quat[i] = v_quat[i];
+		scp_quat[i] = 0.0; // no torque with PHANToM
 	}
+	scp_quat[3] = 1.0;
 
 	vel_quat_dt = dt_vel;
 //printf("get report pos = %lf, %lf, %lf\n",pos[0],pos[1],pos[2]);
 }
+
+
 
 // mainloop:
 //      get button status from GHOST
@@ -379,6 +398,15 @@ void vrpn_Phantom::mainloop(void) {
                     fprintf(stderr,"Phantom: cannot write message: tossing\n");
             }
         }
+	// Encode the SCP if there is a connection
+	if (vrpn_ForceDevice::connection) {
+	    len = vrpn_ForceDevice::encode_scp_to(forcebuf);
+	    if (vrpn_ForceDevice::connection->pack_message(len, timestamp,
+		scp_message_id, vrpn_ForceDevice::my_id,
+		forcebuf, vrpn_CONNECTION_LOW_LATENCY)) {
+		    fprintf(stderr,"Phantom: cannot write message: tossing\n");
+	    }
+	}
   //      print_report();
     }
 }
@@ -491,61 +519,6 @@ int vrpn_Phantom::handle_change_message(void *userdata, vrpn_HANDLERPARAM p)
 	return 0;
 }
 
-int vrpn_Phantom::handle_t2r_request(void *userdata, vrpn_HANDLERPARAM p)
-{
-	struct timeval current_time;
-	char 	msgbuf[1000];
-	int 	len;
-
-	vrpn_Phantom *me = (vrpn_Phantom *)userdata;
-        gettimeofday(&current_time, NULL);
-        me->timestamp.tv_sec = current_time.tv_sec;
-        me->timestamp.tv_usec = current_time.tv_usec;
-
-	// set our t2r transform - use t2r that was read in by the constructor
-
-	// send t2r transform
-	if (me->vrpn_Tracker::connection) {
-	    len = me->vrpn_Tracker::encode_tracker2room_to(msgbuf);
-	    if (me->vrpn_Tracker::connection->pack_message(len, me->timestamp,
-		me->vrpn_Tracker::tracker2room_m_id, me->vrpn_Tracker::my_id,
-		msgbuf, vrpn_CONNECTION_RELIABLE)) {
-		fprintf(stderr, "PHANToM: cannot write t2r message\n");
-	    }
-	}
-	return 0;
-}
-
-int vrpn_Phantom::handle_u2s_request(void *userdata, vrpn_HANDLERPARAM p)
-{
-        struct timeval current_time;
-        char    msgbuf[1000];
-        int     len;
-
-	vrpn_Phantom *me = (vrpn_Phantom *)userdata;
-        gettimeofday(&current_time, NULL);
-        me->timestamp.tv_sec = current_time.tv_sec;
-        me->timestamp.tv_usec = current_time.tv_usec;
-
-        // set our u2s transform and which sensor it is for - use u2s that
-	// was read in by the constructor
-
-	// for the PHANToM there is only one sensor so we only send
-	// one message in response to the request. For other types of
-	// trackers we should send one message for every sensor
-	me->vrpn_Tracker::sensor = 0;	// only one sensor for PHANToM
-        // send u2s transform
-        if (me->vrpn_Tracker::connection) {
-            len = me->vrpn_Tracker::encode_unit2sensor_to(msgbuf);
-            if (me->vrpn_Tracker::connection->pack_message(len, me->timestamp,
-                me->vrpn_Tracker::unit2sensor_m_id, me->vrpn_Tracker::my_id,
-                msgbuf, vrpn_CONNECTION_RELIABLE)) {
-                fprintf(stderr, "PHANToM: cannot write u2s message\n");
-            }
-        }
-        return 0;
-}
-
 #endif  // VRPN_CLIENT_ONLY
 #endif  // _WIN32
 
@@ -555,21 +528,28 @@ vrpn_ForceDevice_Remote::vrpn_ForceDevice_Remote(char *name):
 {
     which_plane = 0;
 
-	// Make sure that we have a valid connection
-	if (connection == NULL) {
+    // Make sure that we have a valid connection
+    if (connection == NULL) {
 		fprintf(stderr,"vrpn_ForceDevice_Remote: No connection\n");
 		return;
-	}
+     }
 
-	// Register a handler for the change callback from this device.
-	if (connection->register_handler(force_message_id, handle_change_message,
-	    this, my_id)) {
-		fprintf(stderr,"vrpn_ForceDevice_Remote:can't register handler\n");
-		connection = NULL;
-	}
+     // Register a handler for the change callback from this device.
+     if (connection->register_handler(force_message_id, handle_change_message,
+	this, my_id)) {
+	    fprintf(stderr,"vrpn_ForceDevice_Remote:can't register handler\n");
+	    connection = NULL;
+     }
 
-	// Find out what time it is and put this into the timestamp
-	gettimeofday(&timestamp, NULL);
+     // Register a handler for the scp change callback from this device.
+     if (connection->register_handler(scp_message_id, handle_scp_change_message,
+	this, my_id)) {
+	    fprintf(stderr,"vrpn_ForceDevice_Remote:can't register handler\n");
+	    connection = NULL;
+     }
+
+     // Find out what time it is and put this into the timestamp
+     gettimeofday(&timestamp, NULL);
 }
 
 
@@ -761,30 +741,90 @@ int vrpn_ForceDevice_Remote::unregister_change_handler(void *userdata,
 	return 0;
 }
 
+int vrpn_ForceDevice_Remote::register_scp_change_handler(void *userdata,
+                        vrpn_FORCESCPHANDLER handler)
+{
+        vrpn_FORCESCPCHANGELIST    *new_entry;
+
+        // Ensure that the handler is non-NULL
+        if (handler == NULL) {
+            fprintf(stderr,
+              "vrpn_ForceDevice_Remote::register_scp_handler: NULL handler\n");
+            return -1;
+        }
+
+        // Allocate and initialize the new entry
+        if ( (new_entry = new vrpn_FORCESCPCHANGELIST) == NULL) {
+            fprintf(stderr,
+             "vrpn_ForceDevice_Remote::register_scp_handler: Out of memory\n");
+            return -1;
+        }
+        new_entry->handler = handler;
+        new_entry->userdata = userdata;
+
+        // Add this handler to the chain at the beginning (don't check to see
+        // if it is already there, since duplication is okay).
+        new_entry->next = scp_change_list;
+        scp_change_list = new_entry;
+
+        return 0;
+}
+
+int vrpn_ForceDevice_Remote::unregister_scp_change_handler(void *userdata,
+                        vrpn_FORCESCPHANDLER handler)
+{
+        // The pointer at *snitch points to victim
+        vrpn_FORCESCPCHANGELIST    *victim, **snitch;
+
+        // Find a handler with this registry in the list (any one will do,
+        // since all duplicates are the same).
+        snitch = &scp_change_list;
+        victim = *snitch;
+        while ( (victim != NULL) &&
+                ( (victim->handler != handler) ||
+                  (victim->userdata != userdata) )) {
+            snitch = &( (*snitch)->next );
+            victim = victim->next;
+        }
+
+        // Make sure we found one
+        if (victim == NULL) {
+         fprintf(stderr,
+          "vrpn_ForceDevice_Remote::unregister_scphandler: No such handler\n");
+          return -1;
+        }
+
+        // Remove the entry from the list
+        *snitch = victim->next;
+        delete victim;
+
+        return 0;
+}
+
+
 int vrpn_ForceDevice_Remote::handle_change_message(void *userdata,
 	vrpn_HANDLERPARAM p)
 {
 	vrpn_ForceDevice_Remote *me = (vrpn_ForceDevice_Remote *)userdata;
-	long *params = (long*)(p.buffer);
+	double *params = (double*)(p.buffer);
 	vrpn_FORCECB	tp;
 	vrpn_FORCECHANGELIST *handler = me->change_list;
 	long	temp;
 	int	i;
 
 	// Fill in the parameters to the tracker from the message
-	if (p.payload_len !=  (3*sizeof(float)) ) {
-		fprintf(stderr,"vrpn_ForceDevice: change message payload error\n");
-		fprintf(stderr,"             (got %d, expected %d)\n",
-			p.payload_len, 3*sizeof(float) );
-		return -1;
+	if (p.payload_len !=  (3*sizeof(double)) ) {
+	  fprintf(stderr,"vrpn_ForceDevice: change message payload error\n");
+	  fprintf(stderr,"             (got %d, expected %d)\n",
+			p.payload_len, 3*sizeof(double) );
+	  return -1;
 	}
 	tp.msg_time = p.msg_time;
 
 	// Typecasting used to get the byte order correct on the floats
 	// that are coming from the other side.
 	for (i = 0; i < 3; i++) {
-	 	temp = ntohl(params[i]);
-		tp.force[i] = *(float*)(&temp);
+		tp.force[i] = ntohd(params[i]);
 	}
 
 	// Go down the list of callbacks that have been registered.
@@ -795,4 +835,40 @@ int vrpn_ForceDevice_Remote::handle_change_message(void *userdata,
 	}
 
 	return 0;
+}
+
+int vrpn_ForceDevice_Remote::handle_scp_change_message(void *userdata,
+	vrpn_HANDLERPARAM p)
+{
+        vrpn_ForceDevice_Remote *me = (vrpn_ForceDevice_Remote *)userdata;
+        double *params = (double*)(p.buffer);
+        vrpn_FORCESCPCB tp;
+        vrpn_FORCESCPCHANGELIST *handler = me->scp_change_list;
+        int i;
+
+        // Fill in the parameters to the tracker from the message
+        if (p.payload_len != (7*sizeof(double))) {
+                fprintf(stderr, "vrpn_ForceDevice: scp message payload");
+                fprintf(stderr, " error\n(got %d, expected %d)\n",
+                        p.payload_len, 7*sizeof(double));
+                return -1;
+        }
+        tp.msg_time = p.msg_time;
+        // Typecasting used to get the byte order correct on the doubles
+        // that are coming from the other side.
+        for (i = 0; i < 3; i++) {
+                tp.pos[i] = ntohd(*params++);
+        }
+        for (i = 0; i < 4; i++) {
+                tp.quat[i] =  ntohd(*params++);
+        }
+
+        // Go down the list of callbacks that have been registered.
+        // Fill in the parameter and call each.
+        while (handler != NULL) {
+                handler->handler(handler->userdata, tp);
+                handler = handler->next;
+        }
+
+        return 0;
 }
