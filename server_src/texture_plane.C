@@ -606,7 +606,7 @@ gstBoolean TexturePlane::collisionDetect(gstPHANToM *PHANToM)
 
 	inContact = getStateForPHANToM(PHANToM);
 
-	if(!_touchableByPHANToM || _resetPHANToMContacts) {
+	if(!isTouchableByPHANToM() || _resetPHANToMContacts) {
 		_resetPHANToMContacts = FALSE;
 		
 		inContact = FALSE;

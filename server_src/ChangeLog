@@ -1,3 +1,13 @@
+2003-05-30  David Marshburn  <marshbur@cs.unc.edu>
+
+	These changes move vrpn from Ghost 3.1 to Ghost 4.0.
+	* plane.C:  uses new isTouchableByPhantom function
+	* texture_plane.C:  uses new isTouchableByPhantom function
+	* vrpn_Phantom.C:  removes the use of the setQuitByDefault
+	function, which has been removed from Ghost 4.0.  The servo
+	loops now restart themselves.
+	* vrpn_phantom.dsp:  Ghost 4.0 include paths.
+
 2003-05-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* daq_server.dsp : Compiles with libraries in their new location

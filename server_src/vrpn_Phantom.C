@@ -182,7 +182,14 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
   scene = new gstScene;
 
   /* make it so simulation loop doesn't exit if remote switch is released */
-  scene->setQuitOnDevFault((gstBoolean)FALSE);
+  //scene->setQuitOnDevFault((gstBoolean)FALSE);
+  /*  this function is removed in Ghost 4.0.  From Ryan Toohil, SensAble support:
+		"SetQuitOnDevFault() was removed and replaced by a far better method of
+		managing device faults.  In GHOST v4, device faults are handled
+		automatically, with the servo loop restarting itself.  It's a far less
+		invasive method of handling errors, but you can override that behavior if
+		desired (by creating your own error handler)."
+  */
 
   
   /* disable popup error dialogs */
