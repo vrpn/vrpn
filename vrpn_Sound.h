@@ -92,8 +92,6 @@ protected:
 	vrpn_int32 stop_sound;					 // ID of message to stop a sound
 	vrpn_int32 change_sound_status;			 // ID of message to change the sound's status
 	vrpn_int32 set_listener_pose;			 // ID of message to set the listener's pos/orient
-	vrpn_int32 set_listener_position;
-	vrpn_int32 set_listener_orientation;
 	vrpn_int32 set_listener_velocity;		 // ID of message to set the listener's velocity
 	vrpn_int32 set_sound_pose;				 // 
 	vrpn_int32 set_sound_velocity;			 //
@@ -146,13 +144,6 @@ protected:
 	vrpn_int32 decodeListenerVelocity(const char* buf, vrpn_float64 *velocity);
 	vrpn_int32 encodeListenerPose(const vrpn_PoseDef pose, char* buf);
 	vrpn_int32 decodeListenerPose(const char* buf, vrpn_PoseDef * pose);
-
-
-	//New July2003 -MM
-	vrpn_int32 encodeListenerPosition(const vrpn_float64 position[3], char* buf);
-	vrpn_int32 decodeListenerPosition(const char* buf, vrpn_float64 position[3]);
-	vrpn_int32 encodeListenerOrientation(const vrpn_float64 at[3],const vrpn_float64 up[3], char* buf);
-	vrpn_int32 decodeListenerOrientation(const char* buf, vrpn_float64 at[3], vrpn_float64 up[3]);
 
 
 	vrpn_int32 encodeSoundPose(const vrpn_PoseDef pose, const vrpn_SoundID id, char* buf);
@@ -241,16 +232,12 @@ public:
 	vrpn_int32 setListenerPose(const vrpn_float64 position[3], const vrpn_float64 orientation[4]);
 	vrpn_int32 setListenerVelocity(const vrpn_float64 velocity[4]);
 
-	// new july2003 -MM
-	vrpn_int32 setListenerPosition(const vrpn_float64 position[3]);
-	vrpn_int32 setListenerOrientation(const vrpn_float64 at[3], const vrpn_float64 up[3]);
-
-  vrpn_int32 LoadModel_local(const char *filename);
+    vrpn_int32 LoadModel_local(const char *filename);
 	
 	// Remote stuff not supported yet!
 	vrpn_int32 LoadModel_remote(const char *data);
 	   
-  vrpn_int32 LoadPolyQuad(const vrpn_QuadDef quad);
+    vrpn_int32 LoadPolyQuad(const vrpn_QuadDef quad);
 	vrpn_int32 LoadPolyTri(const vrpn_TriDef tri);
 	vrpn_int32 LoadMaterial(const vrpn_int32 id, const vrpn_MaterialDef material);
 	
@@ -268,7 +255,7 @@ public:
 	
 	virtual void mainloop();
 
-  virtual void receiveTextMessage(const char * message, vrpn_uint32 type,vrpn_uint32 level, struct timeval	msg_time);
+    virtual void receiveTextMessage(const char * message, vrpn_uint32 type,vrpn_uint32 level, struct timeval	msg_time);
 
 protected:
 
@@ -300,10 +287,6 @@ public:
 	virtual void setListenerPose(vrpn_PoseDef pose) = 0;
 	virtual void setListenerVelocity(vrpn_float64 *velocity) = 0;
 
-	// new july 2003 -MM
-	virtual void setListenerPosition(vrpn_float64 *position) = 0;
-	virtual void setListenerOrientation(vrpn_float64 *at, vrpn_float64 *up) = 0;
-	
 	virtual void setSoundPose(vrpn_SoundID id, vrpn_PoseDef pose) = 0;
 	virtual void setSoundVelocity(vrpn_SoundID id, vrpn_float64 *velocity) = 0;
 	virtual void setSoundDistInfo(vrpn_SoundID id, vrpn_float64 *distinfo) = 0;
@@ -335,10 +318,6 @@ private:
 	static int handle_changeSoundStatus(void *userdata, vrpn_HANDLERPARAM p);
 	static int handle_setListenerPose(void *userdata, vrpn_HANDLERPARAM p);
 	static int handle_setListenerVelocity(void *userdata, vrpn_HANDLERPARAM p);
-
-	//new july 2003 -MM
-	static int handle_setListenerPosition(void *userdata, vrpn_HANDLERPARAM p);
-	static int handle_setListenerOrientation(void *userdata, vrpn_HANDLERPARAM p);
 
 	static int handle_setSoundPose(void *userdata, vrpn_HANDLERPARAM p);
 	static int handle_setSoundVelocity(void *userdata, vrpn_HANDLERPARAM p);

@@ -22,8 +22,6 @@ int vrpn_Sound::register_types(void)
 
 	set_listener_pose = d_connection->register_message_type("vrpn_Sound Listener_Pose");
 	set_listener_velocity = d_connection->register_message_type("vrpn_Sound Listener_Velocity");
-	set_listener_position = d_connection->register_message_type("vrpn_Sound Listener_Position");
-	set_listener_orientation = d_connection->register_message_type("vrpn_Sound Listener_Orientation");
 
 	set_sound_pose = d_connection->register_message_type("vrpn_Sound Pose");
 	set_sound_velocity = d_connection->register_message_type("vrpn_Sound Velocity");
@@ -307,60 +305,6 @@ vrpn_int32 vrpn_Sound::decodeListenerVelocity(const char* buf, vrpn_float64 *vel
 }
 
 
-
-/* Position and Orientation 
-   new July 2003 -MM */
-
-vrpn_int32 vrpn_Sound::encodeListenerPosition(const vrpn_float64 *position, char* buf) {
-	char *mptr = buf;
-	vrpn_int32 len = sizeof(vrpn_float64)*3;
-	vrpn_int32 ret = len;
-	int i;
-
-	for (i=0;i<3;i++)
-	  vrpn_buffer(&mptr, &len, position[i]);
-	
-	return ret;
-}
-
-vrpn_int32 vrpn_Sound::decodeListenerPosition(const char* buf, vrpn_float64 *position) {
-	const char *mptr = buf;
-	
-	for (int i=0;i<3;i++)
-	  vrpn_unbuffer(&mptr, &position[i]);
-	
-	return 0;
-}
-
-vrpn_int32 vrpn_Sound::encodeListenerOrientation(const vrpn_float64 *at, const vrpn_float64 *up, char* buf) {
-	char *mptr = buf;
-	vrpn_int32 len = sizeof(vrpn_float64)*6;
-	vrpn_int32 ret = len;
-	int i;
-
-	for (i=0;i<3;i++)
-	  vrpn_buffer(&mptr, &len, at[i]);
-
-	for (i=0;i<3;i++)
-	  vrpn_buffer(&mptr, &len, up[i]);
-
-	
-	return ret;
-}
-
-vrpn_int32 vrpn_Sound::decodeListenerOrientation(const char* buf, vrpn_float64 *at, vrpn_float64 *up) {
-	const char *mptr = buf;
-	
-	for (int i=0;i<3;i++)
-	  vrpn_unbuffer(&mptr, &at[i]);
-
-	for (i=0;i<3;i++)
-	  vrpn_unbuffer(&mptr, &up[i]);
-
-	
-	return 0;
-}
-	
 
 vrpn_int32 vrpn_Sound::encodeSoundPose(const vrpn_PoseDef pose, const vrpn_SoundID id, char* buf) {
 	char *mptr = buf;
@@ -1076,39 +1020,6 @@ vrpn_int32 vrpn_Sound_Client::setListenerVelocity(const vrpn_float64 velocity[4]
 }
 
 
-vrpn_int32 vrpn_Sound_Client::setListenerPosition(const vrpn_float64 position[3])
-{
-	char buf[sizeof(vrpn_float64)*3];
-	vrpn_int32 len;
- 
-	
-	len = encodeListenerPosition(position, buf);
-
-	gettimeofday(&timestamp, NULL);
-
-	if (vrpn_Sound::d_connection->pack_message(len, timestamp, set_listener_position, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
-      fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
-
-	
-	return 0;
-}
-
-vrpn_int32 vrpn_Sound_Client::setListenerOrientation(const vrpn_float64 at[3], const vrpn_float64 up[3])
-{
-	char buf[sizeof(vrpn_float64)*6];
-	vrpn_int32 len;
- 
-	
-	len = encodeListenerOrientation(at, up, buf);
-
-	gettimeofday(&timestamp, NULL);
-
-	if (vrpn_Sound::d_connection->pack_message(len, timestamp, set_listener_orientation, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
-      fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
-
-	
-	return 0;
-}
 
 
 
@@ -1286,11 +1197,6 @@ vrpn_Sound(name, c) , vrpn_Text_Sender((char *) name, c)
 	register_autodeleted_handler(set_listener_velocity, handle_setListenerVelocity,this, d_sender_id);
 
 
-	/* new july2003 -MM */
-	register_autodeleted_handler(set_listener_position, handle_setListenerPosition,this, d_sender_id);
-	register_autodeleted_handler(set_listener_orientation, handle_setListenerOrientation,this, d_sender_id);
-
-
 	register_autodeleted_handler(set_sound_pose, handle_setSoundPose,this, d_sender_id);
 	register_autodeleted_handler(set_sound_velocity, handle_setSoundVelocity,this, d_sender_id);
 	register_autodeleted_handler(set_sound_distanceinfo,  handle_setSoundDistanceinfo,this, d_sender_id);
@@ -1402,29 +1308,6 @@ int vrpn_Sound_Server::handle_setListenerVelocity(void *userdata, vrpn_HANDLERPA
 	me->setListenerVelocity(velocity);
 	return 0;
 }
-
-
-/* new july 2003 -MM */
-
-int vrpn_Sound_Server::handle_setListenerPosition(void *userdata, vrpn_HANDLERPARAM p){
-	vrpn_Sound_Server *me = (vrpn_Sound_Server*)userdata;
-	vrpn_float64 position[3];
-
-	me->decodeListenerPosition((char*)p.buffer, position);
-	me->setListenerPosition(position);
-	return 0;
-}
-
-int vrpn_Sound_Server::handle_setListenerOrientation(void *userdata, vrpn_HANDLERPARAM p){
-	vrpn_Sound_Server *me = (vrpn_Sound_Server*)userdata;
-	vrpn_float64 at[3];
-	vrpn_float64 up[3];
-
-	me->decodeListenerOrientation((char*)p.buffer, at, up);
-	me->setListenerOrientation(at, up);
-	return 0;
-}
-
 
 
 int vrpn_Sound_Server::handle_setSoundPose(void *userdata, vrpn_HANDLERPARAM p){
