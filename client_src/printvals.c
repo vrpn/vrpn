@@ -29,6 +29,8 @@ int redNum = 0;
 double redTime = 0.0;
 double delayTime = 0.0;
 
+int done = 0;	    // Signals that the program should exit
+
 /*****************************************************************************
  *
    Callback handlers
@@ -143,7 +145,9 @@ fprintf(stderr, "Connecting to host %s.\n", station_name);
 
 	fc = new vrpn_File_Controller (c);
 
-        rc = new vrpn_RedundantRemote (c);
+	if (beRedundant) {
+	    rc = new vrpn_RedundantRemote (c);
+	}
 
 fprintf(stderr, "Tracker's name is %s.\n", devicename);
 	tkr = new vrpn_Tracker_Remote (devicename);
@@ -175,7 +179,7 @@ fprintf(stderr, "Button 2's name is %s.\n", devicename);
 }	/* init */
 
 
-void handle_cntl_c (int) {
+void shutdown () {
 
   static int invocations = 0;
   const char * n;
@@ -222,7 +226,6 @@ void handle_cntl_c (int) {
     for (i = 0L; n = c->message_type_name(i); i++)
       printf("Knew local type \"%s\".\n", n);
 
-
   if (btn)
     delete btn;
   if (btn2)
@@ -233,6 +236,17 @@ void handle_cntl_c (int) {
     delete c;
 
   exit(0);
+}
+
+// WARNING: On Windows systems, this handler is called in a separate
+// thread from the main program (this differs from Unix).  To avoid all
+// sorts of chaos as the main program continues to handle packets, we
+// set a done flag here and let the main program shut down in its own
+// thread by calling shutdown() to do all of the stuff we used to do in
+// this handler.
+
+void handle_cntl_c(int) {
+    done = 1;
 }
 
 void main (int argc, char * argv [])
@@ -251,7 +265,6 @@ void main (int argc, char * argv [])
   const char * NIC = NULL;
   long local_logmode = vrpn_LOG_NONE;
   long remote_logmode = vrpn_LOG_NONE;
-  int	done = 0;
   int   filter = 0;
   int i;
 
@@ -340,7 +353,9 @@ void main (int argc, char * argv [])
     vrpn_System_TextPrinter.remove_object(btn);
     vrpn_System_TextPrinter.remove_object(btn2);
     vrpn_System_TextPrinter.remove_object(tkr);
-    vrpn_System_TextPrinter.remove_object(rc);
+    if (beRedundant) {
+	vrpn_System_TextPrinter.remove_object(rc);
+    }
   }
 
   if (beRedundant) {
@@ -350,20 +365,25 @@ void main (int argc, char * argv [])
 /* 
  * main interactive loop
  */
-  while ( ! done )
-    {
-        // Run this so control happens!
-        c->mainloop();
+  while ( ! done ) {
+        
+	// Run this so control happens!
+	c->mainloop();
 
-        // Let the tracker and button do their things
+	// Let the tracker and button do their things
 	btn->mainloop();
 	btn2->mainloop();
 	tkr->mainloop();
 
-        rc->mainloop();
+        if (beRedundant) {
+	    rc->mainloop();
+	}
+
 	// Sleep for 1ms so we don't eat the CPU
 	vrpn_SleepMsecs(1);
-    }
+  }
+
+  shutdown();
 
 }   /* main */
 

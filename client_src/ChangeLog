@@ -1,3 +1,11 @@
+2000-11-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* printvals.c (handle_cntl_c) : The ^C handler in Windows is
+		multi-threaded, which means it is busy tearing down
+		the connections while the main loop is still going.
+		This fixes it so that a flag is set and the main thread
+		does the shutdown.
+
 2000-10-18  Tom Hudson  <hudson@cs.unc.edu>
 
 	* printvals.c (init) : sometimes use vrpn_DelayedConnection instead

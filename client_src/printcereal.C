@@ -18,6 +18,8 @@ vrpn_Dial_Remote *dial;
 vrpn_Connection * c;
 vrpn_File_Controller * fc;
 
+int done = 0;
+
 const	int	MAX_DIALS = 128;
 vrpn_float64	cur_dial_values[MAX_DIALS];
 
@@ -87,6 +89,10 @@ void init (const char * devicename)
 
 
 void handle_cntl_c (int) {
+    done = 1;
+}
+
+void shutdown (void) {
 
   static int invocations = 0;
   const char * n;
@@ -127,7 +133,6 @@ void main (int argc, char * argv [])
 #endif
 
   const char * station_name = default_station_name;
-  int	done = 0;
 
   if (argc < 2) {
     fprintf(stderr, "Usage:  %s  Device_name\n"
@@ -160,5 +165,7 @@ while ( ! done )
 	// Sleep for 1ms so we don't eat the CPU
 	vrpn_SleepMsecs(1);
     }
+
+    shutdown();
 
 }   /* main */
