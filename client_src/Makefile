@@ -14,6 +14,7 @@
 #HW_OS := pc_cygwin
 #HW_OS := pc_FreeBSD
 #HW_OS := powerpc_aix
+#HW_OS := powerpc_macosx
 ##########################
 
 ifndef	HW_OS

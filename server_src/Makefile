@@ -12,6 +12,7 @@
 #HW_OS := pc_cygwin
 #HW_OS := pc_FreeBSD
 #HW_OS := powerpc_aix
+#HW_OS := powerpc_macosx
 ##########################
 
 ifndef	HW_OS
@@ -79,12 +80,19 @@ ifeq ($(HW_OS), hp_flow_aCC)
 	CC := /opt/aCC/bin/aCC
 endif
 
+        
+
 
 OBJ_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)
 LIB_DIR := ../$(OBJ_DIR)
 
 CFLAGS = -g -I../ -I../../quat
-LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX)
+LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) 
+
+ifeq ($(HW_OS),powerpc_macosx)
+   CFLAGS = -g -I../ -I../../quat -I../../isense -DMACOSX
+   LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) ../../isense/MacOSX/dlcompat.o
+endif
 
 .C.o:
 	$(CC) $(CFLAGS) -c $*.C
