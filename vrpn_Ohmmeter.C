@@ -69,6 +69,7 @@ int vrpn_Ohmmeter::encode_setchannel_to(char *buf)
 int vrpn_Ohmmeter::encode_measure_to(char *buf)
 {
     // Message includes: long channel
+    A
     //                   long status
     //                   double resistance
     //                   double error
@@ -161,7 +162,7 @@ void vrpn_Ohmmeter_ORPX2::mainloop(void) {
 		if (connection) {
 			len = encode_measure_to(msgbuf);
 			if (connection->pack_message(len, timestamp, measure_m_id,
-			my_id, msgbuf, vrpn_CONNECTION_LOW_LATENCY)) {
+			my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
 			    fprintf(stderr, "ORPX2: can't write message: tossing\n");
 			}
 		}
@@ -177,9 +178,13 @@ void vrpn_Ohmmeter_ORPX2::get_measurement_report(void) {
 		else if (chan_data[channel].saturated){
 			status[channel] = M_OVERFLO;
 		}
-		else if (chan_data[channel].measurement < 6554)
+		else if (chan_data[channel].measurement < 5900)
+			// too close to top of range (according to the
+			// original ORPX software)
 			status[channel] = R_OVERFLO;
-		else if (chan_data[channel].measurement > 65536-6554)
+		else if (chan_data[channel].measurement > 65536-328)
+			// too close to bottom of range (according to the
+			// original ORPX software)
 			status[channel] = M_UNDERFLO;
 		else{
 			status[channel] = MEASURING;
