@@ -1,4 +1,10 @@
 
+2001-06-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_print_devices.C : Program to print all message types from a list
+		of devices (Tracker, Button, Analog, Dial).
+	* Makefile : Changed to include building the new application.
+
 2001-04-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* sound_client.c : Changed to compile with more recent version.

@@ -108,6 +108,7 @@ $(OBJ_DIR)/%.o: %.C
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 all:	$(OBJ_DIR)/printvals $(OBJ_DIR)/printcereal \
+	$(OBJ_DIR)/vrpn_print_devices
 	$(OBJ_DIR)/checklogfile $(OBJ_DIR)/logfilesenders \
 	$(OBJ_DIR)/logfiletypes $(OBJ_DIR)/text \
 	forwarderClient $(OBJ_DIR)/bdbox_client \
@@ -155,6 +156,10 @@ $(OBJ_DIR)/vrpn_print_messages: $(OBJ_DIR)/vrpn_print_messages.o $(LIB_DIR)/libv
 $(OBJ_DIR)/printvals: $(OBJ_DIR)/printvals.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/printvals \
 		$(OBJ_DIR)/printvals.o -lvrpn $(ARCH_LIBS)
+
+$(OBJ_DIR)/vrpn_print_devices: $(OBJ_DIR)/vrpn_print_devices.o $(LIB_DIR)/libvrpn.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/vrpn_print_devices \
+		$(OBJ_DIR)/vrpn_print_devices.o -lvrpn $(ARCH_LIBS)
 
 $(OBJ_DIR)/vrpn_Router_Client_GUI: $(OBJ_DIR)/vrpn_Router_Client_GUI.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/vrpn_Router_Client_GUI \

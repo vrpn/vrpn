@@ -6,11 +6,13 @@
 --------------------Configuration: timecode_generator - Win32 Debug--------------------
 </h3>
 <h3>Command Lines</h3>
+Build : warning : failed to (or don't know how to) build 'F:\taylorr\Personal\Work\consulting\DisneyQuest\vrpn\PC_WIN32\DEBUG\vrpn.lib'
+
 
 
 
 <h3>Results</h3>
-timecode_generator.lib - 0 error(s), 0 warning(s)
+timecode_generator.lib - 0 error(s), 1 warning(s)
 </pre>
 </body>
 </html>

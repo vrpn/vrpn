@@ -1,0 +1,323 @@
+/*			vrpn_print_devices.C
+
+	This is a VRPN client program that will connect to one or more VRPN
+	server devices and print out descriptions of any of a number of
+	message types.  These include at least tracker, button, dial and analog
+	messages.  It is useful for testing whether a server is up and running,
+	and perhaps for simple debugging.
+*/
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <signal.h>
+#include <string.h>
+
+#ifndef _WIN32
+#include <strings.h>
+#endif
+
+#include <vrpn_Shared.h>
+#include <vrpn_Tracker.h>
+#include <vrpn_Button.h>
+#include <vrpn_Analog.h>
+#include <vrpn_Dial.h>
+
+int done = 0;	    // Signals that the program should exit
+
+//-------------------------------------
+// This section contains the data structure that holds information on
+// the devices that are created.  For each named device, a remote of each
+// type (tracker, button, analog, dial) is created.  A particular device
+// may only report a subset of these values, but that doesn't hurt anything --
+// there simple are no messages of the other types to receive and so
+// nothing is printed.
+
+class device_info {
+    public:
+	char		    *name;
+	vrpn_Tracker_Remote *tkr;
+	vrpn_Button_Remote  *btn;
+	vrpn_Analog_Remote  *ana;
+	vrpn_Dial_Remote    *dial;
+};
+const unsigned MAX_DEVICES = 50;
+
+//-------------------------------------
+// This section contains the data structure that is used to determine how
+// often to print a report for each sensor of each tracker.  Each element
+// contains the number of reports to skip between printing and a counter
+// that is used by the callback routine to keep track of how many it has
+// skipped.  There is an element for each possible sensor.  A new array of
+// elements is created for each new tracker object, and a pointer to it is
+// passed as the userdata pointer to the callback handlers.  A separate
+// array is kept for the position, velocity, and acceleration for each
+// tracker.  The structure passed to the callback handler also has a
+// string that is the name of the tracker.
+
+class t_sensor_counter {
+    public:
+	int stride;	// Stride of 1 == print every, 2 is every other, ...
+	int count;	// How many we have gotten
+};
+class t_user_callback {
+    public:
+	char		    t_name[vrpn_MAX_TEXT_LEN];
+	t_sensor_counter    t_sensor_list[TRACKER_MAX_SENSORS];
+};
+
+
+/*****************************************************************************
+ *
+   Callback handlers
+ *
+ *****************************************************************************/
+
+void	handle_tracker_pos_quat (void *userdata, const vrpn_TRACKERCB t)
+{
+	t_user_callback	*t_data = (t_user_callback *)userdata;
+
+	// See if we have gotten enough reports from this sensor that we should
+	// print this one.  If so, print and reset the count.
+	if ( ++t_data->t_sensor_list[t.sensor].count >= t_data->t_sensor_list[t.sensor].stride ) {
+		t_data->t_sensor_list[t.sensor].count = 0;
+		printf("Tracker %s, sensor %ld:\n        pos (%5.2f, %5.2f, %5.2f); quat (%5.2f, %5.2f, %5.2f, %5.2f)\n",
+			t_data->t_name,
+			t.sensor,
+			t.pos[0], t.pos[1], t.pos[2],
+			t.quat[0], t.quat[1], t.quat[2], t.quat[3]);
+	}
+}
+
+void	handle_tracker_vel (void *userdata, const vrpn_TRACKERVELCB t)
+{
+	t_user_callback	*t_data = (t_user_callback *)userdata;
+
+	// See if we have gotten enough reports from this sensor that we should
+	// print this one.  If so, print and reset the count.
+	if ( ++t_data->t_sensor_list[t.sensor].count >= t_data->t_sensor_list[t.sensor].stride ) {
+		t_data->t_sensor_list[t.sensor].count = 0;
+		printf("Tracker %s, sensor %ld:\n        vel (%5.2f, %5.2f, %5.2f); quatvel (%5.2f, %5.2f, %5.2f, %5.2f)\n",
+			t_data->t_name,
+			t.sensor,
+			t.vel[0], t.vel[1], t.vel[2],
+			t.vel_quat[0], t.vel_quat[1], t.vel_quat[2], t.vel_quat[3]);
+	}
+}
+
+void	handle_tracker_acc (void *userdata, const vrpn_TRACKERACCCB t)
+{
+	t_user_callback	*t_data = (t_user_callback *)userdata;
+
+	// See if we have gotten enough reports from this sensor that we should
+	// print this one.  If so, print and reset the count.
+	if ( ++t_data->t_sensor_list[t.sensor].count >= t_data->t_sensor_list[t.sensor].stride ) {
+		t_data->t_sensor_list[t.sensor].count = 0;
+		printf("Tracker %s, sensor %ld:\n        acc (%5.2f, %5.2f, %5.2f); quatacc (%5.2f, %5.2f, %5.2f, %5.2f)\n",
+			t_data->t_name,
+			t.sensor,
+			t.acc[0], t.acc[1], t.acc[2],
+			t.acc_quat[0], t.acc_quat[1], t.acc_quat[2], t.acc_quat[3]);
+	}
+}
+
+void	handle_button (void *userdata, const vrpn_BUTTONCB b)
+{
+    const char *name = (const char *)userdata;
+
+    printf("Button %s, number %ld was just %s\n",
+	name, b.button, b.state?"pressed":"released");
+}
+
+void	handle_analog (void *userdata, const vrpn_ANALOGCB a)
+{
+    int i;
+    const char *name = (const char *)userdata;
+
+    printf("Analog %s:\n         %5.2f", name, a.channel[0]);
+    for (i = 1; i < a.num_channel; i++) {
+	printf(", %5.2f", a.channel[i]);
+    }
+    printf(" (%ld chans)\n", a.num_channel);
+}
+
+void	handle_dial (void *userdata, const vrpn_DIALCB d)
+{
+    const char *name = (const char *)userdata;
+
+    printf("Dial %s, number %ld was moved by %5.2f\n",
+	name, d.dial, d.change);
+}
+
+
+// WARNING: On Windows systems, this handler is called in a separate
+// thread from the main program (this differs from Unix).  To avoid all
+// sorts of chaos as the main program continues to handle packets, we
+// set a done flag here and let the main program shut down in its own
+// thread by calling shutdown() to do all of the stuff we used to do in
+// this handler.
+
+void handle_cntl_c(int) {
+    done = 1;
+}
+
+void Usage (const char * arg0) {
+  fprintf(stderr,
+"Usage:  %s [-notracker] [-nobutton] [-noanalog] [-nodial]\n"
+"           [-trackerstride n]\n"
+"           [-notext] device1 [device2] [device3] [device4] [...]\n"
+"  -trackerstride:  Print every nth report from each tracker sensor\n" 
+"  -notracker:  Don't print tracker reports for following devices\n" 
+"  -nobutton:  Don't print button reports for following devices\n" 
+"  -noanalog:  Don't print analog reports for following devices\n" 
+"  -nodial:  Don't print dial reports for following devices\n" 
+"  -notext:  Don't print text messages (warnings, errors) for following devices\n"
+"  deviceX:  VRPN name of device to connect to (eg: Tracker0@ioglab)\n"
+"  The default behavior is to print all message types for all devices listed\n"
+"  The order of the parameters can be changed to suit\n",
+  arg0);
+
+  exit(0);
+}
+
+void main (int argc, char * argv [])
+{
+  int	tracker_stride = 1;	// Every nth report will be printed
+  int   print_for_tracker = 1;	// Print tracker reports?
+  int   print_for_button = 1;	// Print button reports?
+  int   print_for_analog = 1;	// Print analog reports?
+  int   print_for_dial = 1;	// Print dial reports?
+  int	print_for_text = 1;	// Print warning/error messages?
+
+  device_info device_list[MAX_DEVICES];
+  int num_devices = 0;
+
+  int i;
+
+  // Parse arguments, creating objects as we go.  Arguments that
+  // change the way a device is treated affect all devices that
+  // follow on the command line.
+  for (i = 1; i < argc; i++) {
+    if (!strcmp(argv[i], "-notracker")) {
+      print_for_tracker = 0;
+    } else if (!strcmp(argv[i], "-nobutton")) {
+      print_for_button = 0;
+    } else if (!strcmp(argv[i], "-noanalog")) {
+      print_for_analog = 0;
+    } else if (!strcmp(argv[i], "-nodial")) {
+      print_for_dial = 0;
+    } else if (!strcmp(argv[i], "-notext")) {
+      print_for_text = 0;
+    } else if (!strcmp(argv[i], "-trackerstride")) {
+      if (++i >= argc) { Usage(argv[0]); }
+      tracker_stride = atoi(argv[i]);
+      if (tracker_stride <= 0) {
+	  fprintf(stderr, "-trackerstride argument must be 1 or greater\n");
+	  return;
+      }
+    } else {	// Create a device and connect to it.
+	device_info *dev;
+
+	// Make sure we have enough room for the new device
+	if (num_devices == MAX_DEVICES) {
+	    fprintf(stderr,"Too many devices!\n");
+	    exit(-1);
+	}
+
+	// Name the device and open it as everything
+	dev = &device_list[num_devices];
+	dev->name = argv[i];
+	dev->ana = new vrpn_Analog_Remote(dev->name);
+	dev->btn = new vrpn_Button_Remote(dev->name);
+	dev->dial = new vrpn_Dial_Remote(dev->name);
+	dev->tkr = new vrpn_Tracker_Remote(dev->name);
+	if ( (dev->ana == NULL) || (dev->btn == NULL) ||
+	    (dev->dial == NULL) || (dev->tkr == NULL) ) {
+	    fprintf(stderr,"Error opening %s\n", dev->name);
+	    return;
+	} else {
+	    printf("Opened %s as:", dev->name);
+	}
+
+	// If we are printing the tracker reports, prepare the
+	// user-data callbacks and hook them up to be called with
+	// the correct data for this device.
+	if (print_for_tracker) {
+	    int j;
+	    vrpn_Tracker_Remote *tkr = dev->tkr;
+	    t_user_callback *tc = new t_user_callback;
+
+	    if (tc == NULL) {
+		fprintf(stderr,"Out of memory\n");
+	    }
+	    printf(" Tracker");
+
+	    // Fill in the user-data callback information
+	    strncpy(tc->t_name, dev->name, sizeof(tc->t_name));
+	    for (j = 0; j < TRACKER_MAX_SENSORS; j++) {
+		tc->t_sensor_list[j].count = 0;
+		tc->t_sensor_list[j].stride = tracker_stride;
+	    }
+
+	    // Set up the tracker callback handlers
+	    tkr->register_change_handler(tc, handle_tracker_pos_quat);
+	    tkr->register_change_handler(tc, handle_tracker_vel);
+	    tkr->register_change_handler(tc, handle_tracker_acc);
+	}
+
+	if (print_for_button) {
+	    printf(" Button");
+	    dev->btn->register_change_handler(dev->name, handle_button);
+	}
+
+	if (print_for_analog) {
+	    printf(" Analog");
+	    dev->ana->register_change_handler(dev->name, handle_analog);
+	}
+
+	if (print_for_dial) {
+	    printf(" Dial");
+	    dev->dial->register_change_handler(dev->name, handle_dial);
+	}
+
+	if (print_for_text) {
+	  printf(" Warning/Error");
+	} else {
+	  vrpn_System_TextPrinter.remove_object(dev->tkr);
+	  vrpn_System_TextPrinter.remove_object(dev->btn);
+	  vrpn_System_TextPrinter.remove_object(dev->ana);
+	  vrpn_System_TextPrinter.remove_object(dev->dial);
+	}
+
+	printf(".\n");
+	num_devices++;
+    }
+  }
+  if (num_devices == 0) {
+	  Usage(argv[0]);
+  }
+
+  // signal handler so logfiles get closed right
+  signal(SIGINT, handle_cntl_c);
+
+/* 
+ * main interactive loop
+ */
+  printf("Press ^C to exit.\n");
+  while ( ! done ) {
+      int i;
+
+      // Let all the devices do their things
+      for (i = 0; i < num_devices; i++) {
+	  device_list[i].tkr->mainloop();
+	  device_list[i].btn->mainloop();
+	  device_list[i].ana->mainloop();
+	  device_list[i].dial->mainloop();
+      }
+
+      // Sleep for 1ms so we don't eat the CPU
+      vrpn_SleepMsecs(1);
+  }
+
+}   /* main */
+
+
