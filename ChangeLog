@@ -1,4 +1,10 @@
-2000-09-11  Adam Seeger
+2000-09-11  Adam Seeger  <seeger@cs.unc.edu>
+
+        * vrpn_FileConnection.C (vrpn_File_Connection::reset) : 
+	Added call to d_endpoints[0]->drop_connection() to clear all state for
+	replaying the file from the beginning.
+
+2000-09-11  Adam Seeger  <seeger@cs.unc.edu>
 
 	* vrpn_Mutex.C (vrpn_Mutex_Server::~vrpn_Mutex_Server) : added
 	unregister messages to correspond to register messages in the

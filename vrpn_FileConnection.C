@@ -795,6 +795,9 @@ int vrpn_File_Connection::close_file()
 
 int vrpn_File_Connection::reset()
 {
+    // make it as if we never saw any messages from our previous activity
+    d_endpoints[0]->drop_connection();
+
     d_currentLogEntry = d_startEntry;
     d_time = d_startEntry->data.msg_time;
     // reset for mainloop()
