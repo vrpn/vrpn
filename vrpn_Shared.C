@@ -124,7 +124,7 @@ static __int64 VRPN_CLOCK_FREQ = 200000000;
 static int vrpn_AdjustFrequency(void)
 {
   const int loops = 2;
-  const int tPerLoop = 4000; // 1/10 sec in milliseconds for Sleep()
+  const int tPerLoop = 500; // milliseconds for Sleep()
   cerr.precision(4);
   cerr.setf(ios::fixed);
   cerr << "vrpn gettimeofday: determining clock frequency ...";
