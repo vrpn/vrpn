@@ -41,7 +41,7 @@ typedef struct _channel_params_t {
                         //      0..5 = 0.1, 0.3, 1, 3, 10, 30 seconds
 
         // output parameters
-        int measurement;	// 16 bit measurement
+        int measurement;	// 16 bit measurement representing range*65536/(r)
         int saturated;		// binary flag
 } orpx_params_t;
 

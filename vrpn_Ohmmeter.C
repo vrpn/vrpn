@@ -145,16 +145,17 @@ void vrpn_Ohmmeter_ORPX2::mainloop(void) {
 		//update the time
 		timestamp.tv_sec = current_time.tv_sec;
 		timestamp.tv_usec = current_time.tv_usec;
-		if (duration(current_time, last_channel_switch_time) >= (1000000.0)*channel_acquisition_time[channel]) {
+		if ((duration(current_time, last_channel_switch_time) >= 
+			(1000000.0)*channel_acquisition_time[channel]) 
+			|| (!enabled[channel])){
 			// find next enabled channel and switch to it
 			for (int i=0; i < NUM_ORPX_CHANNELS; i++){
 				channel = (channel+1)%NUM_ORPX_CHANNELS;
 				if (enabled[channel]) break;
 			}
 			last_channel_switch_time = current_time;
-			if (!enabled[channel]) return;
 		}
-		
+		if (!enabled[channel]) return; // => no channels enabled
 		get_measurement_report();
 
 		if (connection) {
@@ -172,15 +173,16 @@ void vrpn_Ohmmeter_ORPX2::get_measurement_report(void) {
 		if (!theORPX->read_and_write(resistance[channel],error[channel],
 			chan_data[channel])){
 			status[channel] = ITF_ERROR;
-			//printf("ITF_ERROR\n");
 		}
 		else if (chan_data[channel].saturated){
 			status[channel] = M_OVERFLO;
-			//printf("SATURATED\n");
 		}
+		else if (chan_data[channel].measurement < 6554)
+			status[channel] = R_OVERFLO;
+		else if (chan_data[channel].measurement > 65536-6554)
+			status[channel] = M_UNDERFLO;
 		else{
 			status[channel] = MEASURING;
-			//printf("MEASUREMENT: channel %d, resist %f\n", channel, resistance[channel]);
 		}
     }
 }
