@@ -173,7 +173,8 @@ class vrpn_OneConnection
 
 	inline	int	outbound_udp_open (void) const
 				{ return udp_outbound != -1; }
-	virtual	int	connect_tcp_to (const char * msg);
+	virtual	int	connect_tcp_to (const char * msg,
+                                        const char * NIC_IPaddress);
 
         // Has a clock sync occured yet (slight prob of false negative, but 
         // only for a brief period)

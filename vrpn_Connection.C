@@ -726,6 +726,178 @@ int vrpn_noint_block_read_timeout(int infile, char buffer[],
 }
 
 //---------------------------------------------------------------------------
+// This routine opens a socket with the requested port number.
+// The routine returns -1 on failure and the file descriptor on success.
+// The portno parameter is filled in with the actual port that is opened
+// (this is useful when the address INADDR_ANY is used, since it tells
+// what port was opened).
+// To select between multiple NICs, we can specify the IP address of the
+// socket to open;  NULL selects the default NIC.
+
+static SOCKET open_socket (int type,
+                           unsigned short * portno,
+                           const char * IPaddress) {
+  SOCKET sock;
+  struct sockaddr_in name;
+  struct hostent * phe;           /* pointer to host information entry   */
+  int	namelen;
+
+  // create an Internet socket of the appropriate type
+  sock = socket(AF_INET, type, 0);
+  if (sock == -1)  {
+    fprintf(stderr, "open_socket: can't open socket.\n");
+    fprintf(stderr, "  -- errno %d (%s).\n", errno, strerror(errno));
+    return -1;
+  }
+
+  namelen = sizeof(name);
+
+  // bind to local address
+  memset((void *) &name, 0, namelen);
+  name.sin_family = AF_INET;
+  if (portno) {
+    name.sin_port = htons(*portno);
+  } else {
+    name.sin_port = htons(0);
+  }
+
+  // Map our host name to our IP address, allowing for dotted decimal
+  if (!IPaddress) {
+    name.sin_addr.s_addr = INADDR_ANY;
+  } else if (phe = gethostbyname(IPaddress)) {
+    memcpy((void *) &name.sin_addr, (const void *) phe->h_addr, phe->h_length);
+  } else if ((name.sin_addr.s_addr = inet_addr(IPaddress))
+              == INADDR_NONE) {
+    printf("can't get %s host entry\n", IPaddress);
+    return -1;
+  }
+
+//fprintf(stderr, "open_socket:  port %d, using NIC %d %d %d %d.\n",
+//*portno, name.sin_addr.s_addr >> 24,
+//(name.sin_addr.s_addr >> 16) & 0xff,
+//(name.sin_addr.s_addr >> 8) & 0xff,
+//name.sin_addr.s_addr & 0xff);
+
+  if (bind(sock, (struct sockaddr *) &name, namelen) < 0){
+    fprintf(stderr, "open_socket:  can't bind address");
+    fprintf(stderr, "  --  %d  --  %s\n", errno, strerror(errno));
+    return -1;
+  }
+
+  // Find out which port was actually bound
+  if (getsockname(sock, (struct sockaddr *) &name, GSN_CAST &namelen)) {
+    fprintf(stderr, "vrpn: open_socket: cannot get socket name.\n");
+    return -1;
+  }
+  if (portno) {
+    *portno = ntohs(name.sin_port);
+  }
+
+  return sock;
+}
+
+
+static SOCKET open_udp_socket (unsigned short * portno,
+                               const char * IPaddress) {
+  return open_socket(SOCK_DGRAM, portno, IPaddress);
+}
+
+/**
+ * Create a TCP socket and bind it to its local address.
+ */
+
+static SOCKET open_tcp_socket (const char * NIC_IP = NULL) {
+  return open_socket(SOCK_STREAM, NULL, NIC_IP);
+}
+
+
+
+
+/**
+ * Create a UDP socket and connect it to a specified port.
+ */
+
+static SOCKET vrpn_connect_udp_port
+                       (const char * machineName, int remotePort,
+                        const char * NIC_IP = NULL) {
+  SOCKET udp_socket;
+  struct sockaddr_in udp_name;
+  struct hostent * remoteHost;
+  int udp_namelen;
+
+  udp_socket = open_udp_socket(NULL, NIC_IP);
+
+  udp_namelen = sizeof(udp_name);
+
+  memset((void *) &udp_name, 0, udp_namelen);
+  udp_name.sin_family = AF_INET;
+
+  remoteHost = gethostbyname(machineName);
+  if (remoteHost) {
+
+#ifdef CRAY
+    int i;
+    u_long foo_mark = 0L;
+    for  (i = 0; i < 4; i++) {
+      u_long one_char = remoteHost->h_addr_list[0][i];
+      foo_mark = (foo_mark << 8) | one_char;
+    }
+    udp_name.sin_addr.s_addr = foo_mark;
+#else
+    memcpy(&(udp_name.sin_addr.s_addr), remoteHost->h_addr,  remoteHost->h_length);
+#endif
+
+  } else {
+#ifdef VRPN_USE_WINDOWS_GETHOSTBYNAME_HACK
+
+// gethostbyname() fails on SOME Windows NT boxes, but not all,
+// if given an IP octet string rather than a true name.
+// Until we figure out WHY, we have this extra clause in here.
+// It probably wouldn't hurt to enable it for non-NT systems
+// as well.
+
+      int retval;
+      retval = sscanf(machine, "%u.%u.%u.%u",
+                      ((char *) &udp_name.sin_addr.s_addr)[0],
+                      ((char *) &udp_name.sin_addr.s_addr)[1],
+                      ((char *) &udp_name.sin_addr.s_addr)[2],
+                      ((char *) &udp_name.sin_addr.s_addr)[3]);
+            
+      if (retval != 4) {
+                
+#endif  // VRPN_USE_WINDOWS_GETHOSTBYNAME_HACK
+
+          // Note that this is the failure clause of gethostbyname() on
+          // non-WIN32 systems, but of the sscanf() on WIN32 systems.
+                
+          close(udp_socket);
+          fprintf(stderr,
+                  "vrpn_connect_udp_port: error finding host by name.\n");
+          return(-1);
+                
+#ifdef VRPN_USE_WINDOWS_GETHOSTBYNAME_HACK
+      }
+#endif
+  }
+#ifndef VRPN_USE_WINSOCK_SOCKETS
+  udp_name.sin_port = htons(remotePort);
+#else
+  udp_name.sin_port = htons((u_short)remote_port);
+#endif
+
+  if ( connect(udp_socket,(struct sockaddr *) &udp_name,udp_namelen) ) {
+      fprintf(stderr,"vrpn_connect_udp_port: can't bind udp socket.\n");
+      close(udp_socket);
+      return(-1);
+  }
+
+  return udp_socket;
+}
+
+
+
+
+//---------------------------------------------------------------------------
 // This section deals with implementing a method of connection termed a
 // UDP request.  This works by having the client open a TCP socket that
 // it listens on. It then lobs datagrams to the server asking to be
@@ -748,110 +920,37 @@ int vrpn_udp_request_lob_packet(
                 const char * NIC_IP = NULL)
 {
 	SOCKET	udp_sock;		/* We lob datagrams from here */
-	struct sockaddr_in udp_name;	/* The UDP socket binding name */
-	int	udp_namelen;
-        struct	hostent *host;          /* The host to connect to */
 	char	msg[150];		/* Message to send */
 	vrpn_int32	msglen;		/* How long it is (including \0) */
 	char	myIPchar[100];		/* IP decription this host */
 
-	/* Create a UDP socket and connect it to the port on the remote
-	 * machine. */
+  /* Create a UDP socket and connect it to the port on the remote
+   * machine. */
 
-        udp_sock = socket(AF_INET,SOCK_DGRAM,0);
-        if (udp_sock < 0) {
-	    fprintf(stderr,"vrpn_udp_request_lob_packet: can't open udp socket().\n");
-            return(-1);
-        }
-	udp_name.sin_family = AF_INET;
-	udp_namelen = sizeof(udp_name);
-	host = gethostbyname(machine);
-        if (host) {
+  udp_sock = vrpn_connect_udp_port (machine, remote_port, NIC_IP);
 
-#ifdef CRAY
+  /* Fill in the request message, telling the machine and port that
+   * the remote server should connect to.  These are ASCII, separated
+   * by a space. */
 
-          { int i;
-            u_long foo_mark = 0;
-            for  (i = 0; i < 4; i++) {
-                u_long one_char = host->h_addr_list[0][i];
-                foo_mark = (foo_mark << 8) | one_char;
-            }
-            udp_name.sin_addr.s_addr = foo_mark;
-          }
+  if (vrpn_getmyIP(myIPchar, sizeof(myIPchar), NULL, NIC_IP)) {
+    fprintf(stderr,
+       "vrpn_udp_request_lob_packet: Error finding local hostIP\n");
+    close(udp_sock);
+    return(-1);
+  }
+  sprintf(msg, "%s %d", myIPchar, local_port);
+  msglen = strlen(msg) + 1;	/* Include the terminating 0 char */
 
-#else
+  // Lob the message
+  if (send(udp_sock, msg, msglen, 0) == -1) {
+    perror("vrpn_udp_request_lob_packet: send() failed");
+    close(udp_sock);
+    return -1;
+  }
 
-
-	  memcpy(&(udp_name.sin_addr.s_addr), host->h_addr,  host->h_length);
-#endif
-
-        } else {
-
-#ifdef VRPN_USE_WINDOWS_GETHOSTBYNAME_HACK
-
-// gethostbyname() fails on SOME Windows NT boxes, but not all,
-// if given an IP octet string rather than a true name.
-// Until we figure out WHY, we have this extra clause in here.
-// It probably wouldn't hurt to enable it for non-NT systems
-// as well.
-
-            int retval;
-            retval = sscanf(machine, "%u.%u.%u.%u",
-                            ((char *) &udp_name.sin_addr.s_addr)[0],
-                            ((char *) &udp_name.sin_addr.s_addr)[1],
-                            ((char *) &udp_name.sin_addr.s_addr)[2],
-                            ((char *) &udp_name.sin_addr.s_addr)[3]);
-            
-            if (retval != 4) {
-                
-#endif  // VRPN_USE_WINDOWS_GETHOSTBYNAME_HACK
-
-                // Note that this is the failure clause of gethostbyname() on
-                // non-WIN32 systems, but of the sscanf() on WIN32 systems.
-                
-		close(udp_sock);
-		fprintf(stderr,
-			"vrpn_udp_request_lob_packet: error finding host by name\n");
-		return(-1);
-                
-#ifdef VRPN_USE_WINDOWS_GETHOSTBYNAME_HACK
-            }
-#endif
-        }
-        
-#ifndef VRPN_USE_WINSOCK_SOCKETS
-	udp_name.sin_port = htons(remote_port);
-#else
-	udp_name.sin_port = htons((u_short)remote_port);
-#endif
-        if ( connect(udp_sock,(struct sockaddr*)&udp_name,udp_namelen) ) {
-	    fprintf(stderr,"vrpn_udp_request_lob_packet: can't bind udp socket().\n");
-	    close(udp_sock);
-	    return(-1);
-        }
-
-	/* Fill in the request message, telling the machine and port that
-	 * the remote server should connect to.  These are ASCII, separated
-	 * by a space. */
-
-	if (vrpn_getmyIP(myIPchar, sizeof(myIPchar), NULL, NIC_IP)) {
-		fprintf(stderr,
-		   "vrpn_udp_request_lob_packet: Error finding local hostIP\n");
-		close(udp_sock);
-		return(-1);
-	}
-	sprintf(msg, "%s %d", myIPchar, local_port);
-	msglen = strlen(msg) + 1;	/* Include the terminating 0 char */
-
-	// Lob the message
-	if (send(udp_sock, msg, msglen, 0) == -1) {
-	  perror("vrpn_udp_request_lob_packet: send() failed");
-	  close(udp_sock);
-	  return -1;
-	}
-
-	close(udp_sock);	// We're done with the port
-	return 0;
+  close(udp_sock);	// We're done with the port
+  return 0;
 }
 
 // This routine will get a TCP socket that is ready to accept connections.
@@ -862,68 +961,40 @@ int vrpn_udp_request_lob_packet(
 // To select between multiple network interfaces, we can specify an IPaddress;
 // the default value is NULL, which uses the default NIC.
 
-
+static
 int vrpn_get_a_TCP_socket (SOCKET * listen_sock, int * listen_portnum,
-                           const char * IPaddress = NULL)
+                           const char * NIC_IP = NULL)
 {
-	struct sockaddr_in listen_name;	/* The listen socket binding name */
-	int	listen_namelen;
-
-	/* Create a TCP socket to listen for incoming connections from the
-	 * remote server. */
-
-  struct hostent *phe;           /* pointer to host information entry   */
-
-  memset((void *) &listen_name, 0, sizeof(listen_name));
-  //bzero ((char *) &listen_name, sizeof(listen_name));
-  listen_name.sin_family = AF_INET;
-
-  // Map service name to port number
-  listen_name.sin_port = htons(0);
-
-  // Map host name to IP address, allowing for dotted decimal
-  if (!IPaddress) {
-    listen_name.sin_addr.s_addr = INADDR_ANY;
-  } else if (phe = gethostbyname(IPaddress)) {
-    memcpy((void *)&listen_name.sin_addr, (const void *) phe->h_addr, phe->h_length);
-    //bcopy(phe->h_addr, (char *)&listen_name.sin_addr, phe->h_length);
-  } else if ((listen_name.sin_addr.s_addr = inet_addr(IPaddress))
-              == INADDR_NONE) {
-    printf("can't get %s host entry\n", IPaddress);
-    return -1;
-  }
+  struct sockaddr_in listen_name;	/* The listen socket binding name */
+  int	listen_namelen;
 
   listen_namelen = sizeof(listen_name);
 
-  // We're using TCP
-  if ((*listen_sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-    fprintf(stderr, "vrpn_get_a_TCP_socket:  can't create socket.\n");
-    fprintf(stderr, "  -- errno %d (%s).\n", errno, strerror(errno));
-    return -1;
-  }
-  // Bind the socket
-  if (bind (*listen_sock, (struct sockaddr *) &listen_name,
-            listen_namelen) < 0) {
-    fprintf(stderr, "vrpn_get_a_TCP_socket:  can't bind socket.\n");
-    fprintf(stderr, "  -- errno %d (%s).\n", errno, strerror(errno));
+  /* Create a TCP socket to listen for incoming connections from the
+   * remote server. */
+
+  *listen_sock = open_tcp_socket(NIC_IP);
+  if (*listen_sock < 0) {
+    fprintf(stderr, "vrpn_get_a_TCP_socket:  socket didn't open.\n");
     return -1;
   }
 
+  if (listen(*listen_sock, 2) ) {
+    fprintf(stderr,"vrpn_get_a_TCP_socket: listen() failed.\n");
+    close(*listen_sock);
+    return(-1);
+  }
 
-        if (getsockname(*listen_sock,
-	                (struct sockaddr *) &listen_name,
-                        GSN_CAST &listen_namelen)) {
-		fprintf(stderr,
-			"vrpn_get_a_TCP_socket: cannot get socket name.\n");
-                close(*listen_sock);
-                return(-1);
-        }
-	*listen_portnum = ntohs(listen_name.sin_port);
-	if ( listen(*listen_sock,2) ) {
-		fprintf(stderr,"vrpn_get_a_TCP_socket: listen() failed.\n");
-		close(*listen_sock);
-		return(-1);
-	}
+  if (getsockname(*listen_sock,
+                  (struct sockaddr *) &listen_name,
+                  GSN_CAST &listen_namelen)) {
+    fprintf(stderr, "vrpn_get_a_TCP_socket: cannot get socket name.\n");
+    close(*listen_sock);
+    return(-1);
+  }
+
+  *listen_portnum = ntohs(listen_name.sin_port);
+
 //fprintf(stderr, "Listening on port %d, address %d %d %d %d.\n",
 //*listen_portnum, listen_name.sin_addr.s_addr >> 24,
 //(listen_name.sin_addr.s_addr >> 16) & 0xff,
@@ -940,6 +1011,7 @@ int vrpn_get_a_TCP_socket (SOCKET * listen_sock, int * listen_portnum,
 // successfull, it returns 1. If there is nothing asking for a connection,
 // it returns 0. If there is an error along the way, it returns -1.
 
+static
 int vrpn_poll_for_accept(SOCKET listen_sock, SOCKET *accept_sock, double timeout = 0.0)
 {
 	fd_set	rfds;
@@ -1007,6 +1079,7 @@ SOCKET vrpn_udp_request_call (const char * machine, int port,
  *      This routine returns a file descriptor that points to the socket
  * to the server on success and -1 on failure.
  **********************************/
+static
 int vrpn_start_server(const char * machine, char * server_name, char * args,
                       const char * IPaddress = NULL)
 {
@@ -1457,7 +1530,8 @@ int	vrpn_OneConnection::newRemoteSender(cName sender_name, vrpn_int32 local_id)
 // the machine name, a space, then the port number.
 //  The routine returns -1 on failure and the file descriptor on success.
 
-int vrpn_OneConnection::connect_tcp_to (const char * msg)
+int vrpn_OneConnection::connect_tcp_to (const char * msg,
+                                        const char * NIC_IP)
 {	char	machine [5000];
 	int	port;
 #ifndef VRPN_USE_WINSOCK_SOCKETS
@@ -1468,43 +1542,44 @@ int vrpn_OneConnection::connect_tcp_to (const char * msg)
     struct	sockaddr_in client;     /* The name of the client */
     struct	hostent *host;          /* The host to connect to */
 
-	// Find the machine name and port number
-	if (sscanf(msg, "%s %d", machine, &port) != 2) {
-		return -1;
-	}
+  // Find the machine name and port number
+  if (sscanf(msg, "%s %d", machine, &port) != 2) {
+  	return -1;
+  }
 
-	/* set up the socket */
+  /* set up the socket */
 
-	server_sock = socket(AF_INET,SOCK_STREAM,0);
-	if ( server_sock < 0 ) {
-		fprintf(stderr,
-		      "vrpn_OneConnection::connect_tcp_to: can't open socket\n");
-		return(-1);
-	}
-	client.sin_family = AF_INET;
-	host = gethostbyname(machine);
+  server_sock = open_tcp_socket(NIC_IP);
+
+  if (server_sock < 0) {
+  	fprintf(stderr, "vrpn_OneConnection::connect_tcp_to:  "
+                        "can't open socket\n");
+  	return -1;
+  }
+  client.sin_family = AF_INET;
+  host = gethostbyname(machine);
     if (host) {
 
 #ifdef CRAY
-		{ 
-			int i;
-			u_long foo_mark = 0;
-			for  (i = 0; i < 4; i++) {
-				u_long one_char = host->h_addr_list[0][i];
-				foo_mark = (foo_mark << 8) | one_char;
-			}
-			client.sin_addr.s_addr = foo_mark;
-		}
+  	{ 
+  		int i;
+  		u_long foo_mark = 0;
+  		for  (i = 0; i < 4; i++) {
+  			u_long one_char = host->h_addr_list[0][i];
+  			foo_mark = (foo_mark << 8) | one_char;
+  		}
+  		client.sin_addr.s_addr = foo_mark;
+  	}
 #else
 
-		memcpy(&(client.sin_addr.s_addr), host->h_addr,  host->h_length);
+  	memcpy(&(client.sin_addr.s_addr), host->h_addr,  host->h_length);
 #endif
 
-	} else {
+  } else {
 
-		perror("gethostbyname error:");
+  	perror("gethostbyname error:");
 #if !defined(hpux) && !defined(__hpux) && !defined(_WIN32)  && !defined(sparc)
-		herror("gethostbyname error:");
+  	herror("gethostbyname error:");
 #endif
 
 #ifdef VRPN_USE_WINDOWS_GETHOSTBYNAME_HACK
@@ -1515,76 +1590,74 @@ int vrpn_OneConnection::connect_tcp_to (const char * msg)
 // It probably wouldn't hurt to enable it for non-NT systems
 // as well.
 
-		int retval;
-		unsigned int a, b, c, d;
-		retval = sscanf(machine, "%u.%u.%u.%u", &a, &b, &c, &d);
-		if (retval != 4) {
-			fprintf(stderr,
-				"vrpn_OneConnection::connect_tcp_to:  "
-					"error: bad address string\n");
-			return -1;
-		}
+  	int retval;
+  	unsigned int a, b, c, d;
+  	retval = sscanf(machine, "%u.%u.%u.%u", &a, &b, &c, &d);
+  	if (retval != 4) {
+  		fprintf(stderr,
+  			"vrpn_OneConnection::connect_tcp_to:  "
+  				"error: bad address string\n");
+  		return -1;
+  	}
 #else	// not gethostbyname hack
 
 // Note that this is the failure clause of gethostbyname() on
 // non-WIN32 systems
 		
-		fprintf(stderr,
-			"vrpn_OneConnection::connect_tcp_to:  "
-							"error finding host by name\n");
-		return -1;
-	}
+  	fprintf(stderr,
+  		"vrpn_OneConnection::connect_tcp_to:  "
+  						"error finding host by name\n");
+  	return -1;
+  }
 #endif
 #ifdef VRPN_USE_WINDOWS_GETHOSTBYNAME_HACK
 // XXX OK, so this doesn't work.  What's wrong???
 
-		client.sin_addr.s_addr = (a << 24) + (b << 16) + (c << 8) + d;
-		//client.sin_addr.s_addr = (d << 24) + (c << 16) + (b << 8) + a;
-		fprintf(stderr, "vrpn_OneConnection::connect_tcp_to:  "
-					  "gethostname() failed;  we think we're\n"
-					  "looking for %d.%d.%d.%d.\n", a, b, c, d);
+    client.sin_addr.s_addr = (a << 24) + (b << 16) + (c << 8) + d;
+    //client.sin_addr.s_addr = (d << 24) + (c << 16) + (b << 8) + a;
+    fprintf(stderr, "vrpn_OneConnection::connect_tcp_to:  "
+    			  "gethostname() failed;  we think we're\n"
+    			  "looking for %d.%d.%d.%d.\n", a, b, c, d);
 
-		// here we can try an alternative strategy:
-		unsigned long addr = inet_addr(machine);
-		if (addr == INADDR_NONE) {	// that didn't work either
-			fprintf(stderr, "vrpn_OneConnection::connect_tcp_to:  "
-					"error reading address format\n");
-
-			return -1;
-		} else {
-			host = gethostbyaddr((char *)&addr,sizeof(addr), AF_INET);
-			if (host){
-				printf("gethostbyaddr() was successful\n");
-				memcpy(&(client.sin_addr.s_addr), host->h_addr,  host->h_length);
-			}
-			else{
-				fprintf(stderr, "vrpn_OneConnection::connect_tcp_to:  "
-							" gethostbyaddr() failed\n");
-				return -1;
-			}
-		}
-	}
+    // here we can try an alternative strategy:
+    unsigned long addr = inet_addr(machine);
+    if (addr == INADDR_NONE) {	// that didn't work either
+      fprintf(stderr, "vrpn_OneConnection::connect_tcp_to:  "
+    			"error reading address format\n");
+      return -1;
+    } else {
+      host = gethostbyaddr((char *)&addr,sizeof(addr), AF_INET);
+      if (host) {
+        printf("gethostbyaddr() was successful\n");
+        memcpy(&(client.sin_addr.s_addr), host->h_addr,  host->h_length);
+      } else {
+        fprintf(stderr, "vrpn_OneConnection::connect_tcp_to:  "
+        			" gethostbyaddr() failed\n");
+        return -1;
+      }
+    }
+  }
 
 		
 #endif
 
 
 #ifndef VRPN_USE_WINSOCK_SOCKETS
-	client.sin_port = htons(port);
+  client.sin_port = htons(port);
 #else
-	client.sin_port = htons((u_short)port);
+  client.sin_port = htons((u_short)port);
 #endif
 
-	if (connect(server_sock,(struct sockaddr*)&client,sizeof(client)) < 0 ){
-		fprintf(stderr,
-		     "vrpn_OneConnection::connect_tcp_to: Could not connect\n");
+  if (connect(server_sock,(struct sockaddr*)&client,sizeof(client)) < 0 ){
+  	fprintf(stderr,
+  	     "vrpn_OneConnection::connect_tcp_to: Could not connect\n");
 #ifdef VRPN_USE_WINSOCK_SOCKETS
-		int error = WSAGetLastError();
-		fprintf(stderr, "Winsock error: %d\n", error);
+  	int error = WSAGetLastError();
+  	fprintf(stderr, "Winsock error: %d\n", error);
 #endif
-		close(server_sock);
-		return(-1);
-	}
+  	close(server_sock);
+  	return(-1);
+  }
 
 	/* Set the socket for TCP_NODELAY */
 
@@ -1986,101 +2059,30 @@ int vrpn_Synchronized_Connection::mainloop (const struct timeval * timeout)
   }
   return 0;
 }
-
-//---------------------------------------------------------------------------
-// This routine opens a UDP socket with the requested port number.
-// The socket is not bound to any particular outgoing address.
-// The routine returns -1 on failure and the file descriptor on success.
-// The portno parameter is filled in with the actual port that is opened
-// (this is useful when the address INADDR_ANY is used, since it tells
-// what port was opened).
-// To select between multiple NICs, we can specify the IP address of the
-// socket to open;  the default value of NULL selects the default NIC.
-
-static	int open_udp_socket (unsigned short * portno,
-                             const char * IPaddress = NULL)
-{
-   int sock;
-   struct sockaddr_in server_addr;
-   struct sockaddr_in udp_name;
-   int	udp_namelen = sizeof(udp_name);
-
-  struct hostent *phe;           /* pointer to host information entry   */
-
-   // create an internet datagram socket
-   if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1)  {
-    fprintf(stderr, "open_udp_socket: can't open socket.\n");
-    fprintf(stderr, "  -- errno %d (%s).\n", errno, strerror(errno));
-	return -1;
-   }
-
-//fprintf(stderr, "IPaddress is %d (%s).\n", IPaddress, IPaddress);
-
-   memset((void *) &server_addr, 0, sizeof(server_addr));
-   //bzero((char *) &server_addr, sizeof(server_addr));
-
-   // bind to local address
-   server_addr.sin_family = AF_INET;
-   server_addr.sin_port = htons(*portno);
-
-  // Map host name to IP address, allowing for dotted decimal
-  if (!IPaddress) {
-    server_addr.sin_addr.s_addr = INADDR_ANY;
-  } else if (phe = gethostbyname(IPaddress)) {
-    memcpy((void *)&server_addr.sin_addr, (const void *)phe->h_addr, phe->h_length);
-    //bcopy(phe->h_addr, (char *)&server_addr.sin_addr, phe->h_length);
-  } else if ((server_addr.sin_addr.s_addr = inet_addr(IPaddress))
-              == INADDR_NONE) {
-    printf("can't get %s host entry\n", IPaddress);
-    return -1;
-  }
-
-//fprintf(stderr, "open_udp_socket:  port %d, using NIC %d %d %d %d.\n",
-//*portno, server_addr.sin_addr.s_addr >> 24,
-//(server_addr.sin_addr.s_addr >> 16) & 0xff,
-//(server_addr.sin_addr.s_addr >> 8) & 0xff,
-//server_addr.sin_addr.s_addr & 0xff);
-
-   if (bind(sock, (struct sockaddr*)&server_addr, sizeof (server_addr)) < 0){
-	fprintf(stderr, "open_udp_socket:  can't bind address");
-        fprintf(stderr, "  --  %d  --  %s\n", errno, strerror(errno));
-	return -1;
-   }
-
-   // Find out which port was actually bound
-   if (getsockname(sock, (struct sockaddr *) &udp_name,
-                   GSN_CAST &udp_namelen)) {
-	fprintf(stderr, "vrpn: open_udp_socket: cannot get socket name.\n");
-	return -1;
-   }
-   *portno = ntohs(udp_name.sin_port);
-
-   return sock;
-}
-
 //---------------------------------------------------------------------------
 //  This routine opens a UDP socket and then connects it to a the specified
 // port on the specified machine.
 //  The routine returns -1 on failure and the file descriptor on success.
 
 #ifdef VRPN_USE_WINSOCK_SOCKETS
-static	SOCKET connect_udp_to (char * machine, int portno)
+static	SOCKET connect_udp_to (char * machine, int portno, const char * NIC_IP)
 {
    SOCKET sock; 
 #else
-static	int connect_udp_to (char * machine, int portno)
+static	int connect_udp_to (char * machine, int portno, const char * NIC_IP)
 {
    int sock;
 #endif
-   struct	sockaddr_in client;     /* The name of the client */
-   struct	hostent *host;          /* The host to connect to */
+   struct	sockaddr_in client;  // The name of the client
+   struct	hostent * host;  // The host to connect to
 
-   // create an internet datagram socket
-   if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == INVALID_SOCKET)  {
-	fprintf(stderr, "connect_udp_to: can't open socket.\n");
+  // create an internet datagram socket
+  sock = open_udp_socket(NULL, NIC_IP);
+  if (sock == INVALID_SOCKET)  {
+    fprintf(stderr, "connect_udp_to: can't open socket.\n");
     fprintf(stderr, "  -- errno %d (%s).\n", errno, strerror(errno));
-	return INVALID_SOCKET;
-   }
+    return INVALID_SOCKET;
+  }
 
    // Connect it to the specified port on the specified machine
 	client.sin_family = AF_INET;
@@ -2185,7 +2187,7 @@ void vrpn_Connection::check_connection (const struct timeval * pTimeout)
 	}
 
 	printf("vrpn: Connection request received: %s\n", msg);
-	endpoint.tcp_sock = endpoint.connect_tcp_to(msg);
+	endpoint.tcp_sock = endpoint.connect_tcp_to(msg, d_NIC_IP);
 	if (endpoint.tcp_sock != -1) {
 		status = COOKIE_PENDING;
 //fprintf(stderr, "COOKIE_PENDING - vrpn_Connection::check_connection.\n");
@@ -2205,7 +2207,7 @@ int vrpn_Connection::connect_to_client (const char *machine, int port)
     if (status != LISTEN) return -1;
     sprintf(msg, "%s %d", machine, port);
     printf("vrpn: Connection request received: %s\n", msg);
-    endpoint.tcp_sock = endpoint.connect_tcp_to(msg);
+    endpoint.tcp_sock = endpoint.connect_tcp_to(msg, d_NIC_IP);
     if (endpoint.tcp_sock != -1) {
 	status = COOKIE_PENDING;
 //fprintf(stderr, "COOKIE_PENDING - vrpn_Connection::connect_to_client.\n");
@@ -2660,6 +2662,7 @@ int vrpn_Connection::handle_log_message (void * userdata,
 // outgoing UDP socket to that port so we can send lossy but time-
 // critical (tracker) messages that way.
 
+// static
 int vrpn_Connection::handle_UDP_message(void *userdata,
 		vrpn_HANDLERPARAM p)
 {
@@ -2677,7 +2680,8 @@ int vrpn_Connection::handle_UDP_message(void *userdata,
 	// Open the UDP outbound port and connect it to the port on the
 	// remote machine.
 	// (remember that the sender field holds the UDP port number)
-	me->endpoint.udp_outbound = connect_udp_to(rhostname, (int)p.sender);
+	me->endpoint.udp_outbound = connect_udp_to(rhostname, (int)p.sender,
+                                                   me->d_NIC_IP);
 	if (me->endpoint.udp_outbound == -1) {
 	    perror("vrpn: vrpn_Connection: Couldn't open outbound UDP link");
 	    return -1;
