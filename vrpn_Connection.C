@@ -5451,13 +5451,21 @@ int vrpn_Connection::message_type_is_registered (const char * name) const
 // Changed 8 November 1999 by TCH
 // With multiple connections allowed, TRYING_TO_CONNECT is an
 // "ok" status, so we need to admit it.  (Used to check >= 0)
+// XXX What if one endpoint is BROKEN? Don't we need to loop?
 vrpn_bool vrpn_Connection::doing_okay (void) const {
-  return (connectionStatus >= TRYING_TO_CONNECT);
+    return (connectionStatus >= TRYING_TO_CONNECT);
 }
 
+// XXX What's the right thing to do? For now, loop over endpoints
+// and return TRUE if any of them are connected.
 vrpn_bool vrpn_Connection::connected (void) const
 {
-  return (connectionStatus == CONNECTED);
+    int endpointIndex;
+    
+    for (endpointIndex = 0; endpointIndex < d_numEndpoints; endpointIndex++) {
+        if (d_endpoints[endpointIndex]->status == CONNECTED) return VRPN_TRUE;
+    }
+    return VRPN_FALSE;
 }
 
 //------------------------------------------------------------------------
