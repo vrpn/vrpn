@@ -128,6 +128,10 @@ class vrpn_SharedObject {
     // MANIPULATORS
 
     virtual void bindConnection (vrpn_Connection *);
+      ///< Every derived class should call this, do what it needs to,
+      ///< and ALSO call {server,remote}PostBindCleanup() to get
+      ///< myId and peerId set up and to get standard handlers registered.
+
 
     void useLamportClock (vrpn_LamportClock *);
       ///< Lamport Clocks are NOT currently integrated.  They should
@@ -161,10 +165,14 @@ class vrpn_SharedObject {
     char * d_typename;  // currently int32, float64, or String
 
     vrpn_Connection * d_connection;
-    vrpn_int32 d_myId;
-    vrpn_int32 d_updateFromServer_type;
-    vrpn_int32 d_updateFromRemote_type;
-    vrpn_int32 d_myUpdate_type;  // fragile
+    //vrpn_int32 d_updateFromServer_type;
+    //vrpn_int32 d_updateFromRemote_type;
+    //vrpn_int32 d_myUpdate_type;  // fragile
+    vrpn_int32 d_serverId;
+    vrpn_int32 d_remoteId;
+    vrpn_int32 d_myId;  // fragile
+    vrpn_int32 d_peerId;  // fragile
+    vrpn_int32 d_update_type;
 
     vrpn_int32 d_requestSerializer_type;
       ///< Sent to the serializer to assume its duties.
@@ -174,8 +182,9 @@ class vrpn_SharedObject {
       ///< Sent by a new serializer once it has been notified that
       ///< its request has been granted.
 
-    vrpn_int32 d_updateFromServerLamport_type;
-    vrpn_int32 d_updateFromRemoteLamport_type;
+    //vrpn_int32 d_updateFromServerLamport_type;
+    //vrpn_int32 d_updateFromRemoteLamport_type;
+    vrpn_int32 d_lamportUpdate_type;
 
     vrpn_bool d_isSerializer;
       ///< default to vrpn_TRUE for servers, FALSE for remotes
@@ -209,8 +218,24 @@ class vrpn_SharedObject {
     int yankDeferredUpdateCallbacks (void);
       ///< returns -1 on error (i.e. nonzero return by a callback)
 
+    void serverPostBindCleanup (void);
+    void remotePostBindCleanup (void);
+
+    virtual void sendUpdate (void) = 0;
+      ///< Should invoke default sendUpdate() for this derived type.
+    virtual int handleUpdate (vrpn_HANDLERPARAM) = 0;
+
+    static int handle_gotConnectionToRemote (void *, vrpn_HANDLERPARAM);
+      ///< Servers will register this handler in serverPostBindCleanup();
+      ///< it calls sendUpdate() to make sure the remote has the
+      ///< correct value on first connection.
+    static int handle_update (void *, vrpn_HANDLERPARAM);
+      ///< Passes arguments to handleUpdate() for this type;
+      ///< registered in postBindCleanup();
+
   private:
 
+    void postBindCleanup (void);
 };
 
 
@@ -279,7 +304,9 @@ class vrpn_Shared_int32 : public vrpn_SharedObject {
                                           vrpn_bool isLocalSet, 
                                           vrpn_LamportTimestamp *);
 
-    void sendUpdate (vrpn_int32 messagetype, vrpn_int32 newValue, timeval when);
+    virtual void sendUpdate (void);
+    void sendUpdate (vrpn_int32 newValue, timeval when);
+
     void encode (char ** buffer, vrpn_int32 * len,
                  vrpn_int32 newValue, timeval when) const;
     void encodeLamport (char ** buffer, vrpn_int32 * len,
@@ -304,7 +331,7 @@ class vrpn_Shared_int32 : public vrpn_SharedObject {
     vrpnSharedIntSerializerPolicy d_policyCallback;
     void * d_policyUserdata;
         
-    static int handle_update (void *, vrpn_HANDLERPARAM);
+    int handleUpdate (vrpn_HANDLERPARAM);
 
 
     static int handle_lamportUpdate (void *, vrpn_HANDLERPARAM);
@@ -329,7 +356,6 @@ class vrpn_Shared_int32_Server : public vrpn_Shared_int32 {
 
   protected:
 
-    static int handle_gotConnectionToRemote (void *, vrpn_HANDLERPARAM);
 
 };
 
@@ -416,7 +442,8 @@ class vrpn_Shared_float64 : public vrpn_SharedObject {
     virtual vrpn_bool shouldAcceptUpdate (vrpn_float64 newValue, timeval when,
                                           vrpn_bool isLocalSet);
 
-    void sendUpdate (vrpn_int32 messagetype, vrpn_float64 newValue,
+    virtual void sendUpdate (void);
+    void sendUpdate (vrpn_float64 newValue,
                      timeval when);
     void encode (char ** buffer, vrpn_int32 * len, vrpn_float64 newValue,
                      timeval when) const;
@@ -426,7 +453,7 @@ class vrpn_Shared_float64 : public vrpn_SharedObject {
     int yankCallbacks (vrpn_bool isLocal);
       // must set d_lastUpdate BEFORE calling yankCallbacks()
         
-    static int handle_update (void *, vrpn_HANDLERPARAM);
+    int handleUpdate (vrpn_HANDLERPARAM);
     static int handle_lamportUpdate (void *, vrpn_HANDLERPARAM);
 };
 
@@ -445,7 +472,6 @@ class vrpn_Shared_float64_Server : public vrpn_Shared_float64 {
 
   protected:
 
-    static int handle_gotConnectionToRemote (void *, vrpn_HANDLERPARAM);
 
 };
 
@@ -535,7 +561,8 @@ class vrpn_Shared_String : public vrpn_SharedObject {
     virtual vrpn_bool shouldAcceptUpdate (const char * newValue, timeval when,
                                     vrpn_bool isLocalSet);
 
-    void sendUpdate (vrpn_int32 messagetype, const char * newValue,
+    virtual void sendUpdate (void);
+    void sendUpdate (const char * newValue,
                      timeval when);
     void encode (char ** buffer, vrpn_int32 * len, const char * newValue,
                      timeval when) const;
@@ -545,7 +572,7 @@ class vrpn_Shared_String : public vrpn_SharedObject {
     int yankCallbacks (vrpn_bool isLocal);
       // must set d_lastUpdate BEFORE calling yankCallbacks()
         
-    static int handle_update (void *, vrpn_HANDLERPARAM);
+    int handleUpdate (vrpn_HANDLERPARAM);
     static int handle_lamportUpdate (void *, vrpn_HANDLERPARAM);
 
 };
@@ -565,7 +592,6 @@ class vrpn_Shared_String_Server : public vrpn_Shared_String {
 
   protected:
 
-    static int handle_gotConnectionToRemote (void *, vrpn_HANDLERPARAM);
 
 };
 

@@ -1,3 +1,30 @@
+2000-09-17  Tom Hudson  <hudson@cs.unc.edu>
+
+        * vrpn_SharedObject.C:
+        (class vrpn_SharedObject)
+        d_serverId, d_remoteId, d_peerId, d_update_type, d_lamportUpdate_type :
+        new data members
+        d_updateFromServer_type, d_updateFromRemote_type, d_myUpdate_type,
+        d_updateFromServerLamport_type, d_updateFromRemoteLamport_type :
+        remove
+        (vrpn_SharedObject::postBindCleanup) : new function
+        (vrpn_SharedObject::serverPostBindCleanup) : same
+        (vrpn_SharedObject::remotePostBindCleanup) : same
+        (vrpn_SharedObject::sendUpdate) : same
+        (vrpn_SharedObject::handleUpdate) : same
+        (vrpn_SharedObject::handle_gotConnectionToRemote) : same
+        (vrpn_SharedObject::handle_update) : same
+        (vrpn_SharedObject::becomeSerializer) : simplify
+        (vrpn_SharedObject::handle_requestSerializer) : simplify
+        (vrpn_SharedObject::handle_grantSerializer) : simplify
+        (vrpn_SharedObject::handle_assumeSerializer) : simplify
+        (vrpn_Shared_int32::sendUpdate) : remove first parameter
+        (vrpn_Shared_float64::sendUpdate) : same
+        (vrpn_Shared_String::sendUpdate) : same
+        (vrpn_Shared_int32::handleUpdate) : new function
+        (vrpn_Shared_float64::handleUpdate) : same
+        (vrpn_Shared_String::handleUpdate) : same
+
 2000-09-15  Tom Hudson  <hudson@cs.unc.edu>
 
 	* vrpn_LamportClock.h : changed <> on include to ""
