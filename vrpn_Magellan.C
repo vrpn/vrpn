@@ -124,8 +124,8 @@ int	vrpn_Magellan::reset(void)
 	// Give it a reasonable amount of time to finish (2 seconds), then timeout
 	vrpn_flush_input_buffer(serial_fd);
 	vrpn_write_slowly(serial_fd, (unsigned char *)reset_str, strlen(reset_str));
-	vrpn_SleepMsecs(100); //Give it time to respond
-	timeout.tv_sec = 2;
+	vrpn_SleepMsecs(200); //Give it time to respond
+	timeout.tv_sec = 4;
 	timeout.tv_usec = 0;
 	ret = vrpn_read_available_characters(serial_fd, inbuf, strlen(expect_back), &timeout);
 	inbuf[strlen(expect_back)] = 0;		// Make sure string is NULL-terminated
