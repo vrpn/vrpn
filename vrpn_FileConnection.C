@@ -62,7 +62,7 @@ vrpn_File_Connection::vrpn_File_Connection (const char * file_name,
     bare_file_name = vrpn_copy_file_name(file_name);
     if (!bare_file_name) {
         fprintf(stderr, "vrpn_File_Connection:  Out of memory!\n");
-        status = BROKEN;
+        connectionStatus = BROKEN;
         return;
     }
 
@@ -71,7 +71,7 @@ vrpn_File_Connection::vrpn_File_Connection (const char * file_name,
         fprintf(stderr, "vrpn_File_Connection:  "
                 "Could not open file \"%s\".\n", bare_file_name);
         delete [] (char *) bare_file_name;
-        status = BROKEN;
+        connectionStatus = BROKEN;
         return;
     }
 
@@ -83,7 +83,7 @@ vrpn_File_Connection::vrpn_File_Connection (const char * file_name,
     //fprintf(stderr, "vrpn_File_Connection::vrpn_File_Connection: Preload...\n");
 
     if (read_cookie() < 0) {
-        status = BROKEN;
+        connectionStatus = BROKEN;
         return;
     }
     while (!read_entry()) {
@@ -119,8 +119,10 @@ vrpn_File_Connection::vrpn_File_Connection (const char * file_name,
 // Advances through the file, calling callbacks, up until
 // a user message (type >= 0) is encountered)
 // NOTE: assumes pre-load (could be changed to not)
-void vrpn_File_Connection::play_to_user_message()
+void vrpn_File_Connection::play_to_user_message (void)
 {
+  vrpn_Endpoint * endpoint = d_endpoints[0];
+
     if (!d_currentLogEntry) {
         return;
     }
@@ -130,7 +132,7 @@ void vrpn_File_Connection::play_to_user_message()
         vrpn_HANDLERPARAM &header = d_currentLogEntry->data;
 
         if (header.type != vrpn_CONNECTION_UDP_DESCRIPTION) {
-            if (system_messages[-header.type](this, header)) {
+            if (system_messages[-header.type](endpoint, header)) {
                 fprintf(stderr, "vrn_File_Connection::play_to_user_message: "
                         "Nonzero system return.\n");
             }
@@ -567,6 +569,8 @@ int vrpn_File_Connection::playone()
 //    1 if we hit end_filetime
 int vrpn_File_Connection::playone_to_filetime( timeval end_filetime )
 {
+  vrpn_Endpoint * endpoint = d_endpoints[0];
+
     // read from disk if not in memory
     if (!d_currentLogEntry) {
         int retval = read_entry();
@@ -590,13 +594,13 @@ int vrpn_File_Connection::playone_to_filetime( timeval end_filetime )
     if (header.type >= 0) {
 #ifdef	VERBOSE
 	printf("vrpn_FC: Msg Sender (%s), Type (%s), at (%ld:%ld)\n",
-		endpoint.other_senders[header.sender].name,
-		endpoint.other_types[header.type].name,
+		endpoint->other_senders[header.sender].name,
+		endpoint->other_types[header.type].name,
 		header.msg_time.tv_sec, header.msg_time.tv_usec);
 #endif
-        if (endpoint.local_type_id(header.type) >= 0)                
-            if (do_callbacks_for(endpoint.local_type_id(header.type),
-                                 endpoint.local_sender_id(header.sender),
+        if (endpoint->local_type_id(header.type) >= 0)                
+            if (do_callbacks_for(endpoint->local_type_id(header.type),
+                                 endpoint->local_sender_id(header.sender),
                                  header.msg_time, header.payload_len,
                                  header.buffer))
                 return -1;     
@@ -604,7 +608,7 @@ int vrpn_File_Connection::playone_to_filetime( timeval end_filetime )
     } else {  // system handler            
 
         if (header.type != vrpn_CONNECTION_UDP_DESCRIPTION) {
-            if (system_messages[-header.type](this, header)) {
+            if (system_messages[-header.type](endpoint, header)) {
                 fprintf(stderr, "vrpn_File_Connection::playone_to_filename:  "
                         "Nonzero system return.\n");
                 return -1;
@@ -844,8 +848,8 @@ int vrpn_File_Connection::send_pending_reports(void)
     // Do nothing except clear the buffer - 
     // file connections aren't really connected to anything. 
 
-   d_tcp_num_out = 0;	// Clear the buffer for the next time
-   d_udp_num_out = 0;	// Clear the buffer for the next time
+   d_endpoints[0]->d_tcpNumOut = 0;	// Clear the buffer for the next time
+   d_endpoints[0]->d_udpNumOut = 0;	// Clear the buffer for the next time
    return 0;
 }
 
