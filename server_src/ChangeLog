@@ -1,3 +1,10 @@
+2003-09-26  Blair MacIntyre     <blair@cc.gatech.edu>
+
+	* vrpn.cfg.SAMPLE : Added description of the parameters
+		that could be made to the native-mode Intersense
+		tracker driver.
+	* vrpn.cfg : Same.
+
 2003-09-26  Sebastien MARAUX  <maraux@ondim.fr>
 
 	* vrpn_Phantom.C : Added support for InstantBuzzEffect.
