@@ -39,7 +39,6 @@
 
 #ifdef	_WIN32_WCE
 #define perror(x) fprintf(stderr,"%s\n",x);
-#define	VRPN_NO_STREAMS
 #endif
 
 // comment from vrpn_Connection.h reads :

@@ -1,3 +1,11 @@
+2005-01-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_BaseClass.C : Removing last vestiges of STREAMS from VRPN.
+	* vrpn_BaseClass.h : Same.
+	* vrpn_Clock.C : Same.
+	* vrpn_Configure.h : Same.
+	* vrpn_Shared.h : Same.
+
 2005-01-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Imager.C : Removed all references to the ill-planned

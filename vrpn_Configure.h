@@ -136,7 +136,6 @@
 // Load VRPN Phantom library if we are using phantom server as unified server
 // Load SensAble Technologies GHOST library to run the Phantom
 #ifdef VRPN_USE_PHANTOM_SERVER
-  #define	VRPN_NO_STREAMS
   #ifdef VRPN_USE_HDAPI
     #pragma comment (lib,"C:/Program Files/SensAble/3DTouch/lib/hd.lib")
     #ifdef	_DEBUG

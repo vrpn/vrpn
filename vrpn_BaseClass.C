@@ -12,19 +12,9 @@
 */
 vrpn_TextPrinter    vrpn_System_TextPrinter;
 
-#ifndef VRPN_NO_STREAMS
-#ifndef VRPN_USE_OLD_STREAMS
-using namespace std;
-#endif
-#endif
-
 vrpn_TextPrinter::vrpn_TextPrinter() :
 d_first_watched_object(NULL),
-#ifdef VRPN_NO_STREAMS
 d_ostream(stdout),
-#else
-d_ostream(&cout),
-#endif
 d_severity_to_print(vrpn_TEXT_WARNING),
 d_level_to_print(0)
 {
@@ -64,7 +54,7 @@ int vrpn_TextPrinter::add_object(vrpn_BaseClass *o)
 {
     vrpn_TextPrinter_Watch_Entry    *victim;
 #ifdef	VERBOSE
-    cout << "vrpn_TextPrinter: adding object " << o->d_servicename << endl;
+    printf( "vrpn_TextPrinter: adding object %s\n", o->d_servicename);
 #endif
 
     // Make sure we have an actual object.
@@ -115,7 +105,7 @@ void	vrpn_TextPrinter::remove_object(vrpn_BaseClass *o)
     vrpn_TextPrinter_Watch_Entry    *victim, **snitch;
 
 #ifdef	VERBOSE
-    cout << "vrpn_TextPrinter: removing object " << o->d_servicename << endl;
+    printf( "vrpn_TextPrinter: removing object %s\n", o->d_servicename);
 #endif
 
     // Make sure we have an actual object.
@@ -169,7 +159,7 @@ int vrpn_TextPrinter::text_message_handler(void *userdata, vrpn_HANDLERPARAM p)
     char		message[vrpn_MAX_TEXT_LEN];
 
 #ifdef	VERBOSE
-    cout << "vrpn_TextPrinter: text handler called" << endl;
+    printf( "vrpn_TextPrinter: text handler called\n");
 #endif
 
     // Make sure we have a valid ostream.
@@ -187,7 +177,6 @@ int vrpn_TextPrinter::text_message_handler(void *userdata, vrpn_HANDLERPARAM p)
     if ( (severity > me->d_severity_to_print) ||
 	((severity == me->d_severity_to_print) && (level >= me->d_level_to_print) ) ) {
 
-#ifdef VRPN_NO_STREAMS
 	    fprintf(me->d_ostream, "VRPN ");
 
 	    switch (severity) {
@@ -207,30 +196,6 @@ int vrpn_TextPrinter::text_message_handler(void *userdata, vrpn_HANDLERPARAM p)
 
 	    fprintf(me->d_ostream, " (%d) from %s: %s\n", level,
 		 obj->d_connection->sender_name(p.sender), message);
-#else
-	    *me->d_ostream << "VRPN ";
-
-	    switch (severity) {
-		case vrpn_TEXT_NORMAL:
-		    *me->d_ostream << "Message";
-		    break;
-		case vrpn_TEXT_WARNING:
-		    *me->d_ostream << "Warning";
-		    break;
-		case vrpn_TEXT_ERROR:
-		    *me->d_ostream << "Error";
-		    break;
-		default:
-		    *me->d_ostream << "UNKNOWN SEVERITY";
-		    break;
-	    }
-
-	    *me->d_ostream << " (" << level << ") from ";
-
-	    *me->d_ostream << obj->d_connection->sender_name(p.sender) << ": ";
-
-	    *me->d_ostream << message << endl;
-#endif
     }
 
     return 0;

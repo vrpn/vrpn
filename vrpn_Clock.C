@@ -19,13 +19,6 @@
 #include <netinet/in.h>
 #endif
 
-#ifndef	VRPN_NO_STREAMS
-  #ifdef VRPN_USE_OLD_STREAMS
-        #include <iostream.h>
-  #else
-        #include <iostream>
-  #endif
-#endif
 #include <math.h>
 
 #include "vrpn_Clock.h"
