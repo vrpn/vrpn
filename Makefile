@@ -316,11 +316,12 @@ newclient:
 # files to be compiled into the client library
 
 LIB_FILES =  vrpn_Connection.C vrpn_Tracker.C vrpn_Button.C \
-	     vrpn_Sound.C vrpn_ForceDevice.C vrpn_Clock.C vrpn_Shared.C \
+	     vrpn_ForceDevice.C vrpn_Clock.C vrpn_Shared.C \
 	     vrpn_Ohmmeter.C vrpn_Analog.C vrpn_FileConnection.C \
              vrpn_FileController.C vrpn_Forwarder.C vrpn_Text.C \
              vrpn_ForwarderController.C vrpn_Serial.C vrpn_Dial.C \
-             vrpn_SharedObject.C
+             vrpn_SharedObject.C \
+	     vrpn_Sound.C 
 
 LIB_OBJECTS = $(patsubst %,$(OBJECT_DIR)/%,$(LIB_FILES:.C=.o))
 

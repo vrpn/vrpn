@@ -135,12 +135,7 @@ protected:
 	   are here for the purpose of controlling the array of those soundDefs.
 	   All dynamic allocation is handled by them.*/
 	vrpn_SoundID addSoundDef(vrpn_SoundDef sound);
-	inline vrpn_SoundDef getSoundDef(vrpn_SoundID id)
-	{
-		vrpn_SoundDef soundDef;
-		initSoundDef(&soundDef);
-		return (id < Defs_MaxNum) ? soundDefs[id] : soundDef;
-	};
+	vrpn_SoundDef getSoundDef (vrpn_SoundID id);
 	inline void unloadSoundDefs() 
 	{
 		Defs_CurNum = 0;

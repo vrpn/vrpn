@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "quat.h"
 
+
 //vrpn_Sound constructor.
 vrpn_Sound::vrpn_Sound(const char * name, vrpn_Connection * c)
 {
@@ -216,6 +217,7 @@ vrpn_int32 vrpn_Sound::decodeModelDef(const char* buf, vrpn_ModelDef *model) {
 	return 0;
 }
 
+
 /********************************************************************************************
  Begin vrpn_Sound_Client
  *******************************************************************************************/
@@ -278,6 +280,14 @@ vrpn_SoundID vrpn_Sound_Client::addSoundDef(vrpn_SoundDef sound)
 	return returnVal;
 }
 
+// Moved out-of-line by TCH on 8 Feb 2000 to avoid compiler crashes on O2s.
+
+vrpn_SoundDef vrpn_Sound_Client::getSoundDef (vrpn_SoundID id) {
+  vrpn_SoundDef soundDef;
+  initSoundDef(&soundDef);
+  return (id < Defs_MaxNum) ? soundDefs[id] : soundDef;
+};
+
 
 /*Sounds when loaded default to certain settings.
   volume = 100%
@@ -309,12 +319,16 @@ void vrpn_Sound_Client::initSoundDef(vrpn_SoundDef* soundDef)
 
 }
 
+
+
 /*Sends a play sound message to the server.  Sends the id of the sound to play
   and the repeat value.  If 0 then it plays it continuously*/
 vrpn_int32 vrpn_Sound_Client::playSound(const vrpn_SoundID id, vrpn_int32 repeat)
 {
+
 	char* buf = new char[sizeof(vrpn_SoundDef) + sizeof(vrpn_SoundID) + sizeof(vrpn_int32)];
 	vrpn_int32 len;
+
 
 	len = encodeSoundDef(getSoundDef(id), id, repeat, buf);
 
@@ -324,8 +338,11 @@ vrpn_int32 vrpn_Sound_Client::playSound(const vrpn_SoundID id, vrpn_int32 repeat
       fprintf(stderr,"vrpn_Sound_Client: cannot write message play: tossing\n");
 
 	delete [] buf;
+
+
 	return 0;
 }
+
 
 /*Stops a playing sound*/
 vrpn_int32 vrpn_Sound_Client::stopSound(const vrpn_SoundID id)
@@ -365,6 +382,7 @@ vrpn_SoundID vrpn_Sound_Client::loadSound(const char* sound)
 	delete [] buf;
 	return curIndex;
 }
+
 
 /*Unloads a sound file on the server side*/
 vrpn_int32 vrpn_Sound_Client::unloadSound(const vrpn_SoundID id)
@@ -442,6 +460,7 @@ vrpn_int32 vrpn_Sound_Client::changeSoundVelocity(const vrpn_SoundID id, vrpn_fl
 }
 
 
+
 vrpn_int32 vrpn_Sound_Client::changeListenerPose(const vrpn_float64 position[3], const vrpn_float64 orientation[4])
 {
 	char* buf = new char[sizeof(vrpn_SoundDef) + sizeof(vrpn_SoundID) + sizeof(vrpn_int32)];
@@ -481,6 +500,7 @@ vrpn_int32 vrpn_Sound_Client::changeListenerVelocity(const vrpn_float64 velocity
 	return 0;
 }
 
+
 vrpn_int32 vrpn_Sound_Client::changeSoundDistances(const vrpn_SoundID id, const vrpn_float64 max_front_dist, const vrpn_float64 min_front_dist, const vrpn_float64 max_back_dist, const vrpn_float64 min_back_dist) {
 	char* buf = new char[sizeof(vrpn_SoundDef) + sizeof(vrpn_SoundID) + sizeof(vrpn_int32)];
 	vrpn_int32 len;
@@ -497,6 +517,7 @@ vrpn_int32 vrpn_Sound_Client::changeSoundDistances(const vrpn_SoundID id, const 
 	delete [] buf;
 	return 0;
 }
+
 
 vrpn_int32 vrpn_Sound_Client::initModel(const vrpn_float64 *eye_f_sensor) {
 	char* buf = new char[sizeof(vrpn_ModelDef)];
@@ -524,6 +545,9 @@ void vrpn_Sound_Client::mainloop(const timeval *timeout)
 void vrpn_Sound_Client::setDefModel(vrpn_float64 *eye_f_sensor) {
 	qogl_matrix_copy(Model.eye_from_sensor_matrix,eye_f_sensor);
 }
+
+
+
 
 /********************************************************************************************
  Begin vrpn_Sound_Server
@@ -667,3 +691,4 @@ int vrpn_Sound_Server::handle_initialize(void *userdata, vrpn_HANDLERPARAM p)
 
 
 #endif //#ifndef VRPN_CLIENT_ONLY
+
