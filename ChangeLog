@@ -1,3 +1,21 @@
+2003-01-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Put back the uncommented #pragma for library loads
+		and added comments describing how to change them in the
+		future.
+	* vrpn_DirectXCCJoystick.C : Added casts to get rid of compiler
+		warnings, white space changes, comments.
+	* vrpn_Shared.h : Uncommented definition in Windows CE compile.
+
+2003-01-15  Alexandra Bokinsky  <bokinsky@cs.unc.edu>
+
+	* vrpn_Configure.h : Commented out DirectX library load #pragmas.
+	* vrpn.dsw : Added force-feedback joystick server.
+	* vrpn_Shared.h : Commented out definition for Windows CE compile.
+	* vrpn_DirectXFFJoystick.C : Changed startup parameters for force and
+		made the force command average the last three values before
+		sending them to the joystick.
+
 2003-01-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_GlobalHapticsOrb.C : Server for the Global Haptics GeoOrb device.

@@ -496,6 +496,8 @@ void  vrpn_DirectXFFJoystick::send_normalized_force(double fx, double fy)
     fy /= len;
   }
 
+  // XXX This version of the driver averages the last three force commands
+  // before setting the force.
 
   double fx_avg = (fx + fx_1 + fx_2 )/3.0;
   double fy_avg = (fy + fy_1 + fy_2 )/3.0;
@@ -519,12 +521,12 @@ void  vrpn_DirectXFFJoystick::send_normalized_force(double fx, double fy)
   cf.lMagnitude = (DWORD)(sqrt( (double)xForce * (double)xForce +
 				(double)yForce * (double)yForce ));
 
-	  DIENVELOPE diEnvelope;      // envelope
-	  diEnvelope.dwSize = sizeof(DIENVELOPE);
-	  diEnvelope.dwAttackLevel = 0; 
-	  diEnvelope.dwAttackTime = (DWORD)(0.005 * DI_SECONDS); 
-	  diEnvelope.dwFadeLevel = 0; 
-	  diEnvelope.dwFadeTime = (DWORD)(0.005 * DI_SECONDS); 
+  DIENVELOPE diEnvelope;      // envelope
+  diEnvelope.dwSize = sizeof(DIENVELOPE);
+  diEnvelope.dwAttackLevel = 0; 
+  diEnvelope.dwAttackTime = (DWORD)(0.005 * DI_SECONDS); 
+  diEnvelope.dwFadeLevel = 0; 
+  diEnvelope.dwFadeTime = (DWORD)(0.005 * DI_SECONDS); 
 
 
   DIEFFECT eff;

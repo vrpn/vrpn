@@ -43,21 +43,28 @@
 // code to find it.
 //#define	INCLUDE_TIMECODE_SERVER
 
-//---------------------------------------------------------------//
-// DO NOT EDIT BELOW THIS LINE FOR NORMAL CONFIGURATION SETTING. //
-//---------------------------------------------------------------//
+//----------------------------------------------------------------//
+// DO NOT EDIT BELOW THIS LINE FOR NORMAL CONFIGURATION SETTING.  //
+// DO EDIT IF THE LIBRARIES TO BE USED ARE NOT IN STANDARD PLACES.//
+//----------------------------------------------------------------//
 
 // Load DirectX SDK libraries and tell which version we need if we are using it.
+// If this doesn't match where you have installed these libraries,
+// edit the following lines to point at the correct libraries.  Do
+// this here rather than in the project settings so that it can be
+// turned on and off using the definition above. 
 #ifdef	VRPN_USE_DIRECTINPUT
 #define	DIRECTINPUT_VERSION 0x0800
-// Since this probably doesn't match your file system, add them to 
-// your project settings, if needed. 
-//#pragma comment (lib, "C:/DXSDK/lib/dxguid.lib")
-//#pragma comment (lib, "C:/DXSDK/lib/dxerr8.lib")
-//#pragma comment (lib, "C:/DXSDK/lib/dinput8.lib")
+#pragma comment (lib, "C:/DXSDK/lib/dxguid.lib")
+#pragma comment (lib, "C:/DXSDK/lib/dxerr8.lib")
+#pragma comment (lib, "C:/DXSDK/lib/dinput8.lib")
 #endif
 
 // Load Adrienne libraries if we are using the timecode generator.
+// If this doesn't match where you have installed these libraries,
+// edit the following lines to point at the correct libraries.  Do
+// this here rather than in the project settings so that it can be
+// turned on and off using the definition above. 
 #ifdef	INCLUDE_TIMECODE_SERVER
 #pragma comment (lib, "../../Adrienne/AEC_DLL/AEC_NTTC.lib")
 #endif
