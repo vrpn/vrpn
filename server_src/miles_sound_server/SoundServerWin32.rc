@@ -29,49 +29,91 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Dialog
 //
 
-SOUNDSERVERWIN32 DIALOG DISCARDABLE  100, 100, 208, 220
+SOUNDSERVERWIN32 DIALOG DISCARDABLE  100, 100, 319, 230
 STYLE WS_MINIMIZEBOX | WS_CAPTION | WS_SYSMENU
 CAPTION "VRPN Sound Server"
 CLASS "SoundServerWin32"
 FONT 8, "MS Sans Serif"
 BEGIN
-    GROUPBOX        " Digital Sound Controls: ",IDC_STATIC,5,6,195,45
-    LTEXT           "Choose the 3D &technology to use:",IDC_STATIC,15,20,170,
+    GROUPBOX        " Digital Sound Controls: ",IDC_STATIC,5,6,310,45
+    LTEXT           "Choose the 3D &technology to use:",IDC_STATIC,15,20,105,
                     8
     COMBOBOX        100,15,30,178,108,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
-    PUSHBUTTON      "&Stop all sounds",110,10,195,61,12
-    PUSHBUTTON      "&Close",112,135,195,60,12
-    LTEXT           "Volume",IDC_STATIC,15,85,30,10
-    EDITTEXT        114,45,175,150,12,ES_MULTILINE | ES_AUTOHSCROLL | 
+    PUSHBUTTON      "&Stop all sounds",110,45,210,61,12
+    PUSHBUTTON      "&Close",112,225,210,60,12
+    EDITTEXT        114,55,190,255,12,ES_MULTILINE | ES_AUTOHSCROLL | 
                     ES_READONLY
-    LTEXT           "Last Error:",IDC_STATIC,10,175,31,8
-    LTEXT           "Replay Rate:",IDC_STATIC,15,100,45,10
-    LTEXT           "Y",IDC_STATIC,100,100,10,10
-    LTEXT           "X",IDC_STATIC,100,85,10,10
-    EDITTEXT        115,59,85,30,12,ES_AUTOHSCROLL | ES_READONLY
-    EDITTEXT        116,60,100,30,12,ES_AUTOHSCROLL | ES_READONLY
-    LTEXT           "Z",IDC_STATIC,100,115,8,8
-    EDITTEXT        120,110,85,30,10,ES_AUTOHSCROLL | ES_READONLY | 
+    LTEXT           "Y",IDC_STATIC,20,110,10,10
+    LTEXT           "X",IDC_STATIC,20,95,10,10
+    LTEXT           "Z",IDC_STATIC,20,125,8,8
+    EDITTEXT        120,30,95,30,10,ES_AUTOHSCROLL | ES_READONLY | ES_NUMBER
+    EDITTEXT        121,30,110,30,10,ES_AUTOHSCROLL | ES_READONLY | 
                     ES_NUMBER
-    EDITTEXT        121,110,100,30,10,ES_AUTOHSCROLL | ES_READONLY | 
+    EDITTEXT        122,30,125,30,10,ES_AUTOHSCROLL | ES_READONLY | 
                     ES_NUMBER
-    EDITTEXT        122,110,115,30,10,ES_AUTOHSCROLL | ES_READONLY | 
-                    ES_NUMBER
-    COMBOBOX        131,15,65,40,30,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
+    COMBOBOX        131,15,65,40,45,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
                     WS_TABSTOP
-    GROUPBOX        "Position",IDC_STATIC,95,75,50,55
-    GROUPBOX        "Current sound",IDC_STATIC,5,55,195,80
-    GROUPBOX        "Listener Position",IDC_STATIC,5,140,195,30
-    EDITTEXT        141,25,155,35,10,ES_AUTOHSCROLL | ES_READONLY | 
+    GROUPBOX        "Position",IDC_STATIC,15,85,50,55
+    GROUPBOX        "Current sound",IDC_STATIC,5,55,140,115
+    GROUPBOX        "Orientation",IDC_STATIC,75,85,60,55
+    GROUPBOX        "",IDC_STATIC,5,180,310,25
+    LTEXT           "Z",IDC_STATIC,85,95,8,8
+    LTEXT           "Y",IDC_STATIC,85,110,8,8
+    LTEXT           "X",IDC_STATIC,85,125,8,8
+    EDITTEXT        300,100,95,30,10,ES_AUTOHSCROLL | ES_READONLY | 
                     ES_NUMBER
-    EDITTEXT        142,90,155,35,10,ES_AUTOHSCROLL | ES_READONLY | 
+    EDITTEXT        301,100,110,30,10,ES_AUTOHSCROLL | ES_READONLY | 
                     ES_NUMBER
-    EDITTEXT        143,155,155,35,10,ES_AUTOHSCROLL | ES_READONLY | 
+    EDITTEXT        302,100,125,30,10,ES_AUTOHSCROLL | ES_READONLY | 
                     ES_NUMBER
-    LTEXT           "X",IDC_STATIC,15,155,8,10
-    LTEXT           "Y",IDC_STATIC,80,155,10,10
-    LTEXT           "Z",IDC_STATIC,145,155,10,10
+    LTEXT           "Last Error:",IDC_STATIC,10,190,40,8
+    GROUPBOX        "Listener",IDC_STATIC,155,55,160,115
+    EDITTEXT        141,180,95,35,10,ES_AUTOHSCROLL | ES_READONLY | 
+                    ES_NUMBER
+    EDITTEXT        142,180,110,35,10,ES_AUTOHSCROLL | ES_READONLY | 
+                    ES_NUMBER
+    EDITTEXT        143,180,125,35,10,ES_AUTOHSCROLL | ES_READONLY | 
+                    ES_NUMBER
+    LTEXT           "X",IDC_STATIC,170,95,8,10
+    LTEXT           "Y",IDC_STATIC,170,110,10,10
+    LTEXT           "Z",IDC_STATIC,170,125,10,10
+    LTEXT           "Z",IDC_STATIC,245,95,8,8
+    LTEXT           "Y",IDC_STATIC,245,110,8,8
+    LTEXT           "X",IDC_STATIC,245,125,8,8
+    EDITTEXT        303,260,95,30,10,ES_AUTOHSCROLL | ES_READONLY | 
+                    ES_NUMBER
+    EDITTEXT        304,260,110,30,10,ES_AUTOHSCROLL | ES_READONLY | 
+                    ES_NUMBER
+    EDITTEXT        305,260,125,30,10,ES_AUTOHSCROLL | ES_READONLY | 
+                    ES_NUMBER
+    GROUPBOX        "Position",IDC_STATIC,165,85,55,55
+    GROUPBOX        "Orientation",IDC_STATIC,240,85,55,55
+    PUSHBUTTON      "More Info",162,55,150,40,15
+END
+
+SND_INFO DIALOG DISCARDABLE  120, 120, 209, 85
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Sound Information"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Volume",IDC_STATIC,20,5,30,10
+    LTEXT           "Replay Rate:",IDC_STATIC,105,5,45,10
+    EDITTEXT        115,64,5,30,12,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        116,155,5,30,12,ES_AUTOHSCROLL | ES_READONLY
+    GROUPBOX        "Distances",IDC_STATIC,10,30,185,40
+    LTEXT           "Min Front",IDC_STATIC,25,40,35,10
+    EDITTEXT        151,65,40,30,10,ES_AUTOHSCROLL | ES_READONLY | ES_NUMBER
+    LTEXT           "Max Front",IDC_STATIC,25,55,35,10
+    LTEXT           "Min Back",IDC_STATIC,115,40,35,10
+    LTEXT           "Max Back",IDC_STATIC,115,55,35,10
+    EDITTEXT        152,65,55,30,10,ES_AUTOHSCROLL | ES_READONLY | ES_NUMBER
+    EDITTEXT        153,155,40,30,10,ES_AUTOHSCROLL | ES_READONLY | 
+                    ES_NUMBER
+    EDITTEXT        154,155,55,30,10,ES_AUTOHSCROLL | ES_READONLY | 
+                    ES_NUMBER
+    LTEXT           "(Automatically closes in 3 seconds)",IDC_STATIC,51,75,
+                    108,10
 END
 
 
@@ -100,7 +142,7 @@ BEGIN
     "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
     "#include ""windows.h""\r\n"
     "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
-    "#include ""..\\pc_win32\\mss.h""\r\n"
+    "#include ""c:\\miles\\mss.h""\r\n"
     "\0"
 END
 
@@ -110,6 +152,25 @@ BEGIN
     "\0"
 END
 
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    "SND_INFO", DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 202
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 78
+    END
+END
 #endif    // APSTUDIO_INVOKED
 
 #endif    // English (U.S.) resources

@@ -61,13 +61,16 @@ public:
 	vrpn_int32  GetCurrentVolume(const vrpn_int32 CurrentSoundId);
 	char      * GetLastError();
 	vrpn_int32  GetCurrentPlaybackRate(const vrpn_int32 CurrentSoundId);
-	void        GetCurrentPosition(const vrpn_int32 CurrentSoundId, F32* X, F32* Y, F32* Z);
-	void        GetListenerPosition(F32* X, F32* Y, F32* Z);
+	void        GetCurrentPosition(const vrpn_int32 CurrentSoundId, F32* X_val, F32* Y_val, F32* Z_val);
+	void        GetListenerPosition(F32* X_val, F32* Y_val, F32* Z_val);
+	void        GetCurrentDistances(const vrpn_int32 CurrentSoundId, F32* FMin, F32* FMax, F32* BMin, F32* BMax);
+	void        GetListenerOrientation(F32* X_val, F32 *Y_val, F32 *Z_val);
+	void        GetCurrentOrientation(const vrpn_int32 CurrentSoundId,F32 *X_val, F32 *Y_val, F32 *Z_val);
+
 
 	vrpn_int32    LastSoundId;		//ID of last played sound	
 
 private:
-
 			
 	H3DSAMPLE*	samples;			/*audio handles for Miles, used as an array
 									accessed with getSample and addSample, 
