@@ -103,13 +103,13 @@ int vrpn_open_commport(char *portname, long baud)
   
   if (hCom == INVALID_HANDLE_VALUE) 
   {    
-    perror("Tracker: cannot open serial port");
+    perror("vrpn_open_commport: cannot open serial port");
     return -1;
   }
  
   if (!(fSuccess = GetCommState(hCom, &dcb)))
   {
-	perror("Tracker: cannot get serial port configuration settings");
+	perror("vrpn_open_commport: cannot get serial port configuration settings");
 	CloseHandle(hCom);
     return -1;
   }
@@ -137,7 +137,7 @@ int vrpn_open_commport(char *portname, long baud)
 
   if (!(fSuccess = SetCommState(hCom, &dcb)))
   {
-	perror("Tracker: cannot set serial port configuration settings");
+	perror("vrpn_open_commport: cannot set serial port configuration settings");
 	CloseHandle(hCom);
     return -1;
   }
@@ -150,7 +150,7 @@ int vrpn_open_commport(char *portname, long baud)
 
   if (!(fSuccess = SetCommTimeouts(hCom, &cto)))
   {
-	perror("Tracker: cannot set serial port timeouts");
+	perror("vrpn_open_commport: cannot set serial port timeouts");
 	CloseHandle(hCom);
     return -1;
   }
@@ -160,16 +160,23 @@ int vrpn_open_commport(char *portname, long baud)
 
   return curCom;
 
+  // -- This section is "Win32"
 #else
+  // -- This section is "Not win32"
+
   // Open the serial port for r/w
+#ifdef sol
+  if ( (fileDescriptor = open(portname, O_RDWR|O_NDELAY|O_NOCTTY)) == -1) {
+#else
   if ( (fileDescriptor = open(portname, O_RDWR)) == -1) {
-    perror("Tracker: cannot open serial port");
+#endif
+    perror("vrpn_open_commport: cannot open serial port");
     return -1;
   }
 
   /* get current settings */
   if ( ioctl(fileDescriptor, TCGETA , &sttyArgs) == -1 ) {
-    perror("Tracker: ioctl failed");
+    perror("vrpn_open_commport: ioctl failed");
     return(-1);
   }
 
@@ -218,7 +225,7 @@ int vrpn_open_commport(char *portname, long baud)
   
   /* pass the new settings back to the driver */
   if ( ioctl(fileDescriptor, TCSETA, &sttyArgs) == -1 ) {
-    perror("Tracker: ioctl failed");
+    perror("vrpn_open_commport: ioctl failed");
     close(fileDescriptor);
     return(-1);
   }
@@ -331,7 +338,7 @@ int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes)
 
    if (!(fSuccess = ClearCommError(commConnections[comm], &errors, &cstat)))
    {
-	   perror("Tracker: can't get current status");
+	   perror("vrpn_read_available_characters: can't get current status");
 	   return(-1);
    }
 
@@ -339,7 +346,7 @@ int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes)
    {
 	   if(!(fSuccess = ReadFile(commConnections[comm], buffer, bytes, &numRead, &Overlapped)))
 	   {
-		   perror("Tracker: can't read from serial port");
+		   perror("vrpn_read_available_characters: can't read from serial port");
 		   return(-1);
 	   }
 
@@ -435,7 +442,7 @@ int vrpn_write_characters(int comm, const unsigned char *buffer, int bytes)
 
 	if(!(fSuccess = WriteFile(commConnections[comm], buffer, bytes, &numWritten, &Overlapped)))
     {
-	   perror("Tracker: can't write to serial port");
+	   perror("vrpn_write_characters: can't write to serial port");
 	   return(-1);
     }
 

@@ -37,6 +37,8 @@
 #HW_OS := pc_linux
 #HW_OS := pc_cygwin
 #HW_OS := pc_FreeBSD
+#HW_OS := sparc_solaris
+#HW_OS := powerpc_aix
 ##########################
 
 MV = /bin/mv
@@ -82,12 +84,22 @@ endif
 
 
 CC := g++
-AR := ar
+AR := ar ruv
 
 ifeq ($(FORCE_GPP),1)
   CC := g++
 # -fhuge-objects
 else
+
+  ifeq ($(HW_OS),sparc_solaris)
+	CC := /opt/SUNWspro/bin/CC
+	AR := /opt/SUNWspro/bin/CC -xar -o
+  endif
+
+  ifeq ($(HW_OS),powerpc_aix)
+	CC := /usr/ibmcxx/bin/xlC_r -c -g -qarch=pwr3 -w
+	AR := ar
+  endif
 
   ifeq ($(HW_OS),sgi_irix)
 	SGI_CC_FLAGS := -32
@@ -114,9 +126,9 @@ else
   endif
 endif
 
-ifeq ($(HW_OS),sparc_solaris)
-  AR := /usr/ccs/bin/ar
-endif
+#ifeq ($(HW_OS),sparc_solaris)
+#  AR := /usr/ccs/bin/ar
+#endif
 
 ##########################
 # directories
@@ -396,12 +408,12 @@ SLIB_INCLUDES = $(LIB_INCLUDES) vrpn_3Space.h \
 #$(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(OBJECT_DIR) \
 
 $(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(OBJECT_DIR) $(LIB_OBJECTS)
-	$(AR) ruv $(OBJECT_DIR)/libvrpn.a $(LIB_OBJECTS)
+	$(AR) $(OBJECT_DIR)/libvrpn.a $(LIB_OBJECTS)
 	-ranlib $(OBJECT_DIR)/libvrpn.a
 
 $(OBJECT_DIR)/libvrpnserver.a: $(MAKEFILE) $(SOBJECT_DIR) $(SLIB_OBJECTS) \
 			$(SLIB_INCLUDES)
-	$(AR) ruv $(OBJECT_DIR)/libvrpnserver.a $(SLIB_OBJECTS)
+	$(AR) $(OBJECT_DIR)/libvrpnserver.a $(SLIB_OBJECTS)
 	-ranlib $(OBJECT_DIR)/libvrpnserver.a
 
 #############################################################################

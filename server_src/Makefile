@@ -6,6 +6,8 @@
 # below. Then, the code should compile in your environment.
 #
 #HW_OS := sgi_irix
+#HW_OS := sparc_solaris
+#HW_OS := hp700_hpux10
 #HW_OS := pc_linux
 #HW_OS := pc_cygwin
 #HW_OS := pc_FreeBSD
@@ -46,7 +48,8 @@ ifeq ($(HW_OS),pc_cygwin)
 	SYSLIBS := -lcygwin -luser32 -lgdi32 -lcomdlg32 -lwsock32
 endif
 ifeq ($(HW_OS),sparc_solaris)
-	SYSLIBS := -lsocket
+	CC := /opt/SUNWspro/bin/CC
+	SYSLIBS := -lsocket -lnsl
 endif
 ifeq ($(HW_OS),sgi_irix)
 	CC := CC -32

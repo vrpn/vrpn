@@ -9,6 +9,8 @@
 #
 HW_OS := $(shell hw_os)
 #HW_OS := sgi_irix
+#HW_OS := sparc_solaris
+#HW_OS := hp700_hpux10
 #HW_OS := pc_linux
 #HW_OS := pc_cygwin
 #HW_OS := pc_FreeBSD
@@ -40,6 +42,7 @@ ifeq ($(HW_OS), hp_flow_aCC)
 endif
 
 ifeq ($(HW_OS),sparc_solaris)
+  CC := /opt/SUNWspro/bin/CC
   ARCH_LIBS := -lsocket -lnsl $(ARCH_LIBS)
 endif
 
