@@ -1,3 +1,7 @@
+2002-09-27  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsw : Adds testimager_client project from client_src.
+
 2002-09-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Makefile : Added to compile on ARM
