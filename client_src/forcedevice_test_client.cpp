@@ -114,7 +114,7 @@ static	float g_forceFieldRadius = (float)0.3;
  *
  *****************************************************************************/
 
-void    handle_force_change(void *userdata, const vrpn_FORCECB f)
+void    VRPN_CALLBACK handle_force_change(void *userdata, const vrpn_FORCECB f)
 {
   static vrpn_FORCECB lr;        // last report
   static int first_report_done = 0;
@@ -132,7 +132,7 @@ void    handle_force_change(void *userdata, const vrpn_FORCECB f)
 }
 
 
-void    handle_tracker_change(void *userdata, const vrpn_TRACKERCB t)
+void    VRPN_CALLBACK handle_tracker_change(void *userdata, const vrpn_TRACKERCB t)
 {
   // Record the current position of the device in global variables
   // so that the button routine can know where to store the center
@@ -335,7 +335,7 @@ void    handle_tracker_change(void *userdata, const vrpn_TRACKERCB t)
   };
 }
 
-void	handle_button_change(void *userdata, const vrpn_BUTTONCB b)
+void	VRPN_CALLBACK handle_button_change(void *userdata, const vrpn_BUTTONCB b)
 {
   // When the button is pressed, start things going for the state
   // we are in and tell that the forces are active.

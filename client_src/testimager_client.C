@@ -28,7 +28,7 @@ bool g_already_posted = false;		//< Posted redisplay since the last display?
 //----------------------------------------------------------------------------
 // TempImager callback handlers.
 
-void  handle_description_message(void *, const struct timeval)
+void  VRPN_CALLBACK handle_description_message(void *, const struct timeval)
 {
   // This assumes that the size of the image does not change -- application
   // should allocate a new image array and get a new window size whenever it
@@ -43,7 +43,7 @@ DWORD lastCallTime[2]={0,0};
 DWORD ReportInterval=5000;
 
 // New pixels coming; fill them into the image and tell Glut to redraw.
-void  handle_region_change(void *, const vrpn_IMAGERREGIONCB info)
+void  VRPN_CALLBACK handle_region_change(void *, const vrpn_IMAGERREGIONCB info)
 {
     const vrpn_TempImager_Region  *region=info.region;
 

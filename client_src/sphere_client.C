@@ -18,7 +18,7 @@ static float xpos,ypos,zpos;
  *
  *****************************************************************************/
 
-void    handle_force_change(void *userdata, const vrpn_FORCECB f)
+void    VRPN_CALLBACK handle_force_change(void *userdata, const vrpn_FORCECB f)
 {
   static vrpn_FORCECB lr;        // last report
   static int first_report_done = 0;
@@ -35,7 +35,7 @@ void    handle_force_change(void *userdata, const vrpn_FORCECB f)
 
 vrpn_ForceDevice_Remote *forceDevice;
 
-void    handle_tracker_change(void *userdata, const vrpn_TRACKERCB t)
+void    VRPN_CALLBACK handle_tracker_change(void *userdata, const vrpn_TRACKERCB t)
 {
   static vrpn_TRACKERCB lr; // last report
   static float dist_interval_sq = (float)0.004;
@@ -66,7 +66,7 @@ void    handle_tracker_change(void *userdata, const vrpn_TRACKERCB t)
 
 }
 
-void	handle_button_change(void *userdata, const vrpn_BUTTONCB b)
+void	VRPN_CALLBACK handle_button_change(void *userdata, const vrpn_BUTTONCB b)
 {
   static int count=0;
   static int buttonstate = 1;

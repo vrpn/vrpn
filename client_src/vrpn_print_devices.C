@@ -76,7 +76,7 @@ class t_user_callback {
  *
  *****************************************************************************/
 
-void	handle_tracker_pos_quat (void *userdata, const vrpn_TRACKERCB t)
+void	VRPN_CALLBACK handle_tracker_pos_quat (void *userdata, const vrpn_TRACKERCB t)
 {
 	t_user_callback	*t_data = (t_user_callback *)userdata;
 
@@ -92,7 +92,7 @@ void	handle_tracker_pos_quat (void *userdata, const vrpn_TRACKERCB t)
 	}
 }
 
-void	handle_tracker_vel (void *userdata, const vrpn_TRACKERVELCB t)
+void	VRPN_CALLBACK handle_tracker_vel (void *userdata, const vrpn_TRACKERVELCB t)
 {
 	t_user_callback	*t_data = (t_user_callback *)userdata;
 
@@ -108,7 +108,7 @@ void	handle_tracker_vel (void *userdata, const vrpn_TRACKERVELCB t)
 	}
 }
 
-void	handle_tracker_acc (void *userdata, const vrpn_TRACKERACCCB t)
+void	VRPN_CALLBACK handle_tracker_acc (void *userdata, const vrpn_TRACKERACCCB t)
 {
 	t_user_callback	*t_data = (t_user_callback *)userdata;
 
@@ -124,7 +124,7 @@ void	handle_tracker_acc (void *userdata, const vrpn_TRACKERACCCB t)
 	}
 }
 
-void	handle_button (void *userdata, const vrpn_BUTTONCB b)
+void	VRPN_CALLBACK handle_button (void *userdata, const vrpn_BUTTONCB b)
 {
     const char *name = (const char *)userdata;
 
@@ -132,7 +132,7 @@ void	handle_button (void *userdata, const vrpn_BUTTONCB b)
 	name, b.button, b.state?"pressed":"released");
 }
 
-void	handle_analog (void *userdata, const vrpn_ANALOGCB a)
+void	VRPN_CALLBACK handle_analog (void *userdata, const vrpn_ANALOGCB a)
 {
     int i;
     const char *name = (const char *)userdata;
@@ -144,7 +144,7 @@ void	handle_analog (void *userdata, const vrpn_ANALOGCB a)
     printf(" (%ld chans)\n", a.num_channel);
 }
 
-void	handle_dial (void *userdata, const vrpn_DIALCB d)
+void	VRPN_CALLBACK handle_dial (void *userdata, const vrpn_DIALCB d)
 {
     const char *name = (const char *)userdata;
 

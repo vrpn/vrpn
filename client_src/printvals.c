@@ -37,7 +37,7 @@ int done = 0;	    // Signals that the program should exit
  *
  *****************************************************************************/
 
-void	handle_pos (void *, const vrpn_TRACKERCB t)
+void	VRPN_CALLBACK handle_pos (void *, const vrpn_TRACKERCB t)
 {
 	static	int	count = 0;
 
@@ -55,7 +55,7 @@ void	handle_pos (void *, const vrpn_TRACKERCB t)
 	}
 }
 
-void	handle_vel (void *, const vrpn_TRACKERVELCB t)
+void	VRPN_CALLBACK handle_vel (void *, const vrpn_TRACKERVELCB t)
 {
 	//static	int	count = 0;
 
@@ -63,7 +63,7 @@ void	handle_vel (void *, const vrpn_TRACKERVELCB t)
 	fprintf(stderr, "%ld/", t.sensor);
 }
 
-void	handle_acc (void *, const vrpn_TRACKERACCCB t)
+void	VRPN_CALLBACK handle_acc (void *, const vrpn_TRACKERACCCB t)
 {
 	//static	int	count = 0;
 
@@ -71,12 +71,12 @@ void	handle_acc (void *, const vrpn_TRACKERACCCB t)
 	fprintf(stderr, "%ld~", t.sensor);
 }
 
-void	handle_button (void *, const vrpn_BUTTONCB b)
+void	VRPN_CALLBACK handle_button (void *, const vrpn_BUTTONCB b)
 {
 	printf("B%ld is %ld\n", b.button, b.state);
 }
 
-int handle_gotConnection (void *, vrpn_HANDLERPARAM) {
+int VRPN_CALLBACK handle_gotConnection (void *, vrpn_HANDLERPARAM) {
 
   if (beRedundant) {
     fprintf(stderr, "printvals got connection;  "
@@ -87,7 +87,7 @@ int handle_gotConnection (void *, vrpn_HANDLERPARAM) {
   return 0;
 }
 
-int filter_pos (void * userdata, vrpn_HANDLERPARAM p) {
+int VRPN_CALLBACK filter_pos (void * userdata, vrpn_HANDLERPARAM p) {
 
   vrpn_Connection * c = (vrpn_Connection *) userdata;
   int postype = c->register_message_type("Tracker Pos/Quat");

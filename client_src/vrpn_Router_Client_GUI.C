@@ -66,8 +66,8 @@ double	yOutputPosition( int output );
 double	xInputPosition(  int input );
 double	yInputPosition(  int input );
 void	printInputOutputLevel( int input_ch, int output_ch, int level );
-void	handle_router_change_message( void *, const vrpn_ROUTERCB     routerData );
-void	handle_router_name_message(   void *, const vrpn_ROUTERNAMECB routerData );
+void	VRPN_CALLBACK handle_router_change_message( void *, const vrpn_ROUTERCB     routerData );
+void	VRPN_CALLBACK handle_router_name_message(   void *, const vrpn_ROUTERNAMECB routerData );
 void	readAndParseRouterConfigFile( void );
 void	showUITitle( void );
 void	showRubberBandLine( void );
@@ -379,7 +379,7 @@ void vrpn_Router_Remote_Init( void )
 
 /**************************************************************************************/
 // Update client's name table with info received in name message.
-void handle_router_name_message( void *, const vrpn_ROUTERNAMECB cp )
+void VRPN_CALLBACK handle_router_name_message( void *, const vrpn_ROUTERNAMECB cp )
 {       
 	// Unpack info sent in the "name message" from the server.
  	int channelType  = cp.channelType;
@@ -414,7 +414,7 @@ void handle_router_name_message( void *, const vrpn_ROUTERNAMECB cp )
 // input channel that is linked to it.
 // Example call on server side: 
 //		report_channel_status(input_ch, output_ch, level);
-void handle_router_change_message( void *, const vrpn_ROUTERCB routerData )
+void VRPN_CALLBACK handle_router_change_message( void *, const vrpn_ROUTERCB routerData )
 {       
 	// Unpack info sent in the "change message" from the server.
  	int input_ch  = routerData.input_channel;

@@ -1,3 +1,34 @@
+2004-09-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        Adding Chris VanderKnyff's changes that enable DLL linkage
+        for applications.  Heading towards enabling C# and other language
+        support.
+
+	* forcedevice_test_client.cpp : Adding VRPN_CALLBACK.
+	* printcereal.C : same.
+	* printvals.C : same.
+	* sphere_client.C : same.
+	* test_Zaber.C : same.
+	* test_tempimager.C : same.
+	* testimager_client.C : same.
+	* tracker_to_poser.cpp : same.
+	* vrpn_Router_Client_GUI.C : same.
+	* vrpn_print_devices.C : same.
+	* forcedevice_test_client.dsp : Making it depend on the project
+		that causes both VRPN and VRPNDLL projects to be built, rather
+                than on VRPN.  If you try to make it depend on both
+                VRPN and VRPNDLL, you get linking trouble.
+	* printcereal.dsp : same.
+	* printvals.dsp : same.
+	* setrouter.dsp : same.
+	* sphere_client.dsp : same.
+	* test_tempimager.dsp : same.
+	* test_zaber.dsp : same.
+	* testimager_client.dsp : same.
+	* tracker_to_poser.dsp : same.
+	* vrpn_Router_Client_GUI.dsp : same.
+	* vrpn_print_devices.dsp : same.
+
 2004-09-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* forcedevice_test_client.dsp : Changing code generation back to

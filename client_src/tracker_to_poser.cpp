@@ -31,7 +31,7 @@ void Usage (const char * s)
 // work properly, the tracker must report translations in just the right
 // space for the poser.
 
-void	handle_tracker_update(void *userdata, const vrpn_TRACKERCB t)
+void	VRPN_CALLBACK handle_tracker_update(void *userdata, const vrpn_TRACKERCB t)
 {
   // Turn the pointer into a poser pointer.
   vrpn_Poser_Remote *psr= (vrpn_Poser_Remote*)userdata;

@@ -87,7 +87,7 @@ bool  client_done = false;	  //< Lets us know if the client wants to quit
 // Handler to get an image region in and check it against the image to make
 // sure it came over okay.  Also keeps track of how many rows we have.
 
-void  handle_region_data(void *, const vrpn_IMAGERREGIONCB info)
+void  VRPN_CALLBACK handle_region_data(void *, const vrpn_IMAGERREGIONCB info)
 {
   unsigned x,y;
   const	vrpn_TempImager_Channel *chan;

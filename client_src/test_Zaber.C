@@ -32,7 +32,7 @@ unsigned long	duration(struct timeval t1, struct timeval t2)
  *
  *****************************************************************************/
 
-void	handle_analog (void *, const vrpn_ANALOGCB a)
+void	VRPN_CALLBACK handle_analog (void *, const vrpn_ANALOGCB a)
 {
 	int i;
 	printf("Analogs: ");
