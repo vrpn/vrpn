@@ -2,8 +2,6 @@
 
 #include <string.h>
 
-#include <vrpn_Connection.h>
-
 // We can't put d_lastUpdate in the message header timestamps;  it must
 // go in the body.
 // This is because we're (probably) using a synchronized connection,

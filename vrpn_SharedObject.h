@@ -1,8 +1,8 @@
 #ifndef VRPN_SHARED_OBJECT
 #define VRPN_SHARED_OBJECT
 
-#include <vrpn_Shared.h>  // for types
-#include <vrpn_Types.h>
+//#include "vrpn_Shared.h"  // for types
+//#include "vrpn_Types.h"
 
 #ifdef _WIN32
 #include <winsock.h>
@@ -10,7 +10,7 @@
 #include <sys/time.h>  // for struct timeval
 #endif
 
-#include <vrpn_Connection.h>  // for vrpn_HANDLERPARAM
+#include "vrpn_Connection.h"  // for vrpn_HANDLERPARAM
 
 class vrpn_LamportClock;  // from "vrpn_LamportClock.h"
 

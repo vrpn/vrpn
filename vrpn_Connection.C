@@ -2615,6 +2615,7 @@ static	SOCKET connect_udp_to (const char * machine, int portno,
 
 vrpn_Endpoint::vrpn_Endpoint (vrpn_TypeDispatcher * dispatcher,
                               vrpn_int32 * connectedEndpointCounter) :
+    status(BROKEN),
     d_tcpSocket (INVALID_SOCKET),
     d_tcpListenSocket (INVALID_SOCKET),
     d_tcpListenPort (0),
@@ -5001,7 +5002,7 @@ vrpn_Connection::vrpn_Connection
        const char * remote_logfile_name, long remote_log_mode,
        const char * NIC_IPaddress) :
     // Jeff's change; I've commented out for now
-    //connectionStatus (BROKEN),  // default value if not otherwise set in ctr
+    connectionStatus (BROKEN),  // default value if not otherwise set in ctr
     d_numEndpoints (0),
     d_numConnectedEndpoints (0),
     listen_udp_sock (INVALID_SOCKET),
@@ -5098,7 +5099,9 @@ vrpn_Connection::vrpn_Connection
     // PC.  Tom Hudson independently added a line that is similar, but
     // different.  I'm (jeff) am not sure what the right thing is here.
     //
-    //connectionStatus = TRYING_TO_CONNECT;  // XXX jeff's addition
+    // Let's do both, because otherwise connectionStatus is
+    // never initialized, and doing_ok() returns FALSE sometimes.
+    connectionStatus = TRYING_TO_CONNECT;  // XXX jeff's addition
    
     // here is the line that Tom added
     endpoint->status = TRYING_TO_CONNECT;
@@ -5203,6 +5206,14 @@ vrpn_Connection::vrpn_Connection
       return;
     }
 //fprintf(stderr, "vrpn_Connection: opened logfile.\n");
+  }
+
+  if (isfile) {
+      // If we are a file connection, our status should be CONNECTED
+      // The FileConnection constructor will set to BROKEN if
+      // there is a problem opening/reading the file.
+      connectionStatus = CONNECTED;
+      endpoint->status = CONNECTED;
   }
 }
 
