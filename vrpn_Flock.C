@@ -36,6 +36,10 @@
 #include "vrpn_Tracker.h"
 #include "vrpn_Flock.h"
 
+// output a status msg every status_msg_secs
+#define STATUS_MSG
+#define STATUS_MSG_SECS 30
+
 void vrpn_Tracker_Flock::printError( unsigned char uchErrCode, 
 			unsigned char uchExpandedErrCode ) {
 
@@ -564,7 +568,7 @@ void vrpn_Tracker_Flock::mainloop()
 	
 	cReports++;
 
-#if 0
+#ifdef STATUS_MSG
 	if (vrpn_TimevalMsecs(vrpn_TimevalDiff(tvNow, tvLastPrint)) > cSeconds*1000){
 
 	  double dRate = cReports / 
@@ -573,8 +577,8 @@ void vrpn_Tracker_Flock::mainloop()
 		  dRate, cSensors, dRate/cSensors);
 	  tvLastPrint = tvNow;
 	  cReports=0;
-	  // display the rate every 30 seconds
-	  cSeconds=30;
+	  // display the rate every X seconds
+	  cSeconds=STATUS_MSG_SECS;
 	}
 #endif
 
