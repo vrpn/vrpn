@@ -23,17 +23,17 @@ struct timezone {
 
 extern int gettimeofday(struct timeval *tp, struct timezone *tzp);
 
-#endif // __CYGWIN__
+#endif // ! __CYGWIN__
 
 // This has been moved to connection.C so that users of this
 // lib can still use fstream and other objects with close functions.
 // #define close closesocket
 
-#else
+#else  // not _WIN32
 
 #include <sys/time.h>    // for struct timeval
 
-#endif  // not _WIN32
+#endif
 
 extern struct timeval vrpn_TimevalSum( const struct timeval& tv1, 
 				  const struct timeval& tv2 );
