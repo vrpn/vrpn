@@ -792,7 +792,7 @@ int vrpn_Log::logMessage (vrpn_int32 payloadLen, struct timeval time,
 
 
 int vrpn_Log::setCompoundName (const char * name, int index) {
-  char newName [1000];  // HACK
+  char newName [2048];  // HACK
   const char * dot;
   int len;
 
@@ -1008,6 +1008,13 @@ vrpn_TypeDispatcher::vrpn_TypeDispatcher (void) :
     d_numSenders (0),
     d_genericCallbacks (NULL)
 {
+  int i;
+  // Make all of the names NULL pointers so they get allocated later
+  for (i = 0; i < vrpn_CONNECTION_MAX_SENDERS; i++) {
+    d_senders[i] = NULL;
+  }
+
+  // Clear out any entries in the table.
   clear();
 }
 
@@ -1035,6 +1042,8 @@ vrpn_TypeDispatcher::~vrpn_TypeDispatcher (void) {
     delete pVMCB_Del;
   }
 
+  // Clear out any entries in the table.
+  clear();
 }
 
 int vrpn_TypeDispatcher::numTypes (void) const {
@@ -1412,6 +1421,7 @@ void vrpn_TypeDispatcher::clear (void) {
   }
 
   for (i = 0; i < vrpn_CONNECTION_MAX_SENDERS; i++) {
+    if (d_senders[i] != NULL) { delete [] d_senders[i]; }
     d_senders[i] = NULL;
   }
 }
@@ -2673,6 +2683,13 @@ vrpn_Endpoint::~vrpn_Endpoint (void) {
     delete d_outLog;
   }
 
+  // Delete the buffers created in the constructor
+  if (d_tcpOutbuf) { delete [] d_tcpOutbuf; d_tcpOutbuf = NULL; }
+  if (d_udpOutbuf) { delete [] d_udpOutbuf; d_udpOutbuf = NULL; }
+
+  // Delete any file names created during the running
+  if (d_remoteInLogName) { delete [] d_remoteInLogName; }
+  if (d_remoteOutLogName) { delete [] d_remoteOutLogName; }
 }
 
 

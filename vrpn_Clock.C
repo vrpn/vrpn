@@ -247,8 +247,18 @@ vrpn_Clock_Remote::vrpn_Clock_Remote(const char * name, vrpn_float64 dFreq,
 #endif
 }
 
-vrpn_Clock_Remote::~vrpn_Clock_Remote (void) {
-
+vrpn_Clock_Remote::~vrpn_Clock_Remote (void)
+{
+  // Release any handlers that have not been unregistered
+  // by higher-level code.
+  vrpn_CLOCKSYNCLIST	*curr, *next;
+  curr = change_list;
+  while (curr != NULL) {
+    next = curr->next;
+    delete curr;
+    curr = next;
+  }
+  
   // release the quick arrays
   if (rgtvHalfRoundTrip) {
     delete [] rgtvHalfRoundTrip;
