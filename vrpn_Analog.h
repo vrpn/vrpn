@@ -9,6 +9,15 @@
 #define ANALOG_FAIL 	 	(-2)
 
 #include "vrpn_Connection.h"
+
+// Contention:  vrpn_Analog shouldn't have a mainloop() function.
+//   (Neither should other similar base classes).  There isn't any
+//   reason for some derived classes to implement one, and there may
+//   not even be any meaningful semantics.  (qv vrpn_Analog_Server below)
+// Instead, declare a virtual destructor = 0 to force it to be an abstract
+//   class.
+// TCH March 1999
+
 class vrpn_Analog {
 public:
 	vrpn_Analog (const char * name, vrpn_Connection * c = NULL);
@@ -18,7 +27,7 @@ public:
 
 	// Called once through each main loop iteration to handle
 	// updates.
-	virtual void mainloop(const struct timeval * timeout=NULL) = 0;
+	virtual void mainloop (const struct timeval * timeout = NULL) = 0;
 
 	// Report changes to conneciton
         vrpn_Connection *connectionPtr();
@@ -34,7 +43,8 @@ public:
 	int status; 
 
 	virtual vrpn_int32 encode_to(char *buf);
-        virtual void report_changes(); 
+        virtual void report_changes (void);  // send report iff changed
+	virtual void report (void);  // send report
 };
 
 class vrpn_Serial_Analog: public vrpn_Analog {
@@ -50,6 +60,58 @@ protected:
 
   int read_available_characters(char *buffer,
 	int bytes);
+};
+
+// vrpn_Analog_Server
+// Tom Hudson, March 1999
+//
+// A simple core class to build other servers around;  used for the
+// nMmon network monitor and some test programs.
+//
+// Write whatever values you want into channels(), then call report()
+// or report_changes().  (Original spec only called for report_changes(),
+// but vrpn_Analog's assumption that "no new data = same data" doesn't
+// match the BLT stripchart assumption  of "no intervening data = ramp".
+//
+// For a sample application, see server_src/sample_analog.C
+
+
+class vrpn_Analog_Server : public vrpn_Analog {
+
+  public:
+
+    vrpn_Analog_Server (const char * name, vrpn_Connection * c);
+    virtual ~vrpn_Analog_Server (void);
+
+    // The following function shouldn't exist;  there is no reasonable
+    // semantics for it (neither report_changes() nor report() is
+    // necessarily a good default behavior;  I want to make the choice
+    // between the two explicit.)
+
+    virtual void mainloop (const struct timeval *) { }
+
+    // If anything has changed, report it to the client.
+    
+    virtual void report_changes (void);
+
+    // Reports current status to the client regardless of whether
+    // or not there have been any changes.
+
+    virtual void report (void);
+
+    // Exposes an array of values for the user to write into.
+
+    vrpn_float64 * channels (void);
+
+    // Size of the array.
+
+    vrpn_int32 numChannels (void) const;
+
+    // Sets the size of the array;  returns the size actually set.
+    // (May be clamped to vrpn_CHANNEL_MAX)
+
+    vrpn_int32 setNumChannels (vrpn_int32 sizeRequested);
+
 };
 
 

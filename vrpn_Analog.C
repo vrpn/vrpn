@@ -5,6 +5,8 @@
 #include <unistd.h>
 #endif
 
+//#define VERBOSE
+
 extern int vrpn_open_commport(char *portname, long baud);
 
 vrpn_Analog::vrpn_Analog (const char * name, vrpn_Connection * c) {
@@ -58,30 +60,45 @@ vrpn_int32 vrpn_Analog::encode_to(char *buf)
    //fprintf(stderr, "encode___ %x %x", buf[0], buf[1]);
    return index*sizeof(vrpn_float64);
 }
-void vrpn_Analog::report_changes() {
+void vrpn_Analog::report_changes (void) {
+
   vrpn_int32 i;
   vrpn_int32 change = 0;
+
   if (connection) {
     for (i = 0; i < num_channel; i++) {
-      if (channel[i]!= last[i]) change =1;
+      if (channel[i] != last[i]) change =1;
       last[i] = channel[i];
     }
-    if (!change) return;
+    if (!change) {
+
+#ifdef VERBOSE
+    fprintf(stderr, "No change.\n");
+#endif
+
+      return;
+    }
+  }
       
-    // there is indeed some change, send it;
+  // there is indeed some change, send it;
+  report();
+}
+
+void vrpn_Analog::report (void) {
+
+    char msgbuf [1000];
+    vrpn_int32  len;
+
     gettimeofday(&timestamp, NULL);
-    char	msgbuf[1000];
-    vrpn_int32	len = vrpn_Analog::encode_to(msgbuf);
+    len = vrpn_Analog::encode_to(msgbuf);
 #ifdef VERBOSE
     print();
 #endif
-    if (connection->pack_message(len, timestamp,
-				 channel_m_id, my_id, msgbuf,
-				 vrpn_CONNECTION_LOW_LATENCY)) {
+    if (connection && connection->pack_message(len, timestamp,
+                                 channel_m_id, my_id, msgbuf,
+                                 vrpn_CONNECTION_LOW_LATENCY)) {
       fprintf(stderr,"vrpn_Analog: cannot write message: tossing\n");
     }
-  }else 
-    fprintf(stderr,"vrpn_Analog: No valid connection\n");
 }
 
 #ifndef VRPN_CLIENT_ONLY
@@ -112,6 +129,47 @@ vrpn_Serial_Analog::vrpn_Serial_Analog (const char * name, vrpn_Connection * c,
 }
 #endif  // _WIN32
 #endif  // VRPN_CLIENT_ONLY
+
+
+vrpn_Analog_Server::vrpn_Analog_Server (const char * name,
+                                        vrpn_Connection * c) :
+    vrpn_Analog (name, c) {
+
+  num_channel = 0;
+
+}
+
+//virtual
+vrpn_Analog_Server::~vrpn_Analog_Server (void) {
+
+}
+
+//virtual
+void vrpn_Analog_Server::report_changes (void) {
+  vrpn_Analog::report_changes();
+}
+
+//virtual
+void vrpn_Analog_Server::report (void) {
+  vrpn_Analog::report();
+}
+
+vrpn_float64 * vrpn_Analog_Server::channels (void) {
+  return channel;
+}
+
+vrpn_int32 vrpn_Analog_Server::numChannels (void) const {
+  return num_channel;
+}
+
+vrpn_int32 vrpn_Analog_Server::setNumChannels (vrpn_int32 sizeRequested) {
+  if (sizeRequested < 0) sizeRequested = 0;
+  if (sizeRequested > vrpn_CHANNEL_MAX) sizeRequested = vrpn_CHANNEL_MAX;
+
+  num_channel = sizeRequested;
+
+  return num_channel;
+}
 
 
 // ************* CLIENT ROUTINES ****************************
