@@ -13,13 +13,18 @@
   Revised: Mon Dec 15 18:24:22 1997 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/server_src/clock_server.C,v $
   $Locker:  $
-  $Revision: 1.3 $
+  $Revision: 1.4 $
 \*****************************************************************************/
 
 
 #include <vrpn_Connection.h>
 #include <vrpn_Clock.h>
-#include <iostream.h>
+#ifdef  VRPN_USE_OLD_STREAMS
+        #include <iostream.h>
+#else
+        #include <iostream>
+        using namespace std;
+#endif
 
 main(int argc, char *argv[]) {
 
@@ -52,6 +57,16 @@ main(int argc, char *argv[]) {
 
 /*****************************************************************************\
   $Log: clock_server.C,v $
+  Revision 1.4  2004/04/08 15:33:48  taylorr
+  2004-04-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+          * Makefile : Adding flag to SGI compile in the hope that it would
+                  fix things and let us use the new streams libraries.  It
+                  got us part of the way there on my system.
+          * NIUtil.cpp : Same.
+          * clock_server.C : Same.
+          * nidaqClient.cpp : Same.
+
   Revision 1.3  2000/08/28 16:25:36  taylorr
   2000-08-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
 

@@ -65,7 +65,7 @@ ifeq ($(HW_OS),sgi_irix)
       SGI_ARCH := mips3
    endif
    OBJECT_DIR_SUFFIX := .$(SGI_ABI).$(SGI_ARCH)
-   CC := CC -$(SGI_ABI) -$(SGI_ARCH)
+   CC := CC -$(SGI_ABI) -$(SGI_ARCH) -LANG:std
    GL := -lgl
 endif
 
@@ -153,13 +153,6 @@ last_of_sequence:	$(OBJ_DIR)/last_of_sequence
 .PHONY:	testSharedObject
 testSharedObject:	$(OBJ_DIR)/testSharedObject
 
-# client:		$(OBJ_DIR)/client
-# player:		$(OBJ_DIR)/player
-# player: vrpn_player.o
-# 	$(CC) $(LFLAGS) -o player vrpn_player.o -lvrpnserver -lsdi -lm
-# $(OBJ_DIR)/client: $(OBJ_DIR)/client.o	
-# 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/client $(OBJ_DIR)/client.o -lvrpn -lsdi 
-
 $(OBJ_DIR)/vrpn_server: $(OBJ_DIR)/vrpn.o $(LIB_DIR)/libvrpnserver.a \
 		$(OBJ_DIR)/buzzForceField.o $(OBJ_DIR)/constraint.o \
 		$(OBJ_DIR)/forcefield.o $(OBJ_DIR)/plane.o \
@@ -170,7 +163,7 @@ $(OBJ_DIR)/vrpn_server: $(OBJ_DIR)/vrpn.o $(LIB_DIR)/libvrpnserver.a \
 		$(OBJ_DIR)/forcefield.o $(OBJ_DIR)/plane.o \
 		$(OBJ_DIR)/texture_plane.o $(OBJ_DIR)/trimesh.o \
 		$(OBJ_DIR)/vrpn_Phantom.o \
-		-lvrpnserver $(GL) -lquat $(SYSLIBS) -lm
+		$(LIB_DIR)/libvrpnserver.a $(GL) -lquat $(SYSLIBS) -lm
 
 $(OBJ_DIR)/test_vrpn: $(OBJ_DIR)/test_vrpn.o  \
 			 $(LIB_DIR)/libvrpnserver.a

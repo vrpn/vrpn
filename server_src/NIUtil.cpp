@@ -1,14 +1,13 @@
-#include <iostream>
-
+#ifdef	VRPN_USE_OLD_STREAMS
+	#include <iostream.h>
+#else
+	#include <iostream>
+	using namespace std;
+#endif
 
 #include "NIUtil.h"
 
-
 const short Max_NIDAQ_Devices(10);
-
-
-using namespace std;
-
 
 namespace NIUtil
 {

@@ -12,7 +12,12 @@
 #include <windows.h>
 #include <mmsystem.h>
 // link with winmm.lib
-#include <iostream.h>
+#ifdef  VRPN_USE_OLD_STREAMS
+        #include <iostream.h>
+#else
+        #include <iostream>
+        using namespace std;
+#endif
 
 
 #include "vrpn_Analog.h"

@@ -1,3 +1,12 @@
+2004-04-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Adding flag to SGI compile in the hope that it would
+		fix things and let us use the new streams libraries.  It
+		got us part of the way there on my system.
+	* NIUtil.cpp : Same.
+	* clock_server.C : Same.
+	* nidaqClient.cpp : Same.
+
 2004-04-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* directXFF.C : Using vrpn_gettimeofday() not gettimeofday().
