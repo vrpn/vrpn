@@ -21,15 +21,18 @@
  * Author          : Ruigang Yang
  * Created On      : Thu Jan 15 17:30:37 1998
  * Last Modified By: Ruigang Yang
- * Last Modified On: Tue Feb 24 16:51:41 1998
- * Update Count    : 413
+ * Last Modified On: Tue Apr  7 13:21:36 1998
+ * Update Count    : 414
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Tracker_Fastrak.C,v $
- * $Date: 1998/02/24 22:24:19 $
+ * $Date: 1998/04/07 17:27:15 $
  * $Author: ryang $
- * $Revision: 1.7 $
+ * $Revision: 1.8 $
  * 
  * $Log: vrpn_Tracker_Fastrak.C,v $
+ * Revision 1.8  1998/04/07 17:27:15  ryang
+ * change sensor id number starting from zeor
+ *
  * Revision 1.7  1998/02/24 22:24:19  ryang
  * comment the printf debug function
  *
@@ -61,7 +64,7 @@
  * HISTORY
  */
 
-static char rcsid[] = "$Id: vrpn_Tracker_Fastrak.C,v 1.7 1998/02/24 22:24:19 ryang Exp $";
+static char rcsid[] = "$Id: vrpn_Tracker_Fastrak.C,v 1.8 1998/04/07 17:27:15 ryang Exp $";
 #include <time.h>
 #include <math.h>
 #include <stdlib.h>
@@ -1167,7 +1170,7 @@ int vrpn_Tracker_Fastrak::xyz_quat_interpret()
 
     rawPtr = buffer +3;
 
-    sensor = buffer[1]-'0';
+    sensor = buffer[1]-'0'-1;
     dataPtr = (float *)(buffer+3);
 
 
