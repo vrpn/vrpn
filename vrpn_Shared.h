@@ -2,6 +2,7 @@
 #define VRPN_SHARED_H
 
 #ifdef _WIN32
+#include <windows.h>
 #include <sys/timeb.h>
 #include <winsock.h>   // timeval is defined here
 
