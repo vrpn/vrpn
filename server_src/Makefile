@@ -78,8 +78,8 @@ LIB_DIR := ../$(OBJ_DIR)
 
 CFLAGS = -g -I../ -I../../quat -I/afs/unc/proj/hmd/beta/include
 LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) \
-	 -L/afs/unc/proj/hmd/beta/lib/$(HW_OS) \
-         -L/afs/unc/proj/hmd/lib/$(HW_OS)
+	 -L/afs/unc/proj/hmd/beta/lib/$(HW_OS)$(OBJECT_DIR_SUFFIX) \
+         -L/afs/unc/proj/hmd/lib/$(HW_OS)$(OBJECT_DIR_SUFFIX)
 
 .C.o:
 	$(CC) $(CFLAGS) -c $*.C
