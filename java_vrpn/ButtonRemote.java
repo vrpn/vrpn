@@ -44,7 +44,7 @@ public class ButtonRemote extends VRPN implements Runnable
 			throw new InstantiationException( e.getMessage( ) );
 		}
 		
-		this.buttonThread = new Thread( this );
+		this.buttonThread = new Thread( this, "vrpn ButtonRemote" );
 		this.buttonThread.start( );
 		
 	}

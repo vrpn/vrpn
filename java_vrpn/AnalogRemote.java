@@ -60,7 +60,7 @@ public class AnalogRemote extends VRPN implements Runnable
 			throw new InstantiationException( e.getMessage( ) );
 		}
 		
-		this.analogThread = new Thread( this );
+		this.analogThread = new Thread( this, "vrpn AnalogRemote" );
 		this.analogThread.start( );
 	}
 	

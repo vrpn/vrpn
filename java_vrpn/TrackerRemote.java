@@ -92,7 +92,7 @@ public class TrackerRemote extends VRPN implements Runnable
 			throw new InstantiationException( e.getMessage( ) );
 		}
 		
-		this.trackerThread = new Thread( this );
+		this.trackerThread = new Thread( this, "vrpn TrackerRemote" );
 		this.trackerThread.start( );
 	}
 	

@@ -86,7 +86,7 @@ public class TempImagerRemote extends VRPN implements Runnable
 		// initialize the regions
 		
 		
-		this.tempImagerThread = new Thread( this );
+		this.tempImagerThread = new Thread( this, "vrpn TempImagerRemote" );
 		this.tempImagerThread.start( );
 	}
 	

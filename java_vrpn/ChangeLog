@@ -1,3 +1,9 @@
+2003-05-09  David Marshburn  <marshbur@cs.unc.edu>
+
+	* *Remote.java:  each device type now gives its thread a name
+	* java_vrpn.dsp:  build browse info, also
+	* java_vrpn.vjp:  also zip up the java source (for debugging)
+
 2003-04-01  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* java_vrpn.cpp : Removed ^Ms.

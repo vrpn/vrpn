@@ -40,7 +40,7 @@ public class AnalogOutputRemote extends VRPN implements Runnable
 			throw new InstantiationException( e.getMessage( ) );
 		}
 		
-		this.analogOutputThread = new Thread( this );
+		this.analogOutputThread = new Thread( this, "vrpn AnalogOutputRemote" );
 		this.analogOutputThread.start( );
 
 	}

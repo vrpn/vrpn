@@ -83,7 +83,7 @@ public class ForceDeviceRemote extends VRPN implements Runnable
 			throw new InstantiationException( e.getMessage( ) );
 		}
 		
-		this.forceThread = new Thread( this );
+		this.forceThread = new Thread( this, "vrpn ForceDeviceRemote" );
 		this.forceThread.start( );
 
 	}
