@@ -33,8 +33,10 @@ void	handle_pos (void *, const vrpn_TRACKERCB t)
 	if ((++count % 20) == 0) {
 		fprintf(stderr, "\n");
 		if (count > 300) {
-			printf("Pos, sensor %d = %f, %f, %f\n", t.sensor,
+			printf("Pos, sensor %d = %5.3f, %5.3f, %5.3f", t.sensor,
 				t.pos[0], t.pos[1], t.pos[2]);
+			printf("  Quat = %5.2f, %5.2f, %5.2f, %5.2f\n",
+				t.quat[0], t.quat[1], t.quat[2], t.quat[3]);
 			count = 0;
 		}
 	}
@@ -138,7 +140,6 @@ fprintf(stderr, "Button 2's name is %s.\n", devicename);
 void handle_cntl_c (int) {
 
   static int invocations = 0;
-  struct timeval t;
   const char * n;
   long i;
 
@@ -159,6 +160,7 @@ void handle_cntl_c (int) {
     return;
   }
   if (invocations == 2) {
+    struct timeval t;
     printf("(Third press -- Jumping replay to t+30 seconds -- "
            "1 more to exit)\n");
     t.tv_sec = 30L;

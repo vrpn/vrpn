@@ -1,5 +1,17 @@
 # this is a gmake file
 
+##########################
+# common definitions. For non-UNC sites, uncomment one of the lines
+# that defines hw_os for the machine you are on in the section just
+# below. Then, the code should compile in your environment.
+#
+#HW_OS := sgi_irix
+#HW_OS := pc_linux
+#HW_OS := pc_cygwin
+#HW_OS := pc_FreeBSD
+##########################
+
+ifndef	HW_OS
 # hw_os does not exist on FreeBSD at UNC
 UNAME := $(shell uname -s)
 ifeq ($(UNAME), FreeBSD)
@@ -18,6 +30,7 @@ else
 	  HW_OS := $(shell hw_os)
 	endif
   endif
+endif
 endif
 
 # check if its for pxfl

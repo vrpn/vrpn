@@ -1,24 +1,247 @@
-# vrpn.cfg.SAMPLE
+# vrpn.cfg.SAMPLE for VRPN version 04.07
 
+################################################################################
+################################################################################
+# This file provides comments and examples for the vrpn.cfg file that is read
+# by the vrpn_server application when it starts up. This is a generic server
+# application that can start up many but not all servers (not the Phantom
+# server, for example).
+#
 # This has sample lines for a vrpn.cfg file.  If you get a new device working,
 # add a line for it here.  DO NOT remove lines from this file (unless
 # devices are declared obsolete) - just change the actual vrpn.cfg to match
 # your application.
+#
+# All examples in the file are preceeded by comment characters (#). To actually
+# use one of these examples, remove that character from the beginning of all the
+# examples that you want to use, and edit those lines to suit your environment.
+################################################################################
 
-vrpn_Tracker_NULL	Tracker0	2		2
-#vrpn_Tracker_NULL	Tracker0@daytona		2		2
+################################################################################
+################################################################################
+# Tracker classes.  Lines here to start various tracker servers. A description is
+# provided for each type of tracker for the arguments it takes, then an example
+# configuration line is provided.
+################################################################################
 
-#vrpn_SGIBOX	Button0	1 2 
+################################################################################
+# NULL Tracker. This is a "device" that reports the Identity transformation for
+# each of its sensors at the specified rate. It can be used to verify connections
+# are working and for other tests of VRPN. There are three arguments:
+#	char	name_of_this_device[]
+#	int	number_of_sensors
+#	float	rate_at_which_to_report_updates
 
-# A joybox (7 Analog channels + 2 buttons) attached to this computer.
+#vrpn_Tracker_NULL	Tracker0	2	2.0
 
-# arguments:  output_name port baud_rate min_update_rate
-vrpn_Joystick joybox /dev/ttyd1 30000 100.0
+################################################################################
+# Flock-of-birds Tracker. Runs an Ascension Flock of Birds tracker that is
+# attached to a serial port on this machine. Note that there is another driver
+# (listed below) that runs the Flock when each sensor is connected to its own
+# serial line. Arguments:
+#	char	name_of_this_device[]
+#	int	number_of_sensors
+#	char	name_of_serial_device[]
+#	int	baud_rate_of_serial_device
 
-# A vrpn_Tracker that translates the vrpn_Joystick into Walkthrough-
-# convention tracker reports.
-# Note use of temporary hack '*'-initial tracker server name to denote local
-# device.
+#vrpn_Tracker_Flock	Tracker0	4	/dev/ttyS0	115200
 
-# arguments:  output_name source_joystick_name config_file
-vrpn_JoyFly walk-joybox *joybox vrpn_Joyfly.cfg
+################################################################################
+# Flock-of-birds in parallel Tracker. Runs an Ascension Flock of Birds tracker
+# that has its source and each sensor plugged into its own serial port on this
+# machine (perhaps through a Cyclades multi-port serial card). This mode of
+# operation increases the throughput and decreases the latency of tracker reports.
+# The arguments match those of the Flock-of-birds tracker from above, with the
+# addition of the name of the serial ports for each of the sensors added at the
+# end. Arguments (all on the same line):
+#	char	name_of_this_device[]
+#	int	number_of_sensors
+#	char	name_of_serial_device_for_controller[]
+#	int	baud_rate_of_serial_device
+#	[one for each sensor]	char	name_of_serial_device_for_sensor[]
+
+#vrpn_Tracker_Flock_Parallel	Tracker0	4	/dev/ttyC4	115200	/dev/ttyC0 /dev/ttyC1 /dev/ttyC2 /dev/ttyC3
+
+################################################################################
+# Fastrak Tracker. Runs a Polhemus Fastrak tracker that is attached to a serial
+# port on this machine. This driver will also run an InterSense IS600 tracker,
+# but you will want to include extra initialization code (as described below)
+# to set up the ultrasonic pip information and so forth. Arguments:
+#	char	name_of_this_device[]
+#	char	name_of_serial_device[]
+#	int	baud_rate_of_serial_device
+# It is possible to add additional commands that will be sent to the tracker
+# by putting the backslash character (\) at the end of the config line. This
+# will cause the following line to be read in and sent to the Fastrak during
+# the reset routine. You can add additional lines by putting a slash at the
+# end of each command line but the last. Each line will be sent to the Fastrak
+# with a newline at the end of it. Note that this backslash-notation can only
+# be used for the Fastrak, not to extend the line for any other type of device.
+
+#vrpn_Tracker_Fastrak	Fastrak0	/dev/ttyS0	19200
+
+#vrpn_Tracker_Fastrak	Isense0	/dev/ttyS0	19200 \
+#MCc\
+#MCM1,1,0.0900,0.0000,-0.2210,0.00,0.00,-1.00,89\
+#MCM1,2,-0.0566,0.0000,-0.2210,0.00,0.00,-1.00,87\
+#MCM2,1,0.0900,0.0000,-0.2210,0.00,0.00,-1.00,66\
+#MCM2,2,-0.0566,0.0000,-0.2210,0.00,0.00,-1.00,71\
+#MCM3,1,0.1237,-0.0762,-0.0424,0.00,0.00,-1.00,82\
+#MCM3,2,0.1237,0.0762,-0.0424,0.00,0.00,-1.00,77\
+#MCe
+
+################################################################################
+# Dynasight Tracker. Runs an Origin System's DynaSight tracker connected to a
+# serial port on this machine. arguments:
+#	char	name_of_this_device[]
+#	int	number_of_sensors
+#	char	name_of_serial_device[]
+#	int	baud_rate_of_serial_device
+
+#vrpn_Tracker_Dyna	Tracker0	1	/dev/ttyS0	19200
+
+#vrpn_Tracker_Dyna	Tracker0	0	COM1		19200
+
+################################################################################
+# AnalogFly Tracker. This is a tracker that is intended to be used on top of
+# a joystick of some kind to turn it into a flying device. It could be used on
+# top of any analog device, in fact.
+#   This device basically takes in analog signals and puts out transformation
+# matrices. It should supercede the JoyFly tracker, since it is more general.
+#   One analog channel is associated with each axis (X, Y, Z) and rotation about
+# each axis (RX, RY, RZ). For each axis, the value is converted to a speed
+# (meters/second or revolutions/second) by first thresholding it to see if it
+# is far enough from zero, then (if it is) scaling it and taking it to a power
+# (to allow nonlinear speedup as the stick is pushed far from center).
+#   A button can be associated with a reset function, which will take the
+# device back to center (identity transformation). The device will also recenter
+# when the first connection is made to the server it is running on.
+#   Any axis or the reset button can be disabled by setting the name of its
+# associated device to the string "NULL".
+#   Note that you could have multiple of these devices running simultaneously,
+# each with a different name and interaction metaphor. The user could then
+# connect to their favorite one. Arguments:
+#	char	name_of_this_device[]
+#	float	update_rate_to_send_tracker_reports
+#	[six lines follow, one for X Y Z RX RY RZ, each with:
+#		char	axis_name[]			(X Y Z RX RY RZ in that order)
+#		char	name_of_analog_device[]		(start with * for local)
+#		int	channel_of_analog_device
+#		float	threshold
+#		float	scale
+#		float	power
+#	]
+#	[New line to describe reset button, with:
+#		char	"RESET"
+#		char	name_of_button_device[]		(start with * for local)
+#		int	which_button_to_use
+#	]
+
+#vrpn_Tracker_AnalogFly	Tracker0	60.0
+#X	*CerealBox	4	0.021	1.0	1.0
+#Y	*CerealBox	5	0.021	1.0	1.0
+#Z	*CerealBox	6	0.021	3.0	1.0
+#RX	*CerealBox	0	0.021	1.0	1.0
+#RY	NULL		1	0.021	1.0	1.0
+#RZ	*CerealBox	2	0.021	3.0	1.0
+#RESET	*CerealBox	3
+
+################################################################################
+# JoyFly Tracker. A vrpn_Tracker that translates the vrpn_Joystick into
+# Walkthrough- convention tracker reports. This is part of a two-part setup
+# that allows you to use a joystick as a flying device. First, a joystick
+# device has to be created (named joybox in our example) that will produce
+# the analog inputs that the JoyFly tracker uses to determine the transformation.
+# Then, the JoyFly device needs to be started and will listen to the device
+# and produce tracker reports. If these are both run on the same server, then
+# the JoyFly needs to use the "server" connection to hear from the Joystick
+# device, which is indicated by placing a '*' in front of the name of the
+# joystick device that it is to use. If the joystick device is remote from
+# this server, then the full name of it should be used (joystick@foo.cs.unc.edu).
+# Arguments:
+#	char	name_of_this_device[]
+#	char	source_joystick_name[]  (Begin with * for one sharing your connection)
+#	char	joystick_configuration_file_name[]
+
+#vrpn_JoyFly walk-joybox *joybox vrpn_Joyfly.cfg
+
+################################################################################
+# 3Space Tracker. Runs a Polhemus 3Space (not Fastrak) tracker that is attached
+# to a serial port on this machine. Note that as of VRPN 04.07 there is some sort
+# of bug in the 3Space orientation decoding; nobody has had enough need for this
+# to fix it yet. Arguments:
+#	char	name_of_this_device[]
+#	char	name_of_serial_device[]
+#	int	baud_rate_of_serial_device
+
+#vrpn_Tracker_3Space	Tracker0	/dev/ttyS0	19200
+
+################################################################################
+################################################################################
+# Non-tracker devices. Lines are provided here for the various non-tracker servers
+# that can be started.
+
+################################################################################
+# CerealBox dial/button/analog. Runs a BG Systems CerealBox device that attaches
+# to a serial port on this machine. As of VRPN version 04.07, 19200 is the
+# only supported baud rate. The driver has been tested on an LV824-F-8e device.
+# Arguments:
+#	char	name_of_this_device[]
+#	char	name_of_serial_device[]
+#	int	baud_rate_of_serial_device
+#	int	number_of_buttons_to_read (starting from 0)
+#	int	number_of_analogs_to_read
+#	int	number_of_encoders_to_read
+
+#vrpn_CerealBox	cereal	/dev/cua0	19200	8 8 8
+
+################################################################################
+# SGI Dial and Button box, raw interface. Runs a dial-and-button box from SGI,
+# talking to it through the raw serial interface (not using the GL interface
+# supplied by SGI). This allows the box to be opened even if there is nobody
+# logged on at the console. Note that to use this on an SGI, you will need to
+# configure the port as a serial device, not as a button device, to get it to
+# run. Arguments:
+#	char	name_of_this_device[]
+#	char	name_of_serial_device[]
+#	[list of buttons to treat as toggles]	int	button_to_toggle
+
+#vrpn_raw_SGIBox	sgibox	/dev/ttyS0	0 1 2 3
+
+################################################################################
+# SGI Dial and Button box, cooked interface. Runs a dial-and-button box from SGI,
+# talking to it through the GL interface supplied by SGI. Note that this can
+# only be used on an SGI, and the serial port must be configured as a dial/button
+# device and the dial/button server from SGI must be running to use it. Arguments:
+#	char	name_of_this_device[]
+#	[list of buttons to treat as toggles]	int	button_to_toggle
+
+#vrpn_SGIBOX	sgibox	1 2 
+
+################################################################################
+# UNC Python button device. UNC has developed a custom button input device, which
+# is a 5-button controller that attaches to a parallel port and uses the sense
+# lines to return the state of the buttons. This runs the device. Note that on
+# Windows NT, you need to have installed the GiveIO driver for this code to
+# work. It also works on Linux (no extra drivers needed), but on no other
+# architecture. Arguments:
+#	char	name_of_this_device[]
+#	int	parallel_port_to_use_starting_with_1
+
+#vrpn_Button_Python	Button0	1
+
+################################################################################
+# UNC Joystick driver. UNC has developed a custom-build joybox, with 7 analog
+# and 2 button inputs (two 3-axis joysticks and a slider, with a button on top
+# of each joystick). This will drive one of these devices, which attaches to
+# a serial port on this computer. I'm not sure what the baud rate should be;
+# David Harrison might know.
+# This driver can be used in conjunction with the JoyFly driver to produce a
+# tracker that uses the joystick to fly around. Arguments:
+#	char	name_of_this_device[]
+#	char	name_of_serial_device[]
+#	int	baud_rate_of_serial_device
+#	float	minimum_update_rate_from_analogs_even_if_they_dont_move
+
+#vrpn_Joystick	joybox	/dev/ttyd1	19200	10.0
+

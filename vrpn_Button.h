@@ -132,8 +132,10 @@ typedef void (*vrpn_BUTTONCHANGEHANDLER)(void *userdata,
 
 class vrpn_Button_Remote: public vrpn_Button {
   public:
-	// The name of the button device to connect to
-	vrpn_Button_Remote(const char *name);
+	// The name of the button device to connect to. Optional second
+	// argument is used when you already have an open connection you
+	// want it to listen on.
+	vrpn_Button_Remote(const char *name, vrpn_Connection *cn = NULL);
 
 	// This routine calls the mainloop of the connection it's on
 	virtual void mainloop(const struct timeval * timeout = NULL);

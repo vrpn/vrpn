@@ -30,6 +30,7 @@
 #include "vrpn_Joystick.h"
 #include "vrpn_JoyFly.h"
 #include "vrpn_CerealBox.h"
+#include "vrpn_Tracker_AnalogFly.h"
 
 #include "vrpn_ForwarderController.h"
 
@@ -122,6 +123,53 @@ void shutDown (void)
     exit(0);
     return;
 }
+
+// This function will read one line of the vrpn_AnalogFly configuration (matching
+// one axis) and fill in the data for that axis. The axis name, the file to read
+// from, and the axis to fill in are passed as parameters. It returns 0 on success
+// and -1 on failure.
+
+int	get_AFline(FILE *config_file, char *axis_name, vrpn_TAF_axis *axis)
+{
+	char	line[512];
+	char	_axis_name[512];
+	char	*name = new char[512];	// We need this to stay around for the param
+	int	channel;
+	float	thresh, power, scale;
+
+	// Read in the line
+	if (fgets(line, sizeof(line), config_file) == NULL) {
+		perror("AnalogFly Axis: Can't read axis");
+		return -1;
+	}
+
+	// Get the values from the line
+	if (sscanf(line, "%511s%511s%d%g%g%g", _axis_name, name,
+			&channel, &thresh,&scale,&power) != 6) {
+		fprintf(stderr,"AnalogFly Axis: Bad axis line\n");
+		return -1;
+	}
+
+	// Check to make sure the name of the line matches
+	if (strcmp(_axis_name, axis_name) != 0) {
+		fprintf(stderr,"AnalogFly Axis: wrong axis: wanted %s, got %s)\n",
+			axis_name, name);
+		return -1;
+	}
+
+	// Fill in the values if we didn't get the name "NULL". Otherwise, just
+	// leave them as they are, and they will have no effect.
+	if (strcmp(name,"NULL") != 0) {
+		axis->name = name;
+		axis->channel = channel;
+		axis->thresh = thresh;
+		axis->scale = scale;
+		axis->power = power;
+	}
+
+	return 0;
+}
+
 
 main (int argc, char * argv[])
 {
@@ -291,6 +339,7 @@ main (int argc, char * argv[])
 		}
 
 	  } else if (isit("vrpn_SGIBOX")) {
+#ifdef SGI_BDBOX
 	    int tbutton;
 	    next();
 	    if (sscanf(pch,"%511s",s2)!=1) {
@@ -299,7 +348,6 @@ main (int argc, char * argv[])
 	      else { continue; }	// Skip this line
 	    }
 
-#ifdef SGI_BDBOX
 		// Open the sgibox
 	      if (verbose) printf("Opening vrpn_SGIBOX on host %s\n", s2);
 		if ( (vrpn_special_sgibox =
@@ -367,6 +415,90 @@ main (int argc, char * argv[])
 		  num_trackers++;
 		}
 #endif
+	  } else if (isit("vrpn_Tracker_AnalogFly")) {
+		vrpn_Tracker_AnalogFlyParam	p;
+
+		next();
+		if (sscanf(pch, "%511s%g",s2,&f1) != 2) {
+			fprintf(stderr, "Bad vrpn_Tracker_AnalogFly line: %s\n", line);
+			if (bail_on_error) { return -1; }
+			else { continue; }	// Skip this line
+		}
+
+		// Make sure there's room for a new tracker
+		if (num_trackers >= MAX_TRACKERS) {
+		  fprintf(stderr,"Too many trackers in config file");
+		  if (bail_on_error) { return -1; }
+		  else { continue; }	// Skip this line
+		}
+
+		// Open the tracker
+		if (verbose) {
+                  printf("Opening vrpn_Tracker_AnalogFly: %s with update rate %g\n",s2,f1);
+		}
+
+		// Scan the following lines in the configuration file to fill
+		// in the start-up parameters for the different axis.
+
+		if (get_AFline(config_file,"X", &p.x)) {
+			fprintf(stderr,"Can't read X line for AnalogFly\n");
+			if (bail_on_error) { return -1; }
+			else { continue; }	// Skip this line
+		}
+		
+		if (get_AFline(config_file,"Y", &p.y)) {
+			fprintf(stderr,"Can't read Y line for AnalogFly\n");
+			if (bail_on_error) { return -1; }
+			else { continue; }	// Skip this line
+		}
+
+		if (get_AFline(config_file,"Z", &p.z)) {
+			fprintf(stderr,"Can't read Z line for AnalogFly\n");
+			if (bail_on_error) { return -1; }
+			else { continue; }	// Skip this line
+		}
+
+		if (get_AFline(config_file,"RX", &p.sx)) {
+			fprintf(stderr,"Can't read RX line for AnalogFly\n");
+			if (bail_on_error) { return -1; }
+			else { continue; }	// Skip this line
+		}
+
+		if (get_AFline(config_file,"RY", &p.sy)) {
+			fprintf(stderr,"Can't read RY line for AnalogFly\n");
+			if (bail_on_error) { return -1; }
+			else { continue; }	// Skip this line
+		}
+
+		if (get_AFline(config_file,"RZ", &p.sz)) {
+			fprintf(stderr,"Can't read RZ line for AnalogFly\n");
+			if (bail_on_error) { return -1; }
+			else { continue; }	// Skip this line
+		}
+
+		// Read the reset line
+		if (fgets(line, sizeof(line), config_file) == NULL) {
+			fprintf(stderr,"Ran past end of config file in AnalogFly\n");
+			if (bail_on_error) { return -1; } else {continue;}
+		}
+		if (sscanf(line, "RESET %511s%d", s3, &i1) != 2) {
+			fprintf(stderr,"Bad RESET line in AnalogFly\n");
+			if (bail_on_error) { return -1; } else {continue;}
+		}
+		if (strcmp(s3,"NULL") != 0) {
+			p.reset_name = s3;
+			p.reset_which = i1;
+		}
+
+		trackers[num_trackers] = new vrpn_Tracker_AnalogFly(s2,connection,&p,f1);
+
+		if (!trackers[num_trackers]) {
+		  fprintf(stderr,"Can't create new vrpn_Tracker_AnalogFly\n");
+		  if (bail_on_error) { return -1; }
+		  else { continue; }	// Skip this line
+		} else {
+		  num_trackers++;
+		}
 	  } else  if (isit("vrpn_Joystick")) {
 	    float fhz;
 	    // Get the arguments
@@ -391,7 +523,7 @@ main (int argc, char * argv[])
 	    // Open the sound server
 	    if (verbose) 
 	      printf("Opening vrpn_Joystick:  "
-                     "%s on port %s baud %d, mim update rate = %.2f\n", 
+                     "%s on port %s baud %d, min update rate = %.2f\n", 
 		     s2,s3, i1, fhz);
 	    if ((analogs[num_analogs] =
 		  new vrpn_Joystick(s2, connection,s3, i1, fhz)) == NULL) {
@@ -433,7 +565,7 @@ main (int argc, char * argv[])
 	      }
 	  } else if (isit("vrpn_Tracker_Dyna")) {
 	    next();
-	    // Get the arguments (class, tracker_name, sensors,port, baud)
+	    // Get the arguments (class, tracker_name, sensors, port, baud)
 	    if (sscanf(pch,"%511s%d%511s%d",s2,&i2, s3, &i1) != 4) {
 	      fprintf(stderr,"Bad vrpn_Tracker_Dyan line: %s\n",line);
 	      if (bail_on_error) { return -1; }

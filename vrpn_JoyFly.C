@@ -1,8 +1,6 @@
 #include <string.h>
 #include "vrpn_JoyFly.h"
 
-
-
 vrpn_Tracker_JoyFly::vrpn_Tracker_JoyFly
         (const char * name, vrpn_Connection * c,
          const char * source, const char * set_config,

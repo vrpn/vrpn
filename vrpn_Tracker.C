@@ -64,22 +64,14 @@ vrpn_Tracker::vrpn_Tracker (const char * name, vrpn_Connection * c) {
 	  position_m_id = connection->register_message_type("Tracker Pos/Quat");
 	  velocity_m_id = connection->register_message_type("Tracker Velocity");
 	  accel_m_id =connection->register_message_type("Tracker Acceleration");
-	  tracker2room_m_id = connection->register_message_type(
-							"Tracker To Room");
-	  unit2sensor_m_id = connection->register_message_type(
-							"Unit To Sensor");
-	  request_t2r_m_id = connection->register_message_type(
-						"Request Tracker To Room");
-	  request_u2s_m_id = connection->register_message_type(
-						"Request Unit To Sensor");
-	  workspace_m_id = connection->register_message_type(
-							"Tracker Workspace");
-	  request_workspace_m_id = connection->register_message_type(
-						"Request Tracker Workspace");
-	  update_rate_id = connection->register_message_type
-				("vrpn Tracker set update rate");
-	  reset_origin_m_id = connection->register_message_type(
-						"Reset Origin");
+	  tracker2room_m_id = connection->register_message_type("Tracker To Room");
+	  unit2sensor_m_id = connection->register_message_type("Unit To Sensor");
+	  request_t2r_m_id = connection->register_message_type("Request Tracker To Room");
+	  request_u2s_m_id = connection->register_message_type("Request Unit To Sensor");
+	  workspace_m_id = connection->register_message_type("Tracker Workspace");
+	  request_workspace_m_id = connection->register_message_type("Request Tracker Workspace");
+	  update_rate_id = connection->register_message_type("vrpn Tracker set update rate");
+	  reset_origin_m_id = connection->register_message_type("Reset Origin");
 	}
 
 	// Set the current time to zero, just to have something there
@@ -111,8 +103,7 @@ vrpn_Tracker::vrpn_Tracker (const char * name, vrpn_Connection * c) {
 
 	// Set the room to tracker and sensor to unit transforms to identity
 	tracker2room[0] = tracker2room[1] = tracker2room[2] = 0.0;
-	tracker2room_quat[0] = tracker2room_quat[1] = 
-						tracker2room_quat[2] = 0.0;
+	tracker2room_quat[0] = tracker2room_quat[1] = tracker2room_quat[2] = 0.0;
 	tracker2room_quat[3] = 1.0;
 
 	num_sensors = 1;
@@ -130,16 +121,16 @@ vrpn_Tracker::vrpn_Tracker (const char * name, vrpn_Connection * c) {
 	// replace defaults with values from "vrpn_Tracker.cfg" file
 	// if it exists
 	if ((config_file = fopen(tracker_cfg_file_name, "r")) == NULL) {
-		fprintf(stderr, "Cannot open config file %s\n",
-				tracker_cfg_file_name);
-	}
-	else if (read_config_file(config_file, name)){
-		fprintf(stderr, "Found but cannot read config file %s\n",
-				tracker_cfg_file_name);
+		// Can't find the config file. Oh well!
+	} else if (read_config_file(config_file, name)) {
+		fprintf(stderr, "vrpn_Tracker: Found config file %s, but cannot read info for %s\n",
+				tracker_cfg_file_name, name);
+		fclose(config_file);
+	} else {	// no problems
+		fprintf(stderr,"vrpn_Tracker: Read room and sensor info from %s\n",
+			tracker_cfg_file_name);
 		fclose(config_file);
 	}
-	else	// no problems
-		fclose(config_file);
 
   if (servicename)
     delete [] servicename;
@@ -700,8 +691,8 @@ vrpn_Tracker_Serial::vrpn_Tracker_Serial
 }
 #endif  // VRPN_CLIENT_ONLY
 
-vrpn_Tracker_Remote::vrpn_Tracker_Remote (const char * name) :
-	vrpn_Tracker (name, vrpn_get_connection_by_name(name))
+vrpn_Tracker_Remote::vrpn_Tracker_Remote (const char * name, vrpn_Connection *cn) :
+	vrpn_Tracker (name, cn?cn:vrpn_get_connection_by_name(name))
 {
 	tracker2roomchange_list = NULL;
 	for (vrpn_int32 i = 0; i < TRACKER_MAX_SENSOR_LIST; i++){
@@ -771,7 +762,7 @@ vrpn_Tracker_Remote::vrpn_Tracker_Remote (const char * name) :
 	gettimeofday(&timestamp, NULL);
 }
 
-// the remote tracker has to un-register it's handlers when it
+// the remote tracker has to un-register its handlers when it
 // is destroyed
 vrpn_Tracker_Remote::~vrpn_Tracker_Remote() {
 
@@ -865,7 +856,8 @@ int vrpn_Tracker_Remote::request_u2s_xform(void)
 	return 0;
 }
 
-int vrpn_Tracker_Remote::set_update_rate (vrpn_float64 samplesPerSecond) {
+int vrpn_Tracker_Remote::set_update_rate (vrpn_float64 samplesPerSecond)
+{
   char * msgbuf;
   vrpn_int32 len;
   struct timeval now;
@@ -894,11 +886,10 @@ int vrpn_Tracker_Remote::set_update_rate (vrpn_float64 samplesPerSecond) {
     connection->mainloop();
   }
   return 0;
-
-
 }
 
-int vrpn_Tracker_Remote::reset_origin() {
+int vrpn_Tracker_Remote::reset_origin()
+{
   struct timeval current_time;
   gettimeofday(&current_time, NULL);
   timestamp.tv_sec = current_time.tv_sec;

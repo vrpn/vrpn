@@ -22,12 +22,20 @@
 #############################################################################
 
 ##########################
-# common definitions
+# common definitions. For non-UNC sites, uncomment one of the lines
+# that defines hw_os for the machine you are on in the section just
+# below. Then, the code should compile in your environment.
 #
+#HW_OS := sgi_irix
+#HW_OS := pc_linux
+#HW_OS := pc_cygwin
+#HW_OS := pc_FreeBSD
+##########################
 
 MAKEFILE := Makefile
 MAKE := gmake -f $(MAKEFILE)
 
+ifndef	HW_OS
 # hw_os does not exist on FreeBSD at UNC
 UNAME := $(shell uname -s)
 ifeq ($(UNAME), FreeBSD)
@@ -46,6 +54,7 @@ else
 	  HW_OS := $(shell hw_os)
 	endif
   endif
+endif
 endif
 
 # check if its for pxfl
@@ -310,7 +319,7 @@ SLIB_FILES =  $(LIB_FILES) vrpn_3Space.C \
 	     vrpn_Flock.C vrpn_Tracker_Fastrak.C vrpn_Dyna.C \
 	     vrpn_Flock_Parallel.C  vrpn_Joystick.C \
 	     vrpn_JoyFly.C vrpn_sgibox.C vrpn_raw_sgibox.C \
-             vrpn_CerealBox.C
+             vrpn_CerealBox.C vrpn_Tracker_AnalogFly.C
 
 SLIB_OBJECTS = $(patsubst %,$(SOBJECT_DIR)/%,$(SLIB_FILES:.C=.o))
 
@@ -318,7 +327,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) vrpn_3Space.h \
 	       vrpn_Flock.h vrpn_Tracker_Fastrak.h vrpn_Dyna.h \
 	       vrpn_Flock_Parallel.h vrpn_Joystick.h \
 	       vrpn_JoyFly.h vrpn_sgibox.h vrpn_raw_sgibox.h \
-               vrpn_CerealBox.h
+               vrpn_CerealBox.h vrpn_Tracker_AnalogFly.h
 
 
 $(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(OBJECT_DIR) $(LIB_OBJECTS) \

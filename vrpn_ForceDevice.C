@@ -1035,13 +1035,13 @@ vrpn_int32 vrpn_ForceDevice::decodePoint (const char * buffer,
 
 /* ******************** vrpn_ForceDevice_Remote ********************** */
 
-vrpn_ForceDevice_Remote::vrpn_ForceDevice_Remote(char *name):
-	vrpn_ForceDevice(name, vrpn_get_connection_by_name(name)),
-    change_list (NULL),
-    scp_change_list (NULL),
-    error_change_list (NULL),
-    d_conEnabled (0),
-    d_conMode (POINT_CONSTRAINT)
+vrpn_ForceDevice_Remote::vrpn_ForceDevice_Remote(char *name, vrpn_Connection *cn):
+	vrpn_ForceDevice(name, cn ? cn : vrpn_get_connection_by_name(name)),
+	change_list (NULL),
+	scp_change_list (NULL),
+	error_change_list (NULL),
+	d_conEnabled (0),
+	d_conMode (POINT_CONSTRAINT)
 {
     which_plane = 0;
 

@@ -115,15 +115,21 @@ struct timeval vrpn_MsecsTimeval( const double dMsecs ) {
   return tv;
 }
 
+// Sleep for dMsecs milliseconds, freeing up the processor while you
+// are doing so.
+
 void vrpn_SleepMsecs( double dMsecs ) {
 #ifdef _WIN32
   Sleep(DWORD(dMsecs));
 #else
-  struct timeval tvStart, tvNow;
-  gettimeofday(&tvStart, NULL);
-  do {
-    gettimeofday(&tvNow, NULL);
-  } while (vrpn_TimevalMsecs(vrpn_TimevalDiff( tvNow, tvStart ))<dMsecs);
+  struct timeval timeout;
+  timeout.tv_sec = (int)(dMsecs / 1000);	// Convert milliseconds to seconds
+  dMsecs -= timeout.tv_sec * 1000;		// Subtract of whole number of seconds
+  timeout.tv_usec = (int)(dMsecs * 1000);	// Convert remaining milliseconds to microsec
+  
+  // A select() will NULL file descriptors acts like a microsecond
+  // timer.
+  select(0, 0, 0, 0, & timeout);  // wait for that long;
 #endif
 }
 

@@ -252,8 +252,13 @@ class vrpn_Tracker_Canned: public vrpn_Tracker {
 
 class vrpn_Tracker_Remote: public vrpn_Tracker {
   public:
-	// The name of the tracker to connect to
-	vrpn_Tracker_Remote (const char * name);
+	// The name of the tracker to connect to, including connection name,
+	// for example "Ceiling_tracker@ceiling.cs.unc.edu". If you already
+	// have the connection open, you can specify it as the second parameter.
+	// This allows both servers and clients in the same thread, for example.
+	// If it is not specified, then the connection will be looked up based
+	// on the name passed in.
+	vrpn_Tracker_Remote (const char * name, vrpn_Connection *c = NULL);
 
         // unregister all of the handlers registered with the connection
         virtual ~vrpn_Tracker_Remote (void);

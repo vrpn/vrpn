@@ -95,7 +95,7 @@ int gethostname (char *, int);
 // string.  Since minor versions should interoperate, MAGIC is only
 // checked through the last period;  characters after that are ignored.
 
-const char * vrpn_MAGIC = (const char *) "vrpn: ver. 04.07";
+const char * vrpn_MAGIC = (const char *) "vrpn: ver. 04.08";
 const int vrpn_MAGICLEN = 16;  // Must be a multiple of vrpn_ALIGN bytes!
 
 // Version history:
@@ -2608,10 +2608,13 @@ void vrpn_Connection::drop_connection(void)
 	if (endpoint.tcp_sock != INVALID_SOCKET) {
 		close(endpoint.tcp_sock);
 		endpoint.tcp_sock = INVALID_SOCKET;
+		d_tcp_num_out = 0;	// Ignore characters waiting to go
+
 	}
 	if (endpoint.udp_outbound != INVALID_SOCKET) {
 		close(endpoint.udp_outbound);
 		endpoint.udp_outbound = INVALID_SOCKET;
+		d_udp_num_out = 0;	// Ignore characters waiting to go
 	}
 	if (endpoint.udp_inbound != INVALID_SOCKET) {
 		close(endpoint.udp_inbound);
@@ -2702,7 +2705,7 @@ int vrpn_Connection::send_pending_reports(void)
    printf("UDP Sent %d bytes\n",ret);
 #endif 
       if (ret == -1) {
-	printf("vrpn: UDP send failed\n");
+	perror("vrpn_Connection: UDP send failed");
 	drop_connection();
 	return -1;
       }

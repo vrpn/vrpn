@@ -359,6 +359,14 @@ SOURCE=.\vrpn_Tracker.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_Tracker_AnalogFly.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Tracker_AnalogFly.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_Tracker_Fastrak.C
 # End Source File
 # Begin Source File

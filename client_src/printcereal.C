@@ -57,45 +57,16 @@ void	handle_dial (void *, const vrpn_DIALCB d)
  *
  *****************************************************************************/
 
-void init (const char * station_name, 
-           const char * local_logfile, long local_logmode,
-           const char * remote_logfile, long remote_logmode)
+void init (const char * devicename)
 {
-	char devicename [1000];
-	//char * hn;
-	int port, i;
+	int i;
 
-	// explicitly open up connections with the proper logging parameters
-	// these will be entered in the table and found by the
-	// vrpn_get_connection_by_name() inside vrpn_Tracker and vrpn_Button
-
-	sprintf(devicename, "Cereal@%s", station_name);
-	if (!strncmp(station_name, "file:", 5)) {
-fprintf(stderr, "Opening file %s.\n", station_name);
-	  c = new vrpn_File_Connection (station_name);  // now unnecessary!
-          if (local_logfile || local_logmode ||
-              remote_logfile || remote_logmode)
-            fprintf(stderr, "Warning:  Reading from file, so not logging.\n");
-	} else {
-fprintf(stderr, "Connecting to host %s.\n", station_name);
-	  port = vrpn_get_port_number(station_name);
-	  c = new vrpn_Synchronized_Connection
-                   (station_name, port,
-		    local_logfile, local_logmode,
-		    remote_logfile, remote_logmode);
-	}
-
-	fc = new vrpn_File_Controller (c);
-
-	sprintf(devicename, "Cereal@%s", station_name);
 	fprintf(stderr, "Button's name is %s.\n", devicename);
 	btn = new vrpn_Button_Remote (devicename);
 	
-	sprintf(devicename, "Cereal@%s", station_name);
 	fprintf(stderr, "Analog's name is %s.\n", devicename);
 	ana = new vrpn_Analog_Remote (devicename);
 
-	sprintf(devicename, "Cereal@%s", station_name);
 	fprintf(stderr, "Dial's name is %s.\n", devicename);
 	dial = new vrpn_Dial_Remote (devicename);
 
@@ -149,65 +120,29 @@ void main (int argc, char * argv [])
 {
 
 #ifdef hpux
-  char default_station_name [20];
-  strcpy(default_station_name, "ioph100");
+  char default_station_name [100];
+  strcpy(default_station_name, "CerealBox@ioglab");
 #else
-  char default_station_name [] = { "ioph100" };
+  char default_station_name [] = { "CerealBox@ioglab" };
 #endif
 
   const char * station_name = default_station_name;
-  const char * local_logfile = NULL;
-  const char * remote_logfile = NULL;
-  long local_logmode = vrpn_LOG_NONE;
-  long remote_logmode = vrpn_LOG_NONE;
   int	done = 0;
-  int i;
-
-#ifdef	_WIN32
-  WSADATA wsaData; 
-  int status;
-  if ((status = WSAStartup(MAKEWORD(1,1), &wsaData)) != 0) {
-    fprintf(stderr, "WSAStartup failed with %d\n", status);
-    exit(1);
-  }
-#endif
 
   if (argc < 2) {
-    fprintf(stderr, "Usage:  %s [-ll logfile mode] [-rl logfile mode]\n"
-                    "           [-filterpos] station_name\n"
-                    "  -ll:  log locally in <logfile>\n" 
-                    "  -rl:  log remotely in <logfile>\n" 
-                    "  <mode> is one of i, o, io\n" 
-                    "  station_name:  VRPN name of data source to contact\n"
-                    "    one of:  <hostname>[:<portnum>]\n"
-                    "             file:<filename>\n",
+    fprintf(stderr, "Usage:  %s  Device_name\n"
+                    "  Device_name:  VRPN name of data source to contact\n"
+                    "    example:  CerealBox@ioglab\n",
             argv[0]);
     exit(0);
   }
 
   // parse args
 
-  for (i = 1; i < argc; i++) {
-    if (!strcmp(argv[i], "-ll")) {
-      i++;
-      local_logfile = argv[i];
-      i++;
-      if (strchr(argv[i], 'i')) local_logmode |= vrpn_LOG_INCOMING;
-      if (strchr(argv[i], 'o')) local_logmode |= vrpn_LOG_OUTGOING;
-    } else if (!strcmp(argv[i], "-rl")) {
-      i++;
-      remote_logfile = argv[i];
-      i++;
-      if (strchr(argv[i], 'i')) remote_logmode |= vrpn_LOG_INCOMING;
-      if (strchr(argv[i], 'o')) remote_logmode |= vrpn_LOG_OUTGOING;
-    } else
-      station_name = argv[i];
-  }
+  station_name = argv[1];
 
   // initialize the PC/station
-  init(station_name, 
-       local_logfile, local_logmode,
-       remote_logfile, remote_logmode);
+  init(station_name);
 
   // signal handler so logfiles get closed right
   signal(SIGINT, handle_cntl_c);

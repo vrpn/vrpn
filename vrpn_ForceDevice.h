@@ -352,8 +352,10 @@ typedef void (*vrpn_FORCEERRORHANDLER) (void *userdata,
 class vrpn_ForceDevice_Remote: public vrpn_ForceDevice {
 public:
 
-    // The name of the force device to connect to
-    vrpn_ForceDevice_Remote(char *name);
+    // The name of the force device to connect to.
+    // The connection argument is used only if you already have a connection
+    // the device must listen on (it is not normally used).
+    vrpn_ForceDevice_Remote(char *name, vrpn_Connection *cn = NULL);
 
     void sendSurface(void);
     void startSurface(void);

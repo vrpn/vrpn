@@ -465,9 +465,9 @@ void vrpn_Button_Python::read(void)
 #endif  // VRPN_CLIENT_ONLY
 
 
-vrpn_Button_Remote::vrpn_Button_Remote(const char *name)
-	: vrpn_Button(name, vrpn_get_connection_by_name(name)),
-	  change_list(NULL)
+vrpn_Button_Remote::vrpn_Button_Remote(const char *name, vrpn_Connection *cn):
+	vrpn_Button(name, cn ? cn : vrpn_get_connection_by_name(name)),
+	change_list(NULL)
 {
 	vrpn_int32	i;
 

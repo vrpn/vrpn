@@ -2,7 +2,18 @@
 # Copied the one from ../server_src here and put the former one
 # in Makefile.old
 
+##########################
+# common definitions. For non-UNC sites, uncomment one of the lines
+# that defines hw_os for the machine you are on in the section just
+# below. Then, the code should compile in your environment.
+#
 HW_OS := $(shell hw_os)
+#HW_OS := sgi_irix
+#HW_OS := pc_linux
+#HW_OS := pc_cygwin
+#HW_OS := pc_FreeBSD
+##########################
+
 
 # check if its for pxfl
 ifdef PBASE_ROOT
@@ -51,7 +62,7 @@ $(OBJ_DIR)/%.o: %.c
 $(OBJ_DIR)/%.o: %.C
 	$(CC) $(CFLAGS) -o $@ -c $<
 
-all:	$(OBJ_DIR)/printvals \
+all:	$(OBJ_DIR)/printvals $(OBJ_DIR)/printcereal \
 	$(OBJ_DIR)/checklogfile $(OBJ_DIR)/logfilesenders \
 	$(OBJ_DIR)/logfiletypes $(OBJ_DIR)/text \
 	forwarderClient $(OBJ_DIR)/bdbox_client \
@@ -80,6 +91,10 @@ $(OBJ_DIR)/midi_client: $(OBJ_DIR)/midi_client.o ../$(HW_OS)/libvrpn.a
 $(OBJ_DIR)/printvals: $(OBJ_DIR)/printvals.o ../$(HW_OS)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/printvals \
 		$(OBJ_DIR)/printvals.o -lvrpn $(ARCH_LIBS)
+
+$(OBJ_DIR)/printcereal: $(OBJ_DIR)/printcereal.o ../$(HW_OS)/libvrpn.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/printcereal \
+		$(OBJ_DIR)/printcereal.o -lvrpn $(ARCH_LIBS)
 
 $(OBJ_DIR)/bdbox_client: $(OBJ_DIR)/bdbox_client.o ../$(HW_OS)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/bdbox_client \
