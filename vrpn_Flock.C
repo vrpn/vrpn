@@ -454,6 +454,12 @@ void vrpn_Tracker_Flock::reset()
        fprintf(stderr," (a receiver)");
      } else {
        fprintf(stderr," (a transmitter)");
+       if (i != 0) {
+	   fprintf(stderr,"\nError: VRPN Flock driver can only accept transmitter as first unit\n");
+	   status = TRACKER_FAIL;
+	   fOk=0;
+	   return;
+       }
      }
      if (response[i] & 0x80) {
        fprintf(stderr," is accessible");

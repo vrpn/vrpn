@@ -1,5 +1,11 @@
 2001-06-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Flock.C : Modified to print an error when trying to open a Flock
+		that has a transmitter other than as unit 1.  The code doesn't
+		work in this case, and it is good to tell the user what's up.
+
+2001-06-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Shared.C (gettimeofday) : Modified the PC version to always use the
 		_ftime() call, rather than attempting to use the performance counter.
 		This means only 6ms accuracy on timing, but the other code was fragile

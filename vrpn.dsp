@@ -41,7 +41,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "PC_WIN32/Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /I ".." /I "ghostlib" /I "../quat" /I "server_src/quat" /I "../server_src/quat" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c /Tp
+# ADD CPP /nologo /MD /W3 /GX /O2 /I ".." /I "ghostlib" /I "../quat" /I "server_src/quat" /I "../server_src/quat" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c /Tp
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409
 BSC32=bscmake.exe
