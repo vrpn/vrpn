@@ -44,7 +44,7 @@
 
 
 
-#define VERBOSE
+//#define VERBOSE
 
 //static const char * myID = "vrpn Mutex";
 static const char * request_type = "vrpn Mutex Request";
@@ -72,17 +72,18 @@ static vrpn_uint32 getmyIP (const char * NICaddress = NULL) {
 
 
   if (NICaddress) {
+    // First, see if NIC is specified as IP address. 
+    // inet_addr() comes back in network order
+    in.s_addr = inet_addr(NICaddress);
+    if (in.s_addr != INADDR_NONE) {
+      return ntohl(in.s_addr);
+    }
+    // Second, try a name. 
     // gethostbyname() comes back in network order
     host = gethostbyname(NICaddress);
     if (host) {
       memcpy(&in.s_addr, host->h_addr, host->h_length);
       return ntohl(in.s_addr);
-    }
-
-    // inet_addr() comes back in machine order
-    in.s_addr = inet_addr(NICaddress);
-    if (in.s_addr != INADDR_NONE) {
-      return in.s_addr;
     }
 
     fprintf(stderr, "getmyIP:  Can't get host entry for %s.\n", NICaddress);
@@ -95,6 +96,7 @@ static vrpn_uint32 getmyIP (const char * NICaddress = NULL) {
     return 0;
   }
 
+  // gethostname() is guaranteed to produce something gethostbyname() can parse. 
   // gethostbyname() comes back in network order
   host = gethostbyname(myname);
   if (!host) {

@@ -1657,6 +1657,11 @@ static int	vrpn_getmyIP (char * myIPchar, unsigned maxlen,
   struct hostent * host;          // Encoded host IP address, etc.
   char myIPstring [100];	// Hold "152.2.130.90" or whatever
 
+  if (myIPchar == NULL) {
+    fprintf(stderr,"vrpn_getmyIP: NULL pointer passed in\n");
+    return -1;
+  }
+
   if (NIC_IP) {
     if (strlen(NIC_IP) > maxlen) {
       fprintf(stderr,"vrpn_getmyIP: Name too long to return\n");
@@ -1671,6 +1676,7 @@ static int	vrpn_getmyIP (char * myIPchar, unsigned maxlen,
   }
 
   // Find out what my name is
+  // gethostname() is guaranteed to produce something gethostbyname() can parse. 
   if (gethostname(myname, sizeof(myname))) {
     fprintf(stderr, "vrpn_getmyIP: Error finding local hostname\n");
     return -1;
@@ -1697,10 +1703,6 @@ static int	vrpn_getmyIP (char * myIPchar, unsigned maxlen,
   	(unsigned int)(unsigned char)host->h_addr_list[0][3]);
 
   // Copy this to the output
-  if (myIPchar == NULL) {
-    fprintf(stderr,"vrpn_getmyIP: NULL pointer passed in\n");
-    return -1;
-  }
   if ((int)strlen(myIPstring) > maxlen) {
     fprintf(stderr,"vrpn_getmyIP: Name too long to return\n");
     return -1;
@@ -2101,12 +2103,14 @@ static SOCKET open_socket (int type,
   // Map our host name to our IP address, allowing for dotted decimal
   if (!IPaddress) {
     name.sin_addr.s_addr = INADDR_ANY;
-  } else if (phe = gethostbyname(IPaddress)) {
-    memcpy((void *) &name.sin_addr, (const void *) phe->h_addr, phe->h_length);
   } else if ((name.sin_addr.s_addr = inet_addr(IPaddress))
               == INADDR_NONE) {
-    fprintf(stderr, "open_socket:  can't get %s host entry\n", IPaddress);
-    return -1;
+      if (phe = gethostbyname(IPaddress)) {
+          memcpy((void *) &name.sin_addr, (const void *) phe->h_addr, phe->h_length);
+      } else {
+          fprintf(stderr, "open_socket:  can't get %s host entry\n", IPaddress);
+          return -1;
+      }
   }
 
 #ifdef VERBOSE3
@@ -2184,52 +2188,35 @@ static SOCKET vrpn_connect_udp_port
   memset((void *) &udp_name, 0, udp_namelen);
   udp_name.sin_family = AF_INET;
 
-  remoteHost = gethostbyname(machineName);
-  if (remoteHost) {
+// gethostbyname() fails on SOME Windows NT boxes, but not all,
+// if given an IP octet string rather than a true name. 
+// MS Documentation says it will always fail and inet_addr should 
+// be called first. Avoids a 30+ second wait for
+// gethostbyname() to fail.
+
+  if ((udp_name.sin_addr.s_addr = inet_addr(machineName))
+              == INADDR_NONE) {
+      remoteHost = gethostbyname(machineName);
+      if (remoteHost) {
 
 #ifdef CRAY
-    int i;
-    u_long foo_mark = 0L;
-    for  (i = 0; i < 4; i++) {
-      u_long one_char = remoteHost->h_addr_list[0][i];
-      foo_mark = (foo_mark << 8) | one_char;
-    }
-    udp_name.sin_addr.s_addr = foo_mark;
+          int i;
+          u_long foo_mark = 0L;
+          for  (i = 0; i < 4; i++) {
+              u_long one_char = remoteHost->h_addr_list[0][i];
+              foo_mark = (foo_mark << 8) | one_char;
+          }
+          udp_name.sin_addr.s_addr = foo_mark;
 #else
-    memcpy(&(udp_name.sin_addr.s_addr), remoteHost->h_addr,  remoteHost->h_length);
+          memcpy(&(udp_name.sin_addr.s_addr), remoteHost->h_addr,  remoteHost->h_length);
 #endif
 
-  } else {
-#ifdef VRPN_USE_WINDOWS_GETHOSTBYNAME_HACK
-
-// gethostbyname() fails on SOME Windows NT boxes, but not all,
-// if given an IP octet string rather than a true name.
-// Until we figure out WHY, we have this extra clause in here.
-// It probably wouldn't hurt to enable it for non-NT systems
-// as well.
-
-      int retval;
-      retval = sscanf(machineName, "%u.%u.%u.%u",
-                      ((char *) &udp_name.sin_addr.s_addr)[0],
-                      ((char *) &udp_name.sin_addr.s_addr)[1],
-                      ((char *) &udp_name.sin_addr.s_addr)[2],
-                      ((char *) &udp_name.sin_addr.s_addr)[3]);
-            
-      if (retval != 4) {
-                
-#endif  // VRPN_USE_WINDOWS_GETHOSTBYNAME_HACK
-
-          // Note that this is the failure clause of gethostbyname() on
-          // non-WIN32 systems, but of the sscanf() on WIN32 systems.
-                
+      } else {
           vrpn_closeSocket(udp_socket);
           fprintf(stderr,
                   "vrpn_connect_udp_port: error finding host by name.\n");
           return(-1);
-                
-#ifdef VRPN_USE_WINDOWS_GETHOSTBYNAME_HACK
       }
-#endif
   }
 #ifndef VRPN_USE_WINSOCK_SOCKETS
   udp_name.sin_port = htons(remotePort);
@@ -2694,8 +2681,8 @@ int vrpn_cookie_size (void) {
  * port on the specified machine.
  *  The routine returns -1 on failure and the file descriptor on success.
  */
-
-// OBSOLETE
+/*
+// OBSOLETE, I think. 10/18/00
 // This function does the same thing as vrpn_connect_udp_port ?!
 static	SOCKET connect_udp_to (const char * machine, int portno,
                                const char * NIC_IP) {
@@ -2765,7 +2752,7 @@ static	SOCKET connect_udp_to (const char * machine, int portno,
 
    return sock;
 }
-
+*/
 
 
 
@@ -3562,11 +3549,20 @@ int vrpn_Endpoint::connect_tcp_to (const char * msg) {
   	return -1;
   }
   client.sin_family = AF_INET;
-  host = gethostbyname(machine);
-    if (host) {
+
+// gethostbyname() fails on SOME Windows NT boxes, but not all,
+// if given an IP octet string rather than a true name. 
+// MS Documentation says it will always fail and inet_addr should 
+// be called first. Avoids a 30+ second wait for
+// gethostbyname() to fail.
+
+  if ((client.sin_addr.s_addr = inet_addr(machine))
+              == INADDR_NONE) {
+      host = gethostbyname(machine);
+      if (host) {
 
 #ifdef CRAY
-  	{ 
+          { 
   		int i;
   		u_long foo_mark = 0;
   		for  (i = 0; i < 4; i++) {
@@ -3574,78 +3570,53 @@ int vrpn_Endpoint::connect_tcp_to (const char * msg) {
   			foo_mark = (foo_mark << 8) | one_char;
   		}
   		client.sin_addr.s_addr = foo_mark;
-  	}
+          }
 #else
 
-  	memcpy(&(client.sin_addr.s_addr), host->h_addr,  host->h_length);
+          memcpy(&(client.sin_addr.s_addr), host->h_addr,  host->h_length);
 #endif
 
-  } else {
-
-  	perror("gethostbyname error:");
-#if !defined(hpux) && !defined(__hpux) && !defined(_WIN32)  && !defined(sparc)
-  	herror("gethostbyname error:");
-#endif
-
-#ifdef VRPN_USE_WINDOWS_GETHOSTBYNAME_HACK
-
-// gethostbyname() fails on SOME Windows NT boxes, but not all,
-// if given an IP octet string rather than a true name.
-// Until we figure out WHY, we have this extra clause in here.
-// It probably wouldn't hurt to enable it for non-NT systems
-// as well.
-
-  	int retval;
-  	unsigned int a, b, c, d;
-  	retval = sscanf(machine, "%u.%u.%u.%u", &a, &b, &c, &d);
-  	if (retval != 4) {
-  		fprintf(stderr,
-  			"vrpn_Endpoint::connect_tcp_to:  "
-  				"error: bad address string\n");
-  		return -1;
-  	}
-#else	// not gethostbyname hack
-
-// Note that this is the failure clause of gethostbyname() on
-// non-WIN32 systems
-		
-  	fprintf(stderr,
-  		"vrpn_Endpoint::connect_tcp_to:  "
-  						"error finding host by name\n");
-  	return -1;
-  }
-#endif
-#ifdef VRPN_USE_WINDOWS_GETHOSTBYNAME_HACK
-// XXX OK, so this doesn't work.  What's wrong???
-
-    client.sin_addr.s_addr = (a << 24) + (b << 16) + (c << 8) + d;
-    //client.sin_addr.s_addr = (d << 24) + (c << 16) + (b << 8) + a;
-    fprintf(stderr, "vrpn_Endpoint::connect_tcp_to:  "
-    			  "getbyhostname() failed;  we think we're\n"
-    			  "looking for %d.%d.%d.%d.\n", a, b, c, d);
-
-    // here we can try an alternative strategy:
-    unsigned long addr = inet_addr(machine);
-    if (addr == INADDR_NONE) {	// that didn't work either
-      fprintf(stderr, "vrpn_Endpoint::connect_tcp_to:  "
-    			"error reading address format\n");
-      return -1;
-    } else {
-      host = gethostbyaddr((char *)&addr,sizeof(addr), AF_INET);
-      if (host) {
-        printf("gethostbyaddr() was successful\n");
-        memcpy(&(client.sin_addr.s_addr), host->h_addr,  host->h_length);
       } else {
-        fprintf(stderr, "vrpn_Endpoint::connect_tcp_to:  "
-        			" gethostbyaddr() failed\n");
-        return -1;
-      }
-    }
-  }
 
-		
+          perror("gethostbyname error:");
+#if !defined(hpux) && !defined(__hpux) && !defined(_WIN32)  && !defined(sparc)
+          herror("gethostbyname error:");
 #endif
 
+          fprintf(stderr,
+                  "vrpn_Endpoint::connect_tcp_to:  "
+                  "error finding host by name\n");
+          return -1;
+      }
+
+//  #ifdef VRPN_USE_WINDOWS_GETHOSTBYNAME_HACK
+//  // XXX OK, so this doesn't work.  What's wrong???
+//      client.sin_addr.s_addr = (a << 24) + (b << 16) + (c << 8) + d;
+//      //client.sin_addr.s_addr = (d << 24) + (c << 16) + (b << 8) + a;
+//      fprintf(stderr, "vrpn_Endpoint::connect_tcp_to:  "
+//      			  "getbyhostname() failed;  we think we're\n"
+//      			  "looking for %d.%d.%d.%d.\n", a, b, c, d);
+
+//      // here we can try an alternative strategy:
+//      unsigned long addr = inet_addr(machine);
+//      if (addr == INADDR_NONE) {	// that didn't work either
+//        fprintf(stderr, "vrpn_Endpoint::connect_tcp_to:  "
+//      			"error reading address format\n");
+//        return -1;
+//      } else {
+//        host = gethostbyaddr((char *)&addr,sizeof(addr), AF_INET);
+//        if (host) {
+//          printf("gethostbyaddr() was successful\n");
+//          memcpy(&(client.sin_addr.s_addr), host->h_addr,  host->h_length);
+//        } else {
+//          fprintf(stderr, "vrpn_Endpoint::connect_tcp_to:  "
+//          			" gethostbyaddr() failed\n");
+//          return -1;
+//        }
+//      }
+//    }
+//  #endif
+  }
 
 #ifndef VRPN_USE_WINSOCK_SOCKETS
   client.sin_port = htons(port);
@@ -3693,7 +3664,8 @@ int vrpn_Endpoint::connect_tcp_to (const char * msg) {
 }
 
 int vrpn_Endpoint::connect_udp_to (const char * addr, int port) {
-  d_udpOutboundSocket = ::connect_udp_to(addr, port, d_NICaddress);
+    //  d_udpOutboundSocket = ::connect_udp_to(addr, port, d_NICaddress);
+  d_udpOutboundSocket = ::vrpn_connect_udp_port(addr, port, d_NICaddress);
   if (d_udpOutboundSocket == -1) {
     fprintf(stderr, "vrpn_Endpoint::connect_udp_to:  "
                     "Couldn't open outbound UDP link.\n");

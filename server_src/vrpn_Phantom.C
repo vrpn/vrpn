@@ -993,6 +993,7 @@ void phantomErrorHandler( int errnum, char *description, void *userdata)
 			me->errorCode = FD_DUTY_CYCLE_ERROR;
 			break;
 		case GST_PHANTOM_FORCE_ERROR:
+                case -2:   // This is the number I get when I push through the surface.
 			me->sendError(FD_FORCE_ERROR);
 			me->errorCode = FD_FORCE_ERROR;
 			break;

@@ -1,3 +1,18 @@
+2000-10-20  Aron Helser  <helser@cs.unc.edu>
+
+	* vrpn_Connection.C (connect_tcp_to): Don't call gethostbyname if
+	machine name provided is an IP number. 
+	(vrpn_connect_udp_port): same
+	(connect_tcp_to): same
+	(connect_udp_to): comment out, replaced with call to
+	vrpn_connect_udp_port
+
+	* vrpn_Mutex.C (getmyIP): Don't call gethostbyname if machine name
+	provided is an IP number. Fixes byte-order problem with return
+	value on win32.
+	
+	* vrpn_BaseClass.C (~vrpn_TextPrinter): Fix compiler warnings.
+
 2000-10-18  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Serial.C (vrpn_drain_output_buffer) :
@@ -85,14 +100,14 @@
 
 2000-10-08  Adam Seeger  <seeger@cs.unc.edu>
 
-        * vrpn_FileConnection.C (vrpn_File_Connection::vrpn_File_Connection) :
+	* vrpn_FileConnection.C (vrpn_File_Connection::vrpn_File_Connection):
         sets d_start_time to be the first time after playing to the first
         user message to avoid problems with log files that have system
         messages with messed up timestamps
 
 2000-10-05  Sang-Uok Kum  <kumsu@cs.unc.edu>
 
-	*  vrpn_Shared.h : Fixed a mistake which made it not work in VC++. 
+	* vrpn_Shared.h: Fixed a mistake which made it not work in VC++. 
 	sleep is still not defined in VC++.
 
 2000-10-04  Sang-Uok Kum  <kumsu@cs.unc.edu>
@@ -152,16 +167,16 @@
 
 2000-09-22  Adam Seeger  <seeger@cs.unc.edu>
 
-        * vrpn_Connection.C (vrpn_Log::lastLogTime) : new function to 
+	* vrpn_Connection.C (vrpn_Log::lastLogTime) : new function to 
 	return the last timestamp for a logged message
-        * vrpn_Connection.C (vrpn_Endpoint::drop_connection) : Since we
+	* vrpn_Connection.C (vrpn_Endpoint::drop_connection) : Since we
 	read the actual time here to log dropped connection message, this
         was setting back the time for programs that used the logging
         mechanism for translation of old data into new log files. Now, in the
 	case of logging and when the current time is less than the last log
         time, this function records the dropped_connection message with 
         the previous log time instead
-        * vrpn_Connection.C (vrpn_Synchronized_Connection::client constructor):
+	* vrpn_Connection.C (vrpn_Synchronized_Connection::client constructor):
 	this function now calls pack_sender_description for vrpn_CONTROL and
         pack_type_description for vrpn_got_connection, vrpn_dropped_connection,
         vrpn_got_first_connection, vrpn_dropped_last_connection so that they
