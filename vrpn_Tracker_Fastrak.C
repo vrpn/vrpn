@@ -25,11 +25,14 @@
  * Update Count    : 401
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Tracker_Fastrak.C,v $
- * $Date: 1998/01/24 19:12:13 $
- * $Author: ryang $
- * $Revision: 1.2 $
+ * $Date: 1998/01/26 21:21:55 $
+ * $Author: weberh $
+ * $Revision: 1.3 $
  * 
  * $Log: vrpn_Tracker_Fastrak.C,v $
+ * Revision 1.3  1998/01/26 21:21:55  weberh
+ * compiles on sgi in addition to linux
+ *
  * Revision 1.2  1998/01/24 19:12:13  ryang
  * read one report at a time, no matter how many sensors are on.
  *
@@ -41,7 +44,7 @@
  * HISTORY
  */
 
-static char rcsid[] = "$Id: vrpn_Tracker_Fastrak.C,v 1.2 1998/01/24 19:12:13 ryang Exp $";
+static char rcsid[] = "$Id: vrpn_Tracker_Fastrak.C,v 1.3 1998/01/26 21:21:55 weberh Exp $";
 #include <time.h>
 #include <math.h>
 #include <stdlib.h>
@@ -89,7 +92,51 @@ static char rcsid[] = "$Id: vrpn_Tracker_Fastrak.C,v 1.2 1998/01/24 19:12:13 rya
 
 #undef VERBOSE
 
-#ifdef linux
+
+
+/*****************************************************************************
+ *
+   t_reverse_bytes - reverse the byte order of words in a buffer
+ 
+    input:
+        - pointer to dest buffer
+        -   ''    '' src    ''
+        - size of words in buffer (can be odd)
+        - number of words in buffer
+    
+    output:
+        - src buffer's bytes are reversed in words in dest buffer
+ 
+    notes:
+        - also works for swapping bytes, but slightly less efficient
+            and I didn't feel like changing all of the other drivers.
+        
+        - the dest and src buffers must be distinct!  (done this way
+            for speed, although it could be modified)
+ *
+ *****************************************************************************/
+
+static void
+t_reverse_bytes(unsigned char destBuffer[], unsigned char srcBuffer[], 
+		int wordSize, int numWords)
+{
+    int             i, j;
+    unsigned char   *srcPtr, *destPtr;
+
+
+srcPtr = srcBuffer;
+destPtr = destBuffer;
+for ( i = 0; i < numWords; i++ )
+    {
+    /* swap bytes at from ends of word and work toward the middle   */
+    for ( j = 0; j < wordSize; j++ )
+        destPtr[j] = srcPtr[wordSize-j-1];
+
+    srcPtr += wordSize;
+    destPtr += wordSize;
+    }
+
+}       /* t_reverse_bytes */
 
 static	unsigned long	duration(struct timeval t1, struct timeval t2)
 {
@@ -101,11 +148,7 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 //  characters are read.  Return 0 on success, -1 on failure.
 static int	vrpn_flushInputBuffer(int comm)
 {
-#ifdef	linux
    tcflush(comm, TCIFLUSH);
-#else
-   comm = comm;	// Keep the compiler happy
-#endif
    return 0;
 }
 
@@ -1561,7 +1604,6 @@ int vrpn_Tracker_Fastrak::get_output_list(int unitNum, char * curOutputList)
 
 }	/* t_f_get_output_list */
 
-#endif
 
 
 
