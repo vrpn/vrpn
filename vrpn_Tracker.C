@@ -47,7 +47,7 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 }
 
 
-vrpn_Tracker::vrpn_Tracker(char *name, vrpn_Connection *c) {
+vrpn_Tracker::vrpn_Tracker (const char * name, vrpn_Connection * c) {
 	FILE	*config_file;
   char * servicename;
   servicename = vrpn_copy_service_name(name);
@@ -143,8 +143,9 @@ vrpn_Tracker::vrpn_Tracker(char *name, vrpn_Connection *c) {
     delete [] servicename;
 }
 
-int vrpn_Tracker::read_config_file(FILE *config_file, char *tracker_name)
-{
+int vrpn_Tracker::read_config_file (FILE * config_file,
+                                    const char * tracker_name) {
+
     char	line[512];	// line read from input file
     int		num_sens;
     int 	which_sensor;
@@ -527,8 +528,9 @@ int	vrpn_Tracker::encode_acc_to(char *buf)
 #ifndef VRPN_CLIENT_ONLY
 
 
-vrpn_Tracker_Canned::vrpn_Tracker_Canned (char * name, vrpn_Connection * c,
-                                          char * datafile) 
+vrpn_Tracker_Canned::vrpn_Tracker_Canned
+                    (const char * name, vrpn_Connection * c,
+                     const char * datafile) 
   : vrpn_Tracker(name, c) {
     register_server_handlers();
     fp =fopen(datafile,"r");
@@ -610,9 +612,11 @@ void vrpn_Tracker_Canned::reset() {
 
 #endif  // VRPN_CLIENT_ONLY
 
-vrpn_Tracker_NULL::vrpn_Tracker_NULL(char *name, vrpn_Connection *c,
-	int sensors, float Hz) : vrpn_Tracker(name, c), update_rate(Hz),
-	num_sensors(sensors)
+vrpn_Tracker_NULL::vrpn_Tracker_NULL
+                  (const char * name, vrpn_Connection * c,
+	           int sensors, float Hz) :
+    vrpn_Tracker(name, c), update_rate(Hz),
+    num_sensors(sensors)
 {
 	register_server_handlers();
 	// Nothing left to do
@@ -666,8 +670,10 @@ void	vrpn_Tracker_NULL::mainloop(void)
 }
 
 #ifndef VRPN_CLIENT_ONLY
-vrpn_Tracker_Serial::vrpn_Tracker_Serial(char *name, vrpn_Connection *c,
-	char *port, long baud): vrpn_Tracker(name, c)
+vrpn_Tracker_Serial::vrpn_Tracker_Serial
+                    (const char * name, vrpn_Connection * c,
+	             const char * port, long baud) :
+    vrpn_Tracker(name, c)
 {
    register_server_handlers();
    // Find out the port name and baud rate
@@ -693,8 +699,8 @@ vrpn_Tracker_Serial::vrpn_Tracker_Serial(char *name, vrpn_Connection *c,
 }
 #endif  // VRPN_CLIENT_ONLY
 
-vrpn_Tracker_Remote::vrpn_Tracker_Remote(char *name ) :
-	vrpn_Tracker(name, vrpn_get_connection_by_name(name))
+vrpn_Tracker_Remote::vrpn_Tracker_Remote (const char * name) :
+	vrpn_Tracker (name, vrpn_get_connection_by_name(name))
 {
 	tracker2roomchange_list = NULL;
 	for (int i = 0; i < TRACKER_MAX_SENSOR_LIST; i++){

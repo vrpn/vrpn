@@ -30,11 +30,17 @@
  * Update Count    : 20
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_JoyFly.h,v $
- * $Date: 1998/06/01 20:12:12 $
- * $Author: kumsu $
- * $Revision: 1.4 $
+ * $Date: 1998/12/02 19:44:55 $
+ * $Author: hudson $
+ * $Revision: 1.5 $
  * 
  * $Log: vrpn_JoyFly.h,v $
+ * Revision 1.5  1998/12/02 19:44:55  hudson
+ * Converted JoyFly so it could run on the same server as the Joybox whose
+ * data it is processing.  (Previously they had to run on different servers,
+ * which could add significant latency to the tracker and make startup awkward.)
+ * Added some header comments to vrpn_Serial and some consts to vrpn_Tracker.
+ *
  * Revision 1.4  1998/06/01 20:12:12  kumsu
  * changed to ANSI to compile with aCC for hp
  *
@@ -72,29 +78,32 @@
 
 
 
-class vrpn_Tracker_JoyFly: public vrpn_Tracker {
-public:
-  double chanAccel[7];
-  int 	 chanPower[7];
-  struct timeval prevtime;
+class vrpn_Tracker_JoyFly : public vrpn_Tracker {
 
-private:
-  vrpn_Analog_Remote * joy_remote;
-  q_matrix_type initMatrix, currentMatrix;
+  private:
+    double chanAccel [7];
+    int chanPower [7];
+    struct timeval prevtime;
+
+    vrpn_Analog_Remote * joy_remote;
+    q_matrix_type initMatrix, currentMatrix;
 
 
   
 
-public:
-  vrpn_Tracker_JoyFly(char *name, vrpn_Connection *c, 
-		       char * source, char * config_file_name);
-  ~vrpn_Tracker_JoyFly();
+  public:
+    vrpn_Tracker_JoyFly (const char * name, vrpn_Connection * c, 
+		         const char * source, const char * config_file_name,
+                         vrpn_Connection * sourceConnection = NULL);
+    virtual ~vrpn_Tracker_JoyFly (void);
 
-  virtual void mainloop(void);
-  virtual void reset();
+    virtual void mainloop (void);
+    virtual void reset (void);
 
-  void update(q_matrix_type &);
+    void update (q_matrix_type &);
 
+    static void handle_joystick (void *, const vrpn_ANALOGCB);
+    static int handle_newConnection (void *, vrpn_HANDLERPARAM);
 };
 #endif
 

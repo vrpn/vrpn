@@ -37,11 +37,11 @@
 
 class vrpn_Tracker {
   public:
-   vrpn_Tracker(char *name, vrpn_Connection *c = NULL);
+   vrpn_Tracker (const char * name, vrpn_Connection * c = NULL);
    virtual void mainloop(void) = 0;	// Handle getting any reports
    virtual ~vrpn_Tracker() {};
 
-   int read_config_file(FILE *config_file, char *tracker_name);
+   int read_config_file (FILE * config_file, const char * tracker_name);
    void print_latest_report(void);
    // a tracker server should call the following to register the
    // default xform and workspace request handlers
@@ -107,8 +107,9 @@ class vrpn_Tracker {
 
 class vrpn_Tracker_Serial : public vrpn_Tracker {
   public:
-   vrpn_Tracker_Serial(char *name, vrpn_Connection *c,
-		char *port = "/dev/ttyS1", long baud = 38400);
+   vrpn_Tracker_Serial
+               (const char * name, vrpn_Connection * c,
+		const char * port = "/dev/ttyS1", long baud = 38400);
   protected:
    char portname[VRPN_TRACKER_BUF_SIZE];
    long baudrate;
@@ -125,7 +126,7 @@ class vrpn_Tracker_Serial : public vrpn_Tracker {
 
 class vrpn_Tracker_NULL: public vrpn_Tracker {
   public:
-   vrpn_Tracker_NULL(char *name, vrpn_Connection *c, int sensors = 1,
+   vrpn_Tracker_NULL (const char * name, vrpn_Connection * c, int sensors = 1,
 	float Hz = 1.0);
    virtual void mainloop(void);
   protected:
@@ -219,8 +220,8 @@ class vrpn_Tracker_Canned: public vrpn_Tracker {
   
   public:
   
-   vrpn_Tracker_Canned (char * name, vrpn_Connection * c,
-                        char * datafile);
+   vrpn_Tracker_Canned (const char * name, vrpn_Connection * c,
+                        const char * datafile);
 
    virtual ~vrpn_Tracker_Canned (void);
    virtual void mainloop (void);
@@ -252,10 +253,10 @@ class vrpn_Tracker_Canned: public vrpn_Tracker {
 class vrpn_Tracker_Remote: public vrpn_Tracker {
   public:
 	// The name of the tracker to connect to
-	vrpn_Tracker_Remote(char *name);
+	vrpn_Tracker_Remote (const char * name);
 
         // unregister all of the handlers registered with the connection
-        ~vrpn_Tracker_Remote();
+        virtual ~vrpn_Tracker_Remote (void);
 
 	// request room from tracker xforms
 	int request_t2r_xform(void);

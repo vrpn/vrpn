@@ -9,11 +9,17 @@
  * Update Count    : 26
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Analog.h,v $
- * $Date: 1998/11/05 22:45:42 $
- * $Author: taylorr $
- * $Revision: 1.3 $
+ * $Date: 1998/12/02 19:44:54 $
+ * $Author: hudson $
+ * $Revision: 1.4 $
  * 
  * $Log: vrpn_Analog.h,v $
+ * Revision 1.4  1998/12/02 19:44:54  hudson
+ * Converted JoyFly so it could run on the same server as the Joybox whose
+ * data it is processing.  (Previously they had to run on different servers,
+ * which could add significant latency to the tracker and make startup awkward.)
+ * Added some header comments to vrpn_Serial and some consts to vrpn_Tracker.
+ *
  * Revision 1.3  1998/11/05 22:45:42  taylorr
  * This version strips out the serial-port code into vrpn_Serial.C.
  *
@@ -47,7 +53,7 @@
 #include "vrpn_Connection.h"
 class vrpn_Analog {
 public:
-	vrpn_Analog(char *name, vrpn_Connection *c = NULL);
+	vrpn_Analog (const char * name, vrpn_Connection * c = NULL);
 
 	// Print the status of the button
 	void print(void);
@@ -74,8 +80,8 @@ public:
 
 class vrpn_Serial_Analog: public vrpn_Analog {
 public:
-  vrpn_Serial_Analog(char *name, vrpn_Connection *connection,
-		     char *port, int baud);
+  vrpn_Serial_Analog(const char * name, vrpn_Connection * connection,
+		     const char * port, int baud);
 protected:
   int serial_fd;
   char portname[1024];
@@ -104,8 +110,8 @@ typedef	struct {
                     // channel diliever analog values
 } vrpn_ANALOGCB;
 
-typedef void (*vrpn_ANALOGCHANGEHANDLER)(void *userdata,
-					 const vrpn_ANALOGCB info);
+typedef void (*vrpn_ANALOGCHANGEHANDLER) (void * userdata,
+					  const vrpn_ANALOGCB info);
 
 // Open a analog device that is on the other end of a connection
 // and handle updates from it.  This is the type of analog device
@@ -114,7 +120,9 @@ typedef void (*vrpn_ANALOGCHANGEHANDLER)(void *userdata,
 class vrpn_Analog_Remote: public vrpn_Analog {
   public:
 	// The name of the button device to connect to
-	vrpn_Analog_Remote(char *name);
+        // Optional argument to be used when the Remote MUST listen on
+        // a connection that is already open.
+	vrpn_Analog_Remote (const char * name, vrpn_Connection * c = NULL);
 
 	// This routine calls the mainloop of the connection it's on
 	virtual void mainloop(void);

@@ -25,11 +25,17 @@
  * Update Count    : 95
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_JoyFly.C,v $
- * $Date: 1998/06/01 20:12:11 $
- * $Author: kumsu $
- * $Revision: 1.4 $
+ * $Date: 1998/12/02 19:44:55 $
+ * $Author: hudson $
+ * $Revision: 1.5 $
  * 
  * $Log: vrpn_JoyFly.C,v $
+ * Revision 1.5  1998/12/02 19:44:55  hudson
+ * Converted JoyFly so it could run on the same server as the Joybox whose
+ * data it is processing.  (Previously they had to run on different servers,
+ * which could add significant latency to the tracker and make startup awkward.)
+ * Added some header comments to vrpn_Serial and some consts to vrpn_Tracker.
+ *
  * Revision 1.4  1998/06/01 20:12:11  kumsu
  * changed to ANSI to compile with aCC for hp
  *
@@ -47,28 +53,25 @@
  * HISTORY
  */
 
-static char rcsid[] = "$Id: vrpn_JoyFly.C,v 1.4 1998/06/01 20:12:11 kumsu Exp $";
+static char rcsid[] = "$Id: vrpn_JoyFly.C,v 1.5 1998/12/02 19:44:55 hudson Exp $";
 
 #include <string.h>
 #include "vrpn_JoyFly.h"
 
-void joy_cb(void * userdata, vrpn_ANALOGCB t);
-int con_cb(void * userdata, vrpn_HANDLERPARAM p);
 
 
-vrpn_Tracker_JoyFly::vrpn_Tracker_JoyFly(char *name, vrpn_Connection *c, 
-					 char * source, char * set_config):
-  vrpn_Tracker(name, c)  {
+vrpn_Tracker_JoyFly::vrpn_Tracker_JoyFly
+        (const char * name, vrpn_Connection * c,
+         const char * source, const char * set_config,
+         vrpn_Connection * sourceConnection) :
+    vrpn_Tracker (name, c)  {
   int i;
 
 
-  joy_remote = new vrpn_Analog_Remote(source);
-  joy_remote->register_change_handler(this,(vrpn_ANALOGCHANGEHANDLER)joy_cb);
+  joy_remote = new vrpn_Analog_Remote (source, sourceConnection);
+  joy_remote->register_change_handler(this, handle_joystick);
   c->register_handler(c->register_message_type(vrpn_got_connection),
-		      con_cb, this);
-  //joy_remote->register_change_handler(NULL,(vrpn_ANALOGCHANGEHANDLER)joy_cb);
-  //c->register_handler(c->register_message_type(vrpn_got_connection),
-	//	      (vrpn_MESSAGEHANDLER)con_cb, NULL);
+		      handle_newConnection, this);
   
   FILE * fp = fopen(set_config, "r");
   if (fp == NULL) {
@@ -126,7 +129,9 @@ void vrpn_Tracker_JoyFly::mainloop() {
 
 
 #define ONE_SEC (1000000l)
-void joy_cb(void * userdata, vrpn_ANALOGCB b) {
+// static
+void vrpn_Tracker_JoyFly::handle_joystick
+                         (void * userdata, const vrpn_ANALOGCB b) {
 
   double tx, ty, tz, rx, ry, rz;
   double temp[7];
@@ -207,11 +212,12 @@ void vrpn_Tracker_JoyFly::update(q_matrix_type & newM) {
 }
 
  
-int con_cb(void * userdata, vrpn_HANDLERPARAM)
-{
+// static
+int vrpn_Tracker_JoyFly::handle_newConnection
+                        (void * userdata, vrpn_HANDLERPARAM) {
      
   printf("Get a new connection, reset virtual_Tracker\n");
-  ((vrpn_Tracker_JoyFly *)userdata) ->reset();
+  ((vrpn_Tracker_JoyFly *) userdata)->reset();
   return 0;
 }
 

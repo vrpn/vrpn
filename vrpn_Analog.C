@@ -25,11 +25,17 @@
  * Update Count    : 47
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Analog.C,v $
- * $Date: 1998/11/23 23:24:04 $
- * $Author: lovelace $
- * $Revision: 1.6 $
+ * $Date: 1998/12/02 19:44:53 $
+ * $Author: hudson $
+ * $Revision: 1.7 $
  * 
  * $Log: vrpn_Analog.C,v $
+ * Revision 1.7  1998/12/02 19:44:53  hudson
+ * Converted JoyFly so it could run on the same server as the Joybox whose
+ * data it is processing.  (Previously they had to run on different servers,
+ * which could add significant latency to the tracker and make startup awkward.)
+ * Added some header comments to vrpn_Serial and some consts to vrpn_Tracker.
+ *
  * Revision 1.6  1998/11/23 23:24:04  lovelace
  * Fixed bug in vrpn_Button.C that only showed up under Win32 CLIENT_ONLY.
  * Also, in vrpn_Analog.C fixed <unistd.h> to not be included under Win32.
@@ -63,7 +69,7 @@
  * HISTORY
  */
 
-static char rcsid[] = "$Id: vrpn_Analog.C,v 1.6 1998/11/23 23:24:04 lovelace Exp $";
+static char rcsid[] = "$Id: vrpn_Analog.C,v 1.7 1998/12/02 19:44:53 hudson Exp $";
 
 #include "vrpn_Analog.h"
 #include <stdio.h>
@@ -74,7 +80,7 @@ static char rcsid[] = "$Id: vrpn_Analog.C,v 1.6 1998/11/23 23:24:04 lovelace Exp
 
 extern int vrpn_open_commport(char *portname, long baud);
 
-vrpn_Analog::vrpn_Analog(char *name, vrpn_Connection *c) {
+vrpn_Analog::vrpn_Analog (const char * name, vrpn_Connection * c) {
   // If the connection is valid, use it to register this button by
    // name and the button change report by name.
   char * servicename;
@@ -146,8 +152,9 @@ void vrpn_Analog::report_changes() {
 
 #ifndef VRPN_CLIENT_ONLY
 #ifndef	_WIN32
-vrpn_Serial_Analog::vrpn_Serial_Analog(char *name, vrpn_Connection *c,
-				       char *port, int baud): vrpn_Analog(name, c) {
+vrpn_Serial_Analog::vrpn_Serial_Analog (const char * name, vrpn_Connection * c,
+				        const char * port, int baud) :
+         vrpn_Analog(name, c) {
    // Find out the port name and baud rate;
    if (port == NULL) {
 	fprintf(stderr,"vrpn_Analog_Serial: NULL port name\n");
@@ -175,9 +182,10 @@ vrpn_Serial_Analog::vrpn_Serial_Analog(char *name, vrpn_Connection *c,
 
 // ************* CLIENT ROUTINES ****************************
 
-vrpn_Analog_Remote::vrpn_Analog_Remote(char *name) : 
-	vrpn_Analog(name, vrpn_get_connection_by_name(name)),
-	change_list(NULL)
+vrpn_Analog_Remote::vrpn_Analog_Remote (const char * name,
+                                        vrpn_Connection * c) : 
+	vrpn_Analog (name, c ? c : vrpn_get_connection_by_name(name)),
+	change_list (NULL)
 {
 	int	i;
 

@@ -9,6 +9,13 @@
 #include <sys/time.h>
 #endif
 
+// vrpn_Serial
+//
+// Russ Taylor, 1998
+
+// Pulls all the serial port routines into one file to make porting to
+// new operating systems easy.
+
 // flush discards characters in buffer
 // drain blocks until they are written
 extern int vrpn_open_commport(char *portname, long baud);
