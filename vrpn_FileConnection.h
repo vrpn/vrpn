@@ -13,6 +13,12 @@
 // so we still need to have all the correct names for senders and types
 // registered.
 
+// September 1998:  by default preloads the entire log file on startup.
+// This causes a delay (nontrivial for large logs) but should help smooth
+// playback.  The infrastructure is also in place for playing backwards,
+// but we still have the problem that the semantics of reverse often don't
+// make sense.
+
 class vrpn_File_Connection : public vrpn_Connection {
 
   public:

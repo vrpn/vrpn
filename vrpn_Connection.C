@@ -34,6 +34,7 @@
 #include <sys/timeb.h>
 #else
 #include <sys/wait.h>
+#include <sys/resource.h>  // for wait3() on sparc_solaris
 #include <netinet/tcp.h>
 #endif
 
@@ -114,6 +115,16 @@ const int MAGICLEN = 16;  // Must be a multiple of vrpn_ALIGN bytes!
 //**  functions renamed to vrpn_ from sdi_.  This removes our dependence
 //**  on libsdi.a for VRPN.
 
+#ifdef sparc
+
+// On capefear and swift, getdtablesize() isn't declared in unistd.h
+// even though the man page says it should be.  Similarly, wait3()
+// isn't declared in sys/{wait,time,resource}.h.
+
+extern int getdtablesize (void);
+pid_t wait3 (int * statusp, int options, struct rusage * rusage);
+
+#endif
 
 /* On HP's, this defines how many possible open file descriptors can be
  * open at once.  This is what is returned by the getdtablesize() function
@@ -800,7 +811,11 @@ int vrpn_start_server(const char *machine, char *server_name, char *args)
 
                 for (waitloop = 0; waitloop < (SERVCOUNT-1); waitloop++) {
                     pid_t deadkid;
+#ifdef sparc
+                    int status;  // doesn't exist on sparc_solaris
+#else
                     union wait status;
+#endif
 		    
                     /* Check to see if they called back yet. */
                     inmask = (1 << server_sock);
@@ -865,7 +880,8 @@ int vrpn_start_server(const char *machine, char *server_name, char *args)
                         }
 
                         if (setsockopt(child_socket, p_entry->p_proto,
-                                TCP_NODELAY, &nonzero, sizeof(nonzero))==-1) {
+                                TCP_NODELAY, SOCK_CAST &nonzero,
+                                sizeof(nonzero)) == -1) {
                                 perror("vrpn_start_server: setsockopt() failed");
                                 close(child_socket);
                                 return(-1);

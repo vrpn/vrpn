@@ -20,6 +20,8 @@
 #include "vrpn_Joystick.h"
 #include "vrpn_JoyFly.h"
 
+#include "vrpn_ForwarderController.h"
+
 #define MAX_TRACKERS 100
 #define MAX_BUTTONS 100
 #define MAX_SOUNDS 2
@@ -51,6 +53,10 @@ vrpn_Connection * connection;
 #ifdef	sgi
 vrpn_SGIBox	* vrpn_special_sgibox;
 #endif
+
+// TCH October 1998
+// Use Forwarder as remote-controlled multiple connections.
+vrpn_Forwarder_Server * forwarderServer;
 
 // install a signal handler to shut down the trackers and buttons
 #ifndef WIN32
@@ -390,14 +396,26 @@ main (int argc, char *argv[])
 		if (verbose) printf(
 		    "Opening vrpn_Tracker_Fastrak: %s on port %s, baud %d\n",
 		    s2,s3,i1);
+
+#if defined(sgi) || defined(linux)
+
 		if ( (trackers[num_trackers] =
 		     new vrpn_Tracker_Fastrak(s2, connection, s3, i1)) == NULL){
+
+#endif
+
 		  fprintf(stderr,"Can't create new vrpn_Tracker_Fastrak\n");
 		  if (bail_on_error) { return -1; }
 		  else { continue; }	// Skip this line
+
+#if defined(sgi) || defined(linux)
+
 		} else {
 		  num_trackers++;
 		}
+
+#endif
+
 	  }
 	  else if (isit("vrpn_Tracker_3Space")) {
 	    next();
@@ -576,6 +594,10 @@ main (int argc, char *argv[])
 
 	// Close the configuration file
 	fclose(config_file);
+
+	// Open the Forwarder Server
+        forwarderServer = new vrpn_Forwarder_Server (connection);
+
 	loop = 0;
 	if (auto_quit) {
 		int dlc_m_id = connection->register_message_type(
@@ -620,9 +642,14 @@ main (int argc, char *argv[])
 		if (vrpn_special_sgibox) 
 		  vrpn_special_sgibox->mainloop();
 #endif
+
 		// Send and receive all messages
 		connection->mainloop();
 		if (!connection->doing_okay()) shutDown();
+
+		// Handle forwarding requests;  send messages
+		// on auxiliary connections
+		forwarderServer->mainloop();
 	}
 }
 

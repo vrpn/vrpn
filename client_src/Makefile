@@ -42,7 +42,11 @@ $(OBJ_DIR)/%.o: %.C
 
 all:	$(OBJ_DIR)/sound_client $(OBJ_DIR)/printvals \
 	$(OBJ_DIR)/checklogfile $(OBJ_DIR)/logfilesenders \
-	$(OBJ_DIR)/logfiletypes $(OBJ_DIR)/text
+	$(OBJ_DIR)/logfiletypes $(OBJ_DIR)/text \
+	$(OBJ_DIR)/forwarderClient
+
+.PHONY:
+forwarderClient:	$(OBJ_DIR)/forwarderClient
 
 .PHONY:
 text:	$(OBJ_DIR)/text
@@ -67,6 +71,10 @@ $(OBJ_DIR)/listen_client: $(OBJ_DIR)/listen_client.o ../`hw_os`/libvrpn.a
 $(OBJ_DIR)/text: $(OBJ_DIR)/text.o ../`hw_os`/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/text \
 		$(OBJ_DIR)/text.o -lvrpn $(ARCH_LIBS)
+
+$(OBJ_DIR)/forwarderClient: $(OBJ_DIR)/forwarderClient.o ../`hw_os`/libvrpn.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/forwarderClient \
+		$(OBJ_DIR)/forwarderClient.o -lvrpn $(ARCH_LIBS)
 
 # These utilities actually DON'T use libvrpn
 
