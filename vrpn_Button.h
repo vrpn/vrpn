@@ -135,8 +135,8 @@ class vrpn_Button_Parallel: public vrpn_Button_Filter {
 				int portno, unsigned porthex = 0);
 
   protected:
-	unsigned	port;
-	int			status;
+	int	port;
+	int	status;
 
 	virtual void read(void) = 0;
 #ifdef _WIN32
@@ -146,6 +146,12 @@ class vrpn_Button_Parallel: public vrpn_Button_Filter {
 };
 
 // Open a Python (or Hiball Button) that is connected to a parallel port.
+// See www.vrpn.org/UNC_python.html for a description of how to make
+// a connector that uses the parallel port this way.  Note that this
+// use of a parallel port can result in damage to the motherboard if
+// voltage spikes (static) are passed through if care is not taken.
+// This interface is intended for use at UNC.  No warranty is expressed
+// or implied for use elsewhere (use at your own risk).
 class vrpn_Button_Python: public vrpn_Button_Parallel {
   public:
 	vrpn_Button_Python (const char * name, vrpn_Connection * c, int p);

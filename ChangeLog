@@ -1,3 +1,10 @@
+2004-04-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Button.h : Returns the port argument for the parallel
+		button device to an int to make error checking work.
+		Points to the web page where the Python button is
+		described.
+
 2004-04-13  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_FileConnection.h:  adds new data members to track earliest
