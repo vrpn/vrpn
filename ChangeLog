@@ -1,3 +1,9 @@
+2000-10-02  Adam Seeger  <seeger@cs.unc.edu>
+
+	* vrpn_Shared.C (vrpn_buffer, vrpn_unbuffer) : added these functions
+	for vrpn_int16 and vrpn_uint16 - also, had to remove the one for
+	vrpn_bool because a vrpn_bool is a vrpn_int16
+
 2000-09-26  Tom Hudson  <hudson@cs.unc.edu>
 
         * Makefile : now that we're using makedepend, got rid of rebuild
@@ -27,6 +33,7 @@
         * vrpn_DelayedConnection.C : new file
 
 
+>>>>>>> 1.32
 2000-09-22  Adam Seeger  <seeger@cs.unc.edu>
 
         * vrpn_Connection.C (vrpn_Log::lastLogTime) : new function to 

@@ -187,6 +187,66 @@ vrpn_float64 ntohd (vrpn_float64 d)
     return htond(d);
 }
 
+/** Utility routine for placing a vrpn_int16 into a buffer that
+    is to be sent as a message. Handles packing into an unaligned
+    buffer (though this should not be done). Advances the insertPt
+    pointer to just after newly-inserted value. Decreases the buflen
+    (space remaining) by the length of the value. Returns zero on
+    success and -1 on failure.
+
+    Part of a family of routines that buffer different VRPN types
+    based on their type (vrpn_buffer is overloaded based on the third
+    parameter type). These routines handle byte-swapping to the
+    VRPN standard wire protocol.
+*/
+
+int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_int16 value)
+{
+    vrpn_int16 netValue = htons(value);
+    int length = sizeof(netValue);
+
+    if (length > *buflen) {
+        fprintf(stderr, "vrpn_buffer: buffer not large enough\n");
+        return -1;
+    }
+
+    memcpy(*insertPt, &netValue, length);
+    *insertPt += length;
+    *buflen -= length;
+
+    return 0;
+}
+
+/** Utility routine for placing a vrpn_uint16 into a buffer that
+    is to be sent as a message. Handles packing into an unaligned
+    buffer (though this should not be done). Advances the insertPt
+    pointer to just after newly-inserted value. Decreases the buflen
+    (space remaining) by the length of the value. Returns zero on
+    success and -1 on failure.
+
+    Part of a family of routines that buffer different VRPN types
+    based on their type (vrpn_buffer is overloaded based on the third
+    parameter type). These routines handle byte-swapping to the
+    VRPN standard wire protocol.
+*/
+
+int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_uint16 value)
+{
+    vrpn_uint16 netValue = htons(value);
+    int length = sizeof(netValue);
+
+    if (length > *buflen) {
+        fprintf(stderr, "vrpn_buffer: buffer not large enough\n");
+        return -1;
+    }
+
+    memcpy(*insertPt, &netValue, length);
+    *insertPt += length;
+    *buflen -= length;
+
+    return 0;
+}
+
 /** Utility routine for placing a vrpn_int32 into a buffer that
     is to be sent as a message. Handles packing into an unaligned
     buffer (though this should not be done). Advances the insertPt
@@ -409,6 +469,7 @@ int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
     VRPN standard wire protocol.
 */
 
+/*
 int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_bool value)
 {
     vrpn_bool netValue = htons(value);
@@ -425,6 +486,7 @@ int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_bool value)
 
     return 0;
 }
+*/
 
 /** Utility routine for taking a character from a buffer that
     was sent as a message. Does NOT handle unpacking from an
@@ -444,6 +506,48 @@ int vrpn_unbuffer (const char ** buffer, char * cval) {
   *cval = **buffer;
   *buffer += sizeof(char);
   return 0;
+}
+
+/** Utility routine for taking a vrpn_int16 from a buffer that
+    was sent as a message. Does NOT handle unpacking from an
+    unaligned buffer, because the semantics of VRPN require
+    message buffers and the values in them to be aligned, in order to
+    reduce the amount of copying that goes on. Advances the read
+    pointer to just after newly-read value. Assumes that the
+    buffer holds a complete value. Returns zero on success and -1 on failure.
+
+    Part of a family of routines that unbuffer different VRPN types
+    based on their type (vrpn_buffer is overloaded based on the third
+    parameter type). These routines handle byte-swapping to and from
+    the VRPN defined wire protocol.
+*/
+
+int vrpn_unbuffer (const char ** buffer, vrpn_int16 * lval)
+{
+    *lval = ntohs(*((vrpn_int16 *)(*buffer)));
+    *buffer += sizeof(vrpn_int16);
+    return 0;
+}
+
+/** Utility routine for taking a vrpn_uint16 from a buffer that
+    was sent as a message. Does NOT handle unpacking from an
+    unaligned buffer, because the semantics of VRPN require
+    message buffers and the values in them to be aligned, in order to
+    reduce the amount of copying that goes on. Advances the read
+    pointer to just after newly-read value. Assumes that the
+    buffer holds a complete value. Returns zero on success and -1 on failure.
+
+    Part of a family of routines that unbuffer different VRPN types
+    based on their type (vrpn_buffer is overloaded based on the third
+    parameter type). These routines handle byte-swapping to and from
+    the VRPN defined wire protocol.
+*/
+
+int vrpn_unbuffer (const char ** buffer, vrpn_uint16 * lval)
+{
+    *lval = ntohl(*((vrpn_uint16 *)(*buffer)));
+    *buffer += sizeof(vrpn_uint16);
+    return 0;
 }
 
 /** Utility routine for taking a vrpn_int32 from a buffer that
@@ -608,12 +712,14 @@ int vrpn_unbuffer (const char ** buffer, char * string,
     the VRPN defined wire protocol.
 */
 
+/*
 int vrpn_unbuffer (const char ** buffer, vrpn_bool * lval)
 {
     *lval = ntohs(*((vrpn_bool *)(*buffer)));
     *buffer += sizeof(vrpn_bool);
     return 0;
 }
+*/
 
 // Although VC++ doesn't include a gettimeofday
 // call, Cygnus Solutions Cygwin32 environment does.
