@@ -86,10 +86,19 @@ LIB = libvrpn.a
 # lib
 #
 
-LIB_FILES =  vrpn_Connection.C vrpn_Tracker.C vrpn_Button.C vrpn_Sound.C vrpn_ForceDevice.C
-LIB_OBJECTS =  vrpn_Connection.o vrpn_Tracker.o vrpn_Button.o vrpn_Sound.o vrpn_ForceDevice.o
+LIB_FILES =  \
+        vrpn_Connection.C vrpn_Tracker.C vrpn_3Space.C vrpn_Button.C \
+        vrpn_Sound.C vrpn_ForceDevice.C vrpn_Clock.C vrpn_Shared.C \
+        vrpn_Flock.C vrpn_Tracker_Fastrak.C
 
-LIB_INCLUDES = vrpn_Connection.h vrpn_Tracker.h vrpn_Button.h vrpn_Sound.h vrpn_ForceDevice.h
+LIB_OBJECTS =  \
+        vrpn_Connection.o vrpn_Tracker.o vrpn_3Space.o vrpn_Button.o \
+        vrpn_Sound.o vrpn_ForceDevice.o vrpn_Clock.o vrpn_Shared.o \
+        vrpn_Flock.o vrpn_Tracker_Fastrak.o
+
+LIB_INCLUDES = vrpn_Connection.h vrpn_Tracker.h vrpn_3Space.h vrpn_Button.h \
+               vrpn_Sound.h vrpn_ForceDevice.h vrpn_Clock.h vrpn_Shared.h \
+               vrpn_Flock.h
 
 lib$(SUFFIX) : $(OBJECT_DIR)
 	@$(MAKE) "EXE_NAME = $(LIB)" \
@@ -294,7 +303,7 @@ install :
 	mv $(OBJECT_DIR)/$(LIB) $(LIB_DIR)
 	-ranlib $(LIB_DIR)/$(LIB)
 	echo "Copying new includes..."
-	( cd $(INCLUDE_DIR) ; rm $(LIB_INCLUDES) )
+	( cd $(INCLUDE_DIR) ; rm -f $(LIB_INCLUDES) )
 	cp $(LIB_INCLUDES) $(INCLUDE_DIR)
 	$(MAKE) clean
 
