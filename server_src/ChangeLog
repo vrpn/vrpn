@@ -1,3 +1,7 @@
+2004-10-01  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Phantom.h : Hides the GHOST headers again.
+
 2004-09-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Phantom.C : Added HDCALLBACK definition so that HDAPI will

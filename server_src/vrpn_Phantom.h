@@ -4,7 +4,6 @@
 #include  "vrpn_Configure.h"
 #ifdef	VRPN_USE_PHANTOM_SERVER
 
-#include "ghost.h"
 // Hide the include files which use the old version of iostreams
 // by only defining the types we need from them here and doing
 // the includes in the .C file.  Yucky and frought with danger.
@@ -12,6 +11,14 @@
 #ifdef	VRPN_USE_HDAPI
 typedef unsigned int HHD;
 typedef unsigned long HDSchedulerHandle;
+#else
+class gstScene;
+class gstSeparator;
+class gstPHANToM;
+class DynamicPlane;
+class Trimesh;
+class ConstraintEffect;
+class ForceFieldEffect;
 #endif
 
 
