@@ -164,7 +164,7 @@ protected:
 
 	inline vrpn_int32 map_CIndex_To_SIndex(vrpn_int32 CIndex)
 	{
-		return (CIndex < CSMap_MaxNum) ? CSMap[CIndex] : FAIL;
+		return (CIndex < CSMap_MaxNum) ? CSMap[CIndex] : vrpn_Sound_FAIL;
 	};
 	void set_CIndex_To_SIndex(vrpn_int32 CIndex, vrpn_int32 SIndex);
 

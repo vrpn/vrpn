@@ -32,17 +32,17 @@ vrpn_Sound::vrpn_Sound(const char * name, vrpn_Connection * c)
 	timestamp.tv_usec = 0;
 
 	/*Values used for determining whether to grow the array of sound definitions or not*/
-	Defs_MaxNum = vrpn_Sound_START;
-	Defs_CurNum = 0;
+	//Defs_MaxNum = vrpn_Sound_START;
+	//Defs_CurNum = 0;
 
 	/*The array of sound definitions needs to be initialized with some starting space*/
-	soundDefs = new vrpn_SoundDef[Defs_MaxNum];
+	//soundDefs = new vrpn_SoundDef[Defs_MaxNum];
 
 	if (servicename)
        delete [] servicename;
 }
 
-/vrpn_Sound::~vrpn_Sound()
+vrpn_Sound::~vrpn_Sound()
 {
 }
 
