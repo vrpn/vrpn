@@ -106,10 +106,12 @@ protected:  // sending and receiving
     vrpn_int32 handle_mcast_messages(/* XXX */);
 
 
-    virtual vrpn_int32 pack_service_description( vrpn_int32 which_service );
-    virtual vrpn_int32 pack_type_description( vrpn_int32 which_type );
-    virtual vrpn_int32 pack_udp_description( vrpn_uint16 portno );
-    virtual vrpn_int32 pack_log_description( vrpn_int32 mode, const char * filename );
+    vrpn_int32 pack_service_description (char* name, vrpn_int32 id);
+    vrpn_int32 pack_type_description (
+        const vrpn_BaseConnectionController::vrpnLocalMapping &,
+        vrpn_int32 id);
+    vrpn_int32 pack_udp_description (vrpn_uint16 portno);
+    vrpn_int32 pack_log_description (vrpn_int32 mode, const char * filename);
 
 
 public: // status

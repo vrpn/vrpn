@@ -118,10 +118,14 @@ public:  // sending and receiving
     // and service/ype/descriptions
     // They return zero so that derived classes such as FileConnection can 
     // inherit default behavior. 
-    virtual vrpn_int32 pack_service_description( vrpn_int32 which_service ) { return 0; }
-    virtual vrpn_int32 pack_type_description( vrpn_int32 which_type ) { return 0; }
-    virtual vrpn_int32 pack_udp_description( vrpn_uint16 portno ) { return 0; }
-    virtual vrpn_int32 pack_log_description( vrpn_int32 mode, const char * filename ) { return 0; }
+    
+    virtual vrpn_int32 pack_service_description (char* name, vrpn_int32 id);
+    virtual vrpn_int32 pack_type_description (
+        const vrpn_BaseConnectionController::vrpnLocalMapping &,
+        vrpn_int32 id);
+    virtual vrpn_int32 pack_udp_description (vrpn_uint16 portno) {return 0;}
+    virtual vrpn_int32 pack_log_description (vrpn_int32 mode,
+                                             const char * filename ) {return 0;}
 
 public:  // public type_id and service_id stuff
 

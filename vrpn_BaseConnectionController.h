@@ -258,11 +258,18 @@ protected: // changed from private because derived classes need acess
     // that have been declared by the local version.
     // cCares:  has the other side of this connection registered
     //   a type by this name?  Only used by filtering.
-    
+public: // changed to public on 12/1/99
     struct vrpnLocalMapping {
         char *                  name;       // Name of type
         vrpn_MsgCallbackEntry * who_cares;  // Callbacks
         vrpn_int32              cCares;     // TCH 28 Oct 97
+        // XXX should cCares be a vrpn_bool?
+        // XXX what should cCares be initialized to
+        
+        vrpnLocalMapping (char* n = NULL, vrpn_MsgCallbackEntry* m = NULL,
+                          vrpn_int32 c = 0)
+            : name(n), who_cares(m), cCares(c)
+        {}
     };
 
 protected:
@@ -368,6 +375,7 @@ public:  // clock
     vrpn_int32 clockServer_id;
     vrpn_int32 queryMsg_id;
     vrpn_int32 replyMsg_id;
+
     // }}}
 
 public:  // connection special access stuff
@@ -429,29 +437,16 @@ public:  // connection special access stuff
         // const_iterators to the front and end of the sequence.  The
         // iterators are simply pointers to const objects.
         
-#define LOCAL_HAVE_CONST_CAST
-
         // iterator to the first service in sequence of local services
-        const char** services_begin() {
-#ifdef LOCAL_HAVE_CONST_CAST
-            return const_cast<const char**>(d_controller->my_services);
-#else
-            return (d_controller->my_services);
-#endif
+        char** services_begin() {
+            return (&(d_controller->my_services[0]));
         }
         
         // iterator to one-past-the-end service in sequence of local services
-        const char** services_end() {
-#ifdef LOCAL_HAVE_CONST_CAST
-            return const_cast<const char**>(
-                d_controller->my_services + d_controller->num_my_services);
-#else
-            return (d_controller->my_services + d_controller->num_my_services);
-#endif
+        char** services_end() {
+            return (services_begin() + d_controller->num_my_services);
         }
 
-#undef LOCAL_HAVE_CONST_CAST
-        
         typedef vrpn_BaseConnectionController::vrpnLocalMapping LM;
 
         // iterator to the first type in sequence of local types
@@ -460,7 +455,7 @@ public:  // connection special access stuff
         }
         
         // iterator to one-past-the-end type in sequence of local types
-        const LM* type_end() {
+        const LM* types_end() {
             return (d_controller->my_types + d_controller->num_my_types);
         }
     };

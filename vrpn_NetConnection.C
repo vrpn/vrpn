@@ -2171,6 +2171,19 @@ vrpn_int32 vrpn_NetConnection::setup_new_connection (
 //      for (i = 0; i < num_my_types; i++) {
 //          pack_type_description(i);
 //      }
+    // should this be const_iterator?
+    char** service_itr = d_controller_token->services_begin();
+    char** const service_end = d_controller_token->services_end();
+    for (int i=0;  service_itr != service_end;  ++service_itr, ++i) {
+        pack_service_description (*service_itr, i);
+    }
+
+    typedef vrpn_BaseConnectionController::vrpnLocalMapping vrpnLocalMapping;
+    const vrpnLocalMapping*       type_itr = d_controller_token->types_begin();
+    const vrpnLocalMapping* const type_end = d_controller_token->types_end();
+    for (int j=0;  type_itr != type_end;  ++type_itr, ++j ) {
+        pack_type_description (*type_itr, j);
+    }
 
     //=======================
     // This is where we would pass all the multicast capability stuff to
@@ -2220,39 +2233,42 @@ void vrpn_NetConnection::drop_connection()
 // the following are used during connection setup to communicate 
 // settings and service/type information to the other end
 
-vrpn_int32 vrpn_NetConnection::pack_type_description(vrpn_int32 which)
+vrpn_int32 vrpn_NetConnection::pack_type_description(
+    const vrpn_BaseConnectionController::vrpnLocalMapping& which,
+    vrpn_int32 id)
 {
    struct timeval now;
 
    // need to pack the null char as well
-   vrpn_uint32  len =  1; //strlen(my_types[which].name) + 1; XXX - comment out until ne impl. is done [sain]
+   vrpn_uint32  len = strlen(which.name) + 1; 
    vrpn_uint32 netlen;
    char buffer [sizeof(len) + sizeof(cName)];
 
    netlen = htonl(len);
    // Pack a message with type vrpn_CONNECTION_TYPE_DESCRIPTION
-   // whose service ID is the ID of the type that is being
+    // whose service ID is the ID of the type that is being
    // described and whose body contains the length of the name
    // and then the name of the type.
 
 #ifdef  VERBOSE
-   printf("  vrpn_NetConnection: Packing type '%s'\n",my_types[which].name);
+   printf("  vrpn_NetConnection: Packing type '%s'\n",which.name);
 #endif
    memcpy(buffer, &netlen, sizeof(netlen));
-   //memcpy(&buffer[sizeof(len)], my_types[which].name, (vrpn_int32) len);XXX - comment out until ne impl. is done [sain]
+   memcpy(&buffer[sizeof(len)], which.name, (vrpn_int32) len);
    gettimeofday(&now,NULL);
 
    return pack_message((vrpn_uint32) (len + sizeof(len)), now,
-    vrpn_CONNECTION_TYPE_DESCRIPTION, which, buffer,
+    vrpn_CONNECTION_TYPE_DESCRIPTION, id, buffer,
     vrpn_CONNECTION_RELIABLE);
 }
 
-vrpn_int32 vrpn_NetConnection::pack_service_description(vrpn_int32 which)
+vrpn_int32 vrpn_NetConnection::pack_service_description(char* /*const*/ name,
+                                                        vrpn_int32 id)
 {
    struct timeval now;
 
    // need to pack the null char as well
-   vrpn_uint32  len = 1; //strlen(my_services[which]) + 1;XXX - comment out until ne impl. is done [sain]
+   vrpn_uint32  len = strlen(name) + 1;
    vrpn_uint32 netlen;
    char buffer [sizeof(len) + sizeof(cName)];
 
@@ -2263,14 +2279,14 @@ vrpn_int32 vrpn_NetConnection::pack_service_description(vrpn_int32 which)
    // and then the name of the service.
 
 #ifdef  VERBOSE
-    printf("  vrpn_NetConnection: Packing service '%s'\n", my_services[which]);
+    printf("  vrpn_NetConnection: Packing service '%s'\n", name);
 #endif
    memcpy(buffer, &netlen, sizeof(netlen));
-   //   memcpy(&buffer[sizeof(len)], my_services[which], (vrpn_int32) len);XXX - comment out until ne impl. is done [sain]
+   memcpy(&buffer[sizeof(len)], name, (vrpn_int32) len);
    gettimeofday(&now,NULL);
 
    return pack_message((vrpn_uint32)(len + sizeof(len)), now,
-    vrpn_CONNECTION_SERVICE_DESCRIPTION, which, buffer,
+    vrpn_CONNECTION_SERVICE_DESCRIPTION, id, buffer,
     vrpn_CONNECTION_RELIABLE);
 }
 

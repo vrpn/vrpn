@@ -1217,14 +1217,16 @@ void vrpn_ClientConnectionController::register_service_with_connections(
 
 #else  // changing it to ...
     
+    char* name = (char*) service_name;  // XXX hack for now
+
     // If we're connected, pack the service description
     if (d_connection_ptr) {
-        d_connection_ptr->pack_service_description( /*service_name,*/ service_id );
+        d_connection_ptr->pack_service_description( name, service_id );
     }
 
     // If the other side has declared this service, establish the
     // mapping for it.
-    d_connection_ptr->register_local_service( service_name, service_id );
+    d_connection_ptr->register_local_service( name, service_id );
     
 #endif // ... end change
 }
@@ -1249,7 +1251,12 @@ void vrpn_ClientConnectionController::register_type_with_connections(
 #else  // chaging it to ...
 
     if (d_connection_ptr) {
-        d_connection_ptr->pack_type_description( type_id );
+        char* name = (char*) type_name;  // XXX hack for now
+        vrpn_BaseConnectionController::vrpnLocalMapping lm (name);
+        // XXX do we need to worry about the other data in lm?
+
+        d_connection_ptr->pack_type_description( lm, type_id );
+        // XXX want local mapping
         
         //XXX???
         if (d_connection_ptr->register_local_type( type_name, type_id )) {

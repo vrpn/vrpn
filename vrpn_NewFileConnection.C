@@ -687,8 +687,8 @@ vrpn_NewFileConnection::handle_reset(void * userdata,
 
 // static
 vrpn_int32 
-vrpn_NewFileConnection::handle_play_to_time(void * userdata, 
-										 vrpn_HANDLERPARAM p) 
+vrpn_NewFileConnection::handle_play_to_time(void * userdata,
+                                            vrpn_HANDLERPARAM p) 
 {
 	vrpn_NewFileConnection * me = (vrpn_NewFileConnection *) userdata;
 	timeval newtime;
@@ -698,6 +698,3 @@ vrpn_NewFileConnection::handle_play_to_time(void * userdata,
 
 	return me->play_to_time(newtime);
 }
-
-
-
