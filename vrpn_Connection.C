@@ -367,7 +367,8 @@ int vrpn_Connection::setup_for_new_connection(void)
 int vrpn_Connection::pack_type_description(int which)
 {
    struct timeval now;
-   long	len = strlen(my_types[which].name);
+   // need to pack the null char as well
+   long	len = strlen(my_types[which].name) + 1;
    char	buffer[sizeof(len)+sizeof(cName)];
 
    // Pack a message with type vrpn_CONNECTION_TYPE_DESCRIPTION
@@ -389,7 +390,8 @@ int vrpn_Connection::pack_type_description(int which)
 int vrpn_Connection::pack_sender_description(int which)
 {
    struct timeval now;
-   long	len = strlen(my_senders[which]);
+   // need to pack the null char as well
+   long	len = strlen(my_senders[which]) + 1;
    char	buffer[sizeof(len)+sizeof(cName)];
 
    // Pack a message with type vrpn_CONNECTION_SENDER_DESCRIPTION
@@ -1258,8 +1260,8 @@ int	vrpn_Connection::handle_type_message(void *userdata,
 	}
 
 	// Find out the name of the type (skip the length)
-	strncpy(type_name, p.buffer+4, p.payload_len-4);
-	type_name[p.payload_len-4] = '\0';
+        // NOTE: this assumes that longs are 4 bytes on sender arch
+	strcpy(type_name, p.buffer+4);
 
 #ifdef	VERBOSE
 	printf("Registering other-side type: '%s'\n", type_name);
@@ -1306,13 +1308,13 @@ int	vrpn_Connection::handle_sender_message(void *userdata,
 	int	i;
 
 	if (p.payload_len > sizeof(sender_name)) {
-		fprintf(stderr,"vrpn: vrpn_Connection::Type name too long\n");
+	        fprintf(stderr,"vrpn: vrpn_Connection::Sender name too long\n");
 		return -1;
 	}
 
 	// Find out the name of the sender (skip the length)
-	strncpy(sender_name, p.buffer+4, p.payload_len-4);
-	sender_name[p.payload_len-4] = '\0';
+	// NOTE: this assumes that longs are 4 bytes on sender arch
+	strcpy(sender_name, p.buffer+4);
 
 #ifdef	VERBOSE
 	printf("Registering other-side sender: '%s'\n", sender_name);
