@@ -2,7 +2,11 @@
 
 #ifdef _WIN32
 #ifndef _WIN32_WCE
-#include <iomanip>
+  #ifdef VRPN_USE_OLD_STREAMS
+    #include <iomanip.h>
+  #else
+    #include <iomanip>
+  #endif
 #endif
 #endif
 
@@ -697,8 +701,8 @@ int vrpn_unbuffer (const char ** buffer, char * string,
         #include <iostream.h>
   #else
         #include <iostream>
+	using namespace std;
   #endif
-using namespace std;
 #endif
 #include <math.h>
 
@@ -783,6 +787,7 @@ int vrpn_gettimeofday(timeval *tp, void *voidp)
         #include <iostream.h>
   #else
         #include <iostream>
+	using namespace std;
   #endif
 #include <math.h>
 
