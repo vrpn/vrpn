@@ -645,7 +645,7 @@ int vrpn_Phantom::handle_setVertex_message(void *userdata,
 					   vrpn_HANDLERPARAM p){
   vrpn_Phantom *me = (vrpn_Phantom *)userdata;
   
-  long	temp;
+  vrpn_int32 temp;
   int vertNum;
   float x,y,z;
 
@@ -664,7 +664,7 @@ int vrpn_Phantom::handle_setNormal_message(void *userdata,
 					   vrpn_HANDLERPARAM p){
   vrpn_Phantom *me = (vrpn_Phantom *)userdata;
   
-  long	temp;
+  vrpn_int32 temp;
   int normNum;
   float x, y, z;
 
@@ -684,7 +684,7 @@ int vrpn_Phantom::handle_setTriangle_message(void *userdata,
   vrpn_Phantom *me = (vrpn_Phantom *)userdata;
   
   int triNum, v0, v1, v2, n0, n1, n2;
-  long ltriNum, lv0, lv1, lv2, ln0, ln1, ln2;
+  vrpn_int32 ltriNum, lv0, lv1, lv2, ln0, ln1, ln2;
   decode_triangle(p.buffer, p.payload_len, 
 	  &ltriNum, &lv0, &lv1, &lv2, &ln0, &ln1, &ln2);
   triNum = ltriNum; v0 = lv0; v1 = lv1; v2 = lv2;
@@ -703,7 +703,7 @@ int vrpn_Phantom::handle_removeTriangle_message(void *userdata,
 						vrpn_HANDLERPARAM p){
   vrpn_Phantom *me = (vrpn_Phantom *)userdata;
   
-  long	temp;
+  vrpn_int32 temp;
  
   decode_removeTriangle(p.buffer, p.payload_len, &temp);
 
@@ -744,7 +744,7 @@ int vrpn_Phantom::handle_setTrimeshType_message(void *userdata,
 					       vrpn_HANDLERPARAM p){
   vrpn_Phantom *me = (vrpn_Phantom *)userdata;
   
-  long	temp;
+  vrpn_int32 temp;
 
   decode_setTrimeshType(p.buffer, p.payload_len, &temp);
 

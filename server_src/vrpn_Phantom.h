@@ -20,9 +20,9 @@ public:
   float		SurfaceKdamping;//surface damping coefficient
 
 
-  long		which_plane;
+  vrpn_int32		which_plane;
   float		plane[4];	// plane equation, ax+by+cz+d = 0
-  long		numRecCycles;	// number of recovery cycles
+  vrpn_int32		numRecCycles;	// number of recovery cycles
 };
 
 typedef void (*vrpn_PHANTOMPLANECHANGEHANDLER)(void *userdata,
