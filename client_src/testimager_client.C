@@ -36,80 +36,76 @@ void  handle_description_message(void *, const struct timeval)
   g_got_dimensions = true;
 }
 
+void myDisplayFunc();
+float fps[2]={0,0};
+DWORD lastCallTime[2]={0,0};
+DWORD ReportInterval=5000;
+
 // New pixels coming; fill them into the image and tell Glut to redraw.
 void  handle_region_change(void *, const vrpn_IMAGERREGIONCB info)
 {
-  int r,c, ir;	  //< Row, Column, Inverted Row
-  vrpn_uint16 uns_pix;
+    int r,c;	//< Row, Column
+    int ir;		//< Inverted Row
+    int offset,RegionOffset;
+    const vrpn_TempImager_Region* region=info.region;
 
-  if (!g_ready_for_region) { return; }
+    int infoLineSize=region->cMax-region->cMin+1;
+    vrpn_int32 nCols=g_ti->nCols();
+    vrpn_uint16 uns_pix;
 
-  // Copy pixels into the image buffer.  Flip the image over in
-  // Y so that the image coordinates display correctly in OpenGL.
-  for (r = info.region->rMin; r <= info.region->rMax; r++) {
-    ir = g_ti->nRows() - r - 1;
-    for (c = info.region->cMin; c <= info.region->cMax; c++) {
-      if (!info.region->read_unscaled_pixel(c, r, uns_pix)) {
-	fprintf(stderr, "Cannot read pixel from region\n");
-	exit(-1);
-      }
+    if (!g_ready_for_region) { return; }
 
-#if 0
-      // This assumes that the pixels are actually 8-bit values
-      // and will clip if they go above this.  It also writes pixels
-      // from all regions into the image, which is similar to
-      // assuming that there is only one channel.  It also does
-      // not scale or offset the pixels to get them into the
-      // units for the region.
-      g_image[0 + 3 * (c + g_ti->nCols() * ir)] = uns_pix;
-      g_image[1 + 3 * (c + g_ti->nCols() * ir)] = uns_pix;
-      g_image[2 + 3 * (c + g_ti->nCols() * ir)] = uns_pix;
+    // Copy pixels into the image buffer.  Flip the image over in
+    // Y so that the image coordinates display correctly in OpenGL.
+    for (r = info.region->rMin,RegionOffset=(r-region->rMin)*infoLineSize; r <= region->rMax; r++,RegionOffset+=infoLineSize) {
+		ir = g_ti->nRows() - r - 1;
+		for (c = info.region->cMin; c <= region->cMax; c++) {
+			offset=3 * (c + ir*nCols);
+#if 1
+			// This assumes that the pixels are actually 8-bit values
+			// and will clip if they go above this.  It also writes pixels
+			// from all regions into the image, which is similar to
+			// assuming that there is only one channel.  It also does
+			// not scale or offset the pixels to get them into the
+			// units for the region.
+			// changed from ir to r. The server sends the images inverted
+			uns_pix = region->vals[(c-region->cMin) + RegionOffset];
 #else
-      // This assumes that the pixels are actually 12-bit values
-      // and will clip if they go above this.  It also writes pixels
-      // from all regions into the image, which is similar to
-      // assuming that there is only one channel.  It also does
-      // not scale or offset the pixels to get them into the
-      // units for the region.
-      g_image[0 + 3 * (c + g_ti->nCols() * ir)] = uns_pix >> 4;
-      g_image[1 + 3 * (c + g_ti->nCols() * ir)] = uns_pix >> 4;
-      g_image[2 + 3 * (c + g_ti->nCols() * ir)] = uns_pix >> 4;
+			// This assumes that the pixels are actually 12-bit values
+			// and will clip if they go above this.  It also writes pixels
+			// from all regions into the image, which is similar to
+			// assuming that there is only one channel.  It also does
+			// not scale or offset the pixels to get them into the
+			// units for the region.
+			uns_pix = region->vals[(c-region->cMin) + RegionOffset] >> 4;
 #endif
+			g_image[0 + offset] = uns_pix;
+			g_image[1 + offset] = uns_pix;
+			g_image[2 + offset] = uns_pix;
+		}
     }
-  }
 
-  // Capture timing information and print out how many frames per second
-  // are coming across the wire.  A new frame is assumed whenever the row
-  // minimum for this report is lower than the row minimum for the last
-  // report.
+    // Capture timing information and print out how many frames per second
+    // are coming across the wire.
 
-  { static struct timeval last_print_time;
-    struct timeval now;
-    static bool first_time = true;
-    static int frame_count = 0;
-    static int last_min_row = 0;
-
-    if (first_time) {
-      gettimeofday(&last_print_time, NULL);
-      first_time = false;
-    } else {
-      if (info.region->rMin < last_min_row) {
-	frame_count++;
-      }
-      last_min_row = info.region->rMin;
-      gettimeofday(&now, NULL);
-      double timesecs = 0.001 * vrpn_TimevalMsecs(vrpn_TimevalDiff(now, last_print_time));
-      if (timesecs >= 5) {
-	double frames_per_sec = frame_count / timesecs;
-	frame_count = 0;
-	printf("Received frames per second = %lg\n", frames_per_sec);
-	last_print_time = now;
-      }
+    if (region->rMin==0){
+		fps[0]++;
+	}
+    DWORD CurTime=timeGetTime();
+    if (lastCallTime[0]!=0) {
+		if (CurTime-lastCallTime[0]>ReportInterval) {
+			printf("Received frames per second = %lg\n", 1000.f*fps[0]/(CurTime-lastCallTime[0]));
+			fps[0]=0;
+			lastCallTime[0]=CurTime;
+		}
     }
-  }
-
-  // Tell Glut it is time to draw
-  glutPostRedisplay();
+    else {
+		lastCallTime[0]=CurTime;
+	}
+	
+	// Force to redraw the display. GLUT seems to have a problem with its mainloop
+    if (info.region->rMin==0)
+		myDisplayFunc();
 }
 
 //----------------------------------------------------------------------------
@@ -134,25 +130,17 @@ void myDisplayFunc(void)
   // Capture timing information and print out how many frames per second
   // are being drawn.
 
-  { static struct timeval last_print_time;
-    struct timeval now;
-    static bool first_time = true;
-    static int frame_count = 0;
-
-    if (first_time) {
-      gettimeofday(&last_print_time, NULL);
-      first_time = false;
-    } else {
-      frame_count++;
-      gettimeofday(&now, NULL);
-      double timesecs = 0.001 * vrpn_TimevalMsecs(vrpn_TimevalDiff(now, last_print_time));
-      if (timesecs >= 5) {
-	double frames_per_sec = frame_count / timesecs;
-	frame_count = 0;
-	printf("Displayed frames per second = %lg\n", frames_per_sec);
-	last_print_time = now;
-      }
-    }
+  fps[1]++;
+  DWORD CurTime=timeGetTime();
+  if (lastCallTime[1]!=0) {
+    if (CurTime-lastCallTime[1]>ReportInterval) {
+       printf("Drawn frames per second = %lg\n", 1000.f*fps[1]/(CurTime-lastCallTime[1]));
+       fps[1]=0;
+       lastCallTime[1]=CurTime;
+    } 
+  }
+  else {
+    lastCallTime[1]=CurTime;
   }
 }
 
@@ -161,7 +149,7 @@ void myIdleFunc(void)
   // See if there are any more messages from the server and then sleep
   // a little while so that we don't eat the whole CPU.
   g_ti->mainloop();
-  vrpn_SleepMsecs(1);
+//  vrpn_SleepMsecs(1);
 }
 
 int main(int argc, char **argv)
