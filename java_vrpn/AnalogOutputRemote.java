@@ -141,7 +141,7 @@ public class AnalogOutputRemote extends VRPN implements Runnable
 	protected native boolean requestValueChange_native( int channel, double value );
 	protected native boolean requestValueChange_native( double[] values );
 	
-	protected void finalize( ) throws Throwable
+	public void finalize( ) throws Throwable
 	{
 		keepRunning = false;
 		while( analogOutputThread.isAlive( ) )
@@ -165,6 +165,8 @@ public class AnalogOutputRemote extends VRPN implements Runnable
 	
 	// this is used by the native code to store a C++ pointer to the 
 	// native vrpn_Analog_Output_Remote object
+	// this should be negative if the analog_output is uninitialized or
+	// has already been shut down
 	protected int native_analog_output = -1;
 	
 	// this is used to stop and to keep running the tracking thread

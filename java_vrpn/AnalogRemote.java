@@ -181,7 +181,7 @@ public class AnalogRemote extends VRPN implements Runnable
 	
 	protected native void mainloop( );
 	
-	protected void finalize( ) throws Throwable
+	public void finalize( ) throws Throwable
 	{
 		keepRunning = false;
 		while( analogThread.isAlive( ) )
@@ -205,6 +205,8 @@ public class AnalogRemote extends VRPN implements Runnable
 	
 	// this is used by the native code to store a C++ pointer to the 
 	// native vrpn_AnalogRemote object
+	// this should be negative if the analog is uninitialized or
+	// has already been shut down
 	protected int native_analog = -1;
 	
 	// this is used to stop and to keep running the tracking thread

@@ -279,7 +279,7 @@ public class TempImagerRemote extends VRPN implements Runnable
 	
 	protected native void mainloop( );
 	
-	protected void finalize( ) throws Throwable
+	public void finalize( ) throws Throwable
 	{
 		keepRunning = false;
 		while( tempImagerThread.isAlive( ) )
@@ -351,6 +351,8 @@ public class TempImagerRemote extends VRPN implements Runnable
 	
 	// this is used by the native code to store a C++ pointer to the 
 	// native vrpn_TempImagerRemote object
+	// this should be negative if the imager is uninitialized or
+	// has already been shut down
 	protected int native_tempImager = -1;
 	
 	// this is used to stop and to keep running the tracking thread

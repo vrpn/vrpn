@@ -162,7 +162,7 @@ public class ButtonRemote extends VRPN implements Runnable
 	
 	protected native void mainloop( );
 	
-	protected void finalize( ) throws Throwable
+	public void finalize( ) throws Throwable
 	{
 		keepRunning = false;
 		while( buttonThread.isAlive( ) )
@@ -184,9 +184,11 @@ public class ButtonRemote extends VRPN implements Runnable
 	///////////////////
 	// data members
 	
-        // this is used by the native code to store a C++ pointer to the
-        // native vrpn_ButtonRemote object
-        protected int native_button = -1;
+    // this is used by the native code to store a C++ pointer to the
+    // native vrpn_ButtonRemote object
+	// this should be negative if the button is uninitialized or
+	// has already been shut down
+    protected int native_button = -1;
 
 	// this is used to stop and to keep running the tracking thread
 	// in an orderly fashion.

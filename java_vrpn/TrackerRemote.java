@@ -304,7 +304,7 @@ public class TrackerRemote extends VRPN implements Runnable
 	
 	protected native void mainloop( );
 	
-	protected void finalize( ) throws Throwable
+	public void finalize( ) throws Throwable
 	{
 		keepRunning = false;
 		while( trackerThread.isAlive( ) )
@@ -330,6 +330,8 @@ public class TrackerRemote extends VRPN implements Runnable
 	
 	// this is used by the native code to store a C++ pointer to the 
 	// native vrpn_TrackerRemote object
+	// this should be negative if the tracker is uninitialized or
+	// has already been shut down
 	protected int native_tracker = -1;
 	
 	// this is used to stop and to keep running the tracking thread
