@@ -225,8 +225,17 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
 
   trimesh->addToScene(hapticScene);
 
-  //  status= TRACKER_RESETTING;
-  gettimeofday(&(vrpn_ForceDevice::timestamp),NULL);
+  //  status= TRACKER_RESETTING
+  // the next three lines are a hack around the factthe the third line down
+  // does'nt compile on VC 6.0 with Vtune...
+  // this should be in a non-interuptable block
+  //if we ever run two devices in one multithreaded server process...
+  {	timeval ForceDeviceTimeStamp = vrpn_ForceDevice::timestamp;
+	gettimeofday( &ForceDeviceTimeStamp,NULL);
+	vrpn_ForceDevice::timestamp=ForceDeviceTimeStamp;
+  }
+  //gettimeofday( (void) & (vrpn_ForceDevice::timestamp),NULL);
+ 
 
   if (vrpn_ForceDevice::connection->register_handler(plane_message_id, 
 	handle_plane_change_message, this, vrpn_ForceDevice::my_id)) {
