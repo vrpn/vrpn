@@ -41,7 +41,8 @@ class vrpn_Tracker_Flock: public vrpn_Tracker_Serial {
  public:
   
   vrpn_Tracker_Flock(char *name, vrpn_Connection *c, int cSensors=1,
-		      char *port = "/dev/ttyd3", long baud = 38400);
+		     char *port = "/dev/ttyd3", long baud = 38400,
+		     int fStreamMode = 1);
     
   virtual ~vrpn_Tracker_Flock();
   virtual void mainloop(void);
@@ -53,6 +54,8 @@ class vrpn_Tracker_Flock: public vrpn_Tracker_Serial {
   void printError(unsigned char uchErrCode, unsigned char uchExpandedErrCode);
   int checkError();
   int cSensors;
+  int fStream;  // stream or polled mode
+  int fGroupMode; // for get_report -- group report mode or individual
 
   // class members used to help with error recovery
   int cResets;
@@ -63,6 +66,7 @@ class vrpn_Tracker_Flock: public vrpn_Tracker_Serial {
   struct timeval tvLastStatusReport;
   int cReports;
   int cStatusInterval;
+  double getMeasurementRate();
 };
 
 #endif  // #ifndef _WIN32

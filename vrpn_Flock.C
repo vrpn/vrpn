@@ -12,8 +12,6 @@
 //     specification commands with the RS232TOFBB command.
 //   (weberh 1/11/98)
 
-// If you want to try polling instead of stream mode, just set define POLL
-// #define POLL
 #include <time.h>
 #include <math.h>
 #include <stdlib.h>
@@ -40,7 +38,7 @@
 
 // output a status msg every status_msg_secs
 #define STATUS_MSG
-#define STATUS_MSG_SECS 3
+#define STATUS_MSG_SECS 600
 
 void vrpn_Tracker_Flock::printError( unsigned char uchErrCode, 
 			unsigned char uchExpandedErrCode ) {
@@ -229,9 +227,10 @@ int vrpn_Tracker_Flock::checkError() {
 }
 
 vrpn_Tracker_Flock::vrpn_Tracker_Flock(char *name, vrpn_Connection *c, 
-				       int cSensors, char *port, long baud):
+				       int cSensors, char *port, long baud,
+				       int fStreamMode ) :
   vrpn_Tracker_Serial(name,c,port,baud), cSensors(cSensors), cResets(0),
-  cSyncs(0), fFirstStatusReport(1) {
+  fStream(fStreamMode), fGroupMode(1), cSyncs(0), fFirstStatusReport(1) {
     if (cSensors>MAX_SENSORS) {
       fprintf(stderr, "\nvrpn_Tracker_Flock: too many sensors requested ... only %d allowed (%d specified)", MAX_SENSORS, cSensors );
       cSensors = MAX_SENSORS;
@@ -239,6 +238,45 @@ vrpn_Tracker_Flock::vrpn_Tracker_Flock(char *name, vrpn_Connection *c,
     fprintf(stderr, "\nvrpn_Tracker_Flock: starting up ...");
 }
 
+
+double vrpn_Tracker_Flock::getMeasurementRate() {
+  // the cbird code shows how to read these
+  int resetLen = 0;
+  unsigned char reset[5];
+  unsigned char response[5];
+
+  // get crystal freq and measurement rate
+  reset[resetLen++]='O';
+  reset[resetLen++]=2;
+  reset[resetLen++]='O';
+  reset[resetLen++]=6;
+
+  if (write(serial_fd, (const char *) reset, resetLen )!=resetLen) {
+    perror("\nvrpn_Tracker_Flock: failed writing set mode cmds to tracker");
+    status = TRACKER_FAIL;
+    return 1;
+  }
+  
+  // make sure the commands are sent out
+  vrpn_drain_output_buffer( serial_fd );
+  
+  // let the tracker respond
+  vrpn_SleepMsecs(500);
+  
+  int cRetF;
+   if ((cRetF=read_available_characters(response, 4))!=4) {
+     fprintf(stderr, 
+	     "\nvrpn_Tracker_Flock: received only %d of 4 chars as freq", 
+	     cRetF);
+     status = TRACKER_FAIL;
+     return 1;
+   }
+   
+   fprintf(stderr, "\nvrpn_Tracker_Flock: crystal freq is %d Mhz", 
+	   (unsigned int)response[0]);
+   unsigned int iCount = response[2] + (((unsigned int)response[3]) << 8);
+   return (1000.0/((4*(iCount*(8.0/response[0])/1000.0)) + 0.3));
+}
 
 vrpn_Tracker_Flock::~vrpn_Tracker_Flock() {
 
@@ -266,12 +304,18 @@ vrpn_Tracker_Flock::~vrpn_Tracker_Flock() {
   fprintf(stderr, " done.\n");
 }
 
-
 void vrpn_Tracker_Flock::reset()
 {
    int i;
    int resetLen;
    unsigned char reset[6*(MAX_SENSORS+1)+10];
+
+   // set vars for error handling
+   // set them right away so they are set properly in the
+   // event that we fail during the reset.
+   cResets++;
+   cSyncs=0;
+   fFirstStatusReport=1;
 
    // Get rid of the characters left over from before the reset
    // (make sure they are processed)
@@ -428,21 +472,27 @@ void vrpn_Tracker_Flock::reset()
      return;
    }
 
-   // now start it running
-   resetLen = 0;
-#ifndef POLL
-   // stream mode
-   reset[resetLen++] = '@';
+#define GET_FREQ
+#ifdef GET_FREQ
+  fprintf(stderr, "\nvrpn_Tracker_Flock: sensor measurement rate is %lf hz.",
+	  getMeasurementRate());
 #endif
 
-   if (write(serial_fd, (const char *) reset, resetLen )!=resetLen) {
-     perror("\nvrpn_Tracker_Flock: failed writing set mode cmds to tracker");
-     status = TRACKER_FAIL;
-     return;
+   // now start it running
+   resetLen = 0;
+
+   if (fStream==1) {
+     // stream mode
+     reset[resetLen++] = '@';
+     if (write(serial_fd, (const char *) reset, resetLen )!=resetLen) {
+       perror("\nvrpn_Tracker_Flock: failed writing set mode cmds to tracker");
+       status = TRACKER_FAIL;
+       return;
+     }
+     
+     // make sure the commands are sent out
+     vrpn_drain_output_buffer( serial_fd );
    }
-   
-   // make sure the commands are sent out
-   vrpn_drain_output_buffer( serial_fd );
 
    fprintf(stderr,"\nvrpn_Tracker_Flock: done with reset ... running.\n");
 
@@ -454,13 +504,18 @@ void vrpn_Tracker_Flock::reset()
 void vrpn_Tracker_Flock::get_report(void)
 {
    int ret;
+   int RECORD_SIZE = 15;
 
    // The reports are 15 bytes long each (Pos/Quat format plus
    // group address), with a phasing bit set in the first byte 
    // of each sensor.
+   // If not in group mode, then reports are just 14 bytes
    // VRPN sends every tracker report for every sensor.
-#define RECORD_SIZE 15
 
+   if (!fGroupMode) {
+     RECORD_SIZE = 14;
+   }
+     
    // We need to search for the phasing bit because if the input
    // buffer overflows then it will be emptied and overwritten.
 
@@ -580,9 +635,11 @@ void vrpn_Tracker_Flock::get_report(void)
    quat[1] = -quat[1];
    quat[2] = -quat[2];
 
-   // sensor addr are 0 indexed in vrpn, but start at 2 in the flock 
-   // (1 is the transmitter)
-   sensor = buffer[RECORD_SIZE-1]-2;
+   if (fGroupMode) {
+     // sensor addr are 0 indexed in vrpn, but start at 2 in the flock 
+     // (1 is the transmitter)
+     sensor = buffer[RECORD_SIZE-1]-2;
+   }      
 
    // all set for this sensor, so cycle
    status = TRACKER_REPORT_READY;
@@ -593,7 +650,6 @@ void vrpn_Tracker_Flock::get_report(void)
 #endif
 }
 
-#ifdef POLL
 #define poll() { \
 char chPoint = 'B';\
 fprintf(stderr,"."); \
@@ -604,7 +660,6 @@ if (write(serial_fd, (const char *) &chPoint, 1 )!=1) {\
 } \
 gettimeofday(&timestamp, NULL);\
 }   
-#endif
 
 // max time between start of a report and the finish (or time to 
 // wait for first report)
@@ -621,16 +676,17 @@ void vrpn_Tracker_Flock::mainloop()
   switch (status) {
   case TRACKER_REPORT_READY:
     {
-#ifdef POLL
       // NOTE: the flock behavior is very finicky -- if you try to poll
       //       again before most of the last response has been read, then
       //       it will complain.  You need to wait and issue the next
       //       group poll only once you have read out the previous one entirely
       //       As a result, polling is very slow with multiple sensors.
-      if (sensor==(cSensors-1)) { 
-	poll();
+      if (fStream==0) {
+	if (sensor==(cSensors-1)) { 
+	  poll();
+	}
       }
-#endif
+
 #ifdef	VERBOSE
       static int count = 0;
       if (count++ == 10) {
@@ -748,12 +804,9 @@ void vrpn_Tracker_Flock::mainloop()
   
   case TRACKER_RESETTING:
     reset();
-    cResets++;
-    cSyncs=0;
-    fFirstStatusReport=1;
-#ifdef POLL
-    poll();
-#endif
+    if (fStream==0) {
+      poll();
+    }
     break;
     
   case TRACKER_FAIL:
