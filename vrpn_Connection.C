@@ -27,6 +27,9 @@
 #include <sys/time.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#ifdef _AIX
+#define	_USE_IRS
+#endif
 #include <netdb.h>
 #endif
 
@@ -65,10 +68,14 @@
  #endif
 #endif
 
-#ifdef linux
-#define GSN_CAST (unsigned int *)
+#ifdef _AIX
+  #define GSN_CAST (socklen_t *)
 #else
-#define GSN_CAST
+  #ifdef linux
+    #define GSN_CAST (unsigned int *)
+  #else
+    #define GSN_CAST
+  #endif
 #endif
 
 //  NOT SUPPORTED ON SPARC_SOLARIS
@@ -1105,8 +1112,8 @@ int vrpn_start_server(const char *machine, char *server_name, char *args)
                 for (waitloop = 0; waitloop < (SERVCOUNT); waitloop++) {
 		    int ret;
                     pid_t deadkid;
-#if defined(sparc) || defined(FreeBSD)
-                    int status;  // doesn't exist on sparc_solaris or FreeBSD
+#if defined(sparc) || defined(FreeBSD) || defined(_AIX)
+                    int status;  // doesn't exist on solaris, FreeBSD, AIX
 #else
                     union wait status;
 #endif

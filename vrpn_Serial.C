@@ -12,6 +12,10 @@
 #include <termios.h>
 #endif
 
+#ifdef	_AIX
+#include <sys/termio.h>
+#endif
+
 #if !defined(_WIN32)
 #include <sys/ioctl.h>
 #include <unistd.h>
