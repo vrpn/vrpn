@@ -177,7 +177,7 @@ void handle_cntl_c (int) {
   exit(0);
 }
 
-int main (int argc, char * argv [])
+void main (int argc, char * argv [])
 {
 
 #ifdef hpux

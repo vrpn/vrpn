@@ -73,7 +73,6 @@ struct timeval vrpn_TimevalScale (const struct timeval & tv,
   result.tv_sec = (long)( tv.tv_sec * scale );
   result.tv_usec = (long)( tv.tv_usec * scale
                  + fmod(tv.tv_sec * scale, 1.0) * 1000000.0 );
-
   return result;
 }
 

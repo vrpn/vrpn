@@ -67,7 +67,7 @@ int vrpn_ConnectionForwarder::unforward
   st = d_source->register_message_type(sourceName);
   ss = d_source->register_sender(sourceServiceId);
   dt = d_destination->register_message_type(destinationName);
-  ss = d_source->register_sender(destinationServiceId);
+  ds = d_source->register_sender(destinationServiceId);
 
   for (snitch = &d_list, victim = *snitch;
        victim;

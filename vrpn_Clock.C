@@ -9,7 +9,7 @@
   Revised: Wed Apr  1 13:23:40 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.C,v $
   $Locker:  $
-  $Revision: 1.12 $
+  $Revision: 1.13 $
   \*****************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
@@ -582,9 +582,10 @@ int vrpn_Clock_Remote::fullSyncClockServerReplyHandler(void *userdata,
 
   // now grab the id from the message to check that is is correct
   if (me->lUniqueID!=(long)ntohl(plTimeData[5])) {
-    cerr << "vrpn_Clock_Remote: warning, server entertaining multiple clock" 
-	 << " sync requests simultaneously -- results may be inaccurate." 
-	 << endl;
+// Don't squawk: there could be multiple connections now
+//    cerr << "vrpn_Clock_Remote: warning, server entertaining multiple clock" 
+//	 << " sync requests simultaneously -- results may be inaccurate." 
+//	 << endl;
     return 0;
   }
   
@@ -704,9 +705,10 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
 
   // now grab the id from the message to check that is is correct
   if (me->lUniqueID!=(long)ntohl(plTimeData[5])) {
-    cerr << "vrpn_Clock_Remote: warning, server entertaining multiple clock" 
-	 << " sync requests simultaneously -- results may be inaccurate." 
-	 << endl;
+// Don't squawk: there could be multiple connections now
+//    cerr << "vrpn_Clock_Remote: warning, server entertaining multiple clock" 
+//	 << " sync requests simultaneously -- results may be inaccurate." 
+//	 << endl;
     return 0;
   }
   
@@ -811,6 +813,13 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
 
 /*****************************************************************************\
   $Log: vrpn_Clock.C,v $
+  Revision 1.13  1998/12/02 14:08:13  taylorr
+  This version packs the things needed for a single connection into the
+  vrpn_OneConnection structure called 'endpoint' within a vrpn_Connection.
+  This should make it much easier to allow multiple connections to the same
+  server by duplication of the endpoint.  I'm checking it in at this point
+  because it still works.
+
   Revision 1.12  1998/09/24 04:29:34  gregory
   Updated the forceDevice to handle dynamic triangular meshes,
   as well as to allow for the user to chose between the Ghost

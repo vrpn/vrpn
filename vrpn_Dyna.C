@@ -1,65 +1,3 @@
-/*                               -*- Mode: C -*- 
- * 
- * This library is free software; you can redistribute it and/or          
- * modify it under the terms of the GNU Library General Public            
- * License as published by the Free Software Foundation.                  
- * This library is distributed in the hope that it will be useful,        
- * but WITHOUT ANY WARRANTY; without even the implied warranty of         
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU      
- * Library General Public License for more details.                       
- * If you do not have a copy of the GNU Library General Public            
- * License, write to The Free Software Foundation, Inc.,                  
- * 675 Mass Ave, Cambridge, MA 02139, USA.                                
- *                                                                        
- * For more information on this program, contact Blair MacIntyre          
- * (bm@cs.columbia.edu) or Steven Feiner (feiner@cs.columbia.edu)         
- * at the Computer Science Dept., Columbia University,                    
- * 500 W 120th St, Room 450, New York, NY, 10027.                         
- *                                                                        
- * Copyright (C) Blair MacIntyre 1995, Columbia University 1995           
- * 
- * Author          : Ruigang Yang
- * Created On      : Tue Feb 17 13:51:40 1998
- * Last Modified By: Ruigang Yang
- * Last Modified On: Tue Feb 24 14:36:08 1998
- * Update Count    : 36
- * 
- * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Dyna.C,v $
- * $Date: 1998/11/05 22:45:45 $
- * $Author: taylorr $
- * $Revision: 1.6 $
- * 
- * $Log: vrpn_Dyna.C,v $
- * Revision 1.6  1998/11/05 22:45:45  taylorr
- * This version strips out the serial-port code into vrpn_Serial.C.
- *
- * It also makes it so all the library files compile under NT.
- *
- * It also fixes an insidious initialization bug in the forwarder code.
- *
- * Revision 1.5  1998/05/13 17:32:26  taylorr
- * This version doesn't print so many messages and has the sensor as
- * unit 0.
- *
- * Revision 1.4  1998/03/16 18:26:43  taylorr
- * Compiles on HPs
- *
- * Revision 1.3  1998/02/24 19:36:43  ryang
- * beta test version of DynaSight
- *
- * Revision 1.2  1998/02/23 20:57:38  ryang
- * bug fix
- *
- * Revision 1.1  1998/02/19 21:00:44  ryang
- * drivers for DynaSight
- *
- * SCCS Status     : %W%	%G%
- * 
- * HISTORY
- */
-
-static char rcsid[] = "$Id: vrpn_Dyna.C,v 1.6 1998/11/05 22:45:45 taylorr Exp $";
-
 #ifdef	_WIN32
 #include <io.h>
 #else
@@ -258,7 +196,7 @@ int vrpn_Tracker_Dyna::valid_report() {
 
 
    /* Make sure no other consecutive bytes have 1000 in the high nibble */
-   for (int i = 2; i <reportLength-1; i += 2)
+   for (unsigned i = 2; i <reportLength-1; i += 2)
    {
       if ( ( (buffer[i] & llll_OOOO) == lOOO_OOOO) &&
 	   ( (buffer[i+1] & llll_OOOO) == lOOO_OOOO))
@@ -313,13 +251,11 @@ int vrpn_Tracker_Dyna::valid_report() {
 int vrpn_Tracker_Dyna::decode_record()
 //    q_vec_type   decoded_pos;
 {
-   int           i;
-   int	         bufLength;
+   unsigned	i;
+   unsigned	bufLength;
 
    unsigned char exp;
-   signed char   x_high,
-                 y_high,
-		 z_high;
+   char	x_high, y_high, z_high;
    unsigned char x_low, y_low, z_low;
    long x, y, z;
 

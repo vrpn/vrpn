@@ -505,7 +505,7 @@ void vrpn_Tracker_Flock::reset()
 void vrpn_Tracker_Flock::get_report(void)
 {
    int ret;
-   int RECORD_SIZE = 15;
+   unsigned RECORD_SIZE = 15;
 
    // The reports are 15 bytes long each (Pos/Quat format plus
    // group address), with a phasing bit set in the first byte 

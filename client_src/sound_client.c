@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "vrpn_Sound.h"
 
-char	*SERVER = "Sound0@ioph100";
+char	*SERVER = "Sound0@ioglab";
 char	*SOUND1 = "/net/nano/nano3/sounds/sfx-4/4-3.au";
 char	*SOUND2 = "/net/nano/nano3/sounds/sfx-3/3-2.au";
 

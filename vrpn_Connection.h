@@ -1,3 +1,15 @@
+//XXX When multicast is implemented, make sure that the buffers are
+// still sent to the individual OneConnections so that they can be
+// logged.  Should tag them as multicast, so that the OneConnection
+// knows not to send them again, but only to log them.  Or else the
+// Connection class should handle the logging for each of its
+// OneConnections (maybe this is better).
+
+//XXX When multiple outgoing connections can be made, and the creator
+// of the connection asks for local logging, it should only be turned
+// on for the first connection, so that they don't all try to write
+// the same file?
+
 #ifndef	VRPN_CONNECTION_H
 #define VRPN_CONNECTION_H
 
@@ -6,6 +18,9 @@
 #ifndef VRPN_SHARED_H
 #include "vrpn_Shared.h"
 #endif
+
+// XXX Should make everything that deals with a type or a name ID
+//     be a long, rather than some being longs and some ints.
 
 // NOTE: most users will want to use the vrpn_Synchronized_Connection
 // class rather than the default connection class (either will work,
@@ -29,7 +44,7 @@ typedef int (* vrpn_LOGFILTER) (void * userdata, vrpn_HANDLERPARAM p);
 // to have large tables.  We need at least 150-200 for the microscope
 // project as of Jan 98, and will eventually need two to three times that
 // number.
-#define	vrpn_CONNECTION_MAX_SENDERS	(10)
+#define	vrpn_CONNECTION_MAX_SENDERS	(2000)
 #define	vrpn_CONNECTION_MAX_TYPES	(2000)
 
 // vrpn_ANY_SENDER can be used to register callbacks on a given message
@@ -38,7 +53,7 @@ typedef int (* vrpn_LOGFILTER) (void * userdata, vrpn_HANDLERPARAM p);
 #define	vrpn_ANY_SENDER	(-1)
 
 // vrpn_ANY_TYPE can be used to register callbacks for any USER type of
-// message from a given sender.
+// message from a given sender.  System messages are handled separately.
 #define vrpn_ANY_TYPE (-1)
 
 // Buffer lengths for TCP and UDP.  UDP is set based on ethernet payload length
@@ -54,7 +69,7 @@ typedef int (* vrpn_LOGFILTER) (void * userdata, vrpn_HANDLERPARAM p);
 // Classes of service for messages, specify multiple by ORing them together
 // Priority of satisfying these should go from the top down (RELIABLE will
 // override all others).
-// These flags may be ignored, but RELIABLE is guaranteed to be available.
+// Most of these flags may be ignored, but RELIABLE is guaranteed to be available.
 #define	vrpn_CONNECTION_RELIABLE		(1<<0)
 #define	vrpn_CONNECTION_FIXED_LATENCY		(1<<1)
 #define	vrpn_CONNECTION_LOW_LATENCY		(1<<2)
@@ -82,8 +97,8 @@ typedef int (* vrpn_LOGFILTER) (void * userdata, vrpn_HANDLERPARAM p);
 
 #define vrpn_got_first_connection "VRPN Connection Got First Connection"
 #define vrpn_got_connection "VRPN Connection Got Connection"
-#define vrpn_dropped_connection "VRPN Connection Dropped Last Connection"
-#define vrpn_dropped_last_connection "VRPN Connection Dropped Connection"
+#define vrpn_dropped_connection "VRPN Connection Dropped Connection"
+#define vrpn_dropped_last_connection "VRPN Connection Dropped Last Connection"
 
 // vrpn_CONTROL is used for notification messages sent to the user
 // from the local VRPN implementation (got_first_connection, etc.)
@@ -120,6 +135,101 @@ struct vrpnLogFilterEntry {
   vrpnLogFilterEntry * next;
 };
 
+// Encapsulation of the data and methods for a single connection
+// to take care of one part of many clients talking to a single server.
+// This will only be used from within the vrpn_Connection class, it should
+// not be instantiated by users or devices.
+class vrpn_OneConnection {
+    public:
+	vrpn_OneConnection (void);
+	vrpn_OneConnection (const SOCKET, const SOCKET, const SOCKET,
+		int, int, vrpn_LOGLIST *_d_logbuffer,
+		vrpn_LOGLIST *_d_firstlogentry, char *_d_logname,
+		long _d_logmode, int _d_logfilehandle,
+		FILE *_d_logfile, vrpnLogFilterEntry *_d_logfilters );
+	void	init(void);
+	virtual ~vrpn_OneConnection (void);
+
+	// A new local sender or type has been established; set
+	// the local type for it if the other side has declared it.
+	// Return 1 if the other side has one, 0 if not.
+	int	newLocalSender(const char *name, int which);
+	int	newLocalType(const char *name, int which);
+
+	// Give the local mapping for the remote type or sender.
+	// Returns -1 if there isn't one.
+	int	local_type_id(int remote_type);
+	int	local_sender_id(int remote_sender);
+
+	// Adds a new remote type/sender and returns its index.
+	// Returns -1 on error.
+	int	newRemoteType(cName type_name, int local_id);
+	int	newRemoteSender(cName sender_name, int local_id);
+
+	inline	int	outbound_udp_open (void) const
+				{ return udp_outbound != -1; }
+	virtual	int	connect_tcp_to (const char * msg);
+
+//XXX These should be protected; making them so will lead to making
+//    the code split the functions between OneConnection and Connection
+//    protected:
+	SOCKET tcp_sock;	// Socket to send reliable data on
+	SOCKET udp_outbound;	// Outbound unreliable messages go here
+	SOCKET udp_inbound;	// Inbound unreliable messages come here
+				// Need one for each due to different
+				// clock synchronization for each; we
+				// need to know which server each message is from
+
+	// offset of clocks on connected machines -- local - remote
+	// (this should really not be here, it should be in adjusted time
+	// connection, but this makes it a lot easier
+	struct timeval tvClockOffset;
+
+	// Name of the remote host we are connected to.  This is kept for
+	// informational purposes.  It is printed by the ceiling server,
+	// for example.
+	char rhostname [150];
+
+	// Logging - TCH 11 June 98
+
+	vrpn_LOGLIST * d_logbuffer;  // last entry in log
+	vrpn_LOGLIST * d_first_log_entry;  // first entry in log
+	char * d_logname;            // name of file to write log to
+	long d_logmode;              // logging incoming, outgoing, or both
+
+	int d_logfile_handle;
+	FILE * d_logfile;
+
+	virtual int log_message (int payload_len, struct timeval time,
+	                         long type, long sender, const char * buffer,
+                                 int isRemote = 0);
+	virtual int close_log (void);
+	virtual int open_log (void);
+
+	// Filters (assumed to be on vrpn_ANY_TYPE)
+	vrpnLogFilterEntry	* d_log_filters;	
+
+        // Returns nonzero if we shouldn't log this message.
+        virtual int check_log_filters (vrpn_HANDLERPARAM message);
+
+protected:
+
+	// Holds one entry for a mapping of remote strings to local IDs.
+	struct cRemoteMapping {
+		cName	* name;
+		int	local_id;
+	};
+
+	// The senders and types we know about that have been described by
+	// the other end of the connection.  Also, record the local mapping
+	// for ones that have been described with the same name locally.
+	// The arrays are indexed by the ID from the other side, and store
+	// the name and local ID that corresponds to each.
+	cRemoteMapping	other_senders [vrpn_CONNECTION_MAX_SENDERS];
+	int			num_other_senders;
+	cRemoteMapping	other_types [vrpn_CONNECTION_MAX_TYPES];
+	int			num_other_types;
+};
 
 class vrpn_Connection
 {
@@ -205,6 +315,11 @@ class vrpn_Connection
 	// makes an SDI-like connection to the named remote server
 	// (otherwise functions as a non-networked messaging hub).
 	// Port less than zero forces default.
+	//   Currently, server_name is an extended URL that defaults
+	// to VRPN connections at the port, but can be file:: to read
+	// from a file.  Other extensions should maintain this, so
+	// that VRPN uses URLs to name things that are to be connected
+	// to.
 	vrpn_Connection (const char * server_name,
                          int port = vrpn_DEFAULT_LISTEN_PORT_NO,
                          const char * local_logfile_name = NULL,
@@ -215,26 +330,9 @@ class vrpn_Connection
 	//char *	my_name;
 	int	status;			// Status of the connection
 
-        // Encapsulation of the data for a single connection
-        // since we're thinking about having many clients talking to
-        // a single server.
-        struct vrpn_OneConnection {
-
-          vrpn_OneConnection (void);
-          vrpn_OneConnection (const SOCKET, const SOCKET);
-
-          SOCKET tcp_sock;
-          SOCKET udp_sock;
-          char rhostname [150];
-        };
-
 	// Sockets used to talk to remote Connection(s)
+	// and other information needed on a per-connection basis
 	vrpn_OneConnection	endpoint;
-	SOCKET		udp_inbound;
-	unsigned short	udp_portnum;  // need to keep this around now!
-		// design expects to only have one udp_inbound
-		// for receipt from all remote hosts
-
 	int	num_live_connections;
 
 	// Only used for a vrpn_Connection that awaits incoming connections
@@ -255,18 +353,6 @@ class vrpn_Connection
 
 	// Callbacks on vrpn_ANY_TYPE
 	vrpnMsgCallbackEntry	* generic_callbacks;	
-
-	// The senders and types we know about that have been described by
-	// the other side.  Also, record the local mapping for ones that have
-	// been described with the same name locally.
-	struct cRemoteMapping {
-		cName	* name;
-		int	local_id;
-	};
-	cRemoteMapping	other_senders [vrpn_CONNECTION_MAX_SENDERS];
-	int		num_other_senders;
-	cRemoteMapping	other_types [vrpn_CONNECTION_MAX_TYPES];
-	int		num_other_types;
 
 	// Output buffers storing messages to be sent
 	char	tcp_outbuf [vrpn_CONNECTION_TCP_BUFLEN];
@@ -292,7 +378,6 @@ class vrpn_Connection
 	virtual	int	send_pending_reports (void);
 	virtual	void	check_connection (void);
 	virtual void	handle_connection(void);
-	virtual	int	setup_for_new_connection (void);
 		// set up data
 	virtual	int	setup_new_connection (long logmode = 0L,
 	                                      const char * logfile = NULL);
@@ -303,13 +388,9 @@ class vrpn_Connection
 	virtual	int	pack_udp_description (int portno);
 	virtual int	pack_log_description (long mode,
                                               const char * filename);
-	inline	int	outbound_udp_open (void) const
-				{ return endpoint.udp_sock != -1; }
 	virtual	int	marshall_message (char * outbuf, int outbuf_size,
 				int initial_out, int len, struct timeval time,
 				long type, long sender, const char * buffer);
-
-	virtual	int	connect_tcp_to (const char * msg);
 
 	virtual	int	do_callbacks_for (long type, long sender,
 				struct timeval time, int len,
@@ -317,11 +398,6 @@ class vrpn_Connection
 
 	// Returns message type ID, or -1 if unregistered
 	int		message_type_is_registered (const char *) const;
-
-	// offset of clocks on connected machines -- local - remote
-	// (this should really not be here, it should be in adjusted time
-	// connection, but this makes it a lot easier
-        struct timeval tvClockOffset;
 
 	// Thread safety modifications - TCH 19 May 98
 
@@ -332,31 +408,8 @@ class vrpn_Connection
 			[vrpn_CONNECTION_UDP_BUFLEN/sizeof(double)+1];
 	char *d_UDPinbuf;
 
-	// Logging - TCH 11 June 98
-
-	vrpn_LOGLIST * d_logbuffer;  // last entry in log
-	vrpn_LOGLIST * d_first_log_entry;  // first entry in log
-	char * d_logname;            // name of file to write log to
-	long d_logmode;              // logging incoming, outgoing, or both
-
-	int d_logfile_handle;
-	FILE * d_logfile;
-
-	virtual int log_message (int payload_len, struct timeval time,
-	                         long type, long sender, const char * buffer,
-                                 int isRemote = 0);
-	virtual int close_log (void);
-	virtual int open_log (void);
-
-	// Filters (assumed to be on vrpn_ANY_TYPE)
-	vrpnLogFilterEntry	* d_log_filters;	
-
-        // Returns nonzero if we shouldn't log this message.
-        virtual int check_log_filters (vrpn_HANDLERPARAM message);
-
 	// Timekeeping - TCH 30 June 98
 	struct timeval start_time;
-
 };
 
 // forward decls
@@ -384,7 +437,7 @@ class vrpn_Synchronized_Connection : public vrpn_Connection
 		  vrpn_DEFAULT_LISTEN_PORT_NO);
     vrpn_Clock_Server * pClockServer;
 
-    // Create a connection makes an SDI connection to a remote server
+    // Create a connection makes aconnection to a remote server
     // client call
     // freq is the frequency of clock syncs (<0 means only on user request)
     // cOffsetWindow is how many syncs to include in search window for min

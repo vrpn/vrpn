@@ -137,10 +137,10 @@ int vrpn_File_Connection::mainloop (void) {
 
   if (header.type >= 0) {
 
-    if (other_types[header.type].local_id >= 0)
+    if (endpoint.local_type_id(header.type) >= 0)
 
-      if (do_callbacks_for(other_types[header.type].local_id,
-                           other_senders[header.sender].local_id,
+      if (do_callbacks_for(endpoint.local_type_id(header.type),
+                           endpoint.local_sender_id(header.sender),
                            header.msg_time, header.payload_len,
                            header.buffer))
         return -1;
