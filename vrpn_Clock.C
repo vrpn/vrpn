@@ -9,7 +9,7 @@
   Revised: Wed Apr  1 13:23:40 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.C,v $
   $Locker:  $
-  $Revision: 1.20 $
+  $Revision: 1.21 $
   \*****************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
@@ -221,6 +221,17 @@ vrpn_Clock_Remote::vrpn_Clock_Remote(const char * name, vrpn_float64 dFreq,
 }
 
 vrpn_Clock_Remote::~vrpn_Clock_Remote (void) {
+
+  // Unregister the change handler
+  if (connection != NULL) {
+	if (connection->unregister_handler(replyMsg_id, 
+	     quickSyncClockServerReplyHandler,
+	     this, clockServer_id)) {
+	  fprintf(stderr,"vrpn_Clock_Remote: Can't unregister change handler\n");
+	  fprintf(stderr,"   (VRPN internal error: expect seg fault)\n");
+	}
+  }
+
 
   // release the quick arrays
   if (rgtvHalfRoundTrip)
@@ -861,6 +872,19 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
 
 /*****************************************************************************\
   $Log: vrpn_Clock.C,v $
+  Revision 1.21  1999/09/21 22:15:00  taylorr
+  This corrects the major bug that you could not delete vrpn_Remote objects before
+  without causing seg faults when their callbacks were yanked after they were
+  deleted. All objects now remove their callbacks when deleted.
+
+  This also adds a test_vrpn application that will verify that you can
+  both send and receive messages from the various test objects (tracker,
+  button, dial, etc) and that you can delete and re-create Remote objects
+  without dumping core.
+
+  This also adds a Dial example server, and lets you create it in the
+  generic server (as documented in vrpn.cfg.SAMPLE.
+
   Revision 1.20  1999/08/23 15:39:32  taylorr
   Fixes to allow easier compilation on sparc_solaris
   Client_and_server example program added

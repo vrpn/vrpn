@@ -40,6 +40,7 @@
 #define MAX_ANALOG 4
 #define	MAX_SGIBOX 2
 #define	MAX_CEREALS 8
+#define MAX_DIALS 8
 
 #define CHECK(s) \
     retval = (s)(pch, line, config_file); \
@@ -75,6 +76,8 @@ vrpn_raw_SGIBox	*sgiboxes[MAX_SGIBOX];
 int		num_sgiboxes = 0;
 vrpn_CerealBox	*cereals[MAX_CEREALS];
 int		num_cereals = 0;
+vrpn_Dial	*dials[MAX_DIALS];
+int		num_dials = 0;
 
 vrpn_Connection * connection;
 
@@ -447,6 +450,40 @@ int setup_Joystick (char * & pch, char * line, FILE * config_file) {
   return 0;
 }
 
+int setup_DialExample (char * & pch, char * line, FILE * config_file) {
+  char s2 [512], s3 [512];
+  int i1, i2;
+  float f1,f2;
+
+  next();
+
+  // Get the arguments (class, dial_name, dials, spin_rate, update_rate)
+  if (sscanf(pch,"%511s%d%g%g",s2,&i1,&f1,&f2) != 4) {
+    fprintf(stderr,"Bad vrpn_Dial_Example line: %s\n",line);
+    return -1;
+  }
+
+  // Make sure there's room for a new dial
+  if (num_dials >= MAX_DIALS) {
+    fprintf(stderr,"Too many dials in config file");
+    return -1;
+  }
+
+  // Open the dial
+  if (verbose) printf(
+      "Opening vrpn_Dial_Example: %s with %d sensors, spinrate %f, update %f\n",
+      s2,i1,f1,f2);
+  if ( (dials[num_dials] =
+       new vrpn_Dial_Example_Server(s2, connection, i1, f1, f2)) == NULL){
+    fprintf(stderr,"Can't create new vrpn_Dial_Example\n");
+    return -1;
+  } else {
+    num_dials++;
+  }
+
+  return 0;
+}
+
 int setup_CerealBox (char * & pch, char * line, FILE * config_file) {
   char s2 [512], s3 [512];
   int i1, i2, i3, i4;
@@ -796,13 +833,6 @@ int setup_Button_Python (char * & pch, char * line, FILE * config_file) {
 
 }
 
-
-
-
-
-
-
-
 main (int argc, char * argv[])
 {
 	char	* config_file_name = "vrpn.cfg";
@@ -893,9 +923,6 @@ main (int argc, char * argv[])
         char *pch;
 	char    scrap[512];
 	char	s1[512];
-        //char s2[512],s3[512],s4[512]; // String parameters
-	//int	i1, i2, i3, i4;			// Integer parameters
-	//float	f1;				// Float parameters
         int retval;
 
 	// Read lines from the file until we run out
@@ -942,6 +969,8 @@ main (int argc, char * argv[])
             CHECK(setup_Tracker_AnalogFly);
 	  } else  if (isit("vrpn_Joystick")) {
             CHECK(setup_Joystick);
+	  } else if (isit("vrpn_Dial_Example")) {
+            CHECK(setup_DialExample);
 	  } else if (isit("vrpn_CerealBox")) {
             CHECK(setup_CerealBox);
 	  } else if (isit("vrpn_Tracker_Dyna")) {
@@ -1020,6 +1049,11 @@ main (int argc, char * argv[])
 		// Let all the analogs do their thing
 		for (i=0; i< num_analogs; i++) {
 			analogs[i]->mainloop();
+		}
+
+		// Let all the dials do their thing
+		for (i=0; i< num_dials; i++) {
+			dials[i]->mainloop();
 		}
 
 		// Let all the cereal boxes do their thing

@@ -99,6 +99,67 @@ void vrpn_Dial::report (void) {
   }
 }
 
+// ************* EXAMPLE SERVER ROUTINES ****************************
+
+static	unsigned long	duration(struct timeval t1, struct timeval t2)
+{
+	return (t1.tv_usec - t2.tv_usec) +
+	       1000000L * (t1.tv_sec - t2.tv_sec);
+}
+
+vrpn_Dial_Example_Server::vrpn_Dial_Example_Server(const char * name, vrpn_Connection * c,
+		vrpn_int32 numdials, vrpn_float64 spin_rate, vrpn_float64 update_rate) :
+	vrpn_Dial(name, c),	// Construct the base class, which registers message/sender
+	_spin_rate(spin_rate),	// Set the rate at which the dials will spin
+	_update_rate(update_rate)	// Set the rate at which to generate reports
+{
+	// Make sure we asked for a legal number of dials
+	if (num_dials > vrpn_DIAL_MAX) {
+		fprintf(stderr,"vrpn_Dial_Example_Server: Only using %d dials\n",
+			vrpn_DIAL_MAX);
+		num_dials = vrpn_DIAL_MAX;
+	} else {
+		num_dials = numdials;
+	}
+
+	// IN A REAL SERVER, open the device that will service the dials here	
+}
+
+void vrpn_Dial_Example_Server::mainloop(const struct timeval * timeout)
+{
+	struct timeval current_time;
+	int	i;
+
+	timeout = timeout;	// Keep the compiler happy
+
+	// See if its time to generate a new report
+	// IN A REAL SERVER, this check would not be done; although the
+	// time of the report would be updated to the current time so
+	// that the correct timestamp would be issued on the report.
+	gettimeofday(&current_time, NULL);
+	if ( duration(current_time,timestamp) >= 1000000.0/_update_rate) {
+
+	  // Update the time
+	  timestamp.tv_sec = current_time.tv_sec;
+	  timestamp.tv_usec = current_time.tv_usec;
+
+	  // Update the values for the dials, to say that each one has
+	  // moved the appropriate rotation (spin rate is revolutions per
+	  // second, update rate is report/second, the quotient is the number
+	  // of revolutions since the last report). When the changes are
+	  // reported, these values are set back to zero.
+
+	  // THIS CODE WILL BE REPLACED by the user code that tells how
+	  // many revolutions each dial has changed since the last report.
+	  for (i = 0; i < num_dials; i++) {
+		  dials[i] = _spin_rate / _update_rate;
+	  }
+
+	  // Send reports. Stays the same in a real server.
+	  report_changes();
+	}
+}
+
 // ************* CLIENT ROUTINES ****************************
 
 vrpn_Dial_Remote::vrpn_Dial_Remote (const char * name,
@@ -110,7 +171,7 @@ vrpn_Dial_Remote::vrpn_Dial_Remote (const char * name,
 
 	// Register a handler for the change callback from this device,
 	// if we got a connection.
-	if (connection != NULL) {
+	if (connection) {
 	  if (connection->register_handler(change_m_id, handle_change_message,
 	    this, my_id)) {
 		fprintf(stderr,"vrpn_Dial_Remote: can't register handler\n");
@@ -128,6 +189,30 @@ vrpn_Dial_Remote::vrpn_Dial_Remote (const char * name,
 		dials[i] = 0.0;
 	}
 	gettimeofday(&timestamp, NULL);
+}
+
+vrpn_Dial_Remote::~vrpn_Dial_Remote()
+{
+	vrpn_DIALCHANGELIST	*next;
+
+	// Unregister all of the handlers that have been registered with the
+	// connection so that they won't yank once the object has been deleted.
+	if (connection) {
+	  if (connection->unregister_handler(change_m_id, handle_change_message,
+		this, my_id)) {
+		fprintf(stderr,"vrpn_Dial_Remote: can't unregister handler\n");
+		fprintf(stderr,"   (internal VRPN error -- expect a seg fault)\n");
+	  }
+	}
+
+	// Delete all of the callback handlers that other code had registered
+	// with this object. This will free up the memory taken by the list
+	while (change_list != NULL) {
+		next = change_list->next;
+		delete change_list;
+		change_list = next;
+	}
+
 }
 
 void	vrpn_Dial_Remote::mainloop(const struct timeval * timeout)
@@ -218,7 +303,3 @@ int vrpn_Dial_Remote::handle_change_message(void *userdata,
 
 	return 0;
 }
-
-
-
-

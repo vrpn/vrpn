@@ -34,6 +34,33 @@ public:
 	virtual void report (void);  // send report
 };
 
+
+//----------------------------------------------------------
+// Example server for an array of dials
+//	This will generate an array of dials that all spin at the same
+// rate (revolutions/second), and which send reports at a different rate
+// (updates/second). A real server would send reports whenever it saw
+// dials changing, and would not have the spin_rate or update_rate parameters.
+//	This server can be used for testing to make sure a client is
+// working correctly, and to ensure that a connection to a remote server
+// is working (by running the example server with the name of the device that
+// the real server would use).
+
+class vrpn_Dial_Example_Server: public vrpn_Dial {
+public:
+	vrpn_Dial_Example_Server(const char * name, vrpn_Connection * c,
+		vrpn_int32 numdials = 1, vrpn_float64 spin_rate = 1.0,
+		vrpn_float64 update_rate = 10.0);
+	virtual void mainloop(const struct timeval * timeout = NULL);
+protected:
+	vrpn_float64	_spin_rate;	// The rate at which to spin (revolutions/sec)
+	vrpn_float64	_update_rate;	// The rate at which to update (reports/sec)
+	// The dials[] array within the parent is used for the values
+	// The num_dials within the parent is used
+	// The timestamp field within the parent structure is used for timing
+	// The report_changes() or report() functions within the parent are used
+};
+
 //----------------------------------------------------------
 //************** Users deal with the following *************
 
@@ -61,6 +88,7 @@ class vrpn_Dial_Remote: public vrpn_Dial {
         // Optional argument to be used when the Remote MUST listen on
         // a connection that is already open.
 	vrpn_Dial_Remote (const char * name, vrpn_Connection * c = NULL);
+	~vrpn_Dial_Remote();
 
 	// This routine calls the mainloop of the connection it's on
 	virtual void mainloop(const struct timeval * timeout = NULL);
@@ -83,13 +111,3 @@ class vrpn_Dial_Remote: public vrpn_Dial {
 };
 
 #endif
-
-
-
-
-
-
-
-
-
-

@@ -85,10 +85,13 @@ $(OBJ_DIR)/%.o:	%.C
 
 
 
-all:  vrpn_server
+all:  vrpn_server test_vrpn client_and_server
 
 .PHONY:	vrpn_server
 vrpn_server:	$(OBJ_DIR)/vrpn_server
+
+.PHONY:	test_vrpn
+test_vrpn:	$(OBJ_DIR)/test_vrpn
 
 .PHONY:	client_and_server
 client_and_server:	$(OBJ_DIR)/client_and_server
@@ -116,6 +119,12 @@ $(OBJ_DIR)/vrpn_server: $(OBJ_DIR) $(OBJ_DIR)/vrpn.o  \
 			 ../$(HW_OS)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/vrpn_server \
 		$(OBJ_DIR)/vrpn.o \
+		-lvrpnserver $(GL) -lquat $(SYSLIBS) -lm
+
+$(OBJ_DIR)/test_vrpn: $(OBJ_DIR) $(OBJ_DIR)/test_vrpn.o  \
+			 ../$(HW_OS)/libvrpnserver.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/test_vrpn \
+		$(OBJ_DIR)/test_vrpn.o \
 		-lvrpnserver $(GL) -lquat $(SYSLIBS) -lm
 
 $(OBJ_DIR)/client_and_server: $(OBJ_DIR) $(OBJ_DIR)/client_and_server.o  \
@@ -161,9 +170,4 @@ $(OBJ_DIR)/forward.o:	forward.C
 $(OBJ_DIR)/text.o:	text.C
 $(OBJ_DIR)/sample_server.o:	sample_server.C
 $(OBJ_DIR)/sample_analog.o:	sample_analog.C
-
-
-
-
-
 

@@ -356,6 +356,7 @@ public:
     // The connection argument is used only if you already have a connection
     // the device must listen on (it is not normally used).
     vrpn_ForceDevice_Remote(char *name, vrpn_Connection *cn = NULL);
+    ~vrpn_ForceDevice_Remote();
 
     void sendSurface(void);
     void startSurface(void);
@@ -392,7 +393,6 @@ public:
 
     // XXX it would be safer if changes (especially enable/disable)
     // had better relaxation support
-
 
     void enableConstraint (vrpn_int32 enable);  // zero disables
     void setConstraintMode (ConstraintGeometry mode);

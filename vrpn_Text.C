@@ -103,6 +103,28 @@ vrpn_Text_Receiver::vrpn_Text_Receiver (char * name,
     connectionPtr()->register_handler(message_id, handle_message, this, my_id);
 };
 
+vrpn_Text_Receiver::~vrpn_Text_Receiver()
+{
+	vrpn_TEXTMESSAGELIST	*next;
+
+	// Unregister all of the handlers that have been registered with the
+	// connection so that they won't yank once the object has been deleted.
+	if (connectionPtr()) {
+	  if (connectionPtr()->unregister_handler(message_id, handle_message,
+		this, my_id)) {
+		fprintf(stderr,"vrpn_Text_Receiver: can't unregister handler\n");
+		fprintf(stderr,"   (internal VRPN error -- expect a seg fault)\n");
+	  }
+	}
+
+	// Delete all of the callback handlers that other code had registered
+	// with this object. This will free up the memory taken by the list
+	while (change_list != NULL) {
+		next = change_list->next;
+		delete change_list;
+		change_list = next;
+	}
+}
 
 int vrpn_Text_Receiver::register_message_handler(void *userdata,
                 vrpn_TEXTHANDLER handler){

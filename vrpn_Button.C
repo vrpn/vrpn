@@ -322,9 +322,64 @@ void	vrpn_Button::report_changes(void)
 
 #ifndef VRPN_CLIENT_ONLY
 
+static	unsigned long	duration(struct timeval t1, struct timeval t2)
+{
+	return (t1.tv_usec - t2.tv_usec) +
+	       1000000L * (t1.tv_sec - t2.tv_sec);
+}
+
+vrpn_Button_Example_Server::vrpn_Button_Example_Server(const char *name,
+						       vrpn_Connection *c,
+						       int numbuttons,
+						       vrpn_float64 rate)
+	: vrpn_Button_Filter(name, c)
+{
+	if (numbuttons > vrpn_BUTTON_MAX_BUTTONS) {
+		num_buttons = vrpn_BUTTON_MAX_BUTTONS;
+	} else {
+		num_buttons = numbuttons;
+	}
+
+	_update_rate = rate;
+
+	// IN A REAL SERVER, open the device that will service the buttons here
+}
+
+void vrpn_Button_Example_Server::mainloop(const struct timeval * timeout)
+{
+	struct timeval current_time;
+	int	i;
+
+	timeout = timeout;	// Keep the compiler happy
+
+	// See if its time to generate a new report
+	// IN A REAL SERVER, this check would not be done; although the
+	// time of the report would be updated to the current time so
+	// that the correct timestamp would be issued on the report.
+	gettimeofday(&current_time, NULL);
+	if ( duration(current_time,timestamp) >= 1000000.0/_update_rate) {
+
+	  // Update the time
+	  timestamp.tv_sec = current_time.tv_sec;
+	  timestamp.tv_usec = current_time.tv_usec;
+
+	  // Update the values for the buttons, to say that each one has
+	  // switched its state.
+	  // THIS CODE WILL BE REPLACED by the user code that tells how
+	  // many revolutions each dial has changed since the last report.
+	  for (i = 0; i < num_buttons; i++) {
+		  buttons[i] = !lastbuttons[i];
+	  }
+
+	  // Send reports. Stays the same in a real server.
+	  report_changes();
+	}
+}
+
+
 vrpn_parallel_Button::vrpn_parallel_Button(const char *name,
-										   vrpn_Connection *c,
-										   int portno)
+					   vrpn_Connection *c,
+					   int portno)
 	: vrpn_Button_Filter(name, c)
 {      
 #ifdef linux
@@ -491,6 +546,29 @@ vrpn_Button_Remote::vrpn_Button_Remote(const char *name, vrpn_Connection *cn):
 		buttons[i] = lastbuttons[i] = 0;
 	}
 	gettimeofday(&timestamp, NULL);
+}
+
+vrpn_Button_Remote::~vrpn_Button_Remote()
+{
+	vrpn_BUTTONCHANGELIST	*next;
+
+	// Unregister all of the handlers that have been registered with the
+	// connection so that they won't yank once the object has been deleted.
+	if (connection) {
+	  if (connection->unregister_handler(change_message_id, handle_change_message,
+		this, my_id)) {
+		fprintf(stderr,"vrpn_Button_Remote: can't unregister handler\n");
+		fprintf(stderr,"   (internal VRPN error -- expect a seg fault)\n");
+	  }
+	}
+
+	// Delete all of the callback handlers that other code had registered
+	// with this object. This will free up the memory taken by the list
+	while (change_list != NULL) {
+		next = change_list->next;
+		delete change_list;
+		change_list = next;
+	}
 }
 
 void vrpn_Button_Remote::mainloop(const struct timeval * timeout)

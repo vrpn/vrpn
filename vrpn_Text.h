@@ -63,11 +63,11 @@ class vrpn_Text_Sender: public vrpn_Text {
 class vrpn_Text_Receiver: public vrpn_Text{
   public:
 	vrpn_Text_Receiver (char * name, vrpn_Connection * c = NULL);
+	~vrpn_Text_Receiver();
 	virtual int register_message_handler(void *userdata,
                 vrpn_TEXTHANDLER handler);
         virtual int unregister_message_handler(void *userdata,
                 vrpn_TEXTHANDLER handler);
-
 
   protected:
 	static int handle_message (void * userdata, vrpn_HANDLERPARAM p);

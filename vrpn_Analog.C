@@ -206,6 +206,29 @@ vrpn_Analog_Remote::vrpn_Analog_Remote (const char * name,
 	gettimeofday(&timestamp, NULL);
 }
 
+vrpn_Analog_Remote::~vrpn_Analog_Remote()
+{
+	vrpn_ANALOGCHANGELIST	*next;
+
+	// Unregister all of the handlers that have been registered with the
+	// connection so that they won't yank once the object has been deleted.
+	if (connection) {
+	  if (connection->unregister_handler(channel_m_id, handle_change_message,
+		this, my_id)) {
+		fprintf(stderr,"vrpn_Analog_Remote: can't unregister handler\n");
+		fprintf(stderr,"   (internal VRPN error -- expect a seg fault)\n");
+	  }
+	}
+
+	// Delete all of the callback handlers that other code had registered
+	// with this object. This will free up the memory taken by the list
+	while (change_list != NULL) {
+		next = change_list->next;
+		delete change_list;
+		change_list = next;
+	}
+}
+
 void	vrpn_Analog_Remote::mainloop(const struct timeval * timeout)
 {
   if (connection) { 

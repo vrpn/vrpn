@@ -127,7 +127,7 @@ void vrpn_SleepMsecs( double dMsecs ) {
   dMsecs -= timeout.tv_sec * 1000;		// Subtract of whole number of seconds
   timeout.tv_usec = (int)(dMsecs * 1000);	// Convert remaining milliseconds to microsec
   
-  // A select() will NULL file descriptors acts like a microsecond
+  // A select() with NULL file descriptors acts like a microsecond
   // timer.
   select(0, 0, 0, 0, & timeout);  // wait for that long;
 #endif

@@ -72,6 +72,23 @@ class vrpn_Button_Filter:public vrpn_Button{
 
 #ifndef VRPN_CLIENT_ONLY
 
+// Example button server code. This button device causes its buttons to
+// be pressed and released at the interval specified (default 1/sec). It
+// has the specified number of buttons (default 1).
+// This class is derived from the vrpn_Button_Filter class, so that it
+// can be made to toggle its buttons using messages from the client.
+
+class vrpn_Button_Example_Server: public vrpn_Button_Filter {
+public:
+	vrpn_Button_Example_Server(const char *name, vrpn_Connection *c,
+		int numbuttons = 1, vrpn_float64 rate = 1.0);
+
+	virtual void mainloop(const struct timeval * timeout = NULL);
+
+protected:
+	vrpn_float64	_update_rate;	// How often to toggle
+};
+
 // Button device that is connected to a parallel port and uses the
 // status bits to read from the buttons.  There can be up to 5 buttons
 // read this way.
@@ -79,9 +96,8 @@ class vrpn_parallel_Button: public vrpn_Button_Filter {
   public:
 	// Open a button connected to the local machine, talk to the
 	// outside world through the connection.
-	vrpn_parallel_Button(const char *name,
-						 vrpn_Connection *connection,
-						 int portno);
+	vrpn_parallel_Button(const char *name, vrpn_Connection *connection,
+				int portno);
 
   protected:
 	int	port;
@@ -136,6 +152,7 @@ class vrpn_Button_Remote: public vrpn_Button {
 	// argument is used when you already have an open connection you
 	// want it to listen on.
 	vrpn_Button_Remote(const char *name, vrpn_Connection *cn = NULL);
+	~vrpn_Button_Remote();
 
 	// This routine calls the mainloop of the connection it's on
 	virtual void mainloop(const struct timeval * timeout = NULL);
@@ -159,4 +176,3 @@ class vrpn_Button_Remote: public vrpn_Button {
 
 #define	VRPN_BUTTON_H
 #endif
-

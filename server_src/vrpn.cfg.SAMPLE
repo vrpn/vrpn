@@ -1,4 +1,4 @@
-# vrpn.cfg.SAMPLE for VRPN version 04.09
+# vrpn.cfg.SAMPLE for VRPN version 04.10
 
 ################################################################################
 ################################################################################
@@ -184,6 +184,17 @@
 ################################################################################
 # Non-tracker devices. Lines are provided here for the various non-tracker servers
 # that can be started.
+
+################################################################################
+# Example Dial server. This is a "device" that reports constant rotations for
+# each of its dials at the specified rate. It can be used to verify connections
+# are working and for other tests of VRPN. There are four arguments:
+#	char	name_of_this_device[]
+#	int	number_of_dials
+#	float	rate_at_which_the_dials_spin		(revolutions/second)
+#	float	rate_at_which_to_report_updates	(udpates/second)
+
+#vrpn_Dial_Example	Dial0	2	2.0	10.0
 
 ################################################################################
 # CerealBox dial/button/analog. Runs a BG Systems CerealBox device that attaches

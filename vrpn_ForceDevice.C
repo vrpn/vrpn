@@ -1076,6 +1076,51 @@ vrpn_ForceDevice_Remote::vrpn_ForceDevice_Remote(char *name, vrpn_Connection *cn
      gettimeofday(&timestamp, NULL);
 }
 
+vrpn_ForceDevice_Remote::~vrpn_ForceDevice_Remote()
+{
+	vrpn_FORCECHANGELIST	*nextforce;
+	vrpn_FORCESCPCHANGELIST	*nextscp;
+	vrpn_FORCEERRORCHANGELIST *nexterror;
+
+	// Unregister all of the handlers that have been registered with the
+	// connection so that they won't yank once the object has been deleted.
+	if (connection != NULL) {
+	  if (connection->unregister_handler(force_message_id, handle_force_change_message,
+		this, my_id)) {
+		fprintf(stderr,"vrpn_ForceDevice_Remote: can't unregister handler\n");
+		fprintf(stderr,"   (internal VRPN error -- expect a seg fault)\n");
+	  }  
+	  if (connection->unregister_handler(scp_message_id, handle_scp_change_message,
+		this, my_id)) {
+		fprintf(stderr,"vrpn_ForceDevice_Remote: can't unregister handler\n");
+		fprintf(stderr,"   (internal VRPN error -- expect a seg fault)\n");
+	  }  
+	  if (connection->unregister_handler(error_message_id, handle_error_change_message,
+		this, my_id)) {
+		fprintf(stderr,"vrpn_ForceDevice_Remote: can't unregister handler\n");
+		fprintf(stderr,"   (internal VRPN error -- expect a seg fault)\n");
+	  }
+	}
+
+	// Delete all of the callback handlers that other code had registered
+	// with this object. This will free up the memory taken by the lists
+	while (change_list != NULL) {
+		nextforce = change_list->next;
+		delete change_list;
+		change_list = nextforce;
+	}
+	while (scp_change_list != NULL) {
+		nextscp = scp_change_list->next;
+		delete scp_change_list;
+		scp_change_list = nextscp;
+	}
+	while (error_change_list != NULL) {
+		nexterror = error_change_list->next;
+		delete error_change_list;
+		error_change_list = nexterror;
+	}
+}
+
 void vrpn_ForceDevice_Remote::sendSurface(void)
 { // Encode the plane if there is a connection
   char	*msgbuf;
