@@ -18,6 +18,7 @@
 // global variables to pass information between the various callback
 // handlers.
 
+vrpn_Connection		*g_connection;	//< Set if logging is enabled.
 vrpn_TempImager_Remote  *g_ti;		//< TempImager client object
 bool g_got_dimensions = false;		//< Heard image dimensions from server?
 bool g_ready_for_region = false;	//< Everything set up to handle a region?
@@ -55,6 +56,10 @@ void  handle_region_change(void *, const vrpn_IMAGERREGIONCB info)
     // Flip the image over in Y so that the image coordinates
     // display correctly in OpenGL.
     region->decode_unscaled_region_using_base_pointer(g_image, 3, 3*nCols, nRows, true, 3);
+
+    // If we're logging, save to disk.  This is needed to keep up with
+    // logging and because to program is killed to exit it.
+    if (g_connection) { g_connection->save_log_so_far(); }
 
     // Tell Glut it is time to draw.  Make sure that we don't post the redisplay
     // operation more than once by checking to make sure that it has been handled
@@ -125,11 +130,18 @@ void myIdleFunc(void)
 int main(int argc, char **argv)
 {
   char	*device_name = "TestImage@localhost:4511";
+  char	*logfile_name = NULL;
 
-#if 0
-  // Create a log file of the video
-  vrpn_Connection *c = vrpn_get_connection_by_name(device_name, "TestImageLog.vrpn");
-#endif
+  // Parse the command line.  If there is one argument, it is the device
+  // name.  If there is a second, it is a logfile name.
+  if (argc >= 2) { device_name = argv[1]; }
+  if (argc >= 3) { logfile_name = argv[2]; }
+  if (argc > 3) { fprintf(stderr, "Usage: %s [device_name [logfile_name]]\n", argv[0]); exit(-1); }
+
+  // Create a log file of the video if we've been asked to
+  if (logfile_name) {
+    g_connection = vrpn_get_connection_by_name(device_name, logfile_name);
+  }
 
   // Open the TempImager client and set the callback
   // for new data and for information about the size of

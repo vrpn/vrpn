@@ -1,3 +1,21 @@
+2004-08-31  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* forcedevice_test_client.dsp : Changing code generation to use
+		multithreaded non-DLL for both debug and release.  This turns
+		out to have always been the proper setting to use.
+		Unfortunately, all apps have to be rebuild with new settings,
+		and all libraries have to use the same setting.
+	* printcereal.dsp : Same.
+	* printvals.dsp : Same.
+	* setrouter.dsp : Same.
+	* sphere_client.dsp : Same.
+	* test_tempimager.dsp : Same.
+	* test_zaber.dsp : Same.
+	* testimager_client.dsp : Same.
+	* tracker_to_poser.dsp : Same.
+	* vrpn_Router_Client_GUI.dsp : Same.
+	* vrpn_print_devices.dsp : Same.
+
 2004-08-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* printcereal.C : Removed references to objects that were never
