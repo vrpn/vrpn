@@ -4,6 +4,7 @@
 #include <memory.h>
 #include <math.h>
 #include <errno.h>
+#include <string.h>  // for strerror()
 #include <stdio.h>
 #include <sys/types.h>
 #include <signal.h>
@@ -29,6 +30,7 @@
 #include <sys/time.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>  // for inet_addr()?
 #ifdef _AIX
 #define _USE_IRS
 #endif
@@ -334,6 +336,7 @@ vrpn_ConnectionManager::vrpn_ConnectionManager (void) :
 
 
 
+
 /**********************
  *   This function returns the host IP address in string form.  For example,
  * the machine "ioglab.cs.unc.edu" becomes "152.2.130.90."  This is done
@@ -342,7 +345,8 @@ vrpn_ConnectionManager::vrpn_ConnectionManager (void) :
  * DNS may not even be running.
  **********************/
 
-static int	vrpn_getmyIP(char *myIPchar, int maxlen)
+static int	vrpn_getmyIP (char *myIPchar, int maxlen,
+                              char * nameP = NULL)
 {	
 	char	myname[100];		// Host name of this host
         struct	hostent *host;          // Encoded host IP address, etc.
@@ -862,8 +866,12 @@ int vrpn_udp_request_lob_packet(
 // It will get whatever socket is available from the system. It returns
 // 0 on success and -1 on failure. On success, it fills in the pointers to
 // the socket and the port number of the socket that it obtained.
+// To select between multiple network interfaces, we can specify an IPaddress;
+// the default value is NULL, which uses the default NIC.
 
-int vrpn_get_a_TCP_socket(SOCKET *listen_sock, int *listen_portnum)
+
+int vrpn_get_a_TCP_socket (SOCKET * listen_sock, int * listen_portnum,
+                           const char * IPaddress = NULL)
 {
 	struct sockaddr_in listen_name;	/* The listen socket binding name */
 	int	listen_namelen;
@@ -871,20 +879,40 @@ int vrpn_get_a_TCP_socket(SOCKET *listen_sock, int *listen_portnum)
 	/* Create a TCP socket to listen for incoming connections from the
 	 * remote server. */
 
-        listen_name.sin_family = AF_INET;		/* Internet socket */
-        listen_name.sin_addr.s_addr = INADDR_ANY;	/* Accept any port */
-        listen_name.sin_port = htons(0);
-        *listen_sock = socket(AF_INET,SOCK_STREAM,0);
-	listen_namelen = sizeof(listen_name);
-        if (*listen_sock < 0) {
-		fprintf(stderr,"vrpn_get_a_TCP_socket: can't open socket().\n");
-                return(-1);
-        }
-        if ( bind(*listen_sock,(struct sockaddr*)&listen_name,listen_namelen) ) {
-		fprintf(stderr,"vrpn_get_a_TCP_socket: can't bind socket().\n");
-                close(*listen_sock);
-                return(-1);
-        }
+  struct hostent *phe;           /* pointer to host information entry   */
+
+  bzero ((char *) &listen_name, sizeof(listen_name));
+  listen_name.sin_family = AF_INET;
+
+  // Map service name to port number
+  listen_name.sin_port = htons(0);
+
+  // Map host name to IP address, allowing for dotted decimal
+  if (!IPaddress) {
+    listen_name.sin_addr.s_addr = INADDR_ANY;
+  } else if (phe = gethostbyname(IPaddress)) {
+    bcopy(phe->h_addr, (char *)&listen_name.sin_addr, phe->h_length);
+  } else if ((listen_name.sin_addr.s_addr = inet_addr(IPaddress))
+              == INADDR_NONE) {
+    printf("can't get %s host entry\n", IPaddress);
+    return -1;
+  }
+
+  listen_namelen = sizeof(listen_name);
+
+  // We're using TCP
+  if ((*listen_sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    fprintf(stderr, "can't create socket: %s\n", sys_errlist[errno]);
+    return -1;
+  }
+  // Bind the socket
+  if (bind (*listen_sock, (struct sockaddr *) &listen_name,
+            listen_namelen) < 0) {
+    perror ("bind");
+    return -1;
+  }
+
+
         if (getsockname(*listen_sock,
 	                (struct sockaddr *) &listen_name,
                         GSN_CAST &listen_namelen)) {
@@ -899,6 +927,11 @@ int vrpn_get_a_TCP_socket(SOCKET *listen_sock, int *listen_portnum)
 		close(*listen_sock);
 		return(-1);
 	}
+//fprintf(stderr, "Listening on port %d, address %d %d %d %d.\n",
+//*listen_portnum, listen_name.sin_addr.s_addr >> 24,
+//(listen_name.sin_addr.s_addr >> 16) & 0xff,
+//(listen_name.sin_addr.s_addr >> 8) & 0xff,
+//listen_name.sin_addr.s_addr & 0xff);
 
 	return 0;
 }
@@ -956,6 +989,9 @@ int vrpn_poll_for_accept(SOCKET listen_sock, SOCKET *accept_sock, double timeout
 	return 0;	// Nobody called
 }
 
+#if 0
+  -- obsolete ??  never called!
+
 /***************************
  *	This routine will send UDP packets requesting a TCP callback from
  * a remote server given the name of the machine and the socket number to
@@ -963,7 +999,8 @@ int vrpn_poll_for_accept(SOCKET listen_sock, SOCKET *accept_sock, double timeout
  *	This routine returns the file descriptor of the socket on success
  * and -1 on failure.
  ***************************/
-SOCKET vrpn_udp_request_call(const char * machine, int port)
+SOCKET vrpn_udp_request_call (const char * machine, int port,
+                              const char * IPaddress)
 {
 	SOCKET	listen_sock;		/* The socket to listen on */
 	int	listen_portnum;		/* Port number we're listening on */
@@ -971,7 +1008,7 @@ SOCKET vrpn_udp_request_call(const char * machine, int port)
 	int	try_connect;
 
 	// Open the socket that we will listen on for connections
-	if (vrpn_get_a_TCP_socket(&listen_sock, &listen_portnum)) {
+	if (vrpn_get_a_TCP_socket(&listen_sock, &listen_portnum, IPaddress)) {
 		fprintf(stderr,"vrpn_udp_request_call(): Can't get listen sock\n");
 		return -1;
 	}
@@ -1013,6 +1050,8 @@ SOCKET vrpn_udp_request_call(const char * machine, int port)
 	return accept_sock;
 }
 
+#endif  // 0
+
 // This is like sdi_start_server except that the convention for
 // passing information on the client machine to the server program is 
 // different; everything else has been left the same
@@ -1026,7 +1065,8 @@ SOCKET vrpn_udp_request_call(const char * machine, int port)
  *      This routine returns a file descriptor that points to the socket
  * to the server on success and -1 on failure.
  **********************************/
-int vrpn_start_server(const char *machine, char *server_name, char *args)
+int vrpn_start_server(const char *machine, char *server_name, char *args,
+                      const char * IPaddress = NULL)
 {
 #ifdef  VRPN_USE_WINSOCK_SOCKETS
         fprintf(stderr,"VRPN: vrpn_start_server not ported"
@@ -1039,7 +1079,7 @@ int vrpn_start_server(const char *machine, char *server_name, char *args)
         int     PortNum;        /* Port number we got */
 
         /* Open a socket and insure we can bind it */
-	if (vrpn_get_a_TCP_socket(&server_sock, &PortNum)) {
+	if (vrpn_get_a_TCP_socket(&server_sock, &PortNum, IPaddress)) {
 		fprintf(stderr,"vrpn_start_server: Cannot get listen socket\n");
 		return -1;
 	}
@@ -1904,8 +1944,9 @@ void setClockOffset( void *userdata, const vrpn_CLOCKCB& info )
 
 vrpn_Synchronized_Connection::vrpn_Synchronized_Connection
     (unsigned short listen_port_no,
-     const char * local_logfile, long local_logmode) :
-  vrpn_Connection (listen_port_no, local_logfile, local_logmode)
+     const char * local_logfile, long local_logmode,
+     const char * NIC_IPaddress) :
+  vrpn_Connection (listen_port_no, local_logfile, local_logmode, NIC_IPaddress)
 {
    pClockServer = new vrpn_Clock_Server(this);
 
@@ -1921,9 +1962,10 @@ vrpn_Synchronized_Connection::vrpn_Synchronized_Connection
           const char * remote_logfile,
           long remote_logmode,
           double dFreq, 
-	  int cSyncWindow) :
+	  int cSyncWindow,
+          const char * NIC_IPaddress) :
   vrpn_Connection (server_name, port, local_logfile, local_logmode,
-                   remote_logfile, remote_logmode)
+                   remote_logfile, remote_logmode, NIC_IPaddress)
 {
 
    pClockServer = (vrpn_Clock_Server *) NULL;
@@ -2010,13 +2052,18 @@ int vrpn_Synchronized_Connection::mainloop (const struct timeval * timeout)
 // The portno parameter is filled in with the actual port that is opened
 // (this is useful when the address INADDR_ANY is used, since it tells
 // what port was opened).
+// To select between multiple NICs, we can specify the IP address of the
+// socket to open;  the default value of NULL selects the default NIC.
 
-static	int open_udp_socket (unsigned short * portno)
+static	int open_udp_socket (unsigned short * portno,
+                             const char * IPaddress = NULL)
 {
    int sock;
    struct sockaddr_in server_addr;
    struct sockaddr_in udp_name;
    int	udp_namelen = sizeof(udp_name);
+
+  struct hostent *phe;           /* pointer to host information entry   */
 
    // create an internet datagram socket
    if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1)  {
@@ -2024,12 +2071,34 @@ static	int open_udp_socket (unsigned short * portno)
 	return -1;
    }
 
+//fprintf(stderr, "IPaddress is %d (%s).\n", IPaddress, IPaddress);
+
+   bzero((char *) &server_addr, sizeof(server_addr));
+
    // bind to local address
    server_addr.sin_family = AF_INET;
    server_addr.sin_port = htons(*portno);
-   server_addr.sin_addr.s_addr = htonl((u_long)0); // don't care which client
+
+  // Map host name to IP address, allowing for dotted decimal
+  if (!IPaddress) {
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+  } else if (phe = gethostbyname(IPaddress)) {
+    bcopy(phe->h_addr, (char *)&server_addr.sin_addr, phe->h_length);
+  } else if ((server_addr.sin_addr.s_addr = inet_addr(IPaddress))
+              == INADDR_NONE) {
+    printf("can't get %s host entry\n", IPaddress);
+    return -1;
+  }
+
+//fprintf(stderr, "open_udp_socket:  port %d, using NIC %d %d %d %d.\n",
+//*portno, server_addr.sin_addr.s_addr >> 24,
+//(server_addr.sin_addr.s_addr >> 16) & 0xff,
+//(server_addr.sin_addr.s_addr >> 8) & 0xff,
+//server_addr.sin_addr.s_addr & 0xff);
+
    if (bind(sock, (struct sockaddr*)&server_addr, sizeof (server_addr)) < 0){
-	perror("vrpn: vrpn_Connection: can't bind address");
+	fprintf(stderr, "open_udp_socket:  can't bind address");
+        fprintf(stderr, "  --  %d  --  %s\n", errno, strerror(errno));
 	return -1;
    }
 
@@ -2437,7 +2506,8 @@ int vrpn_Connection::finish_new_connection_setup (void) {
 	if (endpoint.udp_inbound == INVALID_SOCKET) {
 	  // Open the UDP port to accept time-critical messages on.
 	  udp_portnum = (unsigned short)INADDR_ANY;
-	  if ((endpoint.udp_inbound = open_udp_socket(&udp_portnum)) == -1)  {
+	  if ((endpoint.udp_inbound = open_udp_socket(&udp_portnum,
+                                                      d_NIC_IP)) == -1)  {
 	    fprintf(stderr, "vrpn_Connection::finish_new_connection_setup:  "
                             "can't open UDP socket\n");
             status = BROKEN;
@@ -3400,7 +3470,8 @@ void	vrpn_Connection::init (void)
 }
 
 vrpn_Connection::vrpn_Connection (unsigned short listen_port_no,
-       const char * local_logfile_name, long local_log_mode) :
+       const char * local_logfile_name, long local_log_mode,
+       const char * NIC_IPaddress) :
     //my_name (NULL),
     endpoint (INVALID_SOCKET, INVALID_SOCKET, INVALID_SOCKET, 0, 0,
 		NULL, NULL, NULL, vrpn_LOG_NONE, -1, NULL, NULL ),
@@ -3420,7 +3491,8 @@ vrpn_Connection::vrpn_Connection (unsigned short listen_port_no,
     d_TCPbuf ((char*)(&d_TCPinbufToAlignRight[0])),
     d_UDPinbuf ((char*)(&d_UDPinbufToAlignRight[0])),
     d_sequenceNumberUDP (0),
-    d_sequenceNumberTCP (0)
+    d_sequenceNumberTCP (0),
+    d_NIC_IP (NIC_IPaddress)
 {
   int retval;
 
@@ -3434,7 +3506,7 @@ vrpn_Connection::vrpn_Connection (unsigned short listen_port_no,
      return;
    }
 
-   if ( (listen_udp_sock = open_udp_socket(&listen_port_no))
+   if ( (listen_udp_sock = open_udp_socket(&listen_port_no, NIC_IPaddress))
            == INVALID_SOCKET) {
       status = BROKEN;
 //fprintf(stderr, "BROKEN - vrpn_Connection::vrpn_Connection.\n");
@@ -3474,7 +3546,8 @@ vrpn_Connection::vrpn_Connection (unsigned short listen_port_no,
 vrpn_Connection::vrpn_Connection
       (const char * station_name, int port,
        const char * local_logfile_name, long local_log_mode,
-       const char * remote_logfile_name, long remote_log_mode) :
+       const char * remote_logfile_name, long remote_log_mode,
+       const char * NIC_IPaddress) :
     //my_name (NULL),
     endpoint (INVALID_SOCKET, INVALID_SOCKET, INVALID_SOCKET, 0, 0,
 		NULL, NULL, NULL, vrpn_LOG_NONE, -1, NULL, NULL),
@@ -3494,7 +3567,8 @@ vrpn_Connection::vrpn_Connection
     d_TCPbuf ((char*) (&d_TCPinbufToAlignRight[0])),
     d_UDPinbuf ((char *) (&d_UDPinbufToAlignRight[0])),
     d_sequenceNumberUDP (0),
-    d_sequenceNumberTCP (0)
+    d_sequenceNumberTCP (0),
+    d_NIC_IP (NIC_IPaddress)
 {
 	int retval;
 	int isfile;
@@ -3548,7 +3622,8 @@ vrpn_Connection::vrpn_Connection
 #endif
 	  // Set up the connection that we will listen on.
 	  if (vrpn_get_a_TCP_socket(&endpoint.tcp_client_listen_sock,
-				    &endpoint.tcp_client_listen_port) == -1) {
+				    &endpoint.tcp_client_listen_port,
+                                    NIC_IPaddress) == -1) {
 		fprintf(stderr,"vrpn_Connection: Can't create listen socket\n");
 		status = BROKEN;
 //fprintf(stderr, "BROKEN - vrpn_Connection::vrpn_Connection.\n");
@@ -3618,7 +3693,8 @@ vrpn_Connection::vrpn_Connection
           while (token = strchr(token, ','))
                 *token = ' ';
 	  endpoint.tcp_sock = vrpn_start_server(machinename, server_program, 
-							     server_args);
+							     server_args,
+                                                NIC_IPaddress);
 	  if (machinename) delete [] (char *) machinename;
 	  if (server_program) delete [] (char *) server_program;
 	  if (server_args) delete [] (char *) server_args;
@@ -4500,7 +4576,8 @@ vrpn_Connection * vrpn_get_connection_by_name
           const char * remote_logfile_name,
           long remote_log_mode,
 	  double dFreq,
-	  int cSyncWindow)
+	  int cSyncWindow,
+          const char * NIC_IPaddress)
 {
         vrpn_Connection * c;
 	char			*where_at;	// Part of name past last '@'
@@ -4539,7 +4616,7 @@ vrpn_Connection * vrpn_get_connection_by_name
                                 (cname, port,
                                  local_logfile_name, local_log_mode,
                                  remote_logfile_name, remote_log_mode,
-                                 dFreq, cSyncWindow);
+                                 dFreq, cSyncWindow, NIC_IPaddress);
 		}
 
 	}

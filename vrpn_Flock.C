@@ -617,9 +617,9 @@ void vrpn_Tracker_Flock::get_report(void)
 #define WTF (float)(1.0/32768.0)                    /* float to word integer */
    for (i=4;i<7;i++) {
      //     quat[i-4] = (double)(((short *)buffer)[i] * WTF);
-     quat[i-4] = (double)(rgs[i] * WTF);
+     d_quat[i-4] = (double)(rgs[i] * WTF);
    }
-   quat[3] = (double)(rgs[3] * WTF);
+   d_quat[3] = (double)(rgs[3] * WTF);
 
    // KEY: the flock is unusual -- most trackers report back the
    //      transform xfSourceFromSensor, which you can apply
@@ -633,14 +633,14 @@ void vrpn_Tracker_Flock::get_report(void)
    //      here (since we assume quat is normalized, we can form 
    //      the inverse by rotating about the opp axis)
    
-   quat[0] = -quat[0];
-   quat[1] = -quat[1];
-   quat[2] = -quat[2];
+   d_quat[0] = -d_quat[0];
+   d_quat[1] = -d_quat[1];
+   d_quat[2] = -d_quat[2];
 
    if (fGroupMode) {
      // sensor addr are 0 indexed in vrpn, but start at 2 in the flock 
      // (1 is the transmitter)
-     sensor = buffer[RECORD_SIZE-1]-2;
+     d_sensor = buffer[RECORD_SIZE-1]-2;
    }      
 
    // all set for this sensor, so cycle
@@ -684,7 +684,7 @@ void vrpn_Tracker_Flock::mainloop(const struct timeval * /*timeout*/ )
       //       group poll only once you have read out the previous one entirely
       //       As a result, polling is very slow with multiple sensors.
       if (fStream==0) {
-	if (sensor==(cSensors-1)) { 
+	if (d_sensor==(cSensors-1)) { 
 	  poll();
 	}
       }
@@ -743,8 +743,8 @@ void vrpn_Tracker_Flock::mainloop(const struct timeval * /*timeout*/ )
 #if 0
 	fprintf(stderr,
 		"\np/q (%d): ( %lf, %lf, %lf ) < %lf ( %lf, %lf, %lf ) >", 
-		sensor, pos[0], pos[1], pos[2], 
-		quat[3], quat[0], quat[1], quat[2] );
+		d_sensor, pos[0], pos[1], pos[2], 
+		d_quat[3], d_quat[0], d_quat[1], d_quat[2] );
 #endif
 
 	// pack and deliver tracker report
@@ -762,7 +762,7 @@ void vrpn_Tracker_Flock::mainloop(const struct timeval * /*timeout*/ )
       
 #if 0
 // polling for debugging purposes
-      if (sensor==(cSensors-1)) {
+      if (d_sensor==(cSensors-1)) {
 	// poll again
 	char ch;
 	

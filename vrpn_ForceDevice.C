@@ -119,7 +119,7 @@ vrpn_ForceDevice::vrpn_ForceDevice(char *name, vrpn_Connection *c)
     timestamp.tv_usec = 0;
 
     //set the force to zero
-    force[0] = force[1] = force[2] = 0.0;
+    //d_force[0] = d_force[1] = d_force[2] = 0.0;
     SurfaceKspring= 0.29f;
     SurfaceFdynamic = 0.02f;
     SurfaceFstatic = 0.03f;
@@ -148,11 +148,13 @@ void vrpn_ForceDevice::print_plane(void)
 
 void vrpn_ForceDevice::print_report(void)
 {
+  // Nothing sets d_force any more!
   printf("Timestamp:%ld:%ld\n", timestamp.tv_sec, timestamp.tv_usec);
-  printf("Force    :%lf, %lf, %lf\n", force[0],force[1],force[2]);
+  //printf("Force    :%lf, %lf, %lf\n", d_force[0],d_force[1],d_force[2]);
 }
 
 
+// static
 char *vrpn_ForceDevice::encode_force(vrpn_int32 &length, const vrpn_float64 *force)
 {
     // Message includes: vrpn_float64 force[3]
@@ -177,6 +179,7 @@ char *vrpn_ForceDevice::encode_force(vrpn_int32 &length, const vrpn_float64 *for
     return buf;
 }
 
+// static
 vrpn_int32 vrpn_ForceDevice::decode_force (const char *buffer, const vrpn_int32 len, 
 				vrpn_float64 *force)
 {
@@ -196,6 +199,7 @@ vrpn_int32 vrpn_ForceDevice::decode_force (const char *buffer, const vrpn_int32 
     return 0;
 }
 
+// static
 char *vrpn_ForceDevice::encode_scp(vrpn_int32 &length, 
 				const vrpn_float64 *pos, const vrpn_float64 *quat)
 {
@@ -220,6 +224,7 @@ char *vrpn_ForceDevice::encode_scp(vrpn_int32 &length,
     return buf;
 }
 
+// static
 vrpn_int32 vrpn_ForceDevice::decode_scp(const char *buffer, const vrpn_int32 len,
 				 vrpn_float64 *pos, vrpn_float64 *quat)
 {
@@ -242,6 +247,7 @@ vrpn_int32 vrpn_ForceDevice::decode_scp(const char *buffer, const vrpn_int32 len
     return 0;
 }
 
+// static
 char *vrpn_ForceDevice::encode_plane(vrpn_int32 &len, const vrpn_float32 *plane, 
 				const vrpn_float32 kspring, const vrpn_float32 kdamp,
 				const vrpn_float32 fdyn, const vrpn_float32 fstat, 
@@ -273,6 +279,7 @@ char *vrpn_ForceDevice::encode_plane(vrpn_int32 &len, const vrpn_float32 *plane,
 	return buf;
 }
 
+// static
 vrpn_int32 vrpn_ForceDevice::decode_plane(const char *buffer, const vrpn_int32 len, 
 				vrpn_float32 *plane, 
 				vrpn_float32 *kspring, vrpn_float32 *kdamp,
@@ -301,6 +308,7 @@ vrpn_int32 vrpn_ForceDevice::decode_plane(const char *buffer, const vrpn_int32 l
     return 0;
 }
 
+// static
 char *vrpn_ForceDevice::encode_surface_effects(vrpn_int32 &len, 
 		    const vrpn_float32 k_adhesion_normal,
 			const vrpn_float32 k_adhesion_lateral,
@@ -327,6 +335,7 @@ char *vrpn_ForceDevice::encode_surface_effects(vrpn_int32 &len,
     return buf;
 }
 
+// static
 vrpn_int32 vrpn_ForceDevice::decode_surface_effects(const char *buffer, const vrpn_int32 len,
 					vrpn_float32 *k_adhesion_normal,
 					vrpn_float32 *k_adhesion_lateral,
@@ -352,6 +361,7 @@ vrpn_int32 vrpn_ForceDevice::decode_surface_effects(const char *buffer, const vr
     return 0;
 }
 
+// static
 char *vrpn_ForceDevice::encode_vertex(vrpn_int32 &len,const vrpn_int32 vertNum,
 			const vrpn_float32 x,const vrpn_float32 y,const vrpn_float32 z){
 
@@ -373,6 +383,7 @@ char *vrpn_ForceDevice::encode_vertex(vrpn_int32 &len,const vrpn_int32 vertNum,
     return buf; 
 }
 
+// static
 vrpn_int32 vrpn_ForceDevice::decode_vertex(const char *buffer, 
 			    const vrpn_int32 len,vrpn_int32 *vertNum,
 			    vrpn_float32 *x,vrpn_float32 *y,vrpn_float32 *z){
@@ -393,6 +404,7 @@ vrpn_int32 vrpn_ForceDevice::decode_vertex(const char *buffer,
     return 0;
 }
 
+// static
 char *vrpn_ForceDevice::encode_normal(vrpn_int32 &len,const vrpn_int32 normNum,
 		       const vrpn_float32 x,const vrpn_float32 y,const vrpn_float32 z){
 
@@ -413,6 +425,7 @@ char *vrpn_ForceDevice::encode_normal(vrpn_int32 &len,const vrpn_int32 normNum,
     return buf; 
 }
 
+// static
 vrpn_int32 vrpn_ForceDevice::decode_normal(const char *buffer,const vrpn_int32 len,
 			     vrpn_int32 *vertNum,vrpn_float32 *x,vrpn_float32 *y,vrpn_float32 *z){
 
@@ -433,6 +446,7 @@ vrpn_int32 vrpn_ForceDevice::decode_normal(const char *buffer,const vrpn_int32 l
     return 0;
 }
 
+// static
 char *vrpn_ForceDevice::encode_triangle(vrpn_int32 &len,const vrpn_int32 triNum,
 			 const vrpn_int32 vert0,const vrpn_int32 vert1,const vrpn_int32 vert2,
 			 const vrpn_int32 norm0,const vrpn_int32 norm1,const vrpn_int32 norm2){
@@ -457,6 +471,7 @@ char *vrpn_ForceDevice::encode_triangle(vrpn_int32 &len,const vrpn_int32 triNum,
     return buf; 
 }
 
+// static
 vrpn_int32 vrpn_ForceDevice::decode_triangle(const char *buffer,
 				const vrpn_int32 len,vrpn_int32 *triNum,
 			    vrpn_int32 *vert0,vrpn_int32 *vert1,vrpn_int32 *vert2,
@@ -482,6 +497,7 @@ vrpn_int32 vrpn_ForceDevice::decode_triangle(const char *buffer,
     return 0;
 }
 
+// static
 char *vrpn_ForceDevice::encode_removeTriangle(vrpn_int32 &len,const vrpn_int32 triNum){
 
     char *buf;
@@ -499,6 +515,7 @@ char *vrpn_ForceDevice::encode_removeTriangle(vrpn_int32 &len,const vrpn_int32 t
     return buf; 
 }
 
+// static
 vrpn_int32 vrpn_ForceDevice::decode_removeTriangle(const char *buffer,
 				const vrpn_int32 len,vrpn_int32 *triNum){
     const char *mptr = buffer;
@@ -515,6 +532,7 @@ vrpn_int32 vrpn_ForceDevice::decode_removeTriangle(const char *buffer,
     return 0;
 }
 
+// static
 // this is where we send down our surface parameters
 char *vrpn_ForceDevice::encode_updateTrimeshChanges(vrpn_int32 &len, 
 			const vrpn_float32 kspring, const vrpn_float32 kdamp, 
@@ -538,6 +556,7 @@ char *vrpn_ForceDevice::encode_updateTrimeshChanges(vrpn_int32 &len,
     return buf; 
 }
 
+// static
 vrpn_int32 vrpn_ForceDevice::decode_updateTrimeshChanges(const char *buffer,
 			const vrpn_int32 len, vrpn_float32 *kspring, vrpn_float32 *kdamp, 
 			vrpn_float32 *fstat, vrpn_float32 *fdyn){
@@ -559,6 +578,7 @@ vrpn_int32 vrpn_ForceDevice::decode_updateTrimeshChanges(const char *buffer,
     return 0;
 }
 
+// static
 char *vrpn_ForceDevice::encode_setTrimeshType(vrpn_int32 &len,const vrpn_int32 type){
 
     char *buf;
@@ -576,6 +596,7 @@ char *vrpn_ForceDevice::encode_setTrimeshType(vrpn_int32 &len,const vrpn_int32 t
     return buf; 
 }
 
+// static
 vrpn_int32 vrpn_ForceDevice::decode_setTrimeshType(const char *buffer,const vrpn_int32 len,
 					   vrpn_int32 *type){
 
@@ -593,6 +614,7 @@ vrpn_int32 vrpn_ForceDevice::decode_setTrimeshType(const char *buffer,const vrpn
     return 0;
 }
 
+// static
 char *vrpn_ForceDevice::encode_trimeshTransform(vrpn_int32 &len,
 				const vrpn_float32 homMatrix[16]){
 	int i;
@@ -612,6 +634,7 @@ char *vrpn_ForceDevice::encode_trimeshTransform(vrpn_int32 &len,
 	return buf; 
 }
 
+// static
 vrpn_int32 vrpn_ForceDevice::decode_trimeshTransform(const char *buffer,
 				  const vrpn_int32 len, vrpn_float32 homMatrix[16]){
     int i;
@@ -630,6 +653,7 @@ vrpn_int32 vrpn_ForceDevice::decode_trimeshTransform(const char *buffer,
     return 0;
 }
 
+// static
 char *vrpn_ForceDevice::encode_forcefield(vrpn_int32 &len, const vrpn_float32 origin[3],
 	const vrpn_float32 force[3], const vrpn_float32 jacobian[3][3], const vrpn_float32 radius)
 {
@@ -659,6 +683,7 @@ char *vrpn_ForceDevice::encode_forcefield(vrpn_int32 &len, const vrpn_float32 or
     return buf;
 }
 
+// static
 vrpn_int32 vrpn_ForceDevice::decode_forcefield(const char *buffer,
 			  const vrpn_int32 len,vrpn_float32 origin[3],
 			  vrpn_float32 force[3], vrpn_float32 jacobian[3][3], vrpn_float32 *radius){

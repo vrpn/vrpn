@@ -11,7 +11,7 @@
   Revised: Fri Mar 19 15:05:56 1999 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Flock_Parallel.C,v $
   $Locker:  $
-  $Revision: 1.6 $
+  $Revision: 1.7 $
 \*****************************************************************************/
 
 // The structure of this code came from vrpn_3Space.[Ch]
@@ -211,9 +211,9 @@ vrpn_Tracker_Flock_Parallel_Slave( char *name, vrpn_Connection *c,
   vrpn_Tracker_Flock(name,c,1,port,baud,1), vrpnMasterID(masterID),
   vrpnPositionMsgID(positionMsgID)
 {
-  sensor=iSensorID;
+  d_sensor=iSensorID;
   fprintf(stderr, "\nvrpn_Tracker_Flock_Parallel_Slave %d: starting up ...",
-	  sensor);
+	  d_sensor);
   // get_report should operate in non-group mode
   fGroupMode = 0;
 }
@@ -231,14 +231,14 @@ vrpn_Tracker_Flock_Parallel_Slave::~vrpn_Tracker_Flock_Parallel_Slave() {
   // slaves can't do a sleep
   //  rgch[cLen++] = 'G';
 
-  fprintf(stderr,"\nvrpn_Tracker_Flock_Parallel_Slave %d: shutting down ...", sensor);
+  fprintf(stderr,"\nvrpn_Tracker_Flock_Parallel_Slave %d: shutting down ...", d_sensor);
   // clear output buffer
   vrpn_flush_output_buffer( serial_fd );
 
   // put the flock to sleep (B to get out of stream mode, G to sleep)
   if (vrpn_write_characters(serial_fd, (const unsigned char *) rgch, cLen )!=cLen) {
     fprintf(stderr,"\nvrpn_Tracker_Flock_Parallel_Slave %d: "
-	    "failed writing sleep cmd to tracker", sensor);
+	    "failed writing sleep cmd to tracker", d_sensor);
     status = TRACKER_FAIL;
     return;
   }
@@ -251,7 +251,7 @@ vrpn_Tracker_Flock_Parallel_Slave::~vrpn_Tracker_Flock_Parallel_Slave() {
 char chPoint = 'B';\
 fprintf(stderr,"."); \
 if (vrpn_write_characters(serial_fd, (const unsigned char *) &chPoint, 1 )!=1) {\
-  fprintf(stderr,"\nvrpn_Tracker_Flock_Parallel_Slave %d: failed writing set mode cmds to tracker", sensor);\
+  fprintf(stderr,"\nvrpn_Tracker_Flock_Parallel_Slave %d: failed writing set mode cmds to tracker", d_sensor);\
   status = TRACKER_FAIL;\
   return;\
 } \
@@ -285,7 +285,7 @@ void vrpn_Tracker_Flock_Parallel_Slave::reset()
   // send the poll mode command (cmd and cmd_size are args)
   if (vrpn_write_characters(serial_fd, (const unsigned char *) reset, resetLen )!=resetLen) {
     fprintf(stderr,"\nvrpn_Tracker_Flock_Parallel_Slave %d: "
-	    "failed writing poll cmd to tracker", sensor);
+	    "failed writing poll cmd to tracker", d_sensor);
     status = TRACKER_FAIL;
     return;
   }
@@ -310,7 +310,7 @@ void vrpn_Tracker_Flock_Parallel_Slave::reset()
 
     if (vrpn_write_characters(serial_fd, (const unsigned char *) reset, resetLen )!=resetLen) {
       fprintf(stderr,"\nvrpn_Tracker_Flock_Parallel_Slave %d: "
-	      "failed writing set mode cmds to tracker", sensor);
+	      "failed writing set mode cmds to tracker", d_sensor);
       status = TRACKER_FAIL;
      return;
     }
@@ -322,7 +322,7 @@ void vrpn_Tracker_Flock_Parallel_Slave::reset()
   }
 
   fprintf(stderr,"\nvrpn_Tracker_Flock_Parallel_Slave %d: "
-	  "done with reset ... running.\n", sensor);
+	  "done with reset ... running.\n", d_sensor);
   
   gettimeofday(&timestamp, NULL);	// Set watchdog now
   status = TRACKER_SYNCING;	// We're trying for a new reading
@@ -351,7 +351,7 @@ void vrpn_Tracker_Flock_Parallel_Slave::mainloop(const struct timeval * /*timeou
       //       group poll only once you have read out the previous one entirely
       //       As a result, polling is very slow with multiple sensors.
       if (fStream==0) {
-	if (sensor==(cSensors-1)) { 
+	if (d_sensor==(cSensors-1)) { 
 	  poll();
 	}
       }
@@ -359,7 +359,7 @@ void vrpn_Tracker_Flock_Parallel_Slave::mainloop(const struct timeval * /*timeou
 #ifdef	VERBOSE
       static int count = 0;
       if (count++ == 10) {
-	printf("\nvrpn_Tracker_Flock_Parallel_Slave %d: Got report", sensor); print_latest_report();
+	printf("\nvrpn_Tracker_Flock_Parallel_Slave %d: Got report", d_sensor); print_latest_report();
 	count = 0;
       }
 #endif            
@@ -384,7 +384,7 @@ void vrpn_Tracker_Flock_Parallel_Slave::mainloop(const struct timeval * /*timeou
 	  fFirstStatusReport=0;
 	  fprintf(stderr, "\nvrpn_Tracker_Flock_Parallel_Slave %d: "
 		  "status will be printed every %d seconds.",
-		  sensor, STATUS_MSG_SECS);
+		  d_sensor, STATUS_MSG_SECS);
 	}
 
 	cReports++;
@@ -401,7 +401,7 @@ void vrpn_Tracker_Flock_Parallel_Slave::mainloop(const struct timeval * /*timeou
 	  fprintf(stderr, "\nvrpn_Tracker_Flock_Parallel_Slave %d: "
 		  "reports being sent at %6.2lf hz "
 		  "(%d sensors, so ~%6.2lf hz per sensor) ( %s )", 
-		  sensor, dRate, cSensors, dRate/cSensors, pch);
+		  d_sensor, dRate, cSensors, dRate/cSensors, pch);
 	  tvLastStatusReport = tvNow;
 	  cReports=0;
 	  // display the rate every STATUS_MSG_SECS seconds
@@ -412,8 +412,8 @@ void vrpn_Tracker_Flock_Parallel_Slave::mainloop(const struct timeval * /*timeou
 #if 0
 	fprintf(stderr,
 		"\np/q (%d): ( %lf, %lf, %lf ) < %lf ( %lf, %lf, %lf ) >", 
-		sensor, pos[0], pos[1], pos[2], 
-		quat[3], quat[0], quat[1], quat[2] );
+		d_sensor, pos[0], pos[1], pos[2], 
+		d_quat[3], d_quat[0], d_quat[1], d_quat[2] );
 #endif
 
 	// pack and deliver tracker report
@@ -423,10 +423,10 @@ void vrpn_Tracker_Flock_Parallel_Slave::mainloop(const struct timeval * /*timeou
 				     vrpnPositionMsgID, vrpnMasterID, msgbuf,
 				     vrpn_CONNECTION_LOW_LATENCY)) {
 	  fprintf(stderr,
-		  "\nvrpn_Tracker_Flock_Parallel_Slave %d: cannot write message ...  tossing", sensor);
+		  "\nvrpn_Tracker_Flock_Parallel_Slave %d: cannot write message ...  tossing", d_sensor);
 	}
       } else {
-	fprintf(stderr,"\nvrpn_Tracker_Flock_Parallel_Slave %d: No valid connection", sensor);
+	fprintf(stderr,"\nvrpn_Tracker_Flock_Parallel_Slave %d: No valid connection", d_sensor);
       }
       
       // Ready for another report
@@ -463,16 +463,16 @@ void vrpn_Tracker_Flock_Parallel_Slave::mainloop(const struct timeval * /*timeou
     // here we just fail and let the master figure out that we have
     // failed and need to be reset
     fprintf(stderr, "\nvrpn_Tracker_Flock_Parallel_Slave %d: tracker "
-	    "failed, trying to reset ...", sensor);
+	    "failed, trying to reset ...", d_sensor);
 #if 0
     checkError();
     if (cResets==4) {
-      fprintf(stderr, "\nvrpn_Tracker_Flock_Parallel_Slave %d: problems resetting ... check that: a) all cables are attached, b) all units have FLY/STANDBY switches in FLY mode, and c) no receiver is laying too close to the transmitter.  When done checking, power cycle the flock.\nWill attempt to reset in 15 seconds.\n", sensor);
+      fprintf(stderr, "\nvrpn_Tracker_Flock_Parallel_Slave %d: problems resetting ... check that: a) all cables are attached, b) all units have FLY/STANDBY switches in FLY mode, and c) no receiver is laying too close to the transmitter.  When done checking, power cycle the flock.\nWill attempt to reset in 15 seconds.\n", d_sensor);
       sleep(15);
       cResets=0;
     }
     fprintf(stderr, 
-	    "\nvrpn_Tracker_Flock_Parallel_Slave %d: tracker failed, trying to reset ...", sensor);
+	    "\nvrpn_Tracker_Flock_Parallel_Slave %d: tracker failed, trying to reset ...", d_sensor);
     vrpn_close_commport(serial_fd);
     serial_fd = vrpn_open_commport(portname, baudrate);
     status = TRACKER_RESETTING;
@@ -485,6 +485,18 @@ void vrpn_Tracker_Flock_Parallel_Slave::mainloop(const struct timeval * /*timeou
 
 /*****************************************************************************\
   $Log: vrpn_Flock_Parallel.C,v $
+  Revision 1.7  2000/03/30 19:23:19  hudson
+  Big changes:
+    VRPN Connection now supports multiple NICs.  An additional optional argument
+  to every constructor call (incl. vrpn_get_connection_by_name) can be the
+  IP address or DNS name for the NIC you want to use.
+
+  Little changes:
+    Changed the names of fields in vrpn_Tracker, vrpn_Sounds, vrpn_ForceDevice
+  because they wre causing warnings on Solaris compilers and we're trying not
+  to tolerate those any more.  Had to touch just about every single tracker
+  implementation, since they read and write those fields directly.
+
   Revision 1.6  1999/07/19 15:33:03  helser
   Oops. There was an nm_int16 in the vrpn_Shared.h head file when it
   shouldn't be there. I also fixed a bunch of trivial compiler warnings

@@ -78,13 +78,13 @@ vrpn_Tracker::vrpn_Tracker (const char * name, vrpn_Connection * c) {
 	timestamp.tv_usec = 0;
 
 	// Set the sensor to 0 just to have something in there.
-	sensor = 0;
+	d_sensor = 0;
 
 	// Set the position to the origin and the orientation to identity
 	// just to have something there in case nobody fills them in later
 	pos[0] = pos[1] = pos[2] = 0.0;
-	quat[0] = quat[1] = quat[2] = 0.0;
-	quat[3] = 1.0;
+	d_quat[0] = d_quat[1] = d_quat[2] = 0.0;
+	d_quat[3] = 1.0;
 
 	// Set the velocity to zero and the orientation to identity
 	// just to have something there in case nobody fills them in later
@@ -206,10 +206,11 @@ int vrpn_Tracker::read_config_file (FILE * config_file,
 void vrpn_Tracker::print_latest_report(void)
 {
    printf("----------------------------------------------------\n");
-   printf("Sensor   :%d\n", sensor);
+   printf("Sensor   :%d\n", d_sensor);
    printf("Timestamp:%ld:%ld\n", timestamp.tv_sec, timestamp.tv_usec);
    printf("Pos      :%lf, %lf, %lf\n", pos[0],pos[1],pos[2]);
-   printf("Quat     :%lf, %lf, %lf, %lf\n", quat[0],quat[1],quat[2],quat[3]);
+   printf("Quat     :%lf, %lf, %lf, %lf\n",
+          d_quat[0],d_quat[1],d_quat[2],d_quat[3]);
 }
 
 int vrpn_Tracker::register_server_handlers(void)
@@ -308,7 +309,7 @@ int vrpn_Tracker::handle_u2s_request(void *userdata, vrpn_HANDLERPARAM p)
 
     if (me->connection){
 	for (i = 0; i < me->num_sensors; i++){
-	    me->sensor = i;
+	    me->d_sensor = i;
             // send u2s transform
             len = me->encode_unit2sensor_to(msgbuf);
             if (me->connection->pack_message(len, me->timestamp,
@@ -400,17 +401,17 @@ int	vrpn_Tracker::encode_unit2sensor_to(char *buf)
 
 	// Encode the sensor number, then put a filler in32 to re-align
 	// to the 64-bit boundary.
-	vrpn_buffer( &bufptr, &buflen, sensor );
+	vrpn_buffer( &bufptr, &buflen, d_sensor );
 	vrpn_buffer( &bufptr, &buflen, (vrpn_int32)(0) );
 
 	// Encode the position part of the transformation.
 	for (i = 0; i < 3; i++) {
-		vrpn_buffer( &bufptr, &buflen, unit2sensor[sensor][i] );
+		vrpn_buffer( &bufptr, &buflen, unit2sensor[d_sensor][i] );
 	}
 
 	// Encode the quaternion part of the transformation.
 	for (i = 0; i < 4; i++) {
-		vrpn_buffer( &bufptr, &buflen, unit2sensor_quat[sensor][i] );
+		vrpn_buffer( &bufptr, &buflen, unit2sensor_quat[d_sensor][i] );
 	}
 
 	// Return the number of characters sent.
@@ -452,7 +453,7 @@ int	vrpn_Tracker::encode_to(char *buf)
    int	index = 0;
 
    // Move the sensor, position, quaternion there
-   *(vrpn_int32 *)dBuf = htonl(sensor);
+   *(vrpn_int32 *)dBuf = htonl(d_sensor);
 
    // re-align to vrpn_float64
    index++;
@@ -461,7 +462,7 @@ int	vrpn_Tracker::encode_to(char *buf)
    	dBuf[index++] = *(vrpn_float64 *)(&pos[i]);
    }
    for (i = 0; i < 4; i++) {
-   	dBuf[index++] = *(vrpn_float64 *)(&quat[i]);
+   	dBuf[index++] = *(vrpn_float64 *)(&d_quat[i]);
    }
 
    // convert the vrpn_float64
@@ -483,7 +484,7 @@ int	vrpn_Tracker::encode_vel_to(char *buf)
    int	index = 0;
 
    // Move the sensor, velocity, quaternion there
-   *(vrpn_int32 *)dBuf = htonl(sensor);
+   *(vrpn_int32 *)dBuf = htonl(d_sensor);
 
    // re-align to vrpn_float64
    index++;
@@ -515,7 +516,7 @@ int	vrpn_Tracker::encode_acc_to(char *buf)
    int	index = 0;
 
    // Move the sensor, acceleration, quaternion there
-   *(vrpn_int32 *)dBuf = htonl(sensor);
+   *(vrpn_int32 *)dBuf = htonl(d_sensor);
    // re-align to vrpn_float64
    index++;
 
@@ -599,10 +600,10 @@ void vrpn_Tracker_Canned::mainloop (const struct timeval * /*tvTimeout*/ ) {
 
 void vrpn_Tracker_Canned::copy (void) {
   memcpy(&(timestamp), &(t.msg_time), sizeof(struct timeval));
-  sensor = t.sensor;
+  d_sensor = t.sensor;
   pos[0] = t.pos[0];  pos[1] = t.pos[1];  pos[2] = t.pos[2];
-  quat[0] = t.quat[0];  quat[1] = t.quat[1];  
-  quat[2] = t.quat[2];  quat[3] = t.quat[3];
+  d_quat[0] = t.quat[0];  d_quat[1] = t.quat[1];  
+  d_quat[2] = t.quat[2];  d_quat[3] = t.quat[3];
 }
 
 void vrpn_Tracker_Canned::get_report (void) {
@@ -656,7 +657,7 @@ void	vrpn_Tracker_NULL::mainloop(const struct timeval * /*timeout*/ )
 	  // Send messages for all sensors if we have a connection
 	  if (connection) {
 	    for (i = 0; i < num_sensors; i++) {
-		sensor = i;
+		d_sensor = i;
 
 		// Pack position report
 		len = encode_to(msgbuf);

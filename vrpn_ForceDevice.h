@@ -295,14 +295,14 @@ class vrpn_ForceDevice {
     struct timeval timestamp;
 
     vrpn_int32   which_plane;
-    vrpn_float64 force[3];
-    vrpn_float64 scp_pos[3];
-    vrpn_float64 scp_quat[4];  // for torque
-    vrpn_float32 plane[4];
+    //vrpn_float64 d_force [3];
+    vrpn_float64 scp_pos [3];
+    vrpn_float64 scp_quat [4];  // for torque
+    vrpn_float32 plane [4];
 
-    vrpn_float32 ff_origin[3];
-    vrpn_float32 ff_force[3];
-    vrpn_float32 ff_jacobian[3][3]; // J[i][j] = dF[i]/dx[j]
+    vrpn_float32 ff_origin [3];
+    vrpn_float32 ff_force [3];
+    vrpn_float32 ff_jacobian [3][3]; // J[i][j] = dF[i]/dx[j]
     vrpn_float32 ff_radius;
 
     vrpn_float32 SurfaceKspring;

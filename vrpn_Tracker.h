@@ -72,8 +72,8 @@ class vrpn_Tracker {
    vrpn_int32 reset_origin_m_id;	// ID of reset origin message					
 
    // Description of the next report to go out
-   vrpn_int32 sensor;			// Current sensor
-   vrpn_float64 pos[3], quat[4];	// Current pose, (x,y,z), (qx,qy,qz,qw)
+   vrpn_int32 d_sensor;			// Current sensor
+   vrpn_float64 pos[3], d_quat[4];	// Current pose, (x,y,z), (qx,qy,qz,qw)
    vrpn_float64 vel[3], vel_quat[4];	// Cur velocity and dQuat/vel_quat_dt
    vrpn_float64 vel_quat_dt;		// delta time (in secs) for vel_quat
    vrpn_float64 acc[3], acc_quat[4];	// Cur accel and d2Quat/acc_quat_dt2

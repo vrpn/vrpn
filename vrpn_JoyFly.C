@@ -147,7 +147,7 @@ void vrpn_Tracker_JoyFly::update(q_matrix_type & newM) {
   }
   printf("(x, y, z)= %lf %lf %lf\n", pos[0],pos[1], pos[2]);
   for (i=0; i< 4; i++) {
-    quat[i] = xq.quat[i]; // orientation. 
+    d_quat[i] = xq.quat[i]; // orientation. 
   }
 }
 

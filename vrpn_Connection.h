@@ -363,7 +363,8 @@ class vrpn_Connection
 	vrpn_Connection (unsigned short listen_port_no =
 		         vrpn_DEFAULT_LISTEN_PORT_NO,
                          const char * local_logfile_name = NULL,
-                         long local_log_mode = vrpn_LOG_NONE);
+                         long local_log_mode = vrpn_LOG_NONE,
+                         const char * NIC_IPaddress = NULL);
 
 	//   Create a connection -  if server_name is not a file: name,
 	// makes an SDI-like connection to the named remote server
@@ -379,7 +380,8 @@ class vrpn_Connection
                          const char * local_logfile_name = NULL,
                          long local_log_mode = vrpn_LOG_NONE,
                          const char * remote_logfile_name = NULL,
-                         long remote_log_mode = vrpn_LOG_NONE);
+                         long remote_log_mode = vrpn_LOG_NONE,
+                         const char * NIC_IPaddress = NULL);
 
 	//char *	my_name;
 	int	status;			// Status of the connection
@@ -511,6 +513,8 @@ class vrpn_Connection
        * the sixth ("padding") word in the VRPN header.  Currently
        * two sequences are maintained:  one for TCP, one for UDP.
        */
+
+    const char * d_NIC_IP;
 };
 
 
@@ -534,11 +538,13 @@ class vrpn_Synchronized_Connection : public vrpn_Connection
 {
   public:
     // Create a connection to listen for incoming connections on a port
-    // server call
+    // server call.  If no IP address for the NIC to use is specified,
+    // uses the default NIC.
     vrpn_Synchronized_Connection (unsigned short listen_port_no =
 		         vrpn_DEFAULT_LISTEN_PORT_NO,
                          const char * local_logfile_name = NULL,
-                         long local_log_mode = vrpn_LOG_NONE);
+                         long local_log_mode = vrpn_LOG_NONE,
+                         const char * NIC_IPaddress = NULL);
     vrpn_Clock_Server * pClockServer;
 
     // Create a connection makes aconnection to a remote server
@@ -555,7 +561,8 @@ class vrpn_Synchronized_Connection : public vrpn_Connection
           const char * remote_logfile_name = NULL,
           long remote_log_mode = vrpn_LOG_NONE,
 	  double dFreq = 4.0, 
-	  int cOffsetWindow = 2);
+	  int cOffsetWindow = 2,
+          const char * NIC_IPaddress = NULL);
     // fullSync will perform an accurate sync on the connection for the
     // user and return the current offset
 	~vrpn_Synchronized_Connection();
@@ -566,13 +573,16 @@ class vrpn_Synchronized_Connection : public vrpn_Connection
 
 // 1hz sync connection by default, windowed over last three bounces 
 // WARNING:  vrpn_get_connection_by_name() may not be thread safe.
+// If no IP address for the NIC to use is specified, uses the default
+// NIC.
 vrpn_Connection * vrpn_get_connection_by_name
          (const char * cname,
           const char * local_logfile_name = NULL,
           long local_log_mode = vrpn_LOG_NONE,
           const char * remote_logfile_name = NULL,
           long remote_log_mode = vrpn_LOG_NONE,
-	  double dFreq = 1.0, int cSyncWindow = 3);
+	  double dFreq = 1.0, int cSyncWindow = 3,
+          const char * NIC_IPaddress = NULL);
 
 
 // Utility routines to parse names (<service>@<location specifier>)

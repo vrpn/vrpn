@@ -253,7 +253,7 @@ void vrpn_Tracker_3Space::get_report(void)
 	// Parse out sensor number, which is the second byte and is
 	// stored as the ASCII number of the sensor, with numbers
 	// starting from '1'.  We turn it into a zero-based unit number.
-	sensor = decode[1] - '1';
+	d_sensor = decode[1] - '1';
 
 	// Position
 	for (i=0; i<3; i++) {
@@ -264,16 +264,16 @@ void vrpn_Tracker_3Space::get_report(void)
 	// as w,x,y,z while the VR code handles them as x,y,z,w,
 	// so we need to switch the order when decoding.  Also the
 	// tracker does not normalize the quaternions.
-	quat[3] = (* (short*)(&decode[9]));
+	d_quat[3] = (* (short*)(&decode[9]));
 	for (i=0; i<3; i++) {
-		quat[i] = (* (short*)(&decode[11+2*i]));
+		d_quat[i] = (* (short*)(&decode[11+2*i]));
 	}
 
 	//Normalize quaternion
-	double norm = sqrt (  quat[0]*quat[0] + quat[1]*quat[1]
-			    + quat[2]*quat[2] + quat[3]*quat[3]);
+	double norm = sqrt (  d_quat[0]*d_quat[0] + d_quat[1]*d_quat[1]
+			    + d_quat[2]*d_quat[2] + d_quat[3]*d_quat[3]);
 	for (i=0; i<4; i++) {
-		quat[i] /= norm;
+		d_quat[i] /= norm;
 	}
 
 	// Done with the decoding, set the report to ready

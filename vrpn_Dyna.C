@@ -37,7 +37,7 @@ vrpn_Tracker_Serial(name,c,port,baud), cSensors(cSensors), cResets(0)
       cSensors = MAX_SENSORS;
     }
     fprintf(stderr, "\nvrpn_Tracker_Dyna: starting up ...");
-    sensor = 0 ; // sensor id is always 0 (first sensor is 0);
+    d_sensor = 0 ; // sensor id is always 0 (first sensor is 0);
 }
 
 vrpn_Tracker_Dyna::~vrpn_Tracker_Dyna() {
@@ -291,10 +291,10 @@ int vrpn_Tracker_Dyna::decode_record()
    
    /* For the single-target Dynasight, we assume that the orientation *
     * the target is that same as that of the Dynasight.               */
-   quat[0] = 0.0;
-   quat[1] = 0.0;
-   quat[2] = 0.0;
-   quat[3] = 1.0;
+   d_quat[0] = 0.0;
+   d_quat[1] = 0.0;
+   d_quat[2] = 0.0;
+   d_quat[3] = 1.0;
 
    return(T_OK);
 

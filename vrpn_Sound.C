@@ -467,10 +467,10 @@ vrpn_int32 vrpn_Sound_Client::changeListenerPose(const vrpn_float64 position[3],
 	vrpn_int32 len;
 	int i;
 
-	for(i = 0; i < 3; i++) Listener.pose.position[i] = position[i];
-	for(i = 0; i < 4; i++) Listener.pose.orientation[i] = orientation[i];
+	for(i = 0; i < 3; i++) d_Listener.pose.position[i] = position[i];
+	for(i = 0; i < 4; i++) d_Listener.pose.orientation[i] = orientation[i];
 	
-	len = encodeListener(Listener, buf);
+	len = encodeListener(d_Listener, buf);
 
 	gettimeofday(&timestamp, NULL);
 
@@ -487,9 +487,9 @@ vrpn_int32 vrpn_Sound_Client::changeListenerVelocity(const vrpn_float64 velocity
 	vrpn_int32 len;
 	int i;
 
-	for(i = 0; i < 4; i++) Listener.velocity[i] = velocity[i];
+	for(i = 0; i < 4; i++) d_Listener.velocity[i] = velocity[i];
 	
-	len = encodeListener(Listener, buf);
+	len = encodeListener(d_Listener, buf);
 
 	gettimeofday(&timestamp, NULL);
 
@@ -525,8 +525,8 @@ vrpn_int32 vrpn_Sound_Client::initModel(const vrpn_float64 *eye_f_sensor) {
 
 	setDefModel((vrpn_float64*)eye_f_sensor);
 		
-	//len = encodeModelDef((const vrpn_ModelDef) Model, buf);
-	len = encodeModelDef(Model, buf);
+	//len = encodeModelDef((const vrpn_ModelDef) d_Model, buf);
+	len = encodeModelDef(d_Model, buf);
 
 	gettimeofday(&timestamp, NULL);
 
@@ -543,7 +543,7 @@ void vrpn_Sound_Client::mainloop(const timeval *timeout)
 }
 
 void vrpn_Sound_Client::setDefModel(vrpn_float64 *eye_f_sensor) {
-	qogl_matrix_copy(Model.eye_from_sensor_matrix,eye_f_sensor);
+	qogl_matrix_copy(d_Model.eye_from_sensor_matrix,eye_f_sensor);
 }
 
 

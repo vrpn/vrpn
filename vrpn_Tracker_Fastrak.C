@@ -387,11 +387,11 @@ void vrpn_Tracker_Fastrak::get_report(void)
       	   fprintf(stderr,"Tracker Fastrak: Not '0' in record\n");
 	   return;
    }
-   sensor = buffer[1] - '1';	// Convert ASCII 1 to sensor 0 and so on.
-   if ( (sensor < 0) || (sensor >= num_stations) ) {
+   d_sensor = buffer[1] - '1';	// Convert ASCII 1 to sensor 0 and so on.
+   if ( (d_sensor < 0) || (d_sensor >= num_stations) ) {
 	   status = TRACKER_SYNCING;
       	   fprintf(stderr,"Tracker Fastrak: Bad sensor # (%d) in record\n",
-		sensor);
+		d_sensor);
 	   return;
    }
    if ( (buffer[2] != ' ') && !isalpha(buffer[2]) ) {
@@ -436,7 +436,7 @@ void vrpn_Tracker_Fastrak::get_report(void)
 	pos[i] = read_pos[i] * INCHES_TO_METERS;
    }
    for (i = 0; i < 4; i++) {
-	quat[i] = read_quat[i];
+	d_quat[i] = read_quat[i];
    }
 
    //--------------------------------------------------------------------

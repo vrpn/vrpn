@@ -338,6 +338,6 @@ void vrpn_Tracker_AnalogFly::convert_matrix_to_tracker (void)
     pos[i] = xq.xyz[i]; // position;
   }
   for (i=0; i< 4; i++) {
-    quat[i] = xq.quat[i]; // orientation. 
+    d_quat[i] = xq.quat[i]; // orientation. 
   }
 }

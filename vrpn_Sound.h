@@ -47,8 +47,8 @@ public:
 protected:
 #define vrpn_Sound_START 10
 
-	vrpn_ModelDef    Model;
-	vrpn_ListenerDef Listener;				 // A listeners information
+	vrpn_ModelDef    d_Model;
+	vrpn_ListenerDef d_Listener;				 // A listeners information
 	vrpn_Connection *connection;		     // Used to send messages
 
 	vrpn_int32 my_id;						 // ID of this tracker to connection
