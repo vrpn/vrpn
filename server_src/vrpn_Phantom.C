@@ -276,12 +276,6 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
 		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
 		vrpn_ForceDevice::connection = NULL;
   }
-  if (vrpn_ForceDevice::connection->register_handler(set_constraint_message_id,
-	handle_constraint_change_message, this, vrpn_ForceDevice::my_id)) {
-		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
-		vrpn_ForceDevice::connection = NULL;
-  }
-
   if (vrpn_ForceDevice::connection->register_handler(forcefield_message_id,
 	handle_forcefield_change_message, this, vrpn_ForceDevice::my_id)) {
 		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
@@ -787,30 +781,6 @@ int vrpn_Phantom::handle_transformTrimesh_message(void *userdata,
   
   myTrimesh->setTransformMatrix(xformMatrix);
 
-  return 0;
-}
-
-int vrpn_Phantom::handle_constraint_change_message(void *userdata,
-						vrpn_HANDLERPARAM p){
-  vrpn_Phantom *me = (vrpn_Phantom *)userdata;
-  double pnt[3]; 
-  long enable;
-  float x,y,z, kSpr;
-
-  decode_constraint(p.buffer, p.payload_len,
-	  &enable, &x, &y, &z, &kSpr);
-  
-  // convert from meters to mm and dyne/meter to dyne/mm
-  pnt[0] = 1000*x; pnt[1] = 1000*y; pnt[2] = 1000*z;
-  if (!enable){
-	  me->phantom->stopEffect();
-	  me->pointConstraint->stop();
-  }
-  else{
-        me->pointConstraint->setPoint(pnt, kSpr/1000.0);
-	me->phantom->startEffect();
-	me->pointConstraint->start();
-  }
   return 0;
 }
 
