@@ -1304,8 +1304,7 @@ vrpn_Shared_String & vrpn_Shared_String::set (const char * newValue,
   acceptedUpdate = shouldAcceptUpdate(newValue, when, isLocalSet);
   if (acceptedUpdate) {
 
-    // Hmm...
-    if (d_value != newValue) {
+    if ((d_value == NULL) || (strcmp(d_value,newValue) != 0)) {
       if (d_value) {
         delete [] d_value;
       }

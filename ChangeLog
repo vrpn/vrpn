@@ -1,3 +1,10 @@
+2001-10-23  Adam Seeger  <seeger@cs.unc.edu>
+
+	* vrpn_SharedObject.C (vrpn_Shared_String::set): fixed some bad
+	logic here that was causing a memory bug - was comparing strings 
+	by comparing the pointers for those strings despite the fact that
+	string values were being put into newly allocated arrays
+
 2001-09-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.dsw : Adds a DAQ driver server for the UNC 3D Force Microscope
