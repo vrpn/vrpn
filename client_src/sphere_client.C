@@ -10,7 +10,7 @@
 #include <vrpn_Button.h>
 
 
-#define PHANTOM_SERVER "Phantom@phantom"
+#define PHANTOM_SERVER "Phantom@tantalum-cs"
 
 static float xpos,ypos,zpos;
 static float planeZval;
@@ -159,3 +159,10 @@ be smaller than static friction or you will get the same error.
   // shut off force device
   forceDevice->stopSurface();
 }   /* main */
+
+
+
+
+
+
+
