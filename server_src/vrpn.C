@@ -55,28 +55,32 @@ void Usage (const char * s)
 {
   fprintf(stderr,"Usage: %s [-f filename] [-warn] [-v] [port] [-q]\n",s);
   fprintf(stderr,"       [-client machinename port] [-millisleep n]\n");
-  fprintf(stderr,"       -f: Full path to config file (default vrpn.cfg)\n");
-  fprintf(stderr,"       -warn: Only warn on errors (default is to bail)\n");
-  fprintf(stderr,"       -v: Verbose\n");
-  fprintf(stderr,"	 -q: quit when last connection is dropped\n");
-  fprintf(stderr,"       -client: where server connects when it starts up\n");
-  fprintf(stderr,"       -millisleep: sleep n milliseconds each loop cycle\n");
+  fprintf(stderr,"       [-NIC name]\n");
+  fprintf(stderr,"       -f: Full path to config file (default vrpn.cfg).\n");
+  fprintf(stderr,"       -warn: Only warn on errors (default is to bail).\n");
+  fprintf(stderr,"       -v: Verbose.\n");
+  fprintf(stderr,"	 -q: Quit when last connection is dropped\.n");
+  fprintf(stderr,"       -client: Where server connects when it starts up.\n");
+  fprintf(stderr,"       -millisleep: Sleep n milliseconds each loop cycle.\n");
+  fprintf(stderr,"       -NIC: Use NIC with given IP address or DNS name.\n");
   exit(-1);
 }
 
-vrpn_Tracker	*trackers[MAX_TRACKERS];
+static char * g_NICname = NULL;
+
+vrpn_Tracker	* trackers [MAX_TRACKERS];
 int		num_trackers = 0;
-vrpn_Button	*buttons[MAX_BUTTONS];
+vrpn_Button	* buttons [MAX_BUTTONS];
 int		num_buttons = 0;
-vrpn_Sound	*sounds[MAX_SOUNDS];
+vrpn_Sound	* sounds [MAX_SOUNDS];
 int		num_sounds = 0;
-vrpn_Analog	*analogs[MAX_ANALOG];
+vrpn_Analog	* analogs [MAX_ANALOG];
 int		num_analogs = 0;
-vrpn_raw_SGIBox	*sgiboxes[MAX_SGIBOX];
+vrpn_raw_SGIBox	* sgiboxes [MAX_SGIBOX];
 int		num_sgiboxes = 0;
-vrpn_CerealBox	*cereals[MAX_CEREALS];
+vrpn_CerealBox	* cereals [MAX_CEREALS];
 int		num_cereals = 0;
-vrpn_Dial	*dials[MAX_DIALS];
+vrpn_Dial	* dials [MAX_DIALS];
 int		num_dials = 0;
 
 vrpn_Connection * connection;
@@ -922,6 +926,11 @@ main (int argc, char * argv[])
 		client_name = argv[i];
 		if (++i > argc) { Usage(argv[0]); }
 		client_port = atoi(argv[i]);
+	  } else if (!strcmp(argv[i], "-NIC")) { // specify a network interface
+            if (++i > argc) { Usage(argv[0]); }
+            fprintf(stderr, "Listening on network interface card %s.\n",
+                    argv[i]);
+            g_NICname = argv[i];
 	  } else if (argv[i][0] == '-') {	// Unknown flag
 		Usage(argv[0]);
 	  } else switch (realparams) {		// Non-flag parameters
@@ -939,7 +948,8 @@ main (int argc, char * argv[])
 	// Need to have a global pointer to it so we can shut it down
 	// in the signal handler (so we can close any open logfiles.)
 	//vrpn_Synchronized_Connection	connection;
-	connection = new vrpn_Synchronized_Connection (port);
+	connection = new vrpn_Synchronized_Connection
+             (port, NULL, vrpn_LOG_NONE, g_NICname);
 	
 	// Open the configuration file
 	if (verbose) printf("Reading from config file %s\n", config_file_name);
