@@ -145,8 +145,8 @@ extern int vrpn_unbuffer (const char ** buffer, char * string,
 
 // XXX should this be done in cygwin?
 // No sleep() function, but Sleep(DWORD) defined in winbase.h
-//#ifdef _WIN32
-//#define	sleep(x)	Sleep( DWORD(1000.0 * x) )
-//#endif
+#if defined(_WIN32) && (!defined(__CYGWIN__))
+#define	sleep(x)	Sleep( DWORD(1000.0 * x) )
+#endif
 
 #endif  // VRPN_SHARED_H

@@ -1,4 +1,10 @@
+2000-10-05  Sang-Uok Kum  <kumsu@cs.unc.edu>
+
+	*  vrpn_Shared.h : Fixed a mistake which made it not work in VC++. 
+	sleep is still not defined in VC++.
+
 2000-10-04  Sang-Uok Kum  <kumsu@cs.unc.edu>
+
 	* vrpn_Button.C : Include files and #ifdefs changed so in cygwin v1.1
 	it always uses unix sockets instead of window sockets. (The vrpn libary
 	compiled but gave run time errors.) This was only tested for vrpn 
