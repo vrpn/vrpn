@@ -1,3 +1,25 @@
+2004-04-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Adding flag to SGI compile in the hope that it would
+		fix things and let us use the new streams libraries.  It
+		got us part of the way there on my system.
+	* vrpn_BaseClass.C : Added Patrick Hartling's changes to make VRPN
+		compile with Visual Studio.NET, which required switching to
+		new streams, which required retrofitting SGIs to use old
+		streams (using yet another define in vrpn_Configure.h).
+	* vrpn_BaseClass.h : Same.
+	* vrpn_Clock.C : Same.
+	* vrpn_Configure.h : Same.
+	* vrpn_Connection.C : Same.
+	* vrpn_ImmersionBox. : Same.
+	* vrpn_Shared.C : Same.
+	* vrpn_TempImager.h : Same.
+	* vrpn_Tng3.C : Same.
+	* vrpn_Tracker_AnalogFly : Adding Patrick Hartlings changes to make
+		it compile with Visual Studio.NET, in this case a type cast
+		to let the compiler know which function to call.
+	* vrpn_Tracker_ButtonFly : Same.
+
 2004-04-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Shared.C : Modified all of VRPN to use calls to a new

@@ -6,11 +6,16 @@
 // This code is based on the Tng3 code from pulsar.org
 
 #include <string.h>
+#include <math.h>
 #include "vrpn_Tng3.h"
 #include "vrpn_Shared.h"
 #include "vrpn_Serial.h"
-#include <math.h>
-#include <iostream.h>
+  #ifdef VRPN_USE_OLD_STREAMS
+        #include <iostream.h>
+  #else
+        #include <iostream>
+	using namespace std;
+  #endif
 
 #undef VERBOSE
 
@@ -34,6 +39,7 @@
 #define	VRPN_INFO(msg)	  { send_text_message(msg, _timestamp, vrpn_TEXT_NORMAL) ; if (d_connection) d_connection->send_pending_reports(); }
 #define	VRPN_WARNING(msg) { send_text_message(msg, _timestamp, vrpn_TEXT_WARNING) ; if (d_connection) d_connection->send_pending_reports(); }
 #define	VRPN_ERROR(msg)	  { send_text_message(msg, _timestamp, vrpn_TEXT_ERROR) ; if (d_connection) d_connection->send_pending_reports(); }
+
 
 static	unsigned long	duration(struct timeval t1, struct timeval t2)
 {
@@ -75,13 +81,13 @@ vrpn_Tng3::vrpn_Tng3 (const char * name,
 
     // Verify the validity of the parameters
     if (_numbuttons > MAX_TBUTTONS) {
-	cout << "vrpn_Tng3: Can only support " << MAX_TBUTTONS << " buttons, not " <<
-	    _numbuttons << endl;
+	cout << "vrpn_Tng3: Can only support " << (int)MAX_TBUTTONS << " buttons, not " <<
+	    (int)_numbuttons << endl;
 	_numbuttons = MAX_TBUTTONS;
     }
     if (_numchannels > MAX_TCHANNELS) {
-	cout << "vrpn_Tng3: Can only support " << MAX_TCHANNELS << " analog channels, not " <<
-	    _numchannels << endl;
+	cout << "vrpn_Tng3: Can only support " << (int)MAX_TCHANNELS << " analog channels, not " <<
+	    (int)_numchannels << endl;
 	_numchannels = MAX_TCHANNELS;
     }
 
@@ -330,7 +336,7 @@ int vrpn_Tng3::syncDatastream (double seconds) {
 	vrpn_gettimeofday(&current_time, NULL);
 	if (duration(current_time, start_time) > maxDelay ) {
 	    // if we've timed out, go back unhappy
-	    cout << "vrpn_Tng3::syncDatastream timeout expired: " << seconds 
+	    cout << "vrpn_Tng3::syncDatastream timeout expired: " << (int)seconds 
 		 <<	" secs " << endl;
 	    return 0;  // go back unhappy
 	}

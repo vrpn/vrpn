@@ -157,9 +157,9 @@ void	vrpn_Tracker_AnalogFly::handle_analog_update
 
 	// Scale and apply the power to the value (maintaining its sign)
 	if (value_offset >=0) {
-		full->value = pow(value_offset*full->axis.scale, full->axis.power);
+		full->value = pow(value_offset*full->axis.scale, (double) full->axis.power);
 	} else {
-		full->value = -pow(value_abs*full->axis.scale, full->axis.power);
+		full->value = -pow(value_abs*full->axis.scale, (double) full->axis.power);
 	}
 }
 

@@ -30,6 +30,15 @@
 #define	VRPN_NO_STREAMS
 
 //-----------------------
+// Instructs VPRN to use the old-style includes,
+// because at least our SGI compiler is broken in ways not easily fixed
+// when trying to use the new one.  Everything goes great until you try
+// to link, at which time there are undefined symbols for the ostream
+// functions, which the compiler doesn't seem to be able to pull from
+// the library even when its objects were made using -LANG:std.
+//#define	VRPN_USE_OLD_STREAMS
+
+//-----------------------
 // Instructs VRPN to expose the vrpn_gettimeofday() function also
 // as gettimeofday() so that external programs can use it.  This
 // has no effect on any system that already has gettimeofday()

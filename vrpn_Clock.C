@@ -20,7 +20,11 @@
 #endif
 
 #ifndef	VRPN_NO_STREAMS
-#include <iostream.h>
+  #ifdef VRPN_USE_OLD_STREAMS
+        #include <iostream.h>
+  #else
+        #include <iostream>
+  #endif
 #endif
 #include <math.h>
 

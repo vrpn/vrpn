@@ -131,8 +131,8 @@ else
       SGI_ARCH := mips3
    endif
    OBJECT_DIR_SUFFIX := .$(SGI_ABI).$(SGI_ARCH)
-	CC := CC -$(SGI_ABI) -$(SGI_ARCH)
-        RANLIB := :
+   CC := CC -$(SGI_ABI) -$(SGI_ARCH) -LANG:std
+   RANLIB := :
   endif
 
   ifeq ($(HW_OS),hp700_hpux10)

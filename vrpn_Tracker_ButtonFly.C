@@ -214,9 +214,9 @@ void	vrpn_Tracker_ButtonFly::handle_velocity_update
 
   // Scale and apply the power to the value (maintaining its sign)
   if (value_offset >=0) {
-	  value_powered = pow(value_abs, me->d_vel_scale_power);
+	  value_powered = pow(value_abs, (double) me->d_vel_scale_power);
   } else {
-	  value_powered = -pow(value_abs, me->d_vel_scale_power);
+	  value_powered = -pow(value_abs, (double) me->d_vel_scale_power);
   }
 
   // Store the value for use by the matrix code
@@ -240,9 +240,9 @@ void	vrpn_Tracker_ButtonFly::handle_rotation_update
 
   // Scale and apply the power to the value (maintaining its sign)
   if (value_offset >=0) {
-	  value_powered = pow(value_abs, me->d_rot_scale_power);
+	  value_powered = pow(value_abs, (double) me->d_rot_scale_power);
   } else {
-	  value_powered = -pow(value_abs, me->d_rot_scale_power);
+	  value_powered = -pow(value_abs, (double) me->d_rot_scale_power);
   }
 
   // Store the value for use by the matrix code

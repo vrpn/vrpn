@@ -2,7 +2,7 @@
 
 #ifdef _WIN32
 #ifndef _WIN32_WCE
-#include <iomanip.h>
+#include <iomanip>
 #endif
 #endif
 
@@ -17,6 +17,12 @@
     all created objects.
 */
 vrpn_TextPrinter    vrpn_System_TextPrinter;
+
+#ifndef VRPN_NO_STREAMS
+#ifndef VRPN_USE_OLD_STREAMS
+using namespace std;
+#endif
+#endif
 
 vrpn_TextPrinter::vrpn_TextPrinter() :
 d_first_watched_object(NULL),

@@ -12,7 +12,12 @@
 #include "vrpn_Shared.h"
 #include "vrpn_Serial.h"
 #include <math.h>
-#include <iostream.h>
+  #ifdef VRPN_USE_OLD_STREAMS
+        #include <iostream.h>
+  #else
+        #include <iostream>
+	using namespace std;
+  #endif
 
 #undef VERBOSE
 
@@ -30,6 +35,7 @@ char    S_START[6]      = "BEGIN";
 char    S_END[4]        = "END";
 
 #define MAX_TIME_INTERVAL  (2000000) // max time between reports (usec)
+
 
 static	unsigned long	duration(struct timeval t1, struct timeval t2)
 {

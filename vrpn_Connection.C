@@ -11,7 +11,11 @@
 #ifndef _WIN32_WCE
 #include <sys/types.h>
 #include <signal.h>
-#include <iostream.h>
+  #ifdef VRPN_USE_OLD_STREAMS
+        #include <iostream.h>
+  #else
+        #include <iostream>
+  #endif
 #include <sys/stat.h>
 #include <fcntl.h>
 #endif

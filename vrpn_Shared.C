@@ -2,7 +2,7 @@
 
 #ifdef _WIN32
 #ifndef _WIN32_WCE
-#include <iomanip.h>
+#include <iomanip>
 #endif
 #endif
 
@@ -693,7 +693,12 @@ int vrpn_unbuffer (const char ** buffer, char * string,
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
 #ifndef VRPN_NO_STREAMS
-#include <iostream.h>
+  #ifdef VRPN_USE_OLD_STREAMS
+        #include <iostream.h>
+  #else
+        #include <iostream>
+  #endif
+using namespace std;
 #endif
 #include <math.h>
 
@@ -774,7 +779,11 @@ int vrpn_gettimeofday(timeval *tp, void *voidp)
 // They claim it will be fixed in the next release, version b21
 // so until then, we will make it right using our solution. 
 #if defined(_WIN32) && !defined(__CYGWIN__)
-#include <iostream.h>
+  #ifdef VRPN_USE_OLD_STREAMS
+        #include <iostream.h>
+  #else
+        #include <iostream>
+  #endif
 #include <math.h>
 
 // utility routines to read the pentium time stamp counter

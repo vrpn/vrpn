@@ -6,7 +6,6 @@
 #define	VRPN_TEMPIMAGER_H
 #include  "vrpn_Connection.h"
 #include  "vrpn_BaseClass.h"
-#include  <string.h>
 
 const unsigned vrpn_IMAGER_MAX_CHANNELS = 10;
 
