@@ -131,7 +131,6 @@ Java_vrpn_ButtonRemote_mainloop( JNIEnv* env, jobject jobj )
 JNIEXPORT jboolean JNICALL 
 Java_vrpn_ButtonRemote_init( JNIEnv* env, jobject jobj, jstring jname )
 {
-  printf( "in Java_ButtonRemote_init(...)\n" );
 
   // look up where to store the button pointer
   jclass jcls = env->GetObjectClass( jobj );

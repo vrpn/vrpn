@@ -154,13 +154,13 @@ void handle_acceleration_change( void* userdata, const vrpn_TRACKERACCCB info )
   if( jvm == NULL )
     return;
 
-  
+  /*
   printf( "tracker change (C):  time:  %d.%d;  sensor:  %d;\n"
           "\tacc: %f %f %f;\n"
           "\tquat:  %f %f %f %f  dt:  %f\n", info.msg_time.tv_sec, info.msg_time.tv_usec,
           info.sensor, info.acc[0], info.acc[1], info.acc[2],
           info.acc_quat[0], info.acc_quat[1], info.acc_quat[2], info.acc_quat[3], info.acc_quat_dt );
-  
+  */
 
   
   JNIEnv* env;
@@ -224,7 +224,6 @@ Java_vrpn_TrackerRemote_mainloop( JNIEnv* env, jobject jobj )
 JNIEXPORT jboolean JNICALL 
 Java_vrpn_TrackerRemote_init( JNIEnv* env, jobject jobj, jstring jname )
 {
-  printf( "in Java_TrackerRemote_init(...)\n" );
 
   // look up where to store the tracker pointer
   jclass jcls = env->GetObjectClass( jobj );

@@ -202,7 +202,6 @@ void handle_force_error( void* userdata, const vrpn_FORCEERRORCB info )
 JNIEXPORT jboolean JNICALL 
 Java_vrpn_ForceDeviceRemote_init( JNIEnv* env, jobject jobj, jstring jname )
 {
-  printf( "in Java_ForceDeviceRemote_init(...)\n" );
 
   // look up where to store the force device pointer
   jclass jcls = env->GetObjectClass( jobj );

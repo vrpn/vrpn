@@ -87,13 +87,13 @@ void handle_analog_change( void* userdata, const vrpn_ANALOGCB info )
   if( jvm == NULL )
     return;
 
-  
+  /*
   printf( "analog change (C):  time:  %d.%d;  num_channels:  %d;\n\t", 
           info.msg_time.tv_sec, info.msg_time.tv_usec, info.num_channel );
   for( int i = 0; i <= info.num_channel - 1; i++ )
     printf( "%d  ", info.channel[i] );
   printf( "\n" );
-  
+  */
 
   JNIEnv* env;
   jvm->AttachCurrentThread( (void**) &env, NULL );
@@ -158,8 +158,6 @@ Java_vrpn_AnalogRemote_requestValueChange( JNIEnv* env, jobject jobj,
     return false;
   }
 
-  printf( "Requesting change of analog channel %d to %f.\n", jchannel, jvalue );
-
   return a->request_change_channel_value( jchannel, jvalue );
 }
 
@@ -199,7 +197,6 @@ Java_vrpn_AnalogRemote_shutdownAnalog( JNIEnv* env, jobject jobj )
 JNIEXPORT void JNICALL 
 Java_vrpn_AnalogRemote_mainloop( JNIEnv *env, jobject jobj )
 {
-  printf( "in Java_AnalogRemote_mainloop(...)\n" );
 
   // look up the analog pointer
   jclass jcls = env->GetObjectClass( jobj );
@@ -221,7 +218,6 @@ Java_vrpn_AnalogRemote_mainloop( JNIEnv *env, jobject jobj )
 JNIEXPORT jboolean JNICALL 
 Java_vrpn_AnalogRemote_init( JNIEnv *env, jobject jobj, jstring jname )
 {
-  printf( "in Java_AnalogRemote_init(...)\n" );
 
   // look up where to store the analog pointer
   jclass jcls = env->GetObjectClass( jobj );

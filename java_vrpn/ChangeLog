@@ -1,4 +1,11 @@
-2002-07-11    <marshbur@cs.unc.edu>
+2002-07-16  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_AnalogRemote.cpp:  cleaned out some errant print statements.
+	* vrpn_ButtonRemote.cpp:  same
+	* vrpn_ForceDeviceRemote.cpp:  same
+	* vrpn_TrackerRemote.cpp:  same
+
+2002-07-11  David Marshburn  <marshbur@cs.unc.edu>
 
 	* TrackerRemote.java:  starts the thread in the constructor.
 
