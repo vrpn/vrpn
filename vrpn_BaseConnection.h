@@ -29,10 +29,10 @@ protected: // init
 public:  // status
     
     // a connection was made
-    virtual vrpn_int32 connected() const;
+    virtual vrpn_bool connected() const = 0;
 
     // no errors
-    virtual vrpn_int32 doing_okay() const;
+    virtual vrpn_bool doing_okay() const = 0;
 
 public: // clock stuff
     virtual vrpn_int32 time_since_connection_open( timeval * elapsed_time );
@@ -64,15 +64,15 @@ public:  // sending and receiving
 	virtual vrpn_int32 mainloop (const struct timeval * timeout = NULL) = 0;
 
     // functions for sending messages and receiving messages
-    // the ConnectionController will call these functions
 
+    // the ConnectionController will call these functions
     virtual vrpn_int32 handle_outgoing_messages( /*...XXX...*/ ) = 0;
 
     virtual vrpn_int32 handle_incoming_messages( /*...XXX...*/ ) = 0;
 	
-	virtual	vrpn_int32 do_callbacks_for (vrpn_int32 type, vrpn_int32 sender,
-				struct timeval time, vrpn_uint32 len,
-				const char * buffer){};
+    virtual vrpn_int32 do_callbacks_for (vrpn_int32 type, vrpn_int32 sender,
+					 struct timeval time, vrpn_uint32 len,
+					 const char * buffer){};
 
 public:  // public type_id and sender_id stuff
 
@@ -151,12 +151,12 @@ protected: // protected type_id and sender_id stuff
 
     // Holds one entry for a mapping of remote strings to local IDs
     struct cRemoteMapping {
-		// remote/local sender/type equivalence
-		// is based on name string comparison
-		char * name;
-	
-		// each side assigns an id to each name
-		// the id's may differ on the two ends of a connection
+        // remote/local sender/type equivalence
+        // is based on name string comparison
+        char * name;
+        
+        // each side assigns an id to each name
+        // the id's may differ on the two ends of a connection
         vrpn_int32 local_id;
     };
     
@@ -192,6 +192,8 @@ public: // logging stuff
     // we will support three different kinds of logging
     // the interface to logging needs to be enriched
     // in order to facilitate this
+    //
+    // what kinds of logging go here, and with what interface?
 
 
 public: // todo items

@@ -1,4 +1,4 @@
-#include "vrpn_ConnectionController.h"
+#include "vrpn_BaseConnectionController.h"
 
 
 

@@ -23,13 +23,13 @@ public:  // c'tors and d'tors
 
     // destructor ...XXX...
     virtual ~vrpn_ServerConnectionController();
-	
+        
 protected:  // c'tors and init
-	
+        
     // constructors ...XXX...
     vrpn_ServerConnectionController();
 
-	virtual void init(void);
+    virtual void init(void);
 
 public: // sending and receving mesages
 
@@ -49,33 +49,33 @@ private: // the connections
 
 protected: // initializaton and connection setup
 
-	// listen for and process incoming connections on well known port
-	// might have equivalent in Connection
-	void listen_for_incoming_connections(const struct timeval * pTimeout);
-
-	// get mcast group info from mcast sender
-	char* get_mcast_info();
-
+    // listen for and process incoming connections on well known port
+    // might have equivalent in Connection
+    void listen_for_incoming_connections(const struct timeval * pTimeout);
+    
+    // get mcast group info from mcast sender
+    char* get_mcast_info();
+    
     // helper function
     // XXX if this doesn't go away, give a more descriptive comment
-    virtual vrpn_int32 connect_to_client( const char *machine, vrpn_int16 port );
-    	
+    virtual vrpn_int32 connect_to_client( const char *machine,
+                                          vrpn_int16 port );
+        
 private: // data members
 
-	char* d_mcast_info;			// stores mcast group info
-	vrpn_int32	status;			// Status of the connection
-
-	/*
-	// perhaps we should move to enums
-	enum ControllerStatus = { NOTCONNECTED, CONNECTED, ERROR };
-	ControllerStatus status;
-	*/
-
-	vrpn_int32	num_live_connections;
-
-	// Only used for a vrpn_Connection that awaits incoming connections
-	vrpn_int32	listen_udp_sock;	// Connect requests come here
-
+    char* d_mcast_info;                 // stores mcast group info
+    vrpn_int32  status;                 // Status of the connection
+    
+    /*
+    // perhaps we should move to enums
+    enum ControllerStatus = { NOTCONNECTED, CONNECTED, ERROR };
+    ControllerStatus status;
+    */
+    
+    vrpn_int32  num_live_connections;
+    
+    // Only used for a vrpn_Connection that awaits incoming connections
+    vrpn_int32  listen_udp_sock;        // Connect requests come here
 };
 
 #endif
