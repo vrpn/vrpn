@@ -1,3 +1,11 @@
+2002-11-25    <marshbur@cs.unc.edu>
+
+	* vrpn_TempImager.C:  makes the function java_vrpn_handle_region_change
+	a friend of class vrpn_TempImager_Region (so it can copy directly from
+	the value array).  Also, moves the declarations of vrpn_IMAGERREGIONCB,
+	vrpn_IMAGERREGIONHANDLER and vrpn_IMAGERDESCRIPTIONHANDLER forward
+	in the file.
+
 2002-11-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Analog.C : Inlined the channels() function.

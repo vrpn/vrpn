@@ -121,6 +121,18 @@ const vrpn_uint16 vrpn_IMAGER_VALTYPE_UINT8	= 1;
 const vrpn_uint16 vrpn_IMAGER_VALTYPE_UINT16	= 2;
 const vrpn_uint16 vrpn_IMAGER_VALTYPE_FLOAT32	= 3;
 
+class vrpn_TempImager_Region;
+
+typedef struct {
+  struct timeval		msg_time; //< Timestamp of the region data's change
+  const vrpn_TempImager_Region	*region;  //< New region of the image
+} vrpn_IMAGERREGIONCB;
+
+typedef void (*vrpn_IMAGERREGIONHANDLER) (void * userdata,
+					  const vrpn_IMAGERREGIONCB info);
+typedef void (*vrpn_IMAGERDESCRIPTIONHANDLER) (void * userdata,
+					       const struct timeval msg_time);
+
 /// Helper function to convert data for a sub-region of one channel of
 // the image.  This is passed to the user callback handler and aids in
 // getting values out of the buffer.  The region is only valid during
@@ -128,6 +140,7 @@ const vrpn_uint16 vrpn_IMAGER_VALTYPE_FLOAT32	= 3;
 // it for later use.
 class vrpn_TempImager_Region {
   friend class vrpn_TempImager_Remote;
+  friend void java_vrpn_handle_region_change( void * userdata, const vrpn_IMAGERREGIONCB info );
 
 public:
   vrpn_TempImager_Region(void) { _chanIndex = -1; _rMin = _rMax = _cMin = _cMax = 0; 
@@ -200,15 +213,6 @@ protected:
   bool	      _valid;		//< Tells whether the helper can be used.
 };
 
-typedef struct {
-  struct timeval		msg_time; //< Timestamp of the region data's change
-  const vrpn_TempImager_Region	*region;  //< New region of the image
-} vrpn_IMAGERREGIONCB;
-
-typedef void (*vrpn_IMAGERREGIONHANDLER) (void * userdata,
-					  const vrpn_IMAGERREGIONCB info);
-typedef void (*vrpn_IMAGERDESCRIPTIONHANDLER) (void * userdata,
-					       const struct timeval msg_time);
 
 /// This is the class users deal with: it tells the format and the region data when it arrives.
 class vrpn_TempImager_Remote: public vrpn_TempImager {
