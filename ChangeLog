@@ -1,3 +1,9 @@
+2000-08-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Wanda.h : New file
+	* vrpn_Wanda.C : New file
+	* Makefile : Add Wanda to server library
+
 2000-08-27  Jeffrey Juliano  <juliano@cs.unc.edu>
 
 	* .cvsignore: Add sgi_irix.n32.mips3 to ignore list.

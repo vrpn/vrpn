@@ -316,5 +316,13 @@ SOURCE=.\vrpn_Tracker_Fastrak.h
 
 SOURCE=.\vrpn_Types.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Wanda.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Wanda.h
+# End Source File
 # End Target
 # End Project

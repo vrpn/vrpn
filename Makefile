@@ -341,7 +341,7 @@ SLIB_FILES =  $(LIB_FILES) vrpn_3Space.C \
 	     vrpn_Flock_Parallel.C  vrpn_Joystick.C \
 	     vrpn_JoyFly.C vrpn_sgibox.C vrpn_CerealBox.C \
              vrpn_Tracker_AnalogFly.C vrpn_raw_sgibox.C vrpn_Magellan.C \
-             vrpn_Analog_Radamec_SPI.C vrpn_ImmersionBox.C
+             vrpn_Analog_Radamec_SPI.C vrpn_ImmersionBox.C vrpn_Wanda.C
 
 SLIB_OBJECTS = $(patsubst %,$(SOBJECT_DIR)/%,$(SLIB_FILES:.C=.o))
 
