@@ -1,3 +1,9 @@
+2000-10-11  Tom Hudson  <hudson@cs.unc.edu>
+
+	* printvals.c : add vrpn_RedundantRemote, global parameters
+        (init) : create vrpn_RedundantRemote
+        (main) : add parameters -quiet, -red
+
 2000-09-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Makefile : Added vrpn_ping compilation

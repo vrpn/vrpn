@@ -12,12 +12,20 @@
 #include <strings.h>
 #endif
 
+#include <vrpn_RedundantTransmission.h>
+
 vrpn_Button_Remote *btn,*btn2;
 vrpn_Tracker_Remote *tkr;
 vrpn_Connection * c;
 vrpn_File_Controller * fc;
 
+vrpn_RedundantRemote * rc;
+
 int   print_for_tracker = 1;	// Print tracker reports?
+int beQuiet = 0;
+int beRedundant = 0;
+int redNum = 0;
+double redTime = 0.0;
 
 /*****************************************************************************
  *
@@ -113,6 +121,8 @@ fprintf(stderr, "Connecting to host %s.\n", station_name);
 	}
 
 	fc = new vrpn_File_Controller (c);
+
+        rc = new vrpn_RedundantRemote (c);
 
 fprintf(stderr, "Tracker's name is %s.\n", devicename);
 	tkr = new vrpn_Tracker_Remote (devicename);
@@ -231,13 +241,17 @@ void main (int argc, char * argv [])
 
   if (argc < 2) {
     fprintf(stderr, "Usage:  %s [-ll logfile mode] [-rl logfile mode]\n"
-                    "           [-NIC ip] [-filterpos] station_name\n"
+                    "           [-NIC ip] [-filterpos] [-quiet]\n"
+                    "           [-red num time] [-station_name\n"
                     "  -notracker:  Don't print tracker reports\n" 
                     "  -ll:  log locally in <logfile>\n" 
                     "  -rl:  log remotely in <logfile>\n" 
                     "  <mode> is one of i, o, io\n" 
                     "  -NIC:  use network interface with address <ip>\n"
                     "  -filterpos:  log only Tracker Position messages\n"
+                    "  -quiet:  ignore VRPN warnings\n"
+                    "  -red <num> <time>:  send every message <num>\n"
+                    "    times <time> seconds apart\n"
                     "  station_name:  VRPN name of data source to contact\n"
                     "    one of:  <hostname>[:<portnum>]\n"
                     "             file:<filename>\n",
@@ -267,6 +281,14 @@ void main (int argc, char * argv [])
     } else if (!strcmp(argv[i], "-NIC")) {
       i++;
       NIC = argv[i];
+    } else if (!strcmp(argv[i], "-quiet")) {
+      beQuiet = 1;
+    } else if (!strcmp(argv[i], "-red")) {
+      beRedundant = 1;
+      i++;
+      redNum = atoi(argv[i]);
+      i++;
+      redTime = atof(argv[i]);
     } else
       station_name = argv[i];
   }
@@ -284,16 +306,31 @@ void main (int argc, char * argv [])
   if (filter && c)
     c->register_log_filter(filter_pos, c);
 
+  if (beQuiet) {
+    vrpn_System_TextPrinter.remove_object(btn);
+    vrpn_System_TextPrinter.remove_object(btn2);
+    vrpn_System_TextPrinter.remove_object(tkr);
+    vrpn_System_TextPrinter.remove_object(rc);
+  }
+
+  if (beRedundant) {
+    rc->set(redNum, vrpn_MsecsTimeval(redTime));
+  }
+
 /* 
  * main interactive loop
  */
   while ( ! done )
     {
+        // Run this so control happens!
+        c->mainloop();
+
         // Let the tracker and button do their things
 	btn->mainloop();
 	btn2->mainloop();
 	tkr->mainloop();
 
+        rc->mainloop();
 	// Sleep for 1ms so we don't eat the CPU
 	vrpn_SleepMsecs(1);
     }
