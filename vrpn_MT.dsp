@@ -242,6 +242,14 @@ SOURCE=.\vrpn_Shared.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_SharedObject.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_SharedObject.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_Sound.C
 # End Source File
 # Begin Source File
