@@ -2,6 +2,8 @@
 //	This file contains the code to operate a Polhemus Liberty Tracker.
 // This file is based on the vrpn_Tracker_Fastrak.C file.
 
+// Modified to work with the Polhemus Patriot as well.
+
 #include <time.h>
 #include <math.h>
 #include <stdlib.h>
@@ -466,7 +468,7 @@ int vrpn_Tracker_Liberty::get_report(void)
    // Each report starts with the ASCII 'LY' characters. If we're synching,
    // read a byte at a time until we find a 'LY' characters.
    //--------------------------------------------------------------------
-
+   // For the Patriot this is 'PA'.
 
    if (status == vrpn_TRACKER_SYNCING) {
 
@@ -475,7 +477,7 @@ int vrpn_Tracker_Liberty::get_report(void)
      if (singleSyncChar != 1) {
        ret = vrpn_read_available_characters(serial_fd, buffer, 1);
        if (ret != 1) {
-	 if (DEBUG) fprintf(stderr,"[DEBUG]: Missed First Sync Char, ret= %i\n",ret);
+	 //if (DEBUG) fprintf(stderr,"[DEBUG]: Missed First Sync Char, ret= %i\n",ret);
 	 return 0;
        }
      }
@@ -498,16 +500,21 @@ int vrpn_Tracker_Liberty::get_report(void)
       // need to look at the next one, so just return and stay
       // in Syncing mode so that we will try again next time through.
       // Also, flush the buffer so that it won't take as long to catch up.
-      if ((( buffer[0] == 'L') && (buffer[1] == 'Y')) != 1) {
-      	sprintf(errmsg,"While syncing (looking for 'LY', "
+      if (
+      ((( buffer[0] == 'L') && (buffer[1] == 'Y')) != 1) 
+      && 
+      ((( buffer[0] == 'P') && (buffer[1] == 'A')) != 1)
+      ) 
+      {
+      	sprintf(errmsg,"While syncing (looking for 'LY' or 'PA', "
 		"got '%c')", buffer[0]);
 	FT_INFO(errmsg);
 	vrpn_flush_input_buffer(serial_fd);
-	if (DEBUG) fprintf(stderr,"[DEBUGA]: Getting Report - Not LY, Got Character %c %c \n",buffer[0],buffer[1]);
+	if (DEBUG) fprintf(stderr,"[DEBUGA]: Getting Report - Not LY or PA, Got Character %c %c \n",buffer[0],buffer[1]);
       	return 0;
       }
 
-        if (DEBUG) fprintf(stderr,"[DEBUG]: Getting Report - Got LY\n");
+        if (DEBUG) fprintf(stderr,"[DEBUG]: Getting Report - Got LY or PA\n");
 
       // Got the first character of a report -- go into AWAITING_STATION mode
       // and record that we got one character at this time. The next
@@ -590,10 +597,14 @@ int vrpn_Tracker_Liberty::get_report(void)
    //--------------------------------------------------------------------
    //	fprintf(stderr,"[DEBUG]: Got full report\n");
 
-   if ((buffer[0] != 'L') || (buffer[1] != 'Y')){
-     if (DEBUGA)	fprintf(stderr,"[DEBUG]: Don't have LY at beginning");
+   if (
+   ((buffer[0] != 'L') || (buffer[1] != 'Y'))
+   && 
+   ((buffer[0] != 'P') || (buffer[1] != 'A'))
+   ) {
+     if (DEBUGA)	fprintf(stderr,"[DEBUG]: Don't have LY or PA at beginning");
 	   status = vrpn_TRACKER_SYNCING;
-	   FT_INFO("Not 'LY' in record, re-syncing");
+	   FT_INFO("Not 'LY' or 'PA' in record, re-syncing");
 	   vrpn_flush_input_buffer(serial_fd);
 	   return 0;
    }

@@ -1,3 +1,6 @@
+/* Modification to make it work with the SeerReal D4D Headtracker,
+   needs to send "0" instead of "V" to set it to continuous mode.
+   Untested if this still works with the Dynasight Tracker.*/
 #ifdef	_WIN32
 #include <io.h>
 #else
@@ -30,7 +33,7 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 vrpn_Tracker_Dyna::vrpn_Tracker_Dyna(
 		      char *name, vrpn_Connection *c, int cSensors,
 		      char *port, long baud ) :
-vrpn_Tracker_Serial(name,c,port,baud), cSensors(cSensors), cResets(0) 
+vrpn_Tracker_Serial(name,c,port,baud), cSensors(cSensors), cResets(0)
 {
     if (cSensors>MAX_SENSORS) {
       fprintf(stderr, "\nvrpn_Tracker_Dyna: too many sensors requested ... only %d allowed (%d specified)", MAX_SENSORS, cSensors );
@@ -135,7 +138,8 @@ void vrpn_Tracker_Dyna::reset() {
 
    /* set the Dynasight to continuous mode    */
    vrpn_write_characters(serial_fd, (unsigned char*)T_PDYN_C_CTL_C, strlen(T_PDYN_C_CTL_C));
-   vrpn_write_characters(serial_fd, (const unsigned char *)"V", 1); 
+   //vrpn_write_characters(serial_fd, (const unsigned char *)"V", 1);
+   vrpn_write_characters(serial_fd, (const unsigned char *)"0", 1);
    //T_PDYN_C_CONTINUOUS = "V"
    sleep(1);
    //vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now;
@@ -172,10 +176,12 @@ int vrpn_Tracker_Dyna::get_report(void) {
   }
   
   if (!valid_report()) {
+    //fprintf(stderr,"no valid report");
     bufcount = 0;
     status = vrpn_TRACKER_SYNCING;
     return 0;
   }
+  //else fprintf(stderr,"got valid report");
   decode_record();
   status = vrpn_TRACKER_SYNCING;
   bufcount=0;
@@ -198,7 +204,7 @@ int vrpn_Tracker_Dyna::valid_report() {
       if ( ( (buffer[i] & llll_OOOO) == lOOO_OOOO) &&
 	   ( (buffer[i+1] & llll_OOOO) == lOOO_OOOO))
       {
-	fprintf(stderr, 
+	fprintf(stderr,
 		"vrpn_Tracker_Dyna: found two more status bytes in the Dynasight's output list\n");
 	return (0);
      }
@@ -280,7 +286,8 @@ int vrpn_Tracker_Dyna::decode_record()
    x = (long)( ((short)x_high<<8) | ((short)x_low) ) << exp;
    y = (long)( ((short)y_high<<8) | ((short)y_low) ) << exp;
    z = (long)( ((short)z_high<<8) | ((short)z_low) ) << exp;
-   
+   //fprintf(stderr,"x,y,z: %i,%i,%i\n",x,y,z);
+
    /* Convert to meters -- 1 unit = 0.05mm = 0.00005m */
    pos[0] = (double)x * 0.00005;
    pos[1] = (double)y * 0.00005;

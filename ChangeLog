@@ -1,5 +1,15 @@
 2004-11-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Dyna.C : Added changes from Uni-Hamburg to also work with
+		the SeeReal D4D stereo Display, which is an older version.
+		This still works with the newer DynaSight at UNC.
+	* vrpn_Tracker_Liberty.C : Also works with the Patriot, which
+		sends a slightly different record format.  This version
+		comes from Uni-Hamburg.  Roland Schroeder-Kroll sent
+		these fixes in from Steffi Beckhaus' group there.
+
+2004-11-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* Happy Birthday to me!
 	* Makefile : Added John Stone's additions to make it compile on
 		64-bit Solaris
