@@ -1,3 +1,7 @@
+2002-11-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.h : Made Connection constructor public.
+
 2002-11-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Makefile : Changes to work with Cygwin on Windows 2000.

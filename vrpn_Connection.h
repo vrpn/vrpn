@@ -393,10 +393,18 @@ class vrpn_Connection {
 
   public:
 
-    // No public constructors because ...
     // Users should not create vrpn_Connection directly -- use 
     // vrpn_Synchronized_Connection (for servers) or 
     // vrpn_get_connection_by_name (for clients)
+
+	// Create a connection to listen for incoming connections on a port
+	vrpn_Connection (unsigned short listen_port_no =
+		         vrpn_DEFAULT_LISTEN_PORT_NO,
+                         const char * local_in_logfile_name = NULL,
+                         const char * local_out_logfile_name = NULL,
+                         const char * NIC_IPaddress = NULL,
+                         vrpn_Endpoint * (* epa) (vrpn_Connection *,
+                           vrpn_int32 *) = allocateEndpoint);
 
 	virtual ~vrpn_Connection (void);
 
@@ -495,15 +503,6 @@ class vrpn_Connection {
       ///< It should do NOTHING but return an endpoint
       ///< of the appropriate class;  it may not access subclass data,
       ///< since it'll be called from a constructor
-
-	// Create a connection to listen for incoming connections on a port
-	vrpn_Connection (unsigned short listen_port_no =
-		         vrpn_DEFAULT_LISTEN_PORT_NO,
-                         const char * local_in_logfile_name = NULL,
-                         const char * local_out_logfile_name = NULL,
-                         const char * NIC_IPaddress = NULL,
-                         vrpn_Endpoint * (* epa) (vrpn_Connection *,
-                           vrpn_int32 *) = allocateEndpoint);
 
 	//   Create a connection -  if server_name is not a file: name,
 	// makes an SDI-like connection to the named remote server
