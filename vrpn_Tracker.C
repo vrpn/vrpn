@@ -647,7 +647,7 @@ void	vrpn_Tracker_Server::mainloop()
 }
 
 int	vrpn_Tracker_Server::report_pose(int sensor, struct timeval t,
-									 vrpn_float64 position[3], vrpn_float64 quaternion[4])
+	vrpn_float64 position[3], vrpn_float64 quaternion[4], vrpn_uint32 class_of_service)
 {
 	char	msgbuf[1000];
 	vrpn_int32	len;
@@ -672,7 +672,7 @@ int	vrpn_Tracker_Server::report_pose(int sensor, struct timeval t,
 		len = encode_to(msgbuf);
 		if (d_connection->pack_message(len, timestamp,
 			position_m_id, d_sender_id, msgbuf,
-			vrpn_CONNECTION_LOW_LATENCY)) {
+			class_of_service)) {
 		 fprintf(stderr,"vrpn_Tracker_Server: can't write message: tossing\n");
 		 return -1;
 		}
@@ -681,8 +681,8 @@ int	vrpn_Tracker_Server::report_pose(int sensor, struct timeval t,
 }
 
 int	vrpn_Tracker_Server::report_pose_velocity(int sensor, struct timeval t,
-									 vrpn_float64 position[3], vrpn_float64 quaternion[4],
-									 vrpn_float64 interval)
+	vrpn_float64 position[3], vrpn_float64 quaternion[4],
+	vrpn_float64 interval, vrpn_uint32 class_of_service)
 {
 	char	msgbuf[1000];
 	vrpn_int32	len;
@@ -708,7 +708,7 @@ int	vrpn_Tracker_Server::report_pose_velocity(int sensor, struct timeval t,
 		len = encode_vel_to(msgbuf);
 		if (d_connection->pack_message(len, timestamp,
 			velocity_m_id, d_sender_id, msgbuf,
-			vrpn_CONNECTION_LOW_LATENCY)) {
+			class_of_service)) {
 		 fprintf(stderr,"vrpn_Tracker_Server: can't write message: tossing\n");
 		 return -1;
 		}
@@ -718,8 +718,8 @@ int	vrpn_Tracker_Server::report_pose_velocity(int sensor, struct timeval t,
 }
 
 int	vrpn_Tracker_Server::report_pose_acceleration(int sensor, struct timeval t,
-									 vrpn_float64 position[3], vrpn_float64 quaternion[4],
-									 vrpn_float64 interval)
+	vrpn_float64 position[3], vrpn_float64 quaternion[4],
+	vrpn_float64 interval, vrpn_uint32 class_of_service)
 {
 	char	msgbuf[1000];
 	vrpn_int32	len;
@@ -745,7 +745,7 @@ int	vrpn_Tracker_Server::report_pose_acceleration(int sensor, struct timeval t,
 		len = encode_acc_to(msgbuf);
 		if (d_connection->pack_message(len, timestamp,
 			accel_m_id, d_sender_id, msgbuf,
-			vrpn_CONNECTION_LOW_LATENCY)) {
+			class_of_service)) {
 		 fprintf(stderr,"vrpn_Tracker_Server: can't write message: tossing\n");
 		 return -1;
 		}

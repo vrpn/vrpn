@@ -192,9 +192,20 @@ class vrpn_Tracker_Server: public vrpn_Tracker {
    virtual void mainloop();
 
    /// These functions should be called to report changes in state, once per sensor.
-   virtual int report_pose(int sensor, struct timeval t, vrpn_float64 position[3], vrpn_float64 quaternion[4]);
-   virtual int report_pose_velocity(int sensor, struct timeval t, vrpn_float64 position[3], vrpn_float64 quaternion[4], vrpn_float64 interval);
-   virtual int report_pose_acceleration(int sensor, struct timeval t, vrpn_float64 position[3], vrpn_float64 quaternion[4], vrpn_float64 interval);
+   virtual int report_pose(int sensor, struct timeval t,
+			   vrpn_float64 position[3],
+			   vrpn_float64 quaternion[4],
+			   vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
+   virtual int report_pose_velocity(int sensor, struct timeval t,
+			   vrpn_float64 position[3],
+			   vrpn_float64 quaternion[4],
+			   vrpn_float64 interval,
+			   vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
+   virtual int report_pose_acceleration(int sensor, struct timeval t,
+			   vrpn_float64 position[3],
+			   vrpn_float64 quaternion[4],
+			   vrpn_float64 interval,
+			   vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
 
   protected:
    vrpn_int32	num_sensors;

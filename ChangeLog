@@ -1,3 +1,9 @@
+2003-11-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker.h : Modified so that you can set the class of
+		service in the vrpn_Tracker_Server.
+	* vrpn_Tracker.C : Same.
+
 2003-11-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Configure.h : I messed up the commented-out config for UNC
