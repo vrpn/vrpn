@@ -22,12 +22,12 @@ namespace NIUtil
       int deviceNumber
    ); ///< Get name of some device
 
-   int getDeviceCode
+   unsigned long getDeviceCode
    (
-      int deviceNumber
+      short deviceNumber
    ); ///< Get device code of some device
 
-   int findDevice
+   short findDevice
    (
       const char *name
    );

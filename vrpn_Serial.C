@@ -111,7 +111,7 @@ int vrpn_open_commport(const char *portname, long baud, int charsize, vrpn_SER_P
     return -1;
   }
  
-  if (!(fSuccess = GetCommState(hCom, &dcb)))
+  if ((fSuccess = GetCommState(hCom, &dcb)) == 0)
   {
 	perror("vrpn_open_commport: cannot get serial port configuration settings");
 	CloseHandle(hCom);
@@ -176,7 +176,7 @@ int vrpn_open_commport(const char *portname, long baud, int charsize, vrpn_SER_P
      return -1;
   }
 
-  if (!(fSuccess = SetCommState(hCom, &dcb)))
+  if ((fSuccess = SetCommState(hCom, &dcb)) == 0)
   {
 	perror("vrpn_open_commport: cannot set serial port configuration settings");
 	CloseHandle(hCom);
@@ -189,7 +189,7 @@ int vrpn_open_commport(const char *portname, long baud, int charsize, vrpn_SER_P
   cto.WriteTotalTimeoutConstant = 0;
   cto.WriteTotalTimeoutMultiplier = 0;
 
-  if (!(fSuccess = SetCommTimeouts(hCom, &cto)))
+  if ((fSuccess = SetCommTimeouts(hCom, &cto)) == 0)
   {
 	perror("vrpn_open_commport: cannot set serial port timeouts");
 	CloseHandle(hCom);
@@ -493,7 +493,7 @@ int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes)
    Overlapped.OffsetHigh = 0;
    Overlapped.hEvent = NULL;
 
-   if (!(fSuccess = ClearCommError(commConnections[comm], &errors, &cstat)))
+   if ((fSuccess = ClearCommError(commConnections[comm], &errors, &cstat)) == 0)
    {
 	   perror("vrpn_read_available_characters: can't get current status");
 	   return(-1);
@@ -501,7 +501,7 @@ int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes)
 
    if (cstat.cbInQue > 0)
    {
-	   if(!(fSuccess = ReadFile(commConnections[comm], buffer, bytes, &numRead, &Overlapped)))
+	   if((fSuccess = ReadFile(commConnections[comm], buffer, bytes, &numRead, &Overlapped)) == 0)
 	   {
 		   perror("vrpn_read_available_characters: can't read from serial port");
 		   return(-1);
@@ -558,8 +558,15 @@ int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes,
 
 	// Find out what time it is at the start, and when we should end
 	// (unless the timeout is NULL)
-	if (timeout != NULL) {
+	if (timeout == NULL) {
+		// Set up so that it will never be that now > finish
+		// This prevents the while() loop below from stopping looping
+		vrpn_gettimeofday(&now, NULL);
+		memcpy(&finish, &now, sizeof(finish));
+		vrpn_gettimeofday(&finish, NULL);
+	} else {
 		vrpn_gettimeofday(&start, NULL);
+		memcpy(&now, &start, sizeof(now));
 		time_add(start, *timeout, finish);
 	}
 	
@@ -572,8 +579,10 @@ int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes,
 		sofar += ret;
 		if (sofar == bytes) { break; }
 		where += ret;
-		vrpn_gettimeofday(&now, NULL);
-	} while ( (timeout == NULL) || !(time_greater(now,finish)) );
+		if (timeout != NULL) {	// Update the time if we are checking timeout
+		  vrpn_gettimeofday(&now, NULL);
+		}
+	} while ( !(time_greater(now,finish)) );
 
 	return sofar;
 }
@@ -591,7 +600,7 @@ int vrpn_write_characters(int comm, const unsigned char *buffer, int bytes)
    Overlapped.OffsetHigh = 0;
    Overlapped.hEvent = NULL;
 
-    if(!(fSuccess = WriteFile(commConnections[comm], buffer, bytes, &numWritten, &Overlapped)))
+    if((fSuccess = WriteFile(commConnections[comm], buffer, bytes, &numWritten, &Overlapped)) == 0)
     {
 	   perror("vrpn_write_characters: can't write to serial port");
 	   return(-1);

@@ -41,22 +41,6 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 	       1000000L * (t1.tv_sec - t2.tv_sec);
 }
 
-// This routine writes out the characters slowly, so as not to
-// overburden the poor Magellan, which seems to choke when a
-// bunch of characters are all sent at once.
-static	int	vrpn_write_slowly(int fd, unsigned char *buffer, int len)
-{	int	i;
-
-	for (i = 0; i < len; i++) {
-		vrpn_SleepMsecs(1);
-		if (vrpn_write_characters(fd, &buffer[i], 1) != 1) {
-			return -1;
-		}
-	}
-	return len;
-}
-
-
 // This creates a vrpn_Radamec_SPI and sets it to reset mode. It opens
 // the serial device using the code in the vrpn_Serial_Analog constructor.
 
@@ -102,11 +86,11 @@ unsigned char vrpn_Radamec_SPI::compute_crc(const unsigned char *head, int len)
     // Sum up the bytes, allowing them to overflow the unsigned char
     sum = 0;
     for (i = 0; i < len; i++) {
-	sum += head[i];
+	sum = (unsigned char)( sum + head[i] );
     }
 
     // Unsigned subtraction from 40H, again allowing the subtraction to overflow
-    return 0x40 - sum;
+    return (unsigned char)(0x40 - sum);
 }
 
 /** Compute the CRC for the command that is being sent, append that to the

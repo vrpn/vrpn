@@ -75,33 +75,6 @@ class VRPN_API vrpn_ImmersionBox: public vrpn_Serial_Analog,
     char parmf  [MAX_IBOX_STRING];
     
     
-// low-level stuff
-#define CMD_BASIC      0xC0   // mask for command
-#define CMD_HOMEREF    0xC1
-#define CMD_HOMEPOS    0xC2
-#define CMD_SETHOME    0xC3
-#define CMD_BAUDSET    0xC4
-#define CMD_ENDSESS    0xC5
-#define CMD_GETMAXS    0xC6
-#define CMD_SETPARM    0xC7
-#define CMD_GETNAME    0xC8
-#define CMD_GETPRID    0xC9
-#define CMD_GETMODL    0xCA
-#define CMD_GETSERN    0xCB
-#define CMD_GETCOMM    0xCC
-#define CMD_GETPERF    0xCD
-#define CMD_GETVERS    0xCE
-#define CMD_GETMOTN    0xCF
-#define CMD_SETHREF    0xD0
-#define CMD_FACREST    0xD1
-#define CMD_INSMARK    0xD2
-
-#define PAUSE_RESET     .015
-#define PAUSE_END       .015
-#define PAUSE_RESTORE   2.0
-#define PAUSE_BYTE      .015
-
-
 // stores the byte sent to the ibox 
     unsigned char commandByte;
     unsigned char dataPacketHeader;
@@ -113,12 +86,12 @@ class VRPN_API vrpn_ImmersionBox: public vrpn_Serial_Analog,
     inline void setupCommand (int useTimeStamp, 
 			      unsigned int numAnalog, 
 			      unsigned int numEncoder) {
-	commandByte = 
+	commandByte = (unsigned char) (
 	    (useTimeStamp ? 0x20 : 0) |
 	    (numAnalog  > 4 ? 0x0C : (numAnalog  > 2 ? 0x08 : (numAnalog  ? 0x04 : 0 ) ) ) |
-	    (numEncoder > 3 ? 0x03 : (numEncoder > 2 ? 0x02 : (numEncoder ? 0x01 : 0 ) ) );
+	    (numEncoder > 3 ? 0x03 : (numEncoder > 2 ? 0x02 : (numEncoder ? 0x01 : 0 ) ) ) );
 	
-	dataPacketHeader = commandByte | 0x80;
+	dataPacketHeader = (unsigned char)(commandByte | 0x80);
 
 	// packet header
 	// button status  

@@ -186,23 +186,23 @@ public:
 	vrpn_FunctionGenerator_FunctionTypes getFunctionType( ) const
 	{  return CUSTOM_FUNCTION;  }
 
-	vrpn_float32 generateValues( vrpn_float32* buf, vrpn_uint32 nValues,
-								vrpn_float32 startTime, vrpn_float32 sampleRate, 
-								vrpn_FunctionGenerator_channel* channel ) const;
+	vrpn_float32 generateValues(vrpn_float32* buf, vrpn_uint32 nValues,
+				    vrpn_float32 startTime, vrpn_float32 sampleRate, 
+				    vrpn_FunctionGenerator_channel* channel ) const;
 	vrpn_float32 getCycleTime( ) const;
 	vrpn_int32 encode_to( char** buf, vrpn_int32& len ) const;
 	vrpn_int32 decode_from( const char** buf, vrpn_int32& len );
 
-	vrpn_uint32 getLength( ) {  return length;  }
-	const vrpn_float32* getTimes( ) {  return times;  }
-	const vrpn_float32* getValues( ) {  return values;  }
+	vrpn_uint32 getLength( ) {  return d_length;  }
+	const vrpn_float32* getTimes( ) {  return d_times;  }
+	const vrpn_float32* getValues( ) {  return d_values;  }
 
 	// the function will make its own copy of the times and values
-	void set( vrpn_uint32 length, vrpn_float32* times, vrpn_float32* values );
+	bool set( vrpn_uint32 length, vrpn_float32* times, vrpn_float32* values );
 protected:
-	vrpn_float32* times;  // assumed to always increase
-	vrpn_float32* values;
-	vrpn_uint32 length;
+	vrpn_float32* d_times;  // assumed to always increase
+	vrpn_float32* d_values;
+	vrpn_uint32 d_length;
 
 };
 
@@ -521,11 +521,11 @@ protected:
 	vrpn_int32 decode_sample_rate_reply( const char* buf, const vrpn_int32 len );
 	vrpn_int32 decode_reference_channel_reply( const char* buf, const vrpn_int32 len );
 
-	vrpn_uint32 encode_channel( char** buf, vrpn_int32& len, const vrpn_uint32 channelNum, 
+	vrpn_int32 encode_channel( char** buf, vrpn_int32& len, const vrpn_uint32 channelNum, 
 								 const vrpn_FunctionGenerator_channel* channel );
-	vrpn_uint32 encode_requestChannel( char** buf, vrpn_int32& len, const vrpn_uint32 channelNum );
-	vrpn_uint32 encode_sampleRate( char** buf, vrpn_int32& len, const vrpn_float32 sampleRate );
-	vrpn_uint32 encode_referenceChannel( char** buf, vrpn_int32& len, const vrpn_uint32 referenceChannel );
+	vrpn_int32 encode_requestChannel( char** buf, vrpn_int32& len, const vrpn_uint32 channelNum );
+	vrpn_int32 encode_sampleRate( char** buf, vrpn_int32& len, const vrpn_float32 sampleRate );
+	vrpn_int32 encode_referenceChannel( char** buf, vrpn_int32& len, const vrpn_uint32 referenceChannel );
 
 }; // end class vrpn_FunctionGenerator_Remote
 

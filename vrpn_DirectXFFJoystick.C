@@ -669,7 +669,7 @@ int vrpn_DirectXFFJoystick::handle_plane_change_message(void *selfPtr,
 
 
 // Zero the force sent to the device when the last connection is dropped.
-int	vrpn_DirectXFFJoystick::handle_last_connection_dropped(void *selfPtr, vrpn_HANDLERPARAM p)
+int	vrpn_DirectXFFJoystick::handle_last_connection_dropped(void *selfPtr, vrpn_HANDLERPARAM)
 {
   vrpn_DirectXFFJoystick  *me = (vrpn_DirectXFFJoystick*)selfPtr;
   if (me->_force_rate > 0) {

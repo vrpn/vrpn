@@ -10,7 +10,7 @@
 vrpn_float32 vrpn_FunctionGenerator_function_NULL::
 generateValues( vrpn_float32* buf, vrpn_uint32 nValues,
 				 vrpn_float32 startTime, vrpn_float32 sampleRate, 
-				 vrpn_FunctionGenerator_channel* channel ) const
+				 vrpn_FunctionGenerator_channel* ) const
 {
 	for( vrpn_uint32 i = 0; i <= nValues - 1; i++ )
 	{
@@ -27,14 +27,14 @@ getCycleTime( ) const
 
 
 vrpn_int32 vrpn_FunctionGenerator_function_NULL::
-encode_to( char** buf, vrpn_int32& len ) const
+encode_to( char** , vrpn_int32& ) const
 {
 	return 0;
 }
 
 
 vrpn_int32 vrpn_FunctionGenerator_function_NULL::
-decode_from( const char** buf, vrpn_int32& len )
+decode_from( const char** , vrpn_int32& )
 {
 	return 0;
 }
@@ -314,19 +314,22 @@ vrpn_FunctionGenerator_function_custom( vrpn_uint32 length, vrpn_float32* times,
 	if( length == 0 || times == NULL || values == NULL )
 	{
 		length = 1;
-		this->times = new vrpn_float32[1];
-		times[0] = 0;
-		this->values = new vrpn_float32[1];
-		values[0] = 0;
+		d_times = new vrpn_float32[1];
+		d_times[0] = 0;
+		d_values = new vrpn_float32[1];
+		d_values[0] = 0;
 		return;
 	}
-	this->length = length;
-	this->times = new vrpn_float32[length];
-	this->values = new vrpn_float32[length];
-	for( vrpn_uint32 i = 0; i <= length - 1; i++ )
-	{
-		this->times[i] = times[i];
-		this->values[i] = values[i];
+	d_length = length;
+	d_times = new vrpn_float32[length];
+	d_values = new vrpn_float32[length];
+	if ( (d_times == NULL) || (d_values == NULL) ) {
+	  fprintf(stderr,"vrpn_FunctionGenerator_function_custom::vrpn_FunctionGenerator_function_custom(): Out of memory\n");
+	  return;
+	}
+	for( vrpn_uint32 i = 0; i < d_length; i++ ){
+	  d_times[i] = times[i];
+	  d_values[i] = values[i];
 	}
 }
 
@@ -334,24 +337,34 @@ vrpn_FunctionGenerator_function_custom( vrpn_uint32 length, vrpn_float32* times,
 vrpn_FunctionGenerator_function_custom::
 ~vrpn_FunctionGenerator_function_custom( )
 {
-	delete[] times;
-	delete[] values;
+	delete[] d_times;
+	delete[] d_values;
 }
 
 
-void vrpn_FunctionGenerator_function_custom::
+bool vrpn_FunctionGenerator_function_custom::
 set( vrpn_uint32 length, vrpn_float32* times, vrpn_float32* values )
 {
-	if( length == 0 || times == NULL || values == NULL )
-		return;
-
+  if( length == 0 || times == NULL || values == NULL ) {
+    fprintf(stderr, "vrpn_FunctionGenerator_function_custom::set(): Zero or NULL passed in\n");
+    return false;
+  } else if (length != d_length) {
+    fprintf(stderr, "vrpn_FunctionGenerator_function_custom::set(): Different length (%d vs. %d)\n", length, d_length);
+    return false;
+  } else {
+    for( vrpn_uint32 i = 0; i < d_length; i++ ){
+      d_times[i] = times[i];
+      d_values[i] = values[i];
+    }
+    return true;
+  }
 }
 
 
 vrpn_float32 vrpn_FunctionGenerator_function_custom::
-generateValues( vrpn_float32* buf, vrpn_uint32 nValues,
-				 vrpn_float32 startTime, vrpn_float32 sampleRate, 
-				 vrpn_FunctionGenerator_channel* channel ) const
+generateValues(vrpn_float32* buf, vrpn_uint32 nValues,
+	       vrpn_float32 startTime, vrpn_float32 sampleRate, 
+	       vrpn_FunctionGenerator_channel* channel ) const
 {
 	vrpn_float64 t = startTime;
 	vrpn_float64 dt = 1 / sampleRate;
@@ -367,31 +380,31 @@ generateValues( vrpn_float32* buf, vrpn_uint32 nValues,
 vrpn_float32 vrpn_FunctionGenerator_function_custom::
 getCycleTime( ) const
 {
-	return times[length - 1] - times[0];
+	return d_times[d_length - 1] - d_times[0];
 }
 
 
 vrpn_int32 vrpn_FunctionGenerator_function_custom::
 encode_to( char** buf, vrpn_int32& len ) const
 {
-	vrpn_int32 bytes = ( 2 * length + 1 ) * sizeof( vrpn_float32 );
+	vrpn_int32 bytes = ( 2 * d_length + 1 ) * sizeof( vrpn_float32 );
 	if( len < bytes )
 	{
 		fprintf( stderr, "vrpn_FunctionGenerator_function_custom::encode_to:  "
 				"payload error (wanted %d got %d).\n", bytes, len );
 		return -1;
 	}
-	if( 0 > vrpn_buffer( buf, &len, length ) )
+	if( 0 > vrpn_buffer( buf, &len, d_length ) )
 	{
 		fprintf( stderr, "vrpn_FunctionGenerator_function_custom::encode_to:  "
 				"payload error (couldn't buffer length).\n" );
 		return -1;
 	}
 	vrpn_int32 retval = 0;
-	for( vrpn_uint32 i = 0; i <= length - 1; i++ )
+	for( vrpn_uint32 i = 0; i < d_length; i++ )
 	{
-		retval |= vrpn_buffer( buf, &len, times[i] );
-		retval |= vrpn_buffer( buf, &len, values[i] );
+		retval |= vrpn_buffer( buf, &len, d_times[i] );
+		retval |= vrpn_buffer( buf, &len, d_values[i] );
 	}
 	if( retval < 0 )
 	{
@@ -739,10 +752,10 @@ handle_channelRequest_message( void* userdata, vrpn_HANDLERPARAM p )
 
 //static 
 int vrpn_FunctionGenerator_Server::
-handle_allChannelRequest_message( void* userdata, vrpn_HANDLERPARAM p )
+handle_allChannelRequest_message( void* userdata, vrpn_HANDLERPARAM)
 {
 	vrpn_FunctionGenerator_Server* me = (vrpn_FunctionGenerator_Server*) userdata;
-	for( int i = 0; i <= vrpn_FUNCTION_CHANNELS_MAX - 1; i++ )
+	for( int i = 0; i < vrpn_FUNCTION_CHANNELS_MAX; i++ )
 	{
 		// XXX will this work as-is, or do we need to
 		// force buffers to be flushed periodically?
@@ -754,7 +767,7 @@ handle_allChannelRequest_message( void* userdata, vrpn_HANDLERPARAM p )
 
 //static 
 int vrpn_FunctionGenerator_Server::
-handle_start_message( void* userdata, vrpn_HANDLERPARAM p )
+handle_start_message( void* userdata, vrpn_HANDLERPARAM)
 {
 	vrpn_FunctionGenerator_Server* me = (vrpn_FunctionGenerator_Server*) userdata;
 	me->start( );
@@ -764,7 +777,7 @@ handle_start_message( void* userdata, vrpn_HANDLERPARAM p )
 
 //static 
 int vrpn_FunctionGenerator_Server::
-handle_stop_message( void* userdata, vrpn_HANDLERPARAM p )
+handle_stop_message( void* userdata, vrpn_HANDLERPARAM)
 {
 	vrpn_FunctionGenerator_Server* me = (vrpn_FunctionGenerator_Server*) userdata;
 	me->stop( );
@@ -1082,7 +1095,7 @@ requestAllChannels( )
 		char* buf = &msgbuf[0];
 		// nothing to encode; the message type is the symbol
 		if( d_connection->pack_message( vrpn_CONNECTION_TCP_BUFLEN - buflen, timestamp, 
-										this->requestAllChannelsMessageID, this->d_sender_id, msgbuf, 
+										this->requestAllChannelsMessageID, this->d_sender_id, buf, 
 										vrpn_CONNECTION_RELIABLE ) )
 		{
 			fprintf( stderr, "vrpn_FunctionGenerator_Remote::requestAllChannels:  "
@@ -1110,7 +1123,7 @@ requestStart( )
 		char* buf = &msgbuf[0];
 		// nothing to encode; the message type is the symbol
 		if( d_connection->pack_message( vrpn_CONNECTION_TCP_BUFLEN - buflen, timestamp, 
-										this->startFunctionMessageID, this->d_sender_id, msgbuf, 
+										this->startFunctionMessageID, this->d_sender_id, buf, 
 										vrpn_CONNECTION_RELIABLE ) )
 		{
 			fprintf( stderr, "vrpn_FunctionGenerator_Remote::requestStart:  "
@@ -1138,7 +1151,7 @@ requestStop( )
 		char* buf = &msgbuf[0];
 		// nothing to encode; the message type is the symbol
 		if( d_connection->pack_message( vrpn_CONNECTION_TCP_BUFLEN - buflen, timestamp, 
-										this->stopFunctionMessageID, this->d_sender_id, msgbuf, 
+										this->stopFunctionMessageID, this->d_sender_id, buf, 
 										vrpn_CONNECTION_RELIABLE ) )
 		{
 			fprintf( stderr, "vrpn_FunctionGenerator_Remote::requestStop:  "
@@ -1687,7 +1700,7 @@ handle_referenceChannelReply_message( void* userdata, vrpn_HANDLERPARAM p )
 // vrpn_FunctionGenerator_Remote
 //
 
-vrpn_uint32 vrpn_FunctionGenerator_Remote::
+vrpn_int32 vrpn_FunctionGenerator_Remote::
 encode_channel( char** buf, vrpn_int32& len, const vrpn_uint32 channelNum, 
 				 const vrpn_FunctionGenerator_channel* channel )
 {
@@ -1822,7 +1835,7 @@ decode_channelReply( const char* buf, const vrpn_int32 len, vrpn_uint32& channel
 }
 
 
-vrpn_uint32 vrpn_FunctionGenerator_Remote::
+vrpn_int32 vrpn_FunctionGenerator_Remote::
 encode_requestChannel( char** buf, vrpn_int32& len, const vrpn_uint32 channelNum )
 {
 	if( len <= sizeof( vrpn_uint32 ) )
@@ -1858,7 +1871,6 @@ decode_channel_request( const char* buf, const vrpn_int32 len, vrpn_uint32& chan
 		return -1;
 	}
 	const char* mybuf = buf;
-	vrpn_int32 mylen = len;
 	if( 0 > vrpn_unbuffer( &mybuf, &channelNum ) )
 	{
 		fprintf( stderr, "vrpn_FunctionGenerator_Server::decode_channel_request:  "
@@ -1869,7 +1881,7 @@ decode_channel_request( const char* buf, const vrpn_int32 len, vrpn_uint32& chan
 }
 
 
-vrpn_uint32 vrpn_FunctionGenerator_Remote::
+vrpn_int32 vrpn_FunctionGenerator_Remote::
 encode_sampleRate( char** buf, vrpn_int32& len, const vrpn_float32 sampleRate )
 {
 	if( len <= sizeof( vrpn_float32 ) )
@@ -1912,7 +1924,7 @@ decode_sample_rate( const char* buf, const vrpn_int32 len, vrpn_float32& sampleR
 }
 
 
-vrpn_uint32 vrpn_FunctionGenerator_Remote::
+vrpn_int32 vrpn_FunctionGenerator_Remote::
 encode_referenceChannel( char** buf, vrpn_int32& len, const vrpn_uint32 referenceChannel )
 {
 	if( len <= sizeof( vrpn_uint32 ) )

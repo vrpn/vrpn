@@ -113,6 +113,11 @@ int gethostname (char *, int);
 #define	INVALID_SOCKET	-1
 #endif
 
+// Don't tell us about FD_SET() "conditional expression is constant"
+#ifdef	_WIN32
+#pragma	warning ( disable : 4127)
+#endif
+
 // Syntax of vrpn_MAGIC:
 //
 // o The minor version number must follow the last period ('.') and be the
@@ -1950,6 +1955,7 @@ int vrpn_noint_block_read_timeout(int infile, char buffer[],
 		}
 
 		if (!FD_ISSET(infile, &readfds)) {	/* No chars yet */
+			ret = 0;
 			continue;
 		}
 
@@ -2005,7 +2011,7 @@ static SOCKET open_socket (int type,
 #ifndef _WIN32_WCE
     fprintf(stderr, "  -- errno %d (%s).\n", errno, strerror(errno));
 #endif
-    return -1;
+    return (SOCKET) -1;
   }
 
   namelen = sizeof(name);
@@ -2028,7 +2034,7 @@ static SOCKET open_socket (int type,
           memcpy((void *) &name.sin_addr, (const void *) phe->h_addr, phe->h_length);
       } else {
           fprintf(stderr, "open_socket:  can't get %s host entry\n", IPaddress);
-          return -1;
+          return (SOCKET) -1;
       }
   }
 
@@ -2047,13 +2053,13 @@ ntohl(name.sin_addr.s_addr) & 0xff);
     fprintf(stderr, "  --  %d  --  %s\n", errno, strerror(errno));
 #endif
     fprintf(stderr,"  (This probably means that another application has the port open already)\n");
-    return -1;
+    return (SOCKET) -1;
   }
 
   // Find out which port was actually bound
   if (getsockname(sock, (struct sockaddr *) &name, GSN_CAST &namelen)) {
     fprintf(stderr, "vrpn: open_socket: cannot get socket name.\n");
-    return -1;
+    return (SOCKET) -1;
   }
   if (portno) {
     *portno = ntohs(name.sin_port);
@@ -2138,7 +2144,7 @@ static SOCKET vrpn_connect_udp_port
           vrpn_closeSocket(udp_socket);
           fprintf(stderr,
                   "vrpn_connect_udp_port: error finding host by name (%s).\n",machineName);
-          return(-1);
+          return (SOCKET) (-1);
       }
   }
 #ifndef VRPN_USE_WINSOCK_SOCKETS
@@ -2150,7 +2156,7 @@ static SOCKET vrpn_connect_udp_port
   if ( connect(udp_socket,(struct sockaddr *) &udp_name,udp_namelen) ) {
       fprintf(stderr,"vrpn_connect_udp_port: can't bind udp socket.\n");
       vrpn_closeSocket(udp_socket);
-      return(-1);
+      return (SOCKET) (-1);
   }
 
   // Find out which port was actually bound
@@ -2158,7 +2164,7 @@ static SOCKET vrpn_connect_udp_port
   if (getsockname(udp_socket, (struct sockaddr *) &udp_name,
                   GSN_CAST &udp_namelen)) {
     fprintf(stderr, "vrpn_connect_udp_port: cannot get socket name.\n");
-    return -1;
+    return (SOCKET) -1;
   }
 
 #ifdef VERBOSE3
@@ -2366,6 +2372,10 @@ int vrpn_start_server(const char * machine, char * server_name, char * args,
 #if defined(VRPN_USE_WINSOCK_SOCKETS) || defined(__CYGWIN__)
         fprintf(stderr,"VRPN: vrpn_start_server not ported"
                 " for windows winsocks or cygwin!\n");
+	IPaddress = IPaddress;
+	args = args;
+	server_name = server_name;
+	machine = machine;
         return -1;
 #else
         int     pid;    /* Child's process ID */

@@ -10,12 +10,6 @@
 #include "vrpn_Tng3.h"
 #include "vrpn_Shared.h"
 #include "vrpn_Serial.h"
-  #ifdef VRPN_USE_OLD_STREAMS
-        #include <iostream.h>
-  #else
-        #include <iostream>
-	using namespace std;
-  #endif
 
 #undef VERBOSE
 
@@ -77,17 +71,13 @@ vrpn_Tng3::vrpn_Tng3 (const char * name,
     _numbuttons(numbuttons),
     _numchannels(numchannels)
 {
-
-
     // Verify the validity of the parameters
     if (_numbuttons > MAX_TBUTTONS) {
-	cout << "vrpn_Tng3: Can only support " << (int)MAX_TBUTTONS << " buttons, not " <<
-	    (int)_numbuttons << endl;
+	fprintf(stderr,"vrpn_Tng3: Can only support %d buttons, not %d\n", (int)MAX_TBUTTONS, (int)_numbuttons);
 	_numbuttons = MAX_TBUTTONS;
     }
     if (_numchannels > MAX_TCHANNELS) {
-	cout << "vrpn_Tng3: Can only support " << (int)MAX_TCHANNELS << " analog channels, not " <<
-	    (int)_numchannels << endl;
+	fprintf(stderr,"vrpn_Tng3: Can only support %d analog channels, not %d\n", (int)MAX_TCHANNELS, (int)_numchannels);
 	_numchannels = MAX_TCHANNELS;
     }
 
@@ -135,12 +125,13 @@ int    vrpn_Tng3::reset(void)
 
     bDataPacketStart = 0x55;
 
-    if (syncDatastream (2.0))
-	cout << "vrpn_Tng3 found " << endl;   
-    else
+    if (syncDatastream (2.0)) {
+	printf("vrpn_Tng3 found\n");
+    } else {
 	return -1;
+    }
 
-    cout << "TNG3B found" << endl;
+    printf("TNG3B found\n");
 
     status = STATUS_SYNCING;
     vrpn_gettimeofday(&_timestamp, NULL);	// Set watchdog now
@@ -231,7 +222,7 @@ int vrpn_Tng3::get_report(void)
     buttonBits = _buffer[DATA_RECORD_LENGTH-1];
     for (i = 0; i < _numbuttons; i++) {
 	vrpn_Button::lastbuttons[i] = vrpn_Button::buttons[i];
-	vrpn_Button::buttons[i]	= (buttonBits & (1 << i)) ? VRPN_BUTTON_OFF : VRPN_BUTTON_ON;
+	vrpn_Button::buttons[i]	= static_cast<unsigned char>((buttonBits & (1 << i)) ? VRPN_BUTTON_OFF : VRPN_BUTTON_ON);
     }
 
     report_changes();
@@ -295,7 +286,7 @@ void vrpn_Tng3::mainloop(void)
 	break;
 
 	default:
-	    cerr << "vrpn_Tng3: Unknown mode (internal error) " << endl;
+	    fprintf(stderr,"vrpn_Tng3: Unknown mode (internal error)\n");
 	    break;
     }
 }
@@ -336,8 +327,7 @@ int vrpn_Tng3::syncDatastream (double seconds) {
 	vrpn_gettimeofday(&current_time, NULL);
 	if (duration(current_time, start_time) > maxDelay ) {
 	    // if we've timed out, go back unhappy
-	    cout << "vrpn_Tng3::syncDatastream timeout expired: " << (int)seconds 
-		 <<	" secs " << endl;
+	    fprintf(stderr,"vrpn_Tng3::syncDatastream timeout expired: %d secs\n", (int)seconds);
 	    return 0;  // go back unhappy
 	}
 	

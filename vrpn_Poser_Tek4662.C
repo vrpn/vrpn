@@ -163,8 +163,8 @@ static bool interpret_GIN_bytes(const unsigned char inbuf[], bool &pen_down, flo
     // the higher-order 12 bits; the lower 4 are set to zero.  This means that
     // we shift three bit past the right and ignore the lowest bit.
     vrpn_uint16	x_int, y_int;
-    x_int = ((inbuf[0] & LOWFIVEBITS) << 7) | ((inbuf[2] & LOWFIVEBITS) << 2) | ((inbuf[4] & LOWFIVEBITS) >> 3);
-    y_int = ((inbuf[1] & LOWFIVEBITS) << 7) | ((inbuf[3] & LOWFIVEBITS) << 2) | ((inbuf[5] & LOWFIVEBITS) >> 3);
+    x_int = static_cast<unsigned short>(((inbuf[0] & LOWFIVEBITS) << 7) | ((inbuf[2] & LOWFIVEBITS) << 2) | ((inbuf[4] & LOWFIVEBITS) >> 3));
+    y_int = static_cast<unsigned short>(((inbuf[1] & LOWFIVEBITS) << 7) | ((inbuf[3] & LOWFIVEBITS) << 2) | ((inbuf[5] & LOWFIVEBITS) >> 3));
 
     // Convert the position from counts to meters.  This goes through inches, which is the native
     // plotter unit.

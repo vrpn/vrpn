@@ -192,14 +192,14 @@ int	vrpn_CerealBox::reset(void)
 		}
 
 		reset_str[0] = 'c';
-		reset_str[1] = ana1_4 + offset;	// Hope we don't need to set baud rate
-		reset_str[2] = (ana5_8 | (dig1_3 << 4)) + offset;
-		reset_str[3] = 0 + offset;
-		reset_str[4] = 0 + offset;
-		reset_str[5] = enc1_4 + offset;
-		reset_str[6] = enc1_4 + offset;	// Set encoders 1-4 for incremental
-		reset_str[7] = enc5_8 + offset;
-		reset_str[8] = enc5_8 + offset;	// Set encoders 5-8 for incremental
+		reset_str[1] = (unsigned char)(ana1_4 + offset);	// Hope we don't need to set baud rate
+		reset_str[2] = (unsigned char)((ana5_8 | (dig1_3 << 4)) + offset);
+		reset_str[3] = (unsigned char)(0 + offset);
+		reset_str[4] = (unsigned char)(0 + offset);
+		reset_str[5] = (unsigned char)(enc1_4 + offset);
+		reset_str[6] = (unsigned char)(enc1_4 + offset);	// Set encoders 1-4 for incremental
+		reset_str[7] = (unsigned char)(enc5_8 + offset);
+		reset_str[8] = (unsigned char)(enc5_8 + offset);	// Set encoders 5-8 for incremental
 		reset_str[9] = '\n';
 		reset_str[10] = 0;
 	}
@@ -376,7 +376,7 @@ int vrpn_CerealBox::get_report(void)
 	for (i = numbuttonchars-1; i >= 0; i--) {
 		// Find the four bits for these buttons by subtracting
 		// the offset to get them into the low-order 4 bits
-		char bits = _buffer[nextchar++] - offset;
+		char bits = (char)(_buffer[nextchar++] - offset);
 
 		// Set the buttons for each bit
 		buttons[ i*4 + 3 ] = ( (bits & 0x08) != 0);

@@ -8,7 +8,7 @@
 
 vrpn_Analog_Output_Server_NI::vrpn_Analog_Output_Server_NI(const char* name, vrpn_Connection* c, 
                                                      const char *boardName,
-						     vrpn_int32 numChannels, bool bipolar,
+						     vrpn_int16 numChannels, bool bipolar,
 						     double minVoltage, double maxVoltage) :
 	vrpn_Analog_Output(name, c),
 	NI_device_number(-1),
@@ -17,9 +17,9 @@ vrpn_Analog_Output_Server_NI::vrpn_Analog_Output_Server_NI(const char* name, vrp
 	NI_num_channels(numChannels)
 {
 #ifdef	VRPN_USE_NATIONAL_INSTRUMENTS
-  int i;
-  int	  update_mode = 0;	//< Mode 0 is immediate
-  int	  ref_source = 0;	//< Reference source, 0 = internal, 1 = external
+  short i;
+  short	  update_mode = 0;	//< Mode 0 is immediate
+  short	  ref_source = 0;	//< Reference source, 0 = internal, 1 = external
   double  ref_voltage = 0.0;
 
   // Set the polarity
@@ -136,7 +136,7 @@ int VRPN_CALLBACK vrpn_Analog_Output_Server_NI::handle_request_message(void *use
     // Send the new value to the D/A board
 #ifdef	VRPN_USE_NATIONAL_INSTRUMENTS
     if (me->NI_device_number != -1) {
-      AO_VWrite(me->NI_device_number, chan_num, value);
+      AO_VWrite(me->NI_device_number, (short)chan_num, value);
     }
 #endif
     return 0;
@@ -192,7 +192,7 @@ int vrpn_Analog_Output_Server_NI::handle_request_channels_message(void* userdata
 	// Send the new value to the D/A board
 #ifdef	VRPN_USE_NATIONAL_INSTRUMENTS
 	if (me->NI_device_number != -1) {
-	  AO_VWrite(me->NI_device_number, chan_num, value);
+	  AO_VWrite(me->NI_device_number, (short)chan_num, value);
 	}
 #endif
     }

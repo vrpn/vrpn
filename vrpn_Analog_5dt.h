@@ -14,8 +14,6 @@ public:
 		  int mode = 1,
 		  bool tenbytes = false);
 
-	~vrpn_5dt () {};
-
 	/// Called once through each main loop iteration to handle updates.
 	virtual void mainloop ();
 	

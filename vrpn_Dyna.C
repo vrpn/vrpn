@@ -23,13 +23,6 @@
 #define OOOO_OOll (0x03)
 #define OOOO_llOO (0x0c)
 
-#define MAX_TIME_INTERVAL (1000*1000*2)
-static	unsigned long	duration(struct timeval t1, struct timeval t2)
-{
-  if (t2.tv_sec == -1) return 0;
-  return (t1.tv_usec - t2.tv_usec) + 1000000L * (t1.tv_sec - t2.tv_sec);
-}
-
 vrpn_Tracker_Dyna::vrpn_Tracker_Dyna(
 		      char *name, vrpn_Connection *c, int cSensors,
 		      char *port, long baud ) :
@@ -272,7 +265,7 @@ int vrpn_Tracker_Dyna::decode_record()
 
    /* Pull out the exponent to shift by */
    //exp = ( (buffer[0] & OOOO_OOlO)<<1 ) | (buffer[0] & OOOO_OOOl);
-   exp = ( (buffer[0] & 0x2)<<1 ) | (buffer[0] & 0x1);
+   exp = (unsigned char)( ( (buffer[0] & 0x2)<<1 ) | (buffer[0] & 0x1) );
 
    x_high = (char)buffer[2];
    x_low  = (char)buffer[3];

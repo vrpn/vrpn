@@ -22,13 +22,6 @@
 #include <sys/time.h>
 #endif
 
-#ifdef  VRPN_USE_OLD_STREAMS
-        #include <iostream.h>
-#else
-        #include <iostream>
-        using namespace std;
-#endif
-
 void printTrackerPosOri(void *userdata, const vrpn_TRACKERCB info ) {
   static int i=0;
   if (!(i%101)) {

@@ -492,7 +492,7 @@ double vrpn_Tracker_DTrack::dtrack2vrpn_butToChannel(double curVal,
 int vrpn_Tracker_DTrack::dtrack_init(unsigned short dtrack_port)
 {
 
-	if(!(udpbuf = (char *)malloc(UDPRECEIVE_BUFSIZE))){  // init udp buffer
+	if((udpbuf = (char *)malloc(UDPRECEIVE_BUFSIZE)) == NULL) {  // init udp buffer
 		fprintf(stderr, "vrpn_Tracker_DTrack: Cannot Allocate Memory for UDP Buffer.\n");
 		return -1;
 	}
@@ -567,7 +567,7 @@ int vrpn_Tracker_DTrack::dtrack_receive(unsigned long* framenr,
 		if(!strncmp(s, "fr ", 3)){
 			s += 3;
 			
-			if(!(s = string_get_ul(s, framenr))){  // get frame counter
+			if((s = string_get_ul(s, framenr)) == 0) {  // get frame counter
 				*framenr = 0;
 				return -10;
 			}
@@ -583,7 +583,7 @@ int vrpn_Tracker_DTrack::dtrack_receive(unsigned long* framenr,
 			
 			s += 6;
 			
-			if(!(s = string_get_ul(s, &ul))){    // get number of bodies
+			if((s = string_get_ul(s, &ul)) == 0) {    // get number of bodies
 				return -10;
 			}
 
@@ -600,7 +600,7 @@ int vrpn_Tracker_DTrack::dtrack_receive(unsigned long* framenr,
 			
 			s += 3;
 			
-			if(!(s = string_get_ul(s, &ul))){    // get number of bodies
+			if((s = string_get_ul(s, &ul)) == 0) {    // get number of bodies
 				return -10;
 			}
 
@@ -610,18 +610,18 @@ int vrpn_Tracker_DTrack::dtrack_receive(unsigned long* framenr,
 			}
 
 			for(i=0; i<n; i++){                  // get data of body
-				if(!(s = string_get_block(s, "uf", &body[i].id, farr))){
+				if((s = string_get_block(s, "uf", &body[i].id, farr)) == 0) {
 					return -10;
 				}
 				
-				if(!(s = string_get_block(s, "ffffff", NULL, farr))){
+				if((s = string_get_block(s, "ffffff", NULL, farr)) == 0) {
 					return -10;
 				}
 				for(j=0; j<3; j++){
 					body[i].loc[j] = farr[j];
 				}
 				
-				if(!(s = string_get_block(s, "fffffffff", NULL, body[i].rot))){
+				if((s = string_get_block(s, "fffffffff", NULL, body[i].rot)) == 0) {
 					return -10;
 				}
 			}
@@ -638,7 +638,7 @@ int vrpn_Tracker_DTrack::dtrack_receive(unsigned long* framenr,
 			
 			s += 4;
 			
-			if(!(s = string_get_ul(s, &ul))){    // get number of flysticks
+			if((s = string_get_ul(s, &ul)) == 0) {    // get number of flysticks
 				return -10;
 			}
 
@@ -648,21 +648,21 @@ int vrpn_Tracker_DTrack::dtrack_receive(unsigned long* framenr,
 			}
 
 			for(i=0; i<n; i++){                  // get data of body
-				if(!(s = string_get_block(s, "ufu", ularr, &flystick[i].quality))){
+				if((s = string_get_block(s, "ufu", ularr, &flystick[i].quality)) == 0) {
 					return -10;
 				}
 
 				flystick[i].id = ularr[0];
 				flystick[i].bt = ularr[1];
 				
-				if(!(s = string_get_block(s, "ffffff", NULL, farr))){
+				if((s = string_get_block(s, "ffffff", NULL, farr)) == 0) {
 					return -10;
 				}
 				for(j=0; j<3; j++){
 					flystick[i].loc[j] = farr[j];
 				}
 				
-				if(!(s = string_get_block(s, "fffffffff", NULL, flystick[i].rot))){
+				if((s = string_get_block(s, "fffffffff", NULL, flystick[i].rot)) == 0) {
 					return -10;
 				}
 			}
@@ -672,7 +672,7 @@ int vrpn_Tracker_DTrack::dtrack_receive(unsigned long* framenr,
 		
 		// ignore invalid line identifier
 		
-	}while((s = string_nextline(udpbuf, s, UDPRECEIVE_BUFSIZE)));
+	} while((s = string_nextline(udpbuf, s, UDPRECEIVE_BUFSIZE)) != 0);
 
 	return 1;
 }
@@ -749,10 +749,10 @@ static char* string_get_block(char* str, const char* fmt, unsigned long* uldat, 
 	char* strend;
 	int index_ul, index_f;
 
-	if(!(str = strchr(str, '['))){       // search begin of block
+	if((str = strchr(str, '[')) == NULL) {       // search begin of block
 		return NULL;
 	}
-	if(!(strend = strchr(str, ']'))){    // search end of block
+	if((strend = strchr(str, ']')) == NULL) {    // search end of block
 		return NULL;
 	}
 	str++;
@@ -763,13 +763,13 @@ static char* string_get_block(char* str, const char* fmt, unsigned long* uldat, 
 	while(*fmt){
 		switch(*fmt++){
 			case 'u':
-				if(!(str = string_get_ul(str, &uldat[index_ul++]))){
+				if((str = string_get_ul(str, &uldat[index_ul++])) == 0) {
 					return NULL;
 				}
 				break;
 				
 			case 'f':
-				if(!(str = string_get_f(str, &fdat[index_f++]))){
+				if((str = string_get_f(str, &fdat[index_f++])) == 0) {
 					return NULL;
 				}
 				break;
@@ -861,6 +861,10 @@ static int udp_exit(int sock)
 // maxlen (i): length of buffer
 // return value (o): number of received bytes, <0 if error occured
 
+// Don't tell us about the FD_SET causing a conditional expression to be constant
+#ifdef	_WIN32
+#pragma warning ( disable : 4127 )
+#endif
 static int udp_receive(int sock, char *buffer, int maxlen)
 {
 	int nbytes;
@@ -872,7 +876,7 @@ static int udp_receive(int sock, char *buffer, int maxlen)
 	FD_ZERO(&set);
 	FD_SET(sock, &set);
 
-	tout.tv_sec = 0;    // no timeout
+	tout.tv_sec = 0;    // timeout with value of zero, no waiting
 	tout.tv_usec = 0;
 
 	switch(select(FD_SETSIZE, &set, NULL, NULL, &tout)){

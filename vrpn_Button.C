@@ -509,7 +509,7 @@ vrpn_Button_Parallel::vrpn_Button_Parallel(const char *name,
 
 #ifdef _WIN32
         static const unsigned short DATA_REGISTER_OFFSET = 0;
-        _outp(port + DATA_REGISTER_OFFSET, 3);
+        _outp((unsigned short)(port + DATA_REGISTER_OFFSET), 3);
 #else
 	fprintf(stderr,"vrpn_Button_Parallel: Not setting bit 0 on Linux, may not work with all ports\n");
 #endif
@@ -586,7 +586,7 @@ void vrpn_Button_Python::read(void)
   #ifndef __CYGWIN__
 	static const unsigned short STATUS_REGISTER_OFFSET = 1;
     for (i = 0; i < debounce_count; i++) {
-	status_register[i] = _inp(port + STATUS_REGISTER_OFFSET);
+	status_register[i] = _inp((unsigned short)(port + STATUS_REGISTER_OFFSET));
     }
   #else
     for (i = 0; i < debounce_count; i++) {
@@ -730,7 +730,7 @@ void vrpn_Button_PinchGlove::read()
 
             unsigned char mask = 0x10;
             // set button states 
-            for (int j=0; j<5; j++, mask=mask>>1) {
+            for (int j=0; j<5; j++, mask=(unsigned char)(mask>>1)) {
                if (mask & buffer[1])  {  // right hand
                   buttons[j] = VRPN_BUTTON_ON;
                }
@@ -1000,13 +1000,13 @@ void vrpn_Button_SerialMouse::read(void)
 			  continue;
 			}
 
-			buttons[0] = (buffer & 0x20)?1:0;
-			buttons[2] = (buffer & 0x10)?1:0;
+			buttons[0] = (unsigned char)( (buffer & 0x20)?1:0 );
+			buttons[2] = (unsigned char)( (buffer & 0x10)?1:0 );
 			// middle button check:: we get here without a change in left or right
 			// This means that we toggle the middle button by moving the mouse
 			// around while not pressing or releasing the other buttons!
 			if ((buttons[0] == lastL) && (buttons[2] == lastR) && !debounce) {
-				buttons[1] = lastM?0:1;
+				buttons[1] = (unsigned char)( lastM?0:1 );
 			}
 			debounce = 1;
 			break;
@@ -1021,9 +1021,9 @@ void vrpn_Button_SerialMouse::read(void)
 				continue;
 			}
 			debounce = 1;
-			buttons[0] = (buffer & 4)?0:1;
-			buttons[1] = (buffer & 2)?0:1;
-			buttons[2] = (buffer & 1)?0:1;
+			buttons[0] = (unsigned char)( (buffer & 4)?0:1 );
+			buttons[1] = (unsigned char)( (buffer & 2)?0:1 );
+			buttons[2] = (unsigned char)( (buffer & 1)?0:1 );
 			break;
 		} // switch
     } // while (num) 

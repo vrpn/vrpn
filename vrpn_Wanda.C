@@ -177,8 +177,8 @@ void vrpn_Wanda::mainloop(void) {
       if (index == 0 && num >= 3) {
          // update valuators & buttons #0 & #2
 
-         signed char x  = (buffer[1] | ((buffer[0]&3)  << 6));
-         signed char y  = (buffer[2] | ((buffer[0]&12) << 4));
+         signed char x  = static_cast<char>((buffer[1] | ((buffer[0]&3)  << 6)));
+         signed char y  = static_cast<char>((buffer[2] | ((buffer[0]&12) << 4)));
          double xd = -((double)x) / 34.0;  // XXX - what is max range? 34?
          double yd =  ((double)y) / 34.0;
 
@@ -202,11 +202,11 @@ void vrpn_Wanda::mainloop(void) {
          int red_val  = (buffer[0] & (1<<5)) ? 1 : 0; // red button
 
          if (blue_val != buttons[0]) {
-            buttons[0] = blue_val;
+            buttons[0] = static_cast<unsigned char>(blue_val);
             new_button_info = 1;
          }
          if (red_val != buttons[2]) {
-            buttons[2] = red_val;
+            buttons[2] = static_cast<unsigned char>(red_val);
             new_button_info = 1;
          }
 
@@ -220,7 +220,7 @@ void vrpn_Wanda::mainloop(void) {
          int new_val = (buffer[3]) ? 1 : 0; // yellow button
 
          if (new_val != buttons[1]) {
-            buttons[1] = new_val;
+            buttons[1] = static_cast<unsigned char>(new_val);
             new_button_info = 1;
          }
    

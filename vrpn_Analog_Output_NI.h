@@ -14,7 +14,7 @@ class VRPN_API vrpn_Analog_Output_Server_NI : public vrpn_Analog_Output {
 public:
     vrpn_Analog_Output_Server_NI(const char* name, vrpn_Connection* c, 
 			     const char *boardName = "PCI-6713",
-			     vrpn_int32 numChannels = vrpn_CHANNEL_MAX,
+			     vrpn_int16 numChannels = vrpn_CHANNEL_MAX,
 			     bool bipolar = false,
 			     double minVoltage = 0.0,
 			     double maxVoltage = 10.0);
@@ -23,11 +23,11 @@ public:
     virtual void mainloop();
 
 protected:
-    int NI_device_number;	//< National Instruments device to use
-    int NI_num_channels;	//< Number of channels on the board
-    double	min_voltage;	//< Minimum voltage allowed on a channel
-    double	max_voltage;	//< Maximum voltate allowed on a channel
-    int		polarity;	//< Polarity (1 = unipolar, 0 = bipolar)
+    short   NI_device_number;	//< National Instruments device to use
+    short   NI_num_channels;	//< Number of channels on the board
+    double  min_voltage;	//< Minimum voltage allowed on a channel
+    double  max_voltage;	//< Maximum voltate allowed on a channel
+    short   polarity;		//< Polarity (1 = unipolar, 0 = bipolar)
 
     /// Sets the size of the array;  returns the size actually set.
     /// (May be clamped to vrpn_CHANNEL_MAX)

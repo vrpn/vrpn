@@ -344,8 +344,8 @@ int vrpn_Mutex_Server::handle_requestIndex (void *userdata,
 }
 
 // static
-int vrpn_Mutex_Server::handle_gotConnection (void * userdata,
-                                             vrpn_HANDLERPARAM p) {
+int vrpn_Mutex_Server::handle_gotConnection (void *,
+                                             vrpn_HANDLERPARAM) {
   return 0;
   // return handle_requestIndex(userdata, p);
 }
@@ -785,7 +785,7 @@ vrpn_PeerMutex::vrpn_PeerMutex (const char * name, int port,
     fprintf(stderr, "vrpn_PeerMutex:  NULL name!\n");
     return;
   }
-  d_server = new vrpn_Synchronized_Connection (port, NULL, NULL, NICaddress);
+  d_server = new vrpn_Synchronized_Connection (static_cast<unsigned short>(port), NULL, NULL, NICaddress);
   if (!d_server) {
     fprintf(stderr, "vrpn_PeerMutex:  "
                     "Couldn't open connection on port %d!\n", port);

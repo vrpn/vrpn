@@ -89,7 +89,6 @@ class VRPN_API vrpn_Analog_Server : public vrpn_Analog {
   public:
 
     vrpn_Analog_Server (const char * name, vrpn_Connection * c, vrpn_int32 numChannels = vrpn_CHANNEL_MAX );
-    virtual ~vrpn_Analog_Server (void);
 
     /// Makes public the protected base class function
     virtual void report_changes (vrpn_uint32 class_of_service
@@ -177,7 +176,6 @@ class VRPN_API vrpn_Analog_Remote: public vrpn_Analog {
         // Optional argument to be used when the Remote should listen on
         // a connection that is already open.
         vrpn_Analog_Remote (const char * name, vrpn_Connection * c = NULL );
-        virtual ~vrpn_Analog_Remote (void);
 
         // This routine calls the mainloop of the connection it's on
         virtual void mainloop();

@@ -27,12 +27,12 @@ public:
     virtual void mainloop ();
 
 protected:
-    vrpn_uint32	_status;
-	vrpn_uint8	_mode;	// raw data , 0;1 or -1;1 normalized data for axes
+    int	_status;
+    vrpn_uint8	_mode;	// raw data , 0;1 or -1;1 normalized data for axes
 
-	struct timeval _timestamp;	// Time of the last report from the device
-	vrpn_float64 _read_rate;		// How many times per second to read the device
-	vrpn_float64 _deadzone;		// apply a dead zone to analog inputs
+    struct timeval _timestamp;	// Time of the last report from the device
+    vrpn_float64 _read_rate;		// How many times per second to read the device
+    vrpn_float64 _deadzone;		// apply a dead zone to analog inputs
 
     virtual vrpn_int32 get_report(void);	// Try to read a report from the device
     void	clear_values(void);	// Clear the Analog and Button values
@@ -47,10 +47,10 @@ protected:
     vrpn_uint32	  _numbuttons;	  // How many buttons
     vrpn_uint32	  _numchannels;	  // How many analog channels
 
-	vrpn_uint8	  _joyNumber;
-	
-	// joystick caps
-	JOYCAPS _jc;
+    vrpn_uint8	  _joyNumber;
+    
+    // joystick caps
+    JOYCAPS _jc;
 };
 #endif
 #endif

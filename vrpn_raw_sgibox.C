@@ -322,7 +322,7 @@ void vrpn_raw_SGIBox::get_report() {
 #endif
 
 		// Make sure to sign-extend the 16-bit value properly.
-		value = (dial_value[0]<<8) | dial_value[1];
+		value = static_cast<short>((dial_value[0]<<8) | dial_value[1]);
 
 		// Figure out the value and adjust the corresponding analog value.
 		// The analogs are set up to clamp at both the to and bottom end of
@@ -380,7 +380,7 @@ int	vrpn_raw_SGIBox::send_light_command(void)  {
     for (i = 0; i < 8; i++) {
 	int buttonLightNumber = bank*8 + i;
 	if (buttonstate[buttonLightNumber]==vrpn_BUTTON_TOGGLE_ON) {
-		lights[bank]=lights[bank]|1<<i;
+		lights[bank]=static_cast<unsigned char>(lights[bank]|1<<i);
 	}
     }
   }

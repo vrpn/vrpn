@@ -570,7 +570,7 @@ int vrpn_File_Connection::play_to_filetime(const timeval end_filetime)
     }
     
     int ret;
-    while (!(ret = playone_to_filetime(end_filetime))) {
+    while ((ret = playone_to_filetime(end_filetime)) == 0) {
       //   * you get here ONLY IF playone_to_filetime returned 0
       //   * that means that it played one entry
 

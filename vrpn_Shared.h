@@ -134,9 +134,9 @@ extern VRPN_API	struct timeval vrpn_TimevalDiff( const struct timeval& tv1,
 				   const struct timeval& tv2 );
 extern VRPN_API	struct timeval vrpn_TimevalScale (const struct timeval & tv,
                                          double scale);
-extern VRPN_API	int vrpn_TimevalGreater (const struct timeval & tv1,
+extern VRPN_API	bool vrpn_TimevalGreater (const struct timeval & tv1,
                                 const struct timeval & tv2);
-extern VRPN_API	int vrpn_TimevalEqual( const struct timeval& tv1,
+extern VRPN_API	bool vrpn_TimevalEqual( const struct timeval& tv1,
 			      const struct timeval& tv2 );
 extern VRPN_API	double vrpn_TimevalMsecs( const struct timeval& tv1 );
 

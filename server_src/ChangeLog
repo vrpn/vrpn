@@ -1,5 +1,19 @@
 2004-12-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* NIUtil.cpp : Turned on a higher level of warnings in
+		Windows and then went through and fixed all of the
+		warnings, except a few on FunctionGenerator (which
+		has an uncompleted function) and on Sound (which has
+		a bunch of uncompleted functions).  Fixed a few bugs
+		that turned up along the way.  Ripped out every trace
+		of iostream (old or new type) from the base library.
+		Also removed VPRN_NO_NO_STREAMS, which was obviated by
+		this.
+	* NIUtil.h : Same.
+	* nidaqClient.cpp : Same.
+
+2004-12-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* testimager_server.cpp : Guarded min() definition.
 
 2004-12-07  Russell M. Taylor II  <taylorr@cs.unc.edu>

@@ -29,7 +29,7 @@
 // Class for holding data used in transforming pose data to analog values for each axis
 class VRPN_API vrpn_PA_axis {
     public:
-        vrpn_PA_axis(char *name = NULL, int c = -1, double offset = 0.0, double s = 1.0) : ana_name(name), channel(c), offset(0), scale(s) {}  
+        vrpn_PA_axis(char *name = NULL, int c = -1, double offset = 0.0, double s = 1.0) : ana_name(name), channel(c), offset(offset), scale(s) {}  
 
 	char *ana_name;	    // Name of the Analog Output device to drive with this axis
         int channel;        // Which channel to use from the Analog device.  Default value of -1 means 

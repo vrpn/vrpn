@@ -12,17 +12,37 @@
 #include "vrpn_Shared.h"
 #include "vrpn_Serial.h"
 #include <math.h>
-  #ifdef VRPN_USE_OLD_STREAMS
-        #include <iostream.h>
-  #else
-        #include <iostream>
-	using namespace std;
-  #endif
 
 #undef VERBOSE
 
 // static char	offset = 0x21;	// Offset added to some characters to avoid ctl chars
 // static double	REV_PER_TICK = 1.0/4096;	// How many revolutions per encoder tick?
+
+// low-level stuff
+static const unsigned char CMD_BASIC = static_cast<unsigned char>(0xC0);   // mask for command
+static const unsigned char CMD_HOMEREF = static_cast<unsigned char>(0xC1);
+static const unsigned char CMD_HOMEPOS = static_cast<unsigned char>(0xC2);
+static const unsigned char CMD_SETHOME = static_cast<unsigned char>(0xC3);
+static const unsigned char CMD_BAUDSET = static_cast<unsigned char>(0xC4);
+static const unsigned char CMD_ENDSESS = static_cast<unsigned char>(0xC5);
+static const unsigned char CMD_GETMAXS = static_cast<unsigned char>(0xC6);
+static const unsigned char CMD_SETPARM = static_cast<unsigned char>(0xC7);
+static const unsigned char CMD_GETNAME = static_cast<unsigned char>(0xC8);
+static const unsigned char CMD_GETPRID = static_cast<unsigned char>(0xC9);
+static const unsigned char CMD_GETMODL = static_cast<unsigned char>(0xCA);
+static const unsigned char CMD_GETSERN = static_cast<unsigned char>(0xCB);
+static const unsigned char CMD_GETCOMM = static_cast<unsigned char>(0xCC);
+static const unsigned char CMD_GETPERF = static_cast<unsigned char>(0xCD);
+static const unsigned char CMD_GETVERS = static_cast<unsigned char>(0xCE);
+static const unsigned char CMD_GETMOTN = static_cast<unsigned char>(0xCF);
+static const unsigned char CMD_SETHREF = static_cast<unsigned char>(0xD0);
+static const unsigned char CMD_FACREST = static_cast<unsigned char>(0xD1);
+static const unsigned char CMD_INSMARK = static_cast<unsigned char>(0xD2);
+
+static const double PAUSE_RESET     = .015;
+static const double PAUSE_END       = .015;
+static const double PAUSE_RESTORE   = 2.0;
+static const double PAUSE_BYTE      = .015;
 
 // Defines the modes in which the box can find itself.
 #define	STATUS_RESETTING	(-1)	// Resetting the box
@@ -80,19 +100,16 @@ vrpn_ImmersionBox::vrpn_ImmersionBox (const char * name,
 
     // Verify the validity of the parameters
     if (_numbuttons > MAX_IBUTTONS) {
-	cout << "vrpn_ImmersionBox: Can only support " << MAX_IBUTTONS << " buttons, not " <<
-	    _numbuttons << endl;
-	_numbuttons = MAX_IBUTTONS;
+      fprintf(stderr,"vrpn_ImmersionBox: Can only support %d buttons, not %d\n", MAX_IBUTTONS, _numbuttons);
+      _numbuttons = MAX_IBUTTONS;
     }
     if (_numchannels > MAX_ICHANNELS) {
-	cout << "vrpn_ImmersionBox: Can only support " << MAX_ICHANNELS << " analog channels, not " <<
-	    _numchannels << endl;
-	_numchannels = MAX_ICHANNELS;
+      fprintf(stderr,"vrpn_ImmersionBox: Can only support %d analog channels, not %d\n", MAX_ICHANNELS, _numchannels);
+      _numchannels = MAX_ICHANNELS;
     }
     if (_numencoders > MAX_IENCODERS) {
-	cout << "vrpn_ImmersionBox: Can only support " << MAX_IENCODERS << " encoders, not " <<
-	    _numencoders << endl;
-	_numencoders = MAX_IENCODERS;
+      fprintf(stderr,"vrpn_ImmersionBox: Can only support %d encoders, not %d\n", MAX_IENCODERS, _numencoders);
+      _numencoders = MAX_IENCODERS;
     }
 
     // explicitly clear the identification variables
@@ -150,49 +167,43 @@ int    vrpn_ImmersionBox::reset(void)
 
     // try to synchronize for 2 seconds
 
-    if (syncBaudrate (10.0))
-	cout << "vrpn_ImmersionBox found " << endl;   
-    else
+    if (syncBaudrate (10.0)) {
+	printf("vrpn_ImmersionBox found\n");
+    } else {
 	return -1;
+    }
 
     if (0 == sendIboxCommand((char) CMD_GETNAME, (char *) &iname, .1)) {
-	cout << "problems with ibox command CMD_GETNAME" << endl;
+	fprintf(stderr,"problems with ibox command CMD_GETNAME\n");
 	return -1;
     }
     if (0 == sendIboxCommand((char) CMD_GETPRID, (char *) &id, .1)) {
-	cout << "problems with ibox command CMD_GETPRID" << endl;
+	fprintf(stderr,"problems with ibox command CMD_GETPRID\n");
 	return -1;
     }
     if (0 == sendIboxCommand((char) CMD_GETMODL, (char *) &model, .1)){
-	cout << "problems with ibox command CMD_GETMODL" << endl;
+	fprintf(stderr,"problems with ibox command CMD_GETMODL\n");
 	return -1;
     }
     if (0 == sendIboxCommand((char) CMD_GETSERN, (char *) &serial, .1)){
-	cout << "problems with ibox command CMD_GETSERN" << endl;
+	fprintf(stderr,"problems with ibox command CMD_GETSERN\n");
 	return -1;
     }
     if (0 == sendIboxCommand((char) CMD_GETCOMM, (char *) &comment, .1)){
-	cout << "problems with ibox command CMD_GETCOMM" << endl;
+	fprintf(stderr,"problems with ibox command CMD_GETCOMM\n");
 	return -1;
     }
     if (0 == sendIboxCommand((char) CMD_GETPERF, (char *) &parmf, .1)){
-	cout << "problems with ibox command CMD_GETPERF" << endl;
+	fprintf(stderr,"problems with ibox command CMD_GETPERF\n");
 	return -1;
     }
     if (0 == sendIboxCommand((char) CMD_GETVERS, (char *) &vers, .1)){
-	cout << "problems with ibox command CMD_GETVERS" << endl;
+	fprintf(stderr,"problems with ibox command CMD_GETVERS\n");
 	return -1;
     }
 
-    cout << model << endl;
-
 #ifdef VERBOSE
-    cout << iname << endl;
-    cout << id << endl;
-    cout << serial << endl;
-    cout << comment << endl;
-    cout << parmf << endl;
-    cout << vers << endl;
+    printf("%s\n%s\n%s\n%s\n%s\n%s\n", iname, id, serial, comment, parmf, vers);
 #endif
 
     //-----------------------------------------------------------------------
@@ -216,8 +227,8 @@ int    vrpn_ImmersionBox::reset(void)
     
     // Ask the box to send a report, ensure echo received
     if (result < 25) {
-	cerr << "vrpnImmersionBox::reset: could not write command" << endl;
-	return -1;
+      fprintf(stderr,"vrpnImmersionBox::reset: could not write command\n");
+      return -1;
     }
 
     pause (.1);
@@ -226,14 +237,14 @@ int    vrpn_ImmersionBox::reset(void)
     result = vrpn_read_available_characters(serial_fd, (unsigned char *) command, 1);    
     
     if (result <= 0 || command[0] != 0xcf) {
-	cerr << "vrpnImmersionBox::reset: no command echo" << endl;
+	fprintf(stderr,"vrpnImmersionBox::reset: no command echo\n");
 	return -1;
     }
 
     // flush the input buffer
     vrpn_flush_input_buffer(serial_fd);
 
-    cout << "ImmersionBox reset complete." << endl;
+    printf("ImmersionBox reset complete.\n");
 
     status = STATUS_SYNCING;
     vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now
@@ -303,7 +314,7 @@ int vrpn_ImmersionBox::get_report(void)
 
     for (i = 0; i < _numbuttons; i++) {
 	vrpn_Button::lastbuttons[i] = vrpn_Button::buttons[i];
-	vrpn_Button::buttons[i]	= (buttonBits & (1 << i));
+	vrpn_Button::buttons[i]	= static_cast<unsigned char>(buttonBits & (1 << i));
     }
 
 #if VERBOSE
@@ -387,7 +398,7 @@ void	vrpn_ImmersionBox::mainloop(void)
 	break;
 
 	default:
-	    cerr << "vrpn_ImmersionBox: Unknown mode (internal error) " << endl;
+	    fprintf(stderr,"vrpn_ImmersionBox: Unknown mode (internal error)\n");
 	    break;
     }
 }
@@ -466,14 +477,13 @@ int vrpn_ImmersionBox::syncBaudrate (double seconds) {
 	vrpn_gettimeofday(&current_time, NULL);
 	if (duration(current_time, start_time) > maxDelay ) {
 	    // if we've timed out, go back unhappy
-	    cout << "vrpn_ImmersionBox::syncBaudrate timeout expired: " << seconds 
-		 <<	" secs " << endl;
+	    fprintf(stderr,"vrpn_ImmersionBox::syncBaudrate timeout expired: %lf secs \n", seconds);
 	    break;  // out of while loop
 	}
 		
 	// send "IMMC"
 	if (4 != vrpn_write_characters(serial_fd, matchString, 4)) {
-	    cout << "vrpn_ImmersionBox::syncBaudrate could not write to serial port " << endl;
+	    fprintf(stderr,"vrpn_ImmersionBox::syncBaudrate could not write to serial port\n");
 	    break;  // out of while loop
 	}
 

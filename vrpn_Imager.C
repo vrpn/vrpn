@@ -1184,7 +1184,7 @@ int vrpn_Imager_Remote::handle_discarded_frames_message(void *userdata,
 }
 
 int vrpn_Imager_Remote::handle_connection_dropped_message(void *userdata,
-	vrpn_HANDLERPARAM p)
+	vrpn_HANDLERPARAM)
 {
   vrpn_Imager_Remote *me = (vrpn_Imager_Remote *)userdata;
 

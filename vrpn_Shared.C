@@ -1,15 +1,5 @@
 #include "vrpn_Shared.h"
 
-#ifdef _WIN32
-#ifndef _WIN32_WCE
-  #ifdef VRPN_USE_OLD_STREAMS
-    #include <iomanip.h>
-  #else
-    #include <iomanip>
-  #endif
-#endif
-#endif
-
 #include <stdio.h>
 #include <math.h>
 #ifndef	_WIN32_WCE
@@ -120,7 +110,7 @@ timeval vrpn_TimevalScale (const timeval & tv, double scale)
 
 
 // returns 1 if tv1 is greater than tv2;  0 otherwise
-int vrpn_TimevalGreater (const timeval & tv1, const timeval & tv2)
+bool vrpn_TimevalGreater (const timeval & tv1, const timeval & tv2)
 {
     if (tv1.tv_sec > tv2.tv_sec) return 1;
     if ((tv1.tv_sec == tv2.tv_sec) &&
@@ -129,7 +119,7 @@ int vrpn_TimevalGreater (const timeval & tv1, const timeval & tv2)
 }
 
 // return 1 if tv1 is equal to tv2; 0 otherwise
-int vrpn_TimevalEqual( const timeval& tv1, const timeval& tv2 )
+bool vrpn_TimevalEqual( const timeval& tv1, const timeval& tv2 )
 {
   if( tv1.tv_sec == tv2.tv_sec && tv1.tv_usec == tv2.tv_usec )
     return true;
@@ -696,14 +686,6 @@ int vrpn_unbuffer (const char ** buffer, char * string,
 #ifndef VRPN_UNSAFE_WINDOWS_CLOCK
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
-#ifndef VRPN_NO_STREAMS
-  #ifdef VRPN_USE_OLD_STREAMS
-        #include <iostream.h>
-  #else
-        #include <iostream>
-	using namespace std;
-  #endif
-#endif
 #include <math.h>
 
 #pragma optimize("", on)
@@ -783,12 +765,6 @@ int vrpn_gettimeofday(timeval *tp, void *voidp)
 // They claim it will be fixed in the next release, version b21
 // so until then, we will make it right using our solution. 
 #if defined(_WIN32) && !defined(__CYGWIN__)
-  #ifdef VRPN_USE_OLD_STREAMS
-        #include <iostream.h>
-  #else
-        #include <iostream>
-	using namespace std;
-  #endif
 #include <math.h>
 
 // utility routines to read the pentium time stamp counter
@@ -816,14 +792,13 @@ static __int64 VRPN_CLOCK_FREQ = 200000000;
 /*
  * calculate the time stamp counter register frequency (clock freq)
  */
+#ifndef	VRPN_WINDOWS_CLOCK_V2
 #pragma optimize("",off)
 static int vrpn_AdjustFrequency(void)
 {
     const int loops = 2;
     const int tPerLoop = 500; // milliseconds for Sleep()
-    cerr.precision(4);
-    cerr.setf(ios::fixed);
-    cerr << "vrpn vrpn_gettimeofday: determining clock frequency...";
+    fprintf(stderr,"vrpn vrpn_gettimeofday: determining clock frequency...");
 
     LARGE_INTEGER startperf, endperf;
     LARGE_INTEGER perffreq;
@@ -857,8 +832,7 @@ static int vrpn_AdjustFrequency(void)
 
     if (fabs(perffreq.QuadPart - freq) < 0.05*freq) {
         VRPN_CLOCK_FREQ = (__int64) perffreq.QuadPart;
-        cerr << "\nvrpn vrpn_gettimeofday: perf clock is tsc -- using perf clock freq (" 
-             << perffreq.QuadPart/1e6 << " MHz)" << endl;
+        fprintf(stderr,"\nvrpn vrpn_gettimeofday: perf clock is tsc -- using perf clock freq ( %lf MHz)\n", perffreq.QuadPart/1e6);
         SetPriorityClass( GetCurrentProcess() , dwPriorityClass );
         SetThreadPriority( GetCurrentThread(), iThreadPriority );
         return 0;
@@ -868,9 +842,7 @@ static int vrpn_AdjustFrequency(void)
     // tell accurately enough with the short test. either way we now
     // need an accurate frequency measure, so ...
 
-    cerr << " (this will take " << setprecision(0) << loops*tPerLoop/1000.0 
-         << " seconds)... " << endl;
-    cerr.precision(4);
+    fprintf(stderr," (this will take %lf seconds)...\n", loops*tPerLoop/1000.0);
 
     for (int j = 0; j < loops; j++) {
         rdtsc( liStart );
@@ -896,8 +868,6 @@ static int vrpn_AdjustFrequency(void)
     // might want last, not sum -- just get into cache and run
     freq = (sum/loops);
   
-    cerr.precision(5);
-
     // if we are on a uniprocessor system, then use the freq estimate
     // This used to check against a 200 mhz assumed clock, but now 
     // we assume the routine works and trust the result.
@@ -912,16 +882,15 @@ static int vrpn_AdjustFrequency(void)
     // approx the perf clock freq).
     if (fabs(perffreq.QuadPart - freq) < 0.05*freq) {
         VRPN_CLOCK_FREQ = perffreq.QuadPart;
-        cerr << "vrpn vrpn_gettimeofday: perf clock is tsc -- using perf clock freq (" 
-             << perffreq.QuadPart/1e6 << " MHz)" << endl;
+	fprintf(stderr, "vrpn vrpn_gettimeofday: perf clock is tsc -- using perf clock freq ( %lf MHz)\n", perffreq.QuadPart/1e6);
     } else {
-        cerr << "vrpn vrpn_gettimeofday: adjusted clock freq to measured freq (" 
-             << freq/1e6 << " MHz)" << endl;
+        fprintf(stderr, "vrpn vrpn_gettimeofday: adjusted clock freq to measured freq ( %lf MHz )\n", freq/1e6);
     }
     VRPN_CLOCK_FREQ = (__int64) freq;
     return 0;
 }
 #pragma optimize("", on)
+#endif
 
 // The pc has no gettimeofday call, and the closest thing to it is _ftime.
 // _ftime, however, has only about 6 ms resolution, so we use the peformance 
@@ -987,8 +956,8 @@ int vrpn_gettimeofday(timeval *tp, void *voidp)
 	    GetVersionEx(&osvi);
 
 	    if (osvi.dwPlatformId != VER_PLATFORM_WIN32_NT) {
-                cerr << "\nvrpn_gettimeofday: disabling hi performance clock on non-NT system. " 
-	             << "Defaulting to _ftime (~6 ms resolution) ..." << endl;
+                fprintf(stderr, "\nvrpn_gettimeofday: disabling hi performance clock on non-NT system. " 
+	             "Defaulting to _ftime (~6 ms resolution) ...\n");
 		fHasPerfCounter=0;
 	        vrpn_gettimeofday( tp, tzp );
 		return 0;
@@ -997,16 +966,16 @@ int vrpn_gettimeofday(timeval *tp, void *voidp)
 
         // check that hi-perf clock is available
         if ( !(fHasPerfCounter = QueryPerformanceFrequency( &liTemp )) ) {
-            cerr << "\nvrpn_gettimeofday: no hi performance clock available. " 
-                 << "Defaulting to _ftime (~6 ms resolution) ..." << endl;
+            fprintf(stderr, "\nvrpn_gettimeofday: no hi performance clock available. " 
+                 "Defaulting to _ftime (~6 ms resolution) ...\n");
             fHasPerfCounter=0;
             vrpn_gettimeofday( tp, tzp );
             return 0;
         }
 
         if (vrpn_AdjustFrequency()<0) {
-            cerr << "\nvrpn_gettimeofday: can't verify clock frequency. " 
-                 << "Defaulting to _ftime (~6 ms resolution) ..." << endl;
+            fprintf(stderr, "\nvrpn_gettimeofday: can't verify clock frequency. " 
+                 "Defaulting to _ftime (~6 ms resolution) ...\n");
             fHasPerfCounter=0;
             vrpn_gettimeofday( tp, tzp );
             return 0;

@@ -147,7 +147,7 @@ void vrpn_VPJoystick::mainloop()
    	flag = (~flag) & ( VP_BUTTON_ALL | VP_HAT_ALL );
 
 		for( i = 0 ; i < num_buttons; i++ ) {
-			buttons[ i ] =  ( ( flag & button_masks[i] ) == button_masks[i] ) ? VRPN_BUTTON_ON : VRPN_BUTTON_OFF;	
+			buttons[ i ] =  static_cast<unsigned char>( ( ( flag & button_masks[i] ) == button_masks[i] ) ? VRPN_BUTTON_ON : VRPN_BUTTON_OFF );
 
 		}
 

@@ -1,3 +1,7 @@
+2004-12-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpnTrackerClient.cpp : Fixed compiler warnings.
+
 2004-12-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Makefile : Swapped out test_tempimager for test_imager.

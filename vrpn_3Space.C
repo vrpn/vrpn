@@ -31,13 +31,6 @@
 #define T_3_METER_RANGE         (T_3_CM_RANGE / 100.0)
 #define T_3_BINARY_TO_METERS    (T_3_METER_RANGE / T_3_DATA_MAX)
 
-static	unsigned long	duration(struct timeval t1, struct timeval t2)
-{
-	return (t1.tv_usec - t2.tv_usec) +
-	       1000000L * (t1.tv_sec - t2.tv_sec);
-}
-
-
 void vrpn_Tracker_3Space::reset()
 {
    static int numResets = 0;	// How many resets have we tried?

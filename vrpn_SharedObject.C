@@ -130,11 +130,10 @@ void vrpn_SharedObject::bindConnection (vrpn_Connection * c) {
           ("vrpn_Shared assume_serializer");
 }
 
-void vrpn_SharedObject::useLamportClock (vrpn_LamportClock * l) {
+void vrpn_SharedObject::useLamportClock (vrpn_LamportClock *) {
 
   // NOTE:  this is disabled
   // d_lClock = l;
-
 }
 
 
@@ -535,7 +534,7 @@ vrpn_Shared_int32 & vrpn_Shared_int32::set (vrpn_int32 newValue,
 //virtual
 vrpn_bool vrpn_Shared_int32::shouldAcceptUpdate
                      (vrpn_int32 newValue, timeval when,
-                      vrpn_bool isLocalSet, vrpn_LamportTimestamp * t) {
+                      vrpn_bool isLocalSet, vrpn_LamportTimestamp *) {
 
 //fprintf(stderr, "In vrpn_Shared_int32::shouldAcceptUpdate(%s).\n", d_name);
 

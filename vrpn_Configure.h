@@ -12,17 +12,6 @@
 //--------------------------------------------------------//
 
 //-----------------------
-// Instructs VRPN to use a DLL interface on Windows systems.
-// When using this, link with VRPNDLL.LIB (and VRPN.DLL) rather
-// than VRPN.LIB in user code.  This is experimental and is
-// under development to enable C# and other languages to pull in
-// VRPN.  This is only needed when trying to link VRPN with
-// languages other than C++ (and not even for Java).  If you don't
-// have a good reason to, don't define it.
-// Not implemented for .so-based Unix systems.
-//#define VRPN_USE_SHARED_LIBRARY
-
-//-----------------------
 // Default port to listen on for a server.  It used to be 4500
 // up through version 6.03, but then all sorts of VPNs started
 // using this, as did Microsoft.  Port 3883 was assigned to VRPN
@@ -31,22 +20,6 @@
 // The parentheses are to keep it from being expanded into something
 // unexpected if the code has a dot after it.
 #define	vrpn_DEFAULT_LISTEN_PORT_NO (3883)
-
-//-----------------------
-// Instructs VRPN not to use any iostream library functions, but
-// rather to always use C-style FILE objects.  This is to provide
-// compatibility with code that uses the other kind of streams than
-// VRPN uses.
-#define	VRPN_NO_STREAMS
-
-//-----------------------
-// Instructs VPRN to use the old-style includes,
-// because at least our SGI compiler is broken in ways not easily fixed
-// when trying to use the new one.  Everything goes great until you try
-// to link, at which time there are undefined symbols for the ostream
-// functions, which the compiler doesn't seem to be able to pull from
-// the library even when its objects were made using -LANG:std.
-//#define	VRPN_USE_OLD_STREAMS
 
 //-----------------------
 // Instructs VRPN to expose the vrpn_gettimeofday() function also
@@ -104,14 +77,6 @@
 #define	VRPN_WINDOWS_CLOCK_V2
 
 //-----------------------
-// Instructs VRPN to use the default room space transforms for
-// the Desktop Phantom as used in the nanoManipulator application
-// rather than the default world-origin with identity rotation.
-// Please don't anyone new use the room space transforms built
-// into VRPN -- they are a hack pulled forward from Trackerlib.
-#define	DESKTOP_PHANTOM_DEFAULTS
-
-//-----------------------
 // Instructs VRPN library and server to include code that uses
 // the DirectX SDK (from its standard installation in C:\DXSDK).
 // Later in this file, we also instruct the compiler to link with
@@ -145,6 +110,25 @@
 // the National Instruments libraries if this is defined.
 //#define	VRPN_USE_NATIONAL_INSTRUMENTS
 
+//-----------------------
+// Instructs VRPN to use the default room space transforms for
+// the Desktop Phantom as used in the nanoManipulator application
+// rather than the default world-origin with identity rotation.
+// Please don't anyone new use the room space transforms built
+// into VRPN -- they are a hack pulled forward from Trackerlib.
+#define	DESKTOP_PHANTOM_DEFAULTS
+
+//-----------------------
+// Instructs VRPN to use a DLL interface on Windows systems.
+// When using this, link with VRPNDLL.LIB (and VRPN.DLL) rather
+// than VRPN.LIB in user code.  This is experimental and is
+// under development to enable C# and other languages to pull in
+// VRPN.  This is only needed when trying to link VRPN with
+// languages other than C++ (and not even for Java).  If you don't
+// have a good reason to, don't define it.
+// Not implemented for .so-based Unix systems.
+//#define VRPN_USE_SHARED_LIBRARY
+
 //---------------------------------------------------------------//
 // DO NOT EDIT BELOW THIS LINE FOR NORMAL CONFIGURATION SETTING. //
 //---------------------------------------------------------------//
@@ -154,17 +138,17 @@
 #ifdef VRPN_USE_PHANTOM_SERVER
   #define	VRPN_NO_STREAMS
   #ifdef VRPN_USE_HDAPI
-    #pragma comment (lib,"D:/Program Files/SensAble/3DTouch/lib/hd.lib")
+    #pragma comment (lib,"C:/Program Files/SensAble/3DTouch/lib/hd.lib")
     #ifdef	_DEBUG
-      #pragma comment (lib,"D:/Program Files/SensAble/3DTouch/utilities/lib/hdud.lib")
+      #pragma comment (lib,"C:/Program Files/SensAble/3DTouch/utilities/lib/hdud.lib")
     #else
-      #pragma comment (lib,"D:/Program Files/SensAble/3DTouch/utilities/lib/hdu.lib")
+      #pragma comment (lib,"C:/Program Files/SensAble/3DTouch/utilities/lib/hdu.lib")
     #endif
   #else
     #ifdef VRPN_USE_GHOST_31
-      #pragma comment (lib,"D:/Program Files/SensAble/GHOST/v3.1/lib/GHOST31.lib")
+      #pragma comment (lib,"C:/Program Files/SensAble/GHOST/v3.1/lib/GHOST31.lib")
     #else
-      #pragma comment (lib,"D:/Program Files/SensAble/GHOST/v4.0/lib/GHOST40.lib")
+      #pragma comment (lib,"C:/Program Files/SensAble/GHOST/v4.0/lib/GHOST40.lib")
     #endif
   #endif
 #endif
@@ -176,9 +160,9 @@
 // turned on and off using the definition above.
 #ifdef	VRPN_USE_DIRECTINPUT
 #define	DIRECTINPUT_VERSION 0x0800
-#pragma comment (lib, "D:/DXSDK/lib/dxguid.lib")
-#pragma comment (lib, "D:/DXSDK/lib/dxerr8.lib")
-#pragma comment (lib, "D:/DXSDK/lib/dinput8.lib")
+#pragma comment (lib, "C:/DXSDK/lib/dxguid.lib")
+#pragma comment (lib, "C:/DXSDK/lib/dxerr8.lib")
+#pragma comment (lib, "C:/DXSDK/lib/dinput8.lib")
 #endif
 
 // Load Adrienne libraries if we are using the timecode generator.
@@ -196,8 +180,8 @@
 // this here rather than in the project settings so that it can be
 // turned on and off using the definition above.
 #ifdef	VRPN_USE_NATIONAL_INSTRUMENTS
-#pragma comment (lib, "D:/Program Files/National Instruments/NI-DAQ/Lib/nidaq32.lib")
-#pragma comment (lib, "D:/Program Files/National Instruments/NI-DAQ/Lib/nidex32.lib")
+#pragma comment (lib, "C:/Program Files/National Instruments/NI-DAQ/Lib/nidaq32.lib")
+#pragma comment (lib, "C:/Program Files/National Instruments/NI-DAQ/Lib/nidex32.lib")
 #endif
 
 // This will be defined in the VRPN (non-DLL) project and nothing else

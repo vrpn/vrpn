@@ -235,8 +235,8 @@ void vrpn_Joystick::parse (int index, int reset_rest_pos)
      *  should be the right button.  In the original reading the two bits are
      *  opposite this.  We swap the two least significant bits. */;
      
-     buttons[0] = !(serialbuf[index+1] & left)?1:0;
-     buttons[1] = !(serialbuf[index+1] & right)?1:0;
+     buttons[0] = static_cast<unsigned char>(!(serialbuf[index+1] & left)?1:0);
+     buttons[1] = static_cast<unsigned char>(!(serialbuf[index+1] & right)?1:0);
 #ifdef VERBOSE
      printf("Joystick::parse: Buttons: %d %d\n",
 		 buttons[1], buttons[0]);

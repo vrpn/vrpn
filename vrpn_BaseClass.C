@@ -1,15 +1,5 @@
 // vrpn_BaseClass.C
 
-#ifdef _WIN32
-#ifndef _WIN32_WCE
-  #ifdef VRPN_USE_OLD_STREAMS
-    #include <iomanip>
-  #else
-    #include <iomanip>
-  #endif
-#endif
-#endif
-
 #include "vrpn_BaseClass.h"
 #include <stdio.h>
 #include <string.h>

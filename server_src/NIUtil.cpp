@@ -1,10 +1,3 @@
-#ifdef	VRPN_USE_OLD_STREAMS
-	#include <iostream.h>
-#else
-	#include <iostream>
-	using namespace std;
-#endif
-
 #include "NIUtil.h"
 
 const short Max_NIDAQ_Devices(10);
@@ -147,7 +140,7 @@ namespace NIUtil
 	 case 348: name = "DAQCard-6036E"; break;
 	 case 350: name = "PCI-6733"; break;
          default :
-            cerr << "NIUtil::nameCodeToString: Unknown code " << code << "!\n";
+	    fprintf(stderr, "NIUtil::nameCodeToString: Unknown code (%d)!\n", code);
             name = "Unknown";
             break;
       }
@@ -157,7 +150,7 @@ namespace NIUtil
 
    char * getDeviceName
    (
-      int deviceNumber
+      short deviceNumber
    )
    {
       unsigned long code;
@@ -168,9 +161,9 @@ namespace NIUtil
       return nameCodeToString(code);
    }
 
-   int getDeviceCode
+   unsigned long getDeviceCode
    (
-      int deviceNumber
+      short deviceNumber
    )
    {
       unsigned long code;
@@ -181,7 +174,7 @@ namespace NIUtil
       return code;
    }
 
-   int findDevice(const char *name)
+   short findDevice(const char *name)
    {
       static bool first_time = true;
       if (first_time) {
@@ -191,7 +184,8 @@ namespace NIUtil
 	}
 	first_time = false;
       }
-      int device(1), code(0);
+      short device(1);
+      unsigned long code(0);
 
       while ( (-1 != code) && (device < Max_NIDAQ_Devices) ) {
 	 code = getDeviceCode(device);
@@ -211,7 +205,7 @@ namespace NIUtil
 
    int checkError
    (
-      int    status,
+      short    status,
       char *message,
       bool   warn
    ) 

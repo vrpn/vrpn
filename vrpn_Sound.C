@@ -985,11 +985,12 @@ vrpn_int32 vrpn_Sound_Client::setListenerPose(const vrpn_float64 position[3], co
 	vrpn_PoseDef tempdef;
         int i;
 
-	for (i=0; i<4; i++)
+	for (i=0; i<4; i++) {
 	  tempdef.orientation[i] = orientation[i];
-    for (i=0; i<3; i++) 
+	}
+	for (i=0; i<3; i++) {
 	  tempdef.position[i] = position[i];
-
+	}
 		
 	len = encodeListenerPose(tempdef, buf);
 
@@ -1012,16 +1013,12 @@ vrpn_int32 vrpn_Sound_Client::setListenerVelocity(const vrpn_float64 velocity[4]
 
 	vrpn_gettimeofday(&timestamp, NULL);
 
-	if (vrpn_Sound::d_connection->pack_message(len, timestamp, set_listener_velocity, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
-      fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
-
+	if (vrpn_Sound::d_connection->pack_message(len, timestamp, set_listener_velocity, d_sender_id, buf, vrpn_CONNECTION_RELIABLE)) {
+	  fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
+	}
 	
 	return 0;
 }
-
-
-
-
 
 vrpn_int32 vrpn_Sound_Client::LoadModel_local(const char *filename) {
  	vrpn_int32 len;

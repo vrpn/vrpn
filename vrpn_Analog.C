@@ -177,11 +177,6 @@ vrpn_Analog_Server::vrpn_Analog_Server (const char * name,
 }
 
 //virtual
-vrpn_Analog_Server::~vrpn_Analog_Server (void)
-{
-}
-
-//virtual
 void vrpn_Analog_Server::report_changes (vrpn_uint32 class_of_service, const struct timeval time)
 {
   vrpn_Analog::report_changes(class_of_service, time);
@@ -306,11 +301,6 @@ vrpn_Analog_Remote::vrpn_Analog_Remote (const char * name,
 		channel[i] = last[i] = 0;
 	}
 	vrpn_gettimeofday(&timestamp, NULL);
-}
-
-// virtual
-vrpn_Analog_Remote::~vrpn_Analog_Remote (void)
-{
 }
 
 void	vrpn_Analog_Remote::mainloop()

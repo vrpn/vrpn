@@ -38,18 +38,11 @@
 #include "vrpn_Serial.h"
 #include "vrpn_Shared.h"
 
-#define MAX_TIME_INTERVAL       (2000000) // max time between reports (usec)
 #define	INCHES_TO_METERS	(2.54/100.0)
 
 #define	FT_INFO(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_NORMAL) ; if (d_connection) d_connection->send_pending_reports(); }
 #define	FT_WARNING(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_WARNING) ; if (d_connection) d_connection->send_pending_reports(); }
 #define	FT_ERROR(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_ERROR) ; if (d_connection) d_connection->send_pending_reports(); }
-
-static	unsigned long	duration(struct timeval t1, struct timeval t2)
-{
-	return (t1.tv_usec - t2.tv_usec) +
-	       1000000L * (t1.tv_sec - t2.tv_sec);
-}
 
 vrpn_Tracker_Fastrak::vrpn_Tracker_Fastrak(const char *name, vrpn_Connection *c, 
 		      const char *port, long baud, int enable_filtering, int numstations,

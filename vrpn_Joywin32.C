@@ -19,7 +19,7 @@
 // Defines the modes in which the box can find itself.
 const int STATUS_BROKEN	  = -1;	  // Broken joystick
 const int STATUS_READING  =  1;	  // Looking for a report
-const int CENTERED_VALUE  = -1;		// returned value for centered POV
+const int CENTERED_VALUE  = -1;	  // returned value for centered POV
 
 #define MAX_TIME_INTERVAL       (2000000) // max time to try and reacquire
 
@@ -188,8 +188,6 @@ int vrpn_Joywin32::get_report(void)
 		return -1;
 	}
 
-	vrpn_uint32 currentButton = 0;
-	
 	// update vrpn_Channels state
 	// all joysticks have x and y axes.
 	

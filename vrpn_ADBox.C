@@ -131,7 +131,7 @@ void vrpn_ADBox::mainloop()
           int i(0);
           for (i = 0; i < iNumDigBytes; i++)
             for (int b = 0; b < 8; b++)
-              buttons[8 * i + b] = (buffer[i] & (1 << b)) != 0 ? VRPN_BUTTON_OFF : VRPN_BUTTON_ON;
+              buttons[8 * i + b] = (unsigned char) ((buffer[i] & (1 << b)) != 0 ? VRPN_BUTTON_OFF : VRPN_BUTTON_ON);
           
           for (i = 0; i < (iNumBytes - iNumDigBytes) / 2; i++)
             {

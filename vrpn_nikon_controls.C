@@ -420,7 +420,7 @@ int vrpn_Nikon_Controls::handle_request_channels_message(void* userdata, vrpn_HA
 
 /** When we get a connection request from a remote object, send our state so
     they will know it to start with. */
-int vrpn_Nikon_Controls::handle_connect_message(void *userdata, vrpn_HANDLERPARAM p)
+int vrpn_Nikon_Controls::handle_connect_message(void *userdata, vrpn_HANDLERPARAM)
 {
     vrpn_Nikon_Controls *me = (vrpn_Nikon_Controls *)userdata;
 

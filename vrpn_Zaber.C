@@ -86,10 +86,10 @@ bool  vrpn_Zaber::send_command(unsigned char devicenum, unsigned char cmd, vrpn_
   command[1] = cmd;
 
   // Fill in the data in the correct byte order
-  command[2] = (data & 0x000000FF);
-  command[3] = ((data >> 8) & 0x000000FF);
-  command[4] = ((data >> 16) & 0x000000FF);
-  command[5] = ((data >> 24) & 0x000000FF);
+  command[2] = static_cast<unsigned char>(data & 0x000000FF);
+  command[3] = static_cast<unsigned char>((data >> 8) & 0x000000FF);
+  command[4] = static_cast<unsigned char>((data >> 16) & 0x000000FF);
+  command[5] = static_cast<unsigned char>((data >> 24) & 0x000000FF);
 
   // Send the command to the serial port
   return (vrpn_write_characters(serial_fd, command, 6) == 6);
@@ -169,10 +169,11 @@ int	vrpn_Zaber::reset(void)
 	do {
 	  int expected_chars = 4*6;
 	  vrpn_flush_input_buffer(serial_fd);
-	  send_command(num_channel+1, 23, 0); vrpn_SleepMsecs(10);
-	  send_command(num_channel+1, 40, 16, 0, 0, 0); vrpn_SleepMsecs(10);
-	  send_command(num_channel+1, 41, 128, 0, 0, 0); vrpn_SleepMsecs(10);
-	  send_command(num_channel+1, 42, 128, 0, 0, 0);
+	  unsigned char channel_id = static_cast<unsigned char>(num_channel+1);
+	  send_command(channel_id, 23, 0); vrpn_SleepMsecs(10);
+	  send_command(channel_id, 40, 16, 0, 0, 0); vrpn_SleepMsecs(10);
+	  send_command(channel_id, 41, 128, 0, 0, 0); vrpn_SleepMsecs(10);
+	  send_command(channel_id, 42, 128, 0, 0, 0);
 
 	  timeout.tv_sec = 0;
 	  timeout.tv_usec = 30000;
@@ -200,7 +201,15 @@ int	vrpn_Zaber::reset(void)
 
 	  num_channel++;
 	  o_num_channel++;
+
+// Yes, I know the conditional expression is a constant!
+#ifdef	_WIN32
+#pragma warning ( disable : 4127 )
+#endif
 	} while (true);
+#ifdef	_WIN32
+#pragma warning ( default : 4127 )
+#endif
 	sprintf(errmsg,"found %d devices",num_channel);
 	ZAB_WARNING(errmsg);
 
@@ -306,7 +315,7 @@ int vrpn_Zaber::get_report(void)
    // Decode the report and store the values in it into the analog value
    //--------------------------------------------------------------------
 
-   unsigned char chan = _buffer[0] - 1;
+   unsigned char chan = static_cast<unsigned char>(_buffer[0] - 1);
    vrpn_int32 value = convert_bytes_to_reading(&_buffer[2]);
    if (chan >= num_channel) {	// Unsigned, so can't be < 0
      char msg[1024];
@@ -350,7 +359,7 @@ int vrpn_Zaber::handle_request_message(void *userdata, vrpn_HANDLERPARAM p)
       return 0;
     }
     me->channel[chan_num] = value;
-    me->send_command(chan_num+1,20,(vrpn_int32)value);
+    me->send_command(static_cast<unsigned char>(chan_num+1),20,(vrpn_int32)value);
 
     return 0;
 }
@@ -375,7 +384,7 @@ int vrpn_Zaber::handle_request_channels_message(void* userdata, vrpn_HANDLERPARA
     }
     for (i = 0; i < num; i++) {
         vrpn_unbuffer(&bufptr, &(me->o_channel[i]));
-	me->send_command(i+1,20,(vrpn_int32)me->o_channel[i]);
+	me->send_command(static_cast<unsigned char>(i+1),20,(vrpn_int32)me->o_channel[i]);
     }
 
     return 0;
@@ -383,7 +392,7 @@ int vrpn_Zaber::handle_request_channels_message(void* userdata, vrpn_HANDLERPARA
 
 /** When we get a connection request from a remote object, send our state so
     they will know it to start with. */
-int vrpn_Zaber::handle_connect_message(void *userdata, vrpn_HANDLERPARAM p)
+int vrpn_Zaber::handle_connect_message(void *userdata, vrpn_HANDLERPARAM)
 {
     vrpn_Zaber *me = (vrpn_Zaber *)userdata;
 

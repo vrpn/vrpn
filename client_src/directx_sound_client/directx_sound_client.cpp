@@ -3,7 +3,6 @@
 #include <math.h>
 #include <conio.h>
 #include <cstdlib>
-#include <iostream> 
 
 #define FASTSPEED 500
 #define CIRCLERADIUS 5.0F
@@ -148,7 +147,7 @@ int getOnlyDigits(){
 
 	char temp[80];
 	int id;
-	std::cin.getline(temp, 100);
+	fgets(temp, sizeof(temp)-1, stdin);
 	for(int x=0; x<80; x++)
 		if(isalpha(temp[x])) return -1;
 	id=strtol(temp,0,10);

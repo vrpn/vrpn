@@ -204,7 +204,7 @@ public:
 protected:
   bool	      d_description_sent;   //< Has the description message been sent?
   vrpn_int32  d_frames_to_send;	    //< Set to -1 if continuous, zero or positive tells how many to send and then start dropping
-  vrpn_int32  d_dropped_due_to_throttle;  //< Number of frames dropped due to the throttle request
+  vrpn_uint16 d_dropped_due_to_throttle;  //< Number of frames dropped due to the throttle request
 
   // This method makes sure we send a description whenever we get a ping from
   // a client object.

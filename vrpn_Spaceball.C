@@ -417,27 +417,27 @@ int vrpn_Spaceball::get_report(void)
 
             // Spaceball 2003/4000 buttons 1-4 mapped to slots 0-3
             // Spaceball 3003 L/R buttons are mapped as slots 0/1
-            buttons[0] = ((buf[2] & 0x01) != 0) | ((buf[2] & 0x10) != 0);
-            buttons[1] = ((buf[2] & 0x02) != 0) | ((buf[2] & 0x20) != 0);
-            buttons[2] = ((buf[2] & 0x04) != 0);
-            buttons[3] = ((buf[2] & 0x08) != 0);
+            buttons[0] = static_cast<unsigned char>(((buf[2] & 0x01) != 0) | ((buf[2] & 0x10) != 0));
+            buttons[1] = static_cast<unsigned char>(((buf[2] & 0x02) != 0) | ((buf[2] & 0x20) != 0));
+            buttons[2] = static_cast<unsigned char>(((buf[2] & 0x04) != 0));
+            buttons[3] = static_cast<unsigned char>(((buf[2] & 0x08) != 0));
 
             // Spaceball 2003/4000 buttons 5,6,7 mapped to slots 4-6
-            buttons[4] = ((buf[1] & 0x01) != 0);
-            buttons[5] = ((buf[1] & 0x02) != 0);
-            buttons[6] = ((buf[1] & 0x04) != 0);
+            buttons[4] = static_cast<unsigned char>(((buf[1] & 0x01) != 0));
+            buttons[5] = static_cast<unsigned char>(((buf[1] & 0x02) != 0));
+            buttons[6] = static_cast<unsigned char>(((buf[1] & 0x04) != 0));
 
             // Spaceball 2003/3003 rezero buttons are mapped to slot 7
             // The rezero button's function is sometimes hard-wired, 
             // and may or may not be used by applications, this is up
             // in the air still.  For now, I'll map it to slot 7 which
             // keeps the numbering in a sane order on the 2003 device anyway.
-            buttons[7] = ((buf[1] & 0x20) != 0) | ((buf[1] & 0x08) != 0); 
+            buttons[7] = static_cast<unsigned char>(((buf[1] & 0x20) != 0) | ((buf[1] & 0x08) != 0)); 
 
             // Spaceball 2003 pick button mapped to slot 8
             // Note: the pick button is the button embedded into the front
             //           surface of the control sphere.
-            buttons[8] = ((buf[1] & 0x10) != 0); 
+            buttons[8] = static_cast<unsigned char>(((buf[1] & 0x10) != 0));
           break;
 
 

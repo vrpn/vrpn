@@ -369,7 +369,7 @@ void vrpn_Tracker_Flock::reset()
    reset[resetLen++]=50;
 
    // number of units (xmitter + receivers)
-   reset[resetLen++]= cSensors+d_useERT;
+   reset[resetLen++]= (unsigned char)(cSensors+d_useERT);
 
    // as per pg 59 of the jan 31, 1995 FOB manual, we need to pause at
    // least 300 ms before and after sending the autoconfig (paused above)
@@ -397,7 +397,7 @@ void vrpn_Tracker_Flock::reset()
    // pos/quat mode sent to each receiver (transmitter is unit 1)
    // 0xf0 + addr is the cmd to tell the master to forward a cmd
    for (i=1;i<=cSensors;i++) {
-     reset[resetLen++] = 0xf0 + i + d_useERT;
+     reset[resetLen++] = (unsigned char)(0xf0 + i + d_useERT);
      reset[resetLen++] = ']';
    }
 
@@ -405,7 +405,7 @@ void vrpn_Tracker_Flock::reset()
    // as above, first part is rs232 to fbb, 'L' is hemisphere
    // 0xC is the 'axis' (lower), and 0x0 is the 'sign' (lower)
    for (i=1;i<=cSensors;i++) {
-     reset[resetLen++] = 0xf0 + i + d_useERT;
+     reset[resetLen++] = (unsigned char)(0xf0 + i + d_useERT);
      reset[resetLen++] = 'L';
      reset[resetLen++] = 0xc;
      reset[resetLen++] = 0;
@@ -603,7 +603,7 @@ int vrpn_Tracker_Flock::get_report(void)
 
    // they use 14 bit ints
    short *rgs= (short *)buffer;
-   short cs = RECORD_SIZE/2;
+   short cs = (short)(RECORD_SIZE/2);
 
    // Go though the flock data and make into two's complemented
    // 16 bit integers by:
@@ -619,10 +619,10 @@ int vrpn_Tracker_Flock::get_report(void)
    for (int irgs=0;irgs<cs;irgs++) {
      // The data is dealt with as bytes so that the host byte ordering
      // will not affect the operation
-     uchLsb = buffer[irgs*2] & 0x7F;
+     uchLsb = (unsigned char)(buffer[irgs*2] & 0x7F);
      uchLsb <<= 1;
      uchMsb = buffer[irgs*2+1];
-     rgs[irgs] = ((unsigned short) uchLsb) + (((unsigned short) uchMsb) << 8);
+     rgs[irgs] = (short)( ((unsigned short) uchLsb) + (((unsigned short) uchMsb) << 8) );
      rgs[irgs] <<= 1;
    }
 
@@ -684,16 +684,6 @@ if (vrpn_write_characters(serial_fd, (const unsigned char *) &chPoint, 1 )!=1) {
 } \
 vrpn_gettimeofday(&timestamp, NULL);\
 }   
-
-// max time between start of a report and the finish (or time to 
-// wait for first report)
-#define MAX_TIME_INTERVAL       (2000000)
-
-static	unsigned long	duration(struct timeval t1, struct timeval t2)
-{
-	return (t1.tv_usec - t2.tv_usec) +
-	       1000000L * (t1.tv_sec - t2.tv_sec);
-}
 
 void	vrpn_Tracker_Flock::send_report(void) {
     vrpn_Tracker_Serial::send_report();

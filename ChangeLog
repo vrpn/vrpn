@@ -1,5 +1,61 @@
 2004-12-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_3Space.C : Turned on a higher level of warnings in
+		Windows and then went through and fixed all of the
+		warnings, except a few on FunctionGenerator (which
+		has an uncompleted function) and on Sound (which has
+		a bunch of uncompleted functions).  Fixed a few bugs
+		that turned up along the way.  Ripped out every trace
+		of iostream (old or new type) from the base library.
+		Also removed VPRN_NO_STREAMS, which was obviated by
+		this.
+	* vrpn_ADBox.C : Same.
+	* vrpn_Analog.C : Same.
+	* vrpn_Analog.h : Same.
+	* vrpn_Analog_5dt.h : Same.
+	* vrpn_Analog_Output_NI.C : Same.
+	* vrpn_Analog_Output_NI.h : Same.
+	* vrpn_Analog_Radamec_SPI.C : Same.
+	* vrpn_BaseClass.C : Same.
+	* vrpn_BaseClass.h : Same.
+	* vrpn_Button.C : Same.
+	* vrpn_CerealBox.C : Same.
+	* vrpn_Configure.h : Same.
+	* vrpn_Connection.C : Same.
+	* vrpn_DirectXFFJoystick.C : Same.
+	* vrpn_Dyna.C : Same.
+	* vrpn_FileConnection.C : Same.
+	* vrpn_Flock.C : Same.
+	* vrpn_FunctionGenerator.C : Same.
+	* vrpn_FunctionGenerator.h : Same.
+	* vrpn_Imager.C : Same.
+	* vrpn_Imager.h : Same.
+	* vrpn_ImmersionBox.C : Same.
+	* vrpn_ImmersionBox.h : Same.
+	* vrpn_Joywin32.C : Same.
+	* vrpn_Joywin32.h : Same.
+	* vrpn_Mutex.C : Same.
+	* vrpn_Poser_Analog.h : Same.
+	* vrpn_Poser_Tek4662.C : Same.
+	* vrpn_Serial.C : Same.
+	* vrpn_Shared.C : Same.
+	* vrpn_Shared.h : Same.
+	* vrpn_SharedObject.C : Same.
+	* vrpn_Sound.C : Same.
+	* vrpn_Spaceball.C : Same.
+	* vrpn_Tng3.C : Same.
+	* vrpn_Tracker_DTrack.C : Same.
+	* vrpn_Tracker_Fastrak.C : Same.
+	* vrpn_Tracker_Liberty.C : Same.
+	* vrpn_UNC_Joystick.C : Same.
+	* vrpn_VPJoystick.C : Same.
+	* vrpn_Wanda.C : Same.
+	* vrpn_Zaber.C : Same.
+	* vrpn_nikon_controls.C : Same.
+	* vrpn_raw_sgibox.C : Same.
+
+2004-12-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_BaseClass.h : Guarding the #pragma that turns off
 		the warning so that it only happens on Windows,
 		so that the SGI compiler doesn't complain about
