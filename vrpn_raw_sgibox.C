@@ -59,6 +59,7 @@ static	int	write_slowly(int fd, unsigned char *buffer, int len)
 			return -1;
 		}
 	}
+	return 0;
 }
 
 vrpn_raw_SGIBox::vrpn_raw_SGIBox(char * name, vrpn_Connection * c,
