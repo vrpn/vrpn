@@ -9,18 +9,20 @@
 # Author: Russ Taylor, 10/2/1997
 #	  
 # modified:
+# * Jeff Juliano, 10/99
+#     added "make depend"  (see comments at end of this makefile)
 # * Jeff Juliano, 9/1999
-#   support for parallel make
+#     support for parallel make (see WARNING below)
 # * Tom Hudson, 25 Jun 1998
-#   Support for n32 ABI on sgi.  (gmake n32)
+#     Support for n32 ABI on sgi.  (gmake n32)
 # * Hans Weber, ???
-#   Support for both g++ and native compilers on sgi.
+#     Support for both g++ and native compilers on sgi.
 # * Tom Hudson, 13 Feb 1998
-#   Build two different libraries:  client (libvrpn) and server
-# (libvrpnserver).  Our solution is to compile twice, once with the
-# flag -DVRPN_CLIENT_ONLY and once without.  Any server-specific code
-# (vrpn_3Space, vrpn_Tracker_Fastrak, vrpn_Flock) should ONLY be compiled into
-# the server library!
+#     Build two different libraries:  client (libvrpn) and server
+#     (libvrpnserver).  Our solution is to compile twice, once with the
+#     flag -DVRPN_CLIENT_ONLY and once without.  Any server-specific code
+#     (vrpn_3Space, vrpn_Tracker_Fastrak, vrpn_Flock) should ONLY be
+#     compiled into the server library!
 #############################################################################
 
 ##########################
@@ -34,6 +36,11 @@
 #HW_OS := pc_FreeBSD
 ##########################
 
+MV = /bin/mv
+MVF = /bin/mv -f
+
+MAKE_AS_INVOKED := $(MAKE)
+
 MAKEFILE := Makefile
 MAKE := $(MAKE) -f $(MAKEFILE)
 ##
@@ -44,7 +51,7 @@ MAKE := $(MAKE) -f $(MAKEFILE)
 ##   but until it's decided what to do, I'll leave it this way.
 ##
 ## incidently, the above works great on multi-CPU winNT boxes
-## running cygwin.  if you nice it, then your other apps don't suffer.
+## running cygwin!  (if you nice it, then your other apps don't suffer.)
 ##
 
 ifndef	HW_OS
@@ -239,7 +246,8 @@ $(OBJECT_DIR)/%.o: %.c $(LIB_INCLUDES) $(MAKEFILE)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 # Build objects from .C files
-$(OBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) $(MAKEFILE)
+#$(OBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) $(MAKEFILE)
+$(OBJECT_DIR)/%.o: %.C $(LIB_INCLUDES)
 	$(CC) $(CFLAGS) -DVRPN_CLIENT_ONLY -o $@ -c $<
 
 # Build objects from .C files
@@ -283,8 +291,8 @@ server_g++:
 	mv $(UNQUAL_OBJECT_DIR)/g++/libvrpnserver.a $(UNQUAL_OBJECT_DIR)/libvrpnserver_g++.a
 
 .PHONY:	client
-client: 
-	$(MAKE) $(OBJECT_DIR)/libvrpn.a
+client: $(OBJECT_DIR)/libvrpn.a
+#	$(MAKE) $(OBJECT_DIR)/libvrpn.a
 
 .PHONY:	server
 server:
@@ -380,8 +388,12 @@ SLIB_INCLUDES = $(LIB_INCLUDES) vrpn_3Space.h \
                vrpn_CerealBox.h vrpn_Tracker_AnalogFly.h
 
 
-$(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(OBJECT_DIR) $(LIB_OBJECTS) \
-			$(LIB_INCLUDES)
+#$(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(OBJECT_DIR) \
+#                         lib_depends \
+#                         $(LIB_OBJECTS) $(LIB_INCLUDES)
+#$(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(OBJECT_DIR) \
+
+$(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(OBJECT_DIR) $(LIB_OBJECTS)
 	$(AR) ruv $(OBJECT_DIR)/libvrpn.a $(LIB_OBJECTS)
 	-ranlib $(OBJECT_DIR)/libvrpn.a
 
@@ -398,11 +410,14 @@ $(OBJECT_DIR)/libvrpnserver.a: $(MAKEFILE) $(SOBJECT_DIR) $(SLIB_OBJECTS) \
 
 .PHONY:	clean
 clean:
-	\rm -f $(LIB_OBJECTS) $(OBJECT_DIR)/libvrpn.a $(OBJECT_DIR)/libvrpn_g++.a \
-		$(SLIB_OBJECTS) $(OBJECT_DIR)/libvrpnserver.a $(OBJECT_DIR)/libvrpnserver_g++.a
-ifneq ($(CC), g++)
-	$(MAKE) FORCE_GPP=1 clean
-endif
+	\rm -f $(LIB_OBJECTS) $(OBJECT_DIR)/libvrpn.a \
+               $(OBJECT_DIR)/libvrpn_g++.a $(SLIB_OBJECTS) \
+               $(OBJECT_DIR)/libvrpnserver.a \
+               $(OBJECT_DIR)/libvrpnserver_g++.a \
+               .depend .depend-old
+#ifneq ($(CC), g++)
+#	$(MAKE) FORCE_GPP=1 clean
+#endif
 
 # clobberall removes the object directory for EVERY architecture.
 # One problem - the object directory for pc_win32 also contains files
@@ -438,5 +453,79 @@ beta :
 
 #############################################################################
 #
-# Dependencies that are non-obvious
+# Dependencies
 #
+#   If it doesn't already exist, this makefile automatically creates
+#   a dependency file called .depend.  Then it includes it so that
+#   the build will know the dependency information.
+#
+#   to recreate a dependencies file, type  "make depend"
+#   do this any time you add a file to the project,
+#   or add/remove #include lines from a source file
+#
+#   if you don't want a dependency file, then remove .depend if it exists,
+#   and type "touch .depend".  if it exists (and is empty), make will not
+#   automatically create it or automatically update it (unless you type
+#   make depend)
+#
+
+###############
+### this way works better
+###    you type "make depend" anytime you add a file or
+###    add/remove #includes from a file
+########
+
+include .depend
+
+.PHONY: depend
+depend:
+	-$(MVF) .depend .depend-old
+	$(MAKE) .depend
+.depend:
+	@echo ----------------------------------------------------------------
+	@echo -- Making dependency file.  If you add files to the makefile,
+	@echo -- or add/remove includes from a .h or .C file, then you should
+	@echo -- remake the dependency file by typing \"$(MAKE_AS_INVOKED) depend\"
+	@echo ----------------------------------------------------------------
+ifeq ($(HW_OS),hp700_hpux10)
+	@echo -- $(HW_OS): Using g++ since HP CC does not understand -M
+	@echo -- if this causes an error, then delete .depend and type
+	@echo -- \"touch .depend\" to create an empty file
+	@echo ----------------------------------------------------------------
+	$(SHELL) -ec 'g++ -MM $(CFLAGS) $(LIB_FILES) \
+	    | sed '\''s/\(.*\.o[ ]*:[ ]*\)/$(OBJECT_DIR)\/\1/g'\'' > .depend'
+else
+  ifeq ($(HW_OS),hp_flow_aCC)
+	@echo -- $(HW_OS): Using g++ since HP aCC does not understand -M
+	@echo -- if this causes an error, then delete .depend and type
+	@echo -- \"touch .depend\" to create an empty file
+	@echo ----------------------------------------------------------------
+	$(SHELL) -ec 'g++ -MM $(CFLAGS) $(LIB_FILES) \
+	    | sed '\''s/\(.*\.o[ ]*:[ ]*\)/$(OBJECT_DIR)\/\1/g'\'' > .depend'
+  else
+	$(SHELL) -ec '$(CC) -M $(CFLAGS) $(LIB_FILES) \
+	    | sed '\''s/\(.*\.o[ ]*:[ ]*\)/$(OBJECT_DIR)\/\1/g'\'' > .depend'
+  endif
+endif
+	@echo ----------------------------------------------------------------
+
+##############
+### this way doesn't work as well
+###    you don't have to type anything special, but you may have
+###    to type make twice to get the right behavior.  I can't
+###    figure out how to fix that without changing the rest of the
+###    makefile a little.  (not difficult to do, but more work than
+###    I'm willing to do right now)
+########
+#
+#%.d: %.C
+#	$(SHELL) -ec '$(CC) -M $(CFLAGS) $< \
+#	    | sed '\''s/\($*\)\.o[ :]*/\1\.o $@ : /g'\'' > $@'
+#
+#LIB_DEPENDS := $(LIB_FILES:.C=.d)
+#
+#lib_depends: $(LIB_DEPENDS)
+#
+#sinclude $(LIB_DEPENDS)
+#
+##############
