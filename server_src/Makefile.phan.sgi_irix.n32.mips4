@@ -1,0 +1,155 @@
+# this is a gmake file
+
+##########################
+# common definitions. For non-UNC sites, uncomment one of the lines
+# that defines hw_os for the machine you are on in the section just
+# below. Then, the code should compile in your environment.
+#
+HW_OS := sgi_irix
+#HW_OS := sparc_solaris
+#HW_OS := hp700_hpux10
+#HW_OS := pc_linux
+#HW_OS := pc_cygwin
+#HW_OS := pc_FreeBSD
+#HW_OS := powerpc_aix
+##########################
+
+ifndef	HW_OS
+# hw_os does not exist on FreeBSD at UNC
+UNAME := $(shell uname -s)
+ifeq ($(UNAME), FreeBSD)
+  HW_OS := pc_FreeBSD
+else
+  # pc_cygwin doesn't have HW_OS
+  ifeq ($(UNAME), CYGWIN_NT-4.0)
+    HW_OS := pc_cygwin
+    # On cygwin make is gmake (and gmake doesn't exist)
+    MAKE  := make -f $(MAKEFILE)
+  else
+    ifeq ($(UNAME), CYGWIN_98-4.10)
+		HW_OS := pc_cygwin
+		MAKE := make -f $(MAKEFILE)
+	else
+	  HW_OS := $(shell hw_os)
+	endif
+  endif
+endif
+endif
+
+# check if its for pxfl
+ifdef PBASE_ROOT
+  HW_OS := hp_flow
+  ifeq ($(PXFL_COMPILER), aCC)
+    HW_OS = hp_flow_aCC
+  endif
+endif
+
+CC := g++
+ifeq ($(HW_OS),pc_cygwin)
+	SYSLIBS := -lcygwin -luser32 -lgdi32 -lcomdlg32 -lwsock32
+endif
+ifeq ($(HW_OS),sparc_solaris)
+	CC := /opt/SUNWspro/bin/CC
+	SYSLIBS := -lsocket -lnsl
+endif
+ifeq ($(HW_OS),powerpc_aix)
+	CC := /usr/ibmcxx/bin/xlC_r -g -qarch=pwr3 -w
+endif
+
+ifeq ($(HW_OS),sgi_irix)
+   ifndef SGI_ABI
+      SGI_ABI := n32
+   endif
+   ifndef SGI_ARCH
+      SGI_ARCH := mips4
+   endif
+   OBJECT_DIR_SUFFIX := .$(SGI_ABI).$(SGI_ARCH)
+   CC := CC -$(SGI_ABI) -$(SGI_ARCH)
+   GL := -lgl
+endif
+
+ifeq ($(HW_OS),hp700_hpux10)
+	CC := CC +a1
+endif
+ifeq ($(HW_OS),sparc_sunos)
+	CC := /usr/local/lib/CenterLine/bin/CC
+endif
+
+ifeq ($(HW_OS), hp_flow_aCC)
+	CC := /opt/aCC/bin/aCC
+endif
+
+
+OBJ_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)
+LIB_DIR := ../$(OBJ_DIR)
+
+CFLAGS = -g -I../ -I../../quat -DSGI -DUNIX -w -woff 3262     \
+         -I/usr/local/SensAble/GHOST/v31/include/
+# removed: -mips4 -n32
+#          -O2 -ptused \
+#
+LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) \
+         -L/usr/local/SensAble/GHOST/v31/lib
+
+.C.o:
+	$(CC) $(CFLAGS) -c $*.C
+
+.c.o:
+	$(CC) $(CFLAGS) -c $*.c
+
+$(OBJ_DIR)/%.o:	%.c
+	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+$(OBJ_DIR)/%.o:	%.C
+	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+
+
+all:  phan_server
+
+.PHONY:	phan_server
+phan_server:	$(OBJ_DIR)/phan_server
+
+# client:		$(OBJ_DIR)/client
+# player:		$(OBJ_DIR)/player
+# player: vrpn_player.o
+# 	$(CC) $(LFLAGS) -o player vrpn_player.o -lvrpnserver -lsdi -lm
+# $(OBJ_DIR)/client: $(OBJ_DIR)/client.o	
+# 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/client $(OBJ_DIR)/client.o -lvrpn -lsdi 
+
+$(OBJ_DIR)/phan_server: $(OBJ_DIR)/buzzForceField.o \
+	$(OBJ_DIR)/constraint.o $(OBJ_DIR)/forcefield.o $(OBJ_DIR)/plane.o \
+	$(OBJ_DIR)/texture_plane.o $(OBJ_DIR)/trimesh.o \
+	$(OBJ_DIR)/vrpn_Phantom.o $(OBJ_DIR)/phantom.o \
+	$(LIB_DIR)/libvrpnserver.a
+	$(CC) $(LFLAGS)  -o $(OBJ_DIR)/phan_server \
+		$(OBJ_DIR)/buzzForceField.o $(OBJ_DIR)/constraint.o \
+		$(OBJ_DIR)/forcefield.o $(OBJ_DIR)/plane.o \
+		$(OBJ_DIR)/texture_plane.o $(OBJ_DIR)/trimesh.o \
+		$(OBJ_DIR)/vrpn_Phantom.o $(OBJ_DIR)/phantom.o \
+		-lvrpnserver -lghost31_32 $(GL) -lquat $(SYSLIBS) -lm
+
+#$(OBJ_DIR)/phan_server: $(OBJ_DIR)/phantom.o  \
+#			 $(LIB_DIR)/libvrpnserver.a
+#	$(CC) $(LFLAGS) -o $(OBJ_DIR)/phan_server \
+#		$(OBJ_DIR)/phantom.o \
+#		-lvrpnserver $(GL) -lquat $(SYSLIBS) -lm
+
+
+clean:
+	rm -f $(OBJ_DIR)/phantom.o $(OBJ_DIR)/vrpn_Phantom.o $(OBJ_DIR)/buzzForceField.o \
+	      $(OBJ_DIR)/constraint.o $(OBJ_DIR)/forcefield.o $(OBJ_DIR)/plane.o \
+	      $(OBJ_DIR)/texture_plane.o $(OBJ_DIR)/trimesh.o \
+	      $(OBJ_DIR)/phan_server
+
+$(OBJ_DIR)/phantom.o:	phantom.C
+$(OBJ_DIR)/vrpn_Phantom.o:	vrpn_Phantom.C
+$(OBJ_DIR)/buzzForceField.o:	buzzForceField.C
+$(OBJ_DIR)/constraint.o:	constraint.C
+$(OBJ_DIR)/forcefield.o:	forcefield.C
+$(OBJ_DIR)/plane.o:	plane.C
+$(OBJ_DIR)/texture_plane.o:	texture_plane.C
+$(OBJ_DIR)/trimesh.o:	trimesh.C
+

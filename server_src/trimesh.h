@@ -9,7 +9,7 @@
 #include <gstShape.h>
  */
 
-#include "GHOST.H"
+#include "ghost.h"
 
 // the different types of trimeshes we have available for haptic display
 enum TrimeshType {GHOST,HCOLLIDE};

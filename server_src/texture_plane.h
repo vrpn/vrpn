@@ -262,7 +262,12 @@ protected:
 	int texAspect_needs_update;	// when this is updated it preserves wavelength
 	double textureAspect; // ratio of amplitude to wave length
 
+// MB: for SGI compilation with pthreads
+#ifdef SGI
+        pthread_mutex_t  tex_param_mutex;
+#else
 	CRITICAL_SECTION tex_param_mutex;
+#endif
 
 	// variables for fading surface away (gradually reducing spring const)
 	int fadeActive;
@@ -422,7 +427,12 @@ class DynamicPlane: public gstDynamic {
 
   private:
 	gstTransformMatrix xform;
+// MB: for SGI compilation with pthreads
+#ifdef SGI
+        pthread_mutex_t  xform_mutex;
+#else
 	CRITICAL_SECTION xform_mutex;
+#endif
 
 	static gstType DynamicPlaneClassTypeId;
 	TexturePlane *fixedPlane;

@@ -17,6 +17,12 @@
  */
 
 #include "ghost.h"
+
+// MB: for SGI compilation with pthreads
+#ifdef SGI
+#include "pthread.h"
+#endif
+
 //#include <gstForceField.h>
 //#include <gstPlane.h>
 
@@ -69,7 +75,12 @@ private:
 	double _new_frequency;
 	int _freq_needs_update;
 
+// MB: for SGI compilation with pthreads
+#ifdef SGI
+	pthread_mutex_t  _amp_freq_mutex;// mutex for accessing 
+#else
 	CRITICAL_SECTION _amp_freq_mutex;// mutex for accessing 
+#endif
 							// _amp_needs_update or _freq_needs_update
 
 	TexturePlane *_tex_plane;	// we use this to modulate height of _plane by

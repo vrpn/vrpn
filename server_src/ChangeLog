@@ -1,3 +1,23 @@
+2003-03-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* plane.C : Inserting changes made by Marc Baaden.
+		Fixes the capitalization on an #include statement.
+	* buzzForceField.C : Inserting changes made by Marc Baaden.
+		Changes to make it compile on an SGI using GHOST 3.1.
+	* buzzForceField.h : Inserting changes made by Marc Baaden.
+		Changes to make it compile on an SGI using GHOST 3.1.
+	* texture_plane.C : Inserting changes made by Marc Baaden.
+		Fixes the capitalization on an #include statement.
+		Changes to make it compile on an SGI using GHOST 3.1.
+	* texture_plane.h : Inserting changes made by Marc Baaden.
+		Changes to make it compile on an SGI using GHOST 3.1.
+	* trimesh.h : Inserting changes made by Marc Baaden.
+		Fixes the capitalization on an #include statement.
+		Changes to make it compile on an SGI using GHOST 3.1.
+	* Makefile.phan.sgi_irix.n32.mips4 : Makefile for SGI with GHOST 3.1.
+	* SGI_GHOST_EXTRAS : Directory containing files from Marc Baaden.
+		Extras for getting things running on an SGI using GHOST 3.1.
+
 2003-01-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* directXFF.C : Comments.  Modified to compile without warnings.

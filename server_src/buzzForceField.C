@@ -19,7 +19,12 @@ BuzzForceField::BuzzForceField() : gstForceField(),
 {
 	boundBySphere(gstPoint(0,0,0), 1000);
 	_tex_plane = NULL;
+// MB: for SGI compilation with pthreads
+#ifdef SGI
+	pthread_mutex_init(&_amp_freq_mutex,NULL);
+#else
 	InitializeCriticalSection(&_amp_freq_mutex);
+#endif
 }
 
 void BuzzForceField::setAmplitude(double amp) {

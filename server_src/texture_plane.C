@@ -1,4 +1,4 @@
-#include "texture_Plane.h"
+#include "texture_plane.h"
 
 // macros for printing something out x times out of a thousand (i.e. x times per second)
 #define DEBUG_BEGIN(x)	{static int pcnt = 0; if ((pcnt % 1000 >= 0)&&(pcnt%1000 < x)){
@@ -41,7 +41,12 @@ DynamicPlane::DynamicPlane() : gstDynamic()
 	fixedPlane->setTextureSize(10.0);
 	fixedPlane->setTextureAspectRatio(0.0);
 	fixedPlane->setInEffect(FALSE);
+// MB: for SGI compilation with pthreads
+#ifdef SGI
+	pthread_mutex_init(&xform_mutex,NULL);
+#else
 	InitializeCriticalSection(&xform_mutex);
+#endif
 }
 
 void DynamicPlane::setParameters(double fd, double fs, double ks,
@@ -130,7 +135,12 @@ void DynamicPlane::setBuzzFrequency(double freq) {
         //
 
 void DynamicPlane::updateDynamics() {
+// MB: for SGI compilation with pthreads
+#ifdef SGI
+	pthread_mutex_lock(&xform_mutex);
+#else
 	EnterCriticalSection(&xform_mutex);
+#endif
 	if (_is_new_plane){
 		planeEquationToTransform(lastPlane, plane, xform);
 		// if we don't compute plane from xform then any
@@ -141,12 +151,22 @@ void DynamicPlane::updateDynamics() {
 		// bounded amount if plane is always changing - this has been verified
 		// in a test program
 		setPlaneFromTransform(plane, xform);
+// MB: for SGI compilation with pthreads
+#ifdef SGI
+	pthread_mutex_unlock(&xform_mutex);
+#else
 		LeaveCriticalSection(&xform_mutex);
+#endif
 		setTransformMatrixDynamic(xform);
 		_is_new_plane = FALSE;
 	}
 	else
+// MB: for SGI compilation with pthreads
+#ifdef SGI
+	pthread_mutex_unlock(&xform_mutex);
+#else
 		LeaveCriticalSection(&xform_mutex);
+#endif
 	gstDynamic::updateDynamics();
 }
 
@@ -156,14 +176,24 @@ void DynamicPlane::update(double a,double b,double c,double d)
 	
 	// no need to do anything unless this plane is different from
 	// the previous one
+// MB: for SGI compilation with pthreads
+#ifdef SGI
+	pthread_mutex_lock(&xform_mutex);
+#else
 	EnterCriticalSection(&xform_mutex);
+#endif
 	if (plane.a() != a || plane.b() != b ||
 		plane.c() != c || plane.d() != d){
 		if (_is_new_plane) {
 		//	err_cnt++;
 		//	if (err_cnt > 3)
 		//		printf("waited %d msec\n", err_cnt);
+// MB: for SGI compilation with pthreads
+#ifdef SGI
+	pthread_mutex_unlock(&xform_mutex);
+#else
 			LeaveCriticalSection(&xform_mutex);
+#endif
 			return;
 		}
 //		else err_cnt = 0;
@@ -171,11 +201,21 @@ void DynamicPlane::update(double a,double b,double c,double d)
 		fixedPlane->signalNewTransform();
 		plane = gstPlane(a,b,c,d);
 		_is_new_plane = TRUE;
+// MB: for SGI compilation with pthreads
+#ifdef SGI
+	pthread_mutex_unlock(&xform_mutex);
+#else
 		LeaveCriticalSection(&xform_mutex);
+#endif
 		addToDynamicList();
 	}
 	else
+// MB: for SGI compilation with pthreads
+#ifdef SGI
+	pthread_mutex_unlock(&xform_mutex);
+#else
 		LeaveCriticalSection(&xform_mutex);
+#endif
 }
 
 
@@ -285,7 +325,12 @@ void TexturePlane::init() {
 	safety_ineffect = TRUE;
 	newCoordinates = FALSE;
 	inContact = FALSE;
+// MB: for SGI compilation with pthreads
+#ifdef SGI
+	pthread_mutex_init(&tex_param_mutex,NULL);
+#else
 	InitializeCriticalSection(&tex_param_mutex);
+#endif
 }
 
 //constructors
@@ -345,82 +390,172 @@ void TexturePlane::update(double a, double b, double c, double d)
 
 void TexturePlane::setTextureWavelength(double wavelength){
 	if (wavelength < MIN_TEXTURE_WAVELENGTH) return;
+// MB: for SGI compilation with pthreads
+#ifdef SGI
+	pthread_mutex_lock(&tex_param_mutex);
+#else
 	EnterCriticalSection(&tex_param_mutex);
+#endif
 	new_texWN = 1.0/wavelength;
 	texWN_needs_update = TRUE;
+// MB: for SGI compilation with pthreads
+#ifdef SGI
+	pthread_mutex_unlock(&tex_param_mutex);
+#else
 	LeaveCriticalSection(&tex_param_mutex);
+#endif
 }
 
 void TexturePlane::setTextureWaveNumber(double wavenum){
 	if (wavenum == 0 || 1/wavenum < MIN_TEXTURE_WAVELENGTH) return;
+// MB: for SGI compilation with pthreads
+#ifdef SGI
+	pthread_mutex_lock(&tex_param_mutex);
+#else
 	EnterCriticalSection(&tex_param_mutex);
+#endif
 	new_texWN = wavenum;
 	texWN_needs_update = TRUE;
+// MB: for SGI compilation with pthreads
+#ifdef SGI
+	pthread_mutex_unlock(&tex_param_mutex);
+#else
 	LeaveCriticalSection(&tex_param_mutex);
+#endif
 }
 
 void TexturePlane::setTextureAmplitude(double amplitude){
+// MB: for SGI compilation with pthreads
+#ifdef SGI
+	pthread_mutex_lock(&tex_param_mutex);
+#else
 	EnterCriticalSection(&tex_param_mutex);
+#endif
 	new_texAmp = amplitude;
 	texAmp_needs_update = TRUE;
+// MB: for SGI compilation with pthreads
+#ifdef SGI
+	pthread_mutex_unlock(&tex_param_mutex);
+#else
 	LeaveCriticalSection(&tex_param_mutex);
+#endif
 }
 
 void TexturePlane::setTextureSize(double size){
 	if (size < MIN_TEXTURE_WAVELENGTH) return;
+// MB: for SGI compilation with pthreads
+#ifdef SGI
+	pthread_mutex_lock(&tex_param_mutex);
+#else
 	EnterCriticalSection(&tex_param_mutex);
+#endif
 	new_Size = size;
 	texSize_needs_update = TRUE;
+// MB: for SGI compilation with pthreads
+#ifdef SGI
+	pthread_mutex_unlock(&tex_param_mutex);
+#else
 	LeaveCriticalSection(&tex_param_mutex);
+#endif
 }
 
 void TexturePlane::setTextureAspectRatio(double aspectRatio){
+// MB: for SGI compilation with pthreads
+#ifdef SGI
+	pthread_mutex_lock(&tex_param_mutex);
+#else
 	EnterCriticalSection(&tex_param_mutex);
+#endif
 	new_textureAspect = aspectRatio;
 	texAspect_needs_update = TRUE;
+// MB: for SGI compilation with pthreads
+#ifdef SGI
+	pthread_mutex_unlock(&tex_param_mutex);
+#else
 	LeaveCriticalSection(&tex_param_mutex);
+#endif
 }
 
 void TexturePlane::updateTextureWavelength(){
+// MB: for SGI compilation with pthreads
+#ifdef SGI
+	pthread_mutex_lock(&tex_param_mutex);
+#else
 	EnterCriticalSection(&tex_param_mutex);
+#endif
 	if (texWN_needs_update){
 		texWN_needs_update = FALSE;
 		texWN = new_texWN;
 		texWL = 1.0/texWN;
 		textureAspect = 2.0*texAmp/texWL;
 	}
+// MB: for SGI compilation with pthreads
+#ifdef SGI
+	pthread_mutex_unlock(&tex_param_mutex);
+#else
 	LeaveCriticalSection(&tex_param_mutex);
+#endif
 }
 
 void TexturePlane::updateTextureAmplitude(){
+// MB: for SGI compilation with pthreads
+#ifdef SGI
+	pthread_mutex_lock(&tex_param_mutex);
+#else
 	EnterCriticalSection(&tex_param_mutex);
+#endif
 	if (texAmp_needs_update){
 		texAmp_needs_update = FALSE;
 		texAmp = new_texAmp;
 		textureAspect = 2.0*texAmp/texWL;
 	}
+// MB: for SGI compilation with pthreads
+#ifdef SGI
+	pthread_mutex_unlock(&tex_param_mutex);
+#else
 	LeaveCriticalSection(&tex_param_mutex);
+#endif
 }
 
 void TexturePlane::updateTextureSize() {
+// MB: for SGI compilation with pthreads
+#ifdef SGI
+	pthread_mutex_lock(&tex_param_mutex);
+#else
 	EnterCriticalSection(&tex_param_mutex);
+#endif
 	if (texSize_needs_update){
 		texSize_needs_update = FALSE;
 		texWL = new_Size;
 		texWN = 1.0/texWL;
 		texAmp = textureAspect*texWL/2.0;
 	}
+// MB: for SGI compilation with pthreads
+#ifdef SGI
+	pthread_mutex_unlock(&tex_param_mutex);
+#else
 	LeaveCriticalSection(&tex_param_mutex);
+#endif
 }
 
 void TexturePlane::updateTextureAspectRatio() {
+// MB: for SGI compilation with pthreads
+#ifdef SGI
+	pthread_mutex_lock(&tex_param_mutex);
+#else
 	EnterCriticalSection(&tex_param_mutex);
+#endif
 	if (texAspect_needs_update){
 		texAspect_needs_update = FALSE;
 		textureAspect = new_textureAspect;
 		texAmp = textureAspect*texWL/2.0;
 	}
+// MB: for SGI compilation with pthreads
+#ifdef SGI
+	pthread_mutex_unlock(&tex_param_mutex);
+#else
 	LeaveCriticalSection(&tex_param_mutex);
+#endif
 }
 
 gstBoolean TexturePlane::intersection(const gstPoint &startPt_WC,
