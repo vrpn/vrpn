@@ -256,8 +256,6 @@ class vrpn_TranslationTable {
 
     vrpn_int32 numEntries (void) const;
     vrpn_int32 mapToLocalID (vrpn_int32 remote_id) const;
-      ///< BUG:  This used to be a constant-time operation;  now it's
-      ///< more like linear-time.  Oops.
 
     // MANIPULATORS
 
@@ -314,8 +312,13 @@ vrpn_int32 vrpn_TranslationTable::mapToLocalID (vrpn_int32 remote_id) const {
   int i;
 
   if ((remote_id < 0) || (remote_id > d_numEntries)) {
+
+#ifdef VERBOSE2
+    // This isn't an error!?  It happens regularly!?
     fprintf(stderr, "vrpn_TranslationTable::mapToLocalID:  "
                     "Remote ID %d is illegal!\n", remote_id);
+#endif
+
     return -1;
   }
 
