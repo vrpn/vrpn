@@ -680,6 +680,7 @@ int vrpn_Tracker_Fastrak::get_report(void)
        is900_analogs[d_sensor]->setChannelValue(1, (raw_tb - 127) / 128.0);
 
        // Report the new values
+       is900_analogs[d_sensor]->report_changes();
        is900_analogs[d_sensor]->mainloop();
    }
 
