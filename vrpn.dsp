@@ -373,5 +373,9 @@ SOURCE=.\vrpn_Tracker_Fastrak.C
 
 SOURCE=.\vrpn_Tracker_Fastrak.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Types.h
+# End Source File
 # End Target
 # End Project

@@ -87,6 +87,18 @@ Package=<4>
 
 ###############################################################################
 
+Project: "sphere_client"=.\client_src\pc_win32\sphere_client\sphere_client.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "test_vrpn"=.\SERVER_SRC\PC_WIN32\test_vrpn\test_vrpn.dsp - Package Owner=<4>
 
 Package=<5>

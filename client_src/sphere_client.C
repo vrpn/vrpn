@@ -9,9 +9,6 @@
 #include <vrpn_Tracker.h>
 #include <vrpn_Button.h>
 
-
-#define PHANTOM_SERVER "Phantom@tantalum-cs"
-
 static float xpos,ypos,zpos;
 static float planeZval;
 
@@ -74,31 +71,32 @@ void	handle_button_change(void *userdata, const vrpn_BUTTONCB b)
 
 int main(int argc, char *argv[])
 {
-
   int     done = 0;
   vrpn_ForceDevice_Remote *forceDevice;
   vrpn_Tracker_Remote *tracker;
   vrpn_Button_Remote *button;
 
-  if (argc < 3) {
-    printf("Usage: %s sFric dFric\n",argv[0]);
+  if (argc != 4) {
+    printf("Usage: %s sFric dFric device_name\n",argv[0]);
+    printf("   Example: %s 0.1 0.1 Phantom@myhost.mydomain.edu\n",argv[0]);
     exit(-1);
   }
   float sFric = atof(argv[1]);
   float dFric = atof(argv[2]);
-  printf("sFric, dFric= %f %f\n",sFric,dFric);
+  char *device_name = argv[3];
+  printf("Connecting to %s: sFric, dFric= %f %f\n",device_name, sFric,dFric);
 
   /* initialize the force device */
-  forceDevice = new vrpn_ForceDevice_Remote(PHANTOM_SERVER);
+  forceDevice = new vrpn_ForceDevice_Remote(device_name);
 //  if (forceDevice == (vrpn_ForceDevice_Remote *)0) exit(-1);
   forceDevice->register_force_change_handler(NULL, handle_force_change);
 
   /* initialize the tracker */
-  tracker = new vrpn_Tracker_Remote(PHANTOM_SERVER);
+  tracker = new vrpn_Tracker_Remote(device_name);
   tracker->register_change_handler(NULL, handle_tracker_change);
 
   /* initialize the button */
-  button = new vrpn_Button_Remote(PHANTOM_SERVER);
+  button = new vrpn_Button_Remote(device_name);
   button->register_change_handler(&done, handle_button_change);
 
   // Set plane and surface parameters
@@ -127,6 +125,9 @@ be smaller than static friction or you will get the same error.
 
   // enable force device and send first surface
   forceDevice->startSurface();
+
+  printf("\n3cm tesselated sphere at the origin should be present always\n");
+  printf("Press and release the Phantom button 3 times to exit\n");
 
   // main loop
   while (! done )
@@ -159,10 +160,4 @@ be smaller than static friction or you will get the same error.
   // shut off force device
   forceDevice->stopSurface();
 }   /* main */
-
-
-
-
-
-
 
