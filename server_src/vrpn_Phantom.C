@@ -131,13 +131,15 @@ void vrpn_Phantom::check_parameters(vrpn_Plane_PHANTOMCB *p)
 // This function reinitializes the PHANToM (resets the origin)
 void vrpn_Phantom::resetPHANToM(void)
 {
-	scene->stopServoLoop();
-	rootH->removeChild(phantom);
-	delete(phantom);
-	phantom = new gstPHANToM("Default PHANToM", TRUE);
-	rootH->addChild(phantom);
-	Sleep(500);
-	scene->startServoLoop();
+    // Ghost 3.0 manual says you don't have to do this
+    // with the Desktop Phantom...
+    scene->stopServoLoop();
+    rootH->removeChild(phantom);
+    delete(phantom);
+    phantom = new gstPHANToM("Default PHANToM", TRUE);
+    rootH->addChild(phantom);
+    Sleep(500);
+    scene->startServoLoop();
 }
 
 // return the position of the phantom stylus relative to base
@@ -178,6 +180,10 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
   /* Create the phantom object.  When this line is processed, 
      the phantom position is zeroed. */
   phantom = new gstPHANToM("Default PHANToM");
+  // Ghost 3.0 spec says we should make sure construction succeeded. 
+  if(!phantom->getValidConstruction()) {
+      fprintf(stderr, "ERROR: Invalid Phantom object created\n");
+  }
   /* We add the phantom to the root instead of the hapticScene (whic
      is the child of the root) because when we turn haptics off
      via the 'H' key, we do not want to remove the phantom from the
@@ -327,6 +333,7 @@ void vrpn_Phantom::get_report(void)
 	// double angAccNorm;
 	int i,j;
 
+        // SCP means "surface contact point"
 	gstPoint scpt, pt;
 	phantom->getPosition_WC(pt);
 	phantom->getSCP_WC(scpt);
@@ -475,7 +482,7 @@ void vrpn_Phantom::mainloop(void) {
             }
 			delete buf;
         }
-	// Encode the SCP if there is a connection
+	// Encode the SCP (surface contact point) if there is a connection
 		if (vrpn_ForceDevice::d_connection) {
 			buf = vrpn_ForceDevice::encode_scp(len, scp_pos, scp_quat);
 			if (vrpn_ForceDevice::d_connection->pack_message(len, timestamp,
