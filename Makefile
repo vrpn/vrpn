@@ -23,6 +23,13 @@ MAKEFILE := Makefile
 MAKE := gmake -f $(MAKEFILE)
 HW_OS := $(shell hw_os)
 
+# check if its for pxfl
+ifeq ($(HW_OS),hp700_hpux10)
+  ifdef PBASE_ROOT
+    HW_OS := hp_flow
+  endif
+endif
+
 # Which C++ compiler to use.  Default is g++, but some don't use this.
 #
 # IF YOU CHANGE THESE, document either here or in the header comment
@@ -72,11 +79,16 @@ else
  ifeq ($(HW_OS),sgi_irix)
   SYS_INCLUDE := -I/usr/local/contrib/mod/include
  else
-  ifeq ($(HW_OS),hp700_hpux10)
+  ifeq ($(HW_OS),hp700_hpux10) 
    SYS_INCLUDE := -I/usr/local/contrib/include -I/usr/local/contrib/mod/include\
 		  -I/usr/include/bsd
   else
-   SYS_INCLUDE := -I/usr/local/contrib/include -I/usr/local/contrib/mod/include
+   ifeq ($(HW_OS),hp700_hpux10) 
+    SYS_INCLUDE := -I/usr/local/contrib/include -I/usr/local/contrib/mod/include\
+	 	   -I/usr/include/bsd
+   else
+    SYS_INCLUDE := -I/usr/local/contrib/include -I/usr/local/contrib/mod/include
+   endif
   endif
  endif
 endif
