@@ -169,6 +169,10 @@ class vrpn_OneConnection {
 				{ return udp_outbound != -1; }
 	virtual	int	connect_tcp_to (const char * msg);
 
+        // Has a clock sync occured yet (slight prob of false negative, but 
+        // only for a brief period)
+        int clockSynced() { return tvClockOffset.tv_usec!=0;}
+
 //XXX These should be protected; making them so will lead to making
 //    the code split the functions between OneConnection and Connection
 //    protected:
