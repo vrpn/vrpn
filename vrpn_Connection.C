@@ -1002,8 +1002,8 @@ int vrpn_start_server(const char *machine, char *server_name, char *args)
 // This is exposed in vrpn_Connection.h so that we can write
 // add_vrpn_cookie.
 
-int write_vrpn_cookie (char * buffer, int length,
-                              long remote_log_mode) {
+int write_vrpn_cookie (char * buffer, int length, long remote_log_mode)
+{
   if (length < vrpn_MAGICLEN + vrpn_ALIGN + 1)
     return -1;
 
@@ -1015,7 +1015,8 @@ int write_vrpn_cookie (char * buffer, int length,
 // Returns -1 on a mismatch, 0 on an exact match,
 // 1 on a minor version difference.
 
-int check_vrpn_cookie (const char * buffer) {
+int check_vrpn_cookie (const char * buffer)
+{
   char * bp;
 
   // Comparison changed 9 Feb 98 by TCH
@@ -1136,6 +1137,38 @@ vrpn_OneConnection::~vrpn_OneConnection(void)
     }
   }
 }
+
+// Clear out the remote mapping list. This is done when a
+// connection is dropped and we want to try and re-establish
+// it.
+void	vrpn_OneConnection::clear_other_senders_and_types(void)
+{	int	i;
+
+	// Free up space reserved for the names
+  	for (i=0;i<num_other_types;i++) {
+		delete other_types[i].name;
+	}
+	for (i=0;i<num_other_senders;i++) {
+		delete other_senders[i].name;
+	}
+
+	// Set all of the local IDs to -1, in case the other side
+	// sends a message of a type that it has not yet defined.
+	// (for example, arriving on the UDP line ahead of its TCP
+	// definition).
+	num_other_senders = 0;
+	for (i = 0; i < vrpn_CONNECTION_MAX_SENDERS; i++) {
+		other_senders[i].local_id = -1;
+		other_senders[i].name = NULL;
+	}
+
+	num_other_types = 0;
+	for (i = 0; i < vrpn_CONNECTION_MAX_TYPES; i++) {
+		other_types[i].local_id = -1;
+		other_types[i].name = NULL;
+	}
+}
+
 
 // Make the local mapping for the otherside sender with the same
 // name, if there is one.  Return 1 if there was a mapping; this
@@ -1561,9 +1594,9 @@ int vrpn_OneConnection::open_log (void) {
 }
 
 
-int vrpn_OneConnection::close_log (void) {
+int vrpn_OneConnection::close_log (void)
+{
 
-  char magicbuf [501];  // HACK
   vrpn_LOGLIST * lp;
   int host_len;
   int final_retval = 0;
@@ -1575,17 +1608,11 @@ int vrpn_OneConnection::close_log (void) {
   // There's at least one hack here:
   //   What logging mode should a client that plays back the log at a
   // later time be forced into?  I believe NONE, but there might be
-  // arguments the other way?
+  // arguments the other way? So, you may want to adjust the cookie
+  // to make the log mode 0.
 
-  retval = write_vrpn_cookie(magicbuf, vrpn_cookie_size() + 1,
-                             vrpn_LOG_NONE);
-  if (retval < 0) {
-    fprintf(stderr, "vrpn_Connection::close_log:  "
-                    "Couldn't create magic cookie.\n");
-    final_retval = -1;
-  }
-
-  retval = fwrite(magicbuf, 1, vrpn_cookie_size(), d_logfile);
+  retval = fwrite(d_logmagic, 1, vrpn_cookie_size(), d_logfile);
+  delete [] d_logmagic;
   if (retval != vrpn_cookie_size()) {
     fprintf(stderr, "vrpn_Connection::close_log:  "
                     "Couldn't write magic cookie to log file "
@@ -2048,15 +2075,14 @@ int vrpn_Connection::setup_new_connection
         int retval;
 	unsigned short udp_portnum;
 
-  //sprintf(sendbuf, "%s  %c", vrpn_MAGIC, remote_log_mode);
-  retval = write_vrpn_cookie(sendbuf, vrpn_cookie_size() + 1,
-                             remote_log_mode);
-  if (retval < 0) {
-    perror("vrpn_Connection::setup_new_connection:  "
-           "Internal error - array too small.  The code's broken.");
-    return -1;
-  }
-  sendlen = vrpn_cookie_size();
+	retval = write_vrpn_cookie(sendbuf, vrpn_cookie_size() + 1,
+			     remote_log_mode);
+	if (retval < 0) {
+		perror("vrpn_Connection::setup_new_connection:  "
+		   "Internal error - array too small.  The code's broken.");
+		return -1;
+	}
+	sendlen = vrpn_cookie_size();
 
 	// Write the magic cookie header to the server
 	if (vrpn_noint_block_write(endpoint.tcp_sock, sendbuf, sendlen)
@@ -2073,11 +2099,15 @@ int vrpn_Connection::setup_new_connection
 	    "vrpn_Connection::setup_new_connection: Can't read cookie");
 	  return -1;
 	}
-	//recvbuf[vrpn_MAGICLEN] = '\0';  // shouldn't be needed any more
 
-  retval = check_vrpn_cookie(recvbuf);
-  if (retval < 0)
-    return -1;
+	if (check_vrpn_cookie(recvbuf) < 0) {
+		return -1;
+	}
+
+	// Store the magic cookie from the other side into a buffer so
+	// that it can be put into an incoming log file.
+	endpoint.d_logmagic = new char[vrpn_cookie_size()];
+	memcpy(endpoint.d_logmagic, recvbuf, vrpn_cookie_size());
 
 	// Find out what log mode they want us to be in BEFORE we pack
 	// type, sender, and udp descriptions!  If it's nonzero, the
@@ -2570,6 +2600,7 @@ int vrpn_Connection::marshall_message(
 
 void vrpn_Connection::drop_connection(void)
 {
+
 	//XXX Store name when opening, say which dropped here
 	printf("vrpn: Connection dropped\n");
 	if (endpoint.tcp_sock != INVALID_SOCKET) {
@@ -2592,6 +2623,16 @@ void vrpn_Connection::drop_connection(void)
 	} else {
 		status = BROKEN;	// We're unable to accept more
 	}
+
+	// Remove the remote mappings for senders and types. If we
+	// reconnect, we will want to fill them in again. First,
+	// free the space allocated for the list of names, then
+	// set all of the local IDs to -1, in case the other side
+	// sends a message of a type that it has not yet defined.
+	// (for example, arriving on the UDP line ahead of its TCP
+	// definition).
+
+	endpoint.clear_other_senders_and_types();
 
   num_live_connections--;
 

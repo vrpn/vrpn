@@ -134,7 +134,8 @@ void vrpn_File_Connection::play_to_user_message()
 }
 
 // virtual
-vrpn_File_Connection::~vrpn_File_Connection (void) {
+vrpn_File_Connection::~vrpn_File_Connection (void)
+{
     vrpn_LOGLIST * np;
 
     close_file();
@@ -236,7 +237,6 @@ int vrpn_File_Connection::mainloop( const timeval * /*timeout*/ ) {
 
     // XXX timeout ignored for now, needs to be added
 
-    int retval;
     timeval now_time;
     gettimeofday(&now_time, NULL);
 
@@ -414,7 +414,8 @@ int vrpn_File_Connection::play_to_time(timeval end_time)
 
 // plays all entries between d_time and end_filetime
 // returns -1 on error, 0 on success
-int vrpn_File_Connection::play_to_filetime(timeval end_filetime) {
+int vrpn_File_Connection::play_to_filetime(timeval end_filetime)
+{
     
     int ret;
     
@@ -457,7 +458,8 @@ int vrpn_File_Connection::eof()
 // returns
 //   -1 on error (including EOF, call eof() to test)
 //    0 for normal result (played one entry)
-int vrpn_File_Connection::playone() {
+int vrpn_File_Connection::playone()
+{
     static timeval tvMAX = { LONG_MAX, LONG_MAX };
 
     int ret = playone_to_filetime(tvMAX);
@@ -570,8 +572,8 @@ timeval vrpn_File_Connection::get_lowest_user_timestamp()
 // Some subclasses may redefine time.
 
 // virtual
-int vrpn_File_Connection::time_since_connection_open
-(timeval * elapsed_time) {
+int vrpn_File_Connection::time_since_connection_open(timeval * elapsed_time)
+{
 
     *elapsed_time = vrpn_TimevalDiff(d_time, d_start_time);
 
@@ -584,7 +586,8 @@ int vrpn_File_Connection::time_since_connection_open
 // 0 otherwise.
 
 // virtual
-int vrpn_File_Connection::read_cookie (void) {
+int vrpn_File_Connection::read_cookie (void)
+{
     char readbuf [501];  // HACK!
     int retval;
 
@@ -604,7 +607,8 @@ int vrpn_File_Connection::read_cookie (void) {
 }
 
 // virtual
-int vrpn_File_Connection::read_entry (void) {
+int vrpn_File_Connection::read_entry (void)
+{
 
     vrpn_LOGLIST * newEntry;
     int retval;
@@ -673,7 +677,8 @@ int vrpn_File_Connection::read_entry (void) {
 }
 
 // virtual
-int vrpn_File_Connection::close_file (void) {
+int vrpn_File_Connection::close_file (void)
+{
     if (d_file) {
         fclose(d_file);
     }
@@ -701,7 +706,8 @@ void vrpn_File_Connection::set_replay_rate(vrpn_float32 rate)
 
 // static
 int vrpn_File_Connection::handle_set_replay_rate
-(void * userdata, vrpn_HANDLERPARAM p) {
+(void * userdata, vrpn_HANDLERPARAM p)
+{
     vrpn_File_Connection * me = (vrpn_File_Connection *) userdata;
 
     vrpn_int32 value = ntohl(*(vrpn_int32 *) (p.buffer));
@@ -711,8 +717,8 @@ int vrpn_File_Connection::handle_set_replay_rate
 }
 
 // static
-int vrpn_File_Connection::handle_reset
-(void * userdata, vrpn_HANDLERPARAM) {
+int vrpn_File_Connection::handle_reset (void * userdata, vrpn_HANDLERPARAM)
+{
     vrpn_File_Connection * me = (vrpn_File_Connection *) userdata;
 
 //fprintf(stderr, "In vrpn_File_Connection::handle_reset().\n");
@@ -722,7 +728,8 @@ int vrpn_File_Connection::handle_reset
 
 // static
 int vrpn_File_Connection::handle_play_to_time
-(void * userdata, vrpn_HANDLERPARAM p) {
+(void * userdata, vrpn_HANDLERPARAM p)
+{
     vrpn_File_Connection * me = (vrpn_File_Connection *) userdata;
     timeval newtime;
 

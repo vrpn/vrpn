@@ -160,6 +160,11 @@ class vrpn_OneConnection {
 	void	init(void);
 	virtual ~vrpn_OneConnection (void);
 
+	// Clear out the remote mapping list. This is done when a
+	// connection is dropped and we want to try and re-establish
+	// it.
+	void	clear_other_senders_and_types(void);
+
 	// A new local sender or type has been established; set
 	// the local type for it if the other side has declared it.
 	// Return 1 if the other side has one, 0 if not.
@@ -206,10 +211,11 @@ class vrpn_OneConnection {
 
 	// Logging - TCH 11 June 98
 
-	vrpn_LOGLIST * d_logbuffer;  // last entry in log
+	char	*d_logmagic;		// Stores magic from other side
+	vrpn_LOGLIST * d_logbuffer;	// last entry in log
 	vrpn_LOGLIST * d_first_log_entry;  // first entry in log
-	char * d_logname;            // name of file to write log to
-	long d_logmode;              // logging incoming, outgoing, or both
+	char * d_logname;		// name of file to write log to
+	long d_logmode;			// logging incoming, outgoing, or both
 
 	int d_logfile_handle;
 	FILE * d_logfile;
@@ -244,10 +250,6 @@ protected:
 	cRemoteMapping	other_types [vrpn_CONNECTION_MAX_TYPES];
 	vrpn_int32	num_other_types;
 };
-
-
-
-
 
 class vrpn_Connection
 {
@@ -438,7 +440,7 @@ class vrpn_Connection
 		// set up data
 	virtual	int	setup_new_connection (long logmode = 0L,
 	                                      const char * logfile = NULL);
-		// set up network
+	// set up network
 	virtual	void	drop_connection (void);
 	virtual	int	pack_sender_description (vrpn_int32 which);
 	virtual	int	pack_type_description (vrpn_int32 which);
@@ -475,9 +477,6 @@ class vrpn_Connection
 	// Timekeeping - TCH 30 June 98
 	struct timeval start_time;
 };
-
-
-
 
 
 // forward decls
