@@ -36,7 +36,7 @@ void vrpn_RedundantTransmission::mainloop (void) {
     return;
   }
 
-//fprintf(stderr, "mainloop:  %d messages queued.\n", d_numMessagesQueued);
+  //fprintf(stderr, "mainloop:  %d messages queued.\n", d_numMessagesQueued);
 
   gettimeofday(&now, NULL);
   for (qm = d_messageList; qm; qm = qm->next) {
@@ -47,15 +47,15 @@ void vrpn_RedundantTransmission::mainloop (void) {
                                  vrpn_CONNECTION_LOW_LATENCY);
       qm->nextValidTime = vrpn_TimevalSum(now, qm->transmissionInterval);
       qm->remainingTransmissions--;
-//fprintf(stderr, "Sending message;  "
-//"%d transmissions remaining at %d.%d int.\n",
-//qm->remainingTransmissions, qm->transmissionInterval.tv_sec,
-//qm->transmissionInterval.tv_usec);
+      //fprintf(stderr, "Sending message;  "
+      //"%d transmissions remaining at %d.%d int.\n",
+      //qm->remainingTransmissions, qm->transmissionInterval.tv_sec,
+      //qm->transmissionInterval.tv_usec);
     }
   }
-  for (snitch = &d_messageList, qm = *snitch; qm;
-       snitch = &qm->next, qm = *snitch) {
-    while (qm && !qm->remainingTransmissions) {
+  for (snitch = &d_messageList, qm = *snitch; d_numMessagesQueued && qm;
+       qm ? (snitch = &qm->next, qm = *snitch) : (qm)) {
+    while (d_numMessagesQueued && qm && !qm->remainingTransmissions) {
       *snitch = qm->next;
       delete [] (void *) qm->p.buffer;
       delete qm;
@@ -63,12 +63,21 @@ void vrpn_RedundantTransmission::mainloop (void) {
       d_numMessagesQueued--;
     }
   }
+
+  if ((d_numMessagesQueued && !d_messageList) ||
+      (!d_numMessagesQueued && d_messageList)) {
+    fprintf(stderr, "vrpn_RedundantTransmission::mainloop():  "
+                    "serious internal error.\n");
+    d_numMessagesQueued = 0;
+    d_messageList = NULL;
+  }
 }
 
 void vrpn_RedundantTransmission::setDefaults
       (vrpn_uint32 numTransmissions, timeval transmissionInterval) {
-//fprintf(stderr, "vrpn_RedundantTransmission::setDefaults:  to %d, %d.%d\n",
-//numTransmissions, transmissionInterval.tv_sec, transmissionInterval.tv_usec);
+  //fprintf(stderr, "vrpn_RedundantTransmission::setDefaults:  "
+  //"to %d, %d.%d\n", numTransmissions, transmissionInterval.tv_sec,
+  //transmissionInterval.tv_usec);
   d_numTransmissions = numTransmissions;
   d_transmissionInterval = transmissionInterval;
 }
@@ -100,9 +109,9 @@ int vrpn_RedundantTransmission::pack_message
     transmissionInterval = &d_transmissionInterval;
   }
 
-//fprintf(stderr, "In pack message with %d xmit at %d.%d\n",
-//numTransmissions, transmissionInterval->tv_sec,
-//transmissionInterval->tv_usec);
+  //fprintf(stderr, "In pack message with %d xmit at %d.%d\n",
+  //numTransmissions, transmissionInterval->tv_sec,
+  //transmissionInterval->tv_usec);
   if (!numTransmissions) {
     return ret;
   }
@@ -133,11 +142,12 @@ int vrpn_RedundantTransmission::pack_message
 
   d_numMessagesQueued++;
 
-//timeval now;
-//gettimeofday(&now, NULL);
-//fprintf(stderr, "  Queued message to go at %d.%d (now is %d.%d)\n",
-//qm->nextValidTime.tv_sec, qm->nextValidTime.tv_usec,
-//now.tv_sec, now.tv_usec);
+  //timeval now;
+  //gettimeofday(&now, NULL);
+  //fprintf(stderr, "  Queued message to go at %d.%d (now is %d.%d)\n",
+  //qm->nextValidTime.tv_sec, qm->nextValidTime.tv_usec,
+  //now.tv_sec, now.tv_usec);
+
   d_messageList = qm;
 
   return ret;
@@ -216,8 +226,8 @@ int vrpn_RedundantController::handle_set (void * ud, vrpn_HANDLERPARAM p) {
   timeval interval;
 
   me->d_protocol.decode_set(bp, &num, &interval);
-//fprintf(stderr, "vrpn_RedundantController::handle_set:  %d, %d.%d\n",
-//num, interval.tv_sec, interval.tv_usec);
+  //fprintf(stderr, "vrpn_RedundantController::handle_set:  %d, %d.%d\n",
+  //num, interval.tv_sec, interval.tv_usec);
   me->d_object->setDefaults(num, interval);
 
   return 0;
@@ -248,8 +258,8 @@ void vrpn_RedundantRemote::set (int num, timeval interval) {
   if (!buf) {
     return;
   }
-//fprintf(stderr, "vrpn_RedundantRemote::set:  %d, %d.%d\n",
-//num, interval.tv_sec, interval.tv_usec);
+  //fprintf(stderr, "vrpn_RedundantRemote::set:  %d, %d.%d\n",
+  //num, interval.tv_sec, interval.tv_usec);
 
   gettimeofday(&now, NULL);
   d_connection->pack_message(len, now, d_protocol.d_set_type, d_sender_id,

@@ -302,7 +302,7 @@ class vrpn_Endpoint {
     int getOneTCPMessage (int fd, char * buf, int buflen);
     int getOneUDPMessage (char * buf, int buflen);
       ///< These two functions are ALMOST identical, but hard to combine.
-    int dispatch (vrpn_int32 type, vrpn_int32 sender,
+    virtual int dispatch (vrpn_int32 type, vrpn_int32 sender,
                   timeval time, vrpn_uint32 payload_len,
                   char * bufptr);
 
@@ -466,7 +466,9 @@ class vrpn_Connection {
 		         vrpn_DEFAULT_LISTEN_PORT_NO,
                          const char * local_logfile_name = NULL,
                          long local_log_mode = vrpn_LOG_NONE,
-                         const char * NIC_IPaddress = NULL);
+                         const char * NIC_IPaddress = NULL,
+                         vrpn_Endpoint * (* epa) (vrpn_Connection *,
+                           vrpn_int32 *) = allocateEndpoint);
 
 	//   Create a connection -  if server_name is not a file: name,
 	// makes an SDI-like connection to the named remote server
@@ -483,7 +485,9 @@ class vrpn_Connection {
                          long local_log_mode = vrpn_LOG_NONE,
                          const char * remote_logfile_name = NULL,
                          long remote_log_mode = vrpn_LOG_NONE,
-                         const char * NIC_IPaddress = NULL);
+                         const char * NIC_IPaddress = NULL,
+                         vrpn_Endpoint * (* epa) (vrpn_Connection *,
+                           vrpn_int32 *) = allocateEndpoint);
 
     int connectionStatus;		// Status of the connection
 
@@ -546,7 +550,17 @@ class vrpn_Connection {
 
     const char * d_NIC_IP;
 
+  public:
+
+    // Derived classes need access to d_dispatcher in their
+    // allocateEndpoint() routine.  Several compilers won't give it to
+    // them, even if they do inherit publically.  Until we figure that
+    // out, d_dispatcher needs to be public.
+
     vrpn_TypeDispatcher * d_dispatcher;
+
+  protected:
+
     int doSystemCallbacksFor (vrpn_HANDLERPARAM, void *);
 
     // Server logging w. multiconnection - TCH July 00
@@ -563,9 +577,24 @@ class vrpn_Connection {
     vrpn_int32 d_serverLogMode;
     char * d_serverLogName;
 
-    virtual vrpn_Endpoint * allocateEndpoint (vrpn_int32 * connectedEC);
-      ///< Redefining this allows a subclass to use a different subclass
-      ///< of Endpoint.
+    vrpn_Endpoint * (* d_endpointAllocator) (vrpn_Connection *,
+                                             vrpn_int32 *);
+    vrpn_bool d_updateEndpoint;
+
+    virtual void updateEndpoints (void);
+      ///< This function will be called on the mainloop() iteration
+      ///< after *d_endpointAllocator is called, which lets subclasses
+      ///< do initialization.  (They can't do so during allocateEndpoint
+      ///< because it's called during the Connection constructor when
+      ///< their constructors haven't executed yet.)
+
+    static vrpn_Endpoint * allocateEndpoint (vrpn_Connection *,
+                                             vrpn_int32 * connectedEC);
+      ///< Redefining this and passing it to constructors
+      ///< allows a subclass to use a different subclass of Endpoint.
+      ///< It should do NOTHING but return an endpoint
+      ///< of the appropriate class;  it may not access subclass data,
+      ///< since it'll be called from a constructor
 };
 
 
@@ -595,7 +624,9 @@ class vrpn_Synchronized_Connection : public vrpn_Connection
 		         vrpn_DEFAULT_LISTEN_PORT_NO,
                          const char * local_logfile_name = NULL,
                          long local_log_mode = vrpn_LOG_NONE,
-                         const char * NIC_IPaddress = NULL);
+                         const char * NIC_IPaddress = NULL,
+                         vrpn_Endpoint * (* epa) (vrpn_Connection *,
+                             vrpn_int32 *) = allocateEndpoint);
     vrpn_Clock_Server * pClockServer;
 
     // Create a connection makes aconnection to a remote server
@@ -613,7 +644,10 @@ class vrpn_Synchronized_Connection : public vrpn_Connection
           long remote_log_mode = vrpn_LOG_NONE,
 	  double dFreq = 4.0, 
 	  int cOffsetWindow = 2,
-          const char * NIC_IPaddress = NULL);
+          const char * NIC_IPaddress = NULL,
+          vrpn_Endpoint * (* epa) (vrpn_Connection *,
+            vrpn_int32 *) = allocateEndpoint);
+
     // fullSync will perform an accurate sync on the connection for the
     // user and return the current offset
 	~vrpn_Synchronized_Connection();

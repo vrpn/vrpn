@@ -4632,7 +4632,9 @@ int vrpn_Connection::connect_to_client (const char *machine, int port)
 	  return -1;
 	}
 
-	d_endpoints[which_end] = allocateEndpoint(&d_numConnectedEndpoints);
+	d_endpoints[which_end] = (*d_endpointAllocator)(this,
+                                                  &d_numConnectedEndpoints);
+        d_updateEndpoint = vrpn_TRUE;
 	vrpn_Endpoint * endpoint = d_endpoints[which_end];
 
 	if (!endpoint) {
@@ -5012,7 +5014,9 @@ void vrpn_Connection::server_check_for_incoming_connections
 
       // Create a new endpoint and start trying to connect it to
       // the client.
-    d_endpoints[which_end] = allocateEndpoint(&d_numConnectedEndpoints);
+    d_endpoints[which_end] = (*d_endpointAllocator)(this,
+                                              &d_numConnectedEndpoints);
+    d_updateEndpoint = vrpn_TRUE;
     endpoint = d_endpoints[which_end];
     if (!endpoint) {
         fprintf(stderr,
@@ -5140,6 +5144,10 @@ int vrpn_Connection::mainloop (const struct timeval * pTimeout) {
   //printf("vrpn_Connection::mainloop() called (status %d)\n",connectionStatus);
 #endif
   
+  if (d_updateEndpoint) {
+    updateEndpoints();
+    d_updateEndpoint = vrpn_FALSE;
+  }
   // struct timeval perSocketTimeout;
   // const int numSockets = 2;
   // divide timeout over all selects()
@@ -5196,7 +5204,8 @@ vrpn_Connection::vrpn_Connection
       (unsigned short listen_port_no,
        const char * local_logfile_name,
        long local_log_mode,
-       const char * NIC_IPaddress) :
+       const char * NIC_IPaddress,
+       vrpn_Endpoint * (* epa) (vrpn_Connection *, vrpn_int32 *)) :
     d_numEndpoints (0),
     d_numConnectedEndpoints (0),
     listen_udp_sock (INVALID_SOCKET),
@@ -5205,7 +5214,9 @@ vrpn_Connection::vrpn_Connection
     //d_serverLogEndpoint (NULL),
     d_serverLogCount (0),
     d_serverLogMode (local_log_mode),
-    d_serverLogName (NULL)
+    d_serverLogName (NULL),
+    d_endpointAllocator (epa),
+    d_updateEndpoint (vrpn_FALSE)
 {
   vrpn_Endpoint * endpoint;  // shorthand for d_endpoints[0]
   int retval;
@@ -5233,7 +5244,8 @@ vrpn_Connection::vrpn_Connection
   if (local_logfile_name) {
 
     if (local_log_mode & vrpn_LOG_OUTGOING) {
-      d_endpoints[0] = allocateEndpoint(NULL);
+      d_endpoints[0] = (*d_endpointAllocator)(this, NULL);
+      d_updateEndpoint = vrpn_TRUE;
       endpoint = d_endpoints[0];
       if (!endpoint) {
         fprintf(stderr, "vrpn_Connection::vrpn_Connection:  "
@@ -5277,7 +5289,8 @@ vrpn_Connection::vrpn_Connection
       (const char * station_name, int port,
        const char * local_logfile_name, long local_log_mode,
        const char * remote_logfile_name, long remote_log_mode,
-       const char * NIC_IPaddress) :
+       const char * NIC_IPaddress,
+       vrpn_Endpoint * (* epa) (vrpn_Connection *, vrpn_int32 *)) :
     // Jeff's change; I've commented out for now
     connectionStatus (BROKEN),  // default value if not otherwise set in ctr
     d_numEndpoints (0),
@@ -5288,7 +5301,9 @@ vrpn_Connection::vrpn_Connection
     //d_serverLogEndpoint (NULL),
     d_serverLogCount (0),
     d_serverLogMode (vrpn_LOG_NONE),
-    d_serverLogName (NULL)
+    d_serverLogName (NULL),
+    d_endpointAllocator (epa),
+    d_updateEndpoint (vrpn_FALSE)
 {
   vrpn_Endpoint * endpoint;
   vrpn_bool isfile;
@@ -5302,7 +5317,8 @@ vrpn_Connection::vrpn_Connection
   init();
 
   // We're a client;  create our single endpoint and initialize it.
-  d_endpoints[0] = allocateEndpoint(&d_numConnectedEndpoints);
+  d_endpoints[0] = (*d_endpointAllocator)(this, &d_numConnectedEndpoints);
+  d_updateEndpoint = vrpn_TRUE;
   if (!d_endpoints[0]) {
     fprintf(stderr, "vrpn_Connection:  Out of memory.\n");
     connectionStatus = BROKEN;
@@ -5634,8 +5650,15 @@ int vrpn_Connection::doSystemCallbacksFor (vrpn_HANDLERPARAM p, void * ud) {
 
 
 
-vrpn_Endpoint * vrpn_Connection::allocateEndpoint (vrpn_int32 * connectedEC) {
-  return new vrpn_Endpoint (d_dispatcher, connectedEC);
+// virtual
+void vrpn_Connection::updateEndpoints (void) {
+
+}
+
+// static
+vrpn_Endpoint * vrpn_Connection::allocateEndpoint (vrpn_Connection * me,
+                                                   vrpn_int32 * connectedEC) {
+  return new vrpn_Endpoint (me->d_dispatcher, connectedEC);
 }
 
 
@@ -5724,9 +5747,10 @@ vrpn_bool vrpn_Connection::connected (void) const
 vrpn_Synchronized_Connection::vrpn_Synchronized_Connection
     (unsigned short listen_port_no,
      const char * local_logfile, long local_logmode,
-     const char * NIC_IPaddress) :
+     const char * NIC_IPaddress,
+     vrpn_Endpoint * (* epa) (vrpn_Connection *, vrpn_int32 *)) :
     vrpn_Connection (listen_port_no, local_logfile,
-                     local_logmode, NIC_IPaddress),
+                     local_logmode, NIC_IPaddress, epa),
     pClockServer (NULL),
     pClockRemote (NULL)
 {
@@ -5743,9 +5767,10 @@ vrpn_Synchronized_Connection::vrpn_Synchronized_Connection
           long remote_logmode,
           double dFreq, 
 	  int cSyncWindow,
-          const char * NIC_IPaddress) :
+          const char * NIC_IPaddress,
+          vrpn_Endpoint * (* epa) (vrpn_Connection *, vrpn_int32 *)) :
     vrpn_Connection (server_name, port, local_logfile, local_logmode,
-                     remote_logfile, remote_logmode, NIC_IPaddress),
+                     remote_logfile, remote_logmode, NIC_IPaddress, epa),
     pClockServer (NULL),
     pClockRemote (NULL)
 {

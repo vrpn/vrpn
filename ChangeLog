@@ -1,3 +1,45 @@
+2000-10-18  Tom Hudson  <hudson@cs.unc.edu>
+
+	* vrpn_Connection.C (vrpn_Connection) : add data members
+        d_endpointAllocator, d_updateEndpoint
+	(vrpn_Connection client constructor) : add endpoint allocator
+	as extra argument, call (*d_endpointAllocator) & set d_updateEndpoint
+	instead of calling allocateEndpoint()
+	(vrpn_Connection server constructor) : same
+	(vrpn_Synchronized_Connection client constructor) : add endpoint
+	allocator as extra argument
+	(vrpn_Synchronized_Connection server constructor) : same
+	(vrpn_Connection::updateEndpoints) : new function
+	(vrpn_Connection::allocateEndpoint) : change from virtual to static
+        (vrpn_Connection::connect_to_client) : replace call to
+        allocateEndpoint() with (*d_endpointAllocator), set d_updateEndpoint
+	(vrpn_Connection::server_check_for_incoming_connections) : same
+	(vrpn_Connection::mainloop) : call updateEndpoints() if
+	d_updateEndpoint is true
+	(vrpn_Endpoint::dispatch) : make virtual
+
+	* vrpn_DelayedConnection.C (vrpn_DelayedEndpoint) : new data
+	members d_delayListEnd, d_delayAllTypes, d_typeIsDelayed
+	(vrpn_DelayedConnection) : new data members d_delayAllTypes,
+	d_typeIsDelayed
+	(vrpn_DelayedEndpoint constructor) : remove timeval parameter,
+	initialize d_typeIsDelayed
+	(vrpn_DelayedEndpoint::delayAllTypes) : new function
+	(vrpn_DelayedEndpoint::delayType) : same
+	(vrpn_DelayedEndpoint::enqueue) : same
+	(vrpn_DelayedEndpoint::updateEndpoints) : same
+	(vrpn_DelayedEndpoint::dispatch) : don't delay system messages;
+	TCP/UDP connections will timeout otherwise
+	(vrpn_DelayedConnection constructor) : initialize d_typeIsDelayed
+	(vrpn_DelayedConnection::delayAllTypes) : new function
+	(vrpn_DelayedConnection::delayType) : same
+	(vrpn_RelativeDelayEndpoint) : new class
+	(vrpn_RelativeDelayConnection) : new class
+
+	* vrpn_RedundantTransmission.C 
+	(vrpn_RedundantTransmission::mainloop) : detect & clean-up after
+	error states
+
 2000-10-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Connection.C : Deleted commented-out code.
