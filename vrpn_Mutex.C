@@ -542,6 +542,8 @@ int vrpn_Mutex::handle_denyRequest (void * userdata, vrpn_HANDLERPARAM p) {
 
   me->triggerDenyCallbacks();
 
+  me->d_state = HELD_REMOTELY;
+
   return 0;
 }
 
