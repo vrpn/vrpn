@@ -550,6 +550,21 @@ class vrpn_Connection {
 
     vrpn_TypeDispatcher * d_dispatcher;
     int doSystemCallbacksFor (vrpn_HANDLERPARAM, void *);
+
+    // Server logging w. multiconnection - TCH July 00
+    // Use one "hidden" endpoint for outgoing logs (?),
+    // standard per-endpoint logs with augmented names for incoming.
+    // To make a hidden endpoint we create d_endpoints[0] and increment
+    // the d_numEndpoints, but DON'T pass it d_numConnectedEndpoints
+    // (although it should be safe to do so, since it should never truly
+    // become connected, but we might have to "fake" it to get it to log
+    // correctly).
+
+    //vrpn_Endpoint * d_serverLogEndpoint;
+    int d_serverLogCount;
+    vrpn_int32 d_serverLogMode;
+    char * d_serverLogName;
+
 };
 
 

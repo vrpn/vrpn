@@ -110,7 +110,7 @@ int gethostname (char *, int);
 // string.  Since minor versions should interoperate, MAGIC is only
 // checked through the last period;  characters after that are ignored.
 
-const char * vrpn_MAGIC = (const char *) "vrpn: ver. 04.13";
+const char * vrpn_MAGIC = (const char *) "vrpn: ver. 04.14";
 const int vrpn_MAGICLEN = 16;  // Must be a multiple of vrpn_ALIGN bytes!
 
 // This is the list of states that a connection can be in
@@ -121,7 +121,7 @@ enum ConnectionStatus {LISTEN             = (1),
                        COOKIE_PENDING     = (-1),
                        TRYING_TO_CONNECT  = (-2),
                        BROKEN             = (-3),
-                       DROPPED            = (-4)};
+                       LOGGING            = (-4)};
 
 
 
@@ -477,6 +477,11 @@ class vrpn_Log {
       ///< (if we're logging incoming messages) is that of the version of
       ///< VRPN we're communicating with.
 
+    int setCompoundName (const char * name, int index);
+      ///< Takes a name of the form foo.bar and an index <n> and sets the
+      ///< name of the log file to be foo-<n>.bar;  if there is no period
+      ///< in the name, merely appends -<n>.
+
     int setName (const char * name);
     int setName (const char * name, int len);
 
@@ -804,6 +809,31 @@ int vrpn_Log::logMessage (vrpn_int32 payloadLen, struct timeval time,
   return 0;
 }
 
+
+int vrpn_Log::setCompoundName (const char * name, int index) {
+  char newName [1000];  // HACK
+  char * dot;
+  int len;
+
+  // Change foo.bar, 5 to foo-5.bar
+  //   and foo, 5 to foo-5
+
+  dot = strrchr(name, '.');
+
+  if (dot) {
+    strncpy(newName, name, dot - name);
+    newName[dot - name] = 0;
+  } else {
+    strcpy(newName, name);
+  }
+  len = strlen(newName);
+  sprintf(newName + len, "-%d", index);
+  if (dot) {
+    strcat(newName, dot);
+  }
+
+  return setName (newName);
+}
 
 int vrpn_Log::setName (const char * name) {
   return setName(name, strlen(name));
@@ -2690,7 +2720,7 @@ vrpn_bool vrpn_Endpoint::clockSynced (void) const {
 }
 
 vrpn_bool vrpn_Endpoint::doing_okay (void) const {
-  return (status >= TRYING_TO_CONNECT);
+  return ((status >= TRYING_TO_CONNECT) || (status == LOGGING));
 }
 
 
@@ -2917,11 +2947,10 @@ int vrpn_Endpoint::mainloop (timeval * timeout,
     case BROKEN:
       //fprintf(stderr, "vrpn: Fatal connection failure.  Giving up!\n");
       //status = BROKEN;
-//fprintf(stderr, "DROPPED - vrpn_Endpoint::mainloop.\n");
       //// XXXX
       return -1;
 
-    case DROPPED:
+    case LOGGING:
       //// XXXX
   	break;
 
@@ -2994,6 +3023,11 @@ int vrpn_Endpoint::pack_message
     fprintf(stderr, "vrpn_Endpoint::pack_message:  "
                     "Couldn't log outgoing message.!\n");
     return -1;
+  }
+
+  if (status == LOGGING) {
+    // No error message;  this endpoint is ONLY logging.
+    return 0;
   }
 
   // TCH 26 April 2000
@@ -3578,14 +3612,16 @@ void vrpn_Endpoint::drop_connection (void) {
   struct timeval now;
   gettimeofday(&now, NULL);
 
-  *d_connectionCounter--;
+  if (d_connectionCounter) {
+    *d_connectionCounter--;
+  }
 
   d_dispatcher->doCallbacksFor
        (d_dispatcher->registerType(vrpn_dropped_connection),
         d_dispatcher->registerSender(vrpn_CONTROL),
         now, 0, NULL);
 
-  if (!*d_connectionCounter) {
+  if (d_connectionCounter && !*d_connectionCounter) {
     d_dispatcher->doCallbacksFor
          (d_dispatcher->registerType(vrpn_dropped_last_connection),
           d_dispatcher->registerSender(vrpn_CONTROL),
@@ -3827,7 +3863,7 @@ int vrpn_Endpoint::finish_new_connection_setup (void) {
   // actually make it to CONNECTED, not just constructed, so we send
   // got-first-/dropped-last-connection messages properly.
 
-  if (!*d_connectionCounter) {
+  if (d_connectionCounter && !*d_connectionCounter) {
     d_dispatcher->doCallbacksFor
          (d_dispatcher->registerType(vrpn_got_first_connection),
           d_dispatcher->registerSender(vrpn_CONTROL),
@@ -3839,7 +3875,9 @@ int vrpn_Endpoint::finish_new_connection_setup (void) {
         d_dispatcher->registerSender(vrpn_CONTROL),
         now, 0, NULL);
 
-  *d_connectionCounter++;
+  if (d_connectionCounter) {
+    *d_connectionCounter++;
+  }
 
 //fprintf(stderr, "Leaving finish_new_connection_setup().\n");
 
@@ -4748,10 +4786,12 @@ void vrpn_Connection::init (void) {
 
 void vrpn_Connection::server_check_for_incoming_connections
                          (const struct timeval * pTimeout) {
+  vrpn_Endpoint * endpoint;  // shorthand for d_endpoints[which_end]
   int  request;
   char msg[200];       // Message received on the request channel
   timeval timeout;
   int which_end = d_numEndpoints;
+  int retval;
 
   if (pTimeout) {
     timeout = *pTimeout;
@@ -4797,14 +4837,31 @@ void vrpn_Connection::server_check_for_incoming_connections
       // the client.
     d_endpoints[which_end] = new vrpn_Endpoint (d_dispatcher,
                                                 &d_numConnectedEndpoints);
-    if (!d_endpoints[which_end]) {
+    endpoint = d_endpoints[which_end];
+    if (!endpoint) {
         fprintf(stderr,
                 "vrpn_Connection::server_check_for_incoming_connections:\n"
                 "    Out of memory on new endpoint\n");
         return;
     }
-    d_endpoints[which_end]->setNICaddress(d_NIC_IP);
-    d_endpoints[which_end]->connect_tcp_to(msg);
+
+    // Server-side logging under multiconnection - TCH July 2000
+    if (d_serverLogMode & vrpn_LOG_INCOMING) {
+      d_serverLogCount++;
+      endpoint->d_log->setCompoundName(d_serverLogName, d_serverLogCount);
+      endpoint->d_log->logMode() = vrpn_LOG_INCOMING;
+      retval = endpoint->d_log->open();
+      if (retval == -1) {
+        fprintf(stderr,
+                "vrpn_Connection::server_check_for_incoming_connections:  "
+                "Couldn't open log file.\n");
+        connectionStatus = BROKEN;
+        return;
+      }
+    }
+
+    endpoint->setNICaddress(d_NIC_IP);
+    endpoint->connect_tcp_to(msg);
 
     // d_numEndpoints must be incremented before handle_connection is called
     // otherwise the functions doing_okay and connected do not check all
@@ -4958,9 +5015,14 @@ vrpn_Connection::vrpn_Connection
     d_numConnectedEndpoints (0),
     listen_udp_sock (INVALID_SOCKET),
     d_NIC_IP (NIC_IPaddress),
-    d_dispatcher (NULL)
+    d_dispatcher (NULL),
+    //d_serverLogEndpoint (NULL),
+    d_serverLogCount (0),
+    d_serverLogMode (local_log_mode),
+    d_serverLogName (NULL)
 {
-  //int retval;
+  vrpn_Endpoint * endpoint;  // shorthand for d_endpoints[0]
+  int retval;
 
   // Initialize the things that must be for any constructor
   init();
@@ -4980,22 +5042,56 @@ vrpn_Connection::vrpn_Connection
   vrpn_ConnectionManager::instance().addConnection(this, NULL);
 
   if (local_logfile_name) {
+#if 0
     fprintf(stderr, "ERROR - server-initiated logging is not supported "
                     "in this release!\n");
     connectionStatus = BROKEN;
-#if 0
-    endpoint.d_log->setName(local_logfile_name);
-    endpoint.d_log->logMode() = local_log_mode;
-    retval = endpoint.d_log->open();
-    if (retval == -1) {
-      fprintf(stderr, "vrpn_Connection::vrpn_Connection:  "
-                      "Couldn't open log file.\n");
-      connectionStatus = BROKEN;
-//fprintf(stderr, "BROKEN - vrpn_Connection::vrpn_Connection.\n");
-      return;
+#else
+
+    if (local_log_mode & vrpn_LOG_OUTGOING) {
+      //d_serverLogEndpoint = new vrpn_Endpoint (d_dispatcher, NULL)
+      //if (!d_serverLogEndpoint) {
+      d_endpoints[0] = new vrpn_Endpoint (d_dispatcher, NULL);
+      endpoint = d_endpoints[0];
+      if (!endpoint) {
+        fprintf(stderr, "vrpn_Connection::vrpn_Connection:  "
+                        "Couldn't create endpoint for log file.\n");
+        connectionStatus = BROKEN;
+        return;
+      }
+      //d_serverLogEndpoint->d_log->setName(local_logfile_name);
+      //d_serverLogEndpoint->d_log->logMode() = local_log_mode;
+      //retval = d_serverLogEndpoint->d_log->open();
+      endpoint->d_log->setName(local_logfile_name);
+      endpoint->d_log->logMode() = local_log_mode;
+      retval = endpoint->d_log->open();
+      if (retval == -1) {
+        fprintf(stderr, "vrpn_Connection::vrpn_Connection:  "
+                        "Couldn't open log file.\n");
+        connectionStatus = BROKEN;
+        return;
+      }
+      d_numEndpoints = 1;
+      endpoint->remote_log_mode = vrpn_LOG_NONE;
+      endpoint->remote_log_name = new char [10];
+      strcpy(endpoint->remote_log_name, "");
+      // Outgoing messages are logged regardless of connection status.
+      endpoint->status = LOGGING;
+    }
+
+    if (local_log_mode & vrpn_LOG_INCOMING) {
+      d_serverLogName = new char [1 + strlen(local_logfile_name)];
+      if (!d_serverLogName) {
+        fprintf(stderr, "vrpn_Connection::vrpn_Connection:  "
+                        "Out of memory.\n");
+        connectionStatus = BROKEN;
+        return;
+      }
+      strcpy(d_serverLogName, local_logfile_name);
     }
 #endif
   }
+
 
 }
 
@@ -5011,7 +5107,11 @@ vrpn_Connection::vrpn_Connection
     d_numConnectedEndpoints (0),
     listen_udp_sock (INVALID_SOCKET),
     d_NIC_IP (NIC_IPaddress),
-    d_dispatcher (NULL)
+    d_dispatcher (NULL),
+    //d_serverLogEndpoint (NULL),
+    d_serverLogCount (0),
+    d_serverLogMode (vrpn_LOG_NONE),
+    d_serverLogName (NULL)
 {
   vrpn_Endpoint * endpoint;
   vrpn_bool isfile;
@@ -5247,6 +5347,9 @@ vrpn_Connection::~vrpn_Connection (void) {
       delete d_endpoints[i];
     }
   }
+  //if (d_serverLogEndpoint) {
+    //delete d_serverLogEndpoint;
+  //}
 
   // Clean up types, senders, and callbacks.
   delete d_dispatcher;
