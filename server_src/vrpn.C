@@ -611,8 +611,8 @@ main (int argc, char * argv[])
 		}
 
 		// If the last character in the line is a backslash, '\', then
-		// the following line is an additional command too send to the
-		// Fastrak a reset time. So long as we find lines with slashes
+		// the following line is an additional command to send to the
+		// Fastrak at reset time. So long as we find lines with slashes
 		// at the ends, we add them to the command string to send. Note
 		// that there is a newline at the end of the line, following the
 		// backslash.

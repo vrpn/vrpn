@@ -11,8 +11,7 @@ typedef vrpn_int32 vrpn_SoundID;
 
 class vrpn_Sound
 {
-protected:
-#define START 10
+public:
 
 	typedef struct _vrpn_PoseDef
 	{
@@ -32,6 +31,9 @@ protected:
 	  vrpn_PoseDef pose;
 	  vrpn_float64 velocity[3];
 	} vrpn_ListenerDef;
+
+protected:
+#define vrpn_Sound_START 10
 
 	vrpn_ListenerDef Listener;				 // A listeners information
 	vrpn_Connection *connection;		     // Used to send messages
@@ -132,7 +134,7 @@ public:
 	virtual void unloadSound(vrpn_SoundID id) = 0;
 	
 protected:
-#define FAIL -1								//To be set when in in the Mapping
+#define vrpn_Sound_FAIL -1								//To be set when in in the Mapping
 											//when a sound fails to be loaded
 
 	inline vrpn_int32 map_CIndex_To_SIndex(vrpn_int32 CIndex)
@@ -144,7 +146,7 @@ protected:
 	inline void unloadCSMap() 
 	{
 		for(int i = 0; i < CSMap_MaxNum; i++) 
-			CSMap[i] = FAIL;
+			CSMap[i] = vrpn_Sound_FAIL;
 	};
 
 private:

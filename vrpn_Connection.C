@@ -28,6 +28,10 @@
 #include <netdb.h>
 #endif
 
+#ifdef	sparc
+#include <arpa/inet.h>
+#endif
+
 #ifdef	sgi
 #include <bstring.h>
 #endif
@@ -97,36 +101,6 @@ int gethostname (char *, int);
 
 const char * vrpn_MAGIC = (const char *) "vrpn: ver. 04.09";
 const int vrpn_MAGICLEN = 16;  // Must be a multiple of vrpn_ALIGN bytes!
-
-// Version history:
-//
-//   04.06:  Philip Winston, March 1999.  File_Connection was substantially
-//           modified.  Added get_File_Connection() to Connection.
-//   04.05:  ?
-//   04.04:  ?
-//   04.03:  Russ Taylor, Nov/Dec 1998
-//           Put most of what is needed for a connection into OneConnection
-//           to hopefully make it easier to allow multiple connections to a
-//           server.  Made it so that the client and server use IP address
-//           rather than DNS name to connect.
-//   04.02:  Tom Hudson, October 1998
-//           Added WSAStartup(), WSACleanup() calls for PC initialization.
-//   04.01:  Tom Hudson, September 1998
-//           Added filters to logging.
-//   04.00:  Adam Seeger, August 1998
-//           Added the ability to start up a remote server via rsh
-//           and then to connect to it:  x-vrsh://<server name>.
-//           NB:  Should not have been a major version # change.
-//   03.02:  
-//   03.01:  Tom Hudson, July 1998
-//           Bugfixes.  Changes to vrpn_ForceDevice.  Wrote
-//           vrpn_File_Controller.
-//   03.00:  Tom Hudson, June 1998
-//           Added logging.  This changed the format of the magic cookie,
-//           so major version number had to increment.  NULL server_name
-//           to constructor means no network sockets are opened.
-//           Added "<service>@file:///<logfile>" to
-//           vrpn_get_connection_by_name
 
 // This is the list of states that a connection can be in
 // (possible values for status).

@@ -31,7 +31,7 @@ vrpn_Sound::vrpn_Sound(const char * name, vrpn_Connection * c)
 	timestamp.tv_usec = 0;
 
 	/*Values used for determining whether to grow the array of sound definitions or not*/
-	Defs_MaxNum = START;
+	Defs_MaxNum = vrpn_Sound_START;
 	Defs_CurNum = 0;
 
 	/*The array of sound definitions needs to be initialized with some starting space*/
@@ -344,13 +344,13 @@ vrpn_Sound_Server::vrpn_Sound_Server(const char * name, vrpn_Connection * c)
 {
 	/*Values used for determining whether to grow the array of client sound it to 
 	  server id map or not*/
-	CSMap_MaxNum = START;
+	CSMap_MaxNum = vrpn_Sound_START;
 
 	/*The mapping array*/
 	CSMap = new vrpn_int32[CSMap_MaxNum];
 
 	for(int i = 0; i < CSMap_MaxNum; i++) 
-		CSMap[i] = FAIL;
+		CSMap[i] = vrpn_Sound_FAIL;
 
 	/*Register the handlers*/
 	connection->register_handler(load_sound, handle_loadSound, this, my_id);

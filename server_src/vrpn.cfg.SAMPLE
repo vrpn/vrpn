@@ -1,4 +1,4 @@
-# vrpn.cfg.SAMPLE for VRPN version 04.07
+# vrpn.cfg.SAMPLE for VRPN version 04.09
 
 ################################################################################
 ################################################################################
@@ -75,20 +75,24 @@
 # will cause the following line to be read in and sent to the Fastrak during
 # the reset routine. You can add additional lines by putting a slash at the
 # end of each command line but the last. Each line will be sent to the Fastrak
-# with a newline at the end of it. Note that this backslash-notation can only
+# with a newline at the end of it. If a line starts with an asterisk (*), then
+# it is treated as a line telling how long to sleep, with the integer number of
+# seconds following the *. Note that this backslash-notation can only
 # be used for the Fastrak, not to extend the line for any other type of device.
 
 #vrpn_Tracker_Fastrak	Fastrak0	/dev/ttyS0	19200
 
 #vrpn_Tracker_Fastrak	Isense0	/dev/ttyS0	19200 \
 #MCc\
+#*5\
 #MCM1,1,0.0900,0.0000,-0.2210,0.00,0.00,-1.00,89\
 #MCM1,2,-0.0566,0.0000,-0.2210,0.00,0.00,-1.00,87\
 #MCM2,1,0.0900,0.0000,-0.2210,0.00,0.00,-1.00,66\
 #MCM2,2,-0.0566,0.0000,-0.2210,0.00,0.00,-1.00,71\
 #MCM3,1,0.1237,-0.0762,-0.0424,0.00,0.00,-1.00,82\
 #MCM3,2,0.1237,0.0762,-0.0424,0.00,0.00,-1.00,77\
-#MCe
+#MCe\
+#*10
 
 ################################################################################
 # Dynasight Tracker. Runs an Origin System's DynaSight tracker connected to a
@@ -100,7 +104,7 @@
 
 #vrpn_Tracker_Dyna	Tracker0	1	/dev/ttyS0	19200
 
-#vrpn_Tracker_Dyna	Tracker0	0	COM1		19200
+#vrpn_Tracker_Dyna	Tracker0	1	COM1		19200
 
 ################################################################################
 # AnalogFly Tracker. This is a tracker that is intended to be used on top of

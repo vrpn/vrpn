@@ -45,6 +45,9 @@ CC := g++
 ifeq ($(HW_OS),pc_cygwin)
 	SYSLIBS := -lcygwin -luser32 -lgdi32 -lcomdlg32 -lwsock32
 endif
+ifeq ($(HW_OS),sparc_solaris)
+	SYSLIBS := -lsocket
+endif
 ifeq ($(HW_OS),sgi_irix)
 	CC := CC -32
 	GL := -lgl
@@ -87,6 +90,9 @@ all:  vrpn_server
 .PHONY:	vrpn_server
 vrpn_server:	$(OBJ_DIR)/vrpn_server
 
+.PHONY:	client_and_server
+client_and_server:	$(OBJ_DIR)/client_and_server
+
 .PHONY:	sample_server
 sample_server:	$(OBJ_DIR)/sample_server
 
@@ -110,6 +116,12 @@ $(OBJ_DIR)/vrpn_server: $(OBJ_DIR) $(OBJ_DIR)/vrpn.o  $(OBJ_DIR)/midi.o \
 			 ../$(HW_OS)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/vrpn_server \
 		$(OBJ_DIR)/vrpn.o $(OBJ_DIR)/midi.o \
+		-lvrpnserver $(GL) -lquat $(SYSLIBS) -lm
+
+$(OBJ_DIR)/client_and_server: $(OBJ_DIR) $(OBJ_DIR)/client_and_server.o  $(OBJ_DIR)/midi.o \
+			 ../$(HW_OS)/libvrpnserver.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/client_and_server \
+		$(OBJ_DIR)/client_and_server.o $(OBJ_DIR)/midi.o \
 		-lvrpnserver $(GL) -lquat $(SYSLIBS) -lm
 
 $(OBJ_DIR)/forward: $(OBJ_DIR) $(OBJ_DIR)/forward.o  \

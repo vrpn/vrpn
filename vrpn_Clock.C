@@ -9,10 +9,11 @@
   Revised: Wed Apr  1 13:23:40 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.C,v $
   $Locker:  $
-  $Revision: 1.19 $
+  $Revision: 1.20 $
   \*****************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #ifndef _WIN32
 #include <unistd.h>
@@ -860,6 +861,11 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
 
 /*****************************************************************************\
   $Log: vrpn_Clock.C,v $
+  Revision 1.20  1999/08/23 15:39:32  taylorr
+  Fixes to allow easier compilation on sparc_solaris
+  Client_and_server example program added
+  Added sleep commands to the extended Fastrak reset commands
+
   Revision 1.19  1999/04/14 21:23:37  lovelace
   Added #ifdefs so that vrpn will compile under the Cygnus solutions
   cygwin environment.  Also modified Makefile so that it correctly

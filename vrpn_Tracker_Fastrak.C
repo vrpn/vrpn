@@ -219,12 +219,45 @@ void vrpn_Tracker_Fastrak::reset()
    }
 
    // Send the additional reset commands, if any, to the tracker.
+   // These commands come in lines, with character \015 ending each
+   // line. If a line start with an asterisk (*), treat it as a pause
+   // command, with the number of seconds to wait coming right after
+   // the asterisk. Otherwise, the line is sent directly to the tracker.
    // Wait a while for them to take effect, then clear the input
    // buffer.
    if (strlen(add_reset_cmd) > 0) {
-	printf(" Fastrak writing extended reset command...\n");
-	vrpn_write_characters(serial_fd,
-		(const unsigned char *)add_reset_cmd,strlen(add_reset_cmd));
+	char	*next_line;
+	char	add_cmd_copy[1024];
+	char	string_to_send[1024];
+	int	seconds_to_wait;
+
+	printf("  Fastrak writing extended reset commands...\n");
+
+	// Make a copy of the additional reset string, since it is consumed
+	strncpy(add_cmd_copy, add_reset_cmd, sizeof(add_cmd_copy));
+
+	// Pass through the string, testing each line to see if it is
+	// a sleep command or a line to send to the tracker. Continue until
+	// there are no more line delimiters ('\015'). Be sure to write the
+	// \015 to the end of the string sent to the tracker.
+	// Note that strok() puts a NULL character in place of the delimiter.
+
+	next_line = strtok(add_cmd_copy, "\015");
+	while (next_line != NULL) {
+		if (next_line[0] == '*') {	// This is a "sleep" line, see how long
+			seconds_to_wait = atoi(&next_line[1]);
+			fprintf(stderr,"   ...sleeping %d seconds\n",seconds_to_wait);
+			sleep(seconds_to_wait);
+		} else {	// This is a command line, send it
+			sprintf(string_to_send, "%s\015", next_line);
+			fprintf(stderr, "   ...sending command: %s\n", string_to_send);
+			vrpn_write_characters(serial_fd,
+				(const unsigned char *)next_line,strlen(next_line));
+		}
+		next_line = strtok(next_line+strlen(next_line)+1, "\015");
+	}
+
+	// Sleep a little while to let this finish, then clear the input buffer
 	sleep(2);
 	vrpn_flush_input_buffer(serial_fd);
    }
