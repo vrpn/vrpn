@@ -205,7 +205,7 @@ vrpn_bool vrpn_Shared_int32::shouldAcceptUpdate
                      (vrpn_int32 newValue, timeval when,
                       vrpn_bool isLocalSet) {
 
-//fprintf(stderr, "In vrpn_Shared_int32::shouldAcceptUpdate().\n");
+//fprintf(stderr, "In vrpn_Shared_int32::shouldAcceptUpdate(%s).\n", d_name);
 
   // Is this "new" change idempotent?
   if ((d_mode & VRPN_SO_IGNORE_IDEMPOTENT) &&
@@ -270,29 +270,31 @@ vrpn_bool vrpn_Shared_int32::shouldAcceptUpdate
 vrpn_bool vrpn_Shared_int32::shouldSendUpdate
                      (vrpn_bool isLocalSet, vrpn_bool acceptedUpdate) {
 
-//fprintf(stderr, "In vrpn_Shared_int32::shouldSendUpdate().\n");
+//fprintf(stderr, "In vrpn_Shared_int32::shouldSendUpdate(%s).\n", d_name);
 
   // should handle all modes other than VRPN_SO_DEFER_UPDATES
   if (acceptedUpdate && isLocalSet) {
-//fprintf(stderr, "... accepted;  local set => broadcast it.\n");
+//fprintf(stderr, "..... accepted;  local set => broadcast it.\n");
     return vrpn_TRUE;
   }
 
   if (!(d_mode & VRPN_SO_DEFER_UPDATES)) {
+//fprintf(stderr, "..... rejected (NOT serialized).\n");
     return vrpn_FALSE;
   }
 
   if (!d_isSerializer && isLocalSet) {
-//fprintf(stderr, "... not serializer;  local set "
+//fprintf(stderr, "..... not serializer;  local set "
 //"=> send it to the serializer.\n");
     return vrpn_TRUE;
   }
 
   if (d_isSerializer && !isLocalSet && acceptedUpdate) {
-//fprintf(stderr, "... serializer;  remote set;  accepted => broadcast it.\n");
+//fprintf(stderr, "..... serializer;  remote set;  accepted => broadcast it.\n");
     return vrpn_TRUE;
   }
 
+//fprintf(stderr,"..... rejected (under serialization).\n");
   return vrpn_FALSE;
 }
 
@@ -675,15 +677,21 @@ vrpn_bool vrpn_Shared_float64::shouldAcceptUpdate
                      (vrpn_float64 newValue, timeval when,
                       vrpn_bool isLocalSet) {
 
+//fprintf(stderr, "In vrpn_Shared_float64::shouldAcceptUpdate(%s).\n", d_name);
+
   // Is this "new" change idempotent?
   if ((d_mode & VRPN_SO_IGNORE_IDEMPOTENT) &&
       (newValue == d_value)) {
+//fprintf(stderr, "... was idempotent.\n");
+
     return vrpn_FALSE;
   }
 
   // Is this "new" change older than the previous change?
   if ((d_mode & VRPN_SO_IGNORE_OLD) &&
       !vrpn_TimevalGreater(when, d_lastUpdate)) {
+//fprintf(stderr, "... was outdated.\n");
+
     return vrpn_FALSE;
   }
 
@@ -692,29 +700,50 @@ vrpn_bool vrpn_Shared_float64::shouldAcceptUpdate
     return vrpn_TRUE;
   }
 
+//fprintf(stderr, "... serializing:  ");
+
+
   // If we're not the serializer, don't accept local set() calls -
   // forward those to the serializer.  Non-local set() calls are
   // messages from the serializer that we should accept.
   if (!d_isSerializer) {
     if (isLocalSet) {
+//fprintf(stderr, "local update, not serializer, so reject.\n");
+
       return vrpn_FALSE;
     } else {
+//fprintf(stderr, "remote update, not serializer, so accept.\n");
+
       return vrpn_TRUE;
     }
   }
 
   // We are the serializer.
+//fprintf(stderr, "serializer:  ");
+
+  if (isLocalSet) {
+//fprintf(stderr, "local update.\n");
+    return vrpn_TRUE;
+  }
+
 
   // Are we accepting all updates?
   if (d_policy == vrpn_ACCEPT) {
+//fprintf(stderr, "policy is to accept.\n");
+
     return vrpn_TRUE;
   }
 
   // Does the user want to accept this one?
   if ((d_policy == vrpn_CALLBACK) && d_policyCallback &&
       (*d_policyCallback)(d_policyUserdata, newValue, when, this)) {
+//fprintf(stderr, "user callback accepts.\n");
+
+
     return vrpn_TRUE;
   }
+
+//fprintf(stderr, "rejected.\n");
 
   return vrpn_FALSE;
 }
@@ -722,22 +751,33 @@ vrpn_bool vrpn_Shared_float64::shouldAcceptUpdate
 // virtual
 vrpn_bool vrpn_Shared_float64::shouldSendUpdate
                      (vrpn_bool isLocalSet, vrpn_bool acceptedUpdate) {
+//fprintf(stderr, "In vrpn_Shared_float64::shouldSendUpdate(%s).\n", d_name);
+
   if (acceptedUpdate && isLocalSet) {
+//fprintf(stderr, "..... accepted;  local set => broadcast it.\n");
+
     return vrpn_TRUE;
   }
 
   if (!(d_mode & VRPN_SO_DEFER_UPDATES)) {
+//fprintf(stderr, "..... rejected (NOT serialized).\n");
     return vrpn_FALSE;
   }
 
   if (!d_isSerializer && isLocalSet) {
+//fprintf(stderr, "..... not serializer;  local set "
+//"=> send it to the serializer.\n");
+
     return vrpn_TRUE;
   }
 
   if (d_isSerializer && !isLocalSet && acceptedUpdate) {
+//fprintf(stderr, "..... serializer;  remote set;  accepted => broadcast it.\n");
+
     return vrpn_TRUE;
   }
 
+//fprintf(stderr,"..... rejected (under serialization).\n");
   return vrpn_FALSE;
 }
 
@@ -1139,46 +1179,75 @@ vrpn_bool vrpn_Shared_String::shouldAcceptUpdate
                      (const char * newValue, timeval when,
                       vrpn_bool isLocalSet) {
 
+//fprintf(stderr, "In vrpn_Shared_String::shouldAcceptUpdate(%s).\n", d_name);
+
+
   // Is this "new" change idempotent?
   if ((d_mode & VRPN_SO_IGNORE_IDEMPOTENT) &&
       (newValue == d_value)) {
+//fprintf(stderr, "... was idempotent.\n");
+
     return vrpn_FALSE;
   }
 
   // Is this "new" change older than the previous change?
   if ((d_mode & VRPN_SO_IGNORE_OLD) &&
       !vrpn_TimevalGreater(when, d_lastUpdate)) {
+//fprintf(stderr, "... was outdated.\n");
+
     return vrpn_FALSE;
   }
 
   // All other clauses of shouldAcceptUpdate depend on serialization
   if (!(d_mode & VRPN_SO_DEFER_UPDATES)) {
+//fprintf(stderr, "accepted.\n");
     return vrpn_TRUE;
   }
+
+//fprintf(stderr, "... serializing:  ");
+
 
   // If we're not the serializer, don't accept local set() calls -
   // forward those to the serializer.  Non-local set() calls are
   // messages from the serializer that we should accept.
   if (!d_isSerializer) {
     if (isLocalSet) {
+//fprintf(stderr, "local update, not serializer, so reject.\n");
+
       return vrpn_FALSE;
     } else {
+//fprintf(stderr, "remote update, not serializer, so accept.\n");
+
       return vrpn_TRUE;
     }
   }
 
   // We are the serializer.
 
+//fprintf(stderr, "serializer:  ");
+
+
+  if (isLocalSet) {
+//fprintf(stderr, "local update.\n");
+    return vrpn_TRUE;
+  }
+
   // Are we accepting all updates?
   if (d_policy == vrpn_ACCEPT) {
+//fprintf(stderr, "policy is to accept.\n");
+
     return vrpn_TRUE;
   }
 
   // Does the user want to accept this one?
   if ((d_policy == vrpn_CALLBACK) && d_policyCallback &&
       (*d_policyCallback)(d_policyUserdata, newValue, when, this)) {
+//fprintf(stderr, "user callback accepts.\n");
+
     return vrpn_TRUE;
   }
+
+//fprintf(stderr, "rejected.\n");
 
   return vrpn_FALSE;
 }
@@ -1186,22 +1255,34 @@ vrpn_bool vrpn_Shared_String::shouldAcceptUpdate
 // virtual
 vrpn_bool vrpn_Shared_String::shouldSendUpdate
                      (vrpn_bool isLocalSet, vrpn_bool acceptedUpdate) {
+
+//fprintf(stderr, "In vrpn_Shared_String::shouldSendUpdate(%s).\n", d_name);
+
   if (acceptedUpdate && isLocalSet) {
+//fprintf(stderr, "..... accepted;  local set => broadcast it.\n");
+
     return vrpn_TRUE;
   }
 
   if (!(d_mode & VRPN_SO_DEFER_UPDATES)) {
+//fprintf(stderr, "..... rejected (NOT serialized).\n");
     return vrpn_FALSE;
   }
 
   if (!d_isSerializer && isLocalSet) {
+//fprintf(stderr, "..... not serializer;  local set "
+//"=> send it to the serializer.\n");
+
     return vrpn_TRUE;
   }
 
   if (d_isSerializer && !isLocalSet && acceptedUpdate) {
+//fprintf(stderr, "..... serializer;  remote set;  accepted => broadcast it.\n");
+
     return vrpn_TRUE;
   }
 
+//fprintf(stderr, "..... rejected (under serialization).\n");
   return vrpn_FALSE;
 }
 
