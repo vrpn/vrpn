@@ -513,7 +513,7 @@ void vrpn_Phantom::mainloop(void) {
         }
 	// Encode the SCP if there is a connection
 	if (vrpn_ForceDevice::connection) {
-	  buf = vrpn_ForceDevice::encode_scp(len, scp_pos, scp_quat,scp_triId);
+	  buf = vrpn_ForceDevice::encode_scp(len, scp_pos, scp_quat);
 	  if (vrpn_ForceDevice::connection->pack_message(len, timestamp,
 							 scp_message_id, vrpn_ForceDevice::my_id,
 							 buf, vrpn_CONNECTION_LOW_LATENCY)) {
