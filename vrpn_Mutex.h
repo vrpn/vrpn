@@ -65,9 +65,6 @@ class vrpn_Mutex {
     vrpn_Mutex (const char * name, int port, const char * NICaddress = NULL);
       ///< This constructor opens a new connection/port for the mutex.
 
-    vrpn_Mutex (const char * name, vrpn_Connection * c);
-      ///< This constructor reuses a SERVER connection for the mutex.
-
     ~vrpn_Mutex (void);
       ///< If isHeldLocally(), calls release().
 
@@ -113,6 +110,11 @@ class vrpn_Mutex {
       ///< These callbacks are triggered when OUR request is granted.
     void addRequestDeniedCallback (void * userdata, int (*) (void *));
       ///< These callbacks are triggered when OUR request is denied.
+    void addTakeCallback (void * userdata, int (*) (void *));
+      ///< These callbacks are triggered when ANY peer gets the mutex.
+      ///< (If several peers are competing for the mutex, and the
+      ///<  implementation issues multiple "grants", these callbacks will
+      ///<  only be triggered once between triggerings of ReleaseCallbacks.)
     void addReleaseCallback (void * userdata, int (*) (void *));
       ///< These callbacks are triggered when ANY peer releases the
       ///< mutex.
@@ -169,7 +171,10 @@ class vrpn_Mutex {
 
     void triggerGrantCallbacks (void);
     void triggerDenyCallbacks (void);
+    void triggerTakeCallbacks (void);
     void triggerReleaseCallbacks (void);
+
+    void checkGrantMutex (void);
 
     void init (const char * name);
 
@@ -181,6 +186,7 @@ class vrpn_Mutex {
 
     mutexCallback * d_reqGrantedCB;
     mutexCallback * d_reqDeniedCB;
+    mutexCallback * d_takeCB;
     mutexCallback * d_releaseCB;
 
     struct peerData {
@@ -193,6 +199,12 @@ class vrpn_Mutex {
       ///< Needed only to clean up when a peer shuts down (mid-request).
       ///< It isn't currently feasible to have all this data, so instead
       ///< we abort requests that were interrupted by a shutdown.
+
+    vrpn_Mutex (const char * name, vrpn_Connection * c);
+      ///< This constructor reuses a SERVER connection for the mutex.
+      ///< BUG BUG BUG - do not use this constructor;  it does not reliably
+      ///< resolve race conditions.
+
 };
 
 

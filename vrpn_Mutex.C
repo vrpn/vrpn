@@ -128,6 +128,7 @@ vrpn_Mutex::vrpn_Mutex (const char * name, int port, const char * NICaddress) :
     d_holderPort (-1),
     d_reqGrantedCB (NULL),
     d_reqDeniedCB (NULL),
+    d_takeCB (NULL),
     d_releaseCB (NULL),
     d_peerData (NULL)
 {
@@ -159,6 +160,7 @@ vrpn_Mutex::vrpn_Mutex (const char * name, vrpn_Connection * server) :
     d_holderPort (-1),
     d_reqGrantedCB (NULL),
     d_reqDeniedCB (NULL),
+    d_takeCB (NULL),
     d_releaseCB (NULL),
     d_peerData (NULL)
 {
@@ -238,13 +240,7 @@ void vrpn_Mutex::mainloop (void) {
     d_peer[i]->mainloop();
   }
 
-  if ((d_state == REQUESTING) &&
-      (d_numPeersGrantingLock == d_numPeers)) {
-    d_state = OURS;
-
-    triggerGrantCallbacks();
-
-  }
+  checkGrantMutex();
 }
 
 void vrpn_Mutex::request (void) {
@@ -258,13 +254,18 @@ void vrpn_Mutex::request (void) {
     return;
   }
 
-  // This will be checked and acted upon if necessary (if we have no
-  // peers) the next time we wend our way out of mainloop().
+  // We used to wait until the next pass through mainloop() to check
+  // this (our request could be trivially granted if we have no
+  // peers), but that leads to bad things (TM), like having to
+  // insert extra calls to mainloop() in client code just to guarantee
+  // that we have the mutex.
+
+  checkGrantMutex();
 
   d_state = REQUESTING;
   d_numPeersGrantingLock = 0;
   for (i = 0; i < d_numPeers; i++) {
-    //d_peerData[i] = vrpn_false;
+    //d_peerData[i].grantedLock = VRPN_FALSE;
     sendRequest(d_peer[i]);
   }
 
@@ -370,6 +371,20 @@ void vrpn_Mutex::addRequestDeniedCallback (void * ud, int (* f) (void *)) {
   d_reqDeniedCB = cb;
 }
 
+void vrpn_Mutex::addTakeCallback (void * ud, int (* f) (void *)) {
+  mutexCallback * cb = new mutexCallback;
+  if (!cb) {
+    fprintf(stderr, "vrpn_Mutex::addTakeCallback:  Out of memory.\n");
+    return;
+  }
+
+  cb->userdata = ud;
+  cb->f = f;
+  cb->next = d_takeCB;
+  d_takeCB = cb;
+}
+
+// static
 void vrpn_Mutex::addReleaseCallback (void * ud, int (* f) (void *)) {
   mutexCallback * cb = new mutexCallback;
   if (!cb) {
@@ -414,8 +429,14 @@ int vrpn_Mutex::handle_request (void * userdata, vrpn_HANDLERPARAM p) {
        ((senderIP < me->d_holderIP) ||
         (senderIP == me->d_holderIP) &&
         (senderPort < me->d_holderPort)))) {
+
     me->d_holderIP = senderIP;
     me->d_holderPort = senderPort;
+
+    if (me->d_state != HELD_REMOTELY) {
+      me->triggerTakeCallbacks();
+    }
+
     me->d_state = HELD_REMOTELY;
     for (i = 0; i < me->d_numPeers; i++) {
       me->sendGrantRequest(me->d_peer[i], senderIP, senderPort);
@@ -490,8 +511,7 @@ int vrpn_Mutex::handle_grantRequest (void * userdata, vrpn_HANDLERPARAM p) {
 
   me->d_numPeersGrantingLock++;
 
-  // This will be checked and acted upon if necessary as we wend our way
-  // out of mainloop().
+  me->checkGrantMutex();
 
   return 0;
 }
@@ -640,6 +660,15 @@ void vrpn_Mutex::triggerDenyCallbacks (void) {
   }
 }
 
+void vrpn_Mutex::triggerTakeCallbacks (void) {
+  mutexCallback * cb;
+
+  // trigger callbacks
+  for (cb = d_takeCB;  cb;  cb = cb->next) {
+    (cb->f)(cb->userdata);
+  }
+}
+
 void vrpn_Mutex::triggerReleaseCallbacks (void) {
   mutexCallback * cb;
 
@@ -649,6 +678,17 @@ void vrpn_Mutex::triggerReleaseCallbacks (void) {
   }
 }
 
+void vrpn_Mutex::checkGrantMutex (void) {
+
+  if ((d_state == REQUESTING) &&
+      (d_numPeersGrantingLock == d_numPeers)) {
+    d_state = OURS;
+
+    triggerTakeCallbacks();
+    triggerGrantCallbacks();
+
+  }
+}
 
 
 void vrpn_Mutex::init (const char * name) {
