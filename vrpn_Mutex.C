@@ -254,7 +254,15 @@ vrpn_Mutex_Server::vrpn_Mutex_Server (const char * name, vrpn_Connection * c) :
 
 // virtual
 vrpn_Mutex_Server::~vrpn_Mutex_Server (void) {
-
+  if (d_connection) {
+    vrpn_int32 got, droppedLast;
+    got = d_connection->register_message_type(vrpn_got_connection);
+    droppedLast = d_connection->register_message_type(vrpn_dropped_last_connection);
+    d_connection->unregister_handler(d_request_type, handle_request, this);
+    d_connection->unregister_handler(d_release_type, handle_release, this);
+    d_connection->unregister_handler(got, handle_gotConnection, this);
+    d_connection->unregister_handler(droppedLast, handle_dropLastConnection, this);
+  }
 }
 
 // static
@@ -378,6 +386,15 @@ vrpn_Mutex_Remote::~vrpn_Mutex_Remote (void) {
   // Make sure we don't deadlock things
   release();
 
+  if (d_connection) {
+      d_connection->unregister_handler(d_grantRequest_type,
+                                 handle_grantRequest, this);
+      d_connection->unregister_handler(d_denyRequest_type,
+                                 handle_denyRequest, this);
+      d_connection->unregister_handler(d_releaseNotification_type,
+                                 handle_releaseNotification, this);
+      d_connection->unregister_handler(d_initialize_type, handle_initialize, this);
+  }
 }
 
 

@@ -1,3 +1,22 @@
+2000-09-11  Adam Seeger
+
+	* vrpn_Mutex.C (vrpn_Mutex_Server::~vrpn_Mutex_Server) : added
+	unregister messages to correspond to register messages in the
+	constructor (should be fixed using vrpn_BaseClass later)
+	* vrpn_Mutex.C (vrpn_Mutex_Remote::~vrpn_Mutex_Remote) : added
+        unregister messages to correspond to register messages in the
+        constructor (should be fixed using vrpn_BaseClass later)
+	* vrpn_FileConnection.C (vrpn_File_Connection::constructor) :
+	took out code that set the first message to the first
+	user message because when we later get a message that clears
+	the translation table there is no way to rewind and rebuild
+	the translation table because the initial system messages
+	don't get replayed (left in the part that actually skips to the
+	first user message though because this is apparently useful in
+	order to avoid timing problems)
+	* vrpn_FileConnection.C (vrpn_File_Connection::reset) :
+	added code from constructor to skip to the first user message
+
 2000-09-07  Adam Seeger  <seeger@cs.unc.edu>
 
 	* vrpn_Connection.C (vrpn_TranslationTable::clear) : changed this

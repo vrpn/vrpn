@@ -106,10 +106,6 @@ vrpn_File_Connection::vrpn_File_Connection (const char * file_name,
     // the first user message.
     if (fPlayToFirstUserMessage) {
         play_to_user_message();
-        d_startEntry = d_currentLogEntry;
-        if (d_startEntry) {
-            d_start_time = d_startEntry->data.msg_time;
-        }
     }
 }
 
@@ -805,6 +801,18 @@ int vrpn_File_Connection::reset()
     d_last_time.tv_usec = d_last_time.tv_sec = 0;
     d_filetime_accum.reset_at_time( d_last_time );
     
+    // this needs to be a parameter if we want this to be optional
+    int fPlayToFirstUserMessage = 1;
+    // This is useful to play the initial system messages
+    //(the sender/type ones) automatically.  These might not be
+    // time synched so if we don't play them automatically they
+    // can mess up playback if their timestamps are later then
+    // the first user message.
+    if (fPlayToFirstUserMessage) {
+        play_to_user_message();
+    }
+
+
     return 0;
 }
 
