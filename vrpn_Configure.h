@@ -154,17 +154,17 @@
 #ifdef VRPN_USE_PHANTOM_SERVER
   #define	VRPN_NO_STREAMS
   #ifdef VRPN_USE_HDAPI
-    #pragma comment (lib,"C:/Program Files/SensAble/3DTouch/lib/hd.lib")
+    #pragma comment (lib,"D:/Program Files/SensAble/3DTouch/lib/hd.lib")
     #ifdef	_DEBUG
-      #pragma comment (lib,"C:/Program Files/SensAble/3DTouch/utilities/lib/hdud.lib")
+      #pragma comment (lib,"D:/Program Files/SensAble/3DTouch/utilities/lib/hdud.lib")
     #else
-      #pragma comment (lib,"C:/Program Files/SensAble/3DTouch/utilities/lib/hdu.lib")
+      #pragma comment (lib,"D:/Program Files/SensAble/3DTouch/utilities/lib/hdu.lib")
     #endif
   #else
     #ifdef VRPN_USE_GHOST_31
-      #pragma comment (lib,"C:/Program Files/SensAble/GHOST/v3.1/lib/GHOST31.lib")
+      #pragma comment (lib,"D:/Program Files/SensAble/GHOST/v3.1/lib/GHOST31.lib")
     #else
-      #pragma comment (lib,"C:/Program Files/SensAble/GHOST/v4.0/lib/GHOST40.lib")
+      #pragma comment (lib,"D:/Program Files/SensAble/GHOST/v4.0/lib/GHOST40.lib")
     #endif
   #endif
 #endif
@@ -176,9 +176,9 @@
 // turned on and off using the definition above.
 #ifdef	VRPN_USE_DIRECTINPUT
 #define	DIRECTINPUT_VERSION 0x0800
-#pragma comment (lib, "C:/DXSDK/lib/dxguid.lib")
-#pragma comment (lib, "C:/DXSDK/lib/dxerr8.lib")
-#pragma comment (lib, "C:/DXSDK/lib/dinput8.lib")
+#pragma comment (lib, "D:/DXSDK/lib/dxguid.lib")
+#pragma comment (lib, "D:/DXSDK/lib/dxerr8.lib")
+#pragma comment (lib, "D:/DXSDK/lib/dinput8.lib")
 #endif
 
 // Load Adrienne libraries if we are using the timecode generator.
@@ -196,8 +196,8 @@
 // this here rather than in the project settings so that it can be
 // turned on and off using the definition above.
 #ifdef	VRPN_USE_NATIONAL_INSTRUMENTS
-#pragma comment (lib, "C:/Program Files/National Instruments/NI-DAQ/Lib/nidaq32.lib")
-#pragma comment (lib, "C:/Program Files/National Instruments/NI-DAQ/Lib/nidex32.lib")
+#pragma comment (lib, "D:/Program Files/National Instruments/NI-DAQ/Lib/nidaq32.lib")
+#pragma comment (lib, "D:/Program Files/National Instruments/NI-DAQ/Lib/nidex32.lib")
 #endif
 
 // This will be defined in the VRPN (non-DLL) project and nothing else

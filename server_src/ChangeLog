@@ -1,3 +1,9 @@
+2004-11-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * Happy Birthday to me!
+        * Makefile : Added John Stone's additions to make it compile on
+                64-bit Solaris
+
 2004-10-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.C : Added parsing for the config file for a Python joystick

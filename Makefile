@@ -1,8 +1,7 @@
 #############################################################################
-#	Makefile for the nanoManipulator client application.  Needs to be
-# built using 'gmake'.  Should run on any architecture that is currently
-# supported.  It should be possible to build simultaneously on multiple
-# architectures.
+#	Makefile for VRPN libraries.  Needs to be built using 'gmake'.
+# Should run on any architecture that is currently supported.  It should
+# be possible to build simultaneously on multiple architectures.
 #
 # On the sgi, both g++ and CC verisons are built by default.
 #
@@ -39,6 +38,7 @@
 #HW_OS := pc_cygwin
 #HW_OS := pc_FreeBSD
 #HW_OS := sparc_solaris
+#HW_OS := sparc_solaris_64
 #HW_OS := powerpc_aix
 #HW_OS := powerpc_macosx
 ##########################
@@ -100,6 +100,11 @@ else
   ifeq ($(HW_OS),sparc_solaris)
 	CC := /opt/SUNWspro/bin/CC
 	AR := /opt/SUNWspro/bin/CC -xar -o
+  endif
+
+  ifeq ($(HW_OS),sparc_solaris_64)
+	CC := /opt/SUNWspro/bin/CC -xarch=v9a
+	AR := /opt/SUNWspro/bin/CC -xarch=v9a -xar -o
   endif
 
   ifeq ($(HW_OS),powerpc_aix)
@@ -178,7 +183,7 @@ endif
 # directories that we can do an rm -f on because they only contain
 # object files and executables
 SAFE_KNOWN_ARCHITECTURES :=	hp700_hpux/* hp700_hpux10/* mips_ultrix/* \
-	pc_linux/* sgi_irix.32/* sgi_irix.n32/* sparc_solaris/* sparc_sunos/* pc_cygwin/* powerpc_aix/* pc_linux_arm/* powerpc_macosx/*
+	pc_linux/* sgi_irix.32/* sgi_irix.n32/* sparc_solaris/* sparc_solaris_64/* sparc_sunos/* pc_cygwin/* powerpc_aix/* pc_linux_arm/* powerpc_macosx/*
 
 CLIENT_SKA = $(patsubst %,client_src/%,$(SAFE_KNOWN_ARCHITECTURES))
 SERVER_SKA = $(patsubst %,server_src/%,$(SAFE_KNOWN_ARCHITECTURES))
@@ -260,7 +265,11 @@ else
   ifeq ($(HW_OS),sparc_solaris)
         ARCH_LIBS := -lsocket -lnsl
   else
+    ifeq ($(HW_OS),sparc_solaris_64)
+        ARCH_LIBS := -lsocket -lnsl
+    else
         ARCH_LIBS :=
+    endif
   endif
 endif
 
@@ -371,7 +380,8 @@ LIB_INCLUDES = vrpn_Connection.h vrpn_Tracker.h vrpn_Button.h \
 		vrpn_FileController.h vrpn_Forwarder.h vrpn_Text.h \
 		vrpn_ForwarderController.h vrpn_Serial.h vrpn_Dial.h \
 		vrpn_SharedObject.h vrpn_LamportClock.h vrpn_Mutex.h \
-		vrpn_TempImager.h vrpn_Analog_Output.h vrpn_Poser.h
+		vrpn_BaseClass.h vrpn_TempImager.h \
+		vrpn_Analog_Output.h vrpn_Poser.h
 
 # additional files for the new connection work-in-progress
 
@@ -390,9 +400,9 @@ SLIB_FILES =  $(LIB_FILES) vrpn_3Space.C \
 	vrpn_Analog_5dt.C vrpn_Joylin.C vrpn_Tng3.C vrpn_Spaceball.C \
 	vrpn_Tracker_isense.C vrpn_Zaber.C vrpn_nikon_controls.C \
 	vrpn_GlobalHapticsOrb.C vrpn_Tracker_ButtonFly.C vrpn_ADBox.C \
-	vrpn_VPJoystick.C vrpn_Tracker_Liberty.C vrpn_Poser.C \
-	vrpn_Poser_Analog.C vrpn_Analog_Output_NI.C \
-	vrpn_Poser_Analog.C vrpn_Tracker_DTrack.C vrpn_Poser_Tek4662.C
+	vrpn_VPJoystick.C vrpn_Tracker_Liberty.C vrpn_Analog_Output_NI.C \
+	vrpn_Poser_Analog.C vrpn_Tracker_DTrack.C vrpn_Poser_Tek4662.C \
+	vrpn_Poser.C
 
 SLIB_OBJECTS = $(patsubst %,$(SOBJECT_DIR)/%,$(SLIB_FILES:.C=.o))
 
@@ -406,8 +416,9 @@ SLIB_INCLUDES = $(LIB_INCLUDES) vrpn_3Space.h \
 	vrpn_tracker_isense.h vrpn_Zaber.h vrpn_nikon_controls.h \
 	vrpn_GlobalHapticsOrb.C vrpn_Tracker_ButtonFly.h vrpn_ADBox.h \
 	vrpn_VPJoystick.h vrpn_Tracker_Liberty.h vrpn_Analog_Output_NI.h \
-	vrpn_Poser_Analog.h vrpn_Tracker_DTrack.h vrpn_Poser_Tek4662.h \
-	vrpn_Poser.h
+	vrpn_Poser_Analog.h vrpn_Tracker_DTrack.h vrpn_Poser.h \
+	vrpn_Poser_Tek4662.h
+
 
 $(LIB_OBJECTS): 
 $(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(LIB_OBJECTS)

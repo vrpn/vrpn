@@ -7,6 +7,7 @@
 #
 #HW_OS := sgi_irix
 #HW_OS := sparc_solaris
+#HW_OS := sparc_solaris_64
 #HW_OS := hp700_hpux10
 #HW_OS := pc_linux
 #HW_OS := pc_cygwin
@@ -51,6 +52,10 @@ ifeq ($(HW_OS),pc_cygwin)
 endif
 ifeq ($(HW_OS),sparc_solaris)
 	CC := /opt/SUNWspro/bin/CC
+	SYSLIBS := -lsocket -lnsl
+endif
+ifeq ($(HW_OS),sparc_solaris_64)
+	CC := /opt/SUNWspro/bin/CC -xarch=v9a
 	SYSLIBS := -lsocket -lnsl
 endif
 ifeq ($(HW_OS),powerpc_aix)
