@@ -31,6 +31,7 @@
 #include "vrpn_JoyFly.h"
 #include "vrpn_CerealBox.h"
 #include "vrpn_Tracker_AnalogFly.h"
+#include "vrpn_Magellan.h"
 
 #include "vrpn_ForwarderController.h"
 
@@ -40,6 +41,7 @@
 #define MAX_ANALOG 4
 #define	MAX_SGIBOX 2
 #define	MAX_CEREALS 8
+#define	MAX_MAGELLANS 8
 #define MAX_DIALS 8
 
 #define CHECK(s) \
@@ -84,6 +86,8 @@ vrpn_raw_SGIBox	* sgiboxes [MAX_SGIBOX];
 int		num_sgiboxes = 0;
 vrpn_CerealBox	* cereals [MAX_CEREALS];
 int		num_cereals = 0;
+vrpn_Magellan	* magellans [MAX_MAGELLANS];
+int		num_magellans = 0;
 vrpn_Dial	* dials [MAX_DIALS];
 int		num_dials = 0;
 
@@ -250,6 +254,7 @@ int setup_raw_SGIBox (char * & pch, char * line, FILE * config_file) {
 int setup_SGIBOX (char * & pch, char * line, FILE * config_file) {
 
 #ifdef SGI_BDBOX
+
 	    char s2 [512];
 
             int tbutton;
@@ -394,12 +399,12 @@ int setup_Tracker_AnalogFly (char * & pch, char * line, FILE * config_file) {
                 }
 
         // Read the reset line
-        if (fgets(line, sizeof(line), config_file) == NULL) {
+        if (fgets(line, 512, config_file) == NULL) {
                 fprintf(stderr,"Ran past end of config file in AnalogFly\n");
                 return -1;
         }
         if (sscanf(line, "RESET %511s%d", s3, &i1) != 2) {
-                fprintf(stderr,"Bad RESET line in AnalogFly\n");
+                fprintf(stderr,"Bad RESET line in AnalogFly: %s\n",line);
                 return -1;
         }
         if (strcmp(s3,"NULL") != 0) {
@@ -529,6 +534,40 @@ int setup_CerealBox (char * & pch, char * line, FILE * config_file) {
   return 0;
 }
 
+int setup_Magellan (char * & pch, char * line, FILE * config_file) {
+  char s2 [512], s3 [512];
+  int i1;
+
+            next();
+            // Get the arguments (class, magellan_name, port, baud
+            if (sscanf(pch,"%511s%511s%d",s2,s3, &i1) != 3)
+ {
+              fprintf(stderr,"Bad vrpn_Magellan line: %s\n",line);
+              return -1;
+            }
+
+            // Make sure there's room for a new magellan
+            if (num_cereals >= MAX_MAGELLANS) {
+              fprintf(stderr,"Too many Magellans in config file");
+              return -1;
+            }
+
+            // Open the box
+            if (verbose) 
+              printf("Opening vrpn_Magellan: %s on port %s, baud %d\n",
+                    s2,s3,i1);
+            if ((magellans[num_magellans] =
+                  new vrpn_Magellan(s2, connection, s3, i1)) == NULL)               
+              {
+                fprintf(stderr,"Can't create new vrpn_Magellan\n");
+                return -1;
+              } else {
+                num_magellans++;
+              }
+
+  return 0;
+}
+
 int setup_Tracker_Dyna (char * & pch, char * line, FILE * config_file) {
 
   char s2 [512], s3 [512];
@@ -596,7 +635,7 @@ int setup_Tracker_Fastrak (char * & pch, char * line, FILE * config_file) {
         sprintf(rcmd, "");
         while (line[strlen(line)-2] == '\\') {
           // Read the next line
-          if (fgets(line, sizeof(line), config_file) == NULL) {
+          if (fgets(line, 512, config_file) == NULL) {
               fprintf(stderr,"Ran past end of config file in Fastrak\n");
                   return -1;
           }
@@ -604,7 +643,7 @@ int setup_Tracker_Fastrak (char * & pch, char * line, FILE * config_file) {
           // Copy the line into the remote command,
           // then replace \ with \015 if present
           // In any case, make sure we terminate with \015.
-          strncat(rcmd, line, sizeof(line));
+          strncat(rcmd, line, 512);
           if (rcmd[strlen(rcmd)-2] == '\\') {
                   rcmd[strlen(rcmd)-2] = '\015';
                   rcmd[strlen(rcmd)-1] = '\0';
@@ -1030,6 +1069,8 @@ main (int argc, char * argv[])
             CHECK(setup_DialExample);
 	  } else if (isit("vrpn_CerealBox")) {
             CHECK(setup_CerealBox);
+	  } else if (isit("vrpn_Magellan")) {
+            CHECK(setup_Magellan);
 	  } else if (isit("vrpn_Tracker_Dyna")) {
             CHECK(setup_Tracker_Dyna);
 	  } else if (isit("vrpn_Tracker_Fastrak")) {
@@ -1118,6 +1159,11 @@ main (int argc, char * argv[])
 		// Let all the cereal boxes do their thing
 		for (i=0; i< num_cereals; i++) {
 			cereals[i]->mainloop();
+		}
+
+		// Let all the Magellans do their thing
+		for (i=0; i< num_magellans; i++) {
+			magellans[i]->mainloop();
 		}
 
 		// Let all of the SGI button/knob boxes do their thing

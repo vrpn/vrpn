@@ -63,7 +63,7 @@ static	int	write_slowly(int fd, unsigned char *buffer, int len)
 
 	for (i = 0; i < len; i++) {
 		vrpn_SleepMsecs(1);
-		if (vrpn_writesocket(fd, &buffer[i], 1) != 1) {
+		if (vrpn_write_characters(fd, &buffer[i], 1) != 1) {
 			return -1;
 		}
 	}

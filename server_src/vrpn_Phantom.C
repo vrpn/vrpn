@@ -226,65 +226,65 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
   //  status= TRACKER_RESETTING;
   gettimeofday(&(vrpn_ForceDevice::timestamp),NULL);
 
-  if (vrpn_ForceDevice::connection->register_handler(plane_message_id, 
-	handle_plane_change_message, this, vrpn_ForceDevice::my_id)) {
+  if (register_autodeleted_handler(plane_message_id, 
+	handle_plane_change_message, this, vrpn_ForceDevice::d_sender_id)) {
 		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
-		vrpn_ForceDevice::connection = NULL;
+		vrpn_ForceDevice::d_connection = NULL;
   }
-  if (vrpn_ForceDevice::connection->register_handler(plane_effects_message_id,
-	handle_effects_change_message, this, vrpn_ForceDevice::my_id)) {
+  if (register_autodeleted_handler(plane_effects_message_id,
+	handle_effects_change_message, this, vrpn_ForceDevice::d_sender_id)) {
 		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
-		vrpn_ForceDevice::connection = NULL;
+		vrpn_ForceDevice::d_connection = NULL;
   }
-  if (vrpn_ForceDevice::connection->register_handler(setVertex_message_id, 
-	handle_setVertex_message, this, vrpn_ForceDevice::my_id)) {
+  if (register_autodeleted_handler(setVertex_message_id, 
+	handle_setVertex_message, this, vrpn_ForceDevice::d_sender_id)) {
 		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
-		vrpn_ForceDevice::connection = NULL;
+		vrpn_ForceDevice::d_connection = NULL;
   }
-  if (vrpn_ForceDevice::connection->register_handler(setNormal_message_id, 
-	handle_setNormal_message, this, vrpn_ForceDevice::my_id)) {
+  if (register_autodeleted_handler(setNormal_message_id, 
+	handle_setNormal_message, this, vrpn_ForceDevice::d_sender_id)) {
 		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
-		vrpn_ForceDevice::connection = NULL;
+		vrpn_ForceDevice::d_connection = NULL;
   }
-  if (vrpn_ForceDevice::connection->register_handler(setTriangle_message_id, 
-	handle_setTriangle_message, this, vrpn_ForceDevice::my_id)) {
+  if (register_autodeleted_handler(setTriangle_message_id, 
+	handle_setTriangle_message, this, vrpn_ForceDevice::d_sender_id)) {
 		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
-		vrpn_ForceDevice::connection = NULL;
+		vrpn_ForceDevice::d_connection = NULL;
   }
-  if (vrpn_ForceDevice::connection->register_handler(removeTriangle_message_id, 
-	handle_removeTriangle_message, this, vrpn_ForceDevice::my_id)) {
+  if (register_autodeleted_handler(removeTriangle_message_id, 
+	handle_removeTriangle_message, this, vrpn_ForceDevice::d_sender_id)) {
 		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
-		vrpn_ForceDevice::connection = NULL;
+		vrpn_ForceDevice::d_connection = NULL;
   }
-  if (vrpn_ForceDevice::connection->register_handler(updateTrimeshChanges_message_id, 
-	handle_updateTrimeshChanges_message, this, vrpn_ForceDevice::  my_id)) {
+  if (register_autodeleted_handler(updateTrimeshChanges_message_id, 
+	handle_updateTrimeshChanges_message, this, vrpn_ForceDevice::  d_sender_id)) {
 		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
-		vrpn_ForceDevice::connection = NULL;
+		vrpn_ForceDevice::d_connection = NULL;
   }
-  if (vrpn_ForceDevice::connection->register_handler(transformTrimesh_message_id, 
-	handle_transformTrimesh_message, this, vrpn_ForceDevice::my_id)) {
+  if (register_autodeleted_handler(transformTrimesh_message_id, 
+	handle_transformTrimesh_message, this, vrpn_ForceDevice::d_sender_id)) {
 		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
-		vrpn_ForceDevice::connection = NULL;
+		vrpn_ForceDevice::d_connection = NULL;
   }
-  if (vrpn_ForceDevice::connection->register_handler(setTrimeshType_message_id, 
-	handle_setTrimeshType_message, this, vrpn_ForceDevice::my_id)) {
+  if (register_autodeleted_handler(setTrimeshType_message_id, 
+	handle_setTrimeshType_message, this, vrpn_ForceDevice::d_sender_id)) {
 		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
-		vrpn_ForceDevice::connection = NULL;
+		vrpn_ForceDevice::d_connection = NULL;
   }
-  if (vrpn_ForceDevice::connection->register_handler(clearTrimesh_message_id, 
-	handle_clearTrimesh_message, this, vrpn_ForceDevice::my_id)) {
+  if (register_autodeleted_handler(clearTrimesh_message_id, 
+	handle_clearTrimesh_message, this, vrpn_ForceDevice::d_sender_id)) {
 		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
-		vrpn_ForceDevice::connection = NULL;
+		vrpn_ForceDevice::d_connection = NULL;
   }
-  if (vrpn_ForceDevice::connection->register_handler(forcefield_message_id,
-	handle_forcefield_change_message, this, vrpn_ForceDevice::my_id)) {
+  if (register_autodeleted_handler(forcefield_message_id,
+	handle_forcefield_change_message, this, vrpn_ForceDevice::d_sender_id)) {
 		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
-		vrpn_ForceDevice::connection = NULL;
+		vrpn_ForceDevice::d_connection = NULL;
   }
-  if (vrpn_Tracker::connection->register_handler(reset_origin_m_id,
-        handle_resetOrigin_change_message, this, vrpn_Tracker::my_id)) {
+  if (register_autodeleted_handler(reset_origin_m_id,
+        handle_resetOrigin_change_message, this, vrpn_Tracker::d_sender_id)) {
                 fprintf(stderr,"vrpn_Phantom:can't register handler\n");
-                vrpn_Tracker::connection = NULL;
+                vrpn_Tracker::d_connection = NULL;
   }
 
 
@@ -293,34 +293,13 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
   if (vrpn_Tracker::register_server_handlers())
     fprintf(stderr, "vrpn_Phantom: couldn't register xform request handlers\n");
 
-  // UNREGISTER the default handler, register our own.
-  // Must be called after vrpn_Tracker::register_server_handlers()
-  // because unregister_handler doesn't seem to deal with the case of
-  // an unregistering a non-registered handler properly?
-
-  // We need to unregister the address of this-as-a-vrpn_Tracker, not this.
-
-  vrpn_Tracker * track_this = this;
-
-  if (vrpn_Tracker::connection->unregister_handler
-       (update_rate_id,
-        vrpn_Tracker::handle_update_rate_request, track_this,
-        vrpn_Tracker::my_id)) {
-                fprintf(stderr,"vrpn_Phantom:  "
-                        "Can't unregister default update-rate handler\n");
-                vrpn_Tracker::connection = NULL;
-  } else
-      fprintf(stderr, "vrpn_Phantom unregistered old update-rate handler.\n");
-
-
-  if (vrpn_Tracker::connection->register_handler
+  if (register_autodeleted_handler
        (update_rate_id, handle_update_rate_request, this,
-        vrpn_Tracker::my_id)) {
+        vrpn_Tracker::d_sender_id)) {
                 fprintf(stderr, "vrpn_Phantom:  "
                                 "Can't register update-rate handler\n");
-                vrpn_Tracker::connection = NULL;
-  } else
-      fprintf(stderr, "vrpn_Phantom registered new update-rate handler.\n");
+                vrpn_Tracker::d_connection = NULL;
+  }
 
   scene->startServoLoop();
 
@@ -430,6 +409,9 @@ void vrpn_Phantom::mainloop(void) {
 	char    *buf;
 	vrpn_int32	len;
 
+	// Allow the base server class to do its thing
+	server_mainloop();
+
     //check button status
     if(phantom->getStylusSwitch() ) {
 	    buttons[0] = 1;   //button is pressed
@@ -455,49 +437,49 @@ void vrpn_Phantom::mainloop(void) {
         get_report();
 
         //Encode the position/orientation if there is a connection
-        if(vrpn_Tracker::connection) {
+        if(vrpn_Tracker::d_connection) {
             len = vrpn_Tracker::encode_to(msgbuf);
-            if(vrpn_Tracker::connection->pack_message(len,
+            if(vrpn_Tracker::d_connection->pack_message(len,
                 timestamp,vrpn_Tracker::position_m_id,
-                vrpn_Tracker::my_id, msgbuf, vrpn_CONNECTION_LOW_LATENCY)) {
+                vrpn_Tracker::d_sender_id, msgbuf, vrpn_CONNECTION_LOW_LATENCY)) {
                     fprintf(stderr,"Phantom: cannot write message: tossing\n");
             }
         }
 
         //Encode the velocity/angular velocity if there is a connection
-        if(vrpn_Tracker::connection) {
+        if(vrpn_Tracker::d_connection) {
             len = vrpn_Tracker::encode_vel_to(msgbuf);
-            if(vrpn_Tracker::connection->pack_message(len,
+            if(vrpn_Tracker::d_connection->pack_message(len,
                 timestamp,vrpn_Tracker::velocity_m_id,
-                vrpn_Tracker::my_id, msgbuf,vrpn_CONNECTION_LOW_LATENCY)) {
+                vrpn_Tracker::d_sender_id, msgbuf,vrpn_CONNECTION_LOW_LATENCY)) {
                     fprintf(stderr,"Phantom: cannot write message: tossing\n");
             }
         }
         //Encode the acceleration/angular acceleration if there is a connection
-/*        if (vrpn_Tracker::connection) {
+/*        if (vrpn_Tracker::d_connection) {
             len = vrpn_Tracker::encode_acc_to(msgbuf);
-            if(vrpn_Tracker::connection->pack_message(len,
+            if(vrpn_Tracker::d_connection->pack_message(len,
                 timestamp,vrpn_Tracker::acc_m_id,
-                vrpn_Tracker::my_id, msgbuf,vrpn_CONNECTION_LOW_LATENCY)) {
+                vrpn_Tracker::d_sender_id, msgbuf,vrpn_CONNECTION_LOW_LATENCY)) {
                     fprintf(stderr,"Phantom: cannot write message: tossing\n");
             }
         }
 */
         //Encode the force if there is a connection
-        if(vrpn_ForceDevice::connection) {
+        if(vrpn_ForceDevice::d_connection) {
             buf = vrpn_ForceDevice::encode_force(len, d_force);
-            if(vrpn_ForceDevice::connection->pack_message(len,timestamp,
-                force_message_id,vrpn_ForceDevice::my_id,
+            if(vrpn_ForceDevice::d_connection->pack_message(len,timestamp,
+                force_message_id,vrpn_ForceDevice::d_sender_id,
                 buf,vrpn_CONNECTION_LOW_LATENCY)) {
                     fprintf(stderr,"Phantom: cannot write message: tossing\n");
             }
 			delete buf;
         }
 	// Encode the SCP if there is a connection
-		if (vrpn_ForceDevice::connection) {
+		if (vrpn_ForceDevice::d_connection) {
 			buf = vrpn_ForceDevice::encode_scp(len, scp_pos, scp_quat);
-			if (vrpn_ForceDevice::connection->pack_message(len, timestamp,
-				scp_message_id, vrpn_ForceDevice::my_id,
+			if (vrpn_ForceDevice::d_connection->pack_message(len, timestamp,
+				scp_message_id, vrpn_ForceDevice::d_sender_id,
 				buf, vrpn_CONNECTION_LOW_LATENCY)) {
 					fprintf(stderr,"Phantom: cannot write message: tossing\n");
 			}

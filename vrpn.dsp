@@ -210,6 +210,14 @@ SOURCE=.\vrpn_ForwarderController.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_Magellan.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Magellan.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_raw_sgibox.C
 # End Source File
 # Begin Source File

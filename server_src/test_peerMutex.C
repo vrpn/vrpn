@@ -7,14 +7,17 @@
 
 int rg (void *) {
   printf("callback - Mutex granted.\n");
+  return 0;
 }
 
 int rd (void *) {
   printf("callback - Mutex denied.\n");
+  return 0;
 }
 
 int rel (void *) {
   printf("callback - Mutex released.\n");
+  return 0;
 }
 
 int main (int argc, char ** argv) {

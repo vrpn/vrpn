@@ -76,7 +76,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo /o"pc_win32/Debug/phan_server.bsc"
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 vrpn.lib quat.lib ghost30.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib winmm.lib /nologo /pdb:none /map /debug /machine:I386 /nodefaultlib:"libcmtd.lib" /out:"pc_win32/Debug/phan_server.exe" /libpath:"C:\Program Files\SensAble\GHOST\v3.0\lib" /libpath:"../../ghostLib" /libpath:"../../vrpn/pc_win32/debug" /libpath:"quat/Debug" /libpath:"../../../ghostLib"
+# ADD LINK32 quat.lib ghost30.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib winmm.lib /nologo /pdb:none /map /debug /machine:I386 /nodefaultlib:"libcmtd.lib" /out:"pc_win32/Debug/phan_server.exe" /libpath:"C:\Program Files\SensAble\GHOST\v3.0\lib" /libpath:"../../ghostLib" /libpath:"../../vrpn/pc_win32/debug" /libpath:"quat/Debug" /libpath:"../../../ghostLib"
 
 !ENDIF 
 
@@ -139,10 +139,6 @@ SOURCE=.\trimesh.C
 # Begin Source File
 
 SOURCE=.\trimesh.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\vrpn.cfg
 # End Source File
 # Begin Source File
 

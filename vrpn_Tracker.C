@@ -213,31 +213,28 @@ void vrpn_Tracker::print_latest_report(void)
 int vrpn_Tracker::register_server_handlers(void)
 {
     if (d_connection){
- 	if (register_autodeleted_handler(request_t2r_m_id,
-            handle_t2r_request, this, d_sender_id)){
-                fprintf(stderr,"vrpn_Tracker:can't register t2r handler\n");
+ 		if (register_autodeleted_handler(request_t2r_m_id,
+				handle_t2r_request, this, d_sender_id))
+		{
+			fprintf(stderr,"vrpn_Tracker:can't register t2r handler\n");
+			return -1;
+		}
+		if (register_autodeleted_handler(request_u2s_m_id,
+				handle_u2s_request, this, d_sender_id))
+		{
+			fprintf(stderr,"vrpn_Tracker:can't register u2s handler\n");
+			return -1;
+		}
+		if (register_autodeleted_handler(request_workspace_m_id,
+			handle_workspace_request, this, d_sender_id))
+		{
+			fprintf(stderr,"vrpn_Tracker:  "
+								   "Can't register workspace handler\n");
+			return -1;
+		}
+    } else {
 		return -1;
 	}
-        if (register_autodeleted_handler(request_u2s_m_id,
-            handle_u2s_request, this, d_sender_id)){
-                fprintf(stderr,"vrpn_Tracker:can't register u2s handler\n");
-		return -1;
-	}
-	if (register_autodeleted_handler(request_workspace_m_id,
-	    handle_workspace_request, this, d_sender_id)){
-		fprintf(stderr,"vrpn_Tracker:  "
-                               "Can't register workspace handler\n");
-		return -1;
-	}
-	if (register_autodeleted_handler
-		(update_rate_id, handle_update_rate_request, this, d_sender_id)) {
-		fprintf(stderr, "vrpn_Tracker:  "
-                                "Can't register update rate handler.\n");
-                return -1;
-        }
-    }
-    else
-	return -1;
     return 0;
 }
 
@@ -343,12 +340,6 @@ int vrpn_Tracker::handle_workspace_request(void *userdata, vrpn_HANDLERPARAM p)
         }
     }
     return 0;
-}
-
-int vrpn_Tracker::handle_update_rate_request (void *, vrpn_HANDLERPARAM) {
-  fprintf(stderr, "vrpn_Tracker::handle_update_rate_request:  "
-                  "Don't know how to do that!\n");
-  return 0;
 }
 
 /** Encodes the "Tracker to Room" transformation into the buffer

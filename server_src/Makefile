@@ -161,50 +161,50 @@ $(OBJ_DIR)/forward: $(OBJ_DIR) $(OBJ_DIR)/forward.o  \
 			 $(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/forward \
 		$(OBJ_DIR)/forward.o \
-		-lvrpnserver -lm
+		-lvrpnserver $(SYSLIBS) -lm
 
 $(OBJ_DIR)/text: $(OBJ_DIR) $(OBJ_DIR)/text.o  \
 			 $(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/text \
 		$(OBJ_DIR)/text.o \
-		-lvrpnserver -lm
+		-lvrpnserver $(SYSLIBS) -lm
 
 $(OBJ_DIR)/sample_server:	$(OBJ_DIR) $(OBJ_DIR)/sample_server.o \
 			$(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/sample_server \
 		$(OBJ_DIR)/sample_server.o \
-		-lvrpnserver -lm
+		-lvrpnserver $(SYSLIBS) -lm
 
 $(OBJ_DIR)/test_mutex:	$(OBJ_DIR) $(OBJ_DIR)/test_mutex.o \
 			$(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/test_mutex \
 		$(OBJ_DIR)/test_mutex.o \
-		-lvrpnserver -lm
+		-lvrpnserver $(SYSLIBS) -lm
 
 $(OBJ_DIR)/test_peerMutex:	$(OBJ_DIR) $(OBJ_DIR)/test_peerMutex.o \
 			$(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/test_peerMutex \
 		$(OBJ_DIR)/test_peerMutex.o \
-		-lvrpnserver -lm
+		-lvrpnserver $(SYSLIBS) -lm
 
 $(OBJ_DIR)/sample_analog:	$(OBJ_DIR) $(OBJ_DIR)/sample_analog.o \
 			$(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/sample_analog \
 		$(OBJ_DIR)/sample_analog.o \
-		-lvrpnserver -lm
+		-lvrpnserver $(SYSLIBS) -lm
 
 $(OBJ_DIR)/last_of_sequence:	$(OBJ_DIR) $(OBJ_DIR)/last_of_sequence.o \
 			$(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/last_of_sequence \
 		$(OBJ_DIR)/last_of_sequence.o \
-		-lvrpnserver -lm
+		-lvrpnserver $(SYSLIBS) -lm
 
 
 $(OBJ_DIR)/testSharedObject:	$(OBJ_DIR) $(OBJ_DIR)/testSharedObject.o \
 			$(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/testSharedObject \
 		$(OBJ_DIR)/testSharedObject.o \
-		-lvrpnserver -lm
+		-lvrpnserver $(SYSLIBS) -lm
 
 
 $(OBJ_DIR):

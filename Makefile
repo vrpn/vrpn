@@ -301,15 +301,6 @@ $(OBJECT_DIR):
 $(SOBJECT_DIR):
 	-mkdir $(SOBJECT_DIR)
 
-################
-#  work-in-progress
-################
-
-.PHONY:	newclient
-newclient:
-	@echo 
-	$(MAKE) $(NEW_LIB_OBJECTS)
-
 #############################################################################
 #
 # library code
@@ -336,41 +327,6 @@ LIB_INCLUDES = vrpn_Connection.h vrpn_Tracker.h vrpn_Button.h \
                vrpn_SharedObject.h vrpn_LamportClock.h vrpn_Mutex.h \
                vrpn_BaseClass.h
 
-# additional files for the new connection work-in-progress
-
-NEW_LIB_FILES = \
-      vrpn_BaseConnectionManager.C \
-      vrpn_ClientConnectionManager.C \
-      vrpn_ServerConnectionManager.C \
-      vrpn_BaseConnection.C \
-      vrpn_NetConnection.C \
-      vrpn_NewFileConnection.C \
-      vrpn_NewFileController.C \
-      vrpn_FileLogger.C \
-      vrpn_ConnectionCommonStuff.C \
-      vrpn_BaseMulticast.C \
-      vrpn_UnreliableMulticastSender.C \
-      vrpn_UnreliableMulticastRecvr.C
-
-NEW_LIB_OBJECTS = $(patsubst %,$(OBJECT_DIR)/%,$(NEW_LIB_FILES:.C=.o))
-
-NEW_LIB_INCLUDES = \
-      vrpn_ConnectionManagerCallbackInterface.h \
-      vrpn_BaseConnectionManager.h \
-      vrpn_ClientConnectionManager.h \
-      vrpn_ServerConnectionManager.h \
-      vrpn_BaseConnection.h \
-      vrpn_NetConnection.h \
-      vrpn_FileConnectionInterface.h\
-      vrpn_NewFileConnection.h \
-      vrpn_NewFileController.h \
-      vrpn_FileLogger.h \
-      vrpn_ConnectionCommonStuff.h \
-      vrpn_BaseMulticast.h \
-      vrpn_UnreliableMulticastSender.h \
-      vrpn_UnreliableMulticastRecvr.h
-
-
 # Additional files to be compiled into the server library
 
 # We aren't going to use architecture-dependent sets of files.
@@ -381,7 +337,7 @@ SLIB_FILES =  $(LIB_FILES) vrpn_3Space.C \
 	     vrpn_Flock.C vrpn_Tracker_Fastrak.C vrpn_Dyna.C \
 	     vrpn_Flock_Parallel.C  vrpn_Joystick.C \
 	     vrpn_JoyFly.C vrpn_sgibox.C vrpn_CerealBox.C \
-             vrpn_Tracker_AnalogFly.C vrpn_raw_sgibox.C vrpn_Dial.C
+             vrpn_Tracker_AnalogFly.C vrpn_raw_sgibox.C vrpn_Magellan.C
 
 SLIB_OBJECTS = $(patsubst %,$(SOBJECT_DIR)/%,$(SLIB_FILES:.C=.o))
 
@@ -389,7 +345,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) vrpn_3Space.h \
 	       vrpn_Flock.h vrpn_Tracker_Fastrak.h vrpn_Dyna.h \
 	       vrpn_Flock_Parallel.h vrpn_Joystick.h \
 	       vrpn_JoyFly.h vrpn_sgibox.h vrpn_raw_sgibox.h \
-               vrpn_CerealBox.h vrpn_Tracker_AnalogFly.h
+               vrpn_CerealBox.h vrpn_Tracker_AnalogFly.h vrpn_Magellan.h
 
 
 #$(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(OBJECT_DIR) \

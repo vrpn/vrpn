@@ -211,6 +211,17 @@
 #vrpn_CerealBox	cereal	/dev/cua0	19200	8 8 8
 
 ################################################################################
+# Magellan button/analog. Runs a Logitech Magellan device that attaches
+# to a serial port on this machine. As of VRPN version 04.12, 9600 is the
+# only supported baud rate.
+# Arguments:
+#	char	name_of_this_device[]
+#	char	name_of_serial_device[]
+#	int	baud_rate_of_serial_device
+
+#vrpn_Magellan	magellan	/dev/cua0	9600
+
+################################################################################
 # SGI Dial and Button box, raw interface. Runs a dial-and-button box from SGI,
 # talking to it through the raw serial interface (not using the GL interface
 # supplied by SGI). This allows the box to be opened even if there is nobody

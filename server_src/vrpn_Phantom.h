@@ -89,7 +89,6 @@ protected:
 
 public:
 	vrpn_Phantom(char *name, vrpn_Connection *c, float hz=1.0);
-	virtual void mainloop(const struct timeval *t) {mainloop();};
 	virtual void mainloop(void);
 	virtual void reset();
 	void resetPHANToM(void);
