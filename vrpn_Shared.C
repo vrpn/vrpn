@@ -210,6 +210,17 @@ long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const timeval t) {
   return vrpn_buffer(insertPt, buflen, usec);
 }
 
+long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const char * string,
+                  vrpn_uint32 length) {
+  CHECK(length < *buflen);
+
+  memcpy(*insertPt, string, length);
+  *insertPt += length;
+  buflen -= length;
+
+  return 0;
+}
+
 long vrpn_unbuffer (const char ** buffer, vrpn_int32 * lval)
 {
     *lval = ntohl(*((vrpn_int32 *)(*buffer)));
@@ -239,6 +250,16 @@ long vrpn_unbuffer (const char ** buffer, timeval * t) {
 
   t->tv_sec = sec;
   t->tv_usec = usec;
+
+  return 0;
+}
+
+long vrpn_unbuffer (const char ** buffer, char * string,
+                    vrpn_uint32 length) {
+  if (!string) return -1;
+
+  memcpy(string, *buffer, length);
+  *buffer += length;
 
   return 0;
 }

@@ -24,7 +24,7 @@ class vrpn_File_Connection;  // for get_File_Connection()
 // class rather than the default connection class (either will work,
 // a regular connection just has 0 as the client-server time offset)
 
-typedef	struct {
+struct {
 	vrpn_int32	type;
 	vrpn_int32	sender;
 	struct timeval	msg_time;
@@ -387,6 +387,8 @@ class vrpn_Connection
 
 	// The senders we know about and the message types we know about
 	// that have been declared by the local version.
+        // cCares:  has the other side of this connection registered
+        //   a type by this name?  Only used by filtering.
 
 	struct vrpnLocalMapping {
 		char			* name;		// Name of type
