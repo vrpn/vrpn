@@ -1,3 +1,10 @@
+2000-08-31  Tom Hudson  <hudson@cs.unc.edu>
+
+	* vrpn_Connection.C (vrpn_TranslationTable):  Removed a lot of
+        #if 1/#if 0 clauses that have become set.
+	* vrpn_Connection.C (vrpn_TranslationTable::addLocalID):  Added
+        a guard to strcmp to make sure we weren't comparing against NULL.
+
 2000-08-28  Adam Seeger  <seeger@cs.unc.edu>
 
         * vrpn_Router.[hC] (vrpn_Router, ~vrpn_Router) : Made it so that

@@ -376,16 +376,12 @@ vrpn_int32 vrpn_TranslationTable::mapToLocalID (vrpn_int32 remote_id) const {
     return -1;
   }
 
-#if 1
-
 #ifdef VERBOSE
   fprintf(stderr, "Remote ID %d maps to local ID %d (%s).\n", remote_id,
   d_entry[remote_id].local_id, d_entry[remote_id].name);
 #endif
 
   return d_entry[remote_id].local_id;
-
-#endif
 }
 
 vrpn_int32 vrpn_TranslationTable::addRemoteEntry (cName name,
@@ -393,11 +389,7 @@ vrpn_int32 vrpn_TranslationTable::addRemoteEntry (cName name,
                                                   vrpn_int32 local_id) {
   vrpn_int32 useEntry;
 
-#if 0
-  useEntry = d_numEntries;
-#else
   useEntry = remote_id;
-#endif
 
   if (useEntry >= vrpn_CONNECTION_MAX_XLATION_TABLE_SIZE) {
     fprintf(stderr, "vrpn_TranslationTable::addRemoteEntry:  " 
@@ -414,14 +406,12 @@ vrpn_int32 vrpn_TranslationTable::addRemoteEntry (cName name,
     }
   }
 
-#if 1
   if (remote_id != d_numEntries) {
     fprintf(stderr, "vrpn_TranslationTable::addRemoteEntry:  "
                    "Our peer isn't sending every type it registers!\n");
     // Reenable this if we want to go back to a constant-time system.
     // This should probably force an error return.
   }
-#endif
 
   memcpy(d_entry[useEntry].name, name, sizeof(cName));
   d_entry[useEntry].remote_id = remote_id;
@@ -432,13 +422,9 @@ vrpn_int32 vrpn_TranslationTable::addRemoteEntry (cName name,
   remote_id, name, local_id);
 #endif
 
-#if 0
-  d_numEntries++;
-#else
   if (d_numEntries <= useEntry) {
     d_numEntries = useEntry + 1;
   }
-#endif
 
   return useEntry;
 }
@@ -449,7 +435,7 @@ vrpn_bool vrpn_TranslationTable::addLocalID (const char * name,
   int i;
 
   for (i = 0; i < d_numEntries; i++) {
-    if (!strcmp(d_entry[i].name, name)) {
+    if (d_entry[i].name && !strcmp(d_entry[i].name, name)) {
       d_entry[i].local_id = local_id;
       return VRPN_TRUE;
     }
