@@ -1,3 +1,7 @@
+2002-06-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Button.C : Fixing "for (int i = 0;" initialization.
+
 2002-05-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Tng3.C : Cosmetic + fixing infinite-loop bug by turning it from

@@ -554,6 +554,7 @@ void vrpn_Button_Python::mainloop()
 // same value for the past several times to debounce noise).
 void vrpn_Button_Python::read(void)
 {
+    int i;
     const int debounce_count = 30;
     int   status_register[debounce_count];
     
@@ -564,7 +565,7 @@ void vrpn_Button_Python::read(void)
 
     // Read from the status register, read 3 times to debounce noise.
 #ifdef	linux
-    for (int i = 0; i < debounce_count; i++) 
+    for (i = 0; i < debounce_count; i++) 
       if (ioctl(port, LPGETSTATUS, &status_register[i]) == -1) {
 	    perror("vrpn_Button_Python::read(): ioctl() failed");
 	    return;
@@ -573,7 +574,7 @@ void vrpn_Button_Python::read(void)
 #elif _WIN32
   #ifndef __CYGWIN__
 	static const unsigned short STATUS_REGISTER_OFFSET = 1;
-    for (int i = 0; i < debounce_count; i++) {
+    for (i = 0; i < debounce_count; i++) {
 	status_register[i] = _inp(port + STATUS_REGISTER_OFFSET);
     }
   #else
@@ -582,7 +583,7 @@ void vrpn_Button_Python::read(void)
     }
   #endif
 #else
-    for (int i = 0; i < debounce_count; i++) {
+    for (i = 0; i < debounce_count; i++) {
       status_register[i] = 0;
     }
 #endif
