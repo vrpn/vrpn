@@ -1,3 +1,18 @@
+2002-12-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* printcereal.dsp : DSP files have been modified to not do definitions
+		of VRPN_NO_STREAMS and other constants directly, rather these
+		are now set by editing vprn_Configure.h.  Also, made projects
+                compile in both debug and release versions.
+	* printvals.dsp : Same.
+	* setrouter.dsp : Same.
+	* sphere_client.dsp : Same.
+	* test_zaber.dsp : Same.
+	* vrpn_Router_Client_GUI.dsp : Same.
+	* vrpn_print_devices.dsp : Same.
+	* testimager_client.C : Comment change.
+
+
 2002-11-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* testimager_client.C : Modified to use new vrpn_Tempimager class.

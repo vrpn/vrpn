@@ -1,8 +1,7 @@
 //----------------------------------------------------------------------------
 // Example program to read pixels from a vrpn_TempImager server and display
 // them in an OpenGL window.  It assumes that the size of the imager does
-// not change during the run.  It assumes that the pixels are actually 8-bit
-// values (it will clip if they are larger).
+// not change during the run.  It asks for unsigned 8-bit pixels.
 
 #include <stdio.h>
 #include <stdlib.h>
