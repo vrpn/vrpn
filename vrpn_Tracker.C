@@ -83,8 +83,14 @@ vrpn_BaseClass(name, c)
 	acc_quat[3] = 1.0;
 	acc_quat_dt = 1;
 
+#ifdef DESKTOP_PHANTOM_DEFAULTS
+        // Defaults for Desktop Phantom.
+	tracker2room[0] = tracker2room[1] = 0.0;
+        tracker2room[2] = -0.28;
+#else
 	// Set the room to tracker and sensor to unit transforms to identity
-	tracker2room[0] = tracker2room[1] = tracker2room[2] = 0.0;
+  	tracker2room[0] = tracker2room[1] = tracker2room[2] = 0.0;
+#endif
 	tracker2room_quat[0] = tracker2room_quat[1] = tracker2room_quat[2] = 0.0;
 	tracker2room_quat[3] = 1.0;
 
@@ -97,9 +103,15 @@ vrpn_BaseClass(name, c)
 	    unit2sensor_quat[sens][3] = 1.0;
 	}
 
-	workspace_min[0] = workspace_min[1] = workspace_min[2] = -0.5;
-	workspace_max[0] = workspace_max[1] = workspace_max[2] = 0.5;
-
+#ifdef DESKTOP_PHANTOM_DEFAULTS
+        // Defaults for Desktop Phantom. 
+	workspace_min[0] = workspace_min[1] = -0.2;
+        workspace_min[2] = -0.1;
+	workspace_max[0] = workspace_max[1] = workspace_max[2] = 0.2;
+#else
+  	workspace_min[0] = workspace_min[1] = workspace_min[2] = -0.5;
+  	workspace_max[0] = workspace_max[1] = workspace_max[2] = 0.5;
+#endif
 	// replace defaults with values from "vrpn_Tracker.cfg" file
 	// if it exists
 	if ((config_file = fopen(tracker_cfg_file_name, "r")) == NULL) {

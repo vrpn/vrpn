@@ -157,11 +157,25 @@ void vrpn_Phantom::getPosition(double *vec, double *orient)
 vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
 		:vrpn_Tracker(name, c),vrpn_Button_Filter(name,c),
 		 vrpn_ForceDevice(name,c), update_rate(hz),
+                 scene(NULL), 
+                 rootH(NULL),
+                 hapticScene(NULL),
+                 phantom(NULL),
+                 trimesh(NULL),
+                 pointConstraint(NULL),
+                 forceField(NULL),
 		 plane_change_list(NULL){  
   num_buttons = 1;  // only has one button
 
   timestamp.tv_sec = 0;
   timestamp.tv_usec = 0;
+  // Initialization to NULL necessary if construction of Phantom fails below. 
+  // Error handler gets called, and it references planes[] array. 
+  int i;
+  for (i = 0; i < MAXPLANE; i++){
+      planes[i]= NULL;
+  }
+
 
   scene = new gstScene;
 
@@ -209,7 +223,7 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
   SurfaceTextureWavelength = 0.01f;
   SurfaceTextureAmplitude = 0.0f;
 
-  for(int i=0; i<MAXPLANE; i++ ) {
+  for(i=0; i<MAXPLANE; i++ ) {
     planes[i] = new DynamicPlane();
     planes[i]->setSurfaceKspring(SurfaceKspring);
     planes[i]->setSurfaceFdynamic(SurfaceFdynamic);
@@ -964,7 +978,9 @@ void phantomErrorHandler( int errnum, char *description, void *userdata)
 	fprintf(stderr, "PHANTOM ERROR: %s\n", description);
 	int i;
 	for (i = 0; i < MAXPLANE; i++){
+            if (me->planes[i] != NULL) {
 		me->planes[i]->cleanUpAfterError();
+            }
 	}
 
 	switch(errnum) {
