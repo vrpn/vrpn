@@ -750,8 +750,7 @@ void vrpn_Button_PinchGlove::read()
          // clear messages
          while(buffer[0] != PG_END_BYTE)
             vrpn_read_available_characters(serial_fd,buffer,1);
-
-	   send_text_message("vrpn_Button_PinchGlove wrong message start byte", timestamp, vrpn_TEXT_ERROR);
+	    send_text_message("vrpn_Button_PinchGlove wrong message start byte", timestamp, vrpn_TEXT_ERROR);
       } // else
    } // while (buffer[0] != PG_END_BYTE )
    
@@ -762,49 +761,20 @@ void vrpn_Button_PinchGlove::read()
 // set the glove to report data without timestamp
 void vrpn_Button_PinchGlove::report_no_timestamp()
 {
-   // emtpty the message buffer
-   while (vrpn_read_available_characters(serial_fd, buffer, 1) != 0) {};
+  struct timeval timeout = {0, 30000}; // time_out for response from glove: 30 msec
+  struct timeval timeout_to_pass;
 
-   // send command to just send hand data and no time stamp
-   buffer[0] = 'T';   buffer[1] = '0';
-   vrpn_write_characters(serial_fd, buffer, 2);
-
-   bufcount = 0;
-   struct timeval timeout = {0, 30}; // time_out for response from glove: 30 msec
-   
-   // read until correct reply is recieved
-   while ( (bufcount!=3) || (buffer[1]!='0') || (buffer[2]!=PG_END_BYTE) ) {
-
-      // if there is no message within the timeout interval resend the command
-      while (vrpn_read_available_characters(serial_fd,buffer,1,&timeout) != 1) {};
-
-      // if not start of reply to host command keep reading the message buffer
-      // until the correct start byte of the message. If there is no more message
-      // resend the command to glovebox
-      while (buffer[0] != PG_START_BYTE_TEXT) {
-         while(buffer[0] != PG_END_BYTE) 
-            vrpn_read_available_characters(serial_fd, buffer, 1);
-         while ( vrpn_read_available_characters(serial_fd,buffer,1,&timeout) != 1) {
-            buffer[0] = 'T';   buffer[1] = '0';
-            vrpn_write_characters(serial_fd, buffer, 2);
-         }
-      } // while (buffer[0] != PG_START_BYTE_TEXT)
-
-      bufcount = 1;
-      // read until the end of the message
-      // IMPORTANT: it is assumed that the buffer is big enough to hold one text message
-      while(buffer[bufcount-1] != PG_END_BYTE) 
-         bufcount += vrpn_read_available_characters(serial_fd, buffer+bufcount, 1);
-
-      if (bufcount > VRPN_BUTTON_BUF_SIZE) {
-	  send_text_message("vrpn_Button_PinchGlove: Glove Box message is too big for buffer", timestamp, vrpn_TEXT_ERROR);
-	      status = BUTTON_FAIL;
-      }
-
-   } // while ( (bufcount!=3) || (buffer[2]!=PG_END_BYTE) ) {
-
-
-   return;
+  // read until correct reply is recieved
+  do {
+       vrpn_flush_input_buffer(serial_fd);
+       vrpn_write_characters(serial_fd, (unsigned char *)"T0", 2);
+       vrpn_drain_output_buffer(serial_fd);
+       timeout_to_pass.tv_sec = timeout.tv_sec;
+       timeout_to_pass.tv_usec = timeout.tv_usec;
+       bufcount = vrpn_read_available_characters(serial_fd,buffer,3,&timeout_to_pass) ;
+  } while ( (bufcount!=3) || (buffer[1]!='0') || (buffer[2]!=PG_END_BYTE) );
+  
+  return;
 }
 
 #endif  // VRPN_CLIENT_ONLY

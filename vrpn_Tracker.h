@@ -20,6 +20,16 @@
 //       quat represents the orientation of the sensor relative to the
 //       source space (ie, its value rotates the source's axes so that
 //       they coincide with the sensor's)
+// Positions from all trackers in VRPN are reported in meters.
+// Velocities are reported in meters/second.
+// Accelerations are reported in meters/second/second.
+// These are all reported in three-element double arrays
+// in the order (X=0, Y=1, Z=2).
+// They are translated into this format from the native format for each device.
+// Orientations from all trackers in VRPN are reported in quaternions
+// (see Quatlib for more info) in four-element double arrays
+// in the order (X=0, Y=1, Z=2, W=3).
+// They are translated into this format from the native format for each device.
 
 // to use time synched tracking, just pass in a sync connection to the 
 // client and the server

@@ -13,12 +13,12 @@
 #include <termios.h>
 #endif
 
-#if defined(linux) || defined(__APPLE__)
+#if defined(linux) || defined(__APPLE__) || defined(__GNUC__)
 #include <termios.h>
 #include <sys/errno.h>
 #endif
 
-#if defined(sgi) || defined(__sparc)
+#if defined(sgi) || defined(__sparc) || defined(__GNUC__)
 #include <errno.h>
 #endif
 
@@ -26,7 +26,7 @@
 #include <sys/termio.h>
 #endif
 
-#if !defined(_WIN32)
+#if !defined(_WIN32) || defined(__GNUC__)
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <netinet/in.h>
@@ -38,7 +38,7 @@
 
 #if defined(_WIN32)
 #include <io.h>
-#if defined(__CYGWIN__)
+#if defined(__GBUC__)
 #include <netinet/in.h>
 #include <sys/socket.h>
 #else

@@ -10,7 +10,7 @@
 #ifdef	linux
 #include <linux/lp.h>
 #endif
-#if defined(linux) || defined(__sparc) || defined(hpux)
+#if defined(linux) || defined(__sparc) || defined(hpux) || defined(__GNUC__)
 #include <string.h>
 #endif
 

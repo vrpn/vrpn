@@ -1,3 +1,14 @@
+2004-04-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	vrpn_ButtonC : Modified the reset command for the Pinchglove
+		so that it works more reliably (fixed timeout bug
+		and reworked logic).  Tested by offsite user who
+		had problems with the original version.
+	vrpn_ForceDevice.C : Making it compile under Cygwin.
+	vrpn_Serial.C : Making it compile undre Cygwin.
+	vrpn_Tracker.h : Describing the format of the values to be returned.
+	vrpn_Types.h : Making it compile under Cygwin.
+
 2004-04-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Button.h : Returns the port argument for the parallel
