@@ -1,5 +1,10 @@
 2002-09-23  Chris Weigle  <weigle@cs.unc.edu>
 
+   * TempImagerRemote.java:
+      (setChannel): unneeded warning message removed
+
+2002-09-23  Chris Weigle  <weigle@cs.unc.edu>
+
    * vrpn_TempImagerRemote.cpp: Minor changes (commented-out debug messages)
    * TempImagerRemote.java:
       (getNumRows): new

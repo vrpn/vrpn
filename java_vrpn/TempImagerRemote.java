@@ -309,8 +309,6 @@ public class TempImagerRemote implements Runnable
 		}
       if (channels[index] == null)
       {
-         System.err.println("Warning:  channel reference was null! VERY " +
-                            "unexpected!  I'll try to fix this now ...");
          channels[index] = new TempImagerChannel();
       }
 		channels[index].name = name;
