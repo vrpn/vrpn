@@ -25,11 +25,14 @@
  * Update Count    : 36
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Dyna.C,v $
- * $Date: 1998/02/24 19:36:43 $
- * $Author: ryang $
- * $Revision: 1.3 $
+ * $Date: 1998/03/16 18:26:43 $
+ * $Author: taylorr $
+ * $Revision: 1.4 $
  * 
  * $Log: vrpn_Dyna.C,v $
+ * Revision 1.4  1998/03/16 18:26:43  taylorr
+ * Compiles on HPs
+ *
  * Revision 1.3  1998/02/24 19:36:43  ryang
  * beta test version of DynaSight
  *
@@ -44,10 +47,11 @@
  * HISTORY
  */
 
-static char rcsid[] = "$Id: vrpn_Dyna.C,v 1.3 1998/02/24 19:36:43 ryang Exp $";
+static char rcsid[] = "$Id: vrpn_Dyna.C,v 1.4 1998/03/16 18:26:43 taylorr Exp $";
 
 #include <termios.h> // for tcdrain
 #include <unistd.h>
+#include <string.h>
 #include "vrpn_Dyna.h"
 #define T_ERROR (-1)
 #define T_OK 	(0)
