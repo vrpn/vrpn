@@ -586,6 +586,7 @@ int vrpn_Button_Remote::handle_change_message(void *userdata,
   //
   // This function returns 1 if either running Win95 or running NT and
   // the giveio device was opened.  0 if device not opened.
+#ifndef VRPN_CLIENT_ONLY
 #ifdef _WIN32
 int vrpn_parallel_Button::openGiveIO(void)
 {
@@ -618,3 +619,4 @@ int vrpn_parallel_Button::openGiveIO(void)
     return 0;
 }
 #endif // _WIN32
+#endif // VRPN_CLIENT_ONLY

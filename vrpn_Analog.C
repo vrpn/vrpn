@@ -25,11 +25,16 @@
  * Update Count    : 47
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Analog.C,v $
- * $Date: 1998/11/05 22:45:41 $
- * $Author: taylorr $
- * $Revision: 1.5 $
+ * $Date: 1998/11/23 23:24:04 $
+ * $Author: lovelace $
+ * $Revision: 1.6 $
  * 
  * $Log: vrpn_Analog.C,v $
+ * Revision 1.6  1998/11/23 23:24:04  lovelace
+ * Fixed bug in vrpn_Button.C that only showed up under Win32 CLIENT_ONLY.
+ * Also, in vrpn_Analog.C fixed <unistd.h> to not be included under Win32.
+ * Updated Win32 project file and added VC++ 5.0 NMake file (vrpn.mak).
+ *
  * Revision 1.5  1998/11/05 22:45:41  taylorr
  * This version strips out the serial-port code into vrpn_Serial.C.
  *
@@ -58,12 +63,14 @@
  * HISTORY
  */
 
-static char rcsid[] = "$Id: vrpn_Analog.C,v 1.5 1998/11/05 22:45:41 taylorr Exp $";
+static char rcsid[] = "$Id: vrpn_Analog.C,v 1.6 1998/11/23 23:24:04 lovelace Exp $";
 
 #include "vrpn_Analog.h"
 #include <stdio.h>
 #include <string.h>
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 
 extern int vrpn_open_commport(char *portname, long baud);
 

@@ -74,61 +74,133 @@ LIB32=link.exe -lib
 
 # Name "vrpn - Win32 Release"
 # Name "vrpn - Win32 Debug"
+# Begin Group "Source Files"
+
+# PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=\stm\src\NT\hmd\vrpn\vrpn_Button.C
+SOURCE=..\..\vrpn_Analog.C
 # End Source File
 # Begin Source File
 
-SOURCE=\stm\src\NT\hmd\vrpn\vrpn_Button.h
+SOURCE=..\..\vrpn_Button.C
 # End Source File
 # Begin Source File
 
-SOURCE=\stm\src\NT\hmd\vrpn\vrpn_Clock.C
+SOURCE=..\..\vrpn_Clock.C
 # End Source File
 # Begin Source File
 
-SOURCE=\stm\src\NT\hmd\vrpn\vrpn_Clock.h
+SOURCE=..\..\vrpn_Connection.C
 # End Source File
 # Begin Source File
 
-SOURCE=\stm\src\NT\hmd\vrpn\vrpn_Connection.C
+SOURCE=..\..\vrpn_FileConnection.C
 # End Source File
 # Begin Source File
 
-SOURCE=\stm\src\NT\hmd\vrpn\vrpn_Connection.h
+SOURCE=..\..\vrpn_FileController.C
 # End Source File
 # Begin Source File
 
-SOURCE=\stm\src\NT\hmd\vrpn\vrpn_ForceDevice.C
+SOURCE=..\..\vrpn_ForceDevice.C
 # End Source File
 # Begin Source File
 
-SOURCE=\stm\src\NT\hmd\vrpn\vrpn_ForceDevice.h
+SOURCE=..\..\vrpn_Forwarder.C
 # End Source File
 # Begin Source File
 
-SOURCE=\stm\src\NT\hmd\vrpn\vrpn_Shared.C
+SOURCE=..\..\vrpn_ForwarderController.C
 # End Source File
 # Begin Source File
 
-SOURCE=\stm\src\NT\hmd\vrpn\vrpn_Shared.h
+SOURCE=..\..\vrpn_Ohmmeter.C
 # End Source File
 # Begin Source File
 
-SOURCE=\stm\src\NT\hmd\vrpn\vrpn_Sound.C
+SOURCE=..\..\vrpn_Serial.C
 # End Source File
 # Begin Source File
 
-SOURCE=\stm\src\NT\hmd\vrpn\vrpn_Sound.h
+SOURCE=..\..\vrpn_Shared.C
 # End Source File
 # Begin Source File
 
-SOURCE=\stm\src\NT\hmd\vrpn\vrpn_Tracker.C
+SOURCE=..\..\vrpn_Sound.C
 # End Source File
 # Begin Source File
 
-SOURCE=\stm\src\NT\hmd\vrpn\vrpn_Tracker.h
+SOURCE=..\..\vrpn_Text.C
 # End Source File
+# Begin Source File
+
+SOURCE=..\..\vrpn_Tracker.C
+# End Source File
+# End Group
+# Begin Group "Header Files"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=..\..\vrpn_Analog.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\vrpn_Button.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\vrpn_Clock.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\vrpn_Connection.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\vrpn_FileConnection.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\vrpn_FileController.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\vrpn_ForceDevice.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\vrpn_Forwarder.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\vrpn_ForwarderController.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\vrpn_Ohmmeter.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\vrpn_Serial.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\vrpn_Shared.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\vrpn_Sound.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\vrpn_Text.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\vrpn_Tracker.h
+# End Source File
+# End Group
 # End Target
 # End Project
