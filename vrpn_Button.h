@@ -20,7 +20,7 @@
 
 class vrpn_Button {
   public:
-	vrpn_Button(char *name, vrpn_Connection *c = NULL);
+	vrpn_Button(const char *name, vrpn_Connection *c = NULL);
 
 	// Print the status of the button
 	void print(void);
@@ -65,7 +65,7 @@ class vrpn_Button_Filter:public vrpn_Button{
 
 	protected:
 		int send_alerts;
-		vrpn_Button_Filter(char *,vrpn_Connection *c=NULL);
+		vrpn_Button_Filter(const char *,vrpn_Connection *c=NULL);
 		vrpn_int32 alert_message_id;   //used to send back to alert button box for lights
 		void report_changes(void);
 };
@@ -79,8 +79,9 @@ class vrpn_parallel_Button: public vrpn_Button_Filter {
   public:
 	// Open a button connected to the local machine, talk to the
 	// outside world through the connection.
-	vrpn_parallel_Button(char *name, vrpn_Connection *connection,
-		int portno);
+	vrpn_parallel_Button(const char *name,
+						 vrpn_Connection *connection,
+						 int portno);
 
   protected:
 	int	port;
@@ -96,8 +97,9 @@ class vrpn_parallel_Button: public vrpn_Button_Filter {
 // Open a Python that is connected to a parallel port on this Linux box.
 class vrpn_Button_Python: public vrpn_parallel_Button {
   public:
-	vrpn_Button_Python(char *name, vrpn_Connection *c, int p):
-		vrpn_parallel_Button(name,c,p) {};
+	vrpn_Button_Python(const char *name, vrpn_Connection *c, int p)
+		: vrpn_parallel_Button(name,c,p)
+	{}
 
 	virtual void mainloop(const struct timeval * timeout = NULL);
   protected:
@@ -131,7 +133,7 @@ typedef void (*vrpn_BUTTONCHANGEHANDLER)(void *userdata,
 class vrpn_Button_Remote: public vrpn_Button {
   public:
 	// The name of the button device to connect to
-	vrpn_Button_Remote(char *name);
+	vrpn_Button_Remote(const char *name);
 
 	// This routine calls the mainloop of the connection it's on
 	virtual void mainloop(const struct timeval * timeout = NULL);

@@ -71,7 +71,7 @@ else
 	SGI_CC_FLAGS := -32
 	OBJECT_DIR_SUFFIX :=
 	ifeq ($(SGI_ABI_N32),1)
-		SGI_CC_FLAGS := -n32
+		SGI_CC_FLAGS := -n32 -TARG:platform=ip19 -mips3
 		OBJECT_DIR_SUFFIX := .n32
 	endif
 	CC := CC $(SGI_CC_FLAGS)

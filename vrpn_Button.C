@@ -73,7 +73,8 @@ static int client_msg_handler(void *userdata, vrpn_HANDLERPARAM p);
       	}\
         }
 
-vrpn_Button::vrpn_Button(char *name, vrpn_Connection *c): num_buttons(0)
+vrpn_Button::vrpn_Button(const char *name, vrpn_Connection *c)
+	: num_buttons(0)
 {
 
    // If the connection is valid, use it to register this button by
@@ -100,9 +101,11 @@ vrpn_Button::vrpn_Button(char *name, vrpn_Connection *c): num_buttons(0)
     delete [] servicename;
 }
 
-vrpn_Button_Filter::vrpn_Button_Filter(char *name, vrpn_Connection *c):vrpn_Button(name, c){
-
-     if ( (my_id == -1) || (admin_message_id== -1) ) {
+vrpn_Button_Filter::vrpn_Button_Filter(const char *name,
+									   vrpn_Connection *c)
+	:vrpn_Button(name, c)
+{
+	  if ( (my_id == -1) || (admin_message_id== -1) ) {
         fprintf(stderr,"vrpn_Button: Can't register IDs\n");
          connection = NULL;
       }
@@ -318,8 +321,10 @@ void	vrpn_Button::report_changes(void)
 
 #ifndef VRPN_CLIENT_ONLY
 
-vrpn_parallel_Button::vrpn_parallel_Button(char *name, vrpn_Connection *c,
-	int portno) : vrpn_Button_Filter(name, c)
+vrpn_parallel_Button::vrpn_parallel_Button(const char *name,
+										   vrpn_Connection *c,
+										   int portno)
+	: vrpn_Button_Filter(name, c)
 {      
 #ifdef linux
     char *portname;
@@ -455,9 +460,9 @@ void vrpn_Button_Python::read(void)
 #endif  // VRPN_CLIENT_ONLY
 
 
-vrpn_Button_Remote::vrpn_Button_Remote(char *name) : 
-	vrpn_Button(name, vrpn_get_connection_by_name(name)),
-	change_list(NULL)
+vrpn_Button_Remote::vrpn_Button_Remote(const char *name)
+	: vrpn_Button(name, vrpn_get_connection_by_name(name)),
+	  change_list(NULL)
 {
 	vrpn_int32	i;
 
@@ -483,9 +488,10 @@ vrpn_Button_Remote::vrpn_Button_Remote(char *name) :
 	gettimeofday(&timestamp, NULL);
 }
 
-void	vrpn_Button_Remote::mainloop(const struct timeval * timeout)
+void vrpn_Button_Remote::mainloop(const struct timeval * timeout)
 {
-	if (connection) { connection->mainloop(timeout); 
+	if (connection) {
+		connection->mainloop(timeout); 
 	}
 }
 
