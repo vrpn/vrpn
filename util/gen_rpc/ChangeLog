@@ -1,3 +1,10 @@
+2002-12-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* test_gen_rpc.dsp : DSP files have been modified to not do definitions
+		of VRPN_NO_STREAMS and other constants directly, rather these
+		are now set by editing vprn_Configure.h.  Also, made projects
+		compile in both debug and release versions.
+
 2002-03-20  Aron Helser  <helser@cs.unc.edu>
 
 	* test_gen_rpc.dsp: Standardized settings, object files and
