@@ -38,7 +38,7 @@
 
 // output a status msg every status_msg_secs
 #define STATUS_MSG
-#define STATUS_MSG_SECS 30
+#define STATUS_MSG_SECS 600
 
 void vrpn_Tracker_Flock::printError( unsigned char uchErrCode, 
 			unsigned char uchExpandedErrCode ) {
@@ -565,6 +565,7 @@ void vrpn_Tracker_Flock::mainloop()
       // Send the message on the connection
       if (connection) {
 	static int cSeconds = 3;
+	static int fFirst = 1;
 	static char	msgbuf[1000];
 	int	len = encode_to(msgbuf);
 
@@ -579,10 +580,19 @@ void vrpn_Tracker_Flock::mainloop()
 #ifdef STATUS_MSG
 	if (vrpn_TimevalMsecs(vrpn_TimevalDiff(tvNow, tvLastPrint)) > cSeconds*1000){
 
+	  if (fFirst) {
+	    fprintf(stderr, "\nFlock: status will be printed every %d seconds",
+		    cSeconds);
+	    fFirst = 0;
+	  }
+
 	  double dRate = cReports / 
 	    (vrpn_TimevalMsecs(vrpn_TimevalDiff(tvNow, tvLastPrint))/1000.0);
-	  fprintf(stderr, "\nFlock: reports being sent at %6.2lf hz (%d sensors, so ~%6.2lf hz per sensor)\n", 
-		  dRate, cSensors, dRate/cSensors);
+	  time_t tNow = time(NULL);
+	  char *pch = ctime(&tNow);
+	  pch[24]='\0';
+	  fprintf(stderr, "\nFlock: reports being sent at %6.2lf hz (%d sensors, so ~%6.2lf hz per sensor) ( %s )", 
+		  dRate, cSensors, dRate/cSensors, pch);
 	  tvLastPrint = tvNow;
 	  cReports=0;
 	  // display the rate every X seconds
