@@ -44,6 +44,12 @@ Package=<4>
     Begin Project Dependency
     Project_Dep_Name vrpn
     End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vrpn_phantom
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name quat
+    End Project Dependency
 }}}
 
 ###############################################################################
@@ -150,6 +156,21 @@ Package=<4>
 
 ###############################################################################
 
+Project: "test_gen_rpc"=".\UTIL\gen_rpc\test_gen_rpc.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name vrpn_MTd
+    End Project Dependency
+}}}
+
+###############################################################################
+
 Project: "test_radamec_spi"=".\server_src\pc_win32\test_radamec_spi\test_radamec_spi.dsp" - Package Owner=<4>
 
 Package=<5>
@@ -206,6 +227,9 @@ Package=<4>
     Begin Project Dependency
     Project_Dep_Name quat
     End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name test_gen_rpc
+    End Project Dependency
 }}}
 
 ###############################################################################
@@ -230,6 +254,21 @@ Package=<5>
 
 Package=<4>
 {{{
+}}}
+
+###############################################################################
+
+Project: "vrpn_phantom"=".\server_src\vrpn_phantom.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name quat
+    End Project Dependency
 }}}
 
 ###############################################################################

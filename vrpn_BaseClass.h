@@ -1,4 +1,4 @@
-/* vrpn_BaseClass.h
+/** @file vrpn_BaseClass.h
 
   All types of client/server/peer objects in VRPN should be derived from the
   vrpn_BaseClass type described here.  This includes Tracker, Button, Analog,
@@ -63,11 +63,11 @@ Things to do in the server object (server device) files to convert from 4.XX
 #include "vrpn_Connection.h"
 
 const int vrpn_MAX_BCADRS =	100;
-	//< Internal value for number of BaseClass addresses
+	///< Internal value for number of BaseClass addresses
 
 /// Since the sending of text messages has been pulled into the base class (so
-// that every object can send error/warning/info messages this way), these
-// definitions have been pulled in here as well.
+/// that every object can send error/warning/info messages this way), these
+/// definitions have been pulled in here as well.
 typedef enum {vrpn_TEXT_NORMAL = 0, vrpn_TEXT_WARNING = 1, vrpn_TEXT_ERROR = 2} vrpn_TEXT_SEVERITY;
 const unsigned	vrpn_MAX_TEXT_LEN = 1024;
 
@@ -143,19 +143,19 @@ class vrpn_BaseClassUnique {
 	virtual ~vrpn_BaseClassUnique();
 	
   protected:
-	vrpn_Connection *d_connection;	//< Connection that this object talks to
-	char *d_servicename;		//< Name of this device, not including the connection part
-	vrpn_int32 d_sender_id;		//< Sender ID registered with the connection
-	vrpn_int32 d_text_message_id;	//< ID for text messages
-	vrpn_int32 d_ping_message_id;	//< Ask the server if they are there
-	vrpn_int32 d_pong_message_id;	//< Server telling that it is there
+        vrpn_Connection *d_connection;	///< Connection that this object talks to
+        char *d_servicename;		///< Name of this device, not including the connection part
+        vrpn_int32 d_sender_id;		///< Sender ID registered with the connection
+        vrpn_int32 d_text_message_id;	///< ID for text messages
+        vrpn_int32 d_ping_message_id;	///< Ask the server if they are there
+        vrpn_int32 d_pong_message_id;	///< Server telling that it is there
 
 	/// Registers a handler with the connection, and remembers to delete at destruction.
 	// This is a wrapper for the vrpn_Connection call that registers
 	// message handlers.  It should be used rather than the connection's
 	// function because this one will remember to unregister all of its handlers
 	// at object deletion time.
-	// XXX In the future, should write and unregister function, in case
+	// XXX In the future, should write an unregister function, in case
 	// someone wants it.
 	int register_autodeleted_handler(vrpn_int32 type,
 		vrpn_MESSAGEHANDLER handler, void *userdata,
@@ -190,11 +190,11 @@ class vrpn_BaseClassUnique {
       } d_handler_autodeletion_record[vrpn_MAX_BCADRS];
       int   d_num_autodeletions;
 
-      int	d_first_mainloop;		//< First time client_mainloop() or server_mainloop() called?
-      struct	timeval	d_time_first_ping;	//< When was the first ping of this unanswered group sent?
-      struct	timeval	d_time_last_warned;	//< When is the last time we sent a warning?
-      int	d_unanswered_ping;		//< Do we have an outstanding ping request?
-      int	d_flatline;			//< Has it been 10+ seconds without a response?
+      int	d_first_mainloop;		///< First time client_mainloop() or server_mainloop() called?
+      struct	timeval	d_time_first_ping;	///< When was the first ping of this unanswered group sent?
+      struct	timeval	d_time_last_warned;	///< When is the last time we sent a warning?
+      int	d_unanswered_ping;		///< Do we have an outstanding ping request?
+      int	d_flatline;			///< Has it been 10+ seconds without a response?
 
       /// Used by client/server code to request/send "server is alive" (pong) message
       static	int handle_ping(void *userdata, vrpn_HANDLERPARAM p);

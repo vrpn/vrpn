@@ -64,7 +64,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /Z7 /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GX /Z7 /Od /I "../quat" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /Fp"pc_win32/Debug_MT/vrpn_MT.pch" /YX /Fo"pc_win32/Debug_MT/" /Fd"pc_win32/Debug_MT/" /FD /TP /c
+# ADD CPP /nologo /MT /W3 /GX /Z7 /Od /I "../quat" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "DESKTOP_PHANTOM_DEFAULTS" /Fp"pc_win32/Debug_MT/vrpn_MT.pch" /YX /Fo"pc_win32/Debug_MT/" /Fd"pc_win32/Debug_MT/" /FD /TP /c
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409
 BSC32=bscmake.exe

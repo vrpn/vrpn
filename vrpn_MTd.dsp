@@ -17,7 +17,6 @@ CFG=vrpn_MTd - Win32 Debug
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
-!MESSAGE "vrpn_MTd - Win32 Release" (based on "Win32 (x86) Static Library")
 !MESSAGE "vrpn_MTd - Win32 Debug" (based on "Win32 (x86) Static Library")
 !MESSAGE 
 
@@ -27,32 +26,6 @@ CFG=vrpn_MTd - Win32 Debug
 # PROP Scc_LocalPath ""
 CPP=cl.exe
 RSC=rc.exe
-
-!IF  "$(CFG)" == "vrpn_MTd - Win32 Release"
-
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "Release"
-# PROP BASE Intermediate_Dir "Release"
-# PROP BASE Target_Dir ""
-# PROP Use_MFC 0
-# PROP Use_Debug_Libraries 0
-# PROP Output_Dir "Release"
-# PROP Intermediate_Dir "Release"
-# PROP Target_Dir ""
-# ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD BASE RSC /l 0x409
-# ADD RSC /l 0x409
-BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
-# ADD BSC32 /nologo
-LIB32=link.exe -lib
-# ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo /out:"pc_win32_MTd\vrpn.lib"
-
-!ELSEIF  "$(CFG)" == "vrpn_MTd - Win32 Debug"
-
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
 # PROP BASE Output_Dir "Debug"
@@ -64,7 +37,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /Z7 /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MTd /W3 /GX /Z7 /Od /I "../quat" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /Fp"pc_win32_MTd/vrpn.pch" /YX /Fo"pc_win32_MTd/" /Fd"pc_win32_MTd/" /FD /TP /c
+# ADD CPP /nologo /MTd /W3 /GX /Z7 /Od /I "../quat" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "DESKTOP_PHANTOM_DEFAULTS" /Fp"pc_win32_MTd/vrpn.pch" /YX /Fo"pc_win32_MTd/" /Fd"pc_win32_MTd/" /FD /TP /c
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409
 BSC32=bscmake.exe
@@ -73,12 +46,8 @@ BSC32=bscmake.exe
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"pc_win32_MTd\vrpn.lib"
-
-!ENDIF 
-
 # Begin Target
 
-# Name "vrpn_MTd - Win32 Release"
 # Name "vrpn_MTd - Win32 Debug"
 # Begin Source File
 

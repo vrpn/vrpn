@@ -42,7 +42,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I "..\..\ghostLib" /I "..\\" /I "quat" /I "..\..\ghostLib/stl" /I "..\..\analyzer" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /D "USING_HCOLLIDE" /YX /FD /c /Tp
+# ADD CPP /nologo /MTd /W3 /GX /O2 /I "../../quat" /I "../../external/pc_win32/include/ghost3.0" /I "../../external/pc_win32/include/stl" /I "../" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /D "USING_HCOLLIDE" /YX /FD /c /Tp
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -50,7 +50,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
-# ADD LINK32 ghost.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib winmm.lib quat.lib /nologo /subsystem:console /machine:I386 /libpath:"quat/Debug" /libpath:"../../ghostLib"
+# ADD LINK32 ghost30.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib winmm.lib quat.lib /nologo /subsystem:console /machine:I386 /nodefaultlib:"MSVCRT" /nodefaultlib:"LIBCMT" /nodefaultlib:"LIBCIMT" /nodefaultlib:"LIBCI" /libpath:"../../quat/pc_win32_MTd" /libpath:"../../external/pc_win32/lib"
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "phan_server - Win32 Debug"
@@ -76,7 +76,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo /o"pc_win32/Debug/phan_server.bsc"
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 quat.lib ghost30.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib winmm.lib /nologo /pdb:none /map /debug /machine:I386 /nodefaultlib:"libcmtd.lib" /out:"pc_win32/Debug/phan_server.exe" /libpath:"C:\Program Files\SensAble\GHOST\v3.0\lib" /libpath:"../../ghostLib" /libpath:"../../external/pc_win32/lib/" /libpath:"../../vrpn/pc_win32/debug" /libpath:"quat/Debug" /libpath:"../../../ghostLib"
+# ADD LINK32 quat.lib ghost30.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib winmm.lib /nologo /pdb:none /map /debug /machine:I386 /nodefaultlib:"libcmtd.lib" /out:"pc_win32/Debug/phan_server.exe" /libpath:"../../quat/pc_win32_MTd" /libpath:"../../external/pc_win32/lib"
 
 !ENDIF 
 
@@ -86,67 +86,7 @@ LINK32=link.exe
 # Name "phan_server - Win32 Debug"
 # Begin Source File
 
-SOURCE=.\buzzForceField.C
-# End Source File
-# Begin Source File
-
-SOURCE=.\buzzForceField.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\constraint.C
-# End Source File
-# Begin Source File
-
-SOURCE=.\constraint.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\forcefield.C
-# End Source File
-# Begin Source File
-
-SOURCE=.\forcefield.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\ghost.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\phantom.C
-# End Source File
-# Begin Source File
-
-SOURCE=.\plane.C
-# End Source File
-# Begin Source File
-
-SOURCE=.\plane.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\texture_plane.C
-# End Source File
-# Begin Source File
-
-SOURCE=.\texture_plane.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\trimesh.C
-# End Source File
-# Begin Source File
-
-SOURCE=.\trimesh.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\vrpn_Phantom.C
-# End Source File
-# Begin Source File
-
-SOURCE=.\vrpn_Phantom.h
 # End Source File
 # End Target
 # End Project
