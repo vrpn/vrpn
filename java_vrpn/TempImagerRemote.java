@@ -16,20 +16,20 @@ public class TempImagerRemote implements Runnable
 	
 	public class TempImagerChannel
 	{
-		String name;
-		String units;
-		float minVal = 0;
-		float maxVal = 0;
-		float offset = 0;
-		float scale = 0;
+		public String name;
+		public String units;
+		public float minVal = 0;
+		public float maxVal = 0;
+		public float offset = 0;
+		public float scale = 0;
 	}
 	
 	public class TempImagerRegion
 	{
-		int channelIndex = -1;
-		int columnMin = -1, columnMax = -1;
-		int rowMin = -1, rowMax = -1;
-		short vals[] = new short[ VRPN_IMAGER_MAX_REGION ];	
+		public int channelIndex = -1;
+		public int columnMin = -1, columnMax = -1;
+		public int rowMin = -1, rowMax = -1;
+		public short vals[] = new short[ VRPN_IMAGER_MAX_REGION ];	
 	}
 	
 	
