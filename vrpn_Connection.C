@@ -3555,7 +3555,7 @@ void vrpn_Endpoint::drop_connection (void) {
 
   if (d_connectionCounter != NULL) {	// Do nothing on NULL pointer
 
-	*d_connectionCounter--;	// One less connection
+	(*d_connectionCounter)--;	// One less connection
 
 	d_dispatcher->doCallbacksFor
 	       (d_dispatcher->registerType(vrpn_dropped_connection),
@@ -3830,7 +3830,7 @@ int vrpn_Endpoint::finish_new_connection_setup (void) {
         now, 0, NULL);
 
   if (d_connectionCounter) {
-    *d_connectionCounter++;
+    (*d_connectionCounter)++;
   }
 
 //fprintf(stderr, "Leaving finish_new_connection_setup().\n");
@@ -5798,15 +5798,16 @@ int vrpn_Synchronized_Connection::mainloop (const struct timeval * timeout)
 {
   // If we are not in a connected state, don't do synchronization, just
   // call the parent class mainloop()
-  if (connectionStatus != CONNECTED) {
+  //if (connectionStatus != CONNECTED) {
+  if (!d_numConnectedEndpoints) {
 	return vrpn_Connection::mainloop(timeout);
   }
-  if (pClockServer) {
+  if (pClockServer && d_numConnectedEndpoints) {
     pClockServer->mainloop();
     // call the base class mainloop
     return vrpn_Connection::mainloop(timeout);
   } 
-  else if (pClockRemote) {
+  else if (pClockRemote && d_numEndpoints) {
     // the remote device always calls the base class connection mainloop already
     pClockRemote->mainloop();
   } 

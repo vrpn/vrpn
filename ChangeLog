@@ -1,3 +1,18 @@
+2001-07-29  Tom Hudson  <hudson@cs.unc.edu>
+
+        * vrpn_Connection.C (vrpn_Endpoint::drop_connection) :
+        Fix parentheses on d_connectionCounter reference.
+        (vrpn_Endpoint::finish_new_connection) : Same.
+
+        * vrpn_Connection.C (vrpn_Synchronized_Connection::mainloop) :
+        Partially fix logic for calling clock server/remote.
+
+        * vrpn_Mutex.C (vrpn_Mutex_Remote::requestIndex) : Add verbose
+        debugging printfs.
+        (vrpn_Mutex_Remote::request) : Same.
+        (vrpn_Mutex_Remote::release) : Same.
+        (vrpn_Mutex_Remote::handle_initialize) : Same.
+
 2001-07-25  Tom Hudson  <hudson@cs.unc.edu>
 
 	* vrpn_Log.h : New file.

@@ -333,7 +333,9 @@ int vrpn_Mutex_Server::handle_requestIndex (void *userdata,
 
 #ifdef VERBOSE
   fprintf(stderr, "vrpn_Mutex_Server::handle_requestIndex:  "
-                  "Initializing client %d.\n", me->d_remoteIndex);
+                  "Initializing client %d (%lu %d).\n", me->d_remoteIndex,
+				  ntohl(*(vrpn_uint32 *) p.buffer),
+				  ntohl(*(vrpn_int32 *) (p.buffer + sizeof(vrpn_uint32))));
 #endif
 
   if (me->d_connection) {
@@ -456,7 +458,9 @@ void vrpn_Mutex_Remote::requestIndex (void) {
 #endif
   vrpn_buffer(&bufptr, &len, ip_addr);
   vrpn_buffer(&bufptr, &len, pid);
+#ifdef VERBOSE
   printf("requesting index for %lu, %d\n", ip_addr, pid);
+#endif
   gettimeofday(&now, NULL);
   d_connection->pack_message(buflen, now,
                          d_requestIndex_type, d_myId,
@@ -468,12 +472,23 @@ void vrpn_Mutex_Remote::requestIndex (void) {
 
 void vrpn_Mutex_Remote::request (void) {
   if (!isAvailable()) {
-    triggerDenyCallbacks();
+
+#ifdef VERBOSE
+	  fprintf(stderr, "Requested unavailable mutex.\n");
+#endif
+	  triggerDenyCallbacks();
     return;
   } else if (d_myIndex == -1) {
+#ifdef VERBOSE
+fprintf(stderr, "Requested mutex before initialization; deferring.\n");
+#endif
     d_requestBeforeInit = vrpn_TRUE;
     return;
   }
+
+#ifdef VERBOSE
+  fprintf(stderr, "Requesting mutex\n");
+#endif
 
   d_state = REQUESTING;
   sendRequest(d_myIndex);
@@ -486,6 +501,10 @@ void vrpn_Mutex_Remote::release (void) {
   if (!isHeldLocally()) {
     return;
   }
+
+#ifdef VERBOSE
+  fprintf(stderr, "Releasing mutex.\n");
+#endif
 
   d_state = AVAILABLE;
   sendRelease();
@@ -643,7 +662,7 @@ int vrpn_Mutex_Remote::handle_initialize (void * userdata,
   vrpn_int32 pid;
   vrpn_unbuffer(&b, &ip_addr);
   vrpn_unbuffer(&b, &pid);
-  vrpn_uint32 my_pid = 0;
+  vrpn_int32 my_pid = 0;
 #ifdef _WIN32
   my_pid = _getpid();
 #else
@@ -652,6 +671,10 @@ int vrpn_Mutex_Remote::handle_initialize (void * userdata,
   if ( (ip_addr != getmyIP()) || (pid != my_pid) ) {
     fprintf(stderr, "vrpn_Mutex_Remote::handle_initialize: "
        "Warning: Ignoring message that doesn't match ip/pid identifier\n");
+#ifdef VERBOSE
+	fprintf(stderr, "Got %lu %d, expected %lu %d.\n",
+		ip_addr, pid, getmyIP(), my_pid);
+#endif
     return 0;
   }
   vrpn_unbuffer(&b, &(me->d_myIndex));
