@@ -212,6 +212,7 @@ public:
   const vrpn_TempImager_Channel *channel(unsigned chanNum) const;
 
 protected:
+  bool	  _got_description;	//< Have we gotten a description yet?
   // Lists to keep track of registered user handlers.
   typedef struct vrpn_TIDCS {
       void			    *userdata;
@@ -232,6 +233,9 @@ protected:
 
   /// Handler for region change message from the server.
   static int handle_description_message(void *userdata, vrpn_HANDLERPARAM p);
+
+  /// Handler for connection dropped message
+  static int handle_connection_dropped_message(void *userdata, vrpn_HANDLERPARAM p);
 };
 
 #endif

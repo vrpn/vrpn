@@ -1,3 +1,8 @@
+2002-09-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_TempImager.h : Only send region message to user if description gotten.
+	* vrpn_TempImager.C : Same.
+
 2002-09-19  David Borland <borland@cs.unc.edu>
  
         * vrpn_Tracker.C : implemented the request_workspace method in 

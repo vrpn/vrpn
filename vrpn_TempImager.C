@@ -299,12 +299,16 @@ int  vrpn_TempImager_Server::handle_ping_message(void *userdata, vrpn_HANDLERPAR
 
 vrpn_TempImager_Remote::vrpn_TempImager_Remote(const char *name, vrpn_Connection *c) :
   vrpn_TempImager(name, c),
+  _got_description(false),
   _region_list(NULL),
   _description_list(NULL)
 {
   // Register the handlers for the description message and the region change message
   register_autodeleted_handler(_region_m_id, handle_region_message, this, d_sender_id);
   register_autodeleted_handler(_description_m_id, handle_description_message, this, d_sender_id);
+
+  // Register the handler for the connection dropped message
+  register_autodeleted_handler(d_connection->register_message_type(vrpn_dropped_connection), handle_connection_dropped_message, this);
 }
 
 void  vrpn_TempImager_Remote::mainloop(void)
@@ -345,6 +349,7 @@ int vrpn_TempImager_Remote::register_description_handler(void *userdata,
   new_entry->next = _description_list;
   _description_list = new_entry;
 
+  _got_description = true;
   return 0;
 }
 
@@ -486,12 +491,24 @@ int vrpn_TempImager_Remote::handle_region_message(void *userdata,
   rp.msg_time = p.msg_time;
   rp.region = &me->_region;
 
+  // ONLY if we have gotten a description message,
   // Go down the list of callbacks that have been registered.
   // Fill in the parameter and call each.
-  while (handler != NULL) {
+  if (me->_got_description) while (handler != NULL) {
 	  handler->handler(handler->userdata, rp);
 	  handler = handler->next;
   }
+
+  return 0;
+}
+
+int vrpn_TempImager_Remote::handle_connection_dropped_message(void *userdata,
+	vrpn_HANDLERPARAM p)
+{
+  vrpn_TempImager_Remote *me = (vrpn_TempImager_Remote *)userdata;
+
+  // We have no description message, so don't call region callbacks
+  me->_got_description = false;
 
   return 0;
 }
