@@ -88,10 +88,11 @@ LIB = libvrpn.a
 # lib
 #
 
-LIB_FILES =  vrpn_Connection.C vrpn_Tracker.C vrpn_Button.C
-LIB_OBJECTS =  vrpn_Connection.o vrpn_Tracker.o vrpn_Button.o
+LIB_FILES =  vrpn_Connection.C vrpn_Tracker.C vrpn_Button.C vrpn_3Space.C vrpn_Shared.C
 
-LIB_INCLUDES = vrpn_Connection.h vrpn_Tracker.h vrpn_Button.h
+LIB_OBJECTS =  vrpn_Connection.o vrpn_Tracker.o vrpn_Button.o vrpn_3Space.o vrpn_Shared.o
+
+LIB_INCLUDES = vrpn_Connection.h vrpn_Tracker.h vrpn_Button.h vrpn_3Space.h vrpn_Shared.h
 
 lib$(SUFFIX) : $(OBJECT_DIR)
 	@$(MAKE) "EXE_NAME = $(LIB)" \

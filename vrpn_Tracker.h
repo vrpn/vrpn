@@ -9,6 +9,12 @@
 
 #include "vrpn_Connection.h"
 
+extern unsigned long vrpn_duration(struct timeval t1, struct timeval t2);
+
+extern int vrpn_open_commport(char *portname, long baud);
+
+extern int vrpn_flushInputBuffer(int comm);
+
 class vrpn_Tracker {
   public:
    vrpn_Tracker(char *name, vrpn_Connection *c = NULL);
@@ -49,16 +55,6 @@ class vrpn_Tracker_Serial : public vrpn_Tracker {
    virtual void reset(void) = 0;
 };
 
-class vrpn_Tracker_3Space: public vrpn_Tracker_Serial {
-  public:
-   vrpn_Tracker_3Space(char *name,
-	vrpn_Connection *c, char *port = "/dev/ttyS1", long baud = 19200) :
-		vrpn_Tracker_Serial(name,c,port,baud) {};
-   virtual void mainloop(void);
-  protected:
-   virtual void get_report(void);
-   virtual void reset();
-};
 #endif  // #ifndef _WIN32
 
 class vrpn_Tracker_NULL: public vrpn_Tracker {

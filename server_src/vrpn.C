@@ -6,6 +6,7 @@
 #include "vrpn_Connection.h"
 #include "vrpn_Button.h"
 #include "vrpn_Tracker.h"
+#include "vrpn_3Space.h"
 
 static	int	MAX_TRACKERS = 100;
 static	int	MAX_BUTTONS = 100;
