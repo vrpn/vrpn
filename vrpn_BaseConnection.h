@@ -28,7 +28,7 @@ class vrpn_BaseConnection
 {
 public:  // c'tors and d'tors
     vrpn_BaseConnection(
-        vrpn_BaseConnectionController::SpecialAccessToken *,
+        vrpn_BaseConnectionController::RestrictedAccessToken *,
 
         const char * local_logfile_name  = NULL,
         vrpn_int32   local_log_mode      = vrpn_LOG_NONE,
@@ -198,7 +198,7 @@ public:  // public type_id and service_id stuff
 
 protected: // protected type_id and service_id stuff
 
-    vrpn_BaseConnectionController::SpecialAccessToken* const d_controller_token;
+    vrpn_BaseConnectionController::RestrictedAccessToken* const d_controller_token;
 
     // Holds one entry for a mapping of remote strings to local IDs
     struct cRemoteMapping {

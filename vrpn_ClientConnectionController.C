@@ -293,7 +293,7 @@ vrpn_int32 vrpn_ClientConnectionController::connect_to_server(
         // create NetConnection here
         d_connection_ptr 
             = new vrpn_NetConnection(
-                this->new_SpecialAccessToken (this),
+                this->new_RestrictedAccessToken (this),
                 local_logfile_name,
                 local_log_mode,
                 remote_logfile_name,
@@ -335,7 +335,7 @@ vrpn_int32 vrpn_ClientConnectionController::connect_to_server(
     if (isfile) {        
         d_connection_ptr = 
             new vrpn_NewFileConnection(
-                this->new_SpecialAccessToken (this),
+                this->new_RestrictedAccessToken (this),
                 cname,
                 local_logfile_name,
                 local_log_mode);

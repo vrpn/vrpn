@@ -217,7 +217,7 @@ void vrpn_ServerConnectionController::listen_for_incoming_connections(
         // logging options will be set by other side.
         vrpn_BaseConnection* new_connection
             = new vrpn_NetConnection(
-                this->new_SpecialAccessToken(this));
+                this->new_RestrictedAccessToken(this));
 
         // Check to see that the connection is connected
         new_connection->connect_to_client(msg);

@@ -33,7 +33,7 @@ class vrpn_NetConnection
 public:  // c'tors and d'tors
 
     vrpn_NetConnection(
-        vrpn_BaseConnectionController::SpecialAccessToken *,
+        vrpn_BaseConnectionController::RestrictedAccessToken *,
         const char*  local_logfile  = NULL,
         vrpn_int32   local_logmode  = vrpn_LOG_NONE,
 

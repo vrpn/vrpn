@@ -373,15 +373,15 @@ public:  // clock
 public:  // connection special access stuff
 
     // each connection gets one of these so that it can call
-    // special members that are not accessible to anything else.
-    class SpecialAccessToken
+    // Restricted members that are not accessible to anything else.
+    class RestrictedAccessToken
     {
         // all methods forward to d_controller
         vrpn_BaseConnectionController * d_controller;
         
         // private constructor.  you shouldn't make one of these yourself.
         // ConnectionController makes one when it creates a Connection.
-        SpecialAccessToken (vrpn_BaseConnectionController* bcc)
+        RestrictedAccessToken (vrpn_BaseConnectionController* bcc)
             : d_controller(bcc) 
         {}
 
@@ -465,13 +465,13 @@ public:  // connection special access stuff
         }
     };
     
-    // give the token special access to myself
-    friend class SpecialAccessToken;
+    // give the token Restricted access to myself
+    friend class RestrictedAccessToken;
 
     // need a way to create a token.  This is non-virtual on purpose
-    SpecialAccessToken*
-    new_SpecialAccessToken (vrpn_BaseConnectionController* pbcc) {
-        return new SpecialAccessToken (pbcc);
+    RestrictedAccessToken*
+    new_RestrictedAccessToken (vrpn_BaseConnectionController* pbcc) {
+        return new RestrictedAccessToken (pbcc);
     }
 };
 

@@ -18,11 +18,11 @@
 
 
 vrpn_NewFileConnection::vrpn_NewFileConnection (
-    vrpn_BaseConnectionController::SpecialAccessToken * spat,
+    vrpn_BaseConnectionController::RestrictedAccessToken * rat,
     const char * file_name,
     const char * local_logfile_name,
     vrpn_int32   local_log_mode)
-    : vrpn_BaseConnection (spat, local_logfile_name, local_log_mode),
+    : vrpn_BaseConnection (rat, local_logfile_name, local_log_mode),
       d_rate (1.0f),
       d_file (NULL),
       d_logHead (NULL),

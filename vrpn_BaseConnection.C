@@ -3,8 +3,8 @@
 
 
 vrpn_BaseConnection::vrpn_BaseConnection(
-    // takes ownership of spat, and deletes in destructor
-    vrpn_BaseConnectionController::SpecialAccessToken * spat,
+    // takes ownership of rat, and deletes in destructor
+    vrpn_BaseConnectionController::RestrictedAccessToken * rat,
     
     const char *  local_logfile_name,
     vrpn_int32    local_log_mode,
@@ -13,7 +13,7 @@ vrpn_BaseConnection::vrpn_BaseConnection(
     vrpn_int32    remote_log_mode
     )
     
-    : d_controller_token             (spat),
+    : d_controller_token             (rat),
       d_local_logmode                (local_log_mode),
       d_remote_logmode               (remote_log_mode),
       num_registered_remote_services (0),

@@ -44,7 +44,7 @@ class vrpn_NewFileConnection
 public: // c'tors & d'tors
     
     vrpn_NewFileConnection(
-        vrpn_BaseConnectionController::SpecialAccessToken *,
+        vrpn_BaseConnectionController::RestrictedAccessToken *,
         const char *  file_name,
         const char *  local_logfile_name = NULL,
         vrpn_int32    local_log_mode     = vrpn_LOG_NONE);

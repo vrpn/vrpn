@@ -11,7 +11,7 @@
 
 
 vrpn_NetConnection::vrpn_NetConnection(
-    vrpn_BaseConnectionController::SpecialAccessToken * spat,
+    vrpn_BaseConnectionController::RestrictedAccessToken * rat,
     const char * local_logfile,
     vrpn_int32 local_logmode,
     const char * remote_logfile,
@@ -22,7 +22,7 @@ vrpn_NetConnection::vrpn_NetConnection(
     vrpn_int32 udp_outbuflen)
     // add multicast arguments later
     : vrpn_BaseConnection(
-        spat,
+        rat,
         local_logfile,
         local_logmode,
         remote_logfile,
