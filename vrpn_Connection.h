@@ -94,10 +94,10 @@ typedef int (* vrpn_LOGFILTER) (void * userdata, vrpn_HANDLERPARAM p);
 // link.
 //#define vrpn_FILTER_MESSAGES
 
-#define vrpn_got_first_connection "VRPN Connection Got First Connection"
-#define vrpn_got_connection "VRPN Connection Got Connection"
-#define vrpn_dropped_connection "VRPN Connection Dropped Connection"
-#define vrpn_dropped_last_connection "VRPN Connection Dropped Last Connection"
+#define vrpn_got_first_connection "VRPN_Connection_Got_First_Connection"
+#define vrpn_got_connection "VRPN_Connection_Got_Connection"
+#define vrpn_dropped_connection "VRPN_Connection_Dropped_Connection"
+#define vrpn_dropped_last_connection "VRPN_Connection_Dropped_Last_Connection"
 
 // vrpn_CONTROL is used for notification messages sent to the user
 // from the local VRPN implementation (got_first_connection, etc.)

@@ -1,3 +1,25 @@
+2001-03-25  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	vrpn_Analog.C : Removed spaces and other characters not available in
+		C variable names from the message type and sender descriptions
+		so that Aron's Perl script could be used to generate all of
+		these objects (or a program to print them).
+	vrpn_BaseClass.C : same
+	vrpn_Button.C : same
+	vrpn_Clock.C : same
+	vrpn_Connection.C : same
+	vrpn_Dial.C : same
+	vrpn_FileConnection.C : same
+	vrpn_FileController.C : same
+	vrpn_ForceDevice.C : same
+	vrpn_ForwarderController.C : same
+	vrpn_Mutex.C : same
+	vrpn_RedundantTransmission.C : same
+	vrpn_Router.C : same
+	vrpn_SharedObject.C : same
+	vrpn_Sound.C : same
+	vrpn_Tracker.C : same
+
 2001-03-01  Aron Helser  <helser@cs.unc.edu>
 
 	* vrpn_BaseClass.h: Fixed D'Oxygen comments.

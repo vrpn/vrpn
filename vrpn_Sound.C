@@ -13,35 +13,35 @@ vrpn_BaseClass(name, c)
 
 int vrpn_Sound::register_types(void)
 {
-	load_sound_local = d_connection->register_message_type("Sound Load Local");
-	load_sound_remote = d_connection->register_message_type("Sound Load Remote");
-	unload_sound = d_connection->register_message_type("Sound Unload");
-	play_sound = d_connection->register_message_type("Sound Play");
-	stop_sound = d_connection->register_message_type("Sound Stop");
-	change_sound_status = d_connection->register_message_type("Sound Status");
+	load_sound_local = d_connection->register_message_type("Sound_Load_Local");
+	load_sound_remote = d_connection->register_message_type("Sound_Load_Remote");
+	unload_sound = d_connection->register_message_type("Sound_Unload");
+	play_sound = d_connection->register_message_type("Sound_Play");
+	stop_sound = d_connection->register_message_type("Sound_Stop");
+	change_sound_status = d_connection->register_message_type("Sound_Status");
 
-	set_listener_pose = d_connection->register_message_type("Listener Pose");
-	set_listener_velocity = d_connection->register_message_type("Listener Velocity");
+	set_listener_pose = d_connection->register_message_type("Listener_Pose");
+	set_listener_velocity = d_connection->register_message_type("Listener_Velocity");
 
-	set_sound_pose = d_connection->register_message_type("Sound Pose");
-	set_sound_velocity = d_connection->register_message_type("Sound Velocity");
-	set_sound_distanceinfo = d_connection->register_message_type("Sound DistInfo");
-	set_sound_coneinfo = d_connection->register_message_type("Sound ConeInfo");
+	set_sound_pose = d_connection->register_message_type("Sound_Pose");
+	set_sound_velocity = d_connection->register_message_type("Sound_Velocity");
+	set_sound_distanceinfo = d_connection->register_message_type("Sound_DistInfo");
+	set_sound_coneinfo = d_connection->register_message_type("Sound_ConeInfo");
 
-	set_sound_doplerfactor = d_connection->register_message_type("Sound DopFac");
-	set_sound_eqvalue = d_connection->register_message_type("Sound EqVal");
-	set_sound_pitch = d_connection->register_message_type("Sound Pitch");
-	set_sound_volume = d_connection->register_message_type("Sound Volume");
+	set_sound_doplerfactor = d_connection->register_message_type("Sound_DopFac");
+	set_sound_eqvalue = d_connection->register_message_type("Sound_EqVal");
+	set_sound_pitch = d_connection->register_message_type("Sound_Pitch");
+	set_sound_volume = d_connection->register_message_type("Sound_Volume");
 
-	load_model_local = d_connection->register_message_type("Load Model Local");
-	load_model_remote = d_connection->register_message_type("Load Model Remote");
-	load_polyquad = d_connection->register_message_type("Load Poly Quad");
-	load_polytri = d_connection->register_message_type("Load Poly Tri");
-	load_material = d_connection->register_message_type("Load Material");
-	set_polyquad_vertices = d_connection->register_message_type("Quad Vertices");
-	set_polytri_vertices = d_connection->register_message_type("Tri Vertices");
-	set_poly_openingfactor = d_connection->register_message_type("Poly OF");
-	set_poly_material = d_connection->register_message_type("Poly Material");
+	load_model_local = d_connection->register_message_type("Load_Model_Local");
+	load_model_remote = d_connection->register_message_type("Load_Model_Remote");
+	load_polyquad = d_connection->register_message_type("Load_Poly_Quad");
+	load_polytri = d_connection->register_message_type("Load_Poly_Tri");
+	load_material = d_connection->register_message_type("Load_Material");
+	set_polyquad_vertices = d_connection->register_message_type("Quad_Vertices");
+	set_polytri_vertices = d_connection->register_message_type("Tri_Vertices");
+	set_poly_openingfactor = d_connection->register_message_type("Poly_OF");
+	set_poly_material = d_connection->register_message_type("Poly_Material");
 
 	return 0;
 }

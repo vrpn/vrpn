@@ -15,12 +15,12 @@ vrpn_Forwarder_Brain::vrpn_Forwarder_Brain (vrpn_Connection * c) :
   if (!c)
     return;
 
-  d_myId = c->register_sender("vrpn Forwarder Brain");
+  d_myId = c->register_sender("vrpn_Forwarder_Brain");
 
   d_start_forwarding_type =
-      c->register_message_type("vrpn Forwarder Brain start");
+      c->register_message_type("vrpn_Forwarder_Brain_start");
   d_forward_type = 
-      c->register_message_type("vrpn Forwarder Brain forward");
+      c->register_message_type("vrpn_Forwarder_Brain_forward");
 }
 
 

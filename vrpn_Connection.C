@@ -3364,7 +3364,6 @@ int vrpn_Endpoint::pack_log_description (void) {
   char * bpp;
   char ** bp;
   vrpn_int32 buflen = 1000;
-  int usage;
 
   // If we're not requesting remote logging, don't send any message.
 

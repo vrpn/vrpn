@@ -88,7 +88,7 @@ int vrpn_ForceDevice::register_types(void)
     force_message_id =
 	d_connection->register_message_type("Force");
     forcefield_message_id = 
-	d_connection->register_message_type("Force Field");
+	d_connection->register_message_type("Force_Field");
     plane_message_id =
 	d_connection->register_message_type("Plane");
     plane_effects_message_id =
@@ -112,24 +112,24 @@ int vrpn_ForceDevice::register_types(void)
     scp_message_id =
 	d_connection->register_message_type("SCP");
     error_message_id =
-	d_connection->register_message_type("Force Error");
+	d_connection->register_message_type("Force_Error");
 
       enableConstraint_message_id =
-            d_connection->register_message_type("vrpn FDev constraint enable");
+            d_connection->register_message_type("vrpn_FDev_constraint_enable");
       setConstraintMode_message_id =
-            d_connection->register_message_type("vrpn FDev constraint mode");
+            d_connection->register_message_type("vrpn_FDev_constraint_mode");
       setConstraintPoint_message_id =
-            d_connection->register_message_type("vrpn FDev constraint point");
+            d_connection->register_message_type("vrpn_FDev_constraint_point");
       setConstraintLinePoint_message_id =
-            d_connection->register_message_type("vrpn FDev constraint linept");
+            d_connection->register_message_type("vrpn_FDev_constraint_linept");
       setConstraintLineDirection_message_id =
-            d_connection->register_message_type("vrpn FDev constraint linedir");
+            d_connection->register_message_type("vrpn_FDev_constraint_linedir");
       setConstraintPlanePoint_message_id =
-            d_connection->register_message_type("vrpn FDev constraint plpt");
+            d_connection->register_message_type("vrpn_FDev_constraint_plpt");
       setConstraintPlaneNormal_message_id =
-            d_connection->register_message_type("vrpn FDev constraint plnorm");
+            d_connection->register_message_type("vrpn_FDev_constraint_plnorm");
       setConstraintKSpring_message_id =
-            d_connection->register_message_type("vrpn FDev constraint KSpring");
+            d_connection->register_message_type("vrpn_FDev_constraint_KSpring");
 
       return 0;
 }
