@@ -54,7 +54,7 @@ int vrpn_Tracker_Dyna::get_status()
 
     /* send request for status record   */
 
-    write(serial_fd, "\021", 1);
+    vrpn_write_characters(serial_fd, "\021", 1);
     vrpn_drain_output_buffer(serial_fd);
     sleep(2);
 
@@ -105,8 +105,8 @@ void vrpn_Tracker_Dyna::reset() {
   static char T_PDYN_C_CTL_C[4] ="\003\003\003";
   static int T_PDYN_RECORD_LENGTH = 8;
 
-  write(serial_fd, T_PDYN_C_CTL_C, strlen(T_PDYN_C_CTL_C));
-  write(serial_fd, "4", 1); // set to polling mode;
+  vrpn_write_characters(serial_fd, (unsigned char*)T_PDYN_C_CTL_C, strlen(T_PDYN_C_CTL_C));
+  vrpn_write_characters(serial_fd, "4", 1); // set to polling mode;
       
   /* pause 1 second to allow the Dynasight buffer to stabilize	*/
   sleep(1);
@@ -134,8 +134,8 @@ void vrpn_Tracker_Dyna::reset() {
    my_flush();
 
    /* set the Dynasight to continuous mode    */
-   write(serial_fd, T_PDYN_C_CTL_C, strlen(T_PDYN_C_CTL_C));
-   write(serial_fd, "V", 1); 
+   vrpn_write_characters(serial_fd, (unsigned char*)T_PDYN_C_CTL_C, strlen(T_PDYN_C_CTL_C));
+   vrpn_write_characters(serial_fd, "V", 1); 
    //T_PDYN_C_CONTINUOUS = "V"
    sleep(1);
    //gettimeofday(&timestamp, NULL);	// Set watchdog now;
@@ -359,7 +359,7 @@ void vrpn_Tracker_Dyna::mainloop(const struct timeval * timeout)
 
     case TRACKER_FAIL:
 	fprintf(stderr, "Tracker failed, trying to reset (Try power cycle if more than 4 attempts made)\n");
-	close(serial_fd);
+	vrpn_close_commport(serial_fd);
 	serial_fd = vrpn_open_commport(portname, baudrate);
 	status = TRACKER_RESETTING;
 	break;

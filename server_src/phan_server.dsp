@@ -1,5 +1,5 @@
 # Microsoft Developer Studio Project File - Name="phan_server" - Package Owner=<4>
-# Microsoft Developer Studio Generated Build File, Format Version 5.00
+# Microsoft Developer Studio Generated Build File, Format Version 6.00
 # ** DO NOT EDIT **
 
 # TARGTYPE "Win32 (x86) Console Application" 0x0103
@@ -17,13 +17,12 @@ CFG=phan_server - Win32 Debug
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
-!MESSAGE "phan_server - Win32 Release" (based on\
- "Win32 (x86) Console Application")
-!MESSAGE "phan_server - Win32 Debug" (based on\
- "Win32 (x86) Console Application")
+!MESSAGE "phan_server - Win32 Release" (based on "Win32 (x86) Console Application")
+!MESSAGE "phan_server - Win32 Debug" (based on "Win32 (x86) Console Application")
 !MESSAGE 
 
 # Begin Project
+# PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
 CPP=cl.exe
@@ -68,7 +67,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /Zi /Od /I "..\..\ghostLib" /I "..\\" /I "quat" /I "..\..\ghostLib/stl" /I "../../analyzer" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "USING_HCOLLIDE" /D "TRIMESH_DEBUG" /D "MONITOR_TRIMESH" /FR"C:/temp/seeger/pc_win32/Debug/" /Fp"C:/temp/seeger/pc_win32/Debug/phan_server.pch" /YX /Fo"C:/temp/seeger/pc_win32/Debug/" /Fd"C:/temp/seeger/pc_win32/Debug/" /FD /c /Tp
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\..\ghostLib" /I "..\\" /I "quat" /I "..\..\ghostLib/stl" /I "../../analyzer" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "USING_HCOLLIDE" /D "TRIMESH_DEBUG" /D "MONITOR_TRIMESH" /FR"C:/temp/seeger/pc_win32/Debug/" /Fp"C:/temp/seeger/pc_win32/Debug/phan_server.pch" /YX /Fo"C:/temp/seeger/pc_win32/Debug/" /Fd"C:/temp/seeger/pc_win32/Debug/" /FD /c /Tp
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe

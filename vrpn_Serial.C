@@ -18,8 +18,11 @@
 #include <netinet/in.h>
 #endif
 
-#ifdef	_WIN32
+#if defined(_WIN32)
 #include <io.h>
+#if !defined(__CYGWIN__)
+#include <afxcoll.h>
+#endif
 #endif
 
 #ifdef FreeBSD
@@ -43,18 +46,97 @@
                                  ((t1.tv_sec == t2.tv_sec) && \
                                   (t1.tv_usec > t2.tv_usec)) )
 
+#if defined(_WIN32) && !defined(__CYGWIN__)
+static CPtrArray commConnections;
+#endif
 
 int vrpn_open_commport(char *portname, long baud)
 {
-#if defined(_WIN32) || defined(sparc) || defined(hpux) || defined(__hpux) || defined(ultrix) || defined(FreeBSD)
+#if defined(sparc) || defined(hpux) || defined(__hpux) || defined(ultrix) || defined(FreeBSD) || defined(__CYGWIN__)
 	fprintf(stderr,
-		"vrpn_open_commport: Not implemented in NT, sparc, ultrix, or HP\n");
+		"vrpn_open_commport: Not implemented in sparc, ultrix, HP, or Cygwin\n");
 	return -1;
+#else
+
+#if defined(_WIN32)
+  DCB dcb;
+  COMMTIMEOUTS cto;
+  HANDLE hCom;
+  BOOL fSuccess;
+  int curConn = -1;
 #else
   int fileDescriptor;
   struct termio   sttyArgs;
+#endif
 
 
+#if defined(_WIN32)
+  hCom = CreateFile( portname,    GENERIC_READ | GENERIC_WRITE,
+					 0,    // comm devices must be opened w/exclusive-access 
+					 NULL, // no security attributes 
+					 OPEN_EXISTING, // comm devices must use OPEN_EXISTING 
+					 0, // not overlapped I/O 
+					 NULL);  // hTemplate must be NULL for comm devices     );
+  
+  curConn++;
+  commConnections.Add(hCom);  
+
+  if (hCom == INVALID_HANDLE_VALUE) 
+  {    
+    perror("Tracker: cannot open serial port");
+    return -1;
+  }
+ 
+  if (!(fSuccess = GetCommState(hCom, &dcb)))
+  {
+	perror("Tracker: cannot get serial port configuration settings");
+	CloseHandle(hCom);
+    return -1;
+  }
+
+  switch (baud) {
+  case   300: dcb.BaudRate =   CBR_300; break;
+  case  1200: dcb.BaudRate =  CBR_1200; break;
+  case  2400: dcb.BaudRate =  CBR_2400; break;
+  case  4800: dcb.BaudRate =  CBR_4800; break;
+  case  9600: dcb.BaudRate =  CBR_9600; break;
+  case 19200: dcb.BaudRate =  CBR_19200; break;
+  case 38400: dcb.BaudRate =  CBR_38400; break;
+  case 57600: dcb.BaudRate =  CBR_57600; break;
+  case 115200: dcb.BaudRate =  CBR_115200; break;
+  default:
+    fprintf(stderr,"vrpn: Serial tracker: unknown baud rate %ld\n",baud);
+	CloseHandle(hCom);
+    return -1;
+  }   
+
+  dcb.fParity = FALSE;
+  dcb.Parity = NOPARITY;
+  dcb.StopBits = ONESTOPBIT;
+  dcb.ByteSize = 8;
+
+  if (!(fSuccess = SetCommState(hCom, &dcb)))
+  {
+	perror("Tracker: cannot set serial port configuration settings");
+	CloseHandle(hCom);
+    return -1;
+  }
+
+  cto.ReadIntervalTimeout = MAXDWORD;
+  cto.ReadTotalTimeoutMultiplier = MAXDWORD;
+  cto.ReadTotalTimeoutConstant = 1;
+  cto.WriteTotalTimeoutConstant = 0;
+  cto.WriteTotalTimeoutMultiplier = 0;
+
+  if (!(fSuccess = SetCommTimeouts(hCom, &cto)))
+  {
+	perror("Tracker: cannot set serial port timeouts");
+	CloseHandle(hCom);
+    return -1;
+  }
+  return curConn;
+
+#else
   // Open the serial port for r/w
   if ( (fileDescriptor = open(portname, O_RDWR)) == -1) {
     perror("Tracker: cannot open serial port");
@@ -86,15 +168,16 @@ int vrpn_open_commport(char *portname, long baud)
   case 38400: sttyArgs.c_cflag |=  B38400; break;
 #ifdef B57600
   case 57600: sttyArgs.c_cflag |=  B57600; break;
-#endif
+#endif //End B57600
 #ifdef B115200
   case 115200: sttyArgs.c_cflag |=  B115200; break;
-#endif
+#endif //End B115200
   default:
     fprintf(stderr,"vrpn: Serial tracker: unknown baud rate %ld\n",baud);
     return -1;
   }
-#endif
+#endif //SGI NEX MAX BAUD check
+
 
   sttyArgs.c_iflag = (IGNBRK | IGNPAR);  /* Ignore break & parity errs */
   sttyArgs.c_oflag = 0;                  /* Raw output, leave tabs alone */
@@ -118,6 +201,18 @@ int vrpn_open_commport(char *portname, long baud)
   
   return(fileDescriptor);
 #endif  // _WIN32
+
+#endif // !defined(...lots of stuff...)
+}
+
+//When finished close the commport.
+int vrpn_close_commport(int comm)
+{
+#if defined(_WIN32) && !defined(__CYGWIN__)
+	return CloseHandle(commConnections[comm]);
+#else
+	return close(comm);
+#endif
 }
 
 #endif  // VRPN_CLIENT_ONLY
@@ -127,12 +222,16 @@ int vrpn_open_commport(char *portname, long baud)
 // NOT CALLED!  OBSOLETE? -- no ... used by vrpn_Flock
 int vrpn_flush_input_buffer(int comm)
 {
-#if defined(_WIN32) || defined(sparc) || defined(hpux) || defined(__hpux) || defined(ultrix)
+#if defined(sparc) || defined(hpux) || defined(__hpux) || defined(ultrix) || defined(__CYGWIN__)
    fprintf(stderr,
-	"vrpn_flush_input_buffer: Not impemented on NT, sparc, ultrix, or HP\n");
+	"vrpn_flush_input_buffer: Not impemented on cygwin, sparc, ultrix, or HP\n");
    return -1;
 #else
+#if defined(_WIN32)
+   return PurgeComm(commConnections[comm], PURGE_RXCLEAR);
+#else
    return tcflush(comm, TCIFLUSH);
+#endif
 #endif
 }
 
@@ -141,12 +240,18 @@ int vrpn_flush_input_buffer(int comm)
 // NOT CALLED!  OBSOLETE? -- no ... used by vrpn_Flock
 int vrpn_flush_output_buffer(int comm)
 {
-#if defined(_WIN32) || defined(sparc) || defined(hpux) || defined(__hpux) || defined(ultrix)
+#if defined(sparc) || defined(hpux) || defined(__hpux) || defined(ultrix) || defined(__CYGWIN__)
    fprintf(stderr,
-	"vrpn_flush_output_buffer: Not impemented on NT, sparc, ultrix, or HP\n");
+	"vrpn_flush_output_buffer: Not impemented on NT, sparc, ultrix, HP, or cygwin\n");
    return -1;
 #else
+
+#if defined(_WIN32)
+   return FlushFileBuffers(commConnections[comm]);
+#else
    return tcflush(comm, TCOFLUSH);
+#endif
+
 #endif
 }
 
@@ -155,12 +260,18 @@ int vrpn_flush_output_buffer(int comm)
 // NOT CALLED!  OBSOLETE? -- no ... used by vrpn_Flock
 int vrpn_drain_output_buffer(int comm)
 {
-#if defined(_WIN32) || defined(sparc) || defined(hpux) || defined(__hpux) || defined(ultrix)
+#if defined(sparc) || defined(hpux) || defined(__hpux) || defined(ultrix) || defined(__CYGWIN__)
    fprintf(stderr,
 	"vrpn_drain_output_buffer: Not impemented on NT, sparc, ultrix, or HP\n");
    return -1;
 #else
-   return tcdrain(comm);
+
+#if defined(_WIN32)
+   return PurgeComm(commConnections[comm], PURGE_TXCLEAR);
+#else
+   return tcflush(comm, TCIFLUSH);
+#endif
+
 #endif
 }
 
@@ -174,8 +285,35 @@ int vrpn_drain_output_buffer(int comm)
 int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes)
 {
 #ifdef	_WIN32
-	fprintf(stderr,"vrpn_read_available_characters: Not yet on NT\n");
-	return -1;
+   BOOL fSuccess;
+   DWORD numRead;
+   COMSTAT cstat;
+   DWORD errors;
+   OVERLAPPED Overlapped;
+
+
+   Overlapped.Offset = 0;
+   Overlapped.OffsetHigh = 0;
+   Overlapped.hEvent = NULL;
+
+   if (!(fSuccess = ClearCommError(commConnections[comm], &errors, &cstat)))
+   {
+	   perror("Tracker: can't get current status");
+	   return(-1);
+   }
+
+   if (cstat.cbInQue > 0)
+   {
+	   if(!(fSuccess = ReadFile(commConnections[comm], buffer, bytes, &numRead, &Overlapped)))
+	   {
+		   perror("Tracker: can't read from serial port");
+		   return(-1);
+	   }
+
+	   return numRead;
+   }
+   
+   return 0;
 #else
    int bRead;
 
@@ -209,7 +347,8 @@ int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes)
 // of characters read.
 
 int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes,
-		struct timeval *timeout) {
+		struct timeval *timeout) 
+{
 	struct	timeval	start, finish, now;
 	int	sofar = 0, ret;	// How many characters we have read so far
 	unsigned char *where = buffer;
@@ -236,5 +375,29 @@ int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes,
 }
 
 
-#endif  // _WIN32
+#endif  // VRPN_CLIENT_ONLY
 
+// Write the buffer to the serial port
+
+int vrpn_write_characters(int comm, const unsigned char *buffer, int bytes)
+{
+#if defined(_WIN32) && !defined(__CYGWIN__)
+   BOOL fSuccess;
+   DWORD numWritten;
+   OVERLAPPED Overlapped;
+
+   Overlapped.Offset = 0;
+   Overlapped.OffsetHigh = 0;
+   Overlapped.hEvent = NULL;
+
+	if(!(fSuccess = WriteFile(commConnections[comm], buffer, bytes, &numWritten, &Overlapped)))
+    {
+	   perror("Tracker: can't write to serial port");
+	   return(-1);
+    }
+
+	return numWritten;
+#else
+	return write(comm, buffer, bytes);
+#endif
+}

@@ -70,7 +70,7 @@ void vrpn_Tracker_3Space::reset()
    reset[resetLen++] = (char) (25); // Ctrl + Y -> reset the tracker
    fprintf(stderr, "Resetting the 3Space (attempt #%d)",numResets);
    for (i = 0; i < resetLen; i++) {
-	if (write(serial_fd, &reset[i], 1) == 1) {
+	if (vrpn_write_characters(serial_fd, (unsigned char*)&reset[i], 1) == 1) {
 		fprintf(stderr,".");
 		sleep(2);  // Wait 2 seconds each character
    	} else {
@@ -102,7 +102,7 @@ void vrpn_Tracker_3Space::reset()
    }
 
    // Asking for tracker status
-   if (write(serial_fd, "S", 1) == 1) {
+   if (vrpn_write_characters(serial_fd, "S", 1) == 1) {
       sleep(1); // Sleep for a second to let it respond
    } else {
 	perror("  3Space write failed");
@@ -137,7 +137,7 @@ void vrpn_Tracker_3Space::reset()
    // These are a capitol 'o' followed by comma-separated values that
    // indicate data sets according to appendix F of the 3Space manual,
    // then followed by character 13 (octal 15).
-   if (write(serial_fd, "O2,11\015", 6) == 6) {
+   if (vrpn_write_characters(serial_fd, "O2,11\015", 6) == 6) {
 	sleep(1); // Sleep for a second to let it respond
    } else {
 	perror("  3Space write failed");
@@ -146,10 +146,10 @@ void vrpn_Tracker_3Space::reset()
    }
 
    // Set data format to BINARY mode
-   write(serial_fd, "f", 1);
+   vrpn_write_characters(serial_fd, "f", 1);
 
    // Set tracker to continuous mode
-   if (write(serial_fd, "C", 1) != 1)
+   if (vrpn_write_characters(serial_fd, "C", 1) != 1)
    	perror("  3Space write failed");
    else {
    	fprintf(stderr, "  3Space set to continuous mode\n");
@@ -337,7 +337,7 @@ void vrpn_Tracker_3Space::mainloop(const struct timeval * timeout)
 
     case TRACKER_FAIL:
 	fprintf(stderr, "Tracker failed, trying to reset (Try power cycle if more than 4 attempts made)\n");
-	close(serial_fd);
+	vrpn_close_commport(serial_fd);
 	serial_fd = vrpn_open_commport(portname, baudrate);
 	status = TRACKER_RESETTING;
 	break;

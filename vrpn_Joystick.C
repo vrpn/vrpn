@@ -105,7 +105,7 @@ void vrpn_Joystick::reset() {
     /* Request baseline report for comparison */
     request[0] = 'r';
     request[1]  = 0;
-    write_rt = write(serial_fd, request, sizeof(request));
+    write_rt = vrpn_write_characters(serial_fd, (unsigned char*)request, sizeof(request));
     if (write_rt < 0) {
       fprintf(stderr, "vrpn_Joystick::reset: write failed\n");
       status = ANALOG_FAIL;
@@ -126,7 +126,7 @@ joystick, should be 16, trying again\n", bytesread);
       }
       /* only need report when state has changed */
       request[0] = 'j';
-      write(serial_fd, request, sizeof(request));
+      vrpn_write_characters(serial_fd, (unsigned char*)request, sizeof(request));
     }
 }
 

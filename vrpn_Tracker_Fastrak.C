@@ -147,7 +147,7 @@ void vrpn_Tracker_Fastrak::reset()
    reset[resetLen++] = (char) (25); // Ctrl + Y -> reset the tracker
    fprintf(stderr, "Resetting the Fastrak (attempt #%d)",numResets);
    for (i = 0; i < resetLen; i++) {
-	if (write(serial_fd, &reset[i], 1) == 1) {
+	if (vrpn_write_characters(serial_fd, (unsigned char*)&reset[i], 1) == 1) {
 		fprintf(stderr,".");
 		sleep(1);  // Wait 2 seconds each character
    	} else {
@@ -179,7 +179,7 @@ void vrpn_Tracker_Fastrak::reset()
    }
 
    // Asking for tracker status
-   if (write(serial_fd, "S", 1) == 1) {
+   if (vrpn_write_characters(serial_fd, "S", 1) == 1) {
       sleep(1); // Sleep for a second to let it respond
    } else {
 	perror("  Fastrak write failed");
@@ -393,7 +393,7 @@ void vrpn_Tracker_Fastrak::mainloop(const struct timeval * timeout)
 
     case TRACKER_FAIL:
 	fprintf(stderr, "Tracker failed, trying to reset (Try power cycle if more than 4 attempts made)\n");
-	close(serial_fd);
+	vrpn_close_commport(serial_fd);
 	serial_fd = vrpn_open_commport(portname, baudrate);
 	status = TRACKER_RESETTING;
 	break;
@@ -508,7 +508,7 @@ vrpn_Tracker_Fastrak::set_unit(int whichUnit, int onOff)
       
 
     /* send enable command for this unit to fastrak	*/
-      write(serial_fd, (const unsigned char *) stationString, 
+      vrpn_write_characters(serial_fd, (const unsigned char *) stationString, 
 	    strlen(stationString));
       ms_sleep(50);
 
@@ -580,7 +580,7 @@ int vrpn_Tracker_Fastrak::get_units(int stationVector[T_F_MAX_NUM_STATIONS])
 	/* this error may be caused by fastrak ignoring poll mode command */
 	poll_mode();
 
-      write(serial_fd, (const unsigned char *) T_F_C_RETRIEVE_STATIONS, 
+      vrpn_write_characters(serial_fd, (const unsigned char *) T_F_C_RETRIEVE_STATIONS, 
     	    	    	    	strlen(T_F_C_RETRIEVE_STATIONS));
       ms_sleep(500);
       vrpn_read_available_characters(serial_fd, (unsigned char *) this_buffer, 
@@ -696,7 +696,7 @@ int vrpn_Tracker_Fastrak::filter()
     my_flush();
 
     /* try to turn off pos'n filtering  */
-    write(serial_fd, (const unsigned char *) T_F_C_SET_POSITION_FILTER, 
+    vrpn_write_characters(serial_fd, (const unsigned char *) T_F_C_SET_POSITION_FILTER, 
 	  strlen(T_F_C_SET_POSITION_FILTER));
 
     /* any output here probably indicates an error message, so just quit */
@@ -715,7 +715,7 @@ int vrpn_Tracker_Fastrak::filter()
     /* otherwise, it took the command; now disable orientation filter   */
     my_flush();
 
-    write(serial_fd, (unsigned char *) T_F_C_SET_ORIENTATION_FILTER, 
+    vrpn_write_characters(serial_fd, (unsigned char *) T_F_C_SET_ORIENTATION_FILTER, 
 				    strlen(T_F_C_SET_ORIENTATION_FILTER));
 
     if((vrpn_read_available_characters(serial_fd, (unsigned char *) buffer, 
@@ -765,7 +765,7 @@ int vrpn_Tracker_Fastrak::get_status()
 
 
     /* send request for status record   */
-    write(serial_fd, (unsigned char *) T_F_C_GET_STATUS, 
+    vrpn_write_characters(serial_fd, (unsigned char *) T_F_C_GET_STATUS, 
     	    	    	    	   strlen(T_F_C_GET_STATUS));
     sleep(1);
     /* do non-blocking read of status record    */
@@ -839,14 +839,14 @@ int vrpn_Tracker_Fastrak::poll_mode()	{
 		fprintf(stderr, "still trying...\n");
 	    }
 
-    	write(serial_fd, (unsigned char *) T_F_C_RETRIEVE_STATIONS, 
+    	vrpn_write_characters(serial_fd, (unsigned char *) T_F_C_RETRIEVE_STATIONS, 
 	    	    	    	strlen(T_F_C_RETRIEVE_STATIONS));
 	vrpn_read_available_characters(serial_fd,
 		(unsigned char *) statusBuffer, T_F_STATIONS_RECORD_LENGTH);
       }
 
       /* try to set in poll mode	*/
-      write(serial_fd, (unsigned char *) T_F_C_POLLING, 
+      vrpn_write_characters(serial_fd, (unsigned char *) T_F_C_POLLING, 
     	    	    	    	       strlen(T_F_C_POLLING));
 
       /* pause 50 ms to allow fastrak buffer to stabilize	*/
@@ -897,11 +897,11 @@ int vrpn_Tracker_Fastrak::bin_ascii(int binAscii)
 {
 
   if ( binAscii == T_F_M_ASCII )
-    write(serial_fd, (unsigned char *) T_F_C_ASCII, 
+    vrpn_write_characters(serial_fd, (unsigned char *) T_F_C_ASCII, 
     	    	    	    	       strlen(T_F_C_ASCII));
 
   else if ( binAscii == T_F_M_BINARY )
-    write(serial_fd, (unsigned char *) T_F_C_BINARY, 
+    vrpn_write_characters(serial_fd, (unsigned char *) T_F_C_BINARY, 
     	    	    	    	       strlen(T_F_C_BINARY));
   
   else
@@ -947,7 +947,7 @@ void vrpn_Tracker_Fastrak::cont_mode()
   my_flush();
 
   /* set Fastrak to continous mode    */
-  write(serial_fd, (unsigned char *) T_F_C_CONTINUOUS, 
+  vrpn_write_characters(serial_fd, (unsigned char *) T_F_C_CONTINUOUS, 
     	    	    	    	   strlen(T_F_C_CONTINUOUS));
   ms_sleep(50);
 
@@ -1343,7 +1343,7 @@ int vrpn_Tracker_Fastrak::set_data_format(int unitNum)
     do 
       {
 
-	write(serial_fd, (unsigned char *) formatString, 
+	vrpn_write_characters(serial_fd, (unsigned char *) formatString, 
     	    	    	    	    	    strlen(T_F_C_XYZ_QUAT));
 	ms_sleep(50);
 
@@ -1402,7 +1402,7 @@ void vrpn_Tracker_Fastrak::set_hemisphere(int whichUnit, int axis,
     sprintf(hemisphereString, T_F_C_SET_HEMISPHERE, 
     	    	   whichUnit+1, hemiAxis[Q_X], hemiAxis[Q_Y], hemiAxis[Q_Z]);
 
-    write(serial_fd, (unsigned char *) hemisphereString, 
+    vrpn_write_characters(serial_fd, (unsigned char *) hemisphereString, 
     	    	    	    	    	    	strlen(hemisphereString));
     ms_sleep(50);
 
@@ -1502,7 +1502,7 @@ int vrpn_Tracker_Fastrak::get_output_list(int unitNum, char * curOutputList)
       //vrpn_flushInputBuffer(serial_fd);
       //fprintf(stderr, "get_output_list: %d \t%s:%d\n",
 	//    numTries, __FILE__, __LINE__);
-      if (write(serial_fd,  retrieveListCmd, 
+      if (vrpn_write_characters(serial_fd,  (unsigned char*)retrieveListCmd, 
 	  strlen(retrieveListCmd))!=3)
 	  printf("bad write\n");
 

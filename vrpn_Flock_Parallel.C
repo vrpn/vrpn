@@ -11,7 +11,7 @@
   Revised: Fri Mar 19 15:05:56 1999 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Flock_Parallel.C,v $
   $Locker:  $
-  $Revision: 1.4 $
+  $Revision: 1.5 $
 \*****************************************************************************/
 
 // The structure of this code came from vrpn_3Space.[Ch]
@@ -180,12 +180,12 @@ void vrpn_Tracker_Flock_Parallel::mainloop(const struct timeval * timeout)
 	    "\nvrpn_Tracker_Flock_Parallel: tracker failed, trying to reset ...");
 
     // reset master serial i/o
-    close(serial_fd);
+    vrpn_close_commport(serial_fd);
     serial_fd = vrpn_open_commport(portname, baudrate);
 
     // reset slave serial i/o
     for (i=0;i<cSensors;i++) {
-      close(rgSlaves[i]->serial_fd);
+      vrpn_close_commport(rgSlaves[i]->serial_fd);
       rgSlaves[i]->serial_fd = vrpn_open_commport(rgSlaves[i]->portname, 
 						  rgSlaves[i]->baudrate);
       rgSlaves[i]->status = TRACKER_RESETTING;
@@ -236,7 +236,7 @@ vrpn_Tracker_Flock_Parallel_Slave::~vrpn_Tracker_Flock_Parallel_Slave() {
   vrpn_flush_output_buffer( serial_fd );
 
   // put the flock to sleep (B to get out of stream mode, G to sleep)
-  if (write(serial_fd, (const char *) rgch, cLen )!=cLen) {
+  if (vrpn_write_characters(serial_fd, (const unsigned char *) rgch, cLen )!=cLen) {
     fprintf(stderr,"\nvrpn_Tracker_Flock_Parallel_Slave %d: "
 	    "failed writing sleep cmd to tracker", sensor);
     status = TRACKER_FAIL;
@@ -250,7 +250,7 @@ vrpn_Tracker_Flock_Parallel_Slave::~vrpn_Tracker_Flock_Parallel_Slave() {
 #define poll() { \
 char chPoint = 'B';\
 fprintf(stderr,"."); \
-if (write(serial_fd, (const char *) &chPoint, 1 )!=1) {\
+if (vrpn_write_characters(serial_fd, (const unsigned char *) &chPoint, 1 )!=1) {\
   fprintf(stderr,"\nvrpn_Tracker_Flock_Parallel_Slave %d: failed writing set mode cmds to tracker", sensor);\
   status = TRACKER_FAIL;\
   return;\
@@ -283,7 +283,7 @@ void vrpn_Tracker_Flock_Parallel_Slave::reset()
   reset[resetLen++]='B';
 
   // send the poll mode command (cmd and cmd_size are args)
-  if (write(serial_fd, (const char *) reset, resetLen )!=resetLen) {
+  if (vrpn_write_characters(serial_fd, (const unsigned char *) reset, resetLen )!=resetLen) {
     fprintf(stderr,"\nvrpn_Tracker_Flock_Parallel_Slave %d: "
 	    "failed writing poll cmd to tracker", sensor);
     status = TRACKER_FAIL;
@@ -308,7 +308,7 @@ void vrpn_Tracker_Flock_Parallel_Slave::reset()
     // stream mode
     reset[resetLen++] = '@';
 
-    if (write(serial_fd, (const char *) reset, resetLen )!=resetLen) {
+    if (vrpn_write_characters(serial_fd, (const unsigned char *) reset, resetLen )!=resetLen) {
       fprintf(stderr,"\nvrpn_Tracker_Flock_Parallel_Slave %d: "
 	      "failed writing set mode cmds to tracker", sensor);
       status = TRACKER_FAIL;
@@ -473,7 +473,7 @@ void vrpn_Tracker_Flock_Parallel_Slave::mainloop(const struct timeval * timeout)
     }
     fprintf(stderr, 
 	    "\nvrpn_Tracker_Flock_Parallel_Slave %d: tracker failed, trying to reset ...", sensor);
-    close(serial_fd);
+    vrpn_close_commport(serial_fd);
     serial_fd = vrpn_open_commport(portname, baudrate);
     status = TRACKER_RESETTING;
 #endif
@@ -485,6 +485,11 @@ void vrpn_Tracker_Flock_Parallel_Slave::mainloop(const struct timeval * timeout)
 
 /*****************************************************************************\
   $Log: vrpn_Flock_Parallel.C,v $
+  Revision 1.5  1999/07/08 20:31:39  jclark
+  Updated serial code to work on NT machines.
+
+  Jason Clark 7/8/99
+
   Revision 1.4  1999/03/19 23:05:43  weberh
   modified the client and server classes so that they work with
   tom's changes to allow blocking vrpn mainloop calls (ie, mainloop

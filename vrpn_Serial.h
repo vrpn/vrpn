@@ -26,6 +26,7 @@
 // -1 on failure.
 extern int vrpn_open_commport(char *portname, long baud);
 
+extern int vrpn_close_commport(int comm);
 // Throw out any characters within the input buffer.
 //  Return 0 on success, -1 on error.
 extern int vrpn_flush_input_buffer( int comm );
@@ -49,5 +50,6 @@ extern int vrpn_read_available_characters(int comm, unsigned char *buffer,
 extern int vrpn_read_available_characters(int comm, unsigned char *buffer,
 		int count, struct timeval *timeout);
 
+extern int vrpn_write_characters(int comm, const unsigned char *buffer, int bytes); 
 #define VRPN_SERIAL_H
 #endif
