@@ -5,11 +5,14 @@
 #include <sys/timeb.h>
 #include <winsock.h>   // timeval is defined here
 
+#ifndef _STRUCT_TIMEVAL
+#define _STRUCT_TIMEVAL
   /* from HP-UX */
 struct timezone {
     int     tz_minuteswest; /* minutes west of Greenwich */
     int     tz_dsttime;     /* type of dst correction */
 };
+#endif
 
 extern int gettimeofday(struct timeval *tp, struct timezone *tzp);
 #define close closesocket
