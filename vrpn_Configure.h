@@ -14,11 +14,12 @@
 
 // Default port to listen on for a server.  It used to be 4500
 // up through version 6.03, but then all sorts of VPNs started
-// using this, as did Microsoft.  Change this to make a location-
-// specific default if you like.  This was was suggested by
-// VRPN user Chris Ozeroff.  The parentheses are to keep it
-// from being expanded into something unexpected.
-#define	vrpn_DEFAULT_LISTEN_PORT_NO (39684)
+// using this, as did Microsoft.  Port 3883 was assigned to VRPN
+// by the Internet Assigned Numbers Authority (IANA) October, 2003.
+// Change this to make a location-specific default if you like.
+// The parentheses are to keep it from being expanded into something
+// unexpected if the code has a dot after it.
+#define	vrpn_DEFAULT_LISTEN_PORT_NO (3883)
 
 //-----------------------
 // Instructs VRPN not to use any iostream library functions, but

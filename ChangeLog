@@ -1,3 +1,9 @@
+2003-11-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Changes the default port number one more time,
+		to the one given to us by the Internet Address Naming
+		Authority.
+
 2003-10-31  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_Connection.h (vrpn_Endpoint):  new methods setConnection and
