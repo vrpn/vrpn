@@ -1,3 +1,7 @@
+2002-06-12  Tatsuhiro Segi  <segi@email.unc.edu>
+
+	* ButtonTest.java:  new.
+
 2002-06-07  David Marshburn  <marshbur@cs.unc.edu>
 
 	* .cvsignore:  new
