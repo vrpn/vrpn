@@ -10,6 +10,7 @@
 #define VRPN_RAW_SGIBOX
 
 #include "vrpn_Analog.h"
+#include "vrpn_Dial.h"
 #include "vrpn_Button.h"
 #ifndef _WIN32 
 #include <netinet/in.h>
@@ -21,7 +22,7 @@
 #define NUM_DIALS   (8)
 #define NUMDEVS (NUM_BUTTONS+NUM_DIALS)
 
-class vrpn_raw_SGIBox :public vrpn_Analog, public vrpn_Button_Filter {
+class vrpn_raw_SGIBox :public vrpn_Analog, public vrpn_Dial, public vrpn_Button_Filter {
 public:
   vrpn_raw_SGIBox(char * name, vrpn_Connection * c, char *serialDevName);
   void mainloop();
@@ -41,7 +42,8 @@ private:
   unsigned long bs1, bs2;         /* status of all buttons */
   short   vals1[NUMDEVS];	// Value array?
   int	dial_changed[NUM_DIALS];
-  int	mid_values[NUM_DIALS];
+  int	mid_values[NUM_DIALS];	  //< Used to perform clamping
+  int	last_values[NUM_DIALS];	  //< Used by dial reporting code
 };
 
 #endif  // VRPN_RAW_SGIBOX

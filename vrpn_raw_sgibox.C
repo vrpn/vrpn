@@ -6,7 +6,7 @@
  * port at 9600 baud, 8 bits, 1 start 1 stop, no parity.  The single-
  * byte command 0x20 resets both of them; they respond with 0x20.
  *    The dial box returns 3-byte values whenever a dial is moved.
- * There are 256 ticks per rotation, and there is an internal counter
+ * There are 200 ticks per rotation, and there is an internal counter
  * that counts up to 16 bits and then rolls over.  The message format
  * that is returned is 3Z XX YY, where Z is the dial number and XXYY
  * is the new positional value for the dial.  The dials are clamped to
@@ -64,7 +64,8 @@ static	int	write_slowly(int fd, unsigned char *buffer, int len)
 
 vrpn_raw_SGIBox::vrpn_raw_SGIBox(char * name, vrpn_Connection * c,
 				 char *serialPortName):
-  vrpn_Analog(name, c), vrpn_Button_Filter(name, c) {
+  vrpn_Analog(name, c), vrpn_Dial(name, c), vrpn_Button_Filter(name, c)
+{
     char message[1024];
     serialfd = -1;
     
@@ -79,6 +80,7 @@ vrpn_raw_SGIBox::vrpn_raw_SGIBox(char * name, vrpn_Connection * c,
     reset();
 
     num_channel = NUM_DIALS;
+    num_dials = NUM_DIALS;
     num_buttons = NUM_BUTTONS;
 
     // We can use either autodeleted handler; choose the one in Analog
@@ -193,7 +195,7 @@ int vrpn_raw_SGIBox::reset() {  /* Button/Dial box setup */
 
   }
   
-  // Reset the button and dial values to zero, since the dial box
+  // Reset the button and, analog, and dial values to zero, since the dial box
   // and button box are now reset.
   
   for (i=0; i<NUM_BUTTONS; i++) {
@@ -202,8 +204,10 @@ int vrpn_raw_SGIBox::reset() {  /* Button/Dial box setup */
   }
 
   for (i=0; i<NUM_DIALS; i++) {
-	mid_values[i] = 0;		// The middle of saturating dial range
+	mid_values[i] = 0;		// The middle of saturating analog range
 	last[i] = channel[i] = 0;	// The analog values are reset to 0
+	dials[i] = 0;			// Reset the dials to zero
+	last_values[i] = 0;		// Reset the values used by dial code to zero
   }
 
   // Set the lights to how they should be
@@ -292,7 +296,7 @@ void vrpn_raw_SGIBox::get_report() {
 	vrpn_Button_Filter::report_changes();
 	
 	
-	// Parse the dial results, which are more than single-byte
+	// Parse the dial turn results, which are more than single-byte
 	// results so will require reading in the rest of the command.
 	// We will block until either we get them or get an error or time
 	// out.  If there is an error or timeout, try resetting.
@@ -302,7 +306,7 @@ void vrpn_raw_SGIBox::get_report() {
 #endif
 		unsigned char dial_value[2];
 		int i = command - 0x30;		// Which dial
-		vrpn_uint16 value;
+		vrpn_int16 value;
 		struct timeval timeout = {0, 10000};	// 10 milliseconds
 
 		// Attempt to read both new values until we run out of time
@@ -317,11 +321,13 @@ void vrpn_raw_SGIBox::get_report() {
 		 command,dial_value[0],dial_value[1]);
 #endif
 
-		// Figure out the value and adjust the corresponding dial value.
-		// The dials are set up to clamp at both the to and bottom end of
+		// Make sure to sign-extend the 16-bit value properly.
+		value = (dial_value[0]<<8) | dial_value[1];
+
+		// Figure out the value and adjust the corresponding analog value.
+		// The analogs are set up to clamp at both the to and bottom end of
 		// the scale, but will back off immediately if you turn it the other
 		// direction.  The range of outputs (channels) is from -0.5 to 0.5.
-		value = dial_value[0] + dial_value[1]*256;
 		int temp = value - mid_values[i];
 		if (temp > VRPN_DIAL_RANGE) {
 			channel[i] = 0.5;
@@ -332,8 +338,14 @@ void vrpn_raw_SGIBox::get_report() {
 		} else {
 			channel[i] = temp/400.0;
 		}
+
+		// Figure out the change for the dial report, and report fraction
+		// turned.
+		dials[i] = (value-last_values[i])/(double)(VRPN_DIAL_RANGE);
+		last_values[i] = value;
 	}
 	vrpn_Analog::report_changes();
+	vrpn_Dial::report_changes();
 	
 	// check for an unrecognized command from the box
 	if (! (

@@ -1,3 +1,11 @@
+2003-04-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_raw_sgibox.C : Fixed bug on analog code that read from the
+		dials, where the 16-bit integer was not read in the correct
+		order and not sign-extended.  Added Dial interface, so that
+		the dial box reports both analog and dial values.
+	* vrpn_raw_sgibox.h : Same.
+
 2003-04-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.dsw : Removed phan_server project.  Added vrpn_phantom.lib
