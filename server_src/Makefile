@@ -28,6 +28,7 @@ all:  vrpn_server sound_server
 vrpn_server: vrpn.o  ../$(HW_OS)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o vrpn_server vrpn.o -lvrpnserver -lsdi -lm
 
+
 client: client.C
 	$(CC) $(CFLAGS) $(LFLAGS) -o client client.C ../$(HW_OS)/libvrpn.a -lsdi -lm
 
