@@ -175,7 +175,7 @@ void main (int argc, char * argv [])
 		gettimeofday(&now, NULL);
 		if (now.tv_sec - last_report.tv_sec > 1) {
 		    if (!getting_analog_values) {
-			cerr << "Error - not getting analog values!" << endl;
+			fprintf(stderr, "Error - not getting analog values!\n");
 		    }
 		    gettimeofday(&last_report, NULL);
 		    getting_analog_values = 0; // Make sure we get more next time

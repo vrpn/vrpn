@@ -1,3 +1,16 @@
+2002-03-20  Aron Helser  <helser@cs.unc.edu>
+
+	* test_analogfly.C (main): Replaced cerr with fprintf.
+	* vrpn_phantom.dsp: Standardized settings, object files live in
+	../pc_win32/server_src . 
+	
+	* client_and_server.dsp: moved here, standardized settings, object
+	files live in ../pc_win32/server_src
+	* daq_server.dsp: same
+	* test_analogfly.dsp: same
+	* vrpn_server.dsp: same
+	* vrpn_server_with_timecode.dsp: same
+
 2002-03-13  Aron Helser  <helser@cs.unc.edu>
 
 	* vrpn_Phantom.h: Avoid ghost includes here, instead declare

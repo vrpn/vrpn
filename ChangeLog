@@ -1,3 +1,15 @@
+2002-03-20  Aron Helser  <helser@cs.unc.edu>
+
+	* time_test.dsp: Moved here so it is next to the code it
+	compiles. Standardized settings, see below.
+	* vrpn.dsp: standardized settings, see below. 
+	* vrpn.dsw: Changed location of many dsp files, and made
+	standardized settings for all Debug and Release
+	builds. VRPN_NO_STREAMS defined by default. All object files and
+	compiler-generated files go in vrpn/pc_win32 directory, in a
+	subdirectory that matches the source directory or executable
+	name. 
+
 2002-03-18  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_Button.C (read): change in Python's read method to allow
