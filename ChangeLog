@@ -1,3 +1,8 @@
+2002-07-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Serial.C (vrpn_drain_output_buffer) : Changed return value to
+		match what it was supposed to be.
+
 2002-07-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_UNC_Joystick.C : Changed memcpy() to normal assignment

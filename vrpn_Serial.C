@@ -355,7 +355,7 @@ int vrpn_flush_output_buffer(int comm)
 }
 
 // empty the output buffer, waiting for all of the chars to be delivered
-// Return 0 on success, tc err codes on failure.
+// Return 0 on success, nonzero on failure.
 // NOT CALLED!  OBSOLETE? -- no ... used by vrpn_Flock
 int vrpn_drain_output_buffer(int comm)
 {
@@ -366,7 +366,7 @@ int vrpn_drain_output_buffer(int comm)
 #else
 
 #if defined(_WIN32)
-   return FlushFileBuffers(commConnections[comm]);
+   return FlushFileBuffers(commConnections[comm]) == 0;
 #else
   return tcdrain(comm);
 #endif
