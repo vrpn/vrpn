@@ -37,6 +37,19 @@ public:
 	void setSurfaceFstatic(float ks) {SurfaceFstatic = ks;}
 	void setSurfaceFdynamic(float kd) {SurfaceFdynamic =kd;}
 	void setRecoveryTime(int rt) {numRecCycles = rt;}
+	void setFF_Origin(float x, float y, float z) {
+		ff_origin[0] = x;ff_origin[1] = y; ff_origin[2] = z;}
+	void setFF_Force(float fx, float fy, float fz) {
+		ff_force[0] = fx; ff_force[1] = fy; ff_force[2] = fz;}
+	void setFF_Jacobian(float dfxdx, float dfxdy, float dfxdz,
+				float dfydx, float dfydy, float dfydz,
+				float dfzdx, float dfzdy, float dfzdz){
+		ff_jacobian[0][0] = dfxdx; ff_jacobian[0][1] = dfxdy;
+		ff_jacobian[0][2] = dfxdz; ff_jacobian[1][0] = dfydx;
+		ff_jacobian[1][1] = dfydy; ff_jacobian[1][2] = dfydz;
+		ff_jacobian[2][0] = dfzdx; ff_jacobian[2][1] = dfzdy;
+		ff_jacobian[2][2] = dfzdz;}
+	void setFF_Radius(float r) { ff_radius = r;};
 	int getRecoveryTime(void) {return numRecCycles;}
 	int connectionAvailable(void) {return (connection != NULL);}
 
@@ -52,10 +65,11 @@ protected:
 	long my_id;		// ID of this force device to connection
 	long force_message_id;	// ID of force message to connection
 	long plane_message_id;  //ID of plane equation message
+	long forcefield_message_id; 	// ID of force field message
 	long scp_message_id;	// ID of surface contact point message
 
 	// XXX - error messages should be put into the vrpn base class 
-	// whenever someone makes one
+	// whenever someone makes one
 	long error_message_id;	// ID of force device error message
 
         // IDs for trimesh messages
@@ -72,6 +86,11 @@ protected:
 	double scp_pos[3];
 	double scp_quat[4];  // I think this would only be used on 6DOF device
 	float plane[4];
+
+	float ff_origin[3];
+	float ff_force[3];
+	float ff_jacobian[3][3]; // J[i][j] = dF[i]/dx[j]
+	float ff_radius;
 
 	float SurfaceKspring;
 	float SurfaceKdamping;
@@ -135,6 +154,11 @@ public:
 
 	void sendConstraint(int enable, float x, float y, float z, float kSpr);
 
+	void sendForceField(float origin[3], float force[3],
+		float jacobian[3][3], float radius);
+	void sendForceField(void);
+	void stopForceField();
+
 	char *encode_plane(int &len);
 	char *encode_startTrimesh(int &len,int numVerts,int numTris);
         char *encode_vertex(int &len,int vertNum,float x,float y,float z); 
@@ -145,7 +169,8 @@ public:
         char *encode_trimeshTransform(int &len,float homMatrix[16]);
 	char *encode_constraint(int &len, int enable, float x, float y, float z,
 				float kSpr);
-
+	char *encode_forcefield(int &len, float origin[3],
+		float force[3], float jacobian[3][3], float radius);
 	// This routine calls the mainloop of the connection it's own
 	virtual void mainloop(void);
 

@@ -31,6 +31,9 @@ vrpn_ForceDevice::vrpn_ForceDevice(char *name, vrpn_Connection *c)
 	if(connection) {
 		my_id = connection->register_sender(servicename);
 		force_message_id = connection->register_message_type("Force");
+		forcefield_message_id = 
+			connection->register_message_type("Force Field");
+
 		plane_message_id = connection->register_message_type("Plane");
 		startTrimesh_message_id = 
 		  connection->register_message_type("startTrimesh");
@@ -341,6 +344,34 @@ char *vrpn_ForceDevice_Remote::encode_constraint(int &len, int enable,
   return buf;
 }
 
+char *vrpn_ForceDevice_Remote::encode_forcefield(int &len, float origin[3],
+	float force[3], float jacobian[3][3], float radius)
+{
+  len = 16*sizeof(unsigned long);
+  char *buf = new char[len];
+
+  int i,j;
+  unsigned long *longbuf = (unsigned long*)(void*)(buf);
+  int index = 0;
+
+  for (i=0;i<3;i++){
+    longbuf[index] = *(unsigned long *)(void*)(&(origin[i]));
+    index++;
+  }
+  for (i=0;i<3;i++){
+    longbuf[index] = *(unsigned long *)(void*)(&(force[i]));
+    index++;
+  }
+  for (i=0;i<3;i++)
+     for (j=0;j<3;j++){
+	longbuf[index] = *(unsigned long *)(void*)(&(jacobian[i][j]));
+	index++;
+     }
+  longbuf[index] = *(unsigned long *)(void*)(&radius);
+
+  return buf;
+}
+
 void vrpn_ForceDevice_Remote::set_plane(float *p)
 { 
 	for(int i=0;i<4;i++ ) {
@@ -576,6 +607,60 @@ void vrpn_ForceDevice_Remote::sendConstraint(int enable,
     msgbuf = encode_constraint(len, enable, x, y, z, kSpr);
     if (connection->pack_message(len,timestamp,set_constraint_message_id,
 				my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+	fprintf(stderr,"Phantom: cannot write message: tossing\n");
+    }
+    connection->mainloop();
+    delete msgbuf;
+  }
+}
+
+void vrpn_ForceDevice_Remote::sendForceField()
+{
+    sendForceField(ff_origin, ff_force, ff_jacobian, ff_radius);
+}
+
+void vrpn_ForceDevice_Remote::sendForceField(float origin[3],
+	float force[3], float jacobian[3][3], float radius)
+{
+  char *msgbuf;
+  int   len;
+  struct timeval current_time;
+
+  gettimeofday(&current_time, NULL);
+  timestamp.tv_sec = current_time.tv_sec;
+  timestamp.tv_usec = current_time.tv_usec;
+
+  if(connection){
+    msgbuf = encode_forcefield(len, origin, force, jacobian, radius);
+    if (connection->pack_message(len,timestamp, forcefield_message_id,
+		my_id, msgbuf, vrpn_CONNECTION_LOW_LATENCY)) {
+	fprintf(stderr,"Phantom: cannot write message: tossing\n");
+    }
+    connection->mainloop();
+    delete msgbuf;
+  }
+}
+
+// same as sendForceField but sets force to 0 and sends RELIABLY
+void vrpn_ForceDevice_Remote::stopForceField()
+{
+  float origin[3] = {0,0,0};
+  float force[3] = {0,0,0};
+  float jacobian[3][3] = {{0,0,0},{0,0,0},{0,0,0}};
+  float radius = 0;
+
+  char *msgbuf;
+  int   len;
+  struct timeval current_time;
+
+  gettimeofday(&current_time, NULL);
+  timestamp.tv_sec = current_time.tv_sec;
+  timestamp.tv_usec = current_time.tv_usec;
+
+  if(connection){
+    msgbuf = encode_forcefield(len, origin, force, jacobian, radius);
+    if (connection->pack_message(len,timestamp, forcefield_message_id,
+                my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
 	fprintf(stderr,"Phantom: cannot write message: tossing\n");
     }
     connection->mainloop();
