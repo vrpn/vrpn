@@ -430,3 +430,26 @@
 #                                  (2 = continuously)
 
 # vrpn_5dt	glove_5dt	/dev/ttyS0	19200	1
+
+################################################################################
+# NRL Serial Mouse. A device made by wiring buttons in parallel with the buttons 
+# on a serial mouse.  Both mousesystems or microsoft mouse protocols are 
+# supported.  Note that the server code makes the connection at the standard
+# 1200 baud.  The mouse can be plugged into any serial port -- this driver goes
+# directly through the raw port and does not use the built-in mouse drivers.
+
+vrpn_Button_SerialMouse	Button0 /dev/ttyd1 mousesystems
+#vrpn_Button_SerialMouse	Button0 /dev/ttyd1 3button  
+
+################################################################################
+# NRL TNG3.  (Totally Neat Gadget) A device made by mindtel, available from
+# pulsar.org.  Powered off the serial port control lines, the TNG3 has 8 digital 
+# and 8 analog inputs.  Analog resolution is 8 bits. Baud rate fixed internally
+# at 19200.  
+#       char    name_of_this_device[]
+#       char    name_of_serial_device[]
+#       int     number_of_buttons_to_read (i.e. 8 ==> 0,1,2,3,4,5,6,7)
+#       int     number_of_analogs_to_read
+
+#vrpn_Tng3      tng3name    /dev/ttyd2  4 0 
+#vrpn_Tng3      tng3name    com1        8 8

@@ -37,6 +37,7 @@
 #include "vrpn_Analog_Radamec_SPI.h"
 #include "vrpn_Wanda.h"
 #include "vrpn_Analog_5dt.h"
+#include "vrpn_Tng3.h"
 
 #include "vrpn_ForwarderController.h"
 #include <vrpn_RedundantTransmission.h>
@@ -55,6 +56,7 @@
 #define MAX_IBOXES 8
 #define MAX_DIALS 8
 #define MAX_TIMECODE_GENERATORS 8
+#define MAX_TNG3S 8
 
 static	int	done = 0;	// Done and should exit?
 
@@ -113,6 +115,8 @@ int		num_dials = 0;
 vrpn_Timecode_Generator * timecode_generators[MAX_TIMECODE_GENERATORS];
 int		num_generators = 0;
 #endif
+vrpn_Tng3  *tng3s[MAX_TNG3S];
+int             num_tng3s = 0;
 
 vrpn_Connection * connection;
 
@@ -139,6 +143,7 @@ void closeDevices (void) {
     fprintf(stderr, "\nClosing tracker %d ...", i);
     delete trackers[i];
   }
+  //XXX Get the other types of devices too...
   fprintf(stderr, "\nAll devices closed...\n");
 }
 
@@ -1168,6 +1173,47 @@ int setup_Button_Python (char * & pch, char * line, FILE * config_file) {
 }
 
 //================================
+int setup_Button_SerialMouse (char * & pch, char * line, FILE * config_file) {
+
+    char s2 [512];
+    char s3 [512];
+    char s4 [32];
+    vrpn_MOUSETYPE mType = MAX_MOUSE_TYPES;
+    
+    next();
+    // Get the arguments (class, button_name, portname, type)
+    if (sscanf(pch,"%511s%511s%31s",s2,s3,s4) != 3) {
+		fprintf(stderr,"Bad vrpn_Button_SerialMouse line: %s\n",line);
+		return -1;
+    }
+    
+    // Make sure there's room for a new button
+    if (num_buttons >= MAX_BUTTONS) {
+		fprintf(stderr,"Too many buttons in config file");
+		return -1;
+    }
+    
+    if (strcmp(s4, "mousesystems") == 0) mType = MOUSESYSTEMS;
+    else if (strcmp(s4, "3button") == 0) mType = THREEBUTTON_EMULATION;
+    
+    if (mType == MAX_MOUSE_TYPES) {
+		fprintf(stderr,"bad vrpn_SerialMouse_Button type\n");
+		return -1;
+    }
+
+    // Open the button
+    if (verbose) printf("Opening vrpn_SerialMouse_Button: %s on port %s\n", s2,s3);
+    if ( (buttons[num_buttons] =
+		new vrpn_Button_SerialMouse(s2, connection, s3, 1200, mType)) == NULL){
+		fprintf(stderr,"Can't create new vrpn_Button_SerialMouse\n");
+		return -1;
+    } else {
+		num_buttons++;
+    }
+    return 0;
+}
+
+//================================
 int setup_Button_PinchGlove(char* &pch, char *line, FILE *config_file) {
 
    char name[LINESIZE], port[LINESIZE];
@@ -1229,6 +1275,38 @@ int setup_Joylin (char * & pch, char * line, FILE * config_file) {
     num_analogs++;
   }
   return 0;
+}
+
+//================================
+int setup_Tng3 (char * & pch, char * line, FILE * config_file) {
+    char s2 [LINESIZE], s3 [LINESIZE];
+    int i1, i2;
+    vrpn_Tng3 * tng3;
+    next();
+    // Get the arguments (class, tng3_name, port, numdig, numana)
+    if (sscanf(pch,"%511s%511s%d%d",s2,s3, &i1, &i2) != 4) {
+        fprintf(stderr,"Bad vrpn_Tng3 line: %s\n",line);
+        return -1;
+    }
+
+    // Make sure there's room for a new box
+    if (num_tng3s >= MAX_TNG3S) {
+        fprintf(stderr,"Too many Tng3 boxes in config file");
+        return -1;
+    }
+
+    // Open the box
+    if (verbose)
+        printf("Opening vrpn_Tng3: %s on port %s, baud %d, %d digital, "
+               " %d analog\n",s2,s3,19200,i1,i2);
+
+    tng3 = new vrpn_Tng3(s2, connection, s3, 19200, i1, i2);
+    if (NULL == tng3) {
+        fprintf(stderr,"Can't create new vrpn_Tng3\n");
+        return -1;
+    }
+    tng3s[num_tng3s++] = tng3;
+    return 0;
 }
 
 
@@ -1400,7 +1478,7 @@ main (int argc, char * argv[])
             CHECK(setup_Radamec_SPI);
 	  } else if (isit("vrpn_5dt")) {
             CHECK(setup_5dt);
-      } else if (isit("vrpn_ImmersionBox")) {
+	  } else if (isit("vrpn_ImmersionBox")) {
             CHECK(setup_ImmersionBox);
 	  } else if (isit("vrpn_Tracker_Dyna")) {
             CHECK(setup_Tracker_Dyna);
@@ -1418,8 +1496,12 @@ main (int argc, char * argv[])
             CHECK(setup_Button_Python);
 	  } else if (isit("vrpn_Button_PinchGlove")) {
             CHECK(setup_Button_PinchGlove);
+	  } else if (isit("vrpn_Button_SerialMouse")) {
+            CHECK(setup_Button_SerialMouse);
 	  } else  if (isit("vrpn_Wanda")) {
             CHECK(setup_Wanda);
+	  } else if (isit("vrpn_Tng3")) {
+            CHECK(setup_Tng3);
 	  } else  if (isit("vrpn_TimeCode_Generator")) {
 		  CHECK(setup_Timecode_Generator);
 	  } else {	// Never heard of it
@@ -1500,10 +1582,10 @@ main (int argc, char * argv[])
 			magellans[i]->mainloop();
 		}
 
-                // Let all the Immersion boxes do their thing
-                for (i=0; i< num_iboxes; i++) {
-                        iboxes[i]->mainloop();
-                }
+        // Let all the Immersion boxes do their thing
+        for (i=0; i< num_iboxes; i++) {
+                iboxes[i]->mainloop();
+        }
 
 		// Let all of the SGI button/knob boxes do their thing
 		for (i=0; i < num_sgiboxes; i++) {
@@ -1518,6 +1600,11 @@ main (int argc, char * argv[])
 			timecode_generators[i]->mainloop();
 		}
 #endif
+
+		// Let all the TNG3 do their thing
+        for (i=0; i< num_tng3s; i++) {
+			tng3s[i]->mainloop();
+        }
 
         redundantController->mainloop();
         redundancy->mainloop();
