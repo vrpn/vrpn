@@ -1,23 +1,31 @@
 For those not at UNC, you compile by doing the following:
-	go to ../quat.
-	make -f Makefile.remote.[your_architecture]
 
-	come back here (cd ../vrpn)
-	edit the Makefile.remote file to set your architecture
-	gmake -f Makefile.remote
+   for Visual C++:
+	Open the vrpn.dsw file.
+	Compile the quat project.
+	Compile the VPRN project.
+	Then compile whichever of vrpn_server, printvals, etc you want.
 
-	cd server_src
-	edit the Makefile.remote to set your architecture
-	gmake -f Makefile.remote
+   for Unix/Cygwin:
+	Go to ../quat.
+		For Unix: make -f Makefile.remote.[yourarch]
+		For Cygwin: make -f makefile
+	Come back here (cd ../vrpn)
+		Edit Makefile to uncomment your architecture
+		gmake
+	Go to client_src
+		Edit Makefile to uncomment your architecture
+		gmake
+	Go to server_src
+		Edit Makefile to uncomment your architecture
+		gmake
+
 	edit the vrpn.cfg file to set it to start tracker you want
-		Make sure the host name matches the host to run on
-		Sorry, but you need to look in vrpn.C to find the format
+		See the file vrpn.cfg.SAMPLE for exampls.
 		Example:  vrpn_Tracker_NULL Tracker0@MYHOSTNAME 2 2
-	(Run the server: vrpn_server -f vrpn.cfg)
+	(Run the server: sgi_irix/vrpn_server -millisleep 1 -f vrpn.cfg)
 
-	cd ../client_src
-	edit the Makefile.remote to set your architecture
-	edit printvals.c to point to the right tracker on the right host
-	gmake -f Makefile.remote
-	(Run the test program: printvals)
+	Go to client_src
+		Run printvals to check the server
+		Example: sgi_irix/printvals localhost
 
