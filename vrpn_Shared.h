@@ -119,6 +119,7 @@ struct timezone {
 #endif
 
 extern int gettimeofday(struct timeval *tp, struct timezone *tzp);
+
 #endif // __CYGWIN__
 
 // This has been moved to connection.C so that users of this
@@ -126,6 +127,7 @@ extern int gettimeofday(struct timeval *tp, struct timezone *tzp);
 // #define close closesocket
 
 #else
+#include <sys/time.h>
 #endif  // not _WIN32
 
 extern struct timeval vrpn_TimevalSum( const struct timeval& tv1, 
