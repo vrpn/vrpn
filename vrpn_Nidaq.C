@@ -1,15 +1,15 @@
 /*****************************************************************************\
-  $FILE$
+  vrpn_Nidaq.C
   --
   Description :
 
   ----------------------------------------------------------------------------
-  $AUTHOR$
-  $DATE$
-  $REVISED$
+  Author: weberh
+  Created: Fri Jan 29 10:00:00 1999
+  Revised: Fri Jan 29 14:46:41 1999 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Nidaq.C,v $
   $Locker:  $
-  $Revision: 1.1 $
+  $Revision: 1.2 $
 \*****************************************************************************/
 
 #include "vrpn_Nidaq.h"
@@ -151,4 +151,10 @@ void vrpn_Nidaq::report_changes() {
 
 #endif  // def(WIN32) || def(_WIN32)
 
+/*****************************************************************************\
+  $Log: vrpn_Nidaq.C,v $
+  Revision 1.2  1999/01/29 19:47:33  weberh
+  *** empty log message ***
+
+\*****************************************************************************/
 
