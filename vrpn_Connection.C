@@ -4209,17 +4209,20 @@ int vrpn_Endpoint::handle_type_message(void *userdata,
   // If not, add this type locally
   if( local_id == -1 )
   {
-    if( endpoint->d_parent != NULL ) {
+    if( endpoint->d_parent != NULL ) 
+	{
 	  local_id = endpoint->d_parent->register_message_type( type_name );
     }
 #ifdef VERBOSE
-    else {
-	  printf( "vrpn_Endpoint::handle_type_message:  NULL d_parent"
+    else 
+	{
+	  printf( "vrpn_Endpoint::handle_type_message:  NULL d_parent "
 	  "when trying to auto-register remote message type %s.\n", type_name );
     }
 #endif
   }
-  if (endpoint->newRemoteType(type_name, p.sender, local_id) == -1) {
+  if (endpoint->newRemoteType(type_name, p.sender, local_id) == -1) 
+  {
     fprintf(stderr, "vrpn: Failed to add remote type %s\n", type_name);
     return -1;
   }
@@ -4243,6 +4246,7 @@ int vrpn_Endpoint::openLogs (void) {
 
   return 0;
 }
+
 
 // static
 int vrpn_Endpoint::handle_sender_message(void *userdata,
@@ -4271,15 +4275,31 @@ int vrpn_Endpoint::handle_sender_message(void *userdata,
   printf("Registering other-side sender: '%s'\n", sender_name);
 #endif
   // If there is a corresponding local sender defined, find the mapping.
-  // If not, clear the mapping.
   local_id = endpoint->d_dispatcher->getSenderID(sender_name);
-  if (endpoint->newRemoteSender(sender_name, p.sender, local_id) == -1) {
+  // If not, add this sender locally
+  if( local_id == -1 )
+  {
+	  if( endpoint->d_parent != NULL )
+	  {
+		  local_id = endpoint->d_parent->register_sender( sender_name );
+	  }
+#ifdef VERBOSE
+	  else
+	  {
+		  printf( "vrpn_Endpoint::handle_sender_message:  NULL d_parent "
+			  "when trying to auto-register remote message sender %s\n", sender_name );
+	  }
+#endif
+  }
+  if (endpoint->newRemoteSender(sender_name, p.sender, local_id) == -1) 
+  {
     fprintf(stderr, "vrpn: Failed to add remote sender %s\n", sender_name);
     return -1;
   }
 
   return 0;
 }
+
 
 int vrpn_Endpoint::pack_type_description (vrpn_int32 which) {
    struct timeval now;

@@ -1,3 +1,8 @@
+2004-02-04  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Connection.C (handle_sender_message):  auto-registers
+	unknown senders.
+
 2004-1-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Tracker.C : Added initialization of the watchdog timer
