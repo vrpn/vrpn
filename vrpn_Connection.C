@@ -2058,15 +2058,17 @@ static SOCKET open_socket (int type,
     memcpy((void *) &name.sin_addr, (const void *) phe->h_addr, phe->h_length);
   } else if ((name.sin_addr.s_addr = inet_addr(IPaddress))
               == INADDR_NONE) {
-    printf("can't get %s host entry\n", IPaddress);
+    fprintf(stderr, "open_socket:  can't get %s host entry\n", IPaddress);
     return -1;
   }
 
-//fprintf(stderr, "open_socket:  port %d, using NIC %d %d %d %d.\n",
-//*portno, name.sin_addr.s_addr >> 24,
-//(name.sin_addr.s_addr >> 16) & 0xff,
-//(name.sin_addr.s_addr >> 8) & 0xff,
-//name.sin_addr.s_addr & 0xff);
+#ifdef VERBOSE3
+fprintf(stderr, "open_socket:  request port %d, using NIC %d %d %d %d.\n",
+portno ? *portno : 0 , name.sin_addr.s_addr >> 24,
+(name.sin_addr.s_addr >> 16) & 0xff,
+(name.sin_addr.s_addr >> 8) & 0xff,
+name.sin_addr.s_addr & 0xff);
+#endif
 
   if (bind(sock, (struct sockaddr *) &name, namelen) < 0){
     fprintf(stderr, "open_socket:  can't bind address");
@@ -2082,6 +2084,14 @@ static SOCKET open_socket (int type,
   if (portno) {
     *portno = ntohs(name.sin_port);
   }
+
+#ifdef VERBOSE3
+fprintf(stderr, "open_socket:  got port %d, using NIC %d %d %d %d.\n",
+portno ? *portno : ntohs(name.sin_port), name.sin_addr.s_addr >> 24,
+(name.sin_addr.s_addr >> 16) & 0xff,
+(name.sin_addr.s_addr >> 8) & 0xff,
+name.sin_addr.s_addr & 0xff);
+#endif
 
   return sock;
 }
@@ -3162,8 +3172,12 @@ int vrpn_Endpoint::pack_udp_description (int portno) {
   vrpn_uint32 portparam = portno;
   char myIPchar [1000];
 
+#ifdef VERBOSE2
+  fprintf(stderr, "Getting IP address of NIC %s.\n", d_NICaddress);
+#endif
+
   // Find the local host name
-  if (vrpn_getmyIP(myIPchar, sizeof(myIPchar))) {
+  if (vrpn_getmyIP(myIPchar, sizeof(myIPchar)), NULL, d_NICaddress) {
     perror("vrpn_Endpoint::pack_udp_description: can't get host name");
     return -1;
   }
@@ -3649,6 +3663,12 @@ void vrpn_Endpoint::setNICaddress (const char * address) {
   if (d_NICaddress) {
     delete [] d_NICaddress;
   }
+
+#ifdef VERBOSE
+  fprintf(stderr, "Setting endpoint NIC address to %s.\n", address);
+#endif
+
+  d_NICaddress = NULL;
   if (!address) {
     return;
   }
