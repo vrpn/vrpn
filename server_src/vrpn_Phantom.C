@@ -10,7 +10,7 @@
 #include "vrpn_Phantom.h"
 
 #include "ghost.h"
-#include "plane.h"
+#include "texture_plane.h"
 #include "trimesh.h"
 #include "constraint.h"
 #include "forcefield.h"
@@ -37,30 +37,27 @@ void vrpn_Phantom::handle_plane(void *userdata,const vrpn_Plane_PHANTOMCB &p)
 */
     vrpn_Phantom *me = (vrpn_Phantom *) userdata;
  
-    Plane **plane_node = me->planes;
     gstPHANToM *phan = me->phantom;
-    int which_plane = me->which_plane;
-	
-    which_plane = p.which_plane;
- 
+    int which_plane = p.which_plane;
+    DynamicPlane *plane = (me->planes)[which_plane];
+
     // If the plane's normal is (0,0,0), it is a stop surface command
 	// turn off the surface.
     if(p.plane[0]== 0 && p.plane[1] ==0  && p.plane[2] == 0 ) {
-	plane_node[which_plane]->setInEffect(FALSE);
+		plane->setActive(FALSE);
     }
     else {
-	vrpn_Plane_PHANTOMCB p2 = p;
-	check_parameters(&p2);
-	plane_node[which_plane]->update(p2.plane[0],p2.plane[1],
+		vrpn_Plane_PHANTOMCB p2 = p;
+		check_parameters(&p2);
+		plane->update(p2.plane[0],p2.plane[1],
 			p2.plane[2],p2.plane[3]*1000.0);//convert m to mm
-	plane_node[which_plane]->setSurfaceKspring(p2.SurfaceKspring);
-	plane_node[which_plane]->setSurfaceFstatic(p2.SurfaceFstatic);
-	plane_node[which_plane]->setSurfaceFdynamic(p2.SurfaceFdynamic); 
-	plane_node[which_plane]->setSurfaceKdamping(p2.SurfaceKdamping);
-	plane_node[which_plane]->setNumRecCycles((int)p2.numRecCycles);
-	plane_node[which_plane]->setInEffect(TRUE); 
-
-    }
+		plane->setSurfaceKspring(p2.SurfaceKspring);
+		plane->setSurfaceFstatic(p2.SurfaceFstatic);
+		plane->setSurfaceFdynamic(p2.SurfaceFdynamic); 
+		plane->setSurfaceKdamping(p2.SurfaceKdamping);
+		//plane->setNumRecCycles((int)p2.numRecCycles);
+		plane->setActive(TRUE);
+	}
 }
 
 // This function reports errors if surface friction, compliance parameters
@@ -69,55 +66,64 @@ void vrpn_Phantom::handle_plane(void *userdata,const vrpn_Plane_PHANTOMCB &p)
 
 void vrpn_Phantom::check_parameters(vrpn_Plane_PHANTOMCB *p)
 {
-	// only prints out errors every 100 times an error occurs so that
-	// we don't take too much time from servo loop - windows doesn't
-	// enforce process priorities well enough
-	static int errorcnt = 0;
-	int erroroccurred = 0;
+	// only prints out errors every 5 seconds so that
+	// we don't take too much time from servo loop
+	static int recentError = false;
+	static timeval timeOfLastReport;
+	timeval currTime;
 
-        if (p->SurfaceKspring <= 0){
-		if (errorcnt % 100 == 0)
-                  printf("Error: Kspring = %f <= 0\n", p->SurfaceKspring);
-                p->SurfaceKspring = 0.001f;
-		erroroccurred = 1;
-        }
-        else if (p->SurfaceKspring > 1.0){
-		if (errorcnt % 100 == 0)
-                  printf("Error: Kspring = %f > 1.0\n", p->SurfaceKspring);
-                p->SurfaceKspring = 1.0;
-		erroroccurred = 1;
-        }
-        if (p->SurfaceFstatic < 0){
-		if (errorcnt % 100 == 0)
-                  printf("Error: Fstatic = %f < 0\n", p->SurfaceFstatic);
-                p->SurfaceFstatic = 0.0;
-		erroroccurred = 1;
-        }
-        else if (p->SurfaceFstatic > 1.0){
-		if (errorcnt % 100 == 0)
-                  printf("Error: Fstatic = %f > 1.0\n", p->SurfaceFstatic);
-                p->SurfaceFstatic = 1.0;
-		erroroccurred = 1;
-        }
-        if (p->SurfaceFdynamic > p->SurfaceFstatic){
-		if (errorcnt % 100 == 0)
-                  printf("Error: Fdynamic > Fstatic\n");
-                p->SurfaceFdynamic = 0.0;
-		erroroccurred = 1;
-        }
-        if (p->SurfaceKdamping < 0){
-		if (errorcnt % 100 == 0)
-                  printf("Error: Kdamping = %f < 0\n", p->SurfaceKdamping);
-                p->SurfaceKdamping = 0;
-		erroroccurred = 1;
-        }
-        else if (p->SurfaceKdamping > 0.005){
-		if (errorcnt % 100 == 0)
-                  printf("Error: Kdamping = %f > 0.005\n", p->SurfaceKdamping);
-                p->SurfaceKdamping = 0.005f;
-		erroroccurred = 1;
-        }
-	if (erroroccurred) errorcnt++;
+	gettimeofday(&currTime, NULL);
+
+	// if this is the first time check_parameters has been called then initialize
+	// timeOfLastReport, otherwise this has no effect on behavior
+	if (recentError == false)
+		timeOfLastReport.tv_sec = currTime.tv_sec - 6;
+	// if recentError is true then change it to false if enough time has elapsed
+	else if (currTime.tv_sec - timeOfLastReport.tv_sec > 5)
+		recentError = false;
+
+    if (p->SurfaceKspring <= 0){
+		if (!recentError)
+			fprintf(stderr,"Error: Kspring = %f <= 0\n", p->SurfaceKspring);
+		p->SurfaceKspring = 0.001f;
+		recentError = true;
+    }
+    else if (p->SurfaceKspring > 1.0){
+		if (!recentError)
+			printf("Error: Kspring = %f > 1.0\n", p->SurfaceKspring);
+		p->SurfaceKspring = 1.0;
+		recentError = true;
+    }
+    if (p->SurfaceFstatic < 0){
+		if (!recentError)
+			printf("Error: Fstatic = %f < 0\n", p->SurfaceFstatic);
+        p->SurfaceFstatic = 0.0;
+		recentError = true;
+    }
+    else if (p->SurfaceFstatic > 1.0){
+		if (!recentError)
+			printf("Error: Fstatic = %f > 1.0\n", p->SurfaceFstatic);
+		p->SurfaceFstatic = 1.0;
+		recentError = true;
+    }
+    if (p->SurfaceFdynamic > p->SurfaceFstatic){
+		if (!recentError)
+			printf("Error: Fdynamic > Fstatic\n");
+		p->SurfaceFdynamic = 0.0;
+		recentError = true;
+    }
+    if (p->SurfaceKdamping < 0){
+		if (!recentError)
+			printf("Error: Kdamping = %f < 0\n", p->SurfaceKdamping);
+		p->SurfaceKdamping = 0;
+		recentError = true;
+    }
+    else if (p->SurfaceKdamping > 0.005){
+		if (!recentError)
+			printf("Error: Kdamping = %f > 0.005\n", p->SurfaceKdamping);
+		p->SurfaceKdamping = 0.005f;
+		recentError = true;
+    }
 }
 
 // This function reinitializes the PHANToM (resets the origin)
@@ -126,7 +132,7 @@ void vrpn_Phantom::resetPHANToM(void)
 	scene->stopServoLoop();
 	rootH->removeChild(phantom);
 	delete(phantom);
-	phantom = new gstPHANToM("Default PHANToM");
+	phantom = new gstPHANToM("Default PHANToM", TRUE);
 	rootH->addChild(phantom);
 	Sleep(500);
 	scene->startServoLoop();
@@ -186,20 +192,31 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
   SurfaceKspring= 0.29f;
   SurfaceFdynamic = 0.02f;
   SurfaceFstatic = 0.03f;
-  SurfaceKdamping = 0.0;
+  SurfaceKdamping = 0.0f;
+
+  SurfaceKadhesionNormal = 0.0f;
+  SurfaceKadhesionLateral = 0.0f;
+  SurfaceBuzzFreq = 60.0f;
+  SurfaceBuzzAmp = 0.0f;
+  SurfaceTextureWavelength = 0.01f;
+  SurfaceTextureAmplitude = 0.0f;
 
   for(int i=0; i<MAXPLANE; i++ ) {
-       planes[i] = new Plane(0,0,1,0);	   
-	   planes[i]->setDefaultSurfaceKspring(SurfaceKspring);
-       planes[i]->setDefaultSurfaceFdynamic(SurfaceFdynamic);
-       planes[i]->setDefaultSurfaceFstatic(SurfaceFstatic);
-	   planes[i]->setDefaultSurfaceKdamping(SurfaceKdamping);
-       hapticScene->addChild(planes[i]);
+    planes[i] = new DynamicPlane();
+    planes[i]->setSurfaceKspring(SurfaceKspring);
+    planes[i]->setSurfaceFdynamic(SurfaceFdynamic);
+    planes[i]->setSurfaceFstatic(SurfaceFstatic);
+    planes[i]->setSurfaceKdamping(SurfaceKdamping);
+	planes[i]->setBuzzAmplitude(1000.0*SurfaceBuzzAmp);
+	planes[i]->setBuzzFrequency(SurfaceBuzzFreq);
+	planes[i]->setTextureAmplitude(1000.0*SurfaceTextureAmplitude);
+	planes[i]->setTextureWavelength(1000.0*SurfaceTextureWavelength);
+    hapticScene->addChild(planes[i]);
   }
+
+
   which_plane = 0;
  
-  cur_plane = planes[which_plane];
-
   trimesh = new Trimesh();
 
   trimesh->addToScene(hapticScene);
@@ -209,6 +226,11 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
 
   if (vrpn_ForceDevice::connection->register_handler(plane_message_id, 
 	handle_plane_change_message, this, vrpn_ForceDevice::my_id)) {
+		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
+		vrpn_ForceDevice::connection = NULL;
+  }
+  if (vrpn_ForceDevice::connection->register_handler(plane_effects_message_id,
+	handle_effects_change_message, this, vrpn_ForceDevice::my_id)) {
 		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
 		vrpn_ForceDevice::connection = NULL;
   }
@@ -410,7 +432,7 @@ void vrpn_Phantom::mainloop(void) {
 	struct timeval current_time;
 	char	msgbuf[1000];
 	char    *buf;
-	int		len;
+	vrpn_int32	len;
 
     //check button status
     if(phantom->getStylusSwitch() ) {
@@ -496,8 +518,12 @@ void vrpn_Phantom::reset(){
 	if(trimesh->displayStatus())
 		trimesh->clear();
 	for (int i = 0; i < MAXPLANE; i++)
-	   if (planes[i]) planes[i]->setInEffect(FALSE);
+	   if (planes[i]) planes[i]->setActive(FALSE);
 	phantom->stopEffect();
+	if (errorCode != FD_OK) {
+		errorCode = FD_OK;
+		resetPHANToM();
+	}
 }
 
 int vrpn_Phantom::register_change_handler(void *userdata,
@@ -590,6 +616,31 @@ int vrpn_Phantom::handle_plane_change_message(void *userdata,
 		handler->handler(handler->userdata, tp);
 		handler = handler->next;
 	}
+
+	return 0;
+}
+
+int vrpn_Phantom::handle_effects_change_message(void *userdata,
+												vrpn_HANDLERPARAM p){
+
+    vrpn_Phantom *me = (vrpn_Phantom *) userdata;
+ 
+    DynamicPlane *plane = (me->planes)[0];
+
+	float k_adhesion_norm, k_adhesion_lat, tex_amp, tex_wl,
+		buzz_amp, buzz_freq;
+
+	if (decode_surface_effects(p.buffer, p.payload_len, &k_adhesion_norm, 
+		&k_adhesion_lat, &tex_amp, &tex_wl, &buzz_amp, &buzz_freq)){
+		fprintf(stderr, "Error: handle_effects_change_message(): can't decode\n");
+	}
+	
+	plane->setTextureAmplitude(tex_amp*1000.0);
+	plane->setTextureWavelength(tex_wl*1000.0);
+	plane->setBuzzAmplitude(buzz_amp*1000.0);
+	plane->setBuzzFrequency(buzz_freq);
+	plane->enableTexture(TRUE);
+	plane->enableBuzzing(TRUE);
 
 	return 0;
 }
@@ -821,19 +872,28 @@ int vrpn_Phantom::handle_update_rate_request (void * userdata,
 void phantomErrorHandler( int errnum, char *description, void *userdata)
 {
 	vrpn_Phantom *me = (vrpn_Phantom *) userdata;
-	fprintf(stderr, "PHANTOM ERROR: %s", description);
+	fprintf(stderr, "PHANTOM ERROR: %s\n", description);
+	int i;
+	for (i = 0; i < MAXPLANE; i++){
+		me->planes[i]->cleanUpAfterError();
+	}
+
 	switch(errnum) {
 		case GST_OUT_OF_RANGE_ERROR:
 			me->sendError(FD_VALUE_OUT_OF_RANGE);
+			me->errorCode = FD_VALUE_OUT_OF_RANGE;
 			break;
 		case GST_DUTY_CYCLE_ERROR:
 			me->sendError(FD_DUTY_CYCLE_ERROR);
+			me->errorCode = FD_DUTY_CYCLE_ERROR;
 			break;
 		case GST_PHANTOM_FORCE_ERROR:
 			me->sendError(FD_FORCE_ERROR);
+			me->errorCode = FD_FORCE_ERROR;
 			break;
 		default:
 			me->sendError(FD_MISC_ERROR);
+			me->errorCode = FD_MISC_ERROR;
 			break;
 	}
 }

@@ -2,7 +2,7 @@
 #define VRPN_PHANTOM_H
 
 #include "ghost.h"
-#include "plane.h"
+#include "texture_plane.h"
 #include "trimesh.h"
 #include "constraint.h"
 #include "forcefield.h"
@@ -19,6 +19,7 @@ public:
   float	    SurfaceFstatic; //surface static friction coefficient
   float		SurfaceKdamping;//surface damping coefficient
 
+
   long		which_plane;
   float		plane[4];	// plane equation, ax+by+cz+d = 0
   long		numRecCycles;	// number of recovery cycles
@@ -29,6 +30,7 @@ typedef void (*vrpn_PHANTOMPLANECHANGEHANDLER)(void *userdata,
 
 class vrpn_Phantom: public vrpn_ForceDevice,public vrpn_Tracker,
 					public vrpn_Button {
+	friend void phantomErrorHandler( int errnum, char *description, void *userdata);
 protected:
 	float update_rate;
 	gstScene *scene;
@@ -38,8 +40,7 @@ protected:
 					the entire scene graph. */
 	gstPHANToM *phantom;
 	struct timeval timestamp;
-	Plane *planes[MAXPLANE];
-	Plane *cur_plane;
+	DynamicPlane *planes[MAXPLANE];
 	Trimesh *trimesh;
 				       
 	ConstraintEffect *pointConstraint; // this is a force appended to
@@ -62,6 +63,8 @@ protected:
 
 	static int handle_plane_change_message(void *userdata, 
 					       vrpn_HANDLERPARAM p);
+	static int handle_effects_change_message(void *userdata,
+							vrpn_HANDLERPARAM p);
 	static int handle_setVertex_message(void *userdata, 
 				     vrpn_HANDLERPARAM p);
 	static int handle_setNormal_message(void *userdata, 
@@ -91,6 +94,7 @@ protected:
 
 public:
 	vrpn_Phantom(char *name, vrpn_Connection *c, float hz=1.0);
+	virtual void mainloop(const struct timeval *t) {mainloop();};
 	virtual void mainloop(void);
 	virtual void reset();
 	void resetPHANToM(void);
@@ -109,11 +113,9 @@ public:
 		vrpn_PHANTOMPLANECHANGEHANDLER handler);
 
 	static void handle_plane(void *userdata,const vrpn_Plane_PHANTOMCB &p);
-    static void check_parameters(vrpn_Plane_PHANTOMCB *p);	
+    static void check_parameters(vrpn_Plane_PHANTOMCB *p);
 
 };
-
-void phantomErrorHandler( int, char*, void* );
 
 #endif
 
