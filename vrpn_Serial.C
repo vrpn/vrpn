@@ -407,6 +407,15 @@ int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes,
 
 #endif  // VRPN_CLIENT_ONLY
 
+
+#if defined(_WIN32) && defined(__CYGWIN__)
+// [juliano 9/17/99]
+//   added this decl because otherwise I cannot compile vrpn_Serial.C
+//   on my PC in cygwin.  I have this problem with both egcs-2.91.57
+//   and gcc-2.95.
+int write( int fildes, const void *buf, size_t nbyte );
+#endif
+
 // Write the buffer to the serial port
 
 int vrpn_write_characters(int comm, const unsigned char *buffer, int bytes)
