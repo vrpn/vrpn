@@ -14,11 +14,11 @@ print_bits( char *buf, int num_bytes )
 {
   for(int i=0;i<num_bytes;i++) {
     for(int b=7;b>=0;b--)
-      cerr << (((1 << b) & ((int)buf[i])) ? 1 : 0);
-    cerr << " ";
+      fprintf(stderr,"%d ", (((1 << b) & ((int)buf[i])) ? 1 : 0));
   }
-  cerr << endl;
+  fprintf(stderr,"\n");
 }
+
 void print_bits(unsigned char *buf, int n) { print_bits((char *)buf, n); }
 
 // 
@@ -46,10 +46,10 @@ vrpn_Wanda::vrpn_Wanda(char * name,
 void
 vrpn_Wanda::report_new_button_info()
 {
-   if (dbug_wanda)
-      cerr << "buttons = " << int(buttons[0]) << " " << int(buttons[1]) << " " << int(buttons[2]) << endl;
-
-   vrpn_Button::report_changes(); // report any button event;
+	if (dbug_wanda) {
+		fprintf(stderr, "buttons = %d %d %d\n", int(buttons[0]), int(buttons[1]), int(buttons[2]));
+	}
+	vrpn_Button::report_changes(); // report any button event;
 }
 
 
@@ -69,8 +69,9 @@ void
 vrpn_Wanda::report_new_valuator_info()
 {
    last_val_timestamp = the_time();
-   if (dbug_wanda)
-      cerr << "vals = " << channel[0] << "\t" << channel[1] << endl;
+   if (dbug_wanda) {
+	   fprintf(stderr, "vals = %lf %lf\n", channel[0], channel[1]);
+   }
 
    // Send the message on the connection;
    if (vrpn_Analog::d_connection) {
@@ -101,13 +102,13 @@ void vrpn_Wanda::mainloop(void) {
 
       if (num < 2) return;
 
-      if (num > 2)
-         cerr << "wanda huh?  expected 2 characters on opening" << "\t" << num << endl;
-      else {
+      if (num > 2) {
+		  fprintf(stderr,"wanda huh?  expected 2 characters on opening (got %d)\n", num);
+	  } else {
          if (buffer[0] == 'M' && buffer[1] == '3') {
-            cerr << "Read init message from wanda" << endl;
+            fprintf(stderr,"Read init message from wanda\n");
          } else {
-            cerr << "vrpn_Wanda:  ERROR, expected 'M3' from wanda..." << endl;
+            fprintf(stderr,"vrpn_Wanda:  ERROR, expected 'M3' from wanda...\n");
          }
       }
       num = 0;
@@ -130,7 +131,7 @@ void vrpn_Wanda::mainloop(void) {
 
    // handling synching
    while( index == 0 && num > 0 && !(buffer[0] & (1<<6)) ) {
-      cerr << "synching wanda" << endl;
+      fprintf(stderr,"synching wanda\n");
       for(int i=0;i<num-1;i++)
          buffer[i] = buffer[i+1];
 
@@ -156,9 +157,10 @@ void vrpn_Wanda::mainloop(void) {
       }
 
       if (new_valuator_info) {
-         if (dbug_wanda)
-            cerr << "timeout:  " << curtime - last_val_timestamp << endl;
-         report_new_valuator_info();
+		  if (dbug_wanda) {
+            fprintf(stderr, "timeout:  %lf\n", curtime - last_val_timestamp);
+		  }
+		  report_new_valuator_info();
       }
    }
 #endif
@@ -167,7 +169,7 @@ void vrpn_Wanda::mainloop(void) {
 #if 1
    if (dbug_wanda)
       if (num_read > 0)
-         cerr << "\t(num = " << num << ")" << endl;
+         fprintf(stderr, "\t(num = %d)\n", num);
 #endif
 
    while( num >= 3 && index < num ) {
