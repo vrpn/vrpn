@@ -106,8 +106,17 @@ public: // status
 
 private: // the connections
     // XXX - this is now handled by vrpn_ConnectionManager
-	// vrpn_ConnectionManager *d_connection_list;
+    // vrpn_ConnectionManager *d_connection_list;
 
+    // what we really want, is
+    //   std::list<vrpn_BaseConnection*>;
+    // but, since we aren't going to assume a modern compiler or STL,
+    // we need to write our own list management ... yet again.
+    //
+    // we can do the same type of thing we did with
+    // ConnectionControllerCallbackInterface
+
+    
 protected: // initializaton and connection setup
 
     // listen for and process incoming connections on well known port
