@@ -396,6 +396,14 @@ void vrpn_Tracker_Flock::reset()
    // point mode for now
    //   reset[resetLen++]='B';
 
+   // set to lower hemisphere, send cmd to each receiver
+   for (i=1;i<=cSensors;i++) {
+     reset[resetLen++] = 0xf0 + i + 1;
+     reset[resetLen++] = 'L';
+     reset[resetLen++] = 0xc;
+     reset[resetLen++] = 0;
+   }
+
    if (write(serial_fd, reset, resetLen )!=resetLen) {
      perror("\nvrpn_Tracker_Flock: failed writing set mode cmds to tracker");
      status = TRACKER_FAIL;
