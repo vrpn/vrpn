@@ -213,6 +213,10 @@ int vrpn_Tracker_Flock::checkError() {
 vrpn_Tracker_Flock::vrpn_Tracker_Flock(char *name, vrpn_Connection *c, 
 				       int cSensors, char *port, long baud):
   vrpn_Tracker_Serial(name,c,port,baud), cSensors(cSensors), cResets(0) {
+    if (cSensors>MAX_SENSORS) {
+      fprintf(stderr, "\nvrpn_Tracker_Flock: too many sensors requested ... only %d allowed (%d specified)", MAX_SENSORS, cSensors );
+      cSensors = MAX_SENSORS;
+    }
     fprintf(stderr, "\nvrpn_Tracker_Flock: starting up ...");
 }
 
@@ -248,7 +252,7 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 void vrpn_Tracker_Flock::reset()
 {
    int resetLen;
-   unsigned char reset[2*(cSensors+1)+10];
+   unsigned char reset[2*(MAX_SENSORS+1)+10];
 
    // Get rid of the characters left over from before the reset
    vrpn_flush_input_buffer(serial_fd);
@@ -338,8 +342,9 @@ void vrpn_Tracker_Flock::reset()
    
    // check the configuration ...
    int fOk=1;
+   int i;
 
-   for (int i=0;i<=cSensors;i++) {
+   for (i=0;i<=cSensors;i++) {
      fprintf(stderr, "\nvrpn_Tracker_Flock: unit %d", i);
      if (response[i] & 0x20) {
        fprintf(stderr," (a receiver)");
@@ -376,7 +381,7 @@ void vrpn_Tracker_Flock::reset()
    reset[resetLen++] = 1;
    // pos/quat mode sent to each receiver (transmitter is unit 1)
    // 0xf0 + addr is the cmd to tell the master to forward a cmd
-   for (int i=1;i<=cSensors;i++) {
+   for (i=1;i<=cSensors;i++) {
      reset[resetLen++] = 0xf0 + i + 1;
      reset[resetLen++] = ']';
    }
@@ -503,7 +508,8 @@ void vrpn_Tracker_Flock::get_report(void)
    // scale factor for position 
 #define POSK144 (float)(144.0/32768.0)    /* integer to inches ER Controller */
 
-   for (int i=0;i<3;i++) {
+   int i;
+   for (i=0;i<3;i++) {
      // scale and convert to meters
      pos[i] = (double)(rgs[i] * POSK144 * 0.0254);
    }
@@ -511,7 +517,7 @@ void vrpn_Tracker_Flock::get_report(void)
    // they code quats as w,x,y,z, we need to give out x,y,z,w
    // The quats are already normalized
 #define WTF (float)(1.0/32768.0)                    /* float to word integer */
-   for (int i=4;i<7;i++) {
+   for (i=4;i<7;i++) {
      //     quat[i-4] = (double)(((short *)buffer)[i] * WTF);
      quat[i-4] = (double)(rgs[i] * WTF);
    }

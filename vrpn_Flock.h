@@ -11,6 +11,9 @@
 
 #include "vrpn_Tracker.h"
 
+// only 13 receivers allowed in normal addressing mode
+#define MAX_SENSORS 13
+
 #ifndef _WIN32
 
 // This is a class which provides a server for an ascension 

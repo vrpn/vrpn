@@ -19,15 +19,15 @@ HW_OS := $(shell hw_os)
 
 # Which C++ compiler to use.  Default is g++, but some don't use this.
 CC := g++
-ifeq ($(HW_OS),sgi_irix)
-	CC := CC
-endif
-ifeq ($(HW_OS),hp700_hpux10)
-	CC := CC +a1
-endif
-ifeq ($(HW_OS),sparc_sunos)
-	CC := /usr/local/lib/CenterLine/bin/CC
-endif
+#ifeq ($(HW_OS),sgi_irix)
+#	CC := CC
+#endif
+#ifeq ($(HW_OS),hp700_hpux10)
+#	CC := CC +a1
+#endif
+#ifeq ($(HW_OS),sparc_sunos)
+#	CC := /usr/local/lib/CenterLine/bin/CC
+#endif
 
 ##########################
 # directories
