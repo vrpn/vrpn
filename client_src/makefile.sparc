@@ -1,0 +1,27 @@
+CFLAGS = -I./ -I../ -I/afs/unc/proj/hmd/include/ -g
+CC = /usr/local/lib/CenterLine/bin/CC
+
+all:
+	make -f makefile.sgi printvals sound_client
+
+sound_client: sound_client.o vrpn_Sound.o vrpn_Connection.o vrpn_Button.o vrpn_Tracker.o
+	$(CC) $(CFLAGS) -o sound_client sound_client.o vrpn_Sound.o vrpn_Connection.o vrpn_Button.o vrpn_Tracker.o -L../`hw_os` -L/afs/unc/proj/hmd/lib/`hw_os` -lvrpn -lsdi -lm
+
+printvals: printvals.o vrpn_Connection.o vrpn_Button.o vrpn_Tracker.o
+	$(CC) $(CFLAGS) -o printvals printvals.o -L../`hw_os` -L/afs/unc/proj/hmd/lib/`hw_os` -lvrpn -lsdi -lm
+
+vrpn_Connection.o: ../vrpn_Connection.C
+	$(CC) $(CFLAGS) -c ../vrpn_Connection.C
+
+vrpn_Button.o: ../vrpn_Button.C
+	$(CC) $(CFLAGS) -c ../vrpn_Button.C
+
+vrpn_Tracker.o: ../vrpn_Tracker.C
+	$(CC) $(CFLAGS) -c ../vrpn_Tracker.C
+
+vrpn_Sound.o: ../vrpn_Sound.C
+	$(CC) $(CFLAGS) -c ../vrpn_Sound.C
+
+sound_client.o: sound_client.c
+	$(CC) $(CFLAGS) -c sound_client.c
+	

@@ -308,20 +308,20 @@ int vrpn_Connection::setup_for_new_connection(void)
 	}
 
 	// Write the magic cookie header to the server
-	if (sdi_noint_block_write(tcp_sock,MAGIC,16) != 16) {
+	if (sdi_noint_block_write(tcp_sock,MAGIC,MAGICLEN) != MAGICLEN) {
 	  perror(
 	    "vrpn_Connection::setup_for_new_connection: Can't write cookie");
 	  return -1;
 	}
 
 	// Read the magic cookie from the server
-	if (sdi_noint_block_read(tcp_sock,buf,16) != 16) {
+	if (sdi_noint_block_read(tcp_sock,buf,MAGICLEN) != MAGICLEN) {
 	  perror(
 	    "vrpn_Connection::setup_for_new_connection: Can't read cookie");
 	  return -1;
 	}
-	buf[16] = '\0';
-	if (strncmp(buf,MAGIC,16) != 0) {
+	buf[MAGICLEN] = '\0';
+	if (strncmp(buf,MAGIC,MAGICLEN) != 0) {
 	  fprintf(stderr,"vrpn_Connection::setup_for_new_connection: bad cookie (wanted '%s', got '%s'\n", MAGIC, buf);
 	  return -1;
 	}
@@ -813,8 +813,6 @@ vrpn_Connection::vrpn_Connection(unsigned short listen_port_no)
 #ifndef _WIN32
 vrpn_Connection::vrpn_Connection(char *station_name)
 {
-	char	buf[17];
-
 	// Initialize the things that must be for any constructor
 	init();
 

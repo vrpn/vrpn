@@ -49,7 +49,7 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 	       1000000L * (t1.tv_sec - t2.tv_sec);
 }
 
-static int vrpn_open_commport(char *portname, long baud)
+int vrpn_open_commport(char *portname, long baud)
 {
 #ifdef linux
     int fileDescriptor;
@@ -118,7 +118,9 @@ vrpn_Tracker::vrpn_Tracker(char *name, vrpn_Connection *c) {
 	// Register this tracker device and the needed message types
 	if (connection) {
 	  my_id = connection->register_sender(name);
-	  message_id = connection->register_message_type("Tracker Pos/Quat");
+	  position_m_id = connection->register_message_type("Tracker Pos/Quat");
+	  velocity_m_id = connection->register_message_type("Tracker Velocity");
+	  accel_m_id =connection->register_message_type("Tracker Acceleration");
 	}
 
 	// Set the current time to zero, just to have something there
@@ -127,12 +129,24 @@ vrpn_Tracker::vrpn_Tracker(char *name, vrpn_Connection *c) {
 
 	// Set the sensor to 0 just to have something in there.
 	sensor = 0;
-	
+
 	// Set the position to the origin and the orientation to identity
 	// just to have something there in case nobody fills them in later
 	pos[0] = pos[1] = pos[2] = 0.0f;
 	quat[0] = quat[1] = quat[2] = 0.0f;
 	quat[3] = 1.0f;
+
+	// Set the velocity to zero and the orientation to identity
+	// just to have something there in case nobody fills them in later
+	vel[0] = vel[1] = vel[2] = 0.0f;
+	vel_quat[0] = vel_quat[1] = vel_quat[2] = 0.0f;
+	vel_quat[3] = 1.0f;
+
+	// Set the acceleration to zero and the orientation to identity
+	// just to have something there in case nobody fills them in later
+	acc[0] = acc[1] = acc[2] = 0.0f;
+	acc_quat[0] = acc_quat[1] = acc_quat[2] = 0.0f;
+	acc_quat[3] = 1.0f;
 }
 
 
@@ -162,6 +176,58 @@ int	vrpn_Tracker::encode_to(char *buf)
    }
    for (i = 0; i < 4; i++) {
    	longbuf[index++] = *(unsigned long*)(void*)(&quat[i]);
+   }
+
+   for (i = 0; i < index; i++) {
+   	longbuf[i] = htonl(longbuf[i]);
+   }
+
+   return index*sizeof(unsigned long);
+}
+
+int	vrpn_Tracker::encode_vel_to(char *buf)
+{
+   // Message includes: long unitNum, float vel[3], float vel_quat[4]
+   // Byte order of each needs to be reversed to match network standard
+   // This moving is done by horrible typecast hacks.  Please forgive.
+
+   int i;
+   unsigned long *longbuf = (unsigned long*)(void*)(buf);
+   int	index = 0;
+
+   // Move the sensor, velocity, quaternion there
+   longbuf[index++] = sensor;
+   for (i = 0; i < 3; i++) {
+   	longbuf[index++] = *(unsigned long*)(void*)(&vel[i]);
+   }
+   for (i = 0; i < 4; i++) {
+   	longbuf[index++] = *(unsigned long*)(void*)(&vel_quat[i]);
+   }
+
+   for (i = 0; i < index; i++) {
+   	longbuf[i] = htonl(longbuf[i]);
+   }
+
+   return index*sizeof(unsigned long);
+}
+
+int	vrpn_Tracker::encode_acc_to(char *buf)
+{
+   // Message includes: long unitNum, float acc[3], float acc_quat[4]
+   // Byte order of each needs to be reversed to match network standard
+   // This moving is done by horrible typecast hacks.  Please forgive.
+
+   int i;
+   unsigned long *longbuf = (unsigned long*)(void*)(buf);
+   int	index = 0;
+
+   // Move the sensor, acceleration, quaternion there
+   longbuf[index++] = sensor;
+   for (i = 0; i < 3; i++) {
+   	longbuf[index++] = *(unsigned long*)(void*)(&acc[i]);
+   }
+   for (i = 0; i < 4; i++) {
+   	longbuf[index++] = *(unsigned long*)(void*)(&acc_quat[i]);
    }
 
    for (i = 0; i < index; i++) {
@@ -244,12 +310,31 @@ void	vrpn_Tracker_NULL::mainloop(void)
 	  if (connection) {
 	    for (i = 0; i < num_sensors; i++) {
 		sensor = i;
+
+		// Pack position report
 		len = encode_to(msgbuf);
 		if (connection->pack_message(len, timestamp,
-			message_id, my_id, msgbuf,
+			position_m_id, my_id, msgbuf,
 			vrpn_CONNECTION_LOW_LATENCY)) {
 		 fprintf(stderr,"NULL tracker: can't write message: tossing\n");
 		}
+
+		// Pack velocity report
+		len = encode_vel_to(msgbuf);
+		if (connection->pack_message(len, timestamp,
+			velocity_m_id, my_id, msgbuf,
+			vrpn_CONNECTION_LOW_LATENCY)) {
+		 fprintf(stderr,"NULL tracker: can't write message: tossing\n");
+		}
+
+		// Pack acceleration report
+		len = encode_acc_to(msgbuf);
+		if (connection->pack_message(len, timestamp,
+			accel_m_id, my_id, msgbuf,
+			vrpn_CONNECTION_LOW_LATENCY)) {
+		 fprintf(stderr,"NULL tracker: can't write message: tossing\n");
+		}
+
 	    }
 	  }
 	}
@@ -292,10 +377,27 @@ vrpn_Tracker_Remote::vrpn_Tracker_Remote(char *name) :
 		return;
 	}
 
-	// Register a handler for the change callback from this device.
-	if (connection->register_handler(message_id, handle_change_message,
+	// Register a handler for the position change callback from this device.
+	if (connection->register_handler(position_m_id, handle_change_message,
 	    this, my_id)) {
-		fprintf(stderr,"vrpn_Tracker_Remote: can't register handler\n");
+		fprintf(stderr,
+		    "vrpn_Tracker_Remote: can't register position handler\n");
+		connection = NULL;
+	}
+
+	// Register a handler for the velocity change callback from this device.
+	if (connection->register_handler(velocity_m_id,
+	    handle_vel_change_message, this, my_id)) {
+		fprintf(stderr,
+		    "vrpn_Tracker_Remote: can't register velocity handler\n");
+		connection = NULL;
+	}
+
+	// Register a handler for the acceleration change callback.
+	if (connection->register_handler(accel_m_id,
+	    handle_acc_change_message, this, my_id)) {
+		fprintf(stderr,
+		  "vrpn_Tracker_Remote: can't register acceleration handler\n");
 		connection = NULL;
 	}
 
@@ -337,6 +439,64 @@ int vrpn_Tracker_Remote::register_change_handler(void *userdata,
 	return 0;
 }
 
+int vrpn_Tracker_Remote::register_change_handler(void *userdata,
+			vrpn_TRACKERVELCHANGEHANDLER handler)
+{
+	vrpn_TRACKERVELCHANGELIST	*new_entry;
+
+	// Ensure that the handler is non-NULL
+	if (handler == NULL) {
+		fprintf(stderr,
+		   "vrpn_Tracker_Remote::register_vel_handler: NULL handler\n");
+		return -1;
+	}
+
+	// Allocate and initialize the new entry
+	if ( (new_entry = new vrpn_TRACKERVELCHANGELIST) == NULL) {
+		fprintf(stderr,
+		  "vrpn_Tracker_Remote::register_vel_handler: Out of memory\n");
+		return -1;
+	}
+	new_entry->handler = handler;
+	new_entry->userdata = userdata;
+
+	// Add this handler to the chain at the beginning (don't check to see
+	// if it is already there, since duplication is okay).
+	new_entry->next = velchange_list;
+	velchange_list = new_entry;
+
+	return 0;
+}
+
+int vrpn_Tracker_Remote::register_change_handler(void *userdata,
+			vrpn_TRACKERACCCHANGEHANDLER handler)
+{
+	vrpn_TRACKERACCCHANGELIST	*new_entry;
+
+	// Ensure that the handler is non-NULL
+	if (handler == NULL) {
+		fprintf(stderr,
+		   "vrpn_Tracker_Remote::register_acc_handler: NULL handler\n");
+		return -1;
+	}
+
+	// Allocate and initialize the new entry
+	if ( (new_entry = new vrpn_TRACKERACCCHANGELIST) == NULL) {
+		fprintf(stderr,
+		  "vrpn_Tracker_Remote::register_acc_handler: Out of memory\n");
+		return -1;
+	}
+	new_entry->handler = handler;
+	new_entry->userdata = userdata;
+
+	// Add this handler to the chain at the beginning (don't check to see
+	// if it is already there, since duplication is okay).
+	new_entry->next = accchange_list;
+	accchange_list = new_entry;
+
+	return 0;
+}
+
 int vrpn_Tracker_Remote::unregister_change_handler(void *userdata,
 			vrpn_TRACKERCHANGEHANDLER handler)
 {
@@ -359,6 +519,68 @@ int vrpn_Tracker_Remote::unregister_change_handler(void *userdata,
 		fprintf(stderr,
 		  "vrpn_Tracker_Remote::unregister_handler: No such handler\n");
 		return -1;
+	}
+
+	// Remove the entry from the list
+	*snitch = victim->next;
+	delete victim;
+
+	return 0;
+}
+
+int vrpn_Tracker_Remote::unregister_change_handler(void *userdata,
+			vrpn_TRACKERVELCHANGEHANDLER handler)
+{
+	// The pointer at *snitch points to victim
+	vrpn_TRACKERVELCHANGELIST	*victim, **snitch;
+
+	// Find a handler with this registry in the list (any one will do,
+	// since all duplicates are the same).
+	snitch = &velchange_list;
+	victim = *snitch;
+	while ( (victim != NULL) &&
+		( (victim->handler != handler) ||
+		  (victim->userdata != userdata) )) {
+	    snitch = &( (*snitch)->next );
+	    victim = victim->next;
+	}
+
+	// Make sure we found one
+	if (victim == NULL) {
+	    fprintf(stderr,
+	      "vrpn_Tracker_Remote::unregister_vel_handler: No such handler\n");
+	    return -1;
+	}
+
+	// Remove the entry from the list
+	*snitch = victim->next;
+	delete victim;
+
+	return 0;
+}
+
+int vrpn_Tracker_Remote::unregister_change_handler(void *userdata,
+			vrpn_TRACKERACCCHANGEHANDLER handler)
+{
+	// The pointer at *snitch points to victim
+	vrpn_TRACKERACCCHANGELIST	*victim, **snitch;
+
+	// Find a handler with this registry in the list (any one will do,
+	// since all duplicates are the same).
+	snitch = &accchange_list;
+	victim = *snitch;
+	while ( (victim != NULL) &&
+		( (victim->handler != handler) ||
+		  (victim->userdata != userdata) )) {
+	    snitch = &( (*snitch)->next );
+	    victim = victim->next;
+	}
+
+	// Make sure we found one
+	if (victim == NULL) {
+	    fprintf(stderr,
+	      "vrpn_Tracker_Remote::unregister_acc_handler: No such handler\n");
+	    return -1;
 	}
 
 	// Remove the entry from the list
@@ -397,6 +619,88 @@ int vrpn_Tracker_Remote::handle_change_message(void *userdata,
 	for (i = 0; i < 4; i++) {
 		temp = ntohl(params[4+i]);
 		tp.quat[i] = *(float*)(&temp);
+	}
+
+	// Go down the list of callbacks that have been registered.
+	// Fill in the parameter and call each.
+	while (handler != NULL) {
+		handler->handler(handler->userdata, tp);
+		handler = handler->next;
+	}
+
+	return 0;
+}
+
+int vrpn_Tracker_Remote::handle_vel_change_message(void *userdata,
+	vrpn_HANDLERPARAM p)
+{
+	vrpn_Tracker_Remote *me = (vrpn_Tracker_Remote *)userdata;
+	long *params = (long*)(p.buffer);
+	vrpn_TRACKERVELCB tp;
+	vrpn_TRACKERVELCHANGELIST *handler = me->velchange_list;
+	long	temp;
+	int	i;
+
+	// Fill in the parameters to the tracker from the message
+	if (p.payload_len != (sizeof(long) + 7*sizeof(float)) ) {
+		fprintf(stderr,"vrpn_Tracker: vel message payload error\n");
+		fprintf(stderr,"             (got %d, expected %d)\n",
+			p.payload_len, sizeof(long) + 7*sizeof(float) );
+		return -1;
+	}
+	tp.msg_time = p.msg_time;
+	tp.sensor = ntohl(params[0]);
+
+	// Typecasting used to get the byte order correct on the floats
+	// that are coming from the other side.
+	for (i = 0; i < 3; i++) {
+	 	temp = ntohl(params[1+i]);
+		tp.vel[i] = *(float*)(&temp);
+	}
+	for (i = 0; i < 4; i++) {
+		temp = ntohl(params[4+i]);
+		tp.vel_quat[i] = *(float*)(&temp);
+	}
+
+	// Go down the list of callbacks that have been registered.
+	// Fill in the parameter and call each.
+	while (handler != NULL) {
+		handler->handler(handler->userdata, tp);
+		handler = handler->next;
+	}
+
+	return 0;
+}
+
+int vrpn_Tracker_Remote::handle_acc_change_message(void *userdata,
+	vrpn_HANDLERPARAM p)
+{
+	vrpn_Tracker_Remote *me = (vrpn_Tracker_Remote *)userdata;
+	long *params = (long*)(p.buffer);
+	vrpn_TRACKERACCCB tp;
+	vrpn_TRACKERACCCHANGELIST *handler = me->accchange_list;
+	long	temp;
+	int	i;
+
+	// Fill in the parameters to the tracker from the message
+	if (p.payload_len != (sizeof(long) + 7*sizeof(float)) ) {
+		fprintf(stderr,"vrpn_Tracker: acc message payload error\n");
+		fprintf(stderr,"             (got %d, expected %d)\n",
+			p.payload_len, sizeof(long) + 7*sizeof(float) );
+		return -1;
+	}
+	tp.msg_time = p.msg_time;
+	tp.sensor = ntohl(params[0]);
+
+	// Typecasting used to get the byte order correct on the floats
+	// that are coming from the other side.
+	for (i = 0; i < 3; i++) {
+	 	temp = ntohl(params[1+i]);
+		tp.acc[i] = *(float*)(&temp);
+	}
+	for (i = 0; i < 4; i++) {
+		temp = ntohl(params[4+i]);
+		tp.acc_quat[i] = *(float*)(&temp);
 	}
 
 	// Go down the list of callbacks that have been registered.

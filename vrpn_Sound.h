@@ -56,7 +56,7 @@ class vrpn_Linux_Sound: public vrpn_Sound {
 	char    samplename[100];
 	// 
 	char filetable[MAXFNUM][100];
-	signed char *fileinmem[MAXFNUM];
+	char *fileinmem[MAXFNUM];
 	int  filemax[MAXFNUM];
 	int  filenum;
 	int channel_on[CHANNEL_NUM];

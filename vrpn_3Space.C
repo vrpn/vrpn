@@ -47,6 +47,12 @@
 
 #ifdef linux
 
+static	unsigned long	duration(struct timeval t1, struct timeval t2)
+{
+	return (t1.tv_usec - t2.tv_usec) +
+	       1000000L * (t1.tv_sec - t2.tv_sec);
+}
+
 // Read from the input buffer on the specified handle until all of the
 //  characters are read.  Return 0 on success, -1 on failure.
 static int	vrpn_flushInputBuffer(int comm)
@@ -322,7 +328,7 @@ void vrpn_Tracker_3Space::mainloop()
 		char	msgbuf[1000];
 		int	len = encode_to(msgbuf);
 		if (connection->pack_message(len, timestamp,
-			message_id, my_id, msgbuf,
+			position_m_id, my_id, msgbuf,
 			vrpn_CONNECTION_LOW_LATENCY)) {
 		  fprintf(stderr,"Tracker: cannot write message: tossing\n");
 		}

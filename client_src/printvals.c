@@ -12,18 +12,32 @@ vrpn_Tracker_Remote *tkr;
  *
  *****************************************************************************/
 
-void	handle_tracker(void *userdata, const vrpn_TRACKERCB t)
+void	handle_pos(void *userdata, const vrpn_TRACKERCB t)
 {
 	static	int	count = 0;
 
 	fprintf(stderr, ".");
-	if (++count >= 60) {
+	if (++count >= 20) {
 		fprintf(stderr, "\n");
 		count = 0;
 	}
 }
 
-void	handle_button(void *userdata, vrpn_BUTTONCB b)
+void	handle_vel(void *userdata, const vrpn_TRACKERVELCB t)
+{
+	static	int	count = 0;
+
+	fprintf(stderr, "/");
+}
+
+void	handle_acc(void *userdata, const vrpn_TRACKERACCCB t)
+{
+	static	int	count = 0;
+
+	fprintf(stderr, "~");
+}
+
+void	handle_button(void *userdata, const vrpn_BUTTONCB b)
 {
 	printf("B%ld is %ld\n", b.button, b.state);
 }
@@ -41,9 +55,13 @@ void init(void)
 	btn = new vrpn_Button_Remote("Button0@ioglab");
 
 	// Set up the tracker callback handler
-	tkr->register_change_handler(NULL, handle_tracker);
+	printf("Tracker update: '.' = pos, '/' = vel, '~' = acc\n");
+	tkr->register_change_handler(NULL, handle_pos);
+	tkr->register_change_handler(NULL, handle_vel);
+	tkr->register_change_handler(NULL, handle_acc);
 
 	// Set up the button callback handler
+	printf("Button update: B<number> is <newstate>\n");
 	btn->register_change_handler(NULL, handle_button);
 
 }	/* init */

@@ -1,4 +1,7 @@
-NOTE:
+Compile using 'gmake'
+Compile for flow using 'gmake flow'
+
+NOTE:	See http://www.cs.unc.edu/Research/nano/manual/vrpn.
 	The source code here has been checked into CVS under the
 root /afs/cs.unc.edu/project/stm/src/CVS_repository.  To get a
 copy of the source, do:
@@ -22,16 +25,9 @@ the library source.
 (server-side) derived classes for each device.  There is a remote device that
 is used by the client-side (user application).
 
-Changes required due to latest upgrade:
-	Change names from Tracker0_ioglab to Tracker0@ioglab.
-	Change .sdi_devices entries from PC_station_ioglab to just ioglab.
-	Change constructor to pass name and connection to vrpn_Tracker constr
-		Take out the my_id and message_id registration
-
 Things to do:
-	Fix ttest/t_diags on PC/linux
-	Get David to make some more python doobies
 	Get some trackers working!!!!!
+	Fix ttest/t_diags on PC/linux
 
 Problems:
 

@@ -1,17 +1,21 @@
 #include <time.h>
 #include <math.h>
-#ifdef __STDC__
 #include <stdlib.h>
-#else
-#include <getopt.h>
-#endif
 #include <stdio.h>
 #include <string.h>
+
+#ifndef __STDC__
+#ifndef	hpux
+#include <getopt.h>
+#endif
+#endif
+
 #ifdef linux
 #include <termios.h>
 #define  FDEFER 0x00040
 #include <sys/soundcard.h>
 #endif
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
@@ -25,7 +29,7 @@
 #define BUF_SIZE 4096
 
 int audio_fd; // File descriptor for audio device /dev/audio
-signed char audio_buffer[512]; // audio buffer
+char audio_buffer[512]; // audio buffer
 #ifdef linux
 struct sbi_instrument instr; // MIDI
 static int sb, sbptr = 0;
@@ -139,7 +143,7 @@ int vrpn_Linux_Sound::mapping(char *name, int address)
 		fd = open(name, O_RDONLY, 0);
 		printf("fd = %d\n", fd);
 		t = 0;
-		fileinmem[filenum] = (signed char *) calloc(327680, sizeof(char));
+		fileinmem[filenum] = (char *) calloc(327680, sizeof(char));
 		do {
 			n = read(fd, &fileinmem[filenum][t*512], 512);
 			t++;
@@ -243,7 +247,7 @@ void vrpn_Linux_Sound::soundplay()
 	for (i=1; i < CHANNEL_NUM; i++)
 		if (channel_on[i]) {
 			for ( j = 0; j < 512; j++)
-				audio_buffer[j] += ((signed char) ( 
+				audio_buffer[j] += ((char) ( 
 				fileinmem[channel_file[i]][channel_index[i]*512 + j] 
 				* 1.0 * volume[i] /100)>>1);
 			channel_index[i] = 
