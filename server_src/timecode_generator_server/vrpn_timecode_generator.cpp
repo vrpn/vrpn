@@ -1,6 +1,6 @@
 #include "vrpn_timecode_generator.h"
 
-#ifdef	INCLUDE_TIMECODE_SERVER
+#ifdef	VRPN_INCLUDE_TIMECODE_SERVER
 
 /*
 //Function Prototypes

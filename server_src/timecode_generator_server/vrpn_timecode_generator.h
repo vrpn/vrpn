@@ -2,7 +2,7 @@
 #define VRPN_TIMECODE_GENERATOR_H
 
 #include "vrpn_Analog.h"
-#ifdef	INCLUDE_TIMECODE_SERVER
+#ifdef	VRPN_INCLUDE_TIMECODE_SERVER
 
 /* This library is C code. When programming in C++, there may be a problem with
    decorated names of the library, C++ can't recognize the C names in a library. */
