@@ -96,7 +96,7 @@ $(OBJ_DIR)/%.o:	%.C
 
 
 all:  vrpn_server test_vrpn client_and_server test_mutex test_peerMutex \
- last_of_sequence test_radamec_spi
+ last_of_sequence test_radamec_spi test_analogfly
 # testSharedObject
 
 .PHONY:	vrpn_server
@@ -104,6 +104,9 @@ vrpn_server:	$(OBJ_DIR)/vrpn_server
 
 .PHONY:	test_radamec_spi
 test_radamec_spi:	$(OBJ_DIR)/test_radamec_spi
+
+.PHONY:	test_analogfly
+test_analogfly:	$(OBJ_DIR)/test_analogfly
 
 .PHONY:	test_vrpn
 test_vrpn:	$(OBJ_DIR)/test_vrpn
@@ -158,6 +161,12 @@ $(OBJ_DIR)/test_radamec_spi: $(OBJ_DIR) $(OBJ_DIR)/test_radamec_spi.o  \
 			 $(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/test_radamec_spi \
 		$(OBJ_DIR)/test_radamec_spi.o \
+		-lvrpnserver $(GL) -lquat $(SYSLIBS) -lm
+
+$(OBJ_DIR)/test_analogfly: $(OBJ_DIR) $(OBJ_DIR)/test_analogfly.o  \
+			 $(LIB_DIR)/libvrpnserver.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/test_analogfly \
+		$(OBJ_DIR)/test_analogfly.o \
 		-lvrpnserver $(GL) -lquat $(SYSLIBS) -lm
 
 $(OBJ_DIR)/client_and_server: $(OBJ_DIR) $(OBJ_DIR)/client_and_server.o  \

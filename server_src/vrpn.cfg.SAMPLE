@@ -1,4 +1,4 @@
-# vrpn.cfg.SAMPLE for VRPN version 05.01
+# vrpn.cfg.SAMPLE for VRPN version 05.02
 
 ################################################################################
 ################################################################################
@@ -19,16 +19,15 @@
 
 ################################################################################
 ################################################################################
-# Tracker classes. Lines here to start various tracker servers. A description is
+# Tracker classes.  Lines here to start various tracker servers. A description is
 # provided for each type of tracker for the arguments it takes, then an example
 # configuration line is provided.
 ################################################################################
 
 ################################################################################
 # NULL Tracker. This is a "device" that reports the Identity transformation for
-# each of its sensors at the specified rate. It can be used to verify
-# connections are working and for other tests of VRPN. There are three
-# arguments:
+# each of its sensors at the specified rate. It can be used to verify connections
+# are working and for other tests of VRPN. There are three arguments:
 #	char	name_of_this_device[]
 #	int	number_of_sensors
 #	float	rate_at_which_to_report_updates
@@ -51,8 +50,7 @@
 # Flock-of-birds in parallel Tracker. Runs an Ascension Flock of Birds tracker
 # that has its source and each sensor plugged into its own serial port on this
 # machine (perhaps through a Cyclades multi-port serial card). This mode of
-# operation increases the throughput and decreases the latency of tracker
-# reports.
+# operation increases the throughput and decreases the latency of tracker reports.
 # The arguments match those of the Flock-of-birds tracker from above, with the
 # addition of the name of the serial ports for each of the sensors added at the
 # end. Arguments (all on the same line):
@@ -138,29 +136,40 @@
 
 ################################################################################
 # AnalogFly Tracker. This is a tracker that is intended to be used on top of
-# a joystick of some kind to turn it into a flying device. It could be used on
-# top of any analog device, in fact.
+# a joystick or motion tracker of some kind to turn it into a moving or flying
+# device. It could be used on top of any analog device, in fact.
 #   This device basically takes in analog signals and puts out transformation
 # matrices. It should supercede the JoyFly tracker, since it is more general.
+#   There are two kinds of JoyFly's: absolute ones and differential ones.  For
+# absolute ones, the analog value is mapped directly to position or orientation
+# on each axis.  For differential ones, the values are used to create a
+# "change" matrix that is applied once per interval, accumulating changes as
+# it goes; this allows the user to "fly" along by holding a joystick forward,
+# for example.
 #   One analog channel is associated with each axis (X, Y, Z) and rotation about
-# each axis (RX, RY, RZ). For each axis, the value is converted to a speed
-# (meters/second or revolutions/second) by first thresholding it to see if it
-# is far enough from zero, then (if it is) scaling it and taking it to a power
-# (to allow nonlinear speedup as the stick is pushed far from center).
+# each axis (RX, RY, RZ). For each axis, the value is converted to a position
+# (meters) or speed (meters/second) for absolute trackers; or int an orientation
+# (revolutions) or angular velocity (revolutions/second) by first subtracting
+# an offset, then thresholding it to see if it is far enough from zero, then
+# (if it is) scaling it and taking it to a power (to allow nonlinear speedup
+# as the stick is pushed far from center).
 #   A button can be associated with a reset function, which will take the
 # device back to center (identity transformation). The device will also recenter
-# when the first connection is made to the server it is running on.
+# when the first connection is made to the server it is running on. (Centering
+# has no effect on absolute JoyFlys).
 #   Any axis or the reset button can be disabled by setting the name of its
 # associated device to the string "NULL".
 #   Note that you could have multiple of these devices running simultaneously,
 # each with a different name and interaction metaphor. The user could then
 # connect to their favorite one. Arguments:
-#	char	name_of_this_device[]
-#	float	update_rate_to_send_tracker_reports
+#	char  name_of_this_device[]
+#	float update_rate_to_send_tracker_reports
+#	char  "absolute" or "differential"
 #	[six lines follow, one for X Y Z RX RY RZ, each with:
-#		char	axis_name[]             (X Y Z RX RY RZ in that order)
-#		char	name_of_analog_device[] (start with * for local)
+#		char	axis_name[]			(X Y Z RX RY RZ in that order)
+#		char	name_of_analog_device[]		(start with * for local)
 #		int	channel_of_analog_device
+#		float offset
 #		float	threshold
 #		float	scale
 #		float	power
@@ -171,29 +180,38 @@
 #		int	which_button_to_use
 #	]
 
-#vrpn_Tracker_AnalogFly	Tracker0	60.0
-#X	*CerealBox	4	0.021	1.0	1.0
-#Y	*CerealBox	5	0.021	1.0	1.0
-#Z	*CerealBox	6	0.021	3.0	1.0
-#RX	*CerealBox	0	0.021	1.0	1.0
-#RY	NULL		1	0.021	1.0	1.0
-#RZ	*CerealBox	2	0.021	3.0	1.0
+#vrpn_Tracker_AnalogFly	Tracker0	60.0	relative
+#X	*CerealBox0	4	0.0	0.021	1.0	1.0
+#Y	*CerealBox0	5	0.0	0.021	1.0	1.0
+#Z	*CerealBox0	6	0.0	0.021	3.0	1.0
+#RX	*CerealBox0	0	0.0	0.021	1.0	1.0
+#RY	*CerealBox0	1	0.0	0.021	1.0	1.0
+#RZ	*CerealBox0	2	0.0	0.021	3.0	1.0
 #RESET	*CerealBox	3
 
+#vrpn_Tracker_AnalogFly	Tracker0	60.0	absolute
+#X	NULL		0	0.0	0.0	1.0	1.0
+#Y	NULL		0	0.0	0.0	1.0	1.0
+#Z	NULL		0	0.0	0.0	1.0	1.0
+#RX	*Radamec0	1	0.0	0.0	-0.0027777777	1.0
+#RY	NULL		0	0.0	0.0	1.0	1.0
+#RZ	*Radamec0	0	0.0	0.0	-0.0027777777	1.0
+#RESET	NULL	0
+
 ################################################################################
+# XXX This device is superceded by the more-general vrpn_Tracker_AnalogFly
 # JoyFly Tracker. A vrpn_Tracker that translates the vrpn_Joystick into
 # Walkthrough- convention tracker reports. This is part of a two-part setup
 # that allows you to use a joystick as a flying device. First, a joystick
 # device has to be created (named joybox in our example) that will produce
-# the analog inputs that the JoyFly tracker uses to determine the
-# transformation.
+# the analog inputs that the JoyFly tracker uses to determine the transformation.
 # Then, the JoyFly device needs to be started and will listen to the device
 # and produce tracker reports. If these are both run on the same server, then
 # the JoyFly needs to use the "server" connection to hear from the Joystick
 # device, which is indicated by placing a '*' in front of the name of the
 # joystick device that it is to use. If the joystick device is remote from
-# this server, then the full name of it should be used (joystick@foo.cs.unc.edu)
-#
+# this server, then the full name of it should be used (joystick@foo.cs.unc.edu).
+# XXX This device is superceded by the more-general vrpn_Tracker_AnalogFly
 # Arguments:
 #	char	name_of_this_device[]
 #	char	source_joystick_name[]  (Begin with * for one sharing your connection)
@@ -203,7 +221,7 @@
 
 ################################################################################
 # 3Space Tracker. Runs a Polhemus 3Space (not Fastrak) tracker that is attached
-# to a serial port on this machine. Note that as of VRPN 04.07 there is a
+# to a serial port on this machine. Note that as of VRPN 04.07 there is some sort
 # of bug in the 3Space orientation decoding; nobody has had enough need for this
 # to fix it yet. Arguments:
 #	char	name_of_this_device[]
@@ -214,8 +232,8 @@
 
 ################################################################################
 ################################################################################
-# Non-tracker devices. Lines are provided here for the various non-tracker
-# servers that can be started.
+# Non-tracker devices. Lines are provided here for the various non-tracker servers
+# that can be started.
 
 ################################################################################
 # Example Dial server. This is a "device" that reports constant rotations for
@@ -240,14 +258,14 @@
 #	int	number_of_analogs_to_read
 #	int	number_of_encoders_to_read
 
-#vrpn_CerealBox	cereal	/dev/cua0	19200	8 8 8
+#vrpn_CerealBox	Cereal0	/dev/cua0	19200	8 8 8
 
 ################################################################################
 # Magellan button/analog. Runs a Logitech Magellan device that attaches
 # to a serial port on this machine. As of VRPN version 04.12, 9600 is the
 # only supported baud rate.
 #
-# Note that if you want to use the Magellan as a tracing device, you will
+# Note that if you want to use the Magellan as a tracking device, you will
 # need to run a vrpn_Tracker_AnalogFly device that listens to its analog
 # outputs and converts them into tracker reports
 #
@@ -256,7 +274,22 @@
 #	char	name_of_serial_device[]
 #	int	baud_rate_of_serial_device
 
-#vrpn_Magellan	Magellan	/dev/cua0	9600
+#vrpn_Magellan	Magellan0	/dev/cua0	9600
+
+################################################################################
+# NRL Immersion Box dial/button/analog. Runs a Immersion Interface Box device
+# attached to a serial port. As of March 28, 2000 code to read the analog and
+# angle encoders has not been implemented.  Also, baud rate on many SGI's is
+# limited to 38400, but I have run the ibox at 115200 on PCs.
+#       char    name_of_this_device[]
+#       char    name_of_serial_device[]
+#       int     baud_rate_of_serial_device
+#       int     number_of_buttons_to_read (i.e. 4 ==> 0,1,2,3)
+#       int     number_of_analogs_to_read
+#       int     number_of_encoders_to_read
+
+#vrpn_ImmersionBox      ibox    /dev/ttyd2      38400   4 0 0
+#vrpn_ImmersionBox      ibox    com1            115200  4 0 0
 
 ################################################################################
 # Radamec Serial Position Interface analog. Camera tracker that attaches
@@ -276,21 +309,6 @@
 #vrpn_Radamec_SPI	Analog0	/dev/ttyS16	38400
 
 ################################################################################
-# NRL Immersion Box dial/button/analog. Runs a Immersion Interface Box device
-# attached to a serial port. As of March 28, 2000 code to read the analog and
-# angle encoders has not been implemented.  Also, baud rate on many SGI's is
-# limited to 38400, but I have run the ibox at 115200 on PCs.
-#       char    name_of_this_device[]
-#       char    name_of_serial_device[]
-#       int     baud_rate_of_serial_device
-#       int     number_of_buttons_to_read (i.e. 4 ==> 0,1,2,3)
-#       int     number_of_analogs_to_read
-#       int     number_of_encoders_to_read
-
-#vrpn_ImmersionBox      ibox    /dev/ttyd2      38400   4 0 0
-#vrpn_ImmersionBox      ibox    com1            115200  4 0 0
-
-################################################################################
 # SGI Dial and Button box, raw interface. Runs a dial-and-button box from SGI,
 # talking to it through the raw serial interface (not using the GL interface
 # supplied by SGI). This allows the box to be opened even if there is nobody
@@ -301,22 +319,21 @@
 #	char	name_of_serial_device[]
 #	[list of buttons to treat as toggles]	int	button_to_toggle
 
-#vrpn_raw_SGIBox	sgibox	/dev/ttyS0	0 1 2 3
+#vrpn_raw_SGIBox	Sgibox0	/dev/ttyS0	0 1 2 3
 
 ################################################################################
-# SGI Dial and Button box, cooked interface. Runs a dial-and-button box from
-# SGI, talking to it through the GL interface supplied by SGI. Note that this
-# can only be used on an SGI, and the serial port must be configured as a
-# dial/button device and the dial/button server from SGI must be running to
-# use it. Arguments:
+# SGI Dial and Button box, cooked interface. Runs a dial-and-button box from SGI,
+# talking to it through the GL interface supplied by SGI. Note that this can
+# only be used on an SGI, and the serial port must be configured as a dial/button
+# device and the dial/button server from SGI must be running to use it. Arguments:
 #	char	name_of_this_device[]
 #	[list of buttons to treat as toggles]	int	button_to_toggle
 
-#vrpn_SGIBOX	sgibox	1 2 
+#vrpn_SGIBOX	Sgibox0	1 2 
 
 ################################################################################
-# UNC Python button device. UNC has developed a custom button input device, 
-# a 5-button controller that attaches to a parallel port and uses the sense
+# UNC Python button device. UNC has developed a custom button input device, which
+# is a 5-button controller that attaches to a parallel port and uses the sense
 # lines to return the state of the buttons. This runs the device. Note that on
 # Windows NT, you need to have installed the GiveIO driver for this code to
 # work. It also works on Linux (no extra drivers needed), but on no other
@@ -339,7 +356,7 @@
 #	int	baud_rate_of_serial_device
 #	float	minimum_update_rate_from_analogs_even_if_they_dont_move
 
-#vrpn_Joystick	joybox	/dev/ttyd1	19200	10.0
+#vrpn_Joystick	Joybox0	/dev/ttyd1	19200	10.0
 
 ################################################################################
 # Fakespace Pinch Glove. Drives a Fakespace Pinch Glove device connected to a 

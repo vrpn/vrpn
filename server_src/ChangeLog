@@ -1,3 +1,13 @@
+2000-08-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Added test_analogfly compile
+
+	* vrpn.C : Made default millisleep be 1 millisecond
+		Added parameters to vrpn_Tracker_AnalogFly
+
+	* vrpn.cfg : Updated AnalogFly -- LOOK AT THIS IF YOU ARE USING!!!
+		Added "absolute/differential" and per-axis offset
+
 2000-08-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* test_radamec_spi.C : Added baud rate specification

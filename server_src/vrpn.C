@@ -62,11 +62,11 @@ void Usage (const char * s)
   fprintf(stderr,"       [-client machinename port] [-millisleep n]\n");
   fprintf(stderr,"       [-NIC name] [-l filename mode]\n");
   fprintf(stderr,"       -f: Full path to config file (default vrpn.cfg).\n");
+  fprintf(stderr,"       -millisleep: Sleep n milliseconds each loop cycle (default 1).\n");
   fprintf(stderr,"       -warn: Only warn on errors (default is to bail).\n");
   fprintf(stderr,"       -v: Verbose.\n");
   fprintf(stderr,"	 -q: Quit when last connection is dropped.\n");
   fprintf(stderr,"       -client: Where server connects when it starts up.\n");
-  fprintf(stderr,"       -millisleep: Sleep n milliseconds each loop cycle.\n");
   fprintf(stderr,"       -NIC: Use NIC with given IP address or DNS name.\n");
   fprintf(stderr,"       -l: Log to given filename with mode i, o, or io.\n");
   exit(-1);
@@ -166,7 +166,7 @@ int	get_AFline(FILE *config_file, char *axis_name, vrpn_TAF_axis *axis)
 	char	_axis_name[512];
 	char	*name = new char[512];	// We need this to stay around for the param
 	int	channel;
-	float	thresh, power, scale;
+	float	offset, thresh, power, scale;
 
 	// Read in the line
 	if (fgets(line, sizeof(line), config_file) == NULL) {
@@ -175,8 +175,8 @@ int	get_AFline(FILE *config_file, char *axis_name, vrpn_TAF_axis *axis)
 	}
 
 	// Get the values from the line
-	if (sscanf(line, "%511s%511s%d%g%g%g", _axis_name, name,
-			&channel, &thresh,&scale,&power) != 6) {
+	if (sscanf(line, "%511s%511s%d%g%g%g%g", _axis_name, name,
+			&channel, &offset, &thresh,&scale,&power) != 7) {
 		fprintf(stderr,"AnalogFly Axis: Bad axis line\n");
 		return -1;
 	}
@@ -193,6 +193,7 @@ int	get_AFline(FILE *config_file, char *axis_name, vrpn_TAF_axis *axis)
 	if (strcmp(name,"NULL") != 0) {
 		axis->name = name;
 		axis->channel = channel;
+		axis->offset = offset;
 		axis->thresh = thresh;
 		axis->scale = scale;
 		axis->power = power;
@@ -345,18 +346,29 @@ int setup_JoyFly (char * & pch, char * line, FILE * config_file) {
 }
 
 int setup_Tracker_AnalogFly (char * & pch, char * line, FILE * config_file) {
-  char s2 [512], s3 [512];
-  int i1;
-  float f1;
-
-                vrpn_Tracker_AnalogFlyParam     p;
+    char s2 [512], s3 [512];
+    int i1;
+    float f1;
+    vrpn_Tracker_AnalogFlyParam     p;
+    vrpn_bool	absolute;
 
                 next();
-                if (sscanf(pch, "%511s%g",s2,&f1) != 2) {
+                if (sscanf(pch, "%511s%g%511s",s2,&f1,s3) != 3) {
                         fprintf(stderr, "Bad vrpn_Tracker_AnalogFly line: %s\n",
- line);
+			    line);
                         return -1;
                 }
+
+		// See if this should be absolute or differential
+		if (strcmp(s3, "absolute") == 0) {
+		    absolute = vrpn_true;
+		} else if (strcmp(s3, "differential") == 0) {
+		    absolute = vrpn_false;
+		} else {
+		    fprintf(stderr,"vrpn_Tracker_AnalogFly: Expected 'absolute' or 'differential'\n");
+		    fprintf(stderr,"   but got '%s'\n",s3);
+		    return -1;
+		}
 
                 // Make sure there's room for a new tracker
                 if (num_trackers >= MAX_TRACKERS) {
@@ -364,7 +376,6 @@ int setup_Tracker_AnalogFly (char * & pch, char * line, FILE * config_file) {
                   return -1;
                 }
 
-                // Open the tracker
                 if (verbose) {
                   printf("Opening vrpn_Tracker_AnalogFly: "
                          "%s with update rate %g\n",s2,f1);
@@ -418,7 +429,7 @@ int setup_Tracker_AnalogFly (char * & pch, char * line, FILE * config_file) {
         }
 
         trackers[num_trackers] = new
-           vrpn_Tracker_AnalogFly (s2, connection, &p, f1);
+           vrpn_Tracker_AnalogFly (s2, connection, &p, f1, absolute);
 
                 if (!trackers[num_trackers]) {
                   fprintf(stderr,"Can't create new vrpn_Tracker_AnalogFly\n");
@@ -1086,7 +1097,7 @@ main (int argc, char * argv[])
 	int	realparams = 0;
 	int	i;
 	int	port = vrpn_DEFAULT_LISTEN_PORT_NO;
-	int	milli_sleep_time = 0;		// How long to sleep each iteration?
+	int	milli_sleep_time = 1;		// How long to sleep each iteration (default 1ms)?
 #ifdef WIN32
 	WSADATA wsaData; 
 	int status;
