@@ -1,3 +1,10 @@
+2001-06-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Shared.C (gettimeofday) : Modified the PC version to always use the
+		_ftime() call, rather than attempting to use the performance counter.
+		This means only 6ms accuracy on timing, but the other code was fragile
+		and didn't work across operating systems (98, NT, 2000).
+
 2001-06-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Button.h (vrpn_Button_Parallel) : Moving default parameter into

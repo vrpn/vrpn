@@ -456,37 +456,6 @@ int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
     return 0;
 }
 
-/** Utility routine for placing a vrpn_bool into a buffer that
-    is to be sent as a message. Handles packing into an unaligned
-    buffer (though this should not be done). Advances the insertPt
-    pointer to just after newly-inserted value. Decreases the buflen
-    (space remaining) by the length of the value. Returns zero on
-    success and -1 on failure.
-
-    Part of a family of routines that buffer different VRPN types
-    based on their type (vrpn_buffer is overloaded based on the third
-    parameter type). These routines handle byte-swapping to the
-    VRPN standard wire protocol.
-*/
-
-/*
-int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_bool value)
-{
-    vrpn_bool netValue = htons(value);
-    int length = sizeof(netValue);
-
-    if (length > *buflen) {
-        fprintf(stderr, "vrpn_buffer: buffer not large enough\n");
-        return -1;
-    }
-
-    memcpy(*insertPt, &netValue, length);
-    *insertPt += length;
-    *buflen -= length;
-
-    return 0;
-}
-*/
 
 /** Utility routine for taking a character from a buffer that
     was sent as a message. Handles unpacking from an
@@ -694,282 +663,34 @@ int vrpn_unbuffer (const char ** buffer, char * string,
     return 0;
 }
 
-/** Utility routine for taking a vrpn_bool from a buffer that
-    was sent as a message. Handles unpacking from an
-    unaligned buffer, because people did this anyway. Advances the reading
-    pointer to just after newly-read value. Assumes that the
-    buffer holds a complete value. Returns zero on success and -1 on failure.
-
-    Part of a family of routines that unbuffer different VRPN types
-    based on their type (vrpn_buffer is overloaded based on the third
-    parameter type). These routines handle byte-swapping to and from
-    the VRPN defined wire protocol.
-*/
-
-/*
-int vrpn_unbuffer (const char ** buffer, vrpn_bool * lval)
-{
-    vrpn_bool	aligned;
-
-    memcpy(&aligned, *buffer, sizeof(aligned));
-    *lval = ntohs(aligned);
-    *buffer += sizeof(vrpn_bool);
-    return 0;
-}
-*/
-
-// Although VC++ doesn't include a gettimeofday
-// call, Cygnus Solutions Cygwin32 environment does.
-// XXX AND ITS WRONG in the current release 10/11/99, version b20.1
-// They claim it will be fixed in the next release, version b21
-// so until then, we will make it right using our solution. 
 #if defined(_WIN32) && !defined(__CYGWIN__)
 #include <iostream.h>
 #include <math.h>
 
-// utility routines to read the pentium time stamp counter
-// QueryPerfCounter drifts too much -- others have documented this
-// problem on the net
-
-// This is all based on code extracted from the UNC hiball tracker cib lib
-
-// 200 mhz pentium default -- we change this based on our calibration
-static __int64 VRPN_CLOCK_FREQ = 200000000;
-
-// Helium to histidine
-// __int64 FREQUENCY = 199434500;
-
-// tori -- but queryperfcounter returns this for us
-// __int64 FREQUENCY = 198670000;
-
-// Read Time Stamp Counter
-#define rdtsc(li) { _asm _emit 0x0f \
-  _asm _emit 0x31 \
-  _asm mov li.LowPart, eax \
-  _asm mov li.HighPart, edx \
-}
-
-/*
- * calculate the time stamp counter register frequency (clock freq)
- */
-#pragma optimize("",off)
-static int vrpn_AdjustFrequency(void)
-{
-    const int loops = 2;
-    const int tPerLoop = 500; // milliseconds for Sleep()
-    cerr.precision(4);
-    cerr.setf(ios::fixed);
-    //cerr << "vrpn gettimeofday: determining clock frequency...";
-
-    LARGE_INTEGER startperf, endperf;
-    LARGE_INTEGER perffreq;
-
-    // See if the hardware supports the high-resolution performance counter.
-    // If so, get the frequency of it.  If not, we can't use it and so return
-    // -1.
-    if (QueryPerformanceFrequency( &perffreq ) == 0) {
-	return -1;
-    }
-
-    // don't optimize away these variables
-    double sum = 0;
-    volatile LARGE_INTEGER liStart, liEnd;
-
-    DWORD dwPriorityClass=GetPriorityClass(GetCurrentProcess());
-    int iThreadPriority=GetThreadPriority(GetCurrentThread());
-    SetPriorityClass( GetCurrentProcess() , REALTIME_PRIORITY_CLASS );
-    SetThreadPriority( GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL );
-
-    // pull all into cache and do rough test to see if tsc and perf counter
-    // are one and the same
-    rdtsc( liStart );
-    QueryPerformanceCounter( &startperf );
-    Sleep(100);
-    rdtsc( liEnd );
-    QueryPerformanceCounter( &endperf );
-
-    double freq = perffreq.QuadPart * (liEnd.QuadPart - liStart.QuadPart) / 
-        ((double)(endperf.QuadPart - startperf.QuadPart));
-
-    if (fabs(perffreq.QuadPart - freq) < 0.05*freq) {
-        VRPN_CLOCK_FREQ = (__int64) perffreq.QuadPart;
-        //cerr << "\nvrpn gettimeofday: perf clock is tsc -- using perf clock freq (" 
-        //     << perffreq.QuadPart/1e6 << " MHz)" << endl;
-        SetPriorityClass( GetCurrentProcess() , dwPriorityClass );
-        SetThreadPriority( GetCurrentThread(), iThreadPriority );
-        return 0;
-    } 
-
-    // either tcs and perf clock are not the same, or we could not
-    // tell accurately enough with the short test. either way we now
-    // need an accurate frequency measure, so ...
-
-    //cerr << " (this will take " << setprecision(0) << loops*tPerLoop/1000.0 
-    //     << " seconds)... " << endl;
-    cerr.precision(4);
-
-    for (int j = 0; j < loops; j++) {
-        rdtsc( liStart );
-        QueryPerformanceCounter( &startperf );
-        Sleep(tPerLoop);
-        rdtsc( liEnd );
-        QueryPerformanceCounter( &endperf );
-
-        // perf counter timer ran for one call to Query and one call to
-        // tcs read in addition to the time between the tsc readings
-        // tcs read did the same
-
-        // endperf - startperf / perf freq = time between perf queries
-        // endtsc - starttsc = clock ticks between perf queries
-        //    sum += (endtsc - starttsc) / ((double)(endperf - startperf)/perffreq);
-        sum += perffreq.QuadPart * (liEnd.QuadPart - liStart.QuadPart) / 
-            ((double)(endperf.QuadPart - startperf.QuadPart));
-    }
-  
-    SetPriorityClass( GetCurrentProcess() , dwPriorityClass );
-    SetThreadPriority( GetCurrentThread(), iThreadPriority );
-
-    // might want last, not sum -- just get into cache and run
-    freq = (sum/loops);
-  
-    cerr.precision(5);
-
-    // if we are on a uniprocessor system, then use the freq estimate
-    // This used to check against a 200 mhz assumed clock, but now 
-    // we assume the routine works and trust the result.
-    //  if (fabs(freq - VRPN_CLOCK_FREQ) > 0.05 * VRPN_CLOCK_FREQ) {
-    //    cerr << "vrpn gettimeofday: measured freq is " << freq/1e6 
-    //	 << " MHz - DOES NOT MATCH" << endl;
-    //    return -1;
-    //  }
-
-    // if we are in a system where the perf clock is the tsc, then use the
-    // rate the perf clock returns (or rather, if the freq we measure is
-    // approx the perf clock freq).
-    if (fabs(perffreq.QuadPart - freq) < 0.05*freq) {
-        VRPN_CLOCK_FREQ = perffreq.QuadPart;
-        //cerr << "vrpn gettimeofday: perf clock is tsc -- using perf clock freq (" 
-        //     << perffreq.QuadPart/1e6 << " MHz)" << endl;
-    } else {
-        //cerr << "vrpn gettimeofday: adjusted clock freq to measured freq (" 
-        //     << freq/1e6 << " MHz)" << endl;
-    }
-    VRPN_CLOCK_FREQ = (__int64) freq;
-    return 0;
-}
 #pragma optimize("", on)
-
-// The pc has no gettimeofday call, and the closest thing to it is _ftime.
-// _ftime, however, has only about 6 ms resolution, so we use the peformance 
-// as an offset from a base time which is established by a call to by _ftime.
-
-// The first call to gettimeofday will establish a new time frame
-// on which all later calls will be based.  This means that the time returned
-// by gettimeofday will not always match _ftime (even at _ftime's resolution),
-// but it will be consistent across all gettimeofday calls.
 
 ///////////////////////////////////////////////////////////////
 // Although VC++ doesn't include a gettimeofday
 // call, Cygnus Solutions Cygwin32 environment does,
-// so this is not used when compiling with gcc under WIN32
-
-// XXX AND ITS WRONG in the current release 10/11/99
-// They claim it will be fixed in the next release, 
-// so until then, we will make it right using our solution. 
+// so this is not used when compiling with gcc under WIN32.
+// XXX Note that the cygwin one was wrong in an earlier
+// version.  It is claimed that they have fixed it now, but
+// better check.
 ///////////////////////////////////////////////////////////////
 int gettimeofday(timeval *tp, struct timezone *tzp)
 {
-    static int fFirst=1;
-    static int fHasPerfCounter=1;
-    static struct _timeb tbInit;
-    static LARGE_INTEGER liInit;
-    static LARGE_INTEGER liNow;
-    static LARGE_INTEGER liDiff;
-    timeval tvDiff;
-
-    if (!fHasPerfCounter) {
-        _ftime(&tbInit);
-        tp->tv_sec  = tbInit.time;
-        tp->tv_usec = tbInit.millitm*1000;
-        return 0;
-    } 
-
-    if (fFirst) {
-        LARGE_INTEGER liTemp;
-        // establish a time base
-        fFirst=0;
-
-	// Check to see if we are on a Windows NT machine (as opposed to a
-	// Windows 95/98 machine).  If we are not, then use the _ftime code
-	// because the hi-perf clock does not work under Windows 98SE on my
-	// laptop, although the query for one seems to indicate that it is
-	// available.
-
-	{   OSVERSIONINFO osvi;
-
-	    memset(&osvi, 0, sizeof(OSVERSIONINFO));
-	    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	    GetVersionEx(&osvi);
-
-	    if (osvi.dwPlatformId != VER_PLATFORM_WIN32_NT) {
-                //cerr << "\nvrpn gettimeofday: disabling hi performance clock on non-NT system. " 
-	        //     << "Defaulting to _ftime (~6 ms resolution) ..." << endl;
-		fHasPerfCounter=0;
-	        gettimeofday( tp, tzp );
-		return 0;
-	    }
-	}
-
-        // check that hi-perf clock is available
-        if ( !(fHasPerfCounter = QueryPerformanceFrequency( &liTemp )) ) {
-            //cerr << "\nvrpn gettimeofday: no hi performance clock available. " 
-            //     << "Defaulting to _ftime (~6 ms resolution) ..." << endl;
-            fHasPerfCounter=0;
-            gettimeofday( tp, tzp );
-            return 0;
-        }
-
-        if (vrpn_AdjustFrequency()<0) {
-            //cerr << "\nvrpn gettimeofday: can't verify clock frequency. " 
-            //     << "Defaulting to _ftime (~6 ms resolution) ..." << endl;
-            fHasPerfCounter=0;
-            gettimeofday( tp, tzp );
-            return 0;
-        }
-        // get current time
-        // We assume this machine has a time stamp counter register --
-        // I don't know of an easy way to check for this
-        rdtsc( liInit );
-        _ftime(&tbInit);
-
-        // we now consider it to be exactly the time _ftime returned
-        // (beyond the resolution of _ftime, down to the perfCounter res)
-    } 
-
-    // now do the regular get time call to get the current time
-    rdtsc( liNow );
-
-    // find offset from initial value
-    liDiff.QuadPart = liNow.QuadPart - liInit.QuadPart;
-
-    tvDiff.tv_sec = (long) ( liDiff.QuadPart / VRPN_CLOCK_FREQ );
-    tvDiff.tv_usec = (long)(1e6*((liDiff.QuadPart-VRPN_CLOCK_FREQ
-                                  *tvDiff.tv_sec)
-                                 / (double) VRPN_CLOCK_FREQ) );
-    
-    // pack the value and clean it up
-    tp->tv_sec  = tbInit.time + tvDiff.tv_sec;
-    tp->tv_usec = tbInit.millitm*1000 + tvDiff.tv_usec;  
-    while (tp->tv_usec >= 1000000) {
-        tp->tv_sec++;
-        tp->tv_usec -= 1000000;
+    if (tp != NULL) {
+            struct _timeb t;
+            _ftime(&t);
+            tp->tv_sec = t.time;
+            tp->tv_usec = (long)t. millitm * 1000;
     }
-  
-    return 0;
-}
+    if (tzp != NULL) {
+            TIME_ZONE_INFORMATION tz;
+            GetTimeZoneInformation(&tz);
+            tzp->tz_minuteswest = tz.Bias ;
+            tzp->tz_dsttime = (tz.StandardBias != tz.Bias);
+    }
+    return 0;}
 
 #endif //defined(_WIN32)
-
-// do the calibration before the program ever starts up
-static timeval __tv;
-static int __iTrash = gettimeofday(&__tv, (struct timezone *)NULL);
