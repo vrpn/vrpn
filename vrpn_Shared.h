@@ -98,6 +98,12 @@
 XXX	Need to define architecture-dependent sizes here
 #endif
 
+const vrpn_int8 vrpn_TRUE=1;
+const vrpn_int8 vrpn_FALSE=0;
+
+// should we add a success & fail?
+
+
 //------------------------------------------------------------------
 //------------------------------------------------------------------
 #ifdef _WIN32
