@@ -134,8 +134,8 @@ extern vrpn_float64 htond( vrpn_float64 d );
 extern vrpn_float64 ntohd( vrpn_float64 d );
 
 
-#ifdef	_WIN32	// No sleep() function ?!?!?!?!?
-#define	sleep(x)	vrpn_SleepMsecs(1000.0 * x)
+#ifdef	_WIN32	// No sleep() function 
+#define	sleep(x)	Sleep(1000.0 * x)
 #endif
 
 #endif  // VRPN_SHARED_H

@@ -104,11 +104,15 @@ struct timeval vrpn_MsecsTimeval( const double dMsecs ) {
 }
 
 void vrpn_SleepMsecs( double dMsecs ) {
+#ifdef _WIN32
+  Sleep(dMsecs);
+#else
   struct timeval tvStart, tvNow;
   gettimeofday(&tvStart, NULL);
   do {
     gettimeofday(&tvNow, NULL);
   } while (vrpn_TimevalMsecs(vrpn_TimevalDiff( tvNow, tvStart ))<dMsecs);
+#endif
 }
 
 
