@@ -309,8 +309,6 @@ vrpn_int32 vrpn_TranslationTable::numEntries (void) const {
 }
 
 vrpn_int32 vrpn_TranslationTable::mapToLocalID (vrpn_int32 remote_id) const {
-  int i;
-
   if ((remote_id < 0) || (remote_id > d_numEntries)) {
 
 #ifdef VERBOSE2
@@ -5493,62 +5491,59 @@ vrpn_bool vrpn_Connection::connected (void) const
 // because they are derived from connections, and the default 
 // args of freq=-1 makes it behave like a regular connection
 
-vrpn_Connection * vrpn_get_connection_by_name
-	 (const char * cname,
-          const char * local_logfile_name,
-          long local_log_mode,
-          const char * remote_logfile_name,
-          long remote_log_mode,
-	  double dFreq,
-	  int cSyncWindow,
-          const char * NIC_IPaddress)
+vrpn_Connection * vrpn_get_connection_by_name (
+    const char * cname,
+    const char * local_logfile_name,
+    long         local_log_mode,
+    const char * remote_logfile_name,
+    long         remote_log_mode,
+    double       dFreq,
+    int          cSyncWindow,
+    const char * NIC_IPaddress)
 {
-        vrpn_Connection * c;
-	char			*where_at;	// Part of name past last '@'
-	int port;
-	int is_file = 0;
+    if (cname == NULL) {
+        fprintf(stderr,"vrpn_get_connection_by_name(): NULL name\n");
+        return NULL;
+    }
 
-	if (cname == NULL) {
-		fprintf(stderr,"vrpn_get_connection_by_name(): NULL name\n");
-		return NULL;
-	}
+    // Find the relevant part of the name (skip past last '@'
+    // if there is one)
+    char *where_at;	// Part of name past last '@'
+    if ( (where_at = strrchr(cname, '@')) != NULL) {
+        cname = where_at+1;	// Chop off the front of the name
+    }
 
-	// Find the relevant part of the name (skip past last '@'
-	// if there is one)
-	if ( (where_at = strrchr(cname, '@')) != NULL) {
-		cname = where_at+1;	// Chop off the front of the name
-	}
+    vrpn_Connection * c 
+        = vrpn_ConnectionManager::instance().getByName(cname);
 
-        c = vrpn_ConnectionManager::instance().getByName(cname);
+    // If its not already open, open it.
+    // Its constructor will add it to the list (?).
+    if (!c) {
 
-	// If its not already open, open it.
-        // Its constructor will add it to the list (?).
-	if (!c) {
+        // connections now self-register in the known list --
+        // this is kind of odd, but oh well (can probably be done
+        // more cleanly later).
 
-		// connections now self-register in the known list --
-		// this is kind of odd, but oh well (can probably be done
-		// more cleanly later).
+        int is_file = !strncmp(cname, "file:", 5);
 
-		is_file = !strncmp(cname, "file:", 5);
+        if (is_file)
+            c = new vrpn_File_Connection (cname, 
+                                          local_logfile_name, local_log_mode);
+        else {
+            int port = vrpn_get_port_number(cname);
+            c = new vrpn_Synchronized_Connection
+                (cname, port,
+                 local_logfile_name, local_log_mode,
+                 remote_logfile_name, remote_log_mode,
+                 dFreq, cSyncWindow, NIC_IPaddress);
+        }
 
-                if (is_file)
-                        c = new vrpn_File_Connection (cname, 
-				  local_logfile_name, local_log_mode);
-                else {
-			port = vrpn_get_port_number(cname);
-                        c = new vrpn_Synchronized_Connection
-                                (cname, port,
-                                 local_logfile_name, local_log_mode,
-                                 remote_logfile_name, remote_log_mode,
-                                 dFreq, cSyncWindow, NIC_IPaddress);
-		}
+    }
 
-	}
-
-	// Return a pointer to the connection, even if it is not doing
-	// okay. This will allow a connection to retry over and over
-	// again before connecting to the server.
-	return c;
+    // Return a pointer to the connection, even if it is not doing
+    // okay. This will allow a connection to retry over and over
+    // again before connecting to the server.
+    return c;
 }
 
 

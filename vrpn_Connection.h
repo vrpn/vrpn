@@ -610,14 +610,15 @@ class vrpn_Synchronized_Connection : public vrpn_Connection
 // WARNING:  vrpn_get_connection_by_name() may not be thread safe.
 // If no IP address for the NIC to use is specified, uses the default
 // NIC.
-vrpn_Connection * vrpn_get_connection_by_name
-         (const char * cname,
-          const char * local_logfile_name = NULL,
-          long local_log_mode = vrpn_LOG_NONE,
-          const char * remote_logfile_name = NULL,
-          long remote_log_mode = vrpn_LOG_NONE,
-	  double dFreq = 1.0, int cSyncWindow = 3,
-          const char * NIC_IPaddress = NULL);
+vrpn_Connection * vrpn_get_connection_by_name (
+    const char * cname,
+    const char * local_logfile_name  = NULL,
+    long         local_log_mode      = vrpn_LOG_NONE,
+    const char * remote_logfile_name = NULL,
+    long         remote_log_mode     = vrpn_LOG_NONE,
+    double       dFreq               = 1.0,
+    int          cSyncWindow         = 3,
+    const char * NIC_IPaddress       = NULL);
 
 
 // Utility routines to parse names (<service>@<location specifier>)

@@ -1436,7 +1436,7 @@ int vrpn_Sound_Server::handle_loadMaterial(void *userdata, vrpn_HANDLERPARAM p){
 
 int vrpn_Sound_Server::handle_setPolyquadVertices(void *userdata, vrpn_HANDLERPARAM p){
 	vrpn_Sound_Server *me = (vrpn_Sound_Server*)userdata;
-	vrpn_float64 (*vertices)[4][3];
+	vrpn_float64 (*vertices)[4][3] = NULL;
 	vrpn_int32 id;
 	
 	me->decodeSetQuadVert((char*)p.buffer, vertices, &id);
@@ -1446,7 +1446,7 @@ int vrpn_Sound_Server::handle_setPolyquadVertices(void *userdata, vrpn_HANDLERPA
 
 int vrpn_Sound_Server::handle_setPolytriVertices(void *userdata, vrpn_HANDLERPARAM p){
 	vrpn_Sound_Server *me = (vrpn_Sound_Server*)userdata;
-	vrpn_float64 (* vertices)[3][3];
+	vrpn_float64 (* vertices)[3][3] = NULL;
 	vrpn_int32 id;
 	
 	me->decodeSetTriVert((char*)p.buffer, vertices, &id);
@@ -1466,7 +1466,7 @@ int vrpn_Sound_Server::handle_setPolyOpeningfactor(void *userdata, vrpn_HANDLERP
 
 int vrpn_Sound_Server::handle_setPolyMaterial(void *userdata, vrpn_HANDLERPARAM p) {
 	vrpn_Sound_Server *me = (vrpn_Sound_Server*)userdata;
-	char **material;
+	char **material = NULL;
 	vrpn_int32 id;
 	
 	me->decodeSetPolyMaterial((char*)p.buffer, material, &id, p.payload_len);
