@@ -3214,33 +3214,33 @@ vrpn_Connection::vrpn_Connection
 		status = BROKEN;
 		return;
 	  }
-	}
 
-	// See if we have a connection yet (wait for 1/2 sec at most).
-	// This will allow the connection to come up fast if things are
-	// all set. Otherwise, we'll drop into re-sends when we get
-	// to mainloop().
-	retval = vrpn_poll_for_accept(endpoint.tcp_client_listen_sock,
+	  // See if we have a connection yet (wait for 1/2 sec at most).
+	  // This will allow the connection to come up fast if things are
+	  // all set. Otherwise, we'll drop into re-sends when we get
+	  // to mainloop().
+	  retval = vrpn_poll_for_accept(endpoint.tcp_client_listen_sock,
 				 &endpoint.tcp_sock, 0.5);
-	if (retval  == -1) {
+	  if (retval  == -1) {
 		fprintf(stderr,
 		  "vrpn_Connection: Can't poll for accept\n");
 		status = BROKEN;
 		return;
-	}
-	if (retval == 1) {	// Got one!
-	  status = CONNECTED;
-	  printf("vrpn: Connection established\n");
+	  }
+	  if (retval == 1) {	// Got one!
+	    status = CONNECTED;
+	    printf("vrpn: Connection established\n");
 
-	  // Set up the things that need to happen when a new connection
-	  // is established.
-	  if (setup_new_connection(endpoint.remote_log_mode,
+	    // Set up the things that need to happen when a new connection
+	    // is established.
+	    if (setup_new_connection(endpoint.remote_log_mode,
 			endpoint.remote_log_name)){
 	      fprintf(stderr, "vrpn_Connection: "
 			      "Can't set up new connection!\n");
 	      drop_connection();
 	      status = BROKEN;
 	      return;
+	    }
 	  }
 	}
 
