@@ -107,6 +107,9 @@ class vrpn_File_Connection : public vrpn_Connection {
       // helper function for mainloop()
     int need_to_play(timeval filetime);
 
+    virtual int read_cookie (void);  // checks the cookie at
+                                     // the head of the log file;
+                                     //  exit on error!
     virtual int read_entry (void);  // appends entry to d_logTail
       // returns 0 on success, 1 on EOF, -1 on error
     virtual int close_file (void);

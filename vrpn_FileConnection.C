@@ -62,22 +62,26 @@ vrpn_File_Connection::vrpn_File_Connection (const char * file_name) :
   if (!d_file) {
     fprintf(stderr, "vrpn_File_Connection:  "
                     "Could not open file \"%s\".\n", bare_file_name);
+    delete [] (char *) bare_file_name;
     status = BROKEN;
     return;
   }
 
-  if (bare_file_name)
-    delete [] (char *) bare_file_name;
+  delete [] (char *) bare_file_name;
 
   // PRELOAD
   // TCH 16 Sept 1998
 
-  //fprintf(stderr, "vrpn_File_Connection::vrpn_File_Connection: Preload...\n");
+//fprintf(stderr, "vrpn_File_Connection::vrpn_File_Connection: Preload...\n");
 
+  if (read_cookie() < 0) {
+    status = BROKEN;
+    return;
+  }
   while (!read_entry());
   d_currentLogEntry = d_logHead;
 
-  //fprintf(stderr, "vrpn_File_Connection::vrpn_File_Connection: Done preload.\n");
+//fprintf(stderr, "vrpn_File_Connection::vrpn_File_Connection: Done preload.\n");
 
   d_startEntry = d_logHead;
   d_start_time = d_startEntry->data.msg_time;  
@@ -409,6 +413,31 @@ int vrpn_File_Connection::time_since_connection_open
                                 (timeval * elapsed_time) {
 
   *elapsed_time = vrpn_TimevalDiff(d_time, d_start_time);
+
+  return 0;
+}
+
+// Reads a cookie from the logfile and calls check_vrpn_cookie()
+// (from vrpn_Connection.C) to check it.
+// Returns -1 on no cookie or cookie mismatch (which should cause abort),
+// 0 otherwise.
+
+// virtual
+int vrpn_File_Connection::read_cookie (void) {
+  char readbuf [501];  // HACK!
+  int retval;
+
+  retval = fread(readbuf, vrpn_cookie_size(), 1, d_file);
+  if (retval <= 0) {
+    fprintf(stderr, "vrpn_File_Connection::read_cookie:  "
+                    "No cookie.  If you're sure this is a logfile, "
+                    "run add_vrpn_cookie on it and try again.\n");
+    return -1;
+  }
+
+  retval = check_vrpn_cookie(readbuf);
+  if (retval < 0)
+    return -1;
 
   return 0;
 }

@@ -93,8 +93,8 @@ int gethostname (char *, int);
 // string.  Since minor versions should interoperate, MAGIC is only
 // checked through the last period;  characters after that are ignored.
 
-char * vrpn_MAGIC = (char *) "vrpn: ver. 04.06";
-const int MAGICLEN = 16;  // Must be a multiple of vrpn_ALIGN bytes!
+const char * vrpn_MAGIC = (const char *) "vrpn: ver. 04.06";
+const int vrpn_MAGICLEN = 16;  // Must be a multiple of vrpn_ALIGN bytes!
 
 // Version history:
 //
@@ -1023,6 +1023,62 @@ int vrpn_start_server(const char *machine, char *server_name, char *args)
 //**  End of section pulled from SDI library
 //*********************************************************************
 
+// COOKIE MANIPULATION
+
+// Writes the magic cookie into buffer with given length.
+// On failure (if the buffer is too short), returns -1;
+// otherwise returns 0.
+
+// This is exposed in vrpn_Connection.h so that we can write
+// add_vrpn_cookie.
+
+int write_vrpn_cookie (char * buffer, int length,
+                              long remote_log_mode) {
+  if (length < vrpn_MAGICLEN + vrpn_ALIGN + 1)
+    return -1;
+
+  sprintf(buffer, "%s  %c", vrpn_MAGIC, remote_log_mode + '0');
+  return 0;
+}
+
+// Checks to see if the given buffer has the magic cookie.
+// Returns -1 on a mismatch, 0 on an exact match,
+// 1 on a minor version difference.
+
+int check_vrpn_cookie (const char * buffer) {
+  char * bp;
+
+  // Comparison changed 9 Feb 98 by TCH
+  //   We don't care if the minor version numbers don't match,
+  // so only check the characters through the last '.' in our
+  // template.  (If there is no last '.' in our template, somebody's
+  // modified this code to break the constraints above, and we just
+  // use a maximally restrictive check.)
+  //   XXX This pointer arithmetic isn't completely safe.
+
+  bp = strrchr(buffer, '.');
+  if (strncmp(buffer, vrpn_MAGIC,
+      (bp == NULL ? vrpn_MAGICLEN : bp + 1 - buffer))) {
+    fprintf(stderr, "check_vrpn_cookie:  "
+            "bad cookie (wanted '%s', got '%s'\n", vrpn_MAGIC, buffer);
+    return -1;
+  }
+
+  if (strncmp(buffer, vrpn_MAGIC, vrpn_MAGICLEN)) {
+    fprintf(stderr, "vrpn_Connection:  "
+        "Warning:  minor version number doesn't match.\n");
+    return 1;
+  }
+
+  return 0;
+}
+
+int vrpn_cookie_size (void) {
+  return vrpn_MAGICLEN + vrpn_ALIGN;
+}
+
+// END OF COOKIE (-CUTTER?) CODE
+
 void vrpn_OneConnection::init(void)
 {
 	vrpn_int32 i;
@@ -1513,13 +1569,41 @@ int vrpn_OneConnection::open_log (void) {
 
 int vrpn_OneConnection::close_log (void) {
 
+  char magicbuf [501];  // HACK
   vrpn_LOGLIST * lp;
   int host_len;
   int final_retval = 0;
   int retval;
 
-  // write out the log, strting at d_first_log_entry and
-  // working backwards
+  // Write out the log header (magic cookie)
+  // TCH 20 May 1999
+
+  // There's at least one hack here:
+  //   What logging mode should a client that plays back the log at a
+  // later time be forced into?  I believe NONE, but there might be
+  // arguments the other way?
+
+  retval = write_vrpn_cookie(magicbuf, vrpn_cookie_size() + 1,
+                             vrpn_LOG_NONE);
+  if (retval < 0) {
+    fprintf(stderr, "vrpn_Connection::close_log:  "
+                    "Couldn't create magic cookie.\n");
+    final_retval = -1;
+  }
+
+  retval = fwrite(magicbuf, 1, vrpn_cookie_size(), d_logfile);
+  if (retval != vrpn_cookie_size()) {
+    fprintf(stderr, "vrpn_Connection::close_log:  "
+                    "Couldn't write magic cookie to log file "
+                    "(got %d, expected %d).\n",
+            retval, vrpn_cookie_size());
+    lp = d_logbuffer;
+    final_retval = -1;
+  }
+
+
+  // Write out the messages in the log,
+  // starting at d_first_log_entry and working backwards
 
   if (!d_logfile) {
     fprintf(stderr, "vrpn_Connection::close_log:  "
@@ -1532,7 +1616,7 @@ int vrpn_OneConnection::close_log (void) {
     final_retval = -1;
   }
 
-  for (lp = d_first_log_entry; lp; lp = lp->prev) {
+  for (lp = d_first_log_entry; lp && !final_retval; lp = lp->prev) {
 
     retval = fwrite(&lp->data, 1, sizeof(lp->data), d_logfile);
         //vrpn_noint_block_write(d_logfile_handle, (char *) &lp->data,
@@ -1938,16 +2022,23 @@ void vrpn_Connection::handle_connection(void)
 int vrpn_Connection::setup_new_connection
          (long remote_log_mode, const char * remote_logfile_name)
 {
-	char	sendbuf [MAGICLEN + vrpn_ALIGN + 1];
-	char	recvbuf [MAGICLEN + vrpn_ALIGN + 1];
-	char *	bp;
+	char	sendbuf [501];  // HACK
+	char	recvbuf [501];  // HACK
 	long	received_logmode;
 	vrpn_int32	sendlen;
 	int	i;
+        int retval;
 	unsigned short udp_portnum;
 
-	sprintf(sendbuf, "%s  %c", vrpn_MAGIC, remote_log_mode + '0');
-	sendlen = MAGICLEN + vrpn_ALIGN;
+  //sprintf(sendbuf, "%s  %c", vrpn_MAGIC, remote_log_mode);
+  retval = write_vrpn_cookie(sendbuf, vrpn_cookie_size() + 1,
+                             remote_log_mode);
+  if (retval < 0) {
+    perror("vrpn_Connection::setup_new_connection:  "
+           "Internal error - array too small.  The code's broken.");
+    return -1;
+  }
+  sendlen = vrpn_cookie_size();
 
 	// Write the magic cookie header to the server
 	if (vrpn_noint_block_write(endpoint.tcp_sock, sendbuf, sendlen)
@@ -1964,34 +2055,17 @@ int vrpn_Connection::setup_new_connection
 	    "vrpn_Connection::setup_new_connection: Can't read cookie");
 	  return -1;
 	}
-	recvbuf[MAGICLEN] = '\0';
+	//recvbuf[vrpn_MAGICLEN] = '\0';  // shouldn't be needed any more
 
-	// Comparison changed 9 Feb 98 by TCH
-	//   We don't care if the minor version numbers don't match,
-	// so only check the characters through the last '.' in our
-	// template.  (If there is no last '.' in our template, somebody's
-        // modified this code to break the constraints above, and we just
-	// use a maximally restrictive check.)
-        //   XXX This pointer arithmetic isn't completely safe.
-
-	bp = strrchr(recvbuf, '.');
-	if (strncmp(recvbuf, vrpn_MAGIC,
-            (bp == NULL ? MAGICLEN : bp + 1 - recvbuf))) {
-	  fprintf(stderr, "vrpn_Connection::setup_new_connection:  "
-                  "bad cookie (wanted '%s', got '%s'\n", vrpn_MAGIC, recvbuf);
-	  return -1;
-	}
-
-	if (strncmp(recvbuf, vrpn_MAGIC, MAGICLEN)) {
-	  fprintf(stderr, "vrpn_Connection:  "
-              "Warning:  minor version number doesn't match.\n");
-	}
+  retval = check_vrpn_cookie(recvbuf);
+  if (retval < 0)
+    return -1;
 
 	// Find out what log mode they want us to be in BEFORE we pack
 	// type, sender, and udp descriptions!  If it's nonzero, the
 	// filename to use should come in a log_description message later.
 
-	received_logmode = recvbuf[MAGICLEN + 2] - '0';
+	received_logmode = recvbuf[vrpn_MAGICLEN + 2] - '0';
 	if ((received_logmode < 0) ||
             (received_logmode > (vrpn_LOG_INCOMING | vrpn_LOG_OUTGOING))) {
 	  fprintf(stderr, "vrpn_Connection::setup_new_connection:  "

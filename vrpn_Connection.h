@@ -245,6 +245,10 @@ protected:
 	vrpn_int32	num_other_types;
 };
 
+
+
+
+
 class vrpn_Connection
 {
   public:
@@ -468,6 +472,10 @@ class vrpn_Connection
 	struct timeval start_time;
 };
 
+
+
+
+
 // forward decls
 class vrpn_Clock_Server;
 class vrpn_Clock_Remote;
@@ -549,6 +557,17 @@ char * vrpn_copy_machine_name (const char * hostspecifier);
 int vrpn_get_port_number (const char * hostspecifier);
 char * vrpn_copy_rsh_program (const char * hostspecifier);
 char * vrpn_copy_rsh_arguments (const char * hostspecifier);
+
+// Checks the buffer to see if it is a valid VRPN header cookie.
+// Returns -1 on total mismatch,
+// 1 on minor version mismatch or other acceptable difference,
+// and 0 on exact match.
+int check_vrpn_cookie (const char * buffer);
+
+// Returns the size of the magic cookie buffer, plus any alignment overhead.
+int vrpn_cookie_size (void);
+
+int write_vrpn_cookie (char * buffer, int length, long remote_log_mode);
 
 #endif // VRPN_CONNECTION_H
 
