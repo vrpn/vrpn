@@ -6,15 +6,13 @@
 // {{{ timeval defines
 #if defined (_WIN32) && !defined (__CYGWIN__)
 
-// {{{ win32 specific stuff
-
 #include <windows.h>
 #include <sys/timeb.h>
 #include <winsock.h>   // timeval is defined here
 
+// If compiling under Cygnus Solutions Cygwin then these get defined by
+// including sys/time.h.  So, we will manually define only for _WIN32
 
-// If compiling under Cygnus Solutions Cygwin
-// then this should already be defined.
 #ifndef _STRUCT_TIMEVAL
 #define _STRUCT_TIMEVAL
   /* from HP-UX */
@@ -24,20 +22,22 @@ struct timezone {
 };
 #endif
 
+// manually define this too.  _WIN32 sans cygwin doesn't have gettimeofday
 extern int gettimeofday(struct timeval *tp, struct timezone *tzp);
 
 // This has been moved to connection.C so that users of this
 // lib can still use fstream and other objects with close functions.
 // #define close closesocket
 
-#else  // not _WIN32, but including CYGWIN
+#else  // cygwin or not _WIN32
+// both cygwin and Unix (not _WIN32) should include sys/time.h
+// but cygwin need to include winsock.h first.  barf :()
 
 #if defined(__CYGWIN__)
 #include <windows.h>
 #include <sys/timeb.h>
-#include <winsock.h>   // timeval is defined here
+#include <winsock.h>     // timeval is actually defined here
 #endif
-// }}} end win32 specific
 
 #include <sys/time.h>    // for struct timeval
 
