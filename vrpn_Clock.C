@@ -9,7 +9,7 @@
   Revised: Wed Apr  1 13:23:40 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.C,v $
   $Locker:  $
-  $Revision: 1.25 $
+  $Revision: 1.26 $
   \*****************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
@@ -110,7 +110,9 @@ vrpn_Clock_Server::~vrpn_Clock_Server()
 int vrpn_Clock_Server::clockQueryHandler(void *userdata, vrpn_HANDLERPARAM p) {
   vrpn_Clock_Server *me = (vrpn_Clock_Server *) userdata;
   static struct timeval now;
-  char rgch[50];
+
+  vrpn_int32	alignbuf[13];	// Ensure word-aligned buffer for encode
+  char *rgch = (char *)alignbuf;
   
   // send back time client sent request and the buffer the client sent
   //  cerr << ".";
@@ -886,6 +888,11 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
 
 /*****************************************************************************\
   $Log: vrpn_Clock.C,v $
+  Revision 1.26  2000/01/05 23:09:19  taylorr
+  Aligns the buffer that the clock writes into. This was a problem on
+  solaris machines. Dunno who trackers and other devices don't have the
+  same problem.
+
   Revision 1.25  1999/11/15 22:53:58  helser
   Removes the vrpn_cygwin_hack.h file. It is not necessary if the header
   files are included in a certain order. If in doubt, include vrpn_Shared.h
