@@ -9,7 +9,7 @@
   Revised: Wed Apr  1 13:23:40 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.C,v $
   $Locker:  $
-  $Revision: 1.14 $
+  $Revision: 1.15 $
   \*****************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
@@ -167,6 +167,8 @@ vrpn_Clock_Remote::vrpn_Clock_Remote(const char * name, vrpn_float64 dFreq,
   if (dFreq <= 0) {
     // only sync on request of user, and then do it with fullSync()
     fDoQuickSyncs=0;
+    rgtvHalfRoundTrip = NULL;
+    rgtvClockOffset = NULL;
     
     // handler is automatically registered by full sync part of mainloop
   } else {
@@ -813,6 +815,9 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
 
 /*****************************************************************************\
   $Log: vrpn_Clock.C,v $
+  Revision 1.15  1999/03/13 17:00:56  winston
+  Bug fix, initialize things to NULL that aren't used in fullsync mode
+
   Revision 1.14  1999/02/24 15:58:26  taylorr
   BIG CHANGES.
   I modified the code so that it can compile on 64-bit SGI machines.
