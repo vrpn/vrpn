@@ -67,7 +67,7 @@
 # port on this machine. This driver will also run an InterSense IS600 or IS900
 # tracker, but you will want to include extra initialization code (as described
 # below) to set up the ultrasonic pip information, wand devices, stylus devices
-# and so forth. Arguments that go on the first line:
+# and so forth.  Arguments that go on the first line:
 #	char	name_of_this_device[]
 #	char	name_of_serial_device[]
 #	int	baud_rate_of_serial_device
@@ -81,9 +81,16 @@
 # it is treated as a line telling how long to sleep, with the integer number of
 # seconds following the *.
 #
+# If one or more sensors on the Fastrak have a stylus button on them, use
+# the "FTStylus" command after the reset command lines (if any).  There should
+# be a front-slash "/" character at the end of the line before the FTStylus
+# command.  The command takes two arguments: the name of the button device
+# that will report the buttons and the sensor number to which the button is
+# attached (the first sensor is sensor 0).
+#
 # Commands to add Joysticks (2 buttons) or Wands (5 buttons and 2 analogs) to
 # the various sensors on the Isense900 are done by adding Stylus and
-# Wand command lines before the reset command lines.  Each of these lines
+# Wand command lines after the reset command lines.  Each of these lines
 # takes two arguments: the name of the button (for Stylus) or button and
 # analog (for Wand) servers, and the sensor number (starting from 0).  The
 # Wand line takes eight additional parameters, which specify the scaling
@@ -102,7 +109,12 @@
 # Fastrak/Isense tracker, not to extend the line for any other type of device
 # listed in this configuration file.
 
+# Vanilla Fastrak on on a Unix box
 #vrpn_Tracker_Fastrak	Fastrak0	/dev/ttyS0	19200
+
+# Fastrak with a stylus on sensor zero on a Windows box
+#vrpn_Tracker_Fastrak	Tracker0	COM1	115200 /
+#FTStylus Stylus0 0
 
 # IS600 and its pip settings
 #vrpn_Tracker_Fastrak	Isense600	/dev/ttyS0	19200 \

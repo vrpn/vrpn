@@ -1,3 +1,10 @@
+2002-12-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Added Deepak's code to run fastraks that have a stylus
+		with a button on them.
+	* vrpn.cfg.SAMPLE : Same.  Also modified examples for AnalogFly to
+		use correct term.  Also fixed comments.
+
 2002-12-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
         * client_and_server.dsp : DSP files have been modified to not do

@@ -1046,6 +1046,13 @@ int setup_Tracker_Fastrak (char * & pch, char * line, FILE * config_file) {
 		  return -1;
 		}
 		printf(" ...added Stylus (%s) to sensor %d\n", lineName, lineSensor);
+	    } else if (strcmp(lineCommand, "FTStylus") == 0) {
+		if (mytracker->add_fastrak_stylus_button(lineName, lineSensor, 1)) {
+		  fprintf(stderr,"Cannot set Stylus buttons for Fastrak (%s)\n",line);
+		  delete trackers[num_trackers];
+		  return -1;
+		}
+		printf(" ...added FTStylus (%s) to sensor %d\n", lineName, lineSensor);
 	    } else {
 		fprintf(stderr,"Unknown command in Wand/Stylus description for Fastrak/Isense (%s)\n",lineCommand);
 		delete trackers[num_trackers];
