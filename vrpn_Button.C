@@ -69,6 +69,10 @@ void	vrpn_Button::print(void)
    printf("\n");
 }
 
+vrpn_Connection *vrpn_Button::connectionPtr() {
+  return connection;
+}
+
 int	vrpn_Button::encode_to(char *buf, int button, int state)
 {
    // Message includes: long buttonNum, long state

@@ -22,6 +22,8 @@ class vrpn_Button {
 	// button updates.
 	virtual void mainloop(void) = 0;	// Report changes to conneciton
 
+        vrpn_Connection *connectionPtr();
+
   protected:
 	vrpn_Connection *connection;
 	unsigned char	buttons[vrpn_BUTTON_MAX_BUTTONS];
