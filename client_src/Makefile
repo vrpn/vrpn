@@ -111,10 +111,11 @@ $(OBJ_DIR)/forwarderClient: $(OBJ_DIR)/forwarderClient.o ../$(HW_OS)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/forwarderClient \
 		$(OBJ_DIR)/forwarderClient.o -lvrpn $(ARCH_LIBS)
 
-# These utilities actually DON'T use libvrpn
+$(OBJ_DIR)/checklogfile: $(OBJ_DIR)/checklogfile.o ../$(HW_OS)/libvrpn.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/checklogfile \
+		$(OBJ_DIR)/checklogfile.o -lvrpn $(ARCH_LIBS)
 
-$(OBJ_DIR)/checklogfile: $(OBJ_DIR)/checklogfile.o
-	$(CC) $(LFLAGS) -o $(OBJ_DIR)/checklogfile $(OBJ_DIR)/checklogfile.o
+# These utilities actually DON'T use libvrpn
 
 $(OBJ_DIR)/logfilesenders: $(OBJ_DIR)/logfilesenders.o
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/logfilesenders \
