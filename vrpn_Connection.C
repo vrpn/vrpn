@@ -2838,6 +2838,10 @@ int vrpn_Connection::register_log_filter (vrpn_LOGFILTER filter,
   return 0;
 }
 
+// virtual
+vrpn_File_Connection * vrpn_Connection::get_File_Connection (void) {
+  return NULL;
+}
 
 
 vrpn_int32 vrpn_Connection::set_tcp_outbuf_size (vrpn_int32 bytecount) {

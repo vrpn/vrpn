@@ -23,9 +23,9 @@
 
 class vrpn_Ohmmeter {
   public:
-    vrpn_Ohmmeter(char *name, vrpn_Connection *c = NULL);
-    virtual void mainloop(void) = 0;	// Handle getting any reports
-    virtual ~vrpn_Ohmmeter() {};
+    vrpn_Ohmmeter (char * name, vrpn_Connection * c = NULL);
+    virtual void mainloop (void) = 0;	// Handle getting any reports
+    virtual ~vrpn_Ohmmeter (void);
 
   protected:
     vrpn_Connection *connection;	

@@ -102,6 +102,14 @@ vrpn_Button::vrpn_Button(const char *name, vrpn_Connection *c)
     delete [] servicename;
 }
 
+// virtual
+vrpn_Button::~vrpn_Button (void) {
+
+  // do nothing
+
+}
+
+
 vrpn_Button_Filter::vrpn_Button_Filter(const char *name,
 									   vrpn_Connection *c)
 	:vrpn_Button(name, c)
@@ -449,6 +457,17 @@ vrpn_parallel_Button::vrpn_parallel_Button(const char *name,
     status = BUTTON_READY;
     gettimeofday(&timestamp, NULL);
 #endif
+}
+
+vrpn_Button_Python::vrpn_Button_Python (const char * name, vrpn_Connection * c,
+                                        int p) :
+    vrpn_parallel_Button (name, c, p) {
+
+}
+
+// virtual
+vrpn_Button_Python::~vrpn_Button_Python (void) {
+
 }
 
 void vrpn_Button_Python::mainloop(const struct timeval * /*timeout*/ )

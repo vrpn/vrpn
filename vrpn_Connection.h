@@ -352,7 +352,7 @@ class vrpn_Connection
 
   // vrpn_File_Connection implements this as "return this" so it
   // can be used to detect a File_Connection and get the pointer for it
-  virtual vrpn_File_Connection *get_File_Connection() { return NULL; }
+  virtual vrpn_File_Connection * get_File_Connection (void);
 
   protected:
   // Users should not create vrpn_Connection directly -- use 

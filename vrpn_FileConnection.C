@@ -656,6 +656,11 @@ int vrpn_File_Connection::time_since_connection_open( timeval * elapsed_time )
     return 0;
 }
 
+// virtual
+vrpn_File_Connection * vrpn_File_Connection::get_File_Connection (void) {
+  return this;
+}
+
 // {{{ read_cookie and read_entry
 
 // Reads a cookie from the logfile and calls check_vrpn_cookie()

@@ -39,7 +39,7 @@ class vrpn_Tracker {
   public:
    vrpn_Tracker (const char * name, vrpn_Connection * c = NULL);
    virtual void mainloop(const struct timeval * timeout=NULL) = 0;
-   virtual ~vrpn_Tracker() {};
+   virtual ~vrpn_Tracker (void);
 
    int read_config_file (FILE * config_file, const char * tracker_name);
    void print_latest_report(void);
@@ -228,7 +228,7 @@ class vrpn_Tracker_Canned: public vrpn_Tracker {
 
   protected:
 
-   virtual void get_report (void) { /* do nothing */ }
+   virtual void get_report (void);
    virtual void reset (void);
 
   private:

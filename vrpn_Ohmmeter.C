@@ -44,6 +44,12 @@ vrpn_Ohmmeter::vrpn_Ohmmeter(char *name, vrpn_Connection *c)
     delete [] servicename;
 }
 
+// virtual
+vrpn_Ohmmeter::~vrpn_Ohmmeter (void) {
+
+}
+
+
 #define SETOHM_MESSAGE_SIZE (4*sizeof(vrpn_float64))
 vrpn_int32 vrpn_Ohmmeter::encode_setchannel_to(char *buf)
 {

@@ -91,7 +91,7 @@ class vrpn_Analog_Server : public vrpn_Analog {
     // necessarily a good default behavior;  I want to make the choice
     // between the two explicit.)
 
-    virtual void mainloop (const struct timeval *) { }
+    virtual void mainloop (const struct timeval *);
 
     // If anything has changed, report it to the client.
     

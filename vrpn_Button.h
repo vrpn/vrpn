@@ -21,7 +21,7 @@
 class vrpn_Button {
   public:
 	vrpn_Button(const char *name, vrpn_Connection *c = NULL);
-        virtual ~vrpn_Button (void) { }
+        virtual ~vrpn_Button (void);
 
 	// Print the status of the button
 	void print(void);
@@ -114,9 +114,8 @@ class vrpn_parallel_Button: public vrpn_Button_Filter {
 // Open a Python that is connected to a parallel port on this Linux box.
 class vrpn_Button_Python: public vrpn_parallel_Button {
   public:
-	vrpn_Button_Python(const char *name, vrpn_Connection *c, int p)
-		: vrpn_parallel_Button(name,c,p)
-	{}
+	vrpn_Button_Python (const char * name, vrpn_Connection * c, int p);
+        virtual ~vrpn_Button_Python (void);
 
 	virtual void mainloop(const struct timeval * timeout = NULL);
   protected:

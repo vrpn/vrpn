@@ -135,6 +135,11 @@ vrpn_Tracker::vrpn_Tracker (const char * name, vrpn_Connection * c) {
     delete [] servicename;
 }
 
+// virtual
+vrpn_Tracker::~vrpn_Tracker (void) {
+
+}
+
 int vrpn_Tracker::read_config_file (FILE * config_file,
                                     const char * tracker_name) {
 
@@ -585,7 +590,13 @@ void vrpn_Tracker_Canned::copy (void) {
   quat[2] = t.quat[2];  quat[3] = t.quat[3];
 }
 
-void vrpn_Tracker_Canned::reset() {
+void vrpn_Tracker_Canned::get_report (void) {
+
+  // do nothing
+
+}
+
+void vrpn_Tracker_Canned::reset (void) {
   fprintf(stderr, "Resetting!");
   if (fp == NULL) return;
   fseek(fp, sizeof(vrpn_int32), SEEK_SET);

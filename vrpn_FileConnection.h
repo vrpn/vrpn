@@ -36,7 +36,7 @@ public:
     
     virtual int time_since_connection_open (timeval * elapsed_time);
 
-    virtual vrpn_File_Connection *get_File_Connection() { return this; }
+    virtual vrpn_File_Connection * get_File_Connection (void);
 
     // Pretend to send pending report, really just clear the buffer.
     virtual int     send_pending_reports (void);

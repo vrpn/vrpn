@@ -111,7 +111,7 @@ vrpn_Serial_Analog::vrpn_Serial_Analog (const char * name, vrpn_Connection * c,
 {
    // Find out the port name and baud rate;
    if (port == NULL) {
-	fprintf(stderr,"vrpn_Analog_Serial: NULL port name\n");
+	fprintf(stderr,"vrpn_Serial_Analog: NULL port name\n");
 	status = ANALOG_FAIL;
 	return;
    } else {
@@ -143,6 +143,13 @@ vrpn_Analog_Server::vrpn_Analog_Server (const char * name,
 
 //virtual
 vrpn_Analog_Server::~vrpn_Analog_Server (void) {
+
+}
+
+// virtual
+void vrpn_Analog_Server::mainloop (const struct timeval *) {
+
+  // do nothing
 
 }
 
