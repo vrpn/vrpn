@@ -276,8 +276,9 @@ class vrpn_Endpoint {
     char * remote_machine_name;	// Machine to call
     int	remote_UDP_port;	// UDP port on remote machine
     timeval last_UDP_lob;	// When the last lob occured
-    long remote_log_mode;	// Mode to put the remote logging in
-    char * remote_log_name;	// Name of the remote log file
+    long d_remoteLogMode;	// Mode to put the remote logging in
+    char * d_remoteInLogName;	// Name of the remote log file
+    char * d_remoteOutLogName;	// Name of the remote log file
 
     // offset of clocks on connected machines -- local - remote
     // (this should really not be here, it should be in adjusted time
@@ -289,9 +290,13 @@ class vrpn_Endpoint {
     // for example.
     char rhostname [150];
 
-    // Logging - TCH 19 April 00
+    // Logging - TCH 19 April 00;  changed into two logs 16 Feb 01
 
-    vrpn_Log * d_log;
+    vrpn_Log * d_inLog;
+    vrpn_Log * d_outLog;
+
+    void setLogNames (const char * inName, const char * outName);
+    int openLogs (void);
 
     // Routines that handle system messages
     // Visible so that vrpn_Connection can pass them to the Dispatcher
@@ -469,8 +474,8 @@ class vrpn_Connection {
 	// Create a connection to listen for incoming connections on a port
 	vrpn_Connection (unsigned short listen_port_no =
 		         vrpn_DEFAULT_LISTEN_PORT_NO,
-                         const char * local_logfile_name = NULL,
-                         long local_log_mode = vrpn_LOG_NONE,
+                         const char * local_in_logfile_name = NULL,
+                         const char * local_out_logfile_name = NULL,
                          const char * NIC_IPaddress = NULL,
                          vrpn_Endpoint * (* epa) (vrpn_Connection *,
                            vrpn_int32 *) = allocateEndpoint);
@@ -486,10 +491,10 @@ class vrpn_Connection {
 	// to.
 	vrpn_Connection (const char * server_name,
                          int port = vrpn_DEFAULT_LISTEN_PORT_NO,
-                         const char * local_logfile_name = NULL,
-                         long local_log_mode = vrpn_LOG_NONE,
-                         const char * remote_logfile_name = NULL,
-                         long remote_log_mode = vrpn_LOG_NONE,
+                         const char * local_in_logfile_name = NULL,
+                         const char * local_out_logfile_name = NULL,
+                         const char * remote_in_logfile_name = NULL,
+                         const char * remote_out_logfile_name = NULL,
                          const char * NIC_IPaddress = NULL,
                          vrpn_Endpoint * (* epa) (vrpn_Connection *,
                            vrpn_int32 *) = allocateEndpoint);
@@ -630,8 +635,8 @@ class vrpn_Synchronized_Connection : public vrpn_Connection
     // uses the default NIC.
     vrpn_Synchronized_Connection (unsigned short listen_port_no =
 		         vrpn_DEFAULT_LISTEN_PORT_NO,
-                         const char * local_logfile_name = NULL,
-                         long local_log_mode = vrpn_LOG_NONE,
+                         const char * local_in_logfile_name = NULL,
+                         const char * local_out_logfile_name = NULL,
                          const char * NIC_IPaddress = NULL,
                          vrpn_Endpoint * (* epa) (vrpn_Connection *,
                              vrpn_int32 *) = allocateEndpoint);
@@ -646,10 +651,10 @@ class vrpn_Synchronized_Connection : public vrpn_Connection
     vrpn_Synchronized_Connection
 	 (const char * server_name,
           int port = vrpn_DEFAULT_LISTEN_PORT_NO,
-          const char * local_logfile_name = NULL,
-          long local_log_mode = vrpn_LOG_NONE,
-          const char * remote_logfile_name = NULL,
-          long remote_log_mode = vrpn_LOG_NONE,
+          const char * local_in_logfile_name = NULL,
+          const char * local_out_logfile_name = NULL,
+          const char * remote_in_logfile_name = NULL,
+          const char * remote_out_logfile_name = NULL,
 	  double dFreq = 4.0, 
 	  int cOffsetWindow = 2,
           const char * NIC_IPaddress = NULL,
@@ -670,10 +675,10 @@ class vrpn_Synchronized_Connection : public vrpn_Connection
 // NIC.
 vrpn_Connection * vrpn_get_connection_by_name (
     const char * cname,
-    const char * local_logfile_name  = NULL,
-    long         local_log_mode      = vrpn_LOG_NONE,
-    const char * remote_logfile_name = NULL,
-    long         remote_log_mode     = vrpn_LOG_NONE,
+    const char * local_in_logfile_name = NULL,
+    const char * local_out_logfile_name = NULL,
+    const char * remote_in_logfile_name = NULL,
+    const char * remote_out_logfile_name = NULL,
     double       dFreq               = 1.0,
     int          cSyncWindow         = 3,
     const char * NIC_IPaddress       = NULL);

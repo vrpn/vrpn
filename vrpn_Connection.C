@@ -2782,9 +2782,11 @@ vrpn_Endpoint::vrpn_Endpoint (vrpn_TypeDispatcher * dispatcher,
     d_tcpListenPort (0),
     remote_machine_name (NULL),
     remote_UDP_port (0),
-    remote_log_mode (0),
-    remote_log_name (NULL),
-    d_log (NULL),
+    d_remoteLogMode (0),
+    d_remoteInLogName (NULL),
+    d_remoteOutLogName (NULL),
+    d_inLog (NULL),
+    d_outLog (NULL),
     d_udpOutboundSocket (INVALID_SOCKET),
     d_udpInboundSocket (INVALID_SOCKET),
     d_tcpOutbuf (new char [vrpn_CONNECTION_TCP_BUFLEN]),
@@ -2838,10 +2840,15 @@ vrpn_Endpoint::~vrpn_Endpoint (void) {
   }
 
   // Delete the log, if any
-  if (d_log) {
+  if (d_inLog) {
     // close() is called by destructor IFF necessary
-    //d_log->close();
-    delete d_log;
+    //d_inLog->close();
+    delete d_inLog;
+  }
+  if (d_outLog) {
+    // close() is called by destructor IFF necessary
+    //d_outLog->close();
+    delete d_outLog;
   }
 
 }
@@ -2907,9 +2914,16 @@ void vrpn_Endpoint::init (void) {
   tvClockOffset.tv_sec = 0;
   tvClockOffset.tv_usec = 0;
 
-  d_log = new vrpn_Log (d_senders, d_types);
+  d_inLog = new vrpn_Log (d_senders, d_types);
 
-  if (!d_log) {
+  if (!d_inLog) {
+    fprintf(stderr, "vrpn_Endpoint::init:  Out of memory!\n");
+    return;
+  }
+
+  d_outLog = new vrpn_Log (d_senders, d_types);
+
+  if (!d_outLog) {
     fprintf(stderr, "vrpn_Endpoint::init:  Out of memory!\n");
     return;
   }
@@ -3185,7 +3199,7 @@ int vrpn_Endpoint::pack_message
   // any other failure-prone action (such as do_callbacks_for()).  Only
   // semantic checking should precede it.
 
-  if (d_log->logOutgoingMessage (len, time, type, sender, buffer)) {
+  if (d_outLog->logOutgoingMessage (len, time, type, sender, buffer)) {
     fprintf(stderr, "vrpn_Endpoint::pack_message:  "
                     "Couldn't log outgoing message.!\n");
     return -1;
@@ -3346,10 +3360,15 @@ int vrpn_Endpoint::pack_udp_description (int portno) {
 
 int vrpn_Endpoint::pack_log_description (void) {
   struct timeval now;
+  char buf [1000];  // HACK
+  char * bpp;
+  char ** bp;
+  vrpn_int32 buflen = 1000;
+  int usage;
 
   // If we're not requesting remote logging, don't send any message.
 
-  if (!remote_log_mode) {
+  if (!d_remoteLogMode) {
     return 0;
   }
 
@@ -3359,10 +3378,16 @@ int vrpn_Endpoint::pack_log_description (void) {
   // to write to.
 
   gettimeofday(&now, NULL);
-  return pack_message(strlen(remote_log_name) + 1, now,
-                      vrpn_CONNECTION_LOG_DESCRIPTION,
-                      remote_log_mode, remote_log_name,
-                      vrpn_CONNECTION_RELIABLE);
+  bpp = buf;
+  bp = &bpp;
+  vrpn_buffer(bp, &buflen, (vrpn_int32) strlen(d_remoteInLogName));
+  vrpn_buffer(bp, &buflen, (vrpn_int32) strlen(d_remoteOutLogName));
+  vrpn_buffer(bp, &buflen, d_remoteInLogName, strlen(d_remoteInLogName));
+  vrpn_buffer(bp, &buflen, (char) 0);
+  vrpn_buffer(bp, &buflen, d_remoteOutLogName, strlen(d_remoteOutLogName));
+  vrpn_buffer(bp, &buflen, (char) 0);
+  return pack_message(1000 - buflen, now, vrpn_CONNECTION_LOG_DESCRIPTION,
+                      d_remoteLogMode, buf, vrpn_CONNECTION_RELIABLE);
 }
 
 
@@ -3717,10 +3742,13 @@ void vrpn_Endpoint::drop_connection (void) {
   // Clear out the buffers; nothing to read or send if no connection.
   clearBuffers();
 
+  // BUG TCH 16 Feb 01
+  // Why is this code here?  What does it do?  I can't port it to 2-log.
+
   struct timeval now;
   gettimeofday(&now, NULL);
-  if (d_log->logMode()) {
-    struct timeval last = d_log->lastLogTime();
+  if (d_inLog->logMode()) {
+    struct timeval last = d_inLog->lastLogTime();
     if (vrpn_TimevalGreater(last, now)){
         fprintf(stderr,
            "Warning, translation time hack has been executed\n");
@@ -3737,18 +3765,12 @@ void vrpn_Endpoint::drop_connection (void) {
   // there is an error logging the message. This is because we'll want
   // to keep logging if there is a reconnection. We close the file when
   // the endpoint is destroyed.
-  if (d_log->logMode()) {
-    vrpn_int32 scrap_payload = 0;
-    if (d_log->logMessage
-               (sizeof(scrap_payload),  // Size of payload
-                now,                                    // Message is now
-                vrpn_CONNECTION_DISCONNECT_MESSAGE,     // Message type
-                scrap_payload,                          // Sender is zero
-                (char *)(void *) &scrap_payload,        // Not looked at
-                0)                                      // Not a remote type
+  if (d_outLog->logMode()) {
+    if (d_outLog->logMessage
+               (0, now, vrpn_CONNECTION_DISCONNECT_MESSAGE, 0, NULL, 0)
             == -1) {
       fprintf(stderr,"vrpn_Endpoint::drop_connection: Can't log\n");
-      d_log->close();       // Hope for the best...
+      d_outLog->close();       // Hope for the best...
     }
   }
 
@@ -3812,7 +3834,7 @@ int vrpn_Endpoint::setup_new_connection (void) {
 //fprintf(stderr, "vrpn_Endpoint::setup_new_connection().\n");
 
   retval = write_vrpn_cookie(sendbuf, vrpn_cookie_size() + 1,
-                             remote_log_mode);
+                             d_remoteLogMode);
   if (retval < 0) {
           perror("vrpn_Endpoint::setup_new_connection:  "
              "Internal error - array too small.  The code's broken.");
@@ -3934,7 +3956,7 @@ int vrpn_Endpoint::finish_new_connection_setup (void) {
 
   // Store the magic cookie from the other side into a buffer so
   // that it can be put into an incoming log file.
-  d_log->setCookie(recvbuf);
+  d_inLog->setCookie(recvbuf);
 
   // Find out what log mode they want us to be in BEFORE we pack
   // type, sender, and udp descriptions!  If it's nonzero, the
@@ -3949,7 +3971,12 @@ int vrpn_Endpoint::finish_new_connection_setup (void) {
 //fprintf(stderr, "BROKEN - vrpn_Endpoint::finish_new_connection_setup.\n");
     return -1;
   }
-  d_log->logMode() |= received_logmode;
+  if (received_logmode & vrpn_LOG_INCOMING) {
+    d_inLog->logMode() |= vrpn_LOG_INCOMING;
+  }
+  if (received_logmode & vrpn_LOG_OUTGOING) {
+    d_outLog->logMode() |= vrpn_LOG_OUTGOING;
+  }
 
   // Doesn't this have to go here so that pack_log_description() goes
   // through (isn't thrown out in pack_message())?`
@@ -4122,7 +4149,7 @@ int vrpn_Endpoint::getOneTCPMessage (int fd, char * buf, int buflen) {
        << " " << time.tv_usec << endl;
 #endif
 
-  if (d_log->logIncomingMessage (payload_len, time, type, sender, buf)) {
+  if (d_inLog->logIncomingMessage (payload_len, time, type, sender, buf)) {
     fprintf(stderr, "Couldn't log incoming message.!\n");
     return -1;
   }
@@ -4194,7 +4221,7 @@ int vrpn_Endpoint::getOneUDPMessage (char * inbuf_ptr, int inbuf_len) {
   // logging.
   time = vrpn_TimevalSum(time, tvClockOffset);
 
-  if (d_log->logIncomingMessage
+  if (d_inLog->logIncomingMessage
        (payload_len, time, type, sender, inbuf_ptr)) {
     fprintf(stderr, "Couldn't log incoming message.!\n");
     return -1;
@@ -4398,6 +4425,19 @@ int vrpn_Endpoint::handle_type_message(void *userdata,
     fprintf(stderr, "vrpn: Failed to add remote type %s\n", type_name);
     return -1;
   }
+
+  return 0;
+}
+
+void vrpn_Endpoint::setLogNames (const char * inName, const char * outName) {
+  d_inLog->setName(inName);
+  d_outLog->setName(outName);
+}
+
+int vrpn_Endpoint::openLogs (void) {
+
+  if (d_inLog->open()) return -1;
+  if (d_outLog->open()) return -1;
 
   return 0;
 }
@@ -4671,9 +4711,15 @@ int vrpn_Connection::handle_log_message (void * userdata,
                                          vrpn_HANDLERPARAM p) {
   vrpn_Endpoint * endpoint = (vrpn_Endpoint *) userdata;
   int retval = 0;
+  vrpn_int32 inNameLen, outNameLen;
+  const char ** bp = &p.buffer;
 
-  endpoint->d_log->setName(p.buffer, p.payload_len);
-  retval = endpoint->d_log->open();
+  // TCH 16 Feb 01
+  vrpn_unbuffer(bp, &inNameLen);
+  vrpn_unbuffer(bp, &outNameLen);
+  endpoint->setLogNames(*bp, *bp + inNameLen + 1);
+  retval = endpoint->d_inLog->open();
+  retval = endpoint->d_outLog->open();
 
   // Safety check:
   // If we can't log when the client asks us to, close the connection.
@@ -4693,7 +4739,12 @@ int vrpn_Connection::handle_log_message (void * userdata,
 
   // OR the remotely-requested logging mode with whatever we've
   // been told to do locally
-  endpoint->d_log->logMode() |= p.sender;
+  if (p.sender & vrpn_LOG_INCOMING) {
+    endpoint->d_inLog->logMode() |= vrpn_LOG_INCOMING;
+  }
+  if (p.sender & vrpn_LOG_OUTGOING) {
+    endpoint->d_outLog->logMode() |= vrpn_LOG_OUTGOING;
+  }
 
   return retval;
 }
@@ -4825,10 +4876,9 @@ int vrpn_Connection::register_log_filter (vrpn_LOGFILTER filter,
                                           void * userdata) {
   int i;
   for (i = 0; i < d_numEndpoints; i++) {
-    d_endpoints[i]->d_log->addFilter(filter, userdata);
+    d_endpoints[i]->d_inLog->addFilter(filter, userdata);
+    d_endpoints[i]->d_outLog->addFilter(filter, userdata);
   }
-  // XXXX
-  //return endpoint.d_log->addFilter(filter, userdata);
   return 0;
 }
 
@@ -4837,7 +4887,8 @@ int vrpn_Connection::save_log_so_far() {
   int i;
   int final_retval = 0;
   for (i = 0; i < d_numEndpoints; i++) {
-    final_retval |= d_endpoints[i]->d_log->saveLogSoFar();
+    final_retval |= d_endpoints[i]->d_inLog->saveLogSoFar();
+    final_retval |= d_endpoints[i]->d_outLog->saveLogSoFar();
   }
   return final_retval;
 }
@@ -4997,9 +5048,9 @@ void vrpn_Connection::server_check_for_incoming_connections
     // Server-side logging under multiconnection - TCH July 2000
     if (d_serverLogMode & vrpn_LOG_INCOMING) {
       d_serverLogCount++;
-      endpoint->d_log->setCompoundName(d_serverLogName, d_serverLogCount);
-      endpoint->d_log->logMode() = vrpn_LOG_INCOMING;
-      retval = endpoint->d_log->open();
+      endpoint->d_inLog->setCompoundName(d_serverLogName, d_serverLogCount);
+      endpoint->d_inLog->logMode() = vrpn_LOG_INCOMING;
+      retval = endpoint->d_inLog->open();
       if (retval == -1) {
         fprintf(stderr,
                 "vrpn_Connection::server_check_for_incoming_connections:  "
@@ -5072,9 +5123,9 @@ void vrpn_Connection::server_check_for_incoming_connections
     // Server-side logging under multiconnection - TCH July 2000
     if (d_serverLogMode & vrpn_LOG_INCOMING) {
       d_serverLogCount++;
-      endpoint->d_log->setCompoundName(d_serverLogName, d_serverLogCount);
-      endpoint->d_log->logMode() = vrpn_LOG_INCOMING;
-      retval = endpoint->d_log->open();
+      endpoint->d_inLog->setCompoundName(d_serverLogName, d_serverLogCount);
+      endpoint->d_inLog->logMode() = vrpn_LOG_INCOMING;
+      retval = endpoint->d_inLog->open();
       if (retval == -1) {
         fprintf(stderr,
                 "vrpn_Connection::server_check_for_incoming_connections:  "
@@ -5228,8 +5279,8 @@ int vrpn_Connection::mainloop (const struct timeval * pTimeout) {
 }
 vrpn_Connection::vrpn_Connection
       (unsigned short listen_port_no,
-       const char * local_logfile_name,
-       long local_log_mode,
+       const char * local_in_logfile_name,
+       const char * local_out_logfile_name,
        const char * NIC_IPaddress,
        vrpn_Endpoint * (* epa) (vrpn_Connection *, vrpn_int32 *)) :
     d_numEndpoints (0),
@@ -5240,7 +5291,9 @@ vrpn_Connection::vrpn_Connection
     d_dispatcher (NULL),
     //d_serverLogEndpoint (NULL),
     d_serverLogCount (0),
-    d_serverLogMode (local_log_mode),
+    d_serverLogMode
+         ((local_in_logfile_name ? vrpn_LOG_INCOMING : vrpn_LOG_NONE) |
+          (local_out_logfile_name ? vrpn_LOG_OUTGOING : vrpn_LOG_NONE)),
     d_serverLogName (NULL),
     d_endpointAllocator (epa),
     d_updateEndpoint (vrpn_FALSE)
@@ -5278,45 +5331,44 @@ vrpn_Connection::vrpn_Connection
   
   vrpn_ConnectionManager::instance().addConnection(this, NULL);
 
-  if (local_logfile_name) {
-
-    if (local_log_mode & vrpn_LOG_OUTGOING) {
-      d_endpoints[0] = (*d_endpointAllocator)(this, NULL);
-      d_updateEndpoint = vrpn_TRUE;
-      endpoint = d_endpoints[0];
-      if (!endpoint) {
-        fprintf(stderr, "vrpn_Connection::vrpn_Connection:  "
-                        "Couldn't create endpoint for log file.\n");
-        connectionStatus = BROKEN;
-        return;
-      }
-      endpoint->d_log->setName(local_logfile_name);
-      endpoint->d_log->logMode() = local_log_mode;
-      retval = endpoint->d_log->open();
-      if (retval == -1) {
-        fprintf(stderr, "vrpn_Connection::vrpn_Connection:  "
-                        "Couldn't open log file.\n");
-        connectionStatus = BROKEN;
-        return;
-      }
-      d_numEndpoints = 1;
-      endpoint->remote_log_mode = vrpn_LOG_NONE;
-      endpoint->remote_log_name = new char [10];
-      strcpy(endpoint->remote_log_name, "");
-      // Outgoing messages are logged regardless of connection status.
-      endpoint->status = LOGGING;
+  if (local_out_logfile_name) {
+    d_endpoints[0] = (*d_endpointAllocator)(this, NULL);
+    d_updateEndpoint = vrpn_TRUE;
+    endpoint = d_endpoints[0];
+    if (!endpoint) {
+      fprintf(stderr, "vrpn_Connection::vrpn_Connection:  "
+                      "Couldn't create endpoint for log file.\n");
+      connectionStatus = BROKEN;
+      return;
     }
-
-    if (local_log_mode & vrpn_LOG_INCOMING) {
-      d_serverLogName = new char [1 + strlen(local_logfile_name)];
-      if (!d_serverLogName) {
-        fprintf(stderr, "vrpn_Connection::vrpn_Connection:  "
-                        "Out of memory.\n");
-        connectionStatus = BROKEN;
-        return;
-      }
-      strcpy(d_serverLogName, local_logfile_name);
+    endpoint->d_outLog->setName(local_out_logfile_name);
+    endpoint->d_outLog->logMode() = d_serverLogMode;
+    retval = endpoint->d_outLog->open();
+    if (retval == -1) {
+      fprintf(stderr, "vrpn_Connection::vrpn_Connection:  "
+                      "Couldn't open log file.\n");
+      connectionStatus = BROKEN;
+      return;
     }
+    d_numEndpoints = 1;
+    endpoint->d_remoteLogMode = vrpn_LOG_NONE;
+    endpoint->d_remoteInLogName = new char [10];
+    strcpy(endpoint->d_remoteInLogName, "");
+    endpoint->d_remoteOutLogName = new char [10];
+    strcpy(endpoint->d_remoteOutLogName, "");
+    // Outgoing messages are logged regardless of connection status.
+    endpoint->status = LOGGING;
+  }
+
+  if (local_in_logfile_name) {
+    d_serverLogName = new char [1 + strlen(local_in_logfile_name)];
+    if (!d_serverLogName) {
+      fprintf(stderr, "vrpn_Connection::vrpn_Connection:  "
+                      "Out of memory.\n");
+      connectionStatus = BROKEN;
+      return;
+    }
+    strcpy(d_serverLogName, local_in_logfile_name);
   }
 
 }
@@ -5324,8 +5376,10 @@ vrpn_Connection::vrpn_Connection
 
 vrpn_Connection::vrpn_Connection
       (const char * station_name, int port,
-       const char * local_logfile_name, long local_log_mode,
-       const char * remote_logfile_name, long remote_log_mode,
+       const char * local_in_logfile_name,
+       const char * local_out_logfile_name,
+       const char * remote_in_logfile_name,
+       const char * remote_out_logfile_name,
        const char * NIC_IPaddress,
        vrpn_Endpoint * (* epa) (vrpn_Connection *, vrpn_int32 *)) :
     // Jeff's change; I've commented out for now
@@ -5372,14 +5426,25 @@ vrpn_Connection::vrpn_Connection
   endpoint->setNICaddress(d_NIC_IP);
 
   // Store the remote log file name and the remote log mode
-  endpoint->remote_log_mode = remote_log_mode;
-  if (remote_logfile_name == NULL) {
-    endpoint->remote_log_name = new char [10];
-    strcpy(endpoint->remote_log_name, "");
+  endpoint->d_remoteLogMode = 
+         ((remote_in_logfile_name ? vrpn_LOG_INCOMING : vrpn_LOG_NONE) |
+          (remote_out_logfile_name ? vrpn_LOG_OUTGOING : vrpn_LOG_NONE));
+  if (!remote_in_logfile_name) {
+    endpoint->d_remoteInLogName = new char [10];
+    strcpy(endpoint->d_remoteInLogName, "");
   } else {
-    endpoint->remote_log_name =
-    	new char [strlen(remote_logfile_name) + 1];
-    strcpy(endpoint->remote_log_name, remote_logfile_name);
+    endpoint->d_remoteInLogName =
+    	new char [strlen(remote_in_logfile_name) + 1];
+    strcpy(endpoint->d_remoteInLogName, remote_in_logfile_name);
+  }
+   
+  if (!remote_out_logfile_name) {
+    endpoint->d_remoteOutLogName = new char [10];
+    strcpy(endpoint->d_remoteOutLogName, "");
+  } else {
+    endpoint->d_remoteOutLogName =
+    	new char [strlen(remote_out_logfile_name) + 1];
+    strcpy(endpoint->d_remoteOutLogName, remote_out_logfile_name);
   }
    
   // If we are neither a file nor a remote-server-starting
@@ -5572,10 +5637,24 @@ vrpn_Connection::vrpn_Connection
   // If we are doing local logging, turn it on here. If we
   // can't open the file, then the connection is broken.
 
-  if (local_logfile_name) {
-    endpoint->d_log->setName(local_logfile_name);
-    endpoint->d_log->logMode() = local_log_mode;
-    retval = endpoint->d_log->open();
+  if (local_in_logfile_name) {
+    endpoint->d_inLog->setName(local_in_logfile_name);
+    endpoint->d_inLog->logMode() = vrpn_LOG_INCOMING;
+    retval = endpoint->d_inLog->open();
+    if (retval == -1) {
+      fprintf(stderr, "vrpn_Connection::vrpn_Connection:  "
+    		      "Couldn't open log file.\n");
+      connectionStatus = BROKEN;
+//fprintf(stderr, "BROKEN - vrpn_Connection::vrpn_Connection.\n");
+      return;
+    }
+//fprintf(stderr, "vrpn_Connection: opened logfile.\n");
+  }
+
+  if (local_out_logfile_name) {
+    endpoint->d_outLog->setName(local_out_logfile_name);
+    endpoint->d_outLog->logMode() = vrpn_LOG_OUTGOING;
+    retval = endpoint->d_outLog->open();
     if (retval == -1) {
       fprintf(stderr, "vrpn_Connection::vrpn_Connection:  "
     		      "Couldn't open log file.\n");
@@ -5825,11 +5904,12 @@ vrpn_bool vrpn_Connection::connected (void) const
 
 vrpn_Synchronized_Connection::vrpn_Synchronized_Connection
     (unsigned short listen_port_no,
-     const char * local_logfile, long local_logmode,
+     const char * local_in_logfile,
+     const char * local_out_logfile,
      const char * NIC_IPaddress,
      vrpn_Endpoint * (* epa) (vrpn_Connection *, vrpn_int32 *)) :
-    vrpn_Connection (listen_port_no, local_logfile,
-                     local_logmode, NIC_IPaddress, epa),
+    vrpn_Connection (listen_port_no, local_in_logfile, local_out_logfile,
+                     NIC_IPaddress, epa),
     pClockServer (NULL),
     pClockRemote (NULL)
 {
@@ -5840,16 +5920,16 @@ vrpn_Synchronized_Connection::vrpn_Synchronized_Connection
 vrpn_Synchronized_Connection::vrpn_Synchronized_Connection
          (const char * server_name,
 	  int port,
-          const char * local_logfile,
-          long local_logmode,
-          const char * remote_logfile,
-          long remote_logmode,
+          const char * local_in_logfile,
+          const char * local_out_logfile,
+          const char * remote_in_logfile,
+          const char * remote_out_logfile,
           double dFreq, 
 	  int cSyncWindow,
           const char * NIC_IPaddress,
           vrpn_Endpoint * (* epa) (vrpn_Connection *, vrpn_int32 *)) :
-    vrpn_Connection (server_name, port, local_logfile, local_logmode,
-                     remote_logfile, remote_logmode, NIC_IPaddress, epa),
+    vrpn_Connection (server_name, port, local_in_logfile, local_out_logfile,
+                     remote_in_logfile, remote_out_logfile, NIC_IPaddress, epa),
     pClockServer (NULL),
     pClockRemote (NULL)
 {
@@ -5980,10 +6060,10 @@ int vrpn_Synchronized_Connection::mainloop (const struct timeval * timeout)
 
 vrpn_Connection * vrpn_get_connection_by_name (
     const char * cname,
-    const char * local_logfile_name,
-    long         local_log_mode,
-    const char * remote_logfile_name,
-    long         remote_log_mode,
+    const char * local_in_logfile_name,
+    const char * local_out_logfile_name,
+    const char * remote_in_logfile_name,
+    const char * remote_out_logfile_name,
     double       dFreq,
     int          cSyncWindow,
     const char * NIC_IPaddress)
@@ -6015,13 +6095,14 @@ vrpn_Connection * vrpn_get_connection_by_name (
 
         if (is_file)
             c = new vrpn_File_Connection (cname, 
-                                          local_logfile_name, local_log_mode);
+                                          local_in_logfile_name,
+                                          local_out_logfile_name);
         else {
             int port = vrpn_get_port_number(cname);
             c = new vrpn_Synchronized_Connection
                 (cname, port,
-                 local_logfile_name, local_log_mode,
-                 remote_logfile_name, remote_log_mode,
+                 local_in_logfile_name, local_out_logfile_name,
+                 remote_in_logfile_name, remote_out_logfile_name,
                  dFreq, cSyncWindow, NIC_IPaddress);
         }
     }

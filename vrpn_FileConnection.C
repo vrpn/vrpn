@@ -34,9 +34,10 @@ static const int BROKEN = (-3);
 // {{{ constructor
 
 vrpn_File_Connection::vrpn_File_Connection (const char * file_name,
-                         const char * local_logfile_name,
-                         long local_log_mode) :
-    vrpn_Connection (file_name, -1, local_logfile_name, local_log_mode),
+                         const char * local_in_logfile_name,
+                         const char * local_out_logfile_name) :
+    vrpn_Connection (file_name, -1, local_in_logfile_name,
+                     local_out_logfile_name),
     d_controllerId (register_sender("vrpn File Controller")),
     d_set_replay_rate_type(
         register_message_type("vrpn File set replay rate")),

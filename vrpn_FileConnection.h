@@ -28,8 +28,8 @@ class vrpn_File_Connection : public vrpn_Connection
 {
 public:
     vrpn_File_Connection (const char * file_name, 
-                         const char * local_logfile_name = NULL,
-                         long local_log_mode = vrpn_LOG_NONE);
+                         const char * local_in_logfile_name = NULL,
+                         const char * local_out_logfile_name = NULL);
     virtual ~vrpn_File_Connection (void);
     
     virtual int mainloop (const timeval * timeout = NULL);

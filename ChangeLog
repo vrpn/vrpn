@@ -1,3 +1,28 @@
+2001-02-15  Tom Hudson <hudson@cs.unc.edu>
+
+	* vrpn_Connection.h (vrpn_Connection::vrpn_Connection) : change
+	logfile arguments for both server and client constructors.
+	(vrpn_Synchronized_Connection::vrpn_Synchronized_Connection) : same.
+	(vrpn_get_connection_by_name) : same.
+	(vrpn_Endpoint) : replace remote_log_name with two names, one for
+        incoming and one for outgoing;  replace d_log with two vrpn_Logs,
+	add d_ convention to remote_log_mode.
+	(vrpn_Endpoint::setLogNames) : new function.
+	(vrpn_Endpoint::openLogs) : same.
+	* vrpn_Connection.C (vrpn_Connection::vrpn_Connection) : handle
+        changed method of log specification.
+	(vrpn_Synchronized_Connection::vrpn_Synchronized_Connection) : pass
+        changed arguments to Connection constructor.
+	(vrpn_get_connection_by_nbame) : same.
+	(vrpn_Endpoint::vrpn_Endpoint) : initialize both log names.
+	(vrpn_Endpoint::init) : create both logs.
+	(vrpn_Endpoint::pack_log_description) : pass both log names.
+	(vrpn_Endpoint::handle_log_message) : unpack both log names.
+	* vrpn_FileConnection.h (vrpn_File_Connection::vrpn_File_Connection) :
+        change logfile arguments for constructor.
+	* vrpn_FileConnection.C (vrpn_File_Connection::vrpn_File_Connection) :
+	same.
+
 2001-02-12  Russell M. Taylor II <taylorr@cs.unc.edu>
 	* vrpn_shared.C : vrpn_unbuffer ( ) {All of them} Modified to handle
 	conversions from unaligned buffers.  This was causing problems with
