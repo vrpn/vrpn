@@ -142,7 +142,7 @@ int vrpn_Tracker::register_types(void)
 	  request_u2s_m_id = d_connection->register_message_type("vrpn_Tracker Request_Unit_To_Sensor");
 	  workspace_m_id = d_connection->register_message_type("vrpn_Tracker Workspace");
 	  request_workspace_m_id = d_connection->register_message_type("vrpn_Tracker Request_Tracker_Workspace");
-	  update_rate_id = d_connection->register_message_type("vrpn_Tracker_set_update_rate");
+	  update_rate_id = d_connection->register_message_type("vrpn_Tracker set_update_rate");
 	  reset_origin_m_id = d_connection->register_message_type("vrpn_Tracker Reset_Origin");
 	}
 	return 0;
