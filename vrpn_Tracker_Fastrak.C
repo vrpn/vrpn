@@ -252,7 +252,7 @@ void vrpn_Tracker_Fastrak::reset()
 			sprintf(string_to_send, "%s\015", next_line);
 			fprintf(stderr, "   ...sending command: %s\n", string_to_send);
 			vrpn_write_characters(serial_fd,
-				(const unsigned char *)next_line,strlen(next_line));
+				(const unsigned char *)string_to_send,strlen(string_to_send));
 		}
 		next_line = strtok(next_line+strlen(next_line)+1, "\015");
 	}
