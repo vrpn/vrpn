@@ -53,7 +53,7 @@ class vrpn_Poser_AnalogParam {
                         vel_min[3], vel_max[3], vel_rot_min[3], vel_rot_max[3];
 };
 
-class vrpn_Poser_Analog : public vrpn_Poser_Server {
+class vrpn_Poser_Analog : public vrpn_Poser {
     public:
         vrpn_Poser_Analog(const char* name, vrpn_Connection* c, vrpn_Poser_AnalogParam* p);
 
@@ -67,6 +67,9 @@ class vrpn_Poser_Analog : public vrpn_Poser_Server {
 
         // Axes for translation and rotation
         vrpn_PA_axis x, y, z, rx, ry, rz;
+
+        static int handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
+        static int handle_vel_change_message(void *userdata, vrpn_HANDLERPARAM p);
 
         // Routine to update the analog values from the current pose
         bool update_Analog_values();

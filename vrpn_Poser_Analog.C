@@ -15,7 +15,7 @@ vrpn_Poser_AnalogParam::vrpn_Poser_AnalogParam() {
 }
 
 vrpn_Poser_Analog::vrpn_Poser_Analog(const char* name, vrpn_Connection* c, vrpn_Poser_AnalogParam* p) :
-    vrpn_Poser_Server(name, c) 
+    vrpn_Poser(name, c) 
 {
     int i;
 
@@ -49,14 +49,14 @@ vrpn_Poser_Analog::vrpn_Poser_Analog(const char* name, vrpn_Connection* c, vrpn_
 
     // Set up the workspace max and min values
     for (i = 0; i < 3; i++) {
-        pos_min[i] = p->pos_min[i];
-        pos_max[i] = p->pos_max[i];
-        vel_min[i] = p->vel_min[i];
-        vel_max[i] = p->vel_max[i];
-        pos_rot_min[i] = p->pos_rot_min[i];
-        pos_rot_max[i] = p->pos_rot_max[i];
-        vel_rot_min[i] = p->vel_rot_min[i];
-        vel_rot_max[i] = p->vel_rot_max[i];
+        p_pos_min[i] = p->pos_min[i];
+        p_pos_max[i] = p->pos_max[i];
+        p_vel_min[i] = p->vel_min[i];
+        p_vel_max[i] = p->vel_max[i];
+        p_pos_rot_min[i] = p->pos_rot_min[i];
+        p_pos_rot_max[i] = p->pos_rot_max[i];
+        p_vel_rot_min[i] = p->vel_rot_min[i];
+        p_vel_rot_max[i] = p->vel_rot_max[i];
     }
 }
 
@@ -79,6 +79,101 @@ void vrpn_Poser_Analog::mainloop() {
 	}
 }
 
+int vrpn_Poser_Analog::handle_change_message(void* userdata,
+	    vrpn_HANDLERPARAM p)
+{
+	vrpn_Poser_Analog* me = (vrpn_Poser_Analog*)userdata;
+	const char* params = (p.buffer);
+	int	i;
+    bool outside_bounds = false;
+
+	// Fill in the parameters to the poser from the message
+	if (p.payload_len != (7 * sizeof(vrpn_float64)) ) {
+		fprintf(stderr,"vrpn_Poser_Server: change message payload error\n");
+		fprintf(stderr,"             (got %d, expected %d)\n",
+			p.payload_len, 7 * sizeof(vrpn_float64) );
+		return -1;
+	}
+    me->p_timestamp = p.msg_time;
+
+	for (i = 0; i < 3; i++) {
+	 	vrpn_unbuffer(&params, &me->p_pos[i]);
+	}
+	for (i = 0; i < 4; i++) {
+		vrpn_unbuffer(&params, &me->p_quat[i]);
+	}
+
+    // Check the pose against the max and min values of the workspace
+    for (i = 0; i < 3; i++) {
+        if (me->p_pos[i] < me->p_pos_min[i]) {
+            me->p_pos[i] = me->p_pos_min[i];
+            outside_bounds = true;
+        }
+        else if (me->p_pos[i] > me->p_pos_max[i]) {
+            me->p_pos[i] = me->p_pos_max[i];
+            outside_bounds = true;
+        }
+    }
+
+    if (outside_bounds) {
+        // Requested pose not available.  Ack the client of the given pose.
+        me->send_pose();
+    }
+
+    // XXX 
+    // SHOULD WE UPDATE ANALOG VALUES NOW, OR DO THIS IN THE MAINLOOP???
+
+    return 0;
+}
+
+int vrpn_Poser_Analog::handle_vel_change_message(void* userdata,
+	    vrpn_HANDLERPARAM p)
+{
+	vrpn_Poser_Analog* me = (vrpn_Poser_Analog*)userdata;
+	const char* params = (p.buffer);
+	int	i;
+    bool outside_bounds = false;
+
+	// Fill in the parameters to the poser from the message
+	if (p.payload_len != (8 * sizeof(vrpn_float64)) ) {
+		fprintf(stderr,"vrpn_Poser_Server: velocity message payload error\n");
+		fprintf(stderr,"             (got %d, expected %d)\n",
+			p.payload_len, 8 * sizeof(vrpn_float64) );
+		return -1;
+	}
+	me->p_timestamp = p.msg_time;
+
+	for (i = 0; i < 3; i++) {
+	 	vrpn_unbuffer(&params, &me->p_vel[i]);
+	}
+	for (i = 0; i < 4; i++) {
+		vrpn_unbuffer(&params, &me->p_vel_quat[i]);
+	}
+    vrpn_unbuffer(&params, &me->p_vel_quat_dt);
+
+    // Check the velocity against the max and min values of the workspace
+    for (i = 0; i < 3; i++) {
+        if (me->p_vel[i] < me->p_vel_min[i]) {
+            me->p_vel[i] = me->p_vel_min[i];
+            outside_bounds = true;
+        }
+        else if (me->p_vel[i] > me->p_vel_max[i]) {
+            me->p_vel[i] = me->p_vel_max[i];
+            outside_bounds = true;
+        }
+    }
+
+    if (outside_bounds) {
+        // Requested velocity not available.  Ack the client of the given velocity.
+        me->send_pose_velocity();
+    }
+
+    // XXX 
+    // SHOULD WE UPDATE ANALOG VALUES NOW, OR DO THIS IN THE MAINLOOP???
+
+    return 0;
+}
+
 bool vrpn_Poser_Analog::update_Analog_values() {
     vrpn_float64 values[vrpn_CHANNEL_MAX];
 
@@ -92,15 +187,15 @@ bool vrpn_Poser_Analog::update_Analog_values() {
     // ONLY DOING TRANS FOR NOW...ADD ROT LATER
     if (x.channel != -1 && x.channel < vrpn_CHANNEL_MAX) {
 		if (max_channel <= x.channel) max_channel = x.channel + 1;
-		values[x.channel] = (pos[0] - x.offset) * x.scale;
+		values[x.channel] = (p_pos[0] - x.offset) * x.scale;
     }
     if (y.channel != -1 && y.channel < vrpn_CHANNEL_MAX) {
 		if (max_channel <= y.channel) max_channel = y.channel + 1;
-        values[y.channel] = (pos[1] - y.offset) * y.scale;
+        values[y.channel] = (p_pos[1] - y.offset) * y.scale;
     }
     if (z.channel != -1 && z.channel < vrpn_CHANNEL_MAX) {
 		if (max_channel <= z.channel) max_channel = z.channel + 1;
-        values[z.channel] = (pos[2] - z.offset) * z.scale;
+        values[z.channel] = (p_pos[2] - z.offset) * z.scale;
     }
 
     return ana->request_change_channels(max_channel, values);

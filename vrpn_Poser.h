@@ -23,7 +23,82 @@
 
 
 
-// These structures are used in callbacks on both the client and server side 
+class vrpn_Poser : public vrpn_BaseClass {
+    public:
+        vrpn_Poser (const char * name, vrpn_Connection * c = NULL );
+
+        virtual ~vrpn_Poser (void);
+
+        void p_print();          // print the current pose
+        void p_print_vel();      // print the current velocity
+
+        // a poser server should call the following to register the
+        // default xform and workspace request handlers
+//        int register_server_handlers(void);
+
+    protected:
+        // client-->server
+        vrpn_int32 req_position_m_id;		// ID of poser position message
+        vrpn_int32 req_velocity_m_id;       // ID of poser velocity message
+
+        // server-->client
+        vrpn_int32 ack_position_m_id;       // ID of poser position acknowledgement
+        vrpn_int32 ack_velocity_m_id;       // ID of poser velocity acknowledgement
+        
+        // Description of current state
+        vrpn_float64 p_pos[3], p_quat[4];	    // Current pose, (x,y,z), (qx,qy,qz,qw)
+        vrpn_float64 p_vel[3], p_vel_quat[4];   // Current velocity and dQuat/vel_quat_dt
+        vrpn_float64 p_vel_quat_dt;             // delta time (in secs) for vel_quat
+        struct timeval p_timestamp;		        // Current timestamp
+
+        // Minimum and maximum values available for the position and velocity values
+        // of the poser.
+        vrpn_float64    p_pos_min[3], p_pos_max[3], p_pos_rot_min[3], p_pos_rot_max[3],
+                        p_vel_min[3], p_vel_max[3], p_vel_rot_min[3], p_vel_rot_max[3];
+
+        virtual int register_types(void);	    // Called by BaseClass init()
+
+        virtual int encode_to(char* buf);       // Encodes the position
+        virtual int encode_vel_to(char* buf);   // Encodes the velocity
+
+        virtual void set_pose(struct timeval t,                 // Sets the pose internally
+                            vrpn_float64 position[3], 
+                            vrpn_float64 quaternion[4]);
+        virtual void set_pose_velocity(struct timeval t,        // Sets the velocity internally
+                                    vrpn_float64 position[3], 
+                                    vrpn_float64 quaternion[4], 
+                                    vrpn_float64 interval);
+
+        virtual int send_pose();               // Sends the current pose (server-->client)
+        virtual int send_pose_velocity();       // Sends the current pose velocity (server-->client)   
+};
+
+
+//------------------------------------------------------------------------------------
+// Server Code
+// Users supply the routines to handle requests from the client
+
+// This is a sample basic poser server
+// 
+
+class vrpn_Poser_Server: public vrpn_Poser {
+    public:
+        vrpn_Poser_Server (const char* name, vrpn_Connection* c);
+
+        /// This function should be called each time through app mainloop.
+        virtual void mainloop();
+
+    protected:
+        static int handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
+        static int handle_vel_change_message(void *userdata, vrpn_HANDLERPARAM p);
+};
+
+
+
+
+
+//------------------------------------------------------------------------------------
+// Client Code
 
 // User routine to handle a poser position request.
 typedef	struct {
@@ -45,115 +120,7 @@ typedef void (*vrpn_POSERVELCHANGEHANDLER)(void* userdata,
                     const vrpn_POSERVELCB info);
 
 
-
-
-class vrpn_Poser : public vrpn_BaseClass {
-    public:
-        vrpn_Poser (const char * name, vrpn_Connection * c = NULL );
-
-        virtual ~vrpn_Poser (void);
-
-        // a poser server should call the following to register the
-        // default xform and workspace request handlers
-//        int register_server_handlers(void);
-
-        // (un)Register a callback handler to handle a position change
-        virtual int register_change_handler(void* userdata,
-                vrpn_POSERCHANGEHANDLER handler);
-        virtual int unregister_change_handler(void* userdata,
-                vrpn_POSERCHANGEHANDLER handler);
-
-        // (un)Register a callback handler to handle a velocity change
-        virtual int register_change_handler(void* userdata,
-                vrpn_POSERVELCHANGEHANDLER handler);
-        virtual int unregister_change_handler(void* userdata,
-                vrpn_POSERVELCHANGEHANDLER handler);
-
-    protected:
-        // client-->server
-        vrpn_int32 req_position_m_id;		// ID of poser position message
-        vrpn_int32 req_velocity_m_id;       // ID of poser velocity message
-
-        // server-->client
-        vrpn_int32 ack_position_m_id;       // ID of poser position acknowledgement
-        vrpn_int32 ack_velocity_m_id;       // ID of poser velocity acknowledgement
-        
-        // Description of current state
-        vrpn_float64 pos[3], d_quat[4];	    // Current pose, (x,y,z), (qx,qy,qz,qw)
-        vrpn_float64 vel[3], vel_quat[4];   // Current velocity and dQuat/vel_quat_dt
-        vrpn_float64 vel_quat_dt;           // delta time (in secs) for vel_quat
-        struct timeval timestamp;		    // Current timestamp
-
-        // Minimum and maximum values available for the position and velocity values
-        // of the poser.
-        vrpn_float64    pos_min[3], pos_max[3], pos_rot_min[3], pos_rot_max[3],
-                        vel_min[3], vel_max[3], vel_rot_min[3], vel_rot_max[3];
-
-        // Scale values for 
-
-        virtual int register_types(void);	    // Called by BaseClass init()
-
-        virtual int encode_to(char* buf);       // Encodes the position
-        virtual int encode_vel_to(char* buf);   // Encodes the velocity
-
-        virtual void set_pose(struct timeval t,                 // Sets the pose
-                            vrpn_float64 position[3], 
-                            vrpn_float64 quaternion[4]);
-        virtual void set_pose_velocity(struct timeval t,        // Sets the velocity
-                                    vrpn_float64 position[3], 
-                                    vrpn_float64 quaternion[4], 
-                                    vrpn_float64 interval);
-
-        // Client or Server should supply this code...Basically just depends on the message id.  Req or Ack
-        // Ideally, we want these to be pure virtual...
-        virtual int send_pose() { return 0; }               // Sends the current pose (server-->client or client-->server)
-        virtual int send_pose_velocity() { return 0;}       // Sends the current pose velocity (server-->client or client-->server)   
-
-        typedef	struct vrpn_RPCS {
-		    void*				        userdata;
-		    vrpn_POSERCHANGEHANDLER	    handler;
-		    struct vrpn_RPCS*		    next;
-	    } vrpn_POSERCHANGELIST;
-	    vrpn_POSERCHANGELIST *change_list;
-
-        typedef struct vrpn_RPVCS {
-            void*                       userdata;
-            vrpn_POSERVELCHANGEHANDLER  handler;
-            struct vrpn_RPVCS*          next;
-        } vrpn_POSERVELCHANGELIST;
-        vrpn_POSERVELCHANGELIST *velchange_list;
-
-        static int handle_change_message(void* userdata, vrpn_HANDLERPARAM p);
-        static int handle_vel_change_message(void* userdata, vrpn_HANDLERPARAM p);
-};
-
-
-//------------------------------------------------------------------------------------
-// Server Code
-// Users supply the routines to handle requests from the client
-
-// This is a basic poser server used to drive an Analog device
-
-class vrpn_Poser_Server: public vrpn_Poser {
-    public:
-        vrpn_Poser_Server (const char* name, vrpn_Connection* c);
-
-        /// This function should be called each time through app mainloop.
-        virtual void mainloop();
-
-    protected:
-        virtual int send_pose();            // Sends the current pose
-        virtual int send_pose_velocity();   // Sends the current velocity
-            
-        static int handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
-        static int handle_vel_change_message(void *userdata, vrpn_HANDLERPARAM p);
-};
-
-//------------------------------------------------------------------------------------
-// Client Code
-// Open a poser that is on the other end of a connection for sending updates to 
-// it.  
-
+// Open a poser that is on the other end of a connection for sending updates to it.  
 class vrpn_Poser_Remote: public vrpn_Poser {
     public:
 	    // The name of the poser to connect to, including connection name,
@@ -174,9 +141,40 @@ class vrpn_Poser_Remote: public vrpn_Poser {
         int request_pose(struct timeval t, vrpn_float64 position[3], vrpn_float64 quaternion[4]);
         int request_pose_velocity(struct timeval t, vrpn_float64 position[3], vrpn_float64 quaternion[4], vrpn_float64 interval);
 
+
+
+        // (un)Register a callback handler to handle a position change
+        virtual int register_change_handler(void* userdata,
+                vrpn_POSERCHANGEHANDLER handler);
+        virtual int unregister_change_handler(void* userdata,
+                vrpn_POSERCHANGEHANDLER handler);
+
+        // (un)Register a callback handler to handle a velocity change
+        virtual int register_change_handler(void* userdata,
+                vrpn_POSERVELCHANGEHANDLER handler);
+        virtual int unregister_change_handler(void* userdata,
+                vrpn_POSERVELCHANGEHANDLER handler);
+
     protected:
-        virtual int send_pose();            // Sends the current pose
-        virtual int send_pose_velocity();   // Sends the current velocity
+        typedef	struct vrpn_RPCS {
+		    void*				        userdata;
+		    vrpn_POSERCHANGEHANDLER	    handler;
+		    struct vrpn_RPCS*		    next;
+	    } vrpn_POSERCHANGELIST;
+	    vrpn_POSERCHANGELIST *change_list;
+
+        typedef struct vrpn_RPVCS {
+            void*                       userdata;
+            vrpn_POSERVELCHANGEHANDLER  handler;
+            struct vrpn_RPVCS*          next;
+        } vrpn_POSERVELCHANGELIST;
+        vrpn_POSERVELCHANGELIST *velchange_list;
+
+        static int handle_change_message(void* userdata, vrpn_HANDLERPARAM p);
+        static int handle_vel_change_message(void* userdata, vrpn_HANDLERPARAM p);
+
+        virtual int client_send_pose();            // Sends the current pose.  Called by request_pose
+        virtual int client_send_pose_velocity();   // Sends the current velocity.  Called by request_pose_velocity
 };
 
 #endif
