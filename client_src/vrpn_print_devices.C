@@ -179,7 +179,7 @@ void Usage (const char * arg0) {
   exit(0);
 }
 
-void main (int argc, char * argv [])
+int main (int argc, char * argv [])
 {
   int	tracker_stride = 1;	// Every nth report will be printed
   int   print_for_tracker = 1;	// Print tracker reports?
@@ -212,7 +212,7 @@ void main (int argc, char * argv [])
       tracker_stride = atoi(argv[i]);
       if (tracker_stride <= 0) {
 	  fprintf(stderr, "-trackerstride argument must be 1 or greater\n");
-	  return;
+	  return -1;
       }
     } else {	// Create a device and connect to it.
 	device_info *dev;
@@ -233,7 +233,7 @@ void main (int argc, char * argv [])
 	if ( (dev->ana == NULL) || (dev->btn == NULL) ||
 	    (dev->dial == NULL) || (dev->tkr == NULL) ) {
 	    fprintf(stderr,"Error opening %s\n", dev->name);
-	    return;
+	    return -1;
 	} else {
 	    printf("Opened %s as:", dev->name);
 	}
@@ -318,6 +318,7 @@ void main (int argc, char * argv [])
       vrpn_SleepMsecs(1);
   }
 
+ return 0;
 }   /* main */
 
 

@@ -1489,32 +1489,6 @@ void vrpn_TypeDispatcher::clear (void) {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /**
  * @class vrpn_ConnectionManager
  * Singleton class that keeps track of all known VRPN connections

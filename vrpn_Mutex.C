@@ -772,8 +772,7 @@ vrpn_PeerMutex::vrpn_PeerMutex (const char * name, int port,
     fprintf(stderr, "vrpn_PeerMutex:  NULL name!\n");
     return;
   }
-  d_server = new vrpn_Synchronized_Connection (port, NULL, vrpn_LOG_NONE,
-                                               NICaddress);
+  d_server = new vrpn_Synchronized_Connection (port, NULL, NULL, NICaddress);
   if (!d_server) {
     fprintf(stderr, "vrpn_PeerMutex:  "
                     "Couldn't open connection on port %d!\n", port);
