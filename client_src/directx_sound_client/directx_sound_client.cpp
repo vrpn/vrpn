@@ -2,9 +2,12 @@
 #include <string.h>
 #include <math.h>
 #include <conio.h>
+#include <cstdlib>
+#include <iostream> 
 
 #define FASTSPEED 500
 #define CIRCLERADIUS 5.0F
+
 
 vrpn_Sound_Client *soundClient;
 float X,Y,Z,adj;
@@ -92,7 +95,7 @@ static void move_sample_values()
 	// handle the circle movement
 	adj+=(2.0F*3.14159265358979F/(((FASTSPEED+1-50.0F)*1.6F)+20.0F));
 	X=(float)(CIRCLERADIUS*cos(adj));
-	Z=(float)(CIRCLERADIUS*sin(adj));
+	Y=(float)(CIRCLERADIUS*sin(adj));
 }
 
 
@@ -105,7 +108,7 @@ void loopSound(vrpn_SoundID id)
 	{
 		
 		//save old settings
-		position[0] = X; position[1] = -Y; position[2] = Z;
+		position[0] = X; position[1] = Y; position[2] = Z;
 		orientation[0] = -X; orientation[1] = -Y; orientation[2] = Z; orientation[3] = 1;
 		(void)soundClient->setSoundPose(id,position, orientation);
 		
@@ -141,6 +144,19 @@ void shutdown(){
 	soundClient = NULL;
 }
 
+int getOnlyDigits(){
+
+	char temp[80];
+	int id;
+	std::cin.getline(temp, 100);
+	for(int x=0; x<80; x++)
+		if(isalpha(temp[x])) return -1;
+	id=strtol(temp,0,10);
+	return id;
+}
+
+
+
 
 
 int main(int argc, char** argv)
@@ -154,8 +170,8 @@ int main(int argc, char** argv)
 	vrpn_int32 repeat, volume;
 	vrpn_float64 position[3], orientation[4], velocity[4];
 	vrpn_float64 pos[3], ori[4], Lvelocity[4];
-	
 	numconnections = 0;
+	int flag = 0;
 	
 	position[0] = 0; position[1] = 0; position[2] = 0;
 	orientation[0] = 0; orientation[1] = 0; orientation[2] = -1; orientation[3] = 1;
@@ -223,8 +239,14 @@ int main(int argc, char** argv)
 		printf("13) Move Listener\n");
 		printf("14) Quit\n");
 		printf("Choose option ");
-		scanf("%d", &command);
 		
+		
+		do{
+			command = getOnlyDigits();
+		}while(command == -1);	
+
+
+	
 		switch(command)
 		{
 		case 1:
@@ -263,8 +285,12 @@ int main(int argc, char** argv)
 			soundClient->mainloop();
 			break;
 		case 2:
-			printf("Enter ID of sound to unload ");
-			scanf("%d", &id);
+			do{
+				printf("Enter id of sound to unload:");
+				id = getOnlyDigits();
+			}while(id == -1);	
+
+			
 			(void)soundClient->unloadSound(id);
 			for(i = id; i < numSounds; i++){
 					strcpy(files[i], files[i+1]);
@@ -274,46 +300,70 @@ int main(int argc, char** argv)
 			soundClient->mainloop();
 			break;
 		case 3:
-			printf("Enter ID of sound to play ");
-			scanf("%d", &id);
-			printf("Enter number of times to repeat.  (0 = continuous) ");
-			scanf("%d", &repeat);
+			do{
+				printf("Enter id of sound to play:");
+				id = getOnlyDigits();
+			}while(id == -1);	
+
+			do{
+				printf("Enter number of times to repeat.  (0 = continuous) ");
+				repeat = getOnlyDigits();
+			}while(repeat == -1);	
+
 			(void)soundClient->playSound(id, repeat);
 			soundClient->mainloop();
 			break;
 		case 4:
-			printf("Enter ID of sound to stop ");
-			scanf("%d", &id);
+			do{
+				printf("Enter ID of sound to stop ");
+				id = getOnlyDigits();
+			}while(id == -1);	
+		
 			(void)soundClient->stopSound(id);
 			soundClient->mainloop();
 			break;
 		case 5:
-			printf("Enter ID of sound to change ");
-			scanf("%d", &id);
-			printf("Enter value to change volume to ");
-			scanf("%d", &volume);
+			do{
+				printf("Enter ID of sound to change ");
+				id = getOnlyDigits();
+			}while(id == -1);	
+			
+			do{
+				printf("Enter value to change volume to ");
+				volume = getOnlyDigits();
+			}while(volume == -1);	
+
 			(void)soundClient->setSoundVolume(id, volume);
 			soundClient->mainloop();
 			break;
 		case 6:
-			printf("Enter ID of sound to change ");
-			scanf("%d", &id);
+			do{
+				printf("Enter ID of sound to change ");
+				id = getOnlyDigits();
+			}while(id == -1);	
+
 			printf("Enter the new X,Y, and Z position coordinates for the sound\n");
 			scanf("%lf %lf %lf", &position[0], &position[1], &position[2]);
 			(void)soundClient->setSoundPose(id, position, orientation);
 			soundClient->mainloop();
 			break;
 		case 7:
-			printf("Enter ID of sound to change ");
-			scanf("%d", &id);
+			do{
+				printf("Enter ID of sound to change ");
+				id = getOnlyDigits();
+			}while(id == -1);	
+
 			printf("Enter the new X,Y, Z, and W orientation coordinates for the sound\n");
 			scanf("%lf %lf %lf %lf", &orientation[0], &orientation[1], &orientation[2], &orientation[3]);
 			(void)soundClient->setSoundPose(id, position, orientation);
 			soundClient->mainloop();
 			break;
 		case 8:
-			printf("Enter ID of sound to change ");
-			scanf("%d", &id);
+			do{
+				printf("Enter ID of sound to change ");
+				id = getOnlyDigits();
+			}while(id == -1);	
+
 			printf("Enter the new X,Y, and Z velocity coordinates for the sound and magnitude\n");
 			scanf("%lf %lf %lf %lf", &velocity[0], &velocity[1], &velocity[2], &velocity[3]);
 			(void)soundClient->setSoundVelocity(id,velocity);
@@ -339,8 +389,11 @@ int main(int argc, char** argv)
 			soundClient->mainloop();
 			break;
 		case 12:
-			printf("Enter ID of sound to loop");
-			scanf("%d", &id);
+			do{
+				printf("Enter ID of sound to loop");
+				id = getOnlyDigits();
+			}while(id == -1);
+			
 			init_sample_values();
 			loopSound(id);
 			break;
