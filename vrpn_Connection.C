@@ -1106,10 +1106,16 @@ vrpn_OneConnection::~vrpn_OneConnection(void)
 int	vrpn_OneConnection::newLocalSender(const char *name, vrpn_int32 which)
 {
 	vrpn_int32	i;
+#ifdef	VERBOSE
+		printf("  ...looking for other-side sender for '%s'\n", name);
+#endif
 	for (i = 0; i < num_other_senders; i++) {
+#ifdef	VERBOSE
+		printf("    ...checking against '%s'\n", other_senders[i].name);
+#endif
 		if (strcmp(other_senders[i].name, name) == 0) {
 #ifdef	VERBOSE
-		printf("  ...mapping from other-side sender %d\n", i);
+			printf("  ...mapping from other-side sender %d\n", i);
 #endif
 			other_senders[i].local_id = which;
 			return 1;
@@ -1168,7 +1174,7 @@ int	vrpn_OneConnection::newRemoteType(cName type_name, vrpn_int32 local_id)
           }
         }
 
-	memcpy(other_types[num_other_types].name, type_name, sizeof(type_name));
+	memcpy(other_types[num_other_types].name, type_name, sizeof(cName));
 	other_types[num_other_types].local_id = local_id;
 
 	num_other_types++;		// Another type
@@ -1195,7 +1201,7 @@ int	vrpn_OneConnection::newRemoteSender(cName sender_name, vrpn_int32 local_id)
           }
         }
 
-	memcpy(other_senders[num_other_senders].name, sender_name, sizeof(sender_name));
+	memcpy(other_senders[num_other_senders].name, sender_name, sizeof(cName));
 	other_senders[num_other_senders].local_id = local_id;
 
 	num_other_senders++;		// Another sender
@@ -3422,7 +3428,7 @@ int	vrpn_Connection::handle_type_message(void *userdata,
 	vrpn_int32	i;
 	vrpn_int32	local_id;
 
-	if (p.payload_len > sizeof(type_name)) {
+	if (p.payload_len > sizeof(cName)) {
 		fprintf(stderr,"vrpn: vrpn_Connection::Type name too long\n");
 		return -1;
 	}
@@ -3466,7 +3472,7 @@ int	vrpn_Connection::handle_sender_message(void *userdata,
 	vrpn_int32	i;
 	vrpn_int32	local_id;
 
-	if (p.payload_len > sizeof(sender_name)) {
+	if (p.payload_len > sizeof(cName)) {
 	        fprintf(stderr,"vrpn: vrpn_Connection::Sender name too long\n");
 		return -1;
 	}
