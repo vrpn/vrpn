@@ -853,6 +853,7 @@ vrpn_Tracker_Remote::vrpn_Tracker_Remote(char *name ) :
 vrpn_Tracker_Remote::~vrpn_Tracker_Remote() {
 
   // Unregister a handler for the position change callback from this device.
+  if (connection)
   if (connection->unregister_handler(position_m_id, handle_change_message,
 				   this, my_id)) {
     fprintf(stderr,
@@ -861,6 +862,7 @@ vrpn_Tracker_Remote::~vrpn_Tracker_Remote() {
   }
   
   // Unregister a handler for the velocity change callback from this device.
+  if (connection)
   if (connection->unregister_handler(velocity_m_id,
 				   handle_vel_change_message, this, my_id)) {
     fprintf(stderr,
@@ -868,7 +870,8 @@ vrpn_Tracker_Remote::~vrpn_Tracker_Remote() {
     connection = NULL;
   }
   
-	// Unregister a handler for the acceleration change callback.
+  // Unregister a handler for the acceleration change callback.
+  if (connection)
   if (connection->unregister_handler(accel_m_id,
 				   handle_acc_change_message, this, my_id)) {
     fprintf(stderr,
@@ -877,6 +880,7 @@ vrpn_Tracker_Remote::~vrpn_Tracker_Remote() {
   }
   
   // Unregister a handler for the room to tracker xform change callback
+  if (connection)
   if (connection->unregister_handler(tracker2room_m_id,
 				   handle_tracker2room_change_message, this, my_id)) {
 	  fprintf(stderr,
@@ -885,6 +889,7 @@ vrpn_Tracker_Remote::~vrpn_Tracker_Remote() {
   }
   
   // Unregister a handler for the sensor to unit xform change callback
+  if (connection)
   if (connection->unregister_handler(unit2sensor_m_id,
 				   handle_unit2sensor_change_message, this, my_id)) {
     fprintf(stderr,
