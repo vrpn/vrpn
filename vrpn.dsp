@@ -218,6 +218,14 @@ SOURCE=.\vrpn_Magellan.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_Mutex.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Mutex.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_raw_sgibox.C
 # End Source File
 # Begin Source File
