@@ -50,8 +50,6 @@
 #include "timecode_generator_server\vrpn_timecode_generator.h"
 #endif
 
-
-
 const int MAX_TRACKERS = 100;
 const int MAX_BUTTONS =  100;
 const int MAX_SOUNDS =     2;

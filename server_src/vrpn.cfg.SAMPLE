@@ -219,6 +219,24 @@
 #RZ	*Radamec0	0	0.0	0.0	0.0027777777	1.0
 #RESET	NULL	0
 
+#vrpn_Tracker_AnalogFly	Tracker0	60.0	absolute
+#X	*Joystick0	0	0.0	0.0	1.0	1.0
+#Y	*Joystick0	1	0.0	0.0	-1.0	1.0
+#Z	*Joystick0	6	0.0	0.0	1.0	1.0
+#RX	NULL		3	0.0	0.0	1.0	1.0
+#RY	NULL		4	0.0	0.0	1.0	1.0
+#RZ	*Joystick0	5	0.0	0.0	0.5	1.0
+#RESET	NULL	0
+
+#vrpn_Tracker_AnalogFly	Phantom	60.0	absolute
+#X	*Phantom	0	0.0	0.0	0.125	1.0
+#Y	*Phantom	1	0.0	0.0  -0.125	1.0
+#Z	*Phantom	6	0.0	0.0	0.25	1.0
+#RX	NULL		3	0.0	0.0	1.0	1.0
+#RY	NULL		4	0.0	0.0	1.0	1.0
+#RZ	*Phantom	5	0.0	0.0	0.06	1.0
+#RESET	NULL	0
+
 ################################################################################
 # XXX This device is superceded by the more-general vrpn_Tracker_AnalogFly
 # JoyFly Tracker. A vrpn_Tracker that translates the vrpn_Joystick into
@@ -493,8 +511,9 @@
 # Microsoft DirectX compatible force-feedback joystick (or non-force-feedback
 # joystick).
 #       char    name_of_this_device[]
-#       float   number of times per second to read from the device
-#       float   number of times per second to update force (0 for non-force device)
+#       int     number of times per second to read from the device
+#       int     number of times per second to update force (0 for non-force device)
 
 #vrpn_DirectXFFJoystick	Joystick0	60	0
+#vrpn_DirectXFFJoystick	Joystick0	60	200
 #vrpn_DirectXFFJoystick	Joystick0	60	200
