@@ -55,8 +55,8 @@ extern "C" int sdi_noint_block_read_timeout(SOCKET tcp_sock, char *buffer,
 					int len, struct timeval *timeout);
 #endif
 
-char	*MAGIC = "vrpn: ver. 01.00";
-const	int	MAGICLEN = 16;	// Must be a multiple of 4 bytes!
+char	*MAGIC = "vrpn: ver. 02.00";
+const	int	MAGICLEN = 16;	// Must be a multiple of vrpn_ALIGN bytes!
 
 // This is the list of states that a connection can be in
 // (possible values for status).
@@ -65,6 +65,63 @@ const	int	MAGICLEN = 16;	// Must be a multiple of 4 bytes!
 #define CONNECTION_FAIL		(-1)
 #define BROKEN			(-2)
 #define DROPPED			(-3)
+
+#include <iostream.h>
+
+void setClockOffset( void *userdata, const vrpn_CLOCKCB& info ) {
+#if 0
+  cerr << "clock offset is " << timevalMsecs(info.tvClockOffset) 
+       << " msecs (used round trip which took " 
+       << 2*timevalMsecs(info.tvHalfRoundTrip) << " msecs)." << endl;
+#endif
+  (*(struct timeval *) userdata) = info.tvClockOffset;
+}
+
+vrpn_Synchronized_Connection::
+vrpn_Synchronized_Connection(unsigned short listen_port_no) :
+  vrpn_Connection(listen_port_no)
+{
+   pClockServer = new vrpn_Clock_Server(this);
+
+#ifndef _WIN32
+   pClockRemote = (vrpn_Clock_Remote *) NULL;
+#endif
+}
+
+#ifndef _WIN32
+// register the base connection name so that vrpn_Clock_Remote can use it
+vrpn_Synchronized_Connection::
+vrpn_Synchronized_Connection(char *server_name, double dFreq, 
+			     int cSyncWindow ) :
+  vrpn_Connection(server_name)
+{
+
+   pClockServer = (vrpn_Clock_Server *) NULL;
+
+   pClockRemote = new vrpn_Clock_Remote(server_name, dFreq, cSyncWindow);
+   pClockRemote->register_clock_sync_handler( &tvClockOffset, 
+					      setClockOffset );
+}
+#endif
+
+int vrpn_Synchronized_Connection::mainloop(void) {
+  if (pClockServer) {
+    pClockServer->mainloop();
+    // call the base class mainloop
+    return vrpn_Connection::mainloop();
+  } 
+#ifndef _WIN32
+else if (pClockRemote) {
+    // the remote device always calls the base class connection mainloop already
+    pClockRemote->mainloop();
+  } 
+#endif
+else {
+    perror("vrpn_Synchronized_Connection::mainloop: no clock client or server");
+    return -1;
+  }
+  return 0;
+}
 
 //---------------------------------------------------------------------------
 // This routine opens a UDP socket with the requested port number.
@@ -282,7 +339,7 @@ void vrpn_Connection::check_connection(void)
 
 int vrpn_Connection::setup_for_new_connection(void)
 {
-	char	buf[17];
+	char	buf[MAGICLEN+1];
 	int	i;
 	unsigned short udp_portnum;
 
@@ -535,18 +592,22 @@ int vrpn_Connection::marshall_message(
 	long sender,		// Sender of the message
 	char *buffer)		// Message payload
 {
-   int	ceil_len, total_len;
-   int	curr_out = initial_out;	// How many out total so far
+   unsigned int	ceil_len, header_len, total_len;
+   unsigned int	curr_out = initial_out;	// How many out total so far
 
    // Compute the length of the message plus its padding to make it
-   // an even multiple of 4 bytes.
+   // an even multiple of vrpn_ALIGN bytes.
    // Compute the total message length and put it into the
    // message buffer (if we have room for the whole message)
-   ceil_len = len; if (len%4) {ceil_len += 4 - len%4;}
-   total_len = 5*sizeof(long) + ceil_len;
-   if (curr_out + total_len > outbuf_size) {
+   ceil_len = len; 
+   if (len%vrpn_ALIGN) {ceil_len += vrpn_ALIGN - len%vrpn_ALIGN;}
+   header_len = 5*sizeof(long);
+   if (header_len%vrpn_ALIGN) {header_len += vrpn_ALIGN - header_len%vrpn_ALIGN;}
+   total_len = header_len + ceil_len;
+   if ((curr_out + total_len) > (unsigned int)outbuf_size) {
    	return 0;
    }
+   
    *(unsigned long*)(void*)(&outbuf[curr_out]) = htonl(total_len);
    curr_out+= sizeof(unsigned long);
 
@@ -563,9 +624,13 @@ int vrpn_Connection::marshall_message(
    *(unsigned long*)(void*)(&outbuf[curr_out]) = htonl(type);
    curr_out += sizeof(unsigned long);
 
+   // skip chars if needed for alignment
+   curr_out = initial_out + header_len;
+
    // Pack the message from the buffer.  Then skip as many characters
    // as needed to make the end of the buffer fall on an even alignment
-   // of 4 bytes (the size of floats/longs).
+   // of vrpn_ALIGN bytes (the size of largest element sent via vrpn
+   // (doubles(8)/floats(4)/longs(4)).
    if (buffer != NULL) {
 	memcpy(&outbuf[curr_out], buffer, len);
    }
@@ -768,6 +833,12 @@ void	vrpn_Connection::init(void)
 {
 	int	i;
 
+	// offset of clocks on connected machines -- local - remote
+	// (this should really not be here, it should be in adjusted time
+	// connection, but this makes it a lot easier
+	tvClockOffset.tv_sec=0;
+	tvClockOffset.tv_usec=0;
+
 	num_my_senders = 0;
 	num_my_types = 0;
 
@@ -816,6 +887,22 @@ vrpn_Connection::vrpn_Connection(unsigned short listen_port_no)
    }
 }
 
+//------------------------------------------------------------------------
+//	This section holds data structures and functions to open
+// connections by name.
+//	The intention of this section is that it can open connections for
+// objects that are in different libraries (trackers, buttons and sound),
+// even if they all refer to the same connection.
+
+// List of connections that are already open
+typedef	struct vrpn_KNOWN_CONS_STRUCT {
+	char	name[1000];	// The name of the connection
+	vrpn_Connection	*c;	// The connection
+	struct vrpn_KNOWN_CONS_STRUCT *next;	// Next on the list
+} vrpn_KNOWN_CONNECTION;
+static vrpn_KNOWN_CONNECTION *known = NULL;
+
+
 #ifndef _WIN32
 vrpn_Connection::vrpn_Connection(char *station_name)
 {
@@ -840,7 +927,17 @@ vrpn_Connection::vrpn_Connection(char *station_name)
 	    drop_connection();
 	    return;
 	}
+	
+	vrpn_KNOWN_CONNECTION *curr;
 
+	if ( (curr = new(vrpn_KNOWN_CONNECTION)) == NULL) {
+	  fprintf(stderr,"vrpn_Connection: Out of memory\n");
+	  return;
+	}
+	strncpy(curr->name, station_name, sizeof(curr->name));
+	curr->c = this;
+	curr->next = known;
+	known = curr;
 }
 #endif
 
@@ -952,7 +1049,15 @@ int	vrpn_Connection::do_callbacks_for(long type, long sender,
 	vrpn_HANDLERPARAM p;
 	p.type = type;
 	p.sender = sender;
-	p.msg_time = time;
+	p.msg_time = timevalSum(time, tvClockOffset);
+#if 0
+	cerr << " remote time is " << time.tv_sec 
+	     << " " << time.tv_usec << endl;
+	cerr << " offset is " << tvClockOffset.tv_sec 
+	     << " " << tvClockOffset.tv_usec << endl;
+	cerr << " local time is " << p.msg_time.tv_sec 
+	     << " " << p.msg_time.tv_usec << endl;
+#endif
 	p.payload_len = payload_len;
 	p.buffer = buf;
 
@@ -1042,12 +1147,26 @@ int	vrpn_Connection::handle_tcp_messages(int fd)
 		sender = ntohl(header[3]);
 		type = ntohl(header[4]);
 
+		// skip up to alignment
+		unsigned int header_len = sizeof(header);
+		if (header_len%vrpn_ALIGN) {header_len += vrpn_ALIGN - header_len%vrpn_ALIGN;}
+		if (header_len > sizeof(header)) {
+		  // the difference can be no larger than this
+		  char rgch[vrpn_ALIGN];
+		  if (sdi_noint_block_read(fd,(char*)rgch,sizeof(header_len-sizeof(header))) !=
+		      sizeof(header_len-sizeof(header))) {
+		    //perror("vrpn: vrpn_Connection::handle_tcp_messages: Can't read header");
+		    printf("vrpn:vrpn_connection: handle_tcp_messages: Can't read header");
+		    return -1;
+		  }
+		}
+		
 		// Figure out how long the message body is, and how long it
 		// is including any padding to make sure that it is a
 		// multiple of four bytes long.
-		payload_len = len - sizeof(header);
+		payload_len = len - header_len;
 		ceil_len = payload_len;
-		if (ceil_len % 4) { ceil_len += 4 - ceil_len%4; }
+		if (ceil_len%vrpn_ALIGN) {ceil_len += vrpn_ALIGN - ceil_len%vrpn_ALIGN;}
 
 		// Make sure the buffer is long enough to hold the whole
 		// message body.
@@ -1179,12 +1298,16 @@ int	vrpn_Connection::handle_udp_messages(int fd)
 	      while ( (inbuf_ptr - inbuf) != inbuf_len) {
 
 		// Read and parse the header
-		if ( ((inbuf_ptr - inbuf) + sizeof(header)) > (unsigned)inbuf_len) {
+		// skip up to alignment
+		unsigned int header_len = sizeof(header);
+		if (header_len%vrpn_ALIGN) {header_len += vrpn_ALIGN - header_len%vrpn_ALIGN;}
+		
+		if ( ((inbuf_ptr - inbuf) + header_len) > (unsigned)inbuf_len) {
 		   fprintf(stderr, "vrpn: vrpn_Connection::handle_udp_messages: Can't read header");
 		   return -1;
 		}
 		memcpy(header, inbuf_ptr, sizeof(header));
-		inbuf_ptr += sizeof(header);
+		inbuf_ptr += header_len;
 		len = ntohl(header[0]);
 		time.tv_sec = ntohl(header[1]);
 		time.tv_usec = ntohl(header[2]);
@@ -1198,10 +1321,10 @@ int	vrpn_Connection::handle_udp_messages(int fd)
 		
 		// Figure out how long the message body is, and how long it
 		// is including any padding to make sure that it is a
-		// multiple of four bytes long.
-		payload_len = len - sizeof(header);
+		// multiple of vrpn_ALIGN bytes long.
+		payload_len = len - header_len;
 		ceil_len = payload_len;
-		if (ceil_len % 4) { ceil_len += 4 - ceil_len%4; }
+		if (ceil_len%vrpn_ALIGN) {ceil_len += vrpn_ALIGN - ceil_len%vrpn_ALIGN;}
 
 		// Make sure we received enough to cover the entire payload
 		if ( ((inbuf_ptr - inbuf) + ceil_len) > inbuf_len) {
@@ -1259,8 +1382,7 @@ int	vrpn_Connection::handle_type_message(void *userdata,
 	}
 
 	// Find out the name of the type (skip the length)
-        // NOTE: this assumes that longs are 4 bytes on sender arch
-	strcpy(type_name, p.buffer+4);
+	strcpy(type_name, p.buffer+sizeof(long));
 
 #ifdef	VERBOSE
 	printf("Registering other-side type: '%s'\n", type_name);
@@ -1447,12 +1569,12 @@ int vrpn_Connection::unregister_handler(long type, vrpn_MESSAGEHANDLER handler,
 // even if they all refer to the same connection.
 
 // List of connections that are already open
-typedef	struct vrpn_KNOWN_CONS_STRUCT {
-	char	name[1000];	// The name of the connection
-	vrpn_Connection	*c;	// The connection
-	struct vrpn_KNOWN_CONS_STRUCT *next;	// Next on the list
-} vrpn_KNOWN_CONNECTION;
-static vrpn_KNOWN_CONNECTION *known = NULL;
+//typedef	struct vrpn_KNOWN_CONS_STRUCT {
+//	char	name[1000];	// The name of the connection
+//	vrpn_Connection	*c;	// The connection
+//	struct vrpn_KNOWN_CONS_STRUCT *next;	// Next on the list
+//} vrpn_KNOWN_CONNECTION;
+//static vrpn_KNOWN_CONNECTION *known = NULL;
 
 //	This routine will return a pointer to the connection whose name
 // is passed in.  If the routine is called multiple times with the same
@@ -1465,7 +1587,13 @@ static vrpn_KNOWN_CONNECTION *known = NULL;
 // the opening of a connection to "Tracker0@ioglab" for example, which will
 // open a connection to ioglab.
 #ifndef _WIN32
-vrpn_Connection *vrpn_get_connection_by_name(char *cname)
+
+// this now always creates synchronized connections, but that is ok
+// because they are derived from connections, and the default 
+// args of freq=-1 makes it behave like a regular connection
+
+vrpn_Connection *vrpn_get_connection_by_name(char *cname, double dFreq,
+					     int cSyncWindow )
 {
 	vrpn_KNOWN_CONNECTION	*curr = known;
 	char			*where_at;	// Part of name past last '@'
@@ -1494,7 +1622,8 @@ vrpn_Connection *vrpn_get_connection_by_name(char *cname)
 			return NULL;
 		}
 		strncpy(curr->name, cname, sizeof(curr->name));
-		curr->c = new vrpn_Connection(cname);
+		curr->c = new vrpn_Synchronized_Connection( cname, dFreq,
+							   cSyncWindow );
 		curr->next = known;
 		known = curr;
 	}

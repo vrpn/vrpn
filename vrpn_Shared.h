@@ -23,5 +23,10 @@ extern struct timeval timevalDiff( const struct timeval& tv1,
 				   const struct timeval& tv2 );
 extern double timevalMsecs( const struct timeval& tv1 );
 
+
+// xform a double to/from network order -- like htonl and htons
+extern double htond( double d );
+extern double ntohd( double d );
+
 #endif
 

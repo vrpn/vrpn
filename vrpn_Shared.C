@@ -1,4 +1,5 @@
 #include "vrpn_Shared.h"
+#include <iomanip.h>
 
 // Calcs the sum of tv1 and tv2.  Returns the sum in a timeval struct.
 // Calcs negative times properly, with the appropriate sign on both tv_sec
@@ -13,7 +14,7 @@ struct timeval timevalSum( const struct timeval& tv1,
 
   // do borrows, etc to get the time the way i want it: both signs the same,
   // and abs(usec) less than 1e6
-  if (tvSum.tv_sec>=0) {
+  if (tvSum.tv_sec>0) {
     if (tvSum.tv_usec<0) {
       tvSum.tv_sec--;
       tvSum.tv_usec += 1000000;
@@ -21,8 +22,17 @@ struct timeval timevalSum( const struct timeval& tv1,
       tvSum.tv_sec++;
       tvSum.tv_usec -= 1000000;
     }
-  } else {
+  } else if (tvSum.tv_sec<0) {
     if (tvSum.tv_usec>0) {
+      tvSum.tv_sec++;
+      tvSum.tv_usec -= 1000000;
+    } else if (tvSum.tv_usec <= -1000000) {
+      tvSum.tv_sec--;
+      tvSum.tv_usec += 1000000;
+    }
+  } else {
+    // == 0, so just adjust usec
+    if (tvSum.tv_usec >= 1000000) {
       tvSum.tv_sec++;
       tvSum.tv_usec -= 1000000;
     } else if (tvSum.tv_usec <= -1000000) {
@@ -49,11 +59,164 @@ struct timeval timevalDiff( const struct timeval& tv1,
 }
 
 double timevalMsecs( const struct timeval& tv ) {
-  return tv.tv_sec*1000 + tv.tv_usec/1000.0;
+  return tv.tv_sec*1000.0 + tv.tv_usec/1000.0;
+}
+
+
+const long lTestEndian = 0x1;
+const int fLittleEndian = (*((char *)&lTestEndian) == 0x1);
+
+// convert doubles to/from network order
+// I have chosen big endian as the network order for doubles
+double htond( double d ) {
+  if (fLittleEndian) {
+    double dSwapped;
+    char *pchSwapped= (char *)&dSwapped;
+    char *pchOrig= (char *)&d;
+
+    // swap to big
+    for(int i=0;i<sizeof(double);i++) {
+      pchSwapped[i]=pchOrig[sizeof(double)-i-1];
+    }
+    return dSwapped;
+  } else {
+    return d;
+  }
+}
+
+// they are their own inverses, so ...
+double ntohd( double d ) {
+  return htond(d);
 }
 
 #ifdef _WIN32
 #include <iostream.h>
+#include <math.h>
+
+// utility routines to read the pentium time stamp counter
+// QueryPerfCounter drifts too much -- others have documented this
+// problem on the net
+
+// This is all based on code extracted from the hiball tracker cib lib
+
+// 200 mhz pentium -- we change this based on our calibration
+__int64 FREQUENCY = 200000000;
+
+// Helium to histidine
+// __int64 FREQUENCY = 199434500;
+
+// tori -- but queryperfcounter returns this for us
+// __int64 FREQUENCY = 198670000;
+
+// ReaD Time Stamp Counter
+#define rdtsc(li) { _asm _emit 0x0f \
+  _asm _emit 0x31 \
+  _asm mov li.LowPart, eax \
+  _asm mov li.HighPart, edx \
+}
+
+ /*
+  * calculate the time stamp counter register frequency (clock freq)
+  */
+#pragma optimize("",off)
+static int adjustFrequency(void)
+{
+  const int loops = 2;
+  const int tPerLoop = 4000; // 1/10 sec in milliseconds for Sleep()
+  cerr.precision(4);
+  cerr.setf(ios::fixed);
+  cerr << "gettimeofday: verifying " <<  FREQUENCY/1e6 << " MHz clock";
+
+  LARGE_INTEGER startperf, endperf;
+  LARGE_INTEGER perffreq;
+
+  QueryPerformanceFrequency( &perffreq );
+  
+  // don't optimize away these variables
+  double sum = 0;
+  volatile LARGE_INTEGER liStart, liEnd;
+
+  DWORD dwPriorityClass=GetPriorityClass(GetCurrentProcess());
+  int iThreadPriority=GetThreadPriority(GetCurrentThread());
+  SetPriorityClass( GetCurrentProcess() , REALTIME_PRIORITY_CLASS );
+  SetThreadPriority( GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL );
+
+  // pull all into cache and do rough test to see if tsc and perf counter
+  // are one in the same
+  rdtsc( liStart );
+  QueryPerformanceCounter( &startperf );
+  Sleep(100);
+  rdtsc( liEnd );
+  QueryPerformanceCounter( &endperf );
+
+  double freq = perffreq.QuadPart * (liEnd.QuadPart - liStart.QuadPart) / 
+      ((double)(endperf.QuadPart - startperf.QuadPart));
+
+  if (fabs(perffreq.QuadPart - freq) < 0.05*freq) {
+    FREQUENCY = perffreq.QuadPart;
+    cerr << "\ngettimeofday: perf clock is tsc -- using perf clock freq (" 
+	 << perffreq.QuadPart/1e6 << " MHz)" << endl;
+    SetPriorityClass( GetCurrentProcess() , dwPriorityClass );
+    SetThreadPriority( GetCurrentThread(), iThreadPriority );
+    return 0;
+  } 
+
+  // either tcs and perf clock are not the same, or we could not
+  // tell accurately enough with the short test. either way we now
+  // need an accurate frequency measure, so ...
+
+  cerr << " (this will take " << setprecision(0) << loops*tPerLoop/1000.0 
+       << " seconds) ... " << endl;
+  cerr.precision(4);
+
+  for (int j = 0; j < loops; j++) {
+    rdtsc( liStart );
+    QueryPerformanceCounter( &startperf );
+    Sleep(tPerLoop);
+    rdtsc( liEnd );
+    QueryPerformanceCounter( &endperf );
+
+    // perf counter timer ran for one call to Query and one call to
+    // tcs read in addition to the time between the tsc readings
+    // tcs read did the same
+
+    // endperf - startperf / perf freq = time between perf queries
+    // endtsc - starttsc = clock ticks between perf queries
+    //    sum += (endtsc - starttsc) / ((double)(endperf - startperf)/perffreq);
+    sum += perffreq.QuadPart * (liEnd.QuadPart - liStart.QuadPart) / 
+      ((double)(endperf.QuadPart - startperf.QuadPart));
+  }
+  
+  SetPriorityClass( GetCurrentProcess() , dwPriorityClass );
+  SetThreadPriority( GetCurrentThread(), iThreadPriority );
+
+  // might want last, not sum -- just get into cache and run
+  freq = (sum/loops);
+  
+  cerr.precision(5);
+
+  // now, if we are in a uni-processor system, and the freq is within 5% of the expected
+  // then use it
+  if (fabs(freq - FREQUENCY) > 0.05 * FREQUENCY) {
+    cerr << "gettimeofday: measured freq is " << freq/1e6 
+	 << " MHz - DOES NOT MATCH" << endl;
+    return -1;
+  }
+  // if we are in a system where the perf clock is the tsc, then use the rate the
+  // perf clock returns (or rather, if the freq we measure is approx the 
+  // perf clock freq)
+  if (fabs(perffreq.QuadPart - freq) < 0.05*freq) {
+    FREQUENCY = perffreq.QuadPart;
+    cerr << "gettimeofday: perf clock is tsc -- using perf clock freq (" 
+	 << perffreq.QuadPart/1e6 << " MHz)" << endl;
+  } else {
+    cerr << "gettimeofday: adjusted clock freq to measured freq (" 
+	 << freq/1e6 << " MHz)" << endl;
+  }
+  FREQUENCY = (__int64) freq;
+  return 0;
+}
+#pragma optimize("", on)
 
 // The pc has no gettimeofday call, and the closest thing to it is _ftime.
 // _ftime, however, has only about 6 ms resolution, so we use the peformance 
@@ -69,11 +232,11 @@ int gettimeofday(struct timeval *tp, struct timezone *tzp)
   static int fFirst=1;
   static int fHasPerfCounter=1;
   static struct _timeb tbInit;
-  static struct timeval tvInit;
-  struct timeval tvNow;
+  static LARGE_INTEGER liInit;
+  static LARGE_INTEGER liNow;
+  static LARGE_INTEGER liDiff;
   struct timeval tvDiff;
-  static LARGE_INTEGER cLIClockFreq;
-  static LARGE_INTEGER cLICounter;
+
   
   if (!fHasPerfCounter) {
     _ftime(&tbInit);
@@ -83,54 +246,44 @@ int gettimeofday(struct timeval *tp, struct timezone *tzp)
   } 
 
   if (fFirst) {
+    LARGE_INTEGER liTemp;
     // establish a time base
     fFirst=0;
 
     // check that hi-perf clock is available
-    if ( !(fHasPerfCounter = QueryPerformanceFrequency( &cLIClockFreq )) ) {
+    if ( !(fHasPerfCounter = QueryPerformanceFrequency( &liTemp )) ) {
       cerr << "\ngettimeofday: no hi performance clock available. " 
 	   << "Defaulting to _ftime (~6 ms resolution) ..." << endl;
       gettimeofday( tp, tzp );
       return 0;
     }
+    
+    if (adjustFrequency()<0) {
+      cerr << "\ngettimeofday: can't verify clock frequency. " 
+	   << "Defaulting to _ftime (~6 ms resolution) ..." << endl;
+      fHasPerfCounter=0;
+      gettimeofday( tp, tzp );
+      return 0;
+    }
 
     // get current time
-    QueryPerformanceCounter( &cLICounter );
+    
+    rdtsc( liInit );
     _ftime(&tbInit);
 
     // we now consider it to be exactly the time _ftime returned
     // (beyond the resolution of _ftime, down to the perfCounter res)
-    
-    /* now pack counter into a timeval struct -- int divide is fine here */
-    tvInit.tv_sec = (long) (cLICounter.QuadPart / cLIClockFreq.QuadPart);
-      
-    /* counter/freq = num_of_secs (floor), sub out num_secs*freq to
-       get num_ticks and do 1e6 * (double) num_ticks / (double) freq
-       to get num usecs */
-    tvInit.tv_usec = (long) (1e6 * ((double) (cLICounter.QuadPart - 
-				         cLIClockFreq.QuadPart*tvInit.tv_sec)
-				    /(double) cLIClockFreq.QuadPart));
   } 
 
   // now do the regular get time call to get the current time
-  QueryPerformanceCounter( &cLICounter );
-  tvNow.tv_sec = (long) (cLICounter.QuadPart / cLIClockFreq.QuadPart);
-  tvNow.tv_usec = (long) (1e6 * ((double) (cLICounter.QuadPart - 
-				     cLIClockFreq.QuadPart*tvNow.tv_sec)
-				 /(double) cLIClockFreq.QuadPart));
+  rdtsc( liNow );
 
   // find offset from initial value
-  tvDiff = timevalDiff( tvNow, tvInit );
-  
-  if (tvDiff.tv_sec<0) {
-    // need to reset clock, hi-perf timer rolled over
-    // this will probably never be experienced, but just in case ...
-    cerr << "gettimeofday: hi-perf timer rolled over. resetting clock ..." 
-	 << endl;
-    fFirst=1;
-    gettimeofday(tp, tzp);
-    return 0;
-  } 
+  liDiff.QuadPart = liNow.QuadPart - liInit.QuadPart;
+
+  tvDiff.tv_sec = (long) ( liDiff.QuadPart / FREQUENCY );
+  tvDiff.tv_usec = (long) ( 1e6 * ((liDiff.QuadPart - FREQUENCY*tvDiff.tv_sec)
+			   / (double) FREQUENCY) );
 
   // pack the value and clean it up
   tp->tv_sec  = tbInit.time + tvDiff.tv_sec;

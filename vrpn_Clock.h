@@ -13,19 +13,22 @@
   ----------------------------------------------------------------------------
   Author: weberh
   Created: Sat Dec 13 11:21:15 1997
-  Revised: Mon Dec 15 15:06:54 1997 by weberh
+  Revised: Sat Dec 20 08:25:44 1997 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.h,v $
   $Locker:  $
-  $Revision: 1.1 $
+  $Revision: 1.2 $
 \*****************************************************************************/
 #ifndef _VRPN_CLOCK_H_
 #define _VRPN_CLOCK_H_
 
 #include "vrpn_Connection.h"
 
+class vrpn_Connection;
+
+#define CLOCK_VERSION 0x10
+
 // Base class for clock servers.  Definition of remote/client 
 // clock class for the user is at the end.
-
 class vrpn_Clock {
 public:
   vrpn_Clock(char *name, vrpn_Connection *c = NULL);
@@ -37,13 +40,14 @@ protected:
   long clockServer_id;		// ID of this clock to connection
   long queryMsg_id;		// ID of clockQuery message to connection
   long replyMsg_id;		// ID of clockReply message to connection
-  virtual int encode_to(char *buf, const struct timeval& tv, 
+  virtual int encode_to(char *buf, const struct timeval& tvSRep, 
+			const struct timeval& tvCReq, 
 			int cChars, const char* pch);
 };
 
 class vrpn_Clock_Server : public vrpn_Clock {
 public:
-  vrpn_Clock_Server(char *name, vrpn_Connection *c);
+  vrpn_Clock_Server(vrpn_Connection *c);
 
   // Called once through each main loop iteration to handle
   // clock updates.
@@ -77,8 +81,8 @@ typedef void (*vrpn_CLOCKSYNCHANDLER)(void *userdata,
 // and figure out the offset between the local and remote clocks
 // This is the type of clock that user code will deal with.
 // You need only supply the server name (no device name) and the 
-// desired frequency (in hz) of clock sync updates.  If the freq is
-// negative, then you will get no automatic syncs. At any time you
+// desired frequency (in hz) of clock sync updates.  IF THE FREQ IS
+// NEGATIVE, THEN YOU WILL GET NO AUTOMATIC SYNCS. At any time you
 // can get a very accurate sync by calling fullSync();
 
 #ifndef _WIN32
@@ -93,8 +97,15 @@ class vrpn_Clock_Remote: public vrpn_Clock {
   // (from sdi_devices), and the frequency at which to do quick re-syncs 
   // (1 hz by default).  If the user specifies a freq < 0, then there will
   // be no quick syncs -- they will have to request syncs with fullSync().
-  
-  vrpn_Clock_Remote(char *name, double dFreq=1);
+  // The final arg is the number of reports over which the user wants to
+  // maintain a window from which the offset routine will choose the min
+  // round trip report and use the offset from that trip.
+  // A high setting (e.g., 40) works well for arrangements with little drift
+  // while a low setting (e.g., 3) works well when drift is present.
+  // See cMaxQuickRecords below for more detail.
+
+  vrpn_Clock_Remote(char *name, double dFreq=1, int cOffsetWindow=3);
+  virtual ~vrpn_Clock_Remote();
 
   // This routine calls does the sync and calls the mainloop of the 
   // connection it's on
@@ -105,7 +116,7 @@ class vrpn_Clock_Remote: public vrpn_Clock {
 					  vrpn_CLOCKSYNCHANDLER handler);
   virtual int unregister_clock_sync_handler(void *userdata,
 					    vrpn_CLOCKSYNCHANDLER handler);
-  // request a high accuracy re-sync
+  // request a high accuracy sync
   void fullSync();
 
   protected:
@@ -117,9 +128,18 @@ class vrpn_Clock_Remote: public vrpn_Clock {
 
   // CC does not like this, so ...
   // const int cMaxQuickDiffs=5
-#define cMaxQuickRecords 5
-  struct timeval rgtvHalfRoundTrip[cMaxQuickRecords];
-  struct timeval rgtvClockOffset[cMaxQuickRecords];
+  // This is the number of reports the clock keeps track of and
+  // chooses the offset from the min round trip from these.
+  // This is a balance between drift compensation and
+  // accuracy.  In the absence of drift, this should
+  // be very large.  In the presence of drift it needs
+  // to be very small. 5 seems to work well -- this means
+  // that drift will accumulate for at most 5*1/freq secs,
+  // and that a few consecutive long roundtrips will not
+  // reduce the accuracy of the offset.
+  int cMaxQuickRecords;
+  struct timeval *rgtvHalfRoundTrip;
+  struct timeval *rgtvClockOffset;
   int irgtvQuick;
 
   double dQuickIntervalMsecs;
@@ -156,6 +176,27 @@ class vrpn_Clock_Remote: public vrpn_Clock {
 
 /*****************************************************************************\
   $Log: vrpn_Clock.h,v $
+  Revision 1.2  1998/01/08 23:32:49  weberh
+  Summary of changes
+  1) vrpn_Tracker_Ceiling is now in the cvs repository instead of just
+     the tracker hierarchy
+  2) vrpn uses doubles to transmit tracker data instead of floats
+  3) vrpn has a vrpn_ALIGN macro and uses 8 byte alignment
+  4) vrpn_Synchronized_Connection class was derived from regular connection
+     and transforms time stamps to the local time frame (see html man pages
+     for more info)
+  5) vrpn_Shared was modified to support time stamp math ops and gettimeofday
+     under win nt/95
+
+  Revision 2.0  1997/12/21 05:13:40  weberh
+  WORKING!
+
+  Revision 1.2  1997/12/20 00:02:12  weberh
+  cleaned up.
+
+  Revision 1.1  1997/12/16 19:39:34  weberh
+  Initial revision
+
   Revision 1.1  1997/12/15 21:25:09  weberh
   Added the vrpn_Clock class to vrpn to allow users (and eventually a
   connection) to find out the offset between the server and client clock so

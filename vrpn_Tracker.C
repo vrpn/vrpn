@@ -131,21 +131,23 @@ vrpn_Tracker::vrpn_Tracker(char *name, vrpn_Connection *c) {
 
 	// Set the position to the origin and the orientation to identity
 	// just to have something there in case nobody fills them in later
-	pos[0] = pos[1] = pos[2] = 0.0f;
-	quat[0] = quat[1] = quat[2] = 0.0f;
-	quat[3] = 1.0f;
+	pos[0] = pos[1] = pos[2] = 0.0;
+	quat[0] = quat[1] = quat[2] = 0.0;
+	quat[3] = 1.0;
 
 	// Set the velocity to zero and the orientation to identity
 	// just to have something there in case nobody fills them in later
-	vel[0] = vel[1] = vel[2] = 0.0f;
-	vel_quat[0] = vel_quat[1] = vel_quat[2] = 0.0f;
-	vel_quat[3] = 1.0f;
+	vel[0] = vel[1] = vel[2] = 0.0;
+	vel_quat[0] = vel_quat[1] = vel_quat[2] = 0.0;
+	vel_quat[3] = 1.0;
+	vel_quat_dt = 1;
 
 	// Set the acceleration to zero and the orientation to identity
 	// just to have something there in case nobody fills them in later
-	acc[0] = acc[1] = acc[2] = 0.0f;
-	acc_quat[0] = acc_quat[1] = acc_quat[2] = 0.0f;
-	acc_quat[3] = 1.0f;
+	acc[0] = acc[1] = acc[2] = 0.0;
+	acc_quat[0] = acc_quat[1] = acc_quat[2] = 0.0;
+	acc_quat[3] = 1.0;
+	acc_quat_dt = 1;
 }
 
 
@@ -158,82 +160,103 @@ void vrpn_Tracker::print_latest_report(void)
    printf("Quat     :%lf, %lf, %lf, %lf\n", quat[0],quat[1],quat[2],quat[3]);
 }
 
+// NOTE: you need to be sure that if you are sending doubles then 
+//       the entire array needs to remain aligned to 8 byte boundaries
+//	 (malloced data and static arrays are automatically alloced in
+//	  this way)
 int	vrpn_Tracker::encode_to(char *buf)
 {
-   // Message includes: long unitNum, float pos[3], float quat[4]
+   // Message includes: long unitNum, double pos[3], double quat[4]
    // Byte order of each needs to be reversed to match network standard
    // This moving is done by horrible typecast hacks.  Please forgive.
 
    int i;
-   unsigned long *longbuf = (unsigned long*)(void*)(buf);
+   double *dBuf = (double *)buf;
    int	index = 0;
 
    // Move the sensor, position, quaternion there
-   longbuf[index++] = sensor;
+   *(long *)dBuf = htonl(sensor);
+
+   // re-align to doubles
+   index++;
+
    for (i = 0; i < 3; i++) {
-   	longbuf[index++] = *(unsigned long*)(void*)(&pos[i]);
+   	dBuf[index++] = *(double *)(&pos[i]);
    }
    for (i = 0; i < 4; i++) {
-   	longbuf[index++] = *(unsigned long*)(void*)(&quat[i]);
+   	dBuf[index++] = *(double *)(&quat[i]);
    }
 
-   for (i = 0; i < index; i++) {
-   	longbuf[i] = htonl(longbuf[i]);
+   // convert the doubles
+   for (i = 1; i < index; i++) {
+   	dBuf[i] = htond(dBuf[i]);
    }
 
-   return index*sizeof(unsigned long);
+   return index*sizeof(double);
 }
 
 int	vrpn_Tracker::encode_vel_to(char *buf)
 {
-   // Message includes: long unitNum, float vel[3], float vel_quat[4]
+   // Message includes: long unitNum, double vel[3], double vel_quat[4]
    // Byte order of each needs to be reversed to match network standard
    // This moving is done by horrible typecast hacks.  Please forgive.
 
    int i;
-   unsigned long *longbuf = (unsigned long*)(void*)(buf);
+   double *dBuf = (double *)buf;
    int	index = 0;
 
    // Move the sensor, velocity, quaternion there
-   longbuf[index++] = sensor;
+   *(long *)dBuf = htonl(sensor);
+
+   // re-align to doubles
+   index++;
+
    for (i = 0; i < 3; i++) {
-   	longbuf[index++] = *(unsigned long*)(void*)(&vel[i]);
+   	dBuf[index++] = *(double*)(&vel[i]);
    }
    for (i = 0; i < 4; i++) {
-   	longbuf[index++] = *(unsigned long*)(void*)(&vel_quat[i]);
+   	dBuf[index++] = *(double*)(&vel_quat[i]);
    }
+   dBuf[index++] = vel_quat_dt;
 
-   for (i = 0; i < index; i++) {
-   	longbuf[i] = htonl(longbuf[i]);
+   // convert the doubles
+   for (i = 1; i < index; i++) {
+   	dBuf[i] = htond(dBuf[i]);
    }
-
-   return index*sizeof(unsigned long);
+   
+   return index*sizeof(double);
 }
 
 int	vrpn_Tracker::encode_acc_to(char *buf)
 {
-   // Message includes: long unitNum, float acc[3], float acc_quat[4]
+   // Message includes: long unitNum, double acc[3], double acc_quat[4]
    // Byte order of each needs to be reversed to match network standard
    // This moving is done by horrible typecast hacks.  Please forgive.
 
    int i;
-   unsigned long *longbuf = (unsigned long*)(void*)(buf);
+   double *dBuf = (double*)(buf);
    int	index = 0;
 
    // Move the sensor, acceleration, quaternion there
-   longbuf[index++] = sensor;
+   *(long *)dBuf = htonl(sensor);
+   // re-align to doubles
+   index++;
+
    for (i = 0; i < 3; i++) {
-   	longbuf[index++] = *(unsigned long*)(void*)(&acc[i]);
+   	dBuf[index++] = *(double *)(&acc[i]);
    }
    for (i = 0; i < 4; i++) {
-   	longbuf[index++] = *(unsigned long*)(void*)(&acc_quat[i]);
+   	dBuf[index++] = *(double *)(&acc_quat[i]);
    }
 
-   for (i = 0; i < index; i++) {
-   	longbuf[i] = htonl(longbuf[i]);
+   dBuf[index++] = acc_quat_dt;
+
+   // convert the doubles
+   for (i = 1; i < index; i++) {
+   	dBuf[i] = htond(dBuf[i]);
    }
 
-   return index*sizeof(unsigned long);
+   return index*sizeof(double);
 }
 
 // This routine will read any available characters from the handle into
@@ -333,7 +356,6 @@ void	vrpn_Tracker_NULL::mainloop(void)
 			vrpn_CONNECTION_LOW_LATENCY)) {
 		 fprintf(stderr,"NULL tracker: can't write message: tossing\n");
 		}
-
 	    }
 	  }
 	}
@@ -366,9 +388,9 @@ vrpn_Tracker_Serial::vrpn_Tracker_Serial(char *name, vrpn_Connection *c,
    gettimeofday(&timestamp, NULL);
 }
 
-vrpn_Tracker_Remote::vrpn_Tracker_Remote(char *name) :
+vrpn_Tracker_Remote::vrpn_Tracker_Remote(char *name ) :
 	vrpn_Tracker(name, vrpn_get_connection_by_name(name)) ,
-	change_list(NULL)
+	change_list(NULL), velchange_list(NULL), accchange_list(NULL)
 {
 	// Make sure that we have a valid connection
 	if (connection == NULL) {
@@ -467,6 +489,7 @@ int vrpn_Tracker_Remote::register_change_handler(void *userdata,
 	return 0;
 }
 
+
 int vrpn_Tracker_Remote::register_change_handler(void *userdata,
 			vrpn_TRACKERACCCHANGEHANDLER handler)
 {
@@ -495,6 +518,7 @@ int vrpn_Tracker_Remote::register_change_handler(void *userdata,
 
 	return 0;
 }
+
 
 int vrpn_Tracker_Remote::unregister_change_handler(void *userdata,
 			vrpn_TRACKERCHANGEHANDLER handler)
@@ -589,35 +613,35 @@ int vrpn_Tracker_Remote::unregister_change_handler(void *userdata,
 	return 0;
 }
 
+
 int vrpn_Tracker_Remote::handle_change_message(void *userdata,
 	vrpn_HANDLERPARAM p)
 {
 	vrpn_Tracker_Remote *me = (vrpn_Tracker_Remote *)userdata;
-	long *params = (long*)(p.buffer);
+	double *params = (double*)(p.buffer);
 	vrpn_TRACKERCB	tp;
 	vrpn_TRACKERCHANGELIST *handler = me->change_list;
 	long	temp;
 	int	i;
 
 	// Fill in the parameters to the tracker from the message
-	if (p.payload_len != (sizeof(long) + 7*sizeof(float)) ) {
+	if (p.payload_len != (8*sizeof(double)) ) {
 		fprintf(stderr,"vrpn_Tracker: change message payload error\n");
 		fprintf(stderr,"             (got %d, expected %d)\n",
-			p.payload_len, sizeof(long) + 7*sizeof(float) );
+			p.payload_len, 8*sizeof(double) );
 		return -1;
 	}
 	tp.msg_time = p.msg_time;
-	tp.sensor = ntohl(params[0]);
+	tp.sensor = ntohl(*((long *)params));
+	params++;
 
-	// Typecasting used to get the byte order correct on the floats
+	// Typecasting used to get the byte order correct on the doubles
 	// that are coming from the other side.
 	for (i = 0; i < 3; i++) {
-	 	temp = ntohl(params[1+i]);
-		tp.pos[i] = *(float*)(&temp);
+	 	tp.pos[i] = ntohd(*params++);
 	}
 	for (i = 0; i < 4; i++) {
-		temp = ntohl(params[4+i]);
-		tp.quat[i] = *(float*)(&temp);
+		tp.quat[i] = ntohd(*params++);
 	}
 
 	// Go down the list of callbacks that have been registered.
@@ -634,32 +658,33 @@ int vrpn_Tracker_Remote::handle_vel_change_message(void *userdata,
 	vrpn_HANDLERPARAM p)
 {
 	vrpn_Tracker_Remote *me = (vrpn_Tracker_Remote *)userdata;
-	long *params = (long*)(p.buffer);
+	double *params = (double*)(p.buffer);
 	vrpn_TRACKERVELCB tp;
 	vrpn_TRACKERVELCHANGELIST *handler = me->velchange_list;
 	long	temp;
 	int	i;
 
 	// Fill in the parameters to the tracker from the message
-	if (p.payload_len != (sizeof(long) + 7*sizeof(float)) ) {
+	if (p.payload_len != (9*sizeof(double)) ) {
 		fprintf(stderr,"vrpn_Tracker: vel message payload error\n");
 		fprintf(stderr,"             (got %d, expected %d)\n",
-			p.payload_len, sizeof(long) + 7*sizeof(float) );
+			p.payload_len, 9*sizeof(double) );
 		return -1;
 	}
 	tp.msg_time = p.msg_time;
-	tp.sensor = ntohl(params[0]);
+	tp.sensor = ntohl(*(long *)params);
+	params++;
 
-	// Typecasting used to get the byte order correct on the floats
+	// Typecasting used to get the byte order correct on the doubles
 	// that are coming from the other side.
 	for (i = 0; i < 3; i++) {
-	 	temp = ntohl(params[1+i]);
-		tp.vel[i] = *(float*)(&temp);
+		tp.vel[i] = ntohd(*params++);
 	}
 	for (i = 0; i < 4; i++) {
-		temp = ntohl(params[4+i]);
-		tp.vel_quat[i] = *(float*)(&temp);
+		tp.vel_quat[i] = ntohd(*params++);
 	}
+
+	tp.vel_quat_dt = ntohd(*params++);
 
 	// Go down the list of callbacks that have been registered.
 	// Fill in the parameter and call each.
@@ -675,32 +700,33 @@ int vrpn_Tracker_Remote::handle_acc_change_message(void *userdata,
 	vrpn_HANDLERPARAM p)
 {
 	vrpn_Tracker_Remote *me = (vrpn_Tracker_Remote *)userdata;
-	long *params = (long*)(p.buffer);
+	double *params = (double*)(p.buffer);
 	vrpn_TRACKERACCCB tp;
 	vrpn_TRACKERACCCHANGELIST *handler = me->accchange_list;
 	long	temp;
 	int	i;
 
 	// Fill in the parameters to the tracker from the message
-	if (p.payload_len != (sizeof(long) + 7*sizeof(float)) ) {
+	if (p.payload_len != (9*sizeof(double)) ) {
 		fprintf(stderr,"vrpn_Tracker: acc message payload error\n");
 		fprintf(stderr,"             (got %d, expected %d)\n",
-			p.payload_len, sizeof(long) + 7*sizeof(float) );
+			p.payload_len, 9*sizeof(double) );
 		return -1;
 	}
 	tp.msg_time = p.msg_time;
-	tp.sensor = ntohl(params[0]);
+	tp.sensor = ntohl(*(long *)params);
+	params++;
 
-	// Typecasting used to get the byte order correct on the floats
+	// Typecasting used to get the byte order correct on the doubles
 	// that are coming from the other side.
 	for (i = 0; i < 3; i++) {
-	 	temp = ntohl(params[1+i]);
-		tp.acc[i] = *(float*)(&temp);
+		tp.acc[i] = ntohd(*params++);
 	}
 	for (i = 0; i < 4; i++) {
-		temp = ntohl(params[4+i]);
-		tp.acc_quat[i] = *(float*)(&temp);
+		tp.acc_quat[i] =  ntohd(*params++);
 	}
+
+	tp.acc_quat_dt = ntohd(*params++);
 
 	// Go down the list of callbacks that have been registered.
 	// Fill in the parameter and call each.
@@ -711,6 +737,7 @@ int vrpn_Tracker_Remote::handle_acc_change_message(void *userdata,
 
 	return 0;
 }
+
 
 #endif 
 

@@ -7,6 +7,9 @@
 #include <sys/time.h>
 #endif
 
+// to use time synched tracking, just pass in a sync connection to the
+// client and the server
+
 #include "vrpn_Connection.h"
 extern	int vrpn_open_commport(char *portname, long baud);
 
@@ -18,7 +21,7 @@ class vrpn_Tracker {
    void print_latest_report(void);
 
   protected:
-   vrpn_Connection *connection;		// Used to send messages
+   vrpn_Connection *connection;         // Used to send messages
    long my_id;				// ID of this tracker to connection
    long position_m_id;			// ID of tracker position message
    long velocity_m_id;			// ID of tracker velocity message
@@ -26,9 +29,11 @@ class vrpn_Tracker {
 
    // Description of the next report to go out
    int sensor;			// Current sensor
-   float pos[3], quat[4];	// Current position
-   float vel[3], vel_quat[4];	// Current velocity
-   float acc[3], acc_quat[4];	// Current acceleration
+   double pos[3], quat[4];	// Current position
+   double vel[3], vel_quat[4];	// Current velocity and dQuat/vel_quat_dt
+   double vel_quat_dt;          // delta time (in secs) for vel_quat
+   double acc[3], acc_quat[4];	// Current acceleration and d2Quat/acc_quat_dt2
+   double acc_quat_dt;          // delta time (in secs) for acc_quat
    struct timeval timestamp;	// Current timestamp
 
    int status;		// What are we doing?
@@ -80,8 +85,8 @@ class vrpn_Tracker_NULL: public vrpn_Tracker {
 typedef	struct {
 	struct timeval	msg_time;	// Time of the report
 	long		sensor;		// Which sensor is reporting
-	float		pos[3];		// Position of the sensor
-	float		quat[4];	// Orientation of the sensor
+	double		pos[3];		// Position of the sensor
+	double		quat[4];	// Orientation of the sensor
 } vrpn_TRACKERCB;
 typedef void (*vrpn_TRACKERCHANGEHANDLER)(void *userdata,
 					 const vrpn_TRACKERCB info);
@@ -93,8 +98,9 @@ typedef void (*vrpn_TRACKERCHANGEHANDLER)(void *userdata,
 typedef	struct {
 	struct timeval	msg_time;	// Time of the report
 	long		sensor;		// Which sensor is reporting
-	float		vel[3];		// Velocity of the sensor
-	float		vel_quat[4];	// Delta Orientation of the sensor
+	double		vel[3];		// Velocity of the sensor
+	double		vel_quat[4];	// Future Orientation of the sensor
+        double          vel_quat_dt;    // delta time (in secs) for vel_quat
 } vrpn_TRACKERVELCB;
 typedef void (*vrpn_TRACKERVELCHANGEHANDLER)(void *userdata,
 					     const vrpn_TRACKERVELCB info);
@@ -106,8 +112,10 @@ typedef void (*vrpn_TRACKERVELCHANGEHANDLER)(void *userdata,
 typedef	struct {
 	struct timeval	msg_time;	// Time of the report
 	long		sensor;		// Which sensor is reporting
-	float		acc[3];		// Acceleration of the sensor
-	float		acc_quat[4];	// Delta Delta Orientation of the sensor
+	double		acc[3];		// Acceleration of the sensor
+	double		acc_quat[4];	// Future Future Ori of the sensor
+        double          acc_quat_dt;    // delta time (in secs) for acc_quat
+        
 } vrpn_TRACKERACCCB;
 typedef void (*vrpn_TRACKERACCCHANGEHANDLER)(void *userdata,
 					     const vrpn_TRACKERACCCB info);

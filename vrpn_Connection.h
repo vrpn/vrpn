@@ -1,8 +1,11 @@
-#ifndef	VRPN_CONNECTION_H
+#ifndef	_VRPN_CONNECTION_H
+#define _VRPN_CONNECTION_H
 
 #include "vrpn_Shared.h"
 
-class	vrpn_Connection;
+// NOTE: most users will want to use the vrpn_Synchronized_Connection
+// class rather than the default connection class (either will work,
+// a regular connection just has 0 as the client-server time offset)
 
 typedef	struct {
 	long		type;
@@ -12,6 +15,11 @@ typedef	struct {
 	const char	*buffer;
 } vrpn_HANDLERPARAM;
 typedef	int  (*vrpn_MESSAGEHANDLER)(void *userdata, vrpn_HANDLERPARAM p);
+
+#include "vrpn_Clock.h"
+
+// bufs are aligned on 8 byte boundaries
+#define vrpn_ALIGN                       (8)
 
 #define	vrpn_CONNECTION_MAX_SENDERS	(10)
 #define	vrpn_CONNECTION_MAX_TYPES	(50)
@@ -40,12 +48,14 @@ typedef	int  (*vrpn_MESSAGEHANDLER)(void *userdata, vrpn_HANDLERPARAM p);
 // Default port to listen on for a server
 #define	vrpn_DEFAULT_LISTEN_PORT_NO		(4500)
 
+
 class vrpn_Connection
 {
   public:
 	// Create a connection to listen for incoming connections on a port
 	vrpn_Connection(unsigned short listen_port_no =
 		vrpn_DEFAULT_LISTEN_PORT_NO);
+
 #ifndef _WIN32
 	// Create a connection  makes an SDI connection to a remote server
 	vrpn_Connection(char *server_name);
@@ -170,10 +180,53 @@ class vrpn_Connection
 
 	virtual	int	do_callbacks_for(long type, long sender,
 				struct timeval time, int len, char *buffer);
+
+	// offset of clocks on connected machines -- local - remote
+	// (this should really not be here, it should be in adjusted time
+	// connection, but this makes it a lot easier
+        struct timeval tvClockOffset;
 };
 #ifndef _WIN32
-extern	vrpn_Connection *vrpn_get_connection_by_name(char *cname);
+// 1hz sync connection by default, windowed over last three bounces 
+extern	vrpn_Connection *vrpn_get_connection_by_name(char *cname,
+						     double dFreq=1,
+						     int cSyncWindow=3 );
 #endif
 
-#define VRPN_CONNECTION_H
+// forward decls
+class vrpn_Clock_Server;
+class vrpn_Clock_Remote;
+
+// NOTE: the clock offset is calculated only if the freq is >= 0
+// if it is < 0, then the offset is only calced and used if the
+// client specifically calls fullSync on the vrpn_Clock_Remote.
+// Time stamp for messages on the connection server are never
+// adjusted (only the clients get adjusted time stamps).
+
+// NOTE: eventually this should just be another system message type
+//       rather than a separate class, but right now i don't have time
+//       for that.
+
+class vrpn_Synchronized_Connection : public vrpn_Connection {
+public:
+  // Create a connection to listen for incoming connections on a port
+  // server call
+  vrpn_Synchronized_Connection(unsigned short listen_port_no =
+		  vrpn_DEFAULT_LISTEN_PORT_NO);
+  vrpn_Clock_Server *pClockServer;
+
+#ifndef _WIN32
+  // Create a connection makes an SDI connection to a remote server
+  // client call
+  // freq is the frequency of clock syncs (<0 means only on user request)
+  // cOffsetWindow is how many syncs to include in search window for min
+  // roundtrip.  Higher values are more accurate but result in a sync
+  // which accumulates drift error more quickly.
+  vrpn_Synchronized_Connection(char *server_name, double dFreq=4, 
+			       int cOffsetWindow=2);
+  vrpn_Clock_Remote *pClockRemote;
+#endif
+  virtual int mainloop(void);
+};
+
 #endif
