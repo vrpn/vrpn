@@ -154,16 +154,14 @@ static int vrpn_AdjustFrequency(void)
   double freq = perffreq.QuadPart * (liEnd.QuadPart - liStart.QuadPart) / 
       ((double)(endperf.QuadPart - startperf.QuadPart));
 
-#if 0
   if (fabs(perffreq.QuadPart - freq) < 0.05*freq) {
-    VRPN_CLOCK_FREQ = perffreq.QuadPart;
+    VRPN_CLOCK_FREQ = (__int64) perffreq.QuadPart;
     cerr << "\nvrpn gettimeofday: perf clock is tsc -- using perf clock freq (" 
 	 << perffreq.QuadPart/1e6 << " MHz)" << endl;
     SetPriorityClass( GetCurrentProcess() , dwPriorityClass );
     SetThreadPriority( GetCurrentThread(), iThreadPriority );
     return 0;
   } 
-#endif
 
   // either tcs and perf clock are not the same, or we could not
   // tell accurately enough with the short test. either way we now
@@ -273,7 +271,8 @@ int gettimeofday(struct timeval *tp, struct timezone *tzp)
     }
 
     // get current time
-    
+    // We assume this machine has a time stamp counter register --
+    // I don't know of an easy way to check for this
     rdtsc( liInit );
     _ftime(&tbInit);
 
