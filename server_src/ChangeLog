@@ -1,3 +1,8 @@
+2003-06-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg.SAMPLE : Comments to avoid confusion.
+	* vprn.cfg : Same.
+
 2003-05-30  David Marshburn  <marshbur@cs.unc.edu>
 
 	These changes move vrpn from Ghost 3.1 to Ghost 4.0.
