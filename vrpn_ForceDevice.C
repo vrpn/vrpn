@@ -57,7 +57,7 @@ static vrpn_float64 vector_dot (const vrpn_float64 a [3],
 }
 #endif
 
-vrpn_ForceDevice::vrpn_ForceDevice(char *name, vrpn_Connection *c) :
+vrpn_ForceDevice::vrpn_ForceDevice(const char *name, vrpn_Connection *c) :
 vrpn_BaseClass(name, c)
 {
     vrpn_BaseClass::init();
@@ -1061,7 +1061,7 @@ vrpn_int32 vrpn_ForceDevice::decodePoint (const char * buffer,
 
 /* ******************** vrpn_ForceDevice_Remote ********************** */
 
-vrpn_ForceDevice_Remote::vrpn_ForceDevice_Remote(char *name, vrpn_Connection *cn):
+vrpn_ForceDevice_Remote::vrpn_ForceDevice_Remote(const char *name, vrpn_Connection *cn):
 	vrpn_ForceDevice(name, cn),
 	change_list (NULL),
 	scp_change_list (NULL),

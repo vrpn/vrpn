@@ -37,7 +37,7 @@ class vrpn_ForceDevice : public vrpn_BaseClass {
 
   public:
 
-    vrpn_ForceDevice (char * name, vrpn_Connection *c);
+    vrpn_ForceDevice (const char * name, vrpn_Connection *c);
     virtual ~vrpn_ForceDevice (void);
 
     void print_report (void);
@@ -352,7 +352,7 @@ public:
     // The name of the force device to connect to.
     // The connection argument is used only if you already have a connection
     // the device must listen on (it is not normally used).
-    vrpn_ForceDevice_Remote(char *name, vrpn_Connection *cn = NULL);
+    vrpn_ForceDevice_Remote(const char *name, vrpn_Connection *cn = NULL);
     virtual ~vrpn_ForceDevice_Remote (void);
 
     void sendSurface(void);
