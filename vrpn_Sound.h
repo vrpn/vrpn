@@ -13,12 +13,12 @@
 #define vrpn_SND_WAVEFORM 3 //?
 #define	vrpn_SND_STOP 4 
 #define	vrpn_SND_PRELOAD 5 
-#define SHUTDOWN -4 
+#define vrpn_SND_SHUTDOWN -4 
 
 // Base class for a sound server.  Definition
 // of remote sound class for the user is at the end.
-#define CHANNEL_NUM 5 
-#define MAXFNUM 20
+#define vrpn_SND_CHANNEL_NUM 5 
+#define vrpn_SND_MAXFNUM 20
 
 class vrpn_Sound {
   public:
@@ -54,19 +54,19 @@ class vrpn_Linux_Sound: public vrpn_Sound {
 	int 	ear_mode; // mono or stereo
 
         // for sample sound
-	int   	fd[CHANNEL_NUM]; 
+	int   	fd[vrpn_SND_CHANNEL_NUM]; 
 	char    samplename[100];
 	// 
-	char filetable[MAXFNUM][100];
-	char *fileinmem[MAXFNUM];
-	int  filemax[MAXFNUM];
+	char filetable[vrpn_SND_MAXFNUM][100];
+	char *fileinmem[vrpn_SND_MAXFNUM];
+	int  filemax[vrpn_SND_MAXFNUM];
 	int  filenum;
-	int channel_on[CHANNEL_NUM];
-	int channel_file[CHANNEL_NUM];
-    int     volume[CHANNEL_NUM];
-	int  	play_mode[CHANNEL_NUM]; // vrpn_SND_SINGLE, LOOPED or STOP 
-	int channel_index[CHANNEL_NUM];
-	int channel_max[CHANNEL_NUM]; //num of chunks chunk size is 512 here
+	int channel_on[vrpn_SND_CHANNEL_NUM];
+	int channel_file[vrpn_SND_CHANNEL_NUM];
+    int     volume[vrpn_SND_CHANNEL_NUM];
+	int  	play_mode[vrpn_SND_CHANNEL_NUM]; // vrpn_SND_SINGLE, LOOPED or STOP 
+	int channel_index[vrpn_SND_CHANNEL_NUM];
+	int channel_max[vrpn_SND_CHANNEL_NUM]; //num of chunks chunk size is 512 here
 	
     void soundplay(void);
     void initchild();

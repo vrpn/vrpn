@@ -145,7 +145,7 @@ int vrpn_Linux_Sound::mapping(char *name, int address)
 	  	 { channel_max[address] = filemax[i];
 		   return i;
 		 }
-	if (filenum < MAXFNUM) 
+	if (filenum < vrpn_SND_MAXFNUM) 
 	{
 		strcpy(filetable[filenum], name);
 		filetable[filenum][strlen(name)] = '\0';
@@ -199,7 +199,7 @@ int vrpn_Linux_Sound::checkpipe(void)
 	// 0: command 
         // 1: play_mode                           / number of instrments
         // 2: ear_mode                            / instrment No. 2~
-		// 3: volume
+	// 3: volume
         // 4: filename length / notebuf length
         // 5~: filename / content of notebuf
 	switch (cbuff[0]) {
@@ -210,21 +210,20 @@ int vrpn_Linux_Sound::checkpipe(void)
 			//cbuff[5] is used for channel #
 			channel_on[cbuff[5]] = 1;
 			strncpy(samplename, &cbuff[6], (int) cbuff[4]-1);
-	    	samplename[(int) cbuff[4]-1] = '\0';
+			samplename[(int) cbuff[4]-1] = '\0';
 			channel_index[cbuff[5]] = 100;
-			channel_file[cbuff[5]] = 
-			    mapping(samplename, cbuff[5]);
+			channel_file[cbuff[5]] = mapping(samplename, cbuff[5]);
 			break;
 		case vrpn_SND_STOP:
 			channel_on[cbuff[1]] = 0;	
 			break;
 		case vrpn_SND_PRELOAD:
 			strncpy(samplename, &cbuff[2], (int) cbuff[1]);
-	    	samplename[(int) cbuff[1]] = '\0';
+			samplename[(int) cbuff[1]] = '\0';
 			printf("%s\n", samplename);
 			mapping(samplename, 0);
 			break;
-		case SHUTDOWN:
+		case vrpn_SND_SHUTDOWN:
 			return 1;	
 	}
 #endif
@@ -253,7 +252,7 @@ void vrpn_Linux_Sound::soundplay()
     // play the sample sound on /dev/audio
 	for (i=0; i < 512; i++)
 		audio_buffer[i] = 0;
-	for (i=1; i < CHANNEL_NUM; i++)
+	for (i=1; i < vrpn_SND_CHANNEL_NUM; i++)
 		if (channel_on[i]) {
 			for ( j = 0; j < 512; j++)
 				audio_buffer[j] += ((char) ( 
@@ -275,7 +274,7 @@ void vrpn_Linux_Sound::initchild()
 	int format = AFMT_S16_LE;
 
 	filenum = 0;
-	for (i=0; i<CHANNEL_NUM; i++)
+	for (i=0; i<vrpn_SND_CHANNEL_NUM; i++)
 	{
 		channel_on[i] = 0;
 		channel_max[i] = 0;
