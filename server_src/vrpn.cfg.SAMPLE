@@ -1,4 +1,4 @@
-# vrpn.cfg.SAMPLE for VRPN version 05.02
+# vrpn.cfg.SAMPLE for VRPN version 05.03
 
 ################################################################################
 ################################################################################
@@ -290,6 +290,20 @@
 
 #vrpn_ImmersionBox      ibox    /dev/ttyd2      38400   4 0 0
 #vrpn_ImmersionBox      ibox    com1            115200  4 0 0
+
+################################################################################
+# Wands button/analog, driver from Brown University. Runs a Wanda device
+# attached to a serial port.  As of Aug 28, 2000 this driver was untested on
+# Windows machines.  The code compiles fine for them, so it seems like things
+# should work okay...
+#
+# Arguments:
+#       char    name_of_this_device[]
+#       char    name_of_serial_port_to_use[]
+#       int     baud_rate_of_serial_device
+#	  float   minimum_update_rate
+
+#vrpn_Wanda      wanda    /dev/ttyd2      38400   60.0
 
 ################################################################################
 # Radamec Serial Position Interface analog. Camera tracker that attaches

@@ -34,6 +34,7 @@
 #include "vrpn_Magellan.h"
 #include "vrpn_ImmersionBox.h"
 #include "vrpn_Analog_Radamec_SPI.h"
+#include "vrpn_Wanda.h"
 
 #include "vrpn_ForwarderController.h"
 
@@ -46,6 +47,8 @@
 #define	MAX_MAGELLANS 8
 #define MAX_IBOXES 8
 #define MAX_DIALS 8
+
+const int LINESIZE = 512;
 
 #define CHECK(s) \
     retval = (s)(pch, line, config_file); \
@@ -162,9 +165,9 @@ void shutDown (void)
 
 int	get_AFline(FILE *config_file, char *axis_name, vrpn_TAF_axis *axis)
 {
-	char	line[512];
-	char	_axis_name[512];
-	char	*name = new char[512];	// We need this to stay around for the param
+	char	line[LINESIZE];
+	char	_axis_name[LINESIZE];
+	char	*name = new char[LINESIZE];	// We need this to stay around for the param
 	int	channel;
 	float	offset, thresh, power, scale;
 
@@ -209,7 +212,7 @@ int	get_AFline(FILE *config_file, char *axis_name, vrpn_TAF_axis *axis)
 
 int setup_raw_SGIBox (char * & pch, char * line, FILE * config_file) {
 
-  char s2 [512], s3 [512];
+  char s2 [LINESIZE], s3 [LINESIZE];
 
         // Line will be: vrpn_raw_SGIBox NAME PORT [list of buttons to toggle]
         int tbutton;    // Button to toggle
@@ -261,7 +264,7 @@ int setup_SGIBOX (char * & pch, char * line, FILE * config_file) {
 
 #ifdef SGI_BDBOX
 
-	    char s2 [512];
+	    char s2 [LINESIZE];
 
             int tbutton;
             next();
@@ -300,7 +303,7 @@ int setup_SGIBOX (char * & pch, char * line, FILE * config_file) {
 }
 
 int setup_JoyFly (char * & pch, char * line, FILE * config_file) {
-  char s2 [512], s3 [512], s4 [512];
+  char s2 [LINESIZE], s3 [LINESIZE], s4 [LINESIZE];
 
             next();
             if (sscanf(pch, "%511s%511s%511s",s2,s3,s4) != 3) {
@@ -346,7 +349,7 @@ int setup_JoyFly (char * & pch, char * line, FILE * config_file) {
 }
 
 int setup_Tracker_AnalogFly (char * & pch, char * line, FILE * config_file) {
-    char s2 [512], s3 [512];
+    char s2 [LINESIZE], s3 [LINESIZE];
     int i1;
     float f1;
     vrpn_Tracker_AnalogFlyParam     p;
@@ -415,7 +418,7 @@ int setup_Tracker_AnalogFly (char * & pch, char * line, FILE * config_file) {
                 }
 
         // Read the reset line
-        if (fgets(line, 512, config_file) == NULL) {
+        if (fgets(line, LINESIZE, config_file) == NULL) {
                 fprintf(stderr,"Ran past end of config file in AnalogFly\n");
                 return -1;
         }
@@ -441,7 +444,7 @@ int setup_Tracker_AnalogFly (char * & pch, char * line, FILE * config_file) {
 }
 
 int setup_Joystick (char * & pch, char * line, FILE * config_file) {
-  char s2 [512], s3 [512];
+  char s2 [LINESIZE], s3 [LINESIZE];
   int i1;
 
     float fhz;
@@ -480,7 +483,7 @@ int setup_Joystick (char * & pch, char * line, FILE * config_file) {
 }
 
 int setup_DialExample (char * & pch, char * line, FILE * config_file) {
-  char s2 [512];
+  char s2 [LINESIZE];
   int i1;
   float f1,f2;
 
@@ -514,7 +517,7 @@ int setup_DialExample (char * & pch, char * line, FILE * config_file) {
 }
 
 int setup_CerealBox (char * & pch, char * line, FILE * config_file) {
-  char s2 [512], s3 [512];
+  char s2 [LINESIZE], s3 [LINESIZE];
   int i1, i2, i3, i4;
 
             next();
@@ -551,7 +554,7 @@ int setup_CerealBox (char * & pch, char * line, FILE * config_file) {
 }
 
 int setup_Magellan (char * & pch, char * line, FILE * config_file) {
-  char s2 [512], s3 [512];
+  char s2 [LINESIZE], s3 [LINESIZE];
   int i1;
 
             next();
@@ -585,7 +588,7 @@ int setup_Magellan (char * & pch, char * line, FILE * config_file) {
 }
 
 int setup_Radamec_SPI (char * & pch, char * line, FILE * config_file) {
-  char s2 [512], s3 [512];
+  char s2 [LINESIZE], s3 [LINESIZE];
   int i1;
 
             next();
@@ -619,7 +622,7 @@ int setup_Radamec_SPI (char * & pch, char * line, FILE * config_file) {
 }
 
 int setup_ImmersionBox (char * & pch, char * line, FILE * config_file) {
-    char s2 [512], s3 [512];
+    char s2 [LINESIZE], s3 [LINESIZE];
     int i1, i2, i3, i4;
     vrpn_ImmersionBox * ibox;
     next();
@@ -650,9 +653,44 @@ int setup_ImmersionBox (char * & pch, char * line, FILE * config_file) {
     return 0;
 }
 
+int setup_Wanda (char * & pch, char * line, FILE * config_file) {
+  char s2 [LINESIZE], s3 [LINESIZE];
+  int i1;
+
+    float fhz;
+    // Get the arguments Name, Serial_Port, Baud_Rate, Min_Update_Rate
+    next();
+    if (sscanf(pch, "%511s%511s%d %f", s2, s3, &i1, &fhz) != 4) {
+      fprintf(stderr, "Bad vrpn_Wanda line: %s\n", line);
+      return -1;
+    }
+
+    // Make sure there's room for a new wanda server
+    if (num_analogs >= MAX_ANALOG) {
+      fprintf(stderr, "Too many analog devices in config file");
+      return -1;
+    }
+
+    // Create the server
+    if (verbose)
+      printf("Opening vrpn_Wanda:  "
+             "%s on port %s baud %d, min update rate = %.2f\n",
+             s2,s3, i1, fhz);
+
+    if ((analogs[num_analogs] =
+         new vrpn_Wanda(s2, connection,s3, i1, fhz)) == NULL) {
+        fprintf(stderr, "Can't create new vrpn_Wanda\n");
+        return -1;
+    } else {
+        num_analogs++;
+    }
+
+  return 0;
+}
+
 int setup_Tracker_Dyna (char * & pch, char * line, FILE * config_file) {
 
-  char s2 [512], s3 [512];
+  char s2 [LINESIZE], s3 [LINESIZE];
   int i1, i2;
   int ret;
 
@@ -690,7 +728,7 @@ int setup_Tracker_Dyna (char * & pch, char * line, FILE * config_file) {
 
 int setup_Tracker_Fastrak (char * & pch, char * line, FILE * config_file) {
 
-  char s2 [512], s3 [512], s4 [512];
+  char s2 [LINESIZE], s3 [LINESIZE], s4 [LINESIZE];
   int i1;
   int numparms;
   vrpn_Tracker_Fastrak	*mytracker;
@@ -735,7 +773,7 @@ int setup_Tracker_Fastrak (char * & pch, char * line, FILE * config_file) {
         sprintf(rcmd, "");
         while (line[strlen(line)-2] == '\\') {
           // Read the next line
-          if (fgets(line, 512, config_file) == NULL) {
+          if (fgets(line, LINESIZE, config_file) == NULL) {
               fprintf(stderr,"Ran past end of config file in Fastrak/Isense description\n");
                   return -1;
           }
@@ -743,7 +781,7 @@ int setup_Tracker_Fastrak (char * & pch, char * line, FILE * config_file) {
           // Copy the line into the remote command,
           // then replace \ with \015 if present
           // In any case, make sure we terminate with \015.
-          strncat(rcmd, line, 512);
+          strncat(rcmd, line, LINESIZE);
           if (rcmd[strlen(rcmd)-2] == '\\') {
                   rcmd[strlen(rcmd)-2] = '\015';
                   rcmd[strlen(rcmd)-1] = '\0';
@@ -790,12 +828,12 @@ int setup_Tracker_Fastrak (char * & pch, char * line, FILE * config_file) {
 	  // arguments, the string name of the devices and the integer
 	  // sensor number (starting with 0) to attach the device to.
           while (line[strlen(line)-2] == '/') {
-	    char lineCommand[512];
-	    char lineName[512];
+	    char lineCommand[LINESIZE];
+	    char lineName[LINESIZE];
 	    int	 lineSensor;
 
             // Read the next line
-            if (fgets(line, 512, config_file) == NULL) {
+            if (fgets(line, LINESIZE, config_file) == NULL) {
               fprintf(stderr,"Ran past end of config file in Fastrak/Isense description\n");
                   return -1;
 	    }
@@ -859,7 +897,7 @@ int setup_Tracker_Fastrak (char * & pch, char * line, FILE * config_file) {
 
 int setup_Tracker_3Space (char * & pch, char * line, FILE * config_file) {
 
-  char s2 [512], s3 [512];
+  char s2 [LINESIZE], s3 [LINESIZE];
   int i1;
 
             next();
@@ -894,7 +932,7 @@ int setup_Tracker_3Space (char * & pch, char * line, FILE * config_file) {
 
 int setup_Tracker_Flock (char * & pch, char * line, FILE * config_file) {
 
-  char s2 [512], s3 [512];
+  char s2 [LINESIZE], s3 [LINESIZE];
   int i1, i2;
 
             next();
@@ -929,7 +967,7 @@ int setup_Tracker_Flock (char * & pch, char * line, FILE * config_file) {
 
 int setup_Tracker_Flock_Parallel (char * & pch, char * line, FILE * config_file) {
 
-  char s2 [512], s3 [512];
+  char s2 [LINESIZE], s3 [LINESIZE];
   int i1, i2;
 
             next();
@@ -953,7 +991,7 @@ int setup_Tracker_Flock_Parallel (char * & pch, char * line, FILE * config_file)
             char *rgs[MAX_SENSORS];
             // get sensor ports
             for (int iSlaves=0;iSlaves<i1;iSlaves++) {
-              rgs[iSlaves]=new char[512];
+              rgs[iSlaves]=new char[LINESIZE];
               if (!(pch2 = strtok(0," \t"))) {
                 fprintf(stderr,"Bad vrpn_Tracker_Flock_Parallel line: %s\n",
                     line);
@@ -988,7 +1026,7 @@ int setup_Tracker_Flock_Parallel (char * & pch, char * line, FILE * config_file)
 
 int setup_Tracker_NULL (char * & pch, char * line, FILE * config_file) {
 
-  char s2 [512];
+  char s2 [LINESIZE];
   int i1;
   float f1;
 
@@ -1022,7 +1060,7 @@ int setup_Tracker_NULL (char * & pch, char * line, FILE * config_file) {
 
 int setup_Button_Python (char * & pch, char * line, FILE * config_file) {
 
-  char s2 [512];
+  char s2 [LINESIZE];
   int i1;
 
             next();
@@ -1056,7 +1094,7 @@ int setup_Button_Python (char * & pch, char * line, FILE * config_file) {
 //================================
 int setup_Button_PinchGlove(char* &pch, char *line, FILE *config_file) {
 
-   char name[512], port[512];
+   char name[LINESIZE], port[LINESIZE];
    int baud;
 
    next();
@@ -1185,10 +1223,10 @@ main (int argc, char * argv[])
 	//   class of the object that is to be created.
 	// If we fail to open a certain device, print a message and decide
 	//  whether we should bail.
-      {	char	line[512];	// Line read from the input file
+      {	char	line[LINESIZE];	// Line read from the input file
         char *pch;
-	char    scrap[512];
-	char	s1[512];
+	char    scrap[LINESIZE];
+	char	s1[LINESIZE];
         int retval;
 
 	// Read lines from the file until we run out
@@ -1207,7 +1245,7 @@ main (int argc, char * argv[])
 	  }
 
 	  // copy for strtok work
-	  strncpy(scrap, line, 512);
+	  strncpy(scrap, line, LINESIZE);
 	  // Figure out the device from the name and handle appropriately
 
 	  // WARNING: SUBSTRINGS WILL MATCH THE EARLIER STRING, SO 
@@ -1261,6 +1299,8 @@ main (int argc, char * argv[])
             CHECK(setup_Button_Python);
 	  } else if (isit("vrpn_Button_PinchGlove")) {
             CHECK(setup_Button_PinchGlove);
+	  } else  if (isit("vrpn_Wanda")) {
+            CHECK(setup_Wanda);
 	  } else {	// Never heard of it
 		sscanf(line,"%511s",s1);	// Find out the class name
 		fprintf(stderr,"Unknown class: %s\n",s1);
