@@ -1,3 +1,8 @@
+2002-09-27  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* testimager_client.C : Displays TempImager server output in OpenGL/Glut.
+	* testimager_client.dsp : Project file for testimager_client.C.
+
 2002-09-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
         * test_Zaber.C : Modified to use vrpn_Analog_Output.  Not tested.
