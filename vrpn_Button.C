@@ -120,15 +120,19 @@ vrpn_parallel_Button::vrpn_parallel_Button(char *name, vrpn_Connection *c,
 			break;
 		case 2: portname = "/dev/lp1";
 			break;
+		case 3: portname = "/dev/lp2";
+			break;
      default:
 	fprintf(stderr,"vrpn_parallel_Button: Bad port number (%d)\n",portno);
 	status = BUTTON_FAIL;
+	portname = "UNKNOWN";
 	break;
    }
 
    // Open the port
    if ( (port = open(portname, O_RDWR)) < 0) {
-	perror("vrpn_Button::vrpn_Button(): Can't open port");
+	fprintf(stderr,
+		"vrpn_Button::vrpn_Button(): Can't open port %s",portname);
 	status = BUTTON_FAIL;
 	return;
    }
