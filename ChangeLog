@@ -1,3 +1,9 @@
+2000-08-12  Jeffrey Juliano  <juliano@cs.unc.edu>
+
+	* vrpn_Connection.C: Adjust comments on vrpn_Magic to represent
+	the truth.  Suggest (in those comments) how to deal with vrpn-5.x
+	readig vrpn-4.x streamfiles.
+
 2000-08-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Analog_Radamec_SPI.C : Changed some warnings into errors

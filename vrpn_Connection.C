@@ -105,12 +105,66 @@ int gethostname (char *, int);
 #define	INVALID_SOCKET	-1
 #endif
 
-// Syntax of MAGIC:
-//   The minor version number must follow the last period ('.') and be
-// the only significant thing following the last period in the MAGIC
-// string.  Since minor versions should interoperate, MAGIC is only
-// checked through the last period;  characters after that are ignored.
-
+// Syntax of vrpn_MAGIC:
+//
+// o The minor version number must follow the last period ('.') and be the
+// only significant thing following the last period in the vrpn_MAGIC string.
+// 
+// o Minor versions should interoperate.  So, when establishing a connection,
+// vrpn_MAGIC is checked through the last period.  If everything up to, and
+// including, the last period matches, a connection will be made.
+// 
+// o If everything up to the last period matches, then a second check is
+// preformed on everything after the last period (the minor version number).
+// If the minor version numbers differ, a connection is still made, but a
+// warning is printed to stderr.  There is currently no way to supress this
+// warning message if the minor versions differ between the server and the
+// client..
+//
+// o The version checking described above is performed by the function
+// check_vrpn_cookie, found in this file.  check_vrpn_cookie returns a
+// different value for each of these three cases.
+//                                                    -[juliano 2000/08]
+// 
+// [juliano 2000/08] Suggestion:
+//
+// We have the situation today that vrpn5 can read stream files that were
+// produced by vrpn-4.x.  However, the way the library is written, vrpn
+// doesn't know this.  Further, it is difficult to change this quickly,
+// because vrpn_check_cookie doesn't know if it's being called for a network
+// or a file connection.  The purpose of this comment is to suggest a
+// solution.
+// 
+// Our temporary solution is to change the cookie, rebulid the library, and
+// relink into our app.  Then, our app can read stream files produced by
+// vrpn4.x.
+// 
+// Vrpn currently knows that live network connections between vrpn-4.x and
+// vrpn-5.x apps are not possible.  But, ideally, it should also know that
+// it's ok for a vrpn-5.x app to read a vrpn-4.x streamfile.  Unfortunately,
+// coding this is difficult in the current framework.
+//
+// I suggest that check_vrpn_cookie should not be a global function, but
+// should instead be a protected member function of vrpn_Connection.  The
+// default implementation would do what is currently done by the global
+// check_vrpn_cookie.  However, vrpn_FileConnection would override it and
+// perform a more permissive check.
+//
+// This strategy would scale in the future when we move to vrpn-6.x and
+// higher.  It would also be useful if we ever realize after a release that
+// VRPN-major.minor is actually network incompatible (but not streamfile
+// incompatible) with VRPN-major.(minor-1).  Then, the vrpn_check_cookie
+// implementation in VRPN-major.(minor-1) could test for this incompatibility
+// and print an appropriate diagnostic.  Similar solution exists if release
+// n+1 is file-compatible but later found to be network-incompatible with
+// release n.
+// 
+// Again, in our current framework, we cannot distinguish between
+// file-compatible and network-compatible.  In the future, we may also have
+// shared-memory-access-compatible as well as other types of connection.  The
+// proposed strategy hadles both partial major version compatibility as well
+// as accidental partial minor version incompatibility.
+//
 const char * vrpn_MAGIC = (const char *) "vrpn: ver. 05.02";
 const int vrpn_MAGICLEN = 16;  // Must be a multiple of vrpn_ALIGN bytes!
 
