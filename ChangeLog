@@ -1,5 +1,9 @@
 2002-09-27  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* Makefile : Added vrpn_Analog_Output.[Ch] to server build.
+
+2002-09-27  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* Makefile : Put back in 'endif' that was deleted by accident.
 
 2002-09-27  Russell M. Taylor II  <taylorr@cs.unc.edu>
