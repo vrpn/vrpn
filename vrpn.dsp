@@ -39,7 +39,7 @@ CPP=cl.exe
 # PROP Intermediate_Dir "PC_WIN32/Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /I ".." /I "ghostlib" /I "../quat" /I "server_src/quat" /I "../server_src/quat" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c /Tp
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -60,7 +60,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "PC_WIN32/Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /Z7 /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MTd /W3 /GX /Z7 /Od /I ".." /I "ghostlib" /I "../quat" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD / /c /Tp
+# ADD CPP /nologo /MTd /W3 /GX /Z7 /Od /I "../ghostlib" /I "server_src/quat" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /c /Tp
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo

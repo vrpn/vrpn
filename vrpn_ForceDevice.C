@@ -22,14 +22,11 @@
 #include "vrpn_Shared.h"
 
 
-#ifdef _WIN32
 static	unsigned long	duration(struct timeval t1, struct timeval t2)
 {
 	return (t1.tv_usec - t2.tv_usec) +
 	       1000000L * (t1.tv_sec - t2.tv_sec);
 }
-#endif
-
 vrpn_ForceDevice::vrpn_ForceDevice(char *name, vrpn_Connection *c)
 {
 	//set connection to the one passed in
@@ -92,26 +89,28 @@ void vrpn_Phantom::handle_plane(void *userdata,const vrpn_PHANTOMCB p)
 
     vrpn_Phantom *me = (vrpn_Phantom *) userdata;
  
-	Plane **plane_node = me->planes;
+    Plane **plane_node = me->planes;
     gstPHANToM *phan = me->phantom;
-	int which_plane = me->which_plane;
+    int which_plane = me->which_plane;
 	
-	which_plane = p.which_plane;
+    which_plane = p.which_plane;
  
     // If the plane's normal is (0,0,0), it is a stop surface command
 	// turn off the surface.
     if(p.plane[0]== 0 && p.plane[1] ==0  && p.plane[2] == 0 ) {
-		plane_node[which_plane]->setInEffect(FALSE);
-	}
+	plane_node[which_plane]->setInEffect(FALSE);
+    }
     else {
-	  plane_node[which_plane]->update(p.plane[0],p.plane[1],p.plane[2],p.plane[3]*1000.0);
-	  plane_node[which_plane]->setSurfaceKspring(p.SurfaceKspring);
-	  plane_node[which_plane]->setSurfaceFstatic(p.SurfaceFstatic);
-      plane_node[which_plane]->setSurfaceFdynamic(p.SurfaceFdynamic); 
-      plane_node[which_plane]->setSurfaceKdamping(p.SurfaceKdamping);
+	plane_node[which_plane]->update(p.plane[0],p.plane[1],
+					p.plane[2],p.plane[3]*1000.0);
+	plane_node[which_plane]->setSurfaceKspring(p.SurfaceKspring);
+	plane_node[which_plane]->setSurfaceFstatic(p.SurfaceFstatic);
+	plane_node[which_plane]->setSurfaceFdynamic(p.SurfaceFdynamic); 
+	plane_node[which_plane]->setSurfaceKdamping(p.SurfaceKdamping);
+	plane_node[which_plane]->setNumRecCycles((int)p.numRecCycles);
+	plane_node[which_plane]->setInEffect(TRUE); 
 
-	  plane_node[which_plane]->setInEffect(TRUE); 
-	}
+    }
 }
 
 
@@ -125,6 +124,9 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
   timestamp.tv_usec = 0;
 
   scene = new gstScene;
+
+  /* make it so simulation loop doesn't exit if remote switch is released */
+  scene->setQuitOnDevFault((gstBoolean)FALSE);
 
   /* Create the root separator. */
   rootH = new gstSeparator;
@@ -344,10 +346,10 @@ int vrpn_Phantom::handle_change_message(void *userdata,
 	int	i;
 
 	// Fill in the parameters to the tracker from the message
-	if (p.payload_len !=  (9*sizeof(float)) ) {
+	if (p.payload_len !=  (NUM_MESSAGE_PARAMETERS*sizeof(float)) ) {
 		fprintf(stderr,"vrpn_Phantom: change message payload error\n");
 		fprintf(stderr,"             (got %d, expected %d)\n",
-			p.payload_len, 9*sizeof(float) );
+			p.payload_len, NUM_MESSAGE_PARAMETERS*sizeof(float) );
 		return -1;
 	}
 	tp.msg_time = p.msg_time;
@@ -369,7 +371,10 @@ int vrpn_Phantom::handle_change_message(void *userdata,
     
 	temp = ntohl(params[8]);
 	tp.which_plane = *(float*)(&temp);
-	 
+
+	// for recovery:
+	temp = ntohl(params[9]);
+	tp.numRecCycles = temp;
 
 	// Go down the list of callbacks that have been registered.
 	// Fill in the parameter and call each.
@@ -425,11 +430,14 @@ int vrpn_ForceDevice_Remote::encode_plane(char *buf)
    for (i = 0; i < 4; i++){
    	longbuf[index++] = *(unsigned long*)(void*)(&plane[i]);
    }
+
    longbuf[index++] = *(unsigned long*)(void*)(&SurfaceKspring);
    longbuf[index++] = *(unsigned long*)(void*)(&SurfaceKdamping);
    longbuf[index++] = *(unsigned long*)(void*)(&SurfaceFdynamic);
    longbuf[index++] = *(unsigned long*)(void*)(&SurfaceFstatic);
    longbuf[index++] = *(unsigned long*)(void*)(&which_plane);
+
+   longbuf[index++] = *(unsigned long*)(void*)(&numRecCycles);
 
    for (i = 0; i < index; i++) {
    	longbuf[i] = htonl(longbuf[i]);
@@ -493,11 +501,11 @@ void vrpn_ForceDevice_Remote::startSurface(void)
 	timestamp.tv_sec = current_time.tv_sec;
 	timestamp.tv_usec = current_time.tv_usec;
 
-	if(connection) {
+	if (connection) {
 		len = encode_plane(msgbuf);
-		if(connection->pack_message(len,timestamp,plane_message_id,
-			my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
-			fprintf(stderr,"Phantom: cannot write message: tossing\n");
+		if (connection->pack_message(len,timestamp,plane_message_id,
+		     my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+		     fprintf(stderr,"Phantom: cannot write message: tossing\n");
 		}
 		connection->mainloop();
 	}

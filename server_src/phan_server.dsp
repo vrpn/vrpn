@@ -40,9 +40,10 @@ RSC=rc.exe
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "Release"
 # PROP Intermediate_Dir "Release"
+# PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /I ".." /I "../ghostlib" /I "../../quat" /I "../quat" /I "./quat" /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c /Tp
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -50,7 +51,8 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib winmm.lib ghost.lib vrpn.lib sdi.lib quat.lib /nologo /subsystem:console /machine:I386 /nodefaultlib:"msvcrt.lib" /nodefaultlib:"LIBCMTD.lib" /libpath:"../ghostlib" /libpath:"..\..\sdi_pc\pc_win32" /libpath:"..\pc_win32\debug" /libpath:".\quat\debug"
+# SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "phan_server - Win32 Debug"
 
@@ -66,7 +68,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /Zi /Od /I ".." /I "../ghostlib" /I "../../quat" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c /Tp
+# ADD CPP /nologo /MDd /W3 /Gm /GX /Zi /Od /I ".." /I "../../ghostlib" /I "./quat" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR /YX /FD /c /Tp
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -74,7 +76,8 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib winmm.lib ghost.lib vrpn.lib sdi.lib quat.lib /nologo /subsystem:console /debug /machine:I386 /nodefaultlib:"msvcrt.lib" /nodefaultlib:"LIBCMTD.lib" /pdbtype:sept /libpath:"../ghostlib" /libpath:"..\..\sdi\pc_win32" /libpath:"..\pc_win32\debug" /libpath:"..\..\quat\Debug"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib winmm.lib ghost.lib vrpn.lib sdi.lib quat.lib /nologo /subsystem:console /debug /machine:I386 /nodefaultlib:"msvcrt.lib" /nodefaultlib:"LIBCMTD.lib" /pdbtype:sept /libpath:"../../sdi_pc/pc_win32" /libpath:"../../ghostlib" /libpath:"../../vrpn/pc_win32/debug" /libpath:"./quat/debug"
+# SUBTRACT LINK32 /pdb:none
 
 !ENDIF 
 

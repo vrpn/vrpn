@@ -75,7 +75,7 @@ class vrpn_Tracker_NULL: public vrpn_Tracker {
 
 // User routine to handle a tracker position update.  This is called when
 // the tracker callback is called (when a message from its counterpart
-// across the connetion arrives).
+// across the connection arrives).
 
 typedef	struct {
 	struct timeval	msg_time;	// Time of the report

@@ -11,6 +11,7 @@
 #include <gstShape.h>
 */ 
 #include "GHOST.H"
+
 class Plane:public gstShape
 {
 public:
@@ -30,13 +31,15 @@ public:
 	//desstructor
 	~Plane(){}
 
-    void update(double a, double b, double c, double d);
+	void update(double a, double b, double c, double d);
 
 	void setPlane(gstVector newNormal, gstPoint point);
 
 	static int initClass() {PlaneClassTypeId = gstUniqueId++ ;return 0;}
 
 	void setInEffect(gstBoolean effect) {inEffect = effect;}
+
+	void setNumRecCycles(int nrc) {numRecoveryCycles = nrc;}
 
 	// Get type of this class.  No instance needed.
 	static gstType	getClassTypeId() { return PlaneClassTypeId; }
@@ -74,12 +77,36 @@ public:
 	
 	// Used by system or for creating sub-classes only.
 	// Returns TRUE if pt is inside of this object.
-	//virtual int			checkIfPointIsInside_WC(const gstPoint &pt) = 0;
+	//virtual int	checkIfPointIsInside_WC(const gstPoint &pt) = 0;
 
     void printSelf2() const { plane.printSelf2(); }
 protected:
 	gstPlane plane;
 	gstBoolean inEffect;
+
+	// variables used for recovery
+	gstBoolean isNewPlane;	// set to true by update(), set to false
+				// 	by collisionDetect()
+	gstBoolean isInRecovery;// true after collisionDetect() discovers
+				// 	there is a new plane and set to
+				//	false when recoveryPlaneCount
+				//	reaches numRecoveryCycles
+	int recoveryPlaneCount;	// keeps track of how many intermediate
+				// 	planes there have been 
+	gstPlane originalPlane;	// keeps a copy of the plane set by
+				// 	update() so that we can restore this
+				//	plane when recovery is complete
+        double lastDepth;	// this is the depth below the surface
+				// 	for the plane previous to the
+				//	new plane - updated in collisionDetect()
+	double dIncrement;	// value added to d parameter of plane
+				//	equation with each call to
+				//	collisionDetect() during a recovery
+				//	- this value is computed when a new
+				//	plane is encountered
+	int numRecoveryCycles;	// number of recovery cycles
+
+	// end of variables for recovery
 
 private:
 	static gstType PlaneClassTypeId;

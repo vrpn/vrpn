@@ -5,7 +5,6 @@
 #include "vrpn_Button.h"
 #include "vrpn_Connection.h"
 
-
 #ifdef _WIN32
 #include "ghost.h"
 #include "plane.h"
@@ -17,16 +16,26 @@
 
 #define MAXPLANE 4   //maximum number of plane in the scene 
 
+// for recovery:
+#define DEFAULT_NUM_REC_CYCLES	(10)
+
+// number of floating point values encoded in a message
+#define NUM_MESSAGE_PARAMETERS (10)
+
 class vrpn_ForceDevice {
 public:
 	vrpn_ForceDevice(char * name, vrpn_Connection *c);
 	virtual void mainloop(void) = 0;
 	void print_report(void);
-    void setSurfaceKspring(float k) { SurfaceKspring = k; }
-    void setSurfaceKdamping(float d) {SurfaceKdamping =d;}
-    void setSurfaceFstatic(float ks) {SurfaceFstatic = ks;}
-    void setSurfaceFdynamic(float kd) {SurfaceFdynamic =kd;}
 
+	void setSurfaceKspring(float k) { 
+					SurfaceKspring = k; }
+	void setSurfaceKdamping(float d) {SurfaceKdamping =d;}
+	void setSurfaceFstatic(float ks) {SurfaceFstatic = ks;}
+	void setSurfaceFdynamic(float kd) {SurfaceFdynamic =kd;}
+	void setRecoveryTime(int rt) {numRecCycles = rt;}
+	int getRecoveryTime(void) {return numRecCycles;}
+	int connectionAvailable(void) {return (connection != NULL);}
 
 protected:
 	vrpn_Connection *connection;		// Used to send messages
@@ -35,8 +44,8 @@ protected:
 	virtual int encode_to(char *buf);
 	
 	struct timeval timestamp;
-	long my_id;				// ID of this force device to connection
-	long force_message_id;		// ID of force message to connection
+	long my_id;		// ID of this force device to connection
+	long force_message_id;	// ID of force message to connection
 	long plane_message_id;  //ID of plane equation message
 
 	int   which_plane;
@@ -46,19 +55,21 @@ protected:
 	float SurfaceKdamping;
 	float SurfaceFstatic;
 	float SurfaceFdynamic;
+	int numRecCycles;
 
 };
 
 #ifdef _WIN32
 
 typedef	struct {
-	struct		timeval	msg_time;	// Time of the report
+	struct		timeval	msg_time;// Time of the report
 	float		which_plane;
-	float		plane[4];		// plane equation, ax+by+cz+d = 0
+	float		plane[4];	// plane equation, ax+by+cz+d = 0
 	float		SurfaceKspring; //surface spring coefficient
 	float		SurfaceFdynamic;//surface dynamic friction conefficient
-	float	    SurfaceFstatic; //surface static friction coefficient
+	float	        SurfaceFstatic; //surface static friction coefficient
 	float		SurfaceKdamping;//surface damping coefficient
+	float		numRecCycles;	// number of recovery cycles
 } vrpn_PHANTOMCB;
 
 typedef void (*vrpn_PHANTOMCHANGEHANDLER)(void *userdata,
@@ -80,12 +91,16 @@ public:
 protected:
 	float update_rate;
 	gstScene *scene;
-	gstSeparator *rootH; /* This is the haptics root separator that is attached to the scene. */
-	gstSeparator *hapticScene; /* This is the next separator that contains the entire scene graph. */
+	gstSeparator *rootH; /* This is the haptics root separator that is 
+					attached to the scene. */
+	gstSeparator *hapticScene; /* This is the next separator that contains 
+					the entire scene graph. */
 	gstPHANToM *phantom;
 	struct timeval timestamp;
 	Plane *planes[MAXPLANE];
 	Plane *cur_plane;
+	gstEffect *effect; 	// this is a force appended to
+				// other forces exerted by phantom
   //  vrpn_PHANTOMCB	surface;
 
 //	gstPoint cursor_pos;
@@ -121,7 +136,7 @@ public:
 	vrpn_ForceDevice_Remote(char *name);
 
  	void set_plane(float *p);
-    void set_plane(float *p, float d);
+	void set_plane(float *p, float d);
 	void set_plane(float a, float b, float c,float d);
 	void sendSurface(void);
 	void startSurface(void);
