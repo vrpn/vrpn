@@ -116,12 +116,12 @@ const int vrpn_MAGICLEN = 16;  // Must be a multiple of vrpn_ALIGN bytes!
 // This is the list of states that a connection can be in
 // (possible values for status).  doing_okay() returns VRPN_TRUE
 // for connections >= TRYING_TO_CONNECT.
-#define LISTEN			(1)
-#define CONNECTED		(0)
-#define COOKIE_PENDING          (-1)
-#define TRYING_TO_CONNECT	(-2)
-#define BROKEN			(-3)
-#define DROPPED			(-4)
+enum ConnectionStatus {LISTEN             = (1),
+                       CONNECTED          = (0),
+                       COOKIE_PENDING     = (-1),
+                       TRYING_TO_CONNECT  = (-2),
+                       BROKEN             = (-3),
+                       DROPPED            = (-4)};
 
 
 
@@ -2233,7 +2233,7 @@ int vrpn_get_a_TCP_socket (SOCKET * listen_sock, int * listen_portnum,
     return -1;
   }
 
-  if (listen(*listen_sock, 2) ) {
+  if (listen(*listen_sock, 1) ) {
     fprintf(stderr,"vrpn_get_a_TCP_socket: listen() failed.\n");
     close(*listen_sock);
     return(-1);
@@ -4324,6 +4324,7 @@ void setClockOffset( void *userdata, const vrpn_CLOCKCB& info )
 #endif
   (*(struct timeval *) userdata) = info.tvClockOffset;
 }
+
 int flush_udp_socket (int fd) {
   timeval localTimeout;
   fd_set readfds, exceptfds;
@@ -4990,6 +4991,8 @@ vrpn_Connection::vrpn_Connection
        const char * local_logfile_name, long local_log_mode,
        const char * remote_logfile_name, long remote_log_mode,
        const char * NIC_IPaddress) :
+    // Jeff's change; I've commented out for now
+    //connectionStatus (BROKEN),  // default value if not otherwise set in ctr
     d_numEndpoints (0),
     d_numConnectedEndpoints (0),
     listen_udp_sock (INVALID_SOCKET),
@@ -5082,6 +5085,13 @@ vrpn_Connection::vrpn_Connection
       return;
     }
 
+    // the next line is something jeff added to get vrpn to work on his
+    // PC.  Tom Hudson independently added a line that is similar, but
+    // different.  I'm (jeff) am not sure what the right thing is here.
+    //
+    //connectionStatus = TRYING_TO_CONNECT;  // XXX jeff's addition
+   
+    // here is the line that Tom added
     endpoint->status = TRYING_TO_CONNECT;
 
     // See if we have a connection yet (wait for 1 sec at most).
