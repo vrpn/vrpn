@@ -42,6 +42,17 @@
 
 //#define VERBOSE
 
+// HACK - T. Hudson April 00
+#if defined(__CYGWIN__)
+#define vrpn_closesocket closesocket
+#define vrpn_readsocket(a,b,c) recv(a,b,c,0)
+#define vrpn_writesocket(a,b,c) send(a, (char *) b,c,0)
+#else
+#define vrpn_closesocket close
+#define vrpn_readsocket read
+#define vrpn_writesocket write
+#endif
+
 #ifndef VRPN_CLIENT_ONLY
 
 #define time_add(t1,t2, tr)     { (tr).tv_sec = (t1).tv_sec + (t2).tv_sec ; \
@@ -251,7 +262,7 @@ int vrpn_close_commport(int comm)
 		delete [] commConnections;
 
 #else
-	return close(comm);
+	return vrpn_closesocket(comm);
 #endif
 }
 
@@ -368,7 +379,8 @@ int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes)
    unsigned char *pch = buffer;
 
    do {
-     if ( (cReadThisTime = read(comm, (char *)pch, cSpaceLeft)) == -1) {
+     if ((cReadThisTime = vrpn_readsocket(comm, (char *) pch,
+                                          cSpaceLeft)) == -1) {
        perror("vrpn_read_available_characters: cannot read from serial port");
        fprintf(stderr, "buffer = %p, %d\n", pch, bytes);  
        return -1;
@@ -419,12 +431,15 @@ int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes,
 #endif  // VRPN_CLIENT_ONLY
 
 
+#if 0
+// T. Hudson April 00
 #if defined(_WIN32) && defined(__CYGWIN__)
 // [juliano 9/17/99]
 //   added this decl because otherwise I cannot compile vrpn_Serial.C
 //   on my PC in cygwin.  I have this problem with both egcs-2.91.57
 //   and gcc-2.95.
 int write( int fildes, const void *buf, size_t nbyte );
+#endif
 #endif
 
 // Write the buffer to the serial port
@@ -448,6 +463,6 @@ int vrpn_write_characters(int comm, const unsigned char *buffer, int bytes)
 
 	return numWritten;
 #else
-	return write(comm, buffer, bytes);
+	return vrpn_writesocket(comm, buffer, bytes);
 #endif
 }

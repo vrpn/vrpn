@@ -2,7 +2,7 @@
 #include "vrpn_Serial.h"
 #include <stdio.h>
 #include <stdlib.h>
-#ifndef _WINNT
+#ifndef _WIN32
 #include <unistd.h>
 #endif
 #include <string.h>
