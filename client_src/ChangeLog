@@ -1,3 +1,9 @@
+2002-09-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* test_tempimager.C : Test file for TempImager class.
+	* test_tempimager.dsp : build file.
+	* Makefile : same.
+
 2002-07-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Makefile : Removing seldom-used clients that don't compile on
