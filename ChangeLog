@@ -1,3 +1,10 @@
+2003-07-07  Sascha Scholz  <sascha.scholz@imk.fraunhofer.de>
+
+	* Makefile : added ADBox/CubicMouse driver
+	* vrpn.C : Same.
+	* vrpn_ADBox.C : Same.
+	* vrpn_ADBox.h : Same.
+
 2003-06-20  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_Configure.h:  adds a (commented-out) option to use Ghost 3.1
