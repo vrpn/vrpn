@@ -115,6 +115,11 @@ void main(int argc, char *argv[])
   button = new vrpn_Button_Remote(device_name);
   button->register_change_handler(&done, handle_button_change);
 
+  while (!forceDevice->connectionPtr()->connected()) {
+      forceDevice->mainloop();
+  }
+
+
   // Set plane and surface parameters
   forceDevice->set_plane(0.0, 1.0, 0.0, 0.0);
 

@@ -6,7 +6,7 @@
 #include <vrpn_Tracker.h>
 #include <vrpn_Button.h>
 
-#define PHANTOM_SERVER "Phantom@tantalum-cs"
+#define PHANTOM_SERVER "Phantom@europium-cs"
 
 /*****************************************************************************
  *
@@ -76,19 +76,30 @@ int main(int argc, char *argv[])
 	button = new vrpn_Button_Remote(PHANTOM_SERVER);
 	button->register_change_handler(&done, handle_button_change);
 
+        while (!forceDevice->connectionPtr()->connected()) {
+           forceDevice->mainloop();
+        }
+
         // Set plane and surface parameters
         forceDevice->set_plane(0.0, 1.0, 0.0, 0.0);
         forceDevice->setSurfaceKspring(0.8); 	// spring constant - units of
 						// dynes/cm
         forceDevice->setSurfaceKdamping(0.0);	// damping constant - 
                                                 // units of dynes*sec/cm
-        forceDevice->setSurfaceFstatic(0.2); 	// set static friction
-        forceDevice->setSurfaceFdynamic(0.2);	// set dynamic friction
-        forceDevice->setRecoveryTime(1);	// recovery occurs over 10
+        forceDevice->setSurfaceFstatic(0.0); 	// set static friction
+        forceDevice->setSurfaceFdynamic(0.0);	// set dynamic friction
+        forceDevice->setRecoveryTime(0);	// recovery occurs over 10
                                                 // force update cycles
-        // enable force device and send first surface
-        //forceDevice->startSurface();    
 
+        forceDevice->setSurfaceBuzzAmplitude(0.0);
+        forceDevice->setSurfaceBuzzFrequency(60.0);
+        forceDevice->setSurfaceTextureAmplitude(0.0);
+        forceDevice->setSurfaceTextureWavelength(0.01);
+
+        // enable force device and send first surface
+        forceDevice->startSurface();  
+
+/*
 	// test spring constraint instead
 
         vrpn_float32 p [3];
@@ -107,11 +118,13 @@ int main(int argc, char *argv[])
 	//forceDevice->setConstraintLinePoint(p);
 	//forceDevice->setConstraintLineDirection(d);
           // works
+
 	forceDevice->setConstraintMode(vrpn_ForceDevice::PLANE_CONSTRAINT);
 	forceDevice->setConstraintPlanePoint(p);
 	forceDevice->setConstraintPlaneNormal(d);
         forceDevice->setConstraintKSpring(10.0);
         forceDevice->enableConstraint(1);
+*/
 
         // main loop
         while (! done ){

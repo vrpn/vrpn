@@ -1,3 +1,8 @@
+2001-04-19  Adam Seeger  <seeger@cs.unc.edu>
+
+	* phan_client.C, sphere_client.C (main): added while-loop to wait until
+	the connection is established before sending commands
+
 2001-02-17  Tom Hudson  <hudson@cs.unc.edu>
 
 	* printvals.c (main) : remove code to Usage(), change command-line
