@@ -324,7 +324,7 @@ class vrpn_Endpoint {
                   timeval time, vrpn_uint32 payload_len,
                   char * bufptr);
 
-    int tryToMarshall (char * outbuf, int &buflen, int &numOut,
+    int tryToMarshall (char * outbuf, vrpn_int32 &buflen, vrpn_int32 &numOut,
                        vrpn_uint32 len, timeval time,
                        vrpn_int32 type, vrpn_int32 sender,
                        const char * buffer, vrpn_uint32 classOfService);

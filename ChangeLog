@@ -1,9 +1,25 @@
+2002-09-27  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Inserted changes from John Stone to make the code compile
+		on Mac's running OS/X.
+	* vrpn_Connection.C : Changed function return type in declaration
+		to match definition.  Added things from John Stone that make
+		it compile on Mac's running OS/X.
+	* vrpn_Connection.h : Changed function declaration types to match
+		function definition.
+	* vrpn_Serial.C : Added changes by John Stone to make it compile
+		on Mac's running OS/X.
+	* vrpn_Shared.C : Same.
+	* vrpn_Types.h : Same.
+
 2002-10-27  Charalampos Fretzagias <fretzagi@cs.unc.edu>
+
 	* vrpn_TempImager.C : The 16bit version of fill_region will no
 		 longer use offset or scale unless they are really needed
 	* testimager_client.C : Added some optimizations, removed call to
 		glutPostRedisplay() which has some bug. It will also not
 		sleep when idle.
+
 2002-09-27  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.dsw : Adds testimager_client project from client_src.

@@ -13,7 +13,7 @@
 #include <termios.h>
 #endif
 
-#ifdef linux
+#if defined(linux) || defined(__APPLE__) 
 #include <termios.h>
 #endif
 
@@ -68,7 +68,7 @@ static int curCom = -1;
 
 int vrpn_open_commport(char *portname, long baud, int charsize, vrpn_SER_PARITY parity)
 {
-#if defined(hpux) || defined(__hpux) || defined(ultrix) || defined(FreeBSD) || defined(__CYGWIN__)
+#if defined(hpux) || defined(__hpux) || defined(ultrix) || defined(FreeBSD) || defined(__CYGWIN__) || defined(__APPLE__)
 	fprintf(stderr,
 		"vrpn_open_commport: Not implemented in ultrix, HP, or Cygwin\n");
 	return -1;

@@ -16,11 +16,9 @@
 #include <fcntl.h>
 #endif
 
-#ifndef FreeBSD
-// malloc.h is deprecated in FreeBSD;  all the functionality *should*
+// malloc.h is deprecated;  all the functionality *should*
 // be in stdlib.h
-#include <malloc.h>
-#endif
+#include <stdlib.h>
 
 #ifdef VRPN_USE_WINSOCK_SOCKETS
 // a socket in windows can not be closed like it can in unix-land
@@ -959,9 +957,9 @@ class vrpn_TypeDispatcher {
       ///< vrpn_Connection doesn't call this because it needs to know
       ///< whether or not to send a sender message.
 
-    vrpn_int32 addHandler (vrpn_int32 type, vrpn_MESSAGEHANDLER handler,
+    int addHandler (vrpn_int32 type, vrpn_MESSAGEHANDLER handler,
                            void * userdata, vrpn_int32 sender);
-    vrpn_int32 removeHandler (vrpn_int32 type, vrpn_MESSAGEHANDLER handler,
+    int removeHandler (vrpn_int32 type, vrpn_MESSAGEHANDLER handler,
                               void * userdata, vrpn_int32 sender);
     void setSystemHandler (vrpn_int32 type, vrpn_MESSAGEHANDLER handler);
 
@@ -2462,7 +2460,7 @@ int vrpn_start_server(const char * machine, char * server_name, char * args,
 		    }
 
                     /* Check to see if the child is dead yet */
-#if defined(hpux) || defined(sgi) || defined(__hpux) || defined(__CYGWIN__)
+#if defined(hpux) || defined(sgi) || defined(__hpux) || defined(__CYGWIN__) || defined(__APPLE__)
                     /* hpux include files have the wrong declaration */
                     deadkid = wait3((int*)&status, WNOHANG, NULL);
 #else
@@ -4081,7 +4079,7 @@ int vrpn_Endpoint::dispatch (vrpn_int32 type, vrpn_int32 sender,
 }
 
 int vrpn_Endpoint::tryToMarshall
-         (char * outbuf, int &buflen, int &numOut,
+         (char * outbuf, vrpn_int32 &buflen, vrpn_int32 &numOut,
           vrpn_uint32 len, timeval time,
           vrpn_int32 type, vrpn_int32 sender,
           const char * buffer, vrpn_uint32 sequenceNumber) {

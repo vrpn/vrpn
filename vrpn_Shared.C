@@ -12,6 +12,10 @@
 #include <sys/types.h>
 #endif
 
+#if defined(__APPLE__)
+#include <unistd.h>
+#endif
+
 #include <string.h>  // for memcpy()
 
 #if !( defined(_WIN32) && defined(VRPN_USE_WINSOCK_SOCKETS) )
