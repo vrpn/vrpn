@@ -1,3 +1,10 @@
+2003-09-16  Blair MacIntyre	<blair@cc.gatech.edu>
+
+	* vrpn_Tracker_isense.h : Added code to add Wands and other
+		devices to the tracker like the Fastrak version of
+		the Intersense driver could.
+	* vrpn_Tracker_isense.C : Same.
+
 2003-09-02  Blair MacIntyre	<blair@cc.gatech.edu>
 
 	* Makefile : Makes it work on MacOSX with Intersense.
