@@ -301,3 +301,7 @@ int gettimeofday(struct timeval *tp, struct timezone *tzp)
   return 0;
 }
 #endif
+
+// do the calibration before the program ever starts up
+static struct timeval __tv;
+static int __iTrash = gettimeofday(&__tv, (struct timezone *)NULL);
