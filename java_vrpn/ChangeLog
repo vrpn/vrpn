@@ -1,3 +1,8 @@
+2002-12-16  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_TempImager_Remote.cpp:  changed the names of the vrpn
+	TempImager variables to match current implementation.
+
 2002-11-25    <marshbur@cs.unc.edu>
 
 	* TempImagerRemote.java:  made all data members protected (were default

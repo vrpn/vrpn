@@ -109,7 +109,7 @@ void java_vrpn_handle_region_change( void * userdata, const vrpn_IMAGERREGIONCB 
           //info.region->chanIndex, info.region->rMin, info.region->rMax,
           //info.region->cMin, info.region->cMax );
 
-  if( info.region->_valType != vrpn_IMAGER_VALTYPE_UINT16 )
+  if( info.region->d_valType != vrpn_IMAGER_VALTYPE_UINT16 )
   {
 	  printf( "Error in java_vrpn java_vrpn_handle_region_change:  this has "
 			  "only been written for 16-bit image data, and someone's sending "
@@ -147,15 +147,15 @@ void java_vrpn_handle_region_change( void * userdata, const vrpn_IMAGERREGIONCB 
     return;
   }
   env->SetShortArrayRegion( jvals, 0, info.region->getNumVals(), 
-							(short*) info.region->_valBuf );
+							(short*) info.region->d_valBuf );
 
 
   // now call the handler method
   env->CallVoidMethod( jobj, jmid_handler, (jlong) info.msg_time.tv_sec, 
-                       (jlong) info.msg_time.tv_usec, (jint) info.region->_chanIndex,
-                       (jint) info.region->_cMin, 
-                       (jint) info.region->_cMax, 
-                       (jint) info.region->_rMin, (jint) info.region->_rMax );
+                       (jlong) info.msg_time.tv_usec, (jint) info.region->d_chanIndex,
+                       (jint) info.region->d_cMin, 
+                       (jint) info.region->d_cMax, 
+                       (jint) info.region->d_rMin, (jint) info.region->d_rMax );
 
 } // end java_vrpn_handle_region_change(...)
 
