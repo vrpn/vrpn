@@ -1,3 +1,16 @@
+2003-01-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_GlobalHapticsOrb.C : Server for the Global Haptics GeoOrb device.
+	* vrpn_GlobalHapticsOrb.h : Same.
+	* vrpn_Tracker_ButtonFly.C : Server for a device that lets you fly
+		or teleport using button devices.
+	* vrpn_Tracker_ButtonFly.g : Same.
+	* Makefile : Adding GlobalHapticsOrb and ButtonFly servers.
+	* vrpn.dsp : Same.
+	* vrpn_Tng3.h : Comment fix.
+	* vrpn_Tracker_AnalogFly.C : Switched to autodeleted handler, rather
+		than registering and unregistering the handler.
+
 2003-01-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Tracker_Fastrak.C : Installing fix from Sascha Scholz to make

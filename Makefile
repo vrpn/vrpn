@@ -360,24 +360,25 @@ $(SOBJECT_DIR):
 # files to be compiled into the client library
 
 LIB_FILES =  vrpn_Connection.C vrpn_Tracker.C vrpn_Button.C \
-	     vrpn_ForceDevice.C vrpn_Clock.C vrpn_Shared.C \
-	     vrpn_Analog.C vrpn_FileConnection.C \
-             vrpn_FileController.C vrpn_Forwarder.C vrpn_Text.C \
-             vrpn_ForwarderController.C vrpn_Serial.C vrpn_Dial.C \
-             vrpn_SharedObject.C vrpn_BaseClass.C \
-	     vrpn_Sound.C vrpn_LamportClock.C vrpn_Mutex.C vrpn_Router.C \
-             vrpn_RedundantTransmission.C vrpn_TempImager.C
+		vrpn_ForceDevice.C vrpn_Clock.C vrpn_Shared.C \
+		vrpn_Analog.C vrpn_FileConnection.C \
+		vrpn_FileController.C vrpn_Forwarder.C vrpn_Text.C \
+		vrpn_ForwarderController.C vrpn_Serial.C vrpn_Dial.C \
+		vrpn_SharedObject.C vrpn_BaseClass.C \
+		vrpn_Sound.C vrpn_LamportClock.C vrpn_Mutex.C vrpn_Router.C \
+		vrpn_RedundantTransmission.C vrpn_TempImager.C \
+		vrpn_Analog_Output.C
 
 LIB_OBJECTS = $(patsubst %,$(OBJECT_DIR)/%,$(LIB_FILES:.C=.o))
 
 LIB_INCLUDES = vrpn_Connection.h vrpn_Tracker.h vrpn_Button.h \
-	       vrpn_Sound.h vrpn_ForceDevice.h vrpn_Clock.h vrpn_Shared.h \
-	       vrpn_Analog.h vrpn_FileConnection.h \
-               vrpn_FileController.h vrpn_Forwarder.h vrpn_Text.h \
-               vrpn_ForwarderController.h vrpn_Serial.h vrpn_Dial.h \
-               vrpn_SharedObject.h vrpn_LamportClock.h vrpn_Mutex.h \
-               vrpn_BaseClass.h \
-               vrpn_RedundantTransmission.h vrpn_TempImager.h
+		vrpn_Sound.h vrpn_ForceDevice.h vrpn_Clock.h vrpn_Shared.h \
+		vrpn_Analog.h vrpn_FileConnection.h \
+		vrpn_FileController.h vrpn_Forwarder.h vrpn_Text.h \
+		vrpn_ForwarderController.h vrpn_Serial.h vrpn_Dial.h \
+		vrpn_SharedObject.h vrpn_LamportClock.h vrpn_Mutex.h \
+		vrpn_BaseClass.h vrpn_RedundantTransmission.h vrpn_TempImager.h \
+		vrpn_Analog_Output.h
 
 # additional files for the new connection work-in-progress
 
@@ -395,7 +396,7 @@ SLIB_FILES =  $(LIB_FILES) vrpn_3Space.C \
 	vrpn_Analog_Radamec_SPI.C vrpn_ImmersionBox.C vrpn_Wanda.C \
 	vrpn_Analog_5dt.C vrpn_Joylin.C vrpn_Tng3.C vrpn_Spaceball.C \
 	vrpn_Tracker_isense.C vrpn_Zaber.C vrpn_nikon_controls.C \
-	vrpn_Analog_Output.C
+	vrpn_GlobalHapticsOrb.C vrpn_Tracker_ButtonFly.C
 
 SLIB_OBJECTS = $(patsubst %,$(SOBJECT_DIR)/%,$(SLIB_FILES:.C=.o))
 
@@ -407,7 +408,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) vrpn_3Space.h \
 	vrpn_Analog_Radamec_SPI.h vrpn_ImmersionBox.h vrpn_Wanda.h \
 	vrpn_Analog_5dt.h vrpn_Joylin.h vrpn_Tng3.h vrpn_Spaceball.h \
 	vrpn_tracker_isense.h vrpn_Zaber.h vrpn_nikon_controls.h \
-	vrpn_Analog_Output.h
+	vrpn_GlobalHapticsOrb.C vrpn_Tracker_ButtonFly.h
 
 
 #$(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(OBJECT_DIR) \

@@ -8,8 +8,7 @@
 // The TNG3 is an interface device from Mindtel <www.mindtel.com>.
 // It is powered by the serial control lines and offers 8 digital 
 // and 8 analog inputs.  It costs about $150.
-// Written by Rob King at Navy Research Labs.  The button code works;
-// the others are not fully implemented.
+// Written by Rob King at Navy Research Labs.
 
 class vrpn_Tng3: public vrpn_Serial_Analog,
 			 public vrpn_Button

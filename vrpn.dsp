@@ -165,6 +165,10 @@ SOURCE=.\vrpn_ForwarderController.C
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_GlobalHapticsOrb.C
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_ImmersionBox.C
 # End Source File
 # Begin Source File
@@ -246,6 +250,10 @@ SOURCE=.\vrpn_Tracker.C
 # Begin Source File
 
 SOURCE=.\vrpn_Tracker_AnalogFly.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Tracker_ButtonFly.C
 # End Source File
 # Begin Source File
 
@@ -357,6 +365,10 @@ SOURCE=.\vrpn_ForwarderController.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_GlobalHapticsOrb.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_ImmersionBox.h
 # End Source File
 # Begin Source File
@@ -438,6 +450,10 @@ SOURCE=.\vrpn_Tracker.h
 # Begin Source File
 
 SOURCE=.\vrpn_Tracker_AnalogFly.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Tracker_ButtonFly.h
 # End Source File
 # Begin Source File
 

@@ -85,7 +85,7 @@ vrpn_Tracker_AnalogFly::vrpn_Tracker_AnalogFly
 	// Whenever we get the first connection to this server, we also
         // want to reset the matrix to identity, so that you start at the
         // beginning. Set up a handler to do this.
-	d_connection->register_handler(d_connection->register_message_type
+	register_autodeleted_handler(d_connection->register_message_type
                                             (vrpn_got_first_connection),
 		      handle_newConnection, this);
 
@@ -128,11 +128,6 @@ vrpn_Tracker_AnalogFly::~vrpn_Tracker_AnalogFly (void)
                                         handle_reset_press);
 		delete d_reset_button;
 	}
-
-	// Tear down the "new connection" callback
-	d_connection->unregister_handler(d_connection->register_message_type
-                               (vrpn_got_first_connection),
-	      handle_newConnection, this);
 }
 
 // This routine handles updates of the analog values. The value coming in is
