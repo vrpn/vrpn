@@ -1,3 +1,14 @@
+2004-08-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	Changes submitted by Kurt Achatz at A.R.T.
+	* Makefile : Adding vrpn_Tracker_DTrack.[Ch] to server.
+	* vrpn_Analog.C : Fixing time-comparison bug.
+	* vrpn_Configure.h : No longer need to configure the
+		DTrack driver -- all needed files are built in.
+	* vrpn_Tracker_DTrack.C : Updated to not switch target ID
+		numbering.  Now supports up to for A.R.T. Flysticks.
+	* vrpn_Tracker.DTrack.h : Same.	
+
 2004-07-27  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_FileConnection.C : Made all of the deletes for

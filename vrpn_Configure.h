@@ -54,7 +54,7 @@
 // server, using phantom as a common device, and phantom 
 // configuration in .cfg file.
 // PLEASE SPECIFY PATH TO GHOSTLIB IN NEXT SECTION IF YOU USE THIS
-//#define	VRPN_USE_PHANTOM_SERVER
+//#define     VRPN_USE_PHANTOM_SERVER
 
 //------------------------
 // Instructs vrpn to use SensAble's HDAPI rather than GHOST library.
@@ -127,13 +127,6 @@
 // be put either in Windows/system32 or in the location where the
 // executable lives or somewhere on the path.
 //#define VRPN_INCLUDE_INTERSENSE
-
-//-----------------------
-// Includes driver for the Advanced Realtime Tracking CmbH
-// DTrack tracker, based on the library released by that
-// company.  It expects to find their library in a directory
-// on the same level as the vrpn and quat source directories.
-//#define VRPN_USE_DTRACK
 
 //-----------------------
 // Instructs VRPN library and server to include code that uses
