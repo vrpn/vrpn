@@ -16,7 +16,7 @@
   Revised: Mon Mar 23 11:34:26 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.h,v $
   $Locker:  $
-  $Revision: 1.11 $
+  $Revision: 1.12 $
 \*****************************************************************************/
 #ifndef _VRPN_CLOCK_H_
 #define _VRPN_CLOCK_H_
@@ -50,6 +50,7 @@ protected:
 class vrpn_Clock_Server : public vrpn_Clock {
 public:
   vrpn_Clock_Server(vrpn_Connection *c);
+  ~vrpn_Clock_Server();
 
   // Called once through each main loop iteration to handle
   // clock updates.
@@ -206,6 +207,25 @@ class vrpn_Clock_Remote: public vrpn_Clock {
 
 /*****************************************************************************\
   $Log: vrpn_Clock.h,v $
+  Revision 1.12  1999/10/08 22:29:55  taylorr
+  Shutdown/restart server w/o restarting app
+  	If the client starts before the server, this is okay -- it will retry
+  	If the server stops, the client will restore the connection later
+  	If you are logging on the client, it logs before and after reconnect
+  		The break is marked in the log file, in case we need to know
+  		this for some reason.
+  	Both fullsync and interval clock synchronization work
+  	Client gets conection dropped and started messages
+
+  Other fixes along the way:
+  	The clock server unregisters only messages that it registered.
+  	Logging won't segfault when writing if it can't open the file.
+  	Fixed a couple of compiler warnings in vrpn_Connection.C
+  	Connection will not establish itself if it can't do local logging.
+
+  This involved some major surgery to the vrpn_Connection implementation.
+  Some of the surgery removed old scar tissue, but most of it was new.
+
   Revision 1.11  1999/04/08 12:49:01  hudson
   Exposed round-trip-time estimation in vrpn_Clock.
   More details for FreeBSD port.

@@ -9,7 +9,7 @@
   Revised: Wed Apr  1 13:23:40 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.C,v $
   $Locker:  $
-  $Revision: 1.21 $
+  $Revision: 1.22 $
   \*****************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
@@ -93,7 +93,20 @@ vrpn_Clock_Server::vrpn_Clock_Server(vrpn_Connection *c)
   }
 }
 
-// to prevent the user from gettting back incorrect info, clients are
+vrpn_Clock_Server::~vrpn_Clock_Server() 
+{
+  // Unregister the change handler
+  if (connection != NULL) {
+	if (connection->unregister_handler(queryMsg_id, 
+	     clockQueryHandler, this)) {
+	  fprintf(stderr,
+		"vrpn_Clock_Server: Can't unregister change handler\n");
+	  fprintf(stderr,"   (VRPN internal error: expect seg fault)\n");
+	}
+  }
+}
+
+// to prevent the user from getting back incorrect info, clients are
 // (nearly) uniquely identified by a usec timestamp.
 int vrpn_Clock_Server::clockQueryHandler(void *userdata, vrpn_HANDLERPARAM p) {
   vrpn_Clock_Server *me = (vrpn_Clock_Server *) userdata;
@@ -222,14 +235,17 @@ vrpn_Clock_Remote::vrpn_Clock_Remote(const char * name, vrpn_float64 dFreq,
 
 vrpn_Clock_Remote::~vrpn_Clock_Remote (void) {
 
-  // Unregister the change handler
-  if (connection != NULL) {
+  // Unregister the change handler if we are not doing full synchs
+  if (fDoQuickSyncs != 0) {
+    if (connection != NULL) {
 	if (connection->unregister_handler(replyMsg_id, 
 	     quickSyncClockServerReplyHandler,
 	     this, clockServer_id)) {
-	  fprintf(stderr,"vrpn_Clock_Remote: Can't unregister change handler\n");
+	  fprintf(stderr,
+		"vrpn_Clock_Remote: Can't unregister change handler\n");
 	  fprintf(stderr,"   (VRPN internal error: expect seg fault)\n");
 	}
+    }
   }
 
 
@@ -568,8 +584,7 @@ int vrpn_Clock_Remote::unregister_clock_sync_handler(void *userdata,
   
   // Make sure we found one
   if (victim == NULL) {
-    fprintf(stderr,
-	    "vrpn_Clock_Remote::unregister_handler: No such handler\n");
+    fprintf(stderr, "vrpn_Clock_Remote::unregister_handler: No such handler\n");
     return -1;
   }
   
@@ -872,6 +887,25 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
 
 /*****************************************************************************\
   $Log: vrpn_Clock.C,v $
+  Revision 1.22  1999/10/08 22:29:54  taylorr
+  Shutdown/restart server w/o restarting app
+  	If the client starts before the server, this is okay -- it will retry
+  	If the server stops, the client will restore the connection later
+  	If you are logging on the client, it logs before and after reconnect
+  		The break is marked in the log file, in case we need to know
+  		this for some reason.
+  	Both fullsync and interval clock synchronization work
+  	Client gets conection dropped and started messages
+
+  Other fixes along the way:
+  	The clock server unregisters only messages that it registered.
+  	Logging won't segfault when writing if it can't open the file.
+  	Fixed a couple of compiler warnings in vrpn_Connection.C
+  	Connection will not establish itself if it can't do local logging.
+
+  This involved some major surgery to the vrpn_Connection implementation.
+  Some of the surgery removed old scar tissue, but most of it was new.
+
   Revision 1.21  1999/09/21 22:15:00  taylorr
   This corrects the major bug that you could not delete vrpn_Remote objects before
   without causing seg faults when their callbacks were yanked after they were

@@ -73,6 +73,7 @@ typedef int (* vrpn_LOGFILTER) (void * userdata, vrpn_HANDLERPARAM p);
 #define	vrpn_CONNECTION_TYPE_DESCRIPTION	(-2)
 #define	vrpn_CONNECTION_UDP_DESCRIPTION		(-3)
 #define	vrpn_CONNECTION_LOG_DESCRIPTION		(-4)
+#define	vrpn_CONNECTION_DISCONNECT_MESSAGE	(-5)
 
 // Classes of service for messages, specify multiple by ORing them together
 // Priority of satisfying these should go from the top down (RELIABLE will
@@ -149,7 +150,8 @@ struct vrpnLogFilterEntry {
 // to take care of one part of many clients talking to a single server.
 // This will only be used from within the vrpn_Connection class, it should
 // not be instantiated by users or devices.
-class vrpn_OneConnection {
+class vrpn_OneConnection
+{
     public:
 	vrpn_OneConnection (void);
 	vrpn_OneConnection (const SOCKET, const SOCKET, const SOCKET,
@@ -198,6 +200,18 @@ class vrpn_OneConnection {
 				// Need one for each due to different
 				// clock synchronization for each; we
 				// need to know which server each message is from
+	// This section deals with when a client connection is trying to
+	// establish (or re-establish) a connection with its server. It
+	// keeps track of what we need to know to make this happen.
+	SOCKET	tcp_client_listen_sock;	// Socket that the client listens on
+				// when lobbing datagrams at the server and
+				// waiting for it to call back.
+	int	tcp_client_listen_port;	// The port number of this socket
+	char	*remote_machine_name;	// Machine to call
+	int	remote_UDP_port;	// UDP port on remote machine
+	struct timeval last_UDP_lob;	// When the last lob occured
+	long	remote_log_mode;	// Mode to put the remote logging in
+	char	*remote_log_name;	// Name of the remote log file
 
 	// offset of clocks on connected machines -- local - remote
 	// (this should really not be here, it should be in adjusted time
@@ -428,16 +442,27 @@ class vrpn_Connection
 	static int handle_type_message (void * userdata, vrpn_HANDLERPARAM p);
 	static int handle_UDP_message (void * userdata, vrpn_HANDLERPARAM p);
 	static int handle_log_message (void * userdata, vrpn_HANDLERPARAM p);
+	static int handle_disconnect_message (void * userdata,
+		vrpn_HANDLERPARAM p);
 
 	// Pointers to the handlers for system messages
 	vrpn_MESSAGEHANDLER	system_messages [vrpn_CONNECTION_MAX_TYPES];
 
 	virtual	void	init (void);	// Called by all constructors
 
-	virtual	void	check_connection (const struct timeval * timeout = 
-                                          NULL);
+	// This is called by a server-side process to see if there have
+	// been any UDP packets come in asking for a connection. If there
+	// are, it connects the TCP port and then calls handle_connection().
+	virtual	void	check_connection(const struct timeval *timeout = NULL);
+
+	// This routine is called by a server-side connection when a
+	// new connection has just been established, and the tcp port
+	// has been connected to it.
 	virtual void	handle_connection(void);
-		// set up data
+
+	// This sends the magic cookie and other information to its
+	// peer, and receives the peer's cookie. It is called by both
+	// the client and server setup routines.
 	virtual	int	setup_new_connection (long logmode = 0L,
 	                                      const char * logfile = NULL);
 	// set up network
@@ -445,8 +470,7 @@ class vrpn_Connection
 	virtual	int	pack_sender_description (vrpn_int32 which);
 	virtual	int	pack_type_description (vrpn_int32 which);
 	virtual	int	pack_udp_description (int portno);
-	virtual int	pack_log_description (long mode,
-                                              const char * filename);
+	virtual int	pack_log_description (long mode, const char * filename);
 	virtual	int	marshall_message (char * outbuf,vrpn_uint32 outbuf_size,
 				vrpn_uint32 initial_out,
 				vrpn_uint32 len, struct timeval time,
