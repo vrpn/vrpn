@@ -334,6 +334,14 @@ SOURCE=.\vrpn_Types.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_UNC_Joystick.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_UNC_Joystick.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_Wanda.C
 # End Source File
 # Begin Source File
