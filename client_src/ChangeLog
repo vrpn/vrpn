@@ -1,3 +1,20 @@
+2004-09-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* forcedevice_test_client.dsp : Changing code generation back to
+		DLL-based for all classes, like it was supposed to be in
+		the first place.  Confusion over the cause for a crash led
+		us to incorrectly change it before.
+	* printcereal.dsp : Same.
+	* printvals.dsp : Same.
+	* setrouter.dsp : Same.
+	* sphere_client.dsp : Same.
+	* test_tempimager.dsp : Same.
+	* test_zaber.dsp : Same.
+	* testimager_client.dsp : Same.
+	* tracker_to_poser.dsp : Same.
+	* vrpn_Router_Client_GUI.dsp : Same.
+	* vrpn_print_devices.dsp : Same.
+
 2004-08-31  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* forcedevice_test_client.dsp : Changing code generation to use
