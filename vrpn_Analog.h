@@ -171,12 +171,3 @@ class vrpn_Analog_Remote: public vrpn_Analog {
 
 #endif
 
-
-
-
-
-
-
-
-
-

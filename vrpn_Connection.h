@@ -234,7 +234,8 @@ class vrpn_OneConnection
         // Returns nonzero if we shouldn't log this message.
         virtual int check_log_filters (vrpn_HANDLERPARAM message);
 
-protected:
+// These should be protected too
+// protected:
 
 	// Holds one entry for a mapping of remote strings to local IDs.
 	struct cRemoteMapping {

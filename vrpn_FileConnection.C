@@ -570,6 +570,12 @@ int vrpn_File_Connection::playone_to_filetime( timeval end_filetime )
 
     // Handle this log entry
     if (header.type >= 0) {
+#ifdef	VERBOSE
+	printf("vrpn_FC: Msg Sender (%s), Type (%s), at (%ld:%ld)\n",
+		endpoint.other_senders[header.sender].name,
+		endpoint.other_types[header.type].name,
+		header.msg_time.tv_sec, header.msg_time.tv_usec);
+#endif
         if (endpoint.local_type_id(header.type) >= 0)                
             if (do_callbacks_for(endpoint.local_type_id(header.type),
                                  endpoint.local_sender_id(header.sender),

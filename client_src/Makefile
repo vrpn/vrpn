@@ -69,7 +69,7 @@ all:	$(OBJ_DIR)/printvals $(OBJ_DIR)/printcereal \
 	$(OBJ_DIR)/ff_client \
 	$(OBJ_DIR)/ohm_client $(OBJ_DIR)/phan_client \
 	$(OBJ_DIR)/sphere_client $(OBJ_DIR)/bdbox_client \
-	add_vrpn_cookie
+	$(OBJ_DIR)/vrpn_print_messages add_vrpn_cookie
 
 # testSharedObject
 
@@ -88,6 +88,10 @@ text:	$(OBJ_DIR)/text
 $(OBJ_DIR)/sound_client: $(OBJ_DIR)/sound_client.o ../$(HW_OS)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/sound_client \
 		$(OBJ_DIR)/sound_client.o -lvrpn $(ARCH_LIBS)
+
+$(OBJ_DIR)/vrpn_print_messages: $(OBJ_DIR)/vrpn_print_messages.o ../$(HW_OS)/libvrpn.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/vrpn_print_messages \
+		$(OBJ_DIR)/vrpn_print_messages.o -lvrpn $(ARCH_LIBS)
 
 $(OBJ_DIR)/printvals: $(OBJ_DIR)/printvals.o ../$(HW_OS)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/printvals \
