@@ -1,4 +1,10 @@
 2004-08-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+	* vrpn.dsp : Adds possibility that NI files are on D:
+	* vrpn_Button.C : Moving global constants not starting with vrpn_
+		from header file to source file.
+	* vrpn_Button.h : Same.
+
+2004-08-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	Changes submitted by Kurt Achatz at A.R.T.
 	* Makefile : Adding vrpn_Tracker_DTrack.[Ch] to server.

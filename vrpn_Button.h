@@ -199,13 +199,6 @@ public:
 protected:
    virtual void read();
    void report_no_timestamp(); // set the glove to report data without timestamp
-
-private:
-   // message constants
-   const unsigned char PG_START_BYTE_DATA;
-   const unsigned char PG_START_BYTE_DATA_TIME;
-   const unsigned char PG_START_BYTE_TEXT;
-   const unsigned char PG_END_BYTE;
 };
 
 

@@ -59,6 +59,12 @@ static const unsigned char
 	BIT_MASK = PORT_ERROR | PORT_SLCT | PORT_PE | PORT_ACK | PORT_BUSY;
 #endif
 
+// message constants for the PinchGolve code.
+const unsigned char PG_START_BYTE_DATA(0x80);
+const unsigned char PG_START_BYTE_DATA_TIME(0x81);
+const unsigned char PG_START_BYTE_TEXT(0x82);
+const unsigned char PG_END_BYTE(0x8F);
+
 static int client_msg_handler(void *userdata, vrpn_HANDLERPARAM p);
 
 #define PACK_ADMIN_MESSAGE(i,event) { \
@@ -647,9 +653,7 @@ vrpn_Button_Serial::~vrpn_Button_Serial() {
 
 // init pinch glove to send hand data only
 vrpn_Button_PinchGlove::vrpn_Button_PinchGlove(const char* name, vrpn_Connection *c, 
-               const char *port, long baud) : vrpn_Button_Serial(name, c, port, baud),
-               PG_START_BYTE_DATA(0x80), PG_START_BYTE_DATA_TIME(0x81), 
-               PG_START_BYTE_TEXT(0x82), PG_END_BYTE(0x8F)
+               const char *port, long baud) : vrpn_Button_Serial(name, c, port, baud)
 { 
    num_buttons = 10;   // 0-4: right, 5-9: left starting from thumb
    status = BUTTON_READY;
