@@ -115,7 +115,7 @@ all:	$(OBJ_DIR)/printvals $(OBJ_DIR)/printcereal \
 	$(OBJ_DIR)/ff_client \
 	$(OBJ_DIR)/phan_client \
 	$(OBJ_DIR)/sphere_client $(OBJ_DIR)/bdbox_client \
-	add_vrpn_cookie testLamport test_mutex $(OBJ_DIR)/setrouter \
+	add_vrpn_cookie testLamport test_mutex \
 	vrpn_ping
 #	$(OBJ_DIR)/vrpn_print_messages
 

@@ -105,7 +105,7 @@ $(OBJ_DIR)/%.o:	%.C
 
 
 all:  vrpn_server test_vrpn client_and_server test_mutex test_peerMutex \
- last_of_sequence test_radamec_spi test_analogfly
+ test_radamec_spi test_analogfly
 # testSharedObject
 
 .PHONY:	vrpn_server
