@@ -66,7 +66,6 @@ void init (const char * station_name,
 	//char * hn;
 	int port;
 
-	//tkr = new vrpn_Tracker_Remote("Tracker0_hiball1");
 
 	// explicitly open up connections with the proper logging parameters
 	// these will be entered in the table and found by the

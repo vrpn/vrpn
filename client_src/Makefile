@@ -40,7 +40,6 @@ $(OBJ_DIR)/%.o: %.c
 $(OBJ_DIR)/%.o: %.C
 	$(CC) $(CFLAGS) -o $@ -c $<
 
-
 all:	$(OBJ_DIR)/sound_client $(OBJ_DIR)/printvals \
 	$(OBJ_DIR)/checklogfile $(OBJ_DIR)/logfilesenders \
 	$(OBJ_DIR)/logfiletypes
