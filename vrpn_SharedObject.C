@@ -43,6 +43,9 @@ vrpn_SharedObject::~vrpn_SharedObject (void) {
   if (d_name) {
     delete [] d_name;
   }
+  if (d_typename) {
+    delete [] d_typename;
+  }
   if (d_connection) {
     d_connection->unregister_handler(d_becomeSerializer_type,
                                      handle_becomeSerializer, this, d_myId);
@@ -155,9 +158,6 @@ vrpn_Shared_int32::vrpn_Shared_int32 (const char * name,
 
 // virtual
 vrpn_Shared_int32::~vrpn_Shared_int32 (void) {
-  if (d_name) {
-    delete [] d_name;
-  }
   if (d_connection) {
     d_connection->unregister_handler(d_becomeSerializer_type,
                                      handle_becomeSerializer, this, d_myId);
@@ -541,9 +541,6 @@ vrpn_Shared_float64::vrpn_Shared_float64 (const char * name,
 
 // virtual
 vrpn_Shared_float64::~vrpn_Shared_float64 (void) {
-  if (d_name) {
-    delete [] d_name;
-  }
   if (d_connection) {
     d_connection->unregister_handler(d_becomeSerializer_type,
                                      handle_becomeSerializer, this, d_myId);
@@ -945,9 +942,6 @@ vrpn_Shared_String::vrpn_Shared_String (const char * name,
 vrpn_Shared_String::~vrpn_Shared_String (void) {
   if (d_value) {
     delete [] d_value;
-  }
-  if (d_name) {
-    delete [] d_name;
   }
   if (d_connection) {
     d_connection->unregister_handler(d_becomeSerializer_type,
