@@ -26,6 +26,8 @@
 #include "quat.h" 
 #ifdef	VRPN_USE_DTRACK
 
+#include "dtracklib.c"
+
 ///////////////////////////////////////////////////////
 /* This code is based on the dtrack sample code example_without_remote_control.c
 

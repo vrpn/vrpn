@@ -1,5 +1,11 @@
 2004-02-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn.dsw : Removed separate library for DTrack.
+	* vrpn_Tracker.DTrack.C : Includes the necessary .c file from
+		dtracklib to avoid having to load a library.
+
+2004-02-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn.dsp : Told the release version where to find Dtrack.h.
 	* vrpn_Tracker_DTrack.C : Modified the order of includes so that
 		it can compile properly when VRPN_USE_DTRACK is defined.
