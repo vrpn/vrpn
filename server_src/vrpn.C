@@ -127,13 +127,14 @@ void closeDevices (void) {
     fprintf(stderr, "\nClosing tracker %d ...", i);
     delete trackers[i];
   }
-  fprintf(stderr, "\nAll devices closed. Exiting ...\n");
+  fprintf(stderr, "\nAll devices closed...\n");
 }
 
 void shutDown (void)
 {
     closeDevices();
     delete connection;
+    fprintf(stderr,"Deleted connection, Exiting.\n");
     exit(0);
 }
 

@@ -180,22 +180,15 @@ void vrpn_Tracker_Flock_Parallel::mainloop()
 	    "\nvrpn_Tracker_Flock_Parallel: tracker failed, trying to reset ...");
 
     // reset master serial i/o
-/*XXX This causes Linux with a Cyclades to hang up on the close, for some
-      reason.  Removing it for now to see if the reset works without doing
-      the close and re-open.
     vrpn_close_commport(serial_fd);
     serial_fd = vrpn_open_commport(portname, baudrate);
-*/
 
     // reset slave serial i/o
     for (i=0;i<cSensors;i++) {
-/*XXX This causes Linux with a Cyclades to hang up on the close, for some
-      reason.  Removing it for now to see if the reset works without doing
-      the close and re-open.
       vrpn_close_commport(rgSlaves[i]->serial_fd);
       rgSlaves[i]->serial_fd = vrpn_open_commport(rgSlaves[i]->portname, 
 						  rgSlaves[i]->baudrate);
-*/      rgSlaves[i]->status = TRACKER_RESETTING;
+      rgSlaves[i]->status = TRACKER_RESETTING;
     }
     status = TRACKER_RESETTING;
     break;
@@ -496,6 +489,13 @@ void vrpn_Tracker_Flock_Parallel_Slave::mainloop()
 
 /*****************************************************************************\
   $Log: vrpn_Flock_Parallel.C,v $
+  Revision 1.11  2000/11/13 21:15:40  taylorr
+  2000-11-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+          * vrpn_Flock_Parallel.C (mainloop) : Made the code close and then
+                  reopen the serial ports (like it used to do before I turned
+                  it off because of a buggy Linux kernel).
+
   Revision 1.10  2000/11/06 19:38:27  taylorr
   2000-11-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
 

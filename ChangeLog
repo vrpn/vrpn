@@ -1,3 +1,9 @@
+2000-11-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Flock_Parallel.C (mainloop) : Made the code close and then
+		reopen the serial ports (like it used to do before I turned
+		it off because of a buggy Linux kernel).
+
 2000-11-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Shared.C (gettimeofday) : Turned off hi-perf clock for Win98
