@@ -2672,44 +2672,6 @@ void	vrpn_Connection::init (void)
 
 }
 
-vrpn_Connection::~vrpn_Connection (void) {
-
-  //fprintf(stderr, "In vrpn_Connection destructor.\n");
-
-#ifdef WIN32
-
-	if (WSACleanup() == SOCKET_ERROR) {
-    fprintf(stderr, "~vrpn_Connection():  "
-                    "WSACleanup() failed with error code %d\n",
-            WSAGetLastError());
-	}
-
-#endif  // WIN32
-	vrpn_int32 i;
-	vrpnMsgCallbackEntry *pVMCB, *pVMCB_Del;
-	for (i=0;i<num_my_types;i++) {
-		delete my_types[i].name;
-		pVMCB=my_types[i].who_cares;
-		while (pVMCB) {
-			pVMCB_Del=pVMCB;
-			pVMCB=pVMCB_Del->next;
-			delete pVMCB_Del;
-		}
-	}
-	for (i=0;i<num_my_senders;i++) {
-		delete my_senders[i];
-	}
-	
-	// free generic message callbacks
-	pVMCB=generic_callbacks;
-	
-	while (pVMCB) {
-		pVMCB_Del=pVMCB;
-		pVMCB=pVMCB_Del->next;
-		delete pVMCB_Del;
-	}
-}
-
 vrpn_Connection::vrpn_Connection (unsigned short listen_port_no) :
     //my_name (NULL),
     endpoint (INVALID_SOCKET, INVALID_SOCKET, INVALID_SOCKET, 0, 0,
@@ -2875,6 +2837,59 @@ vrpn_Connection::vrpn_Connection
     }
   }
 
+}
+
+vrpn_Connection::~vrpn_Connection (void) {
+
+  //fprintf(stderr, "In vrpn_Connection destructor.\n");
+
+#ifdef WIN32
+
+	if (WSACleanup() == SOCKET_ERROR) {
+    fprintf(stderr, "~vrpn_Connection():  "
+                    "WSACleanup() failed with error code %d\n",
+            WSAGetLastError());
+	}
+
+#endif  // WIN32
+	vrpn_int32 i;
+	vrpnMsgCallbackEntry *pVMCB, *pVMCB_Del;
+	for (i=0;i<num_my_types;i++) {
+		delete my_types[i].name;
+		pVMCB=my_types[i].who_cares;
+		while (pVMCB) {
+			pVMCB_Del=pVMCB;
+			pVMCB=pVMCB_Del->next;
+			delete pVMCB_Del;
+		}
+	}
+	for (i=0;i<num_my_senders;i++) {
+		delete my_senders[i];
+	}
+	
+	// free generic message callbacks
+	pVMCB=generic_callbacks;
+	
+	while (pVMCB) {
+		pVMCB_Del=pVMCB;
+		pVMCB=pVMCB_Del->next;
+		delete pVMCB_Del;
+	}
+
+	// Remove myself from the "known connections" list.
+	vrpn_KNOWN_CONNECTION **snitch = &known;
+	vrpn_KNOWN_CONNECTION *victim = *snitch;
+	while ( (victim != NULL) && (victim->c != this) ) {
+		snitch = &( (*snitch)->next );;
+		victim = victim->next;
+	};
+	if (victim == NULL) {
+		fprintf(stderr,
+		    "VRPN:~vrpn_Connection: Can't find myself on known list\n");
+	} else {
+		*snitch = victim->next;
+		delete victim;
+	}
 }
 
 vrpn_int32 vrpn_Connection::register_sender (const char * name)
