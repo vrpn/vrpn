@@ -207,7 +207,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "test_tempimager"=.\CLIENT_SRC\test_tempimager.dsp - Package Owner=<4>
+Project: "test_imager"=.\CLIENT_SRC\test_imager.dsp - Package Owner=<4>
 
 Package=<5>
 {{{

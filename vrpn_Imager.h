@@ -22,6 +22,7 @@
 
 #ifndef	VRPN_IMAGER_H
 #define	VRPN_IMAGER_H
+#include <string.h>	// For memcpy()
 #include  "vrpn_Connection.h"
 #include  "vrpn_BaseClass.h"
 

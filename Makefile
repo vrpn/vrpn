@@ -369,7 +369,7 @@ LIB_FILES =  vrpn_Connection.C vrpn_Tracker.C vrpn_Button.C \
 		vrpn_ForwarderController.C vrpn_Serial.C vrpn_Dial.C \
 		vrpn_SharedObject.C vrpn_BaseClass.C \
 		vrpn_Sound.C vrpn_LamportClock.C vrpn_Mutex.C vrpn_Router.C \
-		vrpn_RedundantTransmission.C vrpn_TempImager.C \
+		vrpn_RedundantTransmission.C vrpn_Imager.C \
 		vrpn_Analog_Output.C vrpn_Poser.C
 
 LIB_OBJECTS = $(patsubst %,$(OBJECT_DIR)/%,$(LIB_FILES:.C=.o))
@@ -380,7 +380,7 @@ LIB_INCLUDES = vrpn_Connection.h vrpn_Tracker.h vrpn_Button.h \
 		vrpn_FileController.h vrpn_Forwarder.h vrpn_Text.h \
 		vrpn_ForwarderController.h vrpn_Serial.h vrpn_Dial.h \
 		vrpn_SharedObject.h vrpn_LamportClock.h vrpn_Mutex.h \
-		vrpn_BaseClass.h vrpn_TempImager.h \
+		vrpn_BaseClass.h vrpn_Imager.h \
 		vrpn_Analog_Output.h vrpn_Poser.h
 
 # additional files for the new connection work-in-progress
