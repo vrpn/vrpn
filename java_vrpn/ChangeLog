@@ -1,3 +1,8 @@
+2002-06-18 Tatsuhiro Segi <segi@email.unc.edu>
+
+	* ButtonRemote.java:  minor comment changes
+	* vrpn_ButtonRemote.cpp:  comment changes
+
 2002-06-12  Tatsuhiro Segi  <segi@email.unc.edu>
 
 	* java_vrpn.dsw:  added ButtonRemote.dsp project
@@ -9,7 +14,7 @@
 
 2002-06-10  David Marshburn  <marshbur@cs.unc.edu>
 
-	* vrpn_TrackerRemote.cpp:  minor comment chanes
+	* vrpn_TrackerRemote.cpp:  minor comment changes
 	* vrpn_AnalogRemote.cpp:  implementations for JNI_OnLoad, 
 	  JNI_OnUnload, handle_analog_change, 
 	  Java_vrpn_AnalogRemote_shutdownAnalog, 

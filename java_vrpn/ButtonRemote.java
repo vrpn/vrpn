@@ -76,7 +76,7 @@ public class ButtonRemote implements Runnable
 	/**
 	 * Should be called only by mainloop(), a native method which is itself
 	 * synchronized.  By extension, this method is synchronized (in that, for
-	 * a given TrackerRemote object, this method can only be called from one
+	 * a given ButtonRemote object, this method can only be called from one
 	 * thread at a time).
 	 */
 	protected void handleButtonChange( long tv_sec, long tv_usec, int button,
@@ -100,7 +100,7 @@ public class ButtonRemote implements Runnable
 				l.buttonUpdate( b, this );
 			}
 		} // end synchronized( notifyingChangeListenersLock )
-	} // end method handleTrackerChange
+	} // end method handleButtonChange
 	
 	
 	/**

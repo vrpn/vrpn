@@ -6,7 +6,7 @@
 
 JavaVM* jvm = NULL;
 jclass jclass_vrpn_ButtonRemote = NULL;
-jfieldID jfid_vrpn_ButtonRemote_native_tracker = NULL;
+jfieldID jfid_vrpn_ButtonRemote_native_button = NULL;
 
 // This is called when the Java Virtual Machine loads this library
 //  and sets some global references that are used elsewhere.
@@ -50,9 +50,9 @@ JNIEXPORT jint JNICALL JNI_OnLoad( JavaVM* jvm, void* reserved )
   // get a jfid field id reference to the "native_button" 
   // field of class vrpn.ButtonRemote.
   // field ids do not have to be made into global references.
-  jfid_vrpn_ButtonRemote_native_tracker 
+  jfid_vrpn_ButtonRemote_native_button 
     = env->GetFieldID( jclass_vrpn_ButtonRemote, "native_button", "I" );
-  if( jfid_vrpn_ButtonRemote_native_tracker == NULL )
+  if( jfid_vrpn_ButtonRemote_native_button == NULL )
   {
     printf( "Error loading vrpn ButtonRemote native library "
             "while looking into class vrpn.ButtonRemote.\n" );
@@ -79,18 +79,15 @@ JNIEXPORT void JNICALL JNI_OnUnload( JavaVM* jvm, void* reserved )
 
 
 // This is the callback for vprn to notify us of a new button message
-// --- WHAT IS TRACKERCB???????????  I just replace is with BUTTONCB...
 void handle_button_change( void* userdata, const vrpn_BUTTONCB info )
 {
   if( jvm == NULL )
     return;
 
-  /*
-  printf( "tracker change (C):  time:  %d.%d;  sensor:  %d;\n"
-          "\tpos: %f %f %f;\n"
-          "\tquat:  %f %f %f %f\n", info.msg_time.tv_sec, info.msg_time.tv_usec,
-          info.sensor, info.pos[0], info.pos[1], info.pos[2],
-          info.quat[0], info.quat[1], info.quat[2], info.quat[3] );
+  /*  
+  printf( "button change (C):  time:  %d.%d;  button:  %d;\n"
+          "\tstate: %d;\n", info.msg_time.tv_sec, info.msg_time.tv_usec,
+          info.button, info.state );
   */
 
   JNIEnv* env;
