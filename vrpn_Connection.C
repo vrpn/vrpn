@@ -1783,12 +1783,16 @@ static	int connect_udp_to (char * machine, int portno)
 // sets up the local UDP sender.
 //  It then sends descriptions for all of the known packet types.
 
-void vrpn_Connection::check_connection (void)
+void vrpn_Connection::check_connection (const struct timeval * pTimeout)
 {  int	request;
    char	msg[200];	// Message received on the request channel
    timeval timeout;
-   timeout.tv_sec = 0;
-   timeout.tv_usec = 0;
+   if (pTimeout) {
+     timeout = *pTimeout;
+   } else {
+     timeout.tv_sec = 0;
+     timeout.tv_usec = 0;
+   }
 
    // Do a zero-time select() to see if there is an incoming packet on
    // the UDP socket.
@@ -2596,7 +2600,7 @@ int vrpn_Connection::mainloop (const struct timeval * timeout)
 
    switch (status) {
       case LISTEN:
-      	check_connection();
+      	check_connection(timeout);
       	break;
 
       case CONNECTED:
@@ -3253,7 +3257,7 @@ int	vrpn_Connection::handle_tcp_messages (int fd,
 		  // the difference can be no larger than this
 		  char rgch[vrpn_ALIGN];
 		  if (vrpn_noint_block_read(fd,(char*)rgch,header_len-sizeof(header)) !=
-		      header_len-sizeof(header)) {
+		      (int)(header_len-sizeof(header))) {
 		    printf("vrpn_connection::handle_tcp_messages:  "
                            "Can't read header + alignment\n");
 		    return -1;
@@ -3269,7 +3273,7 @@ int	vrpn_Connection::handle_tcp_messages (int fd,
 
 		// Make sure the buffer is long enough to hold the whole
 		// message body.
-		if (d_TCPbuflen < ceil_len) {
+		if ((vrpn_int32)d_TCPbuflen < ceil_len) {
 		  if (d_TCPbuf) { d_TCPbuf = (char*)realloc(d_TCPbuf,ceil_len); }
 		  else { d_TCPbuf = (char*)malloc(ceil_len); }
 		  if (d_TCPbuf == NULL) {
@@ -3289,19 +3293,25 @@ int	vrpn_Connection::handle_tcp_messages (int fd,
 		// If one returns nonzero, return an error.
 		if (type >= 0) {	// User handler, map to local id
 
-		  // only log & process if a local id has been set
+                  // log regardless of whether local id is set,
+                  // but only process if it has been (ie, log ALL
+                  // incoming data -- use a filter on the log
+                  // if you don't want some of it).
+                  if (endpoint.d_logmode & vrpn_LOG_INCOMING) {
+                    if (endpoint.log_message(payload_len, time,
+                                             type,
+                                             sender,
+                                             d_TCPbuf, 1)) {
+                      return -1;
+                    }
+                  }
 
 		  if (endpoint.local_type_id(type) >= 0) {
-		    if (endpoint.d_logmode & vrpn_LOG_INCOMING)
-		      if (endpoint.log_message(payload_len, time,
-                                      type,
-                                      sender,
-                                      d_TCPbuf, 1))
-                        return -1;
 		    if (do_callbacks_for(endpoint.local_type_id(type),
 				         endpoint.local_sender_id(sender),
-				         time, payload_len, d_TCPbuf))
+				         time, payload_len, d_TCPbuf)) {
 		      return -1;
+                    }
 		  }
 
 		} else {	// Call system handler if there is one
@@ -3414,7 +3424,7 @@ int	vrpn_Connection::handle_udp_messages (int fd,
 		}
 
 	      // Parse each message in the buffer
-	      while ( (inbuf_ptr - d_UDPinbuf) != inbuf_len) {
+	      while ( (inbuf_ptr - d_UDPinbuf) != (vrpn_int32)inbuf_len) {
 
 		// Read and parse the header
 		// skip up to alignment
@@ -3455,19 +3465,26 @@ int	vrpn_Connection::handle_udp_messages (int fd,
 		// If it returns nonzero, return an error.
 		if (type >= 0) {	// User handler, map to local id
 
-		  // only log & process if a local id has been set
 
-		  if (endpoint.local_type_id(type) >= 0) {
-		    if (endpoint.d_logmode & vrpn_LOG_INCOMING)
+                  // log regardless of whether local id is set,
+                  // but only process if it has been (ie, log ALL
+                  // incoming data -- use a filter on the log
+                  // if you don't want some of it).
+
+                  if (endpoint.d_logmode & vrpn_LOG_INCOMING) {
 		      if (endpoint.log_message(payload_len, time,
                                       type,
                                       sender,
-                                      inbuf_ptr, 1))
+                                               inbuf_ptr, 1)) {
                         return -1;
+                      }
+                  }
+		  if (endpoint.local_type_id(type) >= 0) {
 		    if (do_callbacks_for(endpoint.local_type_id(type),
 				         endpoint.local_sender_id(sender),
-				         time, payload_len, inbuf_ptr))
+				         time, payload_len, inbuf_ptr)) {
 		      return -1;
+                    }
 		  }
 
 		} else {	// System handler

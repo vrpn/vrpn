@@ -415,7 +415,8 @@ class vrpn_Connection
 	virtual	void	init (void);	// Called by all constructors
 
 	virtual	int	send_pending_reports (void);
-	virtual	void	check_connection (void);
+	virtual	void	check_connection (const struct timeval * timeout = 
+                                          NULL);
 	virtual void	handle_connection(void);
 		// set up data
 	virtual	int	setup_new_connection (long logmode = 0L,

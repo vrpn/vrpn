@@ -9,7 +9,7 @@
   Revised: Fri Jan 29 16:22:55 1999 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Nidaq.C,v $
   $Locker:  $
-  $Revision: 1.5 $
+  $Revision: 1.6 $
 \*****************************************************************************/
 
 #include "vrpn_Nidaq.h"
@@ -137,14 +137,17 @@ vrpn_Nidaq::~vrpn_Nidaq() {
 }
 
 void vrpn_Nidaq::mainloop() {
-	// lower cpu utilization, but do so before report_changes so
+
+  // lower cpu utilization, but do so before report_changes so
 	// that when connection->mainloop is called after nidaq->mainloop
 	// the messages will be sent immediately (rather than having an 
 	// intervening sleep
-	if (fNice) {
-		Sleep(1);
-	}
-	report_changes();
+	//if (fNice) {
+	//	Sleep(1);
+	//}
+	// NO LONGER! Now we do it with timeout val in select for 
+  // connection so that we don't have latency problems.
+  report_changes();
 }
 
 int vrpn_Nidaq::doing_okay() {
@@ -208,6 +211,18 @@ void vrpn_Nidaq::report_changes() {
 
 /*****************************************************************************\
   $Log: vrpn_Nidaq.C,v $
+  Revision 1.6  1999/03/16 22:07:07  weberh
+  vrpn_Analog.C: cast to get rid of warning
+  vrpn_Nidaq.C: got rid of internal Sleep(1) for nice behavior -- users should
+  	use a timeout in mainloop instead.
+  vrpn_FileConnection.h: added comment to indicate that fileconnection is based
+  	on vrpn connection, not synchronized connection
+  vrpn_Connection.h: changed declaration of check_connection to be compatible wiht
+  	new timeout for mainloop.
+  vrpn_Connection.C: got rid of some warnings, have time stamps sync-adjusted
+  	before logging, added timeout to check_connection so mainloop will
+  	sleep for up to timeout whether or not it is connected
+
   Revision 1.5  1999/02/11 21:47:49  weberh
   *** empty log message ***
 

@@ -23,6 +23,10 @@
 // but we still have the problem that the semantics of reverse often don't
 // make sense.
 
+// Note: this is based on a vrpn_Connection, not a vrpn_Synchronized_Connection
+// because the message logs are recorded with adjusted time stamps (and a 
+// vrpn_Clock object can not correctly sync over a file connection).
+
 class vrpn_File_Connection : public vrpn_Connection {
 
   public:

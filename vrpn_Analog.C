@@ -220,7 +220,7 @@ int vrpn_Analog_Remote::handle_change_message(void *userdata,
 	vrpn_ANALOGCHANGELIST *handler = me->change_list;
 
 	cp.msg_time = p.msg_time;
-	cp.num_channel = ntohd(params[0]);
+	cp.num_channel = (long)ntohd(params[0]);
 
 	vrpn_float64 * chandata = (vrpn_float64 *) params+1;
 	for (vrpn_int32 i=0; i< cp.num_channel; i++) 
