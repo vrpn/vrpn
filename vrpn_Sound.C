@@ -168,7 +168,7 @@ int vrpn_Linux_Sound::checkpipe(void)
 	fcntl(pipe1[0], F_SETFL, FDEFER);
 	n = (int) tmp;
 	t = 0;
-	while ( n > 0 && (m = read(pipe1[0], &cbuff[t], n+2)))
+	while ( n > 0 && (m = read(pipe1[0], &cbuff[t], n)))
 	{
 		if ( m < 0) 
 		{
