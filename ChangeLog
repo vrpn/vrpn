@@ -1,5 +1,13 @@
 2003-12-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Analog_5dt.h : Added optional parameter to make it try
+		10 bytes per message rather than 9.  This is because one
+		group has one that does this.
+	* vrpn_Analog_5dt.C : Same.  Also fixed some bugs reported by
+		Sebastien Maraux.
+
+2003-12-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Serial.h : Added calls to raise and lower RTS line.
 		Should work on Windows.  Not sure it will work on Linux/Unix.
 		Not tested on any.

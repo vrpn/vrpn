@@ -45,9 +45,10 @@ static unsigned long duration (struct timeval p_t1, struct timeval p_t2)
  * ARGUMENTS : 
  * RETURN    : 
  ******************************************************************************/
-vrpn_5dt::vrpn_5dt (const char * p_name, vrpn_Connection * p_c, const char * p_port, int p_baud, int p_mode):
+vrpn_5dt::vrpn_5dt (const char * p_name, vrpn_Connection * p_c, const char * p_port, int p_baud, int p_mode, bool tenbytes):
   vrpn_Serial_Analog (p_name, p_c, p_port, p_baud, 8, vrpn_SER_PARITY_NONE),
-  _numchannels (8)	// This is an estimate; will change when reports come
+  _numchannels (8),	// This is an estimate; will change when reports come
+  _tenbytes(tenbytes)	// Do we expect ten-byte messages?
 {
   // Set the parameters in the parent classes
   vrpn_Analog::num_channel = _numchannels;
@@ -223,10 +224,15 @@ void vrpn_5dt::get_report (void)
   // The official doc (http://www.5dt.com/downloads/5DTDataGlove5Manual.pdf)
   // says we should get only 9 bytes, so I don't know if it's a response
   // from a command somewhere; but the fact is we receive 10 bytes.
-  // _expected_chars = 9;
+  if (_tenbytes) {
+    _expected_chars = 10;
+  } else {
+    _expected_chars = 9;
+  }
 
-  _expected_chars = 10;
+  // XXX This should be called when the first character of a report is read.
   gettimeofday(&timestamp, NULL);
+
   //--------------------------------------------------------------------
   // Read as many bytes of this report as we can, storing them
   // in the buffer.  We keep track of how many have been read so far
@@ -242,7 +248,7 @@ void vrpn_5dt::get_report (void)
   }
   _bufcount += l_ret;
 #ifdef	VERBOSE
-  if (l_ret != 0) printf("... got %d characters (%d total)\n",ret, _bufcount);
+  if (l_ret != 0) printf("... got %d characters (%d total)\n",l_ret, _bufcount);
 #endif
 
   if (_bufcount < _expected_chars) {	// Not done -- go back for more
@@ -276,11 +282,12 @@ void vrpn_5dt::get_report (void)
    channel[5] = _buffer[5]/255.0; // Pinkie
    channel[6] = 180 * _buffer[6]/255.0; // Pitch
    channel[7] = 180 * _buffer[7]/255.0; // Roll
+
    //--------------------------------------------------------------------
    // Done with the decoding, send the reports and go back to syncing
    //--------------------------------------------------------------------
 
-   report();	// Report, rather than report_changes(), since it is an absolute device
+   report_changes();
    switch (_mode)
      {
      case 1:
@@ -353,19 +360,19 @@ void vrpn_5dt::mainloop ()
 
     case STATUS_READING:
       {
-		// It turns out to be important to get the report before checking
-		// to see if it has been too long since the last report.  This is
-		// because there is the possibility that some other device running
-		// in the same server may have taken a long time on its last pass
-		// through mainloop().  Trackers that are resetting do this.  When
-		// this happens, you can get an infinite loop -- where one tracker
-		// resets and causes the other to timeout, and then it returns the
-		// favor.  By checking for the report here, we reset the timestamp
-		// if there is a report ready (ie, if THIS device is still operating).
-		get_report();
-		struct timeval current_time;
-		gettimeofday(&current_time, NULL);
-		if ( duration(current_time,timestamp) > MAX_TIME_INTERVAL)
+	  // It turns out to be important to get the report before checking
+	  // to see if it has been too long since the last report.  This is
+	  // because there is the possibility that some other device running
+	  // in the same server may have taken a long time on its last pass
+	  // through mainloop().  Trackers that are resetting do this.  When
+	  // this happens, you can get an infinite loop -- where one tracker
+	  // resets and causes the other to timeout, and then it returns the
+	  // favor.  By checking for the report here, we reset the timestamp
+	  // if there is a report ready (ie, if THIS device is still operating).
+	  get_report();
+	  struct timeval current_time;
+	  gettimeofday(&current_time, NULL);
+	  if ( duration(current_time,timestamp) > MAX_TIME_INTERVAL)
 	  {
 	    sprintf (l_errmsg, "vrpn_5dt::mainloop: Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",
 		     current_time.tv_sec,

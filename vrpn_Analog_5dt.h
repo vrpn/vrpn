@@ -11,7 +11,8 @@ public:
 		  vrpn_Connection * c,
 		  const char * port,
 		  int baud = 19200,
-		  int mode = 1);
+		  int mode = 1,
+		  bool tenbytes = false);
 
 	~vrpn_5dt () {};
 
@@ -27,6 +28,7 @@ public:
 	int _expected_chars;	    //< How many characters to expect in the report
 	unsigned char _buffer[512]; //< Buffer of characters in report
 	int _bufcount;		    //< How many characters we have so far
+	bool  _tenbytes;	    //< Whether there are 10-byte responses (unusual, but seen)
 
 	struct timeval timestamp;   //< Time of the last report from the device
 
