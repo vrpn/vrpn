@@ -195,7 +195,7 @@
 #Z	NULL		0	0.0	0.0	1.0	1.0
 #RX	*Radamec0	1	0.0	0.0	-0.0027777777	1.0
 #RY	NULL		0	0.0	0.0	1.0	1.0
-#RZ	*Radamec0	0	0.0	0.0	-0.0027777777	1.0
+#RZ	*Radamec0	0	0.0	0.0	0.0027777777	1.0
 #RESET	NULL	0
 
 ################################################################################
@@ -297,9 +297,8 @@
 # only supported baud rate.
 #
 # Note that if you want to use the Radamec SPI as a tracking device, you will
-# need to run a vrpn_Tracker_Jacobian device (hopefully to be implemented in
-# vrpn 05.02) that listens to its analog outputs and converts them into tracker
-# reports
+# need to run a vrpn_Tracker_AnalogFly device (of the absolute variety)
+# that listens to its analog outputs and converts them into tracker reports.
 #
 # Arguments:
 #	char	name_of_this_device[]
