@@ -35,6 +35,8 @@
 #include "vrpn_Tracker.h"
 #include "vrpn_Serial.h"
 
+#include "vrpn_cygwin_hack.h"
+
 static const char *tracker_cfg_file_name = "vrpn_Tracker.cfg";
 
 //#define VERBOSE

@@ -5,6 +5,8 @@
 #include <netinet/in.h>
 #endif
 
+#include "vrpn_cygwin_hack.h"
+
 vrpn_File_Controller::vrpn_File_Controller (vrpn_Connection * c) :
     d_connection (c) {
 

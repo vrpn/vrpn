@@ -26,14 +26,21 @@
 #
 
 MAKEFILE := Makefile
-MAKE := gmake -f $(MAKEFILE)
+MAKE := make -f $(MAKEFILE)
 
 # hw_os does not exist on FreeBSD at UNC
 UNAME := $(shell uname -s)
 ifeq ($(UNAME), FreeBSD)
   HW_OS := pc_FreeBSD
 else
-  HW_OS := $(shell hw_os)
+  # pc_cygwin doesn't have HW_OS
+  ifeq ($(UNAME), CYGWIN_NT-4.0)
+    HW_OS := pc_cygwin
+    # On cygwin make is gmake (and gmake doesn't exist)
+    MAKE  := make -f $(MAKEFILE)
+  else
+    HW_OS := $(shell hw_os)
+  endif
 endif
 
 # check if its for pxfl
@@ -110,7 +117,7 @@ endif
 # directories that we can do an rm -f on because they only contain
 # object files and executables
 SAFE_KNOWN_ARCHITECTURES :=	hp700_hpux/* hp700_hpux10/* mips_ultrix/* \
-	pc_linux/* sgi_irix/* sgi_irix.n32/* sparc_solaris/* sparc_sunos/*
+	pc_linux/* sgi_irix/* sgi_irix.n32/* sparc_solaris/* sparc_sunos/* pc_cygwin/*
 
 CLIENT_SKA = $(patsubst %,client_src/%,$(SAFE_KNOWN_ARCHITECTURES))
 SERVER_SKA = $(patsubst %,server_src/%,$(SAFE_KNOWN_ARCHITECTURES))
@@ -146,8 +153,15 @@ ifeq ($(HW_OS),hp_flow_aCC)
                  -I/usr/include/bsd -DFLOW
 endif
 
-INCLUDE_FLAGS := -I. $(SYS_INCLUDE) -I$(BETA_INCLUDE_DIR) -I$(HMD_INCLUDE_DIR)
+# On the PC, place quatlib in the directory ../quat.  No actual system
+# includes should be needed.
+ifeq ($(HW_OS),pc_cygwin)
+  INCLUDE_FLAGS := -I. -I../quat
+else
 
+  INCLUDE_FLAGS := -I. $(SYS_INCLUDE) -I$(BETA_INCLUDE_DIR) -I$(HMD_INCLUDE_DIR)
+
+endif
 ##########################
 # Load flags
 #
@@ -224,7 +238,11 @@ all:	client server
 all:	client server client_g++ server_g++
   endif
 else
+  ifeq ($(HW_OS),pc_cygwin)
+all:	client
+  else
 all:	client server
+  endif
 endif
 
 .PHONY:	n32

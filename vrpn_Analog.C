@@ -5,6 +5,8 @@
 #include <unistd.h>
 #endif
 
+#include "vrpn_cygwin_hack.h"
+
 //#define VERBOSE
 
 extern int vrpn_open_commport(char *portname, long baud);

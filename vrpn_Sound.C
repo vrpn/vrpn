@@ -36,6 +36,8 @@
 #include <ctype.h>
 #include "vrpn_Sound.h"
 
+#include "vrpn_cygwin_hack.h"
+
 #define BUF_SIZE 4096
 
 extern void init(int channel);

@@ -105,6 +105,10 @@ XXX	Need to define architecture-dependent sizes here
 #include <sys/timeb.h>
 #include <winsock.h>   // timeval is defined here
 
+// If compiling under Cygnus Solutions Cygwin
+// then this should already be defined.
+
+#if !defined(__CYGWIN__)
 #ifndef _STRUCT_TIMEVAL
 #define _STRUCT_TIMEVAL
   /* from HP-UX */
@@ -115,15 +119,13 @@ struct timezone {
 #endif
 
 extern int gettimeofday(struct timeval *tp, struct timezone *tzp);
+#endif // __CYGWIN__
 
 // This has been moved to connection.C so that users of this
 // lib can still use fstream and other objects with close functions.
 // #define close closesocket
 
 #else
-
-#include <sys/time.h>
-
 #endif  // not _WIN32
 
 extern struct timeval vrpn_TimevalSum( const struct timeval& tv1, 

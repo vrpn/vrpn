@@ -92,7 +92,7 @@ typedef int (* vrpn_LOGFILTER) (void * userdata, vrpn_HANDLERPARAM p);
 #define vrpn_LOG_OUTGOING			(1<<1)
 
 
-#ifndef _WIN32
+#if !defined(_WIN32) || defined (__CYGWIN__)
 #define SOCKET int
 #endif
 

@@ -8,6 +8,8 @@
 #include <netinet/in.h>
 #endif
 
+#include "vrpn_cygwin_hack.h"
+
 #define ASSERT(x)	assert(x)
 
 static	unsigned long	duration(struct timeval t1, struct timeval t2)

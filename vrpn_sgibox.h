@@ -5,7 +5,9 @@
 
 #include "vrpn_Analog.h"
 #include "vrpn_Button.h"
-#ifndef WIN32
+// Do we really need this here as everything is already
+// surrounded by #ifdef sgi...???
+#ifndef _WIN32 
 #include <netinet/in.h>
 #include <sys/ioctl.h>
 #endif

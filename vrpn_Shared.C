@@ -14,6 +14,8 @@
 #include <netinet/in.h>
 #endif
 
+#include "vrpn_cygwin_hack.h"
+
 #define CHECK(a) if (a == -1) return -1
 
 // Calcs the sum of tv1 and tv2.  Returns the sum in a timeval struct.
@@ -241,7 +243,9 @@ long vrpn_unbuffer (const char ** buffer, timeval * t) {
   return 0;
 }
 
-#ifdef _WIN32
+// Although VC++ doesn't include a gettimeofday
+// call, Cygnus Solutions Cygwin32 environment does.
+#if defined(_WIN32) && !defined(__CYGWIN__)
 #include <iostream.h>
 #include <math.h>
 
@@ -381,6 +385,11 @@ static int vrpn_AdjustFrequency(void)
 // by gettimeofday will not always match _ftime (even at _ftime's resolution),
 // but it will be consistent across all gettimeofday calls.
 
+///////////////////////////////////////////////////////////////
+// Although VC++ doesn't include a gettimeofday
+// call, Cygnus Solutions Cygwin32 environment does,
+// so this is not used when compiling with gcc under WIN32
+///////////////////////////////////////////////////////////////
 int gettimeofday(struct timeval *tp, struct timezone *tzp)
 {
   static int fFirst=1;

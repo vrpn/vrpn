@@ -9,12 +9,12 @@
   Revised: Wed Apr  1 13:23:40 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.C,v $
   $Locker:  $
-  $Revision: 1.18 $
+  $Revision: 1.19 $
   \*****************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
 
-#ifndef WIN32
+#ifndef _WIN32
 #include <unistd.h>
 #include <sys/types.h>
 #include <netinet/in.h>
@@ -24,6 +24,8 @@
 #include <math.h>
 
 #include "vrpn_Clock.h"
+
+#include "vrpn_cygwin_hack.h"
 
 void printTime( char *pch, const struct timeval& tv ) {
   cerr << pch << " " << tv.tv_sec*1000.0 + tv.tv_usec/1000.0 << " msecs." << endl;
@@ -858,6 +860,11 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
 
 /*****************************************************************************\
   $Log: vrpn_Clock.C,v $
+  Revision 1.19  1999/04/14 21:23:37  lovelace
+  Added #ifdefs so that vrpn will compile under the Cygnus solutions
+  cygwin environment.  Also modified Makefile so that it correctly
+  compiles under the cygwin environment.
+
   Revision 1.18  1999/04/11 19:54:56  helser
   Removed an annoying printf.
 

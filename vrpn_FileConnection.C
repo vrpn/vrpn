@@ -12,6 +12,8 @@
 #include <netinet/in.h>
 #endif
 
+#include "vrpn_cygwin_hack.h"
+
 #define CHECK(x) if (x == -1) return -1
 
   // this should be a shared declaration with those

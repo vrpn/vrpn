@@ -46,8 +46,10 @@
 #include <netinet/tcp.h>
 #endif
 
+#include "vrpn_cygwin_hack.h"
+
 // cast fourth argument to setsockopt()
-#ifdef WIN32
+#ifdef _WIN32
 #define SOCK_CAST (char *)
 #else
  #ifdef sparc
@@ -591,7 +593,7 @@ int vrpn_udp_request_call(const char * machine, int port)
 {
 	struct sockaddr_in listen_name;	/* The listen socket binding name */
 	int	listen_namelen;
-#ifdef	WIN32
+#ifdef	_WIN32
 	SOCKET	listen_sock;		/* The socket to listen on */
 	SOCKET	accept_sock;		/* The socket we get when accepting */
 	SOCKET	udp_sock;		/* We lob datagrams from here */
@@ -2809,7 +2811,7 @@ void	vrpn_Connection::init (void)
 
 	gettimeofday(&start_time, NULL);
 
-#ifdef WIN32
+#ifdef _WIN32
 
   // Make sure sockets are set up
   // TCH 2 Nov 98 after Phil Winston
@@ -2825,7 +2827,7 @@ void	vrpn_Connection::init (void)
     exit(0);
   }
 
-#endif  // WIN32
+#endif  // _WIN32
 
 }
 
@@ -3016,7 +3018,7 @@ vrpn_Connection::~vrpn_Connection (void) {
 
   //fprintf(stderr, "In vrpn_Connection destructor.\n");
 
-#ifdef WIN32
+#ifdef _WIN32
 
 	if (WSACleanup() == SOCKET_ERROR) {
     fprintf(stderr, "~vrpn_Connection():  "
@@ -3024,7 +3026,7 @@ vrpn_Connection::~vrpn_Connection (void) {
             WSAGetLastError());
 	}
 
-#endif  // WIN32
+#endif  // _WIN32
 	vrpn_int32 i;
 	vrpnMsgCallbackEntry *pVMCB, *pVMCB_Del;
 	for (i=0;i<num_my_types;i++) {

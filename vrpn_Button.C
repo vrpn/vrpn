@@ -13,7 +13,9 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#ifndef __CYGWIN__
 #include <conio.h>  // for _inp()
+#endif
 #else
 #include <strings.h>
 #include <netinet/in.h>
@@ -30,6 +32,7 @@
 
 #include "vrpn_Button.h"
 
+#include "vrpn_cygwin_hack.h"
 
 #define BUTTON_READY 	  (1)
 #define BUTTON_FAIL	  (-1)
