@@ -59,11 +59,8 @@ ifeq ($(HW_OS),sgi_irix)
   endif
   OBJECT_DIR_SUFFIX := .$(SGI_ABI).$(SGI_ARCH)
   CC := CC -$(SGI_ABI) -$(SGI_ARCH)
+  GLUTLIBS := -L/afs/cs.unc.edu/project/walk/lib/sgi_irix.$(SGI_ABI) -lglut -lGLU -lGL -lXmu -lXext -lX11
 endif
-
-#ifeq ($(HW_OS),sgi_irix)
-#  CC := CC -32
-#endif
 
 ifeq ($(HW_OS),hp700_hpux10)
   CC := CC +a1
@@ -81,7 +78,9 @@ ifeq ($(HW_OS),pc_cygwin)
   ARCH_LIBS := -lcygwin -luser32 -lgdi32 -lcomdlg32 -lwsock32
 endif
 
-CFLAGS = -I../ -g
+GLUTINCLUDE = /afs/cs.unc.edu/project/walk/include
+
+CFLAGS = -I../ -I$(GLUTINCLUDE) -g
 .c.o:
 	$(CC) $(CFLAGS) -c $*.c
 
@@ -108,7 +107,7 @@ all:	$(OBJ_DIR)/printvals $(OBJ_DIR)/printcereal \
 	$(OBJ_DIR)/ff_client \
 	$(OBJ_DIR)/phan_client \
 	$(OBJ_DIR)/sphere_client $(OBJ_DIR)/bdbox_client \
-	add_vrpn_cookie testLamport test_mutex
+	add_vrpn_cookie testLamport test_mutex $(OBJ_DIR)/setrouter
 #	$(OBJ_DIR)/vrpn_print_messages
 
 # $(OBJ_DIR)/ohm_client
@@ -136,6 +135,9 @@ test_mutex:	$(OBJ_DIR)/test_mutex
 .PHONY:	text
 text:	$(OBJ_DIR)/text
 
+.PHONY:	vrpn_Router_Client_GUI
+vrpn_Router_Client_GUI:	$(OBJ_DIR)/vrpn_Router_Client_GUI
+
 $(OBJ_DIR)/sound_client: $(OBJ_DIR)/sound_client.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/sound_client \
 		$(OBJ_DIR)/sound_client.o -lvrpn $(ARCH_LIBS)
@@ -147,6 +149,14 @@ $(OBJ_DIR)/vrpn_print_messages: $(OBJ_DIR)/vrpn_print_messages.o $(LIB_DIR)/libv
 $(OBJ_DIR)/printvals: $(OBJ_DIR)/printvals.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/printvals \
 		$(OBJ_DIR)/printvals.o -lvrpn $(ARCH_LIBS)
+
+$(OBJ_DIR)/vrpn_Router_Client_GUI: $(OBJ_DIR)/vrpn_Router_Client_GUI.o $(LIB_DIR)/libvrpn.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/vrpn_Router_Client_GUI \
+		$(OBJ_DIR)/vrpn_Router_Client_GUI.o $(GLUTLIBS) -lvrpn $(ARCH_LIBS)
+
+$(OBJ_DIR)/setrouter: $(OBJ_DIR)/setrouter.o $(LIB_DIR)/libvrpn.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/setrouter \
+		$(OBJ_DIR)/setrouter.o -lvrpn $(ARCH_LIBS)
 
 $(OBJ_DIR)/printcereal: $(OBJ_DIR)/printcereal.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/printcereal \
