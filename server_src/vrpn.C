@@ -7,9 +7,10 @@
 #include "vrpn_Button.h"
 #include "vrpn_Tracker.h"
 #include "vrpn_3Space.h"
+#include "vrpn_Flock.h"
 
-static	int	MAX_TRACKERS = 100;
-static	int	MAX_BUTTONS = 100;
+#define MAX_TRACKERS 100
+#define MAX_BUTTONS 100
 
 void	Usage(char *s)
 {
@@ -20,7 +21,41 @@ void	Usage(char *s)
   exit(-1);
 }
 
-main (unsigned argc, char *argv[])
+vrpn_Tracker	*trackers[MAX_TRACKERS];
+int		num_trackers = 0;
+vrpn_Button	*buttons[MAX_BUTTONS];
+int		num_buttons = 0;
+
+// install a signal handler to shut down the trackers and buttons
+#ifndef WIN32
+#include <signal.h>
+void closeDevices();
+#ifdef sgi
+void sighandler( ... )
+#else
+void sighandler( int signal )
+#endif
+{
+    closeDevices();
+    return;
+}
+
+void closeDevices() {
+  int i;
+  for (i=0;i < num_buttons; i++) {
+    fprintf(stderr, "\nClosing button %d ...", i);
+    delete buttons[i];
+  }
+  for (i=0;i < num_trackers; i++) {
+    fprintf(stderr, "\nClosing tracker %d ...", i);
+    delete trackers[i];
+  }
+  fprintf(stderr, "\nAll devices closed. Exiting ...\n");
+  exit(0);
+}
+#endif
+
+main (int argc, char *argv[])
 {
 	char	*config_file_name = "vrpn.cfg";
 	FILE	*config_file;
@@ -36,12 +71,21 @@ main (unsigned argc, char *argv[])
 	  fprintf(stderr, "WSAStartup failed with %d\n", status);
 	  exit(1);
 	}
+#else
+#ifdef sgi
+  sigset( SIGINT, sighandler );
+  sigset( SIGKILL, sighandler );
+  sigset( SIGTERM, sighandler );
+  sigset( SIGPIPE, sighandler );
+#else
+  signal( SIGINT, sighandler );
+  signal( SIGKILL, sighandler );
+  signal( SIGTERM, sighandler );
+  signal( SIGPIPE, sighandler );
+#endif // sgi
 #endif
+
 	vrpn_Synchronized_Connection	connection;
-	vrpn_Tracker	*trackers[MAX_TRACKERS];
-	int		num_trackers = 0;
-	vrpn_Button	*buttons[MAX_BUTTONS];
-	int		num_buttons = 0;
 
 	// Parse the command line
 	i = 1;
@@ -77,7 +121,7 @@ main (unsigned argc, char *argv[])
 	//  whether we should bail.
       {	char	line[512];	// Line read from the input file
 	char	s1[512],s2[512],s3[512];	// String parameters
-	int	i1;				// Integer parameters
+	int	i1, i2;				// Integer parameters
 	float	f1;				// Float parameters
 
 	// Read lines from the file until we run out
@@ -88,6 +132,11 @@ main (unsigned argc, char *argv[])
 		fprintf(stderr,"Line too long in config file: %s\n",line);
 		if (bail_on_error) { return -1; }
 		else { continue; }	// Skip this line
+	  }
+
+	  if ((strlen(line)<3)||(line[0]=='#')) {
+	    // comment or empty line -- ignore
+	    continue;
 	  }
 
 	  // Figure out the device from the name and handle appropriately
@@ -114,6 +163,35 @@ main (unsigned argc, char *argv[])
 		    s2,s3,i1);
 		if ( (trackers[num_trackers] =
 		     new vrpn_Tracker_3Space(s2, &connection, s3, i1)) == NULL){
+		  fprintf(stderr,"Can't create new vrpn_Tracker_3Space\n");
+		  if (bail_on_error) { return -1; }
+		  else { continue; }	// Skip this line
+		} else {
+		  num_trackers++;
+		}
+	  } else if (isit("vrpn_Tracker_Flock")) {
+
+		// Get the arguments (class, tracker_name, sensors, port, baud)
+		if (sscanf(line,"%511s%511s%d%511s%d", s1, s2, 
+			   &i1, s3, &i2) != 5) {
+		  fprintf(stderr,"Bad vrpn_Tracker_Flock line: %s\n",line);
+		  if (bail_on_error) { return -1; }
+		  else { continue; }	// Skip this line
+		}
+
+		// Make sure there's room for a new tracker
+		if (num_trackers >= MAX_TRACKERS) {
+		  fprintf(stderr,"Too many trackers in config file");
+		  if (bail_on_error) { return -1; }
+		  else { continue; }	// Skip this line
+		}
+
+		// Open the tracker
+		if (verbose) printf(
+		    "Opening vrpn_Tracker_Flock: %s (%d sensors, on port %s, baud %d)\n",
+		    s2, i1, s3,i2);
+		if ( (trackers[num_trackers] =
+		     new vrpn_Tracker_Flock(s2,&connection,i1,s3,i2)) == NULL){
 		  fprintf(stderr,"Can't create new vrpn_Tracker_3Space\n");
 		  if (bail_on_error) { return -1; }
 		  else { continue; }	// Skip this line
@@ -207,3 +285,8 @@ main (unsigned argc, char *argv[])
 		connection.mainloop();
 	}
 }
+
+
+
+
+
