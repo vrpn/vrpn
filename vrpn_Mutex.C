@@ -160,6 +160,7 @@ void vrpn_Mutex::sendRequest (vrpn_int32 index) {
   char * b = buffer;
   vrpn_int32 bl = 32;
   
+  if (!d_connection) return;
   gettimeofday(&now, NULL);
   vrpn_buffer(&b, &bl, index);
   d_connection->pack_message(32 - bl, now,
@@ -169,6 +170,8 @@ void vrpn_Mutex::sendRequest (vrpn_int32 index) {
 
 void vrpn_Mutex::sendRelease (void) {
   timeval now;
+
+  if (!d_connection) return;
   
   gettimeofday(&now, NULL);
   d_connection->pack_message(0, now,
@@ -180,6 +183,7 @@ void vrpn_Mutex::sendRelease (void) {
 void vrpn_Mutex::sendReleaseNotification (void) {
   timeval now;
   
+  if (!d_connection) return;
   gettimeofday(&now, NULL);
   d_connection->pack_message(0, now,
                   d_releaseNotification_type, d_myId, NULL,
@@ -193,6 +197,7 @@ void vrpn_Mutex::sendGrantRequest (vrpn_int32 index) {
   char * b = buffer;
   vrpn_int32 bl = 32;
   
+  if (!d_connection) return;
   gettimeofday(&now, NULL);
   vrpn_buffer(&b, &bl, index);
   d_connection->pack_message(32 - bl, now,
@@ -207,6 +212,7 @@ void vrpn_Mutex::sendDenyRequest (vrpn_int32 index) {
   char * b = buffer;
   vrpn_int32 bl = 32;
   
+  if (!d_connection) return;
   gettimeofday(&now, NULL);
   vrpn_buffer(&b, &bl, index);
   d_connection->pack_message(32 - bl, now,
@@ -346,7 +352,7 @@ int vrpn_Mutex_Server::handle_dropLastConnection (void * userdata,
 
 
 vrpn_Mutex_Remote::vrpn_Mutex_Remote (const char * name, vrpn_Connection * c) :
-    vrpn_Mutex (name, c ? c : vrpn_get_connection_by_name(name)),
+    vrpn_Mutex (name, c ? c : ((strcmp(name,"null")==0) ? NULL : vrpn_get_connection_by_name(name))),
     d_state (AVAILABLE),
     d_myIndex (-1),
     d_requestBeforeInit(vrpn_FALSE),
@@ -355,13 +361,15 @@ vrpn_Mutex_Remote::vrpn_Mutex_Remote (const char * name, vrpn_Connection * c) :
     d_takeCB (NULL),
     d_releaseCB (NULL) {
 
-  d_connection->register_handler(d_grantRequest_type,
+  if (d_connection) {
+      d_connection->register_handler(d_grantRequest_type,
                                  handle_grantRequest, this);
-  d_connection->register_handler(d_denyRequest_type,
+      d_connection->register_handler(d_denyRequest_type,
                                  handle_denyRequest, this);
-  d_connection->register_handler(d_releaseNotification_type,
+      d_connection->register_handler(d_releaseNotification_type,
                                  handle_releaseNotification, this);
-  d_connection->register_handler(d_initialize_type, handle_initialize, this);
+      d_connection->register_handler(d_initialize_type, handle_initialize, this);
+  }
 }
 
 // virtual
