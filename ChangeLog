@@ -1,3 +1,9 @@
+2003-01-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_Fastrak.C : Installing fix from Sascha Scholz to make
+		the fastrak work with a fastrak stylus.  I couldn't test the
+		code I put in the previous commit.
+
 2003-01-02  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_Analog_Output.h:  uniform formatting, new data members for

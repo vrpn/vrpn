@@ -166,7 +166,7 @@ int vrpn_Tracker_Fastrak::report_length(int sensor)
 
     // Add in the buttons (1 byte) if present
     if (is900_buttons[sensor]) {
-	len += 1;
+	len += 2;
     }
 
     // Add in the joystick (one byte each for two values) if present
@@ -322,6 +322,18 @@ void vrpn_Tracker_Fastrak::reset()
        if (set_sensor_output_format(i)) {
 	   return;
        }
+   }
+
+   if (really_fastrak) {
+      char outstring[64];
+      sprintf(outstring, "e1,0\r");
+      if (vrpn_write_characters(serial_fd, (const unsigned char *)outstring,
+                                strlen(outstring)) == (int)strlen(outstring)) {
+        vrpn_SleepMsecs(50);   // Sleep for a bit to let command run
+      } else {
+        FT_ERROR("Write failed on mouse format command");
+        status = vrpn_TRACKER_FAIL;
+      }
    }
 
    // Enable filtering if the constructor parameter said to.
