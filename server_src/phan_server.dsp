@@ -67,7 +67,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /Zi /Od /I "..\..\quat" /I ".." /I "../../external/pc_win32/include/ghost-stl" /I "../../external/pc_win32/include/ghost3.1" /D "_CONSOLE" /D "_MBCS" /D "VRPN_NO_STREAMS" /D "_DEBUG" /D "WIN32" /D "DESKTOP_PHANTOM_DEFAULT" /Fr /YX /FD /c /Tp
+# ADD CPP /nologo /MDd /W3 /Gm /GX /Zi /Od /I "..\..\quat" /I ".." /I "../../external/pc_win32/include/ghost-stl" /I "../../external/pc_win32/include/ghost3.1" /D "_CONSOLE" /D "_DEBUG" /D "_MBCS" /D "WIN32" /D "VRPN_NO_STREAMS" /Fr /YX /FD /c /Tp
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
