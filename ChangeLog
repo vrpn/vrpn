@@ -1,5 +1,14 @@
 2001-06-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Flock_Parallel.h : Spoof Master ID directly, removed un-needed
+		re-registry of IDs by using inherited function to send the
+		tracker reports.  The previous version was sending messages
+		with bogus ID because of recent refactoring of the Serial
+		Tracker classes.
+	* vrpn_Flock_Parallel.C : Same.
+
+2001-06-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
         * vrpn_Serial.C : Removed dynamic allocation of comm handles,
             which was causing seg faults.
 	* vrpn_Tracker.C : Added check for negative sensor number in callback

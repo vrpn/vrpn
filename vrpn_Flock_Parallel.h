@@ -80,15 +80,12 @@ public:
 				     char *port,
 				     long baud,
 				     vrpn_int32 vrpnMasterID,
-				     vrpn_int32 vrpnPositionMsgID,
 				     int iSensorID );
   virtual ~vrpn_Tracker_Flock_Parallel_Slave();
   virtual void mainloop();
 
  protected:
   virtual void reset();
-  vrpn_int32 vrpnMasterID;
-  vrpn_int32 vrpnPositionMsgID;
 
   friend class vrpn_Tracker_Flock_Parallel;
 };

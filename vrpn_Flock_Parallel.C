@@ -94,7 +94,6 @@ vrpn_Tracker_Flock_Parallel::vrpn_Tracker_Flock_Parallel(char *name,
 							   slavePortArray[i],
 							   baud,
 							   d_sender_id,
-							   position_m_id,
 							   i );
     }      
   }
@@ -207,11 +206,10 @@ vrpn_Tracker_Flock_Parallel_Slave::
 vrpn_Tracker_Flock_Parallel_Slave( char *name, vrpn_Connection *c, 
 				   char *port, long baud,
 				   vrpn_int32 masterID,
-				   vrpn_int32 positionMsgID,
 				   int iSensorID ) :
-  vrpn_Tracker_Flock(name,c,1,port,baud,1), vrpnMasterID(masterID),
-  vrpnPositionMsgID(positionMsgID)
+  vrpn_Tracker_Flock(name,c,1,port,baud,1)
 {
+  d_sender_id = masterID;	// Spoofing the master
   d_sensor=iSensorID;
   fprintf(stderr, "\nvrpn_Tracker_Flock_Parallel_Slave %d: starting up ...",
 	  d_sensor);
