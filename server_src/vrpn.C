@@ -400,34 +400,6 @@ main (int argc, char * argv[])
 		num_analogs++;
 	    }
 #endif
-	  } else if (isit("vrpn_Linux_Sound")) {
-	    // Get the arguments (sound_name)
-	    next();
-	    if (sscanf(pch,"%511s",s2) != 1) {
-	      fprintf(stderr,"Bad vrpn_Linux_Sound line: %s\n",line);
-	      if (bail_on_error) { return -1; }
-	      else { continue; }	// Skip this line
-	    }
-
-	    // Make sure there's room for a new sound server
-	    if (num_sounds >= MAX_SOUNDS) {
-	      fprintf(stderr,"Too many sound servers in config file");
-	      if (bail_on_error) { return -1; }
-	      else { continue; }	// Skip this line
-	    }
-
-	    // Open the sound server
-	    if (verbose) 
-	      printf("Opening vrpn_Linux_Sound: %s\n", s2);
-	    if ((sounds[num_sounds] =
-		  new vrpn_Linux_Sound(s2, connection)) == NULL) {
-		fprintf(stderr,"Can't create new vrpn_Linux_Sound\n");
-		if (bail_on_error) { return -1; }
-		else { continue; }	// Skip this line
-	    } else {
-		num_sounds++;
-	    }
-
 	  } else if (isit("vrpn_Tracker_Dyna")) {
 	    next();
 	    // Get the arguments (class, tracker_name, sensors,port, baud)
