@@ -19,69 +19,116 @@
 #define FD_MISC_ERROR 3		// everything else
 #define FD_OK 4	// no error
 
+// If defined, springs are implemented in the client as force fields.
+// If not, springs are implemented with special messages
+// and extra Ghost classes.  Either way support for the messages
+// is compiled into the parent class so that servers can support
+// both kinds of clients.
+
+// (Springs as force fields require some knotty mathematical programming
+// at the clients that I can't seem to get right, but avoid lots of
+// extra message types and an awful lot of bug-prone Ghost.)
+
+#define FD_SPRINGS_AS_FIELDS
+
+
 class vrpn_ForceDevice {
-public:
-    vrpn_ForceDevice(char * name, vrpn_Connection *c);
-    virtual void mainloop(const struct timeval * timeout=NULL) = 0;
-    void print_report(void);
-    void print_plane(void);
 
-    void setSurfaceKspring(vrpn_float32 k) { 
-				    SurfaceKspring = k; }
-    void setSurfaceKdamping(vrpn_float32 d) {SurfaceKdamping =d;}
-    void setSurfaceFstatic(vrpn_float32 ks) {SurfaceFstatic = ks;}
-    void setSurfaceFdynamic(vrpn_float32 kd) {SurfaceFdynamic =kd;}
-    void setRecoveryTime(int rt) {numRecCycles = rt;}
+  public:
 
-	// additional surface properties
-	void setSurfaceKadhesionNormal(vrpn_float32 k) {SurfaceKadhesionNormal = k;}
-	void setSurfaceKadhesionLateral(vrpn_float32 k) 
-		{SurfaceKadhesionLateral = k;}
-	void setSurfaceBuzzFrequency(vrpn_float32 freq) {SurfaceBuzzFreq = freq;}
-	void setSurfaceBuzzAmplitude(vrpn_float32 amp) {SurfaceBuzzAmp = amp;}
-	void setSurfaceTextureWavelength(vrpn_float32 wl) 
-		{SurfaceTextureWavelength = wl;}
-	void setSurfaceTextureAmplitude(vrpn_float32 amp) 
-		{SurfaceTextureAmplitude = amp;}
+    vrpn_ForceDevice (char * name, vrpn_Connection *c);
+    virtual void mainloop (const struct timeval * timeout = NULL) = 0;
+    void print_report (void);
+    void print_plane (void);
 
-    void setFF_Origin(vrpn_float32 x, vrpn_float32 y, vrpn_float32 z) {
-	    ff_origin[0] = x;ff_origin[1] = y; ff_origin[2] = z;}
-    void setFF_Force(vrpn_float32 fx, vrpn_float32 fy, vrpn_float32 fz) {
-	    ff_force[0] = fx; ff_force[1] = fy; ff_force[2] = fz;}
-    void setFF_Jacobian(vrpn_float32 dfxdx, vrpn_float32 dfxdy, vrpn_float32 dfxdz,
-			vrpn_float32 dfydx, vrpn_float32 dfydy, vrpn_float32 dfydz,
-			vrpn_float32 dfzdx, vrpn_float32 dfzdy, vrpn_float32 dfzdz){
-	    ff_jacobian[0][0] = dfxdx; ff_jacobian[0][1] = dfxdy;
-	    ff_jacobian[0][2] = dfxdz; ff_jacobian[1][0] = dfydx;
-	    ff_jacobian[1][1] = dfydy; ff_jacobian[1][2] = dfydz;
-	    ff_jacobian[2][0] = dfzdx; ff_jacobian[2][1] = dfzdy;
-	    ff_jacobian[2][2] = dfzdz;}
-    void setFF_Radius(vrpn_float32 r) { ff_radius = r;};
-    void set_plane(vrpn_float32 *p);
-    void set_plane(vrpn_float32 *p, vrpn_float32 d);
-    void set_plane(vrpn_float32 a, vrpn_float32 b, vrpn_float32 c,vrpn_float32 d);
-    void sendError(int error_code);
+    void setSurfaceKspring (vrpn_float32 k) { SurfaceKspring = k; }
+    void setSurfaceKdamping (vrpn_float32 d) { SurfaceKdamping =d; }
+    void setSurfaceFstatic (vrpn_float32 ks) { SurfaceFstatic = ks; }
+    void setSurfaceFdynamic (vrpn_float32 kd) { SurfaceFdynamic =kd; }
+    void setRecoveryTime (int rt) { numRecCycles = rt; }
 
-    int getRecoveryTime(void) {return numRecCycles;}
-    int connectionAvailable(void) {return (connection != NULL);}
+    // additional surface properties
+    void setSurfaceKadhesionNormal (vrpn_float32 k)
+           { SurfaceKadhesionNormal = k; }
+    void setSurfaceKadhesionLateral (vrpn_float32 k) 
+           { SurfaceKadhesionLateral = k; }
+    void setSurfaceBuzzFrequency (vrpn_float32 freq)
+           { SurfaceBuzzFreq = freq; }
+    void setSurfaceBuzzAmplitude (vrpn_float32 amp)
+           { SurfaceBuzzAmp = amp; }
+    void setSurfaceTextureWavelength (vrpn_float32 wl) 
+           { SurfaceTextureWavelength = wl; }
+    void setSurfaceTextureAmplitude (vrpn_float32 amp) 
+           { SurfaceTextureAmplitude = amp; }
 
-protected:
-    vrpn_Connection *connection;		// Used to send messages
+    void setFF_Origin (vrpn_float32 x, vrpn_float32 y, vrpn_float32 z)
+           { ff_origin[0] = x; ff_origin[1] = y; ff_origin[2] = z; }
+    void setFF_Origin (vrpn_float32 x [3])
+           { ff_origin[0] = x[0]; ff_origin[1] = x[1]; ff_origin[2] = x[2]; }
+    void setFF_Force (vrpn_float32 fx, vrpn_float32 fy, vrpn_float32 fz)
+           { ff_force[0] = fx; ff_force[1] = fy; ff_force[2] = fz; }
+    void setFF_Force (vrpn_float32 f [3])
+           { ff_force[0] = f[0]; ff_force[1] = f[1]; ff_force[2] = f[2]; }
+    void setFF_Jacobian
+             (vrpn_float32 dfxdx, vrpn_float32 dfxdy, vrpn_float32 dfxdz,
+              vrpn_float32 dfydx, vrpn_float32 dfydy, vrpn_float32 dfydz,
+              vrpn_float32 dfzdx, vrpn_float32 dfzdy, vrpn_float32 dfzdz)
+           { ff_jacobian[0][0] = dfxdx; ff_jacobian[0][1] = dfxdy;
+	     ff_jacobian[0][2] = dfxdz; ff_jacobian[1][0] = dfydx;
+	     ff_jacobian[1][1] = dfydy; ff_jacobian[1][2] = dfydz;
+	     ff_jacobian[2][0] = dfzdx; ff_jacobian[2][1] = dfzdy;
+	     ff_jacobian[2][2] = dfzdz; }
+    void setFF_Radius (vrpn_float32 r) { ff_radius = r; }
 
-    vrpn_int32 my_id;			// ID of this force device to connection
+    void set_plane (vrpn_float32 *p);
+    void set_plane (vrpn_float32 *p, vrpn_float32 d);
+    void set_plane (vrpn_float32 a, vrpn_float32 b, vrpn_float32 c,
+                    vrpn_float32 d);
+
+    void sendError (int error_code);
+
+    int getRecoveryTime (void) {return numRecCycles;}
+    int connectionAvailable (void) {return (connection != NULL);}
+
+  protected:
+
+    vrpn_Connection * connection;		// Used to send messages
+
+    vrpn_int32 my_id;              // ID of this force device to connection
 
     vrpn_int32 force_message_id;	// ID of force message to connection
     vrpn_int32 plane_message_id;	//ID of plane equation message
 	vrpn_int32 plane_effects_message_id; // additional plane properties
-    vrpn_int32 set_constraint_message_id;// ID of constraint force message
     vrpn_int32 forcefield_message_id; 	// ID of force field message
     vrpn_int32 scp_message_id;		// ID of surface contact point message
 
+
+    // constraint messages
+
+    enum ConstraintGeometry
+            { NO_CONSTRAINT,
+              POINT_CONSTRAINT,
+              LINE_CONSTRAINT,
+              PLANE_CONSTRAINT };
+
+    vrpn_int32 enableConstraint_message_id;
+    vrpn_int32 setConstraintMode_message_id;
+    vrpn_int32 setConstraintPoint_message_id;
+    vrpn_int32 setConstraintLinePoint_message_id;
+    vrpn_int32 setConstraintLineDirection_message_id;
+    vrpn_int32 setConstraintPlanePoint_message_id;
+    vrpn_int32 setConstraintPlaneNormal_message_id;
+    vrpn_int32 setConstraintKSpring_message_id;
+    //vrpn_int32 set_constraint_message_id;// ID of constraint force message
+
+
     // XXX - error messages should be put into the vrpn base class 
     // whenever someone makes one
+
     vrpn_int32 error_message_id;	// ID of force device error message
 
     // IDs for trimesh messages
+
     vrpn_int32 setVertex_message_id;   
     vrpn_int32 setNormal_message_id;   
     vrpn_int32 setTriangle_message_id;   
@@ -121,8 +168,6 @@ protected:
     static char *encode_trimeshTransform(vrpn_int32 &len,
 		const vrpn_float32 homMatrix[16]);
 
-    static char *encode_constraint(vrpn_int32 &len, const vrpn_int32 enable, 
-	const vrpn_float32 x, const vrpn_float32 y, const vrpn_float32 z, const vrpn_float32 kSpr);
     static char *encode_forcefield(vrpn_int32 &len, const vrpn_float32 origin[3],
 	const vrpn_float32 force[3], const vrpn_float32 jacobian[3][3], const vrpn_float32 radius);
     static char *encode_error(vrpn_int32 &len, const vrpn_int32 error_code);
@@ -159,12 +204,90 @@ protected:
     static vrpn_int32 decode_trimeshTransform(const char *buffer,const vrpn_int32 len,
 						vrpn_float32 homMatrix[16]);
 
-    static vrpn_int32 decode_constraint(const char *buffer,const vrpn_int32 len, 
-		vrpn_int32 *enable, vrpn_float32 *x, vrpn_float32 *y, vrpn_float32 *z, vrpn_float32 *kSpr);
     static vrpn_int32 decode_forcefield(const char *buffer,const vrpn_int32 len,
 	vrpn_float32 origin[3], vrpn_float32 force[3], vrpn_float32 jacobian[3][3], vrpn_float32 *radius);
     static vrpn_int32 decode_error(const char *buffer, const vrpn_int32 len, 
 		vrpn_int32 *error_code);
+
+
+
+    // constraint encoding & decoding
+
+    static char * encode_enableConstraint
+                   (vrpn_int32 & len,
+                    vrpn_int32 enable);
+    static vrpn_int32 decode_enableConstraint
+                   (const char * buffer,
+                    const vrpn_int32 len,
+                    vrpn_int32 * enable);
+                         
+    static char * encode_setConstraintMode
+                   (vrpn_int32 & len,
+                    ConstraintGeometry mode);
+    static vrpn_int32 decode_setConstraintMode
+                   (const char * buffer,
+                    const vrpn_int32 len,
+                    ConstraintGeometry * mode);
+                         
+    static char * encode_setConstraintPoint
+                   (vrpn_int32 & len,
+                    vrpn_float32 x, vrpn_float32 y, vrpn_float32 z);
+    static vrpn_int32 decode_setConstraintPoint
+                   (const char * buffer,
+                    const vrpn_int32 len,
+                    vrpn_float32 * x, vrpn_float32 * y, vrpn_float32 * z);
+                         
+    static char * encode_setConstraintLinePoint
+                   (vrpn_int32 & len,
+                    vrpn_float32 x, vrpn_float32 y, vrpn_float32 z);
+    static vrpn_int32 decode_setConstraintLinePoint
+                   (const char * buffer,
+                    const vrpn_int32 len,
+                    vrpn_float32 * x, vrpn_float32 * y, vrpn_float32 * z);
+                         
+    static char * encode_setConstraintLineDirection
+                   (vrpn_int32 & len,
+                    vrpn_float32 x, vrpn_float32 y, vrpn_float32 z);
+    static vrpn_int32 decode_setConstraintLineDirection
+                   (const char * buffer,
+                    const vrpn_int32 len,
+                    vrpn_float32 * x, vrpn_float32 * y, vrpn_float32 * z);
+                         
+    static char * encode_setConstraintPlanePoint
+                   (vrpn_int32 & len,
+                    vrpn_float32 x, vrpn_float32 y, vrpn_float32 z);
+    static vrpn_int32 decode_setConstraintPlanePoint
+                   (const char * buffer,
+                    const vrpn_int32 len,
+                    vrpn_float32 * x, vrpn_float32 * y, vrpn_float32 * z);
+                         
+    static char * encode_setConstraintPlaneNormal
+                   (vrpn_int32 & len,
+                    vrpn_float32 x, vrpn_float32 y, vrpn_float32 z);
+    static vrpn_int32 decode_setConstraintPlaneNormal
+                   (const char * buffer,
+                    const vrpn_int32 len,
+                    vrpn_float32 * x, vrpn_float32 * y, vrpn_float32 * z);
+                         
+    static char * encode_setConstraintKSpring
+                   (vrpn_int32 & len,
+                    vrpn_float32 k);
+    static vrpn_int32 decode_setConstraintKSpring
+                   (const char * buffer,
+                    const vrpn_int32 len,
+                    vrpn_float32 * k);
+
+
+    // utility functions
+
+    static char * encodePoint
+                   (vrpn_int32 & len,
+                    vrpn_float32 x, vrpn_float32 y, vrpn_float32 z);
+    static vrpn_int32 decodePoint
+                   (const char * buffer,
+                    const vrpn_int32 len,
+                    vrpn_float32 * x, vrpn_float32 * y, vrpn_float32 * z);
+
 
     struct timeval timestamp;
 
@@ -253,15 +376,50 @@ public:
     void useHcollide();
     void useGhost();
 
-    void sendConstraint(vrpn_int32 enable, vrpn_float32 x, vrpn_float32 y, vrpn_float32 z, vrpn_float32 kSpr);
+    // Generalized constraint code.
+    // Constrains as a spring connected to a point, sliding along a line
+    // (constraint forces in a plane perpendicular to the line), or
+    // sliding along a plane (constraint forces only along the plane's
+    // normal).  LineDirection and PlaneNormal should be normalized
+    // (vector length == 1).
 
-    void sendForceField(vrpn_float32 origin[3], vrpn_float32 force[3],
-	    vrpn_float32 jacobian[3][3], vrpn_float32 radius);
-    void sendForceField(void);
-    void stopForceField();
+    // Constraints are implemented as force fields, so both cannot
+    // run at once.
 
-    // This routine calls the mainloop of the connection it's own
-    virtual void mainloop(const struct timeval * timeout=NULL);
+    // XXX it would be safer if changes (especially enable/disable)
+    // had better relaxation support
+
+
+    void enableConstraint (vrpn_int32 enable);  // zero disables
+    void setConstraintMode (ConstraintGeometry mode);
+    void setConstraintPoint (vrpn_float32 point [3]);
+    void setConstraintLinePoint (vrpn_float32 point [3]);
+    void setConstraintLineDirection (vrpn_float32 direction [3]);
+    void setConstraintPlanePoint (vrpn_float32 point [3]);
+    void setConstraintPlaneNormal (vrpn_float32 normal [3]);
+    void setConstraintKSpring (vrpn_float32 k);
+
+    //void sendConstraint (vrpn_int32 enable, vrpn_float32 x,
+                         //vrpn_float32 y, vrpn_float32 z, vrpn_float32 kSpr);
+
+    // At the <origin> of the field, user feels the specified <force>.
+    // As the user moves away from the origin, the force felt changes
+    // according to the jacobian.  If the user moves further than <radius>
+    // from <origin>, the field cuts out.
+
+    // XXX it would be safer for the field to attenuate rapidly
+    // from the value at the radius if the user moves beyond the radius
+
+    void sendForceField
+           (vrpn_float32 origin [3], vrpn_float32 force [3],
+	    vrpn_float32 jacobian [3][3], vrpn_float32 radius);
+    void sendForceField (void);
+    void stopForceField (void);
+
+    // This routine calls the mainloop of its own connection
+
+    // This routine calls the mainloop of the connection it is on
+    virtual void mainloop (const struct timeval * timeout = NULL);
 
     // (un)Register a callback handler to handle a force change
     // and plane equation change and trimesh change
@@ -305,6 +463,33 @@ protected:
     vrpn_FORCEERRORCHANGELIST *error_change_list;
     static int handle_error_change_message(void *userdata,
 						    vrpn_HANDLERPARAM p);
+
+    // constraint types
+
+    vrpn_int32 d_conEnabled;
+    ConstraintGeometry d_conMode;
+    vrpn_float32 d_conPoint [3];
+    vrpn_float32 d_conLinePoint [3];
+    vrpn_float64 d_conLineDirection [3];  // (assumed) normalized
+    vrpn_float32 d_conPlanePoint [3];
+    vrpn_float64 d_conPlaneNormal [3];  // (assumed) normalized
+    vrpn_float32 d_conKSpring;
+
+    // utility functions
+
+    void send (const char * msgbuf, vrpn_int32 len, vrpn_int32 type);
+      // Takes a pointer to a buffer, the length of the buffer, and the
+      // vrpn message type id to send.  Sends the buffer reliably
+      // over connection AND DELETES THE BUFFER.
+
+#ifdef FD_SPRINGS_AS_FIELDS
+
+    void constraintToForceField (void);
+      // takes the current cs_* settings and translates them into
+      // a force field.
+
+#endif  // FD_SPRINGS_AS_FIELDS
+
 };
 
 #endif
