@@ -163,8 +163,8 @@ int main (int argc, char * argv [])
 	printf("You should see tracker2 positions remaining at 1\n");
 
 	struct timeval start, now, diff;
-	gettimeofday(&start, NULL);
-	gettimeofday(&now, NULL);
+	vrpn_gettimeofday(&start, NULL);
+	vrpn_gettimeofday(&now, NULL);
 	diff = vrpn_TimevalDiff(now, start);
 	while ( diff.tv_sec <= 10 ) {
 
@@ -174,15 +174,15 @@ int main (int argc, char * argv [])
 		struct timeval now;
 
 		if (first) {
-		    gettimeofday(&last_report, NULL);
+		    vrpn_gettimeofday(&last_report, NULL);
 		    first = 0;
 		}
-		gettimeofday(&now, NULL);
+		vrpn_gettimeofday(&now, NULL);
 		if (now.tv_sec - last_report.tv_sec > 1) {
 		    if (!getting_analog_values) {
 			fprintf(stderr, "Error - not getting analog values!\n");
 		    }
-		    gettimeofday(&last_report, NULL);
+		    vrpn_gettimeofday(&last_report, NULL);
 		    getting_analog_values = 0; // Make sure we get more next time
 		}
 	    }
@@ -198,7 +198,7 @@ int main (int argc, char * argv [])
 
 	    // Sleep for 1ms each iteration so we don't eat the CPU
 	    vrpn_SleepMsecs(1);
-	    gettimeofday(&now, NULL);
+	    vrpn_gettimeofday(&now, NULL);
 	    diff = vrpn_TimevalDiff(now, start);
 	}
 

@@ -1,3 +1,12 @@
+2004-04-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* directXFF.C : Using vrpn_gettimeofday() not gettimeofday().
+	* nidaqClient.cpp : Same.
+	* sample_analog.C : Same.
+	* test_analogfly.C : Same.
+	* test_vrpn.C : Same.
+	* vrpn_Phantom.C : Same.
+
 2004-03-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.C : Added a better description of how the -millisleep

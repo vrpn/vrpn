@@ -163,7 +163,7 @@ void	send_text_once_in_a_while(void)
 	static	long	secs = 0;
 	struct	timeval	now;
 
-	gettimeofday(&now, NULL);
+	vrpn_gettimeofday(&now, NULL);
 	if (secs == 0) {	// First time through
 		secs = now.tv_sec;
 	}
@@ -178,7 +178,7 @@ void	send_analog_once_in_a_while(void)
 	static	long	secs = 0;
 	struct	timeval	now;
 
-	gettimeofday(&now, NULL);
+	vrpn_gettimeofday(&now, NULL);
 	if (secs == 0) {	// First time through
 		secs = now.tv_sec;
 	}
@@ -254,7 +254,7 @@ int main (int argc, char * argv [])
 		connection->mainloop();
 
 		// Every 2 seconds, delete the old remotes and create new ones
-		gettimeofday(&now, NULL);
+		vrpn_gettimeofday(&now, NULL);
 		if (secs == 0) {	// First time through
 			secs = now.tv_sec;
 		}

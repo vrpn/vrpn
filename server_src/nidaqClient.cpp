@@ -46,7 +46,7 @@ int main( int argc, char *argv[] ) {
   //  pNidaq = new vrpn_Analog_Remote("Nidaq0@helium.cs.unc.edu", pConnection);
   pNidaq = new vrpn_Analog_Remote("Nidaq0@trackerpc-cs.cs.unc.edu");
 
-  gettimeofday(&tvZero,NULL);
+  vrpn_gettimeofday(&tvZero,NULL);
   pNidaq->register_change_handler(&tvZero, printNidaq);
   
   while (1) {

@@ -86,12 +86,11 @@ int main (unsigned argc, char *argv[])
 
 	// Loop forever calling the mainloop()s for all devices
 /*	struct timeval tv1, tv2;
-	struct timezone tz;
 */	int counter = 0;
 	while (1) {
 	  /*
 	  if ( counter == 0 ) {
-	    gettimeofday( &tv1, &tz );
+	    vrpn_gettimeofday( &tv1, NULL );
 	  }
 	  counter++;
 	  */
@@ -107,7 +106,7 @@ int main (unsigned argc, char *argv[])
 	  //vrpn_SleepMsecs(1);
 	  /*
 	  if ( counter == 50 ) {
-	    gettimeofday( &tv2, &tz );
+	    vrpn_gettimeofday( &tv2, NULL );
 	    printf( "%f\n", 50.0/(((tv2.tv_sec*1000 +tv2.tv_usec/1000.0) - (tv1.tv_sec*1000 +tv1.tv_usec/1000.0))/1000.0));
 	    counter = 0;
 	  }

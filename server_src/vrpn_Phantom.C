@@ -86,7 +86,7 @@ void vrpn_Phantom::check_parameters(vrpn_Plane_PHANTOMCB *p)
 	static timeval timeOfLastReport;
 	timeval currTime;
 
-	gettimeofday(&currTime, NULL);
+	vrpn_gettimeofday(&currTime, NULL);
 
 	// if this is the first time check_parameters has been called then initialize
 	// timeOfLastReport, otherwise this has no effect on behavior
@@ -284,7 +284,7 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
   trimesh->addToScene(hapticScene);
 
   //  status= TRACKER_RESETTING;
-  gettimeofday(&(vrpn_ForceDevice::timestamp),NULL);
+  vrpn_gettimeofday(&(vrpn_ForceDevice::timestamp),NULL);
 
   if (register_autodeleted_handler(plane_message_id, 
 	handle_plane_change_message, this, vrpn_ForceDevice::d_sender_id)) {
@@ -498,7 +498,7 @@ void vrpn_Phantom::mainloop(void) {
 	report_changes();
 
     //set if its time to generate a new report 
-    gettimeofday(&current_time, NULL);
+    vrpn_gettimeofday(&current_time, NULL);
     if(duration(current_time,timestamp) >= 1000000.0/update_rate) {
 		
         //update the time

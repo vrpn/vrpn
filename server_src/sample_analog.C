@@ -33,7 +33,7 @@ void do_audio_throughput_magic (double * channels) {
     channels[0] += 0.5;
 #else
   struct timeval now;
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   channels[0] = sin(((double) now.tv_usec) / 1000000L);
 #endif
 
@@ -54,7 +54,7 @@ void do_video_throughput_magic (double * channels) {
     channels[0] += 2.5;
 #else
   struct timeval now;
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   channels[0] = cos(((double) now.tv_usec) / 1000000L);
 #endif
 
