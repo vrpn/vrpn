@@ -1,5 +1,5 @@
 CFLAGS = -I./ -I../ -I/afs/unc/proj/hmd/include/ -g
-CC = g++ -g
+CC = CC -g
 
 all:
 	make -f makefile.hp printvals

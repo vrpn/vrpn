@@ -11,13 +11,16 @@
 #include <winsock.h>
 #else
 #include <unistd.h>
-#include <sysent.h>
 #include <strings.h>
+#ifndef hpux
+#include <sysent.h>
+#endif
 #include <sys/time.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #endif
+
 
 #ifdef	sgi
 #include <bstring.h>
@@ -53,14 +56,6 @@ extern "C" int sdi_noint_block_read_timeout(SOCKET tcp_sock, char *buffer,
 
 const	char	MAGIC[] = "vrpn: ver. 01.00";
 const	int	MAGICLEN = 16;	// Must be a multiple of 4 bytes!
-
-#ifdef  hpux    /* Horrible hack to make it compile on HPs, since select() */
-                /* seems to be broken in the include files there. */
-        #define fd_set                  int
-        #define FD_ZERO(maskptr)        *maskptr = 0;
-        #define FD_SET(fd, maskptr)     *maskptr = (1 << fd);
-        #define FD_ISSET(fd, maskptr)   (*maskptr & (1 << fd))
-#endif
 
 // This is the list of states that a connection can be in
 // (possible values for status).
@@ -649,7 +644,7 @@ int vrpn_Connection::send_pending_reports(void)
 	ret = send(udp_outbound, udp_outbuf, udp_num_out, 0);
 #ifdef	VERBOSE
    printf("UDP Sent %d bytes\n",ret);
-#endif SOCKET_ERROR
+#endif 
       if (ret == -1) {
 	printf("vrpn: UDP send failed\n");
 	drop_connection();

@@ -45,7 +45,19 @@
 #define T_3_BINARY_TO_METERS    (T_3_METER_RANGE / T_3_DATA_MAX)
 
 
-#ifndef _WIN32
+#ifdef linux
+
+// Read from the input buffer on the specified handle until all of the
+//  characters are read.  Return 0 on success, -1 on failure.
+static int	vrpn_flushInputBuffer(int comm)
+{
+#ifdef	linux
+   tcflush(comm, TCIFLUSH);
+#else
+   comm = comm;	// Keep the compiler happy
+#endif
+   return 0;
+}
 
 void vrpn_Tracker_3Space::reset()
 {
@@ -328,7 +340,7 @@ void vrpn_Tracker_3Space::mainloop()
       {
 	struct timeval current_time;
 	gettimeofday(&current_time, NULL);
-	if ( vrpn_duration(current_time,timestamp) < MAX_TIME_INTERVAL) {
+	if ( duration(current_time,timestamp) < MAX_TIME_INTERVAL) {
 		get_report();
 	} else {
 		fprintf(stderr,"Tracker failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n",current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);

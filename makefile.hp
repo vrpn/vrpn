@@ -17,9 +17,9 @@
 #
 
 # commands
-CC = g++
+CC = CC
 #CC = /usr/local/lib/CenterLine/bin/CC
-makefile = makefile
+makefile = makefile.hp
 MAKE = make -f $(makefile)
 HW_OS = `/usr/local/bin/hw_os`
 SHELL = /bin/sh

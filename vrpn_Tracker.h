@@ -50,17 +50,7 @@ class vrpn_Tracker_Serial : public vrpn_Tracker {
    virtual void reset(void) = 0;
 };
 
-class vrpn_Tracker_3Space: public vrpn_Tracker_Serial {
-  public:
-   vrpn_Tracker_3Space(char *name,
-	vrpn_Connection *c, char *port = "/dev/ttyS1", long baud = 19200) :
-		vrpn_Tracker_Serial(name,c,port,baud) {};
-   virtual void mainloop(void);
-  protected:
-   virtual void get_report(void);
-   virtual void reset();
-};
-#endif  // #ifndef _WIN32
+#endif  
 
 class vrpn_Tracker_NULL: public vrpn_Tracker {
   public:
