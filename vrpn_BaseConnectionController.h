@@ -43,20 +43,24 @@
 // BaseConnection is new.
 //
 
-#include "vrpn_Shared.h"
-#include "vrpn_ConnectionOldCommonStuff.h"
-#include "vrpn_BaseConnection.h"
+#include <stdio.h>
+#include <string.h>
+
+#include "vrpn_ConnectionCommonStuff.h"
+//#include "vrpn_ConnectionOldCommonStuff.h"  /* should go away */
+
+
 
 //-------------------------------------------------
 // defs & funcs used for clock synchronization and
 // debugging
 //-------------------------------------------------
-typedef struct {
-    struct timeval  msg_time;   // Local time of this sync message
-    struct timeval  tvClockOffset;  // Local time - remote time in msecs
-    struct timeval  tvHalfRoundTrip;  // half of the roundtrip time
-                                          // for the roundtrip used to calc offset
-} vrpn_CLOCKCB;
+struct vrpn_CLOCKCB {
+    struct timeval msg_time;        // Local time of this sync message
+    struct timeval tvClockOffset;   // Local time - remote time in msecs
+    struct timeval tvHalfRoundTrip; // half of the roundtrip time
+                                    // for the roundtrip used to calc offset
+};
 
 typedef void (*vrpn_CLOCKSYNCHANDLER)(void *userdata,
                                       const vrpn_CLOCKCB& info);
@@ -73,10 +77,32 @@ typedef void (*vrpn_CLOCKSYNCHANDLER)(void *userdata,
 #define VRPN_CLOCK_FULL_SYNC 1
 #define VRPN_CLOCK_QUICK_SYNC 2
 
-
+#if 0  /* XXX move this out of the .h file */
 void printTime( char *pch, const struct timeval& tv ) {
-  cerr << pch << " " << tv.tv_sec*1000.0 + tv.tv_usec/1000.0 << " msecs." << endl;
+  cerr << pch << " " << tv.tv_sec*1000.0 + tv.tv_usec/1000.0
+       << " msecs." << endl;
 }
+#endif
+
+
+
+// HACK
+// These structs must be declared outside of vrpn_Connection
+// (although we'd like to make them protected/private members)
+// because aCC on PixelFlow doesn't handle nested classes correctly.
+//   [juliano 7/99: I think this statement is true only if
+//                  the nested class is self-referential]
+
+// Description of a callback entry for a user type.
+struct vrpnMsgCallbackEntry {
+  vrpn_MESSAGEHANDLER     handler;   // Routine to call
+  void                  * userdata;  // Passed along
+  vrpn_int32             sender;     // Only if from sender
+  vrpnMsgCallbackEntry  * next;      // Next handler
+};
+
+
+
 
 
 

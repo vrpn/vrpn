@@ -14,12 +14,15 @@
 #ifndef VRPN_NETCONNECTION_INCLUDED
 #define VRPN_NETCONNECTION_INCLUDED
 
-#include "vrpn_ConnectionOldCommonStuff.h"
+//#include "vrpn_ConnectionOldCommonStuff.h"
+#include "vrpn_ConnectionCommonStuff.h"
 #include "vrpn_BaseConnection.h"
 #include "vrpn_UnreliableMulticastRecvr.h"
-#include "vrpn_Shared.h"
+#include "vrpn_FileLogger.h"
 
-class vrpn_NetConnection: public vrpn_BaseConnection {
+
+class vrpn_NetConnection
+    : public vrpn_BaseConnection {
 
 public:  // c'tors and d'tors
     vrpn_NetConnection();   
@@ -137,10 +140,11 @@ protected: // setting up connections
     // setting up network
     vrpn_int32 handle_mcast_description(char* message);
     vrpn_int32 pack_mcast_reply(/* XXX */);
-    inline vrpn_bool mcast_capable(void){return d_mcast_capable};
-    inline void set_mcast_capable(vrpn_bool capable){ d_mcast_capable = capable};
-
-
+    inline vrpn_bool mcast_capable() {return d_mcast_capable;}
+    inline void set_mcast_capable( vrpn_bool capable) {
+        d_mcast_capable = capable;
+    }
+    
     //-----------------------------
     // common functions
 
@@ -255,7 +259,7 @@ private: // data members
     char * d_logname;            // name of file to write log to
     vrpn_int32 d_logmode;              // logging incoming, outgoing, or both
     
-    vrpn_in32 d_logfile_handle;
+    vrpn_int32 d_logfile_handle;
     FILE * d_logfile;
     vrpnLogFilterEntry *d_logfilters;
 

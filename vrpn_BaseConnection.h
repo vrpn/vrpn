@@ -14,7 +14,8 @@
 #ifndef VRPN_BASECONNECTION_INCLUDED
 #define VRPN_BASECONNECTION_INCLUDED
 
-#include "vrpn_ConnectionOldCommonStuff.h"
+//#include "vrpn_ConnectionOldCommonStuff.h"
+#include "vrpn_ConnectionCommonStuff.h"
 
 
 class vrpn_BaseConnection
