@@ -153,7 +153,7 @@ void vrpn_Phantom::getPosition(double *vec, double *orient)
 }
 
 vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
-		:vrpn_Tracker(name, c),vrpn_Button(name,c),
+		:vrpn_Tracker(name, c),vrpn_Button_Filter(name,c),
 		 vrpn_ForceDevice(name,c), update_rate(hz),
 		 plane_change_list(NULL){  
   num_buttons = 1;  // only has one button

@@ -29,7 +29,7 @@ typedef void (*vrpn_PHANTOMPLANECHANGEHANDLER)(void *userdata,
 					 const vrpn_Plane_PHANTOMCB &info);
 
 class vrpn_Phantom: public vrpn_ForceDevice,public vrpn_Tracker,
-					public vrpn_Button {
+					public vrpn_Button_Filter {
 	friend void phantomErrorHandler( int errnum, char *description,
                                          void *userdata);
 protected:
