@@ -22,7 +22,7 @@
 
 // this should be a shared declaration with those
 // at the top of vrpn_Connection.C!
-#define BROKEN                  (-2)
+static const int BROKEN = (-3);
 
 
 // Since the PRELOAD feature was added, I suspect it would
