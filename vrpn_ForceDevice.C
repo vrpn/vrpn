@@ -19,7 +19,6 @@
 #endif 
 
 #include "vrpn_ForceDevice.h"
-#include "vrpn_Shared.h"
 
 
 static	unsigned long	duration(struct timeval t1, struct timeval t2)

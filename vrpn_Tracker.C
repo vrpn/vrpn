@@ -20,7 +20,6 @@
 #endif
 
 #include "vrpn_Tracker.h"
-#include "vrpn_Shared.h"		 // defines gettimeofday for WIN32
 
 //#define VERBOSE
 #define READ_HISTOGRAM

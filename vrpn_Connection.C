@@ -29,7 +29,6 @@
 #endif
 
 #include "vrpn_Connection.h"
-#include "vrpn_Shared.h"		// defines gettimeofday for WIN32
 
 //#define VERBOSE
 //#define	VERBOSE3
@@ -1037,11 +1036,11 @@ int	vrpn_Connection::handle_tcp_messages(int fd)
 		  printf("vrpn:vrpn_connection: handle_tcp_messages: Can't read header");
 			return -1;
 		}
-		len = htonl(header[0]);
-		time.tv_sec = htonl(header[1]);
-		time.tv_usec = htonl(header[2]);
-		sender = htonl(header[3]);
-		type = htonl(header[4]);
+		len = ntohl(header[0]);
+		time.tv_sec = ntohl(header[1]);
+		time.tv_usec = ntohl(header[2]);
+		sender = ntohl(header[3]);
+		type = ntohl(header[4]);
 
 		// Figure out how long the message body is, and how long it
 		// is including any padding to make sure that it is a
@@ -1186,11 +1185,11 @@ int	vrpn_Connection::handle_udp_messages(int fd)
 		}
 		memcpy(header, inbuf_ptr, sizeof(header));
 		inbuf_ptr += sizeof(header);
-		len = htonl(header[0]);
-		time.tv_sec = htonl(header[1]);
-		time.tv_usec = htonl(header[2]);
-		sender = htonl(header[3]);
-		type = htonl(header[4]);
+		len = ntohl(header[0]);
+		time.tv_sec = ntohl(header[1]);
+		time.tv_usec = ntohl(header[2]);
+		sender = ntohl(header[3]);
+		type = ntohl(header[4]);
 
 #ifdef VERBOSE
 		printf("Message type %ld (local type %ld), sender %ld received\n",

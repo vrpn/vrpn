@@ -1,0 +1,587 @@
+/*****************************************************************************\
+  vrpn_Clock.C
+  --
+  Description :
+  
+  ----------------------------------------------------------------------------
+  Author: weberh
+  Created: Sat Dec 13 11:05:16 1997
+  Revised: Mon Dec 15 15:25:34 1997 by weberh
+  $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.C,v $
+  $Locker:  $
+  $Revision: 1.1 $
+  \*****************************************************************************/
+#include <stdlib.h>
+#include <unistd.h>
+#include <stdio.h>
+
+#ifndef WIN32
+#include <sys/types.h>
+#include <netinet/in.h>
+#endif
+
+#include <iostream.h>
+#include <math.h>
+
+#include "vrpn_Clock.h"
+
+void printTime( char *pch, const struct timeval& tv ) {
+  cerr << pch << " " << tv.tv_sec << " secs, " << tv.tv_usec 
+       << " usecs." << endl;
+}
+
+// both server and client call this constructor
+vrpn_Clock::vrpn_Clock(char *name, vrpn_Connection *c) {
+  // If the connection is valid, use it to register this clock by
+  // name, the query by name, and the reply by name
+  connection = c;
+  if (connection == NULL) {
+    return;
+  }
+
+  char rgch[1024];
+  sprintf( rgch, "clock@%s", name );
+
+  clockServer_id = connection->register_sender(rgch);
+  queryMsg_id = connection->register_message_type("clock query");
+  replyMsg_id = connection->register_message_type("clock reply");
+  if ( (clockServer_id == -1) || (queryMsg_id == -1) || (replyMsg_id == -1) ) {
+    cerr << "vrpn_Clock: Can't register IDs" << endl;
+    connection = NULL;
+    return;
+  }
+}
+
+// packs time of message sent and all data sent to it back into buffer
+int vrpn_Clock::encode_to(char *buf, const struct timeval& tv, 
+			  int cChars, const char *pch ) {
+
+  // pack client time and the (almost) unique client identifier
+  long *rgl = (long *)buf;
+  rgl[0]=htonl(tv.tv_sec);
+  rgl[1]=htonl(tv.tv_usec);
+
+  memcpy( (char *) &rgl[2], pch, cChars );
+  
+  return 2*sizeof(long)+cChars;
+}
+
+vrpn_Clock_Server::vrpn_Clock_Server(char *name, vrpn_Connection *c) 
+  : vrpn_Clock(name, c) {
+
+  // Register the callback handler (along with "this" as user data)
+  // It will take messages from any sender (no sender arg specified)
+  if (connection->register_handler(queryMsg_id, clockQueryHandler, this)) {
+    cerr << "vrpn_Clock: can't register handler\n" << endl;
+    connection = NULL;
+    return;
+  }
+}
+
+// the user can get back incorrect info because there is no way to 
+// simple way to uniquely identify a client.  For all practical purposes
+// using the address of the client as the id should be fine.
+int vrpn_Clock_Server::clockQueryHandler(void *userdata, vrpn_HANDLERPARAM p) {
+  vrpn_Clock_Server *me = (vrpn_Clock_Server *) userdata;
+  static struct timeval now;
+  char rgch[50];
+  
+  // send back time client sent request and the buffer the client sent
+  
+  int cLen = me->encode_to( rgch, p.msg_time, p.payload_len, p.buffer );
+  
+  //  cerr << ".";
+  
+  //  printTime("client req ",p.msg_time);
+  gettimeofday(&now,NULL);
+  //  printTime("server rep ", now);
+  me->connection->pack_message(cLen, now,
+			       me->replyMsg_id, me->clockServer_id,
+			       rgch, vrpn_CONNECTION_RELIABLE);
+  return 0;
+}
+
+// the clock server only responds to requests. since the connection
+// mainloop will handle routing the callback (and the general server
+// program always has to call that), this mainloop does nothing.
+void vrpn_Clock_Server::mainloop() {};
+
+
+// This next part is the class for users (client class)
+
+#ifndef _WIN32
+
+vrpn_Clock_Remote::vrpn_Clock_Remote(char *name, double dFreq) : 
+  vrpn_Clock(name, vrpn_get_connection_by_name(name)), change_list(NULL)
+{
+  char rgch[50];
+  
+  if (connection==NULL) {
+    cerr << "vrpn_Clock_Remote: unable to connect to clock server \"" 
+	 << name << "\"." << endl;
+    return;
+  }
+  sprintf( rgch, "%ld", (long) this );
+  clockClient_id = connection->register_sender(rgch);
+  
+  if (clockClient_id == -1) {
+    cerr << "vrpn_Clock_Remote: Can't register ID" << endl;
+    connection = NULL;
+    return;
+  }
+
+  if (dFreq <= 0) {
+    // only sync on request of user, and then do it with fullSync()
+    fDoQuickSyncs=0;
+    
+    // handler is automatically registered by full sync part of mainloop
+
+  } else {
+    fDoQuickSyncs=1;
+
+    // init quick bounce variables
+    cQuickBounces=0;
+    dQuickIntervalMsecs = (1/dFreq)*1000.0;
+
+    struct timeval tvNow;
+    gettimeofday(&tvNow, NULL);
+    tvQuickLastSync = tvNow;
+
+    irgtvQuick=0;
+    
+    // register a handler for replies from the clock server.
+    if (connection->register_handler(replyMsg_id, 
+				     quickSyncClockServerReplyHandler,
+				     this, clockServer_id)) {
+      cerr << "vrpn_Clock_Remote: Can't register handler" << endl;
+      connection = NULL;
+    }
+  }
+}
+
+// for qsort for median
+static int dCompare( const void *pd1, const void *pd2 ) {
+  if (*(double *)pd1==*(double *)pd2) return 0;
+  if (*(double *)pd1<*(double *)pd2) return -1;
+  return 1;
+}
+
+
+// this will take 1 second to run (sync's the clocks)
+// when it is in fullSync mode
+void vrpn_Clock_Remote::mainloop(void)
+{
+  if (connection) { 
+    // always do this -- the first time it will register senders & msg_types
+    connection->mainloop();
+    
+    if (fDoQuickSyncs) {
+      // just a quick sync
+      
+      struct timeval tvNow;
+      gettimeofday(&tvNow, NULL);
+
+      // Check if we have passed the interval
+      if (timevalMsecs(timevalDiff(tvNow, tvQuickLastSync)) >=
+	  dQuickIntervalMsecs) {
+	long rgl[2];
+	struct timeval tv;
+
+	// yes, we have, so pack a message and reset clock
+
+	// send a clock query with this clock client's unique id
+	// not converted using htonl because it is never interpreted
+	// by the server -- only by the client.
+	rgl[0]=(long)this;
+	rgl[1]=(long)VRPN_CLOCK_QUICK_SYNC;
+	gettimeofday(&tv, NULL);
+	connection->pack_message(2*sizeof(long), tv, queryMsg_id, 
+				 clockClient_id, (char *)rgl, 
+				 vrpn_CONNECTION_RELIABLE);
+	tvQuickLastSync = tvNow;
+      }
+    }
+
+    // any time a full clock sync has been requested, do it for 1 sec
+    if (fDoFullSync) {
+      fDoFullSync=0;
+      
+      // register a handler for replies from the clock server.
+      if (connection->register_handler(replyMsg_id, 
+				       fullSyncClockServerReplyHandler,
+				       this, clockServer_id)) {
+	cerr << "vrpn_Clock_Remote: Can't register handler" << endl;
+	connection = NULL;
+      }
+
+      // init the necessary variables for doing clock sync
+      cBounces=0;
+      tvMinHalfRoundTrip.tv_sec=1000000;
+      tvMinHalfRoundTrip.tv_usec=0;
+      tvFullClockOffset.tv_sec=0;
+      tvFullClockOffset.tv_usec=0;
+      
+      // now calibrate the time diff for 1 second
+      struct timeval tvCalib;
+      struct timeval tvNow;
+      long cNextTime=0;
+      long cInterval=25;
+      long cCalibMsecs=1000;
+      long cElapsedMsecs=0;
+      
+      gettimeofday( &tvCalib, NULL );
+      
+      // do bounces for one second to calibrate the clocks
+      while (cElapsedMsecs<=cCalibMsecs) {
+	
+	// do one every cInterval ms or so
+	if (cElapsedMsecs>=cNextTime) {
+	  struct timeval tv;
+	  long rgl[2];
+	  
+	  // send a clock query with this clock client's unique id
+	  // not converted using htonl because it is never interpreted
+	  // by the server -- only by the client.
+	  rgl[0]=(long)this;
+	  rgl[1]=(long)VRPN_CLOCK_FULL_SYNC;
+	  gettimeofday(&tv, NULL);
+	  connection->pack_message(2*sizeof(long), tv, queryMsg_id, 
+				   clockClient_id, (char *)rgl, 
+				   vrpn_CONNECTION_RELIABLE);
+	  cNextTime+=cInterval;
+	}
+	
+	// actually process the message and any callbacks from local
+	// or remote messages
+	connection->mainloop();
+	gettimeofday( &tvNow, NULL );
+	cElapsedMsecs = (long) timevalMsecs(timevalDiff(tvNow, tvCalib));
+      }
+      
+      // we don't care if we missed numerous replies, just make sure we had
+      // at least half back already
+      
+      if (cBounces<((cCalibMsecs/cInterval)/2)) {
+	cerr << "calib error: did not receive replies for at least half of "
+	     << "the bounces" << endl;
+	return;
+      } 
+
+      // actually, we just want to use the min roundtrip record to calc the offset
+      // so we can do it interactively, and the clock offset calced from that 
+      // record is in tvFullClockOffset
+      
+      // now get rid of handler -- no need to calibrate any longer
+      // so don't waste time checking the ids of other's clock server replies.
+      
+      if (connection->unregister_handler(replyMsg_id, 
+					 fullSyncClockServerReplyHandler,
+					 this, clockServer_id)) {
+	cerr << "vrpn_Clock_Remote: Can't unregister handler" << endl;
+	connection = NULL;
+      }
+
+      // now call any user callbacks that want to know the time diff
+      // when syncs occur
+      vrpn_CLOCKCB cs;
+      vrpn_CLOCKSYNCLIST *pHandlerInfo=change_list;
+      
+      cs.tvClockOffset = tvFullClockOffset;
+      cs.tvHalfRoundTrip = tvMinHalfRoundTrip;
+      
+      // go thru list of user specified clock sync callbacks
+      while (pHandlerInfo!=NULL) {
+	pHandlerInfo->handler(pHandlerInfo->userdata, cs);
+	pHandlerInfo = pHandlerInfo->next;
+      }
+    }
+  }
+}
+
+int vrpn_Clock_Remote::register_clock_sync_handler(void *userdata,
+						   vrpn_CLOCKSYNCHANDLER handler)
+{
+  vrpn_CLOCKSYNCLIST	*new_entry;
+  
+  // Ensure that the handler is non-NULL
+  if (handler == NULL) {
+    cerr << "vrpn_Clock_Remote::register_clock_sync_handler:" 
+	 << " NULL handler" << endl;
+    return -1;
+  }
+  
+  // Allocate and initialize the new entry
+  if ( (new_entry = new vrpn_CLOCKSYNCLIST) == NULL) {
+    cerr << "vrpn_Clock_Remote::register_clock_sync_handler:" 
+	 << " out of memory" << endl;
+    return -1;
+  }
+  new_entry->handler = handler;
+  new_entry->userdata = userdata;
+  
+  // Add this handler to the chain at the beginning (don't check to see
+  // if it is already there, since duplication is okay).
+  new_entry->next = change_list;
+  change_list = new_entry;
+  
+  return 0;
+}
+
+int vrpn_Clock_Remote::unregister_clock_sync_handler(void *userdata,
+						     vrpn_CLOCKSYNCHANDLER handler)
+{
+  // The pointer at *snitch points to victim
+  vrpn_CLOCKSYNCLIST	*victim, **snitch;
+  
+  // Find a handler with this registry in the list (any one will do,
+  // since all duplicates are the same).
+  snitch = &change_list;
+  victim = *snitch;
+  while ( (victim != NULL) &&
+	  ( (victim->handler != handler) ||
+	    (victim->userdata != userdata) )) {
+    snitch = &( (*snitch)->next );
+    victim = victim->next;
+  }
+  
+  // Make sure we found one
+  if (victim == NULL) {
+    fprintf(stderr,
+	    "vrpn_Clock_Remote::unregister_handler: No such handler\n");
+    return -1;
+  }
+  
+  // Remove the entry from the list
+  *snitch = victim->next;
+  delete victim;
+  
+  return 0;
+}
+
+void vrpn_Clock_Remote::fullSync() {
+  fDoFullSync=1;
+}
+
+// we return to the user callback the clock offset calculated from the
+// shortest roundtrip over all of the full sync replies.
+// We use the min because it should give us the most accurate calculation of
+// the clock offset.
+
+int vrpn_Clock_Remote::fullSyncClockServerReplyHandler(void *userdata, 
+						       vrpn_HANDLERPARAM p) {
+  // get current local time
+  struct timeval tvLNow;
+  
+  gettimeofday(&tvLNow, NULL);
+  
+  // all of the tv structs have an L (local) or R (remote) tag
+  vrpn_Clock_Remote *me = (vrpn_Clock_Remote *)userdata;
+
+  // look at timing info sent along
+  long *plTimeData = (long *) p.buffer;
+
+  // now grab the id from the message to check that is is correct
+  if (me!=(vrpn_Clock_Remote *)plTimeData[2]) {
+    cerr << "vrpn_Clock_Remote: warning, server entertaining multiple clock" 
+	 << " sync requests simultaneously -- results may be inaccurate." 
+	 << endl;
+    return 0;
+  }
+  
+  // check that it is our type
+  if (plTimeData[3]!=VRPN_CLOCK_FULL_SYNC) {
+    // ignore quick sync messages if they are going at same time
+    //    cerr << "not full sync:temporary message to check that it is working" << endl;
+    return 0;
+  }
+
+  me->cBounces++;
+
+  //  printTime( "\nnow (local)", tvLNow );
+  
+  // copy local time for when bounce request was sent
+  struct timeval tvLReq;
+  tvLReq.tv_sec = (int) ntohl(plTimeData[0]);
+  tvLReq.tv_usec = ntohl(plTimeData[1]);
+  
+  //  printTime( "bounce req sent (local)", tvLReq );
+  
+  // calc round trip time
+  struct timeval tvRoundTrip = timevalDiff( tvLNow, tvLReq );
+  
+  //  double dCurrRoundTripMsecs = tvRoundTrip.tv_sec*1000.0 + 
+  //    tvRoundTrip.tv_usec/1000.0;
+  //    cerr << "\nround-trip time was " << 
+  //      (tvRoundTrip.tv_sec*1000.0 + tvRoundTrip.tv_usec/1000.0) 
+  //	 << " msecs." << endl;
+  
+  //  printTime( "bounce reply sent (remote)", p.msg_time ); 
+  
+  // Now approx calc local time when remote server replied to us ...
+  // assume it occured halfway thru roundtrip time
+  
+
+  if ((tvRoundTrip.tv_sec < me->tvMinHalfRoundTrip.tv_sec) ||
+      ((tvRoundTrip.tv_sec == me->tvMinHalfRoundTrip.tv_sec) &&
+       (tvRoundTrip.tv_usec < me->tvMinHalfRoundTrip.tv_usec)) ||
+      (me->cBounces==1)) {
+    // calc new offset
+
+    // cut round trip time in half
+    tvRoundTrip.tv_usec /= 2;
+    if (tvRoundTrip.tv_sec % 2) {
+      // odd, so add half to usecs
+      tvRoundTrip.tv_usec += (long) (1e6/2);
+    } 
+    tvRoundTrip.tv_sec /= 2;
+  
+    //  printTime( "half roundtrip ", tvRoundTrip );
+    struct timeval tvLServerReply;
+    tvLServerReply.tv_sec = tvLReq.tv_sec + tvRoundTrip.tv_sec;
+    tvLServerReply.tv_usec = tvLReq.tv_usec +  tvRoundTrip.tv_usec;
+  
+    if (tvLServerReply.tv_usec>=1e6) {
+      tvLServerReply.tv_sec++;
+      tvLServerReply.tv_usec -= (long) 1e6;
+    }
+  
+    //  printTime( "bounce reply sent (local approx)", tvLServerReply );
+    
+    // LATER: could check for drift, but probably not essential  
+  
+    // calc offset between clocks
+    me->tvFullClockOffset = timevalDiff( tvLServerReply, p.msg_time );
+    me->tvMinHalfRoundTrip = tvRoundTrip;
+  
+    //  printTime( "diff btwn local and remote", tvClockDiff );
+  }
+  
+  return 0;
+}
+
+// we return to the user callback the clock offset calculated from the
+// shortest roundtrip in recent times (last cMaxQuickRecords bounces)
+// We use the min because it should give us the most accurate calculation of
+// the clock offset.
+
+int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata, 
+							vrpn_HANDLERPARAM p) {
+  // get current local time
+  struct timeval tvLNow;
+  
+  gettimeofday(&tvLNow, NULL);
+
+  // all of the tv structs have an L (local) or R (remote) tag
+  vrpn_Clock_Remote *me = (vrpn_Clock_Remote *)userdata;
+
+  // look at timing data sent along
+  long *plTimeData = (long *) p.buffer;
+
+  // now grab the id from the message to check that is is correct
+  if (me!=(vrpn_Clock_Remote *)plTimeData[2]) {
+    cerr << "vrpn_Clock_Remote: warning, server entertaining multiple clock" 
+	 << " sync requests simultaneously -- results may be inaccurate." 
+	 << endl;
+    return 0;
+  }
+
+  
+  // check that it is our type
+  if (plTimeData[3]!=VRPN_CLOCK_QUICK_SYNC) {
+    // ignore full sync messages if they are going at the same time
+    // cerr << "not quick sync:temporary message to check that it is working" << endl;
+    return 0;
+  }
+
+  me->cQuickBounces++;
+  
+  
+  // copy local time for when bounce request was sent
+  struct timeval tvLReq;
+  tvLReq.tv_sec = (int) ntohl(plTimeData[0]);
+  tvLReq.tv_usec = ntohl(plTimeData[1]);
+  
+  // calc round trip time
+  struct timeval tvRoundTrip = timevalDiff( tvLNow, tvLReq );
+  
+  // cut round trip time in half
+  tvRoundTrip.tv_usec /= 2;
+  if (tvRoundTrip.tv_sec % 2) {
+    // odd, so add half to usecs
+    tvRoundTrip.tv_usec += (long) (1e6/2);
+  } 
+  tvRoundTrip.tv_sec /= 2;
+  
+  //  printTime( "half roundtrip ", tvRoundTrip );
+  struct timeval tvLServerReply;
+  tvLServerReply.tv_sec = tvLReq.tv_sec + tvRoundTrip.tv_sec;
+  tvLServerReply.tv_usec = tvLReq.tv_usec +  tvRoundTrip.tv_usec;
+  
+  if (tvLServerReply.tv_usec>=1e6) {
+    tvLServerReply.tv_sec++;
+    tvLServerReply.tv_usec -= (long) 1e6;
+  }
+  
+  //  printTime( "bounce reply sent (local approx)", tvLServerReply );
+  
+  // LATER: could check for drift, but probably not essential  
+  
+  // calc offset between clocks
+  // keep track of last cMaxDiffs reports, and use the min roundtrip of those
+  me->rgtvHalfRoundTrip[me->irgtvQuick]=tvRoundTrip;
+  me->rgtvClockOffset[me->irgtvQuick]= timevalDiff( tvLServerReply, p.msg_time );
+  me->irgtvQuick++;
+  if (me->irgtvQuick==cMaxQuickRecords) {
+    me->irgtvQuick=0;
+  }
+
+  // now find min round trip
+  int cRecords = (me->cQuickBounces >= cMaxQuickRecords) ? cMaxQuickRecords :
+    me->cQuickBounces;
+  int iMin=0;
+  for(int i=1;i<cRecords;i++) {
+    if ((me->rgtvHalfRoundTrip[i].tv_sec < me->rgtvHalfRoundTrip[iMin].tv_sec) ||
+	((me->rgtvHalfRoundTrip[i].tv_sec == me->rgtvHalfRoundTrip[iMin].tv_sec) &&
+	 (me->rgtvHalfRoundTrip[i].tv_usec<me->rgtvHalfRoundTrip[iMin].tv_usec))) {
+      iMin = i;
+    }
+  }
+
+  // now call any user callbacks that want to know the time diff
+  // when syncs occur
+  vrpn_CLOCKCB cs;
+  vrpn_CLOCKSYNCLIST *pHandlerInfo=me->change_list;
+  
+  cs.tvClockOffset =  me->rgtvClockOffset[iMin];
+  cs.tvHalfRoundTrip = me->rgtvHalfRoundTrip[iMin];
+  
+  // go thru list of user specified clock sync callbacks
+  while (pHandlerInfo!=NULL) {
+    pHandlerInfo->handler(pHandlerInfo->userdata, cs);
+    pHandlerInfo = pHandlerInfo->next;
+  }
+  
+  return 0;
+}
+
+#endif // ifdef _WIN32
+
+
+/*****************************************************************************\
+  $Log: vrpn_Clock.C,v $
+  Revision 1.1  1997/12/15 21:25:08  weberh
+  Added the vrpn_Clock class to vrpn to allow users (and eventually a
+  connection) to find out the offset between the server and client clock so
+  that users can know, in local time, when events happened on remote servers.
+
+  There are two basic modes -- fullSync (on request only) and quickSync
+  (default).  See the .h file for more info.
+
+  Other changes included updating vrpn_Shared.h with time val diff and sum
+  operators and changing the pc version of gettimeofday so that it gets
+  0.8 usec resolution rather than 6 ms resolution.
+
+  I also changed a few things so that the entire package will compile under
+  g++ or CC on sgi, hp, or win 95/nt.
+
+\*****************************************************************************/

@@ -1,10 +1,6 @@
 #ifndef	VRPN_CONNECTION_H
 
-#ifdef _WIN32
-#include <winsock.h>  // defines struct timeval
-#else
-#include <sys/time.h>
-#endif
+#include "vrpn_Shared.h"
 
 class	vrpn_Connection;
 

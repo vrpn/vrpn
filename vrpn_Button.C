@@ -17,7 +17,7 @@
 #endif 
 
 #include "vrpn_Button.h"
-#include "vrpn_Shared.h"		 // defines gettimeofday for WIN32
+
 
 #define BUTTON_READY 	  (1)
 #define BUTTON_FAIL	  (-1)
