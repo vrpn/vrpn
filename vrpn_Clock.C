@@ -6,10 +6,10 @@
   ----------------------------------------------------------------------------
   Author: weberh
   Created: Sat Dec 13 11:05:16 1997
-  Revised: Sun Dec 21 02:18:01 1997 by weberh
+  Revised: Tue Jan 20 20:03:34 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.C,v $
   $Locker:  $
-  $Revision: 1.3 $
+  $Revision: 1.4 $
   \*****************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
@@ -207,7 +207,7 @@ void vrpn_Clock_Remote::mainloop(void)
       gettimeofday(&tvNow, NULL);
 
       // Check if we have passed the interval
-      if (timevalMsecs(timevalDiff(tvNow, tvQuickLastSync)) >=
+      if (vrpn_TimevalMsecs(vrpn_TimevalDiff(tvNow, tvQuickLastSync)) >=
 	  dQuickIntervalMsecs) {
 	long rgl[3];
 	struct timeval tv;
@@ -280,7 +280,7 @@ void vrpn_Clock_Remote::mainloop(void)
 	// or remote messages
 	connection->mainloop();
 	gettimeofday( &tvNow, NULL );
-	cElapsedMsecs = (long) timevalMsecs(timevalDiff(tvNow, tvCalib));
+	cElapsedMsecs = (long) vrpn_TimevalMsecs(vrpn_TimevalDiff(tvNow, tvCalib));
       }
       
       // we don't care if we missed numerous replies, just make sure we had
@@ -422,7 +422,7 @@ int vrpn_Clock_Remote::fullSyncClockServerReplyHandler(void *userdata,
   }
   
   // check that it is our type
-  if (plTimeData[6]!=ntohl(VRPN_CLOCK_FULL_SYNC)) {
+  if (plTimeData[6]!=(long)ntohl(VRPN_CLOCK_FULL_SYNC)) {
     // ignore quick sync messages if they are going at same time
     //    cerr << "not full sync:temporary message to check that it is working" << endl;
     return 0;
@@ -446,7 +446,7 @@ int vrpn_Clock_Remote::fullSyncClockServerReplyHandler(void *userdata,
   tvRRep.tv_usec = ntohl(plTimeData[2]);
 
   // calc round trip time
-  struct timeval tvRoundTrip = timevalDiff( tvLNow, tvLReq );
+  struct timeval tvRoundTrip = vrpn_TimevalDiff( tvLNow, tvLReq );
   
   //  double dCurrRoundTripMsecs = tvRoundTrip.tv_sec*1000.0 + 
   //    tvRoundTrip.tv_usec/1000.0;
@@ -489,7 +489,7 @@ int vrpn_Clock_Remote::fullSyncClockServerReplyHandler(void *userdata,
     // LATER: could check for drift, but probably not essential  
   
     // calc offset between clocks
-    me->tvFullClockOffset = timevalDiff( tvLServerReply, tvRRep );
+    me->tvFullClockOffset = vrpn_TimevalDiff( tvLServerReply, tvRRep );
     me->tvMinHalfRoundTrip = tvRoundTrip;
   
     //  printTime( "diff btwn local and remote", tvClockDiff );
@@ -536,7 +536,7 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
   }
   
   // check that it is our type
-  if (plTimeData[6]!=ntohl(VRPN_CLOCK_QUICK_SYNC)) {
+  if (plTimeData[6]!=(long)ntohl(VRPN_CLOCK_QUICK_SYNC)) {
     // ignore full sync messages if they are going at the same time
     // cerr << "not quick sync:temporary message to check that it is working" << endl;
     return 0;
@@ -559,7 +559,7 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
   
   // printTime("L req time", tvLReq);
   // calc round trip time
-  struct timeval tvRoundTrip = timevalDiff( tvLNow, tvLReq );
+  struct timeval tvRoundTrip = vrpn_TimevalDiff( tvLNow, tvLReq );
   
   // cut round trip time in half
   tvRoundTrip.tv_usec /= 2;
@@ -587,7 +587,7 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
   // calc offset between clocks
   // keep track of last cMaxDiffs reports, and use the min roundtrip of those
   me->rgtvHalfRoundTrip[me->irgtvQuick]=tvRoundTrip;
-  me->rgtvClockOffset[me->irgtvQuick]= timevalDiff( tvLServerReply, tvRRep );
+  me->rgtvClockOffset[me->irgtvQuick]= vrpn_TimevalDiff( tvLServerReply, tvRRep );
 
   //  printTime("newest", me->rgtvClockOffset[me->irgtvQuick]);
 
@@ -620,7 +620,7 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
   //  cerr.precision(4);
   //  cerr.setf(ios::fixed);
 
-  //  cerr << ii << " " << timevalMsecs(cs.tvClockOffset) << endl;
+  //  cerr << ii << " " << vrpn_TimevalMsecs(cs.tvClockOffset) << endl;
   //  ii++;
   //  printTime("used", cs.tvClockOffset);
   
@@ -636,6 +636,9 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
 
 /*****************************************************************************\
   $Log: vrpn_Clock.C,v $
+  Revision 1.4  1998/01/20 20:07:22  weberh
+  cleaned up vrpn_Shared func names so they won't collide with other libs.
+
   Revision 1.3  1998/01/20 15:53:26  taylorr
   	This version allows the client-side compilation of VRPN on NT.
 

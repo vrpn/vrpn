@@ -72,9 +72,9 @@ const	int	MAGICLEN = 16;	// Must be a multiple of vrpn_ALIGN bytes!
 
 void setClockOffset( void *userdata, const vrpn_CLOCKCB& info ) {
 #if 0
-  cerr << "clock offset is " << timevalMsecs(info.tvClockOffset) 
+  cerr << "clock offset is " << vrpn_TimevalMsecs(info.tvClockOffset) 
        << " msecs (used round trip which took " 
-       << 2*timevalMsecs(info.tvHalfRoundTrip) << " msecs)." << endl;
+       << 2*vrpn_TimevalMsecs(info.tvHalfRoundTrip) << " msecs)." << endl;
 #endif
   (*(struct timeval *) userdata) = info.tvClockOffset;
 }
@@ -1051,7 +1051,7 @@ int	vrpn_Connection::do_callbacks_for(long type, long sender,
 	vrpn_HANDLERPARAM p;
 	p.type = type;
 	p.sender = sender;
-	p.msg_time = timevalSum(time, tvClockOffset);
+	p.msg_time = vrpn_TimevalSum(time, tvClockOffset);
 #if 0
 	cerr << " remote time is " << time.tv_sec 
 	     << " " << time.tv_usec << endl;

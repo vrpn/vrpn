@@ -66,7 +66,7 @@ vrpn_Tracker_Ceiling::vrpn_Tracker_Ceiling
   // offset between gettimeofday and 
   tvRT.tv_sec = (long) ((dNow1 + dNow2)/2.0);
   tvRT.tv_usec = (long) (1e6*(((dNow1 + dNow2)/2.0) - tvRT.tv_sec));
-  tvReal2GetTimeOffset = timevalDiff( tv, tvRT );
+  tvReal2GetTimeOffset = vrpn_TimevalDiff( tv, tvRT );
 }
 
 
@@ -208,7 +208,7 @@ void vrpn_Tracker_Ceiling::sendTrackerReport(void) {
   timestamp.tv_usec = long(1e6 * (ts.Obs.time - timestamp.tv_sec));
   
   // convert it to UTC time frame
-  timestamp = timevalSum( tvReal2GetTimeOffset, timestamp );
+  timestamp = vrpn_TimevalSum( tvReal2GetTimeOffset, timestamp );
   
   // use KF to predict ahead if requested.  NOTE: timestamp
   // is currently still from last real packet, should it be

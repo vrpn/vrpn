@@ -7,7 +7,7 @@
 // Calcs negative times properly, with the appropriate sign on both tv_sec
 // and tv_usec (these signs will match unless one of them is 0).
 // NOTE: both abs(tv_usec)'s must be < 1000000 (ie, normal timeval format)
-struct timeval timevalSum( const struct timeval& tv1, 
+struct timeval vrpn_TimevalSum( const struct timeval& tv1, 
 			   const struct timeval& tv2 ) {
   struct timeval tvSum=tv1;
 
@@ -50,23 +50,23 @@ struct timeval timevalSum( const struct timeval& tv1,
 // Calcs the diff between tv1 and tv2.  Returns the diff in a timeval struct.
 // Calcs negative times properly, with the appropriate sign on both tv_sec
 // and tv_usec (these signs will match unless one of them is 0)
-struct timeval timevalDiff( const struct timeval& tv1, 
+struct timeval vrpn_TimevalDiff( const struct timeval& tv1, 
 			    const struct timeval& tv2 ) {
   struct timeval tv;
 
   tv.tv_sec = -tv2.tv_sec;
   tv.tv_usec = -tv2.tv_usec;
 
-  return timevalSum( tv1, tv );
+  return vrpn_TimevalSum( tv1, tv );
 }
 
-double timevalMsecs( const struct timeval& tv ) {
+double vrpn_TimevalMsecs( const struct timeval& tv ) {
   return tv.tv_sec*1000.0 + tv.tv_usec/1000.0;
 }
 
 
-const long lTestEndian = 0x1;
-const int fLittleEndian = (*((char *)&lTestEndian) == 0x1);
+static const long lTestEndian = 0x1;
+static const int fLittleEndian = (*((char *)&lTestEndian) == 0x1);
 
 // convert doubles to/from network order
 // I have chosen big endian as the network order for doubles
@@ -102,7 +102,7 @@ double ntohd( double d ) {
 // This is all based on code extracted from the hiball tracker cib lib
 
 // 200 mhz pentium -- we change this based on our calibration
-__int64 FREQUENCY = 200000000;
+static __int64 VRPN_CLOCK_FREQ = 200000000;
 
 // Helium to histidine
 // __int64 FREQUENCY = 199434500;
@@ -121,13 +121,13 @@ __int64 FREQUENCY = 200000000;
   * calculate the time stamp counter register frequency (clock freq)
   */
 #pragma optimize("",off)
-static int adjustFrequency(void)
+static int vrpn_AdjustFrequency(void)
 {
   const int loops = 2;
   const int tPerLoop = 4000; // 1/10 sec in milliseconds for Sleep()
   cerr.precision(4);
   cerr.setf(ios::fixed);
-  cerr << "gettimeofday: verifying " <<  FREQUENCY/1e6 << " MHz clock";
+  cerr << "vrpn gettimeofday: verifying " <<  VRPN_CLOCK_FREQ/1e6 << " MHz clock";
 
   LARGE_INTEGER startperf, endperf;
   LARGE_INTEGER perffreq;
@@ -155,8 +155,8 @@ static int adjustFrequency(void)
       ((double)(endperf.QuadPart - startperf.QuadPart));
 
   if (fabs(perffreq.QuadPart - freq) < 0.05*freq) {
-    FREQUENCY = perffreq.QuadPart;
-    cerr << "\ngettimeofday: perf clock is tsc -- using perf clock freq (" 
+    VRPN_CLOCK_FREQ = perffreq.QuadPart;
+    cerr << "\nvrpn gettimeofday: perf clock is tsc -- using perf clock freq (" 
 	 << perffreq.QuadPart/1e6 << " MHz)" << endl;
     SetPriorityClass( GetCurrentProcess() , dwPriorityClass );
     SetThreadPriority( GetCurrentThread(), iThreadPriority );
@@ -199,8 +199,8 @@ static int adjustFrequency(void)
 
   // now, if we are in a uni-processor system, and the freq is within 5% of the expected
   // then use it
-  if (fabs(freq - FREQUENCY) > 0.05 * FREQUENCY) {
-    cerr << "gettimeofday: measured freq is " << freq/1e6 
+  if (fabs(freq - VRPN_CLOCK_FREQ) > 0.05 * VRPN_CLOCK_FREQ) {
+    cerr << "vrpn gettimeofday: measured freq is " << freq/1e6 
 	 << " MHz - DOES NOT MATCH" << endl;
     return -1;
   }
@@ -208,14 +208,14 @@ static int adjustFrequency(void)
   // perf clock returns (or rather, if the freq we measure is approx the 
   // perf clock freq)
   if (fabs(perffreq.QuadPart - freq) < 0.05*freq) {
-    FREQUENCY = perffreq.QuadPart;
-    cerr << "gettimeofday: perf clock is tsc -- using perf clock freq (" 
+    VRPN_CLOCK_FREQ = perffreq.QuadPart;
+    cerr << "vrpn gettimeofday: perf clock is tsc -- using perf clock freq (" 
 	 << perffreq.QuadPart/1e6 << " MHz)" << endl;
   } else {
-    cerr << "gettimeofday: adjusted clock freq to measured freq (" 
+    cerr << "vrpn gettimeofday: adjusted clock freq to measured freq (" 
 	 << freq/1e6 << " MHz)" << endl;
   }
-  FREQUENCY = (__int64) freq;
+  VRPN_CLOCK_FREQ = (__int64) freq;
   return 0;
 }
 #pragma optimize("", on)
@@ -254,14 +254,14 @@ int gettimeofday(struct timeval *tp, struct timezone *tzp)
 
     // check that hi-perf clock is available
     if ( !(fHasPerfCounter = QueryPerformanceFrequency( &liTemp )) ) {
-      cerr << "\ngettimeofday: no hi performance clock available. " 
+      cerr << "\nvrpn gettimeofday: no hi performance clock available. " 
 	   << "Defaulting to _ftime (~6 ms resolution) ..." << endl;
       gettimeofday( tp, tzp );
       return 0;
     }
     
-    if (adjustFrequency()<0) {
-      cerr << "\ngettimeofday: can't verify clock frequency. " 
+    if (vrpn_AdjustFrequency()<0) {
+      cerr << "\nvrpn gettimeofday: can't verify clock frequency. " 
 	   << "Defaulting to _ftime (~6 ms resolution) ..." << endl;
       fHasPerfCounter=0;
       gettimeofday( tp, tzp );
@@ -283,9 +283,9 @@ int gettimeofday(struct timeval *tp, struct timezone *tzp)
   // find offset from initial value
   liDiff.QuadPart = liNow.QuadPart - liInit.QuadPart;
 
-  tvDiff.tv_sec = (long) ( liDiff.QuadPart / FREQUENCY );
-  tvDiff.tv_usec = (long) ( 1e6 * ((liDiff.QuadPart - FREQUENCY*tvDiff.tv_sec)
-			   / (double) FREQUENCY) );
+  tvDiff.tv_sec = (long) ( liDiff.QuadPart / VRPN_CLOCK_FREQ );
+  tvDiff.tv_usec = (long)(1e6*((liDiff.QuadPart-VRPN_CLOCK_FREQ*tvDiff.tv_sec)
+			   / (double) VRPN_CLOCK_FREQ) );
 
   // pack the value and clean it up
   tp->tv_sec  = tbInit.time + tvDiff.tv_sec;

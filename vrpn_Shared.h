@@ -17,11 +17,11 @@ extern int gettimeofday(struct timeval *tp, struct timezone *tzp);
 #include <sys/time.h>
 #endif
 
-extern struct timeval timevalSum( const struct timeval& tv1, 
+extern struct timeval vrpn_TimevalSum( const struct timeval& tv1, 
 				  const struct timeval& tv2 );
-extern struct timeval timevalDiff( const struct timeval& tv1, 
+extern struct timeval vrpn_TimevalDiff( const struct timeval& tv1, 
 				   const struct timeval& tv2 );
-extern double timevalMsecs( const struct timeval& tv1 );
+extern double vrpn_TimevalMsecs( const struct timeval& tv1 );
 
 
 // xform a double to/from network order -- like htonl and htons

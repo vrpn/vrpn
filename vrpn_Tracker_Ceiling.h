@@ -1,5 +1,5 @@
-#include "vrpn_Tracker.h"
 #include "tracker.h"
+#include "vrpn_Tracker.h"
 
 
 class vrpn_Tracker_Ceiling: public vrpn_Tracker {
