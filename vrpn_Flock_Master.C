@@ -248,7 +248,7 @@ vrpn_Tracker_Flock_Master::~vrpn_Tracker_Flock_Master() {
 #define MAX_TIME_INTERVAL       (5*1000000) // max time between reports (usec)
 unsigned long	vrpn_Tracker_Flock_Master::duration(struct timeval t1, struct timeval t2)
 {
-  if (cResets != -1 ) return 0;
+  //if (cResets != -1 ) return 0;
   return (t1.tv_usec - t2.tv_usec) +
     1000000L * (t1.tv_sec - t2.tv_sec);
 }
@@ -499,21 +499,28 @@ void vrpn_Tracker_Flock_Master::mainloop()
   
   case TRACKER_SYNCING:
   case TRACKER_PARTIAL:
-#if 0
+
     {
       struct timeval current_time;
 
       gettimeofday(&current_time, NULL);
-      if ( duration(current_time,timestamp) < MAX_TIME_INTERVAL) {
+      unsigned interval = duration(current_time,timestamp) ;
+      if ( cResets != -1 && interval > MAX_TIME_INTERVAL) {
 	get_report();
-      } else {
-	fprintf(stderr,"\nvrpn_Tracker_Flock_Master: failed to read ... current_time=%ld:%ld, timestamp=%ld:%ld",
+      } else if( cResets == -1 && interval < MAX_TIME_INTERVAL) {
+	get_report();
+        if (cResets == 0) {
+	  gettimeofday(&timestamp, NULL);
+	  fprintf(stderr, "geting a report \n");
+	}
+      } else if (cResets == -1 && interval > MAX_TIME_INTERVAL) {
+	fprintf(stderr,"\nvrpn_Tracker_Flock_Master: failed to read ... current			_time=%ld:%ld, timestamp=%ld:%ld",
 		current_time.tv_sec, current_time.tv_usec, 
 		timestamp.tv_sec, timestamp.tv_usec);
 	status = TRACKER_FAIL;
-      }
+      } 
+	
     }
-#endif
     break;
 
   case TRACKER_RESETTING:

@@ -276,7 +276,7 @@ void vrpn_Tracker_Flock_Slave::reset()
   status = TRACKER_SYNCING;	// We're trying for a new reading
   fprintf(stderr, "FLOCK SLAVE reset\n");
   write(serial_fd, "B", 1);
-  cResets=0;
+  cResets ++;
 }
 
 
@@ -284,7 +284,7 @@ void vrpn_Tracker_Flock_Slave::get_report(void)
 {
    int ret;
    static int cSyncs=0;
-   //fprintf(stderr, "I am here %d\n", sensor);
+   fprintf(stderr, "I am here %d\n", sensor);
    // The reports are *14* bytes long each (Pos/Quat format without
    // group address), with a phasing bit set in the first byte 
    // of each sensor.
@@ -298,9 +298,10 @@ void vrpn_Tracker_Flock_Slave::get_report(void)
    // one with the high bit set.
 
    if (status == TRACKER_SYNCING) {
-     
+
      // Try to get a character.  If none, just return.
      if (read_available_characters(buffer, 1) != 1) {
+
        return;
      }
      
@@ -423,7 +424,7 @@ void vrpn_Tracker_Flock_Slave::get_report(void)
      fFirst = 2;
    }
    //gettimeofday(&current_time, NULL);
-   //printf(" This report interval %ld\n", duration(current_time,timestamp)); 
+   printf(" This report interval %ld\n", duration(current_time,timestamp)); 
 #ifdef VERBOSE
       print();
 #endif
@@ -432,6 +433,7 @@ void vrpn_Tracker_Flock_Slave::get_report(void)
 
 void vrpn_Tracker_Flock_Slave::mainloop()
 {
+
 #define VERBOSE
   switch (status) {
   case TRACKER_REPORT_READY:
@@ -519,7 +521,7 @@ void vrpn_Tracker_Flock_Slave::mainloop()
       char ch;
       checkError();
       fprintf(stderr, "\nvrpn_Tracker_Flock_Slave: problems resetting ... check that: a) all cables are attached, b) all units have FLY/STANDBY switches in FLY mode, and c) no receiver is laying too close to the transmitter.  When done checking, power cycle the flock.\nWill attempt to reset in 30 seconds.\n");
-      sleep(30);
+      //sleep(30);
       // "press return when the flock is ready to be re-started. ");
       //      fscanf(stdin, "%c", &ch);
       fscanf(stdin, "%c", &ch);
