@@ -489,10 +489,8 @@ int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_bool value)
 */
 
 /** Utility routine for taking a character from a buffer that
-    was sent as a message. Does NOT handle unpacking from an
-    unaligned buffer, because the semantics of VRPN require
-    message buffers and the values in them to be aligned, in order to
-    reduce the amount of copying that goes on. Advances the reading
+    was sent as a message. Handles unpacking from an
+    unaligned buffer, because people did this anyway. Advances the reading
     pointer to just after newly-read value. Assumes that the
     buffer holds a complete value. Returns zero on success and -1 on failure.
 
@@ -509,10 +507,8 @@ int vrpn_unbuffer (const char ** buffer, char * cval) {
 }
 
 /** Utility routine for taking a vrpn_int16 from a buffer that
-    was sent as a message. Does NOT handle unpacking from an
-    unaligned buffer, because the semantics of VRPN require
-    message buffers and the values in them to be aligned, in order to
-    reduce the amount of copying that goes on. Advances the read
+    was sent as a message. Handles unpacking from an
+    unaligned buffer, because people did this anyway. Advances the reading
     pointer to just after newly-read value. Assumes that the
     buffer holds a complete value. Returns zero on success and -1 on failure.
 
@@ -524,16 +520,17 @@ int vrpn_unbuffer (const char ** buffer, char * cval) {
 
 int vrpn_unbuffer (const char ** buffer, vrpn_int16 * lval)
 {
-    *lval = ntohs(*((vrpn_int16 *)(*buffer)));
+    vrpn_int16	aligned;
+
+    memcpy(&aligned, *buffer, sizeof(aligned));
+    *lval = ntohs(aligned);
     *buffer += sizeof(vrpn_int16);
     return 0;
 }
 
 /** Utility routine for taking a vrpn_uint16 from a buffer that
-    was sent as a message. Does NOT handle unpacking from an
-    unaligned buffer, because the semantics of VRPN require
-    message buffers and the values in them to be aligned, in order to
-    reduce the amount of copying that goes on. Advances the read
+    was sent as a message. Handles unpacking from an
+    unaligned buffer, because people did this anyway. Advances the reading
     pointer to just after newly-read value. Assumes that the
     buffer holds a complete value. Returns zero on success and -1 on failure.
 
@@ -545,16 +542,17 @@ int vrpn_unbuffer (const char ** buffer, vrpn_int16 * lval)
 
 int vrpn_unbuffer (const char ** buffer, vrpn_uint16 * lval)
 {
-    *lval = ntohs(*((vrpn_uint16 *)(*buffer)));
+    vrpn_uint16	aligned;
+
+    memcpy(&aligned, *buffer, sizeof(aligned));
+    *lval = ntohs(aligned);
     *buffer += sizeof(vrpn_uint16);
     return 0;
 }
 
 /** Utility routine for taking a vrpn_int32 from a buffer that
-    was sent as a message. Does NOT handle unpacking from an
-    unaligned buffer, because the semantics of VRPN require
-    message buffers and the values in them to be aligned, in order to
-    reduce the amount of copying that goes on. Advances the read
+    was sent as a message. Handles unpacking from an
+    unaligned buffer, because people did this anyway. Advances the reading
     pointer to just after newly-read value. Assumes that the
     buffer holds a complete value. Returns zero on success and -1 on failure.
 
@@ -566,16 +564,17 @@ int vrpn_unbuffer (const char ** buffer, vrpn_uint16 * lval)
 
 int vrpn_unbuffer (const char ** buffer, vrpn_int32 * lval)
 {
-    *lval = ntohl(*((vrpn_int32 *)(*buffer)));
+    vrpn_int32	aligned;
+
+    memcpy(&aligned, *buffer, sizeof(aligned));
+    *lval = ntohl(aligned);
     *buffer += sizeof(vrpn_int32);
     return 0;
 }
 
 /** Utility routine for taking a vrpn_uint32 from a buffer that
-    was sent as a message. Does NOT handle unpacking from an
-    unaligned buffer, because the semantics of VRPN require
-    message buffers and the values in them to be aligned, in order to
-    reduce the amount of copying that goes on. Advances the read
+    was sent as a message. Handles unpacking from an
+    unaligned buffer, because people did this anyway. Advances the reading
     pointer to just after newly-read value. Assumes that the
     buffer holds a complete value. Returns zero on success and -1 on failure.
 
@@ -587,16 +586,17 @@ int vrpn_unbuffer (const char ** buffer, vrpn_int32 * lval)
 
 int vrpn_unbuffer (const char ** buffer, vrpn_uint32 * lval)
 {
-    *lval = ntohl(*((vrpn_uint32 *)(*buffer)));
+    vrpn_uint32	aligned;
+
+    memcpy(&aligned, *buffer, sizeof(aligned));
+    *lval = ntohl(aligned);
     *buffer += sizeof(vrpn_uint32);
     return 0;
 }
 
 /** Utility routine for taking a vrpn_float32 from a buffer that
-    was sent as a message. Does NOT handle unpacking from an
-    unaligned buffer, because the semantics of VRPN require
-    message buffers and the values in them to be aligned, in order to
-    reduce the amount of copying that goes on. Advances the read
+    was sent as a message. Handles unpacking from an
+    unaligned buffer, because people did this anyway. Advances the reading
     pointer to just after newly-read value. Assumes that the
     buffer holds a complete value. Returns zero on success and -1 on failure.
 
@@ -615,10 +615,8 @@ int vrpn_unbuffer (const char ** buffer, vrpn_float32 * fval)
 }
 
 /** Utility routine for taking a vrpn_float64 from a buffer that
-    was sent as a message. Does NOT handle unpacking from an
-    unaligned buffer, because the semantics of VRPN require
-    message buffers and the values in them to be aligned, in order to
-    reduce the amount of copying that goes on. Advances the read
+    was sent as a message. Handles unpacking from an
+    unaligned buffer, because people did this anyway. Advances the reading
     pointer to just after newly-read value. Assumes that the
     buffer holds a complete value. Returns zero on success and -1 on failure.
 
@@ -636,10 +634,8 @@ int vrpn_unbuffer (const char ** buffer, vrpn_float64 * dval)
 }
 
 /** Utility routine for taking a struct timeval from a buffer that
-    was sent as a message. Does NOT handle unpacking from an
-    unaligned buffer, because the semantics of VRPN require
-    message buffers and the values in them to be aligned, in order to
-    reduce the amount of copying that goes on. Advances the read
+    was sent as a message. Handles unpacking from an
+    unaligned buffer, because people did this anyway. Advances the reading
     pointer to just after newly-read value. Assumes that the
     buffer holds a complete value. Returns zero on success and -1 on failure.
 
@@ -699,10 +695,8 @@ int vrpn_unbuffer (const char ** buffer, char * string,
 }
 
 /** Utility routine for taking a vrpn_bool from a buffer that
-    was sent as a message. Does NOT handle unpacking from an
-    unaligned buffer, because the semantics of VRPN require
-    message buffers and the values in them to be aligned, in order to
-    reduce the amount of copying that goes on. Advances the read
+    was sent as a message. Handles unpacking from an
+    unaligned buffer, because people did this anyway. Advances the reading
     pointer to just after newly-read value. Assumes that the
     buffer holds a complete value. Returns zero on success and -1 on failure.
 
@@ -715,7 +709,10 @@ int vrpn_unbuffer (const char ** buffer, char * string,
 /*
 int vrpn_unbuffer (const char ** buffer, vrpn_bool * lval)
 {
-    *lval = ntohs(*((vrpn_bool *)(*buffer)));
+    vrpn_bool	aligned;
+
+    memcpy(&aligned, *buffer, sizeof(aligned));
+    *lval = ntohs(aligned);
     *buffer += sizeof(vrpn_bool);
     return 0;
 }

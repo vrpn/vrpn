@@ -1,3 +1,9 @@
+2001-02-12  Russell M. Taylor II <taylorr@cs.unc.edu>
+	* vrpn_shared.C : vrpn_unbuffer ( ) {All of them} Modified to handle
+	conversions from unaligned buffers.  This was causing problems with
+	the code being used to read from serial buffers in tracker drivers.
+	I give up on trying to save the extra copy.
+
 2001-02-09  Kwan Torrich Skinner <skinner@cs.unc.edu>
 	* vrpn.dsp : removes references to vrpn_DelayedConnection.[C,h]
 
