@@ -21,15 +21,18 @@
  * Author          : Ruigang Yang
  * Created On      : Thu Jan 15 17:30:37 1998
  * Last Modified By: Ruigang Yang
- * Last Modified On: Wed Feb  4 16:43:25 1998
- * Update Count    : 409
+ * Last Modified On: Thu Feb 19 13:38:12 1998
+ * Update Count    : 412
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Tracker_Fastrak.C,v $
- * $Date: 1998/02/11 20:35:40 $
+ * $Date: 1998/02/19 21:00:47 $
  * $Author: ryang $
- * $Revision: 1.4 $
+ * $Revision: 1.5 $
  * 
  * $Log: vrpn_Tracker_Fastrak.C,v $
+ * Revision 1.5  1998/02/19 21:00:47  ryang
+ * drivers for DynaSight
+ *
  * Revision 1.4  1998/02/11 20:35:40  ryang
  * canned class
  *
@@ -47,7 +50,7 @@
  * HISTORY
  */
 
-static char rcsid[] = "$Id: vrpn_Tracker_Fastrak.C,v 1.4 1998/02/11 20:35:40 ryang Exp $";
+static char rcsid[] = "$Id: vrpn_Tracker_Fastrak.C,v 1.5 1998/02/19 21:00:47 ryang Exp $";
 #include <time.h>
 #include <math.h>
 #include <stdlib.h>
@@ -143,8 +146,9 @@ for ( i = 0; i < numWords; i++ )
 
 static	unsigned long	duration(struct timeval t1, struct timeval t2)
 {
-	return (t1.tv_usec - t2.tv_usec) +
-	       1000000L * (t1.tv_sec - t2.tv_sec);
+  if (t2.tv_sec == -1) return 0;
+  return (t1.tv_usec - t2.tv_usec) +
+    1000000L * (t1.tv_sec - t2.tv_sec);
 }
 
 // Read from the input buffer on the specified handle until all of the
@@ -308,8 +312,9 @@ void vrpn_Tracker_Fastrak::reset()
     mode = T_F_M_CONTINUOUS;
     cont_mode();
     //sleep(5);
-    gettimeofday(&timestamp, NULL);	// Set watchdog now;
+    //gettimeofday(&timestamp, NULL);	// Set watchdog now;
     status = TRACKER_SYNCING;	// We are trying for a new reading;
+    timestamp.tv_sec = -1;
     return;
 }
 

@@ -14,7 +14,7 @@
 #include <strings.h>
 #ifndef hpux
 #ifndef sgi
-#include <sysent.h>
+//#include <sysent.h>
 #endif
 #endif
 #include <sys/time.h>

@@ -1,0 +1,421 @@
+/*                               -*- Mode: C -*- 
+ * 
+ * This library is free software; you can redistribute it and/or          
+ * modify it under the terms of the GNU Library General Public            
+ * License as published by the Free Software Foundation.                  
+ * This library is distributed in the hope that it will be useful,        
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of         
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU      
+ * Library General Public License for more details.                       
+ * If you do not have a copy of the GNU Library General Public            
+ * License, write to The Free Software Foundation, Inc.,                  
+ * 675 Mass Ave, Cambridge, MA 02139, USA.                                
+ *                                                                        
+ * For more information on this program, contact Blair MacIntyre          
+ * (bm@cs.columbia.edu) or Steven Feiner (feiner@cs.columbia.edu)         
+ * at the Computer Science Dept., Columbia University,                    
+ * 500 W 120th St, Room 450, New York, NY, 10027.                         
+ *                                                                        
+ * Copyright (C) Blair MacIntyre 1995, Columbia University 1995           
+ * 
+ * Author          : Ruigang Yang
+ * Created On      : Tue Feb 17 13:51:40 1998
+ * Last Modified By: Ruigang Yang
+ * Last Modified On: Thu Feb 19 12:33:54 1998
+ * Update Count    : 31
+ * 
+ * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Dyna.C,v $
+ * $Date: 1998/02/19 21:00:44 $
+ * $Author: ryang $
+ * $Revision: 1.1 $
+ * 
+ * $Log: vrpn_Dyna.C,v $
+ * Revision 1.1  1998/02/19 21:00:44  ryang
+ * drivers for DynaSight
+ *
+ * SCCS Status     : %W%	%G%
+ * 
+ * HISTORY
+ */
+
+static char rcsid[] = "$Id: vrpn_Dyna.C,v 1.1 1998/02/19 21:00:44 ryang Exp $";
+
+#include <termios.h> // for tcdrain
+#include <unistd.h>
+#include "vrpn_Dyna.h"
+#define T_ERROR (-1)
+#define T_OK 	(0)
+
+/* return codes for status check    */
+#define T_PDYN_SPEW_MODE   (-50)
+#define T_PDYN_NO_DATA 	(-51)
+
+#define lOOO_OOOO (0x80)
+#define llll_OOOO (0xf0)
+#define OOOO_OOll (0x03)
+#define OOOO_llOO (0x0c)
+
+#define MAX_TIME_INTERVAL (1000*1000*2)
+static	unsigned long	duration(struct timeval t1, struct timeval t2)
+{
+  if (t2.tv_sec == -1) return 0;
+  return (t1.tv_usec - t2.tv_usec) + 1000000L * (t1.tv_sec - t2.tv_sec);
+}
+
+vrpn_Tracker_Dyna::vrpn_Tracker_Dyna(
+		      char *name, vrpn_Connection *c, int cSensors,
+		      char *port, long baud ) :
+vrpn_Tracker_Serial(name,c,port,baud), cSensors(cSensors), cResets(0) 
+{
+    if (cSensors>MAX_SENSORS) {
+      fprintf(stderr, "\nvrpn_Tracker_Dyna: too many sensors requested ... only %d allowed (%d specified)", MAX_SENSORS, cSensors );
+      cSensors = MAX_SENSORS;
+    }
+    fprintf(stderr, "\nvrpn_Tracker_Dyna: starting up ...");
+    sensor =1 ; // sensor id is always  1;
+}
+
+vrpn_Tracker_Dyna::~vrpn_Tracker_Dyna() {
+  fprintf(stderr, "vrpn_Tracker_Dyna:Shuting down...\n");
+}
+
+
+int vrpn_Tracker_Dyna::get_status()
+{
+    int	    	bytesRead;
+    unsigned char    	statusBuffer[256];
+
+    my_flush();
+
+    /* send request for status record   */
+
+    write(serial_fd, "\021", 1);
+    tcdrain(serial_fd);
+    sleep(2);
+
+    /* do non-blocking read of status record    */
+    bytesRead = read_available_characters(statusBuffer, 8);
+    // T_PDYN_STATUS_RECORD_LENGTH =8;
+
+    if ( bytesRead == 8 )
+    {
+       /* we have correct length-  check a few chars to make sure this is a valid 
+	* record
+	*/
+       if ( ((statusBuffer[0] & lOOO_OOOO) != lOOO_OOOO) ||
+	    ((statusBuffer[1] & lOOO_OOOO) != lOOO_OOOO) )
+	 return(T_ERROR);       
+
+       /* otherwise, all is well   */
+       return(T_OK);
+    }
+
+    /* if we get here, we either got too much data or not enough	*/
+
+    /* no data means it's probably disconnected or not turned on	*/
+    if ( bytesRead == 0 )
+    {
+       fprintf(stderr, "No data\n");
+      return(T_PDYN_NO_DATA);
+    }
+
+    /* if we got too much data, chances are that it's in continuous mode	*/
+    if ( bytesRead > 8)
+    {
+       fprintf(stderr, "3\n");
+      return(T_PDYN_SPEW_MODE);
+    }
+
+    /* if we get here, i have no idea what's going on-  could be garbage on the
+     *  serial line, wrong baud rate, or that the Dynasight is flaking out.
+     */
+    return(T_ERROR);
+
+}	/* t_pdyn_get_status */
+
+#define MAX_TRIAL 10
+
+void vrpn_Tracker_Dyna::reset() {
+  static int numResets = 0;	// How many resets have we tried?;
+  static char T_PDYN_C_CTL_C[4] ="\003\003\003";
+  static int T_PDYN_RECORD_LENGTH = 8;
+
+  write(serial_fd, T_PDYN_C_CTL_C, strlen(T_PDYN_C_CTL_C));
+  write(serial_fd, "4", 1); // set to polling mode;
+      
+  /* pause 1 second to allow the Dynasight buffer to stabilize	*/
+  sleep(1);
+	 
+
+  status = get_status();
+      
+  if ( status != T_OK ) {
+
+    /* if no data, tracker probably not connected.  just bag it.    */
+    if ( status == T_PDYN_NO_DATA )
+    {
+      fprintf(stderr, "vrpn_Tracker_Dyan:  no data received\n"); 
+      status = TRACKER_RESETTING;
+      return;
+
+    } 
+    
+  }else {
+    fprintf(stderr, "vrpn_Tracker_Dyan: return valid status
+report\n");
+    reportLength = T_PDYN_RECORD_LENGTH;
+    
+    // set it to continues mode;
+    /* clear any leftover data	*/
+   my_flush();
+
+   /* set the Dynasight to continuous mode    */
+   write(serial_fd, T_PDYN_C_CTL_C, strlen(T_PDYN_C_CTL_C));
+   write(serial_fd, "V", 1); 
+   //T_PDYN_C_CONTINUOUS = "V"
+   sleep(1);
+   //gettimeofday(&timestamp, NULL);	// Set watchdog now;
+   timestamp.tv_sec = -1;
+   status = TRACKER_SYNCING;	// We are trying for a new reading;
+   return;
+  }
+				     
+}
+
+void vrpn_Tracker_Dyna::get_report(void) {
+  int ret;
+  if (status == TRACKER_SYNCING) {
+    if ((ret=read_available_characters(buffer, 1)) !=  1 || 
+	(buffer[0] & llll_OOOO) != lOOO_OOOO) {
+      return;
+    }
+    gettimeofday(&timestamp, NULL);
+    status = TRACKER_PARTIAL;
+    bufcount= ret;
+  }
+  if (status == TRACKER_PARTIAL) {
+    ret=read_available_characters(&(buffer[bufcount]), reportLength-bufcount);
+    if (ret < 0) {
+      fprintf(stderr,"%s@%d: Error reading\n", __FILE__, __LINE__);
+      status = TRACKER_FAIL;
+      return;
+    }
+    //fprintf(stderr,"get report:get %d bytes\t%s:%d\n", 
+	//   bufcount, __FILE__, __LINE__);
+    bufcount += ret;
+    if (bufcount < reportLength) {	// Not done -- go back for more
+      return;
+    }	
+    //fprintf(stderr, "this time read: %d rL= %d, \n", ret, reportLength);
+  }
+  
+  if (!valid_report()) {
+    bufcount = 0;
+    status = TRACKER_SYNCING;
+    return;
+  }
+  decode_record();
+  //fprintf(stderr,"(%f %f %f)   ", pos[0], pos[1],pos[2]);
+  status = TRACKER_REPORT_READY;
+  bufcount=0;
+
+}
+
+int vrpn_Tracker_Dyna::valid_report() {
+
+  /* Check to see that the first four bits of the *
+    * first two bytes correspond to 1000.          */
+  if ( ( (buffer[0] & llll_OOOO) != lOOO_OOOO) ||
+        ( (buffer[1] & llll_OOOO) != lOOO_OOOO) )
+    return (0);
+
+
+   /* Make sure no other consecutive bytes have 1000 in the high nibble */
+   for (int i = 2; i <reportLength-1; i += 2)
+   {
+      if ( ( (buffer[i] & llll_OOOO) == lOOO_OOOO) &&
+	   ( (buffer[i+1] & llll_OOOO) == lOOO_OOOO))
+      {
+	fprintf(stderr, 
+		"vrpn_Tracker_Dyan: found two more status bytes in the Dynasight's output list\n");
+	return (0);
+     }
+   }
+
+   /* Next, check that the Dynasight is tracking or in caution mode.  If  *
+    * it is not, then we can't be sure of what data is being sent back,   *
+    * copy the most recent tracked data into the buffer.                  */
+   if ( ( (buffer[1] & OOOO_OOll) == 0 ) ||
+        ( (buffer[1] & OOOO_OOll) == 1 ) )
+   {
+     return (1);
+   }
+
+   /* Also, for this passive Dynasight mode, we want to make sure that we *
+    * only getting records from the single (00) sensor, not any active    *
+    * sensors.                                                            */
+   if ( (buffer[0] & OOOO_llOO) != 0)
+   {
+     fprintf(stderr, "trackerlib:  Invalid target number for passive Dynasight\n");
+     return (0);
+   }
+   
+   /* If we've made it this far, we have a target that is being tracked,   *
+    * and it is the correct target.  So, copy this into the                *
+    * lastTrackedData array.                                               
+   for (i = 0; i < trackerPtr->reportLength; i++)
+     lastTrackedData[i] = buffer[bufIndex + i];
+     */
+   return (1);
+}
+
+
+/*****************************************************************************
+ *
+   decode_record - decodes a continuous binary encoded record
+    	    	    	    for one station.
+ 
+
+    
+    output:
+    	decodedMatrix- represents the row_matrix to transform the receiver
+	               coordinates to tracker coordinates
+
+	- T_ERROR is returned if the record is munged, T_OK otherwise
+ *
+ *****************************************************************************/
+
+int vrpn_Tracker_Dyna::decode_record()
+//    q_vec_type   decoded_pos;
+{
+   int           i;
+   int	         bufLength;
+   int           encodedReportLength;
+
+   unsigned char exp;
+   signed char   x_high,
+                 y_high,
+		 z_high;
+   unsigned char x_low, y_low, z_low;
+   long x, y, z;
+
+   if ( (buffer[0] & lOOO_OOOO) == 0 )
+   {
+      fprintf(stderr, "bogus data to vrpn_Tracker_Dyna_decode_record:\n");
+      for ( i = 0; i < reportLength; i++ )
+    	fprintf(stderr, "%x ", buffer[i]);
+      fprintf(stderr, "\n");
+      return(T_ERROR);
+   }
+
+   bufLength = reportLength;
+
+   /* Pull out the exponent to shift by */
+   //exp = ( (buffer[0] & OOOO_OOlO)<<1 ) | (buffer[0] & OOOO_OOOl);
+   exp = ( (buffer[0] & 0x2)<<1 ) | (buffer[0] & 0x1);
+
+   x_high = (char)buffer[2];
+   x_low  = (char)buffer[3];
+   y_high = (char)buffer[4];
+   y_low  = (char)buffer[5];
+   z_high = (char)buffer[6];
+   z_low  = (char)buffer[7];
+
+   /* Shift high order byte, combine with low order, and then *
+    * shift by the exponent.                                  */
+   x = (long)( ((short)x_high<<8) | ((short)x_low) ) << exp;
+   y = (long)( ((short)y_high<<8) | ((short)y_low) ) << exp;
+   z = (long)( ((short)z_high<<8) | ((short)z_low) ) << exp;
+   
+   /* Convert to meters -- 1 unit = 0.05mm = 0.00005m */
+   pos[0] = (double)x * 0.00005;
+   pos[1] = (double)y * 0.00005;
+   pos[2] = (double)z * 0.00005;
+   
+   /* For the single-target Dynasight, we assume that the orientation *
+    * the target is that same as that of the Dynasight.               */
+   quat[0] = 0.0;
+   quat[1] = 0.0;
+   quat[2] = 0.0;
+   quat[3] = 1.0;
+
+   return(T_OK);
+
+}	/* t_pdyn_decode_record */
+
+
+void vrpn_Tracker_Dyna::mainloop()
+{
+  switch (status) {
+    case TRACKER_REPORT_READY:
+      {
+
+	static int count = 0;
+	if (count++ % 100 ==0) {
+	  fprintf(stderr, ".");
+	  if(count == 5000) {
+	    fprintf(stderr, "\nReport(%f, %f, %f)", pos[0], pos[1],pos[2]);
+		count = 0;
+	  }
+	}
+
+
+	// Send the message on the connection
+	if (connection) {
+		char	msgbuf[1000];
+		int	len = encode_to(msgbuf);
+		if (connection->pack_message(len, timestamp,
+			position_m_id, my_id, msgbuf,
+			vrpn_CONNECTION_LOW_LATENCY)) {
+		  fprintf(stderr,"Tracker: cannot write message: tossing\n");
+		}
+	} else {
+		fprintf(stderr,"Tracker Fastrak: No valid connection\n");
+	}
+
+	// Ready for another report
+	status = TRACKER_SYNCING;
+      }
+      break;
+
+    case TRACKER_SYNCING:
+    case TRACKER_PARTIAL:
+      {
+	struct timeval current_time;
+	gettimeofday(&current_time, NULL);
+	if ( duration(current_time,timestamp) < MAX_TIME_INTERVAL) {
+		get_report();
+	} else {
+		fprintf(stderr,"Tracker failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n",current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);
+		status = TRACKER_FAIL;
+	}
+      }
+      break;
+
+    case TRACKER_RESETTING:
+	reset();
+	break;
+
+    case TRACKER_FAIL:
+	fprintf(stderr, "Tracker failed, trying to reset (Try power cycle if more than 4 attempts made)\n");
+	close(serial_fd);
+	serial_fd = vrpn_open_commport(portname, baudrate);
+	status = TRACKER_RESETTING;
+	break;
+   }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -556,7 +556,7 @@ void vrpn_Tracker_Flock::mainloop()
     {
 #ifdef	VERBOSE
       static int count = 0;
-      if (count++ == 120) {
+      if (count++ == 10) {
 	printf("\nvrpn_Tracker_Flock: Got report"); print();
 	count = 0;
       }

@@ -20,7 +20,7 @@ HW_OS := $(shell hw_os)
 # Which C++ compiler to use.  Default is g++, but some don't use this.
 CC := g++
 #ifeq ($(HW_OS),sgi_irix)
-	CC := CC
+	CC := g++
 #endif
 #ifeq ($(HW_OS),hp700_hpux10)
 #	CC := CC +a1
@@ -55,7 +55,8 @@ OBJECT_DIR	 := $(HW_OS)
 
 ifeq ($(HW_OS),pc_linux)
     SYS_INCLUDE := -I/usr/include -I/usr/local/contrib/include \
-		-I/usr/local/contrib/mod/include -I/usr/include/bsd
+		-I/usr/local/contrib/mod/include -I/usr/include/bsd \
+		-I/usr/include/g++
 else
  ifeq ($(HW_OS),sgi_irix)
   SYS_INCLUDE := -I/usr/local/contrib/mod/include
@@ -158,7 +159,9 @@ $(OBJECT_DIR):
 LIB_FILES =  \
 	vrpn_Connection.C vrpn_Tracker.C vrpn_3Space.C vrpn_Button.C \
 	vrpn_Sound.C vrpn_ForceDevice.C vrpn_Clock.C vrpn_Shared.C \
-	vrpn_Flock.C vrpn_Tracker_Fastrak.C 
+	vrpn_Flock.C vrpn_Tracker_Fastrak.C \
+	vrpn_Flock_Slave.C vrpn_Flock_Master.C  vrpn_canned.C \
+	vrpn_Dyna.C
 
 
 LIB_OBJECTS = $(patsubst %,$(OBJECT_DIR)/%,$(LIB_FILES:.C=.o))
