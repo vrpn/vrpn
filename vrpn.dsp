@@ -218,6 +218,14 @@ SOURCE=.\vrpn_ForwarderController.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_ImmersionBox.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_ImmersionBox.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_Magellan.C
 # End Source File
 # Begin Source File
