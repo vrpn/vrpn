@@ -630,6 +630,8 @@ int setup_Tracker_Fastrak (char * & pch, char * line, FILE * config_file) {
 		printf(" ...using IS900 timing information\n");
 	    } else if (strcmp(s4, "/") == 0) {
 		// Nothing to do
+	    } else if (strcmp(s4, "\\") == 0) {
+		// Nothing to do
 	    } else {
 		fprintf(stderr,"Fastrak/Isense: Bad timing optional param (expected 'IS900time', got '%s')\n",s4);
 		return -1;
