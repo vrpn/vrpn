@@ -21,15 +21,18 @@
  * Author          : Ruigang Yang
  * Created On      : Tue Mar 17 16:01:46 1998
  * Last Modified By: Ruigang Yang
- * Last Modified On: Wed Mar 18 18:08:21 1998
- * Update Count    : 41
+ * Last Modified On: Wed May  6 13:02:11 1998
+ * Update Count    : 46
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Analog.C,v $
- * $Date: 1998/03/18 23:12:21 $
+ * $Date: 1998/05/06 18:00:37 $
  * $Author: ryang $
- * $Revision: 1.1 $
+ * $Revision: 1.2 $
  * 
  * $Log: vrpn_Analog.C,v $
+ * Revision 1.2  1998/05/06 18:00:37  ryang
+ * v0.1 of vrpn_sgibox
+ *
  * Revision 1.1  1998/03/18 23:12:21  ryang
  * new analog device and joystick channell
  * D
@@ -39,7 +42,7 @@
  * HISTORY
  */
 
-static char rcsid[] = "$Id: vrpn_Analog.C,v 1.1 1998/03/18 23:12:21 ryang Exp $";
+static char rcsid[] = "$Id: vrpn_Analog.C,v 1.2 1998/05/06 18:00:37 ryang Exp $";
 
 #include "vrpn_Analog.h"
 #include <stdio.h>
@@ -88,6 +91,32 @@ int vrpn_Analog::encode_to(char *buf)
    //fprintf(stderr, "encode___ %x %x", buf[0], buf[1]);
    return index*sizeof(double);
 }
+void vrpn_Analog::report_changes() {
+  int i;
+  int change = 0;
+  if (connection) {
+    for (i = 0; i < num_channel; i++) {
+      if (channel[i]!= last[i]) change =1;
+      last[i] = channel[i];
+    }
+    if (!change) return;
+      
+    // there is indeed some change, send it;
+    gettimeofday(&timestamp, NULL);
+    char	msgbuf[1000];
+    int	len = vrpn_Analog::encode_to(msgbuf);
+#ifdef VERBOSE
+    print();
+#endif
+    if (connection->pack_message(len, timestamp,
+				 channel_m_id, my_id, msgbuf,
+				 vrpn_CONNECTION_LOW_LATENCY)) {
+      fprintf(stderr,"vrpn_Analog: cannot write message: tossing\n");
+    }
+  }else 
+    fprintf(stderr,"vrpn_Analog: No valid connection\n");
+}
+
 #ifndef VRPN_CLIENT_ONLY
 #ifndef	_WIN32
 vrpn_Serial_Analog::vrpn_Serial_Analog(char *name, vrpn_Connection *c,

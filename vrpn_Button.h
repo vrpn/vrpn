@@ -11,6 +11,11 @@
 // Base class for buttons.  Definition
 // of remote button class for the user is at the end.
 
+#define BUTTON_MOMENTARY 10
+#define BUTTON_TOGGLE_OFF    20
+#define BUTTON_TOGGLE_ON    21
+#define ALL_ID		-99
+
 class vrpn_Button {
   public:
 	vrpn_Button(char *name, vrpn_Connection *c = NULL);
@@ -24,10 +29,17 @@ class vrpn_Button {
 
         vrpn_Connection *connectionPtr();
 
+	void set_momentary(int which_button);
+        void set_toggle(int which_button, int current_state);
+        void set_all_momentary(void);
+        void set_all_toggle(int default_state);
+
   protected:
 	vrpn_Connection *connection;
 	unsigned char	buttons[vrpn_BUTTON_MAX_BUTTONS];
 	unsigned char	lastbuttons[vrpn_BUTTON_MAX_BUTTONS];
+	int     buttonstate[vrpn_BUTTON_MAX_BUTTONS];
+	long     minrate[vrpn_BUTTON_MAX_BUTTONS];
 	int	num_buttons;
 	struct timeval	timestamp;
 	long my_id;			// ID of this button to connection
@@ -103,6 +115,8 @@ class vrpn_Button_Remote: public vrpn_Button {
 		vrpn_BUTTONCHANGEHANDLER handler);
 	virtual int unregister_change_handler(void *userdata,
 		vrpn_BUTTONCHANGEHANDLER handler);
+
+	set_button_mode(int mode, int button_id);
 
   protected:
 	typedef	struct vrpn_RBCS {

@@ -5,15 +5,18 @@
  * Author          : Ruigang Yang
  * Created On      : Tue Mar 17 15:50:46 1998
  * Last Modified By: Ruigang Yang
- * Last Modified On: Wed Mar 18 17:35:34 1998
- * Update Count    : 24
+ * Last Modified On: Thu Apr 30 12:08:06 1998
+ * Update Count    : 26
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Analog.h,v $
- * $Date: 1998/03/18 23:12:21 $
+ * $Date: 1998/05/06 18:00:37 $
  * $Author: ryang $
- * $Revision: 1.1 $
+ * $Revision: 1.2 $
  * 
  * $Log: vrpn_Analog.h,v $
+ * Revision 1.2  1998/05/06 18:00:37  ryang
+ * v0.1 of vrpn_sgibox
+ *
  * Revision 1.1  1998/03/18 23:12:21  ryang
  * new analog device and joystick channell
  * D
@@ -59,6 +62,7 @@ public:
 	int status; 
 
 	virtual int encode_to(char *buf);
+        virtual void report_changes(); 
 };
 
 class vrpn_Serial_Analog: public vrpn_Analog {

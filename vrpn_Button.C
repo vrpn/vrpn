@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <string.h> // for memcpy
 
 #ifdef linux
 #include <linux/lp.h>
@@ -33,6 +34,7 @@ const unsigned char PORT_PE = (1 << 5);
 const unsigned char PORT_ACK = (1 << 6);
 const unsigned char PORT_BUSY = (1 << 7);
 
+static int client_msg_handler(void *userdata, vrpn_HANDLERPARAM p);
 
 vrpn_Button::vrpn_Button(char *name, vrpn_Connection *c): num_buttons(0)
 {
@@ -47,12 +49,49 @@ vrpn_Button::vrpn_Button(char *name, vrpn_Connection *c): num_buttons(0)
       	fprintf(stderr,"vrpn_Button: Can't register IDs\n");
          connection = NULL;
       }
+      connection->register_handler(message_id, 
+				   /*(vrpn_MESSAGEHANDLER)*/client_msg_handler,
+				   this);
    }
 
    // Set the time to 0 just to have something there.
    timestamp.tv_usec = timestamp.tv_sec = 0;
+   for (int i=0; i< num_buttons; i++) buttonstate[i] = BUTTON_MOMENTARY;
 }
 
+void vrpn_Button::set_momentary(int which_button) {
+  if (which_button >= num_buttons) {
+    fprintf(stderr, "vrpn_Button::set_momentary() buttons id %d is greater then the number of buttons(%d)\n", which_button, num_buttons);
+    return;
+  }
+  buttonstate[which_button] = BUTTON_MOMENTARY;
+}
+
+void vrpn_Button::set_toggle(int which_button, int current_state) {
+  if (which_button >= num_buttons) {
+    fprintf(stderr, "vrpn_Button::set_toggle() buttons id %d is greater then the number of buttons(%d)\n", which_button, num_buttons);
+    return;
+  }
+  if (current_state==BUTTON_TOGGLE_ON) 
+    buttonstate[which_button] = BUTTON_TOGGLE_ON;
+  else 
+    buttonstate[which_button] = BUTTON_TOGGLE_OFF;
+    
+}
+
+void vrpn_Button::set_all_momentary(void) {
+  for (int i=0; i< num_buttons; i++)
+    if (buttonstate[i] != BUTTON_MOMENTARY) {
+      buttonstate[i] = BUTTON_MOMENTARY;  
+    }
+}
+
+void vrpn_Button::set_all_toggle(int default_state) {
+  for (int i=0; i< num_buttons; i++)
+    if (buttonstate[i] == BUTTON_MOMENTARY) 
+      buttonstate[i] = 
+	(default_state==BUTTON_TOGGLE_ON)? BUTTON_TOGGLE_ON: BUTTON_TOGGLE_OFF;
+}
 
 void	vrpn_Button::print(void)
 {
@@ -73,6 +112,7 @@ vrpn_Connection *vrpn_Button::connectionPtr() {
   return connection;
 }
 
+
 int	vrpn_Button::encode_to(char *buf, int button, int state)
 {
    // Message includes: long buttonNum, long state
@@ -87,25 +127,67 @@ int	vrpn_Button::encode_to(char *buf, int button, int state)
    return index*sizeof(unsigned long);
 }
 
+#define PACK_MESSAGE(i,event) { \
+  char	msgbuf[1000]; \
+  int	len = encode_to(msgbuf,i, event); \
+  if (connection->pack_message(len, timestamp, \
+			       message_id, my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {\
+      		fprintf(stderr,"Tracker: can't write message: tossing\n");\
+      	}\
+	   /*#ifdef	VERBOSE \
+         printf("vrpn_Button %d %s\n",i, buttons[i]?"pressed":"released");\
+#endif \ */ \
+         lastbuttons[i] = buttons[i]; \
+        }
+
+static	unsigned long	duration(struct timeval t1, struct timeval t2)
+{
+  if (t2.tv_sec == -1) return 0;
+  return (t1.tv_usec - t2.tv_usec) +
+    1000000L * (t1.tv_sec - t2.tv_sec);
+}
+
+static int client_msg_handler(void *userdata, vrpn_HANDLERPARAM p) {
+  vrpn_Button * instance = (vrpn_Button *) userdata;
+  long * bp = (long *)(p.buffer);
+  int mode = ntohl(bp[0]);
+  int buttonid = ntohl(bp[1]);
+
+  if (mode == BUTTON_MOMENTARY) {
+    if (buttonid == ALL_ID)
+      instance->set_all_momentary();
+    else instance->set_momentary(buttonid);
+  }else if (mode == BUTTON_TOGGLE_OFF || mode ==BUTTON_TOGGLE_ON ){
+    if (buttonid == ALL_ID)
+      instance->set_all_toggle(mode);
+    else instance->set_toggle(buttonid,mode);
+  } 
+}
+
 void	vrpn_Button::report_changes(void)
 {  int	i;
 
    if (connection) {
       for (i = 0; i < num_buttons; i++) {
-       if (buttons[i] != lastbuttons[i]) {
-   	char	msgbuf[1000];
-      	int	len = encode_to(msgbuf,i,buttons[i]);
-
-      	if (connection->pack_message(len, timestamp,
-      			message_id, my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
-      		fprintf(stderr,"Tracker: can't write message: tossing\n");
-      	}
-#ifdef	VERBOSE
-         printf("vrpn_Button %d %s\n",i, buttons[i]?"pressed":"released");
-#endif
-	 
-         lastbuttons[i] = buttons[i];
-        }
+	switch (buttonstate[i]) {
+	case BUTTON_MOMENTARY:
+	  if (buttons[i] != lastbuttons[i])
+	    PACK_MESSAGE(i, buttons[i]);
+	  break;
+	case BUTTON_TOGGLE_ON:
+	  if (buttons[i] && !lastbuttons[i]) {
+	    buttonstate[i] = BUTTON_TOGGLE_OFF;
+	    PACK_MESSAGE(i, 0);
+	  }
+	  break;
+	case BUTTON_TOGGLE_OFF:
+	  if (buttons[i] && !lastbuttons[i]) {
+	    buttonstate[i] = BUTTON_TOGGLE_ON;
+	    PACK_MESSAGE(i, 1);
+	  }
+	  break;
+	}
+	lastbuttons[i] = buttons[i];
       }
    } else {
    	fprintf(stderr,"vrpn_Button: No valid connection\n");
@@ -332,3 +414,29 @@ int vrpn_Button_Remote::handle_change_message(void *userdata,
 }
 
 
+int vrpn_Button_Remote::set_button_mode(int mode, int buttonid) {
+  struct timeval current_time;
+  //pack the message and send it to the button server through connection
+  char msgbuf[1024];
+  int len, idata = 0;
+	
+  
+  gettimeofday(&current_time, NULL);
+	
+  if (connection) {
+    long * ip = (long *) msgbuf;
+    ip[0] = htonl(mode);
+    ip[1] = htonl(buttonid);
+    *(msgbuf+2*sizeof(long)) = 0;
+    
+    if (connection->pack_message(len, current_time, message_id, my_id, 
+				 msgbuf, vrpn_CONNECTION_RELIABLE)) {
+      fprintf(stderr, "can't write message\n");
+      return 1;
+    }
+  } else {
+    fprintf(stderr, "vrpn_Button_Remote::set_button_mode: no connection\n");
+    return 2;
+  }
+  return 0;
+}

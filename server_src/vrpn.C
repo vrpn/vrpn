@@ -12,6 +12,7 @@
 #include "vrpn_Flock_Parallel.h"
 #include "vrpn_Dyna.h"
 #include "vrpn_Sound.h"
+#include "vrpn_sgibox.h"
 
 #include "vrpn_Analog.h"
 #include "vrpn_Joystick.h"
@@ -40,6 +41,7 @@ int		num_sounds = 0;
 vrpn_Analog	*analogs[MAX_ANALOG];
 int		num_analogs = 0;
 
+vrpn_SGIBox	* vrpn_special_sgibox;
 // install a signal handler to shut down the trackers and buttons
 #ifndef WIN32
 #include <signal.h>
@@ -166,7 +168,31 @@ main (int argc, char *argv[])
 	  //	  #define isit(s) !strncmp(line,s,strlen(s))
 #define isit(s) !strcmp(pch=strtok(scrap," \t"),s)
 #define next() pch += strlen(pch) + 1
-	  if (isit("vrpn_JoyFly")) {
+	  if (isit("vrpn_SGIBOX")) {
+	    next();
+	    if (sscanf(pch,"%511s",s2) != 1) {
+	      fprintf(stderr,"Bad vrpn_SGIBOX line: %s\n",line);
+	      if (bail_on_error) { return -1; }
+	      else { continue; }	// Skip this line
+	    }
+
+	    // Make sure there's room for a new tracker
+		if (num_trackers >= MAX_TRACKERS) {
+		  fprintf(stderr,"Too many trackers in config file");
+		  if (bail_on_error) { return -1; }
+		  else { continue; }	// Skip this line
+		}
+
+		// Open the tracker
+	      if (verbose) printf("Opening vrpn_SGIBOX on host %s\n", s2);
+		if ( (vrpn_special_sgibox =
+		  new vrpn_SGIBox(s2, &connection)) == NULL){
+		  fprintf(stderr,"Can't create new vrpn_SGIBox\n");
+		  if (bail_on_error) { return -1; }
+		  else { continue; }	// Skip this line
+		} 
+		printf("Opening vrpn_SGIBOX on host %s done\n", s2);
+	  } else if (isit("vrpn_JoyFly")) {
 	    next();
 	    if (sscanf(pch,"%511s%511s%511s",s2,s3,s4) != 3) {
 	      fprintf(stderr,"Bad vrpn_JoyFly line: %s\n",line);
@@ -490,6 +516,7 @@ main (int argc, char *argv[])
 	fclose(config_file);
 	loop = 0;
 	// Loop forever calling the mainloop()s for all devices
+	fprintf(stderr, "sgibox: %p\n", vrpn_special_sgibox);
 	while (1) {
 		int	i;
 
@@ -511,6 +538,10 @@ main (int argc, char *argv[])
 		for (i=0; i< num_analogs; i++) {
 		  analogs[i]->mainloop();
 		}
+		
+		if (vrpn_special_sgibox) 
+		  vrpn_special_sgibox->mainloop();
+
 		// Send and receive all messages
 		connection.mainloop();
 	}

@@ -29,11 +29,14 @@ all:  vrpn_server
 # 	$(CC) $(LFLAGS) -o player vrpn_player.o -lvrpnserver -lsdi -lm
 
 vrpn_server: vrpn.o  midi.o ../$(HW_OS)/libvrpnserver.a
-	$(CC) $(LFLAGS) -o vrpn_server vrpn.o midi.o -lvrpnserver -lsdi -lm -lquat
+	$(CC) $(LFLAGS) -o vrpn_server vrpn.o midi.o -lvrpnserver -lgl -lsdi -lm -lquat
 
 clean:
 	rm -f *.o vrpn_server
 
 midi.o:	midi.c
 vrpn.o:	vrpn.C
+
+
+
 

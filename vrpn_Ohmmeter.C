@@ -69,7 +69,6 @@ int vrpn_Ohmmeter::encode_setchannel_to(char *buf)
 int vrpn_Ohmmeter::encode_measure_to(char *buf)
 {
     // Message includes: long channel
-    A
     //                   long status
     //                   double resistance
     //                   double error

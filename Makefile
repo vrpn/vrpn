@@ -201,7 +201,7 @@ $(SOBJECT_DIR):
 
 LIB_FILES =  vrpn_Connection.C vrpn_Tracker.C vrpn_Button.C \
 	     vrpn_Sound.C vrpn_ForceDevice.C vrpn_Clock.C vrpn_Shared.C \
-	     vrpn_Ohmmeter.C vrpn_Analog.C
+	     vrpn_Ohmmeter.C vrpn_Analog.C 
 
 LIB_OBJECTS = $(patsubst %,$(OBJECT_DIR)/%,$(LIB_FILES:.C=.o))
 
@@ -213,7 +213,7 @@ SLIB_FILES =  vrpn_Connection.C vrpn_Tracker.C vrpn_3Space.C vrpn_Button.C \
 	     vrpn_Sound.C vrpn_ForceDevice.C vrpn_Clock.C vrpn_Shared.C \
 	     vrpn_Flock.C vrpn_Tracker_Fastrak.C vrpn_Dyna.C \
 	     vrpn_Flock_Parallel.C  vrpn_Joystick.C vrpn_Analog.C \
-	     vrpn_JoyFly.C
+	     vrpn_JoyFly.C vrpn_sgibox.C 
 
 # Until we have tracker.h, we can't compile vrpn_Tracker_Ceiling
 
