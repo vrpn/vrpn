@@ -361,26 +361,30 @@ vrpn_Ohmmeter_Remote::vrpn_Ohmmeter_Remote(char *name, vrpn_Connection *c):
 	    fprintf(stderr, 
 		"vrpn_Ohmmeter_Remote: can't register meas. handler\n");
 	    connection = NULL;
+	    return;
     }
     if (connection->register_handler(channelset_m_id, handle_ohmset_message,
 	this, my_id)) {
 	    fprintf(stderr,
 		 "vrpn_Ohmmeter_Remote: can't register ohmset handler\n");
 	    connection = NULL;
+	    return;
     }
 
-	if (connection->get_File_Connection()){
-		fprintf(stderr, "WARNING: Reading ohmmeter messages from all"
-				" senders recorded in log file\n");
-        if (connection->register_handler(measure_m_id,
-            handle_measurement_message, this, vrpn_ANY_SENDER))
-            fprintf(stderr, "vrpn_Ohmmeter_Remote: can't register handler1\n");
-		if (connection->register_handler(channelset_m_id,
-            handle_ohmset_message, this, vrpn_ANY_SENDER))
-            fprintf(stderr, "vrpn_Ohmmeter_Remote: can't register handler2\n");
+    if (connection->get_File_Connection()){
+	fprintf(stderr, "WARNING: Reading ohmmeter messages from all"
+		" senders recorded in log file\n");
+	if (connection->register_handler(measure_m_id,
+		    handle_measurement_message, this, vrpn_ANY_SENDER)) {
+	    fprintf(stderr, "vrpn_Ohmmeter_Remote: can't register handler1\n");
+	}
+	if (connection->register_handler(channelset_m_id,
+		     handle_ohmset_message, this, vrpn_ANY_SENDER)) {
+	    fprintf(stderr, "vrpn_Ohmmeter_Remote: can't register handler2\n");
+	}
     }
-
-
+    
+    
     gettimeofday(&timestamp, NULL);
 }
 
