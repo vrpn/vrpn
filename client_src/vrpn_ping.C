@@ -34,7 +34,7 @@ int	my_pong_handler(void *userdata, vrpn_HANDLERPARAM p)
 	// See how long it has been between the ping request and
 	// the pong response.
 	struct timeval	diff;
-	gettimeofday(&now, NULL);
+	vrpn_gettimeofday(&now, NULL);
 	double msecs;
 	diff = vrpn_TimevalDiff(now, last_ping);
 	msecs = vrpn_TimevalMsecs(vrpn_TimevalNormalize(diff));
@@ -55,7 +55,7 @@ int	my_pong_handler(void *userdata, vrpn_HANDLERPARAM p)
 
 	// Send a new ping request, and record when we sent it.
 	// REMEMBER not to call mainloop() within the handler.
-	gettimeofday(&last_ping, NULL);
+	vrpn_gettimeofday(&last_ping, NULL);
 	c->pack_message(0, last_ping, ping_message_id, sender, NULL,
 		vrpn_CONNECTION_RELIABLE);
 	c->send_pending_reports();
@@ -85,16 +85,16 @@ int main(int argc, char* argv[])
 	// Wait a few seconds (spinning while we do) in order to allow the
 	// real pong message to clear from the system.
 	struct timeval	then, diff;
-	gettimeofday(&then, NULL);
+	vrpn_gettimeofday(&then, NULL);
 	do {
-		gettimeofday(&now, NULL);
+		vrpn_gettimeofday(&now, NULL);
 		r->mainloop();
 		diff = vrpn_TimevalDiff(now, then);
 	} while ( vrpn_TimevalMsecs(vrpn_TimevalNormalize(diff)) < 2000);
 
 	// Send a new ping request to the server, and start counting how
 	// long it takes to respond.
-	gettimeofday(&last_ping, NULL);
+	vrpn_gettimeofday(&last_ping, NULL);
 	c->pack_message(0, last_ping, ping_message_id, sender, NULL,
 		vrpn_CONNECTION_RELIABLE);
 

@@ -1,3 +1,10 @@
+2004-04-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* test_Zaber.C : Using vrpn_gettimeofday() not gettimeofday().
+	* testimager_client.C : Same.
+	* vrpn_ping.C : Same.
+	* vrpn_print_devices.C : Same.
+
 2003-12-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* testimager_client.C : Added #ifdef-ed out line to save log.

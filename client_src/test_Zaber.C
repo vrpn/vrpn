@@ -79,7 +79,7 @@ void shutdown (void) {
 int main (int argc, char * argv [])
 {
   struct timeval  timestamp;
-  gettimeofday(&timestamp, NULL);
+  vrpn_gettimeofday(&timestamp, NULL);
 
 #ifdef hpux
   char default_station_name [100];
@@ -116,7 +116,7 @@ int main (int argc, char * argv [])
     // 10000 steps bigger (if it is less than 10000) or
     // 10000 steps shorter (if it is more than 10000)
     struct timeval current_time;
-    gettimeofday(&current_time, NULL);
+    vrpn_gettimeofday(&current_time, NULL);
     if ( duration(current_time,timestamp) > POLL_INTERVAL) {
       if (analog_0_set) {
 	double newval;
@@ -130,7 +130,7 @@ int main (int argc, char * argv [])
       } else {
 	printf("No value yet from Zaber, not sending change request\n");
       }
-      gettimeofday(&timestamp, NULL);
+      vrpn_gettimeofday(&timestamp, NULL);
     }
 
     // Let the devices do their things
