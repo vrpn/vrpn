@@ -146,9 +146,9 @@ void vrpn_Phantom::getPosition(double *vec, double *orient)
 {
     for (int i = 0; i < 3; i++){
 		vec[i] = pos[i];
-		orient[i] = quat[i];
+		orient[i] = d_quat[i];
 	}
-	orient[3] = quat[3];
+	orient[3] = d_quat[3];
 
 }
 
@@ -334,8 +334,8 @@ void vrpn_Phantom::print_report(void)
 
  //  printf("Timestamp:%ld:%ld\n",timestamp.tv_sec, timestamp.tv_usec);
    printf("Pos      :%lf, %lf, %lf\n", pos[0],pos[1],pos[2]);
-   printf("Quat     :%lf, %lf, %lf, %lf\n", quat[0],quat[1],quat[2],quat[3]);
-   //printf("Force	:%lf, %lf, %lf\n", force[0],force[1], force[2]);
+   printf("Quat     :%lf, %lf, %lf, %lf\n", d_quat[0],d_quat[1],d_quat[2],d_quat[3]);
+   //printf("Force	:%lf, %lf, %lf\n", d_force[0],d_force[1], d_force[2]);
 }
 void vrpn_Phantom::get_report(void)
 {
@@ -375,9 +375,9 @@ void vrpn_Phantom::get_report(void)
 
 	gstVector PhantomForce = phantom->getReactionForce();
         PhantomForce.getValue(x,y,z);
-	force[0] = x;
-	force[1] = y;
-	force[2] = z;
+	d_force[0] = x;
+	d_force[1] = y;
+	d_force[2] = z;
 
 		// transform rotation matrix to quaternion
 	gstTransformMatrix PhantomRot=phantom->getRotationMatrix();	
@@ -399,12 +399,12 @@ void vrpn_Phantom::get_report(void)
 	// compute angular velocity quaternion
         phantomAngVel.getValue(x,y,z);
         q_make(v_quat, x, y, z, angVelNorm*dt_vel);
-        // set v_quat = v_quat*quat
-        q_mult(v_quat, v_quat, quat);
+        // set v_quat = v_quat*d_quat
+        q_mult(v_quat, v_quat, d_quat);
 
 
 	for(i=0;i<4;i++ ) {
-		quat[i] = p_quat[i];
+		d_quat[i] = p_quat[i];
 		vel_quat[i] = v_quat[i];
 		scp_quat[i] = 0.0; // no torque with PHANToM
 	}
@@ -485,7 +485,7 @@ void vrpn_Phantom::mainloop(void) {
 */
         //Encode the force if there is a connection
         if(vrpn_ForceDevice::connection) {
-            buf = vrpn_ForceDevice::encode_force(len, force);
+            buf = vrpn_ForceDevice::encode_force(len, d_force);
             if(vrpn_ForceDevice::connection->pack_message(len,timestamp,
                 force_message_id,vrpn_ForceDevice::my_id,
                 buf,vrpn_CONNECTION_LOW_LATENCY)) {
