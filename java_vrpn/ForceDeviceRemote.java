@@ -68,6 +68,7 @@ public class ForceDeviceRemote extends VRPN implements Runnable
 						  String remoteInLogfileName, String remoteOutLogfileName ) 
 		throws InstantiationException
 	{
+		super( name, localInLogfileName, localOutLogfileName, remoteInLogfileName, remoteOutLogfileName );
 		try	
 		{  
 			synchronized( downInVrpnLock )

@@ -69,6 +69,7 @@ public class TempImagerRemote extends VRPN implements Runnable
 	 */
 	public TempImagerRemote( String name ) throws InstantiationException
 	{
+		super( name, null, null, null, null );
 		try	
 		{  
 			synchronized( downInVrpnLock )
@@ -84,7 +85,6 @@ public class TempImagerRemote extends VRPN implements Runnable
 		}
 		
 		// initialize the regions
-		
 		
 		this.tempImagerThread = new Thread( this, "vrpn TempImagerRemote" );
 		this.tempImagerThread.start( );

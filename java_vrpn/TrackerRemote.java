@@ -77,6 +77,7 @@ public class TrackerRemote extends VRPN implements Runnable
 						  String remoteInLogfileName, String remoteOutLogfileName ) 
 		throws InstantiationException
 	{
+		super( name, localInLogfileName, localOutLogfileName, remoteInLogfileName, remoteOutLogfileName );
 		try	
 		{  
 			synchronized( downInVrpnLock )
@@ -102,11 +103,13 @@ public class TrackerRemote extends VRPN implements Runnable
 	 */
 	public synchronized native int setUpdateRate( double samplesPerSecond );
 	
+
 	public synchronized void addPositionChangeListener( PositionChangeListener listener )
 	{
 		changeListeners.addElement( listener );
 	}
-
+	
+	
 	/**
 	 * @return true on success; false on failure
 	 */
@@ -121,6 +124,7 @@ public class TrackerRemote extends VRPN implements Runnable
 		velocityListeners.addElement( listener );
 	}
 	
+	
 	/**
 	 * @return true on success; false on failure
 	 */
@@ -134,6 +138,7 @@ public class TrackerRemote extends VRPN implements Runnable
 	{
 		accelerationListeners.addElement( listener );
 	}
+	
 	
 	/**
 	 * @return true on success; false on failure
@@ -154,6 +159,7 @@ public class TrackerRemote extends VRPN implements Runnable
 	{
 		mainloopPeriod = period;
 	}
+	
 	
 	/**
 	 * @return The period, in milliseconds.
@@ -347,7 +353,7 @@ public class TrackerRemote extends VRPN implements Runnable
 	protected Vector changeListeners = new Vector( );
 	protected Vector velocityListeners = new Vector( );
 	protected Vector accelerationListeners = new Vector( );
-	
+
 	/**
 	 * these notifying*ListenersLock variables are used to ensure that multiple
 	 * TrackerRemote objects running in multiple threads don't call the 

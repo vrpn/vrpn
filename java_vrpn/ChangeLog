@@ -1,3 +1,11 @@
+2004-07-13  David Marshburn  <marshbur@cs.unc.edu>
+
+	* VRPN.java:  added data members to store the connection name and
+	the names of the local-in, local-out, remote-in and remote-out
+	logfiles.  added accessors for the same.  added a constructor
+	where these are specified.  made the default constructor private.
+	* *Remote.java:  all call the new constructor of class VRPN
+
 2004-07-12  David Marshburn  <marshbur@cs.unc.edu>
 
 	* *Remote.java:  made the finalize function public instead of

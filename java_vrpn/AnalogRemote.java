@@ -45,6 +45,7 @@ public class AnalogRemote extends VRPN implements Runnable
 						  String remoteInLogfileName, String remoteOutLogfileName ) 
 		throws InstantiationException
 	{
+		super( name, localInLogfileName, localOutLogfileName, remoteInLogfileName, remoteOutLogfileName );
 		try	
 		{  
 			synchronized( downInVrpnLock )
@@ -219,7 +220,6 @@ public class AnalogRemote extends VRPN implements Runnable
 	// how long the thread sleeps between checking for messages
 	protected long mainloopPeriod = 100; // milliseconds
 
-	
 	/**
 	 * @see vrpn.TrackerRemote#notifyingChangeListenersLock
 	 */
