@@ -9,6 +9,10 @@
 
 // This class *reads* a file written out by vrpn_Connection's logging hooks.
 
+// The interface exactly matches that of vrpn_Connection.  To do things that
+// are meaningful on log replay but not on live networks, create a
+// vrpn_File_Controller and pass your vrpn_File_Connection to its constructor.
+
 // Logfiles are recorded as *sent*, not as translated by the receiver,
 // so we still need to have all the correct names for senders and types
 // registered.
@@ -38,6 +42,8 @@ class vrpn_File_Connection : public vrpn_Connection {
 
     long d_set_replay_rate_type;
     long d_reset_type;
+    long d_play_to_time_type;
+    //long d_jump_to_time_type;
 
     // time-keeping
 
@@ -58,10 +64,20 @@ class vrpn_File_Connection : public vrpn_Connection {
       // returns 0 on success, 1 on EOF, -1 on error
     virtual int close_file (void);
 
+    // why not expose these two?
+
+    virtual int reset (void);
+      // resets to the beginning of the file
+    virtual int play_to_time (struct timeval newtime);
+    //virtual int jump_to_time (struct timeval newtime);
+      // resets to the given elapsed time
+
     // handlers for VRPN control messages
 
     static int handle_set_replay_rate (void *, vrpn_HANDLERPARAM);
     static int handle_reset (void *, vrpn_HANDLERPARAM);
+    static int handle_play_to_time (void *, vrpn_HANDLERPARAM);
+    //static int handle_jump_to_time (void *, vrpn_HANDLERPARAM);
 
     // TCH 16 Sept 98
     // support for preloading

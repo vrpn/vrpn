@@ -29,6 +29,11 @@
 #include <bstring.h>
 #endif
 
+#ifdef hpux
+#include <arpa/nameser.h>
+#include <resolv.h>  // for herror() - but it isn't there?
+#endif
+
 #ifdef _WIN32
 #include <winsock.h>
 #include <sys/timeb.h>
@@ -47,6 +52,12 @@
  #else
 #define SOCK_CAST
  #endif
+#endif
+
+#ifdef linux
+#define GSN_CAST (unsigned int *)
+#else
+#define GSN_CAST
 #endif
 
 //  NOT SUPPORTED ON SPARC_SOLARIS
@@ -607,8 +618,9 @@ int vrpn_udp_request_call(const char * machine, int port)
                 close(listen_sock);
                 return(-1);
         }
-        if ( getsockname(listen_sock,
-	     (struct sockaddr*)&listen_name,&listen_namelen) ) {
+        if (getsockname(listen_sock,
+	                (struct sockaddr *) &listen_name,
+                        GSN_CAST &listen_namelen)) {
 		fprintf(stderr,
 			"vrpn_udp_request_call: cannot get socket name.\n");
                 close(listen_sock);
@@ -632,24 +644,63 @@ int vrpn_udp_request_call(const char * machine, int port)
         }
 	udp_name.sin_family = AF_INET;
 	udp_namelen = sizeof(udp_name);
-	if ( (host = gethostbyname(machine)) == NULL ) {
+	host = gethostbyname(machine);
+        if (host) {
+
+#ifdef CRAY
+
+          { int i;
+            u_long foo_mark = 0;
+            for  (i = 0; i < 4; i++) {
+                u_long one_char = host->h_addr_list[0][i];
+                foo_mark = (foo_mark << 8) | one_char;
+            }
+            udp_name.sin_addr.s_addr = foo_mark;
+          }
+
+#else
+
+
+	  memcpy(&(udp_name.sin_addr.s_addr), host->h_addr,  host->h_length);
+#endif
+
+        } else {
+
+#ifdef _WIN32
+
+// gethostbyname() fails on SOME Windows NT boxes, but not all,
+// if given an IP octet string rather than a true name.
+// Until we figure out WHY, we have this extra clause in here.
+// It probably wouldn't hurt to enable it for non-NT systems
+// as well.
+
+          int retval;
+          retval = sscanf(machine, "%u.%u.%u.%u",
+                          ((char *) &udp_name.sin_addr.s_addr)[0],
+                          ((char *) &udp_name.sin_addr.s_addr)[1],
+                          ((char *) &udp_name.sin_addr.s_addr)[2],
+                          ((char *) &udp_name.sin_addr.s_addr)[3]);
+
+          if (retval != 4) {
+
+#endif  // _WIN32
+
+// Note that this is the failure clause of gethostbyname() on
+// non-WIN32 systems, but of the sscanf() on WIN32 systems.
+
 		close(listen_sock);
 		fprintf(stderr,
 			"vrpn_udp_request_call: error finding host by name\n");
 		return(-1);
-	}
-#ifdef CRAY
-        { int i;
-          u_long foo_mark = 0;
-          for  (i = 0; i < 4; i++) {
-              u_long one_char = host->h_addr_list[0][i];
-              foo_mark = (foo_mark << 8) | one_char;
+
+#ifdef _WIN32
+
           }
-          udp_name.sin_addr.s_addr = foo_mark;
-        }
-#else
-	memcpy(&(udp_name.sin_addr.s_addr), host->h_addr,  host->h_length);
+
 #endif
+
+        }
+
 #ifndef _WIN32
 	udp_name.sin_port = htons(port);
 #else
@@ -795,7 +846,8 @@ int vrpn_start_server(const char *machine, char *server_name, char *args)
                 return(-1);
         }
         scrap = sizeof(name);
-        if ( getsockname(server_sock,(struct sockaddr*)&name,&scrap) ) {
+        if (getsockname(server_sock, (struct sockaddr *) &name,
+                        GSN_CAST &scrap)) {
                 fprintf(stderr,"vrpn_start_server: cannot get socket name.\n");
                 close(server_sock);
                 return(-1);
@@ -1173,26 +1225,71 @@ int vrpn_OneConnection::connect_tcp_to (const char * msg)
 		return(-1);
 	}
 	client.sin_family = AF_INET;
-	if ( (host=gethostbyname(machine)) == NULL ) {
-		close(server_sock);
-		fprintf(stderr,
-			"vrpn_OneConnection::connect_tcp_to: error finding host by name (%s)\n", machine);
-		return(-1);
-	}
+	host = gethostbyname(machine);
+        if (host) {
+
 #ifdef CRAY
-        {
-          int i;
-          u_long foo_mark = 0;
-          for  (i = 0; i < 4; i++)
-            {
-              u_long one_char = host->h_addr_list[0][i];
-              foo_mark = (foo_mark << 8) | one_char;
+
+          { int i;
+            u_long foo_mark = 0;
+            for  (i = 0; i < 4; i++) {
+                u_long one_char = host->h_addr_list[0][i];
+                foo_mark = (foo_mark << 8) | one_char;
             }
-          client.sin_addr.s_addr = foo_mark;
-        }
+            client.sin_addr.s_addr = foo_mark;
+          }
+
 #else
-    memcpy(&(client.sin_addr.s_addr), host->h_addr, host->h_length);
+
+
+	  memcpy(&(client.sin_addr.s_addr), host->h_addr,  host->h_length);
 #endif
+
+        } else {
+
+			perror("gethostbyname error:");
+#ifndef hpux
+			herror("gethostbyname error:");
+#endif
+
+#ifdef _WIN32
+
+// gethostbyname() fails on SOME Windows NT boxes, but not all,
+// if given an IP octet string rather than a true name.
+// Until we figure out WHY, we have this extra clause in here.
+// It probably wouldn't hurt to enable it for non-NT systems
+// as well.
+
+          int retval;
+          unsigned int a, b, c, d;
+          retval = sscanf(machine, "%u.%u.%u.%u", &a, &b, &c, &d);
+          if (retval != 4) {
+
+#endif  // _WIN32
+
+// Note that this is the failure clause of gethostbyname() on
+// non-WIN32 systems, but of the sscanf() on WIN32 systems.
+
+		fprintf(stderr,
+			"vrpn_OneConnection::connect_tcp_to:  "
+                        "error finding host by name\n");
+		return -1;
+
+#ifdef _WIN32
+
+          }
+
+// OK, so this doesn't work.  What's wrong???
+
+          client.sin_addr.s_addr = (a << 24) + (b << 16) + (c << 8) + d;
+          //client.sin_addr.s_addr = (d << 24) + (c << 16) + (b << 8) + a;
+          fprintf(stderr, "vrpn_OneConnection::connect_tcp_to:  "
+                          "gethostname() failed;  we think we're\n"
+                          "looking for %d.%d.%d.%d.\n", a, b, c, d);
+
+#endif
+
+        }
 
 #ifndef _WIN32
 	client.sin_port = htons(port);
@@ -1579,7 +1676,8 @@ static	int open_udp_socket (unsigned short * portno)
    }
 
    // Find out which port was actually bound
-   if (getsockname(sock,(struct sockaddr*)&udp_name,&udp_namelen)) {
+   if (getsockname(sock, (struct sockaddr *) &udp_name,
+                   GSN_CAST &udp_namelen)) {
 	fprintf(stderr, "vrpn: open_udp_socket: cannot get socket name.\n");
 	return -1;
    }
@@ -1678,7 +1776,8 @@ void vrpn_Connection::check_connection (void)
    } else if (request != 0) {	// Some data to read!  Go get it.
 	struct sockaddr from;
 	int fromlen = sizeof(from);
-	if (recvfrom(listen_udp_sock, msg, sizeof(msg), 0, &from, &fromlen) == -1) {
+	if (recvfrom(listen_udp_sock, msg, sizeof(msg), 0,
+                     &from, GSN_CAST &fromlen) == -1) {
 		fprintf(stderr,
 			"vrpn: Error on recvfrom: Bad connection attempt\n");
 		return;

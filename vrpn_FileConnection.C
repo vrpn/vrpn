@@ -11,6 +11,7 @@
 #include <netinet/in.h>
 #endif
 
+#define CHECK(x) if (x == -1) return -1
 
 
 vrpn_File_Connection::vrpn_File_Connection (const char * file_name) :
@@ -19,6 +20,7 @@ vrpn_File_Connection::vrpn_File_Connection (const char * file_name) :
     d_set_replay_rate_type
                  (register_message_type("vrpn File set replay rate")),
     d_reset_type (register_message_type("vrpn File reset")),
+    d_play_to_time_type (register_message_type("vrpn File play to time")),
     d_rate (1.0f),
     d_file (NULL),
     d_logHead (NULL),
@@ -30,6 +32,8 @@ vrpn_File_Connection::vrpn_File_Connection (const char * file_name) :
   register_handler(d_set_replay_rate_type, handle_set_replay_rate,
                       this, d_controllerId);
   register_handler(d_reset_type, handle_reset, this, d_controllerId);
+  register_handler(d_play_to_time_type, handle_play_to_time,
+                   this, d_controllerId);
 
   bare_file_name = vrpn_copy_file_name(file_name);
   if (!bare_file_name) {
@@ -253,6 +257,45 @@ int vrpn_File_Connection::close_file (void) {
   return 0;
 }
 
+// virtual
+int vrpn_File_Connection::reset (void) {
+  d_start_time.tv_sec = d_start_time.tv_usec = 0L;
+  d_time.tv_sec = d_time.tv_usec = 0L;
+
+  // elapsed file time
+  d_runtime.tv_sec = d_runtime.tv_usec = 0L;
+
+  // elapsed wallclock time
+  d_next_time.tv_sec = d_next_time.tv_usec = 0L;
+
+/*
+  if (d_file)
+    fseek(d_file, 0L, SEEK_SET);
+*/
+
+  // BUG BUG BUG
+  // Doesn't replay the first log entry.
+  // This doesn't bite us because the first log entry is (should?)
+  // always be a TCP connection.
+
+  d_currentLogEntry = d_logHead;
+
+  return 0;
+}
+
+// virtual
+int vrpn_File_Connection::play_to_time (struct timeval newtime) {
+
+  if (vrpn_TimevalGreater(d_time, newtime))  // d_time > time to set to
+    return 0;
+    //CHECK(reset()); - this would permit play_to_time in the past
+    // with semantics Russ considers nonobvious
+
+  d_next_time = newtime;
+
+  return 0;
+}
+
 // static
 int vrpn_File_Connection::handle_set_replay_rate
          (void * userdata, vrpn_HANDLERPARAM p) {
@@ -279,28 +322,21 @@ int vrpn_File_Connection::handle_reset
 
 fprintf(stderr, "In vrpn_File_Connection::handle_reset().\n");
 
-  me->d_start_time.tv_sec = me->d_start_time.tv_usec = 0L;
-  me->d_time.tv_sec = me->d_time.tv_usec = 0L;
+  return me->reset();
+}
 
-  // elapsed file time
-  me->d_runtime.tv_sec = me->d_runtime.tv_usec = 0L;
+// static
+int vrpn_File_Connection::handle_play_to_time
+         (void * userdata, vrpn_HANDLERPARAM p) {
+  vrpn_File_Connection * me = (vrpn_File_Connection *) userdata;
+  struct timeval newtime;
 
-  // elapsed wallclock time
-  me->d_next_time.tv_sec = me->d_next_time.tv_usec = 0L;
+fprintf(stderr, "In vrpn_File_Connection::handle_play_to_time().\n");
 
-/*
-  if (me->d_file)
-    fseek(me->d_file, 0L, SEEK_SET);
-*/
+  newtime.tv_sec = ((long *) (p.buffer))[0];
+  newtime.tv_usec = ((long *) (p.buffer))[1];
 
-  // BUG BUG BUG
-  // Doesn't replay the first log entry.
-  // This doesn't bite us because the first log entry is (should?)
-  // always be a TCP connection.
-
-  me->d_currentLogEntry = me->d_logHead;
-
-  return 0;
+  return me->play_to_time(newtime);
 }
 
 

@@ -1,6 +1,8 @@
 #ifndef VRPN_FILE_CONTROLLER_H
 #define VRPN_FILE_CONTROLLER_H
 
+#include <sys/time.h>  // for struct timeval
+
 class vrpn_Connection;  // from vrpn_Connection.h
 
 // class vrpn_File_Controller
@@ -23,6 +25,14 @@ class vrpn_File_Controller {
     void reset (void);
       // Returns to the beginning of the file.
       // Does NOT reset rate to 1.0.
+      // Equivalent to set_to_time(< 0L, 0L >)
+
+    void play_to_time (struct timeval t);
+      // Goes to an arbitrary elapsed time t in the file,
+      // triggering all events between the current time and t.
+      // Does not work in the past (use reset() first).
+
+    //void jump_to_time (struct timeval t);
 
   protected:
 
@@ -32,6 +42,8 @@ class vrpn_File_Controller {
 
     long d_set_replay_rate_type;
     long d_reset_type;
+    long d_play_to_time_type;
+    //long d_jump_to_time_type;
 };
 
 

@@ -17,6 +17,8 @@ vrpn_File_Controller::vrpn_File_Controller (vrpn_Connection * c) :
         c->register_message_type("vrpn File set replay rate");
   d_reset_type =
         c->register_message_type("vrpn File reset");
+  d_play_to_time_type =
+        c->register_message_type("vrpn File play to time");
 }
 
 vrpn_File_Controller::~vrpn_File_Controller (void) {
@@ -45,6 +47,15 @@ void vrpn_File_Controller::reset (void) {
   gettimeofday(&now, NULL);
   d_connection->pack_message(0, now,
                 d_reset_type, d_myId, NULL,
+                vrpn_CONNECTION_RELIABLE);  // | vrpn_CONNECTION_LOCAL_ONLY
+};
+
+void vrpn_File_Controller::play_to_time (struct timeval t) {
+  struct timeval now;
+
+  gettimeofday(&now, NULL);
+  d_connection->pack_message(sizeof(struct timeval), now,
+                d_play_to_time_type, d_myId, (const char *) &t,
                 vrpn_CONNECTION_RELIABLE);  // | vrpn_CONNECTION_LOCAL_ONLY
 };
 
