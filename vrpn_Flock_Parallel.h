@@ -58,7 +58,8 @@ class vrpn_Tracker_Flock_Parallel: public vrpn_Tracker_Flock {
   // slave ports in a array with cSensors elements
   vrpn_Tracker_Flock_Parallel(char *name, vrpn_Connection *c, int cSensors,
 			      char *port, long baud,
-			      char *slavePortArray[] );
+			      char *slavePortArray[],
+			      bool invertQuaternion = false);
     
   virtual ~vrpn_Tracker_Flock_Parallel();
   virtual void mainloop();

@@ -44,7 +44,7 @@ class vrpn_Tracker_Flock: public vrpn_Tracker_Serial {
  public:
   vrpn_Tracker_Flock(char *name, vrpn_Connection *c, int cSensors=1,
 		     char *port = "/dev/ttyd3", long baud = 38400,
-		     int fStreamMode = 1, int useERT=1);
+		     int fStreamMode = 1, int useERT=1, bool invertQuaternion = false);
   virtual ~vrpn_Tracker_Flock();
     
  protected:
@@ -58,7 +58,8 @@ class vrpn_Tracker_Flock: public vrpn_Tracker_Serial {
   int fStream;  // stream or polled mode
   int fGroupMode; // for get_report -- group report mode or individual
 
-  int useERT;	// do we have an extended range transmitter, this was the default
+  int d_useERT;	// do we have an extended range transmitter, this was the default
+  bool d_invertQuaternion;	// Do we invert the Quaternion before returning it?
 
   // class members used to help with error recovery
   int cResets;

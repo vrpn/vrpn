@@ -33,6 +33,7 @@
 #include <netinet/in.h>
 #endif
 
+#include "quat.h"
 #include "vrpn_Tracker.h"
 #include "vrpn_Flock.h"
 #include "vrpn_Serial.h"
@@ -229,9 +230,10 @@ int vrpn_Tracker_Flock::checkError() {
 
 vrpn_Tracker_Flock::vrpn_Tracker_Flock(char *name, vrpn_Connection *c, 
 				       int cSensors, char *port, long baud,
-				       int fStreamMode, int useERT ) :
+				       int fStreamMode, int useERT, bool invertQuaternion ) :
   vrpn_Tracker_Serial(name,c,port,baud), cSensors(cSensors), cResets(0),
-  fStream(fStreamMode), fGroupMode(1), cSyncs(0), fFirstStatusReport(1), useERT(useERT) {
+  fStream(fStreamMode), fGroupMode(1), cSyncs(0), fFirstStatusReport(1), d_useERT(useERT),
+  d_invertQuaternion(invertQuaternion) {
     if (cSensors>MAX_SENSORS) {
       fprintf(stderr, "\nvrpn_Tracker_Flock: too many sensors requested ... only %d allowed (%d specified)", MAX_SENSORS, cSensors );
       cSensors = MAX_SENSORS;
@@ -367,7 +369,7 @@ void vrpn_Tracker_Flock::reset()
    reset[resetLen++]=50;
 
    // number of units (xmitter + receivers)
-   reset[resetLen++]= cSensors+useERT;
+   reset[resetLen++]= cSensors+d_useERT;
 
    // as per pg 59 of the jan 31, 1995 FOB manual, we need to pause at
    // least 300 ms before and after sending the autoconfig (paused above)
@@ -395,7 +397,7 @@ void vrpn_Tracker_Flock::reset()
    // pos/quat mode sent to each receiver (transmitter is unit 1)
    // 0xf0 + addr is the cmd to tell the master to forward a cmd
    for (i=1;i<=cSensors;i++) {
-     reset[resetLen++] = 0xf0 + i + useERT;
+     reset[resetLen++] = 0xf0 + i + d_useERT;
      reset[resetLen++] = ']';
    }
 
@@ -403,7 +405,7 @@ void vrpn_Tracker_Flock::reset()
    // as above, first part is rs232 to fbb, 'L' is hemisphere
    // 0xC is the 'axis' (lower), and 0x0 is the 'sign' (lower)
    for (i=1;i<=cSensors;i++) {
-     reset[resetLen++] = 0xf0 + i + useERT;
+     reset[resetLen++] = 0xf0 + i + d_useERT;
      reset[resetLen++] = 'L';
      reset[resetLen++] = 0xc;
      reset[resetLen++] = 0;
@@ -458,7 +460,7 @@ void vrpn_Tracker_Flock::reset()
    
    // check the configuration ...
    int fOk=1;
-   for (i=0;i<=cSensors-1+useERT;i++) {
+   for (i=0;i<=cSensors-1+d_useERT;i++) {
      fprintf(stderr, "\nvrpn_Tracker_Flock: unit %d", i);
      if (response[i] & 0x20) {
        fprintf(stderr," (a receiver)");
@@ -642,27 +644,24 @@ int vrpn_Tracker_Flock::get_report(void)
    }
    d_quat[3] = (double)(rgs[3] * WTF);
 
-   // KEY: the flock is unusual -- most trackers report back the
-   //      transform xfSourceFromSensor, which you can apply
-   //      to points in sensor space to get the coords of those
-   //      points in src space.  The flock is strange, it reports
-   //      the pos of the sensor in the src space (fine), and
-   //      then it reports how to rotate the sensor axes to
-   //      coincide with the src axes -- the inverse of the quat
-   //      needed for xfSrcFromSensor.  So that the flock is 
-   //      consistent with all other trackers, we invert the quat
-   //      here (since we assume quat is normalized, we can form 
-   //      the inverse by rotating about the opp axis)
+   // Because the Flock was used at UNC by having the transmitter
+   // above the user, we were always operating in the wrong hemisphere.
+   // According to the Flock manual, the Flock should report things
+   // in the same way other trackers do.  The original code inverted
+   // the Quaternion value before returning it, probably because of this
+   // hemisphere problem.  Sebastien Maraux pointed out the confusion.
+   // To Enable either mode to work, the code now has an optional parameter
+   // that will invert the quaternion, but it is not the default anymore.
+   // Others must have been using the Flock in the same manner, because
+   // they didn't see a problem with this code.
    
-   d_quat[0] = -d_quat[0];
-   d_quat[1] = -d_quat[1];
-   d_quat[2] = -d_quat[2];
+   if (d_invertQuaternion) { q_invert(d_quat, d_quat); }
 
    if (fGroupMode) {
      // sensor addr are 0 indexed in vrpn, but start at 2 in the flock 
      // (1 is the transmitter)
 //     d_sensor = buffer[RECORD_SIZE-1]-2;
-     d_sensor = buffer[RECORD_SIZE-1]-1-useERT;
+     d_sensor = buffer[RECORD_SIZE-1]-1-d_useERT;
    }      
 
    // all set for this sensor, so cycle

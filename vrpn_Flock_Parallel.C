@@ -63,8 +63,9 @@ vrpn_Tracker_Flock_Parallel::vrpn_Tracker_Flock_Parallel(char *name,
 							 int cSensors, 
 							 char *port, 
 							 long baud,
-							 char *slavePortArray[]) :
-  vrpn_Tracker_Flock(name,c,cSensors,port,baud,0)
+							 char *slavePortArray[],
+							 bool invertQuaternion) :
+  vrpn_Tracker_Flock(name,c,cSensors,port,baud,0, 1, invertQuaternion)
 {
   if (cSensors<=0) {
     fprintf(stderr, "\nvrpn_Tracker_Flock_Parallel: must ask for pos num "

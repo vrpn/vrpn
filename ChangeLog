@@ -1,3 +1,13 @@
+2003-12-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Flock.h : Added an optional flag to tell whether to invert
+		the Quaternion orientation report before sending it back.
+		This has been done always in the past, but it was probably
+		a hack to make the sensors work in the wrong hemisphere.
+	* vrpn_Flock.C : Same.
+	* vrpn_Flock_Parallel.h : Same.
+	* vrpn_Flock_Parallel.C : Same.
+
 2003-12-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Analog_5dt.h : Added optional parameter to make it try
