@@ -1,0 +1,233 @@
+[General]
+FileVersion=1.1
+FileType=QSetupIniFile
+ComposerVersion=5.0.0.0
+OperatingSystem=WinXP  5.1  2600 (Service Pack 2)
+
+[Project]
+ProjectName=Nikon_focus_control
+ProjectDirectory=F:\taylorr\STM\src\vrpn\installers\Nikon_focus_control
+NonSFXDirectory=F:\taylorr\STM\src\vrpn\installers\Nikon_focus_control\NonSFX
+MediaFileName=nikon_focus_control_v01.00
+CopyMediaToFName=
+ProgramDescriptiveName=Nikon Focus Control v01.00
+ProgramVersion=01.00
+CompanyName=UNC Nanoscale Science Research Group
+ProgVerLiveUpdate=0
+RegisterAsApp=1
+LanguageFlag=1
+LanguageNames=|
+UseNonSFXDir=0
+ClrNonSFXDir=0
+CompressNonSFXFiles=0
+ForceCopyNonSFXFiles=0
+CompressionLevel=0
+
+[Display]
+AddSetupBackground=1
+SetupBackground3D=0
+TopLabel=1
+TopLabelVer=0
+TopLabel2=0
+BottomLabel=0
+TopLabelText="Nikon Focus Control v01.00"
+TopLabel2Text=""
+BottomLabelText="Copyright © 2004"
+BackgroundDesign=Windmill (Right)
+TopBackgroundColor=16758613
+BottomBackgroundColor=11613445
+AddBottomColor=1
+DlgBmp3DFrame=1
+DialogStyle=Modern
+AddDialogBitmap=0
+DialogBitmapFileName=
+AddBackgroundBitmap=0
+BackgroundBitmapFileName=
+BackgroundBitmapLocation=|Top/Left|0|0|
+AddBackgroundWave=0
+BgBmpTransparent=0
+BackgroundWaveFileName=
+BackgroundWaveLocation=|Center|300|0|
+BackgroundWaveLoop=1
+BackgroundWaveDelay=0
+AddBackgroundWaveSlider=1
+BackgroundWaveSliderType=Fixed
+TopLabelSide=Left
+TopLabel2Side=Left
+BottomLabelSide=Left
+DialogLocation=|Center|0|0|
+TopLabelFont=|Tahoma|32|16777215|1|0|1|0|
+TopLabel2Font=|Tahoma|16|16777215|1|0|1|0|
+BottomLabelFont=|Tahoma|10|16777215|1|0|1|0|
+CompanyUrl=
+
+[TargetExe]
+TargetDirectory=<AbsoluteDir>C:\NSRG\bin\Nikon focus control 01.00
+CommonDirectory=<CommonFilesDir>UNC Nanoscale Science Research Group
+AuxDirectory=<FontDir>
+TargetExeName=<Application Folder>\vrpn_server.exe
+RunTimeDir_1=|||||||1||||1||1|<ProgramFilesDir>|||||
+RunTimeDir_2=|||||||1||||1||1|<ProgramFilesDir>|||||
+RunTimeDir_3=|||||||1||||1||1|<ProgramFilesDir>|||||
+
+[Dialogs]
+SelectedDialogs=*Welcome,License,Readme,User Information,Setup Type,Custom,*Destination,Associate,*Shortcuts,*Confirm Setup,*Copy Files,*Complete
+LicenseTextFile=
+ReadmeTextFile=
+ReadmeTextFile2=
+UseNotepad=0
+SpaceReqOnDriveCheckBox=0
+SpaceReqOnDrive=
+RequestUserName=1
+RequestCompanyName=1
+RequestSerialNumberAlso=0
+MandatoryUserName=1
+MandatoryCompanyName=1
+MandatorySerialNumber=1
+RequestSerialCheckDLL=0
+SerialCheckDll=
+RequestPredefinedSerial=0
+CaseSensitiveSerial=0
+RequestTokenizedSerial=0
+CDSetup=0
+ShowCompactSetupAlso=1
+ForcePartialSetup=0
+ShowProgBar2=0
+SilentSetup=0
+ProposeReadme=0
+ProposeLaunch=1
+ProposeRestart=0
+ProposeReadmeChecked=0
+ProposeLaunchChecked=0
+ShowCloseRecommendation=0
+ShowAdwareDisclaimer=0
+ShowCopyrightWarning=1
+
+[Shortcuts]
+AddMainShortCut=1
+ForceRemoveShortcutFolder=0
+ProgramLinkFolder=NSRG\Nikon Focus Control v01.00
+ProgramLinkName=VRPN Nikon Focus Control Server Artemis
+ProgramLinkParam=-f vrpn_artemis.cfg
+ProgramLinkWorkDir=<Application Folder>
+ProgramLinkRun=Normal Window
+ProgramLinkIconFile=
+ProgramLinkIconNum=0
+StartMenuLinkName=Nikon Focus Control v01.00
+DesktopLinkName=Nikon Focus Control Artemis v01.00
+SendToLinkName=Nikon Focus Control v01.00
+StartUpLinkName=Nikon Focus Control v01.00
+QuickLaunchLinkName=Nikon Focus Control v01.00
+StartMenuCheckBox=0
+DesktopCheckBox=1
+SendToCheckBox=0
+StartUpCheckBox=0
+QuickLaunchCheckBox=0
+StartMenuChecked=1
+DesktopChecked=1
+SendToChecked=1
+StartUpChecked=1
+QuickLaunchChecked=1
+SetAllUsers=1
+AddUninstallShortcut=1
+Item-000=*|VRPN Nikon Focus Control Server Hercules|<Application Folder>\vrpn_server.exe|NSRG\Nikon Focus Control v01.00|-f vrpn_hercules.cfg|<Application Folder>|Normal Window||0|1||0|
+
+[Billboard]
+AddBillboard=1
+Item-000=|1|0|0|1|0|Center|0|0|8388608|16711680|Verdana|14|16777215|1|0|360|360|0|1|
+
+[SplitSetup]
+SplitSetup=0
+ForceDownload=1
+DownloadURL_SPLIT=http://
+ConfirmSplitDownload=0
+
+[AutoUpdate]
+AutoUpdate=0
+RunAutoUpdate=1
+AddAutoUpdateShortcut=1
+ReqConfirmDownload=0
+ReqConfirmInstall=0
+ShutDownMethod=Don't Shut Down
+BackgroundUpdate=0
+RestartProcess=0
+InformFinish=0
+UpdateProjectFName=
+DownloadURL_UPDATE=http:/
+NameOfUpdateFile=
+RunningProcess=
+VersionOriginal=1
+ValidVersions=
+VersionNew=1
+ReAskDays=0
+AutoUpdateProbeSpin=1
+AutoUpdateProbeText=Only at Agent Start
+
+[Switches]
+OperatingSystems=All,95,98,ME,NT,2000,XP,2003
+OverwriteFlag=1
+CreateUnInstall=1
+ScrambleUnInstallData=0
+HideErrMsgUnInstall=0
+HideLogBtnUnInstall=0
+AddRemoveProgramsUnInstall=1
+AddRemoveButtonButtonInstall=1
+UnInstallExeStampSwitch=0
+UnInstallExeStamp=
+CreateLogFile=0
+ConfirmExtract=0
+TestAdminRights=0
+TestAdminRightsUnInstall=0
+SetAllowFullAccess=0
+TestDotNetFramework=0
+TestExeBeforeInstall=0
+TestExeBeforeUnInstall=0
+AutorunCreateInfFile=0
+AutorunTest=0
+AutorunStartApp=0
+
+[Registry]
+
+[IniFile]
+
+[Environment]
+
+[Association]
+OpenWith=0
+OpenWithName=
+OpenWithMenuText=Open with 
+OpenWithExtensions=
+
+[VerInfo]
+CopyFromExe=0
+DefineManually=0
+Item-001=|Comments||
+Item-002=|CompanyName||
+Item-003=|FileDescription||
+Item-004=|FileVersion||
+Item-005=|InternalName||
+Item-006=|LegalCopyright||
+Item-007=|LegalTrademarks||
+Item-008=|OriginalFilename||
+Item-009=|ProductName||
+Item-010=|ProductVersion||
+CopyIconFromTargetExe=0
+CopyIconFromOtherApp=0
+OtherIconAppFileName=
+Spin1=0
+Spin2=0
+
+[Execute]
+ExecuteDllCheckBox=0
+ExecutionDllFileName=
+
+[GroupNames]
+Group-000=Main Group
+
+[Group-000]
+TypicalCompactData=15
+Description=This is the main group of files
+Item-000=Fol*<Application Folder>[0]
+Item-001=Fil*F:\taylorr\STM\src\vrpn\installers\Nikon_focus_control\vrpn_artemis.cfg
+Item-002=Fil*F:\taylorr\STM\src\vrpn\installers\Nikon_focus_control\vrpn_hercules.cfg
+Item-003=Fil*F:\taylorr\STM\src\vrpn\pc_win32\server_src\vrpn_server\Release\vrpn_server.exe
