@@ -88,7 +88,10 @@ void vrpn_Analog::report_changes (void) {
 
 void vrpn_Analog::report (void) {
 
-    char msgbuf [1000];
+    // msgbuf must be float64-aligned!
+    vrpn_float64 fbuf [125];
+    char * msgbuf = (char *) fbuf;
+
     vrpn_int32  len;
 
     gettimeofday(&timestamp, NULL);

@@ -127,7 +127,9 @@ extern int gettimeofday(struct timeval *tp, struct timezone *tzp);
 // #define close closesocket
 
 #else
-#include <sys/time.h>
+
+#include <sys/time.h>    // for struct timeval
+
 #endif  // not _WIN32
 
 extern struct timeval vrpn_TimevalSum( const struct timeval& tv1, 
