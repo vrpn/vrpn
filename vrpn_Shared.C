@@ -105,7 +105,7 @@ struct timeval vrpn_MsecsTimeval( const double dMsecs ) {
 
 void vrpn_SleepMsecs( double dMsecs ) {
 #ifdef _WIN32
-  Sleep(dMsecs);
+  Sleep(DWORD(dMsecs));
 #else
   struct timeval tvStart, tvNow;
   gettimeofday(&tvStart, NULL);
@@ -179,7 +179,7 @@ static int vrpn_AdjustFrequency(void)
   const int tPerLoop = 500; // milliseconds for Sleep()
   cerr.precision(4);
   cerr.setf(ios::fixed);
-  cerr << "vrpn gettimeofday: determining clock frequency ...";
+  cerr << "vrpn gettimeofday: determining clock frequency...";
 
   LARGE_INTEGER startperf, endperf;
   LARGE_INTEGER perffreq;
@@ -220,7 +220,7 @@ static int vrpn_AdjustFrequency(void)
   // need an accurate frequency measure, so ...
 
   cerr << " (this will take " << setprecision(0) << loops*tPerLoop/1000.0 
-       << " seconds) ... " << endl;
+       << " seconds)... " << endl;
   cerr.precision(4);
 
   for (int j = 0; j < loops; j++) {
