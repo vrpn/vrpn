@@ -417,7 +417,7 @@ clean:
                $(OBJECT_DIR)/libvrpn_g++.a $(SLIB_OBJECTS) \
                $(OBJECT_DIR)/libvrpnserver.a \
                $(OBJECT_DIR)/libvrpnserver_g++.a \
-               .depend .depend-old
+               $(OBJECT_DIR)/.depend $(OBJECT_DIR)/.depend-old
 ifneq (xxx$(FORCE_GPP),xxx1)
 	@echo -----------------------------------------------------------------
 	@echo -- Wart: type \"$(MAKE) clean_g++\" to clean up after g++
@@ -498,12 +498,14 @@ include $(OBJECT_DIR)/.depend
 depend:
 	-$(MVF) $(OBJECT_DIR)/.depend $(OBJECT_DIR)/.depend-old
 	$(MAKE) $(OBJECT_DIR)/.depend
-$(OBJECT_DIR)/.depend: $(OBJECT_DIR)
+
+$(OBJECT_DIR)/.depend:
 	@echo ----------------------------------------------------------------
 	@echo -- Making dependency file.  If you add files to the makefile,
 	@echo -- or add/remove includes from a .h or .C file, then you should
 	@echo -- remake the dependency file by typing \"$(MAKE) depend\"
 	@echo ----------------------------------------------------------------
+	-mkdir $(OBJECT_DIR)
 ifeq ($(HW_OS),hp700_hpux10)
 	@echo -- $(HW_OS): Using g++ since HP CC does not understand -M
 	@echo -- if this causes an error, then delete .depend and type
