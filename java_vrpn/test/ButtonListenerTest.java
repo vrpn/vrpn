@@ -11,7 +11,7 @@ public class ButtonListenerTest
 		
 		try
 		{
-			button = new vrpn.ButtonRemote(buttonName);
+			button = new vrpn.ButtonRemote(buttonName, null, null, null, null );
 		}
 		
 		catch(InstantiationException e)

@@ -1,3 +1,5 @@
+import java.io.*;
+import java.util.*;
 import vrpn.*;
 
 public class TrackerTest 
@@ -45,13 +47,19 @@ public class TrackerTest
 		TrackerRemote tracker = null;
 		try
 		{
-			tracker = new TrackerRemote( trackerName );
+			tracker = new TrackerRemote( trackerName, "localIn", "localOut", "remoteIn", "remoteOut" );
 		}
 		catch( InstantiationException e )
 		{
 			// do something b/c you couldn't create the tracker
 			System.out.println( "We couldn't connect to tracker " + trackerName + "." );
 			System.out.println( e.getMessage( ) );
+		DataInputStream in = new DataInputStream(System.in);
+		try
+		{
+			String s = in.readLine();
+		}
+		catch( IOException ioe ) {}
 			return;
 		}
 		
@@ -62,6 +70,7 @@ public class TrackerTest
 		
 		tracker.setUpdateRate( 2 );
 		
+
 	}
 	
 	

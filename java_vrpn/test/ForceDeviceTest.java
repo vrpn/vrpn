@@ -45,7 +45,7 @@ public class ForceDeviceTest
 		ForceDeviceRemote forceDevice = null;
 		try
 		{
-			forceDevice = new ForceDeviceRemote( forceDeviceName );
+			forceDevice = new ForceDeviceRemote( forceDeviceName, null, null, null, null );
 		}
 		catch( InstantiationException e )
 		{

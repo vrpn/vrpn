@@ -20,7 +20,7 @@ public class ButtonTest
 		ButtonRemote button = null;
 		try
 		{
-			button = new ButtonRemote( buttonName );
+			button = new ButtonRemote( buttonName, null, null, null, null );
 		}
 		catch( InstantiationException e )
 		{

@@ -1,3 +1,10 @@
+2002-09-16  David Marshburn  <marshbur@cs.unc.edu>
+
+	* ButtonListenerTest.java, ButtonTest.java, ForceDeviceTest.java,
+	TrackerTest.java:  use new constructors with log file arguments.
+	* .cvsignore:  ignore dll files in this directory
+	* test.vjp:  changed debugging/execution options
+
 2002-09-12  David Marshburn  <marshbur@cs.unc.edu>
 
 	* AnalogListenerTest.java:  fixed up this example to match recent
