@@ -59,6 +59,8 @@ vrpn_File_Connection::vrpn_File_Connection (const char * file_name) :
 
   d_start_time.tv_sec = d_start_time.tv_usec = 0L;
   d_next_time.tv_sec = d_next_time.tv_usec = 0L;  // simulated elapsed time
+  d_now_time.tv_sec = d_now_time.tv_usec = 0L;
+    // necessary for last_time to initialize properly in mainloop()
 
   bare_file_name = vrpn_copy_file_name(file_name);
   if (!bare_file_name) {
@@ -66,7 +68,7 @@ vrpn_File_Connection::vrpn_File_Connection (const char * file_name) :
     return;
   }
 
-  d_file = fopen(bare_file_name, "r");
+  d_file = fopen(bare_file_name, "rb");
   if (!d_file)
     fprintf(stderr, "vrpn_File_Connection:  "
                     "Could not open file \"%s\".\n", bare_file_name);
@@ -120,7 +122,8 @@ int vrpn_File_Connection::mainloop (void) {
   // return 0 if nothing to read OR end-of-file;
   // the latter isn't an error state
   if (retval <= 0) {
-    close_file();
+    // Don't close the file because we might get a reset message...
+    // close_file();
     return 0;
   }
 
@@ -142,7 +145,8 @@ int vrpn_File_Connection::mainloop (void) {
   // return 0 if nothing to read OR end-of-file;
   // the latter isn't an error state
   if (retval <= 0) {
-    close_file();
+    // Don't close the file because we might get a reset message...
+    //close_file();
     return 0;
   }
 
@@ -213,7 +217,7 @@ int vrpn_File_Connection::handle_set_replay_rate
 #else
 
   int value = ntohl(*(int *) (p.buffer));
-  me->d_rate = *((float *) value);
+  me->d_rate = *((float *) &value);
 
 #endif
 
@@ -225,13 +229,19 @@ int vrpn_File_Connection::handle_reset
          (void * userdata, vrpn_HANDLERPARAM) {
   vrpn_File_Connection * me = (vrpn_File_Connection *) userdata;
 
-  me->d_time = me->d_start_time;
+fprintf(stderr, "In vrpn_File_Connection::handle_reset().\n");
+
+  me->d_start_time.tv_sec = me->d_start_time.tv_usec = 0L;
+  me->d_time.tv_sec = me->d_time.tv_usec = 0L;
 
   // elapsed file time
   me->d_runtime.tv_sec = me->d_runtime.tv_usec = 0L;
 
   // elapsed wallclock time
   me->d_next_time.tv_sec = me->d_next_time.tv_usec = 0L;
+
+  if (me->d_file)
+    fseek(me->d_file, 0L, SEEK_SET);
 
   return 0;
 }

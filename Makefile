@@ -248,19 +248,22 @@ $(SOBJECT_DIR):
 
 LIB_FILES =  vrpn_Connection.C vrpn_Tracker.C vrpn_Button.C \
 	     vrpn_Sound.C vrpn_ForceDevice.C vrpn_Clock.C vrpn_Shared.C \
-	     vrpn_Ohmmeter.C vrpn_Analog.C vrpn_FileConnection.C
+	     vrpn_Ohmmeter.C vrpn_Analog.C vrpn_FileConnection.C \
+             vrpn_FileController.C
 
 LIB_OBJECTS = $(patsubst %,$(OBJECT_DIR)/%,$(LIB_FILES:.C=.o))
 
 LIB_INCLUDES = vrpn_Connection.h vrpn_Tracker.h vrpn_Button.h \
 	       vrpn_Sound.h vrpn_ForceDevice.h vrpn_Clock.h vrpn_Shared.h \
-	       vrpn_Ohmmeter.h vrpn_Analog.h vrpn_FileConnection.h
+	       vrpn_Ohmmeter.h vrpn_Analog.h vrpn_FileConnection.h \
+               vrpn_FileController.h
 
 SLIB_FILES =  vrpn_Connection.C vrpn_Tracker.C vrpn_3Space.C vrpn_Button.C \
 	     vrpn_Sound.C vrpn_ForceDevice.C vrpn_Clock.C vrpn_Shared.C \
 	     vrpn_Flock.C vrpn_Tracker_Fastrak.C vrpn_Dyna.C \
 	     vrpn_Flock_Parallel.C  vrpn_Joystick.C vrpn_Analog.C \
-	     vrpn_JoyFly.C vrpn_sgibox.C vrpn_FileConnection.C
+	     vrpn_JoyFly.C vrpn_sgibox.C vrpn_FileConnection.C \
+             vrpn_FileController.C
 
 # NO NO NO!
 # We aren't supposed to have architecture-dependent sets of files used.
@@ -275,14 +278,14 @@ SLIB_FILES =  vrpn_Connection.C vrpn_Tracker.C vrpn_3Space.C vrpn_Button.C \
 #	     vrpn_JoyFly.C vrpn_sgibox.C vrpn_FileConnection.C
 #endif
 
-# Until we have tracker.h, we can't compile vrpn_Tracker_Ceiling
-
 SLIB_OBJECTS = $(patsubst %,$(SOBJECT_DIR)/%,$(SLIB_FILES:.C=.o))
 
 SLIB_INCLUDES = vrpn_Connection.h vrpn_Tracker.h vrpn_3Space.h vrpn_Button.h \
 	       vrpn_Sound.h vrpn_ForceDevice.h vrpn_Clock.h vrpn_Shared.h \
 	       vrpn_Flock.h vrpn_Flock_Parallel.h vrpn_FileConnection.h \
-		vrpn_sgibox.h
+               vrpn_sgibox.h vrpn_FileController.h vrpn_Analog.h \
+               vrpn_Dyna.h vrpn_JoyFly.h vrpn_Joystick.h vrpn_Ohmmeter.h \
+               vrpn_Tracker_Fastrak.h
 
 
 $(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(OBJECT_DIR) $(LIB_OBJECTS) \
@@ -308,12 +311,6 @@ ifneq ($(CC), g++)
 	$(MAKE) FORCE_GPP=1 clean
 endif
 
-VRPN_INCLUDES := vrpn_3Space.h vrpn_Analog.h vrpn_Button.h vrpn_Clock.h \
-                 vrpn_Connection.h vrpn_Dyna.h vrpn_Flock.h \
-                 vrpn_Flock_Parallel.h vrpn_ForceDevice.h vrpn_JoyFly.h \
-                 vrpn_Joystick.h vrpn_Ohmmeter.h vrpn_Shared.h vrpn_Sound.h \
-                 vrpn_Tracker.h vrpn_Tracker_Fastrak.h vrpn_sgibox.h
-
 beta :
 	$(MAKE) clean
 	$(MAKE) all
@@ -322,8 +319,8 @@ beta :
             $(BETA_LIB_DIR)/$(OBJECT_DIR)
 	-ranlib $(BETA_LIB_DIR)/$(OBJECT_DIR)/libvrpn.a
 	-ranlib $(BETA_LIB_DIR)/$(OBJECT_DIR)/libvrpnserver.a
-	-( cd $(BETA_INCLUDE_DIR); /bin/rm -f $(VRPN_INCLUDES) )
-	cp $(VRPN_INCLUDES) $(BETA_INCLUDE_DIR) 
+	-( cd $(BETA_INCLUDE_DIR); /bin/rm -f $(SLIB_INCLUDES) )
+	cp $(SLIB_INCLUDES) $(BETA_INCLUDE_DIR) 
 
 #############################################################################
 #

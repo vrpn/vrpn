@@ -304,29 +304,41 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
 		vrpn_ForceDevice::connection = NULL;
   }
 
-  // UNREGISTER the default handler, register our own.
-  if (vrpn_Tracker::connection->unregister_handler
-       (update_rate_id,
-        vrpn_Tracker::handle_update_rate_request, this,
-        vrpn_ForceDevice::my_id)) {
-                fprintf(stderr,"vrpn_Phantom:  "
-                        "Can't unregister default update-rate handler\n");
-                vrpn_Tracker::connection = NULL;
-  }
-  if (vrpn_Tracker::connection->register_handler
-       (update_rate_id, handle_update_rate_request, this,
-        vrpn_ForceDevice::my_id)) {
-                fprintf(stderr, "vrpn_Phantom:  "
-                                "Can't register update-rate handler\n");
-                vrpn_Tracker::connection = NULL;
-  }
-
 
   this->register_plane_change_handler(this, handle_plane);
 
 
   if (vrpn_Tracker::register_server_handlers())
     fprintf(stderr, "vrpn_Phantom: couldn't register xform request handlers\n");
+
+  // UNREGISTER the default handler, register our own.
+  // Must be called after vrpn_Tracker::register_server_handlers()
+  // because unregister_handler doesn't seem to deal with the case of
+  // an unregistering a non-registered handler properly?
+
+  // We need to unregister the address of this-as-a-vrpn_Tracker, not this.
+
+  vrpn_Tracker * track_this = this;
+
+  if (vrpn_Tracker::connection->unregister_handler
+       (update_rate_id,
+        vrpn_Tracker::handle_update_rate_request, track_this,
+        vrpn_Tracker::my_id)) {
+                fprintf(stderr,"vrpn_Phantom:  "
+                        "Can't unregister default update-rate handler\n");
+                vrpn_Tracker::connection = NULL;
+  } else
+      fprintf(stderr, "vrpn_Phantom unregistered old update-rate handler.\n");
+
+
+  if (vrpn_Tracker::connection->register_handler
+       (update_rate_id, handle_update_rate_request, this,
+        vrpn_Tracker::my_id)) {
+                fprintf(stderr, "vrpn_Phantom:  "
+                                "Can't register update-rate handler\n");
+                vrpn_Tracker::connection = NULL;
+  } else
+      fprintf(stderr, "vrpn_Phantom registered new update-rate handler.\n");
 
 
   scene->startServoLoop();
@@ -855,14 +867,15 @@ int vrpn_Phantom::handle_update_rate_request (void * userdata,
   vrpn_Phantom * me = (vrpn_Phantom *) userdata;
 
   if (p.payload_len != sizeof(double)) {
-    fprintf(stderr, "vrpn_ForceDevice::handle_update_rate_request:  "
+    fprintf(stderr, "vrpn_Phantom::handle_update_rate_request:  "
                     "Got %d-byte message, expected %d bytes.\n",
             p.payload_len, sizeof(double));
     return -1;  // XXXshould this be a fatal error?
   }
 
   me->update_rate = ntohd(*((double *) p.buffer));
-
+  fprintf(stderr, "vrpn_Phantom:  set update rate to %.2f hertz.\n",
+          me->update_rate);
   return 0;
 }
 

@@ -153,6 +153,12 @@ class vrpn_Connection
 	virtual int time_since_connection_open
 	                        (struct timeval * elapsed_time);
 
+	// Returns the name of the specified sender/type, or NULL
+	// if the parameter is invalid.  Only works for user
+	// messages (type >= 0).
+	virtual const char * sender_name (long sender);
+	virtual const char * message_type_name (long type);
+
   protected:
   // Users should not create vrpn_Connection directly -- use 
   // vrpn_Synchronized_Connection (for servers) or 

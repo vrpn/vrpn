@@ -8,11 +8,15 @@
  * Update Count    : 50
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_sgibox.C,v $
- * $Date: 1998/06/26 15:49:03 $
+ * $Date: 1998/07/09 15:47:20 $
  * $Author: hudson $
- * $Revision: 1.4 $
+ * $Revision: 1.5 $
  * 
  * $Log: vrpn_sgibox.C,v $
+ * Revision 1.5  1998/07/09 15:47:20  hudson
+ * Fixed bugs in vrpn_ForceDevice.
+ * Implemented vrpn_FileController and its interface in vrpn_FileConnection.
+ *
  * Revision 1.4  1998/06/26 15:49:03  hudson
  * Wrote vrpn_FileConnection.
  * Changed connection naming convention.
@@ -32,14 +36,14 @@
 
 #ifdef sgi
 
-static char rcsid[] = "$Id: vrpn_sgibox.C,v 1.4 1998/06/26 15:49:03 hudson Exp $";
+static char rcsid[] = "$Id: vrpn_sgibox.C,v 1.5 1998/07/09 15:47:20 hudson Exp $";
 
 #include "vrpn_sgibox.h"
 #include <stdio.h>
 
 // all for gethostbyname();
 #include <unistd.h>
-int sgibox_con_cb(void * userdata, vrpn_HANDLERPARAM p);
+static int sgibox_con_cb(void * userdata, vrpn_HANDLERPARAM p);
 
 
 vrpn_SGIBox::vrpn_SGIBox(char * name, vrpn_Connection * c):

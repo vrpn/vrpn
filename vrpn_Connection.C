@@ -1473,6 +1473,22 @@ int vrpn_Connection::time_since_connection_open
   return 0;
 }
 
+// Returns the name of the specified sender/type, or NULL
+// if the parameter is invalid.
+// virtual
+const char * vrpn_Connection::sender_name (long sender) {
+  if ((sender < 0) || (sender >= num_my_senders)) return NULL;
+  return (const char *) my_senders[sender];
+}
+
+// virtual
+const char * vrpn_Connection::message_type_name (long type) {
+  if ((type < 0) || (type >= num_my_types)) return NULL;
+  return (const char *) my_types[type].name;
+}
+
+
+
 // Marshal the message into the buffer if it will fit.  Return the number
 // of characters sent.
 
