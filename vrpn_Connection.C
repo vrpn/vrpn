@@ -77,7 +77,7 @@ int gethostname (char *, int);
 // string.  Since minor versions should interoperate, MAGIC is only
 // checked through the last period;  characters after that are ignored.
 
-char * vrpn_MAGIC = (char *) "vrpn: ver. 04.03";
+char * vrpn_MAGIC = (char *) "vrpn: ver. 04.04";
 const int MAGICLEN = 16;  // Must be a multiple of vrpn_ALIGN bytes!
 
 // Version history:

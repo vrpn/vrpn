@@ -59,18 +59,18 @@ void noteon (int channel, int pitch, int vol)
 #ifdef	linux
 	char buf[4];
 #ifdef DEBUG
-	printf("Note on, chan=%d pitch=%d vol=%d\n",chan+1,pitch,vol);
+	printf("Note on, channel=%d pitch=%d vol=%d\n",channel+1,pitch,vol);
 #endif
 
-	if (chan >= 0)
+	if (channel >= 0)
 	{
 		buf[0] = SEQ_FMNOTEON;
-		buf[1] = chan;
+		buf[1] = channel;
 		buf[2] = pitch;
 		buf[3] = vol;
 		sbwrite(buf);	
 	} else {
-		midich(0x90+chan);
+		midich(0x90+channel);
 		midich(pitch);
 		midich(vol);
 	}

@@ -44,7 +44,7 @@ all:	$(OBJ_DIR)/sound_client $(OBJ_DIR)/printvals \
 	$(OBJ_DIR)/checklogfile $(OBJ_DIR)/logfilesenders \
 	$(OBJ_DIR)/logfiletypes $(OBJ_DIR)/text \
 	$(OBJ_DIR)/forwarderClient $(OBJ_DIR)/bdbox_client \
-	$(OBJ_DIR)/clock_client $(OBJ_DIR)/ff_client \
+	$(OBJ_DIR)/ff_client \
 	$(OBJ_DIR)/ohm_client $(OBJ_DIR)/phan_client \
 	$(OBJ_DIR)/sphere_client $(OBJ_DIR)/bdbox_client \
 	$(OBJ_DIR)/midi_client	

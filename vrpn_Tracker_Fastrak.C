@@ -1,89 +1,3 @@
-/*                               -*- Mode: C -*- 
- * 
- * This library is free software; you can redistribute it and/or          
- * modify it under the terms of the GNU Library General Public            
- * License as published by the Free Software Foundation.                  
- * This library is distributed in the hope that it will be useful,        
- * but WITHOUT ANY WARRANTY; without even the implied warranty of         
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU      
- * Library General Public License for more details.                       
- * If you do not have a copy of the GNU Library General Public            
- * License, write to The Free Software Foundation, Inc.,                  
- * 675 Mass Ave, Cambridge, MA 02139, USA.                                
- *                                                                        
- * For more information on this program, contact Blair MacIntyre          
- * (bm@cs.columbia.edu) or Steven Feiner (feiner@cs.columbia.edu)         
- * at the Computer Science Dept., Columbia University,                    
- * 500 W 120th St, Room 450, New York, NY, 10027.                         
- *                                                                        
- * Copyright (C) Blair MacIntyre 1995, Columbia University 1995           
- * 
- * Author          : Ruigang Yang
- * Created On      : Thu Jan 15 17:30:37 1998
- * Last Modified By: Ruigang Yang
- * Last Modified On: Tue Apr  7 13:21:36 1998
- * Update Count    : 414
- * 
- * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Tracker_Fastrak.C,v $
- * $Date: 1998/11/05 22:45:55 $
- * $Author: taylorr $
- * $Revision: 1.12 $
- * 
- * $Log: vrpn_Tracker_Fastrak.C,v $
- * Revision 1.12  1998/11/05 22:45:55  taylorr
- * This version strips out the serial-port code into vrpn_Serial.C.
- *
- * It also makes it so all the library files compile under NT.
- *
- * It also fixes an insidious initialization bug in the forwarder code.
- *
- * Revision 1.11  1998/06/05 19:30:47  taylorr
- * Slightly cleaner Fastrak driver.  It should work on SGIs as well as Linux.
- *
- * Revision 1.10  1998/06/05 17:13:15  taylorr
- * This version works on machines where float cannot be accessed on
- * unaligned memory boundaries.
- *
- * Revision 1.9  1998/06/04 16:05:53  taylorr
- * This version should compile at remote locations.
- * This version no longer requires the SDI library to run.  It does all
- * 	lookups by UDP callback based on host name for remote connections.
- * Some bug fixes.
- *
- * Revision 1.8  1998/04/07 17:27:15  ryang
- * change sensor id number starting from zeor
- *
- * Revision 1.7  1998/02/24 22:24:19  ryang
- * comment the printf debug function
- *
- * Revision 1.6  1998/02/20 20:27:00  hudson
- * Version 02.10:
- *   Makefile:  split library into server & client versions
- *   Connection:  added sender "VRPN Control", "VRPN Connection Got/Dropped"
- *     messages, vrpn_ANY_TYPE;  set vrpn_MAX_TYPES to 2000.  Bugfix for sender
- *     and type names.
- *   Tracker:  added Ruigang Yang's vrpn_Tracker_Canned
- *
- * Revision 1.5  1998/02/19 21:00:47  ryang
- * drivers for DynaSight
- *
- * Revision 1.4  1998/02/11 20:35:40  ryang
- * canned class
- *
- * Revision 1.3  1998/01/26 21:21:55  weberh
- * compiles on sgi in addition to linux
- *
- * Revision 1.2  1998/01/24 19:12:13  ryang
- * read one report at a time, no matter how many sensors are on.
- *
- * Revision 1.1  1998/01/22 21:08:51  ryang
- * add vrpn_Tracker_Fastrak.C to data base
- *
- * SCCS Status     : %W%	%G%
- * 
- * HISTORY
- */
-
 #include <time.h>
 #include <math.h>
 #include <stdlib.h>
@@ -363,7 +277,8 @@ void vrpn_Tracker_Fastrak::reset()
 }
 
 
-void vrpn_Tracker_Fastrak::get_report(void) {
+void vrpn_Tracker_Fastrak::get_report(void)
+{
   int ret;
   
   //fprintf(stderr,"get report %p\t%s:%d\n",this,  __FILE__, __LINE__);
@@ -1154,7 +1069,10 @@ int vrpn_Tracker_Fastrak::checkSubType(int bufIndex, int bufferLength)
 
 /*****************************************************************************
  *
-   xyz_quat_interpret - interpret report
+   xyz_quat_interpret - interpret report from the tracker and put into
+	the VRPN standard report format.  This includes changing the
+	inches to meters and converting the order of the quaternion
+	elements.
  *
  *****************************************************************************/
 
@@ -1181,8 +1099,10 @@ int vrpn_Tracker_Fastrak::xyz_quat_interpret(void)
 	// the position and orientation
 	dataPtr = dataList;
 
-	for (i = 0; i < 3; i++) {	// read position
+	// Read the position and convert from inches to meters.
+	for (i = 0; i < 3; i++) {
 		pos[i] = *dataPtr++;
+		pos[i] *= 0.0254;
 	}
 
 	// Q_W is first in the list, but last in the quat array

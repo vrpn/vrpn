@@ -1,48 +1,4 @@
-/*                               -*- Mode: C -*- 
- * 
- * 
- * Author          : Ruigang Yang
- * Created On      : Thu Apr 30 11:08:23 1998
- * Last Modified By: Ruigang Yang
- * Last Modified On: Thu May 14 10:41:07 1998
- * Update Count    : 50
- * 
- * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_sgibox.C,v $
- * $Date: 1998/08/31 15:00:08 $
- * $Author: taylorr $
- * $Revision: 1.7 $
- * 
- * $Log: vrpn_sgibox.C,v $
- * Revision 1.7  1998/08/31 15:00:08  taylorr
- * Removes print messages.
- *
- * Revision 1.6  1998/08/31 14:04:44  taylorr
- * This version fixes the button toggle code.
- *
- * Revision 1.5  1998/07/09 15:47:20  hudson
- * Fixed bugs in vrpn_ForceDevice.
- * Implemented vrpn_FileController and its interface in vrpn_FileConnection.
- *
- * Revision 1.4  1998/06/26 15:49:03  hudson
- * Wrote vrpn_FileConnection.
- * Changed connection naming convention.
- * Changed all the base classes to reflect the new naming convention.
- * Added #ifdef sgi around vrpn_sgibox.
- *
- * Revision 1.3  1998/05/14 14:45:25  ryang
- * modified vrpn_sgibox, so output is clamped to +-0.5, max 2 rounds
- *
- * Revision 1.1  1998/05/06 18:00:40  ryang
- * v0.1 of vrpn_sgibox
- *
- * SCCS Status     : %W%	%G%
- * 
- * HISTORY
- */
-
 #ifdef sgi
-
-static char rcsid[] = "$Id: vrpn_sgibox.C,v 1.7 1998/08/31 15:00:08 taylorr Exp $";
 
 #include "vrpn_sgibox.h"
 #include <stdio.h>
