@@ -54,18 +54,20 @@ $(OBJ_DIR)/%.o: %.C
 all:	$(OBJ_DIR)/sound_client $(OBJ_DIR)/printvals \
 	$(OBJ_DIR)/checklogfile $(OBJ_DIR)/logfilesenders \
 	$(OBJ_DIR)/logfiletypes $(OBJ_DIR)/text \
-	$(OBJ_DIR)/forwarderClient $(OBJ_DIR)/bdbox_client \
+	forwarderClient $(OBJ_DIR)/bdbox_client \
 	$(OBJ_DIR)/ff_client \
 	$(OBJ_DIR)/ohm_client $(OBJ_DIR)/phan_client \
 	$(OBJ_DIR)/sphere_client $(OBJ_DIR)/bdbox_client \
-	$(OBJ_DIR)/midi_client	
+	$(OBJ_DIR)/midi_client add_vrpn_cookie
 
-.PHONY:
+.PHONY:	forwarderClient
 forwarderClient:	$(OBJ_DIR)/forwarderClient
 
-.PHONY:
+.PHONY:	add_vrpn_cookie
+add_vrpn_cookie:	$(OBJ_DIR)/add_vrpn_cookie
+
+.PHONY:	text
 text:	$(OBJ_DIR)/text
-	@echo Done.
 
 $(OBJ_DIR)/sound_client: $(OBJ_DIR)/sound_client.o ../$(HW_OS)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/sound_client \
@@ -115,6 +117,10 @@ $(OBJ_DIR)/checklogfile: $(OBJ_DIR)/checklogfile.o ../$(HW_OS)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/checklogfile \
 		$(OBJ_DIR)/checklogfile.o -lvrpn $(ARCH_LIBS)
 
+$(OBJ_DIR)/add_vrpn_cookie: $(OBJ_DIR)/add_vrpn_cookie.o ../$(HW_OS)/libvrpn.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/add_vrpn_cookie \
+		$(OBJ_DIR)/add_vrpn_cookie.o -lvrpn $(ARCH_LIBS)
+
 # These utilities actually DON'T use libvrpn
 
 $(OBJ_DIR)/logfilesenders: $(OBJ_DIR)/logfilesenders.o
@@ -126,10 +132,7 @@ $(OBJ_DIR)/logfiletypes: $(OBJ_DIR)/logfiletypes.o
 
 
 clean:
-	rm -f *.o sound_client midi_client printvals \
-	checklogfile logfilesenders logfiletypes \
-	bdbox_client ff_client ohm_client phan_client sphere_client \
-	$(OBJ_DIR)/*
+	rm -f $(OBJ_DIR)/*
 
 ../$(HW_OS)/libvrpn.a:
 
