@@ -1653,6 +1653,7 @@ int setup_Tng3 (char * & pch, char * line, FILE * config_file) {
 
 //================================
 int setup_Tracker_InterSense(char * &pch, char *line, FILE * config_file) {
+#ifdef	VRPN_TRACKER_ISENSE
   char trackerName[LINESIZE];
   char commStr[100];
   int commPort;
@@ -1833,6 +1834,10 @@ int setup_Tracker_InterSense(char * &pch, char *line, FILE * config_file) {
       num_trackers++;
   }
 
+#endif
+#else
+	fprintf(stderr, "vrpn_server: Can't open Intersense native server: VRPN_USE_ISENSE not defined in vrpn_Configure.h!\n");
+	return -1;
 #endif
 
   return 0;

@@ -1,3 +1,8 @@
+2003-09-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * vrpn.C : Fixing things that broke the build.
+                Bad Russ.  No Cookie!
+
 2003-09-16  Blair MacIntyre     <blair@cc.gatech.edu>
 
 	* vrpn.C : Added handlers for wands and other things attached
