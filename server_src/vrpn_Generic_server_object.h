@@ -50,7 +50,7 @@
 #include "vrpn_ADBox.h"
 #include "vrpn_VPJoystick.h"
 #include "vrpn_Tracker_DTrack.h"
-#include "vrpn_Analog_Output_NI.h"
+#include "vrpn_NationalInstruments.h"
 #include "vrpn_Poser_Analog.h"
 #include "vrpn_nikon_controls.h"
 #include "vrpn_Poser_Tek4662.h"
@@ -166,7 +166,8 @@ protected:
   int setup_Spaceball (char * & pch, char * line, FILE * config_file);
   int setup_Radamec_SPI (char * & pch, char * line, FILE * config_file);
   int setup_Zaber (char * & pch, char * line, FILE * config_file);
-  int setup_NI (char * & pch, char * line, FILE * config_file);
+  int setup_NationalInstruments (char * & pch, char * line, FILE * config_file);
+  int setup_NationalInstrumentsOutput (char * & pch, char * line, FILE * config_file);
   int setup_ImmersionBox (char * & pch, char * line, FILE * config_file);
   int setup_5dt (char * & pch, char * line, FILE * config_file);
   int setup_Wanda (char * & pch, char * line, FILE * config_file);

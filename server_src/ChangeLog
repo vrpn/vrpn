@@ -1,3 +1,12 @@
+2005-02-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg : Added entries for NationalInstruments
+		server.  Modified Poser to add additional
+		parameter to turn off tracking reporting.
+	* vrpn_Generic_server_object.C : Added NationalInstruments
+		parser and generator.
+	* vrpn_Generic_server_object.h : Same.
+
 2005-02-01  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
         * Makefile : Added John Stone's definitions to make

@@ -45,41 +45,41 @@ protected:
 
 class VRPN_API vrpn_Analog_Output_Server : public vrpn_Analog_Output {
 public:
-     vrpn_Analog_Output_Server(const char* name, vrpn_Connection* c, 
-                               vrpn_int32 numChannels = vrpn_CHANNEL_MAX );
-     virtual ~vrpn_Analog_Output_Server(void);
-     
-     virtual void mainloop() { server_mainloop(); }
-     
-     /// Sets the size of the array;  returns the size actually set.
-     /// (May be clamped to vrpn_CHANNEL_MAX)
-     /// This should be used before mainloop is ever called.
-     vrpn_int32 setNumChannels (vrpn_int32 sizeRequested);
-     
-     /// Responds to a request to change one of the values by
-     /// setting the channel to that value.  Derived class must
-     /// either install handlers for this routine or else make
-     /// its own routines to handle the request message.
-     static int VRPN_CALLBACK handle_request_message( void *userdata,
-                                        vrpn_HANDLERPARAM p );
-     
-     /// Responds to a request to change a number of channels
-     /// Derived class must either install handlers for this
-     /// routine or else make its own routines to handle the
-     /// multi-channel request message.
-     static int VRPN_CALLBACK handle_request_channels_message( void* userdata,
-                                                 vrpn_HANDLERPARAM p);
+    vrpn_Analog_Output_Server(const char* name, vrpn_Connection* c, 
+                             vrpn_int32 numChannels = vrpn_CHANNEL_MAX );
+    virtual ~vrpn_Analog_Output_Server(void);
 
-	/// Used to notify us when a new connection is requested, so that
-	/// we can let the client know how many channels are active
-	static int VRPN_CALLBACK handle_got_connection( void* userdata, vrpn_HANDLERPARAM p );
-     
-     /// Exposes an array of values for the user to read from.
-     const vrpn_float64* o_channels (void) const { return o_channel; };
+    virtual void mainloop() { server_mainloop(); }
+
+    /// Sets the size of the array;  returns the size actually set.
+    /// (May be clamped to vrpn_CHANNEL_MAX)
+    /// This should be used before mainloop is ever called.
+    vrpn_int32 setNumChannels (vrpn_int32 sizeRequested);
+
+    /// Responds to a request to change one of the values by
+    /// setting the channel to that value.  Derived class must
+    /// either install handlers for this routine or else make
+    /// its own routines to handle the request message.
+    static int VRPN_CALLBACK handle_request_message( void *userdata,
+                                      vrpn_HANDLERPARAM p );
+
+    /// Responds to a request to change a number of channels
+    /// Derived class must either install handlers for this
+    /// routine or else make its own routines to handle the
+    /// multi-channel request message.
+    static int VRPN_CALLBACK handle_request_channels_message( void* userdata,
+                                               vrpn_HANDLERPARAM p);
+
+    /// Used to notify us when a new connection is requested, so that
+    /// we can let the client know how many channels are active
+    static int VRPN_CALLBACK handle_got_connection( void* userdata, vrpn_HANDLERPARAM p );
+
+    /// Exposes an array of values for the user to read from.
+    const vrpn_float64* o_channels (void) const { return o_channel; };
 
 protected:
-     virtual bool report_num_channels( vrpn_uint32 class_of_service = vrpn_CONNECTION_RELIABLE );
-	virtual vrpn_int32 encode_num_channels_to( char* buf, vrpn_int32 num );
+    virtual bool report_num_channels( vrpn_uint32 class_of_service = vrpn_CONNECTION_RELIABLE );
+    virtual vrpn_int32 encode_num_channels_to( char* buf, vrpn_int32 num );
 };
 
 

@@ -23,8 +23,7 @@ bool vrpn_Poser_Analog::setup_channel(vrpn_PA_fullaxis *full)
     if (full->axis.ana_name != NULL) {
         if (full->axis.ana_name[0] == '*') {
             full->ana = new vrpn_Analog_Output_Remote(&(full->axis.ana_name[1]), d_connection);
-        }
-        else {
+        } else {
             full->ana = new vrpn_Analog_Output_Remote(full->axis.ana_name);
         }
 
@@ -40,9 +39,10 @@ bool vrpn_Poser_Analog::setup_channel(vrpn_PA_fullaxis *full)
     return true;
 }
 
-vrpn_Poser_Analog::vrpn_Poser_Analog(const char* name, vrpn_Connection* c, vrpn_Poser_AnalogParam* p) :
+vrpn_Poser_Analog::vrpn_Poser_Analog(const char* name, vrpn_Connection* c, vrpn_Poser_AnalogParam* p, bool act_as_tracker) :
     vrpn_Poser(name, c),
-    vrpn_Tracker(name, c)
+    vrpn_Tracker(name, c),
+    d_act_as_tracker(act_as_tracker)
 {
     int i;
 
@@ -50,23 +50,23 @@ vrpn_Poser_Analog::vrpn_Poser_Analog(const char* name, vrpn_Connection* c, vrpn_
 
     // Make sure that we have a valid connection
     if (d_connection == NULL) {
-		fprintf(stderr,"vrpn_Poser_Analog: No connection\n");
-		return;
-	}
+	    fprintf(stderr,"vrpn_Poser_Analog: No connection\n");
+	    return;
+    }
 
     // Register a handler for the position change callback for this device
- 	if (register_autodeleted_handler(req_position_m_id,
-			handle_change_message, this, d_sender_id)) {
-		fprintf(stderr,"vrpn_Poser_Analog: can't register position handler\n");
-		d_connection = NULL;
-	}
+    if (register_autodeleted_handler(req_position_m_id,
+		    handle_change_message, this, d_sender_id)) {
+	    fprintf(stderr,"vrpn_Poser_Analog: can't register position handler\n");
+	    d_connection = NULL;
+    }
 
     // Register a handler for the velocity change callback for this device
     if (register_autodeleted_handler(req_velocity_m_id,
 			handle_vel_change_message, this, d_sender_id)) {
-		fprintf(stderr,"vrpn_Poser_Analog: can't register velocity handler\n");
-		d_connection = NULL;
-	}
+	    fprintf(stderr,"vrpn_Poser_Analog: can't register velocity handler\n");
+	    d_connection = NULL;
+    }
 
     // Set up the axes
     x.axis = p->x; y.axis = p->y; z.axis = p->z;
@@ -103,6 +103,19 @@ vrpn_Poser_Analog::vrpn_Poser_Analog(const char* name, vrpn_Connection* c, vrpn_
         p_vel_rot_min[i] = p->vel_rot_min[i];
         p_vel_rot_max[i] = p->vel_rot_max[i];
     }
+
+    // Check the pose for each channel against the max and min values of the workspace
+    // and set it to the location closest to the origin.
+    p_pos[0] = p_pos[1] = p_pos[2] = 0.0;
+    p_quat[0] = p_quat[1] = p_quat[2] = 0.0; p_quat[3] = 1.0;
+    for (i = 0; i < 3; i++) {
+        if (p_pos[i] < p_pos_min[i]) {
+            p_pos[i] = p_pos_min[i];
+        }
+        else if (p_pos[i] > p_pos_max[i]) {
+            p_pos[i] = p_pos_max[i];
+        }
+    }
 }
 
 vrpn_Poser_Analog::~vrpn_Poser_Analog() {}
@@ -119,18 +132,14 @@ void vrpn_Poser_Analog::mainloop()
     if (rx.ana != NULL) { rx.ana->mainloop(); };
     if (ry.ana != NULL) { ry.ana->mainloop(); };
     if (rz.ana != NULL) { rz.ana->mainloop(); };
-
-    if (!update_Analog_values()) {
-      fprintf(stderr, "vrpn_Poser_Analog: Error updating Analog values\n");
-    }
 }
 
 int vrpn_Poser_Analog::handle_change_message(void* userdata,
 	    vrpn_HANDLERPARAM p)
 {
-	vrpn_Poser_Analog* me = (vrpn_Poser_Analog*)userdata;
-	const char* params = (p.buffer);
-	int	i;
+    vrpn_Poser_Analog* me = (vrpn_Poser_Analog*)userdata;
+    const char* params = (p.buffer);
+    int	i;
     bool outside_bounds = false;
 
     // Fill in the parameters to the poser from the message
@@ -161,27 +170,31 @@ int vrpn_Poser_Analog::handle_change_message(void* userdata,
         }
     }
 
-    // XXX 
-    // SHOULD WE UPDATE ANALOG VALUES NOW, OR DO THIS IN THE MAINLOOP???
+    // Update the analog values based on the request we just got.
+    if (!me->update_Analog_values()) {
+      fprintf(stderr, "vrpn_Poser_Analog: Error updating Analog values\n");
+    }
 
-    // Tell the client where we actually went (clipped position and orientation).
-    // using sensor 0 as the one to use to report.
-    me->d_sensor = 0;
-    me->pos[0] = me->p_pos[0];
-    me->pos[1] = me->p_pos[1];
-    me->pos[2] = me->p_pos[2];
-    me->d_quat[0] = me->p_quat[0];
-    me->d_quat[1] = me->p_quat[1];
-    me->d_quat[2] = me->p_quat[2];
-    me->d_quat[3] = me->p_quat[3];
-    vrpn_gettimeofday(&me->vrpn_Tracker::timestamp, NULL);
-    char	msgbuf[1000];
-    vrpn_int32	len;
-    len = me->vrpn_Tracker::encode_to(msgbuf);
-    if (me->d_connection->pack_message(len, me->vrpn_Tracker::timestamp,
-      me->position_m_id, me->d_sender_id, msgbuf, vrpn_CONNECTION_LOW_LATENCY)) {
-       fprintf(stderr,"vrpn_Poser_Analog::handle_change_message(): can't write message: tossing\n");
-       return -1;
+    if (me->d_act_as_tracker) {
+      // Tell the client where we actually went (clipped position and orientation).
+      // using sensor 0 as the one to use to report.
+      me->d_sensor = 0;
+      me->pos[0] = me->p_pos[0];
+      me->pos[1] = me->p_pos[1];
+      me->pos[2] = me->p_pos[2];
+      me->d_quat[0] = me->p_quat[0];
+      me->d_quat[1] = me->p_quat[1];
+      me->d_quat[2] = me->p_quat[2];
+      me->d_quat[3] = me->p_quat[3];
+      vrpn_gettimeofday(&me->vrpn_Tracker::timestamp, NULL);
+      char	msgbuf[1000];
+      vrpn_int32	len;
+      len = me->vrpn_Tracker::encode_to(msgbuf);
+      if (me->d_connection->pack_message(len, me->vrpn_Tracker::timestamp,
+        me->position_m_id, me->d_sender_id, msgbuf, vrpn_CONNECTION_LOW_LATENCY)) {
+         fprintf(stderr,"vrpn_Poser_Analog::handle_change_message(): can't write message: tossing\n");
+         return -1;
+      }
     }
 
     return 0;
@@ -195,21 +208,21 @@ int vrpn_Poser_Analog::handle_vel_change_message(void* userdata,
       int	i;
     bool outside_bounds = false;
 
-	// Fill in the parameters to the poser from the message
-	if (p.payload_len != (8 * sizeof(vrpn_float64)) ) {
-		fprintf(stderr,"vrpn_Poser_Server: velocity message payload error\n");
-		fprintf(stderr,"             (got %d, expected %d)\n",
-			p.payload_len, 8 * sizeof(vrpn_float64) );
-		return -1;
-	}
-	me->p_timestamp = p.msg_time;
+    // Fill in the parameters to the poser from the message
+    if (p.payload_len != (8 * sizeof(vrpn_float64)) ) {
+	    fprintf(stderr,"vrpn_Poser_Server: velocity message payload error\n");
+	    fprintf(stderr,"             (got %d, expected %d)\n",
+		    p.payload_len, 8 * sizeof(vrpn_float64) );
+	    return -1;
+    }
+    me->p_timestamp = p.msg_time;
 
-	for (i = 0; i < 3; i++) {
-	 	vrpn_unbuffer(&params, &me->p_vel[i]);
-	}
-	for (i = 0; i < 4; i++) {
-		vrpn_unbuffer(&params, &me->p_vel_quat[i]);
-	}
+    for (i = 0; i < 3; i++) {
+	    vrpn_unbuffer(&params, &me->p_vel[i]);
+    }
+    for (i = 0; i < 4; i++) {
+	    vrpn_unbuffer(&params, &me->p_vel_quat[i]);
+    }
     vrpn_unbuffer(&params, &me->p_vel_quat_dt);
 
     // Check the velocity against the max and min values of the workspace
@@ -224,27 +237,28 @@ int vrpn_Poser_Analog::handle_vel_change_message(void* userdata,
         }
     }
 
-    // XXX 
-    // SHOULD WE UPDATE ANALOG VALUES NOW, OR DO THIS IN THE MAINLOOP???
+    // XXX Update the values now.
 
-    // Tell the client where we actually went (clipped position and orientation).
-    // using sensor 0 as the one to use to report.
-    me->d_sensor = 0;
-    me->vel[0] = me->p_vel[0];
-    me->vel[1] = me->p_vel[1];
-    me->vel[2] = me->p_vel[2];
-    me->vel_quat[0] = me->p_vel_quat[0];
-    me->vel_quat[1] = me->p_vel_quat[1];
-    me->vel_quat[2] = me->p_vel_quat[2];
-    me->vel_quat[3] = me->p_vel_quat[3];
-    vrpn_gettimeofday(&me->vrpn_Tracker::timestamp, NULL);
-    char	msgbuf[1000];
-    vrpn_int32	len;
-    len = me->vrpn_Tracker::encode_vel_to(msgbuf);
-    if (me->d_connection->pack_message(len, me->vrpn_Tracker::timestamp,
-      me->velocity_m_id, me->d_sender_id, msgbuf, vrpn_CONNECTION_LOW_LATENCY)) {
-       fprintf(stderr,"vrpn_Poser_Analog::handle_vel_change_message(): can't write message: tossing\n");
-       return -1;
+    if (me->d_act_as_tracker) {
+      // Tell the client where we actually went (clipped position and orientation).
+      // using sensor 0 as the one to use to report.
+      me->d_sensor = 0;
+      me->vel[0] = me->p_vel[0];
+      me->vel[1] = me->p_vel[1];
+      me->vel[2] = me->p_vel[2];
+      me->vel_quat[0] = me->p_vel_quat[0];
+      me->vel_quat[1] = me->p_vel_quat[1];
+      me->vel_quat[2] = me->p_vel_quat[2];
+      me->vel_quat[3] = me->p_vel_quat[3];
+      vrpn_gettimeofday(&me->vrpn_Tracker::timestamp, NULL);
+      char	msgbuf[1000];
+      vrpn_int32	len;
+      len = me->vrpn_Tracker::encode_vel_to(msgbuf);
+      if (me->d_connection->pack_message(len, me->vrpn_Tracker::timestamp,
+        me->velocity_m_id, me->d_sender_id, msgbuf, vrpn_CONNECTION_LOW_LATENCY)) {
+         fprintf(stderr,"vrpn_Poser_Analog::handle_vel_change_message(): can't write message: tossing\n");
+         return -1;
+      }
     }
 
     return 0;

@@ -787,12 +787,13 @@ int vrpn_Generic_Server_Object::setup_Zaber (char * & pch, char * line, FILE * c
   return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_NI (char * & pch, char * line, FILE * config_file) {
+int vrpn_Generic_Server_Object::setup_NationalInstrumentsOutput (char * & pch, char * line, FILE * config_file) {
 
 #ifndef	VRPN_USE_NATIONAL_INSTRUMENTS
   fprintf(stderr, "Attemting to use National Instruments board, but not compiled in\n");
   fprintf(stderr, "  (Define VRPN_USE_NATIONAL_INSTRUMENTS in vrpn_Configuration.h\n");
 #else
+  fprintf(stderr,"Warning: vrpn_NI_Analog_Output is deprecated: use vrpn_National_Instruments instead\n");
   char s2 [LINESIZE], s3 [LINESIZE];
   int i1, i2;
   float f1, f2;
@@ -820,6 +821,52 @@ int vrpn_Generic_Server_Object::setup_NI (char * & pch, char * line, FILE * conf
     return -1;
   } else {
     num_analogouts++;
+  }
+#endif
+
+  return 0;
+}
+
+int vrpn_Generic_Server_Object::setup_NationalInstruments (char * & pch, char * line, FILE * config_file) {
+
+#ifndef	VRPN_USE_NATIONAL_INSTRUMENTS
+  fprintf(stderr, "Attemting to use National Instruments board, but not compiled in\n");
+  fprintf(stderr, "  (Define VRPN_USE_NATIONAL_INSTRUMENTS in vrpn_Configuration.h\n");
+#else
+  char s2 [LINESIZE], s3 [LINESIZE];
+  int num_in_channels, in_polarity, in_mode, in_range, in_drive_ais, in_gain;
+  int num_out_channels, out_polarity;
+  float minimum_delay, min_out_voltage, max_out_voltage;
+
+  next();
+  // Get the arguments (vrpn_name, NI_board_type,
+  //    num_in_channels, minimum_delay, in_polarity, in_mode, in_range, in_drive_ais, in_gain
+  //    num_out_channels, out_polarity, min_out_voltage, max_out_voltage
+  if (sscanf(pch,"%511s%511s%d%f%d%d%d%d%d%d%d%f%f",s2,s3,
+      &num_in_channels, &minimum_delay, &in_polarity, &in_mode, &in_range, &in_drive_ais, &in_gain,
+      &num_out_channels, &out_polarity, &min_out_voltage, &max_out_voltage) != 13) {
+    fprintf(stderr,"Bad vrpn_National_Instruments_Server: %s\n",line);
+    return -1;
+  }
+
+  // Make sure there's room for a new analog
+  if (num_analogs >= VRPN_GSO_MAX_ANALOG) {
+    fprintf(stderr,"Too many Analogs in config file");
+    return -1;
+  }
+
+  // Open the device
+  if (verbose) {
+    printf("Opening vrpn_National_Instruments_Server: %s with %d in and %d out channels\n", s2, num_in_channels, num_out_channels);
+  }
+  if ((analogs[num_analogs] =
+  new vrpn_National_Instruments_Server(s2, connection, s3, num_in_channels, num_out_channels,
+          minimum_delay, in_polarity != 0, in_mode, in_range, in_drive_ais != 0, in_gain,
+          out_polarity != 0, min_out_voltage, max_out_voltage)) == NULL) {
+    fprintf(stderr,"Can't create new vrpn_National_Instruments_Server\n");
+    return -1;
+  } else {
+    num_analogs++;
   }
 #endif
 
@@ -2139,10 +2186,11 @@ int	vrpn_Generic_Server_Object::get_poser_axis_line(FILE *config_file, char *axi
 int vrpn_Generic_Server_Object::setup_Poser_Analog (char * & pch, char * line, FILE * config_file)
 {
     char s2 [LINESIZE];
+    int  i1;
     vrpn_Poser_AnalogParam     p;
 
     next();
-    if (sscanf(pch, "%511s",s2) != 1) {
+    if (sscanf(pch, "%511s%d",s2,&i1) != 2) {
             fprintf(stderr, "Bad vrpn_Poser_Analog line: %s\n",
 		line);
             return -1;
@@ -2188,7 +2236,7 @@ int vrpn_Generic_Server_Object::setup_Poser_Analog (char * & pch, char * line, F
     }
     
     posers[num_posers] = new
-       vrpn_Poser_Analog(s2, connection, &p);
+       vrpn_Poser_Analog(s2, connection, &p, i1 != 0);
 
     if (!posers[num_posers]) {
       fprintf(stderr,"Can't create new vrpn_Poser_Analog\n");
@@ -2419,7 +2467,9 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
 	  } else if (isit("vrpn_Tracker_DTrack")) {
 	    CHECK(setup_DTrack);
 	  } else if (isit("vrpn_NI_Analog_Output")) {
-            CHECK(setup_NI);
+            CHECK(setup_NationalInstrumentsOutput);
+	  } else if (isit("vrpn_National_Instruments")) {
+            CHECK(setup_NationalInstruments);
 	  } else if (isit("vrpn_nikon_controls")) {
             CHECK(setup_nikon_controls);
 	  } else if (isit("vrpn_Tek4662")) {

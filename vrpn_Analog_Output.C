@@ -208,19 +208,18 @@ vrpn_Analog_Output_Remote::vrpn_Analog_Output_Remote(const char* name, vrpn_Conn
     vrpn_int32 i;
 
     o_num_channel = vrpn_CHANNEL_MAX;
-	for (i = 0; i < vrpn_CHANNEL_MAX; i++) {
-		o_channel[i] = 0;
-	}
-	vrpn_gettimeofday(&o_timestamp, NULL);
+    for (i = 0; i < vrpn_CHANNEL_MAX; i++) {
+	o_channel[i] = 0;
+    }
+    vrpn_gettimeofday(&o_timestamp, NULL);
 
      // Register a handler for the report number of active channels message
- 	if (register_autodeleted_handler(report_num_channels_m_id,
-			handle_report_num_channels, this, d_sender_id)) 
-     {
-		fprintf(stderr,"vrpn_Analog_Output_Remote: can't register active channel report handler\n");
-		d_connection = NULL;
-	}
-
+    if (register_autodeleted_handler(report_num_channels_m_id,
+		    handle_report_num_channels, this, d_sender_id)) 
+    {
+	fprintf(stderr,"vrpn_Analog_Output_Remote: can't register active channel report handler\n");
+	d_connection = NULL;
+    }
 }
     
     
@@ -283,26 +282,26 @@ bool vrpn_Analog_Output_Remote::request_change_channel_value(unsigned int chan, 
 
 bool vrpn_Analog_Output_Remote::request_change_channels(int num, vrpn_float64* vals, vrpn_uint32 class_of_service)
 {
-	if (num < 0 || num > vrpn_CHANNEL_MAX) {
-		fprintf(stderr, "vrpn_Analog_Output_Remote: cannot change channels: number of channels out of range\n");
-		return false;
-	}
+    if (num < 0 || num > vrpn_CHANNEL_MAX) {
+      fprintf(stderr, "vrpn_Analog_Output_Remote: cannot change channels: number of channels out of range\n");
+      return false;
+    }
 
-	vrpn_float64 fbuf[ 1 + vrpn_CHANNEL_MAX ];
-	char* msgbuf = (char*) fbuf;
-	vrpn_int32 len;
-	
-	vrpn_gettimeofday(&o_timestamp, NULL);
-	len = encode_change_channels_to(msgbuf, num, vals);
-	if( d_connection && 
-	    d_connection->pack_message( len, o_timestamp,
-                                     request_channels_m_id, d_sender_id, msgbuf, 
-                                     class_of_service ) ) 
+    vrpn_float64 fbuf[ 1 + vrpn_CHANNEL_MAX ];
+    char* msgbuf = (char*) fbuf;
+    vrpn_int32 len;
+    
+    vrpn_gettimeofday(&o_timestamp, NULL);
+    len = encode_change_channels_to(msgbuf, num, vals);
+    if( d_connection && 
+	d_connection->pack_message( len, o_timestamp,
+                                 request_channels_m_id, d_sender_id, msgbuf, 
+                                 class_of_service ) ) 
     {
-		fprintf(stderr, "vrpn_Analog_Output_Remote: cannot write message: tossing\n");
-		return false;
-	}
-	return true;
+      fprintf(stderr, "vrpn_Analog_Output_Remote: cannot write message: tossing\n");
+      return false;
+    }
+    return true;
 }
 
 vrpn_int32 vrpn_Analog_Output_Remote::encode_change_to(char *buf, vrpn_int32 chan, vrpn_float64 val)

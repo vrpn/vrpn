@@ -112,10 +112,6 @@ SOURCE=.\vrpn_Analog_Output.C
 # End Source File
 # Begin Source File
 
-SOURCE=.\vrpn_Analog_Output_NI.C
-# End Source File
-# Begin Source File
-
 SOURCE=.\vrpn_Analog_Radamec_SPI.C
 # End Source File
 # Begin Source File
@@ -209,6 +205,10 @@ SOURCE=.\vrpn_Magellan.C
 # Begin Source File
 
 SOURCE=.\vrpn_Mutex.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_NationalInstruments.C
 # End Source File
 # Begin Source File
 
@@ -336,10 +336,6 @@ SOURCE=.\vrpn_Analog_Output.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\vrpn_Analog_Output_NI.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\vrpn_Analog_Radamec_SPI.h
 # End Source File
 # Begin Source File
@@ -437,6 +433,10 @@ SOURCE=.\vrpn_Magellan.h
 # Begin Source File
 
 SOURCE=.\vrpn_Mutex.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_NationalInstruments.h
 # End Source File
 # Begin Source File
 

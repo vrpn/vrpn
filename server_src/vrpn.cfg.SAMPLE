@@ -1,4 +1,4 @@
-# vrpn.cfg.SAMPLE for VRPN version 06.06
+# vrpn.cfg.SAMPLE for VRPN version 06.07
 
 ################################################################################
 ################################################################################
@@ -947,6 +947,9 @@
 # name is specified, configure the number of channels specified, and set the
 # polarity and maximum voltage range at which to drive the channels.
 #
+# XXX This server is deprecated, please use the vrpn_National_Instruments
+# server listed below.
+#
 # Arguments:
 #  char  vrpn_name_for_this_device[]
 #  char  name_of_NI_board[]
@@ -957,6 +960,33 @@
 
 #vrpn_NI_Analog_Output	Analog_XY	DAQCard-6036E	2   0	-10.0 10.0
 #vrpn_NI_Analog_Output	Analog_ZTweeze	DAQCard-6036E	2   0	-10.0 10.0
+
+################################################################################
+# National Instruments A/D, D/A Analog and Analog Output server.  This will open
+# the board whose name is specified, configure the number of channels specified,
+# and set the polarity and maximum voltage range at which to read and
+# drive the channels.
+##
+# Arguments:
+#  char  vrpn_name_for_this_device[]
+#  char  name_of_NationalInstruments_board[]
+#  int   number_of_input_channels (can be zero)
+#  float mininum_delay_between_Analog_Reports (zero for fastest)
+#  int   input_polarity : 0 = unipolar, 1 = bipolar
+#  int   input_mode : 0 = differential, 1 = ref single-end, 2 = non-ref SE
+#  int   input_range : 5 = 5v, 10 = 10v, 20 = 20v
+#  int   input_drive_ais : 0 = no, 1 = yes
+#  int   input_gain
+#  int   number_of_output_channels (can be zero)
+#  int   output_polarity : 0 = unipolar, 1 = bipolar
+#  float min_out_voltage (used to guard against overdriving devices)
+#  float max_out_voltage (used to guard against overdriving devices)
+
+# Input example
+#vrpn_National_Instruments MCLXYZIN PCI-6052E 7 0 0 10 0 1 0 0 -10.0 10.0
+# Output examples
+#vrpn_National_Instruments MCLXYZOUT PCI-6733 0 0 0 10 0 1 0 3 0 0.0 10.0
+#vrpn_National_Instruments Analog_XY DAQCard-6036E 0 0 0 0 10 0 1 2 1 -10.0 10.0
 
 ################################################################################
 # Analog Poser. This is a poser that is intended to be used on top of

@@ -398,8 +398,6 @@ LIB_INCLUDES = vrpn_Connection.h vrpn_Tracker.h vrpn_Button.h \
 
 # additional files for the new connection work-in-progress
 
-# Additional files to be compiled into the server library
-
 # We aren't going to use architecture-dependent sets of files.
 # If vrpn_sgibox isn't supposed to be compiled on any other architecture,
 # then put all of it inside "#ifdef sgi"!
@@ -413,7 +411,7 @@ SLIB_FILES =  $(LIB_FILES) vrpn_3Space.C \
 	vrpn_Analog_5dt.C vrpn_Joylin.C vrpn_Tng3.C vrpn_Spaceball.C \
 	vrpn_Tracker_isense.C vrpn_Zaber.C vrpn_nikon_controls.C \
 	vrpn_GlobalHapticsOrb.C vrpn_Tracker_ButtonFly.C vrpn_ADBox.C \
-	vrpn_VPJoystick.C vrpn_Tracker_Liberty.C vrpn_Analog_Output_NI.C \
+	vrpn_VPJoystick.C vrpn_Tracker_Liberty.C vrpn_NationalInstruments.C \
 	vrpn_Poser_Analog.C vrpn_Tracker_DTrack.C vrpn_Poser_Tek4662.C \
 	vrpn_Poser.C
 
@@ -428,10 +426,9 @@ SLIB_INCLUDES = $(LIB_INCLUDES) vrpn_3Space.h \
 	vrpn_Analog_5dt.h vrpn_Joylin.h vrpn_Tng3.h vrpn_Spaceball.h \
 	vrpn_tracker_isense.h vrpn_Zaber.h vrpn_nikon_controls.h \
 	vrpn_GlobalHapticsOrb.C vrpn_Tracker_ButtonFly.h vrpn_ADBox.h \
-	vrpn_VPJoystick.h vrpn_Tracker_Liberty.h vrpn_Analog_Output_NI.h \
+	vrpn_VPJoystick.h vrpn_Tracker_Liberty.h vrpn_NationalInstruments.h \
 	vrpn_Poser_Analog.h vrpn_Tracker_DTrack.h vrpn_Poser.h \
 	vrpn_Poser_Tek4662.h
-
 
 $(LIB_OBJECTS): 
 $(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(LIB_OBJECTS)

@@ -1,3 +1,24 @@
+2005-02-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Analog_Output.C : Whitespace change.
+	* vrpn_Analoh_Output.h : Same.
+	* vrpn_Poser_Analog.C : By default, a poser will not send
+		updates until it gets a request from a client.  Also,
+		it sends them only when they arrive, not every
+		time through mainloop().
+	* vrpn_Poser_Analog.h : Same.
+	* vrpn_nikon_controls.h : Guard definitions to enable
+		multiple inclusion.
+	* vrpn_NationalInstruments.C : Replacement for the
+		vrpn_Analog_Output_NI.C file that makes a more-
+		general read/write server.
+	* vrpn_NationalInstruments.h : Replacement for the
+		vrpn_Analog_Output_NI.h file that makes a more-
+		general read/write server.
+	* vrpn.dsp : Modified to use new files.
+	* vrpndll.dsp : Modified to use new files.
+	* Makefile : Changed NI files to NationalInstruments.
+
 2005-02-01  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
         * Makefile : Added John Stone's definitions to make

@@ -1,3 +1,6 @@
+#ifndef VRPN_NIKON_CONTROLS_H
+#define VRPN_NIKON_CONTROLS_H
+
 #include  "vrpn_Analog.h"
 #include  "vrpn_Analog_Output.h"
 
@@ -39,3 +42,4 @@ protected:
   static int VRPN_CALLBACK handle_request_channels_message(void *userdata, vrpn_HANDLERPARAM p);
 };
 
+#endif
