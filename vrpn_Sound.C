@@ -303,7 +303,7 @@ static int sound_handler(void *userdata, vrpn_HANDLERPARAM p)
 {
 	// in this function, it will get the command from the Remote
 	int i;
-	unsigned long *longbuf = (unsigned long*)(void *)(p.buffer);
+	vrpn_uint32 *longbuf = (vrpn_uint32*)(void *)(p.buffer);
 	for (i=0; i< p.payload_len/4; i++)
 	{
 		command_buffer[i] = (char) ntohl(longbuf[i]);
@@ -417,15 +417,12 @@ void vrpn_Sound_Remote::mainloop(void)
 }
 // this function is used to change all the information to a msg
 // the format used here conforms to the one defined in checkpipe()
-int vrpn_Sound_Remote::encode(char *msgbuf, const char *sound, 
-                              const int volume, 
-				              const int mode, 
-							  const int ear, 
-							  const int channel)
+vrpn_int32 vrpn_Sound_Remote::encode(char *msgbuf, const char *sound, 
+       const int volume, const int mode, const int ear, const int channel)
 {
-	unsigned i;
-	unsigned long *longbuf = (unsigned long*) (void*)(msgbuf);
-	unsigned index = 0;
+	vrpn_uint32 i;
+	vrpn_uint32 *longbuf = (vrpn_uint32*) (void*)(msgbuf);
+	vrpn_uint32 index = 0;
 	longbuf[index++] = vrpn_SND_SAMPLE;
 	longbuf[index++] = volume;
 	longbuf[index++] = mode;
@@ -435,38 +432,38 @@ int vrpn_Sound_Remote::encode(char *msgbuf, const char *sound,
 		longbuf[index++] = sound[i];
 	for ( i = 0; i< index; i++) 
 		longbuf[i] = htonl(longbuf[i]);
-	return index*sizeof(unsigned long);
+	return index*sizeof(vrpn_uint32);
 }
 
-int vrpn_Sound_Remote::encode(char *msgbuf, int set_mode, int info)
+vrpn_int32 vrpn_Sound_Remote::encode(char *msgbuf, int set_mode, int info)
 // info = channel/data mode = stop/midi
 {
-	unsigned long *longbuf = (unsigned long*) (void*)(msgbuf);
+	vrpn_uint32 *longbuf = (vrpn_uint32*) (void*)(msgbuf);
 	int index = 0;
 	longbuf[index++] = set_mode;
 	longbuf[index++] = info;
 	longbuf[0] = htonl(longbuf[0]);
 	longbuf[1] = htonl(longbuf[1]);
-	return index*sizeof(unsigned long);
+	return index*sizeof(vrpn_uint32);
 }
-int vrpn_Sound_Remote::encode(char *msgbuf, int set_load, const char *sound)
+vrpn_int32 vrpn_Sound_Remote::encode(char *msgbuf, int set_load, const char *sound)
 {
 	unsigned i;
-	unsigned long *longbuf = (unsigned long*) (void*)(msgbuf);
+	vrpn_uint32 *longbuf = (vrpn_uint32*) (void*)(msgbuf);
 	unsigned index = 0;
 	longbuf[index++] = set_load;
 	for ( i = 0; i< strlen(sound); i++)
 		longbuf[index++] = sound[i];
 	for ( i = 0; i< index; i++) 
 		longbuf[i] = htonl(longbuf[i]);
-	return index*sizeof(unsigned long);
+	return index*sizeof(vrpn_uint32);
 }
 void vrpn_Sound_Remote::play_midi_sound(float data)
 {
 	struct timeval current_time;
 	//pack the message and send it to the sound server through connection
 	char msgbuf[1024];
-	int len, idata = 0;
+	vrpn_int32 len, idata = 0;
 	
 	if (data < .25) idata = 1;
 	else if (data < .50) idata = 2;
@@ -492,7 +489,7 @@ void vrpn_Sound_Remote::play_sampled_sound(const char *sound,
 	struct timeval current_time;
 	//pack the message and send it to the sound server through connection
 	char msgbuf[1024];
-	int len;
+	vrpn_int32 len;
 
 	gettimeofday(&current_time, NULL);
 	
@@ -508,7 +505,7 @@ void vrpn_Sound_Remote::play_stop(const int channel)
 {
 	struct timeval current_time;
 	char msgbuf[1024];
-	int len;
+	vrpn_int32 len;
 
 	gettimeofday(&current_time, NULL);
 	
@@ -524,7 +521,7 @@ void vrpn_Sound_Remote::preload_sampled_sound(const char *sound)
 {
 	struct timeval current_time;
 	char msgbuf[1024];
-	int len;
+	vrpn_int32 len;
 
 	gettimeofday(&current_time, NULL);
 	

@@ -25,28 +25,28 @@ public:
     void print_report(void);
     void print_plane(void);
 
-    void setSurfaceKspring(float k) { 
+    void setSurfaceKspring(vrpn_float32 k) { 
 				    SurfaceKspring = k; }
-    void setSurfaceKdamping(float d) {SurfaceKdamping =d;}
-    void setSurfaceFstatic(float ks) {SurfaceFstatic = ks;}
-    void setSurfaceFdynamic(float kd) {SurfaceFdynamic =kd;}
+    void setSurfaceKdamping(vrpn_float32 d) {SurfaceKdamping =d;}
+    void setSurfaceFstatic(vrpn_float32 ks) {SurfaceFstatic = ks;}
+    void setSurfaceFdynamic(vrpn_float32 kd) {SurfaceFdynamic =kd;}
     void setRecoveryTime(int rt) {numRecCycles = rt;}
-    void setFF_Origin(float x, float y, float z) {
+    void setFF_Origin(vrpn_float32 x, vrpn_float32 y, vrpn_float32 z) {
 	    ff_origin[0] = x;ff_origin[1] = y; ff_origin[2] = z;}
-    void setFF_Force(float fx, float fy, float fz) {
+    void setFF_Force(vrpn_float32 fx, vrpn_float32 fy, vrpn_float32 fz) {
 	    ff_force[0] = fx; ff_force[1] = fy; ff_force[2] = fz;}
-    void setFF_Jacobian(float dfxdx, float dfxdy, float dfxdz,
-			float dfydx, float dfydy, float dfydz,
-			float dfzdx, float dfzdy, float dfzdz){
+    void setFF_Jacobian(vrpn_float32 dfxdx, vrpn_float32 dfxdy, vrpn_float32 dfxdz,
+			vrpn_float32 dfydx, vrpn_float32 dfydy, vrpn_float32 dfydz,
+			vrpn_float32 dfzdx, vrpn_float32 dfzdy, vrpn_float32 dfzdz){
 	    ff_jacobian[0][0] = dfxdx; ff_jacobian[0][1] = dfxdy;
 	    ff_jacobian[0][2] = dfxdz; ff_jacobian[1][0] = dfydx;
 	    ff_jacobian[1][1] = dfydy; ff_jacobian[1][2] = dfydz;
 	    ff_jacobian[2][0] = dfzdx; ff_jacobian[2][1] = dfzdy;
 	    ff_jacobian[2][2] = dfzdz;}
-    void setFF_Radius(float r) { ff_radius = r;};
-    void set_plane(float *p);
-    void set_plane(float *p, float d);
-    void set_plane(float a, float b, float c,float d);
+    void setFF_Radius(vrpn_float32 r) { ff_radius = r;};
+    void set_plane(vrpn_float32 *p);
+    void set_plane(vrpn_float32 *p, vrpn_float32 d);
+    void set_plane(vrpn_float32 a, vrpn_float32 b, vrpn_float32 c,vrpn_float32 d);
     void sendError(int error_code);
 
     int getRecoveryTime(void) {return numRecCycles;}
@@ -55,124 +55,128 @@ public:
 protected:
     vrpn_Connection *connection;		// Used to send messages
 
-    long my_id;		// ID of this force device to connection
+    vrpn_int32 my_id;			// ID of this force device to connection
 
-    long force_message_id;	// ID of force message to connection
-    long plane_message_id;  //ID of plane equation message
-    long set_constraint_message_id;	// ID of constraint force message
-    long forcefield_message_id; 	// ID of force field message
-    long scp_message_id;	// ID of surface contact point message
+    vrpn_int32 force_message_id;	// ID of force message to connection
+    vrpn_int32 plane_message_id;	//ID of plane equation message
+    vrpn_int32 set_constraint_message_id;// ID of constraint force message
+    vrpn_int32 forcefield_message_id; 	// ID of force field message
+    vrpn_int32 scp_message_id;		// ID of surface contact point message
 
     // XXX - error messages should be put into the vrpn base class 
     // whenever someone makes one
-    long error_message_id;	// ID of force device error message
+    vrpn_int32 error_message_id;	// ID of force device error message
 
     // IDs for trimesh messages
-    long setVertex_message_id;   
-    long setNormal_message_id;   
-    long setTriangle_message_id;   
-    long removeTriangle_message_id;   
-    long updateTrimeshChanges_message_id;   
-    long transformTrimesh_message_id;    
-    long setTrimeshType_message_id;    
-    long clearTrimesh_message_id;    
+    vrpn_int32 setVertex_message_id;   
+    vrpn_int32 setNormal_message_id;   
+    vrpn_int32 setTriangle_message_id;   
+    vrpn_int32 removeTriangle_message_id;   
+    vrpn_int32 updateTrimeshChanges_message_id;   
+    vrpn_int32 transformTrimesh_message_id;    
+    vrpn_int32 setTrimeshType_message_id;    
+    vrpn_int32 clearTrimesh_message_id;    
 
     //	virtual void get_report(void) = 0;
 
     // message encoding/decoding utility routines - probably
     // would be useful in vrpn base class
-    static long buffer(char **insertPt, long *buflen, const long value);
-    static long buffer(char **insertPt, long *buflen, const float value);
-    static long buffer(char **insertPt, long *buflen, const double value);
-    static long unbuffer(const char **buffer, long *lval);
-    static long unbuffer(const char **buffer, float *fval);
-    static long unbuffer(const char **buffer, double *dval);
+    static int buffer(char **insertPt, vrpn_int32 *buflen, const vrpn_int32 value);
+    static int buffer(char **insertPt, vrpn_int32 *buflen, const vrpn_float32 value);
+    static int buffer(char **insertPt, vrpn_int32 *buflen, const vrpn_float64 value);
+    static int unbuffer(const char **buffer, vrpn_int32 *lval);
+    static int unbuffer(const char **buffer, vrpn_float32 *fval);
+    static int unbuffer(const char **buffer, vrpn_float64 *dval);
 
     // ENCODING
-    static char *encode_force(int &length, const double *force);
-    static char *encode_scp(int &length,
-	    const double *pos, const double *quat);
-    static char *encode_plane(int &length,const float *plane, 
-			    const float kspring, const float kdamp,
-			    const float fdyn, const float fstat, 
-			    const long plane_index, const long n_rec_cycles);
-    static char *encode_surface_effects(int &len, const float k_adhesion,
-		    const float bump_amp, const float bump_freq,
-		    const float buzz_amp, const float buzz_freq);
-    static char *encode_vertex(int &len, const long vertNum,
-		const float x,const float y,const float z); 
-    static char *encode_normal(int &len,const long vertNum,
-		const float x,const float y,const float z); 
-    static char *encode_triangle(int &len,const long triNum,
-	      const long vert0,const long vert1,const long vert2,
-	      const long norm0,const long norm1,const long norm2);	       
-    static char *encode_removeTriangle(int &len,const long triNum);
-    static char *encode_updateTrimeshChanges(int &len,
-		const float kspring, const float kdamp,
-		const float fdyn, const float fstat);
-    static char *encode_setTrimeshType(int &len,const long type);
-    static char *encode_trimeshTransform(int &len,const float homMatrix[16]);
+    static char *encode_force(vrpn_int32 &length, const vrpn_float64 *force);
+    static char *encode_scp(vrpn_int32 &length,
+	    const vrpn_float64 *pos, const vrpn_float64 *quat);
+    static char *encode_plane(vrpn_int32 &length,const vrpn_float32 *plane, 
+			    const vrpn_float32 kspring, const vrpn_float32 kdamp,
+			    const vrpn_float32 fdyn, const vrpn_float32 fstat, 
+			    const vrpn_int32 plane_index, const vrpn_int32 n_rec_cycles);
+    static char *encode_surface_effects(vrpn_int32 &len, const vrpn_float32 k_adhesion,
+		    const vrpn_float32 bump_amp, const vrpn_float32 bump_freq,
+		    const vrpn_float32 buzz_amp, const vrpn_float32 buzz_freq);
+    static char *encode_vertex(vrpn_int32 &len, const vrpn_int32 vertNum,
+		const vrpn_float32 x,const vrpn_float32 y,const vrpn_float32 z); 
+    static char *encode_normal(vrpn_int32 &len,const vrpn_int32 vertNum,
+		const vrpn_float32 x,const vrpn_float32 y,const vrpn_float32 z); 
+    static char *encode_triangle(vrpn_int32 &len,const vrpn_int32 triNum,
+	      const vrpn_int32 vert0,const vrpn_int32 vert1,const vrpn_int32 vert2,
+	      const vrpn_int32 norm0,const vrpn_int32 norm1,const vrpn_int32 norm2);	       
+    static char *encode_removeTriangle(vrpn_int32 &len,const vrpn_int32 triNum);
+    static char *encode_updateTrimeshChanges(vrpn_int32 &len,
+		const vrpn_float32 kspring, const vrpn_float32 kdamp,
+		const vrpn_float32 fdyn, const vrpn_float32 fstat);
+    static char *encode_setTrimeshType(vrpn_int32 &len,const vrpn_int32 type);
+    static char *encode_trimeshTransform(vrpn_int32 &len,
+		const vrpn_float32 homMatrix[16]);
 
-    static char *encode_constraint(int &len, const long enable, 
-	const float x, const float y, const float z, const float kSpr);
-    static char *encode_forcefield(int &len, const float origin[3],
-	const float force[3], const float jacobian[3][3], const float radius);
-    static char *encode_error(int &len, const long error_code);
+    static char *encode_constraint(vrpn_int32 &len, const vrpn_int32 enable, 
+	const vrpn_float32 x, const vrpn_float32 y, const vrpn_float32 z, const vrpn_float32 kSpr);
+    static char *encode_forcefield(vrpn_int32 &len, const vrpn_float32 origin[3],
+	const vrpn_float32 force[3], const vrpn_float32 jacobian[3][3], const vrpn_float32 radius);
+    static char *encode_error(vrpn_int32 &len, const vrpn_int32 error_code);
 
 
     // DECODING
-    static int decode_force (const char *buffer, const int len, 
-							double *force);
-    static int decode_scp(const char *buffer, const int len,
-					double *pos, double *quat);
-    static int decode_plane(const char *buffer, const int len,float *plane, 
-	    float *kspring, float *kdamp,float *fdyn, float *fstat, 
-	    long *plane_index, long *n_rec_cycles);
-    static int decode_surface_effects(const char *buffer, const int len,
-	    float *k_adhesion,float *bump_amp, float *bump_freq,
-	    float *buzz_amp, float *buzz_freq);
-    static int decode_vertex(const char *buffer, const int len,long *vertNum,
-		float *x,float *y,float *z); 
-    static int decode_normal(const char *buffer,const int len,
-		long *vertNum,float *x,float *y,float *z); 
-    static int decode_triangle(const char *buffer,const int len,long *triNum,
-		long *vert0,long *vert1,long *vert2,
-		long *norm0,long *norm1,long *norm2);	       
-    static int decode_removeTriangle(const char *buffer,const int len,
-						long *triNum);
-    static int decode_updateTrimeshChanges(const char *buffer,const int len,
-		float *kspring, float *kdamp, float *fdyn, float *fstat);
-    static int decode_setTrimeshType(const char *buffer,const int len,
-						long *type);
-    static int decode_trimeshTransform(const char *buffer,const int len,
-						float homMatrix[16]);
+    static vrpn_int32 decode_force (const char *buffer, const vrpn_int32 len, 
+							vrpn_float64 *force);
+    static vrpn_int32 decode_scp(const char *buffer, const vrpn_int32 len,
+					vrpn_float64 *pos, vrpn_float64 *quat);
+    static vrpn_int32 decode_plane(const char *buffer, const vrpn_int32 len,
+	    vrpn_float32 *plane, 
+	    vrpn_float32 *kspring, vrpn_float32 *kdamp,vrpn_float32 *fdyn, vrpn_float32 *fstat, 
+	    vrpn_int32 *plane_index, vrpn_int32 *n_rec_cycles);
+    static vrpn_int32 decode_surface_effects(const char *buffer,
+	    const vrpn_int32 len,
+	    vrpn_float32 *k_adhesion,vrpn_float32 *bump_amp, vrpn_float32 *bump_freq,
+	    vrpn_float32 *buzz_amp, vrpn_float32 *buzz_freq);
+    static vrpn_int32 decode_vertex(const char *buffer, const vrpn_int32 len,
+		vrpn_int32 *vertNum,
+		vrpn_float32 *x,vrpn_float32 *y,vrpn_float32 *z); 
+    static vrpn_int32 decode_normal(const char *buffer,const vrpn_int32 len,
+		vrpn_int32 *vertNum,vrpn_float32 *x,vrpn_float32 *y,vrpn_float32 *z); 
+    static vrpn_int32 decode_triangle(const char *buffer,const vrpn_int32 len,vrpn_int32 *triNum,
+		vrpn_int32 *vert0,vrpn_int32 *vert1,vrpn_int32 *vert2,
+		vrpn_int32 *norm0,vrpn_int32 *norm1,vrpn_int32 *norm2);	       
+    static vrpn_int32 decode_removeTriangle(const char *buffer,const vrpn_int32 len,
+						vrpn_int32 *triNum);
+    static vrpn_int32 decode_updateTrimeshChanges(const char *buffer,const vrpn_int32 len,
+		vrpn_float32 *kspring, vrpn_float32 *kdamp, vrpn_float32 *fdyn, vrpn_float32 *fstat);
+    static vrpn_int32 decode_setTrimeshType(const char *buffer,const vrpn_int32 len,
+						vrpn_int32 *type);
+    static vrpn_int32 decode_trimeshTransform(const char *buffer,const vrpn_int32 len,
+						vrpn_float32 homMatrix[16]);
 
-    static int decode_constraint(const char *buffer,const int len, 
-		long *enable, float *x, float *y, float *z, float *kSpr);
-    static int decode_forcefield(const char *buffer,const int len,
-	float origin[3], float force[3], float jacobian[3][3], float *radius);
-    static int decode_error(const char *buffer, const int len, 
-		long *error_code);
+    static vrpn_int32 decode_constraint(const char *buffer,const vrpn_int32 len, 
+		vrpn_int32 *enable, vrpn_float32 *x, vrpn_float32 *y, vrpn_float32 *z, vrpn_float32 *kSpr);
+    static vrpn_int32 decode_forcefield(const char *buffer,const vrpn_int32 len,
+	vrpn_float32 origin[3], vrpn_float32 force[3], vrpn_float32 jacobian[3][3], vrpn_float32 *radius);
+    static vrpn_int32 decode_error(const char *buffer, const vrpn_int32 len, 
+		vrpn_int32 *error_code);
 
     struct timeval timestamp;
 
-    long   which_plane;
-    double force[3];
-    double scp_pos[3];
-    double scp_quat[4];  // for torque
-    float plane[4];
+    vrpn_int32   which_plane;
+    vrpn_float64 force[3];
+    vrpn_float64 scp_pos[3];
+    vrpn_float64 scp_quat[4];  // for torque
+    vrpn_float32 plane[4];
 
-    float ff_origin[3];
-    float ff_force[3];
-    float ff_jacobian[3][3]; // J[i][j] = dF[i]/dx[j]
-    float ff_radius;
+    vrpn_float32 ff_origin[3];
+    vrpn_float32 ff_force[3];
+    vrpn_float32 ff_jacobian[3][3]; // J[i][j] = dF[i]/dx[j]
+    vrpn_float32 ff_radius;
 
-    float SurfaceKspring;
-    float SurfaceKdamping;
-    float SurfaceFstatic;
-    float SurfaceFdynamic;
-    long numRecCycles;
-    long errorCode;
+    vrpn_float32 SurfaceKspring;
+    vrpn_float32 SurfaceKdamping;
+    vrpn_float32 SurfaceFstatic;
+    vrpn_float32 SurfaceFdynamic;
+    vrpn_int32 numRecCycles;
+    vrpn_int32 errorCode;
 
 };
 
@@ -185,22 +189,22 @@ protected:
 // compliant. 
 typedef struct {
 	struct		timeval msg_time;	// Time of the report
-	double		pos[3];			// position of SCP
-	double		quat[4];		// orientation of SCP
+	vrpn_float64	pos[3];			// position of SCP
+	vrpn_float64	quat[4];		// orientation of SCP
 } vrpn_FORCESCPCB;
 typedef void (*vrpn_FORCESCPHANDLER) (void *userdata,
 					const vrpn_FORCESCPCB info);
 
 typedef	struct {
 	struct		timeval	msg_time;	// Time of the report
-	double		force[3];		// force value
+	vrpn_float64	force[3];		// force value
 } vrpn_FORCECB;
 typedef void (*vrpn_FORCECHANGEHANDLER)(void *userdata,
 					 const vrpn_FORCECB info);
 
 typedef struct {
 	struct		timeval msg_time;	// time of the report
-	long		error_code;		// type of error
+	vrpn_int32		error_code;		// type of error
 } vrpn_FORCEERRORCB;
 typedef void (*vrpn_FORCEERRORHANDLER) (void *userdata,
 					const vrpn_FORCEERRORCB info);
@@ -216,28 +220,28 @@ public:
     void stopSurface(void);
 
     // vertNum normNum and triNum start at 0
-    void setVertex(int vertNum,float x,float y,float z);
+    void setVertex(vrpn_int32 vertNum,vrpn_float32 x,vrpn_float32 y,vrpn_float32 z);
     // NOTE: ghost dosen't take normals, 
     //       and normals still aren't implemented for Hcollide
-    void setNormal(int normNum,float x,float y,float z);
-    void setTriangle(int triNum,int vert0,int vert1,int vert2,
-		  int norm0=-1,int norm1=-1,int norm2=-1);
-    void removeTriangle(int triNum); 
+    void setNormal(vrpn_int32 normNum,vrpn_float32 x,vrpn_float32 y,vrpn_float32 z);
+    void setTriangle(vrpn_int32 triNum,vrpn_int32 vert0,vrpn_int32 vert1,vrpn_int32 vert2,
+		  vrpn_int32 norm0=-1,vrpn_int32 norm1=-1,vrpn_int32 norm2=-1);
+    void removeTriangle(vrpn_int32 triNum); 
     // should be called to incorporate the above changes into the 
     // displayed trimesh 
     void updateTrimeshChanges();
     // set the trimesh's homogen transform matrix (in row major order)
-    void setTrimeshTransform(float homMatrix[16]);
+    void setTrimeshTransform(vrpn_float32 homMatrix[16]);
   	void clearTrimesh(void);
   
     // the next time we send a trimesh we will use the following type
     void useHcollide();
     void useGhost();
 
-    void sendConstraint(int enable, float x, float y, float z, float kSpr);
+    void sendConstraint(vrpn_int32 enable, vrpn_float32 x, vrpn_float32 y, vrpn_float32 z, vrpn_float32 kSpr);
 
-    void sendForceField(float origin[3], float force[3],
-	    float jacobian[3][3], float radius);
+    void sendForceField(vrpn_float32 origin[3], vrpn_float32 force[3],
+	    vrpn_float32 jacobian[3][3], vrpn_float32 radius);
     void sendForceField(void);
     void stopForceField();
 

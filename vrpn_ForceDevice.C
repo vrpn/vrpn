@@ -92,10 +92,10 @@ void vrpn_ForceDevice::print_report(void)
 }
 
 
-long vrpn_ForceDevice::buffer(char **insertPt, long *buflen, const long value)
+int vrpn_ForceDevice::buffer(char **insertPt, vrpn_int32 *buflen, const vrpn_int32 value)
 {
-    long netValue = htonl(value);
-    long length = sizeof(netValue);
+    vrpn_int32 netValue = htonl(value);
+    vrpn_int32 length = sizeof(netValue);
 
     if (length > *buflen) {
 	    fprintf(stderr, "buffer: buffer not large enough\n");
@@ -109,17 +109,17 @@ long vrpn_ForceDevice::buffer(char **insertPt, long *buflen, const long value)
     return 0;
 }
 
-long vrpn_ForceDevice::buffer(char **insertPt, long *buflen, const float value)
+int vrpn_ForceDevice::buffer(char **insertPt, vrpn_int32 *buflen, const vrpn_float32 value)
 {
-    long longval = *((long *)&value);
+    vrpn_int32 longval = *((vrpn_int32 *)&value);
 
     return buffer(insertPt, buflen, longval);
 }
 
-long vrpn_ForceDevice::buffer(char **insertPt, long *buflen,const double value)
+int vrpn_ForceDevice::buffer(char **insertPt, vrpn_int32 *buflen,const vrpn_float64 value)
 {
-    double netValue = htond(value);
-    long length = sizeof(netValue);
+    vrpn_float64 netValue = htond(value);
+    vrpn_int32 length = sizeof(netValue);
 
     if (length > *buflen) {
 	    fprintf(stderr, "buffer: buffer not large enough\n");
@@ -133,38 +133,38 @@ long vrpn_ForceDevice::buffer(char **insertPt, long *buflen,const double value)
     return 0;
 }
 
-long vrpn_ForceDevice::unbuffer(const char **buffer, long *lval)
+int vrpn_ForceDevice::unbuffer(const char **buffer, vrpn_int32 *lval)
 {
-    *lval = ntohl(*((long *)(*buffer)));
-    *buffer += sizeof(long);
+    *lval = ntohl(*((vrpn_int32 *)(*buffer)));
+    *buffer += sizeof(vrpn_int32);
     return 0;
 }
 
-long vrpn_ForceDevice::unbuffer(const char **buffer, float *fval)
+int vrpn_ForceDevice::unbuffer(const char **buffer, vrpn_float32 *fval)
 {
-    long lval;
+    vrpn_int32 lval;
     unbuffer(buffer, &lval);
-    *fval = *((float *) &lval);
+    *fval = *((vrpn_float32 *) &lval);
     return 0;
 }
 
-long vrpn_ForceDevice::unbuffer(const char **buffer, double *dval){
-    *dval = ntohd(*(double *)(*buffer));
-    *buffer += sizeof(double);
+int vrpn_ForceDevice::unbuffer(const char **buffer, vrpn_float64 *dval){
+    *dval = ntohd(*(vrpn_float64 *)(*buffer));
+    *buffer += sizeof(vrpn_float64);
     return 0;
 }
 
-char *vrpn_ForceDevice::encode_force(int &length, const double *force)
+char *vrpn_ForceDevice::encode_force(vrpn_int32 &length, const vrpn_float64 *force)
 {
-    // Message includes: double force[3]
+    // Message includes: vrpn_float64 force[3]
     // Byte order of each needs to be reversed to match network standard
 
     int i;
     char *buf;
     char *mptr;
-    long mlen;
+    vrpn_int32 mlen;
 
-    length = 3*sizeof(double);
+    length = 3*sizeof(vrpn_float64);
     mlen = length;
 
     buf = new char [length];
@@ -178,17 +178,17 @@ char *vrpn_ForceDevice::encode_force(int &length, const double *force)
     return buf;
 }
 
-int vrpn_ForceDevice::decode_force (const char *buffer, const int len, 
-				double *force)
+vrpn_int32 vrpn_ForceDevice::decode_force (const char *buffer, const vrpn_int32 len, 
+				vrpn_float64 *force)
 {
     int i;
     int res;
     const char *mptr = buffer;
 
-    if (len !=  (3*sizeof(double)) ) {
+    if (len !=  (3*sizeof(vrpn_float64)) ) {
       fprintf(stderr,"vrpn_ForceDevice: force message payload error\n");
       fprintf(stderr,"             (got %d, expected %d)\n",
-		    len, 3*sizeof(double) );
+		    len, 3*sizeof(vrpn_float64) );
       return -1;
     }
 
@@ -198,15 +198,15 @@ int vrpn_ForceDevice::decode_force (const char *buffer, const int len,
     return res;
 }
 
-char *vrpn_ForceDevice::encode_scp(int &length, 
-				const double *pos, const double *quat)
+char *vrpn_ForceDevice::encode_scp(vrpn_int32 &length, 
+				const vrpn_float64 *pos, const vrpn_float64 *quat)
 {
     int i;
     char *buf;
     char *mptr;
-    long mlen;
+    vrpn_int32 mlen;
 
-    length = 7*sizeof(double);
+    length = 7*sizeof(vrpn_float64);
     mlen = length;
 
     buf = new char [length];
@@ -222,17 +222,17 @@ char *vrpn_ForceDevice::encode_scp(int &length,
     return buf;
 }
 
-int vrpn_ForceDevice::decode_scp(const char *buffer, const int len,
-				 double *pos, double *quat)
+vrpn_int32 vrpn_ForceDevice::decode_scp(const char *buffer, const vrpn_int32 len,
+				 vrpn_float64 *pos, vrpn_float64 *quat)
 {
     int i;
     int res;
     const char *mptr = buffer;
 
-    if (len != 7*sizeof(double)){
+    if (len != 7*sizeof(vrpn_float64)){
 	    fprintf(stderr,"vrpn_ForceDevice: scp message payload error\n");
 	    fprintf(stderr,"             (got %d, expected %d)\n",
-		    len, 7*sizeof(double) );
+		    len, 7*sizeof(vrpn_float64) );
 	    return -1;
     }
 
@@ -244,18 +244,18 @@ int vrpn_ForceDevice::decode_scp(const char *buffer, const int len,
     return res;
 }
 
-char *vrpn_ForceDevice::encode_plane(int &len, const float *plane, 
-				const float kspring, const float kdamp,
-				const float fdyn, const float fstat, 
-				const long plane_index, const long n_rec_cycles){
-	// Message includes: float plane[4],
+char *vrpn_ForceDevice::encode_plane(vrpn_int32 &len, const vrpn_float32 *plane, 
+				const vrpn_float32 kspring, const vrpn_float32 kdamp,
+				const vrpn_float32 fdyn, const vrpn_float32 fstat, 
+				const vrpn_int32 plane_index, const vrpn_int32 n_rec_cycles){
+	// Message includes: vrpn_float32 plane[4],
 
 	int i;
 	char *buf;
 	char *mptr;
-	long mlen;
+	vrpn_int32 mlen;
 
-	len = 8*sizeof(float)+2*sizeof(long);
+	len = 8*sizeof(vrpn_float32)+2*sizeof(vrpn_int32);
 	mlen = len;
 	
 	buf = new char [len];
@@ -275,20 +275,20 @@ char *vrpn_ForceDevice::encode_plane(int &len, const float *plane,
 	return buf;
 }
 
-int vrpn_ForceDevice::decode_plane(const char *buffer, const int len, 
-				float *plane, 
-				float *kspring, float *kdamp,
-				float *fdyn, float *fstat, 
-				long *plane_index, long *n_rec_cycles)
+vrpn_int32 vrpn_ForceDevice::decode_plane(const char *buffer, const vrpn_int32 len, 
+				vrpn_float32 *plane, 
+				vrpn_float32 *kspring, vrpn_float32 *kdamp,
+				vrpn_float32 *fdyn, vrpn_float32 *fstat, 
+				vrpn_int32 *plane_index, vrpn_int32 *n_rec_cycles)
 {
     int i;
     int res;
     const char *mptr = buffer;
 
-    if (len != 8*sizeof(float)+2*sizeof(long)){
+    if (len != 8*sizeof(vrpn_float32)+2*sizeof(vrpn_int32)){
 	    fprintf(stderr,"vrpn_ForceDevice: plane message payload error\n");
 	    fprintf(stderr,"             (got %d, expected %d)\n",
-		    len, 8*sizeof(float)+2*sizeof(long) );
+		    len, 8*sizeof(vrpn_float32)+2*sizeof(vrpn_int32) );
 	    return -1;
     }
 
@@ -304,16 +304,16 @@ int vrpn_ForceDevice::decode_plane(const char *buffer, const int len,
     return res;
 }
 
-char *vrpn_ForceDevice::encode_surface_effects(int &len, 
-		    const float k_adhesion,
-		    const float bump_amp, const float bump_freq,
-		    const float buzz_amp, const float buzz_freq) {
+char *vrpn_ForceDevice::encode_surface_effects(vrpn_int32 &len, 
+		    const vrpn_float32 k_adhesion,
+		    const vrpn_float32 bump_amp, const vrpn_float32 bump_freq,
+		    const vrpn_float32 buzz_amp, const vrpn_float32 buzz_freq) {
 
     char *buf;
     char *mptr;
-    long mlen;
+    vrpn_int32 mlen;
 
-    len = 5*sizeof(float);
+    len = 5*sizeof(vrpn_float32);
     mlen = len;
 
     buf = new char [len];
@@ -328,18 +328,18 @@ char *vrpn_ForceDevice::encode_surface_effects(int &len,
     return buf;
 }
 
-int vrpn_ForceDevice::decode_surface_effects(const char *buffer, const int len,
-					float *k_adhesion,
-					float *bump_amp, float *bump_freq,
-					float *buzz_amp, float *buzz_freq) {
+vrpn_int32 vrpn_ForceDevice::decode_surface_effects(const char *buffer, const vrpn_int32 len,
+					vrpn_float32 *k_adhesion,
+					vrpn_float32 *bump_amp, vrpn_float32 *bump_freq,
+					vrpn_float32 *buzz_amp, vrpn_float32 *buzz_freq) {
 
     int res;
     const char *mptr = buffer;
 
-    if (len != 5*sizeof(float)){
+    if (len != 5*sizeof(vrpn_float32)){
         fprintf(stderr,"vrpn_ForceDevice: surface effects message payload ");
         fprintf(stderr,"error\n             (got %d, expected %d)\n",
-		    len, 5*sizeof(float) );
+		    len, 5*sizeof(vrpn_float32) );
 	return -1;
     }
 
@@ -352,14 +352,14 @@ int vrpn_ForceDevice::decode_surface_effects(const char *buffer, const int len,
     return res;
 }
 
-char *vrpn_ForceDevice::encode_vertex(int &len,const long vertNum,
-			const float x,const float y,const float z){
+char *vrpn_ForceDevice::encode_vertex(vrpn_int32 &len,const vrpn_int32 vertNum,
+			const vrpn_float32 x,const vrpn_float32 y,const vrpn_float32 z){
 
     char *buf;
     char *mptr;
-    long mlen;
+    vrpn_int32 mlen;
 
-    len = sizeof(long) + 3*sizeof(float);
+    len = sizeof(vrpn_int32) + 3*sizeof(vrpn_float32);
     mlen = len;
 
     buf = new char [len];
@@ -373,16 +373,16 @@ char *vrpn_ForceDevice::encode_vertex(int &len,const long vertNum,
     return buf; 
 }
 
-int vrpn_ForceDevice::decode_vertex(const char *buffer, 
-			    const int len,long *vertNum,
-			    float *x,float *y,float *z){
+vrpn_int32 vrpn_ForceDevice::decode_vertex(const char *buffer, 
+			    const vrpn_int32 len,vrpn_int32 *vertNum,
+			    vrpn_float32 *x,vrpn_float32 *y,vrpn_float32 *z){
     int res;
     const char *mptr = buffer;
 
-    if (len != sizeof(long) + 3*sizeof(float)){
+    if (len != sizeof(vrpn_int32) + 3*sizeof(vrpn_float32)){
 	    fprintf(stderr,"vrpn_ForceDevice: vertex message payload error\n");
 	    fprintf(stderr,"             (got %d, expected %d)\n",
-		    len, sizeof(long) + 3*sizeof(float) );
+		    len, sizeof(vrpn_int32) + 3*sizeof(vrpn_float32) );
 	    return -1;
     }
 
@@ -394,14 +394,14 @@ int vrpn_ForceDevice::decode_vertex(const char *buffer,
     return res;
 }
 
-char *vrpn_ForceDevice::encode_normal(int &len,const long normNum,
-		       const float x,const float y,const float z){
+char *vrpn_ForceDevice::encode_normal(vrpn_int32 &len,const vrpn_int32 normNum,
+		       const vrpn_float32 x,const vrpn_float32 y,const vrpn_float32 z){
 
     char *buf;
     char *mptr;
-    long mlen;
+    vrpn_int32 mlen;
 
-    len = sizeof(long) + 3*sizeof(float);
+    len = sizeof(vrpn_int32) + 3*sizeof(vrpn_float32);
     mlen = len;
 
     buf = new char [len];
@@ -414,16 +414,16 @@ char *vrpn_ForceDevice::encode_normal(int &len,const long normNum,
     return buf; 
 }
 
-int vrpn_ForceDevice::decode_normal(const char *buffer,const int len,
-			     long *vertNum,float *x,float *y,float *z){
+vrpn_int32 vrpn_ForceDevice::decode_normal(const char *buffer,const vrpn_int32 len,
+			     vrpn_int32 *vertNum,vrpn_float32 *x,vrpn_float32 *y,vrpn_float32 *z){
 
     int res;
     const char *mptr = buffer;
 
-    if (len != sizeof(long) + 3*sizeof(float)){
+    if (len != sizeof(vrpn_int32) + 3*sizeof(vrpn_float32)){
 	    fprintf(stderr,"vrpn_ForceDevice: normal message payload error\n");
 	    fprintf(stderr,"             (got %d, expected %d)\n",
-		    len, sizeof(long) + 3*sizeof(float) );
+		    len, sizeof(vrpn_int32) + 3*sizeof(vrpn_float32) );
 	    return -1;
     }
 
@@ -435,14 +435,14 @@ int vrpn_ForceDevice::decode_normal(const char *buffer,const int len,
     return res;
 }
 
-char *vrpn_ForceDevice::encode_triangle(int &len,const long triNum,
-			 const long vert0,const long vert1,const long vert2,
-			 const long norm0,const long norm1,const long norm2){
+char *vrpn_ForceDevice::encode_triangle(vrpn_int32 &len,const vrpn_int32 triNum,
+			 const vrpn_int32 vert0,const vrpn_int32 vert1,const vrpn_int32 vert2,
+			 const vrpn_int32 norm0,const vrpn_int32 norm1,const vrpn_int32 norm2){
     char *buf;
     char *mptr;
-    long mlen;
+    vrpn_int32 mlen;
 
-    len = 7*sizeof(long);
+    len = 7*sizeof(vrpn_int32);
     mlen = len;
 
     buf = new char [len];
@@ -459,18 +459,18 @@ char *vrpn_ForceDevice::encode_triangle(int &len,const long triNum,
     return buf; 
 }
 
-int vrpn_ForceDevice::decode_triangle(const char *buffer,
-				const int len,long *triNum,
-			    long *vert0,long *vert1,long *vert2,
-			    long *norm0,long *norm1,long *norm2)
+vrpn_int32 vrpn_ForceDevice::decode_triangle(const char *buffer,
+				const vrpn_int32 len,vrpn_int32 *triNum,
+			    vrpn_int32 *vert0,vrpn_int32 *vert1,vrpn_int32 *vert2,
+			    vrpn_int32 *norm0,vrpn_int32 *norm1,vrpn_int32 *norm2)
 {
     int res;
     const char *mptr = buffer;
 
-    if (len != 7*sizeof(long)){
+    if (len != 7*sizeof(vrpn_int32)){
 	    fprintf(stderr,"vrpn_ForceDevice: triangle message payload error\n");
 	    fprintf(stderr,"             (got %d, expected %d)\n",
-		    len, 7*sizeof(long) );
+		    len, 7*sizeof(vrpn_int32) );
 	    return -1;
     }
 
@@ -485,13 +485,13 @@ int vrpn_ForceDevice::decode_triangle(const char *buffer,
     return res;
 }
 
-char *vrpn_ForceDevice::encode_removeTriangle(int &len,const long triNum){
+char *vrpn_ForceDevice::encode_removeTriangle(vrpn_int32 &len,const vrpn_int32 triNum){
 
     char *buf;
     char *mptr;
-    long mlen;
+    vrpn_int32 mlen;
 
-    len = sizeof(long);
+    len = sizeof(vrpn_int32);
     mlen = len;
 
     buf = new char [len];
@@ -502,16 +502,16 @@ char *vrpn_ForceDevice::encode_removeTriangle(int &len,const long triNum){
     return buf; 
 }
 
-int vrpn_ForceDevice::decode_removeTriangle(const char *buffer,
-				const int len,long *triNum){
+vrpn_int32 vrpn_ForceDevice::decode_removeTriangle(const char *buffer,
+				const vrpn_int32 len,vrpn_int32 *triNum){
 
     int res;
     const char *mptr = buffer;
 
-    if (len != sizeof(long)){
+    if (len != sizeof(vrpn_int32)){
 	fprintf(stderr,"vrpn_ForceDevice: remove triangle message payload");
 	    fprintf(stderr," error\n             (got %d, expected %d)\n",
-		    len, sizeof(long) );
+		    len, sizeof(vrpn_int32) );
 	    return -1;
     }
 
@@ -521,15 +521,15 @@ int vrpn_ForceDevice::decode_removeTriangle(const char *buffer,
 }
 
 // this is where we send down our surface parameters
-char *vrpn_ForceDevice::encode_updateTrimeshChanges(int &len, 
-			const float kspring, const float kdamp, 
-			const float fstat, const float fdyn){
+char *vrpn_ForceDevice::encode_updateTrimeshChanges(vrpn_int32 &len, 
+			const vrpn_float32 kspring, const vrpn_float32 kdamp, 
+			const vrpn_float32 fstat, const vrpn_float32 fdyn){
 
     char *buf;
     char *mptr;
-    long mlen;
+    vrpn_int32 mlen;
 
-    len = 4*sizeof(float);
+    len = 4*sizeof(vrpn_float32);
     mlen = len;
 
     buf = new char [len];
@@ -543,17 +543,17 @@ char *vrpn_ForceDevice::encode_updateTrimeshChanges(int &len,
     return buf; 
 }
 
-int vrpn_ForceDevice::decode_updateTrimeshChanges(const char *buffer,
-			const int len, float *kspring, float *kdamp, 
-			float *fstat, float *fdyn){
+vrpn_int32 vrpn_ForceDevice::decode_updateTrimeshChanges(const char *buffer,
+			const vrpn_int32 len, vrpn_float32 *kspring, vrpn_float32 *kdamp, 
+			vrpn_float32 *fstat, vrpn_float32 *fdyn){
 
     int res;
     const char *mptr = buffer;
 
-    if (len != 4*sizeof(float)){
+    if (len != 4*sizeof(vrpn_float32)){
 	fprintf(stderr,"vrpn_ForceDevice: update trimesh message payload");
 	    fprintf(stderr," error\n             (got %d, expected %d)\n",
-		    len, 4*sizeof(float) );
+		    len, 4*sizeof(vrpn_float32) );
 	    return -1;
     }
 
@@ -565,13 +565,13 @@ int vrpn_ForceDevice::decode_updateTrimeshChanges(const char *buffer,
     return res;
 }
 
-char *vrpn_ForceDevice::encode_setTrimeshType(int &len,const long type){
+char *vrpn_ForceDevice::encode_setTrimeshType(vrpn_int32 &len,const vrpn_int32 type){
 
     char *buf;
     char *mptr;
-    long mlen;
+    vrpn_int32 mlen;
 
-    len = sizeof(long);
+    len = sizeof(vrpn_int32);
     mlen = len;
 
     buf = new char [len];
@@ -582,16 +582,16 @@ char *vrpn_ForceDevice::encode_setTrimeshType(int &len,const long type){
     return buf; 
 }
 
-int vrpn_ForceDevice::decode_setTrimeshType(const char *buffer,const int len,
-					   long *type){
+vrpn_int32 vrpn_ForceDevice::decode_setTrimeshType(const char *buffer,const vrpn_int32 len,
+					   vrpn_int32 *type){
 
     int res;
     const char *mptr = buffer;
 
-    if (len != sizeof(long)){
+    if (len != sizeof(vrpn_int32)){
 	fprintf(stderr,"vrpn_ForceDevice: trimesh type message payload");
 	    fprintf(stderr," error\n             (got %d, expected %d)\n",
-		    len, sizeof(long) );
+		    len, sizeof(vrpn_int32) );
 	    return -1;
     }
 
@@ -600,14 +600,14 @@ int vrpn_ForceDevice::decode_setTrimeshType(const char *buffer,const int len,
     return res;
 }
 
-char *vrpn_ForceDevice::encode_trimeshTransform(int &len,
-				const float homMatrix[16]){
+char *vrpn_ForceDevice::encode_trimeshTransform(vrpn_int32 &len,
+				const vrpn_float32 homMatrix[16]){
 	int i;
 	char *buf;
 	char *mptr;
-	long mlen;
+	vrpn_int32 mlen;
 
-	len = 16*sizeof(float);
+	len = 16*sizeof(vrpn_float32);
 	mlen = len;
 	
 	buf = new char [len];
@@ -619,16 +619,16 @@ char *vrpn_ForceDevice::encode_trimeshTransform(int &len,
 	return buf; 
 }
 
-int vrpn_ForceDevice::decode_trimeshTransform(const char *buffer,
-				  const int len, float homMatrix[16]){
+vrpn_int32 vrpn_ForceDevice::decode_trimeshTransform(const char *buffer,
+				  const vrpn_int32 len, vrpn_float32 homMatrix[16]){
     int i;
     int res;
     const char *mptr = buffer;
 
-    if (len != 16*sizeof(float)){
+    if (len != 16*sizeof(vrpn_float32)){
 	fprintf(stderr,"vrpn_ForceDevice: trimesh transform message payload ");
 	    fprintf(stderr,"error\n             (got %d, expected %d)\n",
-		    len, 16*sizeof(float) );
+		    len, 16*sizeof(vrpn_float32) );
 	    return -1;
     }
 
@@ -638,14 +638,14 @@ int vrpn_ForceDevice::decode_trimeshTransform(const char *buffer,
     return res;
 }
 
-char *vrpn_ForceDevice::encode_constraint(int &len, const long enable,
-		const float x, const float y, const float z,const float kSpr){
+char *vrpn_ForceDevice::encode_constraint(vrpn_int32 &len, const vrpn_int32 enable,
+		const vrpn_float32 x, const vrpn_float32 y, const vrpn_float32 z,const vrpn_float32 kSpr){
 
     char *buf;
     char *mptr;
-    long mlen;
+    vrpn_int32 mlen;
 
-    len = sizeof(long) + 4*sizeof(float);
+    len = sizeof(vrpn_int32) + 4*sizeof(vrpn_float32);
     mlen = len;
 
     buf = new char [len];
@@ -660,17 +660,17 @@ char *vrpn_ForceDevice::encode_constraint(int &len, const long enable,
     return buf;
 }
 
-int vrpn_ForceDevice::decode_constraint(const char *buffer, 
-			     const int len,long *enable, 
-			     float *x, float *y, float *z, float *kSpr){
+vrpn_int32 vrpn_ForceDevice::decode_constraint(const char *buffer, 
+			     const vrpn_int32 len,vrpn_int32 *enable, 
+			     vrpn_float32 *x, vrpn_float32 *y, vrpn_float32 *z, vrpn_float32 *kSpr){
 
     int res;
     const char *mptr = buffer;
 
-    if (len != sizeof(long) + 4*sizeof(float)){
+    if (len != sizeof(vrpn_int32) + 4*sizeof(vrpn_float32)){
 	fprintf(stderr,"vrpn_ForceDevice: constraint message payload error\n");
 	    fprintf(stderr,"             (got %d, expected %d)\n",
-		    len, sizeof(long) + 4*sizeof(float) );
+		    len, sizeof(vrpn_int32) + 4*sizeof(vrpn_float32) );
 	    return -1;
     }
 
@@ -683,15 +683,15 @@ int vrpn_ForceDevice::decode_constraint(const char *buffer,
     return res;
 }
 
-char *vrpn_ForceDevice::encode_forcefield(int &len, const float origin[3],
-	const float force[3], const float jacobian[3][3], const float radius)
+char *vrpn_ForceDevice::encode_forcefield(vrpn_int32 &len, const vrpn_float32 origin[3],
+	const vrpn_float32 force[3], const vrpn_float32 jacobian[3][3], const vrpn_float32 radius)
 {
     int i,j;
     char *buf;
     char *mptr;
-    long mlen;
+    vrpn_int32 mlen;
 
-    len = 16*sizeof(float);
+    len = 16*sizeof(vrpn_float32);
     mlen = len;
 
     buf = new char [len];
@@ -712,17 +712,17 @@ char *vrpn_ForceDevice::encode_forcefield(int &len, const float origin[3],
     return buf;
 }
 
-int vrpn_ForceDevice::decode_forcefield(const char *buffer,
-			  const int len,float origin[3],
-			  float force[3], float jacobian[3][3], float *radius){
+vrpn_int32 vrpn_ForceDevice::decode_forcefield(const char *buffer,
+			  const vrpn_int32 len,vrpn_float32 origin[3],
+			  vrpn_float32 force[3], vrpn_float32 jacobian[3][3], vrpn_float32 *radius){
     int i,j;
     int res;
     const char *mptr = buffer;
 
-    if (len != 16*sizeof(float)){
+    if (len != 16*sizeof(vrpn_float32)){
        fprintf(stderr,"vrpn_ForceDevice: force field message payload error\n");
 	    fprintf(stderr,"             (got %d, expected %d)\n",
-		    len, 16*sizeof(float) );
+		    len, 16*sizeof(vrpn_float32) );
 	    return -1;
     }
 
@@ -741,14 +741,14 @@ int vrpn_ForceDevice::decode_forcefield(const char *buffer,
     return res;
 }
 
-char *vrpn_ForceDevice::encode_error(int &len, const long error_code)
+char *vrpn_ForceDevice::encode_error(vrpn_int32 &len, const vrpn_int32 error_code)
 {
 
     char *buf;
     char *mptr;
-    long mlen;
+    vrpn_int32 mlen;
 
-    len = sizeof(long);
+    len = sizeof(vrpn_int32);
     mlen = len;
 
     buf = new char [len];
@@ -759,16 +759,17 @@ char *vrpn_ForceDevice::encode_error(int &len, const long error_code)
     return buf;
 }
 
-int vrpn_ForceDevice::decode_error(const char *buffer,
-				   const int len,long *error_code){
+vrpn_int32 vrpn_ForceDevice::decode_error(const char *buffer,
+				   const vrpn_int32 len,vrpn_int32 *error_code)
+{
 
     int res;
     const char *mptr = buffer;
 
-    if (len != sizeof(long)){
+    if (len != sizeof(vrpn_int32)){
 	    fprintf(stderr,"vrpn_ForceDevice: error message payload error\n");
 	    fprintf(stderr,"             (got %d, expected %d)\n",
-		    len, sizeof(long) );
+		    len, sizeof(vrpn_int32) );
 	    return -1;
     }
 
@@ -777,21 +778,21 @@ int vrpn_ForceDevice::decode_error(const char *buffer,
     return res;
 }
 
-void vrpn_ForceDevice::set_plane(float *p)
+void vrpn_ForceDevice::set_plane(vrpn_float32 *p)
 { 
     for(int i=0;i<4;i++ ) {
 	    plane[i]= p[i];
     }
 }
 
-void vrpn_ForceDevice::set_plane(float a, float b, float c,float d)
+void vrpn_ForceDevice::set_plane(vrpn_float32 a, vrpn_float32 b, vrpn_float32 c,vrpn_float32 d)
 { plane[0] = a; 
   plane[1] = b;
   plane[2] = c;
   plane[3] = d;
 }
 
-void vrpn_ForceDevice::set_plane(float *normal, float d)
+void vrpn_ForceDevice::set_plane(vrpn_float32 *normal, vrpn_float32 d)
 { 
     for(int i =0;i<3;i++ ) {
       plane[i] = normal[i];
@@ -802,7 +803,7 @@ void vrpn_ForceDevice::set_plane(float *normal, float d)
 
 void vrpn_ForceDevice::sendError(int error_code){
     char	*msgbuf;
-    int		len;
+    vrpn_int32	len;
     struct timeval current_time;
 
     gettimeofday(&current_time, NULL);
@@ -862,7 +863,7 @@ vrpn_ForceDevice_Remote::vrpn_ForceDevice_Remote(char *name):
 void vrpn_ForceDevice_Remote::sendSurface(void)
 { // Encode the plane if there is a connection
   char	*msgbuf;
-  int		len;
+  vrpn_int32		len;
   struct timeval current_time;
   
   gettimeofday(&current_time, NULL);
@@ -885,7 +886,7 @@ void vrpn_ForceDevice_Remote::sendSurface(void)
 void vrpn_ForceDevice_Remote::startSurface(void)
 {  //Encode the plane if there is a connection
     char	*msgbuf;
-    int		len;
+    vrpn_int32		len;
     struct timeval current_time;
     
     gettimeofday(&current_time, NULL);
@@ -907,7 +908,7 @@ void vrpn_ForceDevice_Remote::startSurface(void)
 void vrpn_ForceDevice_Remote::stopSurface(void)
 {  //Encode the plane if there is a connection
     char	*msgbuf;
-    int		len;
+    vrpn_int32		len;
     struct timeval current_time;
     
     gettimeofday(&current_time, NULL);
@@ -928,10 +929,10 @@ void vrpn_ForceDevice_Remote::stopSurface(void)
     }
 }
 
-void vrpn_ForceDevice_Remote::setVertex(int vertNum,float x,float y,float z){
+void vrpn_ForceDevice_Remote::setVertex(vrpn_int32 vertNum,vrpn_float32 x,vrpn_float32 y,vrpn_float32 z){
 
   char	*msgbuf;
-  int		len;
+  vrpn_int32		len;
   struct timeval current_time;
   
   gettimeofday(&current_time, NULL);
@@ -949,9 +950,9 @@ void vrpn_ForceDevice_Remote::setVertex(int vertNum,float x,float y,float z){
   }
 }
 
-void vrpn_ForceDevice_Remote::setNormal(int normNum,float x,float y,float z){
+void vrpn_ForceDevice_Remote::setNormal(vrpn_int32 normNum,vrpn_float32 x,vrpn_float32 y,vrpn_float32 z){
   char	*msgbuf;
-  int		len;
+  vrpn_int32		len;
   struct timeval current_time;
   
   gettimeofday(&current_time, NULL);
@@ -969,11 +970,11 @@ void vrpn_ForceDevice_Remote::setNormal(int normNum,float x,float y,float z){
   }
 }
 
-void vrpn_ForceDevice_Remote::setTriangle(int triNum,
-	  int vert0,int vert1,int vert2,int norm0,int norm1,int norm2){
+void vrpn_ForceDevice_Remote::setTriangle(vrpn_int32 triNum,
+	  vrpn_int32 vert0,vrpn_int32 vert1,vrpn_int32 vert2,vrpn_int32 norm0,vrpn_int32 norm1,vrpn_int32 norm2){
 
   char	*msgbuf;
-  int		len;
+  vrpn_int32		len;
   struct timeval current_time;
   
   gettimeofday(&current_time, NULL);
@@ -991,10 +992,10 @@ void vrpn_ForceDevice_Remote::setTriangle(int triNum,
   }
 }
 
-void vrpn_ForceDevice_Remote::removeTriangle(int triNum){
+void vrpn_ForceDevice_Remote::removeTriangle(vrpn_int32 triNum){
 
   char	*msgbuf;
-  int		len;
+  vrpn_int32		len;
   struct timeval current_time;
   
   gettimeofday(&current_time, NULL);
@@ -1015,7 +1016,7 @@ void vrpn_ForceDevice_Remote::removeTriangle(int triNum){
 void vrpn_ForceDevice_Remote::updateTrimeshChanges(){
 
   char	*msgbuf;
-  int		len;
+  vrpn_int32		len;
   struct timeval current_time;
   
   gettimeofday(&current_time, NULL);
@@ -1035,9 +1036,9 @@ void vrpn_ForceDevice_Remote::updateTrimeshChanges(){
 }
 
 // set the trimesh's homogen transform matrix (in row major order)
-void vrpn_ForceDevice_Remote::setTrimeshTransform(float homMatrix[16]){
+void vrpn_ForceDevice_Remote::setTrimeshTransform(vrpn_float32 homMatrix[16]){
   char	*msgbuf;
-  int		len;
+  vrpn_int32		len;
   struct timeval current_time;
   
   gettimeofday(&current_time, NULL);
@@ -1058,7 +1059,7 @@ void vrpn_ForceDevice_Remote::setTrimeshTransform(float homMatrix[16]){
 // clear the triMesh if connection
 void vrpn_ForceDevice_Remote::clearTrimesh(void){
   char	*msgbuf=NULL;
-  int		len=0;
+  vrpn_int32		len=0;
   struct timeval current_time;
   
   gettimeofday(&current_time, NULL);
@@ -1078,7 +1079,7 @@ void vrpn_ForceDevice_Remote::clearTrimesh(void){
 // the next time we send a trimesh we will use the following type
 void vrpn_ForceDevice_Remote::useHcollide(void){
   char	*msgbuf;
-  int		len;
+  vrpn_int32		len;
   struct timeval current_time;
   
   gettimeofday(&current_time, NULL);
@@ -1098,7 +1099,7 @@ void vrpn_ForceDevice_Remote::useHcollide(void){
 
 void vrpn_ForceDevice_Remote::useGhost(void){
   char	*msgbuf;
-  int		len;
+  vrpn_int32		len;
   struct timeval current_time;
   
   gettimeofday(&current_time, NULL);
@@ -1117,11 +1118,11 @@ void vrpn_ForceDevice_Remote::useGhost(void){
 }
 
 
-void vrpn_ForceDevice_Remote::sendConstraint(int enable, 
-					float x, float y, float z, float kSpr)
+void vrpn_ForceDevice_Remote::sendConstraint(vrpn_int32 enable, 
+					vrpn_float32 x, vrpn_float32 y, vrpn_float32 z, vrpn_float32 kSpr)
 {
   char *msgbuf;
-  int	len;
+  vrpn_int32	len;
   struct timeval current_time;
 
   gettimeofday(&current_time, NULL);
@@ -1144,11 +1145,11 @@ void vrpn_ForceDevice_Remote::sendForceField()
     sendForceField(ff_origin, ff_force, ff_jacobian, ff_radius);
 }
 
-void vrpn_ForceDevice_Remote::sendForceField(float origin[3],
-	float force[3], float jacobian[3][3], float radius)
+void vrpn_ForceDevice_Remote::sendForceField(vrpn_float32 origin[3],
+	vrpn_float32 force[3], vrpn_float32 jacobian[3][3], vrpn_float32 radius)
 {
   char *msgbuf;
-  int   len;
+  vrpn_int32   len;
   struct timeval current_time;
 
   gettimeofday(&current_time, NULL);
@@ -1169,13 +1170,13 @@ void vrpn_ForceDevice_Remote::sendForceField(float origin[3],
 // same as sendForceField but sets force to 0 and sends RELIABLY
 void vrpn_ForceDevice_Remote::stopForceField()
 {
-  float origin[3] = {0,0,0};
-  float force[3] = {0,0,0};
-  float jacobian[3][3] = {{0,0,0},{0,0,0},{0,0,0}};
-  float radius = 0;
+  vrpn_float32 origin[3] = {0,0,0};
+  vrpn_float32 force[3] = {0,0,0};
+  vrpn_float32 jacobian[3][3] = {{0,0,0},{0,0,0},{0,0,0}};
+  vrpn_float32 radius = 0;
 
   char *msgbuf;
-  int   len;
+  vrpn_int32   len;
   struct timeval current_time;
 
   gettimeofday(&current_time, NULL);
@@ -1427,10 +1428,10 @@ int vrpn_ForceDevice_Remote::handle_error_change_message(void *userdata,
     vrpn_FORCEERRORCB tp;
     vrpn_FORCEERRORCHANGELIST *handler = me->error_change_list;
 
-    if (p.payload_len != sizeof(long)) {
-	    fprintf(stderr, "vrpn_ForceDevice: error message payload",
+    if (p.payload_len != sizeof(vrpn_int32)) {
+	    fprintf(stderr, "vrpn_ForceDevice: error message payload"
 		    " error\n(got %d, expected %d)\n",
-		    p.payload_len, sizeof(long));
+		    p.payload_len, sizeof(vrpn_int32));
 	    return -1;
     }
     tp.msg_time = p.msg_time;

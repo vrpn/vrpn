@@ -281,7 +281,7 @@ void vrpn_Tracker_3Space::get_report(void)
       	bufcount = 0;
    }
 #ifdef VERBOSE
-      print();
+      print_latest_report();
 #endif
 }
 
@@ -294,7 +294,7 @@ void vrpn_Tracker_3Space::mainloop()
 #ifdef	VERBOSE
 	static int count = 0;
 	if (count++ == 120) {
-		printf("  vrpn_Tracker_3Space: Got report\n"); print();
+		printf("  vrpn_Tracker_3Space: Got report\n"); print_latest_report();
 		count = 0;
 	}
 #endif            

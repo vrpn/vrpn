@@ -30,12 +30,12 @@ vrpn_Forwarder_Brain::~vrpn_Forwarder_Brain (void) {
 
 // static
 char * vrpn_Forwarder_Brain::encode_start_remote_forwarding
-            (int * length, int remote_port) {
+            (vrpn_int32 * length, vrpn_int32 remote_port) {
   char * outbuf;
 
-  int nPort;
+  vrpn_int32 nPort;
 
-  *length = sizeof(int);
+  *length = sizeof(vrpn_int32);
   outbuf = new char [*length];
   if (!outbuf) {
     *length = 0;
@@ -43,33 +43,33 @@ char * vrpn_Forwarder_Brain::encode_start_remote_forwarding
   }
 
   nPort = htonl(remote_port);
-  memcpy(outbuf, &nPort, sizeof(int));
+  memcpy(outbuf, &nPort, sizeof(vrpn_int32));
 
   return outbuf;
 }
 
 // static
 void vrpn_Forwarder_Brain::decode_start_remote_forwarding
-          (const char * buffer, int * remote_port) {
-  int port;
+          (const char * buffer, vrpn_int32 * remote_port) {
+  vrpn_int32 port;
 
   if (!buffer || !remote_port) return;
 
-  memcpy(&port, buffer, sizeof(int));
+  memcpy(&port, buffer, sizeof(vrpn_int32));
   *remote_port = ntohl(port);
 }
 
 // static
 char * vrpn_Forwarder_Brain::encode_forward_message_type
-            (int * length, int remote_port, const char * service_name,
+            (vrpn_int32 * length, vrpn_int32 remote_port, const char * service_name,
              const char * message_type) {
   char * outbuf;
 
-  int nPort;
-  int nSLen;
-  int nTLen;
+  vrpn_int32 nPort;
+  vrpn_int32 nSLen;
+  vrpn_int32 nTLen;
 
-  *length = 3 * sizeof(int) + strlen(service_name) + strlen(message_type);
+  *length = 3 * sizeof(vrpn_int32) + strlen(service_name) + strlen(message_type);
   outbuf = new char [*length];
   if (!outbuf) {
     *length = 0;
@@ -85,22 +85,22 @@ char * vrpn_Forwarder_Brain::encode_forward_message_type
   nPort = htonl(remote_port);
   nSLen = htonl(strlen(service_name));
   nTLen = htonl(strlen(message_type));
-  memcpy(outbuf, &nPort, sizeof(int));
-  memcpy(outbuf + sizeof(int), &nSLen, sizeof(int));
-  memcpy(outbuf + 2 * sizeof(int), &nTLen, sizeof(int));
-  strcpy(outbuf + 3 * sizeof(int), service_name);
-  strcpy(outbuf + 3 * sizeof(int) + strlen(service_name), message_type);
+  memcpy(outbuf, &nPort, sizeof(vrpn_int32));
+  memcpy(outbuf + sizeof(vrpn_int32), &nSLen, sizeof(vrpn_int32));
+  memcpy(outbuf + 2 * sizeof(vrpn_int32), &nTLen, sizeof(vrpn_int32));
+  strcpy(outbuf + 3 * sizeof(vrpn_int32), service_name);
+  strcpy(outbuf + 3 * sizeof(vrpn_int32) + strlen(service_name), message_type);
 
   return outbuf;
 }
 
 // static
 void vrpn_Forwarder_Brain::decode_forward_message_type
-          (const char * buffer, int * remote_port, char ** service_name,
+          (const char * buffer, vrpn_int32 * remote_port, char ** service_name,
            char ** message_type) {
-  int port;
-  int Slength;
-  int Tlength;
+  vrpn_int32 port;
+  vrpn_int32 Slength;
+  vrpn_int32 Tlength;
   char * Soutbuf;
   char * Toutbuf;
 
@@ -109,12 +109,12 @@ void vrpn_Forwarder_Brain::decode_forward_message_type
   // All the char [] are at the end of the message so we don't have to
   // worry about padding and alignment.
 
-  memcpy(&port, buffer, sizeof(int));
+  memcpy(&port, buffer, sizeof(vrpn_int32));
   *remote_port = ntohl(port);
-  memcpy(&Slength, buffer + sizeof(int), sizeof(int));
+  memcpy(&Slength, buffer + sizeof(vrpn_int32), sizeof(vrpn_int32));
   Slength = ntohl(Slength);
   Soutbuf = new char [1 + Slength];
-  memcpy(&Tlength, buffer + 2 * sizeof(int), sizeof(int));
+  memcpy(&Tlength, buffer + 2 * sizeof(vrpn_int32), sizeof(vrpn_int32));
   Tlength = ntohl(Tlength);
   Toutbuf = new char [1 + Tlength];
   if (!Soutbuf || !Toutbuf) {
@@ -123,10 +123,10 @@ void vrpn_Forwarder_Brain::decode_forward_message_type
     *message_type = NULL;
     return;
   }
-  strncpy(Soutbuf, buffer + 3 * sizeof(int), Slength);
+  strncpy(Soutbuf, buffer + 3 * sizeof(vrpn_int32), Slength);
   Soutbuf[Slength] = '\0';
   *service_name = Soutbuf;
-  strncpy(Toutbuf, buffer + 3 * sizeof(int) + Slength, Tlength);
+  strncpy(Toutbuf, buffer + 3 * sizeof(vrpn_int32) + Slength, Tlength);
   Toutbuf[Tlength] = '\0';
   *message_type = Toutbuf;
 }
@@ -164,7 +164,7 @@ void vrpn_Forwarder_Server::mainloop (void) {
 }
 
 void vrpn_Forwarder_Server::start_remote_forwarding
-                    (int remote_port) {
+                    (vrpn_int32 remote_port) {
 
   vrpn_Forwarder_List * fp;
 
@@ -182,7 +182,7 @@ void vrpn_Forwarder_Server::start_remote_forwarding
   fp = new vrpn_Forwarder_List;
 
   fp->port = remote_port;
-  fp->connection = new vrpn_Synchronized_Connection (remote_port);
+  fp->connection = new vrpn_Synchronized_Connection ((unsigned short)remote_port);
   fp->forwarder = new vrpn_ConnectionForwarder
        (d_connection, fp->connection);
 
@@ -195,7 +195,7 @@ void vrpn_Forwarder_Server::start_remote_forwarding
 }
 
 void vrpn_Forwarder_Server::forward_message_type
-                   (int remote_port, const char * service_name,
+                   (vrpn_int32 remote_port, const char * service_name,
                     const char * message_type) {
 
   vrpn_Forwarder_List * fp;
@@ -231,7 +231,7 @@ void vrpn_Forwarder_Server::forward_message_type
 int vrpn_Forwarder_Server::handle_start
                    (void * userdata, vrpn_HANDLERPARAM p) {
   vrpn_Forwarder_Server * me = (vrpn_Forwarder_Server *) userdata;
-  int port;
+  vrpn_int32 port;
 
   decode_start_remote_forwarding(p.buffer, &port);
   me->start_remote_forwarding(port);
@@ -243,7 +243,7 @@ int vrpn_Forwarder_Server::handle_start
 int vrpn_Forwarder_Server::handle_forward
                    (void * userdata, vrpn_HANDLERPARAM p) {
   vrpn_Forwarder_Server * me = (vrpn_Forwarder_Server *) userdata;
-  int port;
+  vrpn_int32 port;
   char * typebuffer;
   char * servicebuffer;
 
@@ -267,11 +267,11 @@ vrpn_Forwarder_Controller::~vrpn_Forwarder_Controller (void) {
 
 }
 
-void vrpn_Forwarder_Controller::start_remote_forwarding (int remote_port) {
+void vrpn_Forwarder_Controller::start_remote_forwarding (vrpn_int32 remote_port) {
 
   struct timeval now;
   char * buffer;
-  int length;
+  vrpn_int32 length;
 
   gettimeofday(&now, NULL);
   buffer = encode_start_remote_forwarding(&length, remote_port);
@@ -285,11 +285,11 @@ void vrpn_Forwarder_Controller::start_remote_forwarding (int remote_port) {
 }
 
 void vrpn_Forwarder_Controller::forward_message_type
-                   (int remote_port, const char * service_name,
+                   (vrpn_int32 remote_port, const char * service_name,
                     const char * message_type) {
   struct timeval now;
   char * buffer;
-  int length;
+  vrpn_int32 length;
 
   gettimeofday(&now, NULL);
   buffer = encode_forward_message_type(&length, remote_port, service_name,

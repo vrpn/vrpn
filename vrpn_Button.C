@@ -46,7 +46,7 @@ BIT_MASK = PORT_ERROR | PORT_SLCT | PORT_PE | PORT_ACK | PORT_BUSY;
 static int client_msg_handler(void *userdata, vrpn_HANDLERPARAM p);
 #define PACK_ADMIN_MESSAGE(i,event) { \
   char	msgbuf[1000]; \
-  int	len = encode_to(msgbuf,i, event); \
+  vrpn_int32	len = encode_to(msgbuf,i, event); \
   if (connection->pack_message(len, timestamp, \
 			       admin_message_id, my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {\
       		fprintf(stderr,"Tracker: can't write message: tossing\n");\
@@ -54,7 +54,7 @@ static int client_msg_handler(void *userdata, vrpn_HANDLERPARAM p);
         }
 #define PACK_ALERT_MESSAGE(i,event) { \
   char	msgbuf[1000]; \
-  int	len = encode_to(msgbuf,i, event); \
+  vrpn_int32	len = encode_to(msgbuf,i, event); \
   if (connection->pack_message(len, timestamp, \
 			       alert_message_id, my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {\
       		fprintf(stderr,"Tracker: can't write message: tossing\n");\
@@ -63,7 +63,7 @@ static int client_msg_handler(void *userdata, vrpn_HANDLERPARAM p);
 
 #define PACK_MESSAGE(i,event) { \
   char	msgbuf[1000]; \
-  int	len = encode_to(msgbuf,i, event); \
+  vrpn_int32	len = encode_to(msgbuf,i, event); \
   if (connection->pack_message(len, timestamp, \
 			       change_message_id, my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {\
       		fprintf(stderr,"Tracker: can't write message: tossing\n");\
@@ -89,7 +89,7 @@ vrpn_Button::vrpn_Button(char *name, vrpn_Connection *c): num_buttons(0)
 
    // Set the time to 0 just to have something there.
    timestamp.tv_usec = timestamp.tv_sec = 0;
-   for (int i=0; i< vrpn_BUTTON_MAX_BUTTONS; i++) {
+   for (vrpn_int32 i=0; i< vrpn_BUTTON_MAX_BUTTONS; i++) {
 	lastbuttons[i]=0;
    }
 
@@ -112,18 +112,18 @@ vrpn_Button_Filter::vrpn_Button_Filter(char *name, vrpn_Connection *c):vrpn_Butt
 			//remote to turn it on -- or server side call set_alerts();
 
       //set button default buttonstates
-      for (int i=0; i< vrpn_BUTTON_MAX_BUTTONS; i++) {
+      for (vrpn_int32 i=0; i< vrpn_BUTTON_MAX_BUTTONS; i++) {
            buttonstate[i] = vrpn_BUTTON_MOMENTARY;
       }
       return;
 }
-void vrpn_Button_Filter::set_alerts(int i){
+void vrpn_Button_Filter::set_alerts(vrpn_int32 i){
 	if(i==0 || i==1) send_alerts=i;
 	else fprintf(stderr,"Invalid send_alert state\n");
 	return;
 }
 
-void vrpn_Button_Filter::set_momentary(int which_button) {
+void vrpn_Button_Filter::set_momentary(vrpn_int32 which_button) {
   if (which_button >= num_buttons) {
        fprintf(stderr, "vrpn_Button::set_momentary() buttons id %d is greater\
 	 then the number of buttons(%d)\n", which_button, num_buttons);
@@ -133,7 +133,7 @@ void vrpn_Button_Filter::set_momentary(int which_button) {
   if(send_alerts)PACK_ALERT_MESSAGE(which_button,vrpn_BUTTON_TOGGLE_OFF);
 }
 
-void vrpn_Button::set_momentary(int which_button) {
+void vrpn_Button::set_momentary(vrpn_int32 which_button) {
   if (which_button >= num_buttons) {
        fprintf(stderr, "vrpn_Button::set_momentary() buttons id %d is greater\
 	 then the number of buttons(%d)\n", which_button, num_buttons);
@@ -142,7 +142,7 @@ void vrpn_Button::set_momentary(int which_button) {
   PACK_ADMIN_MESSAGE(which_button,vrpn_BUTTON_MOMENTARY);
 }
 
-void vrpn_Button_Filter::set_toggle(int which_button, int current_state) {
+void vrpn_Button_Filter::set_toggle(vrpn_int32 which_button, vrpn_int32 current_state) {
   if (which_button >= num_buttons) {
     fprintf(stderr, "vrpn_Button::set_toggle() buttons id %d is greater then the number of buttons(%d)\n", which_button, num_buttons);
     return;
@@ -157,7 +157,7 @@ void vrpn_Button_Filter::set_toggle(int which_button, int current_state) {
   }
     
 }
-void vrpn_Button::set_toggle(int which_button, int current_state) {
+void vrpn_Button::set_toggle(vrpn_int32 which_button, vrpn_int32 current_state) {
   if (which_button >= num_buttons) {
     fprintf(stderr, "vrpn_Button::set_toggle() buttons id %d is greater then the number of buttons(%d)\n", which_button, num_buttons);
     return;
@@ -171,7 +171,7 @@ void vrpn_Button::set_toggle(int which_button, int current_state) {
 }
 
 void vrpn_Button_Filter::set_all_momentary(void) {
-  for (int i=0; i< num_buttons; i++){
+  for (vrpn_int32 i=0; i< num_buttons; i++){
     if (buttonstate[i] != vrpn_BUTTON_MOMENTARY) {
       buttonstate[i] = vrpn_BUTTON_MOMENTARY;  
       if(send_alerts) PACK_ALERT_MESSAGE(i,vrpn_BUTTON_TOGGLE_OFF);
@@ -184,12 +184,12 @@ void vrpn_Button::set_all_momentary(void) {
     PACK_ADMIN_MESSAGE(vrpn_ALL_ID,vrpn_BUTTON_MOMENTARY);
 }
 
-void vrpn_Button::set_all_toggle(int default_state) {
+void vrpn_Button::set_all_toggle(vrpn_int32 default_state) {
         PACK_ADMIN_MESSAGE(vrpn_ALL_ID,default_state);
 }
 
-void vrpn_Button_Filter::set_all_toggle(int default_state) {
-  for (int i=0; i< num_buttons; i++){
+void vrpn_Button_Filter::set_all_toggle(vrpn_int32 default_state) {
+  for (vrpn_int32 i=0; i< num_buttons; i++){
     if (buttonstate[i] == vrpn_BUTTON_MOMENTARY){
         buttonstate[i] = default_state;
 	if(send_alerts){PACK_ALERT_MESSAGE(i,default_state); }
@@ -199,7 +199,7 @@ void vrpn_Button_Filter::set_all_toggle(int default_state) {
 
 void	vrpn_Button::print(void)
 {
-   int	i;
+   vrpn_int32	i;
    printf("CurrButtons: ");
    for (i = num_buttons-1; i >= 0; i--) {
    	printf("%c",buttons[i]?'1':'0');
@@ -218,18 +218,18 @@ vrpn_Connection *vrpn_Button::connectionPtr() {
 }
 
 
-int	vrpn_Button::encode_to(char *buf, int button, int state)
+vrpn_int32	vrpn_Button::encode_to(char *buf, vrpn_int32 button, vrpn_int32 state)
 {
-   // Message includes: long buttonNum, long state
+   // Message includes: vrpn_int32 buttonNum, vrpn_int32 state
    // Byte order of each needs to be reversed to match network standard
 
-   unsigned long *longbuf = (unsigned long*)(void*)(buf);
-   int	index = 0;
+   vrpn_uint32 *longbuf = (vrpn_uint32*)(void*)(buf);
+   vrpn_int32	index = 0;
 
    longbuf[index++] = htonl(button);
    longbuf[index++] = htonl(state);
 
-   return index*sizeof(unsigned long);
+   return index*sizeof(vrpn_uint32);
 }
 
 
@@ -242,9 +242,9 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 
 static int client_msg_handler(void *userdata, vrpn_HANDLERPARAM p) {
   vrpn_Button_Filter * instance = (vrpn_Button_Filter *) userdata;
-  long * bp = (long *)(p.buffer);
-  int event= ntohl(bp[1]);
-  int buttonid = ntohl(bp[0]);
+  vrpn_int32 * bp = (vrpn_int32 *)(p.buffer);
+  vrpn_int32 event= ntohl(bp[1]);
+  vrpn_int32 buttonid = ntohl(bp[0]);
 
   if (event== vrpn_BUTTON_MOMENTARY) {
     if (buttonid == vrpn_ALL_ID)
@@ -260,7 +260,7 @@ static int client_msg_handler(void *userdata, vrpn_HANDLERPARAM p) {
 
 
 void vrpn_Button_Filter::report_changes(void){
-   int i;
+   vrpn_int32 i;
 
 //   vrpn_Button::report_changes();
    if (connection) {
@@ -298,7 +298,7 @@ void vrpn_Button_Filter::report_changes(void){
 
 void	vrpn_Button::report_changes(void)
 {
-  int	i;
+  vrpn_int32	i;
 
    if (connection) {
       for (i = 0; i < num_buttons; i++) {
@@ -377,7 +377,7 @@ vrpn_parallel_Button::vrpn_parallel_Button(char *name, vrpn_Connection *c,
 
      // Zero the button states
     num_buttons = 5;	//XXX This is specific to the python
-    for (int i = 0; i < num_buttons; i++) {
+    for (vrpn_int32 i = 0; i < num_buttons; i++) {
 	buttons[i] = lastbuttons[i] = 0;
     }
 
@@ -456,7 +456,7 @@ vrpn_Button_Remote::vrpn_Button_Remote(char *name) :
 	vrpn_Button(name, vrpn_get_connection_by_name(name)),
 	change_list(NULL)
 {
-	int	i;
+	vrpn_int32	i;
 
 	// Register a handler for the change callback from this device,
 	// if we got a connection.
@@ -550,20 +550,20 @@ int vrpn_Button_Remote::handle_change_message(void *userdata,
 	vrpn_HANDLERPARAM p)
 {
 	vrpn_Button_Remote *me = (vrpn_Button_Remote *)userdata;
-	long *params = (long*)(p.buffer);
+	vrpn_int32 *params = (vrpn_int32*)(p.buffer);
 	vrpn_BUTTONCB	bp;
 	vrpn_BUTTONCHANGELIST *handler = me->change_list;
 
 	// Fill in the parameters to the button from the message
-	if (p.payload_len != 2*sizeof(long)) {
+	if (p.payload_len != 2*sizeof(vrpn_int32)) {
 		fprintf(stderr,"vrpn_Button: change message payload error\n");
 		fprintf(stderr,"             (got %d, expected %d)\n",
-			p.payload_len, 2*sizeof(long));
+			p.payload_len, 2*sizeof(vrpn_int32));
 		return -1;
 	}
 	bp.msg_time = p.msg_time;
-	bp.button = (int)ntohl(params[0]);
-	bp.state = (int)ntohl(params[1]);
+	bp.button = (vrpn_int32)ntohl(params[0]);
+	bp.state = (vrpn_int32)ntohl(params[1]);
 
 	// Go down the list of callbacks that have been registered.
 	// Fill in the parameter and call each.

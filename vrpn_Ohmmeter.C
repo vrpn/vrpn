@@ -33,7 +33,7 @@ vrpn_Ohmmeter::vrpn_Ohmmeter(char *name, vrpn_Connection *c)
     timestamp.tv_sec = 0;
     timestamp.tv_usec = 0;
     channel = 0;
-    for (int i = 0; i < MAX_OHMMETER_CHANNELS; i++){
+    for (vrpn_int32 i = 0; i < MAX_OHMMETER_CHANNELS; i++){
 	range_min[i] = 5000;	// Ohms
 	voltage[i] = 1.0;	// mV
 	filter[i] = 1.0;	// sec
@@ -46,86 +46,89 @@ vrpn_Ohmmeter::vrpn_Ohmmeter(char *name, vrpn_Connection *c)
     delete [] servicename;
 }
 
-#define SETOHM_MESSAGE_SIZE (4*sizeof(double))
-int vrpn_Ohmmeter::encode_setchannel_to(char *buf)
+#define SETOHM_MESSAGE_SIZE (4*sizeof(vrpn_float64))
+vrpn_int32 vrpn_Ohmmeter::encode_setchannel_to(char *buf)
 {
-    // Message includes: long channel
-    //                   long enable
-    //                   double voltage
-    //                   double range_min
-    //                   double filter
-    double *dBuf = (double *)buf;
+    // Message includes: vrpn_int32 channel
+    //                   vrpn_int32 enable
+    //                   vrpn_float64 voltage
+    //                   vrpn_float64 range_min
+    //                   vrpn_float64 filter
+    vrpn_float64 *dBuf = (vrpn_float64 *)buf;
     int index = 0;
 
-    ASSERT(sizeof(long)==(sizeof(double)/2));
-    ((long *)dBuf)[0] = htonl(channel);
-    ((long *)dBuf)[1] = htonl(enabled[channel]);
+    // XXX WARNING -- This assumes a certain byte-order!!!! Only works on PC!
+    ASSERT(sizeof(vrpn_int32)==(sizeof(vrpn_float64)/2));
+    ((vrpn_int32 *)dBuf)[0] = htonl(channel);
+    ((vrpn_int32 *)dBuf)[1] = htonl(enabled[channel]);
     index++;
 
     dBuf[index++] = htond(voltage[channel]);
     dBuf[index++] = htond(range_min[channel]);
     dBuf[index++] = htond(filter[channel]);
-    ASSERT(SETOHM_MESSAGE_SIZE == index*sizeof(double));
-    return (index*sizeof(double));
+    ASSERT(SETOHM_MESSAGE_SIZE == index*sizeof(vrpn_float64));
+    return (index*sizeof(vrpn_float64));
 }
 
-#define MEASURE_MESSAGE_SIZE (3*sizeof(double))
-int vrpn_Ohmmeter::encode_measure_to(char *buf)
+#define MEASURE_MESSAGE_SIZE (3*sizeof(vrpn_float64))
+vrpn_int32 vrpn_Ohmmeter::encode_measure_to(char *buf)
 {
-    // Message includes: long channel
-    //                   long status
-    //                   double resistance
-    //                   double error
-    double *dBuf = (double *)buf;
+    // Message includes: vrpn_int32 channel
+    //                   vrpn_int32 status
+    //                   vrpn_float64 resistance
+    //                   vrpn_float64 error
+    vrpn_float64 *dBuf = (vrpn_float64 *)buf;
     int index = 0;
 
-    ASSERT(sizeof(long)==(sizeof(double)/2));
-    ((long *)dBuf)[0] = htonl(channel);
-    ((long *)dBuf)[1] = htonl(status[channel]);
+    // XXX WARNING -- This assumes a certain byte-order!!!! Only works on PC!
+    ASSERT(sizeof(vrpn_int32)==(sizeof(vrpn_float64)/2));
+    ((vrpn_int32 *)dBuf)[0] = htonl(channel);
+    ((vrpn_int32 *)dBuf)[1] = htonl(status[channel]);
     index++;
 
     dBuf[index++] = htond(resistance[channel]);
     dBuf[index++] = htond(error[channel]);
-    ASSERT(MEASURE_MESSAGE_SIZE == (index*sizeof(double)));
-    return (index*sizeof(double));
+    ASSERT(MEASURE_MESSAGE_SIZE == (index*sizeof(vrpn_float64)));
+    return (index*sizeof(vrpn_float64));
 }
 
-#define OHMSET_MESSAGE_SIZE (4*sizeof(double))
-int vrpn_Ohmmeter::encode_channelset_to(char *buf)
+#define OHMSET_MESSAGE_SIZE (4*sizeof(vrpn_float64))
+vrpn_int32 vrpn_Ohmmeter::encode_channelset_to(char *buf)
 {
-    // Message includes: long channel
-    //                   long enable
-    //                   double voltage
-    //                   double range_min
-    //                   double filter
-    double *dBuf = (double *)buf;
+    // Message includes: vrpn_int32 channel
+    //                   vrpn_int32 enable
+    //                   vrpn_float64 voltage
+    //                   vrpn_float64 range_min
+    //                   vrpn_float64 filter
+    vrpn_float64 *dBuf = (vrpn_float64 *)buf;
     int index = 0;
 
-    ASSERT(sizeof(long)==(sizeof(double)/2));
-    ((long *)dBuf)[0] = htonl(channel);
-    ((long *)dBuf)[1] = htonl(enabled[channel]);
+    // XXX WARNING -- This assumes a certain byte-order!!!! Only works on PC!
+    ASSERT(sizeof(vrpn_int32)==(sizeof(vrpn_float64)/2));
+    ((vrpn_int32 *)dBuf)[0] = htonl(channel);
+    ((vrpn_int32 *)dBuf)[1] = htonl(enabled[channel]);
     index++;
 
     dBuf[index++] = htond(voltage[channel]);
     dBuf[index++] = htond(range_min[channel]);
     dBuf[index++] = htond(filter[channel]);
-    ASSERT(OHMSET_MESSAGE_SIZE == index*sizeof(double));
-    return (index*sizeof(double));
+    ASSERT(OHMSET_MESSAGE_SIZE == index*sizeof(vrpn_float64));
+    return (index*sizeof(vrpn_float64));
 }
 
 #ifdef _WIN32
 vrpn_Ohmmeter_ORPX2::vrpn_Ohmmeter_ORPX2(char *name, vrpn_Connection *c = NULL, 
-	float hz):vrpn_Ohmmeter(name,c)
+	vrpn_float32 hz):vrpn_Ohmmeter(name,c)
 {
 	last_channel_switch_time = timestamp;
     update_rate = hz;
     theORPX = new ORPX_SerialComm("COM1");
-    for (int i = 0; i < NUM_ORPX_CHANNELS; i++){
+    for (vrpn_int32 i = 0; i < NUM_ORPX_CHANNELS; i++){
 	channel_acquisition_time[i] = 10;	// seconds
 	chan_data[i].channel = i;
 	chan_data[i].Vmeas = NUM_ORPX_SETTINGS - 1;
 	chan_data[i].range = 4;
-	chan_data[i].filter = (int)((NUM_ORPX_SETTINGS -1)/2);
+	chan_data[i].filter = (vrpn_int32)((NUM_ORPX_SETTINGS -1)/2);
 	// now set floats to the corresponding real values
 	range_min[i] = orpx_ranges[chan_data[i].range];
 	voltage[i] = orpx_voltages[chan_data[i].Vmeas];
@@ -142,7 +145,7 @@ vrpn_Ohmmeter_ORPX2::vrpn_Ohmmeter_ORPX2(char *name, vrpn_Connection *c = NULL,
 void vrpn_Ohmmeter_ORPX2::mainloop(void) {
     struct timeval current_time;
     char msgbuf[1000];
-    int len;
+    vrpn_int32 len;
 
     gettimeofday(&current_time, NULL);
     if (duration(current_time, timestamp) >= 1000000.0/update_rate) {
@@ -153,7 +156,7 @@ void vrpn_Ohmmeter_ORPX2::mainloop(void) {
 			(1000000.0)*channel_acquisition_time[channel]) 
 			|| (!enabled[channel])){
 			// find next enabled channel and switch to it
-			for (int i=0; i < NUM_ORPX_CHANNELS; i++){
+			for (vrpn_int32 i=0; i < NUM_ORPX_CHANNELS; i++){
 				channel = (channel+1)%NUM_ORPX_CHANNELS;
 				if (enabled[channel]) break;
 			}
@@ -204,15 +207,15 @@ void vrpn_Ohmmeter_ORPX2::handle_channel_set(void *userdata,
 {
 
 	vrpn_Ohmmeter_ORPX2 *me = (vrpn_Ohmmeter_ORPX2 *)userdata;
-    int i;
-	int len;
+    vrpn_int32 i;
+	vrpn_int32 len;
 	char outputbuf[1000];
 	struct timeval current_time;
-    double v_del, r_del, f_del;
-    int v_new = 0, r_new = 0, f_new = 0;
+    vrpn_float64 v_del, r_del, f_del;
+    vrpn_int32 v_new = 0, r_new = 0, f_new = 0;
     // set parameters for channel number info.channel_num
     orpx_params_t *chan = &((me->chan_data)[info.channel_num]);
-	int current_channel = me->channel;
+	vrpn_int32 current_channel = me->channel;
 	me->channel = info.channel_num;
     (me->enabled)[info.channel_num] = info.enable;
     v_del = fabs(info.voltage - orpx_voltages[0]);
@@ -259,7 +262,7 @@ int vrpn_Ohmmeter_ORPX2::handle_change_message(void *userdata,
 							vrpn_HANDLERPARAM p)
 {
     vrpn_Ohmmeter_ORPX2 *me = (vrpn_Ohmmeter_ORPX2 *)userdata;
-    double *params = (double *)(p.buffer);
+    vrpn_float64 *params = (vrpn_float64 *)(p.buffer);
     vrpn_SETOHMCB info;
     vrpn_ORPXCHANGELIST *handler = me->change_list;
 
@@ -270,8 +273,8 @@ int vrpn_Ohmmeter_ORPX2::handle_change_message(void *userdata,
 	return -1;
     }
     info.msg_time = p.msg_time;
-    info.channel_num = ntohl( ((long *)params)[0]);
-    info.enable = ntohl( ((long *)params)[1]);
+    info.channel_num = ntohl( ((vrpn_int32 *)params)[0]);
+    info.enable = ntohl( ((vrpn_int32 *)params)[1]);
     params++;
     info.voltage = ntohd(*params++);
     info.range_min = ntohd(*params++);
@@ -364,11 +367,11 @@ void vrpn_Ohmmeter_Remote::mainloop(void)
 	if (connection) connection->mainloop();
 }
 
-int vrpn_Ohmmeter_Remote::set_channel_parameters(int chan, int enable,
-	double volt, double r_min, double filt)
+int vrpn_Ohmmeter_Remote::set_channel_parameters(vrpn_int32 chan, vrpn_int32 enable,
+	vrpn_float64 volt, vrpn_float64 r_min, vrpn_float64 filt)
 {
     char msgbuf[1000];
-    int len;
+    vrpn_int32 len;
     struct timeval current_time;
 
     gettimeofday(&current_time, NULL);
@@ -488,7 +491,7 @@ int vrpn_Ohmmeter_Remote::handle_measurement_message(void *userdata,
 						vrpn_HANDLERPARAM p)
 {
     vrpn_Ohmmeter_Remote *me = (vrpn_Ohmmeter_Remote *)userdata;
-    double *params = (double *)(p.buffer);
+    vrpn_float64 *params = (vrpn_float64 *)(p.buffer);
     vrpn_OHMMEASUREMENTCB info;
     vrpn_OHMMEASCHANGELIST *handler = me->measure_change_list;
 
@@ -499,8 +502,8 @@ int vrpn_Ohmmeter_Remote::handle_measurement_message(void *userdata,
         return -1;
     }
     info.msg_time = p.msg_time;
-    info.channel_num = ntohl( ((long *)params)[0]);
-    info.status = ntohl( ((long *)params)[1]);
+    info.channel_num = ntohl( ((vrpn_int32 *)params)[0]);
+    info.status = ntohl( ((vrpn_int32 *)params)[1]);
     params++;
     info.resistance = ntohd(*params++);
     info.error = ntohd(*params++);
@@ -516,7 +519,7 @@ int vrpn_Ohmmeter_Remote::handle_ohmset_message(void *userdata,
                                                 vrpn_HANDLERPARAM p)
 {
     vrpn_Ohmmeter_Remote *me = (vrpn_Ohmmeter_Remote *)userdata;
-    double *params = (double *)(p.buffer);
+    vrpn_float64 *params = (vrpn_float64 *)(p.buffer);
     vrpn_OHMSETCB info;
     vrpn_OHMSETCHANGELIST *handler = me->ohmset_change_list;
 
@@ -527,8 +530,8 @@ int vrpn_Ohmmeter_Remote::handle_ohmset_message(void *userdata,
         return -1;
     }
     info.msg_time = p.msg_time;
-    info.channel_num = ntohl( ((long *)params)[0]);
-    info.enabled = ntohl( ((long *)params)[1]);
+    info.channel_num = ntohl( ((vrpn_int32 *)params)[0]);
+    info.enabled = ntohl( ((vrpn_int32 *)params)[1]);
     params++;
     info.voltage = ntohd(*params++);
     info.range_min = ntohd(*params++);

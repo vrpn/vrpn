@@ -29,29 +29,29 @@ class vrpn_Ohmmeter {
 
   protected:
     vrpn_Connection *connection;	
-    long my_id;			// ID of this ohmmeter to connection
-    long channelset_m_id;	// ID of message indicating current setting
-    long measure_m_id;		// ID of measurement message
-    long setchannel_m_id;	// ID of message to change a setting
+    vrpn_int32 my_id;		// ID of this ohmmeter to connection
+    vrpn_int32 channelset_m_id;	// ID of message indicating current setting
+    vrpn_int32 measure_m_id;	// ID of measurement message
+    vrpn_int32 setchannel_m_id;	// ID of message to change a setting
 
     // Description of current state of measurement parameters
-    long num_channels;
-    double range_min[MAX_OHMMETER_CHANNELS]; // [Ohms]
-    double voltage[MAX_OHMMETER_CHANNELS];   // [mV]
-    double filter[MAX_OHMMETER_CHANNELS];    // [sec]
+    vrpn_int32 num_channels;
+    vrpn_float64 range_min[MAX_OHMMETER_CHANNELS]; // [Ohms]
+    vrpn_float64 voltage[MAX_OHMMETER_CHANNELS];   // [mV]
+    vrpn_float64 filter[MAX_OHMMETER_CHANNELS];    // [sec]
 
     // Description of the next report to go out (for a specific channel)
-    long channel;	// Current channel
-    long enabled[MAX_OHMMETER_CHANNELS];
+    vrpn_int32 channel;	// Current channel
+    vrpn_int32 enabled[MAX_OHMMETER_CHANNELS];
     struct timeval timestamp;
     // for each channel we have:
-    long status[MAX_OHMMETER_CHANNELS];      // most recent status
-    double resistance[MAX_OHMMETER_CHANNELS];// most recent resistance [Ohms]
-    double error[MAX_OHMMETER_CHANNELS];     // most recent error estimate [%]
+    vrpn_int32 status[MAX_OHMMETER_CHANNELS];      // most recent status
+    vrpn_float64 resistance[MAX_OHMMETER_CHANNELS];// most recent resistance [Ohms]
+    vrpn_float64 error[MAX_OHMMETER_CHANNELS];     // most recent error estimate [%]
 
-    virtual int encode_channelset_to(char *buf);
-    virtual int encode_measure_to(char *buf);
-    virtual int encode_setchannel_to(char *buf);
+    virtual vrpn_int32 encode_channelset_to(char *buf);
+    virtual vrpn_int32 encode_measure_to(char *buf);
+    virtual vrpn_int32 encode_setchannel_to(char *buf);
 };
 
 #ifdef _WIN32
@@ -60,18 +60,18 @@ class vrpn_Ohmmeter {
 // for a particular channel (for server-side use)
 typedef struct {
         struct timeval msg_time;
-        long channel_num;
-        long enable;
-        double voltage;
-        double range_min;
-        double filter;
+        vrpn_int32 channel_num;
+        vrpn_int32 enable;
+        vrpn_float64 voltage;
+        vrpn_float64 range_min;
+        vrpn_float64 filter;
 } vrpn_SETOHMCB;
 typedef void (*vrpn_SETOHMCHANGEHANDLER)(void *userdata,
                                         const vrpn_SETOHMCB &info);
 
 class vrpn_Ohmmeter_ORPX2 : public vrpn_Ohmmeter {
   public:
-    vrpn_Ohmmeter_ORPX2(char *name, vrpn_Connection *c, float hz=1.0);
+    vrpn_Ohmmeter_ORPX2(char *name, vrpn_Connection *c, vrpn_float32 hz=1.0);
     virtual void mainloop(void);
     virtual int register_change_handler(void *userdata, 
 				vrpn_SETOHMCHANGEHANDLER handler);
@@ -81,9 +81,9 @@ class vrpn_Ohmmeter_ORPX2 : public vrpn_Ohmmeter {
   protected:
     ORPX_SerialComm *theORPX;
     orpx_params_t chan_data[NUM_ORPX_CHANNELS];
-	float channel_acquisition_time[NUM_ORPX_CHANNELS]; // seconds
+	vrpn_float32 channel_acquisition_time[NUM_ORPX_CHANNELS]; // seconds
 	struct timeval last_channel_switch_time;
-    float update_rate;
+    vrpn_float32 update_rate;
     virtual void get_measurement_report(void);
 
     typedef struct vrpn_ORPXCS {
@@ -107,11 +107,11 @@ class vrpn_Ohmmeter_ORPX2 : public vrpn_Ohmmeter {
 
 typedef struct {
 	struct timeval msg_time;
-	long channel_num;
-	long enabled; // channel enabled?
-	double voltage;
-	double range_min;
-	double filter;
+	vrpn_int32 channel_num;
+	vrpn_int32 enabled; // channel enabled?
+	vrpn_float64 voltage;
+	vrpn_float64 range_min;
+	vrpn_float64 filter;
 } vrpn_OHMSETCB;
 typedef void (*vrpn_OHMSETCHANGEHANDLER)(void *userdata, 
 						const vrpn_OHMSETCB &info);
@@ -120,10 +120,10 @@ typedef void (*vrpn_OHMSETCHANGEHANDLER)(void *userdata,
 // ohmmeter channel
 typedef struct {
 	struct timeval msg_time;
-	long channel_num;
-	long status;
-	double resistance;
-	double error;
+	vrpn_int32 channel_num;
+	vrpn_int32 status;
+	vrpn_float64 resistance;
+	vrpn_float64 error;
 } vrpn_OHMMEASUREMENTCB;
 typedef void (*vrpn_OHMMEASUREMENTHANDLER)(void *userdata, 
 					const vrpn_OHMMEASUREMENTCB &info);
@@ -131,8 +131,8 @@ typedef void (*vrpn_OHMMEASUREMENTHANDLER)(void *userdata,
 class vrpn_Ohmmeter_Remote : public vrpn_Ohmmeter {
   public:
     vrpn_Ohmmeter_Remote(char *name);
-    int set_channel_parameters(int chan, int enable,
-		double voltage, double range_min, double filter);
+    int set_channel_parameters(vrpn_int32 chan, vrpn_int32 enable,
+		vrpn_float64 voltage, vrpn_float64 range_min, vrpn_float64 filter);
 	int register_measurement_handler(void *userdata,
 		vrpn_OHMMEASUREMENTHANDLER handler);
 	int unregister_measurement_handler(void *userdata,

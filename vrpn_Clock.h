@@ -16,7 +16,7 @@
   Revised: Mon Mar 23 11:34:26 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.h,v $
   $Locker:  $
-  $Revision: 1.8 $
+  $Revision: 1.9 $
 \*****************************************************************************/
 #ifndef _VRPN_CLOCK_H_
 #define _VRPN_CLOCK_H_
@@ -37,12 +37,12 @@ public:
   
 protected:
   vrpn_Connection *connection;
-  long clockServer_id;		// ID of this clock to connection
-  long queryMsg_id;		// ID of clockQuery message to connection
-  long replyMsg_id;		// ID of clockReply message to connection
+  vrpn_int32 clockServer_id;	// ID of this clock to connection
+  vrpn_int32 queryMsg_id;	// ID of clockQuery message to connection
+  vrpn_int32 replyMsg_id;	// ID of clockReply message to connection
   virtual int encode_to(char *buf, const struct timeval& tvSRep, 
 			const struct timeval& tvCReq, 
-			int cChars, const char* pch);
+			vrpn_int32 cChars, const char* pch);
 };
 
 
@@ -104,7 +104,8 @@ class vrpn_Clock_Remote: public vrpn_Clock {
   // while a low setting (e.g., 3) works well when drift is present.
   // See cMaxQuickRecords below for more detail.
 
-  vrpn_Clock_Remote(const char *name, double dFreq=1, int cOffsetWindow=3);
+  vrpn_Clock_Remote(const char *name, vrpn_float64 dFreq=1,
+		vrpn_int32 cOffsetWindow=3);
   virtual ~vrpn_Clock_Remote();
 
   // This routine calls does the sync and calls the mainloop of the 
@@ -120,10 +121,10 @@ class vrpn_Clock_Remote: public vrpn_Clock {
   void fullSync();
 
   protected:
-  long clockClient_id;             // vrpn id for this client
+  vrpn_int32 clockClient_id;             // vrpn id for this client
 
   // unique id for this particular client (to disambiguate replies)
-  long lUniqueID;
+  vrpn_int32 lUniqueID;
 
   // vars for stats on clock for quick sync
   int fDoQuickSyncs;
@@ -145,15 +146,15 @@ class vrpn_Clock_Remote: public vrpn_Clock {
   struct timeval *rgtvClockOffset;
   int irgtvQuick;
 
-  double dQuickIntervalMsecs;
+  vrpn_float64 dQuickIntervalMsecs;
   struct timeval tvQuickLastSync;
 
   // vars for stats on clock for full sync
   int fDoFullSync;
   int cBounces;
 #ifdef USE_REGRESSION
-  double *rgdOffsets;
-  double *rgdTimes;
+  vrpn_float64 *rgdOffsets;
+  vrpn_float64 *rgdTimes;
 #endif
 
   struct timeval tvMinHalfRoundTrip;
@@ -182,6 +183,18 @@ class vrpn_Clock_Remote: public vrpn_Clock {
 
 /*****************************************************************************\
   $Log: vrpn_Clock.h,v $
+  Revision 1.9  1999/02/24 15:58:27  taylorr
+  BIG CHANGES.
+  I modified the code so that it can compile on 64-bit SGI machines.
+
+  To do so, I did what I should have done in the first place and defined
+  architecture-independent types (vrpn_in32, vrpn_int16, vrpn_float32,
+  vrpn_float64 and so on).  These are defined per architecture in the
+  vrpn_Shared.h file.
+
+  FROM NOW ON, folks should use these rather than the non-specific types
+  (int, long, float, double) that may vary between platforms.
+
   Revision 1.8  1998/06/26 15:48:54  hudson
   Wrote vrpn_FileConnection.
   Changed connection naming convention.

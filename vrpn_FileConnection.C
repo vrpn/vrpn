@@ -59,9 +59,9 @@ vrpn_File_Connection::vrpn_File_Connection (const char * file_name) :
 
   //fprintf(stderr, "Completed preload;  starting time.\n");
 
-  d_start_time.tv_sec = d_start_time.tv_usec = 0L;
-  d_next_time.tv_sec = d_next_time.tv_usec = 0L;  // simulated elapsed time
-  d_now_time.tv_sec = d_now_time.tv_usec = 0L;
+  d_start_time.tv_usec = d_start_time.tv_sec = 0;
+  d_next_time.tv_usec = d_next_time.tv_sec = 0;  // simulated elapsed time
+  d_now_time.tv_usec = d_now_time.tv_sec = 0;
     // necessary for last_time to initialize properly in mainloop()
 }
 
@@ -259,14 +259,14 @@ int vrpn_File_Connection::close_file (void) {
 
 // virtual
 int vrpn_File_Connection::reset (void) {
-  d_start_time.tv_sec = d_start_time.tv_usec = 0L;
-  d_time.tv_sec = d_time.tv_usec = 0L;
+  d_start_time.tv_usec = d_start_time.tv_sec = 0;
+  d_time.tv_usec = d_time.tv_sec = 0;
 
   // elapsed file time
-  d_runtime.tv_sec = d_runtime.tv_usec = 0L;
+  d_runtime.tv_usec = d_runtime.tv_sec = 0;
 
   // elapsed wallclock time
-  d_next_time.tv_sec = d_next_time.tv_usec = 0L;
+  d_next_time.tv_usec = d_next_time.tv_sec = 0;
 
 /*
   if (d_file)
@@ -301,16 +301,8 @@ int vrpn_File_Connection::handle_set_replay_rate
          (void * userdata, vrpn_HANDLERPARAM p) {
   vrpn_File_Connection * me = (vrpn_File_Connection *) userdata;
 
-#if (defined(sgi) || defined(hpux) || defined(sparc))
-
-  me->d_rate = *((float *) (p.buffer));
-
-#else
-
-  int value = ntohl(*(int *) (p.buffer));
-  me->d_rate = *((float *) &value);
-
-#endif
+  vrpn_int32 value = ntohl(*(vrpn_int32 *) (p.buffer));
+  me->d_rate = *((vrpn_float32 *) &value);
 
   return 0;
 }
@@ -333,8 +325,8 @@ int vrpn_File_Connection::handle_play_to_time
 
 fprintf(stderr, "In vrpn_File_Connection::handle_play_to_time().\n");
 
-  newtime.tv_sec = ((long *) (p.buffer))[0];
-  newtime.tv_usec = ((long *) (p.buffer))[1];
+  newtime.tv_sec = ((vrpn_int32 *) (p.buffer))[0];
+  newtime.tv_usec = ((vrpn_int32 *) (p.buffer))[1];
 
   return me->play_to_time(newtime);
 }

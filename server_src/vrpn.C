@@ -1,3 +1,7 @@
+#ifdef	sgi
+#define	SGI_BDBOX
+#endif
+
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,7 +16,7 @@
 #include "vrpn_Flock_Parallel.h"
 #include "vrpn_Dyna.h"
 #include "vrpn_Sound.h"
-#ifdef	sgi
+#ifdef	SGI_BDBOX
 #include "vrpn_sgibox.h"
 #endif
 
@@ -50,7 +54,7 @@ int		num_analogs = 0;
 
 vrpn_Connection * connection;
 
-#ifdef	sgi
+#ifdef	SGI_BDBOX
 vrpn_SGIBox	* vrpn_special_sgibox;
 #endif
 
@@ -229,7 +233,7 @@ main (int argc, char * argv[])
 	      else { continue; }	// Skip this line
 	    }
 
-#ifdef sgi
+#ifdef SGI_BDBOX
 	    // Make sure there's room for a new tracker
 		if (num_trackers >= MAX_TRACKERS) {
 		  fprintf(stderr,"Too many trackers in config file");
@@ -626,7 +630,7 @@ main (int argc, char * argv[])
 		connection->register_handler(dlc_m_id, handle_dlc, NULL);
 	}
 	// Loop forever calling the mainloop()s for all devices
-#ifdef	sgi
+#ifdef	SGI_BDBOX
 	fprintf(stderr, "sgibox: %p\n", vrpn_special_sgibox);
 #endif
 	if (client_name) {
@@ -659,7 +663,7 @@ main (int argc, char * argv[])
 		for (i=0; i< num_analogs; i++) {
 		  analogs[i]->mainloop();
 		}
-#ifdef sgi
+#ifdef SGI_BDBOX
 		if (vrpn_special_sgibox) 
 		  vrpn_special_sgibox->mainloop();
 #endif

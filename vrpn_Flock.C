@@ -648,7 +648,7 @@ void vrpn_Tracker_Flock::get_report(void)
    bufcount = 0;
 
 #ifdef VERBOSE
-      print();
+      print_latest_report();
 #endif
 }
 
@@ -692,7 +692,7 @@ void vrpn_Tracker_Flock::mainloop()
 #ifdef	VERBOSE
       static int count = 0;
       if (count++ == 10) {
-	printf("\nvrpn_Tracker_Flock: Got report"); print();
+	printf("\nvrpn_Tracker_Flock: Got report"); print_latest_report();
 	count = 0;
       }
 #endif            

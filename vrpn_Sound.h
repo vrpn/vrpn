@@ -30,8 +30,8 @@ class vrpn_Sound {
 
   protected:
 	vrpn_Connection *connection;
-	long my_id;			// ID of this soundserver to connection
-	long playsample_id;		// ID of "play sample" message
+	vrpn_int32 my_id;		// ID of this soundserver to connection
+	vrpn_int32 playsample_id;	// ID of "play sample" message
 };
 
 #ifndef VRPN_CLIENT_ONLY
@@ -101,15 +101,15 @@ class vrpn_Sound_Remote: public vrpn_Sound {
 	void play_stop(const int channel = 1);
 	void play_midi_sound(float data);
 
-	int encode(char *msgbuf,
+	vrpn_int32 encode(char *msgbuf,
 	       const char *sound,
 		   const int volume,
 		   const int mode,
 		   const int ear,
 		   const int channel);
-	int encode(char *msgbuf, int set_mode, int info); // info = channel/data
-//	int encode(char *msgbuf, int set_midi, int data);
-	int encode(char *msgbuf, int set_load, const char *sound);
+	vrpn_int32 encode(char *msgbuf, int set_mode, int info); // info = channel/data
+//	vrpn_int32 encode(char *msgbuf, int set_midi, int data);
+	vrpn_int32 encode(char *msgbuf, int set_load, const char *sound);
 	
 	void preload_sampled_sound(const char *sound);
 

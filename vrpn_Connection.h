@@ -18,18 +18,15 @@
 #include "vrpn_Shared.h"
 #endif
 
-// XXX Should make everything that deals with a type or a name ID
-//     be a long, rather than some being longs and some ints.
-
 // NOTE: most users will want to use the vrpn_Synchronized_Connection
 // class rather than the default connection class (either will work,
 // a regular connection just has 0 as the client-server time offset)
 
 typedef	struct {
-	long		type;
-	long		sender;
+	vrpn_int32	type;
+	vrpn_int32	sender;
 	struct timeval	msg_time;
-	int		payload_len;
+	vrpn_int32	payload_len;
 	const char	*buffer;
 } vrpn_HANDLERPARAM;
 typedef	int  (*vrpn_MESSAGEHANDLER)(void *userdata, vrpn_HANDLERPARAM p);
@@ -124,7 +121,7 @@ struct vrpn_LOGLIST {
 struct vrpnMsgCallbackEntry {
   vrpn_MESSAGEHANDLER	handler;	// Routine to call
   void			* userdata;	// Passed along
-  long			sender;		// Only if from sender
+  vrpn_int32		sender;		// Only if from sender
   vrpnMsgCallbackEntry	* next;		// Next handler
 };
 
@@ -152,18 +149,18 @@ class vrpn_OneConnection {
 	// A new local sender or type has been established; set
 	// the local type for it if the other side has declared it.
 	// Return 1 if the other side has one, 0 if not.
-	int	newLocalSender(const char *name, int which);
-	int	newLocalType(const char *name, int which);
+	int	newLocalSender(const char *name, vrpn_int32 which);
+	int	newLocalType(const char *name, vrpn_int32 which);
 
 	// Give the local mapping for the remote type or sender.
 	// Returns -1 if there isn't one.
-	int	local_type_id(int remote_type);
-	int	local_sender_id(int remote_sender);
+	int	local_type_id(vrpn_int32 remote_type);
+	int	local_sender_id(vrpn_int32 remote_sender);
 
 	// Adds a new remote type/sender and returns its index.
 	// Returns -1 on error.
-	int	newRemoteType(cName type_name, int local_id);
-	int	newRemoteSender(cName sender_name, int local_id);
+	int	newRemoteType(cName type_name, vrpn_int32 local_id);
+	int	newRemoteSender(cName sender_name, vrpn_int32 local_id);
 
 	inline	int	outbound_udp_open (void) const
 				{ return udp_outbound != -1; }
@@ -203,9 +200,9 @@ class vrpn_OneConnection {
 	int d_logfile_handle;
 	FILE * d_logfile;
 
-	virtual int log_message (int payload_len, struct timeval time,
-	                         long type, long sender, const char * buffer,
-                                 int isRemote = 0);
+	virtual int log_message (vrpn_int32 payload_len, struct timeval time,
+	               vrpn_int32 type, vrpn_int32 sender, const char * buffer,
+                       int isRemote = 0);
 	virtual int close_log (void);
 	virtual int open_log (void);
 
@@ -219,8 +216,8 @@ protected:
 
 	// Holds one entry for a mapping of remote strings to local IDs.
 	struct cRemoteMapping {
-		char	* name;
-		int	local_id;
+		char		* name;
+		vrpn_int32	local_id;
 	};
 
 	// The senders and types we know about that have been described by
@@ -229,9 +226,9 @@ protected:
 	// The arrays are indexed by the ID from the other side, and store
 	// the name and local ID that corresponds to each.
 	cRemoteMapping	other_senders [vrpn_CONNECTION_MAX_SENDERS];
-	int			num_other_senders;
+	vrpn_int32	num_other_senders;
 	cRemoteMapping	other_types [vrpn_CONNECTION_MAX_TYPES];
-	int			num_other_types;
+	vrpn_int32	num_other_types;
 };
 
 class vrpn_Connection
@@ -265,24 +262,26 @@ class vrpn_Connection
 
 	// Get a token to use for the string name of the sender or type.
 	// Remember to check for -1 meaning failure.
-	virtual long register_sender (const char * name);
-	virtual long register_message_type (const char * name);
+	virtual vrpn_int32 register_sender (const char * name);
+	virtual vrpn_int32 register_message_type (const char * name);
 
 	// Set up (or remove) a handler for a message of a given type.
 	// Optionally, specify which sender to handle messages from.
 	// Handlers will be called during mainloop().
 	// Your handler should return 0 or a communication error is assumed
 	// and the connection will be shut down.
-	virtual int register_handler(long type, vrpn_MESSAGEHANDLER handler,
-			void *userdata, long sender = vrpn_ANY_SENDER);
-	virtual	int unregister_handler(long type, vrpn_MESSAGEHANDLER handler,
-			void *userdata, long sender = vrpn_ANY_SENDER);
+	virtual int register_handler(vrpn_int32 type,
+		vrpn_MESSAGEHANDLER handler, void *userdata,
+		vrpn_int32 sender = vrpn_ANY_SENDER);
+	virtual	int unregister_handler(vrpn_int32 type,
+		vrpn_MESSAGEHANDLER handler, void *userdata,
+		vrpn_int32 sender = vrpn_ANY_SENDER);
 
 	// Pack a message that will be sent the next time mainloop() is called.
 	// Turn off the RELIABLE flag if you want low-latency (UDP) send.
-	virtual int pack_message(int len, struct timeval time,
-				 long type, long sender, const char * buffer,
-				 unsigned long class_of_service);
+	virtual int pack_message(vrpn_uint32 len, struct timeval time,
+		vrpn_int32 type, vrpn_int32 sender, const char * buffer,
+		vrpn_uint32 class_of_service);
 
 	// Returns the time since the connection opened.
 	// Some subclasses may redefine time.
@@ -292,8 +291,8 @@ class vrpn_Connection
 	// Returns the name of the specified sender/type, or NULL
 	// if the parameter is invalid.  Only works for user
 	// messages (type >= 0).
-	virtual const char * sender_name (long sender);
-	virtual const char * message_type_name (long type);
+	virtual const char * sender_name (vrpn_int32 sender);
+	virtual const char * message_type_name (vrpn_int32 type);
 
         // Sets up a filter function for logging.
         // Any user message to be logged is first passed to this function,
@@ -337,7 +336,7 @@ class vrpn_Connection
 	// Sockets used to talk to remote Connection(s)
 	// and other information needed on a per-connection basis
 	vrpn_OneConnection	endpoint;
-	int	num_live_connections;
+	vrpn_int32	num_live_connections;
 
 	// Only used for a vrpn_Connection that awaits incoming connections
 	int	listen_udp_sock;	// Connect requests come here
@@ -348,12 +347,12 @@ class vrpn_Connection
 	struct vrpnLocalMapping {
 		char			* name;		// Name of type
 		vrpnMsgCallbackEntry	* who_cares;	// Callbacks
-		int			cCares;		// TCH 28 Oct 97
+		vrpn_int32		cCares;		// TCH 28 Oct 97
 	};
 	char			* my_senders [vrpn_CONNECTION_MAX_SENDERS];
-	int			num_my_senders;
+	vrpn_int32		num_my_senders;
 	vrpnLocalMapping	my_types [vrpn_CONNECTION_MAX_TYPES];
-	int			num_my_types;
+	vrpn_int32		num_my_types;
 
 	// Callbacks on vrpn_ANY_TYPE
 	vrpnMsgCallbackEntry	* generic_callbacks;	
@@ -387,17 +386,19 @@ class vrpn_Connection
 	                                      const char * logfile = NULL);
 		// set up network
 	virtual	void	drop_connection (void);
-	virtual	int	pack_sender_description (int which);
-	virtual	int	pack_type_description (int which);
+	virtual	int	pack_sender_description (vrpn_int32 which);
+	virtual	int	pack_type_description (vrpn_int32 which);
 	virtual	int	pack_udp_description (int portno);
 	virtual int	pack_log_description (long mode,
                                               const char * filename);
-	virtual	int	marshall_message (char * outbuf, int outbuf_size,
-				int initial_out, int len, struct timeval time,
-				long type, long sender, const char * buffer);
+	virtual	int	marshall_message (char * outbuf,vrpn_uint32 outbuf_size,
+				vrpn_uint32 initial_out,
+				vrpn_uint32 len, struct timeval time,
+				vrpn_int32 type, vrpn_int32 sender,
+				const char * buffer);
 
-	virtual	int	do_callbacks_for (long type, long sender,
-				struct timeval time, int len,
+	virtual	int	do_callbacks_for (vrpn_int32 type, vrpn_int32 sender,
+				struct timeval time, vrpn_uint32 len,
 	                        const char * buffer);
 
 	// Returns message type ID, or -1 if unregistered
@@ -406,10 +407,10 @@ class vrpn_Connection
 	// Thread safety modifications - TCH 19 May 98
 
 	// Input buffers
-	int d_TCPbuflen;
+	vrpn_uint32 d_TCPbuflen;
 	char * d_TCPbuf;
-	double d_UDPinbufToAlignRight
-			[vrpn_CONNECTION_UDP_BUFLEN/sizeof(double)+1];
+	vrpn_float64 d_UDPinbufToAlignRight
+			[vrpn_CONNECTION_UDP_BUFLEN/sizeof(vrpn_float64)+1];
 	char *d_UDPinbuf;
 
 	// Timekeeping - TCH 30 June 98

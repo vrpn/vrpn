@@ -32,7 +32,7 @@ int vrpn_ConnectionForwarder::forward
                  const char * sourceServiceId,
                  const char * destinationName,
                  const char * destinationServiceId,
-                 unsigned long classOfService) {
+                 vrpn_uint32 classOfService) {
   
   vrpn_CONNECTIONFORWARDERRECORD * newList =
     new vrpn_CONNECTIONFORWARDERRECORD (d_source, d_destination,
@@ -57,12 +57,12 @@ int vrpn_ConnectionForwarder::unforward
                    const char * sourceServiceId,
                    const char * destinationName,
                    const char * destinationServiceId,
-                   unsigned long classOfService) {
+                   vrpn_uint32 classOfService) {
 
   vrpn_CONNECTIONFORWARDERRECORD ** snitch;
   vrpn_CONNECTIONFORWARDERRECORD * victim;
 
-  long st, ss, dt, ds;
+  vrpn_int32 st, ss, dt, ds;
 
   st = d_source->register_message_type(sourceName);
   ss = d_source->register_sender(sourceServiceId);
@@ -93,9 +93,9 @@ int vrpn_ConnectionForwarder::handle_message (void * userdata,
 
   vrpn_ConnectionForwarder * me = (vrpn_ConnectionForwarder *) userdata;
 
-  long id = p.type;
-  long serviceId = p.sender;
-  unsigned long serviceClass;
+  vrpn_int32 id = p.type;
+  vrpn_int32 serviceId = p.sender;
+  vrpn_uint32 serviceClass;
 
   int retval;
 
@@ -119,8 +119,8 @@ int vrpn_ConnectionForwarder::handle_message (void * userdata,
   return 0;
 }
 
-int vrpn_ConnectionForwarder::map (long * id, long * serviceId,
-                                   unsigned long * classOfService) {
+vrpn_int32 vrpn_ConnectionForwarder::map (vrpn_int32 * id, vrpn_int32 * serviceId,
+                                   vrpn_uint32 * classOfService) {
 
   vrpn_CONNECTIONFORWARDERRECORD * dlp;
 
@@ -142,7 +142,7 @@ vrpn_ConnectionForwarder::vrpn_CONNECTIONFORWARDERRECORD::vrpn_CONNECTIONFORWARD
   (vrpn_Connection * source, vrpn_Connection * dest,
    const char * iSourceId, const char * iSourceServiceId,
    const char * iDestId, const char * iDestServiceId,
-   unsigned long cos) :
+   vrpn_uint32 cos) :
       sourceId (source->register_message_type(iSourceId)),
       sourceServiceId (source->register_sender(iSourceServiceId)),
       destinationId (dest->register_message_type(iDestId)),
@@ -190,7 +190,7 @@ vrpn_StreamForwarder::~vrpn_StreamForwarder (void) {
 int vrpn_StreamForwarder::forward
                 (const char * sourceName,
                  const char * destinationName,
-                 unsigned long classOfService) {
+                 vrpn_uint32 classOfService) {
   
   vrpn_STREAMFORWARDERRECORD * newList =
     new vrpn_STREAMFORWARDERRECORD (d_source, d_destination,
@@ -212,12 +212,12 @@ int vrpn_StreamForwarder::forward
 int vrpn_StreamForwarder::unforward
                   (const char * sourceName,
                    const char * destinationName,
-                   unsigned long classOfService) {
+                   vrpn_uint32 classOfService) {
 
   vrpn_STREAMFORWARDERRECORD ** snitch;
   vrpn_STREAMFORWARDERRECORD * victim;
 
-  long st, dt;
+  vrpn_int32 st, dt;
 
   st = d_source->register_message_type(sourceName);
   dt = d_destination->register_message_type(destinationName);
@@ -243,8 +243,8 @@ int vrpn_StreamForwarder::handle_message (void * userdata,
 
   vrpn_StreamForwarder * me = (vrpn_StreamForwarder *) userdata;
 
-  long id = p.type;
-  unsigned long serviceClass;
+  vrpn_int32 id = p.type;
+  vrpn_uint32 serviceClass;
 
   int retval;
 
@@ -267,8 +267,8 @@ int vrpn_StreamForwarder::handle_message (void * userdata,
   return 0;
 }
 
-int vrpn_StreamForwarder::map (long * id,
-                               unsigned long * classOfService) {
+vrpn_int32 vrpn_StreamForwarder::map (vrpn_int32 * id,
+                               vrpn_uint32 * classOfService) {
 
   vrpn_STREAMFORWARDERRECORD * dlp;
 
@@ -289,7 +289,7 @@ vrpn_StreamForwarder::vrpn_STREAMFORWARDERRECORD::vrpn_STREAMFORWARDERRECORD
   (vrpn_Connection * source, vrpn_Connection * dest,
    const char * iSourceId,
    const char * iDestId,
-   unsigned long cos) :
+   vrpn_uint32 cos) :
       sourceId (source->register_message_type(iSourceId)),
       destinationId (dest->register_message_type(iDestId)),
       classOfService (cos),

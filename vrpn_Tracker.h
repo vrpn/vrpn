@@ -46,8 +46,8 @@ class vrpn_Tracker {
    // a tracker server should call the following to register the
    // default xform and workspace request handlers
    int register_server_handlers(void);
-   void get_local_t2r(double *vec, double *quat);
-   void get_local_u2s(int sensor, double *vec, double *quat);
+   void get_local_t2r(vrpn_float64 *vec, vrpn_float64 *quat);
+   void get_local_u2s(vrpn_int32 sensor, vrpn_float64 *vec, vrpn_float64 *quat);
    static int handle_t2r_request(void *userdata, vrpn_HANDLERPARAM p);
    static int handle_u2s_request(void *userdata, vrpn_HANDLERPARAM p);
    static int handle_workspace_request(void *userdata, vrpn_HANDLERPARAM p);
@@ -57,39 +57,39 @@ class vrpn_Tracker {
 
   protected:
    vrpn_Connection *connection;         // Used to send messages
-   long my_id;				// ID of this tracker to connection
-   long position_m_id;			// ID of tracker position message
-   long velocity_m_id;			// ID of tracker velocity message
-   long accel_m_id;			// ID of tracker acceleration message
-   long tracker2room_m_id;		// ID of tracker tracker2room message
-   long unit2sensor_m_id;		// ID of tracker unit2sensor message
-   long request_t2r_m_id;		// ID of tracker2room request message
-   long request_u2s_m_id;		// ID of unit2sensor request message
-   long request_workspace_m_id;		// ID of workspace request message
-   long workspace_m_id;			// ID of workspace message
-   long update_rate_id;			// ID of update rate message
-   long connection_dropped_m_id;	// ID of connection dropped message
-   long reset_origin_m_id;		// ID of reset origin message					
+   vrpn_int32 my_id;			// ID of this tracker to connection
+   vrpn_int32 position_m_id;		// ID of tracker position message
+   vrpn_int32 velocity_m_id;		// ID of tracker velocity message
+   vrpn_int32 accel_m_id;		// ID of tracker acceleration message
+   vrpn_int32 tracker2room_m_id;	// ID of tracker tracker2room message
+   vrpn_int32 unit2sensor_m_id;		// ID of tracker unit2sensor message
+   vrpn_int32 request_t2r_m_id;		// ID of tracker2room request message
+   vrpn_int32 request_u2s_m_id;		// ID of unit2sensor request message
+   vrpn_int32 request_workspace_m_id;	// ID of workspace request message
+   vrpn_int32 workspace_m_id;		// ID of workspace message
+   vrpn_int32 update_rate_id;		// ID of update rate message
+   vrpn_int32 connection_dropped_m_id;	// ID of connection dropped message
+   vrpn_int32 reset_origin_m_id;	// ID of reset origin message					
 
    // Description of the next report to go out
-   int sensor;			// Current sensor
-   double pos[3], quat[4];	// Current position, (x,y,z), (qx,qy,qz,qw)
-   double vel[3], vel_quat[4];	// Current velocity and dQuat/vel_quat_dt
-   double vel_quat_dt;          // delta time (in secs) for vel_quat
-   double acc[3], acc_quat[4];	// Current acceleration and d2Quat/acc_quat_dt2
-   double acc_quat_dt;          // delta time (in secs) for acc_quat
-   struct timeval timestamp;	// Current timestamp
+   vrpn_int32 sensor;			// Current sensor
+   vrpn_float64 pos[3], quat[4];	// Current pose, (x,y,z), (qx,qy,qz,qw)
+   vrpn_float64 vel[3], vel_quat[4];	// Cur velocity and dQuat/vel_quat_dt
+   vrpn_float64 vel_quat_dt;		// delta time (in secs) for vel_quat
+   vrpn_float64 acc[3], acc_quat[4];	// Cur accel and d2Quat/acc_quat_dt2
+   vrpn_float64 acc_quat_dt;		// delta time (in secs) for acc_quat
+   struct timeval timestamp;		// Current timestamp
 
-   double tracker2room[3], tracker2room_quat[4]; // Current t2r xform
-   long num_sensors;
-   double unit2sensor[TRACKER_MAX_SENSORS][3];
-   double unit2sensor_quat[TRACKER_MAX_SENSORS][4]; // Current u2s xforms
+   vrpn_float64 tracker2room[3], tracker2room_quat[4]; // Current t2r xform
+   vrpn_int32 num_sensors;
+   vrpn_float64 unit2sensor[TRACKER_MAX_SENSORS][3];
+   vrpn_float64 unit2sensor_quat[TRACKER_MAX_SENSORS][4]; // Current u2s xforms
 
    // bounding box for the tracker workspace (in tracker space)
    // these are the points with (x,y,z) minimum and maximum
    // note: we assume the bounding box edges are aligned with the tracker
    // coordinate system
-   double workspace_min[3], workspace_max[3];
+   vrpn_float64 workspace_min[3], workspace_max[3];
 
    int status;		// What are we doing?
 
@@ -116,7 +116,7 @@ class vrpn_Tracker_Serial : public vrpn_Tracker {
    int serial_fd;
 
    unsigned char buffer[VRPN_TRACKER_BUF_SIZE];// Characters read in from the tracker so far
-   unsigned bufcount;		// How many characters in the buffer?
+   vrpn_uint32 bufcount;		// How many characters in the buffer?
 
    virtual void get_report(void) = 0;
    virtual void reset(void) = 0;
@@ -126,12 +126,12 @@ class vrpn_Tracker_Serial : public vrpn_Tracker {
 
 class vrpn_Tracker_NULL: public vrpn_Tracker {
   public:
-   vrpn_Tracker_NULL (const char * name, vrpn_Connection * c, int sensors = 1,
-	float Hz = 1.0);
+   vrpn_Tracker_NULL (const char * name, vrpn_Connection * c,
+	vrpn_int32 sensors = 1, vrpn_float64 Hz = 1.0);
    virtual void mainloop(void);
   protected:
-   float	update_rate;
-   int		num_sensors;
+   vrpn_float64	update_rate;
+   vrpn_int32	num_sensors;
 };
 
 
@@ -146,9 +146,9 @@ class vrpn_Tracker_NULL: public vrpn_Tracker {
 
 typedef	struct {
 	struct timeval	msg_time;	// Time of the report
-	long		sensor;		// Which sensor is reporting
-	double		pos[3];		// Position of the sensor
-	double		quat[4];	// Orientation of the sensor
+	vrpn_int32	sensor;		// Which sensor is reporting
+	vrpn_float64	pos[3];		// Position of the sensor
+	vrpn_float64	quat[4];	// Orientation of the sensor
 } vrpn_TRACKERCB;
 typedef void (*vrpn_TRACKERCHANGEHANDLER)(void *userdata,
 					 const vrpn_TRACKERCB info);
@@ -159,10 +159,10 @@ typedef void (*vrpn_TRACKERCHANGEHANDLER)(void *userdata,
 
 typedef	struct {
 	struct timeval	msg_time;	// Time of the report
-	long		sensor;		// Which sensor is reporting
-	double		vel[3];		// Velocity of the sensor
-	double		vel_quat[4];	// Future Orientation of the sensor
-        double          vel_quat_dt;    // delta time (in secs) for vel_quat
+	vrpn_int32	sensor;		// Which sensor is reporting
+	vrpn_float64	vel[3];		// Velocity of the sensor
+	vrpn_float64	vel_quat[4];	// Future Orientation of the sensor
+        vrpn_float64	vel_quat_dt;    // delta time (in secs) for vel_quat
 } vrpn_TRACKERVELCB;
 typedef void (*vrpn_TRACKERVELCHANGEHANDLER)(void *userdata,
 					     const vrpn_TRACKERVELCB info);
@@ -173,10 +173,10 @@ typedef void (*vrpn_TRACKERVELCHANGEHANDLER)(void *userdata,
 
 typedef	struct {
 	struct timeval	msg_time;	// Time of the report
-	long		sensor;		// Which sensor is reporting
-	double		acc[3];		// Acceleration of the sensor
-	double		acc_quat[4];	// ?????
-        double          acc_quat_dt;    // delta time (in secs) for acc_quat
+	vrpn_int32	sensor;		// Which sensor is reporting
+	vrpn_float64	acc[3];		// Acceleration of the sensor
+	vrpn_float64	acc_quat[4];	// ?????
+        vrpn_float64	acc_quat_dt;    // delta time (in secs) for acc_quat
         
 } vrpn_TRACKERACCCB;
 typedef void (*vrpn_TRACKERACCCHANGEHANDLER)(void *userdata,
@@ -187,26 +187,26 @@ typedef void (*vrpn_TRACKERACCCHANGEHANDLER)(void *userdata,
 // across the connection arrives).
 
 typedef struct {
-	struct timeval	msg_time;	// Time of the report
-	double	tracker2room[3];	// position offset
-	double	tracker2room_quat[4];	// orientation offset
+	struct timeval	msg_time;		// Time of the report
+	vrpn_float64	tracker2room[3];	// position offset
+	vrpn_float64	tracker2room_quat[4];	// orientation offset
 } vrpn_TRACKERTRACKER2ROOMCB;
 typedef void (*vrpn_TRACKERTRACKER2ROOMCHANGEHANDLER)(void *userdata,
 					const vrpn_TRACKERTRACKER2ROOMCB info);
 
 typedef struct {
-        struct timeval  msg_time;       // Time of the report
-	long	sensor;			// Which sensor this is the xform for
-        double  unit2sensor[3];        // position offset
-        double  unit2sensor_quat[4];   // orientation offset
+        struct timeval  msg_time;       	// Time of the report
+	vrpn_int32	sensor;			// Which sensor this is for
+        vrpn_float64  unit2sensor[3];		// position offset
+        vrpn_float64  unit2sensor_quat[4];	// orientation offset
 } vrpn_TRACKERUNIT2SENSORCB;
 typedef void (*vrpn_TRACKERUNIT2SENSORCHANGEHANDLER)(void *userdata,
                                         const vrpn_TRACKERUNIT2SENSORCB info);
 
 typedef struct {
 	struct timeval  msg_time;       // Time of the report
-	double workspace_min[3];	// minimum corner of box (tracker CS)
-	double workspace_max[3];	// maximum corner of box (tracker CS)
+	vrpn_float64 workspace_min[3];	// minimum corner of box (tracker CS)
+	vrpn_float64 workspace_max[3];	// maximum corner of box (tracker CS)
 } vrpn_TRACKERWORKSPACECB;
 typedef void (*vrpn_TRACKERWORKSPACECHANGEHANDLER)(void *userdata,
 					const vrpn_TRACKERWORKSPACECB info);
@@ -236,9 +236,9 @@ class vrpn_Tracker_Canned: public vrpn_Tracker {
    void copy (void);
 
    FILE * fp;
-   int totalRecord;
+   vrpn_int32 totalRecord;
    vrpn_TRACKERCB t;
-   int current;
+   vrpn_int32 current;
 
 };
 #endif  // VRPN_CLIENT_ONLY
@@ -266,7 +266,7 @@ class vrpn_Tracker_Remote: public vrpn_Tracker {
 	int request_workspace(void);
 
 	// set rate of p/v/a updates from the tracker
-	int set_update_rate (double samplesPerSecond);
+	int set_update_rate (vrpn_float64 samplesPerSecond);
 
 	// reset origin to current tracker location (e.g. - to reinitialize
 	// a PHANToM in its reset position)
@@ -311,27 +311,27 @@ class vrpn_Tracker_Remote: public vrpn_Tracker {
 
         // (un)Register a callback handler to handle a position change
         virtual int register_change_handler(void *userdata,
-                vrpn_TRACKERCHANGEHANDLER handler, int sensor);
+                vrpn_TRACKERCHANGEHANDLER handler, vrpn_int32 sensor);
         virtual int unregister_change_handler(void *userdata,
-                vrpn_TRACKERCHANGEHANDLER handler, int sensor);
+                vrpn_TRACKERCHANGEHANDLER handler, vrpn_int32 sensor);
 
         // (un)Register a callback handler to handle a velocity change
         virtual int register_change_handler(void *userdata,
-                vrpn_TRACKERVELCHANGEHANDLER handler, int sensor);
+                vrpn_TRACKERVELCHANGEHANDLER handler, vrpn_int32 sensor);
         virtual int unregister_change_handler(void *userdata,
-                vrpn_TRACKERVELCHANGEHANDLER handler, int sensor);
+                vrpn_TRACKERVELCHANGEHANDLER handler, vrpn_int32 sensor);
 
         // (un)Register a callback handler to handle an acceleration change
         virtual int register_change_handler(void *userdata,
-                vrpn_TRACKERACCCHANGEHANDLER handler, int sensor);
+                vrpn_TRACKERACCCHANGEHANDLER handler, vrpn_int32 sensor);
         virtual int unregister_change_handler(void *userdata,
-                vrpn_TRACKERACCCHANGEHANDLER handler, int sensor);
+                vrpn_TRACKERACCCHANGEHANDLER handler, vrpn_int32 sensor);
 
         // (un)Register a callback handler to handle a unit2sensor change
         virtual int register_change_handler(void *userdata,
-                vrpn_TRACKERUNIT2SENSORCHANGEHANDLER handler, int sensor);
+                vrpn_TRACKERUNIT2SENSORCHANGEHANDLER handler, vrpn_int32 sensor);
         virtual int unregister_change_handler(void *userdata,
-                vrpn_TRACKERUNIT2SENSORCHANGEHANDLER handler, int sensor);
+                vrpn_TRACKERUNIT2SENSORCHANGEHANDLER handler, vrpn_int32 sensor);
 
 	// **** to get workspace information ****
 	// (un)Register a callback handler to handle a workspace change

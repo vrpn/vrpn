@@ -49,7 +49,8 @@ vrpn_Tracker_JoyFly::~vrpn_Tracker_JoyFly()
   delete joy_remote;
 }
 
-void vrpn_Tracker_JoyFly::mainloop() {
+void vrpn_Tracker_JoyFly::mainloop()
+{
   if (joy_remote !=  NULL)
     joy_remote->mainloop();
   if (status == TRACKER_REPORT_READY) {
@@ -57,7 +58,7 @@ void vrpn_Tracker_JoyFly::mainloop() {
     fprintf(stderr, "Sending a report\n");
 
     char msgbuf[1000];
-    int	    len = encode_to(msgbuf);
+    vrpn_int32	    len = encode_to(msgbuf);
     if (connection->pack_message(len, timestamp,
 				 position_m_id, my_id, msgbuf,
 				 vrpn_CONNECTION_LOW_LATENCY)) {
@@ -74,8 +75,8 @@ void vrpn_Tracker_JoyFly::mainloop() {
 #define ONE_SEC (1000000l)
 // static
 void vrpn_Tracker_JoyFly::handle_joystick
-                         (void * userdata, const vrpn_ANALOGCB b) {
-
+                         (void * userdata, const vrpn_ANALOGCB b)
+{
   double tx, ty, tz, rx, ry, rz;
   double temp[7];
   int i,j;
@@ -125,9 +126,7 @@ void vrpn_Tracker_JoyFly::handle_joystick
   tx = -temp[0]; // tx is NEGTIVE of power !!!  ;
   ty = temp[2];
   tz = temp[1];
-  
 
-  
   q_euler_to_col_matrix(newM, rz, ry, rx);
   newM[3][0] = tx; newM[3][1] = ty; newM[3][2] = tz;
   pts->update(newM);

@@ -42,12 +42,12 @@ class vrpn_Forwarder_Brain {
 
     // Tell a Forwarder_Server to open a vrpn_Connection on remote_port.
 
-    virtual void start_remote_forwarding (int remote_port) = 0;
+    virtual void start_remote_forwarding (vrpn_int32 remote_port) = 0;
 
     // Tell a Forwarder_Server to begin forwarding messages of type
     // message_type from the sender named service_name over remote_port.
 
-    virtual void forward_message_type (int remote_port,
+    virtual void forward_message_type (vrpn_int32 remote_port,
                                        const char * service_name,
                                        const char * message_type) = 0;
 
@@ -55,21 +55,21 @@ class vrpn_Forwarder_Brain {
 
     vrpn_Connection * d_connection;
 
-    long d_myId;
+    vrpn_int32 d_myId;
 
-    long d_start_forwarding_type;
-    long d_forward_type;
+    vrpn_int32 d_start_forwarding_type;
+    vrpn_int32 d_forward_type;
 
-    static char * encode_start_remote_forwarding (int * length,
-                       int remote_port);
-    static char * encode_forward_message_type (int * length,
-                       int remote_port, const char * service_name,
+    static char * encode_start_remote_forwarding (vrpn_int32 * length,
+                       vrpn_int32 remote_port);
+    static char * encode_forward_message_type (vrpn_int32 * length,
+                       vrpn_int32 remote_port, const char * service_name,
                        const char * message_type);
 
     static void decode_start_remote_forwarding (const char * buffer,
-                       int * remote_port);
+                       vrpn_int32 * remote_port);
     static void decode_forward_message_type (const char * buffer,
-                       int * remote_port, char ** service_name,
+                       vrpn_int32 * remote_port, char ** service_name,
                        char ** message_type);
 
 };
@@ -83,7 +83,7 @@ class vrpn_Forwarder_Brain {
 
 struct vrpn_Forwarder_List {
   vrpn_Forwarder_List * next;
-  int port;
+  vrpn_int32 port;
   vrpn_Connection * connection;
   vrpn_ConnectionForwarder * forwarder;
 };
@@ -98,10 +98,10 @@ class vrpn_Forwarder_Server : public vrpn_Forwarder_Brain {
     virtual void mainloop (void);
 
     virtual void start_remote_forwarding
-                 (int remote_port);
+                 (vrpn_int32 remote_port);
 
     virtual void forward_message_type
-                 (int remote_port, const char * service_name,
+                 (vrpn_int32 remote_port, const char * service_name,
                   const char * message_type);
 
   protected:
@@ -127,10 +127,10 @@ class vrpn_Forwarder_Controller : public vrpn_Forwarder_Brain {
     vrpn_Forwarder_Controller (vrpn_Connection *);
     ~vrpn_Forwarder_Controller (void);
 
-    virtual void start_remote_forwarding (int remote_port);
+    virtual void start_remote_forwarding (vrpn_int32 remote_port);
 
     virtual void forward_message_type
-                 (int remote_port, const char * service_name,
+                 (vrpn_int32 remote_port, const char * service_name,
                   const char * message_type);
 
 };

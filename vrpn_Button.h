@@ -31,38 +31,41 @@ class vrpn_Button {
 
         vrpn_Connection *connectionPtr();
 
-	virtual void set_momentary(int which_button);
-        virtual void set_toggle(int which_button, int current_state);
+	virtual void set_momentary(vrpn_int32 which_button);
+        virtual void set_toggle(vrpn_int32 which_button,
+				vrpn_int32 current_state);
         virtual void set_all_momentary(void);
-        virtual void set_all_toggle(int default_state);
+        virtual void set_all_toggle(vrpn_int32 default_state);
 
   protected:
 	vrpn_Connection *connection;
 	unsigned char	buttons[vrpn_BUTTON_MAX_BUTTONS];
         unsigned char	lastbuttons[vrpn_BUTTON_MAX_BUTTONS];
-	long     minrate[vrpn_BUTTON_MAX_BUTTONS];
-	int	num_buttons;
+	vrpn_int32	minrate[vrpn_BUTTON_MAX_BUTTONS];
+	vrpn_int32	num_buttons;
 	struct timeval	timestamp;
-	long my_id;			// ID of this button to connection
-	long change_message_id;		// ID of change button message to connection
-	long admin_message_id;		// ID of admin button message to connection
+	vrpn_int32 my_id;		// ID of this button to connection
+	vrpn_int32 change_message_id;	// ID of change button message to connection
+	vrpn_int32 admin_message_id;	// ID of admin button message to connection
 	virtual void report_changes();
-	virtual int encode_to(char *buf, int button, int state);
+	virtual vrpn_int32 encode_to(char *buf, vrpn_int32 button,
+				     vrpn_int32 state);
 };
 
 class vrpn_Button_Filter:public vrpn_Button{
 	public:
-		int     buttonstate[vrpn_BUTTON_MAX_BUTTONS];
-	        virtual void set_momentary(int which_button);
-       		virtual void set_toggle(int which_button, int current_state);
+		vrpn_int32     buttonstate[vrpn_BUTTON_MAX_BUTTONS];
+	        virtual void set_momentary(vrpn_int32 which_button);
+       		virtual void set_toggle(vrpn_int32 which_button,
+					vrpn_int32 current_state);
 		virtual void set_all_momentary(void);
-		virtual void set_all_toggle(int default_state);
-		void set_alerts(int);
+		virtual void set_all_toggle(vrpn_int32 default_state);
+		void set_alerts(vrpn_int32);
 
 	protected:
 		int send_alerts;
 		vrpn_Button_Filter(char *,vrpn_Connection *c=NULL);
-		long alert_message_id;   //used to send back to alert button box for lights
+		vrpn_int32 alert_message_id;   //used to send back to alert button box for lights
 		void report_changes(void);
 };
 
@@ -114,8 +117,8 @@ class vrpn_Button_Python: public vrpn_parallel_Button {
 
 typedef	struct {
 	struct timeval	msg_time;	// Time of button press/release
-	int		button;		// Which button (numbered from zero)
-	int		state;		// New state (0 = off, 1 = on)
+	vrpn_int32	button;		// Which button (numbered from zero)
+	vrpn_int32	state;		// New state (0 = off, 1 = on)
 } vrpn_BUTTONCB;
 typedef void (*vrpn_BUTTONCHANGEHANDLER)(void *userdata,
 					 const vrpn_BUTTONCB info);

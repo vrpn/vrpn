@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <string.h>
 
-static const double JoyScale[] = {1019, 227, 208, 400, 200, 213, 422};
+static const vrpn_float64 JoyScale[] = {1019, 227, 208, 400, 200, 213, 422};
 
 static long  duration(struct timeval t1, struct timeval t2)
 {
@@ -16,7 +16,7 @@ static long  duration(struct timeval t1, struct timeval t2)
 
 vrpn_Joystick::vrpn_Joystick(char * name, 
 		    vrpn_Connection * c, char * portname,int baud, 
-			     double update_rate):
+			     vrpn_float64 update_rate):
       vrpn_Serial_Analog(name, c, portname, baud), vrpn_Button(name, c)
 { 
   num_buttons = 2;  // only has 2 buttons
@@ -39,9 +39,9 @@ void vrpn_Joystick::mainloop(void) {
     // Send the message on the connection;
     if (vrpn_Analog::connection) {
       char	msgbuf[1000];
-      int	len = vrpn_Analog::encode_to(msgbuf);
+      vrpn_int32	len = vrpn_Analog::encode_to(msgbuf);
 #ifdef VERBOSE
-      print();
+      vrpn_Analog::print();
 #endif
       if (vrpn_Analog::connection->pack_message(len, vrpn_Analog::timestamp,
 				   channel_m_id, vrpn_Analog::my_id, msgbuf,

@@ -4,6 +4,14 @@
 
 HW_OS := $(shell hw_os)
 
+# check if its for pxfl
+ifdef PBASE_ROOT
+  HW_OS := hp_flow
+  ifeq ($(PXFL_COMPILER), aCC)
+    HW_OS = hp_flow_aCC
+  endif
+endif
+
 CC := g++
 ARCH_LIBS := -lm
 
@@ -16,6 +24,9 @@ endif
 ifeq ($(HW_OS),hp700_hpux10)
   CC := CC +a1
 endif
+ifeq ($(HW_OS), hp_flow_aCC)
+  CC := /opt/aCC/bin/aCC
+endif
 
 ifeq ($(HW_OS),sparc_solaris)
   ARCH_LIBS := -lsocket -lnsl $(ARCH_LIBS)
@@ -24,9 +35,9 @@ endif
 OBJ_DIR := $(HW_OS)
 
 CFLAGS = -I../ -g
-LFLAGS = -L../`hw_os` \
-	 -L/afs/unc/proj/hmd/beta/lib/`hw_os` \
-         -L/afs/unc/proj/hmd/lib/`hw_os`
+LFLAGS = -L../$(HW_OS) \
+	 -L/afs/unc/proj/hmd/beta/lib/$(HW_OS) \
+         -L/afs/unc/proj/hmd/lib/$(HW_OS)
 
 .c.o:
 	$(CC) $(CFLAGS) -c $*.c
@@ -56,47 +67,47 @@ forwarderClient:	$(OBJ_DIR)/forwarderClient
 text:	$(OBJ_DIR)/text
 	@echo Done.
 
-$(OBJ_DIR)/sound_client: $(OBJ_DIR)/sound_client.o ../`hw_os`/libvrpn.a
+$(OBJ_DIR)/sound_client: $(OBJ_DIR)/sound_client.o ../$(HW_OS)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/sound_client \
 		$(OBJ_DIR)/sound_client.o -lvrpn $(ARCH_LIBS)
 
-$(OBJ_DIR)/midi_client: $(OBJ_DIR)/midi_client.o ../`hw_os`/libvrpn.a
+$(OBJ_DIR)/midi_client: $(OBJ_DIR)/midi_client.o ../$(HW_OS)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/midi_client \
 		$(OBJ_DIR)/midi_client.o -lvrpn $(ARCH_LIBS)
 
-$(OBJ_DIR)/printvals: $(OBJ_DIR)/printvals.o ../`hw_os`/libvrpn.a
+$(OBJ_DIR)/printvals: $(OBJ_DIR)/printvals.o ../$(HW_OS)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/printvals \
 		$(OBJ_DIR)/printvals.o -lvrpn $(ARCH_LIBS)
 
-$(OBJ_DIR)/bdbox_client: $(OBJ_DIR)/bdbox_client.o ../`hw_os`/libvrpn.a
+$(OBJ_DIR)/bdbox_client: $(OBJ_DIR)/bdbox_client.o ../$(HW_OS)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/bdbox_client \
 		$(OBJ_DIR)/bdbox_client.o -lvrpn $(ARCH_LIBS)
 
-$(OBJ_DIR)/ff_client: $(OBJ_DIR)/ff_client.o ../`hw_os`/libvrpn.a
+$(OBJ_DIR)/ff_client: $(OBJ_DIR)/ff_client.o ../$(HW_OS)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/ff_client \
 		$(OBJ_DIR)/ff_client.o -lvrpn $(ARCH_LIBS)
 
-$(OBJ_DIR)/ohm_client: $(OBJ_DIR)/ohm_client.o ../`hw_os`/libvrpn.a
+$(OBJ_DIR)/ohm_client: $(OBJ_DIR)/ohm_client.o ../$(HW_OS)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/ohm_client \
 		$(OBJ_DIR)/ohm_client.o -lvrpn $(ARCH_LIBS)
 
-$(OBJ_DIR)/phan_client: $(OBJ_DIR)/phan_client.o ../`hw_os`/libvrpn.a
+$(OBJ_DIR)/phan_client: $(OBJ_DIR)/phan_client.o ../$(HW_OS)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/phan_client \
 		$(OBJ_DIR)/phan_client.o -lvrpn $(ARCH_LIBS)
 
-$(OBJ_DIR)/sphere_client: $(OBJ_DIR)/sphere_client.o ../`hw_os`/libvrpn.a
+$(OBJ_DIR)/sphere_client: $(OBJ_DIR)/sphere_client.o ../$(HW_OS)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/sphere_client \
 		$(OBJ_DIR)/sphere_client.o -lvrpn $(ARCH_LIBS)
 
-$(OBJ_DIR)/listen_client: $(OBJ_DIR)/listen_client.o ../`hw_os`/libvrpn.a
+$(OBJ_DIR)/listen_client: $(OBJ_DIR)/listen_client.o ../$(HW_OS)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/listen_client \
 		$(OBJ_DIR)/listen_client.o -lvrpn $(ARCH_LIBS)
 
-$(OBJ_DIR)/text: $(OBJ_DIR)/text.o ../`hw_os`/libvrpn.a
+$(OBJ_DIR)/text: $(OBJ_DIR)/text.o ../$(HW_OS)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/text \
 		$(OBJ_DIR)/text.o -lvrpn $(ARCH_LIBS)
 
-$(OBJ_DIR)/forwarderClient: $(OBJ_DIR)/forwarderClient.o ../`hw_os`/libvrpn.a
+$(OBJ_DIR)/forwarderClient: $(OBJ_DIR)/forwarderClient.o ../$(HW_OS)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/forwarderClient \
 		$(OBJ_DIR)/forwarderClient.o -lvrpn $(ARCH_LIBS)
 
@@ -119,6 +130,6 @@ clean:
 	bdbox_client ff_client ohm_client phan_client sphere_client \
 	$(OBJ_DIR)/*
 
-../`hw_os`/libvrpn.a:
+../$(HW_OS)/libvrpn.a:
 
 

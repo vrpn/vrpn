@@ -3,9 +3,8 @@
 
 #ifndef _WIN32
 #include <sys/time.h>  // for struct timeval
-#else
-#include "vrpn_Shared.h"
 #endif
+#include "vrpn_Shared.h"
 
 class vrpn_Connection;  // from vrpn_Connection.h
 
@@ -23,7 +22,7 @@ class vrpn_File_Controller {
     vrpn_File_Controller (vrpn_Connection *);
     ~vrpn_File_Controller (void);
 
-    void set_replay_rate (float = 1.0);
+    void set_replay_rate (vrpn_float32 = 1.0);
       // Sets the rate at which the file is replayed.
 
     void reset (void);
@@ -42,11 +41,11 @@ class vrpn_File_Controller {
 
     vrpn_Connection * d_connection;
 
-    long d_myId;
+    vrpn_int32 d_myId;
 
-    long d_set_replay_rate_type;
-    long d_reset_type;
-    long d_play_to_time_type;
+    vrpn_int32 d_set_replay_rate_type;
+    vrpn_int32 d_reset_type;
+    vrpn_int32 d_play_to_time_type;
     //long d_jump_to_time_type;
 };
 

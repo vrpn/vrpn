@@ -32,11 +32,11 @@ vrpn_Connection *vrpn_Text::connectionPtr(){
 
 }
 
-int vrpn_Text::encode_to (char * buf, unsigned long type,
-                          unsigned long level, const char * msg){
+vrpn_int32 vrpn_Text::encode_to (char * buf, vrpn_uint32 type,
+                          vrpn_uint32 level, const char * msg){
 
-  unsigned long net_type;
-  unsigned long net_level;
+  vrpn_uint32 net_type;
+  vrpn_uint32 net_level;
 
   net_type  = htonl(type);
   net_level = htonl(level);  // reorder to network byte order
@@ -50,11 +50,11 @@ int vrpn_Text::encode_to (char * buf, unsigned long type,
 }
 
 
-int vrpn_Text::decode_to(char *msg, unsigned long *type,
-                         unsigned long *level,const char *buf){
+vrpn_int32 vrpn_Text::decode_to(char *msg, vrpn_uint32 *type,
+                         vrpn_uint32 *level,const char *buf){
 
-  unsigned long net_level;
-  unsigned long net_type;
+  vrpn_uint32 net_level;
+  vrpn_uint32 net_type;
 
   memcpy(&net_type, buf, sizeof(net_type));
   memcpy(&net_level, buf + sizeof(net_type), sizeof(net_level)); 
@@ -69,15 +69,15 @@ int vrpn_Text::decode_to(char *msg, unsigned long *type,
 
 
 int vrpn_Text_Sender::send_message(const char *msg,
-                            unsigned long type,
-                            unsigned long level)
+                            vrpn_uint32 type,
+                            vrpn_uint32 level)
 {
         /*vrpn_Connection *connection = new vrpn_Connection();
-        long my_type = connection->register_message_type("Test_type");
-        long my_id = connection->register_sender("Test0@ioglab.cs.unc.edu");
+        vrpn_int32 my_type = connection->register_message_type("Test_type");
+        vrpn_int32 my_id = connection->register_sender("Test0@ioglab.cs.unc.edu");
 	*/
 
-	char buffer [2 * sizeof(long) + vrpn_MAX_TEXT_LEN];
+	char buffer [2 * sizeof(vrpn_int32) + vrpn_MAX_TEXT_LEN];
         struct timeval now;
 
         gettimeofday(&now,NULL);

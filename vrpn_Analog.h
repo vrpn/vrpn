@@ -25,15 +25,15 @@ public:
 
   protected:
 	vrpn_Connection *connection;
-	double	channel[vrpn_CHANNEL_MAX];
-	double	last[vrpn_CHANNEL_MAX];
-	int	num_channel;
+	vrpn_float64	channel[vrpn_CHANNEL_MAX];
+	vrpn_float64	last[vrpn_CHANNEL_MAX];
+	vrpn_int32	num_channel;
 	struct timeval	timestamp;
-	long my_id;	                   // ID of this device to connection
-	long channel_m_id;                 // channel message id
+	vrpn_int32 my_id;		// ID of this device to connection
+	vrpn_int32 channel_m_id;	// channel message id
 	int status; 
 
-	virtual int encode_to(char *buf);
+	virtual vrpn_int32 encode_to(char *buf);
         virtual void report_changes(); 
 };
 
@@ -63,8 +63,8 @@ protected:
 
 typedef	struct {
 	struct timeval	msg_time;	// Timestamp of analog data
-	int		num_channel;    // how many channels
-	double		channel[vrpn_CHANNEL_MAX];  // analog values
+	vrpn_int32	num_channel;    // how many channels
+	vrpn_float64	channel[vrpn_CHANNEL_MAX];  // analog values
 } vrpn_ANALOGCB;
 
 typedef void (*vrpn_ANALOGCHANGEHANDLER) (void * userdata,

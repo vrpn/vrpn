@@ -45,7 +45,7 @@ class vrpn_ConnectionForwarder {
                  const char * sourceServiceName,
                  const char * destinationName,
                  const char * destinationServiceName,
-                 unsigned long classOfService = vrpn_CONNECTION_RELIABLE);
+                 vrpn_uint32 classOfService = vrpn_CONNECTION_RELIABLE);
 
     // Stops forwarding of a message type.
     // Return nonzero on failure.
@@ -53,7 +53,7 @@ class vrpn_ConnectionForwarder {
                    const char * sourceServiceName,
                    const char * destinationName,
                    const char * destinationServiceName,
-                   unsigned long classOfService = vrpn_CONNECTION_RELIABLE);
+                   vrpn_uint32 classOfService = vrpn_CONNECTION_RELIABLE);
 
   private:
 
@@ -62,7 +62,7 @@ class vrpn_ConnectionForwarder {
     // Translates (id, serviceId) from source to destination
     // and looks up intended class of service.
     // Returns nonzero if lookup fails.
-    int map (long * id, long * serviceId, unsigned long * serviceClass);
+    vrpn_int32 map (vrpn_int32 * id, vrpn_int32 * serviceId, vrpn_uint32 * serviceClass);
 
     vrpn_Connection * d_source;
     vrpn_Connection * d_destination;
@@ -71,13 +71,13 @@ class vrpn_ConnectionForwarder {
 
       vrpn_CONNECTIONFORWARDERRECORD (vrpn_Connection *, vrpn_Connection *,
            const char *, const char *, const char *, const char *,
-           unsigned long);
+           vrpn_uint32);
 
-      long sourceId;              // source's type id
-      long sourceServiceId;       // source's sender id
-      long destinationId;         // destination's type id
-      long destinationServiceId;  // destination's sender id
-      unsigned long classOfService;  // class of service to send
+      vrpn_int32 sourceId;              // source's type id
+      vrpn_int32 sourceServiceId;       // source's sender id
+      vrpn_int32 destinationId;         // destination's type id
+      vrpn_int32 destinationServiceId;  // destination's sender id
+      vrpn_uint32 classOfService;  // class of service to send
 
       vrpn_CONNECTIONFORWARDERRECORD * next;
     };
@@ -106,13 +106,13 @@ class vrpn_StreamForwarder {
     // Return nonzero on failure.
     int forward (const char * sourceName,
                  const char * destinationName,
-                 unsigned long classOfService = vrpn_CONNECTION_RELIABLE);
+                 vrpn_uint32 classOfService = vrpn_CONNECTION_RELIABLE);
 
     // Stops forwarding of a message type.
     // Return nonzero on failure.
     int unforward (const char * sourceName,
                    const char * destinationName,
-                   unsigned long classOfService = vrpn_CONNECTION_RELIABLE);
+                   vrpn_uint32 classOfService = vrpn_CONNECTION_RELIABLE);
 
   private:
 
@@ -121,21 +121,21 @@ class vrpn_StreamForwarder {
     // Translates (id, serviceId) from source to destination
     // and looks up intended class of service.
     // Returns nonzero if lookup fails.
-    int map (long * id, unsigned long * serviceClass);
+    vrpn_int32 map (vrpn_int32 * id, vrpn_uint32 * serviceClass);
 
     vrpn_Connection * d_source;
-    long d_sourceService;
+    vrpn_int32 d_sourceService;
     vrpn_Connection * d_destination;
-    long d_destinationService;
+    vrpn_int32 d_destinationService;
 
     struct vrpn_STREAMFORWARDERRECORD {
 
       vrpn_STREAMFORWARDERRECORD (vrpn_Connection *, vrpn_Connection *,
-           const char *, const char *, unsigned long);
+           const char *, const char *, vrpn_uint32);
 
-      long sourceId;       // source's type id
-      long destinationId;  // destination's type id
-      unsigned long classOfService;  // class of service to send
+      vrpn_int32 sourceId;       // source's type id
+      vrpn_int32 destinationId;  // destination's type id
+      vrpn_uint32 classOfService;  // class of service to send
 
       vrpn_STREAMFORWARDERRECORD * next;
     };

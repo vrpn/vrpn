@@ -25,15 +25,11 @@ vrpn_File_Controller::~vrpn_File_Controller (void) {
 
 }
 
-void vrpn_File_Controller::set_replay_rate (float rate) {
+void vrpn_File_Controller::set_replay_rate (vrpn_float32 rate) {
   struct timeval now;
 
-#if (defined(sgi) || defined(hpux) || defined(sparc))
-  float netValue = rate;
-#else
-  float temp = rate;
-  int netValue = htonl(*(int *) &temp);
-#endif
+  vrpn_float32 temp = rate;
+  vrpn_int32 netValue = htonl(*(vrpn_int32 *) &temp);
 
   gettimeofday(&now, NULL);
   d_connection->pack_message(sizeof(netValue), now,

@@ -17,8 +17,8 @@
 typedef	struct {
 	struct timeval	msg_time;	// Time of the message
 	char		message[vrpn_MAX_TEXT_LEN];	// The message
-	unsigned long	type;
-	unsigned long	level;
+	vrpn_uint32	type;
+	vrpn_uint32	level;
 } vrpn_TEXTCB;
 
 typedef void (*vrpn_TEXTHANDLER)(void *userdata, const vrpn_TEXTCB info);
@@ -36,11 +36,11 @@ class vrpn_Text {
   protected:
 	vrpn_Connection *connection;
 	struct timeval	timestamp;
-	long my_id;			// ID of this text device to connection
-	long message_id;		// ID of text message to connection
+	vrpn_int32 my_id;		// ID of this text device to connection
+	vrpn_int32 message_id;		// ID of text message to connection
 
-	virtual int encode_to(char *buf, unsigned long type, unsigned long level , const char *msg);
-	virtual int decode_to(char *buf, unsigned long *type, unsigned long *level , const char *msg);
+	virtual vrpn_int32 encode_to(char *buf, vrpn_uint32 type, vrpn_uint32 level , const char *msg);
+	virtual vrpn_int32 decode_to(char *buf, vrpn_uint32 *type, vrpn_uint32 *level , const char *msg);
 };
 
 //----------------------------------------------------------
@@ -53,8 +53,8 @@ class vrpn_Text {
 class vrpn_Text_Sender: public vrpn_Text {
   public:
 	vrpn_Text_Sender(char *name, vrpn_Connection *c = NULL) : vrpn_Text(name, c){};
-	int send_message(const char *msg, unsigned long type = vrpn_TEXT_NORMAL,
-			 unsigned long level = 0);
+	int send_message(const char *msg, vrpn_uint32 type = vrpn_TEXT_NORMAL,
+			 vrpn_uint32 level = 0);
 
   protected:
 };

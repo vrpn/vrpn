@@ -10,7 +10,7 @@
   Revised: Tue Mar 10 14:09:55 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Flock_Parallel.h,v $
   $Locker:  $
-  $Revision: 1.4 $
+  $Revision: 1.5 $
 \*****************************************************************************/
 #ifndef _VRPN_FLOCK_PARALLEL_H_
 #define _VRPN_FLOCK_PARALLEL_H_
@@ -82,16 +82,16 @@ public:
 				     vrpn_Connection *c,
 				     char *port,
 				     long baud,
-				     long vrpnMasterID,
-				     long vrpnPositionMsgID,
+				     vrpn_int32 vrpnMasterID,
+				     vrpn_int32 vrpnPositionMsgID,
 				     int iSensorID );
   virtual ~vrpn_Tracker_Flock_Parallel_Slave();
   virtual void mainloop();
 
  protected:
   virtual void reset();
-  long vrpnMasterID;
-  long vrpnPositionMsgID;
+  vrpn_int32 vrpnMasterID;
+  vrpn_int32 vrpnPositionMsgID;
 
   friend class vrpn_Tracker_Flock_Parallel;
 };
@@ -102,6 +102,18 @@ public:
 
 /*****************************************************************************\
   $Log: vrpn_Flock_Parallel.h,v $
+  Revision 1.5  1999/02/24 15:58:33  taylorr
+  BIG CHANGES.
+  I modified the code so that it can compile on 64-bit SGI machines.
+
+  To do so, I did what I should have done in the first place and defined
+  architecture-independent types (vrpn_in32, vrpn_int16, vrpn_float32,
+  vrpn_float64 and so on).  These are defined per architecture in the
+  vrpn_Shared.h file.
+
+  FROM NOW ON, folks should use these rather than the non-specific types
+  (int, long, float, double) that may vary between platforms.
+
   Revision 1.4  1998/11/05 22:45:49  taylorr
   This version strips out the serial-port code into vrpn_Serial.C.
 

@@ -116,17 +116,17 @@ void vrpn_SleepMsecs( double dMsecs ) {
 static long lTestEndian = 0x1;
 static const int fLittleEndian = (*((char *)&lTestEndian) == 0x1);
 
-// convert doubles to/from network order
-// I have chosen big endian as the network order for doubles
-double htond( double d ) {
+// convert vrpn_float64 to/from network order
+// I have chosen big endian as the network order for vrpn_float64
+vrpn_float64 htond( vrpn_float64 d ) {
   if (fLittleEndian) {
-    double dSwapped;
+    vrpn_float64 dSwapped;
     char *pchSwapped= (char *)&dSwapped;
     char *pchOrig= (char *)&d;
 
     // swap to big
-    for(int i=0;i<sizeof(double);i++) {
-      pchSwapped[i]=pchOrig[sizeof(double)-i-1];
+    for(int i=0;i<sizeof(vrpn_float64);i++) {
+      pchSwapped[i]=pchOrig[sizeof(vrpn_float64)-i-1];
     }
     return dSwapped;
   } else {
@@ -135,7 +135,7 @@ double htond( double d ) {
 }
 
 // they are their own inverses, so ...
-double ntohd( double d ) {
+vrpn_float64 ntohd( vrpn_float64 d ) {
   return htond(d);
 }
 

@@ -2,6 +2,14 @@
 
 HW_OS := $(shell /usr/local/bin/hw_os)
 
+# check if its for pxfl
+ifdef PBASE_ROOT
+  HW_OS := hp_flow
+  ifeq ($(PXFL_COMPILER), aCC)
+    HW_OS = hp_flow_aCC
+  endif
+endif
+
 CC := g++
 ifeq ($(HW_OS),sgi_irix)
 	CC := CC -32
@@ -13,6 +21,11 @@ endif
 ifeq ($(HW_OS),sparc_sunos)
 	CC := /usr/local/lib/CenterLine/bin/CC
 endif
+
+ifeq ($(HW_OS), hp_flow_aCC)
+	CC := /opt/aCC/bin/aCC
+endif
+
 
 OBJ_DIR := $(HW_OS)
 

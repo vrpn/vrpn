@@ -11,7 +11,7 @@
   Revised: Tue Mar 10 14:24:35 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Flock_Parallel.C,v $
   $Locker:  $
-  $Revision: 1.2 $
+  $Revision: 1.3 $
 \*****************************************************************************/
 
 // The structure of this code came from vrpn_3Space.[Ch]
@@ -205,8 +205,8 @@ void vrpn_Tracker_Flock_Parallel::mainloop()
 vrpn_Tracker_Flock_Parallel_Slave::
 vrpn_Tracker_Flock_Parallel_Slave( char *name, vrpn_Connection *c, 
 				   char *port, long baud,
-				   long masterID,
-				   long positionMsgID,
+				   vrpn_int32 masterID,
+				   vrpn_int32 positionMsgID,
 				   int iSensorID ) :
   vrpn_Tracker_Flock(name,c,1,port,baud,1), vrpnMasterID(masterID),
   vrpnPositionMsgID(positionMsgID)
@@ -359,7 +359,7 @@ void vrpn_Tracker_Flock_Parallel_Slave::mainloop()
 #ifdef	VERBOSE
       static int count = 0;
       if (count++ == 10) {
-	printf("\nvrpn_Tracker_Flock_Parallel_Slave %d: Got report", sensor); print();
+	printf("\nvrpn_Tracker_Flock_Parallel_Slave %d: Got report", sensor); print_latest_report();
 	count = 0;
       }
 #endif            
@@ -485,6 +485,18 @@ void vrpn_Tracker_Flock_Parallel_Slave::mainloop()
 
 /*****************************************************************************\
   $Log: vrpn_Flock_Parallel.C,v $
+  Revision 1.3  1999/02/24 15:58:33  taylorr
+  BIG CHANGES.
+  I modified the code so that it can compile on 64-bit SGI machines.
+
+  To do so, I did what I should have done in the first place and defined
+  architecture-independent types (vrpn_in32, vrpn_int16, vrpn_float32,
+  vrpn_float64 and so on).  These are defined per architecture in the
+  vrpn_Shared.h file.
+
+  FROM NOW ON, folks should use these rather than the non-specific types
+  (int, long, float, double) that may vary between platforms.
+
   Revision 1.2  1998/11/05 22:45:48  taylorr
   This version strips out the serial-port code into vrpn_Serial.C.
 

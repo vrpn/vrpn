@@ -38,11 +38,11 @@ class vrpn_File_Connection : public vrpn_Connection {
 
     // tokens for VRPN control messages
 
-    long d_controllerId;
+    vrpn_int32 d_controllerId;
 
-    long d_set_replay_rate_type;
-    long d_reset_type;
-    long d_play_to_time_type;
+    vrpn_int32 d_set_replay_rate_type;
+    vrpn_int32 d_reset_type;
+    vrpn_int32 d_play_to_time_type;
     //long d_jump_to_time_type;
 
     // time-keeping
@@ -54,7 +54,7 @@ class vrpn_File_Connection : public vrpn_Connection {
     struct timeval d_now_time;  // wallclock time of last call to mainloop
     struct timeval d_next_time;  // elapsed wallclock time
 
-    float d_rate;  // scale factor for wallclock time
+    vrpn_float32 d_rate;  // scale factor for wallclock time
 
     // the actual mechanics of the logfile
 

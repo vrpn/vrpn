@@ -1,4 +1,3 @@
-
 #include <stdlib.h>
 #include <malloc.h>
 #include <memory.h>
@@ -88,7 +87,7 @@ int gethostname (char *, int);
 // string.  Since minor versions should interoperate, MAGIC is only
 // checked through the last period;  characters after that are ignored.
 
-char * vrpn_MAGIC = (char *) "vrpn: ver. 04.04";
+char * vrpn_MAGIC = (char *) "vrpn: ver. 04.05";
 const int MAGICLEN = 16;  // Must be a multiple of vrpn_ALIGN bytes!
 
 // Version history:
@@ -597,7 +596,7 @@ int vrpn_udp_request_call(const char * machine, int port)
 	int	listen_portnum;		/* Port number we're listening on */
         struct	hostent *host;          /* The host to connect to */
 	char	msg[150];		/* Message to send */
-	int	msglen;			/* How long it is (including \0) */
+	vrpn_int32	msglen;		/* How long it is (including \0) */
 	char	myIPchar[100];		/* IP decription this host */
 	int	try_connect;
 
@@ -1013,8 +1012,9 @@ int vrpn_start_server(const char *machine, char *server_name, char *args)
 //**  End of section pulled from SDI library
 //*********************************************************************
 
-void vrpn_OneConnection::init(void) {
-	int i;
+void vrpn_OneConnection::init(void)
+{
+	vrpn_int32 i;
 
 	tcp_sock = INVALID_SOCKET;
 	udp_outbound = INVALID_SOCKET;
@@ -1078,7 +1078,7 @@ vrpn_OneConnection::vrpn_OneConnection
 
 vrpn_OneConnection::~vrpn_OneConnection(void)
 {
-  int i;
+  vrpn_int32 i;
   	for (i=0;i<num_other_types;i++) {
 		delete other_types[i].name;
 	}
@@ -1103,9 +1103,9 @@ vrpn_OneConnection::~vrpn_OneConnection(void)
 // name, if there is one.  Return 1 if there was a mapping; this
 // lets the higher-ups know that there is someone that cares
 // on the other side.
-int	vrpn_OneConnection::newLocalSender(const char *name, int which)
+int	vrpn_OneConnection::newLocalSender(const char *name, vrpn_int32 which)
 {
-	int	i;
+	vrpn_int32	i;
 	for (i = 0; i < num_other_senders; i++) {
 		if (strcmp(other_senders[i].name, name) == 0) {
 #ifdef	VERBOSE
@@ -1123,8 +1123,8 @@ int	vrpn_OneConnection::newLocalSender(const char *name, int which)
 // mapping for it.  Return 1 if there was a mapping; this
 // lets the higher-ups know that there is someone that cares
 // on the other side.
-int	vrpn_OneConnection::newLocalType(const char *name, int which)
-{	int i;
+int	vrpn_OneConnection::newLocalType(const char *name, vrpn_int32 which)
+{	vrpn_int32 i;
 
 	for (i = 0; i < num_other_types; i++) {
 		if (strcmp(other_types[i].name, name) == 0) {
@@ -1138,18 +1138,18 @@ int	vrpn_OneConnection::newLocalType(const char *name, int which)
 	return 0;
 }
 
-int	vrpn_OneConnection::local_type_id(int remote_type)
+int	vrpn_OneConnection::local_type_id(vrpn_int32 remote_type)
 {
 	return other_types[remote_type].local_id;
 }
 
-int	vrpn_OneConnection::local_sender_id(int remote_sender)
+int	vrpn_OneConnection::local_sender_id(vrpn_int32 remote_sender)
 {
 	return other_senders[remote_sender].local_id;
 }
 
 // Adds a new remote type and returns its index.  Returns -1 on error.
-int	vrpn_OneConnection::newRemoteType(cName type_name, int local_id)
+int	vrpn_OneConnection::newRemoteType(cName type_name, vrpn_int32 local_id)
 {
 	// The assumption is that the type has not been defined before.
 	// Add this as a new type to the list of those defined
@@ -1176,7 +1176,7 @@ int	vrpn_OneConnection::newRemoteType(cName type_name, int local_id)
 }
 
 // Adds a new remote sender and returns its index.  Returns -1 on error.
-int	vrpn_OneConnection::newRemoteSender(cName sender_name, int local_id)
+int	vrpn_OneConnection::newRemoteSender(cName sender_name, vrpn_int32 local_id)
 {
 	// The assumption is that the sender has not been defined before.
 	// Add this as a new sender to the list of those defined
@@ -1256,7 +1256,7 @@ int vrpn_OneConnection::connect_tcp_to (const char * msg)
         } else {
 
 			perror("gethostbyname error:");
-#if !defined(hpux) && !defined(_WIN32) 
+#if !defined(hpux) && !defined(__hpux) && !defined(_WIN32) 
 			herror("gethostbyname error:");
 #endif
 
@@ -1287,7 +1287,7 @@ int vrpn_OneConnection::connect_tcp_to (const char * msg)
 
           }
 
-// OK, so this doesn't work.  What's wrong???
+// XXX OK, so this doesn't work.  What's wrong???
 
           client.sin_addr.s_addr = (a << 24) + (b << 16) + (c << 8) + d;
           //client.sin_addr.s_addr = (d << 24) + (c << 16) + (b << 8) + a;
@@ -1341,8 +1341,8 @@ int vrpn_OneConnection::connect_tcp_to (const char * msg)
 	return(server_sock);
 }
 
-int vrpn_OneConnection::log_message (int len, struct timeval time,
-                long type, long sender, const char * buffer,
+int vrpn_OneConnection::log_message (vrpn_int32 len, struct timeval time,
+                vrpn_int32 type, vrpn_int32 sender, const char * buffer,
                 int isRemote)
 {
   vrpn_LOGLIST * lp;
@@ -1914,7 +1914,7 @@ int vrpn_Connection::setup_new_connection
 	char	recvbuf [MAGICLEN + vrpn_ALIGN + 1];
 	char *	bp;
 	long	received_logmode;
-	int	sendlen;
+	vrpn_int32	sendlen;
 	int	i;
 	unsigned short udp_portnum;
 
@@ -1944,7 +1944,7 @@ int vrpn_Connection::setup_new_connection
 	// template.  (If there is no last '.' in our template, somebody's
         // modified this code to break the constraints above, and we just
 	// use a maximally restrictive check.)
-        //   This pointer arithmetic isn't completely safe.
+        //   XXX This pointer arithmetic isn't completely safe.
 
 	bp = strrchr(recvbuf, '.');
 	if (strncmp(recvbuf, vrpn_MAGIC,
@@ -2018,13 +2018,13 @@ int vrpn_Connection::setup_new_connection
 }
 
 
-int vrpn_Connection::pack_type_description(int which)
+int vrpn_Connection::pack_type_description(vrpn_int32 which)
 {
    struct timeval now;
 
    // need to pack the null char as well
-   long	len = strlen(my_types[which].name) + 1;
-   long netlen;
+   vrpn_uint32	len = strlen(my_types[which].name) + 1;
+   vrpn_uint32 netlen;
    char buffer [sizeof(len) + sizeof(cName)];
 
    netlen = htonl(len);
@@ -2034,24 +2034,24 @@ int vrpn_Connection::pack_type_description(int which)
    // and then the name of the type.
 
 #ifdef	VERBOSE
-   printf("  vrpn_Connection: Packing type '%s'\n",*my_types[which].name);
+   printf("  vrpn_Connection: Packing type '%s'\n",my_types[which].name);
 #endif
    memcpy(buffer, &netlen, sizeof(netlen));
-   memcpy(&buffer[sizeof(len)], my_types[which].name, (int) len);
+   memcpy(&buffer[sizeof(len)], my_types[which].name, (vrpn_int32) len);
    gettimeofday(&now,NULL);
 
-   return pack_message((int) (len + sizeof(len)), now,
+   return pack_message((vrpn_uint32) (len + sizeof(len)), now,
    	vrpn_CONNECTION_TYPE_DESCRIPTION, which, buffer,
 	vrpn_CONNECTION_RELIABLE);
 }
 
-int vrpn_Connection::pack_sender_description(int which)
+int vrpn_Connection::pack_sender_description(vrpn_int32 which)
 {
    struct timeval now;
 
    // need to pack the null char as well
-   long	len = strlen(my_senders[which]) + 1;
-   long netlen;
+   vrpn_uint32	len = strlen(my_senders[which]) + 1;
+   vrpn_uint32 netlen;
    char buffer [sizeof(len) + sizeof(cName)];
 
    netlen = htonl(len);
@@ -2061,13 +2061,13 @@ int vrpn_Connection::pack_sender_description(int which)
    // and then the name of the sender.
 
 #ifdef	VERBOSE
-	printf("  vrpn_Connection: Packing sender '%s'\n", *my_senders[which]);
+	printf("  vrpn_Connection: Packing sender '%s'\n", my_senders[which]);
 #endif
    memcpy(buffer, &netlen, sizeof(netlen));
-   memcpy(&buffer[sizeof(len)], my_senders[which], (int) len);
+   memcpy(&buffer[sizeof(len)], my_senders[which], (vrpn_int32) len);
    gettimeofday(&now,NULL);
 
-   return pack_message((int)(len + sizeof(len)), now,
+   return pack_message((vrpn_uint32)(len + sizeof(len)), now,
    	vrpn_CONNECTION_SENDER_DESCRIPTION, which, buffer,
 	vrpn_CONNECTION_RELIABLE);
 }
@@ -2075,7 +2075,7 @@ int vrpn_Connection::pack_sender_description(int which)
 int vrpn_Connection::pack_udp_description(int portno)
 {
    struct timeval now;
-   long	portparam = portno;
+   vrpn_uint32	portparam = portno;
    char myIPchar[1000];
 
    // Find the local host name
@@ -2166,6 +2166,10 @@ int vrpn_Connection::handle_UDP_message(void *userdata,
 	char	rhostname[1000];	// name of remote host
 	vrpn_Connection * me = (vrpn_Connection *)userdata;
 
+#ifdef	VERBOSE
+	printf("  Received request for UDP channel to %s\n", p.buffer);
+#endif
+
 	// Get the name of the remote host from the buffer (ensure terminated)
 	strncpy(rhostname, p.buffer, sizeof(rhostname));
 	rhostname[sizeof(rhostname)-1] = '\0';
@@ -2192,9 +2196,9 @@ int vrpn_Connection::handle_UDP_message(void *userdata,
 	return 0;
 }
 
-int vrpn_Connection::pack_message(int len, struct timeval time,
-		long type, long sender, const char * buffer,
-		unsigned long class_of_service)
+int vrpn_Connection::pack_message(vrpn_uint32 len, struct timeval time,
+		vrpn_int32 type, vrpn_int32 sender, const char * buffer,
+		vrpn_uint32 class_of_service)
 {
 	int	ret;
 
@@ -2286,13 +2290,13 @@ int vrpn_Connection::time_since_connection_open
 // Returns the name of the specified sender/type, or NULL
 // if the parameter is invalid.
 // virtual
-const char * vrpn_Connection::sender_name (long sender) {
+const char * vrpn_Connection::sender_name (vrpn_int32 sender) {
   if ((sender < 0) || (sender >= num_my_senders)) return NULL;
   return (const char *) my_senders[sender];
 }
 
 // virtual
-const char * vrpn_Connection::message_type_name (long type) {
+const char * vrpn_Connection::message_type_name (vrpn_int32 type) {
   if ((type < 0) || (type >= num_my_types)) return NULL;
   return (const char *) my_types[type].name;
 }
@@ -2325,16 +2329,16 @@ int vrpn_Connection::register_log_filter (vrpn_LOGFILTER filter,
 
 int vrpn_Connection::marshall_message(
 	char *outbuf,		// Base pointer to the output buffer
-	int outbuf_size,	// Total size of the output buffer
-	int initial_out,	// How many characters are already in outbuf
-	int len,		// Length of the message payload
+	vrpn_uint32 outbuf_size,// Total size of the output buffer
+	vrpn_uint32 initial_out,// How many characters are already in outbuf
+	vrpn_uint32 len,	// Length of the message payload
 	struct timeval time,	// Time the message was generated
-	long type,		// Type of the message
-	long sender,		// Sender of the message
+	vrpn_int32 type,	// Type of the message
+	vrpn_int32 sender,	// Sender of the message
 	const char * buffer)	// Message payload
 {
-   unsigned int	ceil_len, header_len, total_len;
-   unsigned int	curr_out = initial_out;	// How many out total so far
+   vrpn_uint32	ceil_len, header_len, total_len;
+   vrpn_uint32	curr_out = initial_out;	// How many out total so far
 
    // Compute the length of the message plus its padding to make it
    // an even multiple of vrpn_ALIGN bytes.
@@ -2343,10 +2347,10 @@ int vrpn_Connection::marshall_message(
    // into the message buffer (if we have room for the whole message)
    ceil_len = len; 
    if (len%vrpn_ALIGN) {ceil_len += vrpn_ALIGN - len%vrpn_ALIGN;}
-   header_len = 5*sizeof(long);
+   header_len = 5*sizeof(vrpn_int32);
    if (header_len%vrpn_ALIGN) {header_len += vrpn_ALIGN - header_len%vrpn_ALIGN;}
    total_len = header_len + ceil_len;
-   if ((curr_out + total_len) > (unsigned int)outbuf_size) {
+   if ((curr_out + total_len) > (vrpn_uint32)outbuf_size) {
    	return 0;
    }
    
@@ -2357,29 +2361,28 @@ int vrpn_Connection::marshall_message(
    // The reason we don't include the padding in the len is that we
    // would not be able to figure out the size of the padding on the
    // far side)
-   *(unsigned long*)(void*)(&outbuf[curr_out]) = htonl(header_len+len);
-   curr_out+= sizeof(unsigned long);
+   *(vrpn_uint32*)(void*)(&outbuf[curr_out]) = htonl(header_len+len);
+   curr_out+= sizeof(vrpn_uint32);
 
    // Pack the time (using gettimeofday() format) into the buffer
    // and do network byte ordering.
-   *(unsigned long*)(void*)(&outbuf[curr_out]) = htonl(time.tv_sec);
-   curr_out += sizeof(unsigned long);
-   *(unsigned long*)(void*)(&outbuf[curr_out]) = htonl(time.tv_usec);
-   curr_out += sizeof(unsigned long);
+   *(vrpn_uint32*)(void*)(&outbuf[curr_out]) = htonl(time.tv_sec);
+   curr_out += sizeof(vrpn_uint32);
+   *(vrpn_uint32*)(void*)(&outbuf[curr_out]) = htonl(time.tv_usec);
+   curr_out += sizeof(vrpn_uint32);
 
    // Pack the sender and type and do network byte-ordering
-   *(unsigned long*)(void*)(&outbuf[curr_out]) = htonl(sender);
-   curr_out += sizeof(unsigned long);
-   *(unsigned long*)(void*)(&outbuf[curr_out]) = htonl(type);
-   curr_out += sizeof(unsigned long);
+   *(vrpn_uint32*)(void*)(&outbuf[curr_out]) = htonl(sender);
+   curr_out += sizeof(vrpn_uint32);
+   *(vrpn_uint32*)(void*)(&outbuf[curr_out]) = htonl(type);
+   curr_out += sizeof(vrpn_uint32);
 
    // skip chars if needed for alignment
    curr_out = initial_out + header_len;
 
    // Pack the message from the buffer.  Then skip as many characters
    // as needed to make the end of the buffer fall on an even alignment
-   // of vrpn_ALIGN bytes (the size of largest element sent via vrpn
-   // (doubles(8)/floats(4)/longs(4)).
+   // of vrpn_ALIGN bytes (the size of largest element sent via vrpn.
    if (buffer != NULL) {
 	memcpy(&outbuf[curr_out], buffer, len);
    }
@@ -2438,7 +2441,7 @@ void vrpn_Connection::drop_connection(void)
 
 int vrpn_Connection::send_pending_reports(void)
 {
-   int	ret, sent = 0;
+   vrpn_int32	ret, sent = 0;
 
    // Do nothing if not connected.
    if (!connected()) {
@@ -2560,7 +2563,7 @@ int vrpn_Connection::mainloop(void)
 #ifdef	PRINT_READ_HISTOGRAM
 #define      HISTSIZE 25
    {
-        static long count = 0;
+        static vrpn_uint32 count = 0;
         static int tcp_histogram[HISTSIZE+1];
         static int udp_histogram[HISTSIZE+1];
         count++;
@@ -2606,7 +2609,7 @@ int vrpn_Connection::mainloop(void)
 
 void	vrpn_Connection::init (void)
 {
-	int	i;
+	vrpn_int32	i;
 
 	// Lots of constants used to be set up here.  They were moved
 	// into the constructors in 02.10;  this will create a slight
@@ -2682,7 +2685,7 @@ vrpn_Connection::~vrpn_Connection (void) {
 	}
 
 #endif  // WIN32
-	int i;
+	vrpn_int32 i;
 	vrpnMsgCallbackEntry *pVMCB, *pVMCB_Del;
 	for (i=0;i<num_my_types;i++) {
 		delete my_types[i].name;
@@ -2874,9 +2877,9 @@ vrpn_Connection::vrpn_Connection
 
 }
 
-long vrpn_Connection::register_sender (const char * name)
+vrpn_int32 vrpn_Connection::register_sender (const char * name)
 {
-   int	i;
+   vrpn_int32	i;
 
    /*fprintf(stderr, "vrpn_Connection::register_sender:  "
      "%d senders;  new name \"%s\"\n", num_my_senders, name);
@@ -2926,9 +2929,9 @@ long vrpn_Connection::register_sender (const char * name)
    return num_my_senders - 1;
 }
 
-long vrpn_Connection::register_message_type (const char * name)
+vrpn_int32 vrpn_Connection::register_message_type (const char * name)
 {
-	int	i;
+	vrpn_int32	i;
 
 	// See if the name is already in the list.  If so, return it.
 	i = message_type_is_registered(name);
@@ -2976,8 +2979,8 @@ long vrpn_Connection::register_message_type (const char * name)
 // are interested in messages from this sender.  Return 0 if they all
 // return 0, -1 otherwise.
 
-int	vrpn_Connection::do_callbacks_for(long type, long sender,
-		struct timeval time, int payload_len, const char * buf)
+int	vrpn_Connection::do_callbacks_for(vrpn_int32 type, vrpn_int32 sender,
+		struct timeval time, vrpn_uint32 payload_len, const char * buf)
 {
 	// Make sure we have a non-negative type.  System messages are
 	// handled differently.
@@ -3090,10 +3093,10 @@ int	vrpn_Connection::handle_tcp_messages(int fd)
 
 	  // If there is anything to read, get the next message
 	  if (FD_ISSET(fd, &readfds)) {
-		int	header[5];
+		vrpn_int32	header[5];
 		struct timeval time;
-		int	sender, type;
-		int	len, payload_len, ceil_len;
+		vrpn_int32	sender, type;
+		vrpn_int32	len, payload_len, ceil_len;
 #ifdef	VERBOSE2
 	printf("vrpn_Connection::handle_tcp_messages() something to read\n");
 #endif
@@ -3101,7 +3104,6 @@ int	vrpn_Connection::handle_tcp_messages(int fd)
 		// Read and parse the header
 		if (vrpn_noint_block_read(fd,(char*)header,sizeof(header)) !=
 			sizeof(header)) {
-		  //perror("vrpn: vrpn_Connection::handle_tcp_messages: Can't read header");
 		  printf("vrpn_connection::handle_tcp_messages:  "
                          "Can't read header\n");
 			return -1;
@@ -3111,16 +3113,19 @@ int	vrpn_Connection::handle_tcp_messages(int fd)
 		time.tv_usec = ntohl(header[2]);
 		sender = ntohl(header[3]);
 		type = ntohl(header[4]);
+#ifdef	VERBOSE2
+	printf("  header: Len %d, Sender %d, Type %d\n",
+		(int)len, (int)sender, (int)type);
+#endif
 
 		// skip up to alignment
-		unsigned int header_len = sizeof(header);
+		vrpn_int32 header_len = sizeof(header);
 		if (header_len%vrpn_ALIGN) {header_len += vrpn_ALIGN - header_len%vrpn_ALIGN;}
 		if (header_len > sizeof(header)) {
 		  // the difference can be no larger than this
 		  char rgch[vrpn_ALIGN];
-		  if (vrpn_noint_block_read(fd,(char*)rgch,sizeof(header_len-sizeof(header))) !=
-		      sizeof(header_len-sizeof(header))) {
-		    //perror("vrpn: vrpn_Connection::handle_tcp_messages: Can't read header");
+		  if (vrpn_noint_block_read(fd,(char*)rgch,header_len-sizeof(header)) !=
+		      header_len-sizeof(header)) {
 		    printf("vrpn_connection::handle_tcp_messages:  "
                            "Can't read header + alignment\n");
 		    return -1;
@@ -3219,7 +3224,7 @@ int	vrpn_Connection::handle_udp_messages(int fd)
         fd_set  readfds, exceptfds;
         struct  timeval timeout;
 	int	num_messages_read = 0;
-	int	inbuf_len;
+	vrpn_uint32	inbuf_len;
 	char	*inbuf_ptr;
 
 #ifdef	VERBOSE2
@@ -3258,10 +3263,10 @@ int	vrpn_Connection::handle_udp_messages(int fd)
 
 	  // If there is anything to read, get the next message
 	  if (FD_ISSET(fd, &readfds)) {
-		int	header[5];
-		struct timeval time;
-		int	sender, type;
-		int	len, payload_len, ceil_len;
+		vrpn_int32	header[5];
+		struct timeval	time;
+		vrpn_int32	sender, type;
+		vrpn_uint32	len, payload_len, ceil_len;
 
 #ifdef	VERBOSE2
 	printf("vrpn_Connection::handle_udp_messages() something to read\n");
@@ -3278,10 +3283,10 @@ int	vrpn_Connection::handle_udp_messages(int fd)
 
 		// Read and parse the header
 		// skip up to alignment
-		unsigned int header_len = sizeof(header);
+		vrpn_uint32 header_len = sizeof(header);
 		if (header_len%vrpn_ALIGN) {header_len += vrpn_ALIGN - header_len%vrpn_ALIGN;}
 		
-		if ( ((inbuf_ptr - d_UDPinbuf) + header_len) > (unsigned)inbuf_len) {
+		if ( ((inbuf_ptr - d_UDPinbuf) + header_len) > (vrpn_uint32)inbuf_len) {
 		   fprintf(stderr, "vrpn: vrpn_Connection::handle_udp_messages: Can't read header");
 		   return -1;
 		}
@@ -3367,8 +3372,8 @@ int	vrpn_Connection::handle_type_message(void *userdata,
 {
 	vrpn_Connection * me = (vrpn_Connection*)userdata;
 	cName	type_name;
-	int	i;
-	int	local_id;
+	vrpn_int32	i;
+	vrpn_int32	local_id;
 
 	if (p.payload_len > sizeof(type_name)) {
 		fprintf(stderr,"vrpn: vrpn_Connection::Type name too long\n");
@@ -3376,12 +3381,12 @@ int	vrpn_Connection::handle_type_message(void *userdata,
 	}
 
 	// Find out the name of the type (skip the length)
-	strncpy(type_name, p.buffer + sizeof(long),
-                p.payload_len - sizeof(long));
+	strncpy(type_name, p.buffer + sizeof(vrpn_int32),
+                p.payload_len - sizeof(vrpn_int32));
 
 	// Use the exact length packed into the start of the buffer
 	// to figure out where to put the trailing '\0'
-	i = ntohl(*((int *) p.buffer));
+	i = ntohl(*((vrpn_int32 *) p.buffer));
 	type_name[i] = '\0';
 
 #ifdef	VERBOSE
@@ -3411,8 +3416,8 @@ int	vrpn_Connection::handle_sender_message(void *userdata,
 {
 	vrpn_Connection * me = (vrpn_Connection*)userdata;
 	cName	sender_name;
-	int	i;
-	int	local_id;
+	vrpn_int32	i;
+	vrpn_int32	local_id;
 
 	if (p.payload_len > sizeof(sender_name)) {
 	        fprintf(stderr,"vrpn: vrpn_Connection::Sender name too long\n");
@@ -3420,12 +3425,12 @@ int	vrpn_Connection::handle_sender_message(void *userdata,
 	}
 
 	// Find out the name of the sender (skip the length)
-	// NOTE: this assumes that longs are 4 bytes on sender arch
-	strncpy(sender_name, p.buffer + 4, p.payload_len-4);
+	strncpy(sender_name, p.buffer + sizeof(vrpn_int32),
+		p.payload_len - sizeof(vrpn_int32));
 
 	// Use the exact length packed into the start of the buffer
 	// to figure out where to put the trailing '\0'
-	i = ntohl(*((int *) p.buffer));
+	i = ntohl(*((vrpn_int32 *) p.buffer));
 	sender_name[i] = '\0';
 
 #ifdef	VERBOSE
@@ -3448,8 +3453,9 @@ int	vrpn_Connection::handle_sender_message(void *userdata,
 	return 0;
 }
 
-int vrpn_Connection::register_handler(long type, vrpn_MESSAGEHANDLER handler,
-                        void *userdata, long sender)
+int vrpn_Connection::register_handler(vrpn_int32 type,
+			vrpn_MESSAGEHANDLER handler,
+                        void *userdata, vrpn_int32 sender)
 {
 	vrpnMsgCallbackEntry	*new_entry;
 
@@ -3503,8 +3509,9 @@ int vrpn_Connection::register_handler(long type, vrpn_MESSAGEHANDLER handler,
 	return 0;
 }
 
-int vrpn_Connection::unregister_handler(long type, vrpn_MESSAGEHANDLER handler,
-                        void *userdata, long sender)
+int vrpn_Connection::unregister_handler(vrpn_int32 type,
+			vrpn_MESSAGEHANDLER handler,
+                        void *userdata, vrpn_int32 sender)
 {
 	// The pointer at *snitch points to victim
 	vrpnMsgCallbackEntry	*victim, **snitch;
@@ -3549,7 +3556,7 @@ int vrpn_Connection::unregister_handler(long type, vrpn_MESSAGEHANDLER handler,
 
 int vrpn_Connection::message_type_is_registered (const char * name) const
 {
-	int	i;
+	vrpn_int32	i;
 
 	// See if the name is already in the list.  If so, return it.
 	for (i = 0; i < num_my_types; i++)

@@ -30,7 +30,7 @@ vrpn_Analog::vrpn_Analog (const char * name, vrpn_Connection * c) {
 
 void vrpn_Analog::print(void ) {
   printf("Analog Report: ");
-  for (int i=0; i< num_channel; i++) {
+  for (vrpn_int32 i=0; i< num_channel; i++) {
     //    printf("Channel[%d]= %f\t", i, channel[i]);
     printf("%f\t", channel[i]);
   }
@@ -41,25 +41,26 @@ vrpn_Connection *vrpn_Analog::connectionPtr() {
   return connection;
 }
 
-int vrpn_Analog::encode_to(char *buf)
+vrpn_int32 vrpn_Analog::encode_to(char *buf)
 {
-   // Message includes: long AnalogNum, long state
+   // Message includes: vrpn_float64 AnalogNum, vrpn_float64 state
    // Byte order of each needs to be reversed to match network standard
+   // XXX This is passing an int in the double for the num_channel
 
-   double *longbuf = (double *)(buf);
-   int	index = 0;
+   vrpn_float64 *longbuf = (vrpn_float64 *)(buf);
+   vrpn_int32	index = 0;
 
-   longbuf[index++]= htond((double) num_channel);
-   for (int i=0; i< num_channel; i++) {
+   longbuf[index++]= htond((vrpn_float64) num_channel);
+   for (vrpn_int32 i=0; i< num_channel; i++) {
      longbuf[index++] = htond(channel[i]);
      last[i] = channel[i];
    }
    //fprintf(stderr, "encode___ %x %x", buf[0], buf[1]);
-   return index*sizeof(double);
+   return index*sizeof(vrpn_float64);
 }
 void vrpn_Analog::report_changes() {
-  int i;
-  int change = 0;
+  vrpn_int32 i;
+  vrpn_int32 change = 0;
   if (connection) {
     for (i = 0; i < num_channel; i++) {
       if (channel[i]!= last[i]) change =1;
@@ -70,7 +71,7 @@ void vrpn_Analog::report_changes() {
     // there is indeed some change, send it;
     gettimeofday(&timestamp, NULL);
     char	msgbuf[1000];
-    int	len = vrpn_Analog::encode_to(msgbuf);
+    vrpn_int32	len = vrpn_Analog::encode_to(msgbuf);
 #ifdef VERBOSE
     print();
 #endif
@@ -120,7 +121,7 @@ vrpn_Analog_Remote::vrpn_Analog_Remote (const char * name,
 	vrpn_Analog (name, c ? c : vrpn_get_connection_by_name(name)),
 	change_list (NULL)
 {
-	int	i;
+	vrpn_int32	i;
 
 	// Register a handler for the change callback from this device,
 	// if we got a connection.
@@ -214,15 +215,15 @@ int vrpn_Analog_Remote::handle_change_message(void *userdata,
 	vrpn_HANDLERPARAM p)
 {
 	vrpn_Analog_Remote *me = (vrpn_Analog_Remote *)userdata;
-	double *params = (double*)(p.buffer);
+	vrpn_float64 *params = (vrpn_float64*)(p.buffer);
 	vrpn_ANALOGCB	cp;
 	vrpn_ANALOGCHANGELIST *handler = me->change_list;
 
 	cp.msg_time = p.msg_time;
 	cp.num_channel = ntohd(params[0]);
 
-	double * chandata = (double *) params+1;
-	for (int i=0; i< cp.num_channel; i++) 
+	vrpn_float64 * chandata = (vrpn_float64 *) params+1;
+	for (vrpn_int32 i=0; i< cp.num_channel; i++) 
 	  cp.channel[i] = ntohd(chandata[i]);
 
 	// Go down the list of callbacks that have been registered.
