@@ -33,6 +33,8 @@ const unsigned char PORT_SLCT = (1 << 4);
 const unsigned char PORT_PE = (1 << 5);
 const unsigned char PORT_ACK = (1 << 6);
 const unsigned char PORT_BUSY = (1 << 7);
+const unsigned char 
+BIT_MASK = PORT_ERROR | PORT_SLCT | PORT_PE | PORT_ACK | PORT_BUSY;
 
 static int client_msg_handler(void *userdata, vrpn_HANDLERPARAM p);
 
@@ -267,29 +269,38 @@ void vrpn_Button_Python::mainloop(void)
 // buttons
 void vrpn_Button_Python::read(void)
 {
-	int   status_register;
-
+	int   status_register[3];
+	
 	// Make sure we're ready to read
 	if (status != BUTTON_READY) {
 		return;
 	}
 
-	// Read from the status register
+	// Read from the status register, read 3 times to debounce noise.
 #ifdef	linux
-	if (ioctl(port, LPGETSTATUS, &status_register) == -1) {
+	for (int i=0; i< 3; i++) 
+	  if (ioctl(port, LPGETSTATUS, &status_register[i]) == -1) {
 		perror("vrpn_Button_Python::read(): ioctl() failed");
 		return;
-	}
+	  }
+
 #else
-	status_register = 0;
+	status_register[0] = status_register[1] = status_register[2] = 0;
 #endif
+	status_register[0] = status_register[0] & BIT_MASK;
+	status_register[1] = status_register[1] & BIT_MASK;
+	status_register[2] = status_register[2] & BIT_MASK;
+	
+	if (!(status_register[0] == status_register[1]  &&
+	      status_register[0] == status_register[2])) 
+	  return;
 
 	// Assign values to the bits based on the control signals
-	buttons[0] = ((status_register & PORT_SLCT) == 0);
-	buttons[1] = ((status_register & PORT_BUSY) != 0);
-	buttons[2] = ((status_register & PORT_PE) == 0);
-	buttons[3] = ((status_register & PORT_ERROR) == 0);
-	buttons[4] = ((status_register & PORT_ACK) == 0);
+	buttons[0] = ((status_register[0] & PORT_SLCT) == 0);
+	buttons[1] = ((status_register[0] & PORT_BUSY) != 0);
+	buttons[2] = ((status_register[0] & PORT_PE) == 0);
+	buttons[3] = ((status_register[0] & PORT_ERROR) == 0);
+	buttons[4] = ((status_register[0] & PORT_ACK) == 0);
 
    gettimeofday(&timestamp, NULL);
 }
