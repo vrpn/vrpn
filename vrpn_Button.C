@@ -424,7 +424,7 @@ int vrpn_Button_Remote::set_button_mode(int mode, int buttonid) {
   struct timeval current_time;
   //pack the message and send it to the button server through connection
   char msgbuf[1024];
-  int len, idata = 0;
+  int len = 3, idata = 0;
 	
   
   gettimeofday(&current_time, NULL);
