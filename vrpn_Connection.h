@@ -177,7 +177,7 @@ class vrpn_OneConnection
 
         // Has a clock sync occured yet (slight prob of false negative, but 
         // only for a brief period)
-        int clockSynced() { return tvClockOffset.tv_usec!=0;}
+        int clockSynced (void) { return tvClockOffset.tv_usec != 0;}
 
 //XXX These should be protected; making them so will lead to making
 //    the code split the functions between OneConnection and Connection
@@ -348,7 +348,7 @@ class vrpn_Connection
   // to shrink the buffer, only to increase it or leave it the same.
   vrpn_int32 set_tcp_outbuf_size (vrpn_int32 bytecount);
 
-  vrpn_OneConnection *endpointPtr() { return &endpoint; }
+  vrpn_OneConnection * endpointPtr (void) { return &endpoint; }
 
   // vrpn_File_Connection implements this as "return this" so it
   // can be used to detect a File_Connection and get the pointer for it
@@ -472,7 +472,8 @@ class vrpn_Connection
 				vrpn_uint32 initial_out,
 				vrpn_uint32 len, struct timeval time,
 				vrpn_int32 type, vrpn_int32 sender,
-				const char * buffer);
+				const char * buffer,
+                                vrpn_uint32 sequenceNumber);
 
 	virtual	int	do_callbacks_for (vrpn_int32 type, vrpn_int32 sender,
 				struct timeval time, vrpn_uint32 len,
@@ -497,6 +498,20 @@ class vrpn_Connection
 
 	// Timekeeping - TCH 30 June 98
 	struct timeval start_time;
+
+    vrpn_uint32 d_sequenceNumberUDP;
+      /**<
+       * All packets are sent out with a sequence number;  this uses
+       * the sixth ("padding") word in the VRPN header.  Currently
+       * two sequences are maintained:  one for TCP, one for UDP.
+       */
+
+    vrpn_uint32 d_sequenceNumberTCP;
+      /**<
+       * All packets are sent out with a sequence number;  this uses
+       * the sixth ("padding") word in the VRPN header.  Currently
+       * two sequences are maintained:  one for TCP, one for UDP.
+       */
 };
 
 

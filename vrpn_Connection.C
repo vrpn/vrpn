@@ -2738,7 +2738,8 @@ int vrpn_Connection::pack_message(vrpn_uint32 len, struct timeval time,
 	// If we don't have a UDP outbound channel, send everything TCP
 	if (endpoint.udp_outbound == -1) {
 	    ret = marshall_message(d_tcp_outbuf, d_tcp_buflen, d_tcp_num_out,
-				   len, time, type, sender, buffer);
+				   len, time, type, sender, buffer,
+                                   d_sequenceNumberTCP++);
 	    d_tcp_num_out += ret;
 	    //	    return -(ret==0);
 
@@ -2748,7 +2749,8 @@ int vrpn_Connection::pack_message(vrpn_uint32 len, struct timeval time,
 	    if (ret == 0) {
 		if (send_pending_reports() != 0) { return -1; }
 		ret = marshall_message(d_tcp_outbuf, d_tcp_buflen,
-				d_tcp_num_out, len, time, type, sender, buffer);
+				d_tcp_num_out, len, time, type, sender,
+                                buffer, d_sequenceNumberTCP++);
 		d_tcp_num_out += ret;
 	    }
 	    return (ret==0) ? -1 : 0;
@@ -2758,7 +2760,8 @@ int vrpn_Connection::pack_message(vrpn_uint32 len, struct timeval time,
 	// appropriate service (TCP for reliable, UDP for everything else).
 	if (class_of_service & vrpn_CONNECTION_RELIABLE) {
 	    ret = marshall_message(d_tcp_outbuf, d_tcp_buflen, d_tcp_num_out,
-				   len, time, type, sender, buffer);
+				   len, time, type, sender, buffer,
+                                   d_sequenceNumberTCP++);
 	    d_tcp_num_out += ret;
 	    //	    return -(ret==0);
 
@@ -2768,13 +2771,15 @@ int vrpn_Connection::pack_message(vrpn_uint32 len, struct timeval time,
 	    if (ret == 0) {
 		if (send_pending_reports() != 0) { return -1; }
 		ret = marshall_message(d_tcp_outbuf, d_tcp_buflen,
-				d_tcp_num_out, len, time, type, sender, buffer);
+				d_tcp_num_out, len, time, type, sender,
+                                buffer, d_sequenceNumberTCP++);
 		d_tcp_num_out += ret;
 	    }
 	    return (ret==0) ? -1 : 0;
 	} else {
 	    ret = marshall_message(d_udp_outbuf, d_udp_buflen, d_udp_num_out,
-				   len, time, type, sender, buffer);
+				   len, time, type, sender, buffer,
+                                   d_sequenceNumberUDP++);
 	    d_udp_num_out += ret;
 	    //	    return -(ret==0);
 
@@ -2784,7 +2789,8 @@ int vrpn_Connection::pack_message(vrpn_uint32 len, struct timeval time,
 	    if (ret == 0) {
 		if (send_pending_reports() != 0) { return -1; }
 		ret = marshall_message(d_udp_outbuf, d_udp_buflen,
-				d_udp_num_out, len, time, type, sender, buffer);
+				d_udp_num_out, len, time, type, sender,
+                                buffer, d_sequenceNumberUDP++);
 		d_udp_num_out += ret;
 	    }
 	    return (ret==0) ? -1 : 0;
@@ -2869,6 +2875,10 @@ vrpn_int32 vrpn_Connection::set_tcp_outbuf_size (vrpn_int32 bytecount) {
 // Marshal the message into the buffer if it will fit.  Return the number
 // of characters sent.
 
+// TCH 22 Feb 99
+// Marshall the sequence number, but never unmarshall it - it's currently
+// only provided for the benefit of sniffers.
+
 int vrpn_Connection::marshall_message(
 	char *outbuf,		// Base pointer to the output buffer
 	vrpn_uint32 outbuf_size,// Total size of the output buffer
@@ -2877,7 +2887,8 @@ int vrpn_Connection::marshall_message(
 	struct timeval time,	// Time the message was generated
 	vrpn_int32 type,	// Type of the message
 	vrpn_int32 sender,	// Sender of the message
-	const char * buffer)	// Message payload
+	const char * buffer,	// Message payload
+        vrpn_uint32 seqNo)      // Sequence number
 {
    vrpn_uint32	ceil_len, header_len, total_len;
    vrpn_uint32	curr_out = initial_out;	// How many out total so far
@@ -2919,6 +2930,12 @@ int vrpn_Connection::marshall_message(
    *(vrpn_uint32*)(void*)(&outbuf[curr_out]) = htonl(sender);
    curr_out += sizeof(vrpn_uint32);
    *(vrpn_uint32*)(void*)(&outbuf[curr_out]) = htonl(type);
+   curr_out += sizeof(vrpn_uint32);
+
+   // Pack the sequence number.  If something's really screwy with
+   // our sizes/types and there isn't room for the sequence number,
+   // skipping for alignment below will overwrite it!
+   *(vrpn_uint32*)(void*)(&outbuf[curr_out]) = htonl(seqNo);
    curr_out += sizeof(vrpn_uint32);
 
    // skip chars if needed for alignment
@@ -3401,7 +3418,9 @@ vrpn_Connection::vrpn_Connection (unsigned short listen_port_no,
     d_pendingLogname (NULL),
     d_TCPbuflen (0),
     d_TCPbuf (NULL),
-    d_UDPinbuf ((char*)(&d_UDPinbufToAlignRight[0]))
+    d_UDPinbuf ((char*)(&d_UDPinbufToAlignRight[0])),
+    d_sequenceNumberUDP (0),
+    d_sequenceNumberTCP (0)
 {
   int retval;
 
@@ -3474,7 +3493,9 @@ vrpn_Connection::vrpn_Connection
     d_pendingLogname (NULL),
     d_TCPbuflen (0),
     d_TCPbuf (NULL),
-    d_UDPinbuf ((char *) (&d_UDPinbufToAlignRight[0]))
+    d_UDPinbuf ((char *) (&d_UDPinbufToAlignRight[0])),
+    d_sequenceNumberUDP (0),
+    d_sequenceNumberTCP (0)
 {
 	int retval;
 	int isfile;

@@ -132,16 +132,16 @@ protected:
         FileTime_Accumulator();
         
         // return accumulated time since last reset
-        const timeval & accumulated() {
+        const timeval & accumulated (void) {
             return d_filetime_accum_since_last_playback;
         }
 
         // return last time accumulate_to was called
-        const timeval & time_of_last_accum() {
+        const timeval & time_of_last_accum (void) {
             return d_time_of_last_accum;
         }
 
-        vrpn_float32 replay_rate() { return d_replay_rate; }
+        vrpn_float32 replay_rate (void) { return d_replay_rate; }
         
         // add (d_replay_rate * (now_time - d_time_of_last_accum))
         // to d_filetime_accum_since_last_playback

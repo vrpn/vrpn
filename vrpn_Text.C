@@ -23,11 +23,16 @@ vrpn_Text::vrpn_Text(char *name, vrpn_Connection *c){
         }
 }
 
-void vrpn_Text::mainloop(){
+// virtual
+vrpn_Text::~vrpn_Text (void) {
+
+}
+
+void vrpn_Text::mainloop (void) {
 	connection->mainloop();
 }
 
-vrpn_Connection *vrpn_Text::connectionPtr(){
+vrpn_Connection * vrpn_Text::connectionPtr (void) {
         return connection;
 
 }
