@@ -522,6 +522,9 @@ class vrpn_Log {
 
     int addFilter (vrpn_LOGFILTER filter, void * userdata);
 
+    timeval lastLogTime ();
+      ///< Returns the time of the last message that was logged
+
   protected:
 
     int checkFilters (vrpn_int32 payloadLen, struct timeval time,
@@ -541,6 +544,8 @@ class vrpn_Log {
 
     vrpn_TranslationTable * d_senders;
     vrpn_TranslationTable * d_types;
+
+    timeval d_lastLogTime;
 };
 
 
@@ -559,6 +564,9 @@ vrpn_Log::vrpn_Log (vrpn_TranslationTable * senders,
     d_senders (senders),
     d_types (types)
 {
+
+  d_lastLogTime.tv_sec = 0;
+  d_lastLogTime.tv_usec = 0;
 
   // Set up default value for the cookie received from the server
   // because if we are using a file connection and want to
@@ -811,6 +819,9 @@ int vrpn_Log::logMessage (vrpn_int32 payloadLen, struct timeval time,
   lp->data.msg_time.tv_sec = htonl(time.tv_sec);
   lp->data.msg_time.tv_usec = htonl(time.tv_usec);
 
+  d_lastLogTime.tv_sec = time.tv_sec;
+  d_lastLogTime.tv_usec = time.tv_usec;
+
   lp->data.payload_len = htonl(payloadLen);
   lp->data.buffer = NULL;
 
@@ -923,7 +934,10 @@ int vrpn_Log::addFilter (vrpn_LOGFILTER filter, void * userdata) {
   return 0;
 }
 
-
+timeval vrpn_Log::lastLogTime ()
+{
+  return d_lastLogTime;
+}
 
 
 
@@ -3742,16 +3756,28 @@ void vrpn_Endpoint::drop_connection (void) {
   // Clear out the buffers; nothing to read or send if no connection.
   clearBuffers();
 
+  struct timeval now;
+  gettimeofday(&now, NULL);
+  if (d_log->logMode()) {
+    struct timeval last = d_log->lastLogTime();
+    if (vrpn_TimevalGreater(last, now)){
+        fprintf(stderr,
+           "Warning, translation time hack has been executed\n");
+        fprintf(stderr, "Changing time from %ld,%ld to %ld,%ld\n",
+          now.tv_sec, now.tv_usec, 
+          last.tv_sec, last.tv_usec);
+        now.tv_sec = last.tv_sec;
+        now.tv_usec = last.tv_usec;
+    }
+  }
+
   // If we are logging, put a message in the log telling that we
   // have had a disconnection. We don't close the logfile here unless
   // there is an error logging the message. This is because we'll want
   // to keep logging if there is a reconnection. We close the file when
   // the endpoint is destroyed.
   if (d_log->logMode()) {
-    struct timeval now;
     vrpn_int32 scrap_payload = 0;
-
-    gettimeofday(&now, NULL);
     if (d_log->logMessage
                (sizeof(scrap_payload),  // Size of payload
                 now,                                    // Message is now
@@ -3772,8 +3798,6 @@ void vrpn_Endpoint::drop_connection (void) {
   // always send a connection dropped message.
   // Message needs to be dispatched *locally only*, so we do_callbacks_for()
   // and never pack_message()
-  struct timeval now;
-  gettimeofday(&now, NULL);
 
   if (d_connectionCounter != NULL) {	// Do nothing on NULL pointer
 
@@ -4475,8 +4499,8 @@ int vrpn_Endpoint::pack_type_description (vrpn_int32 which) {
    // and then the name of the type.
 
 #ifdef	VERBOSE
-   printf("  vrpn_Connection: Packing type '%s'\n",
-          d_dispatcher->typeName(which));
+   printf("  vrpn_Connection: Packing type '%s', %d\n",
+          d_dispatcher->typeName(which), which);
 #endif
    memcpy(buffer, &netlen, sizeof(netlen));
    memcpy(&buffer[sizeof(len)], d_dispatcher->typeName(which),
@@ -4673,6 +4697,7 @@ void vrpn_Connection::handle_connection (int endpointIndex) {
    }
 */
 
+   
    // Set up the things that need to happen when a new connection is
    // started.
    if (endpoint->setup_new_connection()) {
@@ -4681,7 +4706,6 @@ void vrpn_Connection::handle_connection (int endpointIndex) {
 	drop_connection(endpointIndex);
 	return;
    }
-
 }
 
 
@@ -4940,7 +4964,6 @@ void vrpn_Connection::init (void) {
   d_dispatcher = new vrpn_TypeDispatcher;
 
   // These should be among the first senders & types sent over the wire
-
   d_dispatcher->registerSender(vrpn_CONTROL);
   d_dispatcher->registerType(vrpn_got_first_connection);
   d_dispatcher->registerType(vrpn_got_connection);
@@ -5351,6 +5374,7 @@ vrpn_Connection::vrpn_Connection
     }
 
     endpoint->status = TRYING_TO_CONNECT;
+
 //fprintf(stderr, "TRYING_TO_CONNECT - vrpn_Connection::vrpn_Connection.\n");
 
 #ifdef	VERBOSE
@@ -5747,6 +5771,30 @@ vrpn_Synchronized_Connection::vrpn_Synchronized_Connection
   }
 
   // DO WE NEED TO ALLOW COOKIE_PENDING HERE?
+ 
+   // AAS added this: these weren't getting put into the log file
+   // created by the stream file translator and that was causing
+   // some troubling error messages (9/22/00)
+#ifdef VERBOSE
+   printf("Packing sender description for %s\n", vrpn_CONTROL);
+   printf("Packing type description for %s\n", 
+		vrpn_got_first_connection);
+   printf("Packing type description for %s\n",
+                vrpn_got_connection);
+   printf("Packing type description for %s\n",
+                vrpn_dropped_connection);
+   printf("Packing type description for %s\n",
+                vrpn_dropped_last_connection);
+#endif
+   pack_sender_description(d_dispatcher->registerSender(vrpn_CONTROL));
+   pack_type_description(
+         d_dispatcher->registerType(vrpn_got_first_connection));
+   pack_type_description(
+         d_dispatcher->registerType(vrpn_got_connection));
+   pack_type_description(
+         d_dispatcher->registerType(vrpn_dropped_connection));
+   pack_type_description(
+         d_dispatcher->registerType(vrpn_dropped_last_connection));
 
   pClockRemote = new vrpn_Clock_Remote (server_name, dFreq, cSyncWindow);
   pClockRemote->register_clock_sync_handler(&d_endpoints[0]->tvClockOffset, 

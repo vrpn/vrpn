@@ -1,3 +1,22 @@
+2000-09-22  Adam Seeger  <seeger@cs.unc.edu>
+
+        * vrpn_Connection.C (vrpn_Log::lastLogTime) : new function to 
+	return the last timestamp for a logged message
+        * vrpn_Connection.C (vrpn_Endpoint::drop_connection) : Since we
+	read the actual time here to log dropped connection message, this
+        was setting back the time for programs that used the logging
+        mechanism for translation of old data into new log files. Now, in the
+	case of logging and when the current time is less than the last log
+        time, this function records the dropped_connection message with 
+        the previous log time instead
+        * vrpn_Connection.C (vrpn_Synchronized_Connection::client constructor):
+	this function now calls pack_sender_description for vrpn_CONTROL and
+        pack_type_description for vrpn_got_connection, vrpn_dropped_connection,
+        vrpn_got_first_connection, vrpn_dropped_last_connection so that they
+	will get put into a log file even if the endpoint is not connected
+	(needed for translation) - (At least I think this is why they aren't
+	getting put into the log file)
+
 2000-09-21  Tom Hudson  <hudson@cs.unc.edu>
 
         (vrpn_SharedObject::handle_gotConnection) : small fix for
