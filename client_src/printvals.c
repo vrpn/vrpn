@@ -278,7 +278,8 @@ void main (int argc, char * argv [])
 /* 
  * main interactive loop
  */
-while ( ! done )
+  while ( ! done )
+  //for (i = 0; i < 1000; i++)
     {
 	// Let the tracker and button do their things
 	btn->mainloop();

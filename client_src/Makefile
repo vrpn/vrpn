@@ -69,7 +69,9 @@ all:	$(OBJ_DIR)/printvals $(OBJ_DIR)/printcereal \
 	$(OBJ_DIR)/ff_client \
 	$(OBJ_DIR)/ohm_client $(OBJ_DIR)/phan_client \
 	$(OBJ_DIR)/sphere_client $(OBJ_DIR)/bdbox_client \
-	add_vrpn_cookie testSharedObject
+	add_vrpn_cookie
+
+# testSharedObject
 
 .PHONY:	forwarderClient
 forwarderClient:	$(OBJ_DIR)/forwarderClient
