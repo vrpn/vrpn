@@ -7,7 +7,9 @@
 #include "vrpn_Button.h"
 #include "vrpn_Tracker.h"
 #include "vrpn_3Space.h"
+#include "vrpn_Tracker_Fastrak.h"
 #include "vrpn_Flock.h"
+
 
 #define MAX_TRACKERS 100
 #define MAX_BUTTONS 100
@@ -60,10 +62,10 @@ main (int argc, char *argv[])
 	char	*config_file_name = "vrpn.cfg";
 	FILE	*config_file;
 	int	bail_on_error = 1;
-	int	verbose = 0;
+	int	verbose = 1;
 	int	realparams = 0;
 	int	i;
-
+	int 	loop=0;
 #ifdef WIN32
 	WSADATA wsaData; 
 	int status;
@@ -141,7 +143,36 @@ main (int argc, char *argv[])
 
 	  // Figure out the device from the name and handle appropriately
 	  #define isit(s) !strncmp(line,s,strlen(s))
-	  if (isit("vrpn_Tracker_3Space")) {
+	  if (isit("vrpn_Tracker_Fastrak")) {
+	    // Get the arguments (class, tracker_name, port, baud)
+	    if (sscanf(line,"%511s%511s%511s%d",s1,s2,s3,&i1) != 4) {
+	      fprintf(stderr,"Bad vrpn_Tracker_Fastrak line: %s\n",line);
+	      if (bail_on_error) { return -1; }
+	      else { continue; }	// Skip this line
+	    }
+
+	    // Make sure there's room for a new tracker
+	    if (num_trackers >= MAX_TRACKERS) {
+	      fprintf(stderr,"Too many trackers in config file");
+	      if (bail_on_error) { return -1; }
+	      else { continue; }	// Skip this line
+	    }
+
+	    // Open the tracker
+	    if (verbose) 
+	      printf("Opening vrpn_Tracker_Fastrak: %s on port %s, baud %d\n",
+		    s2,s3,i1);
+	    if ((trackers[num_trackers] =
+		  new vrpn_Tracker_Fastrak(s2, &connection, s3, i1)) == NULL)
+	      {
+		fprintf(stderr,"Can't create new vrpn_Tracker_Fastrak\n");
+		if (bail_on_error) { return -1; }
+		else { continue; }	// Skip this line
+	      } else {
+		num_trackers++;
+	      }
+	  }
+	  else if (isit("vrpn_Tracker_3Space")) {
 
 		// Get the arguments (class, tracker_name, port, baud)
 		if (sscanf(line,"%511s%511s%511s%d",s1,s2,s3,&i1) != 4) {
@@ -266,7 +297,7 @@ main (int argc, char *argv[])
 
 	// Close the configuration file
 	fclose(config_file);
-
+	loop = 0;
 	// Loop forever calling the mainloop()s for all devices
 	while (1) {
 		int	i;

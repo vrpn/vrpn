@@ -42,13 +42,14 @@ int vrpn_open_commport(char *portname, long baud)
 #else
   int fileDescriptor;
   struct termio   sttyArgs;
-  
+
+
   // Open the serial port for r/w
   if ( (fileDescriptor = open(portname, O_RDWR)) == -1) {
     perror("Tracker: cannot open serial port");
     return -1;
   }
-  
+
   /* get current settings */
   if ( ioctl(fileDescriptor, TCGETA , &sttyArgs) == -1 ) {
     perror("Tracker: ioctl failed");
