@@ -226,8 +226,8 @@ vrpn_Tracker_Flock_Master::vrpn_Tracker_Flock_Master(char *name, vrpn_Connection
 
 
 vrpn_Tracker_Flock_Master::~vrpn_Tracker_Flock_Master() {
-  int cChars=1;
-  unsigned char rgch[2]={'G'};
+  int cChars=2;
+  unsigned char rgch[2]={'B','G'};
 
   fprintf(stderr,"\nvrpn_Tracker_Flock_Master: shutting down ...");
   // clear output buffer
@@ -380,12 +380,12 @@ void vrpn_Tracker_Flock_Master::reset()
    // now set modes: pos/quat, group, stream
    resetLen=0;
 
-   /* disable group mode
+   //disable group mode
    // group mode
    reset[resetLen++] = 'P';
    reset[resetLen++] = 35;
-   reset[resetLen++] = 1;
-   */
+   reset[resetLen++] = 0;
+
 
    // pos/quat mode sent to each receiver (transmitter is unit 1)
    // 0xf0 + addr is the cmd to tell the master to forward a cmd
@@ -423,11 +423,13 @@ void vrpn_Tracker_Flock_Master::reset()
    gettimeofday(&timestamp, NULL);	// Set watchdog now
    status = TRACKER_SYNCING;	// We're trying for a new reading
    cResets=-1; 
+   sleep(1);
 }
 
 
 void vrpn_Tracker_Flock_Master::get_report(void)
 {
+  
   // master is the controller , it doesn't get any report
   // all reports are sent through seperate serial port
   // poll back a status report every now and then;
@@ -497,6 +499,7 @@ void vrpn_Tracker_Flock_Master::mainloop()
   
   case TRACKER_SYNCING:
   case TRACKER_PARTIAL:
+#if 0
     {
       struct timeval current_time;
 
@@ -510,6 +513,7 @@ void vrpn_Tracker_Flock_Master::mainloop()
 	status = TRACKER_FAIL;
       }
     }
+#endif
     break;
 
   case TRACKER_RESETTING:

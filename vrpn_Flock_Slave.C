@@ -38,8 +38,10 @@
 
 // output a status msg every status_msg_secs
 #define STATUS_MSG
-#define STATUS_MSG_SECS 600
+#define STATUS_MSG_SECS 1
+//#define STATUS_MSG_SECS 600
 
+static      struct timeval current_time;
 void vrpn_Tracker_Flock_Slave::printError( unsigned char uchErrCode, 
 			unsigned char uchExpandedErrCode ) {
 
@@ -264,12 +266,17 @@ void vrpn_Tracker_Flock_Slave::reset()
   // do nothing here. Some delay may be helpful??
   // sleep(1);
    // we are waitng for the output only
-
-   status = TRACKER_SYNCING;	// We're trying for a new reading
-   //fprintf(stderr, "reset\n");
-   write(serial_fd, "B", 1);
-   timestamp.tv_sec = -1;
-   cResets=0;
+  //static first = 0;
+  //if( first) {
+  //  write(serial_fd, "@", 1);
+  //  first = 0;
+  //  sleep(1);
+  //}
+  timestamp.tv_sec = -1;
+  status = TRACKER_SYNCING;	// We're trying for a new reading
+  fprintf(stderr, "FLOCK SLAVE reset\n");
+  write(serial_fd, "B", 1);
+  cResets=0;
 }
 
 
@@ -300,7 +307,7 @@ void vrpn_Tracker_Flock_Slave::get_report(void)
      // If the high bit isn't set, we don't want it we
      // need to look at the next one, so just return
      if ( (buffer[0] & 0x80) == 0) {
-       fprintf(stderr,"\nvrpn_Tracker_Flock_Slave: Syncing (high bit not set)");
+       fprintf(stderr,"\nvrpn_Tracker_Flock_Slave %d: Syncing (high bit not set)", sensor);
        cSyncs++;
        if (cSyncs>10) {
 	 // reset the tracker if more than a few syncs occur
@@ -415,7 +422,8 @@ void vrpn_Tracker_Flock_Slave::get_report(void)
      tvLastPrint = tvNow;
      fFirst = 2;
    }
-
+   //gettimeofday(&current_time, NULL);
+   //printf(" This report interval %ld\n", duration(current_time,timestamp)); 
 #ifdef VERBOSE
       print();
 #endif
@@ -490,8 +498,6 @@ void vrpn_Tracker_Flock_Slave::mainloop()
   case TRACKER_SYNCING:
   case TRACKER_PARTIAL:
     {
-      struct timeval current_time;
-
       gettimeofday(&current_time, NULL);
       if ( duration(current_time,timestamp) < MAX_TIME_INTERVAL) {
 	get_report();
