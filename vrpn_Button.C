@@ -550,10 +550,12 @@ void vrpn_Button_Python::mainloop()
 
 
 // Fill in the buttons[] array with the current value of each of the
-// buttons
+// buttons.  Debounce the buttons (make sure that they have had the
+// same value for the past several times to debounce noise).
 void vrpn_Button_Python::read(void)
 {
-    int   status_register[3];
+    const int debounce_count = 30;
+    int   status_register[debounce_count];
     
     // Make sure we're ready to read
     if (status != BUTTON_READY) {
@@ -562,7 +564,7 @@ void vrpn_Button_Python::read(void)
 
     // Read from the status register, read 3 times to debounce noise.
 #ifdef	linux
-    for (int i = 0; i < 3; i++) 
+    for (int i = 0; i < debounce_count; i++) 
       if (ioctl(port, LPGETSTATUS, &status_register[i]) == -1) {
 	    perror("vrpn_Button_Python::read(): ioctl() failed");
 	    return;
@@ -571,22 +573,30 @@ void vrpn_Button_Python::read(void)
 #elif _WIN32
   #ifndef __CYGWIN__
 	static const unsigned short STATUS_REGISTER_OFFSET = 1;
-    for (int i = 0; i < 3; i++) {
-		status_register[i] = _inp(port + STATUS_REGISTER_OFFSET);
+    for (int i = 0; i < debounce_count; i++) {
+	status_register[i] = _inp(port + STATUS_REGISTER_OFFSET);
     }
   #else
-    status_register[0] = status_register[1] = status_register[2] = 0;
+    for (i = 0; i < debounce_count; i++) {
+      status_register[i] = 0;
+    }
   #endif
 #else
-    status_register[0] = status_register[1] = status_register[2] = 0;
+    for (i = 0; i < debounce_count; i++) {
+      status_register[i] = 0;
+    }
 #endif
-    status_register[0] = status_register[0] & BIT_MASK;
-    status_register[1] = status_register[1] & BIT_MASK;
-    status_register[2] = status_register[2] & BIT_MASK;
+    for (i = 0; i < debounce_count; i++) {
+      status_register[i] = status_register[i] & BIT_MASK;
+    }
     
-    if (!(status_register[0] == status_register[1]  &&
-	  status_register[0] == status_register[2])) 
-      return;
+    // Make sure they are all the same; if not, return and assume that
+    // we are still debouncing.
+    for (i = 1; i < debounce_count; i++) {
+      if (status_register[0] != status_register[i]) {
+	return;
+      }
+    }
 
     // Assign values to the bits based on the control signals
     buttons[0] = ((status_register[0] & PORT_SLCT) == 0);

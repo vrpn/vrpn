@@ -1,3 +1,11 @@
+2002-03-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Button.C (read): Sets the debounce on the Python to check
+		over 30 reads rather than just 3, also makes the code
+		general so that you change one constant and it checks
+		that number of readings.  This is to make the foot pedal
+		for the 3DFM not bounce.
+
 2002-03-13  Aron Helser  <helser@cs.unc.edu>
 
 	* vrpn_Connection.C (setControlMsgTimeOffset): new method to
