@@ -19,15 +19,16 @@
 
 ################################################################################
 ################################################################################
-# Tracker classes.  Lines here to start various tracker servers. A description is
+# Tracker classes. Lines here to start various tracker servers. A description is
 # provided for each type of tracker for the arguments it takes, then an example
 # configuration line is provided.
 ################################################################################
 
 ################################################################################
 # NULL Tracker. This is a "device" that reports the Identity transformation for
-# each of its sensors at the specified rate. It can be used to verify connections
-# are working and for other tests of VRPN. There are three arguments:
+# each of its sensors at the specified rate. It can be used to verify
+# connections are working and for other tests of VRPN. There are three
+# arguments:
 #	char	name_of_this_device[]
 #	int	number_of_sensors
 #	float	rate_at_which_to_report_updates
@@ -50,7 +51,8 @@
 # Flock-of-birds in parallel Tracker. Runs an Ascension Flock of Birds tracker
 # that has its source and each sensor plugged into its own serial port on this
 # machine (perhaps through a Cyclades multi-port serial card). This mode of
-# operation increases the throughput and decreases the latency of tracker reports.
+# operation increases the throughput and decreases the latency of tracker
+# reports.
 # The arguments match those of the Flock-of-birds tracker from above, with the
 # addition of the name of the serial ports for each of the sensors added at the
 # end. Arguments (all on the same line):
@@ -156,8 +158,8 @@
 #	char	name_of_this_device[]
 #	float	update_rate_to_send_tracker_reports
 #	[six lines follow, one for X Y Z RX RY RZ, each with:
-#		char	axis_name[]			(X Y Z RX RY RZ in that order)
-#		char	name_of_analog_device[]		(start with * for local)
+#		char	axis_name[]             (X Y Z RX RY RZ in that order)
+#		char	name_of_analog_device[] (start with * for local)
 #		int	channel_of_analog_device
 #		float	threshold
 #		float	scale
@@ -183,13 +185,15 @@
 # Walkthrough- convention tracker reports. This is part of a two-part setup
 # that allows you to use a joystick as a flying device. First, a joystick
 # device has to be created (named joybox in our example) that will produce
-# the analog inputs that the JoyFly tracker uses to determine the transformation.
+# the analog inputs that the JoyFly tracker uses to determine the
+# transformation.
 # Then, the JoyFly device needs to be started and will listen to the device
 # and produce tracker reports. If these are both run on the same server, then
 # the JoyFly needs to use the "server" connection to hear from the Joystick
 # device, which is indicated by placing a '*' in front of the name of the
 # joystick device that it is to use. If the joystick device is remote from
-# this server, then the full name of it should be used (joystick@foo.cs.unc.edu).
+# this server, then the full name of it should be used (joystick@foo.cs.unc.edu)
+#
 # Arguments:
 #	char	name_of_this_device[]
 #	char	source_joystick_name[]  (Begin with * for one sharing your connection)
@@ -199,7 +203,7 @@
 
 ################################################################################
 # 3Space Tracker. Runs a Polhemus 3Space (not Fastrak) tracker that is attached
-# to a serial port on this machine. Note that as of VRPN 04.07 there is some sort
+# to a serial port on this machine. Note that as of VRPN 04.07 there is a
 # of bug in the 3Space orientation decoding; nobody has had enough need for this
 # to fix it yet. Arguments:
 #	char	name_of_this_device[]
@@ -210,8 +214,8 @@
 
 ################################################################################
 ################################################################################
-# Non-tracker devices. Lines are provided here for the various non-tracker servers
-# that can be started.
+# Non-tracker devices. Lines are provided here for the various non-tracker
+# servers that can be started.
 
 ################################################################################
 # Example Dial server. This is a "device" that reports constant rotations for
@@ -255,6 +259,23 @@
 #vrpn_Magellan	Magellan	/dev/cua0	9600
 
 ################################################################################
+# Radamec Serial Position Interface analog. Camera tracker that attaches
+# to a serial port on this machine. Note that for normal operation, 38400 is the
+# only supported baud rate.
+#
+# Note that if you want to use the Radamec SPI as a tracking device, you will
+# need to run a vrpn_Tracker_Jacobian device (hopefully to be implemented in
+# vrpn 05.02) that listens to its analog outputs and converts them into tracker
+# reports
+#
+# Arguments:
+#	char	name_of_this_device[]
+#	char	name_of_serial_port[]
+#	int	baud_rate_of_serial_port
+
+#vrpn_Radamec_SPI	Analog0	/dev/ttyS16	38400
+
+################################################################################
 # NRL Immersion Box dial/button/analog. Runs a Immersion Interface Box device
 # attached to a serial port. As of March 28, 2000 code to read the analog and
 # angle encoders has not been implemented.  Also, baud rate on many SGI's is
@@ -283,18 +304,19 @@
 #vrpn_raw_SGIBox	sgibox	/dev/ttyS0	0 1 2 3
 
 ################################################################################
-# SGI Dial and Button box, cooked interface. Runs a dial-and-button box from SGI,
-# talking to it through the GL interface supplied by SGI. Note that this can
-# only be used on an SGI, and the serial port must be configured as a dial/button
-# device and the dial/button server from SGI must be running to use it. Arguments:
+# SGI Dial and Button box, cooked interface. Runs a dial-and-button box from
+# SGI, talking to it through the GL interface supplied by SGI. Note that this
+# can only be used on an SGI, and the serial port must be configured as a
+# dial/button device and the dial/button server from SGI must be running to
+# use it. Arguments:
 #	char	name_of_this_device[]
 #	[list of buttons to treat as toggles]	int	button_to_toggle
 
 #vrpn_SGIBOX	sgibox	1 2 
 
 ################################################################################
-# UNC Python button device. UNC has developed a custom button input device, which
-# is a 5-button controller that attaches to a parallel port and uses the sense
+# UNC Python button device. UNC has developed a custom button input device, 
+# a 5-button controller that attaches to a parallel port and uses the sense
 # lines to return the state of the buttons. This runs the device. Note that on
 # Windows NT, you need to have installed the GiveIO driver for this code to
 # work. It also works on Linux (no extra drivers needed), but on no other
@@ -331,4 +353,3 @@
 #	int	baud_rate_of_serial_device
  
 # vrpn_Button_PinchGlove	PinchGlove0		COM1		9600
-

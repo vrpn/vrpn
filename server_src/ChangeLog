@@ -1,6 +1,8 @@
 2000-08-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
-	* vrpn.C : Added code for ImmersionBox
+	* test_radamec_spi.C : Added baud rate specification
+
+	* vrpn.C : Added code for ImmersionBox and Radamec_SPI
 
 2000-08-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
 

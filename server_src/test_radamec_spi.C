@@ -102,7 +102,7 @@ void main (int argc, char * argv [])
 
 	//---------------------------------------------------------------------
 	// Open the analog server, using this connection.
-	sana = new vrpn_Radamec_SPI(ANALOG_NAME, connection, argv[1]);
+	sana = new vrpn_Radamec_SPI(ANALOG_NAME, connection, argv[1], 38400);
 	printf("Analog's name is %s.\n", ANALOG_NAME);
 	create_and_link_analog_remote();
 

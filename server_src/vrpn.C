@@ -33,6 +33,7 @@
 #include "vrpn_Tracker_AnalogFly.h"
 #include "vrpn_Magellan.h"
 #include "vrpn_ImmersionBox.h"
+#include "vrpn_Analog_Radamec_SPI.h"
 
 #include "vrpn_ForwarderController.h"
 
@@ -450,7 +451,7 @@ int setup_Joystick (char * & pch, char * line, FILE * config_file) {
       return -1;
     }
 
-    // Open the sound server
+    // Open the joystick server
     if (verbose) 
       printf("Opening vrpn_Joystick:  "
              "%s on port %s baud %d, min update rate = %.2f\n", 
@@ -556,7 +557,7 @@ int setup_Magellan (char * & pch, char * line, FILE * config_file) {
               return -1;
             }
 
-            // Open the box
+            // Open the device
             if (verbose) 
               printf("Opening vrpn_Magellan: %s on port %s, baud %d\n",
                     s2,s3,i1);
@@ -567,6 +568,40 @@ int setup_Magellan (char * & pch, char * line, FILE * config_file) {
                 return -1;
               } else {
                 num_magellans++;
+              }
+
+  return 0;
+}
+
+int setup_Radamec_SPI (char * & pch, char * line, FILE * config_file) {
+  char s2 [512], s3 [512];
+  int i1;
+
+            next();
+            // Get the arguments (class, Radamec_name, port, baud
+            if (sscanf(pch,"%511s%511s%d",s2,s3, &i1) != 3)
+ {
+              fprintf(stderr,"Bad vrpn_Radamec_SPI line: %s\n",line);
+              return -1;
+            }
+
+            // Make sure there's room for a new analog
+            if (num_analogs >= MAX_ANALOG) {
+              fprintf(stderr,"Too many Analogs in config file");
+              return -1;
+            }
+
+            // Open the device
+            if (verbose)
+              printf("Opening vrpn_Radamec_SPI: %s on port %s, baud %d\n",
+                    s2,s3,i1);
+            if ((analogs[num_analogs] =
+                  new vrpn_Radamec_SPI(s2, connection, s3, i1)) == NULL)
+              {
+                fprintf(stderr,"Can't create new vrpn_Radamec_SPI\n");
+                return -1;
+              } else {
+                num_analogs++;
               }
 
   return 0;
@@ -1195,6 +1230,8 @@ main (int argc, char * argv[])
             CHECK(setup_CerealBox);
 	  } else if (isit("vrpn_Magellan")) {
             CHECK(setup_Magellan);
+	  } else if (isit("vrpn_Radamec_SPI")) {
+            CHECK(setup_Radamec_SPI);
           } else if (isit("vrpn_ImmersionBox")) {
             CHECK(setup_ImmersionBox);
 	  } else if (isit("vrpn_Tracker_Dyna")) {
