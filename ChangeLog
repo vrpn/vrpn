@@ -1,3 +1,10 @@
+2001-06-27  Adam Seeger  <seeger@cs.unc.edu>
+
+	* vrpn_Connection.C (vrpn_Endpoint::drop_connection): removed a hack
+	that had been put in to ensure that the "connection dropped" timestamp
+	was at least as late as the last message in the log (this had 
+	caused problems in translating some old files but I don't remember how)
+
 2001-06-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_3Space.C : Massive cleanup

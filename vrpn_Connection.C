@@ -3624,23 +3624,8 @@ void vrpn_Endpoint::drop_connection (void) {
   // Clear out the buffers; nothing to read or send if no connection.
   clearBuffers();
 
-  // XXX BUG TCH 16 Feb 01
-  // Why is this code here?  What does it do?  I can't port it to 2-log.
-
   struct timeval now;
   gettimeofday(&now, NULL);
-  if (d_inLog->logMode()) {
-    struct timeval last = d_inLog->lastLogTime();
-    if (vrpn_TimevalGreater(last, now)){
-        fprintf(stderr,
-           "Warning, translation time hack has been executed\n");
-        fprintf(stderr, "Changing time from %ld,%ld to %ld,%ld\n",
-          now.tv_sec, now.tv_usec, 
-          last.tv_sec, last.tv_usec);
-        now.tv_sec = last.tv_sec;
-        now.tv_usec = last.tv_usec;
-    }
-  }
 
   // If we are logging, put a message in the log telling that we
   // have had a disconnection. We don't close the logfile here unless
