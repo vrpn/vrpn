@@ -1,0 +1,107 @@
+#ifndef	VRPN_BUTTON_H
+#include <sys/time.h>
+#include "vrpn_Connection.h"
+
+#define	vrpn_BUTTON_MAX_BUTTONS	(100)
+
+// Base class for buttons.  Definition
+// of remote button class for the user is at the end.
+
+class vrpn_Button {
+  public:
+	vrpn_Button(): connection(NULL), num_buttons(0) {};
+
+	// Print the status of the button
+	void print(void);
+
+	// Called once through each main loop iteration to handle
+	// button updates.
+	virtual void mainloop(void) = 0;	// Report changes to conneciton
+
+  protected:
+	vrpn_Connection *connection;
+	unsigned char	buttons[vrpn_BUTTON_MAX_BUTTONS];
+	unsigned char	lastbuttons[vrpn_BUTTON_MAX_BUTTONS];
+	int	num_buttons;
+	struct timeval	timestamp;
+	long my_id;			// ID of this button to connection
+	long message_id;		// ID of button message to connection
+	virtual void report_changes();
+	virtual int encode_to(char *buf, int button, int state);
+};
+
+// Button device that is connected to a parallel port and uses the
+// status bits to read from the buttons.  There can be up to 5 buttons
+// read this way.
+
+class vrpn_parallel_Button: public vrpn_Button {
+  public:
+	// Open a button connected to the local machine, talk to the
+	// outside world through the connection.
+	vrpn_parallel_Button(char *name, vrpn_Connection *connection,
+		int portno);
+
+  protected:
+	int	port;
+	int	status;
+
+	virtual void read(void) = 0;
+};
+
+// Open a Python that is connected to a parallel port on this Linux box.
+class vrpn_Button_Python: public vrpn_parallel_Button {
+  public:
+	vrpn_Button_Python(char *name, vrpn_Connection *c, int p):
+		vrpn_parallel_Button(name,c,p) {};
+
+	virtual void mainloop(void);
+  protected:
+  	virtual void read(void);
+};
+
+//----------------------------------------------------------
+//************** Users deal with the following *************
+
+// User routine to handle a change in button state.  This is called when
+// the button callback is called (when a message from its counterpart
+// across the connetion arrives).
+
+typedef	struct {
+	struct timeval	msg_time;	// Time of button press/release
+	int		button;		// Which button (numbered from zero)
+	int		state;		// New state (0 = off, 1 = on)
+} vrpn_BUTTONCB;
+typedef void (*vrpn_BUTTONCHANGEHANDLER)(void *userdata,
+					 const vrpn_BUTTONCB info);
+
+// Open a button that is on the other end of a connection
+// and handle updates from it.  This is the type of button that user code will
+// deal with.
+
+class vrpn_Button_Remote: public vrpn_Button {
+  public:
+	// The name of the button device to connect to
+	vrpn_Button_Remote(char *name);
+
+	// This routine calls the mainloop of the connection it's on
+	virtual void mainloop(void);
+
+	// (un)Register a callback handler to handle a button state change
+	virtual int register_change_handler(void *userdata,
+		vrpn_BUTTONCHANGEHANDLER handler);
+	virtual int unregister_change_handler(void *userdata,
+		vrpn_BUTTONCHANGEHANDLER handler);
+
+  protected:
+	typedef	struct vrpn_RBCS {
+		void				*userdata;
+		vrpn_BUTTONCHANGEHANDLER	handler;
+		struct vrpn_RBCS		*next;
+	} vrpn_BUTTONCHANGELIST;
+	vrpn_BUTTONCHANGELIST	*change_list;
+
+	static int handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
+};
+
+#define	VRPN_BUTTON_H
+#endif

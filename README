@@ -1,0 +1,55 @@
+NOTE:
+	The source code here has been checked into CVS under the
+root /afs/cs.unc.edu/project/stm/src/CVS_repository.  To get a
+copy of the source, do:
+	cvs -d /afs/cs.unc.edu/project/stm/src/CVS_repository checkout vrpn
+
+VRPN Readme:
+	The Virtual-Reality Peripheral Network (VRPN) is the PC-at-a-station
+implementation that will drive trackers, buttons and sound for each VR
+station.
+	It's implemented in Linux (and is being ported to Windows by Phil
+Winston and/or Jun Chen).  linux_src holds the server application for the
+linux boxes.  The current directory holds the library source.
+
+	vrpn_Connection: Network layer
+	vrpn_Tracker: Both local and remote tracker code
+	vrpn_Button: Both local and remote button code
+	vrpn_Sound: Both local and remote sound code
+
+	In all cases, base class is not what you instance.  There are local
+(server-side) derived classes for each device.  There is a remote device that
+is used by the client-side (user application).
+
+Things to do:
+	Fix ttest/t_diags on PC/linux
+	Get David to make some more python doobies
+	Get some trackers working!!!!!
+
+Problems:
+
+***	The reports from the tracker are not yet being parsed correctly
+(orientation is wrong when it ends up at the application).
+
+How to reduce latency on the tracker:
+    In any case:
+	Run in a way that there isn't swapping going on.
+	Probably want to renice the process to a negative priority
+
+    The hack:
+	Edit /usr/src/linux/include/asm/params.h and change HZ from 100 to 1000
+		to increase the rate at which tty_io.c:flush_to_ldisc() is
+		called to move characters from the serial driver
+	'setserial /dev/ttyS1 uart 16550' to disable input buffering on that
+		serial port and force and interrupt each time a character
+		arrives at the buffer
+	These two together (absent swapping) cause the driver to read at most
+		two characters at a time from the serial port at 19200 baud.
+
+    The real solution:
+	Write a new device driver for the tracker that buffers up characters
+		in the top-half driver, timestamps the first one with the
+		processor tick count, and sets a flag when it has a full
+		report.  The read should grab directly from this buffer and
+		cook the report in user time.
+
