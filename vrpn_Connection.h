@@ -457,6 +457,7 @@ class vrpn_Connection
         // This receives the peer's cookie. It is called by both
 	// the client and server setup routines.
 	virtual	int	finish_new_connection_setup (void);
+        void poll_for_cookie (const timeval * pTimeout = NULL);
 
         long d_pendingLogmode;
         char * d_pendingLogname;
