@@ -55,7 +55,7 @@ HMD_DIR 	 := /afs/cs.unc.edu/proj/hmd
 LIB_DIR 	 := $(HMD_DIR)/lib/$(HW_OS)
 
 BETA_DIR	 := $(HMD_DIR)/beta
-#BETA_INCLUDE_DIR := $(BETA_DIR)/include
+BETA_INCLUDE_DIR := $(BETA_DIR)/include
 BETA_LIB_DIR 	 := $(BETA_DIR)/lib/$(HW_OS)
 
 # hook to quick go to working ARM set.
@@ -94,7 +94,7 @@ else
 endif
 
 #INCLUDE_FLAGS := -I. -I$(BETA_INCLUDE_DIR) -I$(INCLUDE_DIR) $(SYS_INCLUDE)
-INCLUDE_FLAGS := -I. $(SYS_INCLUDE)
+INCLUDE_FLAGS := -I. $(SYS_INCLUDE) -I$(BETA_INCLUDE_DIR)
 
 ##########################
 # Load flags
@@ -206,7 +206,8 @@ LIB_INCLUDES = vrpn_Connection.h vrpn_Tracker.h vrpn_Button.h \
 SLIB_FILES =  vrpn_Connection.C vrpn_Tracker.C vrpn_3Space.C vrpn_Button.C \
 	     vrpn_Sound.C vrpn_ForceDevice.C vrpn_Clock.C vrpn_Shared.C \
 	     vrpn_Flock.C vrpn_Tracker_Fastrak.C vrpn_Dyna.C \
-	     vrpn_Flock_Parallel.C  vrpn_Joystick.C vrpn_Analog.C
+	     vrpn_Flock_Parallel.C  vrpn_Joystick.C vrpn_Analog.C \
+	     vrpn_JoyFly.C
 
 # Until we have tracker.h, we can't compile vrpn_Tracker_Ceiling
 
@@ -214,7 +215,7 @@ SLIB_OBJECTS = $(patsubst %,$(SOBJECT_DIR)/%,$(SLIB_FILES:.C=.o))
 
 SLIB_INCLUDES = vrpn_Connection.h vrpn_Tracker.h vrpn_3Space.h vrpn_Button.h \
 	       vrpn_Sound.h vrpn_ForceDevice.h vrpn_Clock.h vrpn_Shared.h \
-	       vrpn_Flock.h vrpn_Flock_Parallel.h
+	       vrpn_Flock.h vrpn_Flock_Parallel.h 
 
 
 $(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(OBJECT_DIR) $(LIB_OBJECTS) $(LIB_INCLUDES)

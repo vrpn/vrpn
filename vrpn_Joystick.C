@@ -21,15 +21,18 @@
  * Author          : Ruigang Yang
  * Created On      : Tue Mar 17 17:14:01 1998
  * Last Modified By: Ruigang Yang
- * Last Modified On: Wed Mar 25 17:25:09 1998
- * Update Count    : 82
+ * Last Modified On: Fri Apr  3 15:44:18 1998
+ * Update Count    : 83
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Joystick.C,v $
- * $Date: 1998/03/25 22:25:58 $
+ * $Date: 1998/04/06 21:43:52 $
  * $Author: ryang $
- * $Revision: 1.4 $
+ * $Revision: 1.5 $
  * 
  * $Log: vrpn_Joystick.C,v $
+ * Revision 1.5  1998/04/06 21:43:52  ryang
+ * report only one change at a time
+ *
  * Revision 1.4  1998/03/25 22:25:58  ryang
  * test the joystick code with button in lysine
  *
@@ -48,7 +51,7 @@
  * HISTORY
  */
 
-static char rcsid[] = "$Id: vrpn_Joystick.C,v 1.4 1998/03/25 22:25:58 ryang Exp $";
+static char rcsid[] = "$Id: vrpn_Joystick.C,v 1.5 1998/04/06 21:43:52 ryang Exp $";
 
 #include "vrpn_Joystick.h"
 #include <stdio.h>
@@ -191,11 +194,13 @@ void vrpn_Joystick::get_report() {
   if (bytesread  ==0)  
 	return;
   parse(0);
+  /*
   bytesread = read_available_characters(buffer, 2);
   while (bytesread ==2) {
     parse(0);
     bytesread = read_available_characters(buffer, 2);
-  }
+  }*/
+
   status = ANALOG_REPORT_READY;
 }
 
