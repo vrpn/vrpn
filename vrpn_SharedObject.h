@@ -13,6 +13,7 @@
 #include "vrpn_Connection.h"  // for vrpn_HANDLERPARAM
 
 class vrpn_LamportClock;  // from "vrpn_LamportClock.h"
+class vrpn_LamportTimestamp;
 
 // It's increasingly clear that we could handle all this with
 // a template, except for the fact that vrpn_Shared_String is
@@ -27,6 +28,8 @@ class vrpn_LamportClock;  // from "vrpn_LamportClock.h"
 class vrpn_Shared_int32;
 class vrpn_Shared_float64;
 class vrpn_Shared_String;
+
+typedef int (* vrpnDeferredUpdateCallback) (void * userdata);
 
 typedef int (* vrpnSharedIntCallback) (void * userdata, vrpn_int32 newValue,
                                        vrpn_bool isLocal);
@@ -91,12 +94,15 @@ typedef int (* vrpnSharedStringSerializerPolicy)
 
 // setSerializerPolicy() can be used to change the way VRPN_SO_DEFER_UPDATES
 // operates.  The default value described above is equivalent to calling
-// setSerializerPolicy(vrpn_ACCEPT).  Also possible are vrpn_DENY,
+// setSerializerPolicy(vrpn_ACCEPT).  Also possible are vrpn_DENY_REMOTE,
 // which causes the serializer to ignore all updates from its peers,
+// vrpn_DENY_LOCAL, which accepts updates from peers but ignores local
+// updates,
 // and vrpn_CALLBACK, which passes the update to a callback which can
 // return zero for vrpn_ACCEPT or nonzero for vrpn_DENY. 
 
-enum vrpn_SerializerPolicy { vrpn_ACCEPT, vrpn_DENY, vrpn_CALLBACK };
+enum vrpn_SerializerPolicy { vrpn_ACCEPT, vrpn_DENY_REMOTE,
+                             vrpn_DENY_LOCAL, vrpn_CALLBACK };
 
 
 // Separated out vrpn_SharedObject from common behavior of 3 classes
@@ -122,13 +128,12 @@ class vrpn_SharedObject {
     // MANIPULATORS
 
     virtual void bindConnection (vrpn_Connection *);
+
     void useLamportClock (vrpn_LamportClock *);
       ///< Lamport Clocks are NOT currently integrated.  They should
       ///< provide serialization (virtual timestamps) that work even
       ///< when the clocks of the computers communicating are not
       ///< roughly synchronized.
-
-    // lock migration
 
     void becomeSerializer (void);
       ///< Requests that this instance of the shared object becomes 
@@ -138,6 +143,15 @@ class vrpn_SharedObject {
       ///< otherwise initiates a 3-phase request protocol with the
       ///< current serializer.  There currently isn't any provision for
       ///< notification of success (or failure).
+
+    void registerDeferredUpdateCallback (vrpnDeferredUpdateCallback,
+                                         void * userdata);
+      ///< The specified function will be passed userdata when this
+      ///< particular shared object defers an update (receives a local
+      ///< update but is not the serializer and so sends the update off
+      ///< to the serializer).  Intended to allow insertion of timing
+      ///< code for those times when you really want to know how long
+      ///< every little thing is taking.
 
   protected:
 
@@ -160,6 +174,9 @@ class vrpn_SharedObject {
       ///< Sent by a new serializer once it has been notified that
       ///< its request has been granted.
 
+    vrpn_int32 d_updateFromServerLamport_type;
+    vrpn_int32 d_updateFromRemoteLamport_type;
+
     vrpn_bool d_isSerializer;
       ///< default to vrpn_TRUE for servers, FALSE for remotes
 
@@ -179,6 +196,18 @@ class vrpn_SharedObject {
       ///< NOT IMPLEMENTED
 
     vrpn_LamportClock * d_lClock;
+    vrpn_LamportTimestamp * d_lastLamportUpdate;
+
+
+    struct deferredUpdateCallbackEntry {
+      vrpnDeferredUpdateCallback handler;
+      void * userdata;
+      deferredUpdateCallbackEntry * next;
+    };
+    deferredUpdateCallbackEntry * d_deferredUpdateCallbacks;
+
+    int yankDeferredUpdateCallbacks (void);
+      ///< returns -1 on error (i.e. nonzero return by a callback)
 
   private:
 
@@ -243,14 +272,19 @@ class vrpn_Shared_int32 : public vrpn_SharedObject {
     timedCallbackEntry * d_timedCallbacks;
 
     vrpn_Shared_int32 & set (vrpn_int32, timeval,
-                             vrpn_bool isLocalSet);
+                             vrpn_bool isLocalSet, 
+                             vrpn_LamportTimestamp * = NULL);
 
     virtual vrpn_bool shouldAcceptUpdate (vrpn_int32 newValue, timeval when,
-                                    vrpn_bool isLocalSet);
+                                          vrpn_bool isLocalSet, 
+                                          vrpn_LamportTimestamp *);
 
     void sendUpdate (vrpn_int32 messagetype, vrpn_int32 newValue, timeval when);
     void encode (char ** buffer, vrpn_int32 * len,
                  vrpn_int32 newValue, timeval when) const;
+    void encodeLamport (char ** buffer, vrpn_int32 * len,
+                 vrpn_int32 newValue, timeval when,
+                 vrpn_LamportTimestamp * t) const;
       // We used to have sendUpdate() and encode() just read off of
       // d_value and d_lastUpdate, but that doesn't work when we're
       // serializing (VRPN_SO_DEFER_UPDATES), because we don't want
@@ -258,6 +292,9 @@ class vrpn_Shared_int32 : public vrpn_SharedObject {
       // to the serializer.
     void decode (const char ** buffer, vrpn_int32 * len,
                  vrpn_int32 * newValue, timeval * when) const;
+    void decodeLamport (const char ** buffer, vrpn_int32 * len,
+                 vrpn_int32 * newValue, timeval * when,
+                 vrpn_LamportTimestamp ** t) const;
 
     int yankCallbacks (vrpn_bool isLocal);
       // must set d_lastUpdate BEFORE calling yankCallbacks()
@@ -268,6 +305,9 @@ class vrpn_Shared_int32 : public vrpn_SharedObject {
     void * d_policyUserdata;
         
     static int handle_update (void *, vrpn_HANDLERPARAM);
+
+
+    static int handle_lamportUpdate (void *, vrpn_HANDLERPARAM);
 };
 
 // I don't think the derived classes should have to have operator = ()
@@ -387,6 +427,7 @@ class vrpn_Shared_float64 : public vrpn_SharedObject {
       // must set d_lastUpdate BEFORE calling yankCallbacks()
         
     static int handle_update (void *, vrpn_HANDLERPARAM);
+    static int handle_lamportUpdate (void *, vrpn_HANDLERPARAM);
 };
 
 class vrpn_Shared_float64_Server : public vrpn_Shared_float64 {
@@ -505,6 +546,7 @@ class vrpn_Shared_String : public vrpn_SharedObject {
       // must set d_lastUpdate BEFORE calling yankCallbacks()
         
     static int handle_update (void *, vrpn_HANDLERPARAM);
+    static int handle_lamportUpdate (void *, vrpn_HANDLERPARAM);
 
 };
 

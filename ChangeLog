@@ -11,6 +11,8 @@
         (handle_requestSerializer) : new function
         (handle_grantSerializer) : renamed from handle_becomeSerializer
         (handle_assumeSerializer) : new function
+        (vrpn_SerializerPolicy) : renamed vrpn_DENY to vrpn_DENY_REMOTE,
+        added vrpn_DENY_LOCAL
 
         * vrpn_SharedObject.C: (vrpn_SharedObject constructor) :
         default values for new data members, d_lClock.
@@ -25,6 +27,10 @@
         of handler for requestSerializer
         (vrpn_Shared_String_Server::bindConnection) : added registration
         of handler for requestSerializer
+	(vrpn_Shared_int32::shouldAcceptUpdate) : added handling for
+        vrpn_DENY_LOCAL
+	(vrpn_Shared_float64::shouldAcceptUpdate) : same
+	(vrpn_Shared_String::shouldAcceptUpdate) : same
 
 
 2000-09-11  Adam Seeger  <seeger@cs.unc.edu>

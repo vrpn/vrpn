@@ -1,5 +1,7 @@
 #include "vrpn_SharedObject.h"
 
+#include "vrpn_LamportClock.h"
+
 #include <string.h>
 
 // We can't put d_lastUpdate in the message header timestamps;  it must
@@ -29,7 +31,9 @@ vrpn_SharedObject::vrpn_SharedObject (const char * name, const char * tname,
   d_assumeSerializer_type (-1),
   d_isSerializer (vrpn_FALSE),
   d_queueSets (vrpn_FALSE),
-  d_lClock (NULL) {
+  d_lClock (NULL),
+  d_lastLamportUpdate (NULL),
+  d_deferredUpdateCallbacks (NULL) {
 
   if (name) {
     strcpy(d_name, name);
@@ -110,6 +114,20 @@ void vrpn_SharedObject::useLamportClock (vrpn_LamportClock * l) {
 
   d_lClock = l;
 
+  if (l) {
+    if (d_myUpdate_type == d_updateFromServer_type) {
+      d_myUpdate_type = d_updateFromServerLamport_type;
+    } else if (d_myUpdate_type == d_updateFromRemote_type) {
+      d_myUpdate_type = d_updateFromRemoteLamport_type;
+    }
+  } else {
+    if (d_myUpdate_type == d_updateFromServerLamport_type) {
+      d_myUpdate_type = d_updateFromServer_type;
+    } else if (d_myUpdate_type == d_updateFromRemoteLamport_type) {
+      d_myUpdate_type = d_updateFromRemote_type;
+    }
+  }
+
 }
 
 
@@ -134,6 +152,25 @@ void vrpn_SharedObject::becomeSerializer (void) {
 fprintf(stderr, "sent requestSerializer\n");
 }
 
+
+
+void vrpn_SharedObject::registerDeferredUpdateCallback
+                       (vrpnDeferredUpdateCallback cb, void * userdata) {
+  deferredUpdateCallbackEntry * x;
+
+  x = new deferredUpdateCallbackEntry;
+  if (!x) {
+    fprintf(stderr, "vrpn_SharedObject::registerDeferredUpdateCallback:  "
+                    "Out of memory!\n");
+    return;
+  }
+
+  x->handler = cb;
+  x->userdata = userdata;
+  x->next = d_deferredUpdateCallbacks;
+  d_deferredUpdateCallbacks = x;
+
+}
 
 // virtual
 vrpn_bool vrpn_SharedObject::shouldSendUpdate
@@ -261,6 +298,28 @@ int vrpn_SharedObject::handle_assumeSerializer (void * userdata,
 
 
 
+int vrpn_SharedObject::yankDeferredUpdateCallbacks (void) {
+  deferredUpdateCallbackEntry * x;
+
+  for (x = d_deferredUpdateCallbacks; x; x = x->next) {
+    if ((x->handler)(x->userdata)) {
+      return -1;
+    }
+  }
+
+  return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
 vrpn_Shared_int32::vrpn_Shared_int32 (const char * name,
                                       vrpn_int32 defaultValue,
                                       vrpn_int32 mode) :
@@ -381,10 +440,11 @@ void vrpn_Shared_int32::setSerializerPolicy
 
 vrpn_Shared_int32 & vrpn_Shared_int32::set (vrpn_int32 newValue,
                                             timeval when,
-                                            vrpn_bool isLocalSet) {
+                                            vrpn_bool isLocalSet,
+                                            vrpn_LamportTimestamp * t) {
   vrpn_bool acceptedUpdate;
 
-  acceptedUpdate = shouldAcceptUpdate(newValue, when, isLocalSet);
+  acceptedUpdate = shouldAcceptUpdate(newValue, when, isLocalSet, t);
   if (acceptedUpdate) {
     d_value = newValue;
     d_lastUpdate = when;
@@ -401,9 +461,16 @@ vrpn_Shared_int32 & vrpn_Shared_int32::set (vrpn_int32 newValue,
 //virtual
 vrpn_bool vrpn_Shared_int32::shouldAcceptUpdate
                      (vrpn_int32 newValue, timeval when,
-                      vrpn_bool isLocalSet) {
+                      vrpn_bool isLocalSet, vrpn_LamportTimestamp * t) {
 
 //fprintf(stderr, "In vrpn_Shared_int32::shouldAcceptUpdate(%s).\n", d_name);
+
+  vrpn_bool old;
+  if (t) {
+    old = d_lastLamportUpdate && (*t < *d_lastLamportUpdate);
+  } else {
+    old = !vrpn_TimevalGreater(when, d_lastUpdate);
+  }
 
   // Is this "new" change idempotent?
   if ((d_mode & VRPN_SO_IGNORE_IDEMPOTENT) &&
@@ -413,8 +480,7 @@ vrpn_bool vrpn_Shared_int32::shouldAcceptUpdate
   }
 
   // Is this "new" change older than the previous change?
-  if ((d_mode & VRPN_SO_IGNORE_OLD) &&
-      !vrpn_TimevalGreater(when, d_lastUpdate)) {
+  if ((d_mode & VRPN_SO_IGNORE_OLD) && old) {
 //fprintf(stderr, "... was outdated.\n");
     return vrpn_FALSE;
   }
@@ -432,6 +498,7 @@ vrpn_bool vrpn_Shared_int32::shouldAcceptUpdate
   if (!d_isSerializer) {
     if (isLocalSet) {
 //fprintf(stderr, "local update, not serializer, so reject.\n");
+      yankDeferredUpdateCallbacks();
       return vrpn_FALSE;
     } else {
 //fprintf(stderr, "remote update, not serializer, so accept.\n");
@@ -444,7 +511,11 @@ vrpn_bool vrpn_Shared_int32::shouldAcceptUpdate
 
   if (isLocalSet) {
 //fprintf(stderr, "local update.\n");
-    return vrpn_TRUE;
+    if (d_policy == vrpn_DENY_LOCAL) {
+      return vrpn_FALSE;
+    } else {
+      return vrpn_TRUE;
+    }
   }
 
   // Are we accepting all updates?
@@ -469,10 +540,39 @@ void vrpn_Shared_int32::encode (char ** buffer, vrpn_int32 * len,
   vrpn_buffer(buffer, len, newValue);
   vrpn_buffer(buffer, len, when);
 }
+void vrpn_Shared_int32::encodeLamport (char ** buffer, vrpn_int32 * len,
+                                vrpn_int32 newValue, timeval when,
+                                vrpn_LamportTimestamp * t) const {
+  int i;
+  vrpn_buffer(buffer, len, newValue);
+  vrpn_buffer(buffer, len, when);
+  vrpn_buffer(buffer, len, t->size());
+  for (i = 0; i < t->size(); i++) {
+    vrpn_buffer(buffer, len, (*t)[i]);
+  }
+}
+
 void vrpn_Shared_int32::decode (const char ** buffer, vrpn_int32 *,
                                 vrpn_int32 * newValue, timeval * when) const {
   vrpn_unbuffer(buffer, newValue);
   vrpn_unbuffer(buffer, when);
+}
+void vrpn_Shared_int32::decodeLamport (const char ** buffer, vrpn_int32 *,
+                                vrpn_int32 * newValue, timeval * when,
+                                vrpn_LamportTimestamp ** t) const {
+  vrpn_uint32 size;
+  vrpn_uint32 * array;
+  int i;
+
+  vrpn_unbuffer(buffer, newValue);
+  vrpn_unbuffer(buffer, when);
+  vrpn_unbuffer(buffer, &size);
+  array = new vrpn_uint32 [size];
+  for (i = 0; i < size; i++) {
+    vrpn_unbuffer(buffer, &array[i]);
+  }
+  *t = new vrpn_LamportTimestamp(size, array);
+  delete array;
 }
 
 void vrpn_Shared_int32::sendUpdate (vrpn_int32 msgType,
@@ -480,9 +580,15 @@ void vrpn_Shared_int32::sendUpdate (vrpn_int32 msgType,
   char buffer [32];
   vrpn_int32 buflen = 32;
   char * bp = buffer;
+  vrpn_LamportTimestamp * t;
 
   if (d_connection) {
-    encode(&bp, &buflen, newValue, when);
+    if (d_lClock) {
+      t = d_lClock->getTimestampAndAdvance();
+      encodeLamport(&bp, &buflen, newValue, when, t);
+    } else {
+      encode(&bp, &buflen, newValue, when);
+    }
     d_connection->pack_message(32 - buflen, d_lastUpdate,
                                msgType, d_myId,
                                buffer, vrpn_CONNECTION_RELIABLE);
@@ -523,6 +629,31 @@ int vrpn_Shared_int32::handle_update (void * ud, vrpn_HANDLERPARAM p) {
 //newValue, when.tv_sec, when.tv_usec);
 
   s->set(newValue, when, vrpn_FALSE);
+
+//fprintf(stderr, "vrpn_Shared_int32::handle_update done\n");
+  return 0;
+}
+
+// static
+int vrpn_Shared_int32::handle_lamportUpdate (void * ud, vrpn_HANDLERPARAM p) {
+  vrpn_Shared_int32 * s = (vrpn_Shared_int32 *) ud;
+  vrpn_LamportTimestamp * t;
+  vrpn_int32 newValue;
+  timeval when;
+
+  s->decodeLamport(&p.buffer, &p.payload_len, &newValue, &when, &t);
+
+//fprintf(stderr, "vrpn_Shared_int32::handle_update to %d at %d:%d.\n",
+//newValue, when.tv_sec, when.tv_usec);
+
+  s->d_lClock->receive(*t);
+
+  s->set(newValue, when, vrpn_FALSE, t);
+
+  if (s->d_lastLamportUpdate) {
+    delete s->d_lastLamportUpdate;
+  }
+  s->d_lastLamportUpdate = t;
 
 //fprintf(stderr, "vrpn_Shared_int32::handle_update done\n");
   return 0;
@@ -823,7 +954,7 @@ vrpn_bool vrpn_Shared_float64::shouldAcceptUpdate
   if (!d_isSerializer) {
     if (isLocalSet) {
 //fprintf(stderr, "local update, not serializer, so reject.\n");
-
+      yankDeferredUpdateCallbacks();
       return vrpn_FALSE;
     } else {
 //fprintf(stderr, "remote update, not serializer, so accept.\n");
@@ -837,7 +968,11 @@ vrpn_bool vrpn_Shared_float64::shouldAcceptUpdate
 
   if (isLocalSet) {
 //fprintf(stderr, "local update.\n");
-    return vrpn_TRUE;
+    if (d_policy == vrpn_DENY_LOCAL) {
+      return vrpn_FALSE;
+    } else {
+      return vrpn_TRUE;
+    }
   }
 
 
@@ -1249,7 +1384,7 @@ vrpn_bool vrpn_Shared_String::shouldAcceptUpdate
   if (!d_isSerializer) {
     if (isLocalSet) {
 //fprintf(stderr, "local update, not serializer, so reject.\n");
-
+      yankDeferredUpdateCallbacks();
       return vrpn_FALSE;
     } else {
 //fprintf(stderr, "remote update, not serializer, so accept.\n");
@@ -1265,7 +1400,11 @@ vrpn_bool vrpn_Shared_String::shouldAcceptUpdate
 
   if (isLocalSet) {
 //fprintf(stderr, "local update.\n");
-    return vrpn_TRUE;
+    if (d_policy == vrpn_DENY_LOCAL) {
+      return vrpn_FALSE;
+    } else {
+      return vrpn_TRUE;
+    }
   }
 
   // Are we accepting all updates?
