@@ -128,26 +128,26 @@ vrpn_Serial_Analog::vrpn_Serial_Analog (const char * name, vrpn_Connection * c,
     // Initialize
     portname[0] = '\0';
     buffer[0] = '\0';
-   // Find out the port name and baud rate;
-   if (port == NULL) {
+    // Find out the port name and baud rate;
+    if (port == NULL) {
 	fprintf(stderr,"vrpn_Serial_Analog: NULL port name\n");
 	status = vrpn_ANALOG_FAIL;
 	return;
-   } else {
+    } else {
 	strncpy(portname, port, sizeof(portname));
 	portname[sizeof(portname)-1] = '\0';
-   }
-   baudrate = baud;
+    }
+    baudrate = baud;
 
-   // Open the serial port we're going to use
-   if ( (serial_fd=vrpn_open_commport(portname, baudrate, bits, parity)) == -1) {
+    // Open the serial port we're going to use
+    if ( (serial_fd=vrpn_open_commport(portname, baudrate, bits, parity)) == -1) {
 	fprintf(stderr,"vrpn_Serial_Analog: Cannot Open serial port\n");
 	status = vrpn_ANALOG_FAIL;
-   }
+    }
 
-   // Reset the tracker and find out what time it is
-   status = vrpn_ANALOG_RESETTING;
-   vrpn_gettimeofday(&timestamp, NULL);
+    // Reset the tracker and find out what time it is
+    status = vrpn_ANALOG_RESETTING;
+    vrpn_gettimeofday(&timestamp, NULL);
 }
 
 vrpn_Serial_Analog::~vrpn_Serial_Analog () 

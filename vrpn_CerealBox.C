@@ -303,7 +303,7 @@ int vrpn_CerealBox::get_report(void)
    // in the buffer.  We keep track of how many have been read so far
    // and only try to read the rest.  The routine that calls this one
    // makes sure we get a full reading often enough (ie, it is responsible
-   // for doing the watchdog timing to make sure the tracker hasn't simply
+   // for doing the watchdog timing to make sure the device hasn't simply
    // stopped sending characters).
    //--------------------------------------------------------------------
 

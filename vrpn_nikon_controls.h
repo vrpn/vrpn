@@ -3,7 +3,7 @@
 
 class vrpn_Nikon_Controls : public vrpn_Serial_Analog, public vrpn_Analog_Output {
 public:
-  vrpn_Nikon_Controls(const char *device_name, vrpn_Connection *con = NULL, const char *port_name = "com1");
+  vrpn_Nikon_Controls(const char *device_name, vrpn_Connection *con = NULL, const char *port_name = "COM1");
   ~vrpn_Nikon_Controls(void) {};
 
   virtual void mainloop ();

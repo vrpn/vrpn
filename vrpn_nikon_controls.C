@@ -45,21 +45,21 @@ vrpn_Nikon_Controls::vrpn_Nikon_Controls(const char *device_name, vrpn_Connectio
   if (d_connection != NULL) {
     if (register_autodeleted_handler(request_m_id, handle_request_message,
       this, d_sender_id)) {
-	  fprintf(stderr,"vrpn_Zaber: can't register handler\n");
+	  fprintf(stderr,"vrpn_Nikon_Controls: can't register handler\n");
 	  d_connection = NULL;
     }
     if (register_autodeleted_handler(request_channels_m_id, handle_request_channels_message,
       this, d_sender_id)) {
-	  fprintf(stderr,"vrpn_Zaber: can't register handler\n");
+	  fprintf(stderr,"vrpn_Nikon_Controls: can't register handler\n");
 	  d_connection = NULL;
     }
     if (register_autodeleted_handler(d_ping_message_id, handle_connect_message,
       this, d_sender_id)) {
-	  fprintf(stderr,"vrpn_Zaber: can't register handler\n");
+	  fprintf(stderr,"vrpn_Nikon_Controls: can't register handler\n");
 	  d_connection = NULL;
     }
   } else {
-	  fprintf(stderr,"vrpn_Zaber: Can't get connection!\n");
+	  fprintf(stderr,"vrpn_Nikon_Controls: Can't get connection!\n");
   }    
 }
 
@@ -181,7 +181,7 @@ int	vrpn_Nikon_Controls::reset(void)
 	  return -1;
 	}
 	if (ret == 0) {
-	  fprintf(stderr, "vrpn_Nikon_Controls::reset(): No characters when reading position from device");
+	  fprintf(stderr, "vrpn_Nikon_Controls::reset(): No characters when reading position from device\n");
 	  return -1;
 	}
 	inbuf[ret] = '\0';  //< Null-terminate the input string

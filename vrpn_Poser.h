@@ -21,8 +21,6 @@
 #include "vrpn_Connection.h"
 #include "vrpn_BaseClass.h"
 
-
-
 class vrpn_Poser : public vrpn_BaseClass {
     public:
         vrpn_Poser (const char * name, vrpn_Connection * c = NULL );
@@ -38,14 +36,14 @@ class vrpn_Poser : public vrpn_BaseClass {
 
     protected:
         // client-->server
-        vrpn_int32 req_position_m_id;		// ID of poser position message
+        vrpn_int32 req_position_m_id;	    // ID of poser position message
         vrpn_int32 req_velocity_m_id;       // ID of poser velocity message
 
         // Description of current state
-        vrpn_float64 p_pos[3], p_quat[4];	    // Current pose, (x,y,z), (qx,qy,qz,qw)
+        vrpn_float64 p_pos[3], p_quat[4];	// Current pose, (x,y,z), (qx,qy,qz,qw)
         vrpn_float64 p_vel[3], p_vel_quat[4];   // Current velocity and dQuat/vel_quat_dt
         vrpn_float64 p_vel_quat_dt;             // delta time (in secs) for vel_quat
-        struct timeval p_timestamp;		        // Current timestamp
+        struct timeval p_timestamp;		// Current timestamp
 
         // Minimum and maximum values available for the position and velocity values
         // of the poser.
@@ -85,10 +83,6 @@ class vrpn_Poser_Server: public vrpn_Poser {
         static int handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
         static int handle_vel_change_message(void *userdata, vrpn_HANDLERPARAM p);
 };
-
-
-
-
 
 //------------------------------------------------------------------------------------
 // Client Code

@@ -239,24 +239,24 @@ void vrpn_Poser_Server::mainloop()
 int vrpn_Poser_Server::handle_change_message(void* userdata,
 	    vrpn_HANDLERPARAM p)
 {
-	vrpn_Poser_Server* me = (vrpn_Poser_Server *)userdata;
-	const char* params = (p.buffer);
-	int	i;
-	// Fill in the parameters to the poser from the message
-	if (p.payload_len != (7 * sizeof(vrpn_float64)) ) {
-		fprintf(stderr,"vrpn_Poser_Server: change message payload error\n");
-		fprintf(stderr,"             (got %d, expected %d)\n",
-			p.payload_len, 7 * sizeof(vrpn_float64) );
-		return -1;
-	}
+    vrpn_Poser_Server* me = (vrpn_Poser_Server *)userdata;
+    const char* params = (p.buffer);
+    int	i;
+    // Fill in the parameters to the poser from the message
+    if (p.payload_len != (7 * sizeof(vrpn_float64)) ) {
+	    fprintf(stderr,"vrpn_Poser_Server: change message payload error\n");
+	    fprintf(stderr,"             (got %d, expected %d)\n",
+		    p.payload_len, 7 * sizeof(vrpn_float64) );
+	    return -1;
+    }
     me->p_timestamp = p.msg_time;
 
-	for (i = 0; i < 3; i++) {
-	 	vrpn_unbuffer(&params, &me->p_pos[i]);
-	}
-	for (i = 0; i < 4; i++) {
-		vrpn_unbuffer(&params, &me->p_quat[i]);
-	}
+    for (i = 0; i < 3; i++) {
+	    vrpn_unbuffer(&params, &me->p_pos[i]);
+    }
+    for (i = 0; i < 4; i++) {
+	    vrpn_unbuffer(&params, &me->p_quat[i]);
+    }
 
     // Check the pose against the max and min values of the workspace
     for (i = 0; i < 3; i++) {

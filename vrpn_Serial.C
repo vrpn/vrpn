@@ -71,7 +71,7 @@ static HANDLE	commConnections[maxCom];
 static int curCom = -1;
 #endif
 
-int vrpn_open_commport(char *portname, long baud, int charsize, vrpn_SER_PARITY parity)
+int vrpn_open_commport(const char *portname, long baud, int charsize, vrpn_SER_PARITY parity)
 {
 #if defined(hpux) || defined(__hpux) || defined(ultrix) || defined(FreeBSD) || defined(__CYGWIN__) || defined(__APPLE__)
 	fprintf(stderr,
@@ -107,6 +107,7 @@ int vrpn_open_commport(char *portname, long baud, int charsize, vrpn_SER_PARITY 
   if (hCom == INVALID_HANDLE_VALUE) 
   {    
     perror("vrpn_open_commport: cannot open serial port");
+    fprintf(stderr, "  (Make sure port name is valid and it has not been opened by another program)\n");
     return -1;
   }
  
@@ -593,4 +594,3 @@ int vrpn_write_characters(int comm, const unsigned char *buffer, int bytes)
 	return write(comm, buffer, bytes);
 #endif
 }
-

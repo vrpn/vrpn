@@ -1,3 +1,23 @@
+2004-08-31  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Adding build for vrpn_Poser_Tek4662 in server library.
+	* time_test.dsp : Changing code generation to use multithreaded
+		non-DLL for both debug and release.  This turns out to have
+		always been the proper setting to use.  Unfortunately, all
+		apps have to be rebuild with new settings, and all libraries
+		have to use the same setting.
+	* vrpn.dsp : Same.
+	* vrpn_Analog.C : Whitespace changes.
+	* vrpn_Poser.C : Same.
+	* vrpn_Poser.h : Same.
+	* vrpn_CerealBox.C : Comment correction.
+	* vrpn_Connection.C : Setting values to NULL to avoid multiple
+		deletion attempts on clock object at shutdown.
+	* vrpn_Serial.C : Declared const parameter when appropriate.
+	* vrpn_Serial.h : Same.
+	* vrpn_Nikon_Controls.C : Error message correction.
+	* vrpn_Nikon_Controls.h : Uppercased "com1" for Windows.
+
 2004-08-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	Adding changes made by Jeff Feasel to include reference counting

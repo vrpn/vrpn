@@ -1,4 +1,5 @@
 #ifndef	VRPN_SERIAL_H
+#define VRPN_SERIAL_H
 #ifndef _WIN32_WCE
 #include <time.h>
 #endif
@@ -31,7 +32,7 @@ typedef enum {vrpn_SER_PARITY_NONE, vrpn_SER_PARITY_ODD, vrpn_SER_PARITY_EVEN,
 // return immediately if there are no characters or less than the number
 // of characters requested.  Returns the file descriptor on success,
 // -1 on failure.
-extern int vrpn_open_commport(char *portname, long baud, int charsize = 8, vrpn_SER_PARITY parity = vrpn_SER_PARITY_NONE);
+extern int vrpn_open_commport(const char *portname, long baud, int charsize = 8, vrpn_SER_PARITY parity = vrpn_SER_PARITY_NONE);
 
 // Set and clear functions for the RTS ("ready to send") hardware flow-
 // control bit.  These are used on a port that is already open.  Some
@@ -65,5 +66,5 @@ extern int vrpn_read_available_characters(int comm, unsigned char *buffer,
 		int count, struct timeval *timeout);
 
 extern int vrpn_write_characters(int comm, const unsigned char *buffer, int bytes); 
-#define VRPN_SERIAL_H
+
 #endif

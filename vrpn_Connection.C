@@ -5877,10 +5877,10 @@ vrpn_Synchronized_Connection::vrpn_Synchronized_Connection
 
 vrpn_Synchronized_Connection::~vrpn_Synchronized_Connection() {
   if (pClockServer) {
-    delete pClockServer;
+    delete pClockServer; pClockServer = NULL;
   }
   if (pClockRemote) {
-    delete pClockRemote;
+    delete pClockRemote; pClockRemote = NULL;
   }
 }
 
