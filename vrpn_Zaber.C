@@ -51,9 +51,15 @@ vrpn_Zaber::vrpn_Zaber (const char * name, vrpn_Connection * c,
   // Set the mode to reset
   _status = STATUS_RESETTING;
 
-  // Register to receive the message to request changes
+  // Register to receive the message to request changes and to receive connection
+  // messages.
   if (d_connection != NULL) {
     if (register_autodeleted_handler(request_m_id, handle_request_message,
+      this, d_sender_id)) {
+	  fprintf(stderr,"vrpn_Zaber: can't register handler\n");
+	  d_connection = NULL;
+    }
+    if (register_autodeleted_handler(d_ping_message_id, handle_connect_message,
       this, d_sender_id)) {
 	  fprintf(stderr,"vrpn_Zaber: can't register handler\n");
 	  d_connection = NULL;
@@ -254,17 +260,22 @@ int vrpn_Zaber::get_report(void)
    // section will parse it. If it does not, we need to go back into
    // synch mode and ignore this report. A well-formed report has
    // either 23 or 10 as its command.  Also accept command number 1
-   // (reset).  Also accept command 20 (go to absolute position).
+   // (reset).  Also accept command 20 (go to absolute position).  Also
+   // parse command 255 (out of range setting requested -- it puts the
+   // actual position in place).
    //--------------------------------------------------------------------
 
    if ( (_buffer[1] != 10) && (_buffer[1] != 23) && (_buffer[1] != 1)
-       && (_buffer[1] != 20) ) {
+       && (_buffer[1] != 20) && (_buffer[1] != 255) ) {
 	   status = STATUS_SYNCING;
 	   char msg[1024];
 	   sprintf(msg,"Bad command type (%d) in report (ignoring this report)", _buffer[1]);
       	   ZAB_WARNING(msg);
 	   vrpn_flush_input_buffer(serial_fd);
 	   return 0;
+   }
+   if (_buffer[1] == 255) {
+     ZAB_WARNING("Requested value out of range");
    }
 
 #ifdef	VERBOSE
@@ -321,6 +332,16 @@ int vrpn_Zaber::handle_request_message(void *userdata, vrpn_HANDLERPARAM p)
     }
     me->send_command(chan_num+1,20,(vrpn_int32)value);
 
+    return 0;
+}
+
+/** When we get a connection request from a remote object, send our state so
+    they will know it to start with. */
+int vrpn_Zaber::handle_connect_message(void *userdata, vrpn_HANDLERPARAM p)
+{
+    vrpn_Zaber *me = (vrpn_Zaber *)userdata;
+
+    me->report(vrpn_CONNECTION_RELIABLE);
     return 0;
 }
 
