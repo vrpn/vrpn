@@ -164,15 +164,15 @@ public:  // public type_id and service_id stuff
     
     // Adds a new remote type/service and returns its index
     // was: newRemoteSender
-    virtual vrpn_int32 register_remote_service(
+    vrpn_int32 register_remote_service(
         const cName service_name,  // e.g. "tracker0"
-        vrpn_int32 local_id );    // from manager
+        vrpn_int32 remote_id );    // from incoming message
         
     // Adds a new remote type/service and returns its index
     // was: newRemoteType
-    virtual vrpn_int32 register_remote_type(
+    vrpn_int32 register_remote_type(
         const cName type_name,    // e.g. "tracker_pos"
-        vrpn_int32 local_id );    // from manager
+        vrpn_int32 remote_id );    // from incoming message
 
 
     // Give the local mapping for the remote type or service.
@@ -186,23 +186,13 @@ public:  // public type_id and service_id stuff
 
     // Give the local mapping for the remote type
     // was: local_type_id
-    vrpn_int32 translate_remote_type_to_local( vrpn_int32 remote_type ) {
-        if (remote_type < num_registered_remote_types) {
-            return registered_remote_types[remote_type].local_id;
-        } else {
-            return -1;
-        }
-    }
+    vrpn_int32 translate_remote_type_to_local( 
+        vrpn_int32 remote_type );
     
     // Give the local mapping for the remote service
     // was: local_sender_id
-    vrpn_int32 translate_remote_service_to_local( vrpn_int32 remote_service ){
-        if (remote_service < num_registered_remote_services) {
-            return registered_remote_services[remote_service].local_id;
-        } else {
-            return -1;
-        }
-    }
+    vrpn_int32 translate_remote_service_to_local( 
+        vrpn_int32 remote_service );
     
 
     // XXX todo
@@ -237,7 +227,6 @@ protected: // protected type_id and service_id stuff
     //   the name and local ID that corresponds to each.
     // * was: other_senders
     cRemoteMapping registered_remote_services[vrpn_CONNECTION_MAX_SERVICES];
-        
 
     // * the number of types that have been registered by the
     //   other side of the connection
@@ -250,6 +239,10 @@ protected: // protected type_id and service_id stuff
     //   the name and local ID that corresponds to each.
     // * was: other_types
     cRemoteMapping registered_remote_types[vrpn_CONNECTION_MAX_TYPES];
+
+    // These are types that are registered remotely but do not have
+    // a counterpart locally (yet)
+    cRemoteMapping types_registered_remotely_not_locally[vrpn_CONNECTION_MAX_TYPES];
 
 
 

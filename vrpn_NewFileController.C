@@ -10,7 +10,7 @@
 
 // create one of these this way
 //
-//   void foo (vrpn_ClientConnectionController* pccc) {
+//   void foo (vrpn_ClientConnectionManager* pccc) {
 //      vrpn_NewFileController* pfc
 //          = vrpn_NewFileController::get_FileController (pccc);
 //
@@ -33,7 +33,7 @@ vrpn_NewFileController::vrpn_NewFileController (
 
 vrpn_NewFileController*
 vrpn_NewFileController::get_FileController(
-    vrpn_ClientConnectionController* pccc )
+    vrpn_ClientConnectionManager* pccc )
 {
     vrpn_BaseConnection* pbc = pccc->get_BaseConnection();
 

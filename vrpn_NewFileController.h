@@ -6,7 +6,7 @@
 #include "vrpn_ConnectionCommonStuff.h"
 #include "vrpn_FileConnectionInterface.h"
 #include "vrpn_NewFileConnection.h"
-#include "vrpn_ClientConnectionController.h"
+#include "vrpn_ClientConnectionManager.h"
 
 //=============================================================================
 // vrpn_NewFileController
@@ -26,7 +26,7 @@ private: // data members
 public: // c'tors and init
     vrpn_NewFileController( vrpn_FileConnectionInterface * );
 
-    static vrpn_NewFileController * get_FileController( vrpn_ClientConnectionController * pccc );
+    static vrpn_NewFileController * get_FileController( vrpn_ClientConnectionManager * pccc );
 	
 public: // playback functions
 

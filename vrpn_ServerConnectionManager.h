@@ -26,6 +26,10 @@
 #include "vrpn_BaseConnection.h"
 #include "vrpn_UnreliableMulticastSender.h"
 
+// forward declaration. class defined at end of this file
+class vrpn_ConnectionList;
+
+
 class vrpn_ServerConnectionManager
     : public vrpn_BaseConnectionManager
 {
@@ -104,6 +108,17 @@ public: // status
     virtual void dropped_a_connection(void *); 
 
 
+protected: 
+    // these are called by the public functions in
+    // BaseConnectionManager
+
+    virtual void register_service_with_connections(
+        const char * service_name, vrpn_int32 service_id );
+    
+    virtual void register_type_with_connections(
+        const char * type_name, vrpn_int32 type_id );
+
+
 private: // the connections
     // XXX - this is now handled by vrpn_ConnectionList
     // vrpn_ConnectionList *d_connection_list;
@@ -131,6 +146,9 @@ protected: // initializaton and connection setup
                                           vrpn_int16 port );
     
 private: // data members
+
+    // The list of various connections the server has
+    vrpn_ConnectionList* d_connection_list;
 
 	// mulitcast 
     char* d_mcast_info;                 // stores mcast group info
@@ -217,6 +235,12 @@ class vrpn_ConnectionList {
 
   public:
 
+
+    vrpn_ConnectionList (void);
+
+    vrpn_ConnectionList (const vrpn_ConnectionList &);
+      // copy constructor undefined to prevent instantiations
+
     ~vrpn_ConnectionList (void);
 
     static vrpn_ConnectionList & instance (void);
@@ -255,11 +279,6 @@ class vrpn_ConnectionList {
 
     vrpn_int32 d_numConnections;
 
-    vrpn_ConnectionList (void);
-
-    vrpn_ConnectionList (const vrpn_ConnectionList &);
-      // copy constructor undefined to prevent instantiations
-
     static void deleteConnection (vrpn_BaseConnection *, knownConnection **);
 
 }; // class vrpn_ConnectionList
@@ -283,8 +302,8 @@ class vrpn_ConnectionList {
 class vrpn_ConnectionItr
 {
   public:
-    vrpn_ConnectionItr( const vrpn_ConnectionList & CM ) : d_header( CM.d_anonList )
-            { d_current = CM.isEmpty( ) ? NULL : d_header; }
+    vrpn_ConnectionItr( const vrpn_ConnectionList *CM ) : d_header( CM->d_anonList )
+            { d_current = CM->isEmpty( ) ? NULL : d_header; }
     ~vrpn_ConnectionItr( ) { }
 
     // Returns 1 if d_current is not NULL or d_header, 0 otherwise
@@ -311,3 +330,5 @@ class vrpn_ConnectionItr
 
 
 #endif
+
+

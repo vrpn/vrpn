@@ -102,6 +102,53 @@ vrpn_NetConnection::~vrpn_NetConnection(void)
 
 // }}} end vrpn_NetConnection: public: c'tors, d'tors, init
 
+
+//==========================================================================
+//==========================================================================
+//
+// {{{ vrpn_NetConnection: public: services and types
+
+//
+//==========================================================================
+//==========================================================================
+
+// * register a new local {type,service} that that manager
+//   has assigned a {type,service}_id to.
+// * in addition, look to see if this {type,service} has
+//   already been registered remotely (newRemoteType/Service)
+// * if so, record the correspondence so that
+//   local_{type,service}_id() can do its thing
+// * XXX proposed new name:
+//         register_local_{type,service}
+//
+//Return 1 if this {type,service} was already registered
+//by the other side, 0 if not.
+
+vrpn_int32 vrpn_NetConnection::register_local_service(
+    const char* service_name,
+    vrpn_int32 local_id)
+{
+    // currently, NetConnection does not need to do anything that is
+    // not done in the BaseConnection version
+    return vrpn_BaseConnection::register_local_service(
+        service_name, 
+        local_id);
+}
+
+vrpn_int32 vrpn_NetConnection::register_local_type(
+    const char* type_name,
+    vrpn_int32 local_id)
+{
+    // currently, NetConnection does not need to do anything that is
+    // not done in the BaseConnection version
+    return vrpn_BaseConnection::register_local_type(
+        type_name, 
+        local_id);
+
+}
+
+// }}} end vrpn_NetConnection: public: service and types 
+
 //==========================================================================
 //==========================================================================
 //

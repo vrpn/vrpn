@@ -23,12 +23,12 @@ vrpn_ServerConnectionManager::vrpn_ServerConnectionManager(
     vrpn_int32   cSyncWindow )
     // add multicast arguments later
     : vrpn_BaseConnectionManager (local_logfile_name,
-                                     local_log_mode,
-                                     NULL,
-                                     vrpn_LOG_NONE,
-                                     dFreq,
-                                     cSyncWindow),
-    // d_connection_list(NULL),
+                                  local_log_mode,
+                                  NULL,
+                                  vrpn_LOG_NONE,
+                                  dFreq,
+                                  cSyncWindow),
+    d_connection_list(NULL),
     num_live_connections(0),
     status(vrpn_CONNECTION_LISTEN),
     listen_udp_sock(INVALID_SOCKET),
@@ -138,6 +138,9 @@ vrpn_ServerConnectionManager::~vrpn_ServerConnectionManager()
 {
     // NetConnection will now remove themselves from the list by
     // calling dropped_a_connection() in their destructor
+
+    // if list of connections is not empty though, destroy it here
+    if( d_connection_list ) delete d_connection_list;
 
 //  	// Remove all connections from the "known connections" list.
 //  	vrpn_CONNECTION_LIST *list_ptr = d_connection_list;
@@ -286,7 +289,7 @@ vrpn_int32 vrpn_ServerConnectionManager::mainloop(
 {
     vrpn_int32 retval = 0;
     vrpn_int32 retval_sum;
-    vrpn_ConnectionItr itr(vrpn_ConnectionList::instance());
+    vrpn_ConnectionItr itr(d_connection_list);
 
     switch( status ) {
     case vrpn_CONNECTION_LISTEN:
@@ -354,7 +357,7 @@ vrpn_int32 vrpn_ServerConnectionManager::queue_outgoing_message(
     
     // iterate over list of Connections and pass message to 
     // them
-    vrpn_ConnectionItr itr(vrpn_ConnectionList::instance());
+    vrpn_ConnectionItr itr(d_connection_list);
     itr.First();
     while( +itr ) {
         ret = itr()->queue_outgoing_message(
@@ -378,7 +381,7 @@ vrpn_int32 vrpn_ServerConnectionManager::send_pending_reports()
   vrpn_int32 retval;
   // go through list of connections, then check for any
   // new incoming connections
-  vrpn_ConnectionItr itr(vrpn_ConnectionList::instance());
+  vrpn_ConnectionItr itr(d_connection_list);
   itr.First();
   while( +itr ) {
 	retval = itr()->send_pending_reports();
@@ -447,7 +450,7 @@ vrpn_int32 vrpn_ServerConnectionManager::do_callbacks_for(
 // are there any connections?
 vrpn_int32 vrpn_ServerConnectionManager::at_least_one_open_connection() const
 {
-    return vrpn_ConnectionList::instance().numConnections() > 0 ;
+    return d_connection_list->numConnections() > 0 ;
 }
     
 // overall, all connections are doing okay
@@ -455,7 +458,7 @@ vrpn_int32 vrpn_ServerConnectionManager::all_connections_doing_okay() const
 {
     // iterate through list of connections and call doing_okay for each one.
     vrpn_int32 retval = 1;
-    vrpn_ConnectionItr itr(vrpn_ConnectionList::instance());
+    vrpn_ConnectionItr itr(d_connection_list);
     itr.First();
     while( +itr ){
         retval &= itr()->doing_okay();
@@ -468,23 +471,23 @@ vrpn_int32 vrpn_ServerConnectionManager::all_connections_doing_okay() const
 // number of connections
 vrpn_int32 vrpn_ServerConnectionManager::num_connections() const
 {
-    return vrpn_ConnectionList::instance().numConnections();
+    return d_connection_list->numConnections();
 }
 
 void vrpn_ServerConnectionManager::got_a_connection(void* connection)
 {
 
-    vrpn_BaseConnection *new_connection = (vrpn_BaseConnection *) connection;
+    vrpn_BaseConnection* new_connection = (vrpn_BaseConnection *) connection;
 
     // add connection to list - XXX currently it is an anonymous connection
-    vrpn_ConnectionList::instance().addConnection(new_connection, NULL);
+    d_connection_list->addConnection(new_connection, NULL);
 
     // Yank the local callbacks for new connection, and for
 	// first connection if appropriate. Do not pack these
 	// messages.
 	struct timeval now;
 	gettimeofday(&now, NULL);
-	if ( vrpn_ConnectionList::instance().numConnections() == 1 ) {
+	if ( d_connection_list->numConnections() == 1 ) {
 		do_callbacks_for(register_message_type(vrpn_got_first_connection),
                          register_service(vrpn_CONTROL), now, 0, NULL);
 
@@ -500,7 +503,7 @@ void vrpn_ServerConnectionManager::dropped_a_connection(void* connection)
    vrpn_BaseConnection *drop_connection = (vrpn_BaseConnection *) connection;
 
     // remove connection from list - XXX currently it is an anonymous connection
-    vrpn_ConnectionList::instance().deleteConnection(drop_connection);
+    d_connection_list->deleteConnection(drop_connection);
 
     // Yank the local callbacks for new connection, and for
 	// first connection if appropriate. Do not pack these
@@ -511,7 +514,7 @@ void vrpn_ServerConnectionManager::dropped_a_connection(void* connection)
 	do_callbacks_for(register_message_type(vrpn_dropped_connection),
                      register_service(vrpn_CONTROL), now, 0, NULL);
 
-	if ( vrpn_ConnectionList::instance().isEmpty() ) {
+	if ( d_connection_list->isEmpty() ) {
 		do_callbacks_for(register_message_type(vrpn_dropped_last_connection),
                          register_service(vrpn_CONTROL), now, 0, NULL);
 
@@ -520,6 +523,62 @@ void vrpn_ServerConnectionManager::dropped_a_connection(void* connection)
 
 }
   
+
+//==========================================================================
+//==========================================================================
+//
+// vrpn_ServerConnectionManager: protected: services and types
+//
+//==========================================================================
+//==========================================================================
+
+// these are called by the public functions in
+// BaseConnectionManager
+
+void vrpn_ServerConnectionManager::register_service_with_connections(
+        const char * service_name, 
+        vrpn_int32 service_id )
+{
+    vrpn_int32 retval;
+    vrpn_ConnectionItr itr(d_connection_list);
+
+    // iterate through connections and call for each connection
+    itr.First();
+    while( +itr ){
+        if( itr()->connected() ){
+            retval = itr()->register_local_service (service_name,service_id); 
+            if( retval == -1 ){
+                fprintf(stderr,
+                        "vrpn_ServerConnectionManager::register_service_with_connections: "
+                        "error registering service with connection\n");
+            }
+        }
+        itr++;
+    } 
+}
+    
+void vrpn_ServerConnectionManager::register_type_with_connections(
+        const char * type_name, 
+        vrpn_int32 type_id )
+{
+    vrpn_int32 retval;
+    vrpn_ConnectionItr itr(d_connection_list);
+
+    // iterate through connections and call for each connection
+    itr.First();
+    while( +itr ){
+        if( itr()->connected() ){
+            retval = itr()->register_local_type (type_name,type_id); 
+            if( retval == -1 ){
+                fprintf(stderr,
+                        "vrpn_ServerConnectionManager::register_type_with_connections: "
+                        "error registering type with connection\n");
+            }
+        }
+        itr++;
+    } 
+}
+
 
 //==========================================================================
 //==========================================================================
@@ -534,7 +593,7 @@ vrpn_int32 vrpn_ServerConnectionManager::register_log_filter (
     void * userdata)
 {
     vrpn_int32 retval;
-    vrpn_ConnectionItr itr(vrpn_ConnectionList::instance());
+    vrpn_ConnectionItr itr(d_connection_list);
 
     // iterate through connections and call for each connection
     itr.First();
@@ -649,6 +708,15 @@ vrpn_int32 vrpn_ServerConnectionManager::clockQueryHandler(
 //
 //====================================================================================
 
+
+vrpn_ConnectionList::vrpn_ConnectionList (void) :
+    //    d_kcList (NULL),
+    d_anonList (NULL),
+    d_numConnections(0)
+{
+
+}
+
 vrpn_ConnectionList::~vrpn_ConnectionList (void) 
 {
 
@@ -664,13 +732,6 @@ vrpn_ConnectionList::~vrpn_ConnectionList (void)
     delete d_anonList->connection;
   }
 
-}
-
-// static
-vrpn_ConnectionList & vrpn_ConnectionList::instance (void) 
-{
-  static vrpn_ConnectionList list;
-  return list;
 }
 
 void vrpn_ConnectionList::addConnection (
@@ -732,14 +793,6 @@ void vrpn_ConnectionList::deleteConnection (
 //    }
 //    return p->connection;
 //  }
-
-vrpn_ConnectionList::vrpn_ConnectionList (void) :
-    //    d_kcList (NULL),
-    d_anonList (NULL),
-    d_numConnections(0)
-{
-
-}
 
 vrpn_int32 vrpn_ConnectionList::numConnections()
 {

@@ -88,6 +88,258 @@ vrpn_BaseConnection::~vrpn_BaseConnection()
     delete d_manager_token;
 }
 
+
+//==========================================================================
+//==========================================================================
+//
+// vrpn_BaseConnection: public: type and service id functions
+//
+//==========================================================================
+//==========================================================================
+
+// * register a new local {type,service} that that manager
+//   has assigned a {type,service}_id to.
+// * in addition, look to see if this {type,service} has
+//   already been registered remotely (newRemoteType/Service)
+// * if so, record the correspondence so that
+//   local_{type,service}_id() can do its thing
+// * XXX proposed new name:
+//         register_local_{type,service}
+//
+//Return 1 if this {type,service} was already registered
+//by the other side, 0 if not.
+
+// return a 1 if the service was already registered remotely, else
+// return a 0
+vrpn_int32 vrpn_BaseConnection::register_local_service(
+    const char* service_name,
+    vrpn_int32 local_id)
+{
+    // iterate through the registered_remote_services array looking
+    // for emtries w/ a local id value of -1. when you find one, then
+    // you do a strcmp to see if it is the same service you are
+    // registering. if so, fill in the local_id value. if you don't
+    // finad a matching remote service, then do nothing.
+
+    if (local_id >= vrpn_CONNECTION_MAX_SERVICES) {
+		fprintf(stderr,"vrpn_BaseConnection::register_local_service:"
+                " Too many services locally (%d)\n",
+                local_id);
+		return -1;
+	}
+
+    for( int i=0; i < num_registered_remote_services; i++ ){
+        // service not regiatered locally yet
+        if( registered_remote_services[i].local_id == -1 ){
+            // is it the one we're registering now?
+            if( strcmp(registered_remote_services[i].name,service_name) == 0 ){
+                registered_remote_services[i].local_id = local_id;
+                return 1;
+            }
+        }
+    }
+
+    return 0;
+}
+
+
+// return a 1 if the type was already registered remotely, else
+// return a 0
+vrpn_int32 vrpn_BaseConnection::register_local_type(
+    const char* type_name,
+    vrpn_int32 local_id)
+{
+    // iterate through the registered_remote_types array looking
+    // for emtries w/ a local id value of -1. when you find one, then
+    // you do a strcmp to see if it is the same type you are
+    // registering. if so, fill in the local_id value. if you don't
+    // finad a matching remote type, then do nothing.
+
+    if (local_id >= vrpn_CONNECTION_MAX_TYPES) {
+		fprintf(stderr,"vrpn_BaseConnection::register_local_type:"
+                " Too many types locally (%d)\n",
+                local_id);
+		return -1;
+	}
+
+    for( int i=0; i < num_registered_remote_types; i++ ){
+        // type not regiatered locally yet
+        if( registered_remote_types[i].local_id == -1 ){
+            // is it the one we're registering now?
+            if( strcmp(registered_remote_types[i].name,type_name) == 0 ){
+                registered_remote_types[i].local_id = local_id;
+                return 1;
+            }
+        }
+    }
+
+    return 0;
+
+}
+
+// Adds a new remote type/service and returns its index.
+// Returns -1 on error.
+// * called by the ConnectionManager when the peer on the
+//   other side of this connection has sent notification
+//   that it has registered a new type/service
+// * don't call this function if the type/service has
+//   already been locally registered
+// * XXX proposed new name:
+//         register_remote_{type,service}
+    
+// Adds a new remote type/service and returns its index
+// was: newRemoteSender
+vrpn_int32 vrpn_BaseConnection::register_remote_service(
+    const cName service_name,  // e.g. "tracker0"
+    vrpn_int32 remote_id )    // from manager
+{
+	if (num_registered_remote_services >= vrpn_CONNECTION_MAX_SERVICES) {
+		fprintf(stderr,"vrpn: Too many services from other side (%d)\n",
+                        num_registered_remote_services);
+		return -1;
+	}
+
+
+    // sanity check: does remote id match next available space in
+    // array?
+    num_registered_remote_services++;
+    if( remote_id != num_registered_remote_services ){
+        fprintf(stderr,"vrpn_BaseConnection::register_remote_service:"
+                ": remote_id does not match next available spot in "
+                " array\n");
+		return -1;
+    }
+
+
+    // should this be const_iterator?
+    char** service_itr = d_manager_token->services_begin();
+    char** const service_end = d_manager_token->services_end();
+    for (int i=0;  service_itr != service_end;  ++service_itr, ++i) {
+        
+        if( *service_itr ){ // space for service has been allocated
+            if( strcmp(*service_itr, service_name) == 0 ){
+                // we have a match
+                registered_remote_services[remote_id].name = new cName;
+                if( !registered_remote_services[remote_id].name ){
+                    fprintf(stderr,"vrpn_BaseConnection::register_remote_service: "
+                            "Can't allocate memory for new record\n");
+                    return -1;
+                }
+                strncpy(registered_remote_services[remote_id].name, 
+                        service_name, sizeof(cName));
+                registered_remote_services[remote_id].local_id = i;
+                return remote_id;
+            }
+        }  
+    }
+    
+
+    // service has not been registered locally
+    // make sure entry is blank
+    if (registered_remote_services[remote_id].name) {
+        delete registered_remote_services[remote_id].name;
+        registered_remote_services[remote_id].name = NULL;
+    }
+    registered_remote_services[remote_id].local_id = -1;
+
+    return remote_id;
+
+}
+
+// Adds a new remote type/service and returns its index
+// was: newRemoteType
+vrpn_int32 vrpn_BaseConnection::register_remote_type(
+    const cName type_name,    // e.g. "tracker_pos"
+    vrpn_int32 remote_id )     // from manager
+{
+	if (num_registered_remote_types >= vrpn_CONNECTION_MAX_TYPES) {
+		fprintf(stderr,"vrpn: Too many types from other side (%d)\n",
+                        num_registered_remote_types);
+		return -1;
+	}
+
+
+    // sanity check: does remote id match next available space in
+    // array?
+    num_registered_remote_types++;
+    if( remote_id != num_registered_remote_types ){
+        fprintf(stderr,"vrpn_BaseConnection::register_remote_type:"
+                ": remote_id does not match next available spot in "
+                " array\n");
+		return -1;
+    }
+
+
+    typedef vrpn_BaseConnectionManager::vrpnLocalMapping vrpnLocalMapping;
+    const vrpnLocalMapping*       type_itr = d_manager_token->types_begin();
+    const vrpnLocalMapping* const type_end = d_manager_token->types_end();
+    for (int j=0;  type_itr != type_end;  ++type_itr, ++j ) {
+
+        if( type_itr ){ // space for type has been allocated
+            if( strcmp(type_itr->name, type_name) == 0 ){
+                // we have a match
+                registered_remote_types[remote_id].name = new cName;
+                if( !registered_remote_types[remote_id].name ){
+                    fprintf(stderr,"vrpn_BaseConnection::register_remote_type: "
+                            "Can't allocate memory for new record\n");
+                    return -1;
+                }
+                strncpy(registered_remote_types[remote_id].name, 
+                        type_name, sizeof(cName));
+                registered_remote_types[remote_id].local_id = j;
+                return remote_id;
+            }
+        }  
+    }
+
+    // type has not been registered locally
+    // make sure entry is blank
+    if (registered_remote_types[remote_id].name) {
+        delete registered_remote_types[remote_id].name;
+        registered_remote_types[remote_id].name = NULL;
+    }
+    registered_remote_types[remote_id].local_id = -1;
+
+    return remote_id;
+
+}
+
+
+
+// Give the local mapping for the remote type or service.
+// Returns -1 if there isn't one.
+// Pre: have already registered this type/service remotely
+//      and locally using register_local_{type,service}
+//      and register_remote_{type_service}
+// * XXX proposed new name:
+//         translate_remote_{type,service}_to_local
+
+
+// Give the local mapping for the remote type
+// was: local_type_id
+vrpn_int32 vrpn_BaseConnection::translate_remote_type_to_local( 
+    vrpn_int32 remote_type ) 
+{
+    if (remote_type < num_registered_remote_types) {
+        return registered_remote_types[remote_type].local_id;
+    } else {
+        return -1;
+    }
+}
+
+// Give the local mapping for the remote service
+// was: local_sender_id
+vrpn_int32 vrpn_BaseConnection::translate_remote_service_to_local( 
+    vrpn_int32 remote_service )
+{
+    if (remote_service < num_registered_remote_services) {
+        return registered_remote_services[remote_service].local_id;
+    } else {
+        return -1;
+    }
+}
+
+
 //==========================================================================
 //==========================================================================
 //
@@ -146,7 +398,7 @@ vrpn_int32	vrpn_BaseConnection::handle_incoming_type_message(void *userdata,
 	vrpn_BaseConnection * me = (vrpn_BaseConnection*)userdata;
 	cName	type_name;
 	vrpn_int32	i;
-	vrpn_int32	local_id;
+	vrpn_int32	remote_id;
 
 	if (p.payload_len > sizeof(cName)) {
 		fprintf(stderr,"vrpn: vrpn_BaseConnection::Type name too long\n");
@@ -168,8 +420,8 @@ vrpn_int32	vrpn_BaseConnection::handle_incoming_type_message(void *userdata,
 	// If there is a corresponding local type defined, find the mapping.
 	// If not, clear the mapping.
 	// Tell that the other side cares about it if found.
-	local_id = -1; // None yet
-	if (me->register_remote_type(type_name, local_id) == -1) {
+	remote_id = p.type;
+	if (me->register_remote_type(type_name, remote_id) == -1) {
 		fprintf(stderr, "vrpn: Failed to add remote type %s\n", type_name);
 		return -1;
 	}
@@ -183,7 +435,7 @@ vrpn_int32	vrpn_BaseConnection::handle_incoming_service_message(void *userdata,
 	vrpn_BaseConnection * me = (vrpn_BaseConnection*)userdata;
 	cName	service_name;
 	vrpn_int32	i;
-	vrpn_int32	local_id;
+	vrpn_int32	remote_id;
 
 	if (p.payload_len > sizeof(cName)) {
 	        fprintf(stderr,"vrpn: vrpn_BaseConnection::Service name too long\n");
@@ -204,8 +456,8 @@ vrpn_int32	vrpn_BaseConnection::handle_incoming_service_message(void *userdata,
 #endif
 	// If there is a corresponding local service defined, find the mapping.
 	// If not, clear the mapping.
-	local_id = -1; // None yet
-	if (me->register_remote_service(service_name, local_id) == -1) {
+	remote_id = p.service;
+	if (me->register_remote_service(service_name, remote_id) == -1) {
 		fprintf(stderr, "vrpn: Failed to add remote service %s\n", service_name);
 		return -1;
 	}

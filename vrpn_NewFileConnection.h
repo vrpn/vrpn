@@ -36,7 +36,9 @@
 
 class vrpn_NewFileConnection 
     : public vrpn_BaseConnection,
-      protected vrpn_FileConnectionInterface 
+      public vrpn_FileConnectionInterface
+    // JFJ 1/14/00, changed vrpn_FileConnectionInterface to public
+    // instead of protected inheritance.  why was it protected?
 {
     friend class vrpn_NewFileManager;
     
