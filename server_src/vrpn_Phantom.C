@@ -88,7 +88,7 @@ static ACTIVE_FORCE_OBJECT_LIST	g_active_force_object_list;
 // thread and the main (communication) thread.  This makes sure we don't
 // have a collision between the two.
 
-HDCallbackCode readDeviceState(void *pUserData)
+HDCallbackCode HDCALLBACK readDeviceState(void *pUserData)
 {
   HDAPI_state *state = (HDAPI_state *)pUserData;
 
@@ -106,7 +106,7 @@ HDCallbackCode readDeviceState(void *pUserData)
 // It relies on the above static global data structure to keep track of
 // which objects are active.
 
-HDCallbackCode HDAPIForceCallback(void *pUserData)
+HDCallbackCode HDCALLBACK HDAPIForceCallback(void *pUserData)
 {
   HDErrorInfo error;
   hdBeginFrame(hdGetCurrentDevice());

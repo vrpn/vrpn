@@ -1,5 +1,10 @@
 2004-09-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Phantom.C : Added HDCALLBACK definition so that HDAPI will
+		unambiguously link this the right way.
+
+2004-09-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	Adding Chris VanderKnyff's changes that enable DLL linkage
 	for applications.  Heading towards enabling C# and other language
 	support.
