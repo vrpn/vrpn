@@ -1,3 +1,22 @@
+2003-01-02  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Analog.h:  
+	(vrpn_Analog::getNumChannels):  new
+	(vrpn_Analog_Server::numChannels):  removed
+	(vrpn_Analog_Server::setNumChannels):  added a note about expected use.
+	(vrpn_Analog_Server::vrpn_Analog_Server):  added a third parameter
+	which specifies the number of active channels.  defaults to
+	vrpn_CHANNEL_MAX.
+	(vrpn_Clipping_Analog_Server::vrpn_Clipping_Analog_Server):  same
+
+	* vrpn_Analog.C:  changes corresponding to the above, plus:
+	(vrpn_Analog::encode_to):  initializes buflen correctly, to
+	be of size vrpn_CHANNEL_MAX+1.  Also, uses sizeof(vrpn_float64) 
+	instead of  sizeof(double).
+	(vrpn_Analog::report):  create the buffer to be of length
+	vrpn_CHANNEL_MAX+1.
+	(vrpn_Analog_Remote::handle_change_message):  updates num_channel
+
 2002-12-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Tracker_Fastrak.h : Added return type to member function.

@@ -48,22 +48,26 @@ void vrpn_Analog::print(void ) {
   printf("\n");
 }
 
+vrpn_int32 vrpn_Analog::getNumChannels (void) const {
+  return num_channel;
+}
+
 vrpn_int32 vrpn_Analog::encode_to(char *buf)
 {
-    // Message includes: vrpn_float64 AnalogNum, vrpn_float64 state
-    // Byte order of each needs to be reversed to match network standard
-    // XXX This is passing an int in the double for the num_channel
-
-    vrpn_float64    double_chan = num_channel;
-    int		    buflen = 125*sizeof(double);
-
-    vrpn_buffer(&buf, &buflen, double_chan);
-    for (int i=0; i < num_channel; i++) {
-	vrpn_buffer(&buf, &buflen, channel[i]);
-	last[i] = channel[i];
-    }
-
-    return (num_channel+1)*sizeof(vrpn_float64);
+  // Message includes: vrpn_float64 AnalogNum, vrpn_float64 state
+  // Byte order of each needs to be reversed to match network standard
+  // XXX This is passing an int in the double for the num_channel
+  
+  vrpn_float64    double_chan = num_channel;
+  int buflen = (vrpn_CHANNEL_MAX+1)*sizeof(vrpn_float64);
+  
+  vrpn_buffer(&buf, &buflen, double_chan);
+  for (int i=0; i < num_channel; i++) {
+    vrpn_buffer(&buf, &buflen, channel[i]);
+    last[i] = channel[i];
+  }
+  
+  return (num_channel+1)*sizeof(vrpn_float64);
 }
 
 void vrpn_Analog::report_changes (vrpn_uint32 class_of_service) {
@@ -93,7 +97,7 @@ void vrpn_Analog::report_changes (vrpn_uint32 class_of_service) {
 void vrpn_Analog::report (vrpn_uint32 class_of_service) {
 
     // msgbuf must be float64-aligned!
-    vrpn_float64 fbuf [125];
+    vrpn_float64 fbuf [vrpn_CHANNEL_MAX + 1];
     char * msgbuf = (char *) fbuf;
 
     vrpn_int32  len;
@@ -156,10 +160,11 @@ vrpn_Serial_Analog::~vrpn_Serial_Analog ()
 
 
 vrpn_Analog_Server::vrpn_Analog_Server (const char * name,
-                                        vrpn_Connection * c) :
+                                        vrpn_Connection * c,
+                                        vrpn_int32 numChannels) :
     vrpn_Analog (name, c)
 {
-    num_channel = 0;
+    this->setNumChannels( numChannels );
 
     // Check if we got a connection.
     if (d_connection == NULL) {
@@ -184,24 +189,15 @@ void vrpn_Analog_Server::report (vrpn_uint32 class_of_service)
   vrpn_Analog::report(class_of_service);
 }
 
-vrpn_int32 vrpn_Analog_Server::numChannels (void) const {
-  return num_channel;
-}
-
 vrpn_int32 vrpn_Analog_Server::setNumChannels (vrpn_int32 sizeRequested) {
   if (sizeRequested < 0) sizeRequested = 0;
   if (sizeRequested > vrpn_CHANNEL_MAX) sizeRequested = vrpn_CHANNEL_MAX;
-
   num_channel = sizeRequested;
-
   return num_channel;
 }
 
-
-
-
-vrpn_Clipping_Analog_Server::vrpn_Clipping_Analog_Server(const char *name, vrpn_Connection *c) :
-vrpn_Analog_Server(name, c)
+vrpn_Clipping_Analog_Server::vrpn_Clipping_Analog_Server(const char *name, vrpn_Connection *c, vrpn_int32 numChannels) :
+vrpn_Analog_Server(name, c, numChannels)
 {
     int	i;
 
@@ -281,7 +277,7 @@ int vrpn_Clipping_Analog_Server::setChannelValue(int chan, double value)
 // ************* CLIENT ROUTINES ****************************
 
 vrpn_Analog_Remote::vrpn_Analog_Remote (const char * name,
-                                        vrpn_Connection * c) : 
+                                        vrpn_Connection * c ) : 
 	vrpn_Analog (name, c),
     change_list(NULL)
 {
@@ -407,8 +403,9 @@ int vrpn_Analog_Remote::handle_change_message(void *userdata,
     cp.msg_time = p.msg_time;
     vrpn_unbuffer(&bufptr, &numchannelD);
     cp.num_channel = (long)numchannelD;
+    me->num_channel = cp.num_channel;
     for (vrpn_int32 i=0; i< cp.num_channel; i++) {
-	vrpn_unbuffer(&bufptr, &cp.channel[i]);
+      vrpn_unbuffer(&bufptr, &cp.channel[i]);
     }
 
     // Go down the list of callbacks that have been registered.

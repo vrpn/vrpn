@@ -23,6 +23,8 @@ public:
 
 	// Print the status of the analog device
 	void print(void);
+	
+	vrpn_int32 getNumChannels(void) const;
 
   protected:
 	vrpn_float64	channel[vrpn_CHANNEL_MAX];
@@ -38,18 +40,18 @@ public:
 	// Routines used to send data from the server
 	virtual vrpn_int32 encode_to(char *buf);
 	/// Send a report only if something has changed (for servers)
-    virtual void report_changes (vrpn_uint32 class_of_service
-                                     = vrpn_CONNECTION_LOW_LATENCY);
+	virtual void report_changes (vrpn_uint32 class_of_service
+                                   = vrpn_CONNECTION_LOW_LATENCY);
 	/// Send a report whether something has changed or not (for servers)
 	virtual void report (vrpn_uint32 class_of_service
-                             = vrpn_CONNECTION_LOW_LATENCY);
+                           = vrpn_CONNECTION_LOW_LATENCY);
 };
 
 #ifndef	VRPN_CLIENT_ONLY
 class vrpn_Serial_Analog: public vrpn_Analog {
 public:
   vrpn_Serial_Analog(const char * name, vrpn_Connection * connection,
-		     const char * port, int baud = 9600, int bits = 8, 
+                     const char * port, int baud = 9600, int bits = 8, 
                      vrpn_SER_PARITY parity = vrpn_SER_PARITY_NONE);
   ~vrpn_Serial_Analog();
 protected:
@@ -81,7 +83,7 @@ class vrpn_Analog_Server : public vrpn_Analog {
 
   public:
 
-    vrpn_Analog_Server (const char * name, vrpn_Connection * c);
+    vrpn_Analog_Server (const char * name, vrpn_Connection * c, vrpn_int32 numChannels = vrpn_CHANNEL_MAX );
     virtual ~vrpn_Analog_Server (void);
 
     /// Makes public the protected base class function
@@ -100,11 +102,9 @@ class vrpn_Analog_Server : public vrpn_Analog {
     /// Exposes an array of values for the user to write into.
     vrpn_float64* channels (void) { return channel; }
 
-    /// Size of the array.
-    vrpn_int32 numChannels (void) const;
-
     /// Sets the size of the array;  returns the size actually set.
-    /// (May be clamped to vrpn_CHANNEL_MAX)
+    /// (May be clamped to vrpn_CHANNEL_MAX)   
+    /// This should be used before mainloop is ever called.
     vrpn_int32 setNumChannels (vrpn_int32 sizeRequested);
 };
 
@@ -115,7 +115,7 @@ class vrpn_Analog_Server : public vrpn_Analog {
 
 class	vrpn_Clipping_Analog_Server : public vrpn_Analog_Server {
   public:
-    vrpn_Clipping_Analog_Server(const char *name, vrpn_Connection *c);
+    vrpn_Clipping_Analog_Server(const char *name, vrpn_Connection *c, vrpn_int32 numChannels = vrpn_CHANNEL_MAX );
 
     /// Set the clipping values for the specified channel.
     /// min maps to -1, values between lowzero and highzero map to 0,
@@ -169,7 +169,7 @@ class vrpn_Analog_Remote: public vrpn_Analog {
         // The name of the analog device to connect to
         // Optional argument to be used when the Remote should listen on
         // a connection that is already open.
-        vrpn_Analog_Remote (const char * name, vrpn_Connection * c = NULL);
+        vrpn_Analog_Remote (const char * name, vrpn_Connection * c = NULL );
         virtual ~vrpn_Analog_Remote (void);
 
         // This routine calls the mainloop of the connection it's on
