@@ -10,7 +10,7 @@
 
 #include <string.h>  // for memcpy()
 
-#ifndef _WIN32
+#if !( defined(_WIN32) && defined(VRPN_USE_WINSOCK_SOCKETS) )
 #include <netinet/in.h>
 #endif
 
@@ -137,7 +137,7 @@ timeval vrpn_MsecsTimeval( const double dMsecs )
 
 void vrpn_SleepMsecs( double dMsecs )
 {
-#ifdef _WIN32
+#if defined(_WIN32) && defined(VRPN_USE_WINSOCK_SOCKETS)
     Sleep(DWORD(dMsecs));
 #else
     timeval timeout;

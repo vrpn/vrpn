@@ -3,6 +3,10 @@
 
 #include "vrpn_Types.h"
 
+// Oct 2000: Sang-Uok changed becuase vrpn code was compiling but giving 
+// runtime errors with cygwin 1.1. I changed the code so it only uses unix
+// code. I had to change includes in various files.
+
 // jan 2000: jeff changing the way sockets are used with cygwin.  I made this
 // change because I realized that we were using winsock stuff in some places,
 // and cygwin stuff in others.  Discovered this when our code wouldn't compile
@@ -12,7 +16,7 @@
 #undef VRPN_USE_WINSOCK_SOCKETS
 
 // Does cygwin use winsock sockets or unix sockets
-#define VRPN_CYGWIN_USES_WINSOCK_SOCKETS
+//#define VRPN_CYGWIN_USES_WINSOCK_SOCKETS
 
 #if defined(_WIN32) \
     && (!defined(__CYGWIN__) || defined(VRPN_CYGWIN_USES_WINSOCK_SOCKETS))
@@ -140,8 +144,9 @@ extern int vrpn_unbuffer (const char ** buffer, char * string,
 // }}}
 
 // XXX should this be done in cygwin?
-#ifdef	_WIN32	// No sleep() function, but Sleep(DWORD) defined in winbase.h
-#define	sleep(x)	Sleep( DWORD(1000.0 * x) )
-#endif
+// No sleep() function, but Sleep(DWORD) defined in winbase.h
+//#ifdef _WIN32
+//#define	sleep(x)	Sleep( DWORD(1000.0 * x) )
+//#endif
 
 #endif  // VRPN_SHARED_H

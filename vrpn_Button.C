@@ -21,9 +21,14 @@
 #ifndef __CYGWIN__
 #include <conio.h>  // for _inp()
 #endif
-#else
+
+#ifndef VRPN_USE_WINSOCK_SOCKETS
 #include <netinet/in.h>
 #endif
+
+#else
+#include <netinet/in.h>
+#endif // _WIN32
 
 #if (defined(sgi)&&(!defined(VRPN_CLIENT_ONLY)))
 //need these for the gl based setdblight calls

@@ -1,3 +1,17 @@
+2000-10-04  Sang-Uok Kum  <kumsu@cs.unc.edu>
+	* vrpn_Button.C : Include files and #ifdefs changed so in cygwin v1.1
+	it always uses unix sockets instead of window sockets. (The vrpn libary
+	compiled but gave run time errors.) This was only tested for vrpn 
+	client.
+	* vrpn_Clock.C : same
+	* vrpn_Connection.C : same
+	* vrpn_FileConnection.C : same
+	* vrpn_FileController.C : same
+	* vrpn_ForwarderController.C : same
+	* vrpn_Serial.C : same
+	* vrpn_Shared.C : same
+	* vrpn_Shared.h : same
+	
 2000-10-02  Tom Hudson  <hudson@cs.unc.edu>
 
 	* vrpn_SharedObject.h :  Uncommented initial #include of

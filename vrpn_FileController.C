@@ -4,7 +4,7 @@
 // Include vrpn_Shared.h _first_ to avoid conflicts with sys/time.h 
 // and netinet/in.h and ...
 #include "vrpn_Shared.h"
-#ifndef _WIN32
+#if !( defined(_WIN32) && defined(VRPN_USE_WINSOCK_SOCKETS) )
 #include <netinet/in.h>
 #endif
 

@@ -25,6 +25,7 @@
 #else
 #define vrpn_closeSocket close
 #include <unistd.h>
+#include <sys/types.h>
   // gethostname() and getdtablesize() should be here on SGIs,
   // but apparently aren't under g++
 #include <strings.h>
@@ -2452,9 +2453,9 @@ static
 int vrpn_start_server(const char * machine, char * server_name, char * args,
                       const char * IPaddress = NULL)
 {
-#ifdef  VRPN_USE_WINSOCK_SOCKETS
+#if defined(VRPN_USE_WINSOCK_SOCKETS) || defined(__CYGWIN__)
         fprintf(stderr,"VRPN: vrpn_start_server not ported"
-                " for windows winsocks!\n");
+                " for windows winsocks or cygwin!\n");
         return -1;
 #else
         int     pid;    /* Child's process ID */
@@ -2549,7 +2550,7 @@ int vrpn_start_server(const char * machine, char * server_name, char * args,
 		    }
 
                     /* Check to see if the child is dead yet */
-#if defined(hpux) || defined(sgi) || defined(__hpux)
+#if defined(hpux) || defined(sgi) || defined(__hpux) || defined(__CYGWIN__)
                     /* hpux include files have the wrong declaration */
                     deadkid = wait3((int*)&status, WNOHANG, NULL);
 #else

@@ -2,7 +2,7 @@
 
 #include <string.h>
 #include <sys/types.h>
-#ifndef	_WIN32
+#if !( defined(_WIN32) && defined(VRPN_USE_WINSOCK_SOCKETS) )
 #include <netinet/in.h>  // for ntohl()/htonl()
 #endif
 
