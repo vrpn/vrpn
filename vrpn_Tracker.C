@@ -105,6 +105,8 @@ static int open_commport(char *portname, long baud)
 
     return(fileDescriptor);
 #else
+    portname = portname; // Keep the compiler happy
+    baud = baud;
     return -1;
 #endif
 }
@@ -115,6 +117,8 @@ static int	flushInputBuffer(int comm)
 {
 #ifdef	linux
    tcflush(comm, TCIFLUSH);
+#else
+   comm = comm;	// Keep the compiler happy
 #endif
    return 0;
 }

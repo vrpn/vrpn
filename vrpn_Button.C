@@ -176,6 +176,8 @@ void vrpn_Button_Python::read(void)
 		perror("vrpn_Button_Python::read(): ioctl() failed");
 		return;
 	}
+#else
+	status_register = 0;
 #endif
 
 	// Assign values to the bits based on the control signals
@@ -194,8 +196,6 @@ vrpn_Button_Remote::vrpn_Button_Remote(char *name) :
 	change_list(NULL)
 {
 	int	i;
-	char	*tail;
-	char	con_name[1024];
 
 	// Register a handler for the change callback from this device.
 	if (connection->register_handler(message_id, handle_change_message,

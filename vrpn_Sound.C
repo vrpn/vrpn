@@ -28,9 +28,11 @@ int audio_fd; // File descriptor for audio device /dev/audio
 signed char audio_buffer[512]; // audio buffer
 #ifdef linux
 struct sbi_instrument instr; // MIDI
-#endif
 static int sb, sbptr = 0;
+#endif
 unsigned char sbbuf[404];
+
+#ifdef	linux
 static char command_buffer[1024];
 static int my_sound_type;
 static int my_volume;
@@ -39,8 +41,11 @@ static int my_ear_mode;
 char my_samplename[100];
 static int my_status;
 int childpid, pipe1[2], pipe2[2];
+#endif
 
-void sbflush()
+#ifdef	linux
+
+static void sbflush()
 {
         if (!sbptr) return;
 
@@ -53,7 +58,7 @@ void sbflush()
         sbptr=0;
 }
 
-void sbwrite(char *msg)
+static void sbwrite(char *msg)
 {
         if (sbptr>400) sbflush();
 
@@ -61,7 +66,7 @@ void sbwrite(char *msg)
         sbptr +=4;
 }
 
-void midich(char c)
+static void midich(char c)
 {
         char buf[4];
         buf[0] = 5;
@@ -69,9 +74,8 @@ void midich(char c)
         sbwrite(buf);
 }
 
-void noteon(int chan,int pitch,int vol)
+static void noteon(int chan,int pitch,int vol)
 {
-#ifdef linux
         char buf[4];
 #ifdef DEBUG
         printf("Note on, chan=%d pitch=%d vol=%d\n",chan+1,pitch,vol);
@@ -89,12 +93,10 @@ void noteon(int chan,int pitch,int vol)
                 midich(pitch);
                 midich(vol);
         }
-#endif
 }
 
-void noteoff(int chan,int pitch,int vol)
+static void noteoff(int chan,int pitch,int vol)
 {
-#ifdef linux
         char buf[4];
 #ifdef DEBUG
         printf("Note off, chan=%d pitch=%d vol=%d\n",chan+1,pitch,vol);
@@ -112,17 +114,16 @@ void noteoff(int chan,int pitch,int vol)
                 midich(pitch);
                 midich(vol);
         }
-#endif
 }
 
-void wait(int delay)
+static void wait(int delay)
 {
-#ifdef linux
         int jiffies;
         jiffies = (delay << 8) | SEQ_WAIT;
         sbwrite((char*)&jiffies);
-#endif
 }
+#endif
+
 int vrpn_Linux_Sound::mapping(char *name, int address)
 {
 	int i, fd, n, t;
@@ -216,17 +217,19 @@ int vrpn_Linux_Sound::checkpipe(void)
 #endif
 	return 0;
 }
-sndinit(int chan)
-{
+
 #ifdef linux
-		char buf[100];
+static void sndinit(int chan)
+{
+	char buf[100];
         buf[0] = SEQ_FMPGMCHANGE;
         buf[1] = chan;       /* program voice channel to */
         buf[2] = chan;   /* either play default instrument 0 */
                       /*buf[2] = num_instr;or play requested instrument */
         sbwrite(buf);
-#endif
 }
+#endif
+
 void vrpn_Linux_Sound::soundplay()
 {
 #ifdef linux
@@ -254,9 +257,9 @@ void vrpn_Linux_Sound::soundplay()
 
 void vrpn_Linux_Sound::initchild()
 {
-#ifdef linux
+#ifdef	linux
 	int i, stereo, speed;
-    int format = AFMT_S16_LE;
+	int format = AFMT_S16_LE;
 
 	filenum = 0;
 	for (i=0; i<CHANNEL_NUM; i++)
@@ -298,7 +301,8 @@ void vrpn_Linux_Sound::initchild()
 #endif
 }
 
-void decode()
+#ifdef	linux
+static void decode()
 {
 	my_sound_type = (int) command_buffer[0];
 	if (my_sound_type == vrpn_SND_SAMPLE) {
@@ -318,7 +322,7 @@ void decode()
 	my_status = my_sound_type;
 }
 
-int pack_command(int sound_type, int play_mode, int ear_mode,
+static int pack_command(int sound_type, int play_mode, int ear_mode,
 					int volume,char *samplename1)
 {
 	char box[1024];
@@ -335,7 +339,7 @@ int pack_command(int sound_type, int play_mode, int ear_mode,
 	return 1;
 }
 
-int pack_command(int set_stop, int channel)
+static int pack_command(int set_stop, int channel)
 {
 	char box[1024];
 	box[1] = set_stop;
@@ -346,7 +350,7 @@ int pack_command(int set_stop, int channel)
 	return 1;
 }
 
-int pack_command(int set_load, char *sound)
+static int pack_command(int set_load, char *sound)
 {
 	char box[1024];
 	box[1] = set_load;
@@ -358,9 +362,8 @@ int pack_command(int set_load, char *sound)
 	return 1;
 }
 
-int sound_handler(void *userdata, vrpn_HANDLERPARAM p)
+static int sound_handler(void *userdata, vrpn_HANDLERPARAM p)
 {
-#ifdef linux
 	// in this function, it will get the command from the Remote
 	int i;
 	unsigned long *longbuf = (unsigned long*)(void *)(p.buffer);
@@ -384,9 +387,9 @@ int sound_handler(void *userdata, vrpn_HANDLERPARAM p)
 		default:
 		 break;
 	} 
-#endif
 	return 0;
 }
+#endif
 
 vrpn_Linux_Sound::vrpn_Linux_Sound(char *name, vrpn_Connection *c):vrpn_Sound(c)
 {
@@ -432,6 +435,8 @@ vrpn_Linux_Sound::vrpn_Linux_Sound(char *name, vrpn_Connection *c):vrpn_Sound(c)
 		exit(0);
         }
 	}
+#else
+	name = name;	// Keep the compiler happy
 #endif
 }
 
@@ -524,6 +529,7 @@ void vrpn_Sound_Remote::play_sampled_sound(const char *sound,
 		  	fprintf(stderr, "can't write message\n");
 	}
 }
+
 void vrpn_Sound_Remote::play_stop(const int channel)
 {
 	struct timeval current_time;
@@ -539,6 +545,7 @@ void vrpn_Sound_Remote::play_stop(const int channel)
 		  	fprintf(stderr, "can't write message\n");
 	}
 }
+
 void vrpn_Sound_Remote::preload_sampled_sound(const char *sound)
 {
 	struct timeval current_time;
@@ -554,3 +561,4 @@ void vrpn_Sound_Remote::preload_sampled_sound(const char *sound)
 		  	fprintf(stderr, "can't write message\n");
 	}
 }
+
