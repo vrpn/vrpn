@@ -9,6 +9,9 @@ sound_server: sound_server.o vrpn_Tracker.o vrpn_Button.o vrpn_Connection.o vrpn
 	g++ $(LFLAGS) -o sound_server \
 		sound_server.o vrpn_Tracker.o vrpn_Button.o vrpn_Connection.o vrpn_Sound.o -lsdi -lm
 
+vrpn: vrpn.o 
+	g++ $(LFLAGS) -o vrpn vrpn.o ../`hw_os`/libvrpn.a -lsdi -lm
+
 vrpn_Connection.o: ../vrpn_Connection.C
 	g++ $(CFLAGS) -c ../vrpn_Connection.C
 
@@ -17,6 +20,12 @@ vrpn_Button.o: ../vrpn_Button.C ../vrpn_Button.h ../vrpn_Connection.h
 
 vrpn_Tracker.o: ../vrpn_Tracker.C ../vrpn_Button.h ../vrpn_Connection.h
 	g++ $(CFLAGS) -c ../vrpn_Tracker.C
+
+vrpn_3Space.o: ../vrpn_3Space.C ../vrpn_Button.h ../vrpn_Connection.h
+	g++ $(CFLAGS) -c ../vrpn_3Space.C
+
+vrpn_Shared.o: ../vrpn_Shared.C ../vrpn_Button.h ../vrpn_Connection.h
+	g++ $(CFLAGS) -c ../vrpn_Shared.C
 
 vrpn_Sound.o: ../vrpn_Sound.C ../vrpn_Button.h ../vrpn_Connection.h
 	g++ $(CFLAGS) -c ../vrpn_Sound.C
