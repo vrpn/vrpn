@@ -370,7 +370,8 @@ long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const timeval t)
 long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
                   const char * string, vrpn_uint32 length)
 {
-  if (length < (unsigned)*buflen) {
+  if (length > (unsigned)*buflen) {
+    fprintf(stderr, "vrpn_buffer:  buffer not long enough for string.\n");
     return -1;
   }
     
