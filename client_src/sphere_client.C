@@ -35,6 +35,8 @@ void    handle_force_change(void *userdata, const vrpn_FORCECB f)
   lr = f;
 }
 
+vrpn_ForceDevice_Remote *forceDevice;
+
 void    handle_tracker_change(void *userdata, const vrpn_TRACKERCB t)
 {
   static vrpn_TRACKERCB lr; // last report
@@ -50,6 +52,21 @@ void    handle_tracker_change(void *userdata, const vrpn_TRACKERCB t)
   xpos = t.pos[0];
   ypos = t.pos[1];
   zpos = t.pos[2];
+
+    // we may call forceDevice->set_plane(...) followed by
+    //      forceDevice->sendSurface() here to change the plane
+    // for example: using position information from a tracker we can
+    //      compute a plane to approximate a complex surface at that
+    //      position and send that approximation 15-30 times per
+    //      second to simulate the complex surface
+
+    double norm = sqrt(xpos*xpos + ypos*ypos + zpos*zpos);
+    double radius = .03;        // radius is 3 cm
+    forceDevice->set_plane(xpos,ypos,zpos, -radius*norm);
+//    printf("Plane: N= %f %f %f, D=%f\n",xpos,ypos,zpos, -planeZval);
+
+    forceDevice->sendSurface();
+
 }
 
 void	handle_button_change(void *userdata, const vrpn_BUTTONCB b)
@@ -72,7 +89,6 @@ void	handle_button_change(void *userdata, const vrpn_BUTTONCB b)
 int main(int argc, char *argv[])
 {
   int     done = 0;
-  vrpn_ForceDevice_Remote *forceDevice;
   vrpn_Tracker_Remote *tracker;
   vrpn_Button_Remote *button;
 
@@ -120,6 +136,15 @@ be smaller than static friction or you will get the same error.
   forceDevice->setSurfaceFstatic(sFric); 	// set static friction
   forceDevice->setSurfaceFdynamic(dFric);	// set dynamic friction
 
+  // texture and buzzing stuff:
+  // this turns off buzzing and texture
+  forceDevice->setSurfaceBuzzAmplitude(0.0);
+  forceDevice->setSurfaceBuzzFrequency(60.0); // Hz
+  forceDevice->setSurfaceTextureAmplitude(0.00); // meters!!!
+  forceDevice->setSurfaceTextureWavelength(0.01); // meters!!!
+
+
+
   forceDevice->setRecoveryTime(10);	// recovery occurs over 10
                                     // force update cycles
 
@@ -141,20 +166,6 @@ be smaller than static friction or you will get the same error.
 
     // Let button receive button status from remote button
     button->mainloop();
-
-    // we may call forceDevice->set_plane(...) followed by
-    //      forceDevice->sendSurface() here to change the plane
-    // for example: using position information from a tracker we can
-    //      compute a plane to approximate a complex surface at that
-    //      position and send that approximation 15-30 times per
-    //      second to simulate the complex surface
-
-    double norm = sqrt(xpos*xpos + ypos*ypos + zpos*zpos);
-    double radius = .03;	// radius is 3 cm
-    forceDevice->set_plane(xpos,ypos,zpos, -radius*norm);
-//    printf("Plane: N= %f %f %f, D=%f\n",xpos,ypos,zpos, -planeZval);
-
-    forceDevice->sendSurface();
   }
 
   // shut off force device
