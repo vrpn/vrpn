@@ -686,8 +686,10 @@ void vrpn_Tracker_Flock::mainloop()
     if (cResets==4) {
       char ch;
       checkError();
-      fprintf(stderr, "\nvrpn_Tracker_Flock: problems resetting ... check that: a) all cables are attached, b) all units have FLY/STANDBY switches in FLY mode, and c) no receiver is laying too close to the transmitter.  When done checking, power cycle the flock.\nPress return when the flock is ready to be re-started. ");
-      fscanf(stdin, "%c", &ch);
+      fprintf(stderr, "\nvrpn_Tracker_Flock: problems resetting ... check that: a) all cables are attached, b) all units have FLY/STANDBY switches in FLY mode, and c) no receiver is laying too close to the transmitter.  When done checking, power cycle the flock.\nWill attempt to reset in 30 seconds.\n");
+      sleep(30);
+      // "press return when the flock is ready to be re-started. ");
+      //      fscanf(stdin, "%c", &ch);
       cResets=0;
     }
     fprintf(stderr, 
