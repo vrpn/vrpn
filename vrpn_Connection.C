@@ -3748,6 +3748,10 @@ int vrpn_Endpoint::finish_new_connection_setup (void) {
   }
   d_log->logMode() |= received_logmode;
 
+  // Doesn't this have to go here so that pack_log_description() goes
+  // through (isn't thrown out in pack_message())?`
+  status = CONNECTED;
+
   if (pack_log_description() == -1) {
     fprintf(stderr, "vrpn_Endpoint::finish_new_connection_setup:  "
                       "Can't pack remote logging instructions.\n");
@@ -3771,8 +3775,6 @@ int vrpn_Endpoint::finish_new_connection_setup (void) {
 
   // status must be sent to CONNECTED *before* any messages are
   // packed;  otherwise they're silently discarded in pack_message.
-
-  status = CONNECTED;
 
 #ifdef VERBOSE
   fprintf(stderr, "CONNECTED - vrpn_Endpoint::finish_new_connection_setup.\n");
@@ -4322,115 +4324,6 @@ void setClockOffset( void *userdata, const vrpn_CLOCKCB& info )
 #endif
   (*(struct timeval *) userdata) = info.tvClockOffset;
 }
-
-vrpn_Synchronized_Connection::vrpn_Synchronized_Connection
-    (unsigned short listen_port_no,
-     const char * local_logfile, long local_logmode,
-     const char * NIC_IPaddress) :
-  vrpn_Connection (listen_port_no, local_logfile, local_logmode, NIC_IPaddress)
-{
-   pClockServer = new vrpn_Clock_Server(this);
-
-   pClockRemote = (vrpn_Clock_Remote *) NULL;
-}
-
-// register the base connection name so that vrpn_Clock_Remote can use it
-vrpn_Synchronized_Connection::vrpn_Synchronized_Connection
-         (const char * server_name,
-	  int port,
-          const char * local_logfile,
-          long local_logmode,
-          const char * remote_logfile,
-          long remote_logmode,
-          double dFreq, 
-	  int cSyncWindow,
-          const char * NIC_IPaddress) :
-  vrpn_Connection (server_name, port, local_logfile, local_logmode,
-                   remote_logfile, remote_logmode, NIC_IPaddress)
-{
-
-  pClockServer = (vrpn_Clock_Server *) NULL;
-
-  if ((connectionStatus != CONNECTED) &&
-       (connectionStatus != TRYING_TO_CONNECT)  &&
-       (connectionStatus != COOKIE_PENDING) ) { 
-    return;
-  }
-
-  // DO WE NEED TO ALLOW COOKIE_PENDING HERE?
-
-  pClockRemote = new vrpn_Clock_Remote (server_name, dFreq, cSyncWindow);
-  pClockRemote->register_clock_sync_handler(&d_endpoints[0]->tvClockOffset, 
-					    setClockOffset );
-   // -2 as freq tells connection to immediately perform
-   // a full sync to calc clock offset accurately.
-   if (dFreq==-2) {
-#ifdef	VERBOSE
-     printf("vrpn_Synchronized_Connection: starting full sync\n");
-#endif
-     // register messages
-     mainloop();
-     mainloop();
-
-     // do full sync
-#ifdef	VERBOSE
-     printf("vrpn_Synchronized_Connection: calling full sync\n");
-#endif
-     pClockRemote->fullSync();
-     mainloop();
-   }
-}
-
-vrpn_Synchronized_Connection::~vrpn_Synchronized_Connection() {
-  if (pClockServer) {
-    delete pClockServer;
-  }
-  if (pClockRemote) {
-    delete pClockRemote;
-  }
-}
-
-struct timeval vrpn_Synchronized_Connection::fullSync (void)
-{
-  if (pClockRemote) {
-    // set the fullsync flag
-    pClockRemote->fullSync();
-    // call the mainloop to do the sync
-    mainloop();
-  } else {
-    perror("vrpn_Synchronized_Connection::fullSync: only valid for clients");
-  }
-
-  // XXX Since this is only valid for clients, we can assume that the
-  // client connection has instantiated endpoint[0].
-  return d_endpoints[0]->tvClockOffset;
-}
-
-int vrpn_Synchronized_Connection::mainloop (const struct timeval * timeout)
-{
-  // If we are not in a connected state, don't do synchronization, just
-  // call the parent class mainloop()
-  if (connectionStatus != CONNECTED) {
-	return vrpn_Connection::mainloop(timeout);
-  }
-  if (pClockServer) {
-    pClockServer->mainloop();
-    // call the base class mainloop
-    return vrpn_Connection::mainloop(timeout);
-  } 
-  else if (pClockRemote) {
-    // the remote device always calls the base class connection mainloop already
-    pClockRemote->mainloop(timeout);
-  } 
-  else {
-    fprintf(stderr,
-	"vrpn_Synchronized_Connection::mainloop: no clock client or server\n");
-    return -1;
-  }
-  return 0;
-}
-
-
 int flush_udp_socket (int fd) {
   timeval localTimeout;
   fd_set readfds, exceptfds;
@@ -5189,6 +5082,8 @@ vrpn_Connection::vrpn_Connection
       return;
     }
 
+    endpoint->status = TRYING_TO_CONNECT;
+
     // See if we have a connection yet (wait for 1 sec at most).
     // This will allow the connection to come up fast if things are
     // all set. Otherwise, we'll drop into re-sends when we get
@@ -5470,10 +5365,145 @@ vrpn_bool vrpn_Connection::connected (void) const
     int endpointIndex;
     
     for (endpointIndex = 0; endpointIndex < d_numEndpoints; endpointIndex++) {
-        if (d_endpoints[endpointIndex]->status == CONNECTED) return VRPN_TRUE;
+        if (d_endpoints[endpointIndex] &&
+            (d_endpoints[endpointIndex]->status == CONNECTED)) {
+          return VRPN_TRUE;
+        }
     }
     return VRPN_FALSE;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+vrpn_Synchronized_Connection::vrpn_Synchronized_Connection
+    (unsigned short listen_port_no,
+     const char * local_logfile, long local_logmode,
+     const char * NIC_IPaddress) :
+    vrpn_Connection (listen_port_no, local_logfile,
+                     local_logmode, NIC_IPaddress),
+    pClockServer (NULL),
+    pClockRemote (NULL)
+{
+   pClockServer = new vrpn_Clock_Server (this);
+}
+
+// register the base connection name so that vrpn_Clock_Remote can use it
+vrpn_Synchronized_Connection::vrpn_Synchronized_Connection
+         (const char * server_name,
+	  int port,
+          const char * local_logfile,
+          long local_logmode,
+          const char * remote_logfile,
+          long remote_logmode,
+          double dFreq, 
+	  int cSyncWindow,
+          const char * NIC_IPaddress) :
+    vrpn_Connection (server_name, port, local_logfile, local_logmode,
+                     remote_logfile, remote_logmode, NIC_IPaddress),
+    pClockServer (NULL),
+    pClockRemote (NULL)
+{
+
+  if (!doing_okay()) {
+    return;
+  }
+
+  // DO WE NEED TO ALLOW COOKIE_PENDING HERE?
+
+  pClockRemote = new vrpn_Clock_Remote (server_name, dFreq, cSyncWindow);
+  pClockRemote->register_clock_sync_handler(&d_endpoints[0]->tvClockOffset, 
+					    setClockOffset );
+   // -2 as freq tells connection to immediately perform
+   // a full sync to calc clock offset accurately.
+   if (dFreq==-2) {
+#ifdef	VERBOSE
+     printf("vrpn_Synchronized_Connection: starting full sync\n");
+#endif
+     // register messages
+     mainloop();
+     mainloop();
+
+     // do full sync
+#ifdef	VERBOSE
+     printf("vrpn_Synchronized_Connection: calling full sync\n");
+#endif
+     pClockRemote->fullSync();
+     mainloop();
+   }
+}
+
+vrpn_Synchronized_Connection::~vrpn_Synchronized_Connection() {
+  if (pClockServer) {
+    delete pClockServer;
+  }
+  if (pClockRemote) {
+    delete pClockRemote;
+  }
+}
+
+struct timeval vrpn_Synchronized_Connection::fullSync (void)
+{
+  if (pClockRemote) {
+    // set the fullsync flag
+    pClockRemote->fullSync();
+    // call the mainloop to do the sync
+    mainloop();
+  } else {
+    perror("vrpn_Synchronized_Connection::fullSync: only valid for clients");
+  }
+
+  // XXX Since this is only valid for clients, we can assume that the
+  // client connection has instantiated endpoint[0].
+  return d_endpoints[0]->tvClockOffset;
+}
+
+int vrpn_Synchronized_Connection::mainloop (const struct timeval * timeout)
+{
+  // If we are not in a connected state, don't do synchronization, just
+  // call the parent class mainloop()
+  if (connectionStatus != CONNECTED) {
+	return vrpn_Connection::mainloop(timeout);
+  }
+  if (pClockServer) {
+    pClockServer->mainloop();
+    // call the base class mainloop
+    return vrpn_Connection::mainloop(timeout);
+  } 
+  else if (pClockRemote) {
+    // the remote device always calls the base class connection mainloop already
+    pClockRemote->mainloop(timeout);
+  } 
+  else {
+    fprintf(stderr,
+	"vrpn_Synchronized_Connection::mainloop: no clock client or server\n");
+    return -1;
+  }
+  return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //------------------------------------------------------------------------
 //	This section holds data structures and functions to open

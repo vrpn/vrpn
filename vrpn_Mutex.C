@@ -118,6 +118,7 @@ static vrpn_uint32 getmyIP (const char * NICaddress = NULL) {
 
 vrpn_Mutex::vrpn_Mutex (const char * name, int port, const char * NICaddress) :
     d_state (AVAILABLE),
+    d_server (NULL),
     d_peer (NULL),
     d_numPeers (0),
     d_numConnectionsAllocated (0),
@@ -135,30 +136,43 @@ vrpn_Mutex::vrpn_Mutex (const char * name, int port, const char * NICaddress) :
     fprintf(stderr, "vrpn_Mutex:  NULL name!\n");
     return;
   }
-  d_mutexName = new char [1 + strlen(name)];
-  if (!d_mutexName) {
-    fprintf(stderr, "vrpn_Mutex:  Out of memory.\n");
-    return;
-  }
-  strncpy(d_mutexName, name, strlen(name));
-
   d_server = new vrpn_Synchronized_Connection (port, NULL, vrpn_LOG_NONE,
                                                NICaddress);
+  if (!d_server) {
+    fprintf(stderr, "vrpn_Mutex:  "
+                    "Couldn't open connection on port %d!\n", port);
+    return;
+  }
 
-  d_myId = d_server->register_sender(name);
-  d_request_type = d_server->register_message_type(request_type);
-  d_release_type = d_server->register_message_type(release_type);
-  d_grantRequest_type = d_server->register_message_type(grantRequest_type);
-  d_denyRequest_type = d_server->register_message_type(denyRequest_type);
-  //d_losePeer_type = d_server->register_message_type(losePeer_type);
+  init(name);
+}
 
-  d_server->register_handler(d_request_type, handle_request, this, d_myId);
-  d_server->register_handler(d_release_type, handle_release, this, d_myId);
-  d_server->register_handler(d_grantRequest_type, handle_grantRequest,
-                             this, d_myId);
-  d_server->register_handler(d_denyRequest_type, handle_denyRequest,
-                             this, d_myId);
+vrpn_Mutex::vrpn_Mutex (const char * name, vrpn_Connection * server) :
+    d_state (AVAILABLE),
+    d_server (server),
+    d_peer (NULL),
+    d_numPeers (0),
+    d_numConnectionsAllocated (0),
+    d_myIP (getmyIP(NULL)),
+    d_myPort (0),
+    d_holderIP (0),
+    d_holderPort (-1),
+    d_reqGrantedCB (NULL),
+    d_reqDeniedCB (NULL),
+    d_releaseCB (NULL),
+    d_peerData (NULL)
+{
 
+  if (!name) {
+    fprintf(stderr, "vrpn_Mutex:  NULL name!\n");
+    return;
+  }
+  if (!server) {
+    fprintf(stderr, "vrpn_Mutex:  NULL connection!\n");
+    return;
+  }
+
+  init(name);
 }
 
 vrpn_Mutex::~vrpn_Mutex (void) {
@@ -217,7 +231,6 @@ int vrpn_Mutex::numPeers (void) const {
 
 
 void vrpn_Mutex::mainloop (void) {
-  mutexCallback * cb;
   int i;
 
   d_server->mainloop();
@@ -229,10 +242,8 @@ void vrpn_Mutex::mainloop (void) {
       (d_numPeersGrantingLock == d_numPeers)) {
     d_state = OURS;
 
-    // trigger callbacks
-    for (cb = d_reqGrantedCB;  cb;  cb = cb->next) {
-      (cb->f)(cb->userdata);
-    }
+    triggerGrantCallbacks();
+
   }
 }
 
@@ -240,7 +251,10 @@ void vrpn_Mutex::request (void) {
   int i;
 
   // No point in sending requests if it's not currently available.
+  // However, we need to trigger any local denial callbacks;  otherwise
+  // this looks like a silent failure.
   if (!isAvailable()) {
+    triggerDenyCallbacks();
     return;
   }
 
@@ -262,10 +276,10 @@ void vrpn_Mutex::request (void) {
 }
 
 void vrpn_Mutex::release (void) {
-  mutexCallback * cb;
   int i;
 
   // Can't release it if we don't already have it.
+  // There aren't any appropriate callbacks to trigger here.  :)
   if (!isHeldLocally()) {
     return;
   }
@@ -277,10 +291,7 @@ void vrpn_Mutex::release (void) {
     sendRelease(d_peer[i]);
   }
 
-  // Trigger local callbacks, too.
-  for (cb = d_releaseCB;  cb;  cb = cb->next) {
-    (cb->f)(cb->userdata);
-  }
+  triggerReleaseCallbacks();
 }
 
 void vrpn_Mutex::addPeer (const char * stationName) {
@@ -422,7 +433,6 @@ int vrpn_Mutex::handle_request (void * userdata, vrpn_HANDLERPARAM p) {
 // static
 int vrpn_Mutex::handle_release (void * userdata, vrpn_HANDLERPARAM p) {
   vrpn_Mutex * me = (vrpn_Mutex *) userdata;
-  mutexCallback * cb;
   const char * b = p.buffer;
   vrpn_uint32 senderIP;
   vrpn_uint32 senderPort;
@@ -448,10 +458,7 @@ int vrpn_Mutex::handle_release (void * userdata, vrpn_HANDLERPARAM p) {
   me->d_holderIP = 0;
   me->d_holderPort = -1;
 
-  // trigger callbacks
-  for (cb = me->d_releaseCB;  cb;  cb = cb->next) {
-    (cb->f)(cb->userdata);
-  }
+  me->triggerReleaseCallbacks();
 
   return 0;
 }
@@ -492,7 +499,6 @@ int vrpn_Mutex::handle_grantRequest (void * userdata, vrpn_HANDLERPARAM p) {
 // static
 int vrpn_Mutex::handle_denyRequest (void * userdata, vrpn_HANDLERPARAM p) {
   vrpn_Mutex * me = (vrpn_Mutex *) userdata;
-  mutexCallback * cb;
   const char * b = p.buffer;
   vrpn_uint32 senderIP;
   vrpn_uint32 senderPort;
@@ -514,10 +520,7 @@ int vrpn_Mutex::handle_denyRequest (void * userdata, vrpn_HANDLERPARAM p) {
   
   me->d_numPeersGrantingLock = 0;
 
-  // trigger callbacks
-  for (cb = me->d_reqDeniedCB;  cb;  cb = cb->next) {
-    (cb->f)(cb->userdata);
-  }
+  me->triggerDenyCallbacks();
 
   return 0;
 }
@@ -617,5 +620,58 @@ void vrpn_Mutex::sendDenyRequest (vrpn_Connection * c, vrpn_uint32 IP,
                   c->register_message_type(denyRequest_type),
                   c->register_sender(d_mutexName), buffer,
                   vrpn_CONNECTION_RELIABLE);
+}
+
+void vrpn_Mutex::triggerGrantCallbacks (void) {
+  mutexCallback * cb;
+
+  // trigger callbacks
+  for (cb = d_reqGrantedCB;  cb;  cb = cb->next) {
+    (cb->f)(cb->userdata);
+  }
+}
+
+void vrpn_Mutex::triggerDenyCallbacks (void) {
+  mutexCallback * cb;
+
+  // trigger callbacks
+  for (cb = d_reqDeniedCB;  cb;  cb = cb->next) {
+    (cb->f)(cb->userdata);
+  }
+}
+
+void vrpn_Mutex::triggerReleaseCallbacks (void) {
+  mutexCallback * cb;
+
+  // trigger callbacks
+  for (cb = d_releaseCB;  cb;  cb = cb->next) {
+    (cb->f)(cb->userdata);
+  }
+}
+
+
+
+void vrpn_Mutex::init (const char * name) {
+
+  d_mutexName = new char [1 + strlen(name)];
+  if (!d_mutexName) {
+    fprintf(stderr, "vrpn_Mutex::init:  Out of memory.\n");
+    return;
+  }
+  strncpy(d_mutexName, name, strlen(name));
+
+  d_myId = d_server->register_sender(name);
+  d_request_type = d_server->register_message_type(request_type);
+  d_release_type = d_server->register_message_type(release_type);
+  d_grantRequest_type = d_server->register_message_type(grantRequest_type);
+  d_denyRequest_type = d_server->register_message_type(denyRequest_type);
+
+  d_server->register_handler(d_request_type, handle_request, this, d_myId);
+  d_server->register_handler(d_release_type, handle_release, this, d_myId);
+  d_server->register_handler(d_grantRequest_type, handle_grantRequest,
+                             this, d_myId);
+  d_server->register_handler(d_denyRequest_type, handle_denyRequest,
+                             this, d_myId);
+
 }
 

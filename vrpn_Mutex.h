@@ -24,6 +24,15 @@
 /// are true between when request() is called and either RequestGranted or
 /// RequestDenied callbacks are triggered.
 
+// Known bugs -
+
+//   The constructor that takes a Connection as an argument will incorrectly
+// identify its IP address as the machine's default rather than the address
+// used by the Connection.  This should not cause any errors in the protocol,
+// but will bias the tiebreaking algorithm.  The same constructor will use
+// the wrong port number;  without this information the tiebreaking algorithm
+// fails.  Oops.  Use only one mutex per Connection for now.
+
 // Possible bugs -
 
 //   If on startup somebody else is holding the mutex we'll think it's
@@ -47,11 +56,6 @@
 // for details (and how to fix if it ever becomes a problem),
 // see the implementation notes in vrpn_Mutex.C.
 
-// The name is currently meaningless, since we can't multiplex multiple
-// connections over a single port since we have to open a new port -
-// there's no way to get vrpn_get_connection_by_name to give us a server
-// port.
-
 
 
 class vrpn_Mutex {
@@ -59,6 +63,10 @@ class vrpn_Mutex {
   public:
 
     vrpn_Mutex (const char * name, int port, const char * NICaddress = NULL);
+      ///< This constructor opens a new connection/port for the mutex.
+
+    vrpn_Mutex (const char * name, vrpn_Connection * c);
+      ///< This constructor reuses a SERVER connection for the mutex.
 
     ~vrpn_Mutex (void);
       ///< If isHeldLocally(), calls release().
@@ -89,20 +97,30 @@ class vrpn_Mutex {
     void mainloop (void);
 
     void request (void);
-      ///< Request the distributed lock.  Does nothing if !isAvailable().
+      ///< Request the distributed lock.  Does not request the lock
+      ///< if !isAvailable(), instead automatically triggering DeniedCallbacks.
 
     void release (void);
       ///< Release the distributed lock.  Does nothing if !isHeldLocally()
       ///< and there isn't a request pending.
 
+
     void addPeer (const char * stationName);
       ///< Takes a VRPN station name of the form "<host>:<port>".
 
+
     void addRequestGrantedCallback (void * userdata, int (*) (void *));
+      ///< These callbacks are triggered when OUR request is granted.
     void addRequestDeniedCallback (void * userdata, int (*) (void *));
+      ///< These callbacks are triggered when OUR request is denied.
     void addReleaseCallback (void * userdata, int (*) (void *));
+      ///< These callbacks are triggered when ANY peer releases the
+      ///< mutex.
+
+
 
   protected:
+
 
     enum state { OURS, REQUESTING, AVAILABLE, HELD_REMOTELY};
 
@@ -148,6 +166,12 @@ class vrpn_Mutex {
                            vrpn_uint32 PortNumber);
     void sendDenyRequest (vrpn_Connection *, vrpn_uint32 IPnumber,
                           vrpn_uint32 PortNumber);
+
+    void triggerGrantCallbacks (void);
+    void triggerDenyCallbacks (void);
+    void triggerReleaseCallbacks (void);
+
+    void init (const char * name);
 
     struct mutexCallback {
       int (* f) (void *);
