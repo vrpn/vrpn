@@ -2,10 +2,10 @@
 #include "constraint.h"
 
 #define MAX_FORCE 10.0	// we try not to exceed this
-						// force [dyne], this gets pretty close
-						// to the maximum PHANToM force
+			// force [dyne], this gets pretty close
+			// to the maximum PHANToM force
 #define MAX_DIST 50.0	// maximum distance at which effect
-						// force can be felt [mm]
+			// force can be felt [mm]
 
 gstVector ConstraintEffect::calcEffectForce(void *PHANToM){
 

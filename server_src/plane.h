@@ -35,7 +35,9 @@ public:
 
 	void setPlane(gstVector newNormal, gstPoint point);
 
-	static int initClass() {PlaneClassTypeId = gstUniqueId++ ;return 0;}
+	static int initClass() {
+		//PlaneClassTypeId = gstUniqueId++ ;
+		return 0;}
 
 	void setInEffect(gstBoolean effect) {inEffect = effect;}
 

@@ -41,9 +41,10 @@ public:
   float		numRecCycles;	// number of recovery cycles
 };
 
-
 typedef void (*vrpn_PHANTOMPLANECHANGEHANDLER)(void *userdata,
 					 const vrpn_Plane_PHANTOMCB &info);
+
+void phantomErrorHandler (int errorNumber, char *description, void *userdata);
 
 class vrpn_Phantom: public vrpn_ForceDevice,public vrpn_Tracker,
 					public vrpn_Button {
@@ -91,7 +92,7 @@ protected:
 					vrpn_HANDLERPARAM p);
 
 	// from vrpn_Tracker
-
+	static int handle_resetOrigin_change_message(void *, vrpn_HANDLERPARAM);
 	static int handle_update_rate_request (void *, vrpn_HANDLERPARAM);
 
 public:
@@ -115,7 +116,7 @@ public:
 
 	static void handle_plane(void *userdata,const vrpn_Plane_PHANTOMCB &p);
     static void check_parameters(vrpn_Plane_PHANTOMCB *p);	
-
+	void handlePHANToM_Error(int errorNumber, char *description);
 };
 
 
@@ -155,7 +156,6 @@ void vrpn_Phantom::handle_plane(void *userdata,const vrpn_Plane_PHANTOMCB &p)
     }
 }
 
-
 // This function reports errors if surface friction, compliance parameters
 // are not in valid ranges for the GHOST library and sets them as 
 // close as it can to the requested values.
@@ -164,7 +164,7 @@ void vrpn_Phantom::check_parameters(vrpn_Plane_PHANTOMCB *p)
 {
         if (p->SurfaceKspring <= 0){
                 printf("Error: Kspring = %f <= 0\n", p->SurfaceKspring);
-                p->SurfaceKspring = 0.001;
+                p->SurfaceKspring = 0.001f;
         }
         else if (p->SurfaceKspring > 1.0){
                 printf("Error: Kspring = %f > 1.0\n", p->SurfaceKspring);
@@ -188,7 +188,7 @@ void vrpn_Phantom::check_parameters(vrpn_Plane_PHANTOMCB *p)
         }
         else if (p->SurfaceKdamping > 0.005){
                 printf("Error: Kdamping = %f > 0.005\n", p->SurfaceKdamping);
-                p->SurfaceKdamping = 0.005;
+                p->SurfaceKdamping = 0.005f;
         }
 
 }
@@ -199,7 +199,7 @@ void vrpn_Phantom::resetPHANToM(void)
 	scene->stopServoLoop();
 	rootH->removeChild(phantom);
 	delete(phantom);
-	phantom = new gstPHANToM("phantom.ini");
+	phantom = new gstPHANToM("Default PHANToM");
 	rootH->addChild(phantom);
 	Sleep(500);
 	scene->startServoLoop();
@@ -232,13 +232,18 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
   /* make it so simulation loop doesn't exit if remote switch is released */
   scene->setQuitOnDevFault((gstBoolean)FALSE);
 
+  /* register ghost error handler */
+  setErrorCallback( phantomErrorHandler, (void *)this);
+  /* disable popup error dialogs */
+  printErrorMessages(FALSE);
+
   /* Create the root separator. */
   rootH = new gstSeparator;
   scene->setRoot(rootH);
   
   /* Create the phantom object.  When this line is processed, 
      the phantom position is zeroed. */
-  phantom = new gstPHANToM("phantom.ini");
+  phantom = new gstPHANToM("Default PHANToM");
   /* We add the phantom to the root instead of the hapticScene (whic
      is the child of the root) because when we turn haptics off
      via the 'H' key, we do not want to remove the phantom from the
@@ -251,9 +256,9 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
   pointConstraint = new ConstraintEffect();
   phantom->setEffect(pointConstraint);
 
-  SurfaceKspring= 0.29;
-  SurfaceFdynamic = 0.02;
-  SurfaceFstatic = 0.03;
+  SurfaceKspring= 0.29f;
+  SurfaceFdynamic = 0.02f;
+  SurfaceFstatic = 0.03f;
   SurfaceKdamping = 0.0;
 
   for(int i=0; i<MAXPLANE; i++ ) {
@@ -310,10 +315,14 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
 		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
 		vrpn_ForceDevice::connection = NULL;
   }
+  if (vrpn_Tracker::connection->register_handler(reset_origin_m_id,
+        handle_resetOrigin_change_message, this, vrpn_Tracker::my_id)) {
+                fprintf(stderr,"vrpn_Phantom:can't register handler\n");
+                vrpn_Tracker::connection = NULL;
+  }
 
 
   this->register_plane_change_handler(this, handle_plane);
-
 
   if (vrpn_Tracker::register_server_handlers())
     fprintf(stderr, "vrpn_Phantom: couldn't register xform request handlers\n");
@@ -347,7 +356,6 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
   } else
       fprintf(stderr, "vrpn_Phantom registered new update-rate handler.\n");
 
-
   scene->startServoLoop();
 
 }
@@ -368,8 +376,10 @@ void vrpn_Phantom::get_report(void)
 	double x,y,z;
 	double dt_vel = .10, dt_acc = .10;
 	q_matrix_type rot_matrix;
-	q_type p_quat, v_quat, a_quat; // angular information (pos, vel, acc)
-	double angVelNorm, angAccNorm;
+	q_type p_quat, v_quat;
+	//q_type a_quat; // angular information (pos, vel, acc)
+	double angVelNorm;
+	// double angAccNorm;
 	int i,j;
 
 	gstPoint scpt, pt;
@@ -529,6 +539,46 @@ void vrpn_Phantom::mainloop(void) {
   //      print_report();
     }
 }
+
+
+void phantomErrorHandler (int errorNumber, char *description, void *userdata)
+{
+
+	vrpn_Phantom *me = (vrpn_Phantom *)userdata;
+
+	me->handlePHANToM_Error(errorNumber, description);
+}
+
+void vrpn_Phantom::handlePHANToM_Error(int errorNumber, char *description)
+{
+	char errorBuf[100];
+    int len;
+    fprintf(stderr, "PHANToM Error: %s\n", description);
+    // an error condition has occurred; send it to the client
+    switch(errorNumber){
+	case GST_OUT_OF_RANGE_ERROR:
+	  errorCode = FD_VALUE_OUT_OF_RANGE;
+	  break;
+	case GST_DUTY_CYCLE_ERROR:
+	  errorCode = FD_DUTY_CYCLE_ERROR;
+	  break;
+	case GST_PHANTOM_FORCE_ERROR:
+	  errorCode = FD_FORCE_ERROR;
+	  break;
+	default:
+	  errorCode = FD_MISC_ERROR;
+	  break;
+    }
+    if (vrpn_ForceDevice::connection) {
+	len = vrpn_ForceDevice::encode_error_to(errorBuf);
+	if (vrpn_ForceDevice::connection->pack_message(len, timestamp,
+		error_message_id, vrpn_ForceDevice::my_id,
+		errorBuf, vrpn_CONNECTION_RELIABLE)) {
+		    fprintf(stderr,"Phantom: cannot write message: tossing\n");	
+	}
+    }
+}
+
 
 void vrpn_Phantom::reset(){
 	if(trimesh->displayStatus())
@@ -867,6 +917,16 @@ int vrpn_Phantom::handle_constraint_change_message(void *userdata,
   }
   return 0;
 }
+
+// static
+int vrpn_Phantom::handle_resetOrigin_change_message(void * userdata,
+                                                vrpn_HANDLERPARAM p) {
+  vrpn_Phantom * me = (vrpn_Phantom *) userdata;
+  me->resetPHANToM();
+  return 0;
+
+}
+
 
 // static
 int vrpn_Phantom::handle_update_rate_request (void * userdata,

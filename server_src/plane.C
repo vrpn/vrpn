@@ -16,7 +16,7 @@ Plane::Plane(const gstPlane & p)
   lastDepth = 0;
   dIncrement = 0;
   numRecoveryCycles = 1;
-  boundingRadius = 1000.0;
+//  boundingRadius = 1000.0;
   invalidateCumTransf();
 }
 
@@ -30,7 +30,7 @@ Plane::Plane(const gstPlane * p)
   lastDepth = 0;
   dIncrement = 0;
   numRecoveryCycles = 1;
-  boundingRadius = 1000.0;
+//  boundingRadius = 1000.0;
   invalidateCumTransf();
 }
 
@@ -43,7 +43,7 @@ Plane::Plane(const Plane *p)
   lastDepth = 0;
   dIncrement = 0;
   numRecoveryCycles = 1;
-  boundingRadius = 1000.0;
+ // boundingRadius = 1000.0;
   invalidateCumTransf();	
   plane = gstPlane(p->plane);
 }
@@ -58,7 +58,7 @@ Plane::Plane(const Plane &p)
   lastDepth = 0;
   dIncrement = 0;
   numRecoveryCycles = 1;
-  boundingRadius = 1000.0;
+//  boundingRadius = 1000.0;
   invalidateCumTransf();
 }
 
@@ -66,7 +66,7 @@ Plane::Plane(const Plane &p)
 Plane::Plane(double a,double b, double c, double d) 
 {  gstVector vec = gstVector(a,b,c);
   plane = gstPlane(vec,d);
-  boundingRadius = 1000.0;
+ // boundingRadius = 1000.0;
   invalidateCumTransf();
   inEffect= FALSE;
   isNewPlane = FALSE;
