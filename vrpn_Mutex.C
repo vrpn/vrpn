@@ -14,27 +14,18 @@
 #define INADDR_NONE -1
 #endif
 
-// Implementation notes:
-//
-// We broadcast messages over d_peer[] tagged with our IP number in
-// network format.
-// We broadcast REPLIES over d_peer[] tagged with the sender's IP number
-// in network format.  When we get a reply, we check the IP number it
-// contains against our own and discard it if it doesn't match.
-//
-// This is an ugly n^2 implementation, when we could do it in 2n, but the
-// data structures would be a little more complex - we'd have to have a
-// mapping from IP numbers to vrpn_Connections in d_peer[].  What I'd probably
-// do would be abandon IP numbers and ports and just use lexographical
-// ordering of station names.  But then we'd have to ensure that every 
-// instance used the same station name (evans vs. evans.cs.unc.edu vs.
-// evans.cs.unc.edu:4500) for each peer, which is ugly.
-
-
-
 /*
 
-  State diagram:
+  Server State diagram:
+
+                handle_release()
+          +-------------------------+
+          |                         |
+          v                         |
+               handle_request()
+        FREE  ------------------>  HELD
+
+  Peer State diagram:
 
                              release()
           +--------------------------------------------+
@@ -58,13 +49,16 @@
 //static const char * myID = "vrpn Mutex";
 static const char * request_type = "vrpn Mutex Request";
 static const char * release_type = "vrpn Mutex Release";
+static const char * releaseNotification_type =
+                                   "vrpn Mutex Release Notification";
 static const char * grantRequest_type = "vrpn Mutex Grant Request";
 static const char * denyRequest_type = "vrpn Mutex Deny Request";
 //static const char * losePeer_type = "vrpn Mutex Lose Peer";
+static const char * initialize_type = "vrpn Mutex Initialize";
 
 struct losePeerData {
   vrpn_Connection * connection;
-  vrpn_Mutex * mutex;
+  vrpn_PeerMutex * mutex;
 };
 
 // Mostly copied from vrpn_Connection.C's vrpn_getmyIP() and some man pages.
@@ -116,7 +110,519 @@ static vrpn_uint32 getmyIP (const char * NICaddress = NULL) {
 
 
 
-vrpn_Mutex::vrpn_Mutex (const char * name, int port, const char * NICaddress) :
+
+
+
+
+
+
+
+
+
+
+vrpn_Mutex::vrpn_Mutex (const char * name, vrpn_Connection * c) :
+    d_connection (c) {
+  char * servicename;
+
+  servicename = vrpn_copy_service_name(name);
+
+  if (c) {
+    d_myId = c->register_sender(servicename);
+    d_request_type = c->register_message_type(request_type);
+    d_release_type = c->register_message_type(release_type);
+    d_releaseNotification_type = c->register_message_type
+                 (releaseNotification_type);
+    d_grantRequest_type = c->register_message_type(grantRequest_type);
+    d_denyRequest_type = c->register_message_type(denyRequest_type);
+    d_initialize_type = c->register_message_type(initialize_type);
+  }
+
+  if (servicename) {
+    delete [] servicename;
+  }
+}
+
+// virtual
+vrpn_Mutex::~vrpn_Mutex (void) {
+
+}
+
+void vrpn_Mutex::mainloop (void) {
+
+  if (d_connection) {
+    d_connection->mainloop();
+  }
+}
+
+void vrpn_Mutex::sendRequest (vrpn_int32 index) {
+  timeval now;
+  char buffer [32];
+  char * b = buffer;
+  vrpn_int32 bl = 32;
+  
+  gettimeofday(&now, NULL);
+  vrpn_buffer(&b, &bl, index);
+  d_connection->pack_message(32 - bl, now,
+                  d_request_type, d_myId, buffer,
+                  vrpn_CONNECTION_RELIABLE);
+}
+
+void vrpn_Mutex::sendRelease (void) {
+  timeval now;
+  
+  gettimeofday(&now, NULL);
+  d_connection->pack_message(0, now,
+                  d_release_type, d_myId, NULL,
+                  vrpn_CONNECTION_RELIABLE);
+
+}
+
+void vrpn_Mutex::sendReleaseNotification (void) {
+  timeval now;
+  
+  gettimeofday(&now, NULL);
+  d_connection->pack_message(0, now,
+                  d_releaseNotification_type, d_myId, NULL,
+                  vrpn_CONNECTION_RELIABLE);
+
+}
+
+void vrpn_Mutex::sendGrantRequest (vrpn_int32 index) {
+  timeval now;
+  char buffer [32];
+  char * b = buffer;
+  vrpn_int32 bl = 32;
+  
+  gettimeofday(&now, NULL);
+  vrpn_buffer(&b, &bl, index);
+  d_connection->pack_message(32 - bl, now,
+                  d_grantRequest_type, d_myId, buffer,
+                  vrpn_CONNECTION_RELIABLE);
+
+}
+
+void vrpn_Mutex::sendDenyRequest (vrpn_int32 index) {
+  timeval now;
+  char buffer [32];
+  char * b = buffer;
+  vrpn_int32 bl = 32;
+  
+  gettimeofday(&now, NULL);
+  vrpn_buffer(&b, &bl, index);
+  d_connection->pack_message(32 - bl, now,
+                  d_denyRequest_type, d_myId, buffer,
+                  vrpn_CONNECTION_RELIABLE);
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+vrpn_Mutex_Server::vrpn_Mutex_Server (const char * name, vrpn_Connection * c) :
+    vrpn_Mutex (name, c),
+    d_state (FREE) {
+  vrpn_int32 got;
+  vrpn_int32 droppedLast;
+
+  if (c) {
+    c->register_handler(d_request_type, handle_request, this);
+    c->register_handler(d_release_type, handle_release, this);
+
+    got = c->register_message_type(vrpn_got_connection);
+    c->register_handler(got, handle_gotConnection, this);
+    droppedLast = c->register_message_type(vrpn_dropped_last_connection);
+    c->register_handler(droppedLast, handle_dropLastConnection, this);
+  }
+}
+
+// virtual
+vrpn_Mutex_Server::~vrpn_Mutex_Server (void) {
+
+}
+
+// static
+int vrpn_Mutex_Server::handle_request (void * userdata, vrpn_HANDLERPARAM p) {
+  vrpn_Mutex_Server * me = (vrpn_Mutex_Server *) userdata;
+  const char * b = p.buffer;
+  vrpn_int32 remoteId;
+
+  vrpn_unbuffer(&b, &remoteId);
+
+#ifdef VERBOSE
+  fprintf(stderr, "vrpn_Mutex_Server::handle_request from %d.\n", remoteId);
+#endif
+
+  if (me->d_state == FREE) {
+    me->d_state = HELD;
+
+    // BUG BUG BUG - how does the Mutex_Remote recognize that this grant
+    // is for it, not for some other?
+    me->sendGrantRequest(remoteId);
+
+    return 0;
+  } else {
+    me->sendDenyRequest(remoteId);
+
+    return 0;
+  }
+
+}
+
+// static
+int vrpn_Mutex_Server::handle_release (void * userdata, vrpn_HANDLERPARAM) {
+  vrpn_Mutex_Server * me = (vrpn_Mutex_Server *) userdata;
+
+#ifdef VERBOSE
+  fprintf(stderr, "vrpn_Mutex_Server::handle_release.\n");
+#endif
+
+  me->d_state = FREE;
+  me->sendReleaseNotification();
+
+  return 0;
+}
+
+
+// static
+int vrpn_Mutex_Server::handle_gotConnection (void * userdata,
+                                             vrpn_HANDLERPARAM) {
+  vrpn_Mutex_Server * me = (vrpn_Mutex_Server *) userdata;
+  timeval now;
+
+#ifdef VERBOSE
+  fprintf(stderr, "vrpn_Mutex_Server::handle_gotConnection:  "
+                  "Initializing client %d.\n", me->d_remoteIndex);
+#endif
+
+  if (me->d_connection) {
+    gettimeofday(&now, NULL);
+    me->d_connection->pack_message(sizeof(me->d_remoteIndex), now,
+                                   me->d_initialize_type, me->d_myId,
+                                   (const char *) &me->d_remoteIndex,
+                                   vrpn_CONNECTION_RELIABLE);
+  }
+
+  me->d_remoteIndex++;
+
+  return 0;
+}
+
+
+// static
+int vrpn_Mutex_Server::handle_dropLastConnection (void * userdata,
+                                                  vrpn_HANDLERPARAM) {
+  vrpn_Mutex_Server * me = (vrpn_Mutex_Server *) userdata;
+
+  // Force the lock to release, to avoid deadlock.
+  if (me->d_state == HELD) {
+    fprintf(stderr, "vrpn_Mutex_Server::handle_dropLastConnection:  "
+                    "Forcing the state to FREE to avoid deadlock.\n");
+  }
+
+  me->d_state = FREE;
+
+  return 0;
+}
+
+
+
+
+
+
+
+vrpn_Mutex_Remote::vrpn_Mutex_Remote (const char * name, vrpn_Connection * c) :
+    vrpn_Mutex (name, c ? c : vrpn_get_connection_by_name(name)),
+    d_state (AVAILABLE),
+    d_myIndex (-1),
+    d_reqGrantedCB (NULL),
+    d_reqDeniedCB (NULL),
+    d_takeCB (NULL),
+    d_releaseCB (NULL) {
+
+  d_connection->register_handler(d_grantRequest_type,
+                                 handle_grantRequest, this);
+  d_connection->register_handler(d_denyRequest_type,
+                                 handle_denyRequest, this);
+  d_connection->register_handler(d_releaseNotification_type,
+                                 handle_releaseNotification, this);
+  d_connection->register_handler(d_initialize_type, handle_initialize, this);
+}
+
+// virtual
+vrpn_Mutex_Remote::~vrpn_Mutex_Remote (void) {
+
+  // Make sure we don't deadlock things
+  release();
+
+}
+
+
+
+vrpn_bool vrpn_Mutex_Remote::isAvailable (void) const {
+  return (d_state == AVAILABLE);
+}
+
+vrpn_bool vrpn_Mutex_Remote::isHeldLocally (void) const {
+  return (d_state == OURS);
+}
+
+vrpn_bool vrpn_Mutex_Remote::isHeldRemotely (void) const {
+  return (d_state == HELD_REMOTELY);
+}
+
+
+
+void vrpn_Mutex_Remote::request (void) {
+  if (!isAvailable()) {
+    triggerDenyCallbacks();
+    return;
+  }
+
+  d_state = REQUESTING;
+  sendRequest(d_myIndex);
+
+  return;
+}
+
+
+void vrpn_Mutex_Remote::release (void) {
+  if (!isHeldLocally()) {
+    return;
+  }
+
+  d_state = AVAILABLE;
+  sendRelease();
+  triggerReleaseCallbacks();
+}
+
+
+void vrpn_Mutex_Remote::addRequestGrantedCallback (void * userdata,
+                                                   int (* f) (void *)) {
+  mutexCallback * cb = new mutexCallback;
+  if (!cb) {
+    fprintf(stderr, "vrpn_Mutex_Remote::addRequestGrantedCallback:  "
+                    "Out of memory.\n");
+    return;
+  }
+
+  cb->userdata = userdata;
+  cb->f = f;
+  cb->next = d_reqGrantedCB;
+  d_reqGrantedCB = cb;
+}
+
+void vrpn_Mutex_Remote::addRequestDeniedCallback (void * userdata,
+                                                  int (* f) (void *)) {
+  mutexCallback * cb = new mutexCallback;
+  if (!cb) {
+    fprintf(stderr, "vrpn_Mutex_Remote::addRequestDeniedCallback:  "
+                    "Out of memory.\n");
+    return;
+  }
+
+  cb->userdata = userdata;
+  cb->f = f;
+  cb->next = d_reqDeniedCB;
+  d_reqDeniedCB = cb;
+}
+
+void vrpn_Mutex_Remote::addTakeCallback (void * userdata,
+                                         int (* f) (void *)) {
+  mutexCallback * cb = new mutexCallback;
+  if (!cb) {
+    fprintf(stderr, "vrpn_Mutex_Remote::addTakeCallback:  Out of memory.\n");
+    return;
+  }
+
+  cb->userdata = userdata;
+  cb->f = f;
+  cb->next = d_takeCB;
+  d_takeCB = cb;
+}
+
+// static
+void vrpn_Mutex_Remote::addReleaseCallback (void * userdata,
+                                            int (* f) (void *)) {
+  mutexCallback * cb = new mutexCallback;
+  if (!cb) {
+    fprintf(stderr, "vrpn_Mutex_Remote::addReleaseCallback:  "
+                    "Out of memory.\n");
+    return;
+  }
+
+  cb->userdata = userdata;
+  cb->f = f;
+  cb->next = d_releaseCB;
+  d_releaseCB = cb;
+}
+
+
+// static
+int vrpn_Mutex_Remote::handle_grantRequest (void * userdata,
+                                            vrpn_HANDLERPARAM p) {
+  vrpn_Mutex_Remote * me = (vrpn_Mutex_Remote *) userdata;
+  const char * b = p.buffer;
+  vrpn_int32 index;
+
+  vrpn_unbuffer(&b, &index);
+
+#ifdef VERBOSE
+fprintf(stderr, "vrpn_Mutex_Remote::handle_grantRequest for %d.\n", index);
+#endif
+
+  if (me->d_myIndex != index) {
+    me->d_state = HELD_REMOTELY;
+    me->triggerTakeCallbacks();
+    return 0;
+  }
+
+  me->d_state = OURS;
+  me->triggerGrantCallbacks();
+  me->triggerTakeCallbacks();
+
+  return 0;
+}
+
+// static
+int vrpn_Mutex_Remote::handle_denyRequest (void * userdata,
+                                           vrpn_HANDLERPARAM p) {
+  vrpn_Mutex_Remote * me = (vrpn_Mutex_Remote *) userdata;
+  const char * b = p.buffer;
+  vrpn_int32 index;
+
+  vrpn_unbuffer(&b, &index);
+
+#ifdef VERBOSE
+fprintf(stderr, "vrpn_Mutex_Remote::handle_denyRequest for %d.\n", index);
+#endif
+
+  if (me->d_myIndex != index) {
+    return 0;
+  }
+
+  me->d_state = HELD_REMOTELY;
+  me->triggerDenyCallbacks();
+
+  return 0;
+}
+
+// static
+int vrpn_Mutex_Remote::handle_releaseNotification (void * userdata,
+                                       vrpn_HANDLERPARAM p) {
+  vrpn_Mutex_Remote * me = (vrpn_Mutex_Remote *) userdata;
+
+#ifdef VERBOSE
+fprintf(stderr, "vrpn_Mutex_Remote::handle_releaseNotification.\n");
+#endif
+
+  me->d_state = AVAILABLE;
+  me->triggerReleaseCallbacks();
+
+  return 0;
+}
+
+
+// static
+int vrpn_Mutex_Remote::handle_initialize (void * userdata,
+                                          vrpn_HANDLERPARAM p) {
+  vrpn_Mutex_Remote * me = (vrpn_Mutex_Remote *) userdata;
+  const char * b = p.buffer;
+
+  // Only pay attention to the first initialize() message we get
+  // after startup.
+  if (me->d_myIndex != -1) {
+    return 0;
+  }
+
+  vrpn_unbuffer(&b, &me->d_myIndex);
+
+#ifdef VERBOSE
+  fprintf(stderr, "vrpn_Mutex_Remote::handle_initialize:  "
+                  "Got assigned index %d.\n", me->d_myIndex);
+#endif
+
+  return 0;
+}
+
+void vrpn_Mutex_Remote::triggerGrantCallbacks (void) {
+  mutexCallback * cb;
+
+  // trigger callbacks
+  for (cb = d_reqGrantedCB;  cb;  cb = cb->next) {
+    (cb->f)(cb->userdata);
+  }
+}
+
+void vrpn_Mutex_Remote::triggerDenyCallbacks (void) {
+  mutexCallback * cb;
+
+  // trigger callbacks
+  for (cb = d_reqDeniedCB;  cb;  cb = cb->next) {
+    (cb->f)(cb->userdata);
+  }
+}
+
+void vrpn_Mutex_Remote::triggerTakeCallbacks (void) {
+  mutexCallback * cb;
+
+  // trigger callbacks
+  for (cb = d_takeCB;  cb;  cb = cb->next) {
+    (cb->f)(cb->userdata);
+  }
+}
+
+void vrpn_Mutex_Remote::triggerReleaseCallbacks (void) {
+  mutexCallback * cb;
+
+  // trigger callbacks
+  for (cb = d_releaseCB;  cb;  cb = cb->next) {
+    (cb->f)(cb->userdata);
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Implementation notes:
+//
+// We broadcast messages over d_peer[] tagged with our IP number in
+// network format.
+// We broadcast REPLIES over d_peer[] tagged with the sender's IP number
+// in network format.  When we get a reply, we check the IP number it
+// contains against our own and discard it if it doesn't match.
+//
+// This is an ugly n^2 implementation, when we could do it in 2n, but the
+// data structures would be a little more complex - we'd have to have a
+// mapping from IP numbers to vrpn_Connections in d_peer[].  What I'd probably
+// do would be abandon IP numbers and ports and just use lexographical
+// ordering of station names.  But then we'd have to ensure that every 
+// instance used the same station name (evans vs. evans.cs.unc.edu vs.
+// evans.cs.unc.edu:4500) for each peer, which is ugly.
+
+
+
+
+vrpn_PeerMutex::vrpn_PeerMutex (const char * name, int port,
+                                const char * NICaddress) :
     d_state (AVAILABLE),
     d_server (NULL),
     d_peer (NULL),
@@ -134,13 +640,13 @@ vrpn_Mutex::vrpn_Mutex (const char * name, int port, const char * NICaddress) :
 {
 
   if (!name) {
-    fprintf(stderr, "vrpn_Mutex:  NULL name!\n");
+    fprintf(stderr, "vrpn_PeerMutex:  NULL name!\n");
     return;
   }
   d_server = new vrpn_Synchronized_Connection (port, NULL, vrpn_LOG_NONE,
                                                NICaddress);
   if (!d_server) {
-    fprintf(stderr, "vrpn_Mutex:  "
+    fprintf(stderr, "vrpn_PeerMutex:  "
                     "Couldn't open connection on port %d!\n", port);
     return;
   }
@@ -148,7 +654,7 @@ vrpn_Mutex::vrpn_Mutex (const char * name, int port, const char * NICaddress) :
   init(name);
 }
 
-vrpn_Mutex::vrpn_Mutex (const char * name, vrpn_Connection * server) :
+vrpn_PeerMutex::vrpn_PeerMutex (const char * name, vrpn_Connection * server) :
     d_state (AVAILABLE),
     d_server (server),
     d_peer (NULL),
@@ -166,18 +672,18 @@ vrpn_Mutex::vrpn_Mutex (const char * name, vrpn_Connection * server) :
 {
 
   if (!name) {
-    fprintf(stderr, "vrpn_Mutex:  NULL name!\n");
+    fprintf(stderr, "vrpn_PeerMutex:  NULL name!\n");
     return;
   }
   if (!server) {
-    fprintf(stderr, "vrpn_Mutex:  NULL connection!\n");
+    fprintf(stderr, "vrpn_PeerMutex:  NULL connection!\n");
     return;
   }
 
   init(name);
 }
 
-vrpn_Mutex::~vrpn_Mutex (void) {
+vrpn_PeerMutex::~vrpn_PeerMutex (void) {
 
   // Send an explicit message so they know we're shutting down, not
   // just disconnecting temporarily and will be back.
@@ -210,19 +716,19 @@ vrpn_Mutex::~vrpn_Mutex (void) {
 
 
 
-vrpn_bool vrpn_Mutex::isAvailable (void) const {
+vrpn_bool vrpn_PeerMutex::isAvailable (void) const {
   return (d_state == AVAILABLE);
 }
 
-vrpn_bool vrpn_Mutex::isHeldLocally (void) const {
+vrpn_bool vrpn_PeerMutex::isHeldLocally (void) const {
   return (d_state == OURS);
 }
 
-vrpn_bool vrpn_Mutex::isHeldRemotely (void) const {
+vrpn_bool vrpn_PeerMutex::isHeldRemotely (void) const {
   return (d_state == HELD_REMOTELY);
 }
 
-int vrpn_Mutex::numPeers (void) const {
+int vrpn_PeerMutex::numPeers (void) const {
   return d_numPeers;
 }
 
@@ -232,7 +738,7 @@ int vrpn_Mutex::numPeers (void) const {
 
 
 
-void vrpn_Mutex::mainloop (void) {
+void vrpn_PeerMutex::mainloop (void) {
   int i;
 
   d_server->mainloop();
@@ -243,7 +749,7 @@ void vrpn_Mutex::mainloop (void) {
   checkGrantMutex();
 }
 
-void vrpn_Mutex::request (void) {
+void vrpn_PeerMutex::request (void) {
   int i;
 
   // No point in sending requests if it's not currently available.
@@ -253,7 +759,7 @@ void vrpn_Mutex::request (void) {
     triggerDenyCallbacks();
 
 #ifdef VERBOSE
-  fprintf(stderr, "vrpn_Mutex::request:  the mutex isn't available.\n");
+  fprintf(stderr, "vrpn_PeerMutex::request:  the mutex isn't available.\n");
 #endif
 
     return;
@@ -281,12 +787,12 @@ void vrpn_Mutex::request (void) {
   checkGrantMutex();
 
 #ifdef VERBOSE
-  fprintf(stderr, "vrpn_Mutex::request:  requested the mutex "
+  fprintf(stderr, "vrpn_PeerMutex::request:  requested the mutex "
                   "(from %d peers).\n", d_numPeers);
 #endif
 }
 
-void vrpn_Mutex::release (void) {
+void vrpn_PeerMutex::release (void) {
   int i;
 
   // Can't release it if we don't already have it.
@@ -294,7 +800,7 @@ void vrpn_Mutex::release (void) {
   if (!isHeldLocally()) {
 
 #ifdef VERBOSE
-  fprintf(stderr, "vrpn_Mutex::release:  we don't hold the mutex.\n");
+  fprintf(stderr, "vrpn_PeerMutex::release:  we don't hold the mutex.\n");
 #endif
 
     return;
@@ -310,11 +816,11 @@ void vrpn_Mutex::release (void) {
   triggerReleaseCallbacks();
 
 #ifdef VERBOSE
-  fprintf(stderr, "vrpn_Mutex::release:  released the mutex.\n");
+  fprintf(stderr, "vrpn_PeerMutex::release:  released the mutex.\n");
 #endif
 }
 
-void vrpn_Mutex::addPeer (const char * stationName) {
+void vrpn_PeerMutex::addPeer (const char * stationName) {
   vrpn_Connection ** newc;
   peerData * newg;
   losePeerData * d;
@@ -327,7 +833,7 @@ void vrpn_Mutex::addPeer (const char * stationName) {
     newc = new vrpn_Connection * [2 + 2 * d_numConnectionsAllocated];
     newg = new peerData [2 + 2 * d_numConnectionsAllocated];
     if (!newc || !newg) {
-      fprintf(stderr, "vrpn_Mutex::addPeer:  Out of memory.\n");
+      fprintf(stderr, "vrpn_PeerMutex::addPeer:  Out of memory.\n");
       return;
     }
     for (i = 0; i < d_numPeers; i++) {
@@ -348,7 +854,7 @@ void vrpn_Mutex::addPeer (const char * stationName) {
 
   d = new losePeerData;
   if (!d) {
-    fprintf(stderr, "vrpn_Mutex::addPeer:  Out of memory.\n");
+    fprintf(stderr, "vrpn_PeerMutex::addPeer:  Out of memory.\n");
     return;
   }
   d->connection = d_peer[d_numPeers];
@@ -360,16 +866,16 @@ void vrpn_Mutex::addPeer (const char * stationName) {
   d_peer[d_numPeers]->register_handler(drop, handle_losePeer, d, control);
 
 #ifdef VERBOSE
-  fprintf(stderr, "vrpn_Mutex::addPeer:  added peer named %s.\n", stationName);
+  fprintf(stderr, "vrpn_PeerMutex::addPeer:  added peer named %s.\n", stationName);
 #endif
 
   d_numPeers++;
 }
 
-void vrpn_Mutex::addRequestGrantedCallback (void * ud, int (* f) (void *)) {
+void vrpn_PeerMutex::addRequestGrantedCallback (void * ud, int (* f) (void *)) {
   mutexCallback * cb = new mutexCallback;
   if (!cb) {
-    fprintf(stderr, "vrpn_Mutex::addRequestGrantedCallback:  "
+    fprintf(stderr, "vrpn_PeerMutex::addRequestGrantedCallback:  "
                     "Out of memory.\n");
     return;
   }
@@ -380,10 +886,10 @@ void vrpn_Mutex::addRequestGrantedCallback (void * ud, int (* f) (void *)) {
   d_reqGrantedCB = cb;
 }
 
-void vrpn_Mutex::addRequestDeniedCallback (void * ud, int (* f) (void *)) {
+void vrpn_PeerMutex::addRequestDeniedCallback (void * ud, int (* f) (void *)) {
   mutexCallback * cb = new mutexCallback;
   if (!cb) {
-    fprintf(stderr, "vrpn_Mutex::addRequestDeniedCallback:  "
+    fprintf(stderr, "vrpn_PeerMutex::addRequestDeniedCallback:  "
                     "Out of memory.\n");
     return;
   }
@@ -394,10 +900,10 @@ void vrpn_Mutex::addRequestDeniedCallback (void * ud, int (* f) (void *)) {
   d_reqDeniedCB = cb;
 }
 
-void vrpn_Mutex::addTakeCallback (void * ud, int (* f) (void *)) {
+void vrpn_PeerMutex::addTakeCallback (void * ud, int (* f) (void *)) {
   mutexCallback * cb = new mutexCallback;
   if (!cb) {
-    fprintf(stderr, "vrpn_Mutex::addTakeCallback:  Out of memory.\n");
+    fprintf(stderr, "vrpn_PeerMutex::addTakeCallback:  Out of memory.\n");
     return;
   }
 
@@ -408,10 +914,10 @@ void vrpn_Mutex::addTakeCallback (void * ud, int (* f) (void *)) {
 }
 
 // static
-void vrpn_Mutex::addReleaseCallback (void * ud, int (* f) (void *)) {
+void vrpn_PeerMutex::addReleaseCallback (void * ud, int (* f) (void *)) {
   mutexCallback * cb = new mutexCallback;
   if (!cb) {
-    fprintf(stderr, "vrpn_Mutex::addReleaseCallback:  "
+    fprintf(stderr, "vrpn_PeerMutex::addReleaseCallback:  "
                     "Out of memory.\n");
     return;
   }
@@ -423,8 +929,8 @@ void vrpn_Mutex::addReleaseCallback (void * ud, int (* f) (void *)) {
 }
 
 // static
-int vrpn_Mutex::handle_request (void * userdata, vrpn_HANDLERPARAM p) {
-  vrpn_Mutex * me = (vrpn_Mutex *) userdata;
+int vrpn_PeerMutex::handle_request (void * userdata, vrpn_HANDLERPARAM p) {
+  vrpn_PeerMutex * me = (vrpn_PeerMutex *) userdata;
   const char * b = p.buffer;
   vrpn_uint32 senderIP;
   vrpn_uint32 senderPort;
@@ -439,7 +945,7 @@ int vrpn_Mutex::handle_request (void * userdata, vrpn_HANDLERPARAM p) {
 #ifdef VERBOSE
   in_addr nad;
   nad.s_addr = htonl(senderIP);
-  fprintf(stderr, "vrpn_Mutex::handle_request:  got one from %s port %d.\n",
+  fprintf(stderr, "vrpn_PeerMutex::handle_request:  got one from %s port %d.\n",
           inet_ntoa(nad), senderPort);
 #endif
 
@@ -475,8 +981,8 @@ int vrpn_Mutex::handle_request (void * userdata, vrpn_HANDLERPARAM p) {
 }
 
 // static
-int vrpn_Mutex::handle_release (void * userdata, vrpn_HANDLERPARAM p) {
-  vrpn_Mutex * me = (vrpn_Mutex *) userdata;
+int vrpn_PeerMutex::handle_release (void * userdata, vrpn_HANDLERPARAM p) {
+  vrpn_PeerMutex * me = (vrpn_PeerMutex *) userdata;
   const char * b = p.buffer;
   vrpn_uint32 senderIP;
   vrpn_uint32 senderPort;
@@ -488,13 +994,13 @@ int vrpn_Mutex::handle_release (void * userdata, vrpn_HANDLERPARAM p) {
   in_addr nad;
 
   nad.s_addr = senderIP;
-  fprintf(stderr, "vrpn_Mutex::handle_release:  got one from %s port %d.\n",
+  fprintf(stderr, "vrpn_PeerMutex::handle_release:  got one from %s port %d.\n",
           inet_ntoa(nad), senderPort);
 #endif
 
   if ((senderIP != me->d_holderIP) ||
       (senderPort != me->d_holderPort)) {
-    fprintf(stderr, "vrpn_Mutex::handle_release:  Got a release from "
+    fprintf(stderr, "vrpn_PeerMutex::handle_release:  Got a release from "
                     "somebody who didn't have the lock!?\n");
   }
 
@@ -508,8 +1014,8 @@ int vrpn_Mutex::handle_release (void * userdata, vrpn_HANDLERPARAM p) {
 }
 
 // static
-int vrpn_Mutex::handle_grantRequest (void * userdata, vrpn_HANDLERPARAM p) {
-  vrpn_Mutex * me = (vrpn_Mutex *) userdata;
+int vrpn_PeerMutex::handle_grantRequest (void * userdata, vrpn_HANDLERPARAM p) {
+  vrpn_PeerMutex * me = (vrpn_PeerMutex *) userdata;
   const char * b = p.buffer;
   vrpn_uint32 senderIP;
   vrpn_uint32 senderPort;
@@ -520,7 +1026,7 @@ int vrpn_Mutex::handle_grantRequest (void * userdata, vrpn_HANDLERPARAM p) {
 #ifdef VERBOSE
   in_addr nad;
   nad.s_addr = senderIP;
-  fprintf(stderr, "vrpn_Mutex::handle_grantRequest:  "
+  fprintf(stderr, "vrpn_PeerMutex::handle_grantRequest:  "
                   "got one for %s port %d.\n",
                   inet_ntoa(nad), senderPort);
 #endif
@@ -540,8 +1046,8 @@ int vrpn_Mutex::handle_grantRequest (void * userdata, vrpn_HANDLERPARAM p) {
 }
 
 // static
-int vrpn_Mutex::handle_denyRequest (void * userdata, vrpn_HANDLERPARAM p) {
-  vrpn_Mutex * me = (vrpn_Mutex *) userdata;
+int vrpn_PeerMutex::handle_denyRequest (void * userdata, vrpn_HANDLERPARAM p) {
+  vrpn_PeerMutex * me = (vrpn_PeerMutex *) userdata;
   const char * b = p.buffer;
   vrpn_uint32 senderIP;
   vrpn_uint32 senderPort;
@@ -552,7 +1058,7 @@ int vrpn_Mutex::handle_denyRequest (void * userdata, vrpn_HANDLERPARAM p) {
 #ifdef VERBOSE
   in_addr nad;
   nad.s_addr = senderIP;
-  fprintf(stderr, "vrpn_Mutex::handle_denyRequest:  "
+  fprintf(stderr, "vrpn_PeerMutex::handle_denyRequest:  "
                   "got one for %s port %d.\n",
                   inet_ntoa(nad), senderPort);
 #endif
@@ -571,9 +1077,9 @@ int vrpn_Mutex::handle_denyRequest (void * userdata, vrpn_HANDLERPARAM p) {
 }
 
 // static
-int vrpn_Mutex::handle_losePeer (void * userdata, vrpn_HANDLERPARAM p) {
+int vrpn_PeerMutex::handle_losePeer (void * userdata, vrpn_HANDLERPARAM p) {
   losePeerData * data = (losePeerData *) userdata;
-  vrpn_Mutex * me = data->mutex;
+  vrpn_PeerMutex * me = data->mutex;
   vrpn_Connection * c = data->connection;
   int i;
 
@@ -590,11 +1096,11 @@ int vrpn_Mutex::handle_losePeer (void * userdata, vrpn_HANDLERPARAM p) {
     }
   }
   if (i == me->d_numPeers) {
-    fprintf(stderr, "vrpn_Mutex::handle_losePeer:  Can't find lost peer.\n");
+    fprintf(stderr, "vrpn_PeerMutex::handle_losePeer:  Can't find lost peer.\n");
     return 0;  // -1?
   }
 
-fprintf(stderr, "vrpn_Mutex::handle_losePeer:  lost peer #%d.\n", i);
+fprintf(stderr, "vrpn_PeerMutex::handle_losePeer:  lost peer #%d.\n", i);
 
   me->d_numPeers--;
   me->d_peer[i] = me->d_peer[me->d_numPeers];
@@ -604,7 +1110,7 @@ fprintf(stderr, "vrpn_Mutex::handle_losePeer:  lost peer #%d.\n", i);
   return 0;
 }
 
-void vrpn_Mutex::sendRequest (vrpn_Connection * c) {
+void vrpn_PeerMutex::sendRequest (vrpn_Connection * c) {
   timeval now;
   char buffer [32];
   char * b = buffer;
@@ -619,7 +1125,7 @@ void vrpn_Mutex::sendRequest (vrpn_Connection * c) {
                   vrpn_CONNECTION_RELIABLE);
 }
 
-void vrpn_Mutex::sendRelease (vrpn_Connection * c) {
+void vrpn_PeerMutex::sendRelease (vrpn_Connection * c) {
   timeval now;
   char buffer [32];
   char * b = buffer;
@@ -635,7 +1141,7 @@ void vrpn_Mutex::sendRelease (vrpn_Connection * c) {
 }
 
 
-void vrpn_Mutex::sendGrantRequest (vrpn_Connection * c, vrpn_uint32 IP,
+void vrpn_PeerMutex::sendGrantRequest (vrpn_Connection * c, vrpn_uint32 IP,
                                    vrpn_uint32 port) {
   timeval now;
   char buffer [32];
@@ -651,7 +1157,7 @@ void vrpn_Mutex::sendGrantRequest (vrpn_Connection * c, vrpn_uint32 IP,
                   vrpn_CONNECTION_RELIABLE);
 }
 
-void vrpn_Mutex::sendDenyRequest (vrpn_Connection * c, vrpn_uint32 IP,
+void vrpn_PeerMutex::sendDenyRequest (vrpn_Connection * c, vrpn_uint32 IP,
                                   vrpn_uint32 port) {
   timeval now;
   char buffer [32];
@@ -667,7 +1173,7 @@ void vrpn_Mutex::sendDenyRequest (vrpn_Connection * c, vrpn_uint32 IP,
                   vrpn_CONNECTION_RELIABLE);
 }
 
-void vrpn_Mutex::triggerGrantCallbacks (void) {
+void vrpn_PeerMutex::triggerGrantCallbacks (void) {
   mutexCallback * cb;
 
   // trigger callbacks
@@ -676,7 +1182,7 @@ void vrpn_Mutex::triggerGrantCallbacks (void) {
   }
 }
 
-void vrpn_Mutex::triggerDenyCallbacks (void) {
+void vrpn_PeerMutex::triggerDenyCallbacks (void) {
   mutexCallback * cb;
 
   // trigger callbacks
@@ -685,7 +1191,7 @@ void vrpn_Mutex::triggerDenyCallbacks (void) {
   }
 }
 
-void vrpn_Mutex::triggerTakeCallbacks (void) {
+void vrpn_PeerMutex::triggerTakeCallbacks (void) {
   mutexCallback * cb;
 
   // trigger callbacks
@@ -694,7 +1200,7 @@ void vrpn_Mutex::triggerTakeCallbacks (void) {
   }
 }
 
-void vrpn_Mutex::triggerReleaseCallbacks (void) {
+void vrpn_PeerMutex::triggerReleaseCallbacks (void) {
   mutexCallback * cb;
 
   // trigger callbacks
@@ -703,7 +1209,7 @@ void vrpn_Mutex::triggerReleaseCallbacks (void) {
   }
 }
 
-void vrpn_Mutex::checkGrantMutex (void) {
+void vrpn_PeerMutex::checkGrantMutex (void) {
 
   if ((d_state == REQUESTING) &&
       (d_numPeersGrantingLock == d_numPeers)) {
@@ -716,11 +1222,11 @@ void vrpn_Mutex::checkGrantMutex (void) {
 }
 
 
-void vrpn_Mutex::init (const char * name) {
+void vrpn_PeerMutex::init (const char * name) {
 
   d_mutexName = new char [1 + strlen(name)];
   if (!d_mutexName) {
-    fprintf(stderr, "vrpn_Mutex::init:  Out of memory.\n");
+    fprintf(stderr, "vrpn_PeerMutex::init:  Out of memory.\n");
     return;
   }
   strncpy(d_mutexName, name, strlen(name));

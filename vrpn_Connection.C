@@ -92,10 +92,10 @@ int gethostname (char *, int);
 #include "vrpn_Clock.h"  // for vrpn_Synchronized_Connection
 #include "vrpn_FileConnection.h"  // for vrpn_get_connection_by_name
 
-//#define	VERBOSE
-//#define	VERBOSE2
-//#define	VERBOSE3
-//#define	PRINT_READ_HISTOGRAM
+//#define VERBOSE
+//#define VERBOSE2
+//#define VERBOSE3
+//#define PRINT_READ_HISTOGRAM
 
 //   Warning:  PRINT_READ_HISTOGRAM is not thread-safe.
 
