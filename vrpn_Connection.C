@@ -5040,7 +5040,7 @@ void vrpn_Connection::server_check_for_incoming_connections
   }
 
   // TCH OHS HACK
-  vrpn_int32 newSocket;
+  SOCKET newSocket;
 
   // 0-time check for new connection coming in
   retval = vrpn_poll_for_accept(listen_tcp_sock, &newSocket);
