@@ -136,5 +136,62 @@ struct vrpnLogFilterEntry {
   vrpnLogFilterEntry * next;
 };
 
+//-------------------------------------------------------------------
+// UTILITY FUNCTIONS
+//-------------------------------------------------------------------
+
+// marshalls a message into the output buffer for a protocol socket
+// this got move out of vrpn_Connection and made into a global function
+// so that the multicast sender class could have access to it.
+virtual	vrpn_uint32 vrpn_marshall_message (char * outbuf,vrpn_uint32 outbuf_size,
+					   vrpn_uint32 initial_out,
+					   vrpn_uint32 len, struct timeval time,
+					   vrpn_int32 type, vrpn_int32 sender,
+					   const char * buffer);
+
+// 1hz sync connection by default, windowed over last three bounces 
+// WARNING:  vrpn_get_connection_by_name() may not be thread safe.
+vrpn_Connection * vrpn_get_connection_by_name
+         (const char * cname,
+          const char * local_logfile_name = NULL,
+          long local_log_mode = vrpn_LOG_NONE,
+          const char * remote_logfile_name = NULL,
+          long remote_log_mode = vrpn_LOG_NONE,
+	  double dFreq = 1.0, int cSyncWindow = 3);
+
+
+// Utility routines to parse names (<service>@<location specifier>)
+// Both return new char [], and it is the caller's responsibility
+// to delete this memory!
+char * vrpn_copy_service_name (const char * fullname);
+char * vrpn_copy_service_location (const char * fullname);
+
+// Utility routines to parse file specifiers FROM service locations
+//   file:<filename>
+//   file://<hostname>/<filename>
+//   file:///<filename>
+char * vrpn_copy_file_name (const char * filespecifier);
+
+// Utility routines to parse host specifiers FROM service locations
+//   <hostname>
+//   <hostname>:<port number>
+//   x-vrpn://<hostname>
+//   x-vrpn://<hostname>:<port number>
+//   x-vrsh://<hostname>/<server program>,<comma-separated server arguments>
+char * vrpn_copy_machine_name (const char * hostspecifier);
+int vrpn_get_port_number (const char * hostspecifier);
+char * vrpn_copy_rsh_program (const char * hostspecifier);
+char * vrpn_copy_rsh_arguments (const char * hostspecifier);
+
+// Checks the buffer to see if it is a valid VRPN header cookie.
+// Returns -1 on total mismatch,
+// 1 on minor version mismatch or other acceptable difference,
+// and 0 on exact match.
+int check_vrpn_cookie (const char * buffer);
+
+// Returns the size of the magic cookie buffer, plus any alignment overhead.
+int vrpn_cookie_size (void);
+
+int write_vrpn_cookie (char * buffer, int length, long remote_log_mode);
 
 #endif

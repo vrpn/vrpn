@@ -43,12 +43,20 @@ protected: // clock stuff
 
 public:  // sending and receiving
 
+
+	// *** N.B. ***
+	// i think that these should be implemented in the derived classes
+	// so i added the virtual keword and made them abstract
+	// 
+	// stefan
+
+
     // functions for sending messages and receiving messages
     // the ConnectionController will call these functions
 
-    int handle_outgoing_message( /*...XXX...*/ );
+    virtual int handle_outgoing_message( /*...XXX...*/ ) = 0;
 
-    int handle_incommming_message( /*...XXX...*/ );
+    virtual int handle_incoming_message( /*...XXX...*/ ) = 0;
 
 
 public:  // public type_id and sender_id stuff

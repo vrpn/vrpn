@@ -98,7 +98,7 @@ public:  // buffer sizes.  XXX don't know if these belong here or not
     vrpn_int32 set_tcp_outbuf_size (vrpn_int32 bytecount);
 
 
-public:  // handling incomming and outgoing messages
+public:  // handling incoming and outgoing messages
 
     // * call each time through the program main loop
     // * handles receiving any incoming messages
@@ -127,7 +127,7 @@ public:  // handling incomming and outgoing messages
             const char * buffer,
             vrpn_uint32 class_of_service ) = 0;
 
-protected:  // handling incomming and outgoing messages
+protected:  // handling incoming and outgoing messages
     //         wrappers that forwards the functioncall to each open connection
 
     virtual int pack_sender_description( vrpn_int32 which_sender ) = 0;
@@ -136,18 +136,18 @@ protected:  // handling incomming and outgoing messages
     //virtual int pack_log_description( long mode, const char * filename );
 
     // Routines to handle incoming messages on file descriptors
-    int handle_incomming_udp_messages (int fd, const timeval * timeout);
-    int handle_incomming_tcp_messages (int fd, const timeval * timeout);
+    int handle_incoming_udp_messages (int fd, const timeval * timeout);
+    int handle_incoming_tcp_messages (int fd, const timeval * timeout);
     
     // Routines that handle system messages
     // these are registered as callbacks
-    static int handle_incomming_sender_message(
+    static int handle_incoming_sender_message(
         void * userdata, vrpn_HANDLERPARAM p);
-        static int handle_incomming_type_message(
+        static int handle_incoming_type_message(
         void * userdata, vrpn_HANDLERPARAM p);
-        static int handle_incomming_udp_message(
+        static int handle_incoming_udp_message(
         void * userdata, vrpn_HANDLERPARAM p);
-        static int handle_incomming_log_message(
+        static int handle_incoming_log_message(
         void * userdata, vrpn_HANDLERPARAM p);
 
 public:  // callbacks
