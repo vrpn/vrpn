@@ -15,6 +15,10 @@ int noteChange (void * userdata, vrpn_int32 newValue, vrpn_bool isLocal) {
 int main (int argc, char ** argv) {
 
   vrpn_Connection * c;
+  timeval qsec;
+
+  qsec.tv_sec = 0L;
+  qsec.tv_usec = 250000L;
 
   c = vrpn_get_connection_by_name(argv[1]);
 
@@ -27,23 +31,46 @@ int main (int argc, char ** argv) {
   a.bindConnection(c);
   a.register_handler(noteChange, &a);
 
-  c->mainloop();
+  c->mainloop(&qsec);
 
   printf("a = %d.\n", a.value());
 
-  c->mainloop();
+  c->mainloop(&qsec);
 
   a = 3;
 
-  c->mainloop();
+  c->mainloop(&qsec);
 
   printf("a = %d.\n", a.value());
 
-  c->mainloop();
+  c->mainloop(&qsec);
 
   a = -3;
 
-  c->mainloop();
+  c->mainloop(&qsec);
+
+  printf("a = %d.\n", a.value());
+
+  a.becomeSerializer();
+  c->mainloop(&qsec);
+
+  c->mainloop(&qsec);
+
+  printf("a = %d.\n", a.value());
+
+  c->mainloop(&qsec);
+
+  a = 3;
+
+  c->mainloop(&qsec);
+
+  printf("a = %d.\n", a.value());
+
+  c->mainloop(&qsec);
+
+  a = -3;
+
+  c->mainloop(&qsec);
 
   printf("a = %d.\n", a.value());
 
