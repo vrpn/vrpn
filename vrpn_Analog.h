@@ -9,6 +9,7 @@
 #define ANALOG_FAIL 	 	(-2)
 
 #include "vrpn_Connection.h"
+#include "vrpn_BaseClass.h"
 
 // Contention:  vrpn_Analog shouldn't have a mainloop() function.
 //   (Neither should other similar base classes).  There isn't any
@@ -18,36 +19,29 @@
 //   class.
 // TCH March 1999
 
-class vrpn_Analog {
+class vrpn_Analog : public vrpn_BaseClass {
 public:
 	vrpn_Analog (const char * name, vrpn_Connection * c = NULL);
 
 	// Print the status of the analog device
 	void print(void);
 
-	// Called once through each main loop iteration to handle
-	// updates.
-	virtual void mainloop (const struct timeval * timeout = NULL) = 0;
-
-	// Report changes to conneciton
-        vrpn_Connection *connectionPtr();
-
   protected:
-	vrpn_Connection *connection;
 	vrpn_float64	channel[vrpn_CHANNEL_MAX];
 	vrpn_float64	last[vrpn_CHANNEL_MAX];
 	vrpn_int32	num_channel;
 	struct timeval	timestamp;
-	vrpn_int32 my_id;		// ID of this device to connection
 	vrpn_int32 channel_m_id;	// channel message id
 	int status; 
 
+	virtual	int register_types(void);
 	virtual vrpn_int32 encode_to(char *buf);
+	/// Send a report only if something has changed (for servers)
         virtual void report_changes (vrpn_uint32 class_of_service
                                      = vrpn_CONNECTION_LOW_LATENCY);
-            // send report iff changed
+	/// Send a report whether something has changed or not (for servers)
 	virtual void report (vrpn_uint32 class_of_service
-                             = vrpn_CONNECTION_LOW_LATENCY);  // send report
+                             = vrpn_CONNECTION_LOW_LATENCY);
 };
 
 class vrpn_Serial_Analog: public vrpn_Analog {
@@ -86,37 +80,31 @@ class vrpn_Analog_Server : public vrpn_Analog {
     vrpn_Analog_Server (const char * name, vrpn_Connection * c);
     virtual ~vrpn_Analog_Server (void);
 
-    // The following function shouldn't exist;  there is no reasonable
-    // semantics for it (neither report_changes() nor report() is
-    // necessarily a good default behavior;  I want to make the choice
-    // between the two explicit.)
-
-    virtual void mainloop (const struct timeval *);
-
-    // If anything has changed, report it to the client.
-    
+    /// Makes public the protected base class function
     virtual void report_changes (vrpn_uint32 class_of_service
                                  = vrpn_CONNECTION_LOW_LATENCY);
 
-    // Reports current status to the client regardless of whether
-    // or not there have been any changes.
-
+    /// Makes public the protected base class function
     virtual void report (vrpn_uint32 class_of_service
                                  = vrpn_CONNECTION_LOW_LATENCY);
 
-    // Exposes an array of values for the user to write into.
+    /// For this server, the user will normally call report() or
+    /// report_changes() directly.  Here, mainloop() defaults to
+    /// calling report(), since we are not asking for reliable
+    /// communication.  Note that this will cause very rapid sending
+    /// of reports if this is called each time through a loop whose
+    /// rate is unchecked.
+    virtual void mainloop () { server_mainloop(); report(); };
 
+    /// Exposes an array of values for the user to write into.
     vrpn_float64 * channels (void);
 
-    // Size of the array.
-
+    /// Size of the array.
     vrpn_int32 numChannels (void) const;
 
-    // Sets the size of the array;  returns the size actually set.
-    // (May be clamped to vrpn_CHANNEL_MAX)
-
+    /// Sets the size of the array;  returns the size actually set.
+    /// (May be clamped to vrpn_CHANNEL_MAX)
     vrpn_int32 setNumChannels (vrpn_int32 sizeRequested);
-
 };
 
 
@@ -150,7 +138,7 @@ class vrpn_Analog_Remote: public vrpn_Analog {
 	virtual ~vrpn_Analog_Remote (void);
 
 	// This routine calls the mainloop of the connection it's on
-	virtual void mainloop(const struct timeval * timeout = NULL);
+	virtual void mainloop();
 
 	// (un)Register a callback handler to handle analog value change
 	virtual int register_change_handler(void *userdata,

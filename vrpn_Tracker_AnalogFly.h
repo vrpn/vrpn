@@ -92,7 +92,7 @@ class vrpn_Tracker_AnalogFly : public vrpn_Tracker {
 
     virtual ~vrpn_Tracker_AnalogFly (void);
 
-    virtual void mainloop (const struct timeval * timeout = NULL);
+    virtual void mainloop ();
     virtual void reset (void);
 
     void update (q_matrix_type &);

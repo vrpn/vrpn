@@ -57,62 +57,12 @@ static vrpn_float64 vector_dot (const vrpn_float64 a [3],
 }
 #endif
 
-vrpn_ForceDevice::vrpn_ForceDevice(char *name, vrpn_Connection *c)
+vrpn_ForceDevice::vrpn_ForceDevice(char *name, vrpn_Connection *c) :
+vrpn_BaseClass(name, c)
 {
-	//set connection to the one passed in
-    char * servicename;
-    servicename = vrpn_copy_service_name(name);
-    connection = c;
-	
-	errorCode = FD_OK;
+    vrpn_BaseClass::init();
 
-    //register this force device and the needed message types
-    if(connection) {
-	    my_id = connection->register_sender(servicename);
-	    force_message_id = connection->register_message_type("Force");
-	    forcefield_message_id = 
-		    connection->register_message_type("Force Field");
-
-	    plane_message_id = connection->register_message_type("Plane");
-		plane_effects_message_id = connection->register_message_type("Plane2");
-	    setVertex_message_id = 
-	      connection->register_message_type("setVertex");
-	    setNormal_message_id =
-	      connection->register_message_type("setNormal");
-	    setTriangle_message_id = 
-	      connection->register_message_type("setTriangle");
-	    removeTriangle_message_id = 
-	      connection->register_message_type("removeTriangle");
-	    updateTrimeshChanges_message_id = 
-	      connection->register_message_type("updateTrimeshChanges");
-	    transformTrimesh_message_id = 
-	      connection->register_message_type("transformTrimesh");
-	    setTrimeshType_message_id = 
-	      connection->register_message_type("setTrimeshType");
-	    clearTrimesh_message_id = 
-	      connection->register_message_type("clearTrimesh");
-	    scp_message_id = connection->register_message_type("SCP");
-	    error_message_id = connection->register_message_type
-				    ("Force Error");
-
-      enableConstraint_message_id =
-            connection->register_message_type("vrpn FDev constraint enable");
-      setConstraintMode_message_id =
-            connection->register_message_type("vrpn FDev constraint mode");
-      setConstraintPoint_message_id =
-            connection->register_message_type("vrpn FDev constraint point");
-      setConstraintLinePoint_message_id =
-            connection->register_message_type("vrpn FDev constraint linept");
-      setConstraintLineDirection_message_id =
-            connection->register_message_type("vrpn FDev constraint linedir");
-      setConstraintPlanePoint_message_id =
-            connection->register_message_type("vrpn FDev constraint plpt");
-      setConstraintPlaneNormal_message_id =
-            connection->register_message_type("vrpn FDev constraint plnorm");
-      setConstraintKSpring_message_id =
-            connection->register_message_type("vrpn FDev constraint KSpring");
-
-    }
+    errorCode = FD_OK;
 
     //set the current time to zero
     timestamp.tv_sec = 0;
@@ -125,15 +75,63 @@ vrpn_ForceDevice::vrpn_ForceDevice(char *name, vrpn_Connection *c)
     SurfaceFstatic = 0.03f;
     SurfaceKdamping = 0.0f;
 
-	SurfaceKadhesionNormal = 0.0001f;
-	SurfaceKadhesionLateral = 0.0002f;
-	SurfaceBuzzFreq = 0.0003f;
-	SurfaceBuzzAmp = 0.0004f;
-	SurfaceTextureWavelength = 0.01f;
-	SurfaceTextureAmplitude = 0.0005f;
+    SurfaceKadhesionNormal = 0.0001f;
+    SurfaceKadhesionLateral = 0.0002f;
+    SurfaceBuzzFreq = 0.0003f;
+    SurfaceBuzzAmp = 0.0004f;
+    SurfaceTextureWavelength = 0.01f;
+    SurfaceTextureAmplitude = 0.0005f;
+}
 
-    if (servicename)
-        delete [] servicename;
+int vrpn_ForceDevice::register_types(void)
+{
+    force_message_id =
+	d_connection->register_message_type("Force");
+    forcefield_message_id = 
+	d_connection->register_message_type("Force Field");
+    plane_message_id =
+	d_connection->register_message_type("Plane");
+    plane_effects_message_id =
+	d_connection->register_message_type("Plane2");
+    setVertex_message_id = 
+	d_connection->register_message_type("setVertex");
+    setNormal_message_id =
+	d_connection->register_message_type("setNormal");
+    setTriangle_message_id = 
+	d_connection->register_message_type("setTriangle");
+    removeTriangle_message_id = 
+	d_connection->register_message_type("removeTriangle");
+    updateTrimeshChanges_message_id = 
+	d_connection->register_message_type("updateTrimeshChanges");
+    transformTrimesh_message_id = 
+	d_connection->register_message_type("transformTrimesh");
+    setTrimeshType_message_id = 
+	d_connection->register_message_type("setTrimeshType");
+    clearTrimesh_message_id = 
+	d_connection->register_message_type("clearTrimesh");
+    scp_message_id =
+	d_connection->register_message_type("SCP");
+    error_message_id =
+	d_connection->register_message_type("Force Error");
+
+      enableConstraint_message_id =
+            d_connection->register_message_type("vrpn FDev constraint enable");
+      setConstraintMode_message_id =
+            d_connection->register_message_type("vrpn FDev constraint mode");
+      setConstraintPoint_message_id =
+            d_connection->register_message_type("vrpn FDev constraint point");
+      setConstraintLinePoint_message_id =
+            d_connection->register_message_type("vrpn FDev constraint linept");
+      setConstraintLineDirection_message_id =
+            d_connection->register_message_type("vrpn FDev constraint linedir");
+      setConstraintPlanePoint_message_id =
+            d_connection->register_message_type("vrpn FDev constraint plpt");
+      setConstraintPlaneNormal_message_id =
+            d_connection->register_message_type("vrpn FDev constraint plnorm");
+      setConstraintKSpring_message_id =
+            d_connection->register_message_type("vrpn FDev constraint KSpring");
+
+      return 0;
 }
 
 // virtual
@@ -780,14 +778,13 @@ void vrpn_ForceDevice::sendError(int error_code){
     timestamp.tv_sec = current_time.tv_sec;
     timestamp.tv_usec = current_time.tv_usec;
 
-    if(connection) {
+    if(d_connection) {
 	msgbuf = encode_error(len, error_code);
-	if(connection->pack_message(len,timestamp,error_message_id,
-				my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+	if(d_connection->pack_message(len,timestamp,error_message_id,
+				d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
 	  fprintf(stderr,"Phantom: cannot write message: tossing\n");
 	}
-	connection->mainloop();
-	delete msgbuf;
+	delete [] msgbuf;
     }
 }
 
@@ -1065,7 +1062,7 @@ vrpn_int32 vrpn_ForceDevice::decodePoint (const char * buffer,
 /* ******************** vrpn_ForceDevice_Remote ********************** */
 
 vrpn_ForceDevice_Remote::vrpn_ForceDevice_Remote(char *name, vrpn_Connection *cn):
-	vrpn_ForceDevice(name, cn ? cn : vrpn_get_connection_by_name(name)),
+	vrpn_ForceDevice(name, cn),
 	change_list (NULL),
 	scp_change_list (NULL),
 	error_change_list (NULL),
@@ -1075,30 +1072,30 @@ vrpn_ForceDevice_Remote::vrpn_ForceDevice_Remote(char *name, vrpn_Connection *cn
     which_plane = 0;
 
     // Make sure that we have a valid connection
-    if (connection == NULL) {
+    if (d_connection == NULL) {
 		fprintf(stderr,"vrpn_ForceDevice_Remote: No connection\n");
 		return;
      }
 
      // Register a handler for the change callback from this device.
-     if (connection->register_handler(force_message_id, 
-			handle_force_change_message,this, my_id)) {
+     if (register_autodeleted_handler(force_message_id, 
+			handle_force_change_message,this, d_sender_id)) {
 	    fprintf(stderr,"vrpn_ForceDevice_Remote:can't register handler\n");
-	    connection = NULL;
+	    d_connection = NULL;
      }
 
      // Register a handler for the scp change callback from this device.
-     if (connection->register_handler(scp_message_id,
-	handle_scp_change_message, this, my_id)) {
+     if (register_autodeleted_handler(scp_message_id,
+	handle_scp_change_message, this, d_sender_id)) {
 	    fprintf(stderr,"vrpn_ForceDevice_Remote:can't register handler\n");
-	    connection = NULL;
+	    d_connection = NULL;
      }
 
      // Register a handler for the error change callback from this device.
-     if (connection->register_handler(error_message_id, 
-			handle_error_change_message, this, my_id)) {
+     if (register_autodeleted_handler(error_message_id, 
+			handle_error_change_message, this, d_sender_id)) {
 	    fprintf(stderr,"vrpn_ForceDevice_Remote:can't register handler\n");
-	    connection = NULL;
+	    d_connection = NULL;
      }
 
      // Find out what time it is and put this into the timestamp
@@ -1111,26 +1108,6 @@ vrpn_ForceDevice_Remote::~vrpn_ForceDevice_Remote (void)
 	vrpn_FORCECHANGELIST	*nextforce;
 	vrpn_FORCESCPCHANGELIST	*nextscp;
 	vrpn_FORCEERRORCHANGELIST *nexterror;
-
-	// Unregister all of the handlers that have been registered with the
-	// connection so that they won't yank once the object has been deleted.
-	if (connection != NULL) {
-	  if (connection->unregister_handler(force_message_id, handle_force_change_message,
-		this, my_id)) {
-		fprintf(stderr,"vrpn_ForceDevice_Remote: can't unregister handler\n");
-		fprintf(stderr,"   (internal VRPN error -- expect a seg fault)\n");
-	  }  
-	  if (connection->unregister_handler(scp_message_id, handle_scp_change_message,
-		this, my_id)) {
-		fprintf(stderr,"vrpn_ForceDevice_Remote: can't unregister handler\n");
-		fprintf(stderr,"   (internal VRPN error -- expect a seg fault)\n");
-	  }  
-	  if (connection->unregister_handler(error_message_id, handle_error_change_message,
-		this, my_id)) {
-		fprintf(stderr,"vrpn_ForceDevice_Remote: can't unregister handler\n");
-		fprintf(stderr,"   (internal VRPN error -- expect a seg fault)\n");
-	  }
-	}
 
 	// Delete all of the callback handlers that other code had registered
 	// with this object. This will free up the memory taken by the lists
@@ -1161,25 +1138,24 @@ void vrpn_ForceDevice_Remote::sendSurface(void)
   timestamp.tv_sec = current_time.tv_sec;
   timestamp.tv_usec = current_time.tv_usec;
   
-  if(connection) {
-    msgbuf = encode_plane(len, plane, SurfaceKspring, SurfaceKdamping,
+  if(d_connection) {
+      msgbuf = encode_plane(len, plane, SurfaceKspring, SurfaceKdamping,
 		SurfaceFdynamic, SurfaceFstatic, which_plane, numRecCycles);
-    if(connection->pack_message(len,timestamp,plane_message_id,
-		my_id, msgbuf, vrpn_CONNECTION_LOW_LATENCY)) {
-      fprintf(stderr,"Phantom: cannot write message: tossing\n");
-    }
-	connection->mainloop();
-	delete msgbuf;
-	msgbuf = encode_surface_effects(len, SurfaceKadhesionNormal,
+      if(d_connection->pack_message(len,timestamp,plane_message_id,
+		d_sender_id, msgbuf, vrpn_CONNECTION_LOW_LATENCY)) {
+	fprintf(stderr,"Phantom: cannot write message: tossing\n");
+      }
+      delete [] msgbuf;
+
+      msgbuf = encode_surface_effects(len, SurfaceKadhesionNormal,
 		SurfaceKadhesionLateral, SurfaceTextureAmplitude,
 		SurfaceTextureWavelength, SurfaceBuzzAmp, 
 		SurfaceBuzzFreq);
-	if(connection->pack_message(len,timestamp,plane_effects_message_id,
-		my_id, msgbuf, vrpn_CONNECTION_LOW_LATENCY)) {
+      if(d_connection->pack_message(len,timestamp,plane_effects_message_id,
+		d_sender_id, msgbuf, vrpn_CONNECTION_LOW_LATENCY)) {
 		fprintf(stderr,"Phantom: cannot write message: tossing\n");
-	}
-    connection->mainloop();
-    delete msgbuf;
+      }
+      delete [] msgbuf;
   }
 
 }
@@ -1194,15 +1170,14 @@ void vrpn_ForceDevice_Remote::startSurface(void)
     timestamp.tv_sec = current_time.tv_sec;
     timestamp.tv_usec = current_time.tv_usec;
     
-    if(connection){
+    if(d_connection){
       msgbuf = encode_plane(len, plane, SurfaceKspring, SurfaceKdamping,
 		SurfaceFdynamic, SurfaceFstatic, which_plane, numRecCycles);
-      if (connection->pack_message(len,timestamp,plane_message_id,
-			   my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+      if (d_connection->pack_message(len,timestamp,plane_message_id,
+			   d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
 	fprintf(stderr,"Phantom: cannot write message: tossing\n");
       }
-      connection->mainloop();
-      delete msgbuf;
+      delete [] msgbuf;
     }
 }
 
@@ -1218,15 +1193,14 @@ void vrpn_ForceDevice_Remote::stopSurface(void)
     
     set_plane(0,0,0,0);
   
-    if(connection) {
+    if(d_connection) {
       msgbuf = encode_plane(len, plane, SurfaceKspring, SurfaceKdamping,
 		SurfaceFdynamic, SurfaceFstatic, which_plane, numRecCycles);
-      if (connection->pack_message(len,timestamp,plane_message_id,
-				   my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+      if (d_connection->pack_message(len,timestamp,plane_message_id,
+				   d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
 	fprintf(stderr,"Phantom: cannot write message: tossing\n");
       }
-      connection->mainloop();
-      delete msgbuf;
+      delete [] msgbuf;
     }
 }
 
@@ -1240,14 +1214,13 @@ void vrpn_ForceDevice_Remote::setVertex(vrpn_int32 vertNum,vrpn_float32 x,vrpn_f
   timestamp.tv_sec = current_time.tv_sec;
   timestamp.tv_usec = current_time.tv_usec;
 
-  if(connection){
+  if(d_connection){
     msgbuf = encode_vertex(len,vertNum,x,y,z);
-    if (connection->pack_message(len,timestamp,setVertex_message_id,
-		 my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+    if (d_connection->pack_message(len,timestamp,setVertex_message_id,
+		 d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
       fprintf(stderr,"Phantom: cannot write message: tossing\n");
     }
-    connection->mainloop();
-    delete []msgbuf;
+    delete [] msgbuf;
   }
 }
 
@@ -1260,14 +1233,13 @@ void vrpn_ForceDevice_Remote::setNormal(vrpn_int32 normNum,vrpn_float32 x,vrpn_f
   timestamp.tv_sec = current_time.tv_sec;
   timestamp.tv_usec = current_time.tv_usec;
 
-  if(connection){
+  if(d_connection){
     msgbuf = encode_normal(len,normNum,x,y,z);
-    if (connection->pack_message(len,timestamp,setNormal_message_id,
-			 my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+    if (d_connection->pack_message(len,timestamp,setNormal_message_id,
+			 d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
       fprintf(stderr,"Phantom: cannot write message: tossing\n");
     }
-    connection->mainloop();
-    delete []msgbuf;
+    delete [] msgbuf;
   }
 }
 
@@ -1282,14 +1254,13 @@ void vrpn_ForceDevice_Remote::setTriangle(vrpn_int32 triNum,
   timestamp.tv_sec = current_time.tv_sec;
   timestamp.tv_usec = current_time.tv_usec;
 
-  if(connection){
+  if(d_connection){
     msgbuf = encode_triangle(len,triNum,vert0,vert1,vert2,norm0,norm1,norm2);
-    if (connection->pack_message(len,timestamp,setTriangle_message_id,
-				 my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+    if (d_connection->pack_message(len,timestamp,setTriangle_message_id,
+				 d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
       fprintf(stderr,"Phantom: cannot write message: tossing\n");
     }
-    connection->mainloop();
-    delete []msgbuf;
+    delete [] msgbuf;
   }
 }
 
@@ -1303,14 +1274,13 @@ void vrpn_ForceDevice_Remote::removeTriangle(vrpn_int32 triNum){
   timestamp.tv_sec = current_time.tv_sec;
   timestamp.tv_usec = current_time.tv_usec;
 
-  if(connection){
+  if(d_connection){
     msgbuf = encode_removeTriangle(len,triNum);
-    if (connection->pack_message(len,timestamp,removeTriangle_message_id,
-				 my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+    if (d_connection->pack_message(len,timestamp,removeTriangle_message_id,
+				 d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
       fprintf(stderr,"Phantom: cannot write message: tossing\n");
     }
-    connection->mainloop();
-    delete []msgbuf;
+    delete [] msgbuf;
   }
 }
 
@@ -1324,15 +1294,14 @@ void vrpn_ForceDevice_Remote::updateTrimeshChanges(){
   timestamp.tv_sec = current_time.tv_sec;
   timestamp.tv_usec = current_time.tv_usec;
 
-  if(connection){
+  if(d_connection){
     msgbuf = encode_updateTrimeshChanges(len, SurfaceKspring, SurfaceKdamping,
 			SurfaceFstatic, SurfaceFdynamic);
-    if (connection->pack_message(len,timestamp,updateTrimeshChanges_message_id,
-				 my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+    if (d_connection->pack_message(len,timestamp,updateTrimeshChanges_message_id,
+				 d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
       fprintf(stderr,"Phantom: cannot write message: tossing\n");
     }
-    connection->mainloop();
-    delete []msgbuf;
+    delete [] msgbuf;
   }
 }
 
@@ -1346,14 +1315,13 @@ void vrpn_ForceDevice_Remote::setTrimeshTransform(vrpn_float32 homMatrix[16]){
   timestamp.tv_sec = current_time.tv_sec;
   timestamp.tv_usec = current_time.tv_usec;
 
-  if(connection){
+  if(d_connection){
     msgbuf = encode_trimeshTransform(len,homMatrix);
-    if (connection->pack_message(len,timestamp,transformTrimesh_message_id,
-				 my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+    if (d_connection->pack_message(len,timestamp,transformTrimesh_message_id,
+				 d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
       fprintf(stderr,"Phantom: cannot write message: tossing\n");
     }
-    connection->mainloop();
-    delete []msgbuf;
+    delete [] msgbuf;
   }
 }
 
@@ -1367,13 +1335,12 @@ void vrpn_ForceDevice_Remote::clearTrimesh(void){
   timestamp.tv_sec = current_time.tv_sec;
   timestamp.tv_usec = current_time.tv_usec;
 
-  if(connection){
-    if (connection->pack_message(len,timestamp,clearTrimesh_message_id,
-				 my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+  if(d_connection){
+    if (d_connection->pack_message(len,timestamp,clearTrimesh_message_id,
+				 d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
       fprintf(stderr,"Phantom: cannot write message: tossing\n");
     }
-    connection->mainloop();
-    //delete []msgbuf;
+    //delete [] msgbuf;
   }
 }
 
@@ -1387,14 +1354,13 @@ void vrpn_ForceDevice_Remote::useHcollide(void){
   timestamp.tv_sec = current_time.tv_sec;
   timestamp.tv_usec = current_time.tv_usec;
 
-  if(connection){
+  if(d_connection){
     msgbuf = encode_setTrimeshType(len,HCOLLIDE);
-    if (connection->pack_message(len,timestamp,setTrimeshType_message_id,
-				 my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+    if (d_connection->pack_message(len,timestamp,setTrimeshType_message_id,
+				 d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
       fprintf(stderr,"Phantom: cannot write message: tossing\n");
     }
-    connection->mainloop();
-    delete []msgbuf;
+    delete [] msgbuf;
   }
 }
 
@@ -1407,14 +1373,13 @@ void vrpn_ForceDevice_Remote::useGhost(void){
   timestamp.tv_sec = current_time.tv_sec;
   timestamp.tv_usec = current_time.tv_usec;
 
-  if(connection){
+  if(d_connection){
     msgbuf = encode_setTrimeshType(len,GHOST);
-    if (connection->pack_message(len,timestamp,setTrimeshType_message_id,
-				 my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+    if (d_connection->pack_message(len,timestamp,setTrimeshType_message_id,
+				 d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
       fprintf(stderr,"Phantom: cannot write message: tossing\n");
     }
-    connection->mainloop();
-    delete []msgbuf;
+    delete [] msgbuf;
   }
 }
 
@@ -1558,13 +1523,12 @@ void vrpn_ForceDevice_Remote::sendForceField
   timestamp.tv_sec = current_time.tv_sec;
   timestamp.tv_usec = current_time.tv_usec;
 
-  if(connection){
+  if(d_connection){
     msgbuf = encode_forcefield(len, origin, force, jacobian, radius);
-    if (connection->pack_message(len,timestamp, forcefield_message_id,
-		my_id, msgbuf, vrpn_CONNECTION_LOW_LATENCY)) {
+    if (d_connection->pack_message(len,timestamp, forcefield_message_id,
+		d_sender_id, msgbuf, vrpn_CONNECTION_LOW_LATENCY)) {
 	fprintf(stderr,"Phantom: cannot write message: tossing\n");
     }
-    connection->mainloop();
     delete [] msgbuf;
   }
 }
@@ -1585,21 +1549,21 @@ void vrpn_ForceDevice_Remote::stopForceField (void)
   timestamp.tv_sec = current_time.tv_sec;
   timestamp.tv_usec = current_time.tv_usec;
 
-  if(connection){
+  if(d_connection){
     msgbuf = encode_forcefield(len, origin, force, jacobian, radius);
-    if (connection->pack_message(len,timestamp, forcefield_message_id,
-                my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+    if (d_connection->pack_message(len,timestamp, forcefield_message_id,
+                d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
 	fprintf(stderr,"Phantom: cannot write message: tossing\n");
     }
-    connection->mainloop();
-    delete []msgbuf;
+    delete [] msgbuf;
   }
 }
 
 
-void	vrpn_ForceDevice_Remote::mainloop(const struct timeval * timeout)
+void	vrpn_ForceDevice_Remote::mainloop()
 {
-	if (connection) { connection->mainloop(timeout); }
+	if (d_connection) { d_connection->mainloop(); }
+	client_mainloop();
 }
 
 int vrpn_ForceDevice_Remote::register_force_change_handler(void *userdata,
@@ -1855,12 +1819,11 @@ void vrpn_ForceDevice_Remote::send (const char * msgbuf, vrpn_int32 len,
   timestamp.tv_sec = now.tv_sec;
   timestamp.tv_usec = now.tv_usec;
 
-  if (connection) {
-    if (connection->pack_message(len, now, type,
-                                 my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+  if (d_connection) {
+    if (d_connection->pack_message(len, now, type,
+                                 d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
       fprintf(stderr, "vrpn_ForceDevice_Remote::send:  Can't pack message.\n");
     }
-    connection->mainloop();
   }
 
   // HP compiler won't let you delete a const argument.
@@ -1873,10 +1836,6 @@ void vrpn_ForceDevice_Remote::send (const char * msgbuf, vrpn_int32 len,
 
 void vrpn_ForceDevice_Remote::constraintToForceField (void) {
 
-  //vrpn_float64 a [9];  // scratch matrix
-  //vrpn_float64 n0 [3];  // scratch vectors
-  //vrpn_float64 theta;
-  //q_type rotation;
   vrpn_float32 c [9];  // scratch matrix
   vrpn_float64 s [3];  // scratch vectors
   int i, j;
@@ -1926,15 +1885,15 @@ void vrpn_ForceDevice_Remote::constraintToForceField (void) {
       s[1] = d_conLineDirection[1] * d_conLineDirection[1];
       s[2] = d_conLineDirection[2] * d_conLineDirection[2];
 
-      c[0] = 1.0 - s[0];
-      c[1] = - s[0];
-      c[2] = - s[0];
-      c[3] = - s[1];
-      c[4] = 1.0 - s[1];
-      c[5] = - s[1];
-      c[6] = - s[2];
-      c[7] = - s[2];
-      c[8] = 1.0 - s[2];
+      c[0] = (vrpn_float32)(1.0 - s[0]);
+      c[1] = (vrpn_float32)(- s[0]);
+      c[2] = (vrpn_float32)(- s[0]);
+      c[3] = (vrpn_float32)(- s[1]);
+      c[4] = (vrpn_float32)(1.0 - s[1]);
+      c[5] = (vrpn_float32)(- s[1]);
+      c[6] = (vrpn_float32)(- s[2]);
+      c[7] = (vrpn_float32)(- s[2]);
+      c[8] = (vrpn_float32)(1.0 - s[2]);
 
       setFF_Jacobian(c[0], c[1], c[2], c[3], c[4], c[5], c[6], c[7], c[8]);
 
@@ -1951,8 +1910,8 @@ void vrpn_ForceDevice_Remote::constraintToForceField (void) {
 
       for (i = 0; i < 3; i++)
         for (j = 0; j < 3; j++)
-          c[i + j * 3] = -d_conKSpring * d_conPlaneNormal[i]
-                                       * d_conPlaneNormal[j];
+          c[i + j * 3] = (vrpn_float32)(-d_conKSpring * d_conPlaneNormal[i]
+                                       * d_conPlaneNormal[j]);
 
       setFF_Jacobian(c[0], c[1], c[2], c[3], c[4], c[5], c[6], c[7], c[8]);
 

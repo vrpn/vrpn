@@ -80,105 +80,6 @@ LIB32=link.exe -lib
 
 # Name "vrpn - Win32 Release"
 # Name "vrpn - Win32 Debug"
-# Begin Group "new connection stuff"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\vrpn_BaseConnection.C
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\vrpn_BaseConnection.h
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\vrpn_BaseConnectionController.C
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\vrpn_BaseConnectionController.h
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\vrpn_BaseMulticast.C
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\vrpn_BaseMulticast.h
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\vrpn_ClientConnectionController.h
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\vrpn_ConnectionController.C
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\vrpn_ConnectionController.h
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\vrpn_ConnectionOldCommonStuff.C
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\vrpn_ConnectionOldCommonStuff.h
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\vrpn_NetConnection.C
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\vrpn_NetConnection.h
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\vrpn_ServerConnectionController.C
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\vrpn_ServerConnectionController.h
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\vrpn_UnreliableMulticastRecvr.C
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\vrpn_UnreliableMulticastRecvr.h
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\vrpn_UnreliableMulticastSender.C
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\vrpn_UnreliableMulticastSender.h
-# PROP Exclude_From_Build 1
-# End Source File
-# End Group
 # Begin Source File
 
 SOURCE=.\vrpn_3Space.C
@@ -194,6 +95,14 @@ SOURCE=.\vrpn_Analog.C
 # Begin Source File
 
 SOURCE=.\vrpn_Analog.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_BaseClass.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_BaseClass.h
 # End Source File
 # Begin Source File
 

@@ -24,7 +24,7 @@
 class vrpn_SGIBox :public vrpn_Analog, public vrpn_Button_Filter {
 public:
   vrpn_SGIBox(char * name, vrpn_Connection * c);
-  void mainloop(const struct timeval * timeout = NULL);
+  void mainloop();
   void reset();
 
 

@@ -5,114 +5,32 @@
 #include <netinet/in.h>
 #endif
 
-vrpn_Text::vrpn_Text(char *name, vrpn_Connection *c)
-{
-    char* servicename;
-    servicename = vrpn_copy_service_name(name);
-
-    if(c)
-        connection = c;
-    else
-        connection = vrpn_get_connection_by_name(name);
-    
-    if( connection != NULL){
-        my_id = connection->register_sender(servicename);
-        message_id  = connection->register_message_type("vrpn Text ascii type");
-        if((my_id == -1) ||(message_id  == -1)){
-            fprintf(stderr, "vrpn_Text: Can't register IDs\n");
-            connection = NULL;
-        }
-    }
-}
-
-// virtual
-vrpn_Text::~vrpn_Text (void) {
-
-}
-
-void vrpn_Text::mainloop (void) {
-	connection->mainloop();
-}
-
-vrpn_Connection * vrpn_Text::connectionPtr (void) {
-        return connection;
-}
-
-vrpn_int32 vrpn_Text::encode_to (char * buf, vrpn_uint32 type,
-                          vrpn_uint32 level, const char * msg)
-{
-	char *bufptr = buf;
-	int  buflen = 2 * sizeof(vrpn_int32) + vrpn_MAX_TEXT_LEN;
-
-	// Send the type, level and string message (of maximum length)
-	vrpn_buffer( &bufptr, &buflen, type );
-	vrpn_buffer( &bufptr, &buflen, level );
-	vrpn_buffer( &bufptr, &buflen, msg, vrpn_MAX_TEXT_LEN );
-
-	return 0;
-}
-
-
-vrpn_int32 vrpn_Text::decode_to (char *msg, vrpn_uint32 *type,
-                         vrpn_uint32 *level, const char *buf)
-{
-	const char	*bufptr = buf;
-
-	// Read the type, level and message
-	vrpn_unbuffer( &bufptr, type );
-	vrpn_unbuffer( &bufptr, level );
-	vrpn_unbuffer( &bufptr, msg, vrpn_MAX_TEXT_LEN );
-
-	return 0;	
-}
-
-
 int vrpn_Text_Sender::send_message(const char *msg,
-                            vrpn_uint32 type,
+                            vrpn_TEXT_SEVERITY type,
                             vrpn_uint32 level)
 {
-        /*vrpn_Connection *connection = new vrpn_Connection();
-        vrpn_int32 my_type = connection->register_message_type("Test_type");
-        vrpn_int32 my_id = connection->register_sender("Test0@ioglab.cs.unc.edu");
-	*/
-
-	char buffer [2 * sizeof(vrpn_int32) + vrpn_MAX_TEXT_LEN];
         struct timeval now;
-
         gettimeofday(&now,NULL);
 
-	// send both level and message
-
-        encode_to(buffer,  type, level, msg);
-        connection->pack_message(sizeof(buffer), now, message_id, my_id,
-                                 buffer, vrpn_CONNECTION_RELIABLE);  // TCH
-        connection->mainloop();
-	return 0;
+	// send type, level and message
+	return send_text_message(msg, now, type, level);
 }
 
 
-vrpn_Text_Receiver::vrpn_Text_Receiver (char * name,
-                                        vrpn_Connection * c) :  // TCH
-    vrpn_Text(name, c),
-    change_list (NULL)  // TCH
+vrpn_Text_Receiver::vrpn_Text_Receiver (const char * name,
+                                        vrpn_Connection * c) :
+    vrpn_BaseClass(name, c),
+    change_list (NULL)
 {
-  if (connectionPtr())
-    connectionPtr()->register_handler(message_id, handle_message, this, my_id);
+  init();
+  if (d_connection) {
+    register_autodeleted_handler(d_text_message_id, handle_message, this, d_sender_id);
+  }
 };
 
 vrpn_Text_Receiver::~vrpn_Text_Receiver()
 {
 	vrpn_TEXTMESSAGELIST	*next;
-
-	// Unregister all of the handlers that have been registered with the
-	// connection so that they won't yank once the object has been deleted.
-	if (connectionPtr()) {
-	  if (connectionPtr()->unregister_handler(message_id, handle_message,
-		this, my_id)) {
-		fprintf(stderr,"vrpn_Text_Receiver: can't unregister handler\n");
-		fprintf(stderr,"   (internal VRPN error -- expect a seg fault)\n");
-	  }
-	}
 
 	// Delete all of the callback handlers that other code had registered
 	// with this object. This will free up the memory taken by the list
@@ -188,13 +106,8 @@ int vrpn_Text_Receiver::handle_message (void * userdata, vrpn_HANDLERPARAM p) {
   vrpn_TEXTMESSAGELIST * list =  me->change_list;
 
   cp.msg_time = p.msg_time;
- 
-  // FILL IN THE BLANK HERE
-  //FILL IN THE BLANK HERE
-
-// temporary code  by Lin Cui on 09/04/98
-  me->decode_to(cp.message, &cp.type, &cp.level,p.buffer);
-
+  me->decode_text_message_from_buffer(cp.message, &cp.type, &cp.level, p.buffer);
+  
   // Go down the list of callbacks that have been registered.
   // Fill in the parameter and call each.
   while (list != NULL) {

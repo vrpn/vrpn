@@ -101,31 +101,31 @@ extern void vrpn_SleepMsecs( double dMsecs );
 extern vrpn_float64 htond( vrpn_float64 d );
 extern vrpn_float64 ntohd( vrpn_float64 d );
 
-extern long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
-                         const char value);
-extern long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
+extern int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
+                         const vrpn_int8 value);
+extern int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
                          const vrpn_int32 value);
-extern long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
+extern int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
                          const vrpn_uint32 value);
-extern long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
+extern int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
                          const vrpn_float32 value);
-extern long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
+extern int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
                          const vrpn_float64 value);
-extern long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
+extern int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
                          const timeval t);
-extern long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
-                         const char * string, vrpn_uint32 length);
-extern long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
+extern int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
+                         const char * string, vrpn_int32 length);
+extern int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
                          const vrpn_bool value);
-extern long vrpn_unbuffer (const char ** buffer, char * cval);
-extern long vrpn_unbuffer (const char ** buffer, vrpn_int32 * lval);
-extern long vrpn_unbuffer (const char ** buffer, vrpn_uint32 * lval);
-extern long vrpn_unbuffer (const char ** buffer, vrpn_float32 * fval);
-extern long vrpn_unbuffer (const char ** buffer, vrpn_float64 * dval);
-extern long vrpn_unbuffer (const char ** buffer, timeval * t);
-extern long vrpn_unbuffer (const char ** buffer, char * string,
-                           vrpn_uint32 length);
-extern long vrpn_unbuffer (const char ** buffer, vrpn_bool * lval);
+extern int vrpn_unbuffer (const char ** buffer, vrpn_int8 * cval);
+extern int vrpn_unbuffer (const char ** buffer, vrpn_int32 * lval);
+extern int vrpn_unbuffer (const char ** buffer, vrpn_uint32 * lval);
+extern int vrpn_unbuffer (const char ** buffer, vrpn_float32 * fval);
+extern int vrpn_unbuffer (const char ** buffer, vrpn_float64 * dval);
+extern int vrpn_unbuffer (const char ** buffer, timeval * t);
+extern int vrpn_unbuffer (const char ** buffer, char * string,
+                           vrpn_int32 length);
+extern int vrpn_unbuffer (const char ** buffer, vrpn_bool * lval);
 // }}}
 
 // XXX should this be done in cygwin?

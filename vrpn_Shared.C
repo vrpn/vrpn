@@ -200,7 +200,7 @@ vrpn_float64 ntohd (vrpn_float64 d)
     VRPN standard wire protocol.
 */
 
-long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_int32 value)
+int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_int32 value)
 {
     vrpn_int32 netValue = htonl(value);
     int length = sizeof(netValue);
@@ -230,7 +230,7 @@ long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_int32 value)
     VRPN standard wire protocol.
 */
 
-long vrpn_buffer(char ** insertPt, vrpn_int32 * buflen, const vrpn_uint32 value)
+int vrpn_buffer(char ** insertPt, vrpn_int32 * buflen, const vrpn_uint32 value)
 {
     vrpn_uint32 netValue = htonl(value);
     int length = sizeof(netValue);
@@ -260,7 +260,7 @@ long vrpn_buffer(char ** insertPt, vrpn_int32 * buflen, const vrpn_uint32 value)
     VRPN standard wire protocol.
 */
 
-long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const char value)
+int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const char value)
 {
   vrpn_int32 length = sizeof(char);
 
@@ -289,7 +289,7 @@ long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const char value)
     VRPN standard wire protocol.
 */
 
-long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
+int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
                   const vrpn_float32 value)
 {
     vrpn_int32 longval = *((vrpn_int32 *)&value);
@@ -309,7 +309,7 @@ long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
     VRPN standard wire protocol.
 */
 
-long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
+int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
                   const vrpn_float64 value)
 {
     vrpn_float64 netValue = htond(value);
@@ -340,7 +340,7 @@ long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
     VRPN standard wire protocol.
 */
 
-long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const timeval t)
+int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const timeval t)
 {
     vrpn_int32 sec, usec;
 
@@ -365,19 +365,33 @@ long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const timeval t)
     based on their type (vrpn_buffer is overloaded based on the third
     parameter type). These routines handle byte-swapping to the
     VRPN standard wire protocol.
+
+    If the length is specified as -1, then the string will be assumed to
+    be NULL-terminated and will be copied using the string-copy routines.
 */
 
-long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
-                  const char * string, vrpn_uint32 length)
+int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
+                  const char * string, vrpn_int32 length)
 {
-  if (length > (unsigned)*buflen) {
-    fprintf(stderr, "vrpn_buffer:  buffer not long enough for string.\n");
-    return -1;
-  }
+    if (length > *buflen) {
+	fprintf(stderr, "vrpn_buffer:  buffer not long enough for string.\n");
+	return -1;
+    }
     
-    memcpy(*insertPt, string, length);
-    *insertPt += length;
-    *buflen -= length;
+    if (length == -1) {
+	size_t len = strlen(string)+1;	// +1 for the NULL terminating character
+	if (len > (unsigned)*buflen) {
+    	    fprintf(stderr, "vrpn_buffer:  buffer not long enough for string.\n");
+	    return -1;
+	}
+	strcpy(*insertPt, string);
+	*insertPt += len;
+	*buflen -= len;
+    } else {
+	memcpy(*insertPt, string, length);
+	*insertPt += length;
+	*buflen -= length;
+    }
     
     return 0;
 }
@@ -395,7 +409,7 @@ long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
     VRPN standard wire protocol.
 */
 
-long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_bool value)
+int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_bool value)
 {
     vrpn_bool netValue = htons(value);
     int length = sizeof(netValue);
@@ -416,8 +430,8 @@ long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_bool value)
     was sent as a message. Does NOT handle unpacking from an
     unaligned buffer, because the semantics of VRPN require
     message buffers and the values in them to be aligned, in order to
-    reduce the amount of copying that goes on. Advances the insertPt
-    pointer to just after newly-inserted value. Assumes that the
+    reduce the amount of copying that goes on. Advances the reading
+    pointer to just after newly-read value. Assumes that the
     buffer holds a complete value. Returns zero on success and -1 on failure.
 
     Part of a family of routines that unbuffer different VRPN types
@@ -426,7 +440,7 @@ long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_bool value)
     the VRPN defined wire protocol.
 */
 
-long vrpn_unbuffer (const char ** buffer, char * cval) {
+int vrpn_unbuffer (const char ** buffer, char * cval) {
   *cval = **buffer;
   *buffer += sizeof(char);
   return 0;
@@ -436,8 +450,8 @@ long vrpn_unbuffer (const char ** buffer, char * cval) {
     was sent as a message. Does NOT handle unpacking from an
     unaligned buffer, because the semantics of VRPN require
     message buffers and the values in them to be aligned, in order to
-    reduce the amount of copying that goes on. Advances the insertPt
-    pointer to just after newly-inserted value. Assumes that the
+    reduce the amount of copying that goes on. Advances the read
+    pointer to just after newly-read value. Assumes that the
     buffer holds a complete value. Returns zero on success and -1 on failure.
 
     Part of a family of routines that unbuffer different VRPN types
@@ -446,7 +460,7 @@ long vrpn_unbuffer (const char ** buffer, char * cval) {
     the VRPN defined wire protocol.
 */
 
-long vrpn_unbuffer (const char ** buffer, vrpn_int32 * lval)
+int vrpn_unbuffer (const char ** buffer, vrpn_int32 * lval)
 {
     *lval = ntohl(*((vrpn_int32 *)(*buffer)));
     *buffer += sizeof(vrpn_int32);
@@ -457,8 +471,8 @@ long vrpn_unbuffer (const char ** buffer, vrpn_int32 * lval)
     was sent as a message. Does NOT handle unpacking from an
     unaligned buffer, because the semantics of VRPN require
     message buffers and the values in them to be aligned, in order to
-    reduce the amount of copying that goes on. Advances the insertPt
-    pointer to just after newly-inserted value. Assumes that the
+    reduce the amount of copying that goes on. Advances the read
+    pointer to just after newly-read value. Assumes that the
     buffer holds a complete value. Returns zero on success and -1 on failure.
 
     Part of a family of routines that unbuffer different VRPN types
@@ -467,7 +481,7 @@ long vrpn_unbuffer (const char ** buffer, vrpn_int32 * lval)
     the VRPN defined wire protocol.
 */
 
-long vrpn_unbuffer (const char ** buffer, vrpn_uint32 * lval)
+int vrpn_unbuffer (const char ** buffer, vrpn_uint32 * lval)
 {
     *lval = ntohl(*((vrpn_uint32 *)(*buffer)));
     *buffer += sizeof(vrpn_uint32);
@@ -478,8 +492,8 @@ long vrpn_unbuffer (const char ** buffer, vrpn_uint32 * lval)
     was sent as a message. Does NOT handle unpacking from an
     unaligned buffer, because the semantics of VRPN require
     message buffers and the values in them to be aligned, in order to
-    reduce the amount of copying that goes on. Advances the insertPt
-    pointer to just after newly-inserted value. Assumes that the
+    reduce the amount of copying that goes on. Advances the read
+    pointer to just after newly-read value. Assumes that the
     buffer holds a complete value. Returns zero on success and -1 on failure.
 
     Part of a family of routines that unbuffer different VRPN types
@@ -488,7 +502,7 @@ long vrpn_unbuffer (const char ** buffer, vrpn_uint32 * lval)
     the VRPN defined wire protocol.
 */
 
-long vrpn_unbuffer (const char ** buffer, vrpn_float32 * fval)
+int vrpn_unbuffer (const char ** buffer, vrpn_float32 * fval)
 {
     vrpn_int32 lval;
     CHECK(vrpn_unbuffer(buffer, &lval));
@@ -500,8 +514,8 @@ long vrpn_unbuffer (const char ** buffer, vrpn_float32 * fval)
     was sent as a message. Does NOT handle unpacking from an
     unaligned buffer, because the semantics of VRPN require
     message buffers and the values in them to be aligned, in order to
-    reduce the amount of copying that goes on. Advances the insertPt
-    pointer to just after newly-inserted value. Assumes that the
+    reduce the amount of copying that goes on. Advances the read
+    pointer to just after newly-read value. Assumes that the
     buffer holds a complete value. Returns zero on success and -1 on failure.
 
     Part of a family of routines that unbuffer different VRPN types
@@ -510,7 +524,7 @@ long vrpn_unbuffer (const char ** buffer, vrpn_float32 * fval)
     the VRPN defined wire protocol.
 */
 
-long vrpn_unbuffer (const char ** buffer, vrpn_float64 * dval)
+int vrpn_unbuffer (const char ** buffer, vrpn_float64 * dval)
 {
     *dval = ntohd(*(vrpn_float64 *)(*buffer));
     *buffer += sizeof(vrpn_float64);
@@ -521,8 +535,8 @@ long vrpn_unbuffer (const char ** buffer, vrpn_float64 * dval)
     was sent as a message. Does NOT handle unpacking from an
     unaligned buffer, because the semantics of VRPN require
     message buffers and the values in them to be aligned, in order to
-    reduce the amount of copying that goes on. Advances the insertPt
-    pointer to just after newly-inserted value. Assumes that the
+    reduce the amount of copying that goes on. Advances the read
+    pointer to just after newly-read value. Assumes that the
     buffer holds a complete value. Returns zero on success and -1 on failure.
 
     Part of a family of routines that unbuffer different VRPN types
@@ -531,7 +545,7 @@ long vrpn_unbuffer (const char ** buffer, vrpn_float64 * dval)
     the VRPN defined wire protocol.
 */
 
-long vrpn_unbuffer (const char ** buffer, timeval * t)
+int vrpn_unbuffer (const char ** buffer, timeval * t)
 {
     vrpn_int32 sec, usec;
 
@@ -548,23 +562,34 @@ long vrpn_unbuffer (const char ** buffer, timeval * t)
     was sent as a message. Does NOT handle unpacking from an
     unaligned buffer, because the semantics of VRPN require
     message buffers and the values in them to be aligned, in order to
-    reduce the amount of copying that goes on. Advances the insertPt
-    pointer to just after newly-inserted value. Assumes that the
+    reduce the amount of copying that goes on. Advances the read
+    pointer to just after newly-read value. Assumes that the
     buffer holds a complete value. Returns zero on success and -1 on failure.
 
     Part of a family of routines that unbuffer different VRPN types
     based on their type (vrpn_buffer is overloaded based on the third
     parameter type). These routines handle byte-swapping to and from
     the VRPN defined wire protocol.
+
+    If the length is specified as -1, then the string will be assumed to
+    be NULL-terminated and will be read using the string-copy routines. NEVER
+    use this on a string that was packed with other than the NULL-terminating
+    condition, since embedded NULL characters will ruin the argument parsing
+    for any later arguments in the message.
 */
 
-long vrpn_unbuffer (const char ** buffer, char * string,
-                    vrpn_uint32 length)
+int vrpn_unbuffer (const char ** buffer, char * string,
+                    vrpn_int32 length)
 {
     if (!string) return -1;
 
-    memcpy(string, *buffer, length);
-    *buffer += length;
+    if (length == -1) {
+	strcpy(string, *buffer);
+	*buffer += strlen(*buffer)+1;	// +1 for NULL terminating character
+    } else {
+	memcpy(string, *buffer, length);
+	*buffer += length;
+    }
 
     return 0;
 }
@@ -573,8 +598,8 @@ long vrpn_unbuffer (const char ** buffer, char * string,
     was sent as a message. Does NOT handle unpacking from an
     unaligned buffer, because the semantics of VRPN require
     message buffers and the values in them to be aligned, in order to
-    reduce the amount of copying that goes on. Advances the insertPt
-    pointer to just after newly-inserted value. Assumes that the
+    reduce the amount of copying that goes on. Advances the read
+    pointer to just after newly-read value. Assumes that the
     buffer holds a complete value. Returns zero on success and -1 on failure.
 
     Part of a family of routines that unbuffer different VRPN types
@@ -583,7 +608,7 @@ long vrpn_unbuffer (const char ** buffer, char * string,
     the VRPN defined wire protocol.
 */
 
-long vrpn_unbuffer (const char ** buffer, vrpn_bool * lval)
+int vrpn_unbuffer (const char ** buffer, vrpn_bool * lval)
 {
     *lval = ntohs(*((vrpn_bool *)(*buffer)));
     *buffer += sizeof(vrpn_bool);
@@ -754,8 +779,7 @@ int gettimeofday(timeval *tp, struct timezone *tzp)
     static LARGE_INTEGER liDiff;
     timeval tvDiff;
 
-  
-    if (!fHasPerfCounter) {
+      if (!fHasPerfCounter) {
         _ftime(&tbInit);
         tp->tv_sec  = tbInit.time;
         tp->tv_usec = tbInit.millitm*1000;
@@ -806,7 +830,7 @@ int gettimeofday(timeval *tp, struct timezone *tzp)
     // pack the value and clean it up
     tp->tv_sec  = tbInit.time + tvDiff.tv_sec;
     tp->tv_usec = tbInit.millitm*1000 + tvDiff.tv_usec;  
-    if (tp->tv_usec >= 1000000) {
+    while (tp->tv_usec >= 1000000) {
         tp->tv_sec++;
         tp->tv_usec -= 1000000;
     }

@@ -671,4 +671,3 @@ int vrpn_cookie_size (void);
 int write_vrpn_cookie (char * buffer, int length, long remote_log_mode);
 
 #endif // VRPN_CONNECTION_H
-

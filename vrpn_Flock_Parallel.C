@@ -11,7 +11,7 @@
   Revised: Fri Mar 19 15:05:56 1999 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Flock_Parallel.C,v $
   $Locker:  $
-  $Revision: 1.7 $
+  $Revision: 1.8 $
 \*****************************************************************************/
 
 // The structure of this code came from vrpn_3Space.[Ch]
@@ -67,7 +67,7 @@ vrpn_Tracker_Flock_Parallel::vrpn_Tracker_Flock_Parallel(char *name,
 							 char *port, 
 							 long baud,
 							 char *slavePortArray[]) :
-  vrpn_Tracker_Flock(name,c,cSensors,port,baud,0) 
+  vrpn_Tracker_Flock(name,c,cSensors,port,baud,0)
 {
   if (cSensors<=0) {
     fprintf(stderr, "\nvrpn_Tracker_Flock_Parallel: must ask for pos num "
@@ -93,10 +93,10 @@ vrpn_Tracker_Flock_Parallel::vrpn_Tracker_Flock_Parallel(char *name,
       // create a traker name
       sprintf(rgch, "flockSlave%d", i);
       rgSlaves[i] = new vrpn_Tracker_Flock_Parallel_Slave( rgch,
-							   connection,
+							   d_connection,
 							   slavePortArray[i],
 							   baud,
-							   my_id,
+							   d_sender_id,
 							   position_m_id,
 							   i );
     }      
@@ -133,13 +133,16 @@ void vrpn_Tracker_Flock_Parallel::get_report(void)
   // this could either do nothing or call slave get_report(s)
 }
 
-void vrpn_Tracker_Flock_Parallel::mainloop(const struct timeval * timeout)
+void vrpn_Tracker_Flock_Parallel::mainloop()
 {
   int i;
 
+  // Call the generic server code, since we are a server.
+  server_mainloop();
+
   // call slave mainloops
   for (i=0;i<cSensors;i++) {
-    rgSlaves[i]->mainloop(timeout);
+    rgSlaves[i]->mainloop();
   }
 
   // check slave status (master fails if any slave does
@@ -340,8 +343,11 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 	       1000000L * (t1.tv_sec - t2.tv_sec);
 }
 
-void vrpn_Tracker_Flock_Parallel_Slave::mainloop(const struct timeval * /*timeout*/ )
+void vrpn_Tracker_Flock_Parallel_Slave::mainloop()
 {
+  // We don't call the generic server mainloop code, because the master unit
+  // will have done that for us.
+
   switch (status) {
   case TRACKER_REPORT_READY:
     {
@@ -367,7 +373,7 @@ void vrpn_Tracker_Flock_Parallel_Slave::mainloop(const struct timeval * /*timeou
       cResets = 0;
 
       // Send the message on the connection
-      if (connection) {
+      if (d_connection) {
 
 #ifdef STATUS_MSG
 	// data to calc report rate 
@@ -419,7 +425,7 @@ void vrpn_Tracker_Flock_Parallel_Slave::mainloop(const struct timeval * /*timeou
 	// pack and deliver tracker report
 	static char msgbuf[1000];
 	int	    len = encode_to(msgbuf);
-	if (connection->pack_message(len, timestamp,
+	if (d_connection->pack_message(len, timestamp,
 				     vrpnPositionMsgID, vrpnMasterID, msgbuf,
 				     vrpn_CONNECTION_LOW_LATENCY)) {
 	  fprintf(stderr,
@@ -444,6 +450,7 @@ void vrpn_Tracker_Flock_Parallel_Slave::mainloop(const struct timeval * /*timeou
 	get_report();
       } else {
 	fprintf(stderr,"\nvrpn_Tracker_Flock_Parallel_Slave %d: failed to read ... current_time=%ld:%ld, timestamp=%ld:%ld",
+		d_sensor,
 		current_time.tv_sec, current_time.tv_usec, 
 		timestamp.tv_sec, timestamp.tv_usec);
 	status = TRACKER_FAIL;
@@ -485,6 +492,60 @@ void vrpn_Tracker_Flock_Parallel_Slave::mainloop(const struct timeval * /*timeou
 
 /*****************************************************************************\
   $Log: vrpn_Flock_Parallel.C,v $
+  Revision 1.8  2000/07/03 16:39:46  taylorr
+  This takes us to vrpn 5.0, which includes several improvements over
+  the previous versions, but means that everyone now needs to upgrade
+  the servers and clients, since they won't be interoperable with older
+  versions.
+
+  Below is a list of the bug fixes and features, with the major ones
+  indicated by an asterisk:
+
+     bug	Removed the mainloop() calls from within the ForceDevice methods to set
+  		parameters. This will allow them to be used from within callback
+  		handlers.
+     bug	Modified "delete msgbuf" commands to become "delete [] msgbuf", which
+  		matches the fact that they were created with "new char [len]".
+    *ftr	The timeout parameter has been removed from the mainloop() functions of
+  		the object classes (such as Analog) that had it.  Waiting is
+  		more properly done outside this function (using
+  		vrpn_SleepMsecs()).
+    *ftr	Make it so that vrpn_Text messages don't get sent as the
+  		maximum-length text message
+  		no matter how short the actual message is.  THIS FEATURE MAKES
+  		THE CODE NON-INTEROPERABLE WITH VERSION 4 OF VRPN.  THIS
+  		FEATURE WILL BREAK ANY CODE THAT USED vrpn_Text TO PASS
+  		STRINGS THAT CONTAINED THE NULL CHARACTER.
+    *bug	Fixed the packing/unpacking of vrpn_Bool so that it uses proper-length
+  		byte ordering.  THIS FEATURE MAY MAKE THE CODE
+  		NON-INTEROPERABLE WITH VERSION 4 OF VRPN.
+     bug	vrpn_Text send_message() should not call mainloop() inside it.
+  		Causes segfaults if messages are send inside a callback handler.
+    *ftr	vrpn_BaseClass object created, from which all object types should
+  		derive.  Most system object types now derive from this (clock,
+  		analog, button, dial, forcedevice, sound, tracker, text).
+  		This pulls sender_id registration and several other
+  		functions together so that they are only implemented once.
+  		Also allows extension of function (needed for the following
+  		features) by extending only the vrpn_BaseClass object functions.
+    *ftr	Text-handling code pulled into the vrpn_BaseClass object, so that all
+  		objects can send text messages -- allows moving towards this way
+  		of printing error messages from within objects.
+    *ftr	vrpn_System_TextPrinter object created to print warnings and errors
+  		from any created object (by default).  User can change the
+  		ostream that it uses, as well as adjust its level of verbosity.
+  		This should allow all objects to print errors/warnings to the
+  		user console by emitting VRPN text messages.  This addresses
+  		a long-standing problem with VRPN where you couldn't tell if
+  		there was a problem with the
+  		server because its error messages go to some console on another
+  		machine.  Now they will go to both places for objects that are
+  		derived from vrpn_BaseClass.
+    *ftr	Handling the Ping/Pong messages that tell the client if the server is
+  		alive The client warns of no hearbeat in 3 seconds, error if
+  		no heartbeat in 10 second.  Warn/error 1/second.  Gets printed
+  		by vrpn_System_TextPrinter.
+
   Revision 1.7  2000/03/30 19:23:19  hudson
   Big changes:
     VRPN Connection now supports multiple NICs.  An additional optional argument

@@ -452,15 +452,15 @@ void vrpn_Tracker_Flock::reset()
        fprintf(stderr," (a transmitter)");
      }
      if (response[i] & 0x80) {
-       fprintf(stderr," is accessible", i);
+       fprintf(stderr," is accessible");
      } else {
-       fprintf(stderr," is not accessible", i);
+       fprintf(stderr," is not accessible");
        fOk=0;
      }
      if (response[i] & 0x40) {
-       fprintf(stderr," and is running", i);
+       fprintf(stderr," and is running");
      } else {
-       fprintf(stderr," and is not running", i);
+       fprintf(stderr," and is not running");
        fOk=0;
      }
    }
@@ -673,8 +673,11 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 	       1000000L * (t1.tv_sec - t2.tv_sec);
 }
 
-void vrpn_Tracker_Flock::mainloop(const struct timeval * /*timeout*/ )
+void vrpn_Tracker_Flock::mainloop()
 {
+  // Call the generic server mainloop, because we are a server
+  server_mainloop();
+
   switch (status) {
   case TRACKER_REPORT_READY:
     {
@@ -700,7 +703,7 @@ void vrpn_Tracker_Flock::mainloop(const struct timeval * /*timeout*/ )
       cResets = 0;
 
       // Send the message on the connection
-      if (connection) {
+      if (d_connection) {
 
 #ifdef STATUS_MSG
 	// data to calc report rate 
@@ -750,8 +753,8 @@ void vrpn_Tracker_Flock::mainloop(const struct timeval * /*timeout*/ )
 	// pack and deliver tracker report
 	static char msgbuf[1000];
 	int	    len = encode_to(msgbuf);
-	if (connection->pack_message(len, timestamp,
-				     position_m_id, my_id, msgbuf,
+	if (d_connection->pack_message(len, timestamp,
+				     position_m_id, d_sender_id, msgbuf,
 				     vrpn_CONNECTION_LOW_LATENCY)) {
 	  fprintf(stderr,
 		  "\nvrpn_Tracker_Flock: cannot write message ...  tossing");

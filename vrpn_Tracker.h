@@ -19,6 +19,7 @@
 // client and the server
 
 #include "vrpn_Connection.h"
+#include "vrpn_BaseClass.h"
 
 // tracker status flags
 #define TRACKER_SYNCING		(2)
@@ -35,10 +36,9 @@
 // used to specify all sensors
 #define TRACKER_MAX_SENSOR_LIST (TRACKER_MAX_SENSORS + 1)
 
-class vrpn_Tracker {
+class vrpn_Tracker : public vrpn_BaseClass {
   public:
    vrpn_Tracker (const char * name, vrpn_Connection * c = NULL);
-   virtual void mainloop(const struct timeval * timeout=NULL) = 0;
    virtual ~vrpn_Tracker (void);
 
    int read_config_file (FILE * config_file, const char * tracker_name);
@@ -53,11 +53,7 @@ class vrpn_Tracker {
    static int handle_workspace_request(void *userdata, vrpn_HANDLERPARAM p);
    static int handle_update_rate_request (void *, vrpn_HANDLERPARAM);
 
-   vrpn_Connection *connectionPtr();
-
   protected:
-   vrpn_Connection *connection;         // Used to send messages
-   vrpn_int32 my_id;			// ID of this tracker to connection
    vrpn_int32 position_m_id;		// ID of tracker position message
    vrpn_int32 velocity_m_id;		// ID of tracker velocity message
    vrpn_int32 accel_m_id;		// ID of tracker acceleration message
@@ -93,6 +89,7 @@ class vrpn_Tracker {
 
    int status;		// What are we doing?
 
+   virtual int register_types(void);	//< Called by BaseClass init()
    virtual int encode_to(char *buf);	 // Encodes the position report
    // Not all trackers will call the velocity and acceleration packers
    virtual int encode_vel_to(char *buf); // Encodes the velocity report
@@ -128,7 +125,7 @@ class vrpn_Tracker_NULL: public vrpn_Tracker {
   public:
    vrpn_Tracker_NULL (const char * name, vrpn_Connection * c,
 	vrpn_int32 sensors = 1, vrpn_float64 Hz = 1.0);
-   virtual void mainloop(const struct timeval * timeout=NULL);
+   virtual void mainloop();
   protected:
    vrpn_float64	update_rate;
    vrpn_int32	num_sensors;
@@ -224,7 +221,7 @@ class vrpn_Tracker_Canned: public vrpn_Tracker {
                         const char * datafile);
 
    virtual ~vrpn_Tracker_Canned (void);
-   virtual void mainloop(const struct timeval * timeout=NULL);
+   virtual void mainloop();
 
   protected:
 
@@ -278,7 +275,7 @@ class vrpn_Tracker_Remote: public vrpn_Tracker {
 	int reset_origin(void);
 
 	// This routine calls the mainloop of the connection it's on
-  virtual void mainloop(const struct timeval * timeout=NULL);
+	virtual void mainloop();
 
 	// **** to register handlers for all sensors: ****
 

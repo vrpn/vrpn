@@ -457,8 +457,11 @@ void vrpn_Tracker_Fastrak::get_report(void)
 // sends it if there is one. It will reset the tracker if there is
 // no data from it for a few seconds.
 
-void vrpn_Tracker_Fastrak::mainloop(const struct timeval * /*timeout*/ )
+void vrpn_Tracker_Fastrak::mainloop()
 {
+  // Call the generic server mainloop, since we are a server
+  server_mainloop();
+
   switch (status) {
     case TRACKER_REPORT_READY:
       {
@@ -471,11 +474,11 @@ void vrpn_Tracker_Fastrak::mainloop(const struct timeval * /*timeout*/ )
 #endif            
 
 	// Send the message on the connection
-	if (connection) {
+	if (d_connection) {
 		char	msgbuf[1000];
 		int	len = encode_to(msgbuf);
-		if (connection->pack_message(len, timestamp,
-			position_m_id, my_id, msgbuf,
+		if (d_connection->pack_message(len, timestamp,
+			position_m_id, d_sender_id, msgbuf,
 			vrpn_CONNECTION_LOW_LATENCY)) {
 		  fprintf(stderr,"Fastrak: cannot write message: tossing\n");
 		}

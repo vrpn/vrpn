@@ -15,21 +15,6 @@ Package=<4>
 
 ###############################################################################
 
-Project: "ohm_server"=.\server_src\ohm_server.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name vrpn
-    End Project Dependency
-}}}
-
-###############################################################################
-
 Project: "phan_server"=.\server_src\phan_server.dsp - Package Owner=<4>
 
 Package=<5>
@@ -72,7 +57,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "quat"=..\quat\quat.dsp - Package Owner=<4>
+Project: "quat"=.\pc_win32\quat\quat.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -96,7 +81,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "test_vrpn"=.\SERVER_SRC\PC_WIN32\test_vrpn\test_vrpn.dsp - Package Owner=<4>
+Project: "test_vrpn"=.\server_src\pc_win32\test_vrpn\test_vrpn.dsp - Package Owner=<4>
 
 Package=<5>
 {{{

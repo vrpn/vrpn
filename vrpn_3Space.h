@@ -17,9 +17,9 @@ class vrpn_Tracker_3Space: public vrpn_Tracker_Serial {
   
   vrpn_Tracker_3Space(char *name, vrpn_Connection *c, 
 		      char *port = "/dev/ttyS1", long baud = 19200) :
-    vrpn_Tracker_Serial(name,c,port,baud) {};
+  vrpn_Tracker_Serial(name,c,port,baud) {};
     
-  virtual void mainloop(const struct timeval * timeout=NULL);
+  virtual void mainloop();
     
  protected:
   

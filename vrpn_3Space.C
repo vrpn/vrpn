@@ -286,8 +286,10 @@ void vrpn_Tracker_3Space::get_report(void)
 }
 
 
-void vrpn_Tracker_3Space::mainloop(const struct timeval * /*timeout*/ )
+void vrpn_Tracker_3Space::mainloop()
 {
+  server_mainloop();
+
   switch (status) {
     case TRACKER_REPORT_READY:
       {
@@ -300,11 +302,11 @@ void vrpn_Tracker_3Space::mainloop(const struct timeval * /*timeout*/ )
 #endif            
 
 	// Send the message on the connection
-	if (connection) {
+	if (d_connection) {
 		char	msgbuf[1000];
 		int	len = encode_to(msgbuf);
-		if (connection->pack_message(len, timestamp,
-			position_m_id, my_id, msgbuf,
+		if (d_connection->pack_message(len, timestamp,
+			position_m_id, d_sender_id, msgbuf,
 			vrpn_CONNECTION_LOW_LATENCY)) {
 		  fprintf(stderr,"Tracker: cannot write message: tossing\n");
 		}

@@ -5,6 +5,7 @@
 #ifndef	VRPN_SOUND_H
 
 #include "vrpn_Connection.h"
+#include "vrpn_BaseClass.h"
 #include "vrpn_Shared.h"
 #include "vrpn_Tracker.h"
 #include "vrpn_Text.h"
@@ -76,15 +77,14 @@
 		char         material_name[MAX_MATERIAL_NAME_LENGTH];
 	} vrpn_TriDef;
 	
-class vrpn_Sound {
+class vrpn_Sound : public vrpn_BaseClass {
 
 public:
+	vrpn_Sound(const char * name, vrpn_Connection * c);
+	~vrpn_Sound();
 
 protected:
 
-	vrpn_Connection *connection;		     // Used to send messages
-
-	vrpn_int32 my_id;						 // ID of this tracker to connection
 	vrpn_int32 load_sound_local;			 // ID of message to load a sound from server side
 	vrpn_int32 load_sound_remote;			 // ID of message to load a sound from client side
 	vrpn_int32 unload_sound;				 // ID of message to unload a sound
@@ -100,7 +100,7 @@ protected:
 	vrpn_int32 set_sound_doplerfactor;		 //
 	vrpn_int32 set_sound_eqvalue;			 //
 	vrpn_int32 set_sound_pitch;
-  vrpn_int32 set_sound_volume;		     //
+	vrpn_int32 set_sound_volume;		     //
 
 	vrpn_int32 load_model_local;			 // load model file from server side
 	vrpn_int32 load_model_remote;            // load model file from client side
@@ -112,10 +112,12 @@ protected:
 	vrpn_int32 set_poly_openingfactor;
 	vrpn_int32 set_poly_material;
 
-  vrpn_int32 receive_text_message;
+	vrpn_int32 receive_text_message;
 		
-  //	struct timeval timestamp;				 // Current timestamp
-	
+	struct timeval timestamp;				 // Current timestamp
+
+	int register_types(void);
+
 	/*All encodes and decodes functions are for the purpose of setting up
 	  messages to be sent over the network properly (ie to put them in one
 	  char buffer and to put them in proper network order and for getting
@@ -191,11 +193,6 @@ protected:
 	vrpn_int32 decodeSetPolyOF(const char* buf, vrpn_float64 * openingfactor, vrpn_int32 *tag);
 	vrpn_int32 encodeSetPolyMaterial(const char * material, const vrpn_int32 tag, char* buf);
 	vrpn_int32 decodeSetPolyMaterial(const char* buf, char ** material, vrpn_int32 *tag, const int payload);
-		
-public:
-	vrpn_Sound(const char * name, vrpn_Connection * c);
-	~vrpn_Sound();
-	virtual void mainloop(const struct timeval * timeout=NULL) = 0;
 };
 
 class vrpn_Sound_Client : public vrpn_Sound, public vrpn_Text_Receiver {
@@ -255,7 +252,7 @@ public:
 	
 	vrpn_int32 setTriVertices(const int id, const vrpn_float64 vertices[3][3]);
 	
-	void mainloop(const struct timeval * timeout=NULL);
+	virtual void mainloop();
 
   virtual void receiveTextMessage(const char * message, vrpn_uint32 type,vrpn_uint32 level, struct timeval	msg_time);
 

@@ -40,7 +40,7 @@ vrpn_ForceDevice_Remote *forceDevice;
 void    handle_tracker_change(void *userdata, const vrpn_TRACKERCB t)
 {
   static vrpn_TRACKERCB lr; // last report
-  static float dist_interval_sq = 0.004;
+  static float dist_interval_sq = (float)0.004;
 
   if ((lr.pos[0] - t.pos[0])*(lr.pos[0] - t.pos[0]) +
     (lr.pos[1] - t.pos[1])*(lr.pos[1] - t.pos[1]) +
@@ -49,9 +49,9 @@ void    handle_tracker_change(void *userdata, const vrpn_TRACKERCB t)
             t.pos[0], t.pos[1], t.pos[2]);
     lr = t;
   }
-  xpos = t.pos[0];
-  ypos = t.pos[1];
-  zpos = t.pos[2];
+  xpos = (float)t.pos[0];
+  ypos = (float)t.pos[1];
+  zpos = (float)t.pos[2];
 
     // we may call forceDevice->set_plane(...) followed by
     //      forceDevice->sendSurface() here to change the plane
@@ -62,7 +62,7 @@ void    handle_tracker_change(void *userdata, const vrpn_TRACKERCB t)
 
     double norm = sqrt(xpos*xpos + ypos*ypos + zpos*zpos);
     double radius = .03;        // radius is 3 cm
-    forceDevice->set_plane(xpos,ypos,zpos, -radius*norm);
+    forceDevice->set_plane(xpos,ypos,zpos, (float)(-radius*norm));
 //    printf("Plane: N= %f %f %f, D=%f\n",xpos,ypos,zpos, -planeZval);
 
     forceDevice->sendSurface();
@@ -86,7 +86,7 @@ void	handle_button_change(void *userdata, const vrpn_BUTTONCB b)
   *(int *)userdata = done;
 }
 
-int main(int argc, char *argv[])
+void main(int argc, char *argv[])
 {
   int     done = 0;
   vrpn_Tracker_Remote *tracker;
@@ -97,8 +97,8 @@ int main(int argc, char *argv[])
     printf("   Example: %s 0.1 0.1 Phantom@myhost.mydomain.edu\n",argv[0]);
     exit(-1);
   }
-  float sFric = atof(argv[1]);
-  float dFric = atof(argv[2]);
+  float sFric = (float)atof(argv[1]);
+  float dFric = (float)atof(argv[2]);
   char *device_name = argv[3];
   printf("Connecting to %s: sFric, dFric= %f %f\n",device_name, sFric,dFric);
 
@@ -141,7 +141,7 @@ be smaller than static friction or you will get the same error.
   forceDevice->setSurfaceBuzzAmplitude(0.0);
   forceDevice->setSurfaceBuzzFrequency(60.0); // Hz
   forceDevice->setSurfaceTextureAmplitude(0.00); // meters!!!
-  forceDevice->setSurfaceTextureWavelength(0.01); // meters!!!
+  forceDevice->setSurfaceTextureWavelength((float)0.01); // meters!!!
 
 
 

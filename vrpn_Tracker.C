@@ -48,30 +48,11 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 }
 
 
-vrpn_Tracker::vrpn_Tracker (const char * name, vrpn_Connection * c) {
+vrpn_Tracker::vrpn_Tracker (const char * name, vrpn_Connection * c) :
+vrpn_BaseClass(name, c)
+{
 	FILE	*config_file;
-  char * servicename;
-  servicename = vrpn_copy_service_name(name);
-
-
-	// Set our connection to the one passed in
-	connection = c;
-
-	// Register this tracker device and the needed message types
-	if (connection) {
-	  my_id = connection->register_sender(servicename);
-	  position_m_id = connection->register_message_type("Tracker Pos/Quat");
-	  velocity_m_id = connection->register_message_type("Tracker Velocity");
-	  accel_m_id =connection->register_message_type("Tracker Acceleration");
-	  tracker2room_m_id = connection->register_message_type("Tracker To Room");
-	  unit2sensor_m_id = connection->register_message_type("Unit To Sensor");
-	  request_t2r_m_id = connection->register_message_type("Request Tracker To Room");
-	  request_u2s_m_id = connection->register_message_type("Request Unit To Sensor");
-	  workspace_m_id = connection->register_message_type("Tracker Workspace");
-	  request_workspace_m_id = connection->register_message_type("Request Tracker Workspace");
-	  update_rate_id = connection->register_message_type("vrpn Tracker set update rate");
-	  reset_origin_m_id = connection->register_message_type("Reset Origin");
-	}
+	vrpn_BaseClass::init();
 
 	// Set the current time to zero, just to have something there
 	timestamp.tv_sec = 0;
@@ -130,9 +111,25 @@ vrpn_Tracker::vrpn_Tracker (const char * name, vrpn_Connection * c) {
 			tracker_cfg_file_name);
 		fclose(config_file);
 	}
+}
 
-  if (servicename)
-    delete [] servicename;
+int vrpn_Tracker::register_types(void)
+{
+	// Register this tracker device and the needed message types
+	if (d_connection) {
+	  position_m_id = d_connection->register_message_type("Tracker Pos/Quat");
+	  velocity_m_id = d_connection->register_message_type("Tracker Velocity");
+	  accel_m_id =d_connection->register_message_type("Tracker Acceleration");
+	  tracker2room_m_id = d_connection->register_message_type("Tracker To Room");
+	  unit2sensor_m_id = d_connection->register_message_type("Unit To Sensor");
+	  request_t2r_m_id = d_connection->register_message_type("Request Tracker To Room");
+	  request_u2s_m_id = d_connection->register_message_type("Request Unit To Sensor");
+	  workspace_m_id = d_connection->register_message_type("Tracker Workspace");
+	  request_workspace_m_id = d_connection->register_message_type("Request Tracker Workspace");
+	  update_rate_id = d_connection->register_message_type("vrpn Tracker set update rate");
+	  reset_origin_m_id = d_connection->register_message_type("Reset Origin");
+	}
+	return 0;
 }
 
 // virtual
@@ -215,25 +212,25 @@ void vrpn_Tracker::print_latest_report(void)
 
 int vrpn_Tracker::register_server_handlers(void)
 {
-    if (connection){
- 	if (connection->register_handler(request_t2r_m_id,
-            handle_t2r_request, this, my_id)){
+    if (d_connection){
+ 	if (register_autodeleted_handler(request_t2r_m_id,
+            handle_t2r_request, this, d_sender_id)){
                 fprintf(stderr,"vrpn_Tracker:can't register t2r handler\n");
 		return -1;
 	}
-        if (connection->register_handler(request_u2s_m_id,
-            handle_u2s_request, this, my_id)){
+        if (register_autodeleted_handler(request_u2s_m_id,
+            handle_u2s_request, this, d_sender_id)){
                 fprintf(stderr,"vrpn_Tracker:can't register u2s handler\n");
 		return -1;
 	}
-	if (connection->register_handler(request_workspace_m_id,
-	    handle_workspace_request, this, my_id)){
+	if (register_autodeleted_handler(request_workspace_m_id,
+	    handle_workspace_request, this, d_sender_id)){
 		fprintf(stderr,"vrpn_Tracker:  "
                                "Can't register workspace handler\n");
 		return -1;
 	}
-	if (connection->register_handler
-		(update_rate_id, handle_update_rate_request, this, my_id)) {
+	if (register_autodeleted_handler
+		(update_rate_id, handle_update_rate_request, this, d_sender_id)) {
 		fprintf(stderr, "vrpn_Tracker:  "
                                 "Can't register update rate handler.\n");
                 return -1;
@@ -280,10 +277,10 @@ int vrpn_Tracker::handle_t2r_request(void *userdata, vrpn_HANDLERPARAM p)
     // our t2r transform was read in by the constructor
 
     // send t2r transform
-    if (me->connection) {
+    if (me->d_connection) {
         len = me->encode_tracker2room_to(msgbuf);
-        if (me->connection->pack_message(len, me->timestamp,
-            me->tracker2room_m_id, me->my_id,
+        if (me->d_connection->pack_message(len, me->timestamp,
+            me->tracker2room_m_id, me->d_sender_id,
             msgbuf, vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "vrpn_Tracker: cannot write t2r message\n");
         }
@@ -307,13 +304,13 @@ int vrpn_Tracker::handle_u2s_request(void *userdata, vrpn_HANDLERPARAM p)
 
     // our u2s transforms were read in by the constructor
 
-    if (me->connection){
+    if (me->d_connection){
 	for (i = 0; i < me->num_sensors; i++){
 	    me->d_sensor = i;
             // send u2s transform
             len = me->encode_unit2sensor_to(msgbuf);
-            if (me->connection->pack_message(len, me->timestamp,
-                me->unit2sensor_m_id, me->my_id,
+            if (me->d_connection->pack_message(len, me->timestamp,
+                me->unit2sensor_m_id, me->d_sender_id,
                 msgbuf, vrpn_CONNECTION_RELIABLE)) {
                 fprintf(stderr, "vrpn_Tracker: cannot write u2s message\n");
 	    }
@@ -337,10 +334,10 @@ int vrpn_Tracker::handle_workspace_request(void *userdata, vrpn_HANDLERPARAM p)
 
     // our workspace was read in by the constructor
 
-    if (me->connection){
+    if (me->d_connection){
         len = me->encode_workspace_to(msgbuf);
-        if (me->connection->pack_message(len, me->timestamp,
-            me->workspace_m_id, me->my_id,
+        if (me->d_connection->pack_message(len, me->timestamp,
+            me->workspace_m_id, me->d_sender_id,
             msgbuf, vrpn_CONNECTION_RELIABLE)) {
             fprintf(stderr, "vrpn_Tracker: cannot write workspace message\n");
         }
@@ -352,10 +349,6 @@ int vrpn_Tracker::handle_update_rate_request (void *, vrpn_HANDLERPARAM) {
   fprintf(stderr, "vrpn_Tracker::handle_update_rate_request:  "
                   "Don't know how to do that!\n");
   return 0;
-}
-
-vrpn_Connection *vrpn_Tracker::connectionPtr() {
-  return connection;
 }
 
 /** Encodes the "Tracker to Room" transformation into the buffer
@@ -543,7 +536,8 @@ int	vrpn_Tracker::encode_acc_to(char *buf)
 vrpn_Tracker_Canned::vrpn_Tracker_Canned
                     (const char * name, vrpn_Connection * c,
                      const char * datafile) 
-  : vrpn_Tracker(name, c) {
+  : vrpn_Tracker(name, c)
+{
     register_server_handlers();
     fp =fopen(datafile,"r");
     if (fp == NULL) {
@@ -566,13 +560,16 @@ vrpn_Tracker_Canned::~vrpn_Tracker_Canned (void) {
 }
 
 
-void vrpn_Tracker_Canned::mainloop (const struct timeval * /*tvTimeout*/ ) {
+void vrpn_Tracker_Canned::mainloop () {
+  // We're a server, so call the generic server mainloop
+  server_mainloop();
+
   // Send the message on the connection;
-  if (connection) {
+  if (d_connection) {
     char	msgbuf[1000];
     vrpn_int32	len = encode_to(msgbuf);
-    if (connection->pack_message(len, timestamp,
-				 position_m_id, my_id, msgbuf,
+    if (d_connection->pack_message(len, timestamp,
+				 position_m_id, d_sender_id, msgbuf,
 				 vrpn_CONNECTION_LOW_LATENCY)) {
       fprintf(stderr,"Tracker: cannot write message: tossing\n");
     }
@@ -623,11 +620,6 @@ void vrpn_Tracker_Canned::reset (void) {
 
 
 
-
-
-
-
-
 #endif  // VRPN_CLIENT_ONLY
 
 vrpn_Tracker_NULL::vrpn_Tracker_NULL
@@ -640,11 +632,14 @@ vrpn_Tracker_NULL::vrpn_Tracker_NULL
 	// Nothing left to do
 }
 
-void	vrpn_Tracker_NULL::mainloop(const struct timeval * /*timeout*/ )
+void	vrpn_Tracker_NULL::mainloop()
 {
 	struct timeval current_time;
 	char	msgbuf[1000];
 	vrpn_int32	i,len;
+
+	// Call the generic server mainloop routine, since this is a server
+	server_mainloop();
 
 	// See if its time to generate a new report
 	gettimeofday(&current_time, NULL);
@@ -655,30 +650,30 @@ void	vrpn_Tracker_NULL::mainloop(const struct timeval * /*timeout*/ )
 	  timestamp.tv_usec = current_time.tv_usec;
 
 	  // Send messages for all sensors if we have a connection
-	  if (connection) {
+	  if (d_connection) {
 	    for (i = 0; i < num_sensors; i++) {
 		d_sensor = i;
 
 		// Pack position report
 		len = encode_to(msgbuf);
-		if (connection->pack_message(len, timestamp,
-			position_m_id, my_id, msgbuf,
+		if (d_connection->pack_message(len, timestamp,
+			position_m_id, d_sender_id, msgbuf,
 			vrpn_CONNECTION_LOW_LATENCY)) {
 		 fprintf(stderr,"NULL tracker: can't write message: tossing\n");
 		}
 
 		// Pack velocity report
 		len = encode_vel_to(msgbuf);
-		if (connection->pack_message(len, timestamp,
-			velocity_m_id, my_id, msgbuf,
+		if (d_connection->pack_message(len, timestamp,
+			velocity_m_id, d_sender_id, msgbuf,
 			vrpn_CONNECTION_LOW_LATENCY)) {
 		 fprintf(stderr,"NULL tracker: can't write message: tossing\n");
 		}
 
 		// Pack acceleration report
 		len = encode_acc_to(msgbuf);
-		if (connection->pack_message(len, timestamp,
-			accel_m_id, my_id, msgbuf,
+		if (d_connection->pack_message(len, timestamp,
+			accel_m_id, d_sender_id, msgbuf,
 			vrpn_CONNECTION_LOW_LATENCY)) {
 		 fprintf(stderr,"NULL tracker: can't write message: tossing\n");
 		}
@@ -718,7 +713,7 @@ vrpn_Tracker_Serial::vrpn_Tracker_Serial
 #endif  // VRPN_CLIENT_ONLY
 
 vrpn_Tracker_Remote::vrpn_Tracker_Remote (const char * name, vrpn_Connection *cn) :
-	vrpn_Tracker (name, cn?cn:vrpn_get_connection_by_name(name))
+	vrpn_Tracker (name, cn)
 {
 	tracker2roomchange_list = NULL;
 	for (vrpn_int32 i = 0; i < TRACKER_MAX_SENSOR_LIST; i++){
@@ -730,57 +725,57 @@ vrpn_Tracker_Remote::vrpn_Tracker_Remote (const char * name, vrpn_Connection *cn
 	workspacechange_list = NULL;
 
 	// Make sure that we have a valid connection
-	if (connection == NULL) {
+	if (d_connection == NULL) {
 		fprintf(stderr,"vrpn_Tracker_Remote: No connection\n");
 		return;
 	}
 
 	// Register a handler for the position change callback from this device.
-	if (connection->register_handler(position_m_id, handle_change_message,
-	    this, my_id)) {
+	if (register_autodeleted_handler(position_m_id, handle_change_message,
+	    this, d_sender_id)) {
 		fprintf(stderr,
 		    "vrpn_Tracker_Remote: can't register position handler\n");
-		connection = NULL;
+		d_connection = NULL;
 	}
 
 	// Register a handler for the velocity change callback from this device.
-	if (connection->register_handler(velocity_m_id,
-	    handle_vel_change_message, this, my_id)) {
+	if (register_autodeleted_handler(velocity_m_id,
+	    handle_vel_change_message, this, d_sender_id)) {
 		fprintf(stderr,
 		    "vrpn_Tracker_Remote: can't register velocity handler\n");
-		connection = NULL;
+		d_connection = NULL;
 	}
 
 	// Register a handler for the acceleration change callback.
-	if (connection->register_handler(accel_m_id,
-	    handle_acc_change_message, this, my_id)) {
+	if (register_autodeleted_handler(accel_m_id,
+	    handle_acc_change_message, this, d_sender_id)) {
 		fprintf(stderr,
 		  "vrpn_Tracker_Remote: can't register acceleration handler\n");
-		connection = NULL;
+		d_connection = NULL;
 	}
 	
 	// Register a handler for the room to tracker xform change callback
-        if (connection->register_handler(tracker2room_m_id,
-            handle_tracker2room_change_message, this, my_id)) {
+        if (register_autodeleted_handler(tracker2room_m_id,
+            handle_tracker2room_change_message, this, d_sender_id)) {
                 fprintf(stderr,
                   "vrpn_Tracker_Remote: can't register tracker2room handler\n");
-                connection = NULL;
+                d_connection = NULL;
         }
 
 	// Register a handler for the sensor to unit xform change callback
-        if (connection->register_handler(unit2sensor_m_id,
-            handle_unit2sensor_change_message, this, my_id)) {
+        if (register_autodeleted_handler(unit2sensor_m_id,
+            handle_unit2sensor_change_message, this, d_sender_id)) {
                 fprintf(stderr,
                   "vrpn_Tracker_Remote: can't register unit2sensor handler\n");
-                connection = NULL;
+                d_connection = NULL;
         }
 
         // Register a handler for the workspace change callback
-        if (connection->register_handler(workspace_m_id,
-            handle_workspace_change_message, this, my_id)) {
+        if (register_autodeleted_handler(workspace_m_id,
+            handle_workspace_change_message, this, d_sender_id)) {
                 fprintf(stderr,
                   "vrpn_Tracker_Remote: can't register workspace handler\n");
-                connection = NULL;
+                d_connection = NULL;
         }
 
 
@@ -794,43 +789,6 @@ vrpn_Tracker_Remote::vrpn_Tracker_Remote (const char * name, vrpn_Connection *cn
 
 vrpn_Tracker_Remote::~vrpn_Tracker_Remote()
 {
-  // Unregister a handler for the position change callback from this device.
-  if (connection) {
-   if (connection->unregister_handler(position_m_id, handle_change_message,
-				   this, my_id)) {
-    fprintf(stderr,
-	    "vrpn_Tracker_Remote: can't unregister position handler\n");
-   } 
-  
-   // Unregister a handler for the velocity change callback from this device.
-   if (connection->unregister_handler(velocity_m_id,
-				   handle_vel_change_message, this, my_id)) {
-    fprintf(stderr,
-	    "vrpn_Tracker_Remote: can't unregister velocity handler\n");
-   } 
-  
-   // Unregister a handler for the acceleration change callback.
-   if (connection->unregister_handler(accel_m_id,
-				   handle_acc_change_message, this, my_id)) {
-    fprintf(stderr,
-	    "vrpn_Tracker_Remote: can't unregister acceleration handler\n");
-   } 
-  
-   // Unregister a handler for the room to tracker xform change callback
-   if (connection->unregister_handler(tracker2room_m_id,
-				   handle_tracker2room_change_message, this, my_id)) {
-	  fprintf(stderr,
-                  "vrpn_Tracker_Remote: can't unregister tracker2room handler\n");
-   }
-  
-   // Unregister a handler for the sensor to unit xform change callback
-   if (connection->unregister_handler(unit2sensor_m_id,
-				   handle_unit2sensor_change_message, this, my_id)) {
-    fprintf(stderr,
-	    "vrpn_Tracker_Remote: can't unregister unit2sensor handler\n");
-   }
-  }
-
 	// Delete all of the callback handlers that other code had registered
 	// with this object. This will free up the memory taken by the lists
 	//XXX do this once there is only one list, not one/sensor and one for all
@@ -846,14 +804,13 @@ int vrpn_Tracker_Remote::request_t2r_xform(void)
 	timestamp.tv_sec = current_time.tv_sec;
 	timestamp.tv_usec = current_time.tv_usec;
 
-	if (connection) {
-		if (connection->pack_message(len, timestamp, request_t2r_m_id,
-		    my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+	if (d_connection) {
+		if (d_connection->pack_message(len, timestamp, request_t2r_m_id,
+		    d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
 			fprintf(stderr, 
 			    "vrpn_Tracker_Remote: cannot request t2r xform\n");
 			return -1;
 		}
-		connection->mainloop();
 	}
 	return 0;
 }
@@ -868,14 +825,13 @@ int vrpn_Tracker_Remote::request_u2s_xform(void)
         timestamp.tv_sec = current_time.tv_sec;
         timestamp.tv_usec = current_time.tv_usec;
 
-        if (connection) {
-                if (connection->pack_message(len, timestamp, request_u2s_m_id,
-                    my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+        if (d_connection) {
+                if (d_connection->pack_message(len, timestamp, request_u2s_m_id,
+                    d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
                         fprintf(stderr, 
                             "vrpn_Tracker_Remote: cannot request u2s xform\n");
 		    	return -1;
                 }
-                connection->mainloop();
         }
 	return 0;
 }
@@ -900,14 +856,13 @@ int vrpn_Tracker_Remote::set_update_rate (vrpn_float64 samplesPerSecond)
   timestamp.tv_sec = now.tv_sec;
   timestamp.tv_usec = now.tv_usec;
 
-  if (connection) {
-    if (connection->pack_message(len, timestamp, update_rate_id,
-                    my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+  if (d_connection) {
+    if (d_connection->pack_message(len, timestamp, update_rate_id,
+                    d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
       fprintf(stderr, "vrpn_Tracker_Remote::set_update_rate:  "
                       "Cannot send message.\n");
       return -1;
     }
-    connection->mainloop();
   }
   return 0;
 }
@@ -919,19 +874,19 @@ int vrpn_Tracker_Remote::reset_origin()
   timestamp.tv_sec = current_time.tv_sec;
   timestamp.tv_usec = current_time.tv_usec;
 
-  if(connection){
-    if (connection->pack_message(0, timestamp, reset_origin_m_id,
-                                my_id, NULL, vrpn_CONNECTION_RELIABLE)) {
+  if(d_connection){
+    if (d_connection->pack_message(0, timestamp, reset_origin_m_id,
+                                d_sender_id, NULL, vrpn_CONNECTION_RELIABLE)) {
         fprintf(stderr,"vrpn_Tracker_Remote: cannot write message: tossing\n");
     }
-    connection->mainloop();
   }
   return 0;
 }
 
-void	vrpn_Tracker_Remote::mainloop(const struct timeval * timeout)
+void	vrpn_Tracker_Remote::mainloop()
 {
-	if (connection) { connection->mainloop(timeout); }
+	if (d_connection) { d_connection->mainloop(); }
+	client_mainloop();
 }
 
 int vrpn_Tracker_Remote::register_change_handler(void *userdata,

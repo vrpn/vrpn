@@ -9,7 +9,7 @@
   Revised: Wed Apr  1 13:23:40 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.C,v $
   $Locker:  $
-  $Revision: 1.28 $
+  $Revision: 1.29 $
   \*****************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
@@ -32,31 +32,45 @@ void printTime( char *pch, const struct timeval& tv ) {
 }
 
 // both server and client call this constructor
-vrpn_Clock::vrpn_Clock(const char * name, vrpn_Connection *c) {
-  // If the connection is valid, use it to register this clock by
-  // name, the query by name, and the reply by name
-  char * servicename;
-  servicename = vrpn_copy_service_name(name);
-  connection = c;
-  if (connection == NULL) {
-    return;
-  }
-  clockServer_id = connection->register_sender(servicename);
-
-  queryMsg_id = connection->register_message_type("clock query");
-  replyMsg_id = connection->register_message_type("clock reply");
-  if ( (clockServer_id == -1) || (queryMsg_id == -1) || (replyMsg_id == -1) ) {
-    cerr << "vrpn_Clock: Can't register IDs" << endl;
-    connection = NULL;
-    return;
-  }
+vrpn_Clock::vrpn_Clock(const char * name, vrpn_Connection *c) :
+    vrpn_BaseClass(name, c)
+{
+  vrpn_BaseClass::init();
 
   // need to init gettimeofday for the pc
   struct timeval tv;
   gettimeofday(&tv, NULL);
-  if (servicename) {
-    delete [] servicename;
-  }
+}
+
+int vrpn_Clock::register_senders(void)
+{
+    if (d_connection == NULL) {
+	return -1;
+    }
+
+    d_sender_id = d_connection->register_sender(d_servicename);
+    if (d_sender_id == -1) {
+      cerr << "vrpn_Clock: Can't register sender ID" << endl;
+      d_connection = NULL;
+      return -1;
+    }
+    return 0;
+}
+
+int vrpn_Clock::register_types(void)
+{
+    if (d_connection == NULL) {
+	return -1;
+    }
+
+    queryMsg_id = d_connection->register_message_type("clock query");
+    replyMsg_id = d_connection->register_message_type("clock reply");
+    if ( (queryMsg_id == -1) || (replyMsg_id == -1) ) {
+      cerr << "vrpn_Clock: Can't register type IDs" << endl;
+      d_connection = NULL;
+      return -1;
+    }
+    return 0;
 }
 
 /** Packs time of message sent and all data sent to it back into buffer.
@@ -96,28 +110,19 @@ int vrpn_Clock::encode_to(char *buf, const struct timeval& tvSRep,
 
 
 vrpn_Clock_Server::vrpn_Clock_Server(vrpn_Connection *c) 
-  : vrpn_Clock("clockServer", c) {
+  : vrpn_Clock("clockServer", c){
 
   // Register the callback handler (along with "this" as user data)
   // It will take messages from any sender (no sender arg specified)
-  if (connection->register_handler(queryMsg_id, clockQueryHandler, this)) {
+  if (register_autodeleted_handler(queryMsg_id, clockQueryHandler, this)) {
     cerr << "vrpn_Clock: can't register handler\n" << endl;
-    connection = NULL;
+    d_connection = NULL;
     return;
   }
 }
 
 vrpn_Clock_Server::~vrpn_Clock_Server() 
 {
-  // Unregister the change handler
-  if (connection != NULL) {
-	if (connection->unregister_handler(queryMsg_id, 
-	     clockQueryHandler, this)) {
-	  fprintf(stderr,
-		"vrpn_Clock_Server: Can't unregister change handler\n");
-	  fprintf(stderr,"   (VRPN internal error: expect seg fault)\n");
-	}
-  }
 }
 
 // to prevent the user from getting back incorrect info, clients are
@@ -142,8 +147,8 @@ int vrpn_Clock_Server::clockQueryHandler(void *userdata, vrpn_HANDLERPARAM p) {
   gettimeofday(&now,NULL);
   //  printTime("server rep ", now);
   int cLen = me->encode_to( rgch, now, p.msg_time, p.payload_len, p.buffer );
-  me->connection->pack_message(cLen, now,
-			       me->replyMsg_id, me->clockServer_id,
+  me->d_connection->pack_message(cLen, now,
+			       me->replyMsg_id, me->d_sender_id,
 			       rgch, vrpn_CONNECTION_RELIABLE);
   return 0;
 }
@@ -151,7 +156,7 @@ int vrpn_Clock_Server::clockQueryHandler(void *userdata, vrpn_HANDLERPARAM p) {
 // the clock server only responds to requests. since the connection
 // mainloop will handle routing the callback (and the general server
 // program always has to call that), this mainloop does nothing.
-void vrpn_Clock_Server::mainloop (const struct timeval *) {};
+void vrpn_Clock_Server::mainloop () {};
 
 
 // This next part is the class for users (client class)
@@ -180,17 +185,17 @@ vrpn_Clock_Remote::vrpn_Clock_Remote(const char * name, vrpn_float64 dFreq,
   char rgch [50];
   int i;
   
-  if (connection==NULL) {
+  if (d_connection==NULL) {
     cerr << "vrpn_Clock_Remote: unable to connect to clock server \"" 
 	 << name << "\"." << endl;
     return;
   }
   sprintf( rgch, "%ld", (long) this );
-  clockClient_id = connection->register_sender(rgch);
+  clockClient_id = d_connection->register_sender(rgch);
   
   if (clockClient_id == -1) {
     cerr << "vrpn_Clock_Remote: Can't register ID" << endl;
-    connection = NULL;
+    d_connection = NULL;
     return;
   }
 
@@ -227,11 +232,11 @@ vrpn_Clock_Remote::vrpn_Clock_Remote(const char * name, vrpn_float64 dFreq,
     }
     
     // register a handler for replies from the clock server.
-    if (connection->register_handler(replyMsg_id, 
+    if (register_autodeleted_handler(replyMsg_id, 
 				     quickSyncClockServerReplyHandler,
-				     this, clockServer_id)) {
+				     this, d_sender_id)) {
       cerr << "vrpn_Clock_Remote: Can't register handler" << endl;
-      connection = NULL;
+      d_connection = NULL;
     }
   }
 
@@ -248,20 +253,6 @@ vrpn_Clock_Remote::vrpn_Clock_Remote(const char * name, vrpn_float64 dFreq,
 }
 
 vrpn_Clock_Remote::~vrpn_Clock_Remote (void) {
-
-  // Unregister the change handler if we are not doing full synchs
-  if (fDoQuickSyncs != 0) {
-    if (connection != NULL) {
-	if (connection->unregister_handler(replyMsg_id, 
-	     quickSyncClockServerReplyHandler,
-	     this, clockServer_id)) {
-	  fprintf(stderr,
-		"vrpn_Clock_Remote: Can't unregister change handler\n");
-	  fprintf(stderr,"   (VRPN internal error: expect seg fault)\n");
-	}
-    }
-  }
-
 
   // release the quick arrays
   if (rgtvHalfRoundTrip) {
@@ -297,14 +288,14 @@ static vrpn_int32 dCompare( const void *pd1, const void *pd2 ) {
 
 // this will take 1 second to run (sync's the clocks)
 // when it is in fullSync mode
-void vrpn_Clock_Remote::mainloop (const struct timeval * timeout)
+void vrpn_Clock_Remote::mainloop (const struct timeval *timeout)
 {
-  if (connection) { 
+  if (d_connection) { 
     // always do this -- the first time it will register senders & msg_types
     // Also, we don't want to call the Synchronized version (if this is
     // a sync connection) since we are already in that loop (this is 
     // the routine that does the synchronization)
-    connection->vrpn_Connection::mainloop(timeout);
+    d_connection->vrpn_Connection::mainloop(timeout);
     
     if (fDoQuickSyncs) {
       // just a quick sync
@@ -325,13 +316,13 @@ void vrpn_Clock_Remote::mainloop (const struct timeval * timeout)
 	rgl[1]=htonl(lUniqueID);	// An easy, unique ID
 	rgl[2]=htonl((vrpn_int32)VRPN_CLOCK_QUICK_SYNC);
 	gettimeofday(&tv, NULL);
-	connection->pack_message(3*sizeof(vrpn_int32), tv, queryMsg_id, 
+	d_connection->pack_message(3*sizeof(vrpn_int32), tv, queryMsg_id, 
 				 clockClient_id, (char *)rgl, 
 				 vrpn_CONNECTION_RELIABLE);
 	tvQuickLastSync = tvNow;
 	    
 	// send out the clock sync messages right away
-	connection->vrpn_Connection::mainloop();
+	d_connection->vrpn_Connection::mainloop();
       }
     }
 
@@ -340,11 +331,14 @@ void vrpn_Clock_Remote::mainloop (const struct timeval * timeout)
       fDoFullSync=0;
       // cerr << "FullSync" << endl;      
       // register a handler for replies from the clock server.
-      if (connection->register_handler(replyMsg_id, 
+      // We're using the Connection's registration directly (rather than
+      // autodeletion) because we're going to unregister it before the
+      // object is destroyed.
+      if (d_connection->register_handler(replyMsg_id, 
 				       fullSyncClockServerReplyHandler,
-				       this, clockServer_id)) {
+				       this, d_sender_id)) {
 	cerr << "vrpn_Clock_Remote: Can't register handler" << endl;
-	connection = NULL;
+	d_connection = NULL;
       }
 
       // init the necessary variables for doing clock sync
@@ -386,11 +380,11 @@ void vrpn_Clock_Remote::mainloop (const struct timeval * timeout)
 	if (cBounces>=cQueries) {
 	  cerr << "vrpn_Clock_Remote::mainloop: multiple clock servers on "
 	    "connection -- aborting fullSync " <<cBounces<< endl;
-	  if (connection->unregister_handler(replyMsg_id, 
+	  if (d_connection->unregister_handler(replyMsg_id, 
 					     fullSyncClockServerReplyHandler,
-					     this, clockServer_id)) {
+					     this, d_sender_id)) {
 	    cerr << "vrpn_Clock_Remote: Can't unregister handler" << endl;
-	    connection = NULL;
+	    d_connection = NULL;
 	  }
 	  break;
 	}
@@ -408,7 +402,7 @@ void vrpn_Clock_Remote::mainloop (const struct timeval * timeout)
 	  rgl[1]=htonl(lUniqueID);	// An easy, unique ID
 	  rgl[2]=htonl((vrpn_int32)VRPN_CLOCK_FULL_SYNC);
 	  gettimeofday(&tv, NULL);
-	  connection->pack_message(3*sizeof(vrpn_int32), tv, queryMsg_id, 
+	  d_connection->pack_message(3*sizeof(vrpn_int32), tv, queryMsg_id, 
 				   clockClient_id, (char *)rgl, 
 				   vrpn_CONNECTION_RELIABLE);
 	  cNextTime+=cInterval;
@@ -416,7 +410,7 @@ void vrpn_Clock_Remote::mainloop (const struct timeval * timeout)
 	
 	// actually process the message and any callbacks from local
 	// or remote messages (just call the base mainloop)
-	connection->vrpn_Connection::mainloop();
+	d_connection->vrpn_Connection::mainloop();
 	gettimeofday( &tvNow, NULL );
 	cElapsedMsecs = (vrpn_int32) vrpn_TimevalMsecs(vrpn_TimevalDiff(tvNow, tvCalib));
       }
@@ -436,11 +430,11 @@ void vrpn_Clock_Remote::mainloop (const struct timeval * timeout)
       // now get rid of handler -- no need to calibrate any longer
       // so don't waste time checking the ids of other's clock server replies.
       
-      if (connection->unregister_handler(replyMsg_id, 
+      if (d_connection->unregister_handler(replyMsg_id, 
 					 fullSyncClockServerReplyHandler,
-					 this, clockServer_id)) {
+					 this, d_sender_id)) {
 	cerr << "vrpn_Clock_Remote: Can't unregister handler" << endl;
-	connection = NULL;
+	d_connection = NULL;
       }
 
 #ifdef USE_REGRESSION
@@ -902,239 +896,3 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
   return 0;
 }
 
-
-/*****************************************************************************\
-  $Log: vrpn_Clock.C,v $
-  Revision 1.28  2000/05/01 18:38:25  hudson
-  Made sure we never delete NULL.
-
-  Revision 1.27  2000/02/23 18:59:36  taylorr
-  Converts the objects that write things into VRPN buffers to use the
-  vrpn_buffer() functions. These functions are robust in the presence
-  of unaligned output buffer. This should fix seg fault problems on
-  some architectures.
-
-  Made the TCP incoming buffer aligned, rather than malloc()ed. This
-  should fix yet more seg fault problems on some architectures.
-
-  None of these caused problems at UNC, but several outside users have
-  reported problems with this.
-
-  Revision 1.26  2000/01/05 23:09:19  taylorr
-  Aligns the buffer that the clock writes into. This was a problem on
-  solaris machines. Dunno who trackers and other devices don't have the
-  same problem.
-
-  Revision 1.25  1999/11/15 22:53:58  helser
-  Removes the vrpn_cygwin_hack.h file. It is not necessary if the header
-  files are included in a certain order. If in doubt, include vrpn_Shared.h
-  first, even before the system headers, and this fixes header conflicts in
-  the cygwin environment.
-
-  Also removes /afs/unc/proj/hmd from the makefile, because VRPN does not
-  depend on those directories at all, and it will cause problems if a header
-  is removed, like I did.
-
-  Revision 1.24  1999/10/14 17:29:50  helser
-  No, changing the clock messages to a system type was a bad idea. The last
-  commit actually disabled clock syncing entirely (which fixed my problem,
-  but...).  I plan to change file_connection so it will ignore clock sync
-  messages when setting the log file start time during replay.
-
-  Revision 1.23  1999/10/14 15:54:21  helser
-  Changes vrpn_FileConnection so it will allow local logging. I used this
-  ability to write a log-file manipulator. I read in a log file, check and
-  apply a fix to the timestamps, then send out an identical message to the
-  one I received on the file connection, which gets logged. Problem: I don't
-  get system messages in the new log file.
-
-  Played with gettimeofday in Cygwin environment, and found it is broken and
-  can't be fixed using Han's tricks in vrpn_Shared.C. But, instead found a
-  way to get rid of vrpn_cygwin_hack.h - just include sys/time.h AFTER the
-  standard windows headers. vrpn_cygwin_hack.h will be totally removed in my
-  next commit.
-
-  Added quick hack to make Clock messages system messages. This allows clock
-  sync to happen before any user messages are send, if you spin the
-  connection's mainloop a few times on each end, and allows the
-  File_Connection to replay a log of the session correctly later. This is
-  the work-around for the broken Cygwin gettimeofday.
-
-  Revision 1.22  1999/10/08 22:29:54  taylorr
-  Shutdown/restart server w/o restarting app
-  	If the client starts before the server, this is okay -- it will retry
-  	If the server stops, the client will restore the connection later
-  	If you are logging on the client, it logs before and after reconnect
-  		The break is marked in the log file, in case we need to know
-  		this for some reason.
-  	Both fullsync and interval clock synchronization work
-  	Client gets conection dropped and started messages
-
-  Other fixes along the way:
-  	The clock server unregisters only messages that it registered.
-  	Logging won't segfault when writing if it can't open the file.
-  	Fixed a couple of compiler warnings in vrpn_Connection.C
-  	Connection will not establish itself if it can't do local logging.
-
-  This involved some major surgery to the vrpn_Connection implementation.
-  Some of the surgery removed old scar tissue, but most of it was new.
-
-  Revision 1.21  1999/09/21 22:15:00  taylorr
-  This corrects the major bug that you could not delete vrpn_Remote objects before
-  without causing seg faults when their callbacks were yanked after they were
-  deleted. All objects now remove their callbacks when deleted.
-
-  This also adds a test_vrpn application that will verify that you can
-  both send and receive messages from the various test objects (tracker,
-  button, dial, etc) and that you can delete and re-create Remote objects
-  without dumping core.
-
-  This also adds a Dial example server, and lets you create it in the
-  generic server (as documented in vrpn.cfg.SAMPLE.
-
-  Revision 1.20  1999/08/23 15:39:32  taylorr
-  Fixes to allow easier compilation on sparc_solaris
-  Client_and_server example program added
-  Added sleep commands to the extended Fastrak reset commands
-
-  Revision 1.19  1999/04/14 21:23:37  lovelace
-  Added #ifdefs so that vrpn will compile under the Cygnus solutions
-  cygwin environment.  Also modified Makefile so that it correctly
-  compiles under the cygwin environment.
-
-  Revision 1.18  1999/04/11 19:54:56  helser
-  Removed an annoying printf.
-
-  Revision 1.17  1999/04/08 12:49:00  hudson
-  Exposed round-trip-time estimation in vrpn_Clock.
-  More details for FreeBSD port.
-  Bugfixes for some of the new constraint functionality on vrpn_ForceDevice.
-
-  Revision 1.16  1999/04/01 19:43:13  winston
-  Finished changes so that the timeout given as a parameter to mainloop
-  is meaningful for clients (remote devices).  Before it wasn't getting
-  passed by the synchronized connection's mainloop.
-
-  Revision 1.15  1999/03/13 17:00:56  winston
-  Bug fix, initialize things to NULL that aren't used in fullsync mode
-
-  Revision 1.14  1999/02/24 15:58:26  taylorr
-  BIG CHANGES.
-  I modified the code so that it can compile on 64-bit SGI machines.
-
-  To do so, I did what I should have done in the first place and defined
-  architecture-independent types (vrpn_in32, vrpn_int16, vrpn_float32,
-  vrpn_float64 and so on).  These are defined per architecture in the
-  vrpn_Shared.h file.
-
-  FROM NOW ON, folks should use these rather than the non-specific types
-  (int, long, float, double) that may vary between platforms.
-
-  Revision 1.13  1998/12/02 14:08:13  taylorr
-  This version packs the things needed for a single connection into the
-  vrpn_OneConnection structure called 'endpoint' within a vrpn_Connection.
-  This should make it much easier to allow multiple connections to the same
-  server by duplication of the endpoint.  I'm checking it in at this point
-  because it still works.
-
-  Revision 1.12  1998/09/24 04:29:34  gregory
-  Updated the forceDevice to handle dynamic triangular meshes,
-  as well as to allow for the user to chose between the Ghost
-  and Hcollide libraries for the collision detection.
-
-  Revision 1.11  1998/06/26 15:48:53  hudson
-  Wrote vrpn_FileConnection.
-  Changed connection naming convention.
-  Changed all the base classes to reflect the new naming convention.
-  Added #ifdef sgi around vrpn_sgibox.
-
-  Revision 1.10  1998/04/02 23:16:57  weberh
-  Modified so quick sync messages get sent immediately rather than waiting
-  a cycle.
-
-  Revision 1.9  1998/03/23 17:06:43  weberh
-  clock changes:
-
-  fixed up clock constructor to allow proper independent clock server/client
-  creation.
-
-  added code to do fullsync regression for offset slope estimation (added,
-  but not currently used because it is not beneficial enough).
-
-  fixed up a few comments and a minor bug which affected quick sync accuracy.
-
-
-  connection changes:
-
-  added -2 as a sync connection freq arg which performs an immediate
-  fullsync.
-
-  Revision 1.8  1998/03/19 06:07:01  weberh
-  *** empty log message ***
-
-  Revision 1.7  1998/03/19 06:04:38  weberh
-  added a fullSync call to vrpn_Synchronized connection for convenience.
-
-  Revision 1.6  1998/03/18 20:24:30  weberh
-  vrpn_Clock -- added better unique id for clock sync messages
-
-  vrpn_Connection -- fixed error which caused calls to get_connection_by_name
-                     to create multiple connections.
-
-  Revision 1.5  1998/02/20 20:26:49  hudson
-  Version 02.10:
-    Makefile:  split library into server & client versions
-    Connection:  added sender "VRPN Control", "VRPN Connection Got/Dropped"
-      messages, vrpn_ANY_TYPE;  set vrpn_MAX_TYPES to 2000.  Bugfix for sender
-      and type names.
-    Tracker:  added Ruigang Yang's vrpn_Tracker_Canned
-
-  Revision 1.2  1998/02/13 15:50:58  hudson
-  *** empty log message ***
-
-  Revision 1.1  1998/01/29 20:09:35  hudson
-  Initial revision
-
-  Revision 1.4  1998/01/20 20:07:22  weberh
-  cleaned up vrpn_Shared func names so they won't collide with other libs.
-
-  Revision 1.3  1998/01/20 15:53:26  taylorr
-  	This version allows the client-side compilation of VRPN on NT.
-
-  Revision 1.2  1998/01/08 23:32:48  weberh
-  Summary of changes
-  1) vrpn_Tracker_Ceiling is now in the cvs repository instead of just
-     the tracker hierarchy
-  2) vrpn uses doubles to transmit tracker data instead of floats
-  3) vrpn has a vrpn_ALIGN macro and uses 8 byte alignment
-  4) vrpn_Synchronized_Connection class was derived from regular connection
-     and transforms time stamps to the local time frame (see html man pages
-     for more info)
-  5) vrpn_Shared was modified to support time stamp math ops and gettimeofday
-     under win nt/95
-
-  Revision 2.0  1997/12/21 05:13:40  weberh
-  WORKING!
-
-  Revision 1.2  1997/12/20 00:02:12  weberh
-  cleaned up.
-
-  Revision 1.1  1997/12/16 19:39:34  weberh
-  Initial revision
-
-  Revision 1.1  1997/12/15 21:25:08  weberh
-  Added the vrpn_Clock class to vrpn to allow users (and eventually a
-  connection) to find out the offset between the server and client clock so
-  that users can know, in local time, when events happened on remote servers.
-
-  There are two basic modes -- fullSync (on request only) and quickSync
-  (default).  See the .h file for more info.
-
-  Other changes included updating vrpn_Shared.h with time val diff and sum
-  operators and changing the pc version of gettimeofday so that it gets
-  0.8 usec resolution rather than 6 ms resolution.
-
-  I also changed a few things so that the entire package will compile under
-  g++ or CC on sgi, hp, or win 95/nt.
-
-\*****************************************************************************/

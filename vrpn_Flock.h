@@ -43,7 +43,7 @@ class vrpn_Tracker_Flock: public vrpn_Tracker_Serial {
 		     int fStreamMode = 1);
     
   virtual ~vrpn_Tracker_Flock();
-  virtual void mainloop(const struct timeval * timeout=NULL);
+  virtual void mainloop();
     
  protected:
 

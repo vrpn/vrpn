@@ -5,55 +5,45 @@
 
 
 //vrpn_Sound constructor.
-vrpn_Sound::vrpn_Sound(const char * name, vrpn_Connection * c) {
-	char * servicename;
-  
-	servicename = vrpn_copy_service_name(name);
-	
-	if (c == NULL)
-	{
-		fprintf(stderr, "vrpn_Sound: Connection passed is null\n");
-		exit(1);
-	}
+vrpn_Sound::vrpn_Sound(const char * name, vrpn_Connection * c) :
+vrpn_BaseClass(name, c)
+{
+	vrpn_BaseClass::init();
+}
 
-	connection = c;
-	//Register the sender
-	my_id = connection->register_sender(servicename);
+int vrpn_Sound::register_types(void)
+{
+	load_sound_local = d_connection->register_message_type("Sound Load Local");
+	load_sound_remote = d_connection->register_message_type("Sound Load Remote");
+	unload_sound = d_connection->register_message_type("Sound Unload");
+	play_sound = d_connection->register_message_type("Sound Play");
+	stop_sound = d_connection->register_message_type("Sound Stop");
+	change_sound_status = d_connection->register_message_type("Sound Status");
 
-	//Register the types
-	load_sound_local = connection->register_message_type("Sound Load Local");
-	load_sound_remote = connection->register_message_type("Sound Load Remote");
-	unload_sound = connection->register_message_type("Sound Unload");
-	play_sound = connection->register_message_type("Sound Play");
-	stop_sound = connection->register_message_type("Sound Stop");
-	change_sound_status = connection->register_message_type("Sound Status");
+	set_listener_pose = d_connection->register_message_type("Listener Pose");
+	set_listener_velocity = d_connection->register_message_type("Listener Velocity");
 
-	set_listener_pose = connection->register_message_type("Listener Pose");
-	set_listener_velocity = connection->register_message_type("Listener Velocity");
+	set_sound_pose = d_connection->register_message_type("Sound Pose");
+	set_sound_velocity = d_connection->register_message_type("Sound Velocity");
+	set_sound_distanceinfo = d_connection->register_message_type("Sound DistInfo");
+	set_sound_coneinfo = d_connection->register_message_type("Sound ConeInfo");
 
-	set_sound_pose = connection->register_message_type("Sound Pose");
-	set_sound_velocity = connection->register_message_type("Sound Velocity");
-	set_sound_distanceinfo = connection->register_message_type("Sound DistInfo");
-	set_sound_coneinfo = connection->register_message_type("Sound ConeInfo");
+	set_sound_doplerfactor = d_connection->register_message_type("Sound DopFac");
+	set_sound_eqvalue = d_connection->register_message_type("Sound EqVal");
+	set_sound_pitch = d_connection->register_message_type("Sound Pitch");
+	set_sound_volume = d_connection->register_message_type("Sound Volume");
 
-  set_sound_doplerfactor = connection->register_message_type("Sound DopFac");
-	set_sound_eqvalue = connection->register_message_type("Sound EqVal");
-	set_sound_pitch = connection->register_message_type("Sound Pitch");
-  set_sound_volume = connection->register_message_type("Sound Volume");
+	load_model_local = d_connection->register_message_type("Load Model Local");
+	load_model_remote = d_connection->register_message_type("Load Model Remote");
+	load_polyquad = d_connection->register_message_type("Load Poly Quad");
+	load_polytri = d_connection->register_message_type("Load Poly Tri");
+	load_material = d_connection->register_message_type("Load Material");
+	set_polyquad_vertices = d_connection->register_message_type("Quad Vertices");
+	set_polytri_vertices = d_connection->register_message_type("Tri Vertices");
+	set_poly_openingfactor = d_connection->register_message_type("Poly OF");
+	set_poly_material = d_connection->register_message_type("Poly Material");
 
-	load_model_local = connection->register_message_type("Load Model Local");
-	load_model_remote = connection->register_message_type("Load Model Remote");
-	load_polyquad = connection->register_message_type("Load Poly Quad");
-	load_polytri = connection->register_message_type("Load Poly Tri");
-	load_material = connection->register_message_type("Load Material");
-	set_polyquad_vertices = connection->register_message_type("Quad Vertices");
-	set_polytri_vertices = connection->register_message_type("Tri Vertices");
-	set_poly_openingfactor = connection->register_message_type("Poly OF");
-	set_poly_material = connection->register_message_type("Poly Material");
-	
-
-	if (servicename)
-       delete [] servicename;
+	return 0;
 }
 
 vrpn_Sound::~vrpn_Sound()
@@ -762,8 +752,8 @@ vrpn_int32 vrpn_Sound::decodeSetPolyMaterial(const char* buf, char ** material, 
 /********************************************************************************************
  Begin vrpn_Sound_Client
  *******************************************************************************************/
-vrpn_Sound_Client::vrpn_Sound_Client(const char * name, vrpn_Connection * c) 
-				  : vrpn_Sound(name, c) , vrpn_Text_Receiver((char *) name, c)
+vrpn_Sound_Client::vrpn_Sound_Client(const char * name, vrpn_Connection * c) :
+vrpn_Sound(name, c) , vrpn_Text_Receiver(name, c)
 {
   vrpn_Text_Receiver::register_message_handler(this, handle_receiveTextMessage);
 }
@@ -784,9 +774,9 @@ vrpn_int32 vrpn_Sound_Client::playSound(const vrpn_SoundID id, vrpn_int32 repeat
 
 	len = encodeSoundPlay(id, repeat, buf);
 
-  gettimeofday(&timestamp, NULL);
+	gettimeofday(&timestamp, NULL);
 
-	if (vrpn_Sound::connection->pack_message(len, timestamp, play_sound, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+	if (vrpn_Sound::d_connection->pack_message(len, timestamp, play_sound, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message play: tossing\n");
 
 	return 0;
@@ -803,7 +793,7 @@ vrpn_int32 vrpn_Sound_Client::stopSound(const vrpn_SoundID id)
 
 	gettimeofday(&timestamp, NULL);
 
-	if (vrpn_Sound::connection->pack_message(len, timestamp, stop_sound, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+	if (vrpn_Sound::d_connection->pack_message(len, timestamp, stop_sound, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message play: tossing\n");
 
 	return 0;
@@ -820,7 +810,7 @@ vrpn_SoundID vrpn_Sound_Client::loadSound(const char* sound, const vrpn_SoundID 
 	
   gettimeofday(&timestamp, NULL);
 
-	if (vrpn_Sound::connection->pack_message(len, timestamp, load_sound_local, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+	if (vrpn_Sound::d_connection->pack_message(len, timestamp, load_sound_local, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message load: tossing\n");
   
   delete [] buf;
@@ -838,7 +828,7 @@ vrpn_int32 vrpn_Sound_Client::unloadSound(const vrpn_SoundID id)
 
 	gettimeofday(&timestamp, NULL);
 
-	if (vrpn_Sound::connection->pack_message(len, timestamp, unload_sound, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+	if (vrpn_Sound::d_connection->pack_message(len, timestamp, unload_sound, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message unload: tossing\n");
 
 	
@@ -855,7 +845,7 @@ vrpn_int32 vrpn_Sound_Client::setSoundVolume(const vrpn_SoundID id, const vrpn_f
 
 	gettimeofday(&timestamp, NULL);
 
-	if (vrpn_Sound::connection->pack_message(len, timestamp, set_sound_volume, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+	if (vrpn_Sound::d_connection->pack_message(len, timestamp, set_sound_volume, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
 
 	
@@ -877,7 +867,7 @@ vrpn_int32 vrpn_Sound_Client::setSoundPose(const vrpn_SoundID id, vrpn_float64 p
 
 	gettimeofday(&timestamp, NULL);
 
-	if (vrpn_Sound::connection->pack_message(len, timestamp, set_sound_pose, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+	if (vrpn_Sound::d_connection->pack_message(len, timestamp, set_sound_pose, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
 
 	
@@ -893,7 +883,7 @@ vrpn_int32 vrpn_Sound_Client::setSoundVelocity(const vrpn_SoundID id, const vrpn
 
 	gettimeofday(&timestamp, NULL);
  
-	if (vrpn_Sound::connection->pack_message(len, timestamp, set_sound_velocity, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+	if (vrpn_Sound::d_connection->pack_message(len, timestamp, set_sound_velocity, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
 	
 	return 0;
@@ -907,7 +897,7 @@ vrpn_int32 vrpn_Sound_Client::setSoundDistances(const vrpn_SoundID id, const vrp
 
 	gettimeofday(&timestamp, NULL);
 
-	if (vrpn_Sound::connection->pack_message(len, timestamp, set_sound_distanceinfo, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+	if (vrpn_Sound::d_connection->pack_message(len, timestamp, set_sound_distanceinfo, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
 
 	
@@ -927,7 +917,7 @@ vrpn_int32 vrpn_Sound_Client::setSoundConeInfo(const vrpn_SoundID id,
 
 	gettimeofday(&timestamp, NULL);
 
-	if (vrpn_Sound::connection->pack_message(len, timestamp, set_sound_coneinfo, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+	if (vrpn_Sound::d_connection->pack_message(len, timestamp, set_sound_coneinfo, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
 
 	
@@ -945,7 +935,7 @@ vrpn_int32 vrpn_Sound_Client::setSoundDopScale(const vrpn_SoundID id, vrpn_float
 
 	gettimeofday(&timestamp, NULL);
 
-	if (vrpn_Sound::connection->pack_message(len, timestamp, set_sound_doplerfactor, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+	if (vrpn_Sound::d_connection->pack_message(len, timestamp, set_sound_doplerfactor, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
 
 	
@@ -961,7 +951,7 @@ vrpn_int32 vrpn_Sound_Client::setSoundEqValue(const vrpn_SoundID id, vrpn_float6
 
 	gettimeofday(&timestamp, NULL);
 
-	if (vrpn_Sound::connection->pack_message(len, timestamp, set_sound_eqvalue, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+	if (vrpn_Sound::d_connection->pack_message(len, timestamp, set_sound_eqvalue, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
 
 	
@@ -977,7 +967,7 @@ vrpn_int32 vrpn_Sound_Client::setSoundPitch(const vrpn_SoundID id, vrpn_float64 
 
 	gettimeofday(&timestamp, NULL);
 
-	if (vrpn_Sound::connection->pack_message(len, timestamp, set_sound_pitch, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+	if (vrpn_Sound::d_connection->pack_message(len, timestamp, set_sound_pitch, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
 
 	
@@ -1001,7 +991,7 @@ vrpn_int32 vrpn_Sound_Client::setListenerPose(const vrpn_float64 position[3], co
 
 	gettimeofday(&timestamp, NULL);
 
-	if (vrpn_Sound::connection->pack_message(len, timestamp, set_listener_pose, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+	if (vrpn_Sound::d_connection->pack_message(len, timestamp, set_listener_pose, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
 
 	
@@ -1018,7 +1008,7 @@ vrpn_int32 vrpn_Sound_Client::setListenerVelocity(const vrpn_float64 velocity[4]
 
 	gettimeofday(&timestamp, NULL);
 
-	if (vrpn_Sound::connection->pack_message(len, timestamp, set_listener_velocity, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+	if (vrpn_Sound::d_connection->pack_message(len, timestamp, set_listener_velocity, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
 
 	
@@ -1034,7 +1024,7 @@ vrpn_int32 vrpn_Sound_Client::LoadModel_local(const char *filename) {
 	
 	gettimeofday(&timestamp, NULL);
 
-	if (vrpn_Sound::connection->pack_message(len, timestamp, load_model_local, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+	if (vrpn_Sound::d_connection->pack_message(len, timestamp, load_model_local, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message load: tossing\n");
 
 	
@@ -1056,7 +1046,7 @@ vrpn_int32 vrpn_Sound_Client::LoadPolyQuad(const vrpn_QuadDef quad) {
 	
 	gettimeofday(&timestamp, NULL);
 
-	if (vrpn_Sound::connection->pack_message(len, timestamp, load_polyquad, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+	if (vrpn_Sound::d_connection->pack_message(len, timestamp, load_polyquad, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message load: tossing\n");
 
 	
@@ -1073,7 +1063,7 @@ vrpn_int32 len;
 	
 	gettimeofday(&timestamp, NULL);
 
-	if (vrpn_Sound::connection->pack_message(len, timestamp, load_polytri, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+	if (vrpn_Sound::d_connection->pack_message(len, timestamp, load_polytri, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message load: tossing\n");
 
 	
@@ -1090,7 +1080,7 @@ vrpn_int32 vrpn_Sound_Client::LoadMaterial(const vrpn_int32 id,
 	
 	gettimeofday(&timestamp, NULL);
 
-	if (vrpn_Sound::connection->pack_message(len, timestamp, load_material, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+	if (vrpn_Sound::d_connection->pack_message(len, timestamp, load_material, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message load: tossing\n");
 
 	
@@ -1107,7 +1097,7 @@ vrpn_int32 vrpn_Sound_Client::setPolyOF(const int id, const vrpn_float64 OF) {
 
 	gettimeofday(&timestamp, NULL);
 
-	if (vrpn_Sound::connection->pack_message(len, timestamp, set_poly_openingfactor, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+	if (vrpn_Sound::d_connection->pack_message(len, timestamp, set_poly_openingfactor, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
 
 	
@@ -1123,7 +1113,7 @@ vrpn_int32 vrpn_Sound_Client::setQuadVertices(const int id, const vrpn_float64 v
 
 	gettimeofday(&timestamp, NULL);
 
-	if (vrpn_Sound::connection->pack_message(len, timestamp, set_polyquad_vertices, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+	if (vrpn_Sound::d_connection->pack_message(len, timestamp, set_polyquad_vertices, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
 
 	return 0;
@@ -1138,7 +1128,7 @@ vrpn_int32 vrpn_Sound_Client::setPolyMaterialName(const int id, const char * mat
 
 	gettimeofday(&timestamp, NULL);
 
-	if (vrpn_Sound::connection->pack_message(len, timestamp, set_poly_material, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+	if (vrpn_Sound::d_connection->pack_message(len, timestamp, set_poly_material, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
 
 	
@@ -1154,7 +1144,7 @@ vrpn_int32 vrpn_Sound_Client::setTriVertices(const int id, const vrpn_float64 ve
 
 	gettimeofday(&timestamp, NULL);
 
-	if (vrpn_Sound::connection->pack_message(len, timestamp, set_polytri_vertices, vrpn_Sound::my_id, buf, vrpn_CONNECTION_RELIABLE))
+	if (vrpn_Sound::d_connection->pack_message(len, timestamp, set_polytri_vertices, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
 
 	
@@ -1162,9 +1152,10 @@ vrpn_int32 vrpn_Sound_Client::setTriVertices(const int id, const vrpn_float64 ve
 }
 
 
-void vrpn_Sound_Client::mainloop(const timeval *timeout)
+void vrpn_Sound_Client::mainloop()
 {
-  vrpn_Sound::connection->mainloop(timeout);
+  vrpn_Sound::d_connection->mainloop();
+  client_mainloop();
 }
 
 void	vrpn_Sound_Client::handle_receiveTextMessage(void *userdata, const vrpn_TEXTCB t)
@@ -1183,39 +1174,38 @@ void vrpn_Sound_Client::receiveTextMessage(const char * message, vrpn_uint32 typ
  Begin vrpn_Sound_Server
  *******************************************************************************************/
 #ifndef VRPN_CLIENT_ONLY
-vrpn_Sound_Server::vrpn_Sound_Server(const char * name, vrpn_Connection * c) 
-				  : vrpn_Sound(name, c) , vrpn_Text_Sender((char *) name, c)
+vrpn_Sound_Server::vrpn_Sound_Server(const char * name, vrpn_Connection * c) :
+vrpn_Sound(name, c) , vrpn_Text_Sender((char *) name, c)
 {
-
 	/*Register the handlers*/
-	vrpn_Sound::connection->register_handler(load_sound_local, handle_loadSoundLocal, this, vrpn_Sound::my_id);
-	vrpn_Sound::connection->register_handler(load_sound_remote, handle_loadSoundRemote, this, vrpn_Sound::my_id);
-	vrpn_Sound::connection->register_handler(unload_sound, handle_unloadSound, this, vrpn_Sound::my_id);
-	vrpn_Sound::connection->register_handler(play_sound, handle_playSound, this, vrpn_Sound::my_id);
-	vrpn_Sound::connection->register_handler(stop_sound, handle_stopSound, this, vrpn_Sound::my_id);
-	vrpn_Sound::connection->register_handler(change_sound_status, handle_changeSoundStatus, this, vrpn_Sound::my_id);
+	register_autodeleted_handler(load_sound_local, handle_loadSoundLocal, this, d_sender_id);
+	register_autodeleted_handler(load_sound_remote, handle_loadSoundRemote, this, d_sender_id);
+	register_autodeleted_handler(unload_sound, handle_unloadSound, this, d_sender_id);
+	register_autodeleted_handler(play_sound, handle_playSound, this, d_sender_id);
+	register_autodeleted_handler(stop_sound, handle_stopSound, this, d_sender_id);
+	register_autodeleted_handler(change_sound_status, handle_changeSoundStatus, this, d_sender_id);
 
-	vrpn_Sound::connection->register_handler(set_listener_pose, handle_setListenerPose,this, vrpn_Sound::my_id);
-	vrpn_Sound::connection->register_handler(set_listener_velocity, handle_setListenerVelocity,this, vrpn_Sound::my_id);
-	vrpn_Sound::connection->register_handler(set_sound_pose, handle_setSoundPose,this, vrpn_Sound::my_id);
-	vrpn_Sound::connection->register_handler(set_sound_velocity, handle_setSoundVelocity,this, vrpn_Sound::my_id);
-	vrpn_Sound::connection->register_handler(set_sound_distanceinfo,  handle_setSoundDistanceinfo,this, vrpn_Sound::my_id);
-	vrpn_Sound::connection->register_handler(set_sound_coneinfo, handle_setSoundConeinfo,this, vrpn_Sound::my_id);
+	register_autodeleted_handler(set_listener_pose, handle_setListenerPose,this, d_sender_id);
+	register_autodeleted_handler(set_listener_velocity, handle_setListenerVelocity,this, d_sender_id);
+	register_autodeleted_handler(set_sound_pose, handle_setSoundPose,this, d_sender_id);
+	register_autodeleted_handler(set_sound_velocity, handle_setSoundVelocity,this, d_sender_id);
+	register_autodeleted_handler(set_sound_distanceinfo,  handle_setSoundDistanceinfo,this, d_sender_id);
+	register_autodeleted_handler(set_sound_coneinfo, handle_setSoundConeinfo,this, d_sender_id);
 
-  vrpn_Sound::connection->register_handler(set_sound_doplerfactor, handle_setSoundDoplerfactor,this, vrpn_Sound::my_id);
-	vrpn_Sound::connection->register_handler(set_sound_eqvalue, handle_setSoundEqvalue,this, vrpn_Sound::my_id);
-	vrpn_Sound::connection->register_handler(set_sound_pitch, handle_setSoundPitch,this, vrpn_Sound::my_id);
-  vrpn_Sound::connection->register_handler(set_sound_volume, handle_setSoundVolume,this, vrpn_Sound::my_id);
+	register_autodeleted_handler(set_sound_doplerfactor, handle_setSoundDoplerfactor,this, d_sender_id);
+	register_autodeleted_handler(set_sound_eqvalue, handle_setSoundEqvalue,this, d_sender_id);
+	register_autodeleted_handler(set_sound_pitch, handle_setSoundPitch,this, d_sender_id);
+	register_autodeleted_handler(set_sound_volume, handle_setSoundVolume,this, d_sender_id);
 
-	vrpn_Sound::connection->register_handler(load_model_local, handle_loadModelLocal,this, vrpn_Sound::my_id);
-	vrpn_Sound::connection->register_handler(load_model_remote, handle_loadModelRemote,this, vrpn_Sound::my_id);
-	vrpn_Sound::connection->register_handler(load_polyquad, handle_loadPolyquad,this, vrpn_Sound::my_id);
-	vrpn_Sound::connection->register_handler(load_polytri, handle_loadPolytri,this, vrpn_Sound::my_id);
-	vrpn_Sound::connection->register_handler(load_material, handle_loadMaterial,this, vrpn_Sound::my_id);
-	vrpn_Sound::connection->register_handler(set_polyquad_vertices, handle_setPolyquadVertices,this, vrpn_Sound::my_id);		
-	vrpn_Sound::connection->register_handler(set_polytri_vertices, handle_setPolytriVertices,this, vrpn_Sound::my_id);
-	vrpn_Sound::connection->register_handler(set_poly_openingfactor, handle_setPolyOpeningfactor,this, vrpn_Sound::my_id);
-	vrpn_Sound::connection->register_handler(set_poly_material, handle_setPolyMaterial,this, vrpn_Sound::my_id);
+	register_autodeleted_handler(load_model_local, handle_loadModelLocal,this, d_sender_id);
+	register_autodeleted_handler(load_model_remote, handle_loadModelRemote,this, d_sender_id);
+	register_autodeleted_handler(load_polyquad, handle_loadPolyquad,this, d_sender_id);
+	register_autodeleted_handler(load_polytri, handle_loadPolytri,this, d_sender_id);
+	register_autodeleted_handler(load_material, handle_loadMaterial,this, d_sender_id);
+	register_autodeleted_handler(set_polyquad_vertices, handle_setPolyquadVertices,this, d_sender_id);		
+	register_autodeleted_handler(set_polytri_vertices, handle_setPolytriVertices,this, d_sender_id);
+	register_autodeleted_handler(set_poly_openingfactor, handle_setPolyOpeningfactor,this, d_sender_id);
+	register_autodeleted_handler(set_poly_material, handle_setPolyMaterial,this, d_sender_id);
 }
 
 vrpn_Sound_Server::~vrpn_Sound_Server()

@@ -527,7 +527,7 @@ fprintf(stderr, "vrpn_Mutex_Remote::handle_denyRequest for %d.\n", index);
 
 // static
 int vrpn_Mutex_Remote::handle_releaseNotification (void * userdata,
-                                       vrpn_HANDLERPARAM p) {
+                                       vrpn_HANDLERPARAM) {
   vrpn_Mutex_Remote * me = (vrpn_Mutex_Remote *) userdata;
 
 #ifdef VERBOSE
@@ -1094,7 +1094,7 @@ int vrpn_PeerMutex::handle_denyRequest (void * userdata, vrpn_HANDLERPARAM p) {
 }
 
 // static
-int vrpn_PeerMutex::handle_losePeer (void * userdata, vrpn_HANDLERPARAM p) {
+int vrpn_PeerMutex::handle_losePeer (void * userdata, vrpn_HANDLERPARAM) {
   losePeerData * data = (losePeerData *) userdata;
   vrpn_PeerMutex * me = data->mutex;
   vrpn_Connection * c = data->connection;

@@ -27,6 +27,7 @@
 // ordering policies are followed, this code should work.
 
 #include <vrpn_Connection.h>
+#include <string.h>
 
 static vrpn_HANDLERPARAM g_fooStore;
 static void * g_fooData;

@@ -1,3 +1,5 @@
+/// This object has been superceded by the vrpn_Tracker_AnalogFly object.
+
 #include <string.h>
 #include "vrpn_JoyFly.h"
 
@@ -47,18 +49,20 @@ vrpn_Tracker_JoyFly::~vrpn_Tracker_JoyFly()
   delete joy_remote;
 }
 
-void vrpn_Tracker_JoyFly::mainloop(const struct timeval * timeout)
+void vrpn_Tracker_JoyFly::mainloop(void)
 {
+  server_mainloop();
+
   if (joy_remote !=  NULL)
-    joy_remote->mainloop(timeout);
+    joy_remote->mainloop();
   if (status == TRACKER_REPORT_READY) {
     // pack and deliver tracker report;
     fprintf(stderr, "Sending a report\n");
 
     char msgbuf[1000];
     vrpn_int32	    len = encode_to(msgbuf);
-    if (connection->pack_message(len, timestamp,
-				 position_m_id, my_id, msgbuf,
+    if (d_connection->pack_message(len, timestamp,
+				 position_m_id, d_sender_id, msgbuf,
 				 vrpn_CONNECTION_LOW_LATENCY)) {
       fprintf(stderr,
 	      "\nvrpn_Tracker_Flock: cannot write message ...  tossing");

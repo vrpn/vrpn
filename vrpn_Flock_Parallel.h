@@ -10,7 +10,7 @@
   Revised: Fri Mar 19 15:05:28 1999 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Flock_Parallel.h,v $
   $Locker:  $
-  $Revision: 1.6 $
+  $Revision: 1.7 $
 \*****************************************************************************/
 #ifndef _VRPN_FLOCK_PARALLEL_H_
 #define _VRPN_FLOCK_PARALLEL_H_
@@ -64,7 +64,7 @@ class vrpn_Tracker_Flock_Parallel: public vrpn_Tracker_Flock {
 			      char *slavePortArray[] );
     
   virtual ~vrpn_Tracker_Flock_Parallel();
-  virtual void mainloop(const struct timeval * timeout=NULL);
+  virtual void mainloop();
     
  protected:
   virtual void get_report(void);
@@ -86,7 +86,7 @@ public:
 				     vrpn_int32 vrpnPositionMsgID,
 				     int iSensorID );
   virtual ~vrpn_Tracker_Flock_Parallel_Slave();
-  virtual void mainloop(const struct timeval * timeout=NULL);
+  virtual void mainloop();
 
  protected:
   virtual void reset();
@@ -98,50 +98,4 @@ public:
 
 
 #endif // _VRPN_FLOCK_PARALLEL_H_
-
-
-/*****************************************************************************\
-  $Log: vrpn_Flock_Parallel.h,v $
-  Revision 1.6  1999/03/19 23:05:44  weberh
-  modified the client and server classes so that they work with
-  tom's changes to allow blocking vrpn mainloop calls (ie, mainloop
-  signature changed).
-
-  Revision 1.5  1999/02/24 15:58:33  taylorr
-  BIG CHANGES.
-  I modified the code so that it can compile on 64-bit SGI machines.
-
-  To do so, I did what I should have done in the first place and defined
-  architecture-independent types (vrpn_in32, vrpn_int16, vrpn_float32,
-  vrpn_float64 and so on).  These are defined per architecture in the
-  vrpn_Shared.h file.
-
-  FROM NOW ON, folks should use these rather than the non-specific types
-  (int, long, float, double) that may vary between platforms.
-
-  Revision 1.4  1998/11/05 22:45:49  taylorr
-  This version strips out the serial-port code into vrpn_Serial.C.
-
-  It also makes it so all the library files compile under NT.
-
-  It also fixes an insidious initialization bug in the forwarder code.
-
-  Revision 1.3  1998/06/01 20:12:10  kumsu
-  changed to ANSI to compile with aCC for hp
-
-  Revision 1.2  1998/05/05 21:09:56  taylorr
-  This version works better with the aCC compiler on PixelFlow.
-
-  Revision 1.1  1998/03/10 19:35:46  weberh
-  The original parallel flock structure was a pain, so I redid it from
-  scratch. The result is a new vrpn_Tracker_Flock_Parallel class and
-  a corresponding slave class. Both leverage off of the base flock class
-  heavily and avoid repeating code.  The master does all coordination and
-  resetting, and the slaves just read reports.  In this way i am able to
-  get 100hz from all of the sensors.
-
-  I modified the makefile appropriately.
-
-\*****************************************************************************/
-
 

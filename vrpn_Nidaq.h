@@ -19,7 +19,7 @@
   Revised: Fri Mar 19 14:45:55 1999 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Nidaq.h,v $
   $Locker:  $
-  $Revision: 1.9 $
+  $Revision: 1.10 $
 \*****************************************************************************/
 
 #ifndef VRPN_NIDAQ
@@ -48,7 +48,7 @@ public:
 		   int fNice=0);
 
   ~vrpn_Nidaq();
-  void mainloop(const struct timeval * timeout = NULL);
+  void mainloop();
   int doing_okay();
 
 protected:
@@ -78,33 +78,3 @@ private:
 
 #endif // def(_WIN32) || def(WIN32)
 #endif // ndef(VRPN_NIDAQ)
-
-/*****************************************************************************\
-  $Log: vrpn_Nidaq.h,v $
-  Revision 1.9  1999/03/19 23:05:49  weberh
-  modified the client and server classes so that they work with
-  tom's changes to allow blocking vrpn mainloop calls (ie, mainloop
-  signature changed).
-
-  Revision 1.8  1999/03/17 22:30:14  weberh
-  added new comment re: max rate with fNice.
-
-  Revision 1.7  1999/02/15 16:09:08  weberh
-  updated comments to reflect necessary files to compile this component.
-
-  Revision 1.6  1999/02/11 20:17:34  weberh
-  cleaned up problems with cname alloc/dealloc, etc.
-
-  Revision 1.5  1999/02/01 20:53:08  weberh
-  cleaned up and added nice and multithreading for practical usage.
-
-  Revision 1.4  1999/01/29 22:18:28  weberh
-  cleaned up analog.C and added class to support national instruments a/d card
-
-  Revision 1.3  1999/01/29 19:48:28  weberh
-  *** empty log message ***
-
-  Revision 1.2  1999/01/29 19:47:34  weberh
-  *** empty log message ***
-
-\*****************************************************************************/

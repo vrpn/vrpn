@@ -24,7 +24,7 @@
 class vrpn_raw_SGIBox :public vrpn_Analog, public vrpn_Button_Filter {
 public:
   vrpn_raw_SGIBox(char * name, vrpn_Connection * c, char *serialDevName);
-  void mainloop(const struct timeval * timeout = NULL);
+  void mainloop();
   int reset();
   int send_light_command();
 

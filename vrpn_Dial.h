@@ -8,26 +8,19 @@
 #define vrpn_DIAL_MAX 128
 
 #include "vrpn_Connection.h"
+#include "vrpn_BaseClass.h"
 
-class vrpn_Dial {
+class vrpn_Dial : public vrpn_BaseClass {
 public:
 	vrpn_Dial (const char * name, vrpn_Connection * c = NULL);
 
-	// Called once through each main loop iteration to handle
-	// updates.
-	virtual void mainloop (const struct timeval * timeout = NULL) = 0;
-
-	// Report changes to conneciton
-        vrpn_Connection *connectionPtr();
-
   protected:
-	vrpn_Connection *connection;
 	vrpn_float64	dials[vrpn_DIAL_MAX];
 	vrpn_int32	num_dials;
 	struct timeval	timestamp;
-	vrpn_int32 my_id;		// ID of this device to connection
 	vrpn_int32 change_m_id;		// change message id
 
+	virtual int register_types(void);
 	virtual vrpn_int32 encode_to(char *buf, vrpn_int32 buflen,
 		vrpn_int32 dial, vrpn_float64 delta);
         virtual void report_changes (void);  // send report iff changed
@@ -51,7 +44,7 @@ public:
 	vrpn_Dial_Example_Server(const char * name, vrpn_Connection * c,
 		vrpn_int32 numdials = 1, vrpn_float64 spin_rate = 1.0,
 		vrpn_float64 update_rate = 10.0);
-	virtual void mainloop(const struct timeval * timeout = NULL);
+	virtual void mainloop();
 protected:
 	vrpn_float64	_spin_rate;	// The rate at which to spin (revolutions/sec)
 	vrpn_float64	_update_rate;	// The rate at which to update (reports/sec)
@@ -91,7 +84,7 @@ class vrpn_Dial_Remote: public vrpn_Dial {
 	~vrpn_Dial_Remote();
 
 	// This routine calls the mainloop of the connection it's on
-	virtual void mainloop(const struct timeval * timeout = NULL);
+	virtual void mainloop();
 
 	// (un)Register a callback handler to handle dial updates
 	virtual int register_change_handler(void *userdata,

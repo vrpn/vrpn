@@ -18,7 +18,6 @@ vrpn_Tracker_AnalogFly::vrpn_Tracker_AnalogFly
          (const char * name, vrpn_Connection * trackercon,
           vrpn_Tracker_AnalogFlyParam * params, float update_rate) :
 	vrpn_Tracker (name, trackercon),
-	d_connection (trackercon),
 	d_which_button (params->reset_which),
 	d_update_interval (update_rate ? (1/update_rate) : 1.0)
 {
@@ -240,10 +239,13 @@ void vrpn_Tracker_AnalogFly::reset (void)
 	convert_matrix_to_tracker();
 }
 
-void vrpn_Tracker_AnalogFly::mainloop(const struct timeval * timeout)
+void vrpn_Tracker_AnalogFly::mainloop()
 {
 	struct timeval	now;
 	double	interval;	// How long since the last report, in secs
+
+	// Call generic server mainloop, since we are a server
+	server_mainloop();
 
 	// Mainloop() all of the analogs that are defined and the button
 	// so that we will get all of the values fresh.
@@ -273,7 +275,7 @@ void vrpn_Tracker_AnalogFly::mainloop(const struct timeval * timeout)
 			char	msgbuf[1000];
 			int	len = encode_to(msgbuf);
 			if (d_connection->pack_message(len, timestamp,
-				position_m_id, my_id, msgbuf,
+				position_m_id, d_sender_id, msgbuf,
 				vrpn_CONNECTION_LOW_LATENCY)) {
 			fprintf(stderr,"Tracker AnalogFly: "
                                 "cannot write message: tossing\n");

@@ -5,6 +5,7 @@
 #endif
 
 #include "vrpn_Connection.h"
+#include "vrpn_BaseClass.h"
 #include "vrpn_Serial.h"
 
 #define	vrpn_BUTTON_MAX_BUTTONS	(100)
@@ -20,20 +21,13 @@ const int VRPN_BUTTON_BUF_SIZE = 100;
 #define vrpn_BUTTON_LIGHT_ON	31
 #define vrpn_ALL_ID		-99
 
-class vrpn_Button {
+class vrpn_Button : public vrpn_BaseClass {
   public:
 	vrpn_Button(const char *name, vrpn_Connection *c = NULL);
         virtual ~vrpn_Button (void);
 
 	// Print the status of the button
 	void print(void);
-
-	// Called once through each main loop iteration to handle
-	// button updates.
-	// Report changes to conneciton
-        virtual void mainloop(const struct timeval * timeout = NULL) = 0;
-
-        vrpn_Connection *connectionPtr();
 
 	virtual void set_momentary(vrpn_int32 which_button);
         virtual void set_toggle(vrpn_int32 which_button,
@@ -42,15 +36,15 @@ class vrpn_Button {
         virtual void set_all_toggle(vrpn_int32 default_state);
 
   protected:
-	vrpn_Connection *connection;
 	unsigned char	buttons[vrpn_BUTTON_MAX_BUTTONS];
         unsigned char	lastbuttons[vrpn_BUTTON_MAX_BUTTONS];
 	vrpn_int32	minrate[vrpn_BUTTON_MAX_BUTTONS];
 	vrpn_int32	num_buttons;
 	struct timeval	timestamp;
-	vrpn_int32 my_id;		// ID of this button to connection
 	vrpn_int32 change_message_id;	// ID of change button message to connection
 	vrpn_int32 admin_message_id;	// ID of admin button message to connection
+
+	virtual int register_types (void);
 	virtual void report_changes (void);
 	virtual vrpn_int32 encode_to(char *buf, vrpn_int32 button,
 				     vrpn_int32 state);
@@ -86,7 +80,7 @@ public:
 	vrpn_Button_Example_Server(const char *name, vrpn_Connection *c,
 		int numbuttons = 1, vrpn_float64 rate = 1.0);
 
-	virtual void mainloop(const struct timeval * timeout = NULL);
+	virtual void mainloop();
 
 protected:
 	vrpn_float64	_update_rate;	// How often to toggle
@@ -118,7 +112,7 @@ class vrpn_Button_Python: public vrpn_Button_Parallel {
   public:
 	vrpn_Button_Python (const char * name, vrpn_Connection * c, int p);
 
-	virtual void mainloop(const struct timeval * timeout = NULL);
+	virtual void mainloop();
   protected:
   	virtual void read(void);
 };
@@ -153,7 +147,7 @@ public:
    vrpn_Button_PinchGlove(const char* name, vrpn_Connection *c, 
                       const char *port="/dev/ttyS1/", long baud=38400);
 
-   virtual void mainloop(const struct timeval *timeout=NULL);
+   virtual void mainloop();
 
 protected:
    virtual void read();
@@ -203,7 +197,7 @@ class vrpn_Button_Remote: public vrpn_Button {
 	virtual ~vrpn_Button_Remote (void);
 
 	// This routine calls the mainloop of the connection it's on
-	virtual void mainloop(const struct timeval * timeout = NULL);
+	virtual void mainloop();
 
 	// (un)Register a callback handler to handle a button state change
 	virtual int register_change_handler(void *userdata,

@@ -170,7 +170,6 @@ void	send_text_once_in_a_while(void)
 	if ( now.tv_sec - secs >= 1 ) {
 		secs = now.tv_sec;
 		stext->send_message("Text message");
-		sana->mainloop(NULL);
 	}
 }
 
@@ -186,7 +185,6 @@ void	send_analog_once_in_a_while(void)
 	if ( now.tv_sec - secs >= 1 ) {
 		secs = now.tv_sec;
 		sana->report();
-		sana->mainloop(NULL);
 	}
 }
 

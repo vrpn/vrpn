@@ -1,3 +1,5 @@
+/// This object has been superceded by the vrpn_Tracker_AnalogFly object.
+
 #ifndef INCLUDED_JOYFLY
 #define INCLUDED_JOYFLY
 
@@ -30,7 +32,7 @@ class vrpn_Tracker_JoyFly : public vrpn_Tracker {
                          vrpn_Connection * sourceConnection = NULL);
     virtual ~vrpn_Tracker_JoyFly (void);
 
-    virtual void mainloop (const struct timeval * timeout = NULL);
+    virtual void mainloop (void);
     virtual void reset (void);
 
     void update (q_matrix_type &);

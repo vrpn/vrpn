@@ -47,7 +47,7 @@ class vrpn_Tracker_Fastrak: public vrpn_Tracker_Serial {
   // sends it if there is one. It will reset the tracker if there is
   // no data from it for a few seconds.
 
-  virtual void mainloop(const struct timeval * timeout=NULL);
+  virtual void mainloop();
     
  protected:
   

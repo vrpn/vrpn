@@ -249,9 +249,9 @@ int setup_raw_SGIBox (char * & pch, char * line, FILE * config_file) {
 
 int setup_SGIBOX (char * & pch, char * line, FILE * config_file) {
 
-  char s2 [512];
-
 #ifdef SGI_BDBOX
+	    char s2 [512];
+
             int tbutton;
             next();
             if (sscanf(pch,"%511s",s2)!=1) {
@@ -459,8 +459,8 @@ int setup_Joystick (char * & pch, char * line, FILE * config_file) {
 }
 
 int setup_DialExample (char * & pch, char * line, FILE * config_file) {
-  char s2 [512], s3 [512];
-  int i1, i2;
+  char s2 [512];
+  int i1;
   float f1,f2;
 
   next();

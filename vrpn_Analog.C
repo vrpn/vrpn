@@ -9,32 +9,31 @@
 
 //#define VERBOSE
 
-vrpn_Analog::vrpn_Analog (const char * name, vrpn_Connection * c) {
-  // If the connection is valid, use it to register this button by
-   // name and the button change report by name.
-  char * servicename;
-  servicename = vrpn_copy_service_name(name);
-   connection = c;
-   if (connection != NULL) {
-      my_id = connection->register_sender(servicename);
-      channel_m_id = connection->register_message_type("Analog Channel");
-      if ( (my_id == -1) || (channel_m_id == -1) ) {
-      	fprintf(stderr,"vrpn_Analog: Can't register IDs\n");
-         connection = NULL;
-      }
-   }
-   num_channel = 0;
+vrpn_Analog::vrpn_Analog (const char * name, vrpn_Connection * c) :
+	vrpn_BaseClass(name, c),
+	num_channel(0)
+{
+   // Call the base class' init routine
+   vrpn_BaseClass::init();
+
    // Set the time to 0 just to have something there.
    timestamp.tv_usec = timestamp.tv_sec = 0;
-   if (servicename) {
-    delete [] servicename;
-   }
    // Initialize the values in the channels, 
    // gets rid of uninitialized memory read error in Purify
    // and makes sure any initial value change gets reported. 
    for (vrpn_int32 i=0; i< vrpn_CHANNEL_MAX; i++) {
        channel[i] = last[i] = 0;
    }
+}
+
+int vrpn_Analog::register_types(void)
+{
+    channel_m_id = d_connection->register_message_type("Analog Channel");
+    if (channel_m_id == -1) {
+	return -1;
+    } else {
+	return 0;
+    }
 }
 
 void vrpn_Analog::print(void ) {
@@ -44,10 +43,6 @@ void vrpn_Analog::print(void ) {
     printf("%f\t", channel[i]);
   }
   printf("\n");
-}
-
-vrpn_Connection *vrpn_Analog::connectionPtr() {
-  return connection;
 }
 
 vrpn_int32 vrpn_Analog::encode_to(char *buf)
@@ -67,12 +62,13 @@ vrpn_int32 vrpn_Analog::encode_to(char *buf)
    //fprintf(stderr, "encode___ %x %x", buf[0], buf[1]);
    return index*sizeof(vrpn_float64);
 }
+
 void vrpn_Analog::report_changes (vrpn_uint32 class_of_service) {
 
   vrpn_int32 i;
   vrpn_int32 change = 0;
 
-  if (connection) {
+  if (d_connection) {
     for (i = 0; i < num_channel; i++) {
       if (channel[i] != last[i]) change =1;
       last[i] = channel[i];
@@ -104,8 +100,8 @@ void vrpn_Analog::report (vrpn_uint32 class_of_service) {
 #ifdef VERBOSE
     print();
 #endif
-    if (connection && connection->pack_message(len, timestamp,
-                                 channel_m_id, my_id, msgbuf,
+    if (d_connection && d_connection->pack_message(len, timestamp,
+                                 channel_m_id, d_sender_id, msgbuf,
                                  class_of_service)) {
       fprintf(stderr,"vrpn_Analog: cannot write message: tossing\n");
     }
@@ -142,31 +138,25 @@ vrpn_Serial_Analog::vrpn_Serial_Analog (const char * name, vrpn_Connection * c,
 
 vrpn_Analog_Server::vrpn_Analog_Server (const char * name,
                                         vrpn_Connection * c) :
-    vrpn_Analog (name, c) {
-
+    vrpn_Analog (name, c)
+{
   num_channel = 0;
-
 }
 
 //virtual
-vrpn_Analog_Server::~vrpn_Analog_Server (void) {
-
-}
-
-// virtual
-void vrpn_Analog_Server::mainloop (const struct timeval *) {
-
-  // do nothing
-
+vrpn_Analog_Server::~vrpn_Analog_Server (void)
+{
 }
 
 //virtual
-void vrpn_Analog_Server::report_changes (vrpn_uint32 class_of_service) {
+void vrpn_Analog_Server::report_changes (vrpn_uint32 class_of_service)
+{
   vrpn_Analog::report_changes(class_of_service);
 }
 
 //virtual
-void vrpn_Analog_Server::report (vrpn_uint32 class_of_service) {
+void vrpn_Analog_Server::report (vrpn_uint32 class_of_service)
+{
   vrpn_Analog::report(class_of_service);
 }
 
@@ -192,18 +182,18 @@ vrpn_int32 vrpn_Analog_Server::setNumChannels (vrpn_int32 sizeRequested) {
 
 vrpn_Analog_Remote::vrpn_Analog_Remote (const char * name,
                                         vrpn_Connection * c) : 
-	vrpn_Analog (name, c ? c : vrpn_get_connection_by_name(name)),
+	vrpn_Analog (name, c),
 	change_list (NULL)
 {
 	vrpn_int32	i;
 
 	// Register a handler for the change callback from this device,
 	// if we got a connection.
-	if (connection != NULL) {
-	  if (connection->register_handler(channel_m_id, handle_change_message,
-	    this, my_id)) {
+	if (d_connection != NULL) {
+	  if (register_autodeleted_handler(channel_m_id, handle_change_message,
+	    this, d_sender_id)) {
 		fprintf(stderr,"vrpn_Analog_Remote: can't register handler\n");
-		connection = NULL;
+		d_connection = NULL;
 	  }
 	} else {
 		fprintf(stderr,"vrpn_Analog_Remote: Can't get connection!\n");
@@ -224,15 +214,9 @@ vrpn_Analog_Remote::~vrpn_Analog_Remote (void)
 {
 	vrpn_ANALOGCHANGELIST	*next;
 
-	// Unregister all of the handlers that have been registered with the
-	// connection so that they won't yank once the object has been deleted.
-	if (connection) {
-	  if (connection->unregister_handler(channel_m_id, handle_change_message,
-		this, my_id)) {
-		fprintf(stderr,"vrpn_Analog_Remote: can't unregister handler\n");
-		fprintf(stderr,"   (internal VRPN error -- expect a seg fault)\n");
-	  }
-	}
+	// Our handlers have all been registered using the
+	// register_autodeleted_handler() method, so we don't have to
+	// worry about unregistering them here.
 
 	// Delete all of the callback handlers that other code had registered
 	// with this object. This will free up the memory taken by the list
@@ -243,10 +227,11 @@ vrpn_Analog_Remote::~vrpn_Analog_Remote (void)
 	}
 }
 
-void	vrpn_Analog_Remote::mainloop(const struct timeval * timeout)
+void	vrpn_Analog_Remote::mainloop()
 {
-  if (connection) { 
-    connection->mainloop(timeout); 
+  if (d_connection) { 
+    d_connection->mainloop();
+    client_mainloop();
   }
 }
 
@@ -334,7 +319,3 @@ int vrpn_Analog_Remote::handle_change_message(void *userdata,
 
 	return 0;
 }
-
-
-
-

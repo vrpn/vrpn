@@ -3,6 +3,7 @@
 #define  FORCEDEVICE_H
 
 #include "vrpn_Connection.h"
+#include "vrpn_BaseClass.h"
 #include "vrpn_Tracker.h"
 #include "vrpn_Button.h"
 
@@ -32,13 +33,13 @@
 #define FD_SPRINGS_AS_FIELDS
 
 
-class vrpn_ForceDevice {
+class vrpn_ForceDevice : public vrpn_BaseClass {
 
   public:
 
     vrpn_ForceDevice (char * name, vrpn_Connection *c);
     virtual ~vrpn_ForceDevice (void);
-    virtual void mainloop (const struct timeval * timeout = NULL) = 0;
+
     void print_report (void);
     void print_plane (void);
 
@@ -89,7 +90,7 @@ class vrpn_ForceDevice {
     void sendError (int error_code);
 
     int getRecoveryTime (void) {return numRecCycles;}
-    int connectionAvailable (void) {return (connection != NULL);}
+    int connectionAvailable (void) {return (d_connection != NULL);}
 
     // constants for constraint messages
 
@@ -101,9 +102,7 @@ class vrpn_ForceDevice {
 
   protected:
 
-    vrpn_Connection * connection;		// Used to send messages
-
-    vrpn_int32 my_id;              // ID of this force device to connection
+    virtual int register_types(void);
 
     vrpn_int32 force_message_id;	// ID of force message to connection
     vrpn_int32 plane_message_id;	//ID of plane equation message
@@ -124,7 +123,6 @@ class vrpn_ForceDevice {
     vrpn_int32 setConstraintKSpring_message_id;
     //vrpn_int32 set_constraint_message_id;// ID of constraint force message
 
-
     // XXX - error messages should be put into the vrpn base class 
     // whenever someone makes one
 
@@ -140,8 +138,6 @@ class vrpn_ForceDevice {
     vrpn_int32 transformTrimesh_message_id;    
     vrpn_int32 setTrimeshType_message_id;    
     vrpn_int32 clearTrimesh_message_id;    
-
-    //	virtual void get_report(void) = 0;
 
     // ENCODING
     static char *encode_force(vrpn_int32 &length, const vrpn_float64 *force);
@@ -212,8 +208,6 @@ class vrpn_ForceDevice {
     static vrpn_int32 decode_error(const char *buffer, const vrpn_int32 len, 
 		vrpn_int32 *error_code);
 
-
-
     // constraint encoding & decoding
 
     static char * encode_enableConstraint
@@ -280,7 +274,6 @@ class vrpn_ForceDevice {
                     const vrpn_int32 len,
                     vrpn_float32 * k);
 
-
     // utility functions
 
     static char * encodePoint
@@ -316,13 +309,12 @@ class vrpn_ForceDevice {
     vrpn_int32 numRecCycles;
     vrpn_int32 errorCode;
 
-	vrpn_float32 SurfaceKadhesionLateral;
-	vrpn_float32 SurfaceKadhesionNormal;
-	vrpn_float32 SurfaceBuzzFreq;
-	vrpn_float32 SurfaceBuzzAmp;
-	vrpn_float32 SurfaceTextureWavelength;
-	vrpn_float32 SurfaceTextureAmplitude;
-
+    vrpn_float32 SurfaceKadhesionLateral;
+    vrpn_float32 SurfaceKadhesionNormal;
+    vrpn_float32 SurfaceBuzzFreq;
+    vrpn_float32 SurfaceBuzzAmp;
+    vrpn_float32 SurfaceTextureWavelength;
+    vrpn_float32 SurfaceTextureAmplitude;
 };
 
 // User routine to handle position reports for surface contact point (SCP)
@@ -425,10 +417,8 @@ public:
     void sendForceField (void);
     void stopForceField (void);
 
-    // This routine calls the mainloop of its own connection
-
     // This routine calls the mainloop of the connection it is on
-    virtual void mainloop (const struct timeval * timeout = NULL);
+    virtual void mainloop ();
 
     // (un)Register a callback handler to handle a force change
     // and plane equation change and trimesh change

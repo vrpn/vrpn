@@ -7,29 +7,27 @@
 
 //#define VERBOSE
 
-vrpn_Dial::vrpn_Dial (const char * name, vrpn_Connection * c) {
-  // If the connection is valid, use it to register this button by
-   // name and the button change report by name.
-  char * servicename;
-  servicename = vrpn_copy_service_name(name);
-   connection = c;
-   if (connection != NULL) {
-      my_id = connection->register_sender(servicename);
-      change_m_id = connection->register_message_type("Dial update");
-      if ( (my_id == -1) || (change_m_id == -1) ) {
-      	fprintf(stderr,"vrpn_Dial: Can't register IDs\n");
-         connection = NULL;
-      }
-   }
+vrpn_Dial::vrpn_Dial (const char * name, vrpn_Connection * c) :
+    vrpn_BaseClass(name, c)
+{
+  vrpn_BaseClass::init();
+
    num_dials = 0;
    // Set the time to 0 just to have something there.
    timestamp.tv_usec = timestamp.tv_sec = 0;
-  if (servicename)
-    delete [] servicename;
 }
 
-vrpn_Connection *vrpn_Dial::connectionPtr() {
-  return connection;
+int vrpn_Dial::register_types(void)
+{
+    if (d_connection == NULL) {
+	return 0;
+    }
+    change_m_id = d_connection->register_message_type("Dial update");
+    if (change_m_id == -1) {
+    	fprintf(stderr,"vrpn_Dial: Can't register type IDs\n");
+       d_connection = NULL;
+    }
+    return 0;
 }
 
 vrpn_int32	vrpn_Dial::encode_to(char *buf, vrpn_int32 buflen, vrpn_int32 dial, vrpn_float64 delta)
@@ -60,12 +58,12 @@ void vrpn_Dial::report_changes (void) {
   vrpn_int32 i;
   vrpn_int32 len;
 
-  if (connection) {
+  if (d_connection) {
     for (i = 0; i < num_dials; i++) {
 	if (dials[i] != 0) {
 		len = encode_to(msgbuf, sizeof(msgbuf), i, dials[i]);
-		if (connection->pack_message(len, timestamp,
-		    change_m_id, my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+		if (d_connection->pack_message(len, timestamp,
+		    change_m_id, d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
       			fprintf(stderr,"vrpn_Dial: can't write message: tossing\n");
       		}
 		dials[i] = 0;	// We've reported it the change.
@@ -85,11 +83,11 @@ void vrpn_Dial::report (void) {
   vrpn_int32 i;
   vrpn_int32 len;
 
-  if (connection) {
+  if (d_connection) {
     for (i = 0; i < num_dials; i++) {
 		len = encode_to(msgbuf, sizeof(msgbuf), i, dials[i]);
-		if (connection->pack_message(len, timestamp,
-		    change_m_id, my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+		if (d_connection->pack_message(len, timestamp,
+		    change_m_id, d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
       			fprintf(stderr,"vrpn_Dial: can't write message: tossing\n");
       		}
 		dials[i] = 0;	// We've reported it the change.
@@ -123,12 +121,13 @@ vrpn_Dial_Example_Server::vrpn_Dial_Example_Server(const char * name, vrpn_Conne
 	// IN A REAL SERVER, open the device that will service the dials here	
 }
 
-void vrpn_Dial_Example_Server::mainloop(const struct timeval * timeout)
+void vrpn_Dial_Example_Server::mainloop()
 {
 	struct timeval current_time;
 	int	i;
 
-	timeout = timeout;	// Keep the compiler happy
+	// Call the generic server mainloop, since we are a server
+	server_mainloop();
 
 	// See if its time to generate a new report
 	// IN A REAL SERVER, this check would not be done; although the
@@ -162,18 +161,18 @@ void vrpn_Dial_Example_Server::mainloop(const struct timeval * timeout)
 
 vrpn_Dial_Remote::vrpn_Dial_Remote (const char * name,
                                         vrpn_Connection * c) : 
-	vrpn_Dial (name, c ? c : vrpn_get_connection_by_name(name)),
+	vrpn_Dial (name, c),
 	change_list (NULL)
 {
 	vrpn_int32	i;
 
 	// Register a handler for the change callback from this device,
 	// if we got a connection.
-	if (connection) {
-	  if (connection->register_handler(change_m_id, handle_change_message,
-	    this, my_id)) {
+	if (d_connection) {
+	  if (register_autodeleted_handler(change_m_id, handle_change_message,
+	    this, d_sender_id)) {
 		fprintf(stderr,"vrpn_Dial_Remote: can't register handler\n");
-		connection = NULL;
+		d_connection = NULL;
 	  }
 	} else {
 		fprintf(stderr,"vrpn_Dial_Remote: Can't get connection!\n");
@@ -193,16 +192,6 @@ vrpn_Dial_Remote::~vrpn_Dial_Remote()
 {
 	vrpn_DIALCHANGELIST	*next;
 
-	// Unregister all of the handlers that have been registered with the
-	// connection so that they won't yank once the object has been deleted.
-	if (connection) {
-	  if (connection->unregister_handler(change_m_id, handle_change_message,
-		this, my_id)) {
-		fprintf(stderr,"vrpn_Dial_Remote: can't unregister handler\n");
-		fprintf(stderr,"   (internal VRPN error -- expect a seg fault)\n");
-	  }
-	}
-
 	// Delete all of the callback handlers that other code had registered
 	// with this object. This will free up the memory taken by the list
 	while (change_list != NULL) {
@@ -213,10 +202,10 @@ vrpn_Dial_Remote::~vrpn_Dial_Remote()
 
 }
 
-void	vrpn_Dial_Remote::mainloop(const struct timeval * timeout)
+void	vrpn_Dial_Remote::mainloop()
 {
-  if (connection) { 
-    connection->mainloop(timeout); 
+  if (d_connection) { 
+    d_connection->mainloop(); 
   }
 }
 

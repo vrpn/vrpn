@@ -3,9 +3,8 @@ IMPORTANT compiling at other sites information in README.Compile
 
 At UNC:
 Compile using 'gmake'
-Compile for flow using 'gmake flow'
 
-NOTE:	See http://www.cs.unc.edu/Research/nano/manual/vrpn for
+NOTE:	See http://www.cs.unc.edu/Research/vrpn for
 information on VRPN.
 
 	The source code here has been checked into CVS under the

@@ -131,7 +131,7 @@ vrpn_bool vrpn_SharedObject::shouldSendUpdate
 
 // static
 int vrpn_SharedObject::handle_becomeSerializer (void * userdata,
-                                                vrpn_HANDLERPARAM p) {
+                                                vrpn_HANDLERPARAM) {
   vrpn_SharedObject * s = (vrpn_SharedObject *) userdata;
 
   s->d_isSerializer = vrpn_TRUE;
@@ -466,7 +466,7 @@ void vrpn_Shared_int32_Server::bindConnection (vrpn_Connection * c) {
 
 // static
 int vrpn_Shared_int32_Server::handle_gotConnectionToRemote
-             (void * userdata, vrpn_HANDLERPARAM p) {
+             (void * userdata, vrpn_HANDLERPARAM) {
   vrpn_Shared_int32_Server * s = (vrpn_Shared_int32_Server *) userdata;
 
   // Send an update to the remote so that they have the correct
@@ -860,7 +860,7 @@ void vrpn_Shared_float64_Server::bindConnection (vrpn_Connection * c) {
 
 // static
 int vrpn_Shared_float64_Server::handle_gotConnectionToRemote
-             (void * userdata, vrpn_HANDLERPARAM p) {
+             (void * userdata, vrpn_HANDLERPARAM) {
   vrpn_Shared_float64_Server * s = (vrpn_Shared_float64_Server *) userdata;
 
   // Send an update to the remote so that they have the correct
@@ -1284,7 +1284,7 @@ void vrpn_Shared_String_Server::bindConnection (vrpn_Connection * c) {
 
 // static
 int vrpn_Shared_String_Server::handle_gotConnectionToRemote
-             (void * userdata, vrpn_HANDLERPARAM p) {
+             (void * userdata, vrpn_HANDLERPARAM) {
   vrpn_Shared_String_Server * s = (vrpn_Shared_String_Server *) userdata;
 
   // Send an update to the remote so that they have the correct

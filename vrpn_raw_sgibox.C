@@ -88,9 +88,11 @@ vrpn_raw_SGIBox::vrpn_raw_SGIBox(char * name, vrpn_Connection * c,
 
     num_channel = NUM_DIALS;
     num_buttons = NUM_BUTTONS;
-    
-    c->register_handler(c->register_message_type(vrpn_got_first_connection), sgibox_raw_con_cb, this);
-    c->register_handler(alert_message_id,sgibox_raw_alert_handler, this);
+
+    // We can use either autodeleted handler; choose the one in Analog
+    register_autodeleted_handler(c->register_message_type(vrpn_got_first_connection), sgibox_raw_con_cb, this);
+    register_autodeleted_handler(alert_message_id,sgibox_raw_alert_handler, this);
+
     set_alerts(1);	//turn on alerts from toggle filter class to notify
 			//local sgibox that lights should be turned on/off
 }
@@ -353,8 +355,9 @@ void vrpn_raw_SGIBox::get_report() {
 	  }
 }
 
-void vrpn_raw_SGIBox::mainloop(const struct timeval * timeout)
+void vrpn_raw_SGIBox::mainloop()
 {
+  server_mainloop();
   get_report();
 }
 

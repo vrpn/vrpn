@@ -110,7 +110,7 @@ int gethostname (char *, int);
 // string.  Since minor versions should interoperate, MAGIC is only
 // checked through the last period;  characters after that are ignored.
 
-const char * vrpn_MAGIC = (const char *) "vrpn: ver. 04.14";
+const char * vrpn_MAGIC = (const char *) "vrpn: ver. 05.00";
 const int vrpn_MAGICLEN = 16;  // Must be a multiple of vrpn_ALIGN bytes!
 
 // This is the list of states that a connection can be in
@@ -1610,14 +1610,12 @@ vrpn_ConnectionManager::vrpn_ConnectionManager (void) :
  * DNS may not even be running.
  */
 
-static int	vrpn_getmyIP (char * myIPchar, int maxlen,
-                              char * nameP = NULL,
+static int	vrpn_getmyIP (char * myIPchar, unsigned maxlen,
                               const char * NIC_IP = NULL)
 {	
   char myname [100];		// Host name of this host
   struct hostent * host;          // Encoded host IP address, etc.
   char myIPstring [100];	// Hold "152.2.130.90" or whatever
-  int retval;
 
   if (NIC_IP) {
     if (strlen(NIC_IP) > maxlen) {
@@ -2246,7 +2244,7 @@ int vrpn_udp_request_lob_packet(
    * the remote server should connect to.  These are ASCII, separated
    * by a space. */
 
-  if (vrpn_getmyIP(myIPchar, sizeof(myIPchar), NULL, NIC_IP)) {
+  if (vrpn_getmyIP(myIPchar, sizeof(myIPchar), NIC_IP)) {
     fprintf(stderr,
        "vrpn_udp_request_lob_packet: Error finding local hostIP\n");
     close(udp_sock);
@@ -2421,7 +2419,7 @@ int vrpn_start_server(const char * machine, char * server_name, char * args,
                 char    command[600];   /* Command passed to system() call */
                 char    *rsh_to_use;    /* Full path to Rsh command. */
 
-                if (vrpn_getmyIP(myIPchar,sizeof(myIPchar), NULL, IPaddress)) {
+                if (vrpn_getmyIP(myIPchar,sizeof(myIPchar), IPaddress)) {
                         fprintf(stderr,
                            "vrpn_start_server: Error finding my IP\n");
                         close(server_sock);
@@ -3187,7 +3185,7 @@ int vrpn_Endpoint::pack_udp_description (int portno) {
 #endif
 
   // Find the local host name
-  retval = vrpn_getmyIP(myIPchar, sizeof(myIPchar), NULL, d_NICaddress);
+  retval = vrpn_getmyIP(myIPchar, sizeof(myIPchar), d_NICaddress);
   if (retval) {
     perror("vrpn_Endpoint::pack_udp_description: can't get host name");
     return -1;
@@ -3485,7 +3483,7 @@ int vrpn_Endpoint::connect_tcp_to (const char * msg) {
     client.sin_addr.s_addr = (a << 24) + (b << 16) + (c << 8) + d;
     //client.sin_addr.s_addr = (d << 24) + (c << 16) + (b << 8) + a;
     fprintf(stderr, "vrpn_Endpoint::connect_tcp_to:  "
-    			  "gethostname() failed;  we think we're\n"
+    			  "getbyhostname() failed;  we think we're\n"
     			  "looking for %d.%d.%d.%d.\n", a, b, c, d);
 
     // here we can try an alternative strategy:
@@ -3924,17 +3922,6 @@ int vrpn_Endpoint::finish_new_connection_setup (void) {
 
   return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -5669,7 +5656,7 @@ int vrpn_Synchronized_Connection::mainloop (const struct timeval * timeout)
   } 
   else if (pClockRemote) {
     // the remote device always calls the base class connection mainloop already
-    pClockRemote->mainloop(timeout);
+    pClockRemote->mainloop();
   } 
   else {
     fprintf(stderr,

@@ -51,16 +51,16 @@ static int client_msg_handler(void *userdata, vrpn_HANDLERPARAM p);
 #define PACK_ADMIN_MESSAGE(i,event) { \
   char	msgbuf[1000]; \
   vrpn_int32	len = encode_to(msgbuf,i, event); \
-  if (connection->pack_message(len, timestamp, \
-			       admin_message_id, my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {\
+  if (d_connection->pack_message(len, timestamp, \
+			       admin_message_id, d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {\
       		fprintf(stderr,"vrpn_Button: can't write message: tossing\n");\
       	}\
         }
 #define PACK_ALERT_MESSAGE(i,event) { \
   char	msgbuf[1000]; \
   vrpn_int32	len = encode_to(msgbuf,i, event); \
-  if (connection->pack_message(len, timestamp, \
-			       alert_message_id, my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {\
+  if (d_connection->pack_message(len, timestamp, \
+			       alert_message_id, d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {\
       		fprintf(stderr,"vrpn_Button: can't write message: tossing\n");\
       	}\
         }
@@ -68,38 +68,35 @@ static int client_msg_handler(void *userdata, vrpn_HANDLERPARAM p);
 #define PACK_MESSAGE(i,event) { \
   char	msgbuf[1000]; \
   vrpn_int32	len = encode_to(msgbuf,i, event); \
-  if (connection->pack_message(len, timestamp, \
-			       change_message_id, my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {\
+  if (d_connection->pack_message(len, timestamp, \
+			       change_message_id, d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {\
       		fprintf(stderr,"vrpn_Button: can't write message: tossing\n");\
       	}\
         }
 
 vrpn_Button::vrpn_Button(const char *name, vrpn_Connection *c)
-	: num_buttons(0)
+	: vrpn_BaseClass(name, c),
+	num_buttons(0)
 {
-
-   // If the connection is valid, use it to register this button by
-   // name and the button change report by name.
-   connection = c;
-  char * servicename;
-  servicename = vrpn_copy_service_name(name);
-   if (connection != NULL) {
-      my_id = connection->register_sender(servicename);
-      //used to handle button strikes
-      change_message_id = connection->register_message_type("Button Change");
-      //to handle button state changes -- see Buton_Filter should register a handler
-      //for this ID -- ideally the message will be ignored otherwise
-      admin_message_id = connection->register_message_type("Button Admin");
-   }
+    vrpn_BaseClass::init();
 
    // Set the time to 0 just to have something there.
    timestamp.tv_usec = timestamp.tv_sec = 0;
    for (vrpn_int32 i=0; i< vrpn_BUTTON_MAX_BUTTONS; i++) {
 	lastbuttons[i]=0;
    }
+}
 
-  if (servicename)
-    delete [] servicename;
+int vrpn_Button::register_types(void)
+{
+      //used to handle button strikes
+      change_message_id = d_connection->register_message_type("Button Change");
+      
+      //to handle button state changes -- see Buton_Filter should register a handler
+      //for this ID -- ideally the message will be ignored otherwise
+      admin_message_id = d_connection->register_message_type("Button Admin");
+
+      return 0;
 }
 
 // virtual
@@ -110,19 +107,17 @@ vrpn_Button::~vrpn_Button (void) {
 }
 
 
-vrpn_Button_Filter::vrpn_Button_Filter(const char *name,
-									   vrpn_Connection *c)
+vrpn_Button_Filter::vrpn_Button_Filter(const char *name, vrpn_Connection *c)
 	:vrpn_Button(name, c)
 {
-	  if ( (my_id == -1) || (admin_message_id== -1) ) {
+      if ( (d_sender_id == -1) || (admin_message_id == -1) ) {
         fprintf(stderr,"vrpn_Button: Can't register IDs\n");
-         connection = NULL;
+         d_connection = NULL;
       }
-      connection->register_handler(admin_message_id,
-                                   client_msg_handler,
-                                   this);
+      register_autodeleted_handler(admin_message_id, client_msg_handler, this);
+
       //setup message id type for alert messages to alert a device about changes
-      alert_message_id = connection->register_message_type("Button Alert");
+      alert_message_id = d_connection->register_message_type("Button Alert");
       send_alerts=0;	//used to turn on/off alerts -- send and admin message from
 			//remote to turn it on -- or server side call set_alerts();
 
@@ -228,10 +223,6 @@ void	vrpn_Button::print(void)
    printf("\n");
 }
 
-vrpn_Connection *vrpn_Button::connectionPtr() {
-  return connection;
-}
-
 /** Encode a message describing the new state of a button.
     Assumes that there is enough room in the buffer to hold
     the bytes from the message. Returns the number of bytes
@@ -283,7 +274,7 @@ void vrpn_Button_Filter::report_changes (void){
    vrpn_int32 i;
 
 //   vrpn_Button::report_changes();
-   if (connection) {
+   if (d_connection) {
       for (i = 0; i < num_buttons; i++) {
 	switch (buttonstate[i]) {
         case vrpn_BUTTON_MOMENTARY:
@@ -320,7 +311,7 @@ void	vrpn_Button::report_changes(void)
 {
   vrpn_int32	i;
 
-   if (connection) {
+   if (d_connection) {
       for (i = 0; i < num_buttons; i++) {
 	if (buttons[i] != lastbuttons[i])
 	      PACK_MESSAGE(i, buttons[i]);
@@ -358,14 +349,15 @@ vrpn_Button_Example_Server::vrpn_Button_Example_Server(const char *name,
 	// IN A REAL SERVER, open the device that will service the buttons here
 }
 
-void vrpn_Button_Example_Server::mainloop(const struct timeval * timeout)
+void vrpn_Button_Example_Server::mainloop()
 {
 	struct timeval current_time;
 	int	i;
 
-	timeout = timeout;	// Keep the compiler happy
+	// Call the generic server mainloop, since we are a server
+	server_mainloop();
 
-	// See if its time to generate a new report
+	// See if its time to generate a new report (every 1 second).
 	// IN A REAL SERVER, this check would not be done; although the
 	// time of the report would be updated to the current time so
 	// that the correct timestamp would be issued on the report.
@@ -378,8 +370,9 @@ void vrpn_Button_Example_Server::mainloop(const struct timeval * timeout)
 
 	  // Update the values for the buttons, to say that each one has
 	  // switched its state.
-	  // THIS CODE WILL BE REPLACED by the user code that tells how
-	  // many revolutions each dial has changed since the last report.
+	  // THIS CODE WILL BE REPLACED by the user code that
+	  // actually reads from the button devices and fills in buttons[]
+	  // appropriately.
 	  for (i = 0; i < num_buttons; i++) {
 		  buttons[i] = !lastbuttons[i];
 	  }
@@ -469,8 +462,11 @@ vrpn_Button_Python::vrpn_Button_Python (const char * name, vrpn_Connection * c,
 
 }
 
-void vrpn_Button_Python::mainloop(const struct timeval * /*timeout*/ )
+void vrpn_Button_Python::mainloop()
 {
+  // Call the generic server mainloop, since we are a server
+  server_mainloop();
+
   switch (status) {
       case BUTTON_READY:
 	read();
@@ -537,7 +533,8 @@ void vrpn_Button_Python::read(void)
 }
 
 vrpn_Button_Serial::vrpn_Button_Serial(const char* name, vrpn_Connection *c, 
-                    const char *port, long baud) : vrpn_Button_Filter(name, c)
+                    const char *port, long baud) :
+vrpn_Button_Filter(name, c)
 {
    // port name and baud rate
    if (port == NULL) {
@@ -592,8 +589,11 @@ vrpn_Button_PinchGlove::vrpn_Button_PinchGlove(const char* name, vrpn_Connection
    gettimeofday(&timestamp, NULL);
 }
 
-void vrpn_Button_PinchGlove::mainloop(const struct timeval*)
+void vrpn_Button_PinchGlove::mainloop()
 {
+   // Call the generic server mainloop, since we are a server
+   server_mainloop();
+
    switch (status) {
       case BUTTON_READY:
 	      read();
@@ -728,18 +728,18 @@ void vrpn_Button_PinchGlove::report_no_timestamp()
 
 
 vrpn_Button_Remote::vrpn_Button_Remote(const char *name, vrpn_Connection *cn):
-	vrpn_Button(name, cn ? cn : vrpn_get_connection_by_name(name)),
+	vrpn_Button(name, cn),
 	change_list(NULL)
 {
 	vrpn_int32	i;
 
 	// Register a handler for the change callback from this device,
 	// if we got a connection.
-	if (connection != NULL) {
-	  if (connection->register_handler(change_message_id, handle_change_message,
-	    this, my_id)) {
+	if (d_connection != NULL) {
+	  if (register_autodeleted_handler(change_message_id, handle_change_message,
+	    this, d_sender_id)) {
 		fprintf(stderr,"vrpn_Button_Remote: can't register handler\n");
-		connection = NULL;
+		d_connection = NULL;
 	  }
 	} else {
 		fprintf(stderr,"vrpn_Button_Remote: Can't get connection!\n");
@@ -760,16 +760,6 @@ vrpn_Button_Remote::~vrpn_Button_Remote (void)
 {
 	vrpn_BUTTONCHANGELIST	*next;
 
-	// Unregister all of the handlers that have been registered with the
-	// connection so that they won't yank once the object has been deleted.
-	if (connection) {
-	  if (connection->unregister_handler(change_message_id, handle_change_message,
-		this, my_id)) {
-		fprintf(stderr,"vrpn_Button_Remote: can't unregister handler\n");
-		fprintf(stderr,"   (internal VRPN error -- expect a seg fault)\n");
-	  }
-	}
-
 	// Delete all of the callback handlers that other code had registered
 	// with this object. This will free up the memory taken by the list
 	while (change_list != NULL) {
@@ -779,11 +769,12 @@ vrpn_Button_Remote::~vrpn_Button_Remote (void)
 	}
 }
 
-void vrpn_Button_Remote::mainloop(const struct timeval * timeout)
+void vrpn_Button_Remote::mainloop()
 {
-	if (connection) {
-		connection->mainloop(timeout); 
+	if (d_connection) {
+		d_connection->mainloop(); 
 	}
+	client_mainloop();
 }
 
 int vrpn_Button_Remote::register_change_handler(void *userdata,

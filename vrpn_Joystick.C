@@ -31,7 +31,10 @@ vrpn_Joystick::vrpn_Joystick(char * name,
 }
 
 
-void vrpn_Joystick::mainloop(const struct timeval * /*timeout*/ ) {
+void vrpn_Joystick::mainloop(void) {
+  // Since we are a server, call the generic server mainloop()
+  server_mainloop();
+    
   //printf("joy::mainloop %d status\n", status);
   switch (status) {
   case ANALOG_REPORT_READY:
@@ -39,14 +42,14 @@ void vrpn_Joystick::mainloop(const struct timeval * /*timeout*/ ) {
     vrpn_Button::report_changes(); // report any button event;
 
     // Send the message on the connection;
-    if (vrpn_Analog::connection) {
+    if (vrpn_Analog::d_connection) {
       char	msgbuf[1000];
       vrpn_int32	len = vrpn_Analog::encode_to(msgbuf);
 #ifdef VERBOSE
       vrpn_Analog::print();
 #endif
-      if (vrpn_Analog::connection->pack_message(len, vrpn_Analog::timestamp,
-				   channel_m_id, vrpn_Analog::my_id, msgbuf,
+      if (vrpn_Analog::d_connection->pack_message(len, vrpn_Analog::timestamp,
+				   channel_m_id, vrpn_Analog::d_sender_id, msgbuf,
 				   vrpn_CONNECTION_LOW_LATENCY)) {
 	fprintf(stderr,"Tracker: cannot write message: tossing\n");
 		}

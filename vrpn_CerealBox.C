@@ -460,8 +460,11 @@ void	vrpn_CerealBox::report(vrpn_uint32 class_of_service)
 // This routine is called each time through the server's main loop. It will
 // take a course of action depending on the current status of the cerealbox,
 // either trying to reset it or trying to get a reading from it.
-void	vrpn_CerealBox::mainloop(const struct timeval *timeout)
+void	vrpn_CerealBox::mainloop()
 {
+  // Call the generic server mainloop, since we are a server
+  server_mainloop();
+
   switch(status) {
     case STATUS_RESETTING:
 	reset();

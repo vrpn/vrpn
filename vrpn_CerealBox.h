@@ -19,7 +19,7 @@ public:
 
 	// Called once through each main loop iteration to handle
 	// updates.
-	virtual void mainloop (const struct timeval *timeout = NULL);
+	virtual void mainloop ();
 
   protected:
 	int _status;

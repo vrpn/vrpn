@@ -9,7 +9,7 @@
   Revised: Fri Mar 19 14:46:06 1999 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Nidaq.C,v $
   $Locker:  $
-  $Revision: 1.7 $
+  $Revision: 1.8 $
 \*****************************************************************************/
 
 #include "vrpn_Nidaq.h"
@@ -136,17 +136,8 @@ vrpn_Nidaq::~vrpn_Nidaq() {
   delete pDAQ;
 }
 
-void vrpn_Nidaq::mainloop(const struct timeval * timeout) {
-
-  // lower cpu utilization, but do so before report_changes so
-	// that when connection->mainloop is called after nidaq->mainloop
-	// the messages will be sent immediately (rather than having an 
-	// intervening sleep
-	//if (fNice) {
-	//	Sleep(1);
-	//}
-	// NO LONGER! Now we do it with timeout val in select for 
-  // connection so that we don't have latency problems.
+void vrpn_Nidaq::mainloop(void) {
+  server_mainloop();
   report_changes();
 }
 
@@ -169,7 +160,7 @@ void vrpn_Nidaq::report_changes() {
 #ifdef VERBOSE
 	int fHadNew=0;
 #endif
-	if (connection) {
+	if (d_connection) {
 		// there is a reading and a connection ... so package it
 		
 		EnterCriticalSection(&csAnalogBuffer);
@@ -190,7 +181,7 @@ void vrpn_Nidaq::report_changes() {
 			tv = vrpn_TimevalSum(vrpn_MsecsTimeval(dTime*1000.0), 
 				tvOffset);
 			
-			if (connection->pack_message(cChars, tv, channel_m_id, my_id, rgch,
+			if (d_connection->pack_message(cChars, tv, channel_m_id, d_sender_id, rgch,
 				vrpn_CONNECTION_LOW_LATENCY)) {
 				cerr << "vrpn_Nidaq::report_changes: cannot write message: tossing.\n";
 			}
@@ -208,37 +199,3 @@ void vrpn_Nidaq::report_changes() {
 	}
 }
 #endif  // def(WIN32) || def(_WIN32)
-
-/*****************************************************************************\
-  $Log: vrpn_Nidaq.C,v $
-  Revision 1.7  1999/03/19 23:05:48  weberh
-  modified the client and server classes so that they work with
-  tom's changes to allow blocking vrpn mainloop calls (ie, mainloop
-  signature changed).
-
-  Revision 1.6  1999/03/16 22:07:07  weberh
-  vrpn_Analog.C: cast to get rid of warning
-  vrpn_Nidaq.C: got rid of internal Sleep(1) for nice behavior -- users should
-  	use a timeout in mainloop instead.
-  vrpn_FileConnection.h: added comment to indicate that fileconnection is based
-  	on vrpn connection, not synchronized connection
-  vrpn_Connection.h: changed declaration of check_connection to be compatible wiht
-  	new timeout for mainloop.
-  vrpn_Connection.C: got rid of some warnings, have time stamps sync-adjusted
-  	before logging, added timeout to check_connection so mainloop will
-  	sleep for up to timeout whether or not it is connected
-
-  Revision 1.5  1999/02/11 21:47:49  weberh
-  *** empty log message ***
-
-  Revision 1.4  1999/02/01 20:53:07  weberh
-  cleaned up and added nice and multithreading for practical usage.
-
-  Revision 1.3  1999/01/29 22:18:27  weberh
-  cleaned up analog.C and added class to support national instruments a/d card
-
-  Revision 1.2  1999/01/29 19:47:33  weberh
-  *** empty log message ***
-
-\*****************************************************************************/
-
