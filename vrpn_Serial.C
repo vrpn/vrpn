@@ -327,7 +327,11 @@ int vrpn_flush_input_buffer(int comm)
    return -1;
 #else
 #if defined(_WIN32)
-   return PurgeComm(commConnections[comm], PURGE_RXCLEAR);
+   if (PurgeComm(commConnections[comm], PURGE_RXCLEAR) != 0) {
+     return 0;
+   } else {
+     return -1;
+   }
 #else
    return tcflush(comm, TCIFLUSH);
 #endif
