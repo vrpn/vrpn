@@ -188,7 +188,7 @@ void vrpn_Router_Sierra_Server::mainloop( void )
 	// Keep track of elapsed real time, so that certain actions
 	// can be taken at regular intervals.
 	struct timeval current_time;
-	gettimeofday(&current_time, NULL);
+	vrpn_gettimeofday(&current_time, NULL);
 
 	vrpn_float64 update_rate = 0.1;    // 0.1 Hz = once every 10 seconds
 	if ( duration(current_time,timestamp) >= 1000000.0 / update_rate) {

@@ -1,3 +1,8 @@
+2004-04-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Router_Sierra_ServerMain.C :
+		 Using vrpn_gettimeofday() not gettimeofday()
+
 2002-12-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* sierra_router_server.dsp : DSP files have been modified to not do
