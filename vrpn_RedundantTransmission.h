@@ -7,9 +7,9 @@
 /// of on your connection, and call mainloop() here before calling mainloop()
 /// on your connection.
 
-#include <vrpn_Shared.h>  // for timeval, types
-#include <vrpn_BaseClass.h>
-#include <vrpn_Connection.h>  // for vrpn_HANDLERPARAM, vrpn_Connection
+#include "vrpn_Shared.h"  // for timeval, types
+#include "vrpn_BaseClass.h"
+#include "vrpn_Connection.h"  // for vrpn_HANDLERPARAM, vrpn_Connection
 
 class vrpn_RedundantTransmission {
 

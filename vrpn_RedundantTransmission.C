@@ -57,7 +57,7 @@ void vrpn_RedundantTransmission::mainloop (void) {
        snitch = &qm->next, qm = *snitch) {
     while (qm && !qm->remainingTransmissions) {
       *snitch = qm->next;
-      delete [] qm->p.buffer;
+      delete [] (void *) qm->p.buffer;
       delete qm;
       qm = *snitch;
       d_numMessagesQueued--;
