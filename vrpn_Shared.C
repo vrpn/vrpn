@@ -397,7 +397,7 @@ long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
 
 long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_bool value)
 {
-    vrpn_bool netValue = htonl(value);
+    vrpn_bool netValue = htons(value);
     int length = sizeof(netValue);
 
     if (length > *buflen) {
@@ -585,7 +585,7 @@ long vrpn_unbuffer (const char ** buffer, char * string,
 
 long vrpn_unbuffer (const char ** buffer, vrpn_bool * lval)
 {
-    *lval = ntohl(*((vrpn_bool *)(*buffer)));
+    *lval = ntohs(*((vrpn_bool *)(*buffer)));
     *buffer += sizeof(vrpn_bool);
     return 0;
 }
