@@ -167,7 +167,7 @@ int vrpn_Tng3::get_report(void)
     // Zero timeout, poll for any available characters
     struct timeval timeout = {0, 0};
 
-    // Go looking for a synchronization byte.  This apparently start out
+    // Go looking for a synchronization byte.  This apparently starts out
     // as 0x55 for one record, then toggles all of the bits for the next
     // record.
     if (status == STATUS_SYNCING) {
@@ -195,6 +195,8 @@ int vrpn_Tng3::get_report(void)
     // we're reading now, get the report   
 
     // get the expected number of data record bytes
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 0;
     int result = vrpn_read_available_characters(serial_fd, 
 		  &_buffer[num_read], DATA_RECORD_LENGTH-num_read, &timeout);    
 
