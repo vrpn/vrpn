@@ -65,6 +65,10 @@ endif
 HMD_DIR 	 := /afs/cs.unc.edu/proj/hmd
 HMD_INCLUDE_DIR	 := $(HMD_DIR)/include
 
+BETA_DIR         := $(HMD_DIR)/beta
+BETA_INCLUDE_DIR := $(BETA_DIR)/include
+BETA_LIB_DIR     := $(BETA_DIR)/lib
+
 # subdirectory for make
 ifeq ($(FORCE_GPP),1)
 OBJECT_DIR	 := $(HW_OS)/g++
@@ -105,7 +109,7 @@ ifeq ($(HW_OS),hp_flow_aCC)
                  -I/usr/include/bsd -DFLOW
 endif
 
-INCLUDE_FLAGS := -I. $(SYS_INCLUDE) -I$(HMD_INCLUDE_DIR)
+INCLUDE_FLAGS := -I. $(SYS_INCLUDE) -I$(BETA_INCLUDE_DIR) -I$(HMD_INCLUDE_DIR)
 
 ##########################
 # Load flags
@@ -134,10 +138,6 @@ endif
 
 
 LIBS := -lquat -lsdi $(TCL_LIBS) -lXext -lX11 $(ARCH_LIBS) -lm
-#=======
-#LIBS := -lv -ltracker -lad -lquat -lsound -larm -lvrpn -lsdi \
-#	-lXext -lX11 $(ARCH_LIBS) -lm
-#>>>>>>> 1.26
 
 #
 # Defines for the compilation, CFLAGS
@@ -262,6 +262,24 @@ clean:
 ifneq ($(CC), g++)
 	$(MAKE) FORCE_GPP=1 clean
 endif
+
+VRPN_INCLUDES := vrpn_3Space.h vrpn_Analog.h vrpn_Button.h vrpn_Clock.h \
+                 vrpn_Connection.h vrpn_Dyna.h vrpn_Flock.h \
+                 vrpn_Flock_Parallel.h vrpn_ForceDevice.h vrpn_JoyFly.h \
+                 vrpn_Joystick.h vrpn_Ohmmeter.h vrpn_Shared.h vrpn_Sound.h \
+                 vrpn_Tracker.h vrpn_Tracker_Fastrak.h vrpn_sgibox.h
+
+beta :
+	$(MAKE) clean
+	$(MAKE) all
+	-mv $(OBJECT_DIR)/libvrpn.a $(OBJECT_DIR)/libvrpn_g++.a \
+	    $(OBJECT_DIR)/libvrpnserver.a $(OBJECT_DIR)/libvrpnserver_g++.a \
+            $(BETA_LIB_DIR)/$(OBJECT_DIR)
+	-rm -rf $(OBJECT_DIR)
+	-ranlib $(BETA_LIB_DIR)/libvrpn.a
+	-ranlib $(BETA_LIB_DIR)/libvrpnserver.a
+	-( cd $(BETA_INCLUDE_DIR); /bin/rm -f $(VRPN_INCLUDES) )
+	cp $(VRPN_INCLUDES) $(BETA_INCLUDE_DIR) 
 
 #############################################################################
 #
