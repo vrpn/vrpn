@@ -1,4 +1,3 @@
-
 package vrpn;
 import java.util.*;
 
@@ -16,8 +15,8 @@ public class TempImagerRemote implements Runnable
 	
 	public class TempImagerChannel
 	{
-		public String name;
-		public String units;
+		public String name = "";
+		public String units = "";
 		public float minVal = 0;
 		public float maxVal = 0;
 		public float offset = 0;
@@ -85,6 +84,8 @@ public class TempImagerRemote implements Runnable
 		this.tempImagerThread.start( );
 	}
 	
+	public int getNumRows( )
+	{ return numRows; }
 	
 	public int getNumColumns( )
 	{ return numColumns; }
@@ -113,7 +114,7 @@ public class TempImagerRemote implements Runnable
 	}
 	
 	
-	public synchronized void addDecriptionChangeListener( DescriptionChangeListener listener )
+	public synchronized void addDescriptionChangeListener( DescriptionChangeListener listener )
 	{
 		descriptionListeners.addElement( listener );
 	}
@@ -300,12 +301,18 @@ public class TempImagerRemote implements Runnable
 	protected void setChannel( int index, String name, String units,
 							   float minVal, float maxVal, float offset, float scale )
 	{
-		if( index < 0 || index > VRPN_IMAGER_MAX_CHANNELS )
+		if( index < 0 || index >= VRPN_IMAGER_MAX_CHANNELS )
 		{
 			System.err.println( "Warning:  invalid channel index in TempImagerRemote::" +
 								"setChannel.  Ignoring." );
 			return;
 		}
+      if (channels[index] == null)
+      {
+         System.err.println("Warning:  channel reference was null! VERY " +
+                            "unexpected!  I'll try to fix this now ...");
+         channels[index] = new TempImagerChannel();
+      }
 		channels[index].name = name;
 		channels[index].units = units;
 		channels[index].minVal = minVal;

@@ -99,20 +99,20 @@ void handle_region_change( void * userdata, const vrpn_IMAGERREGIONCB info )
   if( jvm == NULL )
     return;
    
-  printf( "region change (C):  time:  %d.%d;\n"
-          "\tchannel:  %d\n"
-          "\trows [%d,%d]  cols[%d,%d]\n",
-          info.msg_time.tv_sec, info.msg_time.tv_usec,
-          info.region->chanIndex, info.region->rMin, info.region->rMax,
-          info.region->cMin, info.region->cMax );
+  //printf( "region change (C):  time:  %d.%d;\n"
+          //"\tchannel:  %d\n"
+          //"\trows [%d,%d]  cols[%d,%d]\n",
+          //info.msg_time.tv_sec, info.msg_time.tv_usec,
+          //info.region->chanIndex, info.region->rMin, info.region->rMax,
+          //info.region->cMin, info.region->cMax );
 
   JNIEnv*env;
   jvm->AttachCurrentThread( (void**) &env, NULL );
   
   jobject jobj = (jobject) userdata;
   jclass jcls = env->GetObjectClass( jobj );
-  jmethodID jmid = env->GetMethodID( jcls, "handleRegionChange", "(JJIIIII)V" );
-  if( jmid == NULL )
+  jmethodID jmid_handler = env->GetMethodID( jcls, "handleRegionChange", "(JJIIIII)V" );
+  if( jmid_handler == NULL )
   {
     printf( "Warning:  vrpn_TempImageRemote library was unable to find the "
             "Java method \'handleRegionChange\'.  This may indicate a version mismatch.\n" );
@@ -139,7 +139,7 @@ void handle_region_change( void * userdata, const vrpn_IMAGERREGIONCB info )
 
 
   // now call the handler method
-  env->CallVoidMethod( jobj, jmid, (jlong) info.msg_time.tv_sec, 
+  env->CallVoidMethod( jobj, jmid_handler, (jlong) info.msg_time.tv_sec, 
                        (jlong) info.msg_time.tv_usec, (jint) info.region->chanIndex,
                        (jint) info.region->cMin, 
                        (jint) info.region->cMax, 
@@ -210,6 +210,10 @@ void handle_description_change( void * userdata, const struct timeval msg_time )
   
   // set up all the new description
   int numChannels = t->nChannels();
+  env->CallVoidMethod( jobj, jmid_setupDescription, (jint) t->nRows(), (jint) t->nCols(),
+					   (jfloat) t->minX(), (jfloat) t->maxX(), (jfloat) t->minY(),
+					   (jfloat) t->maxY(), (jint) numChannels );
+
   for( int i = 0; i<= numChannels - 1; i++ )
   {
 	  const vrpn_TempImager_Channel* channel = t->channel(i);
@@ -225,10 +229,6 @@ void handle_description_change( void * userdata, const struct timeval msg_time )
 						   (jfloat) t->channel(i)->minVal, (jfloat) t->channel(i)->maxVal,
 						   (jfloat) t->channel(i)->offset, (jfloat) t->channel(i)->scale );
   }
-  env->CallVoidMethod( jobj, jmid_setupDescription, (jint) t->nRows(), (jint) t->nCols(),
-					   (jfloat) t->minX(), (jfloat) t->maxX(), (jfloat) t->minY(),
-					   (jfloat) t->maxY(), (jint) numChannels );
-
 
   // now call the java handler
    env->CallVoidMethod( jobj, jmid_handler, (jlong) msg_time.tv_sec, 

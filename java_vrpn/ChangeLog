@@ -1,3 +1,18 @@
+2002-09-23  Chris Weigle  <weigle@cs.unc.edu>
+
+   * vrpn_TempImagerRemote.cpp: Minor changes (commented-out debug messages)
+   * TempImagerRemote.java:
+      (getNumRows): new
+      (addDescriptionChangeListener): fixed name of addDecriptionChangeListener
+      (setChannel): fixed guard (off by on at upper bound)
+                    added test for null channel reference, create if needed
+                       - Note: This shouldn't have to be here. The array of
+                         TempImagerChannels is allocated, but we wind up with
+                         an array of null pointers instead of instantiated
+                         objects. Have I lost my mind, or shouldn't 
+                         "new TempImagerChannel[10]" give me 10 init'd
+                         TICs and not 10 null references to TICs?
+
 2002-09-19  David Marshburn  <marshbur@cs.unc.edu>
 
 	* TempImagerRemote.java:  change the function named
