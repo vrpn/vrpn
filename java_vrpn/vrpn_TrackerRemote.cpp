@@ -222,7 +222,9 @@ Java_vrpn_TrackerRemote_mainloop( JNIEnv* env, jobject jobj )
 
 
 JNIEXPORT jboolean JNICALL 
-Java_vrpn_TrackerRemote_init( JNIEnv* env, jobject jobj, jstring jname )
+Java_vrpn_TrackerRemote_init( JNIEnv* env, jobject jobj, jstring jname,
+							  jstring jlocalInLogfileName, jstring jlocalOutLogfileName,
+							  jstring jremoteInLogfileName, jstring jremoteOutLogfileName )
 {
 
   // look up where to store the tracker pointer
@@ -241,11 +243,26 @@ Java_vrpn_TrackerRemote_init( JNIEnv* env, jobject jobj, jstring jname )
 
   // create the tracker
   const char* name = env->GetStringUTFChars( jname, NULL );
-  vrpn_Tracker_Remote* t = new vrpn_Tracker_Remote( name );
+  const char* local_in_logfile_name = jlocalInLogfileName == NULL ? NULL :
+	  env->GetStringUTFChars( jlocalInLogfileName, NULL );
+  const char* local_out_logfile_name = jlocalOutLogfileName == NULL ? NULL :
+	  env->GetStringUTFChars( jlocalOutLogfileName, NULL );
+  const char* remote_in_logfile_name = jremoteInLogfileName == NULL ? NULL :
+	  env->GetStringUTFChars( jremoteInLogfileName, NULL );
+  const char* remote_out_logfile_name = jremoteOutLogfileName == NULL ? NULL :
+	  env->GetStringUTFChars( jremoteOutLogfileName, NULL );
+  vrpn_Connection* conn 
+	  = vrpn_get_connection_by_name( name, local_in_logfile_name, local_out_logfile_name,
+									 remote_in_logfile_name, remote_out_logfile_name );
+  vrpn_Tracker_Remote* t = new vrpn_Tracker_Remote( name, conn );
   t->register_change_handler( jobj, handle_tracker_change );
   t->register_change_handler( jobj, handle_velocity_change );
   t->register_change_handler( jobj, handle_acceleration_change );
   env->ReleaseStringUTFChars( jname, name );
+  env->ReleaseStringUTFChars( jlocalInLogfileName, local_in_logfile_name );
+  env->ReleaseStringUTFChars( jlocalOutLogfileName, local_out_logfile_name );
+  env->ReleaseStringUTFChars( jremoteInLogfileName, remote_in_logfile_name );
+  env->ReleaseStringUTFChars( jremoteOutLogfileName, remote_out_logfile_name );
   
   // now stash 't' in the jobj's 'native_tracker' field
   jint jt = (jint) t;

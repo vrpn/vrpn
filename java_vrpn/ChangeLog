@@ -1,3 +1,17 @@
+2002-09-16  David Marshburn  <marshbur@cs.unc.edu>
+
+	* ButtonRemote.java (init):  takes extra params for log file names
+			    (ButtonRemote):  same
+	* ForceDeviceRemote.java (init):  same
+	                         (ForceDeviceRemote):  same
+	* TrackerRemote.java (init):  same
+	                     (TrackerRemote):  same
+	* vrpn_ButtonRemote.cpp (Java_vrpn_ButtonRemote_init):  same
+	* vrpn_ForceDeviceRemote.cpp (Java_vrpn_ForceDeviceRemote_init):  same
+	* vrpn_TrackerRemote.cpp (Java_vrpn_TrackerRemote_init):  same
+	* TrackerRemote.dsp:  include java_vrpn.h
+	
+
 2002-09-15  David Marshburn  <marshbur@cs.unc.edu>
 
 	* AnalogRemote.java:  added another data member to hold

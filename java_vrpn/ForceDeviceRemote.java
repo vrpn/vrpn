@@ -64,9 +64,15 @@ public class ForceDeviceRemote implements Runnable
 	 *		If the force device could not be created because of problems with
 	 *      its native code and linking.
 	 */
-	public ForceDeviceRemote( String name ) throws InstantiationException
+	public ForceDeviceRemote( String name, String localInLogfileName, String localOutLogfileName,
+						  String remoteInLogfileName, String remoteOutLogfileName ) 
+		throws InstantiationException
 	{
-		try	{  this.init( name );  }
+		try	
+		{  
+			this.init( name, localInLogfileName, localOutLogfileName, 
+					   remoteInLogfileName, remoteOutLogfileName );  
+		}
 		catch( java.lang.UnsatisfiedLinkError e )
 		{  
 			System.out.println( "Error initializing remote forece device " + name + "." );
@@ -285,7 +291,9 @@ public class ForceDeviceRemote implements Runnable
 	 * @return <code>true</code> if the force device was connected successfully, 
 	 *			<code>false</code> otherwise.
 	 */
-	protected native boolean init( String name );
+	protected native boolean init( String name, String localInLogfileName, 
+								   String localOutLogfileName, String remoteInLogfileName,
+								   String remoteOutLogfileName );
 
 	/**
 	 * This should only be called from the method finalize()

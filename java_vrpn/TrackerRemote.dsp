@@ -100,6 +100,10 @@ SOURCE=.\vrpn_TrackerRemote.cpp
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
+SOURCE=.\java_vrpn.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_TrackerRemote.h
 # End Source File
 # End Group

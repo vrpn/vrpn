@@ -25,9 +25,15 @@ public class ButtonRemote implements Runnable
 	///////////////////
 	// Public methods
 	
-	public ButtonRemote( String name ) throws InstantiationException
+	public ButtonRemote( String name, String localInLogfileName, String localOutLogfileName,
+						 String remoteInLogfileName, String remoteOutLogfileName ) 
+		throws InstantiationException
 	{
-		try { this.init( name ); }
+		try 
+		{ 
+			this.init( name, localInLogfileName, localOutLogfileName, 
+					   remoteInLogfileName, remoteOutLogfileName ); 
+		}
 		catch( java.lang.UnsatisfiedLinkError e )
 		{  
 			System.out.println( "Error initializing remote button " + name + "." );
@@ -139,7 +145,9 @@ public class ButtonRemote implements Runnable
 	 * @return <code>true</code> if the button was connected successfully, 
 	 *			<code>false</code> otherwise.
 	 */
-	protected native boolean init( String name );
+	protected native boolean init( String name, String localInLogfileName, 
+								   String localOutLogfileName, String remoteInLogfileName,
+								   String remoteOutLogfileName );
 
 	/**
 	 * This should only be called from the method finalize()

@@ -129,9 +129,11 @@ Java_vrpn_ButtonRemote_mainloop( JNIEnv* env, jobject jobj )
 
 
 JNIEXPORT jboolean JNICALL 
-Java_vrpn_ButtonRemote_init( JNIEnv* env, jobject jobj, jstring jname )
+Java_vrpn_ButtonRemote_init( JNIEnv* env, jobject jobj, jstring jname, 
+							 jstring jlocalInLogfileName, jstring jlocalOutLogfileName,
+							 jstring jremoteInLogfileName, jstring jremoteOutLogfileName )
 {
-
+  
   // look up where to store the button pointer
   jclass jcls = env->GetObjectClass( jobj );
   jfieldID jfid = env->GetFieldID( jcls, "native_button", "I" );
@@ -148,10 +150,25 @@ Java_vrpn_ButtonRemote_init( JNIEnv* env, jobject jobj, jstring jname )
 
   // create the button
   const char* name = env->GetStringUTFChars( jname, NULL );
-  vrpn_Button_Remote* t = new vrpn_Button_Remote( name );
+  const char* local_in_logfile_name = jlocalInLogfileName == NULL ? NULL :
+	  env->GetStringUTFChars( jlocalInLogfileName, NULL );
+  const char* local_out_logfile_name = jlocalOutLogfileName == NULL ? NULL :
+	  env->GetStringUTFChars( jlocalOutLogfileName, NULL );
+  const char* remote_in_logfile_name = jremoteInLogfileName == NULL ? NULL :
+	  env->GetStringUTFChars( jremoteInLogfileName, NULL );
+  const char* remote_out_logfile_name = jremoteOutLogfileName == NULL ? NULL :
+	  env->GetStringUTFChars( jremoteOutLogfileName, NULL );
+  vrpn_Connection* conn 
+	  = vrpn_get_connection_by_name( name, local_in_logfile_name, local_out_logfile_name,
+									 remote_in_logfile_name, remote_out_logfile_name );
+  vrpn_Button_Remote* t = new vrpn_Button_Remote( name, conn );
   t->register_change_handler( jobj, handle_button_change );
   env->ReleaseStringUTFChars( jname, name );
-  
+  env->ReleaseStringUTFChars( jlocalInLogfileName, local_in_logfile_name );
+  env->ReleaseStringUTFChars( jlocalOutLogfileName, local_out_logfile_name );
+  env->ReleaseStringUTFChars( jremoteInLogfileName, remote_in_logfile_name );
+  env->ReleaseStringUTFChars( jremoteOutLogfileName, remote_out_logfile_name );
+ 
   // now stash 't' in the jobj's 'native_button' field
   jint jt = (jint) t;
   env->SetIntField( jobj, jfid, jt );

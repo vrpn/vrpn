@@ -60,13 +60,28 @@ public class TrackerRemote implements Runnable
 	//
 	
 	/**
+	 * @param name The name of the tracker to connect to (e.g., Tracker0@localhost)
+	 * @param localInLogfileName The name of a logfile to save incoming messages.  Use <code>
+	 * null</code> if no such log is desired.
+	 * @param localOutLogfileName The name of a logfile to save outgoing messages.  Use <code>
+	 * null</code> if no such log is desired.
+	 * @param remoteInLogfileName The name of a logfile in which the server <code>name</code>
+	 * should save incoming messages.  Use <code>null</code> if no such log is desired.
+	 * @param remoteOutLogfileName  The name of a logfile in which the server <code>name</code>
+	 * should save outgoing messages.  Use <code>null</code> if no such log is desired.
 	 * @exception java.lang.InstantiationException
 	 *		If the tracker could not be created because of problems with
 	 *      its native code and linking.
 	 */
-	public TrackerRemote( String name ) throws InstantiationException
+	public TrackerRemote( String name, String localInLogfileName, String localOutLogfileName,
+						  String remoteInLogfileName, String remoteOutLogfileName ) 
+		throws InstantiationException
 	{
-		try	{  this.init( name );  }
+		try	
+		{  
+			this.init( name, localInLogfileName, localOutLogfileName, 
+					   remoteInLogfileName, remoteOutLogfileName );  
+		}
 		catch( java.lang.UnsatisfiedLinkError e )
 		{  
 			System.out.println( "Error initializing remote tracker " + name + "." );
@@ -272,7 +287,9 @@ public class TrackerRemote implements Runnable
 	 * @return <code>true</code> if the tracker was connected successfully, 
 	 *			<code>false</code> otherwise.
 	 */
-	protected native boolean init( String name );
+	protected native boolean init( String name, String localInLogfileName, 
+								   String localOutLogfileName, String remoteInLogfileName,
+								   String remoteOutLogfileName );
 
 	/**
 	 * This should only be called from the method finalize()

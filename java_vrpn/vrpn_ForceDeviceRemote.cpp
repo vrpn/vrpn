@@ -200,7 +200,9 @@ void handle_force_error( void* userdata, const vrpn_FORCEERRORCB info )
  * Signature: (Ljava/lang/String;)Z
  */
 JNIEXPORT jboolean JNICALL 
-Java_vrpn_ForceDeviceRemote_init( JNIEnv* env, jobject jobj, jstring jname )
+Java_vrpn_ForceDeviceRemote_init( JNIEnv* env, jobject jobj, jstring jname, 
+								  jstring jlocalInLogfileName, jstring jlocalOutLogfileName,
+								  jstring jremoteInLogfileName, jstring jremoteOutLogfileName )
 {
 
   // look up where to store the force device pointer
@@ -219,11 +221,26 @@ Java_vrpn_ForceDeviceRemote_init( JNIEnv* env, jobject jobj, jstring jname )
 
   // create the force device
   const char* name = env->GetStringUTFChars( jname, NULL );
-  vrpn_ForceDevice_Remote* f = new vrpn_ForceDevice_Remote( name );
+  const char* local_in_logfile_name = jlocalInLogfileName == NULL ? NULL :
+	  env->GetStringUTFChars( jlocalInLogfileName, NULL );
+  const char* local_out_logfile_name = jlocalOutLogfileName == NULL ? NULL :
+	  env->GetStringUTFChars( jlocalOutLogfileName, NULL );
+  const char* remote_in_logfile_name = jremoteInLogfileName == NULL ? NULL :
+	  env->GetStringUTFChars( jremoteInLogfileName, NULL );
+  const char* remote_out_logfile_name = jremoteOutLogfileName == NULL ? NULL :
+	  env->GetStringUTFChars( jremoteOutLogfileName, NULL );
+  vrpn_Connection* conn 
+	  = vrpn_get_connection_by_name( name, local_in_logfile_name, local_out_logfile_name,
+									 remote_in_logfile_name, remote_out_logfile_name );
+  vrpn_ForceDevice_Remote* f = new vrpn_ForceDevice_Remote( name, conn );
   f->register_force_change_handler( jobj, handle_force_change );
   f->register_scp_change_handler( jobj, handle_scp_change );
   f->register_error_handler( jobj, handle_force_error );
   env->ReleaseStringUTFChars( jname, name );
+  env->ReleaseStringUTFChars( jlocalInLogfileName, local_in_logfile_name );
+  env->ReleaseStringUTFChars( jlocalOutLogfileName, local_out_logfile_name );
+  env->ReleaseStringUTFChars( jremoteInLogfileName, remote_in_logfile_name );
+  env->ReleaseStringUTFChars( jremoteOutLogfileName, remote_out_logfile_name );
   
   // now stash 'f' in the jobj's 'native_force_device' field
   jint jf = (jint) f;
