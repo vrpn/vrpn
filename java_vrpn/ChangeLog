@@ -5,6 +5,8 @@
 	those committed for AnalogRemoteListener.java on 2002-08-12
 	* ForceDeviceRemoteListener.java:  same
 	* TrackerRemoteListener.java:  same
+	* java_vrpn.vjp:  changes from moving the *Listener classes
+	into the vrpn package.
 
 2002-08-12  David Marshburn  <marshbur@cs.unc.edu>
 
