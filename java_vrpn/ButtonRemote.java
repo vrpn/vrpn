@@ -149,6 +149,10 @@ public class ButtonRemote extends TimerTask
 	///////////////////
 	// data members
 	
+        // this is used by the native code to store a C++ pointer to the
+        // native vrpn_ButtonRemote object
+        protected int native_button = -1;
+
 	// the Timer
 	protected Timer buttonTimer = new Timer( );
 	protected long timerPeriod = 100; // milliseconds
