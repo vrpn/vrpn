@@ -34,6 +34,11 @@
 // This could be fixed by sending an addPeer message.
 //   If sites execute addPeer() while the lock is held, or being requested,
 // we'll break.
+//   - To fix:  send messages, but defer all executions of addPeer until the
+// lock is released.  If we want to be really careful here, on getting an
+// addPeer message when we think the lock is available we should request
+// the lock and then (if we get it) release it immediately, without
+// triggering any user callbacks.  Sounds tough to code?
 
 // Handling more than 2 sites in a mutex requires multiconnection servers.
 // It's been tested with 1-3 sites, and works fine.
@@ -54,7 +59,9 @@ class vrpn_Mutex {
   public:
 
     vrpn_Mutex (const char * name, int port, const char * NICaddress = NULL);
+
     ~vrpn_Mutex (void);
+      ///< If isHeldLocally(), calls release().
 
 
     // ACCESSORS
@@ -85,7 +92,8 @@ class vrpn_Mutex {
       ///< Request the distributed lock.  Does nothing if !isAvailable().
 
     void release (void);
-      ///< Release the distributed lock.  Does nothing if !isHeldLocally().
+      ///< Release the distributed lock.  Does nothing if !isHeldLocally()
+      ///< and there isn't a request pending.
 
     void addPeer (const char * stationName);
       ///< Takes a VRPN station name of the form "<host>:<port>".
@@ -113,7 +121,7 @@ class vrpn_Mutex {
 
     int d_numPeers;
     int d_numConnectionsAllocated;
-      ///< Dynamic array size for d_peer.
+      ///< Dynamic array size for d_peer and d_peerGrantedLock.
 
     vrpn_uint32 d_myIP;
     vrpn_uint32 d_myPort;
@@ -125,11 +133,14 @@ class vrpn_Mutex {
     vrpn_int32 d_release_type;
     vrpn_int32 d_grantRequest_type;
     vrpn_int32 d_denyRequest_type;
+    //vrpn_int32 d_losePeer_type;
 
     static int handle_request (void *, vrpn_HANDLERPARAM);
     static int handle_release (void *, vrpn_HANDLERPARAM);
     static int handle_grantRequest (void *, vrpn_HANDLERPARAM);
     static int handle_denyRequest (void *, vrpn_HANDLERPARAM);
+
+    static int handle_losePeer (void *, vrpn_HANDLERPARAM);
 
     void sendRequest (vrpn_Connection *);
     void sendRelease (vrpn_Connection *);
@@ -148,7 +159,18 @@ class vrpn_Mutex {
     mutexCallback * d_reqDeniedCB;
     mutexCallback * d_releaseCB;
 
+    struct peerData {
+      vrpn_uint32 IPaddress;
+      vrpn_uint32 port;
+      vrpn_bool grantedLock;
+    };
+
+    peerData * d_peerData;
+      ///< Needed only to clean up when a peer shuts down (mid-request).
+      ///< It isn't currently feasible to have all this data, so instead
+      ///< we abort requests that were interrupted by a shutdown.
 };
+
 
 #endif  // VRPN_MUTEX_H
 

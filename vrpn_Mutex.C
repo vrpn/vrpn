@@ -24,7 +24,34 @@
 //
 // This is an ugly n^2 implementation, when we could do it in 2n, but the
 // data structures would be a little more complex - we'd have to have a
-// mapping from IP numbers to vrpn_Connections in d_peer[].
+// mapping from IP numbers to vrpn_Connections in d_peer[].  What I'd probably
+// do would be abandon IP numbers and ports and just use lexographical
+// ordering of station names.  But then we'd have to ensure that every 
+// instance used the same station name (evans vs. evans.cs.unc.edu vs.
+// evans.cs.unc.edu:4500) for each peer, which is ugly.
+
+
+
+/*
+
+  State diagram:
+
+                             release()
+          +--------------------------------------------+
+          |                                            |
+          v                                            |
+                     request()
+       AVAILABLE  -------------->  REQUESTING  ---->  OURS
+
+          | ^                         |
+          v |                         |
+                                      |
+      HELD_REMOTELY   <---------------+
+
+*/
+
+
+
 
 #define VERBOSE
 
@@ -33,6 +60,12 @@ static const char * request_type = "vrpn Mutex Request";
 static const char * release_type = "vrpn Mutex Release";
 static const char * grantRequest_type = "vrpn Mutex Grant Request";
 static const char * denyRequest_type = "vrpn Mutex Deny Request";
+//static const char * losePeer_type = "vrpn Mutex Lose Peer";
+
+struct losePeerData {
+  vrpn_Connection * connection;
+  vrpn_Mutex * mutex;
+};
 
 // Mostly copied from vrpn_Connection.C's vrpn_getmyIP() and some man pages.
 // Should return in host order.
@@ -79,6 +112,10 @@ static vrpn_uint32 getmyIP (const char * NICaddress = NULL) {
   return ntohl(in.s_addr);
 }
 
+
+
+
+
 vrpn_Mutex::vrpn_Mutex (const char * name, int port, const char * NICaddress) :
     d_state (AVAILABLE),
     d_peer (NULL),
@@ -90,7 +127,8 @@ vrpn_Mutex::vrpn_Mutex (const char * name, int port, const char * NICaddress) :
     d_holderPort (-1),
     d_reqGrantedCB (NULL),
     d_reqDeniedCB (NULL),
-    d_releaseCB (NULL)
+    d_releaseCB (NULL),
+    d_peerData (NULL)
 {
 
   if (!name) {
@@ -112,6 +150,7 @@ vrpn_Mutex::vrpn_Mutex (const char * name, int port, const char * NICaddress) :
   d_release_type = d_server->register_message_type(release_type);
   d_grantRequest_type = d_server->register_message_type(grantRequest_type);
   d_denyRequest_type = d_server->register_message_type(denyRequest_type);
+  //d_losePeer_type = d_server->register_message_type(losePeer_type);
 
   d_server->register_handler(d_request_type, handle_request, this, d_myId);
   d_server->register_handler(d_release_type, handle_release, this, d_myId);
@@ -119,9 +158,27 @@ vrpn_Mutex::vrpn_Mutex (const char * name, int port, const char * NICaddress) :
                              this, d_myId);
   d_server->register_handler(d_denyRequest_type, handle_denyRequest,
                              this, d_myId);
+
 }
 
 vrpn_Mutex::~vrpn_Mutex (void) {
+
+  // Send an explicit message so they know we're shutting down, not
+  // just disconnecting temporarily and will be back.
+
+  // Probably a safer way to do it would be to do addPeer and losePeer
+  // implicitly through dropped_connection/got_connection on d_server
+  // and d_peer?
+
+  // There is no good solution!
+
+  // Possible improvement:  if we lose our connection and regain it,
+  // send some sort of announcement message to everybody who used to
+  // be our peer so they add us back into their tables.
+
+  if (isHeldLocally()) {
+    release();
+  }
 
   if (d_mutexName) {
     delete [] d_mutexName;
@@ -130,6 +187,10 @@ vrpn_Mutex::~vrpn_Mutex (void) {
     delete [] d_peer;
   }
 }
+
+
+
+
 
 
 
@@ -151,16 +212,31 @@ int vrpn_Mutex::numPeers (void) const {
 
 
 
+
+
+
+
 void vrpn_Mutex::mainloop (void) {
+  mutexCallback * cb;
   int i;
+
   d_server->mainloop();
   for (i = 0; i < d_numPeers; i++) {
     d_peer[i]->mainloop();
   }
+
+  if ((d_state == REQUESTING) &&
+      (d_numPeersGrantingLock == d_numPeers)) {
+    d_state = OURS;
+
+    // trigger callbacks
+    for (cb = d_reqGrantedCB;  cb;  cb = cb->next) {
+      (cb->f)(cb->userdata);
+    }
+  }
 }
 
 void vrpn_Mutex::request (void) {
-  mutexCallback * cb;
   int i;
 
   // No point in sending requests if it's not currently available.
@@ -168,24 +244,13 @@ void vrpn_Mutex::request (void) {
     return;
   }
 
-  if (!d_numPeers) {
-
-    // This duplicates code in handle_grantRequest().  To avoid the
-    // duplication I suppose we could put it in mainloop()...
-
-    d_state = OURS;
-
-    // trigger callbacks
-    for (cb = d_reqGrantedCB;  cb;  cb = cb->next) {
-      (cb->f)(cb->userdata);
-    }
-
-    return;
-  }
+  // This will be checked and acted upon if necessary (if we have no
+  // peers) the next time we wend our way out of mainloop().
 
   d_state = REQUESTING;
   d_numPeersGrantingLock = 0;
   for (i = 0; i < d_numPeers; i++) {
+    //d_peerData[i] = vrpn_false;
     sendRequest(d_peer[i]);
   }
 
@@ -220,6 +285,8 @@ void vrpn_Mutex::release (void) {
 
 void vrpn_Mutex::addPeer (const char * stationName) {
   vrpn_Connection ** newc;
+  peerData * newg;
+  losePeerData * d;
   int i;
 
   // complex
@@ -227,21 +294,41 @@ void vrpn_Mutex::addPeer (const char * stationName) {
 
     // reallocate arrays
     newc = new vrpn_Connection * [2 + 2 * d_numConnectionsAllocated];
-    if (!newc) {
+    newg = new peerData [2 + 2 * d_numConnectionsAllocated];
+    if (!newc || !newg) {
       fprintf(stderr, "vrpn_Mutex::addPeer:  Out of memory.\n");
       return;
     }
     for (i = 0; i < d_numPeers; i++) {
       newc[i] = d_peer[i];
+      newg[i] = d_peerData[i];
     }
     if (d_peer) {
       delete [] d_peer;
     }
+    if (d_peerData) {
+      delete [] d_peerData;
+    }
     d_peer = newc;
+    d_peerData = newg;
   }
   d_peer[d_numPeers] = vrpn_get_connection_by_name(stationName);
-  d_numPeers++;
+  //d_peerData[d_numPeers].grantedLock = vrpn_false;
 
+  d = new losePeerData;
+  if (!d) {
+    fprintf(stderr, "vrpn_Mutex::addPeer:  Out of memory.\n");
+    return;
+  }
+  d->connection = d_peer[d_numPeers];
+  d->mutex = this;
+  vrpn_int32 control;
+  vrpn_int32 drop;
+  control = d_peer[d_numPeers]->register_sender(vrpn_CONTROL);
+  drop = d_peer[d_numPeers]->register_message_type(vrpn_dropped_connection);
+  d_peer[d_numPeers]->register_handler(drop, handle_losePeer, d, control);
+
+  d_numPeers++;
 }
 
 void vrpn_Mutex::addRequestGrantedCallback (void * ud, int (* f) (void *)) {
@@ -304,7 +391,7 @@ int vrpn_Mutex::handle_request (void * userdata, vrpn_HANDLERPARAM p) {
   in_addr nad;
   nad.s_addr = htonl(senderIP);
   fprintf(stderr, "vrpn_Mutex::handle_request:  got one from %s port %d.\n",
-  inet_ntoa(nad), senderPort);
+          inet_ntoa(nad), senderPort);
 #endif
 
   // If several nodes request the lock at once, ties are broken in favor
@@ -348,7 +435,7 @@ int vrpn_Mutex::handle_release (void * userdata, vrpn_HANDLERPARAM p) {
 
   nad.s_addr = senderIP;
   fprintf(stderr, "vrpn_Mutex::handle_release:  got one from %s port %d.\n",
-  inet_ntoa(nad), senderPort);
+          inet_ntoa(nad), senderPort);
 #endif
 
   if ((senderIP != me->d_holderIP) ||
@@ -372,7 +459,6 @@ int vrpn_Mutex::handle_release (void * userdata, vrpn_HANDLERPARAM p) {
 // static
 int vrpn_Mutex::handle_grantRequest (void * userdata, vrpn_HANDLERPARAM p) {
   vrpn_Mutex * me = (vrpn_Mutex *) userdata;
-  mutexCallback * cb;
   const char * b = p.buffer;
   vrpn_uint32 senderIP;
   vrpn_uint32 senderPort;
@@ -384,8 +470,8 @@ int vrpn_Mutex::handle_grantRequest (void * userdata, vrpn_HANDLERPARAM p) {
   in_addr nad;
   nad.s_addr = senderIP;
   fprintf(stderr, "vrpn_Mutex::handle_grantRequest:  "
-  "got one for %s port %d.\n",
-  inet_ntoa(nad), senderPort);
+                  "got one for %s port %d.\n",
+                  inet_ntoa(nad), senderPort);
 #endif
 
   if ((senderIP != me->d_myIP) || (senderPort != me->d_myPort)) {
@@ -397,18 +483,8 @@ int vrpn_Mutex::handle_grantRequest (void * userdata, vrpn_HANDLERPARAM p) {
 
   me->d_numPeersGrantingLock++;
 
-  if (me->d_numPeersGrantingLock < me->d_numPeers) {
-    return 0;
-  }
-
-  // Lock has been granted by everybody (including me, thus the +1)
-
-  me->d_state = OURS;
-
-  // trigger callbacks
-  for (cb = me->d_reqGrantedCB;  cb;  cb = cb->next) {
-    (cb->f)(cb->userdata);
-  }
+  // This will be checked and acted upon if necessary as we wend our way
+  // out of mainloop().
 
   return 0;
 }
@@ -428,8 +504,8 @@ int vrpn_Mutex::handle_denyRequest (void * userdata, vrpn_HANDLERPARAM p) {
   in_addr nad;
   nad.s_addr = senderIP;
   fprintf(stderr, "vrpn_Mutex::handle_denyRequest:  "
-  "got one for %s port %d.\n",
-  inet_ntoa(nad), senderPort);
+                  "got one for %s port %d.\n",
+                  inet_ntoa(nad), senderPort);
 #endif
 
   if ((senderIP != me->d_myIP) || (senderPort != me->d_myPort)) {
@@ -442,6 +518,40 @@ int vrpn_Mutex::handle_denyRequest (void * userdata, vrpn_HANDLERPARAM p) {
   for (cb = me->d_reqDeniedCB;  cb;  cb = cb->next) {
     (cb->f)(cb->userdata);
   }
+
+  return 0;
+}
+
+// static
+int vrpn_Mutex::handle_losePeer (void * userdata, vrpn_HANDLERPARAM p) {
+  losePeerData * data = (losePeerData *) userdata;
+  vrpn_Mutex * me = data->mutex;
+  vrpn_Connection * c = data->connection;
+  int i;
+
+  // Need to abort a request since we don't have enough data to correctly
+  // compensate for losing a peer mid-request.
+
+  if (me->d_state == REQUESTING) {
+    me->release();
+  }
+
+  for (i = 0; i < me->d_numPeers; i++) {
+    if (c == me->d_peer[i]) {
+      break;
+    }
+  }
+  if (i == me->d_numPeers) {
+    fprintf(stderr, "vrpn_Mutex::handle_losePeer:  Can't find lost peer.\n");
+    return 0;  // -1?
+  }
+
+fprintf(stderr, "vrpn_Mutex::handle_losePeer:  lost peer #%d.\n", i);
+
+  me->d_numPeers--;
+  me->d_peer[i] = me->d_peer[me->d_numPeers];
+
+  delete data;
 
   return 0;
 }
