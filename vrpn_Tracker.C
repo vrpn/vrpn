@@ -172,6 +172,7 @@ int vrpn_drain_output_buffer(int comm)
 vrpn_Tracker::vrpn_Tracker(char *name, vrpn_Connection *c) {
 	FILE	*config_file;
 
+
 	// Set our connection to the one passed in
 	connection = c;
 
@@ -189,6 +190,10 @@ vrpn_Tracker::vrpn_Tracker(char *name, vrpn_Connection *c) {
 						"Request Tracker To Room");
 	  request_u2s_m_id = connection->register_message_type(
 						"Request Unit To Sensor");
+	  workspace_m_id = connection->register_message_type(
+							"Tracker Workspace");
+	  request_workspace_m_id = connection->register_message_type(
+						"Request Tracker Workspace");
 	}
 
 	// Set the current time to zero, just to have something there
@@ -232,6 +237,10 @@ vrpn_Tracker::vrpn_Tracker(char *name, vrpn_Connection *c) {
 	    unit2sensor_quat[sens][2] = 0.0;
 	    unit2sensor_quat[sens][3] = 1.0;
 	}
+
+	workspace_min[0] = workspace_min[1] = workspace_min[2] = -0.5;
+	workspace_max[0] = workspace_max[1] = workspace_max[2] = 0.5;
+
 	// replace defaults with values from "vrpn_Tracker.cfg" file
 	// if it exists
 	if ((config_file = fopen(tracker_cfg_file_name, "r")) == NULL) {
@@ -252,7 +261,7 @@ int vrpn_Tracker::read_config_file(FILE *config_file, char *tracker_name)
     char	line[512];	// line read from input file
     int		num_sens;
     int 	which_sensor;
-    float	f[7];
+    float	f[14];
     int 	i,j;
 
     // Read lines from the file until we run out
@@ -262,15 +271,23 @@ int vrpn_Tracker::read_config_file(FILE *config_file, char *tracker_name)
 		 fprintf(stderr,"Line too long in config file: %s\n",line);
 		 return -1;
 	}
-	// find 
-	if (!(strncmp(line,tracker_name,strlen(tracker_name)))) {
-	    // get the tracker2room xform
+	// find tracker name in file 
+	if ((!(strncmp(line,tracker_name,strlen(tracker_name)))) && 
+		(isspace(line[strlen(tracker_name)]) )) {
+	    // get the tracker2room xform and the workspace volume
 	    if (fgets(line, sizeof(line), config_file) == NULL) break;
 	    if (sscanf(line, "%f%f%f", &f[0], &f[1], &f[2]) != 3) break;
 	    if (fgets(line, sizeof(line), config_file) == NULL) break;
 	    if (sscanf(line, "%f%f%f%f",&f[3],&f[4], &f[5], &f[6]) != 4) break;
-	    for (i = 0; i < 3; i++)
+	    if (fgets(line, sizeof(line), config_file) == NULL) break;
+	    if (sscanf(line, "%f%f%f%f%f%f",&f[7],&f[8],&f[9],&f[10],&f[11],
+							&f[12]) != 6) break;
+
+	    for (i = 0; i < 3; i++){
 		tracker2room[i] = f[i];
+		workspace_min[i] = f[i+7];
+		workspace_max[i] = f[i+10];
+	    }
 	    for (i = 0; i < 4; i++)
 		tracker2room_quat[i] = f[i+3];
 	    // get the number of sensors
@@ -310,7 +327,7 @@ void vrpn_Tracker::print_latest_report(void)
    printf("Quat     :%lf, %lf, %lf, %lf\n", quat[0],quat[1],quat[2],quat[3]);
 }
 
-int vrpn_Tracker::register_xform_request_handlers(void)
+int vrpn_Tracker::register_server_handlers(void)
 {
     if (connection){
  	if (connection->register_handler(request_t2r_m_id,
@@ -321,6 +338,11 @@ int vrpn_Tracker::register_xform_request_handlers(void)
         if (connection->register_handler(request_u2s_m_id,
             handle_u2s_request, this, my_id)){
                 fprintf(stderr,"vrpn_Tracker:can't register u2s handler\n");
+		return -1;
+	}
+	if (connection->register_handler(request_workspace_m_id,
+	    handle_workspace_request, this, my_id)){
+		fprintf(stderr,"vrpn_Tracker:can't register wrkspace hndler\n");
 		return -1;
 	}
     }
@@ -404,6 +426,31 @@ int vrpn_Tracker::handle_u2s_request(void *userdata, vrpn_HANDLERPARAM p)
     return 0;
 }
 
+int vrpn_Tracker::handle_workspace_request(void *userdata, vrpn_HANDLERPARAM p)
+{
+    struct timeval current_time;
+    char    msgbuf[1000];
+    int     len;
+    int i;
+
+    vrpn_Tracker *me = (vrpn_Tracker *)userdata;
+    gettimeofday(&current_time, NULL);
+    me->timestamp.tv_sec = current_time.tv_sec;
+    me->timestamp.tv_usec = current_time.tv_usec;
+
+    // our workspace was read in by the constructor
+
+    if (me->connection){
+        len = me->encode_workspace_to(msgbuf);
+        if (me->connection->pack_message(len, me->timestamp,
+            me->workspace_m_id, me->my_id,
+            msgbuf, vrpn_CONNECTION_RELIABLE)) {
+            fprintf(stderr, "vrpn_Tracker: cannot write workspace message\n");
+        }
+    }
+    return 0;
+}
+
 vrpn_Connection *vrpn_Tracker::connectionPtr() {
   return connection;
 }
@@ -453,6 +500,25 @@ int	vrpn_Tracker::encode_unit2sensor_to(char *buf)
     return index*sizeof(double);
 }
 
+int	vrpn_Tracker::encode_workspace_to(char *buf)
+{
+    int i;
+    double *dBuf = (double *)buf;
+    int index = 0;
+
+    for (i = 0; i < 3; i++) {
+        dBuf[index++] = *(double *)(&workspace_min[i]);
+    }
+    for (i = 0; i < 3; i++) {
+        dBuf[index++] = *(double *)(&workspace_max[i]);
+    }
+
+    // convert the doubles
+    for (i = 1; i < index; i++) {
+        dBuf[i] = htond(dBuf[i]);
+    }
+    return index*sizeof(double);
+}
 
 // NOTE: you need to be sure that if you are sending doubles then 
 //       the entire array needs to remain aligned to 8 byte boundaries
@@ -626,6 +692,7 @@ int vrpn_Tracker_Serial::read_available_characters(unsigned char *buffer,
 vrpn_Tracker_Canned::vrpn_Tracker_Canned (char * name, vrpn_Connection * c,
                                           char * datafile) 
   : vrpn_Tracker(name, c) {
+    register_server_handlers();
     fp =fopen(datafile,"r");
     if (fp == NULL) {
       perror("can't open datafile:");
@@ -709,6 +776,7 @@ vrpn_Tracker_NULL::vrpn_Tracker_NULL(char *name, vrpn_Connection *c,
 	int sensors, float Hz) : vrpn_Tracker(name, c), update_rate(Hz),
 	num_sensors(sensors)
 {
+	register_server_handlers();
 	// Nothing left to do
 }
 
@@ -764,6 +832,7 @@ void	vrpn_Tracker_NULL::mainloop(void)
 vrpn_Tracker_Serial::vrpn_Tracker_Serial(char *name, vrpn_Connection *c,
 	char *port, long baud): vrpn_Tracker(name, c)
 {
+   register_server_handlers();
    // Find out the port name and baud rate
    if (port == NULL) {
 	fprintf(stderr,"vrpn_Tracker_Serial: NULL port name\n");
@@ -798,6 +867,8 @@ vrpn_Tracker_Remote::vrpn_Tracker_Remote(char *name ) :
 		accchange_list[i] = NULL;
 		unit2sensorchange_list[i] = NULL;
 	}
+	workspacechange_list = NULL;
+
 	// Make sure that we have a valid connection
 	if (connection == NULL) {
 		fprintf(stderr,"vrpn_Tracker_Remote: No connection\n");
@@ -841,6 +912,14 @@ vrpn_Tracker_Remote::vrpn_Tracker_Remote(char *name ) :
             handle_unit2sensor_change_message, this, my_id)) {
                 fprintf(stderr,
                   "vrpn_Tracker_Remote: can't register unit2sensor handler\n");
+                connection = NULL;
+        }
+
+        // Register a handler for the workspace change callback
+        if (connection->register_handler(workspace_m_id,
+            handle_workspace_change_message, this, my_id)) {
+                fprintf(stderr,
+                  "vrpn_Tracker_Remote: can't register workspace handler\n");
                 connection = NULL;
         }
 
@@ -1138,6 +1217,35 @@ int vrpn_Tracker_Remote::register_change_handler(void *userdata,
         return 0;
 }
 
+int vrpn_Tracker_Remote::register_change_handler(void *userdata,
+		vrpn_TRACKERWORKSPACECHANGEHANDLER handler)
+{
+	vrpn_TRACKERWORKSPACECHANGELIST	*new_entry;
+
+	// Ensure that the handler is non-NULL
+        if (handler == NULL) {
+                fprintf(stderr, "%s%s", "vrpn_Tracker_Remote:"
+                   	":register_workspace_handler: NULL handler\n");
+                return -1;
+        }
+
+        // Allocate and initialize the new entry
+        if ( (new_entry = new vrpn_TRACKERWORKSPACECHANGELIST) == NULL) {
+                fprintf(stderr, "%s%s", "vrpn_Tracker_Remote:",
+                  ":register_workspace_handler: Out of memory\n");
+                return -1;
+        }
+        new_entry->handler = handler;
+        new_entry->userdata = userdata;
+
+        // Add this handler to the chain at the beginning (don't check to see
+        // if it is already there, since duplication is okay).
+        new_entry->next = workspacechange_list;
+        workspacechange_list = new_entry;
+
+        return 0;
+}
+
 int vrpn_Tracker_Remote::unregister_change_handler(void *userdata,
                         vrpn_TRACKERCHANGEHANDLER handler)
 {
@@ -1339,6 +1447,37 @@ int vrpn_Tracker_Remote::unregister_change_handler(void *userdata,
         delete victim;
 
         return 0;
+}
+
+int vrpn_Tracker_Remote::unregister_change_handler(void *userdata,
+		vrpn_TRACKERWORKSPACECHANGEHANDLER handler)
+{
+	// The pointer at *snitch points to victim
+	vrpn_TRACKERWORKSPACECHANGELIST	*victim, **snitch;
+
+	// Find a handler with this registry in the list (any one will do,
+	// since all duplicates are the same).
+	snitch = &(workspacechange_list);
+	victim = *snitch;
+	while ( (victim != NULL) &&
+		( (victim->handler != handler) ||
+		  (victim->userdata != userdata) )) {
+	    snitch = &( (*snitch)->next );
+	    victim = victim->next;
+	}
+
+	// Make sure we found one
+	if (victim == NULL) {
+		fprintf(stderr,
+		  "vrpn_Tracker_Remote::unregister_workspace_handler: No such handler\n");
+		return -1;
+	}
+
+	// Remove the entry from the list
+	*snitch = victim->next;
+	delete victim;
+
+	return 0;
 }
 
 int vrpn_Tracker_Remote::handle_change_message(void *userdata,
@@ -1590,3 +1729,39 @@ int vrpn_Tracker_Remote::handle_unit2sensor_change_message(void *userdata,
         return 0;
 }
 
+int vrpn_Tracker_Remote::handle_workspace_change_message(void *userdata, 
+	vrpn_HANDLERPARAM p)
+{
+	vrpn_Tracker_Remote *me = (vrpn_Tracker_Remote *)userdata;
+	double *params = (double*)(p.buffer);
+	vrpn_TRACKERWORKSPACECB tp;
+	vrpn_TRACKERWORKSPACECHANGELIST *handler = 
+						me->workspacechange_list;
+	int i;
+
+	// Fill in the parameters to the tracker from the message
+	if (p.payload_len != (6*sizeof(double))) {
+		fprintf(stderr, "vrpn_Tracker: tracker2room message payload");
+		fprintf(stderr, " error\n(got %d, expected %d)\n",
+			p.payload_len, 6*sizeof(double));
+		return -1;
+	}
+	tp.msg_time = p.msg_time;
+	// Typecasting used to get the byte order correct on the doubles
+	// that are coming from the other side.
+        for (i = 0; i < 3; i++) {
+                tp.workspace_min[i] = ntohd(*params++);
+        }
+        for (i = 0; i < 3; i++) {
+                tp.workspace_max[i] =  ntohd(*params++);
+        }
+
+        // Go down the list of callbacks that have been registered.
+        // Fill in the parameter and call each.
+        while (handler != NULL) {
+                handler->handler(handler->userdata, tp);
+                handler = handler->next;
+        }
+
+    return 0;
+}

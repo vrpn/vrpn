@@ -1,5 +1,5 @@
 #include <fstream.h>
-#include <gstbasic.h>
+#include <gstBasic.h>
 #include <gstBoundaryCube.h>
 #include <gstButton.h>
 #include <gstDynamic.h>

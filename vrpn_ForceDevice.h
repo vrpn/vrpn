@@ -11,6 +11,7 @@
 #include "ghost.h"
 #include "plane.h"
 #include "trimesh.h"
+#include "constraint.h"
 #endif
 #include <quat.h>
 #endif
@@ -57,7 +58,8 @@ protected:
         long startTrimesh_message_id;   
         long setVertex_message_id;   
         long setTriangle_message_id;   
-        long finishTrimesh_message_id;   
+        long finishTrimesh_message_id;
+	long set_constraint_message_id;
 
 
 	int   which_plane;
@@ -109,7 +111,7 @@ protected:
 	Plane *cur_plane;
 	Trimesh *trimesh;
 				       
-	gstEffect *effect; 	// this is a force appended to
+	ConstraintEffect *pointConstraint; 	// this is a force appended to
 				// other forces exerted by phantom
   //  vrpn_PHANTOMCB	surface;
 
@@ -134,10 +136,15 @@ protected:
 				       vrpn_HANDLERPARAM p);
 	static int handle_finishTrimesh_message(void *userdata, 
 					 vrpn_HANDLERPARAM p);
+	static int handle_constraint_change_message(void *userdata,
+					vrpn_HANDLERPARAM p);
+					
 public:
 	vrpn_Phantom(char *name, vrpn_Connection *c, float hz=1.0);
 	virtual void mainloop(void);
 	virtual void reset();
+	void resetPHANToM(void);
+	void getPosition(double *vec, double *quat);
 	virtual void print_report(void);
 	virtual int register_change_handler(void *userdata,
 		vrpn_PHANTOMPLANECHANGEHANDLER handler,
@@ -200,12 +207,16 @@ public:
         void finishSendingTrimesh();
   	void stopTrimesh(void);
 
+	void sendConstraint(int enable, float x, float y, float z, float kSpr);
+
 	char *encode_plane(int &len);
 	char *encode_startTrimesh(int &len,int numVerts,int numTris);
         char *encode_vertex(int &len,int vertNum,float x,float y,float z); 
         char *encode_triangle(int &len,int triNum,
 			      int vert0,int vert1,int vert2);	       
         char *encode_finishTrimesh(int &len);
+	char *encode_constraint(int &len, int enable, float x, float y, float z,
+				float kSpr);
 
 	// This routine calls the mainloop of the connection it's on
 	virtual void mainloop(void);

@@ -51,12 +51,13 @@ class vrpn_Tracker {
    int read_config_file(FILE *config_file, char *tracker_name);
    void print_latest_report(void);
    // a tracker server should call the following to register the
-   // default xform request handlers
-   int register_xform_request_handlers(void);
+   // default xform and workspace request handlers
+   int register_server_handlers(void);
    void get_local_t2r(double *vec, double *quat);
    void get_local_u2s(int sensor, double *vec, double *quat);
    static int handle_t2r_request(void *userdata, vrpn_HANDLERPARAM p);
    static int handle_u2s_request(void *userdata, vrpn_HANDLERPARAM p);
+   static int handle_workspace_request(void *userdata, vrpn_HANDLERPARAM p);
    vrpn_Connection *connectionPtr();
 
   protected:
@@ -69,6 +70,8 @@ class vrpn_Tracker {
    long unit2sensor_m_id;		// ID of tracker unit2sensor message
    long request_t2r_m_id;		// ID of tracker2room request message
    long request_u2s_m_id;		// ID of unit2sensor request message
+   long request_workspace_m_id;		// ID of workspace request message
+   long workspace_m_id;			// ID of workspace message
 					
 
    // Description of the next report to go out
@@ -85,6 +88,12 @@ class vrpn_Tracker {
    double unit2sensor[TRACKER_MAX_SENSORS][3];
    double unit2sensor_quat[TRACKER_MAX_SENSORS][4]; // Current u2s xforms
 
+   // bounding box for the tracker workspace (in tracker space)
+   // these are the points with (x,y,z) minimum and maximum
+   // note: we assume the bounding box edges are aligned with the tracker
+   // coordinate system
+   double workspace_min[3], workspace_max[3];
+
    int status;		// What are we doing?
 
    virtual int encode_to(char *buf);	 // Encodes the position report
@@ -93,6 +102,7 @@ class vrpn_Tracker {
    virtual int encode_acc_to(char *buf); // Encodes the acceleration report
    virtual int encode_tracker2room_to(char *buf); // Encodes the tracker2room
    virtual int encode_unit2sensor_to(char *buf); // and unit2sensor xforms
+   virtual int encode_workspace_to(char *buf); // Encodes workspace info
 };
 
 #ifndef VRPN_CLIENT_ONLY
@@ -170,7 +180,7 @@ typedef	struct {
 	struct timeval	msg_time;	// Time of the report
 	long		sensor;		// Which sensor is reporting
 	double		acc[3];		// Acceleration of the sensor
-	double		acc_quat[4];	// Future Future Ori of the sensor
+	double		acc_quat[4];	// ?????
         double          acc_quat_dt;    // delta time (in secs) for acc_quat
         
 } vrpn_TRACKERACCCB;
@@ -198,6 +208,13 @@ typedef struct {
 typedef void (*vrpn_TRACKERUNIT2SENSORCHANGEHANDLER)(void *userdata,
                                         const vrpn_TRACKERUNIT2SENSORCB info);
 
+typedef struct {
+	struct timeval  msg_time;       // Time of the report
+	double workspace_min[3];	// minimum corner of box (tracker CS)
+	double workspace_max[3];	// maximum corner of box (tracker CS)
+} vrpn_TRACKERWORKSPACECB;
+typedef void (*vrpn_TRACKERWORKSPACECHANGEHANDLER)(void *userdata,
+					const vrpn_TRACKERWORKSPACECB info);
 #ifndef VRPN_CLIENT_ONLY
 
 
@@ -249,6 +266,8 @@ class vrpn_Tracker_Remote: public vrpn_Tracker {
 	int request_t2r_xform(void);
 	// request all available sensor from unit xforms
 	int request_u2s_xform(void);
+	// request workspace bounding box
+	int request_workspace(void);
 
 	// This routine calls the mainloop of the connection it's on
 	virtual void mainloop(void);
@@ -310,6 +329,14 @@ class vrpn_Tracker_Remote: public vrpn_Tracker {
                 vrpn_TRACKERUNIT2SENSORCHANGEHANDLER handler, int sensor);
         virtual int unregister_change_handler(void *userdata,
                 vrpn_TRACKERUNIT2SENSORCHANGEHANDLER handler, int sensor);
+
+	// **** to get workspace information ****
+	// (un)Register a callback handler to handle a workspace change
+	virtual int register_change_handler(void *userdata,
+		vrpn_TRACKERWORKSPACECHANGEHANDLER handler);
+	virtual int unregister_change_handler(void *userdata,
+		vrpn_TRACKERWORKSPACECHANGEHANDLER handler);
+
   protected:
 	typedef	struct vrpn_RTCS {
 		void				*userdata;
@@ -343,8 +370,15 @@ class vrpn_Tracker_Remote: public vrpn_Tracker {
 		void                            *userdata;
 		vrpn_TRACKERUNIT2SENSORCHANGEHANDLER handler;
 		struct vrpn_RTU2SCS		*next;
-        } vrpn_TRACKERUNIT2SENSORCHANGELIST;
+    } vrpn_TRACKERUNIT2SENSORCHANGELIST;
 	vrpn_TRACKERUNIT2SENSORCHANGELIST *unit2sensorchange_list[TRACKER_MAX_SENSORS + 1];
+	
+	typedef struct vrpn_RTWSCS {
+		void				*userdata;
+		vrpn_TRACKERWORKSPACECHANGEHANDLER handler;
+		struct vrpn_RTWSCS	*next;
+	} vrpn_TRACKERWORKSPACECHANGELIST;
+	vrpn_TRACKERWORKSPACECHANGELIST *workspacechange_list;
 
 	static int handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
 	static int handle_vel_change_message(void *userdata,
@@ -355,6 +389,8 @@ class vrpn_Tracker_Remote: public vrpn_Tracker {
 			vrpn_HANDLERPARAM p);
 	static int handle_unit2sensor_change_message(void *userdata,
                         vrpn_HANDLERPARAM p);
+	static int handle_workspace_change_message(void *userdata,
+			vrpn_HANDLERPARAM p);
 };
 
 

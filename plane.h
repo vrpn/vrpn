@@ -10,7 +10,7 @@
 #include <gstPHANToM.h>
 #include <gstShape.h>
 */ 
-#include "GHOST.H"
+#include "ghost.h"
 
 class Plane:public gstShape
 {

@@ -38,6 +38,8 @@ public:
   void finishDefining();
   // --------------------------------------------------
 
+  bool getVertex(int vertNum, double &x,double &y,double &z);
+
   void addToScene(gstSeparator *ourScene);
 
   void setSurfaceKspring(double Ks){

@@ -64,9 +64,26 @@ void Trimesh::startDefining(int nV,int nT){
   }
 }
 
-bool Trimesh::setVertex(int vertNum,double x,double y,double z){
-  if(vertNum >= numVerts || vertNum < 0)
+bool Trimesh::getVertex(int vertNum,double &x,double &y,double &z){
+  if(vertNum >= numVerts || vertNum < 0){
+    fprintf(stderr,"Trimesh::error: vertNum=%d out of range [%d,%d)\n",vertNum,0
+,numVerts);
     return false;
+  }
+  else {
+    x = vert[vertNum][0];
+    y = vert[vertNum][1];
+    z = vert[vertNum][2];
+    return true;
+  }
+}
+
+
+bool Trimesh::setVertex(int vertNum,double x,double y,double z){
+  if(vertNum >= numVerts || vertNum < 0){
+    fprintf(stderr,"Trimesh::error: vertNum=%d out of range [%d,%d)\n",vertNum,0,numVerts);
+    return false;
+  }
   else {
     vert[vertNum][0]=x;
     vert[vertNum][1]=y;
@@ -77,7 +94,10 @@ bool Trimesh::setVertex(int vertNum,double x,double y,double z){
 
 bool Trimesh::setTriangle(int triNum,int vert0,int vert1,int vert2){
   if(triNum >=numTris || triNum < 0)
+  {
+    fprintf(stderr,"Trimesh::error: triNum=%d out of range [%d,%d)\n",triNum,0,numTris);
     return false;
+  }
   else {
     tri[triNum][0]=vert0;
     tri[triNum][1]=vert1;

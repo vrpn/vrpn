@@ -45,6 +45,8 @@ vrpn_ForceDevice::vrpn_ForceDevice(char *name, vrpn_Connection *c)
 		finishTrimesh_message_id = 
 		  connection->register_message_type("finishTrimesh");
 		scp_message_id = connection->register_message_type("SCP");
+		set_constraint_message_id = 
+			connection->register_message_type("CONSTRAINT");
 	}
 
 	//set the current time to zero
@@ -178,6 +180,31 @@ void vrpn_Phantom::check_parameters(vrpn_Plane_PHANTOMCB *p)
 
 }
 
+// This function reinitializes the PHANToM (resets the origin)
+void vrpn_Phantom::resetPHANToM(void)
+{
+	scene->stopServoLoop();
+	rootH->removeChild(phantom);
+	delete(phantom);
+	phantom = new gstPHANToM("phantom.ini");
+	rootH->addChild(phantom);
+	Sleep(500);
+	scene->startServoLoop();
+}
+
+
+// return the position of the phantom stylus relative to base
+// coordinate system
+void vrpn_Phantom::getPosition(double *vec, double *orient)
+{
+    for (int i = 0; i < 3; i++){
+		vec[i] = pos[i];
+		orient[i] = quat[i];
+	}
+	orient[3] = quat[3];
+
+}
+
 vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
 		:vrpn_Tracker(name, c),vrpn_Button(name,c),
 		 vrpn_ForceDevice(name,c), update_rate(hz),
@@ -207,7 +234,10 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
   rootH->addChild(phantom);
   hapticScene = new gstSeparator;     
   rootH->addChild(hapticScene);
-	
+
+  pointConstraint = new ConstraintEffect();
+  phantom->setEffect(pointConstraint);
+
   SurfaceKspring= 0.29;
   SurfaceFdynamic = 0.02;
   SurfaceFstatic = 0.03;
@@ -257,11 +287,16 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
 		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
 		vrpn_ForceDevice::connection = NULL;
   }
+  if (vrpn_ForceDevice::connection->register_handler(set_constraint_message_id,
+	handle_constraint_change_message, this, vrpn_ForceDevice::my_id)) {
+		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
+		vrpn_ForceDevice::connection = NULL;
+  }
 
   this->register_plane_change_handler(this, handle_plane);
 
 
-  if (vrpn_Tracker::register_xform_request_handlers())
+  if (vrpn_Tracker::register_server_handlers())
     fprintf(stderr, "vrpn_Phantom: couldn't register xform request handlers\n");
 
 
@@ -289,8 +324,7 @@ void vrpn_Phantom::get_report(void)
 	double angVelNorm, angAccNorm;
 	int i,j;
 
-	gstPoint scpt;
-	gstPoint pt;
+	gstPoint scpt, pt;
 	phantom->getPosition_WC(pt);
 	phantom->getSCP_WC(scpt);
 
@@ -298,9 +332,9 @@ void vrpn_Phantom::get_report(void)
 	scp_pos[0] = x/1000.0;	// convert from mm to m
 	scp_pos[1] = y/1000.0;
 	scp_pos[2] = z/1000.0;
-
+	
 	pt.getValue(x,y,z);
-	pos[0] = x/1000.0;  //converts from millimeter to meter
+	pos[0] = x/1000.0;  //converts from mm to meter
 	pos[1] = y/1000.0;
 	pos[2] = z/1000.0;
 
@@ -321,7 +355,7 @@ void vrpn_Phantom::get_report(void)
 	force[1] = y;
 	force[2] = z;
 
-	// transform rotation matrix to quaternion
+		// transform rotation matrix to quaternion
 	gstTransformMatrix PhantomRot=phantom->getRotationMatrix();	
 	
 	for(i=0; i<4; i++) {
@@ -341,8 +375,8 @@ void vrpn_Phantom::get_report(void)
 	// compute angular velocity quaternion
         phantomAngVel.getValue(x,y,z);
         q_make(v_quat, x, y, z, angVelNorm*dt_vel);
-        // set v_quat = v_quat*p_quat
-        q_mult(v_quat, v_quat, p_quat);
+        // set v_quat = v_quat*quat
+        q_mult(v_quat, v_quat, quat);
 
 
 	for(i=0;i<4;i++ ) {
@@ -410,7 +444,7 @@ void vrpn_Phantom::mainloop(void) {
         if(vrpn_Tracker::connection) {
             len = vrpn_Tracker::encode_vel_to(msgbuf);
             if(vrpn_Tracker::connection->pack_message(len,
-                timestamp,vrpn_Tracker::accel_m_id,
+                timestamp,vrpn_Tracker::velocity_m_id,
                 vrpn_Tracker::my_id, msgbuf,vrpn_CONNECTION_LOW_LATENCY)) {
                     fprintf(stderr,"Phantom: cannot write message: tossing\n");
             }
@@ -419,7 +453,7 @@ void vrpn_Phantom::mainloop(void) {
 /*        if (vrpn_Tracker::connection) {
             len = vrpn_Tracker::encode_acc_to(msgbuf);
             if(vrpn_Tracker::connection->pack_message(len,
-                timestamp,vrpn_Tracker::velocity_m_id,
+                timestamp,vrpn_Tracker::acc_m_id,
                 vrpn_Tracker::my_id, msgbuf,vrpn_CONNECTION_LOW_LATENCY)) {
                     fprintf(stderr,"Phantom: cannot write message: tossing\n");
             }
@@ -451,6 +485,9 @@ void vrpn_Phantom::mainloop(void) {
 void vrpn_Phantom::reset(){
 	if(trimesh->displayStatus())
 		trimesh->clear();
+	for (int i = 0; i < MAXPLANE; i++)
+	   if (planes[i]) planes[i]->setInEffect(FALSE);
+	phantom->stopEffect();
 }
 
 int vrpn_Phantom::register_change_handler(void *userdata,
@@ -626,8 +663,10 @@ int vrpn_Phantom::handle_setVertex_message(void *userdata,
     
   if(me->trimesh->setVertex(vertNum,x*1000.0,y*1000.0,z*1000.0))
     return 0;
-  else
+  else{
+      fprintf(stderr,"vrpn_Phantom: error in trimesh::setVertex\n");
     return -1;
+  }
 }
 
 int vrpn_Phantom::handle_setTriangle_message(void *userdata, 
@@ -657,8 +696,10 @@ int vrpn_Phantom::handle_setTriangle_message(void *userdata,
 
   if(me->trimesh->setTriangle(triNum,v0,v1,v2))
     return 0;
-  else
+  else{
+      fprintf(stderr,"vrpn_Phantom: error in trimesh::setTriangle\n");
     return -1;
+  }
 }
 
 
@@ -692,6 +733,45 @@ int vrpn_Phantom::handle_finishTrimesh_message(void *userdata,
   myTrimesh->setSurfaceFdynamic(SurfaceFdynamic); 
   myTrimesh->setSurfaceKdamping(SurfaceKdamping);
 
+  return 0;
+}
+
+int vrpn_Phantom::handle_constraint_change_message(void *userdata,
+						vrpn_HANDLERPARAM p){
+  vrpn_Phantom *me = (vrpn_Phantom *)userdata;
+  long *params = (long*)(p.buffer);
+  double pnt[3]; 
+
+  long temp;
+  int numExpectedParameters = 5;
+  if (p.payload_len !=  (numExpectedParameters*sizeof(float)) ) {
+    fprintf(stderr,"vrpn_Phantom: change constraint payload error\n");
+    fprintf(stderr,"             (got %d, expected %d)\n",
+            p.payload_len, numExpectedParameters*sizeof(float) );
+    return -1;
+  }
+
+  temp = ntohl(params[0]);
+  int enable=temp;
+  temp = ntohl(params[1]);
+  float x = *(float*)(&temp);
+  temp = ntohl(params[2]);
+  float y = *(float*)(&temp);
+  temp = ntohl(params[3]);
+  float z = *(float*)(&temp);
+  temp = ntohl(params[4]);
+  float kSpr = *(float*)(&temp);
+  // convert from meters to mm and dyne/meter to dyne/mm
+  pnt[0] = 1000*x; pnt[1] = 1000*y; pnt[2] = 1000*z;
+  if (!enable){
+	  me->phantom->stopEffect();
+	  me->pointConstraint->stop();
+  }
+  else{
+        me->pointConstraint->setPoint(pnt, kSpr/1000.0);
+	me->phantom->startEffect();
+	me->pointConstraint->start();
+  }
   return 0;
 }
 
@@ -868,6 +948,27 @@ char *vrpn_ForceDevice_Remote::encode_finishTrimesh(int &len){
     longbuf[i] = htonl(longbuf[i]);
   }
   return buf; 
+}
+
+
+char *vrpn_ForceDevice_Remote::encode_constraint(int &len, int enable,
+			float x, float y, float z,float kSpr){
+  len = 5*sizeof(unsigned long);
+  char *buf=new char[len];
+
+  int i;
+  unsigned long *longbuf = (unsigned long*)(void*)(buf);
+  int   index = 0;
+
+  longbuf[index++] = *(unsigned long*)(void*)(&enable);
+  longbuf[index++] = *(unsigned long*)(void*)(&x);
+  longbuf[index++] = *(unsigned long*)(void*)(&y);
+  longbuf[index++] = *(unsigned long*)(void*)(&z);
+  longbuf[index++] = *(unsigned long*)(void*)(&kSpr);
+  for (i = 0; i < index; i++) {
+    longbuf[i] = htonl(longbuf[i]);
+  }
+  return buf;
 }
 
 void vrpn_ForceDevice_Remote::set_plane(float *p)
@@ -1063,6 +1164,28 @@ void vrpn_ForceDevice_Remote::stopTrimesh(void){
     if (connection->pack_message(len,timestamp,startTrimesh_message_id,
 				 my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
       fprintf(stderr,"Phantom: cannot write message: tossing\n");
+    }
+    connection->mainloop();
+    delete msgbuf;
+  }
+}
+
+void vrpn_ForceDevice_Remote::sendConstraint(int enable, 
+					float x, float y, float z, float kSpr)
+{
+  char *msgbuf;
+  int	len;
+  struct timeval current_time;
+
+  gettimeofday(&current_time, NULL);
+  timestamp.tv_sec = current_time.tv_sec;
+  timestamp.tv_usec = current_time.tv_usec;
+
+  if(connection){
+    msgbuf = encode_constraint(len, enable, x, y, z, kSpr);
+    if (connection->pack_message(len,timestamp,set_constraint_message_id,
+				my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+	fprintf(stderr,"Phantom: cannot write message: tossing\n");
     }
     connection->mainloop();
     delete msgbuf;
