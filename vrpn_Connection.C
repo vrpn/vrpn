@@ -187,6 +187,148 @@ pid_t wait3 (int * statusp, int options, struct rusage * rusage);
 #endif  // 0
 
 
+//
+// vrpn_ConnectionManager
+// Singleton class that keeps track of all known VRPN connections
+// and makes sure they're deleted on shutdown.
+// We make it static to guarantee that the destructor is called
+// on program close so that the destructors of all the vrpn_Connections
+// that have been allocated are called so that all open logs are flushed
+// to disk.
+//
+
+//      This section holds data structures and functions to open
+// connections by name.
+//      The intention of this section is that it can open connections for
+// objects that are in different libraries (trackers, buttons and sound),
+// even if they all refer to the same connection.
+
+
+class vrpn_ConnectionManager {
+
+  public:
+
+    ~vrpn_ConnectionManager (void);
+
+    static vrpn_ConnectionManager & instance (void);
+      // The only way to get access to an instance of this class.
+      // Guarantees that there is only one, global object.
+      // Also guarantees that it will be constructed the first time
+      // this function is called, and (hopefully?) destructed when
+      // the program terminates.
+
+    void addConnection (vrpn_Connection *, const char * name);
+    void deleteConnection (vrpn_Connection *);
+      // NB implementation is not particularly efficient;  we expect
+      // to have O(10) connections, not O(1000).
+
+    vrpn_Connection * getByName (const char * name);
+      // Searches through d_kcList but NOT d_anonList
+      // (Connections constructed with no name)
+
+  private:
+
+    struct knownConnection {
+      char name [1000];
+      vrpn_Connection * connection;
+      knownConnection * next;
+    };
+
+    knownConnection * d_kcList;
+      // named connections
+
+    knownConnection * d_anonList;
+      // unnamed (server) connections
+
+    vrpn_ConnectionManager (void);
+
+    vrpn_ConnectionManager (const vrpn_ConnectionManager &);
+      // copy constructor undefined to prevent instantiations
+
+    static void deleteConnection (vrpn_Connection *, knownConnection **);
+};
+
+vrpn_ConnectionManager::~vrpn_ConnectionManager (void) {
+
+  //fprintf(stderr, "In ~vrpn_ConnectionManager:  tearing down the list.\n");
+
+  // Call the destructor of every known connection.
+  // That destructor will call vrpn_ConnectionManager::deleteConnection()
+  // to remove itself from d_kcList.
+  while (d_kcList) {
+    delete d_kcList->connection;
+  }
+  while (d_anonList) {
+    delete d_anonList->connection;
+  }
+
+}
+
+// static
+vrpn_ConnectionManager & vrpn_ConnectionManager::instance (void) {
+  static vrpn_ConnectionManager manager;
+  return manager;
+}
+
+void vrpn_ConnectionManager::addConnection (vrpn_Connection * c,
+                                            const char * name) {
+  knownConnection * p;
+
+  p = new knownConnection;
+  p->connection = c;
+
+  if (name) {
+    strncpy(p->name, name, 1000);
+    p->next = d_kcList;
+    d_kcList = p;
+  } else {
+    p->name[0] = 0;
+    p->next = d_anonList;
+    d_anonList = p;
+  }
+}
+
+void vrpn_ConnectionManager::deleteConnection (vrpn_Connection * c) {
+  deleteConnection(c, &d_kcList);
+  deleteConnection(c, &d_anonList);
+}
+
+void vrpn_ConnectionManager::deleteConnection (vrpn_Connection * c,
+                                               knownConnection ** snitch) {
+  knownConnection * victim = *snitch;
+
+  while (victim && (victim->connection != c)) {
+    snitch = &((*snitch)->next);
+    victim = *snitch;
+  }
+
+  if (!victim) {
+    // No warning, because this connection might be on the *other* list.
+  } else {
+    *snitch = victim->next;
+    delete victim;
+  }
+}
+
+vrpn_Connection * vrpn_ConnectionManager::getByName (const char * name) {
+  knownConnection * p;
+  for (p = d_kcList; p && strcmp(p->name, name); p = p->next) {
+    // do nothing
+  }
+  if (!p) {
+    return NULL;
+  }
+  return p->connection;
+}
+
+vrpn_ConnectionManager::vrpn_ConnectionManager (void) :
+    d_kcList (NULL),
+    d_anonList (NULL) {
+
+}
+
+
+
 /**********************
  *   This function returns the host IP address in string form.  For example,
  * the machine "ioglab.cs.unc.edu" becomes "152.2.130.90."  This is done
@@ -3089,6 +3231,8 @@ vrpn_Connection::vrpn_Connection (unsigned short listen_port_no,
    printf("vrpn: Listening for requests on port %d\n",listen_port_no);
    }
   
+  vrpn_ConnectionManager::instance().addConnection(this, NULL);
+
   if (local_logfile_name) {
     endpoint.d_logname = new char [1 + strlen(local_logfile_name)];
     if (!endpoint.d_logname) {
@@ -3110,21 +3254,6 @@ vrpn_Connection::vrpn_Connection (unsigned short listen_port_no,
   }
 
 }
-
-//------------------------------------------------------------------------
-//	This section holds data structures and functions to open
-// connections by name.
-//	The intention of this section is that it can open connections for
-// objects that are in different libraries (trackers, buttons and sound),
-// even if they all refer to the same connection.
-
-// List of connections that are already open
-typedef	struct vrpn_KNOWN_CONS_STRUCT {
-	char	name[1000];	// The name of the connection
-	vrpn_Connection	*c;	// The connection
-	struct vrpn_KNOWN_CONS_STRUCT *next;	// Next on the list
-} vrpn_KNOWN_CONNECTION;
-static vrpn_KNOWN_CONNECTION *known = NULL;
 
 
 vrpn_Connection::vrpn_Connection
@@ -3292,18 +3421,7 @@ vrpn_Connection::vrpn_Connection
 	  }
 	}
 
-	if (station_name) {
-	  vrpn_KNOWN_CONNECTION *curr;
-
-	  if ( (curr = new(vrpn_KNOWN_CONNECTION)) == NULL) {
-	    fprintf(stderr, "vrpn_Connection:  Out of memory.\n");
-	    return;
-	  }
-	  strncpy(curr->name, station_name, sizeof(curr->name));
-	  curr->c = this;
-	  curr->next = known;
-	  known = curr;
-	}
+        vrpn_ConnectionManager::instance().addConnection(this, station_name);
 
 	// If we are doing local logging, turn it on here. If we
 	// can't open the file, then the connection is broken.
@@ -3367,23 +3485,10 @@ vrpn_Connection::~vrpn_Connection (void) {
 		delete pVMCB_Del;
 	}
 
-	// Remove myself from the "known connections" list.
-	vrpn_KNOWN_CONNECTION **snitch = &known;
-	vrpn_KNOWN_CONNECTION *victim = *snitch;
-	while ( (victim != NULL) && (victim->c != this) ) {
-		snitch = &( (*snitch)->next );;
-		victim = victim->next;
-	};
-	if (victim == NULL) {        
-        // Disabling this warning because servers aren't put on the
-        // known list.  We coudl add a flag of some sort to know if
-        // we are a server, and warn only if not...  -PBW
-        //fprintf(stderr, "VRPN:~vrpn_Connection: Can't find "
-        //                "myself on known list\n");
-	} else {
-		*snitch = victim->next;
-		delete victim;
-	}
+  // Remove myself from the "known connections" list
+  //   (or the "anonymous connections" list).
+  vrpn_ConnectionManager::instance().deleteConnection(this);
+
   if (d_TCPbuf)
     free(d_TCPbuf);
   if (d_tcp_outbuf)
@@ -4163,7 +4268,7 @@ vrpn_Connection * vrpn_get_connection_by_name
 	  double dFreq,
 	  int cSyncWindow)
 {
-	vrpn_KNOWN_CONNECTION	*curr = known;
+        vrpn_Connection * c;
 	char			*where_at;	// Part of name past last '@'
 	int port;
 	int is_file = 0;
@@ -4179,14 +4284,11 @@ vrpn_Connection * vrpn_get_connection_by_name
 		cname = where_at+1;	// Chop off the front of the name
 	}
 
-	// See if the connection is one that is already open.
-	// Leave curr pointing to it if so, or to NULL if not.
-	while ( (curr != NULL) && (strcmp(cname, curr->name) != 0)) {
-		curr = curr->next;
-	}
+        c = vrpn_ConnectionManager::instance().getByName(cname);
 
-	// If its not already open, open it and add it to the list.
-	if (curr == NULL) {
+	// If its not already open, open it.
+        // Its constructor will add it to the list (?).
+	if (!c) {
 
 		// connections now self-register in the known list --
 		// this is kind of odd, but oh well (can probably be done
@@ -4195,33 +4297,22 @@ vrpn_Connection * vrpn_get_connection_by_name
 		is_file = !strncmp(cname, "file:", 5);
 
                 if (is_file)
-                        new vrpn_File_Connection (cname);
+                        c = new vrpn_File_Connection (cname);
                 else {
 			port = vrpn_get_port_number(cname);
-                        new vrpn_Synchronized_Connection
+                        c = new vrpn_Synchronized_Connection
                                 (cname, port,
                                  local_logfile_name, local_log_mode,
                                  remote_logfile_name, remote_log_mode,
                                  dFreq, cSyncWindow);
 		}
 
-		// and now set curr properly (it will have been added to list
-		// by the vrpn_Connection constructor)
-
-		curr = known;
-		while ( (curr != NULL) && (strcmp(cname, curr->name) != 0)) {
-		  curr = curr->next;
-		}
-		if (!curr) {
-		  // unable to open connection
-		  return NULL;
-		}
 	}
 
 	// Return a pointer to the connection, even if it is not doing
 	// okay. This will allow a connection to retry over and over
 	// again before connecting to the server.
-	return curr->c;
+	return c;
 }
 
 
