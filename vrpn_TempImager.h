@@ -207,7 +207,7 @@ typedef void (VRPN_CALLBACK *vrpn_IMAGERDESCRIPTIONHANDLER) (void * userdata,
 // it for later use.
 class VRPN_API vrpn_TempImager_Region {
   friend class VRPN_API vrpn_TempImager_Remote;
-  friend void java_vrpn_handle_region_change( void * userdata, const vrpn_IMAGERREGIONCB info );
+  friend void VRPN_CALLBACK java_vrpn_handle_region_change( void * userdata, const vrpn_IMAGERREGIONCB info );
 
 public:
   vrpn_TempImager_Region(void) { d_chanIndex = -1; d_rMin = d_rMax = d_cMin = d_cMax = 0; 

@@ -1,3 +1,9 @@
+2004-10-20  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_TempImager.h:  added VRPN_CALLBACK to the friend function
+	declaration of java_vrpn_handle_region_change in 
+	vrpn_TempImager_Region
+
 2004-10-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Types.h : Added a flag to tell the file not to throw an error
