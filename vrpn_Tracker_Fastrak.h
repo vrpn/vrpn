@@ -21,15 +21,18 @@
  * Author          : Ruigang Yang
  * Created On      : Thu Jan 15 17:27:52 1998
  * Last Modified By: Ruigang Yang
- * Last Modified On: Sat Jan 24 14:08:07 1998
- * Update Count    : 43
+ * Last Modified On: Sun Feb  8 17:17:27 1998
+ * Update Count    : 45
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Tracker_Fastrak.h,v $
- * $Date: 1998/01/24 19:12:14 $
+ * $Date: 1998/02/11 20:35:41 $
  * $Author: ryang $
- * $Revision: 1.2 $
+ * $Revision: 1.3 $
  * 
  * $Log: vrpn_Tracker_Fastrak.h,v $
+ * Revision 1.3  1998/02/11 20:35:41  ryang
+ * canned class
+ *
  * Revision 1.2  1998/01/24 19:12:14  ryang
  * read one report at a time, no matter how many sensors are on.
  *
@@ -402,7 +405,9 @@ private:
 		       char *port = "/dev/ttyS1", long baud = 9600) :
     vrpn_Tracker_Serial(name,c,port,baud) {};
     
-    virtual void mainloop(void);
+  virtual void mainloop(void);
+  
+  //int get_status(void) { return status;}
     
  protected:
 

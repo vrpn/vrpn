@@ -9,8 +9,14 @@ sound_server: sound_server.o vrpn_Tracker.o vrpn_Button.o vrpn_Connection.o vrpn
 	g++ $(LFLAGS) -o sound_server \
 		sound_server.o vrpn_Tracker.o vrpn_Button.o vrpn_Connection.o vrpn_Sound.o -lsdi -lm
 
+player: vrpn_player.o
+	g++ $(LFLAGS) -o player vrpn_player.o ../`hw_os`/libvrpn.a -lsdi -lm
+
 vrpn: vrpn.o 
 	g++ $(LFLAGS) -o vrpn vrpn.o ../`hw_os`/libvrpn.a -lsdi -lm
+
+client: client.C
+	g++ $(CFLAGS) $(LFLAGS) -o client client.C ../`hw_os`/libvrpn.a -lsdi -lm
 
 vrpn_Connection.o: ../vrpn_Connection.C
 	g++ $(CFLAGS) -c ../vrpn_Connection.C
@@ -35,3 +41,4 @@ clean:
 
 vrpn.o:		vrpn.C ../vrpn_Tracker.h ../vrpn_Connection.h ../vrpn_Button.h ../vrpn_Sound.h
 sound_server.o:		sound_server.C ../vrpn_Tracker.h ../vrpn_Connection.h ../vrpn_Button.h ../vrpn_Sound.h
+client.o:	client.C

@@ -21,15 +21,18 @@
  * Author          : Ruigang Yang
  * Created On      : Thu Jan 15 17:30:37 1998
  * Last Modified By: Ruigang Yang
- * Last Modified On: Sat Jan 24 14:09:45 1998
- * Update Count    : 401
+ * Last Modified On: Wed Feb  4 16:43:25 1998
+ * Update Count    : 409
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Tracker_Fastrak.C,v $
- * $Date: 1998/01/26 21:21:55 $
- * $Author: weberh $
- * $Revision: 1.3 $
+ * $Date: 1998/02/11 20:35:40 $
+ * $Author: ryang $
+ * $Revision: 1.4 $
  * 
  * $Log: vrpn_Tracker_Fastrak.C,v $
+ * Revision 1.4  1998/02/11 20:35:40  ryang
+ * canned class
+ *
  * Revision 1.3  1998/01/26 21:21:55  weberh
  * compiles on sgi in addition to linux
  *
@@ -44,7 +47,7 @@
  * HISTORY
  */
 
-static char rcsid[] = "$Id: vrpn_Tracker_Fastrak.C,v 1.3 1998/01/26 21:21:55 weberh Exp $";
+static char rcsid[] = "$Id: vrpn_Tracker_Fastrak.C,v 1.4 1998/02/11 20:35:40 ryang Exp $";
 #include <time.h>
 #include <math.h>
 #include <stdlib.h>
@@ -360,9 +363,6 @@ void vrpn_Tracker_Fastrak::get_report(void) {
 
 
   if (!valid_report()) {
-    //fast_sync_read();
-    //fprintf(stderr,"get_report: not a valid one %d,\t%s:%d\n", 
-	//    reportLength, __FILE__, __LINE__);
     bufcount = 0;
     status = TRACKER_SYNCING;
     return;
@@ -1139,8 +1139,6 @@ int vrpn_Tracker_Fastrak::xyz_quat_interpret()
     float xyzQuat[4];	    /* temporary var   */
 
     int	    	    numDataItems;
-    float   dataBuffer[T_F_MAX_DATA_ITEMS];
-
 
     /* subtract off the status length, since we want to know how many numbers
      *  there are for processing.
@@ -1148,19 +1146,15 @@ int vrpn_Tracker_Fastrak::xyz_quat_interpret()
     numDataItems = (int) 
       (reportLength-T_F_STATUS_LENGTH) / T_F_FULL_WORD_SIZE;
 
-    rawPtr = buffer +3;;
+    rawPtr = buffer +3;
 
-    /* reverse the bytes for this full report if this machine
-     *  is not little-endian
-     */
-      T_F_REVERSE_BYTES((unsigned char *) dataBuffer, rawPtr, 
-    	    	    	    	    	    T_F_FULL_WORD_SIZE, numDataItems);
-      sensor = buffer[1]-'0';
-      dataPtr = dataBuffer;
+    sensor = buffer[1]-'0';
+    dataPtr = (float *)(buffer+3);
 
-      // get position ;
-      //fprintf(stderr, "pos: ");
-      for ( j = 0; j < 3; j++, dataPtr++ ){
+
+    // get position ;
+    //fprintf(stderr, "pos: ");
+    for ( j = 0; j < 3; j++, dataPtr++ ){
 	pos[j] = *dataPtr;
 	//fprintf(stderr, " %.3f", pos[j]);
       }
@@ -1170,11 +1164,13 @@ int vrpn_Tracker_Fastrak::xyz_quat_interpret()
       dataPtr++;
       
       //fprintf(stderr, "Done\n");
-      // get rest of orientation quat 
-      for ( j = 0; j < 3; j++, dataPtr++ )
+      // get rest of orientation quat ;
+      for ( j = 0; j < 3; j++, dataPtr++ ){
 	quat[j] = *dataPtr;
+	//fprintf(stderr, "%.3f", quat[j]);
+      }
 
-    
+
     return(T_OK);
 
 }	/* t_f_xyz_quat_interpret */
