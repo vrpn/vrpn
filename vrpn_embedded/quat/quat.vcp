@@ -53,8 +53,8 @@ CFG=quat - Win32 (WCE MIPS) Debug
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clmips.exe
-# ADD BASE CPP /nologo /W3 /GX- /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "MIPS" /D "_MIPS_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_LIB" /YX /Oxs /M$(CECrtMT)  /c
-# ADD CPP /nologo /W3 /GX- /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "MIPS" /D "_MIPS_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_LIB" /YX /Oxs /M$(CECrtMT)  /c
+# ADD BASE CPP /nologo /W3 /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "MIPS" /D "_MIPS_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_LIB" /YX /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /W3 /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "MIPS" /D "_MIPS_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_LIB" /YX /Oxs /M$(CECrtMT) /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
@@ -79,7 +79,7 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clmips.exe
-# ADD BASE CPP /nologo /W3 /GX- /Zi /Od /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "MIPS" /D "_MIPS_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /YX /M$(CECrtMTDebug)  /c
+# ADD BASE CPP /nologo /W3 /Zi /Od /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "MIPS" /D "_MIPS_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /YX /M$(CECrtMTDebug) /c
 # ADD CPP /nologo /W3 /Zi /Od /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "MIPS" /D "_MIPS_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /YX /M$(CECrtMTDebug) /c /Tp
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
@@ -105,8 +105,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=shcl.exe
-# ADD BASE CPP /nologo /W3 /GX- /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "SHx" /D "SH3" /D "_SH3_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_LIB" /YX /Oxs /M$(CECrtMT)  /c
-# ADD CPP /nologo /W3 /GX- /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "SHx" /D "SH3" /D "_SH3_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_LIB" /YX /Oxs /M$(CECrtMT)  /c
+# ADD BASE CPP /nologo /W3 /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "SHx" /D "SH3" /D "_SH3_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_LIB" /YX /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /W3 /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "SHx" /D "SH3" /D "_SH3_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_LIB" /YX /Oxs /M$(CECrtMT) /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
@@ -131,8 +131,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=shcl.exe
-# ADD BASE CPP /nologo /W3 /GX- /Zi /Od /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "SHx" /D "SH3" /D "_SH3_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /YX /M$(CECrtMTDebug)  /c
-# ADD CPP /nologo /W3 /GX- /Zi /Od /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "SHx" /D "SH3" /D "_SH3_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /YX /M$(CECrtMTDebug)  /c
+# ADD BASE CPP /nologo /W3 /Zi /Od /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "SHx" /D "SH3" /D "_SH3_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /YX /M$(CECrtMTDebug) /c
+# ADD CPP /nologo /W3 /Zi /Od /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "SHx" /D "SH3" /D "_SH3_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /YX /M$(CECrtMTDebug) /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
@@ -157,8 +157,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clarm.exe
-# ADD BASE CPP /nologo /W3 /GX- /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "NDEBUG" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /YX /Oxs /M$(CECrtMT)  /c
-# ADD CPP /nologo /W3 /GX- /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "NDEBUG" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /YX /Oxs /M$(CECrtMT)  /c
+# ADD BASE CPP /nologo /W3 /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "NDEBUG" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /YX /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /W3 /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "NDEBUG" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /YX /Oxs /M$(CECrtMT) /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
@@ -183,8 +183,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clarm.exe
-# ADD BASE CPP /nologo /W3 /GX- /Zi /Od /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /YX /M$(CECrtMTDebug)  /c
-# ADD CPP /nologo /W3 /GX- /Zi /Od /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /YX /M$(CECrtMTDebug)  /c
+# ADD BASE CPP /nologo /W3 /Zi /Od /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /YX /M$(CECrtMTDebug) /c
+# ADD CPP /nologo /W3 /Zi /Od /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /YX /M$(CECrtMTDebug) /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
@@ -209,8 +209,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=cl.exe
-# ADD BASE CPP /nologo /W3 /GX- /D _WIN32_WCE=$(CEVersion) /D "WIN32" /D "STRICT" /D "_WIN32_WCE_EMULATION" /D "INTERNATIONAL" /D "USA" /D "INTLMSG_CODEPAGE" /D "$(CePlatform)" /D "i486" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_X86_" /D "x86" /D "NDEBUG" /D "_LIB" /YX /Oxs /Gz  /c
-# ADD CPP /nologo /W3 /GX- /D _WIN32_WCE=$(CEVersion) /D "WIN32" /D "STRICT" /D "_WIN32_WCE_EMULATION" /D "INTERNATIONAL" /D "USA" /D "INTLMSG_CODEPAGE" /D "$(CePlatform)" /D "i486" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_X86_" /D "x86" /D "NDEBUG" /D "_LIB" /YX /Oxs /Gz  /c
+# ADD BASE CPP /nologo /W3 /D _WIN32_WCE=$(CEVersion) /D "WIN32" /D "STRICT" /D "_WIN32_WCE_EMULATION" /D "INTERNATIONAL" /D "USA" /D "INTLMSG_CODEPAGE" /D "$(CePlatform)" /D "i486" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_X86_" /D "x86" /D "NDEBUG" /D "_LIB" /YX /Oxs /Gz /c
+# ADD CPP /nologo /W3 /D _WIN32_WCE=$(CEVersion) /D "WIN32" /D "STRICT" /D "_WIN32_WCE_EMULATION" /D "INTERNATIONAL" /D "USA" /D "INTLMSG_CODEPAGE" /D "$(CePlatform)" /D "i486" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_X86_" /D "x86" /D "NDEBUG" /D "_LIB" /YX /Oxs /Gz /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
@@ -235,8 +235,8 @@ BSC32=bscmake.exe
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=cl.exe
-# ADD BASE CPP /nologo /W3 /GX- /Zi /Od /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "WIN32" /D "STRICT" /D "_WIN32_WCE_EMULATION" /D "INTERNATIONAL" /D "USA" /D "INTLMSG_CODEPAGE" /D "$(CePlatform)" /D "i486" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_X86_" /D "x86" /D "_LIB" /YX /Gz  /c
-# ADD CPP /nologo /W3 /GX- /Zi /Od /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "WIN32" /D "STRICT" /D "_WIN32_WCE_EMULATION" /D "INTERNATIONAL" /D "USA" /D "INTLMSG_CODEPAGE" /D "$(CePlatform)" /D "i486" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_X86_" /D "x86" /D "_LIB" /YX /Gz  /c
+# ADD BASE CPP /nologo /W3 /Zi /Od /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "WIN32" /D "STRICT" /D "_WIN32_WCE_EMULATION" /D "INTERNATIONAL" /D "USA" /D "INTLMSG_CODEPAGE" /D "$(CePlatform)" /D "i486" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_X86_" /D "x86" /D "_LIB" /YX /Gz /c
+# ADD CPP /nologo /W3 /Zi /Od /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "WIN32" /D "STRICT" /D "_WIN32_WCE_EMULATION" /D "INTERNATIONAL" /D "USA" /D "INTLMSG_CODEPAGE" /D "$(CePlatform)" /D "i486" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_X86_" /D "x86" /D "_LIB" /YX /Gz /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
@@ -266,56 +266,69 @@ SOURCE=..\..\..\quat\matrix.c
 !IF  "$(CFG)" == "quat - Win32 (WCE MIPS) Release"
 
 DEP_CPP_MATRI=\
-	"..\..\..\quat\pdefs.h"\
 	"..\..\..\quat\quat.h"\
+	
+NODEP_CPP_MATRI=\
+	"..\..\..\quat\pdefs.h"\
 	
 
 !ELSEIF  "$(CFG)" == "quat - Win32 (WCE MIPS) Debug"
 
 DEP_CPP_MATRI=\
-	"..\..\..\quat\pdefs.h"\
 	"..\..\..\quat\quat.h"\
+	
+NODEP_CPP_MATRI=\
+	"..\..\..\quat\pdefs.h"\
 	
 
 !ELSEIF  "$(CFG)" == "quat - Win32 (WCE SH3) Release"
 
 DEP_CPP_MATRI=\
-	"..\..\..\quat\pdefs.h"\
 	"..\..\..\quat\quat.h"\
+	
+NODEP_CPP_MATRI=\
+	"..\..\..\quat\pdefs.h"\
 	
 
 !ELSEIF  "$(CFG)" == "quat - Win32 (WCE SH3) Debug"
 
 DEP_CPP_MATRI=\
-	"..\..\..\quat\pdefs.h"\
 	"..\..\..\quat\quat.h"\
+	
+NODEP_CPP_MATRI=\
+	"..\..\..\quat\pdefs.h"\
 	
 
 !ELSEIF  "$(CFG)" == "quat - Win32 (WCE ARM) Release"
 
 DEP_CPP_MATRI=\
-	"..\..\..\quat\pdefs.h"\
 	"..\..\..\quat\quat.h"\
+	
+NODEP_CPP_MATRI=\
+	"..\..\..\quat\pdefs.h"\
 	
 
 !ELSEIF  "$(CFG)" == "quat - Win32 (WCE ARM) Debug"
 
 DEP_CPP_MATRI=\
-	"..\..\..\quat\pdefs.h"\
 	"..\..\..\quat\quat.h"\
+	
+NODEP_CPP_MATRI=\
+	"..\..\..\quat\pdefs.h"\
 	
 
 !ELSEIF  "$(CFG)" == "quat - Win32 (WCE x86em) Release"
 
 DEP_CPP_MATRI=\
-	"..\..\..\quat\pdefs.h"\
 	"..\..\..\quat\quat.h"\
+	
+NODEP_CPP_MATRI=\
+	"..\..\..\quat\pdefs.h"\
 	
 
 !ELSEIF  "$(CFG)" == "quat - Win32 (WCE x86em) Debug"
 
 DEP_CPP_MATRI=\
-	"..\..\..\quat\pdefs.h"\
 	"..\..\..\quat\quat.h"\
 	
 
@@ -329,56 +342,69 @@ SOURCE=..\..\..\quat\quat.c
 !IF  "$(CFG)" == "quat - Win32 (WCE MIPS) Release"
 
 DEP_CPP_QUAT_=\
-	"..\..\..\quat\pdefs.h"\
 	"..\..\..\quat\quat.h"\
+	
+NODEP_CPP_QUAT_=\
+	"..\..\..\quat\pdefs.h"\
 	
 
 !ELSEIF  "$(CFG)" == "quat - Win32 (WCE MIPS) Debug"
 
 DEP_CPP_QUAT_=\
-	"..\..\..\quat\pdefs.h"\
 	"..\..\..\quat\quat.h"\
+	
+NODEP_CPP_QUAT_=\
+	"..\..\..\quat\pdefs.h"\
 	
 
 !ELSEIF  "$(CFG)" == "quat - Win32 (WCE SH3) Release"
 
 DEP_CPP_QUAT_=\
-	"..\..\..\quat\pdefs.h"\
 	"..\..\..\quat\quat.h"\
+	
+NODEP_CPP_QUAT_=\
+	"..\..\..\quat\pdefs.h"\
 	
 
 !ELSEIF  "$(CFG)" == "quat - Win32 (WCE SH3) Debug"
 
 DEP_CPP_QUAT_=\
-	"..\..\..\quat\pdefs.h"\
 	"..\..\..\quat\quat.h"\
+	
+NODEP_CPP_QUAT_=\
+	"..\..\..\quat\pdefs.h"\
 	
 
 !ELSEIF  "$(CFG)" == "quat - Win32 (WCE ARM) Release"
 
 DEP_CPP_QUAT_=\
-	"..\..\..\quat\pdefs.h"\
 	"..\..\..\quat\quat.h"\
+	
+NODEP_CPP_QUAT_=\
+	"..\..\..\quat\pdefs.h"\
 	
 
 !ELSEIF  "$(CFG)" == "quat - Win32 (WCE ARM) Debug"
 
 DEP_CPP_QUAT_=\
-	"..\..\..\quat\pdefs.h"\
 	"..\..\..\quat\quat.h"\
+	
+NODEP_CPP_QUAT_=\
+	"..\..\..\quat\pdefs.h"\
 	
 
 !ELSEIF  "$(CFG)" == "quat - Win32 (WCE x86em) Release"
 
 DEP_CPP_QUAT_=\
-	"..\..\..\quat\pdefs.h"\
 	"..\..\..\quat\quat.h"\
+	
+NODEP_CPP_QUAT_=\
+	"..\..\..\quat\pdefs.h"\
 	
 
 !ELSEIF  "$(CFG)" == "quat - Win32 (WCE x86em) Debug"
 
 DEP_CPP_QUAT_=\
-	"..\..\..\quat\pdefs.h"\
 	"..\..\..\quat\quat.h"\
 	
 
@@ -392,56 +418,69 @@ SOURCE=..\..\..\quat\vector.c
 !IF  "$(CFG)" == "quat - Win32 (WCE MIPS) Release"
 
 DEP_CPP_VECTO=\
-	"..\..\..\quat\pdefs.h"\
 	"..\..\..\quat\quat.h"\
+	
+NODEP_CPP_VECTO=\
+	"..\..\..\quat\pdefs.h"\
 	
 
 !ELSEIF  "$(CFG)" == "quat - Win32 (WCE MIPS) Debug"
 
 DEP_CPP_VECTO=\
-	"..\..\..\quat\pdefs.h"\
 	"..\..\..\quat\quat.h"\
+	
+NODEP_CPP_VECTO=\
+	"..\..\..\quat\pdefs.h"\
 	
 
 !ELSEIF  "$(CFG)" == "quat - Win32 (WCE SH3) Release"
 
 DEP_CPP_VECTO=\
-	"..\..\..\quat\pdefs.h"\
 	"..\..\..\quat\quat.h"\
+	
+NODEP_CPP_VECTO=\
+	"..\..\..\quat\pdefs.h"\
 	
 
 !ELSEIF  "$(CFG)" == "quat - Win32 (WCE SH3) Debug"
 
 DEP_CPP_VECTO=\
-	"..\..\..\quat\pdefs.h"\
 	"..\..\..\quat\quat.h"\
+	
+NODEP_CPP_VECTO=\
+	"..\..\..\quat\pdefs.h"\
 	
 
 !ELSEIF  "$(CFG)" == "quat - Win32 (WCE ARM) Release"
 
 DEP_CPP_VECTO=\
-	"..\..\..\quat\pdefs.h"\
 	"..\..\..\quat\quat.h"\
+	
+NODEP_CPP_VECTO=\
+	"..\..\..\quat\pdefs.h"\
 	
 
 !ELSEIF  "$(CFG)" == "quat - Win32 (WCE ARM) Debug"
 
 DEP_CPP_VECTO=\
-	"..\..\..\quat\pdefs.h"\
 	"..\..\..\quat\quat.h"\
+	
+NODEP_CPP_VECTO=\
+	"..\..\..\quat\pdefs.h"\
 	
 
 !ELSEIF  "$(CFG)" == "quat - Win32 (WCE x86em) Release"
 
 DEP_CPP_VECTO=\
-	"..\..\..\quat\pdefs.h"\
 	"..\..\..\quat\quat.h"\
+	
+NODEP_CPP_VECTO=\
+	"..\..\..\quat\pdefs.h"\
 	
 
 !ELSEIF  "$(CFG)" == "quat - Win32 (WCE x86em) Debug"
 
 DEP_CPP_VECTO=\
-	"..\..\..\quat\pdefs.h"\
 	"..\..\..\quat\quat.h"\
 	
 
@@ -455,56 +494,69 @@ SOURCE=..\..\..\quat\xyzquat.c
 !IF  "$(CFG)" == "quat - Win32 (WCE MIPS) Release"
 
 DEP_CPP_XYZQU=\
-	"..\..\..\quat\pdefs.h"\
 	"..\..\..\quat\quat.h"\
+	
+NODEP_CPP_XYZQU=\
+	"..\..\..\quat\pdefs.h"\
 	
 
 !ELSEIF  "$(CFG)" == "quat - Win32 (WCE MIPS) Debug"
 
 DEP_CPP_XYZQU=\
-	"..\..\..\quat\pdefs.h"\
 	"..\..\..\quat\quat.h"\
+	
+NODEP_CPP_XYZQU=\
+	"..\..\..\quat\pdefs.h"\
 	
 
 !ELSEIF  "$(CFG)" == "quat - Win32 (WCE SH3) Release"
 
 DEP_CPP_XYZQU=\
-	"..\..\..\quat\pdefs.h"\
 	"..\..\..\quat\quat.h"\
+	
+NODEP_CPP_XYZQU=\
+	"..\..\..\quat\pdefs.h"\
 	
 
 !ELSEIF  "$(CFG)" == "quat - Win32 (WCE SH3) Debug"
 
 DEP_CPP_XYZQU=\
-	"..\..\..\quat\pdefs.h"\
 	"..\..\..\quat\quat.h"\
+	
+NODEP_CPP_XYZQU=\
+	"..\..\..\quat\pdefs.h"\
 	
 
 !ELSEIF  "$(CFG)" == "quat - Win32 (WCE ARM) Release"
 
 DEP_CPP_XYZQU=\
-	"..\..\..\quat\pdefs.h"\
 	"..\..\..\quat\quat.h"\
+	
+NODEP_CPP_XYZQU=\
+	"..\..\..\quat\pdefs.h"\
 	
 
 !ELSEIF  "$(CFG)" == "quat - Win32 (WCE ARM) Debug"
 
 DEP_CPP_XYZQU=\
-	"..\..\..\quat\pdefs.h"\
 	"..\..\..\quat\quat.h"\
+	
+NODEP_CPP_XYZQU=\
+	"..\..\..\quat\pdefs.h"\
 	
 
 !ELSEIF  "$(CFG)" == "quat - Win32 (WCE x86em) Release"
 
 DEP_CPP_XYZQU=\
-	"..\..\..\quat\pdefs.h"\
 	"..\..\..\quat\quat.h"\
+	
+NODEP_CPP_XYZQU=\
+	"..\..\..\quat\pdefs.h"\
 	
 
 !ELSEIF  "$(CFG)" == "quat - Win32 (WCE x86em) Debug"
 
 DEP_CPP_XYZQU=\
-	"..\..\..\quat\pdefs.h"\
 	"..\..\..\quat\quat.h"\
 	
 
