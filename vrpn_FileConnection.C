@@ -186,9 +186,9 @@ int vrpn_File_Connection::jump_to_time(timeval newtime)
 
 
 // virtual
-int vrpn_File_Connection::mainloop (const struct timeval * timeout) {
+int vrpn_File_Connection::mainloop (const struct timeval *) {
 
-    // timeout ignored for now, needs to be added
+    // XXX timeout ignored for now, needs to be added
 
     timeval now_time;
     gettimeofday(&now_time, NULL);

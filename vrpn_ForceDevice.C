@@ -1857,6 +1857,9 @@ void vrpn_ForceDevice_Remote::constraintToForceField (void) {
 
   switch (d_conMode) {
 
+    case NO_CONSTRAINT:
+	break;
+
     case POINT_CONSTRAINT:
       setFF_Origin(d_conPoint);
       setFF_Force(0.0f, 0.0f,  0.0f);

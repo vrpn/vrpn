@@ -38,13 +38,15 @@
 #define BUTTON_FAIL	  (-1)
 
 // Bits in the status register
-const unsigned char PORT_ERROR = (1 << 3);
-const unsigned char PORT_SLCT = (1 << 4);
-const unsigned char PORT_PE = (1 << 5);
-const unsigned char PORT_ACK = (1 << 6);
-const unsigned char PORT_BUSY = (1 << 7);
-const unsigned char 
-BIT_MASK = PORT_ERROR | PORT_SLCT | PORT_PE | PORT_ACK | PORT_BUSY;
+#ifndef VRPN_CLIENT_ONLY
+static const unsigned char PORT_ERROR = (1 << 3);
+static const unsigned char PORT_SLCT = (1 << 4);
+static const unsigned char PORT_PE = (1 << 5);
+static const unsigned char PORT_ACK = (1 << 6);
+static const unsigned char PORT_BUSY = (1 << 7);
+static const unsigned char 
+	BIT_MASK = PORT_ERROR | PORT_SLCT | PORT_PE | PORT_ACK | PORT_BUSY;
+#endif
 
 static int client_msg_handler(void *userdata, vrpn_HANDLERPARAM p);
 #define PACK_ADMIN_MESSAGE(i,event) { \

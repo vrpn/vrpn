@@ -252,7 +252,6 @@ int vrpn_Tracker_Dyna::decode_record()
 //    q_vec_type   decoded_pos;
 {
    unsigned	i;
-   unsigned	bufLength;
 
    unsigned char exp;
    char	x_high, y_high, z_high;
@@ -267,8 +266,6 @@ int vrpn_Tracker_Dyna::decode_record()
       fprintf(stderr, "\n");
       return(T_ERROR);
    }
-
-   bufLength = reportLength;
 
    /* Pull out the exponent to shift by */
    //exp = ( (buffer[0] & OOOO_OOlO)<<1 ) | (buffer[0] & OOOO_OOOl);

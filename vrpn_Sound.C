@@ -564,7 +564,7 @@ int vrpn_Sound_Server::handle_playSound(void *userdata, vrpn_HANDLERPARAM p)
 
 	me->decodeSoundDef((char*)p.buffer, &soundDef, &id, &repeat);
 	me->playSound(id, repeat, soundDef);
-	return 0;
+	return return_value;
 }
 	
 
@@ -598,7 +598,7 @@ int vrpn_Sound_Server::handle_soundStatus(void *userdata, vrpn_HANDLERPARAM p)
 
 	me->decodeSoundDef((char*)p.buffer, &soundDef, &id, &repeat);
 	me->changeSoundStatus(id, soundDef);
-	return 0;
+	return return_value;
 }
 
 int vrpn_Sound_Server::handle_listener(void *userdata, vrpn_HANDLERPARAM p)
