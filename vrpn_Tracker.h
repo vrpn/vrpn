@@ -242,6 +242,9 @@ class vrpn_Tracker_Remote: public vrpn_Tracker {
 	// The name of the tracker to connect to
 	vrpn_Tracker_Remote(char *name);
 
+        // unregister all of the handlers registered with the connection
+        ~vrpn_Tracker_Remote();
+
 	// request room from tracker xforms
 	int request_t2r_xform(void);
 	// request all available sensor from unit xforms

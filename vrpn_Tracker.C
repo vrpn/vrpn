@@ -848,6 +848,51 @@ vrpn_Tracker_Remote::vrpn_Tracker_Remote(char *name ) :
 	gettimeofday(&timestamp, NULL);
 }
 
+// the remote tracker has to un-register it's handlers when it
+// is destroyed
+vrpn_Tracker_Remote::~vrpn_Tracker_Remote() {
+
+  // Unregister a handler for the position change callback from this device.
+  if (connection->unregister_handler(position_m_id, handle_change_message,
+				   this, my_id)) {
+    fprintf(stderr,
+	    "vrpn_Tracker_Remote: can't unregister position handler\n");
+    connection = NULL;
+  }
+  
+  // Unregister a handler for the velocity change callback from this device.
+  if (connection->unregister_handler(velocity_m_id,
+				   handle_vel_change_message, this, my_id)) {
+    fprintf(stderr,
+	    "vrpn_Tracker_Remote: can't unregister velocity handler\n");
+    connection = NULL;
+  }
+  
+	// Unregister a handler for the acceleration change callback.
+  if (connection->unregister_handler(accel_m_id,
+				   handle_acc_change_message, this, my_id)) {
+    fprintf(stderr,
+	    "vrpn_Tracker_Remote: can't unregister acceleration handler\n");
+    connection = NULL;
+  }
+  
+  // Unregister a handler for the room to tracker xform change callback
+  if (connection->unregister_handler(tracker2room_m_id,
+				   handle_tracker2room_change_message, this, my_id)) {
+	  fprintf(stderr,
+                  "vrpn_Tracker_Remote: can't unregister tracker2room handler\n");
+	  connection = NULL;
+  }
+  
+  // Unregister a handler for the sensor to unit xform change callback
+  if (connection->unregister_handler(unit2sensor_m_id,
+				   handle_unit2sensor_change_message, this, my_id)) {
+    fprintf(stderr,
+	    "vrpn_Tracker_Remote: can't unregister unit2sensor handler\n");
+    connection = NULL;
+  }
+}
+
 int vrpn_Tracker_Remote::request_t2r_xform(void)
 {
 	char *msgbuf = NULL;
