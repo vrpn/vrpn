@@ -49,7 +49,31 @@ public:  // c'tors and d'tors
     
     virtual ~vrpn_NetConnection();
     
+public:  // public type_id and service_id stuff
+
+    // * register a new local {type,service} that that manager
+    //   has assigned a {type,service}_id to.
+    // * in addition, look to see if this {type,service} has
+    //   already been registered remotely (newRemoteType/Service)
+    // * if so, record the correspondence so that
+    //   local_{type,service}_id() can do its thing
+    // * XXX proposed new name:
+    //         register_local_{type,service}
+    //
+    //Return 1 if this {type,service} was already registered
+    //by the other side, 0 if not.
+
+    // was: newLocalSender
+    vrpn_int32 register_local_service(
+        const char * service_name,   // e.g. "tracker0"
+        vrpn_int32   local_id);      // from manager
     
+    // was: newLocalType
+    vrpn_int32 register_local_type(
+        const char * type_name,      // e.g. "tracker_pos"
+        vrpn_int32   local_id);      // from manager
+
+
 public:  // sending and receiving
 
 
