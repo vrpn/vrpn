@@ -30,7 +30,8 @@ typedef void (*vrpn_PHANTOMPLANECHANGEHANDLER)(void *userdata,
 
 class vrpn_Phantom: public vrpn_ForceDevice,public vrpn_Tracker,
 					public vrpn_Button {
-	friend void phantomErrorHandler( int errnum, char *description, void *userdata);
+	friend void phantomErrorHandler( int errnum, char *description,
+                                         void *userdata);
 protected:
 	float update_rate;
 	gstScene *scene;
@@ -47,10 +48,6 @@ protected:
 					// other forces exerted by phantom
 	ForceFieldEffect *forceField; // general purpose force field 
 					// approximation
-
-  //  vrpn_PHANTOMCB	surface;
-
-//	gstPoint cursor_pos;
 
 	virtual void get_report(void);
 	
@@ -83,33 +80,6 @@ protected:
 					 vrpn_HANDLERPARAM p);
 	static int handle_forcefield_change_message(void *userdata,
 						vrpn_HANDLERPARAM p);
-
-#if 0
-
-        // Generalized constraint handling;  see vrpn_ForceDevice
-        // for specs.
-
-        static int handle_enableConstraint_message
-                      (void * userdata, vrpn_HANDLERPARAM p);
-        static int handle_setConstraintMode_message
-                      (void * userdata, vrpn_HANDLERPARAM p);
-        static int handle_setConstraintPoint_message
-                      (void * userdata, vrpn_HANDLERPARAM p);
-        static int handle_setConstraintLinePoint_message
-                      (void * userdata, vrpn_HANDLERPARAM p);
-        static int handle_setConstraintLineDirection_message
-                      (void * userdata, vrpn_HANDLERPARAM p);
-        static int handle_setConstraintPlanePoint_message
-                      (void * userdata, vrpn_HANDLERPARAM p);
-        static int handle_setConstraintPlaneNormal_message
-                      (void * userdata, vrpn_HANDLERPARAM p);
-        static int handle_setConstraintKSpring_message
-                      (void * userdata, vrpn_HANDLERPARAM p);
-	//static int handle_constraint_change_message(void *userdata,
-					//vrpn_HANDLERPARAM p);
-
-#endif  // 0
-
 
 	// from vrpn_Tracker
 

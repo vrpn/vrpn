@@ -3,10 +3,13 @@
 const int 	MAX_TRACKERS = 100;
 const int	MAX_BUTTONS = 100;
 
+static char * g_defaultConfigFileName = "phantom.cfg";
+
 void	Usage(char *s)
 {
   fprintf(stderr,"Usage: %s [-f filename] [-warn] [-v]\n",s);
-  fprintf(stderr,"       -f: Full path to config file (default phantom.cfg)\n");
+  fprintf(stderr,"       -f: Full path to config file (default %s)\n",
+          g_defaultConfigFileName);
   fprintf(stderr,"       -warn: Only warn on errors (default is to bail)\n");
   fprintf(stderr,"       -v: Verbose\n");
   exit(-1);
@@ -14,7 +17,7 @@ void	Usage(char *s)
 
 void main (unsigned argc, char *argv[])
 {
-	char	*config_file_name = "phantom.cfg";
+	char	*config_file_name = g_defaultConfigFileName;
 	FILE	*config_file;
 	int	bail_on_error = 1;
 	int	verbose = 0;
