@@ -1,3 +1,13 @@
+2002-06-24    <marshbur@cs.unc.edu>
+
+	* java_vrpn.vjp:  adds ForceDevice
+	* java_vrpn.dsw:  adds ForceDeviceRemote.dsp
+	* ForceDeviceRemote.dsp:  new project for force device
+	* ForceDeviceRemote.java:  new
+	* vrpn_ForceDeviceRemote.java:  new, partial implementation of
+	native functions.
+	* .cvsignore:  now ignores vrpn_ForceDeviceRemote.h (generated)
+
 2002-06-19  David Marshburn  <marshbur@cs.unc.edu>
 
 	* AnalogRemote.java (requestValueChange):  new
