@@ -1,3 +1,14 @@
+2002-06-10  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_TrackerRemote.cpp:  minor comment chanes
+	* vrpn_AnalogRemote.cpp:  implementations for JNI_OnLoad, 
+	  JNI_OnUnload, handle_analog_change, 
+	  Java_vrpn_AnalogRemote_shutdownAnalog, 
+	  Java_vrpn_AnalogRemote_mainloop, and
+	  Java_vrpn_AnalogRemote_init.
+	* AnalogRemote.java:  comment changes
+	* AnalogRemote.dsp:  build/link updates & corrections
+
 2002-06-07  David Marshburn  <marshbur@cs.unc.edu>
 
 	* TrackerRemote.dsw:  removed in favor of java_vrpn.dsw

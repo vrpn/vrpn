@@ -213,7 +213,7 @@ Java_vrpn_TrackerRemote_mainloop( JNIEnv* env, jobject jobj )
     return;
   }
   vrpn_Tracker_Remote* t = (vrpn_Tracker_Remote*) env->GetIntField( jobj, jfid );
-  if( t <= 0 )  // this tracker is uninitialized or has been shtu down already
+  if( t <= 0 )  // this tracker is uninitialized or has been shut down already
     return;
 
   // now call mainloop
@@ -288,7 +288,7 @@ Java_vrpn_TrackerRemote_shutdownTracker( JNIEnv* env, jobject jobj )
   env->SetIntField( jobj, jfid, -1 );
 
   // delete global reference to object (that was created in init)
-  env->DeleteGlobalRef( jobj /* is this the right object? */ );
+  env->DeleteGlobalRef( jobj );
 
 
 }

@@ -13,7 +13,7 @@ public class AnalogRemote implements Runnable
 	public class AnalogUpdate
 	{
 		public Date msg_time = new Date( );
-		public double channel[] = new double[ MAX_CHANNELS ];
+		public double channel[];
 	}
 	
 	public interface AnalogChangeListener
@@ -27,6 +27,11 @@ public class AnalogRemote implements Runnable
 	///////////////////
 	// Public methods
 	
+	/**
+	 * @exception java.lang.InstantiationException
+	 *		If the analog could not be created because of problems with
+	 *      its native code and linking.
+	 */
 	public AnalogRemote( String name ) throws InstantiationException
 	{
 		try { this.init( name ); }
@@ -75,7 +80,7 @@ public class AnalogRemote implements Runnable
 	/**
 	 * Should be called only by mainloop(), a native method which is itself
 	 * synchronized.  By extension, this method is synchronized (in that, for
-	 * a given TrackerRemote object, this method can only be called from one
+	 * a given AnalogRemote object, this method can only be called from one
 	 * thread at a time).
 	 */
 	protected void handleAnalogChange( long tv_sec, long tv_usec, 
