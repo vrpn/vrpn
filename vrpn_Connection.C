@@ -3049,6 +3049,11 @@ int vrpn_Endpoint::send_pending_reports (void) {
   int connection;
   timeval timeout;
 
+  // Make sure we've got a valid TCP connection; else we can't send them.
+  if (d_tcpSocket == -1) {
+	return 0;
+  }
+
   // Check for an exception on the socket.  If there is one, shut it
   // down and go back to listening.
   timeout.tv_sec = 0;
@@ -3086,6 +3091,11 @@ int vrpn_Endpoint::send_pending_reports (void) {
       return -1;
     }
     sent += ret;
+  }
+
+  // Make sure we've got a valid UDP connection; else we can't send them.
+  if (d_udpOutboundSocket == -1) {
+	return 0;
   }
 
    // Send all of the messages that have built

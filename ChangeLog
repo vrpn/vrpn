@@ -1,3 +1,9 @@
+2001-08-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsw : Added vrpn_print_devices project file
+	* vrpn_Connection.C (vrpn_Endpoint::send_pending_messages) :
+		Check for valid connection before doing anything
+
 2001-07-30  David Marshburn  <marshbur@cs.unc.edu>
 
 	* server_src\vrpn_phantom.dsp:  changed the include directories
