@@ -1,3 +1,7 @@
+2004-04-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* main_tes.C : Using vrpn_gettimeofday() not gettimeofday().
+
 2004-03-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* test_gen_rpc.dsp : Point to Cygwin installed in C: rather than

@@ -22,14 +22,14 @@ int main (int argc, char ** argv) {
   struct timeval now;
   char * buf = NULL;
   vrpn_int32 len = 0;
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   printf("Expect Empty\n");
   connection->pack_message(len, now, enc_out->d_Empty_type, myID,
                            (char *) buf, vrpn_CONNECTION_RELIABLE);
   connection->mainloop();
 
   buf = enc_out->encode_Simple(&len, 2, 1.85f, 3.23f);
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   printf("Expect Simple, 2, 1.85, 3.23\n");
   connection->pack_message(len, now, enc_out->d_Simple_type, myID,
                            (char *) buf, vrpn_CONNECTION_RELIABLE);
@@ -60,7 +60,7 @@ int main (int argc, char ** argv) {
 //                                     {"da", "db", "dc" } };
   buf = enc_out->encode_CharArray(&len, cnt, nm, nm2, 
                                   doublenm, triplenm);
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   printf("Expect CharArray ...\n");
   connection->pack_message(len, now, enc_out->d_CharArray_type, myID,
                            (char *) buf, vrpn_CONNECTION_RELIABLE);
@@ -87,7 +87,7 @@ int main (int argc, char ** argv) {
 
   buf = enc_out->encode_IntArray(&len, cnt, &(shortstuff[0]),
                                   constdouble, triple);
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   printf("Expect IntArray ...\n");
   connection->pack_message(len, now, enc_out->d_IntArray_type, myID,
                            (char *) buf, vrpn_CONNECTION_RELIABLE);
@@ -110,7 +110,7 @@ int main (int argc, char ** argv) {
    scale *=3;
   }
 
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   printf("Expect ReportScanDatasets ...\n");
   connection->pack_message(len, now, enc_out->d_ReportScanDatasets_type, myID,
                            (char *) buf, vrpn_CONNECTION_RELIABLE);
