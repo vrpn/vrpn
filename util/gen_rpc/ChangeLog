@@ -1,3 +1,8 @@
+2001-11-20  Aron Helser  <helser@cs.unc.edu>
+
+	* gen_vrpn_rpc.pl (emitHandler): Changed generated variable names
+	to allow "p" and "me" in user code. 
+
 2001-03-02  Aron Helser  <helser@cs.unc.edu>
 
 	* gen_vrpn_rpc.pl (outputGrammar): Changes USE_MSG_GROUP so it

@@ -928,17 +928,17 @@ sub emitHandler ($) {
   
   print "" . ($headerFlag ? "  static ": "\n");
   print "int " . ($headerFlag ? "" : $classPrefix) 
-      . "handle_${typeName} (void * userdata, vrpn_HANDLERPARAM p)";
+      . "handle_${typeName} (void * userdata, vrpn_HANDLERPARAM grpc_p)";
 
   # If this is just a declaration, we are done. 
   if ($headerFlag) { print ";\n"; return 1; }
 
   print " {\n";
   if (($#$fieldarray >= 0)||($#$structarray >= 0)) {
-    print "  const char * buffer = p.buffer;\n";
+    print "  const char * buffer = grpc_p.buffer;\n";
   }
   if ((defined($className)) && ($className ne "")) {
-    print "  " . $className . "* me = (" . $className . " *) userdata;\n"; 
+    print "  " . $className . "* grpc_me = (" . $className . " *) userdata;\n"; 
   }
   foreach $thisarg (@$fieldarray) {
     print "  ";
@@ -957,7 +957,7 @@ sub emitHandler ($) {
 
   my $prefix = "  ";
   if ((defined($className)) && ($className ne "")) {
-    $prefix .= "me->";
+    $prefix .= "grpc_me->";
   }
   
   if ($#$structarray < 0) {
