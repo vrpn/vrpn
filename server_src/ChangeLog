@@ -1,3 +1,8 @@
+2003-05-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* daq_server.dsp : Compiles with libraries in their new location
+		within the external directory.
+
 2003-04-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Makefile : Includes files needed to build Phantom server.
