@@ -35,12 +35,15 @@ $(OBJ_DIR)/%.o:	%.C
 
 
 
-all:  vrpn_server 
+all:  vrpn_server
 
 .PHONY:
 vrpn_server:	$(OBJ_DIR)/vrpn_server
 	@echo Done.
 # can't figure out a gmake trick;  PHONY doesn't do it.
+
+.PHONY:	sample_server
+sample_server:	$(OBJ_DIR)/sample_server
 
 .PHONY:
 forward:	$(OBJ_DIR)/forward
@@ -69,25 +72,33 @@ $(OBJ_DIR)/forward: $(OBJ_DIR) $(OBJ_DIR)/forward.o  \
 			 ../$(HW_OS)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/forward \
 		$(OBJ_DIR)/forward.o $(OBJ_DIR)/midi.o \
-		-lvrpnserver $(GL) -lm
+		-lvrpnserver -lm
 
-$(OBJ_DIR)/text/: $(OBJ_DIR) $(OBJ_DIR)/text.o  \
+$(OBJ_DIR)/text: $(OBJ_DIR) $(OBJ_DIR)/text.o  \
 			 ../$(HW_OS)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/text \
 		$(OBJ_DIR)/text.o $(OBJ_DIR)/midi.o \
-		-lvrpnserver $(GL) -lm
+		-lvrpnserver -lm
+
+$(OBJ_DIR)/sample_server:	$(OBJ_DIR) $(OBJ_DIR)/sample_server.o \
+			../$(HW_OS)/libvrpnserver.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/sample_server \
+		$(OBJ_DIR)/sample_server.o \
+		-lvrpnserver -lm
+
 
 $(OBJ_DIR):
 	-mkdir $(OBJ_DIR)
 
 clean:
 	rm -f $(OBJ_DIR)/*.o $(OBJ_DIR)/vrpn_server $(OBJ_DIR)/forward \
-	$(OBJ_DIR)/text
+	$(OBJ_DIR)/text $(OBJ_DIR)/sample_server
 
 $(OBJ_DIR)/midi.o:	midi.c
 $(OBJ_DIR)/vrpn.o:	vrpn.C
 $(OBJ_DIR)/forward.o:	forward.C
 $(OBJ_DIR)/text.o:	text.C
+$(OBJ_DIR)/sample_server.o:	sample_server.C
 
 
 
