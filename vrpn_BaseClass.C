@@ -30,6 +30,12 @@ vrpn_TextPrinter::~vrpn_TextPrinter()
     vrpn_TextPrinter_Watch_Entry    *victim, *next;
     vrpn_BaseClass  *obj;
 
+    /* XXX This code causes seg faults on exit,when it is trying to unregister
+       handlers, apparently from nonexistent connections.  For now, this has
+       been removed; this will cause user code to segfault if they dynamically
+       create a vrpn_TextPrinter and then delete it.  This is the more rare
+       case.
+
     victim = d_first_watched_object;
     while (victim != NULL) {
 	next = victim->next;
@@ -38,6 +44,7 @@ vrpn_TextPrinter::~vrpn_TextPrinter()
 	delete victim;
 	victim = next;
     }
+    XXX */
 }
 
 /** Adds an object to the list of watched objects.  Returns 0 on success and

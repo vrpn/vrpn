@@ -318,7 +318,7 @@ LIB_FILES =  vrpn_Connection.C vrpn_Tracker.C vrpn_Button.C \
              vrpn_FileController.C vrpn_Forwarder.C vrpn_Text.C \
              vrpn_ForwarderController.C vrpn_Serial.C vrpn_Dial.C \
              vrpn_SharedObject.C vrpn_BaseClass.C \
-	     vrpn_Sound.C vrpn_LamportClock.C vrpn_Mutex.C
+	     vrpn_Sound.C vrpn_LamportClock.C vrpn_Mutex.C vrpn_Router.C
 
 LIB_OBJECTS = $(patsubst %,$(OBJECT_DIR)/%,$(LIB_FILES:.C=.o))
 

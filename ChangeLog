@@ -1,3 +1,10 @@
+2000-08-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_BaseClass.C (~vrpn_TextPrinter) : Hack to remove segfaults
+	* vrpn_Router.C : New file
+	* vrpn_Router.h : New file
+	* Makefile : Added vrpn_Router compilation
+
 2000-08-22  Kwan Skinner  <skinner@cs.unc.edu>
 
 	* vrpn_Connection.C (check_vrpn_file_cookie) : New function

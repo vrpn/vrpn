@@ -3,6 +3,21 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
+Project: "Router_Client_GUI"=.\CLIENT_SRC\PC_WIN32\Router_Client_GUI\Router_Client_GUI.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
 Project: "client_and_server"=.\SERVER_SRC\PC_WIN32\client_and_server\client_and_server.dsp - Package Owner=<4>
 
 Package=<5>
@@ -71,6 +86,36 @@ Package=<5>
 
 Package=<4>
 {{{
+}}}
+
+###############################################################################
+
+Project: "setrouter"=.\CLIENT_SRC\PC_WIN32\setrouter\setrouter.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "sierra_router_server"=.\SERVER_SRC\PC_WIN32\sierra_router_server\sierra_router_server.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
 }}}
 
 ###############################################################################
