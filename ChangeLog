@@ -1,3 +1,7 @@
+2000-09-15  Tom Hudson  <hudson@cs.unc.edu>
+
+	* vrpn_LamportClock.h : changed <> on include to ""
+
 2000-09-12  Tom Hudson  <hudson@cs.unc.edu>
 
         * vrpn_BaseClass.h : made some of the comments 80-column correct
