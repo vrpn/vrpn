@@ -74,7 +74,7 @@ protected:  // c'tors and init
     // constructors ...XXX...
     vrpn_BaseConnectionController();
 
-	virtual void init(void) = 0;
+    virtual void init(void) = 0;
 
 public:  // status
 
@@ -83,21 +83,6 @@ public:  // status
     
     // some way to get a list of open connection names
     // (one need is for the hiball control panel)
-
-public:  // buffer sizes.  XXX don't know if these belong here or not
-
-    // Applications that need to send very large messages may want to
-    // know the buffer size used or to change its size.  Buffer size
-    // is returned in bytes.
-    vrpn_int32 tcp_outbuf_size () const { /*return d_tcp_buflen;*/ }
-    vrpn_int32 udp_outbuf_size () const { /*return d_udp_buflen;*/ }
-
-    // Allows the application to attempt to reallocate the buffer.
-    // If allocation fails (error or out-of-memory), -1 will be returned.
-    // On successful allocation or illegal input (negative size), the
-    // size in bytes will be returned.  These routines are NOT guaranteed
-    // to shrink the buffer, only to increase it or leave it the same.
-    vrpn_int32 set_tcp_outbuf_size (vrpn_int32 bytecount);
 
 
 public:  // handling incoming and outgoing messages
@@ -122,17 +107,18 @@ public:  // handling incoming and outgoing messages
     // * turn off the RELIABLE flag if you want low-latency (UDP) send
     // * was: pack_message
     virtual int handle_outgoing_message(
-            vrpn_uint32 len, 
-            timeval time,
-            vrpn_int32 type,
-            vrpn_int32 sender,
-            const char * buffer,
-            vrpn_uint32 class_of_service ) = 0;
-
+        vrpn_uint32 len, 
+        timeval time,
+        vrpn_int32 type,
+        vrpn_int32 service,
+        const char * buffer,
+        vrpn_uint32 class_of_service ) = 0;
+    
+#ifdef 0  // XXX these have to go into the subclasses
 protected:  // handling incoming and outgoing messages
     //         wrappers that forwards the functioncall to each open connection
 
-    virtual int pack_sender_description( vrpn_int32 which_sender ) = 0;
+    virtual int pack_service_description( vrpn_int32 which_service ) = 0;
     virtual int pack_type_description( vrpn_int32 which_type ) = 0;
     virtual int pack_udp_description( int portno ) = 0;
     //virtual int pack_log_description( long mode, const char * filename );
@@ -143,28 +129,29 @@ protected:  // handling incoming and outgoing messages
     
     // Routines that handle system messages
     // these are registered as callbacks
-    static int handle_incoming_sender_message(
+    static int handle_incoming_service_message(
         void * userdata, vrpn_HANDLERPARAM p);
-        static int handle_incoming_type_message(
+    static int handle_incoming_type_message(
         void * userdata, vrpn_HANDLERPARAM p);
-        static int handle_incoming_udp_message(
+    static int handle_incoming_udp_message(
         void * userdata, vrpn_HANDLERPARAM p);
-        static int handle_incoming_log_message(
+    static int handle_incoming_log_message(
         void * userdata, vrpn_HANDLERPARAM p);
+#endif
 
 public:  // callbacks
     // * clients and servers register callbacks.  The callbacks are how they
     //   are informed about messages passing between the connections.
     // * when registering a callback, you indicte which message types
-    //   and which senders are pertinant to that callback.  Only messages
-    //   with matching type/sender ID's will cause the callback to be invoked
-    // * vrpn_ANY_SENDER and vrpn_ANY_TYPE exist as a way to say you want
-    //   a callback to be invoked regardless of the type/sender id
+    //   and which services are pertinant to that callback.  Only messages
+    //   with matching type/service IDs will cause the callback to be invoked
+    // * vrpn_ANY_SERVICE and vrpn_ANY_TYPE exist as a way to say you want
+    //   a callback to be invoked regardless of the type/service id
 
 
     // * set up a handler for messages of a given
-    //   type_id and sender_id
-    // * may use vrpn_ANY_TYPE or vrpn_ANY_SENDER or both
+    //   type_id and service_id
+    // * may use vrpn_ANY_TYPE or vrpn_ANY_SERVICE or both
     // * handlers will be called during mainloop()
     // * your handler should return 0, or a communication error
     //   is assumed and the connection will be shut down
@@ -172,10 +159,10 @@ public:  // callbacks
         vrpn_int32 type,
         vrpn_MESSAGEHANDLER handler,
         void *userdata,
-        vrpn_int32 sender = vrpn_ANY_SENDER );
+        vrpn_int32 service = vrpn_ANY_SERVICE );
 
     // * remove a handler for messages of a given
-    //   type_id and sender_id
+    //   type_id and service_id
     // * in order for this function to succeed, a handler
     //   must already have been registered with identical
     //   values of these parameters
@@ -183,19 +170,19 @@ public:  // callbacks
         vrpn_int32 type,
         vrpn_MESSAGEHANDLER handler,
         void *userdata,
-        vrpn_int32 sender = vrpn_ANY_SENDER );
+        vrpn_int32 service = vrpn_ANY_SERVICE );
 
     // * invoke callbacks that have registered
-    //   for messages with this (type and sender)
+    //   for messages with this (type and service)
     virtual int do_callbacks_for(
-        vrpn_int32 type, vrpn_int32 sender,
+        vrpn_int32 type, vrpn_int32 service,
         timeval time,
         vrpn_uint32 len, const char * buffer);
     
     
-public:  // senders and types
+public:  // services and types
     // * messages in vrpn are identified by two different ID's
-    // * one is the sender id.  It will be renamed.  An example is
+    // * one is the service id.  It will be renamed.  An example is
     //   tracker0 or tracker1, button0 or button1, etc.
     // * the other ID is the type id.  This one speaks to how to
     //   decode the message.  Examples are ...XXX...
@@ -204,29 +191,29 @@ public:  // senders and types
     //   ...XXX_vel/pos/acc...
     // * when a client instantiates a vrpn_TrackerRemote,
     //   a connection is made and the pertainant types are registered
-    // * the sender name is part of the connection name, for example
+    // * the service name is part of the connection name, for example
     //   "tracker0@ioglab.cs.unc.edu".
 
 
-    // * get a token to use for the string name of the sender
+    // * get a token to use for the string name of the service
     // * remember to check for -1 meaning failure
-    virtual vrpn_int32 register_sender( const char * name );
+    virtual vrpn_int32 register_service( const char * name );
 
     // * get a token to use for the string name of the message type
     // * remember to check for -1 meaning failure
     virtual vrpn_int32 register_message_type( const char * name );
 
-    // * returns sender ID, or -1 if unregistered
-    int get_sender_id( const char * ) const;
+    // * returns service ID, or -1 if unregistered
+    int get_service_id( const char * ) const;
     
     // * returns message type ID, or -1 if unregistered
     // * was message_type_is_registered  
     int get_message_type_id( const char * ) const;
     
-    // * returns the name of the specified sender,
+    // * returns the name of the specified service,
     //   or NULL if the parameter is invalid
     // * was: sender_name
-    virtual const char * get_sender_name( vrpn_int32 sender_id ) const;
+    virtual const char * get_service_name( vrpn_int32 service_id ) const;
     
     // * returns the name of the specified type,
     //   or NULL if the parameter is invalid

@@ -76,6 +76,22 @@ public: // status
     inline vrpn_int32 outbound_mcast_open (void) const
       { return mcast_recvr ? 1 : 0; } // if multicast recvr ptr non-null
 
+public:  // buffer sizes.  XXX don't know if these belong here or not
+    //                         no, they don't
+    // Applications that need to send very large messages may want to
+    // know the buffer size used or to change its size.  Buffer size
+    // is returned in bytes.
+    vrpn_int32 tcp_outbuf_size () const { return d_tcp_buflen; }
+    vrpn_int32 udp_outbuf_size () const { return d_udp_buflen; }
+
+    // Allows the application to attempt to reallocate the buffer.
+    // If allocation fails (error or out-of-memory), -1 will be returned.
+    // On successful allocation or illegal input (negative size), the
+    // size in bytes will be returned.  These routines are NOT guaranteed
+    // to shrink the buffer, only to increase it or leave it the same.
+    vrpn_int32 set_tcp_outbuf_size (vrpn_int32 bytecount);
+    //XXX need to give defn
+
 
 public: // setting up connections
 
