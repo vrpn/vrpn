@@ -833,6 +833,9 @@ int vrpn_Connection::send_pending_reports(void)
    // up in the TCP buffer.  If there is an error during the send, or
    // an exceptional condition, close the accept socket and go back
    // to listening for new connections.
+#ifdef	VERBOSE
+   printf("TCP Need to send %d bytes\n",tcp_num_out);
+#endif
    while (sent < tcp_num_out) {
 	ret = send(endpoint.tcp_sock, &tcp_outbuf[sent], tcp_num_out-sent, 0);
 #ifdef	VERBOSE
@@ -1095,7 +1098,7 @@ vrpn_Connection::vrpn_Connection (char * station_name) :
 	    status = BROKEN;
 	    return;
 	}
-	status = 0;
+	status = CONNECTED;
 
 	// Set up the things that need to happen when a new connection is
 	// established.
