@@ -252,7 +252,7 @@ long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
     
     memcpy(*insertPt, string, length);
     *insertPt += length;
-    buflen -= length;
+    *buflen -= length;
     
     return 0;
 }

@@ -142,10 +142,12 @@ void vrpn_Shared_int32::unregister_handler (vrpnTimedSharedIntCallback cb,
 
 void vrpn_Shared_int32::encode (char ** buffer, vrpn_int32 * len) const {
   vrpn_buffer(buffer, len, d_value);
+  vrpn_buffer(buffer, len, d_lastUpdate);
 }
 void vrpn_Shared_int32::decode (const char ** buffer, vrpn_int32 *,
-                                vrpn_int32 * newValue) const {
+                                vrpn_int32 * newValue, timeval * when) const {
   vrpn_unbuffer(buffer, newValue);
+  vrpn_unbuffer(buffer, when);
 }
 
 void vrpn_Shared_int32::sendUpdate (vrpn_int32 msgType) {
@@ -158,7 +160,8 @@ void vrpn_Shared_int32::sendUpdate (vrpn_int32 msgType) {
     d_connection->pack_message(32 - buflen, d_lastUpdate,
                                msgType, d_myId,
                                buffer, vrpn_CONNECTION_RELIABLE);
-//fprintf(stderr, "vrpn_Shared_int32::sendUpdate:  packed message\n");
+//fprintf(stderr, "vrpn_Shared_int32::sendUpdate:  packed message of %d "
+//"at %d:%d.\n", d_value, d_lastUpdate.tv_sec, d_lastUpdate.tv_usec);
   }
 
 }
@@ -217,16 +220,22 @@ vrpn_Shared_int32 & vrpn_Shared_int32_Server::set
   // Is this "change" to the same value?
   if ((d_mode & VRPN_SO_IGNORE_IDEMPOTENT) &&
       (newValue == d_value)) {
+//fprintf(stderr, "vrpn_Shared_int32_Server::set (%d) idempotent.\n");
     return *this;
   }
 
   // Is this "new" change older than the previous change?
   if ((d_mode & VRPN_SO_IGNORE_OLD) &&
       !vrpn_TimevalGreater(when, d_lastUpdate)) {
+//fprintf(stderr, "vrpn_Shared_int32_Server::set (%d) too old "
+//"(%d:%d vs %d:%d).\n",
+//newValue, when.tv_sec, when.tv_usec,
+//d_lastUpdate.tv_sec, d_lastUpdate.tv_usec);
     return *this;
   }
 
-//fprintf(stderr, "vrpn_Shared_int32_Server::set (%d)\n", newValue);
+//fprintf(stderr, "vrpn_Shared_int32_Server::set (%d) at %ld:%ld.\n",
+//newValue, when.tv_sec, when.tv_usec);
 
   d_value = newValue;
   d_lastUpdate = when;
@@ -256,9 +265,13 @@ int vrpn_Shared_int32_Server::handle_updateFromRemote
              (void * ud, vrpn_HANDLERPARAM p) {
   vrpn_Shared_int32_Server * s = (vrpn_Shared_int32_Server *) ud;
   vrpn_int32 newValue;
+  timeval when;
 
-  s->decode(&p.buffer, &p.payload_len, &newValue);
-  s->set(newValue, p.msg_time, s->d_mode & VRPN_SO_DEFER_UPDATES);
+  s->decode(&p.buffer, &p.payload_len, &newValue, &when);
+
+//fprintf(stderr, "vrpn_Shared_int32_Server::update to %d at %d:%d.\n",
+//newValue, when.tv_sec, when.tv_usec);
+  s->set(newValue, when, s->d_mode & VRPN_SO_DEFER_UPDATES);
     // If VRPN_SO_DEFER_UPDATES is set, we
     // MUST send an update notification back to the originator (if
     // we accept their update) so that they can reflect it.
@@ -296,19 +309,26 @@ vrpn_Shared_int32 & vrpn_Shared_int32_Remote::set
                                              vrpn_bool shouldSendUpdate) {
   if ((d_mode & VRPN_SO_IGNORE_IDEMPOTENT) &&
       (newValue == d_value)) {
+//fprintf(stderr, "vrpn_Shared_int32_Remote::set (%d) idempotent.\n",
+//newValue);
     return *this;
   }
 
   // Is this "new" change older than the previous change?
   if ((d_mode & VRPN_SO_IGNORE_OLD) &&
       !vrpn_TimevalGreater(when, d_lastUpdate)) {
+//fprintf(stderr, "vrpn_Shared_int32_Remote::set (%d) too old "
+//"(%d:%d vs %d:%d).\n",
+//newValue, when.tv_sec, when.tv_usec,
+//d_lastUpdate.tv_sec, d_lastUpdate.tv_usec);
     return *this;
   }
 
   if (!(d_mode & VRPN_SO_DEFER_UPDATES)) {
     // If we're not deferring updates until the server verifies them,
     // update our local value immediately.
-//fprintf(stderr, "vrpn_Shared_int32_Remote::set (%d)\n", newValue);
+//fprintf(stderr, "vrpn_Shared_int32_Remote::set (%d) at %ld:%ld.\n",
+//newValue, when.tv_sec, when.tv_usec);
     d_value = newValue;
     d_lastUpdate = when;
     yankCallbacks();
@@ -338,9 +358,10 @@ int vrpn_Shared_int32_Remote::handle_updateFromServer
              (void * ud, vrpn_HANDLERPARAM p) {
   vrpn_Shared_int32_Remote * s = (vrpn_Shared_int32_Remote *) ud;
   vrpn_int32 newValue;
+  timeval when;
 
-  s->decode(&p.buffer, &p.payload_len, &newValue);
-  s->set(newValue, p.msg_time, vrpn_FALSE);
+  s->decode(&p.buffer, &p.payload_len, &newValue, &when);
+  s->set(newValue, when, vrpn_FALSE);
   //gettimeofday(&s->d_lastUpdate, NULL);
   //s->d_lastUpdate = p.msg_time;
   //s->yankCallbacks();
@@ -410,6 +431,10 @@ void vrpn_Shared_float64::bindConnection (vrpn_Connection * c) {
   }
 
   d_connection = c;
+  if (!c) {
+    return;
+  }
+
   sprintf(buffer, "vrpn Shared float64 %s", d_name);
   d_myId = c->register_sender(buffer);
   d_updateFromServer_type = c->register_message_type
@@ -417,8 +442,8 @@ void vrpn_Shared_float64::bindConnection (vrpn_Connection * c) {
   d_updateFromRemote_type = c->register_message_type
           ("vrpn Shared float64 update from remote");
 
-//printf ("My name is %s;  myId %d, ufs type %d, ufr type %d.\n",
-//buffer, d_myId, d_updateFromServer_type, d_updateFromRemote_type);
+printf ("My name is %s;  myId %d, ufs type %d, ufr type %d.\n",
+buffer, d_myId, d_updateFromServer_type, d_updateFromRemote_type);
 }
 
 void vrpn_Shared_float64::register_handler (vrpnSharedFloatCallback cb,
@@ -491,10 +516,12 @@ void vrpn_Shared_float64::unregister_handler (vrpnTimedSharedFloatCallback cb,
 
 void vrpn_Shared_float64::encode (char ** buffer, vrpn_int32 * len) const {
   vrpn_buffer(buffer, len, d_value);
+  vrpn_buffer(buffer, len, d_lastUpdate);
 }
 void vrpn_Shared_float64::decode (const char ** buffer, vrpn_int32 *,
-                                vrpn_float64 * newValue) const {
+                                vrpn_float64 * newValue, timeval * when) const {
   vrpn_unbuffer(buffer, newValue);
+  vrpn_unbuffer(buffer, when);
 }
 
 void vrpn_Shared_float64::sendUpdate (vrpn_int32 msgType) {
@@ -573,10 +600,15 @@ vrpn_Shared_float64 & vrpn_Shared_float64_Server::set
   // Is this "new" change older than the previous change?
   if ((d_mode & VRPN_SO_IGNORE_OLD) &&
       !vrpn_TimevalGreater(when, d_lastUpdate)) {
+//fprintf(stderr, "vrpn_Shared_float64_Server::set (%.5lf) too old "
+//"(%d:%d vs %d:%d).\n",
+//newValue, when.tv_sec, when.tv_usec,
+//d_lastUpdate.tv_sec, d_lastUpdate.tv_usec);
     return *this;
   }
 
-//fprintf(stderr, "vrpn_Shared_float64_Server::set (%d)\n", newValue);
+//fprintf(stderr, "vrpn_Shared_float64_Server::set (%.5lf) at (%d:%d)\n",
+//newValue, when.tv_sec, when.tv_usec);
 
   d_value = newValue;
   d_lastUpdate = when;
@@ -606,9 +638,10 @@ int vrpn_Shared_float64_Server::handle_updateFromRemote
              (void * ud, vrpn_HANDLERPARAM p) {
   vrpn_Shared_float64_Server * s = (vrpn_Shared_float64_Server *) ud;
   vrpn_float64 newValue;
+  timeval when;
 
-  s->decode(&p.buffer, &p.payload_len, &newValue);
-  s->set(newValue, p.msg_time, s->d_mode & VRPN_SO_DEFER_UPDATES);
+  s->decode(&p.buffer, &p.payload_len, &newValue, &when);
+  s->set(newValue, when, s->d_mode & VRPN_SO_DEFER_UPDATES);
     // If VRPN_SO_DEFER_UPDATES is set, we
     // MUST send an update notification back to the originator (if
     // we accept their update) so that they can reflect it.
@@ -653,13 +686,20 @@ vrpn_Shared_float64 & vrpn_Shared_float64_Remote::set
   // Is this "new" change older than the previous change?
   if ((d_mode & VRPN_SO_IGNORE_OLD) &&
       !vrpn_TimevalGreater(when, d_lastUpdate)) {
+//fprintf(stderr, "vrpn_Shared_float64_Remote::set (%.5lf) too old "
+//"(%d:%d vs %d:%d).\n",
+//newValue, when.tv_sec, when.tv_usec,
+//d_lastUpdate.tv_sec, d_lastUpdate.tv_usec);
     return *this;
   }
 
-  if (!(d_mode & VRPN_SO_DEFER_UPDATES)) {
+  // HACK:  using shouldSendUpdate to determine whether this was a locally-
+  // generated call to set() or one from propagateReceivedUpdate();  in
+  // the latter case we should accept it even if we are deferring updates.
+  if (shouldSendUpdate || !(d_mode & VRPN_SO_DEFER_UPDATES)) {
     // If we're not deferring updates until the server verifies them,
     // update our local value immediately.
-//fprintf(stderr, "vrpn_Shared_float64_Remote::set (%d)\n", newValue);
+//fprintf(stderr, "vrpn_Shared_float64_Remote::set (%.5lf)\n", newValue);
     d_value = newValue;
     d_lastUpdate = when;
     yankCallbacks();
@@ -689,13 +729,399 @@ int vrpn_Shared_float64_Remote::handle_updateFromServer
              (void * ud, vrpn_HANDLERPARAM p) {
   vrpn_Shared_float64_Remote * s = (vrpn_Shared_float64_Remote *) ud;
   vrpn_float64 newValue;
+  timeval when;
 
-  s->decode(&p.buffer, &p.payload_len, &newValue);
-  s->set(newValue, p.msg_time, vrpn_FALSE);
+  s->decode(&p.buffer, &p.payload_len, &newValue, &when);
+  s->set(newValue, when, vrpn_FALSE);
   //gettimeofday(&s->d_lastUpdate, NULL);
   //s->d_lastUpdate = p.msg_time;
   //s->yankCallbacks();
 //fprintf(stderr, "vrpn_Shared_float64_Remote::handle_updateFromServer done\n");
+
+  return 0;
+}
+
+
+
+
+
+vrpn_Shared_String::vrpn_Shared_String (const char * name,
+                                        const char * defaultValue,
+                                        vrpn_int32 mode) :
+  d_value (defaultValue ? new char [1 + strlen(defaultValue)] : NULL),
+  d_name (name ? new char [1 + strlen(name)] : NULL),
+  d_mode (mode),
+  d_connection (NULL),
+  d_myId (-1),
+  d_updateFromServer_type (-1),
+  d_updateFromRemote_type (-1),
+  d_callbacks (NULL),
+  d_timedCallbacks (NULL) {
+
+  if (defaultValue) {
+    strcpy(d_value, defaultValue);
+  }
+  if (name) {
+    strcpy(d_name, name);
+  }
+  gettimeofday(&d_lastUpdate, NULL);
+}
+
+// virtual
+vrpn_Shared_String::~vrpn_Shared_String (void) {
+  if (d_value) {
+    delete [] d_value;
+  }
+  if (d_name) {
+    delete [] d_name;
+  }
+}
+
+const char * vrpn_Shared_String::value (void) const {
+  return d_value;
+}
+
+vrpn_Shared_String::operator const char * () const {
+  return value();
+}
+
+// virtual
+vrpn_Shared_String & vrpn_Shared_String::operator =
+                                            (const char * newValue) {
+  struct timeval now;
+  gettimeofday(&now, NULL);
+  return set(newValue, now);
+}
+
+void vrpn_Shared_String::bindConnection (vrpn_Connection * c) {
+  char buffer [101];
+  if (c == NULL) {
+      // unbind the connection
+      d_connection = NULL;
+      return;
+  }
+
+  if (c && d_connection) {
+    fprintf(stderr, "vrpn_Shared_String::bindConnection:  "
+                    "Tried to rebind a connection to %s.\n", d_name);
+    return;
+  }
+
+  d_connection = c;
+  if (!c) {
+    return;
+  }
+
+  sprintf(buffer, "vrpn Shared float64 %s", d_name);
+  d_myId = c->register_sender(buffer);
+  d_updateFromServer_type = c->register_message_type
+          ("vrpn Shared float64 update from server");
+  d_updateFromRemote_type = c->register_message_type
+          ("vrpn Shared float64 update from remote");
+
+//printf ("My name is %s;  myId %d, ufs type %d, ufr type %d.\n",
+//buffer, d_myId, d_updateFromServer_type, d_updateFromRemote_type);
+}
+
+void vrpn_Shared_String::register_handler (vrpnSharedStringCallback cb,
+                                            void * userdata) {
+  callbackEntry * e = new callbackEntry;
+  if (!e) {
+    fprintf(stderr, "vrpn_Shared_String::register_handler:  "
+                    "Out of memory.\n");
+    return;
+  }
+  e->handler = cb;
+  e->userdata = userdata;
+  e->next = d_callbacks;
+  d_callbacks = e;
+}
+
+void vrpn_Shared_String::unregister_handler (vrpnSharedStringCallback cb,
+                                              void * userdata) {
+  callbackEntry * e, ** snitch;
+
+  snitch = &d_callbacks;
+  e = *snitch;
+  while (e && (e->handler != cb) && (e->userdata != userdata)) {
+    snitch = &(e->next);
+    e = *snitch;
+  }
+  if (!e) {
+    fprintf(stderr, "vrpn_Shared_String::unregister_handler:  "
+                    "Handler not found.\n");
+    return;
+  }
+
+  *snitch = e->next;
+  delete e;
+}
+
+void vrpn_Shared_String::register_handler (vrpnTimedSharedStringCallback cb,
+                                            void * userdata) {
+  timedCallbackEntry * e = new timedCallbackEntry;
+  if (!e) {
+    fprintf(stderr, "vrpn_Shared_String::register_handler:  "
+                    "Out of memory.\n");
+    return;
+  }
+  e->handler = cb;
+  e->userdata = userdata;
+  e->next = d_timedCallbacks;
+  d_timedCallbacks = e;
+}
+
+void vrpn_Shared_String::unregister_handler (vrpnTimedSharedStringCallback cb,
+                                              void * userdata) {
+  timedCallbackEntry * e, ** snitch;
+
+  snitch = &d_timedCallbacks;
+  e = *snitch;
+  while (e && (e->handler != cb) && (e->userdata != userdata)) {
+    snitch = &(e->next);
+    e = *snitch;
+  }
+  if (!e) {
+    fprintf(stderr, "vrpn_Shared_String::unregister_handler:  "
+                    "Handler not found.\n");
+    return;
+  }
+
+  *snitch = e->next;
+  delete e;
+}
+
+void vrpn_Shared_String::encode (char ** buffer, vrpn_int32 * len) const {
+  // We reverse ordering from the other vrpn_SharedObject classes
+  // so that the time value is guaranteed to be aligned.
+  vrpn_buffer(buffer, len, d_lastUpdate);
+  vrpn_buffer(buffer, len, d_value, strlen(d_value));
+}
+void vrpn_Shared_String::decode (const char ** buffer, vrpn_int32 * len,
+                                 char * newValue, timeval * when) const {
+  vrpn_unbuffer(buffer, when);
+  vrpn_unbuffer(buffer, newValue, *len - sizeof(*when));
+    // HACKish
+}
+
+void vrpn_Shared_String::sendUpdate (vrpn_int32 msgType) {
+  char buffer [1024];  // HACK
+  vrpn_int32 buflen = 1024;
+  char * bp = buffer;
+
+  if (d_connection) {
+    encode(&bp, &buflen);
+    d_connection->pack_message(1024 - buflen, d_lastUpdate,
+                               msgType, d_myId,
+                               buffer, vrpn_CONNECTION_RELIABLE);
+//fprintf(stderr, "vrpn_Shared_String::sendUpdate:  packed message\n");
+  }
+
+}
+
+
+int vrpn_Shared_String::yankCallbacks (void) {
+  callbackEntry * e;
+  timedCallbackEntry * te;
+
+  for (e = d_callbacks;  e;  e = e->next) {
+    if ((*e->handler)(e->userdata, d_value)) {
+      return -1;
+    }
+  }
+  for (te = d_timedCallbacks;  te;  te = te->next) {
+    if ((*te->handler)(te->userdata, d_value, d_lastUpdate)) {
+      return -1;
+    }
+  }
+
+  return 0;
+}
+
+
+
+
+
+
+
+vrpn_Shared_String_Server::vrpn_Shared_String_Server
+                                     (const char * name,
+                                      const char * defaultValue,
+                                      vrpn_int32 defaultMode) :
+    vrpn_Shared_String (name, defaultValue, defaultMode) {
+
+}
+
+// virtual
+vrpn_Shared_String_Server::~vrpn_Shared_String_Server (void) {
+
+  // unregister handlers
+  if (d_connection) {
+    d_connection->unregister_handler
+           (d_updateFromRemote_type, handle_updateFromRemote, this, d_myId);
+  }
+
+}
+
+
+
+// virtual
+vrpn_Shared_String & vrpn_Shared_String_Server::set
+                                      (const char * newValue,
+                                       timeval when,
+                                       vrpn_bool shouldSendUpdate) {
+
+  // Is this "change" to the same value?
+  if ((d_mode & VRPN_SO_IGNORE_IDEMPOTENT) &&
+      (newValue == d_value)) {
+    return *this;
+  }
+
+  // Is this "new" change older than the previous change?
+  if ((d_mode & VRPN_SO_IGNORE_OLD) &&
+      !vrpn_TimevalGreater(when, d_lastUpdate)) {
+//fprintf(stderr, "vrpn_Shared_String_Server::set (%.5lf) too old "
+//"(%d:%d vs %d:%d).\n",
+//newValue, when.tv_sec, when.tv_usec,
+//d_lastUpdate.tv_sec, d_lastUpdate.tv_usec);
+    return *this;
+  }
+
+//fprintf(stderr, "vrpn_Shared_String_Server::set (%.5lf) at (%d:%d)\n",
+//newValue, when.tv_sec, when.tv_usec);
+
+  if (d_value) {
+    delete [] d_value;
+  }
+  d_value = new char [1 + strlen(newValue)];
+  if (!d_value) {
+    fprintf(stderr, "vrpn_Shared_String_Server::set:  Out of memory.\n");
+    return *this;
+  }
+  strcpy(d_value, newValue);
+  d_lastUpdate = when;
+  yankCallbacks();
+
+  if (shouldSendUpdate) {
+    sendUpdate(d_updateFromServer_type);
+  }
+
+  return *this;
+}
+
+// virtual
+void vrpn_Shared_String_Server::bindConnection (vrpn_Connection * c) {
+
+  vrpn_Shared_String::bindConnection(c);
+
+  if (d_connection) {
+    d_connection->register_handler(d_updateFromRemote_type,
+                                   handle_updateFromRemote,
+                                   this, d_myId);
+  }
+}
+
+// static
+int vrpn_Shared_String_Server::handle_updateFromRemote
+             (void * ud, vrpn_HANDLERPARAM p) {
+  vrpn_Shared_String_Server * s = (vrpn_Shared_String_Server *) ud;
+  char newValue [1024];  // HACK
+  timeval when;
+
+  s->decode(&p.buffer, &p.payload_len, newValue, &when);
+  s->set(newValue, when, s->d_mode & VRPN_SO_DEFER_UPDATES);
+
+  return 0;
+}
+
+
+vrpn_Shared_String_Remote::vrpn_Shared_String_Remote
+                                  (const char * name,
+                                   const char * defaultValue,
+                                   vrpn_int32 defaultMode) :
+    vrpn_Shared_String (name, defaultValue, defaultMode) {
+
+}
+
+// virtual
+vrpn_Shared_String_Remote::~vrpn_Shared_String_Remote (void) {
+
+  // unregister handlers
+  if (d_connection) {
+    d_connection->unregister_handler
+           (d_updateFromServer_type, handle_updateFromServer, this, d_myId);
+  }
+
+}
+
+// virtual
+vrpn_Shared_String & vrpn_Shared_String_Remote::set
+                                            (const char * newValue,
+                                             timeval when,
+                                             vrpn_bool shouldSendUpdate) {
+  if ((d_mode & VRPN_SO_IGNORE_IDEMPOTENT) &&
+      (newValue == d_value)) {
+    return *this;
+  }
+
+  // Is this "new" change older than the previous change?
+  if ((d_mode & VRPN_SO_IGNORE_OLD) &&
+      !vrpn_TimevalGreater(when, d_lastUpdate)) {
+//fprintf(stderr, "vrpn_Shared_String_Remote::set (%.5lf) too old "
+//"(%d:%d vs %d:%d).\n",
+//newValue, when.tv_sec, when.tv_usec,
+//d_lastUpdate.tv_sec, d_lastUpdate.tv_usec);
+    return *this;
+  }
+
+  // HACK:  using shouldSendUpdate to determine whether this was a locally-
+  // generated call to set() or one from propagateReceivedUpdate();  in
+  // the latter case we should accept it even if we are deferring updates.
+  if (shouldSendUpdate || !(d_mode & VRPN_SO_DEFER_UPDATES)) {
+    // If we're not deferring updates until the server verifies them,
+    // update our local value immediately.
+//fprintf(stderr, "vrpn_Shared_String_Remote::set (%.5lf)\n", newValue);
+    if (d_value) {
+      delete [] d_value;
+    }
+    d_value = new char [1 + strlen(newValue)];
+    if (!d_value) {
+      fprintf(stderr, "vrpn_Shared_String_Server::set:  Out of memory.\n");
+      return *this;
+    }
+    strcpy(d_value, newValue);
+    d_lastUpdate = when;
+    yankCallbacks();
+  }
+
+  if (shouldSendUpdate) {
+    sendUpdate(d_updateFromRemote_type);
+  }
+
+  return *this;
+}
+
+// virtual
+void vrpn_Shared_String_Remote::bindConnection (vrpn_Connection * c) {
+
+  vrpn_Shared_String::bindConnection(c);
+
+  if (d_connection) {
+    d_connection->register_handler(d_updateFromServer_type,
+                                   handle_updateFromServer,
+                                   this, d_myId);
+  }
+}
+
+// static
+int vrpn_Shared_String_Remote::handle_updateFromServer
+             (void * ud, vrpn_HANDLERPARAM p) {
+  vrpn_Shared_String_Remote * s = (vrpn_Shared_String_Remote *) ud;
+  char newValue [1024];  // HACK
+  timeval when;
+
+  s->decode(&p.buffer, &p.payload_len, newValue, &when);
+  s->set(newValue, when, vrpn_FALSE);
 
   return 0;
 }
