@@ -1,6 +1,10 @@
 #include "vrpn_FileController.h"
 #include "vrpn_Connection.h"
 
+#ifndef	_WIN32
+#include <netinet/in.h>
+#endif
+
 vrpn_File_Controller::vrpn_File_Controller (vrpn_Connection * c) :
     d_connection (c) {
 
