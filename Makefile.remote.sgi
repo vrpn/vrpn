@@ -18,7 +18,7 @@
 
 # commands
 CC = CC
-makefile = makefile.remote.sgi
+makefile = $(NM_MAKEFILE)
 MAKE = make -f $(makefile)
 HW_OS = sgi_irix
 SHELL = /bin/sh
