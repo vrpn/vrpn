@@ -12,16 +12,20 @@
 #include <termios.h>
 #endif
 
-#ifndef _WIN32
+#if !defined(_WIN32)
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <netinet/in.h>
 #endif
 
+/*#if defined(__CYGWIN__)
+#include <sys/unistd.h>
+#endif*/
+
 #if defined(_WIN32)
 #include <io.h>
 #if !defined(__CYGWIN__)
-#include <afxcoll.h>
+//#include <afxcoll.h>
 #endif
 #endif
 
@@ -47,7 +51,9 @@
                                   (t1.tv_usec > t2.tv_usec)) )
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
-static CPtrArray commConnections;
+static void **commConnections;
+static int curCom = -1;
+static int maxCom = 10;
 #endif
 
 int vrpn_open_commport(char *portname, long baud)
@@ -63,7 +69,6 @@ int vrpn_open_commport(char *portname, long baud)
   COMMTIMEOUTS cto;
   HANDLE hCom;
   BOOL fSuccess;
-  int curConn = -1;
 #else
   int fileDescriptor;
   struct termio   sttyArgs;
@@ -77,10 +82,21 @@ int vrpn_open_commport(char *portname, long baud)
 					 OPEN_EXISTING, // comm devices must use OPEN_EXISTING 
 					 0, // not overlapped I/O 
 					 NULL);  // hTemplate must be NULL for comm devices     );
-  
-  curConn++;
-  commConnections.Add(hCom);  
 
+  if (curCom == -1)
+	  commConnections = (void**)new char[maxCom];
+  else
+  {
+	  if (curCom >= maxCom)
+	  {
+		  void *old = commConnections;
+		  maxCom *= 2;
+		  commConnections = (void**)new char[maxCom];
+		  delete [] old;
+	  }
+
+  }
+  
   if (hCom == INVALID_HANDLE_VALUE) 
   {    
     perror("Tracker: cannot open serial port");
@@ -134,7 +150,11 @@ int vrpn_open_commport(char *portname, long baud)
 	CloseHandle(hCom);
     return -1;
   }
-  return curConn;
+
+  curCom++;
+  commConnections[curCom] = hCom;
+
+  return curCom;
 
 #else
   // Open the serial port for r/w
@@ -210,6 +230,15 @@ int vrpn_close_commport(int comm)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
 	return CloseHandle(commConnections[comm]);
+
+	for(int i = comm; i < curCom - 1; i++)
+		commConnections[i] = commConnections[i+1];
+
+	commConnections[curCom--] = NULL;
+
+	if (curCom == -1)
+		delete [] commConnections;
+
 #else
 	return close(comm);
 #endif
