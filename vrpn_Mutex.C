@@ -10,6 +10,10 @@
 #include <netdb.h>
 #endif
 
+#ifdef _WIN32
+#include <process.h>  // for _getpid()
+#endif
+
 #ifdef sparc
 #define INADDR_NONE -1
 #endif
@@ -237,7 +241,6 @@ void vrpn_Mutex::sendDenyRequest (vrpn_int32 index) {
 
 
 
-
 vrpn_Mutex_Server::vrpn_Mutex_Server (const char * name, vrpn_Connection * c) :
     vrpn_Mutex (name, c),
     d_state (FREE),
@@ -319,12 +322,14 @@ int vrpn_Mutex_Server::handle_release (void * userdata, vrpn_HANDLERPARAM) {
 
 // static
 int vrpn_Mutex_Server::handle_requestIndex (void *userdata,
-						vrpn_HANDLERPARAM) {
+						vrpn_HANDLERPARAM p) {
   vrpn_Mutex_Server * me = (vrpn_Mutex_Server *) userdata;
+
   timeval now;
-  char buffer [32];
+  vrpn_int32 msg_len = sizeof(vrpn_int32) + p.payload_len;
+  char *buffer = new char[msg_len];
   char * b = buffer;
-  vrpn_int32 bl = 32;
+  vrpn_int32 bl = msg_len;
 
 #ifdef VERBOSE
   fprintf(stderr, "vrpn_Mutex_Server::handle_requestIndex:  "
@@ -333,15 +338,17 @@ int vrpn_Mutex_Server::handle_requestIndex (void *userdata,
 
   if (me->d_connection) {
     gettimeofday(&now, NULL);
+    // echo back whatever the client gave us as a unique identifier
+    vrpn_buffer(&b, &bl, p.buffer, p.payload_len);
     vrpn_buffer(&b, &bl, (me->d_remoteIndex));
-    me->d_connection->pack_message(32-bl, now,
+    me->d_connection->pack_message(msg_len, now,
                                    me->d_initialize_type, me->d_myId,
                                    buffer,
                                    vrpn_CONNECTION_RELIABLE);
   }
 
   me->d_remoteIndex++;
-
+  delete [] buffer;
   return 0;
 }
 
@@ -437,11 +444,25 @@ vrpn_bool vrpn_Mutex_Remote::isHeldRemotely (void) const {
 
 void vrpn_Mutex_Remote::requestIndex (void) {
   timeval now;
+  vrpn_int32 buflen = sizeof(vrpn_int32)+sizeof(vrpn_uint32);
+  char *buf = new char[buflen];
+  char *bufptr = buf;
+  vrpn_int32 len = buflen;
+  vrpn_uint32 ip_addr = getmyIP();
+#ifdef _WIN32
+  vrpn_int32 pid = _getpid();
+#else
+  vrpn_int32 pid = getpid();
+#endif
+  vrpn_buffer(&bufptr, &len, ip_addr);
+  vrpn_buffer(&bufptr, &len, pid);
+  printf("requesting index for %lu, %d\n", ip_addr, pid);
   gettimeofday(&now, NULL);
-  d_connection->pack_message(0, now,
+  d_connection->pack_message(buflen, now,
                          d_requestIndex_type, d_myId,
-                         NULL,
+                         buf,
                          vrpn_CONNECTION_RELIABLE);
+  delete [] buf;
   return;
 }
 
@@ -610,6 +631,29 @@ int vrpn_Mutex_Remote::handle_initialize (void * userdata,
     return 0;
   }
 
+  vrpn_int32 expected_payload_len = 2*sizeof(vrpn_int32) + sizeof(vrpn_uint32);
+  if (p.payload_len != expected_payload_len) {
+    fprintf(stderr, "vrpn_Mutex_Remote::handle_initialize: "
+       "Warning: Ignoring message with length %d, expected %d\n", 
+                p.payload_len, expected_payload_len);
+    return 0;
+  }
+
+  vrpn_uint32 ip_addr;
+  vrpn_int32 pid;
+  vrpn_unbuffer(&b, &ip_addr);
+  vrpn_unbuffer(&b, &pid);
+  vrpn_uint32 my_pid = 0;
+#ifdef _WIN32
+  my_pid = _getpid();
+#else
+  my_pid = getpid();
+#endif
+  if (ip_addr != getmyIP() || pid != my_pid) {
+    fprintf(stderr, "vrpn_Mutex_Remote::handle_initialize: "
+       "Warning: Ignoring message that doesn't match ip/pid identifier\n");
+    return 0;
+  }
   vrpn_unbuffer(&b, &(me->d_myIndex));
 
 #ifdef VERBOSE

@@ -1,3 +1,19 @@
+2001-05-01  Adam Seeger  <seeger@cs.unc.edu>
+
+	* vrpn_Mutex.C (vrpn_Mutex_Remote::requestIndex): now packs the IP
+	address and process id into this message
+	(vrpn_Mutex_Remote::handle_initialize): checks to see if the
+	index message is tagged with the same IP address and process id that
+	was included in the requestIndex message; this also handles the case
+	when other clients that may use an older version of the code
+	do not provide this unique identifier and ignores index assignments
+	designated for those clients
+	(vrpn_Mutex_Server::handle_requestIndex): now packs whatever was
+	in the requestIndex message from the client so it gets echoed back
+	and the client can figure out which index belongs to it
+	(presumably the client put some unique identifier into the
+	requestIndex message)
+
 2001-04-30  Tom Hudson  <hudson@cs.unc.edu>
 
 	* vrpn_Mutex.C (handle_gotConnection) : Fix logic error to request
