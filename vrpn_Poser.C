@@ -55,7 +55,7 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 }
 */
 
-vrpn_Poser::vrpn_Poser (const char * name, vrpn_Connection * c) : 
+vrpn_Poser::vrpn_Poser (const char* name, vrpn_Connection* c) : 
     vrpn_BaseClass(name, c)
 {
 	vrpn_BaseClass::init();
@@ -80,14 +80,20 @@ vrpn_Poser::vrpn_Poser (const char * name, vrpn_Connection * c) :
 	vel_quat_dt = 1;
 
     // Set the workspace max and min values just to have something there
-    workspace_max[0] = workspace_max[1] = workspace_max[2] = 1.0;
-    workspace_min[0] = workspace_min[1] = workspace_min[2] = -1.0;
+    pos_max[0] = pos_max[1] = pos_max[2] = 
+        vel_max[0] = vel_max[1] = vel_max[2] = 1.0;
+    pos_min[0] = pos_min[1] = pos_min[2] = 
+        vel_min[0] = vel_min[1] = vel_min[2] = -1.0;
+    pos_rot_max[0] = pos_rot_max[1] = pos_rot_max[2] = 
+        vel_rot_max[0] = vel_rot_max[1] = vel_rot_max[2] = 45.0;
+    pos_rot_min[0] = pos_rot_min[1] = pos_rot_min[2] = 
+        vel_rot_min[0] = vel_rot_min[1] = vel_rot_min[2] = -1.0;
 }
 
-int vrpn_Poser::register_change_handler(void *userdata,
+int vrpn_Poser::register_change_handler(void* userdata,
         vrpn_POSERCHANGEHANDLER handler)
 {
-    vrpn_POSERCHANGELIST *new_entry;
+    vrpn_POSERCHANGELIST* new_entry;
 
     // Ensure that the handler is non-NULL
     if (handler == NULL) {
@@ -113,10 +119,10 @@ int vrpn_Poser::register_change_handler(void *userdata,
     return 0;
 }
 
-int vrpn_Poser::register_change_handler(void *userdata,
+int vrpn_Poser::register_change_handler(void* userdata,
         vrpn_POSERVELCHANGEHANDLER handler)
 {
-    vrpn_POSERVELCHANGELIST *new_entry;
+    vrpn_POSERVELCHANGELIST* new_entry;
 
     // Ensure that the handler is non-NULL
     if (handler == NULL) {
@@ -142,7 +148,7 @@ int vrpn_Poser::register_change_handler(void *userdata,
     return 0;
 }
 
-int vrpn_Poser::unregister_change_handler(void *userdata,
+int vrpn_Poser::unregister_change_handler(void* userdata,
         vrpn_POSERCHANGEHANDLER handler)
 {
 	// The pointer at *snitch points to victim
@@ -173,7 +179,7 @@ int vrpn_Poser::unregister_change_handler(void *userdata,
 	return 0;
 }
 
-int vrpn_Poser::unregister_change_handler(void *userdata,
+int vrpn_Poser::unregister_change_handler(void* userdata,
         vrpn_POSERVELCHANGEHANDLER handler)
 {
 // The pointer at *snitch points to victim
@@ -246,7 +252,7 @@ int vrpn_Poser::register_server_handlers(void)
 //	        (malloced data and static arrays are automatically alloced in
 //          this way).  Assumes that there is enough room to store the
 //          entire message.  Returns the number of characters sent.
-int	vrpn_Poser::encode_to(char *buf)
+int	vrpn_Poser::encode_to(char* buf)
 {
    char *bufptr = buf;
    int  buflen = 1000;
@@ -266,7 +272,7 @@ int	vrpn_Poser::encode_to(char *buf)
    return 1000 - buflen;
 }
 
-int vrpn_Poser::encode_vel_to(char *buf)
+int vrpn_Poser::encode_vel_to(char* buf)
 {
     char *bufptr = buf;
     int buflen = 1000;
@@ -313,20 +319,20 @@ void vrpn_Poser::set_pose_velocity(timeval t, vrpn_float64 velocity[3], vrpn_flo
     vel_quat_dt = interval;
 }
 
-int vrpn_Poser::handle_change_message(void *userdata,
+int vrpn_Poser::handle_change_message(void* userdata,
 	    vrpn_HANDLERPARAM p)
 {
-	vrpn_Poser *me = (vrpn_Poser *)userdata;
-	const char *params = (p.buffer);
+	vrpn_Poser* me = (vrpn_Poser*)userdata;
+	const char* params = (p.buffer);
 	vrpn_POSERCB pp;
 	vrpn_POSERCHANGELIST *handler;
 	int	i;
 
 	// Fill in the parameters to the poser from the message
-	if (p.payload_len != (7*sizeof(vrpn_float64)) ) {
+	if (p.payload_len != (7 * sizeof(vrpn_float64)) ) {
 		fprintf(stderr,"vrpn_Poser: change message payload error\n");
 		fprintf(stderr,"             (got %d, expected %d)\n",
-			p.payload_len, 7*sizeof(vrpn_float64) );
+			p.payload_len, 7 * sizeof(vrpn_float64) );
 		return -1;
 	}
 	pp.msg_time = p.msg_time;
@@ -352,20 +358,20 @@ int vrpn_Poser::handle_change_message(void *userdata,
     return 0;
 }
 
-int vrpn_Poser::handle_vel_change_message(void *userdata,
+int vrpn_Poser::handle_vel_change_message(void* userdata,
         vrpn_HANDLERPARAM p)
 {
-    vrpn_Poser *me = (vrpn_Poser *)userdata;
-	const char *params = (p.buffer);
+    vrpn_Poser* me = (vrpn_Poser*)userdata;
+	const char* params = (p.buffer);
 	vrpn_POSERVELCB pp;
 	vrpn_POSERVELCHANGELIST *handler;
 	int	i;
 
 	// Fill in the parameters to the poser from the message
-	if (p.payload_len != (8*sizeof(vrpn_float64)) ) {
+	if (p.payload_len != (8 * sizeof(vrpn_float64)) ) {
 		fprintf(stderr,"vrpn_Poser: velocity message payload error\n");
 		fprintf(stderr,"             (got %d, expected %d)\n",
-			p.payload_len, 8*sizeof(vrpn_float64) );
+			p.payload_len, 8 * sizeof(vrpn_float64) );
 		return -1;
 	}
 	pp.msg_time = p.msg_time;
@@ -398,7 +404,7 @@ int vrpn_Poser::handle_vel_change_message(void *userdata,
 //////////////////////////////////////////////////////////////////////////////////////
 // Server Code
 
-vrpn_Poser_Server::vrpn_Poser_Server (const char * name, vrpn_Connection * c, const char * ana_name) :
+vrpn_Poser_Server::vrpn_Poser_Server (const char* name, vrpn_Connection* c) :
     vrpn_Poser(name, c)
 {
 //	register_server_handlers();
@@ -422,21 +428,6 @@ vrpn_Poser_Server::vrpn_Poser_Server (const char * name, vrpn_Connection * c, co
 			handle_vel_change_message, this, d_sender_id)) {
 		fprintf(stderr,"vrpn_Poser_Server:can't register velocity handler\n");
 		d_connection = NULL;
-	}
-
-    // Create the analog client
-    if (ana_name) {
-        if (ana_name[0] == '*') {    // local connection
-            ana = new vrpn_Analog_Remote(&(ana_name[1]), d_connection);
-        }
-        else {                      // remote connection
-            ana = new vrpn_Analog_Remote(ana_name);
-        }
-    }
-
-    if (!ana) {
-		fprintf(stderr,"vrpn_Poser_Server: Can't open Analog %s\n",ana_name);
-        return;
 	}
 }
 
@@ -481,21 +472,21 @@ int vrpn_Poser_Server::send_pose_velocity()
 }
 
 
-int vrpn_Poser_Server::handle_change_message(void *userdata,
+int vrpn_Poser_Server::handle_change_message(void* userdata,
 	    vrpn_HANDLERPARAM p)
 {
-	vrpn_Poser_Server *me = (vrpn_Poser_Server *)userdata;
-	const char *params = (p.buffer);
+	vrpn_Poser_Server* me = (vrpn_Poser_Server *)userdata;
+	const char* params = (p.buffer);
 	vrpn_POSERCB pp;
-	vrpn_POSERCHANGELIST *handler;
+	vrpn_POSERCHANGELIST* handler;
 	int	i;
     bool outside_bounds = false;
 
 	// Fill in the parameters to the poser from the message
-	if (p.payload_len != (7*sizeof(vrpn_float64)) ) {
+	if (p.payload_len != (7 * sizeof(vrpn_float64)) ) {
 		fprintf(stderr,"vrpn_Poser_Server: change message payload error\n");
 		fprintf(stderr,"             (got %d, expected %d)\n",
-			p.payload_len, 7*sizeof(vrpn_float64) );
+			p.payload_len, 7 * sizeof(vrpn_float64) );
 		return -1;
 	}
 	pp.msg_time = p.msg_time;
@@ -513,27 +504,18 @@ int vrpn_Poser_Server::handle_change_message(void *userdata,
     // JUST DOING POSITION RIGHT NOW
 
     for (i = 0; i < 3; i++) {
-        if (pp.pos[i] < me->workspace_min[i]) {
-            pp.pos[i] = me->workspace_min[i];
+        if (pp.pos[i] < me->pos_min[i]) {
+            pp.pos[i] = me->pos_min[i];
             outside_bounds = true;
         }
-        else if (pp.pos[i] > me->workspace_max[i]) {
-            pp.pos[i] = me->workspace_max[i];
+        else if (pp.pos[i] > me->pos_max[i]) {
+            pp.pos[i] = me->pos_max[i];
             outside_bounds = true;
         }
     }
 
     // Set the local pose
     me->set_pose(pp.msg_time, pp.pos, pp.quat);
-
-    // Send the Analog values 
-
-    // SHOULD THIS BE HERE????
-    // JUST DOING FOR POSITION RIGHT NOW
-    // JUST FOR TESTING PURPOSES
-    me->ana->request_change_channel_value(0, pp.pos[0]);
-    me->ana->request_change_channel_value(1, pp.pos[1]);
-    me->ana->request_change_channel_value(2, pp.pos[2]);
 
     if (outside_bounds) {
         // Requested pose not available.  Ack the client of the given pose.
@@ -551,20 +533,20 @@ int vrpn_Poser_Server::handle_change_message(void *userdata,
     return 0;
 }
 
-int vrpn_Poser_Server::handle_vel_change_message(void *userdata,
+int vrpn_Poser_Server::handle_vel_change_message(void* userdata,
 	    vrpn_HANDLERPARAM p)
 {
-	vrpn_Poser_Server *me = (vrpn_Poser_Server *)userdata;
-	const char *params = (p.buffer);
+	vrpn_Poser_Server* me = (vrpn_Poser_Server*)userdata;
+	const char* params = (p.buffer);
 	vrpn_POSERVELCB pp;
-	vrpn_POSERVELCHANGELIST *handler;
+	vrpn_POSERVELCHANGELIST* handler;
 	int	i;
 
 	// Fill in the parameters to the poser from the message
-	if (p.payload_len != (8*sizeof(vrpn_float64)) ) {
+	if (p.payload_len != (8 * sizeof(vrpn_float64)) ) {
 		fprintf(stderr,"vrpn_Poser_Server: velocity message payload error\n");
 		fprintf(stderr,"             (got %d, expected %d)\n",
-			p.payload_len, 8*sizeof(vrpn_float64) );
+			p.payload_len, 8 * sizeof(vrpn_float64) );
 		return -1;
 	}
 	pp.msg_time = p.msg_time;
@@ -596,18 +578,11 @@ int vrpn_Poser_Server::handle_vel_change_message(void *userdata,
 //////////////////////////////////////////////////////////////////////////////////////
 // Client Code
 
-vrpn_Poser_Remote::vrpn_Poser_Remote (const char * name, vrpn_Connection *cn) :
-	vrpn_Poser (name, cn)
+vrpn_Poser_Remote::vrpn_Poser_Remote (const char* name, vrpn_Connection* c) :
+	vrpn_Poser (name, c)
 {
 	// Make sure that we have a valid connection
 	if (d_connection == NULL) {
-		fprintf(stderr,"vrpn_Poser_Remote: No connection\n");
-		return;
-	}
-
-    // Make sure that we have a valid connection
-
-    if (d_connection == NULL) {
 		fprintf(stderr,"vrpn_Poser_Remote: No connection\n");
 		return;
 	}

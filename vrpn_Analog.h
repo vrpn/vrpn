@@ -29,8 +29,9 @@ public:
 	vrpn_float64	last[vrpn_CHANNEL_MAX];
 	vrpn_int32	num_channel;
 	struct timeval	timestamp;
-	vrpn_int32	channel_m_id;	//< channel message id (message from server)
-	vrpn_int32	request_m_id;	//< Request to change message from client
+	vrpn_int32	channel_m_id;	        //< channel message id (message from server)
+	vrpn_int32	request_m_id;	        //< Request to change message from client
+    vrpn_int32  request_channels_m_id;  //< Request to change channels message from client
 	int status; 
 
 	virtual	int register_types(void);
@@ -115,6 +116,10 @@ class vrpn_Analog_Server : public vrpn_Analog {
     /// setting the channel to that value.
     static int handle_request_message(void *userdata,
 	vrpn_HANDLERPARAM p);
+
+    /// Responds to a request to change a number of channels
+    static int handle_request_channels_message(void* userdata,
+    vrpn_HANDLERPARAM p);
 };
 
 /// Analog server that can scale and clip its range to -1..1.
@@ -192,8 +197,14 @@ class vrpn_Analog_Remote: public vrpn_Analog {
 
 	// Request the analog to change its value to the one specified.
 	// Returns false on failure.
-	virtual	bool request_change_channel_value(unsigned chan, vrpn_float64 val,
+	virtual	bool request_change_channel_value(unsigned int chan, vrpn_float64 val,
 	  vrpn_uint32 class_of_service = vrpn_CONNECTION_RELIABLE);
+
+    // Request the analog to change values all at once.  If more values are given than we have channels, the 
+    // Extra values are discarded.  If less values are given than we have channels, the extra channels are set to 0
+    // Returns false on failure
+    virtual bool request_change_channels(int num, vrpn_float64* vals,
+        vrpn_uint32 class_of_service = vrpn_CONNECTION_RELIABLE);
 
   protected:
 	typedef	struct vrpn_RBCS {
@@ -208,6 +219,7 @@ class vrpn_Analog_Remote: public vrpn_Analog {
 	//------------------------------------------------------------------
 	// Routines used to send requests from the client
 	virtual vrpn_int32 encode_change_to(char *buf, vrpn_int32 chan, vrpn_float64 val);
+    virtual vrpn_int32 encode_change_channels_to(char* buf, int num, vrpn_float64* vals);
 };
 
 #endif
