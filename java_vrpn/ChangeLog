@@ -1,3 +1,8 @@
+2002-10-07  David Marshburn  <marshbur@cs.unc.edu>
+
+	* VRPN.java:  new, pending superclass for java vrpn devices
+	* java_vrpn.vjp:  added VRPN.java
+
 2002-09-24  Chris Weigle  <weigle@cs.unc.edu>
 
    * TempImagerRemote.java:
