@@ -1,4 +1,3 @@
-#include <unistd.h>
 #include <stdlib.h>
 #include <malloc.h>
 #include <memory.h>
@@ -57,7 +56,7 @@ extern "C" int sdi_noint_block_read_timeout(SOCKET tcp_sock, char *buffer,
 					int len, struct timeval *timeout);
 #endif
 
-const	char	MAGIC[] = "vrpn: ver. 01.00";
+const	char	*MAGIC = "vrpn: ver. 01.00";
 const	int	MAGICLEN = 16;	// Must be a multiple of 4 bytes!
 
 // This is the list of states that a connection can be in

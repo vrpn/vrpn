@@ -259,7 +259,7 @@ void vrpn_Phantom::mainloop(void) {
 		//connection
 		if(vrpn_Tracker::connection) {
 			len = vrpn_Tracker::encode_to(msgbuf);
-			if(vrpn_Tracker::connection->pack_message(len,timestamp,vrpn_Tracker::message_id,
+			if(vrpn_Tracker::connection->pack_message(len,timestamp,vrpn_Tracker::position_m_id,
 				vrpn_Tracker::my_id, msgbuf, vrpn_CONNECTION_LOW_LATENCY)) {
 				fprintf(stderr,"Phantom: cannot write message: tossing\n");
 			}
