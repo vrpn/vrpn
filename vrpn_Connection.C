@@ -2631,7 +2631,7 @@ int vrpn_Connection::mainloop (const struct timeval * timeout)
 
     // Select to see if ready to hear from other side, or exception
     
-    if (select(32,&readfds,NULL,&exceptfds, timeout) == -1) {
+    if (select(32, &readfds, NULL ,&exceptfds, (timeval *)timeout) == -1) {
       if (errno == EINTR) { /* Ignore interrupt */
         break;
       } else {
@@ -3239,7 +3239,7 @@ int	vrpn_Connection::handle_tcp_messages (int fd,
 	  localTimeout.tv_sec = timeout->tv_sec;
 	  localTimeout.tv_usec = timeout->tv_usec;
         } else {
-	  localTimeout.tv_usec = 0L;
+	  localTimeout.tv_sec = 0L;
 	  localTimeout.tv_usec = 0L;
         }
         
