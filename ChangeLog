@@ -1,3 +1,21 @@
+2004-12-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsp  Added vrpn_Imager.[hC] and removed
+		vrpn_TempImager.[hC].
+	* vrpndll.dsp  Same.
+	* vrpn.dsw  Added vrpn_testimager_server.dsp
+	* vrpn_Imager.C  Final design, partial implementation of
+		VRPN Imager class.  Pulls the image pose out as a
+		separate class and adds throttle capability to the
+		client code (implemented in server by dropping frames
+		rather than sending them).  Adds count of frames
+		dropped to alert client application.  Adds 12-in-16
+		data type.  Transcoding between types not yet
+		implemented.  Client-side selection of data types to
+		send not yet implemented.  RGB and BGR packed formats
+		not yet implemented.
+	* vrpn_Imager.h  Same.
+
 2004-11-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Connection.C : Whitespace changes.
