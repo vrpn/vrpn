@@ -1,3 +1,19 @@
+2005-01-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Pulled most of the code out into an object that
+		parses the configuration file, creates the objects, and
+		provides a loop to mainloop() the objects.  The connection
+		code and other functions are still within this file.
+	* vrpn_Generic_server_object.h : Object that performs most of the
+		functions of the server, making it possible to include as
+		part of an application.  This should make it easier for
+		folks to run both clients and servers in the same application,
+		using one or more configuration files to create the objects.
+	* vrpn_Generic_server_object.C : Same.
+	* vrpn_phantom.dsp : Modified to compile correctly with STL.
+	* vrpn_server.dsp : Modified to include the above two files.
+	* Makefile : Same.
+
 2005-01-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* testimager_server.cpp : Comment change.

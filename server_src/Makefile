@@ -174,12 +174,14 @@ $(OBJ_DIR)/vrpn_server: $(OBJ_DIR)/vrpn.o $(LIB_DIR)/libvrpnserver.a \
 		$(OBJ_DIR)/buzzForceField.o $(OBJ_DIR)/constraint.o \
 		$(OBJ_DIR)/forcefield.o $(OBJ_DIR)/plane.o \
 		$(OBJ_DIR)/texture_plane.o $(OBJ_DIR)/trimesh.o \
-		$(OBJ_DIR)/vrpn_Phantom.o
+		$(OBJ_DIR)/vrpn_Phantom.o \
+		$(OBJ_DIR)/vrpn_Generic_server_object.o 
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/vrpn_server $(OBJ_DIR)/vrpn.o \
 		$(OBJ_DIR)/buzzForceField.o $(OBJ_DIR)/constraint.o \
 		$(OBJ_DIR)/forcefield.o $(OBJ_DIR)/plane.o \
 		$(OBJ_DIR)/texture_plane.o $(OBJ_DIR)/trimesh.o \
 		$(OBJ_DIR)/vrpn_Phantom.o \
+		$(OBJ_DIR)/vrpn_Generic_server_object.o \
 		$(LIB_DIR)/libvrpnserver.a $(GL) -lquat $(SYSLIBS) -lm
 
 $(OBJ_DIR)/test_vrpn: $(OBJ_DIR)/test_vrpn.o  \
@@ -271,6 +273,7 @@ clean:
 	$(OBJ_DIR)/test_vrpn test_analogfly
 
 $(OBJ_DIR)/vrpn.o:	vrpn.C
+$(OBJ_DIR)/vrpn_Generic_server_object.o:	vrpn_Generic_server_object.C
 $(OBJ_DIR)/forward.o:	forward.C
 $(OBJ_DIR)/text.o:	text.C
 $(OBJ_DIR)/sample_server.o:	sample_server.C
