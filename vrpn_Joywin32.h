@@ -1,3 +1,9 @@
+/*
+# Joystick VRPN Driver based on Win32.
+# written by Sebastien MARAUX, ONDIM SA (France)
+# maraux@ondim.fr
+*/
+
 #ifndef VRPN_WIN32JOYSTICK_H
 #define VRPN_WIN32JOYSTICK_H
 

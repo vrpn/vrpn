@@ -134,6 +134,8 @@ class vrpn_Tracker_Serial : public vrpn_Tracker {
    vrpn_Tracker_Serial
                (const char * name, vrpn_Connection * c,
 		const char * port = "/dev/ttyS1", long baud = 38400);
+   virtual ~vrpn_Tracker_Serial();
+
   protected:
    char portname[VRPN_TRACKER_BUF_SIZE];
    long baudrate;

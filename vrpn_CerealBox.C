@@ -418,8 +418,8 @@ int vrpn_CerealBox::get_report(void)
 		increment |= enc2 << 12;
 		enc3 = (_buffer[nextchar++]-offset) & 0x3f;
 		increment |= enc3 << 18;
-		if ( increment & 0x100000 ) {
-			dials[i] = (int)(increment - 16777215) * REV_PER_TICK;
+		if ( increment & 0x800000 ) {
+			dials[i] = (int)(increment - 16777216) * REV_PER_TICK;
 		} else {
 			dials[i] = (int)(increment) * REV_PER_TICK;
 		}

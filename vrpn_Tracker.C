@@ -763,7 +763,8 @@ int	vrpn_Tracker_Server::report_pose_acceleration(int sensor, struct timeval t,
 vrpn_Tracker_Serial::vrpn_Tracker_Serial
                     (const char * name, vrpn_Connection * c,
 	             const char * port, long baud) :
-    vrpn_Tracker(name, c)
+    vrpn_Tracker(name, c),
+    serial_fd(-1)
 {
    register_server_handlers();
    // Find out the port name and baud rate
@@ -786,6 +787,11 @@ vrpn_Tracker_Serial::vrpn_Tracker_Serial
    // Reset the tracker and find out what time it is
    status = vrpn_TRACKER_RESETTING;
    gettimeofday(&timestamp, NULL);
+}
+
+vrpn_Tracker_Serial::~vrpn_Tracker_Serial()
+{
+  if (serial_fd >= 0) { vrpn_close_commport(serial_fd); serial_fd = -1; }
 }
 
 void vrpn_Tracker_Serial::send_report(void)
@@ -862,8 +868,11 @@ void vrpn_Tracker_Serial::mainloop()
 
     case vrpn_TRACKER_FAIL:
 	send_text_message("Tracker failed, trying to reset (Try power cycle if more than 4 attempts made)", timestamp, vrpn_TEXT_ERROR);
-	vrpn_close_commport(serial_fd);
-	serial_fd = vrpn_open_commport(portname, baudrate);
+	if (serial_fd >= 0) { vrpn_close_commport(serial_fd); serial_fd = -1; }
+        if ( (serial_fd=vrpn_open_commport(portname, baudrate)) == -1) {
+	    fprintf(stderr,"vrpn_Tracker_Serial::mainloop(): Cannot Open serial port\n");
+	    status = vrpn_TRACKER_FAIL;
+        }
 	status = vrpn_TRACKER_RESETTING;
 	break;
    }

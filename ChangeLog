@@ -1,3 +1,12 @@
+2004-03-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_CerealBox.C : Fixed a bug that encoded the negative tick
+		incorrectly.
+	* vrpn_Joywin32.h : Added credits.
+	* vrpn_Tracker.C : Closes the serial device when the tracker's
+		destructor is called.
+	* vrpn_Tracker.h : Same.
+
 2004-02-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Connection.C : Closes file handle that is no longer needed.
