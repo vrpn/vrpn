@@ -8,9 +8,11 @@
 #ifndef __STDC__
 #include <getopt.h>
 #endif /* __STDC__ */
+#ifdef	linux
 #include <sys/soundcard.h>
 
 struct sbi_instrument instr;
+#endif
 static int sb;
 static unsigned char sbbuf[404];
 static int sbptr = 0;
@@ -49,6 +51,7 @@ void midich(char c)
 
 void noteon(int chan,int pitch,int vol)
 {
+#ifdef	linux
 	char buf[4];
 #ifdef DEBUG
 	printf("Note on, chan=%d pitch=%d vol=%d\n",chan+1,pitch,vol);
@@ -66,10 +69,12 @@ void noteon(int chan,int pitch,int vol)
 		midich(pitch);
 		midich(vol);
 	}
+#endif
 }
 
 void noteoff(int chan,int pitch,int vol)
 {
+#ifdef	linux
 	char buf[4];
 #ifdef DEBUG
 	printf("Note off, chan=%d pitch=%d vol=%d\n",chan+1,pitch,vol);	
@@ -87,14 +92,17 @@ void noteoff(int chan,int pitch,int vol)
 		midich(pitch);
 		midich(vol);
 	}
+#endif
 }
 
 void wait(int delay)
 {
+#ifdef	linux
 	int jiffies;
 	jiffies = (delay << 8) | TMR_WAIT_REL;
 //	jiffies = (delay << 8) | SEQ_WAIT;
 	sbwrite((char*)&jiffies);
+#endif
 }
 
 #ifdef __STDC__
@@ -113,12 +121,14 @@ volatile void usage(char *s)
 }
 init(int chan)
 {
+#ifdef	linux
 	char buf[100];
 	buf[0] = SEQ_FMPGMCHANGE;
 	buf[1] = chan;		/* program voice #channel to */
 	buf[2] = chan; 		/* either play default instrument 0 */
   		/*buf[2] = nr_instr; or play requested instrument */
 	sbwrite(buf);
+#endif
 }
 
 struct entity
@@ -145,7 +155,8 @@ int unit = 25;		// One basic timing unit
 
 void opendevice()
 {
-		int i;
+#ifdef	linux
+	int i;
         {
         int bar, baz;
         char devname[30] = "/dev/mixer";
@@ -165,6 +176,7 @@ void opendevice()
         }
     	for (i = 0; i< 10; i++)
 		notenew[i] = 1;
+#endif
 }
 
 // Starts and/or stops all the notes for a given basic unit of time.  The
