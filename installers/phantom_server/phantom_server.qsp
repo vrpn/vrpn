@@ -1,0 +1,220 @@
+[General]
+FileVersion=1.1
+FileType=QSetupIniFile
+ComposerVersion=4.0.0.4
+
+[Project]
+ProjectName=phantom_server
+ProjectDirectory=F:\taylorr\STM\src\vrpn\installers\phantom_server
+NonSFXDirectory=F:\taylorr\STM\src\vrpn\installers\phantom_server\NonSFX
+MediaFileName=Phantom server v06_04
+CopyMediaToFName=
+ProgramDescriptiveName=Phantom Server
+ProgramVersion=06.04
+CompanyName=UNC NSRG
+ProgVerLiveUpdate=0
+RegisterAsApp=1
+LanguageFlag=1
+LanguageNames=|
+UseNonSFXDir=0
+ClrNonSFXDir=0
+CompressNonSFXFiles=0
+ForceCopyNonSFXFiles=0
+
+[Display]
+AddSetupBackground=1
+TopLabel=1
+TopLabelVer=1
+TopLabel2=0
+BottomLabel=0
+TopLabelText="Phantom Server"
+TopLabel2Text=""
+BottomLabelText="Copyright © 2003"
+TopBackgroundColor=16711680
+BottomBackgroundColor=0
+AddBottomColor=1
+DlgBmp3DFrame=1
+DialogStyle=Modern
+AddDialogBitmap=0
+DialogBitmapFileName=
+AddBackgroundBitmap=0
+BackgroundBitmapFileName=
+BackgroundBitmapLocation=|Top/Left|0|0|
+AddBackgroundWave=0
+BgBmpTransparent=0
+BackgroundWaveFileName=
+BackgroundWaveLocation=|Center|300|0|
+BackgroundWaveLoop=1
+BackgroundWaveDelay=0
+AddBackgroundWaveSlider=1
+BackgroundWaveSliderType=Fixed
+TopLabelSide=Left
+TopLabel2Side=Left
+BottomLabelSide=Left
+DialogLocation=|Center|0|0|
+TopLabelFont=|Tahoma|36|16777215|1|2|
+TopLabel2Font=|Tahoma|18|16777215|1|2|
+BottomLabelFont=|Tahoma|10|16777215|1|0|
+CompanyUrl=www.cs.unc.edu/nano
+
+[TargetExe]
+TargetDirectory=<AbsoluteDir>C:\nsrg\bin\Phantom server 06.04
+CommonDirectory=<AbsoluteDir>C:\nsrg\src
+AuxDirectory=<FontDir>
+TargetExeName=<Application Folder>\vrpn_server.exe
+RunTimeDir_1=|||||||1||||1||1|<ProgramFilesDir>|||||
+RunTimeDir_2=|||||||1||||1||1|<ProgramFilesDir>|||||
+RunTimeDir_3=|||||||1||||1||1|<ProgramFilesDir>|||||
+
+[Dialogs]
+SelectedDialogs=*Welcome,License,Readme,User Information,Setup Type,Custom,*Destination,Associate,*Shortcuts,*Confirm Setup,*Copy Files,*Complete
+LicenseTextFile=
+ReadmeTextFile=
+ReadmeTextFile2=
+UseNotepad=0
+SpaceReqOnDriveCheckBox=0
+SpaceReqOnDrive=
+RequestUserName=1
+RequestCompanyName=1
+RequestSerialNumberAlso=0
+RequestSerialCheckDLL=0
+SerialCheckDll=
+RequestPredefinedSerial=0
+CaseSensitiveSerial=0
+RequestTokenizedSerial=0
+CDSetup=0
+ShowCompactSetupAlso=1
+ForcePartialSetup=0
+ShowProgBar2=0
+SilentSetup=0
+ProposeReadme=0
+ProposeLaunch=0
+ProposeRestart=0
+ProposeReadmeChecked=0
+ProposeLaunchChecked=0
+ShowCloseRecommendation=0
+ShowAdwareDisclaimer=0
+ShowCopyrightWarning=0
+
+[Shortcuts]
+AddMainShortCut=1
+ForceRemoveShortcutFolder=0
+ProgramLinkFolder=NSRG\Phantom Server v06.04
+ProgramLinkName=Phantom server
+ProgramLinkParam=
+ProgramLinkWorkDir=<Application Folder>
+ProgramLinkRun=Minimized
+ProgramLinkIconFile=
+ProgramLinkIconNum=0
+StartMenuLinkName=Phantom Server
+DesktopLinkName=Phantom Server
+SendToLinkName=Phantom Server
+StartUpLinkName=Phantom Server
+QuickLaunchLinkName=Phantom Server
+StartMenuCheckBox=0
+DesktopCheckBox=0
+SendToCheckBox=0
+StartUpCheckBox=0
+QuickLaunchCheckBox=0
+StartMenuChecked=1
+DesktopChecked=1
+SendToChecked=1
+StartUpChecked=1
+QuickLaunchChecked=1
+SetAllUsers=1
+AddUninstallShortcut=1
+Item-000=*|Configuration|<Application Folder>\vrpn.cfg|NSRG\Phantom Server v06.04|||Normal Window||0|
+
+[Billboard]
+AddBillboard=1
+Item-000=|1|0|0|1|0|Center|0|0|8388608|16711680|Verdana|14|16777215|1|0|360|360|0|1|
+
+[SplitSetup]
+SplitSetup=0
+ForceDownload=1
+DownloadURL_SPLIT=http://
+ConfirmSplitDownload=0
+
+[AutoUpdate]
+AutoUpdate=0
+RunAutoUpdate=1
+AddAutoUpdateShortcut=1
+ReqConfirmDownload=0
+ReqConfirmInstall=0
+ShutDownMethod=Don't Shut Down
+BackgroundUpdate=0
+RestartProcess=0
+InformFinish=0
+UpdateProjectFName=
+DownloadURL_UPDATE=http://
+NameOfUpdateFile=
+RunningProcess=
+VersionOriginal=1
+ValidVersions=
+VersionNew=1
+ReAskDays=0
+AutoUpdateProbeSpin=1
+AutoUpdateProbeText=Only at Agent Start
+
+[Switches]
+OperatingSystems=2000,XP
+OverwriteFlag=1
+CreateUnInstall=1
+ScrambleUnInstallData=1
+HideErrMsgUnInstall=0
+HideLogBtnUnInstall=0
+UnInstallExeStampSwitch=0
+UnInstallExeStamp=
+CreateLogFile=0
+ConfirmExtract=0
+TestAdminRights=1
+TestAdminRightsUnInstall=1
+TestDotNetFramework=0
+TestExeBeforeInstall=1
+TestExeBeforeUnInstall=1
+
+[Registry]
+
+[IniFile]
+
+[Environment]
+
+[Association]
+OpenWith=0
+OpenWithName=
+OpenWithMenuText=Open with 
+OpenWithExtensions=
+
+[VerInfo]
+CopyFromExe=0
+DefineManually=0
+Item-001=|Comments||
+Item-002=|CompanyName||
+Item-003=|FileDescription||
+Item-004=|FileVersion||
+Item-005=|InternalName||
+Item-006=|LegalCopyright||
+Item-007=|LegalTrademarks||
+Item-008=|OriginalFilename||
+Item-009=|ProductName||
+Item-010=|ProductVersion||
+CopyIconFromTargetExe=0
+CopyIconFromOtherApp=0
+OtherIconAppFileName=
+Spin1=0
+Spin2=0
+
+[Execute]
+ExecuteDllCheckBox=0
+ExecutionDllFileName=
+
+[GroupNames]
+Group-000=Main Group
+
+[Group-000]
+TypicalCompactData=15
+Description=This is the main group of files
+Item-000=Fol*<Application Folder>[0]
+Item-001=Fil*F:\taylorr\STM\src\vrpn\installers\phantom_server\vrpn.cfg
+Item-002=Fil*F:\taylorr\STM\src\vrpn\installers\phantom_server\vrpn_Tracker.cfg
+Item-003=Fil*F:\taylorr\STM\src\vrpn\pc_win32\server_src\vrpn_server\Release\vrpn_server.exe
