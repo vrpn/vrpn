@@ -1,5 +1,10 @@
 2000-09-01  Adam Seeger  <seeger@cs.unc.edu>
 
+	* vrpn_Connection.h (check_vrpn_file_cookie) : Now this will work
+	if the version is >= 4.0 and <= the current version
+
+2000-09-01  Adam Seeger  <seeger@cs.unc.edu>
+
         * vrpn_Connection.h (check_vrpn_file_cookie) : This only worked if
 	the version was 4.0, now it works if the version is the current one
 	or less
