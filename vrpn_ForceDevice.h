@@ -141,6 +141,11 @@ protected:
 					 vrpn_HANDLERPARAM p);
 	static int handle_constraint_change_message(void *userdata,
 					vrpn_HANDLERPARAM p);
+
+	// from vrpn_Tracker
+
+	static int handle_update_rate_request (void *, vrpn_HANDLERPARAM);
+
 public:
 	vrpn_Phantom(char *name, vrpn_Connection *c, float hz=1.0);
 	virtual void mainloop(void);

@@ -196,6 +196,8 @@ vrpn_Tracker::vrpn_Tracker(char *name, vrpn_Connection *c) {
 							"Tracker Workspace");
 	  request_workspace_m_id = connection->register_message_type(
 						"Request Tracker Workspace");
+	  update_rate_id = connection->register_message_type
+				("vrpn Tracker set update rate");
 	}
 
 	// Set the current time to zero, just to have something there
@@ -347,9 +349,16 @@ int vrpn_Tracker::register_server_handlers(void)
 	}
 	if (connection->register_handler(request_workspace_m_id,
 	    handle_workspace_request, this, my_id)){
-		fprintf(stderr,"vrpn_Tracker:can't register wrkspace hndler\n");
+		fprintf(stderr,"vrpn_Tracker:  "
+                               "Can't register workspace handler\n");
 		return -1;
 	}
+	if (connection->register_handler
+		(update_rate_id, handle_update_rate_request, this, my_id)) {
+		fprintf(stderr, "vrpn_Tracker:  "
+                                "Can't register update rate handler.\n");
+                return -1;
+        }
     }
     else
 	return -1;
@@ -459,6 +468,12 @@ int vrpn_Tracker::handle_workspace_request(void *userdata, vrpn_HANDLERPARAM p)
         }
     }
     return 0;
+}
+
+int vrpn_Tracker::handle_update_rate_request (void *, vrpn_HANDLERPARAM) {
+  fprintf(stderr, "vrpn_Tracker::handle_update_rate_request:  "
+                  "Don't know how to do that!\n");
+  return 0;
 }
 
 vrpn_Connection *vrpn_Tracker::connectionPtr() {
@@ -1029,6 +1044,39 @@ int vrpn_Tracker_Remote::request_u2s_xform(void)
                 connection->mainloop();
         }
 	return 0;
+}
+
+int vrpn_Tracker_Remote::set_update_rate (double samplesPerSecond) {
+  char * msgbuf;
+  int len;
+  struct timeval now;
+
+  len = sizeof(double);
+  msgbuf = new char [len];
+  if (!msgbuf) {
+    fprintf(stderr, "vrpn_Tracker_Remote::set_update_rate:  "
+                    "Out of memory!\n");
+    return -1;
+  }
+
+  ((double *) msgbuf)[0] = htond(samplesPerSecond);
+
+  gettimeofday(&now, NULL);
+  timestamp.tv_sec = now.tv_sec;
+  timestamp.tv_usec = now.tv_usec;
+
+  if (connection) {
+    if (connection->pack_message(len, timestamp, update_rate_id,
+                    my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+      fprintf(stderr, "vrpn_Tracker_Remote::set_update_rate:  "
+                      "Cannot send message.\n");
+      return -1;
+    }
+    connection->mainloop();
+  }
+  return 0;
+
+
 }
 
 void	vrpn_Tracker_Remote::mainloop(void)

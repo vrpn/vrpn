@@ -58,6 +58,8 @@ class vrpn_Tracker {
    static int handle_t2r_request(void *userdata, vrpn_HANDLERPARAM p);
    static int handle_u2s_request(void *userdata, vrpn_HANDLERPARAM p);
    static int handle_workspace_request(void *userdata, vrpn_HANDLERPARAM p);
+   static int handle_update_rate_request (void *, vrpn_HANDLERPARAM);
+
    vrpn_Connection *connectionPtr();
 
   protected:
@@ -72,6 +74,7 @@ class vrpn_Tracker {
    long request_u2s_m_id;		// ID of unit2sensor request message
    long request_workspace_m_id;		// ID of workspace request message
    long workspace_m_id;			// ID of workspace message
+   long update_rate_id;			// ID of update rate message
 					
 
    // Description of the next report to go out
@@ -268,6 +271,9 @@ class vrpn_Tracker_Remote: public vrpn_Tracker {
 	int request_u2s_xform(void);
 	// request workspace bounding box
 	int request_workspace(void);
+
+	// set rate of p/v/a updates from the tracker
+	int set_update_rate (double samplesPerSecond);
 
 	// This routine calls the mainloop of the connection it's on
 	virtual void mainloop(void);

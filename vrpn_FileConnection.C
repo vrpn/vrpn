@@ -1,12 +1,16 @@
 #include "vrpn_FileConnection.h"
 
 #include <fcntl.h>
-#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+
+#ifndef _WIN32
+#include <unistd.h>
 #include <netinet/in.h>
+#endif
+
 
 
 #define time_greater(t1,t2)     ( (t1.tv_sec > t2.tv_sec) || \
@@ -45,7 +49,7 @@ vrpn_File_Connection::vrpn_File_Connection (const char * file_name) :
                  (register_message_type("vrpn File set replay rate")),
     d_reset_type (register_message_type("vrpn File reset")),
     d_rate (1.0f),
-    d_file_handle (-1)
+    d_file (NULL)
 {
   const char * bare_file_name;
 
@@ -62,8 +66,8 @@ vrpn_File_Connection::vrpn_File_Connection (const char * file_name) :
     return;
   }
 
-  d_file_handle = open(bare_file_name, O_RDONLY);
-  if (d_file_handle == -1)
+  d_file = fopen(bare_file_name, "r");
+  if (!d_file)
     fprintf(stderr, "vrpn_File_Connection:  "
                     "Could not open file \"%s\".\n", bare_file_name);
 
@@ -87,7 +91,7 @@ int vrpn_File_Connection::mainloop (void) {
   char buffer [8000];
   int retval;
 
-  if (d_file_handle == -1)
+  if (!d_file)
     return 0;
 
   // compute elapsed time and when to read
@@ -111,7 +115,7 @@ int vrpn_File_Connection::mainloop (void) {
 
   // get the header of the next message
 
-  retval = read(d_file_handle, (char *) &header, sizeof(header));
+  retval = fread(&header, sizeof(header), 1, d_file);
 
   // return 0 if nothing to read OR end-of-file;
   // the latter isn't an error state
@@ -133,7 +137,7 @@ int vrpn_File_Connection::mainloop (void) {
 
   // get the body of the next message
 
-  retval = read(d_file_handle, buffer, header.payload_len);
+  retval = fread(buffer, 1, header.payload_len, d_file);
 
   // return 0 if nothing to read OR end-of-file;
   // the latter isn't an error state
@@ -174,13 +178,25 @@ int vrpn_File_Connection::mainloop (void) {
   return 0;
 }
 
+// Returns the time since the connection opened.
+// Some subclasses may redefine time.
+
+// virtual
+int vrpn_File_Connection::time_since_connection_open
+                                (struct timeval * elapsed_time) {
+  elapsed_time->tv_sec = d_runtime.tv_sec;
+  elapsed_time->tv_usec = d_runtime.tv_usec;
+
+  return 0;
+}
+
 // virtual
 int vrpn_File_Connection::close_file (void) {
 
-  if (d_file_handle != -1)
-    close(d_file_handle);
+  if (d_file)
+    fclose(d_file);
 
-  d_file_handle = -1;
+  d_file = NULL;
 
   return 0;
 }

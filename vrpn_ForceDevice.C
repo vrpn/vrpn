@@ -304,6 +304,24 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
 		vrpn_ForceDevice::connection = NULL;
   }
 
+  // UNREGISTER the default handler, register our own.
+  if (vrpn_Tracker::connection->unregister_handler
+       (update_rate_id,
+        vrpn_Tracker::handle_update_rate_request, this,
+        vrpn_ForceDevice::my_id)) {
+                fprintf(stderr,"vrpn_Phantom:  "
+                        "Can't unregister default update-rate handler\n");
+                vrpn_Tracker::connection = NULL;
+  }
+  if (vrpn_Tracker::connection->register_handler
+       (update_rate_id, handle_update_rate_request, this,
+        vrpn_ForceDevice::my_id)) {
+                fprintf(stderr, "vrpn_Phantom:  "
+                                "Can't register update-rate handler\n");
+                vrpn_Tracker::connection = NULL;
+  }
+
+
   this->register_plane_change_handler(this, handle_plane);
 
 
@@ -830,6 +848,24 @@ int vrpn_Phantom::handle_constraint_change_message(void *userdata,
   }
   return 0;
 }
+
+// static
+int vrpn_Phantom::handle_update_rate_request (void * userdata,
+                                                  vrpn_HANDLERPARAM p) {
+  vrpn_Phantom * me = (vrpn_Phantom *) userdata;
+
+  if (p.payload_len != sizeof(double)) {
+    fprintf(stderr, "vrpn_ForceDevice::handle_update_rate_request:  "
+                    "Got %d-byte message, expected %d bytes.\n",
+            p.payload_len, sizeof(double));
+    return -1;  // XXXshould this be a fatal error?
+  }
+
+  me->update_rate = ntohd(*((double *) p.buffer));
+
+  return 0;
+}
+
 
 #endif  // VRPN_CLIENT_ONLY
 #endif  // _WIN32

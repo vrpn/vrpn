@@ -22,6 +22,8 @@ class vrpn_File_Connection : public vrpn_Connection {
 
     virtual int mainloop (void);
 
+    virtual int time_since_connection_open (struct timeval * elapsed_time);
+
   protected:
 
     // tokens for VRPN control messages
@@ -44,7 +46,8 @@ class vrpn_File_Connection : public vrpn_Connection {
 
     // the actual mechanics of the logfile
 
-    int d_file_handle;
+    //int d_file_handle;
+    FILE * d_file;
 
     virtual int close_file (void);
 

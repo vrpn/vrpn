@@ -1460,6 +1460,19 @@ int vrpn_Connection::pack_message(int len, struct timeval time,
 	}
 }
 
+// Returns the time since the connection opened.
+// Some subclasses may redefine time.
+
+// virtual
+int vrpn_Connection::time_since_connection_open
+                                (struct timeval * elapsed_time) {
+  struct timeval now;
+  gettimeofday(&now, NULL);
+  time_subtract(now, start_time, *elapsed_time);
+
+  return 0;
+}
+
 // Marshal the message into the buffer if it will fit.  Return the number
 // of characters sent.
 
@@ -1785,6 +1798,8 @@ void	vrpn_Connection::init (void)
 	for (i = 0; i < vrpn_CONNECTION_MAX_SENDERS; i++) {
 		my_senders[i] = NULL;
 	}
+
+	gettimeofday(&start_time, NULL);
 }
 
 vrpn_Connection::~vrpn_Connection (void) {
@@ -1803,28 +1818,43 @@ int vrpn_Connection::open_log (void) {
                     "Log file has no name.\n");
     return -1;
   }
-  if (d_logfile_handle != -1) {
+  if (d_logfile) {
     fprintf(stderr, "vrpn_Connection::open_log:  "
                     "Log file is already open.\n");
     return 0;  // not a catastrophic failure
   }
+
+  // Can't use this because MICROSOFT doesn't support Unix standards!
 
   // Create the file in write-only mode.
   // Permissions are 744 (user read/write, group & others read)
   // Return an error if it already exists (on some filesystems;
   // O_EXCL doesn't work on linux)
 
-  d_logfile_handle = open(d_logname, O_WRONLY | O_CREAT | O_EXCL,
-                          S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+  //d_logfile_handle = open(d_logname, O_WRONLY | O_CREAT | O_EXCL,
+  //                        S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+  
+  // check to see if it exists
+  d_logfile = fopen(d_logname, "r");
+  if (d_logfile) {
+    fprintf(stderr, "vrpn_Connection::open_log:  "
+                    "Log file \"%s\" already exists.\n", d_logname);
+    d_logfile = NULL;
+  } else
+    d_logfile = fopen(d_logname, "wb");
 
-  if (d_logfile_handle == -1) {
+  if (!d_logfile) {
     fprintf(stderr, "vrpn_Connection::open_log:  "
                     "Couldn't open log file \"%s\".\n", d_logname);
 
     // Try to write to "/tmp/vrpn_emergency_log"
-    d_logfile_handle = open("/tmp/vrpn_emergency_log",
-                            O_WRONLY | O_CREAT | O_EXCL);
-    if (d_logfile_handle == -1) {
+    d_logfile = fopen("/tmp/vrpn_emergency_log", "r");
+    if (d_logfile)
+      d_logfile = NULL;
+    else
+      d_logfile = fopen("/tmp/vrpn_emergency_log", "wb");
+
+    if (!d_logfile) {
       fprintf(stderr, "vrpn_Connection::open_log:\n  "
                       "Couldn't open emergency log file "
                       "\"/tmp/vrpn_emergency_log\".\n");
@@ -1849,9 +1879,9 @@ int vrpn_Connection::close_log (void) {
   // write out the log, strting at d_first_log_entry and
   // working backwards
 
-  if (d_logfile_handle == -1) {
+  if (!d_logfile) {
     fprintf(stderr, "vrpn_Connection::close_log:  "
-                    "Log file was never opened!\n");
+                    "Log file is not open!\n");
 
     // Abort writing out log without destroying data needed to
     // clean up memory.
@@ -1862,8 +1892,10 @@ int vrpn_Connection::close_log (void) {
 
   for (lp = d_first_log_entry; lp; lp = lp->prev) {
 
-    retval = vrpn_noint_block_write(d_logfile_handle, (char *) &lp->data,
-                                    sizeof(lp->data));
+    retval = fwrite(&lp->data, 1, sizeof(lp->data), d_logfile);
+        //vrpn_noint_block_write(d_logfile_handle, (char *) &lp->data,
+        //                            sizeof(lp->data));
+    
     if (retval != sizeof(lp->data)) {
       fprintf(stderr, "vrpn_Connection::close_log:  "
                       "Couldn't write log file (got %d, expected %d).\n",
@@ -1878,8 +1910,9 @@ int vrpn_Connection::close_log (void) {
 
     host_len = ntohl(lp->data.payload_len);
 
-    retval = vrpn_noint_block_write(d_logfile_handle, lp->data.buffer,
-                                    host_len);
+    retval = fwrite(lp->data.buffer, 1, host_len, d_logfile);
+        //vrpn_noint_block_write(d_logfile_handle, lp->data.buffer, host_len);
+
     if (retval != host_len) {
       fprintf(stderr, "vrpn_Connection::close_log:  "
                       "Couldn't write log file.\n");
@@ -1889,7 +1922,7 @@ int vrpn_Connection::close_log (void) {
     }
   }
 
-  retval = close(d_logfile_handle);
+  retval = fclose(d_logfile);
   if (retval) {
     fprintf(stderr, "vrpn_Connection::close_log:  "
                     "close of log file failed!\n");
@@ -1909,6 +1942,9 @@ int vrpn_Connection::close_log (void) {
 
   d_logname = NULL;
   d_first_log_entry = NULL;
+
+  d_logfile_handle = -1;
+  d_logfile = NULL;
 
   return final_retval;
 }
@@ -1934,7 +1970,8 @@ vrpn_Connection::vrpn_Connection (unsigned short listen_port_no) :
     d_first_log_entry (NULL),
     d_logname (NULL),
     d_logmode (vrpn_LOG_NONE),
-    d_logfile_handle (-1)
+    d_logfile_handle (-1),
+    d_logfile (NULL)
 {
    // Initialize the things that must be for any constructor
    init();
@@ -1987,7 +2024,8 @@ vrpn_Connection::vrpn_Connection
     d_first_log_entry (NULL),
     d_logname (NULL),
     d_logmode (vrpn_LOG_NONE),
-    d_logfile_handle (-1)
+    d_logfile_handle (-1),
+    d_logfile (NULL)
 {
   const char * machinename;
   int retval;

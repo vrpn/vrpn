@@ -1,6 +1,8 @@
 #ifndef	VRPN_CONNECTION_H
 #define VRPN_CONNECTION_H
 
+#include <stdio.h>  // for FILE
+
 #ifndef VRPN_SHARED_H
 #include "vrpn_Shared.h"
 #endif
@@ -91,6 +93,7 @@ typedef	int  (*vrpn_MESSAGEHANDLER)(void *userdata, vrpn_HANDLERPARAM p);
 
 typedef char cName[100];
 
+
 // Description of a callback entry for a user type.
 struct vrpnMsgCallbackEntry {
   vrpn_MESSAGEHANDLER	handler;	// Routine to call
@@ -144,6 +147,11 @@ class vrpn_Connection
 	virtual int pack_message(int len, struct timeval time,
 				 long type, long sender, const char * buffer,
 				 unsigned long class_of_service);
+
+	// Returns the time since the connection opened.
+	// Some subclasses may redefine time.
+	virtual int time_since_connection_open
+	                        (struct timeval * elapsed_time);
 
   protected:
   // Users should not create vrpn_Connection directly -- use 
@@ -297,11 +305,15 @@ class vrpn_Connection
 	char * d_logname;            // name of file to write log to
 	long d_logmode;              // logging incoming, outgoing, or both
 	int d_logfile_handle;
+    FILE * d_logfile;
 
 	virtual int log_message (int payload_len, struct timeval time,
 	                         long type, long sender, const char * buffer);
 	virtual int close_log (void);
 	virtual int open_log (void);
+
+	// Timekeeping - TCH 30 June 98
+	struct timeval start_time;
 
 };
 
