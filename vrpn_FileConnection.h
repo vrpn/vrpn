@@ -34,6 +34,8 @@ class vrpn_File_Connection : public vrpn_Connection {
 
     virtual int time_since_connection_open (struct timeval * elapsed_time);
 
+    virtual vrpn_File_Connection *get_File_Connection() { return this; }
+
     // XXX the following should not be public if we want vrpn_File_Connection
     //     to have the same interface as vrpn_Connection
     //
