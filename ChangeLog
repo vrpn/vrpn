@@ -1,3 +1,7 @@
+2004-11-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Whitespace changes.
+
 2004-11-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Dyna.C : Added changes from Uni-Hamburg to also work with

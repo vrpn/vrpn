@@ -247,17 +247,10 @@ extern "C" {
 #define SERVWAIT        (120/SERVCOUNT)
 
 
-
-
-
-
-
 // From vrpn_CONNECTION_MAX_SENDERS and vrpn_CONNECTION_MAX_TYPES
 // in vrpn_Connection.h.
 
 #define vrpn_CONNECTION_MAX_XLATION_TABLE_SIZE 2000
-
-
 
 
 /*
@@ -4891,9 +4884,8 @@ void vrpn_Connection::server_check_for_incoming_connections
 
       // Create a new endpoint and start trying to connect it to
       // the client.
-    d_endpoints[which_end] 
-		= (*d_endpointAllocator)(this, &d_numConnectedEndpoints);
-	d_endpoints[which_end]->setConnection( this );
+    d_endpoints[which_end] = (*d_endpointAllocator)(this, &d_numConnectedEndpoints);
+    d_endpoints[which_end]->setConnection( this );
     d_updateEndpoint = vrpn_TRUE;
     endpoint = d_endpoints[which_end];
     if (!endpoint) {
@@ -4981,11 +4973,11 @@ void vrpn_Connection::server_check_for_incoming_connections
       return;
     }
 
-	// Since we're being connected to using a TCP request, tell the endpoint
-	// not to try and establish any other connections (since the client is
-	// presumably coming through a firewall or NAT and UDP packets won't get
-	// through).
-	endpoint->d_tcp_only = vrpn_TRUE;
+    // Since we're being connected to using a TCP request, tell the endpoint
+    // not to try and establish any other connections (since the client is
+    // presumably coming through a firewall or NAT and UDP packets won't get
+    // through).
+    endpoint->d_tcp_only = vrpn_TRUE;
 
     // Server-side logging under multiconnection - TCH July 2000
     if (d_serverLogMode & vrpn_LOG_INCOMING) {
@@ -5201,7 +5193,7 @@ vrpn_Connection::vrpn_Connection
 
   if (local_out_logfile_name) {
     d_endpoints[0] = (*d_endpointAllocator)(this, NULL);
-	d_endpoints[0]->setConnection( this );
+    d_endpoints[0]->setConnection( this );
     d_updateEndpoint = vrpn_TRUE;
     endpoint = d_endpoints[0];
     if (!endpoint) {
@@ -5422,9 +5414,9 @@ vrpn_Connection::vrpn_Connection
     }
     endpoint->remote_UDP_port = 0;
 
-	// Since we are doing a TCP connection, tell the endpoint not to try and
-	// use any other communication mechanism to get to the server.
-	endpoint->d_tcp_only = vrpn_TRUE;
+    // Since we are doing a TCP connection, tell the endpoint not to try and
+    // use any other communication mechanism to get to the server.
+    endpoint->d_tcp_only = vrpn_TRUE;
 
     endpoint->status = TRYING_TO_CONNECT;
 
@@ -5437,9 +5429,9 @@ vrpn_Connection::vrpn_Connection
     retval = endpoint->connect_tcp_to(endpoint->remote_machine_name, port);
 
     if (retval == -1) {
-	  	fprintf(stderr,"vrpn_Connection: Can't create TCP connection.\n");
-  		endpoint->status = BROKEN;
-  		return;
+	fprintf(stderr,"vrpn_Connection: Can't create TCP connection.\n");
+  	endpoint->status = BROKEN;
+  	return;
     }
 
     connectionStatus = TRYING_TO_CONNECT;
@@ -5564,11 +5556,11 @@ vrpn_Connection::~vrpn_Connection (void) {
 
 #ifdef VRPN_USE_WINSOCK_SOCKETS
 
-	if (WSACleanup() == SOCKET_ERROR) {
-    fprintf(stderr, "~vrpn_Connection():  "
-                    "WSACleanup() failed with error code %d\n",
-            WSAGetLastError());
-	}
+  if (WSACleanup() == SOCKET_ERROR) {
+      fprintf(stderr, "~vrpn_Connection():  "
+              "WSACleanup() failed with error code %d\n",
+      WSAGetLastError());
+  }
 
 #endif  // VRPN_USE_WINSOCK_SOCKETS
 
