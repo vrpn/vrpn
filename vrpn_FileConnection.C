@@ -692,6 +692,7 @@ int vrpn_File_Connection::read_entry (void)
 
     if (!d_file) {
         fprintf(stderr, "vrpn_File_Connection::read_entry: no open file\n");
+        delete newEntry;
         return -1;
     }
 
@@ -705,6 +706,7 @@ int vrpn_File_Connection::read_entry (void)
     if (retval <= 0) {
         // Don't close the file because we might get a reset message...
         // close_file();
+        delete newEntry;
         return 1;
     }
 

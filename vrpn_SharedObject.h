@@ -130,6 +130,9 @@ class vrpn_Shared_int32 {
     void setSerializerPolicy (vrpn_SerializerPolicy policy = vrpn_ACCEPT,
                               vrpnSharedIntSerializerPolicy f = NULL,
                               void * userdata = NULL);
+    void becomeSerializer (void);
+      // *requests* to become the serializer;  this can be denied by
+      // the current serializer
 
   protected:
 
@@ -212,6 +215,10 @@ class vrpn_Shared_int32_Server : public vrpn_Shared_int32 {
     vrpn_Shared_int32_Server & operator = (vrpn_int32 newValue);
 
     virtual void bindConnection (vrpn_Connection *);
+
+  protected:
+
+    static int handle_gotConnectionToRemote (void *, vrpn_HANDLERPARAM);
 
 };
 
@@ -341,6 +348,10 @@ class vrpn_Shared_float64_Server : public vrpn_Shared_float64 {
     vrpn_Shared_float64_Server & operator = (vrpn_float64 newValue);
 
     virtual void bindConnection (vrpn_Connection *);
+
+  protected:
+
+    static int handle_gotConnectionToRemote (void *, vrpn_HANDLERPARAM);
 
 };
 
@@ -476,6 +487,10 @@ class vrpn_Shared_String_Server : public vrpn_Shared_String {
     vrpn_Shared_String_Server & operator = (const char *);
 
     virtual void bindConnection (vrpn_Connection *);
+
+  protected:
+
+    static int handle_gotConnectionToRemote (void *, vrpn_HANDLERPARAM);
 
 };
 

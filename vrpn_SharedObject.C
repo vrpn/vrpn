@@ -4,6 +4,12 @@
 
 #include <vrpn_Connection.h>
 
+// Uncomment this to put d_lastUpdate in the message header timestamps,
+// which will be modified by the clock synchronization code in
+// vrpn_Synchronized_Connection.  Comment it out to put d_lastUpdate
+// in the message body and ignore clock synchronization.
+#define USE_CLOCK_SYNCHRONIZATION
+
 vrpn_Shared_int32::vrpn_Shared_int32 (const char * name,
                                       vrpn_int32 defaultValue,
                                       vrpn_int32 mode) :
@@ -348,6 +354,9 @@ int vrpn_Shared_int32::handle_update (void * ud, vrpn_HANDLERPARAM p) {
   timeval when;
 
   s->decode(&p.buffer, &p.payload_len, &newValue, &when);
+#ifdef USE_CLOCK_SYNCHRONIZATION
+  when = p.msg_time;
+#endif
 
 //fprintf(stderr, "vrpn_Shared_int32::handle_update to %d at %d:%d.\n",
 //newValue, when.tv_sec, when.tv_usec);
@@ -374,11 +383,17 @@ vrpn_Shared_int32_Server::vrpn_Shared_int32_Server (const char * name,
 
 // virtual
 vrpn_Shared_int32_Server::~vrpn_Shared_int32_Server (void) {
+  vrpn_int32 gotConnection_type;
 
   // unregister handlers
   if (d_connection) {
     d_connection->unregister_handler
            (d_updateFromRemote_type, handle_update, this, d_myId);
+    gotConnection_type =
+        d_connection->register_message_type(vrpn_got_connection);
+    d_connection->unregister_handler(gotConnection_type,
+                                   handle_gotConnectionToRemote,
+                                   this, d_myId);
   }
 
 }
@@ -391,6 +406,7 @@ vrpn_Shared_int32_Server & vrpn_Shared_int32_Server::operator =
 
 // virtual
 void vrpn_Shared_int32_Server::bindConnection (vrpn_Connection * c) {
+  vrpn_int32 gotConnection_type;
 
   vrpn_Shared_int32::bindConnection(c);
 
@@ -399,7 +415,26 @@ void vrpn_Shared_int32_Server::bindConnection (vrpn_Connection * c) {
   if (d_connection) {
     d_connection->register_handler(d_updateFromRemote_type,
                                    handle_update, this, d_myId);
+    gotConnection_type =
+        d_connection->register_message_type(vrpn_got_connection);
+    d_connection->register_handler(gotConnection_type,
+                                   handle_gotConnectionToRemote,
+                                   this, d_myId);
   }
+}
+
+// static
+int vrpn_Shared_int32_Server::handle_gotConnectionToRemote
+             (void * userdata, vrpn_HANDLERPARAM p) {
+  vrpn_Shared_int32_Server * s = (vrpn_Shared_int32_Server *) userdata;
+
+  // Send an update to the remote so that they have the correct
+  // initial value for our state.  Otherwise an attempt to synchronize
+  // something will assume we're at our initial value until our value
+  // changes, which is an error.
+
+  s->sendUpdate(s->d_myUpdate_type, s->d_value, s->d_lastUpdate);
+  return 0;
 }
 
 
@@ -768,6 +803,9 @@ int vrpn_Shared_float64::handle_update (void * userdata, vrpn_HANDLERPARAM p) {
   timeval when;
 
   s->decode(&p.buffer, &p.payload_len, &newValue, &when);
+#ifdef USE_CLOCK_SYNCHRONIZATION
+  when = p.msg_time;
+#endif
 
   s->set(newValue, when, vrpn_FALSE);
 
@@ -791,11 +829,17 @@ vrpn_Shared_float64_Server::vrpn_Shared_float64_Server
 
 // virtual
 vrpn_Shared_float64_Server::~vrpn_Shared_float64_Server (void) {
+  vrpn_int32 gotConnection_type;
 
   // unregister handlers
   if (d_connection) {
     d_connection->unregister_handler
            (d_updateFromRemote_type, handle_update, this, d_myId);
+    gotConnection_type =
+        d_connection->register_message_type(vrpn_got_connection);
+    d_connection->unregister_handler(gotConnection_type,
+                                   handle_gotConnectionToRemote,
+                                   this, d_myId);
   }
 
 }
@@ -810,6 +854,7 @@ vrpn_Shared_float64_Server & vrpn_Shared_float64_Server::operator =
 
 // virtual
 void vrpn_Shared_float64_Server::bindConnection (vrpn_Connection * c) {
+  vrpn_int32 gotConnection_type;
 
   vrpn_Shared_float64::bindConnection(c);
 
@@ -819,7 +864,26 @@ void vrpn_Shared_float64_Server::bindConnection (vrpn_Connection * c) {
     d_connection->register_handler(d_updateFromRemote_type,
                                    handle_update,
                                    this, d_myId);
+    gotConnection_type =
+        d_connection->register_message_type(vrpn_got_connection);
+    d_connection->register_handler(gotConnection_type,
+                                   handle_gotConnectionToRemote,
+                                   this, d_myId);
   }
+}
+
+// static
+int vrpn_Shared_float64_Server::handle_gotConnectionToRemote
+             (void * userdata, vrpn_HANDLERPARAM p) {
+  vrpn_Shared_float64_Server * s = (vrpn_Shared_float64_Server *) userdata;
+
+  // Send an update to the remote so that they have the correct
+  // initial value for our state.  Otherwise an attempt to synchronize
+  // something will assume we're at our initial value until our value
+  // changes, which is an error.
+
+  s->sendUpdate(s->d_myUpdate_type, s->d_value, s->d_lastUpdate);
+  return 0;
 }
 
 
@@ -1209,6 +1273,9 @@ int vrpn_Shared_String::handle_update (void * ud, vrpn_HANDLERPARAM p) {
   timeval when;
 
   s->decode(&p.buffer, &p.payload_len, newValue, &when);
+#ifdef USE_CLOCK_SYNCHRONIZATION
+  when = p.msg_time;
+#endif
 
   s->set(newValue, when, vrpn_FALSE);
 
@@ -1232,11 +1299,17 @@ vrpn_Shared_String_Server::vrpn_Shared_String_Server
 
 // virtual
 vrpn_Shared_String_Server::~vrpn_Shared_String_Server (void) {
+  vrpn_int32 gotConnection_type;
 
   // unregister handlers
   if (d_connection) {
     d_connection->unregister_handler
            (d_updateFromRemote_type, handle_update, this, d_myId);
+    gotConnection_type =
+        d_connection->register_message_type(vrpn_got_connection);
+    d_connection->unregister_handler(gotConnection_type,
+                                   handle_gotConnectionToRemote,
+                                   this, d_myId);
   }
 
 }
@@ -1250,6 +1323,7 @@ vrpn_Shared_String_Server & vrpn_Shared_String_Server::operator =
 
 // virtual
 void vrpn_Shared_String_Server::bindConnection (vrpn_Connection * c) {
+  vrpn_int32 gotConnection_type;
 
   vrpn_Shared_String::bindConnection(c);
 
@@ -1259,7 +1333,26 @@ void vrpn_Shared_String_Server::bindConnection (vrpn_Connection * c) {
     d_connection->register_handler(d_updateFromRemote_type,
                                    handle_update,
                                    this, d_myId);
+    gotConnection_type =
+        d_connection->register_message_type(vrpn_got_connection);
+    d_connection->register_handler(gotConnection_type,
+                                   handle_gotConnectionToRemote,
+                                   this, d_myId);
   }
+}
+
+// static
+int vrpn_Shared_String_Server::handle_gotConnectionToRemote
+             (void * userdata, vrpn_HANDLERPARAM p) {
+  vrpn_Shared_String_Server * s = (vrpn_Shared_String_Server *) userdata;
+
+  // Send an update to the remote so that they have the correct
+  // initial value for our state.  Otherwise an attempt to synchronize
+  // something will assume we're at our initial value until our value
+  // changes, which is an error.
+
+  s->sendUpdate(s->d_myUpdate_type, s->d_value, s->d_lastUpdate);
+  return 0;
 }
 
 
