@@ -1,3 +1,9 @@
+/*
+# instantBuzzEffect : instantaneous buzz "custom" effect for Phantom server
+# written by Sebastien MARAUX, ONDIM SA (France)
+# maraux@ondim.fr
+*/
+
 #ifndef INSTANT_BUZZ_EFFECT
 #define INSTANT_BUZZ_EFFECT
 

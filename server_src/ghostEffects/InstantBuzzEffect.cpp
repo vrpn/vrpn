@@ -1,3 +1,9 @@
+/*
+# instantBuzzEffect : instantaneous buzz "custom" effect for Phantom server
+# written by Sebastien MARAUX, ONDIM SA (France)
+# maraux@ondim.fr
+*/
+
 #include "InstantBuzzEffect.h"
 #ifdef	VRPN_USE_PHANTOM_SERVER
 #include <gstPHANToM.h>

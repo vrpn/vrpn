@@ -1,3 +1,8 @@
+2004-03-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* InstantBuzzEffect.h : Adding credits.
+	* InstantBuzzEffect.cpp : Same.
+
 2003-12-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* InstantBuzzEffect.h : Making it compile again WITH Ghost.
