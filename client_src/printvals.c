@@ -105,8 +105,8 @@ int filter_pos (void * userdata, vrpn_HANDLERPARAM p) {
  *****************************************************************************/
 
 void init (const char * station_name, 
-           const char * local_logfile, long local_logmode,
-           const char * remote_logfile, long remote_logmode,
+           const char * local_in_logfile, const char * local_out_logfile,
+           const char * remote_in_logfile, const char * remote_out_logfile,
            const char * NIC)
 {
 	char devicename [1000];
@@ -123,9 +123,10 @@ void init (const char * station_name,
 	if (!strncmp(station_name, "file:", 5)) {
 fprintf(stderr, "Opening file %s.\n", station_name);
 	  c = new vrpn_File_Connection (station_name);  // now unnecessary!
-          if (local_logfile || local_logmode ||
-              remote_logfile || remote_logmode)
+          if (local_in_logfile || local_out_logfile ||
+              remote_in_logfile || remote_out_logfile) {
             fprintf(stderr, "Warning:  Reading from file, so not logging.\n");
+          }
 	} else {
 fprintf(stderr, "Connecting to host %s.\n", station_name);
 	  port = vrpn_get_port_number(station_name);
@@ -133,8 +134,8 @@ fprintf(stderr, "Connecting to host %s.\n", station_name);
 	  //c = new vrpn_DelayedConnection
                    //(vrpn_MsecsTimeval(0.0),
                     (station_name, port,
-		    local_logfile, local_logmode,
-		    remote_logfile, remote_logmode,
+		    local_in_logfile, local_out_logfile,
+		    remote_in_logfile, remote_out_logfile,
                     1.0, 3, NIC);
           if (delayTime > 0.0) {
             //((vrpn_DelayedConnection *) c)->setDelay
@@ -181,12 +182,12 @@ fprintf(stderr, "Button 2's name is %s.\n", devicename);
 
 void shutdown () {
 
-  static int invocations = 0;
   const char * n;
   long i;
 
   fprintf(stderr, "\nIn control-c handler.\n");
 /* Commented out this test code for the common case
+  static int invocations = 0;
   if (!invocations) {
     printf("(First press -- setting replay rate to 2.0 -- 3 more to exit)\n");
     fc->set_replay_rate(2.0f);
@@ -249,6 +250,30 @@ void handle_cntl_c(int) {
     done = 1;
 }
 
+void Usage (const char * arg0) {
+  fprintf(stderr,
+"Usage:  %s [-lli logfile] [-llo logfile] [-rli logfile ] [-rlo logfile]\n"
+"           [-NIC ip] [-filterpos] [-quiet]\n"
+"           [-red num time] [-delay time] station_name\n"
+"  -notracker:  Don't print tracker reports\n" 
+"  -lli:  log incoming messages locally in <logfile>\n" 
+"  -llo:  log outgoing messages locally in <logfile>\n" 
+"  -rli:  log incoming messages remotely in <logfile>\n" 
+"  -rlo:  log outgoing messages remotely in <logfile>\n" 
+"  -NIC:  use network interface with address <ip>\n"
+"  -filterpos:  log only Tracker Position messages\n"
+"  -quiet:  ignore VRPN warnings\n"
+"  -red <num> <time>:  send every message <num>\n"
+"    times <time> seconds apart\n"
+"  -delay <time:  delay all messages received by <time>\n"
+"  station_name:  VRPN name of data source to contact\n"
+"    one of:  <hostname>[:<portnum>]\n"
+"             file:<filename>\n",
+  arg0);
+
+  exit(0);
+}
+
 void main (int argc, char * argv [])
 {
 
@@ -260,11 +285,13 @@ void main (int argc, char * argv [])
 #endif
 
   const char * station_name = default_station_name;
-  const char * local_logfile = NULL;
-  const char * remote_logfile = NULL;
+  const char * local_in_logfile = NULL;
+  const char * local_out_logfile = NULL;
+  const char * remote_in_logfile = NULL;
+  const char * remote_out_logfile = NULL;
   const char * NIC = NULL;
-  long local_logmode = vrpn_LOG_NONE;
-  long remote_logmode = vrpn_LOG_NONE;
+  //long local_logmode = vrpn_LOG_NONE;
+  //long remote_logmode = vrpn_LOG_NONE;
   int   filter = 0;
   int i;
 
@@ -278,41 +305,24 @@ void main (int argc, char * argv [])
 #endif
 
   if (argc < 2) {
-    fprintf(stderr, "Usage:  %s [-ll logfile mode] [-rl logfile mode]\n"
-                    "           [-NIC ip] [-filterpos] [-quiet]\n"
-                    "           [-red num time] [-delay time] station_name\n"
-                    "  -notracker:  Don't print tracker reports\n" 
-                    "  -ll:  log locally in <logfile>\n" 
-                    "  -rl:  log remotely in <logfile>\n" 
-                    "  <mode> is one of i, o, io\n" 
-                    "  -NIC:  use network interface with address <ip>\n"
-                    "  -filterpos:  log only Tracker Position messages\n"
-                    "  -quiet:  ignore VRPN warnings\n"
-                    "  -red <num> <time>:  send every message <num>\n"
-                    "    times <time> seconds apart\n"
-                    "  -delay <time:  delay all messages received by <time>\n"
-                    "  station_name:  VRPN name of data source to contact\n"
-                    "    one of:  <hostname>[:<portnum>]\n"
-                    "             file:<filename>\n",
-            argv[0]);
-    exit(0);
+    Usage(argv[0]);
   }
 
   // parse args
 
   for (i = 1; i < argc; i++) {
-    if (!strcmp(argv[i], "-ll")) {
+    if (!strcmp(argv[i], "-lli")) {
       i++;
-      local_logfile = argv[i];
+      local_in_logfile = argv[i];
+    } else if (!strcmp(argv[i], "-llo")) {
       i++;
-      if (strchr(argv[i], 'i')) local_logmode |= vrpn_LOG_INCOMING;
-      if (strchr(argv[i], 'o')) local_logmode |= vrpn_LOG_OUTGOING;
-    } else if (!strcmp(argv[i], "-rl")) {
+      local_out_logfile = argv[i];
+    } else if (!strcmp(argv[i], "-rli")) {
       i++;
-      remote_logfile = argv[i];
+      remote_in_logfile = argv[i];
+    } else if (!strcmp(argv[i], "-rlo")) {
       i++;
-      if (strchr(argv[i], 'i')) remote_logmode |= vrpn_LOG_INCOMING;
-      if (strchr(argv[i], 'o')) remote_logmode |= vrpn_LOG_OUTGOING;
+      remote_out_logfile = argv[i];
     } else if (!strcmp(argv[i], "-notracker")) {
       print_for_tracker = 0;
     } else if (!strcmp(argv[i], "-filterpos")) {
@@ -337,8 +347,8 @@ void main (int argc, char * argv [])
 
   // initialize the PC/station
   init(station_name, 
-       local_logfile, local_logmode,
-       remote_logfile, remote_logmode,
+       local_in_logfile, local_out_logfile,
+       remote_in_logfile, remote_out_logfile,
        NIC);
 
   // signal handler so logfiles get closed right

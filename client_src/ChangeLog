@@ -1,3 +1,10 @@
+2001-02-17  Tom Hudson  <hudson@cs.unc.edu>
+
+	* printvals.c (main) : remove code to Usage(), change command-line
+	parameters to work with new logging methods.
+	(init) : work with new logging methods.
+	(Usage) : new function.
+
 2000-11-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* printvals.c (handle_cntl_c) : The ^C handler in Windows is
