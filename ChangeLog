@@ -1,3 +1,8 @@
+2000-10-18  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Serial.C (vrpn_drain_output_buffer) :
+		Called drain function, rather than flush.
+
 2000-10-18  Tom Hudson  <hudson@cs.unc.edu>
 
 	* vrpn_Connection.C (vrpn_Connection) : add data members

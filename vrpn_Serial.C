@@ -383,7 +383,7 @@ int vrpn_drain_output_buffer(int comm)
 #if defined(_WIN32)
    return PurgeComm(commConnections[comm], PURGE_TXCLEAR);
 #else
-   return tcflush(comm, TCIFLUSH);
+  return tcdrain(comm);
 #endif
 
 #endif
