@@ -150,9 +150,13 @@
 # run IS-600 and IS-900 trackers without the proprietary library, so you might
 # try that as well.
 #	char	name_of_this_device[]
-#	char	name_of_serial_device[]
+#	char	name_of_serial_device[] - this can be COM1-4 or AUTO
+#                                     AUTO will automatically find USB and 
+#                                     serial trackers. Use COM1-4 only if you
+#                                     have more than one serial tracker.
+#                                     I guess you can't have >1 USB trackers
 
-#vrpn_Tracker_InterSense Tracker0 COM1
+#vrpn_Tracker_InterSense Tracker0 AUTO
 
 ################################################################################
 # Dynasight Tracker. Runs an Origin System's DynaSight tracker connected to a

@@ -1,3 +1,12 @@
+2003-06-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Changes to enable opening InterSense tracker on
+		an arbitrary port (even USB).
+	* vrpn.cfg : Same.
+	* vrpn.cfg.SAMPLE : Same.
+	* vrpn_server.dsp : Modified to work with isense library files
+		in ../../isense.
+
 2003-06-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.cfg.SAMPLE : Comments to avoid confusion.

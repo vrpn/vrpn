@@ -1622,6 +1622,8 @@ int setup_Tracker_InterSense(char * &pch, char *line, FILE * config_file) {
     commPort = 3;
   } else if(!strcmp(commStr,"COM4")) {
     commPort = 4;
+  }	else if(!strcmp(commStr,"AUTO")) {
+    commPort = 0; //the intersense SDK will find the tracker on any COM or USB port.
   } else {
     fprintf(stderr,"Error determining COM port: %s not should be either COM1, COM2, COM3, or COM4",commStr);
     return 0;
