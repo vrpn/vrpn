@@ -137,11 +137,11 @@ typedef vrpn_int32 (* vrpn_LOGFILTER) (void * userdata, vrpn_HANDLERPARAM p);
 #define vrpn_CONNECTION_TYPE_DESCRIPTION    (-2)
 #define vrpn_CONNECTION_UDP_DESCRIPTION     (-3)
 #define vrpn_CONNECTION_LOG_DESCRIPTION     (-4)
-#define vrpn_CONNECTION_MCAST_DESCRIPTION   (-5)  
-#define vrpn_CLIENT_MCAST_CAPABLE_REPLY     (-6)
-#define vrpn_CONNECTION_CLOCK_QUERY         (-7)
-#define vrpn_CONNECTION_CLOCK_REPLY         (-8)
-#define	vrpn_CONNECTION_DISCONNECT_MESSAGE	(-9)
+#define	vrpn_CONNECTION_DISCONNECT_MESSAGE  (-5)
+#define vrpn_CONNECTION_MCAST_DESCRIPTION   (-6)  
+#define vrpn_CLIENT_MCAST_CAPABLE_REPLY     (-7)
+#define vrpn_CONNECTION_CLOCK_QUERY         (-8)
+#define vrpn_CONNECTION_CLOCK_REPLY         (-9)
 
 // What to log
 #define vrpn_LOG_NONE               (0)
