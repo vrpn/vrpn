@@ -11,6 +11,8 @@
 
 #ifdef _WIN32
 #include <winsock.h>
+// a socket in windows can not be closed like it can in unix-land
+#define close closesocket
 #else
 #include <unistd.h>
 #include <strings.h>
@@ -76,7 +78,6 @@ const	int	MAGICLEN = 16;	// Must be a multiple of vrpn_ALIGN bytes!
 #define CONNECTION_FAIL		(-1)
 #define BROKEN			(-2)
 #define DROPPED			(-3)
-
 
 
 vrpn_Connection::vrpn_OneConnection::vrpn_OneConnection (void) :
@@ -837,7 +838,7 @@ int vrpn_Connection::send_pending_reports(void)
    // an exceptional condition, close the accept socket and go back
    // to listening for new connections.
 #ifdef	VERBOSE
-   printf("TCP Need to send %d bytes\n",tcp_num_out);
+   if (tcp_num_out) printf("TCP Need to send %d bytes\n",tcp_num_out);
 #endif
    while (sent < tcp_num_out) {
 	ret = send(endpoint.tcp_sock, &tcp_outbuf[sent], tcp_num_out-sent, 0);

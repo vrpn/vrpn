@@ -15,7 +15,11 @@ struct timezone {
 #endif
 
 extern int gettimeofday(struct timeval *tp, struct timezone *tzp);
-#define close closesocket
+
+// This has been moved to connection.C so that users of this
+// lib can still use fstream and other objects with close functions.
+// #define close closesocket
+
 #else
 #include <sys/time.h>
 #endif

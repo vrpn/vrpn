@@ -205,11 +205,11 @@ SLIB_INCLUDES = vrpn_Connection.h vrpn_Tracker.h vrpn_3Space.h vrpn_Button.h \
 	       vrpn_Flock.h vrpn_Flock_Parallel.h
 
 
-$(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(OBJECT_DIR) $(LIB_OBJECTS)
+$(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(OBJECT_DIR) $(LIB_OBJECTS) $(LIB_INCLUDES)
 	ar ruv $(OBJECT_DIR)/libvrpn.a $(LIB_OBJECTS)
 	-ranlib $(OBJECT_DIR)/libvrpn.a
 
-$(OBJECT_DIR)/libvrpnserver.a: $(MAKEFILE) $(SOBJECT_DIR) $(SLIB_OBJECTS)
+$(OBJECT_DIR)/libvrpnserver.a: $(MAKEFILE) $(SOBJECT_DIR) $(SLIB_OBJECTS) $(SLIB_INCLUDES)
 	ar ruv $(OBJECT_DIR)/libvrpnserver.a $(SLIB_OBJECTS)
 	-ranlib $(OBJECT_DIR)/libvrpnserver.a
 
