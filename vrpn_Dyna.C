@@ -25,11 +25,15 @@
  * Update Count    : 36
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Dyna.C,v $
- * $Date: 1998/03/16 18:26:43 $
+ * $Date: 1998/05/13 17:32:26 $
  * $Author: taylorr $
- * $Revision: 1.4 $
+ * $Revision: 1.5 $
  * 
  * $Log: vrpn_Dyna.C,v $
+ * Revision 1.5  1998/05/13 17:32:26  taylorr
+ * This version doesn't print so many messages and has the sensor as
+ * unit 0.
+ *
  * Revision 1.4  1998/03/16 18:26:43  taylorr
  * Compiles on HPs
  *
@@ -47,7 +51,7 @@
  * HISTORY
  */
 
-static char rcsid[] = "$Id: vrpn_Dyna.C,v 1.4 1998/03/16 18:26:43 taylorr Exp $";
+static char rcsid[] = "$Id: vrpn_Dyna.C,v 1.5 1998/05/13 17:32:26 taylorr Exp $";
 
 #include <termios.h> // for tcdrain
 #include <unistd.h>
@@ -82,7 +86,7 @@ vrpn_Tracker_Serial(name,c,port,baud), cSensors(cSensors), cResets(0)
       cSensors = MAX_SENSORS;
     }
     fprintf(stderr, "\nvrpn_Tracker_Dyna: starting up ...");
-    sensor =1 ; // sensor id is always  1;
+    sensor = 0 ; // sensor id is always 0 (first sensor is 0);
 }
 
 vrpn_Tracker_Dyna::~vrpn_Tracker_Dyna() {
@@ -125,7 +129,7 @@ int vrpn_Tracker_Dyna::get_status()
     /* no data means it's probably disconnected or not turned on	*/
     if ( bytesRead == 0 )
     {
-       fprintf(stderr, "No data\n");
+//       fprintf(stderr, "No data\n");
       return(T_PDYN_NO_DATA);
     }
 
@@ -164,7 +168,7 @@ void vrpn_Tracker_Dyna::reset() {
     /* if no data, tracker probably not connected.  just bag it.    */
     if ( status == T_PDYN_NO_DATA )
     {
-      fprintf(stderr, "vrpn_Tracker_Dyan:  no data received\n"); 
+      fprintf(stderr, "vrpn_Tracker_Dyan::reset(): no data (is tracker turned on?)\n"); 
       status = TRACKER_RESETTING;
       return;
 
@@ -402,6 +406,7 @@ void vrpn_Tracker_Dyna::mainloop()
       break;
 
     case TRACKER_RESETTING:
+	fprintf(stderr,"vrpn_Tracker_Dyna: Resetting\n");
 	reset();
 	break;
 
