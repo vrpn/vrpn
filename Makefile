@@ -283,7 +283,7 @@ server_g++:
 	mv $(UNQUAL_OBJECT_DIR)/g++/libvrpnserver.a $(UNQUAL_OBJECT_DIR)/libvrpnserver_g++.a
 
 .PHONY:	client
-client:
+client: 
 	$(MAKE) $(OBJECT_DIR)/libvrpn.a
 
 .PHONY:	server
@@ -295,6 +295,16 @@ $(OBJECT_DIR):
 
 $(SOBJECT_DIR):
 	-mkdir $(SOBJECT_DIR)
+
+################
+#  work-in-progress
+################
+
+.PHONY:	newclient
+newclient: 
+	@echo new objects are: $(NEW_LIB_OBJECTS)
+	@echo 
+	$(MAKE) $(NEW_LIB_OBJECTS)
 
 #############################################################################
 #
@@ -319,6 +329,34 @@ LIB_INCLUDES = vrpn_Connection.h vrpn_Tracker.h vrpn_Button.h \
                vrpn_FileController.h vrpn_Forwarder.h vrpn_Text.h \
                vrpn_ForwarderController.h vrpn_Serial.h vrpn_Dial.h \
                vrpn_SharedObject.h
+
+# additional files for the new connection work-in-progress
+
+NEW_LIB_FILES = \
+      vrpn_BaseConnectionController.C \
+      vrpn_ClientConnectionController.C \
+      vrpn_ServerConnectionController.C \
+      vrpn_BaseConnection.C \
+      vrpn_NetConnection.C \
+      vrpn_NewFileConnection.C \
+      vrpn_NewFileController.C \
+      vrpn_FileLogger.C \
+      vrpn_ConnectionOldCommonStuff.C \
+
+NEW_LIB_OBJECTS = $(patsubst %,$(OBJECT_DIR)/%,$(NEW_LIB_FILES:.C=.o))
+
+NEW_LIB_INCLUDES = \
+      vrpn_BaseConnectionController.h \
+      vrpn_ClientConnectionController.h \
+      vrpn_ServerConnectionController.h \
+      vrpn_BaseConnection.h \
+      vrpn_NetConnection.h \
+      vrpn_NewFileConnection.h \
+      vrpn_NewFileController.h \
+      vrpn_FileLogger.h \
+      vrpn_ConnectionOldCommonStuff.h \
+      vrpn_ConnectionCommonStuff.h
+
 
 # Additional files to be compiled into the server library
 
