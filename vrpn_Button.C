@@ -89,6 +89,7 @@ int	vrpn_Button::encode_to(char *buf, int button, int state)
 
 void	vrpn_Button::report_changes(void)
 {  int	i;
+
    if (connection) {
       for (i = 0; i < num_buttons; i++) {
        if (buttons[i] != lastbuttons[i]) {
@@ -102,6 +103,7 @@ void	vrpn_Button::report_changes(void)
 #ifdef	VERBOSE
          printf("vrpn_Button %d %s\n",i, buttons[i]?"pressed":"released");
 #endif
+	 
          lastbuttons[i] = buttons[i];
         }
       }

@@ -21,15 +21,18 @@
  * Author          : Ruigang Yang
  * Created On      : Tue Mar 17 17:14:01 1998
  * Last Modified By: Ruigang Yang
- * Last Modified On: Tue Mar 24 21:13:57 1998
- * Update Count    : 60
+ * Last Modified On: Wed Mar 25 17:25:09 1998
+ * Update Count    : 82
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Joystick.C,v $
- * $Date: 1998/03/25 22:09:24 $
- * $Author: taylorr $
- * $Revision: 1.3 $
+ * $Date: 1998/03/25 22:25:58 $
+ * $Author: ryang $
+ * $Revision: 1.4 $
  * 
  * $Log: vrpn_Joystick.C,v $
+ * Revision 1.4  1998/03/25 22:25:58  ryang
+ * test the joystick code with button in lysine
+ *
  * Revision 1.3  1998/03/25 22:09:24  taylorr
  * Compiles under g++
  *
@@ -45,7 +48,7 @@
  * HISTORY
  */
 
-static char rcsid[] = "$Id: vrpn_Joystick.C,v 1.3 1998/03/25 22:09:24 taylorr Exp $";
+static char rcsid[] = "$Id: vrpn_Joystick.C,v 1.4 1998/03/25 22:25:58 ryang Exp $";
 
 #include "vrpn_Joystick.h"
 #include <stdio.h>
@@ -70,15 +73,19 @@ vrpn_Joystick::vrpn_Joystick(char * name,
   num_buttons = 2;  // only has 2 buttons
   num_channel = 7;
   for(int i=0; i<7; i++) resetval[i] = -1;
-  MAX_TIME_INTERVAL = 1000000/update_rate;
+  if (update_rate != 0) 
+    MAX_TIME_INTERVAL = 1000000/update_rate;
+  else MAX_TIME_INTERVAL = -1;
+  status = ANALOG_RESETTING;
 }
 
 
 void vrpn_Joystick::mainloop(void) {
+  //printf("joy::mainloop %d status\n", status);
   switch (status) {
   case ANALOG_REPORT_READY:
-
-    report_changes(); // report any button event;
+    
+    vrpn_Button::report_changes(); // report any button event;
 
     // Send the message on the connection;
     if (vrpn_Analog::connection) {
@@ -104,11 +111,14 @@ void vrpn_Joystick::mainloop(void) {
     {	
 	struct timeval current_time;
 	gettimeofday(&current_time, NULL);
-	if ( duration(current_time,vrpn_Analog::timestamp) < MAX_TIME_INTERVAL) {
+	
+	if ( duration(current_time,vrpn_Analog::timestamp) 
+	     < MAX_TIME_INTERVAL || MAX_TIME_INTERVAL == -1) {
 		get_report();
 	} else {
 	  //get_report();
 
+#ifdef sgi
 // This code does not compile with g++
 // The first code does not compile under CC.
 // What a mess.
@@ -116,8 +126,10 @@ void vrpn_Joystick::mainloop(void) {
 	  memcpy((char*)(&vrpn_Analog::timestamp), &current_time,
 		sizeof(current_time));
 #else
+
 	  vrpn_Analog::timestamp.tv_sec = current_time.tv_sec;
 	  vrpn_Analog::timestamp.tv_usec = current_time.tv_usec;
+#endif
 #endif
 	  status = ANALOG_REPORT_READY;
 		// send out the last report again;
@@ -219,8 +231,8 @@ void vrpn_Joystick::parse (int index)
      *  should be the right button.  In the original reading the two bits are
      *  opposite this.  shall we swaps the two least significant bits. */;
      
-     buttons[0] = ( buffer[index+1] &  left)?1:0;
-     buttons[1] = ( buffer[index+1] &  right)?1:0;
+     buttons[0] = !( buffer[index+1] &  left)?1:0;
+     buttons[1] = !( buffer[index+1] &  right)?1:0;
      return ;
    }
 
