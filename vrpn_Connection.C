@@ -2051,7 +2051,7 @@ ntohl(name.sin_addr.s_addr) & 0xff);
 #endif
 
   if (bind(sock, (struct sockaddr *) &name, namelen) < 0){
-    fprintf(stderr, "open_socket:  can't bind address");
+    fprintf(stderr, "open_socket:  can't bind address %d", *portno);
 #ifndef _WIN32_WCE
     fprintf(stderr, "  --  %d  --  %s\n", errno, strerror(errno));
 #endif

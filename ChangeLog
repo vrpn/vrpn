@@ -1,3 +1,7 @@
+2004-07-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * vrpn_Connection.C : Added port number to printed comment.
+
 2004-06-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Configure.h : Turns off streams when compiling for the
