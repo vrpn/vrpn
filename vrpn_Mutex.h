@@ -120,6 +120,7 @@ class vrpn_Mutex_Remote : public vrpn_Mutex {
 
     state d_state;
     vrpn_int32 d_myIndex;
+    vrpn_bool d_requestBeforeInit;
 
     static int handle_grantRequest (void *, vrpn_HANDLERPARAM);
     static int handle_denyRequest (void *, vrpn_HANDLERPARAM);
@@ -290,7 +291,7 @@ class vrpn_PeerMutex {
     vrpn_uint32 d_myIP;
     vrpn_uint32 d_myPort;
     vrpn_uint32 d_holderIP;
-    vrpn_uint32 d_holderPort;
+    vrpn_int32 d_holderPort;
 
     vrpn_int32 d_myId;
     vrpn_int32 d_request_type;

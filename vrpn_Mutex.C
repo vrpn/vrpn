@@ -230,7 +230,8 @@ void vrpn_Mutex::sendDenyRequest (vrpn_int32 index) {
 
 vrpn_Mutex_Server::vrpn_Mutex_Server (const char * name, vrpn_Connection * c) :
     vrpn_Mutex (name, c),
-    d_state (FREE) {
+    d_state (FREE),
+    d_remoteIndex(0) {
   vrpn_int32 got;
   vrpn_int32 droppedLast;
 
@@ -308,7 +309,7 @@ int vrpn_Mutex_Server::handle_gotConnection (void * userdata,
     gettimeofday(&now, NULL);
     me->d_connection->pack_message(sizeof(me->d_remoteIndex), now,
                                    me->d_initialize_type, me->d_myId,
-                                   (const char *) &me->d_remoteIndex,
+                                   (const char *) &(me->d_remoteIndex),
                                    vrpn_CONNECTION_RELIABLE);
   }
 
@@ -344,6 +345,7 @@ vrpn_Mutex_Remote::vrpn_Mutex_Remote (const char * name, vrpn_Connection * c) :
     vrpn_Mutex (name, c ? c : vrpn_get_connection_by_name(name)),
     d_state (AVAILABLE),
     d_myIndex (-1),
+    d_requestBeforeInit(vrpn_FALSE),
     d_reqGrantedCB (NULL),
     d_reqDeniedCB (NULL),
     d_takeCB (NULL),
@@ -385,6 +387,9 @@ vrpn_bool vrpn_Mutex_Remote::isHeldRemotely (void) const {
 void vrpn_Mutex_Remote::request (void) {
   if (!isAvailable()) {
     triggerDenyCallbacks();
+    return;
+  } else if (d_myIndex == -1) {
+    d_requestBeforeInit = vrpn_TRUE;
     return;
   }
 
@@ -544,12 +549,20 @@ int vrpn_Mutex_Remote::handle_initialize (void * userdata,
     return 0;
   }
 
-  vrpn_unbuffer(&b, &me->d_myIndex);
+  vrpn_unbuffer(&b, &(me->d_myIndex));
 
 #ifdef VERBOSE
   fprintf(stderr, "vrpn_Mutex_Remote::handle_initialize:  "
                   "Got assigned index %d.\n", me->d_myIndex);
 #endif
+
+  if (me->d_requestBeforeInit) {
+#ifdef VERBOSE
+  fprintf(stderr, "vrpn_Mutex_Remote::handle_initialize:  "
+                  "Sending request\n");
+#endif
+     me->request();
+  }
 
   return 0;
 }
