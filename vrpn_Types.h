@@ -6,7 +6,7 @@
 // error message.  
 //------------------------------------------------------------------
 #ifndef __cplusplus
-XXX     Need to compile with a C++ compiler, not a C compiler
+//XXX     Need to compile with a C++ compiler, not a C compiler
 #endif
 
 //------------------------------------------------------------------
@@ -155,7 +155,8 @@ XXX     Need to define architecture-dependent sizes in this file
 // *******************************************************
 // you should NOT need to modify anything below this point
 // *******************************************************
-
+#ifdef __cplusplus
+//XXX     Need to compile with a C++ compiler, not a C compiler
 typedef vrpn_int16 vrpn_bool;
 
 const vrpn_int16 vrpn_true  = 1;
@@ -164,6 +165,7 @@ const vrpn_int16 vrpn_TRUE  = 1;
 const vrpn_int16 vrpn_FALSE = 0;
 const vrpn_int16 VRPN_TRUE  = 1;
 const vrpn_int16 VRPN_FALSE = 0;
+#endif
 
 // should we add a success & fail?
 
