@@ -11,8 +11,8 @@
 // probably a FileConnection.
 
 
-#ifndef VRPN_BASECONNECTION_H
-#define VRPN_BASECONNECTION_H
+#ifndef VRPN_BASECONNECTION_INCLUDED
+#define VRPN_BASECONNECTION_INCLUDED
 
 #include "vrpn_ConnectionOldCommonStuff.h"
 
@@ -126,43 +126,42 @@ public:  // public type_id and sender_id stuff
 
 protected: // protected type_id and sender_id stuff
 
-	// Holds one entry for a mapping of remote strings to local IDs
-	struct cRemoteMapping {
-          // remote/local sender/type equivalence
-          // is based on name string comparison
-		char * name;
-
-          // each side assigns an id to each name
-          // the id's may differ on the two ends of a connection
+    // Holds one entry for a mapping of remote strings to local IDs
+    struct cRemoteMapping {
+	// remote/local sender/type equivalence
+	// is based on name string comparison
+	char * name;
+	
+	// each side assigns an id to each name
+	// the id's may differ on the two ends of a connection
         vrpn_int32 local_id;
-	};
-
-
+    };
+    
+    
     // * the number of senders that have been registered by the
     //   other side of the connection
     // * was: num_other_senders
     vrpn_int32 num_registered_remote_senders;
 
     // * The senders we know about that have been described by
-	//   the other end of the connection.
-	// * indexed by the ID from the other side, and store
-	//   the name and local ID that corresponds to each.
+    //   the other end of the connection.
+    // * indexed by the ID from the other side, and store
+    //   the name and local ID that corresponds to each.
     // * was: other_senders
     cRemoteMapping registered_remote_senders[vrpn_CONNECTION_MAX_SENDERS];
-	
+        
 
     // * the number of types that have been registered by the
     //   other side of the connection
     // * was: num_other_types
-	vrpn_int32 num_registered_remote_types;
-
+    vrpn_int32 num_registered_remote_types;
+    
     // * The types we know about that have been described by
-	//   the other end of the connection.
-	// * indexed by the ID from the other side, and store
-	//   the name and local ID that corresponds to each.
+    //   the other end of the connection.
+    // * indexed by the ID from the other side, and store
+    //   the name and local ID that corresponds to each.
     // * was: other_types
     cRemoteMapping registered_remote_types[vrpn_CONNECTION_MAX_TYPES];
-
 
 
 public: // logging stuff
