@@ -1,5 +1,10 @@
 2002-12-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_TempImager.h : Removed duplicate definition.  Note to self,
+		always try compiling after update before commit.
+
+2002-12-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* time_test.dsp : DSP files have been modified to not do definitions of
 		VRPN_NO_STREAMS and other constants directly, rather these are
 		now set by editing vprn_Configure.h.  Also, made projects

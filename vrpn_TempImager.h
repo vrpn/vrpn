@@ -127,7 +127,7 @@ const vrpn_uint16 vrpn_IMAGER_VALTYPE_FLOAT32	= 3;
 
 class vrpn_TempImager_Region;
 
-typedef struct {
+typedef struct _vrpn_IMAGERREGIONCB {
   struct timeval		msg_time; //< Timestamp of the region data's change
   const vrpn_TempImager_Region	*region;  //< New region of the image
 } vrpn_IMAGERREGIONCB;
@@ -216,16 +216,6 @@ protected:
   vrpn_uint16 d_valType;	//< Type of the values in the buffer
   bool	      d_valid;		//< Tells whether the helper can be used.
 };
-
-typedef struct _vrpn_IMAGERREGIONCB {
-  struct timeval		msg_time; //< Timestamp of the region data's change
-  const vrpn_TempImager_Region	*region;  //< New region of the image
-} vrpn_IMAGERREGIONCB;
-
-typedef void (*vrpn_IMAGERREGIONHANDLER) (void * userdata,
-					  const vrpn_IMAGERREGIONCB info);
-typedef void (*vrpn_IMAGERDESCRIPTIONHANDLER) (void * userdata,
-					       const struct timeval msg_time);
 
 /// This is the class users deal with: it tells the format and the region data when it arrives.
 class vrpn_TempImager_Remote: public vrpn_TempImager {
