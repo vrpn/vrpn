@@ -494,13 +494,18 @@ vrpn_Button_Parallel::vrpn_Button_Parallel(const char *name,
 #endif
 
 #if defined(linux) || defined(_WIN32)
-    // Set the INIT line on the device to provide power to the python
-    //  update: don't need this for builtin LPT1 on DELLs, but do need it
-    //    for warp9 PCI parallel port. Added next lines.  BCE Nov07.00
+      // Set the INIT line on the device to provide power to the python
+      //  update: don't need this for builtin LPT1 on DELLs, but do need it
+      //    for warp9 PCI parallel port. Added next lines.  BCE Nov07.00
+      // Setting Bit 1 high also for a specific HiBall system
+      //  requirement (IR blocking device on same port)
+      //  - BCE 08 July 03
 
 #ifdef _WIN32
         static const unsigned short DATA_REGISTER_OFFSET = 0;
-        _outp(port + DATA_REGISTER_OFFSET, 1);
+        _outp(port + DATA_REGISTER_OFFSET, 3);
+#else
+	fprintf(stderr,"vrpn_Button_Parallel: Not setting bit 0 on Linux, may not work with all ports\n");
 #endif
 
      // Zero the button states

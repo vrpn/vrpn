@@ -1,4 +1,9 @@
-2003-06-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+2003-07-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Button.C : Turns on a second bit to work with the HiBall.
+		This is a fix from Ben Elgin.
+
+2003-07-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.dsp : Added support for compiling ADBox/CubicMouse driver.
 	* vrpn_ADBox.C : Removed definitions that exclude Windows.

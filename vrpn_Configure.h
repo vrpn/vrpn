@@ -59,14 +59,14 @@
 // rather than the default world-origin with identity rotation.
 // Please don't anyone new use the room space transforms built
 // into VRPN -- they are a hack pulled forward from Trackerlib.
-//#define	DESKTOP_PHANTOM_DEFAULTS
+#define	DESKTOP_PHANTOM_DEFAULTS
 
 //-----------------------
 // Instructs VRPN library and server to include code that uses
 // the DirectX SDK (from its standard installation in C:\DXSDK).
 // Later in this file, we also instruct the compiler to link with
 // the DirectX library if this is defined.
-//#define	VRPN_USE_DIRECTINPUT
+#define	VRPN_USE_DIRECTINPUT
 
 //-----------------------
 // Instructs the VRPN server to create an entry for the Adrienne
@@ -96,7 +96,9 @@
 // Load VRPN Phantom library if we are using phantom server as unified server
 // Load SensAble Technologies GHOST library to run the Phantom
 #ifdef VRPN_USE_PHANTOM_SERVER
-#ifdef _WIN32
+#ifdef VRPN_USE_GHOST_31
+#pragma comment (lib,"C:/Program Files/SensAble/GHOST/v3.1/lib/GHOST31.lib")
+#else
 #pragma comment (lib,"C:/Program Files/SensAble/GHOST/v4.0/lib/GHOST40.lib")
 #endif
 #endif
