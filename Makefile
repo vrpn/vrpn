@@ -351,6 +351,7 @@ NEW_LIB_INCLUDES = \
       vrpn_ServerConnectionController.h \
       vrpn_BaseConnection.h \
       vrpn_NetConnection.h \
+      vrpn_FileConnectionControllerInterface.h\
       vrpn_NewFileConnection.h \
       vrpn_NewFileController.h \
       vrpn_FileLogger.h \
