@@ -36,22 +36,22 @@ vrpn_Radamec_SPI		*sana;
  *
  *****************************************************************************/
 
-void	handle_pos (void *, const vrpn_TRACKERCB t)
+void	VRPN_CALLBACK handle_pos (void *, const vrpn_TRACKERCB t)
 {
 	printf("Got tracker pos, sensor %ld", t.sensor);
 }
 
-void	handle_vel (void *, const vrpn_TRACKERVELCB t)
+void	VRPN_CALLBACK handle_vel (void *, const vrpn_TRACKERVELCB t)
 {
 	printf(" + vel, sensor %ld", t.sensor);
 }
 
-void	handle_acc (void *, const vrpn_TRACKERACCCB t)
+void	VRPN_CALLBACK handle_acc (void *, const vrpn_TRACKERACCCB t)
 {
 	printf(" + acc, sensor %ld\n", t.sensor);
 }
 
-void	handle_analog (void *, const vrpn_ANALOGCB a)
+void	VRPN_CALLBACK handle_analog (void *, const vrpn_ANALOGCB a)
 {
 	printf("Received %d analog channels\n", a.num_channel);
 }

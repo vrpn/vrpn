@@ -222,7 +222,7 @@ void shutDown (void)
     exit(0);
 }
 
-int handle_dlc (void *, vrpn_HANDLERPARAM p)
+int VRPN_CALLBACK handle_dlc (void *, vrpn_HANDLERPARAM p)
 {
     shutDown();
     return 0;
@@ -990,6 +990,11 @@ int setup_Zaber (char * & pch, char * line, FILE * config_file) {
 }
 
 int setup_NI (char * & pch, char * line, FILE * config_file) {
+
+#ifndef	VRPN_USE_NATIONAL_INSTRUMENTS
+  fprintf(stderr, "Attemting to use National Instruments board, but not compiled in\n");
+  fprintf(stderr, "  (Define VRPN_USE_NATIONAL_INSTRUMENTS in vrpn_Configuration.h\n");
+#else
   char s2 [LINESIZE], s3 [LINESIZE];
   int i1, i2;
   float f1, f2;
@@ -1018,6 +1023,7 @@ int setup_NI (char * & pch, char * line, FILE * config_file) {
   } else {
     num_analogouts++;
   }
+#endif
 
   return 0;
 }

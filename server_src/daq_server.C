@@ -42,7 +42,7 @@ double	max_voltage = 6.0;	//< Maximum voltate allowed on a channel
  *
  *****************************************************************************/
 
-void	handle_analog (void *, const vrpn_ANALOGCB a)
+void	VRPN_CALLBACK handle_analog (void *, const vrpn_ANALOGCB a)
 {
     int i;
     int channels = a.num_channel;
@@ -87,7 +87,7 @@ void	handle_analog (void *, const vrpn_ANALOGCB a)
     }
 }
 
-int	handle_connection_shutdown(void *, vrpn_HANDLERPARAM)
+int	VRPN_CALLBACK handle_connection_shutdown(void *, vrpn_HANDLERPARAM)
 {
     int	i;
 

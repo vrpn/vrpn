@@ -64,37 +64,37 @@ vrpn_Analog_Remote		*rana;
  *
  *****************************************************************************/
 
-void	handle_pos (void *, const vrpn_TRACKERCB t)
+void	VRPN_CALLBACK handle_pos (void *, const vrpn_TRACKERCB t)
 {
 	printf("Got tracker pos, sensor %ld", t.sensor);
 }
 
-void	handle_vel (void *, const vrpn_TRACKERVELCB t)
+void	VRPN_CALLBACK handle_vel (void *, const vrpn_TRACKERVELCB t)
 {
 	printf(" + vel, sensor %ld", t.sensor);
 }
 
-void	handle_acc (void *, const vrpn_TRACKERACCCB t)
+void	VRPN_CALLBACK handle_acc (void *, const vrpn_TRACKERACCCB t)
 {
 	printf(" + acc, sensor %ld\n", t.sensor);
 }
 
-void	handle_dial (void *, const vrpn_DIALCB d)
+void	VRPN_CALLBACK handle_dial (void *, const vrpn_DIALCB d)
 {
 	printf("Dial %ld spun by %lf\n", d.dial, d.change);
 }
 
-void	handle_text (void *, const vrpn_TEXTCB t)
+void	VRPN_CALLBACK handle_text (void *, const vrpn_TEXTCB t)
 {
 	printf("Received text \"%s\"\n", t.message);
 }
 
-void	handle_analog (void *, const vrpn_ANALOGCB a)
+void	VRPN_CALLBACK handle_analog (void *, const vrpn_ANALOGCB a)
 {
 	printf("Received %d analog channels\n", a.num_channel);
 }
 
-void	handle_button (void *, const vrpn_BUTTONCB b)
+void	VRPN_CALLBACK handle_button (void *, const vrpn_BUTTONCB b)
 {
 	printf("Button %d is now in state %d\n", b.button, b.state);
 }

@@ -45,19 +45,19 @@ vrpn_Tracker_AnalogFly	*stkr2;
  *
  *****************************************************************************/
 
-void	handle_pos1 (void *, const vrpn_TRACKERCB t)
+void	VRPN_CALLBACK handle_pos1 (void *, const vrpn_TRACKERCB t)
 {
 	printf("Got tracker1 pos: sensor %ld at (%f, %f, %f)\n", t.sensor,
 	    t.pos[0], t.pos[1], t.pos[2]);
 }
 
-void	handle_pos2 (void *, const vrpn_TRACKERCB t)
+void	VRPN_CALLBACK handle_pos2 (void *, const vrpn_TRACKERCB t)
 {
 	printf("Got tracker2 pos: sensor %ld at (%f, %f, %f)\n", t.sensor,
 	    t.pos[0], t.pos[1], t.pos[2]);
 }
 
-void	handle_analog (void *, const vrpn_ANALOGCB a)
+void	VRPN_CALLBACK handle_analog (void *, const vrpn_ANALOGCB a)
 {
     if (a.channel[0] != 1.0) {
 	fprintf(stderr, "handle_analog: Expected 1.0, got %f\n",a.channel[0]);

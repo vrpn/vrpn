@@ -58,7 +58,7 @@ public:
   vrpn_int32	numRecCycles;	// number of recovery cycles
 };
 
-typedef void (*vrpn_PHANTOMPLANECHANGEHANDLER)(void *userdata,
+typedef void (VRPN_CALLBACK *vrpn_PHANTOMPLANECHANGEHANDLER)(void *userdata,
 					 const vrpn_Plane_PHANTOMCB &info);
 
 class vrpn_Phantom: public vrpn_ForceDevice,public vrpn_Tracker,
@@ -101,36 +101,36 @@ protected:
 	} vrpn_PHANTOMCHANGELIST;
 	vrpn_PHANTOMCHANGELIST	*plane_change_list;
 
-	static int handle_plane_change_message(void *userdata, 
+	static int VRPN_CALLBACK handle_plane_change_message(void *userdata, 
 					       vrpn_HANDLERPARAM p);
-	static int handle_effects_change_message(void *userdata,
+	static int VRPN_CALLBACK handle_effects_change_message(void *userdata,
 							vrpn_HANDLERPARAM p);
-	static int handle_setVertex_message(void *userdata, 
+	static int VRPN_CALLBACK handle_setVertex_message(void *userdata, 
 				     vrpn_HANDLERPARAM p);
-	static int handle_setNormal_message(void *userdata, 
+	static int VRPN_CALLBACK handle_setNormal_message(void *userdata, 
 				     vrpn_HANDLERPARAM p);
-	static int handle_setTriangle_message(void *userdata, 
+	static int VRPN_CALLBACK handle_setTriangle_message(void *userdata, 
 				       vrpn_HANDLERPARAM p);
-	static int handle_removeTriangle_message(void *userdata, 
+	static int VRPN_CALLBACK handle_removeTriangle_message(void *userdata, 
 				       vrpn_HANDLERPARAM p);
-	static int handle_updateTrimeshChanges_message(void *userdata, 
+	static int VRPN_CALLBACK handle_updateTrimeshChanges_message(void *userdata, 
 					 vrpn_HANDLERPARAM p);
-	static int handle_transformTrimesh_message(void *userdata, 
+	static int VRPN_CALLBACK handle_transformTrimesh_message(void *userdata, 
 					 vrpn_HANDLERPARAM p);
-	static int handle_setTrimeshType_message(void *userdata, 
+	static int VRPN_CALLBACK handle_setTrimeshType_message(void *userdata, 
 					 vrpn_HANDLERPARAM p);
-	static int handle_clearTrimesh_message(void *userdata, 
+	static int VRPN_CALLBACK handle_clearTrimesh_message(void *userdata, 
 					 vrpn_HANDLERPARAM p);
-	static int handle_forcefield_change_message(void *userdata,
+	static int VRPN_CALLBACK handle_forcefield_change_message(void *userdata,
 						vrpn_HANDLERPARAM p);
-	static int handle_custom_effect_change_message(void *userdata,
+	static int VRPN_CALLBACK handle_custom_effect_change_message(void *userdata,
 						vrpn_HANDLERPARAM p);
-	static int handle_dropConnection (void *, vrpn_HANDLERPARAM);
+	static int VRPN_CALLBACK handle_dropConnection (void *, vrpn_HANDLERPARAM);
 
 	// from vrpn_Tracker
 
-	static int handle_update_rate_request (void *, vrpn_HANDLERPARAM);
-	static int handle_resetOrigin_change_message(void * userdata,
+	static int VRPN_CALLBACK handle_update_rate_request (void *, vrpn_HANDLERPARAM);
+	static int VRPN_CALLBACK handle_resetOrigin_change_message(void * userdata,
 							vrpn_HANDLERPARAM p);
 
 public:
@@ -154,8 +154,8 @@ public:
 	virtual int unregister_plane_change_handler(void *userdata,
 		vrpn_PHANTOMPLANECHANGEHANDLER handler);
 
-	static void handle_plane(void *userdata,const vrpn_Plane_PHANTOMCB &p);
-	static void check_parameters(vrpn_Plane_PHANTOMCB *p);
+	static void VRPN_CALLBACK handle_plane(void *userdata,const vrpn_Plane_PHANTOMCB &p);
+	static void VRPN_CALLBACK check_parameters(vrpn_Plane_PHANTOMCB *p);
 };
 
 #endif

@@ -26,7 +26,7 @@ vrpn_Connection		*connection;
  *
  *****************************************************************************/
 
-void	handle_pos (void *, const vrpn_TRACKERCB t)
+void	VRPN_CALLBACK handle_pos (void *, const vrpn_TRACKERCB t)
 {
 	static	int	count = 0;
 
@@ -41,14 +41,14 @@ void	handle_pos (void *, const vrpn_TRACKERCB t)
 	}
 }
 
-void	handle_vel (void *, const vrpn_TRACKERVELCB t)
+void	VRPN_CALLBACK handle_vel (void *, const vrpn_TRACKERVELCB t)
 {
 	//static	int	count = 0;
 
 	fprintf(stderr, "%ld/", t.sensor);
 }
 
-void	handle_acc (void *, const vrpn_TRACKERACCCB t)
+void	VRPN_CALLBACK handle_acc (void *, const vrpn_TRACKERACCCB t)
 {
 	//static	int	count = 0;
 
