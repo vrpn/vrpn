@@ -1,4 +1,7 @@
 #include "vrpn_timecode_generator.h"
+
+#ifdef	INCLUDE_TIMECODE_SERVER
+
 /*
 //Function Prototypes
 int		FindAllBoards(void);
@@ -642,3 +645,5 @@ void vrpn_Timecode_Generator::do_poll(void) {
 //		printf("brd %d: %f\n",i, channel[i]);
 	}
 }
+
+#endif
