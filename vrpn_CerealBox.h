@@ -15,7 +15,7 @@ public:
 			const char * port, int baud,
 			const int numbuttons, const int numchannels, const int numencoders);
 
-	~vrpn_CerealBox ();
+	~vrpn_CerealBox () {};
 
 	// Called once through each main loop iteration to handle
 	// updates.
