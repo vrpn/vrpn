@@ -564,9 +564,9 @@ void vrpn_Tracker_Flock::mainloop()
 	
 	cReports++;
 
-	if (timevalMsecs(timevalDiff(tvNow, tvLastPrint)) > cSeconds*1000) {
+	if (vrpn_TimevalMsecs(vrpn_TimevalDiff(tvNow, tvLastPrint)) > cSeconds*1000){
 	  double dRate = cReports / 
-	    (timevalMsecs(timevalDiff(tvNow, tvLastPrint))/1000.0);
+	    (vrpn_TimevalMsecs(vrpn_TimevalDiff(tvNow, tvLastPrint))/1000.0);
 	  fprintf(stderr, "\nFlock: reports being sent at %6.2lf hz (%d sensors, so ~%6.2lf hz per sensor)\n", 
 		  dRate, cSensors, dRate/cSensors);
 	  tvLastPrint = tvNow;
