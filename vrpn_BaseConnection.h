@@ -17,7 +17,7 @@
 #include "vrpn_CommonSystemIncludes.h"
 #include "vrpn_ConnectionCommonStuff.h"
 #include "vrpn_FileLogger.h"
-#include "vrpn_BaseConnectionController.h"
+#include "vrpn_BaseConnectionManager.h"
 
 
 #ifndef VRPN_HAVE_DYNAMIC_CAST
@@ -28,7 +28,7 @@ class vrpn_BaseConnection
 {
 public:  // c'tors and d'tors
     vrpn_BaseConnection(
-        vrpn_BaseConnectionController::RestrictedAccessToken *,
+        vrpn_BaseConnectionManager::RestrictedAccessToken *,
 
         const char * local_logfile_name  = NULL,
         vrpn_int32   local_log_mode      = vrpn_LOG_NONE,
@@ -98,14 +98,14 @@ public:  // sending and receiving
     virtual vrpn_int32 mainloop (const struct timeval * timeout = NULL) = 0;
     
     // functions for sending messages
-    // the ConnectionController calls it
+    // the ConnectionManager calls it
     virtual vrpn_int32 queue_outgoing_message(
         vrpn_uint32 len, struct timeval time,
         vrpn_int32 type, vrpn_int32 sender, const char * buffer,
         vrpn_uint32 class_of_service, vrpn_bool sent_mcast ) = 0;
     
     // functions for receiving messages
-    // the ConnectionController calls it
+    // the ConnectionManager calls it
     virtual vrpn_int32 handle_incoming_messages( const struct timeval * pTimeout = NULL  ) = 0;
 
     
@@ -121,7 +121,7 @@ public:  // sending and receiving
     
     virtual vrpn_int32 pack_service_description (char* name, vrpn_int32 id);
     virtual vrpn_int32 pack_type_description (
-        const vrpn_BaseConnectionController::vrpnLocalMapping &,
+        const vrpn_BaseConnectionManager::vrpnLocalMapping &,
         vrpn_int32 id);
     virtual vrpn_int32 pack_udp_description (vrpn_uint16 portno) {return 0;}
     virtual vrpn_int32 pack_log_description (vrpn_int32 mode,
@@ -129,7 +129,7 @@ public:  // sending and receiving
 
 public:  // public type_id and service_id stuff
 
-    // * register a new local {type,service} that that controller
+    // * register a new local {type,service} that that manager
     //   has assigned a {type,service}_id to.
     // * in addition, look to see if this {type,service} has
     //   already been registered remotely (newRemoteType/Service)
@@ -144,17 +144,17 @@ public:  // public type_id and service_id stuff
     // was: newLocalSender
     virtual vrpn_int32 register_local_service(
         const char * service_name,   // e.g. "tracker0"
-        vrpn_int32   local_id);      // from controller
+        vrpn_int32   local_id);      // from manager
     
     // was: newLocalType
     virtual vrpn_int32 register_local_type(
-        const char * type_name,   // e.g. "tracker_pos"
-        vrpn_int32   local_id);   // from controller
+        const char * type_name,      // e.g. "tracker_pos"
+        vrpn_int32   local_id);      // from manager
     
 
     // Adds a new remote type/service and returns its index.
     // Returns -1 on error.
-    // * called by the ConnectionController when the peer on the
+    // * called by the ConnectionManager when the peer on the
     //   other side of this connection has sent notification
     //   that it has registered a new type/service
     // * don't call this function if the type/service has
@@ -166,13 +166,13 @@ public:  // public type_id and service_id stuff
     // was: newRemoteSender
     virtual vrpn_int32 register_remote_service(
         const cName service_name,  // e.g. "tracker0"
-        vrpn_int32 local_id );    // from controller
+        vrpn_int32 local_id );    // from manager
         
     // Adds a new remote type/service and returns its index
     // was: newRemoteType
     virtual vrpn_int32 register_remote_type(
         const cName type_name,    // e.g. "tracker_pos"
-        vrpn_int32 local_id );    // from controller
+        vrpn_int32 local_id );    // from manager
 
 
     // Give the local mapping for the remote type or service.
@@ -186,14 +186,24 @@ public:  // public type_id and service_id stuff
 
     // Give the local mapping for the remote type
     // was: local_type_id
-    virtual vrpn_int32 translate_remote_type_to_local(
-        vrpn_int32 remote_type );
+    vrpn_int32 translate_remote_type_to_local( vrpn_int32 remote_type ) {
+        if (remote_type < num_registered_remote_types) {
+            return registered_remote_types[remote_type].local_id;
+        } else {
+            return -1;
+        }
+    }
     
     // Give the local mapping for the remote service
     // was: local_sender_id
-    virtual vrpn_int32 translate_remote_service_to_local(
-        vrpn_int32 remote_service );
-
+    vrpn_int32 translate_remote_service_to_local( vrpn_int32 remote_service ){
+        if (remote_service < num_registered_remote_services) {
+            return registered_remote_services[remote_service].local_id;
+        } else {
+            return -1;
+        }
+    }
+    
 
     // XXX todo
     // * check into why one of the register functions
@@ -202,7 +212,7 @@ public:  // public type_id and service_id stuff
 
 protected: // protected type_id and service_id stuff
 
-    vrpn_BaseConnectionController::RestrictedAccessToken* const d_controller_token;
+    vrpn_BaseConnectionManager::RestrictedAccessToken* const d_manager_token;
 
     // Holds one entry for a mapping of remote strings to local IDs
     struct cRemoteMapping {

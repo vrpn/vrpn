@@ -1,6 +1,6 @@
 
-#ifndef VRPN_BASECONNECTIONCONTROLLER_INCLUDED
-#define VRPN_BASECONNECTIONCONTROLLER_INCLUDED
+#ifndef VRPN_BASECONNECTIONMANAGER_INCLUDED
+#define VRPN_BASECONNECTIONMANAGER_INCLUDED
 
 #include "vrpn_CommonSystemIncludes.h"
 #include "vrpn_Shared.h"
@@ -9,41 +9,41 @@
 //
 // In this file, we define the classes
 //
-//    vrpn_BaseConnectionController
+//    vrpn_BaseConnectionManager
 //
-// vrpn_ServerConnectionController and vrpn_ClientConnectionController are
+// vrpn_ServerConnectionManager and vrpn_ClientConnectionManager are
 // defined in their own files.
 //
 // For convenience, comments in this file will often drop the vrpn_ prefix.
 //
-// BaseConnectionController defines the portion of the interface that is
-// common to both client and server applications.  ServerConnectionController
-// and ClientConnectionController define additional functionality that is
+// BaseConnectionManager defines the portion of the interface that is
+// common to both client and server applications.  ServerConnectionManager
+// and ClientConnectionManager define additional functionality that is
 // particular to each respective type of application.
 //
 // servers and client devices (like vrpn_TrackerRemote or a tracker
-// server) interract with a ptr to BaseConnectionController.
+// server) interract with a ptr to BaseConnectionManager.
 //
-// ClientConnectionController HAS-A single BaseConnection.
-// ServerConnectionController HAS-A list of BaseConnections.
+// ClientConnectionManager HAS-A single BaseConnection.
+// ServerConnectionManager HAS-A list of BaseConnections.
 //
 // Each BaseConnection is a communication
 // link with a single client.  BaseConnection is an abstract
 // base class.  One example of a concrete class that implements
 // this interface is NetworkConnection.
 //
-// Beyond BaseConnectionController, ClientConnectionController implements:
+// Beyond BaseConnectionManager, ClientConnectionManager implements:
 //  * initiates a connection (active)
 //  * reconnect attempts (server not yet running or restarting)
 //  * client-side logging
 //
-// Beyond BaseConnectionController, ServerConnectionController implements:
+// Beyond BaseConnectionManager, ServerConnectionManager implements:
 //  * listens for connections (passive)
 //  * multiple connections
 //  * multicast sending
 //  * more extensive logging
 //
-// (*ConnectionController) used to be called Connection.
+// (*ConnectionManager) used to be called Connection.
 // NetworkConnection used to be called OneConnection.
 // BaseConnection is new.
 //
@@ -95,17 +95,17 @@ struct vrpn_MsgCallbackEntry {
 
 // }}}
 
-// {{{ class vrpn_BaseConnectionController
+// {{{ class vrpn_BaseConnectionManager
 ////////////////////////////////////////////////////////
 //
-// class vrpn_BaseConnectionController
+// class vrpn_BaseConnectionManager
 //
 // this class used to be called vrpn_Connection it defines the
-// interface that is common between ServerConnectionController and
-// ClientConnectionController
+// interface that is common between ServerConnectionManager and
+// ClientConnectionManager
 //
 
-class vrpn_BaseConnectionController
+class vrpn_BaseConnectionManager
 {
     // {{{ c'tors, and d'tors
 public:
@@ -118,12 +118,12 @@ public:
 
     // Destructor should delete all entries from callback lists
     // and all BaseConnection's
-    virtual ~vrpn_BaseConnectionController();
+    virtual ~vrpn_BaseConnectionManager();
 
 protected:
 
     // constructor should include these for clock synch
-    vrpn_BaseConnectionController(  
+    vrpn_BaseConnectionManager(  
         const char *  local_logfile  = NULL,
         vrpn_int32    local_logmode  = vrpn_LOG_NONE,
         const char *  remote_logfile = NULL,
@@ -384,17 +384,17 @@ public:  // connection special access stuff
     // Restricted members that are not accessible to anything else.
     class RestrictedAccessToken
     {
-        // all methods forward to d_controller
-        vrpn_BaseConnectionController * d_controller;
+        // all methods forward to d_manager
+        vrpn_BaseConnectionManager * d_manager;
         
         // private constructor.  you shouldn't make one of these yourself.
-        // ConnectionController makes one when it creates a Connection.
-        RestrictedAccessToken (vrpn_BaseConnectionController* bcc)
-            : d_controller(bcc) 
+        // ConnectionManager makes one when it creates a Connection.
+        RestrictedAccessToken (vrpn_BaseConnectionManager* bcc)
+            : d_manager(bcc) 
         {}
 
         // friend so that the constructor is accessible
-        friend vrpn_BaseConnectionController;
+        friend vrpn_BaseConnectionManager;
         
     public:
         vrpn_int32 do_callbacks_for (vrpn_int32   type, 
@@ -403,7 +403,7 @@ public:  // connection special access stuff
                                      vrpn_uint32  len,
                                      const char*  buffer)
         {
-            return d_controller->do_callbacks_for (type, sender,
+            return d_manager->do_callbacks_for (type, sender,
                                                    time, len, buffer);
         }
         
@@ -413,50 +413,50 @@ public:  // connection special access stuff
             void*                userdata,
             vrpn_int32           service = vrpn_ANY_SERVICE )
         {
-            return d_controller->register_handler (type, handler,
+            return d_manager->register_handler (type, handler,
                                                    userdata, service);
         }
         
         void got_a_connection (void* pv) {
-            d_controller->got_a_connection (pv);
+            d_manager->got_a_connection (pv);
         }
         
         void dropped_a_connection (void* pv) {
-            d_controller->dropped_a_connection (pv);
+            d_manager->dropped_a_connection (pv);
         }
         
         // used in vrpn_NetConnection to synchronize clocks before any
         // other user messages are sent
         void synchronize_clocks() {
-            d_controller->synchronize_clocks();
+            d_manager->synchronize_clocks();
         }
         
         
         // The Connections need a way to get at the list of services/types in
-        // the Controller.  We will use STL-style sequences, by returning
+        // the Manager.  We will use STL-style sequences, by returning
         // const_iterators to the front and end of the sequence.  The
         // iterators are simply pointers to const objects.
         
         // iterator to the first service in sequence of local services
         char** services_begin() {
-            return (&(d_controller->my_services[0]));
+            return (&(d_manager->my_services[0]));
         }
         
         // iterator to one-past-the-end service in sequence of local services
         char** services_end() {
-            return (services_begin() + d_controller->num_my_services);
+            return (services_begin() + d_manager->num_my_services);
         }
 
-        typedef vrpn_BaseConnectionController::vrpnLocalMapping LM;
+        typedef vrpn_BaseConnectionManager::vrpnLocalMapping LM;
 
         // iterator to the first type in sequence of local types
         const LM* types_begin() {
-            return d_controller->my_types;
+            return d_manager->my_types;
         }
         
         // iterator to one-past-the-end type in sequence of local types
         const LM* types_end() {
-            return (d_controller->my_types + d_controller->num_my_types);
+            return (d_manager->my_types + d_manager->num_my_types);
         }
     };
     
@@ -465,7 +465,7 @@ public:  // connection special access stuff
 
     // need a way to create a token.  This is non-virtual on purpose
     RestrictedAccessToken*
-    new_RestrictedAccessToken (vrpn_BaseConnectionController* pbcc) {
+    new_RestrictedAccessToken (vrpn_BaseConnectionManager* pbcc) {
         return new RestrictedAccessToken (pbcc);
     }
 };

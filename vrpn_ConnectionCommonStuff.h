@@ -1,7 +1,7 @@
 // vrpn_ConnectionCommonStuff.h
 // 
 // this is a place to put stuff that is shared between the different
-// connection classes like BaseConnectionController and BaseConnection
+// connection classes like BaseConnectionManager and BaseConnection
 // and their subclasses
 
 #ifndef VRPN_CONNECTIONCOMMONSTUFF_INCLUDED
@@ -68,7 +68,7 @@ const int vrpn_MAGICLEN = 16;  // Must be a multiple of vrpn_ALIGN bytes!
 // vrpn_CONTROL is used for notification messages sent to the user
 // from the local VRPN implementation (got_first_connection, etc.)
 // and for control messages sent by auxiliary services.  (Such as
-// class vrpn_Controller, which will be introduced in a future revision.)
+// class vrpn_Manager, which will be introduced in a future revision.)
 
 #define vrpn_CONTROL "VRPN Control"
 
@@ -103,8 +103,8 @@ typedef char cName [100];
 // some forward declarations so we can avoid including
 // a bunch of stuff at this point
 
-// from vrpn_BaseConnectionController.h
-class vrpn_ClientConnectionController;
+// from vrpn_BaseConnectionManager.h
+class vrpn_ClientConnectionManager;
 
 // NOTE: most users will want to use the vrpn_Synchronized_Connection
 // class rather than the default connection class (either will work,
@@ -274,7 +274,7 @@ vrpn_uint32 vrpn_marshall_message (
 
 // 1hz sync connection by default, windowed over last three bounces 
 // WARNING:  vrpn_get_connection_by_name() may not be thread safe.
-vrpn_ClientConnectionController *
+vrpn_ClientConnectionManager *
 vrpn_get_connection_by_name(
     const char * cname,
     const char * local_logfile_name   = NULL,

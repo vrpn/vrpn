@@ -1,14 +1,14 @@
-#ifndef VRPN_SERVERCONNECTIONCONTROLLER_INCLUDED
-#define VRPN_SERVERCONNECTIONCONTROLLER_INCLUDED
+#ifndef VRPN_SERVERCONNECTIONMANAGER_INCLUDED
+#define VRPN_SERVERCONNECTIONMANAGER_INCLUDED
 
 ////////////////////////////////////////////////////////
 //
-// class vrpn_ServerConnectionController
+// class vrpn_ServerConnectionManager
 //
 // this class HAS-A list of BaseConnection objects that it
 // communicates through
 //
-// beyond BaseConnectionController, it implements
+// beyond BaseConnectionManager, it implements
 //  * listens for connections (passive)
 //  * multiple connections
 //  * multicast sending
@@ -22,22 +22,22 @@
 //
 // Stefan Sain, 8/99
 
-#include "vrpn_BaseConnectionController.h"
+#include "vrpn_BaseConnectionManager.h"
 #include "vrpn_BaseConnection.h"
 #include "vrpn_UnreliableMulticastSender.h"
 
-class vrpn_ServerConnectionController
-    : public vrpn_BaseConnectionController
+class vrpn_ServerConnectionManager
+    : public vrpn_BaseConnectionManager
 {
 public:  // c'tors and d'tors
 
     // destructor ...XXX...
-    virtual ~vrpn_ServerConnectionController();
+    virtual ~vrpn_ServerConnectionManager();
         
 protected:  // c'tors and init
         
     // constructors ...XXX...
-    vrpn_ServerConnectionController(
+    vrpn_ServerConnectionManager(
         vrpn_uint16   port                = vrpn_DEFAULT_LISTEN_PORT_NO,
         char *        local_logfile_name  = NULL, 
         vrpn_int32    local_log_mode      = vrpn_LOG_NONE,
@@ -105,8 +105,8 @@ public: // status
 
 
 private: // the connections
-    // XXX - this is now handled by vrpn_ConnectionManager
-    // vrpn_ConnectionManager *d_connection_list;
+    // XXX - this is now handled by vrpn_ConnectionList
+    // vrpn_ConnectionList *d_connection_list;
 
     // what we really want, is
     //   std::list<vrpn_BaseConnection*>;
@@ -114,7 +114,7 @@ private: // the connections
     // we need to write our own list management ... yet again.
     //
     // we can do the same type of thing we did with
-    // ConnectionControllerCallbackInterface
+    // ConnectionManagerCallbackInterface
 
     
 protected: // initializaton and connection setup
@@ -171,7 +171,7 @@ public: // logging functions
         void * userdata);
 
     // this function registers log filters with the
-    // ServerConnectionController's FileLogger object
+    // ServerConnectionManager's FileLogger object
     virtual vrpn_int32 register_server_side_log_filter (
         vrpn_LOGFILTER filter, 
         void * userdata);
@@ -193,7 +193,7 @@ protected: // clock server function
 
 
 //
-// vrpn_ConnectionManager
+// vrpn_ConnectionList
 // Singleton class that keeps track of all known VRPN connections
 // and makes sure they're deleted on shutdown.
 // We make it static to guarantee that the destructor is called
@@ -211,15 +211,15 @@ protected: // clock server function
 // forward declaration
 class vrpn_ConnectionItr;
 
-class vrpn_ConnectionManager {
+class vrpn_ConnectionList {
 
     friend class vrpn_ConnectionItr;
 
   public:
 
-    ~vrpn_ConnectionManager (void);
+    ~vrpn_ConnectionList (void);
 
-    static vrpn_ConnectionManager & instance (void);
+    static vrpn_ConnectionList & instance (void);
       // The only way to get access to an instance of this class.
       // Guarantees that there is only one, global object.
       // Also guarantees that it will be constructed the first time
@@ -255,19 +255,19 @@ class vrpn_ConnectionManager {
 
     vrpn_int32 d_numConnections;
 
-    vrpn_ConnectionManager (void);
+    vrpn_ConnectionList (void);
 
-    vrpn_ConnectionManager (const vrpn_ConnectionManager &);
+    vrpn_ConnectionList (const vrpn_ConnectionList &);
       // copy constructor undefined to prevent instantiations
 
     static void deleteConnection (vrpn_BaseConnection *, knownConnection **);
 
-}; // class vrpn_ConnectionManager
+}; // class vrpn_ConnectionList
 
 
 // vrpn_ConnectionItr class interface; maintains "current position"
 //
-// CONSTRUCTION: with (a) vrpn_ConnectionManager to which
+// CONSTRUCTION: with (a) vrpn_ConnectionList to which
 // vrpn_ConnectionItr is permanently bound or (b) another
 // vrpn_ConnectionItr; Copying of vrpn_ConnectionItr objects not
 // supported in current form
@@ -283,7 +283,7 @@ class vrpn_ConnectionManager {
 class vrpn_ConnectionItr
 {
   public:
-    vrpn_ConnectionItr( const vrpn_ConnectionManager & CM ) : d_header( CM.d_anonList )
+    vrpn_ConnectionItr( const vrpn_ConnectionList & CM ) : d_header( CM.d_anonList )
             { d_current = CM.isEmpty( ) ? NULL : d_header; }
     ~vrpn_ConnectionItr( ) { }
 
@@ -304,8 +304,8 @@ class vrpn_ConnectionItr
     void operator++( int ) { operator++( ); }
 
   private:
-    vrpn_ConnectionManager::knownConnection * const d_header;   // List Header
-    vrpn_ConnectionManager::knownConnection *d_current;         // Current position
+    vrpn_ConnectionList::knownConnection * const d_header;   // List Header
+    vrpn_ConnectionList::knownConnection *d_current;         // Current position
 
 };
 

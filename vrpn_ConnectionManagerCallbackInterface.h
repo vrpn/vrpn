@@ -2,16 +2,16 @@
 // the original one was solved by means other than separating this
 // declaration from BaseConnectionController.h. 10/99 sain
 
-#ifndef VRPN_CONNECTIONCONTROLLER_CALLBACK_INTERFACE_INCLUDED
-#define VRPN_CONNECTIONCONTROLLER_CALLBACK_INTERFACE_INCLUDED
+#ifndef VRPN_CONNECTIONMANAGER_CALLBACK_INTERFACE_INCLUDED
+#define VRPN_CONNECTIONMANAGER_CALLBACK_INTERFACE_INCLUDED
 // please excuse our ugly hack.  we did it this way to avoid the need
 // to create yet another file for just this one class
 //
 // This is the interface that we provide to the Connection classes so
 // that they can invoke callbacks. The only functions of the
-// ConnectionControllers that we want the Connection classes to have
+// ConnectionManagers that we want the Connection classes to have
 // access to is do_callbacks_for and {got,lost}_a_connection so that
-// Connections can inform the controller when a connection has been
+// Connections can inform the manager when a connection has been
 // lost or completed correctly.
 //
 #include "vrpn_Shared.h"
@@ -20,7 +20,7 @@
     struct vrpn_MsgCallbackEntry;
 #endif
 
-struct vrpn_ConnectionControllerCallbackInterface
+struct vrpn_ConnectionManagerCallbackInterface
 {
     virtual vrpn_int32 do_callbacks_for( 
 		vrpn_int32 type, 
@@ -50,7 +50,7 @@ struct vrpn_ConnectionControllerCallbackInterface
 
 
     // The Connections need a way to get at the list of services/types in the
-    // Controller.  We will use STL-style sequences, by returning
+    // Manager.  We will use STL-style sequences, by returning
     // const_iterators to the front and end of the sequence.  The iterators
     // are simply const pointers.
     
@@ -61,7 +61,7 @@ struct vrpn_ConnectionControllerCallbackInterface
     virtual const char* service_end();
 
 #if 0 // doesn't work
-    typedef vrpn_BaseConnectionController::vrpnLocalMapping LM;
+    typedef vrpn_BaseConnectionManager::vrpnLocalMapping LM;
 #else
     struct vrpnLocalMapping {
         char *                  name;       // Name of type
@@ -79,5 +79,5 @@ struct vrpn_ConnectionControllerCallbackInterface
 //
 // end of our ugly hack
 //
-#endif  // VRPN_CONNECTIONCONTROLLER_CALLBACK_INTERFACE_INCLUDED
+#endif  // VRPN_CONNECTIONMANAGER_CALLBACK_INTERFACE_INCLUDED
 

@@ -18,7 +18,7 @@
 
 
 vrpn_NewFileConnection::vrpn_NewFileConnection (
-    vrpn_BaseConnectionController::RestrictedAccessToken * rat,
+    vrpn_BaseConnectionManager::RestrictedAccessToken * rat,
     const char * file_name,
     const char * local_logfile_name,
     vrpn_int32   local_log_mode)
@@ -205,15 +205,15 @@ vrpn_int32 vrpn_NewFileConnection::handle_incoming_messages(
 // was: newLocalSender
 vrpn_int32 vrpn_NewFileConnection::register_local_service(
     const char *service_name,  // e.g. "tracker0"
-    vrpn_int32 local_id )      // from controller
+    vrpn_int32 local_id )      // from manager
 {
     vrpn_int32 service_id = 
         vrpn_BaseConnection::register_local_service(
             service_name,
             local_id);
 
-    if( strcmp("vrpn File Controller",service_name) == 0 ){
-        d_controllerId = service_id;
+    if( strcmp("vrpn File Manager",service_name) == 0 ){
+        d_managerId = service_id;
     }
 
     return service_id;
@@ -222,7 +222,7 @@ vrpn_int32 vrpn_NewFileConnection::register_local_service(
 // was: newLocalType
 vrpn_int32 vrpn_NewFileConnection::register_local_type(
     const char *type_name,   // e.g. "tracker_pos"
-    vrpn_int32 local_id )    // from controller
+    vrpn_int32 local_id )    // from manager
 {
     vrpn_int32 type_id = 
         vrpn_BaseConnection::register_local_type(
@@ -232,19 +232,19 @@ vrpn_int32 vrpn_NewFileConnection::register_local_type(
 
     // register handlers if these types are being registered
     if( strcmp("vrpn File set replay rate",type_name) == 0 ){
-        d_controller_token->register_handler(
+        d_manager_token->register_handler(
             type_id, handle_set_replay_rate,
-            this, d_controllerId);
+            this, d_managerId);
     } 
     else if( strcmp("vrpn File reset",type_name) == 0 ){
-        d_controller_token->register_handler(
+        d_manager_token->register_handler(
             type_id, handle_reset, 
-            this, d_controllerId);
+            this, d_managerId);
     } 
     else if( strcmp("vrpn File play to time",type_name) == 0 ){
-        d_controller_token->register_handler(
+        d_manager_token->register_handler(
             type_id, handle_play_to_time,
-            this, d_controllerId);
+            this, d_managerId);
     }
 
     return type_id;
@@ -445,7 +445,7 @@ vrpn_int32 vrpn_NewFileConnection::playone_to_filetime(timeval end_filetime)
 	// Handle this log entry
     if (header.type >= 0) {
         if (translate_remote_type_to_local(header.type) >= 0) {
-            if (d_controller_token->do_callbacks_for(
+            if (d_manager_token->do_callbacks_for(
                 translate_remote_type_to_local(header.type),
                 translate_remote_service_to_local(header.service),
                 header.msg_time, header.payload_len,

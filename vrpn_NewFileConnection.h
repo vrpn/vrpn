@@ -22,7 +22,7 @@
 
 // The interface exactly matches that of vrpn_Connection.  To do things that
 // are meaningful on log replay but not on live networks, create a
-// vrpn_File_Controller and pass your vrpn_NewFileConnection to its constructor.
+// vrpn_File_Manager and pass your vrpn_NewFileConnection to its constructor.
 
 // Logfiles are recorded as *sent*, not as translated by the receiver,
 // so we still need to have all the correct names for senders and types
@@ -38,13 +38,13 @@ class vrpn_NewFileConnection
     : public vrpn_BaseConnection,
       protected vrpn_FileConnectionInterface 
 {
-    friend class vrpn_NewFileController;
+    friend class vrpn_NewFileManager;
     
     // {{{ c'tors, d'tors
 public: // c'tors & d'tors
     
     vrpn_NewFileConnection(
-        vrpn_BaseConnectionController::RestrictedAccessToken *,
+        vrpn_BaseConnectionManager::RestrictedAccessToken *,
         const char *  file_name,
         const char *  local_logfile_name = NULL,
         vrpn_int32    local_log_mode     = vrpn_LOG_NONE);
@@ -59,7 +59,7 @@ public: // c'tors & d'tors
     // {{{ public type_id and service_id stuff
 public:  
 
-    // * register a new local {type,service} that that controller
+    // * register a new local {type,service} that that manager
     //   has assigned a {type,service}_id to.
     // * in addition, look to see if this {type,service} has
     //   already been registered remotely (newRemoteType/Service)
@@ -74,12 +74,12 @@ public:
     // was: newLocalSender
     virtual vrpn_int32 register_local_service(
         const char *service_name,  // e.g. "tracker0"
-        vrpn_int32 local_id );    // from controller
+        vrpn_int32 local_id );    // from manager
     
     // was: newLocalType
     virtual vrpn_int32 register_local_type(
         const char *type_name,   // e.g. "tracker_pos"
-        vrpn_int32 local_id );   // from controller
+        vrpn_int32 local_id );   // from manager
 
     // }}}
     // {{{ status
@@ -110,7 +110,7 @@ public:
     virtual vrpn_int32 mainloop (const struct timeval * timeout = NULL);
 
     // functions for sending messages and receiving messages
-    // the ConnectionController will call these functions
+    // the ConnectionManager will call these functions
 
     vrpn_int32 queue_outgoing_message(
         vrpn_uint32  len, 
@@ -205,7 +205,7 @@ protected:
     
     // tokens for VRPN control messages
 
-    vrpn_int32 d_controllerId;
+    vrpn_int32 d_managerId;
 
     vrpn_int32 d_set_replay_rate_type;
     vrpn_int32 d_reset_type;

@@ -1,18 +1,18 @@
-#include "vrpn_ClientConnectionController.h"
+#include "vrpn_ClientConnectionManager.h"
 
 #include "vrpn_NetConnection.h"
 #include "vrpn_NewFileConnection.h"
 
 ////////////////////////////////////////////////
-// List of controllers that are already open
+// List of managers that are already open
 //
-//  struct vrpn_KNOWN_CONTROLLER {
+//  struct vrpn_KNOWN_MANAGER {
 //      char name[1000];                    // The name of the connection
-//      vrpn_ClientConnectionController *c; // The conntroller
-//      vrpn_KNOWN_CONTROLLER *next;        // Next on the list
+//      vrpn_ClientConnectionManager *c; // The conntroller
+//      vrpn_KNOWN_MANAGER *next;        // Next on the list
 //  };
 
-//  static vrpn_KNOWN_CONTROLLER *known_controllers = NULL;
+//  static vrpn_KNOWN_MANAGER *known_managers = NULL;
 
 
 ///////////////////////////////////////////////
@@ -45,7 +45,7 @@ void vrpn_setClockOffset(void *userdata, const vrpn_CLOCKCB& info )
 // args of freq=-1 makes it behave like a regular connection
 
 // {{{ vrpn_get_connection_by_name() ...
-vrpn_ClientConnectionController * vrpn_get_connection_by_name(
+vrpn_ClientConnectionManager * vrpn_get_connection_by_name(
     const char *  cname,
     const char *  local_logfile_name,
     vrpn_int32    local_log_mode,
@@ -54,7 +54,7 @@ vrpn_ClientConnectionController * vrpn_get_connection_by_name(
     vrpn_float64  dFreq,
     vrpn_int32    cSyncWindow)
 {
-    vrpn_ClientConnectionController* ccc;
+    vrpn_ClientConnectionManager* ccc;
     char* where_at; // Part of name past last '@'
     vrpn_int32 port;
 
@@ -70,7 +70,7 @@ vrpn_ClientConnectionController * vrpn_get_connection_by_name(
     }
 
     // See if the connection is one that is already open.
-    ccc = vrpn_ConnectionControllerManager::instance().getByName(cname);
+    ccc = vrpn_ManagerList::instance().getByName(cname);
     
     // If its not already open, open it and add it to the list.
     if (ccc == NULL) {
@@ -81,9 +81,9 @@ vrpn_ClientConnectionController * vrpn_get_connection_by_name(
         // this is kind of odd, but oh well (can probably be done
         // more cleanly later).
         
-        // Just create a ClientConnectionController, it will decided
+        // Just create a ClientConnectionManager, it will decided
         // whether to create a vrpn_FileConnection or vrpn_NetConnection
-        new vrpn_ClientConnectionController(
+        new vrpn_ClientConnectionManager(
             local_logfile_name,
             local_log_mode,
             remote_logfile_name, 
@@ -91,11 +91,11 @@ vrpn_ClientConnectionController * vrpn_get_connection_by_name(
             dFreq, 
             cSyncWindow );
         
-        // ClientConnectionController adds itself to the list of
+        // ClientConnectionManager adds itself to the list of
         // connections in its constructor
         
         // make connection to server
-        ccc = vrpn_ConnectionControllerManager::instance().getByName(cname);
+        ccc = vrpn_ManagerList::instance().getByName(cname);
         if (ccc->connect_to_server(    
             cname,
             port,
@@ -112,7 +112,7 @@ vrpn_ClientConnectionController * vrpn_get_connection_by_name(
     }
 
     // See if the connection is okay.  If so, return it.  If not, NULL
-    ccc = vrpn_ConnectionControllerManager::instance().getByName(cname);
+    ccc = vrpn_ManagerList::instance().getByName(cname);
     if (ccc->all_connections_doing_okay()) {
         return ccc;
     } else {
@@ -126,20 +126,20 @@ vrpn_ClientConnectionController * vrpn_get_connection_by_name(
 //==========================================================================
 //==========================================================================
 //
-// {{{ vrpn_ClientConnectionController: public: c'tors and d'tors
+// {{{ vrpn_ClientConnectionManager: public: c'tors and d'tors
 
 //
 //==========================================================================
 //==========================================================================
 
-vrpn_ClientConnectionController::vrpn_ClientConnectionController(
+vrpn_ClientConnectionManager::vrpn_ClientConnectionManager(
 	const char * local_logfile_name, 
 	vrpn_int32 local_log_mode,
 	const char * remote_logfile_name, 
 	vrpn_int32 remote_log_mode,
 	vrpn_float64 dFreq, 
 	vrpn_int32 cSyncWindow):
-	vrpn_BaseConnectionController(
+	vrpn_BaseConnectionManager(
 		local_logfile_name,
 		local_log_mode,
 		remote_logfile_name,
@@ -163,7 +163,7 @@ vrpn_ClientConnectionController::vrpn_ClientConnectionController(
 //      queryMsg_id = register_message_type("clock query");
 //      replyMsg_id = register_message_type("clock reply");
     if ( (clockServer_id == -1) || (queryMsg_id == -1) || (replyMsg_id == -1) ) {
-        cerr << "vrpn_ClientConnectionController: Can't register IDs for synch clocks" 
+        cerr << "vrpn_ClientConnectionManager: Can't register IDs for synch clocks" 
              << endl;
         return;
     }
@@ -183,37 +183,37 @@ vrpn_ClientConnectionController::vrpn_ClientConnectionController(
     
     init_clock_client();
 
-	// add self to list of known controllers
-    vrpn_ConnectionControllerManager::instance().addController(this, NULL);
+	// add self to list of known managers
+    vrpn_ManagerList::instance().addManager(this, NULL);
 //  	if (cname) {
-//  		vrpn_KNOWN_CONTROLLER *curr;
+//  		vrpn_KNOWN_MANAGER *curr;
 		
-//  		if ( (curr = new(vrpn_KNOWN_CONTROLLER)) == NULL) {
-//  			fprintf(stderr, "vrpn_ClientConnectionController:  Out of memory.\n");
+//  		if ( (curr = new(vrpn_KNOWN_MANAGER)) == NULL) {
+//  			fprintf(stderr, "vrpn_ClientConnectionManager:  Out of memory.\n");
 //  			return;
 //  		}
 //  		strncpy(curr->name, cname, sizeof(curr->name));
 //  		curr->c = this;
-//  		curr->next = known_controllers;
-//  		known_controllers = curr;
+//  		curr->next = known_managers;
+//  		known_managers = curr;
 //  	}
 
 }
 	
 	
 
-vrpn_ClientConnectionController::~vrpn_ClientConnectionController () {
+vrpn_ClientConnectionManager::~vrpn_ClientConnectionManager () {
 
 	// delete connection
 	delete d_connection_ptr;
 
     // Remove myself from the "known connections" list
     //   (or the "anonymous connections" list).
-    vrpn_ConnectionControllerManager::instance().deleteController(this);
+    vrpn_ManagerList::instance().deleteManager(this);
 
 //  	// Remove myself from the "known connections" list.
-//  	vrpn_KNOWN_CONTROLLER **snitch = &known_controllers;
-//  	vrpn_KNOWN_CONTROLLER *victim = *snitch;
+//  	vrpn_KNOWN_MANAGER **snitch = &known_managers;
+//  	vrpn_KNOWN_MANAGER *victim = *snitch;
 //  	while ( (victim != NULL) && (victim->c != this) ) {
 //  		snitch = &( (*snitch)->next );;
 //  		victim = victim->next;
@@ -260,7 +260,7 @@ static vrpn_int32 dCompare( const void *pd1, const void *pd2 ) {
 #endif
 
 
-vrpn_int32 vrpn_ClientConnectionController::connect_to_server(
+vrpn_int32 vrpn_ClientConnectionManager::connect_to_server(
     const char*  cname,
     vrpn_int16   port,
     const char*  local_logfile_name, 
@@ -282,7 +282,7 @@ vrpn_int32 vrpn_ClientConnectionController::connect_to_server(
         // Open a connection to the station using VRPN
         machinename = vrpn_copy_machine_name(cname);
         if (!machinename) {
-            fprintf(stderr, "vrpn_ClientConnectionController:  "
+            fprintf(stderr, "vrpn_ClientConnectionManager:  "
                     "Out of memory!\n");
             return -1;
         }
@@ -349,13 +349,13 @@ vrpn_int32 vrpn_ClientConnectionController::connect_to_server(
 //==========================================================================
 //==========================================================================
 //
-// {{{ vrpn_ClientConnectionController: public: mainloop
+// {{{ vrpn_ClientConnectionManager: public: mainloop
 
 //
 //==========================================================================
 //==========================================================================
 
-vrpn_int32 vrpn_ClientConnectionController::mainloop(
+vrpn_int32 vrpn_ClientConnectionManager::mainloop(
     const timeval * timeout)
 {
     vrpn_int32 retval;
@@ -380,12 +380,12 @@ vrpn_int32 vrpn_ClientConnectionController::mainloop(
 //==========================================================================
 //==========================================================================
 //
-// vrpn_ClientConnectionController: public: logging
+// vrpn_ClientConnectionManager: public: logging
 //
 //==========================================================================
 //==========================================================================
 
-vrpn_int32 vrpn_ClientConnectionController::register_log_filter (
+vrpn_int32 vrpn_ClientConnectionManager::register_log_filter (
     vrpn_LOGFILTER filter, 
     void * userdata)
 {
@@ -396,19 +396,19 @@ vrpn_int32 vrpn_ClientConnectionController::register_log_filter (
 //==========================================================================
 //==========================================================================
 //
-// vrpn_ClientConnectionController: public: status
+// vrpn_ClientConnectionManager: public: status
 //
 //==========================================================================
 //==========================================================================
 
 // are there any connections?
-vrpn_int32 vrpn_ClientConnectionController::at_least_one_open_connection() const
+vrpn_int32 vrpn_ClientConnectionManager::at_least_one_open_connection() const
 {
     return d_connection_ptr->connected();
 }
 
 // overall, all connections are doing okay
-vrpn_int32 vrpn_ClientConnectionController::all_connections_doing_okay() const
+vrpn_int32 vrpn_ClientConnectionManager::all_connections_doing_okay() const
 {
     return d_connection_ptr->doing_okay();
 }       
@@ -416,7 +416,7 @@ vrpn_int32 vrpn_ClientConnectionController::all_connections_doing_okay() const
 //==========================================================================
 //==========================================================================
 //
-// vrpn_ClientConnectionController: public : sending and receiving
+// vrpn_ClientConnectionManager: public : sending and receiving
 //
 //==========================================================================
 //==========================================================================
@@ -425,7 +425,7 @@ vrpn_int32 vrpn_ClientConnectionController::all_connections_doing_okay() const
 // * send pending report (that have been packed), and clear the buffer
 // * this function was protected, now is public, so we can use
 //   it to send out intermediate results without calling mainloop
-vrpn_int32 vrpn_ClientConnectionController::send_pending_reports()
+vrpn_int32 vrpn_ClientConnectionManager::send_pending_reports()
 {
     return d_connection_ptr->send_pending_reports();
 }
@@ -433,7 +433,7 @@ vrpn_int32 vrpn_ClientConnectionController::send_pending_reports()
 // * pack a message that will be sent the next time mainloop() is called
 // * turn off the RELIABLE flag if you want low-latency (UDP) send
 // * was: pack_message
-vrpn_int32 vrpn_ClientConnectionController::queue_outgoing_message(
+vrpn_int32 vrpn_ClientConnectionManager::queue_outgoing_message(
     vrpn_uint32 len, 
     timeval time,
     vrpn_int32 type,
@@ -445,7 +445,7 @@ vrpn_int32 vrpn_ClientConnectionController::queue_outgoing_message(
     
     // Make sure type is either a system type (-) or a legal user type
     if ( type >= get_num_my_types() ) {
-        printf("vrpn_ClientConnectionController::queue_outgoing_message: bad type (%ld)\n",
+        printf("vrpn_ClientConnectionManager::queue_outgoing_message: bad type (%ld)\n",
                type);
         return -1;
     }
@@ -453,7 +453,7 @@ vrpn_int32 vrpn_ClientConnectionController::queue_outgoing_message(
     // If this is not a system message, make sure the service is legal.
     if (type >= 0) {
         if ( (service < 0) || (service >= get_num_my_services() ) ) {
-            printf("vrpn_ClientConnectionController::queue_outgoing_message: bad service (%ld)\n",
+            printf("vrpn_ClientConnectionManager::queue_outgoing_message: bad service (%ld)\n",
                    service);
             return -1;
         }
@@ -479,14 +479,14 @@ vrpn_int32 vrpn_ClientConnectionController::queue_outgoing_message(
 //==========================================================================
 //==========================================================================
 //
-// {{{ vrpn_ClientConnectionController: public : clock synch functions
+// {{{ vrpn_ClientConnectionManager: public : clock synch functions
 //
 //==========================================================================
 //==========================================================================
 
 // do all inits that are done in
 // vrpn_Clock_Remote constructor
-void vrpn_ClientConnectionController::init_clock_client()
+void vrpn_ClientConnectionManager::init_clock_client()
 {
     char rgch [50];
     vrpn_int32 i;
@@ -494,7 +494,7 @@ void vrpn_ClientConnectionController::init_clock_client()
     change_list = NULL;
     
     if (d_connection_ptr == NULL) {
-        cerr << "vrpn_ClientConnectionController: unable to connect to clock server" 
+        cerr << "vrpn_ClientConnectionManager: unable to connect to clock server" 
              << endl;
         return;
     }
@@ -503,7 +503,7 @@ void vrpn_ClientConnectionController::init_clock_client()
     clockClient_id = register_service(rgch);
     
     if (clockClient_id == -1) {
-        cerr << "vrpn_ClientConnectionController: Can't register ID" << endl;
+        cerr << "vrpn_ClientConnectionManager: Can't register ID" << endl;
         d_connection_ptr = NULL;
         return;
     }
@@ -544,7 +544,7 @@ void vrpn_ClientConnectionController::init_clock_client()
         if (register_handler(replyMsg_id, 
                              quickSyncClockServerReplyHandler,
                              (void *)this, clockServer_id)) {
-            cerr << "vrpn_ClientConnectionController: Can't register handler" << endl;
+            cerr << "vrpn_ClientConnectionManager: Can't register handler" << endl;
         }
     }
 
@@ -564,7 +564,7 @@ void vrpn_ClientConnectionController::init_clock_client()
 // this will take 1 second to run (sync's the clocks)
 // when it is in fullSync mode
 // mostly code from vrpn_Clock_Remote::mainloop()
-void vrpn_ClientConnectionController::synchronize_clocks()
+void vrpn_ClientConnectionManager::synchronize_clocks()
 {
     if (fDoQuickSyncs) {
         // just a quick sync
@@ -603,7 +603,7 @@ void vrpn_ClientConnectionController::synchronize_clocks()
         if (register_handler(replyMsg_id, 
                              fullSyncClockServerReplyHandler,
                              (void *) this, clockServer_id)) {
-            cerr << "vrpn_ClientConnectionController: Can't register handler" << endl;
+            cerr << "vrpn_ClientConnectionManager: Can't register handler" << endl;
         }
 
         // init the necessary variables for doing clock sync
@@ -623,7 +623,7 @@ void vrpn_ClientConnectionController::synchronize_clocks()
         const vrpn_int32 cQueries = (cCalibMsecs/cInterval) + 1;
         vrpn_int32 iQueries = 0;
 
-        cerr << "vrpn_ClientConnectionController: performing fullsync calibration, "
+        cerr << "vrpn_ClientConnectionManager: performing fullsync calibration, "
             "this will take " << cCalibMsecs/1000.0 << " seconds." << endl;
         
 #ifdef USE_REGRESSION
@@ -643,12 +643,12 @@ void vrpn_ClientConnectionController::synchronize_clocks()
             
             // don't let replies overwrite the buffer
             if (cBounces>=cQueries) {
-                cerr << "vrpn_ClientConnectionController::mainloop: multiple clock servers on "
+                cerr << "vrpn_ClientConnectionManager::mainloop: multiple clock servers on "
                     "connection -- aborting fullSync " <<cBounces<< endl;
                 if (unregister_handler(replyMsg_id, 
                                        fullSyncClockServerReplyHandler,
                                        (void *)this, clockServer_id)) {
-                    cerr << "vrpn_ClientConnectionController: Can't unregister handler" << endl;
+                    cerr << "vrpn_ClientConnectionManager: Can't unregister handler" << endl;
                 }
                 break;
             }
@@ -682,7 +682,7 @@ void vrpn_ClientConnectionController::synchronize_clocks()
         // at least half back already
         
         if (cBounces<((cCalibMsecs/cInterval)/2)) {
-            cerr << "vrpn_ClientConnectionController::mainloop: calib error; did not receive "
+            cerr << "vrpn_ClientConnectionManager::mainloop: calib error; did not receive "
                 "replies for at least half of the bounces" << endl;
             return;
         } 
@@ -697,7 +697,7 @@ void vrpn_ClientConnectionController::synchronize_clocks()
         if (unregister_handler(replyMsg_id, 
                                fullSyncClockServerReplyHandler,
                                (void *)this, clockServer_id)) {
-            cerr << "vrpn_ClientConnectionController: Can't unregister handler" << endl;
+            cerr << "vrpn_ClientConnectionManager: Can't unregister handler" << endl;
         }
 
 #ifdef USE_REGRESSION
@@ -794,10 +794,10 @@ void vrpn_ClientConnectionController::synchronize_clocks()
         cs.tvHalfRoundTrip = tvMinHalfRoundTrip;
       
 #if 0
-        cerr << "vrpn_ClientConnectionController::mainloop: clock offset is " 
+        cerr << "vrpn_ClientConnectionManager::mainloop: clock offset is " 
              << tvFullClockOffset.tv_sec << "s, "
              << tvFullClockOffset.tv_usec << "us." << endl;
-        cerr << "vrpn_ClientConnectionController::mainloop: half round trip is " 
+        cerr << "vrpn_ClientConnectionManager::mainloop: half round trip is " 
              << tvMinHalfRoundTrip.tv_sec << "s, "
              << tvMinHalfRoundTrip.tv_usec << "us." << endl;
 #endif
@@ -812,7 +812,7 @@ void vrpn_ClientConnectionController::synchronize_clocks()
 }
 
 vrpn_int32 
-vrpn_ClientConnectionController::register_clock_sync_handler(
+vrpn_ClientConnectionManager::register_clock_sync_handler(
     void *userdata,
     vrpn_CLOCKSYNCHANDLER handler)
 {
@@ -820,14 +820,14 @@ vrpn_ClientConnectionController::register_clock_sync_handler(
     
     // Ensure that the handler is non-NULL
     if (handler == NULL) {
-        cerr << "vrpn_ClientConnectionController::register_clock_sync_handler:" 
+        cerr << "vrpn_ClientConnectionManager::register_clock_sync_handler:" 
              << " NULL handler" << endl;
         return -1;
     }
     
     // Allocate and initialize the new entry
     if ( (new_entry = new vrpn_CLOCKSYNCLIST) == NULL) {
-        cerr << "vrpn_ClientConnectionController::register_clock_sync_handler:" 
+        cerr << "vrpn_ClientConnectionManager::register_clock_sync_handler:" 
              << " out of memory" << endl;
         return -1;
     }
@@ -843,7 +843,7 @@ vrpn_ClientConnectionController::register_clock_sync_handler(
 }
 
 vrpn_int32 
-vrpn_ClientConnectionController::unregister_clock_sync_handler(
+vrpn_ClientConnectionManager::unregister_clock_sync_handler(
     void *userdata, vrpn_CLOCKSYNCHANDLER handler)
 {
     // The pointer at *snitch points to victim
@@ -863,7 +863,7 @@ vrpn_ClientConnectionController::unregister_clock_sync_handler(
     // Make sure we found one
     if (victim == NULL) {
         fprintf(stderr,
-                "vrpn_ClientConnectionController::unregister_handler: No such handler\n");
+                "vrpn_ClientConnectionManager::unregister_handler: No such handler\n");
         return -1;
     }
   
@@ -876,7 +876,7 @@ vrpn_ClientConnectionController::unregister_clock_sync_handler(
 
 // return value was added to match signature found in
 // vrpn_SynchronizedConnection::fullSync() - sain 8/99
-struct timeval vrpn_ClientConnectionController::fullSync () 
+struct timeval vrpn_ClientConnectionManager::fullSync () 
 {
     fDoFullSync=1;
     fDoQuickSyncs=0;
@@ -888,7 +888,7 @@ struct timeval vrpn_ClientConnectionController::fullSync ()
 // or if no quick syncs are being done.
 // RTT is 2 * most recent estimate of half-RTT.
 
-struct timeval vrpn_ClientConnectionController::currentRTT () const 
+struct timeval vrpn_ClientConnectionManager::currentRTT () const 
 {
     struct timeval retval;
     vrpn_int32 last;
@@ -916,7 +916,7 @@ struct timeval vrpn_ClientConnectionController::currentRTT () const
 //==========================================================================
 //==========================================================================
 //
-// vrpn_ClientConnectionController: protected : clock synch functions
+// vrpn_ClientConnectionManager: protected : clock synch functions
 //
 //==========================================================================
 //==========================================================================
@@ -928,7 +928,7 @@ struct timeval vrpn_ClientConnectionController::currentRTT () const
 // the clock offset.
 
 vrpn_int32 
-vrpn_ClientConnectionController::fullSyncClockServerReplyHandler(
+vrpn_ClientConnectionManager::fullSyncClockServerReplyHandler(
     void *userdata, vrpn_HANDLERPARAM p) 
 {
     // get current local time
@@ -937,8 +937,8 @@ vrpn_ClientConnectionController::fullSyncClockServerReplyHandler(
     gettimeofday(&tvLNow, NULL);
   
     // all of the tv structs have an L (local) or R (remote) tag
-    vrpn_ClientConnectionController *me
-        = (vrpn_ClientConnectionController *)userdata;
+    vrpn_ClientConnectionManager *me
+        = (vrpn_ClientConnectionManager *)userdata;
 
     // look at timing info sent along
     vrpn_int32 *plTimeData = (vrpn_int32 *) p.buffer;
@@ -946,7 +946,7 @@ vrpn_ClientConnectionController::fullSyncClockServerReplyHandler(
     // check clock version
     if (  (p.payload_len==0)
           || (ntohl(*(vrpn_int32 *)p.buffer)!=CLOCK_VERSION)) {
-        cerr << "vrpn_ClientConnectionController: current version is 0x"
+        cerr << "vrpn_ClientConnectionManager: current version is 0x"
              << hex << CLOCK_VERSION 
              << ", clock server reply msg uses version 0x" 
              << ntohl(*(vrpn_int32 *)p.buffer) << "." << dec << endl;
@@ -956,7 +956,7 @@ vrpn_ClientConnectionController::fullSyncClockServerReplyHandler(
     // now grab the id from the message to check that is is correct
     if (me->lUniqueID!=(vrpn_int32)ntohl(plTimeData[5])) {
         // Don't squawk: there could be multiple connections now
-        //    cerr << "vrpn_ClientConnectionController: warning, server entertaining multiple clock" 
+        //    cerr << "vrpn_ClientConnectionManager: warning, server entertaining multiple clock" 
         //   << " sync requests simultaneously -- results may be inaccurate." 
         //   << endl;
         return 0;
@@ -1054,7 +1054,7 @@ vrpn_ClientConnectionController::fullSyncClockServerReplyHandler(
 // the clock offset.
 
 vrpn_int32 
-vrpn_ClientConnectionController::quickSyncClockServerReplyHandler(
+vrpn_ClientConnectionManager::quickSyncClockServerReplyHandler(
     void *userdata, vrpn_HANDLERPARAM p) 
 {
     // get current local time
@@ -1065,8 +1065,8 @@ vrpn_ClientConnectionController::quickSyncClockServerReplyHandler(
     // printTime("L now time", tvLNow);
     
     // all of the tv structs have an L (local) or R (remote) tag
-    vrpn_ClientConnectionController *me
-        = (vrpn_ClientConnectionController *)userdata;
+    vrpn_ClientConnectionManager *me
+        = (vrpn_ClientConnectionManager *)userdata;
     
     // look at timing data sent along
     vrpn_int32 *plTimeData = (vrpn_int32 *) p.buffer;
@@ -1074,7 +1074,7 @@ vrpn_ClientConnectionController::quickSyncClockServerReplyHandler(
     // check clock version
     if (  (p.payload_len==0)
           || (ntohl(*(vrpn_int32 *)p.buffer)!=CLOCK_VERSION)) {
-        cerr << "vrpn_ClientConnectionController: current version is 0x"
+        cerr << "vrpn_ClientConnectionManager: current version is 0x"
              << hex << CLOCK_VERSION 
              << ", clock server reply msg uses version 0x" 
              << ntohl(*(vrpn_int32 *)p.buffer) << "." << dec << endl;
@@ -1084,7 +1084,7 @@ vrpn_ClientConnectionController::quickSyncClockServerReplyHandler(
     // now grab the id from the message to check that is is correct
     if (me->lUniqueID!=(vrpn_int32)ntohl(plTimeData[5])) {
         // Don't squawk: there could be multiple connections now
-        //    cerr << "vrpn_ClientConnectionController: warning, server entertaining multiple clock" 
+        //    cerr << "vrpn_ClientConnectionManager: warning, server entertaining multiple clock" 
         //   << " sync requests simultaneously -- results may be inaccurate." 
         //   << endl;
         return 0;
@@ -1198,7 +1198,7 @@ vrpn_ClientConnectionController::quickSyncClockServerReplyHandler(
 //==========================================================================
 //==========================================================================
 
-void vrpn_ClientConnectionController::register_service_with_connections(
+void vrpn_ClientConnectionManager::register_service_with_connections(
     const char * service_name, 
     vrpn_int32 service_id )
 {
@@ -1232,7 +1232,7 @@ void vrpn_ClientConnectionController::register_service_with_connections(
 }
 
 
-void vrpn_ClientConnectionController::register_type_with_connections(
+void vrpn_ClientConnectionManager::register_type_with_connections(
     const char * type_name, vrpn_int32 type_id )
 {
     // XXX fill in
@@ -1252,7 +1252,7 @@ void vrpn_ClientConnectionController::register_type_with_connections(
 
     if (d_connection_ptr) {
         char* name = (char*) type_name;  // XXX hack for now
-        vrpn_BaseConnectionController::vrpnLocalMapping lm (name);
+        vrpn_BaseConnectionManager::vrpnLocalMapping lm (name);
         // XXX do we need to worry about the other data in lm?
 
         d_connection_ptr->pack_type_description( lm, type_id );
@@ -1276,41 +1276,41 @@ void vrpn_ClientConnectionController::register_type_with_connections(
 
 //===========================================================================
 //
-// {{{ vrpn_ConnectionControllerManager ...
+// {{{ vrpn_ManagerList ...
 //
 //===========================================================================
 
-vrpn_ConnectionControllerManager::~vrpn_ConnectionControllerManager() 
+vrpn_ManagerList::~vrpn_ManagerList() 
 {
-    //fprintf(stderr, "In ~vrpn_ConnectionControllerManager:  tearing down the list.\n");
+    //fprintf(stderr, "In ~vrpn_ManagerList:  tearing down the list.\n");
     
     // Call the destructor of every known connection.
-    // That destructor will call vrpn_ConnectionControllerManager::deleteConnection()
+    // That destructor will call vrpn_ManagerList::deleteConnection()
     // to remove itself from d_kcList.
     while (d_kcList) {
-        delete d_kcList->controller;
+        delete d_kcList->manager;
     }
     while (d_anonList) {
-        delete d_anonList->controller;
+        delete d_anonList->manager;
     }
 }
 
 // static
-vrpn_ConnectionControllerManager &
-vrpn_ConnectionControllerManager::instance() 
+vrpn_ManagerList &
+vrpn_ManagerList::instance() 
 {
-    static vrpn_ConnectionControllerManager manager;
+    static vrpn_ManagerList manager;
     return manager;
 }
 
-void vrpn_ConnectionControllerManager::addController (
-    vrpn_ClientConnectionController * c,
+void vrpn_ManagerList::addManager (
+    vrpn_ClientConnectionManager * c,
     const char * name) 
 {
-    knownController * p;
+    knownManager * p;
     
-    p = new knownController;
-    p->controller = c;
+    p = new knownManager;
+    p->manager = c;
     
     if (name) {
         strncpy(p->name, name, 1000);
@@ -1322,24 +1322,24 @@ void vrpn_ConnectionControllerManager::addController (
         d_anonList = p;
     }
     
-    d_numControllers++;
+    d_numManagers++;
 }
 
-void vrpn_ConnectionControllerManager::deleteController (
-    vrpn_ClientConnectionController * c) 
+void vrpn_ManagerList::deleteManager (
+    vrpn_ClientConnectionManager * c) 
 {
-    deleteController(c, &d_kcList);
-    deleteController(c, &d_anonList);
-    d_numControllers--;
+    deleteManager(c, &d_kcList);
+    deleteManager(c, &d_anonList);
+    d_numManagers--;
 }
 
-void vrpn_ConnectionControllerManager::deleteController (
-    vrpn_ClientConnectionController * c,
-    knownController ** snitch) 
+void vrpn_ManagerList::deleteManager (
+    vrpn_ClientConnectionManager * c,
+    knownManager ** snitch) 
 {
-    knownController * victim = *snitch;
+    knownManager * victim = *snitch;
     
-    while (victim && (victim->controller != c)) {
+    while (victim && (victim->manager != c)) {
         snitch = &((*snitch)->next);
         victim = *snitch;
     }
@@ -1352,31 +1352,31 @@ void vrpn_ConnectionControllerManager::deleteController (
     }
 }
 
-vrpn_ClientConnectionController * 
-vrpn_ConnectionControllerManager::getByName (const char * name) 
+vrpn_ClientConnectionManager * 
+vrpn_ManagerList::getByName (const char * name) 
 {
-    knownController * p;
+    knownManager * p;
     for (p = d_kcList; p && strcmp(p->name, name); p = p->next) {
         // do nothing
     }
     if (!p) {
         return NULL;
     }
-    return p->controller;
+    return p->manager;
 }
 
-vrpn_ConnectionControllerManager::vrpn_ConnectionControllerManager (void)
+vrpn_ManagerList::vrpn_ManagerList (void)
     : d_kcList (NULL),
       d_anonList (NULL),
-      d_numControllers(0)
+      d_numManagers(0)
 {
 }
 
-vrpn_int32 vrpn_ConnectionControllerManager::numControllers()
+vrpn_int32 vrpn_ManagerList::numManagers()
 {
-    return d_numControllers;
+    return d_numManagers;
 }
 
-// }}} end vrpn_ConnectionControllerManager
+// }}} end vrpn_ManagerList
 //
 //===========================================================================

@@ -11,7 +11,7 @@
 
 
 vrpn_NetConnection::vrpn_NetConnection(
-    vrpn_BaseConnectionController::RestrictedAccessToken * rat,
+    vrpn_BaseConnectionManager::RestrictedAccessToken * rat,
     const char * local_logfile,
     vrpn_int32 local_logmode,
     const char * remote_logfile,
@@ -97,7 +97,7 @@ vrpn_NetConnection::~vrpn_NetConnection(void)
     delete d_udp_inbuf;
     delete d_udp_outbuf;
     
-    d_controller_token->dropped_a_connection(this);
+    d_manager_token->dropped_a_connection(this);
 }
 
 // }}} end vrpn_NetConnection: public: c'tors, d'tors, init
@@ -124,7 +124,7 @@ vrpn_int32 vrpn_NetConnection::mainloop (const struct timeval * timeout){
 }
 
 
-// This function gets called by the ConnectionController
+// This function gets called by the ConnectionManager
 // replaces pack_message in the interface, but calls it internally
 vrpn_int32 vrpn_NetConnection::queue_outgoing_message(vrpn_uint32 len, struct timeval time,
         vrpn_int32 type, vrpn_int32 service, const char * buffer,
@@ -138,7 +138,7 @@ vrpn_int32 vrpn_NetConnection::queue_outgoing_message(vrpn_uint32 len, struct ti
 }
 
 
-// gets called by ConnectionController. handles any incoming messages
+// gets called by ConnectionManager. handles any incoming messages
 // on any of the channels, as well as logging and invoking callbacks.
 // This function uses some of the functionality found in
 // vrpn_NetConnection::handle_incoming_messages()
@@ -186,7 +186,7 @@ vrpn_int32 vrpn_NetConnection::handle_incoming_messages( const struct timeval* p
     switch (status) {
         /*
     case vrpn_CONNECTION_LISTEN:
-        // check_connection(pTimeout); now done in Controller
+        // check_connection(pTimeout); now done in Manager
         break;
         */
     case vrpn_CONNECTION_CONNECTED: 
@@ -701,7 +701,7 @@ vrpn_int32 vrpn_NetConnection::handle_tcp_messages (
                 }
                 
                 if (translate_remote_type_to_local(type) >= 0) {
-                    if (d_controller_token->do_callbacks_for(
+                    if (d_manager_token->do_callbacks_for(
                         translate_remote_type_to_local(type),
                         translate_remote_service_to_local(service),
                         time, payload_len, d_tcp_inbuf))
@@ -714,7 +714,7 @@ vrpn_int32 vrpn_NetConnection::handle_tcp_messages (
                 
                 // Special cases have been added to handle Clock
                 // synchronization messages because their handlers are in
-                // the ConnectionControllers and not BaseConnection like
+                // the ConnectionManagers and not BaseConnection like
                 // the others [sain:11/99]
                 if (system_messages[-type] != NULL
                     || type == vrpn_CONNECTION_CLOCK_QUERY ||
@@ -749,7 +749,7 @@ vrpn_int32 vrpn_NetConnection::handle_tcp_messages (
                     if( type == vrpn_CONNECTION_CLOCK_QUERY ||
                         type == vrpn_CONNECTION_CLOCK_REPLY )
                     {
-                        if (d_controller_token->do_callbacks_for(
+                        if (d_manager_token->do_callbacks_for(
                             type,service,time, 
                             payload_len,d_tcp_inbuf))
                         {
@@ -909,7 +909,7 @@ vrpn_int32  vrpn_NetConnection::handle_udp_messages (vrpn_int32 fd,
             }
 
             if (translate_remote_type_to_local(type) >= 0) {
-                if (d_controller_token->do_callbacks_for(translate_remote_type_to_local(type),
+                if (d_manager_token->do_callbacks_for(translate_remote_type_to_local(type),
                                      translate_remote_service_to_local(service),
                                      time, payload_len, inbuf_ptr)) {
                     return -1;
@@ -1052,7 +1052,7 @@ vrpn_int32 vrpn_NetConnection::handle_mcast_messages(/* XXX */){
                 }
                 
                 if (translate_remote_type_to_local(type) >= 0) {
-                    if (d_controller_token->do_callbacks_for(translate_remote_type_to_local(type),
+                    if (d_manager_token->do_callbacks_for(translate_remote_type_to_local(type),
                                          translate_remote_service_to_local(service),
                                          time, payload_len, inbuf_ptr)) {
                         return -1;
@@ -1435,7 +1435,7 @@ vrpn_int32 vrpn_NetConnection::mcast_reply_handler(){
     // set local data member
     // set_peer_mcast_capable(/* true/false */);
 
-    // inform ServerConnectionController whether
+    // inform ServerConnectionManager whether
     // client is mcast capable
 
     return 0;
@@ -1473,7 +1473,7 @@ vrpn_int32 vrpn_NetConnection::pack_mcast_description(vrpn_int32 service){
 
     return pack_message((vrpn_uint32)sizeof(vrpn_McastGroupDescrp), 
                         now, vrpn_CONNECTION_MCAST_DESCRIPTION,
-                        service, controller->get_mcast_info(),
+                        service, manager->get_mcast_info(),
                         vrpn_CONNECTION_RELIABLE, vrpn_false);
 
     ==============================*/
@@ -2067,7 +2067,7 @@ void vrpn_NetConnection::handle_connection()
 
    // adds connection to list of connections and invokes callbacks for
    // got_connection, and got_first_connection if any
-   d_controller_token->got_a_connection(this);
+   d_manager_token->got_a_connection(this);
 }
 
 // network initialization
@@ -2121,7 +2121,7 @@ vrpn_int32 vrpn_NetConnection::setup_new_connection (
   // Synchronize clocks before any other user messages are sent. On
   // the server side, synchronize_clocks() is an empty function and
   // will not do anything.
-  d_controller_token->synchronize_clocks();
+  d_manager_token->synchronize_clocks();
 
     // Find out what log mode they want us to be in BEFORE we pack
     // type, service, and udp descriptions!  If it's nonzero, the
@@ -2172,15 +2172,15 @@ vrpn_int32 vrpn_NetConnection::setup_new_connection (
 //          pack_type_description(i);
 //      }
     // should this be const_iterator?
-    char** service_itr = d_controller_token->services_begin();
-    char** const service_end = d_controller_token->services_end();
+    char** service_itr = d_manager_token->services_begin();
+    char** const service_end = d_manager_token->services_end();
     for (int i=0;  service_itr != service_end;  ++service_itr, ++i) {
         pack_service_description (*service_itr, i);
     }
 
-    typedef vrpn_BaseConnectionController::vrpnLocalMapping vrpnLocalMapping;
-    const vrpnLocalMapping*       type_itr = d_controller_token->types_begin();
-    const vrpnLocalMapping* const type_end = d_controller_token->types_end();
+    typedef vrpn_BaseConnectionManager::vrpnLocalMapping vrpnLocalMapping;
+    const vrpnLocalMapping*       type_itr = d_manager_token->types_begin();
+    const vrpnLocalMapping* const type_end = d_manager_token->types_end();
     for (int j=0;  type_itr != type_end;  ++type_itr, ++j ) {
         pack_type_description (*type_itr, j);
     }
@@ -2217,7 +2217,7 @@ void vrpn_NetConnection::drop_connection()
         udp_inbound = INVALID_SOCKET;
     }
 
-  d_controller_token->dropped_a_connection(this);
+  d_manager_token->dropped_a_connection(this);
 
   if (d_local_logname) {
       close_log();
@@ -2234,7 +2234,7 @@ void vrpn_NetConnection::drop_connection()
 // settings and service/type information to the other end
 
 vrpn_int32 vrpn_NetConnection::pack_type_description(
-    const vrpn_BaseConnectionController::vrpnLocalMapping& which,
+    const vrpn_BaseConnectionManager::vrpnLocalMapping& which,
     vrpn_int32 id)
 {
    struct timeval now;

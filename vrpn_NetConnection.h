@@ -23,7 +23,7 @@
 
 #include "vrpn_ConnectionCommonStuff.h"
 #include "vrpn_BaseConnection.h"
-#include "vrpn_BaseConnectionController.h"
+#include "vrpn_BaseConnectionManager.h"
 #include "vrpn_UnreliableMulticastRecvr.h"
 #include "vrpn_CommonSystemIncludes.h"
 
@@ -33,7 +33,7 @@ class vrpn_NetConnection
 public:  // c'tors and d'tors
 
     vrpn_NetConnection(
-        vrpn_BaseConnectionController::RestrictedAccessToken *,
+        vrpn_BaseConnectionManager::RestrictedAccessToken *,
         const char*  local_logfile  = NULL,
         vrpn_int32   local_logmode  = vrpn_LOG_NONE,
 
@@ -63,7 +63,7 @@ public:  // sending and receiving
     virtual vrpn_int32 mainloop (const struct timeval * timeout = NULL);
 
     // functions for sending messages and receiving messages
-    // the ConnectionController will call these functions
+    // the ConnectionManager will call these functions
   
     vrpn_int32 queue_outgoing_message(
         vrpn_uint32 len, 
@@ -108,7 +108,7 @@ protected:  // sending and receiving
 
     vrpn_int32 pack_service_description (char* name, vrpn_int32 id);
     vrpn_int32 pack_type_description (
-        const vrpn_BaseConnectionController::vrpnLocalMapping &,
+        const vrpn_BaseConnectionManager::vrpnLocalMapping &,
         vrpn_int32 id);
     vrpn_int32 pack_udp_description (vrpn_uint16 portno);
     vrpn_int32 pack_log_description (vrpn_int32 mode, const char * filename);

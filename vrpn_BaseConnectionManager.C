@@ -1,17 +1,17 @@
-#include "vrpn_BaseConnectionController.h"
+#include "vrpn_BaseConnectionManager.h"
 
 
 
 //==========================================================================
 //==========================================================================
 // 
-// {{{ vrpn_BaseConnectionController constructors and destructor
+// {{{ vrpn_BaseConnectionManager constructors and destructor
 // 
 //==========================================================================
 //==========================================================================
 
 
-vrpn_BaseConnectionController::vrpn_BaseConnectionController(
+vrpn_BaseConnectionManager::vrpn_BaseConnectionManager(
     const char *  local_logfile,
     vrpn_int32    local_logmode,
     const char *  remote_logfile,
@@ -60,7 +60,7 @@ vrpn_BaseConnectionController::vrpn_BaseConnectionController(
     if( local_logfile ){
         d_local_logname = new char [1 + strlen(local_logfile)];
         if (!d_local_logname) {
-            fprintf(stderr, "vrpn_BaseConnectionController::vrpn_BaseConnectionController:  "
+            fprintf(stderr, "vrpn_BaseConnectionManager::vrpn_BaseConnectionManager:  "
                     "Out of memory!\n");
             return;
         }
@@ -69,7 +69,7 @@ vrpn_BaseConnectionController::vrpn_BaseConnectionController(
     if( remote_logfile ){
         d_remote_logname = new char [1 + strlen(remote_logfile)];
         if (!d_remote_logname) {
-            fprintf(stderr, "vrpn_BaseConnectionController::vrpn_BaseConnectionController:  "
+            fprintf(stderr, "vrpn_BaseConnectionManager::vrpn_BaseConnectionManager:  "
                     "Out of memory!\n");
             return;
         }
@@ -96,7 +96,7 @@ vrpn_BaseConnectionController::vrpn_BaseConnectionController(
 
 }
 
-vrpn_BaseConnectionController::~vrpn_BaseConnectionController()
+vrpn_BaseConnectionManager::~vrpn_BaseConnectionManager()
 {
 	vrpn_int32 i;
 	vrpn_MsgCallbackEntry *pVMCB, *pVMCB_Del;
@@ -132,14 +132,14 @@ vrpn_BaseConnectionController::~vrpn_BaseConnectionController()
 //==========================================================================
 //==========================================================================
 // 
-// {{{ vrpn_BaseConnectionController services and types
+// {{{ vrpn_BaseConnectionManager services and types
 
 // 
 //==========================================================================
 //==========================================================================
 
 vrpn_int32
-vrpn_BaseConnectionController::register_service(
+vrpn_BaseConnectionManager::register_service(
     const char * name )
 {
     vrpn_int32	i;
@@ -199,7 +199,7 @@ vrpn_BaseConnectionController::register_service(
 
 
 vrpn_int32
-vrpn_BaseConnectionController::register_message_type(
+vrpn_BaseConnectionManager::register_message_type(
     const char * name )
 {
     vrpn_int32	i;
@@ -255,7 +255,7 @@ vrpn_BaseConnectionController::register_message_type(
 
 
 vrpn_int32
-vrpn_BaseConnectionController::get_service_id(
+vrpn_BaseConnectionManager::get_service_id(
     const char * name ) const
 {
     vrpn_int32	i;
@@ -270,7 +270,7 @@ vrpn_BaseConnectionController::get_service_id(
 
 
 vrpn_int32
-vrpn_BaseConnectionController::get_message_type_id(
+vrpn_BaseConnectionManager::get_message_type_id(
     const char * name ) const
 {
     vrpn_int32	i;
@@ -285,7 +285,7 @@ vrpn_BaseConnectionController::get_message_type_id(
 
 
 const char *
-vrpn_BaseConnectionController::get_service_name(
+vrpn_BaseConnectionManager::get_service_name(
     vrpn_int32 service_id ) const
 {
     if ((service_id < 0) || (service_id >= num_my_services)) {
@@ -296,7 +296,7 @@ vrpn_BaseConnectionController::get_service_name(
 
 
 const char *
-vrpn_BaseConnectionController::get_message_type_name(
+vrpn_BaseConnectionManager::get_message_type_name(
     vrpn_int32 type_id ) const
 {
     if ((type_id < 0) || (type_id >= num_my_types)) {
@@ -310,7 +310,7 @@ vrpn_BaseConnectionController::get_message_type_name(
 //==========================================================================
 //==========================================================================
 //
-// {{{ vrpn_BaseConnectionController: public: callbacks
+// {{{ vrpn_BaseConnectionManager: public: callbacks
 //
 //==========================================================================
 //==========================================================================
@@ -319,7 +319,7 @@ vrpn_BaseConnectionController::get_message_type_name(
 // are interested in messages from this sender.  Return 0 if they all
 // return 0, -1 otherwise.
 
-vrpn_int32 vrpn_BaseConnectionController::do_callbacks_for(
+vrpn_int32 vrpn_BaseConnectionManager::do_callbacks_for(
     vrpn_int32 type, 
     vrpn_int32 service,
     timeval time, 
@@ -396,31 +396,31 @@ vrpn_int32 vrpn_BaseConnectionController::do_callbacks_for(
 //==========================================================================
 //==========================================================================
 //
-// {{{ vrpn_BaseConnectionController: public: logging functions
+// {{{ vrpn_BaseConnectionManager: public: logging functions
 //
 //==========================================================================
 //==========================================================================
 
-vrpn_int32 vrpn_BaseConnectionController::get_local_logmode()
+vrpn_int32 vrpn_BaseConnectionManager::get_local_logmode()
 {
     return d_local_logmode;
 }
 
 // it is assumed the caller has provided ample storage for the filename
-void vrpn_BaseConnectionController::get_local_logfile_name(char * logname_copy)
+void vrpn_BaseConnectionManager::get_local_logfile_name(char * logname_copy)
 {
     strncpy( logname_copy,
              d_local_logname,
              strlen(d_local_logname)+1 );
 }
 
-vrpn_int32 vrpn_BaseConnectionController::get_remote_logmode()
+vrpn_int32 vrpn_BaseConnectionManager::get_remote_logmode()
 {
     return d_remote_logmode;
 }
 
 // it is assumed the caller has provided ample storage for the filename
-void vrpn_BaseConnectionController::get_remote_logfile_name(char * logname_copy)
+void vrpn_BaseConnectionManager::get_remote_logfile_name(char * logname_copy)
 {
     strncpy( logname_copy,
              d_remote_logname,

@@ -4,7 +4,7 @@
 
 vrpn_BaseConnection::vrpn_BaseConnection(
     // takes ownership of rat, and deletes in destructor
-    vrpn_BaseConnectionController::RestrictedAccessToken * rat,
+    vrpn_BaseConnectionManager::RestrictedAccessToken * rat,
     
     const char *  local_logfile_name,
     vrpn_int32    local_log_mode,
@@ -13,7 +13,7 @@ vrpn_BaseConnection::vrpn_BaseConnection(
     vrpn_int32    remote_log_mode
     )
     
-    : d_controller_token             (rat),
+    : d_manager_token             (rat),
       d_local_logmode                (local_log_mode),
       d_remote_logmode               (remote_log_mode),
       num_registered_remote_services (0),
@@ -85,7 +85,7 @@ vrpn_BaseConnection::~vrpn_BaseConnection()
         delete d_local_logname;
     if(d_remote_logname)
         delete d_remote_logname;
-    delete d_controller_token;
+    delete d_manager_token;
 }
 
 //==========================================================================

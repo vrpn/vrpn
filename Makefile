@@ -335,9 +335,9 @@ LIB_INCLUDES = vrpn_Connection.h vrpn_Tracker.h vrpn_Button.h \
 # additional files for the new connection work-in-progress
 
 NEW_LIB_FILES = \
-      vrpn_BaseConnectionController.C \
-      vrpn_ClientConnectionController.C \
-      vrpn_ServerConnectionController.C \
+      vrpn_BaseConnectionManager.C \
+      vrpn_ClientConnectionManager.C \
+      vrpn_ServerConnectionManager.C \
       vrpn_BaseConnection.C \
       vrpn_NetConnection.C \
       vrpn_NewFileConnection.C \
@@ -351,10 +351,10 @@ NEW_LIB_FILES = \
 NEW_LIB_OBJECTS = $(patsubst %,$(OBJECT_DIR)/%,$(NEW_LIB_FILES:.C=.o))
 
 NEW_LIB_INCLUDES = \
-      vrpn_ConnectionControllerCallbackInterface.h \
-      vrpn_BaseConnectionController.h \
-      vrpn_ClientConnectionController.h \
-      vrpn_ServerConnectionController.h \
+      vrpn_ConnectionManagerCallbackInterface.h \
+      vrpn_BaseConnectionManager.h \
+      vrpn_ClientConnectionManager.h \
+      vrpn_ServerConnectionManager.h \
       vrpn_BaseConnection.h \
       vrpn_NetConnection.h \
       vrpn_FileConnectionInterface.h\
