@@ -1,3 +1,8 @@
+2001-07-30  David Marshburn  <marshbur@cs.unc.edu>
+
+	* server_src\vrpn_phantom.dsp:  changed the include directories
+	to ghost3.1 and ghost-stl.
+
 2001-07-29  Tom Hudson  <hudson@cs.unc.edu>
 
         * vrpn_Connection.C (vrpn_Endpoint::drop_connection) :

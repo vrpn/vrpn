@@ -89,7 +89,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "pc_win32_MTd"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "..\..\..\..\quat" /I "..\..\..\\" /I "..\..\..\..\external\include\ghost3.0" /I "..\..\..\..\external\include\stl" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /TP /c
-# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "..\..\quat" /I ".." /I "..\..\external\pc_win32\include\ghost3.0" /I "..\..\external\pc_win32\include\stl" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /TP /c
+# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "..\..\quat" /I ".." /I "..\..\external\pc_win32\include\ghost3.1" /I "..\..\external\pc_win32\include\ghost-stl" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /TP /c
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
