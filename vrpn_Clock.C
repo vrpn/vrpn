@@ -6,10 +6,10 @@
   ----------------------------------------------------------------------------
   Author: weberh
   Created: Sat Dec 13 11:05:16 1997
-  Revised: Thu Mar 19 01:01:34 1998 by weberh
+  Revised: Thu Mar 19 01:06:07 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.C,v $
   $Locker:  $
-  $Revision: 1.7 $
+  $Revision: 1.8 $
   \*****************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
@@ -396,7 +396,7 @@ int vrpn_Clock_Remote::unregister_clock_sync_handler(void *userdata,
 
 void vrpn_Clock_Remote::fullSync() {
   fDoFullSync=1;
-  fDoQuickSync=0;
+  fDoQuickSyncs=0;
 }
 
 // we return to the user callback the clock offset calculated from the
@@ -648,6 +648,9 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
 
 /*****************************************************************************\
   $Log: vrpn_Clock.C,v $
+  Revision 1.8  1998/03/19 06:07:01  weberh
+  *** empty log message ***
+
   Revision 1.7  1998/03/19 06:04:38  weberh
   added a fullSync call to vrpn_Synchronized connection for convenience.
 
