@@ -254,14 +254,6 @@ void vrpn_Mutex::request (void) {
     return;
   }
 
-  // We used to wait until the next pass through mainloop() to check
-  // this (our request could be trivially granted if we have no
-  // peers), but that leads to bad things (TM), like having to
-  // insert extra calls to mainloop() in client code just to guarantee
-  // that we have the mutex.
-
-  checkGrantMutex();
-
   d_state = REQUESTING;
   d_numPeersGrantingLock = 0;
   for (i = 0; i < d_numPeers; i++) {
@@ -274,6 +266,14 @@ void vrpn_Mutex::request (void) {
 
   d_holderIP = d_myIP;
   d_holderPort = d_myPort;
+
+  // We used to wait until the next pass through mainloop() to check
+  // this (our request could be trivially granted if we have no
+  // peers), but that leads to bad things (TM), like having to
+  // insert extra calls to mainloop() in client code just to guarantee
+  // that we have the mutex.
+
+  checkGrantMutex();
 }
 
 void vrpn_Mutex::release (void) {
