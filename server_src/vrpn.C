@@ -27,7 +27,7 @@
 
 void	Usage(char *s)
 {
-  fprintf(stderr,"Usage: %s [-f filename] [-warn] [-v]\n",s);
+  fprintf(stderr,"Usage: %s [-f filename] [-warn] [-v] [port]\n",s);
   fprintf(stderr,"       -f: Full path to config file (default vrpn.cfg)\n");
   fprintf(stderr,"       -warn: Only warn on errors (default is to bail)\n");
   fprintf(stderr,"       -v: Verbose\n");
@@ -43,6 +43,8 @@ int		num_sounds = 0;
 vrpn_Analog	*analogs[MAX_ANALOG];
 int		num_analogs = 0;
 
+vrpn_Connection * connection;
+
 #ifdef	sgi
 vrpn_SGIBox	* vrpn_special_sgibox;
 #endif
@@ -51,14 +53,16 @@ vrpn_SGIBox	* vrpn_special_sgibox;
 #ifndef WIN32
 #include <signal.h>
 void closeDevices();
-#ifdef sgi
-void sighandler( ... )
-#else
+//#ifdef sgi
+//void sighandler( ... )
+//#else
 void sighandler( int signal )
-#endif
+//#endif
 {
     closeDevices();
-    return;
+    delete connection;
+    //return;
+    exit(0);
 }
 
 void closeDevices() {
@@ -72,7 +76,7 @@ void closeDevices() {
     delete trackers[i];
   }
   fprintf(stderr, "\nAll devices closed. Exiting ...\n");
-  exit(0);
+  //exit(0);
 }
 #endif
 
@@ -85,6 +89,7 @@ main (int argc, char *argv[])
 	int	realparams = 0;
 	int	i;
 	int 	loop=0;
+	int	port = vrpn_DEFAULT_LISTEN_PORT_NO;
 #ifdef WIN32
 	WSADATA wsaData; 
 	int status;
@@ -106,8 +111,6 @@ main (int argc, char *argv[])
 #endif // sgi
 #endif
 
-	vrpn_Synchronized_Connection	connection;
-
 	// Parse the command line
 	i = 1;
 	while (i < argc) {
@@ -121,12 +124,21 @@ main (int argc, char *argv[])
 	  } else if (argv[i][0] == '-') {	// Unknown flag
 		Usage(argv[0]);
 	  } else switch (realparams) {		// Non-flag parameters
+	    case 0:
+		port = atoi(argv[i]);
+		realparams++;
+		break;
 	    default:
 		Usage(argv[0]);
 	  }
 	  i++;
 	}
 
+
+	// Need to have a global pointer to it so we can shut it down
+	// in the signal handler (so we can close any open logfiles.)
+	//vrpn_Synchronized_Connection	connection;
+	connection = new vrpn_Synchronized_Connection (port);
 
 	// Open the configuration file
 	if (verbose) printf("Reading from config file %s\n", config_file_name);
@@ -192,7 +204,7 @@ main (int argc, char *argv[])
 		// Open the tracker
 	      if (verbose) printf("Opening vrpn_SGIBOX on host %s\n", s2);
 		if ( (vrpn_special_sgibox =
-		  new vrpn_SGIBox(s2, &connection)) == NULL){
+		  new vrpn_SGIBox(s2, connection)) == NULL){
 		  fprintf(stderr,"Can't create new vrpn_SGIBox\n");
 		  if (bail_on_error) { return -1; }
 		  else { continue; }	// Skip this line
@@ -221,7 +233,7 @@ main (int argc, char *argv[])
 	       "Opening vrpn_Tracker_JoyFly: %s on server %s config_file %s\n",
 		    s2,s3,s4);
 		if ( (trackers[num_trackers] =
-		  new vrpn_Tracker_JoyFly(s2, &connection, s3, s4)) == NULL){
+		  new vrpn_Tracker_JoyFly(s2, connection, s3, s4)) == NULL){
 		  fprintf(stderr,"Can't create new vrpn_Tracker_JoyFly\n");
 		  if (bail_on_error) { return -1; }
 		  else { continue; }	// Skip this line
@@ -250,7 +262,7 @@ main (int argc, char *argv[])
 	      printf("Opening vrpn_Joystick: %s on port %s baud %d, mim update rate = %.2f\n", 
 		     s2,s3, i1, fhz);
 	    if ((analogs[num_analogs] =
-		  new vrpn_Joystick(s2, &connection,s3, i1, fhz)) == NULL) {
+		  new vrpn_Joystick(s2, connection,s3, i1, fhz)) == NULL) {
 		fprintf(stderr,"Can't create new vrpn_Joystick\n");
 		if (bail_on_error) { return -1; }
 		else { continue; }	// Skip this line
@@ -278,7 +290,7 @@ main (int argc, char *argv[])
 	    if (verbose) 
 	      printf("Opening vrpn_Linux_Sound: %s\n", s2);
 	    if ((sounds[num_sounds] =
-		  new vrpn_Linux_Sound(s2, &connection)) == NULL) {
+		  new vrpn_Linux_Sound(s2, connection)) == NULL) {
 		fprintf(stderr,"Can't create new vrpn_Linux_Sound\n");
 		if (bail_on_error) { return -1; }
 		else { continue; }	// Skip this line
@@ -308,7 +320,7 @@ main (int argc, char *argv[])
 	      printf("Opening vrpn_Tracker_Dyan: %s on port %s, baud %d, %d sensors\n",
 		    s2,s3,i1, i2);
 	    if ((trackers[num_trackers] =
-		  new vrpn_Tracker_Dyna(s2, &connection, i2, s3, i1)) == NULL)               
+		  new vrpn_Tracker_Dyna(s2, connection, i2, s3, i1)) == NULL)               
 	      {
 		fprintf(stderr,"Can't create new vrpn_Tracker_Dyna\n");
 		if (bail_on_error) { return -1; }
@@ -337,7 +349,7 @@ main (int argc, char *argv[])
 		    "Opening vrpn_Tracker_Fastrak: %s on port %s, baud %d\n",
 		    s2,s3,i1);
 		if ( (trackers[num_trackers] =
-		     new vrpn_Tracker_Fastrak(s2, &connection, s3, i1)) == NULL){
+		     new vrpn_Tracker_Fastrak(s2, connection, s3, i1)) == NULL){
 		  fprintf(stderr,"Can't create new vrpn_Tracker_Fastrak\n");
 		  if (bail_on_error) { return -1; }
 		  else { continue; }	// Skip this line
@@ -366,7 +378,7 @@ main (int argc, char *argv[])
 		    "Opening vrpn_Tracker_3Space: %s on port %s, baud %d\n",
 		    s2,s3,i1);
 		if ( (trackers[num_trackers] =
-		     new vrpn_Tracker_3Space(s2, &connection, s3, i1)) == NULL){
+		     new vrpn_Tracker_3Space(s2, connection, s3, i1)) == NULL){
 		  fprintf(stderr,"Can't create new vrpn_Tracker_3Space\n");
 		  if (bail_on_error) { return -1; }
 		  else { continue; }	// Skip this line
@@ -395,7 +407,7 @@ main (int argc, char *argv[])
 		    "Opening vrpn_Tracker_Flock: %s (%d sensors, on port %s, baud %d)\n",
 		    s2, i1, s3,i2);
 		if ( (trackers[num_trackers] =
-		     new vrpn_Tracker_Flock(s2,&connection,i1,s3,i2)) == NULL){
+		     new vrpn_Tracker_Flock(s2,connection,i1,s3,i2)) == NULL){
 		  fprintf(stderr,"Can't create new vrpn_Tracker_Flock\n");
 		  if (bail_on_error) { return -1; }
 		  else { continue; }	// Skip this line
@@ -446,7 +458,7 @@ main (int argc, char *argv[])
 				"Opening vrpn_Tracker_Flock_Parallel: %s (%d sensors, on port %s, baud %d)\n",
 		    s2, i1, s3,i2);
 	    if ( (trackers[num_trackers] =
-		  new vrpn_Tracker_Flock_Parallel(s2,&connection,i1,s3,i2,
+		  new vrpn_Tracker_Flock_Parallel(s2,connection,i1,s3,i2,
 						  rgs)) == NULL){
 	      fprintf(stderr,"Can't create new vrpn_Tracker_Flock_Parallel\n");
 	      if (bail_on_error) { return -1; }
@@ -475,7 +487,7 @@ main (int argc, char *argv[])
 		    "Opening vrpn_Tracker_NULL: %s with %d sensors, rate %f\n",
 		    s2,i1,f1);
 		if ( (trackers[num_trackers] =
-		     new vrpn_Tracker_NULL(s2, &connection, i1, f1)) == NULL){
+		     new vrpn_Tracker_NULL(s2, connection, i1, f1)) == NULL){
 		  fprintf(stderr,"Can't create new vrpn_Tracker_NULL\n");
 		  if (bail_on_error) { return -1; }
 		  else { continue; }	// Skip this line
@@ -503,7 +515,7 @@ main (int argc, char *argv[])
 		if (verbose) printf(
 		    "Opening vrpn_Button_Python: %s on port %d\n", s2,i1);
 		if ( (buttons[num_buttons] =
-		     new vrpn_Button_Python(s2, &connection, i1)) == NULL){
+		     new vrpn_Button_Python(s2, connection, i1)) == NULL){
 		  fprintf(stderr,"Can't create new vrpn_Button_Python\n");
 		  if (bail_on_error) { return -1; }
 		  else { continue; }	// Skip this line
@@ -553,7 +565,7 @@ main (int argc, char *argv[])
 		  vrpn_special_sgibox->mainloop();
 #endif
 		// Send and receive all messages
-		connection.mainloop();
+		connection->mainloop();
 	}
 }
 

@@ -3,7 +3,7 @@
 HW_OS := $(shell /usr/local/bin/hw_os)
 CC := g++
 ifeq ($(HW_OS),sgi_irix)
-	CC := CC
+	CC := CC -32
 	GL := -lgl
 endif
 ifeq ($(HW_OS),hp700_hpux10)
