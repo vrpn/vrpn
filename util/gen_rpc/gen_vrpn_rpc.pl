@@ -927,7 +927,7 @@ sub emitHandler ($) {
 
   
   print "" . ($headerFlag ? "  static ": "\n");
-  print "int " . ($headerFlag ? "" : $classPrefix) 
+  print "int " . ($headerFlag ? "VRPN_CALLBACK " : $classPrefix) 
       . "handle_${typeName} (void * userdata, vrpn_HANDLERPARAM grpc_p)";
 
   # If this is just a declaration, we are done. 

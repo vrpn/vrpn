@@ -1,5 +1,9 @@
 2004-09-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* gen_vrpn_rpc.pl : Making it add VRPN_CALLBACK where it should.
+
+2004-09-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	Adding Chris VanderKnyff's changes that enable DLL linkage
 	for applications.  Heading towards enabling C# and other language
 	support.
