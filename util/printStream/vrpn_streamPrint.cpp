@@ -16,7 +16,7 @@ static   vrpn_File_Connection *fcon = NULL;
 static char * device_name = NULL;
 
 static bool doHead = false;
-static int msgs_to_print = INT_MAX;
+static unsigned long msgs_to_print = ULONG_MAX;
 
 static bool done = false;
 
@@ -31,7 +31,7 @@ static void handle_cntl_c(int )
 // This handler gets every message, presumably from a stream file
 int handle_any_print (void * userdata, vrpn_HANDLERPARAM p) 
 {
-	static msg_number = 0 ;
+	static unsigned long msg_number = 0 ;
 	if( msg_number > msgs_to_print - 1 )
 	{  return 0;  }
 	vrpn_Connection * c = (vrpn_Connection *) userdata;
@@ -129,9 +129,10 @@ int	main(unsigned argc, char *argv[])
 		// Send/receive message from our vrpn connections.
 		connection->mainloop();
 		//fprintf(stderr, "After mainloop, fcon is doing %d.\n", fcon->doing_okay());
-		if (fcon) 
+		if (fcon && fcon->eof()) 
 		{
-			if (fcon->eof()) done = true;
+				done = true;
+				connection->unregister_handler(vrpn_ANY_TYPE, handle_any_print, connection);
 		}
 		vrpn_SleepMsecs( 10 );      
 	}
