@@ -117,7 +117,8 @@ bool  vrpn_TempImager_Server::send_region_using_base_pointer(vrpn_int16 chanInde
     return false;
   }
   if ( (rMax-rMin+1) * (cMax-cMin+1) * sizeof(vrpn_uint8) > vrpn_IMAGER_MAX_REGIONu8) {
-    fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): Region to large\n");
+    fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): Region too large (%d,%d to %d,%d)\n",
+      cMin,rMin, cMax,rMax);
     return false;
   }
   if ( invert_y && (nRows < rMax) ) {
@@ -249,7 +250,8 @@ bool  vrpn_TempImager_Server::send_region_using_base_pointer(vrpn_int16 chanInde
     return false;
   }
   if ( (rMax-rMin+1) * (cMax-cMin+1) * sizeof(vrpn_uint16) > vrpn_IMAGER_MAX_REGIONu16) {
-    fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): Region to large\n");
+    fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): Region too large (%d,%d to %d,%d)\n",
+      cMin,rMin, cMax,rMax);
     return false;
   }
   if ( invert_y && (nRows < rMax) ) {
@@ -384,7 +386,8 @@ bool  vrpn_TempImager_Server::send_region_using_base_pointer(vrpn_int16 chanInde
     return false;
   }
   if ( (rMax-rMin+1) * (cMax-cMin+1) * sizeof(vrpn_float32) > vrpn_IMAGER_MAX_REGIONf32) {
-    fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): Region to large\n");
+    fprintf(stderr,"vrpn_TempImager_Server::send_region_using_base_pointer(): Region too large (%d,%d to %d,%d)\n",
+      cMin,rMin, cMax,rMax);
     return false;
   }
   if ( invert_y && (nRows < rMax) ) {
