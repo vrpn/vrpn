@@ -43,7 +43,11 @@ $(OBJ_DIR)/%.o: %.C
 all:	$(OBJ_DIR)/sound_client $(OBJ_DIR)/printvals \
 	$(OBJ_DIR)/checklogfile $(OBJ_DIR)/logfilesenders \
 	$(OBJ_DIR)/logfiletypes $(OBJ_DIR)/text \
-	$(OBJ_DIR)/forwarderClient
+	$(OBJ_DIR)/forwarderClient $(OBJ_DIR)/bdbox_client \
+	$(OBJ_DIR)/clock_client $(OBJ_DIR)/ff_client \
+	$(OBJ_DIR)/ohm_client $(OBJ_DIR)/phan_client \
+	$(OBJ_DIR)/sphere_client $(OBJ_DIR)/bdbox_client \
+	$(OBJ_DIR)/midi_client	
 
 .PHONY:
 forwarderClient:	$(OBJ_DIR)/forwarderClient
@@ -63,6 +67,26 @@ $(OBJ_DIR)/midi_client: $(OBJ_DIR)/midi_client.o ../`hw_os`/libvrpn.a
 $(OBJ_DIR)/printvals: $(OBJ_DIR)/printvals.o ../`hw_os`/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/printvals \
 		$(OBJ_DIR)/printvals.o -lvrpn $(ARCH_LIBS)
+
+$(OBJ_DIR)/bdbox_client: $(OBJ_DIR)/bdbox_client.o ../`hw_os`/libvrpn.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/bdbox_client \
+		$(OBJ_DIR)/bdbox_client.o -lvrpn $(ARCH_LIBS)
+
+$(OBJ_DIR)/ff_client: $(OBJ_DIR)/ff_client.o ../`hw_os`/libvrpn.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/ff_client \
+		$(OBJ_DIR)/ff_client.o -lvrpn $(ARCH_LIBS)
+
+$(OBJ_DIR)/ohm_client: $(OBJ_DIR)/ohm_client.o ../`hw_os`/libvrpn.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/ohm_client \
+		$(OBJ_DIR)/ohm_client.o -lvrpn $(ARCH_LIBS)
+
+$(OBJ_DIR)/phan_client: $(OBJ_DIR)/phan_client.o ../`hw_os`/libvrpn.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/phan_client \
+		$(OBJ_DIR)/phan_client.o -lvrpn $(ARCH_LIBS)
+
+$(OBJ_DIR)/sphere_client: $(OBJ_DIR)/sphere_client.o ../`hw_os`/libvrpn.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/sphere_client \
+		$(OBJ_DIR)/sphere_client.o -lvrpn $(ARCH_LIBS)
 
 $(OBJ_DIR)/listen_client: $(OBJ_DIR)/listen_client.o ../`hw_os`/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/listen_client \
@@ -92,6 +116,7 @@ $(OBJ_DIR)/logfiletypes: $(OBJ_DIR)/logfiletypes.o
 clean:
 	rm -f *.o sound_client midi_client printvals \
 	checklogfile logfilesenders logfiletypes \
+	bdbox_client ff_client ohm_client phan_client sphere_client \
 	$(OBJ_DIR)/*
 
 ../`hw_os`/libvrpn.a:
