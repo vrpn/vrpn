@@ -4,6 +4,7 @@
 #include <jni.h>
 #include "java_vrpn.h"
 #include "vrpn_Analog.h"
+#include "vrpn_Analog_Output.h"
 #include "vrpn_AnalogRemote.h"
 
 
@@ -142,23 +143,23 @@ Java_vrpn_AnalogRemote_requestValueChange( JNIEnv* env, jobject jobj,
     return false;
   }
   jclass jcls = env->GetObjectClass( jobj );
-  jfieldID jfid = env->GetFieldID( jcls, "native_analog", "I" );
+  jfieldID jfid = env->GetFieldID( jcls, "native_analog_output", "I" );
   if( jfid == NULL )
   {
-    printf( "Error in native method \"requestValueChange\":  unable to ID native analog field.\n" );
+    printf( "Error in native method \"requestValueChange\":  unable to ID native analog output field.\n" );
     return false;
   }
 
   // get the analog pointer
-  vrpn_Analog_Remote* a = (vrpn_Analog_Remote*) env->GetIntField( jobj, jfid );
-  if( a <= 0 )  // this analog is uninitialized or has been shut down already
+  vrpn_Analog_Output_Remote* ao = (vrpn_Analog_Output_Remote*) env->GetIntField( jobj, jfid );
+  if( ao <= 0 )  // this analog is uninitialized or has been shut down already
   {
-    printf( "Error in native method \"requestValueChange\":  the analog is uninitialized or "
-            "has been shut down.\n" );
+    printf( "Error in native method \"requestValueChange\":  the analog output is "
+            "uninitialized or has been shut down.\n" );
     return false;
   }
 
-  return a->request_change_channel_value( jchannel, jvalue );
+  return ao->request_change_channel_value( jchannel, jvalue );
 }
 
 
@@ -168,25 +169,39 @@ Java_vrpn_AnalogRemote_shutdownAnalog( JNIEnv* env, jobject jobj )
 {
   // look up where to store the analog pointer
   jclass jcls = env->GetObjectClass( jobj );
-  jfieldID jfid = env->GetFieldID( jcls, "native_analog", "I" );
-  if( jfid == NULL )
+  jfieldID jfid_analog = env->GetFieldID( jcls, "native_analog", "I" );
+  if( jfid_analog == NULL )
   {
     printf( "Error in native method \"shutdownAnalog\":  unable to ID native analog field.\n" );
     return;
   }
 
-  // get the analog pointer
-  vrpn_Analog_Remote* a = (vrpn_Analog_Remote*) env->GetIntField( jobj, jfid );
-  
-  // unregister a handler and destroy the analog
+  jfieldID jfid_output = env->GetFieldID( jcls, "native_analog_output", "I" );
+  if( jfid_output == NULL )
+  {
+    printf( "Error in native method \"mainloop\":  unable to ID native analog field.\n" );
+    return;
+  }
+
+  // get the analog pointers
+  vrpn_Analog_Remote* a = (vrpn_Analog_Remote*) env->GetIntField( jobj, jfid_analog );
+  vrpn_Analog_Output_Remote* ao 
+	  = (vrpn_Analog_Output_Remote*) env->GetIntField( jobj, jfid_output );
+
+  // unregister a handler and destroy the analogs
   if( a > 0 )
   {
     a->unregister_change_handler( jobj, handle_analog_change );
-   delete a;
+    delete a;
   }
-
-  // set the analog pointer to -1
-  env->SetIntField( jobj, jfid, -1 );
+  if( ao > 0 )
+  {
+	delete ao;
+  }
+   
+  // set the analog pointers to -1
+  env->SetIntField( jobj, jfid_analog, -1 );
+  env->SetIntField( jobj, jfid_output, -1 );
 
   // delete global reference to object (that was created in init)
   env->DeleteGlobalRef( jobj );
@@ -200,18 +215,27 @@ Java_vrpn_AnalogRemote_mainloop( JNIEnv *env, jobject jobj )
 
   // look up the analog pointer
   jclass jcls = env->GetObjectClass( jobj );
-  jfieldID jfid = env->GetFieldID( jcls, "native_analog", "I" );
-  if( jfid == NULL )
+  jfieldID jfid_analog = env->GetFieldID( jcls, "native_analog", "I" );
+  if( jfid_analog == NULL )
   {
     printf( "Error in native method \"mainloop\":  unable to ID native analog field.\n" );
     return;
   }
-  vrpn_Analog_Remote* a = (vrpn_Analog_Remote*) env->GetIntField( jobj, jfid );
-  if( a <= 0 )  // this analog is uninitialized or has been shut down already
-    return;
+  vrpn_Analog_Remote* a = (vrpn_Analog_Remote*) env->GetIntField( jobj, jfid_analog );
 
-  // now call mainloop
-  a->mainloop( );
+  jfieldID jfid_output = env->GetFieldID( jcls, "native_analog_output", "I" );
+  if( jfid_output == NULL )
+  {
+    printf( "Error in native method \"mainloop\":  unable to ID native analog field.\n" );
+    return;
+  }
+  vrpn_Analog_Output_Remote* ao 
+	  = (vrpn_Analog_Output_Remote*) env->GetIntField( jobj, jfid_output );
+
+  if( a > 0 )  // this analog is still alive
+    a->mainloop( );
+  if( ao > 0 )
+	ao->mainloop( );
 }
 
 
@@ -221,11 +245,17 @@ Java_vrpn_AnalogRemote_init( JNIEnv *env, jobject jobj, jstring jname )
 
   // look up where to store the analog pointer
   jclass jcls = env->GetObjectClass( jobj );
-  jfieldID jfid = env->GetFieldID( jcls, "native_analog", "I" );
-  if( jfid == NULL )
+  jfieldID jfid_analog = env->GetFieldID( jcls, "native_analog", "I" );
+  if( jfid_analog == NULL )
   {
     printf( "Error in native method \"init\":  unable to ID native analog field.\n" );
     return false;
+  }
+  jfieldID jfid_output = env->GetFieldID( jcls, "native_analog_output", "I" );
+  if( jfid_output == NULL )
+  {
+	printf( "Error in native method \"init\":  unable to ID native analog output field.\n" );
+	return false;
   }
 
   // make a global reference to the Java AnalogRemote
@@ -233,15 +263,17 @@ Java_vrpn_AnalogRemote_init( JNIEnv *env, jobject jobj, jstring jname )
   // handle_analog_change(...)
   jobj = env->NewGlobalRef( jobj );
 
-  // create the analog
+  // create the analog & output
   const char* name = env->GetStringUTFChars( jname, NULL );
   vrpn_Analog_Remote* a = new vrpn_Analog_Remote( name );
   a->register_change_handler( jobj, handle_analog_change );
+  vrpn_Analog_Output_Remote* ao = new vrpn_Analog_Output_Remote( name );
   env->ReleaseStringUTFChars( jname, name );
   
+
   // now stash 'a' in the jobj's 'native_analog' field
   jint ja = (jint) a;
-  env->SetIntField( jobj, jfid, ja );
+  env->SetIntField( jobj, jfid_analog, ja );
   
   return true;
 }

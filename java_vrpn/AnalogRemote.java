@@ -175,12 +175,13 @@ public class AnalogRemote implements Runnable
 	// this is used by the native code to store a C++ pointer to the 
 	// native vrpn_AnalogRemote object
 	protected int native_analog = -1;
+	protected int native_analog_output = -1;
 	
 	// this is used to stop and to keep running the tracking thread
 	// in an orderly fashion.
 	protected boolean keepRunning = true;
 	
-	// the tracking thread
+	// the analog thread
 	Thread analogThread = null;
 
 	// how long the thread sleeps between checking for messages

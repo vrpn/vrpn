@@ -1,3 +1,12 @@
+2002-09-15  David Marshburn  <marshbur@cs.unc.edu>
+
+	* AnalogRemote.java:  added another data member to hold
+	a pointer to a vrpn_Analog_Output_Remote (used by the
+	native code).
+	* vrpn_AnalogRemote.cpp:  changed this to also use 
+	vrpn_Analog_Output_Remote (corresponds to recent changes
+	in vrpn_Analog_Remote).
+
 2002-09-11  David Marshburn  <marshbur@cs.unc.edu>
 
 	* java_vrpn.dsw, java_vrpn.vjp:  added TempImager stuff
