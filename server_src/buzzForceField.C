@@ -28,9 +28,9 @@ void BuzzForceField::setAmplitude(double amp) {
 		return;
 	}
 	_new_amplitude = amp;
-	EnterCriticalSection(&_amp_freq_mutex);
+//	EnterCriticalSection(&_amp_freq_mutex);
 	_amp_needs_update = TRUE;
-	LeaveCriticalSection(&_amp_freq_mutex);
+//	LeaveCriticalSection(&_amp_freq_mutex);
 }
 
 void BuzzForceField::setFrequency(double freq) {
@@ -39,9 +39,9 @@ void BuzzForceField::setFrequency(double freq) {
 		return;
 	}
 	_new_frequency = freq;
-	EnterCriticalSection(&_amp_freq_mutex);
+//	EnterCriticalSection(&_amp_freq_mutex);
 	_freq_needs_update = TRUE;
-	LeaveCriticalSection(&_amp_freq_mutex);
+//	LeaveCriticalSection(&_amp_freq_mutex);
 }
 
 // SERVOLOOP:
@@ -57,7 +57,7 @@ gstVector BuzzForceField::calculateForceFieldForce(gstPHANToM *phantom){
 		phase = 2.0*_t_buzz*_frequency;
 		if ( (phase - floor(phase)) < ((phantom->getDeltaT())*2.0*_frequency) ){
 			// its okay to update freq, amp now 
-			EnterCriticalSection(&_amp_freq_mutex);
+//			EnterCriticalSection(&_amp_freq_mutex);
 			if (_amp_needs_update){
 				_amp_needs_update = FALSE;
 				_amplitude = _new_amplitude;
@@ -68,7 +68,7 @@ gstVector BuzzForceField::calculateForceFieldForce(gstPHANToM *phantom){
 					_t_buzz *= _frequency/_new_frequency;	// for continuity
 				_frequency = _new_frequency;
 			}
-			LeaveCriticalSection(&_amp_freq_mutex);
+//			LeaveCriticalSection(&_amp_freq_mutex);
 		}
 		phantom->getPosition_WC(phanPos);
 		phanPos = fromWorld(phanPos);
