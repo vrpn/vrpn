@@ -1,3 +1,11 @@
+2002-09-06  David Borland <borland@cs.unc.edu>
+
+        * vrpn_Poser_Analog.[Ch] : Changed the Poser_Analog to have a 
+        vrpn_Analog_Server member instead of a vrpn_Analog_Remote.  
+        Therefore, the server code must open up a vrpn_Analog_Remote 
+        connection.  This seems counter-intuitive, but it is correct for
+        the Poser, since we are sending analog values, not receiving them.
+
 2002-09-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_TempImager.h : Temporary Imager class until the new cool one arrives.

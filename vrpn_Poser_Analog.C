@@ -1,9 +1,11 @@
 #include "vrpn_Poser_Analog.h"
 
-
 vrpn_Poser_AnalogParam::vrpn_Poser_AnalogParam() {
-    // Name of the Analog device
-    ana_name = NULL;
+	// default port to use
+	port_num = vrpn_DEFAULT_LISTEN_PORT_NO;
+
+	// default number of channels
+	num_channels = 8;
 
     // set workspace values to defaults
     for (int i = 0; i < 3; i ++) {
@@ -17,7 +19,7 @@ vrpn_Poser_AnalogParam::vrpn_Poser_AnalogParam() {
 vrpn_Poser_Analog::vrpn_Poser_Analog(const char* name, vrpn_Connection* c, vrpn_Poser_AnalogParam* p) :
     vrpn_Poser_Server(name, c) 
 {
-    int i;
+	int i;
 
     // Set up the axes
     x = p->x;
@@ -27,25 +29,20 @@ vrpn_Poser_Analog::vrpn_Poser_Analog(const char* name, vrpn_Connection* c, vrpn_
     ry = p->ry;
     rz = p->rz;
 
-    // Create the Analog Remote 
-    // If the name starts with the '*' character, use the server
-    // connection rather than making a new one.
-    if (p->ana_name != NULL) {
-        if (p->ana_name[0] == '*') {
-            ana = new vrpn_Analog_Remote(&(p->ana_name[1]), d_connection);
-        }
-        else {
-            ana = new vrpn_Analog_Remote(p->ana_name);
-        }
+    // Create the Analog Server 
+	ana_c = new vrpn_Synchronized_Connection(p->port_num);
 
-        if (ana == NULL) {
-            fprintf(stderr, "vrpn_Poser_Analog: Can't open Analog %s\n", p->ana_name);
-        }
-    }
-	else {
-		ana = NULL;
-		fprintf(stderr, "vrpn_Poser_Analog: Can't open Analog: No name given\n");
+	if (ana_c == NULL) {
+		fprintf(stderr, "vrpn_Poser_Analog: Can't open Connection\n");
 	}
+
+	ana = new vrpn_Analog_Server("Analog", ana_c);
+
+    if (ana == NULL) {
+        fprintf(stderr, "vrpn_Poser_Analog: Can't open Analog\n");
+    }
+
+	ana->setNumChannels(p->num_channels);
 
     // Set up the workspace max and min values
     for (i = 0; i < 3; i++) {
@@ -66,42 +63,31 @@ void vrpn_Poser_Analog::mainloop() {
     // Call generic server mainloop, since we are a server
     server_mainloop();
 
+	// Call the Analog's connection mainloop
+	if (ana_c) {
+		ana_c->mainloop();
+	}
+
     // Call the Analog's mainloop
     if (ana) {
+		
+		// set the analog values
+		update_Analog_values();
+
+		ana->report_changes();
 		ana->mainloop();
-	
-		if (ana->connectionPtr()->connected()) {
-			// Update the Analog's values
-			if (!update_Analog_values()) {
-				fprintf(stderr, "vrpn_Poser_Analog: Error updating Analog values\n");
-			}
-		}
 	}
 }
 
-bool vrpn_Poser_Analog::update_Analog_values() {
-    vrpn_float64 values[vrpn_CHANNEL_MAX];
-
-	int i;
-	int max_channel = -1;	// sets the range of values we are changing
-
-	for (i = 0; i < vrpn_CHANNEL_MAX; i++) {
-		values[i] = 0.0;
-	}
-
+void vrpn_Poser_Analog::update_Analog_values() {
     // ONLY DOING TRANS FOR NOW...ADD ROT LATER
-    if (x.channel != -1 && x.channel < vrpn_CHANNEL_MAX) {
-		if (max_channel <= x.channel) max_channel = x.channel + 1;
-		values[x.channel] = (pos[0] - x.offset) * x.scale;
+    if (x.channel != -1 && x.channel < ana->numChannels()) {
+		ana->channels()[x.channel] = (pos[0] - x.offset) * x.scale;
     }
-    if (y.channel != -1 && y.channel < vrpn_CHANNEL_MAX) {
-		if (max_channel <= y.channel) max_channel = y.channel + 1;
-        values[y.channel] = (pos[1] - y.offset) * y.scale;
+    if (y.channel != -1 && y.channel < ana->numChannels()) {
+        ana->channels()[y.channel] = (pos[1] - y.offset) * y.scale;
     }
-    if (z.channel != -1 && z.channel < vrpn_CHANNEL_MAX) {
-		if (max_channel <= z.channel) max_channel = z.channel + 1;
-        values[z.channel] = (pos[2] - z.offset) * z.scale;
+    if (z.channel != -1 && z.channel < ana->numChannels()) {
+        ana->channels()[z.channel] = (pos[2] - z.offset) * z.scale;
     }
-
-    return ana->request_change_channels(max_channel, values);
 }
