@@ -76,6 +76,25 @@ private: // data members
     
     // Only used for a vrpn_Connection that awaits incoming connections
     vrpn_int32  listen_udp_sock;        // Connect requests come here
+
+    // logging object
+    vrpn_FileLogger* logger;
+
+public: // logging functions
+
+    virtual vrpn_int32 get_remote_logmode(void);
+    virtual void get_remote_logfile_name(char *);
+
+public: // clock server functions
+
+    static vrpn_int32 clockQueryHandler( void *userdata, vrpn_HANDLERPARAM p );
+
+protected: // clock server function
+
+    virtual vrpn_int32 encode_to(char *buf, const struct timeval& tvSRep, 
+                                 const struct timeval& tvCReq, 
+                                 vrpn_int32 cChars, const char* pch);
+
 };
 
 #endif

@@ -35,9 +35,9 @@ vrpn_int32 vrpn_NetConnection::mainloop (const struct timeval * timeout){
 vrpn_int32 vrpn_NetConnection::handle_outgoing_messages(const struct timeval* pTimeout){
 
 	// log message if necessary
+	
 
 	// if not multicasted, marshall into appropriate buffer
-	if( vrpn_Mcast_Capable && 
 
 	return 0;
 }
@@ -106,10 +106,6 @@ vrpn_int32 vrpn_NetConnection::handle_incoming_messages( const struct timeval* p
 		FD_ZERO(&exceptfds);
 
 		// Read incoming messages from the UDP, TCP. and Multicast channels
-
-		// *** N.B. ***
-		// not sure what sockets are going to be called in new system
-		// maybe we'll keep the same notation
 
 		if (udp_inbound != -1) {
 			FD_SET(udp_inbound, &readfds); /* Check for read */
@@ -325,7 +321,7 @@ vrpn_int32 vrpn_NetConnection::pack_message(vrpn_uint32 len,
 
 	// If we don't have a UDP outbound channel, send everything TCP
 	if (udp_outbound == -1) {
-	    ret = vrpn_marshall_message(d_tcp_outbuf, d_tcp_buflen, d_tcp_num_out,
+	    ret = vrpn_marshall_message(d_tcp_outbuf, d_tcp_outbuflen, d_tcp_num_out,
 				   len, time, type, sender, buffer);
 	    d_tcp_num_out += ret;
 	    //	    return -(ret==0);
@@ -335,7 +331,7 @@ vrpn_int32 vrpn_NetConnection::pack_message(vrpn_uint32 len,
 	    // room.  If not, we'll have to give up.
 	    if (ret == 0) {
 		if (send_pending_reports() != 0) { return -1; }
-		ret = vrpn_marshall_message(d_tcp_outbuf, d_tcp_buflen,
+		ret = vrpn_marshall_message(d_tcp_outbuf, d_tcp_outbuflen,
 				d_tcp_num_out, len, time, type, sender, buffer);
 		d_tcp_num_out += ret;
 	    }
@@ -345,7 +341,7 @@ vrpn_int32 vrpn_NetConnection::pack_message(vrpn_uint32 len,
 	// Determine the class of service and pass it off to the
 	// appropriate service (TCP for reliable, UDP for everything else).
 	if (class_of_service & vrpn_CONNECTION_RELIABLE) {
-	    ret = vrpn_marshall_message(d_tcp_outbuf, d_tcp_buflen, d_tcp_num_out,
+	    ret = vrpn_marshall_message(d_tcp_outbuf, d_tcp_outbuflen, d_tcp_num_out,
 				   len, time, type, sender, buffer);
 	    d_tcp_num_out += ret;
 	    //	    return -(ret==0);
@@ -355,13 +351,13 @@ vrpn_int32 vrpn_NetConnection::pack_message(vrpn_uint32 len,
 	    // room.  If not, we'll have to give up.
 	    if (ret == 0) {
 		if (send_pending_reports() != 0) { return -1; }
-		ret = vrpn_marshall_message(d_tcp_outbuf, d_tcp_buflen,
+		ret = vrpn_marshall_message(d_tcp_outbuf, d_tcp_outbuflen,
 				d_tcp_num_out, len, time, type, sender, buffer);
 		d_tcp_num_out += ret;
 	    }
 	    return (ret==0) ? -1 : 0;
 	} else {
-	    ret = vrpn_marshall_message(d_udp_outbuf, d_udp_buflen, d_udp_num_out,
+	    ret = vrpn_marshall_message(d_udp_outbuf, d_udp_outbuflen, d_udp_num_out,
 				   len, time, type, sender, buffer);
 	    d_udp_num_out += ret;
 	    //	    return -(ret==0);
@@ -371,7 +367,7 @@ vrpn_int32 vrpn_NetConnection::pack_message(vrpn_uint32 len,
 	    // room.  If not, we'll have to give up.
 	    if (ret == 0) {
 		if (send_pending_reports() != 0) { return -1; }
-		ret = vrpn_marshall_message(d_udp_outbuf, d_udp_buflen,
+		ret = vrpn_marshall_message(d_udp_outbuf, d_udp_outbuflen,
 				d_udp_num_out, len, time, type, sender, buffer);
 		d_udp_num_out += ret;
 	    }
@@ -564,18 +560,18 @@ vrpn_int32 vrpn_NetConnection::handle_tcp_messages (vrpn_int32 fd,
 
 		// Make sure the buffer is long enough to hold the whole
 		// message body.
-		if ((vrpn_int32)d_TCPbuflen < ceil_len) {
-		  if (d_TCPbuf) { d_TCPbuf = (char*)realloc(d_TCPbuf,ceil_len); }
-		  else { d_TCPbuf = (char*)malloc(ceil_len); }
-		  if (d_TCPbuf == NULL) {
+		if ((vrpn_int32)d_tcp_inbuflen < ceil_len) {
+		  if (d_tcp_inbuf) { d_tcp_inbuf = (char*)realloc(d_tcp_inbuf,ceil_len); }
+		  else { d_tcp_inbuf = (char*)malloc(ceil_len); }
+		  if (d_tcp_inbuf == NULL) {
 		     fprintf(stderr, "vrpn: vrpn_NetConnection::handle_tcp_messages: Out of memory\n");
 		     return -1;
 		  }
-		  d_TCPbuflen = ceil_len;
+		  d_tcp_inbuflen = ceil_len;
 		}
 
 		// Read the body of the message 
-		if (vrpn_noint_block_read(fd,d_TCPbuf,ceil_len) != ceil_len) {
+		if (vrpn_noint_block_read(fd,d_tcp_inbuf,ceil_len) != ceil_len) {
 		 perror("vrpn: vrpn_NetConnection::handle_tcp_messages: Can't read body");
 		 return -1;
 		}
@@ -585,9 +581,6 @@ vrpn_int32 vrpn_NetConnection::handle_tcp_messages (vrpn_int32 fd,
 		if (type >= 0) {	// User handler, map to local id
 
 			
-			// *** N.B. ***
-			// This is where we'll do our logging/filtering
-			//
 			// log regardless of whether local id is set,
 			// but only process if it has been (ie, log ALL
 			// incoming data -- use a filter on the log
@@ -596,7 +589,7 @@ vrpn_int32 vrpn_NetConnection::handle_tcp_messages (vrpn_int32 fd,
 				if (logger->log_message(payload_len, time,
 										translate_remote_type_to_local(type),
 										translate_remote_sender_to_local(sender),
-										d_TCPbuf)) {
+										d_tcp_inbuf)) {
 					return -1;
 				}
 			}
@@ -604,7 +597,7 @@ vrpn_int32 vrpn_NetConnection::handle_tcp_messages (vrpn_int32 fd,
 			if (local_type_id(type) >= 0) {
 				if (do_callbacks_for(local_type_id(type),
 									 local_sender_id(sender),
-									 time, payload_len, d_TCPbuf)) {
+									 time, payload_len, d_tcp_inbuf)) {
 					return -1;
 				}
 			}
@@ -617,7 +610,7 @@ vrpn_int32 vrpn_NetConnection::handle_tcp_messages (vrpn_int32 fd,
 					if (logger->log_message(payload_len, time, 
 											translate_remote_type_to_local(type),
 											translate_remote_sender_to_local(sender),
-											d_TCPbuf))
+											d_tcp_inbuf))
 						return -1;
 				
 				// Fill in the parameter to be passed to the routines
@@ -626,7 +619,7 @@ vrpn_int32 vrpn_NetConnection::handle_tcp_messages (vrpn_int32 fd,
 				p.sender = sender;
 				p.msg_time = time;
 				p.payload_len = payload_len;
-				p.buffer = d_TCPbuf;
+				p.buffer = d_tcp_inbuf;
 				
 				if (system_messages[-type](this, p)) {
 					fprintf(stderr, 
@@ -715,21 +708,21 @@ vrpn_int32	vrpn_NetConnection::handle_udp_messages (vrpn_int32 fd,
 	printf("vrpn_NetConnection::handle_udp_messages() something to read\n");
 #endif
 		// Read the buffer and reset the buffer pointer
-		inbuf_ptr = d_UDPinbuf;
-		if ( (inbuf_len = recv(fd, d_UDPinbuf, sizeof(d_UDPinbufToAlignRight), 0)) == -1) {
+		inbuf_ptr = d_udp_inbuf;
+		if ( (inbuf_len = recv(fd, d_udp_inbuf, sizeof(d_udp_inbufToAlignRight), 0)) == -1) {
 		   perror("vrpn: vrpn_NetConnection::handle_udp_messages: recv() failed");
 		   return -1;
 		}
 
 	      // Parse each message in the buffer
-	      while ( (inbuf_ptr - d_UDPinbuf) != (vrpn_int32)inbuf_len) {
+	      while ( (inbuf_ptr - d_udp_inbuf) != (vrpn_int32)inbuf_len) {
 
 		// Read and parse the header
 		// skip up to alignment
 		vrpn_uint32 header_len = sizeof(header);
 		if (header_len%vrpn_ALIGN) {header_len += vrpn_ALIGN - header_len%vrpn_ALIGN;}
 		
-		if ( ((inbuf_ptr - d_UDPinbuf) + header_len) > (vrpn_uint32)inbuf_len) {
+		if ( ((inbuf_ptr - d_udp_inbuf) + header_len) > (vrpn_uint32)inbuf_len) {
 		   fprintf(stderr, "vrpn: vrpn_NetConnection::handle_udp_messages: Can't read header");
 		   return -1;
 		}
@@ -754,7 +747,7 @@ vrpn_int32	vrpn_NetConnection::handle_udp_messages (vrpn_int32 fd,
 		if (ceil_len%vrpn_ALIGN) {ceil_len += vrpn_ALIGN - ceil_len%vrpn_ALIGN;}
 
 		// Make sure we received enough to cover the entire payload
-		if ( ((inbuf_ptr - d_UDPinbuf) + ceil_len) > inbuf_len) {
+		if ( ((inbuf_ptr - d_udp_inbuf) + ceil_len) > inbuf_len) {
 		   fprintf(stderr, "vrpn: vrpn_NetConnection::handle_udp_messages: Can't read payload");
 		   return -1;
 		}
@@ -764,9 +757,6 @@ vrpn_int32	vrpn_NetConnection::handle_udp_messages (vrpn_int32 fd,
 		if (type >= 0) {	// User handler, map to local id
 
 
-			// *** N.B. ***
-			// This is where we'll do our logging/filtering
-			//
 			// log regardless of whether local id is set,
 			// but only process if it has been (ie, log ALL
 			// incoming data -- use a filter on the log
@@ -883,7 +873,7 @@ vrpn_int32 vrpn_NetConnection::handle_mcast_messages(/* XXX */){
 			if (ceil_len%vrpn_ALIGN) {ceil_len += vrpn_ALIGN - ceil_len%vrpn_ALIGN;}
 	
 			// Make sure we received enough to cover the entire payload
-			if ( ((inbuf_ptr - d_UDPinbuf) + ceil_len) > inbuf_len) {
+			if ( ((inbuf_ptr - d_udp_inbuf) + ceil_len) > inbuf_len) {
 			   fprintf(stderr, "vrpn: vrpn_NetConnection::handle_udp_messages: Can't read payload");
 			   return -1;
 			}
@@ -891,10 +881,7 @@ vrpn_int32 vrpn_NetConnection::handle_mcast_messages(/* XXX */){
 			// Call the handler for this message type
 			// If it returns nonzero, return an error.
 			if (type >= 0) {	// User handler, map to local id
-				
-				// *** N.B. ***
-				// This is where we'll do our logging/filtering
-				//
+
 				// log regardless of whether local id is set,
 				// but only process if it has been (ie, log ALL
 				// incoming data -- use a filter on the log
@@ -966,11 +953,10 @@ vrpn_int32 vrpn_NetConnection::handle_mcast_messages(/* XXX */){
 //**************************************************************************
 
 
-vrpn_int32 vrpn_NetConnection::connect_to_client (const char *machine, vrpn_int16 port)
+vrpn_int32 vrpn_NetConnection::connect_to_client (char *msg)
 {
-    char msg[100];
+
     if (status != LISTEN) return -1;
-    sprintf(msg, "%s %d", machine, port);
     printf("vrpn: Connection request received: %s\n", msg);
     tcp_sock = connect_tcp_to(msg);
     if (tcp_sock != -1) {
@@ -998,7 +984,8 @@ vrpn_int32 vrpn_NetConnection::connect_to_client (const char *machine, vrpn_int1
 //  The routine returns -1 on failure and the file descriptor on success.
 
 vrpn_int32 vrpn_NetConnection::connect_tcp_to (const char * msg)
-{	char	machine [5000];
+{	
+	char	machine [5000];
 	vrpn_int32	port;
 #ifndef _WIN32
 	vrpn_int32	server_sock;		/* Socket on this host */
@@ -1239,11 +1226,12 @@ vrpn_int32 NetConnection::handle_mcast_reply(){
 	// unpack message
 
 	// set local data member
-	set_peer_mcast_capable(/* true/false */);
+	// set_peer_mcast_capable(/* true/false */);
 
 	// inform ServerConnectionController whether
 	// client is mcast capable
 
+	return 0;
 }
 
 // get mcast info from mcast sender and pack into message
@@ -1268,6 +1256,7 @@ vrpn_int32 NetConnection::pack_mcast_description(vrpn_int32 sender){
 	vrpn_buffer(insertPt,&buflen,ip);
 	vrpn_buffer(insertPt,&buflen,pid);
 	
+	// need to pack d_mcast_cookie into first part of message
 
 	return pack_message((vrpn_uint32)sizeof(McastGroupDescrp), 
 						now, vrpn_CONNECTION_MCAST_DESCRIPTION,
@@ -1288,7 +1277,8 @@ vrpn_int32 NetConnection::pack_mcast_description(vrpn_int32 sender){
 // make connection to server
 // this is just a rough outline
 vrpn_int32 vrpn_NetConnection::connect_to_server(const char* machine, 
-												 vrpn_int16 port){
+												 vrpn_int16 port)
+{
 	vrpn_int32 retval = 0;
 
 	// initiate connection by sending message to well
@@ -1555,7 +1545,7 @@ vrpn_int32 vrpn_NetConnection::udp_request_connection_call(const char * machine,
 // (this is useful when the address INADDR_ANY is used, since it tells
 // what port was opened).
 
-static	vrn_int32 open_udp_socket (vrpn_uint16 * portno)
+static	vrpn_int32 open_udp_socket (vrpn_uint16 * portno)
 {
    vrpn_int32 sock;
    struct sockaddr_in server_addr;
@@ -1804,7 +1794,9 @@ int vrpn_NetConnection::setup_new_connection
 		pack_type_description(i);
 	}
 
-	// pack multicast capability descriptons
+
+	// This is where we would pass all the multicast capability stuff to
+	// the other side. this will be done if i have time.
 
 	// Send the messages
 	if (send_pending_reports() == -1) {

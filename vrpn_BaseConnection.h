@@ -24,7 +24,7 @@ public:  // c'tors and d'tors
     virtual ~vrpn_BaseConnection();
 
 protected: // init
-	virtual void init(void);
+    virtual void init(void);
    
 public:  // status
     
@@ -33,6 +33,9 @@ public:  // status
 
     // no errors
     virtual vrpn_bool doing_okay() const = 0;
+
+    // get status of connection
+    virtual vrpn_int32 get_status() const = 0;
 
 public: // clock stuff
     virtual vrpn_int32 time_since_connection_open( timeval * elapsed_time );
@@ -63,7 +66,7 @@ public:  // sending and receiving
     // the ConnectionController calls it
     virtual vrpn_int32 handle_incoming_messages( /*...XXX...*/ ) = 0;
 
-	
+    
 public:  // public type_id and sender_id stuff
 
     // * register a new local {type,sender} that that controller

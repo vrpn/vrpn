@@ -103,7 +103,7 @@ public: // setting up connections
     // Returns the name of the service that the connection was first
     // constructed to talk to, or NULL if it was built as a server.
     //inline const char * name (void) const { return my_name; }
-    virtual vrpn_int32 connect_to_client(const char* machine, vrpn_int16 port);
+    virtual vrpn_int32 connect_to_client(const char* msg);
 
     //-----------------------------
     // client side
@@ -188,8 +188,8 @@ private: // data members
 
     char *  d_tcp_outbuf;
     char *  d_udp_outbuf;
-    vrpn_int32  d_tcp_buflen;  // total buffer size, in bytes
-    vrpn_int32  d_udp_buflen;
+    vrpn_int32  d_tcp_outbuflen;  // total buffer size, in bytes
+    vrpn_int32  d_udp_outbuflen;
     vrpn_int32  d_tcp_num_out;  // number of bytes currently used
     vrpn_int32  d_udp_num_out;
 
@@ -197,9 +197,9 @@ private: // data members
     // Input buffers
     // HACK:  d_TCPbuf uses malloc()/realloc()/free() instead of
     //   new/delete.
-    vrpn_uint32 d_TCPbuflen;
-    char * d_TCPbuf;
-    char * d_UDPinbuf;
+    vrpn_uint32 d_tcp_inbuflen;
+    char * d_tcp_inbuf;
+    char * d_udp_inbuf;
     // used to know how many bytes to read from the udp socket
     vrpn_float64 d_UDPinbufToAlignRight
         [vrpn_CONNECTION_UDP_BUFLEN / sizeof(vrpn_float64) + 1];
@@ -247,7 +247,7 @@ private: // data members
     vrpn_int32  num_other_types;
 
     // logging data memnbers, passed to FileLogger
-    FileLogger* logger;
+    vrpn_FileLogger* logger;
 
 
     vrpn_LOGLIST * d_logbuffer;  // last entry in log

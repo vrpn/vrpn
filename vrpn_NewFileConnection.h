@@ -45,22 +45,33 @@ public: // c'tors & d'tors
     vrpn_FileConnection (const char * file_name);
     virtual ~vrpn_FileConnection (void);
 
-    virtual vrpn_int32 mainloop (const struct timeval * timeout = NULL);
-
     virtual vrpn_int32 time_since_connection_open (struct timeval * elapsed_time);
 
     virtual vrpn_FileConnection *get_FileConnection() { return this; }
 
-    // XXX the following should not be public if we want vrpn_FileConnection
-    //     to have the same interface as vrpn_Connection
-    //
-    //     If so handler functions for messages for these operations 
-    //     should be made, and functions added to vrpn_File_Controller which
-    //     generate the messages.  This seemed like it would be messy
-    //     since most of these functions have return values
+public:  // sending and receiving
 
 
-public: // playback functions
+    // Call each time through program main loop to handle receiving any
+    // incoming messages and sending any packed messages.
+    // Returns -1 when connection dropped due to error, 0 otherwise.
+    // (only returns -1 once per connection drop).
+    // Optional argument is TOTAL time to block on select() calls;
+    // there may be multiple calls to select() per call to mainloop(),
+    // and this timeout will be divided evenly between them.
+    virtual vrpn_int32 mainloop (const struct timeval * timeout = NULL);
+
+    // functions for sending messages and receiving messages
+    // the ConnectionController will call these functions
+  
+	// does nothing. no outgoing messages in FileConnections
+    inline vrpn_int32 handle_outgoing_messages( const struct timeval * pTimeout = NULL )
+		{ return 0; }
+
+    vrpn_int32 handle_incoming_messages( const struct timeval * pTimeout = NULL );
+
+
+protected: // playback functions - are public in base class
 
 	// rate of 0.0 is paused, 1.0 is normal speed
     void set_replay_rate(vrpn_float32 rate);
@@ -123,6 +134,13 @@ protected: // playback functions
     static vrpn_int32 handle_play_to_time (void *, vrpn_HANDLERPARAM);
 	
 protected: // data members
+
+	vrpn_int32 status;
+
+	// different possible statuses
+#define CONNECTED (1)
+#define UNCONNECTED (0)
+#define ERROR (-1)
 	
     // tokens for VRPN control messages
 

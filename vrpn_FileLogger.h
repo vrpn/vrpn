@@ -18,13 +18,13 @@ class vrpn_FileLogger {
 
 public: // c'tors and d'tors
 
-	vrpn_FileLogger(vrpn_LOGLIST *_d_logbuffer,
-					vrpn_LOGLIST *_d_firstlogentry, 
-					char *_d_logname,
-					long _d_logmode, 
-					int _d_logfilehandle,
-					FILE *_d_logfile, 
-					vrpnLogFilterEntry *_d_logfilters );
+	vrpn_FileLogger(char *_d_logname,
+					vrpn_int32 _d_logmode, 
+					vrpn_int32 _d_logfilehandle = 0,
+					FILE *_d_logfile = NULL,
+					vrpn_LOGLIST *_d_logbuffer = NULL,
+					vrpn_LOGLIST *_d_firstlogentry = NULL, 
+					vrpnLogFilterEntry *_d_logfilters  = NULL);
 	~vrpn_FileLogger(void);
 
 public: // logging functions
@@ -34,6 +34,17 @@ public: // logging functions
 									vrpn_int32 type, 
 									vrpn_int32 sender, 
 									const char * buffer);
+
+
+	// Sets up a filter function for logging.
+	// Any user message to be logged is first passed to this function,
+	// and will only be logged if the function returns zero (XXX).
+	// NOTE:  this only affects local logging - remote logging
+	// is unfiltered!  Only user messages are filtered;  all system
+	// messages are logged.
+	// Returns nonzero on failure.
+	virtual vrpn_int32 register_log_filter (vrpn_LOGFILTER filter, 
+											void * userdata);
 
 	// Returns nonzero if we shouldn't log this message.
 	virtual vrpn_int32 check_log_filters (vrpn_HANDLERPARAM message);

@@ -128,11 +128,72 @@ vrpn_FileConnection::~vrpn_FileConnection (void) {
 	}
 }
 
+//**************************************************************************
+//**************************************************************************
+//
+// vrpn_FileConnection: public: sending and receiving
+//
+//**************************************************************************
+//**************************************************************************
+
+// virtual
+vrpn_int32 vrpn_FileConnection::mainloop (const struct timeval * timeout)
+{
+	vrpn_int32 retval;
+	// add status switch
+	switch( status ){
+	case CONNECTED:
+		retval = handle_incoming_messages(timeout);
+		break;
+	default:
+		// error - exit program?
+	}
+	   
+	return retval;
+}
+vrpn_int32 
+vrpn_FileConnection::handle_incoming_messages( const struct timeval * pTimeout = NULL )
+{
+    // timeout ignored for now, needs to be added
+
+    timeval now_time;
+    gettimeofday(&now_time, NULL);
+
+    if ((d_last_time.tv_sec == 0) && (d_last_time.tv_usec == 0)) {
+          // If first iteration, consider 0 time elapsed
+        d_last_time = now_time;
+        return 0;
+    }
+
+      // scale elapsed time by d_rate (rate of replay);
+      // this gives us the time to advance (skip_time)
+      // our clock to (next_time).
+    timeval skip_time = vrpn_TimevalDiff(now_time, d_last_time);
+    skip_time = vrpn_TimevalScale(skip_time, d_rate);
+    timeval end_time = vrpn_TimevalSum(d_time, skip_time);
+    //fprintf(stderr, "skip = %d %d\n", skip_time.tv_sec, skip_time.tv_usec);
+
+      // Had to add need_to_play() because at fractional rates
+      // (even just 1/10th) the d_time didn't accumulate properly
+      // because tiny intervals after scaling were too small for
+      // for a timeval to represent (1us minimum).
+    if (need_to_play(end_time)) {
+        d_last_time = now_time;
+        return play_to_filetime(end_time);
+    } else {
+          // we don't set d_last_time so that we can more
+          // accurately measure the (larger) interval next
+          // time around
+        return 0;
+    }
+}
+
+
 
 //**************************************************************************
 //**************************************************************************
 //
-// vrpn_FileConnection: public: playback functions
+// vrpn_FileConnection: protected: playback functions
 //
 //**************************************************************************
 //**************************************************************************
@@ -201,52 +262,6 @@ vrpn_int32 vrpn_FileConnection::jump_to_time(timeval newtime)
     }
 
     return 0;
-}
-
-
-//**************************************************************************
-//**************************************************************************
-//
-// vrpn_FileCOnnection: public: 
-//
-//**************************************************************************
-//**************************************************************************
-
-// virtual
-vrpn_int32 vrpn_FileConnection::mainloop (const struct timeval * timeout) {
-
-    // timeout ignored for now, needs to be added
-
-    timeval now_time;
-    gettimeofday(&now_time, NULL);
-
-    if ((d_last_time.tv_sec == 0) && (d_last_time.tv_usec == 0)) {
-          // If first iteration, consider 0 time elapsed
-        d_last_time = now_time;
-        return 0;
-    }
-
-      // scale elapsed time by d_rate (rate of replay);
-      // this gives us the time to advance (skip_time)
-      // our clock to (next_time).
-    timeval skip_time = vrpn_TimevalDiff(now_time, d_last_time);
-    skip_time = vrpn_TimevalScale(skip_time, d_rate);
-    timeval end_time = vrpn_TimevalSum(d_time, skip_time);
-    //fprintf(stderr, "skip = %d %d\n", skip_time.tv_sec, skip_time.tv_usec);
-
-      // Had to add need_to_play() because at fractional rates
-      // (even just 1/10th) the d_time didn't accumulate properly
-      // because tiny intervals after scaling were too small for
-      // for a timeval to represent (1us minimum).
-    if (need_to_play(end_time)) {
-        d_last_time = now_time;
-        return play_to_filetime(end_time);
-    } else {
-          // we don't set d_last_time so that we can more
-          // accurately measure the (larger) interval next
-          // time around
-        return 0;
-    }
 }
 
 

@@ -1,5 +1,8 @@
 #include "vrpn_NewFileController.h"
 
+// initialize static variable
+vrpn_FileController * vrpn_FileController::sp_pfc = 0;
+
 //**************************************************************************
 //**************************************************************************
 //

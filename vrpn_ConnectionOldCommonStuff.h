@@ -40,7 +40,7 @@
 #include <netdb.h>
 #endif
 
-#ifdef	sgi
+#ifdef  sgi
 #include <bstring.h>
 #endif
 
@@ -94,13 +94,13 @@ class vrpn_File_Connection;  // for get_File_Connection()
 // a regular connection just has 0 as the client-server time offset)
 
 struct vrpn_HANDLERPARAM {
-	vrpn_int32	type;
-	vrpn_int32	sender;
-	struct timeval	msg_time;
-	vrpn_int32	payload_len;
-	const char	*buffer;
+    vrpn_int32  type;
+    vrpn_int32  sender;
+    struct timeval  msg_time;
+    vrpn_int32  payload_len;
+    const char  *buffer;
 };
-typedef	int  (*vrpn_MESSAGEHANDLER)(void *userdata, vrpn_HANDLERPARAM p);
+typedef int  (*vrpn_MESSAGEHANDLER)(void *userdata, vrpn_HANDLERPARAM p);
 
 typedef int (* vrpn_LOGFILTER) (void * userdata, vrpn_HANDLERPARAM p);
 
@@ -111,13 +111,13 @@ typedef int (* vrpn_LOGFILTER) (void * userdata, vrpn_HANDLERPARAM p);
 // to have large tables.  We need at least 150-200 for the microscope
 // project as of Jan 98, and will eventually need two to three times that
 // number.
-#define	vrpn_CONNECTION_MAX_SENDERS	(2000)
-#define	vrpn_CONNECTION_MAX_TYPES	(2000)
+#define vrpn_CONNECTION_MAX_SENDERS (2000)
+#define vrpn_CONNECTION_MAX_TYPES   (2000)
 
 // vrpn_ANY_SENDER can be used to register callbacks on a given message
 // type from any sender.
 
-#define	vrpn_ANY_SENDER	(-1)
+#define vrpn_ANY_SENDER (-1)
 
 // vrpn_ANY_TYPE can be used to register callbacks for any USER type of
 // message from a given sender.  System messages are handled separately.
@@ -133,25 +133,27 @@ typedef int (* vrpn_LOGFILTER) (void * userdata, vrpn_HANDLERPARAM p);
 // so for now we do not expose any way to change the UDP output
 // buffer size.  (MTU = 1500 bytes, - 28 bytes of IP+UDP header)
 
-#define	vrpn_CONNECTION_TCP_BUFLEN	(64000)
-#define	vrpn_CONNECTION_UDP_BUFLEN	(1472)
+#define vrpn_CONNECTION_TCP_BUFLEN  (64000)
+#define vrpn_CONNECTION_UDP_BUFLEN  (1472)
 
 // This is the list of states that a connection can be in
 // (possible values for status).
-#define LISTEN			(1)
-#define CONNECTED		(0)
-#define CONNECTION_FAIL		(-1)
-#define BROKEN			(-2)
-#define DROPPED			(-3)
+#define LISTEN          (1)
+#define CONNECTED       (0)
+#define CONNECTION_FAIL     (-1)
+#define BROKEN          (-2)
+#define DROPPED         (-3)
 
 
 // System message types
-#define	vrpn_CONNECTION_SENDER_DESCRIPTION	(-1)
-#define	vrpn_CONNECTION_TYPE_DESCRIPTION	(-2)
-#define	vrpn_CONNECTION_UDP_DESCRIPTION		(-3)
-#define	vrpn_CONNECTION_LOG_DESCRIPTION		(-4)
-#define vrpn_CONNECTION_MCAST_DESCRIPTION	(-5)  
-#define vrpn_CLIENT_MCAST_CAPABLE_REPLY		(-6)
+#define vrpn_CONNECTION_SENDER_DESCRIPTION  (-1)
+#define vrpn_CONNECTION_TYPE_DESCRIPTION    (-2)
+#define vrpn_CONNECTION_UDP_DESCRIPTION     (-3)
+#define vrpn_CONNECTION_LOG_DESCRIPTION     (-4)
+#define vrpn_CONNECTION_MCAST_DESCRIPTION   (-5)  
+#define vrpn_CLIENT_MCAST_CAPABLE_REPLY     (-6)
+#define vrpn_CLOCK_QUERY                    (-7)
+#define vrpn_CLOCK_REPLY                    (-8)
 
 // Classes of service for messages, specify multiple by ORing them together
 // Priority of satisfying these should go from the top down (RELIABLE will
@@ -159,16 +161,16 @@ typedef int (* vrpn_LOGFILTER) (void * userdata, vrpn_HANDLERPARAM p);
 // Most of these flags may be ignored, but RELIABLE is guaranteed
 // to be available.
 
-#define	vrpn_CONNECTION_RELIABLE		(1<<0)
-#define	vrpn_CONNECTION_FIXED_LATENCY		(1<<1)
-#define	vrpn_CONNECTION_LOW_LATENCY		(1<<2)
-#define	vrpn_CONNECTION_FIXED_THROUGHPUT	(1<<3)
-#define	vrpn_CONNECTION_HIGH_THROUGHPUT		(1<<4)
+#define vrpn_CONNECTION_RELIABLE        (1<<0)
+#define vrpn_CONNECTION_FIXED_LATENCY       (1<<1)
+#define vrpn_CONNECTION_LOW_LATENCY     (1<<2)
+#define vrpn_CONNECTION_FIXED_THROUGHPUT    (1<<3)
+#define vrpn_CONNECTION_HIGH_THROUGHPUT     (1<<4)
 
 // What to log
-#define vrpn_LOG_NONE				(0)
-#define vrpn_LOG_INCOMING			(1<<0)
-#define vrpn_LOG_OUTGOING			(1<<1)
+#define vrpn_LOG_NONE               (0)
+#define vrpn_LOG_INCOMING           (1<<0)
+#define vrpn_LOG_OUTGOING           (1<<1)
 
 
 #if !defined(_WIN32) || defined (__CYGWIN__)
@@ -212,10 +214,10 @@ struct vrpn_LOGLIST {
 
 // Description of a callback entry for a user type.
 struct vrpnMsgCallbackEntry {
-  vrpn_MESSAGEHANDLER	handler;	// Routine to call
-  void			* userdata;	// Passed along
-  vrpn_int32		sender;		// Only if from sender
-  vrpnMsgCallbackEntry	* next;		// Next handler
+  vrpn_MESSAGEHANDLER   handler;    // Routine to call
+  void          * userdata; // Passed along
+  vrpn_int32        sender;     // Only if from sender
+  vrpnMsgCallbackEntry  * next;     // Next handler
 };
 
 struct vrpnLogFilterEntry {
@@ -233,10 +235,10 @@ struct vrpnLogFilterEntry {
 // this got move out of vrpn_Connection and made into a global function
 // so that the multicast sender class could have access to it.
 vrpn_uint32 vrpn_marshall_message (char * outbuf,vrpn_uint32 outbuf_size,
-					   vrpn_uint32 initial_out,
-					   vrpn_uint32 len, struct timeval time,
-					   vrpn_int32 type, vrpn_int32 sender,
-					   const char * buffer);
+                       vrpn_uint32 initial_out,
+                       vrpn_uint32 len, struct timeval time,
+                       vrpn_int32 type, vrpn_int32 sender,
+                       const char * buffer);
 /*
 // 1hz sync connection by default, windowed over last three bounces 
 // WARNING:  vrpn_get_connection_by_name() may not be thread safe.
@@ -246,7 +248,7 @@ vrpn_Connection * vrpn_get_connection_by_name
           long local_log_mode = vrpn_LOG_NONE,
           const char * remote_logfile_name = NULL,
           long remote_log_mode = vrpn_LOG_NONE,
-	  double dFreq = 1.0, int cSyncWindow = 3);
+      double dFreq = 1.0, int cSyncWindow = 3);
 */
 
 // Utility routines to parse names (<service>@<location specifier>)

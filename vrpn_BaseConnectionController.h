@@ -47,6 +47,39 @@
 #include "vrpn_ConnectionOldCommonStuff.h"
 #include "vrpn_BaseConnection.h"
 
+//-------------------------------------------------
+// defs & funcs used for clock synchronization and
+// debugging
+//-------------------------------------------------
+typedef struct {
+    struct timeval  msg_time;   // Local time of this sync message
+    struct timeval  tvClockOffset;  // Local time - remote time in msecs
+    struct timeval  tvHalfRoundTrip;  // half of the roundtrip time
+                                          // for the roundtrip used to calc offset
+} vrpn_CLOCKCB;
+
+typedef void (*vrpn_CLOCKSYNCHANDLER)(void *userdata,
+                                      const vrpn_CLOCKCB& info);
+
+// Connect to a clock server that is on the other end of a connection
+// and figure out the offset between the local and remote clocks
+// This is the type of clock that user code will deal with.
+// You need only supply the server name (no device name) and the 
+// desired frequency (in hz) of clock sync updates.  IF THE FREQ IS
+// NEGATIVE, THEN YOU WILL GET NO AUTOMATIC SYNCS. At any time you
+// can get a very accurate sync by calling fullSync();
+
+// special message identifiers for remote clock syncs
+#define VRPN_CLOCK_FULL_SYNC 1
+#define VRPN_CLOCK_QUICK_SYNC 2
+
+
+void printTime( char *pch, const struct timeval& tv ) {
+  cerr << pch << " " << tv.tv_sec*1000.0 + tv.tv_usec/1000.0 << " msecs." << endl;
+}
+
+
+
 ////////////////////////////////////////////////////////
 //
 // class vrpn_BaseConnectionController
@@ -72,18 +105,19 @@ public:  // c'tors and d'tors
 protected:  // c'tors and init
 
     // constructors ...XXX...
-    vrpn_BaseConnectionController();
+    // constructor should include these for clock synch
+    vrpn_BaseConnectionController(  vrpn_float64 dFreq = 4.0, 
+                                    vrpn_int32 cOffsetWindow = 2);
 
     virtual void init(void) = 0;
 
 public:  // status
 
     // are there any connections?
-    int at_least_one_open_connection() const = 0;
+    vrpn_int32 at_least_one_open_connection() const = 0;
     
     // some way to get a list of open connection names
     // (one need is for the hiball control panel)
-
 
 public:  // handling incoming and outgoing messages
 
@@ -95,18 +129,18 @@ public:  // handling incoming and outgoing messages
     // * optional argument is TOTAL time to block on select() calls;
     //   there may be multiple calls to select() per call to mainloop(),
     //   and this timeout will be divided evenly between them.
-    virtual int mainloop( const timeval * timeout = NULL ) = 0;
+    virtual vrpn_int32 mainloop( const timeval * timeout = NULL ) = 0;
 
     
     // * send pending report (that have been packed), and clear the buffer
     // * this function was protected, now is public, so we can use
     //   it to send out intermediate results without calling mainloop
-    virtual int send_pending_reports() = 0;
+    virtual vrpn_int32 send_pending_reports() = 0;
     
     // * pack a message that will be sent the next time mainloop() is called
     // * turn off the RELIABLE flag if you want low-latency (UDP) send
     // * was: pack_message
-    virtual int handle_outgoing_message(
+    virtual vrpn_int32 handle_outgoing_message(
         vrpn_uint32 len, 
         timeval time,
         vrpn_int32 type,
@@ -118,24 +152,21 @@ public:  // handling incoming and outgoing messages
 protected:  // handling incoming and outgoing messages
     //         wrappers that forwards the functioncall to each open connection
 
-    virtual int pack_service_description( vrpn_int32 which_service ) = 0;
-    virtual int pack_type_description( vrpn_int32 which_type ) = 0;
-    virtual int pack_udp_description( int portno ) = 0;
+    virtual vrpn_int32 pack_service_description( vrpn_int32 which_service ) = 0;
+    virtual vrpn_int32 pack_type_description( vrpn_int32 which_type ) = 0;
+    virtual vrpn_int32 pack_udp_description( vrpn_int32 portno ) = 0;
     //virtual int pack_log_description( long mode, const char * filename );
 
-    // Routines to handle incoming messages on file descriptors
-    int handle_incoming_udp_messages (int fd, const timeval * timeout);
-    int handle_incoming_tcp_messages (int fd, const timeval * timeout);
-    
+
     // Routines that handle system messages
     // these are registered as callbacks
-    static int handle_incoming_service_message(
+    static vrpn_int32 handle_incoming_service_message(
         void * userdata, vrpn_HANDLERPARAM p);
-    static int handle_incoming_type_message(
+    static vrpn_int32 handle_incoming_type_message(
         void * userdata, vrpn_HANDLERPARAM p);
-    static int handle_incoming_udp_message(
+    static vrpn_int32 handle_incoming_udp_message(
         void * userdata, vrpn_HANDLERPARAM p);
-    static int handle_incoming_log_message(
+    static vrpn_int32 handle_incoming_log_message(
         void * userdata, vrpn_HANDLERPARAM p);
 #endif
 
@@ -155,7 +186,7 @@ public:  // callbacks
     // * handlers will be called during mainloop()
     // * your handler should return 0, or a communication error
     //   is assumed and the connection will be shut down
-    virtual int register_handler(
+    virtual vrpn_int32 register_handler(
         vrpn_int32 type,
         vrpn_MESSAGEHANDLER handler,
         void *userdata,
@@ -166,7 +197,7 @@ public:  // callbacks
     // * in order for this function to succeed, a handler
     //   must already have been registered with identical
     //   values of these parameters
-    virtual int unregister_handler(
+    virtual vrpn_int32 unregister_handler(
         vrpn_int32 type,
         vrpn_MESSAGEHANDLER handler,
         void *userdata,
@@ -174,7 +205,7 @@ public:  // callbacks
 
     // * invoke callbacks that have registered
     //   for messages with this (type and service)
-    virtual int do_callbacks_for(
+    virtual vrpn_int32 do_callbacks_for(
         vrpn_int32 type, vrpn_int32 service,
         timeval time,
         vrpn_uint32 len, const char * buffer);
@@ -204,11 +235,11 @@ public:  // services and types
     virtual vrpn_int32 register_message_type( const char * name );
 
     // * returns service ID, or -1 if unregistered
-    int get_service_id( const char * ) const;
+    vrpn_int32 get_service_id( const char * ) const;
     
     // * returns message type ID, or -1 if unregistered
     // * was message_type_is_registered  
-    int get_message_type_id( const char * ) const;
+    vrpn_int32 get_message_type_id( const char * ) const;
     
     // * returns the name of the specified service,
     //   or NULL if the parameter is invalid
@@ -222,7 +253,27 @@ public:  // services and types
     virtual const char * get_message_type_name( vrpn_int32 type_id ) const;
     
     
-public:
+public: // logging functions
+
+    virtual vrpn_int32 get_local_logmode(void);
+    virtual void get_local_logfile_name(char *);
     
-    // logging, etc. ...
+    virtual vrpn_int32 get_remote_logmode(void);
+    virtual void get_remote_logfile_name(char *);
+
+private: // logging data members
+
+    char * d_local_logname;            // local name of file to write log to
+    vrpn_int32 d_local_logmode;        // local logging: incoming, outgoing, or both
+    
+    char * d_remote_logname;           // remote name of file to write log to
+    vrpn_int32 d_remote_logmode;       // remote logging: incoming, outgoing, both
+
+public: // clock functions
+
+    // offset of clocks on connected machines -- local - remote
+    // (this should really not be here, it should be in adjusted time
+    // connection, but this makes it a lot easier
+    struct timeval tvClockOffset;
+
 };

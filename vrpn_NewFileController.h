@@ -147,7 +147,7 @@ public: // playback functions
 };
 
 
-vrpn_FileController * vrpn_FileController::sp_pfc = 0;
+
 
 	
 

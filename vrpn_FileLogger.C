@@ -10,26 +10,28 @@
 //**************************************************************************
 //**************************************************************************
 
-vrpn_FileLogger::vrpn_FileLogger(vrpn_LOGLIST *_d_logbuffer,
-								 vrpn_LOGLIST *_d_firstlogentry, 
-								 char *_d_logname,
+vrpn_FileLogger::vrpn_FileLogger(char *_d_logname,
 								 vrpn_int32 _d_logmode, 
 								 vrpn_int32 _d_logfilehandle,
-								 FILE *_d_logfile, 
+								 FILE *_d_logfile,
+								 vrpn_LOGLIST *_d_logbuffer,
+								 vrpn_LOGLIST *_d_firstlogentry,
 								 vrpnLogFilterEntry *_d_logfilters) :
     d_logbuffer (_d_logbuffer),
     d_first_log_entry (_d_firstlogentry),
     d_logmode (_d_logmode),
     d_logfile_handle (_d_logfilehandle),
     d_logfile (_d_logfile),
-    d_log_filters (_d_logfilters){
+    d_log_filters (_d_logfilters)
+{
 
 		d_logname = new char[strlen(logfile_name)+1];
 		strcpy(d_logname,logfile_name,strlen(logfile_name)+1);
 		open_log();
 }
 
-vrpn_FileLogger::~vrpn_FileLogger(void){
+vrpn_FileLogger::~vrpn_FileLogger(void)
+{
 	close_log();
 }
 
@@ -108,6 +110,26 @@ vrpn_int32 vrpn_FileLogger::log_message (vrpn_int32 len, struct timeval time,
 }
 
 
+// virtual
+vrpn_int32 vrpn_FileLogger::register_log_filter (vrpn_LOGFILTER filter,
+												 void * userdata) {
+  vrpnLogFilterEntry * newEntry;
+
+  newEntry = new vrpnLogFilterEntry;
+  if (!newEntry) {
+    fprintf(stderr, "vrpn_FileLogger::register_log_filter:  "
+                    "Out of memory.\n");
+    return -1;
+  }
+
+  newEntry->filter = filter;
+  newEntry->userdata = userdata;
+  newEntry->next = endpoint.d_log_filters;
+  endpoint.d_log_filters = newEntry;
+
+  return 0;
+}
+
 vrpn_int32 vrpn_OneConnection::check_log_filters (vrpn_HANDLERPARAM message) {
 
 	vrpnLogFilterEntry * nextFilter;
@@ -130,14 +152,14 @@ vrpn_int32 vrpn_OneConnection::check_log_filters (vrpn_HANDLERPARAM message) {
 vrpn_int32 vrpn_FileLogger::open_log (void) {
 
   if (!d_logname) {
-    fprintf(stderr, "vrpn_FileLogger::open_log:  "
-                    "Log file has no name.\n");
-    return -1;
+	  fprintf(stderr, "vrpn_FileLogger::open_log:  "
+			  "Log file has no name.\n");
+	  return -1;
   }
   if (d_logfile) {
-    fprintf(stderr, "vrpn_FileLogger::open_log:  "
-                    "Log file is already open.\n");
-    return 0;  // not a catastrophic failure
+	  fprintf(stderr, "vrpn_FileLogger::open_log:  "
+			  "Log file is already open.\n");
+	  return 0;  // not a catastrophic failure
   }
 
   // Can't use this because MICROSOFT doesn't support Unix standards!
@@ -153,34 +175,34 @@ vrpn_int32 vrpn_FileLogger::open_log (void) {
   // check to see if it exists
   d_logfile = fopen(d_logname, "r");
   if (d_logfile) {
-    fprintf(stderr, "vrpn_FileLogger::open_log:  "
-                    "Log file \"%s\" already exists.\n", d_logname);
-    d_logfile = NULL;
+	  fprintf(stderr, "vrpn_FileLogger::open_log:  "
+			  "Log file \"%s\" already exists.\n", d_logname);
+	  d_logfile = NULL;
   } else
-    d_logfile = fopen(d_logname, "wb");
-
+	  d_logfile = fopen(d_logname, "wb");
+  
   if (!d_logfile) {
-    fprintf(stderr, "vrpn_FileLogger::open_log:  "
-                    "Couldn't open log file \"%s\".\n", d_logname);
+	  fprintf(stderr, "vrpn_FileLogger::open_log:  "
+			  "Couldn't open log file \"%s\".\n", d_logname);
 
-    // Try to write to "/tmp/vrpn_emergency_log"
-    d_logfile = fopen("/tmp/vrpn_emergency_log", "r");
-    if (d_logfile)
-      d_logfile = NULL;
-    else
-      d_logfile = fopen("/tmp/vrpn_emergency_log", "wb");
+	  // Try to write to "/tmp/vrpn_emergency_log"
+	  d_logfile = fopen("/tmp/vrpn_emergency_log", "r");
+	  if (d_logfile)
+		  d_logfile = NULL;
+	  else
+		  d_logfile = fopen("/tmp/vrpn_emergency_log", "wb");
 
-    if (!d_logfile) {
-      fprintf(stderr, "vrpn_FileLogger::open_log:\n  "
-                      "Couldn't open emergency log file "
-                      "\"/tmp/vrpn_emergency_log\".\n");
-
-      return -1;
-    } else
-      fprintf(stderr, "Writing to /tmp/vrpn_emergency_log instead.\n");
-
+	  if (!d_logfile) {
+		  fprintf(stderr, "vrpn_FileLogger::open_log:\n  "
+				  "Couldn't open emergency log file "
+				  "\"/tmp/vrpn_emergency_log\".\n");
+		  
+		  return -1;
+	  } else
+		  fprintf(stderr, "Writing to /tmp/vrpn_emergency_log instead.\n");
+	  
   }
-
+  
   return 0;
 }
 
