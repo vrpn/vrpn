@@ -1,6 +1,10 @@
 #include "buzzForceField.h"
 #include "texture_plane.h"
 
+// macros for printing something out x times out of a thousand (i.e. x times per second)
+#define DEBUG_BEGIN(x)	{static int pcnt = 0; if ((pcnt % 1000 >= 0)&&(pcnt%1000 < x)){
+#define DEBUG_END	}pcnt++;}
+
 // APPLICATION:
 BuzzForceField::BuzzForceField() : gstForceField(),
 	_t_buzz(0.0),
@@ -9,7 +13,9 @@ BuzzForceField::BuzzForceField() : gstForceField(),
 	_plane(gstPlane(0.0, 1.0, 0.0, 0.0)),
 	_spring(0.5),
 	_amplitude(0.5),
-	_frequency(60.0)
+	_frequency(60.0),
+	_amp_needs_update(0),
+	_freq_needs_update(0)
 {
 	boundBySphere(gstPoint(0,0,0), 1000);
 	_tex_plane = NULL;
@@ -17,6 +23,10 @@ BuzzForceField::BuzzForceField() : gstForceField(),
 }
 
 void BuzzForceField::setAmplitude(double amp) {
+	if (!_active){
+		_amplitude = amp;
+		return;
+	}
 	_new_amplitude = amp;
 	EnterCriticalSection(&_amp_freq_mutex);
 	_amp_needs_update = TRUE;
@@ -24,6 +34,10 @@ void BuzzForceField::setAmplitude(double amp) {
 }
 
 void BuzzForceField::setFrequency(double freq) {
+	if (!_active){
+		_frequency = freq;
+		return;
+	}
 	_new_frequency = freq;
 	EnterCriticalSection(&_amp_freq_mutex);
 	_freq_needs_update = TRUE;
@@ -63,7 +77,9 @@ gstVector BuzzForceField::calculateForceFieldForce(gstPHANToM *phantom){
 			height_mod = _tex_plane->getTextureHeight(phanPos);
 		double ph_height = _plane.error(phanPos)-height_mod;
 		
-		if (ph_height > _amplitude) return gstVector(0,0,0);
+		if (ph_height > _amplitude) {
+			return gstVector(0,0,0);
+		}
 		// force may be nonzero so compute height of vibrating plane to see
 		double buzzplane_height = _amplitude*(sin(2.0*M_PI*_frequency*_t_buzz));
 
@@ -77,7 +93,9 @@ gstVector BuzzForceField::calculateForceFieldForce(gstPHANToM *phantom){
 			force_mag = (ph_height)*_spring; // we need to cancel force of static plane so we
 											// produce the opposite of the collision force here
 		}
-		else force_mag = buzzplane_height*_spring;
+		else {
+			force_mag = buzzplane_height*_spring;
+		}
 
 
 		force_vec = _plane.normal();

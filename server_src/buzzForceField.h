@@ -36,7 +36,7 @@ public:
 		_tex_plane = p;
 	}
 	void setParameters(double buzzamp, double buzzfreq, double kspr){
-		_amplitude = buzzamp; _frequency = buzzfreq; _spring = kspr;
+		setAmplitude(buzzamp); setFrequency(buzzfreq); setSpring(kspr);
 	}
 	void setSpring(double spr) {_spring = spr;};
 
