@@ -310,8 +310,12 @@ vrpn_int32 vrpn_TranslationTable::mapToLocalID (vrpn_int32 remote_id) const {
 //fprintf(stderr, "Remote ID %d is illegal!\n", remote_id);
     return -1;
   }
-//fprintf(stderr, "Remote ID %d maps to local ID %d (%s).\n", remote_id,
-//d_entry[remote_id].local_id, d_entry[remote_id].name);
+
+#ifdef VERBOSE
+fprintf(stderr, "Remote ID %d maps to local ID %d (%s).\n", remote_id,
+d_entry[remote_id].local_id, d_entry[remote_id].name);
+#endif
+
   return d_entry[remote_id].local_id;
 }
 
@@ -334,8 +338,12 @@ vrpn_int32 vrpn_TranslationTable::addRemoteEntry (cName name,
 
   memcpy(d_entry[d_numEntries].name, name, sizeof(cName));
   d_entry[d_numEntries].local_id = local_id;
-//fprintf(stderr, "Set up remote ID %d named %s with local equivalent %d.\n",
-//d_numEntries, d_entry[d_numEntries].name, d_entry[d_numEntries].local_id);
+
+#ifdef VERBOSE
+fprintf(stderr, "Set up remote ID %d named %s with local equivalent %d.\n",
+d_numEntries, d_entry[d_numEntries].name, d_entry[d_numEntries].local_id);
+#endif
+
   d_numEntries++;
   return d_numEntries - 1;
 }
@@ -1016,7 +1024,7 @@ vrpn_int32 vrpn_TypeDispatcher::addType (const char * name) {
 
   // See if there are too many on the list.  If so, return -1.
   if (d_numTypes == vrpn_CONNECTION_MAX_TYPES) {
-    fprintf(stderr, "vrpn_Connection::register_message_type:  "
+    fprintf(stderr, "vrpn_Connection::addType:  "
                     "Too many! (%d)\n", d_numTypes);
     return -1;
   }
@@ -1024,7 +1032,7 @@ vrpn_int32 vrpn_TypeDispatcher::addType (const char * name) {
   if (!d_types[d_numTypes].name) {
     d_types[d_numTypes].name = new cName;
        if (!d_types[d_numTypes].name) {
-         fprintf(stderr, "vrpn_Connection::register_message_type:  "
+         fprintf(stderr, "vrpn_Connection::addType:  "
                          "Can't allocate memory for new record.\n");
        return -1;
     }
@@ -2933,6 +2941,11 @@ int vrpn_Endpoint::pack_message
     return -1;
   }
 
+  // TCH 26 April 2000
+  if (status != CONNECTED) {
+    return 0;
+  }
+
   // Determine the class of service and pass it off to the
   // appropriate service (TCP for reliable, UDP for everything else).
   // If we don't have a UDP outbound channel, send everything TCP
@@ -4194,7 +4207,7 @@ int vrpn_Endpoint::pack_type_description (vrpn_int32 which) {
 
 #ifdef	VERBOSE
    printf("  vrpn_Connection: Packing type '%s'\n",
-          d_dispatcher->getTypeName(which));
+          d_dispatcher->typeName(which));
 #endif
    memcpy(buffer, &netlen, sizeof(netlen));
    memcpy(&buffer[sizeof(len)], d_dispatcher->typeName(which),
@@ -4938,6 +4951,12 @@ int vrpn_Connection::mainloop (const struct timeval * pTimeout) {
   for (endpointIndex = 0; endpointIndex < d_numEndpoints; endpointIndex++) {
     endpoint = d_endpoints[endpointIndex];
 
+    // The current array-sorting code is liable to break when unexpected
+    // things happen, so we have to double-check it here.
+    if (!endpoint) {
+      continue;
+    }
+
     if (pTimeout) {
       timeout = *pTimeout;
     } else {
@@ -5243,8 +5262,8 @@ vrpn_int32 vrpn_Connection::register_sender (const char * name) {
    vrpn_int32 retval;
    vrpn_int32 i;
 
-//fprintf(stderr, "vrpn_Connection::register_sender:  "
-//"%d senders;  new name \"%s\"\n", d_dispatcher->numMySenders(), name);
+fprintf(stderr, "vrpn_Connection::register_sender:  "
+"%d senders;  new name \"%s\"\n", d_dispatcher->numSenders(), name);
 
   // See if the name is already in the list.  If so, return it.
   retval = d_dispatcher->getSenderID(name);
@@ -5253,6 +5272,8 @@ vrpn_int32 vrpn_Connection::register_sender (const char * name) {
   }
 
   retval = d_dispatcher->addSender(name);
+
+fprintf(stderr, "Packing sender description for %s, type %d.\n", name, retval);
 
    // Pack the sender description.
    // TCH 24 Jan 00 - Need to do this even if not connected so
@@ -5273,6 +5294,9 @@ vrpn_int32 vrpn_Connection::register_message_type (const char * name) {
   vrpn_int32 retval;
   vrpn_int32 i;
 
+fprintf(stderr, "vrpn_Connection::register_message_type:  "
+"%d type;  new name \"%s\"\n", d_dispatcher->numTypes(), name);
+
   // See if the name is already in the list.  If so, return it.
   retval = d_dispatcher->getTypeID(name);
   if (retval != -1) {
@@ -5284,6 +5308,8 @@ vrpn_int32 vrpn_Connection::register_message_type (const char * name) {
   // Pack the type description.
   // TCH 24 Jan 00 - Need to do this even if not connected so
   // that it goes into the logs (if we're keeping any).
+
+fprintf(stderr, "Packing type description for %s, type %d.\n", name, retval);
 
   pack_type_description(retval);
 
@@ -5352,21 +5378,13 @@ int vrpn_Connection::message_type_is_registered (const char * name) const
 // Changed 8 November 1999 by TCH
 // With multiple connections allowed, TRYING_TO_CONNECT is an
 // "ok" status, so we need to admit it.  (Used to check >= 0)
-// XXX What if one endpoint is BROKEN? Don't we need to loop?
 vrpn_bool vrpn_Connection::doing_okay (void) const {
   return (connectionStatus >= TRYING_TO_CONNECT);
 }
 
-// XXX What's the right thing to do? For now, loop over endpoints
-// and return TRUE if any of them are connected.
 vrpn_bool vrpn_Connection::connected (void) const
 {
-  int endpointIndex;
-
-  for (endpointIndex = 0; endpointIndex < d_numEndpoints; endpointIndex++) {
-    if (d_endpoints[endpointIndex]->status == CONNECTED) return VRPN_TRUE;
-  }
-  return VRPN_FALSE;
+  return (connectionStatus == CONNECTED);
 }
 
 //------------------------------------------------------------------------
