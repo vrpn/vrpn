@@ -1,3 +1,10 @@
+2002-07-25  Tatsuhiro Segi  <segi@email.unc.edu>
+
+	* AnalogRemoteListener.java:  revised and commented
+	* ButtonRemoteListener.java:  same
+	* ForceDeviceRemoteListener.java:  same
+	* TrackerRemoteListener.java:  same
+
 2002-07-16  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_AnalogRemote.cpp:  cleaned out some errant print statements.

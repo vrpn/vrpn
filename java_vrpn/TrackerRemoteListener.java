@@ -1,3 +1,16 @@
+/***************************************************************************
+ * Use this class to store updates in a vector and get them when you want
+ *
+ * How it is currently set up...
+ * 
+ * 1. The vector is emptied when all the updates are returned
+ * 2. The vector keeps only the latest update when the mode is set to last
+ * 
+ * It's easy to change these settings, but if you're too lazy to do it,
+ * contact Tatsuhiro Segi (segi@email.unc.edu)
+ ***************************************************************************/
+
+
 import vrpn.*;
 import java.util.Vector;
 
@@ -32,76 +45,87 @@ public class TrackerRemoteListener
 	}
 	
 	
-	public void setModeLastTrackerUpdate()
+	//** Empty the vector when the mode is set to last
+	public synchronized void setModeLastTrackerUpdate()
 	{
 		returnLastTracker = true;
 		
-		Object temp = trackerUpdates.lastElement();
+		if (!trackerUpdates.isEmpty())
+		{
+			Object temp = trackerUpdates.lastElement();
 		
-		trackerUpdates.removeAllElements();
-		trackerUpdates.addElement(temp);
+			trackerUpdates.removeAllElements();
+			trackerUpdates.addElement(temp);
+		}
 	}
 	
 	
-	public void setModeLastVelocityUpdate()
+	public synchronized void setModeLastVelocityUpdate()
 	{
 		returnLastVelocity = true;
 		
-		Object temp = velocityUpdates.lastElement();
+		if (!velocityUpdates.isEmpty())
+		{
+			Object temp = velocityUpdates.lastElement();
 		
-		velocityUpdates.removeAllElements();
-		velocityUpdates.addElement(temp);
+			velocityUpdates.removeAllElements();
+			velocityUpdates.addElement(temp);
+		}
 	}
 	
 	
-	public void setModeLastAccelerationUpdate()
+	public synchronized void setModeLastAccelerationUpdate()
 	{
 		returnLastAcceleration = true;
 		
-		Object temp = accelerationUpdates.lastElement();
+		if (!accelerationUpdates.isEmpty())
+		{
+			Object temp = accelerationUpdates.lastElement();
 		
-		accelerationUpdates.removeAllElements();
-		accelerationUpdates.addElement(temp);
+			accelerationUpdates.removeAllElements();
+			accelerationUpdates.addElement(temp);
+		}
 	}
 	
 	
-	public void setModeAllTrackerUpdates()
+	public synchronized void setModeAllTrackerUpdates()
 	{
 		returnLastTracker = false;
 	}
 	
 	
-	public void setModeAllVelocityUpdates()
+	public synchronized void setModeAllVelocityUpdates()
 	{
 		returnLastVelocity = false;
 	}
 	
 	
-	public void setModeAllAccelerationUpdates()
+	public synchronized void setModeAllAccelerationUpdates()
 	{
 		returnLastAcceleration = false;
 	}
 	
 	
-	public boolean getModeTrackerUpdate()
+	public synchronized boolean getModeTrackerUpdate()
 	{
 		return returnLastTracker;
 	}
 	
 	
-	public boolean getModeVelocityUpdate()
+	public synchronized boolean getModeVelocityUpdate()
 	{
 		return returnLastVelocity;
 	}
 	
 	
-	public boolean getModeAccelerationUpdate()
+	public synchronized boolean getModeAccelerationUpdate()
 	{
 		return returnLastAcceleration;
 	}
 	
 	
-	public Vector getTrackerUpdate()
+	//** Empty the vector when all the updates are returned
+	public synchronized Vector getTrackerUpdate()
 	{
 		if (trackerUpdates.isEmpty())
 		{
@@ -133,7 +157,7 @@ public class TrackerRemoteListener
 	}
 	
 	
-	public Vector getVelocityUpdate()
+	public synchronized Vector getVelocityUpdate()
 	{
 		if (velocityUpdates.isEmpty())
 		{
@@ -165,7 +189,7 @@ public class TrackerRemoteListener
 	}
 	
 	
-	public Vector getAcclerationUpdate()
+	public synchronized Vector getAcclerationUpdate()
 	{
 		if (accelerationUpdates.isEmpty())
 		{
@@ -197,7 +221,7 @@ public class TrackerRemoteListener
 	}
 	
 	
-	public TrackerRemote.TrackerUpdate getLastTrackerUpdate()
+	public synchronized TrackerRemote.TrackerUpdate getLastTrackerUpdate()
 	{
 		TrackerRemote.TrackerUpdate tracker = (TrackerRemote.TrackerUpdate)(trackerUpdates.lastElement());
 		
@@ -205,7 +229,7 @@ public class TrackerRemoteListener
 	}
 	
 	
-	public TrackerRemote.VelocityUpdate getLastVelocityUpdate()
+	public synchronized TrackerRemote.VelocityUpdate getLastVelocityUpdate()
 	{
 		TrackerRemote.VelocityUpdate vel = (TrackerRemote.VelocityUpdate)(velocityUpdates.lastElement());
 		
@@ -213,7 +237,7 @@ public class TrackerRemoteListener
 	}
 	
 	
-	public TrackerRemote.AccelerationUpdate getLastAccelerationUpdate()
+	public synchronized TrackerRemote.AccelerationUpdate getLastAccelerationUpdate()
 	{
 		TrackerRemote.AccelerationUpdate acc = (TrackerRemote.AccelerationUpdate)(accelerationUpdates.lastElement());
 		
@@ -221,7 +245,8 @@ public class TrackerRemoteListener
 	}
 	
 	
-	public void trackerPositionUpdate (TrackerRemote.TrackerUpdate u, TrackerRemote tracker)
+	//** Keep only the last update if the mode is set to last
+	public synchronized void trackerPositionUpdate (TrackerRemote.TrackerUpdate u, TrackerRemote tracker)
 	{
 		if (returnLastTracker)
 		{
@@ -232,7 +257,7 @@ public class TrackerRemoteListener
 	}
 	
 	
-	public void trackerVelocityUpdate (TrackerRemote.VelocityUpdate v, TrackerRemote tracker)
+	public synchronized void trackerVelocityUpdate (TrackerRemote.VelocityUpdate v, TrackerRemote tracker)
 	{
 		if (returnLastVelocity)
 		{
@@ -243,7 +268,7 @@ public class TrackerRemoteListener
 	}
 	
 	
-	public void trackerAccelerationUpdate (TrackerRemote.AccelerationUpdate a, TrackerRemote tracker )
+	public synchronized void trackerAccelerationUpdate (TrackerRemote.AccelerationUpdate a, TrackerRemote tracker )
 	{
 		if (returnLastAcceleration)
 		{

@@ -1,9 +1,21 @@
+/***************************************************************************
+ * Use this class to store updates in a vector and get them when you want
+ *
+ * How it is currently set up...
+ * 
+ * 1. The vector is emptied when all the updates are returned
+ * 2. The vector keeps only the latest update when the mode is set to last
+ * 
+ * It's easy to change these settings, but if you're too lazy to do it,
+ * contact Tatsuhiro Segi (segi@email.unc.edu)
+ ***************************************************************************/
+
+
 import vrpn.*;
 import java.util.Vector;
 
 
-public class AnalogRemoteListener
-	implements vrpn.AnalogRemote.AnalogChangeListener
+public class AnalogRemoteListener implements vrpn.AnalogRemote.AnalogChangeListener
 {
 	Vector analogUpdates;
 	
@@ -20,30 +32,35 @@ public class AnalogRemoteListener
 	}
 	
 	
-	public void setModeLastAnalogUpdate()
+	//** Empty the vector when the mode is set to last
+	public synchronized void setModeLastAnalogUpdate()
 	{
 		returnLastAnalog = true;
 		
-		Object temp = analogUpdates.lastElement();
+		if (!analogUpdates.isEmpty())
+		{
+			Object temp = analogUpdates.lastElement();
 		
-		analogUpdates.removeAllElements();
-		analogUpdates.addElement(temp);
+			analogUpdates.removeAllElements();
+			analogUpdates.addElement(temp);
+		}
 	}
 	
 	
-	public void setModeAllAnalogUpdates()
+	public synchronized void setModeAllAnalogUpdates()
 	{
 		returnLastAnalog = false;
 	}
 	
 	
-	public boolean getModeAnalogUpdate()
+	public synchronized boolean getModeAnalogUpdate()
 	{
 		return returnLastAnalog;
 	}
 	
 	
-	public Vector getAnalogUpdate()
+	//** Empty the vector when all the updates are returned
+	public synchronized Vector getAnalogUpdate()
 	{
 		if (analogUpdates.isEmpty())
 		{
@@ -75,7 +92,7 @@ public class AnalogRemoteListener
 	}
 	
 	
-	public AnalogRemote.AnalogUpdate getLastAnalogUpdate()
+	public synchronized AnalogRemote.AnalogUpdate getLastAnalogUpdate()
 	{
 		AnalogRemote.AnalogUpdate analog = (AnalogRemote.AnalogUpdate)(analogUpdates.lastElement());
 		
@@ -83,7 +100,8 @@ public class AnalogRemoteListener
 	}
 	
 	
-	public void analogUpdate (AnalogRemote.AnalogUpdate u, AnalogRemote analog)
+	//** Keep only the last update if the mode is set to last
+	public synchronized void analogUpdate (AnalogRemote.AnalogUpdate u, AnalogRemote analog)
 	{
 		if (returnLastAnalog)
 		{

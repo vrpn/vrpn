@@ -1,9 +1,21 @@
+/***************************************************************************
+ * Use this class to store updates in a vector and get them when you want
+ *
+ * How it is currently set up...
+ * 
+ * 1. The vector is emptied when all the updates are returned
+ * 2. The vector keeps only the latest update when the mode is set to last
+ * 
+ * It's easy to change these settings, but if you're too lazy to do it,
+ * contact Tatsuhiro Segi (segi@email.unc.edu)
+ ***************************************************************************/
+
+
 import vrpn.*;
 import java.util.Vector;
 
 
-public class ButtonRemoteListener
-	implements vrpn.ButtonRemote.ButtonChangeListener
+public class ButtonRemoteListener implements vrpn.ButtonRemote.ButtonChangeListener
 {
 	Vector buttonUpdates;
 	
@@ -20,30 +32,35 @@ public class ButtonRemoteListener
 	}
 	
 	
-	public void setModeLastButtonUpdate()
+	//** Empty the vector when the mode is set to last
+	public synchronized void setModeLastButtonUpdate()
 	{
 		returnLastButton = true;
 		
-		Object temp = buttonUpdates.lastElement();
+		if (!buttonUpdates.isEmpty())
+		{
+			Object temp = buttonUpdates.lastElement();
 		
-		buttonUpdates.removeAllElements();
-		buttonUpdates.addElement(temp);
+			buttonUpdates.removeAllElements();
+			buttonUpdates.addElement(temp);
+		}
 	}
 	
 	
-	public void setModeAllButtonUpdates()
+	public synchronized void setModeAllButtonUpdates()
 	{
 		returnLastButton = false;
 	}
 	
 	
-	public boolean getModeButtonUpdate()
+	public synchronized boolean getModeButtonUpdate()
 	{
 		return returnLastButton;
 	}
 	
 	
-	public Vector getButtonUpdate()
+	//** Empty the vector when all the updates are returned
+	public synchronized Vector getButtonUpdate()
 	{
 		if (buttonUpdates.isEmpty())
 		{
@@ -75,7 +92,7 @@ public class ButtonRemoteListener
 	}
 	
 	
-	public ButtonRemote.ButtonUpdate getLastButtonUpdate()
+	public synchronized ButtonRemote.ButtonUpdate getLastButtonUpdate()
 	{
 		ButtonRemote.ButtonUpdate button = (ButtonRemote.ButtonUpdate)(buttonUpdates.lastElement());
 		
@@ -83,7 +100,8 @@ public class ButtonRemoteListener
 	}
 	
 	
-	public void buttonUpdate (ButtonRemote.ButtonUpdate u, ButtonRemote button)
+	//** Keep only the last update if the mode is set to last
+	public synchronized void buttonUpdate (ButtonRemote.ButtonUpdate u, ButtonRemote button)
 	{
 		if (returnLastButton)
 		{

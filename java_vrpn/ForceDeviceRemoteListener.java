@@ -1,3 +1,16 @@
+/***************************************************************************
+ * Use this class to store updates in a vector and get them when you want
+ *
+ * How it is currently set up...
+ * 
+ * 1. The vector is emptied when all the updates are returned
+ * 2. The vector keeps only the latest update when the mode is set to last
+ * 
+ * It's easy to change these settings, but if you're too lazy to do it,
+ * contact Tatsuhiro Segi (segi@email.unc.edu)
+ ***************************************************************************/
+
+
 import vrpn.*;
 import java.util.Vector;
 
@@ -32,76 +45,87 @@ public class ForceDeviceRemoteListener
 	}
 	
 	
-	public void setModeLastForceUpdate()
+	//** Empty the vector when the mode is set to last
+	public synchronized void setModeLastForceUpdate()
 	{
 		returnLastForce = true;
 		
-		Object temp = forceUpdates.lastElement();
+		if (!forceUpdates.isEmpty())
+		{
+			Object temp = forceUpdates.lastElement();
 		
-		forceUpdates.removeAllElements();
-		forceUpdates.addElement(temp);
+			forceUpdates.removeAllElements();
+			forceUpdates.addElement(temp);
+		}
 	}
 	
 	
-	public void setModeLastForceErrorUpdate()
+	public synchronized void setModeLastForceErrorUpdate()
 	{
 		returnLastError = true;
 		
-		Object temp = errorUpdates.lastElement();
+		if (!errorUpdates.isEmpty())
+		{
+			Object temp = errorUpdates.lastElement();
 		
-		errorUpdates.removeAllElements();
-		errorUpdates.addElement(temp);
+			errorUpdates.removeAllElements();
+			errorUpdates.addElement(temp);
+		}
 	}
 	
 	
-	public void setModeLastSCPUpdate()
+	public synchronized void setModeLastSCPUpdate()
 	{
 		returnLastSCP = true;
 		
-		Object temp = SCPUpdates.lastElement();
+		if (!SCPUpdates.isEmpty())
+		{
+			Object temp = SCPUpdates.lastElement();
 		
-		SCPUpdates.removeAllElements();
-		SCPUpdates.addElement(temp);
+			SCPUpdates.removeAllElements();
+			SCPUpdates.addElement(temp);
+		}
 	}
 	
 	
-	public void setModeAllForceUpdates()
+	public synchronized void setModeAllForceUpdates()
 	{
 		returnLastForce = false;
 	}
 	
 	
-	public void setModeAllForceErrorUpdates()
+	public synchronized void setModeAllForceErrorUpdates()
 	{
 		returnLastError = false;
 	}
 	
 	
-	public void setModeAllSCPUpdates()
+	public synchronized void setModeAllSCPUpdates()
 	{
 		returnLastSCP = false;
 	}
 	
 	
-	public boolean getModeForceUpdate()
+	public synchronized boolean getModeForceUpdate()
 	{
 		return returnLastForce;
 	}
 	
 	
-	public boolean getModeForceErrorUpdate()
+	public synchronized boolean getModeForceErrorUpdate()
 	{
 		return returnLastError;
 	}
 	
 	
-	public boolean getModeSCPUpdate()
+	public synchronized boolean getModeSCPUpdate()
 	{
 		return returnLastSCP;
 	}
 	
 	
-	public Vector getForceUpdate()
+	//** Empty the vector when all the updates are returned
+	public synchronized Vector getForceUpdate()
 	{
 		if (forceUpdates.isEmpty())
 		{
@@ -133,7 +157,7 @@ public class ForceDeviceRemoteListener
 	}
 	
 	
-	public Vector getForceErrorUpdate()
+	public synchronized Vector getForceErrorUpdate()
 	{
 		if (errorUpdates.isEmpty())
 		{
@@ -165,7 +189,7 @@ public class ForceDeviceRemoteListener
 	}
 	
 	
-	public Vector getSCPUpdate()
+	public synchronized Vector getSCPUpdate()
 	{
 		if (SCPUpdates.isEmpty())
 		{
@@ -197,7 +221,7 @@ public class ForceDeviceRemoteListener
 	}
 	
 	
-	public ForceDeviceRemote.ForceChange getLastForceUpdate()
+	public synchronized ForceDeviceRemote.ForceChange getLastForceUpdate()
 	{
 		ForceDeviceRemote.ForceChange force = (ForceDeviceRemote.ForceChange)(forceUpdates.lastElement());
 		
@@ -205,7 +229,7 @@ public class ForceDeviceRemoteListener
 	}
 	
 	
-	public ForceDeviceRemote.ForceError getLastErrorUpdate()
+	public synchronized ForceDeviceRemote.ForceError getLastErrorUpdate()
 	{
 		ForceDeviceRemote.ForceError error = (ForceDeviceRemote.ForceError)(errorUpdates.lastElement());
 		
@@ -213,7 +237,7 @@ public class ForceDeviceRemoteListener
 	}
 	
 	
-	public ForceDeviceRemote.SCPChange getLastSCPUpdate()
+	public synchronized ForceDeviceRemote.SCPChange getLastSCPUpdate()
 	{
 		ForceDeviceRemote.SCPChange scp = (ForceDeviceRemote.SCPChange)(SCPUpdates.lastElement());
 		
@@ -221,7 +245,8 @@ public class ForceDeviceRemoteListener
 	}
 	
 	
-	public void forceUpdate (ForceDeviceRemote.ForceChange f, ForceDeviceRemote force)
+	//** Keep only the last update if the mode is set to last
+	public synchronized void forceUpdate (ForceDeviceRemote.ForceChange f, ForceDeviceRemote force)
 	{
 		if (returnLastForce)
 		{
@@ -232,7 +257,7 @@ public class ForceDeviceRemoteListener
 	}
 	
 	
-	public void forceError (ForceDeviceRemote.ForceError e, ForceDeviceRemote force)
+	public synchronized void forceError (ForceDeviceRemote.ForceError e, ForceDeviceRemote force)
 	{
 		if (returnLastError)
 		{
@@ -243,7 +268,7 @@ public class ForceDeviceRemoteListener
 	}
 	
 	
-	public void scpUpdate (ForceDeviceRemote.SCPChange s, ForceDeviceRemote force )
+	public synchronized void scpUpdate (ForceDeviceRemote.SCPChange s, ForceDeviceRemote force )
 	{
 		if (returnLastSCP)
 		{
