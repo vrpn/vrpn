@@ -1,3 +1,9 @@
+2001-08-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsw : Makes all libraries in Phantom server use same style
+	* vrpn_Connection.C (vrpn_Endpoint::send_pending_messages) :
+		Better handling of this check to avoid problems.
+
 2001-08-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.dsw : Added vrpn_print_devices project file

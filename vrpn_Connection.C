@@ -3051,7 +3051,10 @@ int vrpn_Endpoint::send_pending_reports (void) {
 
   // Make sure we've got a valid TCP connection; else we can't send them.
   if (d_tcpSocket == -1) {
-	return 0;
+    fprintf(stderr,"vrpn_Endpoint::send_pending_reports(): No TCP connection\n");
+    status = BROKEN;
+    clearBuffers();
+    return -1;
   }
 
   // Check for an exception on the socket.  If there is one, shut it
@@ -3093,22 +3096,12 @@ int vrpn_Endpoint::send_pending_reports (void) {
     sent += ret;
   }
 
-  // Make sure we've got a valid UDP connection; else we can't send them.
-  if (d_udpOutboundSocket == -1) {
-	return 0;
-  }
-
    // Send all of the messages that have built
    // up in the UDP buffer.  If there is an error during the send, or
    // an exceptional condition, close the accept socket and go back
    // to listening for new connections.
 
-   if (d_udpNumOut > 0) {
-
-//fprintf(stderr, "UDP buffer starts with:  len %d sender %d type %d.\n",
-//((vrpn_int32 *) d_udpOutbuf)[0],
-//((vrpn_int32 *) d_udpOutbuf)[3],
-//((vrpn_int32 *) d_udpOutbuf)[4]);
+   if ( (d_udpOutboundSocket != -1) && (d_udpNumOut > 0) ) {
 
         ret = send(d_udpOutboundSocket, d_udpOutbuf, d_udpNumOut, 0);
 #ifdef  VERBOSE
