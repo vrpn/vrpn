@@ -1,4 +1,4 @@
-CC = g++
+CC = CC
 CFLAGS = -I../ -g
 LFLAGS = -L../`hw_os` \
 	 -L/afs/unc/proj/hmd/beta/lib/`hw_os` \
@@ -7,19 +7,19 @@ LFLAGS = -L../`hw_os` \
 .C.o:
 	$(CC) $(CFLAGS) -c $*.C
 
-all:  sound_server vrpn_server
+all:  vrpn_server sound_server 
 
 # player: vrpn_player.o
-# 	g++ $(LFLAGS) -o player vrpn_player.o -lvrpnserver -lsdi -lm
+# 	$(CC) $(LFLAGS) -o player vrpn_player.o -lvrpnserver -lsdi -lm
 
 vrpn_server: vrpn.o  
-	g++ $(LFLAGS) -o vrpn_server vrpn.o -lvrpnserver -lsdi -lm
+	$(CC) $(LFLAGS) -o vrpn_server vrpn.o -lvrpnserver -lsdi -lm
 
 #client: client.C
 #	$(CC) $(CFLAGS) $(LFLAGS) -o client client.C ../`hw_os`/libvrpn.a -lsdi -lm
 
 sound_server: sound_server.o ../`hw_os`/libvrpn.a
-	g++ $(LFLAGS) -o sound_server sound_server.o -lvrpnserver -lsdi -lm
+	$(CC) $(LFLAGS) -o sound_server sound_server.o -lvrpnserver -lsdi -lm
 
 
 
