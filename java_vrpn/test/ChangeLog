@@ -1,3 +1,7 @@
+2003-10-24  Oliver Otto <o.otto@reading.ac.uk>
+
+	* PrintCereals.java:  java version of the printcereals utility.
+
 2002-09-16  David Marshburn  <marshbur@cs.unc.edu>
 
 	* ButtonListenerTest.java, ButtonTest.java, ForceDeviceTest.java,
