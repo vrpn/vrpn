@@ -11,10 +11,10 @@
 // Base class for buttons.  Definition
 // of remote button class for the user is at the end.
 
-#define BUTTON_MOMENTARY 10
-#define BUTTON_TOGGLE_OFF    20
-#define BUTTON_TOGGLE_ON    21
-#define ALL_ID		-99
+#define vrpn_BUTTON_MOMENTARY	10
+#define vrpn_BUTTON_TOGGLE_OFF	20
+#define vrpn_BUTTON_TOGGLE_ON	21
+#define vrpn_ALL_ID		-99
 
 class vrpn_Button {
   public:

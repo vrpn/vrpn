@@ -61,7 +61,7 @@ vrpn_Button::vrpn_Button(char *name, vrpn_Connection *c): num_buttons(0)
    // Set the time to 0 just to have something there.
    timestamp.tv_usec = timestamp.tv_sec = 0;
    for (int i=0; i< vrpn_BUTTON_MAX_BUTTONS; i++) {
-	   buttonstate[i] = BUTTON_MOMENTARY;
+	   buttonstate[i] = vrpn_BUTTON_MOMENTARY;
 	   lastbuttons[i] = 0;
    }
   if (servicename)
@@ -73,7 +73,7 @@ void vrpn_Button::set_momentary(int which_button) {
     fprintf(stderr, "vrpn_Button::set_momentary() buttons id %d is greater then the number of buttons(%d)\n", which_button, num_buttons);
     return;
   }
-  buttonstate[which_button] = BUTTON_MOMENTARY;
+  buttonstate[which_button] = vrpn_BUTTON_MOMENTARY;
 }
 
 void vrpn_Button::set_toggle(int which_button, int current_state) {
@@ -81,25 +81,25 @@ void vrpn_Button::set_toggle(int which_button, int current_state) {
     fprintf(stderr, "vrpn_Button::set_toggle() buttons id %d is greater then the number of buttons(%d)\n", which_button, num_buttons);
     return;
   }
-  if (current_state==BUTTON_TOGGLE_ON) 
-    buttonstate[which_button] = BUTTON_TOGGLE_ON;
+  if (current_state==vrpn_BUTTON_TOGGLE_ON) 
+    buttonstate[which_button] = vrpn_BUTTON_TOGGLE_ON;
   else 
-    buttonstate[which_button] = BUTTON_TOGGLE_OFF;
+    buttonstate[which_button] = vrpn_BUTTON_TOGGLE_OFF;
     
 }
 
 void vrpn_Button::set_all_momentary(void) {
   for (int i=0; i< num_buttons; i++)
-    if (buttonstate[i] != BUTTON_MOMENTARY) {
-      buttonstate[i] = BUTTON_MOMENTARY;  
+    if (buttonstate[i] != vrpn_BUTTON_MOMENTARY) {
+      buttonstate[i] = vrpn_BUTTON_MOMENTARY;  
     }
 }
 
 void vrpn_Button::set_all_toggle(int default_state) {
   for (int i=0; i< num_buttons; i++)
-    if (buttonstate[i] == BUTTON_MOMENTARY) 
+    if (buttonstate[i] == vrpn_BUTTON_MOMENTARY) 
       buttonstate[i] = 
-	(default_state==BUTTON_TOGGLE_ON)? BUTTON_TOGGLE_ON: BUTTON_TOGGLE_OFF;
+	(default_state==vrpn_BUTTON_TOGGLE_ON)? vrpn_BUTTON_TOGGLE_ON: vrpn_BUTTON_TOGGLE_OFF;
 }
 
 void	vrpn_Button::print(void)
@@ -161,12 +161,12 @@ static int client_msg_handler(void *userdata, vrpn_HANDLERPARAM p) {
   int mode = ntohl(bp[0]);
   int buttonid = ntohl(bp[1]);
 
-  if (mode == BUTTON_MOMENTARY) {
-    if (buttonid == ALL_ID)
+  if (mode == vrpn_BUTTON_MOMENTARY) {
+    if (buttonid == vrpn_ALL_ID)
       instance->set_all_momentary();
     else instance->set_momentary(buttonid);
-  }else if (mode == BUTTON_TOGGLE_OFF || mode ==BUTTON_TOGGLE_ON ){
-    if (buttonid == ALL_ID)
+  }else if (mode == vrpn_BUTTON_TOGGLE_OFF || mode ==vrpn_BUTTON_TOGGLE_ON ){
+    if (buttonid == vrpn_ALL_ID)
       instance->set_all_toggle(mode);
     else instance->set_toggle(buttonid,mode);
   } 
@@ -180,19 +180,19 @@ void	vrpn_Button::report_changes(void)
    if (connection) {
       for (i = 0; i < num_buttons; i++) {
 	switch (buttonstate[i]) {
-	case BUTTON_MOMENTARY:
+	case vrpn_BUTTON_MOMENTARY:
 		if (buttons[i] != lastbuttons[i])
 	      PACK_MESSAGE(i, buttons[i]);
 	  break;
-	case BUTTON_TOGGLE_ON:
+	case vrpn_BUTTON_TOGGLE_ON:
 	  if (buttons[i] && !lastbuttons[i]) {
-	    buttonstate[i] = BUTTON_TOGGLE_OFF;
+	    buttonstate[i] = vrpn_BUTTON_TOGGLE_OFF;
 	    PACK_MESSAGE(i, 0);
 	  }
 	  break;
-	case BUTTON_TOGGLE_OFF:
+	case vrpn_BUTTON_TOGGLE_OFF:
 	  if (buttons[i] && !lastbuttons[i]) {
-	    buttonstate[i] = BUTTON_TOGGLE_ON;
+	    buttonstate[i] = vrpn_BUTTON_TOGGLE_ON;
 	    PACK_MESSAGE(i, 1);
 	  }
 	  break;
