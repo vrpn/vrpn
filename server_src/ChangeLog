@@ -1,3 +1,9 @@
+2003-12-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Cleaned up code so that the Liberty tracker server
+		compiles on several architectures.  Removed code that
+		caused compiler warnings.
+
 2003-12-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.C : Adds driver submitted by Daniel Myall

@@ -1284,15 +1284,11 @@ int setup_Tracker_Liberty (char * & pch, char * line, FILE * config_file) {
 
   char s2 [LINESIZE], s3 [LINESIZE];
   int i1;
-  int numparms;
-  vrpn_Tracker_Liberty	*mytracker;
-  int do_is900_timing = 0;
-
 
         char    rcmd[5000];     // Reset command to send to Liberty
         next();
         // Get the arguments (class, tracker_name, port, baud)
-        if ( (numparms = sscanf(pch,"%511s%511s%d%511s",s2,s3,&i1) < 3)) {
+        if ( sscanf(pch,"%511s%511s%d",s2,s3,&i1) < 3) {
           fprintf(stderr,"Bad vrpn_Tracker_Liberty line: %s\n%s %s\n",
                   line, pch, s3);
           return -1;
@@ -1348,20 +1344,15 @@ int setup_Tracker_Liberty (char * & pch, char * line, FILE * config_file) {
             "Opening vrpn_Tracker_Liberty: %s on port %s, baud %d\n",
             s2,s3,i1);
 
-#if defined(sgi) || defined(linux) || defined(WIN32)
-
-        if ( (trackers[num_trackers] = mytracker =
+        if ( (trackers[num_trackers] = 
              new vrpn_Tracker_Liberty(s2, connection, s3, i1, 0, 8, rcmd))
-                            == NULL){
-
-#endif
+                            == NULL) {
 
           fprintf(stderr,"Can't create new vrpn_Tracker_Liberty\n");
           return -1;
         }
 
 	num_trackers++;
-
 
   return 0;
 }
