@@ -1000,11 +1000,11 @@ int setup_ImmersionBox (char * & pch, char * line, FILE * config_file) {
 int setup_5dt (char * & pch, char * line, FILE * config_file)
 {
   char name [LINESIZE], device [LINESIZE];
-  int baud_rate, mode;
+  int baud_rate, mode, tenbytes;
 
   next();
   // Get the arguments (class, 5DT_name, port, baud
-  if (sscanf(pch,"%511s%511s%d%d",name,device, &baud_rate, &mode) != 4)
+  if (sscanf(pch,"%511s%511s%d%d%d",name,device, &baud_rate, &mode, &tenbytes) != 5)
     {
       fprintf(stderr,"Bad vrpn_5dt line: %s\n",line);
       return -1;
@@ -1021,7 +1021,7 @@ int setup_5dt (char * & pch, char * line, FILE * config_file)
 	   name,device,baud_rate);
   }
   if ((analogs[num_analogs] =
-       new vrpn_5dt (name, connection, device, baud_rate, mode)) == NULL) {
+       new vrpn_5dt (name, connection, device, baud_rate, mode, tenbytes != 0)) == NULL) {
       fprintf(stderr,"Can't create new vrpn_5dt\n");
       return -1;
   } else {

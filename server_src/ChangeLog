@@ -1,5 +1,11 @@
 2003-12-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn.C : Added optional parameter to specify 9 or 10 bytes.
+	* vrpn.cfg : Same.
+	* vrpn.cfg.SAMPLE : Same.
+
+2003-12-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn.C : Cleaned up code so that the Liberty tracker server
 		compiles on several architectures.  Removed code that
 		caused compiler warnings.
