@@ -42,6 +42,20 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 	       1000000L * (t1.tv_sec - t2.tv_sec);
 }
 
+vrpn_Tracker_Fastrak::vrpn_Tracker_Fastrak(char *name, vrpn_Connection *c, 
+		      char *port, long baud, int enable_filtering, int numstations,
+		      const char *additional_reset_commands) :
+    vrpn_Tracker_Serial(name,c,port,baud),
+    do_filter(enable_filtering),
+    num_stations(numstations)
+{
+	reset_time.tv_sec = reset_time.tv_usec = 0;
+	if (additional_reset_commands == NULL) {
+		sprintf(add_reset_cmd, "");
+	} else {
+		strncpy(add_reset_cmd, additional_reset_commands, 1023);
+	}
+}
 
 //   This routine will reset the tracker and set it to generate the types
 // of reports we want. It relies on the power-on configuration to set the
@@ -95,7 +109,10 @@ void vrpn_Tracker_Fastrak::reset()
 	}
    }
    //XXX Take out the sleep and make it keep spinning quickly
-   sleep(10);	// Sleep to let the reset happen
+   // You only need to sleep 10 seconds for an actual Fastrak.
+   // For the Intersense trackers, you need to sleep 20. So,
+   // sleeping 20 is the more general solution...
+   sleep(20);	// Sleep to let the reset happen
    fprintf(stderr,"\n");
 
    // Get rid of the characters left over from before the reset
@@ -199,6 +216,17 @@ void vrpn_Tracker_Fastrak::reset()
 	status = TRACKER_FAIL;
 	return;
      }
+   }
+
+   // Send the additional reset commands, if any, to the tracker.
+   // Wait a while for them to take effect, then clear the input
+   // buffer.
+   if (strlen(add_reset_cmd) > 0) {
+	printf(" Fastrak writing extended reset command...\n");
+	vrpn_write_characters(serial_fd,
+		(const unsigned char *)add_reset_cmd,strlen(add_reset_cmd));
+	sleep(2);
+	vrpn_flush_input_buffer(serial_fd);
    }
    
    // Set data format to BINARY mode

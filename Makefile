@@ -164,7 +164,7 @@ ifeq ($(HW_OS),pc_cygwin)
   INCLUDE_FLAGS := -I. -I../quat
 else
 
-  INCLUDE_FLAGS := -I. $(SYS_INCLUDE) -I$(BETA_INCLUDE_DIR) -I$(HMD_INCLUDE_DIR)
+  INCLUDE_FLAGS := -I. $(SYS_INCLUDE) -I$(BETA_INCLUDE_DIR) -I$(HMD_INCLUDE_DIR) -I../quat
 
 endif
 ##########################
@@ -290,7 +290,7 @@ LIB_FILES =  vrpn_Connection.C vrpn_Tracker.C vrpn_Button.C \
 	     vrpn_Sound.C vrpn_ForceDevice.C vrpn_Clock.C vrpn_Shared.C \
 	     vrpn_Ohmmeter.C vrpn_Analog.C vrpn_FileConnection.C \
              vrpn_FileController.C vrpn_Forwarder.C vrpn_Text.C \
-             vrpn_ForwarderController.C vrpn_Serial.C
+             vrpn_ForwarderController.C vrpn_Serial.C vrpn_Dial.C
 
 LIB_OBJECTS = $(patsubst %,$(OBJECT_DIR)/%,$(LIB_FILES:.C=.o))
 
@@ -298,7 +298,7 @@ LIB_INCLUDES = vrpn_Connection.h vrpn_Tracker.h vrpn_Button.h \
 	       vrpn_Sound.h vrpn_ForceDevice.h vrpn_Clock.h vrpn_Shared.h \
 	       vrpn_Ohmmeter.h vrpn_Analog.h vrpn_FileConnection.h \
                vrpn_FileController.h vrpn_Forwarder.h vrpn_Text.h \
-               vrpn_ForwarderController.h vrpn_Serial.h
+               vrpn_ForwarderController.h vrpn_Serial.h vrpn_Dial.h
 
 # Additional files to be compiled into the server library
 
@@ -309,14 +309,16 @@ LIB_INCLUDES = vrpn_Connection.h vrpn_Tracker.h vrpn_Button.h \
 SLIB_FILES =  $(LIB_FILES) vrpn_3Space.C \
 	     vrpn_Flock.C vrpn_Tracker_Fastrak.C vrpn_Dyna.C \
 	     vrpn_Flock_Parallel.C  vrpn_Joystick.C \
-	     vrpn_JoyFly.C vrpn_sgibox.C vrpn_raw_sgibox.C
+	     vrpn_JoyFly.C vrpn_sgibox.C vrpn_raw_sgibox.C \
+             vrpn_CerealBox.C
 
 SLIB_OBJECTS = $(patsubst %,$(SOBJECT_DIR)/%,$(SLIB_FILES:.C=.o))
 
 SLIB_INCLUDES = $(LIB_INCLUDES) vrpn_3Space.h \
 	       vrpn_Flock.h vrpn_Tracker_Fastrak.h vrpn_Dyna.h \
 	       vrpn_Flock_Parallel.h vrpn_Joystick.h \
-	       vrpn_JoyFly.h vrpn_sgibox.h vrpn_raw_sgibox.h
+	       vrpn_JoyFly.h vrpn_sgibox.h vrpn_raw_sgibox.h \
+               vrpn_CerealBox.h
 
 
 $(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(OBJECT_DIR) $(LIB_OBJECTS) \

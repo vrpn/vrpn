@@ -207,6 +207,14 @@ SOURCE=.\vrpn_Button.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_CerealBox.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_CerealBox.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_Clock.C
 # End Source File
 # Begin Source File
@@ -220,6 +228,14 @@ SOURCE=.\vrpn_Connection.C
 # Begin Source File
 
 SOURCE=.\vrpn_Connection.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Dial.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Dial.h
 # End Source File
 # Begin Source File
 

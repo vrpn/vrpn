@@ -5,11 +5,10 @@
 #include <unistd.h>
 #endif
 
+#include "vrpn_Serial.h"
 #include "vrpn_cygwin_hack.h"
 
 //#define VERBOSE
-
-extern int vrpn_open_commport(char *portname, long baud);
 
 vrpn_Analog::vrpn_Analog (const char * name, vrpn_Connection * c) {
   // If the connection is valid, use it to register this button by
@@ -83,7 +82,7 @@ void vrpn_Analog::report_changes (void) {
   }
       
   // there is indeed some change, send it;
-  report();
+  vrpn_Analog::report();
 }
 
 void vrpn_Analog::report (void) {
@@ -107,10 +106,10 @@ void vrpn_Analog::report (void) {
 }
 
 #ifndef VRPN_CLIENT_ONLY
-#ifndef	_WIN32
 vrpn_Serial_Analog::vrpn_Serial_Analog (const char * name, vrpn_Connection * c,
 				        const char * port, int baud) :
-         vrpn_Analog(name, c) {
+         vrpn_Analog(name, c)
+{
    // Find out the port name and baud rate;
    if (port == NULL) {
 	fprintf(stderr,"vrpn_Analog_Serial: NULL port name\n");
@@ -132,7 +131,6 @@ vrpn_Serial_Analog::vrpn_Serial_Analog (const char * name, vrpn_Connection * c,
    status = ANALOG_RESETTING;
    gettimeofday(&timestamp, NULL);
 }
-#endif  // _WIN32
 #endif  // VRPN_CLIENT_ONLY
 
 

@@ -396,6 +396,7 @@ int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes,
 		ret = vrpn_read_available_characters(comm, where, bytes-sofar);
 		if (ret == -1) { return -1; }
 		sofar += ret;
+		if (sofar == bytes) { break; }
 		where += ret;
 		gettimeofday(&now, NULL);
 	} while ( (timeout != NULL) && !(time_greater(now,finish)) );

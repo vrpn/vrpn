@@ -29,6 +29,7 @@
 #include "vrpn_Analog.h"
 #include "vrpn_Joystick.h"
 #include "vrpn_JoyFly.h"
+#include "vrpn_CerealBox.h"
 
 #include "vrpn_ForwarderController.h"
 
@@ -37,16 +38,18 @@
 #define MAX_SOUNDS 2
 #define MAX_ANALOG 4
 #define	MAX_SGIBOX 2
+#define	MAX_CEREALS 8
 
 void Usage (const char * s)
 {
   fprintf(stderr,"Usage: %s [-f filename] [-warn] [-v] [port] [-q]\n",s);
-  fprintf(stderr,"       [-client machinename port]\n");
+  fprintf(stderr,"       [-client machinename port] [-millisleep n]\n");
   fprintf(stderr,"       -f: Full path to config file (default vrpn.cfg)\n");
   fprintf(stderr,"       -warn: Only warn on errors (default is to bail)\n");
   fprintf(stderr,"       -v: Verbose\n");
   fprintf(stderr,"	 -q: quit when last connection is dropped\n");
   fprintf(stderr,"       -client: where server connects when it starts up\n");
+  fprintf(stderr,"       -millisleep: sleep n milliseconds each loop cycle\n");
   exit(-1);
 }
 
@@ -60,6 +63,8 @@ vrpn_Analog	*analogs[MAX_ANALOG];
 int		num_analogs = 0;
 vrpn_raw_SGIBox	*sgiboxes[MAX_SGIBOX];
 int		num_sgiboxes = 0;
+vrpn_CerealBox	*cereals[MAX_CEREALS];
+int		num_cereals = 0;
 
 vrpn_Connection * connection;
 
@@ -131,6 +136,7 @@ main (int argc, char * argv[])
 	int	i;
 	int 	loop = 0;
 	int	port = vrpn_DEFAULT_LISTEN_PORT_NO;
+	int	milli_sleep_time = 0;		// How long to sleep each iteration?
 #ifdef WIN32
 	WSADATA wsaData; 
 	int status;
@@ -158,6 +164,9 @@ main (int argc, char * argv[])
 	  if (!strcmp(argv[i], "-f")) {		// Specify config-file name
 		if (++i > argc) { Usage(argv[0]); }
 		config_file_name = argv[i];
+	  } else if (!strcmp(argv[i], "-millisleep")) {	// How long to sleep each loop?
+		if (++i > argc) { Usage(argv[0]); }
+		milli_sleep_time = atoi(argv[i]);
 	  } else if (!strcmp(argv[i], "-warn")) {// Don't bail on errors
 		bail_on_error = 0;
 	  } else if (!strcmp(argv[i], "-v")) {	// Verbose
@@ -204,8 +213,8 @@ main (int argc, char * argv[])
       {	char	line[512];	// Line read from the input file
         char *pch;
 	char    scrap[512];
-	char	s1[512],s2[512],s3[512], s4[512]; // String parameters
-	int	i1, i2;				// Integer parameters
+	char	s1[512],s2[512],s3[512],s4[512]; // String parameters
+	int	i1, i2, i3, i4;			// Integer parameters
 	float	f1;				// Float parameters
 
 	// Read lines from the file until we run out
@@ -291,14 +300,7 @@ main (int argc, char * argv[])
 	    }
 
 #ifdef SGI_BDBOX
-	    // Make sure there's room for a new tracker
-		if (num_trackers >= MAX_TRACKERS) {
-		  fprintf(stderr,"Too many trackers in config file");
-		  if (bail_on_error) { return -1; }
-		  else { continue; }	// Skip this line
-		}
-
-		// Open the tracker
+		// Open the sgibox
 	      if (verbose) printf("Opening vrpn_SGIBOX on host %s\n", s2);
 		if ( (vrpn_special_sgibox =
 		  new vrpn_SGIBox(s2, connection)) == NULL){
@@ -400,6 +402,35 @@ main (int argc, char * argv[])
 		num_analogs++;
 	    }
 #endif
+	  } else if (isit("vrpn_CerealBox")) {
+	    next();
+	    // Get the arguments (class, serialbox_name, port, baud, numdig, numana, numenc)
+	    if (sscanf(pch,"%511s%511s%d%d%d%d",s2,s3, &i1, &i2, &i3, &i4) != 6) {
+	      fprintf(stderr,"Bad vrpn_Cereal line: %s\n",line);
+	      if (bail_on_error) { return -1; }
+	      else { continue; }	// Skip this line
+	    }
+
+	    // Make sure there's room for a new box
+	    if (num_cereals >= MAX_CEREALS) {
+	      fprintf(stderr,"Too many Cereal boxes in config file");
+	      if (bail_on_error) { return -1; }
+	      else { continue; }	// Skip this line
+	    }
+
+	    // Open the box
+	    if (verbose) 
+	      printf("Opening vrpn_Cereal: %s on port %s, baud %d, %d dig, %d ana, %d enc\n",
+		    s2,s3,i1, i2,i3,i4);
+	    if ((cereals[num_cereals] =
+		  new vrpn_CerealBox(s2, connection, s3, i1, i2, i3, i4)) == NULL)               
+	      {
+		fprintf(stderr,"Can't create new vrpn_CerealBox\n");
+		if (bail_on_error) { return -1; }
+		else { continue; }	// Skip this line
+	      } else {
+		num_cereals++;
+	      }
 	  } else if (isit("vrpn_Tracker_Dyna")) {
 	    next();
 	    // Get the arguments (class, tracker_name, sensors,port, baud)
@@ -430,9 +461,10 @@ main (int argc, char * argv[])
 	      } else {
 		num_trackers++;
 	      }
-	  }else if (isit("vrpn_Tracker_Fastrak")) {
-	    next();
-	    // Get the arguments (class, tracker_name, port, baud)
+	  } else if (isit("vrpn_Tracker_Fastrak")) {
+		char	rcmd[5000];	// Reset command to send to Fastrak
+		next();
+		// Get the arguments (class, tracker_name, port, baud)
 		if (sscanf(pch,"%511s%511s%d",s2,s3,&i1) != 3) {
 		  fprintf(stderr,"Bad vrpn_Tracker_Fastrak line: %s\n%s %s\n",line, pch, s3);
 		  if (bail_on_error) { return -1; }
@@ -446,15 +478,47 @@ main (int argc, char * argv[])
 		  else { continue; }	// Skip this line
 		}
 
+		// If the last character in the line is a backslash, '\', then
+		// the following line is an additional command too send to the
+		// Fastrak a reset time. So long as we find lines with slashes
+		// at the ends, we add them to the command string to send. Note
+		// that there is a newline at the end of the line, following the
+		// backslash.
+		sprintf(rcmd, "");
+		while (line[strlen(line)-2] == '\\') {
+			// Read the next line
+			if (fgets(line, sizeof(line), config_file) == NULL) {
+				fprintf(stderr,"Ran past end of config file in Fastrak\n");
+				if (bail_on_error) { return -1; } else {continue;}
+			}
+
+			// Copy the line into the remote command, then replace \ with \015 if present
+			// In any case, make sure we terminate with \015.
+			strncat(rcmd, line, sizeof(line));
+			if (rcmd[strlen(rcmd)-2] == '\\') {
+				rcmd[strlen(rcmd)-2] = '\015';
+				rcmd[strlen(rcmd)-1] = '\0';
+			} else if (rcmd[strlen(rcmd)-1] == '\n') {
+				rcmd[strlen(rcmd)-1] = '\015';
+			} else {	// Add one, we reached the EOF before CR
+				rcmd[strlen(rcmd)+1] = '\0';
+				rcmd[strlen(rcmd)] = '\015';
+			}
+		}
+		if (strlen(rcmd) > 0) {
+			printf("... additional reset commands follow:\n");
+			printf("%s\n",rcmd);
+		}
+
 		// Open the tracker
 		if (verbose) printf(
 		    "Opening vrpn_Tracker_Fastrak: %s on port %s, baud %d\n",
 		    s2,s3,i1);
 
-#if defined(sgi) || defined(linux)
+#if defined(sgi) || defined(linux) || defined(WIN32)
 
 		if ( (trackers[num_trackers] =
-		     new vrpn_Tracker_Fastrak(s2, connection, s3, i1)) == NULL){
+		     new vrpn_Tracker_Fastrak(s2, connection, s3, i1, 1, 4, rcmd)) == NULL){
 
 #endif
 
@@ -462,7 +526,7 @@ main (int argc, char * argv[])
 		  if (bail_on_error) { return -1; }
 		  else { continue; }	// Skip this line
 
-#if defined(sgi) || defined(linux)
+#if defined(sgi) || defined(linux) || defined(WIN32)
 
 		} else {
 		  num_trackers++;
@@ -701,6 +765,11 @@ main (int argc, char * argv[])
 			analogs[i]->mainloop();
 		}
 
+		// Let all the cereal boxes do their thing
+		for (i=0; i< num_cereals; i++) {
+			cereals[i]->mainloop();
+		}
+
 		// Let all of the SGI button/knob boxes do their thing
 		for (i=0; i < num_sgiboxes; i++) {
 			sgiboxes[i]->mainloop();
@@ -717,8 +786,12 @@ main (int argc, char * argv[])
 		// Handle forwarding requests;  send messages
 		// on auxiliary connections
 		forwarderServer->mainloop();
+
+		// Sleep so we don't eat the CPU
+		if (milli_sleep_time > 0) {
+			vrpn_SleepMsecs(milli_sleep_time);
+		}
 	}
 
 	return 0;
 }
-

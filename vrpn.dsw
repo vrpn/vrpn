@@ -36,6 +36,18 @@ Package=<4>
 
 ###############################################################################
 
+Project: "printcereal"=.\CLIENT_SRC\PC_WIN32\printcereal\printcereal.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "printvals"=.\client_src\pc_win32\printvals\printvals.dsp - Package Owner=<4>
 
 Package=<5>

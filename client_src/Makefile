@@ -51,14 +51,14 @@ $(OBJ_DIR)/%.o: %.c
 $(OBJ_DIR)/%.o: %.C
 	$(CC) $(CFLAGS) -o $@ -c $<
 
-all:	$(OBJ_DIR)/sound_client $(OBJ_DIR)/printvals \
+all:	$(OBJ_DIR)/printvals \
 	$(OBJ_DIR)/checklogfile $(OBJ_DIR)/logfilesenders \
 	$(OBJ_DIR)/logfiletypes $(OBJ_DIR)/text \
 	forwarderClient $(OBJ_DIR)/bdbox_client \
 	$(OBJ_DIR)/ff_client \
 	$(OBJ_DIR)/ohm_client $(OBJ_DIR)/phan_client \
 	$(OBJ_DIR)/sphere_client $(OBJ_DIR)/bdbox_client \
-	$(OBJ_DIR)/midi_client add_vrpn_cookie
+	$(OBJ_DIR)/midi_client add_vrpn_cookie $(OBJ_DIR)/sound_client
 
 .PHONY:	forwarderClient
 forwarderClient:	$(OBJ_DIR)/forwarderClient

@@ -31,15 +31,16 @@ class vrpn_Tracker_Fastrak: public vrpn_Tracker_Serial {
   // filtering is enabled (default yes), and the number of stations
   // that are possible on this Fastrak (default 4). The station select
   // switches on the front of the Fastrak determine which stations are
-  // active.
+  // active. The final parameter is a string that can contain additional
+  // commands that are set to the tracker as part of its reset routine.
+  // These might be used to set the hemisphere or other things that are
+  // not normally included; see the Fastrak manual for a list of these.
+  // There can be multiple lines of them but putting <CR> into the string.
 
   vrpn_Tracker_Fastrak(char *name, vrpn_Connection *c, 
 		      char *port = "/dev/ttyS1", long baud = 19200,
-		      int enable_filtering = 1, int numstations = 4) :
-    vrpn_Tracker_Serial(name,c,port,baud),
-    do_filter(enable_filtering),
-    num_stations(numstations)
-    { reset_time.tv_sec = reset_time.tv_usec = 0;};
+		      int enable_filtering = 1, int numstations = 4,
+		      const char *additional_reset_commands = NULL);
 
   // This function should be called each time through the main loop
   // of the server code. It polls for a report from the tracker and
@@ -63,6 +64,7 @@ class vrpn_Tracker_Fastrak: public vrpn_Tracker_Serial {
   struct timeval reset_time;
   int	do_filter;	// Should we turn on filtering for pos/orient?
   int	num_stations;	// How many stations maximum on this Fastrak?
+  char	add_reset_cmd[1024];	// Additional reset commands to be sent
 
 };
 

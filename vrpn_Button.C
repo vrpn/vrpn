@@ -52,7 +52,7 @@ static int client_msg_handler(void *userdata, vrpn_HANDLERPARAM p);
   vrpn_int32	len = encode_to(msgbuf,i, event); \
   if (connection->pack_message(len, timestamp, \
 			       admin_message_id, my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {\
-      		fprintf(stderr,"Tracker: can't write message: tossing\n");\
+      		fprintf(stderr,"vrpn_Button: can't write message: tossing\n");\
       	}\
         }
 #define PACK_ALERT_MESSAGE(i,event) { \
@@ -60,7 +60,7 @@ static int client_msg_handler(void *userdata, vrpn_HANDLERPARAM p);
   vrpn_int32	len = encode_to(msgbuf,i, event); \
   if (connection->pack_message(len, timestamp, \
 			       alert_message_id, my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {\
-      		fprintf(stderr,"Tracker: can't write message: tossing\n");\
+      		fprintf(stderr,"vrpn_Button: can't write message: tossing\n");\
       	}\
         }
 
@@ -69,7 +69,7 @@ static int client_msg_handler(void *userdata, vrpn_HANDLERPARAM p);
   vrpn_int32	len = encode_to(msgbuf,i, event); \
   if (connection->pack_message(len, timestamp, \
 			       change_message_id, my_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {\
-      		fprintf(stderr,"Tracker: can't write message: tossing\n");\
+      		fprintf(stderr,"vrpn_Button: can't write message: tossing\n");\
       	}\
         }
 
