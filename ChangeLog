@@ -1,3 +1,16 @@
+2003-12-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Serial.h : Added calls to raise and lower RTS line.
+		Should work on Windows.  Not sure it will work on Linux/Unix.
+		Not tested on any.
+
+	* vrpn_Serial.C : Same.
+
+	* vrpn_Flock.C : Changed to use the new RTS raise/lower calls
+		in vrpn_Serial.C to reset the tracker.  This should enable
+		Flocks to work even with serial connectors that have all
+		the wires connected.
+
 2003-12-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Clock.C : Plugging memory leaks.

@@ -33,6 +33,13 @@ typedef enum {vrpn_SER_PARITY_NONE, vrpn_SER_PARITY_ODD, vrpn_SER_PARITY_EVEN,
 // -1 on failure.
 extern int vrpn_open_commport(char *portname, long baud, int charsize = 8, vrpn_SER_PARITY parity = vrpn_SER_PARITY_NONE);
 
+// Set and clear functions for the RTS ("ready to send") hardware flow-
+// control bit.  These are used on a port that is already open.  Some
+// devices (like the Ascension Flock of Birds) use this to reset the
+// device.  Return 0 on success, nonzero on error.
+extern int vrpn_set_rts(int comm);
+extern int vrpn_clear_rts(int comm);
+
 extern int vrpn_close_commport(int comm);
 // Throw out any characters within the input buffer.
 //  Return 0 on success, -1 on error.

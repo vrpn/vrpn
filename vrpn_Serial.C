@@ -75,7 +75,7 @@ int vrpn_open_commport(char *portname, long baud, int charsize, vrpn_SER_PARITY 
 {
 #if defined(hpux) || defined(__hpux) || defined(ultrix) || defined(FreeBSD) || defined(__CYGWIN__) || defined(__APPLE__)
 	fprintf(stderr,
-		"vrpn_open_commport: Not implemented in ultrix, HP, or Cygwin\n");
+		"vrpn_open_commport(): Not yet implemented in this operating system\n");
 	return -1;
 #else
 
@@ -298,6 +298,7 @@ int vrpn_open_commport(char *portname, long baud, int charsize, vrpn_SER_PARITY 
   }
   
   return(fileDescriptor);
+  // -- This section is "Not win32"
 #endif  // _WIN32
 
 #endif // !defined(...lots of stuff...)
@@ -317,6 +318,86 @@ int vrpn_close_commport(int comm)
 	return ret;
 #else
 	return close(comm);
+#endif
+}
+
+// Set the RTS ("ready to send") bit on an open commport.
+int vrpn_set_rts(int comm)
+{
+#if defined(_WIN32)
+  // Determine the handle for this serial port by looking it
+  // up in our list.  Then make the system call that Kyle from
+  // Ascension told us about.  Return 0 on success; the Windows
+  // function returns nonzero on success
+  return EscapeCommFunction(commConnections[comm],SETRTS) != 0;
+
+#else
+  //XXX The man pages for Linux/Irix state that this will
+  // enable RTS/CTS flow control, which is not the same thing
+  // as setting the RTS line.  I don't see how to set the RTS
+  // line any other way, so I hope this works.
+  struct termio   sttyArgs;
+
+  /* get current settings */
+  if ( ioctl(comm, TCGETA , &sttyArgs) == -1 ) {
+    perror("vrpn_set_rts: read ioctl failed");
+    return(-1);
+  }
+
+  /* set rtscts bit */
+#ifdef sgi
+  sttyArgs.c_cflag |= CNEW_RTSCTS;
+#else
+  sttyArgs.c_cflag |= CRTSCTS;
+#endif
+
+  /* pass the new settings back to the driver */
+  if ( ioctl(comm, TCSETA, &sttyArgs) == -1 ) {
+    perror("vrpn_set_rts: write ioctl failed");
+    return(-1);
+  }
+
+  return 0;
+#endif
+}
+
+// Clear the RTS ("ready to send") bit on an open commport.
+int vrpn_clear_rts(int comm)
+{
+#if defined(_WIN32)
+  // Determine the handle for this serial port by looking it
+  // up in our list.  Then make the system call that Kyle from
+  // Ascension told us about.  Return 0 on success; the Windows
+  // function returns nonzero on success
+  return EscapeCommFunction(commConnections[comm],CLRRTS) != 0;
+
+#else
+  //XXX The man pages for Linux/Irix state that this will
+  // disable RTS/CTS flow control, which is not the same thing
+  // as clearing the RTS line.  I don't see how to clear the RTS
+  // line any other way, so I hope this works.
+  struct termio   sttyArgs;
+
+  /* get current settings */
+  if ( ioctl(comm, TCGETA , &sttyArgs) == -1 ) {
+    perror("vrpn_clear_rts: read ioctl failed");
+    return(-1);
+  }
+
+  /* set rtscts bit */
+#ifdef sgi
+  sttyArgs.c_cflag &= ~CNEW_RTSCTS;
+#else
+  sttyArgs.c_cflag &= ~CRTSCTS;
+#endif
+
+  /* pass the new settings back to the driver */
+  if ( ioctl(comm, TCSETA, &sttyArgs) == -1 ) {
+    perror("vrpn_clear_rts: write ioctl failed");
+    return(-1);
+  }
+
+  return 0;
 #endif
 }
 

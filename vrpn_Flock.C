@@ -311,6 +311,18 @@ void vrpn_Tracker_Flock::reset()
    int resetLen;
    unsigned char reset[6*(MAX_SENSORS+1)+10];
 
+   // If the RTS/CTS pins are in the cable that connects the Flock
+   // to the computer, we need to raise and drop the RTS/CTS line
+   // to make the communications on the Flock reset.  We need to give
+   // it time to reset.  If these wires are not installed (ie, if only
+   // send, receive and ground are connected) then we don't need this.
+   // To be more general, we put it in.  The following code snippet
+   // comes from Kyle at Ascension.
+   vrpn_set_rts( serial_fd );
+   vrpn_SleepMsecs(1000);
+   vrpn_clear_rts( serial_fd );
+   vrpn_SleepMsecs(5000);
+
    // set vars for error handling
    // set them right away so they are set properly in the
    // event that we fail during the reset.
