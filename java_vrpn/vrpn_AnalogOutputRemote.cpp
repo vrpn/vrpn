@@ -100,8 +100,8 @@ JNIEXPORT void JNICALL JNI_OnUnload_AnalogOutput_Remote( JavaVM* jvm, void* rese
 
 
 JNIEXPORT jboolean JNICALL 
-Java_vrpn_AnalogOutputRemote_requestValueChange__ID( JNIEnv* env, jobject jobj, 
-													 jint jchannel, jdouble jvalue )
+Java_vrpn_AnalogOutputRemote_requestValueChange_1native__ID( JNIEnv* env, jobject jobj, 
+															 jint jchannel, jdouble jvalue )
 {
   if( jchannel < 0 ) 
   {
@@ -130,8 +130,8 @@ Java_vrpn_AnalogOutputRemote_requestValueChange__ID( JNIEnv* env, jobject jobj,
 
 
 JNIEXPORT jboolean JNICALL 
-Java_vrpn_AnalogOutputRemote_requestValueChange___3D( JNIEnv* env, jobject jobj, 
-													  jdoubleArray jvalues )
+Java_vrpn_AnalogOutputRemote_requestValueChange_1native___3D( JNIEnv* env, jobject jobj, 
+															  jdoubleArray jvalues )
 {
   jclass jcls = env->GetObjectClass( jobj );
   jfieldID jfid = env->GetFieldID( jcls, "native_analog_output", "I" );
@@ -177,7 +177,6 @@ Java_vrpn_AnalogOutputRemote_requestValueChange___3D( JNIEnv* env, jobject jobj,
   bool retval = ao->request_change_channels( length, values );
   env->ReleaseDoubleArrayElements( jvalues, values, JNI_ABORT /*mode*/ );
   return retval;
-
 }
 
 

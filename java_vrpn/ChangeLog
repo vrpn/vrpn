@@ -1,3 +1,12 @@
+2003-01-15  David Marshburn  <marshbur@cs.unc.edu>
+
+	* AnalogOutputRemote.java:
+	(requestValueChange_native):  new, the native functions
+	(requestValueChange):  these are now java functions that aquire
+	the library-wide lock before calling the native functions.
+	* vrpn_AnalogOutputRemote.cpp:  renames the requestValueChange 
+	functions to match the new declarations, as above.
+
 2003-01-09  David Marshburn  <marshbur@cs.unc.edu>
 
 	* AnalogOutputRemote.java:  

@@ -45,8 +45,25 @@ public class AnalogOutputRemote extends VRPN implements Runnable
 
 	}
 	
-	public synchronized native boolean requestValueChange( int channel, double value );
-	public synchronized native boolean requestValueChange( double[] values );
+	public synchronized boolean requestValueChange( int channel, double value )
+	{
+		boolean retval = false;
+		synchronized( downInVrpnLock )
+		{
+			retval = this.requestValueChange_native( channel, value );
+		}
+		return retval;
+	}
+				
+	public synchronized boolean requestValueChange( double[] values )
+	{
+		boolean retval = false;
+		synchronized( downInVrpnLock )
+		{
+			retval = this.requestValueChange_native( values );
+		}
+		return retval;
+	}
 	
 	public synchronized native int getNumActiveChannels( );
 	public int getMaxActiveChannels( )
@@ -121,6 +138,8 @@ public class AnalogOutputRemote extends VRPN implements Runnable
 	protected native void shutdownAnalogOutput( );
 	
 	protected synchronized native void mainloop( );
+	protected synchronized native boolean requestValueChange_native( int channel, double value );
+	protected synchronized native boolean requestValueChange_native( double[] values );
 	
 	protected void finalize( ) throws Throwable
 	{
