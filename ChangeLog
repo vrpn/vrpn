@@ -1,3 +1,7 @@
+2000-01-07 Kwan Torrich Skinner  <skinner@cs.unc.edu>
+	* vrpn_MTd.dsp: added vrpn_RedundantTransmission to the project
+	file so topo will compile.
+
 2000-12-6  Tom Hudson  <hudson@cs.unc.edu>
 
 	* Makefile:  remove vrpn_DelayedConnection.C, vrpn_DelayedConnection.h

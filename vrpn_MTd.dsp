@@ -242,6 +242,10 @@ SOURCE=.\vrpn_raw_sgibox.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_RedundantTransmission.C
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_Serial.C
 # End Source File
 # Begin Source File
