@@ -21,15 +21,18 @@
  * Author          : Ruigang Yang
  * Created On      : Tue Feb 17 13:51:40 1998
  * Last Modified By: Ruigang Yang
- * Last Modified On: Mon Feb 23 15:57:14 1998
- * Update Count    : 32
+ * Last Modified On: Tue Feb 24 14:36:08 1998
+ * Update Count    : 36
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Dyna.C,v $
- * $Date: 1998/02/23 20:57:38 $
+ * $Date: 1998/02/24 19:36:43 $
  * $Author: ryang $
- * $Revision: 1.2 $
+ * $Revision: 1.3 $
  * 
  * $Log: vrpn_Dyna.C,v $
+ * Revision 1.3  1998/02/24 19:36:43  ryang
+ * beta test version of DynaSight
+ *
  * Revision 1.2  1998/02/23 20:57:38  ryang
  * bug fix
  *
@@ -41,7 +44,7 @@
  * HISTORY
  */
 
-static char rcsid[] = "$Id: vrpn_Dyna.C,v 1.2 1998/02/23 20:57:38 ryang Exp $";
+static char rcsid[] = "$Id: vrpn_Dyna.C,v 1.3 1998/02/24 19:36:43 ryang Exp $";
 
 #include <termios.h> // for tcdrain
 #include <unistd.h>
@@ -217,7 +220,7 @@ void vrpn_Tracker_Dyna::get_report(void) {
     return;
   }
   decode_record();
-  //fprintf(stderr,"(%f %f %f)   ", pos[0], pos[1],pos[2]);
+  //fprintf(stderr,"(%f %f %f)  \n ", pos[0], pos[1],pos[2]);
   status = TRACKER_REPORT_READY;
   bufcount=0;
 
@@ -353,14 +356,14 @@ void vrpn_Tracker_Dyna::mainloop()
       {
 
 	static int count = 0;
-	if (count++ % 100 ==0) {
+	/*if (count++ % 100 ==0) {
 	  fprintf(stderr, ".");
 	  if(count == 5000) {
 	    fprintf(stderr, "\nReport(%f, %f, %f)", pos[0], pos[1],pos[2]);
 		count = 0;
 	  }
 	}
-
+	*/
 
 	// Send the message on the connection
 	if (connection) {

@@ -10,9 +10,9 @@ LFLAGS = -L../`hw_os` \
 all:  sound_server vrpn_server
 
 # player: vrpn_player.o
-# 	g++ $(LFLAGS) -o player vrpn_player.o -lvrpn -lsdi -lm
+# 	g++ $(LFLAGS) -o player vrpn_player.o -lvrpnserver -lsdi -lm
 
-vrpn_server: vrpn.o  ../`hw_os`/libvrpn.a
+vrpn_server: vrpn.o  
 	g++ $(LFLAGS) -o vrpn_server vrpn.o -lvrpnserver -lsdi -lm
 
 #client: client.C
