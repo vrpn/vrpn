@@ -582,7 +582,7 @@ void vrpn_Tracker_Flock::mainloop()
 
 	  if (fFirst) {
 	    fprintf(stderr, "\nFlock: status will be printed every %d seconds",
-		    cSeconds);
+		    STATUS_MSG_SECS);
 	    fFirst = 0;
 	  }
 

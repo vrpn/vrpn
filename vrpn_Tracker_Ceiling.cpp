@@ -145,13 +145,10 @@ void vrpn_Tracker_Ceiling::writeLogfile(void)
 
 void vrpn_Tracker_Ceiling::mainloop(void)
 {
-  static double endtime = 0;
-  static double last = 0;
-  static double lasthzprint = RealTime::Now();
-
-  // just so it is not put on the stack each time
-  static double now;
-  static int i=0;
+  static double now =  RealTime::Now();
+  static double endtime = now + interval_time;
+  static double last = now;
+  static double lasthzprint = now;
 
   // This call did a spin wait, so the connection did not get serviced.
   // This destroyed the accuracy of the clock-synchronized connection.
@@ -164,8 +161,9 @@ void vrpn_Tracker_Ceiling::mainloop(void)
   last = now;
   now = RealTime::Now();
 
-  // exit if endtime is less than iteration time away
-  if (now >= endtime - (now-last)) {
+  // send report if endtime is less than half an iteration time away
+  // (1/2 iteration time so we avg report is on time -- 50% late, 50% early)
+  if (now >= (endtime - ((now-last)/2))) {
 
     // set up next target end time
     endtime = now + interval_time;
