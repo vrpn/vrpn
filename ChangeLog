@@ -1,10 +1,22 @@
 2001-06-01  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
-	vrpn_Connection.h (vrpn_Endpoint) : Adds d_tcp_only member, which tells
+	* vrpn_Analog_5dt.h : Driver for 5DT data glove (5 fingers, roll, pitch)
+	* vrpn_Analog_5dt.C : Same
+	* vrpn_Button.h : Added Bel Elgin's changes from 3rdTech to allow the
+		hex specification of the parallel port address as a 4th argument.
+	* vrpn_Button.C : Same plus ability to set an output bit on the port to
+		1 to driver power to an external button device.
+	* vrpn_Joylin.h : Driver for PC joysticks under Linux, written by Harald
+		Barth.
+	* vrpn_Joylin.C : Same
+
+2001-06-01  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.h (vrpn_Endpoint) : Adds d_tcp_only member, which tells
 		the endpoint not to try and communicate with its peer using any
 		other mechanism.
 
-	vrpn_Connection.C : Removed commented-out things left hanging around.
+	* vrpn_Connection.C : Removed commented-out things left hanging around.
 		(vrpn_Connection) : Made parsing of "tcp:" names more robust and
 			made it so that an endpoint created using the "tcp:" URL is
 			told not to communicate except via TCP.
@@ -70,46 +82,46 @@
 
 2001-03-25  Aron Helser  <helser@cs.unc.edu>
 
-	vrpn_Analog.C : Tweak of message types to make them more uniform
+	* vrpn_Analog.C : Tweak of message types to make them more uniform
 	an easy to automatically generate. Class name is first, followed
 	by space, followed by message type.
-	vrpn_BaseClass.C : same
-	vrpn_Button.C : same
-	vrpn_Clock.C : same
-	vrpn_Connection.C : same
-	vrpn_Dial.C : same
-	vrpn_FileConnection.C : same
-	vrpn_FileController.C : same
-	vrpn_ForceDevice.C : same
-	vrpn_ForwarderController.C : same
-	vrpn_Mutex.C : same
-	vrpn_RedundantTransmission.C : same
-	vrpn_Router.C : same
-	vrpn_SharedObject.C : same
-	vrpn_Sound.C : same
-	vrpn_Tracker.C : same
+	* vrpn_BaseClass.C : same
+	* vrpn_Button.C : same
+	* vrpn_Clock.C : same
+	* vrpn_Connection.C : same
+	* vrpn_Dial.C : same
+	* vrpn_FileConnection.C : same
+	* vrpn_FileController.C : same
+	* vrpn_ForceDevice.C : same
+	* vrpn_ForwarderController.C : same
+	* vrpn_Mutex.C : same
+	* vrpn_RedundantTransmission.C : same
+	* vrpn_Router.C : same
+	* vrpn_SharedObject.C : same
+	* vrpn_Sound.C : same
+	* vrpn_Tracker.C : same
 
 2001-03-25  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
-	vrpn_Analog.C : Removed spaces and other characters not available in
+	* vrpn_Analog.C : Removed spaces and other characters not available in
 		C variable names from the message type and sender descriptions
 		so that Aron's Perl script could be used to generate all of
 		these objects (or a program to print them).
-	vrpn_BaseClass.C : same
-	vrpn_Button.C : same
-	vrpn_Clock.C : same
-	vrpn_Connection.C : same
-	vrpn_Dial.C : same
-	vrpn_FileConnection.C : same
-	vrpn_FileController.C : same
-	vrpn_ForceDevice.C : same
-	vrpn_ForwarderController.C : same
-	vrpn_Mutex.C : same
-	vrpn_RedundantTransmission.C : same
-	vrpn_Router.C : same
-	vrpn_SharedObject.C : same
-	vrpn_Sound.C : same
-	vrpn_Tracker.C : same
+	* vrpn_BaseClass.C : same
+	* vrpn_Button.C : same
+	* vrpn_Clock.C : same
+	* vrpn_Connection.C : same
+	* vrpn_Dial.C : same
+	* vrpn_FileConnection.C : same
+	* vrpn_FileController.C : same
+	* vrpn_ForceDevice.C : same
+	* vrpn_ForwarderController.C : same
+	* vrpn_Mutex.C : same
+	* vrpn_RedundantTransmission.C : same
+	* vrpn_Router.C : same
+	* vrpn_SharedObject.C : same
+	* vrpn_Sound.C : same
+	* vrpn_Tracker.C : same
 
 2001-03-01  Aron Helser  <helser@cs.unc.edu>
 

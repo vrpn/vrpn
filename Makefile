@@ -386,8 +386,9 @@ SLIB_FILES =  $(LIB_FILES) vrpn_3Space.C \
 	     vrpn_Flock.C vrpn_Tracker_Fastrak.C vrpn_Dyna.C \
 	     vrpn_Flock_Parallel.C  vrpn_UNC_Joystick.C \
 	     vrpn_JoyFly.C vrpn_sgibox.C vrpn_CerealBox.C \
-             vrpn_Tracker_AnalogFly.C vrpn_raw_sgibox.C vrpn_Magellan.C \
-             vrpn_Analog_Radamec_SPI.C vrpn_ImmersionBox.C vrpn_Wanda.C
+           vrpn_Tracker_AnalogFly.C vrpn_raw_sgibox.C vrpn_Magellan.C \
+           vrpn_Analog_Radamec_SPI.C vrpn_ImmersionBox.C vrpn_Wanda.C \
+           vrpn_Analog_5dt.C vrpn_Joylin.C
 
 SLIB_OBJECTS = $(patsubst %,$(SOBJECT_DIR)/%,$(SLIB_FILES:.C=.o))
 
@@ -395,8 +396,9 @@ SLIB_INCLUDES = $(LIB_INCLUDES) vrpn_3Space.h \
 	       vrpn_Flock.h vrpn_Tracker_Fastrak.h vrpn_Dyna.h \
 	       vrpn_Flock_Parallel.h vrpn_UNC_Joystick.h \
 	       vrpn_JoyFly.h vrpn_sgibox.h vrpn_raw_sgibox.h \
-               vrpn_CerealBox.h vrpn_Tracker_AnalogFly.h vrpn_Magellan.h \
-               vrpn_Analog_Radamec_SPI.h vrpn_ImmersionBox.h vrpn_Wanda.h
+             vrpn_CerealBox.h vrpn_Tracker_AnalogFly.h vrpn_Magellan.h \
+             vrpn_Analog_Radamec_SPI.h vrpn_ImmersionBox.h vrpn_Wanda.h \
+             vrpn_Analog_5dt.h vrpn_Joylin.h
 
 
 #$(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(OBJECT_DIR) \

@@ -649,7 +649,7 @@ int vrpn_Mutex_Remote::handle_initialize (void * userdata,
 #else
   my_pid = getpid();
 #endif
-  if (ip_addr != getmyIP() || pid != my_pid) {
+  if ( (ip_addr != getmyIP()) || (pid != my_pid) ) {
     fprintf(stderr, "vrpn_Mutex_Remote::handle_initialize: "
        "Warning: Ignoring message that doesn't match ip/pid identifier\n");
     return 0;

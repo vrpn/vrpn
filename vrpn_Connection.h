@@ -518,10 +518,8 @@ class vrpn_Connection {
       ///< need exactly one copy per Connection, so it's on the Connection.
 
     // Only used for a vrpn_Connection that awaits incoming connections
-    int listen_udp_sock;	// Connect requests come here
-
-    // TCH OHS HACK
-    int listen_tcp_sock;
+    int listen_udp_sock;	// UDP Connect requests come here
+    int listen_tcp_sock;	// TCP Connection requests come here
 
     // Routines that handle system messages
     static int handle_UDP_message (void * userdata, vrpn_HANDLERPARAM p);

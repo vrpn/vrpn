@@ -421,9 +421,10 @@ void vrpn_Button_Example_Server::mainloop()
 }
 
 
+// changed to take raw port hex address
 vrpn_Button_Parallel::vrpn_Button_Parallel(const char *name,
 					   vrpn_Connection *c,
-					   int portno)
+					   int portno, unsigned porthex = 0)
 	: vrpn_Button_Filter(name, c)
 {      
 #ifdef linux
@@ -437,7 +438,7 @@ vrpn_Button_Parallel::vrpn_Button_Parallel(const char *name,
 		break;
 	default:
 	    fprintf(stderr, "vrpn_Button_Parallel: "
-			    "Bad port number (%d)\n",portno);
+			    "Bad port number (%x) for Linux lp#\n",portno);
 	    status = BUTTON_FAIL;
 	    portname = "UNKNOWN";
 	    break;
@@ -461,17 +462,22 @@ vrpn_Button_Parallel::vrpn_Button_Parallel(const char *name,
        status = BUTTON_FAIL;
        return;
     }
-    switch (portno) {
-	  // we use this mapping, although LPT? can actually
-	  // have different addresses.
-	case 1: port = 0x378; break;  // usually LPT1
-	case 2: port = 0x3bc; break;  // usually LPT2
-	case 3: port = 0x278; break;  // usually LPT3
-	default:
-	    fprintf(stderr,"vrpn_Button_Parallel: Bad port number (%d)\n",portno);
-	    status = BUTTON_FAIL;
-	    break;
+	if (porthex != 0)    // using direct hex port address
+			port = porthex;
+	else {               // using old style port 1, 2, or 3
+	    switch (portno) {
+			// we use this mapping, although LPT? can actually
+			// have different addresses.
+		case 1: port = 0x378; break;  // usually LPT1
+		case 2: port = 0x3bc; break;  // usually LPT2
+		case 3: port = 0x278; break;  // usually LPT3
+		default:
+			fprintf(stderr,"vrpn_Button_Parallel: Bad port number (%d)\n",portno);
+			status = BUTTON_FAIL;
+			break;
+		}
     }
+	fprintf(stderr,"vrpn_Button_Parallel: Using port %x\n",port);
 #else  // _WIN32      
     fprintf(stderr, "vrpn_Button_Parallel: not supported on this platform\n?");
     status = BUTTON_FAIL;
@@ -482,6 +488,13 @@ vrpn_Button_Parallel::vrpn_Button_Parallel(const char *name,
 #if defined(linux) || defined(_WIN32)
    // Set the INIT line on the device to provide power to the python
    // XXX apparently, we don't need to do this.
+	    //  update: don't need this for builtin LPT1 on DELLs, but do need it
+        //    for warp9 PCI parallel port. Added next lines.  BCE Nov07.00
+
+#ifdef _WIN32
+        static const int DATA_REGISTER_OFFSET = 0;
+        _outp(port + DATA_REGISTER_OFFSET, 1);
+#endif
 
      // Zero the button states
     num_buttons = 5;	//XXX This is specific to the python
@@ -494,10 +507,16 @@ vrpn_Button_Parallel::vrpn_Button_Parallel(const char *name,
 #endif
 }
 
-vrpn_Button_Python::vrpn_Button_Python (const char * name, vrpn_Connection * c,
-                                        int p) :
+vrpn_Button_Python::vrpn_Button_Python (const char * name,
+										vrpn_Connection * c, int p) :
     vrpn_Button_Parallel (name, c, p) {
 
+}
+
+
+vrpn_Button_Python::vrpn_Button_Python (const char * name,
+										vrpn_Connection * c, int p, unsigned ph) :
+    vrpn_Button_Parallel (name, c, p, ph) {
 }
 
 void vrpn_Button_Python::mainloop()
@@ -520,6 +539,7 @@ void vrpn_Button_Python::mainloop()
       	break;
    }
 }
+
 
 // Fill in the buttons[] array with the current value of each of the
 // buttons
@@ -569,6 +589,7 @@ void vrpn_Button_Python::read(void)
 
     gettimeofday(&timestamp, NULL);
 }
+
 
 vrpn_Button_Serial::vrpn_Button_Serial(const char* name, vrpn_Connection *c, 
                     const char *port, long baud) :

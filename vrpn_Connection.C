@@ -5600,8 +5600,15 @@ vrpn_Connection::~vrpn_Connection (void) {
 
   vrpn_int32 i;
 
-
   //fprintf(stderr, "In vrpn_Connection destructor.\n");
+
+  // Close the UDP and TCP listen endpoints if we're a server
+  if (listen_udp_sock != INVALID_SOCKET) {
+	vrpn_closeSocket(listen_udp_sock);
+  }
+  if (listen_tcp_sock != INVALID_SOCKET) {
+	vrpn_closeSocket(listen_tcp_sock);
+  }
 
 #ifdef VRPN_USE_WINSOCK_SOCKETS
 

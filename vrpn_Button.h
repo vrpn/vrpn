@@ -120,11 +120,11 @@ class vrpn_Button_Parallel: public vrpn_Button_Filter {
 	// Open a button connected to the local machine, talk to the
 	// outside world through the connection.
 	vrpn_Button_Parallel(const char *name, vrpn_Connection *connection,
-				int portno);
+				int portno, unsigned porthex);
 
   protected:
-	int	port;
-   int	status;
+	unsigned	port;
+	int			status;
 
 	virtual void read(void) = 0;
 #ifdef _WIN32
@@ -133,10 +133,12 @@ class vrpn_Button_Parallel: public vrpn_Button_Filter {
 
 };
 
-// Open a Python that is connected to a parallel port on this Linux box.
+// Open a Python (or Hiball Button) that is connected to a parallel port.
 class vrpn_Button_Python: public vrpn_Button_Parallel {
   public:
 	vrpn_Button_Python (const char * name, vrpn_Connection * c, int p);
+	vrpn_Button_Python (const char * name, vrpn_Connection * c,
+						int p, unsigned ph);
 
 	virtual void mainloop();
   protected:

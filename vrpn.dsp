@@ -98,6 +98,14 @@ SOURCE=.\vrpn_Analog.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_Analog_5dt.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Analog_5dt.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_Analog_Radamec_SPI.C
 # End Source File
 # Begin Source File
@@ -223,6 +231,14 @@ SOURCE=.\vrpn_ImmersionBox.C
 # Begin Source File
 
 SOURCE=.\vrpn_ImmersionBox.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Joylin.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Joylin.h
 # End Source File
 # Begin Source File
 

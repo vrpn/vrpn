@@ -21,8 +21,6 @@ print_bits( char *buf, int num_bytes )
 }
 void print_bits(unsigned char *buf, int n) { print_bits((char *)buf, n); }
 
-static const vrpn_float64 JoyScale[] = {1019, 227, 208, 400, 200, 213, 422};
-
 static long  duration(struct timeval t1, struct timeval t2)
 {
   if (t2.tv_sec == -1) return 0;
