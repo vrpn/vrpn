@@ -105,28 +105,3 @@ main(int argc, char *argv[]) {
   }
   return 0;
 }
-
-
-
-/*****************************************************************************\
-  $Log: vrpnTrackerClient.cpp,v $
-  Revision 1.2  2000/08/28 16:25:20  taylorr
-  2000-08-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
-
-          * Makefile : Added AIX compile
-
-  Revision 1.1.1.1  2000/02/22 18:45:49  ddj
-  VRPN 4.11 beta 2 sources
-
-  Revision 1.1  1998/01/20 06:25:05  weberh
-  vrpnTrackerClient: simple example of tracker client code and how to change
-  	           synchronization options
-
-  Revision 1.2  1997/12/21 10:34:30  weberh
-  logs data from synched tracker
-
-  Revision 1.1  1997/12/19 23:54:19  weberh
-  Initial revision
-
-\*****************************************************************************/
-
