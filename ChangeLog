@@ -1,3 +1,14 @@
+2000-10-09  Aron Helser  <helser@cs.unc.edu>
+
+	* vrpn_Connection.C (server_check_for_incoming_connections): A
+	server used to get NIC for tcp connection from information in the
+	UDP message sent by the client. Instead, use the NIC the UDP
+	message came in on, ignoring NIC information in the UDP
+	message. Allows us to handle multiple NICs more gracefully,
+	because client can't easily discover the right NIC to put in the
+	message.
+	Other comment and verbose printout changes.
+
 2000-10-08  Adam Seeger  <seeger@cs.unc.edu>
 
         * vrpn_FileConnection.C (vrpn_File_Connection::vrpn_File_Connection) :

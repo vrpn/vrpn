@@ -2117,11 +2117,12 @@ static SOCKET open_socket (int type,
   }
 
 #ifdef VERBOSE3
+  //NIC will be 0.0.0.0 if we use INADDR_ANY 
 fprintf(stderr, "open_socket:  request port %d, using NIC %d %d %d %d.\n",
-portno ? *portno : 0 , name.sin_addr.s_addr >> 24,
-(name.sin_addr.s_addr >> 16) & 0xff,
-(name.sin_addr.s_addr >> 8) & 0xff,
-name.sin_addr.s_addr & 0xff);
+portno ? *portno : 0 , ntohl(name.sin_addr.s_addr) >> 24,
+(ntohl(name.sin_addr.s_addr) >> 16) & 0xff,
+(ntohl(name.sin_addr.s_addr) >> 8) & 0xff,
+ntohl(name.sin_addr.s_addr) & 0xff);
 #endif
 
   if (bind(sock, (struct sockaddr *) &name, namelen) < 0){
@@ -2140,11 +2141,12 @@ name.sin_addr.s_addr & 0xff);
   }
 
 #ifdef VERBOSE3
+//NIC will be 0.0.0.0 if we use INADDR_ANY 
 fprintf(stderr, "open_socket:  got port %d, using NIC %d %d %d %d.\n",
-portno ? *portno : ntohs(name.sin_port), name.sin_addr.s_addr >> 24,
-(name.sin_addr.s_addr >> 16) & 0xff,
-(name.sin_addr.s_addr >> 8) & 0xff,
-name.sin_addr.s_addr & 0xff);
+portno ? *portno : ntohs(name.sin_port), ntohl(name.sin_addr.s_addr) >> 24,
+(ntohl(name.sin_addr.s_addr) >> 16) & 0xff,
+(ntohl(name.sin_addr.s_addr) >> 8) & 0xff,
+ntohl(name.sin_addr.s_addr) & 0xff);
 #endif
 
   return sock;
@@ -2257,11 +2259,12 @@ static SOCKET vrpn_connect_udp_port
   }
 
 #ifdef VERBOSE3
+  // NOTE NIC will be 0.0.0.0 if we listen on all NICs. 
 fprintf(stderr, "vrpn_connect_udp_port:  got port %d, using NIC %d %d %d %d.\n",
-ntohs(udp_name.sin_port), udp_name.sin_addr.s_addr >> 24,
-(udp_name.sin_addr.s_addr >> 16) & 0xff,
-(udp_name.sin_addr.s_addr >> 8) & 0xff,
-udp_name.sin_addr.s_addr & 0xff);
+ntohs(udp_name.sin_port), ntohl(udp_name.sin_addr.s_addr) >> 24,
+(ntohl(udp_name.sin_addr.s_addr) >> 16) & 0xff,
+(ntohl(udp_name.sin_addr.s_addr) >> 8) & 0xff,
+ntohl(udp_name.sin_addr.s_addr) & 0xff);
 #endif
 
   return udp_socket;
@@ -2306,7 +2309,11 @@ int vrpn_udp_request_lob_packet(
   /* Fill in the request message, telling the machine and port that
    * the remote server should connect to.  These are ASCII, separated
    * by a space. */
-
+  // NOTE when using multiple NICs, this give undesirable results, because
+  // vrpn_getmyIP always returns the IP of the primary NIC. The server will
+  // ignore the IP in this message, instead requesting a TCP connection on the
+  // same NIC that the UDP message arrived on (in
+  // server_check_for_incoming_connections).
   if (vrpn_getmyIP(myIPchar, sizeof(myIPchar), NIC_IP)) {
     fprintf(stderr,
        "vrpn_udp_request_lob_packet: Error finding local hostIP\n");
@@ -3062,8 +3069,9 @@ int vrpn_Endpoint::mainloop (timeval * timeout,
       	if (ret == 1) {	// Got one!
       	  status = COOKIE_PENDING;
 //fprintf(stderr, "COOKIE_PENDING - vrpn_Endpoint::mainloop.\n");
+#ifdef	VERBOSE
       	  printf("vrpn: Connection established\n");
-
+#endif
       	  // Set up the things that need to happen when a new connection
       	  // is established.
       	  if (setup_new_connection()) {
@@ -3541,7 +3549,7 @@ int vrpn_Endpoint::handle_udp_messages
 //  The routine returns -1 on failure and the file descriptor on success.
 
 int vrpn_Endpoint::connect_tcp_to (const char * msg) {
-  char	machine [5000];
+  char	machine [1000];
   int	port;
   struct	sockaddr_in client;     /* The name of the client */
   struct	hostent *host;          /* The host to connect to */
@@ -4999,6 +5007,7 @@ void vrpn_Connection::server_check_for_incoming_connections
   timeval timeout;
   int which_end = d_numEndpoints;
   int retval;
+  int port;
 
   if (pTimeout) {
     timeout = *pTimeout;
@@ -5021,11 +5030,11 @@ void vrpn_Connection::server_check_for_incoming_connections
 //fprintf(stderr, "BROKEN - vrpn_Connection::server_check_for_incoming_connections.\n");
       return;
   } else if (request != 0) {   // Some data to read!  Go get it.
-      struct sockaddr from;
+      struct sockaddr_in from;
       int fromlen = sizeof(from);
 
       if (recvfrom(listen_udp_sock, msg, sizeof(msg), 0,
-                   &from, GSN_CAST &fromlen) == -1) {
+                   (struct sockaddr *) &from, GSN_CAST &fromlen) == -1) {
               fprintf(stderr,
                       "vrpn: Error on recvfrom: Bad connection attempt\n");
               return;
@@ -5067,6 +5076,16 @@ void vrpn_Connection::server_check_for_incoming_connections
     }
 
     endpoint->setNICaddress(d_NIC_IP);
+    // Because we sometimes use multiple-NICs, we are ignoring the IP from the
+    // client, and filling in the NIC that the udp request arrived on.
+    sscanf(msg, "%*s %d", &port);   // get the port
+    //fill in NIC address
+    unsigned long addr_num = ntohl(from.sin_addr.s_addr);
+    sprintf(msg, "%u.%u.%u.%u %d", 
+            (addr_num) >> 24,
+            (addr_num >> 16) & 0xff,
+            (addr_num >> 8) & 0xff,
+            addr_num & 0xff, port); 
     endpoint->connect_tcp_to(msg);
 
     // d_numEndpoints must be incremented before handle_connection is called
@@ -5241,7 +5260,9 @@ vrpn_Connection::vrpn_Connection
   } else {
     connectionStatus = LISTEN;
 //fprintf(stderr, "LISTEN - vrpn_Connection::vrpn_Connection.\n");
+#ifdef	VERBOSE
     printf("vrpn: Listening for requests on port %d\n",listen_port_no);
+#endif
   }
 
   flush_udp_socket(listen_udp_sock);
@@ -5422,8 +5443,9 @@ vrpn_Connection::vrpn_Connection
     if (retval == 1) {	// Got one!
       endpoint->status = COOKIE_PENDING;
 //fprintf(stderr, "COOKIE_PENDING - vrpn_Connection::vrpn_Connection.\n");
+#ifdef	VERBOSE
       printf("vrpn: Connection established on initial try\n");
-
+#endif
       // Set up the things that need to happen when a new connection
       // is established.
       if (endpoint->setup_new_connection()) {
