@@ -16,28 +16,141 @@
 // timestamps as message identifiers/sequencers, so they need to be invariant
 // over several network hops.
 
-vrpn_Shared_int32::vrpn_Shared_int32 (const char * name,
-                                      vrpn_int32 defaultValue,
+vrpn_SharedObject::vrpn_SharedObject (const char * name, const char * tname,
                                       vrpn_int32 mode) :
-  d_value (defaultValue),
   d_name (name ? new char [1 + strlen(name)] : NULL),
   d_mode (mode),
+  d_typename (tname ? new char [1 + strlen(tname)] : NULL),
   d_connection (NULL),
   d_myId (-1),
   d_updateFromServer_type (-1),
   d_updateFromRemote_type (-1),
   d_becomeSerializer_type (-1),
-  d_callbacks (NULL),
-  d_timedCallbacks (NULL),
-  d_policy (vrpn_ACCEPT),
-  d_policyCallback (NULL),
-  d_policyUserdata (NULL),
+  d_myUpdate_type (-1),
   d_isSerializer (vrpn_FALSE) {
 
   if (name) {
     strcpy(d_name, name);
   }
+  if (tname) {
+    strcpy(d_typename, tname);
+  }
   gettimeofday(&d_lastUpdate, NULL);
+}
+
+// virtual
+vrpn_SharedObject::~vrpn_SharedObject (void) {
+  if (d_name) {
+    delete [] d_name;
+  }
+  if (d_connection) {
+    d_connection->unregister_handler(d_becomeSerializer_type,
+                                     handle_becomeSerializer, this, d_myId);
+  }
+}
+
+const char * vrpn_SharedObject::name (void) const {
+  return d_name;
+}
+
+vrpn_bool vrpn_SharedObject::isSerializer (void) const {
+  if (d_mode & VRPN_SO_DEFER_UPDATES) {
+    return d_isSerializer;
+  } else {
+    return VRPN_TRUE;
+  }
+}
+
+// virtual
+void vrpn_SharedObject::bindConnection (vrpn_Connection * c) {
+  char buffer [101];
+  if (c == NULL) {
+      // unbind the connection
+      d_connection = NULL;
+      return;
+  }
+
+  if (c && d_connection) {
+    fprintf(stderr, "vrpn_SharedObject::bindConnection:  "
+                    "Tried to rebind a connection to %s.\n", d_name);
+    return;
+  }
+
+  d_connection = c;
+  sprintf(buffer, "vrpn Shared %s %s", d_typename, d_name);
+  d_myId = c->register_sender(buffer);
+  d_updateFromServer_type = c->register_message_type
+          ("vrpn Shared update from server");
+  d_updateFromRemote_type = c->register_message_type
+          ("vrpn Shared update from remote");
+  d_becomeSerializer_type = c->register_message_type
+          ("vrpn Shared become serializer");
+
+//fprintf (stderr, "My name is %s;  myId %d, ufs type %d, ufr type %d.\n",
+//buffer, d_myId, d_updateFromServer_type, d_updateFromRemote_type);
+
+  d_connection->register_handler(d_becomeSerializer_type,
+                                 handle_becomeSerializer,
+                                 this, d_myId);
+
+}
+
+// virtual
+vrpn_bool vrpn_SharedObject::shouldSendUpdate
+                     (vrpn_bool isLocalSet, vrpn_bool acceptedUpdate) {
+
+//fprintf(stderr, "In vrpn_SharedObject::shouldSendUpdate(%s).\n", d_name);
+
+  // Should handle all modes other than VRPN_SO_DEFER_UPDATES.
+  if (acceptedUpdate && isLocalSet) {
+//fprintf(stderr, "..... accepted;  local set => broadcast it.\n");
+    return vrpn_TRUE;
+  }
+
+  // Not a local set or (not accepted and not serializing)
+  if (!(d_mode & VRPN_SO_DEFER_UPDATES)) {
+//fprintf(stderr, "..... rejected (NOT serialized).\n");
+    return vrpn_FALSE;
+  }
+
+  if (!d_isSerializer && isLocalSet) {
+//fprintf(stderr, "..... not serializer;  local set "
+//"=> send it to the serializer.\n");
+    return vrpn_TRUE;
+  }
+
+  if (d_isSerializer && !isLocalSet && acceptedUpdate) {
+//fprintf(stderr, "..... serializer;  remote set;  accepted => broadcast it.\n");
+    return vrpn_TRUE;
+  }
+
+//fprintf(stderr,"..... rejected (under serialization).\n");
+  return vrpn_FALSE;
+}
+
+// static
+int vrpn_SharedObject::handle_becomeSerializer (void * userdata,
+                                                vrpn_HANDLERPARAM p) {
+  vrpn_SharedObject * s = (vrpn_SharedObject *) userdata;
+
+  s->d_isSerializer = vrpn_TRUE;
+
+  return 0;
+}
+
+
+
+vrpn_Shared_int32::vrpn_Shared_int32 (const char * name,
+                                      vrpn_int32 defaultValue,
+                                      vrpn_int32 mode) :
+  vrpn_SharedObject (name, "int32", mode),
+  d_value (defaultValue),
+  d_callbacks (NULL),
+  d_timedCallbacks (NULL),
+  d_policy (vrpn_ACCEPT),
+  d_policyCallback (NULL),
+  d_policyUserdata (NULL) {
+
 }
 
 // virtual
@@ -51,13 +164,6 @@ vrpn_Shared_int32::~vrpn_Shared_int32 (void) {
   }
 }
 
-vrpn_bool vrpn_Shared_int32::isSerializer (void) const {
-  if (d_mode & VRPN_SO_DEFER_UPDATES) {
-    return d_isSerializer;
-  } else {
-    return VRPN_TRUE;
-  }
-}
 
 vrpn_int32 vrpn_Shared_int32::value (void) const {
   return d_value;
@@ -78,40 +184,6 @@ vrpn_Shared_int32 & vrpn_Shared_int32::set (vrpn_int32 newValue,
                                             timeval when) {
   return set(newValue, when, vrpn_TRUE);
 }
-
-void vrpn_Shared_int32::bindConnection (vrpn_Connection * c) {
-  char buffer [101];
-  if (c == NULL) {
-      // unbind the connection
-      d_connection = NULL;
-      return;
-  }
-
-  if (c && d_connection) {
-    fprintf(stderr, "vrpn_Shared_int32::bindConnection:  "
-                    "Tried to rebind a connection to %s.\n", d_name);
-    return;
-  }
-
-  d_connection = c;
-  sprintf(buffer, "vrpn Shared int32 %s", d_name);
-  d_myId = c->register_sender(buffer);
-  d_updateFromServer_type = c->register_message_type
-          ("vrpn Shared update from server");
-  d_updateFromRemote_type = c->register_message_type
-          ("vrpn Shared update from remote");
-  d_becomeSerializer_type = c->register_message_type
-          ("vrpn Shared become serializer");
-
-//fprintf (stderr, "My name is %s;  myId %d, ufs type %d, ufr type %d.\n",
-//buffer, d_myId, d_updateFromServer_type, d_updateFromRemote_type);
-
-  d_connection->register_handler(d_becomeSerializer_type,
-                                 handle_becomeSerializer,
-                                 this, d_myId);
-
-}
-
 void vrpn_Shared_int32::register_handler (vrpnSharedIntCallback cb,
                                           void * userdata) {
   callbackEntry * e = new callbackEntry;
@@ -274,39 +346,6 @@ vrpn_bool vrpn_Shared_int32::shouldAcceptUpdate
   return vrpn_FALSE;
 }
 
-// virtual
-vrpn_bool vrpn_Shared_int32::shouldSendUpdate
-                     (vrpn_bool isLocalSet, vrpn_bool acceptedUpdate) {
-
-//fprintf(stderr, "In vrpn_Shared_int32::shouldSendUpdate(%s).\n", d_name);
-
-  // Should handle all modes other than VRPN_SO_DEFER_UPDATES.
-  if (acceptedUpdate && isLocalSet) {
-//fprintf(stderr, "..... accepted;  local set => broadcast it.\n");
-    return vrpn_TRUE;
-  }
-
-  // Not a local set or (not accepted and not serializing)
-  if (!(d_mode & VRPN_SO_DEFER_UPDATES)) {
-//fprintf(stderr, "..... rejected (NOT serialized).\n");
-    return vrpn_FALSE;
-  }
-
-  if (!d_isSerializer && isLocalSet) {
-//fprintf(stderr, "..... not serializer;  local set "
-//"=> send it to the serializer.\n");
-    return vrpn_TRUE;
-  }
-
-  if (d_isSerializer && !isLocalSet && acceptedUpdate) {
-//fprintf(stderr, "..... serializer;  remote set;  accepted => broadcast it.\n");
-    return vrpn_TRUE;
-  }
-
-//fprintf(stderr,"..... rejected (under serialization).\n");
-  return vrpn_FALSE;
-}
-
 void vrpn_Shared_int32::encode (char ** buffer, vrpn_int32 * len,
                                 vrpn_int32 newValue, timeval when) const {
   vrpn_buffer(buffer, len, newValue);
@@ -350,16 +389,6 @@ int vrpn_Shared_int32::yankCallbacks (vrpn_bool isLocal) {
       return -1;
     }
   }
-
-  return 0;
-}
-
-// static
-int vrpn_Shared_int32::handle_becomeSerializer (void * userdata,
-                                                vrpn_HANDLERPARAM p) {
-  vrpn_Shared_int32 * s = (vrpn_Shared_int32 *) userdata;
-
-  s->d_isSerializer = vrpn_TRUE;
 
   return 0;
 }
@@ -496,20 +525,13 @@ void vrpn_Shared_int32_Remote::bindConnection (vrpn_Connection * c) {
 vrpn_Shared_float64::vrpn_Shared_float64 (const char * name,
                                       vrpn_float64 defaultValue,
                                       vrpn_int32 mode) :
+  vrpn_SharedObject(name, "float64", mode),
   d_value (defaultValue),
-  d_name (name ? new char [1 + strlen(name)] : NULL),
-  d_mode (mode),
-  d_connection (NULL),
-  d_myId (-1),
-  d_updateFromServer_type (-1),
-  d_updateFromRemote_type (-1),
-  d_becomeSerializer_type (-1),
   d_callbacks (NULL),
   d_timedCallbacks (NULL),
   d_policy (vrpn_ACCEPT),
   d_policyCallback (NULL),
-  d_policyUserdata (NULL),
-  d_isSerializer (vrpn_FALSE) {
+  d_policyUserdata (NULL) {
 
   if (name) {
     strcpy(d_name, name);
@@ -525,14 +547,6 @@ vrpn_Shared_float64::~vrpn_Shared_float64 (void) {
   if (d_connection) {
     d_connection->unregister_handler(d_becomeSerializer_type,
                                      handle_becomeSerializer, this, d_myId);
-  }
-}
-
-vrpn_bool vrpn_Shared_float64::isSerializer (void) const {
-  if (d_mode & VRPN_SO_DEFER_UPDATES) {
-    return d_isSerializer;
-  } else {
-    return VRPN_TRUE;
   }
 }
 
@@ -554,43 +568,6 @@ vrpn_Shared_float64 & vrpn_Shared_float64::operator =
 vrpn_Shared_float64 & vrpn_Shared_float64::set (vrpn_float64 newValue,
                                                 timeval when) {
   return set(newValue, when, vrpn_TRUE);
-}
-
-void vrpn_Shared_float64::bindConnection (vrpn_Connection * c) {
-  char buffer [101];
-  if (c == NULL) {
-      // unbind the connection
-      d_connection = NULL;
-      return;
-  }
-
-  if (c && d_connection) {
-    fprintf(stderr, "vrpn_Shared_float64::bindConnection:  "
-                    "Tried to rebind a connection to %s.\n", d_name);
-    return;
-  }
-
-  d_connection = c;
-  if (!c) {
-    return;
-  }
-
-  sprintf(buffer, "vrpn Shared float64 %s", d_name);
-  d_myId = c->register_sender(buffer);
-  d_updateFromServer_type = c->register_message_type
-          ("vrpn Shared update from server");
-  d_updateFromRemote_type = c->register_message_type
-          ("vrpn Shared update from remote");
-  d_becomeSerializer_type = c->register_message_type
-          ("vrpn Shared become serializer");
-
-//fprintf (stderr, "My name is %s;  myId %d, ufs type %d, ufr type %d.\n",
-//buffer, d_myId, d_updateFromServer_type, d_updateFromRemote_type);
-
-  d_connection->register_handler(d_becomeSerializer_type,
-                                 handle_becomeSerializer,
-                                 this, d_myId);
-
 }
 
 void vrpn_Shared_float64::register_handler (vrpnSharedFloatCallback cb,
@@ -765,40 +742,6 @@ vrpn_bool vrpn_Shared_float64::shouldAcceptUpdate
   return vrpn_FALSE;
 }
 
-// virtual
-vrpn_bool vrpn_Shared_float64::shouldSendUpdate
-                     (vrpn_bool isLocalSet, vrpn_bool acceptedUpdate) {
-//fprintf(stderr, "In vrpn_Shared_float64::shouldSendUpdate(%s).\n", d_name);
-
-  if (acceptedUpdate && isLocalSet) {
-//fprintf(stderr, "..... accepted;  local set => broadcast it.\n");
-
-    return vrpn_TRUE;
-  }
-
-  if (!(d_mode & VRPN_SO_DEFER_UPDATES)) {
-//fprintf(stderr, "..... rejected (NOT serialized).\n");
-    return vrpn_FALSE;
-  }
-
-  if (!d_isSerializer && isLocalSet) {
-//fprintf(stderr, "..... not serializer;  local set "
-//"=> send it to the serializer.\n");
-
-    return vrpn_TRUE;
-  }
-
-  if (d_isSerializer && !isLocalSet && acceptedUpdate) {
-//fprintf(stderr, "..... serializer;  remote set;  accepted => broadcast it.\n");
-
-    return vrpn_TRUE;
-  }
-
-//fprintf(stderr,"..... rejected (under serialization).\n");
-  return vrpn_FALSE;
-}
-
-
 
 void vrpn_Shared_float64::encode (char ** buffer, vrpn_int32 * len,
                                   vrpn_float64 newValue, timeval when) const {
@@ -846,15 +789,6 @@ int vrpn_Shared_float64::yankCallbacks (vrpn_bool isLocal) {
   return 0;
 }
 
-// static
-int vrpn_Shared_float64::handle_becomeSerializer (void * userdata,
-                                                vrpn_HANDLERPARAM p) {
-  vrpn_Shared_float64 * s = (vrpn_Shared_float64 *) userdata;
-
-  s->d_isSerializer = vrpn_TRUE;
-
-  return 0;
-}
 
 // static
 int vrpn_Shared_float64::handle_update (void * userdata, vrpn_HANDLERPARAM p) {
@@ -990,20 +924,13 @@ void vrpn_Shared_float64_Remote::bindConnection (vrpn_Connection * c) {
 vrpn_Shared_String::vrpn_Shared_String (const char * name,
                                         const char * defaultValue,
                                         vrpn_int32 mode) :
+  vrpn_SharedObject (name, "String", mode),
   d_value (defaultValue ? new char [1 + strlen(defaultValue)] : NULL),
-  d_name (name ? new char [1 + strlen(name)] : NULL),
-  d_mode (mode),
-  d_connection (NULL),
-  d_myId (-1),
-  d_updateFromServer_type (-1),
-  d_updateFromRemote_type (-1),
-  d_becomeSerializer_type (-1),
   d_callbacks (NULL),
   d_timedCallbacks (NULL),
   d_policy (vrpn_ACCEPT),
   d_policyCallback (NULL),
-  d_policyUserdata (NULL),
-  d_isSerializer (vrpn_FALSE) {
+  d_policyUserdata (NULL) {
 
   if (defaultValue) {
     strcpy(d_value, defaultValue);
@@ -1028,14 +955,6 @@ vrpn_Shared_String::~vrpn_Shared_String (void) {
   }
 }
 
-vrpn_bool vrpn_Shared_String::isSerializer (void) const {
-  if (d_mode & VRPN_SO_DEFER_UPDATES) {
-    return d_isSerializer;
-  } else {
-    return VRPN_TRUE;
-  }
-}
-
 const char * vrpn_Shared_String::value (void) const {
   return d_value;
 }
@@ -1057,42 +976,6 @@ vrpn_Shared_String & vrpn_Shared_String::set (const char * newValue,
 }
 
 
-void vrpn_Shared_String::bindConnection (vrpn_Connection * c) {
-  char buffer [101];
-  if (c == NULL) {
-      // unbind the connection
-      d_connection = NULL;
-      return;
-  }
-
-  if (c && d_connection) {
-    fprintf(stderr, "vrpn_Shared_String::bindConnection:  "
-                    "Tried to rebind a connection to %s.\n", d_name);
-    return;
-  }
-
-  d_connection = c;
-  if (!c) {
-    return;
-  }
-
-  sprintf(buffer, "vrpn Shared String %s", d_name);
-  d_myId = c->register_sender(buffer);
-  d_updateFromServer_type = c->register_message_type
-          ("vrpn Shared update from server");
-  d_updateFromRemote_type = c->register_message_type
-          ("vrpn Shared update from remote");
-  d_becomeSerializer_type = c->register_message_type
-          ("vrpn Shared become serializer");
-
-//fprintf (stderr, "My name is %s;  myId %d, ufs type %d, ufr type %d.\n",
-//buffer, d_myId, d_updateFromServer_type, d_updateFromRemote_type);
-
-  d_connection->register_handler(d_becomeSerializer_type,
-                                 handle_becomeSerializer,
-                                 this, d_myId);
-
-}
 
 void vrpn_Shared_String::register_handler (vrpnSharedStringCallback cb,
                                             void * userdata) {
@@ -1281,41 +1164,6 @@ vrpn_bool vrpn_Shared_String::shouldAcceptUpdate
   return vrpn_FALSE;
 }
 
-// virtual
-vrpn_bool vrpn_Shared_String::shouldSendUpdate
-                     (vrpn_bool isLocalSet, vrpn_bool acceptedUpdate) {
-
-//fprintf(stderr, "In vrpn_Shared_String::shouldSendUpdate(%s).\n", d_name);
-
-  if (acceptedUpdate && isLocalSet) {
-//fprintf(stderr, "..... accepted;  local set => broadcast it.\n");
-
-    return vrpn_TRUE;
-  }
-
-  if (!(d_mode & VRPN_SO_DEFER_UPDATES)) {
-//fprintf(stderr, "..... rejected (NOT serialized).\n");
-    return vrpn_FALSE;
-  }
-
-  if (!d_isSerializer && isLocalSet) {
-//fprintf(stderr, "..... not serializer;  local set "
-//"=> send it to the serializer.\n");
-
-    return vrpn_TRUE;
-  }
-
-  if (d_isSerializer && !isLocalSet && acceptedUpdate) {
-//fprintf(stderr, "..... serializer;  remote set;  accepted => broadcast it.\n");
-
-    return vrpn_TRUE;
-  }
-
-//fprintf(stderr, "..... rejected (under serialization).\n");
-  return vrpn_FALSE;
-}
-
-
 
 void vrpn_Shared_String::encode (char ** buffer, vrpn_int32 * len,
                                  const char * newValue, timeval when) const {
@@ -1362,16 +1210,6 @@ int vrpn_Shared_String::yankCallbacks (vrpn_bool isLocal) {
       return -1;
     }
   }
-
-  return 0;
-}
-
-// static
-int vrpn_Shared_String::handle_becomeSerializer (void * userdata,
-                                                vrpn_HANDLERPARAM p) {
-  vrpn_Shared_String * s = (vrpn_Shared_String *) userdata;
-
-  s->d_isSerializer = vrpn_TRUE;
 
   return 0;
 }

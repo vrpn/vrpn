@@ -20,7 +20,7 @@
 // I'd like to implement shouldAcceptUpdate/shouldSendUpdate
 // with the Strategy pattern (Gamma/Helm/Johnson/Vlissides 1995, pg 315).
 // That would make it far, far easier to extend, but the implementation
-// looks to unweildy.
+// looks too unweildy.
 
 class vrpn_Shared_int32;
 class vrpn_Shared_float64;
@@ -96,7 +96,63 @@ typedef int (* vrpnSharedStringSerializerPolicy)
 
 enum vrpn_SerializerPolicy { vrpn_ACCEPT, vrpn_DENY, vrpn_CALLBACK };
 
-class vrpn_Shared_int32 {
+
+// Separated out vrpn_SharedObject from common behavior of 3 classes
+// on 14 Feb 2000.  Now all we need is permission to use templates to
+// collapse them all together;  *all* the functions remaining on the
+// other classes are type-dependent and should be templatable.
+// (One exception:  the string that names the type.  This could probably
+// be cut.)
+
+class vrpn_SharedObject {
+
+  public:
+
+    vrpn_SharedObject (const char * name, const char * tname,
+                       vrpn_int32 mode);
+    virtual ~vrpn_SharedObject (void);
+
+    // ACCESSORS
+
+    const char * name (void) const;
+    vrpn_bool isSerializer (void) const;
+
+    // MANIPULATORS
+
+    virtual void bindConnection (vrpn_Connection *);
+
+  protected:
+
+    char * d_name;
+    vrpn_int32 d_mode;
+    timeval d_lastUpdate;
+    char * d_typename;  // currently int32, float64, or String
+
+    vrpn_Connection * d_connection;
+    vrpn_int32 d_myId;
+    vrpn_int32 d_updateFromServer_type;
+    vrpn_int32 d_updateFromRemote_type;
+    vrpn_int32 d_becomeSerializer_type;
+    vrpn_int32 d_myUpdate_type;  // fragile
+
+    vrpn_bool d_isSerializer;
+      // default to vrpn_TRUE for servers, FALSE for remotes
+
+    virtual vrpn_bool shouldSendUpdate (vrpn_bool isLocalSet,
+                                        vrpn_bool acceptedUpdate);
+
+    int yankCallbacks (vrpn_bool isLocal);
+      // must set d_lastUpdate BEFORE calling yankCallbacks()
+        
+    static int handle_becomeSerializer (void *, vrpn_HANDLERPARAM);
+
+  private:
+
+};
+
+
+
+class vrpn_Shared_int32 : public vrpn_SharedObject {
 
 
   public:
@@ -108,8 +164,6 @@ class vrpn_Shared_int32 {
 
     // ACCESSORS
 
-    const char * name (void) const { return d_name; }
-    vrpn_bool isSerializer (void) const;
     vrpn_int32 value (void) const;
     operator vrpn_int32 () const;
 
@@ -120,8 +174,6 @@ class vrpn_Shared_int32 {
 
     vrpn_Shared_int32 & set (vrpn_int32 newValue, timeval when);
       // calls protected set (newValue, when, vrpn_TRUE);
-
-    virtual void bindConnection (vrpn_Connection *);
 
     void register_handler (vrpnSharedIntCallback, void *);
     void unregister_handler (vrpnSharedIntCallback, void *);
@@ -134,23 +186,9 @@ class vrpn_Shared_int32 {
     void setSerializerPolicy (vrpn_SerializerPolicy policy = vrpn_ACCEPT,
                               vrpnSharedIntSerializerPolicy f = NULL,
                               void * userdata = NULL);
-    void becomeSerializer (void);
-      // *requests* to become the serializer;  this can be denied by
-      // the current serializer
-
   protected:
 
     vrpn_int32 d_value;
-    char * d_name;
-    vrpn_int32 d_mode;
-    timeval d_lastUpdate;
-
-    vrpn_Connection * d_connection;
-    vrpn_int32 d_myId;
-    vrpn_int32 d_updateFromServer_type;
-    vrpn_int32 d_updateFromRemote_type;
-    vrpn_int32 d_becomeSerializer_type;
-    vrpn_int32 d_myUpdate_type;  // fragile
 
     // callback code
     // Could generalize this by making a class that gets passed
@@ -170,20 +208,11 @@ class vrpn_Shared_int32 {
     };
     timedCallbackEntry * d_timedCallbacks;
 
-    // serializer policy code
-    vrpn_SerializerPolicy d_policy;  // default to vrpn_ACCEPT
-    vrpnSharedIntSerializerPolicy d_policyCallback;
-    void * d_policyUserdata;
-    vrpn_bool d_isSerializer;
-      // default to vrpn_TRUE for servers, FALSE for remotes
-
     vrpn_Shared_int32 & set (vrpn_int32, timeval,
                              vrpn_bool isLocalSet);
 
     virtual vrpn_bool shouldAcceptUpdate (vrpn_int32 newValue, timeval when,
                                     vrpn_bool isLocalSet);
-    virtual vrpn_bool shouldSendUpdate (vrpn_bool isLocalSet,
-                                        vrpn_bool acceptedUpdate);
 
     void sendUpdate (vrpn_int32 messagetype, vrpn_int32 newValue, timeval when);
     void encode (char ** buffer, vrpn_int32 * len,
@@ -198,8 +227,12 @@ class vrpn_Shared_int32 {
 
     int yankCallbacks (vrpn_bool isLocal);
       // must set d_lastUpdate BEFORE calling yankCallbacks()
+
+    // serializer policy code
+    vrpn_SerializerPolicy d_policy;  // default to vrpn_ACCEPT
+    vrpnSharedIntSerializerPolicy d_policyCallback;
+    void * d_policyUserdata;
         
-    static int handle_becomeSerializer (void *, vrpn_HANDLERPARAM);
     static int handle_update (void *, vrpn_HANDLERPARAM);
 };
 
@@ -243,7 +276,7 @@ class vrpn_Shared_int32_Remote : public vrpn_Shared_int32 {
 
 
 
-class vrpn_Shared_float64 {
+class vrpn_Shared_float64 : public vrpn_SharedObject {
 
 
   public:
@@ -255,8 +288,6 @@ class vrpn_Shared_float64 {
 
     // ACCESSORS
 
-    const char * name (void) const { return d_name; }
-    vrpn_bool isSerializer (void) const;
     vrpn_float64 value (void) const;
     operator vrpn_float64 () const;
 
@@ -267,8 +298,6 @@ class vrpn_Shared_float64 {
 
     virtual vrpn_Shared_float64 & set (vrpn_float64 newValue, timeval when);
       // calls protected set (newValue, when, vrpn_TRUE);
-
-    virtual void bindConnection (vrpn_Connection *);
 
     void register_handler (vrpnSharedFloatCallback, void *);
     void unregister_handler (vrpnSharedFloatCallback, void *);
@@ -285,16 +314,6 @@ class vrpn_Shared_float64 {
   protected:
 
     vrpn_float64 d_value;
-    char * d_name;
-    vrpn_int32 d_mode;
-    timeval d_lastUpdate;
-
-    vrpn_Connection * d_connection;
-    vrpn_int32 d_myId;
-    vrpn_int32 d_updateFromServer_type;
-    vrpn_int32 d_updateFromRemote_type;
-    vrpn_int32 d_becomeSerializer_type;
-    vrpn_int32 d_myUpdate_type;  // fragile
 
     // callback code
     // Could generalize this by making a class that gets passed
@@ -317,15 +336,11 @@ class vrpn_Shared_float64 {
     vrpn_SerializerPolicy d_policy;  // default to vrpn_ACCEPT
     vrpnSharedFloatSerializerPolicy d_policyCallback;
     void * d_policyUserdata;
-    vrpn_bool d_isSerializer;
-      // default to vrpn_TRUE for servers, FALSE for remotes
 
     vrpn_Shared_float64 & set (vrpn_float64, timeval, vrpn_bool isLocalSet);
 
     virtual vrpn_bool shouldAcceptUpdate (vrpn_float64 newValue, timeval when,
                                           vrpn_bool isLocalSet);
-    virtual vrpn_bool shouldSendUpdate (vrpn_bool isLocalSet,
-                                        vrpn_bool acceptedUpdate);
 
     void sendUpdate (vrpn_int32 messagetype, vrpn_float64 newValue,
                      timeval when);
@@ -337,7 +352,6 @@ class vrpn_Shared_float64 {
     int yankCallbacks (vrpn_bool isLocal);
       // must set d_lastUpdate BEFORE calling yankCallbacks()
         
-    static int handle_becomeSerializer (void *, vrpn_HANDLERPARAM);
     static int handle_update (void *, vrpn_HANDLERPARAM);
 };
 
@@ -378,7 +392,7 @@ class vrpn_Shared_float64_Remote : public vrpn_Shared_float64 {
 
 
 
-class vrpn_Shared_String {
+class vrpn_Shared_String : public vrpn_SharedObject {
 
 
   public:
@@ -390,8 +404,6 @@ class vrpn_Shared_String {
 
     // ACCESSORS
 
-    const char * name (void) const { return d_name; }
-    vrpn_bool isSerializer (void) const;
     const char * value (void) const;
     operator const char * () const;
 
@@ -402,8 +414,6 @@ class vrpn_Shared_String {
 
     virtual vrpn_Shared_String & set (const char * newValue, timeval when);
      // calls protected set (newValue, when, vrpn_TRUE);
-
-    virtual void bindConnection (vrpn_Connection *);
 
     void register_handler (vrpnSharedStringCallback, void *);
     void unregister_handler (vrpnSharedStringCallback, void *);
@@ -421,16 +431,6 @@ class vrpn_Shared_String {
   protected:
 
     char * d_value;
-    char * d_name;
-    vrpn_int32 d_mode;
-    timeval d_lastUpdate;
-
-    vrpn_Connection * d_connection;
-    vrpn_int32 d_myId;
-    vrpn_int32 d_updateFromServer_type;
-    vrpn_int32 d_updateFromRemote_type;
-    vrpn_int32 d_becomeSerializer_type;
-    vrpn_int32 d_myUpdate_type;  // fragile
 
     // callback code
     // Could generalize this by making a class that gets passed
@@ -453,18 +453,12 @@ class vrpn_Shared_String {
     vrpn_SerializerPolicy d_policy;  // default to vrpn_ACCEPT
     vrpnSharedStringSerializerPolicy d_policyCallback;
     void * d_policyUserdata;
-    vrpn_bool d_isSerializer;
-      // default to vrpn_TRUE for servers, FALSE for remotes
 
     vrpn_Shared_String & set (const char *, timeval,
                              vrpn_bool isLocalSet);
 
     virtual vrpn_bool shouldAcceptUpdate (const char * newValue, timeval when,
                                     vrpn_bool isLocalSet);
-    virtual vrpn_bool shouldSendUpdate (vrpn_bool isLocalSet,
-                                        vrpn_bool acceptedUpdate);
-
-
 
     void sendUpdate (vrpn_int32 messagetype, const char * newValue,
                      timeval when);
@@ -476,7 +470,6 @@ class vrpn_Shared_String {
     int yankCallbacks (vrpn_bool isLocal);
       // must set d_lastUpdate BEFORE calling yankCallbacks()
         
-    static int handle_becomeSerializer (void *, vrpn_HANDLERPARAM);
     static int handle_update (void *, vrpn_HANDLERPARAM);
 
 };
