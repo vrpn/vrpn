@@ -1069,6 +1069,8 @@ vrpn_Shared_String & vrpn_Shared_String::set (const char * newValue,
       strcpy(d_value, newValue);
     }
 
+//fprintf(stderr, "vrpn_Shared_String::set:  %s to \"%s\".\n", name(), value());
+
     d_lastUpdate = when;
     yankCallbacks(isLocalSet);
   }

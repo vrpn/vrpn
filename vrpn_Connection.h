@@ -134,21 +134,25 @@ struct vrpnLogFilterEntry {
   vrpnLogFilterEntry * next;
 };
 
+class vrpn_Log;
+class vrpn_TranslationTable;
+
 // Encapsulation of the data and methods for a single connection
 // to take care of one part of many clients talking to a single server.
 // This will only be used from within the vrpn_Connection class, it should
 // not be instantiated by users or devices.
-class vrpn_OneConnection
+// Should not be visible!
+class vrpn_Endpoint
 {
     public:
-	vrpn_OneConnection (void);
-	vrpn_OneConnection (const SOCKET, const SOCKET, const SOCKET,
+	vrpn_Endpoint (void);
+	vrpn_Endpoint (const SOCKET, const SOCKET, const SOCKET,
 		int, int, vrpn_LOGLIST *_d_logbuffer,
 		vrpn_LOGLIST *_d_firstlogentry, char *_d_logname,
 		long _d_logmode, int _d_logfilehandle,
 		FILE *_d_logfile, vrpnLogFilterEntry *_d_logfilters );
 	void	init(void);
-	virtual ~vrpn_OneConnection (void);
+	virtual ~vrpn_Endpoint (void);
 
 	// Clear out the remote mapping list. This is done when a
 	// connection is dropped and we want to try and re-establish
@@ -181,7 +185,7 @@ class vrpn_OneConnection
         int clockSynced (void) { return tvClockOffset.tv_usec != 0;}
 
 //XXX These should be protected; making them so will lead to making
-//    the code split the functions between OneConnection and Connection
+//    the code split the functions between Endpoint and Connection
 //    protected:
 	SOCKET tcp_sock;	// Socket to send reliable data on
 	SOCKET udp_outbound;	// Outbound unreliable messages go here
@@ -214,45 +218,19 @@ class vrpn_OneConnection
 
 	// Logging - TCH 11 June 98
 
-	char	*d_logmagic;		// Stores magic from other side
-	vrpn_LOGLIST * d_logbuffer;	// last entry in log
-	vrpn_LOGLIST * d_first_log_entry;  // first entry in log
-	char * d_logname;		// name of file to write log to
-	long d_logmode;			// logging incoming, outgoing, or both
+    vrpn_Log * d_log;
 
-	int d_logfile_handle;
-	FILE * d_logfile;
+  protected:
 
-	virtual int log_message (vrpn_int32 payload_len, struct timeval time,
-	               vrpn_int32 type, vrpn_int32 sender, const char * buffer,
-                       int isRemote = 0);
-	virtual int close_log (void);
-	virtual int open_log (void);
+    // The senders and types we know about that have been described by
+    // the other end of the connection.  Also, record the local mapping
+    // for ones that have been described with the same name locally.
+    // The arrays are indexed by the ID from the other side, and store
+    // the name and local ID that corresponds to each.
 
-	// Filters (assumed to be on vrpn_ANY_TYPE)
-	vrpnLogFilterEntry	* d_log_filters;	
+    vrpn_TranslationTable * d_senders;
+    vrpn_TranslationTable * d_types;
 
-        // Returns nonzero if we shouldn't log this message.
-        virtual int check_log_filters (vrpn_HANDLERPARAM message);
-
-// These should be protected too
-// protected:
-
-	// Holds one entry for a mapping of remote strings to local IDs.
-	struct cRemoteMapping {
-		char		* name;
-		vrpn_int32	local_id;
-	};
-
-	// The senders and types we know about that have been described by
-	// the other end of the connection.  Also, record the local mapping
-	// for ones that have been described with the same name locally.
-	// The arrays are indexed by the ID from the other side, and store
-	// the name and local ID that corresponds to each.
-	cRemoteMapping	other_senders [vrpn_CONNECTION_MAX_SENDERS];
-	vrpn_int32	num_other_senders;
-	cRemoteMapping	other_types [vrpn_CONNECTION_MAX_TYPES];
-	vrpn_int32	num_other_types;
 };
 
 class vrpn_Connection
@@ -349,7 +327,7 @@ class vrpn_Connection
   // to shrink the buffer, only to increase it or leave it the same.
   vrpn_int32 set_tcp_outbuf_size (vrpn_int32 bytecount);
 
-  vrpn_OneConnection * endpointPtr (void) { return &endpoint; }
+  vrpn_Endpoint * endpointPtr (void) { return &endpoint; }
 
   // vrpn_File_Connection implements this as "return this" so it
   // can be used to detect a File_Connection and get the pointer for it
@@ -389,7 +367,7 @@ class vrpn_Connection
 
 	// Sockets used to talk to remote Connection(s)
 	// and other information needed on a per-connection basis
-	vrpn_OneConnection	endpoint;
+	vrpn_Endpoint	endpoint;
 	vrpn_int32	num_live_connections;
 
 	// Only used for a vrpn_Connection that awaits incoming connections
