@@ -39,21 +39,6 @@
 MV = /bin/mv
 MVF = /bin/mv -f
 
-MAKE_AS_INVOKED := $(MAKE)
-
-MAKEFILE := Makefile
-MAKE := $(MAKE) -f $(MAKEFILE)
-##
-## WARNING: [juliano 9/99]
-##   if the user sets MAKE on the commandline, for example
-##      nice gmake MAKE="gmake -j 2" -j 2
-##   then the -f will get lost.  This is VERY DANGEROUS,
-##   but until it's decided what to do, I'll leave it this way.
-##
-## incidently, the above works great on multi-CPU winNT boxes
-## running cygwin!  (if you nice it, then your other apps don't suffer.)
-##
-
 ifndef	HW_OS
 # hw_os does not exist on FreeBSD at UNC
 UNAME := $(shell uname -s)
@@ -415,9 +400,20 @@ clean:
                $(OBJECT_DIR)/libvrpnserver.a \
                $(OBJECT_DIR)/libvrpnserver_g++.a \
                .depend .depend-old
+ifneq (xxx$(FORCE_GPP),xxx1)
+	@echo -----------------------------------------------------------------
+	@echo -- Wart: type \"$(MAKE) clean_g++\" to clean up after g++
+	@echo -- I don\'t do it automatically in case you don\'t have g++
+	@echo -----------------------------------------------------------------
+endif
 #ifneq ($(CC), g++)
 #	$(MAKE) FORCE_GPP=1 clean
 #endif
+
+.PHONY:	clean
+clean_g++:
+	$(MAKE) FORCE_GPP=1 clean
+
 
 # clobberall removes the object directory for EVERY architecture.
 # One problem - the object directory for pc_win32 also contains files
@@ -485,7 +481,7 @@ depend:
 	@echo ----------------------------------------------------------------
 	@echo -- Making dependency file.  If you add files to the makefile,
 	@echo -- or add/remove includes from a .h or .C file, then you should
-	@echo -- remake the dependency file by typing \"$(MAKE_AS_INVOKED) depend\"
+	@echo -- remake the dependency file by typing \"$(MAKE) depend\"
 	@echo ----------------------------------------------------------------
 ifeq ($(HW_OS),hp700_hpux10)
 	@echo -- $(HW_OS): Using g++ since HP CC does not understand -M
