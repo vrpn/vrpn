@@ -2,7 +2,7 @@
 
         * vrpn_Poser.C : cosmetic changes
 
-        * vrpn_Poser_Analog.C : wasn't regestering callbacks.  Changed this.
+        * vrpn_Poser_Analog.C : wasn't registering callbacks.  Changed this.
 
 2002-09-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
