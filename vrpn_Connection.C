@@ -130,17 +130,29 @@ vrpn_Synchronized_Connection(char *server_name, double dFreq,
 					      setClockOffset );
 }
 
+struct timeval vrpn_Synchronized_Connection::fullSync(void) {
+  if (pClockRemote) {
+    // set the fullsync flag
+    pClockRemote->fullSync();
+    // call the mainloop to do the sync
+    mainloop();
+  } else {
+    perror("vrpn_Synchronized_Connection::fullSync: only valid for clients");
+  }
+  return tvClockOffset;
+}
+
 int vrpn_Synchronized_Connection::mainloop(void) {
   if (pClockServer) {
     pClockServer->mainloop();
     // call the base class mainloop
     return vrpn_Connection::mainloop();
   } 
-else if (pClockRemote) {
+  else if (pClockRemote) {
     // the remote device always calls the base class connection mainloop already
     pClockRemote->mainloop();
   } 
-else {
+  else {
     perror("vrpn_Synchronized_Connection::mainloop: no clock client or server");
     return -1;
   }

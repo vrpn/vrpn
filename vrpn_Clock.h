@@ -13,10 +13,10 @@
   ----------------------------------------------------------------------------
   Author: weberh
   Created: Sat Dec 13 11:21:15 1997
-  Revised: Tue Mar 17 11:42:34 1998 by weberh
+  Revised: Wed Mar 18 16:33:03 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.h,v $
   $Locker:  $
-  $Revision: 1.5 $
+  $Revision: 1.6 $
 \*****************************************************************************/
 #ifndef _VRPN_CLOCK_H_
 #define _VRPN_CLOCK_H_
@@ -116,7 +116,7 @@ class vrpn_Clock_Remote: public vrpn_Clock {
 					  vrpn_CLOCKSYNCHANDLER handler);
   virtual int unregister_clock_sync_handler(void *userdata,
 					    vrpn_CLOCKSYNCHANDLER handler);
-  // request a high accuracy sync
+  // request a high accuracy sync (and turn off quick syncs)
   void fullSync();
 
   protected:
@@ -178,6 +178,9 @@ class vrpn_Clock_Remote: public vrpn_Clock {
 
 /*****************************************************************************\
   $Log: vrpn_Clock.h,v $
+  Revision 1.6  1998/03/19 06:04:38  weberh
+  added a fullSync call to vrpn_Synchronized connection for convenience.
+
   Revision 1.5  1998/03/18 20:24:31  weberh
   vrpn_Clock -- added better unique id for clock sync messages
 

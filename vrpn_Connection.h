@@ -251,11 +251,6 @@ class vrpn_Connection
         struct timeval tvClockOffset;
 };
 
-// 1hz sync connection by default, windowed over last three bounces 
-extern	vrpn_Connection *vrpn_get_connection_by_name (char * cname,
-						      double dFreq = 1.0,
-						      int cSyncWindow = 3);
-
 // forward decls
 class vrpn_Clock_Server;
 class vrpn_Clock_Remote;
@@ -287,9 +282,17 @@ class vrpn_Synchronized_Connection : public vrpn_Connection
     // which accumulates drift error more quickly.
     vrpn_Synchronized_Connection(char * server_name, double dFreq = 4.0, 
 			       int cOffsetWindow = 2);
+    // fullSync will perform an accurate sync on the connection for the
+    // user and return the current offset
+    struct timeval fullSync();
     vrpn_Clock_Remote * pClockRemote;
     virtual int mainloop (void);
 };
+
+// 1hz sync connection by default, windowed over last three bounces 
+extern vrpn_Connection *vrpn_get_connection_by_name (char * cname,
+		   double dFreq = 1.0,int cSyncWindow = 3);
+
 
 #endif // VRPN_CONNECTION_H
 
