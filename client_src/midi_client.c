@@ -31,7 +31,7 @@ int main()
 	sleep (10);
 
 	printf("...Done\n");
-	remote->play_midi_sound(0.00);
+	remote->play_stop(1);
 	remote->mainloop();
 	return 0;
 }
