@@ -112,28 +112,28 @@ text:	$(OBJ_DIR)/text
 # $(OBJ_DIR)/client: $(OBJ_DIR) $(OBJ_DIR)/client.o	
 # 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/client $(OBJ_DIR)/client.o -lvrpn -lsdi 
 
-$(OBJ_DIR)/vrpn_server: $(OBJ_DIR) $(OBJ_DIR)/vrpn.o  $(OBJ_DIR)/midi.o \
+$(OBJ_DIR)/vrpn_server: $(OBJ_DIR) $(OBJ_DIR)/vrpn.o  \
 			 ../$(HW_OS)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/vrpn_server \
-		$(OBJ_DIR)/vrpn.o $(OBJ_DIR)/midi.o \
+		$(OBJ_DIR)/vrpn.o \
 		-lvrpnserver $(GL) -lquat $(SYSLIBS) -lm
 
-$(OBJ_DIR)/client_and_server: $(OBJ_DIR) $(OBJ_DIR)/client_and_server.o  $(OBJ_DIR)/midi.o \
+$(OBJ_DIR)/client_and_server: $(OBJ_DIR) $(OBJ_DIR)/client_and_server.o  \
 			 ../$(HW_OS)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/client_and_server \
-		$(OBJ_DIR)/client_and_server.o $(OBJ_DIR)/midi.o \
+		$(OBJ_DIR)/client_and_server.o \
 		-lvrpnserver $(GL) -lquat $(SYSLIBS) -lm
 
 $(OBJ_DIR)/forward: $(OBJ_DIR) $(OBJ_DIR)/forward.o  \
 			 ../$(HW_OS)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/forward \
-		$(OBJ_DIR)/forward.o $(OBJ_DIR)/midi.o \
+		$(OBJ_DIR)/forward.o \
 		-lvrpnserver -lm
 
 $(OBJ_DIR)/text: $(OBJ_DIR) $(OBJ_DIR)/text.o  \
 			 ../$(HW_OS)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/text \
-		$(OBJ_DIR)/text.o $(OBJ_DIR)/midi.o \
+		$(OBJ_DIR)/text.o \
 		-lvrpnserver -lm
 
 $(OBJ_DIR)/sample_server:	$(OBJ_DIR) $(OBJ_DIR)/sample_server.o \
@@ -156,7 +156,6 @@ clean:
 	rm -f $(OBJ_DIR)/*.o $(OBJ_DIR)/vrpn_server $(OBJ_DIR)/forward \
 	$(OBJ_DIR)/text $(OBJ_DIR)/sample_server
 
-$(OBJ_DIR)/midi.o:	midi.c
 $(OBJ_DIR)/vrpn.o:	vrpn.C
 $(OBJ_DIR)/forward.o:	forward.C
 $(OBJ_DIR)/text.o:	text.C

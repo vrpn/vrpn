@@ -41,6 +41,15 @@
 #define	MAX_SGIBOX 2
 #define	MAX_CEREALS 8
 
+#define CHECK(s) \
+    retval = (s)(pch, line, config_file); \
+    if (retval && bail_on_error) \
+      return -1; \
+    else \
+      continue
+
+#define next() pch += strlen(pch) + 1
+
 void Usage (const char * s)
 {
   fprintf(stderr,"Usage: %s [-f filename] [-warn] [-v] [port] [-q]\n",s);
@@ -76,6 +85,8 @@ vrpn_SGIBox	* vrpn_special_sgibox;
 // TCH October 1998
 // Use Forwarder as remote-controlled multiple connections.
 vrpn_Forwarder_Server * forwarderServer;
+
+int	verbose = 1;
 
 // install a signal handler to shut down the trackers and buttons
 #ifndef WIN32
@@ -170,6 +181,627 @@ int	get_AFline(FILE *config_file, char *axis_name, vrpn_TAF_axis *axis)
 	return 0;
 }
 
+// setup_raw_SGIBox
+// uses globals:  num_sgiboxes, sgiboxes[], verbose
+// imports from main:  pch
+// returns nonzero on error
+
+int setup_raw_SGIBox (char * & pch, char * line, FILE * config_file) {
+
+  char s2 [512], s3 [512];
+
+        // Line will be: vrpn_raw_SGIBox NAME PORT [list of buttons to toggle]
+        int tbutton;    // Button to toggle
+        next();
+        if (sscanf(pch,"%511s %511s",s2,s3)!=2) {
+                fprintf(stderr,"Bad vrpn_raw_SGIBox line: %s\n",line);
+                return -1;
+        }
+
+        // Make sure there's room for a new raw SGIBox
+        if (num_sgiboxes >= MAX_SGIBOX) {
+          fprintf(stderr,"Too many raw SGI Boxes in config file");
+          return -1;
+        }
+
+        // Open the raw SGI box
+        if (verbose)
+          printf("Opening vrpn_raw_SGIBox %s on serial port %s\n", s2, s3);
+        if ( (sgiboxes[num_sgiboxes] =
+             new vrpn_raw_SGIBox(s2, connection, s3)) == NULL){
+          fprintf(stderr,"Can't create new vrpn_raw_SGIBox\n");
+            return -1;
+        }
+        else {
+          num_sgiboxes++;
+        }
+
+        //setting listed buttons to toggles instead of default momentary
+        //pch=s3;
+        pch+=strlen(s2)+1; //advance past the name and port
+        pch+=strlen(s3)+1;
+        while(sscanf(pch,"%s",s2)==1){
+                pch+=strlen(s2)+1;
+                tbutton=atoi(s2);       
+                // set the button to be a toggle,
+                // and set the state of that toggle
+                // to 'off'
+                sgiboxes[num_sgiboxes - 1]->set_toggle(tbutton,
+                                                 vrpn_BUTTON_TOGGLE_OFF); 
+                //vrpnButton class will make sure I don't set
+                //an invalid button number
+                printf("\tButton %d is toggle\n",tbutton);
+        }
+
+  return 0;  // successful completion
+}
+
+int setup_SGIBOX (char * & pch, char * line, FILE * config_file) {
+
+  char s2 [512];
+
+#ifdef SGI_BDBOX
+            int tbutton;
+            next();
+            if (sscanf(pch,"%511s",s2)!=1) {
+              fprintf(stderr,"Bad vrpn_SGIBOX line: %s\n",line);
+              return -1;
+            }
+
+                // Open the sgibox
+              if (verbose) printf("Opening vrpn_SGIBOX on host %s\n", s2);
+                if ( (vrpn_special_sgibox =
+                  new vrpn_SGIBox(s2, connection)) == NULL){
+                  fprintf(stderr,"Can't create new vrpn_SGIBox\n");
+                  return -1;
+                } 
+                
+                //setting listed buttons to toggles instead of default momentary
+                pch+=strlen(s2)+1;
+                while(sscanf(pch,"%s",s2)==1){
+                        pch+=strlen(s2)+1;
+                        tbutton=atoi(s2);       
+                        vrpn_special_sgibox->set_toggle(tbutton,
+                                 vrpn_BUTTON_TOGGLE_OFF);  
+                        //vrpnButton class will make sure I don't set
+                        //an invalid button number
+                        printf("Button %d toggles\n",tbutton);
+                }
+                printf("Opening vrpn_SGIBOX on host %s done\n", s2);
+
+#else
+                fprintf(stderr,"vrpn_server: Can't open SGIbox: not an SGI!\n");
+#endif
+
+
+  return 0;  // successful completion
+}
+
+int setup_JoyFly (char * & pch, char * line, FILE * config_file) {
+  char s2 [512], s3 [512], s4 [512];
+
+            next();
+            if (sscanf(pch, "%511s%511s%511s",s2,s3,s4) != 3) {
+              fprintf(stderr, "Bad vrpn_JoyFly line: %s\n", line);
+              return -1;
+            }
+
+#ifdef  _WIN32
+            fprintf(stderr,"JoyFly tracker not yet defined for NT\n");
+#else
+            // Make sure there's room for a new tracker
+                if (num_trackers >= MAX_TRACKERS) {
+                  fprintf(stderr,"Too many trackers in config file");
+                  return -1;
+                }
+
+                // Open the tracker
+                if (verbose)
+                  printf("Opening vrpn_Tracker_JoyFly:  "
+                         "%s on server %s with config_file %s\n",
+                         s2,s3,s4);
+
+                // HACK HACK HACK
+                // Check for illegal character leading '*' to see if it's local
+
+                if (s3[0] == '*') 
+                  trackers[num_trackers] =
+                    new vrpn_Tracker_JoyFly (s2, connection, &s3[1], s4,
+                                             connection);
+                else
+                  trackers[num_trackers] =
+                    new vrpn_Tracker_JoyFly (s2, connection, s3, s4);
+
+                if (!trackers[num_trackers]) {
+                  fprintf(stderr,"Can't create new vrpn_Tracker_JoyFly\n");
+                  return -1;
+                } else {
+                  num_trackers++;
+                }
+#endif
+
+  return 0;
+}
+
+int setup_Tracker_AnalogFly (char * & pch, char * line, FILE * config_file) {
+  char s2 [512], s3 [512];
+  int i1;
+  float f1;
+
+                vrpn_Tracker_AnalogFlyParam     p;
+
+                next();
+                if (sscanf(pch, "%511s%g",s2,&f1) != 2) {
+                        fprintf(stderr, "Bad vrpn_Tracker_AnalogFly line: %s\n",
+ line);
+                        return -1;
+                }
+
+                // Make sure there's room for a new tracker
+                if (num_trackers >= MAX_TRACKERS) {
+                  fprintf(stderr,"Too many trackers in config file");
+                  return -1;
+                }
+
+                // Open the tracker
+                if (verbose) {
+                  printf("Opening vrpn_Tracker_AnalogFly: "
+                         "%s with update rate %g\n",s2,f1);
+                }
+
+                // Scan the following lines in the configuration file to fill
+                // in the start-up parameters for the different axis.
+
+                if (get_AFline(config_file,"X", &p.x)) {
+                        fprintf(stderr,"Can't read X line for AnalogFly\n");
+                        return -1;
+                }
+                
+                if (get_AFline(config_file,"Y", &p.y)) {
+                        fprintf(stderr,"Can't read Y line for AnalogFly\n");
+                        return -1;
+                }
+
+                if (get_AFline(config_file,"Z", &p.z)) {
+                        fprintf(stderr,"Can't read Z line for AnalogFly\n");
+                        return -1;
+                }
+
+                if (get_AFline(config_file,"RX", &p.sx)) {
+                        fprintf(stderr,"Can't read RX line for AnalogFly\n");
+                        return -1;
+                }
+
+                if (get_AFline(config_file,"RY", &p.sy)) {
+                        fprintf(stderr,"Can't read RY line for AnalogFly\n");
+                        return -1;
+                }
+
+                if (get_AFline(config_file,"RZ", &p.sz)) {
+                        fprintf(stderr,"Can't read RZ line for AnalogFly\n");
+                        return -1;
+                }
+
+        // Read the reset line
+        if (fgets(line, sizeof(line), config_file) == NULL) {
+                fprintf(stderr,"Ran past end of config file in AnalogFly\n");
+                return -1;
+        }
+        if (sscanf(line, "RESET %511s%d", s3, &i1) != 2) {
+                fprintf(stderr,"Bad RESET line in AnalogFly\n");
+                return -1;
+        }
+        if (strcmp(s3,"NULL") != 0) {
+                p.reset_name = s3;
+                p.reset_which = i1;
+        }
+
+        trackers[num_trackers] = new
+           vrpn_Tracker_AnalogFly (s2, connection, &p, f1);
+
+                if (!trackers[num_trackers]) {
+                  fprintf(stderr,"Can't create new vrpn_Tracker_AnalogFly\n");
+                  return -1;
+                } else {
+                  num_trackers++;
+                }
+  return 0;
+}
+
+int setup_Joystick (char * & pch, char * line, FILE * config_file) {
+  char s2 [512], s3 [512];
+  int i1;
+
+    float fhz;
+    // Get the arguments
+    next();
+    if (sscanf(pch, "%511s%511s%d %f", s2, s3, &i1, &fhz) != 4) {
+      fprintf(stderr, "Bad vrpn_Joystick line: %s\n", line);
+      return -1;
+    }
+
+#ifdef  _WIN32
+    fprintf(stderr,"Joystick not yet defined for NT\n");
+#else
+
+    // Make sure there's room for a new joystick server
+    if (num_analogs >= MAX_ANALOG) {
+      fprintf(stderr, "Too many analog devices in config file");
+      return -1;
+    }
+
+    // Open the sound server
+    if (verbose) 
+      printf("Opening vrpn_Joystick:  "
+             "%s on port %s baud %d, min update rate = %.2f\n", 
+             s2,s3, i1, fhz);
+    if ((analogs[num_analogs] =
+          new vrpn_Joystick(s2, connection,s3, i1, fhz)) == NULL) {
+        fprintf(stderr, "Can't create new vrpn_Joystick\n");
+        return -1;
+    } else {
+        num_analogs++;
+    }
+#endif
+
+  return 0;
+}
+
+int setup_CerealBox (char * & pch, char * line, FILE * config_file) {
+  char s2 [512], s3 [512];
+  int i1, i2, i3, i4;
+
+            next();
+            // Get the arguments (class, serialbox_name, port, baud, numdig,
+            // numana, numenc)
+            if (sscanf(pch,"%511s%511s%d%d%d%d",s2,s3, &i1, &i2, &i3, &i4) != 6)
+ {
+              fprintf(stderr,"Bad vrpn_Cereal line: %s\n",line);
+              return -1;
+            }
+
+            // Make sure there's room for a new box
+            if (num_cereals >= MAX_CEREALS) {
+              fprintf(stderr,"Too many Cereal boxes in config file");
+              return -1;
+            }
+
+            // Open the box
+            if (verbose) 
+              printf("Opening vrpn_Cereal: %s on port %s, baud %d, %d dig, "
+                     " %d ana, %d enc\n",
+                    s2,s3,i1, i2,i3,i4);
+            if ((cereals[num_cereals] =
+                  new vrpn_CerealBox(s2, connection, s3, i1, i2, i3, i4))
+                       == NULL)               
+              {
+                fprintf(stderr,"Can't create new vrpn_CerealBox\n");
+                return -1;
+              } else {
+                num_cereals++;
+              }
+
+  return 0;
+}
+
+int setup_Tracker_Dyna (char * & pch, char * line, FILE * config_file) {
+
+  char s2 [512], s3 [512];
+  int i1, i2;
+
+            // Get the arguments (class, tracker_name, sensors, port, baud)
+            if (sscanf(pch,"%511s%d%511s%d",s2,&i2, s3, &i1) != 4) {
+              fprintf(stderr,"Bad vrpn_Tracker_Dyan line: %s\n",line);
+              return -1;
+            }
+
+            // Make sure there's room for a new tracker
+            if (num_trackers >= MAX_TRACKERS) {
+              fprintf(stderr,"Too many trackers in config file");
+              return -1;
+            }
+
+
+            // Open the tracker
+            if (verbose) 
+              printf("Opening vrpn_Tracker_Dyan: %s on port %s, baud %d, "
+                     "%d sensors\n",
+                    s2,s3,i1, i2);
+            if ((trackers[num_trackers] =
+                  new vrpn_Tracker_Dyna(s2, connection, i2, s3, i1)) == NULL)   
+            
+              {
+                fprintf(stderr,"Can't create new vrpn_Tracker_Dyna\n");
+                return -1;
+              } else {
+                num_trackers++;
+              }
+
+  return 0;
+}
+
+int setup_Tracker_Fastrak (char * & pch, char * line, FILE * config_file) {
+
+  char s2 [512], s3 [512];
+  int i1;
+
+        char    rcmd[5000];     // Reset command to send to Fastrak
+        next();
+        // Get the arguments (class, tracker_name, port, baud)
+        if (sscanf(pch,"%511s%511s%d",s2,s3,&i1) != 3) {
+          fprintf(stderr,"Bad vrpn_Tracker_Fastrak line: %s\n%s %s\n",
+                  line, pch, s3);
+          return -1;
+        }
+
+                // Make sure there's room for a new tracker
+                if (num_trackers >= MAX_TRACKERS) {
+                  fprintf(stderr,"Too many trackers in config file");
+                  return -1;
+                }
+
+        // If the last character in the line is a backslash, '\', then
+        // the following line is an additional command to send to the
+        // Fastrak at reset time. So long as we find lines with slashes
+        // at the ends, we add them to the command string to send. Note
+        // that there is a newline at the end of the line, following the
+        // backslash.
+        sprintf(rcmd, "");
+        while (line[strlen(line)-2] == '\\') {
+          // Read the next line
+          if (fgets(line, sizeof(line), config_file) == NULL) {
+              fprintf(stderr,"Ran past end of config file in Fastrak\n");
+                  return -1;
+          }
+
+          // Copy the line into the remote command,
+          // then replace \ with \015 if present
+          // In any case, make sure we terminate with \015.
+          strncat(rcmd, line, sizeof(line));
+          if (rcmd[strlen(rcmd)-2] == '\\') {
+                  rcmd[strlen(rcmd)-2] = '\015';
+                  rcmd[strlen(rcmd)-1] = '\0';
+          } else if (rcmd[strlen(rcmd)-1] == '\n') {
+                  rcmd[strlen(rcmd)-1] = '\015';
+          } else {        // Add one, we reached the EOF before CR
+                  rcmd[strlen(rcmd)+1] = '\0';
+                  rcmd[strlen(rcmd)] = '\015';
+          }
+        }
+        if (strlen(rcmd) > 0) {
+                printf("... additional reset commands follow:\n");
+                printf("%s\n",rcmd);
+        }
+
+        // Open the tracker
+        if (verbose) printf(
+            "Opening vrpn_Tracker_Fastrak: %s on port %s, baud %d\n",
+            s2,s3,i1);
+
+#if defined(sgi) || defined(linux) || defined(WIN32)
+
+        if ( (trackers[num_trackers] =
+             new vrpn_Tracker_Fastrak(s2, connection, s3, i1, 1, 4, rcmd))
+                            == NULL){
+
+#endif
+
+          fprintf(stderr,"Can't create new vrpn_Tracker_Fastrak\n");
+          return -1;
+
+#if defined(sgi) || defined(linux) || defined(WIN32)
+
+        } else {
+          num_trackers++;
+        }
+
+#endif
+
+  return 0;
+}
+
+int setup_Tracker_3Space (char * & pch, char * line, FILE * config_file) {
+
+  char s2 [512], s3 [512];
+  int i1;
+
+            next();
+                // Get the arguments (class, tracker_name, port, baud)
+                if (sscanf(pch,"%511s%511s%d",s2,s3,&i1) != 3) {
+                  fprintf(stderr,"Bad vrpn_Tracker_3Space line: %s\n",line);
+                  return -1;
+                }
+
+                // Make sure there's room for a new tracker
+                if (num_trackers >= MAX_TRACKERS) {
+                  fprintf(stderr,"Too many trackers in config file");
+                  return -1;
+                }
+
+                // Open the tracker
+                if (verbose) printf(
+                    "Opening vrpn_Tracker_3Space: %s on port %s, baud %d\n",
+                    s2,s3,i1);
+                if ( (trackers[num_trackers] =
+                     new vrpn_Tracker_3Space(s2, connection, s3, i1)) == NULL){
+                  fprintf(stderr,"Can't create new vrpn_Tracker_3Space\n");
+                  return -1;
+                } else {
+                  num_trackers++;
+                }
+
+
+
+  return 0;
+}
+
+int setup_Tracker_Flock (char * & pch, char * line, FILE * config_file) {
+
+  char s2 [512], s3 [512];
+  int i1, i2;
+
+            next();
+                // Get the arguments (class, tracker_name, sensors, port, baud)
+                if (sscanf(pch,"%511s%d%511s%d", s2, 
+                           &i1, s3, &i2) != 4) {
+                  fprintf(stderr,"Bad vrpn_Tracker_Flock line: %s\n",line);
+                  return -1;
+                }
+
+                // Make sure there's room for a new tracker
+                if (num_trackers >= MAX_TRACKERS) {
+                  fprintf(stderr,"Too many trackers in config file");
+                  return -1;
+                }
+
+        // Open the tracker
+        if (verbose) printf("Opening vrpn_Tracker_Flock: "
+                            "%s (%d sensors, on port %s, baud %d)\n",
+                    s2, i1, s3,i2);
+        if ( (trackers[num_trackers] =
+             new vrpn_Tracker_Flock(s2,connection,i1,s3,i2)) == NULL){
+          fprintf(stderr,"Can't create new vrpn_Tracker_Flock\n");
+          return -1;
+        } else {
+          num_trackers++;
+        }
+
+  return 0;
+
+}
+
+int setup_Tracker_Flock_Parallel (char * & pch, char * line, FILE * config_file) {
+
+  char s2 [512], s3 [512];
+  int i1, i2;
+
+            next();
+            // Get the arguments (class, tracker_name, sensors, port, baud, 
+            // and parallel sensor ports )
+            
+            if (sscanf(pch,"%511s%d%511s%d", s2, 
+                       &i1, s3, &i2) != 4) {
+              fprintf(stderr,"Bad vrpn_Tracker_Flock_Parallel line: %s\n",line);
+              return -1;
+            }
+
+            // set up strtok to get the variable num of port names
+            char rgch[24];
+            sprintf(rgch, "%d", i2);
+            char *pch2 = strstr(pch, rgch); 
+            strtok(pch2," \t");
+            fprintf(stderr,"%s",pch2);
+            // pch points to baud, next strtok will give first port name
+            
+            char *rgs[MAX_SENSORS];
+            // get sensor ports
+            for (int iSlaves=0;iSlaves<i1;iSlaves++) {
+              rgs[iSlaves]=new char[512];
+              if (!(pch2 = strtok(0," \t"))) {
+                fprintf(stderr,"Bad vrpn_Tracker_Flock_Parallel line: %s\n",
+                    line);
+                return -1;
+              } else {
+                sscanf(pch2,"%511s", rgs[iSlaves]);
+              }
+            }
+
+            // Make sure there's room for a new tracker
+            if (num_trackers >= MAX_TRACKERS) {
+              fprintf(stderr,"Too many trackers in config file");
+              return -1;
+            }
+            
+            // Open the tracker
+            if (verbose)
+              printf("Opening vrpn_Tracker_Flock_Parallel: "
+                     "%s (%d sensors, on port %s, baud %d)\n",
+                    s2, i1, s3,i2);
+            if ( (trackers[num_trackers] =
+                  new vrpn_Tracker_Flock_Parallel(s2,connection,i1,s3,i2,
+                                                  rgs)) == NULL){
+              fprintf(stderr,"Can't create new vrpn_Tracker_Flock_Parallel\n");
+              return -1;
+            } else {
+              num_trackers++;
+            }
+
+  return 0;
+}
+
+int setup_Tracker_NULL (char * & pch, char * line, FILE * config_file) {
+
+  char s2 [512];
+  int i1;
+  float f1;
+
+            next();
+                // Get the arguments (class, tracker_name, sensors, rate)
+                if (sscanf(pch,"%511s%d%g",s2,&i1,&f1) != 3) {
+                  fprintf(stderr,"Bad vrpn_Tracker_NULL line: %s\n",line);
+                  return -1;
+                }
+
+                // Make sure there's room for a new tracker
+                if (num_trackers >= MAX_TRACKERS) {
+                  fprintf(stderr,"Too many trackers in config file");
+                  return -1;
+                }
+
+                // Open the tracker
+                if (verbose) printf(
+                    "Opening vrpn_Tracker_NULL: %s with %d sensors, rate %f\n",
+                    s2,i1,f1);
+                if ( (trackers[num_trackers] =
+                     new vrpn_Tracker_NULL(s2, connection, i1, f1)) == NULL){
+                  fprintf(stderr,"Can't create new vrpn_Tracker_NULL\n");
+                  return -1;
+                } else {
+                  num_trackers++;
+                }
+
+  return 0;
+}
+
+int setup_Button_Python (char * & pch, char * line, FILE * config_file) {
+
+  char s2 [512];
+  int i1;
+
+            next();
+                // Get the arguments (class, button_name, portno)
+                if (sscanf(pch,"%511s%d",s2,&i1) != 2) {
+                  fprintf(stderr,"Bad vrpn_Button_Python line: %s\n",line);
+                  return -1;
+                }
+
+                // Make sure there's room for a new button
+                if (num_buttons >= MAX_BUTTONS) {
+                  fprintf(stderr,"Too many buttons in config file");
+                  return -1;
+                }
+
+                // Open the button
+                if (verbose) printf(
+                    "Opening vrpn_Button_Python: %s on port %d\n", s2,i1);
+                if ( (buttons[num_buttons] =
+                     new vrpn_Button_Python(s2, connection, i1)) == NULL){
+                  fprintf(stderr,"Can't create new vrpn_Button_Python\n");
+                  return -1;
+                } else {
+                  num_buttons++;
+                }
+
+  return 0;
+
+}
+
+
+
+
+
+
+
 
 main (int argc, char * argv[])
 {
@@ -178,7 +810,6 @@ main (int argc, char * argv[])
 	char 	* client_name = NULL;
 	int	client_port;
 	int	bail_on_error = 1;
-	int	verbose = 1;
 	int	auto_quit = 0;
 	int	realparams = 0;
 	int	i;
@@ -261,9 +892,11 @@ main (int argc, char * argv[])
       {	char	line[512];	// Line read from the input file
         char *pch;
 	char    scrap[512];
-	char	s1[512],s2[512],s3[512],s4[512]; // String parameters
-	int	i1, i2, i3, i4;			// Integer parameters
-	float	f1;				// Float parameters
+	char	s1[512];
+        //char s2[512],s3[512],s4[512]; // String parameters
+	//int	i1, i2, i3, i4;			// Integer parameters
+	//float	f1;				// Float parameters
+        int retval;
 
 	// Read lines from the file until we run out
 	while ( fgets(line, sizeof(line), config_file) != NULL ) {
@@ -289,550 +922,42 @@ main (int argc, char * argv[])
 
 	  //	  #define isit(s) !strncmp(line,s,strlen(s))
 #define isit(s) !strcmp(pch=strtok(scrap," \t"),s)
-#define next() pch += strlen(pch) + 1
+
+          // Rewritten to move all this code out-of-line by Tom Hudson
+          // August 99.  We could even make it table-driven now.
+          // It seems that we're never going to document this program
+          // and that it will allways be necessary to read the code to
+          // figure out how to write a config file.  This code rearrangement
+          // should make it easier to figure out what the possible tokens
+          // are in a config file by listing them close together here
+          // instead of hiding them in the middle of functions.
+
 	  if (isit("vrpn_raw_SGIBox")) {
-		// Line will be: vrpn_raw_SGIBox NAME PORT [list of buttons to toggle]
-		int tbutton;	// Button to toggle
-		next();
-		if (sscanf(pch,"%511s %511s",s2,s3)!=2) {
-			fprintf(stderr,"Bad vrpn_raw_SGIBox line: %s\n",line);
-			if (bail_on_error) {
-			  return -1; }
-			else {
-			  continue; }	// Skip this line
-		}
-
-		// Make sure there's room for a new raw SGIBox
-		if (num_sgiboxes >= MAX_SGIBOX) {
-		  fprintf(stderr,"Too many raw SGI Boxes in config file");
-		  if (bail_on_error) { return -1; }
-		  else { continue; }	// Skip this line
-		}
-
-		// Open the raw SGI box
-		if (verbose) printf("Opening vrpn_raw_SGIBox %s on serial port %s\n", s2, s3);
-		if ( (sgiboxes[num_sgiboxes] =
-		     new vrpn_raw_SGIBox(s2, connection, s3)) == NULL){
-		  fprintf(stderr,"Can't create new vrpn_raw_SGIBox\n");
-		  if (bail_on_error) {
-		    return -1; }
-		  else {
-		    continue; }	// Skip this line
-		}
-		else {
-		  num_sgiboxes++;
-		}
-
-		//setting listed buttons to toggles instead of default momentary
-		//pch=s3;
-		pch+=strlen(s2)+1; //advance past the name and port
-		pch+=strlen(s3)+1;
-       		while(sscanf(pch,"%s",s2)==1){
-			pch+=strlen(s2)+1;
-			tbutton=atoi(s2);	
-			// set the button to be a toggle, and set the state of that toggle
-			// to 'off'
-			sgiboxes[num_sgiboxes-1]->set_toggle(tbutton,vrpn_BUTTON_TOGGLE_OFF); 
-			//vrpnButton class will make sure I don't set
-			//an invalid button number
-			printf("\tButton %d is toggle\n",tbutton);
-		}
-
+            CHECK(setup_raw_SGIBox);
 	  } else if (isit("vrpn_SGIBOX")) {
-#ifdef SGI_BDBOX
-	    int tbutton;
-	    next();
-	    if (sscanf(pch,"%511s",s2)!=1) {
-	      fprintf(stderr,"Bad vrpn_SGIBOX line: %s\n",line);
-	      if (bail_on_error) { return -1; }
-	      else { continue; }	// Skip this line
-	    }
-
-		// Open the sgibox
-	      if (verbose) printf("Opening vrpn_SGIBOX on host %s\n", s2);
-		if ( (vrpn_special_sgibox =
-		  new vrpn_SGIBox(s2, connection)) == NULL){
-		  fprintf(stderr,"Can't create new vrpn_SGIBox\n");
-		  if (bail_on_error) { return -1; }
-		  else { continue; }	// Skip this line
-		} 
-		
-		//setting listed buttons to toggles instead of default momentary
-		pch+=strlen(s2)+1;
-		while(sscanf(pch,"%s",s2)==1){
-			pch+=strlen(s2)+1;
-			tbutton=atoi(s2);	
-			vrpn_special_sgibox->set_toggle(tbutton,vrpn_BUTTON_TOGGLE_OFF);  
-			//vrpnButton class will make sure I don't set
-			//an invalid button number
-			printf("Button %d toggles\n",tbutton);
-		}
-		printf("Opening vrpn_SGIBOX on host %s done\n", s2);
-
-#else
-		fprintf(stderr,"vrpn_server: Can't open SGIbox: not an SGI!\n");
-#endif
+            CHECK(setup_SGIBOX);
 	  } else if (isit("vrpn_JoyFly")) {
-	    next();
-	    if (sscanf(pch, "%511s%511s%511s",s2,s3,s4) != 3) {
-	      fprintf(stderr, "Bad vrpn_JoyFly line: %s\n", line);
-	      if (bail_on_error) { return -1; }
-	      else { continue; }	// Skip this line
-	    }
-
-#ifdef	_WIN32
-	    fprintf(stderr,"JoyFly tracker not yet defined for NT\n");
-#else
-	    // Make sure there's room for a new tracker
-		if (num_trackers >= MAX_TRACKERS) {
-		  fprintf(stderr,"Too many trackers in config file");
-		  if (bail_on_error) { return -1; }
-		  else { continue; }	// Skip this line
-		}
-
-		// Open the tracker
-	        if (verbose)
-                  printf("Opening vrpn_Tracker_JoyFly:  "
-                         "%s on server %s with config_file %s\n",
-                         s2,s3,s4);
-
-                // HACK HACK HACK
-                // Check for illegal character leading '*' to see if it's local
-
-                if (s3[0] == '*') 
-                  trackers[num_trackers] =
-                    new vrpn_Tracker_JoyFly (s2, connection, &s3[1], s4,
-                                             connection);
-                else
-                  trackers[num_trackers] =
-                    new vrpn_Tracker_JoyFly (s2, connection, s3, s4);
-
-		if (!trackers[num_trackers]) {
-		  fprintf(stderr,"Can't create new vrpn_Tracker_JoyFly\n");
-		  if (bail_on_error) { return -1; }
-		  else { continue; }	// Skip this line
-		} else {
-		  num_trackers++;
-		}
-#endif
+            CHECK(setup_JoyFly);
 	  } else if (isit("vrpn_Tracker_AnalogFly")) {
-		vrpn_Tracker_AnalogFlyParam	p;
-
-		next();
-		if (sscanf(pch, "%511s%g",s2,&f1) != 2) {
-			fprintf(stderr, "Bad vrpn_Tracker_AnalogFly line: %s\n", line);
-			if (bail_on_error) { return -1; }
-			else { continue; }	// Skip this line
-		}
-
-		// Make sure there's room for a new tracker
-		if (num_trackers >= MAX_TRACKERS) {
-		  fprintf(stderr,"Too many trackers in config file");
-		  if (bail_on_error) { return -1; }
-		  else { continue; }	// Skip this line
-		}
-
-		// Open the tracker
-		if (verbose) {
-                  printf("Opening vrpn_Tracker_AnalogFly: %s with update rate %g\n",s2,f1);
-		}
-
-		// Scan the following lines in the configuration file to fill
-		// in the start-up parameters for the different axis.
-
-		if (get_AFline(config_file,"X", &p.x)) {
-			fprintf(stderr,"Can't read X line for AnalogFly\n");
-			if (bail_on_error) { return -1; }
-			else { continue; }	// Skip this line
-		}
-		
-		if (get_AFline(config_file,"Y", &p.y)) {
-			fprintf(stderr,"Can't read Y line for AnalogFly\n");
-			if (bail_on_error) { return -1; }
-			else { continue; }	// Skip this line
-		}
-
-		if (get_AFline(config_file,"Z", &p.z)) {
-			fprintf(stderr,"Can't read Z line for AnalogFly\n");
-			if (bail_on_error) { return -1; }
-			else { continue; }	// Skip this line
-		}
-
-		if (get_AFline(config_file,"RX", &p.sx)) {
-			fprintf(stderr,"Can't read RX line for AnalogFly\n");
-			if (bail_on_error) { return -1; }
-			else { continue; }	// Skip this line
-		}
-
-		if (get_AFline(config_file,"RY", &p.sy)) {
-			fprintf(stderr,"Can't read RY line for AnalogFly\n");
-			if (bail_on_error) { return -1; }
-			else { continue; }	// Skip this line
-		}
-
-		if (get_AFline(config_file,"RZ", &p.sz)) {
-			fprintf(stderr,"Can't read RZ line for AnalogFly\n");
-			if (bail_on_error) { return -1; }
-			else { continue; }	// Skip this line
-		}
-
-		// Read the reset line
-		if (fgets(line, sizeof(line), config_file) == NULL) {
-			fprintf(stderr,"Ran past end of config file in AnalogFly\n");
-			if (bail_on_error) { return -1; } else {continue;}
-		}
-		if (sscanf(line, "RESET %511s%d", s3, &i1) != 2) {
-			fprintf(stderr,"Bad RESET line in AnalogFly\n");
-			if (bail_on_error) { return -1; } else {continue;}
-		}
-		if (strcmp(s3,"NULL") != 0) {
-			p.reset_name = s3;
-			p.reset_which = i1;
-		}
-
-		trackers[num_trackers] = new vrpn_Tracker_AnalogFly(s2,connection,&p,f1);
-
-		if (!trackers[num_trackers]) {
-		  fprintf(stderr,"Can't create new vrpn_Tracker_AnalogFly\n");
-		  if (bail_on_error) { return -1; }
-		  else { continue; }	// Skip this line
-		} else {
-		  num_trackers++;
-		}
+            CHECK(setup_Tracker_AnalogFly);
 	  } else  if (isit("vrpn_Joystick")) {
-	    float fhz;
-	    // Get the arguments
-	    next();
-	    if (sscanf(pch, "%511s%511s%d %f", s2, s3, &i1, &fhz) != 4) {
-	      fprintf(stderr, "Bad vrpn_Joystick line: %s\n", line);
-	      if (bail_on_error) { return -1; }
-	      else { continue; }	// Skip this line
-	    }
-
-#ifdef	_WIN32
-	    fprintf(stderr,"Joystick not yet defined for NT\n");
-#else
-
-	    // Make sure there's room for a new joystick server
-	    if (num_analogs >= MAX_ANALOG) {
-	      fprintf(stderr, "Too many analog devices in config file");
-	      if (bail_on_error) { return -1; }
-	      else { continue; }	// Skip this line
-	    }
-
-	    // Open the sound server
-	    if (verbose) 
-	      printf("Opening vrpn_Joystick:  "
-                     "%s on port %s baud %d, min update rate = %.2f\n", 
-		     s2,s3, i1, fhz);
-	    if ((analogs[num_analogs] =
-		  new vrpn_Joystick(s2, connection,s3, i1, fhz)) == NULL) {
-		fprintf(stderr, "Can't create new vrpn_Joystick\n");
-		if (bail_on_error) { return -1; }
-		else { continue; }	// Skip this line
-	    } else {
-		num_analogs++;
-	    }
-#endif
+            CHECK(setup_Joystick);
 	  } else if (isit("vrpn_CerealBox")) {
-	    next();
-	    // Get the arguments (class, serialbox_name, port, baud, numdig, numana, numenc)
-	    if (sscanf(pch,"%511s%511s%d%d%d%d",s2,s3, &i1, &i2, &i3, &i4) != 6) {
-	      fprintf(stderr,"Bad vrpn_Cereal line: %s\n",line);
-	      if (bail_on_error) { return -1; }
-	      else { continue; }	// Skip this line
-	    }
-
-	    // Make sure there's room for a new box
-	    if (num_cereals >= MAX_CEREALS) {
-	      fprintf(stderr,"Too many Cereal boxes in config file");
-	      if (bail_on_error) { return -1; }
-	      else { continue; }	// Skip this line
-	    }
-
-	    // Open the box
-	    if (verbose) 
-	      printf("Opening vrpn_Cereal: %s on port %s, baud %d, %d dig, %d ana, %d enc\n",
-		    s2,s3,i1, i2,i3,i4);
-	    if ((cereals[num_cereals] =
-		  new vrpn_CerealBox(s2, connection, s3, i1, i2, i3, i4)) == NULL)               
-	      {
-		fprintf(stderr,"Can't create new vrpn_CerealBox\n");
-		if (bail_on_error) { return -1; }
-		else { continue; }	// Skip this line
-	      } else {
-		num_cereals++;
-	      }
+            CHECK(setup_CerealBox);
 	  } else if (isit("vrpn_Tracker_Dyna")) {
-	    next();
-	    // Get the arguments (class, tracker_name, sensors, port, baud)
-	    if (sscanf(pch,"%511s%d%511s%d",s2,&i2, s3, &i1) != 4) {
-	      fprintf(stderr,"Bad vrpn_Tracker_Dyan line: %s\n",line);
-	      if (bail_on_error) { return -1; }
-	      else { continue; }	// Skip this line
-	    }
-
-	    // Make sure there's room for a new tracker
-	    if (num_trackers >= MAX_TRACKERS) {
-	      fprintf(stderr,"Too many trackers in config file");
-	      if (bail_on_error) { return -1; }
-	      else { continue; }	// Skip this line
-	    }
-
-
-	    // Open the tracker
-	    if (verbose) 
-	      printf("Opening vrpn_Tracker_Dyan: %s on port %s, baud %d, %d sensors\n",
-		    s2,s3,i1, i2);
-	    if ((trackers[num_trackers] =
-		  new vrpn_Tracker_Dyna(s2, connection, i2, s3, i1)) == NULL)               
-	      {
-		fprintf(stderr,"Can't create new vrpn_Tracker_Dyna\n");
-		if (bail_on_error) { return -1; }
-		else { continue; }	// Skip this line
-	      } else {
-		num_trackers++;
-	      }
+            CHECK(setup_Tracker_Dyna);
 	  } else if (isit("vrpn_Tracker_Fastrak")) {
-		char	rcmd[5000];	// Reset command to send to Fastrak
-		next();
-		// Get the arguments (class, tracker_name, port, baud)
-		if (sscanf(pch,"%511s%511s%d",s2,s3,&i1) != 3) {
-		  fprintf(stderr,"Bad vrpn_Tracker_Fastrak line: %s\n%s %s\n",line, pch, s3);
-		  if (bail_on_error) { return -1; }
-		  else { continue; }	// Skip this line
-		}
-
-		// Make sure there's room for a new tracker
-		if (num_trackers >= MAX_TRACKERS) {
-		  fprintf(stderr,"Too many trackers in config file");
-		  if (bail_on_error) { return -1; }
-		  else { continue; }	// Skip this line
-		}
-
-		// If the last character in the line is a backslash, '\', then
-		// the following line is an additional command to send to the
-		// Fastrak at reset time. So long as we find lines with slashes
-		// at the ends, we add them to the command string to send. Note
-		// that there is a newline at the end of the line, following the
-		// backslash.
-		sprintf(rcmd, "");
-		while (line[strlen(line)-2] == '\\') {
-			// Read the next line
-			if (fgets(line, sizeof(line), config_file) == NULL) {
-				fprintf(stderr,"Ran past end of config file in Fastrak\n");
-				if (bail_on_error) { return -1; } else {continue;}
-			}
-
-			// Copy the line into the remote command, then replace \ with \015 if present
-			// In any case, make sure we terminate with \015.
-			strncat(rcmd, line, sizeof(line));
-			if (rcmd[strlen(rcmd)-2] == '\\') {
-				rcmd[strlen(rcmd)-2] = '\015';
-				rcmd[strlen(rcmd)-1] = '\0';
-			} else if (rcmd[strlen(rcmd)-1] == '\n') {
-				rcmd[strlen(rcmd)-1] = '\015';
-			} else {	// Add one, we reached the EOF before CR
-				rcmd[strlen(rcmd)+1] = '\0';
-				rcmd[strlen(rcmd)] = '\015';
-			}
-		}
-		if (strlen(rcmd) > 0) {
-			printf("... additional reset commands follow:\n");
-			printf("%s\n",rcmd);
-		}
-
-		// Open the tracker
-		if (verbose) printf(
-		    "Opening vrpn_Tracker_Fastrak: %s on port %s, baud %d\n",
-		    s2,s3,i1);
-
-#if defined(sgi) || defined(linux) || defined(WIN32)
-
-		if ( (trackers[num_trackers] =
-		     new vrpn_Tracker_Fastrak(s2, connection, s3, i1, 1, 4, rcmd)) == NULL){
-
-#endif
-
-		  fprintf(stderr,"Can't create new vrpn_Tracker_Fastrak\n");
-		  if (bail_on_error) { return -1; }
-		  else { continue; }	// Skip this line
-
-#if defined(sgi) || defined(linux) || defined(WIN32)
-
-		} else {
-		  num_trackers++;
-		}
-
-#endif
-
-	  }
-	  else if (isit("vrpn_Tracker_3Space")) {
-	    next();
-		// Get the arguments (class, tracker_name, port, baud)
-		if (sscanf(pch,"%511s%511s%d",s2,s3,&i1) != 3) {
-		  fprintf(stderr,"Bad vrpn_Tracker_3Space line: %s\n",line);
-		  if (bail_on_error) { return -1; }
-		  else { continue; }	// Skip this line
-		}
-
-		// Make sure there's room for a new tracker
-		if (num_trackers >= MAX_TRACKERS) {
-		  fprintf(stderr,"Too many trackers in config file");
-		  if (bail_on_error) { return -1; }
-		  else { continue; }	// Skip this line
-		}
-
-		// Open the tracker
-		if (verbose) printf(
-		    "Opening vrpn_Tracker_3Space: %s on port %s, baud %d\n",
-		    s2,s3,i1);
-		if ( (trackers[num_trackers] =
-		     new vrpn_Tracker_3Space(s2, connection, s3, i1)) == NULL){
-		  fprintf(stderr,"Can't create new vrpn_Tracker_3Space\n");
-		  if (bail_on_error) { return -1; }
-		  else { continue; }	// Skip this line
-		} else {
-		  num_trackers++;
-		}
+            CHECK(setup_Tracker_Fastrak);
+	  } else if (isit("vrpn_Tracker_3Space")) {
+            CHECK(setup_Tracker_3Space);
 	  } else if (isit("vrpn_Tracker_Flock")) {
-	    next();
-		// Get the arguments (class, tracker_name, sensors, port, baud)
-		if (sscanf(pch,"%511s%d%511s%d", s2, 
-			   &i1, s3, &i2) != 4) {
-		  fprintf(stderr,"Bad vrpn_Tracker_Flock line: %s\n",line);
-		  if (bail_on_error) { return -1; }
-		  else { continue; }	// Skip this line
-		}
-
-		// Make sure there's room for a new tracker
-		if (num_trackers >= MAX_TRACKERS) {
-		  fprintf(stderr,"Too many trackers in config file");
-		  if (bail_on_error) { return -1; }
-		  else { continue; }	// Skip this line
-		}
-
-		// Open the tracker
-		if (verbose) printf(
-		    "Opening vrpn_Tracker_Flock: %s (%d sensors, on port %s, baud %d)\n",
-		    s2, i1, s3,i2);
-		if ( (trackers[num_trackers] =
-		     new vrpn_Tracker_Flock(s2,connection,i1,s3,i2)) == NULL){
-		  fprintf(stderr,"Can't create new vrpn_Tracker_Flock\n");
-		  if (bail_on_error) { return -1; }
-		  else { continue; }	// Skip this line
-		} else {
-		  num_trackers++;
-		}
+            CHECK(setup_Tracker_Flock);
 	  } else if (isit("vrpn_Tracker_Flock_Parallel")) {
-	    next();
-	    // Get the arguments (class, tracker_name, sensors, port, baud, 
-	    // and parallel sensor ports )
-	    
-	    if (sscanf(pch,"%511s%d%511s%d", s2, 
-		       &i1, s3, &i2) != 4) {
-	      fprintf(stderr,"Bad vrpn_Tracker_Flock_Parallel line: %s\n",line);
-	      if (bail_on_error) { return -1; }
-	      else { continue; }	// Skip this line
-	    }
-
-	    // set up strtok to get the variable num of port names
-	    char rgch[24];
-	    sprintf(rgch, "%d", i2);
-	    char *pch2 = strstr(pch, rgch); 
-	    strtok(pch2," \t");
-	    fprintf(stderr,"%s",pch2);
-	    // pch points to baud, next strtok will give first port name
-	    
-	    char *rgs[MAX_SENSORS];
-	    // get sensor ports
-	    for (int iSlaves=0;iSlaves<i1;iSlaves++) {
-	      rgs[iSlaves]=new char[512];
-	      if (!(pch2 = strtok(0," \t"))) {
-		fprintf(stderr,"Bad vrpn_Tracker_Flock_Parallel line: %s\n",line);
-		return -1;
-	      } else {
-		sscanf(pch2,"%511s", rgs[iSlaves]);
-	      }
-	    }
-
-	    // Make sure there's room for a new tracker
-	    if (num_trackers >= MAX_TRACKERS) {
-	      fprintf(stderr,"Too many trackers in config file");
-	      if (bail_on_error) { return -1; }
-	      else { continue; }	// Skip this line
-	    }
-	    
-	    // Open the tracker
-	    if (verbose) printf(
-				"Opening vrpn_Tracker_Flock_Parallel: %s (%d sensors, on port %s, baud %d)\n",
-		    s2, i1, s3,i2);
-	    if ( (trackers[num_trackers] =
-		  new vrpn_Tracker_Flock_Parallel(s2,connection,i1,s3,i2,
-						  rgs)) == NULL){
-	      fprintf(stderr,"Can't create new vrpn_Tracker_Flock_Parallel\n");
-	      if (bail_on_error) { return -1; }
-	      else { continue; }	// Skip this line
-	    } else {
-	      num_trackers++;
-	    }
+            CHECK(setup_Tracker_Flock_Parallel);
 	  } else if (isit("vrpn_Tracker_NULL")) {
-	    next();
-		// Get the arguments (class, tracker_name, sensors, rate)
-		if (sscanf(pch,"%511s%d%g",s2,&i1,&f1) != 3) {
-		  fprintf(stderr,"Bad vrpn_Tracker_NULL line: %s\n",line);
-		  if (bail_on_error) { return -1; }
-		  else { continue; }	// Skip this line
-		}
-
-		// Make sure there's room for a new tracker
-		if (num_trackers >= MAX_TRACKERS) {
-		  fprintf(stderr,"Too many trackers in config file");
-		  if (bail_on_error) { return -1; }
-		  else { continue; }	// Skip this line
-		}
-
-		// Open the tracker
-		if (verbose) printf(
-		    "Opening vrpn_Tracker_NULL: %s with %d sensors, rate %f\n",
-		    s2,i1,f1);
-		if ( (trackers[num_trackers] =
-		     new vrpn_Tracker_NULL(s2, connection, i1, f1)) == NULL){
-		  fprintf(stderr,"Can't create new vrpn_Tracker_NULL\n");
-		  if (bail_on_error) { return -1; }
-		  else { continue; }	// Skip this line
-		} else {
-		  num_trackers++;
-		}
-
+            CHECK(setup_Tracker_NULL);
 	  } else if (isit("vrpn_Button_Python")) {
-	    next();
-		// Get the arguments (class, button_name, portno)
-		if (sscanf(pch,"%511s%d",s2,&i1) != 2) {
-		  fprintf(stderr,"Bad vrpn_Button_Python line: %s\n",line);
-		  if (bail_on_error) { return -1; }
-		  else { continue; }	// Skip this line
-		}
-
-		// Make sure there's room for a new button
-		if (num_buttons >= MAX_BUTTONS) {
-		  fprintf(stderr,"Too many buttons in config file");
-		  if (bail_on_error) { return -1; }
-		  else { continue; }	// Skip this line
-		}
-
-		// Open the button
-		if (verbose) printf(
-		    "Opening vrpn_Button_Python: %s on port %d\n", s2,i1);
-		if ( (buttons[num_buttons] =
-		     new vrpn_Button_Python(s2, connection, i1)) == NULL){
-		  fprintf(stderr,"Can't create new vrpn_Button_Python\n");
-		  if (bail_on_error) { return -1; }
-		  else { continue; }	// Skip this line
-		} else {
-		  num_buttons++;
-		}
-
+            CHECK(setup_Button_Python);
 	  } else {	// Never heard of it
 		sscanf(line,"%511s",s1);	// Find out the class name
 		fprintf(stderr,"Unknown class: %s\n",s1);
