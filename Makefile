@@ -9,7 +9,11 @@
 # Author: Russ Taylor, 10/2/1997
 #	  
 # modified:
-#   Tom Hudson, 13 Feb 1998
+# * Tom Hudson, 25 Jun 1998
+#   Support for n32 ABI on sgi.  (gmake n32)
+# * Hans Weber, ???
+#   Support for both g++ and native compilers on sgi.
+# * Tom Hudson, 13 Feb 1998
 #   Build two different libraries:  client (libvrpn) and server
 # (libvrpnserver).  Our solution is to compile twice, once with the
 # flag -DVRPN_CLIENT_ONLY and once without.  Any server-specific code
@@ -37,16 +41,27 @@ endif
 #
 # IF YOU CHANGE THESE, document either here or in the header comment
 # why.  Multiple contradictory changes have been made recently.
+
 # On the sgi, both g++ and CC versions are compiled by default.
+# CC compiles default to old 32-bit format;  'gmake n32' builds -n32.
+
 
 CC := g++
 
 ifeq ($(FORCE_GPP),1)
   CC := g++
 else
+
   ifeq ($(HW_OS),sgi_irix)
-	CC := CC
+	SGI_CC_FLAGS := -32
+	OBJECT_DIR_SUFFIX :=
+	ifeq ($(SGI_ABI_N32),1)
+		SGI_CC_FLAGS := -n32
+		OBJECT_DIR_SUFFIX := .n32
+	endif
+	CC := CC $(SGI_CC_FLAGS)
   endif
+
   ifeq ($(HW_OS),hp700_hpux10)
 	CC := CC +a1
   endif
@@ -74,8 +89,10 @@ ifeq ($(FORCE_GPP),1)
 OBJECT_DIR	 := $(HW_OS)/g++
 SOBJECT_DIR      := $(HW_OS)/g++/server
 else
-OBJECT_DIR	 := $(HW_OS)
-SOBJECT_DIR      := $(HW_OS)/server
+UNQUAL_OBJECT_DIR := $(HW_OS)
+UNQUAL_SOBJECT_DIR := $(HW_OS)/server
+OBJECT_DIR	 := $(HW_OS)$(OBJECT_DIR_SUFFIX)
+SOBJECT_DIR      := $(HW_OS)$(OBJECT_DIR_SUFFIX)/server
 endif
 
 ##########################
@@ -172,22 +189,33 @@ $(SOBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) $(MAKEFILE)
 #
 #############################################################################
 
+# If we're building for sgi_irix, we need both g++ and non-g++ versions,
+# unless we're building for one of the weird ABIs, which are only supported
+# by the native compiler.
+
 ifeq ($(HW_OS),sgi_irix)
-# build both gcc and regular
+  ifeq ($(SGI_ABI_N32),1)
+all:	client server
+  else
 all:	client server client_g++ server_g++
+  endif
 else
 all:	client server
 endif
 
+.PHONY:	n32
+n32:
+	$(MAKE) SGI_ABI_N32=1 all
+
 .PHONY:	client_g++
 client_g++:
-	$(MAKE) FORCE_GPP=1 $(OBJECT_DIR)/g++/libvrpn.a
-	mv $(OBJECT_DIR)/g++/libvrpn.a $(OBJECT_DIR)/libvrpn_g++.a
+	$(MAKE) FORCE_GPP=1 $(UNQUAL_OBJECT_DIR)/g++/libvrpn.a
+	mv $(UNQUAL_OBJECT_DIR)/g++/libvrpn.a $(UNQUAL_OBJECT_DIR)/libvrpn_g++.a
 
 .PHONY:	server_g++
 server_g++:
-	$(MAKE) FORCE_GPP=1 $(OBJECT_DIR)/g++/libvrpnserver.a
-	mv $(OBJECT_DIR)/g++/libvrpnserver.a $(OBJECT_DIR)/libvrpnserver_g++.a
+	$(MAKE) FORCE_GPP=1 $(UNQUAL_OBJECT_DIR)/g++/libvrpnserver.a
+	mv $(UNQUAL_OBJECT_DIR)/g++/libvrpnserver.a $(UNQUAL_OBJECT_DIR)/libvrpnserver_g++.a
 
 .PHONY:	client
 client:
