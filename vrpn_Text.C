@@ -5,22 +5,24 @@
 #include <netinet/in.h>
 #endif
 
-vrpn_Text::vrpn_Text(char *name, vrpn_Connection *c){
-	char* servicename;
-        servicename = vrpn_copy_service_name(name);
+vrpn_Text::vrpn_Text(char *name, vrpn_Connection *c)
+{
+    char* servicename;
+    servicename = vrpn_copy_service_name(name);
 
-	if(c)
-	    connection = c;
-	else
-	    connection = vrpn_get_connection_by_name(name);
-        if( connection != NULL){
-            my_id = connection->register_sender(servicename);
-            message_id  = connection->register_message_type("vrpn Text ascii type");
-            if((my_id == -1) ||(message_id  == -1)){
-                fprintf(stderr, "vrpn_Text: Can't register IDs\n");
-                connection = NULL;
-            }
+    if(c)
+        connection = c;
+    else
+        connection = vrpn_get_connection_by_name(name);
+    
+    if( connection != NULL){
+        my_id = connection->register_sender(servicename);
+        message_id  = connection->register_message_type("vrpn Text ascii type");
+        if((my_id == -1) ||(message_id  == -1)){
+            fprintf(stderr, "vrpn_Text: Can't register IDs\n");
+            connection = NULL;
         }
+    }
 }
 
 // virtual
