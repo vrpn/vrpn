@@ -27,7 +27,14 @@
 
 MAKEFILE := Makefile
 MAKE := gmake -f $(MAKEFILE)
-HW_OS := $(shell hw_os)
+
+# hw_os does not exist on FreeBSD at UNC
+UNAME := $(shell uname -s)
+ifeq ($(UNAME), FreeBSD)
+  HW_OS := pc_FreeBSD
+else
+  HW_OS := $(shell hw_os)
+endif
 
 # check if its for pxfl
 ifdef PBASE_ROOT

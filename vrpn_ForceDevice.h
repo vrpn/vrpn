@@ -90,6 +90,14 @@ class vrpn_ForceDevice {
     int getRecoveryTime (void) {return numRecCycles;}
     int connectionAvailable (void) {return (connection != NULL);}
 
+    // constants for constraint messages
+
+    enum ConstraintGeometry
+            { NO_CONSTRAINT,
+              POINT_CONSTRAINT,
+              LINE_CONSTRAINT,
+              PLANE_CONSTRAINT };
+
   protected:
 
     vrpn_Connection * connection;		// Used to send messages
@@ -104,12 +112,6 @@ class vrpn_ForceDevice {
 
 
     // constraint messages
-
-    enum ConstraintGeometry
-            { NO_CONSTRAINT,
-              POINT_CONSTRAINT,
-              LINE_CONSTRAINT,
-              PLANE_CONSTRAINT };
 
     vrpn_int32 enableConstraint_message_id;
     vrpn_int32 setConstraintMode_message_id;

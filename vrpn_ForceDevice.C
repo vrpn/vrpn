@@ -1346,7 +1346,7 @@ void vrpn_ForceDevice_Remote::useGhost(void){
 //
 
 
-#ifdef FD_SPRINGS_AS_FIELDS
+#ifndef FD_SPRINGS_AS_FIELDS
 
 #if 0
 void vrpn_ForceDevice_Remote::enableConstraint (vrpn_int32 enable) {
@@ -1377,9 +1377,6 @@ void vrpn_ForceDevice_Remote::setConstraintKSpring (vrpn_float32 k) {
 #else
 
 void vrpn_ForceDevice_Remote::enableConstraint (vrpn_int32 enable) {
-  char * msgbuf;
-  vrpn_int32 len;
-
   if (enable == d_conEnabled) return;
   d_conEnabled = enable;
 
@@ -1399,9 +1396,6 @@ void vrpn_ForceDevice_Remote::enableConstraint (vrpn_int32 enable) {
 }
 
 void vrpn_ForceDevice_Remote::setConstraintMode (ConstraintGeometry mode) {
-  char * msgbuf;
-  vrpn_int32 len;
-
   d_conMode = mode;
   constraintToForceField();
   if (d_conEnabled)
@@ -1410,9 +1404,9 @@ void vrpn_ForceDevice_Remote::setConstraintMode (ConstraintGeometry mode) {
 
 void vrpn_ForceDevice_Remote::setConstraintPoint
                   (vrpn_float32 point [3]) {
-  d_conPoint[0] = normal[0];
-  d_conPoint[1] = normal[1];
-  d_conPoint[2] = normal[2];
+  d_conPoint[0] = point[0];
+  d_conPoint[1] = point[1];
+  d_conPoint[2] = point[2];
   constraintToForceField();
   if (d_conEnabled)
     sendForceField();
@@ -1420,9 +1414,9 @@ void vrpn_ForceDevice_Remote::setConstraintPoint
 
 void vrpn_ForceDevice_Remote::setConstraintLinePoint
                   (vrpn_float32 point [3]) {
-  d_conLinePoint[0] = normal[0];
-  d_conLinePoint[1] = normal[1];
-  d_conLinePoint[2] = normal[2];
+  d_conLinePoint[0] = point[0];
+  d_conLinePoint[1] = point[1];
+  d_conLinePoint[2] = point[2];
   constraintToForceField();
   if (d_conEnabled)
     sendForceField();
@@ -1430,9 +1424,11 @@ void vrpn_ForceDevice_Remote::setConstraintLinePoint
 
 void vrpn_ForceDevice_Remote::setConstraintLineDirection
                   (vrpn_float32 direction [3]) {
-  d_conLineDirection[0] = normal[0];
-  d_conLineDirection[1] = normal[1];
-  d_conLineDirection[2] = normal[2];
+  d_conLineDirection[0] = direction[0];
+  d_conLineDirection[1] = direction[1];
+  d_conLineDirection[2] = direction[2];
+//fprintf(stderr, "Set dcld to %.4g %.4g %.4g\n",
+//d_conLineDirection[0], d_conLineDirection[1], d_conLineDirection[2]);
   constraintToForceField();
   if (d_conEnabled)
     sendForceField();
@@ -1440,9 +1436,9 @@ void vrpn_ForceDevice_Remote::setConstraintLineDirection
 
 void vrpn_ForceDevice_Remote::setConstraintPlanePoint
                   (vrpn_float32 point [3]) {
-  d_conPlanePoint[0] = normal[0];
-  d_conPlanePoint[1] = normal[1];
-  d_conPlanePoint[2] = normal[2];
+  d_conPlanePoint[0] = point[0];
+  d_conPlanePoint[1] = point[1];
+  d_conPlanePoint[2] = point[2];
   constraintToForceField();
   if (d_conEnabled)
     sendForceField();
@@ -1825,28 +1821,6 @@ void vrpn_ForceDevice_Remote::constraintToForceField (void) {
       setFF_Origin(d_conLinePoint);
       setFF_Force(0.0f, 0.0f,  0.0f);
 
-#if 0
-      // find two vectors perpendicular to d_conLineDirection
-      // add the respective Jacobians
-
-      // find the first perpendicular vector by finding an arbitrary
-      // non-parallel vector and taking the cross product.
-
-      s[0] = d_conLineDirection[0] + 100.0;
-      s[1] = d_conLineDirection[1] - 100.0;
-      s[2] = d_conLineDirection[2];
-
-      vector_cross(d_conLineDirection, s, n0);
-      vector_cross(d_conLineDirection, n0, n1);
-
-      // now we sum two plane constraints together
-      // XXX BUG BUG BUG
-
-      setFF_Jacobian(-d_conKSpring * d_conPlaneNormal[0],  0.0f,  0.0f,
-                      0.0f, -d_conKSpring * d_conPlaneNormal[1],  0.0f,
-                      0.0f,  0.0f, -d_conKSpring * d_conPlaneNormal[2]);
-#endif
-
       // Jacobian matrix for a spring attached to the line in
       // the direction <0, 0, 1>.
 
@@ -1860,6 +1834,9 @@ void vrpn_ForceDevice_Remote::constraintToForceField (void) {
       a[7] = 0.0;
       a[8] = 0.0;
 
+//fprintf(stderr, "Jacobian:  %.4g %.4g %.4g  %.4g %.4g %.4g  %.4g %.4g %.4g\n",
+//a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8]);
+
       // Find the rotation that takes <0, 0, 1> into d_conLineDirection.
 
       s[0] = 0.0;
@@ -1868,15 +1845,28 @@ void vrpn_ForceDevice_Remote::constraintToForceField (void) {
       vector_cross(s, d_conLineDirection, n0);
       theta = acos(vector_dot(s, d_conLineDirection));
 
+//fprintf(stderr, "dcld:  %.4g %.4g %.4g\n",
+//d_conLineDirection[0], d_conLineDirection[1], d_conLineDirection[2]);
+
+//fprintf(stderr, "Axis:  %.4g %.4g %.4g;  Theta:  %.4g\n",
+//n0[0], n0[1], n0[2], theta);
+
       // The rotation we want is by angle theta about the
       // axis (s x conLineDirection).
 
       q_make(rotation, n0[0], n0[1], n0[2], theta);
 
+//fprintf(stderr, "Quaternion:  %.4g %.4g %.4g  %.4g\n",
+//rotation[0], rotation[1], rotation[2], rotation[3]);
+
       // apply rotation to a;  that's our Jacobian
       q_xform(&a[0], rotation, &a[0]);
       q_xform(&a[3], rotation, &a[3]);
       q_xform(&a[6], rotation, &a[6]);
+
+//fprintf(stderr, "Rotated Jacobian:  "
+//"%.4g %.4g %.4g  %.4g %.4g %.4g  %.4g %.4g %.4g\n",
+//a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8]);
 
       // discard bits
 

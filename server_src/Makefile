@@ -50,23 +50,20 @@ $(OBJ_DIR)/%.o:	%.C
 
 all:  vrpn_server
 
-.PHONY:
+.PHONY:	vrpn_server
 vrpn_server:	$(OBJ_DIR)/vrpn_server
-	@echo Done.
-# can't figure out a gmake trick;  PHONY doesn't do it.
 
 .PHONY:	sample_server
 sample_server:	$(OBJ_DIR)/sample_server
 
-.PHONY:
-forward:	$(OBJ_DIR)/forward
-	@echo Done.
-# can't figure out a gmake trick;  PHONY doesn't do it.
+.PHONY:	sample_analog
+sample_analog:	$(OBJ_DIR)/sample_analog
 
-.PHONY:
+.PHONY:	forward
+forward:	$(OBJ_DIR)/forward
+
+.PHONY:	text
 text:	$(OBJ_DIR)/text
-	@echo Done.
-# can't figure out a gmake trick;  PHONY doesn't do it.
 
 # client:		$(OBJ_DIR)/client
 # player:		$(OBJ_DIR)/player
@@ -99,6 +96,12 @@ $(OBJ_DIR)/sample_server:	$(OBJ_DIR) $(OBJ_DIR)/sample_server.o \
 		$(OBJ_DIR)/sample_server.o \
 		-lvrpnserver -lm
 
+$(OBJ_DIR)/sample_analog:	$(OBJ_DIR) $(OBJ_DIR)/sample_analog.o \
+			../$(HW_OS)/libvrpnserver.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/sample_analog \
+		$(OBJ_DIR)/sample_analog.o \
+		-lvrpnserver -lm
+
 
 $(OBJ_DIR):
 	-mkdir $(OBJ_DIR)
@@ -112,6 +115,7 @@ $(OBJ_DIR)/vrpn.o:	vrpn.C
 $(OBJ_DIR)/forward.o:	forward.C
 $(OBJ_DIR)/text.o:	text.C
 $(OBJ_DIR)/sample_server.o:	sample_server.C
+$(OBJ_DIR)/sample_analog.o:	sample_analog.C
 
 
 

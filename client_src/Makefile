@@ -13,7 +13,7 @@ ifdef PBASE_ROOT
 endif
 
 CC := g++
-ARCH_LIBS := -lm
+ARCH_LIBS := -lquat -lm
 
 ifeq ($(HW_OS),pc_linux)
   CC := g++

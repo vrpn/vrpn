@@ -9,7 +9,7 @@
   Revised: Wed Apr  1 13:23:40 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.C,v $
   $Locker:  $
-  $Revision: 1.16 $
+  $Revision: 1.17 $
   \*****************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
@@ -121,7 +121,7 @@ int vrpn_Clock_Server::clockQueryHandler(void *userdata, vrpn_HANDLERPARAM p) {
 // the clock server only responds to requests. since the connection
 // mainloop will handle routing the callback (and the general server
 // program always has to call that), this mainloop does nothing.
-void vrpn_Clock_Server::mainloop(const struct timeval * timeout) {};
+void vrpn_Clock_Server::mainloop (const struct timeval *) {};
 
 
 // This next part is the class for users (client class)
@@ -147,7 +147,8 @@ vrpn_Clock_Remote::vrpn_Clock_Remote(const char * name, vrpn_float64 dFreq,
               vrpn_get_connection_by_name (name, NULL, 0L, NULL, 0L, -1)), 
   change_list(NULL)
 {
-  char rgch[50];
+  char rgch [50];
+  int i;
   
   if (connection==NULL) {
     cerr << "vrpn_Clock_Remote: unable to connect to clock server \"" 
@@ -185,8 +186,15 @@ vrpn_Clock_Remote::vrpn_Clock_Remote(const char * name, vrpn_float64 dFreq,
     // set up quick arrays
     irgtvQuick=0;
     cMaxQuickRecords = cOffsetWindow;
-    rgtvHalfRoundTrip = new struct timeval[cMaxQuickRecords];
-    rgtvClockOffset = new struct timeval[cMaxQuickRecords];
+    rgtvHalfRoundTrip = new struct timeval [cMaxQuickRecords];
+    rgtvClockOffset = new struct timeval [cMaxQuickRecords];
+
+    // Initialize rgtv to 0 so that currentRTT doesn't return garbage.
+    // TCH April 99
+    for (i = 0; i < cMaxQuickRecords; i++) {
+      rgtvHalfRoundTrip[i].tv_sec = 0L;
+      rgtvHalfRoundTrip[i].tv_usec = 0L;
+    }
     
     // register a handler for replies from the clock server.
     if (connection->register_handler(replyMsg_id, 
@@ -209,16 +217,23 @@ vrpn_Clock_Remote::vrpn_Clock_Remote(const char * name, vrpn_float64 dFreq,
 #endif
 }
 
-vrpn_Clock_Remote::~vrpn_Clock_Remote() {
+vrpn_Clock_Remote::~vrpn_Clock_Remote (void) {
+
   // release the quick arrays
-  delete [] rgtvHalfRoundTrip;
-  delete [] rgtvClockOffset;
+  if (rgtvHalfRoundTrip)
+    delete [] rgtvHalfRoundTrip;
+  if (rgtvClockOffset)
+    delete [] rgtvClockOffset;
 
 #ifdef USE_REGRESSION
+
   // release the regression arrays
-  delete rgdOffsets;
-  delete rgdTimes;
-#endif
+  if (rgdOffsets)
+    delete rgdOffsets;
+  if (rgdTimes)
+    delete rgdTimes;
+
+#endif  // USE_REGRESSION
 
 }
 
@@ -234,7 +249,7 @@ static vrpn_int32 dCompare( const void *pd1, const void *pd2 ) {
 
 // this will take 1 second to run (sync's the clocks)
 // when it is in fullSync mode
-void vrpn_Clock_Remote::mainloop(const struct timeval * timeout)
+void vrpn_Clock_Remote::mainloop (const struct timeval * timeout)
 {
   if (connection) { 
     // always do this -- the first time it will register senders & msg_types
@@ -551,10 +566,38 @@ int vrpn_Clock_Remote::unregister_clock_sync_handler(void *userdata,
   return 0;
 }
 
-void vrpn_Clock_Remote::fullSync() {
+void vrpn_Clock_Remote::fullSync (void) {
   fDoFullSync=1;
   fDoQuickSyncs=0;
 }
+
+// Returns the most recent RTT estimate.  TCH April 99
+// Returns 0 if the first RTT estimate is not yet completed
+// or if no quick syncs are being done.
+// RTT is 2 * most recent estimate of half-RTT.
+
+struct timeval vrpn_Clock_Remote::currentRTT (void) const {
+  struct timeval retval;
+  int last;
+
+  // Assumes values are initialized to 0 or otherwise safe.
+  // (Ensured by a clause in the constructor).
+
+  retval.tv_sec = 0L;
+  retval.tv_usec = 0L;
+
+  if (!rgtvHalfRoundTrip)
+    return retval;
+
+  last = this->irgtvQuick - 1;
+  while (last < 0)
+    last += cMaxQuickRecords;
+  retval = vrpn_TimevalScale(this->rgtvHalfRoundTrip[last], 2.0);
+fprintf(stderr, "Record %d is %ld:%ld.\n", last, retval.tv_sec, retval.tv_usec);
+
+  return retval;
+}
+
 
 // we return to the user callback the clock offset calculated from the
 // shortest roundtrip over all of the full sync replies.
@@ -815,6 +858,11 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
 
 /*****************************************************************************\
   $Log: vrpn_Clock.C,v $
+  Revision 1.17  1999/04/08 12:49:00  hudson
+  Exposed round-trip-time estimation in vrpn_Clock.
+  More details for FreeBSD port.
+  Bugfixes for some of the new constraint functionality on vrpn_ForceDevice.
+
   Revision 1.16  1999/04/01 19:43:13  winston
   Finished changes so that the timeout given as a parameter to mainloop
   is meaningful for clients (remote devices).  Before it wasn't getting

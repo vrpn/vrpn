@@ -21,6 +21,8 @@
 #include <sys/ioctl.h>
 #endif
 
+#define CHECK(a) if (a == -1) return -1
+
 static	unsigned long	duration(struct timeval t1, struct timeval t2)
 {
 	return (t1.tv_usec - t2.tv_usec) +
@@ -849,6 +851,131 @@ int vrpn_Phantom::handle_resetOrigin_change_message(void * userdata,
   return 0;
 
 }
+
+#if 0
+
+//
+// constraint
+//
+//
+// Would like to implement with gstConstraintEffect, but that has a
+// THREE SECOND relaxation on startup and instant cutoff.  We need
+// relaxation closer to tenth-second on startup and cutoff.
+//
+
+//static
+int vrpn_Phantom::handle_enableConstraint_message
+                      (void * userdata, vrpn_HANDLERPARAM p) {
+  int enable;
+
+  CHECK(decode_enableConstraint(p.buffer, p.payload_len, &enable));
+
+  // TODO
+
+  return 0;
+}
+
+//static
+int vrpn_Phantom::handle_setConstraintMode_message
+                      (void * userdata, vrpn_HANDLERPARAM p) {
+  ConstraintGeometry mode;
+
+  CHECK(decode_setConstraintMode(p.buffer, p.payload_len, &mode));
+
+  // TODO
+
+  return 0;
+}
+
+//static
+int vrpn_Phantom::handle_setConstraintPoint_message
+                      (void * userdata, vrpn_HANDLERPARAM p) {
+  float x, y, z;
+
+  CHECK(decode_setConstraintPoint(p.buffer, p.payload_len, &x, &y, &z));
+
+  // convert m to mm
+  x *= 1000.0f;  y *= 1000.0f;  z *= 1000.0f;
+
+  // TODO
+
+  return 0;
+}
+
+//static
+int vrpn_Phantom::handle_setConstraintLinePoint_message
+                      (void * userdata, vrpn_HANDLERPARAM p) {
+  float x, y, z;
+
+  CHECK(decode_setConstraintLinePoint(p.buffer, p.payload_len, &x, &y, &z));
+
+  // convert m to mm
+  x *= 1000.0f;  y *= 1000.0f;  z *= 1000.0f;
+
+  // TODO
+
+  return 0;
+}
+
+//static
+int vrpn_Phantom::handle_setConstraintLineDirection_message
+                      (void * userdata, vrpn_HANDLERPARAM p) {
+  float x, y, z;
+
+  CHECK(decode_setConstraintLineDirection(p.buffer, p.payload_len, &x, &y, &z));
+
+  // convert m to mm
+  x *= 1000.0f;  y *= 1000.0f;  z *= 1000.0f;
+
+  // TODO
+
+  return 0;
+}
+
+//static
+int vrpn_Phantom::handle_setConstraintPlanePoint_message
+                      (void * userdata, vrpn_HANDLERPARAM p) {
+  float x, y, z;
+
+  CHECK(decode_setConstraintPlanePoint(p.buffer, p.payload_len, &x, &y, &z));
+
+  // convert m to mm
+  x *= 1000.0f;  y *= 1000.0f;  z *= 1000.0f;
+
+  // TODO
+
+  return 0;
+}
+
+//static
+int vrpn_Phantom::handle_setConstraintPlaneNormal_message
+                      (void * userdata, vrpn_HANDLERPARAM p) {
+  float x, y, z;
+
+  CHECK(decode_setConstraintPlaneNormal(p.buffer, p.payload_len, &x, &y, &z));
+
+  // convert m to mm
+  x *= 1000.0f;  y *= 1000.0f;  z *= 1000.0f;
+
+  // TODO
+
+  return 0;
+}
+
+//static
+int vrpn_Phantom::handle_setConstraintKSpring_message
+                      (void * userdata, vrpn_HANDLERPARAM p) {
+  float k;
+
+  CHECK(decode_setConstraintKSpring(p.buffer, p.payload_len, &k));
+
+  // TODO
+
+  return 0;
+}
+
+#endif  // 0
+
 
 // static
 int vrpn_Phantom::handle_update_rate_request (void * userdata,

@@ -8,6 +8,8 @@
 #include <math.h>
 #include <sys/types.h>
 
+#include <string.h>  // for memcpy()
+
 #ifndef _WIN32
 #include <netinet/in.h>
 #endif

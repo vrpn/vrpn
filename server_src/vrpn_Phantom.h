@@ -81,10 +81,35 @@ protected:
 					 vrpn_HANDLERPARAM p);
 	static int handle_clearTrimesh_message(void *userdata, 
 					 vrpn_HANDLERPARAM p);
-	static int handle_constraint_change_message(void *userdata,
-					vrpn_HANDLERPARAM p);
 	static int handle_forcefield_change_message(void *userdata,
 						vrpn_HANDLERPARAM p);
+
+#if 0
+
+        // Generalized constraint handling;  see vrpn_ForceDevice
+        // for specs.
+
+        static int handle_enableConstraint_message
+                      (void * userdata, vrpn_HANDLERPARAM p);
+        static int handle_setConstraintMode_message
+                      (void * userdata, vrpn_HANDLERPARAM p);
+        static int handle_setConstraintPoint_message
+                      (void * userdata, vrpn_HANDLERPARAM p);
+        static int handle_setConstraintLinePoint_message
+                      (void * userdata, vrpn_HANDLERPARAM p);
+        static int handle_setConstraintLineDirection_message
+                      (void * userdata, vrpn_HANDLERPARAM p);
+        static int handle_setConstraintPlanePoint_message
+                      (void * userdata, vrpn_HANDLERPARAM p);
+        static int handle_setConstraintPlaneNormal_message
+                      (void * userdata, vrpn_HANDLERPARAM p);
+        static int handle_setConstraintKSpring_message
+                      (void * userdata, vrpn_HANDLERPARAM p);
+	//static int handle_constraint_change_message(void *userdata,
+					//vrpn_HANDLERPARAM p);
+
+#endif  // 0
+
 
 	// from vrpn_Tracker
 

@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <malloc.h>
 #include <memory.h>
 #include <math.h>
 #include <errno.h>
@@ -10,6 +9,11 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#ifndef FreeBSD
+// malloc.h is deprecated in FreeBSD;  all the functionality *should*
+// be in stdlib.h
+#include <malloc.h>
+#endif
 
 #ifdef _WIN32
 #include <winsock.h>
@@ -2589,9 +2593,12 @@ int vrpn_Connection::mainloop (const struct timeval * pTimeout)
   if (pTimeout) {
     timeout = *pTimeout;
   } else {
-    timeout.tv_sec = 0;
-    timeout.tv_usec = 0;
+    timeout.tv_sec = 0L;
+    timeout.tv_usec = 0L;
   }
+
+//fprintf(stderr, "Timeout is %ld:%ld (status %d).\n",
+//timeout.tv_sec, timeout.tv_usec, status);
 
 #ifdef	VERBOSE2
   printf("vrpn_Connection::mainloop() called (status %d)\n",status);

@@ -16,7 +16,7 @@
   Revised: Mon Mar 23 11:34:26 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.h,v $
   $Locker:  $
-  $Revision: 1.10 $
+  $Revision: 1.11 $
 \*****************************************************************************/
 #ifndef _VRPN_CLOCK_H_
 #define _VRPN_CLOCK_H_
@@ -32,8 +32,9 @@ class vrpn_Connection;
 class vrpn_Clock {
 public:
   vrpn_Clock(const char *name, vrpn_Connection *c = NULL);
-    // Report changes to connection
-  virtual void mainloop(const struct timeval * timeout) = 0;
+  
+  // Report changes to connection
+  virtual void mainloop (const struct timeval * = NULL) = 0;
   
 protected:
   vrpn_Connection *connection;
@@ -52,8 +53,8 @@ public:
 
   // Called once through each main loop iteration to handle
   // clock updates.
-    // Report changes to connection
-  virtual void mainloop(const struct timeval * timeout = NULL);	
+  // Report changes to connection
+  virtual void mainloop (const struct timeval * = NULL);
   static int clockQueryHandler( void *userdata, vrpn_HANDLERPARAM p );
 };
 
@@ -93,89 +94,110 @@ typedef void (*vrpn_CLOCKSYNCHANDLER)(void *userdata,
 #define VRPN_CLOCK_QUICK_SYNC 2
 
 class vrpn_Clock_Remote: public vrpn_Clock {
+
+
   public:
-  // The name of the station which runs the clock server to connect to
-  // (from sdi_devices), and the frequency at which to do quick re-syncs 
-  // (1 hz by default).  If the user specifies a freq < 0, then there will
-  // be no quick syncs -- they will have to request syncs with fullSync().
-  // The final arg is the number of reports over which the user wants to
-  // maintain a window from which the offset routine will choose the min
-  // round trip report and use the offset from that trip.
-  // A high setting (e.g., 40) works well for arrangements with little drift
-  // while a low setting (e.g., 3) works well when drift is present.
-  // See cMaxQuickRecords below for more detail.
 
-  vrpn_Clock_Remote(const char *name, vrpn_float64 dFreq=1,
-		vrpn_int32 cOffsetWindow=3);
-  virtual ~vrpn_Clock_Remote();
 
-  // This routine calls does the sync and calls the mainloop of the 
-  // connection it's on
-  virtual void mainloop(const struct timeval * timeout);
+    // The name of the station which runs the clock server to connect to
+    // (from sdi_devices), and the frequency at which to do quick re-syncs 
+    // (1 hz by default).  If the user specifies a freq < 0, then there will
+    // be no quick syncs -- they will have to request syncs with fullSync().
+    // The final arg is the number of reports over which the user wants to
+    // maintain a window from which the offset routine will choose the min
+    // round trip report and use the offset from that trip.
+    // A high setting (e.g., 40) works well for arrangements with little drift
+    // while a low setting (e.g., 3) works well when drift is present.
+    // See cMaxQuickRecords below for more detail.
 
-  // (un)Register a callback to handle a clock sync
-  virtual int register_clock_sync_handler(void *userdata,
-					  vrpn_CLOCKSYNCHANDLER handler);
-  virtual int unregister_clock_sync_handler(void *userdata,
+    vrpn_Clock_Remote (const char * name, vrpn_float64 dFreq = 1,
+		       vrpn_int32 cOffsetWindow = 3);
+    virtual ~vrpn_Clock_Remote (void);
+
+
+    // MANIPULATORS
+
+
+    // This routine calls does the sync and calls the mainloop of the 
+    // connection it's on
+    virtual void mainloop (const struct timeval * timeout = NULL);
+
+    // (un)Register a callback to handle a clock sync
+    virtual int register_clock_sync_handler(void *userdata,
 					    vrpn_CLOCKSYNCHANDLER handler);
-  // request a high accuracy sync (and turn off quick syncs)
-  void fullSync();
+    virtual int unregister_clock_sync_handler(void *userdata,
+					      vrpn_CLOCKSYNCHANDLER handler);
+    // request a high accuracy sync (and turn off quick syncs)
+    void fullSync (void);
+
+
+    // ACCESSORS
+
+
+    // Returns the most recent RTT estimate.  TCH April 99
+    // Returns 0 if the first RTT estimate is not yet completed
+    // or if no quick syncs are being done.
+    struct timeval currentRTT (void) const;
+
 
   protected:
-  vrpn_int32 clockClient_id;             // vrpn id for this client
 
-  // unique id for this particular client (to disambiguate replies)
-  vrpn_int32 lUniqueID;
 
-  // vars for stats on clock for quick sync
-  int fDoQuickSyncs;
-  int cQuickBounces;
+    vrpn_int32 clockClient_id;             // vrpn id for this client
 
-  // CC does not like this, so ...
-  // const int cMaxQuickDiffs=5
-  // This is the number of reports the clock keeps track of and
-  // chooses the offset from the min round trip from these.
-  // This is a balance between drift compensation and
-  // accuracy.  In the absence of drift, this should
-  // be very large.  In the presence of drift it needs
-  // to be very small. 5 seems to work well -- this means
-  // that drift will accumulate for at most 5*1/freq secs,
-  // and that a few consecutive long roundtrips will not
-  // reduce the accuracy of the offset.
-  int cMaxQuickRecords;
-  struct timeval *rgtvHalfRoundTrip;
-  struct timeval *rgtvClockOffset;
-  int irgtvQuick;
+    // unique id for this particular client (to disambiguate replies)
+    vrpn_int32 lUniqueID;
 
-  vrpn_float64 dQuickIntervalMsecs;
-  struct timeval tvQuickLastSync;
+    // vars for stats on clock for quick sync
+    int fDoQuickSyncs;
+    int cQuickBounces;
 
-  // vars for stats on clock for full sync
-  int fDoFullSync;
-  int cBounces;
+    // CC does not like this, so ...
+    // const int cMaxQuickDiffs=5
+    // This is the number of reports the clock keeps track of and
+    // chooses the offset from the min round trip from these.
+    // This is a balance between drift compensation and
+    // accuracy.  In the absence of drift, this should
+    // be very large.  In the presence of drift it needs
+    // to be very small. 5 seems to work well -- this means
+    // that drift will accumulate for at most 5*1/freq secs,
+    // and that a few consecutive long roundtrips will not
+    // reduce the accuracy of the offset.
+    int cMaxQuickRecords;
+    struct timeval *rgtvHalfRoundTrip;
+    struct timeval *rgtvClockOffset;
+    int irgtvQuick;
+
+    vrpn_float64 dQuickIntervalMsecs;
+    struct timeval tvQuickLastSync;
+
+    // vars for stats on clock for full sync
+    int fDoFullSync;
+    int cBounces;
+
 #ifdef USE_REGRESSION
-  vrpn_float64 *rgdOffsets;
-  vrpn_float64 *rgdTimes;
+    vrpn_float64 *rgdOffsets;
+    vrpn_float64 *rgdTimes;
 #endif
 
-  struct timeval tvMinHalfRoundTrip;
+    struct timeval tvMinHalfRoundTrip;
 
-  // offset to report to user
-  struct timeval tvFullClockOffset;
+    // offset to report to user
+    struct timeval tvFullClockOffset;
 
-  // vars for user specified handlers
-  typedef struct _vrpn_CLOCKSYNCLIST {
-    void			*userdata;
-    vrpn_CLOCKSYNCHANDLER	handler;
-    struct _vrpn_CLOCKSYNCLIST	*next;
-  } vrpn_CLOCKSYNCLIST;
+    // vars for user specified handlers
+    typedef struct _vrpn_CLOCKSYNCLIST {
+      void			*userdata;
+      vrpn_CLOCKSYNCHANDLER	handler;
+      struct _vrpn_CLOCKSYNCLIST	*next;
+    } vrpn_CLOCKSYNCLIST;
 
-  vrpn_CLOCKSYNCLIST	*change_list;
+    vrpn_CLOCKSYNCLIST	*change_list;
 
-  static int quickSyncClockServerReplyHandler(void *userdata, 
-					      vrpn_HANDLERPARAM p);
-  static int fullSyncClockServerReplyHandler(void *userdata, 
-					     vrpn_HANDLERPARAM p);
+    static int quickSyncClockServerReplyHandler(void *userdata, 
+					        vrpn_HANDLERPARAM p);
+    static int fullSyncClockServerReplyHandler(void *userdata, 
+					       vrpn_HANDLERPARAM p);
 };
 
 #endif // ifndef _VRPN_CLOCK_H_
@@ -184,6 +206,11 @@ class vrpn_Clock_Remote: public vrpn_Clock {
 
 /*****************************************************************************\
   $Log: vrpn_Clock.h,v $
+  Revision 1.11  1999/04/08 12:49:01  hudson
+  Exposed round-trip-time estimation in vrpn_Clock.
+  More details for FreeBSD port.
+  Bugfixes for some of the new constraint functionality on vrpn_ForceDevice.
+
   Revision 1.10  1999/04/01 19:43:14  winston
   Finished changes so that the timeout given as a parameter to mainloop
   is meaningful for clients (remote devices).  Before it wasn't getting

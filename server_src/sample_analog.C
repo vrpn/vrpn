@@ -72,7 +72,9 @@ int main (int argc, char ** argv) {
 
   c = new vrpn_Synchronized_Connection;
   ats = new vrpn_Analog_Server ("audio_throughput", c);
+  ats->setNumChannels(1);
   vts = new vrpn_Analog_Server ("video_throughput", c);
+  vts->setNumChannels(1);
 
   printf("Services named audio-throughput and video-throughput now listening on port 4500.\n");
 

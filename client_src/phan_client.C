@@ -6,7 +6,7 @@
 #include <vrpn_Tracker.h>
 #include <vrpn_Button.h>
 
-#define PHANTOM_SERVER "Phantom@phantom"
+#define PHANTOM_SERVER "Phantom@tantalum-cs"
 
 /*****************************************************************************
  *
@@ -87,7 +87,32 @@ int main(int argc, char *argv[])
         forceDevice->setRecoveryTime(1);	// recovery occurs over 10
                                                 // force update cycles
         // enable force device and send first surface
-        forceDevice->startSurface();    
+        //forceDevice->startSurface();    
+
+	// test spring constraint instead
+
+        vrpn_float32 p [3];
+        p[0] = 0.0f;
+        p[1] = 0.0f;
+        p[2] = 0.0f;
+        vrpn_float32 d [3];
+        d[0] = 0.0f;
+        d[1] = 1.0f;
+        d[2] = 0.0f;
+
+	//forceDevice->setConstraintMode(vrpn_ForceDevice::POINT_CONSTRAINT);
+	//forceDevice->setConstraintPoint(p);
+          // works
+	//forceDevice->setConstraintMode(vrpn_ForceDevice::LINE_CONSTRAINT);
+	//forceDevice->setConstraintLinePoint(p);
+	//forceDevice->setConstraintLineDirection(d);
+          // works
+	forceDevice->setConstraintMode(vrpn_ForceDevice::PLANE_CONSTRAINT);
+	forceDevice->setConstraintPlanePoint(p);
+	forceDevice->setConstraintPlaneNormal(d);
+        forceDevice->setConstraintKSpring(10.0);
+        forceDevice->enableConstraint(1);
+
         // main loop
         while (! done ){
                 // Let the forceDevice send its planes to remote force device
