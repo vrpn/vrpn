@@ -1,3 +1,26 @@
+2001-06-01  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	vrpn_Connection.h (vrpn_Endpoint) : Adds d_tcp_only member, which tells
+		the endpoint not to try and communicate with its peer using any
+		other mechanism.
+
+	vrpn_Connection.C : Removed commented-out things left hanging around.
+		(vrpn_Connection) : Made parsing of "tcp:" names more robust and
+			made it so that an endpoint created using the "tcp:" URL is
+			told not to communicate except via TCP.
+		(header_len) : Const helper routine for the following
+		(vrpn_copy_machine_name) : Uses more-robust helper routine
+		(vrpn_get_port_number) : Same
+		(vrpn_copy_rsh_program) : Same
+		(vrpn_copy_rsh_arguments) : Same
+		(server_check_for_incoming_connections) : Tells the endpoint not
+			to open a UDP link if it was created on a server that was
+			connected to with a TCP connection (presumably going through
+			a firewall or NAT).
+		(finish_new_connection_setup) : Doesn't open UDP port if it is a
+			TCP-only endpoint.  Otherwise, it does.
+		(connect_udp_to) : Same.
+
 2001-05-01  Adam Seeger  <seeger@cs.unc.edu>
 
 	* vrpn_Mutex.C (vrpn_Mutex_Remote::requestIndex): now packs the IP

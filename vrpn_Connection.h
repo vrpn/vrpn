@@ -255,7 +255,6 @@ class vrpn_Endpoint {
     int status;
 
 
-
 //XXX These should be protected; making them so will lead to making
 //    the code split the functions between Endpoint and Connection
 //    protected:
@@ -289,6 +288,12 @@ class vrpn_Endpoint {
     // informational purposes.  It is printed by the ceiling server,
     // for example.
     char rhostname [150];
+
+	vrpn_bool	d_tcp_only;
+	  ///< For connections made through firewalls or NAT with the
+	  ///< tcp: URL, we do not want to allow the endpoints on either
+	  ///< end to open a UDP link to their counterparts.  If this is
+	  ///< the case, then this flag should be set to true.
 
     // Logging - TCH 19 April 00;  changed into two logs 16 Feb 01
 

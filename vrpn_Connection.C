@@ -19,7 +19,6 @@
 #endif
 
 #ifdef VRPN_USE_WINSOCK_SOCKETS
-//XXX #include <winsock.h>
 // a socket in windows can not be closed like it can in unix-land
 #define vrpn_closeSocket closesocket
 #else
@@ -90,7 +89,6 @@ int gethostname (char *, int);
 }
 #endif
 
-//XXX #include "vrpn_Connection.h"
 #include "vrpn_Clock.h"  // for vrpn_Synchronized_Connection
 #include "vrpn_FileConnection.h"  // for vrpn_get_connection_by_name
 
@@ -2688,92 +2686,6 @@ int vrpn_cookie_size (void) {
 // END OF COOKIE (-CUTTER?) CODE
 
 
-/**
- *  This routine opens a UDP socket and then connects it to a the specified
- * port on the specified machine.
- *  The routine returns -1 on failure and the file descriptor on success.
- */
-/*
-// OBSOLETE, I think. 10/18/00
-// This function does the same thing as vrpn_connect_udp_port ?!
-static	SOCKET connect_udp_to (const char * machine, int portno,
-                               const char * NIC_IP) {
-   SOCKET sock; 
-   struct sockaddr_in client;  // The name of the client
-   struct hostent * host;  // The host to connect to
-
-  // create an internet datagram socket
-  sock = ::open_udp_socket(NULL, NIC_IP);
-  if (sock == INVALID_SOCKET)  {
-    fprintf(stderr, "connect_udp_to: can't open socket.\n");
-    fprintf(stderr, "  -- errno %d (%s).\n", errno, strerror(errno));
-    return INVALID_SOCKET;
-  }
-
-   // Connect it to the specified port on the specified machine
-	client.sin_family = AF_INET;
-	if ( (host=gethostbyname(machine)) == NULL ) {
-#ifndef VRPN_USE_WINSOCK_SOCKETS
-	    vrpn_closeSocket(sock);
-	    fprintf(stderr,
-		 "vrpn: connect_udp_to: error finding host by name\n");
-	    return(INVALID_SOCKET);
-#else
-	    unsigned long addr = inet_addr(machine);
-	    if (addr == INADDR_NONE){
-		vrpn_closeSocket(sock);
-		fprintf(stderr,
-			 "vrpn: connect_udp_to: error finding host by name\n");
-		return(INVALID_SOCKET);
-	    } else{
-		host = gethostbyaddr((char *)&addr,sizeof(addr), AF_INET);
-		if (!host){
-		    vrpn_closeSocket(sock);
-		    fprintf(stderr,
-			 "vrpn: connect_udp_to: error finding host by name\n");
-		    return(INVALID_SOCKET);
-		}
-	    }
-#endif
-	}
-#ifdef CRAY
-        { int i;
-          u_long foo_mark = 0;
-          for  (i = 0; i < 4; i++) {
-              u_long one_char = host->h_addr_list[0][i];
-              foo_mark = (foo_mark << 8) | one_char;
-          }
-          client.sin_addr.s_addr = foo_mark;
-        }
-#elif defined(_WIN32)
-    // XXX does cygwin have bcopy? cygwin-1.0 appears to have bcopy!
-	memcpy((char*)&(client.sin_addr.s_addr), host->h_addr, host->h_length);
-#else
-	bcopy(host->h_addr, (char*)&(client.sin_addr.s_addr), host->h_length);
-#endif
-	client.sin_port = htons(portno);
-	if (connect(sock,(struct sockaddr*)&client,sizeof(client)) < 0 ){
-		perror("vrpn: connect_udp_to: Could not connect to client");
-#ifdef VRPN_USE_WINSOCK_SOCKETS
-		int error = WSAGetLastError();
-		fprintf(stderr, "Winsock error: %d\n", error);
-#endif
-		vrpn_closeSocket(sock);
-		return(INVALID_SOCKET);
-	}
-
-   return sock;
-}
-*/
-
-
-
-
-
-
-
-
-
 vrpn_Endpoint::vrpn_Endpoint (vrpn_TypeDispatcher * dispatcher,
                               vrpn_int32 * connectedEndpointCounter) :
     status(BROKEN),
@@ -2803,7 +2715,8 @@ vrpn_Endpoint::vrpn_Endpoint (vrpn_TypeDispatcher * dispatcher,
     d_senders (NULL),
     d_types (NULL),
     d_dispatcher (dispatcher),
-    d_connectionCounter (connectedEndpointCounter)
+    d_connectionCounter (connectedEndpointCounter),
+    d_tcp_only(vrpn_FALSE)
 {
   init();
 }
@@ -3675,15 +3588,16 @@ int vrpn_Endpoint::connect_tcp_to (const char * addr, int port) {
 }
 
 int vrpn_Endpoint::connect_udp_to (const char * addr, int port) {
-    //  d_udpOutboundSocket = ::connect_udp_to(addr, port, d_NICaddress);
-  d_udpOutboundSocket = ::vrpn_connect_udp_port(addr, port, d_NICaddress);
-  if (d_udpOutboundSocket == -1) {
-    fprintf(stderr, "vrpn_Endpoint::connect_udp_to:  "
-                    "Couldn't open outbound UDP link.\n");
-    status = BROKEN;
-    return -1;
-  }
-  return 0;
+    if (!d_tcp_only) {
+	d_udpOutboundSocket = ::vrpn_connect_udp_port(addr, port, d_NICaddress);
+	if (d_udpOutboundSocket == -1) {
+		fprintf(stderr, "vrpn_Endpoint::connect_udp_to:  "
+                   "Couldn't open outbound UDP link.\n");
+		status = BROKEN;
+		return -1;
+	}
+    }
+    return 0;
 }
 
 vrpn_int32 vrpn_Endpoint::set_tcp_outbuf_size (vrpn_int32 bytecount) {
@@ -3977,46 +3891,46 @@ int vrpn_Endpoint::finish_new_connection_setup (void) {
     d_outLog->logMode() |= vrpn_LOG_OUTGOING;
   }
 
-  // Doesn't this have to go here so that pack_log_description() goes
-  // through (isn't thrown out in pack_message())?`
+  // status must be sent to CONNECTED *before* any messages are
+  // packed;  otherwise they're silently discarded in pack_message.
   status = CONNECTED;
 
   if (pack_log_description() == -1) {
     fprintf(stderr, "vrpn_Endpoint::finish_new_connection_setup:  "
                       "Can't pack remote logging instructions.\n");
     status = BROKEN;
-//fprintf(stderr, "BROKEN - vrpn_Endpoint::finish_new_connection_setup.\n");
     return -1;
   }
 
-  if (d_udpInboundSocket == INVALID_SOCKET) {
-    // Open the UDP port to accept time-critical messages on.
-    udp_portnum = (unsigned short)INADDR_ANY;
-    d_udpInboundSocket = ::open_udp_socket(&udp_portnum, d_NICaddress);
-    if (d_udpInboundSocket == -1)  {
-      fprintf(stderr, "vrpn_Endpoint::finish_new_connection_setup:  "
-                      "can't open UDP socket\n");
-      status = BROKEN;
-//fprintf(stderr, "BROKEN - vrpn_Endpoint::finish_new_connection_setup.\n");
-      return -1;
-    }
-  }
+  // If we do not have a socket for inbound connections open, and if we
+  // are allowed to do other-than-TCP sockets, then open one and tell the
+  // other side that it can use it.
+  if (!d_tcp_only) {
 
-  // status must be sent to CONNECTED *before* any messages are
-  // packed;  otherwise they're silently discarded in pack_message.
+	  if (d_udpInboundSocket == INVALID_SOCKET) {
+		// Open the UDP port to accept time-critical messages on.
+		udp_portnum = (unsigned short)INADDR_ANY;
+		d_udpInboundSocket = ::open_udp_socket(&udp_portnum, d_NICaddress);
+		if (d_udpInboundSocket == -1)  {
+		  fprintf(stderr, "vrpn_Endpoint::finish_new_connection_setup:  "
+						  "can't open UDP socket\n");
+		  status = BROKEN;
+		  return -1;
+		}
+	  }
+
+	  // Tell the other side what port number to send its UDP messages to.
+	  if (pack_udp_description(udp_portnum) == -1) {
+		fprintf(stderr,
+		  "vrpn_Endpoint::finish_new_connection_setup: Can't pack UDP msg\n");
+		status = BROKEN;
+		return -1;
+	  }
+  }
 
 #ifdef VERBOSE
   fprintf(stderr, "CONNECTED - vrpn_Endpoint::finish_new_connection_setup.\n");
 #endif
-
-  // Tell the other side what port number to send its UDP messages to.
-  if (pack_udp_description(udp_portnum) == -1) {
-    fprintf(stderr,
-      "vrpn_Endpoint::finish_new_connection_setup: Can't pack UDP msg\n");
-    status = BROKEN;
-//fprintf(stderr, "BROKEN - vrpn_Endpoint::finish_new_connection_setup.\n");
-    return -1;
-  }
 
   // Pack messages that describe the types of messages and sender
   // ID mappings that have been described to this connection.  These
@@ -4033,7 +3947,6 @@ int vrpn_Endpoint::finish_new_connection_setup (void) {
     fprintf(stderr,
       "vrpn_Endpoint::finish_new_connection_setup: Can't send UDP msg\n");
     status = BROKEN;
-//fprintf(stderr, "BROKEN - vrpn_Endpoint::finish_new_connection_setup.\n");
     return -1;
   }
 
@@ -5089,10 +5002,12 @@ void vrpn_Connection::server_check_for_incoming_connections
     flush_udp_socket(listen_udp_sock);
   }
 
-  // TCH OHS HACK
-  SOCKET newSocket;
 
-  // 0-time check for new connection coming in
+  // Do a zero-time select() to see if there are incoming TCP requests on
+  // the listen socket.  This is used when the client needs to punch through
+  // a firewall.
+
+  SOCKET newSocket;
   retval = vrpn_poll_for_accept(listen_tcp_sock, &newSocket);
 
   if (retval == -1) {
@@ -5118,6 +5033,12 @@ void vrpn_Connection::server_check_for_incoming_connections
               "    Out of memory on new endpoint\n");
       return;
     }
+
+	// Since we're being connected to using a TCP request, tell the endpoint
+	// not to try and establish any other connections (since the client is
+	// presumably coming through a firewall or NAT and UDP packets won't get
+	// through).
+	endpoint->d_tcp_only = vrpn_TRUE;
 
     // Server-side logging under multiconnection - TCH July 2000
     if (d_serverLogMode & vrpn_LOG_INCOMING) {
@@ -5404,7 +5325,6 @@ vrpn_Connection::vrpn_Connection
 
   isfile = (strstr(station_name, "file:") ? VRPN_TRUE : VRPN_FALSE);
   isrsh = (strstr(station_name, "x-vrsh:") ? VRPN_TRUE : VRPN_FALSE);
-  // TCH OHS HACK
   istcp = (strstr(station_name, "tcp:") ? VRPN_TRUE : VRPN_FALSE);
 
   // Initialize the things that must be for any constructor
@@ -5457,15 +5377,15 @@ vrpn_Connection::vrpn_Connection
     // that asks to machine to call us back here.
     endpoint->remote_machine_name = vrpn_copy_machine_name(station_name);
     if (!endpoint->remote_machine_name) {
-      fprintf(stderr, "vrpn_Connection: Out of memory!\n");
+      fprintf(stderr, "vrpn_Connection: Can't ge remote machine name!\n");
       connectionStatus = BROKEN;
 //fprintf(stderr, "BROKEN - vrpn_Connection::vrpn_Connection.\n");
       return;
     }
     if (port < 0) {
-  	endpoint->remote_UDP_port = vrpn_DEFAULT_LISTEN_PORT_NO;
+  		endpoint->remote_UDP_port = vrpn_DEFAULT_LISTEN_PORT_NO;
     } else {
-  	endpoint->remote_UDP_port = port;
+  		endpoint->remote_UDP_port = port;
     }
 
     endpoint->status = TRYING_TO_CONNECT;
@@ -5543,14 +5463,17 @@ vrpn_Connection::vrpn_Connection
 
   // TCH OHS HACK
   if (istcp) {
-    // Skip over the 4 characters of "tcp:" - ewwww...
-    endpoint->remote_machine_name = vrpn_copy_machine_name(station_name+4);
+    endpoint->remote_machine_name = vrpn_copy_machine_name(station_name);
     if (!endpoint->remote_machine_name) {
-      fprintf(stderr, "vrpn_Connection: Out of memory!\n");
+      fprintf(stderr, "vrpn_Connection: Can't get remote machine name for tcp: connection!\n");
       connectionStatus = BROKEN;
       return;
     }
     endpoint->remote_UDP_port = 0;
+
+	// Since we are doing a TCP connection, tell the endpoint not to try and
+	// use any other communication mechanism to get to the server.
+	endpoint->d_tcp_only = vrpn_TRUE;
 
     endpoint->status = TRYING_TO_CONNECT;
 
@@ -5563,9 +5486,9 @@ vrpn_Connection::vrpn_Connection
     retval = endpoint->connect_tcp_to(endpoint->remote_machine_name, port);
 
     if (retval == -1) {
-  	fprintf(stderr,"vrpn_Connection: Can't create TCP connection.\n");
-  	endpoint->status = BROKEN;
-  	return;
+	  	fprintf(stderr,"vrpn_Connection: Can't create TCP connection.\n");
+  		endpoint->status = BROKEN;
+  		return;
     }
 
     connectionStatus = TRYING_TO_CONNECT;
@@ -5891,16 +5814,6 @@ vrpn_bool vrpn_Connection::connected (void) const
 
 
 
-
-
-
-
-
-
-
-
-
-
 vrpn_Synchronized_Connection::vrpn_Synchronized_Connection
     (unsigned short listen_port_no,
      const char * local_in_logfile,
@@ -6169,27 +6082,48 @@ char * vrpn_copy_file_name (const char * filespecifier)
   return filename;
 }
 
+// Returns the length in characters of the header on the name that is
+// passed to it.  Helper routine for those that follow.
+
+static int header_len(const char *hostspecifier) {
+  // If the name begins with "x-vrpn://" or "x-vrsh://" or "tcp://" skip that
+  // (also handle the case where there is no // after the colon).
+  if (!strncmp(hostspecifier, "x-vrpn://", 9) || 
+      !strncmp(hostspecifier, "x-vrsh://", 9)) {
+	  return 9;
+  } else if (!strncmp(hostspecifier, "tcp://", 6)) {
+	  return 6;
+  } else if (!strncmp(hostspecifier, "x-vrpn:", 7) ||
+		     !strncmp(hostspecifier, "x-vrsh:", 7)) {
+	  return 7;
+  } else if (!strncmp(hostspecifier, "tcp:", 4)) {
+	  return 4;
+  }
+
+  // No header found.
+  return 0;
+}
+
 char * vrpn_copy_machine_name (const char * hostspecifier)
 {
   int nearoffset = 0;
-    // if it begins with "x-vrpn://" or "x-vrsh://" skip that
   int faroffset;
     // if it contains a ':', copy only the prefix before the last ':'
     // otherwise copy all of it
   int len;
   char * tbuf;
 
-  if (!strncmp(hostspecifier, "x-vrpn://", 9) || 
-      !strncmp(hostspecifier, "x-vrsh://", 9))
-    nearoffset = 9;
+  // Skip past the header, if any
+  nearoffset = header_len(hostspecifier);
+
   // stop at first occurrence of :<port #> or /<rsh arguments>
   faroffset = strcspn(hostspecifier + nearoffset, ":/");
   len = 1 + (faroffset ? faroffset : strlen(hostspecifier) - nearoffset);
-  tbuf = new char [len];
 
-  if (!tbuf)
+  tbuf = new char [len]; //XXX Memory leak, but a small one
+  if (!tbuf) {
     fprintf(stderr, "vrpn_copy_machine_name:  Out of memory!\n");
-  else {
+  } else {
     strncpy(tbuf, hostspecifier + nearoffset, len - 1);
     tbuf[len - 1] = 0;
 //fprintf(stderr, "Host Name:  %s.\n", tbuf);
@@ -6206,10 +6140,8 @@ int vrpn_get_port_number (const char * hostspecifier)
   pn = hostspecifier;
   if (!pn) return -1;
 
-  // skip over ':' in header
-  if (!strncmp(pn, "x-vrpn://", 9) ||
-      !strncmp(pn, "x-vrsh://", 9))
-    pn += 9;
+  // Skip over the header, if present
+  pn += header_len(hostspecifier);
 
   pn = strrchr(pn, ':');
   if (pn) {
@@ -6229,9 +6161,8 @@ char * vrpn_copy_rsh_program (const char * hostspecifier)
   int len;
   char * tbuf;
 
-  if (!strncmp(hostspecifier, "x-vrpn://", 9) ||
-      !strncmp(hostspecifier, "x-vrsh://", 9))
-    nearoffset += 9;
+  nearoffset += header_len(hostspecifier);
+
   nearoffset += strcspn(hostspecifier + nearoffset, "/");
   nearoffset++; // step past the '/'
   faroffset = strcspn(hostspecifier + nearoffset, ",");
@@ -6255,9 +6186,7 @@ char * vrpn_copy_rsh_arguments (const char * hostspecifier)
   int len;
   char * tbuf;
 
-  if (!strncmp(hostspecifier, "x-vrpn://", 9) ||
-      !strncmp(hostspecifier, "x-vrsh://", 9))
-    nearoffset += 9;
+  nearoffset += header_len(hostspecifier);
 
   nearoffset += strcspn(hostspecifier + nearoffset, "/");
   nearoffset += strcspn(hostspecifier + nearoffset, ",");
