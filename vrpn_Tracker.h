@@ -356,21 +356,21 @@ class vrpn_Tracker_Remote: public vrpn_Tracker {
 		vrpn_TRACKERCHANGEHANDLER	handler;
 		struct vrpn_RTCS		*next;
 	} vrpn_TRACKERCHANGELIST;
-	vrpn_TRACKERCHANGELIST	*change_list[vrpn_TRACKER_MAX_SENSORS + 1];
+	vrpn_TRACKERCHANGELIST	*change_list[vrpn_TRACKER_MAX_SENSOR_LIST];
 
 	typedef	struct vrpn_RTVCS {
 		void				*userdata;
 		vrpn_TRACKERVELCHANGEHANDLER	handler;
 		struct vrpn_RTVCS		*next;
 	} vrpn_TRACKERVELCHANGELIST;
-	vrpn_TRACKERVELCHANGELIST *velchange_list[vrpn_TRACKER_MAX_SENSORS + 1];
+	vrpn_TRACKERVELCHANGELIST *velchange_list[vrpn_TRACKER_MAX_SENSOR_LIST];
 
 	typedef	struct vrpn_RTACS {
 		void				*userdata;
 		vrpn_TRACKERACCCHANGEHANDLER	handler;
 		struct vrpn_RTACS		*next;
 	} vrpn_TRACKERACCCHANGELIST;
-	vrpn_TRACKERACCCHANGELIST *accchange_list[vrpn_TRACKER_MAX_SENSORS + 1];
+	vrpn_TRACKERACCCHANGELIST *accchange_list[vrpn_TRACKER_MAX_SENSOR_LIST];
 
 	typedef struct vrpn_RTT2RCS {
 		void				*userdata;
@@ -384,7 +384,7 @@ class vrpn_Tracker_Remote: public vrpn_Tracker {
 		vrpn_TRACKERUNIT2SENSORCHANGEHANDLER handler;
 		struct vrpn_RTU2SCS		*next;
 	} vrpn_TRACKERUNIT2SENSORCHANGELIST;
-	vrpn_TRACKERUNIT2SENSORCHANGELIST *unit2sensorchange_list[vrpn_TRACKER_MAX_SENSORS + 1];
+	vrpn_TRACKERUNIT2SENSORCHANGELIST *unit2sensorchange_list[vrpn_TRACKER_MAX_SENSOR_LIST];
 	
 	typedef struct vrpn_RTWSCS {
 		void				*userdata;

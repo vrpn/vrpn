@@ -1,3 +1,13 @@
+2002-07-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Clock.h : Cosmetic changes.
+	* vrpn_Connection.C : Adds hostname to error messages.
+		Only reports broken connection message once/second.
+	* vrpn_FileConnection.C : Comment changes.  Only print out
+		error messages once per second.
+	* vrpn_Tracker.h : Changed array sizes to use the defined
+		constant meant for that purpose.
+
 2002-06-24  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_ForceDevice.[h,C]:  constructors now take the name of

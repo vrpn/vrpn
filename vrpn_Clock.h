@@ -3,13 +3,12 @@
   --
   Description : Note: for both types of clocks (server and client), users
                       need only to pass in the station which runs the 
-		      clock server (a name from the sdi_devices file).
+		      clock server.
 		      The vrpn_Clock class takes care of the actual clock
 		      device name (since there is only one clock device).
-		      (i.e., you just say vrpn_Clock("server name") or
-		      vrpn_Clock_Remote("server name"), where "server name"
-		      is an entry in the .sdi_devices file.)
-
+		      (i.e., you just say vrpn_Clock("server_name") or
+		      vrpn_Clock_Remote("server_name"), rather than
+                      vrpn_Clock_Remote("myclockname@server_name");
   ----------------------------------------------------------------------------
   Author: weberh
   Created: Sat Dec 13 11:21:15 1997
@@ -91,10 +90,7 @@ typedef void (*vrpn_CLOCKSYNCHANDLER)(void *userdata,
 #define VRPN_CLOCK_QUICK_SYNC 2
 
 class vrpn_Clock_Remote: public vrpn_Clock {
-
-
   public:
-
 
     // The name of the station which runs the clock server to connect to
     // (from sdi_devices), and the frequency at which to do quick re-syncs 
@@ -114,7 +110,6 @@ class vrpn_Clock_Remote: public vrpn_Clock {
 
     // MANIPULATORS
 
-
     // This routine calls does the sync and calls the mainloop of the 
     // connection it's on.  The clock does not call client_mainloop()
     // or server_mainloop, because it does not need heartbeats or
@@ -133,15 +128,12 @@ class vrpn_Clock_Remote: public vrpn_Clock {
 
     // ACCESSORS
 
-
     // Returns the most recent RTT estimate.  TCH April 99
     // Returns 0 if the first RTT estimate is not yet completed
     // or if no quick syncs are being done.
     struct timeval currentRTT (void) const;
 
-
   protected:
-
 
     vrpn_int32 clockClient_id;             // vrpn id for this client
 

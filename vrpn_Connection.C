@@ -1605,7 +1605,7 @@ static int	vrpn_getmyIP (char * myIPchar, unsigned maxlen,
   // Find out what my IP address is
   host = gethostbyname(myname);
   if (host == NULL) {
-    fprintf(stderr, "vrpn_getmyIP: error finding host by name\n");
+    fprintf(stderr, "vrpn_getmyIP: error finding host by name (%s)\n",myname);
     return -1;
   }
 
@@ -2139,7 +2139,7 @@ static SOCKET vrpn_connect_udp_port
       } else {
           vrpn_closeSocket(udp_socket);
           fprintf(stderr,
-                  "vrpn_connect_udp_port: error finding host by name.\n");
+                  "vrpn_connect_udp_port: error finding host by name (%s).\n",machineName);
           return(-1);
       }
   }
@@ -2710,10 +2710,6 @@ vrpn_bool vrpn_Endpoint::clockSynced (void) const {
 vrpn_bool vrpn_Endpoint::doing_okay (void) const {
   return ((status >= TRYING_TO_CONNECT) || (status == LOGGING));
 }
-
-
-
-
 
 
 void vrpn_Endpoint::init (void) {
@@ -3452,7 +3448,7 @@ int vrpn_Endpoint::connect_tcp_to (const char * addr, int port) {
           perror("gethostbyname error:");
 #endif
           fprintf(stderr, "vrpn_Endpoint::connect_tcp_to:  "
-                  "error finding host by name\n");
+                  "error finding host by name (%s)\n",addr);
           return -1;
       }
   }
@@ -4359,15 +4355,6 @@ int vrpn_Endpoint::setControlMsgTimeOffset(const timeval * offset)
     d_controlMsgTimeOffset.tv_usec = offset->tv_usec;
     return 0;
 }
-
-
-
-
-
-
-
-
-
 
 void setClockOffset( void *userdata, const vrpn_CLOCKCB& info )
 {
@@ -5869,6 +5856,18 @@ struct timeval vrpn_Synchronized_Connection::fullSync (void)
 
 int vrpn_Synchronized_Connection::mainloop (const struct timeval * timeout)
 {
+  // If we are broken, say so once a second
+  if (connectionStatus == BROKEN) {
+    static struct timeval last_told = {0,0};
+    static struct timeval now;
+    gettimeofday(&now, NULL);
+    if (now.tv_sec != last_told.tv_sec) {
+      fprintf(stderr, "vrpn_Synchronized_Connection::mainloop: Connection object is broken\n");
+      memcpy(&last_told, &now, sizeof(last_told));
+    }
+    return -1;
+  }
+
   // If we are not in a connected state, don't do synchronization, just
   // call the parent class mainloop()
   //if (connectionStatus != CONNECTED) {

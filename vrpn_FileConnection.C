@@ -385,7 +385,7 @@ int vrpn_File_Connection::mainloop( const timeval * /*timeout*/ )
     
     // (winston) Had to add need_to_play() because at fractional rates
     // (even just 1/10th) the d_time didn't accumulate properly
-    // because tiny intervals after scaling were too small for
+    // because tiny intervals after scaling were too small
     // for a timeval to represent (1us minimum).
     // 
     // (juliano-8/26/99) if ((end_time - timestamp of next event) < 1us)
@@ -617,7 +617,7 @@ int vrpn_File_Connection::playone_to_filetime( timeval end_filetime )
     }
 
     // TCH July 2001
-    // A big design decision:  do we reproduce messages exactly,
+    // A big design decision:  do we re-log messages exactly,
     // or do we mark them with the time they were played back?
     // Maybe this should be switchable, but the latter is what
     // I need yesterday.
@@ -633,7 +633,7 @@ int vrpn_File_Connection::playone_to_filetime( timeval end_filetime )
     // advance current file position
     d_time = header.msg_time;
 
-    // Handle this log entry
+  // Handle this log entry
     if (header.type >= 0) {
 #ifdef	VERBOSE
 	printf("vrpn_FC: Msg Sender (%s), Type (%s), at (%ld:%ld)\n",
@@ -779,10 +779,17 @@ int vrpn_File_Connection::read_entry (void)
         return -1;
     }
 
+    // Only print this message every second or so
     if (!d_file) {
+      static struct timeval last_told = {0,0};
+      static struct timeval now;
+      gettimeofday(&now, NULL);
+      if (now.tv_sec != last_told.tv_sec) {
         fprintf(stderr, "vrpn_File_Connection::read_entry: no open file\n");
-        delete newEntry;
-        return -1;
+        memcpy(&last_told, &now, sizeof(last_told));
+      }
+      delete newEntry;
+      return -1;
     }
 
     // get the header of the next message
