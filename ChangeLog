@@ -1,3 +1,8 @@
+2003-07-21  Sascha Scholz  <sascha.scholz@imk.fraunhofer.de>
+
+	* Makefile : Removed un-needed include directories that caused
+		problems with non-standard Linux compiler installation.
+
 2003-07-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Button.C : Turns on a second bit to work with the HiBall.
