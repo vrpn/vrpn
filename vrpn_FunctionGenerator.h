@@ -39,11 +39,11 @@ enum vrpn_FunctionGenerator_RepeatStyle
 	REPEAT_MANUAL		// repeat until told to stop
 };
 
-class vrpn_FunctionGenerator_channel;
+class VRPN_API vrpn_FunctionGenerator_channel;
 
 // a base class for all functions that vrpn_FunctionGenerator
 // can generate
-class vrpn_FunctionGenerator_function
+class VRPN_API vrpn_FunctionGenerator_function
 {
 public:
 	virtual vrpn_FunctionGenerator_FunctionTypes getFunctionType( ) const = 0;
@@ -87,7 +87,7 @@ protected:
 
 
 // the NULL function:  generate all zeros
-class vrpn_FunctionGenerator_function_NULL
+class VRPN_API vrpn_FunctionGenerator_function_NULL
 : public virtual vrpn_FunctionGenerator_function
 {
 public:
@@ -106,7 +106,7 @@ public:
 };
 
 
-class vrpn_FunctionGenerator_function_sine 
+class VRPN_API vrpn_FunctionGenerator_function_sine 
 : public vrpn_FunctionGenerator_function
 {
 public:
@@ -142,7 +142,7 @@ public:
                           \|__|/      <-- down voltage
  t0| t1|   t2  | t3| t4 |t5|t6|t7|
 */
-class vrpn_FunctionGenerator_function_ramp
+class VRPN_API vrpn_FunctionGenerator_function_ramp
 : public vrpn_FunctionGenerator_function
 {
 public:
@@ -176,7 +176,7 @@ protected:
 };
 
 
-class vrpn_FunctionGenerator_function_custom
+class VRPN_API vrpn_FunctionGenerator_function_custom
 : public vrpn_FunctionGenerator_function
 {
 public:
@@ -207,7 +207,7 @@ protected:
 };
 
 
-class vrpn_FunctionGenerator_channel
+class VRPN_API vrpn_FunctionGenerator_channel
 {
 	// note:  the channel will delete its function when the function is
 	// no longer needed (e.g., when the channel is destroyed or the function changed)
@@ -250,7 +250,7 @@ protected:
 };
 
 
-class vrpn_FunctionGenerator : public vrpn_BaseClass
+class VRPN_API vrpn_FunctionGenerator : public vrpn_BaseClass
 {
 public:
 	vrpn_FunctionGenerator( const char* name, vrpn_Connection* c = NULL );
@@ -298,7 +298,7 @@ protected:
 }; // end class vrpn_FunctionGenerator
 
 
-class vrpn_FunctionGenerator_Server : public vrpn_FunctionGenerator
+class VRPN_API vrpn_FunctionGenerator_Server : public vrpn_FunctionGenerator
 {
 public:
 	vrpn_FunctionGenerator_Server( const char* name, vrpn_Connection* c = NULL );
@@ -318,13 +318,13 @@ public:
 
 	// sub-classes should not override these methods; these take care of
 	// receiving requests
-	static int handle_channel_message( void* userdata, vrpn_HANDLERPARAM p );
-	static int handle_channelRequest_message( void* userdata, vrpn_HANDLERPARAM p );
-	static int handle_allChannelRequest_message( void* userdata, vrpn_HANDLERPARAM p );
-	static int handle_start_message( void* userdata, vrpn_HANDLERPARAM p );
-	static int handle_stop_message( void* userdata, vrpn_HANDLERPARAM p );
-	static int handle_sample_rate_message( void* userdata, vrpn_HANDLERPARAM p );
-	static int handle_reference_channel_message( void* userdata, vrpn_HANDLERPARAM p );
+	static int VRPN_CALLBACK handle_channel_message( void* userdata, vrpn_HANDLERPARAM p );
+	static int VRPN_CALLBACK handle_channelRequest_message( void* userdata, vrpn_HANDLERPARAM p );
+	static int VRPN_CALLBACK handle_allChannelRequest_message( void* userdata, vrpn_HANDLERPARAM p );
+	static int VRPN_CALLBACK handle_start_message( void* userdata, vrpn_HANDLERPARAM p );
+	static int VRPN_CALLBACK handle_stop_message( void* userdata, vrpn_HANDLERPARAM p );
+	static int VRPN_CALLBACK handle_sample_rate_message( void* userdata, vrpn_HANDLERPARAM p );
+	static int VRPN_CALLBACK handle_reference_channel_message( void* userdata, vrpn_HANDLERPARAM p );
 
 protected:
 	
@@ -417,7 +417,7 @@ typedef void (*vrpn_FUNCTION_REFERENCE_CHANNEL_REPLY_HANDLER)( void *userdata,
 					     const vrpn_FUNCTION_REFERENCE_CHANNEL_REPLY_CB info );
 
 
-class vrpn_FunctionGenerator_Remote : public vrpn_FunctionGenerator
+class VRPN_API vrpn_FunctionGenerator_Remote : public vrpn_FunctionGenerator
 {
 public:
 	vrpn_FunctionGenerator_Remote( const char* name, vrpn_Connection* c = NULL );
@@ -463,11 +463,11 @@ public:
 	virtual int unregister_reference_channel_reply_handler( void *userdata,
 		vrpn_FUNCTION_REFERENCE_CHANNEL_REPLY_HANDLER handler );
 	
-	static int handle_channelReply_message( void* userdata, vrpn_HANDLERPARAM p );
-	static int handle_startReply_message( void* userdata, vrpn_HANDLERPARAM p );
-	static int handle_stopReply_message( void* userdata, vrpn_HANDLERPARAM p );
-	static int handle_sampleRateReply_message( void* userdata, vrpn_HANDLERPARAM p );
-	static int handle_referenceChannelReply_message( void* userdata, vrpn_HANDLERPARAM p );
+	static int VRPN_CALLBACK handle_channelReply_message( void* userdata, vrpn_HANDLERPARAM p );
+	static int VRPN_CALLBACK VRPN_CALLBACK handle_startReply_message( void* userdata, vrpn_HANDLERPARAM p );
+	static int VRPN_CALLBACK handle_stopReply_message( void* userdata, vrpn_HANDLERPARAM p );
+	static int VRPN_CALLBACK handle_sampleRateReply_message( void* userdata, vrpn_HANDLERPARAM p );
+	static int VRPN_CALLBACK handle_referenceChannelReply_message( void* userdata, vrpn_HANDLERPARAM p );
 
 protected:
 	typedef	struct vrpn_FGCRL

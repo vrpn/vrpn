@@ -4,7 +4,7 @@
 #include "vrpn_Connection.h"
 #include "vrpn_Analog.h"
 
-class vrpn_5dt: public vrpn_Serial_Analog
+class VRPN_API vrpn_5dt: public vrpn_Serial_Analog
 {
 public:
 	vrpn_5dt (const char * name,

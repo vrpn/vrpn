@@ -96,7 +96,7 @@ vrpn_int32 vrpn_Analog_Output_Server_NI::setNumChannels (vrpn_int32 sizeRequeste
 }
 
 /* static */
-int vrpn_Analog_Output_Server_NI::handle_request_message(void *userdata,
+int VRPN_CALLBACK vrpn_Analog_Output_Server_NI::handle_request_message(void *userdata,
 	vrpn_HANDLERPARAM p)
 {
     const char* bufptr = p.buffer;
@@ -202,7 +202,7 @@ int vrpn_Analog_Output_Server_NI::handle_request_channels_message(void* userdata
 
 
 /* static */
-int vrpn_Analog_Output_Server_NI::handle_got_connection( void* userdata, vrpn_HANDLERPARAM )
+int VRPN_CALLBACK vrpn_Analog_Output_Server_NI::handle_got_connection( void* userdata, vrpn_HANDLERPARAM )
 {
 	vrpn_Analog_Output_Server_NI* me = (vrpn_Analog_Output_Server_NI*) userdata;
 	if( me->report_num_channels( ) == false )

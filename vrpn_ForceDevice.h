@@ -32,7 +32,7 @@
 #define FD_SPRINGS_AS_FIELDS
 
 
-class vrpn_ForceDevice : public vrpn_BaseClass {
+class VRPN_API vrpn_ForceDevice : public vrpn_BaseClass {
 
   public:
 
@@ -348,24 +348,24 @@ typedef struct _vrpn_FORCESCPCB {
 	vrpn_float64	pos[3];			// position of SCP
 	vrpn_float64	quat[4];		// orientation of SCP
 } vrpn_FORCESCPCB;
-typedef void (*vrpn_FORCESCPHANDLER) (void *userdata,
+typedef void (VRPN_CALLBACK *vrpn_FORCESCPHANDLER) (void *userdata,
 					const vrpn_FORCESCPCB info);
 
 typedef	struct _vrpn_FORCECB {
 	struct		timeval	msg_time;	// Time of the report
 	vrpn_float64	force[3];		// force value
 } vrpn_FORCECB;
-typedef void (*vrpn_FORCECHANGEHANDLER)(void *userdata,
+typedef void (VRPN_CALLBACK *vrpn_FORCECHANGEHANDLER)(void *userdata,
 					 const vrpn_FORCECB info);
 
 typedef struct _vrpn_FORCEERRORCB {
 	struct		timeval msg_time;	// time of the report
 	vrpn_int32		error_code;		// type of error
 } vrpn_FORCEERRORCB;
-typedef void (*vrpn_FORCEERRORHANDLER) (void *userdata,
+typedef void (VRPN_CALLBACK *vrpn_FORCEERRORHANDLER) (void *userdata,
 					const vrpn_FORCEERRORCB info);
 
-class vrpn_ForceDevice_Remote: public vrpn_ForceDevice {
+class VRPN_API vrpn_ForceDevice_Remote: public vrpn_ForceDevice {
 public:
 
     // The name of the force device to connect to.
@@ -468,7 +468,7 @@ protected:
 	    struct vrpn_RFCS		*next;
     } vrpn_FORCECHANGELIST;
     vrpn_FORCECHANGELIST	*change_list;
-    static int handle_force_change_message(void *userdata,vrpn_HANDLERPARAM p);
+    static int VRPN_CALLBACK handle_force_change_message(void *userdata,vrpn_HANDLERPARAM p);
 
     typedef struct vrpn_RFSCPCS {
 	    void                            *userdata;
@@ -476,7 +476,7 @@ protected:
 	    struct vrpn_RFSCPCS		*next;
     } vrpn_FORCESCPCHANGELIST;
     vrpn_FORCESCPCHANGELIST	*scp_change_list;
-    static int handle_scp_change_message(void *userdata,
+    static int VRPN_CALLBACK handle_scp_change_message(void *userdata,
 						    vrpn_HANDLERPARAM p);
     typedef struct vrpn_RFERRCS {
 	    void				*userdata;
@@ -484,7 +484,7 @@ protected:
 	    struct vrpn_RFERRCS		*next;
     } vrpn_FORCEERRORCHANGELIST;
     vrpn_FORCEERRORCHANGELIST *error_change_list;
-    static int handle_error_change_message(void *userdata,
+    static int VRPN_CALLBACK handle_error_change_message(void *userdata,
 						    vrpn_HANDLERPARAM p);
 
     // constraint types

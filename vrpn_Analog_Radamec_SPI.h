@@ -4,7 +4,7 @@
 #include "vrpn_Connection.h"
 #include "vrpn_Analog.h"
 
-class vrpn_Radamec_SPI: public vrpn_Serial_Analog
+class VRPN_API vrpn_Radamec_SPI: public vrpn_Serial_Analog
 {
 public:
 	vrpn_Radamec_SPI (const char * name, vrpn_Connection * c,

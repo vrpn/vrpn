@@ -26,7 +26,7 @@
 #include <daq.h>
 #include <windows.h>
 
-class vrpn_Nidaq : public vrpn_Analog {
+class VRPN_API vrpn_Nidaq : public vrpn_Analog {
 public:
 	// see daq.h for more info on the args
 	// fNice says whether these threads should use 100% of the cpu or

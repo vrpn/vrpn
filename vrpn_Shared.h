@@ -1,5 +1,4 @@
 #ifndef VRPN_SHARED_H
-#define VRPN_SHARED_H
 
 // Horrible hack for old HPUX compiler
 #ifdef	hpux
@@ -85,7 +84,7 @@
 
   // Whether or not we export gettimeofday, we declare the
   // vrpn_gettimeofday() function.
-  extern "C" int vrpn_gettimeofday(struct timeval *tp, void *tzp);
+  extern "C" VRPN_API int vrpn_gettimeofday(struct timeval *tp, void *tzp);
 
   // If compiling under Cygnus Solutions Cygwin then these get defined by
   // including sys/time.h.  So, we will manually define only for _WIN32
@@ -127,23 +126,23 @@
 
 
 // make sure tv_usec is less than 1,000,000
-extern struct timeval vrpn_TimevalNormalize( const struct timeval & tv );
+extern VRPN_API	struct timeval vrpn_TimevalNormalize( const struct timeval & tv );
 
-extern struct timeval vrpn_TimevalSum( const struct timeval& tv1, 
+extern VRPN_API	struct timeval vrpn_TimevalSum( const struct timeval& tv1, 
 				  const struct timeval& tv2 );
-extern struct timeval vrpn_TimevalDiff( const struct timeval& tv1, 
+extern VRPN_API	struct timeval vrpn_TimevalDiff( const struct timeval& tv1, 
 				   const struct timeval& tv2 );
-extern struct timeval vrpn_TimevalScale (const struct timeval & tv,
+extern VRPN_API	struct timeval vrpn_TimevalScale (const struct timeval & tv,
                                          double scale);
-extern int vrpn_TimevalGreater (const struct timeval & tv1,
+extern VRPN_API	int vrpn_TimevalGreater (const struct timeval & tv1,
                                 const struct timeval & tv2);
-extern int vrpn_TimevalEqual( const struct timeval& tv1,
+extern VRPN_API	int vrpn_TimevalEqual( const struct timeval& tv1,
 			      const struct timeval& tv2 );
-extern double vrpn_TimevalMsecs( const struct timeval& tv1 );
+extern VRPN_API	double vrpn_TimevalMsecs( const struct timeval& tv1 );
 
-extern struct timeval vrpn_MsecsTimeval( const double dMsecs );
+extern VRPN_API	struct timeval vrpn_MsecsTimeval( const double dMsecs );
 
-extern void vrpn_SleepMsecs( double dMsecs );
+extern VRPN_API	void vrpn_SleepMsecs( double dMsecs );
 
 // Tells whether the maci
 
@@ -152,37 +151,37 @@ extern void vrpn_SleepMsecs( double dMsecs );
 // definitions and functions.
 
 // xform a double to/from network order -- like htonl and htons
-extern vrpn_float64 htond( vrpn_float64 d );
-extern vrpn_float64 ntohd( vrpn_float64 d );
+extern VRPN_API	vrpn_float64 htond( vrpn_float64 d );
+extern VRPN_API	vrpn_float64 ntohd( vrpn_float64 d );
 
-extern int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
+extern VRPN_API	int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
                          const vrpn_int8 value);
-extern int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
+extern VRPN_API	int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
                          const vrpn_int16 value);
-extern int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
+extern VRPN_API	int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
                          const vrpn_uint16 value);
-extern int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
+extern VRPN_API	int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
                          const vrpn_int32 value);
-extern int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
+extern VRPN_API	int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
                          const vrpn_uint32 value);
-extern int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
+extern VRPN_API	int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
                          const vrpn_float32 value);
-extern int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
+extern VRPN_API	int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
                          const vrpn_float64 value);
-extern int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
+extern VRPN_API	int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
                          const timeval t);
-extern int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
+extern VRPN_API	int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
                          const char * string, vrpn_int32 length);
 
-extern int vrpn_unbuffer (const char ** buffer, vrpn_int8 * cval);
-extern int vrpn_unbuffer (const char ** buffer, vrpn_int16 * lval);
-extern int vrpn_unbuffer (const char ** buffer, vrpn_uint16 * lval);
-extern int vrpn_unbuffer (const char ** buffer, vrpn_int32 * lval);
-extern int vrpn_unbuffer (const char ** buffer, vrpn_uint32 * lval);
-extern int vrpn_unbuffer (const char ** buffer, vrpn_float32 * fval);
-extern int vrpn_unbuffer (const char ** buffer, vrpn_float64 * dval);
-extern int vrpn_unbuffer (const char ** buffer, timeval * t);
-extern int vrpn_unbuffer (const char ** buffer, char * string,
+extern VRPN_API	int vrpn_unbuffer (const char ** buffer, vrpn_int8 * cval);
+extern VRPN_API	int vrpn_unbuffer (const char ** buffer, vrpn_int16 * lval);
+extern VRPN_API	int vrpn_unbuffer (const char ** buffer, vrpn_uint16 * lval);
+extern VRPN_API	int vrpn_unbuffer (const char ** buffer, vrpn_int32 * lval);
+extern VRPN_API	int vrpn_unbuffer (const char ** buffer, vrpn_uint32 * lval);
+extern VRPN_API	int vrpn_unbuffer (const char ** buffer, vrpn_float32 * fval);
+extern VRPN_API	int vrpn_unbuffer (const char ** buffer, vrpn_float64 * dval);
+extern VRPN_API	int vrpn_unbuffer (const char ** buffer, timeval * t);
+extern VRPN_API	int vrpn_unbuffer (const char ** buffer, char * string,
                            vrpn_int32 length);
 
 // From this we get the variable "vrpn_big_endian" set to true if the machine we are
@@ -200,4 +199,5 @@ static	const   bool    vrpn_big_endian = (vrpn_char_data_for_endian_test[3] == 1
 #define	sleep(x)	Sleep( DWORD(1000.0 * x) )
 #endif
 
+#define VRPN_SHARED_H
 #endif  // VRPN_SHARED_H

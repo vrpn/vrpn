@@ -1146,3 +1146,4 @@ static timeval __tv;
 static int __iTrash = vrpn_gettimeofday(&__tv, (struct timezone *)NULL);
 
 #endif // VRPN_UNSAFE_WINDOWS_CLOCK
+

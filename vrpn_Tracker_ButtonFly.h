@@ -23,7 +23,7 @@ const int vrpn_BUTTONFLY_MAXAXES = 200;
 // in meters/second.  Rotation is specified as a vector with the number
 // of rotations to make per second around X, Y, and Z.
 
-class vrpn_TBF_axis {
+class VRPN_API vrpn_TBF_axis {
 
   public:
 
@@ -49,7 +49,7 @@ class vrpn_TBF_axis {
     bool  absolute;   //< Whether this is an absolute or differential change
 };
 
-class vrpn_Tracker_ButtonFlyParam {
+class VRPN_API vrpn_Tracker_ButtonFlyParam {
 
   public:
 
@@ -86,9 +86,9 @@ class vrpn_Tracker_ButtonFlyParam {
     float rot_scale_power;
 };
 
-class vrpn_Tracker_ButtonFly;	// Forward reference
+class VRPN_API vrpn_Tracker_ButtonFly;	// Forward reference
 
-class vrpn_TBF_fullaxis {
+class VRPN_API vrpn_TBF_fullaxis {
   public:
     vrpn_TBF_fullaxis (void) { btn = NULL; active = false; bf = NULL; };
 
@@ -113,7 +113,7 @@ class vrpn_TBF_fullaxis {
 // change since the last update, in which case they are generated no faster
 // than update_rate. 
 
-class vrpn_Tracker_ButtonFly : public vrpn_Tracker {
+class VRPN_API vrpn_Tracker_ButtonFly : public vrpn_Tracker {
   public:
     vrpn_Tracker_ButtonFly (const char * name, vrpn_Connection * trackercon,
 			    vrpn_Tracker_ButtonFlyParam * params,
@@ -127,7 +127,7 @@ class vrpn_Tracker_ButtonFly : public vrpn_Tracker {
 
     void update (q_matrix_type &);
 
-    static int handle_newConnection (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_newConnection (void *, vrpn_HANDLERPARAM);
 
   protected:
 
@@ -171,10 +171,10 @@ class vrpn_Tracker_ButtonFly : public vrpn_Tracker {
     int setup_channel(vrpn_TBF_fullaxis * full);
     int teardown_channel(vrpn_TBF_fullaxis * full);
 
-    static void	handle_velocity_update(void * userdata, const vrpn_ANALOGCB info);
-    static void	handle_rotation_update(void * userdata, const vrpn_ANALOGCB info);
-    static void	handle_button_update(void * userdata, const vrpn_BUTTONCB info);
-    static void handle_reset_press(void * userdata, const vrpn_BUTTONCB info);
+    static void	VRPN_CALLBACK handle_velocity_update(void * userdata, const vrpn_ANALOGCB info);
+    static void	VRPN_CALLBACK handle_rotation_update(void * userdata, const vrpn_ANALOGCB info);
+    static void	VRPN_CALLBACK handle_button_update(void * userdata, const vrpn_BUTTONCB info);
+    static void VRPN_CALLBACK handle_reset_press(void * userdata, const vrpn_BUTTONCB info);
 };
 
 #endif

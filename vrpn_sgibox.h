@@ -21,7 +21,7 @@
 #define NUM_DIALS   (8)
 #define NUMDEVS (NUM_BUTTONS+NUM_DIALS)
 
-class vrpn_SGIBox :public vrpn_Analog, public vrpn_Button_Filter {
+class VRPN_API vrpn_SGIBox :public vrpn_Analog, public vrpn_Button_Filter {
 public:
   vrpn_SGIBox(char * name, vrpn_Connection * c);
   void mainloop();
@@ -51,3 +51,4 @@ private:
 #endif  // sgi
 
 #endif  // VRPN_SGIBOX
+

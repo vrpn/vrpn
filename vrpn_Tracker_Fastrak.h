@@ -27,7 +27,7 @@
 
 const int vrpn_FASTRAK_MAX_STATIONS = 4;    //< How many stations can exist
 
-class vrpn_Tracker_Fastrak: public vrpn_Tracker_Serial {
+class VRPN_API vrpn_Tracker_Fastrak: public vrpn_Tracker_Serial {
   
  public:
 

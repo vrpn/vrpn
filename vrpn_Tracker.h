@@ -34,10 +34,10 @@
 // to use time synched tracking, just pass in a sync connection to the 
 // client and the server
 
-#include "vrpn_Connection.h"
 #include "vrpn_BaseClass.h"
+#include "vrpn_Connection.h"
 
-class vrpn_RedundantTransmission;
+class VRPN_API vrpn_RedundantTransmission;
 
 // tracker status flags
 const	int vrpn_TRACKER_SYNCING	   = (3);
@@ -57,7 +57,7 @@ const	int vrpn_ALL_SENSORS = vrpn_TRACKER_MAX_SENSORS;
 // used to specify all sensors
 const	int vrpn_TRACKER_MAX_SENSOR_LIST = vrpn_TRACKER_MAX_SENSORS + 1;
 
-class vrpn_Tracker : public vrpn_BaseClass {
+class VRPN_API vrpn_Tracker : public vrpn_BaseClass {
   public:
   // vrpn_Tracker.cfg, in the "local" directory, is the default config file
   // . You can specify a different config file in the constructor. When
@@ -77,10 +77,10 @@ class vrpn_Tracker : public vrpn_BaseClass {
    int register_server_handlers(void);
    void get_local_t2r(vrpn_float64 *vec, vrpn_float64 *quat);
    void get_local_u2s(vrpn_int32 sensor, vrpn_float64 *vec, vrpn_float64 *quat);
-   static int handle_t2r_request(void *userdata, vrpn_HANDLERPARAM p);
-   static int handle_u2s_request(void *userdata, vrpn_HANDLERPARAM p);
-   static int handle_workspace_request(void *userdata, vrpn_HANDLERPARAM p);
-   static int handle_update_rate_request (void *, vrpn_HANDLERPARAM);
+   static int VRPN_CALLBACK handle_t2r_request(void *userdata, vrpn_HANDLERPARAM p);
+   static int VRPN_CALLBACK handle_u2s_request(void *userdata, vrpn_HANDLERPARAM p);
+   static int VRPN_CALLBACK handle_workspace_request(void *userdata, vrpn_HANDLERPARAM p);
+   static int VRPN_CALLBACK handle_update_rate_request (void *, vrpn_HANDLERPARAM);
 
   protected:
    vrpn_int32 position_m_id;		// ID of tracker position message
@@ -139,7 +139,7 @@ class vrpn_Tracker : public vrpn_BaseClass {
 #ifndef VRPN_CLIENT_ONLY
 #define VRPN_TRACKER_BUF_SIZE 100
 
-class vrpn_Tracker_Serial : public vrpn_Tracker {
+class VRPN_API vrpn_Tracker_Serial : public vrpn_Tracker {
   public:
    vrpn_Tracker_Serial
                (const char * name, vrpn_Connection * c,
@@ -175,7 +175,7 @@ class vrpn_Tracker_Serial : public vrpn_Tracker {
 // how to build a tracker server, and also serves as a test object for
 // client codes and VRPN builds.
 
-class vrpn_Tracker_NULL: public vrpn_Tracker {
+class VRPN_API vrpn_Tracker_NULL: public vrpn_Tracker {
   public:
    vrpn_Tracker_NULL (const char * name, vrpn_Connection * c,
 	vrpn_int32 sensors = 1, vrpn_float64 Hz = 1.0);
@@ -203,7 +203,7 @@ class vrpn_Tracker_NULL: public vrpn_Tracker {
 // mainloop() function needs to be called periodically even when
 // there is nothing to report.
 
-class vrpn_Tracker_Server: public vrpn_Tracker {
+class VRPN_API vrpn_Tracker_Server: public vrpn_Tracker {
   public:
    vrpn_Tracker_Server (const char * name, vrpn_Connection * c,
 	vrpn_int32 sensors = 1);
@@ -246,7 +246,7 @@ typedef	struct _vrpn_TRACKERCB {
 	vrpn_float64	pos[3];		// Position of the sensor
 	vrpn_float64	quat[4];	// Orientation of the sensor
 } vrpn_TRACKERCB;
-typedef void (*vrpn_TRACKERCHANGEHANDLER)(void *userdata,
+typedef void (VRPN_CALLBACK *vrpn_TRACKERCHANGEHANDLER)(void *userdata,
 					  const vrpn_TRACKERCB info);
 
 // User routine to handle a tracker velocity update.  This is called when
@@ -260,7 +260,7 @@ typedef	struct _vrpn_TRACKERVELCB {
 	vrpn_float64	vel_quat[4];	// Future Orientation of the sensor
         vrpn_float64	vel_quat_dt;    // delta time (in secs) for vel_quat
 } vrpn_TRACKERVELCB;
-typedef void (*vrpn_TRACKERVELCHANGEHANDLER)(void *userdata,
+typedef void (VRPN_CALLBACK *vrpn_TRACKERVELCHANGEHANDLER)(void *userdata,
 					     const vrpn_TRACKERVELCB info);
 
 // User routine to handle a tracker acceleration update.  This is called when
@@ -275,7 +275,7 @@ typedef	struct _vrpn_TRACKERACCCB {
         vrpn_float64	acc_quat_dt;    // delta time (in secs) for acc_quat
         
 } vrpn_TRACKERACCCB;
-typedef void (*vrpn_TRACKERACCCHANGEHANDLER)(void *userdata,
+typedef void (VRPN_CALLBACK *vrpn_TRACKERACCCHANGEHANDLER)(void *userdata,
 					     const vrpn_TRACKERACCCB info);
 
 // User routine to handle a tracker room2tracker xform update. This is called
@@ -287,7 +287,7 @@ typedef struct _vrpn_TRACKERTRACKER2ROOMCB {
 	vrpn_float64	tracker2room[3];	// position offset
 	vrpn_float64	tracker2room_quat[4];	// orientation offset
 } vrpn_TRACKERTRACKER2ROOMCB;
-typedef void (*vrpn_TRACKERTRACKER2ROOMCHANGEHANDLER)(void *userdata,
+typedef void (VRPN_CALLBACK *vrpn_TRACKERTRACKER2ROOMCHANGEHANDLER)(void *userdata,
 					const vrpn_TRACKERTRACKER2ROOMCB info);
 
 typedef struct _vrpn_TRACKERUNIT2SENSORCB {
@@ -296,7 +296,7 @@ typedef struct _vrpn_TRACKERUNIT2SENSORCB {
         vrpn_float64  unit2sensor[3];		// position offset
         vrpn_float64  unit2sensor_quat[4];	// orientation offset
 } vrpn_TRACKERUNIT2SENSORCB;
-typedef void (*vrpn_TRACKERUNIT2SENSORCHANGEHANDLER)(void *userdata,
+typedef void (VRPN_CALLBACK *vrpn_TRACKERUNIT2SENSORCHANGEHANDLER)(void *userdata,
                                         const vrpn_TRACKERUNIT2SENSORCB info);
 
 typedef struct _vrpn_TRACKERWORKSPACECB {
@@ -304,14 +304,14 @@ typedef struct _vrpn_TRACKERWORKSPACECB {
 	vrpn_float64 workspace_min[3];	// minimum corner of box (tracker CS)
 	vrpn_float64 workspace_max[3];	// maximum corner of box (tracker CS)
 } vrpn_TRACKERWORKSPACECB;
-typedef void (*vrpn_TRACKERWORKSPACECHANGEHANDLER)(void *userdata,
+typedef void (VRPN_CALLBACK *vrpn_TRACKERWORKSPACECHANGEHANDLER)(void *userdata,
 					const vrpn_TRACKERWORKSPACECB info);
 
 // Open a tracker that is on the other end of a connection
 // and handle updates from it.  This is the type of tracker that user code will
 // deal with.
 
-class vrpn_Tracker_Remote: public vrpn_Tracker {
+class VRPN_API vrpn_Tracker_Remote: public vrpn_Tracker {
   public:
 	// The name of the tracker to connect to, including connection name,
 	// for example "Ceiling_tracker@ceiling.cs.unc.edu". If you already
@@ -424,16 +424,16 @@ class vrpn_Tracker_Remote: public vrpn_Tracker {
 	} vrpn_TRACKERWORKSPACECHANGELIST;
 	vrpn_TRACKERWORKSPACECHANGELIST *workspacechange_list;
 
-	static int handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
-	static int handle_vel_change_message(void *userdata,
+	static int VRPN_CALLBACK handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_vel_change_message(void *userdata,
 			vrpn_HANDLERPARAM p);
-	static int handle_acc_change_message(void *userdata,
+	static int VRPN_CALLBACK handle_acc_change_message(void *userdata,
 			vrpn_HANDLERPARAM p);
-	static int handle_tracker2room_change_message(void *userdata,
+	static int VRPN_CALLBACK handle_tracker2room_change_message(void *userdata,
 			vrpn_HANDLERPARAM p);
-	static int handle_unit2sensor_change_message(void *userdata,
+	static int VRPN_CALLBACK handle_unit2sensor_change_message(void *userdata,
                         vrpn_HANDLERPARAM p);
-	static int handle_workspace_change_message(void *userdata,
+	static int VRPN_CALLBACK handle_workspace_change_message(void *userdata,
 			vrpn_HANDLERPARAM p);
 };
 

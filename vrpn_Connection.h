@@ -10,7 +10,7 @@
 // class rather than the default connection class (either will work,
 // a regular connection just has 0 as the client-server time offset)
 
-class vrpn_File_Connection;  // Forward declaration for get_File_Connection()
+class VRPN_API	vrpn_File_Connection;  // Forward declaration for get_File_Connection()
 
 /// This structure is what is passed to a vrpn_Connection message callback.
 /// It is used by objects, but not normally by user code.
@@ -22,7 +22,7 @@ struct vrpn_HANDLERPARAM {
 	const char	*buffer;
 };
 /// Type of a message handler for vrpn_Connection messages.
-typedef	int (*vrpn_MESSAGEHANDLER)(void *userdata, vrpn_HANDLERPARAM p);
+typedef	int (VRPN_CALLBACK *vrpn_MESSAGEHANDLER)(void *userdata, vrpn_HANDLERPARAM p);
 /// Type of handler for filters on logfiles is the same as connection handler
 typedef	vrpn_MESSAGEHANDLER vrpn_LOGFILTER;
 
@@ -94,23 +94,23 @@ const	long	vrpn_LOG_OUTGOING	= (1<<1);
 
 // These are the strings that define the system-generated message
 // types that tell when connections are received and dropped.
-extern	const char *vrpn_got_first_connection;
-extern	const char *vrpn_got_connection;
-extern	const char *vrpn_dropped_connection;
-extern	const char *vrpn_dropped_last_connection;
+extern	VRPN_API const char *vrpn_got_first_connection;
+extern	VRPN_API const char *vrpn_got_connection;
+extern	VRPN_API const char *vrpn_dropped_connection;
+extern	VRPN_API const char *vrpn_dropped_last_connection;
 
 // vrpn_CONTROL is the sender used for notification messages sent to the user
 // from the local VRPN implementation (got_first_connection, etc.)
 // and for control messages sent by auxiliary services.  (Such as
 // class vrpn_Controller, which will be introduced in a future revision.)
 
-extern	const char *vrpn_CONTROL;
+extern	VRPN_API const char *vrpn_CONTROL;
 
 /// Length of names within VRPN
 typedef char cName [100];
 
 // Placed here so vrpn_FileConnection can use it too.
-struct vrpn_LOGLIST {
+struct VRPN_API vrpn_LOGLIST {
   vrpn_HANDLERPARAM data;
   vrpn_LOGLIST * next;
   vrpn_LOGLIST * prev;
@@ -135,10 +135,10 @@ struct vrpnLogFilterEntry {
   vrpnLogFilterEntry * next;
 };
 
-class vrpn_Connection;
-class vrpn_Log;
-class vrpn_TranslationTable;
-class vrpn_TypeDispatcher;
+class VRPN_API	vrpn_Connection;
+class VRPN_API	vrpn_Log;
+class VRPN_API	vrpn_TranslationTable;
+class VRPN_API	vrpn_TypeDispatcher;
 
 // Encapsulation of the data and methods for a single connection
 // to take care of one part of many clients talking to a single server.
@@ -146,7 +146,7 @@ class vrpn_TypeDispatcher;
 // not be instantiated by users or devices.
 // Should not be visible!
 
-class vrpn_Endpoint {
+class VRPN_API vrpn_Endpoint {
 
   public:
 
@@ -309,8 +309,8 @@ class vrpn_Endpoint {
 
     // Routines that handle system messages
     // Visible so that vrpn_Connection can pass them to the Dispatcher
-    static int handle_sender_message (void * userdata, vrpn_HANDLERPARAM p);
-    static int handle_type_message (void * userdata, vrpn_HANDLERPARAM p);
+    static int VRPN_CALLBACK handle_sender_message (void * userdata, vrpn_HANDLERPARAM p);
+    static int VRPN_CALLBACK handle_type_message (void * userdata, vrpn_HANDLERPARAM p);
 	
 	// Routines to inform the endpoing of the connection of 
 	// which it is a part.
@@ -385,9 +385,9 @@ class vrpn_Endpoint {
 };
 
 
-class vrpn_Connection {
+class VRPN_API vrpn_Connection {
 
-  //friend class vrpn_Endpoint;
+  //friend class VRPN_API vrpn_Endpoint;
 
   public:
 
@@ -536,9 +536,9 @@ class vrpn_Connection {
     int listen_tcp_sock;	// TCP Connection requests come here
 
     // Routines that handle system messages
-    static int handle_UDP_message (void * userdata, vrpn_HANDLERPARAM p);
-    static int handle_log_message (void * userdata, vrpn_HANDLERPARAM p);
-    static int handle_disconnect_message (void * userdata,
+    static int VRPN_CALLBACK handle_UDP_message (void * userdata, vrpn_HANDLERPARAM p);
+    static int VRPN_CALLBACK handle_log_message (void * userdata, vrpn_HANDLERPARAM p);
+    static int VRPN_CALLBACK handle_disconnect_message (void * userdata,
 		vrpn_HANDLERPARAM p);
 
     virtual void init (void);	// Called by all constructors
@@ -629,8 +629,8 @@ class vrpn_Connection {
 
 
 // forward decls
-class vrpn_Clock_Server;
-class vrpn_Clock_Remote;
+class VRPN_API	vrpn_Clock_Server;
+class VRPN_API	vrpn_Clock_Remote;
 
 // NOTE: the clock offset is calculated only if the freq is >= 0
 // if it is -1, then the offset is only calced and used if the
@@ -644,7 +644,7 @@ class vrpn_Clock_Remote;
 //       rather than a separate class, but right now i don't have time
 //       for that.
 
-class vrpn_Synchronized_Connection : public vrpn_Connection
+class VRPN_API vrpn_Synchronized_Connection : public vrpn_Connection
 {
   public:
     // Create a connection to listen for incoming connections on a port
@@ -680,8 +680,8 @@ class vrpn_Synchronized_Connection : public vrpn_Connection
 
     // fullSync will perform an accurate sync on the connection for the
     // user and return the current offset
-	~vrpn_Synchronized_Connection();
-	struct timeval fullSync();
+    ~vrpn_Synchronized_Connection();
+    struct timeval fullSync();
     vrpn_Clock_Remote * pClockRemote;
     virtual int mainloop (const struct timeval * timeout = NULL );
 };
@@ -690,7 +690,7 @@ class vrpn_Synchronized_Connection : public vrpn_Connection
 // WARNING:  vrpn_get_connection_by_name() may not be thread safe.
 // If no IP address for the NIC to use is specified, uses the default
 // NIC.
-vrpn_Connection * vrpn_get_connection_by_name (
+VRPN_API vrpn_Connection * vrpn_get_connection_by_name (
     const char * cname,
     const char * local_in_logfile_name = NULL,
     const char * local_out_logfile_name = NULL,
@@ -704,14 +704,14 @@ vrpn_Connection * vrpn_get_connection_by_name (
 // Utility routines to parse names (<service>@<location specifier>)
 // Both return new char [], and it is the caller's responsibility
 // to delete this memory!
-char * vrpn_copy_service_name (const char * fullname);
-char * vrpn_copy_service_location (const char * fullname);
+VRPN_API char * vrpn_copy_service_name (const char * fullname);
+VRPN_API char * vrpn_copy_service_location (const char * fullname);
 
 // Utility routines to parse file specifiers FROM service locations
 //   file:<filename>
 //   file://<hostname>/<filename>
 //   file:///<filename>
-char * vrpn_copy_file_name (const char * filespecifier);
+VRPN_API char * vrpn_copy_file_name (const char * filespecifier);
 
 // Utility routines to parse host specifiers FROM service locations
 //   <hostname>
@@ -719,30 +719,30 @@ char * vrpn_copy_file_name (const char * filespecifier);
 //   x-vrpn://<hostname>
 //   x-vrpn://<hostname>:<port number>
 //   x-vrsh://<hostname>/<server program>,<comma-separated server arguments>
-char * vrpn_copy_machine_name (const char * hostspecifier);
-int vrpn_get_port_number (const char * hostspecifier);
-char * vrpn_copy_rsh_program (const char * hostspecifier);
-char * vrpn_copy_rsh_arguments (const char * hostspecifier);
+VRPN_API char * vrpn_copy_machine_name (const char * hostspecifier);
+VRPN_API int vrpn_get_port_number (const char * hostspecifier);
+VRPN_API char * vrpn_copy_rsh_program (const char * hostspecifier);
+VRPN_API char * vrpn_copy_rsh_arguments (const char * hostspecifier);
 
 // Checks the buffer to see if it is a valid VRPN header cookie.
 // Returns -1 on total mismatch,
 // 1 on minor version mismatch or other acceptable difference,
 // and 0 on exact match.
-int check_vrpn_cookie (const char * buffer);
-int check_vrpn_file_cookie (const char * buffer);
+VRPN_API int check_vrpn_cookie (const char * buffer);
+VRPN_API int check_vrpn_file_cookie (const char * buffer);
 
 // Returns the size of the magic cookie buffer, plus any alignment overhead.
-int vrpn_cookie_size (void);
+VRPN_API int vrpn_cookie_size (void);
 
-int write_vrpn_cookie (char * buffer, int length, long remote_log_mode);
+VRPN_API int write_vrpn_cookie (char * buffer, int length, long remote_log_mode);
 
 // Utility routines for reading from and writing to sockets/file descriptors
 #ifndef VRPN_USE_WINSOCK_SOCKETS
- int vrpn_noint_block_write (int outfile, const char buffer[], int length);
- int vrpn_noint_block_read(int infile, char buffer[], int length);
+ int VRPN_API vrpn_noint_block_write (int outfile, const char buffer[], int length);
+ int VRPN_API vrpn_noint_block_read(int infile, char buffer[], int length);
 #else /* winsock sockets */
- int vrpn_noint_block_write(SOCKET outsock, char *buffer, int length);
- int vrpn_noint_block_read(SOCKET insock, char *buffer, int length);
+ int VRPN_API vrpn_noint_block_write(SOCKET outsock, char *buffer, int length);
+ int VRPN_API vrpn_noint_block_read(SOCKET insock, char *buffer, int length);
 #endif /* VRPN_USE_WINSOCK_SOCKETS */
 
 #endif // VRPN_CONNECTION_H

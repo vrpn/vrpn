@@ -24,7 +24,7 @@
 //   There is currently no way to specify vrpn_SENDER_ANY as a source.
 // If we do, it isn't clear what sender to specify to the destination.
 
-class vrpn_ConnectionForwarder {
+class VRPN_API vrpn_ConnectionForwarder {
 
   public:
 
@@ -57,7 +57,7 @@ class vrpn_ConnectionForwarder {
 
   private:
 
-    static int handle_message (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_message (void *, vrpn_HANDLERPARAM);
 
     // Translates (id, serviceId) from source to destination
     // and looks up intended class of service.
@@ -86,7 +86,7 @@ class vrpn_ConnectionForwarder {
 
 };
 
-class vrpn_StreamForwarder {
+class VRPN_API vrpn_StreamForwarder {
 
   public:
 
@@ -116,7 +116,7 @@ class vrpn_StreamForwarder {
 
   private:
 
-    static int handle_message (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_message (void *, vrpn_HANDLERPARAM);
 
     // Translates (id, serviceId) from source to destination
     // and looks up intended class of service.

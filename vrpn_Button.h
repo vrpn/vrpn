@@ -31,7 +31,7 @@ const	int vrpn_ALL_ID			= -99;
     should actually derive from the vrpn_Button_Filter class, described
     next, which enables toggling any of the buttons. **/
 
-class vrpn_Button : public vrpn_BaseClass {
+class VRPN_API vrpn_Button : public vrpn_BaseClass {
   public:
 	vrpn_Button(const char *name, vrpn_Connection *c = NULL);
         virtual ~vrpn_Button (void);
@@ -64,7 +64,7 @@ class vrpn_Button : public vrpn_BaseClass {
     the ability to turn any of the buttons into toggles (using messages
     from the remote button object). **/
 
-class vrpn_Button_Filter:public vrpn_Button {
+class VRPN_API vrpn_Button_Filter:public vrpn_Button {
     public:
 	vrpn_int32     buttonstate[vrpn_BUTTON_MAX_BUTTONS];
 	virtual void set_momentary(vrpn_int32 which_button);
@@ -90,7 +90,7 @@ class vrpn_Button_Filter:public vrpn_Button {
 // the Fastrak server (which may have several button devices, one for each
 // sensor).
 
-class vrpn_Button_Server: public vrpn_Button_Filter {
+class VRPN_API vrpn_Button_Server: public vrpn_Button_Filter {
 public:
     vrpn_Button_Server(const char *name, vrpn_Connection *c, int numbuttons = 1);
 
@@ -112,7 +112,7 @@ public:
 // This class is derived from the vrpn_Button_Filter class, so that it
 // can be made to toggle its buttons using messages from the client.
 
-class vrpn_Button_Example_Server: public vrpn_Button_Filter {
+class VRPN_API vrpn_Button_Example_Server: public vrpn_Button_Filter {
 public:
 	vrpn_Button_Example_Server(const char *name, vrpn_Connection *c,
 		int numbuttons = 1, vrpn_float64 rate = 1.0);
@@ -127,7 +127,7 @@ protected:
 // Button device that is connected to a parallel port and uses the
 // status bits to read from the buttons.  There can be up to 5 buttons
 // read this way.
-class vrpn_Button_Parallel: public vrpn_Button_Filter {
+class VRPN_API vrpn_Button_Parallel: public vrpn_Button_Filter {
   public:
 	// Open a button connected to the local machine, talk to the
 	// outside world through the connection.
@@ -152,7 +152,7 @@ class vrpn_Button_Parallel: public vrpn_Button_Filter {
 // voltage spikes (static) are passed through if care is not taken.
 // This interface is intended for use at UNC.  No warranty is expressed
 // or implied for use elsewhere (use at your own risk).
-class vrpn_Button_Python: public vrpn_Button_Parallel {
+class VRPN_API vrpn_Button_Python: public vrpn_Button_Parallel {
   public:
 	vrpn_Button_Python (const char * name, vrpn_Connection * c, int p);
 	vrpn_Button_Python (const char * name, vrpn_Connection * c,
@@ -165,7 +165,7 @@ class vrpn_Button_Python: public vrpn_Button_Parallel {
 
 
 // Button device that is connected to the serial port.
-class vrpn_Button_Serial : public vrpn_Button_Filter {
+class VRPN_API vrpn_Button_Serial : public vrpn_Button_Filter {
 public:
    vrpn_Button_Serial(const char* name, vrpn_Connection *c, 
                       const char *port="/dev/ttyS1/", long baud=38400);
@@ -189,7 +189,7 @@ protected:
 // and pinkie last-while buttons 5-9 are for the left hand-thumb first. The report
 // you get back is the finger is touching. So you will not have a state where only
 // one button is ON.
-class vrpn_Button_PinchGlove : public vrpn_Button_Serial {
+class VRPN_API vrpn_Button_PinchGlove : public vrpn_Button_Serial {
 public:
    vrpn_Button_PinchGlove(const char* name, vrpn_Connection *c, 
                       const char *port="/dev/ttyS1/", long baud=38400);
@@ -210,7 +210,7 @@ protected:
 
 enum vrpn_MOUSETYPE {MOUSESYSTEMS, THREEBUTTON_EMULATION, MAX_MOUSE_TYPES};
 
-class vrpn_Button_SerialMouse: public vrpn_Button_Filter {
+class VRPN_API vrpn_Button_SerialMouse: public vrpn_Button_Filter {
 public:
     // Open a serial mouse button device connected to the local machine
     
@@ -252,14 +252,14 @@ typedef	struct _vrpn_BUTTONCB {
 	    // If the button is the type of vrpn_Button_PinchGlove there are up to 5
 	    // different kinds of on state since it knows which fingers are touching
 } vrpn_BUTTONCB;
-typedef void (*vrpn_BUTTONCHANGEHANDLER)(void *userdata,
+typedef void (VRPN_CALLBACK *vrpn_BUTTONCHANGEHANDLER)(void *userdata,
 					 const vrpn_BUTTONCB info);
 
 // Open a button that is on the other end of a connection
 // and handle updates from it.  This is the type of button that user code will
 // deal with.
 
-class vrpn_Button_Remote: public vrpn_Button {
+class VRPN_API vrpn_Button_Remote: public vrpn_Button {
   public:
 	// The name of the button device to connect to. Optional second
 	// argument is used when you already have an open connection you
@@ -284,7 +284,7 @@ class vrpn_Button_Remote: public vrpn_Button {
 	} vrpn_BUTTONCHANGELIST;
 	vrpn_BUTTONCHANGELIST	*change_list;
 
-	static int handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
 };
 
 #define	VRPN_BUTTON_H

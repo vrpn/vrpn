@@ -11,7 +11,7 @@
 
 #include "vrpn_Tracker.h"
 
-class vrpn_Tracker_3Space: public vrpn_Tracker_Serial {
+class VRPN_API vrpn_Tracker_3Space: public vrpn_Tracker_Serial {
   
  public:
   

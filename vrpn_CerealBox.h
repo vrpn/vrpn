@@ -6,7 +6,7 @@
 #include "vrpn_Button.h"
 #include "vrpn_Dial.h"
 
-class vrpn_CerealBox: public vrpn_Serial_Analog
+class VRPN_API vrpn_CerealBox: public vrpn_Serial_Analog
 			,public vrpn_Button
 			,public vrpn_Dial
 {

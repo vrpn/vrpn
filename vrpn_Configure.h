@@ -1,5 +1,4 @@
 #ifndef	VRPN_CONFIGURE_H
-#define	VRPN_CONFIGURE_H
 
 //--------------------------------------------------------------
 /* This file contains configuration options for VRPN.  The first
@@ -11,8 +10,19 @@
 //--------------------------------------------------------//
 // EDIT BELOW THIS LINE FOR NORMAL CONFIGURATION SETTING. //
 //--------------------------------------------------------//
-//-----------------------
 
+//-----------------------
+// Instructs VRPN to use a DLL interface on Windows systems.
+// When using this, link with VRPNDLL.LIB (and VRPN.DLL) rather
+// than VRPN.LIB in user code.  This is experimental and is
+// under development to enable C# and other languages to pull in
+// VRPN.  This is only needed when trying to link VRPN with
+// languages other than C++ (and not even for Java).  If you don't
+// have a good reason to, don't define it.
+// Not implemented for .so-based Unix systems.
+//#define VRPN_USE_SHARED_LIBRARY
+
+//-----------------------
 // Default port to listen on for a server.  It used to be 4500
 // up through version 6.03, but then all sorts of VPNs started
 // using this, as did Microsoft.  Port 3883 was assigned to VRPN
@@ -51,7 +61,7 @@
 
 //-----------------------
 // Instructs VRPN to use phantom library to construct a unified
-// server, using phantom as a common device, and phantom 
+// server, using phantom as a common device, and phantom
 // configuration in .cfg file.
 // PLEASE SPECIFY PATH TO GHOSTLIB IN NEXT SECTION IF YOU USE THIS
 //#define     VRPN_USE_PHANTOM_SERVER
@@ -70,7 +80,7 @@
 // Instructs vrpn to use Ghost 3.1 instead of Ghost 3.4.
 // Only used in conjuntion with VRPN_USE_PHANTOM_SERVER.
 // PLEASE SPECIFY PATH TO GHOSTLIB IN NEXT SECTION IF YOU USE THIS
-// (This is expected to be used on systems where Ghost 4.0 is not 
+// (This is expected to be used on systems where Ghost 4.0 is not
 // available, such as the SGI platform.  If you are using this on
 // a Windows PC with Visual Studio, you will need to alter
 // server_src/vrpn_phantom.dsp to reference the Ghost 3.1 include
@@ -118,7 +128,7 @@
 //#define	VRPN_INCLUDE_TIMECODE_SERVER
 
 //-----------------------
-// Compiles the InterSense Tracker using the 
+// Compiles the InterSense Tracker using the
 // InterSense Interface Libraries SDK (tested for version
 // 3.45) on windows.  This should work with all Intersense trackers,
 // both the USB and the serial port versions.  The files isense.h,
@@ -144,17 +154,17 @@
 #ifdef VRPN_USE_PHANTOM_SERVER
   #define	VRPN_NO_STREAMS
   #ifdef VRPN_USE_HDAPI
-    #pragma comment (lib,"C:/Program Files/SensAble/3DTouch/lib/hd.lib")
+    #pragma comment (lib,"D:/Program Files/SensAble/3DTouch/lib/hd.lib")
     #ifdef	_DEBUG
-      #pragma comment (lib,"C:/Program Files/SensAble/3DTouch/utilities/lib/hdud.lib")
+      #pragma comment (lib,"D:/Program Files/SensAble/3DTouch/utilities/lib/hdud.lib")
     #else
-      #pragma comment (lib,"C:/Program Files/SensAble/3DTouch/utilities/lib/hdu.lib")
+      #pragma comment (lib,"D:/Program Files/SensAble/3DTouch/utilities/lib/hdu.lib")
     #endif
   #else
     #ifdef VRPN_USE_GHOST_31
-      #pragma comment (lib,"C:/Program Files/SensAble/GHOST/v3.1/lib/GHOST31.lib")
+      #pragma comment (lib,"D:/Program Files/SensAble/GHOST/v3.1/lib/GHOST31.lib")
     #else
-      #pragma comment (lib,"C:/Program Files/SensAble/GHOST/v4.0/lib/GHOST40.lib")
+      #pragma comment (lib,"D:/Program Files/SensAble/GHOST/v4.0/lib/GHOST40.lib")
     #endif
   #endif
 #endif
@@ -163,7 +173,7 @@
 // If this doesn't match where you have installed these libraries,
 // edit the following lines to point at the correct libraries.  Do
 // this here rather than in the project settings so that it can be
-// turned on and off using the definition above. 
+// turned on and off using the definition above.
 #ifdef	VRPN_USE_DIRECTINPUT
 #define	DIRECTINPUT_VERSION 0x0800
 #pragma comment (lib, "C:/DXSDK/lib/dxguid.lib")
@@ -175,7 +185,7 @@
 // If this doesn't match where you have installed these libraries,
 // edit the following lines to point at the correct libraries.  Do
 // this here rather than in the project settings so that it can be
-// turned on and off using the definition above. 
+// turned on and off using the definition above.
 #ifdef	VRPN_INCLUDE_TIMECODE_SERVER
 #pragma comment (lib, "../../Adrienne/AEC_DLL/AEC_NTTC.lib")
 #endif
@@ -184,11 +194,47 @@
 // If this doesn't match where you have installed these libraries,
 // edit the following lines to point at the correct libraries.  Do
 // this here rather than in the project settings so that it can be
-// turned on and off using the definition above. 
+// turned on and off using the definition above.
 #ifdef	VRPN_USE_NATIONAL_INSTRUMENTS
 #pragma comment (lib, "C:/Program Files/National Instruments/NI-DAQ/Lib/nidaq32.lib")
 #pragma comment (lib, "C:/Program Files/National Instruments/NI-DAQ/Lib/nidex32.lib")
 #endif
 
+// This will be defined in the VRPN (non-DLL) project and nothing else
+// Overrides USE_SHARED_LIBRARY to get rid of "inconsistent DLL linkage" warnings.
+#ifdef VRPNDLL_NOEXPORTS
+#undef VRPN_USE_SHARED_LIBRARY
+#endif
+
+// This will be defined in the VRPN (DLL) project and nothing else
+// Forces "USE_SHARED_LIBRARY independent of definition above so that the
+// DLL will build
+#if defined(VRPNDLL_EXPORTS) && !defined(VRPN_USE_SHARED_LIBRARY)
+#define VRPN_USE_SHARED_LIBRARY
+#endif
+
+// For client code, make sure we add the proper library dependency to the linker
+#ifdef _WIN32
+#ifdef VRPN_USE_SHARED_LIBRARY
+#ifdef VRPNDLL_EXPORTS
+#define  VRPN_API		 __declspec(dllexport) 
+#else
+#define  VRPN_API		 __declspec(dllimport)
+#pragma comment (lib, "vrpndll.lib")
+#endif
+#else
+#ifndef VRPNDLL_NOEXPORTS
+#pragma comment (lib, "vrpn.lib")
+#endif
+#define  VRPN_API
+#endif
+#define	 VRPN_CALLBACK	 __stdcall
+#else
+// In the future, other architectures may need their own sections
+#define  VRPN_API
+#define  VRPN_CALLBACK
+#endif
+
+#define	VRPN_CONFIGURE_H
 #endif
 

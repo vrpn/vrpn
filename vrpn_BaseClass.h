@@ -80,7 +80,7 @@ const int vrpn_MAX_BCADRS =	100;
 typedef enum {vrpn_TEXT_NORMAL = 0, vrpn_TEXT_WARNING = 1, vrpn_TEXT_ERROR = 2} vrpn_TEXT_SEVERITY;
 const unsigned	vrpn_MAX_TEXT_LEN = 1024;
 
-class	vrpn_BaseClass;
+class	VRPN_API vrpn_BaseClass;
 
 /// Class that handles text/warning/error printing for all objects in the
 /// system.
@@ -93,7 +93,7 @@ class	vrpn_BaseClass;
 //  The user could create their own TextPrinter, and attach whatever objects
 // they want to it.
 
-class vrpn_TextPrinter {
+class VRPN_API vrpn_TextPrinter {
   public:
     vrpn_TextPrinter();
     ~vrpn_TextPrinter();
@@ -127,7 +127,7 @@ class vrpn_TextPrinter {
 
   protected:
     /// Structure to hold the objects that are being watched.
-    class vrpn_TextPrinter_Watch_Entry {
+    class VRPN_API vrpn_TextPrinter_Watch_Entry {
       public:
 	  vrpn_BaseClass    *obj;		///< Object being watched
 	  vrpn_TextPrinter  *me;
@@ -152,17 +152,17 @@ class vrpn_TextPrinter {
 
     /// Handles the text messages that come from the connections for
     /// objects we are watching.
-    static  int	text_message_handler(void *userdata, vrpn_HANDLERPARAM p);
+    static  int	VRPN_CALLBACK text_message_handler(void *userdata, vrpn_HANDLERPARAM p);
 };
-extern vrpn_TextPrinter	vrpn_System_TextPrinter;
+extern VRPN_API	vrpn_TextPrinter	vrpn_System_TextPrinter;
 
 /// INTERNAL class to hold members that there should only be one copy of
 /// even when a class inherits from multiple vrpn_BaseClasses because it
 /// inherits from multiple user-level classes.  Note that not everything in
 /// vrpnBaseClass should be here, because (for example) the registration of
 /// types should be done for each parent class.
-class vrpn_BaseClassUnique {
-  friend class vrpn_TextPrinter;
+class VRPN_API vrpn_BaseClassUnique {
+  friend class VRPN_API vrpn_TextPrinter;
   public:
 	vrpn_BaseClassUnique();
 	virtual ~vrpn_BaseClassUnique();
@@ -222,9 +222,9 @@ class vrpn_BaseClassUnique {
       int	d_flatline;			///< Has it been 10+ seconds without a response?
 
       /// Used by client/server code to request/send "server is alive" (pong) message
-      static	int handle_ping(void *userdata, vrpn_HANDLERPARAM p);
-      static	int handle_pong(void *userdata, vrpn_HANDLERPARAM p);
-      static	int handle_connection_dropped(void *userdata, vrpn_HANDLERPARAM p);
+      static	int VRPN_CALLBACK handle_ping(void *userdata, vrpn_HANDLERPARAM p);
+      static	int VRPN_CALLBACK handle_pong(void *userdata, vrpn_HANDLERPARAM p);
+      static	int VRPN_CALLBACK handle_connection_dropped(void *userdata, vrpn_HANDLERPARAM p);
       void	initiate_ping_cycle(void);
 };
 
@@ -232,7 +232,7 @@ class vrpn_BaseClassUnique {
 /// Class from which all user-level (and other) classes that communicate
 /// with vrpn_Connections should derive.
 
-class vrpn_BaseClass : virtual public vrpn_BaseClassUnique {
+class VRPN_API vrpn_BaseClass : virtual public vrpn_BaseClassUnique {
 
   public:
 

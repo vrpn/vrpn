@@ -12,7 +12,7 @@
 /// some seminal papers I can't find my copies of, for use by people who
 /// want to sequence events without relying on synchronization of wallclocks.
 
-class vrpn_LamportTimestamp {
+class VRPN_API vrpn_LamportTimestamp {
 
   public:
 
@@ -56,7 +56,7 @@ class vrpn_LamportTimestamp {
 };
 
 
-class vrpn_LamportClock {
+class VRPN_API vrpn_LamportClock {
 
   public:
 

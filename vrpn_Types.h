@@ -8,7 +8,7 @@
 // error message.  
 //------------------------------------------------------------------
 #ifndef __cplusplus
-// XXX     Need to compile with a C++ compiler, not a C compiler
+#error Need to compile with a C++ compiler, not a C compiler
 #endif
 
 //------------------------------------------------------------------
@@ -170,7 +170,7 @@ typedef  double          vrpn_float64;
 
 
 #ifndef VRPN_ARCH
-XXX     Need to define architecture-dependent sizes in this file
+#error Need to define architecture-dependent sizes in this file
 #endif
 
 // prevent use of these macros outside this file

@@ -11,7 +11,7 @@
 /// that is exposed so that it can be used by other classes that need to
 /// maintain their own lists of callbacks.
 
-class vrpn_TypeDispatcher {
+class VRPN_API vrpn_TypeDispatcher {
 
   public:
 

@@ -23,7 +23,7 @@ typedef	struct _vrpn_TEXTCB {
 } vrpn_TEXTCB;
 
 /// Description of the callback function type.
-typedef void (*vrpn_TEXTHANDLER)(void *userdata, const vrpn_TEXTCB info);
+typedef void (VRPN_CALLBACK *vrpn_TEXTHANDLER)(void *userdata, const vrpn_TEXTCB info);
 
 //----------------------------------------------------------
 //************** Users deal with the following *************
@@ -32,7 +32,7 @@ typedef void (*vrpn_TEXTHANDLER)(void *userdata, const vrpn_TEXTCB info);
 // the send_text_message() function is protected).  It provides
 // the needed function definitions for vrpn_BaseClass.
 
-class vrpn_Text_Sender: public vrpn_BaseClass {
+class VRPN_API vrpn_Text_Sender: public vrpn_BaseClass {
   public:
 	vrpn_Text_Sender(const char *name, vrpn_Connection *c = NULL) :
 		vrpn_BaseClass(name, c) { init(); };
@@ -52,7 +52,7 @@ class vrpn_Text_Sender: public vrpn_BaseClass {
 /// Allows a user to handle text messages directly, in addition too having the
 // standard VRPN printing functions handle them.
 
-class vrpn_Text_Receiver: public vrpn_BaseClass {
+class VRPN_API vrpn_Text_Receiver: public vrpn_BaseClass {
   public:
 	vrpn_Text_Receiver (const char * name, vrpn_Connection * c = NULL);
 	virtual ~vrpn_Text_Receiver (void);
@@ -64,7 +64,7 @@ class vrpn_Text_Receiver: public vrpn_BaseClass {
 	virtual void mainloop(void) { if (d_connection) { d_connection->mainloop(); }; client_mainloop(); };
 
   protected:
-	static int handle_message (void * userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_message (void * userdata, vrpn_HANDLERPARAM p);
 	typedef struct vrpn_TCS {
                 void                    *userdata;
                 vrpn_TEXTHANDLER        handler;

@@ -51,7 +51,7 @@ typedef	struct _vrpn_ROUTERCB {
 	vrpn_int32	output_channel;			// Output channel #
 	vrpn_int32	level;					// Level of router
 } vrpn_ROUTERCB;
-typedef void (*vrpn_ROUTERCHANGEHANDLER) (void * userdata, const vrpn_ROUTERCB info);
+typedef void (VRPN_CALLBACK *vrpn_ROUTERCHANGEHANDLER) (void * userdata, const vrpn_ROUTERCB info);
 
 
 typedef	struct _vrpn_ROUTERNAMECB {
@@ -62,12 +62,12 @@ typedef	struct _vrpn_ROUTERNAMECB {
 	vrpn_int32	nameLength;
 	vrpn_int8	name[vrpn_NAME_MAX];
 } vrpn_ROUTERNAMECB;
-typedef void (*vrpn_ROUTERNAMEHANDLER) (void * userdata, const vrpn_ROUTERNAMECB info);
+typedef void (VRPN_CALLBACK *vrpn_ROUTERNAMEHANDLER) (void * userdata, const vrpn_ROUTERNAMECB info);
 
 
 
 /**************************************************************************************/
-class vrpn_Router : public vrpn_BaseClass {
+class VRPN_API vrpn_Router : public vrpn_BaseClass {
 public:
 	vrpn_Router( const char * name, vrpn_Connection * c = NULL);
         ~vrpn_Router();
@@ -111,21 +111,9 @@ public:
 	vrpn_int32	encode_name(char *buf, vrpn_int32 buflen, 
 					vrpn_int32 channelType, vrpn_int32 channelNum, 
 					vrpn_int32 levelNum, char *name );
-};
 
-
-/**************************************************************************************/
-// Server for Sierra router.
-class vrpn_Router_Sierra_Server: public vrpn_Router {
-public:
-	vrpn_Router_Sierra_Server(const char * name, vrpn_Connection * c );
-	virtual void mainloop();
-
-protected:
-	// The timestamp field within the parent structure is used for timing
-
-	static int vrpn_handle_set_link_message(void *userdata, vrpn_HANDLERPARAM p);
-	static int vrpn_handle_set_named_link_message(void *userdata, vrpn_HANDLERPARAM p);
+	static	vrpn_int32	VRPN_CALLBACK decode_name_message(   vrpn_HANDLERPARAM p, vrpn_ROUTERNAMECB & cp );
+	static	vrpn_int32	VRPN_CALLBACK decode_change_message( vrpn_HANDLERPARAM p, vrpn_ROUTERCB & cp );
 };
 
 
@@ -133,7 +121,7 @@ protected:
 // Open a router device that is on the client end of a connection
 // and handle messages (ie set_link commands) from it.  
 // This is the class that user code will instantiate.  
-class vrpn_Router_Remote: public vrpn_Router {
+class VRPN_API vrpn_Router_Remote: public vrpn_Router {
   public:
 	vrpn_Router_Remote (const char * name, vrpn_Connection * c = NULL);
 		// name: name of the server device to connect to -- eg "Router0@DC-1-CS"
@@ -153,7 +141,7 @@ class vrpn_Router_Remote: public vrpn_Router {
 
   protected:
 
-	static int handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
 	typedef	struct vrpn_RCH {
 		void						*userdata;
 		vrpn_ROUTERCHANGEHANDLER	handler;
@@ -163,7 +151,7 @@ class vrpn_Router_Remote: public vrpn_Router {
 	vrpn_ROUTERCHANGELIST *	change_list;
 
 
-	static int handle_name_message(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_name_message(void *userdata, vrpn_HANDLERPARAM p);
 	typedef	struct vrpn_RNH {
 		void					*userdata;
 		vrpn_ROUTERNAMEHANDLER	handler;
@@ -172,11 +160,5 @@ class vrpn_Router_Remote: public vrpn_Router {
 	vrpn_ROUTERNAMELIST	  name_block;
 	vrpn_ROUTERNAMELIST	* name_list;
 };
-
-
-
-	vrpn_int32	decode_name_message(   vrpn_HANDLERPARAM p, vrpn_ROUTERNAMECB & cp );
-	vrpn_int32	decode_change_message( vrpn_HANDLERPARAM p, vrpn_ROUTERCB & cp );
-
 
 #endif

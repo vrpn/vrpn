@@ -168,7 +168,7 @@ vrpn_int32	vrpn_Router::encode_channel_status(char *buf, vrpn_int32 buflen,
 // Decode (reconstruct from sequence of bytes received over network) 
 // a message of this form: (input_channel, output_channel, level).
 vrpn_int32
-decode_change_message( vrpn_HANDLERPARAM p, vrpn_ROUTERCB & cp )
+VRPN_CALLBACK vrpn_Router::decode_change_message( vrpn_HANDLERPARAM p, vrpn_ROUTERCB & cp )
 {
 	// Get ptr to the payload chars received by VRPN for this message.  
 	const char	*bufptr = p.buffer;
@@ -234,7 +234,7 @@ vrpn_int32	vrpn_Router::encode_name(char *buf, vrpn_int32 buflen,
 // a message of this form: 
 // (channel_type, channel_number, level_number, name_string).
 vrpn_int32
-decode_name_message( vrpn_HANDLERPARAM p, vrpn_ROUTERNAMECB & cp )
+VRPN_CALLBACK vrpn_Router::decode_name_message( vrpn_HANDLERPARAM p, vrpn_ROUTERNAMECB & cp )
 {
 	// Get ptr to the payload chars received by VRPN for this message.  
 	const char	*bufptr = p.buffer;

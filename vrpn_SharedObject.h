@@ -7,8 +7,8 @@
 
 #include "vrpn_Connection.h"  // for vrpn_HANDLERPARAM
 
-class vrpn_LamportClock;  // from "vrpn_LamportClock.h"
-class vrpn_LamportTimestamp;
+class VRPN_API vrpn_LamportClock;  // from "vrpn_LamportClock.h"
+class VRPN_API vrpn_LamportTimestamp;
 
 // It's increasingly clear that we could handle all this with
 // a template, except for the fact that vrpn_Shared_String is
@@ -20,28 +20,28 @@ class vrpn_LamportTimestamp;
 // That would make it far, far easier to extend, but the implementation
 // looks too unweildy.
 
-class vrpn_Shared_int32;
-class vrpn_Shared_float64;
-class vrpn_Shared_String;
+class VRPN_API vrpn_Shared_int32;
+class VRPN_API vrpn_Shared_float64;
+class VRPN_API vrpn_Shared_String;
 
-typedef int (* vrpnDeferredUpdateCallback) (void * userdata);
+typedef int (VRPN_CALLBACK * vrpnDeferredUpdateCallback) (void * userdata);
 
-typedef int (* vrpnSharedIntCallback) (void * userdata, vrpn_int32 newValue,
+typedef int (VRPN_CALLBACK * vrpnSharedIntCallback) (void * userdata, vrpn_int32 newValue,
                                        vrpn_bool isLocal);
-typedef int (* vrpnSharedFloatCallback) (void * userdata,
+typedef int (VRPN_CALLBACK * vrpnSharedFloatCallback) (void * userdata,
                                          vrpn_float64 newValue,
                                        vrpn_bool isLocal);
-typedef int (* vrpnSharedStringCallback)
+typedef int (VRPN_CALLBACK * vrpnSharedStringCallback)
                     (void * userdata, const char * newValue,
                                        vrpn_bool isLocal);
 
-typedef int (* vrpnTimedSharedIntCallback)
+typedef int (VRPN_CALLBACK * vrpnTimedSharedIntCallback)
                     (void * userdata, vrpn_int32 newValue,
                      timeval when, vrpn_bool isLocal);
-typedef int (* vrpnTimedSharedFloatCallback)
+typedef int (VRPN_CALLBACK * vrpnTimedSharedFloatCallback)
                     (void * userdata, vrpn_float64 newValue,
                      timeval when, vrpn_bool isLocal);
-typedef int (* vrpnTimedSharedStringCallback)
+typedef int (VRPN_CALLBACK * vrpnTimedSharedStringCallback)
                     (void * userdata, const char * newValue,
                      timeval when, vrpn_bool isLocal);
 
@@ -49,13 +49,13 @@ typedef int (* vrpnTimedSharedStringCallback)
 // nonzero on error (which will prevent further update callbacks
 // from being invoked).
 
-typedef int (* vrpnSharedIntSerializerPolicy)
+typedef int (VRPN_CALLBACK * vrpnSharedIntSerializerPolicy)
                     (void * userdata, vrpn_int32 newValue,
                      timeval when, vrpn_Shared_int32 * object);
-typedef int (* vrpnSharedFloatSerializerPolicy)
+typedef int (VRPN_CALLBACK * vrpnSharedFloatSerializerPolicy)
                     (void * userdata, vrpn_float64 newValue,
                      timeval when, vrpn_Shared_float64 * object);
-typedef int (* vrpnSharedStringSerializerPolicy)
+typedef int (VRPN_CALLBACK * vrpnSharedStringSerializerPolicy)
                     (void * userdata, const char * newValue,
                      timeval when, vrpn_Shared_String * object);
 
@@ -107,7 +107,7 @@ enum vrpn_SerializerPolicy { vrpn_ACCEPT, vrpn_DENY_REMOTE,
 // (One exception:  the string that names the type.  This could probably
 // be cut.)
 
-class vrpn_SharedObject {
+class VRPN_API vrpn_SharedObject {
 
   public:
 
@@ -193,9 +193,9 @@ class vrpn_SharedObject {
     int yankCallbacks (vrpn_bool isLocal);
       ///< must set d_lastUpdate BEFORE calling yankCallbacks()
         
-    static int handle_requestSerializer (void *, vrpn_HANDLERPARAM);
-    static int handle_grantSerializer (void *, vrpn_HANDLERPARAM);
-    static int handle_assumeSerializer (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_requestSerializer (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_grantSerializer (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_assumeSerializer (void *, vrpn_HANDLERPARAM);
 
     vrpn_bool d_queueSets;
       ///< If this is true, no set()s are processed;  instead, they
@@ -223,11 +223,11 @@ class vrpn_SharedObject {
       ///< Should invoke default sendUpdate() for this derived type.
     virtual int handleUpdate (vrpn_HANDLERPARAM) = 0;
 
-    static int handle_gotConnection (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_gotConnection (void *, vrpn_HANDLERPARAM);
       ///< Register this handler in postBindCleanup();
       ///< it calls sendUpdate() to make sure the remote has the
       ///< correct value on first connection.
-    static int handle_update (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_update (void *, vrpn_HANDLERPARAM);
       ///< Passes arguments to handleUpdate() for this type;
       ///< registered in postBindCleanup();
 
@@ -238,7 +238,7 @@ class vrpn_SharedObject {
 
 
 
-class vrpn_Shared_int32 : public vrpn_SharedObject {
+class VRPN_API vrpn_Shared_int32 : public vrpn_SharedObject {
 
 
   public:
@@ -332,14 +332,14 @@ class vrpn_Shared_int32 : public vrpn_SharedObject {
     int handleUpdate (vrpn_HANDLERPARAM);
 
 
-    static int handle_lamportUpdate (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_lamportUpdate (void *, vrpn_HANDLERPARAM);
 };
 
 // I don't think the derived classes should have to have operator = ()
 // defined (they didn't in the last version??), but both SGI and HP
 // compilers seem to insist on it.
 
-class vrpn_Shared_int32_Server : public vrpn_Shared_int32 {
+class VRPN_API vrpn_Shared_int32_Server : public vrpn_Shared_int32 {
 
   public:
 
@@ -357,7 +357,7 @@ class vrpn_Shared_int32_Server : public vrpn_Shared_int32 {
 
 };
 
-class vrpn_Shared_int32_Remote : public vrpn_Shared_int32 {
+class VRPN_API vrpn_Shared_int32_Remote : public vrpn_Shared_int32 {
 
   public:
 
@@ -374,7 +374,7 @@ class vrpn_Shared_int32_Remote : public vrpn_Shared_int32 {
 
 
 
-class vrpn_Shared_float64 : public vrpn_SharedObject {
+class VRPN_API vrpn_Shared_float64 : public vrpn_SharedObject {
 
 
   public:
@@ -452,10 +452,10 @@ class vrpn_Shared_float64 : public vrpn_SharedObject {
       // must set d_lastUpdate BEFORE calling yankCallbacks()
         
     int handleUpdate (vrpn_HANDLERPARAM);
-    static int handle_lamportUpdate (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_lamportUpdate (void *, vrpn_HANDLERPARAM);
 };
 
-class vrpn_Shared_float64_Server : public vrpn_Shared_float64 {
+class VRPN_API vrpn_Shared_float64_Server : public vrpn_Shared_float64 {
 
   public:
 
@@ -473,7 +473,7 @@ class vrpn_Shared_float64_Server : public vrpn_Shared_float64 {
 
 };
 
-class vrpn_Shared_float64_Remote : public vrpn_Shared_float64 {
+class VRPN_API vrpn_Shared_float64_Remote : public vrpn_Shared_float64 {
 
   public:
 
@@ -491,7 +491,7 @@ class vrpn_Shared_float64_Remote : public vrpn_Shared_float64 {
 
 
 
-class vrpn_Shared_String : public vrpn_SharedObject {
+class VRPN_API vrpn_Shared_String : public vrpn_SharedObject {
 
 
   public:
@@ -571,11 +571,11 @@ class vrpn_Shared_String : public vrpn_SharedObject {
       // must set d_lastUpdate BEFORE calling yankCallbacks()
         
     int handleUpdate (vrpn_HANDLERPARAM);
-    static int handle_lamportUpdate (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_lamportUpdate (void *, vrpn_HANDLERPARAM);
 
 };
 
-class vrpn_Shared_String_Server : public vrpn_Shared_String {
+class VRPN_API vrpn_Shared_String_Server : public vrpn_Shared_String {
 
   public:
 
@@ -593,7 +593,7 @@ class vrpn_Shared_String_Server : public vrpn_Shared_String {
 
 };
 
-class vrpn_Shared_String_Remote : public vrpn_Shared_String {
+class VRPN_API vrpn_Shared_String_Remote : public vrpn_Shared_String {
 
   public:
 

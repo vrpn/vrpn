@@ -17,7 +17,7 @@
 #include <linux/joystick.h>
 #endif
 
-class vrpn_Joylin :public vrpn_Analog, public vrpn_Button {
+class VRPN_API vrpn_Joylin :public vrpn_Analog, public vrpn_Button {
 public:
   vrpn_Joylin(char * name, vrpn_Connection * c, char * portname);
 

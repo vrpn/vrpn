@@ -12,7 +12,7 @@
 // Exports Thumbwheel both as clamping analog (-1..1) 0 and as dial 0.
 // Exports Trackball both as clamping analogs 1 and 2 and as dials 1 and 2.
 
-class vrpn_GlobalHapticsOrb: public vrpn_Serial_Analog
+class VRPN_API vrpn_GlobalHapticsOrb: public vrpn_Serial_Analog
 			,public vrpn_Button
 			,public vrpn_Dial
 {
@@ -52,7 +52,7 @@ public:
                     = vrpn_CONNECTION_RELIABLE);
 
 	/// Clear all of the values when we get a new connection request
-	static	int handle_newConnection(void * userdata, vrpn_HANDLERPARAM);
+	static	int VRPN_CALLBACK handle_newConnection(void * userdata, vrpn_HANDLERPARAM);
 };
 
 #endif

@@ -44,7 +44,7 @@ const unsigned vrpn_IMAGER_MAX_REGIONu16 = (vrpn_CONNECTION_TCP_BUFLEN - 6*sizeo
 const unsigned vrpn_IMAGER_MAX_REGIONf32 = (vrpn_CONNECTION_TCP_BUFLEN - 6*sizeof(vrpn_int16) - 6*sizeof(vrpn_int32))/sizeof(vrpn_float32);
 
 /// Holds the description needed to convert from raw data to values for a channel
-class vrpn_TempImager_Channel {
+class VRPN_API vrpn_TempImager_Channel {
 public:
   vrpn_TempImager_Channel(void) { name[0] = '\0'; units[0] = '\0'; minVal = maxVal = 0.0;
       scale = offset = 0; };
@@ -82,7 +82,7 @@ public:
 };
 
 /// Base class for temporary implementation of Imager class
-class vrpn_TempImager: public vrpn_BaseClass {
+class VRPN_API vrpn_TempImager: public vrpn_BaseClass {
 public:
   vrpn_TempImager(const char *name, vrpn_Connection *c = NULL);
 
@@ -109,7 +109,7 @@ protected:
   vrpn_int32	d_regionf32_m_id;   //< ID of the message type describing a region with 32-bit float entries
 };
 
-class vrpn_TempImager_Server: public vrpn_TempImager {
+class VRPN_API vrpn_TempImager_Server: public vrpn_TempImager {
 public:
   vrpn_TempImager_Server(const char *name, vrpn_Connection *c,
 			 vrpn_int32 nCols, vrpn_int32 nRows,
@@ -177,7 +177,7 @@ protected:
 
   // This method makes sure we send a description whenever we get a ping from
   // a client object.
-  static  int handle_ping_message(void *userdata, vrpn_HANDLERPARAM p);
+  static  int VRPN_CALLBACK handle_ping_message(void *userdata, vrpn_HANDLERPARAM p);
 };
 
 //------------------------------------------------------------------------------
@@ -188,16 +188,16 @@ const vrpn_uint16 vrpn_IMAGER_VALTYPE_UINT8	= 1;
 const vrpn_uint16 vrpn_IMAGER_VALTYPE_UINT16	= 2;
 const vrpn_uint16 vrpn_IMAGER_VALTYPE_FLOAT32	= 3;
 
-class vrpn_TempImager_Region;
+class VRPN_API	vrpn_TempImager_Region;
 
 typedef struct _vrpn_IMAGERREGIONCB {
   struct timeval		msg_time; //< Timestamp of the region data's change
   const vrpn_TempImager_Region	*region;  //< New region of the image
 } vrpn_IMAGERREGIONCB;
 
-typedef void (*vrpn_IMAGERREGIONHANDLER) (void * userdata,
+typedef void (VRPN_CALLBACK *vrpn_IMAGERREGIONHANDLER) (void * userdata,
 					  const vrpn_IMAGERREGIONCB info);
-typedef void (*vrpn_IMAGERDESCRIPTIONHANDLER) (void * userdata,
+typedef void (VRPN_CALLBACK *vrpn_IMAGERDESCRIPTIONHANDLER) (void * userdata,
 					       const struct timeval msg_time);
 
 /// Helper function to convert data for a sub-region of one channel of
@@ -205,8 +205,8 @@ typedef void (*vrpn_IMAGERDESCRIPTIONHANDLER) (void * userdata,
 // getting values out of the buffer.  The region is only valid during
 // the actual callback handler, so users should not store pointers to
 // it for later use.
-class vrpn_TempImager_Region {
-  friend class vrpn_TempImager_Remote;
+class VRPN_API vrpn_TempImager_Region {
+  friend class VRPN_API vrpn_TempImager_Remote;
   friend void java_vrpn_handle_region_change( void * userdata, const vrpn_IMAGERREGIONCB info );
 
 public:
@@ -301,7 +301,7 @@ protected:
 };
 
 /// This is the class users deal with: it tells the format and the region data when it arrives.
-class vrpn_TempImager_Remote: public vrpn_TempImager {
+class VRPN_API vrpn_TempImager_Remote: public vrpn_TempImager {
 public:
   vrpn_TempImager_Remote(const char *name, vrpn_Connection *c = NULL);
 
@@ -344,13 +344,13 @@ protected:
   vrpn_REGIONLIST *d_region_list;
 
   /// Handler for description change message from the server.
-  static int handle_region_message(void *userdata, vrpn_HANDLERPARAM p);
+  static int VRPN_CALLBACK handle_region_message(void *userdata, vrpn_HANDLERPARAM p);
 
   /// Handler for region change message from the server.
-  static int handle_description_message(void *userdata, vrpn_HANDLERPARAM p);
+  static int VRPN_CALLBACK handle_description_message(void *userdata, vrpn_HANDLERPARAM p);
 
   /// Handler for connection dropped message
-  static int handle_connection_dropped_message(void *userdata, vrpn_HANDLERPARAM p);
+  static int VRPN_CALLBACK handle_connection_dropped_message(void *userdata, vrpn_HANDLERPARAM p);
 };
 
 #endif

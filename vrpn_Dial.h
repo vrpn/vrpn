@@ -11,7 +11,7 @@ const	int vrpn_DIAL_MAX = 128;
 #include "vrpn_Connection.h"
 #include "vrpn_BaseClass.h"
 
-class vrpn_Dial : public vrpn_BaseClass {
+class VRPN_API vrpn_Dial : public vrpn_BaseClass {
 public:
 	vrpn_Dial (const char * name, vrpn_Connection * c = NULL);
 
@@ -40,7 +40,7 @@ public:
 // is working (by running the example server with the name of the device that
 // the real server would use).
 
-class vrpn_Dial_Example_Server: public vrpn_Dial {
+class VRPN_API vrpn_Dial_Example_Server: public vrpn_Dial {
 public:
 	vrpn_Dial_Example_Server(const char * name, vrpn_Connection * c,
 		vrpn_int32 numdials = 1, vrpn_float64 spin_rate = 1.0,
@@ -69,14 +69,14 @@ typedef	struct _vrpn_DIALCB {
 	vrpn_float64	change;		// Fraction of a revolution it changed
 } vrpn_DIALCB;
 
-typedef void (*vrpn_DIALCHANGEHANDLER) (void * userdata,
+typedef void (VRPN_CALLBACK *vrpn_DIALCHANGEHANDLER) (void * userdata,
 					  const vrpn_DIALCB info);
 
 // Open a dial device that is on the other end of a connection
 // and handle updates from it.  This is the type of device
 // that user code will deal with.
 
-class vrpn_Dial_Remote: public vrpn_Dial {
+class VRPN_API vrpn_Dial_Remote: public vrpn_Dial {
   public:
 	// The name of the device to connect to.
         // Optional argument to be used when the Remote MUST listen on
@@ -101,7 +101,7 @@ class vrpn_Dial_Remote: public vrpn_Dial {
 	} vrpn_DIALCHANGELIST;
 	vrpn_DIALCHANGELIST	*change_list;
 
-	static int handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
 };
 
 #endif

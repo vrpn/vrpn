@@ -12,10 +12,10 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name vrpn
+    Project_Dep_Name quatlib
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name quatlib
+    Project_Dep_Name make_vrpn_libs_build
     End Project Dependency
 }}}
 
@@ -30,7 +30,7 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name vrpn
+    Project_Dep_Name make_vrpn_libs_build
     End Project Dependency
 }}}
 
@@ -48,7 +48,25 @@ Package=<4>
     Project_Dep_Name quatlib
     End Project Dependency
     Begin Project Dependency
+    Project_Dep_Name make_vrpn_libs_build
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "make_vrpn_libs_build"=.\make_vrpn_libs_build.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
     Project_Dep_Name vrpn
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vrpndll
     End Project Dependency
 }}}
 
@@ -63,7 +81,7 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name vrpn
+    Project_Dep_Name make_vrpn_libs_build
     End Project Dependency
 }}}
 
@@ -78,7 +96,7 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name vrpn
+    Project_Dep_Name make_vrpn_libs_build
     End Project Dependency
 }}}
 
@@ -105,7 +123,7 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name vrpn
+    Project_Dep_Name make_vrpn_libs_build
     End Project Dependency
 }}}
 
@@ -120,7 +138,7 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name vrpn
+    Project_Dep_Name make_vrpn_libs_build
     End Project Dependency
 }}}
 
@@ -135,7 +153,7 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name vrpn
+    Project_Dep_Name make_vrpn_libs_build
     End Project Dependency
 }}}
 
@@ -150,10 +168,10 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name vrpn
+    Project_Dep_Name quatlib
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name quatlib
+    Project_Dep_Name make_vrpn_libs_build
     End Project Dependency
 }}}
 
@@ -168,7 +186,7 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name vrpn
+    Project_Dep_Name make_vrpn_libs_build
     End Project Dependency
 }}}
 
@@ -183,7 +201,7 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name vrpn
+    Project_Dep_Name make_vrpn_libs_build
     End Project Dependency
 }}}
 
@@ -198,7 +216,7 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name vrpn
+    Project_Dep_Name make_vrpn_libs_build
     End Project Dependency
 }}}
 
@@ -213,7 +231,7 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name vrpn
+    Project_Dep_Name make_vrpn_libs_build
     End Project Dependency
 }}}
 
@@ -228,10 +246,10 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name vrpn
+    Project_Dep_Name quatlib
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name quatlib
+    Project_Dep_Name make_vrpn_libs_build
     End Project Dependency
 }}}
 
@@ -246,7 +264,7 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name vrpn
+    Project_Dep_Name make_vrpn_libs_build
     End Project Dependency
 }}}
 
@@ -261,7 +279,7 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name vrpn
+    Project_Dep_Name make_vrpn_libs_build
     End Project Dependency
 }}}
 
@@ -276,7 +294,7 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name vrpn
+    Project_Dep_Name make_vrpn_libs_build
     End Project Dependency
 }}}
 
@@ -294,7 +312,7 @@ Package=<4>
     Project_Dep_Name quatlib
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name vrpn
+    Project_Dep_Name make_vrpn_libs_build
     End Project Dependency
 }}}
 
@@ -324,7 +342,7 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name vrpn
+    Project_Dep_Name make_vrpn_libs_build
     End Project Dependency
 }}}
 
@@ -351,7 +369,7 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name vrpn
+    Project_Dep_Name make_vrpn_libs_build
     End Project Dependency
 }}}
 
@@ -366,14 +384,29 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name vrpn
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name timecode_generator
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name vrpn_phantom
     End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name quatlib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name make_vrpn_libs_build
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "vrpndll"=.\vrpndll.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
     Begin Project Dependency
     Project_Dep_Name quatlib
     End Project Dependency

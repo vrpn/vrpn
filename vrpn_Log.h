@@ -12,7 +12,7 @@
  * We ought to be able to write it out incrementally.
  */
 
-class vrpn_Log {
+class VRPN_API vrpn_Log {
 
   public:
 

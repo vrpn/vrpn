@@ -10,7 +10,7 @@
 // and 8 analog inputs.  It costs about $150.
 // Written by Rob King at Navy Research Labs.
 
-class vrpn_Tng3: public vrpn_Serial_Analog,
+class VRPN_API vrpn_Tng3: public vrpn_Serial_Analog,
 			 public vrpn_Button
 {
  public:

@@ -15,7 +15,7 @@
 // before triggering the got_connection callback.  If connections were somehow
 // batched, or we multithreaded vrpn_Connection, this would break.
 
-class vrpn_Mutex {
+class VRPN_API vrpn_Mutex {
 
   public:
 
@@ -45,7 +45,7 @@ class vrpn_Mutex {
 
 };
 
-class vrpn_Mutex_Server : public vrpn_Mutex {
+class VRPN_API vrpn_Mutex_Server : public vrpn_Mutex {
 
   public:
 
@@ -61,15 +61,15 @@ class vrpn_Mutex_Server : public vrpn_Mutex {
     vrpn_int32 d_remoteIndex;
       ///< Counts remotes who have had IDs issued to them.
 
-    static int handle_requestIndex (void *, vrpn_HANDLERPARAM);
-    static int handle_requestMutex (void *, vrpn_HANDLERPARAM);
-    static int handle_release (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_requestIndex (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_requestMutex (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_release (void *, vrpn_HANDLERPARAM);
 
-    static int handle_gotConnection (void *, vrpn_HANDLERPARAM);
-    static int handle_dropLastConnection (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_gotConnection (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_dropLastConnection (void *, vrpn_HANDLERPARAM);
 };
 
-class vrpn_Mutex_Remote : public vrpn_Mutex {
+class VRPN_API vrpn_Mutex_Remote : public vrpn_Mutex {
 
   public:
 
@@ -125,13 +125,13 @@ class vrpn_Mutex_Remote : public vrpn_Mutex {
     vrpn_int32 d_myIndex;
     vrpn_bool d_requestBeforeInit;
 
-    static int handle_grantRequest (void *, vrpn_HANDLERPARAM);
-    static int handle_denyRequest (void *, vrpn_HANDLERPARAM);
-    static int handle_releaseNotification (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_grantRequest (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_denyRequest (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_releaseNotification (void *, vrpn_HANDLERPARAM);
 
-    static int handle_initialize (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_initialize (void *, vrpn_HANDLERPARAM);
 
-    static int handle_gotConnection (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_gotConnection (void *, vrpn_HANDLERPARAM);
 
     void triggerGrantCallbacks (void);
     void triggerDenyCallbacks (void);
@@ -207,7 +207,7 @@ class vrpn_Mutex_Remote : public vrpn_Mutex {
 
 
 
-class vrpn_PeerMutex {
+class VRPN_API vrpn_PeerMutex {
 
   public:
 
@@ -305,12 +305,12 @@ class vrpn_PeerMutex {
     vrpn_int32 d_denyRequest_type;
     //vrpn_int32 d_losePeer_type;
 
-    static int handle_request (void *, vrpn_HANDLERPARAM);
-    static int handle_release (void *, vrpn_HANDLERPARAM);
-    static int handle_grantRequest (void *, vrpn_HANDLERPARAM);
-    static int handle_denyRequest (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_request (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_release (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_grantRequest (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_denyRequest (void *, vrpn_HANDLERPARAM);
 
-    static int handle_losePeer (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_losePeer (void *, vrpn_HANDLERPARAM);
 
     void sendRequest (vrpn_Connection *);
     void sendRelease (vrpn_Connection *);

@@ -20,7 +20,7 @@
 #endif
 
 #ifdef VRPN_INCLUDE_INTERSENSE
-class vrpn_Tracker_InterSense : public vrpn_Tracker {
+class VRPN_API vrpn_Tracker_InterSense : public vrpn_Tracker {
   
  public:
 

@@ -30,7 +30,7 @@
 // If multiple requests for motion to a new location arrive while an ongoing
 // move is being made, all but the last are ignored.
 
-class vrpn_Poser_Tek4662 : public vrpn_Poser, public vrpn_Tracker {
+class VRPN_API vrpn_Poser_Tek4662 : public vrpn_Poser, public vrpn_Tracker {
 public:
   vrpn_Poser_Tek4662(const char* name, vrpn_Connection* c,
 	      const char * port, int baud = 1200, int bits = 8, 
@@ -52,8 +52,8 @@ protected:
   void	reset(void);
   void	run();
 
-  static int handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
-  static int handle_vel_change_message(void *userdata, vrpn_HANDLERPARAM p);
+  static int VRPN_CALLBACK handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
+  static int VRPN_CALLBACK handle_vel_change_message(void *userdata, vrpn_HANDLERPARAM p);
 };
 
 #endif

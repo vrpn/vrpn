@@ -27,11 +27,6 @@
 #define vrpn_DTRACK_MAX_NFLYSTICK 4
 
 
-// --------------------------------------------------------------------------
-// Just for private functions:
-
-// DTrack body data (6d):
-
 typedef struct{
 	unsigned long id;     // id number
 	float loc[3];         // location (in mm)
@@ -51,7 +46,7 @@ typedef struct{
 
 // --------------------------------------------------------------------------
 
-class vrpn_Tracker_DTrack : public vrpn_Tracker, public vrpn_Button, public vrpn_Analog
+class VRPN_API vrpn_Tracker_DTrack : public vrpn_Tracker, public vrpn_Button, public vrpn_Analog
 {
   
  public:

@@ -20,7 +20,7 @@
 // that will be used to reset the tracker when it is pushed. Any entry which
 // has a NULL pointer for the name is disabled.
 
-class vrpn_TAF_axis {
+class VRPN_API vrpn_TAF_axis {
 
   public:
 
@@ -36,7 +36,7 @@ class vrpn_TAF_axis {
         float power;	//< Power to which values are taken after scaling
 };
 
-class vrpn_Tracker_AnalogFlyParam {
+class VRPN_API vrpn_Tracker_AnalogFlyParam {
 
   public:
 
@@ -57,9 +57,9 @@ class vrpn_Tracker_AnalogFlyParam {
     int reset_which;
 };
 
-class vrpn_Tracker_AnalogFly;	// Forward reference
+class VRPN_API vrpn_Tracker_AnalogFly;	// Forward reference
 
-class vrpn_TAF_fullaxis {
+class VRPN_API vrpn_TAF_fullaxis {
 public:
         vrpn_TAF_fullaxis (void) { ana = NULL; value = 0.0; af = NULL; };
 
@@ -93,7 +93,7 @@ public:
 // change since the last update, in which case they are generated no faster
 // than update_rate. 
 
-class vrpn_Tracker_AnalogFly : public vrpn_Tracker {
+class VRPN_API vrpn_Tracker_AnalogFly : public vrpn_Tracker {
   public:
     vrpn_Tracker_AnalogFly (const char * name, vrpn_Connection * trackercon,
 			    vrpn_Tracker_AnalogFlyParam * params,
@@ -107,8 +107,8 @@ class vrpn_Tracker_AnalogFly : public vrpn_Tracker {
 
     void update (q_matrix_type &);
 
-    static void handle_joystick (void *, const vrpn_ANALOGCB);
-    static int handle_newConnection (void *, vrpn_HANDLERPARAM);
+    static void VRPN_CALLBACK handle_joystick (void *, const vrpn_ANALOGCB);
+    static int VRPN_CALLBACK handle_newConnection (void *, vrpn_HANDLERPARAM);
 
   protected:
 
@@ -131,9 +131,9 @@ class vrpn_Tracker_AnalogFly : public vrpn_Tracker {
     int setup_channel (vrpn_TAF_fullaxis * full);
     int teardown_channel (vrpn_TAF_fullaxis * full);
 
-    static void	handle_analog_update (void * userdata,
+    static void	VRPN_CALLBACK handle_analog_update (void * userdata,
                                       const vrpn_ANALOGCB info);
-    static void handle_reset_press (void * userdata, const vrpn_BUTTONCB info);
+    static void VRPN_CALLBACK handle_reset_press (void * userdata, const vrpn_BUTTONCB info);
 };
 
 #endif

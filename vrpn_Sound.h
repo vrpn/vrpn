@@ -77,7 +77,7 @@
 		char         material_name[MAX_MATERIAL_NAME_LENGTH];
 	} vrpn_TriDef;
 	
-class vrpn_Sound : public vrpn_BaseClass {
+class VRPN_API vrpn_Sound : public vrpn_BaseClass {
 
 public:
 	vrpn_Sound(const char * name, vrpn_Connection * c);
@@ -196,7 +196,7 @@ protected:
 	vrpn_int32 decodeSetPolyMaterial(const char* buf, char ** material, vrpn_int32 *tag, const int payload);
 };
 
-class vrpn_Sound_Client : public vrpn_Sound, public vrpn_Text_Receiver {
+class VRPN_API vrpn_Sound_Client : public vrpn_Sound, public vrpn_Text_Receiver {
 public:
 	vrpn_Sound_Client(const char * name, vrpn_Connection * c);
 	~vrpn_Sound_Client();
@@ -260,7 +260,7 @@ public:
 protected:
 
 private:
-  static void handle_receiveTextMessage(void *userdata, const vrpn_TEXTCB t);
+  static void VRPN_CALLBACK handle_receiveTextMessage(void *userdata, const vrpn_TEXTCB t);
  
 };
 
@@ -272,7 +272,7 @@ private:
   all of the callback functionality and decoding, allowing child classes to only have 
   to worry about sound functionality*/
 #ifndef VRPN_CLIENT_ONLY
-class vrpn_Sound_Server : public vrpn_Sound, public vrpn_Text_Sender
+class VRPN_API vrpn_Sound_Server : public vrpn_Sound, public vrpn_Text_Sender
 {
 public:
 	vrpn_Sound_Server(const char * name, vrpn_Connection * c);
@@ -310,34 +310,34 @@ protected:
 
 private:
 	
-	static int handle_loadSoundLocal(void *userdata, vrpn_HANDLERPARAM p);
-	static int handle_loadSoundRemote(void *userdata, vrpn_HANDLERPARAM p);
-	static int handle_unloadSound(void *userdata, vrpn_HANDLERPARAM p);
-	static int handle_playSound(void *userdata, vrpn_HANDLERPARAM p);
-	static int handle_stopSound(void *userdata, vrpn_HANDLERPARAM p);
-	static int handle_changeSoundStatus(void *userdata, vrpn_HANDLERPARAM p);
-	static int handle_setListenerPose(void *userdata, vrpn_HANDLERPARAM p);
-	static int handle_setListenerVelocity(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_loadSoundLocal(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_loadSoundRemote(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_unloadSound(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_playSound(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_stopSound(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_changeSoundStatus(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_setListenerPose(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_setListenerVelocity(void *userdata, vrpn_HANDLERPARAM p);
 
-	static int handle_setSoundPose(void *userdata, vrpn_HANDLERPARAM p);
-	static int handle_setSoundVelocity(void *userdata, vrpn_HANDLERPARAM p);
-	static int handle_setSoundDistanceinfo(void *userdata, vrpn_HANDLERPARAM p);
-	static int handle_setSoundConeinfo(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_setSoundPose(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_setSoundVelocity(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_setSoundDistanceinfo(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_setSoundConeinfo(void *userdata, vrpn_HANDLERPARAM p);
 
-    static int handle_setSoundDoplerfactor(void *userdata, vrpn_HANDLERPARAM p);
-	static int handle_setSoundEqvalue(void *userdata, vrpn_HANDLERPARAM p);
-	static int handle_setSoundPitch(void *userdata, vrpn_HANDLERPARAM p);
-    static int handle_setSoundVolume(void *userdata, vrpn_HANDLERPARAM p);
+    static int VRPN_CALLBACK handle_setSoundDoplerfactor(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_setSoundEqvalue(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_setSoundPitch(void *userdata, vrpn_HANDLERPARAM p);
+    static int VRPN_CALLBACK handle_setSoundVolume(void *userdata, vrpn_HANDLERPARAM p);
 
-	static int handle_loadModelLocal(void *userdata, vrpn_HANDLERPARAM p);
-	static int handle_loadModelRemote(void *userdata, vrpn_HANDLERPARAM p);
-	static int handle_loadPolyquad(void *userdata, vrpn_HANDLERPARAM p);
-	static int handle_loadPolytri(void *userdata, vrpn_HANDLERPARAM p);
-	static int handle_loadMaterial(void *userdata, vrpn_HANDLERPARAM p);
-	static int handle_setPolyquadVertices(void *userdata, vrpn_HANDLERPARAM p);		
-	static int handle_setPolytriVertices(void *userdata, vrpn_HANDLERPARAM p);
-	static int handle_setPolyOpeningfactor(void *userdata, vrpn_HANDLERPARAM p);
-	static int handle_setPolyMaterial(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_loadModelLocal(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_loadModelRemote(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_loadPolyquad(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_loadPolytri(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_loadMaterial(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_setPolyquadVertices(void *userdata, vrpn_HANDLERPARAM p);		
+	static int VRPN_CALLBACK handle_setPolytriVertices(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_setPolyOpeningfactor(void *userdata, vrpn_HANDLERPARAM p);
+	static int VRPN_CALLBACK handle_setPolyMaterial(void *userdata, vrpn_HANDLERPARAM p);
 	
 };
 #endif //#ifndef VRPN_CLIENT_ONLY

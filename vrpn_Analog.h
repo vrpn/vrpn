@@ -20,7 +20,7 @@ const	int vrpn_ANALOG_FAIL 	 	= (-2);
 // Analog time value meaning "go find out what time it is right now"
 const struct timeval vrpn_ANALOG_NOW = { 0 , 0 };
 
-class vrpn_Analog : public vrpn_BaseClass {
+class VRPN_API vrpn_Analog : public vrpn_BaseClass {
 public:
 	vrpn_Analog (const char * name, vrpn_Connection * c = NULL);
 
@@ -53,7 +53,7 @@ public:
 };
 
 #ifndef	VRPN_CLIENT_ONLY
-class vrpn_Serial_Analog: public vrpn_Analog {
+class VRPN_API vrpn_Serial_Analog: public vrpn_Analog {
 public:
   vrpn_Serial_Analog(const char * name, vrpn_Connection * connection,
                      const char * port, int baud = 9600, int bits = 8, 
@@ -84,7 +84,7 @@ protected:
 // For a sample application, see server_src/sample_analog.C
 
 
-class vrpn_Analog_Server : public vrpn_Analog {
+class VRPN_API vrpn_Analog_Server : public vrpn_Analog {
 
   public:
 
@@ -120,7 +120,7 @@ class vrpn_Analog_Server : public vrpn_Analog {
 // scaled to cover the whole range.  Rather than writing directly
 // into the channels array, call the setChannel() method.
 
-class	vrpn_Clipping_Analog_Server : public vrpn_Analog_Server {
+class VRPN_API vrpn_Clipping_Analog_Server : public vrpn_Analog_Server {
   public:
     vrpn_Clipping_Analog_Server(const char *name, vrpn_Connection *c, vrpn_int32 numChannels = vrpn_CHANNEL_MAX );
 
@@ -164,14 +164,14 @@ typedef	struct _vrpn_ANALOGCB {
 	vrpn_float64	channel[vrpn_CHANNEL_MAX];  // analog values
 } vrpn_ANALOGCB;
 
-typedef void (*vrpn_ANALOGCHANGEHANDLER) (void * userdata,
+typedef void (VRPN_CALLBACK *vrpn_ANALOGCHANGEHANDLER) (void * userdata,
 					  const vrpn_ANALOGCB info);
 
 // Open an analog device that is on the other end of a connection
 // and handle updates from it.  This is the type of analog device
 // that user code will deal with.
 
-class vrpn_Analog_Remote: public vrpn_Analog {
+class VRPN_API vrpn_Analog_Remote: public vrpn_Analog {
     public:
         // The name of the analog device to connect to
         // Optional argument to be used when the Remote should listen on
@@ -196,7 +196,7 @@ class vrpn_Analog_Remote: public vrpn_Analog {
         } vrpn_ANALOGCHANGELIST;
         vrpn_ANALOGCHANGELIST *change_list;
 
-        static int handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
+        static int VRPN_CALLBACK handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
 };
 
 #endif

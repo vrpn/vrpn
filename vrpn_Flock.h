@@ -39,7 +39,7 @@
 // is the case or not.  Added by David Nahon, for Virtools VR Pack,
 // david@z-a.net, support@virtools.com
 
-class vrpn_Tracker_Flock: public vrpn_Tracker_Serial {
+class VRPN_API vrpn_Tracker_Flock: public vrpn_Tracker_Serial {
   
  public:
   vrpn_Tracker_Flock(char *name, vrpn_Connection *c, int cSensors=1,

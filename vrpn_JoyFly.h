@@ -16,7 +16,7 @@
 
 #include <quat.h>
 
-class vrpn_Tracker_JoyFly : public vrpn_Tracker {
+class VRPN_API vrpn_Tracker_JoyFly : public vrpn_Tracker {
 
   private:
     double chanAccel [7];
@@ -37,8 +37,8 @@ class vrpn_Tracker_JoyFly : public vrpn_Tracker {
 
     void update (q_matrix_type &);
 
-    static void handle_joystick (void *, const vrpn_ANALOGCB);
-    static int handle_newConnection (void *, vrpn_HANDLERPARAM);
+    static void VRPN_CALLBACK handle_joystick (void *, const vrpn_ANALOGCB);
+    static int VRPN_CALLBACK handle_newConnection (void *, vrpn_HANDLERPARAM);
 };
 
 #endif

@@ -6,7 +6,7 @@
 #endif
 #include "vrpn_Shared.h"
 
-class vrpn_Connection;  // from vrpn_Connection.h
+class VRPN_API vrpn_Connection;  // from vrpn_Connection.h
 
 // class vrpn_File_Controller
 // Tom Hudson, July 1998
@@ -15,7 +15,7 @@ class vrpn_Connection;  // from vrpn_Connection.h
 // Can be attached to any vrpn_Connection.
 // vrpn_File_Connections will respond to the messages.
 
-class vrpn_File_Controller {
+class VRPN_API vrpn_File_Controller {
 
   public:
 

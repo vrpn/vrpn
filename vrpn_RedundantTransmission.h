@@ -11,7 +11,7 @@
 #include "vrpn_BaseClass.h"
 #include "vrpn_Connection.h"  // for vrpn_HANDLERPARAM, vrpn_Connection
 
-class vrpn_RedundantTransmission {
+class VRPN_API vrpn_RedundantTransmission {
 
   public:
 
@@ -98,7 +98,7 @@ struct vrpn_RedundantController_Protocol {
 /// Accepts commands over a connection to control a local
 /// vrpn_RedundantTransmission's default parameters.
   
-class vrpn_RedundantController : public vrpn_BaseClass {
+class VRPN_API vrpn_RedundantController : public vrpn_BaseClass {
 
   public:
 
@@ -114,8 +114,8 @@ class vrpn_RedundantController : public vrpn_BaseClass {
 
     vrpn_RedundantController_Protocol d_protocol;
 
-    static int handle_set (void *, vrpn_HANDLERPARAM);
-    static int handle_enable (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_set (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_enable (void *, vrpn_HANDLERPARAM);
 
     vrpn_RedundantTransmission * d_object;
 };
@@ -126,7 +126,7 @@ class vrpn_RedundantController : public vrpn_BaseClass {
 /// Sends messages to a vrpn_RedundantController so that a
 /// vrpn_RedundantTransmission on a server can be controlled from a client.
 
-class vrpn_RedundantRemote : public vrpn_BaseClass {
+class VRPN_API vrpn_RedundantRemote : public vrpn_BaseClass {
 
   public:
 
@@ -169,7 +169,7 @@ class vrpn_RedundantRemote : public vrpn_BaseClass {
 
 #define VRPN_RR_LENGTH 8
 
-class vrpn_RedundantReceiver {
+class VRPN_API vrpn_RedundantReceiver {
 
   public:
 
@@ -200,7 +200,7 @@ class vrpn_RedundantReceiver {
 
     vrpn_Connection * d_connection;
 
-    struct RRRecord {
+    struct VRPN_API RRRecord {
       RRRecord (void);
 
       timeval timestampSeen [VRPN_RR_LENGTH];
@@ -224,7 +224,7 @@ class vrpn_RedundantReceiver {
     RRMemory * d_lastMemory;
     vrpn_bool d_record;
 
-    static int handle_possiblyRedundantMessage (void *, vrpn_HANDLERPARAM); 
+    static int VRPN_CALLBACK handle_possiblyRedundantMessage (void *, vrpn_HANDLERPARAM); 
 };
 
 

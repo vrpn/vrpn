@@ -20,13 +20,13 @@
 #include "vrpn_Connection.h"
 #include "vrpn_BaseClass.h"
 
-class vrpn_Connection;
+class VRPN_API vrpn_Connection;
 
 #define CLOCK_VERSION 0x10
 
 // Base class for clock servers.  Definition of remote/client 
 // clock class for the user is at the end.
-class vrpn_Clock : public vrpn_BaseClass {
+class VRPN_API vrpn_Clock : public vrpn_BaseClass {
 public:
   vrpn_Clock(const char *name, vrpn_Connection *c = NULL);
   
@@ -42,7 +42,7 @@ protected:
 };
 
 
-class vrpn_Clock_Server : public vrpn_Clock {
+class VRPN_API vrpn_Clock_Server : public vrpn_Clock {
 public:
   vrpn_Clock_Server(vrpn_Connection *c);
   virtual ~vrpn_Clock_Server();
@@ -51,7 +51,7 @@ public:
   // clock updates.
   // Report changes to connection
   virtual void mainloop ();
-  static int clockQueryHandler( void *userdata, vrpn_HANDLERPARAM p );
+  static int VRPN_CALLBACK clockQueryHandler( void *userdata, vrpn_HANDLERPARAM p );
 };
 
 
@@ -74,7 +74,7 @@ typedef	struct _vrpn_CLOCKCB {
                                           // for the roundtrip used to calc offset
 } vrpn_CLOCKCB;
 
-typedef void (*vrpn_CLOCKSYNCHANDLER)(void *userdata,
+typedef void (VRPN_CALLBACK *vrpn_CLOCKSYNCHANDLER)(void *userdata,
 				      const vrpn_CLOCKCB& info);
 
 // Connect to a clock server that is on the other end of a connection
@@ -89,7 +89,7 @@ typedef void (*vrpn_CLOCKSYNCHANDLER)(void *userdata,
 #define VRPN_CLOCK_FULL_SYNC 1
 #define VRPN_CLOCK_QUICK_SYNC 2
 
-class vrpn_Clock_Remote: public vrpn_Clock {
+class VRPN_API vrpn_Clock_Remote: public vrpn_Clock {
   public:
 
     // The name of the station which runs the clock server to connect to
@@ -186,9 +186,9 @@ class vrpn_Clock_Remote: public vrpn_Clock {
 
     vrpn_CLOCKSYNCLIST	*change_list;
 
-    static int quickSyncClockServerReplyHandler(void *userdata, 
+    static int VRPN_CALLBACK quickSyncClockServerReplyHandler(void *userdata, 
 					        vrpn_HANDLERPARAM p);
-    static int fullSyncClockServerReplyHandler(void *userdata, 
+    static int VRPN_CALLBACK fullSyncClockServerReplyHandler(void *userdata, 
 					       vrpn_HANDLERPARAM p);
 };
 

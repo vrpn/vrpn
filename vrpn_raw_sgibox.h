@@ -22,7 +22,7 @@
 #define vrpn_SGI_NUM_DIALS   (8)
 #define vrpn_SGI_NUMDEVS (vrpn_SGI_NUM_BUTTONS+vrpn_SGI_NUM_DIALS)
 
-class vrpn_raw_SGIBox :public vrpn_Analog, public vrpn_Dial, public vrpn_Button_Filter {
+class VRPN_API vrpn_raw_SGIBox :public vrpn_Analog, public vrpn_Dial, public vrpn_Button_Filter {
 public:
   vrpn_raw_SGIBox(char * name, vrpn_Connection * c, char *serialDevName);
   void mainloop();

@@ -35,7 +35,7 @@
 // useful for applications that load large data files and don't want to
 // wait for them to pre-load.
 
-extern bool vrpn_FILE_CONNECTIONS_SHOULD_PRELOAD;
+extern VRPN_API bool vrpn_FILE_CONNECTIONS_SHOULD_PRELOAD;
 
 // Global variable used to indicate whether File Connections should
 // keep already-read messages stored in memory.  If not, then we have
@@ -49,7 +49,7 @@ extern bool vrpn_FILE_CONNECTIONS_SHOULD_PRELOAD;
 // don't have enough memory to keep them in memory at once, or for applications
 // that read through only once and have no need to go back and check.
 
-extern bool vrpn_FILE_CONNECTIONS_SHOULD_ACCUMULATE;
+extern VRPN_API bool vrpn_FILE_CONNECTIONS_SHOULD_ACCUMULATE;
 
 // Global variable used to indicate whether File Connections should
 // play through all system messages and get to the first user message
@@ -61,9 +61,9 @@ extern bool vrpn_FILE_CONNECTIONS_SHOULD_ACCUMULATE;
 // the connection behaves consistently once created.  Leaving this true
 // can help with offsets in time that happen at the beginning of files.
 
-extern bool vrpn_FILE_CONNECTIONS_SHOULD_SKIP_TO_USER_MESSAGES;
+extern VRPN_API bool vrpn_FILE_CONNECTIONS_SHOULD_SKIP_TO_USER_MESSAGES;
 
-class vrpn_File_Connection : public vrpn_Connection
+class VRPN_API vrpn_File_Connection : public vrpn_Connection
 {
 public:
     vrpn_File_Connection (const char * file_name, 
@@ -175,7 +175,7 @@ protected:
 	//      read_entry and manual traversal of d_logHead/d_logTail 
 	//      will be used.
 	// the functions return false if they don't save or restore the bookmark
-	class vrpn_FileBookmark
+	class VRPN_API vrpn_FileBookmark
 	{
 	public:
 		vrpn_FileBookmark( );
@@ -194,7 +194,7 @@ protected:
     // to mainloop that played back an event
     timeval d_last_time;  // XXX remove
 
-    class FileTime_Accumulator
+    class VRPN_API FileTime_Accumulator
     {
         // accumulates the amount of time that we will advance
         // filetime by when we next play back messages.
@@ -268,9 +268,9 @@ protected:
     //     a File Controller object that wants to control this
     //     File Connection.
 protected:
-    static int handle_set_replay_rate (void *, vrpn_HANDLERPARAM);
-    static int handle_reset (void *, vrpn_HANDLERPARAM);
-    static int handle_play_to_time (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_set_replay_rate (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_reset (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_play_to_time (void *, vrpn_HANDLERPARAM);
 
     // }}}
     // {{{ Maintains a doubly-linked list structure that keeps

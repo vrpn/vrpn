@@ -11,13 +11,13 @@
  *  written by Sascha Scholz <sascha.scholz@imk.fraunhofer.de>
  */
 
-#ifndef VRPN_ADBOX
-#define VRPN_ADBOX
+#ifndef VRPN_ADBOX_H
+#define VRPN_ADBOX_H
 
 #include "vrpn_Analog.h"
 #include "vrpn_Button.h"
 
-class vrpn_ADBox : public vrpn_Analog, public vrpn_Button {
+class VRPN_API vrpn_ADBox : public vrpn_Analog, public vrpn_Button {
 
  public:
   vrpn_ADBox(char* name, vrpn_Connection *c, 

@@ -22,7 +22,7 @@
 
 const int vrpn_LIBERTY_MAX_STATIONS = 8;    //< How many stations can exist
 
-class vrpn_Tracker_Liberty: public vrpn_Tracker_Serial {
+class VRPN_API vrpn_Tracker_Liberty: public vrpn_Tracker_Serial {
   
  public:
 

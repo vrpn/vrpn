@@ -1,4 +1,93 @@
-2004-08-31  Russell M. Taylor II  <taylorr@cs.unc.edu>
+2004-09-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	Adding Chris VanderKnyff's changes that enable DLL linkage
+	for applications.  Heading towards enabling C# and other language
+	support.
+
+	* ChangeLog : Fixing date on my earlier message, reordering.
+	* Makefile : Adding new source-code files.
+	* make_vrpn_libs_build.dsp : New project file to make
+		dependency on both VRPN and VRPNDLL.
+	* time_test.dsp : Making it depend on the project that causes
+		both VRPN and VRPNDLL projects to be built, rather
+		than on VRPN.  If you try to make it depend on both
+		VRPN and VRPNDLL, you get linking trouble.
+	* vrpn.dsp : Same.  Also, defining things needed to make DLL
+		linkage work correctly.
+	* vrpn.dsw : Adding make_vrpn_libs.build project.  Adding
+		dependencies.
+	* vrpn_Configure.h : Added an entry for compiling with DLL linkage.
+		Added definitions needed to make this work for the three
+		cases (library DLL, library static, application).
+	* vrpn_Connection.C : Removed iostream.  Chris made error output
+		go to stderr rather than stdout.
+	* vrpn_Router.C : Moved external functions into static member
+		functions to avoid cluttering the name space.
+	* vrpn_Types.h : Changed to #error from ad-hoc error generator.
+	* vrpn_3Space.h : Making all classes defined with VRPN_API.
+		Making all callbacks use VRPN_CALLBACK.  Making all
+		external functions and structures VRPN_API.
+	* vrpn_ADBox.h : Same.
+	* vrpn_Analog.h : Same.
+	* vrpn_Analog_5dt.h : Same.
+	* vrpn_Analog_Output.h : Same.
+	* vrpn_Analog_Output_NI.h : Same.
+	* vrpn_Radamec_SPI.h : Same.
+	* vrpn_BaseClass.h : Same.
+	* vrpn_Button.h : Same.
+	* vrpn_CerealBox.h : Same.
+	* vrpn_Clock.h : Same.
+	* vrpn_Connection.h : Same.
+	* vrpn_Dial.h : Same.
+	* vrpn_DirectXFFJoystick.h : Same.
+	* vrpn_Dyna.h : Same.
+	* vrpn_FileConnection.h : Same.
+	* vrpn_FileController.h : Same.
+	* vrpn_Flock.h : Same.
+	* vrpn_Flock_Parallel.h : Same.
+	* vrpn_ForeceDevice.h : Same.
+	* vrpn_ForwarderController.h : Same.
+	* vrpn_FunctionGenerator.h : Same.
+	* vrpn_GlobalHapticsOrb.h : Same.
+	* vrpn_ImmersionBox.h : Same.
+	* vrpn_JoyFly.h : Same.
+	* vrpn_Joylin.h : Same.
+	* vrpn_Joywin32.h : Same.
+	* vrpn_LamportClock.h : Same.
+	* vrpn_Log.h : Same.
+	* vrpn_Magellan.h : Same.
+	* vrpn_Mutex.h : Same.
+	* vrpn_Nidaq.h : Same.
+	* vrpn_Poser.h : Same.
+	* vrpn_Poser_Analog.h : Same.
+	* vrpn_Poser_Tek4662.h : Same.
+	* vrpn_RedundantTransmission.h : Same.
+	* vrpn_Router.h : Same.
+	* vrpn_Serial.h : Same.
+	* vrpn_Shared.h : Same.
+	* vrpn_SharedObject.h : Same.
+	* vrpn_Sound.h : Same.
+	* vrpn_Spaceball.h : Same.
+	* vrpn_TemImager.h : Same.
+	* vrpn_Text.h : Same.
+	* vrpn_Tng3.h : Same.
+	* vrpn_Tracker.h : Same.
+	* vrpn_Tracker_AnalogFly.h : Same.
+	* vrpn_Tracker_ButtonFly.h : Same.
+	* vrpn_Tracker_DTrack.h : Same.
+	* vrpn_Tracker_Fastrak.h : Same.
+	* vrpn_Tracker_Liberty.h : Same.
+	* vrpn_Tracker_isense.h : Same.
+	* vrpn_TypeDispatcher.h : Same.
+	* vrpn_UNC_Joystick.h : Same.
+	* vrpn_VPJoystick.h : Same.
+	* vrpn_Wanda.h : Same.
+	* vrpn_Zaber.h : Same.
+	* vrpn_nikon_controls.h : Same.
+	* vrpn_raw_sgibox.h : Same.
+	* vrpn_sgibox.h : Same.
+
+2004-09-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Tracker.h : Bumped the maximum number of sensors per tracker
 		from 20 to 100.
@@ -11,15 +100,15 @@
 	* time_test.dsp : Switching back to DLL-based linkage
 	* vrpn.dsp : Same.
 
-2004-08-31  Russell M. Taylor II  <taylorr@cs.unc.edu>
-
-	* vrpn_Serial.C : Added John Stone's fix to make it compile on macs.
-
 2004-09-01  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_FunctionGenerator.[h,C]:  first commit of a new device
 	type, and function generator
 	* vrpn.dsp:  includes function generator files
+
+2004-08-31  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Serial.C : Added John Stone's fix to make it compile on macs.
 
 2004-08-31  Russell M. Taylor II  <taylorr@cs.unc.edu>
 

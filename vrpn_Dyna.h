@@ -16,7 +16,7 @@
 // If this is running on a non-linux system, then the serial port driver
 // is probably adding more latency -- see the vrpn README for more info.
 
-class vrpn_Tracker_Dyna: public vrpn_Tracker_Serial {
+class VRPN_API vrpn_Tracker_Dyna: public vrpn_Tracker_Serial {
 private:
   unsigned reportLength;
   unsigned totalReportLength;

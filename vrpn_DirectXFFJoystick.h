@@ -10,7 +10,7 @@
 #include <basetsd.h>
 #include <dinput.h>
 
-class vrpn_DirectXFFJoystick: public vrpn_Analog
+class VRPN_API vrpn_DirectXFFJoystick: public vrpn_Analog
 			     ,public vrpn_Button
 			     ,public vrpn_ForceDevice
 {
@@ -61,8 +61,8 @@ protected:
     static  BOOL CALLBACK    EnumJoysticksCallback( const DIDEVICEINSTANCE* pdidInstance, VOID* selfPtr );
     static  BOOL CALLBACK    EnumObjectsCallback( const DIDEVICEOBJECTINSTANCE* pdidoi, VOID* selfPtr );
 
-    static  int	handle_last_connection_dropped(void *selfPtr, vrpn_HANDLERPARAM p);
-    static  int	handle_plane_change_message(void *selfPtr, vrpn_HANDLERPARAM p);
+    static  int	VRPN_CALLBACK handle_last_connection_dropped(void *selfPtr, vrpn_HANDLERPARAM p);
+    static  int	VRPN_CALLBACK handle_plane_change_message(void *selfPtr, vrpn_HANDLERPARAM p);
 };
 
 #endif

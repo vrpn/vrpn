@@ -27,7 +27,7 @@
 
 
 // Class for holding data used in transforming pose data to analog values for each axis
-class vrpn_PA_axis {
+class VRPN_API vrpn_PA_axis {
     public:
         vrpn_PA_axis(char *name = NULL, int c = -1, double offset = 0.0, double s = 1.0) : ana_name(name), channel(c), offset(0), scale(s) {}  
 
@@ -39,7 +39,7 @@ class vrpn_PA_axis {
 };
 
 // Class for passing in config data.  Usually read from the vrpn.cfg file in the server code.
-class vrpn_Poser_AnalogParam {
+class VRPN_API vrpn_Poser_AnalogParam {
     public:
         vrpn_Poser_AnalogParam();
 
@@ -54,9 +54,9 @@ class vrpn_Poser_AnalogParam {
                         vel_min[3], vel_max[3], vel_rot_min[3], vel_rot_max[3];
 };
 
-class vrpn_Poser_Analog;	// Forward reference
+class VRPN_API vrpn_Poser_Analog;	// Forward reference
 
-class vrpn_PA_fullaxis {
+class VRPN_API vrpn_PA_fullaxis {
 public:
         vrpn_PA_fullaxis (void) { ana = NULL; value = 0.0; pa = NULL; };
 
@@ -66,7 +66,7 @@ public:
         double value;
 };
 
-class vrpn_Poser_Analog : public vrpn_Poser, public vrpn_Tracker {
+class VRPN_API vrpn_Poser_Analog : public vrpn_Poser, public vrpn_Tracker {
     public:
         vrpn_Poser_Analog(const char* name, vrpn_Connection* c, vrpn_Poser_AnalogParam* p);
 
@@ -78,8 +78,8 @@ class vrpn_Poser_Analog : public vrpn_Poser, public vrpn_Tracker {
         // Axes for translation and rotation
         vrpn_PA_fullaxis x, y, z, rx, ry, rz;
 
-        static int handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
-        static int handle_vel_change_message(void *userdata, vrpn_HANDLERPARAM p);
+        static int VRPN_CALLBACK handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
+        static int VRPN_CALLBACK handle_vel_change_message(void *userdata, vrpn_HANDLERPARAM p);
 
         // Routine to update the analog values from the current pose
         bool update_Analog_values();

@@ -5,7 +5,7 @@
 #include "vrpn_Analog.h"
 #include "vrpn_Button.h"
 
-class vrpn_Spaceball: public vrpn_Serial_Analog
+class VRPN_API vrpn_Spaceball: public vrpn_Serial_Analog
 			,public vrpn_Button
 {
   public:

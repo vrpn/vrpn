@@ -21,7 +21,7 @@
 #include "vrpn_Connection.h"
 #include "vrpn_BaseClass.h"
 
-class vrpn_Poser : public vrpn_BaseClass {
+class VRPN_API vrpn_Poser : public vrpn_BaseClass {
     public:
         vrpn_Poser (const char * name, vrpn_Connection * c = NULL );
 
@@ -72,7 +72,7 @@ class vrpn_Poser : public vrpn_BaseClass {
 // This is a sample basic poser server
 // 
 
-class vrpn_Poser_Server: public vrpn_Poser {
+class VRPN_API vrpn_Poser_Server: public vrpn_Poser {
     public:
         vrpn_Poser_Server (const char* name, vrpn_Connection* c);
 
@@ -80,15 +80,15 @@ class vrpn_Poser_Server: public vrpn_Poser {
         virtual void mainloop();
 
     protected:
-        static int handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
-        static int handle_vel_change_message(void *userdata, vrpn_HANDLERPARAM p);
+        static int VRPN_CALLBACK handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
+        static int VRPN_CALLBACK handle_vel_change_message(void *userdata, vrpn_HANDLERPARAM p);
 };
 
 //------------------------------------------------------------------------------------
 // Client Code
 
 // Open a poser that is on the other end of a connection for sending updates to it.  
-class vrpn_Poser_Remote: public vrpn_Poser {
+class VRPN_API vrpn_Poser_Remote: public vrpn_Poser {
     public:
 	// The name of the poser to connect to, including connection name,
 	// for example "poser@magnesium.cs.unc.edu". If you already

@@ -15,7 +15,7 @@
 // Similar to vrpn_Analog, but messages are different
 // Members beginning with o_ are also found in vrpn_Analog, the o_ is 
 // so that you can derive a class from both without getting ambiguities
-class vrpn_Analog_Output : public vrpn_BaseClass {
+class VRPN_API vrpn_Analog_Output : public vrpn_BaseClass {
 public:
      vrpn_Analog_Output(const char* name, vrpn_Connection* c = NULL);
      
@@ -43,7 +43,7 @@ protected:
 // A *Sample* Analog output server.  Use this, or derive your own server
 // from vrpn_Analog_Output with this as a guide
 
-class vrpn_Analog_Output_Server : public vrpn_Analog_Output {
+class VRPN_API vrpn_Analog_Output_Server : public vrpn_Analog_Output {
 public:
      vrpn_Analog_Output_Server(const char* name, vrpn_Connection* c, 
                                vrpn_int32 numChannels = vrpn_CHANNEL_MAX );
@@ -60,19 +60,19 @@ public:
      /// setting the channel to that value.  Derived class must
      /// either install handlers for this routine or else make
      /// its own routines to handle the request message.
-     static int handle_request_message( void *userdata,
+     static int VRPN_CALLBACK handle_request_message( void *userdata,
                                         vrpn_HANDLERPARAM p );
      
      /// Responds to a request to change a number of channels
      /// Derived class must either install handlers for this
      /// routine or else make its own routines to handle the
      /// multi-channel request message.
-     static int handle_request_channels_message( void* userdata,
+     static int VRPN_CALLBACK handle_request_channels_message( void* userdata,
                                                  vrpn_HANDLERPARAM p);
 
 	/// Used to notify us when a new connection is requested, so that
 	/// we can let the client know how many channels are active
-	static int handle_got_connection( void* userdata, vrpn_HANDLERPARAM p );
+	static int VRPN_CALLBACK handle_got_connection( void* userdata, vrpn_HANDLERPARAM p );
      
      /// Exposes an array of values for the user to read from.
      const vrpn_float64* o_channels (void) const { return o_channel; };
@@ -86,7 +86,7 @@ protected:
 // Open an analog output device that is on the other end of a connection
 // and send updates to it.  This is the type of analog output device
 // that user code will deal with.
-class vrpn_Analog_Output_Remote : public vrpn_Analog_Output {
+class VRPN_API vrpn_Analog_Output_Remote : public vrpn_Analog_Output {
 public:
      // The name of the analog device to connect to
      // Optional argument to be used when the Remote should listen on
@@ -98,7 +98,7 @@ public:
      virtual void mainloop();
 
      // How we hear about the number of active channels
-     static int handle_report_num_channels( void *userdata, vrpn_HANDLERPARAM p );
+     static int VRPN_CALLBACK handle_report_num_channels( void *userdata, vrpn_HANDLERPARAM p );
      
      // Request the analog to change its value to the one specified.
      // Returns false on failure.

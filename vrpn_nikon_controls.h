@@ -1,7 +1,7 @@
 #include  "vrpn_Analog.h"
 #include  "vrpn_Analog_Output.h"
 
-class vrpn_Nikon_Controls : public vrpn_Serial_Analog, public vrpn_Analog_Output {
+class VRPN_API vrpn_Nikon_Controls : public vrpn_Serial_Analog, public vrpn_Analog_Output {
 public:
   vrpn_Nikon_Controls(const char *device_name, vrpn_Connection *con = NULL, const char *port_name = "COM1");
   ~vrpn_Nikon_Controls(void) {};
@@ -29,13 +29,13 @@ protected:
   virtual void report (vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
 
   /// Responds to a connection request with a report of the values
-  static int handle_connect_message(void *userdata, vrpn_HANDLERPARAM p);
+  static int VRPN_CALLBACK handle_connect_message(void *userdata, vrpn_HANDLERPARAM p);
 
   /// Responds to a request to change one of the values by
   /// setting the channel to that value.
-  static int handle_request_message(void *userdata, vrpn_HANDLERPARAM p);
+  static int VRPN_CALLBACK handle_request_message(void *userdata, vrpn_HANDLERPARAM p);
 
   /// Responds to a request to change multiple channels at once.
-  static int handle_request_channels_message(void *userdata, vrpn_HANDLERPARAM p);
+  static int VRPN_CALLBACK handle_request_channels_message(void *userdata, vrpn_HANDLERPARAM p);
 };
 

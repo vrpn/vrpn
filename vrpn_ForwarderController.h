@@ -31,9 +31,9 @@
 
 #include "vrpn_Connection.h"  // for vrpn_HANDLERPARAM
 
-class vrpn_ConnectionForwarder;
+class VRPN_API vrpn_ConnectionForwarder;
 
-class vrpn_Forwarder_Brain {
+class VRPN_API vrpn_Forwarder_Brain {
 
   public:
 
@@ -88,7 +88,7 @@ struct vrpn_Forwarder_List {
   vrpn_ConnectionForwarder * forwarder;
 };
 
-class vrpn_Forwarder_Server : public vrpn_Forwarder_Brain {
+class VRPN_API vrpn_Forwarder_Server : public vrpn_Forwarder_Brain {
 
   public:
 
@@ -110,8 +110,8 @@ class vrpn_Forwarder_Server : public vrpn_Forwarder_Brain {
 
   private:
 
-    static int handle_start (void *, vrpn_HANDLERPARAM);
-    static int handle_forward (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_start (void *, vrpn_HANDLERPARAM);
+    static int VRPN_CALLBACK handle_forward (void *, vrpn_HANDLERPARAM);
 
 };
 
@@ -120,7 +120,7 @@ class vrpn_Forwarder_Server : public vrpn_Forwarder_Brain {
 // Construct a Forwarder_Controller on a connection to control a
 // Forwarder_Server on its far end.
 
-class vrpn_Forwarder_Controller : public vrpn_Forwarder_Brain {
+class VRPN_API vrpn_Forwarder_Controller : public vrpn_Forwarder_Brain {
 
   public:
 

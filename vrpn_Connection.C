@@ -1,5 +1,3 @@
-#include "vrpn_Connection.h"
-
 #include <stdlib.h>
 #include <memory.h>
 #include <math.h>
@@ -11,11 +9,6 @@
 #ifndef _WIN32_WCE
 #include <sys/types.h>
 #include <signal.h>
-  #ifdef VRPN_USE_OLD_STREAMS
-        #include <iostream.h>
-  #else
-        #include <iostream>
-  #endif
 #include <sys/stat.h>
 #include <fcntl.h>
 #endif
@@ -23,6 +16,8 @@
 // malloc.h is deprecated;  all the functionality *should*
 // be in stdlib.h
 #include <stdlib.h>
+
+#include "vrpn_Connection.h"
 
 #ifdef VRPN_USE_WINSOCK_SOCKETS
 // a socket in windows can not be closed like it can in unix-land
@@ -2844,7 +2839,7 @@ int vrpn_Endpoint::mainloop (timeval * timeout,
     if (FD_ISSET(d_tcpSocket,&readfds)) {
       tcp_messages_read = handle_tcp_messages(NULL);
       if (tcp_messages_read == -1) {
-        printf("vrpn: TCP handling failed, dropping connection (this is normal when a connection is dropped)\n");
+        fprintf(stderr, "vrpn: TCP handling failed, dropping connection (this is normal when a connection is dropped)\n");
         status = BROKEN;
         break;
       }
@@ -4376,7 +4371,7 @@ int vrpn_Endpoint::setControlMsgTimeOffset(const timeval * offset)
     return 0;
 }
 
-void setClockOffset( void *userdata, const vrpn_CLOCKCB& info )
+void VRPN_CALLBACK setClockOffset( void *userdata, const vrpn_CLOCKCB& info )
 {
 #if 0
   cerr << "clock offset is " << vrpn_TimevalMsecs(info.tvClockOffset) 

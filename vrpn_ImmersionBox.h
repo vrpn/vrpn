@@ -9,7 +9,7 @@
 // Written by Rob King at Navy Research Labs.  The button code works;
 // the others are not fully implemented.
 
-class vrpn_ImmersionBox: public vrpn_Serial_Analog,
+class VRPN_API vrpn_ImmersionBox: public vrpn_Serial_Analog,
 			 public vrpn_Button,
 			 public vrpn_Dial
 {

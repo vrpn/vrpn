@@ -44,13 +44,13 @@
 // is probably adding more latency -- see the vrpn README for more info.
 
 // forward decl
-class vrpn_Tracker_Flock_Parallel_Slave;
+class VRPN_API vrpn_Tracker_Flock_Parallel_Slave;
 
 // this class acts as the master
 // these are both derived from vrpn_Tracker_Flock to take advantage
 // of some of the data and functionality, but they replace the major 
 // functions
-class vrpn_Tracker_Flock_Parallel: public vrpn_Tracker_Flock {
+class VRPN_API vrpn_Tracker_Flock_Parallel: public vrpn_Tracker_Flock {
   
  public:
   
@@ -74,7 +74,7 @@ class vrpn_Tracker_Flock_Parallel: public vrpn_Tracker_Flock {
 
 // the special args are the master's vrpn id and tracker pos msg id
 // The slave masquerades as the master when sending out reports
-class vrpn_Tracker_Flock_Parallel_Slave : public vrpn_Tracker_Flock {
+class VRPN_API vrpn_Tracker_Flock_Parallel_Slave : public vrpn_Tracker_Flock {
 public:
   vrpn_Tracker_Flock_Parallel_Slave( char *name,
 				     vrpn_Connection *c,
@@ -88,7 +88,7 @@ public:
  protected:
   virtual void reset();
 
-  friend class vrpn_Tracker_Flock_Parallel;
+  friend class VRPN_API vrpn_Tracker_Flock_Parallel;
 };
 
 #endif // _VRPN_FLOCK_PARALLEL_H_
