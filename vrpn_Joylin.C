@@ -56,7 +56,6 @@ vrpn_Joylin::vrpn_Joylin(char * name,
 
 void vrpn_Joylin::mainloop(void) {
   struct timeval zerotime;
-  struct timezone zone;
   fd_set fdset;
   struct js_event js;
   int i;
@@ -79,11 +78,11 @@ void vrpn_Joylin::mainloop(void) {
       }
       switch(js.type & ~JS_EVENT_INIT) {
       case JS_EVENT_BUTTON:
-		  gettimeofday((timeval *)&vrpn_Button::timestamp, &zone);
+		  vrpn_gettimeofday((timeval *)&vrpn_Button::timestamp, NULL);
 		  buttons[js.number] = js.value;
 		  break;
       case JS_EVENT_AXIS:
-		  gettimeofday((timeval *)&vrpn_Analog::timestamp, &zone);
+		  vrpn_gettimeofday((timeval *)&vrpn_Analog::timestamp, NULL);
 		  channel[js.number] = js.value / 32767.0;           /* FIX LATER */
 		  break;
       }

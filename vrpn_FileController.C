@@ -34,7 +34,7 @@ void vrpn_File_Controller::set_replay_rate (vrpn_float32 rate) {
   vrpn_float32 temp = rate;
   vrpn_int32 netValue = htonl(*(vrpn_int32 *) &temp);
 
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   d_connection->pack_message(sizeof(netValue), now,
                 d_set_replay_rate_type, d_myId, (const char *) &netValue,
                 vrpn_CONNECTION_RELIABLE);  // | vrpn_CONNECTION_LOCAL_ONLY
@@ -43,7 +43,7 @@ void vrpn_File_Controller::set_replay_rate (vrpn_float32 rate) {
 void vrpn_File_Controller::reset (void) {
   struct timeval now;
 
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   d_connection->pack_message(0, now,
                 d_reset_type, d_myId, NULL,
                 vrpn_CONNECTION_RELIABLE);  // | vrpn_CONNECTION_LOCAL_ONLY
@@ -52,7 +52,7 @@ void vrpn_File_Controller::reset (void) {
 void vrpn_File_Controller::play_to_time (struct timeval t) {
   struct timeval now;
 
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   d_connection->pack_message(sizeof(struct timeval), now,
                 d_play_to_time_type, d_myId, (const char *) &t,
                 vrpn_CONNECTION_RELIABLE);  // | vrpn_CONNECTION_LOCAL_ONLY

@@ -407,7 +407,7 @@ void vrpn_Button_Example_Server::mainloop()
 	// IN A REAL SERVER, this check would not be done; although the
 	// time of the report would be updated to the current time so
 	// that the correct timestamp would be issued on the report.
-	gettimeofday(&current_time, NULL);
+	vrpn_gettimeofday(&current_time, NULL);
 	if ( duration(current_time,timestamp) >= 1000000.0/_update_rate) {
 
 	  // Update the time
@@ -515,7 +515,7 @@ vrpn_Button_Parallel::vrpn_Button_Parallel(const char *name,
     }
 
     status = BUTTON_READY;
-    gettimeofday(&timestamp, NULL);
+    vrpn_gettimeofday(&timestamp, NULL);
 #endif
 }
 
@@ -611,7 +611,7 @@ void vrpn_Button_Python::read(void)
     buttons[3] = ((status_register[0] & PORT_ERROR) == 0);
     buttons[4] = ((status_register[0] & PORT_ACK) == 0);
 
-    gettimeofday(&timestamp, NULL);
+    vrpn_gettimeofday(&timestamp, NULL);
 }
 
 
@@ -638,7 +638,7 @@ vrpn_Button_Filter(name, c)
 
    // Reset the tracker and find out what time it is
    status = BUTTON_READY;
-   gettimeofday(&timestamp, NULL);
+   vrpn_gettimeofday(&timestamp, NULL);
 }
 
 vrpn_Button_Serial::~vrpn_Button_Serial() {
@@ -669,7 +669,7 @@ vrpn_Button_PinchGlove::vrpn_Button_PinchGlove(const char* name, vrpn_Connection
       buttons[i] = lastbuttons[i] = VRPN_BUTTON_OFF;
 
    // Reset the tracker and find out what time it is
-   gettimeofday(&timestamp, NULL);
+   vrpn_gettimeofday(&timestamp, NULL);
 }
 
 void vrpn_Button_PinchGlove::mainloop()
@@ -755,7 +755,7 @@ void vrpn_Button_PinchGlove::read()
       } // else
    } // while (buffer[0] != PG_END_BYTE )
    
-   gettimeofday(&timestamp, NULL);
+   vrpn_gettimeofday(&timestamp, NULL);
    return;
 }
 
@@ -835,7 +835,7 @@ vrpn_Button_Remote::vrpn_Button_Remote(const char *name, vrpn_Connection *cn):
 	for (i = 0; i < num_buttons; i++) {
 		buttons[i] = lastbuttons[i] = 0;
 	}
-	gettimeofday(&timestamp, NULL);
+	vrpn_gettimeofday(&timestamp, NULL);
 }
 
 // virtual
@@ -1031,7 +1031,7 @@ vrpn_Button_SerialMouse::vrpn_Button_SerialMouse(const char *name,vrpn_Connectio
 
     // Say we are ready and find out what time it is
     status = BUTTON_READY;
-    gettimeofday(&timestamp, NULL);      
+    vrpn_gettimeofday(&timestamp, NULL);      
 }
 
 void vrpn_Button_SerialMouse::mainloop()

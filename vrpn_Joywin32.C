@@ -140,7 +140,7 @@ vrpn_Joywin32::vrpn_Joywin32 (const char * name, vrpn_Connection * c, vrpn_uint8
 
 	// Set the mode to reading.  Set time to zero, so we'll try to read
 	_status = STATUS_READING;
-	gettimeofday(&_timestamp, NULL);
+	vrpn_gettimeofday(&_timestamp, NULL);
 
 }
 
@@ -165,7 +165,7 @@ int vrpn_Joywin32::get_report(void)
 {
 	// If it is not time for the next read, just return
 	struct timeval reporttime;
-	gettimeofday(&reporttime, NULL);
+	vrpn_gettimeofday(&reporttime, NULL);
 	if (duration(reporttime, _timestamp) < 1000000.0 / _read_rate) {
 		return 0;
 	}
@@ -368,7 +368,7 @@ void	vrpn_Joywin32::mainloop()
 	{
 	  static  struct  timeval last_report = {0,0};
 	  struct  timeval now;
-	  gettimeofday(&now, NULL);
+	  vrpn_gettimeofday(&now, NULL);
 	  if (duration(now, last_report) > MAX_TIME_INTERVAL) {
 	    send_text_message("Cannot talk to joystick", now, vrpn_TEXT_ERROR);
 	    last_report = now;

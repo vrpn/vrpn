@@ -83,7 +83,7 @@ vrpn_VPJoystick::vrpn_VPJoystick(char* name, vrpn_Connection *c,
   }
   
   // find out what time it is - needed?
-  gettimeofday(&timestamp, 0);
+  vrpn_gettimeofday(&timestamp, 0);
 	vrpn_Button::timestamp = timestamp;
 
 	num_buttons = vrpn_VPJOY_NUM_BUTTONS;

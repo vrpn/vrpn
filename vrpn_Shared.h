@@ -12,7 +12,7 @@
 
 #include "vrpn_Types.h"
 
-// Oct 2000: Sang-Uok changed becuase vrpn code was compiling but giving 
+// Oct 2000: Sang-Uok changed because vrpn code was compiling but giving 
 // runtime errors with cygwin 1.1. I changed the code so it only uses unix
 // code. I had to change includes in various files.
 
@@ -55,9 +55,26 @@
 #endif
 
 //--------------------------------------------------------------
-// timeval defines
+// Timeval defines.  These are a bit hairy.  The basic problem is
+// that Windows doesn't implement gettimeofday(), nor does it
+// define "struct timezone", although Winsock.h does define
+// "struct timeval".  The painful solution has been to define a
+// vrpn_gettimeofday() function that takes a void * as a second
+// argument (the timezone) and have all VPRN code call this function
+// rather than gettimeofday().  On non-WINSOCK implementations,
+// we alias vrpn_gettimeofday() right back to gettimeofday(), so
+// that we are calling the system routine.  On Windows, we will
+// be using vrpn_gettimofday().  So far so good, but now user code
+// would like to no have to know the difference under windows, so
+// we have an optional VRPN configuration setting in vrpn_Configure.h
+// that exports vrpn_gettimeofday() as gettimeofday() and also
+// exports a "struct timezone" definition.  Yucky, but it works and
+// lets user code use the VRPN one as if it were the system call
+// on Windows.
+
 #if (!defined(VRPN_USE_WINSOCK_SOCKETS))
 #include <sys/time.h>    // for timeval, timezone, gettimeofday
+#define vrpn_gettimeofday gettimeofday
 #else  // winsock sockets
 
   #include <windows.h>
@@ -66,20 +83,31 @@
 #endif
   #include <winsock.h>    // struct timeval is defined here
 
+  // Whether or not we export gettimeofday, we declare the
+  // vrpn_gettimeofday() function.
+  extern "C" int vrpn_gettimeofday(struct timeval *tp, void *tzp);
+
   // If compiling under Cygnus Solutions Cygwin then these get defined by
   // including sys/time.h.  So, we will manually define only for _WIN32
+  // Only do this if the Configure file has set VRPN_EXPORT_GETTIMEOFDAY,
+  // so that application code can get at it.  All VRPN routines should be
+  // calling vrpn_gettimeofday() directly.
 
-  #ifndef _STRUCT_TIMEZONE
-    #define _STRUCT_TIMEZONE
-    /* from HP-UX */
-    struct timezone {
-        int     tz_minuteswest; /* minutes west of Greenwich */
-        int     tz_dsttime;     /* type of dst correction */
-    };
+  #ifdef VRPN_EXPORT_GETTIMEOFDAY
+
+    #ifndef _STRUCT_TIMEZONE
+      #define _STRUCT_TIMEZONE
+      /* from HP-UX */
+      struct timezone {
+	  int     tz_minuteswest; /* minutes west of Greenwich */
+	  int     tz_dsttime;     /* type of dst correction */
+      };
+
+      // manually define this too.  _WIN32 sans cygwin doesn't have gettimeofday
+      #define gettimeofday  vrpn_gettimeofday
+    #endif
+
   #endif
-
-  // manually define this too.  _WIN32 sans cygwin doesn't have gettimeofday
-  extern "C" int gettimeofday(struct timeval *tp, struct timezone *tzp);
 
 #endif
 

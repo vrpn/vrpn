@@ -169,7 +169,7 @@ void vrpn_Mutex::sendRequest (vrpn_int32 index) {
   vrpn_int32 bl = 32;
   
   if (!d_connection) return;
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   vrpn_buffer(&b, &bl, index);
   d_connection->pack_message(32 - bl, now,
                   d_requestMutex_type, d_myId, buffer,
@@ -181,7 +181,7 @@ void vrpn_Mutex::sendRelease (void) {
 
   if (!d_connection) return;
   
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   d_connection->pack_message(0, now,
                   d_release_type, d_myId, NULL,
                   vrpn_CONNECTION_RELIABLE);
@@ -192,7 +192,7 @@ void vrpn_Mutex::sendReleaseNotification (void) {
   timeval now;
   
   if (!d_connection) return;
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   d_connection->pack_message(0, now,
                   d_releaseNotification_type, d_myId, NULL,
                   vrpn_CONNECTION_RELIABLE);
@@ -206,7 +206,7 @@ void vrpn_Mutex::sendGrantRequest (vrpn_int32 index) {
   vrpn_int32 bl = 32;
   
   if (!d_connection) return;
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   vrpn_buffer(&b, &bl, index);
   d_connection->pack_message(32 - bl, now,
                   d_grantRequest_type, d_myId, buffer,
@@ -221,7 +221,7 @@ void vrpn_Mutex::sendDenyRequest (vrpn_int32 index) {
   vrpn_int32 bl = 32;
   
   if (!d_connection) return;
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   vrpn_buffer(&b, &bl, index);
   d_connection->pack_message(32 - bl, now,
                   d_denyRequest_type, d_myId, buffer,
@@ -339,7 +339,7 @@ int vrpn_Mutex_Server::handle_requestIndex (void *userdata,
 #endif
 
   if (me->d_connection) {
-    gettimeofday(&now, NULL);
+    vrpn_gettimeofday(&now, NULL);
     // echo back whatever the client gave us as a unique identifier
     vrpn_buffer(&b, &bl, p.buffer, p.payload_len);
     vrpn_buffer(&b, &bl, (me->d_remoteIndex));
@@ -461,7 +461,7 @@ void vrpn_Mutex_Remote::requestIndex (void) {
 #ifdef VERBOSE
   printf("requesting index for %lu, %d\n", ip_addr, pid);
 #endif
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   d_connection->pack_message(buflen, now,
                          d_requestIndex_type, d_myId,
                          buf,
@@ -1264,7 +1264,7 @@ void vrpn_PeerMutex::sendRequest (vrpn_Connection * c) {
   char * b = buffer;
   vrpn_int32 bl = 32;
   
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   vrpn_buffer(&b, &bl, d_myIP);
   vrpn_buffer(&b, &bl, d_myPort);
   c->pack_message(32 - bl, now,
@@ -1279,7 +1279,7 @@ void vrpn_PeerMutex::sendRelease (vrpn_Connection * c) {
   char * b = buffer;
   vrpn_int32 bl = 32;
 
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   vrpn_buffer(&b, &bl, d_myIP);
   vrpn_buffer(&b, &bl, d_myPort);
   c->pack_message(32 - bl, now,
@@ -1296,7 +1296,7 @@ void vrpn_PeerMutex::sendGrantRequest (vrpn_Connection * c, vrpn_uint32 IP,
   char * b = buffer;
   vrpn_int32 bl = 32;
 
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   vrpn_buffer(&b, &bl, IP);
   vrpn_buffer(&b, &bl, port);
   c->pack_message(32 - bl, now,
@@ -1312,7 +1312,7 @@ void vrpn_PeerMutex::sendDenyRequest (vrpn_Connection * c, vrpn_uint32 IP,
   char * b = buffer;
   vrpn_int32 bl = 32;
 
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   vrpn_buffer(&b, &bl, IP);
   vrpn_buffer(&b, &bl, port);
   c->pack_message(32 - bl, now,

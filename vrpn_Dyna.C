@@ -138,7 +138,7 @@ void vrpn_Tracker_Dyna::reset() {
    vrpn_write_characters(serial_fd, (const unsigned char *)"V", 1); 
    //T_PDYN_C_CONTINUOUS = "V"
    sleep(1);
-   //gettimeofday(&timestamp, NULL);	// Set watchdog now;
+   //vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now;
    timestamp.tv_sec = -1;
    status = vrpn_TRACKER_SYNCING;	// We are trying for a new reading;
    return;
@@ -153,7 +153,7 @@ int vrpn_Tracker_Dyna::get_report(void) {
 	(buffer[0] & llll_OOOO) != lOOO_OOOO) {
       return 0;
     }
-    gettimeofday(&timestamp, NULL);
+    vrpn_gettimeofday(&timestamp, NULL);
     status = vrpn_TRACKER_PARTIAL;
     bufcount= ret;
   }

@@ -151,7 +151,7 @@ int vrpn_Poser_Analog::handle_change_message(void* userdata,
     me->d_quat[1] = me->p_quat[1];
     me->d_quat[2] = me->p_quat[2];
     me->d_quat[3] = me->p_quat[3];
-    gettimeofday(&me->vrpn_Tracker::timestamp, NULL);
+    vrpn_gettimeofday(&me->vrpn_Tracker::timestamp, NULL);
     char	msgbuf[1000];
     vrpn_int32	len;
     len = me->vrpn_Tracker::encode_to(msgbuf);
@@ -214,7 +214,7 @@ int vrpn_Poser_Analog::handle_vel_change_message(void* userdata,
     me->vel_quat[1] = me->p_vel_quat[1];
     me->vel_quat[2] = me->p_vel_quat[2];
     me->vel_quat[3] = me->p_vel_quat[3];
-    gettimeofday(&me->vrpn_Tracker::timestamp, NULL);
+    vrpn_gettimeofday(&me->vrpn_Tracker::timestamp, NULL);
     char	msgbuf[1000];
     vrpn_int32	len;
     len = me->vrpn_Tracker::encode_vel_to(msgbuf);

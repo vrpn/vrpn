@@ -133,7 +133,7 @@ void vrpn_Dial_Example_Server::mainloop()
 	// IN A REAL SERVER, this check would not be done; although the
 	// time of the report would be updated to the current time so
 	// that the correct timestamp would be issued on the report.
-	gettimeofday(&current_time, NULL);
+	vrpn_gettimeofday(&current_time, NULL);
 	if ( duration(current_time,timestamp) >= 1000000.0/_update_rate) {
 
 	  // Update the time
@@ -185,7 +185,7 @@ vrpn_Dial_Remote::vrpn_Dial_Remote (const char * name,
 	for (i = 0; i < vrpn_DIAL_MAX; i++) {
 		dials[i] = 0.0;
 	}
-	gettimeofday(&timestamp, NULL);
+	vrpn_gettimeofday(&timestamp, NULL);
 }
 
 vrpn_Dial_Remote::~vrpn_Dial_Remote()

@@ -74,13 +74,13 @@ int main(int argc, char *argv[]) {
     }
     */
 
-    /* Checking the gettimeofday() function for monotonicity and step size */
+    /* Checking the vrpn_gettimeofday() function for monotonicity and step size */
     struct timeval last_time, this_time;
     double skip;
-    gettimeofday(&last_time, NULL);
+    vrpn_gettimeofday(&last_time, NULL);
     printf("Should be no further output if things are working\n");
     while (true) {
-      gettimeofday(&this_time, NULL);
+      vrpn_gettimeofday(&this_time, NULL);
       skip = vrpn_TimevalMsecs(vrpn_TimevalDiff(this_time, last_time));
       if (skip > 50) {
 	printf("Skipped forward %lg microseconds\n", skip);

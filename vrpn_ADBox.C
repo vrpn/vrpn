@@ -37,7 +37,7 @@ vrpn_ADBox::vrpn_ADBox(char* name, vrpn_Connection *c,
   }
   
   // find out what time it is - needed?
-  gettimeofday(&timestamp, 0);
+  vrpn_gettimeofday(&timestamp, 0);
   vrpn_Analog::timestamp = timestamp;
 	vrpn_Button::timestamp = timestamp;
 }
@@ -122,7 +122,7 @@ void vrpn_ADBox::mainloop()
             }
         }
 
-      gettimeofday(&timestamp, 0);
+      vrpn_gettimeofday(&timestamp, 0);
       vrpn_Analog::timestamp = timestamp;
       vrpn_Button::timestamp = timestamp;
       

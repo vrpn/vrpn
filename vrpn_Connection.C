@@ -1660,7 +1660,6 @@ int vrpn_noint_select(int width, fd_set *readfds, fd_set *writefds,
         struct	timeval timeout2;
         struct	timeval *timeout2ptr;
 	struct	timeval	start, stop, now;
-	struct	timezone zone;
 
 	/* If the timeout parameter is non-NULL and non-zero, then we
 	 * may have to adjust it due to an interrupt.  In these cases,
@@ -1671,7 +1670,7 @@ int vrpn_noint_select(int width, fd_set *readfds, fd_set *writefds,
 	     ((timeout->tv_sec != 0) || (timeout->tv_usec != 0)) ) {
 		timeout2 = *timeout;
 		timeout2ptr = &timeout2;
-		gettimeofday(&start, &zone);	/* Find start time */
+		vrpn_gettimeofday(&start, NULL);	/* Find start time */
 		//time_add(start,*timeout,stop);	/* Find stop time */
 		stop = vrpn_TimevalSum(start, *timeout);/* Find stop time */
 	} else {
@@ -1707,7 +1706,7 @@ int vrpn_noint_select(int width, fd_set *readfds, fd_set *writefds,
 		  ((timeout->tv_sec != 0) || (timeout->tv_usec != 0))) {
 
 		    /* Interrupt happened.  Find new time timeout value */
-		    gettimeofday(&now, &zone);
+		    vrpn_gettimeofday(&now, NULL);
 		    if (vrpn_TimevalGreater(now, stop)) {/* Past stop time */
 			done = 1;
 		    } else {	/* Still time to go. */
@@ -1895,7 +1894,6 @@ int vrpn_noint_block_read_timeout(int infile, char buffer[],
         struct	timeval timeout2;
         struct	timeval *timeout2ptr;
 	struct	timeval	start, stop, now;
-	struct	timezone zone;
 
   // TCH 4 Jan 2000 - hackish - Cygwin will block forever on a 0-length
   // read(), and from the man pages this is close enough to in-spec that
@@ -1914,7 +1912,7 @@ int vrpn_noint_block_read_timeout(int infile, char buffer[],
 	     ((timeout->tv_sec != 0) || (timeout->tv_usec != 0)) ) {
 		timeout2 = *timeout;
 		timeout2ptr = &timeout2;
-		gettimeofday(&start, &zone);	/* Find start time */
+		vrpn_gettimeofday(&start, NULL);	/* Find start time */
 		stop = vrpn_TimevalSum(start, *timeout);/* Find stop time */
 	} else {
 		timeout2ptr = timeout;
@@ -1948,7 +1946,7 @@ int vrpn_noint_block_read_timeout(int infile, char buffer[],
 
 		/* See what time it is now and how long we have to go */
 		if (timeout2ptr) {
-			gettimeofday(&now, &zone);
+			vrpn_gettimeofday(&now, NULL);
 			if (vrpn_TimevalGreater(now, stop)) {	/* Timeout! */
 				return sofar;
 			} else {
@@ -2929,7 +2927,7 @@ int vrpn_Endpoint::mainloop (timeval * timeout,
         // If we don't wait a while between these we flood buffers and
         // do BAD THINGS (TM).
 
-      	gettimeofday(&now, NULL);
+      	vrpn_gettimeofday(&now, NULL);
       	if (now.tv_sec - last_UDP_lob.tv_sec >= 2) {
           last_UDP_lob.tv_sec = now.tv_sec;
 
@@ -3188,7 +3186,7 @@ int vrpn_Endpoint::pack_udp_description (int portno) {
   fprintf(stderr, "vrpn_Endpoint::pack_udp_description:  "
                   "Packing UDP %s:%d\n", myIPchar, portno);
 #endif
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
 
   return pack_message(strlen(myIPchar) + 1, now,
                       vrpn_CONNECTION_UDP_DESCRIPTION,
@@ -3213,7 +3211,7 @@ int vrpn_Endpoint::pack_log_description (void) {
   // and whose body holds the zero-terminated string name of the file
   // to write to.
 
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   bpp = buf;
   bp = &bpp;
   vrpn_buffer(bp, &buflen, (vrpn_int32) strlen(d_remoteInLogName));
@@ -3565,7 +3563,7 @@ void vrpn_Endpoint::drop_connection (void) {
   clearBuffers();
 
   struct timeval now, adj_time;
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   // Adjust the time of this system message. Default adjustment is 0. 
   adj_time = vrpn_TimevalSum(now, d_controlMsgTimeOffset);
 
@@ -3830,7 +3828,7 @@ int vrpn_Endpoint::finish_new_connection_setup (void) {
   // Message needs to be dispatched *locally only*, so we do_callbacks_for
   // and never pack_message()
   struct timeval now;
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
 
   // Connection counter gives us a single point to count connections that
   // actually make it to CONNECTED, not just constructed, so we send
@@ -4323,7 +4321,7 @@ int vrpn_Endpoint::pack_type_description (vrpn_int32 which) {
    memcpy(buffer, &netlen, sizeof(netlen));
    memcpy(&buffer[sizeof(len)], d_dispatcher->typeName(which),
           (vrpn_int32) len);
-   gettimeofday(&now,NULL);
+   vrpn_gettimeofday(&now,NULL);
 
   return pack_message((vrpn_uint32) (len + sizeof(len)), now,
               vrpn_CONNECTION_TYPE_DESCRIPTION, which, buffer,
@@ -4351,7 +4349,7 @@ int vrpn_Endpoint::pack_sender_description (vrpn_int32 which) {
    memcpy(buffer, &netlen, sizeof(netlen));
    memcpy(&buffer[sizeof(len)], d_dispatcher->senderName(which),
           (vrpn_int32) len);
-   gettimeofday(&now,NULL);
+   vrpn_gettimeofday(&now,NULL);
 
   return pack_message((vrpn_uint32)(len + sizeof(len)), now,
        vrpn_CONNECTION_SENDER_DESCRIPTION, which, buffer,
@@ -4359,7 +4357,7 @@ int vrpn_Endpoint::pack_sender_description (vrpn_int32 which) {
 }
 
 /** Set an offset that the endpoint should add to the timestamp it gets from
-   gettimeofday before it sends drop connection system messages. Allows us to
+   vrpn_gettimeofday before it sends drop connection system messages. Allows us to
    construct a log file with something other than wall-clock time for system
    messages. I was having a problem with dropped connection, specifically, but
    if other messages are a problem, it can be extended to those.  
@@ -4710,7 +4708,7 @@ int vrpn_Connection::send_pending_reports (void) {
 int vrpn_Connection::time_since_connection_open
                                 (struct timeval * elapsed_time) {
   struct timeval now;
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   *elapsed_time = vrpn_TimevalDiff(now, start_time);
 
   return 0;
@@ -4768,7 +4766,7 @@ void vrpn_Connection::init (void) {
   }
 
 
-  gettimeofday(&start_time, NULL);
+  vrpn_gettimeofday(&start_time, NULL);
 
 #ifdef VRPN_USE_WINSOCK_SOCKETS
 
@@ -5356,7 +5354,7 @@ vrpn_Connection::vrpn_Connection
     }
 
     // Lob a packet asking for a connection on that port.
-    gettimeofday(&endpoint->last_UDP_lob, NULL);
+    vrpn_gettimeofday(&endpoint->last_UDP_lob, NULL);
     if (vrpn_udp_request_lob_packet(endpoint->remote_machine_name,
   			            endpoint->remote_UDP_port,
   			            endpoint->d_tcpListenPort,
@@ -5883,7 +5881,7 @@ int vrpn_Synchronized_Connection::mainloop (const struct timeval * timeout)
   if (connectionStatus == BROKEN) {
     static struct timeval last_told = {0,0};
     static struct timeval now;
-    gettimeofday(&now, NULL);
+    vrpn_gettimeofday(&now, NULL);
     if (now.tv_sec != last_told.tv_sec) {
       fprintf(stderr, "vrpn_Synchronized_Connection::mainloop: Connection object is broken\n");
       memcpy(&last_told, &now, sizeof(last_told));

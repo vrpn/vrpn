@@ -10,7 +10,7 @@ int vrpn_Text_Sender::send_message(const char *msg,
                             vrpn_uint32 level)
 {
         struct timeval now;
-        gettimeofday(&now,NULL);
+        vrpn_gettimeofday(&now,NULL);
 
 	// send type, level and message
 	return send_text_message(msg, now, type, level);

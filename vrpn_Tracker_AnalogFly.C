@@ -105,7 +105,7 @@ vrpn_Tracker_AnalogFly::vrpn_Tracker_AnalogFly
 	// for absolute trackers.  This is done in case we never hear from the
 	// analog devices.  Reset doesn't do this for absolute trackers.
 	if (d_absolute) {
-	    gettimeofday(&d_prevtime, NULL);
+	    vrpn_gettimeofday(&d_prevtime, NULL);
 	    vrpn_Tracker::timestamp = d_prevtime;
 	    q_matrix_copy(d_currentMatrix, d_initMatrix);
 	    convert_matrix_to_tracker();
@@ -260,7 +260,7 @@ void vrpn_Tracker_AnalogFly::reset (void)
 
 	// Set the matrix back to the identity matrix
 	q_matrix_copy(d_currentMatrix, d_initMatrix);
-	gettimeofday(&d_prevtime, NULL);
+	vrpn_gettimeofday(&d_prevtime, NULL);
 
 	// Convert the matrix into quaternion notation and copy into the
 	// tracker pos and quat elements.
@@ -287,7 +287,7 @@ void vrpn_Tracker_AnalogFly::mainloop()
 
 	// See if it has been long enough since our last report.
         // If so, generate a new one.
-	gettimeofday(&now, NULL);
+	vrpn_gettimeofday(&now, NULL);
 	interval = duration(now, d_prevtime);
 
 	if (shouldReport(interval)) {

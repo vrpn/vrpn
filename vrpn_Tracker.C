@@ -309,7 +309,7 @@ int vrpn_Tracker::handle_t2r_request(void *userdata, vrpn_HANDLERPARAM p)
 
     p = p; // Keep the compiler from complaining
 
-    gettimeofday(&current_time, NULL);
+    vrpn_gettimeofday(&current_time, NULL);
     me->timestamp.tv_sec = current_time.tv_sec;
     me->timestamp.tv_usec = current_time.tv_usec;
 
@@ -337,7 +337,7 @@ int vrpn_Tracker::handle_u2s_request(void *userdata, vrpn_HANDLERPARAM p)
 
     p = p; // Keep the compiler from complaining
 
-    gettimeofday(&current_time, NULL);
+    vrpn_gettimeofday(&current_time, NULL);
     me->timestamp.tv_sec = current_time.tv_sec;
     me->timestamp.tv_usec = current_time.tv_usec;
 
@@ -367,7 +367,7 @@ int vrpn_Tracker::handle_workspace_request(void *userdata, vrpn_HANDLERPARAM p)
 
     p = p; // Keep the compiler from complaining
 
-    gettimeofday(&current_time, NULL);
+    vrpn_gettimeofday(&current_time, NULL);
     me->timestamp.tv_sec = current_time.tv_sec;
     me->timestamp.tv_usec = current_time.tv_usec;
 
@@ -560,7 +560,7 @@ void	vrpn_Tracker_NULL::mainloop()
 	server_mainloop();
 
 	// See if its time to generate a new report
-	gettimeofday(&current_time, NULL);
+	vrpn_gettimeofday(&current_time, NULL);
 	if ( duration(current_time,timestamp) >= 1000000.0/update_rate) {
 
 	  // Update the time
@@ -786,7 +786,7 @@ vrpn_Tracker_Serial::vrpn_Tracker_Serial
 
    // Reset the tracker and find out what time it is
    status = vrpn_TRACKER_RESETTING;
-   gettimeofday(&timestamp, NULL);
+   vrpn_gettimeofday(&timestamp, NULL);
 }
 
 vrpn_Tracker_Serial::~vrpn_Tracker_Serial()
@@ -839,7 +839,7 @@ void vrpn_Tracker_Serial::mainloop()
 	    };
 
 	    struct timeval current_time;
-	    gettimeofday(&current_time, NULL);
+	    vrpn_gettimeofday(&current_time, NULL);
 	    int time_lapsed; /* The time since the last report */
 
             // Watchdog timestamp is implemented by Polhemus Liberty driver.
@@ -947,7 +947,7 @@ vrpn_Tracker_Remote::vrpn_Tracker_Remote (const char * name, vrpn_Connection *cn
 
 
 	// Find out what time it is and put this into the timestamp
-	gettimeofday(&timestamp, NULL);
+	vrpn_gettimeofday(&timestamp, NULL);
 }
 
 // The remote tracker has to un-register its handlers when it
@@ -988,7 +988,7 @@ int vrpn_Tracker_Remote::request_t2r_xform(void)
 	vrpn_int32 len = 0; // no payload
 	struct timeval current_time;
 
-	gettimeofday(&current_time, NULL);
+	vrpn_gettimeofday(&current_time, NULL);
 	timestamp.tv_sec = current_time.tv_sec;
 	timestamp.tv_usec = current_time.tv_usec;
 
@@ -1009,7 +1009,7 @@ int vrpn_Tracker_Remote::request_u2s_xform(void)
         vrpn_int32 len = 0; // no payload
         struct timeval current_time;
 
-        gettimeofday(&current_time, NULL);
+        vrpn_gettimeofday(&current_time, NULL);
         timestamp.tv_sec = current_time.tv_sec;
         timestamp.tv_usec = current_time.tv_usec;
 
@@ -1030,7 +1030,7 @@ int vrpn_Tracker_Remote::request_workspace(void)
     vrpn_int32 len = 0; // no payload
     struct timeval current_time;
 
-    gettimeofday(&current_time, NULL);
+    vrpn_gettimeofday(&current_time, NULL);
     timestamp.tv_sec = current_time.tv_sec;
     timestamp.tv_usec = current_time.tv_usec;
 
@@ -1062,7 +1062,7 @@ int vrpn_Tracker_Remote::set_update_rate (vrpn_float64 samplesPerSecond)
 
   ((vrpn_float64 *) msgbuf)[0] = htond(samplesPerSecond);
 
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   timestamp.tv_sec = now.tv_sec;
   timestamp.tv_usec = now.tv_usec;
 
@@ -1080,7 +1080,7 @@ int vrpn_Tracker_Remote::set_update_rate (vrpn_float64 samplesPerSecond)
 int vrpn_Tracker_Remote::reset_origin()
 {
   struct timeval current_time;
-  gettimeofday(&current_time, NULL);
+  vrpn_gettimeofday(&current_time, NULL);
   timestamp.tv_sec = current_time.tv_sec;
   timestamp.tv_usec = current_time.tv_usec;
 

@@ -209,7 +209,7 @@ int	vrpn_Zaber::reset(void)
 
 	ZAB_WARNING("reset complete (this is good)");
 
-	gettimeofday(&timestamp, NULL);	// Set watchdog now
+	vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now
 	return 0;
 }
 
@@ -246,7 +246,7 @@ int vrpn_Zaber::get_report(void)
       // The time stored here is as close as possible to when the
       // report was generated.
       _bufcount = 1;
-      gettimeofday(&timestamp, NULL);
+      vrpn_gettimeofday(&timestamp, NULL);
       status = STATUS_READING;
 #ifdef	VERBOSE
       printf("... Got the 1st char\n");
@@ -438,14 +438,14 @@ void	vrpn_Zaber::mainloop()
 	    while (get_report()) {};	// Keep getting reports so long as there are more
 
 	    struct timeval current_time;
-	    gettimeofday(&current_time, NULL);
+	    vrpn_gettimeofday(&current_time, NULL);
 	    if ( duration(current_time,timestamp) > POLL_INTERVAL) {
 	      static struct timeval last_poll = {0, 0};
 
 	      if (duration(current_time, last_poll) > TIMEOUT_TIME_INTERVAL) {
 		// Tell unit 1 to stop, which will cause it to respond.
 		send_command(1,23,0);
-	        gettimeofday(&last_poll, NULL);
+	        vrpn_gettimeofday(&last_poll, NULL);
 	      } else {
 		return;
 	      }

@@ -53,7 +53,7 @@ vrpn_SharedObject::vrpn_SharedObject (const char * name, const char * tname,
   if (tname) {
     strcpy(d_typename, tname);
   }
-  gettimeofday(&d_lastUpdate, NULL);
+  vrpn_gettimeofday(&d_lastUpdate, NULL);
 }
 
 // virtual
@@ -152,7 +152,7 @@ void vrpn_SharedObject::becomeSerializer (void) {
   // send requestSerializer
 
   if (d_connection) {
-    gettimeofday(&now, NULL);
+    vrpn_gettimeofday(&now, NULL);
     d_connection->pack_message(0, d_lastUpdate,
                                d_requestSerializer_type, d_myId,
                                NULL, vrpn_CONNECTION_RELIABLE);
@@ -239,7 +239,7 @@ int vrpn_SharedObject::handle_requestSerializer (void * userdata,
 
   // send grantSerializer
 
-    gettimeofday(&now, NULL);
+    vrpn_gettimeofday(&now, NULL);
     s->d_connection->pack_message(0, s->d_lastUpdate,
                                   s->d_grantSerializer_type, s->d_myId,
                                   NULL, vrpn_CONNECTION_RELIABLE);
@@ -267,7 +267,7 @@ int vrpn_SharedObject::handle_grantSerializer (void * userdata,
   // send assumeSerializer
 
   if (s->d_connection) {
-    gettimeofday(&now, NULL);
+    vrpn_gettimeofday(&now, NULL);
     s->d_connection->pack_message(0, s->d_lastUpdate,
                                   s->d_assumeSerializer_type, s->d_myId,
                                   NULL, vrpn_CONNECTION_RELIABLE);
@@ -422,7 +422,7 @@ vrpn_Shared_int32::operator vrpn_int32 () const {
 vrpn_Shared_int32 & vrpn_Shared_int32::operator =
                                             (vrpn_int32 newValue) {
   struct timeval now;
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   return set(newValue, now);
 }
 
@@ -832,7 +832,7 @@ vrpn_Shared_float64::vrpn_Shared_float64 (const char * name,
   if (name) {
     strcpy(d_name, name);
   }
-  gettimeofday(&d_lastUpdate, NULL);
+  vrpn_gettimeofday(&d_lastUpdate, NULL);
 }
 
 // virtual
@@ -854,7 +854,7 @@ vrpn_Shared_float64::operator vrpn_float64 () const {
 vrpn_Shared_float64 & vrpn_Shared_float64::operator =
                                             (vrpn_float64 newValue) {
   struct timeval now;
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   return set(newValue, now);
 }
 
@@ -1183,7 +1183,7 @@ vrpn_Shared_String::vrpn_Shared_String (const char * name,
   if (name) {
     strcpy(d_name, name);
   }
-  gettimeofday(&d_lastUpdate, NULL);
+  vrpn_gettimeofday(&d_lastUpdate, NULL);
 }
 
 // virtual
@@ -1208,7 +1208,7 @@ vrpn_Shared_String::operator const char * () const {
 vrpn_Shared_String & vrpn_Shared_String::operator =
                                             (const char * newValue) {
   struct timeval now;
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   return set(newValue, now);
 }
 

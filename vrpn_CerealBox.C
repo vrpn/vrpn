@@ -240,7 +240,7 @@ int	vrpn_CerealBox::reset(void)
 	_expected_chars = 2 + 2*_numchannels + _numencoders*4 +
 		((_numbuttons+7) / 8) * 2;
 
-	gettimeofday(&timestamp, NULL);	// Set watchdog now
+	vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now
 	return 0;
 }
 
@@ -291,7 +291,7 @@ int vrpn_CerealBox::get_report(void)
       // The time stored here is as close as possible to when the
       // report was generated.
       _bufcount = 1;
-      gettimeofday(&timestamp, NULL);
+      vrpn_gettimeofday(&timestamp, NULL);
       status = STATUS_READING;
 #ifdef	VERBOSE
       printf("... Got the 1st char\n");
@@ -485,7 +485,7 @@ void	vrpn_CerealBox::mainloop()
 		// if there is a report ready (ie, if THIS device is still operating).
 		while (get_report()) {};    // Keep getting reports as long as they come
 		struct timeval current_time;
-		gettimeofday(&current_time, NULL);
+		vrpn_gettimeofday(&current_time, NULL);
 		if ( duration(current_time,timestamp) > MAX_TIME_INTERVAL) {
 			fprintf(stderr,"CerealBox failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n",current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);
 			send_text_message("Too long since last report, resetting", current_time, vrpn_TEXT_ERROR);

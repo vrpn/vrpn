@@ -326,7 +326,7 @@ int	vrpn_Radamec_SPI::reset(void)
 
 	SPI_WARNING("reset complete (this is good)");
 
-	gettimeofday(&timestamp, NULL);	// Set watchdog now
+	vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now
 	return 0;
 }
 
@@ -386,7 +386,7 @@ int vrpn_Radamec_SPI::get_report(void)
       // The time stored here is as close as possible to when the
       // report was generated.
       _bufcount = 1;
-      gettimeofday(&timestamp, NULL);
+      vrpn_gettimeofday(&timestamp, NULL);
       status = STATUS_READING;
 #ifdef	VERBOSE
       printf("... Got the 1st char\n");
@@ -563,7 +563,7 @@ void	vrpn_Radamec_SPI::mainloop()
 	    while (get_report()) {};	// Keep getting reports so long as there are more
 
 	    struct timeval current_time;
-	    gettimeofday(&current_time, NULL);
+	    vrpn_gettimeofday(&current_time, NULL);
 	    if ( duration(current_time,timestamp) > MAX_TIME_INTERVAL) {
 		    sprintf(errmsg,"Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);
 		    SPI_ERROR(errmsg);

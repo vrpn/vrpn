@@ -134,7 +134,7 @@ int	vrpn_GlobalHapticsOrb::reset(void)
 	// which is just 1 for the Orb.
 	d_expected_chars = 1;
 
-	gettimeofday(&d_timestamp, NULL);	// Set watchdog now
+	vrpn_gettimeofday(&d_timestamp, NULL);	// Set watchdog now
 
 	send_text_message("vrpn_GlobalHapticsOrb::reset(): Reset complete (this is good)", d_timestamp, vrpn_TEXT_ERROR);
 
@@ -170,7 +170,7 @@ int vrpn_GlobalHapticsOrb::get_report(void)
       }
 
       d_bufcount = 1;
-      gettimeofday(&d_timestamp, NULL);
+      vrpn_gettimeofday(&d_timestamp, NULL);
 
       // Respond to the command, ignore it, or throw an error if it is
       // one we don't know how to deal with.
@@ -331,7 +331,7 @@ void	vrpn_GlobalHapticsOrb::mainloop()
 	// if there is a report ready (ie, if THIS device is still operating).
 	while (get_report()) {};    // Keep getting reports as long as they come
 	struct timeval current_time;
-	gettimeofday(&current_time, NULL);
+	vrpn_gettimeofday(&current_time, NULL);
 
 	// If we haven't heard in a while (this can be normal), send a reset
 	// request to the device -- this will cause a response of 0xfc, which

@@ -178,7 +178,7 @@ bool vrpn_Analog_Output_Server::report_num_channels( vrpn_uint32 class_of_servic
 	vrpn_int32 len = sizeof( vrpn_int32 );;
 	
 	encode_num_channels_to( msgbuf, this->o_num_channel );
-	gettimeofday( &o_timestamp, NULL );
+	vrpn_gettimeofday( &o_timestamp, NULL );
 	if( d_connection && 
 	    d_connection->pack_message( len, o_timestamp,	report_num_channels_m_id, 
 							  d_sender_id, msgbuf, class_of_service ) ) 
@@ -211,7 +211,7 @@ vrpn_Analog_Output_Remote::vrpn_Analog_Output_Remote(const char* name, vrpn_Conn
 	for (i = 0; i < vrpn_CHANNEL_MAX; i++) {
 		o_channel[i] = 0;
 	}
-	gettimeofday(&o_timestamp, NULL);
+	vrpn_gettimeofday(&o_timestamp, NULL);
 
      // Register a handler for the report number of active channels message
  	if (register_autodeleted_handler(report_num_channels_m_id,
@@ -269,7 +269,7 @@ bool vrpn_Analog_Output_Remote::request_change_channel_value(unsigned int chan, 
 
     vrpn_int32  len;
 
-    gettimeofday(&o_timestamp, NULL);
+    vrpn_gettimeofday(&o_timestamp, NULL);
     len = encode_change_to(msgbuf, chan, val);
     if (d_connection && d_connection->pack_message(len, o_timestamp,
                                  request_m_id, d_sender_id, msgbuf,
@@ -292,7 +292,7 @@ bool vrpn_Analog_Output_Remote::request_change_channels(int num, vrpn_float64* v
 	char* msgbuf = (char*) fbuf;
 	vrpn_int32 len;
 	
-	gettimeofday(&o_timestamp, NULL);
+	vrpn_gettimeofday(&o_timestamp, NULL);
 	len = encode_change_channels_to(msgbuf, num, vals);
 	if( d_connection && 
 	    d_connection->pack_message( len, o_timestamp,

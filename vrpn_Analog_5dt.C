@@ -173,7 +173,7 @@ vrpn_5dt::reset (void)
   // We're now entering the syncing mode which send the read command to the glove
   _status = STATUS_SYNCING;
 
-  gettimeofday (&timestamp, NULL);	// Set watchdog now
+  vrpn_gettimeofday (&timestamp, NULL);	// Set watchdog now
   return 0;
 }
 
@@ -231,7 +231,7 @@ void vrpn_5dt::get_report (void)
   }
 
   // XXX This should be called when the first character of a report is read.
-  gettimeofday(&timestamp, NULL);
+  vrpn_gettimeofday(&timestamp, NULL);
 
   //--------------------------------------------------------------------
   // Read as many bytes of this report as we can, storing them
@@ -371,7 +371,7 @@ void vrpn_5dt::mainloop ()
 	  // if there is a report ready (ie, if THIS device is still operating).
 	  get_report();
 	  struct timeval current_time;
-	  gettimeofday(&current_time, NULL);
+	  vrpn_gettimeofday(&current_time, NULL);
 	  if ( duration(current_time,timestamp) > MAX_TIME_INTERVAL)
 	  {
 	    sprintf (l_errmsg, "vrpn_5dt::mainloop: Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",

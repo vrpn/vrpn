@@ -11,6 +11,7 @@
 //--------------------------------------------------------//
 // EDIT BELOW THIS LINE FOR NORMAL CONFIGURATION SETTING. //
 //--------------------------------------------------------//
+//-----------------------
 
 // Default port to listen on for a server.  It used to be 4500
 // up through version 6.03, but then all sorts of VPNs started
@@ -27,6 +28,17 @@
 // compatibility with code that uses the other kind of streams than
 // VRPN uses.
 #define	VRPN_NO_STREAMS
+
+//-----------------------
+// Instructs VRPN to expose the vrpn_gettimeofday() function also
+// as gettimeofday() so that external programs can use it.  This
+// has no effect on any system that already has gettimeofday()
+// defined, and is put here for Windows.  This function should
+// not really be implemented within VRPN, but it was expedient to
+// include it when porting applications to Windows.  Turn this
+// off if you have another implementation, or if you want to call
+// vrpn_gettimeofday() directly.
+#define	VRPN_EXPORT_GETTIMEOFDAY
 
 //-----------------------
 // Instructs VRPN to use phantom library to construct a unified
@@ -56,7 +68,7 @@
 // of the faster windows clock.  The original one, made by Hans
 // Weber, checks the clock rate to see how fast the performance
 // clock runs (it takes a second to do this when the program
-// first calls gettimeofday()).  The second version by Haris
+// first calls vrpn_gettimeofday()).  The second version by Haris
 // Fretzagias relies on the timing supplied by Windows.  To use
 // the second version, also define VRPN_WINDOWS_CLOCK_V2.
 #define	VRPN_UNSAFE_WINDOWS_CLOCK

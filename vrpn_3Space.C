@@ -153,7 +153,7 @@ void vrpn_Tracker_3Space::reset()
    }
 
    fprintf(stderr, "  (at the end of 3Space reset routine)\n");
-   gettimeofday(&timestamp, NULL);	// Set watchdog now
+   vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now
    status = vrpn_TRACKER_SYNCING;	// We're trying for a new reading
 }
 
@@ -182,7 +182,7 @@ int vrpn_Tracker_3Space::get_report(void)
       // Got the first character of a report -- go into PARTIAL mode
       // and say that we got one character at this time.
       bufcount = 1;
-      gettimeofday(&timestamp, NULL);
+      vrpn_gettimeofday(&timestamp, NULL);
       status = vrpn_TRACKER_PARTIAL;
    }
 

@@ -58,8 +58,8 @@ vrpn_Wanda::report_new_button_info()
 #include <sys/time.h>
 #endif
 inline double the_time() {
-    struct timeval ts; struct timezone tz;
-    gettimeofday(&ts, &tz);
+    struct timeval ts;
+    vrpn_gettimeofday(&ts, NULL);
     return (double)(ts.tv_sec + ts.tv_usec/1e6);
 }
 static double last_val_timestamp = the_time();

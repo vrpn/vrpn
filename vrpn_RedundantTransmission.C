@@ -43,7 +43,7 @@ void vrpn_RedundantTransmission::mainloop (void) {
 
   //fprintf(stderr, "mainloop:  %d messages queued.\n", d_numMessagesQueued);
 
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   for (qm = d_messageList; qm; qm = qm->next) {
     if ((qm->remainingTransmissions > 0) &&
         vrpn_TimevalGreater(now, qm->nextValidTime)) {
@@ -190,7 +190,7 @@ int vrpn_RedundantTransmission::pack_message
   d_numMessagesQueued++;
 
 //timeval now;
-//gettimeofday(&now, NULL);
+//vrpn_gettimeofday(&now, NULL);
 //fprintf(stderr, "  Queued message to go at %d.%d (now is %d.%d)\n",
 //qm->nextValidTime.tv_sec, qm->nextValidTime.tv_usec,
 //now.tv_sec, now.tv_usec);
@@ -361,7 +361,7 @@ void vrpn_RedundantRemote::set (int num, timeval interval) {
   //fprintf(stderr, "vrpn_RedundantRemote::set:  %d, %d.%d\n",
   //num, interval.tv_sec, interval.tv_usec);
 
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   d_connection->pack_message(len, now, d_protocol.d_set_type, d_sender_id,
                              buf, vrpn_CONNECTION_RELIABLE);
 }
@@ -376,7 +376,7 @@ void vrpn_RedundantRemote::enable (vrpn_bool on) {
     return;
   }
 
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   d_connection->pack_message(len, now, d_protocol.d_enable_type, d_sender_id,
                              buf, vrpn_CONNECTION_RELIABLE);
 }

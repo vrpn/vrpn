@@ -861,7 +861,7 @@ void vrpn_ForceDevice::sendError(int error_code) {
     vrpn_int32	len;
     struct timeval current_time;
 
-    gettimeofday(&current_time, NULL);
+    vrpn_gettimeofday(&current_time, NULL);
     timestamp.tv_sec = current_time.tv_sec;
     timestamp.tv_usec = current_time.tv_usec;
 
@@ -1186,7 +1186,7 @@ vrpn_ForceDevice_Remote::vrpn_ForceDevice_Remote(const char *name, vrpn_Connecti
      }
 
      // Find out what time it is and put this into the timestamp
-     gettimeofday(&timestamp, NULL);
+     vrpn_gettimeofday(&timestamp, NULL);
 }
 
 // virtual
@@ -1221,7 +1221,7 @@ void vrpn_ForceDevice_Remote::sendSurface(void)
   vrpn_int32		len;
   struct timeval current_time;
   
-  gettimeofday(&current_time, NULL);
+  vrpn_gettimeofday(&current_time, NULL);
   timestamp.tv_sec = current_time.tv_sec;
   timestamp.tv_usec = current_time.tv_usec;
   
@@ -1253,7 +1253,7 @@ void vrpn_ForceDevice_Remote::startSurface(void)
     vrpn_int32		len;
     struct timeval current_time;
     
-    gettimeofday(&current_time, NULL);
+    vrpn_gettimeofday(&current_time, NULL);
     timestamp.tv_sec = current_time.tv_sec;
     timestamp.tv_usec = current_time.tv_usec;
     
@@ -1274,7 +1274,7 @@ void vrpn_ForceDevice_Remote::stopSurface(void)
     vrpn_int32		len;
     struct timeval current_time;
     
-    gettimeofday(&current_time, NULL);
+    vrpn_gettimeofday(&current_time, NULL);
     timestamp.tv_sec = current_time.tv_sec;
     timestamp.tv_usec = current_time.tv_usec;
     
@@ -1297,7 +1297,7 @@ void vrpn_ForceDevice_Remote::setVertex(vrpn_int32 vertNum,vrpn_float32 x,vrpn_f
   vrpn_int32		len;
   struct timeval current_time;
   
-  gettimeofday(&current_time, NULL);
+  vrpn_gettimeofday(&current_time, NULL);
   timestamp.tv_sec = current_time.tv_sec;
   timestamp.tv_usec = current_time.tv_usec;
 
@@ -1316,7 +1316,7 @@ void vrpn_ForceDevice_Remote::setNormal(vrpn_int32 normNum,vrpn_float32 x,vrpn_f
   vrpn_int32		len;
   struct timeval current_time;
   
-  gettimeofday(&current_time, NULL);
+  vrpn_gettimeofday(&current_time, NULL);
   timestamp.tv_sec = current_time.tv_sec;
   timestamp.tv_usec = current_time.tv_usec;
 
@@ -1337,7 +1337,7 @@ void vrpn_ForceDevice_Remote::setTriangle(vrpn_int32 triNum,
   vrpn_int32		len;
   struct timeval current_time;
   
-  gettimeofday(&current_time, NULL);
+  vrpn_gettimeofday(&current_time, NULL);
   timestamp.tv_sec = current_time.tv_sec;
   timestamp.tv_usec = current_time.tv_usec;
 
@@ -1357,7 +1357,7 @@ void vrpn_ForceDevice_Remote::removeTriangle(vrpn_int32 triNum){
   vrpn_int32		len;
   struct timeval current_time;
   
-  gettimeofday(&current_time, NULL);
+  vrpn_gettimeofday(&current_time, NULL);
   timestamp.tv_sec = current_time.tv_sec;
   timestamp.tv_usec = current_time.tv_usec;
 
@@ -1377,7 +1377,7 @@ void vrpn_ForceDevice_Remote::updateTrimeshChanges(){
   vrpn_int32		len;
   struct timeval current_time;
   
-  gettimeofday(&current_time, NULL);
+  vrpn_gettimeofday(&current_time, NULL);
   timestamp.tv_sec = current_time.tv_sec;
   timestamp.tv_usec = current_time.tv_usec;
 
@@ -1398,7 +1398,7 @@ void vrpn_ForceDevice_Remote::setTrimeshTransform(vrpn_float32 homMatrix[16]){
   vrpn_int32		len;
   struct timeval current_time;
   
-  gettimeofday(&current_time, NULL);
+  vrpn_gettimeofday(&current_time, NULL);
   timestamp.tv_sec = current_time.tv_sec;
   timestamp.tv_usec = current_time.tv_usec;
 
@@ -1418,7 +1418,7 @@ void vrpn_ForceDevice_Remote::clearTrimesh(void){
   vrpn_int32		len=0;
   struct timeval current_time;
   
-  gettimeofday(&current_time, NULL);
+  vrpn_gettimeofday(&current_time, NULL);
   timestamp.tv_sec = current_time.tv_sec;
   timestamp.tv_usec = current_time.tv_usec;
 
@@ -1437,7 +1437,7 @@ void vrpn_ForceDevice_Remote::useHcollide(void){
   vrpn_int32		len;
   struct timeval current_time;
   
-  gettimeofday(&current_time, NULL);
+  vrpn_gettimeofday(&current_time, NULL);
   timestamp.tv_sec = current_time.tv_sec;
   timestamp.tv_usec = current_time.tv_usec;
 
@@ -1456,7 +1456,7 @@ void vrpn_ForceDevice_Remote::useGhost(void){
   vrpn_int32		len;
   struct timeval current_time;
   
-  gettimeofday(&current_time, NULL);
+  vrpn_gettimeofday(&current_time, NULL);
   timestamp.tv_sec = current_time.tv_sec;
   timestamp.tv_usec = current_time.tv_usec;
 
@@ -1477,7 +1477,7 @@ void vrpn_ForceDevice_Remote::startEffect(void)
   vrpn_int32		len;
   struct timeval current_time;
   
-  gettimeofday(&current_time, NULL);
+  vrpn_gettimeofday(&current_time, NULL);
   timestamp.tv_sec = current_time.tv_sec;
   timestamp.tv_usec = current_time.tv_usec;
 
@@ -1497,7 +1497,7 @@ void vrpn_ForceDevice_Remote::stopEffect(void)
     vrpn_int32		len;
     struct timeval current_time;
     
-    gettimeofday(&current_time, NULL);
+    vrpn_gettimeofday(&current_time, NULL);
     timestamp.tv_sec = current_time.tv_sec;
     timestamp.tv_usec = current_time.tv_usec;
     
@@ -1640,7 +1640,7 @@ void vrpn_ForceDevice_Remote::sendForceField
   vrpn_int32   len;
   struct timeval current_time;
 
-  gettimeofday(&current_time, NULL);
+  vrpn_gettimeofday(&current_time, NULL);
   timestamp.tv_sec = current_time.tv_sec;
   timestamp.tv_usec = current_time.tv_usec;
 
@@ -1666,7 +1666,7 @@ void vrpn_ForceDevice_Remote::stopForceField (void)
   vrpn_int32   len;
   struct timeval current_time;
 
-  gettimeofday(&current_time, NULL);
+  vrpn_gettimeofday(&current_time, NULL);
   timestamp.tv_sec = current_time.tv_sec;
   timestamp.tv_usec = current_time.tv_usec;
 
@@ -1936,7 +1936,7 @@ void vrpn_ForceDevice_Remote::send (const char * msgbuf, vrpn_int32 len,
                       vrpn_int32 type) {
   struct timeval now;
 
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   timestamp.tv_sec = now.tv_sec;
   timestamp.tv_usec = now.tv_usec;
 

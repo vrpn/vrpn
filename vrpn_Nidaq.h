@@ -54,7 +54,7 @@ protected:
 private:
   DAQSample daqSample;
   DAQ *pDAQ;
-  // value to add to UpTime calls to get into gettimeofday timeframe
+  // value to add to UpTime calls to get into vrpn_gettimeofday timeframe
   struct timeval tvOffset;
   
   // Data, threadshell, and function used by extra daq getSample thread.

@@ -776,7 +776,7 @@ vrpn_int32 vrpn_Sound_Client::playSound(const vrpn_SoundID id, vrpn_int32 repeat
 
 	len = encodeSoundPlay(id, repeat, buf);
 
-	gettimeofday(&timestamp, NULL);
+	vrpn_gettimeofday(&timestamp, NULL);
 
 	if (vrpn_Sound::d_connection->pack_message(len, timestamp, play_sound, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message play: tossing\n");
@@ -793,7 +793,7 @@ vrpn_int32 vrpn_Sound_Client::stopSound(const vrpn_SoundID id)
 
 	len = encodeSoundID(id, buf);
 
-	gettimeofday(&timestamp, NULL);
+	vrpn_gettimeofday(&timestamp, NULL);
 
 	if (vrpn_Sound::d_connection->pack_message(len, timestamp, stop_sound, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message play: tossing\n");
@@ -810,7 +810,7 @@ vrpn_SoundID vrpn_Sound_Client::loadSound(const char* sound, const vrpn_SoundID 
   
   len = encodeSound_local(sound, id,  soundDef, &buf);
 	
-  gettimeofday(&timestamp, NULL);
+  vrpn_gettimeofday(&timestamp, NULL);
 
 	if (vrpn_Sound::d_connection->pack_message(len, timestamp, load_sound_local, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message load: tossing\n");
@@ -828,7 +828,7 @@ vrpn_int32 vrpn_Sound_Client::unloadSound(const vrpn_SoundID id)
 
 	len = encodeSoundID(id, buf);
 
-	gettimeofday(&timestamp, NULL);
+	vrpn_gettimeofday(&timestamp, NULL);
 
 	if (vrpn_Sound::d_connection->pack_message(len, timestamp, unload_sound, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message unload: tossing\n");
@@ -845,7 +845,7 @@ vrpn_int32 vrpn_Sound_Client::setSoundVolume(const vrpn_SoundID id, const vrpn_f
 
 	len = encodeSoundVolume(volume, id, buf);
 
-	gettimeofday(&timestamp, NULL);
+	vrpn_gettimeofday(&timestamp, NULL);
 
 	if (vrpn_Sound::d_connection->pack_message(len, timestamp, set_sound_volume, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
@@ -869,7 +869,7 @@ vrpn_int32 vrpn_Sound_Client::setSoundPose(const vrpn_SoundID id, vrpn_float64 p
 
 	len = encodeSoundPose(tempdef, id, buf);
 
-	gettimeofday(&timestamp, NULL);
+	vrpn_gettimeofday(&timestamp, NULL);
 
 	if (vrpn_Sound::d_connection->pack_message(len, timestamp, set_sound_pose, d_sender_id, buf, vrpn_CONNECTION_RELIABLE)) {
 	    fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
@@ -885,7 +885,7 @@ vrpn_int32 vrpn_Sound_Client::setSoundVelocity(const vrpn_SoundID id, const vrpn
 	
 	len = encodeSoundVelocity(velocity, id, buf);
 
-	gettimeofday(&timestamp, NULL);
+	vrpn_gettimeofday(&timestamp, NULL);
  
 	if (vrpn_Sound::d_connection->pack_message(len, timestamp, set_sound_velocity, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
@@ -899,7 +899,7 @@ vrpn_int32 vrpn_Sound_Client::setSoundDistances(const vrpn_SoundID id, const vrp
 	
 	len = encodeSoundDistInfo(max_front_dist, min_front_dist, max_back_dist, min_back_dist, id, buf);
 
-	gettimeofday(&timestamp, NULL);
+	vrpn_gettimeofday(&timestamp, NULL);
 
 	if (vrpn_Sound::d_connection->pack_message(len, timestamp, set_sound_distanceinfo, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
@@ -919,7 +919,7 @@ vrpn_int32 vrpn_Sound_Client::setSoundConeInfo(const vrpn_SoundID id,
 
 	len = encodeSoundConeInfo(inner_angle, outer_angle, gain, id, buf);
 
-	gettimeofday(&timestamp, NULL);
+	vrpn_gettimeofday(&timestamp, NULL);
 
 	if (vrpn_Sound::d_connection->pack_message(len, timestamp, set_sound_coneinfo, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
@@ -937,7 +937,7 @@ vrpn_int32 vrpn_Sound_Client::setSoundDopScale(const vrpn_SoundID id, vrpn_float
 
 	len = encodeSoundDoplerScale(dopfactor, id, buf);
 
-	gettimeofday(&timestamp, NULL);
+	vrpn_gettimeofday(&timestamp, NULL);
 
 	if (vrpn_Sound::d_connection->pack_message(len, timestamp, set_sound_doplerfactor, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
@@ -953,7 +953,7 @@ vrpn_int32 vrpn_Sound_Client::setSoundEqValue(const vrpn_SoundID id, vrpn_float6
 
 	len = encodeSoundEqFactor(eq_value, id, buf);
 
-	gettimeofday(&timestamp, NULL);
+	vrpn_gettimeofday(&timestamp, NULL);
 
 	if (vrpn_Sound::d_connection->pack_message(len, timestamp, set_sound_eqvalue, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
@@ -969,7 +969,7 @@ vrpn_int32 vrpn_Sound_Client::setSoundPitch(const vrpn_SoundID id, vrpn_float64 
 
 	len = encodeSoundPitch(pitch, id, buf);
 
-	gettimeofday(&timestamp, NULL);
+	vrpn_gettimeofday(&timestamp, NULL);
 
 	if (vrpn_Sound::d_connection->pack_message(len, timestamp, set_sound_pitch, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
@@ -993,7 +993,7 @@ vrpn_int32 vrpn_Sound_Client::setListenerPose(const vrpn_float64 position[3], co
 		
 	len = encodeListenerPose(tempdef, buf);
 
-	gettimeofday(&timestamp, NULL);
+	vrpn_gettimeofday(&timestamp, NULL);
 
 	if (vrpn_Sound::d_connection->pack_message(len, timestamp, set_listener_pose, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
@@ -1010,7 +1010,7 @@ vrpn_int32 vrpn_Sound_Client::setListenerVelocity(const vrpn_float64 velocity[4]
 	
 	len = encodeListenerVelocity(velocity, buf);
 
-	gettimeofday(&timestamp, NULL);
+	vrpn_gettimeofday(&timestamp, NULL);
 
 	if (vrpn_Sound::d_connection->pack_message(len, timestamp, set_listener_velocity, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
@@ -1030,7 +1030,7 @@ vrpn_int32 vrpn_Sound_Client::LoadModel_local(const char *filename) {
 
 	len = encodeLoadModel_local(filename, &buf);
 	
-	gettimeofday(&timestamp, NULL);
+	vrpn_gettimeofday(&timestamp, NULL);
 
 	if (vrpn_Sound::d_connection->pack_message(len, timestamp, load_model_local, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message load: tossing\n");
@@ -1052,7 +1052,7 @@ vrpn_int32 vrpn_Sound_Client::LoadPolyQuad(const vrpn_QuadDef quad) {
 
 	len = encodeLoadPolyQuad(quad, buf);
 	
-	gettimeofday(&timestamp, NULL);
+	vrpn_gettimeofday(&timestamp, NULL);
 
 	if (vrpn_Sound::d_connection->pack_message(len, timestamp, load_polyquad, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message load: tossing\n");
@@ -1069,7 +1069,7 @@ vrpn_int32 len;
 
 	len = encodeLoadPolyTri(tri, buf);
 	
-	gettimeofday(&timestamp, NULL);
+	vrpn_gettimeofday(&timestamp, NULL);
 
 	if (vrpn_Sound::d_connection->pack_message(len, timestamp, load_polytri, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message load: tossing\n");
@@ -1086,7 +1086,7 @@ vrpn_int32 vrpn_Sound_Client::LoadMaterial(const vrpn_int32 id,
 
 	len = encodeLoadMaterial(id, material, buf);
 	
-	gettimeofday(&timestamp, NULL);
+	vrpn_gettimeofday(&timestamp, NULL);
 
 	if (vrpn_Sound::d_connection->pack_message(len, timestamp, load_material, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message load: tossing\n");
@@ -1103,7 +1103,7 @@ vrpn_int32 vrpn_Sound_Client::setPolyOF(const int id, const vrpn_float64 OF) {
 	
 	len = encodeSetPolyOF(OF, id, buf);
 
-	gettimeofday(&timestamp, NULL);
+	vrpn_gettimeofday(&timestamp, NULL);
 
 	if (vrpn_Sound::d_connection->pack_message(len, timestamp, set_poly_openingfactor, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
@@ -1119,7 +1119,7 @@ vrpn_int32 vrpn_Sound_Client::setQuadVertices(const int id, const vrpn_float64 v
 	
 	len = encodeSetQuadVert(vertices, id, buf);
 
-	gettimeofday(&timestamp, NULL);
+	vrpn_gettimeofday(&timestamp, NULL);
 
 	if (vrpn_Sound::d_connection->pack_message(len, timestamp, set_polyquad_vertices, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
@@ -1134,7 +1134,7 @@ vrpn_int32 vrpn_Sound_Client::setPolyMaterialName(const int id, const char * mat
 	
 	len = encodeSetPolyMaterial(material_name, id, buf);
 
-	gettimeofday(&timestamp, NULL);
+	vrpn_gettimeofday(&timestamp, NULL);
 
 	if (vrpn_Sound::d_connection->pack_message(len, timestamp, set_poly_material, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
@@ -1150,7 +1150,7 @@ vrpn_int32 vrpn_Sound_Client::setTriVertices(const int id, const vrpn_float64 ve
 
 	len = encodeSetTriVert(vertices, id, buf);
 
-	gettimeofday(&timestamp, NULL);
+	vrpn_gettimeofday(&timestamp, NULL);
 
 	if (vrpn_Sound::d_connection->pack_message(len, timestamp, set_polytri_vertices, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
       fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");

@@ -289,7 +289,7 @@ void vrpn_File_Connection::FileTime_Accumulator::set_replay_rate(
     vrpn_float32 new_rate)
 {
     timeval now_time;
-    gettimeofday(&now_time, NULL);
+    vrpn_gettimeofday(&now_time, NULL);
     accumulate_to( now_time );
 
     d_replay_rate = new_rate;
@@ -341,12 +341,12 @@ void vrpn_File_Connection::FileTime_Accumulator::reset_at_time(
 //     represents the amount of time elapsed sice d_last_time was last set.
 //
 //     set_replay_rate will do sample-and-hold integration over the window
-//     from d_last_time to the result of gettimeofday(), and it will
+//     from d_last_time to the result of vrpn_gettimeofday(), and it will
 //     accumulate the result into d_virtual_time_elapsed_since_last_event.
-//     then it will set d_last_time to the result of gettimeofday().
+//     then it will set d_last_time to the result of vrpn_gettimeofday().
 //
 //     mainloop will also do sample-and-hold integration over the window
-//     [d_last_time:gettimeofday()], and accumulate the result into
+//     [d_last_time:vrpn_gettimeofday()], and accumulate the result into
 //     d_virtual_time_elapsed_since_last_event.  Then it will compute end_time
 //     by adding d_time and d_virtual_time_elapsed_since_last_event.  iff an
 //     event is played from the file, d_last_time will be set to now_time and
@@ -360,7 +360,7 @@ int vrpn_File_Connection::mainloop( const timeval * /*timeout*/ )
     // XXX timeout ignored for now, needs to be added
 
     timeval now_time;
-    gettimeofday(&now_time, NULL);
+    vrpn_gettimeofday(&now_time, NULL);
 
     if ((d_last_time.tv_sec == 0) && (d_last_time.tv_usec == 0)) {
         // If first iteration, consider 0 time elapsed
@@ -636,7 +636,7 @@ int vrpn_File_Connection::playone_to_filetime( timeval end_filetime )
     // or do we mark them with the time they were played back?
     // Maybe this should be switchable, but the latter is what
     // I need yesterday.
-    gettimeofday(&now, NULL);
+    vrpn_gettimeofday(&now, NULL);
     retval = endpoint->d_inLog->logIncomingMessage
                     (header.payload_len, now, header.type,
                      header.sender, header.buffer);
@@ -731,7 +731,7 @@ timeval vrpn_File_Connection::get_length()
 	timeval stop;
 	do {
 	  stop = d_logHead->data.msg_time;
-	} while (advance_currentLogEntry == 0);
+	} while (advance_currentLogEntry() == 0);
 
 	len = vrpn_TimevalDiff(stop, start);
       }
@@ -763,7 +763,7 @@ timeval vrpn_File_Connection::get_lowest_user_timestamp()
 	    vrpn_TimevalGreater(low, d_currentLogEntry->data.msg_time)) {
 	low = d_currentLogEntry->data.msg_time;
       }
-    } while (advance_currentLogEntry == 0);
+    } while (advance_currentLogEntry() == 0);
 
     // We have our value.  Set it and go back where
     // we came from, but don't play the records along
@@ -850,7 +850,7 @@ int vrpn_File_Connection::read_entry (void)
     if (!d_file) {
       static struct timeval last_told = {0,0};
       static struct timeval now;
-      gettimeofday(&now, NULL);
+      vrpn_gettimeofday(&now, NULL);
       if (now.tv_sec != last_told.tv_sec) {
         fprintf(stderr, "vrpn_File_Connection::read_entry: no open file\n");
         memcpy(&last_told, &now, sizeof(last_told));

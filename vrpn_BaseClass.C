@@ -532,7 +532,7 @@ void	vrpn_BaseClassUnique::client_mainloop(void)
 
     if (d_unanswered_ping) {
 
-	gettimeofday(&now, NULL);
+	vrpn_gettimeofday(&now, NULL);
 	diff = vrpn_TimevalDiff(now, d_time_last_warned);
 	vrpn_TimevalNormalize(diff);
 
@@ -559,7 +559,7 @@ void	vrpn_BaseClassUnique::client_mainloop(void)
 void vrpn_BaseClassUnique::initiate_ping_cycle(void)
 {
     // Record when we sent the ping and say that we haven't gotten an answer
-    gettimeofday(&d_time_first_ping, NULL);
+    vrpn_gettimeofday(&d_time_first_ping, NULL);
     d_connection->pack_message(0, d_time_first_ping, d_ping_message_id, d_sender_id,
                              NULL, vrpn_CONNECTION_RELIABLE);
     d_unanswered_ping = 1;
@@ -599,7 +599,7 @@ int vrpn_BaseClassUnique::handle_ping(void *userdata, vrpn_HANDLERPARAM)
     vrpn_BaseClassUnique    *me = (vrpn_BaseClassUnique *)userdata;
     struct  timeval now;
 
-    gettimeofday(&now, NULL);
+    vrpn_gettimeofday(&now, NULL);
     if (me->d_connection != NULL) {
 	me->d_connection->pack_message(0, now, me->d_pong_message_id, me->d_sender_id, NULL, vrpn_CONNECTION_RELIABLE);
     }
@@ -621,7 +621,7 @@ int vrpn_BaseClassUnique::handle_connection_dropped(void *userdata, vrpn_HANDLER
 	return 0;
     }
 
-    gettimeofday(&now, NULL);
+    vrpn_gettimeofday(&now, NULL);
     if (me->d_connection != NULL) {
 	me->initiate_ping_cycle();
     }

@@ -63,7 +63,7 @@ void vrpn_Joystick::report(struct timeval current_time)
 
 void vrpn_Joystick::mainloop(void) {
   struct timeval current_time;
-  gettimeofday(&current_time, NULL);
+  vrpn_gettimeofday(&current_time, NULL);
 
   // Since we are a server, call the generic server mainloop()
   server_mainloop();
@@ -77,7 +77,7 @@ void vrpn_Joystick::mainloop(void) {
         // XXX Ideally, this time would be the time of the first
         // character read from the serial port for this report.
 	while (get_report()) {
-	  gettimeofday(&current_time, NULL);
+	  vrpn_gettimeofday(&current_time, NULL);
 	  report(current_time);
 	}
 

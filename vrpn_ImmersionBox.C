@@ -43,10 +43,10 @@ static void pause (double delay) {
     unsigned long interval = (long) floor(1000000.0 * delay);
 
     struct timeval start, now;
-    gettimeofday (&start, NULL);
+    vrpn_gettimeofday (&start, NULL);
 
     do {
-	gettimeofday (&now, NULL);
+	vrpn_gettimeofday (&now, NULL);
     } while (duration(now, start) < interval);
 	
 }
@@ -230,7 +230,7 @@ int    vrpn_ImmersionBox::reset(void)
     cout << "ImmersionBox reset complete." << endl;
 
     status = STATUS_SYNCING;
-    gettimeofday(&timestamp, NULL);	// Set watchdog now
+    vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now
     return 0;
 }
 
@@ -318,7 +318,7 @@ int vrpn_ImmersionBox::get_report(void)
     }
 
     report_changes();
-    gettimeofday(&timestamp, NULL);	// Set watchdog now
+    vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now
 
     return 1;
 }
@@ -371,7 +371,7 @@ void	vrpn_ImmersionBox::mainloop(void)
 	    // if there is a report ready (ie, if THIS device is still operating).
 	    while (get_report()) {};	// Get multiple reports if available
 	    struct timeval current_time;
-	    gettimeofday(&current_time, NULL);
+	    vrpn_gettimeofday(&current_time, NULL);
 	    if ( duration(current_time,timestamp) > MAX_TIME_INTERVAL) {
 		    fprintf(stderr,"Tracker failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n",current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);
 		    send_text_message("Too long since last report, resetting", current_time, vrpn_TEXT_ERROR);
@@ -442,7 +442,7 @@ int vrpn_ImmersionBox::syncBaudrate (double seconds) {
 
     unsigned long maxDelay = 1000000L * (long) seconds;
     struct timeval start_time;
-    gettimeofday(&start_time, NULL);
+    vrpn_gettimeofday(&start_time, NULL);
 
     int loggedOn = 0;
     unsigned char responseString[8];
@@ -457,7 +457,7 @@ int vrpn_ImmersionBox::syncBaudrate (double seconds) {
 
     while (!loggedOn) {
 	struct timeval current_time;
-	gettimeofday(&current_time, NULL);
+	vrpn_gettimeofday(&current_time, NULL);
 	if (duration(current_time, start_time) > maxDelay ) {
 	    // if we've timed out, go back unhappy
 	    cout << "vrpn_ImmersionBox::syncBaudrate timeout expired: " << seconds 

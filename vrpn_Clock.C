@@ -36,9 +36,9 @@ vrpn_Clock::vrpn_Clock(const char * name, vrpn_Connection *c) :
 {
   vrpn_BaseClass::init();
 
-  // need to init gettimeofday for the pc
+  // need to init vrpn_gettimeofday for the pc
   struct timeval tv;
-  gettimeofday(&tv, NULL);
+  vrpn_gettimeofday(&tv, NULL);
 }
 
 int vrpn_Clock::register_senders(void)
@@ -140,7 +140,7 @@ int vrpn_Clock_Server::clockQueryHandler(void *userdata, vrpn_HANDLERPARAM p) {
     return -1;
   }
 
-  gettimeofday(&now,NULL);
+  vrpn_gettimeofday(&now,NULL);
   //  printTime("server rep ", now);
   int cLen = me->encode_to( rgch, now, p.msg_time, p.payload_len, p.buffer );
   me->d_connection->pack_message(cLen, now,
@@ -237,7 +237,7 @@ vrpn_Clock_Remote::vrpn_Clock_Remote(const char * name, vrpn_float64 dFreq,
 
   // establish unique id
   struct timeval tv;
-  gettimeofday(&tv, NULL);
+  vrpn_gettimeofday(&tv, NULL);
 
   lUniqueID = (vrpn_int32)tv.tv_usec;
 
@@ -306,7 +306,7 @@ void vrpn_Clock_Remote::mainloop (const struct timeval *timeout)
       // just a quick sync
       //      cerr << "QuickSync" << endl;      
       struct timeval tvNow;
-      gettimeofday(&tvNow, NULL);
+      vrpn_gettimeofday(&tvNow, NULL);
 
       // Check if we have passed the interval
       if (vrpn_TimevalMsecs(vrpn_TimevalDiff(tvNow, tvQuickLastSync)) >=
@@ -320,7 +320,7 @@ void vrpn_Clock_Remote::mainloop (const struct timeval *timeout)
 	rgl[0]=htonl(CLOCK_VERSION);
 	rgl[1]=htonl(lUniqueID);	// An easy, unique ID
 	rgl[2]=htonl((vrpn_int32)VRPN_CLOCK_QUICK_SYNC);
-	gettimeofday(&tv, NULL);
+	vrpn_gettimeofday(&tv, NULL);
 	d_connection->pack_message(3*sizeof(vrpn_int32), tv, queryMsg_id, 
 				 clockClient_id, (char *)rgl, 
 				 vrpn_CONNECTION_RELIABLE);
@@ -375,7 +375,7 @@ void vrpn_Clock_Remote::mainloop (const struct timeval *timeout)
 	rgdTimes = new vrpn_float64[cQueries];
       }
 #endif
-      gettimeofday( &tvCalib, NULL );
+      vrpn_gettimeofday( &tvCalib, NULL );
 
       // do bounces for one second to calibrate the clocks
       //      while (cElapsedMsecs<=cCalibMsecs) {
@@ -406,7 +406,7 @@ void vrpn_Clock_Remote::mainloop (const struct timeval *timeout)
 	  rgl[0]=htonl(CLOCK_VERSION);
 	  rgl[1]=htonl(lUniqueID);	// An easy, unique ID
 	  rgl[2]=htonl((vrpn_int32)VRPN_CLOCK_FULL_SYNC);
-	  gettimeofday(&tv, NULL);
+	  vrpn_gettimeofday(&tv, NULL);
 	  d_connection->pack_message(3*sizeof(vrpn_int32), tv, queryMsg_id, 
 				   clockClient_id, (char *)rgl, 
 				   vrpn_CONNECTION_RELIABLE);
@@ -416,7 +416,7 @@ void vrpn_Clock_Remote::mainloop (const struct timeval *timeout)
 	// actually process the message and any callbacks from local
 	// or remote messages (just call the base mainloop)
 	d_connection->vrpn_Connection::mainloop();
-	gettimeofday( &tvNow, NULL );
+	vrpn_gettimeofday( &tvNow, NULL );
 	cElapsedMsecs = (vrpn_int32) vrpn_TimevalMsecs(vrpn_TimevalDiff(tvNow, tvCalib));
       }
       // we don't care if we missed numerous replies, just make sure we had
@@ -655,7 +655,7 @@ int vrpn_Clock_Remote::fullSyncClockServerReplyHandler(void *userdata,
   // get current local time
   struct timeval tvLNow;
   
-  gettimeofday(&tvLNow, NULL);
+  vrpn_gettimeofday(&tvLNow, NULL);
   
   // all of the tv structs have an L (local) or R (remote) tag
   vrpn_Clock_Remote *me = (vrpn_Clock_Remote *)userdata;
@@ -776,7 +776,7 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
   // get current local time
   struct timeval tvLNow;
   
-  gettimeofday(&tvLNow, NULL);
+  vrpn_gettimeofday(&tvLNow, NULL);
 
   // printTime("L now time", tvLNow);
 

@@ -52,21 +52,21 @@ vrpn_Nidaq::vrpn_Nidaq(char *pchName, vrpn_Connection *pConnection,
     // call each to get them in cache
     struct timeval tv, tvUpTime;
     double dTime1, dTime2;
-    gettimeofday(&tv, NULL);
-    gettimeofday(&tv, NULL);
+    vrpn_gettimeofday(&tv, NULL);
+    vrpn_gettimeofday(&tv, NULL);
     UpTime::Now();
     UpTime::Now();
     
     // Now calc offset
     dTime1=UpTime::Now();
-    gettimeofday(&tv, NULL);
+    vrpn_gettimeofday(&tv, NULL);
     dTime2=UpTime::Now();
     
     dTime1 = (dTime1 + dTime2)/2.0;
     tvUpTime = vrpn_MsecsTimeval(dTime1*1000.0);
     tvOffset = vrpn_TimevalDiff(tv, tvUpTime);
 
-    // later, add this to tvUpTime to get into gettimeofday time frame
+    // later, add this to tvUpTime to get into vrpn_gettimeofday time frame
 
     // alloc the daq (which also starts it up)
     // args are:

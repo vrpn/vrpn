@@ -136,7 +136,7 @@ int	vrpn_Magellan::reset(void)
 	ret = vrpn_read_available_characters(serial_fd, inbuf, strlen(expect_back), &timeout);
 	inbuf[strlen(expect_back)] = 0;		// Make sure string is NULL-terminated
 
-	gettimeofday(&now, NULL);
+	vrpn_gettimeofday(&now, NULL);
 	if (ret < 0) {
 		send_text_message("vrpn_Magellan reset: Error reading from device", now);
 		return -1;
@@ -164,7 +164,7 @@ int	vrpn_Magellan::reset(void)
 	// We're now waiting for a response from the box
 	status = STATUS_SYNCING;
 
-	gettimeofday(&timestamp, NULL);	// Set watchdog now
+	vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now
 	return 0;
 }
 
@@ -233,7 +233,7 @@ int vrpn_Magellan::get_report(void)
       // The time stored here is as close as possible to when the
       // report was generated.
       _bufcount = 1;
-      gettimeofday(&timestamp, NULL);
+      vrpn_gettimeofday(&timestamp, NULL);
       status = STATUS_READING;
 #ifdef	VERBOSE
       printf("... Got the 1st char\n");

@@ -732,8 +732,17 @@ void	get_time_using_GetLocalTime(unsigned long &sec, unsigned long &usec)
 // version.  It is claimed that they have fixed it now, but
 // better check.
 ///////////////////////////////////////////////////////////////
-int gettimeofday(timeval *tp, struct timezone *tzp)
+int vrpn_gettimeofday(timeval *tp, void *voidp)
 {
+#ifndef _STRUCT_TIMEZONE
+  #define _STRUCT_TIMEZONE
+  /* from HP-UX */
+  struct timezone {
+      int     tz_minuteswest; /* minutes west of Greenwich */
+      int     tz_dsttime;     /* type of dst correction */
+  };
+#endif
+  struct timezone *tzp = (struct timezone *)voidp;
     if (tp != NULL) {
 #ifdef _WIN32_WCE
 	unsigned long sec, usec;
@@ -800,7 +809,7 @@ static int vrpn_AdjustFrequency(void)
     const int tPerLoop = 500; // milliseconds for Sleep()
     cerr.precision(4);
     cerr.setf(ios::fixed);
-    cerr << "vrpn gettimeofday: determining clock frequency...";
+    cerr << "vrpn vrpn_gettimeofday: determining clock frequency...";
 
     LARGE_INTEGER startperf, endperf;
     LARGE_INTEGER perffreq;
@@ -834,7 +843,7 @@ static int vrpn_AdjustFrequency(void)
 
     if (fabs(perffreq.QuadPart - freq) < 0.05*freq) {
         VRPN_CLOCK_FREQ = (__int64) perffreq.QuadPart;
-        cerr << "\nvrpn gettimeofday: perf clock is tsc -- using perf clock freq (" 
+        cerr << "\nvrpn vrpn_gettimeofday: perf clock is tsc -- using perf clock freq (" 
              << perffreq.QuadPart/1e6 << " MHz)" << endl;
         SetPriorityClass( GetCurrentProcess() , dwPriorityClass );
         SetThreadPriority( GetCurrentThread(), iThreadPriority );
@@ -879,7 +888,7 @@ static int vrpn_AdjustFrequency(void)
     // This used to check against a 200 mhz assumed clock, but now 
     // we assume the routine works and trust the result.
     //  if (fabs(freq - VRPN_CLOCK_FREQ) > 0.05 * VRPN_CLOCK_FREQ) {
-    //    cerr << "vrpn gettimeofday: measured freq is " << freq/1e6 
+    //    cerr << "vrpn vrpn_gettimeofday: measured freq is " << freq/1e6 
     //	 << " MHz - DOES NOT MATCH" << endl;
     //    return -1;
     //  }
@@ -889,10 +898,10 @@ static int vrpn_AdjustFrequency(void)
     // approx the perf clock freq).
     if (fabs(perffreq.QuadPart - freq) < 0.05*freq) {
         VRPN_CLOCK_FREQ = perffreq.QuadPart;
-        cerr << "vrpn gettimeofday: perf clock is tsc -- using perf clock freq (" 
+        cerr << "vrpn vrpn_gettimeofday: perf clock is tsc -- using perf clock freq (" 
              << perffreq.QuadPart/1e6 << " MHz)" << endl;
     } else {
-        cerr << "vrpn gettimeofday: adjusted clock freq to measured freq (" 
+        cerr << "vrpn vrpn_gettimeofday: adjusted clock freq to measured freq (" 
              << freq/1e6 << " MHz)" << endl;
     }
     VRPN_CLOCK_FREQ = (__int64) freq;
@@ -904,10 +913,10 @@ static int vrpn_AdjustFrequency(void)
 // _ftime, however, has only about 6 ms resolution, so we use the peformance 
 // as an offset from a base time which is established by a call to by _ftime.
 
-// The first call to gettimeofday will establish a new time frame
+// The first call to vrpn_gettimeofday will establish a new time frame
 // on which all later calls will be based.  This means that the time returned
-// by gettimeofday will not always match _ftime (even at _ftime's resolution),
-// but it will be consistent across all gettimeofday calls.
+// by vrpn_gettimeofday will not always match _ftime (even at _ftime's resolution),
+// but it will be consistent across all vrpn_gettimeofday calls.
 
 ///////////////////////////////////////////////////////////////
 // Although VC++ doesn't include a gettimeofday
@@ -919,7 +928,7 @@ static int vrpn_AdjustFrequency(void)
 // so until then, we will make it right using our solution. 
 ///////////////////////////////////////////////////////////////
 #ifndef	VRPN_WINDOWS_CLOCK_V2
-int gettimeofday(timeval *tp, struct timezone *tzp)
+int vrpn_gettimeofday(timeval *tp, void *voidp)
 {
     static int fFirst=1;
     static int fHasPerfCounter=1;
@@ -928,6 +937,16 @@ int gettimeofday(timeval *tp, struct timezone *tzp)
     static LARGE_INTEGER liNow;
     static LARGE_INTEGER liDiff;
     timeval tvDiff;
+
+#ifndef _STRUCT_TIMEZONE
+  #define _STRUCT_TIMEZONE
+  /* from HP-UX */
+  struct timezone {
+      int     tz_minuteswest; /* minutes west of Greenwich */
+      int     tz_dsttime;     /* type of dst correction */
+  };
+#endif
+  struct timezone *tzp = (struct timezone *)voidp;
 
     if (!fHasPerfCounter) {
         _ftime(&tbInit);
@@ -954,28 +973,28 @@ int gettimeofday(timeval *tp, struct timezone *tzp)
 	    GetVersionEx(&osvi);
 
 	    if (osvi.dwPlatformId != VER_PLATFORM_WIN32_NT) {
-                cerr << "\nvrpn gettimeofday: disabling hi performance clock on non-NT system. " 
+                cerr << "\nvrpn_gettimeofday: disabling hi performance clock on non-NT system. " 
 	             << "Defaulting to _ftime (~6 ms resolution) ..." << endl;
 		fHasPerfCounter=0;
-	        gettimeofday( tp, tzp );
+	        vrpn_gettimeofday( tp, tzp );
 		return 0;
 	    }
 	}
 
         // check that hi-perf clock is available
         if ( !(fHasPerfCounter = QueryPerformanceFrequency( &liTemp )) ) {
-            cerr << "\nvrpn gettimeofday: no hi performance clock available. " 
+            cerr << "\nvrpn_gettimeofday: no hi performance clock available. " 
                  << "Defaulting to _ftime (~6 ms resolution) ..." << endl;
             fHasPerfCounter=0;
-            gettimeofday( tp, tzp );
+            vrpn_gettimeofday( tp, tzp );
             return 0;
         }
 
         if (vrpn_AdjustFrequency()<0) {
-            cerr << "\nvrpn gettimeofday: can't verify clock frequency. " 
+            cerr << "\nvrpn_gettimeofday: can't verify clock frequency. " 
                  << "Defaulting to _ftime (~6 ms resolution) ..." << endl;
             fHasPerfCounter=0;
-            gettimeofday( tp, tzp );
+            vrpn_gettimeofday( tp, tzp );
             return 0;
         }
         // get current time
@@ -1079,8 +1098,18 @@ void get_time_using_GetLocalTime(unsigned long &sec, unsigned long &usec)
     sec -= 3054524608L;
 }
 
-int gettimeofday(timeval *tp, struct timezone *tzp)
+int vrpn_gettimeofday(timeval *tp, void *voidp)
 {
+#ifndef _STRUCT_TIMEZONE
+  #define _STRUCT_TIMEZONE
+  /* from HP-UX */
+  struct timezone {
+      int     tz_minuteswest; /* minutes west of Greenwich */
+      int     tz_dsttime;     /* type of dst correction */
+  };
+#endif
+  struct timezone *tzp = (struct timezone *)voidp;
+
   unsigned  long sec,usec;
   get_time_using_GetLocalTime(sec,usec);
   tp->tv_sec = sec;
@@ -1100,6 +1129,6 @@ int gettimeofday(timeval *tp, struct timezone *tzp)
 
 // do the calibration before the program ever starts up
 static timeval __tv;
-static int __iTrash = gettimeofday(&__tv, (struct timezone *)NULL);
+static int __iTrash = vrpn_gettimeofday(&__tv, (struct timezone *)NULL);
 
 #endif // VRPN_UNSAFE_WINDOWS_CLOCK

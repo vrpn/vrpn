@@ -103,7 +103,7 @@ void vrpn_Analog::report (vrpn_uint32 class_of_service, const struct timeval tim
     // Replace the time value with the current time if the user passed in the
     // constant time referring to "now".
     if ( (time.tv_sec == vrpn_ANALOG_NOW.tv_sec) && (time.tv_usec == vrpn_ANALOG_NOW.tv_sec) ) {
-      gettimeofday(&timestamp, NULL);
+      vrpn_gettimeofday(&timestamp, NULL);
     }
     len = vrpn_Analog::encode_to(msgbuf);
 #ifdef VERBOSE
@@ -147,7 +147,7 @@ vrpn_Serial_Analog::vrpn_Serial_Analog (const char * name, vrpn_Connection * c,
 
    // Reset the tracker and find out what time it is
    status = vrpn_ANALOG_RESETTING;
-   gettimeofday(&timestamp, NULL);
+   vrpn_gettimeofday(&timestamp, NULL);
 }
 
 vrpn_Serial_Analog::~vrpn_Serial_Analog () 
@@ -304,7 +304,7 @@ vrpn_Analog_Remote::vrpn_Analog_Remote (const char * name,
 	for (i = 0; i < vrpn_CHANNEL_MAX; i++) {
 		channel[i] = last[i] = 0;
 	}
-	gettimeofday(&timestamp, NULL);
+	vrpn_gettimeofday(&timestamp, NULL);
 }
 
 // virtual

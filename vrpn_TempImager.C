@@ -130,7 +130,7 @@ bool  vrpn_TempImager_Server::send_region_using_base_pointer(vrpn_int16 chanInde
   if (time != NULL) {
     timestamp = *time;
   } else {
-    gettimeofday(&timestamp, NULL);
+    vrpn_gettimeofday(&timestamp, NULL);
   }
 
   // Tell which channel this region is for, and what the borders of the
@@ -263,7 +263,7 @@ bool  vrpn_TempImager_Server::send_region_using_base_pointer(vrpn_int16 chanInde
   if (time != NULL) {
     timestamp = *time;
   } else {
-    gettimeofday(&timestamp, NULL);
+    vrpn_gettimeofday(&timestamp, NULL);
   }
 
   // Tell which channel this region is for, and what the borders of the
@@ -399,7 +399,7 @@ bool  vrpn_TempImager_Server::send_region_using_base_pointer(vrpn_int16 chanInde
   if (time != NULL) {
     timestamp = *time;
   } else {
-    gettimeofday(&timestamp, NULL);
+    vrpn_gettimeofday(&timestamp, NULL);
   }
 
   // Tell which channel this region is for, and what the borders of the
@@ -510,7 +510,7 @@ bool  vrpn_TempImager_Server::send_description(void)
   // Pack the buffer into the connection's outgoing reliable queue, if we have
   // a valid connection.
   vrpn_int32  len = sizeof(fbuf) - buflen;
-  gettimeofday(&timestamp, NULL);
+  vrpn_gettimeofday(&timestamp, NULL);
   if (d_connection && d_connection->pack_message(len, timestamp,
                                d_description_m_id, d_sender_id, (char *)(void*)fbuf,
                                vrpn_CONNECTION_RELIABLE)) {

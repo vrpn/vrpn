@@ -60,7 +60,7 @@ vrpn_Poser::vrpn_Poser (const char* name, vrpn_Connection* c) :
 	vrpn_BaseClass::init();
 		
 	// Find out what time it is and put this into the timestamp
-	gettimeofday(&p_timestamp, NULL);
+	vrpn_gettimeofday(&p_timestamp, NULL);
 
 	// Set the position to the origin and the orientation to identity
 	// just to have something there in case nobody fills them in later

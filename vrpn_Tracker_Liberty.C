@@ -411,10 +411,10 @@ void vrpn_Tracker_Liberty::reset()
 	// Drain the output buffer again, then record the time as the base time from
 	// the tracker.
 	vrpn_drain_output_buffer(serial_fd);
-	gettimeofday(&liberty_zerotime, NULL);
+	vrpn_gettimeofday(&liberty_zerotime, NULL);
 
    // Done with reset.
-   gettimeofday(&watchdog_timestamp, NULL);	// Set watchdog now
+   vrpn_gettimeofday(&watchdog_timestamp, NULL);	// Set watchdog now
    FT_WARNING("Reset Completed (this is good)");
    status = vrpn_TRACKER_SYNCING;	// We're trying for a new reading
 }
@@ -516,7 +516,7 @@ int vrpn_Tracker_Liberty::get_report(void)
       // report was generated.  For the InterSense 900 in timestamp
       // mode, this value will be overwritten later.
       bufcount = 2;
-      //      gettimeofday(&timestamp, NULL);
+      //      vrpn_gettimeofday(&timestamp, NULL);
       status = vrpn_TRACKER_AWAITING_STATION;
    }
 
@@ -682,7 +682,7 @@ int vrpn_Tracker_Liberty::get_report(void)
 
        // The time that the report was generated
        timestamp = vrpn_TimevalSum(liberty_zerotime, delta_time);
-       gettimeofday(&watchdog_timestamp, NULL);	// Set watchdog now       
+       vrpn_gettimeofday(&watchdog_timestamp, NULL);	// Set watchdog now       
  
 
    //--------------------------------------------------------------------

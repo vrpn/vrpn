@@ -550,7 +550,7 @@ int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes,
 	// Find out what time it is at the start, and when we should end
 	// (unless the timeout is NULL)
 	if (timeout != NULL) {
-		gettimeofday(&start, NULL);
+		vrpn_gettimeofday(&start, NULL);
 		time_add(start, *timeout, finish);
 	}
 	
@@ -563,7 +563,7 @@ int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes,
 		sofar += ret;
 		if (sofar == bytes) { break; }
 		where += ret;
-		gettimeofday(&now, NULL);
+		vrpn_gettimeofday(&now, NULL);
 	} while ( (timeout == NULL) || !(time_greater(now,finish)) );
 
 	return sofar;

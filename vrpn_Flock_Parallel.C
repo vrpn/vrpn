@@ -255,7 +255,7 @@ if (vrpn_write_characters(serial_fd, (const unsigned char *) &chPoint, 1 )!=1) {
   status = vrpn_TRACKER_FAIL;\
   return;\
 } \
-gettimeofday(&timestamp, NULL);\
+vrpn_gettimeofday(&timestamp, NULL);\
 }   
 
 
@@ -324,7 +324,7 @@ void vrpn_Tracker_Flock_Parallel_Slave::reset()
   fprintf(stderr,"\nvrpn_Tracker_Flock_Parallel_Slave %d: "
 	  "done with reset ... running.\n", d_sensor);
   
-  gettimeofday(&timestamp, NULL);	// Set watchdog now
+  vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now
   status = vrpn_TRACKER_SYNCING;	// We're trying for a new reading
 }
 
@@ -362,7 +362,7 @@ void vrpn_Tracker_Flock_Parallel_Slave::mainloop()
 	    send_report();
 	}
 	struct timeval current_time;
-	gettimeofday(&current_time, NULL);
+	vrpn_gettimeofday(&current_time, NULL);
 	if ( duration(current_time,timestamp) > MAX_TIME_INTERVAL) {
 		fprintf(stderr,"Tracker failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n",current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);
 		send_text_message("Too long since last report, resetting", current_time, vrpn_TEXT_ERROR);

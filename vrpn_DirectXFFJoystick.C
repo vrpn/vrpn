@@ -96,7 +96,7 @@ vrpn_DirectXFFJoystick::vrpn_DirectXFFJoystick (const char * name, vrpn_Connecti
 
   // Set the mode to reading.  Set time to zero, so we'll try to read
   _status = STATUS_READING;
-  gettimeofday(&_timestamp, NULL);
+  vrpn_gettimeofday(&_timestamp, NULL);
 }
 
 vrpn_DirectXFFJoystick::~vrpn_DirectXFFJoystick()
@@ -369,7 +369,7 @@ int vrpn_DirectXFFJoystick::get_report(void)
   {
     static struct timeval forcetime = {0,0};
     struct timeval now;
-    gettimeofday(&now, NULL);
+    vrpn_gettimeofday(&now, NULL);
     if (duration(now, forcetime) >= 1000000.0 / _force_rate) {
       send_normalized_force(_fX, _fY);
       forcetime = now;
@@ -378,7 +378,7 @@ int vrpn_DirectXFFJoystick::get_report(void)
 
   // If it is not time for the next read, just return
   struct timeval reporttime;
-  gettimeofday(&reporttime, NULL);
+  vrpn_gettimeofday(&reporttime, NULL);
   if (duration(reporttime, _timestamp) < 1000000.0 / _read_rate) {
     return 0;
   }
@@ -399,9 +399,9 @@ int vrpn_DirectXFFJoystick::get_report(void)
       hr = _Joystick->Acquire();
       if ( hr == DIERR_INPUTLOST ) {
 	  struct timeval resettime;
-	  gettimeofday(&resettime, NULL);
+	  vrpn_gettimeofday(&resettime, NULL);
 	  while ( ( hr == DIERR_INPUTLOST) && (duration(resettime, reporttime) <= MAX_TIME_INTERVAL) ) {
-	    gettimeofday(&resettime, NULL);
+	    vrpn_gettimeofday(&resettime, NULL);
 	    hr = _Joystick->Acquire();
 	  }
 	  if (hr == DIERR_INPUTLOST) {
@@ -565,7 +565,7 @@ void	vrpn_DirectXFFJoystick::mainloop()
 	{
 	  static  struct  timeval last_report = {0,0};
 	  struct  timeval now;
-	  gettimeofday(&now, NULL);
+	  vrpn_gettimeofday(&now, NULL);
 	  if (duration(now, last_report) > MAX_TIME_INTERVAL) {
 	    send_text_message("Cannot talk to joystick", now, vrpn_TEXT_ERROR);
 	    last_report = now;

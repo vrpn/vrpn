@@ -47,10 +47,10 @@ static void pause (double delay) {
     unsigned long interval = (long) floor(1000000.0 * delay);
 
     struct timeval start, now;
-    gettimeofday (&start, NULL);
+    vrpn_gettimeofday (&start, NULL);
 
     do {
-	gettimeofday (&now, NULL);
+	vrpn_gettimeofday (&now, NULL);
     } while (duration(now, start) < interval);
 	
 }
@@ -137,7 +137,7 @@ int    vrpn_Tng3::reset(void)
     cout << "TNG3B found" << endl;
 
     status = STATUS_SYNCING;
-    gettimeofday(&_timestamp, NULL);	// Set watchdog now
+    vrpn_gettimeofday(&_timestamp, NULL);	// Set watchdog now
     return 0;
 }
 
@@ -229,7 +229,7 @@ int vrpn_Tng3::get_report(void)
     }
 
     report_changes();
-    gettimeofday(&_timestamp, NULL);	// Set watchdog now
+    vrpn_gettimeofday(&_timestamp, NULL);	// Set watchdog now
 
     status = STATUS_SYNCING;
     return 1;
@@ -279,7 +279,7 @@ void vrpn_Tng3::mainloop(void)
 	    // if there is a report ready (ie, if THIS device is still operating).
 	    while (get_report()) {};	// Keep getting reports as long as they come
 	    struct timeval current_time;
-	    gettimeofday(&current_time, NULL);
+	    vrpn_gettimeofday(&current_time, NULL);
 	    if ( duration(current_time,_timestamp) > MAX_TIME_INTERVAL) {
 		    fprintf(stderr,"TNG3 failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n",current_time.tv_sec, current_time.tv_usec, _timestamp.tv_sec, _timestamp.tv_usec);
 		    send_text_message("Too long since last report, resetting", current_time, vrpn_TEXT_ERROR);
@@ -306,7 +306,7 @@ int vrpn_Tng3::syncDatastream (double seconds) {
 
     unsigned long maxDelay = 1000000L * (long) seconds;
     struct timeval start_time;
-    gettimeofday(&start_time, NULL);
+    vrpn_gettimeofday(&start_time, NULL);
 
     int loggedOn = 0;
     int numRead;
@@ -327,7 +327,7 @@ int vrpn_Tng3::syncDatastream (double seconds) {
 
     while (!loggedOn) {
 	struct timeval current_time;
-	gettimeofday(&current_time, NULL);
+	vrpn_gettimeofday(&current_time, NULL);
 	if (duration(current_time, start_time) > maxDelay ) {
 	    // if we've timed out, go back unhappy
 	    cout << "vrpn_Tng3::syncDatastream timeout expired: " << seconds 

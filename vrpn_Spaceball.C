@@ -167,7 +167,7 @@ int	vrpn_Spaceball::reset(void) {
 	// We're now waiting for a response from the box
 	status = STATUS_SYNCING;
 
-	gettimeofday(&timestamp, NULL);	// Set watchdog now
+	vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now
 	return 0;
 }
 
@@ -345,7 +345,7 @@ int vrpn_Spaceball::get_report(void)
         continue;
 
       status = STATUS_READING;        // ready to process event packet
-      gettimeofday(&timestamp, NULL); // set timestamp of this event
+      vrpn_gettimeofday(&timestamp, NULL); // set timestamp of this event
 
       switch (packtype) {
         case 'D':  /* ball displacement event */

@@ -273,7 +273,7 @@ void vrpn_Forwarder_Controller::start_remote_forwarding (vrpn_int32 remote_port)
   char * buffer;
   vrpn_int32 length;
 
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   buffer = encode_start_remote_forwarding(&length, remote_port);
 
   if (!buffer)
@@ -291,7 +291,7 @@ void vrpn_Forwarder_Controller::forward_message_type
   char * buffer;
   vrpn_int32 length;
 
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   buffer = encode_forward_message_type(&length, remote_port, service_name,
                                        message_type);
 

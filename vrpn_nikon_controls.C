@@ -205,7 +205,7 @@ int	vrpn_Nikon_Controls::reset(void)
 
 	NIK_WARNING("reset complete (this is good)");
 
-	gettimeofday(&timestamp, NULL);	// Set watchdog now
+	vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now
 	return 0;
 }
 
@@ -246,7 +246,7 @@ int vrpn_Nikon_Controls::get_report(void)
       // The time stored here is as close as possible to when the
       // report was generated.
       _bufcount = 1;
-      gettimeofday(&timestamp, NULL);
+      vrpn_gettimeofday(&timestamp, NULL);
       status = STATUS_READING;
 #ifdef	VERBOSE2
       printf("... Got the 1st char\n");
@@ -350,7 +350,7 @@ int vrpn_Nikon_Controls::set_channel(unsigned chan_num, vrpn_float64 value)
     char msg[1024];
     sprintf(msg,"vrpn_Nikon_Controls::set_channel(): Index out of bounds (%d of %d), value %lg\n",
       chan_num, o_num_channel, value);
-    gettimeofday(&o_timestamp, NULL);
+    vrpn_gettimeofday(&o_timestamp, NULL);
     send_text_message(msg, o_timestamp, vrpn_TEXT_ERROR);
   }
 
@@ -476,7 +476,7 @@ void	vrpn_Nikon_Controls::mainloop()
 	    while (get_report()) {};	// Keep getting reports so long as there are more
 
 	    struct timeval current_time;
-	    gettimeofday(&current_time, NULL);
+	    vrpn_gettimeofday(&current_time, NULL);
 	    if ( duration(current_time,timestamp) > POLL_INTERVAL) {
 	      static struct timeval last_poll = {0, 0};
 
@@ -489,7 +489,7 @@ void	vrpn_Nikon_Controls::mainloop()
 		  status = STATUS_RESETTING;
 		  return;
 		}
-	        gettimeofday(&last_poll, NULL);
+	        vrpn_gettimeofday(&last_poll, NULL);
 	      } else {
 		return;
 	      }

@@ -1,3 +1,73 @@
+2004-04-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Shared.C : Modified all of VRPN to use calls to a new
+		function vrpn_gettimeofday() rather than the standard
+		gettimeofday() to avoid exporting gettimeofday().  On
+		all but Windows with WINSOCK, this is defined back to
+		gettimeofday().  On Windows with WINSOCK, it is the
+		function that implements gettimeofday().  By editing
+		a flag in vrpn_Configure.h, VRPN will still export
+		gettimeofday; otherwise, it no longer does on any
+		operating system.
+	* vrpn_Shared.h : Same.
+	* vrpn_Configure.h : Modified to include an optional parameter
+		that will export vrpn_gettimeofday() as gettimeofday() and also
+		'struct timezone' when it is set, but not otherwise.
+	* time_test.cpp : Using vrpn_gettimeofday() not gettimeofday()
+	* vrpn_3Space.C : Same.
+	* vrpn_ADBox.C : Same.
+	* vrpn_Analog.C : Same.
+	* vrpn_Analog_3dt.C : Same.
+	* vrpn_Analog_Output.C : Same.
+	* vrpn_Analog_Radamec_SPI.C : Same.
+	* vrpn_BaseClass.C : Same.
+	* vrpn_Button.C : Same.
+	* vrpn_CerealBox.C : Same.
+	* vrpn_Clock.C : Same.
+	* vrpn_Connection.C : Same.
+	* vrpn_Dial.C : Same.
+	* vrpn_DirectXFFJoystick.C : Same.
+	* vrpn_Dyna. : Same.
+	* vrpn_FileController.C : Same.
+	* vrpn_Flock.C : Same.
+	* vrpn_Flock_Parallel.C : Same.
+	* vrpn_ForceDevice.C : Same.
+	* vrpn_ForewardController.C : Same.
+	* vrpn_GlobalHapticsOrb.C : Same.
+	* vrpn_ImmersionBox.C : Same.
+	* vrpn_Joylin.C : Same.
+	* vrpn_Joywin32.C : Same.
+	* vrpn_Magellan.C : Same.
+	* vrpn_Mutex.C : Same.
+	* vrpn_Nidaq.C : Same.
+	* vrpn_Nidaq.h : Same.
+	* vrpn_Poser.C : Same.
+	* vrpn_Poser_Analog.C : Same.
+	* vrpn_RedundantTransmission.C : Sam.e
+	* vrpn_Router.C : Same.
+	* vrpn_Serial.C : Same.
+	* vrpn_SharedObject.C : Same.
+	* vrpn_Sound.C : Same.
+	* vrpn_Spaceball.C : Same.
+	* vrpn_TempImager.C : Same.
+	* vrpn_Text.C : Same.
+	* vrpn_Tng.C : Same.
+	* vrpn_Tracker.C : Same.
+	* vrpn_Tracker_AnalogFly.C : Same.
+	* vrpn_Tracker_ButtonFly.C : Same.
+	* vrpn_Tracker_DTrack.C : Same.
+	* vrpn_Tracker_Fastrak.C : Same.
+	* vrpn_Tracker_Liberty.C : Same.
+	* vrpn_Tracker_isense.C : Same.
+	* vrpn_UNC_Joystick.C : Same.
+	* vrpn_Wanda.C : Same.
+	* vrpn_Zaber.C : Same.
+	* vrpn_nikon_controls.C : Same.
+	* vrpn_FileConnection.C : Same.  Also, modified some calls to
+		advance_currentLogEntry() so that they were funtion
+		calls so that the code would compile.  Not sure how
+		they compiled before...
+
 2004-03-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_CerealBox.C : Fixed a bug that encoded the negative tick

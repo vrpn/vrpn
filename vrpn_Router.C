@@ -572,7 +572,7 @@ vrpn_Router_Remote::vrpn_Router_Remote (const char * name,
 	}
 
 
-	gettimeofday(&timestamp, NULL);
+	vrpn_gettimeofday(&timestamp, NULL);
 }
 
 

@@ -329,7 +329,7 @@ void vrpn_Tracker_ButtonFly::reset (void)
 {
   // Set the matrix back to the identity matrix
   q_matrix_copy(d_currentMatrix, d_initMatrix);
-  gettimeofday(&d_prevtime, NULL);
+  vrpn_gettimeofday(&d_prevtime, NULL);
 
   // Convert the matrix into quaternion notation and copy into the
   // tracker pos and quat elements.
@@ -356,7 +356,7 @@ void vrpn_Tracker_ButtonFly::mainloop()
 
   // See if it has been long enough since our last report.
   // If so, generate a new one.
-  gettimeofday(&now, NULL);
+  vrpn_gettimeofday(&now, NULL);
   interval = duration(now, d_prevtime);
 
   if (shouldReport(interval)) {

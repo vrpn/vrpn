@@ -131,10 +131,9 @@ vrpn_Tracker_DTrack::~vrpn_Tracker_DTrack()
 void vrpn_Tracker_DTrack::mainloop()
 {
 	struct timeval timestamp;
-	struct timezone zone;
 	double dt;
 
-	gettimeofday(&timestamp, &zone);
+	vrpn_gettimeofday(&timestamp, NULL);
 	if (m_first)
 	{
 		m_first=false;
@@ -148,12 +147,6 @@ void vrpn_Tracker_DTrack::mainloop()
 
 	// Call the generic server mainloop, since we are a server
 	server_mainloop();
-
-//	gettimeofday((timeval *)&vrpn_Tracker::timestamp, &zone);
-//	gettimeofday((timeval *)&timestamp, &zone);
-//	gettimeofday((timeval *)&timestamp, &zone);
-//	gettimeofday((timeval *)&timestamp, &zone);
-//	gettimeofday((timeval *)&vrpn_Tracker::timestamp, &zone);
 
 	int err = dtracklib_receive_udp_ascii(
 				&framenr, &m_timestamp,

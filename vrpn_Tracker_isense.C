@@ -161,7 +161,7 @@ m_reset_at_start(reset_at_start)
   //we might want to set the update rate of the mainloop to based on this value.
   //for now we just print it out.
   getTrackerInfo(errStr);
-  gettimeofday(&timestamp, NULL);
+  vrpn_gettimeofday(&timestamp, NULL);
   FT_INFO(errStr);
   fprintf(stderr,errStr);	
   
@@ -229,7 +229,7 @@ int vrpn_Tracker_InterSense::set_sensor_output_format(int station)
 			if(!ISD_SetStationConfig(m_Handle,&m_StationInfo[station],station+1,FALSE))
 		    {
 				sprintf(errStr,"Warning: Your tracker doesn't seem to support the quaternion format - couldn't set station config for Station%d. ",station+1);
-				gettimeofday(&timestamp, NULL);
+				vrpn_gettimeofday(&timestamp, NULL);
 				FT_WARNING(errStr);
 
 				m_StationInfo[station].AngleFormat = ISD_EULER;
@@ -244,7 +244,7 @@ int vrpn_Tracker_InterSense::set_sensor_output_format(int station)
 				if(!ISD_SetStationConfig(m_Handle,&m_StationInfo[station],station+1,FALSE))
 			    {
 					sprintf(errStr,"Warning: Your tracker doesn't seem to support the IS900 timestamps - couldn't set station config for Station%d. ",station+1);
-					gettimeofday(&timestamp, NULL);
+					vrpn_gettimeofday(&timestamp, NULL);
 					FT_WARNING(errStr);
 					m_StationInfo[station].TimeStamped = FALSE;
 				}
@@ -255,7 +255,7 @@ int vrpn_Tracker_InterSense::set_sensor_output_format(int station)
 				if(!ISD_SetStationConfig(m_Handle,&m_StationInfo[station],station+1,FALSE))
 			    {
 					sprintf(errStr,"Warning: Your tracker doesn't seem to support the IS900 buttons/analogs - couldn't set station config for Station%d. ",station+1);
-					gettimeofday(&timestamp, NULL);
+					vrpn_gettimeofday(&timestamp, NULL);
 					FT_WARNING(errStr);
 					m_StationInfo[station].GetInputs = FALSE;
 				}
@@ -276,7 +276,7 @@ void vrpn_Tracker_InterSense::reset()
   {
     sprintf(errStr,"InterSense: Failed to open tracker '%s' on COM%d: ISD_OpenTracker returned -1",d_servicename,m_CommPort);
     fprintf(stderr,errStr);
-    gettimeofday(&timestamp, NULL);
+    vrpn_gettimeofday(&timestamp, NULL);
 	FT_ERROR(errStr);
 
     status = vrpn_TRACKER_FAIL;
@@ -307,7 +307,7 @@ void vrpn_Tracker_InterSense::reset()
 		if(!ISD_SendScript(m_Handle,add_reset_cmd))
 	    {
 			sprintf(errStr,"Warning: Your tracker failed executing the additional command string. ");
-			gettimeofday(&timestamp, NULL);
+			vrpn_gettimeofday(&timestamp, NULL);
 			FT_WARNING(errStr);
 		}
 	}
@@ -323,15 +323,15 @@ void vrpn_Tracker_InterSense::reset()
 		if(!ISD_SendScript(m_Handle,clear_timestamp_cmd))
 	    {
 			sprintf(errStr,"Warning: Your tracker failed executing the additional command string. ");
-			gettimeofday(&timestamp, NULL);
+			vrpn_gettimeofday(&timestamp, NULL);
 			FT_WARNING(errStr);
 		}
 
-		gettimeofday(&is900_zerotime, NULL);
+		vrpn_gettimeofday(&is900_zerotime, NULL);
     }
 
     // Done with reset.
-    gettimeofday(&timestamp, NULL);	// Set watchdog now
+    vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now
     FT_WARNING("Reset Completed (this is good)");
 
     status = vrpn_TRACKER_SYNCING;	// We're trying for a new reading
@@ -378,7 +378,7 @@ void vrpn_Tracker_InterSense::get_report(void)
           // Store the current time
           timestamp = vrpn_TimevalSum(is900_zerotime, delta_time);
         } else {
-		  gettimeofday(&timestamp, NULL);	// Set watchdog now
+		  vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now
 		}
 
         //--------------------------------------------------------------------

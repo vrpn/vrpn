@@ -520,7 +520,7 @@ void vrpn_Tracker_Flock::reset()
 
    fprintf(stderr,"\nvrpn_Tracker_Flock: done with reset ... running.\n");
 
-   gettimeofday(&timestamp, NULL);	// Set watchdog now
+   vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now
    status = vrpn_TRACKER_SYNCING;	// We're trying for a new reading
 }
 
@@ -568,7 +568,7 @@ int vrpn_Tracker_Flock::get_report(void)
      // Got the first character of a report -- go into PARTIAL mode
      // and say that we got one character at this time.
      bufcount = 1;
-     gettimeofday(&timestamp, NULL);
+     vrpn_gettimeofday(&timestamp, NULL);
      status = vrpn_TRACKER_PARTIAL;
    }
      
@@ -682,7 +682,7 @@ if (vrpn_write_characters(serial_fd, (const unsigned char *) &chPoint, 1 )!=1) {
   status = vrpn_TRACKER_FAIL;\
   return;\
 } \
-gettimeofday(&timestamp, NULL);\
+vrpn_gettimeofday(&timestamp, NULL);\
 }   
 
 // max time between start of a report and the finish (or time to 
@@ -717,7 +717,7 @@ void	vrpn_Tracker_Flock::send_report(void) {
 	struct timeval tvNow;
 
 	// get curr time
-	gettimeofday(&tvNow, NULL);
+	vrpn_gettimeofday(&tvNow, NULL);
 
 	if (fFirstStatusReport) {
 	  // print a status message in cStatusInterval seconds
