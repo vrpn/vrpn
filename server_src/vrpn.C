@@ -28,6 +28,7 @@
 
 #include "vrpn_Analog.h"
 #include "vrpn_UNC_Joystick.h"
+#include "vrpn_Joylin.h"
 #include "vrpn_JoyFly.h"
 #include "vrpn_CerealBox.h"
 #include "vrpn_Tracker_AnalogFly.h"
@@ -35,6 +36,7 @@
 #include "vrpn_ImmersionBox.h"
 #include "vrpn_Analog_Radamec_SPI.h"
 #include "vrpn_Wanda.h"
+#include "vrpn_Analog_5dt.h"
 
 #include "vrpn_ForwarderController.h"
 #include <vrpn_RedundantTransmission.h>
@@ -691,6 +693,40 @@ int setup_ImmersionBox (char * & pch, char * line, FILE * config_file) {
     return 0;
 }
 
+int setup_5dt (char * & pch, char * line, FILE * config_file)
+{
+  char name [512], device [512];
+  int baud_rate, mode;
+
+  next();
+  // Get the arguments (class, 5DT_name, port, baud
+  if (sscanf(pch,"%511s%511s%d%d",name,device, &baud_rate, &mode) != 4)
+    {
+      fprintf(stderr,"Bad vrpn_5dt line: %s\n",line);
+      return -1;
+    }
+  // Make sure there's room for a new analog
+  if (num_analogs >= MAX_ANALOG) {
+      fprintf(stderr,"Too many Analogs in config file");
+      return -1;
+  }
+
+  // Open the device
+  if (verbose) {
+    printf("Opening vrpn_5dt: %s on port %s, baud %d\n",
+	   name,device,baud_rate);
+  }
+  if ((analogs[num_analogs] =
+       new vrpn_5dt (name, connection, device, baud_rate, mode)) == NULL) {
+      fprintf(stderr,"Can't create new vrpn_5dt\n");
+      return -1;
+  } else {
+      num_analogs++;
+  }
+
+  return 0;
+}
+
 int setup_Wanda (char * & pch, char * line, FILE * config_file) {
   char s2 [LINESIZE], s3 [LINESIZE];
   int i1;
@@ -1164,6 +1200,38 @@ int setup_Button_PinchGlove(char* &pch, char *line, FILE *config_file) {
 
 }
 
+//================================
+int setup_Joylin (char * & pch, char * line, FILE * config_file) {
+  char s2[512];
+  char s3[512];
+  
+  // Get the arguments
+  next();
+  if (sscanf(pch, "%511s%511s", s2, s3) != 2) {
+    fprintf(stderr, "Bad vrpn_Joylin line: %s\n", line);
+    return -1;
+  }
+  
+  // Make sure there's room for a new joystick server
+  if (num_analogs >= MAX_ANALOG) {
+    fprintf(stderr, "Too many analog devices in config file");
+    return -1;
+  }
+
+  // Open the joystick server
+  if (verbose) 
+    printf("Opening vrpn_Joylin: %s on port %s\n", s2, s3);
+  if ((analogs[num_analogs] = 
+       new vrpn_Joylin(s2, connection, s3)) == NULL) {
+    fprintf(stderr, "Can't create new vrpn_Joylin\n");
+    return -1;
+  } else {
+    num_analogs++;
+  }
+  return 0;
+}
+
+
 main (int argc, char * argv[])
 {
 	char	* config_file_name = "vrpn.cfg";
@@ -1320,6 +1388,8 @@ main (int argc, char * argv[])
             CHECK(setup_Tracker_AnalogFly);
 	  } else  if (isit("vrpn_Joystick")) {
             CHECK(setup_Joystick);
+	  } else  if (isit("vrpn_Joylin")) {
+            CHECK(setup_Joylin);
 	  } else if (isit("vrpn_Dial_Example")) {
             CHECK(setup_DialExample);
 	  } else if (isit("vrpn_CerealBox")) {
@@ -1328,7 +1398,9 @@ main (int argc, char * argv[])
             CHECK(setup_Magellan);
 	  } else if (isit("vrpn_Radamec_SPI")) {
             CHECK(setup_Radamec_SPI);
-          } else if (isit("vrpn_ImmersionBox")) {
+	  } else if (isit("vrpn_5dt")) {
+            CHECK(setup_5dt);
+      } else if (isit("vrpn_ImmersionBox")) {
             CHECK(setup_ImmersionBox);
 	  } else if (isit("vrpn_Tracker_Dyna")) {
             CHECK(setup_Tracker_Dyna);
