@@ -15,8 +15,6 @@
 vrpn_Button_Remote *btn;
 vrpn_Analog_Remote *ana;
 vrpn_Dial_Remote *dial;
-vrpn_Connection * c;
-vrpn_File_Controller * fc;
 
 int done = 0;
 
@@ -99,24 +97,9 @@ void shutdown (void) {
 
   fprintf(stderr, "\nIn control-c handler.\n");
 
-  // print out sender names
-
-  if (c)
-    for (i = 0L; n = c->sender_name(i); i++)
-      printf("Knew local sender \"%s\".\n", n);
-
-  // print out type names
-
-  if (c)
-    for (i = 0L; n = c->message_type_name(i); i++)
-      printf("Knew local type \"%s\".\n", n);
-
-
   if (btn) delete btn;
   if (ana) delete ana;
   if (dial) delete dial;
-  if (c)
-    delete c;
 
   exit(0);
 }
