@@ -2,7 +2,7 @@
 package vrpn;
 import java.util.*;
 
-public class AnalogRemote implements Runnable
+public class AnalogRemote extends TimerTask
 {
 	
 	//////////////////
@@ -42,8 +42,7 @@ public class AnalogRemote implements Runnable
 			throw new InstantiationException( e.getMessage( ) );
 		}
 		
-		this.analogThread = new Thread( this );
-		this.analogThread.start( );
+		analogTimer.scheduleAtFixedRate( this, 0, timerPeriod );
 	}
 	
 	public synchronized native boolean requestValueChange( int channel, double value );
@@ -63,12 +62,7 @@ public class AnalogRemote implements Runnable
 	 */
 	public void run( )
 	{
-		while( keepRunning )
-		{
-			this.mainloop( );
-			try { Thread.sleep( 100 ); }
-			catch( InterruptedException e ) { } 
-		}
+		this.mainloop( );
 	}
 	
 	// end public methods
@@ -89,7 +83,7 @@ public class AnalogRemote implements Runnable
 									   double[] channel )
 	{
 		// putting the body of this function into a synchronized block prevents
-		// other instances of TrackerRemote from calling listeners' trackerPositionUpdate
+		// other instances of AnalogRemote from calling listeners' analogUpdate
 		// method concurrently.
 		synchronized( notifyingChangeListenersLock )
 		{
@@ -105,7 +99,7 @@ public class AnalogRemote implements Runnable
 				l.analogUpdate( a, this );
 			}
 		} // end synchronized( notifyingChangeListenersLock )
-	} // end method handleTrackerChange
+	} // end method handleAnalogChange
 	
 	
 	/**
@@ -125,12 +119,8 @@ public class AnalogRemote implements Runnable
 	
 	protected void finalize( ) throws Throwable
 	{
-		keepRunning = false;
-		while( analogThread.isAlive( ) )
-		{
-			try { analogThread.join( ); }
-			catch( InterruptedException e ) { }
-		}
+		this.cancel( );
+		analogTimer.cancel( );
 		changeListeners.removeAllElements( );
 		this.shutdownAnalog( );
 	}
@@ -143,18 +133,15 @@ public class AnalogRemote implements Runnable
 	// data members
 	
 	// this is used by the native code to store a C++ pointer to the 
-	// native vrpn_TrackerRemote object
+	// native vrpn_AnalogRemote object
 	protected int native_analog = -1;
 	
-	// this is used to stop and to keep running the tracking thread
-	// in an orderly fashion.
-	protected boolean keepRunning = true;
-	
-	// the tracking thread
-	Thread analogThread = null;
+	// the Timer
+	protected Timer analogTimer = new Timer( );
+	protected long timerPeriod = 100; // milliseconds
 	
 	/**
-	 * @see vrpn.TrackerRemote.notifyingChangeListenersLock
+	 * @see vrpn.AnalogRemote.notifyingChangeListenersLock
 	 */
 	protected final static Object notifyingChangeListenersLock = new Object( );
 	protected Vector changeListeners = new Vector( );

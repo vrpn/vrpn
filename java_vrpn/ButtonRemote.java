@@ -1,7 +1,7 @@
 package vrpn;
 import java.util.*;
 
-public class ButtonRemote implements Runnable
+public class ButtonRemote extends TimerTask
 {
 	
 	//////////////////
@@ -34,9 +34,8 @@ public class ButtonRemote implements Runnable
 			System.out.println( " -- Unable to find the right functions.  This may be a version problem." );
 			throw new InstantiationException( e.getMessage( ) );
 		}
+		buttonTimer.scheduleAtFixedRate( this, 0, timerPeriod );
 		
-		this.buttonThread = new Thread( this );
-		this.buttonThread.start( );
 	}
 	
 	public synchronized void addButtonChangeListener( ButtonChangeListener listener )
@@ -53,16 +52,33 @@ public class ButtonRemote implements Runnable
 	}
 	
 	/**
+	 * Sets the interval between invocations of <code>mainloop()</code>, which checks
+	 * for and delivers messages.
+	 * @param period The period, in milliseconds, between the beginnings of two
+	 * consecutive message loops.
+	 */
+	public synchronized void setTimerPeriod( long period )
+	{
+		this.cancel( );
+		timerPeriod = period;
+		buttonTimer.scheduleAtFixedRate( this, 0, timerPeriod );
+	}
+	
+	/**
+	 * @return The period, in milliseconds.
+	 */
+	public synchronized long getTimerPeriod( )
+	{
+		return timerPeriod;
+	}
+	
+	
+	/**
 	 * This should <b>not</b> be called by user code.
 	 */
 	public void run( )
 	{
-		while( keepRunning )
-		{
-			this.mainloop( );
-			try { Thread.sleep( 100 ); }
-			catch( InterruptedException e ) { } 
-		}
+		this.mainloop( );
 	}
 	
 	// end public methods
@@ -120,12 +136,8 @@ public class ButtonRemote implements Runnable
 	
 	protected void finalize( ) throws Throwable
 	{
-		keepRunning = false;
-		while( buttonThread.isAlive( ) )
-		{
-			try { buttonThread.join( ); }
-			catch( InterruptedException e ) { }
-		}
+		this.cancel( );
+		buttonTimer.cancel( );
 		changeListeners.removeAllElements( );
 		this.shutdownButton( );
 	}
@@ -137,16 +149,9 @@ public class ButtonRemote implements Runnable
 	///////////////////
 	// data members
 	
-	// this is used by the native code to store a C++ pointer to the 
-	// native vrpn_ButtonRemote object
-	protected int native_button = -1;
-	
-	// this is used to stop and to keep running the button thread
-	// in an orderly fashion.
-	protected boolean keepRunning = true;
-	
-	// the button thread
-	Thread buttonThread = null;
+	// the Timer
+	protected Timer buttonTimer = new Timer( );
+	protected long timerPeriod = 100; // milliseconds
 	
 	protected Vector changeListeners = new Vector( );
 	

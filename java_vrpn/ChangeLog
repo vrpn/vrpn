@@ -1,4 +1,17 @@
-2002-06-27    <marshbur@cs.unc.edu>
+2002-06-28  David Marshburn  <marshbur@cs.unc.edu>
+
+	* AnalogRemote.java:  two new functions, Get/SetTimerPeriod, to 
+	control how often vrpn looks for messages.  Also, instead of 
+	spawning its own thread and sleeping, this uses the Java Timer
+	and TimerTask class to check for vrpn messages reliably.
+	* ButtonRemote.java:  same
+	* ForceDeviceRemote.java:  same
+	* TrackerRemote.java:  same
+	* java_vrpn.vjp:  added a classpath link to the Sun Java 1.4.0 SDK
+	* README.txt:  updated instructions for building and using this.
+	* ButtonRemote.dsp:  adds java_vrpn.h to source files.
+
+2002-06-27  David Marshburn  <marshbur@cs.unc.edu>
 
 	* AnalogRemote.java:  more and more correct error messages when
 	the native library dll can't be found or has problems...

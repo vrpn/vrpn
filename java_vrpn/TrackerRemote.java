@@ -3,7 +3,7 @@ package vrpn;
 import java.util.*;
 
 
-public class TrackerRemote implements Runnable
+public class TrackerRemote extends TimerTask
 {
 	//////////////////
 	// Public structures and interfaces
@@ -74,8 +74,7 @@ public class TrackerRemote implements Runnable
 			throw new InstantiationException( e.getMessage( ) );
 		}
 		
-		this.trackingThread = new Thread( this );
-		this.trackingThread.start( );
+		trackingTimer.scheduleAtFixedRate( this, 0, timerPeriod );
 	}
 	
 	
@@ -125,17 +124,35 @@ public class TrackerRemote implements Runnable
 		return accelerationListeners.removeElement( listener );
 	}
 
+	
+	/**
+	 * Sets the interval between invocations of <code>mainloop()</code>, which checks
+	 * for and delivers messages.
+	 * @param period The period, in milliseconds, between the beginnings of two
+	 * consecutive message loops.
+	 */
+	public synchronized void setTimerPeriod( long period )
+	{
+		this.cancel( );
+		timerPeriod = period;
+		trackingTimer.scheduleAtFixedRate( this, 0, timerPeriod );
+	}
+	
+	/**
+	 * @return The period, in milliseconds.
+	 */
+	public synchronized long getTimerPeriod( )
+	{
+		return timerPeriod;
+	}
+	
+	
 	/**
 	 * This should <b>not</b> be called by user code.
 	 */
 	public void run( )
 	{
-		while( keepTracking )
-		{
-			this.mainloop( );
-			try { Thread.sleep( 100 ); }
-			catch( InterruptedException e ) { } 
-		}
+		this.mainloop( );
 	}
 	
 	// end public methods
@@ -253,12 +270,8 @@ public class TrackerRemote implements Runnable
 	
 	protected void finalize( ) throws Throwable
 	{
-		keepTracking = false;
-		while( trackingThread.isAlive( ) )
-		{
-			try { trackingThread.join( ); }
-			catch( InterruptedException e ) { }
-		}
+		this.cancel( );
+		trackingTimer.cancel( );
 		changeListeners.removeAllElements( );
 		velocityListeners.removeAllElements( );
 		accelerationListeners.removeAllElements( );
@@ -275,12 +288,9 @@ public class TrackerRemote implements Runnable
 	// native vrpn_TrackerRemote object
 	protected int native_tracker = -1;
 	
-	// this is used to stop and to keep running the tracking thread
-	// in an orderly fashion.
-	protected boolean keepTracking = true;
-	
-	// the tracking thread
-	Thread trackingThread = null;
+	// the tracking Timer
+	protected Timer trackingTimer = new Timer( );
+	protected long timerPeriod = 100; // milliseconds
 	
 	protected Vector changeListeners = new Vector( );
 	protected Vector velocityListeners = new Vector( );

@@ -3,7 +3,7 @@ import java.util.*;
 
 
 
-public class ForceDeviceRemote implements Runnable
+public class ForceDeviceRemote extends TimerTask
 {
 	
 	//////////////////
@@ -74,8 +74,7 @@ public class ForceDeviceRemote implements Runnable
 			throw new InstantiationException( e.getMessage( ) );
 		}
 		
-		this.forceDeviceThread = new Thread( this );
-		this.forceDeviceThread.start( );
+		forceTimer.scheduleAtFixedRate( this, 0, timerPeriod );
 	}
 	
 	
@@ -152,16 +151,33 @@ public class ForceDeviceRemote implements Runnable
 	}
 
 	/**
+	 * Sets the interval between invocations of <code>mainloop()</code>, which checks
+	 * for and delivers messages.
+	 * @param period The period, in milliseconds, between the beginnings of two
+	 * consecutive message loops.
+	 */
+	public synchronized void setTimerPeriod( long period )
+	{
+		this.cancel( );
+		timerPeriod = period;
+		forceTimer.scheduleAtFixedRate( this, 0, timerPeriod );
+	}
+	
+	/**
+	 * @return The period, in milliseconds.
+	 */
+	public synchronized long getTimerPeriod( )
+	{
+		return timerPeriod;
+	}
+	
+	
+	/**
 	 * This should <b>not</b> be called by user code.
 	 */
 	public void run( )
 	{
-		while( keepForcing )
-		{
-			this.mainloop( );
-			try { Thread.sleep( 100 ); }
-			catch( InterruptedException e ) { } 
-		}
+		this.mainloop( ); 
 	}
 	
 	// end public methods
@@ -266,12 +282,8 @@ public class ForceDeviceRemote implements Runnable
 	
 	protected void finalize( ) throws Throwable
 	{
-		keepForcing = false;
-		while( forceDeviceThread.isAlive( ) )
-		{
-			try { forceDeviceThread.join( ); }
-			catch( InterruptedException e ) { }
-		}
+		this.cancel( );
+		forceTimer.cancel( );
 		forceListeners.removeAllElements( );
 		scpListeners.removeAllElements( );
 		errorListeners.removeAllElements( );
@@ -288,12 +300,9 @@ public class ForceDeviceRemote implements Runnable
 	// native vrpn_ForceDeviceRemote object
 	protected int native_force_device = -1;
 	
-	// this is used to stop and to keep running the force device thread
-	// in an orderly fashion.
-	protected boolean keepForcing = true;
-	
-	// the force device thread
-	Thread forceDeviceThread = null;
+	// the Timer
+	protected Timer forceTimer = new Timer( );
+	protected long timerPeriod = 100; // milliseconds
 	
 	protected Vector forceListeners = new Vector( );
 	protected Vector scpListeners = new Vector( );
