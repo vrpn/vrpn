@@ -546,25 +546,33 @@ int vrpn_Log::open (void) {
     d_file = NULL;
   } else {
     d_file = fopen(d_logFileName, "wb");
+    if( d_file == NULL ) // unable to open the file
+    {
+      fprintf(stderr, "vrpn_Log::open_log:  "
+              "Couldn't open log file \"%s\":  ", d_logFileName);
+      perror( NULL /* no additional string */ );
+    }
   }
 
-  if (!d_file) {
-    fprintf(stderr, "vrpn_Log::open_log:  "
-                    "Couldn't open log file \"%s\".\n", d_logFileName);
-
-    // Try to write to "/tmp/vrpn_emergency_log"
+  if (!d_file) { // Try to write to "/tmp/vrpn_emergency_log"
     d_file = fopen("/tmp/vrpn_emergency_log", "r");
     if (d_file) {
       d_file = NULL;
+      fprintf(stderr, "vrpn_Log::open_log:  "
+              "Emergency log file \"/tmp/vrpn_emergency_log\" "
+              "already exists.\n");
     } else {
       d_file = fopen("/tmp/vrpn_emergency_log", "wb");
+      if( d_file == NULL )
+      {
+        fprintf(stderr, "vrpn_Log::open_log:  "
+                "Couldn't open emergency log file "
+                "\"/tmp/vrpn_emergency_log\":  ");
+        perror( NULL /* no additional string */ );
+      }
     }
 
     if (!d_file) {
-      fprintf(stderr, "vrpn_Log::open_log:\n  "
-                      "Couldn't open emergency log file "
-                      "\"/tmp/vrpn_emergency_log\".\n");
-
       return -1;
     } else {
       fprintf(stderr, "Writing to /tmp/vrpn_emergency_log instead.\n");

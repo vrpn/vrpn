@@ -1,3 +1,8 @@
+2001-12-10  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Connection.C (vrpn_Log::open):  added some more diagnostic
+	output when this fails to open a log file.
+
 2001-11-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* time_test.cpp : Program to compare two ways of reading time on Windows.
