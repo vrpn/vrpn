@@ -95,7 +95,8 @@ vrpn_Connection::vrpn_OneConnection::vrpn_OneConnection
 }
 
 
-void setClockOffset( void *userdata, const vrpn_CLOCKCB& info ) {
+void setClockOffset( void *userdata, const vrpn_CLOCKCB& info )
+{
 #if 0
   cerr << "clock offset is " << vrpn_TimevalMsecs(info.tvClockOffset) 
        << " msecs (used round trip which took " 
@@ -141,7 +142,8 @@ vrpn_Synchronized_Connection(char *server_name, double dFreq,
    }
 }
 
-struct timeval vrpn_Synchronized_Connection::fullSync(void) {
+struct timeval vrpn_Synchronized_Connection::fullSync(void)
+{
   if (pClockRemote) {
     // set the fullsync flag
     pClockRemote->fullSync();
@@ -153,7 +155,8 @@ struct timeval vrpn_Synchronized_Connection::fullSync(void) {
   return tvClockOffset;
 }
 
-int vrpn_Synchronized_Connection::mainloop(void) {
+int vrpn_Synchronized_Connection::mainloop(void)
+{
   if (pClockServer) {
     pClockServer->mainloop();
     // call the base class mainloop
@@ -420,7 +423,7 @@ int vrpn_Connection::setup_for_new_connection(void)
 	// No UDP outbound is defined
 	endpoint.udp_sock = INVALID_SOCKET;
 
-	// Set all of the local IDs to zero, in case the other side
+	// Set all of the local IDs to -1, in case the other side
 	// sends a message of a type that it has not yet defined.
 	// (for example, arriving on the UDP line ahead of its TCP
 	// definition).
