@@ -1,11 +1,9 @@
 
 #include <stdio.h>
 #include <jni.h>
+#include "java_vrpn.h"
 #include "vrpn_Tracker.h"
 #include "vrpn_TrackerRemote.h"
-
-// this is the java/jni version that we're expecting
-#define JAVA_VRPN_JNI_VERSION JNI_VERSION_1_4
 
 JavaVM* jvm = NULL;
 jclass jclass_vrpn_TrackerRemote = NULL;
@@ -115,6 +113,76 @@ void handle_tracker_change( void* userdata, const vrpn_TRACKERCB info )
 }
 
 
+// This is the callback for vprn to notify us of a new velocity message
+void handle_velocity_change( void* userdata, const vrpn_TRACKERVELCB info )
+{
+  if( jvm == NULL )
+    return;
+
+  /*
+  printf( "velocityb change (C):  time:  %d.%d;  sensor:  %d;\n"
+          "\tvel: %f %f %f;\n"
+          "\tquat:  %f %f %f %f  dt:  %f\n", info.msg_time.tv_sec, info.msg_time.tv_usec,
+          info.sensor, info.vel[0], info.vel[1], info.vel[2],
+          info.vel_quat[0], info.vel_quat[1], info.vel_quat[2], info.vel_quat[3], info.vel_quat_dt );
+  */
+
+  
+  JNIEnv* env;
+  jvm->AttachCurrentThread( (void**) &env, NULL );
+  
+  jobject jobj = (jobject) userdata;
+  jclass jcls = env->GetObjectClass( jobj );
+  jmethodID jmid = env->GetMethodID( jcls, "handleVelocityChange", "(JJIDDDDDDDD)V" );
+  if( jmid == NULL )
+  {
+    printf( "Warning:  vrpn_TrackerRemote library was unable to find the "
+            "Java method \'handleVelocityChange\'.  This may indicate a version mismatch.\n" );
+    return;
+  }
+  env->CallVoidMethod( jobj, jmid, (jlong) info.msg_time.tv_sec, (jlong) info.msg_time.tv_usec,
+                       (jint) info.sensor, (jdouble) info.vel[0], (jdouble) info.vel[1], 
+                       (jdouble) info.vel[2], (jdouble) info.vel_quat[0], (jdouble) info.vel_quat[1], 
+                       (jdouble) info.vel_quat[2], (jdouble) info.vel_quat[3], (jdouble) info.vel_quat_dt );
+  
+}
+
+
+// This is the callback for vprn to notify us of a new tracker message
+void handle_acceleration_change( void* userdata, const vrpn_TRACKERACCCB info )
+{
+  if( jvm == NULL )
+    return;
+
+  
+  printf( "tracker change (C):  time:  %d.%d;  sensor:  %d;\n"
+          "\tacc: %f %f %f;\n"
+          "\tquat:  %f %f %f %f  dt:  %f\n", info.msg_time.tv_sec, info.msg_time.tv_usec,
+          info.sensor, info.acc[0], info.acc[1], info.acc[2],
+          info.acc_quat[0], info.acc_quat[1], info.acc_quat[2], info.acc_quat[3], info.acc_quat_dt );
+  
+
+  
+  JNIEnv* env;
+  jvm->AttachCurrentThread( (void**) &env, NULL );
+  
+  jobject jobj = (jobject) userdata;
+  jclass jcls = env->GetObjectClass( jobj );
+  jmethodID jmid = env->GetMethodID( jcls, "handleAccelerationChange", "(JJIDDDDDDDD)V" );
+  if( jmid == NULL )
+  {
+    printf( "Warning:  vrpn_TrackerRemote library was unable to find the "
+            "Java method \'handleAccelerationChange\'.  This may indicate a version mismatch.\n" );
+    return;
+  }
+  env->CallVoidMethod( jobj, jmid, (jlong) info.msg_time.tv_sec, (jlong) info.msg_time.tv_usec,
+                       (jint) info.sensor, (jdouble) info.acc[0], (jdouble) info.acc[1], 
+                       (jdouble) info.acc[2], (jdouble) info.acc_quat[0], (jdouble) info.acc_quat[1], 
+                       (jdouble) info.acc_quat[2], (jdouble) info.acc_quat[3], (jdouble) info.acc_quat_dt );
+  
+}
+
+
 JNIEXPORT jint JNICALL 
 Java_vrpn_TrackerRemote_setUpdateRate( JNIEnv* env, jobject jobj, jdouble updateRate )
 {
@@ -126,6 +194,8 @@ Java_vrpn_TrackerRemote_setUpdateRate( JNIEnv* env, jobject jobj, jdouble update
   vrpn_Tracker_Remote* t = (vrpn_Tracker_Remote*) env->GetIntField( jobj, jfid );
   if( t <= 0 )
     return -1;
+  
+  // now set the update rate
   return t->set_update_rate( updateRate );
 
 }
@@ -138,10 +208,15 @@ Java_vrpn_TrackerRemote_mainloop( JNIEnv* env, jobject jobj )
   jclass jcls = env->GetObjectClass( jobj );
   jfieldID jfid = env->GetFieldID( jcls, "native_tracker", "I" );
   if( jfid == NULL )
+  {
+    printf( "Error in native method \"mainloop\":  unable to ID native tracker field.\n" );
     return;
+  }
   vrpn_Tracker_Remote* t = (vrpn_Tracker_Remote*) env->GetIntField( jobj, jfid );
-  if( t <= 0 )
+  if( t <= 0 )  // this tracker is uninitialized or has been shtu down already
     return;
+
+  // now call mainloop
   t->mainloop( );
 }
 
@@ -155,7 +230,10 @@ Java_vrpn_TrackerRemote_init( JNIEnv* env, jobject jobj, jstring jname )
   jclass jcls = env->GetObjectClass( jobj );
   jfieldID jfid = env->GetFieldID( jcls, "native_tracker", "I" );
   if( jfid == NULL )
+  {
+    printf( "Error in native method \"init\":  unable to ID native tracker field.\n" );
     return false;
+  }
 
   // make a global reference to the Java TrackerRemote
   // object, so that it can be referenced in the function
@@ -166,6 +244,8 @@ Java_vrpn_TrackerRemote_init( JNIEnv* env, jobject jobj, jstring jname )
   const char* name = env->GetStringUTFChars( jname, NULL );
   vrpn_Tracker_Remote* t = new vrpn_Tracker_Remote( name );
   t->register_change_handler( jobj, handle_tracker_change );
+  t->register_change_handler( jobj, handle_velocity_change );
+  t->register_change_handler( jobj, handle_acceleration_change );
   env->ReleaseStringUTFChars( jname, name );
   
   // now stash 't' in the jobj's 'native_tracker' field
@@ -187,7 +267,10 @@ Java_vrpn_TrackerRemote_shutdownTracker( JNIEnv* env, jobject jobj )
   jclass jcls = env->GetObjectClass( jobj );
   jfieldID jfid = env->GetFieldID( jcls, "native_tracker", "I" );
   if( jfid == NULL )
+  {
+    printf( "Error in native method \"shutdownTracker\":  unable to ID native tracker field.\n" );
     return;
+  }
 
   // get the tracker pointer
   vrpn_Tracker_Remote* t = (vrpn_Tracker_Remote*) env->GetIntField( jobj, jfid );
@@ -196,6 +279,8 @@ Java_vrpn_TrackerRemote_shutdownTracker( JNIEnv* env, jobject jobj )
   if( t > 0 )
   {
     t->unregister_change_handler( jobj, handle_tracker_change );
+    t->unregister_change_handler( jobj, handle_velocity_change );
+    t->unregister_change_handler( jobj, handle_acceleration_change );
     delete t;
   }
 

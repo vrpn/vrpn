@@ -59,14 +59,19 @@ public class TrackerRemote implements Runnable
 	// Public methods
 	//
 	
-	public TrackerRemote( String name )
+	/**
+	 * @exception java.lang.InstantiationException
+	 *		If the tracker could not be created because of problems with
+	 *      its native code and linking.
+	 */
+	public TrackerRemote( String name ) throws InstantiationException
 	{
 		try	{  this.init( name );  }
 		catch( java.lang.UnsatisfiedLinkError e )
 		{  
 			System.out.println( "Error initializing remote tracker " + name + "." );
-			System.out.println( e.getMessage( ) );
-			return;
+			System.out.println( " -- Unable to find native library." );
+			throw new InstantiationException( e.getMessage( ) );
 		}
 		
 		this.trackingThread = new Thread( this );
@@ -278,23 +283,25 @@ public class TrackerRemote implements Runnable
 	Thread trackingThread = null;
 	
 	protected Vector changeListeners = new Vector( );
-	protected final static Object notifyingChangeListenersLock = new Object( );
 	protected Vector velocityListeners = new Vector( );
-	protected final static Object notifyingVelocityListenersLock = new Object( );
 	protected Vector accelerationListeners = new Vector( );
-	protected final static Object notifyingAccelerationListenersLock = new Object( );
 	
-	// these notifying*ListenersLock variables are used to ensure that multiple
-	// TrackerRemote objects running in multiple threads don't call the 
-	// trackerChangeUpdate, et. al., method of some single object concurrently.
-	// For example, the handleTrackerChange(...) method, which is invoked from native 
-	// code, gets a lock on the notifyingChangeListenersLock object.  Since that object
-	// is static, all other instances of TrackerRemote must wait before notifying 
-	// their listeners and completing their handleTrackerChange(...) methods.
-	// They are necessary, in part, because methods in an interface can't be declared
-	// synchronized (and the semantics of the keyword 'synchronized' aren't what's
-	// wanted here, anyway -- we want synchronization across all instances, not just a 
-	// single object).
+	/**
+	 * these notifying*ListenersLock variables are used to ensure that multiple
+	 * TrackerRemote objects running in multiple threads don't call the 
+	 * trackerChangeUpdate, et. al., method of some single object concurrently.
+	 * For example, the handleTrackerChange(...) method, which is invoked from native 
+	 * code, gets a lock on the notifyingChangeListenersLock object.  Since that object
+	 * is static, all other instances of TrackerRemote must wait before notifying 
+	 * their listeners and completing their handleTrackerChange(...) methods.
+	 * They are necessary, in part, because methods in an interface can't be declared
+	 * synchronized (and the semantics of the keyword 'synchronized' aren't what's
+	 * wanted here, anyway -- we want synchronization across all instances, not just a 
+	 * single object).
+	 */
+	protected final static Object notifyingChangeListenersLock = new Object( );
+	protected final static Object notifyingVelocityListenersLock = new Object( );
+	protected final static Object notifyingAccelerationListenersLock = new Object( );
 	
 	// static initialization
 	static 

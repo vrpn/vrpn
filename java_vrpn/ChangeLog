@@ -1,3 +1,18 @@
+2002-06-07  David Marshburn  <marshbur@cs.unc.edu>
+
+	* TrackerRemote.dsw:  removed in favor of java_vrpn.dsw
+	* java_vrpn.dsw:  new; workspace for a project for each vrpn device
+	* AnalogRemote.dsp:  new
+	* AnalogRemote.java:  new.  the java part of a java vrpn analog remote
+	* vrpn_AnalogRemote.cpp:  new.  the c++ part of java vrpn analog remote
+	* .cvsignore:  new
+	* java_vrpn.h:  new.  some common constants for the c++ part
+	* TrackerRemote.java:  comment changes.  also throws an exception
+	if the tracker can't be created in native code.
+	* java_vrpn.vjp:  added AnalogRemote
+	* vrpn_TrackerRemote.cpp:  added handlers for velocity and
+	acceleration.
+
 2002-06-02  David Marshburn  <marshbur@cs.unc.edu>
 
 	* creation of java_vrpn repository
