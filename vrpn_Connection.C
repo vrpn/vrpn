@@ -365,7 +365,7 @@ int vrpn_noint_select(int width, fd_set *readfds, fd_set *writefds,
  * return that or return -1 (in the case of an error) or 0 (in the case
  * of EOF being reached before all the data is sent). */
 
-#ifndef _WIN32
+#if !defined(_WIN32) || defined(__CYGWIN__)
 
 int vrpn_noint_block_write (int outfile, const char buffer[], int length)
 {
@@ -464,6 +464,7 @@ int vrpn_noint_block_read(SOCKET insock, char *buffer, int length)
 	    
     return(sofar);			/* All bytes read */
 }
+
 
 #endif /* _WIN32 */
 

@@ -188,6 +188,14 @@ SOURCE=.\vrpn_Ohmmeter.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_raw_sgibox.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_raw_sgibox.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_Serial.C
 # End Source File
 # Begin Source File

@@ -119,6 +119,8 @@ vrpn_int32 vrpn_Ohmmeter::encode_channelset_to(char *buf)
     return (index*sizeof(vrpn_float64));
 }
 
+// Should this only be in the client?
+#ifndef VRPN_CLIENT_ONLY
 #ifdef _WIN32
 vrpn_Ohmmeter_ORPX2::vrpn_Ohmmeter_ORPX2(char *name, vrpn_Connection *c = NULL, 
 	vrpn_float32 hz):vrpn_Ohmmeter(name,c)
@@ -337,6 +339,7 @@ int vrpn_Ohmmeter_ORPX2::unregister_change_handler(void *userdata,
 }
 
 #endif // _WIN32
+#endif // VRPN_CLIENT_ONLY
 
 vrpn_Ohmmeter_Remote::vrpn_Ohmmeter_Remote(char *name, vrpn_Connection *c):
 	vrpn_Ohmmeter(name, vrpn_get_connection_by_name(name))

@@ -13,9 +13,6 @@
 #include "vrpn_Analog.h"
 
 #include <quat.h>
-#ifndef _WIN32
-
-
 
 class vrpn_Tracker_JoyFly : public vrpn_Tracker {
 
@@ -41,7 +38,6 @@ class vrpn_Tracker_JoyFly : public vrpn_Tracker {
     static void handle_joystick (void *, const vrpn_ANALOGCB);
     static int handle_newConnection (void *, vrpn_HANDLERPARAM);
 };
-#endif
 
 #endif
 

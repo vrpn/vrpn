@@ -16,6 +16,7 @@
 #include "vrpn_Flock_Parallel.h"
 #include "vrpn_Dyna.h"
 #include "vrpn_Sound.h"
+#include "vrpn_raw_sgibox.h"
 #ifdef	SGI_BDBOX
 #include "vrpn_sgibox.h"
 #endif
@@ -30,6 +31,7 @@
 #define MAX_BUTTONS 100
 #define MAX_SOUNDS 2
 #define MAX_ANALOG 4
+#define	MAX_SGIBOX 2
 
 void Usage (const char * s)
 {
@@ -51,6 +53,8 @@ vrpn_Sound	*sounds[MAX_SOUNDS];
 int		num_sounds = 0;
 vrpn_Analog	*analogs[MAX_ANALOG];
 int		num_analogs = 0;
+vrpn_raw_SGIBox	*sgiboxes[MAX_SGIBOX];
+int		num_sgiboxes = 0;
 
 vrpn_Connection * connection;
 
@@ -224,7 +228,46 @@ main (int argc, char * argv[])
 	  //	  #define isit(s) !strncmp(line,s,strlen(s))
 #define isit(s) !strcmp(pch=strtok(scrap," \t"),s)
 #define next() pch += strlen(pch) + 1
-	  if (isit("vrpn_SGIBOX")) {
+	  if (isit("vrpn_raw_SGIBox")) {
+		// Line will be: vrpn_raw_SGIBox NAME PORT [list of buttons to toggle]
+		int tbutton;	// Button to toggle
+		next();
+		if (sscanf(pch,"%511s %511s",s2,s3)!=2) {
+			fprintf(stderr,"Bad vrpn_raw_SGIBox line: %s\n",line);
+			if (bail_on_error) { return -1; }
+			else { continue; }	// Skip this line
+		}
+
+		// Make sure there's room for a new raw SGIBox
+		if (num_sgiboxes >= MAX_SGIBOX) {
+		  fprintf(stderr,"Too many raw SGI Boxes in config file");
+		  if (bail_on_error) { return -1; }
+		  else { continue; }	// Skip this line
+		}
+
+		// Open the raw SGI box
+		if (verbose) printf("Opening vrpn_raw_SGIBox %s on serial port %s\n", s2, s3);
+		if ( (sgiboxes[num_sgiboxes] =
+		     new vrpn_raw_SGIBox(s2, connection, s3)) == NULL){
+		  fprintf(stderr,"Can't create new vrpn_raw_SGIBox\n");
+		  if (bail_on_error) { return -1; }
+		  else { continue; }	// Skip this line
+		} else {
+		  num_sgiboxes++;
+		}
+
+		//setting listed buttons to toggles instead of default momentary
+		pch+=strlen(s2)+1;
+		while(sscanf(pch,"%s",s2)==1){
+			pch+=strlen(s2)+1;
+			tbutton=atoi(s2);	
+			sgiboxes[num_sgiboxes-1]->set_toggle(tbutton,vrpn_BUTTON_TOGGLE_OFF);  
+			//vrpnButton class will make sure I don't set
+			//an invalid button number
+			printf("...Button %d toggles\n",tbutton);
+		}
+
+	  } else if (isit("vrpn_SGIBOX")) {
 	    int tbutton;
 	    next();
 	    if (sscanf(pch,"%511s",s2)!=1) {
@@ -660,8 +703,14 @@ main (int argc, char * argv[])
 			sounds[i]->mainloop();
 		}
 
+		// Let all the analogs do their thing
 		for (i=0; i< num_analogs; i++) {
-		  analogs[i]->mainloop();
+			analogs[i]->mainloop();
+		}
+
+		// Let all of the SGI button/knob boxes do their thing
+		for (i=0; i < num_sgiboxes; i++) {
+			sgiboxes[i]->mainloop();
 		}
 #ifdef SGI_BDBOX
 		if (vrpn_special_sgibox) 

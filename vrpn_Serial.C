@@ -14,7 +14,6 @@
 
 #ifndef _WIN32
 #include <sys/ioctl.h>
-#include <sys/time.h>
 #include <unistd.h>
 #include <netinet/in.h>
 #endif
@@ -27,11 +26,23 @@
 #include <termios.h>
 #endif
 
+#include "vrpn_Shared.h"
 #include "vrpn_Serial.h"
 
 //#define VERBOSE
 
 #ifndef VRPN_CLIENT_ONLY
+
+#define time_add(t1,t2, tr)     { (tr).tv_sec = (t1).tv_sec + (t2).tv_sec ; \
+                                  (tr).tv_usec = (t1).tv_usec + (t2).tv_usec ; \
+                                  if ((tr).tv_usec >= 1000000L) { \
+                                        (tr).tv_sec++; \
+                                        (tr).tv_usec -= 1000000L; \
+                                  } }
+#define time_greater(t1,t2)     ( (t1.tv_sec > t2.tv_sec) || \
+                                 ((t1.tv_sec == t2.tv_sec) && \
+                                  (t1.tv_usec > t2.tv_usec)) )
+
 
 int vrpn_open_commport(char *portname, long baud)
 {
@@ -189,37 +200,40 @@ int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes)
    }  while ((cReadThisTime!=0) && (cSpaceLeft>0));
    bRead = pch - buffer;
  
-   if (bRead > 100 || bRead < 0) 
-     fprintf(stderr, "  vrpn_Tracker_Serial: Read %d bytes\n",bRead);
-
-#ifdef	READ_HISTOGRAM
-   // When we are using a 16550A UART with buffers enabled, the histogram is:
-   // 49734 97 0 0 34 0 0 37 1 0 0 1 37 0 0 35 0 0 0 24 0 0 0 0 (0's)
-   // When we use 'setserial /dev/ttyS1 uart 16550 to disable buffers, it is:
-   // 49739 99 9 10 9 9 9 10 9 8 8 9 10 9 9 9 8 9 9 9 0 0 0 0 (0's)
-   #define	HISTSIZE 30
-   if (bRead >= 0) {
-	static long count = 0;
-	static int histogram[HISTSIZE+1];
-	count++;
-
-	if (bRead > HISTSIZE) {histogram[HISTSIZE]++;}
-	else {histogram[bRead]++;};
-
-	if (count == 100000L) {
-		count = 0;
-		for (int i = 0; i < HISTSIZE+1; i++) {
-			printf("%d ",histogram[i]);
-			histogram[i] = 0;
-		}
-		printf("\n");
-	}
-   }
-#endif
-
    return bRead;
 #endif
 }
+
+// Read until either you get the answer, you get an error, or the timeout
+// occurs.  If there is a NULL pointer, block indefinitely. Return the number
+// of characters read.
+
+int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes,
+		struct timeval *timeout) {
+	struct	timeval	start, finish, now;
+	int	sofar = 0, ret;	// How many characters we have read so far
+	unsigned char *where = buffer;
+
+	// Find out what time it is at the start, and when we should end
+	// (unless the timeout is NULL)
+	if (timeout != NULL) {
+		gettimeofday(&start, NULL);
+		time_add(start, *timeout, finish);
+	}
+	
+	// Keep reading until we timeout.  Exit from the middle of this by
+	// returning if we complete or find an error so that the loop only has
+	// to check for timeout, not other terminating conditions.
+	do {
+		ret = vrpn_read_available_characters(comm, where, bytes-sofar);
+		if (ret == -1) { return -1; }
+		sofar += ret;
+		where += ret;
+	} while ( (timeout != NULL) && !(time_greater(now,finish)) );
+
+	return sofar;
+}
+
 
 #endif  // _WIN32
 

@@ -432,10 +432,14 @@ void vrpn_Button_Python::read(void)
       }
 
 #elif _WIN32
+  #ifndef __CYGWIN__
 	static const int STATUS_REGISTER_OFFSET = 1;
     for (int i = 0; i < 3; i++) {
 		status_register[i] = _inp(port + STATUS_REGISTER_OFFSET);
     }
+  #else
+    status_register[0] = status_register[1] = status_register[2] = 0;
+  #endif
 #else
     status_register[0] = status_register[1] = status_register[2] = 0;
 #endif

@@ -1,6 +1,24 @@
 # this is a gmake file
 
-HW_OS := $(shell /usr/local/bin/hw_os)
+# hw_os does not exist on FreeBSD at UNC
+UNAME := $(shell uname -s)
+ifeq ($(UNAME), FreeBSD)
+  HW_OS := pc_FreeBSD
+else
+  # pc_cygwin doesn't have HW_OS
+  ifeq ($(UNAME), CYGWIN_NT-4.0)
+    HW_OS := pc_cygwin
+    # On cygwin make is gmake (and gmake doesn't exist)
+    MAKE  := make -f $(MAKEFILE)
+  else
+    ifeq ($(UNAME), CYGWIN_98-4.10)
+		HW_OS := pc_cygwin
+		MAKE := make -f $(MAKEFILE)
+	else
+	  HW_OS := $(shell hw_os)
+	endif
+  endif
+endif
 
 # check if its for pxfl
 ifdef PBASE_ROOT
@@ -11,6 +29,9 @@ ifdef PBASE_ROOT
 endif
 
 CC := g++
+ifeq ($(HW_OS),pc_cygwin)
+	SYSLIBS := -lcygwin -luser32 -lgdi32 -lcomdlg32 -lwsock32
+endif
 ifeq ($(HW_OS),sgi_irix)
 	CC := CC -32
 	GL := -lgl
@@ -29,8 +50,8 @@ endif
 
 OBJ_DIR := $(HW_OS)
 
-CFLAGS = -g -I../ -g -I/afs/unc/proj/hmd/beta/include
-LFLAGS = -L../$(HW_OS) \
+CFLAGS = -g -I../ -I../../quat -I/afs/unc/proj/hmd/beta/include
+LFLAGS = -L../$(HW_OS) -L../../quat/$(HW_OS) \
 	 -L/afs/unc/proj/hmd/beta/lib/$(HW_OS) \
          -L/afs/unc/proj/hmd/lib/$(HW_OS)
 
@@ -76,7 +97,7 @@ $(OBJ_DIR)/vrpn_server: $(OBJ_DIR) $(OBJ_DIR)/vrpn.o  $(OBJ_DIR)/midi.o \
 			 ../$(HW_OS)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/vrpn_server \
 		$(OBJ_DIR)/vrpn.o $(OBJ_DIR)/midi.o \
-		-lvrpnserver $(GL) -lquat -lm
+		-lvrpnserver $(GL) -lquat $(SYSLIBS) -lm
 
 $(OBJ_DIR)/forward: $(OBJ_DIR) $(OBJ_DIR)/forward.o  \
 			 ../$(HW_OS)/libvrpnserver.a

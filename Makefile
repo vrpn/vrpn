@@ -39,7 +39,12 @@ else
     # On cygwin make is gmake (and gmake doesn't exist)
     MAKE  := make -f $(MAKEFILE)
   else
-    HW_OS := $(shell hw_os)
+    ifeq ($(UNAME), CYGWIN_98-4.10)
+		HW_OS := pc_cygwin
+		MAKE := make -f $(MAKEFILE)
+	else
+	  HW_OS := $(shell hw_os)
+	endif
   endif
 endif
 
@@ -239,7 +244,7 @@ all:	client server client_g++ server_g++
   endif
 else
   ifeq ($(HW_OS),pc_cygwin)
-all:	client
+all:	client server
   else
 all:	client server
   endif
@@ -304,14 +309,14 @@ LIB_INCLUDES = vrpn_Connection.h vrpn_Tracker.h vrpn_Button.h \
 SLIB_FILES =  $(LIB_FILES) vrpn_3Space.C \
 	     vrpn_Flock.C vrpn_Tracker_Fastrak.C vrpn_Dyna.C \
 	     vrpn_Flock_Parallel.C  vrpn_Joystick.C \
-	     vrpn_JoyFly.C vrpn_sgibox.C
+	     vrpn_JoyFly.C vrpn_sgibox.C vrpn_raw_sgibox.C
 
 SLIB_OBJECTS = $(patsubst %,$(SOBJECT_DIR)/%,$(SLIB_FILES:.C=.o))
 
 SLIB_INCLUDES = $(LIB_INCLUDES) vrpn_3Space.h \
 	       vrpn_Flock.h vrpn_Tracker_Fastrak.h vrpn_Dyna.h \
 	       vrpn_Flock_Parallel.h vrpn_Joystick.h \
-	       vrpn_JoyFly.h vrpn_sgibox.h
+	       vrpn_JoyFly.h vrpn_sgibox.h vrpn_raw_sgibox.h
 
 
 $(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(OBJECT_DIR) $(LIB_OBJECTS) \

@@ -2,7 +2,9 @@
 #include "vrpn_Serial.h"
 #include <stdio.h>
 #include <stdlib.h>
+#ifndef _WINNT
 #include <unistd.h>
+#endif
 #include <string.h>
 
 static const vrpn_float64 JoyScale[] = {1019, 227, 208, 400, 200, 213, 422};
