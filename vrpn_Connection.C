@@ -687,13 +687,16 @@ int vrpn_Log::close (void) {
     final_retval = -1;
   }
 
-  if (d_logFileName)
+  if (d_logFileName) {
     delete [] d_logFileName;
+  }
 
   // clean up the linked list
   while (d_logTail) {
     lp = d_logTail->next;
-    delete [] (char *) d_logTail->data.buffer;  // ugly cast
+    if (d_logTail->data.buffer) {
+      delete [] (char *) d_logTail->data.buffer;  // ugly cast
+    }
     delete d_logTail;
     d_logTail = lp;
   }
@@ -997,7 +1000,9 @@ vrpn_TypeDispatcher::~vrpn_TypeDispatcher (void) {
   int i;
 
   for (i = 0; i < d_numTypes; i++) {
-    delete d_types[i].name;
+    if (d_types[i].name) {
+      delete d_types[i].name;
+    }
     pVMCB = d_types[i].who_cares;
     while (pVMCB) {
       pVMCB_Del = pVMCB;
@@ -4377,12 +4382,12 @@ vrpn_Synchronized_Connection::vrpn_Synchronized_Connection
 }
 
 vrpn_Synchronized_Connection::~vrpn_Synchronized_Connection() {
-	  if (pClockServer) {
-		  delete pClockServer;
-	  }
-	  if (pClockRemote) {
-		delete pClockRemote;
-	  }
+  if (pClockServer) {
+    delete pClockServer;
+  }
+  if (pClockRemote) {
+    delete pClockRemote;
+  }
 }
 
 struct timeval vrpn_Synchronized_Connection::fullSync (void)
@@ -4944,8 +4949,9 @@ int vrpn_Connection::delete_endpoint (int endpointIndex) {
 
   vrpn_Endpoint * endpoint = d_endpoints[endpointIndex];
 
-  // Delete the endpoint (no matter if we find it in the list)
-  delete endpoint;
+  if (endpoint) {
+    delete endpoint;
+  }
   d_endpoints[endpointIndex] = NULL;
 
   return 0;

@@ -9,7 +9,7 @@
   Revised: Wed Apr  1 13:23:40 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.C,v $
   $Locker:  $
-  $Revision: 1.27 $
+  $Revision: 1.28 $
   \*****************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
@@ -54,8 +54,9 @@ vrpn_Clock::vrpn_Clock(const char * name, vrpn_Connection *c) {
   // need to init gettimeofday for the pc
   struct timeval tv;
   gettimeofday(&tv, NULL);
-  if (servicename)
+  if (servicename) {
     delete [] servicename;
+  }
 }
 
 /** Packs time of message sent and all data sent to it back into buffer.
@@ -263,18 +264,22 @@ vrpn_Clock_Remote::~vrpn_Clock_Remote (void) {
 
 
   // release the quick arrays
-  if (rgtvHalfRoundTrip)
+  if (rgtvHalfRoundTrip) {
     delete [] rgtvHalfRoundTrip;
-  if (rgtvClockOffset)
+  }
+  if (rgtvClockOffset) {
     delete [] rgtvClockOffset;
+  }
 
 #ifdef USE_REGRESSION
 
   // release the regression arrays
-  if (rgdOffsets)
+  if (rgdOffsets) {
     delete rgdOffsets;
-  if (rgdTimes)
+  }
+  if (rgdTimes) {
     delete rgdTimes;
+  }
 
 #endif  // USE_REGRESSION
 
@@ -900,6 +905,9 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
 
 /*****************************************************************************\
   $Log: vrpn_Clock.C,v $
+  Revision 1.28  2000/05/01 18:38:25  hudson
+  Made sure we never delete NULL.
+
   Revision 1.27  2000/02/23 18:59:36  taylorr
   Converts the objects that write things into VRPN buffers to use the
   vrpn_buffer() functions. These functions are robust in the presence
