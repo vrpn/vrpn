@@ -26,6 +26,7 @@ vrpn_Sound::vrpn_Sound(const char * name, vrpn_Connection * c)
 	stop_sound = connection->register_message_type("Sound Stop");
 	change_sound_status = connection->register_message_type("Sound Status");
 	change_listener_status = connection->register_message_type("Listener");
+	set_listener_quat = connection->register_message_type("Tracker Pos/Quat");
 
 	// Set the current time to zero, just to have something there
 	timestamp.tv_sec = 0;
@@ -123,7 +124,7 @@ vrpn_int32 vrpn_Sound::encodeSoundDef(const vrpn_SoundDef sound, const vrpn_Soun
 	vrpn_buffer(&mptr, &len, sound.max_front_dist);
 	vrpn_buffer(&mptr, &len, sound.min_front_dist);
 	vrpn_buffer(&mptr, &len, sound.max_back_dist);
-	vrpn_buffer(&mptr, &len, sound.max_back_dist);
+	vrpn_buffer(&mptr, &len, sound.min_back_dist);
 
 	return ret;
 	
@@ -173,9 +174,6 @@ vrpn_int32 vrpn_Sound::encodeListener(const vrpn_ListenerDef Listener, char* buf
 
 	for(i = 0; i < 4; i++)
 		vrpn_buffer(&mptr, &len, Listener.velocity[i]);
-
-
-
 	return ret;
 }
 
@@ -249,8 +247,8 @@ vrpn_SoundID vrpn_Sound_Client::addSoundDef(vrpn_SoundDef sound)
 
 	soundDefs[Defs_CurNum].max_front_dist = sound.max_front_dist;
 	soundDefs[Defs_CurNum].min_front_dist = sound.min_front_dist;
-	soundDefs[Defs_CurNum].max_back_dist = sound.max_back_dist;
-	soundDefs[Defs_CurNum].min_back_dist = sound.min_back_dist;
+	soundDefs[Defs_CurNum].max_back_dist  = sound.max_back_dist;
+	soundDefs[Defs_CurNum].min_back_dist  = sound.min_back_dist;
 
 	returnVal = Defs_CurNum;
 	Defs_CurNum++;
@@ -265,7 +263,7 @@ vrpn_SoundID vrpn_Sound_Client::addSoundDef(vrpn_SoundDef sound)
   orientation = (0, 0, 0, 0)
   velocity = (0, 0, 0)
   distances:
-    max=10, min=0
+    max=200, min=20
 */
 void vrpn_Sound_Client::initSoundDef(vrpn_SoundDef* soundDef)
 {
@@ -282,10 +280,10 @@ void vrpn_Sound_Client::initSoundDef(vrpn_SoundDef* soundDef)
 	for(i = 0; i < 4; i++)
 		soundDef->velocity[i] = 0;
 
-	soundDef->max_front_dist = 10;
-	soundDef->min_front_dist = 0;
-	soundDef->max_back_dist  = 0;
-	soundDef->min_back_dist  = 10;
+	soundDef->max_front_dist = 200;
+	soundDef->min_front_dist = 20;
+	soundDef->max_back_dist  = 200;
+	soundDef->min_back_dist  = 20;
 
 }
 
@@ -507,6 +505,7 @@ vrpn_Sound_Server::vrpn_Sound_Server(const char * name, vrpn_Connection * c)
 	connection->register_handler(stop_sound, handle_stopSound, this, my_id);
 	connection->register_handler(change_sound_status, handle_soundStatus, this, my_id);
 	connection->register_handler(change_listener_status, handle_listener, this, my_id);
+
 }
 
 vrpn_Sound_Server::~vrpn_Sound_Server()
@@ -564,7 +563,7 @@ int vrpn_Sound_Server::handle_playSound(void *userdata, vrpn_HANDLERPARAM p)
 
 	me->decodeSoundDef((char*)p.buffer, &soundDef, &id, &repeat);
 	me->playSound(id, repeat, soundDef);
-	return return_value;
+	return 0;
 }
 	
 
@@ -598,7 +597,7 @@ int vrpn_Sound_Server::handle_soundStatus(void *userdata, vrpn_HANDLERPARAM p)
 
 	me->decodeSoundDef((char*)p.buffer, &soundDef, &id, &repeat);
 	me->changeSoundStatus(id, soundDef);
-	return return_value;
+	return 0;
 }
 
 int vrpn_Sound_Server::handle_listener(void *userdata, vrpn_HANDLERPARAM p)
@@ -610,5 +609,7 @@ int vrpn_Sound_Server::handle_listener(void *userdata, vrpn_HANDLERPARAM p)
 	me->changeListenerStatus(listener);
 	return 0;
 }
+
+
 
 #endif //#ifndef VRPN_CLIENT_ONLY

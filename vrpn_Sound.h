@@ -2,6 +2,7 @@
 
 #include "vrpn_Connection.h"
 #include "vrpn_Shared.h"
+#include "vrpn_Tracker.h"
 
 #if defined(__CYGWIN__)
 #include "vrpn_cygwin_hack.h"
@@ -9,11 +10,7 @@
 
 typedef vrpn_int32 vrpn_SoundID;
 
-class vrpn_Sound
-{
-public:
-
-	typedef struct _vrpn_PoseDef
+typedef struct _vrpn_PoseDef
 	{
 	  vrpn_float64 position[3];
 	  vrpn_float64 orientation[4];
@@ -36,6 +33,12 @@ public:
 	  vrpn_float64 velocity[4];
 	} vrpn_ListenerDef;
 
+class vrpn_Sound
+{
+public:
+
+	
+
 protected:
 #define vrpn_Sound_START 10
 
@@ -48,6 +51,8 @@ protected:
 	vrpn_int32 stop_sound;					 // ID of message to stop a sound
 	vrpn_int32 change_sound_status;			 // ID of message to change the sound's status
 	vrpn_int32 change_listener_status;		 // ID of message to change the listener's status
+	vrpn_int32 set_listener_quat;			 // ID of message to set the listener's pos and 
+		                                     //  orientation based on a tracker report
 	struct timeval timestamp;				 // Current timestamp
 	
 
@@ -201,6 +206,7 @@ private:
 	static int handle_unloadSound(void *userdata, vrpn_HANDLERPARAM p);
 	static int handle_soundStatus(void *userdata, vrpn_HANDLERPARAM p);
 	static int handle_listener(void *userdata, vrpn_HANDLERPARAM p);
+	
 };
 #endif //#ifndef VRPN_CLIENT_ONLY
 
