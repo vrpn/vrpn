@@ -1,5 +1,13 @@
 2002-01-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_3Space.C (vrpn_Tracker_3Space::get_report) : Decodes the
+		orientation bytes correctly for all orientations.  Fixes
+		a bug.  This code is still too specific, it looks like it
+		will only work on machines with the same byte order as
+		PCs, and with machines that allow unaligned access.
+
+2002-01-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Button.C (vrpn_Button_SerialMouse::read) : Checks more
 		carefully for unwanted characters.  More comments to
 		describe what is happening.

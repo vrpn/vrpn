@@ -243,7 +243,7 @@ int vrpn_Tracker_3Space::get_report(void)
 	for (i=14; i<17; i++) {
 		decode[i] = buffer[i+2];
 		if ( (buffer[19] & mask[i-14]) != 0) {
-			buffer[i+2] |= (unsigned char)(0x80);
+			decode[i] |= (unsigned char)(0x80);
 		}
 	}
 
