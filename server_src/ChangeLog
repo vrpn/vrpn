@@ -1,5 +1,10 @@
 2005-01-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Generic_server_object.h : Added final newline.
+	* vrpn_Generic_server_object.C : Added final newline.
+
+2005-01-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn.C : Pulled most of the code out into an object that
 		parses the configuration file, creates the objects, and
 		provides a loop to mainloop() the objects.  The connection
