@@ -120,3 +120,4 @@ void Trimesh::addToScene(gstSeparator *ourScene){
   if(NULL!=gstMesh)
     ourNode->addChild(gstMesh);
 }
+

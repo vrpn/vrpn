@@ -1,5 +1,5 @@
 --------------------Configuration: vrpn - Win32 Debug--------------------
-Begining build with project "\\Capefear\taylorr\stm\src\NT\hmd\vrpn\pc_win32\vrpn\vrpn.dsp", at root.
+Begining build with project "\\zeta\taylorr\vrpn\pc_win32\vrpn\vrpn.dsp", at root.
 Active configuration is Win32 (x86) Static Library (based on Win32 (x86) Static Library)
 
 Project's tools are:
@@ -9,15 +9,36 @@ Project's tools are:
 			"Custom Build" with flags ""
 			"<Component 0xa>" with flags ""
 
-Creating temp file "C:\TEMP\RSP35D.tmp" with contents </nologo /MLd /W3 /GX /Z7 /Od /I "..\.." /I "..\..\..\quat" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "VRPN_CLIENT_ONLY" /Fp"Debug/vrpn.pch" /YX /Fo"Debug/" /Fd"Debug/" /FD /c     
-/Tp "\\Capefear\taylorr\stm\src\NT\hmd\vrpn\vrpn_Tracker.C"
+Build : warning : failed to (or don't know how to) build '\\zeta\taylorr\stm\src\NT\hmd\vrpn\vrpn_Tracker.C'
+
+Creating temp file "C:\TEMP\RSPE24.tmp" with contents </nologo /MLd /W3 /GX /Z7 /Od /I "..\.." /I "..\..\..\quat" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "VRPN_CLIENT_ONLY" /Fp"Debug/vrpn.pch" /YX /Fo"Debug/" /Fd"Debug/" /FD /c     
+/Tp "\\zeta\taylorr\stm\src\NT\hmd\vrpn\vrpn_Button.C"
+/Tp "\\zeta\taylorr\stm\src\NT\hmd\vrpn\vrpn_Clock.C"
+/Tp "\\zeta\taylorr\stm\src\NT\hmd\vrpn\vrpn_Connection.C"
+/Tp "\\zeta\taylorr\stm\src\NT\hmd\vrpn\vrpn_ForceDevice.C"
+/Tp "\\zeta\taylorr\stm\src\NT\hmd\vrpn\vrpn_Shared.C"
+/Tp "\\zeta\taylorr\stm\src\NT\hmd\vrpn\vrpn_Sound.C"
+/Tp "\\zeta\taylorr\stm\src\NT\hmd\vrpn\vrpn_Tracker.C"
 >
-Creating command line "cl.exe @C:\TEMP\RSP35D.tmp" 
+Creating command line "cl.exe @C:\TEMP\RSPE24.tmp" 
 Creating command line "link.exe -lib /nologo /out:"Debug\vrpn.lib"  .\Debug\vrpn_Button.obj .\Debug\vrpn_Clock.obj .\Debug\vrpn_Connection.obj .\Debug\vrpn_ForceDevice.obj .\Debug\vrpn_Shared.obj .\Debug\vrpn_Sound.obj .\Debug\vrpn_Tracker.obj" 
 Compiling...
+vrpn_Button.C
+fatal error C1083: Cannot open source file: '\\zeta\taylorr\stm\src\NT\hmd\vrpn\vrpn_Button.C': No such file or directory
+vrpn_Clock.C
+fatal error C1083: Cannot open source file: '\\zeta\taylorr\stm\src\NT\hmd\vrpn\vrpn_Clock.C': No such file or directory
+vrpn_Connection.C
+fatal error C1083: Cannot open source file: '\\zeta\taylorr\stm\src\NT\hmd\vrpn\vrpn_Connection.C': No such file or directory
+vrpn_ForceDevice.C
+fatal error C1083: Cannot open source file: '\\zeta\taylorr\stm\src\NT\hmd\vrpn\vrpn_ForceDevice.C': No such file or directory
+vrpn_Shared.C
+fatal error C1083: Cannot open source file: '\\zeta\taylorr\stm\src\NT\hmd\vrpn\vrpn_Shared.C': No such file or directory
+vrpn_Sound.C
+fatal error C1083: Cannot open source file: '\\zeta\taylorr\stm\src\NT\hmd\vrpn\vrpn_Sound.C': No such file or directory
 vrpn_Tracker.C
-Creating library...
+fatal error C1083: Cannot open source file: '\\zeta\taylorr\stm\src\NT\hmd\vrpn\vrpn_Tracker.C': No such file or directory
+Error executing cl.exe.
 
 
 
-vrpn.lib - 0 error(s), 0 warning(s)
+vrpn.lib - 7 error(s), 1 warning(s)

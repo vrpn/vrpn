@@ -68,7 +68,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /Zi /Od /I ".." /I "D:\Program Files\PHANToM\Ghost\lib" /I "C:\Program Files\PHANToM\Ghost\lib" /I "..\..\quat" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR"C:/temp/seeger/pc_win32/Debug/" /Fp"C:/temp/seeger/pc_win32/Debug/phan_server.pch" /YX /Fo"C:/temp/seeger/pc_win32/Debug/" /Fd"C:/temp/seeger/pc_win32/Debug/" /FD /c /Tp
+# ADD CPP /nologo /MTd /W3 /Gm /GX /Zi /Od /I ".." /I "D:\Program Files\PHANToM\Ghost\lib" /I "C:\Program Files\PHANToM\Ghost\lib" /I "..\..\quat" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR"C:/temp/seeger/pc_win32/Debug/" /Fp"C:/temp/seeger/pc_win32/Debug/phan_server.pch" /YX /Fo"C:/temp/seeger/pc_win32/Debug/" /Fd"C:/temp/seeger/pc_win32/Debug/" /FD /c /Tp
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -76,7 +76,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo /o"pc_win32/Debug/phan_server.bsc"
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib winmm.lib vrpn.lib sdi.lib quat.lib ghost.lib /nologo /subsystem:console /pdb:none /debug /machine:I386 /out:"pc_win32/Debug/phan_server.exe" /libpath:"../../sdi/pc_win32/debug" /libpath:"C:\Program Files\PHANToM\Ghost\lib" /libpath:"D:\Program Files\PHANToM\Ghost\lib" /libpath:"../../vrpn/pc_win32/debug" /libpath:"../../quat/pc_win32/debug" /libpath:"\\zeta\hudson\stm\src\hudson\quat\pc_win32\debug"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib winmm.lib vrpn.lib quat.lib ghost.lib /nologo /subsystem:console /pdb:none /debug /machine:I386 /out:"pc_win32/Debug/phan_server.exe" /libpath:"C:\Program Files\PHANToM\Ghost\lib" /libpath:"D:\Program Files\PHANToM\Ghost\lib" /libpath:"../../vrpn/pc_win32/debug" /libpath:"../../quat/pc_win32/debug" /libpath:"\\zeta\hudson\stm\src\hudson\quat\pc_win32\debug"
 
 !ENDIF 
 
@@ -86,7 +86,35 @@ LINK32=link.exe
 # Name "phan_server - Win32 Debug"
 # Begin Source File
 
+SOURCE=.\constraint.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\constraint.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\ghost.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\phantom.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\plane.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\plane.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\trimesh.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\trimesh.h
 # End Source File
 # Begin Source File
 

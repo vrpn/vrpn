@@ -65,7 +65,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /W3 /Gm /GX /Zi /Od /I "../../.." /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c /Tp
+# ADD CPP /nologo /MTd /W3 /Gm /GX /Zi /Od /I "../../.." /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c /Tp
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -73,7 +73,8 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ../../../pc_win32/vrpn/Debug/vrpn.lib ../../../../sdi/pc_win32/sdi/Debug/sdi.lib wsock32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ../../../pc_win32/Debug/vrpn.lib wsock32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
+# SUBTRACT LINK32 /nodefaultlib
 
 !ENDIF 
 
@@ -83,7 +84,7 @@ LINK32=link.exe
 # Name "printvals - Win32 Debug"
 # Begin Source File
 
-SOURCE=\stm\src\NT\hmd\vrpn\client_src\printvals.c
+SOURCE=\vrpn\client_src\printvals.c
 # End Source File
 # End Target
 # End Project
