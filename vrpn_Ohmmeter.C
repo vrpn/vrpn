@@ -28,6 +28,7 @@ vrpn_Ohmmeter::vrpn_Ohmmeter(char *name, vrpn_Connection *c)
     // Register this ohmmeter and the needed message types
     if (connection) {
 	my_id = connection->register_sender(servicename);
+
 	channelset_m_id = connection->register_message_type("Channel Settings");
 	measure_m_id = connection->register_message_type("Resistance");
 	setchannel_m_id = connection->register_message_type("Set Channel");
@@ -337,9 +338,13 @@ int vrpn_Ohmmeter_ORPX2::unregister_change_handler(void *userdata,
 
 #endif // _WIN32
 
-vrpn_Ohmmeter_Remote::vrpn_Ohmmeter_Remote(char *name) :
+vrpn_Ohmmeter_Remote::vrpn_Ohmmeter_Remote(char *name, vrpn_Connection *c):
 	vrpn_Ohmmeter(name, vrpn_get_connection_by_name(name))
 {
+	if (c == NULL)
+		connection = vrpn_get_connection_by_name(name);
+	else
+		connection = c;
     ohmset_change_list = NULL;
     measure_change_list = NULL;
     if (connection == NULL) {
@@ -354,13 +359,25 @@ vrpn_Ohmmeter_Remote::vrpn_Ohmmeter_Remote(char *name) :
 		"vrpn_Ohmmeter_Remote: can't register meas. handler\n");
 	    connection = NULL;
     }
-
     if (connection->register_handler(channelset_m_id, handle_ohmset_message,
 	this, my_id)) {
 	    fprintf(stderr,
 		 "vrpn_Ohmmeter_Remote: can't register ohmset handler\n");
 	    connection = NULL;
     }
+
+	if (connection->get_File_Connection()){
+		fprintf(stderr, "WARNING: Reading ohmmeter messages from all"
+				" senders recorded in log file\n");
+        if (connection->register_handler(measure_m_id,
+            handle_measurement_message, this, vrpn_ANY_SENDER))
+            fprintf(stderr, "vrpn_Ohmmeter_Remote: can't register handler1\n");
+		if (connection->register_handler(channelset_m_id,
+            handle_ohmset_message, this, vrpn_ANY_SENDER))
+            fprintf(stderr, "vrpn_Ohmmeter_Remote: can't register handler2\n");
+    }
+
+
     gettimeofday(&timestamp, NULL);
 }
 
