@@ -77,7 +77,7 @@ int gethostname (char *, int);
 // string.  Since minor versions should interoperate, MAGIC is only
 // checked through the last period;  characters after that are ignored.
 
-char * vrpn_MAGIC = (char *) "vrpn: ver. 04.02";
+char * vrpn_MAGIC = (char *) "vrpn: ver. 04.03";
 const int MAGICLEN = 16;  // Must be a multiple of vrpn_ALIGN bytes!
 
 // Version history:
@@ -182,6 +182,61 @@ static  struct  timeval longtime= { SERVWAIT,0 };  /* Poll/startup interval */
 					(tr).tv_usec += 1000000L; \
 				   } }
 #endif  // 0
+
+
+/**********************
+ *   This function returns the host IP address in string form.  For example,
+ * the machine "ioglab.cs.unc.edu" becomes "152.2.130.90."  This is done
+ * so that the remote host can connect back even if it can't resolve the
+ * DNS name of this host.  This is especially useful at conferences, where
+ * DNS may not even be running.
+ **********************/
+
+static int	vrpn_getmyIP(char *myIPchar, int maxlen)
+{	
+	char	myname[100];		// Host name of this host
+        struct	hostent *host;          // Encoded host IP address, etc.
+	char	myIPstring[100];	// Hold "152.2.130.90" or whatever
+
+	// Find out what my name is
+	if (gethostname(myname, sizeof(myname))) {
+		fprintf(stderr, "vrpn_getmyIP: Error finding local hostname\n");
+		return -1;
+	}
+
+	// Find out what my IP address is
+	if ( (host = gethostbyname(myname)) == NULL ) {
+		fprintf(stderr, "vrpn_getmyIP: error finding host by name\n");
+		return -1;
+	}
+
+	// Convert this back into a string
+#ifndef CRAY
+	if (host->h_length != 4) {
+		fprintf(stderr, "vrpn_getmyIP: Host length not 4\n");
+		return -1;
+	}
+#endif
+	sprintf(myIPstring, "%u.%u.%u.%u",
+		(unsigned int)(unsigned char)host->h_addr_list[0][0],
+		(unsigned int)(unsigned char)host->h_addr_list[0][1],
+		(unsigned int)(unsigned char)host->h_addr_list[0][2],
+		(unsigned int)(unsigned char)host->h_addr_list[0][3]);
+
+	// Copy this to the output
+	if (myIPchar == NULL) {
+		fprintf(stderr,"vrpn_getmyIP: NULL pointer passed in\n");
+		return -1;
+	}
+	if (strlen(myIPstring) > maxlen) {
+		fprintf(stderr,"vrpn_getmyIP: Name too long to return\n");
+		return -1;
+	}
+
+	strcpy(myIPchar, myIPstring);
+	return 0;
+}
+
 
 /**********************
  *	This routine will perform like a normal select() call, but it will
@@ -527,7 +582,7 @@ int vrpn_udp_request_call(const char * machine, int port)
         struct	hostent *host;          /* The host to connect to */
 	char	msg[150];		/* Message to send */
 	int	msglen;			/* How long it is (including \0) */
-	char	myname[100];		/* Name of this host */
+	char	myIPchar[100];		/* IP decription this host */
 	int	try_connect;
 
 	/* Create a TCP socket to listen for incoming connections from the
@@ -606,14 +661,14 @@ int vrpn_udp_request_call(const char * machine, int port)
 	 * the remote server should connect to.  These are ASCII, separated
 	 * by a space. */
 
-	if (gethostname(myname, sizeof(myname))) {
+	if (vrpn_getmyIP(myIPchar, sizeof(myIPchar))) {
 		fprintf(stderr,
-		   "vrpn_udp_request_call: Error finding local hostname\n");
+		   "vrpn_udp_request_call: Error finding local hostIP\n");
 		close(listen_sock);
 		close(udp_sock);
 		return(-1);
 	}
-	sprintf(msg, "%s %d", myname, listen_portnum);
+	sprintf(msg, "%s %d", myIPchar, listen_portnum);
 	msglen = strlen(msg) + 1;	/* Include the terminating 0 char */
 
 	/* Repeat sending the request to the server and checking for it
@@ -751,13 +806,13 @@ int vrpn_start_server(const char *machine, char *server_name, char *args)
                 int     loop;
                 int     ret;
                 int     num_descriptors;/* Number of available file descr */
-                char    myname[300];    /* Host name of this host */
+                char    myIPchar[100];    /* Host name of this host */
                 char    command[600];   /* Command passed to system() call */
                 char    *rsh_to_use;    /* Full path to Rsh command. */
 
-                if (gethostname(myname,sizeof(myname))) {
+                if (vrpn_getmyIP(myIPchar,sizeof(myIPchar))) {
                         fprintf(stderr,
-                           "vrpn_start_server: Error finding local hostname\n");
+                           "vrpn_start_server: Error finding my IP\n");
                         close(server_sock);
                         return(-1);
                 }
@@ -779,7 +834,7 @@ int vrpn_start_server(const char *machine, char *server_name, char *args)
                         rsh_to_use = RSH;
                 }
                 sprintf(command,"%s %s %s %s -client %s %d",rsh_to_use, machine,
-                        server_name, args, myname, PortNum);
+                        server_name, args, myIPchar, PortNum);
                 ret = system(command);
                 if ( (ret == 127) || (ret == -1) ) {
                         fprintf(stderr,
@@ -1134,7 +1189,7 @@ int vrpn_Connection::connect_tcp_to (const char * msg)
 	if ( (host=gethostbyname(machine)) == NULL ) {
 		close(server_sock);
 		fprintf(stderr,
-			"vrpn_Connection::connect_tcp_to: error finding host by name\n");
+			"vrpn_Connection::connect_tcp_to: error finding host by name (%s)\n", machine);
 		return(-1);
 	}
 #ifdef CRAY
@@ -1541,10 +1596,10 @@ int vrpn_Connection::pack_udp_description(int portno)
 {
    struct timeval now;
    long	portparam = portno;
-   char hostname[1000];
+   char myIPchar[1000];
 
    // Find the local host name
-   if (gethostname(hostname, sizeof(hostname))) {
+   if (vrpn_getmyIP(myIPchar, sizeof(myIPchar))) {
 	perror("vrpn_Connection::pack_udp_description: can't get host name");
 	return -1;
    }
@@ -1555,14 +1610,14 @@ int vrpn_Connection::pack_udp_description(int portno)
    // name of the host to contact.
 
 #ifdef	VERBOSE
-	printf("  vrpn_Connection: Packing UDP %s:%d\n", hostname,
+	printf("  vrpn_Connection: Packing UDP %s:%d\n", myIPchar,
 		portno);
 #endif
    gettimeofday(&now, NULL);
 
-   return pack_message(strlen(hostname) + 1, now,
+   return pack_message(strlen(myIPchar) + 1, now,
         vrpn_CONNECTION_UDP_DESCRIPTION,
-	portparam, hostname, vrpn_CONNECTION_RELIABLE);
+	portparam, myIPchar, vrpn_CONNECTION_RELIABLE);
 }
 
 int vrpn_Connection::pack_log_description (long logmode,
