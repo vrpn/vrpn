@@ -19,13 +19,16 @@ all:  sound_client
 sound_client: sound_client.o ../`hw_os`/libvrpn.a
 	$(CC) $(LFLAGS) -o sound_client sound_client.o -lvrpn -lsdi -lm
 
+midi_client: midi_client.o ../`hw_os`/libvrpn.a
+	$(CC) $(LFLAGS) -o midi_client midi_client.o -lvrpn -lsdi -lm
+
 listen_client: listen_client.o ../`hw_os`/libvrpn.a
 	$(CC) $(LFLAGS) -o listen_client listen_client.o -lvrpn -lsdi -lm
 
 
 
 clean:
-	rm -f *.o sound_client 
+	rm -f *.o sound_client midi_client
 
 
 ../`hw_os`/libvrpn.a:
