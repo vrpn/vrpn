@@ -511,12 +511,17 @@ vrpn_Shared_int32 & vrpn_Shared_int32::set (vrpn_int32 newValue,
   if (acceptedUpdate) {
     d_value = newValue;
     d_lastUpdate = when;
-    yankCallbacks(isLocalSet);
+    //yankCallbacks(isLocalSet);
   }
 
   if (shouldSendUpdate(isLocalSet, acceptedUpdate)) {
     sendUpdate(newValue, when);
   }
+
+  //yankCallbacks is placed after sendUpdate so that the update goes on the
+  //network before the updates due to local callbacks.
+  if (acceptedUpdate)
+    yankCallbacks(isLocalSet);
 
   return *this;
 }
@@ -915,12 +920,17 @@ vrpn_Shared_float64 & vrpn_Shared_float64::set (vrpn_float64 newValue,
   if (acceptedUpdate) {
     d_value = newValue;
     d_lastUpdate = when;
-    yankCallbacks(isLocalSet);
+    //yankCallbacks(isLocalSet);
   }
 
   if (shouldSendUpdate(isLocalSet, acceptedUpdate)) {
     sendUpdate(newValue, when);
   }
+
+  //yankCallbacks is placed after sendUpdate so that the update goes on the
+  //network before the updates due to local callbacks.
+  if (acceptedUpdate)
+    yankCallbacks(isLocalSet);
 
   return *this;
 }
@@ -1288,15 +1298,19 @@ vrpn_Shared_String & vrpn_Shared_String::set (const char * newValue,
       strcpy(d_value, newValue);
     }
 
-//fprintf(stderr, "vrpn_Shared_String::set:  %s to \"%s\".\n", name(), value());
+fprintf(stderr, "vrpn_Shared_String::set:  %s to \"%s\".\n", name(), value());
 
     d_lastUpdate = when;
-    yankCallbacks(isLocalSet);
   }
 
   if (shouldSendUpdate(isLocalSet, acceptedUpdate)) {
     sendUpdate(newValue, when);
   }
+
+  //yankCallbacks is placed after sendUpdate so that the update goes on the
+  //network before the updates due to local callbacks.
+  if (acceptedUpdate) 
+    yankCallbacks(isLocalSet);
 
   return *this;
 }
@@ -1306,13 +1320,13 @@ vrpn_bool vrpn_Shared_String::shouldAcceptUpdate
                      (const char * newValue, timeval when,
                       vrpn_bool isLocalSet) {
 
-//fprintf(stderr, "In vrpn_Shared_String::shouldAcceptUpdate(%s).\n", d_name);
+fprintf(stderr, "In vrpn_Shared_String::shouldAcceptUpdate(%s).\n", d_name);
 
 
   // Is this "new" change idempotent?
   if ((d_mode & VRPN_SO_IGNORE_IDEMPOTENT) &&
       (newValue == d_value)) {
-//fprintf(stderr, "... was idempotent.\n");
+fprintf(stderr, "... was idempotent.\n");
 
     return vrpn_FALSE;
   }
@@ -1320,18 +1334,18 @@ vrpn_bool vrpn_Shared_String::shouldAcceptUpdate
   // Is this "new" change older than the previous change?
   if ((d_mode & VRPN_SO_IGNORE_OLD) &&
       !vrpn_TimevalGreater(when, d_lastUpdate)) {
-//fprintf(stderr, "... was outdated.\n");
+fprintf(stderr, "... was outdated.\n");
 
     return vrpn_FALSE;
   }
 
   // All other clauses of shouldAcceptUpdate depend on serialization
   if (!(d_mode & VRPN_SO_DEFER_UPDATES)) {
-//fprintf(stderr, "accepted.\n");
+fprintf(stderr, "accepted.\n");
     return vrpn_TRUE;
   }
 
-//fprintf(stderr, "... serializing:  ");
+fprintf(stderr, "... serializing:  ");
 
 
   // If we're not the serializer, don't accept local set() calls -
@@ -1339,11 +1353,11 @@ vrpn_bool vrpn_Shared_String::shouldAcceptUpdate
   // messages from the serializer that we should accept.
   if (!d_isSerializer) {
     if (isLocalSet) {
-//fprintf(stderr, "local update, not serializer, so reject.\n");
+fprintf(stderr, "local update, not serializer, so reject.\n");
       yankDeferredUpdateCallbacks();
       return vrpn_FALSE;
     } else {
-//fprintf(stderr, "remote update, not serializer, so accept.\n");
+fprintf(stderr, "remote update, not serializer, so accept.\n");
 
       return vrpn_TRUE;
     }
@@ -1351,11 +1365,11 @@ vrpn_bool vrpn_Shared_String::shouldAcceptUpdate
 
   // We are the serializer.
 
-//fprintf(stderr, "serializer:  ");
+fprintf(stderr, "serializer:  ");
 
 
   if (isLocalSet) {
-//fprintf(stderr, "local update.\n");
+fprintf(stderr, "local update.\n");
     if (d_policy == vrpn_DENY_LOCAL) {
       return vrpn_FALSE;
     } else {
@@ -1365,7 +1379,7 @@ vrpn_bool vrpn_Shared_String::shouldAcceptUpdate
 
   // Are we accepting all updates?
   if (d_policy == vrpn_ACCEPT) {
-//fprintf(stderr, "policy is to accept.\n");
+fprintf(stderr, "policy is to accept.\n");
 
     return vrpn_TRUE;
   }
@@ -1373,12 +1387,12 @@ vrpn_bool vrpn_Shared_String::shouldAcceptUpdate
   // Does the user want to accept this one?
   if ((d_policy == vrpn_CALLBACK) && d_policyCallback &&
       (*d_policyCallback)(d_policyUserdata, newValue, when, this)) {
-//fprintf(stderr, "user callback accepts.\n");
+fprintf(stderr, "user callback accepts.\n");
 
     return vrpn_TRUE;
   }
 
-//fprintf(stderr, "rejected.\n");
+fprintf(stderr, "rejected.\n");
 
   return vrpn_FALSE;
 }
@@ -1412,7 +1426,7 @@ void vrpn_Shared_String::sendUpdate (const char * newValue, timeval when) {
     d_connection->pack_message(1024 - buflen, d_lastUpdate,
                                d_update_type, d_myId,
                                buffer, vrpn_CONNECTION_RELIABLE);
-//fprintf(stderr, "vrpn_Shared_String::sendUpdate:  packed message\n");
+fprintf(stderr, "vrpn_Shared_String::sendUpdate:  packed message\n");
   }
 
 }
