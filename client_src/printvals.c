@@ -56,6 +56,17 @@ void	handle_button (void *, const vrpn_BUTTONCB b)
 	printf("B%ld is %ld\n", b.button, b.state);
 }
 
+int filter_pos (void * userdata, vrpn_HANDLERPARAM p) {
+
+  vrpn_Connection * c = (vrpn_Connection *) userdata;
+  int postype = c->register_message_type("Tracker Pos/Quat");
+
+  if (p.type == postype)
+    return 0;  // keep position messages
+
+  return 1;  // discard all others
+}
+
 /*****************************************************************************
  *
    init - initialize everything
@@ -175,6 +186,7 @@ int main (int argc, char * argv [])
   long local_logmode = vrpn_LOG_NONE;
   long remote_logmode = vrpn_LOG_NONE;
   int	done = 0;
+  int   filter = 0;
   int i;
 
 #ifdef	_WIN32
@@ -187,11 +199,12 @@ int main (int argc, char * argv [])
 #endif
 
   if (argc < 2) {
-    fprintf(stderr, "Usage:  %s [-ll logfile mode] [-rl logfile mode] "
-                                                             "station_name\n"
+    fprintf(stderr, "Usage:  %s [-ll logfile mode] [-rl logfile mode]\n"
+                    "           [-filterpos] station_name\n"
                     "  -ll:  log locally in <logfile>\n" 
                     "  -rl:  log remotely in <logfile>\n" 
                     "  <mode> is one of i, o, io\n" 
+                    "  -filterpos:  log only Tracker Position messages\n"
                     "  station_name:  VRPN name of data source to contact\n"
                     "    one of:  <hostname>[:<portnum>]\n"
                     "             file:<filename>\n",
@@ -214,6 +227,8 @@ int main (int argc, char * argv [])
       i++;
       if (strchr(argv[i], 'i')) remote_logmode |= vrpn_LOG_INCOMING;
       if (strchr(argv[i], 'o')) remote_logmode |= vrpn_LOG_OUTGOING;
+    } else if (!strcmp(argv[i], "-filterpos")) {
+      filter = 1;
     } else
       station_name = argv[i];
   }
@@ -225,6 +240,10 @@ int main (int argc, char * argv [])
 
   // signal handler so logfiles get closed right
   signal(SIGINT, handle_cntl_c);
+
+  // filter the log if requested
+  if (filter && c)
+    c->register_log_filter(filter_pos, c);
 
 /* 
  * main interactive loop

@@ -11,25 +11,37 @@
 const int buflen = 8000;
 
 void Usage (const char * name) {
-  fprintf(stderr, "Usage:  %s <filename>\n", name);
+  fprintf(stderr, "Usage:  %s [-n] <filename>\n", name);
+  fprintf(stderr,"    -n:  Print names instead of numbers.\n");
 }
 
 
 int main (int argc, char ** argv) {
+
+  char * filename;
+  int name_mode = 0;
 
   char buffer [buflen];
   vrpn_HANDLERPARAM header;
   int file;
   int retval;
 
-  if (argc != 2) {
+  if (argc < 2) {
     Usage(argv[0]);
     exit(0);
   }
 
-  file = open(argv[1], O_RDONLY);
+  filename = argv[1];
+  if (!strcmp(argv[1], "-n")) {
+    filename = argv[2];
+    name_mode = 1;
+    fprintf(stderr, "FATAL ERROR:  Name mode not implemented.\n");
+    exit(0);
+  }
+
+  file = open(filename, O_RDONLY);
   if (file == -1) {
-    fprintf(stderr, "Couldn't open \"%s\".\n", argv[1]);
+    fprintf(stderr, "Couldn't open \"%s\".\n", filename);
     exit(0);
   }
 
@@ -51,14 +63,18 @@ int main (int argc, char ** argv) {
     sender = ntohl(header.sender);
     type = ntohl(header.type);
 
-    printf("Message type %d, sender %d, payload length %d\n",
+    if (name_mode)
+      printf("%s from %s, payload length %d\n",
+              type, sender, len);
+    else
+      printf("Message type %ld, sender %ld, payload length %d\n",
             type, sender, len);
 
     retval = read(file, buffer, len);
     if (retval < 0) { printf("ERROR\n"); close(file); exit(0); }
     if (!retval) { printf("EOF\n"); close(file); exit(0); }
 
-    printf(" <%d bytes>\n", retval);
+    printf(" <%d bytes> at %ld:%ld\n", retval, time.tv_sec, time.tv_usec);
 
     switch (type) {
 
