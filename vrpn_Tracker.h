@@ -95,6 +95,14 @@ class vrpn_Tracker : public vrpn_BaseClass {
    vrpn_float64 acc_quat_dt;		// delta time (in secs) for acc_quat
    struct timeval timestamp;		// Current timestamp
 
+   // The timestamp that the last report was received (Used by the Liberty Driver)
+   // Other trackers use timestamp as the watchdog, however due to variable USB
+   // latency the Liberty driver uses the device timestamp and not the computer clock 
+   // at the time the report was received. This however can drift
+   // from the computer time, and hence it can cause a reset when things are
+   // working fine
+   struct timeval watchdog_timestamp;
+
    vrpn_float64 tracker2room[3], tracker2room_quat[4]; // Current t2r xform
    vrpn_int32 num_sensors;
    vrpn_float64 unit2sensor[vrpn_TRACKER_MAX_SENSORS][3];

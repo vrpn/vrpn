@@ -1,3 +1,13 @@
+2003-12-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_Liberty.h : Adds driver submitted by Daniel Myall
+		from Westco for the Polhemus Liberty tracker.
+	* vrpn_Tracker_Liberty.C : Same.
+	* vrpn_Tracker.h : Same.
+	* vrpn_Tracker.C : Same.
+	* vrpn.dsp : Same.
+	* Makefile : Same.
+
 2003-11-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Analog.C : report() : Added parameter to tell the timestamp

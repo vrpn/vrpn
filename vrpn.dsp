@@ -273,6 +273,10 @@ SOURCE=.\vrpn_Tracker_isense.C
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_Tracker_Liberty.C
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_UNC_Joystick.C
 # End Source File
 # Begin Source File
@@ -486,6 +490,10 @@ SOURCE=.\vrpn_Tracker_Fastrak.h
 # Begin Source File
 
 SOURCE=.\vrpn_Tracker_isense.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Tracker_Liberty.h
 # End Source File
 # Begin Source File
 

@@ -830,10 +830,24 @@ void vrpn_Tracker_Serial::mainloop()
 
 	    struct timeval current_time;
 	    gettimeofday(&current_time, NULL);
-	    if ( duration(current_time,timestamp) > vrpn_ser_tkr_MAX_TIME_INTERVAL) {
-		    fprintf(stderr,"Tracker failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n",current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);
-		    send_text_message("Too long since last report, resetting", current_time, vrpn_TEXT_ERROR);
-		    status = vrpn_TRACKER_FAIL;
+	    int time_lapsed; /* The time since the last report */
+
+            // Watchdog timestamp is implemented by Polhemus Liberty driver.
+            // XXX All trackers should be modified to use this, or it to not.
+	    // If the watchdog timestamp is zero, use the last timestamp to check.
+	    if (watchdog_timestamp.tv_sec == 0) {
+		time_lapsed=duration(current_time,timestamp);
+	    } else { // The watchdog_timestamp is being used
+		time_lapsed=duration(current_time,watchdog_timestamp);
+	    }
+
+	    if ( time_lapsed > vrpn_ser_tkr_MAX_TIME_INTERVAL) {
+	      char errmsg[1024];
+	      sprintf(errmsg,"Tracker failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n", \
+		      current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);
+	      send_text_message(errmsg, current_time, vrpn_TEXT_ERROR);
+	      status = vrpn_TRACKER_FAIL;
+
 	    }
       }
       break;
