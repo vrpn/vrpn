@@ -306,6 +306,146 @@ Java_vrpn_ForceDeviceRemote_shutdownForceDevice( JNIEnv* env, jobject jobj )
 
 /*
  * Class:     vrpn_ForceDeviceRemote
+ * Method:    sendForceField
+ * Signature: ()V
+ */
+JNIEXPORT jboolean JNICALL 
+Java_vrpn_ForceDeviceRemote_sendForceField__( JNIEnv* env, jobject jobj )
+{
+  // look up the force device pointer
+  jclass jcls = env->GetObjectClass( jobj );
+  jfieldID jfid = env->GetFieldID( jcls, "native_force_device", "I" );
+  if( jfid == NULL )
+    return false;
+  vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid );
+  if( f <= 0 )
+    return false;
+  
+  f->sendForceField( );
+  return true;
+
+}
+
+
+/*
+ * Class:     vrpn_ForceDeviceRemote
+ * Method:    stopForceField
+ * Signature: ()V
+ */
+JNIEXPORT jboolean JNICALL 
+Java_vrpn_ForceDeviceRemote_stopForceField( JNIEnv* env, jobject jobj )
+{
+  // look up the force device pointer
+  jclass jcls = env->GetObjectClass( jobj );
+  jfieldID jfid = env->GetFieldID( jcls, "native_force_device", "I" );
+  if( jfid == NULL )
+    return false;
+  vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid );
+  if( f <= 0 )
+    return false;
+  
+  f->stopForceField( );
+  return true;
+
+}
+
+
+/*
+ * Class:     vrpn_ForceDeviceRemote
+ * Method:    sendForceField
+ * Signature: ([F[F[[FF)V
+ */
+JNIEXPORT jboolean JNICALL 
+Java_vrpn_ForceDeviceRemote_sendForceField___3F_3F_3_3FF( JNIEnv* env, jobject jobj, 
+                                                         jfloatArray jorigin, 
+                                                         jfloatArray jforce, 
+                                                         jobjectArray jjacobian, 
+                                                         jfloat jradius )
+{
+  // look up the force device pointer
+  jclass jcls = env->GetObjectClass( jobj );
+  jfieldID jfid = env->GetFieldID( jcls, "native_force_device", "I" );
+  if( jfid == NULL )
+    return false;
+  vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid );
+  if( f <= 0 )
+    return false;
+
+  // get the arguments
+  jfloat origin[3];
+  jfloat force[3];
+  jfloat jacobian_row0[3];
+  jfloat jacobian_row1[3];
+  jfloat jacobian_row2[3];
+  jfloatArray jacobian_row;
+
+  if( env->GetArrayLength( jorigin ) != 3 )
+    return false;
+  env->GetFloatArrayRegion( jorigin, 0, 3, origin);
+
+  if( env->GetArrayLength( jforce ) != 3 )
+    return false;
+  env->GetFloatArrayRegion( jforce, 0, 3, force );
+  if( force == NULL )
+    return false;
+  
+  if( env->GetArrayLength( jjacobian ) != 3 )
+    return false;
+  jacobian_row = (jfloatArray) env->GetObjectArrayElement( jjacobian, 0 );
+  if( jacobian_row == NULL )
+    return false;
+  if( env->GetArrayLength( jacobian_row ) != 3 )
+    return false;
+  env->GetFloatArrayRegion( jacobian_row, 0, 3, jacobian_row0 );
+
+  jacobian_row = (jfloatArray) env->GetObjectArrayElement( jjacobian, 1 );
+  if( jacobian_row == NULL )
+    return false;
+  if( env->GetArrayLength( jacobian_row ) != 3 )
+    return false;
+  env->GetFloatArrayRegion( jacobian_row, 0, 3, jacobian_row1 );
+
+  jacobian_row = (jfloatArray) env->GetObjectArrayElement( jjacobian, 2 );
+  if( jacobian_row == NULL )
+    return false;
+  if( env->GetArrayLength( jacobian_row ) != 3 )
+    return false;
+  env->GetFloatArrayRegion( jacobian_row, 0, 3, jacobian_row2 );
+
+  
+  float jacobian[3][3];
+  jacobian[0][0] = jacobian_row0[0];
+  jacobian[0][1] = jacobian_row0[1];
+  jacobian[0][2] = jacobian_row0[2];
+  jacobian[1][0] = jacobian_row1[0];
+  jacobian[1][1] = jacobian_row1[1];
+  jacobian[1][2] = jacobian_row1[2];
+  jacobian[2][0] = jacobian_row1[0];
+  jacobian[2][1] = jacobian_row1[1];
+  jacobian[2][2] = jacobian_row1[2];
+
+
+  // now call the function
+  f->sendForceField( origin, force, jacobian, jradius );
+  return true;
+
+}
+
+
+/*
+ * Class:     vrpn_ForceDeviceRemote
+ * Method:    enableConstraint
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_vrpn_ForceDeviceRemote_enableConstraint
+  (JNIEnv *, jobject, jint)
+{
+  printf( "Function Java_vrpn_ForceDeviceRemote_enableConstraint is not implemented.\n" );
+}
+
+
+/*
+ * Class:     vrpn_ForceDeviceRemote
  * Method:    setConstraintMode
  * Signature: (I)V
  */
@@ -414,6 +554,18 @@ JNIEXPORT void JNICALL Java_vrpn_ForceDeviceRemote_useHcollide
 
 /*
  * Class:     vrpn_ForceDeviceRemote
+ * Method:    useGhost
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_vrpn_ForceDeviceRemote_useGhost
+  (JNIEnv *, jobject)
+{
+  printf( "Function Java_vrpn_ForceDeviceRemote_useGhost is not implemented.\n" );
+}
+
+
+/*
+ * Class:     vrpn_ForceDeviceRemote
  * Method:    setTrimeshTransform
  * Signature: ([F)V
  */
@@ -445,42 +597,6 @@ JNIEXPORT void JNICALL Java_vrpn_ForceDeviceRemote_clearTrimesh
   (JNIEnv *, jobject)
 {
   printf( "Function Java_vrpn_ForceDeviceRemote_clearTrimesh is not implemented.\n" );
-}
-
-
-/*
- * Class:     vrpn_ForceDeviceRemote
- * Method:    sendForceField
- * Signature: ()V
- */
-JNIEXPORT void JNICALL Java_vrpn_ForceDeviceRemote_sendForceField__
-  (JNIEnv *, jobject)
-{
-  printf( "Function Java_vrpn_ForceDeviceRemote_sendForceField__ is not implemented.\n" );
-}
-
-
-/*
- * Class:     vrpn_ForceDeviceRemote
- * Method:    stopForceField
- * Signature: ()V
- */
-JNIEXPORT void JNICALL Java_vrpn_ForceDeviceRemote_stopForceField
-  (JNIEnv *, jobject)
-{
-  printf( "Function Java_vrpn_ForceDeviceRemote_stopForceField is not implemented.\n" );
-}
-
-
-/*
- * Class:     vrpn_ForceDeviceRemote
- * Method:    sendForceField
- * Signature: ([F[F[[FF)V
- */
-JNIEXPORT void JNICALL Java_vrpn_ForceDeviceRemote_sendForceField___3F_3F_3_3FF
-  (JNIEnv *, jobject, jfloatArray, jfloatArray, jobjectArray, jfloat)
-{
-  printf( "Function Java_vrpn_ForceDeviceRemote_sendForceField___3F_3F_3_3FF is not implemented.\n" );
 }
 
 
@@ -534,18 +650,6 @@ JNIEXPORT void JNICALL Java_vrpn_ForceDeviceRemote_setVertex
 
 /*
  * Class:     vrpn_ForceDeviceRemote
- * Method:    useGhost
- * Signature: ()V
- */
-JNIEXPORT void JNICALL Java_vrpn_ForceDeviceRemote_useGhost
-  (JNIEnv *, jobject)
-{
-  printf( "Function Java_vrpn_ForceDeviceRemote_useGhost is not implemented.\n" );
-}
-
-
-/*
- * Class:     vrpn_ForceDeviceRemote
  * Method:    setNormal
  * Signature: (IFFF)V
  */
@@ -565,18 +669,6 @@ JNIEXPORT void JNICALL Java_vrpn_ForceDeviceRemote_removeTriangle
   (JNIEnv *, jobject, jint)
 {
   printf( "Function Java_vrpn_ForceDeviceRemote_setConstraintMode is not implemented.\n" );
-}
-
-
-/*
- * Class:     vrpn_ForceDeviceRemote
- * Method:    enableConstraint
- * Signature: (I)V
- */
-JNIEXPORT void JNICALL Java_vrpn_ForceDeviceRemote_enableConstraint
-  (JNIEnv *, jobject, jint)
-{
-  printf( "Function Java_vrpn_ForceDeviceRemote_enableConstraint is not implemented.\n" );
 }
 
 

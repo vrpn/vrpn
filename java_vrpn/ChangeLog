@@ -1,4 +1,10 @@
-2002-06-24    <marshbur@cs.unc.edu>
+2002-06-25  David Marshburn  <marshbur@cs.unc.edu>
+
+	* ForceDeviceRemote.java:  *ForceField methods return boolean. 
+	(stopForceField, sendForceField x2)
+	* vrpn_ForceDeviceRemote.java:  *ForceField method implementations.
+
+2002-06-24  David Marshburn  <marshbur@cs.unc.edu>
 
 	* java_vrpn.vjp:  adds ForceDevice
 	* java_vrpn.dsw:  adds ForceDeviceRemote.dsp

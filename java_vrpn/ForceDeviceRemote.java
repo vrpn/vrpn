@@ -83,16 +83,19 @@ public class ForceDeviceRemote implements Runnable
 	public native void sendSurface( );
 	public native void startSurface( );
 	public native void stopSurface( );
+
 	public native void setVertex( int number, float x, float y, float z );
 	public native void setNormal( int number, float x, float y, float z );
 	public native void setTriangle( int number, int vertex1, int vertex2, int vertex3,
-							 int normal1, int normal2, int normal3 );
+									int normal1, int normal2, int normal3 );
 	public native void removeTriangle( int number );
 	public native void updateTrimeshChanges( );
 	public native void setTrimeshTransform( float[] transform );
 	public native void clearTrimesh( );
+	
 	public native void useHcollide( );
 	public native void useGhost( );
+	
 	public native void enableConstraint( int enable );
 	public native void setConstraintMode( int mode );
 	public native void setConstraintPoint( float[] point );
@@ -101,9 +104,10 @@ public class ForceDeviceRemote implements Runnable
 	public native void setConstraintPlanePoint( float[] point );
 	public native void setConstraintPlaneNormal( float[] normal );
 	public native void setConstraintKSpring( float k );
-	public native void sendForceField( float[] origin, float[] force, float[][] jacobian, float radius );
-	public native void sendForceField( );
-	public native void stopForceField( );
+	
+	public native boolean sendForceField( float[] origin, float[] force, float[][] jacobian, float radius );
+	public native boolean sendForceField( );
+	public native boolean stopForceField( );
 	
 	
 	public synchronized void addForceChangeListener( ForceChangeListener listener )
