@@ -51,10 +51,16 @@ ifeq ($(HW_OS),sparc_solaris)
 	CC := /opt/SUNWspro/bin/CC
 	SYSLIBS := -lsocket -lnsl
 endif
+
 ifeq ($(HW_OS),sgi_irix)
-	CC := CC -32
-	GL := -lgl
+  ifndef SGI_ABI
+    SGI_ABI := n32
+  endif
+  OBJECT_DIR_SUFFIX := .$(SGI_ABI)
+  CC := CC -$(SGI_ABI)
+  GL := -lgl
 endif
+
 ifeq ($(HW_OS),hp700_hpux10)
 	CC := CC +a1
 endif
@@ -67,10 +73,11 @@ ifeq ($(HW_OS), hp_flow_aCC)
 endif
 
 
-OBJ_DIR := $(HW_OS)
+OBJ_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)
+LIB_DIR := ../$(OBJ_DIR)
 
 CFLAGS = -g -I../ -I../../quat -I/afs/unc/proj/hmd/beta/include
-LFLAGS = -L../$(HW_OS) -L../../quat/$(HW_OS) \
+LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) \
 	 -L/afs/unc/proj/hmd/beta/lib/$(HW_OS) \
          -L/afs/unc/proj/hmd/lib/$(HW_OS)
 
@@ -122,49 +129,49 @@ testSharedObject:	$(OBJ_DIR)/testSharedObject
 # 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/client $(OBJ_DIR)/client.o -lvrpn -lsdi 
 
 $(OBJ_DIR)/vrpn_server: $(OBJ_DIR) $(OBJ_DIR)/vrpn.o  \
-			 ../$(HW_OS)/libvrpnserver.a
+			 $(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/vrpn_server \
 		$(OBJ_DIR)/vrpn.o \
 		-lvrpnserver $(GL) -lquat $(SYSLIBS) -lm
 
 $(OBJ_DIR)/test_vrpn: $(OBJ_DIR) $(OBJ_DIR)/test_vrpn.o  \
-			 ../$(HW_OS)/libvrpnserver.a
+			 $(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/test_vrpn \
 		$(OBJ_DIR)/test_vrpn.o \
 		-lvrpnserver $(GL) -lquat $(SYSLIBS) -lm
 
 $(OBJ_DIR)/client_and_server: $(OBJ_DIR) $(OBJ_DIR)/client_and_server.o  \
-			 ../$(HW_OS)/libvrpnserver.a
+			 $(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/client_and_server \
 		$(OBJ_DIR)/client_and_server.o \
 		-lvrpnserver $(GL) -lquat $(SYSLIBS) -lm
 
 $(OBJ_DIR)/forward: $(OBJ_DIR) $(OBJ_DIR)/forward.o  \
-			 ../$(HW_OS)/libvrpnserver.a
+			 $(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/forward \
 		$(OBJ_DIR)/forward.o \
 		-lvrpnserver -lm
 
 $(OBJ_DIR)/text: $(OBJ_DIR) $(OBJ_DIR)/text.o  \
-			 ../$(HW_OS)/libvrpnserver.a
+			 $(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/text \
 		$(OBJ_DIR)/text.o \
 		-lvrpnserver -lm
 
 $(OBJ_DIR)/sample_server:	$(OBJ_DIR) $(OBJ_DIR)/sample_server.o \
-			../$(HW_OS)/libvrpnserver.a
+			$(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/sample_server \
 		$(OBJ_DIR)/sample_server.o \
 		-lvrpnserver -lm
 
 $(OBJ_DIR)/sample_analog:	$(OBJ_DIR) $(OBJ_DIR)/sample_analog.o \
-			../$(HW_OS)/libvrpnserver.a
+			$(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/sample_analog \
 		$(OBJ_DIR)/sample_analog.o \
 		-lvrpnserver -lm
 
 $(OBJ_DIR)/testSharedObject:	$(OBJ_DIR) $(OBJ_DIR)/testSharedObject.o \
-			../$(HW_OS)/libvrpnserver.a
+			$(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/testSharedObject \
 		$(OBJ_DIR)/testSharedObject.o \
 		-lvrpnserver -lm
