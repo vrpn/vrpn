@@ -87,10 +87,15 @@ int gethostname (char *, int);
 // string.  Since minor versions should interoperate, MAGIC is only
 // checked through the last period;  characters after that are ignored.
 
-char * vrpn_MAGIC = (char *) "vrpn: ver. 04.05";
+char * vrpn_MAGIC = (char *) "vrpn: ver. 04.06";
 const int MAGICLEN = 16;  // Must be a multiple of vrpn_ALIGN bytes!
 
 // Version history:
+//
+//   04.06:  Philip Winston, March 1999.  File_Connection was substantially
+//           modified.  Added get_File_Connection() to Connection.
+//   04.05:  ?
+//   04.04:  ?
 //   04.03:  Russ Taylor, Nov/Dec 1998
 //           Put most of what is needed for a connection into OneConnection
 //           to hopefully make it easier to allow multiple connections to a
@@ -3044,9 +3049,12 @@ vrpn_Connection::~vrpn_Connection (void) {
 		snitch = &( (*snitch)->next );;
 		victim = victim->next;
 	};
-	if (victim == NULL) {
-		fprintf(stderr,
-		    "VRPN:~vrpn_Connection: Can't find myself on known list\n");
+	if (victim == NULL) {        
+        // Disabling this warning because servers aren't put on the
+        // known list.  We coudl add a flag of some sort to know if
+        // we are a server, and warn only if not...  -PBW
+        //fprintf(stderr, "VRPN:~vrpn_Connection: Can't find "
+        //                "myself on known list\n");
 	} else {
 		*snitch = victim->next;
 		delete victim;
