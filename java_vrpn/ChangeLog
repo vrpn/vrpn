@@ -1,3 +1,8 @@
+2004-07-22  David Marshburn  <marshbur@cs.unc.edu>
+
+	* *Remote.java (stopRunning):  added most of the functionality of
+	finalize to this function (this should be used instead of finalize).
+
 2004-07-13  David Marshburn  <marshbur@cs.unc.edu>
 
 	* VRPN.java:  added data members to store the connection name and

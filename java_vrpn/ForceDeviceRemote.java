@@ -188,6 +188,18 @@ public class ForceDeviceRemote extends VRPN implements Runnable
 	public void stopRunning( )
 	{
 		keepRunning = false;
+		while( forceThread.isAlive( ) )
+		{
+			try { forceThread.join( ); }
+			catch( InterruptedException e ) { }
+		}
+		forceListeners.removeAllElements( );
+		scpListeners.removeAllElements( );
+		errorListeners.removeAllElements( );
+		synchronized( downInVrpnLock )
+		{
+			this.shutdownForceDevice( );
+		}
 	}
 
 	

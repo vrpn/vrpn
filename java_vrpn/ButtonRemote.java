@@ -89,6 +89,16 @@ public class ButtonRemote extends VRPN implements Runnable
 	public void stopRunning( )
 	{
 		keepRunning = false;
+		while( buttonThread.isAlive( ) )
+		{
+			try { buttonThread.join( ); }
+			catch( InterruptedException e ) { }
+		}
+		changeListeners.removeAllElements( );
+		synchronized( downInVrpnLock )
+		{
+			this.shutdownButton( );
+		}
 	}
 
 	

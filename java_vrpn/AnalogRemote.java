@@ -109,6 +109,16 @@ public class AnalogRemote extends VRPN implements Runnable
 	public void stopRunning( )
 	{
 		keepRunning = false;
+		while( analogThread.isAlive( ) )
+		{
+			try { analogThread.join( ); }
+			catch( InterruptedException e ) { }
+		}
+		changeListeners.removeAllElements( );
+		synchronized( downInVrpnLock )
+		{
+			this.shutdownAnalog( );
+		}
 	}
 
 	

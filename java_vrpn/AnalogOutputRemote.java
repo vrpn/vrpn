@@ -97,6 +97,15 @@ public class AnalogOutputRemote extends VRPN implements Runnable
 	public void stopRunning( )
 	{
 		keepRunning = false;
+		while( analogOutputThread.isAlive( ) )
+		{
+			try { analogOutputThread.join( ); }
+			catch( InterruptedException e ) { }
+		}
+		synchronized( downInVrpnLock )
+		{
+			this.shutdownAnalogOutput( );
+		}
 	}
 
 	

@@ -174,6 +174,18 @@ public class TempImagerRemote extends VRPN implements Runnable
 	public void stopRunning( )
 	{
 		keepRunning = false;
+		while( tempImagerThread.isAlive( ) )
+		{
+			try { tempImagerThread.join( ); }
+			catch( InterruptedException e ) { }
+		}
+		
+		descriptionListeners.removeAllElements( );
+		regionListeners.removeAllElements( );
+		synchronized( downInVrpnLock )
+		{
+			this.shutdownTempImager( );
+		}
 	}
 
 	

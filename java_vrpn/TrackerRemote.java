@@ -176,6 +176,18 @@ public class TrackerRemote extends VRPN implements Runnable
 	public void stopRunning( )
 	{
 		keepRunning = false;
+		while( trackerThread.isAlive( ) )
+		{
+			try { trackerThread.join( ); }
+			catch( InterruptedException e ) { }
+		}
+		changeListeners.removeAllElements( );
+		velocityListeners.removeAllElements( );
+		accelerationListeners.removeAllElements( );
+		synchronized( downInVrpnLock )
+		{
+			this.shutdownTracker( );
+		}
 	}
 
 	
