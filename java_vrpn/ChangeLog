@@ -1,3 +1,9 @@
+2003-10-24  Oliver Otto <o.otto@reading.ac.uk>
+
+	* makefile:  builds java_vrpn on unix (linux and iris tested)
+	* make_header.sh:  script to build the C++ header files
+	* README.txt:  updated build instructions for Irix/Linux
+
 2003-05-16  David Marshburn  <marshbur@cs.unc.edu>
 
 	* *Remote.java:  removed the 'synchronized' keyword from a number
