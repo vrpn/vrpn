@@ -6,10 +6,10 @@
   ----------------------------------------------------------------------------
   Author: weberh
   Created: Fri Jan 29 10:00:00 1999
-  Revised: Fri Jan 29 14:46:41 1999 by weberh
+  Revised: Fri Jan 29 16:22:55 1999 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Nidaq.C,v $
   $Locker:  $
-  $Revision: 1.2 $
+  $Revision: 1.3 $
 \*****************************************************************************/
 
 #include "vrpn_Nidaq.h"
@@ -17,49 +17,21 @@
 
 #if defined(WIN32) || defined(_WIN32)
 #define VERBOSE
-vrpn_Nidaq::vrpn_Nidaq(char *pchName, vrpn_Connection *pConnection)
+vrpn_Nidaq::vrpn_Nidaq(char *pchName, vrpn_Connection *pConnection,
+		       double dSamplingRate, double dInterChannelRate, 
+		       short sDeviceNumber, int cChannels, 
+		       short rgsChan[], short rgsGain[],
+		       short sInputMode, short sPolarity)
   : vrpn_Analog(pchName, pConnection), pDAQ(NULL) {
-
-    // NOTE: all of these will have to become args
-
-    // You should use an even number of channels even if you
-    // really only need one less.  If you don't, the daq will
-    // only report at about half the rate (some wierd double-buffering
-    // side-effect).
-    int cChannels = 10;
-
-    // differential mode, so chans/2
-    if (cChannels>(DAQ::MAX_CHANS/2)) {
-      cerr << "vrpn_Nidaq::vrpn_Nidaq: only " << (DAQ::MAX_CHANS/2) << 
-	" allowed, " << cChannels << " requested. DAQ not initialized." endl;
-      return;
-    }
 
     if (cChannels>vrpn_CHANNEL_MAX) {
       cerr << "vrpn_Nidaq::vrpn_Nidaq: vrpn_Analog allows only " 
 	   << vrpn_CHANNEL_MAX << " channels (" << cChannels 
-	   << " requested). DAQ not initialized." endl;
+	   << " requested). DAQ not initialized." << endl;
       return;
     }
     
-    short rgsChan[cMaxChannels];
-    // xbow acc are 0->5v, tokin rg are +-1v, systron rg +-5
-    // a/d is +-10, so we have the following gains (since 
-    // our device is set to +-10 v by default
-    short rgsGain[] = { 2, 2, 2, 10, 10, 10, 2, 2, 2, 1 };
-    
-    // max rate for 6 channels at 100khz
-    double dInterSampleRate = 100000.0
-    double dSamplingRate=dInterSampleRate/(double)cChannels;
-    
-    // set up the channel array
-    int i;
-    for (i=0;i<cChannels;i++) {
-      // these are all differential, so they go 0-7, 16-23, 32-39, 48-55 
-      // if we want single ended, then we don't do this trickery
-      rgsChan[i] = i%8 + 16*(i/8);
-    }
-    
+    num_channel = cChannels;
     daqSample.resize(cChannels);
     
     // calc the approximate offset between the clock the daq class uses
@@ -79,7 +51,7 @@ vrpn_Nidaq::vrpn_Nidaq(char *pchName, vrpn_Connection *pConnection)
     dTime2=UpTime::Now();
     
     dTime1 = (dTime1 + dTime2)/2.0;
-    tvUpTime.tv_secs = vrpn_MsecsTimeval(dTime1*1000.0);
+    tvUpTime = vrpn_MsecsTimeval(dTime1*1000.0);
     tvOffset = vrpn_TimevalDiff(tv, tvUpTime);
 
     // later, add this to tvUpTime to get into gettimeofday time frame
@@ -94,8 +66,8 @@ vrpn_Nidaq::vrpn_Nidaq(char *pchName, vrpn_Connection *pConnection)
     // the gain to apply to each
     // differential or single ended
     // bipolar (+/-) or just unipolar (+)
-    pDAQ = new DAQ(dSamplingRate, 100000.0, DAQ::DEF_DEVICE, cChannels,
-		   rgsChan, rgsGain, DAQ::DIFFERENTIAL, DAQ::BIPOLAR );
+    pDAQ = new DAQ(dSamplingRate, dInterChannelRate, sDeviceNumber, cChannels,
+		   rgsChan, rgsGain, sInputMode, sPolarity );
 }
 
 vrpn_Nidaq::~vrpn_Nidaq() {
@@ -104,6 +76,10 @@ vrpn_Nidaq::~vrpn_Nidaq() {
 
 void vrpn_Nidaq::mainloop() {
   report_changes();
+}
+
+int vrpn_Nidaq::doing_okay() {
+  return (pDAQ->status()==DAQ::RUNNING);
 }
 
 void vrpn_Nidaq::report_changes() {
@@ -119,18 +95,18 @@ void vrpn_Nidaq::report_changes() {
   // reports as well (note: gfAllInertial does not work properly as 
   // of 1/29/99 weberh).
 
-  if (pDaq->getSample(&daqSample) && pConnection) {
+  if (pDAQ->getSample(&daqSample) && connection) {
     // there is a reading and a connection ... so package it
 
     // copy daq channels to analog class data
     for (int i=0;i<daqSample.cChannels;i++) {
-      channels[i]=daqSample.rgd[i];
+      channel[i]=daqSample.rgd[i];
     }
 
     // It will actually be sent out when the server calls 
     // mainloop() on the connection object this device uses.
     char rgch[1000];
-    int	cChars = vrpn_Analog::encode_to(msgbuf);
+    int	cChars = vrpn_Analog::encode_to(rgch);
 #ifdef VERBOSE
     print();
 #endif
@@ -140,7 +116,7 @@ void vrpn_Nidaq::report_changes() {
     tv = vrpn_TimevalSum(vrpn_MsecsTimeval(daqSample.dTime*1000.0), 
 			 tvOffset);
 
-    if (pConnection->pack_message(cChars, tv, channel_m_id, my_id, rgch,
+    if (connection->pack_message(cChars, tv, channel_m_id, my_id, rgch,
 				  vrpn_CONNECTION_LOW_LATENCY)) {
       cerr << "vrpn_Nidaq::report_changes: cannot write message: tossing.\n";
     }
@@ -153,6 +129,9 @@ void vrpn_Nidaq::report_changes() {
 
 /*****************************************************************************\
   $Log: vrpn_Nidaq.C,v $
+  Revision 1.3  1999/01/29 22:18:27  weberh
+  cleaned up analog.C and added class to support national instruments a/d card
+
   Revision 1.2  1999/01/29 19:47:33  weberh
   *** empty log message ***
 

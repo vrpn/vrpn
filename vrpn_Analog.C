@@ -6,11 +6,14 @@
  * Update Count    : 47
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Analog.C,v $
- * $Date: 1999/01/29 19:42:01 $
+ * $Date: 1999/01/29 22:18:26 $
  * $Author: weberh $
- * $Revision: 1.8 $
+ * $Revision: 1.9 $
  * 
  * $Log: vrpn_Analog.C,v $
+ * Revision 1.9  1999/01/29 22:18:26  weberh
+ * cleaned up analog.C and added class to support national instruments a/d card
+ *
  * Revision 1.8  1999/01/29 19:42:01  weberh
  * cleaned up analog and shared code, added new class to read national
  * instrument d/a card.
@@ -54,7 +57,7 @@
  * HISTORY
  */
 
-static char rcsid[] = "$Id: vrpn_Analog.C,v 1.8 1999/01/29 19:42:01 weberh Exp $";
+static char rcsid[] = "$Id: vrpn_Analog.C,v 1.9 1999/01/29 22:18:26 weberh Exp $";
 
 #include "vrpn_Analog.h"
 #include <stdio.h>
@@ -88,8 +91,10 @@ vrpn_Analog::vrpn_Analog (const char * name, vrpn_Connection * c) {
 
 void vrpn_Analog::print(void ) {
   printf("Analog Report:");
-  for (int i=0; i< num_channel; i++) 
-    printf("Channel[%d]= %f\t", i, channel[i]);
+  for (int i=0; i< num_channel; i++) {
+    //    printf("Channel[%d]= %f\t", i, channel[i]);
+    printf("%f\t", channel[i]);
+  }
   printf("\n");
 }
 
