@@ -1,6 +1,5 @@
 #ifndef VRPN_ANALOG
 #define VRPN_ANALOG
-
 #define vrpn_CHANNEL_MAX 128
 // analog status flags
 #define ANALOG_SYNCING		(2)

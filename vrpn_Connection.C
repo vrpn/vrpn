@@ -1078,7 +1078,15 @@ vrpn_OneConnection::vrpn_OneConnection
 
 vrpn_OneConnection::~vrpn_OneConnection(void)
 {
-  if (d_logname)
+  int i;
+  	for (i=0;i<num_other_types;i++) {
+		delete other_types[i].name;
+	}
+	for (i=0;i<num_other_senders;i++) {
+		delete other_senders[i].name;
+	}
+
+	if (d_logname)
     close_log();
 
   if (d_log_filters) {
@@ -1099,7 +1107,7 @@ int	vrpn_OneConnection::newLocalSender(const char *name, int which)
 {
 	int	i;
 	for (i = 0; i < num_other_senders; i++) {
-		if (strcmp(*other_senders[i].name, name) == 0) {
+		if (strcmp(other_senders[i].name, name) == 0) {
 #ifdef	VERBOSE
 		printf("  ...mapping from other-side sender %d\n", i);
 #endif
@@ -1119,7 +1127,7 @@ int	vrpn_OneConnection::newLocalType(const char *name, int which)
 {	int i;
 
 	for (i = 0; i < num_other_types; i++) {
-		if (strcmp(*other_types[i].name, name) == 0) {
+		if (strcmp(other_types[i].name, name) == 0) {
 			other_types[i].local_id = which;
 			return 1;
 #ifdef	VERBOSE
@@ -1152,7 +1160,7 @@ int	vrpn_OneConnection::newRemoteType(cName type_name, int local_id)
 	}
 
         if (!other_types[num_other_types].name) {
-	  other_types[num_other_types].name = (cName *) new cName;
+	  other_types[num_other_types].name = new cName;
           if (!other_types[num_other_types].name) {
             fprintf(stderr, "vrpn_OneConnection::newRemoteType:  "
                             "Can't allocate memory for new record\n");
@@ -1179,7 +1187,7 @@ int	vrpn_OneConnection::newRemoteSender(cName sender_name, int local_id)
 	}
 
         if (!other_senders[num_other_senders].name) {
-	  other_senders[num_other_senders].name = (cName *) new cName;
+	  other_senders[num_other_senders].name = new cName;
           if (!other_senders[num_other_senders].name) {
             fprintf(stderr, "vrpn_OneConnection::newRemoteSender:  "
                             "Can't allocate memory for new record\n");
@@ -1614,6 +1622,15 @@ vrpn_Synchronized_Connection::vrpn_Synchronized_Connection
    }
 }
 
+  vrpn_Synchronized_Connection::~vrpn_Synchronized_Connection() {
+	  if (pClockServer) {
+		  delete pClockServer;
+	  }
+	  if (pClockRemote) {
+		delete pClockRemote;
+	  }
+  }
+
 struct timeval vrpn_Synchronized_Connection::fullSync(void)
 {
   if (pClockRemote) {
@@ -2006,7 +2023,7 @@ int vrpn_Connection::pack_type_description(int which)
    struct timeval now;
 
    // need to pack the null char as well
-   long	len = strlen(*my_types[which].name) + 1;
+   long	len = strlen(my_types[which].name) + 1;
    long netlen;
    char buffer [sizeof(len) + sizeof(cName)];
 
@@ -2020,7 +2037,7 @@ int vrpn_Connection::pack_type_description(int which)
    printf("  vrpn_Connection: Packing type '%s'\n",*my_types[which].name);
 #endif
    memcpy(buffer, &netlen, sizeof(netlen));
-   memcpy(&buffer[sizeof(len)], *my_types[which].name, (int) len);
+   memcpy(&buffer[sizeof(len)], my_types[which].name, (int) len);
    gettimeofday(&now,NULL);
 
    return pack_message((int) (len + sizeof(len)), now,
@@ -2033,7 +2050,7 @@ int vrpn_Connection::pack_sender_description(int which)
    struct timeval now;
 
    // need to pack the null char as well
-   long	len = strlen(*my_senders[which]) + 1;
+   long	len = strlen(my_senders[which]) + 1;
    long netlen;
    char buffer [sizeof(len) + sizeof(cName)];
 
@@ -2047,7 +2064,7 @@ int vrpn_Connection::pack_sender_description(int which)
 	printf("  vrpn_Connection: Packing sender '%s'\n", *my_senders[which]);
 #endif
    memcpy(buffer, &netlen, sizeof(netlen));
-   memcpy(&buffer[sizeof(len)], *my_senders[which], (int) len);
+   memcpy(&buffer[sizeof(len)], my_senders[which], (int) len);
    gettimeofday(&now,NULL);
 
    return pack_message((int)(len + sizeof(len)), now,
@@ -2658,13 +2675,36 @@ vrpn_Connection::~vrpn_Connection (void) {
 
 #ifdef WIN32
 
-  if (WSACleanup() == SOCKET_ERROR)
+	if (WSACleanup() == SOCKET_ERROR) {
     fprintf(stderr, "~vrpn_Connection():  "
                     "WSACleanup() failed with error code %d\n",
             WSAGetLastError());
+	}
 
 #endif  // WIN32
-
+	int i;
+	vrpnMsgCallbackEntry *pVMCB, *pVMCB_Del;
+	for (i=0;i<num_my_types;i++) {
+		delete my_types[i].name;
+		pVMCB=my_types[i].who_cares;
+		while (pVMCB) {
+			pVMCB_Del=pVMCB;
+			pVMCB=pVMCB_Del->next;
+			delete pVMCB_Del;
+		}
+	}
+	for (i=0;i<num_my_senders;i++) {
+		delete my_senders[i];
+	}
+	
+	// free generic message callbacks
+	pVMCB=generic_callbacks;
+	
+	while (pVMCB) {
+		pVMCB_Del=pVMCB;
+		pVMCB=pVMCB_Del->next;
+		delete pVMCB_Del;
+	}
 }
 
 vrpn_Connection::vrpn_Connection (unsigned short listen_port_no) :
@@ -2844,7 +2884,7 @@ long vrpn_Connection::register_sender (const char * name)
 
    // See if the name is already in the list.  If so, return it.
    for (i = 0; i < num_my_senders; i++) {
-      if (strcmp((char *) my_senders[i], name) == 0) {
+      if (strcmp(my_senders[i], name) == 0) {
 	// fprintf(stderr, "It's already there, #%d\n", i);
       	return i;
       }
@@ -2861,7 +2901,7 @@ long vrpn_Connection::register_sender (const char * name)
 
      //  fprintf(stderr, "Allocating a new name entry\n");
 
-     my_senders[num_my_senders] = (cName *) new cName;
+     my_senders[num_my_senders] = new cName;
      if (!my_senders[num_my_senders]) {
        fprintf(stderr, "vrpn_Connection::register_sender:  "
                        "Can't allocate memory for new record\n");
@@ -2870,7 +2910,7 @@ long vrpn_Connection::register_sender (const char * name)
    }
 
    // Add this one into the list
-   strncpy(*my_senders[num_my_senders], name, sizeof(cName) - 1);
+   strncpy(my_senders[num_my_senders], name, sizeof(cName) - 1);
    num_my_senders++;
 
    // If we're connected, pack the sender description
@@ -2904,7 +2944,7 @@ long vrpn_Connection::register_message_type (const char * name)
 	}
 
 	if (!my_types[num_my_types].name) {
-	  my_types[num_my_types].name = (cName *) new cName;
+	  my_types[num_my_types].name = new cName;
           if (!my_types[num_my_types].name) {
             fprintf(stderr, "vrpn_Connection::register_message_type:  "
                             "Can't allocate memory for new record\n");
@@ -2913,7 +2953,7 @@ long vrpn_Connection::register_message_type (const char * name)
         }
 
 	// Add this one into the list and return its index
-	strncpy(*my_types[num_my_types].name, name, sizeof(cName) - 1);
+	strncpy(my_types[num_my_types].name, name, sizeof(cName) - 1);
 	my_types[num_my_types].who_cares = NULL;
 	my_types[num_my_types].cCares = 0;  // TCH 28 Oct 97 - redundant?
 	num_my_types++;
@@ -3352,7 +3392,7 @@ int	vrpn_Connection::handle_type_message(void *userdata,
 	// Tell that the other side cares about it if found.
 	local_id = -1; // None yet
 	for (i = 0; i < me->num_my_types; i++) {
-		if (strcmp(type_name, (char *) me->my_types[i].name) == 0) {
+		if (strcmp(type_name, me->my_types[i].name) == 0) {
 			local_id = i;
 			me->my_types[i].cCares = 1;  // TCH 28 Oct 97
 			break;
@@ -3395,7 +3435,7 @@ int	vrpn_Connection::handle_sender_message(void *userdata,
 	// If not, clear the mapping.
 	local_id = -1; // None yet
 	for (i = 0; i < me->num_my_senders; i++) {
-		if (strcmp(sender_name, (char *) *me->my_senders[i]) == 0) {
+		if (strcmp(sender_name, me->my_senders[i]) == 0) {
 			local_id = i;
 			break;
 		}
@@ -3513,7 +3553,7 @@ int vrpn_Connection::message_type_is_registered (const char * name) const
 
 	// See if the name is already in the list.  If so, return it.
 	for (i = 0; i < num_my_types; i++)
-		if (strcmp(*my_types[i].name, name) == 0)
+		if (strcmp(my_types[i].name, name) == 0)
 			return i;
 
 	return -1;

@@ -12,7 +12,6 @@
 
 #ifndef	VRPN_CONNECTION_H
 #define VRPN_CONNECTION_H
-
 #include <stdio.h>  // for FILE
 
 #ifndef VRPN_SHARED_H
@@ -216,7 +215,7 @@ protected:
 
 	// Holds one entry for a mapping of remote strings to local IDs.
 	struct cRemoteMapping {
-		cName	* name;
+		char	* name;
 		int	local_id;
 	};
 
@@ -342,11 +341,11 @@ class vrpn_Connection
 	// that have been declared by the local version.
 
 	struct vrpnLocalMapping {
-		cName			* name;		// Name of type
+		char			* name;		// Name of type
 		vrpnMsgCallbackEntry	* who_cares;	// Callbacks
 		int			cCares;		// TCH 28 Oct 97
 	};
-	cName			* my_senders [vrpn_CONNECTION_MAX_SENDERS];
+	char			* my_senders [vrpn_CONNECTION_MAX_SENDERS];
 	int			num_my_senders;
 	vrpnLocalMapping	my_types [vrpn_CONNECTION_MAX_TYPES];
 	int			num_my_types;
@@ -454,7 +453,8 @@ class vrpn_Synchronized_Connection : public vrpn_Connection
 	  int cOffsetWindow = 2);
     // fullSync will perform an accurate sync on the connection for the
     // user and return the current offset
-    struct timeval fullSync();
+	~vrpn_Synchronized_Connection();
+	struct timeval fullSync();
     vrpn_Clock_Remote * pClockRemote;
     virtual int mainloop (void);
 };

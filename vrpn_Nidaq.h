@@ -19,12 +19,11 @@
   Revised: Fri Jan 29 16:28:30 1999 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Nidaq.h,v $
   $Locker:  $
-  $Revision: 1.5 $
+  $Revision: 1.6 $
 \*****************************************************************************/
 
 #ifndef VRPN_NIDAQ
 #define VRPN_NIDAQ
-
 #if defined(_WIN32) || defined(WIN32)
 #include "vrpn_Analog.h"
 #include <daq.h>
@@ -81,6 +80,9 @@ private:
 
 /*****************************************************************************\
   $Log: vrpn_Nidaq.h,v $
+  Revision 1.6  1999/02/11 20:17:34  weberh
+  cleaned up problems with cname alloc/dealloc, etc.
+
   Revision 1.5  1999/02/01 20:53:08  weberh
   cleaned up and added nice and multithreading for practical usage.
 
