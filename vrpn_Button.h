@@ -120,7 +120,7 @@ class vrpn_Button_Parallel: public vrpn_Button_Filter {
 	// Open a button connected to the local machine, talk to the
 	// outside world through the connection.
 	vrpn_Button_Parallel(const char *name, vrpn_Connection *connection,
-				int portno, unsigned porthex);
+				int portno, unsigned porthex = 0);
 
   protected:
 	unsigned	port;

@@ -1,5 +1,11 @@
 2001-06-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Button.h (vrpn_Button_Parallel) : Moving default parameter into
+		header file and out of C file
+	* vrpn_Button.C (vrpn_Button_Parallel) : same
+
+2001-06-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_3Space.C (mainloop) : Made it so that it tries to read a record
 		before checking for timeout (to prevent infinite resets when there
 		are two trackers or other devices running on same server).

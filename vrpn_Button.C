@@ -424,7 +424,7 @@ void vrpn_Button_Example_Server::mainloop()
 // changed to take raw port hex address
 vrpn_Button_Parallel::vrpn_Button_Parallel(const char *name,
 					   vrpn_Connection *c,
-					   int portno, unsigned porthex = 0)
+					   int portno, unsigned porthex)
 	: vrpn_Button_Filter(name, c)
 {      
 #ifdef linux
