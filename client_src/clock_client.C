@@ -16,7 +16,12 @@
 
 #include <vrpn_Connection.h>
 #include <vrpn_Clock.h>
-#include <iostream.h>
+#ifdef  VRPN_USE_OLD_STREAMS
+        #include <iostream.h>
+#else
+        #include <iostream>
+        using namespace std;
+#endif
 
 #include <stdlib.h>
 
@@ -73,6 +78,20 @@ main(int argc, char *argv[]) {
 
 /*****************************************************************************\
   $Log: clock_client.C,v $
+  Revision 1.3  2004/04/08 15:33:33  taylorr
+  2004-04-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+          * Makefile : Adding flag to SGI compile in the hope that it would
+                  fix things and let us use the new streams libraries.  It
+                  got us part of the way there on my system.
+          * clock_client.C : Added Patrick Hartling's changes to make VRPN
+                  compile with Visual Studio.NET, which required switching to
+                  new streams, which required retrofitting SGIs to use old
+                  streams (using yet another define in vrpn_Configure.h).
+          * test_tempimager.C : same.
+          * vrpnTrackerClient.cpp : Same.
+          * vrpn_LamportClock.t.C : Same.
+
   Revision 1.2  2000/08/28 16:25:18  taylorr
   2000-08-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
 

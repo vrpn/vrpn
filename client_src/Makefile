@@ -60,7 +60,7 @@ ifeq ($(HW_OS),sgi_irix)
       SGI_ARCH := mips3
   endif
   OBJECT_DIR_SUFFIX := .$(SGI_ABI).$(SGI_ARCH)
-  CC := CC -$(SGI_ABI) -$(SGI_ARCH)
+  CC := CC -$(SGI_ABI) -$(SGI_ARCH) -LANG:std
   GLUTLIBS := -L/afs/cs.unc.edu/project/walk/lib/sgi_irix.$(SGI_ABI) -lglut -lGLU -lGL -lXmu -lXext -lX11
 endif
 

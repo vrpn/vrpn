@@ -51,7 +51,7 @@ bool  init_server_code(void)
     fprintf(stderr, "Could not open TempImager Server\n");
     return false;
   }
-  if ( (svrchan = svr->add_channel("value", "unsigned16bit", 0, (float)(pow(2,16)-1))) == -1) {
+  if ( (svrchan = svr->add_channel("value", "unsigned16bit", 0, (float)(pow(2.0,16)-1))) == -1) {
     fprintf(stderr, "Could not add channel to server image\n");
     return false;
   }
