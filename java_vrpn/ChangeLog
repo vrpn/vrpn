@@ -1,3 +1,15 @@
+2002-11-25    <marshbur@cs.unc.edu>
+
+	* TempImagerRemote.java:  made all data members protected (were default
+	visibility before).
+	* vrpn_TempImager_Remote.cpp:  changed the names of the functions
+	handle_region_changed and handle_description_change to prepend 
+	"java_vrpn_" to the names.  Changes to match recent naming changes
+	in vrpn_TempImager_Region.
+	(java_vrpn_handle_region_change):  recognizes if it's been passed
+	something other than 16-bit image data and fails (temporary, until
+	we write something to deal with other size pixels).
+
 2002-10-24  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_ForceDeviceRemote.cpp (handle_force_error):  corrected

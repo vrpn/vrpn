@@ -97,7 +97,7 @@ JNIEXPORT void JNICALL JNI_OnUnload_TempImagerRemote( JavaVM* jvm, void* reserve
 // dll utility functions
 
 
-void handle_region_change( void * userdata, const vrpn_IMAGERREGIONCB info )
+void java_vrpn_handle_region_change( void * userdata, const vrpn_IMAGERREGIONCB info )
 {
   if( jvm == NULL )
     return;
@@ -108,6 +108,15 @@ void handle_region_change( void * userdata, const vrpn_IMAGERREGIONCB info )
           //info.msg_time.tv_sec, info.msg_time.tv_usec,
           //info.region->chanIndex, info.region->rMin, info.region->rMax,
           //info.region->cMin, info.region->cMax );
+
+  if( info.region->_valType != vrpn_IMAGER_VALTYPE_UINT16 )
+  {
+	  printf( "Error in java_vrpn java_vrpn_handle_region_change:  this has "
+			  "only been written for 16-bit image data, and someone's sending "
+			  "something different.\n" );
+	  return;
+  }
+
 
   JNIEnv*env;
   jvm->AttachCurrentThread( (void**) &env, NULL );
@@ -138,20 +147,20 @@ void handle_region_change( void * userdata, const vrpn_IMAGERREGIONCB info )
     return;
   }
   env->SetShortArrayRegion( jvals, 0, info.region->getNumVals(), 
-							(short*) info.region->vals );
+							(short*) info.region->_valBuf );
 
 
   // now call the handler method
   env->CallVoidMethod( jobj, jmid_handler, (jlong) info.msg_time.tv_sec, 
-                       (jlong) info.msg_time.tv_usec, (jint) info.region->chanIndex,
-                       (jint) info.region->cMin, 
-                       (jint) info.region->cMax, 
-                       (jint) info.region->rMin, (jint) info.region->rMax );
+                       (jlong) info.msg_time.tv_usec, (jint) info.region->_chanIndex,
+                       (jint) info.region->_cMin, 
+                       (jint) info.region->_cMax, 
+                       (jint) info.region->_rMin, (jint) info.region->_rMax );
 
-} // end handle_region_change(...)
+} // end java_vrpn_handle_region_change(...)
 
 
-void handle_description_change( void * userdata, const struct timeval msg_time )
+void java_vrpn_handle_description_change( void * userdata, const struct timeval msg_time )
 {
   
   if( jvm == NULL )
@@ -197,7 +206,7 @@ void handle_description_change( void * userdata, const struct timeval msg_time )
   if( jfid_imagerptr == NULL )
   {
     printf( "Warning:  vrpn_TempImagerRemote library was unable to ID the "
-            "native TempImager in \'handle_description_change\'.  "
+            "native TempImager in \'java_vrpn_handle_description_change\'.  "
 			"This may indicate a version mismatch.\n" );
     return;
   }
@@ -205,7 +214,7 @@ void handle_description_change( void * userdata, const struct timeval msg_time )
   if( t <= 0 )
   {
     printf( "Warning:  the native vrpn TempImager was uninitialized or had already "
-            "been shut down in \'handle_description_change\'.\n" );
+            "been shut down in \'java_vrpn_handle_description_change\'.\n" );
     return;
   }
 
@@ -223,7 +232,7 @@ void handle_description_change( void * userdata, const struct timeval msg_time )
 	  if( channel == NULL )
 	  {
 		  printf( "Warning:  invalid channel %d in "
-			  "native TempImager in \'handle_description_change\'.\n" );
+			  "native TempImager in \'java_vrpn_handle_description_change\'.\n" );
 		  continue;
 	  }
 	  env->CallVoidMethod( jobj, jmid_setChannel, (jint) i, 
@@ -237,7 +246,7 @@ void handle_description_change( void * userdata, const struct timeval msg_time )
    env->CallVoidMethod( jobj, jmid_handler, (jlong) msg_time.tv_sec, 
                        (jlong) msg_time.tv_usec );
 
-} // end handle_description_change(...)
+} // end java_vrpn_handle_description_change(...)
 
 
 // end dll utility functions
@@ -271,8 +280,8 @@ Java_vrpn_TempImagerRemote_init( JNIEnv* env, jobject jobj, jstring jname)
   // create the tracker
   const char* name = env->GetStringUTFChars( jname, NULL );
   vrpn_TempImager_Remote* t = new vrpn_TempImager_Remote( name );
-  t->register_region_handler( jobj, handle_region_change );
-  t->register_description_handler( jobj, handle_description_change );
+  t->register_region_handler( jobj, java_vrpn_handle_region_change );
+  t->register_description_handler( jobj, java_vrpn_handle_description_change );
   env->ReleaseStringUTFChars( jname, name );
   
   // now stash 't' in the jobj's 'native_tempImager' field
@@ -333,8 +342,8 @@ Java_vrpn_TempImagerRemote_shutdownTempImager( JNIEnv* env, jobject jobj )
   // unregister handlers and destroy the tempImager
   if( t > 0 )
   {
-    t->unregister_region_handler( jobj, handle_region_change );
-    t->unregister_description_handler( jobj, handle_description_change );
+    t->unregister_region_handler( jobj, java_vrpn_handle_region_change );
+    t->unregister_description_handler( jobj, java_vrpn_handle_description_change );
     delete t;
   }
 

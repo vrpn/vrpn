@@ -319,10 +319,10 @@ public class TempImagerRemote extends VRPN implements Runnable
 								"setChannel.  Ignoring." );
 			return;
 		}
-      if (channels[index] == null)
-      {
-         channels[index] = new TempImagerChannel();
-      }
+		if (channels[index] == null)
+		{
+			channels[index] = new TempImagerChannel();
+		}
 		channels[index].name = name;
 		channels[index].units = units;
 		channels[index].minVal = minVal;
@@ -337,17 +337,17 @@ public class TempImagerRemote extends VRPN implements Runnable
 	///////////////////
 	// data members
 	
-	int numRows = 0;
-	int numColumns = 0;
-	float minX = 0;
-	float maxX = 0;
-	float minY = 0;
-	float maxY = 0;
-	int numChannels = 0;
-	TempImagerChannel[] channels = new TempImagerChannel[VRPN_IMAGER_MAX_CHANNELS];
+	protected int numRows = 0;
+	protected int numColumns = 0;
+	protected float minX = 0;
+	protected float maxX = 0;
+	protected float minY = 0;
+	protected float maxY = 0;
+	protected int numChannels = 0;
+	protected TempImagerChannel[] channels = new TempImagerChannel[VRPN_IMAGER_MAX_CHANNELS];
 	
 	// used for individual channels
-	short[] regionValues = new short[VRPN_IMAGER_MAX_REGION];
+	protected short[] regionValues = new short[VRPN_IMAGER_MAX_REGION];
 	
 	// this is used by the native code to store a C++ pointer to the 
 	// native vrpn_TempImagerRemote object
@@ -357,8 +357,8 @@ public class TempImagerRemote extends VRPN implements Runnable
 	// in an orderly fashion.
 	protected boolean keepRunning = true;
 
-	// the tracking thread
-	Thread tempImagerThread = null;
+	// the imager thread
+	protected Thread tempImagerThread = null;
 
 	// how long the thread sleeps between checking for messages
 	protected long mainloopPeriod = 100; // milliseconds
