@@ -42,6 +42,8 @@
 
 static const char *tracker_cfg_file_name = "vrpn_Tracker.cfg";
 
+#define vrpn_ser_tkr_MAX_TIME_INTERVAL       (2000000) // max time between reports (usec)
+
 //#define VERBOSE
 // #define READ_HISTOGRAM
 
@@ -97,7 +99,7 @@ vrpn_BaseClass(name, c)
 	tracker2room_quat[3] = 1.0;
 
 	num_sensors = 1;
-	for (vrpn_int32 sens = 0; sens < TRACKER_MAX_SENSORS; sens++){
+	for (vrpn_int32 sens = 0; sens < vrpn_TRACKER_MAX_SENSORS; sens++){
 	    unit2sensor[sens][0] = unit2sensor[sens][1] = 
 						unit2sensor[sens][2] = 0.0;
 	    unit2sensor_quat[sens][0] = unit2sensor_quat[sens][1] = 0.0;
@@ -191,12 +193,12 @@ int vrpn_Tracker::read_config_file (FILE * config_file,
 	    // get the number of sensors
 	    if (fgets(line, sizeof(line), config_file) == NULL) break;
 	    if ((sscanf(line, "%d", &num_sens) != 1) ||
-		(num_sens > TRACKER_MAX_SENSORS)) break;
+		(num_sens > vrpn_TRACKER_MAX_SENSORS)) break;
 	    for (i = 0; i < num_sens; i++){
 		// get which sensor this xform is for
 		if (fgets(line, sizeof(line), config_file) == NULL) break;
 		if ((sscanf(line, "%d", &which_sensor) != 1) ||
-		    (which_sensor > TRACKER_MAX_SENSORS)) break;
+		    (which_sensor > vrpn_TRACKER_MAX_SENSORS)) break;
 		// get the sensor to unit xform
 		if (fgets(line, sizeof(line), config_file) == NULL) break;
 		if (sscanf(line, "%f%f%f", &f[0], &f[1], &f[2]) != 3) break;
@@ -512,97 +514,6 @@ int	vrpn_Tracker::encode_acc_to(char *buf)
    return 1000 - buflen;
 }
 
-#ifndef VRPN_CLIENT_ONLY
-
-
-vrpn_Tracker_Canned::vrpn_Tracker_Canned
-                    (const char * name, vrpn_Connection * c,
-                     const char * datafile) 
-  : vrpn_Tracker(name, c)
-{
-    register_server_handlers();
-    fp =fopen(datafile,"r");
-    if (fp == NULL) {
-      perror("can't open datafile:");
-      return;
-    } else {
-      fread(&totalRecord, sizeof(totalRecord), 1, fp);
-      fread(&t, sizeof(vrpn_TRACKERCB), 1, fp);
-      printf("pos[0]=%.4f, time = %ld usec\n", t.pos[0],
-	     t.msg_time.tv_usec);
-      printf("sizeof trackcb = %d, total = %d\n", sizeof(t), totalRecord);
-      current =1;
-      copy();
-    }
-}
-
-
-vrpn_Tracker_Canned::~vrpn_Tracker_Canned (void) {
-  if (fp != NULL) fclose(fp);
-}
-
-
-void vrpn_Tracker_Canned::mainloop () {
-  // We're a server, so call the generic server mainloop
-  server_mainloop();
-
-  // Send the message on the connection;
-  if (d_connection) {
-    char	msgbuf[1000];
-    vrpn_int32	len = encode_to(msgbuf);
-    if (d_connection->pack_message(len, timestamp,
-				 position_m_id, d_sender_id, msgbuf,
-				 vrpn_CONNECTION_LOW_LATENCY)) {
-      fprintf(stderr,"Tracker: cannot write message: tossing\n");
-    }
-  } else {
-    fprintf(stderr,"Tracker canned: No valid connection\n");
-    return;
-  }
-
-  if (fread(&t, sizeof(vrpn_TRACKERCB), 1, fp) < 1) {
-    reset();
-    return;
-  }
-  struct timeval timeout;
-  timeout.tv_sec =0;
-  timeout.tv_usec = (t.msg_time.tv_sec * 1000000 + t.msg_time.tv_usec)
-    - (timestamp.tv_sec *  1000000 + timestamp.tv_usec);
-  if (timeout.tv_usec > 1000000) timeout.tv_usec = 0;
-  
-  //printf("pos[0]=%.4f, time = %ld usec\n", pos[0], timeout.tv_usec);
-  select(0, 0, 0, 0, & timeout);  // wait for that long;
-  current ++;
-  copy();
-
-}
-
-void vrpn_Tracker_Canned::copy (void) {
-  memcpy(&(timestamp), &(t.msg_time), sizeof(struct timeval));
-  d_sensor = t.sensor;
-  pos[0] = t.pos[0];  pos[1] = t.pos[1];  pos[2] = t.pos[2];
-  d_quat[0] = t.quat[0];  d_quat[1] = t.quat[1];  
-  d_quat[2] = t.quat[2];  d_quat[3] = t.quat[3];
-}
-
-void vrpn_Tracker_Canned::get_report (void) {
-
-  // do nothing
-
-}
-
-void vrpn_Tracker_Canned::reset (void) {
-  fprintf(stderr, "Resetting!");
-  if (fp == NULL) return;
-  fseek(fp, sizeof(vrpn_int32), SEEK_SET);
-  fread(&t, sizeof(vrpn_TRACKERCB), 1, fp);
-  copy();
-  current = 1;
-}
-
-
-
-#endif  // VRPN_CLIENT_ONLY
 
 vrpn_Tracker_NULL::vrpn_Tracker_NULL
                   (const char * name, vrpn_Connection * c,
@@ -709,7 +620,7 @@ vrpn_Tracker_Serial::vrpn_Tracker_Serial
    // Find out the port name and baud rate
    if (port == NULL) {
 	fprintf(stderr,"vrpn_Tracker_Serial: NULL port name\n");
-	status = TRACKER_FAIL;
+	status = vrpn_TRACKER_FAIL;
 	return;
    } else {
 	strncpy(portname, port, sizeof(portname));
@@ -720,12 +631,79 @@ vrpn_Tracker_Serial::vrpn_Tracker_Serial
    // Open the serial port we're going to use
    if ( (serial_fd=vrpn_open_commport(portname, baudrate)) == -1) {
 	fprintf(stderr,"vrpn_Tracker_Serial: Cannot Open serial port\n");
-	status = TRACKER_FAIL;
+	status = vrpn_TRACKER_FAIL;
    }
 
    // Reset the tracker and find out what time it is
-   status = TRACKER_RESETTING;
+   status = vrpn_TRACKER_RESETTING;
    gettimeofday(&timestamp, NULL);
+}
+
+void vrpn_Tracker_Serial::send_report(void)
+{
+    // Send the message on the connection
+    if (d_connection) {
+	    char	msgbuf[1000];
+	    int	len = encode_to(msgbuf);
+	    if (d_connection->pack_message(len, timestamp,
+		    position_m_id, d_sender_id, msgbuf,
+		    vrpn_CONNECTION_LOW_LATENCY)) {
+	      fprintf(stderr,"Tracker: cannot write message: tossing\n");
+	    }
+    } else {
+	    fprintf(stderr,"Tracker: No valid connection\n");
+    }
+}
+
+/** This function should be called each time through the main loop
+    of the server code. It polls for a report from the tracker and
+    sends them if there are one or more. It will reset the tracker
+    if there is no data from it for a few seconds.
+**/
+void vrpn_Tracker_Serial::mainloop()
+{
+  server_mainloop();
+
+  switch (status) {
+    case vrpn_TRACKER_SYNCING:
+    case vrpn_TRACKER_AWAITING_STATION:
+    case vrpn_TRACKER_PARTIAL:
+      {
+	    // It turns out to be important to get the report before checking
+	    // to see if it has been too long since the last report.  This is
+	    // because there is the possibility that some other device running
+	    // in the same server may have taken a long time on its last pass
+	    // through mainloop().  Trackers that are resetting do this.  When
+	    // this happens, you can get an infinite loop -- where one tracker
+	    // resets and causes the other to timeout, and then it returns the
+	    // favor.  By checking for the report here, we reset the timestamp
+	    // if there is a report ready (ie, if THIS device is still operating).
+
+	    while (get_report()) {	// While we get reports, continue to send them.
+		send_report();
+	    };
+
+	    struct timeval current_time;
+	    gettimeofday(&current_time, NULL);
+	    if ( duration(current_time,timestamp) > vrpn_ser_tkr_MAX_TIME_INTERVAL) {
+		    fprintf(stderr,"Tracker failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n",current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);
+		    send_text_message("Too long since last report, resetting", current_time, vrpn_TEXT_ERROR);
+		    status = vrpn_TRACKER_FAIL;
+	    }
+      }
+      break;
+
+    case vrpn_TRACKER_RESETTING:
+	reset();
+	break;
+
+    case vrpn_TRACKER_FAIL:
+	send_text_message("Tracker failed, trying to reset (Try power cycle if more than 4 attempts made)", timestamp, vrpn_TEXT_ERROR);
+	vrpn_close_commport(serial_fd);
+	serial_fd = vrpn_open_commport(portname, baudrate);
+	status = vrpn_TRACKER_RESETTING;
+	break;
+   }
 }
 #endif  // VRPN_CLIENT_ONLY
 
@@ -733,7 +711,7 @@ vrpn_Tracker_Remote::vrpn_Tracker_Remote (const char * name, vrpn_Connection *cn
 	vrpn_Tracker (name, cn)
 {
 	tracker2roomchange_list = NULL;
-	for (vrpn_int32 i = 0; i < TRACKER_MAX_SENSOR_LIST; i++){
+	for (vrpn_int32 i = 0; i < vrpn_TRACKER_MAX_SENSOR_LIST; i++){
 		change_list[i] = NULL;
 		velchange_list[i] = NULL;
 		accchange_list[i] = NULL;
@@ -801,7 +779,8 @@ vrpn_Tracker_Remote::vrpn_Tracker_Remote (const char * name, vrpn_Connection *cn
 }
 
 // The remote tracker has to un-register its handlers when it
-// is destroyed to avoid seg faults. It should also remove all
+// is destroyed to avoid seg faults (this is taken care of by
+// using autodeleted handlers above). It should also remove all
 // remaining user-registered callbacks to free up memory.
 
 vrpn_Tracker_Remote::~vrpn_Tracker_Remote()
@@ -912,7 +891,7 @@ int vrpn_Tracker_Remote::register_change_handler(void *userdata,
 {
         vrpn_TRACKERCHANGELIST  *new_entry;
 
-	if ((whichSensor < 0) || (whichSensor >= TRACKER_MAX_SENSOR_LIST)) {
+	if ((whichSensor < 0) || (whichSensor >= vrpn_TRACKER_MAX_SENSOR_LIST)) {
 	    fprintf(stderr, 
 		"vrpn_Tracker_Remote::register_handler: bad sensor index\n");
 	    return -1;
@@ -947,7 +926,7 @@ int vrpn_Tracker_Remote::register_change_handler(void *userdata,
 {
 	vrpn_TRACKERVELCHANGELIST	*new_entry;
 
-        if ((whichSensor < 0) || (whichSensor >= TRACKER_MAX_SENSOR_LIST)) {
+        if ((whichSensor < 0) || (whichSensor >= vrpn_TRACKER_MAX_SENSOR_LIST)) {
             fprintf(stderr,
                 "vrpn_Tracker_Remote::register_handler: bad sensor index\n");
             return -1;
@@ -981,7 +960,7 @@ int vrpn_Tracker_Remote::register_change_handler(void *userdata,
 		vrpn_TRACKERACCCHANGEHANDLER handler, vrpn_int32 whichSensor)
 {
 	vrpn_TRACKERACCCHANGELIST	*new_entry;
-        if ((whichSensor < 0) || (whichSensor >= TRACKER_MAX_SENSOR_LIST)) {
+        if ((whichSensor < 0) || (whichSensor >= vrpn_TRACKER_MAX_SENSOR_LIST)) {
             fprintf(stderr,
                 "vrpn_Tracker_Remote::register_handler: bad sensor index\n");
             return -1;
@@ -1046,7 +1025,7 @@ int vrpn_Tracker_Remote::register_change_handler(void *userdata,
 {
         vrpn_TRACKERUNIT2SENSORCHANGELIST      *new_entry;
 
-        if ((whichSensor < 0) || (whichSensor >= TRACKER_MAX_SENSOR_LIST)) {
+        if ((whichSensor < 0) || (whichSensor >= vrpn_TRACKER_MAX_SENSOR_LIST)) {
             fprintf(stderr,
                 "vrpn_Tracker_Remote::register_handler: bad sensor index\n");
             return -1;
@@ -1112,7 +1091,7 @@ int vrpn_Tracker_Remote::unregister_change_handler(void *userdata,
 	// The pointer at *snitch points to victim
 	vrpn_TRACKERCHANGELIST	*victim, **snitch;
 
-        if ((whichSensor < 0) || (whichSensor >= TRACKER_MAX_SENSOR_LIST)) {
+        if ((whichSensor < 0) || (whichSensor >= vrpn_TRACKER_MAX_SENSOR_LIST)) {
             fprintf(stderr,
                 "vrpn_Tracker_Remote::unregister_handler: bad sensor index\n");
             return -1;
@@ -1150,7 +1129,7 @@ int vrpn_Tracker_Remote::unregister_change_handler(void *userdata,
 	// The pointer at *snitch points to victim
 	vrpn_TRACKERVELCHANGELIST	*victim, **snitch;
 
-        if ((whichSensor < 0) || (whichSensor >= TRACKER_MAX_SENSOR_LIST)) {
+        if ((whichSensor < 0) || (whichSensor >= vrpn_TRACKER_MAX_SENSOR_LIST)) {
             fprintf(stderr,
              "vrpn_Tracker_Remote::unregister_vel_handler: bad sensor index\n");
             return -1;
@@ -1188,7 +1167,7 @@ int vrpn_Tracker_Remote::unregister_change_handler(void *userdata,
 	// The pointer at *snitch points to victim
 	vrpn_TRACKERACCCHANGELIST	*victim, **snitch;
 
-        if ((whichSensor < 0) || (whichSensor >= TRACKER_MAX_SENSOR_LIST)) {
+        if ((whichSensor < 0) || (whichSensor >= vrpn_TRACKER_MAX_SENSOR_LIST)) {
             fprintf(stderr,
              "vrpn_Tracker_Remote::unregister_acc_handler: bad sensor index\n");
             return -1;
@@ -1257,7 +1236,7 @@ int vrpn_Tracker_Remote::unregister_change_handler(void *userdata,
         // The pointer at *snitch points to victim
         vrpn_TRACKERUNIT2SENSORCHANGELIST       *victim, **snitch;
 
-        if ((whichSensor < 0) || (whichSensor >= TRACKER_MAX_SENSOR_LIST)) {
+        if ((whichSensor < 0) || (whichSensor >= vrpn_TRACKER_MAX_SENSOR_LIST)) {
             fprintf(stderr,
              "vrpn_Tracker_Remote::unregister_u2s_handler: bad sensor index\n");
             return -1;
@@ -1347,14 +1326,14 @@ int vrpn_Tracker_Remote::handle_change_message(void *userdata,
 		vrpn_unbuffer(&params, &tp.quat[i]);
 	}
 
-	handler = me->change_list[ALL_SENSORS];
+	handler = me->change_list[vrpn_ALL_SENSORS];
 	// Go down the list of callbacks that have been registered.
 	// Fill in the parameter and call each.
 	while (handler != NULL) {
 		handler->handler(handler->userdata, tp);
 		handler = handler->next;
 	}
-	if (tp.sensor < TRACKER_MAX_SENSORS)
+	if (tp.sensor < vrpn_TRACKER_MAX_SENSORS)
 		handler = me->change_list[tp.sensor];
 	else{
 	    fprintf(stderr,"vrpn_Tracker_Rem:pos sensor index too large\n");
@@ -1399,7 +1378,7 @@ int vrpn_Tracker_Remote::handle_vel_change_message(void *userdata,
 
 	vrpn_unbuffer(&params, &tp.vel_quat_dt);
 
-	handler = me->velchange_list[ALL_SENSORS];
+	handler = me->velchange_list[vrpn_ALL_SENSORS];
 	// Go down the list of callbacks that have been registered.
 	// Fill in the parameter and call each.
 	while (handler != NULL) {
@@ -1407,7 +1386,7 @@ int vrpn_Tracker_Remote::handle_vel_change_message(void *userdata,
 		handler = handler->next;
 	}
 
-        if (tp.sensor < TRACKER_MAX_SENSORS)
+        if (tp.sensor < vrpn_TRACKER_MAX_SENSORS)
                 handler = me->velchange_list[tp.sensor];
         else{
                 fprintf(stderr,"vrpn_Tracker_Rem:vel sensor index too large\n");
@@ -1452,7 +1431,7 @@ int vrpn_Tracker_Remote::handle_acc_change_message(void *userdata,
 
 	vrpn_unbuffer(&params, &tp.acc_quat_dt);
 
-	handler = me->accchange_list[ALL_SENSORS];
+	handler = me->accchange_list[vrpn_ALL_SENSORS];
 	// Go down the list of callbacks that have been registered.
 	// Fill in the parameter and call each.
 	while (handler != NULL) {
@@ -1460,7 +1439,7 @@ int vrpn_Tracker_Remote::handle_acc_change_message(void *userdata,
 		handler = handler->next;
 	}
 
-        if (tp.sensor < TRACKER_MAX_SENSORS)
+        if (tp.sensor < vrpn_TRACKER_MAX_SENSORS)
                 handler = me->accchange_list[tp.sensor];
         else{
                 fprintf(stderr,"vrpn_Tracker_Rem:acc sensor index too large\n");
@@ -1541,7 +1520,7 @@ int vrpn_Tracker_Remote::handle_unit2sensor_change_message(void *userdata,
                 vrpn_unbuffer(&params, &tp.unit2sensor_quat[i]);
         }
 	
-	handler = me->unit2sensorchange_list[ALL_SENSORS];
+	handler = me->unit2sensorchange_list[vrpn_ALL_SENSORS];
         // Go down the list of callbacks that have been registered.
         // Fill in the parameter and call each.
         while (handler != NULL) {
@@ -1549,7 +1528,7 @@ int vrpn_Tracker_Remote::handle_unit2sensor_change_message(void *userdata,
                 handler = handler->next;
         }
 
-        if (tp.sensor < TRACKER_MAX_SENSORS)
+        if (tp.sensor < vrpn_TRACKER_MAX_SENSORS)
                 handler = me->unit2sensorchange_list[tp.sensor];
         else{
                 fprintf(stderr,"vrpn_Tracker_Rem:u2s sensor index too large\n");

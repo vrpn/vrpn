@@ -1,3 +1,46 @@
+2001-06-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3Space.C : Massive cleanup
+	* vrpn_3Space.h : Massive cleanup
+	* vrpn_Analog.C : Massive cleanup
+	* vrpn_Analog.h : Massive cleanup
+	* vrpn_Analog_5dt.C : Massive cleanup
+	* vrpn_Analog_Radamec_SPI.C : Massive cleanup
+	* vrpn_Analog_Radamec_SPI.h : Massive cleanup
+	* vrpn_BaseClass.h : Massive cleanup
+	* vrpn_Button.C : Massive cleanup
+	* vrpn_Button.h : Massive cleanup
+	* vrpn_CerealBox.C : Massive cleanup
+	* vrpn_CerealBox.h : Massive cleanup
+	* vrpn_Clock.C : Massive cleanup
+	* vrpn_Connection.C : Massive cleanup
+	* vrpn_Connection.h : Massive cleanup
+	* vrpn_Dial.h : Massive cleanup
+	* vrpn_Dyna.C : Massive cleanup
+	* vrpn_Dyna.h : Massive cleanup
+	* vrpn_Flock.C : Massive cleanup
+	* vrpn_Flock.h : Massive cleanup
+	* vrpn_Flock_Parallel.C : Massive cleanup
+	* vrpn_Flock_Parallel.h : Massive cleanup
+	* vrpn_ForceDevice.C : Massive cleanup
+	* vrpn_ImmersionBox.C : Massive cleanup
+	* vrpn_ImmersionBox.h : Massive cleanup
+	* vrpn_Joylin.C : Massive cleanup
+	* vrpn_Magellan.C : Massive cleanup
+	* vrpn_Mutex.C : Massive cleanup
+	* vrpn_Serial.C : Massive cleanup
+	* vrpn_Sound.C : Massive cleanup
+	* vrpn_Tng3.C : Massive cleanup
+	* vrpn_Tng3.h : Massive cleanup
+	* vrpn_Tracker.C : Massive cleanup
+	* vrpn_Tracker.h : Massive cleanup
+	* vrpn_Tracker_Fastrak.C : Massive cleanup
+	* vrpn_Tracker_Fastrak.h : Massive cleanup
+	* vrpn_Types.h : Massive cleanup
+	* vrpn_UNC_Joystick.C : Massive cleanup
+	* vrpn_Wanda.C : Massive cleanup
+	* vrpn_raw_sgibox.C : Massive cleanup
+
 2001-06-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Connection.C : Bumped minor version number

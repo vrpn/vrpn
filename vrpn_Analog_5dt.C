@@ -226,7 +226,6 @@ void vrpn_5dt::get_report (void)
 					  _expected_chars - _bufcount);
   if (l_ret == -1) {
       _5DT_ERROR ("Error reading the glove");
-      //XXX Put out a VRPN text message here, and at other error locations
       _status = STATUS_RESETTING;
       return;
   }

@@ -50,19 +50,6 @@
 
 //#define VERBOSE
 
-// HACK - T. Hudson April 00
-#if defined(__CYGWIN__)
-#define vrpn_closesocket closesocket
-#define vrpn_readsocket(a,b,c) recv(a,b,c,0)
-#define vrpn_writesocket(a,b,c) send(a, (char *) b,c,0)
-#else
-#define vrpn_closesocket close
-#define vrpn_readsocket read
-#define vrpn_writesocket write
-#endif
-
-#ifndef VRPN_CLIENT_ONLY
-
 #define time_add(t1,t2, tr)     { (tr).tv_sec = (t1).tv_sec + (t2).tv_sec ; \
                                   (tr).tv_usec = (t1).tv_usec + (t2).tv_usec ; \
                                   if ((tr).tv_usec >= 1000000L) { \
@@ -334,7 +321,6 @@ int vrpn_close_commport(int comm)
 #endif
 }
 
-#endif  // VRPN_CLIENT_ONLY
 
 // empty the input buffer (discarding the chars)
 // Return 0 on success, -1 on failure.
@@ -394,7 +380,6 @@ int vrpn_drain_output_buffer(int comm)
 #endif
 }
 
-#ifndef VRPN_CLIENT_ONLY
 
 // This routine will read any available characters from the handle into
 // the buffer specified, up to the number of bytes requested.  It returns
@@ -462,8 +447,8 @@ int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes)
 #endif
 }
 
-// Read until either you get the answer, you get an error, or the timeout
-// occurs.  If there is a NULL pointer, block indefinitely. Return the number
+/// Read until either you get the answer, you get an error, or timeout.
+// If there is a NULL timeout pointer, block indefinitely. Return the number
 // of characters read.
 
 int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes,
@@ -495,22 +480,7 @@ int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes,
 	return sofar;
 }
 
-
-#endif  // VRPN_CLIENT_ONLY
-
-
-#if 0
-// T. Hudson April 00
-#if defined(_WIN32) && defined(__CYGWIN__)
-// [juliano 9/17/99]
-//   added this decl because otherwise I cannot compile vrpn_Serial.C
-//   on my PC in cygwin.  I have this problem with both egcs-2.91.57
-//   and gcc-2.95.
-int write( int fildes, const void *buf, size_t nbyte );
-#endif
-#endif
-
-// Write the buffer to the serial port
+/// Write the buffer to the serial port
 
 int vrpn_write_characters(int comm, const unsigned char *buffer, int bytes)
 {
@@ -523,7 +493,7 @@ int vrpn_write_characters(int comm, const unsigned char *buffer, int bytes)
    Overlapped.OffsetHigh = 0;
    Overlapped.hEvent = NULL;
 
-	if(!(fSuccess = WriteFile(commConnections[comm], buffer, bytes, &numWritten, &Overlapped)))
+    if(!(fSuccess = WriteFile(commConnections[comm], buffer, bytes, &numWritten, &Overlapped)))
     {
 	   perror("vrpn_write_characters: can't write to serial port");
 	   return(-1);
@@ -531,6 +501,7 @@ int vrpn_write_characters(int comm, const unsigned char *buffer, int bytes)
 
 	return numWritten;
 #else
-	return vrpn_writesocket(comm, buffer, bytes);
+	return write(comm, buffer, bytes);
 #endif
 }
+

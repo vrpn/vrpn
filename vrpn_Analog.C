@@ -49,20 +49,20 @@ void vrpn_Analog::print(void ) {
 
 vrpn_int32 vrpn_Analog::encode_to(char *buf)
 {
-   // Message includes: vrpn_float64 AnalogNum, vrpn_float64 state
-   // Byte order of each needs to be reversed to match network standard
-   // XXX This is passing an int in the double for the num_channel
+    // Message includes: vrpn_float64 AnalogNum, vrpn_float64 state
+    // Byte order of each needs to be reversed to match network standard
+    // XXX This is passing an int in the double for the num_channel
 
-   vrpn_float64 *longbuf = (vrpn_float64 *)(buf);
-   vrpn_int32	index = 0;
+    vrpn_float64    double_chan = num_channel;
+    int		    buflen = 125*sizeof(double);
 
-   longbuf[index++]= htond((vrpn_float64) num_channel);
-   for (vrpn_int32 i=0; i< num_channel; i++) {
-     longbuf[index++] = htond(channel[i]);
-     last[i] = channel[i];
-   }
-   //fprintf(stderr, "encode___ %x %x", buf[0], buf[1]);
-   return index*sizeof(vrpn_float64);
+    vrpn_buffer(&buf, &buflen, double_chan);
+    for (int i=0; i < num_channel; i++) {
+	vrpn_buffer(&buf, &buflen, channel[i]);
+	last[i] = channel[i];
+    }
+
+    return (num_channel+1)*sizeof(vrpn_float64);
 }
 
 void vrpn_Analog::report_changes (vrpn_uint32 class_of_service) {
@@ -124,7 +124,7 @@ vrpn_Serial_Analog::vrpn_Serial_Analog (const char * name, vrpn_Connection * c,
    // Find out the port name and baud rate;
    if (port == NULL) {
 	fprintf(stderr,"vrpn_Serial_Analog: NULL port name\n");
-	status = ANALOG_FAIL;
+	status = vrpn_ANALOG_FAIL;
 	return;
    } else {
 	strncpy(portname, port, sizeof(portname));
@@ -135,11 +135,11 @@ vrpn_Serial_Analog::vrpn_Serial_Analog (const char * name, vrpn_Connection * c,
    // Open the serial port we're going to use
    if ( (serial_fd=vrpn_open_commport(portname, baudrate, bits, parity)) == -1) {
 	fprintf(stderr,"vrpn_Serial_Analog: Cannot Open serial port\n");
-	status = ANALOG_FAIL;
+	status = vrpn_ANALOG_FAIL;
    }
 
    // Reset the tracker and find out what time it is
-   status = ANALOG_RESETTING;
+   status = vrpn_ANALOG_RESETTING;
    gettimeofday(&timestamp, NULL);
 }
 
@@ -393,24 +393,25 @@ int vrpn_Analog_Remote::unregister_change_handler(void *userdata,
 int vrpn_Analog_Remote::handle_change_message(void *userdata,
 	vrpn_HANDLERPARAM p)
 {
-	vrpn_Analog_Remote *me = (vrpn_Analog_Remote *)userdata;
-	vrpn_float64 *params = (vrpn_float64*)(p.buffer);
-	vrpn_ANALOGCB	cp;
-	vrpn_ANALOGCHANGELIST *handler = me->change_list;
+    const char *bufptr = p.buffer;
+    vrpn_float64 numchannelD;	//< Number of channels passed in a double (yuck!)
+    vrpn_Analog_Remote *me = (vrpn_Analog_Remote *)userdata;
+    vrpn_ANALOGCB	cp;
+    vrpn_ANALOGCHANGELIST *handler = me->change_list;
 
-	cp.msg_time = p.msg_time;
-	cp.num_channel = (long)ntohd(params[0]);
+    cp.msg_time = p.msg_time;
+    vrpn_unbuffer(&bufptr, &numchannelD);
+    cp.num_channel = (long)numchannelD;
+    for (vrpn_int32 i=0; i< cp.num_channel; i++) {
+	vrpn_unbuffer(&bufptr, &cp.channel[i]);
+    }
 
-	vrpn_float64 * chandata = (vrpn_float64 *) params+1;
-	for (vrpn_int32 i=0; i< cp.num_channel; i++) 
-	  cp.channel[i] = ntohd(chandata[i]);
+    // Go down the list of callbacks that have been registered.
+    // Fill in the parameter and call each.
+    while (handler != NULL) {
+	    handler->handler(handler->userdata, cp);
+	    handler = handler->next;
+    }
 
-	// Go down the list of callbacks that have been registered.
-	// Fill in the parameter and call each.
-	while (handler != NULL) {
-		handler->handler(handler->userdata, cp);
-		handler = handler->next;
-	}
-
-	return 0;
+    return 0;
 }

@@ -54,6 +54,7 @@ static const unsigned char
 #endif
 
 static int client_msg_handler(void *userdata, vrpn_HANDLERPARAM p);
+
 #define PACK_ADMIN_MESSAGE(i,event) { \
   char	msgbuf[1000]; \
   vrpn_int32	len = encode_to(msgbuf,i, event); \
@@ -141,8 +142,9 @@ void vrpn_Button_Filter::set_alerts(vrpn_int32 i){
 
 void vrpn_Button_Filter::set_momentary(vrpn_int32 which_button) {
   if (which_button >= num_buttons) {
-       fprintf(stderr, "vrpn_Button::set_momentary() buttons id %d is greater\
-	 then the number of buttons(%d)\n", which_button, num_buttons);
+      char msg[200];
+       sprintf(msg, "vrpn_Button::set_momentary() buttons id %d is greater than the number of buttons(%d)\n", which_button, num_buttons);
+       send_text_message(msg, timestamp, vrpn_TEXT_ERROR);
     return;
   }
   buttonstate[which_button] = vrpn_BUTTON_MOMENTARY;
@@ -151,8 +153,9 @@ void vrpn_Button_Filter::set_momentary(vrpn_int32 which_button) {
 
 void vrpn_Button::set_momentary(vrpn_int32 which_button) {
   if (which_button >= num_buttons) {
-       fprintf(stderr, "vrpn_Button::set_momentary() buttons id %d is greater\
-	 then the number of buttons(%d)\n", which_button, num_buttons);
+      char msg[200];
+       sprintf(msg, "vrpn_Button::set_momentary() buttons id %d is greater than the number of buttons(%d)\n", which_button, num_buttons);
+       send_text_message(msg, timestamp, vrpn_TEXT_ERROR);
     return;
   }
   PACK_ADMIN_MESSAGE(which_button,vrpn_BUTTON_MOMENTARY);
@@ -160,7 +163,9 @@ void vrpn_Button::set_momentary(vrpn_int32 which_button) {
 
 void vrpn_Button_Filter::set_toggle(vrpn_int32 which_button, vrpn_int32 current_state) {
   if (which_button >= num_buttons) {
-    fprintf(stderr, "vrpn_Button::set_toggle() buttons id %d is greater then the number of buttons(%d)\n", which_button, num_buttons);
+    char msg[200];
+    sprintf(msg, "vrpn_Button::set_toggle() buttons id %d is greater then the number of buttons(%d)\n", which_button, num_buttons);
+    send_text_message(msg, timestamp, vrpn_TEXT_ERROR);
     return;
   }
   if (current_state==vrpn_BUTTON_TOGGLE_ON){
@@ -175,7 +180,9 @@ void vrpn_Button_Filter::set_toggle(vrpn_int32 which_button, vrpn_int32 current_
 }
 void vrpn_Button::set_toggle(vrpn_int32 which_button, vrpn_int32 current_state) {
   if (which_button >= num_buttons) {
-    fprintf(stderr, "vrpn_Button::set_toggle() buttons id %d is greater then the number of buttons(%d)\n", which_button, num_buttons);
+    char msg[200];
+    sprintf(msg, "vrpn_Button::set_toggle() buttons id %d is greater then the number of buttons(%d)\n", which_button, num_buttons);
+    send_text_message(msg, timestamp, vrpn_TEXT_ERROR);
     return;
   }
   if (current_state==vrpn_BUTTON_TOGGLE_ON) {
@@ -248,20 +255,15 @@ vrpn_int32 vrpn_Button::encode_to(char *buf,
 	return 1000 - buflen;
 }
 
-/*
-static	unsigned long	duration(struct timeval t1, struct timeval t2)
-{
-  if (t2.tv_sec == -1) return 0;
-  return (t1.tv_usec - t2.tv_usec) +
-    1000000L * (t1.tv_sec - t2.tv_sec);
-}
-*/
 
 static int client_msg_handler(void *userdata, vrpn_HANDLERPARAM p) {
   vrpn_Button_Filter * instance = (vrpn_Button_Filter *) userdata;
-  vrpn_int32 * bp = (vrpn_int32 *)(p.buffer);
-  vrpn_int32 event= ntohl(bp[1]);
-  vrpn_int32 buttonid = ntohl(bp[0]);
+  const char *bufptr = p.buffer;
+  vrpn_int32 event;
+  vrpn_int32 buttonid;
+
+  vrpn_unbuffer(&bufptr, &event);
+  vrpn_unbuffer(&bufptr, &buttonid);
 
   if (event== vrpn_BUTTON_MOMENTARY) {
     if (buttonid == vrpn_ALL_ID)
@@ -486,13 +488,12 @@ vrpn_Button_Parallel::vrpn_Button_Parallel(const char *name,
 #endif
 
 #if defined(linux) || defined(_WIN32)
-   // Set the INIT line on the device to provide power to the python
-   // XXX apparently, we don't need to do this.
-	    //  update: don't need this for builtin LPT1 on DELLs, but do need it
-        //    for warp9 PCI parallel port. Added next lines.  BCE Nov07.00
+    // Set the INIT line on the device to provide power to the python
+    //  update: don't need this for builtin LPT1 on DELLs, but do need it
+    //    for warp9 PCI parallel port. Added next lines.  BCE Nov07.00
 
 #ifdef _WIN32
-        static const int DATA_REGISTER_OFFSET = 0;
+        static const unsigned short DATA_REGISTER_OFFSET = 0;
         _outp(port + DATA_REGISTER_OFFSET, 1);
 #endif
 
@@ -534,6 +535,7 @@ void vrpn_Button_Python::mainloop()
          	if (first) {
          		first = 0;
 	      		fprintf(stderr, "vrpn_Button_Python failure!\n");
+			send_text_message("Failure", timestamp, vrpn_TEXT_ERROR);
          	}
         }
       	break;
@@ -562,7 +564,7 @@ void vrpn_Button_Python::read(void)
 
 #elif _WIN32
   #ifndef __CYGWIN__
-	static const int STATUS_REGISTER_OFFSET = 1;
+	static const unsigned short STATUS_REGISTER_OFFSET = 1;
     for (int i = 0; i < 3; i++) {
 		status_register[i] = _inp(port + STATUS_REGISTER_OFFSET);
     }
@@ -719,7 +721,7 @@ void vrpn_Button_PinchGlove::read()
          if (bufcount != 1)   buffer[0] = buffer[1];
       } // if (buffer[0] == PG_START_BYTE_DATA) {
       else if (buffer[0] == PG_START_BYTE_DATA_TIME) {
-         fprintf(stderr, "vrpn_Button_PinchGlove message start byte: time stamped byte!\n");
+         send_text_message("vrpn_Button_PinchGlove message start byte: time stamped byte!", timestamp, vrpn_TEXT_ERROR);
          report_no_timestamp();
       }
       else {    // ignore any other type of messages: empty butter till PG_END_BYTE
@@ -727,7 +729,7 @@ void vrpn_Button_PinchGlove::read()
          while(buffer[0] != PG_END_BYTE)
             vrpn_read_available_characters(serial_fd,buffer,1);
 
-     	   fprintf(stderr, "vrpn_Button_PinchGlove wrong message start byte!\n");
+	   send_text_message("vrpn_Button_PinchGlove wrong message start byte", timestamp, vrpn_TEXT_ERROR);
       } // else
    } // while (buffer[0] != PG_END_BYTE )
    
@@ -773,7 +775,7 @@ void vrpn_Button_PinchGlove::report_no_timestamp()
          bufcount += vrpn_read_available_characters(serial_fd, buffer+bufcount, 1);
 
       if (bufcount > VRPN_BUTTON_BUF_SIZE) {
-	      fprintf(stderr,"vrpn_Button_PinchGlove: Glove Box message is too big for buffer");
+	  send_text_message("vrpn_Button_PinchGlove: Glove Box message is too big for buffer", timestamp, vrpn_TEXT_ERROR);
 	      status = BUTTON_FAIL;
       }
 
@@ -900,7 +902,7 @@ int vrpn_Button_Remote::handle_change_message(void *userdata,
 	vrpn_HANDLERPARAM p)
 {
 	vrpn_Button_Remote *me = (vrpn_Button_Remote *)userdata;
-	vrpn_int32 *params = (vrpn_int32*)(p.buffer);
+	const char *bufptr = p.buffer;
 	vrpn_BUTTONCB	bp;
 	vrpn_BUTTONCHANGELIST *handler = me->change_list;
 
@@ -912,8 +914,8 @@ int vrpn_Button_Remote::handle_change_message(void *userdata,
 		return -1;
 	}
 	bp.msg_time = p.msg_time;
-	bp.button = (vrpn_int32)ntohl(params[0]);
-	bp.state = (vrpn_int32)ntohl(params[1]);
+	vrpn_unbuffer(&bufptr, &bp.button);
+	vrpn_unbuffer(&bufptr, &bp.state);
 
 	// Go down the list of callbacks that have been registered.
 	// Fill in the parameter and call each.
@@ -1025,7 +1027,7 @@ void vrpn_Button_SerialMouse::mainloop()
 	    static int first = 1;
 	    if (!first)	break;
 	    first = 0;
-	    fprintf(stderr, "vrpn_Button_SerialMouse failure!\n");
+	    send_text_message("vrpn_Button_SerialMouse failure!", timestamp, vrpn_TEXT_ERROR);
         }
       	break;
     }

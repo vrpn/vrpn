@@ -248,8 +248,9 @@ int    vrpn_ImmersionBox::reset(void)
 // makes sure we get a full reading often enough (ie, it is responsible
 // for doing the watchdog timing to make sure the box hasn't simply
 // stopped sending characters).
+// Returns 1 if got a full report, 0 otherwise.
    
-void vrpn_ImmersionBox::get_report(void)
+int vrpn_ImmersionBox::get_report(void)
 {
     static unsigned char responseString[MAX_IBOX_STRING];
     int i;
@@ -274,7 +275,7 @@ void vrpn_ImmersionBox::get_report(void)
 
     // we broke out.. if we're not reading, then we have nothing to do
     if (STATUS_READING != status) {
-	return;
+	return 0;
     }    
 
 
@@ -288,7 +289,7 @@ void vrpn_ImmersionBox::get_report(void)
     
     if (result < dataRecordLength) {
 	status = STATUS_SYNCING;
-	return;
+	return 0;
     }
     
     // parse the report here
@@ -318,6 +319,8 @@ void vrpn_ImmersionBox::get_report(void)
 
     report_changes();
     gettimeofday(&timestamp, NULL);	// Set watchdog now
+
+    return 1;
 }
 
 void vrpn_ImmersionBox::report_changes(vrpn_uint32 class_of_service)
@@ -357,23 +360,23 @@ void	vrpn_ImmersionBox::mainloop(void)
 	case STATUS_SYNCING:
 	case STATUS_READING:
 	{
-		// It turns out to be important to get the report before checking
-		// to see if it has been too long since the last report.  This is
-		// because there is the possibility that some other device running
-		// in the same server may have taken a long time on its last pass
-		// through mainloop().  Trackers that are resetting do this.  When
-		// this happens, you can get an infinite loop -- where one tracker
-		// resets and causes the other to timeout, and then it returns the
-		// favor.  By checking for the report here, we reset the timestamp
-		// if there is a report ready (ie, if THIS device is still operating).
-		get_report();
-		struct timeval current_time;
-		gettimeofday(&current_time, NULL);
-		if ( duration(current_time,timestamp) > MAX_TIME_INTERVAL) {
-			fprintf(stderr,"Tracker failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n",current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);
-			send_text_message("Too long since last report, resetting", current_time, vrpn_TEXT_ERROR);
-			status = STATUS_RESETTING;
-		}
+	    // It turns out to be important to get the report before checking
+	    // to see if it has been too long since the last report.  This is
+	    // because there is the possibility that some other device running
+	    // in the same server may have taken a long time on its last pass
+	    // through mainloop().  Trackers that are resetting do this.  When
+	    // this happens, you can get an infinite loop -- where one tracker
+	    // resets and causes the other to timeout, and then it returns the
+	    // favor.  By checking for the report here, we reset the timestamp
+	    // if there is a report ready (ie, if THIS device is still operating).
+	    while (get_report()) {};	// Get multiple reports if available
+	    struct timeval current_time;
+	    gettimeofday(&current_time, NULL);
+	    if ( duration(current_time,timestamp) > MAX_TIME_INTERVAL) {
+		    fprintf(stderr,"Tracker failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n",current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);
+		    send_text_message("Too long since last report, resetting", current_time, vrpn_TEXT_ERROR);
+		    status = STATUS_RESETTING;
+	    }
 	}
 	break;
 

@@ -3,9 +3,10 @@
 // possibly without bound. It returns the fraction of a revolution that
 // it has turned as its message type.
 
-#ifndef VRPN_DIAL
-#define VRPN_DIAL
-#define vrpn_DIAL_MAX 128
+#ifndef VRPN_DIAL_H
+#define VRPN_DIAL_H
+
+const	int vrpn_DIAL_MAX = 128;
 
 #include "vrpn_Connection.h"
 #include "vrpn_BaseClass.h"

@@ -27,7 +27,6 @@ private:
 		      char *port = "/dev/ttyd3", long baud = 38400);
     
   virtual ~vrpn_Tracker_Dyna();
-  virtual void mainloop();
     
 private:
   void my_flush() {
@@ -40,7 +39,7 @@ private:
   int get_status();
  protected:
 
-  virtual void get_report(void);
+  virtual int get_report(void);
   virtual void reset();
   void printError(unsigned char uchErrCode, unsigned char uchExpandedErrCode);
   int checkError();

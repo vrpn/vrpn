@@ -123,7 +123,7 @@ int vrpn_Tracker_Fastrak::set_sensor_output_format(int sensor)
 		vrpn_SleepMsecs(50);	// Sleep for a bit to let command run
     } else {
 		FT_ERROR("Write failed on format command");
-		status = TRACKER_FAIL;
+		status = vrpn_TRACKER_FAIL;
 		return -1;
     }
 
@@ -223,7 +223,7 @@ void vrpn_Tracker_Fastrak::reset()
 		sleep(2);  // Wait after each character to give it time to respond
    	} else {
 		perror("Fastrak: Failed writing to tracker");
-		status = TRACKER_FAIL;
+		status = vrpn_TRACKER_FAIL;
 		return;
 	}
    }
@@ -262,7 +262,7 @@ void vrpn_Tracker_Fastrak::reset()
       sleep(1); // Sleep for a second to let it respond
    } else {
 	perror("  Fastrak write failed");
-	status = TRACKER_FAIL;
+	status = vrpn_TRACKER_FAIL;
 	return;
    }
 
@@ -316,7 +316,7 @@ void vrpn_Tracker_Fastrak::reset()
 	sleep(1); // Sleep for a second to let it respond
      } else {
 	perror("  Fastrak write position filter failed");
-	status = TRACKER_FAIL;
+	status = vrpn_TRACKER_FAIL;
 	return;
      }
      if (vrpn_write_characters(serial_fd,
@@ -324,7 +324,7 @@ void vrpn_Tracker_Fastrak::reset()
 	sleep(1); // Sleep for a second to let it respond
      } else {
 	perror("  Fastrak write orientation filter failed");
-	status = TRACKER_FAIL;
+	status = vrpn_TRACKER_FAIL;
 	return;
      }
    }
@@ -379,7 +379,7 @@ void vrpn_Tracker_Fastrak::reset()
    // Set tracker to continuous mode
    if (vrpn_write_characters(serial_fd,(const unsigned char *) "C", 1) != 1) {
    	perror("  Fastrak write failed");
-	status = TRACKER_FAIL;
+	status = vrpn_TRACKER_FAIL;
 	return;
    } else {
    	fprintf(stderr, "  Fastrak set to continuous mode\n");
@@ -399,7 +399,7 @@ void vrpn_Tracker_Fastrak::reset()
 	if (vrpn_write_characters(serial_fd, (const unsigned char *)clear_timestamp_cmd,
 	        strlen(clear_timestamp_cmd)) != (int)strlen(clear_timestamp_cmd)) {
 	    FT_ERROR("Cannot send command to clear timestamp");
-	    status = TRACKER_FAIL;
+	    status = vrpn_TRACKER_FAIL;
 	    return;
 	}
 
@@ -412,7 +412,7 @@ void vrpn_Tracker_Fastrak::reset()
    // Done with reset.
    gettimeofday(&timestamp, NULL);	// Set watchdog now
    FT_WARNING("Reset Completed (this is good)");
-   status = TRACKER_SYNCING;	// We're trying for a new reading
+   status = vrpn_TRACKER_SYNCING;	// We're trying for a new reading
 }
 
 // Swap the endian-ness of the 4-byte entry in the buffer.
@@ -450,7 +450,7 @@ void vrpn_Tracker_Fastrak::swap_endian4(char *buffer)
 // enough (ie, it is responsible for doing the watchdog timing to make sure
 // the tracker hasn't simply stopped sending characters).
    
-void vrpn_Tracker_Fastrak::get_report(void)
+int vrpn_Tracker_Fastrak::get_report(void)
 {
    char errmsg[512];	// Error message to send to VRPN
    int ret;		// Return value from function call to be checked
@@ -462,10 +462,10 @@ void vrpn_Tracker_Fastrak::get_report(void)
    // read a byte at a time until we find a '0' character.
    //--------------------------------------------------------------------
 
-   if (status == TRACKER_SYNCING) {
+   if (status == vrpn_TRACKER_SYNCING) {
       // Try to get a character.  If none, just return.
       if (vrpn_read_available_characters(serial_fd, buffer, 1) != 1) {
-      	return;
+      	return 0;
       }
 
       // If it is not an '0', we don't want it but we
@@ -477,7 +477,7 @@ void vrpn_Tracker_Fastrak::get_report(void)
 		"got '%c')", buffer[0]);
 	FT_INFO(errmsg);
 	vrpn_flush_input_buffer(serial_fd);
-      	return;
+      	return 0;
       }
 
       // Got the first character of a report -- go into AWAITING_STATION mode
@@ -488,7 +488,7 @@ void vrpn_Tracker_Fastrak::get_report(void)
       // mode, this value will be overwritten later.
       bufcount = 1;
       gettimeofday(&timestamp, NULL);
-      status = TRACKER_AWAITING_STATION;
+      status = vrpn_TRACKER_AWAITING_STATION;
    }
 
    //--------------------------------------------------------------------
@@ -499,19 +499,19 @@ void vrpn_Tracker_Fastrak::get_report(void)
    // the first Fastrak station is '1' and the first VRPN sensor is 0.
    //--------------------------------------------------------------------
 
-   if (status == TRACKER_AWAITING_STATION) {
+   if (status == vrpn_TRACKER_AWAITING_STATION) {
       // Try to get a character.  If none, just return.
       if (vrpn_read_available_characters(serial_fd, &buffer[bufcount], 1) != 1) {
-      	return;
+      	return 0;
       }
 
       d_sensor = buffer[1] - '1';	// Convert ASCII 1 to sensor 0 and so on.
       if ( (d_sensor < 0) || (d_sensor >= num_stations) ) {
-	   status = TRACKER_SYNCING;
+	   status = vrpn_TRACKER_SYNCING;
       	   sprintf(errmsg,"Bad sensor # (%d) in record, re-syncing", d_sensor);
 	   FT_INFO(errmsg);
 	   vrpn_flush_input_buffer(serial_fd);
-	   return;
+	   return 0;
       }
 
       // Figure out how long the current report should be based on the
@@ -522,7 +522,7 @@ void vrpn_Tracker_Fastrak::get_report(void)
       // that we got one character at this time.  The next bit of code
       // will attempt to read the rest of the report.
       bufcount++;
-      status = TRACKER_PARTIAL;
+      status = vrpn_TRACKER_PARTIAL;
    }
    
    //--------------------------------------------------------------------
@@ -538,12 +538,12 @@ void vrpn_Tracker_Fastrak::get_report(void)
 		REPORT_LEN-bufcount);
    if (ret == -1) {
 	FT_ERROR("Error reading report");
-	status = TRACKER_FAIL;
-	return;
+	status = vrpn_TRACKER_FAIL;
+	return 0;
    }
    bufcount += ret;
    if (bufcount < REPORT_LEN) {	// Not done -- go back for more
-	return;
+	return 0;
    }
 
    //--------------------------------------------------------------------
@@ -556,23 +556,23 @@ void vrpn_Tracker_Fastrak::get_report(void)
    //--------------------------------------------------------------------
 
    if (buffer[0] != '0') {
-	   status = TRACKER_SYNCING;
+	   status = vrpn_TRACKER_SYNCING;
 	   FT_INFO("Not '0' in record, re-syncing");
 	   vrpn_flush_input_buffer(serial_fd);
-	   return;
+	   return 0;
    }
    // Sensor checking was handled when we received the character for it
    if ( (buffer[2] != ' ') && !isalpha(buffer[2]) ) {
-	   status = TRACKER_SYNCING;
+	   status = vrpn_TRACKER_SYNCING;
 	   FT_INFO("Bad 3rd char in record, re-syncing");
 	   vrpn_flush_input_buffer(serial_fd);
-	   return;
+	   return 0;
    }
    if (buffer[bufcount-1] != ' ') {
-	   status = TRACKER_SYNCING;
+	   status = vrpn_TRACKER_SYNCING;
 	   FT_INFO("No space character at end of report, re-syncing");
 	   vrpn_flush_input_buffer(serial_fd);
-	   return;
+	   return 0;
    }
 
    //--------------------------------------------------------------------
@@ -685,92 +685,16 @@ void vrpn_Tracker_Fastrak::get_report(void)
    // Done with the decoding, set the report to ready
    //--------------------------------------------------------------------
 
-   status = TRACKER_REPORT_READY;
+   status = vrpn_TRACKER_SYNCING;
    bufcount = 0;
 
 #ifdef VERBOSE2
       print_latest_report();
 #endif
+
+   return 1;
 }
 
-
-// This function should be called each time through the main loop
-// of the server code. It polls for a report from the tracker and
-// sends it if there is one. It will reset the tracker if there is
-// no data from it for a few seconds.
-
-void vrpn_Tracker_Fastrak::mainloop()
-{
-  char errmsg[512];
-
-  // Call the generic server mainloop, since we are a server
-  server_mainloop();
-
-  switch (status) {
-    case TRACKER_REPORT_READY:
-      {
-#ifdef	VERBOSE
-	static int count = 0;
-	if (count++ == 120) {
-		printf("  vrpn_Tracker_Fastrak: Got report\n"); print_latest_report();
-		count = 0;
-	}
-#endif            
-
-	// Send the message on the connection
-	if (d_connection) {
-		char	msgbuf[1000];
-		int	len = encode_to(msgbuf);
-		if (d_connection->pack_message(len, timestamp,
-			position_m_id, d_sender_id, msgbuf,
-			vrpn_CONNECTION_LOW_LATENCY)) {
-		  fprintf(stderr,"Fastrak: cannot write message: tossing\n");
-		}
-	} else {
-		fprintf(stderr,"Tracker Fastrak: No valid connection\n");
-	}
-
-	// Ready for another report
-	status = TRACKER_SYNCING;
-      }
-      break;
-
-    case TRACKER_SYNCING:
-    case TRACKER_AWAITING_STATION:
-    case TRACKER_PARTIAL:
-      {
-		// It turns out to be important to get the report before checking
-		// to see if it has been too long since the last report.  This is
-		// because there is the possibility that some other device running
-		// in the same server may have taken a long time on its last pass
-		// through mainloop().  Trackers that are resetting do this.  When
-		// this happens, you can get an infinite loop -- where one tracker
-		// resets and causes the other to timeout, and then it returns the
-		// favor.  By checking for the report here, we reset the timestamp
-		// if there is a report ready (ie, if THIS device is still operating).
-		get_report();
-		struct timeval current_time;
-		gettimeofday(&current_time, NULL);
-		if ( duration(current_time,timestamp) > MAX_TIME_INTERVAL) {
-			sprintf(errmsg,"Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);
-			FT_ERROR(errmsg);
-			status = TRACKER_FAIL;
-		}
-      }
-      break;
-
-    case TRACKER_RESETTING:
-	reset();
-	break;
-
-    case TRACKER_FAIL:
-	FT_WARNING("Tracking failed, trying to reset (try power cycle if more than 4 attempts made)");
-	vrpn_close_commport(serial_fd);
-	serial_fd = vrpn_open_commport(portname, baudrate);
-	status = TRACKER_RESETTING;
-	break;
-   }
-}
 
 /** This function indicates to the driver that there is some sort of InterSense IS-900-
     compatible button device attached to the port (either a Wand or a Stylus).  The driver

@@ -256,8 +256,9 @@ int	vrpn_CerealBox::reset(void)
 // makes sure we get a full reading often enough (ie, it is responsible
 // for doing the watchdog timing to make sure the box hasn't simply
 // stopped sending characters).
+// Returns 1 if got a complete report, 0 otherwise.
    
-void vrpn_CerealBox::get_report(void)
+int vrpn_CerealBox::get_report(void)
 {
    int ret;		// Return value from function call to be checked
    int i;		// Loop counter
@@ -272,7 +273,7 @@ void vrpn_CerealBox::get_report(void)
    if (status == STATUS_SYNCING) {
       // Try to get a character.  If none, just return.
       if (vrpn_read_available_characters(serial_fd, _buffer, 1) != 1) {
-      	return;
+      	return 0;
       }
 
       // If it is not a 'p', we don't want it but we
@@ -281,7 +282,7 @@ void vrpn_CerealBox::get_report(void)
       if ( _buffer[0] != 'p') {
       	fprintf(stderr,"vrpn_CerealBox: Syncing (looking for 'p', "
 		"got '%c')\n", _buffer[0]);
-      	return;
+      	return 0;
       }
 
       // Got the first character of a report -- go into READING mode
@@ -309,17 +310,16 @@ void vrpn_CerealBox::get_report(void)
    ret = vrpn_read_available_characters(serial_fd, &_buffer[_bufcount],
 		_expected_chars-_bufcount);
    if (ret == -1) {
-	fprintf(stderr,"vrpn_CerealBox: Error reading\n");
-	//XXX Put out a VRPN text message here, and at other error locations
+	send_text_message("vrpn_CerealBox: Error reading", timestamp, vrpn_TEXT_ERROR);
 	status = STATUS_RESETTING;
-	return;
+	return 0;
    }
    _bufcount += ret;
 #ifdef	VERBOSE
    if (ret != 0) printf("... got %d characters (%d total)\n",ret, _bufcount);
 #endif
    if (_bufcount < _expected_chars) {	// Not done -- go back for more
-	return;
+	return 0;
    }
 
    //--------------------------------------------------------------------
@@ -333,12 +333,12 @@ void vrpn_CerealBox::get_report(void)
    if (_buffer[0] != 'p') {
 	   status = STATUS_SYNCING;
       	   fprintf(stderr,"vrpn_CerealBox: Not 'p' in record\n");
-	   return;
+	   return 0;
    }
    if (_buffer[_expected_chars-1] != '\n') {
 	   status = STATUS_SYNCING;
       	   fprintf(stderr,"vrpn_CerealBox: No carriage return in record\n");
-	   return;
+	   return 0;
    }
 
 #ifdef	VERBOSE
@@ -433,6 +433,7 @@ void vrpn_CerealBox::get_report(void)
    report_changes();
    status = STATUS_SYNCING;
    _bufcount = 0;
+   return 1;
 }
 
 void	vrpn_CerealBox::report_changes(vrpn_uint32 class_of_service)
@@ -482,7 +483,7 @@ void	vrpn_CerealBox::mainloop()
 		// resets and causes the other to timeout, and then it returns the
 		// favor.  By checking for the report here, we reset the timestamp
 		// if there is a report ready (ie, if THIS device is still operating).
-		get_report();
+		while (get_report()) {};    // Keep getting reports as long as they come
 		struct timeval current_time;
 		gettimeofday(&current_time, NULL);
 		if ( duration(current_time,timestamp) > MAX_TIME_INTERVAL) {

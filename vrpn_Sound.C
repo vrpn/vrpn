@@ -730,7 +730,7 @@ vrpn_int32 vrpn_Sound::decodeSetPolyOF(const char* buf, vrpn_float64 * openingfa
 vrpn_int32 vrpn_Sound::encodeSetPolyMaterial(const char * material, const vrpn_int32 tag, char* buf) {
 	vrpn_int32 len = sizeof(vrpn_SoundID) + 128;
 	vrpn_int32 ret = len;
-	char *mptr;
+	char *mptr = buf;
 
 	vrpn_buffer(&mptr, &len, tag);
 	vrpn_buffer(&mptr, &len, material, 128);
@@ -738,8 +738,8 @@ vrpn_int32 vrpn_Sound::encodeSetPolyMaterial(const char * material, const vrpn_i
 	return ret;
 }
 
-vrpn_int32 vrpn_Sound::decodeSetPolyMaterial(const char* buf, char ** material, vrpn_int32 *tag, const int payload) {
-	const char *mptr;
+vrpn_int32 vrpn_Sound::decodeSetPolyMaterial(const char* buf, char ** material, vrpn_int32 *tag, const int) {
+	const char *mptr = buf;
 	
 	vrpn_unbuffer(&mptr, tag);
 	vrpn_unbuffer(&mptr, *material, 128);
@@ -858,18 +858,20 @@ vrpn_int32 vrpn_Sound_Client::setSoundPose(const vrpn_SoundID id, vrpn_float64 p
 	vrpn_int32 len;
 	vrpn_PoseDef tempdef;
         int i;
-	for (i=0; i<4; i++)
+	for (i=0; i<4; i++) {
 	  tempdef.orientation[i] = orientation[i];
-    for (i=0; i<3; i++) 
+	}
+	for (i=0; i<3; i++) {
 	  tempdef.position[i] = position[i];
+	}
 
 	len = encodeSoundPose(tempdef, id, buf);
 
 	gettimeofday(&timestamp, NULL);
 
-	if (vrpn_Sound::d_connection->pack_message(len, timestamp, set_sound_pose, d_sender_id, buf, vrpn_CONNECTION_RELIABLE))
-      fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
-
+	if (vrpn_Sound::d_connection->pack_message(len, timestamp, set_sound_pose, d_sender_id, buf, vrpn_CONNECTION_RELIABLE)) {
+	    fprintf(stderr,"vrpn_Sound_Client: cannot write message change status: tossing\n");
+	}
 	
 	return 0;
 }
@@ -1164,7 +1166,7 @@ void	vrpn_Sound_Client::handle_receiveTextMessage(void *userdata, const vrpn_TEX
   me->receiveTextMessage(t.message, t.type, t.level, t.msg_time);
 }
 
-void vrpn_Sound_Client::receiveTextMessage(const char * message, vrpn_uint32 type,vrpn_uint32 level, struct timeval msg_time) {
+void vrpn_Sound_Client::receiveTextMessage(const char * message, vrpn_uint32, vrpn_uint32, struct timeval) {
   printf("Virtual: %s\n", message);
   return;
 }

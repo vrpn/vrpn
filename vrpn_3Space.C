@@ -23,8 +23,6 @@
 #include "vrpn_3Space.h"
 #include "vrpn_Serial.h"
 
-#define MAX_TIME_INTERVAL       (2000000) // max time between reports (usec)
-
 // This constant turns the tracker binary values in the range -32768 to
 // 32768 to meters.
 #define T_3_DATA_MAX            (32768.0)
@@ -68,19 +66,18 @@ void vrpn_Tracker_3Space::reset()
    reset[resetLen++] = (char) (11); // Ctrl + k --> Burn settings into EPROM
    }
    reset[resetLen++] = (char) (25); // Ctrl + Y -> reset the tracker
-   fprintf(stderr, "Resetting the 3Space (attempt #%d)",numResets);
+   send_text_message("Resetting", timestamp, vrpn_TEXT_ERROR, numResets);
    for (i = 0; i < resetLen; i++) {
 	if (vrpn_write_characters(serial_fd, (unsigned char*)&reset[i], 1) == 1) {
-		fprintf(stderr,".");
 		sleep(2);  // Wait 2 seconds each character
    	} else {
+		send_text_message("Failed writing to tracker", timestamp, vrpn_TEXT_ERROR, numResets);
 		perror("3Space: Failed writing to tracker");
-		status = TRACKER_FAIL;
+		status = vrpn_TRACKER_FAIL;
 		return;
 	}
    }
    sleep(10);	// Sleep to let the reset happen
-   fprintf(stderr,"\n");
 
    // Get rid of the characters left over from before the reset
    vrpn_flush_input_buffer(serial_fd);
@@ -106,7 +103,7 @@ void vrpn_Tracker_3Space::reset()
       sleep(1); // Sleep for a second to let it respond
    } else {
 	perror("  3Space write failed");
-	status = TRACKER_FAIL;
+	status = vrpn_TRACKER_FAIL;
 	return;
    }
 
@@ -129,7 +126,7 @@ void vrpn_Tracker_3Space::reset()
      fprintf(stderr, ")\n  Bad status report from tracker, retrying reset\n");
      return;
    } else {
-     fprintf(stderr, "  3Space gives status!\n");
+     send_text_message("Got status (tracker back up)!", timestamp, vrpn_TEXT_ERROR, 0);
      numResets = 0; 	// Success, use simple reset next time
    }
 
@@ -141,7 +138,7 @@ void vrpn_Tracker_3Space::reset()
 	sleep(1); // Sleep for a second to let it respond
    } else {
 	perror("  3Space write failed");
-	status = TRACKER_FAIL;
+	status = vrpn_TRACKER_FAIL;
 	return;
    }
 
@@ -157,11 +154,11 @@ void vrpn_Tracker_3Space::reset()
 
    fprintf(stderr, "  (at the end of 3Space reset routine)\n");
    gettimeofday(&timestamp, NULL);	// Set watchdog now
-   status = TRACKER_SYNCING;	// We're trying for a new reading
+   status = vrpn_TRACKER_SYNCING;	// We're trying for a new reading
 }
 
 
-void vrpn_Tracker_3Space::get_report(void)
+int vrpn_Tracker_3Space::get_report(void)
 {
    int ret;
 
@@ -169,24 +166,24 @@ void vrpn_Tracker_3Space::get_report(void)
    // byte that has the high bit set and no other bytes have the high
    // bit set.  If we're synching, read a byte at a time until we find
    // one with the high bit set.
-   if (status == TRACKER_SYNCING) {
+   if (status == vrpn_TRACKER_SYNCING) {
       // Try to get a character.  If none, just return.
       if (vrpn_read_available_characters(serial_fd, buffer, 1) != 1) {
-      	return;
+      	return 0;
       }
 
       // If the high bit isn't set, we don't want it we
       // need to look at the next one, so just return
       if ( (buffer[0] & 0x80) == 0) {
-      	fprintf(stderr,"Tracker 3Space: Syncing (high bit not set)\n");
-      	return;
+      	send_text_message("Syncing (high bit not set)", timestamp, vrpn_TEXT_WARNING);
+      	return 0;
       }
 
       // Got the first character of a report -- go into PARTIAL mode
       // and say that we got one character at this time.
       bufcount = 1;
       gettimeofday(&timestamp, NULL);
-      status = TRACKER_PARTIAL;
+      status = vrpn_TRACKER_PARTIAL;
    }
 
    // Read as many bytes of this 20 as we can, storing them
@@ -198,13 +195,13 @@ void vrpn_Tracker_3Space::get_report(void)
    ret = vrpn_read_available_characters(serial_fd, &buffer[bufcount],
 		20-bufcount);
    if (ret == -1) {
-	fprintf(stderr,"3Space: Error reading\n");
-	status = TRACKER_FAIL;
-	return;
+	send_text_message("Error reading, resetting", timestamp, vrpn_TEXT_ERROR);
+	status = vrpn_TRACKER_FAIL;
+	return 0;
    }
    bufcount += ret;
    if (bufcount < 20) {	// Not done -- go back for more
-	return;
+	return 0;
    }
 
    { // Decode the report
@@ -277,88 +274,13 @@ void vrpn_Tracker_3Space::get_report(void)
 	}
 
 	// Done with the decoding, set the report to ready
-      	status = TRACKER_REPORT_READY;
+	// Ready for another report
+	status = vrpn_TRACKER_SYNCING;
       	bufcount = 0;
    }
+
+   return 1;	// Got a report.
 #ifdef VERBOSE
       print_latest_report();
 #endif
 }
-
-
-void vrpn_Tracker_3Space::mainloop()
-{
-  server_mainloop();
-
-  switch (status) {
-    case TRACKER_REPORT_READY:
-      {
-#ifdef	VERBOSE
-	static int count = 0;
-	if (count++ == 120) {
-		printf("  vrpn_Tracker_3Space: Got report\n"); print_latest_report();
-		count = 0;
-	}
-#endif            
-
-	// Send the message on the connection
-	if (d_connection) {
-		char	msgbuf[1000];
-		int	len = encode_to(msgbuf);
-		if (d_connection->pack_message(len, timestamp,
-			position_m_id, d_sender_id, msgbuf,
-			vrpn_CONNECTION_LOW_LATENCY)) {
-		  fprintf(stderr,"Tracker: cannot write message: tossing\n");
-		}
-	} else {
-		fprintf(stderr,"Tracker 3Space: No valid connection\n");
-	}
-
-	// Ready for another report
-	status = TRACKER_SYNCING;
-      }
-      break;
-
-    case TRACKER_SYNCING:
-    case TRACKER_PARTIAL:
-      {
-		// It turns out to be important to get the report before checking
-		// to see if it has been too long since the last report.  This is
-		// because there is the possibility that some other device running
-		// in the same server may have taken a long time on its last pass
-		// through mainloop().  Trackers that are resetting do this.  When
-		// this happens, you can get an infinite loop -- where one tracker
-		// resets and causes the other to timeout, and then it returns the
-		// favor.  By checking for the report here, we reset the timestamp
-		// if there is a report ready (ie, if THIS device is still operating).
-		get_report();
-		struct timeval current_time;
-		gettimeofday(&current_time, NULL);
-		if ( duration(current_time,timestamp) > MAX_TIME_INTERVAL) {
-			fprintf(stderr,"Tracker failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n",current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);
-			send_text_message("Too long since last report, resetting", current_time, vrpn_TEXT_ERROR);
-			status = TRACKER_FAIL;
-		}
-      }
-      break;
-
-    case TRACKER_RESETTING:
-	reset();
-	break;
-
-    case TRACKER_FAIL:
-	fprintf(stderr, "Tracker failed, trying to reset (Try power cycle if more than 4 attempts made)\n");
-	vrpn_close_commport(serial_fd);
-	serial_fd = vrpn_open_commport(portname, baudrate);
-	status = TRACKER_RESETTING;
-	break;
-   }
-}
-
-
-
-
-
-
-
-

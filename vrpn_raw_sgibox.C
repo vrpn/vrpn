@@ -44,14 +44,6 @@ const	int	VRPN_DIAL_RANGE = 200;
 #include <unistd.h>
 #endif
 
-// HACK - T. Hudson April 00
-#if defined(_WIN32)
-#define vrpn_writesocket(a,b,c) send(a, (char *) b,c,0)
-#else
-#define vrpn_writesocket write
-#endif
-
-
 static int sgibox_raw_con_cb(void * userdata, vrpn_HANDLERPARAM p);
 static int sgibox_raw_alert_handler(void * userdata, vrpn_HANDLERPARAM);
 
@@ -295,7 +287,6 @@ void vrpn_raw_SGIBox::get_report() {
 		check_release_bank(16, 0xE8, command);
 		check_release_bank(8, 0xF0, command);
 		check_release_bank(0, 0xF8, command);
-
 	}
 
 	vrpn_Button_Filter::report_changes();

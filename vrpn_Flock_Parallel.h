@@ -64,7 +64,7 @@ class vrpn_Tracker_Flock_Parallel: public vrpn_Tracker_Flock {
   virtual void mainloop();
     
  protected:
-  virtual void get_report(void);
+  virtual int get_report(void);
   virtual void reset();
 
   // slave ptrs
@@ -93,6 +93,4 @@ public:
   friend class vrpn_Tracker_Flock_Parallel;
 };
 
-
 #endif // _VRPN_FLOCK_PARALLEL_H_
-

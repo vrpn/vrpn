@@ -64,17 +64,10 @@ class vrpn_Tracker_Fastrak: public vrpn_Tracker_Serial {
   int	add_is900_analog(const char *analog_device_name, int sensor,
 	    double c0Min = -1, double c0Low = 0, double c0Hi = 0, double c0Max = 1,
 	    double c1Min = -1, double c1Low = 0, double c1Hi = 0, double c1Max = 1);
-
-  /// This function should be called each time through the main loop
-  /// of the server code. It polls for a report from the tracker and
-  /// sends it if there is one. It will reset the tracker if there is
-  /// no data from it for a few seconds.
-
-  virtual void mainloop();
     
  protected:
   
-  virtual void get_report(void);
+  virtual int get_report(void);
   virtual void reset();
 
   /// Swap the endian-ness of the 4-byte entry in the buffer.

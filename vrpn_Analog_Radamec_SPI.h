@@ -27,7 +27,7 @@ public:
 	struct timeval timestamp;   //< Time of the last report from the device
 
 	virtual int reset(void);		//< Set device back to starting config
-	virtual	void get_report(void);		//< Try to read a report from the device
+	virtual	int get_report(void);		//< Try to read a report from the device
 
 	virtual void clear_values(void);	//< Clears all channels to 0
 

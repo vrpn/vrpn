@@ -150,7 +150,7 @@ int    vrpn_Tng3::reset(void)
 // for doing the watchdog timing to make sure the box hasn't simply
 // stopped sending characters).
    
-void vrpn_Tng3::get_report(void)
+int vrpn_Tng3::get_report(void)
 {
     int i;
     unsigned int buttonBits = 0;
@@ -177,8 +177,9 @@ void vrpn_Tng3::get_report(void)
     }
 
     // we broke out.. if we're not reading, then we have nothing to do
-    if (STATUS_READING != status) 
-	return;
+    if (STATUS_READING != status) {
+	return 0;
+    }
 
     // we're reading now, get the report   
 
@@ -190,7 +191,7 @@ void vrpn_Tng3::get_report(void)
     
     if (result < DATA_RECORD_LENGTH) {
 	status = STATUS_SYNCING;
-	return;
+	return 0;
     }
 
     // parse the report here
@@ -212,6 +213,8 @@ void vrpn_Tng3::get_report(void)
 
     report_changes();
     gettimeofday(&timestamp, NULL);	// Set watchdog now
+
+    return 1;
 }
 
 void vrpn_Tng3::report_changes(vrpn_uint32 class_of_service)
@@ -247,23 +250,23 @@ void vrpn_Tng3::mainloop(void)
 	case STATUS_SYNCING:
 	case STATUS_READING:
 	{
-		// It turns out to be important to get the report before checking
-		// to see if it has been too long since the last report.  This is
-		// because there is the possibility that some other device running
-		// in the same server may have taken a long time on its last pass
-		// through mainloop().  Trackers that are resetting do this.  When
-		// this happens, you can get an infinite loop -- where one tracker
-		// resets and causes the other to timeout, and then it returns the
-		// favor.  By checking for the report here, we reset the timestamp
-		// if there is a report ready (ie, if THIS device is still operating).
-		get_report();
-		struct timeval current_time;
-		gettimeofday(&current_time, NULL);
-		if ( duration(current_time,timestamp) > MAX_TIME_INTERVAL) {
-			fprintf(stderr,"CerealBox failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n",current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);
-			send_text_message("Too long since last report, resetting", current_time, vrpn_TEXT_ERROR);
-			status = STATUS_RESETTING;
-		}
+	    // It turns out to be important to get the report before checking
+	    // to see if it has been too long since the last report.  This is
+	    // because there is the possibility that some other device running
+	    // in the same server may have taken a long time on its last pass
+	    // through mainloop().  Trackers that are resetting do this.  When
+	    // this happens, you can get an infinite loop -- where one tracker
+	    // resets and causes the other to timeout, and then it returns the
+	    // favor.  By checking for the report here, we reset the timestamp
+	    // if there is a report ready (ie, if THIS device is still operating).
+	    while (get_report()) {};	// Keep getting reports as long as they come
+	    struct timeval current_time;
+	    gettimeofday(&current_time, NULL);
+	    if ( duration(current_time,timestamp) > MAX_TIME_INTERVAL) {
+		    fprintf(stderr,"CerealBox failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n",current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);
+		    send_text_message("Too long since last report, resetting", current_time, vrpn_TEXT_ERROR);
+		    status = STATUS_RESETTING;
+	    }
 	}
 	break;
 

@@ -769,7 +769,7 @@ void vrpn_ForceDevice::set_plane(vrpn_float32 *normal, vrpn_float32 d)
     plane[3] = d;
 }
 
-void vrpn_ForceDevice::sendError(int error_code){
+void vrpn_ForceDevice::sendError(int error_code) {
     char	*msgbuf;
     vrpn_int32	len;
     struct timeval current_time;
@@ -1441,8 +1441,7 @@ void vrpn_ForceDevice_Remote::enableConstraint (vrpn_int32 enable) {
 void vrpn_ForceDevice_Remote::setConstraintMode (ConstraintGeometry mode) {
   d_conMode = mode;
   constraintToForceField();
-  if (d_conEnabled)
-    sendForceField();
+  if (d_conEnabled) { sendForceField(); }
 }
 
 void vrpn_ForceDevice_Remote::setConstraintPoint
@@ -1451,8 +1450,7 @@ void vrpn_ForceDevice_Remote::setConstraintPoint
   d_conPoint[1] = point[1];
   d_conPoint[2] = point[2];
   constraintToForceField();
-  if (d_conEnabled)
-    sendForceField();
+  if (d_conEnabled) { sendForceField(); }
 }
 
 void vrpn_ForceDevice_Remote::setConstraintLinePoint
@@ -1461,8 +1459,7 @@ void vrpn_ForceDevice_Remote::setConstraintLinePoint
   d_conLinePoint[1] = point[1];
   d_conLinePoint[2] = point[2];
   constraintToForceField();
-  if (d_conEnabled)
-    sendForceField();
+  if (d_conEnabled) { sendForceField(); }
 }
 
 void vrpn_ForceDevice_Remote::setConstraintLineDirection
@@ -1470,11 +1467,8 @@ void vrpn_ForceDevice_Remote::setConstraintLineDirection
   d_conLineDirection[0] = direction[0];
   d_conLineDirection[1] = direction[1];
   d_conLineDirection[2] = direction[2];
-//fprintf(stderr, "Set dcld to %.4g %.4g %.4g\n",
-//d_conLineDirection[0], d_conLineDirection[1], d_conLineDirection[2]);
   constraintToForceField();
-  if (d_conEnabled)
-    sendForceField();
+  if (d_conEnabled) { sendForceField(); }
 }
 
 void vrpn_ForceDevice_Remote::setConstraintPlanePoint
@@ -1483,8 +1477,7 @@ void vrpn_ForceDevice_Remote::setConstraintPlanePoint
   d_conPlanePoint[1] = point[1];
   d_conPlanePoint[2] = point[2];
   constraintToForceField();
-  if (d_conEnabled)
-    sendForceField();
+  if (d_conEnabled) { sendForceField(); }
 }
 
 void vrpn_ForceDevice_Remote::setConstraintPlaneNormal
@@ -1493,15 +1486,13 @@ void vrpn_ForceDevice_Remote::setConstraintPlaneNormal
   d_conPlaneNormal[1] = normal[1];
   d_conPlaneNormal[2] = normal[2];
   constraintToForceField();
-  if (d_conEnabled)
-    sendForceField();
+  if (d_conEnabled) { sendForceField(); }
 }
 
 void vrpn_ForceDevice_Remote::setConstraintKSpring (vrpn_float32 k) {
   d_conKSpring = k;
   constraintToForceField();
-  if (d_conEnabled)
-    sendForceField();
+  if (d_conEnabled) { sendForceField(); }
 }
 
 #endif  // FD_SPRINGS_AS_FIELDS

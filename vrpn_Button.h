@@ -11,18 +11,23 @@
 #include "vrpn_Serial.h"
 #endif
 
-#define	vrpn_BUTTON_MAX_BUTTONS	(100)
-const int VRPN_BUTTON_BUF_SIZE = 100;
+const	int vrpn_BUTTON_MAX_BUTTONS = 100;
+const	int VRPN_BUTTON_BUF_SIZE = 100;
 
 // Base class for buttons.  Definition
 // of remote button class for the user is at the end.
 
-#define vrpn_BUTTON_MOMENTARY	10
-#define vrpn_BUTTON_TOGGLE_OFF	20
-#define vrpn_BUTTON_TOGGLE_ON	21
-#define vrpn_BUTTON_LIGHT_OFF	30
-#define vrpn_BUTTON_LIGHT_ON	31
-#define vrpn_ALL_ID		-99
+const	int vrpn_BUTTON_MOMENTARY	= 10;
+const	int vrpn_BUTTON_TOGGLE_OFF	= 20;
+const	int vrpn_BUTTON_TOGGLE_ON	= 21;
+const	int vrpn_BUTTON_LIGHT_OFF	= 30;
+const	int vrpn_BUTTON_LIGHT_ON	= 31;
+const	int vrpn_ALL_ID			= -99;
+
+/** This is the base class for both the client and server for a button
+    device (a device with one or more boolean switches).  Any server
+    should actually derive from the vrpn_Button_Filter class, described
+    next, which enables toggling any of the buttons. **/
 
 class vrpn_Button : public vrpn_BaseClass {
   public:
@@ -53,21 +58,25 @@ class vrpn_Button : public vrpn_BaseClass {
 				     vrpn_int32 state);
 };
 
-class vrpn_Button_Filter:public vrpn_Button {
-	public:
-		vrpn_int32     buttonstate[vrpn_BUTTON_MAX_BUTTONS];
-	        virtual void set_momentary(vrpn_int32 which_button);
-       		virtual void set_toggle(vrpn_int32 which_button,
-					vrpn_int32 current_state);
-		virtual void set_all_momentary(void);
-		virtual void set_all_toggle(vrpn_int32 default_state);
-		void set_alerts(vrpn_int32);
+/** All button servers should derive from this class, which provides
+    the ability to turn any of the buttons into toggles (using messages
+    from the remote button object). **/
 
-	protected:
-		int send_alerts;
-		vrpn_Button_Filter(const char *,vrpn_Connection *c=NULL);
-		vrpn_int32 alert_message_id;   //used to send back to alert button box for lights
-		void report_changes(void);
+class vrpn_Button_Filter:public vrpn_Button {
+    public:
+	vrpn_int32     buttonstate[vrpn_BUTTON_MAX_BUTTONS];
+	virtual void set_momentary(vrpn_int32 which_button);
+       	virtual void set_toggle(vrpn_int32 which_button,
+				vrpn_int32 current_state);
+	virtual void set_all_momentary(void);
+	virtual void set_all_toggle(vrpn_int32 default_state);
+	void set_alerts(vrpn_int32);
+
+    protected:
+	int send_alerts;
+	vrpn_Button_Filter(const char *,vrpn_Connection *c=NULL);
+	vrpn_int32 alert_message_id;   //used to send back to alert button box for lights
+	void report_changes(void);
 };
 
 #ifndef VRPN_CLIENT_ONLY
@@ -111,6 +120,7 @@ public:
 protected:
 	vrpn_float64	_update_rate;	// How often to toggle
 };
+
 
 // Button device that is connected to a parallel port and uses the
 // status bits to read from the buttons.  There can be up to 5 buttons
@@ -165,6 +175,7 @@ protected:
    virtual void read()=0;
 };
 
+
 // Open a Fakespace Pinch Glove System that is connected to a serial port. There are
 // total of 10 buttons. Buttons 0-4 are fingers for the right hand-thumb first 
 // and pinkie last-while buttons 5-9 are for the left hand-thumb first. The report
@@ -188,6 +199,7 @@ private:
    const unsigned char PG_START_BYTE_TEXT;
    const unsigned char PG_END_BYTE;
 };
+
 
 // (RDK) Button device that is connected to a serial port.  This is a
 // raw driver that can be used with any of the serial-enabled architectures,

@@ -120,7 +120,7 @@ void vrpn_Tracker_Dyna::reset() {
     if ( status == T_PDYN_NO_DATA )
     {
       fprintf(stderr, "vrpn_Tracker_Dyna::reset(): no data (is tracker turned on?)\n"); 
-      status = TRACKER_RESETTING;
+      status = vrpn_TRACKER_RESETTING;
       return;
 
     } 
@@ -140,50 +140,47 @@ void vrpn_Tracker_Dyna::reset() {
    sleep(1);
    //gettimeofday(&timestamp, NULL);	// Set watchdog now;
    timestamp.tv_sec = -1;
-   status = TRACKER_SYNCING;	// We are trying for a new reading;
+   status = vrpn_TRACKER_SYNCING;	// We are trying for a new reading;
    return;
   }
 				     
 }
 
-void vrpn_Tracker_Dyna::get_report(void) {
+int vrpn_Tracker_Dyna::get_report(void) {
   int ret;
-  if (status == TRACKER_SYNCING) {
+  if (status == vrpn_TRACKER_SYNCING) {
     if ((ret=vrpn_read_available_characters(serial_fd, buffer, 1)) !=  1 || 
 	(buffer[0] & llll_OOOO) != lOOO_OOOO) {
-      return;
+      return 0;
     }
     gettimeofday(&timestamp, NULL);
-    status = TRACKER_PARTIAL;
+    status = vrpn_TRACKER_PARTIAL;
     bufcount= ret;
   }
-  if (status == TRACKER_PARTIAL) {
+  if (status == vrpn_TRACKER_PARTIAL) {
     ret=vrpn_read_available_characters(serial_fd, &(buffer[bufcount]),
 		reportLength-bufcount);
     if (ret < 0) {
       fprintf(stderr,"%s@%d: Error reading\n", __FILE__, __LINE__);
-      status = TRACKER_FAIL;
-      return;
+      status = vrpn_TRACKER_FAIL;
+      return 0;
     }
-    //fprintf(stderr,"get report:get %d bytes\t%s:%d\n", 
-	//   bufcount, __FILE__, __LINE__);
     bufcount += ret;
     if (bufcount < reportLength) {	// Not done -- go back for more
-      return;
+      return 0;
     }	
-    //fprintf(stderr, "this time read: %d rL= %d, \n", ret, reportLength);
   }
   
   if (!valid_report()) {
     bufcount = 0;
-    status = TRACKER_SYNCING;
-    return;
+    status = vrpn_TRACKER_SYNCING;
+    return 0;
   }
   decode_record();
-  //fprintf(stderr,"(%f %f %f)  \n ", pos[0], pos[1],pos[2]);
-  status = TRACKER_REPORT_READY;
+  status = vrpn_TRACKER_SYNCING;
   bufcount=0;
 
+  return 1;
 }
 
 int vrpn_Tracker_Dyna::valid_report() {
@@ -299,93 +296,3 @@ int vrpn_Tracker_Dyna::decode_record()
    return(T_OK);
 
 }	/* t_pdyn_decode_record */
-
-
-void vrpn_Tracker_Dyna::mainloop()
-{
-  // Call the generic server mainloop, since we are a server
-  server_mainloop();
-
-  switch (status) {
-    case TRACKER_REPORT_READY:
-      {
-
-	/*static int count = 0;
-	if (count++ % 100 ==0) {
-	  fprintf(stderr, ".");
-	  if(count == 5000) {
-	    fprintf(stderr, "\nReport(%f, %f, %f)", pos[0], pos[1],pos[2]);
-		count = 0;
-	  }
-	}
-	*/
-
-	// Send the message on the connection
-	if (d_connection) {
-		char	msgbuf[1000];
-		int	len = encode_to(msgbuf);
-		if (d_connection->pack_message(len, timestamp,
-			position_m_id, d_sender_id, msgbuf,
-			vrpn_CONNECTION_LOW_LATENCY)) {
-		  fprintf(stderr,"Tracker: cannot write message: tossing\n");
-		}
-	} else {
-		fprintf(stderr,"Tracker Fastrak: No valid connection\n");
-	}
-
-	// Ready for another report
-	status = TRACKER_SYNCING;
-      }
-      break;
-
-    case TRACKER_SYNCING:
-    case TRACKER_PARTIAL:
-      {
-		// It turns out to be important to get the report before checking
-		// to see if it has been too long since the last report.  This is
-		// because there is the possibility that some other device running
-		// in the same server may have taken a long time on its last pass
-		// through mainloop().  Trackers that are resetting do this.  When
-		// this happens, you can get an infinite loop -- where one tracker
-		// resets and causes the other to timeout, and then it returns the
-		// favor.  By checking for the report here, we reset the timestamp
-		// if there is a report ready (ie, if THIS device is still operating).
-		get_report();
-		struct timeval current_time;
-		gettimeofday(&current_time, NULL);
-		if ( duration(current_time,timestamp) > MAX_TIME_INTERVAL) {
-			fprintf(stderr,"Tracker failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n",current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);
-			send_text_message("Too long since last report, resetting", current_time, vrpn_TEXT_ERROR);
-			status = TRACKER_FAIL;
-		}
-      }
-      break;
-
-    case TRACKER_RESETTING:
-	fprintf(stderr,"vrpn_Tracker_Dyna: Resetting\n");
-	reset();
-	break;
-
-    case TRACKER_FAIL:
-	fprintf(stderr, "Tracker failed, trying to reset (Try power cycle if more than 4 attempts made)\n");
-	vrpn_close_commport(serial_fd);
-	serial_fd = vrpn_open_commport(portname, baudrate);
-	status = TRACKER_RESETTING;
-	break;
-   }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

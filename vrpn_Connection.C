@@ -161,12 +161,19 @@ int gethostname (char *, int);
 // Again, in our current framework, we cannot distinguish between
 // file-compatible and network-compatible.  In the future, we may also have
 // shared-memory-access-compatible as well as other types of connection.  The
-// proposed strategy hadles both partial major version compatibility as well
+// proposed strategy handles both partial major version compatibility as well
 // as accidental partial minor version incompatibility.
 //
 const char * vrpn_MAGIC = (const char *) "vrpn: ver. 06.01";
 const char * vrpn_FILE_MAGIC = (const char *) "vrpn: ver. 04.00";
 const int vrpn_MAGICLEN = 16;  // Must be a multiple of vrpn_ALIGN bytes!
+
+const char *vrpn_got_first_connection	= "VRPN_Connection_Got_First_Connection";
+const char *vrpn_got_connection		= "VRPN_Connection_Got_Connection";
+const char *vrpn_dropped_connection	= "VRPN_Connection_Dropped_Connection";
+const char *vrpn_dropped_last_connection= "VRPN_Connection_Dropped_Last_Connection";
+
+const char *vrpn_CONTROL = "VRPN Control";
 
 // This is the list of states that a connection can be in
 // (possible values for status).  doing_okay() returns VRPN_TRUE
@@ -2114,7 +2121,7 @@ static SOCKET open_socket (int type,
     name.sin_addr.s_addr = INADDR_ANY;
   } else if ((name.sin_addr.s_addr = inet_addr(IPaddress))
               == INADDR_NONE) {
-      if (phe = gethostbyname(IPaddress)) {
+      if ( (phe = gethostbyname(IPaddress)) != NULL) {
           memcpy((void *) &name.sin_addr, (const void *) phe->h_addr, phe->h_length);
       } else {
           fprintf(stderr, "open_socket:  can't get %s host entry\n", IPaddress);
@@ -2631,7 +2638,7 @@ int check_vrpn_cookie (const char * buffer)
 
   if (strncmp(buffer, vrpn_MAGIC, vrpn_MAGICLEN)) {
     fprintf(stderr, "vrpn_Connection: "
-        "Warning:  minor version number doesn't match: (prefer '%s', got '%s')\n",
+        "VRPN Note: minor version number doesn't match: (prefer '%s', got '%s').  This is not normally a problem.\n",
 	    vrpn_MAGIC, buffer);
     return 1;
   }
@@ -2671,7 +2678,7 @@ int check_vrpn_file_cookie (const char * buffer)
   if (majorComparison == 0 &&
 	strncmp(buffer, vrpn_MAGIC, vrpn_MAGICLEN)) {
     fprintf(stderr, "vrpn_Connection: "
-        "Warning:  minor version number doesn't match: (prefer '%s', got '%s')\n",
+        "Note: Version number doesn't match: (prefer '%s', got '%s').  This is not normally a problem.\n",
 	    vrpn_MAGIC, buffer);
     return 1;
   }
@@ -2915,7 +2922,7 @@ int vrpn_Endpoint::mainloop (timeval * timeout,
     if (FD_ISSET(d_tcpSocket,&readfds)) {
       tcp_messages_read = handle_tcp_messages(NULL);
       if (tcp_messages_read == -1) {
-        printf("vrpn: TCP handling failed, dropping connection\n");
+        printf("vrpn: TCP handling failed, dropping connection (this is normal when a connection is dropped)\n");
         status = BROKEN;
         break;
       }
@@ -2982,12 +2989,10 @@ int vrpn_Endpoint::mainloop (timeval * timeout,
       		fprintf(stderr,
       		  "vrpn_Endpoint: mainloop: Can't poll for accept\n");
       		status = BROKEN;
-//fprintf(stderr, "BROKEN - vrpn_Endpoint::mainloop.\n");
       		break;
       	}
       	if (ret == 1) {	// Got one!
       	  status = COOKIE_PENDING;
-//fprintf(stderr, "COOKIE_PENDING - vrpn_Endpoint::mainloop.\n");
 #ifdef	VERBOSE
       	  printf("vrpn: Connection established\n");
 #endif
@@ -3025,13 +3030,10 @@ int vrpn_Endpoint::mainloop (timeval * timeout,
       break;
 
     case BROKEN:
-      //fprintf(stderr, "vrpn: Fatal connection failure.  Giving up!\n");
-      //status = BROKEN;
       //// XXXX
       return -1;
 
-    case LOGGING:
-      //// XXXX
+    case LOGGING:   //  Just logging, so go about your business.
   	break;
 
     default:
@@ -3379,11 +3381,11 @@ int vrpn_Endpoint::handle_tcp_messages
 // Read all messages available on the given file descriptor (a UDP link).
 // Handle each message that is received.
 // Return the number of messages read, or -1 on failure.
-// XXX At some point, the common parts of this routine and the TCP read
-// routine should be merged.  Using read() on the UDP socket fails, so
-// we need the UDP version.  If we use the UDP version for the TCP code,
-// it hangs when we the client drops its connection, so we need the
-// TCP code as well.
+// This routine and the TCP read routine are annoyingly similar, so it
+// seems like they should be merged.  They can't though:  using read() on
+// the UDP socket fails, so we need the UDP version.  If we use the UDP
+// version for the TCP code, it hangs when we the client drops its
+// connection, so we need the TCP code as well.
 
 int vrpn_Endpoint::handle_udp_messages
                (const struct timeval * timeout) {
@@ -3464,11 +3466,6 @@ int vrpn_Endpoint::handle_udp_messages
 
   return num_messages_read;
 }
-
-
-
-
-
 
 
 //---------------------------------------------------------------------------
@@ -3624,8 +3621,6 @@ vrpn_int32 vrpn_Endpoint::set_tcp_outbuf_size (vrpn_int32 bytecount) {
 }
 
 void vrpn_Endpoint::drop_connection (void) {
-
-//fprintf(stderr, "vrpn_Endpoint::drop_connection().\n");
 
   if (d_tcpSocket != INVALID_SOCKET) {
         vrpn_closeSocket(d_tcpSocket);
@@ -3917,14 +3912,14 @@ int vrpn_Endpoint::finish_new_connection_setup (void) {
 		  status = BROKEN;
 		  return -1;
 		}
-	  }
 
-	  // Tell the other side what port number to send its UDP messages to.
-	  if (pack_udp_description(udp_portnum) == -1) {
-		fprintf(stderr,
-		  "vrpn_Endpoint::finish_new_connection_setup: Can't pack UDP msg\n");
-		status = BROKEN;
-		return -1;
+		// Tell the other side what port number to send its UDP messages to.
+		if (pack_udp_description(udp_portnum) == -1) {
+		    fprintf(stderr,
+		      "vrpn_Endpoint::finish_new_connection_setup: Can't pack UDP msg\n");
+		    status = BROKEN;
+		    return -1;
+		}
 	  }
   }
 
@@ -3997,7 +3992,7 @@ int vrpn_Endpoint::getOneTCPMessage (int fd, char * buf, int buflen) {
   if (vrpn_noint_block_read(fd, (char *) header, sizeof(header)) !=
           sizeof(header)) {
     fprintf(stderr,"vrpn_Endpoint::handle_tcp_messages:  "
-           "Can't read header\n");
+           "Can't read header (this is normal when a connection is dropped)\n");
           return -1;
   }
   len = ntohl(header[0]);
@@ -4722,13 +4717,10 @@ int vrpn_Connection::pack_message(vrpn_uint32 len, struct timeval time,
     }
   }
 
-  // See if there are any local handlers for this message type from
-  // this sender.  If so, yank the callbacks.
-  if (do_callbacks_for(type, sender, time, len, buffer)) {
-    return -1;
-  }
-
-  // Pack the message to all open endpoints
+  // Pack the message to all open endpoints  This must be done before
+  // yanking local callbacks in order to have message delivery be the
+  // same on local and remote systems in the case where a local handler
+  // packs one or more messages in response to this message.
   ret = 0;
   for (i = 0; i < d_numEndpoints; i++) {
     if (d_endpoints[i] &&
@@ -4736,6 +4728,17 @@ int vrpn_Connection::pack_message(vrpn_uint32 len, struct timeval time,
                                    class_of_service) != 0)) {
       ret = -1;
     }
+  }
+
+  // See if there are any local handlers for this message type from
+  // this sender.  If so, yank the callbacks.  This needs to be done
+  // AFTER the message is packed to open endpoints so that messages
+  // will be sent in the same order from local and remote senders
+  // (since a local message handler may pack its own messages before
+  // returning).
+
+  if (do_callbacks_for(type, sender, time, len, buffer)) {
+    return -1;
   }
 
   return ret;
@@ -5518,9 +5521,9 @@ vrpn_Connection::vrpn_Connection
     server_program = vrpn_copy_rsh_program(station_name);
           server_args = vrpn_copy_rsh_arguments(station_name);
     token = server_args;
-           // replace all argument separators (',') with spaces (' ')
-           while (token = strchr(token, ','))
-                 *token = ' ';
+    // replace all argument separators (',') with spaces (' ')
+    while ( (token = strchr(token, ',')) != NULL) { *token = ' '; }
+
     endpoint->d_tcpSocket = vrpn_start_server(machinename, server_program, 
   						     server_args,
                                                  NIC_IPaddress);
@@ -5600,7 +5603,8 @@ vrpn_Connection::~vrpn_Connection (void) {
 
   vrpn_int32 i;
 
-  //fprintf(stderr, "In vrpn_Connection destructor.\n");
+  // Send any pending messages
+  send_pending_reports();
 
   // Close the UDP and TCP listen endpoints if we're a server
   if (listen_udp_sock != INVALID_SOCKET) {
@@ -5630,9 +5634,6 @@ vrpn_Connection::~vrpn_Connection (void) {
       delete d_endpoints[i];
     }
   }
-  //if (d_serverLogEndpoint) {
-    //delete d_serverLogEndpoint;
-  //}
 
   // Clean up types, senders, and callbacks.
   delete d_dispatcher;
@@ -5925,7 +5926,7 @@ struct timeval vrpn_Synchronized_Connection::fullSync (void)
     perror("vrpn_Synchronized_Connection::fullSync: only valid for clients");
   }
 
-  // XXX Since this is only valid for clients, we can assume that the
+  // Since this is only valid for clients, we can assume that the
   // client connection has instantiated endpoint[0].
   return d_endpoints[0]->tvClockOffset;
 }

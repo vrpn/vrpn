@@ -125,9 +125,10 @@ void vrpn_Tracker_Flock_Parallel::reset()
    }
 }
 
-void vrpn_Tracker_Flock_Parallel::get_report(void)
+int vrpn_Tracker_Flock_Parallel::get_report(void)
 {
-  // this could either do nothing or call slave get_report(s)
+    // this could either do nothing or call slave get_report(s)
+    return 0;
 }
 
 void vrpn_Tracker_Flock_Parallel::mainloop()
@@ -146,13 +147,13 @@ void vrpn_Tracker_Flock_Parallel::mainloop()
   // and the master resets the slaves)
   for (i=0;i<cSensors;i++) {
     // first check for failure
-    if (rgSlaves[i]->status==TRACKER_FAIL) {
-      status=TRACKER_FAIL;
+    if (rgSlaves[i]->status==vrpn_TRACKER_FAIL) {
+      status=vrpn_TRACKER_FAIL;
       break;
     }
     // now check for reset being needed (cont to check for failures)
-    if (rgSlaves[i]->status==TRACKER_RESETTING) {
-      status=TRACKER_RESETTING;
+    if (rgSlaves[i]->status==vrpn_TRACKER_RESETTING) {
+      status=vrpn_TRACKER_RESETTING;
       continue;
     }
   }
@@ -161,15 +162,15 @@ void vrpn_Tracker_Flock_Parallel::mainloop()
   // fail, reset, or sync mode
   // The slaves send messages on the master's connection
   switch (status) {
-  case TRACKER_SYNCING:
+  case vrpn_TRACKER_SYNCING:
     // everything is a-ok
   break;
   
-  case TRACKER_RESETTING:
+  case vrpn_TRACKER_RESETTING:
     reset();
     break;
     
-  case TRACKER_FAIL:
+  case vrpn_TRACKER_FAIL:
     checkError();
     if (cResets==4) {
       fprintf(stderr, "\nvrpn_Tracker_Flock_Parallel: problems resetting ... check that: a) all cables are attached, b) all units have FLY/STANDBY switches in FLY mode, and c) no receiver is laying too close to the transmitter.  When done checking, power cycle the flock.\nWill attempt to reset in 15 seconds.\n");
@@ -188,9 +189,9 @@ void vrpn_Tracker_Flock_Parallel::mainloop()
       vrpn_close_commport(rgSlaves[i]->serial_fd);
       rgSlaves[i]->serial_fd = vrpn_open_commport(rgSlaves[i]->portname, 
 						  rgSlaves[i]->baudrate);
-      rgSlaves[i]->status = TRACKER_RESETTING;
+      rgSlaves[i]->status = vrpn_TRACKER_RESETTING;
     }
-    status = TRACKER_RESETTING;
+    status = vrpn_TRACKER_RESETTING;
     break;
   }
 }
@@ -239,7 +240,7 @@ vrpn_Tracker_Flock_Parallel_Slave::~vrpn_Tracker_Flock_Parallel_Slave() {
   if (vrpn_write_characters(serial_fd, (const unsigned char *) rgch, cLen )!=cLen) {
     fprintf(stderr,"\nvrpn_Tracker_Flock_Parallel_Slave %d: "
 	    "failed writing sleep cmd to tracker", d_sensor);
-    status = TRACKER_FAIL;
+    status = vrpn_TRACKER_FAIL;
     return;
   }
   // make sure the command is sent out
@@ -252,7 +253,7 @@ char chPoint = 'B';\
 fprintf(stderr,"."); \
 if (vrpn_write_characters(serial_fd, (const unsigned char *) &chPoint, 1 )!=1) {\
   fprintf(stderr,"\nvrpn_Tracker_Flock_Parallel_Slave %d: failed writing set mode cmds to tracker", d_sensor);\
-  status = TRACKER_FAIL;\
+  status = vrpn_TRACKER_FAIL;\
   return;\
 } \
 gettimeofday(&timestamp, NULL);\
@@ -286,7 +287,7 @@ void vrpn_Tracker_Flock_Parallel_Slave::reset()
   if (vrpn_write_characters(serial_fd, (const unsigned char *) reset, resetLen )!=resetLen) {
     fprintf(stderr,"\nvrpn_Tracker_Flock_Parallel_Slave %d: "
 	    "failed writing poll cmd to tracker", d_sensor);
-    status = TRACKER_FAIL;
+    status = vrpn_TRACKER_FAIL;
     return;
   }
 
@@ -311,7 +312,7 @@ void vrpn_Tracker_Flock_Parallel_Slave::reset()
     if (vrpn_write_characters(serial_fd, (const unsigned char *) reset, resetLen )!=resetLen) {
       fprintf(stderr,"\nvrpn_Tracker_Flock_Parallel_Slave %d: "
 	      "failed writing set mode cmds to tracker", d_sensor);
-      status = TRACKER_FAIL;
+      status = vrpn_TRACKER_FAIL;
      return;
     }
     
@@ -325,7 +326,7 @@ void vrpn_Tracker_Flock_Parallel_Slave::reset()
 	  "done with reset ... running.\n", d_sensor);
   
   gettimeofday(&timestamp, NULL);	// Set watchdog now
-  status = TRACKER_SYNCING;	// We're trying for a new reading
+  status = vrpn_TRACKER_SYNCING;	// We're trying for a new reading
 }
 
 // max time between start of a report and the finish (or time to 
@@ -346,147 +347,38 @@ void vrpn_Tracker_Flock_Parallel_Slave::mainloop()
   // will have done that for us.
 
   switch (status) {
-  case TRACKER_REPORT_READY:
+  case vrpn_TRACKER_SYNCING:
+  case vrpn_TRACKER_PARTIAL:
     {
-      // NOTE: the flock behavior is very finicky -- if you try to poll
-      //       again before most of the last response has been read, then
-      //       it will complain.  You need to wait and issue the next
-      //       group poll only once you have read out the previous one entirely
-      //       As a result, polling is very slow with multiple sensors.
-      if (fStream==0) {
-	if (d_sensor==(cSensors-1)) { 
-	  poll();
+	// It turns out to be important to get the report before checking
+	// to see if it has been too long since the last report.  This is
+	// because there is the possibility that some other device running
+	// in the same server may have taken a long time on its last pass
+	// through mainloop().  Trackers that are resetting do this.  When
+	// this happens, you can get an infinite loop -- where one tracker
+	// resets and causes the other to timeout, and then it returns the
+	// favor.  By checking for the report here, we reset the timestamp
+	// if there is a report ready (ie, if THIS device is still operating).
+	while (get_report()) {
+	    send_report();
 	}
-      }
-
-#ifdef	VERBOSE
-      static int count = 0;
-      if (count++ == 10) {
-	printf("\nvrpn_Tracker_Flock_Parallel_Slave %d: Got report", d_sensor); print_latest_report();
-	count = 0;
-      }
-#endif            
-      // successful read, so reset the reset count
-      cResets = 0;
-
-      // Send the message on the connection
-      if (d_connection) {
-
-#ifdef STATUS_MSG
-	// data to calc report rate 
-	struct timeval tvNow;
-
-	// get curr time
-	gettimeofday(&tvNow, NULL);
-
-	if (fFirstStatusReport) {
-	  // print a status message in cStatusInterval seconds
-	  cStatusInterval=3;
-	  tvLastStatusReport=tvNow;
-	  cReports=0;
-	  fFirstStatusReport=0;
-	  fprintf(stderr, "\nvrpn_Tracker_Flock_Parallel_Slave %d: "
-		  "status will be printed every %d seconds.",
-		  d_sensor, STATUS_MSG_SECS);
+	struct timeval current_time;
+	gettimeofday(&current_time, NULL);
+	if ( duration(current_time,timestamp) > MAX_TIME_INTERVAL) {
+		fprintf(stderr,"Tracker failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n",current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);
+		send_text_message("Too long since last report, resetting", current_time, vrpn_TEXT_ERROR);
+		status = vrpn_TRACKER_FAIL;
 	}
-
-	cReports++;
-
-	if (vrpn_TimevalMsecs(vrpn_TimevalDiff(tvNow, tvLastStatusReport)) > 
-	    cStatusInterval*1000){
-
-	  double dRate = cReports / 
-	    (vrpn_TimevalMsecs(vrpn_TimevalDiff(tvNow, 
-						tvLastStatusReport))/1000.0);
-	  time_t tNow = time(NULL);
-	  char *pch = ctime(&tNow);
-	  pch[24]='\0';
-	  fprintf(stderr, "\nvrpn_Tracker_Flock_Parallel_Slave %d: "
-		  "reports being sent at %6.2lf hz "
-		  "(%d sensors, so ~%6.2lf hz per sensor) ( %s )", 
-		  d_sensor, dRate, cSensors, dRate/cSensors, pch);
-	  tvLastStatusReport = tvNow;
-	  cReports=0;
-	  // display the rate every STATUS_MSG_SECS seconds
-	  cStatusInterval=STATUS_MSG_SECS;
-	}
-#endif
-
-#if 0
-	fprintf(stderr,
-		"\np/q (%d): ( %lf, %lf, %lf ) < %lf ( %lf, %lf, %lf ) >", 
-		d_sensor, pos[0], pos[1], pos[2], 
-		d_quat[3], d_quat[0], d_quat[1], d_quat[2] );
-#endif
-
-	// pack and deliver tracker report
-	static char msgbuf[1000];
-	int	    len = encode_to(msgbuf);
-	if (d_connection->pack_message(len, timestamp,
-				     vrpnPositionMsgID, vrpnMasterID, msgbuf,
-				     vrpn_CONNECTION_LOW_LATENCY)) {
-	  fprintf(stderr,
-		  "\nvrpn_Tracker_Flock_Parallel_Slave %d: cannot write message ...  tossing", d_sensor);
-	}
-      } else {
-	fprintf(stderr,"\nvrpn_Tracker_Flock_Parallel_Slave %d: No valid connection", d_sensor);
-      }
-      
-      // Ready for another report
-      status = TRACKER_SYNCING;
-    }
-  break;
-  
-  case TRACKER_SYNCING:
-  case TRACKER_PARTIAL:
-    {
-		// It turns out to be important to get the report before checking
-		// to see if it has been too long since the last report.  This is
-		// because there is the possibility that some other device running
-		// in the same server may have taken a long time on its last pass
-		// through mainloop().  Trackers that are resetting do this.  When
-		// this happens, you can get an infinite loop -- where one tracker
-		// resets and causes the other to timeout, and then it returns the
-		// favor.  By checking for the report here, we reset the timestamp
-		// if there is a report ready (ie, if THIS device is still operating).
-		get_report();
-		struct timeval current_time;
-		gettimeofday(&current_time, NULL);
-		if ( duration(current_time,timestamp) > MAX_TIME_INTERVAL) {
-			fprintf(stderr,"Tracker failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n",current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);
-			send_text_message("Too long since last report, resetting", current_time, vrpn_TEXT_ERROR);
-			status = TRACKER_FAIL;
-		}
     }
   break;
   // master resets us
-  case TRACKER_RESETTING:
-#if 0
-    reset();
-    if (fStream==0) {
-      poll();
-    }
-#endif
+  case vrpn_TRACKER_RESETTING:
     break;
-  case TRACKER_FAIL:
+  case vrpn_TRACKER_FAIL:
     // here we just fail and let the master figure out that we have
     // failed and need to be reset
     fprintf(stderr, "\nvrpn_Tracker_Flock_Parallel_Slave %d: tracker "
 	    "failed, trying to reset ...", d_sensor);
-#if 0
-    checkError();
-    if (cResets==4) {
-      fprintf(stderr, "\nvrpn_Tracker_Flock_Parallel_Slave %d: problems resetting ... check that: a) all cables are attached, b) all units have FLY/STANDBY switches in FLY mode, and c) no receiver is laying too close to the transmitter.  When done checking, power cycle the flock.\nWill attempt to reset in 15 seconds.\n", d_sensor);
-      sleep(15);
-      cResets=0;
-    }
-    fprintf(stderr, 
-	    "\nvrpn_Tracker_Flock_Parallel_Slave %d: tracker failed, trying to reset ...", d_sensor);
-    vrpn_close_commport(serial_fd);
-    serial_fd = vrpn_open_commport(portname, baudrate);
-    status = TRACKER_RESETTING;
-#endif
     break;
   }
 }
-

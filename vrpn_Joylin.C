@@ -114,7 +114,7 @@ void vrpn_Joylin::mainloop(void) {
 
 vrpn_Joylin::vrpn_Joylin(char * name, 
 			 vrpn_Connection * c,
-			 char *portname):
+			 char *):
   vrpn_Analog(name, c), vrpn_Button(name, c)
 { 
 	  fprintf(stderr,"vrpn_Joylin::vrpn_Joylin: Can't open Linux joystick on non-Linux machine\n");

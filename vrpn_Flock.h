@@ -43,11 +43,11 @@ class vrpn_Tracker_Flock: public vrpn_Tracker_Serial {
 		     int fStreamMode = 1);
     
   virtual ~vrpn_Tracker_Flock();
-  virtual void mainloop();
     
  protected:
 
-  virtual void get_report(void);
+  virtual int get_report(void);
+  virtual void send_report(void);
   virtual void reset();
   void printError(unsigned char uchErrCode, unsigned char uchExpandedErrCode);
   int checkError();
@@ -68,4 +68,3 @@ class vrpn_Tracker_Flock: public vrpn_Tracker_Serial {
 };
 
 #endif
-

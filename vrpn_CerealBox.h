@@ -35,7 +35,7 @@ public:
 
 	virtual	void clear_values(void);	// Set all buttons, analogs and encoders back to 0
 	virtual int reset(void);		// Set device back to starting config
-	virtual	void get_report(void);		// Try to read a report from the device
+	virtual	int get_report(void);		// Try to read a report from the device
 
 	// send report iff changed
         virtual void report_changes

@@ -339,7 +339,7 @@ int	vrpn_Radamec_SPI::reset(void)
 // on the first character of the report to see how many more to expect and
 // to see how to handle the report.
    
-void vrpn_Radamec_SPI::get_report(void)
+int vrpn_Radamec_SPI::get_report(void)
 {
    int ret;		// Return value from function call to be checked
    char errmsg[256];
@@ -355,7 +355,7 @@ void vrpn_Radamec_SPI::get_report(void)
    if (status == STATUS_SYNCING) {
       // Try to get a character.  If none, just return.
       if (vrpn_read_available_characters(serial_fd, _buffer, 1) != 1) {
-      	return;
+      	return 0;
       }
 
       switch (_buffer[0]) {
@@ -376,7 +376,7 @@ void vrpn_Radamec_SPI::get_report(void)
 
 	  default:
 	      // Not a recognized command, keep looking
-	      return;
+	      return 0;
       }
 
 
@@ -403,16 +403,15 @@ void vrpn_Radamec_SPI::get_report(void)
 		_expected_chars-_bufcount);
    if (ret == -1) {
 	SPI_ERROR("Error reading");
-	//XXX Put out a VRPN text message here, and at other error locations
 	status = STATUS_RESETTING;
-	return;
+	return 0;
    }
    _bufcount += ret;
 #ifdef	VERBOSE
    if (ret != 0) printf("... got %d characters (%d total)\n",ret, _bufcount);
 #endif
    if (_bufcount < _expected_chars) {	// Not done -- go back for more
-	return;
+	return 0;
    }
 
    //--------------------------------------------------------------------
@@ -427,7 +426,7 @@ void vrpn_Radamec_SPI::get_report(void)
    if (_buffer[_expected_chars-1] != compute_crc(_buffer, _expected_chars-1) ) {
 	   status = STATUS_SYNCING;
       	   SPI_WARNING("Bad CRC in report (ignoring this report)");
-	   return;
+	   return 0;
    }
    _camera_id = _buffer[1];
 
@@ -503,7 +502,7 @@ void vrpn_Radamec_SPI::get_report(void)
 	sprintf(errmsg,"vrpn_Radamec_SPI: Unhandled command (0x%02x), resetting\n", _buffer[0]);
 	SPI_ERROR(errmsg);
 	status = STATUS_RESETTING;
-	return;
+	return 0;
    }
 
    //--------------------------------------------------------------------
@@ -513,6 +512,8 @@ void vrpn_Radamec_SPI::get_report(void)
    report();	// Report, rather than report_changes(), since it is an absolute device
    status = STATUS_SYNCING;
    _bufcount = 0;
+
+   return 1;
 }
 
 void	vrpn_Radamec_SPI::report_changes(vrpn_uint32 class_of_service)
@@ -550,23 +551,24 @@ void	vrpn_Radamec_SPI::mainloop()
     case STATUS_SYNCING:
     case STATUS_READING:
       {
-		// It turns out to be important to get the report before checking
-		// to see if it has been too long since the last report.  This is
-		// because there is the possibility that some other device running
-		// in the same server may have taken a long time on its last pass
-		// through mainloop().  Trackers that are resetting do this.  When
-		// this happens, you can get an infinite loop -- where one tracker
-		// resets and causes the other to timeout, and then it returns the
-		// favor.  By checking for the report here, we reset the timestamp
-		// if there is a report ready (ie, if THIS device is still operating).
-		get_report();
-	struct timeval current_time;
-	gettimeofday(&current_time, NULL);
-	if ( duration(current_time,timestamp) > MAX_TIME_INTERVAL) {
-		sprintf(errmsg,"Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);
-		SPI_ERROR(errmsg);
-		status = STATUS_RESETTING;
-	}
+	    // It turns out to be important to get the report before checking
+	    // to see if it has been too long since the last report.  This is
+	    // because there is the possibility that some other device running
+	    // in the same server may have taken a long time on its last pass
+	    // through mainloop().  Trackers that are resetting do this.  When
+	    // this happens, you can get an infinite loop -- where one tracker
+	    // resets and causes the other to timeout, and then it returns the
+	    // favor.  By checking for the report here, we reset the timestamp
+	    // if there is a report ready (ie, if THIS device is still operating).
+	    while (get_report()) {};	// Keep getting reports so long as there are more
+
+	    struct timeval current_time;
+	    gettimeofday(&current_time, NULL);
+	    if ( duration(current_time,timestamp) > MAX_TIME_INTERVAL) {
+		    sprintf(errmsg,"Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);
+		    SPI_ERROR(errmsg);
+		    status = STATUS_RESETTING;
+	    }
       }
         break;
 

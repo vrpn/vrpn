@@ -254,7 +254,7 @@ double vrpn_Tracker_Flock::getMeasurementRate() {
 
   if (vrpn_write_characters(serial_fd, (const unsigned char *) reset, resetLen )!=resetLen) {
     perror("\nvrpn_Tracker_Flock: failed writing set mode cmds to tracker");
-    status = TRACKER_FAIL;
+    status = vrpn_TRACKER_FAIL;
     return 1;
   }
   
@@ -269,7 +269,7 @@ double vrpn_Tracker_Flock::getMeasurementRate() {
      fprintf(stderr, 
 	     "\nvrpn_Tracker_Flock: received only %d of 4 chars as freq", 
 	     cRetF);
-     status = TRACKER_FAIL;
+     status = vrpn_TRACKER_FAIL;
      return 1;
    }
    
@@ -297,7 +297,7 @@ vrpn_Tracker_Flock::~vrpn_Tracker_Flock() {
   // put the flock to sleep (B to get out of stream mode, G to sleep)
   if (vrpn_write_characters(serial_fd, (const unsigned char *) rgch, cLen )!=cLen) {
     perror("\nvrpn_Tracker_Flock: failed writing sleep cmd to tracker");
-    status = TRACKER_FAIL;
+    status = vrpn_TRACKER_FAIL;
     return;
   }
   // make sure the command is sent out
@@ -331,7 +331,7 @@ void vrpn_Tracker_Flock::reset()
    fprintf(stderr,"  vrpn_Flock: Sending POLL mode command...\n");
    if (vrpn_write_characters(serial_fd, (const unsigned char *) reset, resetLen )!=resetLen) {
      perror("\nvrpn_Tracker_Flock: failed writing poll cmd to tracker");
-     status = TRACKER_FAIL;
+     status = vrpn_TRACKER_FAIL;
      return;
    }
    // make sure the command is sent out
@@ -365,7 +365,7 @@ void vrpn_Tracker_Flock::reset()
    fprintf(stderr,"  vrpn_Flock: Sending RESET command...\n");
    if (vrpn_write_characters(serial_fd, (const unsigned char *) reset, resetLen )!=resetLen) {
      perror("\nvrpn_Tracker_Flock: failed writing auto-config to tracker");
-     status = TRACKER_FAIL;
+     status = vrpn_TRACKER_FAIL;
      return;
    }
    // make sure the command is sent out
@@ -402,7 +402,7 @@ void vrpn_Tracker_Flock::reset()
    fprintf(stderr,"  vrpn_Flock: Setting parameters...\n");
    if (vrpn_write_characters(serial_fd, (const unsigned char *) reset, resetLen )!=resetLen) {
      perror("\nvrpn_Tracker_Flock: failed writing set mode cmds to tracker");
-     status = TRACKER_FAIL;
+     status = vrpn_TRACKER_FAIL;
      return;
    }
    
@@ -424,7 +424,7 @@ void vrpn_Tracker_Flock::reset()
    // write the cmd and get response
    if (vrpn_write_characters(serial_fd, (const unsigned char *) reset, resetLen )!=resetLen) {
      perror("\nvrpn_Tracker_Flock: failed writing get sys config to tracker");
-     status = TRACKER_FAIL;
+     status = vrpn_TRACKER_FAIL;
      return;
    }
 
@@ -441,7 +441,7 @@ void vrpn_Tracker_Flock::reset()
      fprintf(stderr, 
 	     "\nvrpn_Tracker_Flock: received only %d of 14 chars as status", 
 	     cRet);
-     status = TRACKER_FAIL;
+     status = vrpn_TRACKER_FAIL;
      return;
    }
    
@@ -456,7 +456,7 @@ void vrpn_Tracker_Flock::reset()
        fprintf(stderr," (a transmitter)");
        if (i != 0) {
 	   fprintf(stderr,"\nError: VRPN Flock driver can only accept transmitter as first unit\n");
-	   status = TRACKER_FAIL;
+	   status = vrpn_TRACKER_FAIL;
 	   fOk=0;
 	   return;
        }
@@ -479,7 +479,7 @@ void vrpn_Tracker_Flock::reset()
 
    if (!fOk) {
      perror("\nvrpn_Tracker_Flock: problems resetting tracker.");
-     status = TRACKER_FAIL;
+     status = vrpn_TRACKER_FAIL;
      return;
    }
 
@@ -497,7 +497,7 @@ void vrpn_Tracker_Flock::reset()
      reset[resetLen++] = '@';
      if (vrpn_write_characters(serial_fd, (const unsigned char *) reset, resetLen )!=resetLen) {
        perror("\nvrpn_Tracker_Flock: failed writing set mode cmds to tracker");
-       status = TRACKER_FAIL;
+       status = vrpn_TRACKER_FAIL;
        return;
      }
      
@@ -508,11 +508,11 @@ void vrpn_Tracker_Flock::reset()
    fprintf(stderr,"\nvrpn_Tracker_Flock: done with reset ... running.\n");
 
    gettimeofday(&timestamp, NULL);	// Set watchdog now
-   status = TRACKER_SYNCING;	// We're trying for a new reading
+   status = vrpn_TRACKER_SYNCING;	// We're trying for a new reading
 }
 
 
-void vrpn_Tracker_Flock::get_report(void)
+int vrpn_Tracker_Flock::get_report(void)
 {
    int ret;
    unsigned RECORD_SIZE = 15;
@@ -533,10 +533,10 @@ void vrpn_Tracker_Flock::get_report(void)
    // If we're synching, read a byte at a time until we find
    // one with the high bit set.
 
-   if (status == TRACKER_SYNCING) {
+   if (status == vrpn_TRACKER_SYNCING) {
      // Try to get a character.  If none, just return.
      if (vrpn_read_available_characters(serial_fd, buffer, 1) != 1) {
-       return;
+       return 0;
      }
      
      // If the high bit isn't set, we don't want it we
@@ -546,9 +546,9 @@ void vrpn_Tracker_Flock::get_report(void)
        cSyncs++;
        if (cSyncs>10) {
 	 // reset the tracker if more than a few syncs occur
-	 status = TRACKER_RESETTING;
+	 status = vrpn_TRACKER_RESETTING;
        }
-       return;
+       return 0;
      }
      cSyncs=0;
 
@@ -556,7 +556,7 @@ void vrpn_Tracker_Flock::get_report(void)
      // and say that we got one character at this time.
      bufcount = 1;
      gettimeofday(&timestamp, NULL);
-     status = TRACKER_PARTIAL;
+     status = vrpn_TRACKER_PARTIAL;
    }
      
    // Read as many bytes of this record as we can, storing them
@@ -569,19 +569,19 @@ void vrpn_Tracker_Flock::get_report(void)
 		RECORD_SIZE-bufcount);
    if (ret == -1) {
      fprintf(stderr,"\nvrpn_Tracker_Flock: Error reading");
-     status = TRACKER_FAIL;
-     return;
+     status = vrpn_TRACKER_FAIL;
+     return 0;
    }
    bufcount += ret;
    if (bufcount < RECORD_SIZE) {	// Not done -- go back for more
-     return;
+     return 0;
    }
    
    // confirm that we are still synched ...
    if ( (buffer[0] & 0x80) == 0) {
      fprintf(stderr,"\nvrpn_Tracker_Flock: lost sync, resyncing.");
-     status = TRACKER_SYNCING;
-     return;
+     status = vrpn_TRACKER_SYNCING;
+     return 0;
    }
    
    // Now decode the report
@@ -654,12 +654,13 @@ void vrpn_Tracker_Flock::get_report(void)
    }      
 
    // all set for this sensor, so cycle
-   status = TRACKER_REPORT_READY;
+   status = vrpn_TRACKER_SYNCING;
    bufcount = 0;
 
 #ifdef VERBOSE
       print_latest_report();
 #endif
+    return 1;
 }
 
 #define poll() { \
@@ -667,7 +668,7 @@ char chPoint = 'B';\
 fprintf(stderr,"."); \
 if (vrpn_write_characters(serial_fd, (const unsigned char *) &chPoint, 1 )!=1) {\
   perror("\nvrpn_Tracker_Flock: failed writing set mode cmds to tracker");\
-  status = TRACKER_FAIL;\
+  status = vrpn_TRACKER_FAIL;\
   return;\
 } \
 gettimeofday(&timestamp, NULL);\
@@ -683,37 +684,22 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 	       1000000L * (t1.tv_sec - t2.tv_sec);
 }
 
-void vrpn_Tracker_Flock::mainloop()
-{
-  // Call the generic server mainloop, because we are a server
-  server_mainloop();
+void	vrpn_Tracker_Flock::send_report(void) {
+    vrpn_Tracker_Serial::send_report();
 
-  switch (status) {
-  case TRACKER_REPORT_READY:
-    {
-      // NOTE: the flock behavior is very finicky -- if you try to poll
-      //       again before most of the last response has been read, then
-      //       it will complain.  You need to wait and issue the next
-      //       group poll only once you have read out the previous one entirely
-      //       As a result, polling is very slow with multiple sensors.
-      if (fStream==0) {
+    // NOTE: the flock behavior is very finicky -- if you try to poll
+    //       again before most of the last response has been read, then
+    //       it will complain.  You need to wait and issue the next
+    //       group poll only once you have read out the previous one entirely
+    //       As a result, polling is very slow with multiple sensors.
+    if (fStream==0) {
 	if (d_sensor==(cSensors-1)) { 
 	  poll();
 	}
-      }
+    }
 
-#ifdef	VERBOSE
-      static int count = 0;
-      if (count++ == 10) {
-	printf("\nvrpn_Tracker_Flock: Got report"); print_latest_report();
-	count = 0;
-      }
-#endif            
-      // successful read, so reset the reset count
-      cResets = 0;
-
-      // Send the message on the connection
-      if (d_connection) {
+    // successful read, so reset the reset count
+    cResets = 0;
 
 #ifdef STATUS_MSG
 	// data to calc report rate 
@@ -752,98 +738,4 @@ void vrpn_Tracker_Flock::mainloop()
 	  cStatusInterval=STATUS_MSG_SECS;
 	}
 #endif
-
-#if 0
-	fprintf(stderr,
-		"\np/q (%d): ( %lf, %lf, %lf ) < %lf ( %lf, %lf, %lf ) >", 
-		d_sensor, pos[0], pos[1], pos[2], 
-		d_quat[3], d_quat[0], d_quat[1], d_quat[2] );
-#endif
-
-	// pack and deliver tracker report
-	static char msgbuf[1000];
-	int	    len = encode_to(msgbuf);
-	if (d_connection->pack_message(len, timestamp,
-				     position_m_id, d_sender_id, msgbuf,
-				     vrpn_CONNECTION_LOW_LATENCY)) {
-	  fprintf(stderr,
-		  "\nvrpn_Tracker_Flock: cannot write message ...  tossing");
-	}
-      } else {
-	fprintf(stderr,"\nvrpn_Tracker_Flock: No valid connection");
-      }
-      
-#if 0
-// polling for debugging purposes
-      if (d_sensor==(cSensors-1)) {
-	// poll again
-	char ch;
-	
-	fprintf(stderr, "\nPoll again? ");
-	fscanf(stdin, "%c", &ch);
-	if (ch=='y') {
-	  ch='B';
-	  
-	  // send the poll mode command (cmd and cmd_size are args)
-	  if (vrpn_write_characters(serial_fd, (unsigned char*)&ch, 1 )!=1) {
-	    perror("\nvrpn_Tracker_Flock: failed writing poll cmd to tracker");
-	    status = TRACKER_FAIL;
-	    return;
-	  }
-	  // make sure the command is sent out
-	  vrpn_drain_output_buffer( serial_fd );
-	}
-      }
-#endif
-      // Ready for another report
-      status = TRACKER_SYNCING;
-    }
-  break;
-  
-  case TRACKER_SYNCING:
-  case TRACKER_PARTIAL:
-    {
-		// It turns out to be important to get the report before checking
-		// to see if it has been too long since the last report.  This is
-		// because there is the possibility that some other device running
-		// in the same server may have taken a long time on its last pass
-		// through mainloop().  Trackers that are resetting do this.  When
-		// this happens, you can get an infinite loop -- where one tracker
-		// resets and causes the other to timeout, and then it returns the
-		// favor.  By checking for the report here, we reset the timestamp
-		// if there is a report ready (ie, if THIS device is still operating).
-		get_report();
-		struct timeval current_time;
-		gettimeofday(&current_time, NULL);
-		if ( duration(current_time,timestamp) > MAX_TIME_INTERVAL) {
-			fprintf(stderr,"Tracker failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n",current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);
-			send_text_message("Too long since last report, resetting", current_time, vrpn_TEXT_ERROR);
-			status = TRACKER_FAIL;
-		}
-    }
-  break;
-  
-  case TRACKER_RESETTING:
-    reset();
-    if (fStream==0) {
-      poll();
-    }
-    break;
-    
-  case TRACKER_FAIL:
-    checkError();
-    if (cResets==4) {
-      fprintf(stderr, "\nvrpn_Tracker_Flock: problems resetting ... check that: a) all cables are attached, b) all units have FLY/STANDBY switches in FLY mode, and c) no receiver is laying too close to the transmitter.  When done checking, power cycle the flock.\nWill attempt to reset in 15 seconds.\n");
-      sleep(15);
-      cResets=0;
-    }
-    fprintf(stderr, 
-	    "\nvrpn_Tracker_Flock: tracker failed, trying to reset ...");
-    vrpn_close_commport(serial_fd);
-    serial_fd = vrpn_open_commport(portname, baudrate);
-    status = TRACKER_RESETTING;
-    break;
-  }
 }
-
-

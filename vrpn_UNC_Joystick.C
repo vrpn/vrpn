@@ -34,7 +34,7 @@ vrpn_Joystick::vrpn_Joystick(char * name,
   } else {
 	MAX_TIME_INTERVAL = -1;
   }
-  status = ANALOG_RESETTING;
+  status = vrpn_ANALOG_RESETTING;
 }
 
 void vrpn_Joystick::report(struct timeval current_time)
@@ -80,19 +80,18 @@ void vrpn_Joystick::mainloop(void) {
     
   switch (status) {
 
-  case ANALOG_REPORT_READY:
+  case vrpn_ANALOG_REPORT_READY:
 
 	// Send the report
 	report(current_time);
 
 	// Ready for another report
-	status = ANALOG_SYNCING;
+	status = vrpn_ANALOG_SYNCING;
     break;
 
-  case ANALOG_SYNCING:
-  case ANALOG_PARTIAL:
+  case vrpn_ANALOG_SYNCING:
+  case vrpn_ANALOG_PARTIAL:
     {	
-
 	// See if we have a report ready.
 	get_report();
 
@@ -108,8 +107,8 @@ void vrpn_Joystick::mainloop(void) {
     }
     break;
 
-  case ANALOG_RESETTING:
-  case ANALOG_FAIL:
+  case vrpn_ANALOG_RESETTING:
+  case vrpn_ANALOG_FAIL:
     reset();
     break;
   }
@@ -131,7 +130,7 @@ void vrpn_Joystick::reset() {
     write_rt = vrpn_write_characters(serial_fd, (unsigned char*)request, strlen(request));
     if (write_rt < 0) {
       fprintf(stderr, "vrpn_Joystick::reset: write failed\n");
-      status = ANALOG_FAIL;
+      status = vrpn_ANALOG_FAIL;
       return;
     }
     sleep(1);
@@ -143,7 +142,7 @@ void vrpn_Joystick::reset() {
     if (bytesread != 16) {
       fprintf(stderr, "vrpn_Joystick::reset: got only %d char from \
 joystick, should be 16, trying again\n", bytesread);
-      status = ANALOG_FAIL;
+      status = vrpn_ANALOG_FAIL;
     } else {  
 	  // Parse the analog reports in the serialbuf and reset each
 	  // channel's rest value.  The button report is not
@@ -151,7 +150,7 @@ joystick, should be 16, trying again\n", bytesread);
       for (int i=0; i< num_channel; i++) { 
 		  parse(i*2, 1);
       }
-      status = ANALOG_SYNCING;
+      status = vrpn_ANALOG_SYNCING;
 
       /* Request only send each channel when state has changed */
       request[0] = 'j';
@@ -168,7 +167,7 @@ joystick, should be 16, trying again\n", bytesread);
 void vrpn_Joystick::get_report() {
   int bytesread = 0;
   
-  if (status == ANALOG_SYNCING) {
+  if (status == vrpn_ANALOG_SYNCING) {
     bytesread =vrpn_read_available_characters(serial_fd, serialbuf, 1);
 	if (bytesread == -1) {
 		perror("vrpn_Joystick::get_report() 1st read failed");
@@ -176,7 +175,7 @@ void vrpn_Joystick::get_report() {
 	}
     if (bytesread == 1) {
 		if ((serialbuf[0] >> 7) == 0) {
-			status = ANALOG_PARTIAL;
+			status = vrpn_ANALOG_PARTIAL;
 		} else {
 		    fprintf(stderr,"vrpn_Joystick::get_report(): Bad 1st byte (re-syncing)\n");
 			return;
@@ -202,12 +201,12 @@ void vrpn_Joystick::get_report() {
   // sometimes duplicate first characters in the report ?!?!?
   if ( (serialbuf[1] >> 7) == 0 ) {	// Should have high bit set
 	  serialbuf[0] = serialbuf[1];
-	  status = ANALOG_PARTIAL;
+	  status = vrpn_ANALOG_PARTIAL;
 	  return;
   }
 
   parse(0);	// Parse starting at the beginning of the serialbuf.
-  status = ANALOG_REPORT_READY;
+  status = vrpn_ANALOG_REPORT_READY;
 }
 
 /****************************************************************************/
@@ -238,7 +237,7 @@ void vrpn_Joystick::parse (int index, int reset_rest_pos)
    // If channel number is > 7, this is illegal.
    if (chan > 7) {
 	   fprintf(stderr,"vrpn_Joystick::parse(): Invalid channel % (%d)\n",chan);
-	   status = ANALOG_FAIL;
+	   status = vrpn_ANALOG_FAIL;
 	   return;
    }
    

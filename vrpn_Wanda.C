@@ -21,13 +21,6 @@ print_bits( char *buf, int num_bytes )
 }
 void print_bits(unsigned char *buf, int n) { print_bits((char *)buf, n); }
 
-static long  duration(struct timeval t1, struct timeval t2)
-{
-  if (t2.tv_sec == -1) return 0;
-  return (t1.tv_usec - t2.tv_usec) +
-    1000000L * (t1.tv_sec - t2.tv_sec);
-}
-
 // 
 // Note: Wanda works at 1200 baud, 1 stopbit, CS7 (character size), and no parity
 // 
@@ -43,7 +36,7 @@ vrpn_Wanda::vrpn_Wanda(char * name,
   if (update_rate != 0) 
     MAX_TIME_INTERVAL = (long)(1000000/update_rate);
   else MAX_TIME_INTERVAL = -1;
-  status = ANALOG_RESETTING;
+  status = vrpn_ANALOG_RESETTING;
 
   // reset buttons & channels
   buttons[0] = buttons[1] = buttons[2] = 0;

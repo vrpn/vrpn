@@ -97,8 +97,6 @@ int vrpn_Clock::encode_to(char *buf, const struct timeval& tvSRep,
   cChars -= sizeof(vrpn_int32);
 
   // Pack the payload of the old message
-  // XXX Note that this will un-align any 64-bit entries in the buffer.
-  // This means that none can be put there.
   vrpn_buffer( &bufptr, &buflen, pch, cChars );
 
   // Tell how many characters we sent.

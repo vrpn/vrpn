@@ -39,12 +39,6 @@
 
 #define MAX_TIME_INTERVAL       (2000000) // max time between reports (usec)
 
-static	unsigned long	duration(struct timeval t1, struct timeval t2)
-{
-	return (t1.tv_usec - t2.tv_usec) +
-	       1000000L * (t1.tv_sec - t2.tv_sec);
-}
-
 // This routine writes out the characters slowly, so as not to
 // overburden the poor Magellan, which seems to choke when a
 // bunch of characters are all sent at once.
@@ -242,8 +236,7 @@ int vrpn_Magellan::get_report(void)
    ret = vrpn_read_available_characters(serial_fd, &_buffer[_bufcount],
 		_expected_chars-_bufcount);
    if (ret == -1) {
-	fprintf(stderr,"vrpn_Magellan: Error reading\n");
-	//XXX Put out a VRPN text message here, and at other error locations
+	send_text_message("vrpn_Magellan: Error reading", timestamp, vrpn_TEXT_ERROR);
 	status = STATUS_RESETTING;
 	return 0;
    }
@@ -265,7 +258,7 @@ int vrpn_Magellan::get_report(void)
 
    if (_buffer[_expected_chars-1] != '\r') {
 	   status = STATUS_SYNCING;
-      	   fprintf(stderr,"vrpn_Magellan: No carriage return in record\n");
+      	   send_text_message("vrpn_Magellan: No carriage return in record", timestamp, vrpn_TEXT_ERROR);
 	   return 0;
    }
 
@@ -308,7 +301,7 @@ int vrpn_Magellan::get_report(void)
 	 // and rotations are being sent. We can handle any of these without
 	 // incident.
 	 if ( (_buffer[1] & 0x08) != 0) {
-	     fprintf(stderr,"vrpn_Magellan: Was put into mouse mode, resetting\n");
+	     send_text_message("vrpn_Magellan: Was put into mouse mode, resetting", timestamp, vrpn_TEXT_ERROR);
 	     status = STATUS_RESETTING;
 	     return 1;
 	 }

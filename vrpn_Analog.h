@@ -1,12 +1,14 @@
-#ifndef VRPN_ANALOG
-#define VRPN_ANALOG
+#ifndef VRPN_ANALOG_H
+#define VRPN_ANALOG_H
+
 #define vrpn_CHANNEL_MAX 128
+
 // analog status flags
-#define ANALOG_SYNCING		(2)
-#define ANALOG_REPORT_READY 	(1)
-#define ANALOG_PARTIAL 	(0)
-#define ANALOG_RESETTING	(-1)
-#define ANALOG_FAIL 	 	(-2)
+const	int vrpn_ANALOG_SYNCING		= (2);
+const	int vrpn_ANALOG_REPORT_READY 	= (1);
+const	int vrpn_ANALOG_PARTIAL 	= (0);
+const	int vrpn_ANALOG_RESETTING	= (-1);
+const	int vrpn_ANALOG_FAIL 	 	= (-2);
 
 #include "vrpn_Connection.h"
 #include "vrpn_BaseClass.h"
@@ -192,4 +194,3 @@ class vrpn_Analog_Remote: public vrpn_Analog {
 };
 
 #endif
-

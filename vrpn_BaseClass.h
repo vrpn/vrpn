@@ -63,7 +63,7 @@ Things to do in the server object (server device) files to convert from 4.XX
 #include "vrpn_Connection.h"
 
 const int vrpn_MAX_BCADRS =	100;
-	///< Internal value for number of BaseClass addresses
+///< Internal value for number of BaseClass addresses
 
 /// Since the sending of text messages has been pulled into the base class (so
 /// that every object can send error/warning/info messages this way), these
