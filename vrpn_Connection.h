@@ -50,13 +50,23 @@ typedef int (* vrpn_LOGFILTER) (void * userdata, vrpn_HANDLERPARAM p);
 
 // vrpn_ANY_TYPE can be used to register callbacks for any USER type of
 // message from a given sender.  System messages are handled separately.
+
 #define vrpn_ANY_TYPE (-1)
 
-// Buffer lengths for TCP and UDP.  UDP is set based on ethernet payload length
+// Buffer lengths for TCP and UDP.
+// TCP is an arbitrary number that can be changed by the user
+// using vrpn_Connection::set_tcp_outbuf_size().
+// UDP is set based on ethernet maximum transmission size;  trying
+// to send a message via UDP which is longer than the MTU of any
+// intervening physical network may cause untraceable failures,
+// so for now we do not expose any way to change the UDP output
+// buffer size.
+
 #define	vrpn_CONNECTION_TCP_BUFLEN	(64000)
 #define	vrpn_CONNECTION_UDP_BUFLEN	(1500)
 
 // System message types
+
 #define	vrpn_CONNECTION_SENDER_DESCRIPTION	(-1)
 #define	vrpn_CONNECTION_TYPE_DESCRIPTION	(-2)
 #define	vrpn_CONNECTION_UDP_DESCRIPTION		(-3)
@@ -65,7 +75,9 @@ typedef int (* vrpn_LOGFILTER) (void * userdata, vrpn_HANDLERPARAM p);
 // Classes of service for messages, specify multiple by ORing them together
 // Priority of satisfying these should go from the top down (RELIABLE will
 // override all others).
-// Most of these flags may be ignored, but RELIABLE is guaranteed to be available.
+// Most of these flags may be ignored, but RELIABLE is guaranteed
+// to be available.
+
 #define	vrpn_CONNECTION_RELIABLE		(1<<0)
 #define	vrpn_CONNECTION_FIXED_LATENCY		(1<<1)
 #define	vrpn_CONNECTION_LOW_LATENCY		(1<<2)
@@ -258,7 +270,10 @@ class vrpn_Connection
 	// incoming messages and sending any packed messages.
 	// Returns -1 when connection dropped due to error, 0 otherwise.
 	// (only returns -1 once per connection drop).
-	virtual int mainloop(void);
+        // Optional argument is TOTAL time to block on select() calls;
+        // there may be multiple calls to select() per call to mainloop(),
+        // and this timeout will be divided evenly between them.
+	virtual int mainloop (const struct timeval * timeout = NULL);
 
 	// Get a token to use for the string name of the sender or type.
 	// Remember to check for -1 meaning failure.
@@ -304,7 +319,22 @@ class vrpn_Connection
         virtual int register_log_filter (vrpn_LOGFILTER filter,
                                          void * userdata);
 
+  // Applications that need to send very large messages may want to
+  // know the buffer size used or to change its size.  Buffer size
+  // is returned in bytes.
+  vrpn_int32 tcp_outbuf_size (void) const { return d_tcp_buflen; }
+  vrpn_int32 udp_outbuf_size (void) const { return d_udp_buflen; }
+
+  // Allows the application to attempt to reallocate the buffer.
+  // If allocation fails (error or out-of-memory), -1 will be returned.
+  // On successful allocation or illegal input (negative size), the
+  // size in bytes will be returned.  These routines are NOT guaranteed
+  // to shrink the buffer, only to increase it or leave it the same.
+  vrpn_int32 set_tcp_outbuf_size (vrpn_int32 bytecount);
+
+
   vrpn_OneConnection *endpointPtr() { return &endpoint; }
+
   protected:
   // Users should not create vrpn_Connection directly -- use 
   // vrpn_Synchronized_Connection (for servers) or 
@@ -358,14 +388,20 @@ class vrpn_Connection
 	vrpnMsgCallbackEntry	* generic_callbacks;	
 
 	// Output buffers storing messages to be sent
-	char	tcp_outbuf [vrpn_CONNECTION_TCP_BUFLEN];
-	char	udp_outbuf [vrpn_CONNECTION_UDP_BUFLEN];
-	int	tcp_num_out;
-	int	udp_num_out;
+	// Convention:  use d_ to denote a data member of an object so
+	// that inside a method you can recognize data members at a glance
+	// and differentiate them from parameters or local variables.
+
+	char *	d_tcp_outbuf;
+	char *	d_udp_outbuf;
+        int	d_tcp_buflen;  // total buffer size, in bytes
+	int	d_udp_buflen;
+	int	d_tcp_num_out;  // number of bytes currently used
+	int	d_udp_num_out;
 
 	// Routines to handle incoming messages on file descriptors
-	int	handle_udp_messages (int fd);
-	int	handle_tcp_messages (int fd);
+	int	handle_udp_messages (int fd, const struct timeval * timeout);
+	int	handle_tcp_messages (int fd, const struct timeval * timeout);
 
 	// Routines that handle system messages
 	static int handle_sender_message (void * userdata, vrpn_HANDLERPARAM p);
@@ -405,13 +441,18 @@ class vrpn_Connection
 	int		message_type_is_registered (const char *) const;
 
 	// Thread safety modifications - TCH 19 May 98
+	// Convention:  use d_ to denote a data member of an object so
+	// that inside a method you can recognize data members at a glance
+	// and differentiate them from parameters or local variables.
 
 	// Input buffers
+        // HACK:  d_TCPbuf uses malloc()/realloc()/free() instead of
+        //   new/delete.
 	vrpn_uint32 d_TCPbuflen;
 	char * d_TCPbuf;
 	vrpn_float64 d_UDPinbufToAlignRight
-			[vrpn_CONNECTION_UDP_BUFLEN/sizeof(vrpn_float64)+1];
-	char *d_UDPinbuf;
+		[vrpn_CONNECTION_UDP_BUFLEN / sizeof(vrpn_float64) + 1];
+	char * d_UDPinbuf;
 
 	// Timekeeping - TCH 30 June 98
 	struct timeval start_time;
@@ -462,7 +503,7 @@ class vrpn_Synchronized_Connection : public vrpn_Connection
 	~vrpn_Synchronized_Connection();
 	struct timeval fullSync();
     vrpn_Clock_Remote * pClockRemote;
-    virtual int mainloop (void);
+    virtual int mainloop (const struct timeval * timeout = NULL);
 };
 
 // 1hz sync connection by default, windowed over last three bounces 

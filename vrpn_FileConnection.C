@@ -82,14 +82,17 @@ vrpn_File_Connection::~vrpn_File_Connection (void) {
 }
 
 // virtual
-int vrpn_File_Connection::mainloop (void) {
+int vrpn_File_Connection::mainloop (const struct timeval * timeout) {
 
   struct timeval last_time;
   struct timeval skip_time;
   int retval;
 
-  if (!d_file)
+  if (!d_file) {
+    if (timeout)  // block for the requested time
+      select(0, NULL, NULL, NULL, timeout);
     return 0;
+  }
 
   // compute time elapsed since last call to mainloop()
 
@@ -107,14 +110,41 @@ int vrpn_File_Connection::mainloop (void) {
   skip_time = vrpn_TimevalScale(skip_time, d_rate);
   d_next_time = vrpn_TimevalSum(d_next_time, skip_time);
 
-  // are we ready for the next message?
+  // Are we ready for the next message?
   // XXX This should really look ahead at the next message
   // (if there is one) and see if it is too soon to play it,
   // rather than reading and sending the message then seeing
   // that it is too late.
 
-  if (vrpn_TimevalGreater(d_runtime, d_next_time))
-    return 0;
+  if (vrpn_TimevalGreater(d_runtime, d_next_time)) {
+    if (!timeout)
+      return 0;  // Don't block
+
+    // Is the next message closer than (now + timeout)?
+    // If not, block (timeout) and return;
+    // otherwise block (next message - now) and play it.
+
+    struct timeval next_plus;
+    struct timeval wait_time;
+
+    skip_time = vrpn_TimevalScale(*timeout, d_rate);
+    next_plus = vrpn_TimevalSum(d_next_time, skip_time);
+
+    if (vrpn_TimevalGreater(d_runtime, next_plus)) {
+      select(0, NULL, NULL, NULL, timeout);  // block
+      return 0;
+    }
+
+    wait_time = vrpn_TimevalDiff(d_runtime, d_next_time);
+    wait_time = vrpn_TimevalScale(wait_time, 1.0 / d_rate);
+
+    select(0, NULL, NULL, NULL, &wait_time);  // block
+
+    gettimeofday(&d_now_time, NULL);
+    skip_time = vrpn_TimevalDiff(d_now_time, last_time);
+    skip_time = vrpn_TimevalScale(skip_time, d_rate);
+    d_next_time = vrpn_TimevalSum(d_next_time, skip_time);
+  }
 
   // give the user the next message;  fetch from disk if need be
 

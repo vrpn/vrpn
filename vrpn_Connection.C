@@ -260,7 +260,7 @@ static int	vrpn_getmyIP(char *myIPchar, int maxlen)
  * sends USER1 interrupts while rendering an image.
  **********************/
 int vrpn_noint_select(int width, fd_set *readfds, fd_set *writefds, 
-		     fd_set *exceptfds, struct timeval *timeout)
+		     fd_set *exceptfds, struct timeval * timeout)
 {
 	fd_set	tmpread, tmpwrite, tmpexcept;
 	int	ret;
@@ -1655,12 +1655,12 @@ struct timeval vrpn_Synchronized_Connection::fullSync(void)
   return endpoint.tvClockOffset;
 }
 
-int vrpn_Synchronized_Connection::mainloop(void)
+int vrpn_Synchronized_Connection::mainloop (const struct timeval * timeout)
 {
   if (pClockServer) {
     pClockServer->mainloop();
     // call the base class mainloop
-    return vrpn_Connection::mainloop();
+    return vrpn_Connection::mainloop(timeout);
   } 
   else if (pClockRemote) {
     // the remote device always calls the base class connection mainloop already
@@ -2261,18 +2261,19 @@ int vrpn_Connection::pack_message(vrpn_uint32 len, struct timeval time,
 
 	// If we don't have a UDP outbound channel, send everything TCP
 	if (endpoint.udp_outbound == -1) {
-	    ret = marshall_message(tcp_outbuf, sizeof(tcp_outbuf), tcp_num_out,
+	    ret = marshall_message(d_tcp_outbuf, d_tcp_buflen, d_tcp_num_out,
 				   len, time, type, sender, buffer);
-	    tcp_num_out += ret;
+	    d_tcp_num_out += ret;
+	    //	    return -(ret==0);
 
 	    // If the marshalling failed, try clearing the outgoing buffers
 	    // by sending the stuff in them to see if this makes enough
 	    // room.  If not, we'll have to give up.
 	    if (ret == 0) {
 		if (send_pending_reports() != 0) { return -1; }
-		ret = marshall_message(tcp_outbuf, sizeof(tcp_outbuf),
-				tcp_num_out, len, time, type, sender, buffer);
-		tcp_num_out += ret;
+		ret = marshall_message(d_tcp_outbuf, d_tcp_buflen,
+				d_tcp_num_out, len, time, type, sender, buffer);
+		d_tcp_num_out += ret;
 	    }
 	    return (ret==0) ? -1 : 0;
 	}
@@ -2280,33 +2281,35 @@ int vrpn_Connection::pack_message(vrpn_uint32 len, struct timeval time,
 	// Determine the class of service and pass it off to the
 	// appropriate service (TCP for reliable, UDP for everything else).
 	if (class_of_service & vrpn_CONNECTION_RELIABLE) {
-	    ret = marshall_message(tcp_outbuf, sizeof(tcp_outbuf), tcp_num_out,
+	    ret = marshall_message(d_tcp_outbuf, d_tcp_buflen, d_tcp_num_out,
 				   len, time, type, sender, buffer);
-	    tcp_num_out += ret;
+	    d_tcp_num_out += ret;
+	    //	    return -(ret==0);
 
 	    // If the marshalling failed, try clearing the outgoing buffers
 	    // by sending the stuff in them to see if this makes enough
 	    // room.  If not, we'll have to give up.
 	    if (ret == 0) {
 		if (send_pending_reports() != 0) { return -1; }
-		ret = marshall_message(tcp_outbuf, sizeof(tcp_outbuf),
-				tcp_num_out, len, time, type, sender, buffer);
-		tcp_num_out += ret;
+		ret = marshall_message(d_tcp_outbuf, d_tcp_buflen,
+				d_tcp_num_out, len, time, type, sender, buffer);
+		d_tcp_num_out += ret;
 	    }
 	    return (ret==0) ? -1 : 0;
 	} else {
-	    ret = marshall_message(udp_outbuf, sizeof(udp_outbuf), udp_num_out,
+	    ret = marshall_message(d_udp_outbuf, d_udp_buflen, d_udp_num_out,
 				   len, time, type, sender, buffer);
-	    udp_num_out += ret;
+	    d_udp_num_out += ret;
+	    //	    return -(ret==0);
 
 	    // If the marshalling failed, try clearing the outgoing buffers
 	    // by sending the stuff in them to see if this makes enough
 	    // room.  If not, we'll have to give up.
 	    if (ret == 0) {
 		if (send_pending_reports() != 0) { return -1; }
-		ret = marshall_message(udp_outbuf, sizeof(udp_outbuf),
-				udp_num_out, len, time, type, sender, buffer);
-		udp_num_out += ret;
+		ret = marshall_message(d_udp_outbuf, d_udp_buflen,
+				d_udp_num_out, len, time, type, sender, buffer);
+		d_udp_num_out += ret;
 	    }
 	    return (ret==0) ? -1 : 0;
 	}
@@ -2358,6 +2361,30 @@ int vrpn_Connection::register_log_filter (vrpn_LOGFILTER filter,
 
   return 0;
 }
+
+
+
+vrpn_int32 vrpn_Connection::set_tcp_outbuf_size (vrpn_int32 bytecount) {
+  char * new_outbuf;
+
+  if (bytecount < 0)
+    return d_tcp_buflen;
+
+  new_outbuf = new char [bytecount];
+
+  if (!new_outbuf)
+    return -1;
+
+  if (d_tcp_outbuf)
+    delete [] d_tcp_outbuf;
+
+  d_tcp_outbuf = new_outbuf;
+  d_tcp_buflen = bytecount;
+
+  return d_tcp_buflen;
+}
+
+
 
 
 
@@ -2507,10 +2534,11 @@ int vrpn_Connection::send_pending_reports(void)
    // an exceptional condition, close the accept socket and go back
    // to listening for new connections.
 #ifdef	VERBOSE
-   if (tcp_num_out) printf("TCP Need to send %d bytes\n",tcp_num_out);
+   if (d_tcp_num_out) printf("TCP Need to send %d bytes\n",d_tcp_num_out);
 #endif
-   while (sent < tcp_num_out) {
-	ret = send(endpoint.tcp_sock, &tcp_outbuf[sent], tcp_num_out-sent, 0);
+   while (sent < d_tcp_num_out) {
+	ret = send(endpoint.tcp_sock, &d_tcp_outbuf[sent],
+                   d_tcp_num_out - sent, 0);
 #ifdef	VERBOSE
    printf("TCP Sent %d bytes\n",ret);
 #endif
@@ -2526,8 +2554,8 @@ int vrpn_Connection::send_pending_reports(void)
    // up in the UDP buffer.  If there is an error during the send, or
    // an exceptional condition, close the accept socket and go back
    // to listening for new connections.
-   if (udp_num_out > 0) {
-	ret = send(endpoint.udp_outbound, udp_outbuf, udp_num_out, 0);
+   if (d_udp_num_out > 0) {
+	ret = send(endpoint.udp_outbound, d_udp_outbuf, d_udp_num_out, 0);
 #ifdef	VERBOSE
    printf("UDP Sent %d bytes\n",ret);
 #endif 
@@ -2538,19 +2566,27 @@ int vrpn_Connection::send_pending_reports(void)
       }
    }
 
-   tcp_num_out = 0;	// Clear the buffer for the next time
-   udp_num_out = 0;	// Clear the buffer for the next time
+   d_tcp_num_out = 0;	// Clear the buffer for the next time
+   d_udp_num_out = 0;	// Clear the buffer for the next time
    return 0;
 }
 
-int vrpn_Connection::mainloop(void)
+int vrpn_Connection::mainloop (const struct timeval * timeout)
 {
-	int	tcp_messages_read;
-	int	udp_messages_read;
+  struct timeval perSocketTimeout;
+  const int numSockets = 2;
+  int	tcp_messages_read;
+  int	udp_messages_read;
 
 #ifdef	VERBOSE2
 	printf("vrpn_Connection::mainloop() called (status %d)\n",status);
 #endif
+
+   // divide timeout over all selects()
+   perSocketTimeout.tv_sec = timeout->tv_sec / numSockets;
+   perSocketTimeout.tv_usec = timeout->tv_usec / numSockets
+                              + (timeout->tv_sec % numSockets) *
+                                (1000000L / numSockets);
 
    switch (status) {
       case LISTEN:
@@ -2564,7 +2600,9 @@ int vrpn_Connection::mainloop(void)
 
 	// Read incoming messages from the UDP channel
 	if (endpoint.udp_inbound != -1) {
-	  if ( (udp_messages_read = handle_udp_messages(endpoint.udp_inbound)) == -1) {
+	  if ( (udp_messages_read = 
+                   handle_udp_messages(endpoint.udp_inbound,
+                                       &perSocketTimeout)) == -1) {
 		fprintf(stderr,
 			"vrpn: UDP handling failed, dropping connection\n");
 		drop_connection();
@@ -2581,8 +2619,9 @@ int vrpn_Connection::mainloop(void)
 	}
 
 	// Read incoming messages from the TCP channel
-	if ((tcp_messages_read = handle_tcp_messages(endpoint.tcp_sock))
-            == -1) {
+	if ((tcp_messages_read =
+                  handle_tcp_messages(endpoint.tcp_sock,
+                                      &perSocketTimeout)) == -1) {
 		printf(
 			"vrpn: TCP handling failed, dropping connection\n");
 		drop_connection();
@@ -2719,8 +2758,12 @@ vrpn_Connection::vrpn_Connection (unsigned short listen_port_no) :
     num_my_senders (0),
     num_my_types (0),
     generic_callbacks (NULL),
-    tcp_num_out (0),
-    udp_num_out (0),
+    d_tcp_outbuf (new char [vrpn_CONNECTION_TCP_BUFLEN]),
+    d_udp_outbuf (new char [vrpn_CONNECTION_UDP_BUFLEN]),
+    d_tcp_buflen (d_tcp_outbuf ? vrpn_CONNECTION_TCP_BUFLEN : 0),
+    d_udp_buflen (d_udp_outbuf ? vrpn_CONNECTION_UDP_BUFLEN : 0),
+    d_tcp_num_out (0),
+    d_udp_num_out (0),
     d_TCPbuflen (0),
     d_TCPbuf (NULL),
     d_UDPinbuf ((char*)(&d_UDPinbufToAlignRight[0]))
@@ -2728,12 +2771,20 @@ vrpn_Connection::vrpn_Connection (unsigned short listen_port_no) :
    // Initialize the things that must be for any constructor
    init();
 
-   if ( (listen_udp_sock=open_udp_socket(&listen_port_no)) == INVALID_SOCKET) {
+   if (!d_tcp_buflen || !d_udp_buflen) {
+     status = BROKEN;
+     fprintf(stderr, "vrpn_Connection couldn't allocate buffers.\n");
+     return;
+   }
+
+   if ( (listen_udp_sock = open_udp_socket(&listen_port_no))
+           == INVALID_SOCKET) {
       status = BROKEN;
    } else {
       status = LISTEN;
    printf("vrpn: Listening for requests on port %d\n",listen_port_no);
    }
+  
 }
 
 //------------------------------------------------------------------------
@@ -2764,8 +2815,12 @@ vrpn_Connection::vrpn_Connection
     num_my_senders (0),
     num_my_types (0),
     generic_callbacks (NULL),
-    tcp_num_out (0),
-    udp_num_out (0),
+    d_tcp_outbuf (new char [vrpn_CONNECTION_TCP_BUFLEN]),
+    d_udp_outbuf (new char [vrpn_CONNECTION_UDP_BUFLEN]),
+    d_tcp_buflen (d_tcp_outbuf ? vrpn_CONNECTION_TCP_BUFLEN : 0),
+    d_udp_buflen (d_udp_outbuf ? vrpn_CONNECTION_UDP_BUFLEN : 0),
+    d_tcp_num_out (0),
+    d_udp_num_out (0),
     d_TCPbuflen (0),
     d_TCPbuf (NULL),
     d_UDPinbuf ((char *) (&d_UDPinbufToAlignRight[0]))
@@ -2928,6 +2983,12 @@ vrpn_Connection::~vrpn_Connection (void) {
 		*snitch = victim->next;
 		delete victim;
 	}
+  if (d_TCPbuf)
+    free(d_TCPbuf);
+  if (d_tcp_outbuf)
+    delete [] d_tcp_outbuf;
+  if (d_udp_outbuf)
+    delete [] d_udp_outbuf;
 }
 
 vrpn_int32 vrpn_Connection::register_sender (const char * name)
@@ -3105,15 +3166,25 @@ int	vrpn_Connection::do_callbacks_for(vrpn_int32 type, vrpn_int32 sender,
 // Handle each message that is received.
 // Return the number of messages read, or -1 on failure.
 
-int	vrpn_Connection::handle_tcp_messages(int fd)
+int	vrpn_Connection::handle_tcp_messages (int fd,
+                         const struct timeval * timeout)
 {	int	sel_ret;
         fd_set  readfds, exceptfds;
-        struct  timeval timeout;
+        struct  timeval localTimeout;
 	int	num_messages_read = 0;
 
 #ifdef	VERBOSE2
 	printf("vrpn_Connection::handle_tcp_messages() called\n");
 #endif
+
+        if (timeout) {
+	  localTimeout.tv_sec = timeout->tv_sec;
+	  localTimeout.tv_sec = timeout->tv_usec;
+        } else {
+	  localTimeout.tv_usec = 0L;
+	  localTimeout.tv_usec = 0L;
+        }
+
 	// Read incoming messages until there are no more characters to
 	// read from the other side.  For each message, determine what
 	// type it is and then pass it off to the appropriate handler
@@ -3125,9 +3196,7 @@ int	vrpn_Connection::handle_tcp_messages(int fd)
 	  FD_ZERO(&exceptfds);
 	  FD_SET(fd, &readfds);     /* Check for read */
 	  FD_SET(fd, &exceptfds);   /* Check for exceptions */
-	  timeout.tv_sec = 0;
-	  timeout.tv_usec = 0;
-	  sel_ret = select(32,&readfds,NULL,&exceptfds, &timeout);
+	  sel_ret = select(32,&readfds,NULL,&exceptfds, &localTimeout);
 	  if (sel_ret == -1) {
 	    if (errno == EINTR) { /* Ignore interrupt */
 		continue;
@@ -3272,10 +3341,11 @@ int	vrpn_Connection::handle_tcp_messages(int fd)
 // it hangs when we the client drops its connection, so we need the
 // TCP code as well.
 
-int	vrpn_Connection::handle_udp_messages(int fd)
+int	vrpn_Connection::handle_udp_messages (int fd,
+                         const struct timeval * timeout)
 {	int	sel_ret;
         fd_set  readfds, exceptfds;
-        struct  timeval timeout;
+        struct  timeval localTimeout;
 	int	num_messages_read = 0;
 	vrpn_uint32	inbuf_len;
 	char	*inbuf_ptr;
@@ -3283,6 +3353,14 @@ int	vrpn_Connection::handle_udp_messages(int fd)
 #ifdef	VERBOSE2
 	printf("vrpn_Connection::handle_udp_messages() called\n");
 #endif
+
+        if (timeout) {
+	  localTimeout.tv_sec = timeout->tv_sec;
+	  localTimeout.tv_usec = timeout->tv_usec;
+        } else {
+	  localTimeout.tv_sec = 0L;
+	  localTimeout.tv_usec = 0L;
+        }
 
 	// Read incoming messages until there are no more packets to
 	// read from the other side.  Each packet may have more than one
@@ -3296,9 +3374,7 @@ int	vrpn_Connection::handle_udp_messages(int fd)
 	  FD_ZERO(&exceptfds);
 	  FD_SET(fd, &readfds);     /* Check for read */
 	  FD_SET(fd, &exceptfds);   /* Check for exceptions */
-	  timeout.tv_sec = 0;
-	  timeout.tv_usec = 0;
-	  sel_ret = select(32,&readfds,NULL,&exceptfds, &timeout);
+	  sel_ret = select(32, &readfds, NULL, &exceptfds, &localTimeout);
 	  if (sel_ret == -1) {
 	    if (errno == EINTR) { /* Ignore interrupt */
 		continue;
