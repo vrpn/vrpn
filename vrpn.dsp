@@ -1,5 +1,5 @@
 # Microsoft Developer Studio Project File - Name="vrpn" - Package Owner=<4>
-# Microsoft Developer Studio Generated Build File, Format Version 6.00
+# Microsoft Developer Studio Generated Build File, Format Version 5.00
 # ** DO NOT EDIT **
 
 # TARGTYPE "Win32 (x86) Static Library" 0x0104
@@ -22,11 +22,9 @@ CFG=vrpn - Win32 Debug
 !MESSAGE 
 
 # Begin Project
-# PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
 CPP=cl.exe
-RSC=rc.exe
 
 !IF  "$(CFG)" == "vrpn - Win32 Release"
 
@@ -42,8 +40,6 @@ RSC=rc.exe
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
 # ADD CPP /nologo /MT /W3 /GX /O2 /I ".." /I "ghostlib" /I "../quat" /I "server_src/quat" /I "../server_src/quat" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c /Tp
-# ADD BASE RSC /l 0x409
-# ADD RSC /l 0x409
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -65,8 +61,6 @@ LIB32=link.exe -lib
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /Z7 /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /c
 # ADD CPP /nologo /MDd /W3 /GX /Z7 /Od /I "../quat" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /TP /c
-# ADD BASE RSC /l 0x409
-# ADD RSC /l 0x409
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -80,41 +74,7 @@ LIB32=link.exe -lib
 
 # Name "vrpn - Win32 Release"
 # Name "vrpn - Win32 Debug"
-# Begin Group "Multicast"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\vrpn_BaseMulticast.C
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\vrpn_BaseMulticast.h
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\vrpn_UnreliableMulticastRecvr.C
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\vrpn_UnreliableMulticastRecvr.h
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\vrpn_UnreliableMulticastSender.C
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\vrpn_UnreliableMulticastSender.h
-# PROP Exclude_From_Build 1
-# End Source File
-# End Group
-# Begin Group "new_conn"
+# Begin Group "new connection stuff"
 
 # PROP Default_Filter ""
 # Begin Source File
@@ -139,6 +99,16 @@ SOURCE=.\vrpn_BaseConnectionController.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_BaseMulticast.C
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_BaseMulticast.h
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_ClientConnectionController.h
 # PROP Exclude_From_Build 1
 # End Source File
@@ -150,6 +120,11 @@ SOURCE=.\vrpn_ConnectionController.C
 # Begin Source File
 
 SOURCE=.\vrpn_ConnectionController.h
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_ConnectionOldCommonStuff.C
 # PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
@@ -175,6 +150,26 @@ SOURCE=.\vrpn_ServerConnectionController.C
 # Begin Source File
 
 SOURCE=.\vrpn_ServerConnectionController.h
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_UnreliableMulticastRecvr.C
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_UnreliableMulticastRecvr.h
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_UnreliableMulticastSender.C
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_UnreliableMulticastSender.h
 # PROP Exclude_From_Build 1
 # End Source File
 # End Group
