@@ -182,12 +182,14 @@ $(SOBJECT_DIR):
 #############################################################################
 
 LIB_FILES =  vrpn_Connection.C vrpn_Tracker.C vrpn_Button.C \
-	     vrpn_Sound.C vrpn_ForceDevice.C vrpn_Clock.C vrpn_Shared.C
+	     vrpn_Sound.C vrpn_ForceDevice.C vrpn_Clock.C vrpn_Shared.C \
+	     vrpn_Ohmmeter.C
 
 LIB_OBJECTS = $(patsubst %,$(OBJECT_DIR)/%,$(LIB_FILES:.C=.o))
 
 LIB_INCLUDES = vrpn_Connection.h vrpn_Tracker.h vrpn_Button.h \
-	       vrpn_Sound.h vrpn_ForceDevice.h vrpn_Clock.h vrpn_Shared.h
+	       vrpn_Sound.h vrpn_ForceDevice.h vrpn_Clock.h vrpn_Shared.h \
+	       vrpn_Ohmmeter.h
 
 SLIB_FILES =  vrpn_Connection.C vrpn_Tracker.C vrpn_3Space.C vrpn_Button.C \
 	     vrpn_Sound.C vrpn_ForceDevice.C vrpn_Clock.C vrpn_Shared.C \

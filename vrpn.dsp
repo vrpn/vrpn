@@ -76,6 +76,14 @@ LIB32=link.exe -lib
 # Name "vrpn - Win32 Debug"
 # Begin Source File
 
+SOURCE=.\orpx.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\orpx.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\plane.C
 # End Source File
 # Begin Source File
@@ -113,6 +121,14 @@ SOURCE=.\vrpn_ForceDevice.C
 # Begin Source File
 
 SOURCE=.\vrpn_ForceDevice.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Ohmmeter.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Ohmmeter.h
 # End Source File
 # Begin Source File
 
