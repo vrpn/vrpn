@@ -55,12 +55,12 @@ void	get_time_using_ftime(unsigned long &sec, unsigned long &usec)
 }
 
 int main(int argc, char *argv[]) {
+
+    /* XXX Checking how well the two clocks track each other
     unsigned long    lsec, lusec;
     unsigned long    fsec, fusec;
     long    dsec, dusec;
     int	    i;
-
-    /* XXX Checking how well the two clocks track each other
     for (i = 0; i < 10; i++) {
 	get_time_using_GetLocalTime(lsec, lusec);
 	get_time_using_ftime(fsec, fusec);

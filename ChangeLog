@@ -1,5 +1,12 @@
 2003-09-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* time_test.cpp : Compiles without warnings (commented out
+		unused variables).
+	* time_test.dsp : Making it build on Release setting.
+	* vrpn_ForceDevice : Changed types to prevent compiler warnings.
+
+2003-09-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Tracker.C : Cleans up memory in the destructor to
 		prevent it leaking when remote tracker objects
 		are created and destroyed.

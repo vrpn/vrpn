@@ -265,21 +265,21 @@ vrpn_int32 vrpn_ForceDevice::decode_custom_effect (const char *buffer, const vrp
     CHECK(vrpn_unbuffer(&mptr, effectId));
 	CHECK(vrpn_unbuffer(&mptr, nbParams));
 
-    if (len < (2*sizeof(vrpn_uint32) + (*nbParams)*sizeof(vrpn_float32))) {
+    if ((vrpn_uint32)(len) < (2*sizeof(vrpn_uint32) + (*nbParams)*sizeof(vrpn_float32))) {
 	  fprintf(stderr,"vrpn_ForceDevice: custom effect message payload error\n");
       fprintf(stderr,"             (got %d, expected at least %d)\n",
 		    len,(2*sizeof(vrpn_uint32) + (*nbParams)*sizeof(vrpn_float32)));
       return -2;
     }
 
-	if (*params != NULL) delete [] *params;
-	*params = new vrpn_float32[(*nbParams)];
+    if (*params != NULL) delete [] *params;
+    *params = new vrpn_float32[(*nbParams)];
 
-	for (int i=0;i<(*nbParams);i++) {
-		CHECK(vrpn_unbuffer(&mptr, &((*params)[i])));
-	}
-	
-	return 0;
+    for (vrpn_uint32 i=0;i<(*nbParams);i++) {
+	    CHECK(vrpn_unbuffer(&mptr, &((*params)[i])));
+    }
+    
+    return 0;
 }
 // fin ajout ONDIM
 
