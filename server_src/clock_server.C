@@ -10,10 +10,10 @@
   ----------------------------------------------------------------------------
   Author: weberh
   Created: Wed Dec 10 16:01:46 1997
-  Revised: Mon Dec 15 12:53:59 1997 by weberh
+  Revised: Mon Dec 15 18:24:22 1997 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/server_src/clock_server.C,v $
   $Locker:  $
-  $Revision: 1.1 $
+  $Revision: 1.2 $
 \*****************************************************************************/
 
 
@@ -22,10 +22,7 @@
 #include <iostream.h>
 
 main(int argc, char *argv[]) {
-  if (argc!=2) {
-    cerr << "Usage: " << argv[0] << " sdi_name_of_server_station/host" << endl;
-    return -1;
-  }
+
 
 #ifdef WIN32
   // init windows socket dll, version 1.1
@@ -43,7 +40,7 @@ main(int argc, char *argv[]) {
   vrpn_Connection c;
 
   // add a clock device to the server
-  vrpn_Clock_Server *clock = new vrpn_Clock_Server(argv[1], &c);
+  vrpn_Clock_Server *clock = new vrpn_Clock_Server(&c);
 
   while(1) {
     clock->mainloop();
@@ -55,8 +52,11 @@ main(int argc, char *argv[]) {
 
 /*****************************************************************************\
   $Log: clock_server.C,v $
-  Revision 1.1  1997/12/15 21:37:45  weberh
-  demonstrates the use of the clock class as a server
+  Revision 1.2  1998/01/08 23:34:11  weberh
+  clock_server.C has sample code for a clock server/client (sync connection
+  class takes care of all this)
+
+  vrpn.C has winsock startup call and sync connection
 
   Revision 1.3  1997/12/13 07:37:16  weberh
   nice clock sync server

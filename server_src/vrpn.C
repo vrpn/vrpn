@@ -29,7 +29,15 @@ main (unsigned argc, char *argv[])
 	int	realparams = 0;
 	int	i;
 
-	vrpn_Connection	connection;
+#ifdef WIN32
+	WSADATA wsaData; 
+	int status;
+	if ((status = WSAStartup(MAKEWORD(1,1), &wsaData)) != 0) {
+	  fprintf(stderr, "WSAStartup failed with %d\n", status);
+	  exit(1);
+	}
+#endif
+	vrpn_Synchronized_Connection	connection;
 	vrpn_Tracker	*trackers[MAX_TRACKERS];
 	int		num_trackers = 0;
 	vrpn_Button	*buttons[MAX_BUTTONS];
