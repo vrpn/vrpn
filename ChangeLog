@@ -1,3 +1,12 @@
+2003-11-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Analog.C : report() : Added parameter to tell the timestamp
+		that should be used by the Analog for the report.  Both
+		for vrpn_Analog and vrpn_Analog_Server.
+		: report_changes() : Same.
+	* vrpn_Analog.h : Same.  Also added default time parameter.  Also
+		re-ordered where include files happen.
+
 2003-11-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Tracker.h : Modified so that you can set the class of

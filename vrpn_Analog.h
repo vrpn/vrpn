@@ -1,6 +1,13 @@
 #ifndef VRPN_ANALOG_H
 #define VRPN_ANALOG_H
 
+#include "vrpn_Connection.h"
+#include "vrpn_BaseClass.h"
+
+#ifndef	VRPN_CLIENT_ONLY
+#include "vrpn_Serial.h"
+#endif
+
 #define vrpn_CHANNEL_MAX 128
 
 // analog status flags
@@ -10,12 +17,8 @@ const	int vrpn_ANALOG_PARTIAL 	= (0);
 const	int vrpn_ANALOG_RESETTING	= (-1);
 const	int vrpn_ANALOG_FAIL 	 	= (-2);
 
-#include "vrpn_Connection.h"
-#include "vrpn_BaseClass.h"
-
-#ifndef	VRPN_CLIENT_ONLY
-#include "vrpn_Serial.h"
-#endif
+// Analog time value meaning "go find out what time it is right now"
+const struct timeval vrpn_ANALOG_NOW = { 0 , 0 };
 
 class vrpn_Analog : public vrpn_BaseClass {
 public:
@@ -40,11 +43,13 @@ public:
 	// Routines used to send data from the server
 	virtual vrpn_int32 encode_to(char *buf);
 	/// Send a report only if something has changed (for servers)
+	/// Optionally, tell what time to stamp the value with
 	virtual void report_changes (vrpn_uint32 class_of_service
-                                   = vrpn_CONNECTION_LOW_LATENCY);
+                                   = vrpn_CONNECTION_LOW_LATENCY, const struct timeval time = vrpn_ANALOG_NOW);
 	/// Send a report whether something has changed or not (for servers)
+	/// Optionally, tell what time to stamp the value with
 	virtual void report (vrpn_uint32 class_of_service
-                           = vrpn_CONNECTION_LOW_LATENCY);
+                           = vrpn_CONNECTION_LOW_LATENCY, const struct timeval time = vrpn_ANALOG_NOW);
 };
 
 #ifndef	VRPN_CLIENT_ONLY
@@ -88,11 +93,13 @@ class vrpn_Analog_Server : public vrpn_Analog {
 
     /// Makes public the protected base class function
     virtual void report_changes (vrpn_uint32 class_of_service
-                                 = vrpn_CONNECTION_LOW_LATENCY);
+                                 = vrpn_CONNECTION_LOW_LATENCY,
+				 const struct timeval time = vrpn_ANALOG_NOW);
 
     /// Makes public the protected base class function
     virtual void report (vrpn_uint32 class_of_service
-                                 = vrpn_CONNECTION_LOW_LATENCY);
+                                 = vrpn_CONNECTION_LOW_LATENCY,
+				 const struct timeval time = vrpn_ANALOG_NOW);
 
     /// For this server, the user must normally call report() or
     /// report_changes() directly.  This mainloop() only takes

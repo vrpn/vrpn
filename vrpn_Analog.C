@@ -70,8 +70,8 @@ vrpn_int32 vrpn_Analog::encode_to(char *buf)
   return (num_channel+1)*sizeof(vrpn_float64);
 }
 
-void vrpn_Analog::report_changes (vrpn_uint32 class_of_service) {
-
+void vrpn_Analog::report_changes (vrpn_uint32 class_of_service, const struct timeval time)
+{
   vrpn_int32 i;
   vrpn_int32 change = 0;
 
@@ -81,28 +81,30 @@ void vrpn_Analog::report_changes (vrpn_uint32 class_of_service) {
       last[i] = channel[i];
     }
     if (!change) {
-
 #ifdef VERBOSE
     fprintf(stderr, "No change.\n");
 #endif
-
       return;
     }
   }
       
   // there is indeed some change, send it;
-  vrpn_Analog::report(class_of_service);
+  vrpn_Analog::report(class_of_service, time);
 }
 
-void vrpn_Analog::report (vrpn_uint32 class_of_service) {
-
+void vrpn_Analog::report (vrpn_uint32 class_of_service, const struct timeval time)
+{
     // msgbuf must be float64-aligned!
     vrpn_float64 fbuf [vrpn_CHANNEL_MAX + 1];
     char * msgbuf = (char *) fbuf;
 
     vrpn_int32  len;
 
-    gettimeofday(&timestamp, NULL);
+    // Replace the time value with the current time if the user passed in the
+    // constant time referring to "now".
+    if ( (time.tv_sec == vrpn_ANALOG_NOW.tv_sec) && (time.tv_usec == vrpn_ANALOG_NOW.tv_sec) ) {
+      gettimeofday(&timestamp, NULL);
+    }
     len = vrpn_Analog::encode_to(msgbuf);
 #ifdef VERBOSE
     print();
@@ -178,15 +180,15 @@ vrpn_Analog_Server::~vrpn_Analog_Server (void)
 }
 
 //virtual
-void vrpn_Analog_Server::report_changes (vrpn_uint32 class_of_service)
+void vrpn_Analog_Server::report_changes (vrpn_uint32 class_of_service, const struct timeval time)
 {
-  vrpn_Analog::report_changes(class_of_service);
+  vrpn_Analog::report_changes(class_of_service, time);
 }
 
 //virtual
-void vrpn_Analog_Server::report (vrpn_uint32 class_of_service)
+void vrpn_Analog_Server::report (vrpn_uint32 class_of_service, const struct timeval time)
 {
-  vrpn_Analog::report(class_of_service);
+  vrpn_Analog::report(class_of_service, time);
 }
 
 vrpn_int32 vrpn_Analog_Server::setNumChannels (vrpn_int32 sizeRequested) {
