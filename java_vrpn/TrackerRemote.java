@@ -74,7 +74,7 @@ public class TrackerRemote extends TimerTask
 			throw new InstantiationException( e.getMessage( ) );
 		}
 		
-		trackingTimer.scheduleAtFixedRate( this, 0, timerPeriod );
+		this.trackerThread = new Thread( this );
 	}
 	
 	
@@ -133,11 +133,7 @@ public class TrackerRemote extends TimerTask
 	 */
 	public synchronized void setTimerPeriod( long period )
 	{
-		this.cancel( );
-		trackingTimer.cancel( );
-		trackingTimer = new Timer( );
-		timerPeriod = period;
-		trackingTimer.scheduleAtFixedRate( this, 0, timerPeriod );
+		mainloopPeriod = period;
 	}
 	
 	/**
@@ -145,7 +141,7 @@ public class TrackerRemote extends TimerTask
 	 */
 	public synchronized long getTimerPeriod( )
 	{
-		return timerPeriod;
+		return mainloopPeriod;
 	}
 	
 	
@@ -154,7 +150,12 @@ public class TrackerRemote extends TimerTask
 	 */
 	public void run( )
 	{
-		this.mainloop( );
+		while( keepRunning )
+		{
+			this.mainloop( );
+			try { Thread.sleep( mainloopPeriod ); }
+			catch( InterruptedException e ) { } 
+		}
 	}
 	
 	// end public methods
@@ -272,8 +273,13 @@ public class TrackerRemote extends TimerTask
 	
 	protected void finalize( ) throws Throwable
 	{
-		this.cancel( );
-		trackingTimer.cancel( );
+		keepRunning = false;
+		while( trackerThread.isAlive( ) )
+		{
+			try { trackerThread.join( ); }
+			catch( InterruptedException e ) { }
+		}
+		
 		changeListeners.removeAllElements( );
 		velocityListeners.removeAllElements( );
 		accelerationListeners.removeAllElements( );
@@ -290,9 +296,15 @@ public class TrackerRemote extends TimerTask
 	// native vrpn_TrackerRemote object
 	protected int native_tracker = -1;
 	
-	// the tracking Timer
-	protected Timer trackingTimer = new Timer( );
-	protected long timerPeriod = 100; // milliseconds
+	// this is used to stop and to keep running the tracking thread
+	// in an orderly fashion.
+	protected boolean keepRunning = true;
+
+	// the tracking thread
+	Thread trackerThread = null;
+
+	// how long the thread sleeps between checking for messages
+	protected long mainloopPeriod = 100; // milliseconds
 	
 	protected Vector changeListeners = new Vector( );
 	protected Vector velocityListeners = new Vector( );

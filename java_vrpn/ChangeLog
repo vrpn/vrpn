@@ -1,3 +1,12 @@
+2002-07-11  David Marshburn  <marshbur@cs.unc.edu>
+
+	* AnalogRemote.java:  removes all references to java.util.Timer
+	and TimerTask, as these could not be rescheduled.  This version
+	returns to the method of spawning a thread and sleeping.
+	* ButtonRemote.java:  same
+	* ForceDeviceRemote.java:  same
+	* TrackerRemote.java:  same
+
 2002-07-08  Tatsuhiro Segi  <segi@email.unc.edu>
 
 	* AnalogRemoteListener.java:  new file that acts as a wrapper 

@@ -34,7 +34,9 @@ public class ButtonRemote extends TimerTask
 			System.out.println( " -- Unable to find the right functions.  This may be a version problem." );
 			throw new InstantiationException( e.getMessage( ) );
 		}
-		buttonTimer.scheduleAtFixedRate( this, 0, timerPeriod );
+		
+		this.buttonThread = new Thread( this );
+		this.buttonThread.start( );
 		
 	}
 	
@@ -59,11 +61,7 @@ public class ButtonRemote extends TimerTask
 	 */
 	public synchronized void setTimerPeriod( long period )
 	{
-		this.cancel( );
-		buttonTimer.cancel( );
-		buttonTimer = new Timer( );
-		timerPeriod = period;
-		buttonTimer.scheduleAtFixedRate( this, 0, timerPeriod );
+		mainloopPeriod = period;
 	}
 	
 	/**
@@ -71,7 +69,7 @@ public class ButtonRemote extends TimerTask
 	 */
 	public synchronized long getTimerPeriod( )
 	{
-		return timerPeriod;
+		return mainloopPeriod;
 	}
 	
 	
@@ -80,7 +78,12 @@ public class ButtonRemote extends TimerTask
 	 */
 	public void run( )
 	{
-		this.mainloop( );
+		while( keepRunning )
+		{
+			this.mainloop( );
+			try { Thread.sleep( mainloopPeriod ); }
+			catch( InterruptedException e ) { } 
+		}
 	}
 	
 	// end public methods
@@ -138,8 +141,12 @@ public class ButtonRemote extends TimerTask
 	
 	protected void finalize( ) throws Throwable
 	{
-		this.cancel( );
-		buttonTimer.cancel( );
+		keepRunning = false;
+		while( buttonThread.isAlive( ) )
+		{
+			try { buttonThread.join( ); }
+			catch( InterruptedException e ) { }
+		}
 		changeListeners.removeAllElements( );
 		this.shutdownButton( );
 	}
@@ -155,9 +162,15 @@ public class ButtonRemote extends TimerTask
         // native vrpn_ButtonRemote object
         protected int native_button = -1;
 
-	// the Timer
-	protected Timer buttonTimer = new Timer( );
-	protected long timerPeriod = 100; // milliseconds
+	// this is used to stop and to keep running the tracking thread
+	// in an orderly fashion.
+	protected boolean keepRunning = true;
+	
+	// the tracking thread
+	Thread buttonThread = null;
+
+	// how long the thread sleeps between checking for messages
+	protected long mainloopPeriod = 100; // milliseconds
 	
 	protected Vector changeListeners = new Vector( );
 	

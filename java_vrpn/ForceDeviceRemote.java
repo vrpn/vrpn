@@ -74,7 +74,9 @@ public class ForceDeviceRemote extends TimerTask
 			throw new InstantiationException( e.getMessage( ) );
 		}
 		
-		forceTimer.scheduleAtFixedRate( this, 0, timerPeriod );
+		this.forceThread = new Thread( this );
+		this.forceThread.start( );
+
 	}
 	
 	
@@ -158,11 +160,7 @@ public class ForceDeviceRemote extends TimerTask
 	 */
 	public synchronized void setTimerPeriod( long period )
 	{
-		this.cancel( );
-		forceTimer.cancel( );
-		forceTimer = new Timer( );
-		timerPeriod = period;
-		forceTimer.scheduleAtFixedRate( this, 0, timerPeriod );
+		mainloopPeriod = period;
 	}
 	
 	/**
@@ -170,7 +168,7 @@ public class ForceDeviceRemote extends TimerTask
 	 */
 	public synchronized long getTimerPeriod( )
 	{
-		return timerPeriod;
+		return mainloopPeriod;
 	}
 	
 	
@@ -179,7 +177,12 @@ public class ForceDeviceRemote extends TimerTask
 	 */
 	public void run( )
 	{
-		this.mainloop( ); 
+		while( keepRunning )
+		{
+			this.mainloop( );
+			try { Thread.sleep( mainloopPeriod ); }
+			catch( InterruptedException e ) { } 
+		}
 	}
 	
 	// end public methods
@@ -284,8 +287,12 @@ public class ForceDeviceRemote extends TimerTask
 	
 	protected void finalize( ) throws Throwable
 	{
-		this.cancel( );
-		forceTimer.cancel( );
+		keepRunning = false;
+		while( forceThread.isAlive( ) )
+		{
+			try { forceThread.join( ); }
+			catch( InterruptedException e ) { }
+		}
 		forceListeners.removeAllElements( );
 		scpListeners.removeAllElements( );
 		errorListeners.removeAllElements( );
@@ -302,9 +309,16 @@ public class ForceDeviceRemote extends TimerTask
 	// native vrpn_ForceDeviceRemote object
 	protected int native_force_device = -1;
 	
-	// the Timer
-	protected Timer forceTimer = new Timer( );
-	protected long timerPeriod = 100; // milliseconds
+	// this is used to stop and to keep running the tracking thread
+	// in an orderly fashion.
+	protected boolean keepRunning = true;
+	
+	// the tracking thread
+	Thread forceThread = null;
+
+	// how long the thread sleeps between checking for messages
+	protected long mainloopPeriod = 100; // milliseconds
+
 	
 	protected Vector forceListeners = new Vector( );
 	protected Vector scpListeners = new Vector( );

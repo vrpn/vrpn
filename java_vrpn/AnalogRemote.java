@@ -42,7 +42,9 @@ public class AnalogRemote extends TimerTask
 			throw new InstantiationException( e.getMessage( ) );
 		}
 		
-		analogTimer.scheduleAtFixedRate( this, 0, timerPeriod );
+		this.analogThread = new Thread( this );
+		this.analogThread.start( );
+
 	}
 	
 	public synchronized native boolean requestValueChange( int channel, double value );
@@ -65,11 +67,7 @@ public class AnalogRemote extends TimerTask
 	 */
 	public synchronized void setTimerPeriod( long period )
 	{
-		this.cancel( );
-		analogTimer.cancel( );
-		analogTimer = new Timer( );
-		timerPeriod = period;
-		analogTimer.scheduleAtFixedRate( this, 0, timerPeriod );
+		mainloopPeriod = period;
 	}
 	
 	/**
@@ -77,7 +75,7 @@ public class AnalogRemote extends TimerTask
 	 */
 	public synchronized long getTimerPeriod( )
 	{
-		return timerPeriod;
+		return mainloopPeriod;
 	}
 	
 
@@ -86,7 +84,12 @@ public class AnalogRemote extends TimerTask
 	 */
 	public void run( )
 	{
-		this.mainloop( );
+		while( keepRunning )
+		{
+			this.mainloop( );
+			try { Thread.sleep( mainloopPeriod ); }
+			catch( InterruptedException e ) { } 
+		}
 	}
 	
 	// end public methods
@@ -143,8 +146,12 @@ public class AnalogRemote extends TimerTask
 	
 	protected void finalize( ) throws Throwable
 	{
-		this.cancel( );
-		analogTimer.cancel( );
+		keepRunning = false;
+		while( analogThread.isAlive( ) )
+		{
+			try { analogThread.join( ); }
+			catch( InterruptedException e ) { }
+		}
 		changeListeners.removeAllElements( );
 		this.shutdownAnalog( );
 	}
@@ -160,9 +167,16 @@ public class AnalogRemote extends TimerTask
 	// native vrpn_AnalogRemote object
 	protected int native_analog = -1;
 	
-	// the Timer
-	protected Timer analogTimer = new Timer( );
-	protected long timerPeriod = 100; // milliseconds
+	// this is used to stop and to keep running the tracking thread
+	// in an orderly fashion.
+	protected boolean keepRunning = true;
+	
+	// the tracking thread
+	Thread analogThread = null;
+
+	// how long the thread sleeps between checking for messages
+	protected long mainloopPeriod = 100; // milliseconds
+
 	
 	/**
 	 * @see vrpn.AnalogRemote.notifyingChangeListenersLock
@@ -188,6 +202,4 @@ public class AnalogRemote extends TimerTask
 		}
 	}
 	
-	
-
 }
