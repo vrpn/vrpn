@@ -39,6 +39,10 @@
 #include "vrpn_ForwarderController.h"
 #include <vrpn_RedundantTransmission.h>
 
+#ifdef INCLUDE_TIMECODE_SERVER
+#include "timecode_generator_server\vrpn_timecode_generator.h"
+#endif
+
 #define MAX_TRACKERS 100
 #define MAX_BUTTONS 100
 #define MAX_SOUNDS 2
@@ -48,6 +52,7 @@
 #define	MAX_MAGELLANS 8
 #define MAX_IBOXES 8
 #define MAX_DIALS 8
+#define MAX_TIMECODE_GENERATORS 8
 
 static	int	done = 0;	// Done and should exit?
 
@@ -102,6 +107,10 @@ vrpn_ImmersionBox  *iboxes[MAX_IBOXES];
 int             num_iboxes = 0;
 vrpn_Dial	* dials [MAX_DIALS];
 int		num_dials = 0;
+#ifdef INCLUDE_TIMECODE_SERVER
+vrpn_Timecode_Generator * timecode_generators[MAX_TIMECODE_GENERATORS];
+int		num_generators = 0;
+#endif
 
 vrpn_Connection * connection;
 
@@ -298,9 +307,43 @@ int setup_SGIBOX (char * & pch, char * line, FILE * config_file) {
                 fprintf(stderr,"vrpn_server: Can't open SGIbox: not an SGI!\n");
 #endif
 
-
   return 0;  // successful completion
 }
+
+
+int setup_Timecode_Generator (char * & pch, char * line, FILE * config_file) {
+#ifdef INCLUDE_TIMECODE_SERVER
+	char s2 [LINESIZE];
+
+	next();
+	if (sscanf(pch,"%511s",s2)!=1) {
+		fprintf(stderr,"Timecode_Generator line: %s\n",line);
+		return -1;
+	}
+
+	// Make sure there's room for a new generator
+    if (num_generators >= MAX_TIMECODE_GENERATORS) {
+      fprintf(stderr,"Too many generators in config file");
+      return -1;
+    }
+
+	// open the timecode generator
+	if (verbose) {
+		printf("Opening vrpn_Timecode_Generator on host %s\n", s2);
+	}
+	if ( ( timecode_generators[num_generators] =	new vrpn_Timecode_Generator(s2, connection)) == NULL) {
+		fprintf(stderr,"Can't create new vrpn_Timecode_Generator\n");
+		return -1;
+	} else {
+		num_generators++;
+	}
+	return 0; // successful completion
+#else
+	fprintf(stderr, "vrpn_server: Can't open Timecode Generator: INCLUDE_TIMECODE_GENERATOR not defined at compile time!\n");
+	return -1;
+#endif
+}
+
 
 int setup_JoyFly (char * & pch, char * line, FILE * config_file) {
   char s2 [LINESIZE], s3 [LINESIZE], s4 [LINESIZE];
@@ -1305,6 +1348,8 @@ main (int argc, char * argv[])
             CHECK(setup_Button_PinchGlove);
 	  } else  if (isit("vrpn_Wanda")) {
             CHECK(setup_Wanda);
+	  } else  if (isit("vrpn_TimeCode_Generator")) {
+		  CHECK(setup_Timecode_Generator);
 	  } else {	// Never heard of it
 		sscanf(line,"%511s",s1);	// Find out the class name
 		fprintf(stderr,"vrpn_server: Unknown Device: %s\n",s1);
@@ -1396,9 +1441,14 @@ main (int argc, char * argv[])
 		if (vrpn_special_sgibox) 
 		  vrpn_special_sgibox->mainloop();
 #endif
+#ifdef INCLUDE_TIMECODE_SERVER
+		for (i=0; i < num_generators; i++) {
+			timecode_generators[i]->mainloop();
+		}
+#endif
 
-                redundantController->mainloop();
-                redundancy->mainloop();
+        redundantController->mainloop();
+        redundancy->mainloop();
 
 		// Send and receive all messages
 		connection->mainloop();
