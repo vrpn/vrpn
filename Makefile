@@ -79,9 +79,6 @@ endif
 # IF YOU CHANGE THESE, document either here or in the header comment
 # why.  Multiple contradictory changes have been made recently.
 
-# On the sgi, both g++ and CC versions are compiled by default.
-# CC compiles default to old 32-bit format;  'gmake n32' builds -n32.
-
 
 CC := g++
 AR := ar ruv
@@ -101,13 +98,11 @@ else
   endif
 
   ifeq ($(HW_OS),sgi_irix)
-	SGI_CC_FLAGS := -32
-	OBJECT_DIR_SUFFIX :=
-	ifeq ($(SGI_ABI_N32),1)
-		SGI_CC_FLAGS := -n32 -TARG:platform=ip19 -mips3
-		OBJECT_DIR_SUFFIX := .n32
-	endif
-	CC := CC $(SGI_CC_FLAGS)
+   ifndef SGI_ABI
+      SGI_ABI := n32
+   endif
+   OBJECT_DIR_SUFFIX := .$(SGI_ABI)
+	CC := CC -$(SGI_ABI)
   endif
 
   ifeq ($(HW_OS),hp700_hpux10)
@@ -141,11 +136,11 @@ endif
 
 # subdirectory for make
 ifeq ($(FORCE_GPP),1)
-OBJECT_DIR	 := $(HW_OS)/g++
-SOBJECT_DIR      := $(HW_OS)/g++/server
+OBJECT_DIR	 := $(HW_OS)$(OBJECT_DIR_SUFFIX)/g++
+SOBJECT_DIR      := $(HW_OS)$(OBJECT_DIR_SUFFIX)/g++/server
 else
-UNQUAL_OBJECT_DIR := $(HW_OS)
-UNQUAL_SOBJECT_DIR := $(HW_OS)/server
+UNQUAL_OBJECT_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)
+UNQUAL_SOBJECT_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)/server
 OBJECT_DIR	 := $(HW_OS)$(OBJECT_DIR_SUFFIX)
 SOBJECT_DIR      := $(HW_OS)$(OBJECT_DIR_SUFFIX)/server
 endif
@@ -153,7 +148,7 @@ endif
 # directories that we can do an rm -f on because they only contain
 # object files and executables
 SAFE_KNOWN_ARCHITECTURES :=	hp700_hpux/* hp700_hpux10/* mips_ultrix/* \
-	pc_linux/* sgi_irix/* sgi_irix.n32/* sparc_solaris/* sparc_sunos/* pc_cygwin/*
+	pc_linux/* sgi_irix.32/* sgi_irix.n32/* sparc_solaris/* sparc_sunos/* pc_cygwin/*
 
 CLIENT_SKA = $(patsubst %,client_src/%,$(SAFE_KNOWN_ARCHITECTURES))
 SERVER_SKA = $(patsubst %,server_src/%,$(SAFE_KNOWN_ARCHITECTURES))
@@ -202,7 +197,7 @@ endif
 # Load flags
 #
 
-LOAD_FLAGS := -L./$(HW_OS) -L/usr/local/lib \
+LOAD_FLAGS := -L./$(HW_OS)$(OBJECT_DIR_SUFFIX) -L/usr/local/lib \
 		-L/usr/local/contrib/unmod/lib -L/usr/local/contrib/mod/lib -g
 
 ifeq ($(HW_OS),sgi_irix)
@@ -269,10 +264,10 @@ $(SOBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) $(MAKEFILE)
 # by the native compiler.
 
 ifeq ($(HW_OS),sgi_irix)
-  ifeq ($(SGI_ABI_N32),1)
-all:	client server
-  else
+  ifeq ($(SGI_ABI),32)
 all:	client server client_g++ server_g++
+  else
+all:	client server
   endif
 else
   ifeq ($(HW_OS),pc_cygwin)
@@ -281,10 +276,6 @@ all:	client
 all:	client server
   endif
 endif
-
-.PHONY:	n32
-n32:
-	$(MAKE) SGI_ABI_N32=1 all
 
 .PHONY:	client_g++
 client_g++:
@@ -501,13 +492,13 @@ beta :
 ###    add/remove #includes from a file
 ########
 
-include .depend
+include $(OBJECT_DIR)/.depend
 
 .PHONY: depend
 depend:
-	-$(MVF) .depend .depend-old
-	$(MAKE) .depend
-.depend:
+	-$(MVF) $(OBJECT_DIR)/.depend $(OBJECT_DIR)/.depend-old
+	$(MAKE) $(OBJECT_DIR)/.depend
+$(OBJECT_DIR)/.depend: $(OBJECT_DIR)
 	@echo ----------------------------------------------------------------
 	@echo -- Making dependency file.  If you add files to the makefile,
 	@echo -- or add/remove includes from a .h or .C file, then you should
@@ -519,7 +510,7 @@ ifeq ($(HW_OS),hp700_hpux10)
 	@echo -- \"touch .depend\" to create an empty file
 	@echo ----------------------------------------------------------------
 	$(SHELL) -ec 'g++ -MM $(CFLAGS) $(LIB_FILES) \
-	    | sed '\''s/\(.*\.o[ ]*:[ ]*\)/$(OBJECT_DIR)\/\1/g'\'' > .depend'
+	    | sed '\''s/\(.*\.o[ ]*:[ ]*\)/$(OBJECT_DIR)\/\1/g'\'' > $(OBJECT_DIR)/.depend'
 else
   ifeq ($(HW_OS),hp_flow_aCC)
 	@echo -- $(HW_OS): Using g++ since HP aCC does not understand -M
@@ -527,10 +518,10 @@ else
 	@echo -- \"touch .depend\" to create an empty file
 	@echo ----------------------------------------------------------------
 	$(SHELL) -ec 'g++ -MM $(CFLAGS) $(LIB_FILES) \
-	    | sed '\''s/\(.*\.o[ ]*:[ ]*\)/$(OBJECT_DIR)\/\1/g'\'' > .depend'
+	    | sed '\''s/\(.*\.o[ ]*:[ ]*\)/$(OBJECT_DIR)\/\1/g'\'' > $(OBJECT_DIR)/.depend'
   else
 	$(SHELL) -ec '$(CC) -M $(CFLAGS) $(LIB_FILES) \
-	    | sed '\''s/\(.*\.o[ ]*:[ ]*\)/$(OBJECT_DIR)\/\1/g'\'' > .depend'
+	    | sed '\''s/\(.*\.o[ ]*:[ ]*\)/$(OBJECT_DIR)\/\1/g'\'' > $(OBJECT_DIR)/.depend'
   endif
 endif
 	@echo ----------------------------------------------------------------
