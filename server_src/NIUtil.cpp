@@ -9,6 +9,13 @@
 
 const short Max_NIDAQ_Devices(10);
 
+// This array keeps track of whether a particular device has been
+// returned by the findDevice() function.  It prevents the same
+// device from being found twice, enabling the program to open more
+// than one device of the same type on the same computer
+
+static	bool  opened_already[Max_NIDAQ_Devices];
+
 namespace NIUtil
 {
    char *nameCodeToString
@@ -175,20 +182,27 @@ namespace NIUtil
 
    int findDevice(const char *name)
    {
-      int device(1),
-          code(0);
-          
+      static bool first_time = true;
+      if (first_time) {
+	int i;
+	for (i = 0; i < Max_NIDAQ_Devices; i++) {
+	  opened_already[i] = false;
+	}
+	first_time = false;
+      }
+      int device(1), code(0);
 
-      while (-1 != code && device < Max_NIDAQ_Devices)
-      {
-         code = getDeviceCode(device);
+      while ( (-1 != code) && (device < Max_NIDAQ_Devices) ) {
+	 code = getDeviceCode(device);
 
-         if ( !strcmp(name,nameCodeToString(code)) )
-         {
-            return device;
-         }
+	 if ( !strcmp(name,nameCodeToString(code)) ) {
+	   if (!opened_already[device]) {
+	     opened_already[device] = true;
+	     return device;
+	   }
+	 }
 
-         device++;
+	 device++;
       }
 
       return -1;

@@ -433,9 +433,9 @@
 # of motion, using the Logitech joystick for the analog
 # server and the tracker_to_poser program.
 #vrpn_Tracker_AnalogFly	Tracker0	60.0	absolute
-#X	*Joystick0	0	-0.03	0.0	25.3	1.0
-#Y	*Joystick0	1	-0.04	0.0	25.3	1.0
-#Z	*Joystick0	6	-0.10	0.0	17.2	1.0
+#X	*Joystick0	0	-0.03	0.0	2.53	1.0
+#Y	*Joystick0	1	-0.04	0.0	2.53	1.0
+#Z	*Joystick0	6	-0.10	0.0	-1.75	1.0
 #RX	NULL		3	0.0	0.0	1.0	1.0
 #RY	NULL		4	0.0	0.0	1.0	1.0
 #RZ	*Joystick0	5	0.0	0.0	0.5	1.0
@@ -843,6 +843,7 @@
 #       int     number of times per second to update force (0 for non-force device)
 
 #vrpn_DirectXFFJoystick	Joystick0	60	0
+#vrpn_DirectXFFJoystick	Joystick0	60	1
 #vrpn_DirectXFFJoystick	Joystick0	60	200
 #vrpn_DirectXFFJoystick	Joystick0	60	200
 
@@ -926,7 +927,8 @@
 #  float min_voltage
 #  float max_voltage
 
-#vrpn_NI_Analog_Output	NI0	DAQCard-6036E	3   0	-10.0 10.0
+#vrpn_NI_Analog_Output	Analog_XY	DAQCard-6036E	2   0	-10.0 10.0
+#vrpn_NI_Analog_Output	Analog_ZTweeze	DAQCard-6036E	2   0	-10.0 10.0
 
 ################################################################################
 # Analog Poser. This is a poser that is intended to be used on top of
@@ -956,10 +958,10 @@
 #		float max_value of workspace
 #	]
 
-#vrpn_Poser_Analog	Poser0	*NI0
-#X	0	0.0	1.0	-10	10
-#Y	1	0.0	1.0	-10	10
-#Z	2	0.0	1.0	-10	10
-#RX	4	0.0	1.0	-10	10
-#RY	5	0.0	1.0	-10	10
-#RZ	6	0.0	1.0	-10	10
+#vrpn_Poser_Analog	Poser0
+#X	*Analog_XY	0	0.0	1.0	-10	10
+#Y	*Analog_XY	1	0.0	1.0	-10	10
+#Z	*Analog_ZTweeze	0	0.0	1.0	-10	10
+#RX	NULL	0	0.0	1.0	-10	10
+#RY	NULL	0	0.0	1.0	-10	10
+#RZ	NULL	0	0.0	1.0	-10	10

@@ -497,7 +497,7 @@ int	get_AFline(FILE *config_file, char *axis_name, vrpn_TAF_axis *axis)
 	// leave them as they are, and they will have no effect.
 	if (strcmp(name,"NULL") != 0) {
 		axis->name = name;
-		axis->channel = channel;
+		axis->channel = channel;  
 		axis->offset = offset;
 		axis->thresh = thresh;
 		axis->scale = scale;
@@ -2232,8 +2232,8 @@ int	get_poser_axis_line(FILE *config_file, char *axis_name, vrpn_PA_axis *axis, 
 	}
 
 	// Get the values from the line
-	if (sscanf(line, "%511s%d%g%g%lg%lg", _axis_name,
-			&channel, &offset, &scale, min, max) != 6) {
+	if (sscanf(line, "%511s%511s%d%g%g%lg%lg", _axis_name, name,
+			&channel, &offset, &scale, min, max) != 7) {
 		fprintf(stderr,"Poser Analog Axis: Bad axis line\n");
 		return -1;
 	}
@@ -2248,25 +2248,25 @@ int	get_poser_axis_line(FILE *config_file, char *axis_name, vrpn_PA_axis *axis, 
 	// Fill in the values if we didn't get the name "NULL". Otherwise, just
 	// leave them as they are, and they will have no effect.
 	if (strcmp(name,"NULL") != 0) {
-		axis->channel = channel;
-		axis->offset = offset;
-		axis->scale = scale;
+	  axis->ana_name = name;
+	  axis->channel = channel;
+	  axis->offset = offset;
+	  axis->scale = scale;
 	}
 
 	return 0;
 }
 
 int setup_Poser_Analog (char * & pch, char * line, FILE * config_file) {
-    char s2 [LINESIZE], s3 [LINESIZE];
+    char s2 [LINESIZE];
     vrpn_Poser_AnalogParam     p;
 
     next();
-    if (sscanf(pch, "%511s%511s",s2,s3) != 2) {
+    if (sscanf(pch, "%511s",s2) != 1) {
             fprintf(stderr, "Bad vrpn_Poser_Analog line: %s\n",
 		line);
             return -1;
     }
-    p.ana_name = s3;
 
     // Make sure there's room for a new poser
     if (num_posers >= MAX_POSER) {
@@ -2276,7 +2276,7 @@ int setup_Poser_Analog (char * & pch, char * line, FILE * config_file) {
 
     if (verbose) {
       printf("Opening vrpn_Poser_Analog: "
-             "%s using analog output %s\n",s2,s3);
+             "%s\n",s2);
     }
 
     // Scan the following lines in the configuration file to fill

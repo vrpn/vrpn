@@ -1,3 +1,15 @@
+2004-05-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* NIUtil.cpp : Will return more than one instance of the same
+		type of device if they are plugged into the same PC.
+	* NIUtil.h : Comment change.
+	* vrpn.C : Modified Poser remote to include an entry for the
+		analog_out name for each channel, rather than one for
+		the whole device.
+	* vrpn.cfg : Same.  Plus modified entry for DTU/MIC Poser and
+		Analog_Output devices.
+	* vrpn.cfg.SAMPLE : Same.
+
 2004-05-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* NIUtil.cpp : Added description for another board.
