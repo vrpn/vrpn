@@ -2253,7 +2253,16 @@ int vrpn_Connection::pack_message(vrpn_uint32 len, struct timeval time,
 	    ret = marshall_message(tcp_outbuf, sizeof(tcp_outbuf), tcp_num_out,
 				   len, time, type, sender, buffer);
 	    tcp_num_out += ret;
-	    //	    return -(ret==0);
+
+	    // If the marshalling failed, try clearing the outgoing buffers
+	    // by sending the stuff in them to see if this makes enough
+	    // room.  If not, we'll have to give up.
+	    if (ret == 0) {
+		if (send_pending_reports() != 0) { return -1; }
+		ret = marshall_message(tcp_outbuf, sizeof(tcp_outbuf),
+				tcp_num_out, len, time, type, sender, buffer);
+		tcp_num_out += ret;
+	    }
 	    return (ret==0) ? -1 : 0;
 	}
 
@@ -2263,13 +2272,31 @@ int vrpn_Connection::pack_message(vrpn_uint32 len, struct timeval time,
 	    ret = marshall_message(tcp_outbuf, sizeof(tcp_outbuf), tcp_num_out,
 				   len, time, type, sender, buffer);
 	    tcp_num_out += ret;
-	    //	    return -(ret==0);
+
+	    // If the marshalling failed, try clearing the outgoing buffers
+	    // by sending the stuff in them to see if this makes enough
+	    // room.  If not, we'll have to give up.
+	    if (ret == 0) {
+		if (send_pending_reports() != 0) { return -1; }
+		ret = marshall_message(tcp_outbuf, sizeof(tcp_outbuf),
+				tcp_num_out, len, time, type, sender, buffer);
+		tcp_num_out += ret;
+	    }
 	    return (ret==0) ? -1 : 0;
 	} else {
 	    ret = marshall_message(udp_outbuf, sizeof(udp_outbuf), udp_num_out,
 				   len, time, type, sender, buffer);
 	    udp_num_out += ret;
-	    //	    return -(ret==0);
+
+	    // If the marshalling failed, try clearing the outgoing buffers
+	    // by sending the stuff in them to see if this makes enough
+	    // room.  If not, we'll have to give up.
+	    if (ret == 0) {
+		if (send_pending_reports() != 0) { return -1; }
+		ret = marshall_message(udp_outbuf, sizeof(udp_outbuf),
+				udp_num_out, len, time, type, sender, buffer);
+		udp_num_out += ret;
+	    }
 	    return (ret==0) ? -1 : 0;
 	}
 }
