@@ -26,8 +26,15 @@ vrpn_Analog::vrpn_Analog (const char * name, vrpn_Connection * c) {
    num_channel = 0;
    // Set the time to 0 just to have something there.
    timestamp.tv_usec = timestamp.tv_sec = 0;
-  if (servicename)
+   if (servicename) {
     delete [] servicename;
+   }
+   // Initialize the values in the channels, 
+   // gets rid of uninitialized memory read error in Purify
+   // and makes sure any initial value change gets reported. 
+   for (vrpn_int32 i=0; i< vrpn_CHANNEL_MAX; i++) {
+       channel[i] = last[i] = 0;
+   }
 }
 
 void vrpn_Analog::print(void ) {
