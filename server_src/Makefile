@@ -53,12 +53,15 @@ ifeq ($(HW_OS),sparc_solaris)
 endif
 
 ifeq ($(HW_OS),sgi_irix)
-  ifndef SGI_ABI
-    SGI_ABI := n32
-  endif
-  OBJECT_DIR_SUFFIX := .$(SGI_ABI)
-  CC := CC -$(SGI_ABI)
-  GL := -lgl
+   ifndef SGI_ABI
+      SGI_ABI := n32
+   endif
+   ifndef SGI_ARCH
+      SGI_ARCH := mips3
+   endif
+   OBJECT_DIR_SUFFIX := .$(SGI_ABI).$(SGI_ARCH)
+   CC := CC -$(SGI_ABI) -$(SGI_ARCH)
+   GL := -lgl
 endif
 
 ifeq ($(HW_OS),hp700_hpux10)
