@@ -269,18 +269,18 @@ int	vrpn_Radamec_SPI::reset(void)
 		return -1;
 	}
 	if (ret == 0) {
-		SPI_WARNING("reset: No response to camera ID from device");
+		SPI_ERROR("reset: No response to camera ID from device");
 		return -1;
 	}
 	if (ret != 4) {
 		sprintf(errmsg,"reset: Got %d of %d expected characters for camera ID\n",ret, 4);
-		SPI_WARNING(errmsg);
+		SPI_ERROR(errmsg);
 		return -1;
 	}
 
 	// Make sure the string we got back is what we expected and then find out the camera ID
 	if ( (inbuf[0] != 0xa4) || (inbuf[2] != 0x02) || (inbuf[3] != compute_crc(inbuf,3)) ) {
-	    SPI_WARNING("reset: Bad response to camera # request");
+	    SPI_ERROR("reset: Bad response to camera # request");
 	    return -1;
 	}
 	_camera_id = inbuf[1];
@@ -296,23 +296,23 @@ int	vrpn_Radamec_SPI::reset(void)
 	ret = vrpn_read_available_characters(serial_fd, inbuf, 4, &timeout);
 	inbuf[4] = 0;		// Make sure string is NULL-terminated
 	if (ret < 0) {
-		SPI_WARNING("reset: Error reading from device");
+		SPI_ERROR("reset: Error reading from device");
 		return -1;
 	}
 	if (ret == 0) {
-		SPI_WARNING("reset: No response from device");
+		SPI_ERROR("reset: No response from device");
 		return -1;
 	}
 	if (ret != 4) {
 		sprintf(errmsg,"vrpn_Radamec_SPI reset: Got %d of %d expected characters\n",ret, 4);
-		SPI_WARNING(errmsg);
+		SPI_ERROR(errmsg);
 		return -1;
 	}
 
 	// Make sure the string we got back is what we expected
 	if ( (inbuf[0] != 0xa4) || (inbuf[1] != _camera_id) || (inbuf[2] != 0x01) ||
 		(inbuf[3] != compute_crc(inbuf,3)) ) {
-	    SPI_WARNING("reset: Bad response to start stream mode command");
+	    SPI_ERROR("reset: Bad response to start stream mode command");
 	    return -1;
 	}
 
@@ -371,7 +371,7 @@ void vrpn_Radamec_SPI::get_report(void)
 
 	  default:
 	      sprintf(errmsg,"vrpn_Radamec_SPI: Unknown command (%c), resetting\n", _buffer[0]);
-	      SPI_WARNING(errmsg);
+	      SPI_ERROR(errmsg);
 	      status = STATUS_RESETTING;
 	      return;
       }
@@ -399,7 +399,7 @@ void vrpn_Radamec_SPI::get_report(void)
    ret = vrpn_read_available_characters(serial_fd, &_buffer[_bufcount],
 		_expected_chars-_bufcount);
    if (ret == -1) {
-	SPI_WARNING("Error reading");
+	SPI_ERROR("Error reading");
 	//XXX Put out a VRPN text message here, and at other error locations
 	status = STATUS_RESETTING;
 	return;
@@ -423,7 +423,7 @@ void vrpn_Radamec_SPI::get_report(void)
 
    if (_buffer[_expected_chars-1] != compute_crc(_buffer, _expected_chars-1) ) {
 	   status = STATUS_SYNCING;
-      	   SPI_WARNING("Bad CRC in report");
+      	   SPI_ERROR("Bad CRC in report");
 	   return;
    }
    if (_buffer[1] != _camera_id) {
@@ -532,11 +532,17 @@ void	vrpn_Radamec_SPI::report(vrpn_uint32 class_of_service)
 	vrpn_Analog::report(class_of_service);
 }
 
-// This routine is called each time through the server's main loop. It will
-// take a course of action depending on the current status of the device,
-// either trying to reset it or trying to get a reading from it.
+/** This routine is called each time through the server's main loop. It will
+    take a course of action depending on the current status of the device,
+    either trying to reset it or trying to get a reading from it.  It will
+    try to reset the device if no data has come from it for a couple of
+    seconds
+*/
+
 void	vrpn_Radamec_SPI::mainloop()
 {
+  char errmsg[256];
+
   server_mainloop();
 
   switch(status) {
@@ -546,7 +552,17 @@ void	vrpn_Radamec_SPI::mainloop()
 
     case STATUS_SYNCING:
     case STATUS_READING:
-	get_report();
+      {
+	struct timeval current_time;
+	gettimeofday(&current_time, NULL);
+	if ( duration(current_time,timestamp) < MAX_TIME_INTERVAL) {
+		get_report();
+	} else {
+		sprintf(errmsg,"Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);
+		SPI_ERROR(errmsg);
+		status = STATUS_RESETTING;
+	}
+      }
         break;
 
     default:

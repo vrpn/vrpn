@@ -1,5 +1,8 @@
 2000-08-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Analog_Radamec_SPI.C : Changed some warnings into errors
+		(mainloop) : Added a watchdog timer
+
 	* vrpn_Connection.C (vrpn_Log::setCompoundName): added 'const'
 
 	* vrpn_Serial.C (vrpn_open_commport): Adds input baud to SGI code
