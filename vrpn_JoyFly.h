@@ -21,15 +21,18 @@
  * Author          : Ruigang Yang
  * Created On      : Tue Mar 31 17:16:25 1998
  * Last Modified By: Ruigang Yang
- * Last Modified On: Mon Apr  6 17:40:21 1998
- * Update Count    : 19
+ * Last Modified On: Tue Apr  7 13:31:54 1998
+ * Update Count    : 20
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_JoyFly.h,v $
- * $Date: 1998/04/07 16:55:12 $
- * $Author: taylorr $
- * $Revision: 1.1 $
+ * $Date: 1998/04/07 17:32:33 $
+ * $Author: ryang $
+ * $Revision: 1.2 $
  * 
  * $Log: vrpn_JoyFly.h,v $
+ * Revision 1.2  1998/04/07 17:32:33  ryang
+ * change to const XXX
+ *
  * Revision 1.1  1998/04/07 16:55:12  taylorr
  * Implements more sound code.
  *
@@ -78,7 +81,7 @@ public:
 
   virtual void mainloop(void);
   virtual void reset();
-  void update(q_matrix_type &);
+  void update(const q_matrix_type &);
 };
 #endif
 

@@ -21,15 +21,18 @@
  * Author          : Ruigang Yang
  * Created On      : Tue Mar 31 17:23:25 1998
  * Last Modified By: Ruigang Yang
- * Last Modified On: Mon Apr  6 17:41:47 1998
- * Update Count    : 94
+ * Last Modified On: Tue Apr  7 13:31:39 1998
+ * Update Count    : 95
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_JoyFly.C,v $
- * $Date: 1998/04/07 16:55:11 $
- * $Author: taylorr $
- * $Revision: 1.1 $
+ * $Date: 1998/04/07 17:32:31 $
+ * $Author: ryang $
+ * $Revision: 1.2 $
  * 
  * $Log: vrpn_JoyFly.C,v $
+ * Revision 1.2  1998/04/07 17:32:31  ryang
+ * change to const XXX
+ *
  * Revision 1.1  1998/04/07 16:55:11  taylorr
  * Implements more sound code.
  *
@@ -38,7 +41,7 @@
  * HISTORY
  */
 
-static char rcsid[] = "$Id: vrpn_JoyFly.C,v 1.1 1998/04/07 16:55:11 taylorr Exp $";
+static char rcsid[] = "$Id: vrpn_JoyFly.C,v 1.2 1998/04/07 17:32:31 ryang Exp $";
 
 #include <string.h>
 #include "vrpn_JoyFly.h"
@@ -54,7 +57,7 @@ vrpn_Tracker_JoyFly::vrpn_Tracker_JoyFly(char *name, vrpn_Connection *c,
 
 
   joy_remote = new vrpn_Analog_Remote(source);
-  joy_remote->register_change_handler(this,(vrpn_ANALOGCHANGEHANDLER)joy_cb);
+  joy_remote->register_change_handler(this,joy_cb);
   c->register_handler(c->register_message_type(vrpn_got_connection),
 		      con_cb, this);
   //joy_remote->register_change_handler(NULL,(vrpn_ANALOGCHANGEHANDLER)joy_cb);
@@ -176,7 +179,7 @@ void joy_cb(void * userdata, vrpn_ANALOGCB b) {
   pts->update(newM);
 }
 
-void vrpn_Tracker_JoyFly::update(q_matrix_type & newM) {
+void vrpn_Tracker_JoyFly::update(const q_matrix_type & newM) {
   q_matrix_type final;
   q_xyz_quat_type xq;
   int i;
