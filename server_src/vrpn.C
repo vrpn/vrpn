@@ -9,8 +9,7 @@
 #include "vrpn_3Space.h"
 #include "vrpn_Tracker_Fastrak.h"
 #include "vrpn_Flock.h"
-#include "vrpn_Flock_Master.h"
-#include "vrpn_Flock_Slave.h"
+#include "vrpn_Flock_Parallel.h"
 #include "vrpn_Dyna.h"
 #include "vrpn_Sound.h"
 
@@ -211,93 +210,6 @@ main (int argc, char *argv[])
 	      } else {
 		num_trackers++;
 	      }
-	  } else if (isit("vrpn_Tracker_Flock_Master ")) {
-
-	    // Get the arguments (class, tracker_name, sensors,port, baud)
-	    if (sscanf(line,"%511s%511s%d%511s%d",s1,s2,&i2,s3, &i1) != 5) {
-	      fprintf(stderr,"Bad vrpn_Tracker_Flock_Master line: %s\n",line);
-	      if (bail_on_error) { return -1; }
-	      else { continue; }	// Skip this line
-	    }
-
-	    // Make sure there's room for a new tracker
-	    if (num_trackers >= MAX_TRACKERS) {
-	      fprintf(stderr,"Too many trackers in config file");
-	      if (bail_on_error) { return -1; }
-	      else { continue; }	// Skip this line
-	    }
-
-
-	    // Open the tracker
-	    if (verbose) 
-	      printf("Opening vrpn_Tracker_Flock_Master: %s on port %s, baud %d, %d sensors\n",
-		    s2,s3,i1, i2);
-	    if ((trackers[num_trackers] =
-		  new vrpn_Tracker_Flock_Master(s2, &connection, i2, s3, i1)) == NULL)               
-	      {
-		fprintf(stderr,"Can't create new vrpn_Tracker_Flock_Master\n");
-		if (bail_on_error) { return -1; }
-		else { continue; }	// Skip this line
-	      } else {
-		num_trackers++;
-	      }
-	  }else if( isit("vrpn_Tracker_Flock_Slave ")) {
-
-	    // Get the arguments (class, tracker_name, sensors,port, baud)
-	    if (sscanf(line,"%511s%511s%d%511s%d",s1,s2,&i2,s3, &i1) != 5) {
-	      fprintf(stderr,"Bad vrpn_Tracker_Flock_Slave line: %s\n",line);
-	      if (bail_on_error) { return -1; }
-	      else { continue; }	// Skip this line
-	    }
-
-	    // Make sure there's room for a new tracker
-	    if (num_trackers >= MAX_TRACKERS) {
-	      fprintf(stderr,"Too many trackers in config file");
-	      if (bail_on_error) { return -1; }
-	      else { continue; }	// Skip this line
-	    }
-
-	    // Open the tracker
-	    if (verbose) 
-	      printf("Opening vrpn_Tracker_Flock_Slave: %s on port %s, baud %d,  sensors Id = %d\n",
-		    s2,s3,i1, i2);
-	    if ((trackers[num_trackers] =
-		  new vrpn_Tracker_Flock_Slave(s2, &connection, i2, s3, i1)) == NULL)
-	      {
-		fprintf(stderr,"Can't create new vrpn_Tracker_Flock_Slave\n");
-		if (bail_on_error) { return -1; }
-		else { continue; }	// Skip this line
-	      } else {
-		num_trackers++;
-	      }
-	  } else if (isit("vrpn_Tracker_Fastrak ")) {
-	    // Get the arguments (class, tracker_name, port, baud)
-	    if (sscanf(line,"%511s%511s%511s%d",s1,s2,s3,&i1) != 4) {
-	      fprintf(stderr,"Bad vrpn_Tracker_Fastrak line: %s\n",line);
-	      if (bail_on_error) { return -1; }
-	      else { continue; }	// Skip this line
-	    }
-
-	    // Make sure there's room for a new tracker
-	    if (num_trackers >= MAX_TRACKERS) {
-	      fprintf(stderr,"Too many trackers in config file");
-	      if (bail_on_error) { return -1; }
-	      else { continue; }	// Skip this line
-	    }
-
-	    // Open the tracker
-	    if (verbose) 
-	      printf("Opening vrpn_Tracker_Fastrak: %s on port %s, baud %d\n",
-		    s2,s3,i1);
-	    if ((trackers[num_trackers] =
-		  new vrpn_Tracker_Fastrak(s2, &connection, s3, i1)) == NULL)
-	      {
-		fprintf(stderr,"Can't create new vrpn_Tracker_Fastrak\n");
-		if (bail_on_error) { return -1; }
-		else { continue; }	// Skip this line
-	      } else {
-		num_trackers++;
-	      }
 	  }
 	  else if (isit("vrpn_Tracker_3Space ")) {
 
@@ -356,6 +268,58 @@ main (int argc, char *argv[])
 		} else {
 		  num_trackers++;
 		}
+	  } else if (isit("vrpn_Tracker_Flock_Parallel ")) {
+
+	    // Get the arguments (class, tracker_name, sensors, port, baud, 
+	    // and parallel sensor ports )
+	    
+	    if (sscanf(line,"%511s%511s%d%511s%d", s1, s2, 
+		       &i1, s3, &i2) != 5) {
+	      fprintf(stderr,"Bad vrpn_Tracker_Flock line: %s\n",line);
+	      if (bail_on_error) { return -1; }
+	      else { continue; }	// Skip this line
+	    }
+
+	    // set up strtok to get the variable num of port names
+	    char rgch[24];
+	    sprintf(rgch, "%d", i2);
+	    char *pch = strstr(line, rgch); 
+	    strtok(pch," \t");
+
+	    // pch points to baud, next strtok will give first port name
+	    
+	    char *rgs[MAX_SENSORS];
+	    // get sensor ports
+	    for (int iSlaves=0;iSlaves<i1;iSlaves++) {
+	      rgs[iSlaves]=new char[512];
+	      if (!(pch = strtok(0," \t"))) {
+		fprintf(stderr,"Bad vrpn_Tracker_Flock line: %s\n",line);
+		return -1;
+	      } else {
+		sscanf(pch,"%511s", rgs[iSlaves]);
+	      }
+	    }
+
+	    // Make sure there's room for a new tracker
+	    if (num_trackers >= MAX_TRACKERS) {
+	      fprintf(stderr,"Too many trackers in config file");
+	      if (bail_on_error) { return -1; }
+	      else { continue; }	// Skip this line
+	    }
+	    
+	    // Open the tracker
+	    if (verbose) printf(
+				"Opening vrpn_Tracker_Flock_Parallel: %s (%d sensors, on port %s, baud %d)\n",
+		    s2, i1, s3,i2);
+	    if ( (trackers[num_trackers] =
+		  new vrpn_Tracker_Flock_Parallel(s2,&connection,i1,s3,i2,
+						  rgs)) == NULL){
+	      fprintf(stderr,"Can't create new vrpn_Tracker_Flock_Parallel\n");
+	      if (bail_on_error) { return -1; }
+	      else { continue; }	// Skip this line
+	    } else {
+	      num_trackers++;
+	    }
 	  } else if (isit("vrpn_Tracker_NULL ")) {
 
 		// Get the arguments (class, tracker_name, sensors, rate)
