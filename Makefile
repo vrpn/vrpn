@@ -28,7 +28,7 @@ ifeq ($(HW_OS),hp700_hpux10)
   ifdef PBASE_ROOT
     HW_OS := hp_flow
   endif
-  ifneq ($(PXFL_COMPILER), gnu)
+  ifeq ($(PXFL_COMPILER), aCC)
     HW_OS := hp_flow_$(PXFL_COMPILER)
   endif
 endif
