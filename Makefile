@@ -188,10 +188,11 @@ SERVER_SKA = $(patsubst %,server_src/%,$(SAFE_KNOWN_ARCHITECTURES))
 #
 
 #SYS_INCLUDE := -I/usr/local/contrib/include -I/usr/local/contrib/mod/include
-SYS_INCLUDE := 
+SYS_INCLUDE :=
 
 ifeq ($(HW_OS),powerpc_macosx)
-  SYS_INCLUDE := -I/usr/include
+#  SYS_INCLUDE := -I/usr/include
+   SYS_INCLUDE :=-DMACOSX -I../isense 
 endif
 
 ifeq ($(HW_OS),pc_linux_arm)

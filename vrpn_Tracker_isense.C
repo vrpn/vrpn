@@ -53,6 +53,9 @@ vrpn_Tracker(name,c)
 {
 #ifdef  VRPN_INCLUDE_INTERSENSE
   char errStr[1024];
+
+  register_server_handlers();
+
   m_CommPort = commPort;
 //  m_Handle = ISLIB_OpenTracker(NULL, commPort, FALSE, FALSE);
   m_Handle = ISD_OpenTracker(NULL, commPort, FALSE, FALSE);
@@ -60,8 +63,8 @@ vrpn_Tracker(name,c)
   
   if(m_Handle == -1)
   {
-    sprintf(errStr,"Failed to open tracker '%s' on COM%d: ISLIB_OpenTracker returned -1",name,commPort);
-    MessageBox(0,errStr,"vrpn_Tracker_InterSense",MB_ICONSTOP);
+    //    sprintf(errStr,"Failed to open tracker '%s' on COM%d: ISLIB_OpenTracker returned -1",name,commPort);
+    //    MessageBox(0,errStr,"vrpn_Tracker_InterSense",MB_ICONSTOP);
     status = vrpn_TRACKER_FAIL;
     return;
   }

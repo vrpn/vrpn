@@ -15,7 +15,7 @@
 
 #if defined(linux) || defined(__APPLE__) 
 #include <termios.h>
-#include <errno.h>
+#include <sys/errno.h>
 #endif
 
 #ifdef	_AIX

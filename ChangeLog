@@ -1,3 +1,11 @@
+2003-09-02  Blair MacIntyre	<blair@cc.gatech.edu>
+
+	* Makefile : Makes it work on MacOSX with Intersense.
+	* vrpn_ADBox.C : Compiles on Mac.
+	* vrpn_Serial.C : Compiles on Mac.
+	* vrpn_Tracker_isense.C : Calls required function in constructor.
+	* vrpn_Tracker_isense.h : Works on Mac.
+
 2003-08-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.dsp : Includes the new files for Joywin32.

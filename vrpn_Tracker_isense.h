@@ -9,12 +9,15 @@
 #include <sys/time.h>
 #endif
 
-#ifdef  VRPN_INCLUDE_INTERSENSE
-#include "isense.h"
-#endif
 #include "vrpn_Tracker.h"
 #include "vrpn_Button.h"
 #include "vrpn_Analog.h"
+#ifdef  VRPN_INCLUDE_INTERSENSE
+#ifdef __APPLE__
+#define MACOSX
+#endif
+#include "isense.h"
+#endif
 
 class vrpn_Tracker_InterSense : public vrpn_Tracker {
   

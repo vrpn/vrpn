@@ -15,6 +15,10 @@
 
 #include <stdio.h>
 
+#if !defined(_WIN32)
+#include <unistd.h>
+#endif
+
 
 #include <string.h>
 #if defined(linux) || defined(sgi)
