@@ -33,6 +33,21 @@ Package=<4>
 
 ###############################################################################
 
+Project: "daq_server"=.\server_src\pc_win32\daq_server\daq_server.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
 Project: "phan_server"=.\server_src\phan_server.dsp - Package Owner=<4>
 
 Package=<5>

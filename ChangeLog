@@ -1,3 +1,8 @@
+2001-09-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsw : Adds a DAQ driver server for the UNC 3D Force Microscope
+	* vrpn_Types.h : Comment clarification
+
 2001-08-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.dsw : Makes all libraries in Phantom server use same style

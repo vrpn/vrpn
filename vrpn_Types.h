@@ -2,7 +2,7 @@
 #define VRPN_TYPES_H
 
 //------------------------------------------------------------------
-// do the test for a C++ compiler first, to insure it's the first
+// do the test for a C++ compiler first, to ensure it's the first
 // error message.  
 //------------------------------------------------------------------
 #ifndef __cplusplus
