@@ -66,17 +66,6 @@ const	int	MAGICLEN = 16;	// Must be a multiple of vrpn_ALIGN bytes!
 
 
 #ifdef	_WIN32
-struct timezone { int tz_minuteswest; int tz_dsttime; };
-
-int gettimeofday(struct timeval *tp, struct timezone *tzp)
-{
-        struct _timeb timeb;
-        _ftime(&timeb);
-        tp->tv_sec  = timeb.time;
-        tp->tv_usec = timeb.millitm*1000;  // milli to micro secs
-        return 0;
-}
-
 #define	close	closesocket
 #endif
 
@@ -612,7 +601,7 @@ int vrpn_udp_request_call(char *machine, int port)
 
 		if (setsockopt(accept_sock, p_entry->p_proto,
 #ifdef	WIN32
-		    TCP_NODELAY, &(const char)nonzero, sizeof(nonzero))==-1){
+		    TCP_NODELAY, (const char *)&nonzero, sizeof(nonzero))==-1) {
 #else
 		    TCP_NODELAY, &nonzero, sizeof(nonzero))==-1) {
 #endif
