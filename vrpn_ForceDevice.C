@@ -207,14 +207,14 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
 		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
 		vrpn_ForceDevice::connection = NULL;
   }
-  if (vrpn_Tracker::connection->register_handler(request_r2t_m_id,
-	handle_r2t_request, this, vrpn_Tracker::my_id)) {
-		fprintf(stderr,"vrpn_Phantom:can't register r2t handler\n");
+  if (vrpn_Tracker::connection->register_handler(request_t2r_m_id,
+	handle_t2r_request, this, vrpn_Tracker::my_id)) {
+		fprintf(stderr,"vrpn_Phantom:can't register t2r handler\n");
 		vrpn_Tracker::connection = NULL;
   }
-  if (vrpn_Tracker::connection->register_handler(request_s2u_m_id,
-	handle_s2u_request, this, vrpn_Tracker::my_id)) {
-		fprintf(stderr,"vrpn_Phantom:can't register s2u handler\n");
+  if (vrpn_Tracker::connection->register_handler(request_u2s_m_id,
+	handle_u2s_request, this, vrpn_Tracker::my_id)) {
+		fprintf(stderr,"vrpn_Phantom:can't register u2s handler\n");
 		vrpn_Tracker::connection = NULL;
   }
 
@@ -491,8 +491,7 @@ int vrpn_Phantom::handle_change_message(void *userdata, vrpn_HANDLERPARAM p)
 	return 0;
 }
 
-
-int vrpn_Phantom::handle_r2t_request(void *userdata, vrpn_HANDLERPARAM p)
+int vrpn_Phantom::handle_t2r_request(void *userdata, vrpn_HANDLERPARAM p)
 {
 	struct timeval current_time;
 	char 	msgbuf[1000];
@@ -503,21 +502,21 @@ int vrpn_Phantom::handle_r2t_request(void *userdata, vrpn_HANDLERPARAM p)
         me->timestamp.tv_sec = current_time.tv_sec;
         me->timestamp.tv_usec = current_time.tv_usec;
 
-	// set our r2t transform - use r2t that was read in by the constructor
+	// set our t2r transform - use t2r that was read in by the constructor
 
-	// send r2t transform
+	// send t2r transform
 	if (me->vrpn_Tracker::connection) {
-	    len = me->vrpn_Tracker::encode_room2tracker_to(msgbuf);
+	    len = me->vrpn_Tracker::encode_tracker2room_to(msgbuf);
 	    if (me->vrpn_Tracker::connection->pack_message(len, me->timestamp,
-		me->vrpn_Tracker::room2tracker_m_id, me->vrpn_Tracker::my_id,
+		me->vrpn_Tracker::tracker2room_m_id, me->vrpn_Tracker::my_id,
 		msgbuf, vrpn_CONNECTION_RELIABLE)) {
-		fprintf(stderr, "PHANToM: cannot write r2t message\n");
+		fprintf(stderr, "PHANToM: cannot write t2r message\n");
 	    }
 	}
 	return 0;
 }
 
-int vrpn_Phantom::handle_s2u_request(void *userdata, vrpn_HANDLERPARAM p)
+int vrpn_Phantom::handle_u2s_request(void *userdata, vrpn_HANDLERPARAM p)
 {
         struct timeval current_time;
         char    msgbuf[1000];
@@ -528,20 +527,20 @@ int vrpn_Phantom::handle_s2u_request(void *userdata, vrpn_HANDLERPARAM p)
         me->timestamp.tv_sec = current_time.tv_sec;
         me->timestamp.tv_usec = current_time.tv_usec;
 
-        // set our s2u transform and which sensor it is for - use s2u that
+        // set our u2s transform and which sensor it is for - use u2s that
 	// was read in by the constructor
 
 	// for the PHANToM there is only one sensor so we only send
 	// one message in response to the request. For other types of
 	// trackers we should send one message for every sensor
 	me->vrpn_Tracker::sensor = 0;	// only one sensor for PHANToM
-        // send s2u transform
+        // send u2s transform
         if (me->vrpn_Tracker::connection) {
-            len = me->vrpn_Tracker::encode_sensor2unit_to(msgbuf);
+            len = me->vrpn_Tracker::encode_unit2sensor_to(msgbuf);
             if (me->vrpn_Tracker::connection->pack_message(len, me->timestamp,
-                me->vrpn_Tracker::sensor2unit_m_id, me->vrpn_Tracker::my_id,
+                me->vrpn_Tracker::unit2sensor_m_id, me->vrpn_Tracker::my_id,
                 msgbuf, vrpn_CONNECTION_RELIABLE)) {
-                fprintf(stderr, "PHANToM: cannot write s2u message\n");
+                fprintf(stderr, "PHANToM: cannot write u2s message\n");
             }
         }
         return 0;

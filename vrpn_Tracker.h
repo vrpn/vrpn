@@ -27,6 +27,12 @@ extern int vrpn_drain_output_buffer( int comm );
 #define TRACKER_FAIL 	 	(-2)
 
 #define TRACKER_MAX_SENSORS	(20)
+// index for the change_list that should be called for all sensors
+#define ALL_SENSORS		TRACKER_MAX_SENSORS
+// this is the maximum for indices into sensor-specific change lists
+// it is 1 more than the number of sensors because the last list is
+// used to specify all sensors
+#define TRACKER_MAX_SENSOR_LIST (TRACKER_MAX_SENSORS + 1)
 
 class vrpn_Tracker {
   public:
@@ -43,10 +49,10 @@ class vrpn_Tracker {
    long position_m_id;			// ID of tracker position message
    long velocity_m_id;			// ID of tracker velocity message
    long accel_m_id;			// ID of tracker acceleration message
-   long room2tracker_m_id;		// ID of tracker room2tracker message
-   long sensor2unit_m_id;		// ID of tracker sensor2unit message
-   long request_r2t_m_id;		// ID of room2tracker request message
-   long request_s2u_m_id;		// ID of sensor2unit request message
+   long tracker2room_m_id;		// ID of tracker tracker2room message
+   long unit2sensor_m_id;		// ID of tracker unit2sensor message
+   long request_t2r_m_id;		// ID of tracker2room request message
+   long request_u2s_m_id;		// ID of unit2sensor request message
 					
 
    // Description of the next report to go out
@@ -58,10 +64,10 @@ class vrpn_Tracker {
    double acc_quat_dt;          // delta time (in secs) for acc_quat
    struct timeval timestamp;	// Current timestamp
 
-   double room2tracker[3], room2tracker_quat[4]; // Current r2t xform
+   double tracker2room[3], tracker2room_quat[4]; // Current t2r xform
    long num_sensors;
-   double sensor2unit[TRACKER_MAX_SENSORS][3];
-   double sensor2unit_quat[TRACKER_MAX_SENSORS][4]; // Current s2u xforms
+   double unit2sensor[TRACKER_MAX_SENSORS][3];
+   double unit2sensor_quat[TRACKER_MAX_SENSORS][4]; // Current u2s xforms
 
    int status;		// What are we doing?
 
@@ -69,8 +75,8 @@ class vrpn_Tracker {
    // Not all trackers will call the velocity and acceleration packers
    virtual int encode_vel_to(char *buf); // Encodes the velocity report
    virtual int encode_acc_to(char *buf); // Encodes the acceleration report
-   virtual int encode_room2tracker_to(char *buf); // Encodes the room2tracker
-   virtual int encode_sensor2unit_to(char *buf); // and sensor2unit xforms
+   virtual int encode_tracker2room_to(char *buf); // Encodes the tracker2room
+   virtual int encode_unit2sensor_to(char *buf); // and unit2sensor xforms
 };
 
 #ifndef VRPN_CLIENT_ONLY
@@ -161,25 +167,22 @@ typedef void (*vrpn_TRACKERACCCHANGEHANDLER)(void *userdata,
 
 typedef struct {
 	struct timeval	msg_time;	// Time of the report
-	double	room2tracker[3];	// position offset
-	double	room2tracker_quat[4];	// orientation offset
-} vrpn_TRACKERROOM2TRACKERCB;
-typedef void (*vrpn_TRACKERROOM2TRACKERCHANGEHANDLER)(void *userdata,
-					const vrpn_TRACKERROOM2TRACKERCB info);
+	double	tracker2room[3];	// position offset
+	double	tracker2room_quat[4];	// orientation offset
+} vrpn_TRACKERTRACKER2ROOMCB;
+typedef void (*vrpn_TRACKERTRACKER2ROOMCHANGEHANDLER)(void *userdata,
+					const vrpn_TRACKERTRACKER2ROOMCB info);
 
 typedef struct {
         struct timeval  msg_time;       // Time of the report
 	long	sensor;			// Which sensor this is the xform for
-        double  sensor2unit[3];        // position offset
-        double  sensor2unit_quat[4];   // orientation offset
-} vrpn_TRACKERSENSOR2UNITCB;
-typedef void (*vrpn_TRACKERSENSOR2UNITCHANGEHANDLER)(void *userdata,
-                                        const vrpn_TRACKERSENSOR2UNITCB info);
+        double  unit2sensor[3];        // position offset
+        double  unit2sensor_quat[4];   // orientation offset
+} vrpn_TRACKERUNIT2SENSORCB;
+typedef void (*vrpn_TRACKERUNIT2SENSORCHANGEHANDLER)(void *userdata,
+                                        const vrpn_TRACKERUNIT2SENSORCB info);
 
 #ifndef VRPN_CLIENT_ONLY
-
-
-
 
 
 // This is a virtual device that plays back pre-recorded sensor data.
@@ -214,8 +217,6 @@ class vrpn_Tracker_Canned: public vrpn_Tracker {
 
 
 
-
-
 // Open a tracker that is on the other end of a connection
 // and handle updates from it.  This is the type of tracker that user code will
 // deal with.
@@ -225,13 +226,15 @@ class vrpn_Tracker_Remote: public vrpn_Tracker {
 	// The name of the tracker to connect to
 	vrpn_Tracker_Remote(char *name);
 
-	// request room to tracker xforms
-	int request_r2t_xform(void);
-	// request all available sensor to unit xforms
-	int request_s2u_xform(void);
+	// request room from tracker xforms
+	int request_t2r_xform(void);
+	// request all available sensor from unit xforms
+	int request_u2s_xform(void);
 
 	// This routine calls the mainloop of the connection it's on
 	virtual void mainloop(void);
+
+	// **** to register handlers for all sensors: ****
 
 	// (un)Register a callback handler to handle a position change
 	virtual int register_change_handler(void *userdata,
@@ -251,62 +254,87 @@ class vrpn_Tracker_Remote: public vrpn_Tracker {
 	virtual int unregister_change_handler(void *userdata,
 		vrpn_TRACKERACCCHANGEHANDLER handler);
 
-	// (un)Register a callback handler to handle a room2tracker change
+	// (un)Register a callback handler to handle a tracker2room change
 	virtual int register_change_handler(void *userdata,
-		vrpn_TRACKERROOM2TRACKERCHANGEHANDLER handler);
+		vrpn_TRACKERTRACKER2ROOMCHANGEHANDLER handler);
 	virtual int unregister_change_handler(void *userdata,
-		vrpn_TRACKERROOM2TRACKERCHANGEHANDLER handler);
+		vrpn_TRACKERTRACKER2ROOMCHANGEHANDLER handler);
 
-	// (un)Register a callback handler to handle a sensor2unit change
+	// (un)Register a callback handler to handle a unit2sensor change
 	virtual int register_change_handler(void *userdata,
-		vrpn_TRACKERSENSOR2UNITCHANGEHANDLER handler);
+		vrpn_TRACKERUNIT2SENSORCHANGEHANDLER handler);
 	virtual int unregister_change_handler(void *userdata,
-		vrpn_TRACKERSENSOR2UNITCHANGEHANDLER handler);
+		vrpn_TRACKERUNIT2SENSORCHANGEHANDLER handler);
 
+	// **** to register handlers for specific sensors: ****
+
+        // (un)Register a callback handler to handle a position change
+        virtual int register_change_handler(void *userdata,
+                vrpn_TRACKERCHANGEHANDLER handler, int sensor);
+        virtual int unregister_change_handler(void *userdata,
+                vrpn_TRACKERCHANGEHANDLER handler, int sensor);
+
+        // (un)Register a callback handler to handle a velocity change
+        virtual int register_change_handler(void *userdata,
+                vrpn_TRACKERVELCHANGEHANDLER handler, int sensor);
+        virtual int unregister_change_handler(void *userdata,
+                vrpn_TRACKERVELCHANGEHANDLER handler, int sensor);
+
+        // (un)Register a callback handler to handle an acceleration change
+        virtual int register_change_handler(void *userdata,
+                vrpn_TRACKERACCCHANGEHANDLER handler, int sensor);
+        virtual int unregister_change_handler(void *userdata,
+                vrpn_TRACKERACCCHANGEHANDLER handler, int sensor);
+
+        // (un)Register a callback handler to handle a unit2sensor change
+        virtual int register_change_handler(void *userdata,
+                vrpn_TRACKERUNIT2SENSORCHANGEHANDLER handler, int sensor);
+        virtual int unregister_change_handler(void *userdata,
+                vrpn_TRACKERUNIT2SENSORCHANGEHANDLER handler, int sensor);
   protected:
 	typedef	struct vrpn_RTCS {
 		void				*userdata;
 		vrpn_TRACKERCHANGEHANDLER	handler;
 		struct vrpn_RTCS		*next;
 	} vrpn_TRACKERCHANGELIST;
-	vrpn_TRACKERCHANGELIST	*change_list;
+	vrpn_TRACKERCHANGELIST	*change_list[TRACKER_MAX_SENSORS + 1];
 
 	typedef	struct vrpn_RTVCS {
 		void				*userdata;
 		vrpn_TRACKERVELCHANGEHANDLER	handler;
 		struct vrpn_RTVCS		*next;
 	} vrpn_TRACKERVELCHANGELIST;
-	vrpn_TRACKERVELCHANGELIST	*velchange_list;
+	vrpn_TRACKERVELCHANGELIST *velchange_list[TRACKER_MAX_SENSORS + 1];
 
 	typedef	struct vrpn_RTACS {
 		void				*userdata;
 		vrpn_TRACKERACCCHANGEHANDLER	handler;
 		struct vrpn_RTACS		*next;
 	} vrpn_TRACKERACCCHANGELIST;
-	vrpn_TRACKERACCCHANGELIST	*accchange_list;
+	vrpn_TRACKERACCCHANGELIST *accchange_list[TRACKER_MAX_SENSORS + 1];
 
-	typedef struct vrpn_RTR2TCS {
+	typedef struct vrpn_RTT2RCS {
 		void				*userdata;
-		vrpn_TRACKERROOM2TRACKERCHANGEHANDLER handler;
-		struct vrpn_RTR2TCS		*next;
-	} vrpn_TRACKERROOM2TRACKERCHANGELIST;
-	vrpn_TRACKERROOM2TRACKERCHANGELIST *room2trackerchange_list;
+		vrpn_TRACKERTRACKER2ROOMCHANGEHANDLER handler;
+		struct vrpn_RTT2RCS		*next;
+	} vrpn_TRACKERTRACKER2ROOMCHANGELIST;
+	vrpn_TRACKERTRACKER2ROOMCHANGELIST *tracker2roomchange_list;
 
-	typedef struct vrpn_RTS2UCS {
+	typedef struct vrpn_RTU2SCS {
 		void                            *userdata;
-		vrpn_TRACKERSENSOR2UNITCHANGEHANDLER handler;
-		struct vrpn_RTS2UCS		*next;
-        } vrpn_TRACKERSENSOR2UNITCHANGELIST;
-	vrpn_TRACKERSENSOR2UNITCHANGELIST *sensor2unitchange_list;
+		vrpn_TRACKERUNIT2SENSORCHANGEHANDLER handler;
+		struct vrpn_RTU2SCS		*next;
+        } vrpn_TRACKERUNIT2SENSORCHANGELIST;
+	vrpn_TRACKERUNIT2SENSORCHANGELIST *unit2sensorchange_list[TRACKER_MAX_SENSORS + 1];
 
 	static int handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
 	static int handle_vel_change_message(void *userdata,
 			vrpn_HANDLERPARAM p);
 	static int handle_acc_change_message(void *userdata,
 			vrpn_HANDLERPARAM p);
-	static int handle_room2tracker_change_message(void *userdata,
+	static int handle_tracker2room_change_message(void *userdata,
 			vrpn_HANDLERPARAM p);
-	static int handle_sensor2unit_change_message(void *userdata,
+	static int handle_unit2sensor_change_message(void *userdata,
                         vrpn_HANDLERPARAM p);
 };
 

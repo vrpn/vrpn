@@ -92,8 +92,8 @@ public:
 
 	static void handle_plane(void *userdata,const vrpn_PHANTOMCB p);
         static void check_parameters(vrpn_PHANTOMCB *p);
-	static int handle_r2t_request(void *userdata, vrpn_HANDLERPARAM p);
-	static int handle_s2u_request(void *userdata, vrpn_HANDLERPARAM p);
+	static int handle_t2r_request(void *userdata, vrpn_HANDLERPARAM p);
+	static int handle_u2s_request(void *userdata, vrpn_HANDLERPARAM p);
 
 protected:
 	float update_rate;
