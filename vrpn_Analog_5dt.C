@@ -214,7 +214,18 @@ void vrpn_5dt::get_report (void)
 {
   int  l_ret;		// Return value from function call to be checked
 
-  _expected_chars = 9;
+  // XXX Sebastien Kuntz reports the following about the driver they have
+  // written:  It works great except for one small detail :
+  // for unknown reasons, there's an extra byte hanging around in the data
+  // stream sent by the 5DT glove in stream mode.
+  // We have the header, finger infos, pitch and roll, checksum and after
+  // that we receive a 0x55 Byte.
+  // The official doc (http://www.5dt.com/downloads/5DTDataGlove5Manual.pdf)
+  // says we should get only 9 bytes, so I don't know if it's a response
+  // from a command somewhere; but the fact is we receive 10 bytes.
+  // _expected_chars = 9;
+
+  _expected_chars = 10;
   gettimeofday(&timestamp, NULL);
   //--------------------------------------------------------------------
   // Read as many bytes of this report as we can, storing them

@@ -1,3 +1,11 @@
+2001-11-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Analog_5dt.C (vrpn_5dt::get_report) :
+		Changed it to expect 10 characters per report, since
+		that is what they are getting in France (they are the
+		only group that has the glove, and they wrote the
+		driver, so I does what they sez.
+
 2001-11-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Connection.C (vrpn_TranslationTable::addRemoteEntry) :
