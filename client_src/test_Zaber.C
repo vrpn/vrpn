@@ -3,13 +3,15 @@
 #include <signal.h>
 #include <string.h>
 #include "vrpn_Analog.h"
+#include "vrpn_Analog_Output.h"
 
 #ifndef _WIN32
 #include <strings.h>
 #endif
 
 #define POLL_INTERVAL       (2000000)	  // time to poll if no response in a while (usec)
-vrpn_Analog_Remote *ana;
+vrpn_Analog_Remote	  *ana;
+vrpn_Analog_Output_Remote *anaout;
 
 int done = 0;
 
@@ -53,6 +55,7 @@ void init (const char * devicename)
 {
 	fprintf(stderr, "Zaber's name is %s.\n", devicename);
 	ana = new vrpn_Analog_Remote (devicename);
+	anaout = new vrpn_Analog_Output_Remote(devicename);
 
 	// Set up the callback handlers
 	printf("Analog update: Analogs: [new values listed]\n");
@@ -69,6 +72,7 @@ void shutdown (void) {
   fprintf(stderr, "\nIn control-c handler.\n");
 
   if (ana) delete ana;
+  if (anaout) delete anaout;
   exit(0);
 }
 
@@ -122,14 +126,15 @@ void main (int argc, char * argv [])
 	  newval = analog_0+10000;
 	}
 	printf("Requesting change to %lf\n", newval);
-	ana->request_change_channel_value(0, newval);
+	anaout->request_change_channel_value(0, newval);
       } else {
 	printf("No value yet from Zaber, not sending change request\n");
       }
       gettimeofday(&timestamp, NULL);
     }
 
-    // Let the tracker and button do their things
+    // Let the devices do their things
+    anaout->mainloop();
     ana->mainloop();
 
     // Sleep for 1ms so we don't eat the CPU
