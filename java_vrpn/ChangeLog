@@ -1,4 +1,12 @@
-2002-08-12    <marshbur@cs.unc.edu>
+2002-08-13  David Marshburn  <marshbur@cs.unc.edu>
+
+	* AnalogRemoteListener.java:  cosmetic & comment changes
+	* ButtonRemoteListener.java:  changes exactly corresponsing to
+	those committed for AnalogRemoteListener.java on 2002-08-12
+	* ForceDeviceRemoteListener.java:  same
+	* TrackerRemoteListener.java:  same
+
+2002-08-12  David Marshburn  <marshbur@cs.unc.edu>
 
 	* AnalogRemoteListener.java:  
 	- more and better comments.

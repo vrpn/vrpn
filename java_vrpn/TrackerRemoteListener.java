@@ -1,280 +1,380 @@
 /***************************************************************************
- * Use this class to store updates in a vector and get them when you want
+ * Use this class to store Tracker-, Velocity- and AcceleraionUpdates in a 
+ * vector and get them when you want.  It is most useful if you don't want 
+ * to worry about your code running in a multi-threaded environment and 
+ * about vrpn possibly delivering device updates at arbitrary times.
  *
- * How it is currently set up...
+ * The Listener can be configured to buffer and return either all
+ * updates or only the last (the most recent) update.  Tracker, velocity
+ * and acceleration messages are buffered independently.  By default, the
+ * Listener keeps only the last update of each.
  * 
- * 1. The vector is emptied when all the updates are returned
- * 2. The vector keeps only the latest update when the mode is set to last
- * 
- * It's easy to change these settings, but if you're too lazy to do it,
- * contact Tatsuhiro Segi (segi@email.unc.edu)
+ * It is not intended that Listeners be shared among objects.  Each 
+ * entity in a program that is interested in hearing about updates 
+ * from some vrpn Tracker device (and which wishes to use this Listener
+ * mechanism) should create its own listener (even if multiple entities 
+ * wish to hear from the same device).
  ***************************************************************************/
 
 package vrpn;
-
 import java.util.Vector;
-
 
 public class TrackerRemoteListener
 	implements TrackerRemote.PositionChangeListener, 
-				TrackerRemote.VelocityChangeListener, 
-				TrackerRemote.AccelerationChangeListener
+	TrackerRemote.VelocityChangeListener, 
+	TrackerRemote.AccelerationChangeListener
 {
-	Vector trackerUpdates;
-	Vector velocityUpdates;
-	Vector accelerationUpdates;
-	
-	boolean returnLastTracker;
-	boolean returnLastVelocity;
-	boolean returnLastAcceleration;
+	public static final int ALL_UPDATES = 0;
+	public static final int LAST_UPDATE = 1;
 	
 	
-	public TrackerRemoteListener(TrackerRemote tracker)
+	public TrackerRemoteListener( TrackerRemote tracker )
 	{
-		tracker.addPositionChangeListener(this);
-		tracker.addVelocityChangeListener(this);
-		tracker.addAccelerationChangeListener(this);
 		
 		trackerUpdates = new Vector();
 		velocityUpdates = new Vector();
 		accelerationUpdates = new Vector();
 		
-		returnLastTracker = true;
-		returnLastVelocity = true;
-		returnLastAcceleration = true;
+		trackerBufferMode = LAST_UPDATE;
+		velocityBufferMode = LAST_UPDATE;
+		accelerationBufferMode = LAST_UPDATE;
+
+		tracker.addPositionChangeListener(this);
+		tracker.addVelocityChangeListener(this);
+		tracker.addAccelerationChangeListener(this);
 	}
 	
 	
-	//** Empty the vector when the mode is set to last
+	/**
+	 * Sets the buffering mode of the Listener to record and return only 
+	 * the most recent (the last, the latest) TrackerUpdate.
+	 */
 	public synchronized void setModeLastTrackerUpdate()
 	{
-		returnLastTracker = true;
-		
-		if (!trackerUpdates.isEmpty())
+		trackerBufferMode = LAST_UPDATE;
+		if( !trackerUpdates.isEmpty() )
 		{
 			Object temp = trackerUpdates.lastElement();
-		
 			trackerUpdates.removeAllElements();
 			trackerUpdates.addElement(temp);
 		}
 	}
 	
 	
+	/**
+	 * Sets the buffering mode of the Listener to record and return only 
+	 * the most recent (the last, the latest) VelocityUpdate.
+	 */
 	public synchronized void setModeLastVelocityUpdate()
 	{
-		returnLastVelocity = true;
-		
-		if (!velocityUpdates.isEmpty())
+		velocityBufferMode = LAST_UPDATE;
+		if( !velocityUpdates.isEmpty() )
 		{
 			Object temp = velocityUpdates.lastElement();
-		
 			velocityUpdates.removeAllElements();
 			velocityUpdates.addElement(temp);
 		}
 	}
 	
 	
+	/**
+	 * Sets the buffering mode of the Listener to record and return only 
+	 * the most recent (the last, the latest) AccelerationUpdate.
+	 */
 	public synchronized void setModeLastAccelerationUpdate()
 	{
-		returnLastAcceleration = true;
-		
-		if (!accelerationUpdates.isEmpty())
+		accelerationBufferMode = LAST_UPDATE;
+		if( !accelerationUpdates.isEmpty() )
 		{
 			Object temp = accelerationUpdates.lastElement();
-		
 			accelerationUpdates.removeAllElements();
 			accelerationUpdates.addElement(temp);
 		}
 	}
 	
 	
+	/**
+	 * Sets the buffering mode of the Listener to record and return all 
+	 * TrackerUpdates, beginning at the time this mode is first enabled.
+	 */
 	public synchronized void setModeAllTrackerUpdates()
 	{
-		returnLastTracker = false;
+		if( trackerBufferMode == LAST_UPDATE )
+		{
+			trackerUpdates.removeAllElements( );
+		}
+		trackerBufferMode = ALL_UPDATES;
 	}
 	
 	
+	/**
+	 * Sets the buffering mode of the Listener to record and return all 
+	 * VelocityUpdates, beginning at the time this mode is first enabled.
+	 */
 	public synchronized void setModeAllVelocityUpdates()
 	{
-		returnLastVelocity = false;
+		if( velocityBufferMode == LAST_UPDATE )
+		{
+			velocityUpdates.removeAllElements( );
+		}
+		velocityBufferMode = ALL_UPDATES;
 	}
 	
 	
+	/**
+	 * Sets the buffering mode of the Listener to record and return all 
+	 * AccelerationUpdates, beginning at the time this mode is first enabled.
+	 */
 	public synchronized void setModeAllAccelerationUpdates()
 	{
-		returnLastAcceleration = false;
+		if( accelerationBufferMode == LAST_UPDATE )
+		{
+			accelerationUpdates.removeAllElements( );
+		}
+		accelerationBufferMode = ALL_UPDATES;
 	}
 	
 	
-	public synchronized boolean getModeTrackerUpdate()
+	/**
+	 * @return TrackerRemoteListener.ALL_UPDATES if the Listener is recording and 
+	 * returning all TrackerUpdates; TrackerRemoteListener.LAST_UPDATE if only the 
+	 * latest TrackerUpdate.
+	 */
+	public synchronized int getModeTrackerUpdate()
 	{
-		return returnLastTracker;
+		return trackerBufferMode;
 	}
 	
 	
-	public synchronized boolean getModeVelocityUpdate()
+	/**
+	 * @return TrackerRemoteListener.ALL_UPDATES if the Listener is recording and 
+	 * returning all VelocityUpdates; TrackerRemoteListener.LAST_UPDATE if only the 
+	 * latest VelocityUpdate.
+	 */
+	public synchronized int getModeVelocityUpdate()
 	{
-		return returnLastVelocity;
+		return velocityBufferMode;
 	}
 	
 	
-	public synchronized boolean getModeAccelerationUpdate()
+	/**
+	 * @return TrackerRemoteListener.ALL_UPDATES if the Listener is recording and 
+	 * returning all AccelerationUpdates; TrackerRemoteListener.LAST_UPDATE if only the 
+	 * latest AccelerationUpdate.
+	 */
+	public synchronized int getModeAccelerationUpdate()
 	{
-		return returnLastAcceleration;
+		return accelerationBufferMode;
 	}
 	
 	
-	//** Empty the vector when all the updates are returned
+	/**
+	 * This method retreives the buffered TrackerUpdates from the Listener.
+	 * If the buffering mode is LAST_UPDATE, the last update received will
+	 * be returned (note that, in this mode, successive calls to getTrackerUpdate()
+	 * may return the same TrackerUpdate if no new updates were received in the 
+	 * interim).  If the buffering mode is ALL_UPDATES, all updates 
+	 * received since the last call to getTrackerUpdate() (or since ALL_UPDATES
+	 * mode was enabled) will be returned.
+	 * @return A Vector containing the buffered TrackerUpdates.  The number of
+	 * TrackerUpdates returned will depend on the buffering mode.  If there are
+	 * no TrackerUpdates buffered, an empty Vector will be returned.
+	 * @see TrackerRemoteListener.setModeLastTrackerUpdate
+	 * @see TrackerRemoteListener.setModeAllTrackerUpdates
+	 */
 	public synchronized Vector getTrackerUpdate()
 	{
-		if (trackerUpdates.isEmpty())
+		Vector v = new Vector( );
+		if( trackerUpdates.isEmpty() )
 		{
-			return null;
+			return v;
 		}
 		
-		if (returnLastTracker)
+		if( trackerBufferMode == LAST_UPDATE )
 		{
-			Vector last = new Vector();
-			
-			last.addElement(trackerUpdates.lastElement());
-			
-			return last;
+			v.addElement( trackerUpdates.lastElement() );
 		}
-		
-		else
+		else if( trackerBufferMode == ALL_UPDATES )
 		{
-			Vector all = new Vector();
-			
-			for (int i=0; i<trackerUpdates.size(); i++)
+			for( int i = 0; i < trackerUpdates.size(); i++ )
 			{
-				all.addElement(trackerUpdates.elementAt(i));
+				v.addElement( trackerUpdates.elementAt(i) );
 			}
-			
 			trackerUpdates.removeAllElements();
-			
-			return all;
 		}
-	}
+		return v;
+	} // end method getTrackerUpdate( )
 	
 	
+	/**
+	 * This method retreives the buffered VelocityUpdates from the Listener.
+	 * If the buffering mode is LAST_UPDATE, the last update received will
+	 * be returned (note that, in this mode, successive calls to getVelocityUpdate()
+	 * may return the same VelocityUpdate if no new updates were received in the 
+	 * interim).  If the buffering mode is ALL_UPDATES, all updates 
+	 * received since the last call to getVelocityUpdate() (or since ALL_UPDATES
+	 * mode was enabled) will be returned.
+	 * @return A Vector containing the buffered VelocityUpdates.  The number of
+	 * VelocityUpdates returned will depend on the buffering mode.  If there are
+	 * no VelocityUpdates buffered, an empty Vector will be returned.
+	 * @see TrackerRemoteListener.setModeLastVelocityUpdate
+	 * @see TrackerRemoteListener.setModeAllVelocityUpdates
+	 */
 	public synchronized Vector getVelocityUpdate()
 	{
-		if (velocityUpdates.isEmpty())
+		Vector v = new Vector( );
+		if( velocityUpdates.isEmpty() )
 		{
-			return null;
+			return v;
 		}
 		
-		if (returnLastVelocity)
+		if( velocityBufferMode == LAST_UPDATE )
 		{
-			Vector last = new Vector();
-			
-			last.addElement(velocityUpdates.lastElement());
-			
-			return last;
+			v.addElement( velocityUpdates.lastElement() );
 		}
-		
-		else
+		else if( velocityBufferMode == ALL_UPDATES )
 		{
-			Vector all = new Vector();
-			
-			for (int i=0; i<velocityUpdates.size(); i++)
+			for( int i = 0; i < velocityUpdates.size(); i++ )
 			{
-				all.addElement(velocityUpdates.elementAt(i));
+				v.addElement( velocityUpdates.elementAt(i) );
 			}
-			
 			velocityUpdates.removeAllElements();
-			
-			return all;
 		}
-	}
+		return v;
+	} // end method getVelocityUpdate( )
 	
 	
+	/**
+	 * This method retreives the buffered AccelerationUpdates from the Listener.
+	 * If the buffering mode is LAST_UPDATE, the last update received will
+	 * be returned (note that, in this mode, successive calls to getAcclerationUpdate()
+	 * may return the same AccelerationUpdate if no new updates were received in the 
+	 * interim).  If the buffering mode is ALL_UPDATES, all updates 
+	 * received since the last call to getAcclerationUpdate() (or since ALL_UPDATES
+	 * mode was enabled) will be returned.
+	 * @return A Vector containing the buffered AccelerationUpdates.  The number of
+	 * AccelerationUpdates returned will depend on the buffering mode.  If there are
+	 * no AccelerationUpdates buffered, an empty Vector will be returned.
+	 * @see TrackerRemoteListener.setModeLastAccelerationUpdate
+	 * @see TrackerRemoteListener.setModeAllAccelerationUpdates
+	 */
 	public synchronized Vector getAcclerationUpdate()
 	{
-		if (accelerationUpdates.isEmpty())
+		Vector v = new Vector( );
+		if( accelerationUpdates.isEmpty() )
 		{
-			return null;
+			return v;
 		}
 		
-		if (returnLastAcceleration)
+		if( accelerationBufferMode == LAST_UPDATE )
 		{
-			Vector last = new Vector();
-			
-			last.addElement(accelerationUpdates.lastElement());
-			
-			return last;
+			v.addElement( accelerationUpdates.lastElement() );
 		}
-		
-		else
+		else if( accelerationBufferMode == ALL_UPDATES )
 		{
-			Vector all = new Vector();
-			
-			for (int i=0; i<accelerationUpdates.size(); i++)
+			for( int i = 0; i < accelerationUpdates.size(); i++ )
 			{
-				all.addElement(accelerationUpdates.elementAt(i));
+				v.addElement( accelerationUpdates.elementAt(i) );
 			}
-			
 			accelerationUpdates.removeAllElements();
-			
-			return all;
 		}
-	}
+		return v;
+	} // end method getAccelerationUpdate( )
 	
 	
+	/**
+	 * @return The last (most recent, latest) TrackerUpdate received.  This function 
+	 * returns <code>null</code> if no updates have been recieved.  Note that
+	 * successive calls to getLastTrackerUpdate() may return the same TrackerUpdate
+	 * if no updates were received in the interim.
+	 */
 	public synchronized TrackerRemote.TrackerUpdate getLastTrackerUpdate()
 	{
-		TrackerRemote.TrackerUpdate tracker = (TrackerRemote.TrackerUpdate)(trackerUpdates.lastElement());
+		if( trackerUpdates.isEmpty( ) )
+			return null;
 		
-		return tracker;
+		return (TrackerRemote.TrackerUpdate) trackerUpdates.lastElement();
 	}
 	
 	
+	/**
+	 * @return The last (most recent, latest) VelocityUpdate received.  This function 
+	 * returns <code>null</code> if no updates have been recieved.  Note that
+	 * successive calls to getLastVelocityUpdate() may return the same VelocityUpdate
+	 * if no updates were received in the interim.
+	 */
 	public synchronized TrackerRemote.VelocityUpdate getLastVelocityUpdate()
 	{
-		TrackerRemote.VelocityUpdate vel = (TrackerRemote.VelocityUpdate)(velocityUpdates.lastElement());
+		if( velocityUpdates.isEmpty( ) )
+			return null;
 		
-		return vel;
+		return (TrackerRemote.VelocityUpdate) velocityUpdates.lastElement();
 	}
 	
 	
+	/**
+	 * @return The last (most recent, latest) AccelerationUpdate received.  This function 
+	 * returns <code>null</code> if no updates have been recieved.  Note that
+	 * successive calls to getLastAccelerationUpdate() may return the same 
+	 * AccelerationUpdate if no updates were received in the interim.
+	 */
 	public synchronized TrackerRemote.AccelerationUpdate getLastAccelerationUpdate()
 	{
-		TrackerRemote.AccelerationUpdate acc = (TrackerRemote.AccelerationUpdate)(accelerationUpdates.lastElement());
+		if( accelerationUpdates.isEmpty( ) )
+			return null;
 		
-		return acc;
+		return (TrackerRemote.AccelerationUpdate) accelerationUpdates.lastElement();
 	}
 	
 	
-	//** Keep only the last update if the mode is set to last
-	public synchronized void trackerPositionUpdate (TrackerRemote.TrackerUpdate u, TrackerRemote tracker)
+	/**
+	 * This is the handler that the TrackerRemote instance will call to deliver 
+	 * position updates.  This method is not intended to be called by user code.
+	 */
+	public synchronized void trackerPositionUpdate( TrackerRemote.TrackerUpdate u, TrackerRemote tracker )
 	{
-		if (returnLastTracker)
+		if( trackerBufferMode == LAST_UPDATE )
 		{
 			trackerUpdates.removeAllElements();
 		}
-			
 		trackerUpdates.addElement(u);
 	}
 	
 	
+	/**
+	 * This is the handler that the TrackerRemote instance will call to deliver 
+	 * velocity updates.  This method is not intended to be called by user code.
+	 */
 	public synchronized void trackerVelocityUpdate (TrackerRemote.VelocityUpdate v, TrackerRemote tracker)
 	{
-		if (returnLastVelocity)
+		if( velocityBufferMode == LAST_UPDATE )
 		{
 			velocityUpdates.removeAllElements();
 		}
-		
 		velocityUpdates.addElement(v);
 	}
 	
 	
+	/**
+	 * This is the handler that the TrackerRemote instance will call to deliver 
+	 * acceleration updates.  This method is not intended to be called by user code.
+	 */
 	public synchronized void trackerAccelerationUpdate (TrackerRemote.AccelerationUpdate a, TrackerRemote tracker )
 	{
-		if (returnLastAcceleration)
+		if( accelerationBufferMode == LAST_UPDATE )
 		{
 			accelerationUpdates.removeAllElements();
 		}
-		
 		accelerationUpdates.addElement(a);
 	}
-}
+
+
+	protected Vector trackerUpdates;
+	protected Vector velocityUpdates;
+	protected Vector accelerationUpdates;
+	
+	protected int trackerBufferMode;
+	protected int velocityBufferMode;
+	protected int accelerationBufferMode;
+	
+} // end class TrackerRemoteListener

@@ -1,11 +1,12 @@
 /***************************************************************************
- * Use this class to store updates in a vector and get them when you want.
- * It is most useful if you don't want to worry about your code running
- * in a multi-threaded environment and about vrpn possibly delivering 
- * device updates at arbitrary times.
+ * Use this class to store AnalogUpdates in a vector and get them when 
+ * you want.  It is most useful if you don't want to worry about your code 
+ * running in a multi-threaded environment and about vrpn possibly deliver-
+ * ing device updates at arbitrary times.
  *
  * The Listener can be configured to buffer and return either all
- * updates or only the last (the most recent) update.
+ * updates or only the last (the most recent) update.  By default, it
+ * keeps only the last update.
  * 
  * It is not intended that Listeners be shared among objects.  Each 
  * entity in a program that is interested in hearing about updates 
@@ -15,16 +16,15 @@
  ***************************************************************************/
 
 package vrpn;
-
 import java.util.Vector;
-
 
 public class AnalogRemoteListener implements AnalogRemote.AnalogChangeListener
 {
 	public static final int ALL_UPDATES = 0;
 	public static final int LAST_UPDATE = 1;
 	
-	public AnalogRemoteListener(AnalogRemote analog)
+	
+	public AnalogRemoteListener( AnalogRemote analog )
 	{
 		analogUpdates = new Vector();		
 		bufferMode = LAST_UPDATE;
@@ -39,11 +39,9 @@ public class AnalogRemoteListener implements AnalogRemote.AnalogChangeListener
 	public synchronized void setModeLastAnalogUpdate()
 	{
 		bufferMode = LAST_UPDATE;
-		
 		if (!analogUpdates.isEmpty())
 		{
 			Object temp = analogUpdates.lastElement();
-		
 			analogUpdates.removeAllElements();
 			analogUpdates.addElement(temp);
 		}
@@ -110,7 +108,7 @@ public class AnalogRemoteListener implements AnalogRemote.AnalogChangeListener
 			analogUpdates.removeAllElements();
 		}
 		return v;
-	}
+	} // end method getAnalogUpdate()
 
 	
 	/**
@@ -138,7 +136,6 @@ public class AnalogRemoteListener implements AnalogRemote.AnalogChangeListener
 		{
 			analogUpdates.removeAllElements();
 		}
-		
 		analogUpdates.addElement(u);
 	}
 
@@ -146,5 +143,4 @@ public class AnalogRemoteListener implements AnalogRemote.AnalogChangeListener
 	protected Vector analogUpdates;
 	protected int bufferMode;
 	
-	
-}
+} // end class AnalogRemoteListener

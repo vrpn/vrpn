@@ -1,254 +1,338 @@
 /***************************************************************************
- * Use this class to store updates in a vector and get them when you want
+ * Use this class to store ForceChanges, ForceErrors and SCPChanges in a 
+ * vector and get them when you want.  It is most useful if you don't want 
+ * to worry about your code running in a multi-threaded environment and 
+ * about vrpn possibly delivering device updates at arbitrary times.
  *
- * How it is currently set up...
+ * The Listener can be configured to buffer and return either all
+ * updates or only the last (the most recent) update.  Force messages,
+ * SCP messages and force-error messages are buffered independently.
+ * By default, the Listener keeps only the last update of each.
  * 
- * 1. The vector is emptied when all the updates are returned
- * 2. The vector keeps only the latest update when the mode is set to last
- * 
- * It's easy to change these settings, but if you're too lazy to do it,
- * contact Tatsuhiro Segi (segi@email.unc.edu)
+ * It is not intended that Listeners be shared among objects.  Each 
+ * entity in a program that is interested in hearing about updates 
+ * from some vrpn Force device (and which wishes to use this Listener
+ * mechanism) should create its own listener (even if multiple entities 
+ * wish to hear from the same device).
  ***************************************************************************/
 
 package vrpn;
-
 import java.util.Vector;
-
 
 public class ForceDeviceRemoteListener
 	implements ForceDeviceRemote.ForceChangeListener,
-				ForceDeviceRemote.ForceErrorListener,
-				ForceDeviceRemote.SCPChangeListener
+	ForceDeviceRemote.ForceErrorListener,
+	ForceDeviceRemote.SCPChangeListener
 {
-	Vector forceUpdates;
-	Vector errorUpdates;
-	Vector SCPUpdates;
-	
-	boolean returnLastForce;
-	boolean returnLastError;
-	boolean returnLastSCP;
+	public static final int ALL_UPDATES = 0;
+	public static final int LAST_UPDATE = 1;
 	
 	
 	public ForceDeviceRemoteListener(ForceDeviceRemote force)
 	{
+		forceUpdates = new Vector();
+		errorUpdates = new Vector();
+		scpUpdates = new Vector();
+		
+		forceBufferMode = LAST_UPDATE;
+		errorBufferMode = LAST_UPDATE;
+		scpBufferMode = LAST_UPDATE;
+		
 		force.addForceChangeListener(this);
 		force.addForceErrorListener(this);
 		force.addSCPChangeListener(this);
-		
-		forceUpdates = new Vector();
-		errorUpdates = new Vector();
-		SCPUpdates = new Vector();
-		
-		returnLastForce = true;
-		returnLastError = true;
-		returnLastSCP = true;
 	}
 	
 	
-	//** Empty the vector when the mode is set to last
+	/**
+	 * Sets the buffering mode of the Listener to record and return only 
+	 * the most recent (the last, the latest) ForceChange.
+	 */
 	public synchronized void setModeLastForceUpdate()
 	{
-		returnLastForce = true;
-		
+		forceBufferMode = LAST_UPDATE;
 		if (!forceUpdates.isEmpty())
 		{
 			Object temp = forceUpdates.lastElement();
-		
 			forceUpdates.removeAllElements();
 			forceUpdates.addElement(temp);
 		}
 	}
 	
 	
+	/**
+	 * Sets the buffering mode of the Listener to record and return only 
+	 * the most recent (the last, the latest) ForceError.
+	 */
 	public synchronized void setModeLastForceErrorUpdate()
 	{
-		returnLastError = true;
-		
+		errorBufferMode = LAST_UPDATE;
 		if (!errorUpdates.isEmpty())
 		{
 			Object temp = errorUpdates.lastElement();
-		
 			errorUpdates.removeAllElements();
 			errorUpdates.addElement(temp);
 		}
 	}
 	
 	
+	/**
+	 * Sets the buffering mode of the Listener to record and return only 
+	 * the most recent (the last, the latest) SCPChange.
+	 */
 	public synchronized void setModeLastSCPUpdate()
 	{
-		returnLastSCP = true;
-		
-		if (!SCPUpdates.isEmpty())
+		scpBufferMode = LAST_UPDATE;
+		if (!scpUpdates.isEmpty())
 		{
-			Object temp = SCPUpdates.lastElement();
-		
-			SCPUpdates.removeAllElements();
-			SCPUpdates.addElement(temp);
+			Object temp = scpUpdates.lastElement();
+			scpUpdates.removeAllElements();
+			scpUpdates.addElement(temp);
 		}
 	}
 	
 	
+	/**
+	 * Sets the buffering mode of the Listener to record and return all 
+	 * ForceChanges, beginning at the time this mode is first enabled.
+	 */
 	public synchronized void setModeAllForceUpdates()
 	{
-		returnLastForce = false;
+		if( forceBufferMode == LAST_UPDATE )
+		{
+			forceUpdates.removeAllElements( );
+		}
+		forceBufferMode = ALL_UPDATES;
 	}
 	
 	
+	/**
+	 * Sets the buffering mode of the Listener to record and return all 
+	 * ForceErrors, beginning at the time this mode is first enabled.
+	 */
 	public synchronized void setModeAllForceErrorUpdates()
 	{
-		returnLastError = false;
+		if( errorBufferMode == LAST_UPDATE )
+		{
+			errorUpdates.removeAllElements( );
+		}
+		errorBufferMode = ALL_UPDATES;
 	}
 	
 	
+	/**
+	 * Sets the buffering mode of the Listener to record and return all 
+	 * SCPChanges, beginning at the time this mode is first enabled.
+	 */
 	public synchronized void setModeAllSCPUpdates()
 	{
-		returnLastSCP = false;
+		if( forceBufferMode == LAST_UPDATE )
+		{
+			scpUpdates.removeAllElements( );
+		}
+		scpBufferMode = ALL_UPDATES;
 	}
 	
 	
-	public synchronized boolean getModeForceUpdate()
+	/**
+	 * @return ForceDeviceRemoteListener.ALL_UPDATES if the Listener is recording and 
+	 * returning all ForceChanges; ForceDeviceRemoteListener.LAST_UPDATE if only the 
+	 * latest ForceChanges.
+	 */
+	public synchronized int getModeForceUpdate()
 	{
-		return returnLastForce;
+		return forceBufferMode;
 	}
 	
 	
-	public synchronized boolean getModeForceErrorUpdate()
+	/**
+	 * @return ForceDeviceRemoteListener.ALL_UPDATES if the Listener is recording and 
+	 * returning all ForceErrors; ForceDeviceRemoteListener.LAST_UPDATE if only the 
+	 * latest ForceErrors.
+	 */
+	public synchronized int getModeForceErrorUpdate()
 	{
-		return returnLastError;
+		return errorBufferMode;
 	}
 	
 	
-	public synchronized boolean getModeSCPUpdate()
+	/**
+	 * @return ForceDeviceRemoteListener.ALL_UPDATES if the Listener is recording and 
+	 * returning all SCPUpdates; ForceDeviceRemoteListener.LAST_UPDATE if only the 
+	 * latest SCPUpdates.
+	 */
+	public synchronized int getModeSCPUpdate()
 	{
-		return returnLastSCP;
+		return scpBufferMode;
 	}
 	
 	
-	//** Empty the vector when all the updates are returned
+	/**
+	 * This method retreives the buffered ForceChanges from the Listener.
+	 * If the buffering mode is LAST_UPDATE, the last update received will
+	 * be returned (note that, in this mode, successive calls to getForceUpdate()
+	 * may return the same ForceChange if no new changes were received in the 
+	 * interim).  If the buffering mode is ALL_UPDATES, all changes 
+	 * received since the last call to getForceUpdate() (or since ALL_UPDATES
+	 * mode was enabled) will be returned.
+	 * @return A Vector containing the buffered ForceChanges.  The number of
+	 * ForceChanges returned will depend on the buffering mode.  If there are
+	 * no ForceChanges buffered, an empty Vector will be returned.
+	 * @see ForceDeviceRemoteListener.setModeLastForceUpdate
+	 * @see ForceDeviceRemoteListener.setModeAllForcegUpdates
+	 */
 	public synchronized Vector getForceUpdate()
 	{
-		if (forceUpdates.isEmpty())
+		Vector v = new Vector( );
+		if( forceUpdates.isEmpty() )
 		{
-			return null;
+			return v;
 		}
 		
-		if (returnLastForce)
+		if( forceBufferMode == LAST_UPDATE )
 		{
-			Vector last = new Vector();
-			
-			last.addElement(forceUpdates.lastElement());
-			
-			return last;
+			v.addElement( forceUpdates.lastElement() );
 		}
-		
-		else
+		else if( forceBufferMode == ALL_UPDATES )
 		{
-			Vector all = new Vector();
-			
-			for (int i=0; i<forceUpdates.size(); i++)
+			for( int i = 0; i < forceUpdates.size(); i++ )
 			{
-				all.addElement(forceUpdates.elementAt(i));
+				v.addElement( forceUpdates.elementAt(i) );
 			}
-			
 			forceUpdates.removeAllElements();
-			
-			return all;
 		}
-	}
+		return v;
+	} // end method getForceUpdate()
 	
 	
+	/**
+	 * This method retreives the buffered ForceErrors from the Listener.
+	 * If the buffering mode is LAST_UPDATE, the last update received will
+	 * be returned (note that, in this mode, successive calls to getForceErrorUpdate()
+	 * may return the same ForceError if no new changes were received in the 
+	 * interim).  If the buffering mode is ALL_UPDATES, all changes 
+	 * received since the last call to getForceErrorUpdate() (or since ALL_UPDATES
+	 * mode was enabled) will be returned.
+	 * @return A Vector containing the buffered ForceErrors.  The number of
+	 * ForceErrors returned will depend on the buffering mode.  If there are
+	 * no ForceErrors buffered, an empty Vector will be returned.
+	 * @see ForceDeviceRemoteListener.setModeLastErrorUpdate
+	 * @see ForceDeviceRemoteListener.setModeAllErrorUpdates
+	 */
 	public synchronized Vector getForceErrorUpdate()
 	{
-		if (errorUpdates.isEmpty())
+		Vector v = new Vector( );
+		if( errorUpdates.isEmpty() )
 		{
-			return null;
+			return v;
 		}
 		
-		if (returnLastError)
+		if( errorBufferMode == LAST_UPDATE )
 		{
-			Vector last = new Vector();
-			
-			last.addElement(errorUpdates.lastElement());
-			
-			return last;
+			v.addElement( errorUpdates.lastElement() );
 		}
-		
-		else
+		else if( errorBufferMode == ALL_UPDATES )
 		{
-			Vector all = new Vector();
-			
-			for (int i=0; i<errorUpdates.size(); i++)
+			for( int i = 0; i < errorUpdates.size(); i++ )
 			{
-				all.addElement(errorUpdates.elementAt(i));
+				v.addElement( errorUpdates.elementAt(i) );
 			}
-			
 			errorUpdates.removeAllElements();
-			
-			return all;
 		}
-	}
+		return v;
+	} // end method getForceErrorUpdate()
+
 	
-	
+	/**
+	 * This method retreives the buffered SCPChanges from the Listener.
+	 * If the buffering mode is LAST_UPDATE, the last update received will
+	 * be returned (note that, in this mode, successive calls to getSCPUpdate()
+	 * may return the same SCPChange if no new changes were received in the 
+	 * interim).  If the buffering mode is ALL_UPDATES, all changes 
+	 * received since the last call to getSCPUpdate() (or since ALL_UPDATES
+	 * mode was enabled) will be returned.
+	 * @return A Vector containing the buffered SCPChanges.  The number of
+	 * SCPChanges returned will depend on the buffering mode.  If there are
+	 * no SCPChanges buffered, an empty Vector will be returned.
+	 * @see ForceDeviceRemoteListener.setModeLastSCPUpdate
+	 * @see ForceDeviceRemoteListener.setModeAllSCPUpdates
+	 */
 	public synchronized Vector getSCPUpdate()
 	{
-		if (SCPUpdates.isEmpty())
+		Vector v = new Vector( );
+		if( scpUpdates.isEmpty() )
 		{
-			return null;
+			return v;
 		}
 		
-		if (returnLastSCP)
+		if( scpBufferMode == LAST_UPDATE )
 		{
-			Vector last = new Vector();
-			
-			last.addElement(SCPUpdates.lastElement());
-			
-			return last;
+			v.addElement( scpUpdates.lastElement() );
 		}
-		
-		else
+		else if( errorBufferMode == ALL_UPDATES )
 		{
-			Vector all = new Vector();
-			
-			for (int i=0; i<SCPUpdates.size(); i++)
+			for( int i = 0; i < scpUpdates.size(); i++ )
 			{
-				all.addElement(SCPUpdates.elementAt(i));
+				v.addElement( scpUpdates.elementAt(i) );
 			}
-			
-			SCPUpdates.removeAllElements();
-			
-			return all;
+			scpUpdates.removeAllElements();
 		}
-	}
-	
-	
+		return v;
+	} // end method getForceErrorUpdate()
+
+		
+	/**
+	 * @return The last (most recent, latest) ForceChange received.  This function 
+	 * returns <code>null</code> if no updates have been recieved.  Note that
+	 * successive calls to getLastForceUpdate() may return the same ForceChange
+	 * if no updates were received in the interim.
+	 */
 	public synchronized ForceDeviceRemote.ForceChange getLastForceUpdate()
 	{
-		ForceDeviceRemote.ForceChange force = (ForceDeviceRemote.ForceChange)(forceUpdates.lastElement());
+		if( forceUpdates.isEmpty( ) )
+			return null;
 		
-		return force;
+		return (ForceDeviceRemote.ForceChange) forceUpdates.lastElement();
 	}
 	
 	
+	/**
+	 * @return The last (most recent, latest) ForceError received.  This function 
+	 * returns <code>null</code> if no updates have been recieved.  Note that
+	 * successive calls to getLastErrorUpdate() may return the same ForceError
+	 * if no updates were received in the interim.
+	 */
 	public synchronized ForceDeviceRemote.ForceError getLastErrorUpdate()
 	{
-		ForceDeviceRemote.ForceError error = (ForceDeviceRemote.ForceError)(errorUpdates.lastElement());
+		if( errorUpdates.isEmpty( ) )
+			return null;
 		
-		return error;
+		return (ForceDeviceRemote.ForceError) errorUpdates.lastElement();
 	}
 	
 	
+	/**
+	 * @return The last (most recent, latest) SCPChange received.  This function 
+	 * returns <code>null</code> if no updates have been recieved.  Note that
+	 * successive calls to getLastSCPUpdate() may return the same SCPChange
+	 * if no updates were received in the interim.
+	 */
 	public synchronized ForceDeviceRemote.SCPChange getLastSCPUpdate()
 	{
-		ForceDeviceRemote.SCPChange scp = (ForceDeviceRemote.SCPChange)(SCPUpdates.lastElement());
+		if( scpUpdates.isEmpty( ) )
+			return null;
 		
-		return scp;
+		return (ForceDeviceRemote.SCPChange) scpUpdates.lastElement();
 	}
 	
 	
-	//** Keep only the last update if the mode is set to last
+	/**
+	 * This is the handler that the ForceDeviceRemote instance will call to deliver 
+	 * force change messages.  This method is not intended to be called by user code.
+	 */
 	public synchronized void forceUpdate (ForceDeviceRemote.ForceChange f, ForceDeviceRemote force)
 	{
-		if (returnLastForce)
+		if( forceBufferMode == LAST_UPDATE )
 		{
 			forceUpdates.removeAllElements();
 		}
@@ -257,9 +341,13 @@ public class ForceDeviceRemoteListener
 	}
 	
 	
+	/**
+	 * This is the handler that the ForceDeviceRemote instance will call to deliver 
+	 * force error messages.  This method is not intended to be called by user code.
+	 */
 	public synchronized void forceError (ForceDeviceRemote.ForceError e, ForceDeviceRemote force)
 	{
-		if (returnLastError)
+		if( errorBufferMode == LAST_UPDATE )
 		{
 			errorUpdates.removeAllElements();
 		}
@@ -268,13 +356,27 @@ public class ForceDeviceRemoteListener
 	}
 	
 	
+	/**
+	 * This is the handler that the ForceDeviceRemote instance will call to deliver 
+	 * SCP change messages.  This method is not intended to be called by user code.
+	 */
 	public synchronized void scpUpdate (ForceDeviceRemote.SCPChange s, ForceDeviceRemote force )
 	{
-		if (returnLastSCP)
+		if( scpBufferMode == LAST_UPDATE )
 		{
-			SCPUpdates.removeAllElements();
+			scpUpdates.removeAllElements();
 		}
 		
-		SCPUpdates.addElement(s);
+		scpUpdates.addElement(s);
 	}
-}
+	
+	
+	protected Vector forceUpdates;
+	protected Vector errorUpdates;
+	protected Vector scpUpdates;
+	
+	protected int forceBufferMode;
+	protected int errorBufferMode;
+	protected int scpBufferMode;
+
+} // end class ForceDeviceRemoteListener
