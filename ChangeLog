@@ -1,3 +1,12 @@
+2002-05-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Zaber.C : Code to handle report types 20 and 255.  Added code to tell the
+			 remote device its values upon initial connection.  Code to
+			 tell it to start off more slowly and have a smaller maximum
+			 speed (to help with torque).  Fixed timeout code so that it
+			 will reset correctly if devices are unplugged and replugged.
+	* vrpn_Zaber.h : Code to tell the remote device its values upon initial connection
+
 2002-05-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Analog.C : Added capability to send requests from an analog remote

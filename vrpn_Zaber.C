@@ -29,8 +29,8 @@
 #define	ZAB_WARNING(msg)    { send_text_message(msg, timestamp, vrpn_TEXT_WARNING) ; if (d_connection) d_connection->send_pending_reports(); }
 #define	ZAB_ERROR(msg)	    { send_text_message(msg, timestamp, vrpn_TEXT_ERROR) ; if (d_connection) d_connection->send_pending_reports(); }
 
-#define MAX_TIME_INTERVAL       (2000000) // max time between reports (usec)
-#define POLL_INTERVAL       (1000000)	  // time to poll if no response in a while (usec)
+#define TIMEOUT_TIME_INTERVAL   (2000000L) // max time between reports (usec)
+#define POLL_INTERVAL		(1000000L)	  // time to poll if no response in a while (usec)
 
 static	unsigned long	duration(struct timeval t1, struct timeval t2)
 {
@@ -136,6 +136,12 @@ int	vrpn_Zaber::reset(void)
 	char	errmsg[256];
 
 	//-----------------------------------------------------------------------
+	// Sleep a second and then drain the input buffer to make sure we start
+	// with a fresh slate.
+	vrpn_SleepMsecs(1000);
+	vrpn_flush_input_buffer(serial_fd);
+
+	//-----------------------------------------------------------------------
 	// Send the command to request that the units renumber themselves.  Then
 	// wait 1 second to give them time to do so.
 	if (!send_command(0,2,0)) {
@@ -147,17 +153,22 @@ int	vrpn_Zaber::reset(void)
 	//-----------------------------------------------------------------------
 	// Go one by one and request the units to stop.  This will cause them to
 	// say where they are.  When one doesn't respond, we've figured out how
-	// many we have!
+	// many we have!  Also, set it to report position when moving at constant
+	// linear velocity and set the minimum step size and maximum step size
+	// to be slower than the defaults to hopefully give more torque.
 
 	num_channel = 0;
 	do {
+	  int expected_chars = 4*6;
 	  vrpn_flush_input_buffer(serial_fd);
-	  send_command(num_channel+1, 23, 0);
-	  send_command(num_channel+1, 40, 16, 0, 0, 0);
+	  send_command(num_channel+1, 23, 0); vrpn_SleepMsecs(10);
+	  send_command(num_channel+1, 40, 16, 0, 0, 0); vrpn_SleepMsecs(10);
+	  send_command(num_channel+1, 41, 128, 0, 0, 0); vrpn_SleepMsecs(10);
+	  send_command(num_channel+1, 42, 128, 0, 0, 0);
 
 	  timeout.tv_sec = 0;
 	  timeout.tv_usec = 30000;
-	  ret = vrpn_read_available_characters(serial_fd, inbuf, 12, &timeout);
+	  ret = vrpn_read_available_characters(serial_fd, inbuf, expected_chars, &timeout);
 	  if (ret < 0) {
 		  perror("vrpn_Zaber::reset(): Error reading position from device");
 		  return -1;
@@ -165,8 +176,8 @@ int	vrpn_Zaber::reset(void)
 	  if (ret == 0) {
 	    break;  //< No more devices found
 	  }
-	  if (ret != 12) {
-		  sprintf(errmsg,"reset: Got %d of %d expected characters for position\n",ret, 12);
+	  if (ret != expected_chars) {
+		  sprintf(errmsg,"reset: Got %d of %d expected characters for position\n",ret, expected_chars);
 		  ZAB_ERROR(errmsg);
 		  return -1;
 	  }
@@ -394,12 +405,18 @@ void	vrpn_Zaber::mainloop()
 	    struct timeval current_time;
 	    gettimeofday(&current_time, NULL);
 	    if ( duration(current_time,timestamp) > POLL_INTERVAL) {
-	      // Tell unit 1 to stop, which will cause it to respond.
-	      send_command(1,23,0);
-	      return;
+	      static struct timeval last_poll = {0, 0};
+
+	      if (duration(current_time, last_poll) > TIMEOUT_TIME_INTERVAL) {
+		// Tell unit 1 to stop, which will cause it to respond.
+		send_command(1,23,0);
+	        gettimeofday(&last_poll, NULL);
+	      } else {
+		return;
+	      }
 	    }
 
-	    if ( duration(current_time,timestamp) > MAX_TIME_INTERVAL) {
+	    if ( duration(current_time,timestamp) > TIMEOUT_TIME_INTERVAL) {
 		    sprintf(errmsg,"Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);
 		    ZAB_ERROR(errmsg);
 		    status = STATUS_RESETTING;
