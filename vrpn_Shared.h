@@ -37,6 +37,8 @@ extern int vrpn_TimevalGreater (const struct timeval & tv1,
                                 const struct timeval & tv2);
 extern double vrpn_TimevalMsecs( const struct timeval& tv1 );
 
+extern struct timeval vrpn_MsecsTimeval( const double dMsecs );
+
 extern void vrpn_SleepMsecs( double dMsecs );
 
 // xform a double to/from network order -- like htonl and htons

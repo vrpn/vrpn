@@ -1,7 +1,4 @@
-/*                               -*- Mode: C -*- 
- * 
- * Copyright (C) Blair MacIntyre 1995, Columbia University 1995           
- * 
+/*
  * Author          : Ruigang Yang
  * Created On      : Tue Mar 17 15:50:46 1998
  * Last Modified By: Ruigang Yang
@@ -9,11 +6,15 @@
  * Update Count    : 26
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Analog.h,v $
- * $Date: 1998/12/02 19:44:54 $
- * $Author: hudson $
- * $Revision: 1.4 $
+ * $Date: 1999/01/29 19:42:03 $
+ * $Author: weberh $
+ * $Revision: 1.5 $
  * 
  * $Log: vrpn_Analog.h,v $
+ * Revision 1.5  1999/01/29 19:42:03  weberh
+ * cleaned up analog and shared code, added new class to read national
+ * instrument d/a card.
+ *
  * Revision 1.4  1998/12/02 19:44:54  hudson
  * Converted JoyFly so it could run on the same server as the Joybox whose
  * data it is processing.  (Previously they had to run on different servers,
@@ -55,11 +56,11 @@ class vrpn_Analog {
 public:
 	vrpn_Analog (const char * name, vrpn_Connection * c = NULL);
 
-	// Print the status of the button
+	// Print the status of the analog device
 	void print(void);
 
 	// Called once through each main loop iteration to handle
-	// button updates.
+	// updates.
 	virtual void mainloop(void) = 0;	// Report changes to conneciton
 
   protected:
@@ -68,10 +69,8 @@ public:
 	double	last[vrpn_CHANNEL_MAX];
 	int	num_channel;
 	struct timeval	timestamp;
-	long my_id;			// ID of this button to connection
-	//long message_id;		// ID of button message to
-					     //connection;
-	long channel_m_id; // what's this for?? channel message id??
+	long my_id;	                   // ID of this device to connection
+	long channel_m_id;                 // channel message id
 	int status; 
 
 	virtual int encode_to(char *buf);
@@ -103,11 +102,9 @@ protected:
 
 
 typedef	struct {
-	struct timeval	msg_time;	// Time of button press/release
-	int		num_channel;		
-                    // how many channels
-	double		channel[vrpn_CHANNEL_MAX];  
-                    // channel diliever analog values
+	struct timeval	msg_time;	// Timestamp of analog data
+	int		num_channel;    // how many channels
+	double		channel[vrpn_CHANNEL_MAX];  // analog values
 } vrpn_ANALOGCB;
 
 typedef void (*vrpn_ANALOGCHANGEHANDLER) (void * userdata,
@@ -115,7 +112,7 @@ typedef void (*vrpn_ANALOGCHANGEHANDLER) (void * userdata,
 
 // Open a analog device that is on the other end of a connection
 // and handle updates from it.  This is the type of analog device
-// that user code will  deal with.
+// that user code will deal with.
 
 class vrpn_Analog_Remote: public vrpn_Analog {
   public:

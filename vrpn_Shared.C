@@ -96,7 +96,12 @@ double vrpn_TimevalMsecs( const struct timeval& tv ) {
   return tv.tv_sec*1000.0 + tv.tv_usec/1000.0;
 }
 
-
+struct timeval vrpn_MsecsTimeval( const double dMsecs ) {
+  struct timeval tv;
+  tv.tv_sec = (long) floor(dMsecs/1000.0);
+  tv.tv_usec = (long) ((dMsecs/1000.0 - tv.tv_sec)*1e6);
+  return tv;
+}
 
 void vrpn_SleepMsecs( double dMsecs ) {
   struct timeval tvStart, tvNow;

@@ -1,23 +1,4 @@
-/*                               -*- Mode: C -*- 
- * 
- * This library is free software; you can redistribute it and/or          
- * modify it under the terms of the GNU Library General Public            
- * License as published by the Free Software Foundation.                  
- * This library is distributed in the hope that it will be useful,        
- * but WITHOUT ANY WARRANTY; without even the implied warranty of         
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU      
- * Library General Public License for more details.                       
- * If you do not have a copy of the GNU Library General Public            
- * License, write to The Free Software Foundation, Inc.,                  
- * 675 Mass Ave, Cambridge, MA 02139, USA.                                
- *                                                                        
- * For more information on this program, contact Blair MacIntyre          
- * (bm@cs.columbia.edu) or Steven Feiner (feiner@cs.columbia.edu)         
- * at the Computer Science Dept., Columbia University,                    
- * 500 W 120th St, Room 450, New York, NY, 10027.                         
- *                                                                        
- * Copyright (C) Blair MacIntyre 1995, Columbia University 1995           
- * 
+/*
  * Author          : Ruigang Yang
  * Created On      : Tue Mar 17 16:01:46 1998
  * Last Modified By: Ruigang Yang
@@ -25,11 +6,15 @@
  * Update Count    : 47
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Analog.C,v $
- * $Date: 1998/12/02 19:44:53 $
- * $Author: hudson $
- * $Revision: 1.7 $
+ * $Date: 1999/01/29 19:42:01 $
+ * $Author: weberh $
+ * $Revision: 1.8 $
  * 
  * $Log: vrpn_Analog.C,v $
+ * Revision 1.8  1999/01/29 19:42:01  weberh
+ * cleaned up analog and shared code, added new class to read national
+ * instrument d/a card.
+ *
  * Revision 1.7  1998/12/02 19:44:53  hudson
  * Converted JoyFly so it could run on the same server as the Joybox whose
  * data it is processing.  (Previously they had to run on different servers,
@@ -69,7 +54,7 @@
  * HISTORY
  */
 
-static char rcsid[] = "$Id: vrpn_Analog.C,v 1.7 1998/12/02 19:44:53 hudson Exp $";
+static char rcsid[] = "$Id: vrpn_Analog.C,v 1.8 1999/01/29 19:42:01 weberh Exp $";
 
 #include "vrpn_Analog.h"
 #include <stdio.h>
@@ -201,11 +186,11 @@ vrpn_Analog_Remote::vrpn_Analog_Remote (const char * name,
 		fprintf(stderr,"vrpn_Analog_Remote: Can't get connection!\n");
 	}
 
-	// XXX These should be read from a description message that comes
-	// from the Analog device (as a response to a query?).  For now,
-	// we assume a JoyStick
-	num_channel = 7;
-	for (i = 0; i < num_channel; i++) {
+	// At the start, as far as the client knows, the device could have
+	// max channels -- the number of channels is specified in each
+	// message.
+	num_channel=vrpn_CHANNEL_MAX;
+	for (i = 0; i < vrpn_CHANNEL_MAX; i++) {
 		channel[i] = last[i] = 0;
 	}
 	gettimeofday(&timestamp, NULL);
@@ -285,22 +270,7 @@ int vrpn_Analog_Remote::handle_change_message(void *userdata,
 	vrpn_ANALOGCB	cp;
 	vrpn_ANALOGCHANGELIST *handler = me->change_list;
 
-	//fprintf(stderr, "Analog_Remote::handle_chg_msg\n");
-	// Fill in the parameters to the button from the message;
-
-	/*
-	// XXX here we assume that analog device is a Joystick     ****
-
-
-	if (p.payload_len != (7+1)*sizeof(double)) {
-		fprintf(stderr,"vrpn_Analog: change message payload error\n");
-		fprintf(stderr,"             (got %d, expected %d)\n",
-			p.payload_len, 2*sizeof(long));
-		return -1;
-	}*/
 	cp.msg_time = p.msg_time;
-	//char * buf= (char *) p.buffer;
-
 	cp.num_channel = ntohd(params[0]);
 
 	double * chandata = (double *) params+1;
