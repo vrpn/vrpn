@@ -1,3 +1,12 @@
+2003-05-21  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Connection.C:
+	(vrpn_Endpoint::setLogNames):  set the in or out log-file name only
+	if each is non-NULL
+	(vrpn_Connection::handle_log_message):  correctly handle the case in
+	which only one log file has been requested (in or out).  previously
+	assumed both would be requested.
+
 2003-05-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_TempImager.C : Fixes bug by which a new imager client would

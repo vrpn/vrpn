@@ -4214,9 +4214,12 @@ int vrpn_Endpoint::handle_type_message(void *userdata,
   return 0;
 }
 
-void vrpn_Endpoint::setLogNames (const char * inName, const char * outName) {
-  d_inLog->setName(inName);
-  d_outLog->setName(outName);
+void vrpn_Endpoint::setLogNames (const char * inName, const char * outName) 
+{
+	if( inName != NULL )
+		d_inLog->setName(inName);
+	if( outName != NULL )
+		d_outLog->setName(outName);
 }
 
 int vrpn_Endpoint::openLogs (void) {
@@ -4524,9 +4527,16 @@ int vrpn_Connection::handle_log_message (void * userdata,
   // TCH 16 Feb 01
   vrpn_unbuffer(bp, &inNameLen);
   vrpn_unbuffer(bp, &outNameLen);
-  endpoint->setLogNames(*bp, *bp + inNameLen + 1);
-  retval = endpoint->d_inLog->open();
-  retval = endpoint->d_outLog->open();
+
+  // must deal properly with only opening one log file
+  //  the log message contains "" (an empty string) if
+  //  there is no desire to log that file.
+  endpoint->setLogNames( inNameLen == 0 ? NULL : *bp, 
+						 outNameLen == 0 ? NULL : *bp + inNameLen + 1);
+  if( inNameLen > 0 )
+	  retval = endpoint->d_inLog->open();
+  if( outNameLen > 0 )
+	  retval = endpoint->d_outLog->open();
 
   // Safety check:
   // If we can't log when the client asks us to, close the connection.
