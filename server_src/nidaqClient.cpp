@@ -8,9 +8,6 @@
   Author: weberh
   Created: Mon Apr 27 14:26:09 1998
   Revised: Fri Jan 29 17:09:15 1999 by weberh
-  $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/server_src/nidaqClient.cpp,v $
-  $Locker:  $
-  $Revision: 1.1 $
 \*****************************************************************************/
 #include <windows.h>
 #include <mmsystem.h>

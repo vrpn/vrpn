@@ -172,7 +172,7 @@ int	get_AFline(FILE *config_file, char *axis_name, vrpn_TAF_axis *axis)
 	float	offset, thresh, power, scale;
 
 	// Read in the line
-	if (fgets(line, sizeof(line), config_file) == NULL) {
+	if (fgets(line, LINESIZE, config_file) == NULL) {
 		perror("AnalogFly Axis: Can't read axis");
 		return -1;
 	}
@@ -1230,10 +1230,10 @@ main (int argc, char * argv[])
         int retval;
 
 	// Read lines from the file until we run out
-	while ( fgets(line, sizeof(line), config_file) != NULL ) {
+	while ( fgets(line, LINESIZE, config_file) != NULL ) {
 
 	  // Make sure the line wasn't too long
-	  if (strlen(line) >= sizeof(line)-1) {
+	  if (strlen(line) >= LINESIZE-1) {
 		fprintf(stderr,"Line too long in config file: %s\n",line);
 		if (bail_on_error) { return -1; }
 		else { continue; }	// Skip this line

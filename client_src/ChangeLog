@@ -1,5 +1,9 @@
 2000-08-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* Makefile : Added AIX compile
+
+2000-08-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* setrouter : New file
 	* vrpn_Router_Client_GUI : New file
 	* Makefile : Added two router test clients, one of which uses GLUT

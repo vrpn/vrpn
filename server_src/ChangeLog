@@ -1,5 +1,16 @@
 2000-08-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* Makefile.remote : Removed; use Makefile.
+
+	* vrpn.rc : Brown's startup code for Linux
+
+	* Makefile : Added AIX compile
+
+	* vrpn.C : Added Wanda code.  Added code to handle MS-DOS
+		formatting for Fastrak startup.
+
+2000-08-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn.C : Replaced 512 with LINESIZE throughout
 		Added a Wanda device loader
 

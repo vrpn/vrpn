@@ -13,6 +13,7 @@
 #HW_OS := pc_linux
 #HW_OS := pc_cygwin
 #HW_OS := pc_FreeBSD
+#HW_OS := powerpc_aix
 ##########################
 
 ifndef	HW_OS
@@ -74,13 +75,17 @@ ifeq ($(HW_OS),sparc_solaris)
   ARCH_LIBS := -lsocket -lnsl $(ARCH_LIBS)
 endif
 
+ifeq ($(HW_OS),powerpc_aix)
+  CC := /usr/ibmcxx/bin/xlC_r -g -qarch=pwr3 -w -+
+endif
+
 ifeq ($(HW_OS),pc_cygwin)
   ARCH_LIBS := -lcygwin -luser32 -lgdi32 -lcomdlg32 -lwsock32
 endif
 
 GLUTINCLUDE = /afs/cs.unc.edu/project/walk/include
-
 CFLAGS = -I../ -I$(GLUTINCLUDE) -g
+
 .c.o:
 	$(CC) $(CFLAGS) -c $*.c
 
@@ -94,10 +99,12 @@ LFLAGS = -g -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) \
 	 -L/afs/unc/proj/hmd/beta/lib/$(HW_OS)$(OBJECT_DIR_SUFFIX) \
          -L/afs/unc/proj/hmd/lib/$(HW_OS)$(OBJECT_DIR_SUFFIX)
 
-$(OBJ_DIR)/%.o: %.c $(OBJ_DIR)
+$(OBJ_DIR)/%.o: %.c
+	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 $(OBJ_DIR)/%.o: %.C
+	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 all:	$(OBJ_DIR)/printvals $(OBJ_DIR)/printcereal \
@@ -111,9 +118,6 @@ all:	$(OBJ_DIR)/printvals $(OBJ_DIR)/printcereal \
 #	$(OBJ_DIR)/vrpn_print_messages
 
 # $(OBJ_DIR)/ohm_client
-
-$(OBJ_DIR):
-	mkdir $(OBJ_DIR)
 
 # testSharedObject
 

@@ -10,9 +10,6 @@
   Author: weberh
   Created: Mon Apr 27 14:26:09 1998
   Revised: Tue Feb  9 13:43:09 1999 by weberh
-  $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/server_src/nidaqServer.cpp,v $
-  $Locker:  $
-  $Revision: 1.1 $
 \*****************************************************************************/
 #if defined(WIN32) || defined(_WIN32)
 

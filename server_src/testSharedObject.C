@@ -4,7 +4,7 @@
 #include <stdio.h>  // for printf()
 #include <stdlib.h>  // for atoi()
 
-int noteChange (void * userdata, vrpn_int32 newValue) {
+int noteChange (void * userdata, vrpn_int32 newValue, vrpn_bool isLocal) {
   vrpn_Shared_int32_Server * ip;
 
   ip = (vrpn_Shared_int32_Server *) userdata;
@@ -21,12 +21,12 @@ int main (int argc, char ** argv) {
 
   vrpn_Shared_int32_Server a ("a", 0, VRPN_SO_DEFER_UPDATES);
 
-  a.setSerializerPolicy(DENY);
+  a.setSerializerPolicy(vrpn_DENY);
 
   c->mainloop();
 
   a.bindConnection(c);
-  a.register_handler(noteChange, &a);
+  a.register_handler(&noteChange, &a);
 
   c->mainloop();
 

@@ -11,6 +11,7 @@
 #HW_OS := pc_linux
 #HW_OS := pc_cygwin
 #HW_OS := pc_FreeBSD
+#HW_OS := powerpc_aix
 ##########################
 
 ifndef	HW_OS
@@ -50,6 +51,9 @@ endif
 ifeq ($(HW_OS),sparc_solaris)
 	CC := /opt/SUNWspro/bin/CC
 	SYSLIBS := -lsocket -lnsl
+endif
+ifeq ($(HW_OS),powerpc_aix)
+	CC := /usr/ibmcxx/bin/xlC_r -g -qarch=pwr3 -w
 endif
 
 ifeq ($(HW_OS),sgi_irix)
@@ -91,9 +95,11 @@ LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) \
 	$(CC) $(CFLAGS) -c $*.c
 
 $(OBJ_DIR)/%.o:	%.c
+	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 $(OBJ_DIR)/%.o:	%.C
+	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 
@@ -145,91 +151,89 @@ testSharedObject:	$(OBJ_DIR)/testSharedObject
 # player:		$(OBJ_DIR)/player
 # player: vrpn_player.o
 # 	$(CC) $(LFLAGS) -o player vrpn_player.o -lvrpnserver -lsdi -lm
-# $(OBJ_DIR)/client: $(OBJ_DIR) $(OBJ_DIR)/client.o	
+# $(OBJ_DIR)/client: $(OBJ_DIR)/client.o	
 # 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/client $(OBJ_DIR)/client.o -lvrpn -lsdi 
 
-$(OBJ_DIR)/vrpn_server: $(OBJ_DIR) $(OBJ_DIR)/vrpn.o  \
+$(OBJ_DIR)/vrpn_server: $(OBJ_DIR)/vrpn.o  \
 			 $(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/vrpn_server \
 		$(OBJ_DIR)/vrpn.o \
 		-lvrpnserver $(GL) -lquat $(SYSLIBS) -lm
 
-$(OBJ_DIR)/test_vrpn: $(OBJ_DIR) $(OBJ_DIR)/test_vrpn.o  \
+$(OBJ_DIR)/test_vrpn: $(OBJ_DIR)/test_vrpn.o  \
 			 $(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/test_vrpn \
 		$(OBJ_DIR)/test_vrpn.o \
 		-lvrpnserver $(GL) -lquat $(SYSLIBS) -lm
 
-$(OBJ_DIR)/test_radamec_spi: $(OBJ_DIR) $(OBJ_DIR)/test_radamec_spi.o  \
+$(OBJ_DIR)/test_radamec_spi: $(OBJ_DIR)/test_radamec_spi.o  \
 			 $(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/test_radamec_spi \
 		$(OBJ_DIR)/test_radamec_spi.o \
 		-lvrpnserver $(GL) -lquat $(SYSLIBS) -lm
 
-$(OBJ_DIR)/test_analogfly: $(OBJ_DIR) $(OBJ_DIR)/test_analogfly.o  \
+$(OBJ_DIR)/test_analogfly: $(OBJ_DIR)/test_analogfly.o  \
 			 $(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/test_analogfly \
 		$(OBJ_DIR)/test_analogfly.o \
 		-lvrpnserver $(GL) -lquat $(SYSLIBS) -lm
 
-$(OBJ_DIR)/client_and_server: $(OBJ_DIR) $(OBJ_DIR)/client_and_server.o  \
+$(OBJ_DIR)/client_and_server: $(OBJ_DIR)/client_and_server.o  \
 			 $(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/client_and_server \
 		$(OBJ_DIR)/client_and_server.o \
 		-lvrpnserver $(GL) -lquat $(SYSLIBS) -lm
 
-$(OBJ_DIR)/forward: $(OBJ_DIR) $(OBJ_DIR)/forward.o  \
+$(OBJ_DIR)/forward: $(OBJ_DIR)/forward.o  \
 			 $(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/forward \
 		$(OBJ_DIR)/forward.o \
 		-lvrpnserver $(SYSLIBS) -lm
 
-$(OBJ_DIR)/text: $(OBJ_DIR) $(OBJ_DIR)/text.o  \
+$(OBJ_DIR)/text: $(OBJ_DIR)/text.o  \
 			 $(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/text \
 		$(OBJ_DIR)/text.o \
 		-lvrpnserver $(SYSLIBS) -lm
 
-$(OBJ_DIR)/sample_server:	$(OBJ_DIR) $(OBJ_DIR)/sample_server.o \
+$(OBJ_DIR)/sample_server:	$(OBJ_DIR)/sample_server.o \
 			$(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/sample_server \
 		$(OBJ_DIR)/sample_server.o \
 		-lvrpnserver $(SYSLIBS) -lm
 
-$(OBJ_DIR)/test_mutex:	$(OBJ_DIR) $(OBJ_DIR)/test_mutex.o \
+$(OBJ_DIR)/test_mutex:	$(OBJ_DIR)/test_mutex.o \
 			$(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/test_mutex \
 		$(OBJ_DIR)/test_mutex.o \
 		-lvrpnserver $(SYSLIBS) -lm
 
-$(OBJ_DIR)/test_peerMutex:	$(OBJ_DIR) $(OBJ_DIR)/test_peerMutex.o \
+$(OBJ_DIR)/test_peerMutex:	$(OBJ_DIR)/test_peerMutex.o \
 			$(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/test_peerMutex \
 		$(OBJ_DIR)/test_peerMutex.o \
 		-lvrpnserver $(SYSLIBS) -lm
 
-$(OBJ_DIR)/sample_analog:	$(OBJ_DIR) $(OBJ_DIR)/sample_analog.o \
+$(OBJ_DIR)/sample_analog:	$(OBJ_DIR)/sample_analog.o \
 			$(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/sample_analog \
 		$(OBJ_DIR)/sample_analog.o \
 		-lvrpnserver $(SYSLIBS) -lm
 
-$(OBJ_DIR)/last_of_sequence:	$(OBJ_DIR) $(OBJ_DIR)/last_of_sequence.o \
+$(OBJ_DIR)/last_of_sequence:	$(OBJ_DIR)/last_of_sequence.o \
 			$(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/last_of_sequence \
 		$(OBJ_DIR)/last_of_sequence.o \
 		-lvrpnserver $(SYSLIBS) -lm
 
 
-$(OBJ_DIR)/testSharedObject:	$(OBJ_DIR) $(OBJ_DIR)/testSharedObject.o \
+$(OBJ_DIR)/testSharedObject:	$(OBJ_DIR)/testSharedObject.o \
 			$(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/testSharedObject \
 		$(OBJ_DIR)/testSharedObject.o \
 		-lvrpnserver $(SYSLIBS) -lm
 
 
-$(OBJ_DIR):
-	-mkdir $(OBJ_DIR)
 
 clean:
 	rm -f $(OBJ_DIR)/*.o $(OBJ_DIR)/vrpn_server $(OBJ_DIR)/forward \

@@ -9,9 +9,6 @@
   Author: weberh
   Created: Tue Dec 16 16:03:22 1997
   Revised: Tue Jan 20 01:13:47 1998 by weberh
-  $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/client_src/Attic/vrpnTrackerClient.cpp,v $
-  $Locker:  $
-  $Revision: 1.1 $
 \*****************************************************************************/
 
 #include <vrpn_Tracker.h>
@@ -113,6 +110,14 @@ main(int argc, char *argv[]) {
 
 /*****************************************************************************\
   $Log: vrpnTrackerClient.cpp,v $
+  Revision 1.2  2000/08/28 16:25:20  taylorr
+  2000-08-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+          * Makefile : Added AIX compile
+
+  Revision 1.1.1.1  2000/02/22 18:45:49  ddj
+  VRPN 4.11 beta 2 sources
+
   Revision 1.1  1998/01/20 06:25:05  weberh
   vrpnTrackerClient: simple example of tracker client code and how to change
   	           synchronization options

@@ -13,7 +13,7 @@
   Revised: Mon Dec 15 18:24:22 1997 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/server_src/clock_server.C,v $
   $Locker:  $
-  $Revision: 1.2 $
+  $Revision: 1.3 $
 \*****************************************************************************/
 
 
@@ -52,6 +52,14 @@ main(int argc, char *argv[]) {
 
 /*****************************************************************************\
   $Log: clock_server.C,v $
+  Revision 1.3  2000/08/28 16:25:36  taylorr
+  2000-08-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+          * Makefile : Added AIX compile
+
+  Revision 1.1.1.1  2000/02/22 18:45:49  ddj
+  VRPN 4.11 beta 2 sources
+
   Revision 1.2  1998/01/08 23:34:11  weberh
   clock_server.C has sample code for a clock server/client (sync connection
   class takes care of all this)

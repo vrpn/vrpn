@@ -11,9 +11,6 @@
   Author: weberh
   Created: Wed Dec 10 16:01:46 1997
   Revised: Mon Dec 15 15:09:18 1997 by weberh
-  $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/client_src/Attic/clock_client.C,v $
-  $Locker:  $
-  $Revision: 1.1 $
 \*****************************************************************************/
 
 
@@ -76,6 +73,14 @@ main(int argc, char *argv[]) {
 
 /*****************************************************************************\
   $Log: clock_client.C,v $
+  Revision 1.2  2000/08/28 16:25:18  taylorr
+  2000-08-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+          * Makefile : Added AIX compile
+
+  Revision 1.1.1.1  2000/02/22 18:45:49  ddj
+  VRPN 4.11 beta 2 sources
+
   Revision 1.1  1997/12/15 21:37:29  weberh
   demonstrates the use of the clock class as a client
 
