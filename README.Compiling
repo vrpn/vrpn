@@ -1,0 +1,23 @@
+For those not at UNC, you compile by doing the following:
+	go to ../quat.
+	make -f Makefile.remote.[your_architecture]
+
+	come back here (cd ../vrpn)
+	edit the Makefile.remote file to set your architecture
+	gmake -f Makefile.remote
+
+	cd server_src
+	edit the Makefile.remote to set your architecture
+	gmake -f Makefile.remote
+	edit the vrpn.cfg file to set it to start tracker you want
+		Make sure the host name matches the host to run on
+		Sorry, but you need to look in vrpn.C to find the format
+		Example:  vrpn_Tracker_NULL Tracker0@MYHOSTNAME 2 2
+	(Run the server: vrpn_server -f vrpn.cfg)
+
+	cd ../client_src
+	edit the Makefile.remote to set your architecture
+	edit printvals.c to point to the right tracker on the right host
+	gmake -f Makefile.remote
+	(Run the test program: printvals)
+

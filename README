@@ -1,4 +1,7 @@
 IMPORTANT LEGAL INFORMATION for offsite use is in README.Legal
+IMPORTANT compiling at other sites information in README.Compile
+
+At UNC:
 Compile using 'gmake'
 Compile for flow using 'gmake flow'
 
