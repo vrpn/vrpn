@@ -159,9 +159,9 @@
 // turned on and off using the definition above.
 #ifdef	VRPN_USE_DIRECTINPUT
 #define	DIRECTINPUT_VERSION 0x0800
-#pragma comment (lib, "C:/DXSDK/lib/dxguid.lib")
-#pragma comment (lib, "C:/DXSDK/lib/dxerr8.lib")
-#pragma comment (lib, "C:/DXSDK/lib/dinput8.lib")
+#pragma comment (lib, "C:/Program Files/Microsoft DirectX 9.0 SDK (February 2005)/Lib/x86/dxguid.lib")
+#pragma comment (lib, "C:/Program Files/Microsoft DirectX 9.0 SDK (February 2005)/Lib/x86/dxerr8.lib")
+#pragma comment (lib, "C:/Program Files/Microsoft DirectX 9.0 SDK (February 2005)/Lib/x86/dinput8.lib")
 #endif
 
 // Load Adrienne libraries if we are using the timecode generator.

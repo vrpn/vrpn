@@ -43,7 +43,6 @@ protected:
     short   d_in_polarity;	      //< Polarity (1 = unipolar, 0 = bipolar)
     int     d_in_gain;                //< Input gain
     double  d_in_min_delay;           //< Minimum delay between two readings
-    short   d_out_num_channels;       //< Number of output channels on the board
     double  d_out_min_voltage;	      //< Minimum voltage allowed on a channel
     double  d_out_max_voltage;	      //< Maximum voltate allowed on a channel
     short   d_out_polarity;	      //< Polarity (1 = unipolar, 0 = bipolar)

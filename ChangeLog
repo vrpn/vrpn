@@ -1,5 +1,17 @@
 2005-04-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Configure.h : Moved the location to look for DirectX
+		SDK to where the Feb 2005 installer puts it.  This
+		version works with release but not debug code.  How
+		Nice of them :-)
+	* vrpn_NationalInstruments.h : Removed a redundant place to
+		store the number of output channels.  There is already
+		a member variable for this is the AnalogOutput class;
+		having another one here just causes fragility.
+	* vrpn_NationalInstruments.C : Same.
+
+2005-04-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_NationalInstruments.C : Marked one particular
 		error return code as not a problem for AO_Configure.
 		This makes the new NI module work like the old

@@ -1,3 +1,13 @@
+2005-04-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg : Added entries to run the Mad City Labs
+		stages using a Microsoft Force-Feedback Joystick.
+		When you run a server with these configs, and
+		the Tracker_To_Poser, you can fly the focus all
+		through the volume.  Things should now be ready
+		for Eli Holder's amazingly cool 3D optical
+		microscope program!
+
 2005-02-25  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Makefile : Removed -LANG:std from compile, no streams

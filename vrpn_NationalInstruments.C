@@ -72,7 +72,7 @@ vrpn_National_Instruments_Server::vrpn_National_Instruments_Server (const char* 
   }
 
   // Set the parameters for each output channel.  Set the voltage for each channel to the minimum.
-  for (i = 0; i < d_out_num_channels; i++) {
+  for (i = 0; i < o_num_channel; i++) {
 
     int ret = AO_Configure(d_device_number, i, d_out_polarity, ref_source, ref_voltage, update_mode);
     // Code -10403 shows up but did not cause problems for the NI server, so we ignore it (probably at our peril)
@@ -178,8 +178,8 @@ int vrpn_National_Instruments_Server::setNumOutChannels (int sizeRequested) {
   if (sizeRequested < 0) sizeRequested = 0;
   if (sizeRequested > vrpn_CHANNEL_MAX) sizeRequested = vrpn_CHANNEL_MAX;
 
-  d_out_num_channels = sizeRequested;
-  return d_out_num_channels;
+  o_num_channel = sizeRequested;
+  return o_num_channel;
 }
 
 /* static */
@@ -243,7 +243,7 @@ int vrpn_National_Instruments_Server::handle_request_channels_message(void* user
     // Read the values from the buffer
     vrpn_unbuffer(&bufptr, &num);
     vrpn_unbuffer(&bufptr, &pad);
-    if (num > me->d_out_num_channels) 
+    if (num > me->o_num_channel) 
     {
          char msg[1024];
          sprintf( msg, "Error:  (handle_request_channels_message):  channels above %d not active; "
