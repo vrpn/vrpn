@@ -1,0 +1,26 @@
+2000-08-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsp: Adds a driver for the Radamec Serial Position Interface
+	(Camera tracker)
+
+	* vrpn.dsw: same
+	* vrpn_Analog_Radamec_SPI.h: same
+	* vrpn_Analog_Radamec_SPI.C: same
+
+	* vrpn_Serial.h (vrpn_open_commport): Adds bit length and parity to
+	the optional parameters to the serial-port open.
+
+	* vrpn_Serial.C (vrpn_open_commport): same
+	* vrpn_Analog.C (vrpn_Serial_Analog::vrpn_Serial_Analog): same
+	* vrpn_Analog.h (vrpn_Serial_Analog::vrpn_Serial_Analog): same
+
+	* vrpn_Tracker.C: Modified the packing code to use vrpn_buffer()
+	and vrpn_unbufer().  Removed the redundant change handlers for all
+	sensors, by replacing them with ones that have optional parameters.
+
+	* vrpn_Tracker.h: same
+
+	* vrpn_AnalogFly.C (vrpn_AnalogFly::vrpn_AnalogFly): Sets the reset
+	button to NULL by default so that the code won't blow up if you don't
+	have one.
+
