@@ -1,3 +1,23 @@
+2004-02-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Closes file handle that is no longer needed.
+	* vrpn_RedundantTransmission.C : Same.
+	* vrpn_FileConnection.h : Added three new global flags that
+		control the state of buffering when a FileConnection
+		reads a log file.  PRELOAD controls whether it grabs
+		the whole file into memory when it starts.  ACCUMULATE
+		controls whether it keep the file in memory as it reads
+		it.  SKIP_TO_USER_MESSAGES tells whether it should jump
+		over all initial system messages in a file when it is
+		loaded or rewound.
+	* vrpn_FileConnection.C : Major changes throughout to implement
+		the flexibility described above.  Also lots of code
+		factoring and consolidation so that there is only one
+		function to do each particular operation that is called
+		by all other functions requiring the operation.  Tested
+		with Nano, Video_spot_tracker, and vrpnLogToMatlab in
+		several different states of operation.
+
 2004-02-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Tracker_isense.C : Added change by David Nahon to make

@@ -9,7 +9,9 @@
 
 // The interface exactly matches that of vrpn_Connection.  To do things that
 // are meaningful on log replay but not on live networks, create a
-// vrpn_File_Controller and pass your vrpn_File_Connection to its constructor.
+// vrpn_File_Controller and pass your vrpn_File_Connection to its constructor,
+// or just ask the Connection for its file connection pointer and do the
+// operations directly on the FileConnection if the pointer is non-NULL.
 
 // Logfiles are recorded as *sent*, not as translated by the receiver,
 // so we still need to have all the correct names for senders and types
@@ -17,12 +19,49 @@
 
 // September 1998:  by default preloads the entire log file on startup.
 // This causes a delay (nontrivial for large logs) but should help smooth
-// playback.  The infrastructure is also in place for playing backwards,
-// but we still have the problem that the semantics of reverse often don't
-// make sense.
+// playback.
 // }}}
 
 #include "vrpn_Connection.h"
+
+// Global variable used to indicate whether File Connections should
+// pre-load all of their records into memory when opened.  This is the
+// default behavior, but fails on very large files that eat up all
+// of the memory.  This defaults to "true".  User code should set this
+// to "false" before calling vrpn_get_connection_by_name() or creating
+// a new vrpn_File_Connection object if it wants that file connection
+// to not preload.  The value is only checked at connection creation time;
+// the connection behaves consistently once created.  This operation is
+// useful for applications that load large data files and don't want to
+// wait for them to pre-load.
+
+extern bool vrpn_FILE_CONNECTIONS_SHOULD_PRELOAD;
+
+// Global variable used to indicate whether File Connections should
+// keep already-read messages stored in memory.  If not, then we have
+// to re-load the file starting at the beginning on rewind.  This
+// defaults to "true".  User code should set this
+// to "false" before calling vrpn_get_connection_by_name() or creating
+// a new vrpn_File_Connection object if it wants that file connection
+// to not preload.  The value is only checked at connection creation time;
+// the connection behaves consistently once created.  This operation is
+// useful for applications that read through large data files and
+// don't have enough memory to keep them in memory at once, or for applications
+// that read through only once and have no need to go back and check.
+
+extern bool vrpn_FILE_CONNECTIONS_SHOULD_ACCUMULATE;
+
+// Global variable used to indicate whether File Connections should
+// play through all system messages and get to the first user message
+// when opened or reset to the beginning.  This defaults to "true". 
+// User code should set this
+// to "false" before calling vrpn_get_connection_by_name() or creating
+// a new vrpn_File_Connection object if it wants that file connection
+// to not preload.  The value is only checked at connection creation time;
+// the connection behaves consistently once created.  Leaving this true
+// can help with offsets in time that happen at the beginning of files.
+
+extern bool vrpn_FILE_CONNECTIONS_SHOULD_SKIP_TO_USER_MESSAGES;
 
 class vrpn_File_Connection : public vrpn_Connection
 {
@@ -179,23 +218,47 @@ protected:
 
     virtual int read_entry (void);  // appends entry to d_logTail
       // returns 0 on success, 1 on EOF, -1 on error
+
+    // Steps the currentLogEntry pointer forward one.
+    // It handles both cases of preload and non-preload.
+    // returns 0 on success, 1 on EOF, -1 on error
+    virtual int advance_currentLogEntry(void);
+
     virtual int close_file (void);
 
     // }}}
-    // {{{ handlers for VRPN control messages
+    // {{{ handlers for VRPN control messages that might come from
+    //     a File Controller object that wants to control this
+    //     File Connection.
 protected:
     static int handle_set_replay_rate (void *, vrpn_HANDLERPARAM);
     static int handle_reset (void *, vrpn_HANDLERPARAM);
     static int handle_play_to_time (void *, vrpn_HANDLERPARAM);
-    //static int handle_jump_to_time (void *, vrpn_HANDLERPARAM);
 
     // }}}
-    // {{{ [TCH 16 Sept 98] support for preloading
+    // {{{ Maintains a doubly-linked list structure that keeps
+    //     copies of the messages from the file in memory.  If
+    //     d_accumulate is false, then there is only ever one entry
+    //     in memory (d_currentLogEntry == d_logHead == d_logTail.
+    //     If d_preload is true, then all of the records from the file
+    //     are read into the list in the constructor and we merely step
+    //     through memory when playing the streamfile.  If d_preload is
+    //     false and d_accumulate is true, then we have all of the
+    //     records up the d_currentLogEntry in memory (d_logTail points
+    //     too d_currentLogEntry but not to the last entry in the file
+    //     until we get to the end of the file).
+    //     The d_currentLogEntry should always be non-NULL unless we are
+    //     past the end of all messages... we will either have preloaded
+    //     all of them or else the read routine will attempt to load the
+    //     next message each time one is played.  The constructor fills it
+    //     in with the first message, which makes it non-NULL initially.
 protected:
-    vrpn_LOGLIST * d_logHead;  // where the log begins
-    vrpn_LOGLIST * d_logTail;  // the most recently read-in record
-    vrpn_LOGLIST * d_currentLogEntry;  // most recently replayed
+    vrpn_LOGLIST * d_logHead;  // the first read-in record
+    vrpn_LOGLIST * d_logTail;  // the last read-in record
+    vrpn_LOGLIST * d_currentLogEntry;  // Message that we've just loaded, or are at right now
     vrpn_LOGLIST * d_startEntry;  // potentially after initial system messages
+    bool	   d_preload;	  // Should THIS File Connection pre-load?
+    bool	   d_accumulate;  // Should THIS File Connection accumulate?
     // }}}
 
 protected:

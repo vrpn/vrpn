@@ -533,7 +533,7 @@ void vrpn_RedundantReceiver::writeMemory (const char * filename) {
   // period & trimming them back that's OK, but if this code is ever
   // used for precise timings there will be slight undersampling.
 
-  fp = fopen(filename, "w");
+  fp = fopen(filename, "wb");
   if (!fp) {
     fprintf(stderr, "vrpn_RedundantReceiver::writeMemory:  "
                     "Couldn't open %s for writing.\n", filename);

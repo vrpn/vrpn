@@ -536,33 +536,34 @@ int vrpn_Log::open (void) {
     return 0;  // not a catastrophic failure
   }
 
+  // If we can open the file for reading, then it already exists.  If
+  // so, we don't want to overwrite it.
   d_file = fopen(d_logFileName, "r");
-
   if (d_file) {
     fprintf(stderr, "vrpn_Log::open_log:  "
                     "Log file \"%s\" already exists.\n", d_logFileName);
+    fclose(d_file);
     d_file = NULL;
   } else {
     d_file = fopen(d_logFileName, "wb");
-    if( d_file == NULL ) // unable to open the file
-    {
+    if( d_file == NULL ) { // unable to open the file
       fprintf(stderr, "vrpn_Log::open_log:  "
               "Couldn't open log file \"%s\":  ", d_logFileName);
       perror( NULL /* no additional string */ );
     }
   }
 
-  if (!d_file) { // Try to write to "/tmp/vrpn_emergency_log"
+  if (!d_file) { // Try to write to "/tmp/vrpn_emergency_log", unless it exists!
     d_file = fopen("/tmp/vrpn_emergency_log", "r");
     if (d_file) {
+      fclose(d_file);
       d_file = NULL;
       fprintf(stderr, "vrpn_Log::open_log:  "
               "Emergency log file \"/tmp/vrpn_emergency_log\" "
               "already exists.\n");
     } else {
       d_file = fopen("/tmp/vrpn_emergency_log", "wb");
-      if( d_file == NULL )
-      {
+      if( d_file == NULL ) {
         fprintf(stderr, "vrpn_Log::open_log:  "
                 "Couldn't open emergency log file "
                 "\"/tmp/vrpn_emergency_log\":  ");

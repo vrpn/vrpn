@@ -23,6 +23,37 @@
 #include <netinet/in.h>
 #endif
 
+// Global variable used to indicate whether File Connections should
+// pre-load all of their records into memory when opened.  This is the
+// default behavior, but fails on very large files that eat up all
+// of the memory.
+// This is used to initialize the data member for each new file connection
+// so that it will do what is expected.  This setting is stored per file
+// connection so that a given file connection will behave consistently.
+
+bool vrpn_FILE_CONNECTIONS_SHOULD_PRELOAD = true;
+
+// Global variable used to indicate whether File Connections should
+// keep already-read messages stored in memory.  If not, then we have
+// to re-load the file starting at the beginning on rewind.
+// This is used to initialize the data member for each new file connection
+// so that it will do what is expected.  This setting is stored per file
+// connection so that a given file connection will behave consistently.
+
+bool vrpn_FILE_CONNECTIONS_SHOULD_ACCUMULATE = true;
+
+// Global variable used to indicate whether File Connections should
+// play through all system messages and get to the first user message
+// when opened or reset to the beginning.  This defaults to "true". 
+// User code should set this
+// to "false" before calling vrpn_get_connection_by_name() or creating
+// a new vrpn_File_Connection object if it wants that file connection
+// to not preload.  The value is only checked at connection creation time;
+// the connection behaves consistently once created.  Leaving this true
+// can help with offsets in time that happen at the beginning of files.
+
+bool vrpn_FILE_CONNECTIONS_SHOULD_SKIP_TO_USER_MESSAGES = true;
+
 #define CHECK(x) if (x == -1) return -1
 
 #include "vrpn_Log.h"
@@ -46,8 +77,7 @@ vrpn_File_Connection::vrpn_File_Connection (const char * file_name,
     vrpn_Connection (file_name, -1, local_in_logfile_name,
                      local_out_logfile_name),
     d_controllerId (register_sender("vrpn File Controller")),
-    d_set_replay_rate_type(
-        register_message_type("vrpn_File set_replay_rate")),
+    d_set_replay_rate_type(register_message_type("vrpn_File set_replay_rate")),
     d_reset_type (register_message_type("vrpn_File reset")),
     d_play_to_time_type (register_message_type("vrpn_File play_to_time")),
     d_file (NULL),
@@ -55,8 +85,17 @@ vrpn_File_Connection::vrpn_File_Connection (const char * file_name,
     d_logHead (NULL),
     d_logTail (NULL),
     d_currentLogEntry (NULL),
-    d_max_message_playback (0)
+    d_max_message_playback (0),
+    d_preload(vrpn_FILE_CONNECTIONS_SHOULD_PRELOAD),
+    d_accumulate(vrpn_FILE_CONNECTIONS_SHOULD_ACCUMULATE)
 {
+    // If we are preloading, then we must accumulate messages.
+    if (d_preload) {
+      d_accumulate = true;
+    }
+
+    // These are handlers for messages that may be sent from a
+    // vrpn_File_Controller object that may attach itself to us.
     register_handler(d_set_replay_rate_type, handle_set_replay_rate,
                      this, d_controllerId);
     register_handler(d_reset_type, handle_reset, this, d_controllerId);
@@ -81,39 +120,47 @@ vrpn_File_Connection::vrpn_File_Connection (const char * file_name,
         return;
     }
 
-    // PRELOAD
-    // TCH 16 Sept 1998
-
-    //fprintf(stderr, "vrpn_File_Connection::vrpn_File_Connection: Preload...\n");
-
+    // Read the cookie from the file.  It will print an error message if it
+    // can't read it, so we just pass the broken status on up the chain.
     if (read_cookie() < 0) {
-        connectionStatus = BROKEN;
-        return;
+	connectionStatus = BROKEN;
+	return;
     }
-    while (!read_entry()) {
-      // empty loop body - read all the entries
+
+    // If we are supposed to preload the entire file into memory buffers,
+    // then keep reading until we get to the end.  Otherwise, just read the
+    // first message to get things going.
+    if (d_preload) {
+      while (!read_entry()) { }
+    } else {
+      read_entry();
     }
-    d_currentLogEntry = d_logHead;
 
-    //fprintf(stderr, "vrpn_File_Connection::vrpn_File_Connection: Done preload.\n");
+    // Initialize the "current message" pointer to the first log-file
+    // entry that was read, and set the start time for the file and
+    // the current time to the one in this message.
+    if (d_logHead) {
+      d_currentLogEntry = d_logHead;
+      d_startEntry = d_logHead;
+      d_start_time = d_startEntry->data.msg_time;  
+      d_time = d_start_time;
+    } else {
+      fprintf(stderr, "vrpn_File_Connection: Can't read first message\n");
+      connectionStatus = BROKEN;
+      return;
+    }
 
-    d_startEntry = d_logHead;
-    d_start_time = d_startEntry->data.msg_time;  
-    d_time = d_start_time;
-
-    // this needs to be a parameter if we want this to be optional
-    int fPlayToFirstUserMessage = 1;
     // This is useful to play the initial system messages
-    //(the sender/type ones) automatically.  These might not be
+    // (the sender/type ones) automatically.  These might not be
     // time synched so if we don't play them automatically they
     // can mess up playback if their timestamps are later then
     // the first user message.
-    if (fPlayToFirstUserMessage) {
-        play_to_user_message();
-        if (d_currentLogEntry) {
-            d_start_time = d_currentLogEntry->data.msg_time;
-            d_time = d_start_time;
-        }
+    if (vrpn_FILE_CONNECTIONS_SHOULD_SKIP_TO_USER_MESSAGES) {
+	play_to_user_message();
+	if (d_currentLogEntry) {
+	    d_start_time = d_currentLogEntry->data.msg_time;
+	    d_time = d_start_time;
+	}
     }
 }
 
@@ -122,50 +169,20 @@ vrpn_File_Connection::vrpn_File_Connection (const char * file_name,
 
 // Advances through the file, calling callbacks, up until
 // a user message (type >= 0) is encountered)
-// NOTE: assumes pre-load (could be changed to not)
 void vrpn_File_Connection::play_to_user_message (void)
 {
-  vrpn_Endpoint * endpoint = d_endpoints[0];
-  timeval now;
-  int retval;
+  // As long as the current message is a system message, play it.
+  // Also stop if we get to the end of the file.
+  while ( d_currentLogEntry && (d_currentLogEntry->data.type < 0) ) {
+    playone();
+  }
 
-    if (!d_currentLogEntry) {
-        return;
-    }
-    
-    while (d_currentLogEntry != NULL && d_currentLogEntry->data.type < 0) {
-
-        vrpn_HANDLERPARAM &header = d_currentLogEntry->data;
-
-        // TCH July 2001
-        // A big design decision:  do we reproduce messages exactly,
-        // or do we mark them with the time they were played back?
-        // Maybe this should be switchable, but the latter is what
-        // I need yesterday.
-        gettimeofday(&now, NULL);
-        retval = endpoint->d_inLog->logIncomingMessage
-                        (header.payload_len, now, header.type,
-                         header.sender, header.buffer);
-        if (retval) {
-          fprintf(stderr, "Couldn't log \"incoming\" message during replay!\n");
-          return;
-        }
-
-        if (header.type != vrpn_CONNECTION_UDP_DESCRIPTION) {
-            if (doSystemCallbacksFor(header, endpoint)) {
-                fprintf(stderr, "vrn_File_Connection::play_to_user_message: "
-                        "Nonzero system return.\n");
-            }
-        }
-        d_currentLogEntry = d_currentLogEntry->next;
-
-        if (d_currentLogEntry) {
-            // we advance d_time one ahead because they're may be 
-            // a large gap in the file (forward or backwards) between
-            // the last system message and first user one
-            d_time = d_currentLogEntry->data.msg_time;
-        }        
-    }
+  // we advance d_time one ahead because they're may be 
+  // a large gap in the file (forward or backwards) between
+  // the last system message and first user one
+  if (d_currentLogEntry) {
+      d_time = d_currentLogEntry->data.msg_time;
+  }
 }
 
 // }}}
@@ -177,16 +194,18 @@ vrpn_File_Connection::~vrpn_File_Connection (void)
     vrpn_LOGLIST * np;
 
     close_file();
+    delete [] d_fileName;
+    d_fileName = NULL;
 
+    // Delete any messages that are in memory, and their data buffers.
     while (d_logHead) {
         np = d_logHead->next;
-        if (d_logHead->data.buffer)
+        if (d_logHead->data.buffer) {
             delete [] (char *) d_logHead->data.buffer;
+	}
         delete d_logHead;
         d_logHead = np;
     }
-    delete [] d_fileName;
-    d_fileName = NULL;
 }
 
 // }}}
@@ -197,34 +216,33 @@ int vrpn_File_Connection::jump_to_time(vrpn_float64 newtime)
     return jump_to_time(vrpn_MsecsTimeval(newtime * 1000));
 }
 
-// assumes preload(?)
+// If the time is before our current time (or there is no current
+// time) then reset back to the beginning.  Whether or not we did
+// that, search forwards until we get to or past the time we are
+// searching for.
 int vrpn_File_Connection::jump_to_time(timeval newtime)
 {
     d_time = vrpn_TimevalSum(d_start_time, newtime);
     
-    if (!d_currentLogEntry) {
-        d_currentLogEntry = d_logTail;
+    // If the time is earlier than where we are, or if we have
+    // run past the end (no current entry), jump back to
+    // the beginning of the file before searching.
+    if ( !d_currentLogEntry || vrpn_TimevalGreater(d_currentLogEntry->data.msg_time, d_time) ) {
+        reset();
     }
     
-    // search backwards
-    while (vrpn_TimevalGreater(d_currentLogEntry->data.msg_time, d_time)) {
-        if (d_currentLogEntry->prev) {
-            d_currentLogEntry = d_currentLogEntry->prev;
-        } else {
-            return 1;
-        }
+    // Search forwards, as needed.  Do not play the messages as they are
+    // passed, just skip over them until we get to a message that has a
+    // time greater than or equal to the one we are looking for.  That is,
+    // one whose time is not less than ours.
+    while (!vrpn_TimevalGreater(d_currentLogEntry->data.msg_time, d_time)) {
+      int ret = advance_currentLogEntry();
+      if ( ret != 0 ) {
+	return 0; // Didn't get where we were going!
+      }
     }
-    
-    // or forwards, as needed
-    while (vrpn_TimevalGreater(d_time, d_currentLogEntry->data.msg_time)) {
-        if (d_currentLogEntry->next) {
-            d_currentLogEntry = d_currentLogEntry->next;
-        } else {
-            return 1;
-        }        
-    }
-    
-    return 0;
+
+    return 1; // Got where we were going!
 }
 
 
@@ -339,7 +357,6 @@ void vrpn_File_Connection::FileTime_Accumulator::reset_at_time(
 // virtual
 int vrpn_File_Connection::mainloop( const timeval * /*timeout*/ )
 {
-
     // XXX timeout ignored for now, needs to be added
 
     timeval now_time;
@@ -469,13 +486,15 @@ int vrpn_File_Connection::mainloop( const timeval * /*timeout*/ )
 //
 int vrpn_File_Connection::need_to_play( timeval time_we_want_to_play_to )
 {
+    // This read_entry() call may be useful to test the state, but
+    // it should be the case that d_currentLogEntry is non-NULL except
+    // when we are at the end.  This is because read_entry() and the
+    // constructor now both read the next one in when they are finished.
     if (!d_currentLogEntry) {
         int retval = read_entry();
-        if (retval < 0)
-            return -1;  // error reading from file
-        if (retval > 0)
-            return 0;  // end of file;  nothing to replay
-        d_currentLogEntry = d_logTail;  // better be non-NULL
+        if (retval < 0) { return -1; } // error reading from file
+        if (retval > 0) { return 0; }  // end of file;  nothing to replay
+        d_currentLogEntry = d_logTail;  // If read_entry() returns 0, this will be non-NULL
     } 
 
     vrpn_HANDLERPARAM & header = d_currentLogEntry->data;
@@ -490,7 +509,7 @@ int vrpn_File_Connection::need_to_play( timeval time_we_want_to_play_to )
     //   this is true, but do you ever want to pause in the middle of
     //   such a group?  This was a problem prior to fixing the
     //   timeval overflow bug, but now that it's fixed, (who cares?)
-    
+
     return vrpn_TimevalGreater( time_we_want_to_play_to, header.msg_time );
 }
 
@@ -527,7 +546,6 @@ int vrpn_File_Connection::play_to_filetime(const timeval end_filetime)
     }
     
     int ret;
-    
     while (!(ret = playone_to_filetime(end_filetime))) {
       //   * you get here ONLY IF playone_to_filetime returned 0
       //   * that means that it played one entry
@@ -539,7 +557,6 @@ int vrpn_File_Connection::play_to_filetime(const timeval end_filetime)
         // Don't reset d_time to end_filetime
         return 0;
       }
-
     }
     
     if (ret == 1) {
@@ -564,9 +581,8 @@ int vrpn_File_Connection::eof()
     } 
     // read from disk if not in memory
     int ret = read_entry();
-
     if (ret == 0) {
-        d_currentLogEntry = d_logTail;  // better be non-NULL
+        d_currentLogEntry = d_logTail;  // If read_entry() returns zero, this will be non-NULL
     }
 
     return ret;
@@ -597,16 +613,14 @@ int vrpn_File_Connection::playone()
 //    1 if we hit end_filetime
 int vrpn_File_Connection::playone_to_filetime( timeval end_filetime )
 {
-  vrpn_Endpoint * endpoint = d_endpoints[0];
-  timeval now;
-  int retval;
+    vrpn_Endpoint * endpoint = d_endpoints[0];
+    timeval now;
+    int retval;
 
-    // read from disk if not in memory
+    // If we don't have a currentLogEntry, then we've gone past the end of the
+    // file.
     if (!d_currentLogEntry) {
-        int retval = read_entry();
-        if (retval != 0)
-            return -1;  // error reading from file or EOF
-        d_currentLogEntry = d_logTail;  // better be non-NULL
+      return 1;
     }
 
     vrpn_HANDLERPARAM & header = d_currentLogEntry->data;
@@ -618,7 +632,7 @@ int vrpn_File_Connection::playone_to_filetime( timeval end_filetime )
     }
 
     // TCH July 2001
-    // A big design decision:  do we re-log messages exactly,
+    // XXX A big design decision:  do we re-log messages exactly,
     // or do we mark them with the time they were played back?
     // Maybe this should be switchable, but the latter is what
     // I need yesterday.
@@ -659,10 +673,22 @@ int vrpn_File_Connection::playone_to_filetime( timeval end_filetime )
             }
         }
     }        
+    
+    return advance_currentLogEntry();
+}
 
-    // Advance to next entry
-    if (d_currentLogEntry) {
-        d_currentLogEntry = d_currentLogEntry->next;
+// Advance to next entry.  If there is no next entry, and if we have
+// not preloaded, then try to read one in.
+
+int vrpn_File_Connection::advance_currentLogEntry(void)
+{
+    d_currentLogEntry = d_currentLogEntry->next;
+    if (!d_currentLogEntry && !d_preload) {
+        int retval = read_entry();
+        if (retval != 0) {
+            return -1;  // error reading from file or EOF
+	}
+        d_currentLogEntry = d_logTail;  // If read_entry() returns zero, this will be non-NULL
     }
 
     return 0;
@@ -680,9 +706,42 @@ timeval vrpn_File_Connection::get_length()
 {
     timeval len = {0, 0};
 
-    if (d_logHead && d_logTail) {
-        len = vrpn_TimevalDiff(d_logTail->data.msg_time,
-                               d_start_time);
+    // If we've not preloaded, then we need to
+    // do a loop through the whole file to find out how long it is.  Otherwise,
+    // just check the difference between the times for the last message and
+    // the first message in the log.
+
+    if (d_preload) {
+      if (d_logHead && d_logTail) {
+	  len = vrpn_TimevalDiff(d_logTail->data.msg_time,
+				 d_start_time);
+      }
+    } else {
+
+      // Remember where we were when we asked this question
+      timeval time_to_come_back_to = d_time;
+
+      reset();
+      if (d_logHead != NULL) {
+	// Go to the beginning of the file and find out when it
+	// started.
+	timeval start = d_logHead->data.msg_time;
+
+	// Go to the end and find out what time it is
+	timeval stop;
+	do {
+	  stop = d_logHead->data.msg_time;
+	} while (advance_currentLogEntry == 0);
+
+	len = vrpn_TimevalDiff(stop, start);
+      }
+
+      // We have our value.  Set it and go back where
+      // we came from, but don't play the records along
+      // the way.  Make sure that we or the routines we
+      // call set both the current pointer and the d_time
+      // to the correct value.
+      jump_to_time(time_to_come_back_to);
     }
 
     return len;
@@ -693,18 +752,25 @@ timeval vrpn_File_Connection::get_lowest_user_timestamp()
 {
     timeval low = {LONG_MAX, LONG_MAX};
 
-    // The first timestamp in the file may not be the lowest
-    // because of time synchronization.
-    if (d_logHead) {        
-        vrpn_LOGLIST *pEntry;
-        for (pEntry = d_logHead; pEntry != NULL; pEntry = pEntry->next) {            
-            if (pEntry->data.type >= 0 &&
-                vrpn_TimevalGreater(low, pEntry->data.msg_time)) {
+    // Remember where we were when we asked this question
+    timeval time_to_come_back_to = d_time;
 
-                low = pEntry->data.msg_time;
-            }
-        }
-    }
+    // Go to the beginning of the file and then run through all
+    // of the messages to find the one with the lowest value
+    reset();
+    do {
+      if ( (d_currentLogEntry->data.type >= 0) &&
+	    vrpn_TimevalGreater(low, d_currentLogEntry->data.msg_time)) {
+	low = d_currentLogEntry->data.msg_time;
+      }
+    } while (advance_currentLogEntry == 0);
+
+    // We have our value.  Set it and go back where
+    // we came from, but don't play the records along
+    // the way.  Make sure that we or the routines we
+    // call set both the current pointer and the d_time
+    // to the correct value.
+    jump_to_time(time_to_come_back_to);
 
     return low;
 }
@@ -741,7 +807,7 @@ vrpn_File_Connection * vrpn_File_Connection::get_File_Connection (void) {
 // virtual
 int vrpn_File_Connection::read_cookie (void)
 {
-    char readbuf [501];  // HACK!
+    char readbuf [2048];  // HACK!
     int retval;
 
     retval = fread(readbuf, vrpn_cookie_size(), 1, d_file);
@@ -802,7 +868,6 @@ int vrpn_File_Connection::read_entry (void)
     // the latter isn't an error state
     if (retval <= 0) {
         // Don't close the file because we might get a reset message...
-        // close_file();
         delete newEntry;
         return 1;
     }
@@ -831,19 +896,49 @@ int vrpn_File_Connection::read_entry (void)
     // the latter isn't an error state
     if (retval <= 0) {
         // Don't close the file because we might get a reset message...
-        //close_file();
         return 1;
     }
 
-    // doubly-linked list maintenance
-    newEntry->next = NULL;
-    newEntry->prev = d_logTail;
-    if (d_logTail) {
-        d_logTail->next = newEntry;
-    }
-    d_logTail = newEntry;
-    if (!d_logHead) {
-        d_logHead = d_logTail;
+    // If we are accumulating messages, keep the list of them up to
+    // date.  If we are not, toss the old to make way for the new.
+    // Whenever this function returns 0, we need to have set the
+    // Head and Tail to something non-NULL.
+
+    if (d_accumulate) {
+
+      // doubly-linked list maintenance, putting this one at the tail.
+      newEntry->next = NULL;
+      newEntry->prev = d_logTail;
+      if (d_logTail) {
+	  d_logTail->next = newEntry;
+      }
+      d_logTail = newEntry;
+
+      // If we've not gotten any messages yet, this one is also the
+      // head.
+      if (!d_logHead) {
+	  d_logHead = d_logTail;
+      }
+
+    } else { // Don't keep old list entries.
+
+      // If we had a message before, get rid of it and its data now.  We
+      // could use either Head or Tail here because they will point
+      // to the same message.
+      if (d_logTail) {
+        if (d_logTail->data.buffer) {
+            delete [] (char *) d_logTail->data.buffer;
+	}
+	delete d_logTail;
+      }
+
+      // This is the only message in memory, so it is both the
+      // head and the tail of the memory list.
+      d_logHead = d_logTail = newEntry;
+
+      // The new entry is not linked to any others (there are no others)
+      newEntry->next = NULL;
+      newEntry->prev = NULL;
     }
 
     return 0;
@@ -866,23 +961,30 @@ int vrpn_File_Connection::reset()
     // make it as if we never saw any messages from our previous activity
     d_endpoints[0]->drop_connection();
 
-    d_currentLogEntry = d_startEntry;
+    // If we are accumulating, reset us back to the beginning of the memory
+    // buffer chain. Otherwise, go back to the beginning of the file and
+    // then read the magic cookie and then the first entry again.
+    if (d_accumulate) {
+      d_currentLogEntry = d_startEntry;
+    } else {
+      rewind(d_file);
+      read_cookie();
+      read_entry();
+      d_startEntry = d_currentLogEntry = d_logHead;
+    }
     d_time = d_startEntry->data.msg_time;
     // reset for mainloop()
     d_last_time.tv_usec = d_last_time.tv_sec = 0;
     d_filetime_accum.reset_at_time( d_last_time );
     
-    // this needs to be a parameter if we want this to be optional
-    int fPlayToFirstUserMessage = 1;
     // This is useful to play the initial system messages
-    //(the sender/type ones) automatically.  These might not be
+    // (the sender/type ones) automatically.  These might not be
     // time synched so if we don't play them automatically they
     // can mess up playback if their timestamps are later then
     // the first user message.
-    if (fPlayToFirstUserMessage) {
+    if (vrpn_FILE_CONNECTIONS_SHOULD_SKIP_TO_USER_MESSAGES) {
         play_to_user_message();
     }
-
 
     return 0;
 }
