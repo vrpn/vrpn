@@ -106,6 +106,10 @@ vrpn_File_Connection::vrpn_File_Connection (const char * file_name,
     // the first user message.
     if (fPlayToFirstUserMessage) {
         play_to_user_message();
+        if (d_currentLogEntry) {
+            d_start_time = d_currentLogEntry->data.msg_time;
+            d_time = d_start_time;
+        }
     }
 }
 

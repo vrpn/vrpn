@@ -207,6 +207,18 @@ Package=<4>
 
 ###############################################################################
 
+Project: "vrpn_MTd"=.\vrpn_MTd.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "vrpn_server"=.\server_src\pc_win32\vrpn_server\vrpn_server.dsp - Package Owner=<4>
 
 Package=<5>

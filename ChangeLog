@@ -1,3 +1,10 @@
+2000-10-08  Adam Seeger  <seeger@cs.unc.edu>
+
+        * vrpn_FileConnection.C (vrpn_File_Connection::vrpn_File_Connection) :
+        sets d_start_time to be the first time after playing to the first
+        user message to avoid problems with log files that have system
+        messages with messed up timestamps
+
 2000-10-05  Sang-Uok Kum  <kumsu@cs.unc.edu>
 
 	*  vrpn_Shared.h : Fixed a mistake which made it not work in VC++. 
@@ -58,8 +65,6 @@
 
         * vrpn_DelayedConnection.C : new file
 
-
->>>>>>> 1.32
 2000-09-22  Adam Seeger  <seeger@cs.unc.edu>
 
         * vrpn_Connection.C (vrpn_Log::lastLogTime) : new function to 
