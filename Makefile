@@ -318,8 +318,8 @@ LIB_INCLUDES = vrpn_Connection.h vrpn_Tracker.h vrpn_Button.h \
 SLIB_FILES =  $(LIB_FILES) vrpn_3Space.C \
 	     vrpn_Flock.C vrpn_Tracker_Fastrak.C vrpn_Dyna.C \
 	     vrpn_Flock_Parallel.C  vrpn_Joystick.C \
-	     vrpn_JoyFly.C vrpn_sgibox.C vrpn_raw_sgibox.C \
-             vrpn_CerealBox.C vrpn_Tracker_AnalogFly.C
+	     vrpn_JoyFly.C vrpn_sgibox.C vrpn_CerealBox.C \
+             vrpn_Tracker_AnalogFly.C vrpn_raw_sgibox.C vrpn_Dial.C
 
 SLIB_OBJECTS = $(patsubst %,$(SOBJECT_DIR)/%,$(SLIB_FILES:.C=.o))
 
