@@ -1,6 +1,10 @@
 #ifndef	VRPN_CONNECTION_H
 
+#ifdef _WIN32
+#include <winsock.h>  // defines struct timeval
+#else
 #include <sys/time.h>
+#endif
 
 class	vrpn_Connection;
 
@@ -46,9 +50,10 @@ class vrpn_Connection
 	// Create a connection to listen for incoming connections on a port
 	vrpn_Connection(unsigned short listen_port_no =
 		vrpn_DEFAULT_LISTEN_PORT_NO);
-
+#ifndef _WIN32
 	// Create a connection that makes an SDI connection to a remote server
 	vrpn_Connection(char *server_name);
+#endif
 
 	//XXX Destructor should delete all entries from callback lists
 
@@ -91,9 +96,15 @@ class vrpn_Connection
 	int	status;			// Status of the connection
 
 	// Sockets used to talk to a remote Connection
+#ifdef _WIN32
+	SOCKET	tcp_sock;
+	SOCKET	udp_outbound;
+	SOCKET	udp_inbound;
+#else
 	int	tcp_sock;		// TCP socket to other machine
 	int	udp_outbound;		// UDP socket to other machine
 	int	udp_inbound;		// UDP socket from other machine
+#endif
 
 	// Only used for a vrpn_Connection that awaits incoming connections
 	int	listen_udp_sock;	// Connect requests come here
@@ -169,8 +180,9 @@ class vrpn_Connection
 	virtual	int	do_callbacks_for(long type, long sender,
 				struct timeval time, int len, char *buffer);
 };
-
+#ifndef _WIN32
 extern	vrpn_Connection *vrpn_get_connection_by_name(char *cname);
+#endif
 
 #define VRPN_CONNECTION_H
 #endif

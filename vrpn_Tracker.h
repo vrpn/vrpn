@@ -3,7 +3,10 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#ifndef _WIN32
 #include <sys/time.h>
+#endif
+
 #include "vrpn_Connection.h"
 
 class vrpn_Tracker {
@@ -28,6 +31,7 @@ class vrpn_Tracker {
    virtual int encode_to(char *buf);
 };
 
+#ifndef _WIN32
 class vrpn_Tracker_Serial : public vrpn_Tracker {
   public:
    vrpn_Tracker_Serial(char *name, vrpn_Connection *c,
@@ -55,6 +59,7 @@ class vrpn_Tracker_3Space: public vrpn_Tracker_Serial {
    virtual void get_report(void);
    virtual void reset();
 };
+#endif  // #ifndef _WIN32
 
 class vrpn_Tracker_NULL: public vrpn_Tracker {
   public:
@@ -86,6 +91,7 @@ typedef void (*vrpn_TRACKERCHANGEHANDLER)(void *userdata,
 // Open a tracker that is on the other end of a connection
 // and handle updates from it.  This is the type of tracker that user code will
 // deal with.
+#ifndef _WIN32
 
 class vrpn_Tracker_Remote: public vrpn_Tracker {
   public:
@@ -111,6 +117,8 @@ class vrpn_Tracker_Remote: public vrpn_Tracker {
 
 	static int handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
 };
+
+#endif /* ifndef _WIN32 */
 
 #define TRACKER_H
 #endif

@@ -1,35 +1,52 @@
 #include <stdlib.h>
-#include <unistd.h>
-#include <sysent.h>
 #include <malloc.h>
 #include <memory.h>
 #include <math.h>
 #include <errno.h>
 #include <stdio.h>
-#include <strings.h>
-#ifdef	sgi
-#include <bstring.h>
-#endif
-#include <sys/time.h>
 #include <sys/types.h>
+#include <signal.h>
+
+#ifdef _WIN32
+#include <winsock.h>
+#else
+#include <unistd.h>
+#include <sysent.h>
+#include <strings.h>
+#include <sys/time.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
-#include <unistd.h>
-#include <signal.h>
+#endif
+
+#ifdef	sgi
+#include <bstring.h>
+#endif
+
 #include "vrpn_Connection.h"
+#include "vrpn_Shared.h"		// defines gettimeofday for WIN32
 
 //#define	VERBOSE
 //#define	VERBOSE2
 //#define	PRINT_READ_HISTOGRAM
 
-extern "C" int sdi_connect_to_device(char *s);
+// On Win32, this constant is defined as ~0 (sockets are unsigned ints)
+#ifndef	_WIN32
+#define	INVALID_SOCKET	-1
+#endif
+
 extern "C" int sdi_disconnect_from_device(int device);
 extern "C" int sdi_connect_to_client(char *machine, int port);
+#ifndef _WIN32
+extern "C" int sdi_connect_to_device(char *s);
 extern "C" int sdi_noint_block_read(int file, char *buf, int len);
 extern "C" int sdi_noint_block_write(int file, const char *buf, int len);
-extern "C" int sdi_noint_block_read_timeout(int tcp_sock, char *buffer,
-		int len, struct timeval *timeout);
+#else
+extern "C" int sdi_noint_block_read(SOCKET outsock, char *buffer, int length);
+extern "C" int sdi_noint_block_write(SOCKET insock, char *buffer, int length);
+extern "C" int sdi_noint_block_read_timeout(SOCKET tcp_sock, char *buffer,
+											int len, struct timeval *timeout);
+#endif
 
 const	char	MAGIC[] = "vrpn: ver. 01.00";
 const	int	MAGICLEN = 16;	// Must be a multiple of 4 bytes!
@@ -95,16 +112,22 @@ static	int open_udp_socket(unsigned short *portno)
 // port on the specified machine.
 //  The routine returns -1 on failure and the file descriptor on success.
 
+#ifdef _WIN32
+static	SOCKET connect_udp_to(char *machine, int portno)
+{
+   SOCKET sock; 
+#else
 static	int connect_udp_to(char *machine, int portno)
 {
    int sock;
+#endif
    struct	sockaddr_in client;     /* The name of the client */
    struct	hostent *host;          /* The host to connect to */
 
    // create an internet datagram socket
-   if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1)  {
+   if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == INVALID_SOCKET)  {
 	perror("vrpn: vrpn_Connection: can't open socket");
-	return -1;
+	return INVALID_SOCKET;
    }
 
    // Connect it to the specified port on the specified machine
@@ -113,7 +136,7 @@ static	int connect_udp_to(char *machine, int portno)
 		close(sock);
 		fprintf(stderr,
 			 "vrpn: connect_udp_to: error finding host by name\n");
-		return(-1);
+		return(INVALID_SOCKET);
 	}
 #ifdef CRAY
         { int i;
@@ -124,6 +147,8 @@ static	int connect_udp_to(char *machine, int portno)
           }
           client.sin_addr.s_addr = foo_mark;
         }
+#elif defined(_WIN32)
+	memcpy((char*)&(client.sin_addr.s_addr), host->h_addr, host->h_length);
 #else
 	bcopy(host->h_addr, (char*)&(client.sin_addr.s_addr), host->h_length);
 #endif
@@ -131,7 +156,7 @@ static	int connect_udp_to(char *machine, int portno)
 	if (connect(sock,(struct sockaddr*)&client,sizeof(client)) < 0 ){
 		perror("vrpn: connect_udp_to: Could not connect to client");
 		close(sock);
-		return(-1);
+		return(INVALID_SOCKET);
 	}
 
    return sock;
@@ -244,7 +269,9 @@ void vrpn_Connection::check_connection(void)
    // remote client shuts down its TCP connection.  We'll find out
    // about it as an exception on the socket when we select() for
    // read.
+#ifndef _WIN32
    signal( SIGPIPE, SIG_IGN );
+#endif
 
    // Set up the things that need to happen when a new connection is
    // started.
@@ -431,7 +458,7 @@ int vrpn_Connection::handle_UDP_message(void *userdata,
 	    perror("vrpn: vrpn_Connection: Couldn't open outbound UDP link");
 	    return -1;
 	}
-
+	fprintf(stderr, "  Opened UDP channel to %s:%d\n", rhostname, p.sender);
 #ifdef	VERBOSE
 	printf("  Opened UDP channel to %s:%d\n", rhostname, p.sender);
 #endif
@@ -552,17 +579,17 @@ void vrpn_Connection::drop_connection(void)
 {
 	//XXX Store name when opening, say which dropped here
 	fprintf(stderr,"vrpn: Connection dropped\n");
-	if (tcp_sock != -1) {
+	if (tcp_sock != INVALID_SOCKET) {
 		close(tcp_sock);
-		tcp_sock = -1;
+		tcp_sock = INVALID_SOCKET;
 	}
-	if (udp_outbound != -1) {
+	if (udp_outbound != INVALID_SOCKET) {
 		close(udp_outbound);
-		udp_outbound = -1;
+		udp_outbound = INVALID_SOCKET;
 	}
-	if (udp_inbound != -1) {
+	if (udp_inbound != INVALID_SOCKET) {
 		close(udp_inbound);
-		udp_inbound = -1;
+		udp_inbound = INVALID_SOCKET;
 	}
 	if (listen_udp_sock != -1) {
 		status = LISTEN;	// We're able to accept more
@@ -621,7 +648,7 @@ int vrpn_Connection::send_pending_reports(void)
 	ret = send(udp_outbound, udp_outbuf, udp_num_out, 0);
 #ifdef	VERBOSE
    printf("UDP Sent %d bytes\n",ret);
-#endif
+#endif SOCKET_ERROR
       if (ret == -1) {
 	fprintf(stderr,"vrpn: UDP send failed\n");
 	drop_connection();
@@ -640,7 +667,7 @@ int vrpn_Connection::mainloop(void)
 	int	udp_messages_read;
 
 #ifdef	VERBOSE2
-	printf("vrpn_Connection::mainlop() called (status %d)\n",status);
+	printf("vrpn_Connection::mainloop() called (status %d)\n",status);
 #endif
 
    switch (status) {
@@ -740,9 +767,9 @@ void	vrpn_Connection::init(void)
 	udp_num_out = 0;
 
 	listen_udp_sock = -1;
-	tcp_sock = -1;
-	udp_inbound = -1;
-	udp_outbound = -1;
+	tcp_sock = INVALID_SOCKET;
+	udp_inbound = INVALID_SOCKET;
+	udp_outbound = INVALID_SOCKET;
 
 	// Set up the default handlers for the different types of user
 	// incoming messages.  Initially, they are all set to the
@@ -779,11 +806,11 @@ vrpn_Connection::vrpn_Connection(unsigned short listen_port_no)
    }
 }
 
+#ifndef _WIN32
 vrpn_Connection::vrpn_Connection(char *station_name)
 {
 	char	buf[17];
 	unsigned short	udp_portnum;
-	int	header[5];
 
 	// Initialize the things that must be for any constructor
 	init();
@@ -853,6 +880,7 @@ vrpn_Connection::vrpn_Connection(char *station_name)
 		return;
 	}
 }
+#endif
 
 long vrpn_Connection::register_sender(char *name)
 {
@@ -1188,7 +1216,7 @@ int	vrpn_Connection::handle_udp_messages(int fd)
 	      while ( (inbuf_ptr - inbuf) != inbuf_len) {
 
 		// Read and parse the header
-		if ( ((inbuf_ptr - inbuf) + sizeof(header)) > inbuf_len) {
+		if ( ((inbuf_ptr - inbuf) + sizeof(header)) > (unsigned)inbuf_len) {
 		   fprintf(stderr, "vrpn: vrpn_Connection::handle_udp_messages: Can't read header");
 		   return -1;
 		}
@@ -1276,8 +1304,13 @@ int	vrpn_Connection::handle_type_message(void *userdata,
 		fprintf(stderr,"vrpn: Too many types from other side\n");
 		return -1;
 	}
+#ifdef _WIN32
+	memcpy(type_name, me->other_types[me->num_other_types].name,
+		 sizeof(type_name));
+#else
 	bcopy(type_name, me->other_types[me->num_other_types].name,
 		sizeof(type_name));
+#endif
 
 	// If there is a corresponding local type defined, set the mapping.
 	// If not, clear the mapping.
@@ -1324,8 +1357,13 @@ int	vrpn_Connection::handle_sender_message(void *userdata,
 		fprintf(stderr,"vrpn: Too many senders from other side\n");
 		return -1;
 	}
+#ifdef _WIN32
+	memcpy(sender_name, me->other_senders[me->num_other_senders].name,
+		sizeof(sender_name));
+#else
 	bcopy(sender_name, me->other_senders[me->num_other_senders].name,
 		sizeof(sender_name));
+#endif
 
 	// If there is a corresponding local sender defined, set the mapping.
 	// If not, set it to -1.
@@ -1453,7 +1491,7 @@ static vrpn_KNOWN_CONNECTION *known = NULL;
 // name, it will return the same pointer, rather than trying to make
 // multiple of the same connection.  If the connection is in a bad way,
 // it returns NULL.
-
+#ifndef _WIN32
 vrpn_Connection *vrpn_get_connection_by_name(char *cname)
 {
 	vrpn_KNOWN_CONNECTION *curr = known;
@@ -1483,4 +1521,4 @@ vrpn_Connection *vrpn_get_connection_by_name(char *cname)
 		return NULL;
 	}
 }
-
+#endif

@@ -1,5 +1,9 @@
 #ifndef	VRPN_BUTTON_H
+
+#ifndef _WIN32
 #include <sys/time.h>
+#endif
+
 #include "vrpn_Connection.h"
 
 #define	vrpn_BUTTON_MAX_BUTTONS	(100)
@@ -33,7 +37,7 @@ class vrpn_Button {
 // Button device that is connected to a parallel port and uses the
 // status bits to read from the buttons.  There can be up to 5 buttons
 // read this way.
-
+#ifndef _WIN32
 class vrpn_parallel_Button: public vrpn_Button {
   public:
 	// Open a button connected to the local machine, talk to the
@@ -58,6 +62,7 @@ class vrpn_Button_Python: public vrpn_parallel_Button {
   protected:
   	virtual void read(void);
 };
+#endif
 
 //----------------------------------------------------------
 //************** Users deal with the following *************

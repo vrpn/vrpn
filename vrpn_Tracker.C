@@ -3,18 +3,24 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <ctype.h>
+
 #ifdef linux
 #include <termios.h>
 #endif
-#include <sys/types.h>
-#include <sys/stat.h>
+
+#ifndef _WIN32
 #include <sys/ioctl.h>
-#include <fcntl.h>
 #include <sys/time.h>
 #include <unistd.h>
-#include <ctype.h>
 #include <netinet/in.h>
+#endif
+
 #include "vrpn_Tracker.h"
+#include "vrpn_Shared.h"		 // defines gettimeofday for WIN32
 
 //#define VERBOSE
 #define READ_HISTOGRAM
@@ -153,7 +159,7 @@ int	vrpn_Tracker::encode_to(char *buf)
 // the number of characters read or -1 on failure.  Note that it only
 // reads characters that are available at the time of the read, so less
 // than the requested number may be returned.
-
+#ifndef _WIN32
 int vrpn_Tracker_Serial::readAvailableCharacters(unsigned char *buffer,
 	int bytes)
 {
@@ -194,6 +200,7 @@ int vrpn_Tracker_Serial::readAvailableCharacters(unsigned char *buffer,
 
    return bRead;
 }
+#endif // #ifndef _WIN32
 
 vrpn_Tracker_NULL::vrpn_Tracker_NULL(char *name, vrpn_Connection *c,
 	int sensors, float Hz) : vrpn_Tracker(c), update_rate(Hz),
@@ -210,9 +217,9 @@ vrpn_Tracker_NULL::vrpn_Tracker_NULL(char *name, vrpn_Connection *c,
       }
 
 	// Set the position to the origin and the orientation to identity
-	pos[0] = pos[1] = pos[2] = 0.0;
-	quat[0] = quat[1] = quat[2] = 0.0;
-	quat[3] = 1.0;
+	pos[0] = pos[1] = pos[2] = 0.0f;
+	quat[0] = quat[1] = quat[2] = 0.0f;
+	quat[3] = 1.0f;
 }
 
 void	vrpn_Tracker_NULL::mainloop(void)
@@ -244,6 +251,7 @@ void	vrpn_Tracker_NULL::mainloop(void)
 	}
 }
 
+#ifndef _WIN32
 void vrpn_Tracker_3Space::reset()
 {
    static int numResets = 0;	// How many resets have we tried?
@@ -363,6 +371,7 @@ void vrpn_Tracker_3Space::reset()
    gettimeofday(&timestamp, NULL);	// Set watchdog now
    status = TRACKER_SYNCING;	// We're trying for a new reading
 }
+
 
 void vrpn_Tracker_3Space::get_report(void)
 {
@@ -487,6 +496,7 @@ void vrpn_Tracker_3Space::get_report(void)
 #endif
 }
 
+
 void vrpn_Tracker_3Space::mainloop()
 {
   switch (status) {
@@ -545,6 +555,7 @@ void vrpn_Tracker_3Space::mainloop()
    }
 }
 
+
 vrpn_Tracker_Serial::vrpn_Tracker_Serial(char *name, vrpn_Connection *c,
 	char *port, long baud)
 {
@@ -581,7 +592,6 @@ vrpn_Tracker_Serial::vrpn_Tracker_Serial(char *name, vrpn_Connection *c,
    status = TRACKER_RESETTING;
    gettimeofday(&timestamp, NULL);
 }
-
 
 vrpn_Tracker_Remote::vrpn_Tracker_Remote(char *name) : change_list(NULL)
 {
@@ -728,3 +738,4 @@ int vrpn_Tracker_Remote::handle_change_message(void *userdata,
 	return 0;
 }
 
+#endif // #ifndef _WIN32

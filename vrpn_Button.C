@@ -2,16 +2,22 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <strings.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <netinet/in.h>
-#include <sys/ioctl.h>
+#include <fcntl.h>
+
 #ifdef linux
 #include <linux/lp.h>
 #endif
-#include <fcntl.h>
+
+#ifndef _WIN32
+#include <strings.h>
+#include <netinet/in.h>
+#include <sys/ioctl.h>
+#endif 
+
 #include "vrpn_Button.h"
+#include "vrpn_Shared.h"		 // defines gettimeofday for WIN32
 
 #define BUTTON_READY 	  (1)
 #define BUTTON_FAIL	  (-1)
@@ -76,6 +82,7 @@ void	vrpn_Button::report_changes(void)
    }
 }
 
+#ifndef _WIN32
 vrpn_parallel_Button::vrpn_parallel_Button(char *name, vrpn_Connection *c,
 	int portno)
 {
@@ -314,3 +321,4 @@ int vrpn_Button_Remote::handle_change_message(void *userdata,
 	return 0;
 }
 
+#endif // #ifndef _WIN32
