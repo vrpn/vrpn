@@ -18,9 +18,9 @@
 #include <sys/ioctl.h>
 #endif 
 
-#include <quat.h>  // quaternion for spring stuff
-
 #include "vrpn_ForceDevice.h"
+
+#include <quat.h>  // quaternion for spring stuff
 
 /* cheezy hack to make sure this enum is defined in the case we didn't 
    include trimesh.h */
