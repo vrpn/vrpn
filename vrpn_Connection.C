@@ -4190,18 +4190,16 @@ int vrpn_Endpoint::handle_type_message(void *userdata,
   // If there is a corresponding local type defined, find the mapping.
   local_id = endpoint->d_dispatcher->getTypeID(type_name);
   // If not, add this type locally
-  if( local_id = -1 )
+  if( local_id == -1 )
   {
-	  if( endpoint->d_parent != NULL )
-	  {
-		  local_id = endpoint->d_parent->register_message_type( type_name );
-	  }
+    if( endpoint->d_parent != NULL ) {
+	  local_id = endpoint->d_parent->register_message_type( type_name );
+    }
 #ifdef VERBOSE
-	  else
-	  {
-		  printf( "vrpn_Endpoint::handle_type_message:  NULL d_parent"
-				  "when trying to auto-register remote message type %s.\n", type_name );
-	  }
+    else {
+	  printf( "vrpn_Endpoint::handle_type_message:  NULL d_parent"
+	  "when trying to auto-register remote message type %s.\n", type_name );
+    }
 #endif
   }
   if (endpoint->newRemoteType(type_name, p.sender, local_id) == -1) {

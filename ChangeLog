@@ -1,5 +1,12 @@
 2003-11-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Connection.C : Compiler warning on SGI caught this!  There
+		was an = rather than == where we were checking for the
+		existence of a local type.  No harm done, but this avoids
+		extra checking.
+
+2003-11-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Connection.C : Exposing constructor with stern warning
 		against using it.
 
