@@ -47,7 +47,8 @@
 //#define VERBOSE
 
 //static const char * myID = "vrpn_Mutex";
-static const char * request_type = "vrpn_Mutex Request";
+static const char * requestIndex_type = "vrpn_Mutex Request Index";
+static const char * requestMutex_type = "vrpn_Mutex Request Mutex";
 static const char * release_type = "vrpn_Mutex Release";
 static const char * releaseNotification_type =
                                    "vrpn_Mutex Release_Notification";
@@ -130,7 +131,8 @@ vrpn_Mutex::vrpn_Mutex (const char * name, vrpn_Connection * c) :
 
   if (c) {
     d_myId = c->register_sender(servicename);
-    d_request_type = c->register_message_type(request_type);
+    d_requestIndex_type = c->register_message_type(requestIndex_type);
+    d_requestMutex_type = c->register_message_type(requestMutex_type);
     d_release_type = c->register_message_type(release_type);
     d_releaseNotification_type = c->register_message_type
                  (releaseNotification_type);
@@ -166,7 +168,7 @@ void vrpn_Mutex::sendRequest (vrpn_int32 index) {
   gettimeofday(&now, NULL);
   vrpn_buffer(&b, &bl, index);
   d_connection->pack_message(32 - bl, now,
-                  d_request_type, d_myId, buffer,
+                  d_requestMutex_type, d_myId, buffer,
                   vrpn_CONNECTION_RELIABLE);
 }
 
@@ -244,7 +246,8 @@ vrpn_Mutex_Server::vrpn_Mutex_Server (const char * name, vrpn_Connection * c) :
   vrpn_int32 droppedLast;
 
   if (c) {
-    c->register_handler(d_request_type, handle_request, this);
+    c->register_handler(d_requestIndex_type, handle_requestIndex, this);
+    c->register_handler(d_requestMutex_type, handle_requestMutex, this);
     c->register_handler(d_release_type, handle_release, this);
 
     got = c->register_message_type(vrpn_got_connection);
@@ -260,7 +263,10 @@ vrpn_Mutex_Server::~vrpn_Mutex_Server (void) {
     vrpn_int32 got, droppedLast;
     got = d_connection->register_message_type(vrpn_got_connection);
     droppedLast = d_connection->register_message_type(vrpn_dropped_last_connection);
-    d_connection->unregister_handler(d_request_type, handle_request, this);
+    d_connection->unregister_handler(d_requestIndex_type, 
+		handle_requestIndex, this);
+    d_connection->unregister_handler(d_requestMutex_type, 
+	handle_requestMutex, this);
     d_connection->unregister_handler(d_release_type, handle_release, this);
     d_connection->unregister_handler(got, handle_gotConnection, this);
     d_connection->unregister_handler(droppedLast, handle_dropLastConnection, this);
@@ -268,7 +274,8 @@ vrpn_Mutex_Server::~vrpn_Mutex_Server (void) {
 }
 
 // static
-int vrpn_Mutex_Server::handle_request (void * userdata, vrpn_HANDLERPARAM p) {
+int vrpn_Mutex_Server::handle_requestMutex (void * userdata, 
+					vrpn_HANDLERPARAM p) {
   vrpn_Mutex_Server * me = (vrpn_Mutex_Server *) userdata;
   const char * b = p.buffer;
   vrpn_int32 remoteId;
@@ -311,8 +318,8 @@ int vrpn_Mutex_Server::handle_release (void * userdata, vrpn_HANDLERPARAM) {
 
 
 // static
-int vrpn_Mutex_Server::handle_gotConnection (void * userdata,
-                                             vrpn_HANDLERPARAM) {
+int vrpn_Mutex_Server::handle_requestIndex (void *userdata,
+						vrpn_HANDLERPARAM) {
   vrpn_Mutex_Server * me = (vrpn_Mutex_Server *) userdata;
   timeval now;
   char buffer [32];
@@ -320,7 +327,7 @@ int vrpn_Mutex_Server::handle_gotConnection (void * userdata,
   vrpn_int32 bl = 32;
 
 #ifdef VERBOSE
-  fprintf(stderr, "vrpn_Mutex_Server::handle_gotConnection:  "
+  fprintf(stderr, "vrpn_Mutex_Server::handle_requestIndex:  "
                   "Initializing client %d.\n", me->d_remoteIndex);
 #endif
 
@@ -336,6 +343,13 @@ int vrpn_Mutex_Server::handle_gotConnection (void * userdata,
   me->d_remoteIndex++;
 
   return 0;
+}
+
+// static
+int vrpn_Mutex_Server::handle_gotConnection (void * userdata,
+                                             vrpn_HANDLERPARAM p) {
+  return 0;
+  // return handle_requestIndex(userdata, p);
 }
 
 
@@ -379,6 +393,12 @@ vrpn_Mutex_Remote::vrpn_Mutex_Remote (const char * name, vrpn_Connection * c) :
       d_connection->register_handler(d_releaseNotification_type,
                                  handle_releaseNotification, this);
       d_connection->register_handler(d_initialize_type, handle_initialize, this);
+      if (d_connection->connected()) {
+          requestIndex();
+      }
+      vrpn_int32 got = d_connection->register_message_type(vrpn_got_connection);
+      d_connection->register_handler(got, handle_gotConnection, this);
+
   }
 }
 
@@ -396,6 +416,8 @@ vrpn_Mutex_Remote::~vrpn_Mutex_Remote (void) {
       d_connection->unregister_handler(d_releaseNotification_type,
                                  handle_releaseNotification, this);
       d_connection->unregister_handler(d_initialize_type, handle_initialize, this);
+      vrpn_int32 got = d_connection->register_message_type(vrpn_got_connection);
+      d_connection->unregister_handler(got, handle_gotConnection, this);
   }
 }
 
@@ -413,7 +435,15 @@ vrpn_bool vrpn_Mutex_Remote::isHeldRemotely (void) const {
   return (d_state == HELD_REMOTELY);
 }
 
-
+void vrpn_Mutex_Remote::requestIndex (void) {
+  timeval now;
+  gettimeofday(&now, NULL);
+  d_connection->pack_message(0, now,
+                         d_requestIndex_type, d_myId,
+                         NULL,
+                         vrpn_CONNECTION_RELIABLE);
+  return;
+}
 
 void vrpn_Mutex_Remote::request (void) {
   if (!isAvailable()) {
@@ -597,6 +627,17 @@ int vrpn_Mutex_Remote::handle_initialize (void * userdata,
 
   return 0;
 }
+
+// static
+int vrpn_Mutex_Remote::handle_gotConnection (void * userdata,
+                                             vrpn_HANDLERPARAM p) {
+  vrpn_Mutex_Remote * me = (vrpn_Mutex_Remote *) userdata;
+  if (me->d_myIndex != -1) {
+    me->requestIndex();
+  }
+  return 0;
+}
+
 
 void vrpn_Mutex_Remote::triggerGrantCallbacks (void) {
   mutexCallback * cb;
@@ -1161,7 +1202,7 @@ void vrpn_PeerMutex::sendRequest (vrpn_Connection * c) {
   vrpn_buffer(&b, &bl, d_myIP);
   vrpn_buffer(&b, &bl, d_myPort);
   c->pack_message(32 - bl, now,
-                  c->register_message_type(request_type),
+                  c->register_message_type(requestMutex_type),
                   c->register_sender(d_mutexName), buffer,
                   vrpn_CONNECTION_RELIABLE);
 }
@@ -1273,7 +1314,7 @@ void vrpn_PeerMutex::init (const char * name) {
   strncpy(d_mutexName, name, strlen(name));
 
   d_myId = d_server->register_sender(name);
-  d_request_type = d_server->register_message_type(request_type);
+  d_request_type = d_server->register_message_type(requestMutex_type);
   d_release_type = d_server->register_message_type(release_type);
   d_grantRequest_type = d_server->register_message_type(grantRequest_type);
   d_denyRequest_type = d_server->register_message_type(denyRequest_type);

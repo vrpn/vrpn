@@ -1,3 +1,20 @@
+2001-04-24  Adam Seeger  <seeger@cs.unc.edu>
+
+	* vrpn_Mutex.hC : added a new message to let the client request
+		the initialization message instead of having the server
+		send this automatically on getting a connection - the problem
+		with the old method is that if the connection was opened before
+		creating the vrpn_Mutex_Remote then the message could be
+		received before the vrpn_Mutex_Remote's callback was registered
+		Now, when creating a vrpn_Mutex_Remote with an already-
+		connected vrpn_Connection, a request for initialization is sent
+		immediately. Otherwise, the vrpn_Mutex_Remote requests
+		initialization when its got_connection callback is 
+		triggered.
+	* vrpn_Tracker.C : changed checks for sensor > TRACKER_MAX_SENSOR_LIST
+		to sensor >= TRACKER_MAX_SENSOR_LIST because a sensor index
+		equal to TRACKER_MAX_SENSOR_LIST is also illegal
+
 2001-03-25  Aron Helser  <helser@cs.unc.edu>
 
 	vrpn_Analog.C : Tweak of message types to make them more uniform

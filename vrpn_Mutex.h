@@ -29,7 +29,8 @@ class vrpn_Mutex {
     vrpn_Connection * d_connection;
 
     vrpn_int32 d_myId;
-    vrpn_int32 d_request_type;
+    vrpn_int32 d_requestIndex_type;
+    vrpn_int32 d_requestMutex_type;
     vrpn_int32 d_release_type;
     vrpn_int32 d_releaseNotification_type;
     vrpn_int32 d_grantRequest_type;
@@ -60,7 +61,8 @@ class vrpn_Mutex_Server : public vrpn_Mutex {
     vrpn_int32 d_remoteIndex;
       ///< Counts remotes who have had IDs issued to them.
 
-    static int handle_request (void *, vrpn_HANDLERPARAM);
+    static int handle_requestIndex (void *, vrpn_HANDLERPARAM);
+    static int handle_requestMutex (void *, vrpn_HANDLERPARAM);
     static int handle_release (void *, vrpn_HANDLERPARAM);
 
     static int handle_gotConnection (void *, vrpn_HANDLERPARAM);
@@ -115,6 +117,7 @@ class vrpn_Mutex_Remote : public vrpn_Mutex {
 
   protected:
 
+    void requestIndex (void);
 
     enum state { OURS, REQUESTING, AVAILABLE, HELD_REMOTELY};
 
@@ -127,6 +130,8 @@ class vrpn_Mutex_Remote : public vrpn_Mutex {
     static int handle_releaseNotification (void *, vrpn_HANDLERPARAM);
 
     static int handle_initialize (void *, vrpn_HANDLERPARAM);
+
+    static int handle_gotConnection (void *, vrpn_HANDLERPARAM);
 
     void triggerGrantCallbacks (void);
     void triggerDenyCallbacks (void);

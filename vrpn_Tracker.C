@@ -912,7 +912,7 @@ int vrpn_Tracker_Remote::register_change_handler(void *userdata,
 {
         vrpn_TRACKERCHANGELIST  *new_entry;
 
-	if ((whichSensor < 0) || (whichSensor > TRACKER_MAX_SENSOR_LIST)) {
+	if ((whichSensor < 0) || (whichSensor >= TRACKER_MAX_SENSOR_LIST)) {
 	    fprintf(stderr, 
 		"vrpn_Tracker_Remote::register_handler: bad sensor index\n");
 	    return -1;
@@ -947,7 +947,7 @@ int vrpn_Tracker_Remote::register_change_handler(void *userdata,
 {
 	vrpn_TRACKERVELCHANGELIST	*new_entry;
 
-        if ((whichSensor < 0) || (whichSensor > TRACKER_MAX_SENSOR_LIST)) {
+        if ((whichSensor < 0) || (whichSensor >= TRACKER_MAX_SENSOR_LIST)) {
             fprintf(stderr,
                 "vrpn_Tracker_Remote::register_handler: bad sensor index\n");
             return -1;
@@ -981,7 +981,7 @@ int vrpn_Tracker_Remote::register_change_handler(void *userdata,
 		vrpn_TRACKERACCCHANGEHANDLER handler, vrpn_int32 whichSensor)
 {
 	vrpn_TRACKERACCCHANGELIST	*new_entry;
-        if ((whichSensor < 0) || (whichSensor > TRACKER_MAX_SENSOR_LIST)) {
+        if ((whichSensor < 0) || (whichSensor >= TRACKER_MAX_SENSOR_LIST)) {
             fprintf(stderr,
                 "vrpn_Tracker_Remote::register_handler: bad sensor index\n");
             return -1;
@@ -1046,7 +1046,7 @@ int vrpn_Tracker_Remote::register_change_handler(void *userdata,
 {
         vrpn_TRACKERUNIT2SENSORCHANGELIST      *new_entry;
 
-        if ((whichSensor < 0) || (whichSensor > TRACKER_MAX_SENSOR_LIST)) {
+        if ((whichSensor < 0) || (whichSensor >= TRACKER_MAX_SENSOR_LIST)) {
             fprintf(stderr,
                 "vrpn_Tracker_Remote::register_handler: bad sensor index\n");
             return -1;
@@ -1112,7 +1112,7 @@ int vrpn_Tracker_Remote::unregister_change_handler(void *userdata,
 	// The pointer at *snitch points to victim
 	vrpn_TRACKERCHANGELIST	*victim, **snitch;
 
-        if ((whichSensor < 0) || (whichSensor > TRACKER_MAX_SENSOR_LIST)) {
+        if ((whichSensor < 0) || (whichSensor >= TRACKER_MAX_SENSOR_LIST)) {
             fprintf(stderr,
                 "vrpn_Tracker_Remote::unregister_handler: bad sensor index\n");
             return -1;
@@ -1150,7 +1150,7 @@ int vrpn_Tracker_Remote::unregister_change_handler(void *userdata,
 	// The pointer at *snitch points to victim
 	vrpn_TRACKERVELCHANGELIST	*victim, **snitch;
 
-        if ((whichSensor < 0) || (whichSensor > TRACKER_MAX_SENSOR_LIST)) {
+        if ((whichSensor < 0) || (whichSensor >= TRACKER_MAX_SENSOR_LIST)) {
             fprintf(stderr,
              "vrpn_Tracker_Remote::unregister_vel_handler: bad sensor index\n");
             return -1;
@@ -1188,7 +1188,7 @@ int vrpn_Tracker_Remote::unregister_change_handler(void *userdata,
 	// The pointer at *snitch points to victim
 	vrpn_TRACKERACCCHANGELIST	*victim, **snitch;
 
-        if ((whichSensor < 0) || (whichSensor > TRACKER_MAX_SENSOR_LIST)) {
+        if ((whichSensor < 0) || (whichSensor >= TRACKER_MAX_SENSOR_LIST)) {
             fprintf(stderr,
              "vrpn_Tracker_Remote::unregister_acc_handler: bad sensor index\n");
             return -1;
@@ -1257,7 +1257,7 @@ int vrpn_Tracker_Remote::unregister_change_handler(void *userdata,
         // The pointer at *snitch points to victim
         vrpn_TRACKERUNIT2SENSORCHANGELIST       *victim, **snitch;
 
-        if ((whichSensor < 0) || (whichSensor > TRACKER_MAX_SENSOR_LIST)) {
+        if ((whichSensor < 0) || (whichSensor >= TRACKER_MAX_SENSOR_LIST)) {
             fprintf(stderr,
              "vrpn_Tracker_Remote::unregister_u2s_handler: bad sensor index\n");
             return -1;
@@ -1351,6 +1351,15 @@ int vrpn_Tracker_Remote::handle_change_message(void *userdata,
 	// Go down the list of callbacks that have been registered.
 	// Fill in the parameter and call each.
 	while (handler != NULL) {
+		void *x = handler->handler;
+		int sensor = tp.sensor;
+		double dummy;
+		struct timeval t = tp.msg_time;
+		for (i = 0; i < 3; i++) {
+ 		  dummy = tp.pos[i];
+		  dummy = tp.quat[i];
+		}
+		dummy = tp.quat[3];
 		handler->handler(handler->userdata, tp);
 		handler = handler->next;
 	}
