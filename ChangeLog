@@ -1,3 +1,11 @@
+2003-07-24  Matt McCallus  <mccallus@cs.unc.edu>
+
+	* vrpn_Sound.C : Added a "look at/look up" call for setting
+		orientation, rather than quaternions.  Later will
+		either remove quaternion one or (better) reimplement
+		in terms of at/up (or vice-versa).
+	* vrpn_Sound.h : Same.
+
 2003-07-21  Sascha Scholz  <sascha.scholz@imk.fraunhofer.de>
 
 	* Makefile : Removed un-needed include directories that caused
