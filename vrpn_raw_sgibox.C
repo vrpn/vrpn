@@ -79,9 +79,9 @@ vrpn_raw_SGIBox::vrpn_raw_SGIBox(char * name, vrpn_Connection * c,
     }
     reset();
 
-    num_channel = NUM_DIALS;
-    num_dials = NUM_DIALS;
-    num_buttons = NUM_BUTTONS;
+    num_channel = vrpn_SGI_NUM_DIALS;
+    num_dials = vrpn_SGI_NUM_DIALS;
+    num_buttons = vrpn_SGI_NUM_BUTTONS;
 
     // We can use either autodeleted handler; choose the one in Analog
     register_autodeleted_handler(c->register_message_type(vrpn_got_first_connection), sgibox_raw_con_cb, this);
@@ -198,12 +198,12 @@ int vrpn_raw_SGIBox::reset() {  /* Button/Dial box setup */
   // Reset the button and, analog, and dial values to zero, since the dial box
   // and button box are now reset.
   
-  for (i=0; i<NUM_BUTTONS; i++) {
+  for (i=0; i<vrpn_SGI_NUM_BUTTONS; i++) {
 	buttons[i] = lastbuttons[i] = 0;	// The buttons are released
 	//XXX Reset the button-light handling registers
   }
 
-  for (i=0; i<NUM_DIALS; i++) {
+  for (i=0; i<vrpn_SGI_NUM_DIALS; i++) {
 	mid_values[i] = 0;		// The middle of saturating analog range
 	last[i] = channel[i] = 0;	// The analog values are reset to 0
 	dials[i] = 0;			// Reset the dials to zero

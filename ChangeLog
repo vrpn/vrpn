@@ -1,3 +1,13 @@
+2003-09-26  Matt Harvey  <m.j.harvey@ucl.ac.uk>
+
+	* Makefile : Added VPJoystick driver.
+	* vrpn.dsp : Same.
+	* vrpn_VPJoystick.h : Driver for a commercial joystick.
+	* vrpn_VPJoystick.C : Same.
+	* vrpn_raw_sgibox.C : Modified to remove #defines from the header
+		file that didn't start with vrpn_
+	* vrpn_raw_sgibox.h : Same.
+
 2003-09-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Connection.h : Rearranged order of functions so that

@@ -18,9 +18,9 @@
 #endif
 
 /* Number of buttons and number of dials on sgi button/dial boxes */
-#define NUM_BUTTONS (32)
-#define NUM_DIALS   (8)
-#define NUMDEVS (NUM_BUTTONS+NUM_DIALS)
+#define vrpn_SGI_NUM_BUTTONS (32)
+#define vrpn_SGI_NUM_DIALS   (8)
+#define vrpn_SGI_NUMDEVS (vrpn_SGI_NUM_BUTTONS+vrpn_SGI_NUM_DIALS)
 
 class vrpn_raw_SGIBox :public vrpn_Analog, public vrpn_Dial, public vrpn_Button_Filter {
 public:
@@ -40,10 +40,10 @@ private:
   int	serialfd;		// Serial port that has been opened
   unsigned long btstat;           /* status of of on/off buttons */
   unsigned long bs1, bs2;         /* status of all buttons */
-  short   vals1[NUMDEVS];	// Value array?
-  int	dial_changed[NUM_DIALS];
-  int	mid_values[NUM_DIALS];	  //< Used to perform clamping
-  int	last_values[NUM_DIALS];	  //< Used by dial reporting code
+  short   vals1[vrpn_SGI_NUMDEVS];	// Value array?
+  int	dial_changed[vrpn_SGI_NUM_DIALS];
+  int	mid_values[vrpn_SGI_NUM_DIALS];	  //< Used to perform clamping
+  int	last_values[vrpn_SGI_NUM_DIALS];	  //< Used by dial reporting code
 };
 
 #endif  // VRPN_RAW_SGIBOX
