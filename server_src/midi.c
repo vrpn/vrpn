@@ -54,7 +54,7 @@ void midich(char c)
 	sbwrite(buf);
 }
 
-void noteon(int chan,int pitch,int vol)
+void noteon (int channel, int pitch, int vol)
 {
 #ifdef	linux
 	char buf[4];

@@ -1,0 +1,24 @@
+# vrpn.cfg.SAMPLE
+
+# This has sample lines for a vrpn.cfg file.  If you get a new device working,
+# add a line for it here.  DO NOT remove lines from this file (unless
+# devices are declared obsolete) - just change the actual vrpn.cfg to match
+# your application.
+
+vrpn_Tracker_NULL	Tracker0	2		2
+#vrpn_Tracker_NULL	Tracker0@daytona		2		2
+
+#vrpn_SGIBOX	Button0	1 2 
+
+# A joybox (7 Analog channels + 2 buttons) attached to this computer.
+
+# arguments:  output_name port baud_rate min_update_rate
+vrpn_Joystick joybox /dev/ttyd1 30000 100.0
+
+# A vrpn_Tracker that translates the vrpn_Joystick into Walkthrough-
+# convention tracker reports.
+# Note use of temporary hack '*'-initial tracker server name to denote local
+# device.
+
+# arguments:  output_name source_joystick_name config_file
+vrpn_JoyFly walk-joybox *joybox vrpn_Joyfly.cfg

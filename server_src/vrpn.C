@@ -27,7 +27,7 @@
 #define MAX_SOUNDS 2
 #define MAX_ANALOG 4
 
-void	Usage(char *s)
+void Usage (const char * s)
 {
   fprintf(stderr,"Usage: %s [-f filename] [-warn] [-v] [port] [-q]\n",s);
   fprintf(stderr,"       [-client machinename port]\n");
@@ -65,7 +65,7 @@ void closeDevices();
 //#ifdef sgi
 //void sighandler( ... )
 //#else
-void sighandler( int signal )
+void sighandler (int)
 //#endif
 {
     closeDevices();
@@ -75,7 +75,7 @@ void sighandler( int signal )
 }
 #endif
 
-void closeDevices() {
+void closeDevices (void) {
   int i;
   for (i=0;i < num_buttons; i++) {
     fprintf(stderr, "\nClosing button %d ...", i);
@@ -89,7 +89,7 @@ void closeDevices() {
   //exit(0);
 }
 
-int handle_dlc(void *userdata, vrpn_HANDLERPARAM p)
+int handle_dlc (void *, vrpn_HANDLERPARAM p)
 {
     closeDevices();
     delete connection;
@@ -97,7 +97,7 @@ int handle_dlc(void *userdata, vrpn_HANDLERPARAM p)
     return 0;
 }
 
-void shutDown()
+void shutDown (void)
 {
     closeDevices();
     delete connection;
@@ -105,18 +105,18 @@ void shutDown()
     return;
 }
 
-main (int argc, char *argv[])
+main (int argc, char * argv[])
 {
-	char	*config_file_name = "vrpn.cfg";
-	FILE	*config_file;
-	char 	*client_name = NULL;
+	char	* config_file_name = "vrpn.cfg";
+	FILE	* config_file;
+	char 	* client_name = NULL;
 	int	client_port;
 	int	bail_on_error = 1;
 	int	verbose = 1;
 	int	auto_quit = 0;
 	int	realparams = 0;
 	int	i;
-	int 	loop=0;
+	int 	loop = 0;
 	int	port = vrpn_DEFAULT_LISTEN_PORT_NO;
 #ifdef WIN32
 	WSADATA wsaData; 
@@ -263,14 +263,14 @@ main (int argc, char *argv[])
 #endif
 	  } else if (isit("vrpn_JoyFly")) {
 	    next();
-	    if (sscanf(pch,"%511s%511s%511s",s2,s3,s4) != 3) {
-	      fprintf(stderr,"Bad vrpn_JoyFly line: %s\n",line);
+	    if (sscanf(pch, "%511s%511s%511s",s2,s3,s4) != 3) {
+	      fprintf(stderr, "Bad vrpn_JoyFly line: %s\n", line);
 	      if (bail_on_error) { return -1; }
 	      else { continue; }	// Skip this line
 	    }
 
 #ifdef	_WIN32
-	    fprintf(stderr,"Joytracker not yet defined for NT\n");
+	    fprintf(stderr,"JoyFly tracker not yet defined for NT\n");
 #else
 	    // Make sure there's room for a new tracker
 		if (num_trackers >= MAX_TRACKERS) {
@@ -280,11 +280,23 @@ main (int argc, char *argv[])
 		}
 
 		// Open the tracker
-	      if (verbose) printf(
-	       "Opening vrpn_Tracker_JoyFly: %s on server %s config_file %s\n",
-		    s2,s3,s4);
-		if ( (trackers[num_trackers] =
-		  new vrpn_Tracker_JoyFly(s2, connection, s3, s4)) == NULL){
+	        if (verbose)
+                  printf("Opening vrpn_Tracker_JoyFly:  "
+                         "%s on server %s with config_file %s\n",
+                         s2,s3,s4);
+
+                // HACK HACK HACK
+                // Check for illegal character leading '*' to see if it's local
+
+                if (s3[0] == '*') 
+                  trackers[num_trackers] =
+                    new vrpn_Tracker_JoyFly (s2, connection, &s3[1], s4,
+                                             connection);
+                else
+                  trackers[num_trackers] =
+                    new vrpn_Tracker_JoyFly (s2, connection, s3, s4);
+
+		if (!trackers[num_trackers]) {
 		  fprintf(stderr,"Can't create new vrpn_Tracker_JoyFly\n");
 		  if (bail_on_error) { return -1; }
 		  else { continue; }	// Skip this line
@@ -294,10 +306,10 @@ main (int argc, char *argv[])
 #endif
 	  } else  if (isit("vrpn_Joystick")) {
 	    float fhz;
-	    // Get the arguments (sound_name)
+	    // Get the arguments
 	    next();
-	    if (sscanf(pch,"%511s%511s%d %f",s2,s3, &i1, &fhz) != 4) {
-	      fprintf(stderr,"Bad vrpn_Joystick line: %s\n",line);
+	    if (sscanf(pch, "%511s%511s%d %f", s2, s3, &i1, &fhz) != 4) {
+	      fprintf(stderr, "Bad vrpn_Joystick line: %s\n", line);
 	      if (bail_on_error) { return -1; }
 	      else { continue; }	// Skip this line
 	    }
@@ -306,20 +318,21 @@ main (int argc, char *argv[])
 	    fprintf(stderr,"Joystick not yet defined for NT\n");
 #else
 
-	    // Make sure there's room for a new sound server
+	    // Make sure there's room for a new joystick server
 	    if (num_analogs >= MAX_ANALOG) {
-	      fprintf(stderr,"Too many analog devices in config file");
+	      fprintf(stderr, "Too many analog devices in config file");
 	      if (bail_on_error) { return -1; }
 	      else { continue; }	// Skip this line
 	    }
 
 	    // Open the sound server
 	    if (verbose) 
-	      printf("Opening vrpn_Joystick: %s on port %s baud %d, mim update rate = %.2f\n", 
+	      printf("Opening vrpn_Joystick:  "
+                     "%s on port %s baud %d, mim update rate = %.2f\n", 
 		     s2,s3, i1, fhz);
 	    if ((analogs[num_analogs] =
 		  new vrpn_Joystick(s2, connection,s3, i1, fhz)) == NULL) {
-		fprintf(stderr,"Can't create new vrpn_Joystick\n");
+		fprintf(stderr, "Can't create new vrpn_Joystick\n");
 		if (bail_on_error) { return -1; }
 		else { continue; }	// Skip this line
 	    } else {
@@ -659,7 +672,5 @@ main (int argc, char *argv[])
 		// on auxiliary connections
 		forwarderServer->mainloop();
 	}
-
-	return 0;
 }
 
