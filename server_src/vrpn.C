@@ -1318,35 +1318,41 @@ int setup_Tracker_Flock (char * & pch, char * line, FILE * config_file) {
 
   char s2 [LINESIZE], s3 [LINESIZE];
   int i1, i2;
+  char useERT[LINESIZE]; strcpy(useERT, "y");
 
-            next();
-                // Get the arguments (class, tracker_name, sensors, port, baud)
-                if (sscanf(pch,"%511s%d%511s%d", s2, 
-                           &i1, s3, &i2) != 4) {
-                  fprintf(stderr,"Bad vrpn_Tracker_Flock line: %s\n",line);
-                  return -1;
-                }
+  next();
+  // Get the arguments (class, tracker_name, sensors, port, baud, useERT)
+  int nb=sscanf(pch,"%511s%d%511s%d%511s", s2, &i1, s3, &i2, useERT);
+  if ((nb != 4) && (nb != 5)) {
+    fprintf(stderr,"Bad vrpn_Tracker_Flock line: %s\n",line);
+    return -1;
+  }
 
-                // Make sure there's room for a new tracker
-                if (num_trackers >= MAX_TRACKERS) {
-                  fprintf(stderr,"Too many trackers in config file");
-                  return -1;
-                }
+  // Make sure there's room for a new tracker
+  if (num_trackers >= MAX_TRACKERS) {
+    fprintf(stderr,"Too many trackers in config file");
+    return -1;
+  }
 
-        // Open the tracker
-        if (verbose) printf("Opening vrpn_Tracker_Flock: "
-                            "%s (%d sensors, on port %s, baud %d)\n",
-                    s2, i1, s3,i2);
-        if ( (trackers[num_trackers] =
-             new vrpn_Tracker_Flock(s2,connection,i1,s3,i2)) == NULL){
-          fprintf(stderr,"Can't create new vrpn_Tracker_Flock\n");
-          return -1;
-        } else {
-          num_trackers++;
-        }
+  // Open the tracker
+  bool buseERT=true;
+  if ((useERT[0] == 'n') || (useERT[0] == 'N')) {
+    buseERT = false;
+  }
+  if (verbose) {
+    printf("Opening vrpn_Tracker_Flock: "
+      "%s (%d sensors, on port %s, baud %d) %s ERT\n",
+      s2, i1, s3,i2, buseERT ? "with" : "without");
+  }
+  if ( (trackers[num_trackers] =
+    new vrpn_Tracker_Flock(s2,connection,i1,s3,i2, 1, buseERT)) == NULL) {
+      fprintf(stderr,"Can't create new vrpn_Tracker_Flock\n");
+      return -1;
+  } else {
+      num_trackers++;
+  }
 
   return 0;
-
 }
 
 int setup_Tracker_Flock_Parallel (char * & pch, char * line, FILE * config_file) {
@@ -1696,46 +1702,46 @@ int setup_Tracker_InterSense(char * &pch, char *line, FILE * config_file) {
   int found_a_valid_option=0;
   // See if we got the optional parameter to enable IS900 timings
   if (numparms >= 3) {
-	    if ( (strncmp(s4, "IS900time", strlen("IS900time")) == 0) ||
-			 (strncmp(s5, "IS900time", strlen("IS900time")) == 0) ||
-			 (strncmp(s6, "IS900time", strlen("IS900time")) == 0)
-			) {
-  			do_is900_timing = 1;
-			found_a_valid_option = 1;
-			printf(" ...using IS900 timing information\n");
-	    }  
-		if ( 
-			 (strncmp(s4, "ResetAtStartup", strlen("ResetAtStartup")) == 0) ||
-			 (strncmp(s5, "ResetAtStartup", strlen("ResetAtStartup")) == 0) ||
-			 (strncmp(s6, "ResetAtStartup", strlen("ResetAtStartup")) == 0)
-			) {
-  			reset_at_start = 1;
-			found_a_valid_option = 1;
-			printf(" ...Sensor will reset at startup\n");
-	    } 
-		if (strcmp(s4, "/") == 0) {
-			found_a_valid_option = 1;
-	    }
-		if (strcmp(s5, "/") == 0) {
-			found_a_valid_option = 1;
-	    }
-		if (strcmp(s6, "/") == 0) {
-			found_a_valid_option = 1;
-	    }
-		if (strcmp(s4, "\\") == 0) {
-			found_a_valid_option = 1;
-	    }
-		if (strcmp(s5, "\\") == 0) {
-			found_a_valid_option = 1;
-	    }
-		if (strcmp(s6, "\\") == 0) {
-			found_a_valid_option = 1;
-	    }
-		if (!found_a_valid_option) {
-			fprintf(stderr,"InterSense: Bad optional param (expected 'IS900time', 'ResetAtStartup' and/or 'SensorsStartsAtOne', got '%s %s %s')\n",s4,s5,s6);
-			return -1;
-	    }
-	}
+    if ( (strncmp(s4, "IS900time", strlen("IS900time")) == 0) ||
+		 (strncmp(s5, "IS900time", strlen("IS900time")) == 0) ||
+		 (strncmp(s6, "IS900time", strlen("IS900time")) == 0)
+	) {
+	  do_is900_timing = 1;
+	  found_a_valid_option = 1;
+	  printf(" ...using IS900 timing information\n");
+    }  
+    if ( 
+	 (strncmp(s4, "ResetAtStartup", strlen("ResetAtStartup")) == 0) ||
+	 (strncmp(s5, "ResetAtStartup", strlen("ResetAtStartup")) == 0) ||
+	 (strncmp(s6, "ResetAtStartup", strlen("ResetAtStartup")) == 0)
+	) {
+	  reset_at_start = 1;
+	  found_a_valid_option = 1;
+	  printf(" ...Sensor will reset at startup\n");
+    } 
+    if (strcmp(s4, "/") == 0) {
+		found_a_valid_option = 1;
+    }
+    if (strcmp(s5, "/") == 0) {
+		found_a_valid_option = 1;
+    }
+    if (strcmp(s6, "/") == 0) {
+		found_a_valid_option = 1;
+    }
+    if (strcmp(s4, "\\") == 0) {
+		found_a_valid_option = 1;
+    }
+    if (strcmp(s5, "\\") == 0) {
+		found_a_valid_option = 1;
+    }
+    if (strcmp(s6, "\\") == 0) {
+		found_a_valid_option = 1;
+    }
+    if (!found_a_valid_option) {
+	fprintf(stderr,"InterSense: Bad optional param (expected 'IS900time', 'ResetAtStartup' and/or 'SensorsStartsAtOne', got '%s %s %s')\n",s4,s5,s6);
+	return -1;
+    }
+  }
 
     // Make sure there's room for a new tracker
     if (num_trackers >= MAX_TRACKERS) {

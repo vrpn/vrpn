@@ -1,5 +1,12 @@
 2003-11-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn.C : Added changes by David Nahon to enable optional use
+		of the extended-range transmitter (no longer required).
+	* vprn.cfg : Same.
+	* vprn.cfg.SAMPLE : Same.
+
+2003-11-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn.C : Added changed by David Nahon that lets
                 the user specify whether to do a boresight reset at startup.
                 Also changes the sensor numbers to be zero-indexed like all
