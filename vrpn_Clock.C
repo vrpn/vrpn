@@ -6,10 +6,10 @@
   ----------------------------------------------------------------------------
   Author: weberh
   Created: Sat Dec 13 11:05:16 1997
-  Revised: Mon Mar 23 11:33:58 1998 by weberh
+  Revised: Wed Apr  1 13:23:40 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.C,v $
   $Locker:  $
-  $Revision: 1.9 $
+  $Revision: 1.10 $
   \*****************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
@@ -259,6 +259,9 @@ void vrpn_Clock_Remote::mainloop(void)
 				 clockClient_id, (char *)rgl, 
 				 vrpn_CONNECTION_RELIABLE);
 	tvQuickLastSync = tvNow;
+	    
+	// send out the clock sync messages right away
+	connection->vrpn_Connection::mainloop();
       }
     }
 
@@ -803,6 +806,10 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
 
 /*****************************************************************************\
   $Log: vrpn_Clock.C,v $
+  Revision 1.10  1998/04/02 23:16:57  weberh
+  Modified so quick sync messages get sent immediately rather than waiting
+  a cycle.
+
   Revision 1.9  1998/03/23 17:06:43  weberh
   clock changes:
 
