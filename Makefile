@@ -88,7 +88,6 @@ AR := ar ruv
 
 ifeq ($(FORCE_GPP),1)
   CC := g++
-# -fhuge-objects
 else
 
   ifeq ($(HW_OS),sparc_solaris)
@@ -116,7 +115,6 @@ else
   endif
   ifeq ($(HW_OS),pc_cygwin)
 	CC := g++
-# -fhuge-objects
   endif
   ifeq ($(HW_OS),sparc_sunos)
 	CC := /usr/local/lib/CenterLine/bin/CC

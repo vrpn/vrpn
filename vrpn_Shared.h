@@ -3,43 +3,60 @@
 
 #include "vrpn_Types.h"
 
+// jan 2000: jeff changing the way sockets are used with cygwin.  I made this
+// change because I realized that we were using winsock stuff in some places,
+// and cygwin stuff in others.  Discovered this when our code wouldn't compile
+// in cygwin-1.0 (but it did in cygwin-b20.1).
+
+// let's start with a clean slate
+#undef VRPN_USE_WINSOCK_SOCKETS
+
+// Does cygwin use winsock sockets or unix sockets
+#define VRPN_CYGWIN_USES_WINSOCK_SOCKETS
+
+#if defined(_WIN32) \
+    && (!defined(__CYGWIN__) || defined(VRPN_CYGWIN_USES_WINSOCK_SOCKETS))
+#define VRPN_USE_WINSOCK_SOCKETS
+#endif
+
+// comment from vrpn_Connection.h reads :
+//
+//   gethostbyname() fails on SOME Windows NT boxes, but not all,
+//   if given an IP octet string rather than a true name.
+//   Until we figure out WHY, we have this extra clause in here.
+//   It probably wouldn't hurt to enable it for non-NT systems
+//   as well.
+#ifdef _WIN32
+#define VRPN_USE_WINDOWS_GETHOSTBYNAME_HACK
+#endif
+
 // {{{ timeval defines
-#if defined (_WIN32) && !defined (__CYGWIN__)
-
-#include <windows.h>
-#include <sys/timeb.h>
-#include <winsock.h>   // timeval is defined here
-
-// If compiling under Cygnus Solutions Cygwin then these get defined by
-// including sys/time.h.  So, we will manually define only for _WIN32
-
-#ifndef _STRUCT_TIMEVAL
-#define _STRUCT_TIMEVAL
-  /* from HP-UX */
-struct timezone {
-    int     tz_minuteswest; /* minutes west of Greenwich */
-    int     tz_dsttime;     /* type of dst correction */
-};
-#endif
-
-// manually define this too.  _WIN32 sans cygwin doesn't have gettimeofday
-extern int gettimeofday(struct timeval *tp, struct timezone *tzp);
-
-// This has been moved to connection.C so that users of this
-// lib can still use fstream and other objects with close functions.
-// #define close closesocket
-
-#else  // cygwin or not _WIN32
-// both cygwin and Unix (not _WIN32) should include sys/time.h
-// but cygwin need to include winsock.h first.  barf :()
-
-#if defined(__CYGWIN__)
-#include <windows.h>
-#include <sys/timeb.h>
-#include <winsock.h>     // timeval is actually defined here
-#endif
-
+#if (!defined(VRPN_USE_WINSOCK_SOCKETS))
 #include <sys/time.h>    // for timeval, timezone, gettimeofday
+#else  // winsock sockets
+
+  #include <windows.h>
+  #include <sys/timeb.h>
+  #include <winsock.h>   // timeval is defined here
+
+  // If compiling under Cygnus Solutions Cygwin then these get defined by
+  // including sys/time.h.  So, we will manually define only for _WIN32
+
+  #ifndef _STRUCT_TIMEVAL
+    #define _STRUCT_TIMEVAL
+    /* from HP-UX */
+    struct timezone {
+        int     tz_minuteswest; /* minutes west of Greenwich */
+        int     tz_dsttime;     /* type of dst correction */
+    };
+  #endif
+
+  // manually define this too.  _WIN32 sans cygwin doesn't have gettimeofday
+  extern "C" int gettimeofday(struct timeval *tp, struct timezone *tzp);
+
+  // This has been moved to connection.C so that users of this
+  // lib can still use fstream and other objects with close functions.
+  // #define close closesocket
 
 #endif
 // }}} timeval defines
@@ -108,9 +125,9 @@ extern long vrpn_unbuffer (const char ** buffer, char * string,
                            vrpn_uint32 length);
 // }}}
 
+// XXX should this be done in cygwin?
 #ifdef	_WIN32	// No sleep() function, but Sleep(DWORD) defined in winbase.h
 #define	sleep(x)	Sleep( DWORD(1000.0 * x) )
 #endif
 
 #endif  // VRPN_SHARED_H
-

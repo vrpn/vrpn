@@ -16,7 +16,7 @@
   Revised: Mon Mar 23 11:34:26 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.h,v $
   $Locker:  $
-  $Revision: 1.12 $
+  $Revision: 1.13 $
 \*****************************************************************************/
 #ifndef _VRPN_CLOCK_H_
 #define _VRPN_CLOCK_H_
@@ -50,7 +50,7 @@ protected:
 class vrpn_Clock_Server : public vrpn_Clock {
 public:
   vrpn_Clock_Server(vrpn_Connection *c);
-  ~vrpn_Clock_Server();
+  virtual ~vrpn_Clock_Server();
 
   // Called once through each main loop iteration to handle
   // clock updates.
@@ -207,6 +207,9 @@ class vrpn_Clock_Remote: public vrpn_Clock {
 
 /*****************************************************************************\
   $Log: vrpn_Clock.h,v $
+  Revision 1.13  2000/02/24 21:24:10  juliano
+  these are my changes to get vrpn to compile with cygwin-1.0.  They are *not* extensively tested yet
+
   Revision 1.12  1999/10/08 22:29:55  taylorr
   Shutdown/restart server w/o restarting app
   	If the client starts before the server, this is okay -- it will retry

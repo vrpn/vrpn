@@ -1,3 +1,5 @@
+#include "vrpn_Connection.h"
+
 #include <stdlib.h>
 #include <memory.h>
 #include <math.h>
@@ -15,8 +17,8 @@
 #include <malloc.h>
 #endif
 
-#ifdef _WIN32
-#include <winsock.h>
+#ifdef VRPN_USE_WINSOCK_SOCKETS
+//XXX #include <winsock.h>
 // a socket in windows can not be closed like it can in unix-land
 #define close closesocket
 #else
@@ -46,26 +48,23 @@
 #include <resolv.h>  // for herror() - but it isn't there?
 #endif
 
-#ifdef _WIN32
-#include <winsock.h>
-#include <sys/timeb.h>
-#else
+#ifndef VRPN_USE_WINSOCK_SOCKETS
 #include <sys/wait.h>
 #include <sys/resource.h>  // for wait3() on sparc_solaris
+#ifndef __CYGWIN__
 #include <netinet/tcp.h>
-#endif
-
-//#include "vrpn_cygwin_hack.h"
+#endif /* __CYGWIN__ */
+#endif /* VRPN_USE_WINSOCK_SOCKETS */
 
 // cast fourth argument to setsockopt()
-#ifdef _WIN32
-#define SOCK_CAST (char *)
+#ifdef VRPN_USE_WINSOCK_SOCKETS
+  #define SOCK_CAST (char *)
 #else
- #ifdef sparc
-#define SOCK_CAST (const char *)
- #else
-#define SOCK_CAST
- #endif
+  #ifdef sparc
+    #define SOCK_CAST (const char *)
+  #else
+    #define SOCK_CAST
+  #endif
 #endif
 
 #ifdef _AIX
@@ -86,7 +85,7 @@ int gethostname (char *, int);
 }
 #endif
 
-#include "vrpn_Connection.h"
+//XXX #include "vrpn_Connection.h"
 #include "vrpn_Clock.h"  // for vrpn_Synchronized_Connection
 #include "vrpn_FileConnection.h"  // for vrpn_get_connection_by_name
 
@@ -98,7 +97,7 @@ int gethostname (char *, int);
 //   Warning:  PRINT_READ_HISTOGRAM is not thread-safe.
 
 // On Win32, this constant is defined as ~0 (sockets are unsigned ints)
-#ifndef	_WIN32
+#ifndef	VRPN_USE_WINSOCK_SOCKETS
 #define	INVALID_SOCKET	-1
 #endif
 
@@ -122,9 +121,6 @@ const int vrpn_MAGICLEN = 16;  // Must be a multiple of vrpn_ALIGN bytes!
 #define DROPPED			(-4)
 
 
-#ifdef	_WIN32
-#define	close	closesocket
-#endif
 
 //**********************************************************************
 //**  This section has been pulled from the "SDI" library and had its
@@ -137,8 +133,8 @@ const int vrpn_MAGICLEN = 16;  // Must be a multiple of vrpn_ALIGN bytes!
 // even though the man page says it should be.  Similarly, wait3()
 // isn't declared in sys/{wait,time,resource}.h.
 extern "C" {
-extern int getdtablesize (void);
-pid_t wait3 (int * statusp, int options, struct rusage * rusage);
+    extern int getdtablesize (void);
+    pid_t wait3 (int * statusp, int options, struct rusage * rusage);
 }
 #endif
 
@@ -493,7 +489,7 @@ int vrpn_noint_select(int width, fd_set *readfds, fd_set *writefds,
  * return that or return -1 (in the case of an error) or 0 (in the case
  * of EOF being reached before all the data is sent). */
 
-#if !defined(_WIN32)
+#ifndef VRPN_USE_WINSOCK_SOCKETS
 
 int vrpn_noint_block_write (int outfile, const char buffer[], int length)
 {
@@ -561,7 +557,7 @@ int vrpn_noint_block_read(int infile, char buffer[], int length)
         return(sofar);			/* All bytes read */
 }
 
-#else /* _WIN32 */
+#else /* winsock sockets */
 
 int vrpn_noint_block_write(SOCKET outsock, char *buffer, int length)
 {
@@ -610,7 +606,7 @@ int vrpn_noint_block_read(SOCKET insock, char *buffer, int length)
 }
 
 
-#endif /* _WIN32 */
+#endif /* VRPN_USE_WINSOCK_SOCKETS */
 
 
 /*	This routine will read in a block from the file descriptor.
@@ -623,7 +619,7 @@ int vrpn_noint_block_read(SOCKET insock, char *buffer, int length)
  * of EOF being reached before all the data arrives), or return the number
  * of characters read before timeout (in the case of a timeout). */
 
-#ifdef _WIN32
+#ifdef VRPN_USE_WINSOCK_SOCKETS
 int vrpn_noint_block_read_timeout(SOCKET infile, char buffer[], 
 				 int length, struct timeval *timeout)
 #else
@@ -706,7 +702,7 @@ int vrpn_noint_block_read_timeout(int infile, char buffer[],
 		 * guaranteed to have available.  On a socket, this is
 		 * not a problem because it won't block, but on a file it
 		 * will. */
-#ifndef _WIN32
+#ifndef VRPN_USE_WINSOCK_SOCKETS
                 ret = read(infile, buffer+sofar, 1);
                 sofar += ret;
 
@@ -725,11 +721,10 @@ int vrpn_noint_block_read_timeout(int infile, char buffer[],
 #endif
 
         } while ((ret > 0) && (sofar < length));
-
-#ifndef _WIN32
+#ifndef VRPN_USE_WINSOCK_SOCKETS
         if (ret == -1) return(-1);	/* Error during read */
 #endif
-	    if (ret == 0) return(0);	/* EOF reached */
+        if (ret == 0) return(0);	/* EOF reached */
 
         return(sofar);			/* All bytes read */
 }
@@ -795,7 +790,7 @@ int vrpn_udp_request_lob_packet(
 
         } else {
 
-#ifdef _WIN32
+#ifdef VRPN_USE_WINDOWS_GETHOSTBYNAME_HACK
 
 // gethostbyname() fails on SOME Windows NT boxes, but not all,
 // if given an IP octet string rather than a true name.
@@ -803,34 +798,31 @@ int vrpn_udp_request_lob_packet(
 // It probably wouldn't hurt to enable it for non-NT systems
 // as well.
 
-          int retval;
-          retval = sscanf(machine, "%u.%u.%u.%u",
-                          ((char *) &udp_name.sin_addr.s_addr)[0],
-                          ((char *) &udp_name.sin_addr.s_addr)[1],
-                          ((char *) &udp_name.sin_addr.s_addr)[2],
-                          ((char *) &udp_name.sin_addr.s_addr)[3]);
+            int retval;
+            retval = sscanf(machine, "%u.%u.%u.%u",
+                            ((char *) &udp_name.sin_addr.s_addr)[0],
+                            ((char *) &udp_name.sin_addr.s_addr)[1],
+                            ((char *) &udp_name.sin_addr.s_addr)[2],
+                            ((char *) &udp_name.sin_addr.s_addr)[3]);
+            
+            if (retval != 4) {
+                
+#endif  // VRPN_USE_WINDOWS_GETHOSTBYNAME_HACK
 
-          if (retval != 4) {
-
-#endif  // _WIN32
-
-// Note that this is the failure clause of gethostbyname() on
-// non-WIN32 systems, but of the sscanf() on WIN32 systems.
-
+                // Note that this is the failure clause of gethostbyname() on
+                // non-WIN32 systems, but of the sscanf() on WIN32 systems.
+                
 		close(udp_sock);
 		fprintf(stderr,
 			"vrpn_udp_request_lob_packet: error finding host by name\n");
 		return(-1);
-
-#ifdef _WIN32
-
-          }
-
+                
+#ifdef VRPN_USE_WINDOWS_GETHOSTBYNAME_HACK
+            }
 #endif
-
         }
-
-#ifndef _WIN32
+        
+#ifndef VRPN_USE_WINSOCK_SOCKETS
 	udp_name.sin_port = htons(remote_port);
 #else
 	udp_name.sin_port = htons((u_short)remote_port);
@@ -1036,8 +1028,9 @@ SOCKET vrpn_udp_request_call(const char * machine, int port)
  **********************************/
 int vrpn_start_server(const char *machine, char *server_name, char *args)
 {
-#ifdef  _WIN32
-        fprintf(stderr,"VRPN: vrpn_start_server not ported to NT!\n");
+#ifdef  VRPN_USE_WINSOCK_SOCKETS
+        fprintf(stderr,"VRPN: vrpn_start_server not ported"
+                " for windows winsocks!\n");
         return -1;
 #else
         int     pid;    /* Child's process ID */
@@ -1485,7 +1478,7 @@ int	vrpn_OneConnection::newRemoteSender(cName sender_name, vrpn_int32 local_id)
 int vrpn_OneConnection::connect_tcp_to (const char * msg)
 {	char	machine [5000];
 	int	port;
-#ifndef _WIN32
+#ifndef VRPN_USE_WINSOCK_SOCKETS
 	int	server_sock;		/* Socket on this host */
 #else
 	SOCKET server_sock;
@@ -1532,7 +1525,7 @@ int vrpn_OneConnection::connect_tcp_to (const char * msg)
 		herror("gethostbyname error:");
 #endif
 
-#ifdef _WIN32
+#ifdef VRPN_USE_WINDOWS_GETHOSTBYNAME_HACK
 
 // gethostbyname() fails on SOME Windows NT boxes, but not all,
 // if given an IP octet string rather than a true name.
@@ -1549,7 +1542,7 @@ int vrpn_OneConnection::connect_tcp_to (const char * msg)
 					"error: bad address string\n");
 			return -1;
 		}
-#else	// not _WIN32
+#else	// not gethostbyname hack
 
 // Note that this is the failure clause of gethostbyname() on
 // non-WIN32 systems
@@ -1560,7 +1553,7 @@ int vrpn_OneConnection::connect_tcp_to (const char * msg)
 		return -1;
 	}
 #endif
-#ifdef _WIN32
+#ifdef VRPN_USE_WINDOWS_GETHOSTBYNAME_HACK
 // XXX OK, so this doesn't work.  What's wrong???
 
 		client.sin_addr.s_addr = (a << 24) + (b << 16) + (c << 8) + d;
@@ -1594,7 +1587,7 @@ int vrpn_OneConnection::connect_tcp_to (const char * msg)
 #endif
 
 
-#ifndef _WIN32
+#ifndef VRPN_USE_WINSOCK_SOCKETS
 	client.sin_port = htons(port);
 #else
 	client.sin_port = htons((u_short)port);
@@ -1603,7 +1596,7 @@ int vrpn_OneConnection::connect_tcp_to (const char * msg)
 	if (connect(server_sock,(struct sockaddr*)&client,sizeof(client)) < 0 ){
 		fprintf(stderr,
 		     "vrpn_OneConnection::connect_tcp_to: Could not connect\n");
-#ifdef _WIN32
+#ifdef VRPN_USE_WINSOCK_SOCKETS
 		int error = WSAGetLastError();
 		fprintf(stderr, "Winsock error: %d\n", error);
 #endif
@@ -1623,7 +1616,7 @@ int vrpn_OneConnection::connect_tcp_to (const char * msg)
 			return(-1);
 		}
 
-//#ifndef _WIN32
+//#ifndef VRPN_USE_WINSOCK_SOCKETS
 		if (setsockopt(server_sock, p_entry->p_proto,
 			TCP_NODELAY, SOCK_CAST &nonzero, sizeof(nonzero))==-1) {
 //#else
@@ -2056,7 +2049,7 @@ static	int open_udp_socket (unsigned short * portno)
 // port on the specified machine.
 //  The routine returns -1 on failure and the file descriptor on success.
 
-#ifdef _WIN32
+#ifdef VRPN_USE_WINSOCK_SOCKETS
 static	SOCKET connect_udp_to (char * machine, int portno)
 {
    SOCKET sock; 
@@ -2077,7 +2070,7 @@ static	int connect_udp_to (char * machine, int portno)
    // Connect it to the specified port on the specified machine
 	client.sin_family = AF_INET;
 	if ( (host=gethostbyname(machine)) == NULL ) {
-#ifndef _WIN32
+#ifndef VRPN_USE_WINSOCK_SOCKETS
 		close(sock);
 		fprintf(stderr,
 			 "vrpn: connect_udp_to: error finding host by name\n");
@@ -2110,6 +2103,7 @@ static	int connect_udp_to (char * machine, int portno)
           client.sin_addr.s_addr = foo_mark;
         }
 #elif defined(_WIN32)
+    // XXX does cygwin have bcopy? cygwin-1.0 appears to have bcopy!
 	memcpy((char*)&(client.sin_addr.s_addr), host->h_addr, host->h_length);
 #else
 	bcopy(host->h_addr, (char*)&(client.sin_addr.s_addr), host->h_length);
@@ -2117,7 +2111,7 @@ static	int connect_udp_to (char * machine, int portno)
 	client.sin_port = htons(portno);
 	if (connect(sock,(struct sockaddr*)&client,sizeof(client)) < 0 ){
 		perror("vrpn: connect_udp_to: Could not connect to client");
-#ifdef _WIN32
+#ifdef VRPN_USE_WINSOCK_SOCKETS
 		int error = WSAGetLastError();
 		fprintf(stderr, "Winsock error: %d\n", error);
 #endif
@@ -2250,7 +2244,7 @@ void vrpn_Connection::handle_connection(void)
    // read.
    // Mips/Ultrix header file signal.h appears to be broken and
    // require the following cast
-#ifndef _WIN32
+#ifndef _WIN32  // XXX what about cygwin?
  #ifdef ultrix
    signal( SIGPIPE, (void (*) (int)) SIG_IGN );
  #else
@@ -3385,7 +3379,7 @@ void	vrpn_Connection::init (void)
 
 	gettimeofday(&start_time, NULL);
 
-#ifdef _WIN32
+#ifdef VRPN_USE_WINSOCK_SOCKETS
 
   // Make sure sockets are set up
   // TCH 2 Nov 98 after Phil Winston
@@ -3401,7 +3395,7 @@ void	vrpn_Connection::init (void)
     exit(0);
   }
 
-#endif  // _WIN32
+#endif  // windows sockets
 
 }
 
@@ -3688,7 +3682,7 @@ vrpn_Connection::~vrpn_Connection (void) {
 
   //fprintf(stderr, "In vrpn_Connection destructor.\n");
 
-#ifdef _WIN32
+#ifdef VRPN_USE_WINSOCK_SOCKETS
 
 	if (WSACleanup() == SOCKET_ERROR) {
     fprintf(stderr, "~vrpn_Connection():  "
@@ -3696,7 +3690,7 @@ vrpn_Connection::~vrpn_Connection (void) {
             WSAGetLastError());
 	}
 
-#endif  // _WIN32
+#endif  // VRPN_USE_WINSOCK_SOCKETS
 	vrpn_int32 i;
 	vrpnMsgCallbackEntry *pVMCB, *pVMCB_Del;
 	for (i=0;i<num_my_types;i++) {
