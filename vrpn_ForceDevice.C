@@ -415,15 +415,15 @@ void vrpn_Phantom::mainloop(void) {
 
     //check button status
     if(phantom->getStylusSwitch() ) {
-	buttons[0] = 1;   //button is depressed
-	//	printf("button is depressed.\n");
+	    buttons[0] = 1;   //button is pressed
+	//	printf("button is pressed.\n");
     } else {
-	buttons[0]= 0;
+	    buttons[0]= 0;
 	//	printf("button is released. \n");
     }
 
 	// if button event happens, report changes
-    report_changes();
+	report_changes();
 
     //set if its time to generate a new report 
     gettimeofday(&current_time, NULL);

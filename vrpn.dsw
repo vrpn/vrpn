@@ -3,6 +3,24 @@ Microsoft Developer Studio Workspace File, Format Version 5.00
 
 ###############################################################################
 
+Project: "ohm_server"=.\server_src\ohm_server.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name sdi
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
 Project: "phan_server"=.\server_src\phan_server.dsp - Package Owner=<4>
 
 Package=<5>
@@ -21,7 +39,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "quat"="..\..\Program Files\DevStudio\MyProjects\quat\quat.dsp" - Package Owner=<4>
+Project: "quat"=..\quat\quat.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -33,7 +51,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "sdi"="..\..\Program Files\DevStudio\MyProjects\sdi\sdi.dsp" - Package Owner=<4>
+Project: "sdi"=..\sdi\sdi.dsp - Package Owner=<4>
 
 Package=<5>
 {{{

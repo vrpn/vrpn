@@ -56,7 +56,10 @@ vrpn_Button::vrpn_Button(char *name, vrpn_Connection *c): num_buttons(0)
 
    // Set the time to 0 just to have something there.
    timestamp.tv_usec = timestamp.tv_sec = 0;
-   for (int i=0; i< num_buttons; i++) buttonstate[i] = BUTTON_MOMENTARY;
+   for (int i=0; i< vrpn_BUTTON_MAX_BUTTONS; i++) {
+	   buttonstate[i] = BUTTON_MOMENTARY;
+	   lastbuttons[i] = 0;
+   }
 }
 
 void vrpn_Button::set_momentary(int which_button) {
@@ -137,7 +140,6 @@ int	vrpn_Button::encode_to(char *buf, int button, int state)
 	   /*#ifdef	VERBOSE \
          printf("vrpn_Button %d %s\n",i, buttons[i]?"pressed":"released");\
 #endif \ */ \
-         lastbuttons[i] = buttons[i]; \
         }
 
 static	unsigned long	duration(struct timeval t1, struct timeval t2)
@@ -172,8 +174,8 @@ void	vrpn_Button::report_changes(void)
       for (i = 0; i < num_buttons; i++) {
 	switch (buttonstate[i]) {
 	case BUTTON_MOMENTARY:
-	  if (buttons[i] != lastbuttons[i])
-	    PACK_MESSAGE(i, buttons[i]);
+		if (buttons[i] != lastbuttons[i])
+	      PACK_MESSAGE(i, buttons[i]);
 	  break;
 	case BUTTON_TOGGLE_ON:
 	  if (buttons[i] && !lastbuttons[i]) {
@@ -187,6 +189,8 @@ void	vrpn_Button::report_changes(void)
 	    PACK_MESSAGE(i, 1);
 	  }
 	  break;
+	default:
+		fprintf(stderr,"vrpn_Button::report_changes(): Button %d in invalid state (%d)\n",i,buttonstate[i]);
 	}
 	lastbuttons[i] = buttons[i];
       }

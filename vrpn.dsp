@@ -60,7 +60,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "PC_WIN32/Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /Z7 /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MDd /W3 /GX /Z7 /Od /I "D:\Program Files\PHANToM\Ghost\lib" /I "C:\Program Files\PHANToM\Ghost\lib" /I "C:\gregory\vrpn\server_src\quat" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /c /Tp
+# ADD CPP /nologo /MDd /W3 /GX /Z7 /Od /I "D:\Program Files\PHANToM\Ghost\lib" /I "C:\Program Files\PHANToM\Ghost\lib" /I "..\sdi" /I "..\quat" /I "C:\gregory\vrpn\server_src\quat" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /Fp"C:/temp/seeger/PC_WIN32/Debug/vrpn.pch" /YX /Fo"C:/temp/seeger/PC_WIN32/Debug/" /Fd"C:/temp/seeger/PC_WIN32/Debug/" /FD /c /Tp
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -74,6 +74,22 @@ LIB32=link.exe -lib
 
 # Name "vrpn - Win32 Release"
 # Name "vrpn - Win32 Debug"
+# Begin Source File
+
+SOURCE=.\constraint.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\constraint.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\orpx.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\orpx.h
+# End Source File
 # Begin Source File
 
 SOURCE=.\plane.C
@@ -121,6 +137,14 @@ SOURCE=.\vrpn_ForceDevice.C
 # Begin Source File
 
 SOURCE=.\vrpn_ForceDevice.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Ohmmeter.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Ohmmeter.h
 # End Source File
 # Begin Source File
 
