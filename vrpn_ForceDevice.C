@@ -194,16 +194,16 @@ vrpn_int32 vrpn_ForceDevice::decode_force (const char *buffer, const vrpn_int32 
     return 0;
 }
 
-char *vrpn_ForceDevice::encode_scp(vrpn_int32 &length, 
-				const vrpn_float64 *pos, const vrpn_float64 *quat,
-				   const vrpn_int32 triId)
-{
+char *vrpn_ForceDevice::encode_scp (vrpn_int32 &length, 
+				    const vrpn_float64 * pos,
+                                    const vrpn_float64 * quat,
+				    const vrpn_int32 triId) {
     int i;
-    char *buf;
-    char *mptr;
+    char * buf;
+    char * mptr;
     vrpn_int32 mlen;
 
-    length = 7*sizeof(vrpn_float64)+sizeof(vrpn_int32);
+    length = 7 * sizeof(vrpn_float64) + sizeof(vrpn_int32);
     mlen = length;
 
     buf = new char [length];
@@ -220,25 +220,28 @@ char *vrpn_ForceDevice::encode_scp(vrpn_int32 &length,
     return buf;
 }
 
-vrpn_int32 vrpn_ForceDevice::decode_scp(const char *buffer, const vrpn_int32 len,
-					vrpn_float64 *pos, vrpn_float64 *quat,
-					vrpn_int32 &triId)
-{
+vrpn_int32 vrpn_ForceDevice::decode_scp (const char * buffer,
+                                         const vrpn_int32 len,
+					 vrpn_float64 * pos,
+                                         vrpn_float64 * quat,
+					 vrpn_int32 & triId) {
+    int desiredLen;
     int i;
-    const char *mptr = buffer;
+    const char * mptr = buffer;
 
-    if (len != (7*sizeof(vrpn_float64)+sizeof(vrpn_int32))){
+    desiredLen = 7 * sizeof(vrpn_float64) + sizeof(vrpn_int32);
+
+    if (len != desiredLen) {
 	    fprintf(stderr,"vrpn_ForceDevice: scp message payload error\n");
 	    fprintf(stderr,"             (got %d, expected %d)\n",
-		    len, 7*sizeof(vrpn_float64) );
+		    len, desiredLen);
 	    return -1;
     }
 
     for (i = 0; i < 3; i++)
-	    CHECK(vrpn_unbuffer(&mptr, &(pos[i])));
-    for (i = 0; i < 4; i++){
+      CHECK(vrpn_unbuffer(&mptr, &(pos[i])));
+    for (i = 0; i < 4; i++)
       CHECK(vrpn_unbuffer(&mptr, &(quat[i])));
-    }
     CHECK(vrpn_unbuffer(&mptr, &triId));
 
     return 0;
