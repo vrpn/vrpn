@@ -3618,10 +3618,7 @@ int	vrpn_Connection::do_callbacks_for(vrpn_int32 type, vrpn_int32 sender,
 	// Make sure we have a non-negative type.  System messages are
 	// handled differently.
     if (type < 0) {
-	// XXX Hack allow clock system messages to be handled by "user" code. 
-	    if ((type != vrpn_CLOCK_QUERY) && ( type!=vrpn_CLOCK_REPLY)) {
-		return 0;
-	    }
+	return 0;
     }
 	vrpnMsgCallbackEntry * who;
 	vrpn_HANDLERPARAM p;
@@ -4145,13 +4142,9 @@ int vrpn_Connection::register_handler(vrpn_int32 type,
         //   OR that it is "any"
 	if ( ( (type < 0) || (type >= num_my_types) ) &&
              (type != vrpn_ANY_TYPE) ) {
-	    // XXX Hack allow clock system message to be registered 
-	    // by user code, for now.
-	    if ((type != vrpn_CLOCK_QUERY) && ( type!=vrpn_CLOCK_REPLY)) {
 		fprintf(stderr,
 			"vrpn_Connection::register_handler: No such type\n");
 		return -1;
-	    }
 	}
 
 	// Ensure that the sender is a valid one (or "any")
@@ -4206,13 +4199,9 @@ int vrpn_Connection::unregister_handler(vrpn_int32 type,
         //   OR that it is "any"
 	if ( ( (type < 0) || (type >= num_my_types) ) &&
 	     (type != vrpn_ANY_TYPE) ) {
-	    // XXX Hack allow clock system message to be registered 
-	    // by user code, for now.
-	    if ((type != vrpn_CLOCK_QUERY) && ( type!=vrpn_CLOCK_REPLY)) {
 		fprintf(stderr,
 			"vrpn_Connection::unregister_handler: No such type\n");
 		return -1;
-	    }
 	}
 
 	// Find a handler with this registry in the list (any one will do,

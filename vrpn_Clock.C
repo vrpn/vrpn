@@ -9,7 +9,7 @@
   Revised: Wed Apr  1 13:23:40 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.C,v $
   $Locker:  $
-  $Revision: 1.23 $
+  $Revision: 1.24 $
   \*****************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
@@ -44,13 +44,8 @@ vrpn_Clock::vrpn_Clock(const char * name, vrpn_Connection *c) {
   }
   clockServer_id = connection->register_sender(servicename);
 
-  // XXX Hack We need to force the clock messages to be system messages,
-  // so we use hard-coded message IDs from vrpn_Connection.h
-  // Should be fixed in a re-write by Stefan Sain and Jeff Juliano. 
-  queryMsg_id = vrpn_CLOCK_QUERY;
-  replyMsg_id = vrpn_CLOCK_REPLY;
-//    queryMsg_id = connection->register_message_type("clock query");
-//    replyMsg_id = connection->register_message_type("clock reply");
+  queryMsg_id = connection->register_message_type("clock query");
+  replyMsg_id = connection->register_message_type("clock reply");
   if ( (clockServer_id == -1) || (queryMsg_id == -1) || (replyMsg_id == -1) ) {
     cerr << "vrpn_Clock: Can't register IDs" << endl;
     connection = NULL;
@@ -892,6 +887,12 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
 
 /*****************************************************************************\
   $Log: vrpn_Clock.C,v $
+  Revision 1.24  1999/10/14 17:29:50  helser
+  No, changing the clock messages to a system type was a bad idea. The last
+  commit actually disabled clock syncing entirely (which fixed my problem,
+  but...).  I plan to change file_connection so it will ignore clock sync
+  messages when setting the log file start time during replay.
+
   Revision 1.23  1999/10/14 15:54:21  helser
   Changes vrpn_FileConnection so it will allow local logging. I used this
   ability to write a log-file manipulator. I read in a log file, check and

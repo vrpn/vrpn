@@ -75,14 +75,6 @@ typedef int (* vrpn_LOGFILTER) (void * userdata, vrpn_HANDLERPARAM p);
 #define	vrpn_CONNECTION_LOG_DESCRIPTION		(-4)
 #define	vrpn_CONNECTION_DISCONNECT_MESSAGE	(-5)
 
-// XXX Hack
-// We need the clock sync messages to be treated like system messages, 
-// so until Stefan and Jeff complete their re-write of this file
-// we will just hard-code them as system messages.
-#define vrpn_CLOCK_QUERY                        (-6)
-#define vrpn_CLOCK_REPLY                        (-7)
-
-
 // Classes of service for messages, specify multiple by ORing them together
 // Priority of satisfying these should go from the top down (RELIABLE will
 // override all others).
