@@ -32,7 +32,7 @@
 // server, using phantom as a common device, and phantom 
 // configuration in .cfg file.
 // PLEASE SPECIFY PATH TO GHOSTLIB IN NEXT SECTION IF YOU USE THIS
-//#define	VRPN_USE_PHANTOM_SERVER
+#define	VRPN_USE_PHANTOM_SERVER
 
 //------------------------
 // Instructs vrpn to use Ghost 3.1 instead of Ghost 3.4.
@@ -58,8 +58,8 @@
 // first calls gettimeofday()).  The second version by Haris
 // Fretzagias relies on the timing supplied by Windows.  To use
 // the second version, also define VRPN_WINDOWS_CLOCK_V2.
-//#define	VRPN_UNSAFE_WINDOWS_CLOCK
-//#define	VRPN_WINDOWS_CLOCK_V2
+#define	VRPN_UNSAFE_WINDOWS_CLOCK
+#define	VRPN_WINDOWS_CLOCK_V2
 
 //-----------------------
 // Instructs VRPN to use the default room space transforms for
@@ -74,7 +74,7 @@
 // the DirectX SDK (from its standard installation in C:\DXSDK).
 // Later in this file, we also instruct the compiler to link with
 // the DirectX library if this is defined.
-//#define	VRPN_USE_DIRECTINPUT
+#define	VRPN_USE_DIRECTINPUT
 
 //-----------------------
 // Instructs the VRPN server to create an entry for the Adrienne
