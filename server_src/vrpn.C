@@ -28,10 +28,12 @@
 void	Usage(char *s)
 {
   fprintf(stderr,"Usage: %s [-f filename] [-warn] [-v] [port] [-q]\n",s);
+  fprintf(stderr,"       [-client machinename port]\n");
   fprintf(stderr,"       -f: Full path to config file (default vrpn.cfg)\n");
   fprintf(stderr,"       -warn: Only warn on errors (default is to bail)\n");
   fprintf(stderr,"       -v: Verbose\n");
   fprintf(stderr,"	 -q: quit when last connection is dropped\n");
+  fprintf(stderr,"       -client: where server connects when it starts up\n");
   exit(-1);
 }
 
@@ -101,6 +103,8 @@ main (int argc, char *argv[])
 {
 	char	*config_file_name = "vrpn.cfg";
 	FILE	*config_file;
+	char 	*client_name = NULL;
+	int	client_port;
 	int	bail_on_error = 1;
 	int	verbose = 1;
 	int	auto_quit = 0;
@@ -141,6 +145,11 @@ main (int argc, char *argv[])
 		verbose = 1;
 	  } else if (!strcmp(argv[i], "-q")) {  // quit on dropped last con
 		auto_quit = 1;
+	  } else if (!strcmp(argv[i], "-client")) { // specify a waiting client
+		if (++i > argc) { Usage(argv[0]); }
+		client_name = argv[i];
+		if (++i > argc) { Usage(argv[0]); }
+		client_port = atoi(argv[i]);
 	  } else if (argv[i][0] == '-') {	// Unknown flag
 		Usage(argv[0]);
 	  } else switch (realparams) {		// Non-flag parameters
@@ -564,6 +573,15 @@ main (int argc, char *argv[])
 #ifdef	sgi
 	fprintf(stderr, "sgibox: %p\n", vrpn_special_sgibox);
 #endif
+	if (client_name) {
+	    fprintf(stderr, "vrpn_serv: connecting to client: %s:%d\n",
+		client_name, client_port);
+	    if (connection->connect_to_client(client_name, client_port)){
+	 	fprintf(stderr, "server: could not connect to client %s:%d\n",
+			client_name, client_port);
+		shutDown();
+	    }
+	}
 	while (1) {
 		int	i;
 
