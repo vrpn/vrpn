@@ -39,6 +39,7 @@
 
 #ifdef	sparc
 #include <arpa/inet.h>
+#define INADDR_NONE -1
 #endif
 
 #ifdef	sgi
