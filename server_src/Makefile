@@ -4,6 +4,7 @@ HW_OS := $(shell /usr/local/bin/hw_os)
 CC := g++
 ifeq ($(HW_OS),sgi_irix)
 	CC := CC
+	GL := -lgl
 endif
 ifeq ($(HW_OS),hp700_hpux10)
 	CC := CC +a1
@@ -29,7 +30,7 @@ all:  vrpn_server
 # 	$(CC) $(LFLAGS) -o player vrpn_player.o -lvrpnserver -lsdi -lm
 
 vrpn_server: vrpn.o  midi.o ../$(HW_OS)/libvrpnserver.a
-	$(CC) $(LFLAGS) -o vrpn_server vrpn.o midi.o -lvrpnserver -lgl -lsdi -lm -lquat
+	$(CC) $(LFLAGS) -o vrpn_server vrpn.o midi.o -lvrpnserver $(GL) -lsdi -lm -lquat
 
 clean:
 	rm -f *.o vrpn_server

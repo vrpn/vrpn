@@ -8,11 +8,15 @@
  * Update Count    : 28
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_sgibox.C,v $
- * $Date: 1998/05/06 18:00:40 $
- * $Author: ryang $
- * $Revision: 1.1 $
+ * $Date: 1998/05/12 19:59:47 $
+ * $Author: taylorr $
+ * $Revision: 1.2 $
  * 
  * $Log: vrpn_sgibox.C,v $
+ * Revision 1.2  1998/05/12 19:59:47  taylorr
+ * This version will compile under non-SGI (in particular, it has been
+ * test under linux)
+ *
  * Revision 1.1  1998/05/06 18:00:40  ryang
  * v0.1 of vrpn_sgibox
  *
@@ -21,7 +25,8 @@
  * HISTORY
  */
 
-static char rcsid[] = "$Id: vrpn_sgibox.C,v 1.1 1998/05/06 18:00:40 ryang Exp $";
+static char rcsid[] = "$Id: vrpn_sgibox.C,v 1.2 1998/05/12 19:59:47 taylorr Exp $";
+#ifdef	sgi
 
 #include "vrpn_sgibox.h"
 #include <stdio.h>
@@ -96,12 +101,4 @@ void vrpn_SGIBox::mainloop() {
   get_report();
 }
 
-
-
-
-
-
-
-
-
-
+#endif

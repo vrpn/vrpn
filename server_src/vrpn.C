@@ -12,7 +12,9 @@
 #include "vrpn_Flock_Parallel.h"
 #include "vrpn_Dyna.h"
 #include "vrpn_Sound.h"
+#ifdef	sgi
 #include "vrpn_sgibox.h"
+#endif
 
 #include "vrpn_Analog.h"
 #include "vrpn_Joystick.h"
@@ -41,7 +43,10 @@ int		num_sounds = 0;
 vrpn_Analog	*analogs[MAX_ANALOG];
 int		num_analogs = 0;
 
+#ifdef	sgi
 vrpn_SGIBox	* vrpn_special_sgibox;
+#endif
+
 // install a signal handler to shut down the trackers and buttons
 #ifndef WIN32
 #include <signal.h>
@@ -176,6 +181,7 @@ main (int argc, char *argv[])
 	      else { continue; }	// Skip this line
 	    }
 
+#ifdef sgi
 	    // Make sure there's room for a new tracker
 		if (num_trackers >= MAX_TRACKERS) {
 		  fprintf(stderr,"Too many trackers in config file");
@@ -192,6 +198,9 @@ main (int argc, char *argv[])
 		  else { continue; }	// Skip this line
 		} 
 		printf("Opening vrpn_SGIBOX on host %s done\n", s2);
+#else
+		fprintf(stderr,"vrpn_server: Can't open SGIbox: not an SGI!\n");
+#endif
 	  } else if (isit("vrpn_JoyFly")) {
 	    next();
 	    if (sscanf(pch,"%511s%511s%511s",s2,s3,s4) != 3) {
@@ -515,7 +524,9 @@ main (int argc, char *argv[])
 	fclose(config_file);
 	loop = 0;
 	// Loop forever calling the mainloop()s for all devices
+#ifdef	sgi
 	fprintf(stderr, "sgibox: %p\n", vrpn_special_sgibox);
+#endif
 	while (1) {
 		int	i;
 
@@ -537,10 +548,10 @@ main (int argc, char *argv[])
 		for (i=0; i< num_analogs; i++) {
 		  analogs[i]->mainloop();
 		}
-		
+#ifdef sgi
 		if (vrpn_special_sgibox) 
 		  vrpn_special_sgibox->mainloop();
-
+#endif
 		// Send and receive all messages
 		connection.mainloop();
 	}
