@@ -7,19 +7,19 @@
 		following directories in your include path:
 		  ~tracker/hiball/nidaq/
 		  ~tracker/hiball/src/libs/libgb (for uptime.h)
-		  ~tracker/hiball/src/libs/tracker (for daq.h)
+		  ~tracker/hiball/src/hybrid/ (for daq.h)
 		And you must link in:
 		  ~tracker/hiball/src/libs/libgb/uptime.cpp
-		  ~tracker/hiball/src/libs/tracker/daq.cpp
+		  ~tracker/hiball/src/hybrid/daq.cpp
 		  ~tracker/hiball/nidaq/nidaq32.lib
 
   ----------------------------------------------------------------------------
   Author: weberh
   Created: Fri Jan 29 10:00:00 1999
-  Revised: Fri Jan 29 16:28:30 1999 by weberh
+  Revised: Mon Feb 15 11:08:40 1999 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_Nidaq.h,v $
   $Locker:  $
-  $Revision: 1.6 $
+  $Revision: 1.7 $
 \*****************************************************************************/
 
 #ifndef VRPN_NIDAQ
@@ -80,6 +80,9 @@ private:
 
 /*****************************************************************************\
   $Log: vrpn_Nidaq.h,v $
+  Revision 1.7  1999/02/15 16:09:08  weberh
+  updated comments to reflect necessary files to compile this component.
+
   Revision 1.6  1999/02/11 20:17:34  weberh
   cleaned up problems with cname alloc/dealloc, etc.
 
