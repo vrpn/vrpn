@@ -216,6 +216,7 @@ class vrpn_Endpoint {
 
 
     int connect_tcp_to (const char * msg);
+    int connect_tcp_to (const char * addr, int port);
       ///< Connects d_tcpSocket to the specified address (msg = "IP port");
       ///< sets status to COOKIE_PENDING;  returns 0 on success, -1 on failure
     int connect_udp_to (const char * addr, int port);
@@ -508,6 +509,9 @@ class vrpn_Connection {
 
     // Only used for a vrpn_Connection that awaits incoming connections
     int listen_udp_sock;	// Connect requests come here
+
+    // TCH OHS HACK
+    int listen_tcp_sock;
 
     // Routines that handle system messages
     static int handle_UDP_message (void * userdata, vrpn_HANDLERPARAM p);

@@ -1,4 +1,20 @@
+2000-02-05 Tom Hudson  <hudson@cs.unc.edu>
+
+	* vrpn_Connection.h: add vrpn_Connection::listen_tcp_sock
+	vrpn_Connection.C
+	(open_tcp_socket) : Add portno argument just like open_udp_socket;
+	default to NULL
+	(vrpn_Endpoint::connect_tcp_to) : Refactor into two functions
+        (vrpn_Connection::server_check_for_incoming_connections) :
+        Add check for TCP connections
+	(vrpn_Connection server constructor) : Add initialization,
+        opening, and listen() call for tcp socket
+	(vrpn_Connection client constructor) : Check for "tcp:"
+        station name; if found, initiate a TCP connection instead
+        of sending UDP message asking the server to initiate on
+
 2000-01-07 Kwan Torrich Skinner  <skinner@cs.unc.edu>
+
 	* vrpn_MTd.dsp: added vrpn_RedundantTransmission to the project
 	file so topo will compile.
 

@@ -2173,8 +2173,9 @@ static SOCKET open_udp_socket (unsigned short * portno,
  * Create a TCP socket and bind it to its local address.
  */
 
-static SOCKET open_tcp_socket (const char * NIC_IP = NULL) {
-  return open_socket(SOCK_STREAM, NULL, NIC_IP);
+static SOCKET open_tcp_socket (unsigned short * portno = NULL,
+                               const char * NIC_IP = NULL) {
+  return open_socket(SOCK_STREAM, portno, NIC_IP);
 }
 
 
@@ -2347,7 +2348,7 @@ int vrpn_get_a_TCP_socket (SOCKET * listen_sock, int * listen_portnum,
   /* Create a TCP socket to listen for incoming connections from the
    * remote server. */
 
-  *listen_sock = open_tcp_socket(NIC_IP);
+  *listen_sock = open_tcp_socket(NULL, NIC_IP);
   if (*listen_sock < 0) {
     fprintf(stderr, "vrpn_get_a_TCP_socket:  socket didn't open.\n");
     return -1;
@@ -3542,17 +3543,22 @@ int vrpn_Endpoint::handle_udp_messages
 int vrpn_Endpoint::connect_tcp_to (const char * msg) {
   char	machine [1000];
   int	port;
-  struct	sockaddr_in client;     /* The name of the client */
-  struct	hostent *host;          /* The host to connect to */
 
   // Find the machine name and port number
   if (sscanf(msg, "%s %d", machine, &port) != 2) {
   	return -1;
   }
 
+  return connect_tcp_to(machine, port);
+}
+
+int vrpn_Endpoint::connect_tcp_to (const char * addr, int port) {
+  struct	sockaddr_in client;     /* The name of the client */
+  struct	hostent *host;          /* The host to connect to */
+
   /* set up the socket */
 
-  d_tcpSocket = open_tcp_socket(d_NICaddress);
+  d_tcpSocket = open_tcp_socket(NULL, d_NICaddress);
 
   if (d_tcpSocket < 0) {
   	fprintf(stderr, "vrpn_Endpoint::connect_tcp_to:  "
@@ -3567,9 +3573,9 @@ int vrpn_Endpoint::connect_tcp_to (const char * msg) {
 // be called first. Avoids a 30+ second wait for
 // gethostbyname() to fail.
 
-  if ((client.sin_addr.s_addr = inet_addr(machine))
+  if ((client.sin_addr.s_addr = inet_addr(addr))
               == INADDR_NONE) {
-      host = gethostbyname(machine);
+      host = gethostbyname(addr);
       if (host) {
 
 #ifdef CRAY
@@ -5032,6 +5038,63 @@ void vrpn_Connection::server_check_for_incoming_connections
     // later.
     flush_udp_socket(listen_udp_sock);
   }
+
+  // TCH OHS HACK
+  vrpn_int32 newSocket;
+
+  // 0-time check for new connection coming in
+  retval = vrpn_poll_for_accept(listen_tcp_sock, &newSocket);
+
+  if (retval == -1) {
+    fprintf(stderr, "Error accepting on TCP socket.\n");
+    return;
+  } else if (retval) {
+
+    printf("vrpn: TCP connection request received.\n");
+
+    if (which_end >= vrpn_MAX_ENDPOINTS) {
+        fprintf(stderr, "vrpn: Too many existing connections;  "
+                        "ignoring request.\n");
+        return;
+    }
+
+    d_endpoints[which_end] = (*d_endpointAllocator)(this,
+                                              &d_numConnectedEndpoints);
+    d_updateEndpoint = vrpn_TRUE;
+    endpoint = d_endpoints[which_end];
+    if (!endpoint) {
+      fprintf(stderr,
+              "vrpn_Connection::server_check_for_incoming_connections:\n"
+              "    Out of memory on new endpoint\n");
+      return;
+    }
+
+    // Server-side logging under multiconnection - TCH July 2000
+    if (d_serverLogMode & vrpn_LOG_INCOMING) {
+      d_serverLogCount++;
+      endpoint->d_log->setCompoundName(d_serverLogName, d_serverLogCount);
+      endpoint->d_log->logMode() = vrpn_LOG_INCOMING;
+      retval = endpoint->d_log->open();
+      if (retval == -1) {
+        fprintf(stderr,
+                "vrpn_Connection::server_check_for_incoming_connections:  "
+                "Couldn't open log file.\n");
+        connectionStatus = BROKEN;
+        return;
+      }
+    }
+
+    endpoint->setNICaddress(d_NIC_IP);
+
+    // TCH OHS HACK (continued - here's a critical point)
+    //endpoint->connect_tcp_to(msg);
+    endpoint->d_tcpSocket = newSocket;
+
+    d_numEndpoints++;
+
+    handle_connection(which_end);
+  }
+
   return;
 }
 
@@ -5172,6 +5235,7 @@ vrpn_Connection::vrpn_Connection
     d_numEndpoints (0),
     d_numConnectedEndpoints (0),
     listen_udp_sock (INVALID_SOCKET),
+    listen_tcp_sock (INVALID_SOCKET),
     d_NIC_IP (NIC_IPaddress),
     d_dispatcher (NULL),
     //d_serverLogEndpoint (NULL),
@@ -5188,7 +5252,10 @@ vrpn_Connection::vrpn_Connection
   init();
 
   listen_udp_sock = ::open_udp_socket(&listen_port_no, NIC_IPaddress);
-  if (listen_udp_sock == INVALID_SOCKET) {
+  // TCH OHS HACK
+  listen_tcp_sock = ::open_tcp_socket(&listen_port_no, NIC_IPaddress);
+  if ((listen_udp_sock == INVALID_SOCKET) ||
+      (listen_tcp_sock == INVALID_SOCKET)) {
     connectionStatus = BROKEN;
     return;
 //fprintf(stderr, "BROKEN - vrpn_Connection::vrpn_Connection.\n");
@@ -5198,6 +5265,13 @@ vrpn_Connection::vrpn_Connection
 #ifdef	VERBOSE
     printf("vrpn: Listening for requests on port %d\n",listen_port_no);
 #endif
+  }
+
+  // TCH OHS HACK
+  if (listen(listen_tcp_sock, 1)) {
+    fprintf(stderr, "Couldn't listen on TCP listening socket.\n");
+    connectionStatus = BROKEN;
+    return;
   }
 
   flush_udp_socket(listen_udp_sock);
@@ -5259,6 +5333,7 @@ vrpn_Connection::vrpn_Connection
     d_numEndpoints (0),
     d_numConnectedEndpoints (0),
     listen_udp_sock (INVALID_SOCKET),
+    listen_tcp_sock (INVALID_SOCKET),
     d_NIC_IP (NIC_IPaddress),
     d_dispatcher (NULL),
     //d_serverLogEndpoint (NULL),
@@ -5271,10 +5346,13 @@ vrpn_Connection::vrpn_Connection
   vrpn_Endpoint * endpoint;
   vrpn_bool isfile;
   vrpn_bool isrsh;
+  vrpn_bool istcp;
   int retval;
 
   isfile = (strstr(station_name, "file:") ? VRPN_TRUE : VRPN_FALSE);
   isrsh = (strstr(station_name, "x-vrsh:") ? VRPN_TRUE : VRPN_FALSE);
+  // TCH OHS HACK
+  istcp = (strstr(station_name, "tcp:") ? VRPN_TRUE : VRPN_FALSE);
 
   // Initialize the things that must be for any constructor
   init();
@@ -5310,7 +5388,7 @@ vrpn_Connection::vrpn_Connection
   // wait for the responses. Go ahead and set up the TCP
   // socket that we will listen on and lob a packet.
 
-  if (!isfile && !isrsh) {
+  if (!isfile && !isrsh && !istcp) {
     // Open a connection to the station using a UDP request
     // that asks to machine to call us back here.
     endpoint->remote_machine_name = vrpn_copy_machine_name(station_name);
@@ -5396,6 +5474,44 @@ vrpn_Connection::vrpn_Connection
 //fprintf(stderr, "BROKEN - vrpn_Connection::vrpn_Connection.\n");
         return;
       }
+    }
+  }
+
+  // TCH OHS HACK
+  if (istcp) {
+    // Skip over the 4 characters of "tcp:" - ewwww...
+    endpoint->remote_machine_name = vrpn_copy_machine_name(station_name+4);
+    if (!endpoint->remote_machine_name) {
+      fprintf(stderr, "vrpn_Connection: Out of memory!\n");
+      connectionStatus = BROKEN;
+      return;
+    }
+    endpoint->remote_UDP_port = 0;
+
+    endpoint->status = TRYING_TO_CONNECT;
+
+#ifdef	VERBOSE
+    printf("vrpn_Connection: Getting the TCP port to connect with.\n");
+#endif
+
+    // Set up the connection that we will connect with.
+    // Blocks, doesn't it?
+    retval = endpoint->connect_tcp_to(endpoint->remote_machine_name, port);
+
+    if (retval == -1) {
+  	fprintf(stderr,"vrpn_Connection: Can't create TCP connection.\n");
+  	endpoint->status = BROKEN;
+  	return;
+    }
+
+    connectionStatus = TRYING_TO_CONNECT;
+    endpoint->status = TRYING_TO_CONNECT;
+
+    if (endpoint->setup_new_connection()) {
+      fprintf(stderr, "vrpn_Connection: "
+		      "Can't set up new connection!\n");
+      drop_connection(0);
+      return;
     }
   }
 
