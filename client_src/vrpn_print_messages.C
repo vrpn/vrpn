@@ -3,6 +3,9 @@
 // is at a server or in a file.
 // It uses the logging feature to get called even for messages that
 // it has not registered senders for.
+
+// XXX Does not work on files; nothing gets printed...
+
 // XXX Bad side effect: It produces a file called vrpn_temp.deleteme
 // in the current directory.
 
