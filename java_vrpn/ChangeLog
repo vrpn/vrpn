@@ -1,3 +1,11 @@
+2002-07-08  Tatsuhiro Segi  <segi@email.unc.edu>
+
+	* AnalogRemoteListener.java:  new file that acts as a wrapper 
+	for updates.
+	* ButtonRemoteListener.java:  same
+	* ForceDeviceRemoteListener.java:  same
+	* TrackerRemoteListener.java:  same
+
 2002-07-08  David Marshburn  <marshbur@cs.unc.edu>
 
 	* AnalogRemote.java (SetTimerPeriod):  fixed this so that it no
