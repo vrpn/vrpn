@@ -85,6 +85,8 @@ extern vrpn_float64 htond( vrpn_float64 d );
 extern vrpn_float64 ntohd( vrpn_float64 d );
 
 extern long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
+                         const char value);
+extern long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
                          const vrpn_int32 value);
 extern long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
                          const vrpn_float32 value);
@@ -94,6 +96,7 @@ extern long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
                          const timeval t);
 extern long vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
                          const char * string, vrpn_uint32 length);
+extern long vrpn_unbuffer (const char ** buffer, char * cval);
 extern long vrpn_unbuffer (const char ** buffer, vrpn_int32 * lval);
 extern long vrpn_unbuffer (const char ** buffer, vrpn_float32 * fval);
 extern long vrpn_unbuffer (const char ** buffer, vrpn_float64 * dval);

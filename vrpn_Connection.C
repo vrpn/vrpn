@@ -526,6 +526,13 @@ int vrpn_noint_block_read(int infile, char buffer[], int length)
         register int    sofar;          /* How many we read so far */
         register int    ret;            /* Return value from the read() */
 
+  // TCH 4 Jan 2000 - hackish - Cygwin will block forever on a 0-length
+  // read(), and from the man pages this is close enough to in-spec that
+  // other OS may do the same thing.
+
+  if (!length) {
+    return 0;
+  }
         sofar = 0;
         do {
 		/* Try to read all remaining data */
@@ -567,6 +574,15 @@ int vrpn_noint_block_write(SOCKET outsock, char *buffer, int length)
 int vrpn_noint_block_read(SOCKET insock, char *buffer, int length)
 {
     int nread, sofar = 0;  
+
+  // TCH 4 Jan 2000 - hackish - Cygwin will block forever on a 0-length
+  // read(), and from the man pages this is close enough to in-spec that
+  // other OS may do the same thing.
+
+  if (!length) {
+    return 0;
+  }
+
     do {
             /* Try to read all remaining data */
         nread = recv(insock, buffer+sofar, length-sofar, 0);
@@ -612,6 +628,14 @@ int vrpn_noint_block_read_timeout(int infile, char buffer[],
         struct	timeval *timeout2ptr;
 	struct	timeval	start, stop, now;
 	struct	timezone zone;
+
+  // TCH 4 Jan 2000 - hackish - Cygwin will block forever on a 0-length
+  // read(), and from the man pages this is close enough to in-spec that
+  // other OS may do the same thing.
+
+  if (!length) {
+    return 0;
+  }
 
 	/* If the timeout parameter is non-NULL and non-zero, then we
 	 * may have to adjust it due to an interrupt.  In these cases,

@@ -10,7 +10,7 @@
 // and VRPN clock sync munges these timestamps.
 // If we send a message from A to B and it gets sent back to A, attempting
 // to preserve the timestamp at both ends, but sending it over a synchronized
-// connection, its timestamp should end up equal to the original timestamp
+// connection, its timestamp will end up equal to the original timestamp
 // PLUS the network RTT (round-trip time).
 // The original design intent of a vrpn_SharedObject was to be able to use
 // timestamps as message identifiers/sequencers, so they need to be invariant
@@ -272,12 +272,13 @@ vrpn_bool vrpn_Shared_int32::shouldSendUpdate
 
 //fprintf(stderr, "In vrpn_Shared_int32::shouldSendUpdate(%s).\n", d_name);
 
-  // should handle all modes other than VRPN_SO_DEFER_UPDATES
+  // Should handle all modes other than VRPN_SO_DEFER_UPDATES.
   if (acceptedUpdate && isLocalSet) {
 //fprintf(stderr, "..... accepted;  local set => broadcast it.\n");
     return vrpn_TRUE;
   }
 
+  // Not a local set or (not accepted and not serializing)
   if (!(d_mode & VRPN_SO_DEFER_UPDATES)) {
 //fprintf(stderr, "..... rejected (NOT serialized).\n");
     return vrpn_FALSE;
