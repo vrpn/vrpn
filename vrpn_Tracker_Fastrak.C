@@ -9,6 +9,8 @@
 // Intersense IS600 tracker; basically, this involved allowing the user
 // to set extra things in the reset routine, and to pause to let the tracker
 // handle the parameter-setting commands.
+//	Modifications were later made to support the IS-900 trackers,
+// including wands and styli.
 
 #include <time.h>
 #include <math.h>
