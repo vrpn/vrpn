@@ -1,7 +1,8 @@
 #ifndef FORCEFIELD_H
 #define FORCEFIELD_H
 
-#include "gstEffect.h"
+#include "ghost.h"
+//#include "gstEffect.h"
 #include <math.h>
 
 // force field effect for PHANToM

@@ -184,8 +184,8 @@ bool Trimesh::setVertex(int vertNum,double x,double y,double z){
       // but we do only need to notify of one moved poly right????
       gstTriPoly *movedPoly=NULL;
       if(!curVert->isStranded()){
-	movedPoly=(curVert->incidentEdgesBegin().node->data.getEdge()->
-		   incidentPolysBegin().node->data);
+	movedPoly=(curVert->incidentEdgesBegin()._M_node->_M_data.getEdge()->
+		  incidentPolysBegin()._M_node->_M_data);
 	ghostPolyMesh->beginModify(movedPoly);
       }
       

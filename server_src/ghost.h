@@ -1,3 +1,7 @@
+// SensAble Technologies, Inc. Copyright 1996-1999
+// All rights reserved.
+
+
 #include <fstream.h>
 #include <gstBasic.h>
 #include <gstBoundaryCube.h>
@@ -6,16 +10,7 @@
 #include <gstNode.h>
 #include <gstPHANToM.h>
 #include <gstPHANToM_SCP.h>
-
 #include <gstTriPolyMeshHaptic.h>
-#include <gstPolyMesh.h>
-
-#ifdef USING_HCOLLIDE
-#include <gstRAPIDTriMesh.h>
-#include <gstHashGridTriMesh.h>
-#include <gstHybridHashGridTriMesh.h>
-#endif
-
 #include <gstPoint.h>
 #include <gstScene.h>
 #include <gstSeparator.h>
@@ -24,3 +19,6 @@
 
 #include <gstCube.h>
 #include <gstSphere.h>
+
+//we added this include
+#include <gstForceField.h>

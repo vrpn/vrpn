@@ -1,7 +1,8 @@
 #ifndef CONSTRAINT_H
 #define CONSTRAINT_H
 
-#include <gstEffect.h>
+#include "ghost.h"
+//#include <gstEffect.h>
 #include <math.h>
 
 // Constraint effect for PHANToM

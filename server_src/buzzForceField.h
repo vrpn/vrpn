@@ -16,9 +16,9 @@
 		on the order of a millimeter)
  */
 
-
-#include <gstForceField.h>
-#include <gstPlane.h>
+#include "ghost.h"
+//#include <gstForceField.h>
+//#include <gstPlane.h>
 
 class TexturePlane;
 
