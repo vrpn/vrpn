@@ -2,10 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 #ifndef _WIN32
-#include <unistd.h>
+//#include <unistd.h>
 #endif
-
-#include "vrpn_cygwin_hack.h"
 
 //#define VERBOSE
 

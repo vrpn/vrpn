@@ -120,12 +120,12 @@ endif
 # directories
 #
 
-HMD_DIR 	 := /afs/cs.unc.edu/proj/hmd
-HMD_INCLUDE_DIR	 := $(HMD_DIR)/include
+#HMD_DIR 	 := /afs/cs.unc.edu/proj/hmd
+#HMD_INCLUDE_DIR	 := $(HMD_DIR)/include
 
-BETA_DIR         := $(HMD_DIR)/beta
-BETA_INCLUDE_DIR := $(BETA_DIR)/include
-BETA_LIB_DIR     := $(BETA_DIR)/lib
+#BETA_DIR         := $(HMD_DIR)/beta
+#BETA_INCLUDE_DIR := $(BETA_DIR)/include
+#BETA_LIB_DIR     := $(BETA_DIR)/lib
 
 # subdirectory for make
 ifeq ($(FORCE_GPP),1)
@@ -183,7 +183,7 @@ ifeq ($(HW_OS),pc_cygwin)
   INCLUDE_FLAGS := -I. -I../quat
 else
 
-  INCLUDE_FLAGS := -I. $(SYS_INCLUDE) -I$(BETA_INCLUDE_DIR) -I$(HMD_INCLUDE_DIR) -I../quat
+  INCLUDE_FLAGS := -I. $(SYS_INCLUDE) -I../quat -I../../quat
 
 endif
 ##########################

@@ -9,15 +9,16 @@
   Revised: Wed Apr  1 13:23:40 1998 by weberh
   $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Clock.C,v $
   $Locker:  $
-  $Revision: 1.24 $
+  $Revision: 1.25 $
   \*****************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
+// Include vrpn_Shared.h _first_ to avoid conflicts with sys/time.h 
+// and unistd.h
+#include "vrpn_Shared.h"
 #ifndef _WIN32
-#include <unistd.h>
-#include <sys/types.h>
 #include <netinet/in.h>
 #endif
 
@@ -25,8 +26,6 @@
 #include <math.h>
 
 #include "vrpn_Clock.h"
-
-#include "vrpn_cygwin_hack.h"
 
 void printTime( char *pch, const struct timeval& tv ) {
   cerr << pch << " " << tv.tv_sec*1000.0 + tv.tv_usec/1000.0 << " msecs." << endl;
@@ -887,6 +886,16 @@ int vrpn_Clock_Remote::quickSyncClockServerReplyHandler(void *userdata,
 
 /*****************************************************************************\
   $Log: vrpn_Clock.C,v $
+  Revision 1.25  1999/11/15 22:53:58  helser
+  Removes the vrpn_cygwin_hack.h file. It is not necessary if the header
+  files are included in a certain order. If in doubt, include vrpn_Shared.h
+  first, even before the system headers, and this fixes header conflicts in
+  the cygwin environment.
+
+  Also removes /afs/unc/proj/hmd from the makefile, because VRPN does not
+  depend on those directories at all, and it will cause problems if a header
+  is removed, like I did.
+
   Revision 1.24  1999/10/14 17:29:50  helser
   No, changing the clock messages to a system type was a bad idea. The last
   commit actually disabled clock syncing entirely (which fixed my problem,

@@ -12,17 +12,16 @@
 #include <linux/lp.h>
 #endif
 
-#ifndef _WIN32
-#include <strings.h>
-#include <netinet/in.h>
-#include <sys/ioctl.h>
-#endif 
+// Include vrpn_Shared.h _first_ to avoid conflicts with sys/time.h 
+// and unistd.h
+#include "vrpn_Shared.h"
+//#include <strings.h>
+//#include <netinet/in.h>
+//#include <sys/ioctl.h>
 
 #include "vrpn_ForceDevice.h"
 
 #include <quat.h>  // quaternion for spring stuff
-
-#include "vrpn_cygwin_hack.h"
 
 /* cheezy hack to make sure this enum is defined in the case we didn't 
    include trimesh.h */
@@ -33,6 +32,7 @@ enum TrimeshType {GHOST,HCOLLIDE};
 
 #define CHECK(a) if (a == -1) return -1
 
+#if 0
 // c = a x b
 static void vector_cross (const vrpn_float64 a [3], const vrpn_float64 b [3],
                           vrpn_float64 c [3]) {
@@ -43,7 +43,6 @@ static void vector_cross (const vrpn_float64 a [3], const vrpn_float64 b [3],
 
 }
 
-#if 0
 // vprime = v * T
 static void rotate_vector (const vrpn_float64 v [3], const vrpn_float64 T [9],
                            vrpn_float64 vprime [3]) {
@@ -51,12 +50,12 @@ static void rotate_vector (const vrpn_float64 v [3], const vrpn_float64 T [9],
   vprime[1] = v[0] * T[1] + v[1] * T[4] + v[2] * T[7];
   vprime[2] = v[0] * T[2] + v[1] * T[5] + v[2] * T[8];
 }
-#endif
 
 static vrpn_float64 vector_dot (const vrpn_float64 a [3],
                                 const vrpn_float64 b [3]) {
   return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 }
+#endif
 
 vrpn_ForceDevice::vrpn_ForceDevice(char *name, vrpn_Connection *c)
 {

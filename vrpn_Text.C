@@ -5,8 +5,6 @@
 #include <netinet/in.h>
 #endif
 
-#include "vrpn_cygwin_hack.h"
-
 vrpn_Text::vrpn_Text(char *name, vrpn_Connection *c){
 	char* servicename;
         servicename = vrpn_copy_service_name(name);

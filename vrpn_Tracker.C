@@ -21,10 +21,10 @@
 #include <termios.h>
 #endif
 
+// Include vrpn_Shared.h _first_ to avoid conflicts with sys/time.h 
+// and unistd.h
+#include "vrpn_Shared.h"
 #ifndef _WIN32
-#include <sys/ioctl.h>
-#include <sys/time.h>
-#include <unistd.h>
 #include <netinet/in.h>
 #endif
 
@@ -35,7 +35,6 @@
 #include "vrpn_Tracker.h"
 #include "vrpn_Serial.h"
 
-#include "vrpn_cygwin_hack.h"
 
 static const char *tracker_cfg_file_name = "vrpn_Tracker.cfg";
 

@@ -4,11 +4,12 @@
 #include <math.h>
 #include "vrpn_Ohmmeter.h"
 
+// Include vrpn_Shared.h _first_ to avoid conflicts with sys/time.h 
+// and netinet/in.h and ...
+#include "vrpn_Shared.h"
 #ifndef _WIN32
 #include <netinet/in.h>
 #endif
-
-#include "vrpn_cygwin_hack.h"
 
 #define ASSERT(x)	assert(x)
 

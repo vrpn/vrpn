@@ -1,12 +1,11 @@
 #include "vrpn_Analog.h"
 #include <stdio.h>
 #include <string.h>
-#ifndef _WIN32
-#include <unistd.h>
-#endif
+// Include vrpn_Shared.h _first_ to avoid conflicts with sys/time.h 
+// and netinet/in.h and ...
+#include "vrpn_Shared.h"
 
 #include "vrpn_Serial.h"
-#include "vrpn_cygwin_hack.h"
 
 //#define VERBOSE
 

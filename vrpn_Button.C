@@ -11,17 +11,18 @@
 #include <linux/lp.h>
 #endif
 
+// Include vrpn_Shared.h _first_ to avoid conflicts with sys/time.h 
+// and unistd.h
+#include "vrpn_Shared.h"
+
 #ifdef _WIN32
-#include <windows.h>
+
 #ifndef __CYGWIN__
 #include <conio.h>  // for _inp()
 #endif
 #else
-#include <strings.h>
 #include <netinet/in.h>
-#include <sys/ioctl.h>
-#endif 
-
+#endif
 
 #if (defined(sgi)&&(!defined(VRPN_CLIENT_ONLY)))
 //need these for the gl based setdblight calls
@@ -31,8 +32,6 @@
 
 
 #include "vrpn_Button.h"
-
-#include "vrpn_cygwin_hack.h"
 
 #define BUTTON_READY 	  (1)
 #define BUTTON_FAIL	  (-1)

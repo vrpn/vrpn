@@ -8,8 +8,6 @@
 
 #include "vrpn_Forwarder.h"
 
-#include "vrpn_cygwin_hack.h"
-
 vrpn_Forwarder_Brain::vrpn_Forwarder_Brain (vrpn_Connection * c) :
     d_connection (c),
     d_myId (-1) {

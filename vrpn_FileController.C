@@ -1,11 +1,12 @@
 #include "vrpn_FileController.h"
 #include "vrpn_Connection.h"
 
-#ifndef	_WIN32
+// Include vrpn_Shared.h _first_ to avoid conflicts with sys/time.h 
+// and netinet/in.h and ...
+#include "vrpn_Shared.h"
+#ifndef _WIN32
 #include <netinet/in.h>
 #endif
-
-#include "vrpn_cygwin_hack.h"
 
 vrpn_File_Controller::vrpn_File_Controller (vrpn_Connection * c) :
     d_connection (c) {

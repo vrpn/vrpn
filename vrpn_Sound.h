@@ -6,9 +6,6 @@
 
 
 
-#if defined(__CYGWIN__)
-#include "vrpn_cygwin_hack.h"
-#endif
 
     // this is used to send any data that the server might need for initializing
     typedef struct _vrpn_ModelDef
