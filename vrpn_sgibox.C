@@ -8,11 +8,14 @@
  * Update Count    : 50
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/vrpn_sgibox.C,v $
- * $Date: 1998/08/31 14:04:44 $
+ * $Date: 1998/08/31 15:00:08 $
  * $Author: taylorr $
- * $Revision: 1.6 $
+ * $Revision: 1.7 $
  * 
  * $Log: vrpn_sgibox.C,v $
+ * Revision 1.7  1998/08/31 15:00:08  taylorr
+ * Removes print messages.
+ *
  * Revision 1.6  1998/08/31 14:04:44  taylorr
  * This version fixes the button toggle code.
  *
@@ -39,7 +42,7 @@
 
 #ifdef sgi
 
-static char rcsid[] = "$Id: vrpn_sgibox.C,v 1.6 1998/08/31 14:04:44 taylorr Exp $";
+static char rcsid[] = "$Id: vrpn_sgibox.C,v 1.7 1998/08/31 15:00:08 taylorr Exp $";
 
 #include "vrpn_sgibox.h"
 #include <stdio.h>
@@ -137,10 +140,8 @@ static int sgibox_alert_handler(void * userdata, vrpn_HANDLERPARAM){
 
   lights=0;
   for(i=0;i<NUM_BUTTONS;i++){
-    fprintf(stderr,"%d ",me->buttonstate[i]);
     if(me->buttonstate[i]==vrpn_BUTTON_TOGGLE_ON) lights=lights|1<<i;
   }
-  fprintf(stderr," %p\n",me);
   setdblights(lights);
   return 0;
 

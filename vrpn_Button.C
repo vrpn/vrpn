@@ -246,7 +246,6 @@ static int client_msg_handler(void *userdata, vrpn_HANDLERPARAM p) {
   int event= ntohl(bp[1]);
   int buttonid = ntohl(bp[0]);
 
-  fprintf(stderr,"Button admin message\n");
   if (event== vrpn_BUTTON_MOMENTARY) {
     if (buttonid == vrpn_ALL_ID)
       instance->set_all_momentary();
