@@ -40,7 +40,7 @@ void MoveListener()
 
 		if((kbchar=='i') || (kbchar=='I')){
 		
-			pos[2] += .1;
+			pos[1] += .1;
 			(void)soundClient->setListenerPose(pos,ori);
 			soundClient->mainloop();
 			connection.mainloop();
@@ -64,7 +64,7 @@ void MoveListener()
 		
 		if((kbchar=='m') || (kbchar=='M')){
 		
-			pos[2] -= .1;
+			pos[1] -= .1;
 			(void)soundClient->setListenerPose(pos,ori);
 			soundClient->mainloop();
 			connection.mainloop();
@@ -153,7 +153,7 @@ int main(int argc, char** argv)
 	int loop = 1, i;
 	vrpn_int32 repeat, volume;
 	vrpn_float64 position[3], orientation[4], velocity[4];
-	vrpn_float64 pos[3], at[3], up[3], Lvelocity[4];
+	vrpn_float64 pos[3], ori[4], Lvelocity[4];
 	
 	numconnections = 0;
 	
@@ -164,13 +164,10 @@ int main(int argc, char** argv)
 	pos[0] = 0;
 	pos[1] = 0;
 	pos[2] = 0;
- 	Lvelocity[0] = 0; Lvelocity[1] = 0; Lvelocity[2] = 0; Lvelocity[3] = 0;
-	at[0] = 0;
-	at[1] = 0;
-	at[2] = -1;
-	up[0] = 0;
-	up[1] = 1;
-	up[2] = 0;
+	ori[0] = 0;
+	ori[1] = 0;
+	ori[2] = 0;
+	ori[3] = 1;
 /*	
 	printf("Please enter the server you wish to connect to.\n");
 	scanf("%s", server);
@@ -238,7 +235,7 @@ int main(int argc, char** argv)
 			// 1 meter in front of listener
 			SoundDef.pose.position[0] = 0;
 			SoundDef.pose.position[1] = 0;
-			SoundDef.pose.position[2] = 1;
+			SoundDef.pose.position[2] = 0;
 
 			// Looking back at listener
 			SoundDef.pose.orientation[0] = 0;
@@ -251,7 +248,7 @@ int main(int argc, char** argv)
 			SoundDef.cone_outer_angle = 360;
 
 			// No attenuation
-			SoundDef.cone_gain = 0;
+			SoundDef.cone_gain = -60;
 
 			SoundDef.min_front_dist = .1;
 			SoundDef.max_front_dist = 50;
@@ -325,15 +322,14 @@ int main(int argc, char** argv)
 		case 9:
 			printf("Enter the new X,Y, and Z position coordinates for the listener\n");
 			scanf("%lf %lf %lf", &pos[0], &pos[1], &pos[2]);
-			(void)soundClient->setListenerPosition(pos);
+			(void)soundClient->setListenerPose(pos,ori);
 			soundClient->mainloop();
 			break;
 		case 10:
-			printf("Enter the new at.x, at.y, at.z orientation vector for the listener\n");
-			scanf("%lf %lf %lf", &at[0], &at[1], &at[2]);
-			printf("Enter the new up.x, up.y, up.z orientation vector for the listener\n");
-			scanf("%lf %lf %lf", &up[0], &up[1], &up[2]);
-			(void)soundClient->setListenerOrientation(at, up);
+			printf("Enter the new orientation quaternion for the listener\n");
+			scanf("%lf %lf %lf %lf", &ori[0], &ori[1], &ori[2], &ori[3]);
+		
+			(void)soundClient->setListenerPose(pos, ori);
 			soundClient->mainloop();
 			break;
 		case 11:
