@@ -1,3 +1,9 @@
+2002-01-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_Fastrak.C (reset) : Some IS900 trackers report
+		a status message with only 54 bytes, rather than the 55 bytes
+		for a Fastrak.  This code is generalized to handle both.
+
 2002-01-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Tracker_Fastrak.C (get_report) : Added a call to report

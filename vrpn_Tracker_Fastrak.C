@@ -270,10 +270,16 @@ void vrpn_Tracker_Fastrak::reset()
 
    // Read Status
    unsigned char statusmsg[56];
-   if ( (ret = vrpn_read_available_characters(serial_fd, statusmsg, 55)) != 55){
-  	fprintf(stderr, "  Got %d of 55 characters for status\n",ret);
+
+   // Attempt to read 55 characters.  For some reason, later versions of the
+   // InterSense IS900 only report a 54-character status message.  If this
+   // happens, handle it.
+   ret = vrpn_read_available_characters(serial_fd, statusmsg, 55);
+   if ( (ret != 55) && (ret != 54) ) {
+  	fprintf(stderr,
+	 "  Got %d of 55 characters for status (54 expected for IS900)\n",ret);
    }
-   if ( (statusmsg[0]!='2') || (statusmsg[54]!=(char)(10)) ) {
+   if ( (statusmsg[0]!='2') || (statusmsg[ret-1]!=(char)(10)) ) {
      int i;
      statusmsg[55] = '\0';	// Null-terminate the string
      fprintf(stderr, "  Fastrak: status is (");
