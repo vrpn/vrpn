@@ -5,17 +5,24 @@
 #ifdef	VRPN_USE_PHANTOM_SERVER
 
 #include "ghost.h"
-//#include "gstEffect.h"
 #include <math.h>
 
 /// force field effect for PHANToM
 
+#ifdef	VRPN_USE_HDAPI
+class  ForceFieldEffect
+#else
 class  ForceFieldEffect:public gstEffect 
+#endif
 {
   public:
 
 	/// Constructor.
-	ForceFieldEffect():gstEffect() {}
+#ifdef	VRPN_USE_HDAPI
+    ForceFieldEffect(): active(FALSE), time(0) {}
+#else
+    ForceFieldEffect():gstEffect() {}
+#endif
 
 	/// Destructor.
 	~ForceFieldEffect() {}
@@ -40,17 +47,21 @@ class  ForceFieldEffect:public gstEffect
     	// Otherwise, the next call to calcEffectForce could 
 	// generate unexpectedly large forces.
 	/// Start the application of forces based on the field.
-	virtual gstBoolean start() { 
-	    if (!active) { printf("starting ForceFieldEffect\n"); }
+	virtual vrpn_HapticBoolean start() { 
+//	    if (!active) { printf("starting ForceFieldEffect\n"); }
 	    active = TRUE; time = 0.0; return TRUE;
 	}
 
 	// FOR_GHOST_EXTENSION:
 	/// Stop the application of force based on the field.
 	virtual void stop() { 
-	    if (active) { printf("stopping ForceFieldEffect\n"); }
+//	    if (active) { printf("stopping ForceFieldEffect\n"); }
 	    active = FALSE;
 	}
+
+#ifdef	VRPN_USE_HDAPI
+	virtual vrpn_HapticBoolean isActive() const { return active; }
+#endif
 
 	// FOR_GHOST_EXTENSION:
 	/// Calculate the force in parent reference frame of phantom.
@@ -64,14 +75,18 @@ class  ForceFieldEffect:public gstEffect
 	// WARNING!: Never call PHANToM->setForce or
 	//			PHANToM->setForce_WC from this function.
 	//			It will cause an infinite recursion.
-	virtual gstVector	calcEffectForce(void *phantom);
+	virtual vrpn_HapticVector	calcEffectForce(void *phantom_info);
 
   protected:
 
-	gstPoint origin;	//< Origin of the force field
-	gstVector force;	//< Constant force to add to position-dependent forces
-	double radius;		//< Distance from origin at which the field drops to zero
-	double jacobian[3][3];	//< Describes increase in force away from origin in different directions
+#ifdef	VRPN_USE_HDAPI
+	vrpn_HapticBoolean	active;
+	double			time;
+#endif
+	vrpn_HapticPosition origin;	//< Origin of the force field
+	vrpn_HapticVector force;	//< Constant force to add to position-dependent forces
+	double radius;			//< Distance from origin at which the field drops to zero
+	double jacobian[3][3];		//< Describes increase in force away from origin in different directions
 };
 
 #endif

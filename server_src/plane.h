@@ -9,19 +9,15 @@
 
 #include  "vrpn_Configure.h"
 #ifdef	VRPN_USE_PHANTOM_SERVER
-/*
-#include <gstPHANToM.h>
-#include <gstShape.h>
-*/ 
 #include "ghost.h"
 
-class Plane:public gstShape
+class Plane:public vrpn_HapticSurface
 {
 public:
 	//Constructor
-	Plane(const gstPlane *);
+	Plane(const vrpn_HapticPlane *);
 
-	Plane(const gstPlane &);
+	Plane(const vrpn_HapticPlane &);
 
 	//Constructor
 	Plane(const Plane *);
@@ -31,18 +27,19 @@ public:
 
 	//Constructor
 	Plane(double a, double b, double c, double d);
+
 	//desstructor
 	~Plane(){}
 
 	void update(double a, double b, double c, double d);
 
-	void setPlane(gstVector newNormal, gstPoint point);
+	void setPlane(vrpn_HapticVector newNormal, vrpn_HapticPosition point);
 
 	static int initClass() {
 		//PlaneClassTypeId = gstUniqueId++ ;
 		return 0;}
 
-	void setInEffect(gstBoolean effect) {inEffect = effect;}
+	void setInEffect(vrpn_HapticBoolean effect) {inEffect = effect;}
 
 	void setNumRecCycles(int nrc) {
 			if (nrc < 1) 
@@ -50,6 +47,7 @@ public:
 			else
 			   numRecoveryCycles = nrc;}
 
+#ifndef	VRPN_USE_HDAPI
 	// Get type of this class.  No instance needed.
 	static gstType	getClassTypeId() { return PlaneClassTypeId; }
 
@@ -57,13 +55,14 @@ public:
 
 	// GHOST_IGNORE_IN_DOC:
 	// Returns TRUE if subclass is of type.
-	static gstBoolean	staticIsOfType(gstType type) {
+	static vrpn_HapticBoolean	staticIsOfType(gstType type) {
 		if (type == PlaneClassTypeId) return TRUE;
 		else return (gstShape::staticIsOfType(type));}
 
-    virtual gstBoolean isOftype(gstType type) const {
-        if( type == PlaneClassTypeId) return TRUE;
-		else return (gstShape::isOfType(type)); } 
+	virtual vrpn_HapticBoolean isOftype(gstType type) const {
+	    if( type == PlaneClassTypeId) return TRUE;
+		    else return (gstShape::isOfType(type)); } 
+#endif
 
 	// FOR_GHOST_EXTENSION:
 	// Used by system or for creating sub-classes only.
@@ -71,54 +70,63 @@ public:
 	//  intersects this shape object.  If so, intersectionPt_WC is set to
 	//  point of intersection and intersectionNormal_WC is set to surface
 	//  normal at intersection point.
-	virtual gstBoolean	intersection(	const gstPoint &startPt_WC,
-										const gstPoint &endPt_WC,
-										gstPoint &intersectionPt_WC,
-										gstVector &intersectionPtNormal_WC,
-										void **);
+	virtual vrpn_HapticBoolean	intersection(	const vrpn_HapticPosition &startPt_WC,
+							const vrpn_HapticPosition &endPt_WC,
+							vrpn_HapticPosition &intersectionPt_WC,
+							vrpn_HapticVector &intersectionPtNormal_WC,
+							void **);
 
-	// Used by system or for creating sub-classes only.
 	// Returns TRUE if PHANToM is currently in contact with this object.
 	// If so, the collision is added to the PHANToM's list through
 	// gstPHANToM::getCollisionInfo() and gstPHANToM::collisionAdded().
-	virtual gstBoolean	collisionDetect(gstPHANToM *PHANToM) ;
-
+#ifdef	VRPN_USE_HDAPI
+	virtual vrpn_HapticBoolean	collisionDetect(vrpn_HapticCollisionState *collision) ;
+#else
+	virtual vrpn_HapticBoolean	collisionDetect(gstPHANToM *PHANToM) ;
+#endif
 	
-	// Used by system or for creating sub-classes only.
-	// Returns TRUE if pt is inside of this object.
-	//virtual int	checkIfPointIsInside_WC(const gstPoint &pt) = 0;
+#ifndef	VRPN_USE_HDAPI
+	void printSelf2() const { plane.printSelf2(); }
+#endif
 
-    void printSelf2() const { plane.printSelf2(); }
+#ifdef	VRPN_USE_HDAPI
+	const vrpn_HapticPlane &getPlane(void) const { return plane; }
+	bool getActive(void) const { return (inEffect != 0); }
+	void setActive(vrpn_HapticBoolean active) { setInEffect(active); }
+#endif
+
 protected:
-	gstPlane plane;
-	gstBoolean inEffect;
+	vrpn_HapticPlane plane;
+	vrpn_HapticBoolean inEffect;
 
 	// variables used for recovery
-	gstBoolean isNewPlane;	// set to true by update(), set to false
-				// 	by collisionDetect()
-	gstBoolean isInRecovery;// true after collisionDetect() discovers
-				// 	there is a new plane and set to
-				//	false when recoveryPlaneCount
-				//	reaches numRecoveryCycles
-	int recoveryPlaneCount;	// keeps track of how many intermediate
-				// 	planes there have been 
-	gstPlane originalPlane;	// keeps a copy of the plane set by
-				// 	update() so that we can restore this
-				//	plane when recovery is complete
-        double lastDepth;	// this is the depth below the surface
-				// 	for the plane previous to the
-				//	new plane - updated in collisionDetect()
-	double dIncrement;	// value added to d parameter of plane
-				//	equation with each call to
-				//	collisionDetect() during a recovery
-				//	- this value is computed when a new
-				//	plane is encountered
-	int numRecoveryCycles;	// number of recovery cycles
+	vrpn_HapticBoolean isNewPlane;	// set to true by update(), set to false
+					// 	by collisionDetect()
+	vrpn_HapticBoolean isInRecovery;// true after collisionDetect() discovers
+					// 	there is a new plane and set to
+					//	false when recoveryPlaneCount
+					//	reaches numRecoveryCycles
+	int recoveryPlaneCount;		// keeps track of how many intermediate
+					// 	planes there have been 
+	vrpn_HapticPlane originalPlane;	// keeps a copy of the plane set by
+					// 	update() so that we can restore this
+					//	plane when recovery is complete
+        double lastDepth;		// this is the depth below the surface
+					// 	for the plane previous to the
+					//	new plane - updated in collisionDetect()
+	double dIncrement;		// value added to d parameter of plane
+					//	equation with each call to
+					//	collisionDetect() during a recovery
+					//	- this value is computed when a new
+					//	plane is encountered
+	int numRecoveryCycles;		// number of recovery cycles
 
 	// end of variables for recovery
 
 private:
-	static gstType PlaneClassTypeId;
+#ifndef	VRPN_USE_HDAPI
+  static gstType PlaneClassTypeId;
+#endif
 };
 
 #endif

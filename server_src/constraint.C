@@ -1,7 +1,9 @@
 #include  "vrpn_Configure.h"
 #ifdef	VRPN_USE_PHANTOM_SERVER
 
+#ifndef	VRPN_USE_HDAPI
 #include <gstPHANToM.h>
+#endif
 #include "constraint.h"
 
 
@@ -11,46 +13,61 @@
 #define MAX_DIST 50.0	// maximum distance at which effect
 			// force can be felt [mm]
 
-gstVector ConstraintEffect::calcEffectForce(void *PHANToM){
+vrpn_HapticVector ConstraintEffect::calcEffectForce(void *phantom_info) {
 
-	gstPHANToM *phantom = (gstPHANToM *)PHANToM;
-	gstPoint phantomPos;
-	gstPoint lastPhantomPos;
-	gstVector phantomVel;
-	gstVector phantomForce;
-	gstVector effectForce;
+	vrpn_HapticPosition phantomPos;
+	vrpn_HapticPosition lastPhantomPos;
+	vrpn_HapticVector phantomVel;
+	vrpn_HapticVector effectForce;
 	double dt;
 	int i;
+#ifdef	VRPN_USE_HDAPI
+	HDAPI_state *state = (HDAPI_state *)phantom_info;
+	int rate = state->instant_rate;
+	dt = 1.0 / rate;
+	double vec[3];
+	vec[0] = state->pose[3][0]; vec[1] = state->pose[3][1]; vec[2] = state->pose[3][2];
+	phantomPos.set(vec);
+	double lastvec[3];
+	lastvec[0] = state->last_pose[3][0]; lastvec[1] = state->last_pose[3][1]; lastvec[2] = state->last_pose[3][2];
+	lastPhantomPos.set(lastvec);
+	double	velvec[3];
+	velvec[0] = (vec[0] - lastvec[0]) / dt;
+	velvec[1] = (vec[1] - lastvec[1]) / dt;
+	velvec[2] = (vec[2] - lastvec[2]) / dt;
+	phantomVel.set(velvec);
+#else
+	gstPHANToM *phantom = (gstPHANToM *)phantom_info;
 	phantom->getPosition_WC(phantomPos);
-	phantomForce = phantom->getReactionForce_WC();
 	phantom->getLastPosition_WC(lastPhantomPos);
 	phantomVel = phantom->getVelocity();
 	dt = phantom->getDeltaT();
+#endif
 
 	time += dt;
 
 	if (active) {
-		gstPoint forceVec = (fixedEnd - phantomPos);
+		vrpn_HapticPosition forceVec = (fixedEnd - phantomPos);
 		double dist = forceVec.distToOrigin();
 		effectForce = forceVec;
-		for (i = 0; i < 3; i++)
+		for (i = 0; i < 3; i++) {
 		    effectForce[i] *= kSpring;
+		}
 		// set effectForce to (0,0,0) if given our velocity
 		// we may have already reached the fixedEnd
-		if ((dist < phantomVel.distToOrigin()*dt) || (dist > MAX_DIST))
-		    return gstVector(0,0,0);
-		else if (dist*kSpring > MAX_FORCE){
-			for (i = 0; i < 3; i++)
-				effectForce[i] *= MAX_FORCE/(dist*kSpring);
-			return effectForce;
+		if ((dist < phantomVel.distToOrigin()*dt) || (dist > MAX_DIST)) {
+		    return vrpn_HapticVector(0,0,0);
+		} else if (dist*kSpring > MAX_FORCE){
+		  for (i = 0; i < 3; i++) {
+		    effectForce[i] *= MAX_FORCE/(dist*kSpring);
+		  }
+		  return effectForce;
+		} else {
+		  return effectForce;
 		}
-		else
-		    return effectForce;
+	} else {
+		return vrpn_HapticVector(0,0,0);
 	}
-	else {
-		return gstVector(0,0,0);
-	}
-
 }
 
 #endif

@@ -10,32 +10,44 @@
 #define MAX_FORCE (10.0)
 
 // Initialize class.
+#ifndef	VRPN_USE_HDAPI
 gstType DynamicPlane::DynamicPlaneClassTypeId;
-
 int DynamicPlaneTest = DynamicPlane::initClass();
-
 int DynamicPlane::initClass() {
     DynamicPlaneClassTypeId = -1000;
     return 0;
 }
+#endif
 
+
+#ifdef	VRPN_USE_HDAPI
+DynamicPlane::DynamicPlane()
+#else
 DynamicPlane::DynamicPlane() : gstDynamic()
+#endif
 {
 	// initialize transform to identity
 	xform.identity();
 	fixedPlane = new TexturePlane(0.0, 1.0, 0.0, 0.0);
+#ifdef	VRPN_USE_HDAPI
+	//XXX Probably going to need some linking code in here somewhere to keep track of objects
+#else
 	fixedPlane->setParent(this);
+#endif
 	buzzForce = new BuzzForceField();
-	buzzForce->setPlane(gstPlane(0.0, 1.0, 0.0, 0.0));
+	buzzForce->setPlane(vrpn_HapticPlane(0.0, 1.0, 0.0, 0.0));
 	buzzForce->setSpring(fixedPlane->getSurfaceKspring());
 	buzzForce->restrictToSurface(TRUE);
 	buzzForce->adjustToTexturePlane(fixedPlane);
 
-	plane = gstPlane(0.0, 1.0, 0.0, 0.0);
-	lastPlane = gstPlane(plane);
+	plane = vrpn_HapticPlane(0.0, 1.0, 0.0, 0.0);
+	lastPlane = vrpn_HapticPlane(plane);
+#ifdef	VRPN_USE_HDAPI
+	//XXX Probably going to need some linking code in here somewhere to keep track of objects
+#else
 	addChild(fixedPlane);
 	addChild(buzzForce);
-	_using_buzz = FALSE;
+#endif	_using_buzz = FALSE;
 	_active = FALSE;
 	_is_new_plane = FALSE;
 	buzzForce->deactivate();
@@ -52,47 +64,62 @@ DynamicPlane::DynamicPlane() : gstDynamic()
 }
 
 void DynamicPlane::setParameters(double fd, double fs, double ks,
-								 double bpa, double bpl, 
-								 double buzzamp, double buzzfreq){
+				 double bpa, double bpl, 
+				 double buzzamp, double buzzfreq)
+{
 	fixedPlane->setParameters(fd, fs, ks, bpa, bpl);
 	buzzForce->setParameters(buzzamp, buzzfreq, ks);
 }
 
 
-void DynamicPlane::setActive(gstBoolean active) {_active = active;
+void DynamicPlane::setActive(vrpn_HapticBoolean active)
+{
+    _active = active;
     fixedPlane->setInEffect(active);
-    if (_active && _using_buzz) buzzForce->activate();
-    else buzzForce->deactivate();
+    if (_active && _using_buzz) {
+      buzzForce->activate();
+    } else {
+      buzzForce->deactivate();
+    }
 }
 
-void DynamicPlane::cleanUpAfterError(){
+void DynamicPlane::cleanUpAfterError() {
 	_is_new_plane = FALSE;
 	setActive(FALSE);
 }
 
-void DynamicPlane::enableBuzzing(gstBoolean enable) {
+void DynamicPlane::enableBuzzing(vrpn_HapticBoolean enable)
+{
     _using_buzz = enable;
     if (_active && _using_buzz) buzzForce->activate();
     else buzzForce->deactivate();
 }
-void DynamicPlane::enableTexture(gstBoolean enable) {
+void DynamicPlane::enableTexture(vrpn_HapticBoolean enable)
+{
     if (enable) fixedPlane->enableTexture();
     else fixedPlane->disableTexture();
 }
 
-void DynamicPlane::setSurfaceKspring(double ks) {
+void DynamicPlane::setSurfaceKspring(double ks)
+{
     buzzForce->setSpring(ks);
     fixedPlane->setSurfaceKspring(ks);
 }
 
-double DynamicPlane::getBuzzAmplitude() {
-    return buzzForce->getAmplitude();}
+double DynamicPlane::getBuzzAmplitude()
+{
+    return buzzForce->getAmplitude();
+}
 
-void DynamicPlane::setBuzzAmplitude(double amp) {
-    buzzForce->setAmplitude(amp);}
+void DynamicPlane::setBuzzAmplitude(double amp)
+{
+    buzzForce->setAmplitude(amp);
+}
 
-double DynamicPlane::getBuzzFrequency() {
-    return buzzForce->getFrequency();}
+double DynamicPlane::getBuzzFrequency()
+{
+    return buzzForce->getFrequency();
+}
 
 void DynamicPlane::setBuzzFrequency(double freq) {
     buzzForce->setFrequency(freq);}
@@ -155,11 +182,15 @@ void DynamicPlane::updateDynamics() {
 		setPlaneFromTransform(plane, xform);
 // MB: for SGI compilation with pthreads
 #ifdef SGI
-	pthread_mutex_unlock(&xform_mutex);
+		pthread_mutex_unlock(&xform_mutex);
 #else
 		LeaveCriticalSection(&xform_mutex);
 #endif
+#ifdef	VRPN_USE_HDAPI
+		//XXX Probably going to need some transform code in here somewhere to keep track of motion
+#else
 		setTransformMatrixDynamic(xform);
+#endif
 		_is_new_plane = FALSE;
 	}
 	else
@@ -167,9 +198,13 @@ void DynamicPlane::updateDynamics() {
 #ifdef SGI
 	pthread_mutex_unlock(&xform_mutex);
 #else
-		LeaveCriticalSection(&xform_mutex);
+	LeaveCriticalSection(&xform_mutex);
 #endif
+#ifdef	VRPN_USE_HDAPI
+	//XXX Probably going to need some code in here somewhere to emulate GHOST behavior
+#else
 	gstDynamic::updateDynamics();
+#endif
 }
 
 void DynamicPlane::update(double a,double b,double c,double d)
@@ -199,9 +234,9 @@ void DynamicPlane::update(double a,double b,double c,double d)
 			return;
 		}
 //		else err_cnt = 0;
-		lastPlane = gstPlane(plane);
+		lastPlane = vrpn_HapticPlane(plane);
 		fixedPlane->signalNewTransform();
-		plane = gstPlane(a,b,c,d);
+		plane = vrpn_HapticPlane(a,b,c,d);
 		_is_new_plane = TRUE;
 // MB: for SGI compilation with pthreads
 #ifdef SGI
@@ -209,7 +244,10 @@ void DynamicPlane::update(double a,double b,double c,double d)
 #else
 		LeaveCriticalSection(&xform_mutex);
 #endif
+#ifndef	VRPN_USE_HDAPI
+		// XXX At some point, we may implement HDAPI dynamics objects.
 		addToDynamicList();
+#endif
 	}
 	else
 // MB: for SGI compilation with pthreads
@@ -228,52 +266,52 @@ void DynamicPlane::update(double a,double b,double c,double d)
 // transformation composed with xform to achieve this consists of a rotation
 // about the axis that is the intersection of prev_plane with next_plane.
 
-void DynamicPlane::planeEquationToTransform(gstPlane &prev_plane,
-    gstPlane &next_plane, gstTransformMatrix &xform_to_update) 
+void DynamicPlane::planeEquationToTransform(vrpn_HapticPlane &prev_plane,
+    vrpn_HapticPlane &next_plane, vrpn_HapticMatrix &xform_to_update) 
 {
     // plane is [a,b,c,d] where ax + by +cz + d = 0
 
-
-    gstVector next_normal = next_plane.normal();
-    gstVector prev_normal = prev_plane.normal();
+    vrpn_HapticVector next_normal = next_plane.normal();
+    vrpn_HapticVector prev_normal = prev_plane.normal();
     double m = next_normal.distToOrigin();
 
     double distAlongNormal = -next_plane.d();
 
-    gstVector axis = gstVector(0,0,0);
+    vrpn_HapticVector axis = vrpn_HapticVector(0,0,0);
     double theta = 0;
-    gstVector trans;
+    vrpn_HapticVector trans;
 
     trans = distAlongNormal*next_normal; // translation vector for xform
 
     // compute the rotation axis and angle
-    gstVector crossprod = prev_normal.cross(next_normal);
+    vrpn_HapticVector crossprod = prev_normal.cross(next_normal);
     double sintheta = crossprod.distToOrigin();
     double costheta = prev_normal.dot(next_normal);
-    if (sintheta == 0){	// exceptional case
+    if (sintheta == 0) {	// exceptional case
         // pick an arbitrary vector perp to normal because we are either 
 	// rotating by 0 or 180 degrees
-        if (next_normal[0] != 0){
-            axis = gstVector(next_normal[1], -next_normal[0], 0);
+        if (next_normal[0] != 0) {
+            axis = vrpn_HapticVector(next_normal[1], -next_normal[0], 0);
             axis /= (axis.distToOrigin());
-        } else
-            axis = gstVector(1,0,0);
-    } else	// normal case
+        } else {
+            axis = vrpn_HapticVector(1,0,0);
+	}
+    } else {	// normal case
         axis = crossprod/sintheta;
+    }
     theta = asin(sintheta);
     if (costheta < 0) theta = M_PI - theta;
 
     // set the incremental rotation
-    gstTransformMatrix rot_incrxform;
+    vrpn_HapticMatrix rot_incrxform;
     rot_incrxform.setRotate(axis,theta);
     double rot_cumulative[3][3], prod[3][3], rot_incr[3][3];
 
-
-	xform_to_update.getRotationMatrix(rot_cumulative);
+    xform_to_update.getRotationMatrix(rot_cumulative);
     rot_incrxform.getRotationMatrix(rot_incr);
     int i,j;
     for (i = 0; i < 3; i++)
-        for (j = 0; j < 3; j++){
+        for (j = 0; j < 3; j++) {
             prod[i][j] = rot_cumulative[i][0]*rot_incr[0][j] +
 			 rot_cumulative[i][1]*rot_incr[1][j] +
 			 rot_cumulative[i][2]*rot_incr[2][j];
@@ -285,17 +323,21 @@ void DynamicPlane::planeEquationToTransform(gstPlane &prev_plane,
 	return;
 }
 
-void DynamicPlane::setPlaneFromTransform(gstPlane &pl, 
-					gstTransformMatrix &xfm){
-    gstVector normal(0,1,0);
+void DynamicPlane::setPlaneFromTransform(vrpn_HapticPlane &pl, 
+					vrpn_HapticMatrix &xfm)
+{
+	vrpn_HapticVector normal(0,1,0);
 	normal = xfm.fromLocal(normal);
-	gstPoint origin(0,0,0);
+	vrpn_HapticPosition origin(0,0,0);
 	origin = xfm.fromLocal(origin);
-	pl = gstPlane(normal[0], normal[1], normal[2], -origin.distToOrigin());
+	pl = vrpn_HapticPlane(normal[0], normal[1], normal[2], -origin.distToOrigin());
+	//printf("XXX %lf, %lf, %lf,  %lf\n", pl.a(), pl.b(), pl.c(), pl.d());
 }
 
+#ifndef	VRPN_USE_HDAPI
 gstType TexturePlane::PlaneClassTypeId;
 static int temp = TexturePlane::initClass();
+#endif
 
 void TexturePlane::init() {
 	isNewPlane = FALSE;
@@ -307,10 +349,11 @@ void TexturePlane::init() {
 	dIncrement = 0;
 	numRecoveryCycles = 1;
 	//  boundingRadius = 1000.0;
+#ifndef	VRPN_USE_HDAPI
 	invalidateCumTransf();
-
-	textureOrigin = gstPoint(0,0,0);
 	dynamicParent = NULL;
+#endif
+	textureOrigin = vrpn_HapticPosition(0,0,0);
 
 	usingTexture = 0;
 	texWL = 10.0;
@@ -336,39 +379,39 @@ void TexturePlane::init() {
 }
 
 //constructors
-TexturePlane::TexturePlane(const gstPlane & p)
+TexturePlane::TexturePlane(const vrpn_HapticPlane & p)
 { 
 	init();
-	plane= gstPlane(p);
+	plane= vrpn_HapticPlane(p);
 }
 
-TexturePlane::TexturePlane(const gstPlane * p)
+TexturePlane::TexturePlane(const vrpn_HapticPlane * p)
 {
 	init();
-	plane = gstPlane(p);
+	plane = vrpn_HapticPlane(p);
 }
 
 TexturePlane::TexturePlane(const TexturePlane *p)
 { 
 	init();
-	plane = gstPlane(p->plane);
+	plane = vrpn_HapticPlane(p->plane);
 }
 
 TexturePlane::TexturePlane(const TexturePlane &p)
 { 
 	init();
-	plane = gstPlane(p.plane);
+	plane = vrpn_HapticPlane(p.plane);
 }
 
 
 TexturePlane::TexturePlane(double a,double b, double c, double d) 
 {  
 	init();
-	gstVector vec = gstVector(a,b,c);
-	plane = gstPlane(vec,d);
+	vrpn_HapticVector vec = vrpn_HapticVector(a,b,c);
+	plane = vrpn_HapticPlane(vec,d);
 }
 
-void TexturePlane::setPlane(gstVector newNormal, gstPoint point) 
+void TexturePlane::setPlane(vrpn_HapticVector newNormal, vrpn_HapticPosition point) 
 { 
 	plane.setPlane(newNormal,point);
 	isNewPlane = TRUE;
@@ -386,7 +429,7 @@ void TexturePlane::setParameters(double fd, double fs, double ks,
 
 void TexturePlane::update(double a, double b, double c, double d)
 {
-	plane = gstPlane(a,b,c,d);
+	plane = vrpn_HapticPlane(a,b,c,d);
 	isNewPlane = TRUE;
 }
 
@@ -560,10 +603,10 @@ void TexturePlane::updateTextureAspectRatio() {
 #endif
 }
 
-gstBoolean TexturePlane::intersection(const gstPoint &startPt_WC,
-			       const gstPoint &endPt_WC,
-			       gstPoint &intersectionPt_WC,
-			       gstVector &intersectionPtNormal_WC,
+vrpn_HapticBoolean TexturePlane::intersection(const vrpn_HapticPosition &startPt_WC,
+			       const vrpn_HapticPosition &endPt_WC,
+			       vrpn_HapticPosition &intersectionPt_WC,
+			       vrpn_HapticVector &intersectionPtNormal_WC,
 			       void **)
 {   
 	// XXX - this function doesn't do the right thing if there
@@ -572,22 +615,23 @@ gstBoolean TexturePlane::intersection(const gstPoint &startPt_WC,
 }
 
 
-gstBoolean TexturePlane::collisionDetect(gstPHANToM *PHANToM)
+#ifndef	VRPN_USE_HDAPI
+vrpn_HapticBoolean TexturePlane::collisionDetect(gstPHANToM *PHANToM)
 { 
-	gstPoint phantomPos, lastPhantPos, intersectionPoint;
+	vrpn_HapticPosition phantomPos, lastPhantPos, intersectionPoint;
 	
 	double depth = 0;
-	gstPoint SCP;
-	gstVector SCPnormal;
+	vrpn_HapticPosition SCP;
+	vrpn_HapticVector SCPnormal;
 	double deltaT;
 	static double deltaDist;
-	gstPoint diff;
+	vrpn_HapticPosition diff;
 	deltaT = PHANToM->getDeltaT();
 
 	if (fadeActive)
 		incrementFade(deltaT);
 
-	gstVector phantomForce = PHANToM->getReactionForce_WC();
+	vrpn_HapticVector phantomForce = PHANToM->getReactionForce_WC();
 	PHANToM->getLastPosition_WC(lastPhantPos);
 	PHANToM->getPosition_WC(phantomPos);
 	diff = lastPhantPos - phantomPos;
@@ -648,7 +692,7 @@ gstBoolean TexturePlane::collisionDetect(gstPHANToM *PHANToM)
 			} else {
 				t_elapsed += deltaT;
 			}
-			gstPoint posInPreviousCoordinates;
+			vrpn_HapticPosition posInPreviousCoordinates;
 			PHANToM->getPosition_WC(posInPreviousCoordinates);
 			posInPreviousCoordinates = dynamicParent->fromWorldLast(posInPreviousCoordinates);
 			posInPreviousCoordinates = fromParent(posInPreviousCoordinates);
@@ -658,8 +702,8 @@ gstBoolean TexturePlane::collisionDetect(gstPHANToM *PHANToM)
 //				if (t_elapsed > 0.0){
 //					printf("big t_elapsed: %f\n", t_elapsed);
 //				}
-				gstPoint currProj = plane.projectPoint(phantomPos);
-				gstPoint prevProj = 
+				vrpn_HapticPosition currProj = plane.projectPoint(phantomPos);
+				vrpn_HapticPosition prevProj = 
 					plane.projectPoint(posInPreviousCoordinates); 
 					// this is the projection of the
 					// current position onto the
@@ -681,10 +725,10 @@ gstBoolean TexturePlane::collisionDetect(gstPHANToM *PHANToM)
 
 		// translate to texture coordinates - note: this is a translation in the plane of
 		// the phantom position
-		gstPoint texturePos = phantomPos - textureOrigin;
+		vrpn_HapticPosition texturePos = phantomPos - textureOrigin;
 
 		SCP = computeSCPfromGradient(texturePos);
-		gstPlane texPlane;
+		vrpn_HapticPlane texPlane;
 		texPlane = computeTangentPlaneAt(texturePos);
 		depth = -(texturePos.x()*texPlane.a() + texturePos.y()*texPlane.b() +
 			texturePos.z()*texPlane.c() + texPlane.d());
@@ -748,6 +792,7 @@ gstBoolean TexturePlane::collisionDetect(gstPHANToM *PHANToM)
 
 	return inContact;
 }
+#endif
 
 void TexturePlane::incrementFade(double dT){
 	double curr_spr = getSurfaceKspring();
@@ -762,27 +807,27 @@ void TexturePlane::incrementFade(double dT){
 	}
 }
 
-gstBoolean TexturePlane::usingAssumedTextureBasePlane(gstPlane &p){
+vrpn_HapticBoolean TexturePlane::usingAssumedTextureBasePlane(vrpn_HapticPlane &p){
 	return !(p.a() != 0 || p.b() != 1 || p.c() != 0 || p.d() != 0);
 }
 
 // given a point, compute the tangent to the
 // point at the orthogonal projection intersection point
-gstPlane TexturePlane::computeTangentPlaneAt(gstPoint pnt)
+vrpn_HapticPlane TexturePlane::computeTangentPlaneAt(vrpn_HapticPosition pnt)
 {
 	// compute normal at pnt[0],pnt[2]
-	gstVector pNormal = computeNormal(pnt[0],pnt[2]);
+	vrpn_HapticVector pNormal = computeNormal(pnt[0],pnt[2]);
 	// assume pnt is in the tangent plane
-	gstPoint proj = projectPointOrthogonalToStaticPlane(pnt);
-	gstPlane tangPlane = gstPlane(pNormal, proj);
+	vrpn_HapticPosition proj = projectPointOrthogonalToStaticPlane(pnt);
+	vrpn_HapticPlane tangPlane = vrpn_HapticPlane(pNormal, proj);
 	return tangPlane;
 }
 
 
-gstPoint TexturePlane::projectPointOrthogonalToStaticPlane(gstPoint pnt)
+vrpn_HapticPosition TexturePlane::projectPointOrthogonalToStaticPlane(vrpn_HapticPosition pnt)
 {
 	double y = computeHeight(pnt[0], pnt[2]);
-	gstPoint projection = pnt;
+	vrpn_HapticPosition projection = pnt;
 	projection[1] = y;
 	return projection;
 }
@@ -814,7 +859,7 @@ gstPoint TexturePlane::projectPointOrthogonalToStaticPlane(gstPoint pnt)
 	must be transformed correctly
 
   */
-gstPoint TexturePlane::computeSCPfromGradient(gstPoint currentPos)
+vrpn_HapticPosition TexturePlane::computeSCPfromGradient(vrpn_HapticPosition currentPos)
 {
 	double pos_x, pos_y, pos_z, pos_r; // position in local coordinates
 	double scp_h;	// scp in local coordinates
@@ -831,7 +876,7 @@ gstPoint TexturePlane::computeSCPfromGradient(gstPoint currentPos)
 		return currentPos;
 	}
 
-	gstPoint newSCP;
+	vrpn_HapticPosition newSCP;
 
 	// get height of surface at contact point
 	scp_h = computeHeight(pos_r);
@@ -840,8 +885,8 @@ gstPoint TexturePlane::computeSCPfromGradient(gstPoint currentPos)
 	if (scp_h < pos_y) 
 		newSCP = currentPos;
 	else {
-		gstVector normal = computeNormal(pos_x, pos_z);
-		normal = normal/normal.norm();
+		vrpn_HapticVector normal = computeNormal(pos_x, pos_z);
+		normal.normalize();
 
 		double delta_y = scp_h - pos_y;
 
@@ -852,7 +897,6 @@ gstPoint TexturePlane::computeSCPfromGradient(gstPoint currentPos)
 	}
 
 	return newSCP;
-
 }
 
 // for texture:
@@ -892,13 +936,13 @@ double TexturePlane::computeHeight(double r)
 }
 
 // for texture:
-gstVector TexturePlane::computeNormal(double x, double z)
+vrpn_HapticVector TexturePlane::computeNormal(double x, double z)
 {
 	double k = 2*M_PI*texWN;
 	double r_sq = x*x + z*z;
 	double r = sqrt(r_sq);
 
-	gstVector normal;
+	vrpn_HapticVector normal;
 
 	if (r != 0){
 		normal.setx(texAmp*x*k*sin(k*r)/r);
@@ -919,12 +963,12 @@ gstVector TexturePlane::computeNormal(double x, double z)
 void TexturePlane::getTextureShape(int nsamples, float *surface)
 {
 	
-	float radius = 0;
-	float incr = texWL/(float)(nsamples-1);
+	double	radius = 0;
+	double	incr = texWL/(float)(nsamples-1);
 	int i;
 
 	if (texWN == 0) {
-		surface[0] = computeHeight(0);
+		surface[0] = (float)computeHeight(0);
 		for (i = 1; i < nsamples; i++){
 			surface[i] = surface[0];
 		}
@@ -932,7 +976,7 @@ void TexturePlane::getTextureShape(int nsamples, float *surface)
 	else {
 		for (i = 0; i < nsamples; i++){
 			// (radius, height)
-			surface[i] = computeHeight(radius);
+			surface[i] = (float)computeHeight(radius);
 			radius += incr;
 		}
 	}

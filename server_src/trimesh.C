@@ -2,6 +2,8 @@
 #ifdef	VRPN_USE_PHANTOM_SERVER
 #include "trimesh.h"
 
+#ifndef	VRPN_USE_HDAPI
+
 //pre: NULL==gstMesh; && NULL==ghostPolyMesh
 void Trimesh::getGstMesh(){
   if(GHOST==ourType){
@@ -347,4 +349,5 @@ void Trimesh::setTransformMatrix(float xfMat[16]){
   }
 }
 
+#endif	VRPN_USE_HDAPI
 #endif

@@ -8,16 +8,18 @@
 #include  "vrpn_Configure.h"
 #ifdef	VRPN_USE_PHANTOM_SERVER
 
-/*
-#include <gstPHANToM.h>
-#include <gstShape.h>
- */
-
 #include "ghost.h"
+
+//XXX There's no easy was to implement this class in the absence of GHOST.
+//XXX It may make sense to pull it out of ForceDevice and provide it as a
+//XXX separate interface.  Who knows?
+
+#ifndef	VRPN_USE_HDAPI
 
 // the different types of trimeshes we have available for haptic display
 enum TrimeshType {GHOST,HCOLLIDE};
 // the GHOST mesh does not properly deal with vertex normals
+
 
 class Trimesh {
 protected:
@@ -107,6 +109,8 @@ public:
   // set the transformatrix for the mesh (xFormMat is in row major order)
   void setTransformMatrix(float xFormMat[16]);
 };
+
+#endif	// VRPN_USE_HDAPI
 
 #endif
 #endif  // TRIMESH_H

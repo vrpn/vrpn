@@ -9,13 +9,21 @@
 
 /// Constraint effect for PHANToM (superceded by ForceField)
 
-class  ConstraintEffect:public gstEffect 
+#ifdef	VRPN_USE_HDAPI
+class  ConstraintEffect
+#else
+class  ConstraintEffect:public gstEffect
+#endif
 
 {
   public:
 
 	// Constructor.
-	ConstraintEffect():gstEffect(){}
+#ifdef	VRPN_USE_HDAPI
+    ConstraintEffect(): active(FALSE), time(0) { }
+#else
+    ConstraintEffect(): gstEffect() {}
+#endif
 
 	// Destructor.
 	~ConstraintEffect() {}
@@ -23,7 +31,7 @@ class  ConstraintEffect:public gstEffect
 	// set the point to which this effect is attached
 	// units are mm and Newtons/mm
 	void setPoint(double *pnt, double kSpr) {
-		fixedEnd = gstPoint(pnt[0],pnt[1],pnt[2]);
+		fixedEnd = vrpn_HapticPosition(pnt[0],pnt[1],pnt[2]);
 		kSpring = kSpr;
 	}
 
@@ -32,14 +40,14 @@ class  ConstraintEffect:public gstEffect
         // make sure to reset any state, such as past PHANToM position.
     	// Otherwise, the next call to calcEffectForce could 
 	// generate unexpectedly large forces.
-	virtual gstBoolean start() { 
-		if (!active) printf("starting force\n");
+	virtual vrpn_HapticBoolean start() { 
+//		if (!active) printf("starting force\n");
 		active = TRUE; time = 0.0; return TRUE;}
 
 	// FOR_GHOST_EXTENSION:
 	// Stop the effect.
 	virtual void stop() { 
-		if (active) printf("stopping force\n");
+//		if (active) printf("stopping force\n");
 		active = FALSE;}
 
 	// FOR_GHOST_EXTENSION:
@@ -54,12 +62,14 @@ class  ConstraintEffect:public gstEffect
 	// WARNING!: Never call PHANToM->setForce or
 	//			PHANToM->setForce_WC from this function.
 	//			It will cause an infinite recursion.
-	virtual gstVector	calcEffectForce(void *phantom);
-
+	virtual vrpn_HapticVector	calcEffectForce(void *phantom_info);
 
   protected:
-
-	gstPoint fixedEnd;
+#ifdef	VRPN_USE_HDAPI
+	vrpn_HapticBoolean	active;
+	double			time;
+#endif
+	vrpn_HapticPosition fixedEnd;
 	double kSpring;
 };
 

@@ -1,31 +1,40 @@
 #include  "vrpn_Configure.h"
 #ifdef	VRPN_USE_PHANTOM_SERVER
+#ifndef	VRPN_USE_HDAPI
 #include "gstPHANToM.h"
+#endif
 #include "forcefield.h"
 
 /// Do not to exceed this force (in dynes).
 // It is pretty close to the maximum PHANToM force.
 const double FF_MAX_FORCE = 10.0;
 
-gstVector ForceFieldEffect::calcEffectForce(void *PHANToM) {
+vrpn_HapticVector ForceFieldEffect::calcEffectForce(void *phantom_info) {
 
-	gstPHANToM *phantom = (gstPHANToM *)PHANToM;
-	gstPoint phantomPos;
-	gstVector effectForce = gstVector(0,0,0);
+	vrpn_HapticPosition phantomPos;
+	vrpn_HapticVector effectForce = vrpn_HapticVector(0,0,0);
 	double forceMag;
 	int i,j;
 
 	if (active) {
 		// Find out the vector from the current position to the origin
 		// of the defined force field.
+#ifdef	VRPN_USE_HDAPI
+		HDAPI_state *state = (HDAPI_state *)phantom_info;
+		double vec[3];
+		vec[0] = state->pose[3][0]; vec[1] = state->pose[3][1]; vec[2] = state->pose[3][2];
+		phantomPos.set(vec);
+#else
+		gstPHANToM *phantom = (gstPHANToM *)phantom_info;
 		phantom->getPosition_WC(phantomPos);
-		gstVector dR = (phantomPos - origin);
+#endif
+		vrpn_HapticVector dR = (phantomPos - origin);
 
 		// If the Phantom has been moved too far from the origin,
 		// drop the force to zero.
 
 		if (dR.norm() > radius) {
-		    return gstVector(0,0,0);
+		    return vrpn_HapticVector(0,0,0);
 		}
 
 		// Compute the force, which is the constant force plus

@@ -2,6 +2,7 @@
 #define BUZZFORCEFIELD_H
 
 #include  "vrpn_Configure.h"
+#include  "vrpn_ForceDevice.h"
 #ifdef	VRPN_USE_PHANTOM_SERVER
 
 /*
@@ -31,16 +32,22 @@
 
 class TexturePlane;
 
+#ifdef	VRPN_USE_HDAPI
+class BuzzForceField {
+	// gstForceField override:
+	vrpn_HapticVector calculateForceFieldForce(HDAPI_state	*state);
+#else
 class BuzzForceField : public gstForceField {
 	// gstForceField override:
-	gstVector calculateForceFieldForce(gstPHANToM *phantom);
+	vrpn_HapticVector calculateForceFieldForce(gstPHANToM *phantom);
+#endif
 public:
 	BuzzForceField();
 	void activate() {_active = TRUE;};
 	void deactivate() {_active = FALSE;};
-	void restrictToSurface(gstBoolean r) {_surface_only = r;};
-	void setSurface(gstPlane &p, double spr) {_plane = p; _spring = spr;};
-	void setPlane(gstPlane &p) {_plane = p;};
+	void restrictToSurface(vrpn_HapticBoolean r) {_surface_only = r;};
+	void setSurface(vrpn_HapticPlane &p, double spr) {_plane = p; _spring = spr;};
+	void setPlane(vrpn_HapticPlane &p) {_plane = p;};
 	void adjustToTexturePlane(TexturePlane *p) {
 		_tex_plane = p;
 	}
@@ -58,7 +65,7 @@ public:
 
 	int active() {return _active;};
 	int restrictedToSurface() {return _surface_only;};
-	gstPlane &getPlane() {return _plane;};
+	vrpn_HapticPlane  &getPlane() {return _plane;};
 	double getSpring() {return _spring;};
 	double getAmplitude() {return _amplitude;};
 	double getFrequency() {return _frequency;};
@@ -67,7 +74,7 @@ private:
 	double _t_buzz;	// time used in force calculation
 	int _active;		// is force active
 	int _surface_only;	// is buzzing limited to the surface of a plane
-	gstPlane _plane;		// what surface is buzzing
+	vrpn_HapticPlane  _plane;	// what surface is buzzing
 	double _spring;			// force/mm
 
 	double _amplitude;		// mm

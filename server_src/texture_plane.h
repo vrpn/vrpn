@@ -1,19 +1,21 @@
 /*	texture_plane.h 
 	Plane primitive. This is a user defined geometry node which 
 	extends the GHOST SDK. 
-	This class represents a planar surface
+	This class represents a planar surface which can have bumps, and
+	a dynamic plane with bumps that can jump up and down.
+
+	The port to HDAPI is not complete for these classes.  There is
+	something in the dynamics callback that is not working (probably),
+	and the Matrix class defined in ghost.h for the HDAPI implementation
+	also may not work.
   */
 
 #ifndef TEXTURE_PLANE_H
 #define TEXTURE_PLANE_H
 
 #include  "vrpn_Configure.h"
+#include  "vrpn_ForceDevice.h"
 #ifdef	VRPN_USE_PHANTOM_SERVER
-
-/*
-#include <gstPHANToM.h>
-#include <gstShape.h>
-*/ 
 
 #define MIN_TEXTURE_WAVELENGTH (0.06) // [mm] reasonable value considering
 								// resolution of phantom
@@ -22,22 +24,20 @@
 #include "buzzForceField.h"
 
 typedef void (*pos_force_dataCB)(const double time, 
-    const gstPoint &pos, const gstVector &force, void *ud);
+    const vrpn_HapticPosition &pos, const vrpn_HapticVector &force, void *ud);
 
 
-class TexturePlane:public gstShape
+class TexturePlane:public vrpn_HapticSurface
 {
 public:
 	void init();
-	//Constructor
-	TexturePlane(const gstPlane *);
 
-	TexturePlane(const gstPlane &);
+	//Constructor
+	TexturePlane(const vrpn_HapticPlane *);
+	TexturePlane(const vrpn_HapticPlane &);
 
 	//Constructor
 	TexturePlane(const TexturePlane *);
-
-	//Constructor
 	TexturePlane(const TexturePlane &);
 
 	//Constructor
@@ -45,24 +45,48 @@ public:
 	//destructor
 	~TexturePlane(){}
 
-	void setParent(gstDynamic *d) {dynamicParent = d;};	// tells plane that its 
-			// coordinate system relative to the world coordinates has changed
-
 	// use the DynamicPlane functions instead of these:
 	void update(double a, double b, double c, double d);
-	void setPlane(gstVector newNormal, gstPoint point);
+	void setPlane(vrpn_HapticVector newNormal, vrpn_HapticPosition point);
 
 	static int initClass() {
 		//PlaneClassTypeId = gstUniqueId++ ;
 		return 0;}
-
-	void setInEffect(gstBoolean effect) {inEffect = effect;}
 
 	void setNumRecCycles(int nrc) {
 			if (nrc < 1) 
 			   printf("Error: setRecCycles(cycles < 1): %d\n",nrc);
 			else
 			   numRecoveryCycles = nrc;}
+
+	void setInEffect(vrpn_HapticBoolean effect) {inEffect = effect;}
+
+	// FOR_GHOST_EXTENSION:
+	// Used by system or for creating sub-classes only.
+	//  Returns TRUE if line segment defined by startPt_WC and endPt_WC
+	//  intersects this shape object.  If so, intersectionPt_WC is set to
+	//  point of intersection and intersectionNormal_WC is set to surface
+	//  normal at intersection point.
+	virtual vrpn_HapticBoolean	intersection(const vrpn_HapticPosition &startPt_WC,
+		const vrpn_HapticPosition &endPt_WC,
+		vrpn_HapticPosition &intersectionPt_WC,
+		vrpn_HapticVector &intersectionPtNormal_WC,
+		void **);
+
+	// Used by system or for creating sub-classes only.
+	// Returns TRUE if pt is inside of this object.
+	//virtual int	checkIfPointIsInside_WC(const vrpn_HapticPosition &pt) = 0;
+
+#ifndef	VRPN_USE_HDAPI
+	// Used by system or for creating sub-classes only.
+	// Returns TRUE if PHANToM is currently in contact with this object.
+	// If so, the collision is added to the PHANToM's list through
+	// gstPHANToM::getCollisionInfo() and gstPHANToM::collisionAdded().
+	// XXX We may need this.
+	virtual vrpn_HapticBoolean	collisionDetect(gstPHANToM *PHANToM) ;
+
+	void setParent(gstDynamic *d) {dynamicParent = d;};	// tells plane that its 
+			// coordinate system relative to the world coordinates has changed
 
 	// Get type of this class.  No instance needed.
 	static gstType	getClassTypeId() { return PlaneClassTypeId; }
@@ -71,38 +95,16 @@ public:
 
 	// GHOST_IGNORE_IN_DOC:
 	// Returns TRUE if subclass is of type.
-	static gstBoolean	staticIsOfType(gstType type) {
+	static vrpn_HapticBoolean	staticIsOfType(gstType type) {
 		if (type == PlaneClassTypeId) return TRUE;
 		else return (gstShape::staticIsOfType(type));}
 
-    virtual gstBoolean isOftype(gstType type) const {
-        if( type == PlaneClassTypeId) return TRUE;
-		else return (gstShape::isOfType(type)); } 
+	virtual vrpn_HapticBoolean isOftype(gstType type) const {
+	    if( type == PlaneClassTypeId) return TRUE;
+		    else return (gstShape::isOfType(type)); } 
 
-	// FOR_GHOST_EXTENSION:
-	// Used by system or for creating sub-classes only.
-	//  Returns TRUE if line segment defined by startPt_WC and endPt_WC
-	//  intersects this shape object.  If so, intersectionPt_WC is set to
-	//  point of intersection and intersectionNormal_WC is set to surface
-	//  normal at intersection point.
-	virtual gstBoolean	intersection(	const gstPoint &startPt_WC,
-		const gstPoint &endPt_WC,
-		gstPoint &intersectionPt_WC,
-		gstVector &intersectionPtNormal_WC,
-		void **);
-
-	// Used by system or for creating sub-classes only.
-	// Returns TRUE if PHANToM is currently in contact with this object.
-	// If so, the collision is added to the PHANToM's list through
-	// gstPHANToM::getCollisionInfo() and gstPHANToM::collisionAdded().
-	virtual gstBoolean	collisionDetect(gstPHANToM *PHANToM) ;
-
-	// Used by system or for creating sub-classes only.
-	// Returns TRUE if pt is inside of this object.
-	//virtual int	checkIfPointIsInside_WC(const gstPoint &pt) = 0;
-
-    void printSelf2() const { plane.printSelf2(); }
-
+	void printSelf2() const { plane.printSelf2(); }
+#endif
 	// set frict. dyn, frict. stat, spring, texture amplitude
 	// and texture wavelength
 	void setParameters(double fd, double fs, double ks,
@@ -139,18 +141,18 @@ public:
 	// get a graph of what isotropic surface texture looks like
 	void getTextureShape(int nsamples, float *surface);
 
-	double getTextureHeight(gstPoint &position){
-		gstPoint tex_pos = position - textureOrigin;
+	double getTextureHeight(vrpn_HapticPosition &position){
+		vrpn_HapticVector tex_pos = position - textureOrigin;
 		return computeHeight(tex_pos[0], tex_pos[2]);
 	}
 
-	gstVector getTextureNormal(gstPoint &position){
-		gstVector tex_pos = position - textureOrigin;
+	vrpn_HapticVector getTextureNormal(vrpn_HapticPosition &position){
+		vrpn_HapticVector tex_pos = position - textureOrigin;
 		return computeNormal(tex_pos[0], tex_pos[2]);
 	}
 
-	gstPlane getTangentPlane(gstPoint &position){
-		gstVector tex_pos = position - textureOrigin;
+	vrpn_HapticPlane  getTangentPlane(vrpn_HapticPosition &position){
+		vrpn_HapticVector tex_pos = position - textureOrigin;
 		return computeTangentPlaneAt(tex_pos);
 	}
 
@@ -158,10 +160,11 @@ public:
 
 	// fading force effect
 	void fadeAway(double fadingDuration) {
-		if (!fadeActive)
-			fadeOldKspring = getSurfaceKspring();
-		fadeActive = TRUE;
-		dSpring_dt = fadeOldKspring/fadingDuration;
+	  if (!fadeActive) {
+	    fadeOldKspring = getSurfaceKspring();
+	  }
+	  fadeActive = TRUE;
+	  dSpring_dt = fadeOldKspring/fadingDuration;
 	}
 	int fadeDone(){
 		return !fadeActive;
@@ -185,37 +188,37 @@ public:
 
 private:
 	// texture-related functions
-	gstBoolean usingAssumedTextureBasePlane(gstPlane &p);
+	vrpn_HapticBoolean usingAssumedTextureBasePlane(vrpn_HapticPlane &p);
 	void updateTextureOrigin(double x, double z);
 
 	// FOR USE IN TEXTURE COORDINATES ONLY!(i.e. phantomPos - textureOrigin):
-	gstPlane computeTangentPlaneAt(gstPoint pnt);
-	gstPoint projectPointOrthogonalToStaticPlane(gstPoint pnt);
-	gstPoint computeSCPfromGradient(gstPoint currentPos);
 	double computeHeight(double x, double z);
 	double computeHeight(double r);
-	gstVector computeNormal(double x, double z);
+	vrpn_HapticPlane computeTangentPlaneAt(vrpn_HapticPosition pnt);
+	vrpn_HapticPosition projectPointOrthogonalToStaticPlane(vrpn_HapticPosition pnt);
+	vrpn_HapticPosition computeSCPfromGradient(vrpn_HapticPosition currentPos);
+	vrpn_HapticVector computeNormal(double x, double z);
 
 	// fade-related functions
 	void incrementFade(double dT);
 
 protected:
-	gstPlane plane;
-	gstBoolean inEffect;
+	vrpn_HapticPlane    plane;
+	vrpn_HapticBoolean  inEffect;
 
 	// variables used for recovery
-	gstBoolean isNewPlane;	// set to true by update(), set to false
+	vrpn_HapticBoolean isNewPlane;	// set to true by update(), set to false
 				// 	by collisionDetect()
-	gstBoolean isInRecovery;// true after collisionDetect() discovers
+	vrpn_HapticBoolean isInRecovery;// true after collisionDetect() discovers
 				// 	there is a new plane and set to
 				//	false when recoveryPlaneCount
 				//	reaches numRecoveryCycles
 	int recoveryPlaneCount;	// keeps track of how many intermediate
 				// 	planes there have been 
-	gstPlane originalPlane;	// keeps a copy of the plane set by
+	vrpn_HapticPlane originalPlane;	// keeps a copy of the plane set by
 				// 	update() so that we can restore this
 				//	plane precisely when recovery is complete
-    double lastDepth;	// this is the depth below the surface
+	double lastDepth;	// this is the depth below the surface
 				// 	for the plane previous to the
 				//	new plane - updated in collisionDetect()
 	double dIncrement;	// value added to d parameter of plane
@@ -235,17 +238,19 @@ protected:
 	// flat plane as long as the texture scale is much smaller
 	// than the surface scale.
 
-		// the parent node transforms the plane (0,1,0,0) into
-		// the current plane by incremental rotations about edges formed by
-		// consecutive planes - in this way we get a mapping that takes care of
-		// preserving orientation in the plane with each new plane update
-		// However, we are still left with a translation to maintain continuity
-		// between texture coordinates on one plane and the next and this is
-		// handled by updating a textureOrigin. textureOrigin is updated so that
-		// the projection of the phantom position onto the plane texture coordinates
-		// is preserved over plane updates
-	gstVector textureOrigin;
+	// the parent node transforms the plane (0,1,0,0) into
+	// the current plane by incremental rotations about edges formed by
+	// consecutive planes - in this way we get a mapping that takes care of
+	// preserving orientation in the plane with each new plane update
+	// However, we are still left with a translation to maintain continuity
+	// between texture coordinates on one plane and the next and this is
+	// handled by updating a textureOrigin. textureOrigin is updated so that
+	// the projection of the phantom position onto the plane texture coordinates
+	// is preserved over plane updates
+	vrpn_HapticVector textureOrigin;
+#ifndef	VRPN_USE_HDAPI
 	gstDynamic *dynamicParent;
+#endif
 	// end of texture variables for xform stuff
 	// other texture variables
 	int usingTexture;
@@ -290,27 +295,33 @@ protected:
 	double t_elapsed;
 
 private:
+#ifndef	VRPN_USE_HDAPI
 	static gstType PlaneClassTypeId;
-	
+#endif
 };
 
 class BuzzForceField;
 // This class implements a haptic plane that will rotate and shift to match
 // a specified plane equation allowing special effects to be defined in a
 // local plane coordinate system
+#ifdef	VRPN_USE_HDAPI
+class DynamicPlane {
+#else
 class DynamicPlane: public gstDynamic {
+#endif
   public:
 	DynamicPlane();
 	~DynamicPlane() {};
+#ifndef	VRPN_USE_HDAPI
 	static gstType getClassTypeId() {return DynamicPlaneClassTypeId;};
 	virtual gstType getTypeId() const {return DynamicPlaneClassTypeId;};
-	virtual gstBoolean    isOfType(gstType type) const{    
+	virtual vrpn_HapticBoolean    isOfType(gstType type) const{    
 		if (type == DynamicPlaneClassTypeId) return TRUE;
 		else // Check if type is parent class.
 			return (gstDynamic::staticIsOfType(type));}
   
 	// Allows subclasses to check if they are subclass of type.
-	static gstBoolean staticIsOfType(gstType type) {
+	static vrpn_HapticBoolean staticIsOfType(gstType type) {
 		if (type == DynamicPlaneClassTypeId) return TRUE;
 		else return (gstDynamic::staticIsOfType(type));}
 	gstEvent getEvent() {
@@ -318,28 +329,29 @@ class DynamicPlane: public gstDynamic {
 		event.id = 0;
 		return event;
 	}
+#endif
 
 	void update(double a, double b, double c, double d); // set plane equation
 
 	// mostly duplicates of child node functions so we can combine the
 	// interfaces of multiple objects 
 
-	void setActive(gstBoolean active);
+	void setActive(vrpn_HapticBoolean active);
 	void cleanUpAfterError();
 
-	void enableBuzzing(gstBoolean enable);
-	void enableTexture(gstBoolean enable);
+	void enableBuzzing(vrpn_HapticBoolean enable);
+	void enableTexture(vrpn_HapticBoolean enable);
 
 	int buzzingEnabled() {return _using_buzz;};
 
 	int textureEnabled() {return fixedPlane->textureEnabled();};
 
 	void setParameters(double fd, double fs, double ks,
-								 double bpa, double bpl, 
-								 double buzzamp, double buzzfreq);
+			   double bpa, double bpl, 
+			   double buzzamp, double buzzfreq);
 
-    double getSurfaceFstatic() {
-		return fixedPlane->getSurfaceFstatic();}
+	double getSurfaceFstatic() {
+		    return fixedPlane->getSurfaceFstatic();}
 
 	void setSurfaceFstatic(double fs) {
 		fixedPlane->setSurfaceFstatic(fs);}
@@ -347,8 +359,8 @@ class DynamicPlane: public gstDynamic {
 	double getSurfaceFdynamic() {
 		return fixedPlane->getSurfaceFdynamic();}
 
-    void setSurfaceFdynamic(double fd) {
-		fixedPlane->setSurfaceFdynamic(fd);}
+	void setSurfaceFdynamic(double fd) {
+		    fixedPlane->setSurfaceFdynamic(fd);}
 
 	double getSurfaceKspring() {
 		return fixedPlane->getSurfaceKspring();}
@@ -362,7 +374,7 @@ class DynamicPlane: public gstDynamic {
 
 	double getBuzzAmplitude();
 
-    void setBuzzAmplitude(double amp);
+	void setBuzzAmplitude(double amp);
 
 	double getBuzzFrequency();
 
@@ -371,7 +383,7 @@ class DynamicPlane: public gstDynamic {
 	double getTextureAspectRatio() {
 		return fixedPlane->getTextureAspectRatio();}
 
-    void setTextureAspectRatio(double ar) {
+	void setTextureAspectRatio(double ar) {
 		fixedPlane->setTextureAspectRatio(ar);}
 
 	void setTextureSize(double size){
@@ -386,7 +398,7 @@ class DynamicPlane: public gstDynamic {
 	double getTextureWavelength() {
 		return fixedPlane->getTextureWavelength();}
 
-    void setTextureWavelength(double wl) {
+	void setTextureWavelength(double wl) {
 		fixedPlane->setTextureWavelength(wl);}
 
 	double getTextureWaveNumber() {
@@ -395,42 +407,53 @@ class DynamicPlane: public gstDynamic {
 	void setTextureWaveNumber(double wn) {
 		fixedPlane->setTextureWaveNumber(wn);}
 
-    void getTextureShape(int nsamples, float *surface) {
-        fixedPlane->getTextureShape(nsamples, surface);}
+	void getTextureShape(int nsamples, float *surface) {
+		fixedPlane->getTextureShape(nsamples, surface);}
+
+	bool getActive(void) const { return (_active != 0); }
 
 	// TODO: setTextureShape()
 
-    void fadeAway(double fadingDuration) 
-		{ fixedPlane->fadeAway(fadingDuration);}
-    int fadeDone(){ return fixedPlane->fadeDone();}
-    void cancelFade() {fixedPlane->cancelFade();}
+	void fadeAway(double fadingDuration) 
+		    { fixedPlane->fadeAway(fadingDuration);}
+	int fadeDone(){ return fixedPlane->fadeDone();}
+	void cancelFade() {fixedPlane->cancelFade();}
 
-    void setDataCB(pos_force_dataCB func, void *ud){
-		fixedPlane->setDataCB(func, ud);
-    }
-    void resetDataTime() {fixedPlane->resetDataTime();};
+	void setDataCB(pos_force_dataCB func, void *ud){
+		    fixedPlane->setDataCB(func, ud);
+	}
+	void resetDataTime() {fixedPlane->resetDataTime();};
 
 	// DynamicPlane-specific:
-	void planeEquationToTransform(gstPlane &prev_plane,
-		gstPlane &next_plane, gstTransformMatrix &xform_to_update);
-	void setPlaneFromTransform(gstPlane &pl, gstTransformMatrix &xfm);
+	void planeEquationToTransform(vrpn_HapticPlane &prev_plane,
+		vrpn_HapticPlane &next_plane, vrpn_HapticMatrix &xform_to_update);
+	void setPlaneFromTransform(vrpn_HapticPlane &pl, vrpn_HapticMatrix &xfm);
 
-	void planeEquationToTransform(const gstPlane &prev_plane, 
-		const gstPlane &next_plane, const gstVector &p_project, 
-		gstTransformMatrix &xform);
+	void planeEquationToTransform(const vrpn_HapticPlane &prev_plane, 
+		const vrpn_HapticPlane &next_plane, const vrpn_HapticVector &p_project, 
+		vrpn_HapticMatrix &xform);
+
+#ifdef	VRPN_USE_HDAPI
+	const vrpn_HapticPlane &getPlane(void) const { return plane; }
+#endif
 
   private:
-	void updateTransform(const gstTransformMatrix &xfm) {
+	void updateTransform(const vrpn_HapticMatrix &xfm) {
 		xform = xfm;};
-	gstTransformMatrix getTransform() {
+	vrpn_HapticMatrix getTransform() {
 		return xform;};
 
+#ifdef	VRPN_USE_HDAPI
+  public:
+	virtual void updateDynamics();
+#else
   gstInternal public:
 	static int initClass();
 	virtual void updateDynamics();
+#endif
 
   private:
-	gstTransformMatrix xform;
+	vrpn_HapticMatrix xform;
 // MB: for SGI compilation with pthreads
 #ifdef SGI
         pthread_mutex_t  xform_mutex;
@@ -438,11 +461,13 @@ class DynamicPlane: public gstDynamic {
 	CRITICAL_SECTION xform_mutex;
 #endif
 
+#ifndef	VRPN_USE_HDAPI
 	static gstType DynamicPlaneClassTypeId;
+#endif
 	TexturePlane *fixedPlane;
 	BuzzForceField *buzzForce;
-	gstPlane plane;
-	gstPlane lastPlane;
+	vrpn_HapticPlane plane;
+	vrpn_HapticPlane lastPlane;
 
 	int _using_buzz;
 	int _active;

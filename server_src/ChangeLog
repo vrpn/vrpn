@@ -1,3 +1,24 @@
+2004-07-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* BuzzForceField.C : Modified to work with GHOST or HDAPI (partial port).
+	* BuzzForceField.h : Same.
+	* constraint.C : Modified to work with GHOST or HDAPI (full port).
+	* constraint.h : Same.
+	* forcefield.C : Modified to work with GHOST or HDAPI (full port).
+	* forcefield.h : Same.
+	* ghost.h : Added helper classes for port to HDAPI (partial).
+	* plane.C : Modified to work with GHOST or HDAPI (full port).
+	* plane.h : Same.
+	* texture_plane.C : Modified to work with GHOST or HDAPI (partial port).
+	* texture_plane.h : Same.
+	* trimesh.C : Modified to work with GHOST or HDAPI (beginning of port).
+	* trimesh.h : Same.
+	* vrpn_Phantom.C : Modified to work with GHOST or HDAPI (partial port).
+	* vrpn_Phantom.h : Same.
+	* vrpn_phantom.dsp : Modified include paths to look on C or D for GHOST
+		or HDAPI.  Need to remove the GHOST ones if use HDAPI.
+	* vrpn_server.dsp : Same
+
 2004-05-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* NIUtil.cpp : Will return more than one instance of the same
