@@ -1,3 +1,8 @@
+2001-06-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Bumped minor version number
+	* vrpn_Shared.C : Put back Perf code, guarded by VRPN_UNSAFE_WINDOWS_CLOCK
+
 2001-06-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Flock.C : Modified to print an error when trying to open a Flock
