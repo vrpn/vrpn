@@ -3815,7 +3815,10 @@ void vrpn_Endpoint::poll_for_cookie (const timeval * pTimeout) {
   if (FD_ISSET(d_tcpSocket, &readfds)) {
     finish_new_connection_setup();
     if (!doing_okay()) {
-      printf("vrpn_Endpoint::poll_for_cookie: cookie handling failed\n");
+      fprintf(stderr,
+              "vrpn_Endpoint::poll_for_cookie: cookie handling failed\n"
+              "    while connecting to \"%s\"\n",
+              remote_machine_name);
       return;
     }
 #ifdef VERBOSE3
