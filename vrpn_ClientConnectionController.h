@@ -23,7 +23,7 @@
 class vrpn_ClientConnectionController
     : public vrpn_BaseConnectionController
 {
-    // {{{ c'tors and d'tors
+    // {{{ c'tors and d'tors and initialization
 public:
 
     // destructor ...XXX...
@@ -31,6 +31,18 @@ public:
 
     // constructors ...XXX...
     vrpn_ClientConnectionController(
+		const char * local_logfile_name = NULL, 
+		vrpn_int32 local_log_mode = vrpn_LOG_NONE,
+		const char * remote_logfile_name = NULL, 
+		vrpn_int32 remote_log_mode = vrpn_LOG_NONE,
+		vrpn_float64 dFreq = 4.0, 
+		vrpn_int32 cSyncWindow = 2);
+
+    // Used to initialize connection. Since vrpn_NetConnection c'tor
+    // makes callbacks to Controller, we had to move this outside of
+    // the ClientConnectionController c'tor. called by
+    // vrpn_get_connection_by_name()
+    virtual vrpn_int32 connect_to_server(
 		const char * cname, 
 		vrpn_int16 port = vrpn_DEFAULT_LISTEN_PORT_NO,
 		const char * local_logfile_name = NULL, 
@@ -39,15 +51,7 @@ public:
 		vrpn_int32 remote_log_mode = vrpn_LOG_NONE,
 		vrpn_int32 tcp_inbuflen = vrpn_CONNECTION_TCP_BUFLEN,
 		vrpn_int32 tcp_outbuflen = vrpn_CONNECTION_TCP_BUFLEN,
-		//vrpn_int32 udp_inbuflen = vrpn_CONNECTION_UDP_BUFLEN,
-		vrpn_int32 udp_outbuflen = vrpn_CONNECTION_UDP_BUFLEN,
-		vrpn_float64 dFreq = 4.0, 
-		vrpn_int32 cSyncWindow = 2
-		);
-
-    // helper function
-    // called by vrpn_get_connection_by_name()
-    virtual int connect_to_server( const char *machine, int port );
+		vrpn_int32 udp_outbuflen = vrpn_CONNECTION_UDP_BUFLEN);
 
     // called by NewFileController to get an interface to a FileConnection.
     //
@@ -137,7 +141,7 @@ public:
     void init_clock_client();
 
     // mostly code from vrpn_Clock_Remote::mainloop()
-    void synchronize_clocks();
+    virtual void synchronize_clocks();
 
     // MANIPULATORS
 
@@ -228,7 +232,7 @@ protected: // clock synch data members and funcs
 
 
 //
-// vrpn_ConnectionControllerManager
+// {{{ vrpn_ConnectionControllerManager
 //
 // Singleton class that keeps track of all known VRPN
 // ClientConnectionControllers and makes sure they're deleted on
@@ -294,6 +298,8 @@ class vrpn_ConnectionControllerManager {
 
     vrpn_int32 d_numControllers;
 };
+
+// }}} end class vrpn_ConnectionControllerManager
 
 #endif
 

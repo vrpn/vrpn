@@ -311,6 +311,92 @@ vrpn_BaseConnectionController::get_message_type_name(
 //==========================================================================
 //==========================================================================
 //
+// {{{ vrpn_BaseConnectionController: public: callbacks
+//
+//==========================================================================
+//==========================================================================
+
+// Yank the callback chain for a message type.  Call all handlers that
+// are interested in messages from this sender.  Return 0 if they all
+// return 0, -1 otherwise.
+
+vrpn_int32 vrpn_BaseConnectionController::do_callbacks_for(
+    vrpn_int32 type, 
+    vrpn_int32 service,
+    timeval time, 
+    vrpn_uint32 payload_len, 
+    const char * buf)
+{
+	// Make sure we have a non-negative type.  System messages are
+	// handled differently.
+    if (type < 0) {
+	return 0;
+    }
+	vrpn_MsgCallbackEntry * who;
+	vrpn_HANDLERPARAM p;
+
+	// Fill in the parameter to be passed to the routines
+	p.type = type;
+	p.service = service;
+	p.msg_time = vrpn_TimevalSum(time, tvClockOffset);
+#if 0
+	cerr << " remote time is " << time.tv_sec 
+	     << " " << time.tv_usec << endl;
+	cerr << " offset is " << tvClockOffset.tv_sec 
+	     << " " << tvClockOffset.tv_usec << endl;
+	cerr << " local time is " << p.msg_time.tv_sec 
+	     << " " << p.msg_time.tv_usec << endl;
+#endif
+	p.payload_len = payload_len;
+	p.buffer = buf;
+
+        // Do generic callbacks (vrpn_ANY_TYPE)
+	who = generic_callbacks;
+
+	while (who != NULL) {	// For each callback entry
+
+		// Verify that the service is ANY or matches
+		if ( (who->sender == vrpn_ANY_SERVICE) ||
+		     (who->sender == service) ) {
+			if (who->handler(who->userdata, p)) {
+				fprintf(stderr,
+                                  "vrpn: vrpn_Connection::do_callbacks_for:  "
+                                  "Nonzero user generic handler return\n");
+				return -1;
+			}
+		}
+
+		// Next callback in list
+		who = who->next;
+	}
+
+	// Find the head for the list of callbacks to call
+	who = my_types[type].who_cares;
+
+	while (who != NULL) {	// For each callback entry
+
+		// Verify that the service is ANY or matches
+		if ( (who->sender == vrpn_ANY_SERVICE) ||
+		     (who->sender == service) ) {
+			if (who->handler(who->userdata, p)) {
+				fprintf(stderr,
+                                  "vrpn: vrpn_Connection::do_callbacks_for:  "
+                                  "Nonzero user handler return\n");
+				return -1;
+			}
+		}
+
+		// Next callback in list
+		who = who->next;
+	}
+
+	return 0;
+}
+// }}}
+//
+//==========================================================================
+//==========================================================================
+//
 // {{{ vrpn_BaseConnectionController: public: logging functions
 //
 //==========================================================================
@@ -344,3 +430,6 @@ void vrpn_BaseConnectionController::get_remote_logfile_name(char * logname_copy)
 
 
 // }}}
+//
+//==========================================================================
+//==========================================================================

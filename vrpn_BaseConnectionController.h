@@ -327,9 +327,11 @@ public:
     // * invoke callbacks that have registered
     //   for messages with this (type and service)
     virtual vrpn_int32 do_callbacks_for(
-        vrpn_int32 type, vrpn_int32 service,
+        vrpn_int32 type, 
+        vrpn_int32 service,
         timeval time,
-        vrpn_uint32 len, const char * buffer);
+        vrpn_uint32 len, 
+        const char * buffer);
 
 private:  // implementation of callbacks
 
@@ -369,6 +371,8 @@ private:
     vrpn_int32 d_remote_logmode; // remote logging: incoming, outgoing, both
     
 public:  // clock
+
+    virtual void synchronize_clocks() { };
     
     // offset of clocks on connected machines -- local - remote
     timeval       tvClockOffset;    

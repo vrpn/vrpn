@@ -185,7 +185,12 @@ protected: // setting up connections
 
     // formerly vrpn_udp_request_call
     int udp_request_connection_call(const char* machine, int port);
-
+    int udp_request_lob_packet(
+		const char * machine,
+		const int remote_port,
+		const int local_port);
+    int get_a_TCP_socket(SOCKET *listen_sock, int *listen_portnum);
+    int poll_for_accept(SOCKET listen_sock, SOCKET *accept_sock, double timeout = 0.0);
 
     //-----------------------------
     // common functions

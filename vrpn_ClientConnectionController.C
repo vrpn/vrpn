@@ -41,6 +41,7 @@ void vrpn_setClockOffset(void *userdata, const vrpn_CLOCKCB& info )
 // because they are derived from connections, and the default 
 // args of freq=-1 makes it behave like a regular connection
 
+// {{{ vrpn_get_connection_by_name() ...
 vrpn_ClientConnectionController * vrpn_get_connection_by_name(
     const char * cname,
     const char * local_logfile_name,
@@ -80,21 +81,30 @@ vrpn_ClientConnectionController * vrpn_get_connection_by_name(
         // Just create a ClientConnectionController, it will decided
         // whether to create a vrpn_FileConnection or vrpn_NetConnection
         new vrpn_ClientConnectionController(
-            cname, 
-            port,
             local_logfile_name,
             local_log_mode,
             remote_logfile_name, 
             remote_log_mode,
-            vrpn_CONNECTION_TCP_BUFLEN,
-            vrpn_CONNECTION_TCP_BUFLEN,
-            //vrpn_CONNECTION_UDP_BUFLEN,
-            vrpn_CONNECTION_UDP_BUFLEN,
             dFreq, 
             cSyncWindow );
 
         // ClientConnectionController adds itself to the list of
         // connections in its constructor
+
+        // make connection to server
+        ccc = vrpn_ConnectionControllerManager::instance().getByName(cname);
+        if (ccc->connect_to_server(    
+            cname,
+            port,
+            local_logfile_name, 
+            local_log_mode,
+            remote_logfile_name, 
+            remote_log_mode,
+            vrpn_CONNECTION_TCP_BUFLEN,
+            vrpn_CONNECTION_TCP_BUFLEN,
+            vrpn_CONNECTION_UDP_BUFLEN) == -1) {
+            return NULL;
+        }
     }
 
     // See if the connection is okay.  If so, return it.  If not, NULL
@@ -105,7 +115,7 @@ vrpn_ClientConnectionController * vrpn_get_connection_by_name(
         return NULL;
     }
 }
-
+// }}} end vrpn_get_connection_by_name()
 
 
 
@@ -119,16 +129,10 @@ vrpn_ClientConnectionController * vrpn_get_connection_by_name(
 //==========================================================================
 
 vrpn_ClientConnectionController::vrpn_ClientConnectionController(
-	const char * cname, 
-	vrpn_int16 port,
 	const char * local_logfile_name, 
 	vrpn_int32 local_log_mode,
 	const char * remote_logfile_name, 
 	vrpn_int32 remote_log_mode,
-	vrpn_int32 tcp_inbuflen,
-	vrpn_int32 tcp_outbuflen,
-	//vrpn_int32 udp_inbuflen,
-	vrpn_int32 udp_outbuflen,
 	vrpn_float64 dFreq, 
 	vrpn_int32 cSyncWindow):
 	vrpn_BaseConnectionController(
@@ -140,10 +144,6 @@ vrpn_ClientConnectionController::vrpn_ClientConnectionController(
 		cSyncWindow)
 {
 
-	const char * machinename;
-	vrpn_int32 isfile;
-	vrpn_int32 isrsh;
-
     
     //-----------------------------------------------------------------
     // initializations done by both clock client and server 
@@ -152,9 +152,12 @@ vrpn_ClientConnectionController::vrpn_ClientConnectionController(
     // If the connection is valid, use it to register this clock by
     // name, the query by name, and the reply by name
     clockServer_id = register_service("clockServer");
+
+    queryMsg_id = vrpn_CONNECTION_CLOCK_QUERY;
+    replyMsg_id = vrpn_CONNECTION_CLOCK_REPLY;
     
-    queryMsg_id = register_message_type("clock query");
-    replyMsg_id = register_message_type("clock reply");
+//      queryMsg_id = register_message_type("clock query");
+//      replyMsg_id = register_message_type("clock reply");
     if ( (clockServer_id == -1) || (queryMsg_id == -1) || (replyMsg_id == -1) ) {
         cerr << "vrpn_ClientConnectionController: Can't register IDs for synch clocks" 
              << endl;
@@ -175,65 +178,6 @@ vrpn_ClientConnectionController::vrpn_ClientConnectionController(
     }
     
     init_clock_client();
-    
-    isfile = (strstr(cname, "file:") ? 1 : 0);
-    isrsh = (strstr(cname, "x-vrsh:") ? 1 : 0);
-    
-    if (!isfile && !isrsh) {
-        // Open a connection to the station using VRPN
-        machinename = vrpn_copy_machine_name(cname);
-        if (!machinename) {
-            fprintf(stderr, "vrpn_ClientConnectionController:  "
-                    "Out of memory!\n");
-            return;
-		}
-		if (port < 0)
-			port = vrpn_DEFAULT_LISTEN_PORT_NO;
-
-		// create NetConnection here
-		d_connection_ptr 
-			= new vrpn_NetConnection(this,	
-                                     local_logfile_name, 
-                                     local_log_mode,
-                                     remote_logfile_name, 
-                                     remote_log_mode,
-                                     tcp_inbuflen,
-                                     tcp_outbuflen,
-                                     //udp_inbuflen,
-                                     udp_outbuflen);
-		d_connection_ptr->connect_to_server(cname,port);
-
-		if (machinename)
-			delete [] (char *) machinename;
-	}
-	if (isrsh) {
-		// Start up the server and wait for it to connect back
-		char *server_program;
-		char *server_args;   // server program plus its arguments
-		char *token;
-		
-		machinename = vrpn_copy_machine_name(cname);
-		server_program = vrpn_copy_rsh_program(cname);
-		server_args = vrpn_copy_rsh_arguments(cname);
-		token = server_args;
-		// replace all argument separators (',') with spaces (' ')
-		while (token = strchr(token, ','))
-			*token = ' ';
-
-		// start server on remote machine
-		d_connection_ptr->start_server(machinename, server_program, 
-									   server_args);
-
-		if (machinename) delete [] (char *) machinename;
-		if (server_program) delete [] (char *) server_program;
-		if (server_args) delete [] (char *) server_args;
-
-	}
-	
-	// create FileConnection Here
-	if (isfile) {
-		d_connection_ptr = new vrpn_NewFileConnection(this,local_logfile_name);
-	}
 
 	// add self to list of known controllers
     vrpn_ConnectionControllerManager::instance().addController(this, NULL);
@@ -311,12 +255,97 @@ static vrpn_int32 dCompare( const void *pd1, const void *pd2 ) {
 }
 #endif
 
+
+vrpn_int32 vrpn_ClientConnectionController::connect_to_server(
+    const char* cname,
+    vrpn_int16  port,
+    const char* local_logfile_name, 
+    vrpn_int32 local_log_mode,
+    const char* remote_logfile_name, 
+    vrpn_int32 remote_log_mode,
+    vrpn_int32 tcp_inbuflen,
+    vrpn_int32 tcp_outbuflen,
+    vrpn_int32 udp_outbuflen)
+{
+	const char* machinename;
+	vrpn_int32 isfile;
+	vrpn_int32 isrsh;
+    
+    isfile = (strstr(cname, "file:") ? 1 : 0);
+    isrsh = (strstr(cname, "x-vrsh:") ? 1 : 0);
+    
+    if (!isfile && !isrsh) {
+        // Open a connection to the station using VRPN
+        machinename = vrpn_copy_machine_name(cname);
+        if (!machinename) {
+            fprintf(stderr, "vrpn_ClientConnectionController:  "
+                    "Out of memory!\n");
+            return -1;
+		}
+		if (port < 0)
+			port = vrpn_DEFAULT_LISTEN_PORT_NO;
+
+		// create NetConnection here
+		d_connection_ptr 
+			= new vrpn_NetConnection(this,	
+                                     local_logfile_name, 
+                                     local_log_mode,
+                                     remote_logfile_name, 
+                                     remote_log_mode,
+                                     tcp_inbuflen,
+                                     tcp_outbuflen,
+                                     //udp_inbuflen,
+                                     udp_outbuflen);
+		d_connection_ptr->connect_to_server(cname,port);
+
+		if (machinename)
+			delete [] (char *) machinename;
+	}
+	if (isrsh) {
+		// Start up the server and wait for it to connect back
+		char *server_program;
+		char *server_args;   // server program plus its arguments
+		char *token;
+		
+		machinename = vrpn_copy_machine_name(cname);
+		server_program = vrpn_copy_rsh_program(cname);
+		server_args = vrpn_copy_rsh_arguments(cname);
+		token = server_args;
+		// replace all argument separators (',') with spaces (' ')
+		while (token = strchr(token, ','))
+			*token = ' ';
+
+		// start server on remote machine
+		d_connection_ptr->start_server(machinename, server_program, 
+									   server_args);
+
+		if (machinename) delete [] (char *) machinename;
+		if (server_program) delete [] (char *) server_program;
+		if (server_args) delete [] (char *) server_args;
+
+	}
+	
+	// create FileConnection Here
+	if (isfile) {        
+		d_connection_ptr = 
+            new vrpn_NewFileConnection(
+                this,
+                cname,
+                local_logfile_name,
+                local_log_mode);
+	}
+
+    return 0;
+
+}
+
 // }}} end c'tors and d'tors
 // 
 //==========================================================================
 //==========================================================================
 //
 // {{{ vrpn_ClientConnectionController: public: mainloop
+
 //
 //==========================================================================
 //==========================================================================
@@ -342,7 +371,7 @@ vrpn_int32 vrpn_ClientConnectionController::mainloop(
 }
 
 // }}} end mainloop
-
+//
 //==========================================================================
 //==========================================================================
 //
@@ -1228,14 +1257,16 @@ void vrpn_ClientConnectionController::register_type_with_connections(
 }
 
 // }}} end services and types
-
-
-
-//====================================================================================
 //
-// vrpn_ConnectionControllerManager
+//==========================================================================
+//==========================================================================
+
+
+//===========================================================================
 //
-//====================================================================================
+// {{{ vrpn_ConnectionControllerManager ...
+//
+//===========================================================================
 
 vrpn_ConnectionControllerManager::~vrpn_ConnectionControllerManager (void) 
 {
@@ -1335,4 +1366,6 @@ vrpn_int32 vrpn_ConnectionControllerManager::numControllers()
     return d_numControllers;
 }
 
-
+// }}} end vrpn_ConnectionControllerManager
+//
+//===========================================================================

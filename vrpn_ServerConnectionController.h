@@ -77,6 +77,17 @@ public: // sending and receving messages
     //   it to send out intermediate results without calling mainloop
     virtual vrpn_int32 send_pending_reports();
 
+public: // callbacks
+
+    // * invoke callbacks that have registered
+    //   for messages with this (type and service)
+    virtual vrpn_int32 do_callbacks_for(
+        vrpn_int32 type, 
+        vrpn_int32 service,
+        timeval time,
+        vrpn_uint32 len, 
+        const char * buffer);
+
 public: // status
 
     // are there any connections?

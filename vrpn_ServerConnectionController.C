@@ -393,6 +393,49 @@ vrpn_int32 vrpn_ServerConnectionController::send_pending_reports()
 //==========================================================================
 //==========================================================================
 //
+// vrpn_ServerConnectionController: public: callbacks
+//
+//==========================================================================
+//==========================================================================
+
+// * invoke callbacks that have registered
+//   for messages with this (type and service)
+vrpn_int32 vrpn_ServerConnectionController::do_callbacks_for(
+    vrpn_int32 type, 
+    vrpn_int32 service,
+    timeval time,
+    vrpn_uint32 len, 
+    const char * buffer)
+{
+
+    // call BaseConnectionController version of do_callbacks_for()
+    vrpn_int32 retval = 
+        vrpn_BaseConnectionController::do_callbacks_for(
+            type,
+            service,
+            time,
+            len,
+            buffer);
+
+    // do server side logging
+    timeval tvTemp = vrpn_TimevalSum(time, tvClockOffset);
+    if ( (get_local_logmode() & vrpn_LOG_INCOMING) || 
+         (get_local_logmode() & vrpn_LOG_OUTGOING) ) {
+        if (d_logger_ptr->log_message(len, tvTemp,
+                                      type,
+                                      service,
+                                      buffer)) {
+            return -1;
+        }
+    }
+
+    return retval;
+}
+    
+
+//==========================================================================
+//==========================================================================
+//
 // vrpn_ServerConnectionController: public: status
 //
 //==========================================================================

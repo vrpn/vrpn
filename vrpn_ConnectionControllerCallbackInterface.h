@@ -40,6 +40,10 @@ struct vrpn_ConnectionControllerCallbackInterface
         void *userdata,
         vrpn_int32 service = vrpn_ANY_SERVICE ) = 0;
 
+    // used in vrpn_NetConnection to synchronize clocks before any
+    // other user messages are sent
+    virtual void synchronize_clocks();
+
 };
 //
 // end of our ugly hack
