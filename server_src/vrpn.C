@@ -1,6 +1,11 @@
 #ifdef	sgi
 #define	SGI_BDBOX
 #endif
+// SGI_BDBOX is a SGI Button & dial BOX connected to an SGI.
+// This is also refered to a 'special sgibox' in the code.
+// The alternative is SGI BDBOX connected to a linix PC.
+// confusing eh?
+
 
 #include <math.h>
 #include <stdlib.h>
@@ -16,9 +21,9 @@
 #include "vrpn_Flock_Parallel.h"
 #include "vrpn_Dyna.h"
 #include "vrpn_Sound.h"
-#include "vrpn_raw_sgibox.h"
+#include "vrpn_raw_sgibox.h" // for access to the SGI button & dial box connected to the serial port of an linix PC
 #ifdef	SGI_BDBOX
-#include "vrpn_sgibox.h"
+#include "vrpn_sgibox.h" //for access to the B&D box connected to an SGI via the IRIX GL drivers
 #endif
 
 #include "vrpn_Analog.h"
@@ -234,8 +239,10 @@ main (int argc, char * argv[])
 		next();
 		if (sscanf(pch,"%511s %511s",s2,s3)!=2) {
 			fprintf(stderr,"Bad vrpn_raw_SGIBox line: %s\n",line);
-			if (bail_on_error) { return -1; }
-			else { continue; }	// Skip this line
+			if (bail_on_error) {
+			  return -1; }
+			else {
+			  continue; }	// Skip this line
 		}
 
 		// Make sure there's room for a new raw SGIBox
@@ -250,21 +257,28 @@ main (int argc, char * argv[])
 		if ( (sgiboxes[num_sgiboxes] =
 		     new vrpn_raw_SGIBox(s2, connection, s3)) == NULL){
 		  fprintf(stderr,"Can't create new vrpn_raw_SGIBox\n");
-		  if (bail_on_error) { return -1; }
-		  else { continue; }	// Skip this line
-		} else {
+		  if (bail_on_error) {
+		    return -1; }
+		  else {
+		    continue; }	// Skip this line
+		}
+		else {
 		  num_sgiboxes++;
 		}
 
 		//setting listed buttons to toggles instead of default momentary
-		pch+=strlen(s2)+1;
-		while(sscanf(pch,"%s",s2)==1){
+		//pch=s3;
+		pch+=strlen(s2)+1; //advance past the name and port
+		pch+=strlen(s3)+1;
+       		while(sscanf(pch,"%s",s2)==1){
 			pch+=strlen(s2)+1;
 			tbutton=atoi(s2);	
-			sgiboxes[num_sgiboxes-1]->set_toggle(tbutton,vrpn_BUTTON_TOGGLE_OFF);  
+			// set the button to be a toggle, and set the state of that toggle
+			// to 'off'
+			sgiboxes[num_sgiboxes-1]->set_toggle(tbutton,vrpn_BUTTON_TOGGLE_OFF); 
 			//vrpnButton class will make sure I don't set
 			//an invalid button number
-			printf("...Button %d toggles\n",tbutton);
+			printf("\tButton %d is toggle\n",tbutton);
 		}
 
 	  } else if (isit("vrpn_SGIBOX")) {
@@ -685,6 +699,13 @@ main (int argc, char * argv[])
 		shutDown();
 	    }
 	}
+
+
+	// ********************************************************************
+	// **                                                                **
+	// **                MAIN LOOP                                       **
+	// **                                                                **
+	// ********************************************************************
 	while (1) {
 		int	i;
 
