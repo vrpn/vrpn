@@ -8,6 +8,11 @@
 #include <fcntl.h>
 #include <ctype.h>
 
+#if defined(__sparc)
+#include <sys/termio.h>
+#include <termios.h>
+#endif
+
 #ifdef linux
 #include <termios.h>
 #endif
@@ -76,9 +81,9 @@ static int maxCom = 10;
 
 int vrpn_open_commport(char *portname, long baud, int charsize, vrpn_SER_PARITY parity)
 {
-#if defined(sparc) || defined(hpux) || defined(__hpux) || defined(ultrix) || defined(FreeBSD) || defined(__CYGWIN__)
+#if defined(hpux) || defined(__hpux) || defined(ultrix) || defined(FreeBSD) || defined(__CYGWIN__)
 	fprintf(stderr,
-		"vrpn_open_commport: Not implemented in sparc, ultrix, HP, or Cygwin\n");
+		"vrpn_open_commport: Not implemented in ultrix, HP, or Cygwin\n");
 	return -1;
 #else
 
@@ -336,9 +341,9 @@ int vrpn_close_commport(int comm)
 // NOT CALLED!  OBSOLETE? -- no ... used by vrpn_Flock
 int vrpn_flush_input_buffer(int comm)
 {
-#if defined(sparc) || defined(hpux) || defined(__hpux) || defined(ultrix) || defined(__CYGWIN__)
+#if defined(hpux) || defined(__hpux) || defined(ultrix) || defined(__CYGWIN__)
    fprintf(stderr,
-	"vrpn_flush_input_buffer: Not impemented on cygwin, sparc, ultrix, or HP\n");
+	"vrpn_flush_input_buffer: Not impemented on cygwin, ultrix, or HP\n");
    return -1;
 #else
 #if defined(_WIN32)
@@ -354,9 +359,9 @@ int vrpn_flush_input_buffer(int comm)
 // NOT CALLED!  OBSOLETE? -- no ... used by vrpn_Flock
 int vrpn_flush_output_buffer(int comm)
 {
-#if defined(sparc) || defined(hpux) || defined(__hpux) || defined(ultrix) || defined(__CYGWIN__)
+#if defined(hpux) || defined(__hpux) || defined(ultrix) || defined(__CYGWIN__)
    fprintf(stderr,
-	"vrpn_flush_output_buffer: Not impemented on NT, sparc, ultrix, HP, or cygwin\n");
+	"vrpn_flush_output_buffer: Not impemented on NT, ultrix, HP, or cygwin\n");
    return -1;
 #else
 
@@ -374,9 +379,9 @@ int vrpn_flush_output_buffer(int comm)
 // NOT CALLED!  OBSOLETE? -- no ... used by vrpn_Flock
 int vrpn_drain_output_buffer(int comm)
 {
-#if defined(sparc) || defined(hpux) || defined(__hpux) || defined(ultrix) || defined(__CYGWIN__)
+#if defined(hpux) || defined(__hpux) || defined(ultrix) || defined(__CYGWIN__)
    fprintf(stderr,
-	"vrpn_drain_output_buffer: Not impemented on NT, sparc, ultrix, or HP\n");
+	"vrpn_drain_output_buffer: Not impemented on NT, ultrix, or HP\n");
    return -1;
 #else
 
