@@ -24,13 +24,13 @@ class vrpn_File_Connection;  // for get_File_Connection()
 // class rather than the default connection class (either will work,
 // a regular connection just has 0 as the client-server time offset)
 
-struct {
+struct vrpn_HANDLERPARAM {
 	vrpn_int32	type;
 	vrpn_int32	sender;
 	struct timeval	msg_time;
 	vrpn_int32	payload_len;
 	const char	*buffer;
-} vrpn_HANDLERPARAM;
+};
 typedef	int  (*vrpn_MESSAGEHANDLER)(void *userdata, vrpn_HANDLERPARAM p);
 
 typedef int (* vrpn_LOGFILTER) (void * userdata, vrpn_HANDLERPARAM p);
