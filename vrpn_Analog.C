@@ -104,6 +104,8 @@ void vrpn_Analog::report (vrpn_uint32 class_of_service, const struct timeval tim
     // constant time referring to "now".
     if ( (time.tv_sec == vrpn_ANALOG_NOW.tv_sec) && (time.tv_usec == vrpn_ANALOG_NOW.tv_usec) ) {
       vrpn_gettimeofday(&timestamp, NULL);
+    } else {
+      timestamp = time;
     }
     len = vrpn_Analog::encode_to(msgbuf);
 #ifdef VERBOSE
