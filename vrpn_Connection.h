@@ -356,7 +356,9 @@ class vrpn_Connection
 
 	// Create a connection to listen for incoming connections on a port
 	vrpn_Connection (unsigned short listen_port_no =
-		         vrpn_DEFAULT_LISTEN_PORT_NO);
+		         vrpn_DEFAULT_LISTEN_PORT_NO,
+                         const char * local_logfile_name = NULL,
+                         long local_log_mode = vrpn_LOG_NONE);
 
 	//   Create a connection -  if server_name is not a file: name,
 	// makes an SDI-like connection to the named remote server
@@ -500,7 +502,9 @@ class vrpn_Synchronized_Connection : public vrpn_Connection
     // Create a connection to listen for incoming connections on a port
     // server call
     vrpn_Synchronized_Connection (unsigned short listen_port_no =
-		  vrpn_DEFAULT_LISTEN_PORT_NO);
+		         vrpn_DEFAULT_LISTEN_PORT_NO,
+                         const char * local_logfile_name = NULL,
+                         long local_log_mode = vrpn_LOG_NONE);
     vrpn_Clock_Server * pClockServer;
 
     // Create a connection makes aconnection to a remote server

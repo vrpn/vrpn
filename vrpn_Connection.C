@@ -1686,9 +1686,10 @@ void setClockOffset( void *userdata, const vrpn_CLOCKCB& info )
   (*(struct timeval *) userdata) = info.tvClockOffset;
 }
 
-vrpn_Synchronized_Connection::
- vrpn_Synchronized_Connection(unsigned short listen_port_no) :
-  vrpn_Connection(listen_port_no)
+vrpn_Synchronized_Connection::vrpn_Synchronized_Connection
+    (unsigned short listen_port_no,
+     const char * local_logfile, long local_logmode) :
+  vrpn_Connection (listen_port_no, local_logfile, local_logmode)
 {
    pClockServer = new vrpn_Clock_Server(this);
 
@@ -1995,7 +1996,8 @@ void vrpn_Connection::handle_connection(void)
    // Set up the things that need to happen when a new connection is
    // started.
    if (setup_new_connection()) {
-	fprintf(stderr,"vrpn_Connection: Can't set up new connection!\n");
+	fprintf(stderr,"vrpn_Connection::handle_connection():  "
+                       "Can't set up new connection!\n");
 	drop_connection();
 	return;
    }
@@ -2907,7 +2909,8 @@ void	vrpn_Connection::init (void)
 
 }
 
-vrpn_Connection::vrpn_Connection (unsigned short listen_port_no) :
+vrpn_Connection::vrpn_Connection (unsigned short listen_port_no,
+       const char * local_logfile_name, long local_log_mode) :
     //my_name (NULL),
     endpoint (INVALID_SOCKET, INVALID_SOCKET, INVALID_SOCKET, 0, 0,
 		NULL, NULL, NULL, vrpn_LOG_NONE, -1, NULL, NULL ),
@@ -2926,6 +2929,8 @@ vrpn_Connection::vrpn_Connection (unsigned short listen_port_no) :
     d_TCPbuf (NULL),
     d_UDPinbuf ((char*)(&d_UDPinbufToAlignRight[0]))
 {
+  int retval;
+
    // Initialize the things that must be for any constructor
    init();
 
@@ -2943,6 +2948,26 @@ vrpn_Connection::vrpn_Connection (unsigned short listen_port_no) :
    printf("vrpn: Listening for requests on port %d\n",listen_port_no);
    }
   
+  if (local_logfile_name) {
+    endpoint.d_logname = new char [1 + strlen(local_logfile_name)];
+    if (!endpoint.d_logname) {
+      fprintf(stderr, "vrpn_Connection::vrpn_Connection:  "
+                      "Out of memory!\n");
+      status = BROKEN;
+      return;
+    }
+
+    strcpy(endpoint.d_logname, local_logfile_name);
+    endpoint.d_logmode = local_log_mode;
+    retval = endpoint.open_log();
+    if (retval == -1) {
+      fprintf(stderr, "vrpn_Connection::vrpn_Connection:  "
+                      "Couldn't open log file.\n");
+      status = BROKEN;
+      return;
+    }
+  }
+
 }
 
 //------------------------------------------------------------------------
@@ -3042,7 +3067,7 @@ vrpn_Connection::vrpn_Connection
 	  }
 	}
 
-	status = CONNECTED;
+	  status = CONNECTED;
 
 	// Set up the things that need to happen when a new connection is
 	// established.
