@@ -67,22 +67,20 @@
 //#define	INCLUDE_TIMECODE_SERVER
 
 //-----------------------
-// Instructs the VRPN library and server to include code to run
-// InterSense trackers using their supplied set of driver code.
-// This should support more of the trackers than the modified
-// serial-port-only Fastrak code supports.  If this is defined,
-// the isense.h, types.h, and isense.c files should also be copied into
-// the same directory that the vrpn_Configure.h file is located
-// in (horrible hack, but there is not a standard installation
-// location to put in the Include path).  I can't get this to
-// compile correctly with the current release of the DLL code;
-// several of the things it is looking for are undefined.
-//#define VRPN_INCLUDE_INTERSENSE
+// Compiles the InterSense Tracker using the 
+// InterSense Interface Libraries SDK (tested for version
+// 3.45) on windows.  This should work with all Intersense trackers,
+// both the USB and the serial port versions.  The files isense.h,
+// types.h and isense.c should be put in a directory called 'isense'
+// at the same level as the vrpn directory.  The isense.dll should
+// be put either in Windows/system32 or in the location where the
+// executable lives or somewhere on the path.
+/ 
+#define VRPN_INCLUDE_INTERSENSE
 
-//----------------------------------------------------------------//
-// DO NOT EDIT BELOW THIS LINE FOR NORMAL CONFIGURATION SETTING.  //
-// DO EDIT IF THE LIBRARIES TO BE USED ARE NOT IN STANDARD PLACES.//
-//----------------------------------------------------------------//
+//---------------------------------------------------------------//
+// DO NOT EDIT BELOW THIS LINE FOR NORMAL CONFIGURATION SETTING. //
+//---------------------------------------------------------------//
 
 // Load VRPN Phantom library if we are using phantom server as unified server
 // Load SensAble Technologies GHOST library to run the Phantom

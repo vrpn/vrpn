@@ -1,3 +1,10 @@
+2003-06-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsp : Changes to include Intersense files in ../isense.
+	* vrpn_Configure.h : Describes how to link with InterSense library.
+	* vrpn_Tracker_isense.C : Updated to newer version of InterSense
+		library.  Now works with USB trackers.
+
 2003-05-30  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_Configure.h:  change the default path for the Ghost library

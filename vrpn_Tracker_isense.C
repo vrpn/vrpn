@@ -54,7 +54,9 @@ vrpn_Tracker(name,c)
 #ifdef  VRPN_INCLUDE_INTERSENSE
   char errStr[1024];
   m_CommPort = commPort;
-  m_Handle = ISLIB_OpenTracker(NULL, commPort, FALSE, FALSE);
+//  m_Handle = ISLIB_OpenTracker(NULL, commPort, FALSE, FALSE);
+  m_Handle = ISD_OpenTracker(NULL, commPort, FALSE, FALSE);
+
   
   if(m_Handle == -1)
   {
@@ -66,27 +68,47 @@ vrpn_Tracker(name,c)
 
   ISD_TRACKER_INFO_TYPE trackerInfo;
 
-  ISLIB_GetTrackerConfig(m_Handle,&trackerInfo,FALSE);
-  ISLIB_ResetAngles(m_Handle,0.0,0.0,0.0);
+  ISD_GetTrackerConfig(m_Handle,&trackerInfo,FALSE);
+  //ISD_ResetAngles(m_Handle,0.0,0.0,0.0);
 
   for(int station=0;station<ISD_MAX_STATIONS;station++)
   {
     //Get the info about all its stations
-    ISLIB_GetStationConfig(m_Handle,&m_StationInfo[station],station+1,0);
+    ISD_GetStationConfig(m_Handle,&m_StationInfo[station],station+1,0);
 
-/*
-    // Make sure everything reports in quaternion format
+	ISD_ResetHeading(m_Handle,station+1); //Not sure if this is needed
+
+	//some models of intersense trackers (like the intertrax series) will only report
+	//in euler angles
+
+    // Try to set the tracker to report in quaternion format
+	// (to avoid gimbal lock)
     if(m_StationInfo[station].State == TRUE && m_StationInfo[station].AngleFormat == ISD_EULER)
     {
       m_StationInfo[station].AngleFormat = ISD_QUATERNION;
-      if(!ISLIB_SetStationConfig(m_Handle,&m_StationInfo[station],station+1,FALSE))
+      if(!ISD_SetStationConfig(m_Handle,&m_StationInfo[station],station+1,FALSE))
       {
-        sprintf(errStr,"Failed to set station config for Station%d",station+1);
-        MessageBox(0,errStr,"Error setting station config",0);
+		//FIXME this should be a VRPN warning (of low priority)	
+        sprintf(errStr,"Warning: Your tracker doesn't seem to support the quaternion format - couldn't set station config for Station%d. ",station+1);
+		gettimeofday(&timestamp, NULL);
+		FT_WARNING(errStr);
+
         m_StationInfo[station].AngleFormat = ISD_EULER;
       }
     }
-    */
+
+	//what is the update rate of this tracker?
+	//we might want to set the update rate of the mainloop to based on this value.
+	//for now we just print it out.
+
+	//it would also be nice if we could set the update rate of the tracker here as well
+	//(and let the user specifiy it in the config file)
+	sprintf(errStr,"sync state=%d update rate=%f\n",trackerInfo.SyncState, trackerInfo.SyncRate);
+	gettimeofday(&timestamp, NULL);
+	FT_INFO(errStr);
+	fprintf(stderr,errStr);
+
+	
   }
   status =   vrpn_TRACKER_SYNCING;
 #else
@@ -98,7 +120,7 @@ vrpn_Tracker(name,c)
 vrpn_Tracker_InterSense::~vrpn_Tracker_InterSense()
 {
 #ifdef  VRPN_INCLUDE_INTERSENSE
-  ISLIB_CloseTracker(m_Handle);
+  ISD_CloseTracker(m_Handle);
 #endif
 }
 
@@ -107,13 +129,15 @@ void vrpn_Tracker_InterSense::reset()
 #ifdef  VRPN_INCLUDE_INTERSENSE
   char errStr[1024]; 
   
-  m_Handle = ISLIB_OpenTracker(NULL,m_CommPort,FALSE,FALSE);
+  m_Handle = ISD_OpenTracker(NULL,m_CommPort,FALSE,FALSE);
 
   if(m_Handle == -1)
   {
-    sprintf(errStr,"InterSense: Failed to open tracker '%s' on COM%d: ISLIB_OpenTracker returned -1",d_servicename,m_CommPort);
+    sprintf(errStr,"InterSense: Failed to open tracker '%s' on COM%d: ISD_OpenTracker returned -1",d_servicename,m_CommPort);
     fprintf(stderr,errStr);
-    //MessageBox(0,errStr,"From driver: already sent to stderr",0);
+    gettimeofday(&timestamp, NULL);
+	FT_ERROR(errStr);
+
     status = vrpn_TRACKER_FAIL;
   }
   else
@@ -131,12 +155,14 @@ void vrpn_Tracker_InterSense::get_report(void)
 {
 #ifdef  VRPN_INCLUDE_INTERSENSE
   q_vec_type angles;
-  ISD_DATA_TYPE data;
+  ISD_TRACKER_DATA_TYPE data;
 
-  if(ISLIB_GetTrackerData(m_Handle,&data)) {
+  if(ISD_GetData(m_Handle,&data)) {
     for(int station=0;station<ISD_MAX_STATIONS;station++) {
       if(m_StationInfo[station].State == TRUE) {
 	gettimeofday(&timestamp, NULL);	// Set watchdog now
+	// we need a better clock!
+
 
 	d_sensor = station+1;
 
@@ -161,8 +187,8 @@ void vrpn_Tracker_InterSense::get_report(void)
 	}
 
 	//printf("Isense %f, %f, %f\n",pos[0],pos[1],pos[2]);
-	//printf("Isense %f, %f, %f\n",angles[0],angles[1],angles[2]);
-	//printf("Isense %f, %f, %f, %f\n\n",d_quat[0],d_quat[1],d_quat[2],d_quat[3]);	
+	//printf("Isense a:%f, %f, %f : ",angles[0],angles[1],angles[2]); //if the tracker reports a quat, these will be garbage
+	//printf("q: %f, %f, %f, %f\n",d_quat[0],d_quat[1],d_quat[2],d_quat[3]);	
       }
     }
   }
