@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include <stdlib.h>
 #include <malloc.h>
 #include <memory.h>
@@ -13,7 +14,9 @@
 #include <unistd.h>
 #include <strings.h>
 #ifndef hpux
+#ifndef sgi
 #include <sysent.h>
+#endif
 #endif
 #include <sys/time.h>
 #include <sys/socket.h>
