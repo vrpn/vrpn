@@ -46,34 +46,24 @@ protected: // clock stuff
 
 public:  // sending and receiving
 
-
-	// *** N.B. ***
-	// i think that these should be implemented in the derived classes
-	// so i added the virtual keword and made them abstract
-	// 
-	// stefan
-
-
-	// Call each time through program main loop to handle receiving any
-	// incoming messages and sending any packed messages.
-	// Returns -1 when connection dropped due to error, 0 otherwise.
-	// (only returns -1 once per connection drop).
-	// Optional argument is TOTAL time to block on select() calls;
-	// there may be multiple calls to select() per call to mainloop(),
-	// and this timeout will be divided evenly between them.
-	virtual vrpn_int32 mainloop (const struct timeval * timeout = NULL) = 0;
-
-    // functions for sending messages and receiving messages
-
-    // the ConnectionController will call these functions
+    // Call each time through program main loop to handle receiving any
+    // incoming messages and sending any packed messages.
+    // Returns -1 when connection dropped due to error, 0 otherwise.
+    // (only returns -1 once per connection drop).
+    // Optional argument is TOTAL time to block on select() calls;
+    // there may be multiple calls to select() per call to mainloop(),
+    // and this timeout will be divided evenly between them.
+    virtual vrpn_int32 mainloop (const struct timeval * timeout = NULL) = 0;
+    
+    // functions for sending messages
+    // the ConnectionController calls it
     virtual vrpn_int32 handle_outgoing_messages( /*...XXX...*/ ) = 0;
 
+    // functions for receiving messages
+    // the ConnectionController calls it
     virtual vrpn_int32 handle_incoming_messages( /*...XXX...*/ ) = 0;
-	
-    virtual vrpn_int32 do_callbacks_for (vrpn_int32 type, vrpn_int32 sender,
-					 struct timeval time, vrpn_uint32 len,
-					 const char * buffer){};
 
+	
 public:  // public type_id and sender_id stuff
 
     // * register a new local {type,sender} that that controller
