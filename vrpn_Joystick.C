@@ -21,15 +21,18 @@
  * Author          : Ruigang Yang
  * Created On      : Tue Mar 17 17:14:01 1998
  * Last Modified By: Ruigang Yang
- * Last Modified On: Wed Mar 18 18:09:57 1998
- * Update Count    : 48
+ * Last Modified On: Tue Mar 24 21:13:57 1998
+ * Update Count    : 60
  * 
  * $Source: /afs/unc/proj/stm/src/CVS_repository/vrpn/Attic/vrpn_Joystick.C,v $
- * $Date: 1998/03/18 23:12:22 $
+ * $Date: 1998/03/25 02:15:24 $
  * $Author: ryang $
- * $Revision: 1.1 $
+ * $Revision: 1.2 $
  * 
  * $Log: vrpn_Joystick.C,v $
+ * Revision 1.2  1998/03/25 02:15:24  ryang
+ * add button report function
+ *
  * Revision 1.1  1998/03/18 23:12:22  ryang
  * new analog device and joystick channell
  * D
@@ -39,7 +42,7 @@
  * HISTORY
  */
 
-static char rcsid[] = "$Id: vrpn_Joystick.C,v 1.1 1998/03/18 23:12:22 ryang Exp $";
+static char rcsid[] = "$Id: vrpn_Joystick.C,v 1.2 1998/03/25 02:15:24 ryang Exp $";
 
 #include "vrpn_Joystick.h"
 #include <stdio.h>
@@ -58,8 +61,9 @@ static long  duration(struct timeval t1, struct timeval t2)
 vrpn_Joystick::vrpn_Joystick(char * name, 
 		    vrpn_Connection * c, char * portname,int baud, 
 			     double update_rate):
-      vrpn_Serial_Analog(name, c, portname, baud) 
+      vrpn_Serial_Analog(name, c, portname, baud), vrpn_Button(name, c)
 { 
+  num_buttons = 2;  // only has 2 buttons
   num_channel = 7;
   for(int i=0; i<7; i++) resetval[i] = -1;
   MAX_TIME_INTERVAL = 1000000/update_rate;
@@ -69,15 +73,18 @@ vrpn_Joystick::vrpn_Joystick(char * name,
 void vrpn_Joystick::mainloop(void) {
   switch (status) {
   case ANALOG_REPORT_READY:
+
+    report_changes(); // report any button event;
+
     // Send the message on the connection;
-    if (connection) {
+    if (vrpn_Analog::connection) {
       char	msgbuf[1000];
-      int	len = encode_to(msgbuf);
+      int	len = vrpn_Analog::encode_to(msgbuf);
 #ifdef VERBOSE
       print();
 #endif
-      if (connection->pack_message(len, timestamp,
-				   channel_m_id, my_id, msgbuf,
+      if (vrpn_Analog::connection->pack_message(len, vrpn_Analog::timestamp,
+				   channel_m_id, vrpn_Analog::my_id, msgbuf,
 				   vrpn_CONNECTION_LOW_LATENCY)) {
 	fprintf(stderr,"Tracker: cannot write message: tossing\n");
 		}
@@ -93,11 +100,13 @@ void vrpn_Joystick::mainloop(void) {
     {	
 	struct timeval current_time;
 	gettimeofday(&current_time, NULL);
-	if ( duration(current_time,timestamp) < MAX_TIME_INTERVAL) {
+	if ( duration(current_time,vrpn_Analog::timestamp) < MAX_TIME_INTERVAL) {
 		get_report();
 	} else {
 	  //get_report();
-	  gettimeofday(&timestamp, NULL);
+	  
+	  vrpn_Analog::timestamp.tv_sec = current_time.tv_sec;
+	  vrpn_Analog::timestamp.tv_usec = current_time.tv_usec;
 	  status = ANALOG_REPORT_READY;
 		// send out the last report again;
 	}
@@ -115,7 +124,7 @@ void vrpn_Joystick::mainloop(void) {
 */
 void vrpn_Joystick::reset() {
   char request[256];
-  int write_rt, bytesread, dots;
+  int write_rt, bytesread;
 
   fprintf(stderr, "Going into Joystick::reset()\n");
     /* Request baseline report for comparison */
@@ -185,13 +194,23 @@ void vrpn_Joystick::parse (int index)
 {
 
    static unsigned int temp;
-   static unsigned int mask1 = 7, mask2 = 127;
+   static unsigned int mask1 = 7, mask2 = 127, left = 2, right = 1;
    
    int chan;
    int value;
    
    chan = buffer[index] >> 3; /* isolate channel */
-   if (chan >= 7) return; // chan 7 is the button;
+   if (chan > 7) return; // chan 7 is the button;
+   if (chan == 7) {
+     /******************************************************************
+     *  The least most significant bit should be the left button and the next
+     *  should be the right button.  In the original reading the two bits are
+     *  opposite this.  shall we swaps the two least significant bits. */;
+     
+     buttons[0] = ( buffer[index+1] &  left)?1:0;
+     buttons[1] = ( buffer[index+1] &  right)?1:0;
+     return ;
+   }
 
    temp = buffer[index] & mask1;  /* isolate  value bits */
    temp = temp << 7;              /* position  value bits */
@@ -204,6 +223,7 @@ void vrpn_Joystick::parse (int index)
    else if (channel[chan] < -0.5) channel[chan] = -0.5;
    //printf("Joystick::parse: channel[%d] = %f\n", chan, value);
 }                     /* end px_sparse */
+
 
 
 
