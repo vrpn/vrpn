@@ -66,7 +66,7 @@ void Usage (const char * s)
 {
   fprintf(stderr,"Usage: %s [-f filename] [-warn] [-v] [port] [-q]\n",s);
   fprintf(stderr,"       [-client machinename port] [-millisleep n]\n");
-  fprintf(stderr,"       [-NIC name] [-l filename mode]\n");
+  fprintf(stderr,"       [-NIC name] [-li filename] [-lo filename]\n");
   fprintf(stderr,"       -f: Full path to config file (default vrpn.cfg).\n");
   fprintf(stderr,"       -millisleep: Sleep n milliseconds each loop cycle (default 1).\n");
   fprintf(stderr,"       -warn: Only warn on errors (default is to bail).\n");
@@ -74,14 +74,15 @@ void Usage (const char * s)
   fprintf(stderr,"	 -q: Quit when last connection is dropped.\n");
   fprintf(stderr,"       -client: Where server connects when it starts up.\n");
   fprintf(stderr,"       -NIC: Use NIC with given IP address or DNS name.\n");
-  fprintf(stderr,"       -l: Log to given filename with mode i, o, or io.\n");
-  exit(-1);
+  fprintf(stderr,"       -li: Log incoming messages to given filename.\n");
+  fprintf(stderr,"       -lo: Log outgoing messages to given filename.\n");
+  exit(0);
 }
 
 static char * g_NICname = NULL;
 
-static const char * g_logName = NULL;
-static int g_logMode = 0;
+static const char * g_inLogName = NULL;
+static const char * g_outLogName = NULL;
 
 vrpn_Tracker	* trackers [MAX_TRACKERS];
 int		num_trackers = 0;
@@ -1183,14 +1184,14 @@ main (int argc, char * argv[])
             fprintf(stderr, "Listening on network interface card %s.\n",
                     argv[i]);
             g_NICname = argv[i];
-          } else if (!strcmp(argv[i], "-l")) { // specify server-side logging
+          } else if (!strcmp(argv[i], "-li")) { // specify server-side logging
             if (++i > argc) { Usage(argv[0]); }
-            fprintf(stderr, "Base logfile name %s.\n", argv[i]);
-            g_logName = argv[i];
+            fprintf(stderr, "Incoming logfile name %s.\n", argv[i]);
+            g_inLogName = argv[i];
+          } else if (!strcmp(argv[i], "-lo")) { // specify server-side logging
             if (++i > argc) { Usage(argv[0]); }
-            if (strchr(argv[i], 'i')) { g_logMode |= vrpn_LOG_INCOMING; }
-            if (strchr(argv[i], 'o')) { g_logMode |= vrpn_LOG_OUTGOING; }
-            fprintf(stderr, "Log mode %s: %d.\n", argv[i], g_logMode);
+            fprintf(stderr, "Outgoing logfile name %s.\n", argv[i]);
+            g_outLogName = argv[i];
 	  } else if (argv[i][0] == '-') {	// Unknown flag
 		Usage(argv[0]);
 	  } else switch (realparams) {		// Non-flag parameters
@@ -1209,7 +1210,7 @@ main (int argc, char * argv[])
 	// in the signal handler (so we can close any open logfiles.)
 	//vrpn_Synchronized_Connection	connection;
 	connection = new vrpn_Synchronized_Connection
-             (port, g_logName, g_logMode, g_NICname);
+             (port, g_inLogName, g_outLogName, g_NICname);
 	
         // Open the Redundant Transmission support
         // Need to have this handy to pass into NULL trackers,
