@@ -123,7 +123,7 @@ main (int argc, char * argv[])
 	int status;
 	if ((status = WSAStartup(MAKEWORD(1,1), &wsaData)) != 0) {
 	  fprintf(stderr, "WSAStartup failed with %d\n", status);
-	  exit(1);
+	  return(1);
 	}
 #else
 #ifdef sgi
@@ -672,5 +672,7 @@ main (int argc, char * argv[])
 		// on auxiliary connections
 		forwarderServer->mainloop();
 	}
+
+	return 0;
 }
 
