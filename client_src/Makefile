@@ -5,7 +5,7 @@
 HW_OS := $(shell hw_os)
 
 CC := g++
-ARCH_LIBS :=
+ARCH_LIBS := -lm
 
 ifeq ($(HW_OS),pc_linux)
   CC := g++
@@ -18,7 +18,7 @@ ifeq ($(HW_OS),hp700_hpux10)
 endif
 
 ifeq ($(HW_OS),sparc_solaris)
-  ARCH_LIBS := -lsocket -lnsl
+  ARCH_LIBS := -lsocket -lnsl $(ARCH_LIBS)
 endif
 
 OBJ_DIR := $(HW_OS)
