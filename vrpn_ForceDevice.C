@@ -1150,9 +1150,6 @@ vrpn_int32 vrpn_ForceDevice::decodePoint (const char * buffer,
 
 vrpn_ForceDevice_Remote::vrpn_ForceDevice_Remote(const char *name, vrpn_Connection *cn):
 	vrpn_ForceDevice(name, cn),
-	change_list (NULL),
-	scp_change_list (NULL),
-	error_change_list (NULL),
 	d_conEnabled (0),
 	d_conMode (POINT_CONSTRAINT)
 {
@@ -1192,27 +1189,6 @@ vrpn_ForceDevice_Remote::vrpn_ForceDevice_Remote(const char *name, vrpn_Connecti
 // virtual
 vrpn_ForceDevice_Remote::~vrpn_ForceDevice_Remote (void)
 {
-	vrpn_FORCECHANGELIST	*nextforce;
-	vrpn_FORCESCPCHANGELIST	*nextscp;
-	vrpn_FORCEERRORCHANGELIST *nexterror;
-
-	// Delete all of the callback handlers that other code had registered
-	// with this object. This will free up the memory taken by the lists
-	while (change_list != NULL) {
-		nextforce = change_list->next;
-		delete change_list;
-		change_list = nextforce;
-	}
-	while (scp_change_list != NULL) {
-		nextscp = scp_change_list->next;
-		delete scp_change_list;
-		scp_change_list = nextscp;
-	}
-	while (error_change_list != NULL) {
-		nexterror = error_change_list->next;
-		delete error_change_list;
-		error_change_list = nexterror;
-	}
 }
 
 void vrpn_ForceDevice_Remote::sendSurface(void)
@@ -1687,202 +1663,15 @@ void	vrpn_ForceDevice_Remote::mainloop()
 	client_mainloop();
 }
 
-int vrpn_ForceDevice_Remote::register_force_change_handler(void *userdata,
-			vrpn_FORCECHANGEHANDLER handler)
-{
-    vrpn_FORCECHANGELIST	*new_entry;
-
-    // Ensure that the handler is non-NULL
-    if (handler == NULL) {
-	    fprintf(stderr,
-		"vrpn_ForceDevice_Remote::register_handler: NULL handler\n");
-	    return -1;
-    }
-
-    // Allocate and initialize the new entry
-    if ( (new_entry = new vrpn_FORCECHANGELIST) == NULL) {
-	    fprintf(stderr,
-		"vrpn_ForceDevice_Remote::register_handler: Out of memory\n");
-	    return -1;
-    }
-    new_entry->handler = handler;
-    new_entry->userdata = userdata;
-
-    // Add this handler to the chain at the beginning (don't check to see
-    // if it is already there, since duplication is okay).
-    new_entry->next = change_list;
-    change_list = new_entry;
-
-    return 0;
-}
-
-int vrpn_ForceDevice_Remote::unregister_force_change_handler(void *userdata,
-			vrpn_FORCECHANGEHANDLER handler)
-{
-    // The pointer at *snitch points to victim
-    vrpn_FORCECHANGELIST	*victim, **snitch;
-
-    // Find a handler with this registry in the list (any one will do,
-    // since all duplicates are the same).
-    snitch = &change_list;
-    victim = *snitch;
-    while ( (victim != NULL) &&
-	    ( (victim->handler != handler) ||
-	      (victim->userdata != userdata) )) {
-	snitch = &( (*snitch)->next );
-	victim = victim->next;
-    }
-
-    // Make sure we found one
-    if (victim == NULL) {
-	    fprintf(stderr,
-	      "vrpn_ForceDevice_Remote::unregister_handler: No such handler\n");
-	    return -1;
-    }
-
-    // Remove the entry from the list
-    *snitch = victim->next;
-    delete victim;
-
-    return 0;
-}
-
-int vrpn_ForceDevice_Remote::register_scp_change_handler(void *userdata,
-                        vrpn_FORCESCPHANDLER handler)
-{
-    vrpn_FORCESCPCHANGELIST    *new_entry;
-
-    // Ensure that the handler is non-NULL
-    if (handler == NULL) {
-	fprintf(stderr,
-	  "vrpn_ForceDevice_Remote::register_scp_handler: NULL handler\n");
-	return -1;
-    }
-
-    // Allocate and initialize the new entry
-    if ( (new_entry = new vrpn_FORCESCPCHANGELIST) == NULL) {
-	fprintf(stderr,
-	 "vrpn_ForceDevice_Remote::register_scp_handler: Out of memory\n");
-	return -1;
-    }
-    new_entry->handler = handler;
-    new_entry->userdata = userdata;
-
-    // Add this handler to the chain at the beginning (don't check to see
-    // if it is already there, since duplication is okay).
-    new_entry->next = scp_change_list;
-    scp_change_list = new_entry;
-
-    return 0;
-}
-
-int vrpn_ForceDevice_Remote::unregister_scp_change_handler(void *userdata,
-                        vrpn_FORCESCPHANDLER handler)
-{
-    // The pointer at *snitch points to victim
-    vrpn_FORCESCPCHANGELIST    *victim, **snitch;
-
-    // Find a handler with this registry in the list (any one will do,
-    // since all duplicates are the same).
-    snitch = &scp_change_list;
-    victim = *snitch;
-    while ( (victim != NULL) &&
-	    ( (victim->handler != handler) ||
-	      (victim->userdata != userdata) )) {
-	snitch = &( (*snitch)->next );
-	victim = victim->next;
-    }
-
-    // Make sure we found one
-    if (victim == NULL) {
-     fprintf(stderr,
-      "vrpn_ForceDevice_Remote::unregister_scphandler: No such handler\n");
-      return -1;
-    }
-
-    // Remove the entry from the list
-    *snitch = victim->next;
-    delete victim;
-
-    return 0;
-}
-
-int vrpn_ForceDevice_Remote::register_error_handler(void *userdata,
-                        vrpn_FORCEERRORHANDLER handler)
-{
-    vrpn_FORCEERRORCHANGELIST    *new_entry;
-
-    // Ensure that the handler is non-NULL
-    if (handler == NULL) {
-	fprintf(stderr,
-	 "vrpn_ForceDevice_Remote::register_error_handler: NULL handler\n");
-	return -1;
-    }
-
-    // Allocate and initialize the new entry
-    if ( (new_entry = new vrpn_FORCEERRORCHANGELIST) == NULL) {
-       fprintf(stderr,
-	"vrpn_ForceDevice_Remote::register_error_handler: Out of memory\n");
-       return -1;
-    }
-    new_entry->handler = handler;
-    new_entry->userdata = userdata;
-
-    // Add this handler to the chain at the beginning (don't check to see
-    // if it is already there, since duplication is okay).
-    new_entry->next = error_change_list;
-    error_change_list = new_entry;
-
-    return 0;
-}
-
-int vrpn_ForceDevice_Remote::unregister_error_handler(void *userdata,
-                        vrpn_FORCEERRORHANDLER handler)
-{
-    // The pointer at *snitch points to victim
-    vrpn_FORCEERRORCHANGELIST    *victim, **snitch;
-
-    // Find a handler with this registry in the list (any one will do,
-    // since all duplicates are the same).
-    snitch = &error_change_list;
-    victim = *snitch;
-    while ( (victim != NULL) &&
-	    ( (victim->handler != handler) ||
-	      (victim->userdata != userdata) )) {
-	snitch = &( (*snitch)->next );
-	victim = victim->next;
-    }
-
-    // Make sure we found one
-    if (victim == NULL) {
-     fprintf(stderr,
-     "vrpn_ForceDevice_Remote::unregister_errorhandler: No such handler\n");
-      return -1;
-    }
-
-    // Remove the entry from the list
-    *snitch = victim->next;
-    delete victim;
-
-    return 0;
-}
-
 int vrpn_ForceDevice_Remote::handle_force_change_message(void *userdata,
 	vrpn_HANDLERPARAM p)
 {
     vrpn_ForceDevice_Remote *me = (vrpn_ForceDevice_Remote *)userdata;
     vrpn_FORCECB	tp;
-    vrpn_FORCECHANGELIST *handler = me->change_list;
 
     tp.msg_time = p.msg_time;
     decode_force(p.buffer, p.payload_len, tp.force);
-
-    // Go down the list of callbacks that have been registered.
-    // Fill in the parameter and call each.
-    while (handler != NULL) {
-	    handler->handler(handler->userdata, tp);
-	    handler = handler->next;
-    }
+    me->d_change_list.call_handlers(tp);
 
     return 0;
 }
@@ -1892,17 +1681,10 @@ int vrpn_ForceDevice_Remote::handle_scp_change_message(void *userdata,
 {
     vrpn_ForceDevice_Remote *me = (vrpn_ForceDevice_Remote *)userdata;
     vrpn_FORCESCPCB tp;
-    vrpn_FORCESCPCHANGELIST *handler = me->scp_change_list;
 
     tp.msg_time = p.msg_time;
     decode_scp(p.buffer, p.payload_len, tp.pos, tp.quat);
-
-    // Go down the list of callbacks that have been registered.
-    // Fill in the parameter and call each.
-    while (handler != NULL) {
-	    handler->handler(handler->userdata, tp);
-	    handler = handler->next;
-    }
+    me->d_scp_change_list.call_handlers(tp);
 
     return 0;
 }
@@ -1913,7 +1695,6 @@ int vrpn_ForceDevice_Remote::handle_error_change_message(void *userdata,
 {
     vrpn_ForceDevice_Remote *me = (vrpn_ForceDevice_Remote *)userdata;
     vrpn_FORCEERRORCB tp;
-    vrpn_FORCEERRORCHANGELIST *handler = me->error_change_list;
 
     if (p.payload_len != sizeof(vrpn_int32)) {
 	    fprintf(stderr, "vrpn_ForceDevice: error message payload"
@@ -1923,12 +1704,7 @@ int vrpn_ForceDevice_Remote::handle_error_change_message(void *userdata,
     }
     tp.msg_time = p.msg_time;
     decode_error(p.buffer, p.payload_len, &(tp.error_code));
-
-    // Go down the list of callbacks that have been registered.
-    while (handler != NULL) {
-	    handler->handler(handler->userdata, tp);
-	    handler = handler->next;
-    }
+    me->d_error_change_list.call_handlers(tp);
     return 0;
 }
 

@@ -447,43 +447,42 @@ public:
     // (un)Register a callback handler to handle a force change
     // and plane equation change and trimesh change
     virtual int register_force_change_handler(void *userdata,
-	    vrpn_FORCECHANGEHANDLER handler);
+      vrpn_FORCECHANGEHANDLER handler) {
+      return d_change_list.register_handler(userdata, handler);
+    };
     virtual int unregister_force_change_handler(void *userdata,
-	    vrpn_FORCECHANGEHANDLER handler);
+      vrpn_FORCECHANGEHANDLER handler) {
+      return d_change_list.unregister_handler(userdata, handler);
+    };
 
     virtual int register_scp_change_handler(void *userdata,
-	    vrpn_FORCESCPHANDLER handler);
+	    vrpn_FORCESCPHANDLER handler) {
+      return d_scp_change_list.register_handler(userdata, handler);
+    };
     virtual int unregister_scp_change_handler(void *userdata,
-	    vrpn_FORCESCPHANDLER handler);
+	    vrpn_FORCESCPHANDLER handler) {
+      return d_scp_change_list.unregister_handler(userdata, handler);
+    };
 
     virtual int register_error_handler(void *userdata,
-	    vrpn_FORCEERRORHANDLER handler);
+	    vrpn_FORCEERRORHANDLER handler) {
+      return d_error_change_list.register_handler(userdata, handler);
+    };
     virtual int unregister_error_handler(void *userdata,
-	    vrpn_FORCEERRORHANDLER handler);
+	    vrpn_FORCEERRORHANDLER handler) {
+      return d_error_change_list.unregister_handler(userdata, handler);
+    }
+    ;
 protected:
 
-    typedef	struct vrpn_RFCS {
-	    void				*userdata;
-	    vrpn_FORCECHANGEHANDLER	handler;
-	    struct vrpn_RFCS		*next;
-    } vrpn_FORCECHANGELIST;
-    vrpn_FORCECHANGELIST	*change_list;
+    vrpn_Callback_List<vrpn_FORCECB>    d_change_list;
     static int VRPN_CALLBACK handle_force_change_message(void *userdata,vrpn_HANDLERPARAM p);
 
-    typedef struct vrpn_RFSCPCS {
-	    void                            *userdata;
-	    vrpn_FORCESCPHANDLER handler;
-	    struct vrpn_RFSCPCS		*next;
-    } vrpn_FORCESCPCHANGELIST;
-    vrpn_FORCESCPCHANGELIST	*scp_change_list;
+    vrpn_Callback_List<vrpn_FORCESCPCB>  d_scp_change_list;
     static int VRPN_CALLBACK handle_scp_change_message(void *userdata,
 						    vrpn_HANDLERPARAM p);
-    typedef struct vrpn_RFERRCS {
-	    void				*userdata;
-	    vrpn_FORCEERRORHANDLER handler;
-	    struct vrpn_RFERRCS		*next;
-    } vrpn_FORCEERRORCHANGELIST;
-    vrpn_FORCEERRORCHANGELIST *error_change_list;
+
+    vrpn_Callback_List<vrpn_FORCEERRORCB>  d_error_change_list;
     static int VRPN_CALLBACK handle_error_change_message(void *userdata,
 						    vrpn_HANDLERPARAM p);
 

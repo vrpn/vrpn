@@ -1,3 +1,8 @@
+2005-04-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* testimager_client.C : Clears image to black so that
+		anything not filled in has a definite value.
+
 2005-02-25  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Makefile : Removed -LANG:std from compile, no streams

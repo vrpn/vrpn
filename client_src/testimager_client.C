@@ -1,3 +1,6 @@
+// XXX It gets so busy reading from the network that it never updates
+// the display.  This doesn't happen when it is a local connection.
+
 //----------------------------------------------------------------------------
 // Example program to read pixels from a vrpn_Imager server and display
 // them in an OpenGL window.  It assumes that the size of the imager does
@@ -216,6 +219,7 @@ int main(int argc, char **argv)
 {
   char	*device_name = "TestImage@localhost";
   char	*logfile_name = NULL;
+  int i;
 
   // Parse the command line.  If there is one argument, it is the device
   // name.  If there is a second, it is a logfile name.
@@ -237,15 +241,20 @@ int main(int argc, char **argv)
   g_imager->register_region_handler(g_imager, handle_region_change);
   g_imager->register_discarded_frames_handler(NULL, handle_discarded_frames);
 
-
   printf("Waiting to hear the image dimensions...\n");
   while (!g_got_dimensions) {
     g_imager->mainloop();
     vrpn_SleepMsecs(1);
   }
+
+  // Allocate memory for the image and clear it, so that things that
+  // don't get filled in will be black.
   if ( (g_image = new unsigned char[g_Xdim * g_Ydim * 3]) == NULL) {
     fprintf(stderr,"Out of memory when allocating image!\n");
     return -1;
+  }
+  for (i = 0; i < g_Xdim * g_Ydim * 3; i++) {
+    g_image[i] = 0;
   }
   g_ready_for_region = true;
   printf("Receiving images at size %dx%d\n", g_Xdim, g_Ydim);
