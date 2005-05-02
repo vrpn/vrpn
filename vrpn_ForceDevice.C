@@ -64,8 +64,6 @@ vrpn_BaseClass(name, c)
 {
     vrpn_BaseClass::init();
 
-    errorCode = FD_OK;
-
     //set the current time to zero
     timestamp.tv_sec = 0;
     timestamp.tv_usec = 0;
@@ -73,9 +71,12 @@ vrpn_BaseClass(name, c)
     //set the force to zero
     //d_force[0] = d_force[1] = d_force[2] = 0.0;
     SurfaceKspring= 0.29f;
-    SurfaceFdynamic = 0.02f;
-    SurfaceFstatic = 0.03f;
     SurfaceKdamping = 0.0f;
+    SurfaceFstatic = 0.03f;
+    SurfaceFdynamic = 0.02f;
+    
+    numRecCycles = 1;
+    errorCode = FD_OK;
 
     SurfaceKadhesionNormal = 0.0001f;
     SurfaceKadhesionLateral = 0.0002f;
