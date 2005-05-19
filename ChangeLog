@@ -1,3 +1,9 @@
+2005-05-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Removing HMD directory stuff that is no
+		longer useful, and might cause permission
+		problems on builds at UNC.
+
 2005-04-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_ForceDevice.h : Replaced the callback list code

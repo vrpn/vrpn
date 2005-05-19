@@ -168,13 +168,6 @@ endif
 # directories
 #
 
-#HMD_DIR 	 := /afs/cs.unc.edu/proj/hmd
-#HMD_INCLUDE_DIR	 := $(HMD_DIR)/include
-
-#BETA_DIR         := $(HMD_DIR)/beta
-#BETA_INCLUDE_DIR := $(BETA_DIR)/include
-#BETA_LIB_DIR     := $(BETA_DIR)/lib
-
 # subdirectory for make
 ifeq ($(FORCE_GPP),1)
 OBJECT_DIR	 := $(HW_OS)$(OBJECT_DIR_SUFFIX)/g++
@@ -486,19 +479,6 @@ clobberwin32:
 	$(RMF) -r pc_win32/vrpn/Debug/*
 	$(RMF) -r client_src/pc_win32/printvals/Debug/*
 	$(RMF) -r server_src/pc_win32/vrpn_server/Debug/*
-
-
-.PHONY:	beta
-beta :
-	$(MAKE) clean
-	$(MAKE) all
-	-$(MV) $(OBJECT_DIR)/libvrpn.a $(OBJECT_DIR)/libvrpn_g++.a \
-	    $(OBJECT_DIR)/libvrpnserver.a $(OBJECT_DIR)/libvrpnserver_g++.a \
-            $(BETA_LIB_DIR)/$(OBJECT_DIR)
-	-$(RANLIB) $(BETA_LIB_DIR)/$(OBJECT_DIR)/libvrpn.a
-	-$(RANLIB) $(BETA_LIB_DIR)/$(OBJECT_DIR)/libvrpnserver.a
-	-( cd $(BETA_INCLUDE_DIR); $(RMF) $(SLIB_INCLUDES) )
-	cp $(SLIB_INCLUDES) $(BETA_INCLUDE_DIR) 
 
 #############################################################################
 #
