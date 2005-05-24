@@ -49,7 +49,7 @@ class VRPN_API vrpn_Clock_Server : public vrpn_Clock {
 
   // Allow only vrpn_Synchronized_Connection to create clocks.
   // User code should not be allowed to do so.
-  friend vrpn_Synchronized_Connection;
+  friend class vrpn_Synchronized_Connection;
 protected:
   vrpn_Clock_Server(vrpn_Connection *c);
 
@@ -114,7 +114,7 @@ class VRPN_API vrpn_Clock_Remote: public vrpn_Clock {
 
     // Allow only vrpn_Synchronized_Connection to create clocks.
     // User code should not be allowed to do so.
-    friend vrpn_Synchronized_Connection;
+    friend class vrpn_Synchronized_Connection;
 protected:
     vrpn_Clock_Remote (const char * name, vrpn_float64 dFreq = 1,
                        vrpn_int32 cOffsetWindow = 3);

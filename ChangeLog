@@ -1,5 +1,10 @@
 2005-05-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Clock.h : Added "class" keyword so it would compile on
+		Linux.
+
+2005-05-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_BaseClass.C : Changes from Jeff Feasel to fix a
 		bug I introduced when I put the reference-counting
 		stuff in without his earlier patch.  This makes the
