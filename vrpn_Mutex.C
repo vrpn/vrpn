@@ -114,27 +114,27 @@ static vrpn_uint32 getmyIP (const char * NICaddress = NULL) {
 }
 
 vrpn_Mutex::vrpn_Mutex (const char * name, vrpn_Connection * c) :
-    d_connection (c) {
-  char * servicename;
+  d_connection (c) {
+	char * servicename;
 
-  servicename = vrpn_copy_service_name(name);
+	servicename = vrpn_copy_service_name(name);
 
-  if (c) {
-    d_connection->addReference();
-    d_myId = c->register_sender(servicename);
-    d_requestIndex_type = c->register_message_type(requestIndex_type);
-    d_requestMutex_type = c->register_message_type(requestMutex_type);
-    d_release_type = c->register_message_type(release_type);
-    d_releaseNotification_type = c->register_message_type
-                 (releaseNotification_type);
-    d_grantRequest_type = c->register_message_type(grantRequest_type);
-    d_denyRequest_type = c->register_message_type(denyRequest_type);
-    d_initialize_type = c->register_message_type(initialize_type);
-  }
+	if (c) {
+		c->addReference();
+		d_myId = c->register_sender(servicename);
+		d_requestIndex_type = c->register_message_type(requestIndex_type);
+		d_requestMutex_type = c->register_message_type(requestMutex_type);
+		d_release_type = c->register_message_type(release_type);
+		d_releaseNotification_type =
+			c->register_message_type(releaseNotification_type);
+		d_grantRequest_type = c->register_message_type(grantRequest_type);
+		d_denyRequest_type = c->register_message_type(denyRequest_type);
+		d_initialize_type = c->register_message_type(initialize_type);
+	}
 
-  if (servicename) {
-    delete [] servicename;
-  }
+	if (servicename) {
+		delete [] servicename;
+	}
 }
 
 // virtual
@@ -384,7 +384,6 @@ vrpn_Mutex_Remote::vrpn_Mutex_Remote (const char * name, vrpn_Connection * c) :
     d_releaseCB (NULL) {
 
   if (d_connection) {
-      d_connection->addReference();
       d_connection->register_handler(d_grantRequest_type,
                                  handle_grantRequest, this);
       d_connection->register_handler(d_denyRequest_type,
@@ -416,7 +415,6 @@ vrpn_Mutex_Remote::~vrpn_Mutex_Remote (void) {
       d_connection->unregister_handler(d_initialize_type, handle_initialize, this);
       vrpn_int32 got = d_connection->register_message_type(vrpn_got_connection);
       d_connection->unregister_handler(got, handle_gotConnection, this);
-      d_connection->removeReference();	// possibly destroy d_connection.
   }
 }
 
@@ -786,7 +784,10 @@ vrpn_PeerMutex::vrpn_PeerMutex (const char * name, int port,
     return;
   }
   d_server = new vrpn_Synchronized_Connection (static_cast<unsigned short>(port), NULL, NULL, NICaddress);
-  if (!d_server) {
+  if (d_server) {
+    d_server->addReference();
+    d_server->setAutoDeleteStatus(true);
+  } else {
     fprintf(stderr, "vrpn_PeerMutex:  "
                     "Couldn't open connection on port %d!\n", port);
     return;
@@ -816,11 +817,11 @@ vrpn_PeerMutex::vrpn_PeerMutex (const char * name, vrpn_Connection * server) :
     fprintf(stderr, "vrpn_PeerMutex:  NULL name!\n");
     return;
   }
-  if (!server) {
+  if (server) {
+    d_server->addReference();
+  } else {
     fprintf(stderr, "vrpn_PeerMutex:  NULL connection!\n");
     return;
-  } else {
-    d_server->addReference();
   }
 
   init(name);

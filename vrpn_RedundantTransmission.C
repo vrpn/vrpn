@@ -11,10 +11,17 @@ vrpn_RedundantTransmission::vrpn_RedundantTransmission (vrpn_Connection * c) :
 
   d_transmissionInterval.tv_sec = 0L;
   d_transmissionInterval.tv_usec = 0L;
+
+  if (d_connection) {
+    d_connection->addReference();
+  }
 }
 
 vrpn_RedundantTransmission::~vrpn_RedundantTransmission (void) {
 
+  if (d_connection) {
+    d_connection->removeReference();
+  }
 }
 
 vrpn_uint32 vrpn_RedundantTransmission::defaultRetransmissions (void) const {
@@ -418,6 +425,9 @@ vrpn_RedundantReceiver::vrpn_RedundantReceiver (vrpn_Connection * c) :
     d_lastMemory (NULL),
     d_record (VRPN_FALSE) {
 
+  if (d_connection) {
+    d_connection->addReference();
+  }
 }
 
 vrpn_RedundantReceiver::~vrpn_RedundantReceiver (void) {
@@ -439,6 +449,10 @@ vrpn_RedundantReceiver::~vrpn_RedundantReceiver (void) {
     pVMCB_Del = pVMCB;
     pVMCB = pVMCB_Del->next;
     delete pVMCB_Del;
+  }
+
+  if (d_connection) {
+    d_connection->removeReference();
   }
 }
 

@@ -8,23 +8,36 @@ vrpn_ConnectionForwarder::vrpn_ConnectionForwarder
   d_destination (destination),
   d_list (NULL) {
 
+	if (d_source) {
+		d_source->addReference();
+	}
+	if (d_destination) {
+		d_destination->addReference();
+	}
+
 }
 
 vrpn_ConnectionForwarder::~vrpn_ConnectionForwarder (void) {
 
-  vrpn_CONNECTIONFORWARDERRECORD * dlp;
+	vrpn_CONNECTIONFORWARDERRECORD * dlp;
 
-  while (d_list) {
-    dlp = d_list->next;
+	while (d_list) {
+		dlp = d_list->next;
 
-    if (d_source)
-      d_source->unregister_handler(d_list->sourceId, handle_message,
-                                   this, d_list->sourceServiceId);
+		if (d_source)
+			d_source->unregister_handler(d_list->sourceId, handle_message,
+			                             this, d_list->sourceServiceId);
 
-    delete d_list;
-    d_list = dlp;
-  }
+		delete d_list;
+		d_list = dlp;
+	}
 
+	if (d_source) {
+		d_source->removeReference();
+	}
+	if (d_destination) {
+		d_destination->removeReference();
+	}
 }
 
 int vrpn_ConnectionForwarder::forward
@@ -168,6 +181,12 @@ vrpn_StreamForwarder::vrpn_StreamForwarder
   d_destinationService (destination->register_sender(destinationServiceName)),
   d_list (NULL) {
 
+	if (d_source) {
+		d_source->addReference();
+	}
+	if (d_destination) {
+		d_destination->addReference();
+	}
 }
 
 vrpn_StreamForwarder::~vrpn_StreamForwarder (void) {
@@ -185,6 +204,12 @@ vrpn_StreamForwarder::~vrpn_StreamForwarder (void) {
     d_list = dlp;
   }
 
+	if (d_source) {
+		d_source->removeReference();
+	}
+	if (d_destination) {
+		d_destination->removeReference();
+	}
 }
 
 int vrpn_StreamForwarder::forward

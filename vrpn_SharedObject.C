@@ -81,6 +81,8 @@ vrpn_SharedObject::~vrpn_SharedObject (void) {
     d_connection->unregister_handler(gotConnection_type,
                                      handle_gotConnection,
                                      this, d_myId);
+
+    d_connection->removeReference();
   }
 }
 
@@ -96,9 +98,12 @@ vrpn_bool vrpn_SharedObject::isSerializer (void) const {
 void vrpn_SharedObject::bindConnection (vrpn_Connection * c) {
   char buffer [101];
   if (c == NULL) {
-      // unbind the connection
-      d_connection = NULL;
-      return;
+    // unbind the connection
+    if (d_connection) {
+      d_connection->removeReference();
+    }
+    d_connection = NULL;
+    return;
   }
 
   if (c && d_connection) {
@@ -108,6 +113,7 @@ void vrpn_SharedObject::bindConnection (vrpn_Connection * c) {
   }
 
   d_connection = c;
+  c->addReference();
   sprintf(buffer, "vrpn Shared server %s %s", d_typename, d_name);
   d_serverId = c->register_sender(buffer);
   sprintf(buffer, "vrpn Shared peer %s %s", d_typename, d_name);

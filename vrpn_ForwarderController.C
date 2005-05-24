@@ -15,6 +15,8 @@ vrpn_Forwarder_Brain::vrpn_Forwarder_Brain (vrpn_Connection * c) :
   if (!c)
     return;
 
+  d_connection->addReference();
+
   d_myId = c->register_sender("vrpn_Forwarder_Brain");
 
   d_start_forwarding_type =
@@ -26,6 +28,9 @@ vrpn_Forwarder_Brain::vrpn_Forwarder_Brain (vrpn_Connection * c) :
 
 vrpn_Forwarder_Brain::~vrpn_Forwarder_Brain (void) {
 
+	if (d_connection) {
+		d_connection->removeReference();
+	}
 }
 
 // static
@@ -151,6 +156,16 @@ vrpn_Forwarder_Server::~vrpn_Forwarder_Server (void) {
          (d_start_forwarding_type, handle_start, this, d_myId);
   d_connection->unregister_handler
          (d_forward_type, handle_forward, this, d_myId);
+
+  // Destroy my list of forwarders
+  vrpn_Forwarder_List * fp;
+  for (fp = d_myForwarders;  fp;  fp = fp->next) {
+    if (fp->connection)
+      delete fp->connection;
+	if (fp->forwarder)
+	  delete fp->forwarder;
+  }
+
 }
 
 void vrpn_Forwarder_Server::mainloop (void) {

@@ -1,3 +1,27 @@
+2005-05-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_BaseClass.C : Changes from Jeff Feasel to fix a
+		bug I introduced when I put the reference-counting
+		stuff in without his earlier patch.  This makes the
+		Clock object behave differently.  It also hides the
+		clock objects away so that users don't create them
+		and cause reference-count problems.  Also adds
+		comments describing why we need both unique and
+		non-unique base classes.
+	* vrpn_BaseClass.h : Same.
+	* vrpn_Clock.C : Same.
+	* vrpn_Clock.h : Same.
+	* vrpn_Connection.C : Same. Also bumps minor version number.
+	* vrpn_Connection.h : Same.
+	* vrpn_Forwarder.C : Adds reference-counting to this class, which
+		is not derived from BaseClass.
+	* vrpn_Forwarder.h : Same.
+	* vrpn_ForwarderController.C : Same.
+	* vrpn_ForwarderController.h : Same.
+	* vrpn_Mutex.C : Same.
+	* vrpn_RedundantTransmission.C : Same.
+	* vrpn_SharedObject.C : Same.
+
 2005-05-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Makefile : Removing HMD directory stuff that is no

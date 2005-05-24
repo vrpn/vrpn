@@ -580,13 +580,32 @@ class VRPN_API vrpn_Connection {
 
     const char * d_NIC_IP;
 
+
 	//
 	// Counting references to this connection.
   public:
-    void addReference();
-    void removeReference();
+	void addReference();
+	void removeReference();
+	void removeReferenceWithoutDeleting();
   private:
-    int d_references;
+	int d_references;
+
+	//
+	// Specify whether this connection should be deleted automatically when
+	//  it is no longer need (reference count reaches zero).
+	// For connections created by the VRPN code (as is done in 
+	//  get_connection_by_name) these should be auto-deleted.
+	//  Connections created by user code should not be auto-deleted;
+	//  that is up to the user to decide when finished.
+	// By default, the constructor sets this to FALSE.
+	// VRPN code (or user code) can set this to TRUE if it wants the
+	//  connection to be deleted automatically when the last service on it
+	//  is deleted 
+  public:
+	void setAutoDeleteStatus(bool setvalue) { d_autoDeleteStatus=setvalue; }
+  private:
+	bool d_autoDeleteStatus;	// FALSE by default.
+
 
   public:
 
@@ -723,6 +742,9 @@ VRPN_API char * vrpn_copy_machine_name (const char * hostspecifier);
 VRPN_API int vrpn_get_port_number (const char * hostspecifier);
 VRPN_API char * vrpn_copy_rsh_program (const char * hostspecifier);
 VRPN_API char * vrpn_copy_rsh_arguments (const char * hostspecifier);
+
+// Utility routine to rename the service name of a given host specifier.
+char * vrpn_set_service_name(const char * specifier, const char * newServiceName);
 
 // Checks the buffer to see if it is a valid VRPN header cookie.
 // Returns -1 on total mismatch,

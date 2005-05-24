@@ -53,15 +53,16 @@ vrpn_TextPrinter::~vrpn_TextPrinter()
 int vrpn_TextPrinter::add_object(vrpn_BaseClass *o)
 {
     vrpn_TextPrinter_Watch_Entry    *victim;
-#ifdef	VERBOSE
-    printf( "vrpn_TextPrinter: adding object %s\n", o->d_servicename);
-#endif
 
     // Make sure we have an actual object.
     if (o == NULL) {
 	fprintf(stderr, "vrpn_TextPrinter::add_object(): NULL pointer passed\n");
 	return -1;
     }
+
+#ifdef	VERBOSE
+    printf( "vrpn_TextPrinter: adding object %s\n", o->d_servicename);
+#endif
 
     // If the object is already in the list, we are done.  It is considered the same
     // object if it has the same connection and the same service name.
@@ -166,7 +167,7 @@ int vrpn_TextPrinter::text_message_handler(void *userdata, vrpn_HANDLERPARAM p)
     if (me->d_ostream == NULL) { return 0; };
 
     // Decode the message
-    if (vrpn_BaseClass::decode_text_message_from_buffer(message, &severity, &level, p.buffer) != 0) {
+    if (vrpn_BaseClassUnique::decode_text_message_from_buffer(message, &severity, &level, p.buffer) != 0) {
 	fprintf(stderr,"vrpn_TextPrinter::text_message_handler(): Can't decode message\n");
 	return -1;
     }
@@ -201,46 +202,65 @@ int vrpn_TextPrinter::text_message_handler(void *userdata, vrpn_HANDLERPARAM p)
     return 0;
 }
 
+
 /** Assigns the connection passed in to the object, or else tries to
     create a new connection based on the object name.  If this succeeds,
     it calls the sender and type registration routines for the object.
     Sets the servicename field to be the part of the name coming before
     the "@" sign in the name.
+    
+    userRefCount_ indicates whether this object should participate in the reference counting
+    mechanism of d_connection.  If unspecified, useRefCount is TRUE.  Typically, it will only
+    be FALSE for the vrpn_Clock_Server/Remote created automatically by vrpn_Synchronized_Connection.
+    
+    vrpn_BaseClassUnique is a virtual base class so it will only be called once, while
+    vrpn_BaseClass may be called multiple times.
+    Setting d_connection, d_servicename, and d_useRefCount only needs to be done once
+    for each object (even if it inherits from multiple device classes).  So these
+    things should technically go into the vrpn_BaseClassUnique constructor, except that
+    it is unable to accept parameters.  If the vrpn_BaseClassUnique constructor
+    *did* take the service-name, connnection, and use-ref-count parameters
+    then every derived class (not just those at the top level) would have to make
+    an explicit call to the vrpn_BaseClassUnique constructor.  As it stands, these
+    derived classes will instead use the 0-parameter version of the vrpn_BaseClassUnique
+    constructor implicitly.
+    As a result, this constructor must make sure that it only executes the code therein once.
 */
 
-vrpn_BaseClass::vrpn_BaseClass (const char * name, vrpn_Connection * c)
+vrpn_BaseClass::vrpn_BaseClass (const char * name, vrpn_Connection * c, bool useRefCount)
 {
-  // Get the part of the name for this device that does not include the connection.
-  // We see if some other sibling has already set the service name.  If so,
-  // then we leave it alone.  This would ideally be in the virtual
-  // unique base-class constructor so that we know it happens only once, but then
-  // we have to have all of the derived classes at the top level call the constructor
-  // for the virtual class (it would have to be told the name and connection).
-  // The unique base class destructor handles the deletion of the space.
-  if (d_servicename == NULL) {
-    d_servicename = vrpn_copy_service_name(name);
-  }
+    bool firstTimeCalled = (d_connection==NULL);  // has the constructor been called before?
+    // note that this might also be true if it was called once before but failed.
 
-  // We see if some other sibling has already handled the connection-creation
-  // code.  If so, then we leave it alone.  This would ideally be in the virtual
-  // unique base-class constructor so that we know it happens only once, but then
-  // we have to have all of the derived classes at the top level call the constructor
-  // for the virtual class (it would have to be told the name and connection).
-  // The unique base class destructor handles the removal of the reference and
-  // possible deletion of the connection.
+    if (firstTimeCalled)
+    {
+        d_useRefCount = useRefCount;
 
-  if (d_connection == NULL) {
-    // Get the connection for this object established. If the user passed in a
-    // NULL connection object, then we determine the connection from the name of
-    // the object itself (for example, Tracker0@mumble.cs.unc.edu will make a
-    // connection to the machine mumble on the standard VRPN port).
-    if (c) {	// using existing connection.
-	d_connection = c;
-	d_connection->addReference();
-    } else {
-	d_connection = vrpn_get_connection_by_name(name);
+        // Get the connection for this object established. If the user passed in a
+        // NULL connection object, then we determine the connection from the name of
+        // the object itself (for example, Tracker0@mumble.cs.unc.edu will make a
+        // connection to the machine mumble on the standard VRPN port).
+        //
+        // The vrpn_BassClassUnique destructor handles the deletion of this connection.
+        if (c) {	// using existing connection.
+            d_connection = c;
+            if (d_useRefCount) {
+                d_connection->addReference();
+            }
+        } else {
+            d_connection = vrpn_get_connection_by_name(name);
+            // GCBN will always call addReference().  if we don't want this object
+            // to participate in reference counting, manually decrement d_connection's
+            // ref count in order to compensate.
+            if (!d_useRefCount && d_connection!=NULL) {
+                d_connection->removeReferenceWithoutDeleting();
+            }
+        }
+
+        // Get the part of the name for this device that does not include the connection.
+        // The vrpn_BassClassUnique destructor handles the deletion of the space.
+        d_servicename = vrpn_copy_service_name(name);
     }
-  }
 }
 
 vrpn_BaseClass::~vrpn_BaseClass()
@@ -249,54 +269,61 @@ vrpn_BaseClass::~vrpn_BaseClass()
     vrpn_System_TextPrinter.remove_object(this);
 }
 
+
 /** This would normally be found in the constructor, but the constructor
     cannot call virtual functions in the derived class (since it does not
     yet exist). This function needs to be called at the beginning of the
-    derived class' constructor.
+    constructor of each class that derives directly from vrpn_BaseClass
+....(i.e. the top-level device classes such as Button, Analog, Tracker, etc)
 */
 
 int vrpn_BaseClass::init(void)
 {
+    // In the case of multiple inheritence from this base class, the rest of
+    //  the code in this function will be executed each time init is called.
+
     // If we have established a connection, then register the sender and types
     // that this device type uses.  If one of these fails, set the connection
     // for this object to NULL to indicate failure, and print an error message.
-    if (d_connection != NULL) {
-	if (register_senders() || register_types()) {
-	    fprintf(stderr,"vrpn_BaseClass: Can't register IDs\n");
-	    d_connection = NULL;
-	    return -1;
-	}
+    if (d_connection) {
+        if (register_senders() || register_types()) {
+            fprintf(stderr,"vrpn_BaseClassUnique: Can't register IDs\n");
+            d_connection = NULL;
+            return -1;
+        }
     }
 
     // Register the text and ping/pong types, which will be available to all classes for use.
-    if ( d_connection != NULL ) {
+    if (d_connection) {
         d_text_message_id  = d_connection->register_message_type("vrpn_Base text_message");
         if (d_text_message_id  == -1) {
-	    fprintf(stderr,"vrpn_BaseClass: Can't register Text type ID\n");
-	    d_connection = NULL;
-	    return -1;
+            fprintf(stderr,"vrpn_BaseClassUnique: Can't register Text type ID\n");
+            d_connection = NULL;
+            return -1;
         }
         d_ping_message_id  = d_connection->register_message_type("vrpn_Base ping_message");
         if (d_ping_message_id  == -1) {
-	    fprintf(stderr,"vrpn_BaseClass: Can't register ping type ID\n");
-	    d_connection = NULL;
-	    return -1;
+            fprintf(stderr,"vrpn_BaseClassUnique: Can't register ping type ID\n");
+            d_connection = NULL;
+            return -1;
         }
         d_pong_message_id  = d_connection->register_message_type("vrpn_Base pong_message");
         if (d_pong_message_id  == -1) {
-	    fprintf(stderr,"vrpn_BaseClass: Can't register pong type ID\n");
-	    d_connection = NULL;
-	    return -1;
+            fprintf(stderr,"vrpn_BaseClassUnique: Can't register pong type ID\n");
+            d_connection = NULL;
+            return -1;
         }
     }
 
     // Sign us up with the standard print function.
-    vrpn_System_TextPrinter.add_object(this);
+    if (d_connection) {
+        vrpn_System_TextPrinter.add_object(this);
+    }
 
     if (d_connection == NULL) {
-	return -1;
+        return -1;
     } else {
-	return 0;
+        return 0;
     }
 }
 
@@ -347,25 +374,25 @@ vrpn_BaseClassUnique::~vrpn_BaseClassUnique ()
     // Unregister all of the handlers that were to be autodeleted,
     // if we have a connection.
     if (d_connection != NULL) {
-	for (i = 0; i < d_num_autodeletions; i++) {
-	    d_connection->unregister_handler(d_handler_autodeletion_record[i].type,
-		d_handler_autodeletion_record[i].handler, d_handler_autodeletion_record[i].userdata,
-		d_handler_autodeletion_record[i].sender);
-	}
-	d_num_autodeletions = 0;
+        for (i = 0; i < d_num_autodeletions; i++) {
+            d_connection->unregister_handler(d_handler_autodeletion_record[i].type,
+            d_handler_autodeletion_record[i].handler, d_handler_autodeletion_record[i].userdata,
+            d_handler_autodeletion_record[i].sender);
+        }
+        d_num_autodeletions = 0;
     }
 
-
     // notify the connection that this object is no longer using it.
-    if (d_connection) {
-	d_connection->removeReference();
+    if (d_useRefCount && d_connection!=NULL) {
+        d_connection->removeReference();
     }
 
     // Delete the space allocated in the constructor for the servicename
     if (d_servicename) {
-	delete [] d_servicename;
+        delete [] d_servicename;
     }
 }
+
 
 /** This function is a wrapper for the vrpn_Connection register_handler()
     routine.  It also keeps track of all of the handlers registered by an
@@ -384,17 +411,17 @@ int vrpn_BaseClassUnique::register_autodeleted_handler(vrpn_int32 type,
 {
     // Make sure we have a Connection
     if (d_connection == NULL) {
-	fprintf(stderr,"vrpn_BaseClass::register_autodeleted_handler: "
-	    "No vrpn_Connection.\n");
-	return -1;
+        fprintf(stderr,"vrpn_BaseClassUnique::register_autodeleted_handler: "
+                "No vrpn_Connection.\n");
+        return -1;
     }
 
     // Make sure we have an empy entry to fill in.
     if (d_num_autodeletions >= vrpn_MAX_BCADRS) {
-	fprintf(stderr,"vrpn_BaseClass::register_autodeleted_handler: "
-	    "Too many handlers registered.  Increase vrpn_MAX_BCADRS "
-	    "and recompile VRPN.  Please report to vrpn@cs.unc.edu.\n");
-	return -1;
+        fprintf(stderr,"vrpn_BaseClassUnique::register_autodeleted_handler: "
+                "Too many handlers registered.  Increase vrpn_MAX_BCADRS "
+                "and recompile VRPN.  Please report to vrpn@cs.unc.edu.\n");
+        return -1;
     }
 
     // Fill in the values so we know what to delete, and bump the count
@@ -407,6 +434,7 @@ int vrpn_BaseClassUnique::register_autodeleted_handler(vrpn_int32 type,
     // Call the register command.
     return d_connection->register_handler(type, handler, userdata, sender);
 }
+
 
 int vrpn_BaseClassUnique::encode_text_message_to_buffer (char * buf, vrpn_TEXT_SEVERITY severity,
                           vrpn_uint32 level, const char * msg)
@@ -447,7 +475,7 @@ int vrpn_BaseClassUnique::send_text_message(const char *msg, struct timeval time
 	int  len = strlen(msg)+1; // +1 is for the NULL terminator
 
 	if (len > vrpn_MAX_TEXT_LEN) {
-	    fprintf(stderr,"vrpn_BaseClass::send_message: Attempt to encode string that is too long\n");
+	    fprintf(stderr,"vrpn_BaseClassUnique::send_message: Attempt to encode string that is too long\n");
 	    return -1;
 	}
 

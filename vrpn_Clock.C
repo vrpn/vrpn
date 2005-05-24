@@ -29,7 +29,7 @@ void printTime( char *pch, const struct timeval& tv ) {
 
 // both server and client call this constructor
 vrpn_Clock::vrpn_Clock(const char * name, vrpn_Connection *c) :
-    vrpn_BaseClass(name, c)
+    vrpn_BaseClass(name, c, false)    // does not affect the ref count of its connection
 {
   vrpn_BaseClass::init();
 
@@ -103,6 +103,9 @@ int vrpn_Clock::encode_to(char *buf, const struct timeval& tvSRep,
 }
 
 
+// This clock is created by the vrpn_Synchronized_Connection.
+// Users will not create clocks directly.
+
 vrpn_Clock_Server::vrpn_Clock_Server(vrpn_Connection *c) 
   : vrpn_Clock("clockServer", c){
 
@@ -154,25 +157,12 @@ void vrpn_Clock_Server::mainloop () {};
 
 // This next part is the class for users (client class)
 
-
-// If this clock is created as part of a sync_conn constructor,
-// then the connection will already exist, and the -1 will have no
-// effect (the vrpn_get_connection by name will just return a
-// ptr to the connection).
-
-// If the use is actually creating a vrpn_Clock_Remote directly
-// (as a clock client), then they don't want another clock on the
-// connection as this will result in less accurate calibration.
-// -1 as the freq arg, because if the connection does not yet
-// exist, then when it is created it does not need to have another
-// clock running on it (the sync_connection will still have a clock
-// created on it, but the clock will be a fullSync clock and
-// will be inactive.)
+// This clock is created by the vrpn_Synchronized_Connection.
+// Users will not create clocks directly.
 
 vrpn_Clock_Remote::vrpn_Clock_Remote(const char * name, vrpn_float64 dFreq, 
 				     vrpn_int32 cOffsetWindow ) : 
-  vrpn_Clock ("clockServer",
-              vrpn_get_connection_by_name (name, NULL, 0L, NULL, 0L, -1))
+  vrpn_Clock (vrpn_set_service_name(name,"clockServer"), NULL)
 {
   char rgch [50];
   int i;
@@ -245,12 +235,6 @@ vrpn_Clock_Remote::vrpn_Clock_Remote(const char * name, vrpn_float64 dFreq,
 
 vrpn_Clock_Remote::~vrpn_Clock_Remote (void)
 {
-  // must remove a reference from the connection, because
-  //  we call vrpn_get_connection_by_name in the constructor.
-  if (d_connection) {
-    d_connection->removeReference();
-  }
-
   // release the quick arrays
   if (rgtvHalfRoundTrip) {
     delete [] rgtvHalfRoundTrip;

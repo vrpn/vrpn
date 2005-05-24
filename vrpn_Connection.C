@@ -178,7 +178,7 @@ int gethostname (char *, int);
 // proposed strategy handles both partial major version compatibility as well
 // as accidental partial minor version incompatibility.
 //
-const char * vrpn_MAGIC = (const char *) "vrpn: ver. 06.06";
+const char * vrpn_MAGIC = (const char *) "vrpn: ver. 06.07";
 const char * vrpn_FILE_MAGIC = (const char *) "vrpn: ver. 04.00";
 const int vrpn_MAGICLEN = 16;  // Must be a multiple of vrpn_ALIGN bytes!
 
@@ -5166,7 +5166,8 @@ vrpn_Connection::vrpn_Connection
     d_serverLogName (NULL),
     d_endpointAllocator (epa),
     d_updateEndpoint (vrpn_FALSE),
-    d_references (0)
+    d_references (0),
+    d_autoDeleteStatus (false)
 {
   vrpn_Endpoint * endpoint;  // shorthand for d_endpoints[0]
   int retval;
@@ -5253,7 +5254,6 @@ vrpn_Connection::vrpn_Connection
        const char * remote_out_logfile_name,
        const char * NIC_IPaddress,
        vrpn_Endpoint * (* epa) (vrpn_Connection *, vrpn_int32 *)) :
-    // Jeff's change; I've commented out for now
     connectionStatus (BROKEN),  // default value if not otherwise set in ctr
     d_numEndpoints (0),
     d_numConnectedEndpoints (0),
@@ -5267,7 +5267,8 @@ vrpn_Connection::vrpn_Connection
     d_serverLogName (NULL),
     d_endpointAllocator (epa),
     d_updateEndpoint (vrpn_FALSE),
-    d_references (0)
+    d_references (0),
+    d_autoDeleteStatus (false)
 {
   vrpn_Endpoint * endpoint;
   vrpn_bool isfile;
@@ -5587,24 +5588,53 @@ vrpn_Connection::~vrpn_Connection (void) {
 
   // Clean up types, senders, and callbacks.
   delete d_dispatcher;
+
+  if (d_references > 0) {
+    fprintf(stderr, "Connection was deleted while %d references still remain.",
+            d_references);
+  }
 }
 
-// Some object is using this connection.
+// Some object is now using this connection.
+// Note that the vrpn_Clock_Server or vrpn_Clock_Remote internal to
+//  a vrpn_Synchronized_Connection does not participate in the ref count.
 void vrpn_Connection::addReference()
 {
-    d_references++;
+	d_references++;
 }
 
-// Some object has stopped using this connection.
-// if there weren't any references, this must have been the original.
-//  so destroy it.
+// Some object has stopped using this connection.  Decrement the ref counter.
+// If there aren't any references, this connection is no longer in use.
+//  Once it's no longer in use destroy the connection iff d_autoDeleteStatus
+//  has been set to TRUE.  If d_autoDeleteStatus is FALSE, the user must
+//  destroy the connection explicitly.
+// Note that the vrpn_Clock_Server or vrpn_Clock_Remote internal to
+//  a vrpn_Synchronized_Connection does not participate in the ref count.
 void vrpn_Connection::removeReference()
 {
-  if (d_references == 0) {
-    delete this;
-  } else {
-    d_references--;
-  }
+	d_references--;
+	if (d_references == 0 && d_autoDeleteStatus == true) {
+		delete this;
+	}
+	else if (d_references < 0) {	// this shouldn't happen.
+		// sanity check
+		fprintf(stderr, "Negative reference count.  This shouldn't happen.");
+	}
+}
+
+// This function decrements the reference count, but does not delete the object
+//  when its ref count reaches 0.
+// This is used by the vrpn_BaseClass constructor when creating a
+//  vrpn_Clock_Server/Remote object to go with a vrpn_Synchronized_Connection.
+//  This is done in order to exclude the clock from reference counting.
+void vrpn_Connection::removeReferenceWithoutDeleting()
+{
+	d_references--;
+
+	// sanity check
+	if (d_references < 0) {	// this shouldn't happen.
+		fprintf(stderr, "Negative reference count.  This shouldn't happen.");
+	}
 }
 
 
@@ -5956,65 +5986,83 @@ int vrpn_Synchronized_Connection::mainloop (const struct timeval * timeout)
 // the opening of a connection to "Tracker0@ioglab" for example, which will
 // open a connection to ioglab.
 
-// this now always creates synchronized connections, but that is ok
-// because they are derived from connections, and the default 
-// args of freq=-1 makes it behave like a regular connection.
+// This now always creates synchronized connections, but that is ok
+//  because they are derived from regular connections.
+// Passing freq=-1 makes it behave like a regular connection,
+//  i.e., quick-sync is disabled.
+
+// This routine adds to the reference count of the connection in question.
+// This happens regardless of whether the connection already exists
+//  or it is to be created.
+// Any user code that calls vrpn_get_connection_by_name() directly
+//  should call vrpn_Connection::removeReference() when it is finished
+//  with the pointer.  It's ok if you have old code that doesn't do this;
+//  it just means the connection will remain open until the program quits,
+//  which isn't so bad.
 
 vrpn_Connection * vrpn_get_connection_by_name (
-    const char * cname,
-    const char * local_in_logfile_name,
-    const char * local_out_logfile_name,
-    const char * remote_in_logfile_name,
-    const char * remote_out_logfile_name,
-    double       dFreq,
-    int          cSyncWindow,
-    const char * NIC_IPaddress)
+	const char * cname,
+	const char * local_in_logfile_name,
+	const char * local_out_logfile_name,
+	const char * remote_in_logfile_name,
+	const char * remote_out_logfile_name,
+	double       dFreq,
+	int          cSyncWindow,
+	const char * NIC_IPaddress)
 {
-    if (cname == NULL) {
-        fprintf(stderr,"vrpn_get_connection_by_name(): NULL name\n");
-        return NULL;
-    }
+	if (cname == NULL) {
+		fprintf(stderr,"vrpn_get_connection_by_name(): NULL name\n");
+		return NULL;
+	}
 
-    // Find the relevant part of the name (skip past last '@'
-    // if there is one)
-    const char *where_at;	// Part of name past last '@'
-    if ( (where_at = strrchr(cname, '@')) != NULL) {
-        cname = where_at+1;	// Chop off the front of the name
-    }
+	// Find the relevant part of the name (skip past last '@'
+	// if there is one)
+	const char *where_at;	// Part of name past last '@'
+	if ( (where_at = strrchr(cname, '@')) != NULL) {
+		cname = where_at+1;	// Chop off the front of the name
+	}
 
-    vrpn_Connection * c 
-        = vrpn_ConnectionManager::instance().getByName(cname);
+	vrpn_Connection * c 
+		= vrpn_ConnectionManager::instance().getByName(cname);
 
-    // If its not already open, open it.
-    // Its constructor will add it to the list (?).
-    if (!c) {
+	// If its not already open, open it.
+	// Its constructor will add it to the list (?).
+	if (!c) {
 
-        // connections now self-register in the known list --
-        // this is kind of odd, but oh well (can probably be done
-        // more cleanly later).
+		// connections now self-register in the known list --
+		// this is kind of odd, but oh well (can probably be done
+		// more cleanly later).
 
-        int is_file = !strncmp(cname, "file:", 5);
+		int is_file = !strncmp(cname, "file:", 5);
 
-        if (is_file) {
-            c = new vrpn_File_Connection (cname, 
-                                          local_in_logfile_name,
-                                          local_out_logfile_name);
-        } else {
-            int port = vrpn_get_port_number(cname);
-            c = new vrpn_Synchronized_Connection
-                (cname, port,
-                 local_in_logfile_name, local_out_logfile_name,
-                 remote_in_logfile_name, remote_out_logfile_name,
-                 dFreq, cSyncWindow, NIC_IPaddress);
-        }
-    } else {	// connection was already open.
-	c->addReference();
-    }
+		if (is_file) {
+			c = new vrpn_File_Connection (cname, 
+			                              local_in_logfile_name,
+			                              local_out_logfile_name);
+		} else {
+			int port = vrpn_get_port_number(cname);
+			c = new vrpn_Synchronized_Connection (cname, port,
+				local_in_logfile_name, local_out_logfile_name,
+				remote_in_logfile_name, remote_out_logfile_name,
+				dFreq, cSyncWindow, NIC_IPaddress);
+		}
 
-    // Return a pointer to the connection, even if it is not doing
-    // okay. This will allow a connection to retry over and over
-    // again before connecting to the server.
-    return c;
+		if (c) {	// creation succeeded
+			c->setAutoDeleteStatus(true);	// destroy when refcount hits zero.
+		}
+		else {		// creation failed
+			fprintf(stderr, "Could not create new connection.");
+			return NULL;
+		}
+	}
+	// else the connection was already open.
+
+	c->addReference();	// increment the reference count either way.
+
+	// Return a pointer to the connection, even if it is not doing
+	// okay. This will allow a connection to retry over and over
+	// again before connecting to the server.
+	return c;
 }
 
 
@@ -6194,4 +6242,38 @@ char * vrpn_copy_rsh_arguments (const char * hostspecifier)
     //fprintf(stderr, "server args: '%s'.\n", tbuf);
   }
   return tbuf;
+}
+
+// For a host specifier without a service name, this routine prepends
+//  the given string newServiceName to it.
+// For a host specifier with a service name (e.g. "service@URL"),
+//  this routine strips off the service name and adds the given
+//  string newServiceName in its place (e.g. "newServiceName@URL").
+// This routine allocates memory for the return value.  Caller is
+//  responsible for freeing the memory.
+char * vrpn_set_service_name(const char * specifier, const char * newServiceName)
+{
+  size_t inputLength = strlen(specifier);
+  size_t atSymbolIndex = strcspn(specifier, "@");
+
+  char * location = NULL;
+
+  if (atSymbolIndex == inputLength) {
+    // no @ symbol present; just a location
+    location = new char[inputLength+1];
+    strcpy(location, specifier);  // take the whole thing to be the location
+  }
+  else {
+    // take everything after the @ symbol to be the location
+    location = vrpn_copy_service_location(specifier);
+  }
+
+  // prepend newServiceName to location.
+  size_t len = strlen(location) + strlen(newServiceName);
+  char * newSpecifier = new char[len+2];   // extra space for '@'
+                                           //  and terminal '/0'
+  strcpy(newSpecifier, newServiceName);
+  strcat(newSpecifier, "@");
+  strcat(newSpecifier, location);
+  return newSpecifier;
 }

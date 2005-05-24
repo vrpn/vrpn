@@ -27,7 +27,10 @@ class VRPN_API vrpn_Connection;
 // Base class for clock servers.  Definition of remote/client 
 // clock class for the user is at the end.
 class VRPN_API vrpn_Clock : public vrpn_BaseClass {
-public:
+
+  // Hide the constructor so that nobody can create a vrpn_Clock
+  //  except by creating a vrpn_Clock_Server or vrpn_Clock_Remote.
+protected:
   vrpn_Clock(const char *name, vrpn_Connection *c = NULL);
   
 protected:
@@ -43,8 +46,14 @@ protected:
 
 
 class VRPN_API vrpn_Clock_Server : public vrpn_Clock {
-public:
+
+  // Allow only vrpn_Synchronized_Connection to create clocks.
+  // User code should not be allowed to do so.
+  friend vrpn_Synchronized_Connection;
+protected:
   vrpn_Clock_Server(vrpn_Connection *c);
+
+public:
   virtual ~vrpn_Clock_Server();
 
   // Called once through each main loop iteration to handle
@@ -90,7 +99,6 @@ typedef void (VRPN_CALLBACK *vrpn_CLOCKSYNCHANDLER)(void *userdata,
 #define VRPN_CLOCK_QUICK_SYNC 2
 
 class VRPN_API vrpn_Clock_Remote: public vrpn_Clock {
-  public:
 
     // The name of the station which runs the clock server to connect to
     // (from sdi_devices), and the frequency at which to do quick re-syncs 
@@ -103,8 +111,15 @@ class VRPN_API vrpn_Clock_Remote: public vrpn_Clock {
     // while a low setting (e.g., 3) works well when drift is present.
     // See cMaxQuickRecords below for more detail.
 
+
+    // Allow only vrpn_Synchronized_Connection to create clocks.
+    // User code should not be allowed to do so.
+    friend vrpn_Synchronized_Connection;
+protected:
     vrpn_Clock_Remote (const char * name, vrpn_float64 dFreq = 1,
-		       vrpn_int32 cOffsetWindow = 3);
+                       vrpn_int32 cOffsetWindow = 3);
+
+public:
     virtual ~vrpn_Clock_Remote (void);
 
 
