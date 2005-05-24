@@ -78,7 +78,7 @@
   #endif
 #endif
 
-#ifdef _AIX
+#if defined(_AIX) || defined(__APPLE__)
  #define GSN_CAST (socklen_t *)
 #else
  #if defined(linux) || defined(FreeBSD)
