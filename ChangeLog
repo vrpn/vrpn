@@ -1,3 +1,9 @@
+2005-06-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Imager.C : Added transcoding from float32
+		to uint8 to enable testing the receipt of
+		different image servers.
+
 2005-05-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Connection.C : Adds patch for compile on Mac submitted
