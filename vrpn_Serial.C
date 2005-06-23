@@ -38,7 +38,7 @@
 
 #if defined(_WIN32)
 #include <io.h>
-#if defined(__GBUC__)
+#if defined(__GNUC__)
 #include <netinet/in.h>
 #include <sys/socket.h>
 #else

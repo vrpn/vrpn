@@ -1,3 +1,8 @@
+2005-06-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Serial.C : Fixed type on GNUC define pointed out by
+		Chris V.
+
 2005-06-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Imager.C : Added transcoding from float32
