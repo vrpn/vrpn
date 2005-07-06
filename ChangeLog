@@ -1,3 +1,9 @@
+2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_Crossbow.h : Driver from Chris V. for a
+		Crossbow accelerometer and rate gyro server.
+	* vrpn_Tracker_Crossbow.C : Same.
+
 2005-06-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Serial.C : Fixed type on GNUC define pointed out by
