@@ -1,5 +1,10 @@
 2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* Makefile : Removed vrpn_Clock.C and .h, which are
+		no longer needed.
+
+2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn.dsp : Removed vrpn_Clock.C and .h files from those needed.
 	* vrpndll.dsp : Same.
 	* vrpn_BaseClass.C : Removed option to not count an object when
