@@ -210,6 +210,10 @@ SOURCE=.\vrpn_Magellan.C
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_Mouse.C
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_Mutex.C
 # End Source File
 # Begin Source File
@@ -455,6 +459,10 @@ SOURCE=.\vrpn_LamportClock.h
 # Begin Source File
 
 SOURCE=.\vrpn_Magellan.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Mouse.h
 # End Source File
 # Begin Source File
 

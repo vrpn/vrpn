@@ -1,5 +1,11 @@
 2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn.dsp : Adding vrpn_Mouse to Windows build.
+	* vrpndll.dsp : Same.
+	* vrpn_Mouse.C : Modified so that it will compile on Windows.
+
+2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* Makefile : Including vrpn_Mouse class in the server build.
 	* vrpn_Mouse.h : Linux GPM-based mouse driver submitted by
 		Mike Weiblen at 3DLabs.

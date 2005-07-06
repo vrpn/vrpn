@@ -9,9 +9,11 @@
 */
 
 #include <stdio.h>
+#ifndef _WIN32
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/time.h>
+#endif
 
 #ifdef	linux
 #include <gpm.h>
