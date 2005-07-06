@@ -55,6 +55,7 @@
 #include "vrpn_Poser_Analog.h"
 #include "vrpn_nikon_controls.h"
 #include "vrpn_Poser_Tek4662.h"
+#include "vrpn_Mouse.h"
 
 #ifdef VRPN_INCLUDE_TIMECODE_SERVER
 #include "timecode_generator_server\vrpn_timecode_generator.h"
@@ -63,8 +64,8 @@
 const int VRPN_GSO_MAX_TRACKERS = 100;
 const int VRPN_GSO_MAX_BUTTONS =  100;
 const int VRPN_GSO_MAX_SOUNDS =     2;
-const int VRPN_GSO_MAX_ANALOG =     4;
-const int VRPN_GSO_MAX_ANALOGOUT =  4;
+const int VRPN_GSO_MAX_ANALOG =     8;
+const int VRPN_GSO_MAX_ANALOGOUT =  8;
 const int VRPN_GSO_MAX_SGIBOX =     2;
 const int VRPN_GSO_MAX_CEREALS =    8;
 const int VRPN_GSO_MAX_MAGELLANS =  8;
@@ -83,8 +84,9 @@ const int VRPN_GSO_MAX_GLOBALHAPTICSORBS = 8;
 #ifdef	VRPN_USE_PHANTOM_SERVER
 const int VRPN_GSO_MAX_PHANTOMS =  10;
 #endif
-const int VRPN_GSO_MAX_DTRACKS =	   5;
-const int VRPN_GSO_MAX_POSER =	   4;
+const int VRPN_GSO_MAX_DTRACKS =   5;
+const int VRPN_GSO_MAX_POSER =	   8;
+const int VRPN_GSO_MAX_MOUSES =	   8;
 
 class vrpn_Generic_Server_Object {
 public:
@@ -147,6 +149,8 @@ protected:
   int		num_analogouts;
   vrpn_Poser	* posers [VRPN_GSO_MAX_POSER];
   int		num_posers;
+  vrpn_Mouse	* mouses [VRPN_GSO_MAX_MOUSES];
+  int		num_mouses;
 
   void closeDevices (void);
 
@@ -198,6 +202,7 @@ protected:
   int setup_Phantom (char * & pch, char * line, FILE * config_file);
   int setup_JoyFly (char * & pch, char * line, FILE * config_file);
   int setup_Tracker_3DMouse (char * & pch, char * line, FILE * config_file);
+  int setup_Mouse (char * & pch, char * line, FILE * config_file);
 };
 
 #endif

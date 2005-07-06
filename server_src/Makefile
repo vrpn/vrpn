@@ -66,6 +66,10 @@ ifeq ($(HW_os),pc_linux64)
 	CC := cc -m64
 endif
 
+ifeq ($(HW_OS),pc_linux)
+	SYSLIBS := -lgpm
+endif
+
 ifeq ($(HW_OS),sgi_irix)
    ifndef SGI_ABI
       SGI_ABI := n32

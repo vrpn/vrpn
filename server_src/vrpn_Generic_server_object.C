@@ -1663,24 +1663,60 @@ int vrpn_Generic_Server_Object::setup_Tng3 (char * & pch, char * line, FILE * co
         fprintf(stderr,"Bad vrpn_Tng3 line: %s\n",line);
         return -1;
     }
-
     // Make sure there's room for a new box
     if (num_tng3s >= VRPN_GSO_MAX_TNG3S) {
         fprintf(stderr,"Too many Tng3 boxes in config file");
         return -1;
     }
-
     // Open the box
     if (verbose)
         printf("Opening vrpn_Tng3: %s on port %s, baud %d, %d digital, "
                " %d analog\n",s2,s3,19200,i1,i2);
-
     tng3 = new vrpn_Tng3(s2, connection, s3, 19200, i1, i2);
     if (NULL == tng3) {
         fprintf(stderr,"Can't create new vrpn_Tng3\n");
         return -1;
     }
     tng3s[num_tng3s++] = tng3;
+    return 0;
+}
+
+//================================
+int vrpn_Generic_Server_Object::setup_Mouse (char * & pch, char * line, FILE * config_file) {
+    char s2 [LINESIZE];
+    vrpn_Mouse * mouse;
+    next();
+
+    // Get the arguments (class, mouse_name)
+    if (sscanf(pch,"%511s",s2) != 1) {
+        fprintf(stderr,"Bad vrpn_Mouse line: %s\n",line);
+        return -1;
+    }
+
+    // Make sure there's room for a new mouse
+    if (num_mouses >= VRPN_GSO_MAX_MOUSES) {
+        fprintf(stderr,"Too many mouses (mice) in config file");
+        return -1;
+    }
+
+    // Open the box
+    if (verbose)
+        printf("Opening vrpn_Mouse: %s\n",s2);
+
+    try {
+	    mouse = new vrpn_Mouse(s2, connection);
+    }
+    catch (...) {
+	fprintf( stderr, "could not create vrpn_Mouse\n" );
+	fprintf( stderr, "- Is the GPM server running?\n" );
+	fprintf( stderr, "- Are you running on a linux console (not an xterm)?\n" );
+	return -1;
+    }
+    if (NULL == mouse) {
+        fprintf(stderr,"Can't create new vrpn_Mouse\n");
+        return -1;
+    }
+    mouses[num_mouses++] = mouse;
     return 0;
 }
 
@@ -2366,7 +2402,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
   num_phantoms(0),
   num_analogouts(0),
   num_DTracks(0),
-  num_posers(0)
+  num_posers(0),
+  num_mouses(0)
 {
   FILE	* config_file;
   char 	* client_name = NULL;
@@ -2481,6 +2518,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
             CHECK(setup_Button_SerialMouse);
 	  } else  if (isit("vrpn_Wanda")) {
             CHECK(setup_Wanda);
+	  } else if (isit("vrpn_Mouse")) {
+            CHECK(setup_Mouse);
 	  } else if (isit("vrpn_Tng3")) {
             CHECK(setup_Tng3);
 	  } else  if (isit("vrpn_TimeCode_Generator")) {
@@ -2636,6 +2675,11 @@ void  vrpn_Generic_Server_Object::mainloop( void )
   // Let all the Posers do their thing
   for (i=0; i< num_posers; i++) {
 	  posers[i]->mainloop();
+  }
+
+  // Let all the Mouses (Mice) do their thing
+  for (i=0; i< num_mouses; i++) {
+	  mouses[i]->mainloop();
   }
 }
 

@@ -1,3 +1,10 @@
+2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * Makefile : Adds new library on Linux needed by mouse driver.
+        * vrpn_Generic_Server_Object.h : Adds Linux GPM-based mouse driver
+		submitted by Mike Weiblen at 3DLabs.
+        * vrpn_Generic_Server_Object.C : Same.
+
 2005-06-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Generic_Server_Object.h : Added support for the Logitech
