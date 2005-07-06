@@ -1,5 +1,13 @@
 2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Tracker_3DMouse.C : Driver for Logitech 3D Mouse
+		provided by Jinseok Seo from the VR Lab of
+		POSTECH in Korea.
+	* vprn_Tracker_3DMouse.h : Same.
+	* Makefile : Added the 3D mouse into the build.
+
+2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn.dsp : Adding Crossbow into the set of files built
 		into VRPN.
 	* vrpndll.dsp : Same.
