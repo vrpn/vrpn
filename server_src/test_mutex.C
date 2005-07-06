@@ -5,7 +5,7 @@
 
 int main (int argc, char ** argv) {
 
-  vrpn_Synchronized_Connection * c;
+  vrpn_Connection * c;
   vrpn_Mutex_Server * me;
   int portno = vrpn_DEFAULT_LISTEN_PORT_NO;
 
@@ -13,7 +13,7 @@ int main (int argc, char ** argv) {
     portno = atoi(argv[2]);
   }
 
-  c = new vrpn_Synchronized_Connection (portno);
+  c = new vrpn_Connection (portno);
   me = new vrpn_Mutex_Server (argv[1], c);
 
   while (1) {

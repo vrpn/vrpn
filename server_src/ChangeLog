@@ -1,5 +1,9 @@
 2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* test_mutex.C : Removed Synchronized.
+
+2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* client_and_server.C : Removed Synchronized.
 	* test_analogfly.C : Same.
 	* test_radamec_spi.C : Same.
