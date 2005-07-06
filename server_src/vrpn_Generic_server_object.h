@@ -20,6 +20,7 @@
 #include "vrpn_3Space.h"
 #include "vrpn_Tracker_Fastrak.h"
 #include "vrpn_Tracker_Liberty.h"
+#include "vrpn_Tracker_3DMouse.h"
 #include "vrpn_Flock.h"
 #include "vrpn_Flock_Parallel.h"
 #include "vrpn_Dyna.h"
@@ -196,6 +197,7 @@ protected:
   int setup_Timecode_Generator (char * & pch, char * line, FILE * config_file);
   int setup_Phantom (char * & pch, char * line, FILE * config_file);
   int setup_JoyFly (char * & pch, char * line, FILE * config_file);
+  int setup_Tracker_3DMouse (char * & pch, char * line, FILE * config_file);
 };
 
 #endif

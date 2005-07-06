@@ -1013,6 +1013,49 @@ int vrpn_Generic_Server_Object::setup_Tracker_Dyna (char * & pch, char * line, F
   return 0;
 }
 
+int vrpn_Generic_Server_Object::setup_Tracker_3DMouse (char * & pch, char * line, FILE * config_file) {
+	char s2 [LINESIZE], s3 [LINESIZE], s4 [LINESIZE];
+	int i1;
+	int filtering_count = 1;
+	int numparms;
+	vrpn_Tracker_3DMouse	*mytracker;
+
+	next();
+	
+	// Get the arguments (class, tracker_name, port, baud, [optional filtering_count])
+	if ( (numparms = sscanf(pch,"%511s%511s%d%511s",s2,s3,&i1,s4)) < 3)
+	{
+		fprintf(stderr,"Bad vrpn_Tracker_3DMouse line: %s\n%s %s\n", line, pch, s3);
+		return -1;
+	}
+
+	// See if we got the optional parameter to set the filtering count
+	if (numparms == 4) {
+	    filtering_count = atoi(s4);
+	    if (filtering_count < 1 || filtering_count > 5)
+	    {
+		fprintf(stderr, "3DMouse: Bad filtering count optional param (expected 1-5, got '%s')\n",s4);
+		return -1;
+	    }
+	}
+
+	// Open the tracker
+	if (verbose) {
+		printf("Opening vrpn_Tracker_3DMouse: %s on port %s, baud %d\n", s2,s3,i1);
+	}
+
+	if ( (trackers[num_trackers] = mytracker =
+		 new vrpn_Tracker_3DMouse(s2, connection, s3, i1, filtering_count)) == NULL)
+	{
+		fprintf(stderr, "Can't create new vrpn_Tracker_3DMouse\n");
+		return -1;
+        } else {
+          num_trackers++;
+        }
+
+  return 0;
+}
+
 int vrpn_Generic_Server_Object::setup_Tracker_Fastrak (char * & pch, char * line, FILE * config_file) {
 
   char s2 [LINESIZE], s3 [LINESIZE], s4 [LINESIZE];
@@ -1094,18 +1137,12 @@ int vrpn_Generic_Server_Object::setup_Tracker_Fastrak (char * & pch, char * line
             "Opening vrpn_Tracker_Fastrak: %s on port %s, baud %d\n",
             s2,s3,i1);
 
-#if defined(sgi) || defined(linux) || defined(WIN32)
-
         if ( (trackers[num_trackers] = mytracker =
              new vrpn_Tracker_Fastrak(s2, connection, s3, i1, 1, 4, rcmd, do_is900_timing))
                             == NULL){
 
-#endif
-
           fprintf(stderr,"Can't create new vrpn_Tracker_Fastrak\n");
           return -1;
-
-#if defined(sgi) || defined(linux) || defined(WIN32)
 
         } else {
 	  // If the last character in the line is a front slash, '/', then
@@ -1183,8 +1220,6 @@ int vrpn_Generic_Server_Object::setup_Tracker_Fastrak (char * & pch, char * line
 
           num_trackers++;
         }
-
-#endif
 
   return 0;
 }
@@ -1783,17 +1818,11 @@ int vrpn_Generic_Server_Object::setup_Tracker_InterSense(char * &pch, char *line
 		printf("Opening vrpn_Tracker_InterSense: %s on port %s\n",
                trackerName, commStr);
 
-#if defined(sgi) || defined(linux) || defined(WIN32) || defined(MACOSX)
-
      if ( (trackers[num_trackers] = mytracker =
              new vrpn_Tracker_InterSense(trackerName, connection, commPort, rcmd, do_is900_timing, 
 				reset_at_start)) == NULL){
-#endif
-
           fprintf(stderr,"Can't create new vrpn_Tracker_InterSense\n");
           return -1;
-
-#if defined(sgi) || defined(linux) || defined(WIN32) || defined(MACOSX)
 
      } else {
 		// If the last character in the line is a front slash, '/', then
@@ -1864,7 +1893,6 @@ int vrpn_Generic_Server_Object::setup_Tracker_InterSense(char * &pch, char *line
       num_trackers++;
   }
 
-#endif
 #else
 	fprintf(stderr, "vrpn_server: Can't open Intersense native server: VRPN_USE_ISENSE not defined in vrpn_Configure.h!\n");
 	return -1;
@@ -2441,6 +2469,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
             CHECK(setup_Tracker_Flock);
 	  } else if (isit("vrpn_Tracker_Flock_Parallel")) {
             CHECK(setup_Tracker_Flock_Parallel);
+	  } else if (isit("vrpn_Tracker_3DMouse")) {
+	    CHECK(setup_Tracker_3DMouse);
 	  } else if (isit("vrpn_Tracker_NULL")) {
             CHECK(setup_Tracker_NULL);
 	  } else if (isit("vrpn_Button_Python")) {
