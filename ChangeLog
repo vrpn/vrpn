@@ -1,5 +1,12 @@
 2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* Makefile : Including vrpn_Mouse class in the server build.
+	* vrpn_Mouse.h : Linux GPM-based mouse driver submitted by
+		Mike Weiblen at 3DLabs.
+	* vrpn_Mouse.C : Same.
+
+2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn.dsp : Adding Logitech 3DMouse into the Windows build.
 	* vrpndll.dsp : Same.
 	* vrpn_Tracker_3DMouse.C : Switching to C++ type casts and putting
