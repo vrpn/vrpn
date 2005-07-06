@@ -168,10 +168,6 @@ class VRPN_API vrpn_Endpoint {
     vrpn_int32 tcp_outbuf_size (void) const;
     vrpn_int32 udp_outbuf_size (void) const;
 
-    // Has a clock sync occured yet (slight prob of false negative, but 
-    // only for a brief period)
-    vrpn_bool clockSynced (void) const;
-
     vrpn_bool doing_okay (void) const;
 
     // MANIPULATORS
@@ -253,10 +249,6 @@ class VRPN_API vrpn_Endpoint {
     int pack_type_description (vrpn_int32 which);
       ///< Packs a type description.
 
-    int setControlMsgTimeOffset(const timeval * offset);
-      ///< Offset endpoint should apply to timestamps of system messages,
-      ///< allows us to construct a log with the timestamps we want.
-
     int status;
 
 //XXX These should be protected; making them so will lead to making
@@ -282,11 +274,6 @@ class VRPN_API vrpn_Endpoint {
     long d_remoteLogMode;	// Mode to put the remote logging in
     char * d_remoteInLogName;	// Name of the remote log file
     char * d_remoteOutLogName;	// Name of the remote log file
-
-    // offset of clocks on connected machines -- local - remote
-    // (this should really not be here, it should be in adjusted time
-    // connection, but this makes it a lot easier
-    timeval tvClockOffset;
 
     // Name of the remote host we are connected to.  This is kept for
     // informational purposes.  It is printed by the ceiling server,
@@ -347,6 +334,7 @@ class VRPN_API vrpn_Endpoint {
       ///< Need one for each due to different
       ///< clock synchronization for each; we
       ///< need to know which server each message is from.
+      ///< XXX Now that we don't need multiple clocks, can we collapse this?
 
     char * d_tcpOutbuf;
     char * d_udpOutbuf;
@@ -391,11 +379,8 @@ class VRPN_API vrpn_Connection {
 
   public:
 
-	// Users should not create vrpn_Connection directly -- use 
-	// vrpn_Synchronized_Connection (for servers) or 
-	// vrpn_get_connection_by_name (for clients).  This is here
-	// only for those who KNOW that they want to create
-	// non-time-synchronized connections for servers.
+	// Use vrpn_get_connection_by_name to create a connection
+        // for clients.
 	vrpn_Connection (unsigned short listen_port_no =
 		         vrpn_DEFAULT_LISTEN_PORT_NO,
                          const char * local_in_logfile_name = NULL,
@@ -476,10 +461,6 @@ class VRPN_API vrpn_Connection {
         virtual int register_log_filter (vrpn_LOGFILTER filter,
                                          void * userdata);
 
-    int setControlMsgTimeOffset(const timeval * offset);
-      ///< Offset endpoint should apply to timestamps of system messages,
-      ///< allows us to construct a log with the timestamps we want.
-
         // Save any messages on any endpoints which have been logged so far.
         virtual int save_log_so_far();
 
@@ -493,30 +474,38 @@ class VRPN_API vrpn_Connection {
     static vrpn_Endpoint * allocateEndpoint (vrpn_Connection *,
                                              vrpn_int32 * connectedEC);
 
-      ///< Redefining this and passing it to constructors
-      ///< allows a subclass to use a different subclass of Endpoint.
-      ///< It should do NOTHING but return an endpoint
-      ///< of the appropriate class;  it may not access subclass data,
-      ///< since it'll be called from a constructor
+    ///< Redefining this and passing it to constructors
+    ///< allows a subclass to use a different subclass of Endpoint.
+    ///< It should do NOTHING but return an endpoint
+    ///< of the appropriate class;  it may not access subclass data,
+    ///< since it'll be called from a constructor
 
-      //   Create a connection -  if server_name is not a file: name,
-      // makes an SDI-like connection to the named remote server
-      // (otherwise functions as a non-networked messaging hub).
-      // Port less than zero forces default.
-      //   Currently, server_name is an extended URL that defaults
-      // to VRPN connections at the port, but can be file:: to read
-      // from a file.  Other extensions should maintain this, so
-      // that VRPN uses URLs to name things that are to be connected
-      // to.
-      vrpn_Connection (const char * server_name,
-                       int port = vrpn_DEFAULT_LISTEN_PORT_NO,
-                       const char * local_in_logfile_name = NULL,
-                       const char * local_out_logfile_name = NULL,
-                       const char * remote_in_logfile_name = NULL,
-                       const char * remote_out_logfile_name = NULL,
-                       const char * NIC_IPaddress = NULL,
-                       vrpn_Endpoint * (* epa) (vrpn_Connection *,
-                         vrpn_int32 *) = allocateEndpoint);
+    friend VRPN_API vrpn_Connection * vrpn_get_connection_by_name (
+        const char * cname,
+        const char * local_in_logfile_name,
+        const char * local_out_logfile_name,
+        const char * remote_in_logfile_name,
+        const char * remote_out_logfile_name,
+        const char * NIC_IPaddress);
+
+    //   Create a connection -  if server_name is not a file: name,
+    // makes an SDI-like connection to the named remote server
+    // (otherwise functions as a non-networked messaging hub).
+    // Port less than zero forces default.
+    //   Currently, server_name is an extended URL that defaults
+    // to VRPN connections at the port, but can be file:: to read
+    // from a file.  Other extensions should maintain this, so
+    // that VRPN uses URLs to name things that are to be connected
+    // to.
+    vrpn_Connection (const char * server_name,
+                     int port = vrpn_DEFAULT_LISTEN_PORT_NO,
+                     const char * local_in_logfile_name = NULL,
+                     const char * local_out_logfile_name = NULL,
+                     const char * remote_in_logfile_name = NULL,
+                     const char * remote_out_logfile_name = NULL,
+                     const char * NIC_IPaddress = NULL,
+                     vrpn_Endpoint * (* epa) (vrpn_Connection *,
+                       vrpn_int32 *) = allocateEndpoint);
 
     int connectionStatus;		// Status of the connection
 
@@ -586,7 +575,6 @@ class VRPN_API vrpn_Connection {
   public:
 	void addReference();
 	void removeReference();
-	void removeReferenceWithoutDeleting();
   private:
 	int d_references;
 
@@ -647,65 +635,6 @@ class VRPN_API vrpn_Connection {
 };
 
 
-// forward decls
-class VRPN_API	vrpn_Clock_Server;
-class VRPN_API	vrpn_Clock_Remote;
-
-// NOTE: the clock offset is calculated only if the freq is >= 0
-// if it is -1, then the offset is only calced and used if the
-// client specifically calls fullSync on the vrpn_Clock_Remote.
-// if the freq is -2, then the offset is calced immediately using
-// full sync.
-// Time stamp for messages on the connection server are never
-// adjusted (only the clients get adjusted time stamps).
-
-// NOTE: eventually this should just be another system message type
-//       rather than a separate class, but right now i don't have time
-//       for that.
-
-class VRPN_API vrpn_Synchronized_Connection : public vrpn_Connection
-{
-  public:
-    // Create a connection to listen for incoming connections on a port
-    // server call.  If no IP address for the NIC to use is specified,
-    // uses the default NIC.
-    vrpn_Synchronized_Connection (unsigned short listen_port_no =
-		         vrpn_DEFAULT_LISTEN_PORT_NO,
-                         const char * local_in_logfile_name = NULL,
-                         const char * local_out_logfile_name = NULL,
-                         const char * NIC_IPaddress = NULL,
-                         vrpn_Endpoint * (* epa) (vrpn_Connection *,
-                             vrpn_int32 *) = allocateEndpoint);
-    vrpn_Clock_Server * pClockServer;
-
-    // Makes a connection to a remote server or to a file, depending on
-    // the portion of the server_name argument after the "@" sign.
-    // freq is the frequency of clock syncs (<0 means only on user request)
-    // cOffsetWindow is how many syncs to include in search window for min
-    // roundtrip.  Higher values are more accurate but result in a sync
-    // which accumulates drift error more quickly.
-    vrpn_Synchronized_Connection
-	 (const char * server_name,
-          int port = vrpn_DEFAULT_LISTEN_PORT_NO,
-          const char * local_in_logfile_name = NULL,
-          const char * local_out_logfile_name = NULL,
-          const char * remote_in_logfile_name = NULL,
-          const char * remote_out_logfile_name = NULL,
-	  double dFreq = 4.0, 
-	  int cOffsetWindow = 2,
-          const char * NIC_IPaddress = NULL,
-          vrpn_Endpoint * (* epa) (vrpn_Connection *,
-            vrpn_int32 *) = allocateEndpoint);
-
-    // fullSync will perform an accurate sync on the connection for the
-    // user and return the current offset
-    ~vrpn_Synchronized_Connection();
-    struct timeval fullSync();
-    vrpn_Clock_Remote * pClockRemote;
-    virtual int mainloop (const struct timeval * timeout = NULL );
-};
-
-// 1hz sync connection by default, windowed over last three bounces 
 // WARNING:  vrpn_get_connection_by_name() may not be thread safe.
 // If no IP address for the NIC to use is specified, uses the default
 // NIC.
@@ -715,8 +644,6 @@ VRPN_API vrpn_Connection * vrpn_get_connection_by_name (
     const char * local_out_logfile_name = NULL,
     const char * remote_in_logfile_name = NULL,
     const char * remote_out_logfile_name = NULL,
-    double       dFreq               = 1.0,
-    int          cSyncWindow         = 3,
     const char * NIC_IPaddress       = NULL);
 
 

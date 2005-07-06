@@ -92,9 +92,6 @@ void handle_cntl_c (int) {
 
 void shutdown (void) {
 
-  const char * n;
-  long i;
-
   fprintf(stderr, "\nIn control-c handler.\n");
 
   if (btn) delete btn;

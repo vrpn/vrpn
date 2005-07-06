@@ -98,7 +98,6 @@ int gethostname (char *, int);
 
 #include "vrpn_Log.h"
 
-#include "vrpn_Clock.h"  // for vrpn_Synchronized_Connection
 #include "vrpn_FileConnection.h"  // for vrpn_get_connection_by_name
 
 //#define VERBOSE
@@ -2718,10 +2717,6 @@ vrpn_int32 vrpn_Endpoint::udp_outbuf_size (void) const {
   return d_udpBuflen;
 }
 
-vrpn_bool vrpn_Endpoint::clockSynced (void) const {
-  return tvClockOffset.tv_usec != 0;
-}
-
 vrpn_bool vrpn_Endpoint::doing_okay (void) const {
   return ((status >= TRYING_TO_CONNECT) || (status == LOGGING));
 }
@@ -2749,9 +2744,6 @@ void vrpn_Endpoint::init (void) {
     fprintf(stderr, "vrpn_Endpoint::init:  Out of memory!\n");
     return;
   }
-
-  tvClockOffset.tv_sec = 0;
-  tvClockOffset.tv_usec = 0;
 
   d_inLog = new vrpn_Log (d_senders, d_types);
 
@@ -3923,22 +3915,6 @@ int vrpn_Endpoint::getOneTCPMessage (int fd, char * buf, int buflen) {
    return -1;
   }
 
-#if 0
-  cerr << " remote time is " << time.tv_sec
-       << " " << time.tv_usec << endl;
-  cerr << " offset is " << tvClockOffset.tv_sec
-       << " " << tvClockOffset.tv_usec << endl;
-#endif
-  // Adjust the time within the message from remote time to
-  // local time. This is needed both for delivery and for
-  // logging.
-  time = vrpn_TimevalSum(time, tvClockOffset);
-
-#if 0
-  cerr << " local time is " << time.tv_sec
-       << " " << time.tv_usec << endl;
-#endif
-
   if (d_inLog->logIncomingMessage (payload_len, time, type, sender, buf)) {
     fprintf(stderr, "Couldn't log incoming message.!\n");
     return -1;
@@ -3999,17 +3975,6 @@ int vrpn_Endpoint::getOneUDPMessage (char * inbuf_ptr, int inbuf_len) {
      fprintf(stderr, "vrpn_Endpoint::getOneUDPMessage:  Can't read payload");
      return -1;
   }
-
-#if 0
-        cerr << " remote time is " << time.tv_sec
-             << " " << time.tv_usec << endl;
-        cerr << " offset is " << tvClockOffset.tv_sec
-             << " " << tvClockOffset.tv_usec << endl;
-#endif
-  // Adjust the time within the message from remote time to
-  // local time. This is needed both for delivery and for
-  // logging.
-  time = vrpn_TimevalSum(time, tvClockOffset);
 
   if (d_inLog->logIncomingMessage
        (payload_len, time, type, sender, inbuf_ptr)) {
@@ -4361,29 +4326,6 @@ int vrpn_Endpoint::pack_sender_description (vrpn_int32 which) {
        vrpn_CONNECTION_RELIABLE);
 }
 
-/** Set an offset that the endpoint should add to the timestamp it gets from
-   vrpn_gettimeofday before it sends drop connection system messages. Allows us to
-   construct a log file with something other than wall-clock time for system
-   messages. I was having a problem with dropped connection, specifically, but
-   if other messages are a problem, it can be extended to those.  
-*/
-int vrpn_Endpoint::setControlMsgTimeOffset(const timeval * offset)
-{
-    d_controlMsgTimeOffset.tv_sec = offset->tv_sec;
-    d_controlMsgTimeOffset.tv_usec = offset->tv_usec;
-    return 0;
-}
-
-void VRPN_CALLBACK setClockOffset( void *userdata, const vrpn_CLOCKCB info )
-{
-#if 0
-  cerr << "clock offset is " << vrpn_TimevalMsecs(info.tvClockOffset) 
-       << " msecs (used round trip which took " 
-       << 2*vrpn_TimevalMsecs(info.tvHalfRoundTrip) << " msecs)." << endl;
-#endif
-  (*(struct timeval *) userdata) = info.tvClockOffset;
-}
-
 int flush_udp_socket (int fd) {
   timeval localTimeout;
   fd_set readfds, exceptfds;
@@ -4529,25 +4471,6 @@ int vrpn_Connection::pack_sender_description (vrpn_int32 which) {
     }
   }
 
-  return 0;
-}
-
-/** Set time offset for all endpoints. See
- vrpn_Endpoint::setControlMsgTimeOffset  for more. 
-*/
-int vrpn_Connection::setControlMsgTimeOffset(const timeval * offset)
-{
-  int retval;
-  int i;
-
-  for (i = 0; i < d_numEndpoints; i++) {
-    if (d_endpoints[i]) {
-      retval = d_endpoints[i]->setControlMsgTimeOffset(offset);
-      if (retval) {
-        return -1;
-      }
-    }
-  }
   return 0;
 }
 
@@ -5596,8 +5519,6 @@ vrpn_Connection::~vrpn_Connection (void) {
 }
 
 // Some object is now using this connection.
-// Note that the vrpn_Clock_Server or vrpn_Clock_Remote internal to
-//  a vrpn_Synchronized_Connection does not participate in the ref count.
 void vrpn_Connection::addReference()
 {
 	d_references++;
@@ -5608,8 +5529,6 @@ void vrpn_Connection::addReference()
 //  Once it's no longer in use destroy the connection iff d_autoDeleteStatus
 //  has been set to TRUE.  If d_autoDeleteStatus is FALSE, the user must
 //  destroy the connection explicitly.
-// Note that the vrpn_Clock_Server or vrpn_Clock_Remote internal to
-//  a vrpn_Synchronized_Connection does not participate in the ref count.
 void vrpn_Connection::removeReference()
 {
 	d_references--;
@@ -5621,22 +5540,6 @@ void vrpn_Connection::removeReference()
 		fprintf(stderr, "Negative reference count.  This shouldn't happen.");
 	}
 }
-
-// This function decrements the reference count, but does not delete the object
-//  when its ref count reaches 0.
-// This is used by the vrpn_BaseClass constructor when creating a
-//  vrpn_Clock_Server/Remote object to go with a vrpn_Synchronized_Connection.
-//  This is done in order to exclude the clock from reference counting.
-void vrpn_Connection::removeReferenceWithoutDeleting()
-{
-	d_references--;
-
-	// sanity check
-	if (d_references < 0) {	// this shouldn't happen.
-		fprintf(stderr, "Negative reference count.  This shouldn't happen.");
-	}
-}
-
 
 vrpn_int32 vrpn_Connection::register_sender (const char * name) {
    vrpn_int32 retval;
@@ -5820,154 +5723,6 @@ vrpn_bool vrpn_Connection::connected (void) const
 }
 
 
-
-vrpn_Synchronized_Connection::vrpn_Synchronized_Connection
-    (unsigned short listen_port_no,
-     const char * local_in_logfile,
-     const char * local_out_logfile,
-     const char * NIC_IPaddress,
-     vrpn_Endpoint * (* epa) (vrpn_Connection *, vrpn_int32 *)) :
-    vrpn_Connection (listen_port_no, local_in_logfile, local_out_logfile,
-                     NIC_IPaddress, epa),
-    pClockServer (NULL),
-    pClockRemote (NULL)
-{
-   pClockServer = new vrpn_Clock_Server (this);
-}
-
-// register the base connection name so that vrpn_Clock_Remote can use it
-vrpn_Synchronized_Connection::vrpn_Synchronized_Connection
-         (const char * server_name,
-	  int port,
-          const char * local_in_logfile,
-          const char * local_out_logfile,
-          const char * remote_in_logfile,
-          const char * remote_out_logfile,
-          double dFreq, 
-	  int cSyncWindow,
-          const char * NIC_IPaddress,
-          vrpn_Endpoint * (* epa) (vrpn_Connection *, vrpn_int32 *)) :
-    vrpn_Connection (server_name, port, local_in_logfile, local_out_logfile,
-                     remote_in_logfile, remote_out_logfile, NIC_IPaddress, epa),
-    pClockServer (NULL),
-    pClockRemote (NULL)
-{
-
-  if (!doing_okay()) {
-    return;
-  }
-
-  // DO WE NEED TO ALLOW COOKIE_PENDING HERE?
- 
-   // AAS added this: these weren't getting put into the log file
-   // created by the stream file translator and that was causing
-   // some troubling error messages (9/22/00)
-#ifdef VERBOSE
-   printf("Packing sender description for %s\n", vrpn_CONTROL);
-   printf("Packing type description for %s\n", 
-		vrpn_got_first_connection);
-   printf("Packing type description for %s\n",
-                vrpn_got_connection);
-   printf("Packing type description for %s\n",
-                vrpn_dropped_connection);
-   printf("Packing type description for %s\n",
-                vrpn_dropped_last_connection);
-#endif
-   pack_sender_description(d_dispatcher->registerSender(vrpn_CONTROL));
-   pack_type_description(
-         d_dispatcher->registerType(vrpn_got_first_connection));
-   pack_type_description(
-         d_dispatcher->registerType(vrpn_got_connection));
-   pack_type_description(
-         d_dispatcher->registerType(vrpn_dropped_connection));
-   pack_type_description(
-         d_dispatcher->registerType(vrpn_dropped_last_connection));
-
-  pClockRemote = new vrpn_Clock_Remote (server_name, dFreq, cSyncWindow);
-  pClockRemote->register_clock_sync_handler(&d_endpoints[0]->tvClockOffset, 
-					    setClockOffset );
-   // -2 as freq tells connection to immediately perform
-   // a full sync to calc clock offset accurately.
-   if (dFreq==-2) {
-#ifdef	VERBOSE
-     printf("vrpn_Synchronized_Connection: starting full sync\n");
-#endif
-     // register messages
-     mainloop();
-     mainloop();
-
-     // do full sync
-#ifdef	VERBOSE
-     printf("vrpn_Synchronized_Connection: calling full sync\n");
-#endif
-     pClockRemote->fullSync();
-     mainloop();
-   }
-}
-
-vrpn_Synchronized_Connection::~vrpn_Synchronized_Connection() {
-  if (pClockServer) {
-    delete pClockServer; pClockServer = NULL;
-  }
-  if (pClockRemote) {
-    delete pClockRemote; pClockRemote = NULL;
-  }
-}
-
-struct timeval vrpn_Synchronized_Connection::fullSync (void)
-{
-  if (pClockRemote) {
-    // set the fullsync flag
-    pClockRemote->fullSync();
-    // call the mainloop to do the sync
-    mainloop();
-  } else {
-    perror("vrpn_Synchronized_Connection::fullSync: only valid for clients");
-  }
-
-  // Since this is only valid for clients, we can assume that the
-  // client connection has instantiated endpoint[0].
-  return d_endpoints[0]->tvClockOffset;
-}
-
-int vrpn_Synchronized_Connection::mainloop (const struct timeval * timeout)
-{
-  // If we are broken, say so once a second
-  if (connectionStatus == BROKEN) {
-    static struct timeval last_told = {0,0};
-    static struct timeval now;
-    vrpn_gettimeofday(&now, NULL);
-    if (now.tv_sec != last_told.tv_sec) {
-      fprintf(stderr, "vrpn_Synchronized_Connection::mainloop: Connection object is broken\n");
-      memcpy(&last_told, &now, sizeof(last_told));
-    }
-    return -1;
-  }
-
-  // If we are not in a connected state, don't do synchronization, just
-  // call the parent class mainloop()
-  //if (connectionStatus != CONNECTED) {
-  if (!d_numConnectedEndpoints) {
-	return vrpn_Connection::mainloop(timeout);
-  }
-  if (pClockServer && d_numConnectedEndpoints) {
-    pClockServer->mainloop();
-    // call the base class mainloop
-    return vrpn_Connection::mainloop(timeout);
-  } 
-  else if (pClockRemote && d_numEndpoints) {
-    // the remote device always calls the base class connection mainloop already
-    pClockRemote->mainloop();
-  } 
-  else {
-    fprintf(stderr,
-	"vrpn_Synchronized_Connection::mainloop: no clock client or server\n");
-    return -1;
-  }
-  return 0;
-}
-
-
 //------------------------------------------------------------------------
 //	This section holds data structures and functions to open
 // connections by name.
@@ -6006,8 +5761,6 @@ vrpn_Connection * vrpn_get_connection_by_name (
 	const char * local_out_logfile_name,
 	const char * remote_in_logfile_name,
 	const char * remote_out_logfile_name,
-	double       dFreq,
-	int          cSyncWindow,
 	const char * NIC_IPaddress)
 {
 	if (cname == NULL) {
@@ -6041,10 +5794,10 @@ vrpn_Connection * vrpn_get_connection_by_name (
 			                              local_out_logfile_name);
 		} else {
 			int port = vrpn_get_port_number(cname);
-			c = new vrpn_Synchronized_Connection (cname, port,
+			c = new vrpn_Connection (cname, port,
 				local_in_logfile_name, local_out_logfile_name,
 				remote_in_logfile_name, remote_out_logfile_name,
-				dFreq, cSyncWindow, NIC_IPaddress);
+				NIC_IPaddress);
 		}
 
 		if (c) {	// creation succeeded

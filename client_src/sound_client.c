@@ -85,7 +85,7 @@ int main(int argc, char** argv)
 	printf("Please enter the sound device name you wish to connect to.\n");
 	scanf("%s", device);
 	
-	vrpn_Synchronized_Connection connection(server);
+	vrpn_Connection(server);
 	soundClient = new vrpn_Sound_Client(device, &connection);
 
 	for(i = 0; i < 100; i++)

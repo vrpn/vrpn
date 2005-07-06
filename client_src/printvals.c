@@ -111,7 +111,6 @@ void init (const char * station_name,
 {
 	char devicename [1000];
 	//char * hn;
-	int port;
 
   vrpn_int32 gotConn_type;
 
@@ -129,14 +128,11 @@ fprintf(stderr, "Opening file %s.\n", station_name);
           }
 	} else {
 fprintf(stderr, "Connecting to host %s.\n", station_name);
-	  port = vrpn_get_port_number(station_name);
-	  c = new vrpn_Synchronized_Connection
-	  //c = new vrpn_DelayedConnection
-                   //(vrpn_MsecsTimeval(0.0),
-                    (station_name, port,
+	  c = vrpn_get_connection_by_name
+                    (station_name,
 		    local_in_logfile, local_out_logfile,
 		    remote_in_logfile, remote_out_logfile,
-                    1.0, 3, NIC);
+                    NIC);
           if (delayTime > 0.0) {
             //((vrpn_DelayedConnection *) c)->setDelay
                               //(vrpn_MsecsTimeval(delayTime * 1000.0));

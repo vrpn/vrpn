@@ -39,8 +39,8 @@ extern void readAndParseRouterConfigFile( void );
 
 /**************************************************************************************/
 // GLOBAL VARIABLES
-vrpn_Synchronized_Connection	c;
-vrpn_Synchronized_Connection *	connection = &c;	// ptr to VRPN connection
+vrpn_Connection	c;
+vrpn_Connection *	connection = &c;	// ptr to VRPN connection
 vrpn_Router *					router;				// ptr to video router server
 
 const int minInputChannel  = vrpn_INPUT_CHANNEL_MIN;	// lowest channel #

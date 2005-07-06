@@ -783,7 +783,7 @@ vrpn_PeerMutex::vrpn_PeerMutex (const char * name, int port,
     fprintf(stderr, "vrpn_PeerMutex:  NULL name!\n");
     return;
   }
-  d_server = new vrpn_Synchronized_Connection (static_cast<unsigned short>(port), NULL, NULL, NICaddress);
+  d_server = new vrpn_Connection (static_cast<unsigned short>(port), NULL, NULL, NICaddress);
   if (d_server) {
     d_server->addReference();
     d_server->setAutoDeleteStatus(true);

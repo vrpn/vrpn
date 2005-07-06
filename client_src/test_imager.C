@@ -36,13 +36,13 @@ bool  init_test_image(void)
 //-----------------------------------------------------------------
 // This section contains code that does what the server should do
 
-vrpn_Synchronized_Connection  *svrcon;	//< Connection for server to talk on
+vrpn_Connection  *svrcon;	//< Connection for server to talk on
 vrpn_Imager_Server	      *svr;	//< Image server to be used to send
 int			      svrchan;	//< Server channel index for image data
 
 bool  init_server_code(void)
 {
-  if ( (svrcon = new vrpn_Synchronized_Connection()) == NULL) {
+  if ( (svrcon = new vrpn_Connection()) == NULL) {
     fprintf(stderr, "Could not open server connection\n");
     return false;
   }
@@ -166,6 +166,9 @@ int main(unsigned argc, char *argv[])
     mainloop_server_code();
     mainloop_client_code();
   }
+
+  if (clt) { delete clt; }
+  if (svr) { delete svr; }
 
   return 0;
 }

@@ -157,7 +157,7 @@ main (int argc, char * argv[])
   // Need to have a global pointer to it so we can shut it down
   // in the signal handler (so we can close any open logfiles.)
   //vrpn_Synchronized_Connection	connection;
-  connection = new vrpn_Synchronized_Connection
+  connection = new vrpn_Connection
        (port, g_inLogName, g_outLogName, g_NICname);
 
   // Create the generic server object and make sure it is doing okay.

@@ -1,5 +1,26 @@
 2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn.dsp : Removed vrpn_Clock.C and .h files from those needed.
+	* vrpndll.dsp : Same.
+	* vrpn_BaseClass.C : Removed option to not count an object when
+		doing reference counting.  This was only in there for the
+		synchronized connections, which are now gone.
+	* vrpn_BaseClass.h : Same.
+	* vrpn_Clock.C : Removed.
+	* vrpn_Clock.h : Removed.
+	* vrpn_Connection.C : Removed references to vrpn_Clock, and the
+		implementation of vrpn_Synchronized_Connection.  This is
+		going to break every server ever compiled for VRPN, but the
+		fix is to change to using a vrpn_Connection wherever there
+		was a vrpn_Synchronized_Connection before.  If you were
+		including the parameters for the clock frequency and
+		interval, remove them.
+	* vrpn_Connection.h : Same.
+	* vrpn_ForwarderController.C : Removed Synchronized.
+	* vrpn_Mutex.C : Same.
+
+2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn.dsp : Adding vrpn_Mouse to Windows build.
 	* vrpndll.dsp : Same.
 	* vrpn_Mouse.C : Modified so that it will compile on Windows.

@@ -209,13 +209,9 @@ int vrpn_TextPrinter::text_message_handler(void *userdata, vrpn_HANDLERPARAM p)
     Sets the servicename field to be the part of the name coming before
     the "@" sign in the name.
     
-    userRefCount_ indicates whether this object should participate in the reference counting
-    mechanism of d_connection.  If unspecified, useRefCount is TRUE.  Typically, it will only
-    be FALSE for the vrpn_Clock_Server/Remote created automatically by vrpn_Synchronized_Connection.
-    
     vrpn_BaseClassUnique is a virtual base class so it will only be called once, while
     vrpn_BaseClass may be called multiple times.
-    Setting d_connection, d_servicename, and d_useRefCount only needs to be done once
+    Setting d_connection and d_servicename, only needs to be done once
     for each object (even if it inherits from multiple device classes).  So these
     things should technically go into the vrpn_BaseClassUnique constructor, except that
     it is unable to accept parameters.  If the vrpn_BaseClassUnique constructor
@@ -227,15 +223,13 @@ int vrpn_TextPrinter::text_message_handler(void *userdata, vrpn_HANDLERPARAM p)
     As a result, this constructor must make sure that it only executes the code therein once.
 */
 
-vrpn_BaseClass::vrpn_BaseClass (const char * name, vrpn_Connection * c, bool useRefCount)
+vrpn_BaseClass::vrpn_BaseClass (const char * name, vrpn_Connection * c)
 {
     bool firstTimeCalled = (d_connection==NULL);  // has the constructor been called before?
     // note that this might also be true if it was called once before but failed.
 
     if (firstTimeCalled)
     {
-        d_useRefCount = useRefCount;
-
         // Get the connection for this object established. If the user passed in a
         // NULL connection object, then we determine the connection from the name of
         // the object itself (for example, Tracker0@mumble.cs.unc.edu will make a
@@ -244,17 +238,9 @@ vrpn_BaseClass::vrpn_BaseClass (const char * name, vrpn_Connection * c, bool use
         // The vrpn_BassClassUnique destructor handles the deletion of this connection.
         if (c) {	// using existing connection.
             d_connection = c;
-            if (d_useRefCount) {
-                d_connection->addReference();
-            }
+            d_connection->addReference();
         } else {
             d_connection = vrpn_get_connection_by_name(name);
-            // GCBN will always call addReference().  if we don't want this object
-            // to participate in reference counting, manually decrement d_connection's
-            // ref count in order to compensate.
-            if (!d_useRefCount && d_connection!=NULL) {
-                d_connection->removeReferenceWithoutDeleting();
-            }
         }
 
         // Get the part of the name for this device that does not include the connection.
@@ -383,7 +369,7 @@ vrpn_BaseClassUnique::~vrpn_BaseClassUnique ()
     }
 
     // notify the connection that this object is no longer using it.
-    if (d_useRefCount && d_connection!=NULL) {
+    if (d_connection!=NULL) {
         d_connection->removeReference();
     }
 

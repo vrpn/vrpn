@@ -1,3 +1,13 @@
+2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* clock_client.C : Removed.
+	* vrpnTrackerClient.cpp : Same.
+	* printcereal.C : Removed Synchronized.
+	* printvals.c : Same.
+	* sound_client.c : same.
+	* test_imager.C : Deleted objects that had been created, to
+		avoid reference-count warning at the end.
+
 2005-04-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* testimager_client.C : Clears image to black so that

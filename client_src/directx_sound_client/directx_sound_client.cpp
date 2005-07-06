@@ -12,7 +12,7 @@ vrpn_Sound_Client *soundClient;
 float X,Y,Z,adj;
 int numconnections;
 int numSounds = 0;
-vrpn_Synchronized_Connection connection;
+vrpn_Connection connection;
 
 void MoveListener()
 {
@@ -189,7 +189,7 @@ int main(int argc, char** argv)
 	printf("Please enter the sound device name you wish to connect to.\n");
 	scanf("%s", device);
 */	
-	vrpn_Synchronized_Connection connection("localhost");
+	vrpn_Connection connection("localhost");
 	soundClient = new vrpn_Sound_Client("sound", &connection);
 	
 	for(i = 0; i < 100; i++)

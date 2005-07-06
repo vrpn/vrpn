@@ -37,7 +37,7 @@ int main (int argc, char * argv[])
   // Need to have a global pointer to it so we can shut it down
   // in the signal handler (so we can close any open logfiles.)
   //vrpn_Synchronized_Connection	connection;
-  if ( (g_connection = new vrpn_Synchronized_Connection()) == NULL) {
+  if ( (g_connection = new vrpn_Connection()) == NULL) {
     fprintf(stderr, "Could not open connection\n");
     return -1;
   }

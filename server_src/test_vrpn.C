@@ -198,7 +198,7 @@ int main (int argc, char * argv [])
 
 	//---------------------------------------------------------------------
 	// explicitly open the connection
-	connection = new vrpn_Synchronized_Connection(CONNECTION_PORT);
+	connection = new vrpn_Connection(CONNECTION_PORT);
 
 	//---------------------------------------------------------------------
 	// Open the tracker server, using this connection, 2 sensors, update 1 times/sec

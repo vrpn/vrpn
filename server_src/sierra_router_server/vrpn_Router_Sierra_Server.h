@@ -25,8 +25,8 @@ protected:
 
 /**************************************************************************************/
 // GLOBAL VARIABLES
-extern vrpn_Synchronized_Connection	c;			// VRPN connection
-extern vrpn_Synchronized_Connection *	connection;		// ptr to VRPN connection
+extern vrpn_Connection	c;			// VRPN connection
+extern vrpn_Connection *	connection;		// ptr to VRPN connection
 extern vrpn_Router *			router;			// ptr to video router server
 
 extern const int minInputChannel;	// lowest channel #

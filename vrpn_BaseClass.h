@@ -147,8 +147,6 @@ class VRPN_API vrpn_BaseClassUnique {
   protected:
         vrpn_Connection *d_connection;  ///< Connection that this object talks to
         char *d_servicename;            ///< Name of this device, not including the connection part
-        bool d_useRefCount;    // Whether or not this object should affect
-                               //  the reference count of d_connection.
 
         vrpn_int32 d_sender_id;		///< Sender ID registered with the connection
         vrpn_int32 d_text_message_id;	///< ID for text messages
@@ -218,7 +216,7 @@ class VRPN_API vrpn_BaseClass : virtual public vrpn_BaseClassUnique {
 
 	/// Names the device and assigns or opens connection,
         /// calls registration methods
-	vrpn_BaseClass (const char * name, vrpn_Connection * c = NULL, bool useRefCount=true);
+	vrpn_BaseClass (const char * name, vrpn_Connection * c = NULL);
 
 	virtual ~vrpn_BaseClass();
 

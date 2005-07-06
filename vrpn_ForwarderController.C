@@ -197,7 +197,7 @@ void vrpn_Forwarder_Server::start_remote_forwarding
   fp = new vrpn_Forwarder_List;
 
   fp->port = remote_port;
-  fp->connection = new vrpn_Synchronized_Connection ((unsigned short)remote_port);
+  fp->connection = new vrpn_Connection ((unsigned short)remote_port);
   fp->forwarder = new vrpn_ConnectionForwarder
        (d_connection, fp->connection);
 

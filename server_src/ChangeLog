@@ -1,5 +1,14 @@
 2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* client_and_server.C : Removed Synchronized.
+	* test_analogfly.C : Same.
+	* test_radamec_spi.C : Same.
+	* test_vrpn.C : Same.
+	* testimager_server.cpp : Same.
+	* vrpn.C : Same.
+
+2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
         * Makefile : Adds new library on Linux needed by mouse driver.
         * vrpn_Generic_Server_Object.h : Adds Linux GPM-based mouse driver
 		submitted by Mike Weiblen at 3DLabs.

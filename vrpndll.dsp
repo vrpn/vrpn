@@ -128,10 +128,6 @@ SOURCE=.\vrpn_CerealBox.C
 # End Source File
 # Begin Source File
 
-SOURCE=.\vrpn_Clock.C
-# End Source File
-# Begin Source File
-
 SOURCE=.\vrpn_Connection.C
 # End Source File
 # Begin Source File
@@ -361,10 +357,6 @@ SOURCE=.\vrpn_Button.h
 # Begin Source File
 
 SOURCE=.\vrpn_CerealBox.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\vrpn_Clock.h
 # End Source File
 # Begin Source File
 
