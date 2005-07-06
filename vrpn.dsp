@@ -290,6 +290,10 @@ SOURCE=.\vrpn_Tracker_ButtonFly.C
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_Tracker_Crossbow.C
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_Tracker_DTrack.C
 # End Source File
 # Begin Source File
@@ -519,6 +523,10 @@ SOURCE=.\vrpn_Tracker_AnalogFly.h
 # Begin Source File
 
 SOURCE=.\vrpn_Tracker_ButtonFly.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Tracker_Crossbow.h
 # End Source File
 # Begin Source File
 

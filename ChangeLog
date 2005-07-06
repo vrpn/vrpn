@@ -1,5 +1,13 @@
 2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn.dsp : Adding Crossbow into the set of files built
+		into VRPN.
+	* vrpndll.dsp : Same.
+	* vrpn_Tracker_Crossbow.C : Changed warning pragmas to work
+		with VC6.0.
+
+2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Tracker_Crossbow.h : Driver from Chris V. for a
 		Crossbow accelerometer and rate gyro server.
 	* vrpn_Tracker_Crossbow.C : Same.
