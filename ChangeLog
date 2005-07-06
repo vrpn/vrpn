@@ -1,5 +1,12 @@
 2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn.dsp : Adding Logitech 3DMouse into the Windows build.
+	* vrpndll.dsp : Same.
+	* vrpn_Tracker_3DMouse.C : Switching to C++ type casts and putting
+		in some more to prevent compile-time warnings on Windows.
+
+2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Tracker_3DMouse.C : Driver for Logitech 3D Mouse
 		provided by Jinseok Seo from the VR Lab of
 		POSTECH in Korea.

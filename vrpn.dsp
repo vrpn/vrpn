@@ -282,6 +282,10 @@ SOURCE=.\vrpn_Tracker.C
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_Tracker_3DMouse.C
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_Tracker_AnalogFly.C
 # End Source File
 # Begin Source File
@@ -515,6 +519,10 @@ SOURCE=.\vrpn_Tng3.h
 # Begin Source File
 
 SOURCE=.\vrpn_Tracker.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Tracker_3DMouse.h
 # End Source File
 # Begin Source File
 

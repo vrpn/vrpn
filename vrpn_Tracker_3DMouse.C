@@ -208,106 +208,105 @@ int vrpn_Tracker_3DMouse::get_report(void)
    waittime.tv_sec = 2;
 
    if (status == vrpn_TRACKER_SYNCING) {
-		unsigned char tmpc;
+	unsigned char tmpc;
 
-		if (vrpn_write_characters(serial_fd, (const unsigned char*)"*d", 2) !=2)
-		{
-			perror("  3DMouse write command failed");
-			status = vrpn_TRACKER_RESETTING;
-			return 0;
-		}
-		ret = vrpn_read_available_characters(serial_fd, _buffer+count, 16-count, &waittime);
-		if (ret < 0)
-		{
-			perror("  3DMouse read failed (disconnected)");
-			status = vrpn_TRACKER_RESETTING;
-			return 0;
-		}
-
-		count += ret;
-		if (count < 16) return 0;
-		if (count > 16)
-		{
-			perror("  3DMouse read failed (wrong message)");
-			status = vrpn_TRACKER_RESETTING;
-			return 0;
-		}
-
-		count = 0;
-		
-
-		tmpc = _buffer[0];
-		if (tmpc & 32)
-		{
-			//printf("port%d: Out of Range\n", i);
-			//ret |= 1 << (3-i);
-		} else
-		{
-			long ax, ay, az;           // integer form of absolute translational data
-			short arx, ary, arz;       // integer form of absolute rotational data
-			float p, y, r;
-
-			ax = (_buffer[1] & 0x40) ? 0xFFE00000 : 0;
-			ax |= (long)(_buffer[1] & 0x7f) << 14;
-			ax |= (long)(_buffer[2] & 0x7f) << 7;
-			ax |= (_buffer[3] & 0x7f);
-
-			ay = (_buffer[4] & 0x40) ? 0xFFE00000 : 0;
-			ay |= (long)(_buffer[4] & 0x7f) << 14;
-			ay |= (long)(_buffer[5] & 0x7f) << 7;
-			ay |= (_buffer[6] & 0x7f);
-
-			az = (_buffer[7] & 0x40) ? 0xFFE00000 : 0;
-			az |= (long)(_buffer[7] & 0x7f) << 14;
-			az |= (long)(_buffer[8] & 0x7f) << 7;
-			az |= (_buffer[9] & 0x7f);
-
-			pos[0] = ((float) ax) / 100000.0f * 2.54f;
-			pos[2] = ((float) ay) / 100000.0f * 2.54f;
-			pos[1] = -(((float) az) / 100000.0f * 2.54f);
-
-			arx  = (_buffer[10] & 0x7f) << 7;
-			arx += (_buffer[11] & 0x7f);
-
-			ary  = (_buffer[12] & 0x7f) << 7;
-			ary += (_buffer[13] & 0x7f);
-
-			arz  = (_buffer[14] & 0x7f) << 7;
-			arz += (_buffer[15] & 0x7f);
-
-			p = ((float) arx) / 40.0f;		// pitch
-			y = ((float) ary) / 40.0f;		// yaw
-			r = ((float) arz) / 40.0f;		// roll
-
-			p = p * M_PI / 180;
-			y = y * M_PI / 180;
-			r = (360-r) * M_PI / 180;
-
-			float cosp2 = cos(p/2);
-			float cosy2 = cos(y/2);
-			float cosr2 = cos(r/2);
-			float sinp2 = sin(p/2);
-			float siny2 = sin(y/2);
-			float sinr2 = sin(r/2);
-
-			d_quat[0] = cosr2*sinp2*cosy2 + sinr2*cosp2*siny2;
-			d_quat[1] = sinr2*cosp2*cosy2 + cosr2*sinp2*siny2;
-			d_quat[2] = cosr2*cosp2*siny2 + sinr2*sinp2*cosy2;
-			d_quat[3] = cosr2*cosp2*cosy2 + sinr2*sinp2*siny2;
-
-		}
-
-		buttons[0] = tmpc & 16;		// Mouse stand button
-		buttons[1] = tmpc & 8;		// Suspend button
-		buttons[2] = tmpc & 4;		// Left button
-		buttons[3] = tmpc & 2;		// Middle button
-		buttons[4] = tmpc & 1;		// Right button
+	if (vrpn_write_characters(serial_fd, (const unsigned char*)"*d", 2) !=2)
+	{
+		perror("  3DMouse write command failed");
+		status = vrpn_TRACKER_RESETTING;
+		return 0;
+	}
+	ret = vrpn_read_available_characters(serial_fd, _buffer+count, 16-count, &waittime);
+	if (ret < 0)
+	{
+		perror("  3DMouse read failed (disconnected)");
+		status = vrpn_TRACKER_RESETTING;
+		return 0;
 	}
 
-	vrpn_Button::report_changes();
+	count += ret;
+	if (count < 16) return 0;
+	if (count > 16)
+	{
+		perror("  3DMouse read failed (wrong message)");
+		status = vrpn_TRACKER_RESETTING;
+		return 0;
+	}
 
-	status = vrpn_TRACKER_SYNCING;
-	bufcount = 0;
+	count = 0;
+	
+	tmpc = _buffer[0];
+	if (tmpc & 32)
+	{
+		//printf("port%d: Out of Range\n", i);
+		//ret |= 1 << (3-i);
+	} else
+	{
+		long ax, ay, az;           // integer form of absolute translational data
+		short arx, ary, arz;       // integer form of absolute rotational data
+		float p, y, r;
+
+		ax = (_buffer[1] & 0x40) ? 0xFFE00000 : 0;
+		ax |= (long)(_buffer[1] & 0x7f) << 14;
+		ax |= (long)(_buffer[2] & 0x7f) << 7;
+		ax |= (_buffer[3] & 0x7f);
+
+		ay = (_buffer[4] & 0x40) ? 0xFFE00000 : 0;
+		ay |= (long)(_buffer[4] & 0x7f) << 14;
+		ay |= (long)(_buffer[5] & 0x7f) << 7;
+		ay |= (_buffer[6] & 0x7f);
+
+		az = (_buffer[7] & 0x40) ? 0xFFE00000 : 0;
+		az |= (long)(_buffer[7] & 0x7f) << 14;
+		az |= (long)(_buffer[8] & 0x7f) << 7;
+		az |= (_buffer[9] & 0x7f);
+
+		pos[0] = static_cast<float>(ax / 100000.0 * 2.54);
+		pos[2] = static_cast<float>(ay / 100000.0 * 2.54);
+		pos[1] = -static_cast<float>(az / 100000.0f * 2.54);
+
+		arx  = (_buffer[10] & 0x7f) << 7;
+		arx += (_buffer[11] & 0x7f);
+
+		ary  = (_buffer[12] & 0x7f) << 7;
+		ary += (_buffer[13] & 0x7f);
+
+		arz  = (_buffer[14] & 0x7f) << 7;
+		arz += (_buffer[15] & 0x7f);
+
+		p = static_cast<float>(arx / 40.0);		// pitch
+		y = static_cast<float>(ary / 40.0);		// yaw
+		r = static_cast<float>(arz / 40.0);		// roll
+
+		p = static_cast<float>(p * M_PI / 180);
+		y = static_cast<float>(y * M_PI / 180);
+		r = static_cast<float>((360-r) * M_PI / 180);
+
+		float cosp2 = static_cast<float>(cos(p/2));
+		float cosy2 = static_cast<float>(cos(y/2));
+		float cosr2 = static_cast<float>(cos(r/2));
+		float sinp2 = static_cast<float>(sin(p/2));
+		float siny2 = static_cast<float>(sin(y/2));
+		float sinr2 = static_cast<float>(sin(r/2));
+
+		d_quat[0] = cosr2*sinp2*cosy2 + sinr2*cosp2*siny2;
+		d_quat[1] = sinr2*cosp2*cosy2 + cosr2*sinp2*siny2;
+		d_quat[2] = cosr2*cosp2*siny2 + sinr2*sinp2*cosy2;
+		d_quat[3] = cosr2*cosp2*cosy2 + sinr2*sinp2*siny2;
+
+	}
+
+	buttons[0] = tmpc & 16;		// Mouse stand button
+	buttons[1] = tmpc & 8;		// Suspend button
+	buttons[2] = tmpc & 4;		// Left button
+	buttons[3] = tmpc & 2;		// Middle button
+	buttons[4] = tmpc & 1;		// Right button
+    }
+
+    vrpn_Button::report_changes();
+
+    status = vrpn_TRACKER_SYNCING;
+    bufcount = 0;
 
 #ifdef VERBOSE2
       print_latest_report();
