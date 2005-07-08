@@ -37,7 +37,7 @@
 // server, using phantom as a common device, and phantom
 // configuration in .cfg file.
 // PLEASE SPECIFY PATH TO GHOSTLIB IN NEXT SECTION IF YOU USE THIS
-#define     VRPN_USE_PHANTOM_SERVER
+//#define     VRPN_USE_PHANTOM_SERVER
 
 //------------------------
 // Instructs vrpn to use SensAble's HDAPI rather than GHOST library.
@@ -49,7 +49,7 @@
 // things also fail).  At least we're rid of them now.  When you
 // uncomment it (to use GHOST), add the following to the include
 // directories for the vrpn_phantom project: $(SYSTEMDRIVE)\Program Files\SensAble\GHOST\v4.0\include,$(SYSTEMDRIVE)\Program Files\SensAble\GHOST\v4.0\external\stl,
-#define VRPN_USE_HDAPI
+//#define VRPN_USE_HDAPI
 
 //------------------------
 // Instructs vrpn to use Ghost 3.1 instead of Ghost 3.4.
@@ -83,7 +83,7 @@
 // the DirectX SDK (from its standard installation in C:\DXSDK).
 // Later in this file, we also instruct the compiler to link with
 // the DirectX library if this is defined.
-#define	VRPN_USE_DIRECTINPUT
+//#define	VRPN_USE_DIRECTINPUT
 
 //-----------------------
 // Instructs the VRPN server to create an entry for the Adrienne
@@ -131,6 +131,22 @@
 // Not implemented for .so-based Unix systems.
 //#define VRPN_USE_SHARED_LIBRARY
 
+//------------------------------------------------------------------//
+// EDIT THESE DEFINITIONS IF YOUR SYSTEM IS NON-STANDARD.  THEY ARE //
+// USED BELOW TO LOCATE LIBRARIES AND INCLUDE FILES.                //
+//------------------------------------------------------------------//
+
+#define VRPN_SYSTEMDRIVE "D:"
+
+#define VRPN_HDAPI_PATH         VRPN_SYSTEMDRIVE "/Program Files/SensAble/3DTouch/lib/"
+#define VRPN_HDAPI_UTIL_PATH    VRPN_SYSTEMDRIVE "/Program Files/SensAble/3DTouch/utilities/lib/"
+#define VRPN_GHOST_31_PATH      VRPN_SYSTEMDRIVE "/Program Files/SensAble/GHOST/v3.1/lib/"
+#define VRPN_GHOST_40_PATH      VRPN_SYSTEMDRIVE "/Program Files/SensAble/GHOST/v4.0/lib/"
+
+#define VRPN_DIRECT_X_PATH      VRPN_SYSTEMDRIVE "/DXSDK/lib/"
+
+#define VRPN_NIDAQ_PATH         VRPN_SYSTEMDRIVE "/Program Files/National Instruments/NI-DAQ/Lib/"
+
 //---------------------------------------------------------------//
 // DO NOT EDIT BELOW THIS LINE FOR NORMAL CONFIGURATION SETTING. //
 //---------------------------------------------------------------//
@@ -142,17 +158,17 @@
 // Settings/C++/preprocessor tab.
 #ifdef VRPN_USE_PHANTOM_SERVER
   #ifdef VRPN_USE_HDAPI
-    #pragma comment (lib,"hd.lib")
+    #pragma comment (lib, VRPN_HDAPI_PATH "hd.lib")
     #ifdef	_DEBUG
-      #pragma comment (lib,"hdud.lib")
+      #pragma comment (lib,VRPN_HDAPI_UTIL_PATH "hdud.lib")
     #else
-      #pragma comment (lib,"hdu.lib")
+      #pragma comment (lib,VRPN_HDAPI_UTIL_PATH "hdu.lib")
     #endif
   #else
     #ifdef VRPN_USE_GHOST_31
-      #pragma comment (lib,"GHOST31.lib")
+      #pragma comment (lib,VRPN_GHOST_31_PATH "GHOST31.lib")
     #else
-      #pragma comment (lib,"GHOST40.lib")
+      #pragma comment (lib,VRPN_GHOST_40_PATH "GHOST40.lib")
     #endif
   #endif
 #endif
@@ -164,9 +180,9 @@
 // turned on and off using the definition above.
 #ifdef	VRPN_USE_DIRECTINPUT
 #define	DIRECTINPUT_VERSION 0x0800
-#pragma comment (lib, "D:/DXSDK/lib/dxguid.lib")
-#pragma comment (lib, "D:/DXSDK/lib/dxerr8.lib")
-#pragma comment (lib, "D:/DXSDK/lib/dinput8.lib")
+#pragma comment (lib, VRPN_DIRECT_X_PATH "dxguid.lib")
+#pragma comment (lib, VRPN_DIRECT_X_PATH "dxerr8.lib")
+#pragma comment (lib, VRPN_DIRECT_X_PATH "dinput8.lib")
 #endif
 
 // Load Adrienne libraries if we are using the timecode generator.
@@ -187,8 +203,8 @@
 // the various project files.  The paths to the include files are in the
 // Settings/C++/preprocessor tab.
 #ifdef	VRPN_USE_NATIONAL_INSTRUMENTS
-#pragma comment (lib, "nidaq32.lib")
-#pragma comment (lib, "nidex32.lib")
+#pragma comment (lib, VRPN_NIDAQ_PATH "nidaq32.lib")
+#pragma comment (lib, VRPN_NIDAQ_PATH "nidex32.lib")
 #endif
 
 // This will be defined in the VRPN (non-DLL) project and nothing else
@@ -206,6 +222,7 @@
 
 // For client code, make sure we add the proper library dependency to the linker
 #ifdef _WIN32
+#pragma comment (lib, "wsock32.lib")  // VRPN requires the Windows Sockets library.
 #ifdef VRPN_USE_SHARED_LIBRARY
 #ifdef VRPNDLL_EXPORTS
 #define  VRPN_API		 __declspec(dllexport) 
@@ -215,7 +232,7 @@
 #endif
 #else
 #ifndef VRPNDLL_NOEXPORTS
-#pragma comment (lib, "vrpn.lib")
+#pragma comment (lib, "vrpn.lib")     // We'll need the VRPN library
 #endif
 #define  VRPN_API
 #endif
