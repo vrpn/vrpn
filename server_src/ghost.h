@@ -95,27 +95,34 @@
 
   class vrpn_HapticPlane {
   public:
-    vrpn_HapticPlane() { d_A = d_B = d_D = 0; d_C = 1; }
+    // Normalize the parameters so that we have an equivalent
+    // plane, but the (A,B,C) vector is normalized and D is
+    // modified to put the plane where we were asked to.  This way,
+    // we can rapidly compute penetration depth without having to do
+    // this calculation later.
+    vrpn_HapticPlane() { d_A = d_B = d_D = 0; d_C = 1; normalize(); }
     vrpn_HapticPlane(double a, double b, double c, double d)
-      { d_A = a; d_B = b; d_C = c; d_D = d; };
+      { d_A = a; d_B = b; d_C = c; d_D = d; normalize();};
     vrpn_HapticPlane(const vrpn_HapticPlane &p)
-      { d_A = p.d_A; d_B = p.d_B; d_C = p.d_C; d_D = p.d_D; }
+      { d_A = p.d_A; d_B = p.d_B; d_C = p.d_C; d_D = p.d_D; normalize(); }
     vrpn_HapticPlane(const vrpn_HapticPlane *p)
-      { d_A = p->d_A; d_B = p->d_B; d_C = p->d_C; d_D = p->d_D; }
+      { d_A = p->d_A; d_B = p->d_B; d_C = p->d_C; d_D = p->d_D; normalize(); }
     vrpn_HapticPlane(const vrpn_HapticVector &v, double d)
-      { d_A = v[0]; d_B = v[1]; d_C = v[2]; d_D = d; }
+      { d_A = v[0]; d_B = v[1]; d_C = v[2]; d_D = d; normalize(); }
     vrpn_HapticPlane(const vrpn_HapticVector &v, const vrpn_HapticPosition &p) {
       d_A = v[0]; d_B = v[1]; d_C = v[2];
       d_D = - ( d_A*p[0] + d_B*p[1] + d_C*p[2] );
+      normalize();
     }
 
     double a() const { return d_A; }
     double b() const { return d_B; }
     double c() const { return d_C; }
     double d() const { return d_D; }
+
+    // The plane will always have been normalized, so the normal is a unit normal.
     vrpn_HapticVector normal(void) const {
-      double len = sqrt( d_A*d_A + d_B*d_B + d_C*d_C );
-      return vrpn_HapticVector(d_A/len, d_B/len, d_C/len);
+      return vrpn_HapticVector(d_A, d_B, d_C);
     }
     double error(vrpn_HapticPosition p) const {
       return p[0]*d_A + p[1]*d_B + p[2]*d_C + d_D;
@@ -146,6 +153,16 @@
     }
   protected:
     double d_A, d_B, d_C, d_D;
+    void normalize(void) {
+      double len = sqrt( d_A*d_A + d_B*d_B + d_C*d_C );
+      if (len != 0) {
+        d_A /= len;
+        d_B /= len;
+        d_C /= len;
+        d_D /= len;   // Also adjust this so the plane stays at the same place
+      }
+    }
+
   };
 
   // XXX Translation is stored in first three entries in last row from HDAPI.
@@ -354,6 +371,7 @@
   typedef struct {
     double  pose[4][4];
     double  last_pose[4][4];
+    double  max_stiffness;
     int	  instant_rate;
     int	  buttons;
   } HDAPI_state;

@@ -63,7 +63,6 @@ void    VRPN_CALLBACK handle_tracker_change(void *userdata, const vrpn_TRACKERCB
     forceDevice->set_plane(xpos,ypos,zpos, (float)(-radius*norm));
 
     forceDevice->sendSurface();
-
 }
 
 void	VRPN_CALLBACK handle_button_change(void *userdata, const vrpn_BUTTONCB b)
@@ -101,7 +100,6 @@ int main(int argc, char *argv[])
 
   /* initialize the force device */
   forceDevice = new vrpn_ForceDevice_Remote(device_name);
-//  if (forceDevice == (vrpn_ForceDevice_Remote *)0) exit(-1);
   forceDevice->register_force_change_handler(NULL, handle_force_change);
 
   /* initialize the tracker */
@@ -112,13 +110,14 @@ int main(int argc, char *argv[])
   button = new vrpn_Button_Remote(device_name);
   button->register_change_handler(&done, handle_button_change);
 
+  // Wait until we are connected to the server.
   while (!forceDevice->connectionPtr()->connected()) {
       forceDevice->mainloop();
   }
 
-
-  // Set plane and surface parameters
-  forceDevice->set_plane(0.0, 1.0, 0.0, 0.0);
+  // Set plane and surface parameters.  Initially, the plane will be
+  // far outside the volume so we don't get a sudden jerk at startup.
+  forceDevice->set_plane(0.0, 1.0, 0.0, 100.0);
 
 /*-------------------------------------------------------------
 correct ranges for these values (from GHOST 1.2 documentation):
@@ -127,10 +126,10 @@ Kspring: 0-1.0
 Kdamping: 0-0.005
 
 An additional constraint that I discovered is that dynamic friction must
-be smaller than static friction or you will get the same error.
+be smaller than static friction or you will get the same error.  "1.0" means
+the maximum stable surface presentable by the device.
 --------------------------------------------------------------*/
-  forceDevice->setSurfaceKspring(1.0); 	// spring constant - units of
-						                // dynes/cm
+  forceDevice->setSurfaceKspring(1.0);
 
   forceDevice->setSurfaceKdamping(0.0);	// damping constant -
                                             // units of dynes*sec/cm
@@ -145,10 +144,8 @@ be smaller than static friction or you will get the same error.
   forceDevice->setSurfaceTextureAmplitude(0.00); // meters!!!
   forceDevice->setSurfaceTextureWavelength((float)0.01); // meters!!!
 
-
-
   forceDevice->setRecoveryTime(10);	// recovery occurs over 10
-                                    // force update cycles
+                                        // force update cycles
 
   // enable force device and send first surface
   forceDevice->startSurface();
@@ -159,7 +156,6 @@ be smaller than static friction or you will get the same error.
   // main loop
   while (! done )
   {
-
     // Let the forceDevice send its planes to remote force device
     forceDevice->mainloop();
 
@@ -172,6 +168,12 @@ be smaller than static friction or you will get the same error.
 
   // shut off force device
   forceDevice->stopSurface();
+
+  // Delete the objects
+  delete forceDevice;
+  delete button;
+  delete tracker;
+
   return 0;
 }   /* main */
 

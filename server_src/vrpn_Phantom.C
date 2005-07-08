@@ -1,3 +1,4 @@
+//XXX Problem: Recovery time seems to have gotten itself unimplemented over time.
 #include  "vrpn_Configure.h"
 #ifdef	VRPN_USE_PHANTOM_SERVER
 #include <math.h>
@@ -96,6 +97,7 @@ HDCallbackCode HDCALLBACK readDeviceState(void *pUserData)
   hdGetDoublev(HD_CURRENT_TRANSFORM, &state->pose[0][0]);
   hdGetDoublev(HD_LAST_TRANSFORM, &state->last_pose[0][0]);
   hdGetIntegerv(HD_INSTANTANEOUS_UPDATE_RATE, &state->instant_rate);
+  hdGetDoublev(HD_NOMINAL_MAX_STIFFNESS, &state->max_stiffness);
 
   return HD_CALLBACK_DONE;
 }
@@ -143,7 +145,7 @@ HDCallbackCode HDCALLBACK HDAPIForceCallback(void *pUserData)
       // the plane times its spring constant.  We say there are no
       // collisions (not true) to avoid calling the code below.
       vrpn_HapticPosition	  where(current_position);
-      vrpn_HapticCollisionState	  state(where);
+      vrpn_HapticCollisionState	  collistion_state(where);
 
       //XXX Where did the collisionDetect() routine go for the dynamic plane?
 
@@ -153,7 +155,11 @@ HDCallbackCode HDCALLBACK HDAPIForceCallback(void *pUserData)
       //if (active) { printf("%lf, %lf, %lf,  %lf  (%lf)\n", plane.a(), plane.b(), plane.c(), plane.d(), g_active_force_object_list.Planes[i]->getSurfaceKspring()  ); }
       if (active && (depth > 0) ) {
 	g_active_force_object_list.SCP = plane.projectPoint(where);
-	g_active_force_object_list.CurrentForce += plane.normal() * depth * g_active_force_object_list.Planes[i]->getSurfaceKspring();
+
+        // Scale the spring constant by the maximum stable stiffness for the device.
+        // This is because the spring constant is in terms of this factor.
+	g_active_force_object_list.CurrentForce +=
+          plane.normal() * depth * g_active_force_object_list.Planes[i]->getSurfaceKspring() * state.max_stiffness;
       }
     }
 
@@ -244,8 +250,7 @@ void vrpn_Phantom::handle_plane(void *userdata,const vrpn_Plane_PHANTOMCB &p)
 	plane->setSurfaceFstatic(p2.SurfaceFstatic);
 	plane->setSurfaceFdynamic(p2.SurfaceFdynamic); 
 	plane->setSurfaceKdamping(p2.SurfaceKdamping);
-	// XXX Dynamic plane doesn't have recovery time implemented.
-	//plane->setNumRecCycles((int)p2.numRecCycles);
+	plane->setNumRecCycles((int)p2.numRecCycles);
 	plane->setActive(TRUE);
     }
 }
@@ -258,7 +263,7 @@ void vrpn_Phantom::check_parameters(vrpn_Plane_PHANTOMCB *p)
 {
     // only prints out errors every 5 seconds so that
     // we don't take too much time from servo loop
-    static int recentError = false;
+    static bool recentError = false;
     static timeval timeOfLastReport;
     timeval currTime;
 
@@ -266,12 +271,13 @@ void vrpn_Phantom::check_parameters(vrpn_Plane_PHANTOMCB *p)
 
     // if this is the first time check_parameters has been called then initialize
     // timeOfLastReport, otherwise this has no effect on behavior
-    if (recentError == false) {
-	    timeOfLastReport.tv_sec = currTime.tv_sec - 6;
+    if (!recentError) {
+	    timeOfLastReport.tv_sec = currTime.tv_sec;
 
     // if recentError is true then change it to false if enough time has elapsed
     } else if (currTime.tv_sec - timeOfLastReport.tv_sec > 5) {
 	    recentError = false;
+	    timeOfLastReport.tv_sec = currTime.tv_sec;
     }
 
     if (p->SurfaceKspring <= 0){

@@ -4,7 +4,7 @@
 	This class represents a planar surface which can have bumps, and
 	a dynamic plane with bumps that can jump up and down.
 
-	The port to HDAPI is not complete for these classes.  There is
+	XXX The port to HDAPI is not complete for these classes.  There is
 	something in the dynamics callback that is not working (probably),
 	and the Matrix class defined in ghost.h for the HDAPI implementation
 	also may not work.
@@ -54,10 +54,12 @@ public:
 		return 0;}
 
 	void setNumRecCycles(int nrc) {
-			if (nrc < 1) 
-			   printf("Error: setRecCycles(cycles < 1): %d\n",nrc);
-			else
-			   numRecoveryCycles = nrc;}
+          if (nrc < 1) {
+            numRecoveryCycles = 1;
+          } else {
+            numRecoveryCycles = nrc;
+          }
+        }
 
 	void setInEffect(vrpn_HapticBoolean effect) {inEffect = effect;}
 

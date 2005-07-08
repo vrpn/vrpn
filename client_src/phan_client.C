@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
                                                 // units of dynes*sec/cm
         forceDevice->setSurfaceFstatic(0.0); 	// set static friction
         forceDevice->setSurfaceFdynamic(0.0);	// set dynamic friction
-        forceDevice->setRecoveryTime(0);	// recovery occurs over 10
+        forceDevice->setRecoveryTime(10);	// recovery occurs over 10
                                                 // force update cycles
 
         forceDevice->setSurfaceBuzzAmplitude(0.0);

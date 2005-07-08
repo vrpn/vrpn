@@ -482,6 +482,10 @@ int main(int argc, char *argv[])
     g_forceDevice->mainloop();
   }
 
+  delete tracker;
+  delete button;
+  delete g_forceDevice;
+
   return 0;
 }   /* main */
 

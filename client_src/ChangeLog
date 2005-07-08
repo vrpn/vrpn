@@ -1,4 +1,10 @@
-2005-07-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+2005-07-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* forcedevice_test_client.cpp : Deleted objects before exiting.
+	* phan_client.C : Same.
+	* sphere_client.C : Same.
+
+2005-07-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* printcereal.dsp : Added include directories on $(SYSTEMDRIVE)
 		and lib directories also on $(SYSTEMDRIVE) so that the

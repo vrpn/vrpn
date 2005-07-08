@@ -1,4 +1,12 @@
-2005-07-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+2005-07-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* ghost.h : Normalizing planes as they come in to avoid having their
+		stiffness depend on the scaling of their A,B,C coefficients.
+	* texture_plane.h : Removing print statement.
+	* vrpn_Phantom.C : Making the error reporting that is supposed to
+		happen rarely indeed happen rarely.
+
+2005-07-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* client_and_server.dsp : Added include directories on $(SYSTEMDRIVE)
 		and lib directories also on $(SYSTEMDRIVE) so that the
