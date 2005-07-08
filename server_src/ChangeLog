@@ -1,3 +1,18 @@
+2005-07-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* client_and_server.dsp : Added include directories on $(SYSTEMDRIVE)
+		and lib directories also on $(SYSTEMDRIVE) so that the
+		apps can build correctly with only edits in the
+		vrpn_Configure.h file if things are installed in standard
+		locations.
+	* daq_server.dsp : Same.
+	* test_analogfly.dsp : Same.
+	* test_radamec_spi.dsp : Same.
+	* test_vrpn.dsp : Same.
+	* testimager_server.dsp : Same.
+	* vrpn_phantom.dsp : Same.
+	* vrpn_server.dsp : Same.
+
 2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* test_mutex.C : Removed Synchronized.
