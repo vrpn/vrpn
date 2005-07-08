@@ -1,3 +1,14 @@
+2005-07-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* time_test.dsp : Added include directories on $(SYSTEMDRIVE)
+		and lib directories also on $(SYSTEMDRIVE) so that the
+		apps can build correctly with only edits in the
+		vrpn_Configure.h file if things are installed in standard
+		locations.
+	* vrpn.dsp : Same.
+	* vrpn_Configure.h : Same.
+	* vrpndll.dsp : Same.
+
 2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Makefile : Removed vrpn_Clock.C and .h, which are

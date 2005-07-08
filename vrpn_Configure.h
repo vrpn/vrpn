@@ -46,7 +46,9 @@
 // Also, you need to go to the vrpn_phantom and vrpn_server projects
 // and remove the GHOST include directories from the include paths.
 // Yes, HDAPI fails if it even has them in the path (as so many other
-// things also fail).  At least we're rid of them now.
+// things also fail).  At least we're rid of them now.  When you
+// uncomment it (to use GHOST), add the following to the include
+// directories for the vrpn_phantom project: $(SYSTEMDRIVE)\Program Files\SensAble\GHOST\v4.0\include,$(SYSTEMDRIVE)\Program Files\SensAble\GHOST\v4.0\external\stl,
 //#define VRPN_USE_HDAPI
 
 //------------------------
@@ -135,19 +137,22 @@
 
 // Load VRPN Phantom library if we are using phantom server as unified server
 // Load SensAble Technologies GHOST library to run the Phantom
+// NOTE: The paths to these libraries are set in the Settings/Link tab of
+// the various project files.  The paths to the include files are in the
+// Settings/C++/preprocessor tab.
 #ifdef VRPN_USE_PHANTOM_SERVER
   #ifdef VRPN_USE_HDAPI
-    #pragma comment (lib,"C:/Program Files/SensAble/3DTouch/lib/hd.lib")
+    #pragma comment (lib,"hd.lib")
     #ifdef	_DEBUG
-      #pragma comment (lib,"C:/Program Files/SensAble/3DTouch/utilities/lib/hdud.lib")
+      #pragma comment (lib,"hdud.lib")
     #else
-      #pragma comment (lib,"C:/Program Files/SensAble/3DTouch/utilities/lib/hdu.lib")
+      #pragma comment (lib,"hdu.lib")
     #endif
   #else
     #ifdef VRPN_USE_GHOST_31
-      #pragma comment (lib,"C:/Program Files/SensAble/GHOST/v3.1/lib/GHOST31.lib")
+      #pragma comment (lib,"GHOST31.lib")
     #else
-      #pragma comment (lib,"C:/Program Files/SensAble/GHOST/v4.0/lib/GHOST40.lib")
+      #pragma comment (lib,"GHOST40.lib")
     #endif
   #endif
 #endif
@@ -159,9 +164,9 @@
 // turned on and off using the definition above.
 #ifdef	VRPN_USE_DIRECTINPUT
 #define	DIRECTINPUT_VERSION 0x0800
-#pragma comment (lib, "C:/Program Files/Microsoft DirectX 9.0 SDK (February 2005)/Lib/x86/dxguid.lib")
-#pragma comment (lib, "C:/Program Files/Microsoft DirectX 9.0 SDK (February 2005)/Lib/x86/dxerr8.lib")
-#pragma comment (lib, "C:/Program Files/Microsoft DirectX 9.0 SDK (February 2005)/Lib/x86/dinput8.lib")
+#pragma comment (lib, "D:/DXSDK/lib/dxguid.lib")
+#pragma comment (lib, "D:/DXSDK/lib/dxerr8.lib")
+#pragma comment (lib, "D:/DXSDK/lib/dinput8.lib")
 #endif
 
 // Load Adrienne libraries if we are using the timecode generator.
@@ -178,9 +183,12 @@
 // edit the following lines to point at the correct libraries.  Do
 // this here rather than in the project settings so that it can be
 // turned on and off using the definition above.
+// NOTE: The paths to these libraries are set in the Settings/Link tab of
+// the various project files.  The paths to the include files are in the
+// Settings/C++/preprocessor tab.
 #ifdef	VRPN_USE_NATIONAL_INSTRUMENTS
-#pragma comment (lib, "C:/Program Files/National Instruments/NI-DAQ/Lib/nidaq32.lib")
-#pragma comment (lib, "C:/Program Files/National Instruments/NI-DAQ/Lib/nidex32.lib")
+#pragma comment (lib, "nidaq32.lib")
+#pragma comment (lib, "nidex32.lib")
 #endif
 
 // This will be defined in the VRPN (non-DLL) project and nothing else

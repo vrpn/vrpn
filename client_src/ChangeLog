@@ -1,3 +1,20 @@
+2005-07-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* printcereal.dsp : Added include directories on $(SYSTEMDRIVE)
+		and lib directories also on $(SYSTEMDRIVE) so that the
+		apps can build correctly with only edits in the
+		vrpn_Configure.h file if things are installed in standard
+		locations.
+	* forcedevice_test_client.dsp : Same.
+	* printvals.h : Same.
+	* setrouter.dsp : Same.
+	* test_imager.dsp : Same.
+	* test_zaber.dsp : Same.
+	* testimager_client.dsp : Same.
+	* tracker_to_poser.dsp : Same.
+	* vrpn_Router_Client_GUI.dsp : Same.
+	* vrpn_print_devices.dsp : Same.
+
 2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* clock_client.C : Removed.

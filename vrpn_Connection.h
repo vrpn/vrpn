@@ -6,10 +6,6 @@
 #include "vrpn_Shared.h"
 #endif
 
-// NOTE: most users will want to use the vrpn_Synchronized_Connection
-// class rather than the default connection class (either will work,
-// a regular connection just has 0 as the client-server time offset)
-
 class VRPN_API	vrpn_File_Connection;  // Forward declaration for get_File_Connection()
 
 /// This structure is what is passed to a vrpn_Connection message callback.
