@@ -1,3 +1,11 @@
+2005-07-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Serial.C : Switched over to the termios-style commands
+		from the termio/ioctl() style.  This lets things compile
+		on the Mac platform and should retain backwards compatibility
+		with the other Unix/Linux platforms.  The code does indeed
+		compile on linux, sgi, and sparc.  Not yet tested.
+
 2005-07-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* time_test.dsp : Added include directories on $(SYSTEMDRIVE)

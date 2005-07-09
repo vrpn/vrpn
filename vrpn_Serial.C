@@ -8,33 +8,19 @@
 #include <fcntl.h>
 #include <ctype.h>
 
-#if defined(__sparc)
-#include <sys/termio.h>
+#ifndef _WIN32
 #include <termios.h>
-#endif
-
-#if defined(linux) || defined(__APPLE__) || defined(__GNUC__)
-#include <termios.h>
-#include <sys/errno.h>
-#endif
-
-#if defined(sgi) || defined(__sparc) || defined(__GNUC__)
 #include <errno.h>
 #endif
 
-#ifdef	_AIX
-#include <sys/termio.h>
-#endif
-
 #if !defined(_WIN32) || defined(__GNUC__)
-#include <sys/ioctl.h>
 #include <unistd.h>
 #include <netinet/in.h>
 #endif
 
-/*#if defined(__CYGWIN__)
-#include <sys/unistd.h>
-#endif*/
+#ifdef	_AIX
+#include <sys/termios.h>
+#endif
 
 #if defined(_WIN32)
 #include <io.h>
@@ -44,10 +30,6 @@
 #else
 //#include <afxcoll.h>
 #endif
-#endif
-
-#ifdef FreeBSD
-#include <termios.h>
 #endif
 
 #include "vrpn_Shared.h"
@@ -73,7 +55,7 @@ static int curCom = -1;
 
 int vrpn_open_commport(const char *portname, long baud, int charsize, vrpn_SER_PARITY parity)
 {
-#if defined(hpux) || defined(__hpux) || defined(ultrix) || defined(FreeBSD) || defined(__CYGWIN__) || defined(__APPLE__)
+#if defined(hpux) || defined(__hpux) || defined(ultrix) || defined(FreeBSD) || defined(__CYGWIN__)
 	fprintf(stderr,
 		"vrpn_open_commport(): Not yet implemented in this operating system\n");
 	return -1;
@@ -86,7 +68,7 @@ int vrpn_open_commport(const char *portname, long baud, int charsize, vrpn_SER_P
   BOOL fSuccess;
 #else
   int fileDescriptor;
-  struct termio   sttyArgs;
+  struct termios   sttyArgs;
 #endif
 
 
@@ -216,41 +198,33 @@ int vrpn_open_commport(const char *portname, long baud, int charsize, vrpn_SER_P
   }
 
   /* get current settings */
-  if ( ioctl(fileDescriptor, TCGETA , &sttyArgs) == -1 ) {
-    perror("vrpn_open_commport: ioctl failed");
+  if ( tcgetattr(fileDescriptor, &sttyArgs) == -1) {
+    perror("vrpn_open_commport: tcgetattr failed");
     return(-1);
   }
 
   /* override old values 	*/
-  // note, newer sgi's don't support regular ("old") stty speed
-  // settings -- they require the use of the new ospeed field to 
-  // use settings above 38400.  The O2 line can use any baud rate 
-  // up 460k (no fixed settings).
-#if defined(sgi) && defined(__NEW_MAX_BAUD)
-  sttyArgs.c_ospeed = baud;
-  sttyArgs.c_ispeed = baud;
-#else
-  sttyArgs.c_cflag &= ~CBAUD;
+  speed_t speed;
   switch (baud) {
-  case   300: sttyArgs.c_cflag |=   B300; break;
-  case  1200: sttyArgs.c_cflag |=  B1200; break;
-  case  2400: sttyArgs.c_cflag |=  B2400; break;
-  case  4800: sttyArgs.c_cflag |=  B4800; break;
-  case  9600: sttyArgs.c_cflag |=  B9600; break;
-  case 19200: sttyArgs.c_cflag |=  B19200; break;
-  case 38400: sttyArgs.c_cflag |=  B38400; break;
+    case   300: speed   = B300; break;
+    case  1200: speed   =  B1200; break;
+    case  2400: speed   =  B2400; break;
+    case  4800: speed   =  B4800; break;
+    case  9600: speed   =  B9600; break;
+    case 19200: speed   =  B19200; break;
+    case 38400: speed   =  B38400; break;
 #ifdef B57600
-  case 57600: sttyArgs.c_cflag |=  B57600; break;
+    case 57600: speed   =  B57600; break;
 #endif //End B57600
 #ifdef B115200
-  case 115200: sttyArgs.c_cflag |=  B115200; break;
+    case 115200: speed   =  B115200; break;
 #endif //End B115200
-  default:
-    fprintf(stderr,"vrpn_open_commport: unknown baud rate %ld\n",baud);
-    return -1;
+    default:
+      fprintf(stderr,"vrpn_open_commport: unknown baud rate %ld\n",baud);
+      return -1;
   }
-#endif //SGI NEX MAX BAUD check
-
+  cfsetispeed(&sttyArgs, speed);
+  cfsetospeed(&sttyArgs, speed);
 
   sttyArgs.c_iflag = (IGNBRK | IGNPAR);  /* Ignore break & parity errs */
   sttyArgs.c_oflag = 0;                  /* Raw output, leave tabs alone */
@@ -292,8 +266,8 @@ int vrpn_open_commport(const char *portname, long baud, int charsize, vrpn_SER_P
   sttyArgs.c_cc[VTIME] = 0;	/* Return without waiting */
   
   /* pass the new settings back to the driver */
-  if ( ioctl(fileDescriptor, TCSETA, &sttyArgs) == -1 ) {
-    perror("vrpn_open_commport: ioctl failed");
+  if ( tcsetattr(fileDescriptor, TCSANOW, &sttyArgs) == -1) {
+    perror("vrpn_open_commport: tcsetattr failed");
     close(fileDescriptor);
     return(-1);
   }
@@ -325,9 +299,6 @@ int vrpn_close_commport(int comm)
 // Set the RTS ("ready to send") bit on an open commport.
 int vrpn_set_rts(int comm)
 {
-#if defined(hpux) || defined(__hpux) || defined(ultrix) || defined(FreeBSD) || defined(__CYGWIN__) || defined(__APPLE__)
-  return -1;
-#else
 #if defined(_WIN32)
   // Determine the handle for this serial port by looking it
   // up in our list.  Then make the system call that Kyle from
@@ -340,11 +311,11 @@ int vrpn_set_rts(int comm)
   // enable RTS/CTS flow control, which is not the same thing
   // as setting the RTS line.  I don't see how to set the RTS
   // line any other way, so I hope this works.
-  struct termio   sttyArgs;
+  struct termios   sttyArgs;
 
   /* get current settings */
-  if ( ioctl(comm, TCGETA , &sttyArgs) == -1 ) {
-    perror("vrpn_set_rts: read ioctl failed");
+  if ( tcgetattr(comm, &sttyArgs) == -1) {
+    perror("vrpn_set_rts: tcgetattr failed");
     return(-1);
   }
 
@@ -356,39 +327,35 @@ int vrpn_set_rts(int comm)
 #endif
 
   /* pass the new settings back to the driver */
-  if ( ioctl(comm, TCSETA, &sttyArgs) == -1 ) {
-    perror("vrpn_set_rts: write ioctl failed");
+  if ( tcsetattr(comm, TCSANOW, &sttyArgs) == -1) {
+    perror("vrpn_set_rts: tcsetattr failed");
     return(-1);
   }
 
   return 0;
-#endif
 #endif
 }
 
 // Clear the RTS ("ready to send") bit on an open commport.
 int vrpn_clear_rts(int comm)
 {
-#if defined(hpux) || defined(__hpux) || defined(ultrix) || defined(FreeBSD) || defined(__CYGWIN__) || defined(__APPLE__)
-  return -1;
-#else
 #if defined(_WIN32)
   // Determine the handle for this serial port by looking it
   // up in our list.  Then make the system call that Kyle from
   // Ascension told us about.  Return 0 on success; the Windows
   // function returns nonzero on success
-  return EscapeCommFunction(commConnections[comm],CLRRTS) != 0;
+  return EscapeCommFunction(commConnections[comm],SETRTS) != 0;
 
 #else
   //XXX The man pages for Linux/Irix state that this will
-  // disable RTS/CTS flow control, which is not the same thing
-  // as clearing the RTS line.  I don't see how to clear the RTS
+  // enable RTS/CTS flow control, which is not the same thing
+  // as setting the RTS line.  I don't see how to set the RTS
   // line any other way, so I hope this works.
-  struct termio   sttyArgs;
+  struct termios   sttyArgs;
 
   /* get current settings */
-  if ( ioctl(comm, TCGETA , &sttyArgs) == -1 ) {
-    perror("vrpn_clear_rts: read ioctl failed");
+  if ( tcgetattr(comm, &sttyArgs) == -1) {
+    perror("vrpn_clear_rts: tcgetattr failed");
     return(-1);
   }
 
@@ -400,20 +367,19 @@ int vrpn_clear_rts(int comm)
 #endif
 
   /* pass the new settings back to the driver */
-  if ( ioctl(comm, TCSETA, &sttyArgs) == -1 ) {
-    perror("vrpn_clear_rts: write ioctl failed");
+  if ( tcsetattr(comm, TCSANOW, &sttyArgs) == -1) {
+    perror("vrpn_clear_rts: tcsetattr failed");
     return(-1);
   }
 
   return 0;
-#endif
 #endif
 }
 
 
 // empty the input buffer (discarding the chars)
 // Return 0 on success, -1 on failure.
-// NOT CALLED!  OBSOLETE? -- no ... used by vrpn_Flock
+// NOT CALLED!  OBSOLETE? -- no ... used by vrpn_Flock and others
 int vrpn_flush_input_buffer(int comm)
 {
 #if defined(hpux) || defined(__hpux) || defined(ultrix) || defined(__CYGWIN__)
