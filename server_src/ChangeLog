@@ -1,3 +1,12 @@
+2005-07-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg : Adds entry for serial mouse on mac through a
+		Keyspan serial-to-USB converter.  Adds entry for
+		a Linux box.
+	* vrpn.cfg.SAMPLE : Same.
+	* Makefile : Fixes so that it compiles on a mac without
+		the intersense libraries.
+
 2005-07-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* ghost.h : Normalizing planes as they come in to avoid having their

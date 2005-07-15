@@ -99,9 +99,11 @@ LIB_DIR := ../$(OBJ_DIR)
 CFLAGS = -g -I../ -I../../quat
 LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) 
 
-ifeq ($(HW_OS),powerpc_macosx)
-   CFLAGS = -g -I../ -I../../quat -I../../isense -DMACOSX
-   LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) ../../isense/MacOSX/dlcompat.o
+ifdef INTERSENSE
+  ifeq ($(HW_OS),powerpc_macosx)
+     CFLAGS = -g -I../ -I../../quat -I../../isense -DMACOSX
+     LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) ../../isense/MacOSX/dlcompat.o
+  endif
 endif
 
 .SUFFIXES: .cpp
