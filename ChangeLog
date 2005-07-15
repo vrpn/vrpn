@@ -1,3 +1,10 @@
+2005-07-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Serial.C : Debugged and tested on a mac.  Tested on
+		Linux box.  Only tested with the serial mouse, so
+		more testing should be done before we're entirely
+		certain that the port worked.
+
 2005-07-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Serial.C : Switched over to the termios-style commands

@@ -55,6 +55,9 @@ static int curCom = -1;
 
 int vrpn_open_commport(const char *portname, long baud, int charsize, vrpn_SER_PARITY parity)
 {
+#ifdef VERBOSE
+	printf("vrpn_open_commport(): Entering\n");
+#endif
 #if defined(hpux) || defined(__hpux) || defined(ultrix) || defined(FreeBSD) || defined(__CYGWIN__)
 	fprintf(stderr,
 		"vrpn_open_commport(): Not yet implemented in this operating system\n");
@@ -188,7 +191,7 @@ int vrpn_open_commport(const char *portname, long baud, int charsize, vrpn_SER_P
   // -- This section is "Not win32"
 
   // Open the serial port for r/w
-#ifdef sol
+#if defined(sol) || defined(__APPLE__) || defined(linux)
   if ( (fileDescriptor = open(portname, O_RDWR|O_NDELAY|O_NOCTTY)) == -1) {
 #else
   if ( (fileDescriptor = open(portname, O_RDWR)) == -1) {
@@ -197,6 +200,9 @@ int vrpn_open_commport(const char *portname, long baud, int charsize, vrpn_SER_P
     return -1;
   }
 
+#ifdef VERBOSE
+	printf("vrpn_open_commport(): Getting settings\n");
+#endif
   /* get current settings */
   if ( tcgetattr(fileDescriptor, &sttyArgs) == -1) {
     perror("vrpn_open_commport: tcgetattr failed");
@@ -265,6 +271,9 @@ int vrpn_open_commport(const char *portname, long baud, int charsize, vrpn_SER_P
   sttyArgs.c_cc[VMIN] = 0;	/* Return read even if no chars */
   sttyArgs.c_cc[VTIME] = 0;	/* Return without waiting */
   
+#ifdef VERBOSE
+	printf("vrpn_open_commport(): Setting settings\n");
+#endif
   /* pass the new settings back to the driver */
   if ( tcsetattr(fileDescriptor, TCSANOW, &sttyArgs) == -1) {
     perror("vrpn_open_commport: tcsetattr failed");
@@ -272,6 +281,9 @@ int vrpn_open_commport(const char *portname, long baud, int charsize, vrpn_SER_P
     return(-1);
   }
   
+#ifdef VERBOSE
+	printf("vrpn_open_commport(): Exiting\n");
+#endif
   return(fileDescriptor);
   // -- This section is "Not win32"
 #endif  // _WIN32
@@ -282,6 +294,9 @@ int vrpn_open_commport(const char *portname, long baud, int charsize, vrpn_SER_P
 //When finished close the commport.
 int vrpn_close_commport(int comm)
 {
+#ifdef VERBOSE
+	printf("vrpn_close_commport(): Entering\n");
+#endif
 #if defined(_WIN32) && !defined(__CYGWIN__)
 	int ret = CloseHandle(commConnections[comm]);
 
@@ -299,6 +314,9 @@ int vrpn_close_commport(int comm)
 // Set the RTS ("ready to send") bit on an open commport.
 int vrpn_set_rts(int comm)
 {
+#ifdef VERBOSE
+	printf("vrpn_set_rts(): Entering\n");
+#endif
 #if defined(_WIN32)
   // Determine the handle for this serial port by looking it
   // up in our list.  Then make the system call that Kyle from
@@ -339,6 +357,9 @@ int vrpn_set_rts(int comm)
 // Clear the RTS ("ready to send") bit on an open commport.
 int vrpn_clear_rts(int comm)
 {
+#ifdef VERBOSE
+	printf("vrpn_clear_rts(): Entering\n");
+#endif
 #if defined(_WIN32)
   // Determine the handle for this serial port by looking it
   // up in our list.  Then make the system call that Kyle from
@@ -382,6 +403,9 @@ int vrpn_clear_rts(int comm)
 // NOT CALLED!  OBSOLETE? -- no ... used by vrpn_Flock and others
 int vrpn_flush_input_buffer(int comm)
 {
+#ifdef VERBOSE
+	printf("vrpn_flush_input_buffer(): Entering\n");
+#endif
 #if defined(hpux) || defined(__hpux) || defined(ultrix) || defined(__CYGWIN__)
    fprintf(stderr,
 	"vrpn_flush_input_buffer: Not impemented on cygwin, ultrix, or HP\n");
@@ -404,6 +428,9 @@ int vrpn_flush_input_buffer(int comm)
 // NOT CALLED!  OBSOLETE? -- no ... used by vrpn_Flock
 int vrpn_flush_output_buffer(int comm)
 {
+#ifdef VERBOSE
+	printf("vrpn_flush_output_buffer(): Entering\n");
+#endif
 #if defined(hpux) || defined(__hpux) || defined(ultrix) || defined(__CYGWIN__)
    fprintf(stderr,
 	"vrpn_flush_output_buffer: Not impemented on NT, ultrix, HP, or cygwin\n");
@@ -424,6 +451,9 @@ int vrpn_flush_output_buffer(int comm)
 // NOT CALLED!  OBSOLETE? -- no ... used by vrpn_Flock
 int vrpn_drain_output_buffer(int comm)
 {
+#ifdef VERBOSE
+	printf("vrpn_drain_output_buffer(): Entering\n");
+#endif
 #if defined(hpux) || defined(__hpux) || defined(ultrix) || defined(__CYGWIN__)
    fprintf(stderr,
 	"vrpn_drain_output_buffer: Not impemented on NT, ultrix, or HP\n");
@@ -447,13 +477,15 @@ int vrpn_drain_output_buffer(int comm)
 // than the requested number may be returned.
 int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes)
 {
+#ifdef VERBOSE
+	printf("vrpn_read_available_characters(): Entering\n");
+#endif
 #if defined(_WIN32) && !defined(__CYGWIN__)
    BOOL fSuccess;
    DWORD numRead;
    COMSTAT cstat;
    DWORD errors;
    OVERLAPPED Overlapped;
-
 
    Overlapped.Offset = 0;
    Overlapped.OffsetHigh = 0;
@@ -507,6 +539,9 @@ int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes)
    }  while ((cReadThisTime!=0) && (cSpaceLeft>0));
    bRead = pch - buffer;
  
+#ifdef VERBOSE
+	printf("vrpn_read_available_characters(): Exiting\n");
+#endif
    return bRead;
 #endif
 }
@@ -518,6 +553,9 @@ int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes)
 int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes,
 		struct timeval *timeout) 
 {
+#ifdef VERBOSE
+	printf("vrpn_read_available_characters(timeout): Entering\n");
+#endif
 	struct	timeval	start, finish, now;
 	int	sofar = 0, ret;	// How many characters we have read so far
 	unsigned char *where = buffer;
@@ -550,6 +588,9 @@ int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes,
 		}
 	} while ( !(time_greater(now,finish)) );
 
+#ifdef VERBOSE
+	printf("vrpn_read_available_characters(timeout): Exiting\n");
+#endif
 	return sofar;
 }
 
@@ -557,6 +598,9 @@ int vrpn_read_available_characters(int comm, unsigned char *buffer, int bytes,
 
 int vrpn_write_characters(int comm, const unsigned char *buffer, int bytes)
 {
+#ifdef VERBOSE
+	printf("vrpn_write_characters(): Entering\n");
+#endif
 #if defined(_WIN32) && !defined(__CYGWIN__)
    BOOL fSuccess;
    DWORD numWritten;
