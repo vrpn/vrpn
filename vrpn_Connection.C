@@ -5822,16 +5822,20 @@ vrpn_Connection * vrpn_get_connection_by_name (
 // utility routines to parse names (<service>@<URL>)
 char * vrpn_copy_service_name (const char * fullname)
 {
-  int len = 1 + strcspn(fullname, "@");
-  char * tbuf = new char [len];
-  if (!tbuf)
-    fprintf(stderr, "vrpn_copy_service_name:  Out of memory!\n");
-  else {
-    strncpy(tbuf, fullname, len - 1);
-    tbuf[len - 1] = 0;
-//fprintf(stderr, "Service Name:  %s.\n", tbuf);
+  if (fullname == NULL) {
+    return NULL;
+  } else {
+    int len = 1 + strcspn(fullname, "@");
+    char * tbuf = new char [len];
+    if (!tbuf)
+      fprintf(stderr, "vrpn_copy_service_name:  Out of memory!\n");
+    else {
+      strncpy(tbuf, fullname, len - 1);
+      tbuf[len - 1] = 0;
+  //fprintf(stderr, "Service Name:  %s.\n", tbuf);
+    }
+    return tbuf;
   }
-  return tbuf;
 }
 
 char * vrpn_copy_service_location (const char * fullname)

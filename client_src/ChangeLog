@@ -1,3 +1,10 @@
+2005-07-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* clock_drift_estimator.C : Application to estimate the drift between
+		the local machine's clock and another machine's clock using
+		the PING/PONG response from an arbitrary server object.
+	* clock_drift_estimator.dsp : Project file for this.
+
 2005-07-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* forcedevice_test_client.cpp : Deleted objects before exiting.

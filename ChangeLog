@@ -1,3 +1,10 @@
+2005-07-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsw : Added a clock drift estimator project to the list
+		of available projects.
+	* vrpn_Connection.C : Modified the getservicename function so that
+		it doesn't seg fault if passed a NULL pointer.
+
 2005-07-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Serial.C : Debugged and tested on a mac.  Tested on
