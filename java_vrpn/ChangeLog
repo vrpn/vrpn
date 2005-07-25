@@ -1,3 +1,15 @@
+2005-07-24    <marshbur@cs.unc.edu>
+
+	* PoserRemote.java:  new, first implementation of java wrapping
+	for poser
+	* vrpn_PoserRemote.cpp:  new.  native code for java wrapping
+	* .cvsignore:  also ignore vrpn_PoserRemote.h (generated file)
+	* java_vrpn.vjp:  adds poser to the project.  removed temp imager
+	* java_vrpn.dsp:  adds poser to the project.
+	* java_vrpn.h,cpp:  adds function for poser.  commented out
+	functions for temp_imager.
+	* vrpn_AnalogOutputRemote.cpp:  corrected an error print statement
+	
 2004-10-20  David Marshburn  <marshbur@cs.unc.edu>
 
 	* java_vrpn.dsp:  rolled this back to before Oct. 2004.  Something

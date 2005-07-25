@@ -23,7 +23,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad_AnalogOutput_Remote( JavaVM* jvm, void* reserv
   // make sure the general library code set jvm
   if( jvm == NULL )
   {
-	printf( "vrpn_TrackerRemote native:  no jvm.\n" );
+	printf( "vrpn_AnalogOutputRemote native:  no jvm.\n" );
     return JNI_ERR;
   }
 

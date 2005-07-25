@@ -30,9 +30,14 @@ JNIEXPORT jint JNICALL JNI_OnLoad_ForceDevice_Remote( JavaVM* jvm, void* reserve
 JNIEXPORT void JNICALL JNI_OnUnload_ForceDevice_Remote( JavaVM* jvm, void* reserved );
 
 // TempImage_Remote Load/Unload
-JNIEXPORT jint JNICALL JNI_OnLoad_TempImagerRemote( JavaVM* jvm, void* reserved );
-JNIEXPORT void JNICALL JNI_OnUnload_TempImagerRemote( JavaVM* jvm, void* reserved );
+//JNIEXPORT jint JNICALL JNI_OnLoad_TempImagerRemote( JavaVM* jvm, void* reserved );
+//JNIEXPORT void JNICALL JNI_OnUnload_TempImagerRemote( JavaVM* jvm, void* reserved );
 
 // Tracker_Remote Load/Unload
 JNIEXPORT jint JNICALL JNI_OnLoad_Tracker_Remote( JavaVM* jvm, void* reserved );
 JNIEXPORT void JNICALL JNI_OnUnload_Tracker_Remote( JavaVM* jvm, void* reserved );
+
+// Poser_Remote Load/Unload
+JNIEXPORT jint JNICALL JNI_OnLoad_Poser_Remote( JavaVM* jvm, void* reserved );
+JNIEXPORT void JNICALL JNI_OnUnload_Poser_Remote( JavaVM* jvm, void* reserved );
+

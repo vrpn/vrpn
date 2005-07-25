@@ -5,6 +5,7 @@ vrpn_AnalogRemote.h
 vrpn_AnalogOutputRemote.h
 vrpn_ForceDeviceRemote.h
 vrpn_TempImagerRemote.h
+vrpn_PoserRemote.h
 codebase.dat
 vrpn
 vrpn.jar
