@@ -203,6 +203,7 @@ Java_vrpn_ButtonRemote_shutdownButton( JNIEnv* env, jobject jobj )
   if( t > 0 )
   {
     t->unregister_change_handler( jobj, handle_button_change );
+	t->connectionPtr()->removeReference(); // because we called vrpn_get_connection_by_name
     delete t;
   }
 

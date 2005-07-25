@@ -1,3 +1,17 @@
+2005-07-25  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_AnalogOutputRemote.cpp (shutdownAnalog):  changed the name
+	to shutdownAnalogOutput, as it should have been.  Also, 
+	call vrpn_Connection::removeReference, needed because we
+	initially got the connection with vrpn_get_connection_by_name.
+	* vrpn_AnalogRemote.cpp (shutdownAnalog):  call 
+	vrpn_Connection::removeReference, needed because we
+	initially got the connection with vrpn_get_connection_by_name.
+	* vrpn_ButtonRemote.cpp (shutdownButton):  same
+	* vrpn_ForceDeviceRemote.cpp (shutdownForceDevice):  same
+	* vrpn_PoserRemote.cpp (shutdownPoser):  same
+	* vrpn_TrackerRemote.cpp (shutdownTracker):  same
+
 2005-07-24    <marshbur@cs.unc.edu>
 
 	* PoserRemote.java:  new, first implementation of java wrapping

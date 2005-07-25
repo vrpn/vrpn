@@ -155,6 +155,7 @@ Java_vrpn_AnalogRemote_shutdownAnalog( JNIEnv* env, jobject jobj )
   if( a > 0 )
   {
     a->unregister_change_handler( jobj, handle_analog_change );
+	a->connectionPtr()->removeReference(); // because we called vrpn_get_connection_by_name
     delete a;
   }
    

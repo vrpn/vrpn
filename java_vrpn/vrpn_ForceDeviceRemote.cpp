@@ -304,6 +304,7 @@ Java_vrpn_ForceDeviceRemote_shutdownForceDevice( JNIEnv* env, jobject jobj )
     f->unregister_force_change_handler( jobj, handle_force_change );
     f->unregister_scp_change_handler( jobj, handle_scp_change );
     f->unregister_error_handler( jobj, handle_force_error );
+	f->connectionPtr()->removeReference(); // because we called vrpn_get_connection_by_name
     delete f;
   }
 

@@ -313,6 +313,7 @@ Java_vrpn_TrackerRemote_shutdownTracker( JNIEnv* env, jobject jobj )
     t->unregister_change_handler( jobj, handle_tracker_change );
     t->unregister_change_handler( jobj, handle_velocity_change );
     t->unregister_change_handler( jobj, handle_acceleration_change );
+	t->connectionPtr()->removeReference(); // because we called vrpn_get_connection_by_name
     delete t;
   }
 

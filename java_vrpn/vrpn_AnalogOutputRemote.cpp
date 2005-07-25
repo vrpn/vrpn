@@ -206,14 +206,14 @@ Java_vrpn_AnalogOutputRemote_getNumActiveChannels( JNIEnv* env, jobject jobj )
 
 
 JNIEXPORT void JNICALL 
-Java_vrpn_AnalogOutputRemote_shutdownAnalog( JNIEnv* env, jobject jobj )
+Java_vrpn_AnalogOutputRemote_shutdownAnalogOutput( JNIEnv* env, jobject jobj )
 {
   // look up where to store the analog pointer
   jclass jcls = env->GetObjectClass( jobj );
   jfieldID jfid_analog_output = env->GetFieldID( jcls, "native_analog_output", "I" );
   if( jfid_analog_output == NULL )
   {
-    printf( "Error in native method \"shutdownAnalog\":  unable to ID native analog field.\n" );
+    printf( "Error in native method \"shutdownAnalogOuput\":  unable to ID native analog field.\n" );
     return;
   }
 
@@ -223,6 +223,7 @@ Java_vrpn_AnalogOutputRemote_shutdownAnalog( JNIEnv* env, jobject jobj )
 
   if( ao > 0 )
   {
+	ao->connectionPtr()->removeReference(); // because we called vrpn_get_connection_by_name
 	delete ao;
   }
    

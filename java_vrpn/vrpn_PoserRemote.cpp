@@ -122,6 +122,7 @@ Java_vrpn_PoserRemote_shutdownPoser( JNIEnv* env, jobject jobj )
 
   if( po > 0 )
   {
+	po->connectionPtr()->removeReference(); // because we called vrpn_get_connection_by_name
 	delete po;
   }
    
