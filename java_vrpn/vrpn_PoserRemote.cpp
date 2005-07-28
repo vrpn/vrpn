@@ -2,6 +2,7 @@
 #include <jni.h>
 #include "java_vrpn.h"
 #include "vrpn_Poser.h"
+#include "vrpn_PoserRemote.h"
 
 
 jclass jclass_vrpn_PoserRemote = NULL;
@@ -81,7 +82,7 @@ JNIEXPORT void JNICALL JNI_OnUnload_Poser_Remote( JavaVM* jvm, void* reserved )
     return;
   }
 
-  // delete the global reference to the vrpn.analogRemote class
+  // delete the global reference to the vrpn.poserRemote class
   env->DeleteWeakGlobalRef( jclass_vrpn_PoserRemote );
 }
 
@@ -116,7 +117,7 @@ Java_vrpn_PoserRemote_mainloop( JNIEnv* env, jobject jobj )
 JNIEXPORT void JNICALL 
 Java_vrpn_PoserRemote_shutdownPoser( JNIEnv* env, jobject jobj )
 {
-  // get the analog pointers
+  // get the poser pointers
   vrpn_Poser_Remote* po 
 	  = (vrpn_Poser_Remote*) env->GetIntField( jobj, jfid_vrpn_PoserRemote_native_poser );
 
@@ -126,7 +127,7 @@ Java_vrpn_PoserRemote_shutdownPoser( JNIEnv* env, jobject jobj )
 	delete po;
   }
    
-  // set the analog pointers to -1
+  // set the poser pointers to -1
   env->SetIntField( jobj, jfid_vrpn_PoserRemote_native_poser, -1 );
 
   // delete global reference to object (that was created in init)
@@ -139,14 +140,13 @@ Java_vrpn_PoserRemote_shutdownPoser( JNIEnv* env, jobject jobj )
  * Method:    init
  * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Z
  */
-JNIEXPORT jboolean 
-JNICALL Java_vrpn_PoserRemote_init( JNIEnv* env, jobject jobj, jstring jname, 
-								    jstring jlocalInLogfileName, jstring jlocalOutLogfileName,
-									jstring jremoteInLogfileName, jstring jremoteOutLogfileName )
+JNIEXPORT jboolean JNICALL 
+Java_vrpn_PoserRemote_init( JNIEnv* env, jobject jobj, jstring jname, 
+						    jstring jlocalInLogfileName, jstring jlocalOutLogfileName,
+							jstring jremoteInLogfileName, jstring jremoteOutLogfileName )
 {
-	// make a global reference to the Java AnalogOutputRemote
-	// object, so that it can be referenced in the function
-	// handle_analog_change(...)
+	// make a global reference to the Java PoserRemote
+	// object, so it can be referenced by native code
 	jobj = env->NewGlobalRef( jobj );
 	
 	// create the poser

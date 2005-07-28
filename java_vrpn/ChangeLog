@@ -1,3 +1,8 @@
+2005-07-28  David Marshburn  <marshbur@cs.unc.edu>
+
+	* java_vrpn.vjp:  adds a custom build rule for the poser native .h file
+	* vrpn_PoserRemote.cpp:  includes vrpn_PoserRemote.h now.
+
 2005-07-25  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_AnalogOutputRemote.cpp (shutdownAnalog):  changed the name
