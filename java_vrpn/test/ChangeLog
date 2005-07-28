@@ -1,3 +1,7 @@
+2005-07-28  David Marshburn  <marshbur@cs.unc.edu>
+
+	* PoserTest.java:  new, a test program for java_vrpn poser.
+
 2003-10-24  Oliver Otto <o.otto@reading.ac.uk>
 
 	* PrintCereals.java:  java version of the printcereals utility.
