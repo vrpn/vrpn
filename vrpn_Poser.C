@@ -242,6 +242,8 @@ int vrpn_Poser_Server::handle_change_message(void* userdata,
     vrpn_Poser_Server* me = (vrpn_Poser_Server *)userdata;
     const char* params = (p.buffer);
     int	i;
+
+    vrpn_POSERCB cp;
     // Fill in the parameters to the poser from the message
     if (p.payload_len != (7 * sizeof(vrpn_float64)) ) {
 	    fprintf(stderr,"vrpn_Poser_Server: change message payload error\n");
@@ -267,6 +269,14 @@ int vrpn_Poser_Server::handle_change_message(void* userdata,
             me->p_pos[i] = me->p_pos_max[i];
         }
     }
+
+    ///Now pack the information in a way that user-routine will understand
+    cp.msg_time = me->p_timestamp;
+    memcpy(cp.pos,me->p_pos, sizeof(cp.pos));
+    memcpy(cp.quat,me->p_quat, sizeof(cp.quat));
+     // Go down the list of callbacks that have been registered.
+    // Fill in the parameter and call each.*/
+     me->d_callback_list.call_handlers(cp);
 
     return 0;
 }

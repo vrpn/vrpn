@@ -64,6 +64,22 @@ class VRPN_API vrpn_Poser : public vrpn_BaseClass {
                                     const vrpn_float64 interval);
 };
 
+//------------------------------------------------------------------------------------
+// Server Code
+
+///A structure for Call-Backs related to Vrpn Poser Server
+typedef	struct _vrpn_POSERCB {
+	struct timeval	msg_time;	// Timestamp
+	///NOTE: I think since we have different routines for handling velocity and position poser requests, 
+	/// putting poser and quaternions for both doesn't make sense. Instead, the change handler should
+	/// take care of packing correct poser and quaternion.
+	vrpn_float64	pos[3];
+	vrpn_float64	quat[4];	
+} vrpn_POSERCB;
+
+typedef void (VRPN_CALLBACK *vrpn_POSERHANDLER) (void * userdata,
+					  const vrpn_POSERCB info);
+
 
 //------------------------------------------------------------------------------------
 // Server Code
@@ -78,11 +94,22 @@ class VRPN_API vrpn_Poser_Server: public vrpn_Poser {
 
         /// This function should be called each time through app mainloop.
         virtual void mainloop();
+	
+	///-----------------KD adding (un)register_change_handler------------
+	// (un)Register a callback handler to handle analog value change
+        int register_change_handler(void *userdata, vrpn_POSERHANDLER handler) {
+	  return d_callback_list.register_handler(userdata, handler);
+	};
+        int unregister_change_handler(void *userdata, vrpn_POSERHANDLER handler) {
+	  return d_callback_list.unregister_handler(userdata, handler);
+	}
+        ///----------------------------------------------------------------
 
     protected:
         static int VRPN_CALLBACK handle_change_message(void *userdata, vrpn_HANDLERPARAM p);
         static int VRPN_CALLBACK handle_vel_change_message(void *userdata, vrpn_HANDLERPARAM p);
-};
+	vrpn_Callback_List<vrpn_POSERCB> d_callback_list;
+};	
 
 //------------------------------------------------------------------------------------
 // Client Code
