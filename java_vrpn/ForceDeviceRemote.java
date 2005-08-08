@@ -107,14 +107,14 @@ public class ForceDeviceRemote extends VRPN implements Runnable
 	public native void useHcollide( );
 	public native void useGhost( );
 	
-	public native void enableConstraint( int enable );
-	public native void setConstraintMode( int mode );
-	public native void setConstraintPoint( float[] point );
-	public native void setConstraintLinePoint( float[] point );
-	public native void setConstraintLineDirection( float[] direction );
-	public native void setConstraintPlanePoint( float[] point );
-	public native void setConstraintPlaneNormal( float[] normal );
-	public native void setConstraintKSpring( float k );
+	public native boolean enableConstraint( int enable );
+	public native boolean setConstraintMode( int mode );
+	public native boolean setConstraintPoint( float[] point );
+	public native boolean setConstraintLinePoint( float[] point );
+	public native boolean setConstraintLineDirection( float[] direction );
+	public native boolean setConstraintPlanePoint( float[] point );
+	public native boolean setConstraintPlaneNormal( float[] normal );
+	public native boolean setConstraintKSpring( float k );
 	
 	public native boolean sendForceField( float[] origin, float[] force, float[][] jacobian, float radius );
 	public native boolean sendForceField( );

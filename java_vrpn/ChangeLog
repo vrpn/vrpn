@@ -1,3 +1,10 @@
+2005-08-08	Ben Wilde	<wilde@cs.unc.edu>
+
+	* vrpn_ForceDeviceRemote.cpp
+		-Wrote wrappers for all functions dealing with force device constraints
+	* ForceDeviceRemote.java
+		-Made all of the native functions booleans rather than voids
+
 2005-07-28  David Marshburn  <marshbur@cs.unc.edu>
 
 	* java_vrpn.vjp:  adds a custom build rule for the poser native .h file

@@ -457,10 +457,18 @@ Java_vrpn_ForceDeviceRemote_sendForceField___3F_3F_3_3FF( JNIEnv* env, jobject j
  * Method:    enableConstraint
  * Signature: (I)V
  */
-JNIEXPORT void JNICALL Java_vrpn_ForceDeviceRemote_enableConstraint
-  (JNIEnv *, jobject, jint)
+JNIEXPORT jboolean JNICALL Java_vrpn_ForceDeviceRemote_enableConstraint
+  (JNIEnv *env, jobject jobj, jint on_int)
 {
-  printf( "Function Java_vrpn_ForceDeviceRemote_enableConstraint is not implemented.\n" );
+	if( jfid_vrpn_ForceDeviceRemote_native_force_device == NULL )
+		return false;
+	vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid_vrpn_ForceDeviceRemote_native_force_device );
+	if( f <= 0 )
+		return false;
+
+  // now call the function
+  f->enableConstraint( on_int );
+  return true;
 }
 
 
@@ -469,10 +477,18 @@ JNIEXPORT void JNICALL Java_vrpn_ForceDeviceRemote_enableConstraint
  * Method:    setConstraintMode
  * Signature: (I)V
  */
-JNIEXPORT void JNICALL Java_vrpn_ForceDeviceRemote_setConstraintMode
-  (JNIEnv *, jobject, jint)
+JNIEXPORT jboolean JNICALL Java_vrpn_ForceDeviceRemote_setConstraintMode
+  (JNIEnv *env, jobject jobj, jint mode)
 {
-  printf( "Function Java_vrpn_ForceDeviceRemote_setConstraintMode is not implemented.\n" );
+  if( jfid_vrpn_ForceDeviceRemote_native_force_device == NULL )
+		return false;
+	vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid_vrpn_ForceDeviceRemote_native_force_device );
+	if( f <= 0 )
+		return false;
+
+  // now call the function
+  f->enableConstraint( mode );
+  return true;
 }
 
 
@@ -481,10 +497,26 @@ JNIEXPORT void JNICALL Java_vrpn_ForceDeviceRemote_setConstraintMode
  * Method:    setConstraintPoint
  * Signature: ([F)V
  */
-JNIEXPORT void JNICALL Java_vrpn_ForceDeviceRemote_setConstraintPoint
-  (JNIEnv *, jobject, jfloatArray)
+JNIEXPORT jboolean JNICALL Java_vrpn_ForceDeviceRemote_setConstraintPoint
+  (JNIEnv* env, jobject jobj, jfloatArray jpoint)
 {
-  printf( "Function Java_vrpn_ForceDeviceRemote_setConstraintPoint is not implemented.\n" );
+  if( jfid_vrpn_ForceDeviceRemote_native_force_device == NULL )
+    return false;
+  vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid_vrpn_ForceDeviceRemote_native_force_device );
+  if( f <= 0 )
+    return false;
+
+  // get the arguments
+  jfloat point[3];
+
+  if( env->GetArrayLength( jpoint ) != 3 )
+    return false;
+  env->GetFloatArrayRegion( jpoint, 0, 3, point );
+
+  
+  // now call the function
+  f->setConstraintPoint( point );
+  return true;
 }
 
 
@@ -493,10 +525,26 @@ JNIEXPORT void JNICALL Java_vrpn_ForceDeviceRemote_setConstraintPoint
  * Method:    setConstraintLinePoint
  * Signature: ([F)V
  */
-JNIEXPORT void JNICALL Java_vrpn_ForceDeviceRemote_setConstraintLinePoint
-  (JNIEnv *, jobject, jfloatArray)
+JNIEXPORT jboolean JNICALL 
+Java_vrpn_ForceDeviceRemote_setConstraintLinePoint( JNIEnv* env, jobject jobj, jfloatArray jpoint )
 {
-  printf( "Function Java_vrpn_ForceDeviceRemote_setConstraintLinePoint is not implemented.\n" );
+  if( jfid_vrpn_ForceDeviceRemote_native_force_device == NULL )
+    return false;
+  vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid_vrpn_ForceDeviceRemote_native_force_device );
+  if( f <= 0 )
+    return false;
+
+  // get the arguments
+  jfloat point[3];
+
+  if( env->GetArrayLength( jpoint ) != 3 )
+    return false;
+  env->GetFloatArrayRegion( jpoint, 0, 3, point );
+
+  
+  // now call the function
+  f->setConstraintLinePoint( point );
+  return true;
 }
 
 
@@ -505,10 +553,26 @@ JNIEXPORT void JNICALL Java_vrpn_ForceDeviceRemote_setConstraintLinePoint
  * Method:    setConstraintLineDirection
  * Signature: ([F)V
  */
-JNIEXPORT void JNICALL Java_vrpn_ForceDeviceRemote_setConstraintLineDirection
-  (JNIEnv *, jobject, jfloatArray)
+JNIEXPORT jboolean JNICALL Java_vrpn_ForceDeviceRemote_setConstraintLineDirection
+  (JNIEnv* env, jobject jobj, jfloatArray jpoint)
 {
-  printf( "Function Java_vrpn_ForceDeviceRemote_setConstraintLineDirection is not implemented.\n" );
+	if( jfid_vrpn_ForceDeviceRemote_native_force_device == NULL )
+		return false;
+	vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid_vrpn_ForceDeviceRemote_native_force_device );
+	if( f <= 0 )
+		return false;
+
+	// get the arguments
+	jfloat point[3];
+
+	if( env->GetArrayLength( jpoint ) != 3 )
+		return false;
+	env->GetFloatArrayRegion( jpoint, 0, 3, point );
+
+  
+	// now call the function
+	f->setConstraintLineDirection( point );
+	return true;
 }
 
 
@@ -517,10 +581,26 @@ JNIEXPORT void JNICALL Java_vrpn_ForceDeviceRemote_setConstraintLineDirection
  * Method:    setConstraintPlaneNormal
  * Signature: ([F)V
  */
-JNIEXPORT void JNICALL Java_vrpn_ForceDeviceRemote_setConstraintPlaneNormal
-  (JNIEnv *, jobject, jfloatArray)
+JNIEXPORT jboolean JNICALL Java_vrpn_ForceDeviceRemote_setConstraintPlaneNormal
+  (JNIEnv* env, jobject jobj, jfloatArray jpoint)
 {
-  printf( "Function Java_vrpn_ForceDeviceRemote_setConstraintPlaneNormal is not implemented.\n" );
+	if( jfid_vrpn_ForceDeviceRemote_native_force_device == NULL )
+		return false;
+	vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid_vrpn_ForceDeviceRemote_native_force_device );
+	if( f <= 0 )
+		return false;
+
+	// get the arguments
+	jfloat point[3];
+
+	if( env->GetArrayLength( jpoint ) != 3 )
+		return false;
+	env->GetFloatArrayRegion( jpoint, 0, 3, point );
+
+  
+	// now call the function
+	f->setConstraintPlaneNormal( point );
+	return true;
 }
 
 
@@ -529,10 +609,26 @@ JNIEXPORT void JNICALL Java_vrpn_ForceDeviceRemote_setConstraintPlaneNormal
  * Method:    setConstraintPlanePoint
  * Signature: ([F)V
  */
-JNIEXPORT void JNICALL Java_vrpn_ForceDeviceRemote_setConstraintPlanePoint
-  (JNIEnv *, jobject, jfloatArray)
+JNIEXPORT jboolean JNICALL Java_vrpn_ForceDeviceRemote_setConstraintPlanePoint
+  (JNIEnv* env, jobject jobj, jfloatArray jpoint)
 {
-  printf( "Function Java_vrpn_ForceDeviceRemote_setConstraintPlanePoint is not implemented.\n" );
+	if( jfid_vrpn_ForceDeviceRemote_native_force_device == NULL )
+		return false;
+	vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid_vrpn_ForceDeviceRemote_native_force_device );
+	if( f <= 0 )
+		return false;
+
+	// get the arguments
+	jfloat point[3];
+
+	if( env->GetArrayLength( jpoint ) != 3 )
+		return false;
+	env->GetFloatArrayRegion( jpoint, 0, 3, point );
+
+  
+	// now call the function
+	f->setConstraintPlanePoint( point );
+	return true;
 }
 
 
@@ -541,10 +637,18 @@ JNIEXPORT void JNICALL Java_vrpn_ForceDeviceRemote_setConstraintPlanePoint
  * Method:    setConstraintKSpring
  * Signature: (F)V
  */
-JNIEXPORT void JNICALL Java_vrpn_ForceDeviceRemote_setConstraintKSpring
-  (JNIEnv *, jobject, jfloat)
+JNIEXPORT jboolean JNICALL Java_vrpn_ForceDeviceRemote_setConstraintKSpring
+  (JNIEnv* env, jobject jobj, jfloat springConst)
 {
-  printf( "Function Java_vrpn_ForceDeviceRemote_setConstraintKSpring is not implemented.\n" );
+	if( jfid_vrpn_ForceDeviceRemote_native_force_device == NULL )
+		return false;
+	vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid_vrpn_ForceDeviceRemote_native_force_device );
+	if( f <= 0 )
+		return false;
+
+	// now call the function
+	f->setConstraintKSpring( springConst );
+	return true;
 }
 
 
