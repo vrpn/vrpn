@@ -1,3 +1,9 @@
+2005-08-10	Ben Wilde	<wilde@cs.unc.edu>
+
+	* vrpn_ForceDeviceRemote.cpp
+		-Fixed the wrapper for setConstraintMode by casting the integer 
+		to a constraint geometry.
+
 2005-08-08	Ben Wilde	<wilde@cs.unc.edu>
 
 	* vrpn_ForceDeviceRemote.cpp

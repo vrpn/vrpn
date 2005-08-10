@@ -487,7 +487,7 @@ JNIEXPORT jboolean JNICALL Java_vrpn_ForceDeviceRemote_setConstraintMode
 		return false;
 
   // now call the function
-  f->enableConstraint( mode );
+  f->setConstraintMode( (vrpn_ForceDevice::ConstraintGeometry)mode );
   return true;
 }
 
@@ -528,23 +528,23 @@ JNIEXPORT jboolean JNICALL Java_vrpn_ForceDeviceRemote_setConstraintPoint
 JNIEXPORT jboolean JNICALL 
 Java_vrpn_ForceDeviceRemote_setConstraintLinePoint( JNIEnv* env, jobject jobj, jfloatArray jpoint )
 {
-  if( jfid_vrpn_ForceDeviceRemote_native_force_device == NULL )
-    return false;
-  vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid_vrpn_ForceDeviceRemote_native_force_device );
-  if( f <= 0 )
-    return false;
+	if( jfid_vrpn_ForceDeviceRemote_native_force_device == NULL )
+		return false;
+	vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid_vrpn_ForceDeviceRemote_native_force_device );
+	if( f <= 0 )
+		return false;
 
-  // get the arguments
-  jfloat point[3];
+	// get the arguments
+	jfloat point[3];
 
-  if( env->GetArrayLength( jpoint ) != 3 )
-    return false;
-  env->GetFloatArrayRegion( jpoint, 0, 3, point );
+	if( env->GetArrayLength( jpoint ) != 3 )
+		return false;
+	env->GetFloatArrayRegion( jpoint, 0, 3, point );
 
   
-  // now call the function
-  f->setConstraintLinePoint( point );
-  return true;
+	// now call the function
+	f->setConstraintLinePoint( point );
+	return true;
 }
 
 
