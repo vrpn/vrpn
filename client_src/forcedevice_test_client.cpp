@@ -23,7 +23,7 @@
  *****************************************************************************/
 
 // What type of effect the application is presenting
-typedef	enum { box, pointconstraint, forcefield, buzzing, quit } APP_STATE;
+typedef	enum { box, pointconstraint, lineconstraint, planeconstraint, forcefield, buzzing, quit } APP_STATE;
 
 // For the display of the box, this holds a descripton of the paramters
 // for each side.
@@ -100,8 +100,10 @@ static	BoxSide	g_box[6] = {  BoxSide(-0.02, 0.00, 0.00,  1, 0, 0,  -1, 0, 0),
 			      BoxSide( 0.00, 0.02, 0.00,  0,-1, 0,   0, 1, 0),
 			      BoxSide( 0.00, 0.00, 0.02,  0, 0,-1,   0, 0, 1) };
 
-// Stiffness of the point constraint
+// Stiffness of the point, line and plane constraint
 static	float g_pointConstraintStiffness = (float)100.0;
+static  float g_lineConstraintStiffness = (float) 1000.0;
+static  float g_planeConstraintStiffness = (float) 1000.0;
 
 // Strength and variability of the force field
 static	float g_forceFieldStrength = (float)0.0;
@@ -262,6 +264,34 @@ void    VRPN_CALLBACK handle_tracker_change(void *userdata, const vrpn_TRACKERCB
 	g_forceDevice->enableConstraint(1);
       }
       break;
+
+       case lineconstraint:
+      // We produce a point constraint that pulls the user back towards the place where
+      // they pressed the button.  The strength of this constraint is stored in a global. 
+      {
+	vrpn_float32  center[3] = { g_xCenter, g_yCenter, g_zCenter };
+	vrpn_float32  direction[3] = { 1, 1, 10};
+	g_forceDevice->setConstraintMode(vrpn_ForceDevice::LINE_CONSTRAINT);
+	g_forceDevice->setConstraintKSpring(g_lineConstraintStiffness);
+	g_forceDevice->setConstraintLinePoint(center);
+	g_forceDevice->setConstraintLineDirection( direction );
+	g_forceDevice->enableConstraint(1);
+      }
+      break;
+
+       case planeconstraint:
+      // We produce a point constraint that pulls the user back towards the place where
+      // they pressed the button.  The strength of this constraint is stored in a global. 
+      {
+	vrpn_float32  center[3] = { g_xCenter, g_yCenter, g_zCenter };
+	vrpn_float32  direction[3] = { 0, 0, 1};
+	g_forceDevice->setConstraintMode(vrpn_ForceDevice::PLANE_CONSTRAINT);
+	g_forceDevice->setConstraintKSpring(g_planeConstraintStiffness);
+	g_forceDevice->setConstraintPlanePoint(center);
+	g_forceDevice->setConstraintPlaneNormal( direction );
+	g_forceDevice->enableConstraint(1);
+      }
+      break;
    
     case forcefield:
       // Produce a force field pointing in +Z, starting at the center position.  As the
@@ -372,7 +402,19 @@ void	VRPN_CALLBACK handle_button_change(void *userdata, const vrpn_BUTTONCB b)
 	printf("\n");
 	printf("Release button to stop point constraint\n");
 	break;
+
+      case lineconstraint: 
+	printf("  You will be able to pull along a line in the z direction\n");
+	printf("\n");
+	printf("Release button to stop line constraint\n");
+	break;
    
+      case planeconstraint: 
+	printf("  You will be able to pull along the x-y plane\n");
+	printf("\n");
+	printf("Release button to stop plane constraint\n");
+	break;
+
       case forcefield:
 	printf("  You will be pushed in Z while you are within the field\n");
 	printf("  The push is in +Z when you move in +X, in -Z when you move in -X\n");
@@ -411,6 +453,18 @@ void	VRPN_CALLBACK handle_button_change(void *userdata, const vrpn_BUTTONCB b)
 	break;
 
       case pointconstraint:
+	printf("\n");
+	printf("Press button to line constraint\n");
+	g_state = lineconstraint;
+	break;
+
+      case lineconstraint:
+	printf("\n");
+	printf("Press button to start plane constraint\n");
+	g_state = planeconstraint;
+	break;
+
+      case planeconstraint:
 	printf("\n");
 	printf("Press button to start force field\n");
 	g_state = forcefield;

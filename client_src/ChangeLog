@@ -1,3 +1,10 @@
+2005-08-10	Ben Wilde	<wilde@cs.unc.edu>
+
+	* forcedevice_test_client.cpp
+		-Added tests for the line and plane constraints.  The plane 
+		seems to work fine, but the line constraint has a strange
+		behavior.  Either due to poor implementation or vrpn problem.
+
 2005-07-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* clock_drift_estimator.C : Application to estimate the drift between
