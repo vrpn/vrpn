@@ -250,7 +250,7 @@ void vrpn_Phantom::handle_plane(void *userdata,const vrpn_Plane_PHANTOMCB &p)
 	plane->setSurfaceFstatic(p2.SurfaceFstatic);
 	plane->setSurfaceFdynamic(p2.SurfaceFdynamic); 
 	plane->setSurfaceKdamping(p2.SurfaceKdamping);
-	plane->setNumRecCycles((int)p2.numRecCycles);
+	//plane->setNumRecCycles((int)p2.numRecCycles);
 	plane->setActive(TRUE);
     }
 }
@@ -661,7 +661,8 @@ void vrpn_Phantom::print_report(void)
 
 // mainloop:
 //      get button status from GHOST
-//      send button message (done in vrpn_Button::report_changes)
+//      send button message (done in vrpn_Button_Filter::report_changes)
+//          NOT vrpn_Button::report_changes.
 //      get position from GHOST (done in vrpn_Phantom::get_report())
 //      get force from GHOST (done in vrpn_Phantom::get_report())
 //      send position message
@@ -822,7 +823,9 @@ void vrpn_Phantom::mainloop(void) {
 //printf("get report pos = %lf, %lf, %lf\n",pos[0],pos[1],pos[2]);
 
 	// If button a event has happened, report changes
-	vrpn_Button::report_changes();
+	//  we have to use vrpn_Button_Filter, not vrpn_Button, or
+	//  we lost the toggle functionality.
+	vrpn_Button_Filter::report_changes();
 
         //Encode the position/orientation if there is a connection
         if(vrpn_Tracker::d_connection) {

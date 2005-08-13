@@ -1,3 +1,12 @@
+2005-08-13  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Phantom.C (mainloop):  call vrpn_Button_Filter::report_changes
+	instead of vrpn_Button::report_changes (to get correct toggle
+	functionality).
+	(handle_plane):  commented out a call to 
+	DynamicPlane::setNumRecCycles, which seems not to exist any more.
+	* vrpn_phantom.dsp:  builds browse info also
+
 2005-07-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.cfg : Adds entry for serial mouse on mac through a
