@@ -1,3 +1,7 @@
+2005-08-13    <marshbur@cs.unc.edu>
+
+	* vrpn.dsw:  makes vrpn_Phantom project depend on vrpn project
+
 2005-08-05  Kalpit Desai	<kvdesai@cs.unc.edu>
 	* vrpn_Poser.h: Added register_change_handler routines and vrpn_POSERCB
 		template that provides a way to call back user-routines.
