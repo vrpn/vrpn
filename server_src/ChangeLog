@@ -1,3 +1,7 @@
+2005-08-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_phantom.dsp : Swiched from GHOST to HDAPI include paths.
+
 2005-08-13  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_Phantom.C (mainloop):  call vrpn_Button_Filter::report_changes

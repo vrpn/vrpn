@@ -43,12 +43,9 @@ Things to do in the server object (server device) files to convert from 4.XX
   to 5.00:
 	Replace the message registration commands with calls to autodelete ones
 		(Note that the handler for update rate has been removed from
-                the tracker
-		class -- it should not have been there in the first place.
-                This saves the
-		derived class from having to unregister the old one before
-                registering its
-		own).
+                the tracker class -- it should not have been there in the first place.
+                This saves the derived class from having to unregister the old one before
+                registering its	own).
 	Delete the unregister commands for the message handlers
 	Change connection-> to d_connection->
 	Change my_id to d_sender_id

@@ -1,3 +1,8 @@
+2005-08-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* clock_drift_estimator.C : Diff went crazy, so it is hard to
+		tell.  Newer version.
+
 2005-08-10	Ben Wilde	<wilde@cs.unc.edu>
 
 	* forcedevice_test_client.cpp

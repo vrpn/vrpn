@@ -1,8 +1,18 @@
-2005-08-13    <marshbur@cs.unc.edu>
+2005-08-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_BaseClass.h : Whitespace change.
+	* vrpn_Connection.C : Fixed a bug where a zero-time select()
+		during an interrupt was not setting the stop time, so
+		would return with an inconsistent state.  Also, whitespace
+		changes.
+	* vrpn_Shared.h : Whitspace changes.
+
+2005-08-13    David Marshburn <marshbur@cs.unc.edu>
 
 	* vrpn.dsw:  makes vrpn_Phantom project depend on vrpn project
 
 2005-08-05  Kalpit Desai	<kvdesai@cs.unc.edu>
+
 	* vrpn_Poser.h: Added register_change_handler routines and vrpn_POSERCB
 		template that provides a way to call back user-routines.
 	* vrpn_Poser.C: Modified handle_change_message routine of server to

@@ -1663,22 +1663,23 @@ int vrpn_noint_select(int width, fd_set *readfds, fd_set *writefds,
 	/* If the timeout parameter is non-NULL and non-zero, then we
 	 * may have to adjust it due to an interrupt.  In these cases,
 	 * we will copy the timeout to timeout2, which will be used
-	 * to keep track.  Also, the current time is found so that we
-	 * can track elapsed time. */
+	 * to keep track.  Also, the stop time is calculated so that
+         * we can know when it is time to bail. */
 	if ( (timeout != NULL) && 
 	     ((timeout->tv_sec != 0) || (timeout->tv_usec != 0)) ) {
 		timeout2 = *timeout;
 		timeout2ptr = &timeout2;
 		vrpn_gettimeofday(&start, NULL);	/* Find start time */
-		//time_add(start,*timeout,stop);	/* Find stop time */
 		stop = vrpn_TimevalSum(start, *timeout);/* Find stop time */
 	} else {
 		timeout2ptr = timeout;
+                stop.tv_sec = 0;
+                stop.tv_usec = 0;
 	}
 
 	/* Repeat selects until it returns for a reason other than interrupt */
 	do {
-		/* Set the temp file descriptor sets to match parameters */
+		/* Set the temp file descriptor sets to match parameters each time through. */
 		if (readfds != NULL) {
 			tmpread = *readfds;
 		} else {
@@ -1719,15 +1720,9 @@ int vrpn_noint_select(int width, fd_set *readfds, fd_set *writefds,
 	} while (!done);
 
 	/* Copy the temporary sets back to the parameter sets */
-	if (readfds != NULL) {
-		*readfds = tmpread;
-	}
-	if (writefds != NULL) {
-		*writefds = tmpwrite;
-	}
-	if (exceptfds != NULL) {
-		*exceptfds = tmpexcept;
-	}
+        if (readfds != NULL) { *readfds = tmpread; }
+	if (writefds != NULL) {	*writefds = tmpwrite; }
+        if (exceptfds != NULL) { *exceptfds = tmpexcept; }
 
 	return(ret);
 }
