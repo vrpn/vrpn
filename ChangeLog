@@ -1,3 +1,7 @@
+2005-09-02	Kalpit Desai	<kvdesai@cs.unc.edu>
+	* vrpn_Text.h: Modified the signature of send_message() method to expect 4th argument (time stamp) which may be supplied.
+	* vrpn_Text.C: Modified the definition of send_message() method to send the user specified timestamp when supplied.
+
 2005-08-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_BaseClass.h : Whitespace change.

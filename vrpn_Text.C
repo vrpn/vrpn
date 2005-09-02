@@ -5,15 +5,22 @@
 #include <netinet/in.h>
 #endif
 
-int vrpn_Text_Sender::send_message(const char *msg,
+int vrpn_Text_Sender::send_message(const char *msg, 				  
                             vrpn_TEXT_SEVERITY type,
-                            vrpn_uint32 level)
+                            vrpn_uint32 level,
+			    const struct timeval time)
 {
-        struct timeval now;
-        vrpn_gettimeofday(&now,NULL);
-
-	// send type, level and message
-	return send_text_message(msg, now, type, level);
+  struct timeval now;
+  
+  // Replace the time value with the current time if the user passed in the
+  // constant time referring to "now".
+  if ( (time.tv_sec == vrpn_TEXT_NOW.tv_sec) && (time.tv_usec == vrpn_TEXT_NOW.tv_usec) ) {
+    vrpn_gettimeofday(&now, NULL);
+  } else {
+    now = time;
+  }  
+  // send message, time, type and level
+  return send_text_message(msg, now, type, level);
 }
 
 

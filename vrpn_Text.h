@@ -14,6 +14,9 @@
 #include "vrpn_Connection.h"
 #include "vrpn_BaseClass.h"
 
+// text-message time value meaning "go find out what time it is right now"
+const struct timeval vrpn_TEXT_NOW = { 0 , 0 };
+
 /// Structure passed back to user-level code from a vrpn_Text_Receiver.
 typedef	struct _vrpn_TEXTCB {
 	struct timeval	msg_time;	// Time of the message
@@ -41,9 +44,10 @@ class VRPN_API vrpn_Text_Sender: public vrpn_BaseClass {
 	void mainloop(void) { server_mainloop(); if (d_connection) d_connection->mainloop(); };
 
 	/// Send a text message.
-	int send_message(const char *msg, vrpn_TEXT_SEVERITY type = vrpn_TEXT_NORMAL,
-			 vrpn_uint32 level = 0);
-
+	int send_message(const char *msg, 
+			    vrpn_TEXT_SEVERITY type = vrpn_TEXT_NORMAL,
+			    vrpn_uint32 level = 0,
+			    const struct timeval time = vrpn_TEXT_NOW);
   protected:
       /// No types to register beyond the text, which is done in BaseClass.
       virtual int register_types(void) { return 0; };
