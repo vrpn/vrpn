@@ -1,3 +1,11 @@
+2005-09-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Phantom.h : Added debounce counters for the buttons.
+		This is to overcome problems found on a particular
+		Omni device.  Also set 2 buttons when using HDAPI,
+		in case we have an Omni.
+	* vrpn_Phantom.C : Same.
+
 2005-08-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_phantom.dsp : Swiched from GHOST to HDAPI include paths.

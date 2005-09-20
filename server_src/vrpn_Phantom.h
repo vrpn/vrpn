@@ -77,6 +77,7 @@ protected:
 #ifdef	VRPN_USE_HDAPI
 	HHD		  phantom;	    //< The Phantom hardware device we are using
 	HDSchedulerHandle hServoCallback;   //< The Haptic Servo loop callback identifier
+        int   button_0_bounce_count, button_1_bounce_count; //< Used to remove button "bounce"
 #else
 	gstScene *scene;
 	gstSeparator *rootH;	    //< The haptics root separator attached to the scene.

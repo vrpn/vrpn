@@ -410,7 +410,13 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
 		 instantBuzzEffect(NULL)
 		 // fin ajout ONDIM
 {  
-  num_buttons = 1;  // only has one button
+#ifdef	VRPN_USE_HDAPI
+  vrpn_Button_Filter::num_buttons = 2;  // Omni has 2 buttons, others have 1. XXX This overestimates it
+  button_0_bounce_count = 0;
+  button_1_bounce_count = 0;
+#else
+  vrpn_Button_Filter::num_buttons = 1;
+#endif
 
   timestamp.tv_sec = 0;
   timestamp.tv_usec = 0;
@@ -692,11 +698,26 @@ void vrpn_Phantom::mainloop(void) {
 	HDAPI_state state;
 	hdScheduleSynchronous(readDeviceState, &state, HD_MIN_SCHEDULER_PRIORITY);
 
-	// Convert buttons to VRPN
-	if (state.buttons & HD_DEVICE_BUTTON_1) {
-	  buttons[0] = 1;
-	} else {
-	  buttons[0] = 0;
+	// Convert buttons to VRPN.  Debounce them, making sure they have
+        // stabilized at their current value for at least 5 cycles before
+        // switching (this was needed for a particular Phantom Omni whose
+        // button glitched a lot).  This is done by setting bounce count to
+        // zero whenever the button matches what is stored and incrementing
+        // it whenever it is different until 5 is reached.
+        int button_0_state = ((state.buttons & HD_DEVICE_BUTTON_1) == 0) ? 0 : 1;
+        int button_1_state = ((state.buttons & HD_DEVICE_BUTTON_2) == 0) ? 0 : 1;
+
+        if (button_0_state == buttons[0]) {
+          button_0_bounce_count = 0;
+        } else if (++button_0_bounce_count >= 5) {
+          buttons[0] = button_0_state;
+          button_0_bounce_count = 0;
+	}
+        if (button_1_state == buttons[1]) {
+          button_1_bounce_count = 0;
+        } else if (++button_1_bounce_count >= 5) {
+          buttons[1] = button_1_state;
+          button_1_bounce_count = 0;
 	}
 
 	// Convert position and orientation to VRPN (meters and quaternion)
@@ -824,7 +845,7 @@ void vrpn_Phantom::mainloop(void) {
 
 	// If button a event has happened, report changes
 	//  we have to use vrpn_Button_Filter, not vrpn_Button, or
-	//  we lost the toggle functionality.
+	//  we lose the toggle functionality.
 	vrpn_Button_Filter::report_changes();
 
         //Encode the position/orientation if there is a connection
