@@ -1,5 +1,14 @@
 2005-09-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn.dsw : Modified all applications to also depend on
+		VRPN library, in addition to "make_vrpn_build."  This
+		is going to break things for those who want to build
+		DLLs, but not having it meant that the apps would not
+		re-link with the library when only library files were
+		changed.  This was debugging hell.
+
+2005-09-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_ForceDevice.C : Fixed a bug in the line-mode
 		constraint code.  Involved remembering lots of
 		linear algebra.  Eigenstuff that I always wondered
