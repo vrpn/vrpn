@@ -102,8 +102,8 @@ static	BoxSide	g_box[6] = {  BoxSide(-0.02, 0.00, 0.00,  1, 0, 0,  -1, 0, 0),
 
 // Stiffness of the point, line and plane constraint
 static	float g_pointConstraintStiffness = (float)100.0;
-static  float g_lineConstraintStiffness = (float) 1000.0;
-static  float g_planeConstraintStiffness = (float) 1000.0;
+static  float g_lineConstraintStiffness = (float) 300.0;
+static  float g_planeConstraintStiffness = (float) 500.0;
 
 // Strength and variability of the force field
 static	float g_forceFieldStrength = (float)0.0;
@@ -270,7 +270,7 @@ void    VRPN_CALLBACK handle_tracker_change(void *userdata, const vrpn_TRACKERCB
       // they pressed the button.  The strength of this constraint is stored in a global. 
       {
 	vrpn_float32  center[3] = { g_xCenter, g_yCenter, g_zCenter };
-	vrpn_float32  direction[3] = { 1, 1, 10};
+	vrpn_float32  direction[3] = { 0, 0, 1};
 	g_forceDevice->setConstraintMode(vrpn_ForceDevice::LINE_CONSTRAINT);
 	g_forceDevice->setConstraintKSpring(g_lineConstraintStiffness);
 	g_forceDevice->setConstraintLinePoint(center);

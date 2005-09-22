@@ -1,3 +1,13 @@
+2005-09-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_ForceDevice.C : Fixed a bug in the line-mode
+		constraint code.  Involved remembering lots of
+		linear algebra.  Eigenstuff that I always wondered
+		why I would use it when I had it in course.  Also
+		modified both line and plane codes to normalize the
+		direction vectors they are passed in.  This avoids
+		unexpected scaling of the forces.
+
 2005-09-02	Kalpit Desai	<kvdesai@cs.unc.edu>
 	* vrpn_Text.h: Modified the signature of send_message() method to expect 4th argument (time stamp) which may be supplied.
 	* vrpn_Text.C: Modified the definition of send_message() method to send the user specified timestamp when supplied.

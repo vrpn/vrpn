@@ -1735,7 +1735,6 @@ void vrpn_ForceDevice_Remote::send (const char * msgbuf, vrpn_int32 len,
 void vrpn_ForceDevice_Remote::constraintToForceField (void) {
 
   vrpn_float32 c [9];  // scratch matrix
-  vrpn_float64 s [3];  // scratch vectors
   int i, j;
 
   // quatlib wants 64-bit reals;  the forcefield code wants 32-bit
@@ -1758,7 +1757,7 @@ void vrpn_ForceDevice_Remote::constraintToForceField (void) {
       setFF_Radius(largeRadius);
       break;
 
-    case LINE_CONSTRAINT:
+    case LINE_CONSTRAINT: {
       setFF_Origin(d_conLinePoint);
       setFF_Force(0.0f, 0.0f,  0.0f);
 
@@ -1768,39 +1767,90 @@ void vrpn_ForceDevice_Remote::constraintToForceField (void) {
       // case that we'd tried rotating a Jacobian in the first place.
       // Time to hit the books again looking for something that'll work.
 
-      // The direction we want (modulo instability in computation)
-      // is (userPosition - d_conLinePoint) -
-      //        d_conLineDirection x
-      //          (userPosition - d_conLinePoint) * d_conLineDirection;
-      // for force, multiply that by -d_conKSpring.
+      //------------------------------------------------------------------
+      // We want to generate a force that is in the opposite direction
+      // of the offset between where the pen is and where the line is
+      // defined to be.  Because we are going to multiply the jacobian by
+      // this offset vector, we want it to hold values that produce a
+      // force that is in the direction of -OFFSET, but we want the
+      // force to be scaled by the amount by which OFFSET is perpendicular
+      // to the line direction (it should be zero along the line).  So,
+      // along the line direction it should always evaluate to (0,0,0)
+      // independent of OFFSET, and perpendicular to this it should
+      // always be OFFSET in length in direction -OFFSET,
+      // which is just -OFFSET, which makes the matrix act like
+      // -1 scaled by the spring constant.  This means that we want a
+      // matrix with Eigenvalues (-1, -1, 0) whose 0 Eigenvector lies
+      // along the line direction.  We get this by compositing a matrix
+      // that rotates this vector to lie along Z, then applying the diagonal
+      // (-1, -1, 0) matrix, then a matrix that rotates Z back to the
+      // line direction.  Remember to scale all of this by the spring constant;
+      // we do this during the diagonal matrix construction.
 
-      // So we fudge the partial derivatives:
-      //   dFx/dx = dx (1 - d_conLineDirection[0]^2)
-      //   dFx/dy = dy ( - d_conLineDirection[0]^2)
-      //   dFx/dz = dz ( - d_conLineDirection[0]^2)
+      // Normalize the direction to avoid having its length scale the force
+      q_vec_type    norm_line_dir;
+      vrpn_float64  norm_len = sqrt( (d_conLineDirection[0]*d_conLineDirection[0]) +
+                                     (d_conLineDirection[1]*d_conLineDirection[1]) +
+                                     (d_conLineDirection[2]*d_conLineDirection[2]) );
+      if (norm_len == 0) { norm_len = 1; }
+      for (i = 0; i < 3; i++) {
+        norm_line_dir[i] = d_conLineDirection[i] / norm_len;
+      }
 
-      s[0] = d_conLineDirection[0] * d_conLineDirection[0];
-      s[1] = d_conLineDirection[1] * d_conLineDirection[1];
-      s[2] = d_conLineDirection[2] * d_conLineDirection[2];
+      // Construct the rotation from the normalized direction to +Z
+      // and the rotation back.
+      q_vec_type    z_dir = { 0, 0, 1 };
+      q_type        q_forward;
+      q_matrix_type forward;
+      q_type        q_reverse;
+      q_matrix_type reverse;
+      q_from_two_vecs(q_forward, norm_line_dir, z_dir);
+      q_to_row_matrix(forward, q_forward);
+      q_invert(q_reverse, q_forward);
+      q_to_row_matrix(reverse, q_reverse);
 
-      c[0] = (vrpn_float32)(1.0 - s[0]);
-      c[1] = (vrpn_float32)(- s[0]);
-      c[2] = (vrpn_float32)(- s[0]);
-      c[3] = (vrpn_float32)(- s[1]);
-      c[4] = (vrpn_float32)(1.0 - s[1]);
-      c[5] = (vrpn_float32)(- s[1]);
-      c[6] = (vrpn_float32)(- s[2]);
-      c[7] = (vrpn_float32)(- s[2]);
-      c[8] = (vrpn_float32)(1.0 - s[2]);
+      // Construct the (-d_conKSpring, -d_conKSpring, 0) matrix and catenate the
+      // matrices to form the final jacobian.
+      q_matrix_type diagonal, temp, jacobian;
+      for (i = 0; i < 4; i++) {
+        for (j = 0; j < 4; j++) {
+          if ( (i == j) && (i < 2) ) {
+            diagonal[i][j] = -d_conKSpring;
+          } else {
+            diagonal[i][j] = 0.0;
+          }
+        }
+      }
+      q_matrix_mult( temp, diagonal, forward);
+      q_matrix_mult( jacobian, reverse, temp);
+
+      // Grab the upper-left 3x3 portion of the jacobian and put it into
+      // the coefficients.
+      for (i = 0; i < 3; i++) {
+        for (j = 0; j < 3; j++) {
+          c[i + j * 3] = (vrpn_float32)jacobian[i][j];
+        }
+      }
 
       setFF_Jacobian(c[0], c[1], c[2], c[3], c[4], c[5], c[6], c[7], c[8]);
 
       setFF_Radius(largeRadius);
+      };
       break;
 
-    case PLANE_CONSTRAINT:
+    case PLANE_CONSTRAINT: {
       setFF_Origin(d_conPlanePoint);
       setFF_Force(0.0f, 0.0f,  0.0f);
+
+      // Normalize the direction to avoid having its length scale the force
+      vrpn_float64  norm_plane_dir[3];
+      vrpn_float64  norm_len = sqrt( (d_conPlaneNormal[0]*d_conPlaneNormal[0]) +
+                                     (d_conPlaneNormal[1]*d_conPlaneNormal[1]) +
+                                     (d_conPlaneNormal[2]*d_conPlaneNormal[2]) );
+      if (norm_len == 0) { norm_len = 1; }
+      for (i = 0; i < 3; i++) {
+        norm_plane_dir[i] = d_conPlaneNormal[i] / norm_len;
+      }
 
       // Paul Grayson (pdg@mit.edu) points out that rotating the Jacobian
       // won't work and we should use something simpler here.  The below
@@ -1808,12 +1858,13 @@ void vrpn_ForceDevice_Remote::constraintToForceField (void) {
 
       for (i = 0; i < 3; i++)
         for (j = 0; j < 3; j++)
-          c[i + j * 3] = (vrpn_float32)(-d_conKSpring * d_conPlaneNormal[i]
-                                       * d_conPlaneNormal[j]);
+          c[i + j * 3] = (vrpn_float32)(-d_conKSpring * norm_plane_dir[i]
+                                       * norm_plane_dir[j]);
 
       setFF_Jacobian(c[0], c[1], c[2], c[3], c[4], c[5], c[6], c[7], c[8]);
 
       setFF_Radius(largeRadius);
+      };
       break;
   }
 }
