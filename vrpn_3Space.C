@@ -35,7 +35,7 @@ void vrpn_Tracker_3Space::reset()
 {
    static int numResets = 0;	// How many resets have we tried?
    int i,resetLen,ret;
-   char reset[10];
+   unsigned char reset[10];
 
    // Send the tracker a string that should reset it.  The first time we
    // try this, just do the normal ^Y reset.  Later, try to reset
@@ -61,7 +61,7 @@ void vrpn_Tracker_3Space::reset()
    reset[resetLen++] = (char) (25); // Ctrl + Y -> reset the tracker
    send_text_message("Resetting", timestamp, vrpn_TEXT_ERROR, numResets);
    for (i = 0; i < resetLen; i++) {
-	if (vrpn_write_characters(serial_fd, (unsigned char*)&reset[i], 1) == 1) {
+	if (vrpn_write_characters(serial_fd, &reset[i], 1) == 1) {
 		sleep(2);  // Wait 2 seconds each character
    	} else {
 		send_text_message("Failed writing to tracker", timestamp, vrpn_TEXT_ERROR, numResets);

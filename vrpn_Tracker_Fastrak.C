@@ -179,7 +179,7 @@ void vrpn_Tracker_Fastrak::reset()
 {
    static int numResets = 0;	// How many resets have we tried?
    int i,resetLen,ret;
-   char reset[10];
+   unsigned char reset[10];
    char errmsg[512];
 
    //--------------------------------------------------------------------
@@ -199,7 +199,7 @@ void vrpn_Tracker_Fastrak::reset()
    resetLen = 0;
    numResets++;		  	// We're trying another reset
    if (numResets > 1) {	// Try to get it out of a query loop if its in one
-   	reset[resetLen++] = (char) (13); // Return key -> get ready
+   	reset[resetLen++] = (unsigned char) (13); // Return key -> get ready
    }
    if (numResets > 5) {
 	reset[resetLen++] = 'Y'; // Put tracker into tracking (not point) mode
@@ -213,18 +213,18 @@ void vrpn_Tracker_Fastrak::reset()
       them back in if your tracker isn't resetting as well.
    if (numResets > 3) {	// Get a little more aggressive
 	reset[resetLen++] = 'W'; // Reset to factory defaults
-	reset[resetLen++] = (char) (11); // Ctrl + k --> Burn settings into EPROM
+	reset[resetLen++] = (unsigned char) (11); // Ctrl + k --> Burn settings into EPROM
    }
    */
    if (numResets > 2) {
-       reset[resetLen++] = (char) (25); // Ctrl + Y -> reset the tracker
+       reset[resetLen++] = (unsigned char) (25); // Ctrl + Y -> reset the tracker
    }
    reset[resetLen++] = 'c'; // Put it into polled (not continuous) mode
 
    sprintf(errmsg, "Resetting the tracker (attempt %d)", numResets);
    FT_WARNING(errmsg);
    for (i = 0; i < resetLen; i++) {
-	if (vrpn_write_characters(serial_fd, (unsigned char*)&reset[i], 1) == 1) {
+	if (vrpn_write_characters(serial_fd, &reset[i], 1) == 1) {
 		fprintf(stderr,".");
 		sleep(2);  // Wait after each character to give it time to respond
    	} else {
@@ -620,15 +620,15 @@ int vrpn_Tracker_Fastrak::get_report(void)
    // tracker's fields (which are float64s)
    vrpn_float32	read_pos[3], read_quat[4];
 
-   swap_endian4(bufptr); vrpn_unbuffer( (const char **)&bufptr, &read_pos[0]);
-   swap_endian4(bufptr); vrpn_unbuffer( (const char **)&bufptr, &read_pos[1]);
-   swap_endian4(bufptr); vrpn_unbuffer( (const char **)&bufptr, &read_pos[2]);
+   swap_endian4(bufptr); vrpn_unbuffer( const_cast<const char**>(&bufptr), &read_pos[0]);
+   swap_endian4(bufptr); vrpn_unbuffer( const_cast<const char**>(&bufptr), &read_pos[1]);
+   swap_endian4(bufptr); vrpn_unbuffer( const_cast<const char**>(&bufptr), &read_pos[2]);
 
    // Change the order of the quaternion fields to match quatlib order
-   swap_endian4(bufptr); vrpn_unbuffer( (const char **)&bufptr, &read_quat[3]);
-   swap_endian4(bufptr); vrpn_unbuffer( (const char **)&bufptr, &read_quat[0]);
-   swap_endian4(bufptr); vrpn_unbuffer( (const char **)&bufptr, &read_quat[1]);
-   swap_endian4(bufptr); vrpn_unbuffer( (const char **)&bufptr, &read_quat[2]);
+   swap_endian4(bufptr); vrpn_unbuffer( const_cast<const char**>(&bufptr), &read_quat[3]);
+   swap_endian4(bufptr); vrpn_unbuffer( const_cast<const char**>(&bufptr), &read_quat[0]);
+   swap_endian4(bufptr); vrpn_unbuffer( const_cast<const char**>(&bufptr), &read_quat[1]);
+   swap_endian4(bufptr); vrpn_unbuffer( const_cast<const char**>(&bufptr), &read_quat[2]);
 
    // When copying the positions, convert from inches to meters, since the
    // Fastrak reports in inches and VRPN reports in meters.

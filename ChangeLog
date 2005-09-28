@@ -1,3 +1,11 @@
+2005-09-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3Space.C : Fixing up type-casts.
+	* vrpn_Connection.C : Removing typecasts that are not needed
+	* vrpn_Joylin.C : Fixing type cast that was a bug under the
+		C++ standard, and on some compilers.
+	* vrpn_Tracker_Fastrak.C : Fixing up typecasts.
+
 2005-09-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.dsw : Modified all applications to also depend on

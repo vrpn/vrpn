@@ -2789,7 +2789,7 @@ int vrpn_Endpoint::mainloop (timeval * timeout,
 
       // Select to see if ready to hear from other side, or exception
     
-      if (vrpn_noint_select(32, &readfds, NULL, &exceptfds, (timeval *) timeout) == -1) {
+      if (vrpn_noint_select(32, &readfds, NULL, &exceptfds, timeout) == -1) {
           fprintf(stderr, "vrpn_Endpoint::mainloop: select failed.\n");
 #ifndef _WIN32_WCE
           fprintf(stderr, "  Errno (%d):  %s.\n", errno, strerror(errno));
@@ -3682,7 +3682,7 @@ void vrpn_Endpoint::poll_for_cookie (const timeval * pTimeout) {
 
   // Select to see if ready to hear from other side, or exception
 
-  if (vrpn_noint_select(32, &readfds, NULL ,&exceptfds, (timeval *)&timeout) == -1) {
+  if (vrpn_noint_select(32, &readfds, NULL ,&exceptfds, &timeout) == -1) {
       fprintf(stderr, "vrpn_Endpoint::poll_for_cookie(): select failed.\n");
       status = BROKEN;
       return;
