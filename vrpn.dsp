@@ -93,6 +93,10 @@ SOURCE=.\vrpn_3Space.C
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_5DT16.C
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_ADBox.C
 # End Source File
 # Begin Source File
@@ -347,6 +351,10 @@ SOURCE=.\vrpn_3DMicroscribe.h
 # Begin Source File
 
 SOURCE=.\vrpn_3Space.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_5DT16.h
 # End Source File
 # Begin Source File
 
