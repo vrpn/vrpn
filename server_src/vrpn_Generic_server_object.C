@@ -1757,6 +1757,44 @@ int vrpn_Generic_Server_Object::setup_Tracker_Crossbow (char * & pch, char *line
 }
 
 //================================
+int vrpn_Generic_Server_Object::setup_3DMicroscribe(char * & pch, char * line, FILE * config_file)
+{
+        char name [LINESIZE], device [LINESIZE], li [LINESIZE];
+        int baud_rate;
+        float x,y,z,s;
+
+        next();
+        // Get the arguments (class, 5DT_name, port, baud, xoff, yoff, zoff, scale)
+        if (sscanf(pch,"%511s%511s%d%f%f%f%f",name,device, &baud_rate,&x,&y,&z,&s) != 7) {
+                fprintf(stderr,"Bad vrpn_3dMicroscribe line: %s\n",line);
+                return -1;
+        }
+        // Make sure there's room for a new analog
+        if (num_trackers >= VRPN_GSO_MAX_TRACKERS) {
+                fprintf(stderr,"Too many Trackers in config file");
+                return -1;
+        }
+
+        // Open the device
+        if (verbose) {
+                printf("Opening 3dMicroscribe: %s on port %s, baud %d\n",
+                        name,device,baud_rate);
+        }
+#ifdef VRPN_USE_MICROSCRIBE
+        if ((trackers[num_trackers] =
+                new vrpn_3DMicroscribe (name, connection, device, baud_rate,x,y,z,s )) == NULL) {
+                        fprintf(stderr,"Can't create new vrpn_3DMicroscribe\n");
+                        return -1;
+                } else {
+                        num_trackers++;
+                }
+#else
+	fprintf(stderr,"3DMicroscribe support not configured in VRPN, edit vrpn_Configure.h and rebuild\n");
+#endif
+	return 0;
+}
+
+//================================
 int vrpn_Generic_Server_Object::setup_Tracker_InterSense(char * &pch, char *line, FILE * config_file) {
 #ifdef	VRPN_INCLUDE_INTERSENSE
   char trackerName[LINESIZE];
@@ -2586,6 +2624,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
             CHECK(setup_Poser_Analog);
 	  } else if (isit("vrpn_Tracker_Crossbow")) {
             CHECK(setup_Tracker_Crossbow);
+	  } else if (isit("vrpn_3DMicroscribe")) {
+            CHECK(setup_3DMicroscribe);
 
 	 } else {	// Never heard of it
 		sscanf(line,"%511s",s1);	// Find out the class name

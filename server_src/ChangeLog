@@ -1,5 +1,12 @@
 2005-09-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn.cfg : Added entry for Microscribe.
+	* vrpn.cfg.SAMPLE : Added entry for Microscribe.
+	* vrpn_Generic_server_object.h : Same.
+	* vrpn_Generic_server_object.C : Same.
+
+2005-09-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Generic_server_object.h : Added support for Crossbow
 		tracker.
 	* vrpn_Generic_server_object.C : Same.
