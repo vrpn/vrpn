@@ -1,5 +1,15 @@
 2005-09-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_3DMicroscribe.C : Added driver from Tom de Weyer's group
+		in Belgium for the Microscribe.
+	* vrpn_3DMicroscribe.h : Same.
+	* vrpn_Configure.h : Same.
+	* Makefile : Same, but only works on Unix whereas the scribe
+		only works on Windows and Mac (need to modify things
+		to make it link correctly on these).
+
+2005-09-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Tracker_Crossbow.h : Removing a function no longer needed.
 	* vrpn_Tracker_Crossbow.C : Same.
 

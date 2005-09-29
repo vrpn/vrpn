@@ -40,6 +40,11 @@
 //#define     VRPN_USE_PHANTOM_SERVER
 
 //------------------------
+// Instructs VRPN to use microscribe3D library to construct a unified
+// server
+//#define VRPN_USE_MICROSCRIBE
+
+//------------------------
 // Instructs vrpn to use SensAble's HDAPI rather than GHOST library.
 // Only used in conjuntion with VRPN_USE_PHANTOM_SERVER.
 // PLEASE SPECIFY PATH TO HDAPI IN NEXT SECTION IF YOU USE THIS.
@@ -205,6 +210,15 @@
 #ifdef	VRPN_USE_NATIONAL_INSTRUMENTS
 #pragma comment (lib, VRPN_NIDAQ_PATH "nidaq32.lib")
 #pragma comment (lib, VRPN_NIDAQ_PATH "nidex32.lib")
+#endif
+
+// Load Microscribe-3D SDK libraries 
+// If this doesn't match where you have installed these libraries,
+// edit the following lines to point at the correct libraries.  Do
+// this here rather than in the project settings so that it can be
+// turned on and off using the definition above.
+#ifdef        VRPN_USE_MICROSCRIBE
+#pragma comment (lib, "armdll32.lib")
 #endif
 
 // This will be defined in the VRPN (non-DLL) project and nothing else
