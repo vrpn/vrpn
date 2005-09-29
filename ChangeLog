@@ -1,5 +1,9 @@
 2005-09-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn.dsp : Added the Microscribe.
+
+2005-09-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_3DMicroscribe.C : Added driver from Tom de Weyer's group
 		in Belgium for the Microscribe.
 	* vrpn_3DMicroscribe.h : Same.

@@ -1759,7 +1759,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_Crossbow (char * & pch, char *line
 //================================
 int vrpn_Generic_Server_Object::setup_3DMicroscribe(char * & pch, char * line, FILE * config_file)
 {
-        char name [LINESIZE], device [LINESIZE], li [LINESIZE];
+        char name [LINESIZE], device [LINESIZE];
         int baud_rate;
         float x,y,z,s;
 
@@ -1769,7 +1769,7 @@ int vrpn_Generic_Server_Object::setup_3DMicroscribe(char * & pch, char * line, F
                 fprintf(stderr,"Bad vrpn_3dMicroscribe line: %s\n",line);
                 return -1;
         }
-        // Make sure there's room for a new analog
+        // Make sure there's room for a new tracker
         if (num_trackers >= VRPN_GSO_MAX_TRACKERS) {
                 fprintf(stderr,"Too many Trackers in config file");
                 return -1;
