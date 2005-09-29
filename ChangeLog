@@ -1,5 +1,13 @@
 2005-09-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* Makefile : Adding 5DT16 driver along with button driver
+		to convert from its analog outputs to button
+		outputs.
+	* vrpn_5DT16.h : Same.
+	* vrpn_5DT16.C : Same.
+
+2005-09-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn.dsp : Added the Microscribe.
 
 2005-09-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
