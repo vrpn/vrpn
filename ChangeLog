@@ -1,3 +1,8 @@
+2005-09-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_Crossbow.h : Removing a function no longer needed.
+	* vrpn_Tracker_Crossbow.C : Same.
+
 2005-09-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_3Space.C : Fixing up type-casts.

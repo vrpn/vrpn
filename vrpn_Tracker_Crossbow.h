@@ -33,9 +33,6 @@ public:
 
 	~vrpn_Tracker_Crossbow();
 
-	// This is a debugging function that validates a sample packet.
-	void check();
-
 	// Run through the main loop once, sending notification messages as necessary
 	virtual void mainloop();
 

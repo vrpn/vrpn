@@ -24,30 +24,6 @@ vrpn_Tracker_Crossbow::~vrpn_Tracker_Crossbow() {
 	}
 }
 
-// This whole function needs to go once I have the rest of the tracker written.
-void vrpn_Tracker_Crossbow::check() {
-	raw_packet pkt;
-
-// Ignore constant truncation warnings here.
-#ifdef _WIN32
-# pragma warning(push)
-# pragma warning(disable : 4305 4309)
-#endif
-	char bytes[sizeof(raw_packet)] = {
-		0xaa, 0x55, 0x00, 0x5b, 0xff, 0x97, 0xff, 0xee,
-		0x00, 0x5f, 0x00, 0x5c, 0x2a, 0x59, 0xad, 0xa2,
-		0x06, 0x21, 0x01, 0x2c, 0x00, 0x00, 0x06, 0xbf
-	};
-#ifdef _WIN32
-# pragma warning(pop)
-#endif
-
-	unbuffer_packet(pkt, bytes);
-
-	printf("Validating sample packet.\n");
-	validate_packet(pkt);
-}
-
 // Retrieves a raw_packet from an incoming byte array, and even flips endianness as necessary.
 void vrpn_Tracker_Crossbow::unbuffer_packet(raw_packet &dest, const char *buffer) {
 	vrpn_unbuffer(&buffer, &dest.header);
