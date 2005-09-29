@@ -360,6 +360,34 @@
 #vrpn_3DMicroscribe Microscribe COM1 19200 0.3 -0.1 -0.2 1
 
 ################################################################################
+# 5DT glove with 16 sensors.  This driver reports the 16 channels as analog
+# devices.  If you want to treat them as buttons, then also add the entry
+# for the vrpn_Button_5DT_Server below, connecting it to the output of this
+# server.
+#
+# This server does not work with the previous version of the glove.
+#
+#  arguments:
+#       char    name_of_this_device[]
+#       char    name_of_serial_device[]
+#       int     baud_rate_of_serial_device
+
+#vrpn_5dt16    glove_5dt16     COM1    19200
+
+################################################################################
+#
+# Use the 5dtglove16 as button device.  Use in conjunction with the vrpn_5dt16
+# device above to turn the analog reports into button press/release when the
+# sensors cross the threshold.
+#
+# arguments:
+#       char name_of_this_device[]
+#       char name_of_the_glove device[]
+#       double threshold_toggle_point_between_pressed_and_unpressed[16]
+
+#vrpn_Button_5DT_Server glove_5dt_button glove_5dt16 1794 2171 2110 2610 1707 2673 2459 1493 3029 2301 1936 3007 2302 1635 0 0
+
+################################################################################
 # AnalogFly Tracker. This is a tracker that is intended to be used on top of
 # a joystick or motion tracker of some kind to turn it into a moving or flying
 # device. It could be used on top of any analog device, in fact.

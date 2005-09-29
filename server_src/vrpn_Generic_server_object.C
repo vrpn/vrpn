@@ -942,6 +942,74 @@ int vrpn_Generic_Server_Object::setup_5dt (char * & pch, char * line, FILE * con
   return 0;
 }
 
+int vrpn_Generic_Server_Object::setup_5dt16 (char * & pch, char * line, FILE * config_file)
+{
+        char name [LINESIZE], device [LINESIZE];
+        int baud_rate;
+
+        next();
+        // Get the arguments (class, 5DT_name, port, baud
+        if (sscanf(pch,"%511s%511s%d",name,device, &baud_rate) != 3) {
+                fprintf(stderr,"Bad vrpn_5dt16 line: %s\n",line);
+                return -1;
+        }
+        // Make sure there's room for a new analog
+        if (num_analogs >= VRPN_GSO_MAX_ANALOG) {
+                fprintf(stderr,"Too many Analogs in config file");
+                return -1;
+        }
+
+        // Open the device
+        if (verbose) {
+                printf("Opening vrpn_5dt16: %s on port %s, baud %d\n",
+                        name,device,baud_rate);
+        }
+        if ((analogs[num_analogs] = new vrpn_5dt16 (name, connection, device, baud_rate )) == NULL) {
+		fprintf(stderr,"Can't create new vrpn_5dt16\n");
+		return -1;
+	} else {
+		num_analogs++;
+	}
+
+        return 0;
+}
+
+int vrpn_Generic_Server_Object::setup_Button_5DT_Server(char * & pch, char * line, FILE * config_file)
+{
+        char name[LINESIZE],deviceName[LINESIZE];
+        double center[16];
+
+        next();
+        // Get the arguments (button_name)
+        if (sscanf(pch,"%511s%511s%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf", name,deviceName,
+		&center[0],&center[1],
+		&center[2],&center[3],&center[4],&center[5],&center[6],&center[7],
+		&center[8],&center[9],&center[10],&center[11],&center[12],&center[13],
+		&center[14],&center[15]) != 18) {
+                fprintf(stderr,"Bad vrpn_Button_5dt_Server line: %s\n",line);
+                return -1;
+        }
+
+        // Make sure there's room for a new button
+        if (num_buttons >= VRPN_GSO_MAX_BUTTONS) {
+                fprintf(stderr,"vrpn_Button_5dt_Server: Too many buttons in config file");
+                return -1;
+        }
+
+        // Open the button
+        if (verbose)
+                printf("Opening vrpn_Button_5dt_Server: %s \n",name);
+        if ( (buttons[num_buttons] = new vrpn_Button_5DT_Server(name,deviceName,connection,center))
+                	== NULL ) {
+		fprintf(stderr,"Can't create new vrpn_Button_5dt_Server\n");
+		return -1;
+        } else {
+		num_buttons++;
+	}
+
+	return 0;
+}
+
 int vrpn_Generic_Server_Object::setup_Wanda (char * & pch, char * line, FILE * config_file) {
   char s2 [LINESIZE], s3 [LINESIZE];
   int i1;
@@ -2566,6 +2634,10 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
             CHECK(setup_Zaber);
 	  } else if (isit("vrpn_5dt")) {
             CHECK(setup_5dt);
+	  } else if (isit("vrpn_5dt16")) {
+            CHECK(setup_5dt16);
+	  } else if (isit("vrpn_Button_5DT_Server")) {
+            CHECK(setup_Button_5DT_Server);
 	  } else if (isit("vrpn_ImmersionBox")) {
             CHECK(setup_ImmersionBox);
 	  } else if (isit("vrpn_Tracker_Dyna")) {
