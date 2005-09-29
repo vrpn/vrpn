@@ -1721,6 +1721,42 @@ int vrpn_Generic_Server_Object::setup_Mouse (char * & pch, char * line, FILE * c
 }
 
 //================================
+int vrpn_Generic_Server_Object::setup_Tracker_Crossbow (char * & pch, char *line, FILE *config_file) {
+        char port[LINESIZE], name[LINESIZE];
+        long baud;
+        float gRange, aRange;
+
+        next();
+
+        // Get the arguments (class, tracker_name, port, baud, g-range, a-range)
+        // g-range is the linear acceleration sensitivity in Gs
+        // a-range is the angular velocity sensitivity in degrees per second
+        if (sscanf(pch, "%511s%511s%ld%f%f", name, port, &baud, &gRange, &aRange) < 5) {
+                fprintf(stderr, "Bad vrpn_Tracker_Crossbow line: %s\n%s %s\n", line, pch, port);
+                return -1;
+        }
+
+        if (num_trackers >= VRPN_GSO_MAX_TRACKERS) {
+                fprintf(stderr, "Too many trackers in config file");
+                return -1;
+        }
+
+        if (verbose)
+                printf("Opening vrpn_Tracker_Crossbow: %s on %s with baud %ld, G-range %f, and A-range %f\n",
+                        name, port, baud, gRange, aRange);
+
+        if (!(trackers[num_trackers] = new vrpn_Tracker_Crossbow(name, connection, port, baud, gRange, aRange))) {
+                fprintf(stderr, "Can't create new vrpn_Tracker_Crossbow\n");
+                return -1;
+        }
+        else {
+                num_trackers++;
+        }
+
+        return 0;
+}
+
+//================================
 int vrpn_Generic_Server_Object::setup_Tracker_InterSense(char * &pch, char *line, FILE * config_file) {
 #ifdef	VRPN_INCLUDE_INTERSENSE
   char trackerName[LINESIZE];
@@ -2548,6 +2584,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
             CHECK(setup_Poser_Tek4662);
 	  } else if (isit("vrpn_Poser_Analog")) {
             CHECK(setup_Poser_Analog);
+	  } else if (isit("vrpn_Tracker_Crossbow")) {
+            CHECK(setup_Tracker_Crossbow);
 
 	 } else {	// Never heard of it
 		sscanf(line,"%511s",s1);	// Find out the class name

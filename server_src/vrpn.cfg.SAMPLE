@@ -339,6 +339,17 @@
 #vrpn_Tracker_Dyna	Tracker0	1	COM1		19200
 
 ################################################################################
+# Crossbow Tracker. Runs a Crossbow Technology RGA300-series tracker that is
+# attached to a serial port on this machine. There are four arguments:
+#       char    name_of_this_device[]
+#       char    name_of_serial_device[]
+#       int             baud_rate_of_serial_device (should be 38400)
+#       float   linear_acceleration_sensitivity (Gs; default is 2.0)
+#       float   angular_rate_sensitivity (degrees per second; default is 100)
+
+#vrpn_Tracker_Crossbow  Tracker0        COM1:   38400   2.0     100
+
+################################################################################
 # AnalogFly Tracker. This is a tracker that is intended to be used on top of
 # a joystick or motion tracker of some kind to turn it into a moving or flying
 # device. It could be used on top of any analog device, in fact.
@@ -861,9 +872,12 @@
 # seem.  The motion of the mouse is not reported, only the buttons.
 
 #vrpn_Button_SerialMouse	Button0 /dev/ttyd1 mousesystems
-#vrpn_Button_SerialMouse	Button0 /dev/ttyd1 3button  
 #vrpn_Button_SerialMouse	Button0 COM1 mousesystems
 #vrpn_Button_SerialMouse	Button0 COM1 3button  
+# For a Linux box with a mouse on port 0
+#vrpn_Button_SerialMouse	Button0 /dev/ttyS0 3button  
+# For a mac with a Keyspan 4-port serial-to-USB converter
+#vrpn_Button_SerialMouse	Button0 /dev/tty.USA49W3b12P1.1 3button
 
 ################################################################################
 # NRL TNG3.  (Totally Neat Gadget) A device made by mindtel, available from
