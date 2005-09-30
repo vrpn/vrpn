@@ -31,7 +31,7 @@ vrpn_DirectXFFJoystick::vrpn_DirectXFFJoystick (const char * name, vrpn_Connecti
 						double readRate, double forceRate) :
 		vrpn_Analog(name, c),
 		vrpn_Button(name, c),
-		vrpn_ForceDevice(name, c),
+		vrpn_ForceDeviceServer(name, c),
 		_read_rate(readRate),
 		_force_rate(forceRate),
 		_DirectInput(NULL),

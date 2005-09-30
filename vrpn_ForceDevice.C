@@ -1,3 +1,7 @@
+// Include vrpn_Shared.h _first_ to avoid conflicts with sys/time.h 
+// and unistd.h
+#include "vrpn_Shared.h"
+
 #include <time.h>
 #include <math.h>
 #include <stdlib.h>
@@ -13,13 +17,6 @@
 #if defined(linux) || defined(__sparc) || defined(hpux) || defined(__GNUC__)
 #include <string.h>
 #endif
-
-// Include vrpn_Shared.h _first_ to avoid conflicts with sys/time.h 
-// and unistd.h
-#include "vrpn_Shared.h"
-//#include <strings.h>
-//#include <netinet/in.h>
-//#include <sys/ioctl.h>
 
 #include "vrpn_ForceDevice.h"
 
@@ -70,10 +67,10 @@ vrpn_BaseClass(name, c)
 
     //set the force to zero
     //d_force[0] = d_force[1] = d_force[2] = 0.0;
-    SurfaceKspring= 0.29f;
-    SurfaceKdamping = 0.0f;
-    SurfaceFstatic = 0.03f;
-    SurfaceFdynamic = 0.02f;
+    SurfaceKspring= 0.8f;
+    SurfaceFdynamic = 0.3f;
+    SurfaceFstatic = 0.7f;
+    SurfaceKdamping = 0.001f;
     
     numRecCycles = 1;
     errorCode = FD_OK;
@@ -114,7 +111,21 @@ int vrpn_ForceDevice::register_types(void)
 	d_connection->register_message_type("vrpn_ForceDevice Plane");
     plane_effects_message_id =
 	d_connection->register_message_type("vrpn_ForceDevice Plane2");
-    setVertex_message_id = 
+    addObject_message_id = 
+	d_connection->register_message_type("vrpn_ForceDevice addObject");
+	addObjectExScene_message_id = 
+	d_connection->register_message_type("vrpn_ForceDevice addObjectExScene");
+	moveToParent_message_id = 
+	d_connection->register_message_type("vrpn_ForceDevice moveToParent");
+	setObjectPosition_message_id = 
+	d_connection->register_message_type("vrpn_ForceDevice setObjectPosition");
+	setObjectOrientation_message_id = 
+	d_connection->register_message_type("vrpn_ForceDevice setObjectOrientation");
+	setObjectScale_message_id = 
+	d_connection->register_message_type("vrpn_ForceDevice setObjectScale");
+	removeObject_message_id = 
+	d_connection->register_message_type("vrpn_ForceDevice removeObject");
+	setVertex_message_id = 
 	d_connection->register_message_type("vrpn_ForceDevice setVertex");
     setNormal_message_id =
 	d_connection->register_message_type("vrpn_ForceDevice setNormal");
@@ -130,6 +141,18 @@ int vrpn_ForceDevice::register_types(void)
 	d_connection->register_message_type("vrpn_ForceDevice setTrimeshType");
     clearTrimesh_message_id = 
 	d_connection->register_message_type("vrpn_ForceDevice clearTrimesh");
+
+	setHapticOrigin_message_id = 
+	d_connection->register_message_type("vrpn_ForceDevice setHapticOrigin");
+	setHapticScale_message_id = 
+	d_connection->register_message_type("vrpn_ForceDevice setHapticScale");
+	setSceneOrigin_message_id = 
+	d_connection->register_message_type("vrpn_ForceDevice setSceneOrigin");
+	
+	getNewObjectID_message_id = 
+	d_connection->register_message_type("vrpn_ForceDevice getNewObjectID");
+	setObjectIsTouchable_message_id = 
+	d_connection->register_message_type("vrpn_ForceDevice setObjectIsTouchable");
     scp_message_id =
 	d_connection->register_message_type("vrpn_ForceDevice SCP");
     error_message_id =
@@ -448,19 +471,20 @@ vrpn_int32 vrpn_ForceDevice::decode_surface_effects(const char *buffer, const vr
 }
 
 // static
-char *vrpn_ForceDevice::encode_vertex(vrpn_int32 &len,const vrpn_int32 vertNum,
+char *vrpn_ForceDevice::encode_vertex(vrpn_int32 &len,const vrpn_int32 objNum, const vrpn_int32 vertNum,
 			const vrpn_float32 x,const vrpn_float32 y,const vrpn_float32 z){
 
     char *buf;
     char *mptr;
     vrpn_int32 mlen;
 
-    len = sizeof(vrpn_int32) + 3*sizeof(vrpn_float32);
+    len = sizeof(objNum) + sizeof(vertNum) + 3*sizeof(vrpn_float32);
     mlen = len;
 
     buf = new char [len];
     mptr = buf;
 
+    vrpn_buffer(&mptr, &mlen, objNum);
     vrpn_buffer(&mptr, &mlen, vertNum);
     vrpn_buffer(&mptr, &mlen, x);
     vrpn_buffer(&mptr, &mlen, y);
@@ -471,17 +495,18 @@ char *vrpn_ForceDevice::encode_vertex(vrpn_int32 &len,const vrpn_int32 vertNum,
 
 // static
 vrpn_int32 vrpn_ForceDevice::decode_vertex(const char *buffer, 
-			    const vrpn_int32 len,vrpn_int32 *vertNum,
+			    const vrpn_int32 len,vrpn_int32 *objNum, vrpn_int32 *vertNum,
 			    vrpn_float32 *x,vrpn_float32 *y,vrpn_float32 *z){
     const char *mptr = buffer;
 
-    if (len != sizeof(vrpn_int32) + 3*sizeof(vrpn_float32)){
+    if (len != (sizeof(objNum) + sizeof(vertNum) + 3*sizeof(vrpn_float32))){
 	    fprintf(stderr,"vrpn_ForceDevice: vertex message payload error\n");
 	    fprintf(stderr,"             (got %d, expected %d)\n",
-		    len, sizeof(vrpn_int32) + 3*sizeof(vrpn_float32) );
+		    len, sizeof(objNum) +sizeof(vertNum) + 3*sizeof(vrpn_float32) );
 	    return -1;
     }
 
+    CHECK(vrpn_unbuffer(&mptr,objNum));
     CHECK(vrpn_unbuffer(&mptr, vertNum));
     CHECK(vrpn_unbuffer(&mptr, x));
     CHECK(vrpn_unbuffer(&mptr, y));
@@ -491,18 +516,19 @@ vrpn_int32 vrpn_ForceDevice::decode_vertex(const char *buffer,
 }
 
 // static
-char *vrpn_ForceDevice::encode_normal(vrpn_int32 &len,const vrpn_int32 normNum,
+char *vrpn_ForceDevice::encode_normal(vrpn_int32 &len,const vrpn_int32 objNum, const vrpn_int32 normNum,
 		       const vrpn_float32 x,const vrpn_float32 y,const vrpn_float32 z){
 
     char *buf;
     char *mptr;
     vrpn_int32 mlen;
 
-    len = sizeof(vrpn_int32) + 3*sizeof(vrpn_float32);
+    len = sizeof(vrpn_int32) +sizeof(vrpn_int32) + 3*sizeof(vrpn_float32);
     mlen = len;
 
     buf = new char [len];
     mptr = buf;
+	vrpn_buffer(&mptr, &mlen, objNum);
     vrpn_buffer(&mptr, &mlen, normNum);
     vrpn_buffer(&mptr, &mlen, x);
     vrpn_buffer(&mptr, &mlen, y);
@@ -513,17 +539,18 @@ char *vrpn_ForceDevice::encode_normal(vrpn_int32 &len,const vrpn_int32 normNum,
 
 // static
 vrpn_int32 vrpn_ForceDevice::decode_normal(const char *buffer,const vrpn_int32 len,
-			     vrpn_int32 *vertNum,vrpn_float32 *x,vrpn_float32 *y,vrpn_float32 *z){
+			     vrpn_int32 *objNum, vrpn_int32 *vertNum,vrpn_float32 *x,vrpn_float32 *y,vrpn_float32 *z){
 
     const char *mptr = buffer;
 
-    if (len != sizeof(vrpn_int32) + 3*sizeof(vrpn_float32)){
+    if (len != (sizeof(vrpn_int32) + sizeof(vrpn_int32) + 3*sizeof(vrpn_float32))){
 	    fprintf(stderr,"vrpn_ForceDevice: normal message payload error\n");
 	    fprintf(stderr,"             (got %d, expected %d)\n",
-		    len, sizeof(vrpn_int32) + 3*sizeof(vrpn_float32) );
+		    len, sizeof(vrpn_int32) + sizeof(vrpn_int32) + 3*sizeof(vrpn_float32) );
 	    return -1;
     }
 
+	CHECK(vrpn_unbuffer(&mptr,objNum));
     CHECK(vrpn_unbuffer(&mptr, vertNum));
     CHECK(vrpn_unbuffer(&mptr, x));
     CHECK(vrpn_unbuffer(&mptr, y));
@@ -533,19 +560,20 @@ vrpn_int32 vrpn_ForceDevice::decode_normal(const char *buffer,const vrpn_int32 l
 }
 
 // static
-char *vrpn_ForceDevice::encode_triangle(vrpn_int32 &len,const vrpn_int32 triNum,
+char *vrpn_ForceDevice::encode_triangle(vrpn_int32 &len,const vrpn_int32 objNum,const vrpn_int32 triNum,
 			 const vrpn_int32 vert0,const vrpn_int32 vert1,const vrpn_int32 vert2,
 			 const vrpn_int32 norm0,const vrpn_int32 norm1,const vrpn_int32 norm2){
     char *buf;
     char *mptr;
     vrpn_int32 mlen;
 
-    len = 7*sizeof(vrpn_int32);
+    len = sizeof(vrpn_int32) +7*sizeof(vrpn_int32);
     mlen = len;
 
     buf = new char [len];
     mptr = buf;
 
+	vrpn_buffer(&mptr, &mlen, objNum);
     vrpn_buffer(&mptr, &mlen, triNum);
     vrpn_buffer(&mptr, &mlen, vert0);
     vrpn_buffer(&mptr, &mlen, vert1);
@@ -559,19 +587,20 @@ char *vrpn_ForceDevice::encode_triangle(vrpn_int32 &len,const vrpn_int32 triNum,
 
 // static
 vrpn_int32 vrpn_ForceDevice::decode_triangle(const char *buffer,
-				const vrpn_int32 len,vrpn_int32 *triNum,
+				const vrpn_int32 len,vrpn_int32 *objNum,vrpn_int32 *triNum,
 			    vrpn_int32 *vert0,vrpn_int32 *vert1,vrpn_int32 *vert2,
 			    vrpn_int32 *norm0,vrpn_int32 *norm1,vrpn_int32 *norm2)
 {
     const char *mptr = buffer;
 
-    if (len != 7*sizeof(vrpn_int32)){
+    if (len != (sizeof(vrpn_int32) + 7*sizeof(vrpn_int32))){
 	    fprintf(stderr,"vrpn_ForceDevice: triangle message payload error\n");
 	    fprintf(stderr,"             (got %d, expected %d)\n",
-		    len, 7*sizeof(vrpn_int32) );
+		    len, sizeof(vrpn_int32) + 7*sizeof(vrpn_int32) );
 	    return -1;
     }
 
+	CHECK(vrpn_unbuffer(&mptr,objNum));
     CHECK(vrpn_unbuffer(&mptr, triNum));
     CHECK(vrpn_unbuffer(&mptr, vert0));
     CHECK(vrpn_unbuffer(&mptr, vert1));
@@ -584,18 +613,19 @@ vrpn_int32 vrpn_ForceDevice::decode_triangle(const char *buffer,
 }
 
 // static
-char *vrpn_ForceDevice::encode_removeTriangle(vrpn_int32 &len,const vrpn_int32 triNum){
+char *vrpn_ForceDevice::encode_removeTriangle(vrpn_int32 &len,const vrpn_int32 objNum ,const vrpn_int32 triNum){
 
     char *buf;
     char *mptr;
     vrpn_int32 mlen;
 
-    len = sizeof(vrpn_int32);
+    len = sizeof(vrpn_int32) +sizeof(vrpn_int32);
     mlen = len;
 
     buf = new char [len];
     mptr = buf;
 
+	vrpn_buffer(&mptr, &mlen, objNum);
     vrpn_buffer(&mptr, &mlen, triNum);
 
     return buf; 
@@ -603,16 +633,17 @@ char *vrpn_ForceDevice::encode_removeTriangle(vrpn_int32 &len,const vrpn_int32 t
 
 // static
 vrpn_int32 vrpn_ForceDevice::decode_removeTriangle(const char *buffer,
-				const vrpn_int32 len,vrpn_int32 *triNum){
+				const vrpn_int32 len,vrpn_int32 *objNum,vrpn_int32 *triNum){
     const char *mptr = buffer;
 
-    if (len != sizeof(vrpn_int32)){
+    if (len != (sizeof(vrpn_int32) + sizeof(vrpn_int32))){
 	fprintf(stderr,"vrpn_ForceDevice: remove triangle message payload");
 	    fprintf(stderr," error\n             (got %d, expected %d)\n",
-		    len, sizeof(vrpn_int32) );
+		    len, sizeof(vrpn_int32) +sizeof(vrpn_int32) );
 	    return -1;
     }
 
+	CHECK(vrpn_unbuffer(&mptr,objNum));
     CHECK(vrpn_unbuffer(&mptr, triNum));
 
     return 0;
@@ -620,7 +651,7 @@ vrpn_int32 vrpn_ForceDevice::decode_removeTriangle(const char *buffer,
 
 // static
 // this is where we send down our surface parameters
-char *vrpn_ForceDevice::encode_updateTrimeshChanges(vrpn_int32 &len, 
+char *vrpn_ForceDevice::encode_updateTrimeshChanges(vrpn_int32 &len,const vrpn_int32 objNum, 
 			const vrpn_float32 kspring, const vrpn_float32 kdamp, 
 			const vrpn_float32 fstat, const vrpn_float32 fdyn){
 
@@ -628,12 +659,13 @@ char *vrpn_ForceDevice::encode_updateTrimeshChanges(vrpn_int32 &len,
     char *mptr;
     vrpn_int32 mlen;
 
-    len = 4*sizeof(vrpn_float32);
+    len = sizeof(vrpn_int32) + 4*sizeof(vrpn_float32);
     mlen = len;
 
     buf = new char [len];
     mptr = buf;
 
+	vrpn_buffer(&mptr, &mlen, objNum);
     vrpn_buffer(&mptr, &mlen, kspring);
     vrpn_buffer(&mptr, &mlen, kdamp);
     vrpn_buffer(&mptr, &mlen, fstat);
@@ -644,18 +676,19 @@ char *vrpn_ForceDevice::encode_updateTrimeshChanges(vrpn_int32 &len,
 
 // static
 vrpn_int32 vrpn_ForceDevice::decode_updateTrimeshChanges(const char *buffer,
-			const vrpn_int32 len, vrpn_float32 *kspring, vrpn_float32 *kdamp, 
+			const vrpn_int32 len, vrpn_int32 *objNum, vrpn_float32 *kspring, vrpn_float32 *kdamp, 
 			vrpn_float32 *fstat, vrpn_float32 *fdyn){
 
     const char *mptr = buffer;
 
-    if (len != 4*sizeof(vrpn_float32)){
+    if (len != (sizeof(vrpn_int32) +4*sizeof(vrpn_float32))){
 	fprintf(stderr,"vrpn_ForceDevice: update trimesh message payload");
 	    fprintf(stderr," error\n             (got %d, expected %d)\n",
-		    len, 4*sizeof(vrpn_float32) );
+		    len, sizeof(vrpn_int32) +4*sizeof(vrpn_float32) );
 	    return -1;
     }
 
+	CHECK(vrpn_unbuffer(&mptr,objNum));
     CHECK(vrpn_unbuffer(&mptr, kspring));
     CHECK(vrpn_unbuffer(&mptr, kdamp));
     CHECK(vrpn_unbuffer(&mptr, fstat));
@@ -665,8 +698,307 @@ vrpn_int32 vrpn_ForceDevice::decode_updateTrimeshChanges(const char *buffer,
 }
 
 // static
-char *vrpn_ForceDevice::encode_setTrimeshType(vrpn_int32 &len,const vrpn_int32 type){
+char *vrpn_ForceDevice::encode_setTrimeshType(vrpn_int32 &len,const vrpn_int32 objNum,const vrpn_int32 type){
 
+    char *buf;
+    char *mptr;
+    vrpn_int32 mlen;
+
+    len = sizeof(vrpn_int32) +sizeof(vrpn_int32);
+    mlen = len;
+
+    buf = new char [len];
+    mptr = buf;
+
+	vrpn_buffer(&mptr, &mlen, objNum);
+    vrpn_buffer(&mptr, &mlen, type);
+
+    return buf; 
+}
+
+// static
+vrpn_int32 vrpn_ForceDevice::decode_setTrimeshType(const char *buffer,const vrpn_int32 len,
+					   vrpn_int32 *objNum,vrpn_int32 *type){
+
+    const char *mptr = buffer;
+
+    if (len != (sizeof(vrpn_int32) +sizeof(vrpn_int32))){
+	fprintf(stderr,"vrpn_ForceDevice: trimesh type message payload");
+	    fprintf(stderr," error\n             (got %d, expected %d)\n",
+		    len, sizeof(vrpn_int32) +sizeof(vrpn_int32) );
+	    return -1;
+    }
+
+	CHECK(vrpn_unbuffer(&mptr,objNum));
+    CHECK(vrpn_unbuffer(&mptr, type));
+
+    return 0;
+}
+
+// static
+char *vrpn_ForceDevice::encode_trimeshTransform(vrpn_int32 &len,
+				const vrpn_int32 objNum, const vrpn_float32 homMatrix[16]){
+	int i;
+	char *buf;
+	char *mptr;
+	vrpn_int32 mlen;
+
+	len = sizeof(vrpn_int32) +16*sizeof(vrpn_float32);
+	mlen = len;
+	
+	buf = new char [len];
+	mptr = buf;
+  
+	vrpn_buffer(&mptr, &mlen, objNum);
+	for(i = 0; i < 16; i++)
+		vrpn_buffer(&mptr, &mlen, homMatrix[i]);    
+
+	return buf; 
+}
+
+// static
+vrpn_int32 vrpn_ForceDevice::decode_trimeshTransform(const char *buffer,
+				  const vrpn_int32 len, vrpn_int32 *objNum, vrpn_float32 homMatrix[16]){
+    int i;
+    const char *mptr = buffer;
+
+    if (len != (sizeof(vrpn_int32) +16*sizeof(vrpn_float32))){
+	fprintf(stderr,"vrpn_ForceDevice: trimesh transform message payload ");
+	    fprintf(stderr,"error\n             (got %d, expected %d)\n",
+		    len, sizeof(vrpn_int32) +16*sizeof(vrpn_float32) );
+	    return -1;
+    }
+
+	CHECK(vrpn_unbuffer(&mptr,objNum));
+    for (i = 0; i < 16; i++)
+	    CHECK(vrpn_unbuffer(&mptr, &(homMatrix[i])));
+
+    return 0;
+}
+
+char *vrpn_ForceDevice::encode_addObject(vrpn_int32 &len,const vrpn_int32 objNum, const vrpn_int32 ParentNum)
+{
+    char *buf;
+    char *mptr;
+    vrpn_int32 mlen;
+
+    len = 2*sizeof(vrpn_int32);
+    mlen = len;
+
+    buf = new char [len];
+    mptr = buf;
+
+	vrpn_buffer(&mptr, &mlen, objNum);
+    vrpn_buffer(&mptr, &mlen, ParentNum);
+
+    return buf; 
+}
+
+vrpn_int32 vrpn_ForceDevice::decode_addObject(const char *buffer,vrpn_int32 len,vrpn_int32 *objNum, vrpn_int32 *ParentNum)
+{
+    const char *mptr = buffer;
+
+    if (len != 2*sizeof(vrpn_int32) ){
+	fprintf(stderr,"vrpn_ForceDevice: add object message payload ");
+	    fprintf(stderr,"error\n             (got %d, expected %d)\n",
+		    len, 2*sizeof(vrpn_int32) );
+	    return -1;
+    }
+
+	CHECK(vrpn_unbuffer(&mptr,objNum));
+    CHECK(vrpn_unbuffer(&mptr,ParentNum));
+
+    return 0;
+}
+
+char *vrpn_ForceDevice::encode_addObjectExScene(vrpn_int32 &len,const vrpn_int32 objNum)
+{
+    char *buf;
+    char *mptr;
+    vrpn_int32 mlen;
+
+    len = sizeof(objNum);
+    mlen = len;
+
+    buf = new char [len];
+    mptr = buf;
+
+	vrpn_buffer(&mptr, &mlen, objNum);
+
+    return buf; 
+}
+
+vrpn_int32 vrpn_ForceDevice::decode_addObjectExScene(const char *buffer,vrpn_int32 len,vrpn_int32 *objNum)
+{
+    const char *mptr = buffer;
+
+    if (len != sizeof(vrpn_int32)){
+	fprintf(stderr,"vrpn_ForceDevice: add object message payload ");
+	    fprintf(stderr,"error\n             (got %d, expected %d)\n",
+		    len, sizeof(vrpn_int32) );
+	    return -1;
+    }
+
+	CHECK(vrpn_unbuffer(&mptr,objNum));
+
+    return 0;
+}
+
+char *vrpn_ForceDevice::encode_objectPosition(vrpn_int32 &len,const vrpn_int32 objNum, const vrpn_float32 Pos[3])
+{   
+	char *buf;
+    char *mptr;
+    vrpn_int32 mlen;
+
+    len = sizeof(vrpn_int32) + 3*sizeof(vrpn_float32);
+    mlen = len;
+
+    buf = new char [len];
+    mptr = buf;
+
+	vrpn_buffer(&mptr, &mlen, objNum);
+    vrpn_buffer(&mptr, &mlen, Pos[0]);
+    vrpn_buffer(&mptr, &mlen, Pos[1]);
+    vrpn_buffer(&mptr, &mlen, Pos[2]);
+
+    return buf; 
+
+}
+
+vrpn_int32 vrpn_ForceDevice::decode_objectPosition(const char *buffer,vrpn_int32 len,vrpn_int32 *objNum, vrpn_float32 Pos[3])
+{
+    const char *mptr = buffer;
+
+    if (len != (sizeof(vrpn_int32) + 3*sizeof(vrpn_float32))){
+	fprintf(stderr,"vrpn_ForceDevice: object position message payload ");
+	    fprintf(stderr,"error\n             (got %d, expected %d)\n",
+		    len, sizeof(vrpn_int32) + 3*sizeof(vrpn_float32) );
+	    return -1;
+    }
+
+	CHECK(vrpn_unbuffer(&mptr,objNum));
+    CHECK(vrpn_unbuffer(&mptr,&Pos[0]));
+    CHECK(vrpn_unbuffer(&mptr,&Pos[1]));
+    CHECK(vrpn_unbuffer(&mptr,&Pos[2]));
+
+    return 0;
+}
+
+char *vrpn_ForceDevice::encode_objectOrientation(vrpn_int32 &len,const vrpn_int32 objNum, const vrpn_float32 axis[3], const vrpn_float32 angle)
+{
+    char *buf;
+    char *mptr;
+    vrpn_int32 mlen;
+
+    len = sizeof(vrpn_int32) + 4*sizeof(vrpn_float32);
+    mlen = len;
+
+    buf = new char [len];
+    mptr = buf;
+
+	vrpn_buffer(&mptr, &mlen, objNum);
+    vrpn_buffer(&mptr, &mlen, axis[0]);
+    vrpn_buffer(&mptr, &mlen, axis[1]);
+    vrpn_buffer(&mptr, &mlen, axis[2]);
+    vrpn_buffer(&mptr, &mlen, angle);
+
+    return buf; 
+}
+
+vrpn_int32 vrpn_ForceDevice::decode_objectOrientation(const char *buffer,vrpn_int32 len,vrpn_int32 *objNum, vrpn_float32 axis[3], vrpn_float32 *angle)
+{
+    const char *mptr = buffer;
+
+    if (len != (sizeof(vrpn_int32) + 4*sizeof(vrpn_float32))){
+	fprintf(stderr,"vrpn_ForceDevice: object orientation message payload ");
+	    fprintf(stderr,"error\n             (got %d, expected %d)\n",
+		    len, sizeof(vrpn_int32) + 4*sizeof(vrpn_float32) );
+	    return -1;
+    }
+
+	CHECK(vrpn_unbuffer(&mptr,objNum));
+    CHECK(vrpn_unbuffer(&mptr,&axis[0]));
+    CHECK(vrpn_unbuffer(&mptr,&axis[1]));
+    CHECK(vrpn_unbuffer(&mptr,&axis[2]));
+    CHECK(vrpn_unbuffer(&mptr,angle));
+
+    return 0;
+}
+
+char *vrpn_ForceDevice::encode_objectScale(vrpn_int32 &len,const vrpn_int32 objNum, const vrpn_float32 Scale[3])
+{
+    char *buf;
+    char *mptr;
+    vrpn_int32 mlen;
+
+    len = sizeof(vrpn_int32) + 3*sizeof(vrpn_float32);
+    mlen = len;
+
+    buf = new char [len];
+    mptr = buf;
+
+	vrpn_buffer(&mptr, &mlen, objNum);
+    vrpn_buffer(&mptr, &mlen, Scale[0]);
+    vrpn_buffer(&mptr, &mlen, Scale[1]);
+    vrpn_buffer(&mptr, &mlen, Scale[2]);
+
+    return buf; 
+}
+
+vrpn_int32 vrpn_ForceDevice::decode_objectScale(const char *buffer,vrpn_int32 len,vrpn_int32 *objNum, vrpn_float32 Scale[3])
+{
+	const char *mptr = buffer;
+
+    if (len != (sizeof(vrpn_int32) + 3*sizeof(vrpn_float32))){
+	fprintf(stderr,"vrpn_ForceDevice: object scale message payload ");
+	    fprintf(stderr,"error\n             (got %d, expected %d)\n",
+		    len, sizeof(vrpn_int32) + 3*sizeof(vrpn_float32) );
+	    return -1;
+    }
+
+	CHECK(vrpn_unbuffer(&mptr,objNum));
+    CHECK(vrpn_unbuffer(&mptr,&Scale[0]));
+    CHECK(vrpn_unbuffer(&mptr,&Scale[1]));
+    CHECK(vrpn_unbuffer(&mptr,&Scale[2]));
+
+    return 0;
+}
+
+char *vrpn_ForceDevice::encode_removeObject(vrpn_int32 &len,const vrpn_int32 objNum)
+{
+    char *buf;
+    char *mptr;
+    vrpn_int32 mlen;
+
+    len = sizeof(vrpn_int32) ;
+    mlen = len;
+
+    buf = new char [len];
+    mptr = buf;
+
+	vrpn_buffer(&mptr, &mlen, objNum);
+
+    return buf; 
+}
+	
+vrpn_int32 vrpn_ForceDevice::decode_removeObject(const char *buffer,vrpn_int32 len,vrpn_int32 *objNum)
+{
+	const char *mptr = buffer;
+
+    if (len != sizeof(vrpn_int32) ){
+	fprintf(stderr,"vrpn_ForceDevice: remove object message payload ");
+	    fprintf(stderr,"error\n             (got %d, expected %d)\n",
+		    len, sizeof(vrpn_int32) );
+	    return -1;
+    }
+
+	CHECK(vrpn_unbuffer(&mptr,objNum));
+
+    return 0;
+}
+
+char *vrpn_ForceDevice::encode_clearTrimesh(vrpn_int32 &len,const vrpn_int32 objNum)
+{
     char *buf;
     char *mptr;
     vrpn_int32 mlen;
@@ -677,64 +1009,219 @@ char *vrpn_ForceDevice::encode_setTrimeshType(vrpn_int32 &len,const vrpn_int32 t
     buf = new char [len];
     mptr = buf;
 
-    vrpn_buffer(&mptr, &mlen, type);
+	vrpn_buffer(&mptr, &mlen, objNum);
 
     return buf; 
 }
 
-// static
-vrpn_int32 vrpn_ForceDevice::decode_setTrimeshType(const char *buffer,const vrpn_int32 len,
-					   vrpn_int32 *type){
+vrpn_int32 vrpn_ForceDevice::decode_clearTrimesh(const char *buffer,vrpn_int32 len,vrpn_int32 *objNum)
+{
+	const char *mptr = buffer;
 
-    const char *mptr = buffer;
-
-    if (len != sizeof(vrpn_int32)){
-	fprintf(stderr,"vrpn_ForceDevice: trimesh type message payload");
-	    fprintf(stderr," error\n             (got %d, expected %d)\n",
+    if (len != sizeof(vrpn_int32) ){
+	fprintf(stderr,"vrpn_ForceDevice: clear TriMesh message payload ");
+	    fprintf(stderr,"error\n             (got %d, expected %d)\n",
 		    len, sizeof(vrpn_int32) );
 	    return -1;
     }
 
-    CHECK(vrpn_unbuffer(&mptr, type));
+	CHECK(vrpn_unbuffer(&mptr,objNum));
 
     return 0;
 }
 
-// static
-char *vrpn_ForceDevice::encode_trimeshTransform(vrpn_int32 &len,
-				const vrpn_float32 homMatrix[16]){
-	int i;
-	char *buf;
-	char *mptr;
-	vrpn_int32 mlen;
+char *vrpn_ForceDevice::encode_moveToParent(vrpn_int32 &len,const vrpn_int32 objNum, const vrpn_int32 parentNum)
+{
+    char *buf;
+    char *mptr;
+    vrpn_int32 mlen;
 
-	len = 16*sizeof(vrpn_float32);
-	mlen = len;
-	
-	buf = new char [len];
-	mptr = buf;
-  
-	for(i = 0; i < 16; i++)
-		vrpn_buffer(&mptr, &mlen, homMatrix[i]);    
+    len = sizeof(vrpn_int32) +sizeof(vrpn_int32) ;
+    mlen = len;
 
-	return buf; 
+    buf = new char [len];
+    mptr = buf;
+
+	vrpn_buffer(&mptr, &mlen, objNum);
+    vrpn_buffer(&mptr, &mlen, parentNum);
+
+    return buf; 
 }
+    
+vrpn_int32 vrpn_ForceDevice::decode_moveToParent(const char *buffer,vrpn_int32 len,vrpn_int32 *objNum, vrpn_int32 *parentNum)
+{
+	const char *mptr = buffer;
 
-// static
-vrpn_int32 vrpn_ForceDevice::decode_trimeshTransform(const char *buffer,
-				  const vrpn_int32 len, vrpn_float32 homMatrix[16]){
-    int i;
-    const char *mptr = buffer;
-
-    if (len != 16*sizeof(vrpn_float32)){
-	fprintf(stderr,"vrpn_ForceDevice: trimesh transform message payload ");
+    if (len != (sizeof(vrpn_int32) +sizeof(vrpn_int32)) ){
+	fprintf(stderr,"vrpn_ForceDevice: move object to parent message payload ");
 	    fprintf(stderr,"error\n             (got %d, expected %d)\n",
-		    len, 16*sizeof(vrpn_float32) );
+		    len, sizeof(vrpn_int32) +sizeof(vrpn_int32) );
 	    return -1;
     }
 
-    for (i = 0; i < 16; i++)
-	    CHECK(vrpn_unbuffer(&mptr, &(homMatrix[i])));
+	CHECK(vrpn_unbuffer(&mptr,objNum));
+	CHECK(vrpn_unbuffer(&mptr,parentNum));
+
+    return 0;
+}
+
+char *vrpn_ForceDevice::encode_setHapticOrigin(vrpn_int32 &len,const vrpn_float32 Pos[3], const vrpn_float32 axis[3], const vrpn_float32 angle)
+{
+	int i;
+    char *buf;
+    char *mptr;
+    vrpn_int32 mlen;
+
+    len = 7*sizeof(vrpn_float32);
+    mlen = len;
+
+    buf = new char [len];
+    mptr = buf;
+
+    for (i=0;i<3;i++)
+    vrpn_buffer(&mptr, &mlen, Pos[i]);
+
+    for (i=0;i<3;i++)
+    vrpn_buffer(&mptr, &mlen, axis[i]);
+
+	vrpn_buffer(&mptr, &mlen, angle);
+
+    return buf;
+}
+
+vrpn_int32 vrpn_ForceDevice::decode_setHapticOrigin(const char *buffer,vrpn_int32 len,vrpn_float32 Pos[3], vrpn_float32 axis[3], vrpn_float32 *angle)
+{
+	int i;
+	const char *mptr = buffer;
+
+    if (len != 7*sizeof(vrpn_int32)){
+	    fprintf(stderr,"vrpn_ForceDevice: sethapticorigin message payload error\n");
+	    fprintf(stderr,"             (got %d, expected %d)\n",
+		    len, 7*sizeof(vrpn_int32) );
+	    return -1;
+    }
+	
+	for (i=0;i<3;i++)
+    CHECK(vrpn_unbuffer(&mptr, &Pos[i]));
+
+    for (i=0;i<3;i++)
+    CHECK(vrpn_unbuffer(&mptr, &axis[i]));
+
+	CHECK(vrpn_unbuffer(&mptr, angle));
+    return 0;
+}
+
+char *vrpn_ForceDevice::encode_setHapticScale(vrpn_int32 &len,const vrpn_float32 scale)
+{
+    char *buf;
+    char *mptr;
+    vrpn_int32 mlen;
+
+    len = sizeof(vrpn_float32);
+    mlen = len;
+
+    buf = new char [len];
+    mptr = buf;
+	
+	vrpn_buffer(&mptr, &mlen, scale);
+
+    return buf;
+}
+
+vrpn_int32 vrpn_ForceDevice::decode_setHapticScale(const char *buffer,vrpn_int32 len,vrpn_float32 *scale)
+{
+	const char *mptr = buffer;
+
+    if (len != sizeof(vrpn_float32)){
+	    fprintf(stderr,"vrpn_ForceDevice: sethapticscale message payload error\n");
+	    fprintf(stderr,"             (got %d, expected %d)\n",
+		    len, 7*sizeof(vrpn_float32) );
+	    return -1;
+    }
+	
+    CHECK(vrpn_unbuffer(&mptr, scale));
+
+    return 0;
+}
+
+char *vrpn_ForceDevice::encode_setSceneOrigin(vrpn_int32 &len,const vrpn_float32 Pos[3], const vrpn_float32 axis[3], const vrpn_float32 angle)
+{
+	int i;
+    char *buf;
+    char *mptr;
+    vrpn_int32 mlen;
+
+    len = 7*sizeof(vrpn_float32);
+    mlen = len;
+
+    buf = new char [len];
+    mptr = buf;
+
+    for (i=0;i<3;i++)
+    vrpn_buffer(&mptr, &mlen, Pos[i]);
+
+    for (i=0;i<3;i++)
+    vrpn_buffer(&mptr, &mlen, axis[i]);
+
+	vrpn_buffer(&mptr, &mlen, angle);
+
+    return buf;
+}
+
+vrpn_int32 vrpn_ForceDevice::decode_setSceneOrigin(const char *buffer,vrpn_int32 len,vrpn_float32 Pos[3], vrpn_float32 axis[3], vrpn_float32 *angle)
+{
+	int i;
+	const char *mptr = buffer;
+
+    if (len != 7*sizeof(vrpn_int32)){
+	    fprintf(stderr,"vrpn_ForceDevice: setsceneorigin message payload error\n");
+	    fprintf(stderr,"             (got %d, expected %d)\n",
+		    len, 7*sizeof(vrpn_int32) );
+	    return -1;
+    }
+	
+	for (i=0;i<3;i++)
+    CHECK(vrpn_unbuffer(&mptr, &Pos[i]));
+
+    for (i=0;i<3;i++)
+    CHECK(vrpn_unbuffer(&mptr, &axis[i]));
+
+	CHECK(vrpn_unbuffer(&mptr, angle));
+
+    return 0;
+}
+
+char *vrpn_ForceDevice::encode_setObjectIsTouchable(vrpn_int32 &len,const vrpn_int32 objNum, const vrpn_bool IsTouchable)
+{
+	char *buf;
+    char *mptr;
+    vrpn_int32 mlen;
+
+    len = sizeof(vrpn_int32)+sizeof(vrpn_bool);
+    mlen = len;
+
+    buf = new char [len];
+    mptr = buf;
+
+    vrpn_buffer(&mptr, &mlen, objNum);
+	vrpn_buffer(&mptr, &mlen, IsTouchable);
+
+    return buf;
+}
+
+vrpn_int32 vrpn_ForceDevice::decode_setObjectIsTouchable(const char *buffer,vrpn_int32 len,vrpn_int32 *objNum,vrpn_bool *IsTouchable)
+{
+	const char *mptr = buffer;
+
+    if (len != (sizeof(vrpn_int32)+sizeof(vrpn_bool))){
+	    fprintf(stderr,"vrpn_ForceDevice: set object is touchable message payload error\n");
+	    fprintf(stderr,"             (got %d, expected %d)\n",
+		    len, sizeof(vrpn_int32)+sizeof(vrpn_bool) );
+	    return -1;
+    }
+
+	CHECK(vrpn_unbuffer(&mptr,objNum));
+	CHECK(vrpn_unbuffer(&mptr,IsTouchable));
 
     return 0;
 }
@@ -743,7 +1230,7 @@ vrpn_int32 vrpn_ForceDevice::decode_trimeshTransform(const char *buffer,
 char *vrpn_ForceDevice::encode_forcefield(vrpn_int32 &len, const vrpn_float32 origin[3],
 	const vrpn_float32 force[3], const vrpn_float32 jacobian[3][3], const vrpn_float32 radius)
 {
-    int i,j;
+	int i,j;
     char *buf;
     char *mptr;
     vrpn_int32 mlen;
@@ -1268,8 +1755,98 @@ void vrpn_ForceDevice_Remote::stopSurface(void)
     }
 }
 
-void vrpn_ForceDevice_Remote::setVertex(vrpn_int32 vertNum,vrpn_float32 x,vrpn_float32 y,vrpn_float32 z){
+void vrpn_ForceDevice_Remote::setVertex(vrpn_int32 vertNum,vrpn_float32 x,vrpn_float32 y,vrpn_float32 z)
+{
+	setObjectVertex(0,vertNum,x,y,z);
+}
 
+void vrpn_ForceDevice_Remote::setNormal(vrpn_int32 normNum,vrpn_float32 x,vrpn_float32 y,vrpn_float32 z)
+{
+	setObjectNormal(0,normNum,x,y,z);
+}
+
+void vrpn_ForceDevice_Remote::setTriangle(vrpn_int32 triNum,
+	  vrpn_int32 vert0,vrpn_int32 vert1,vrpn_int32 vert2,vrpn_int32 norm0,vrpn_int32 norm1,vrpn_int32 norm2)
+{
+	setObjectTriangle(0,triNum,vert0,vert1,vert2,norm0,norm1,norm2);
+}
+
+void vrpn_ForceDevice_Remote::removeTriangle(vrpn_int32 triNum)
+{
+	removeObjectTriangle(0,triNum);
+}
+
+void vrpn_ForceDevice_Remote::updateTrimeshChanges()
+{
+	updateObjectTrimeshChanges(0);
+}
+
+// set the trimesh's homogen transform matrix (in row major order)
+void vrpn_ForceDevice_Remote::setTrimeshTransform(vrpn_float32 homMatrix[16])
+{
+	setObjectTrimeshTransform(0,homMatrix);
+}
+
+// clear the triMesh if connection
+void vrpn_ForceDevice_Remote::clearTrimesh(void)
+{
+	clearObjectTrimesh(0);
+}
+
+/** functions for multiple objects in the haptic scene *************************************/
+// Add an object to the haptic scene as root (parent -1 = default) or as child (ParentNum =the number of the parent)
+void vrpn_ForceDevice_Remote::addObject(vrpn_int32 objNum, vrpn_int32 ParentNum/*=-1*/)
+{
+  char	*msgbuf;
+  vrpn_int32		len;
+  struct timeval current_time;
+ 
+  if(objNum>m_NextAvailableObjectID)
+	  m_NextAvailableObjectID=objNum+1;
+
+  vrpn_gettimeofday(&current_time, NULL);
+  timestamp.tv_sec = current_time.tv_sec;
+  timestamp.tv_usec = current_time.tv_usec;
+
+  if(d_connection)
+  {
+    msgbuf = encode_addObject(len,objNum,ParentNum);
+    if (d_connection->pack_message(len,timestamp,addObject_message_id, d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) 
+	{
+      fprintf(stderr,"Phantom: cannot write message: tossing\n");
+    }
+    delete [] msgbuf;
+  }
+}
+
+// Add an object next to the haptic scene as root 
+void vrpn_ForceDevice_Remote::addObjectExScene(vrpn_int32 objNum)
+{
+  char	*msgbuf;
+  vrpn_int32		len;
+  struct timeval current_time;
+ 
+  if(objNum>m_NextAvailableObjectID)
+	  m_NextAvailableObjectID=objNum+1;
+
+  vrpn_gettimeofday(&current_time, NULL);
+  timestamp.tv_sec = current_time.tv_sec;
+  timestamp.tv_usec = current_time.tv_usec;
+
+  if(d_connection)
+  {
+    msgbuf = encode_addObjectExScene(len,objNum);
+    if (d_connection->pack_message(len,timestamp,addObjectExScene_message_id, d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) 
+	{
+      fprintf(stderr,"Phantom: cannot write message: tossing\n");
+    }
+    delete [] msgbuf;
+  }
+}
+
+// vertNum normNum and triNum start at 0
+void vrpn_ForceDevice_Remote::setObjectVertex(vrpn_int32 objNum, vrpn_int32 vertNum,vrpn_float32 x,vrpn_float32 y,vrpn_float32 z)
+{
   char	*msgbuf;
   vrpn_int32		len;
   struct timeval current_time;
@@ -1279,7 +1856,7 @@ void vrpn_ForceDevice_Remote::setVertex(vrpn_int32 vertNum,vrpn_float32 x,vrpn_f
   timestamp.tv_usec = current_time.tv_usec;
 
   if(d_connection){
-    msgbuf = encode_vertex(len,vertNum,x,y,z);
+    msgbuf = encode_vertex(len,objNum,vertNum,x,y,z);
     if (d_connection->pack_message(len,timestamp,setVertex_message_id,
 		 d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
       fprintf(stderr,"Phantom: cannot write message: tossing\n");
@@ -1288,7 +1865,10 @@ void vrpn_ForceDevice_Remote::setVertex(vrpn_int32 vertNum,vrpn_float32 x,vrpn_f
   }
 }
 
-void vrpn_ForceDevice_Remote::setNormal(vrpn_int32 normNum,vrpn_float32 x,vrpn_float32 y,vrpn_float32 z){
+// NOTE: ghost dosen't take normals, 
+//       and normals still aren't implemented for Hcollide
+void vrpn_ForceDevice_Remote::setObjectNormal(vrpn_int32 objNum, vrpn_int32 normNum,vrpn_float32 x,vrpn_float32 y,vrpn_float32 z)
+{
   char	*msgbuf;
   vrpn_int32		len;
   struct timeval current_time;
@@ -1298,7 +1878,7 @@ void vrpn_ForceDevice_Remote::setNormal(vrpn_int32 normNum,vrpn_float32 x,vrpn_f
   timestamp.tv_usec = current_time.tv_usec;
 
   if(d_connection){
-    msgbuf = encode_normal(len,normNum,x,y,z);
+    msgbuf = encode_normal(len,objNum,normNum,x,y,z);
     if (d_connection->pack_message(len,timestamp,setNormal_message_id,
 			 d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
       fprintf(stderr,"Phantom: cannot write message: tossing\n");
@@ -1307,9 +1887,9 @@ void vrpn_ForceDevice_Remote::setNormal(vrpn_int32 normNum,vrpn_float32 x,vrpn_f
   }
 }
 
-void vrpn_ForceDevice_Remote::setTriangle(vrpn_int32 triNum,
-	  vrpn_int32 vert0,vrpn_int32 vert1,vrpn_int32 vert2,vrpn_int32 norm0,vrpn_int32 norm1,vrpn_int32 norm2){
-
+void vrpn_ForceDevice_Remote::setObjectTriangle(vrpn_int32 objNum, vrpn_int32 triNum,vrpn_int32 vert0,vrpn_int32 vert1,vrpn_int32 vert2,
+	  vrpn_int32 norm0/*=-1*/,vrpn_int32 norm1/*=-1*/,vrpn_int32 norm2/*=-1*/)
+{
   char	*msgbuf;
   vrpn_int32		len;
   struct timeval current_time;
@@ -1319,7 +1899,7 @@ void vrpn_ForceDevice_Remote::setTriangle(vrpn_int32 triNum,
   timestamp.tv_usec = current_time.tv_usec;
 
   if(d_connection){
-    msgbuf = encode_triangle(len,triNum,vert0,vert1,vert2,norm0,norm1,norm2);
+    msgbuf = encode_triangle(len,objNum,triNum,vert0,vert1,vert2,norm0,norm1,norm2);
     if (d_connection->pack_message(len,timestamp,setTriangle_message_id,
 				 d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
       fprintf(stderr,"Phantom: cannot write message: tossing\n");
@@ -1328,8 +1908,8 @@ void vrpn_ForceDevice_Remote::setTriangle(vrpn_int32 triNum,
   }
 }
 
-void vrpn_ForceDevice_Remote::removeTriangle(vrpn_int32 triNum){
-
+void vrpn_ForceDevice_Remote::removeObjectTriangle(vrpn_int32 objNum, vrpn_int32 triNum)
+{
   char	*msgbuf;
   vrpn_int32		len;
   struct timeval current_time;
@@ -1339,7 +1919,7 @@ void vrpn_ForceDevice_Remote::removeTriangle(vrpn_int32 triNum){
   timestamp.tv_usec = current_time.tv_usec;
 
   if(d_connection){
-    msgbuf = encode_removeTriangle(len,triNum);
+    msgbuf = encode_removeTriangle(len,objNum,triNum);
     if (d_connection->pack_message(len,timestamp,removeTriangle_message_id,
 				 d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
       fprintf(stderr,"Phantom: cannot write message: tossing\n");
@@ -1347,9 +1927,11 @@ void vrpn_ForceDevice_Remote::removeTriangle(vrpn_int32 triNum){
     delete [] msgbuf;
   }
 }
-
-void vrpn_ForceDevice_Remote::updateTrimeshChanges(){
-
+ 
+// should be called to incorporate the above changes into the 
+// displayed trimesh 
+void vrpn_ForceDevice_Remote::updateObjectTrimeshChanges(vrpn_int32 objNum)
+{
   char	*msgbuf;
   vrpn_int32		len;
   struct timeval current_time;
@@ -1359,7 +1941,7 @@ void vrpn_ForceDevice_Remote::updateTrimeshChanges(){
   timestamp.tv_usec = current_time.tv_usec;
 
   if(d_connection){
-    msgbuf = encode_updateTrimeshChanges(len, SurfaceKspring, SurfaceKdamping,
+    msgbuf = encode_updateTrimeshChanges(len, objNum, SurfaceKspring, SurfaceKdamping,
 			SurfaceFstatic, SurfaceFdynamic);
     if (d_connection->pack_message(len,timestamp,updateTrimeshChanges_message_id,
 				 d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
@@ -1370,7 +1952,8 @@ void vrpn_ForceDevice_Remote::updateTrimeshChanges(){
 }
 
 // set the trimesh's homogen transform matrix (in row major order)
-void vrpn_ForceDevice_Remote::setTrimeshTransform(vrpn_float32 homMatrix[16]){
+void vrpn_ForceDevice_Remote::setObjectTrimeshTransform(vrpn_int32 objNum, vrpn_float32 homMatrix[16])
+{
   char	*msgbuf;
   vrpn_int32		len;
   struct timeval current_time;
@@ -1380,7 +1963,7 @@ void vrpn_ForceDevice_Remote::setTrimeshTransform(vrpn_float32 homMatrix[16]){
   timestamp.tv_usec = current_time.tv_usec;
 
   if(d_connection){
-    msgbuf = encode_trimeshTransform(len,homMatrix);
+    msgbuf = encode_trimeshTransform(len,objNum,homMatrix);
     if (d_connection->pack_message(len,timestamp,transformTrimesh_message_id,
 				 d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
       fprintf(stderr,"Phantom: cannot write message: tossing\n");
@@ -1389,9 +1972,93 @@ void vrpn_ForceDevice_Remote::setTrimeshTransform(vrpn_float32 homMatrix[16]){
   }
 }
 
-// clear the triMesh if connection
-void vrpn_ForceDevice_Remote::clearTrimesh(void){
-  char	*msgbuf=NULL;
+// set position of an object
+void vrpn_ForceDevice_Remote::setObjectPosition(vrpn_int32 objNum, vrpn_float32 Pos[3])
+{
+  char	*msgbuf;
+  vrpn_int32		len;
+  struct timeval current_time;
+  
+  vrpn_gettimeofday(&current_time, NULL);
+  timestamp.tv_sec = current_time.tv_sec;
+  timestamp.tv_usec = current_time.tv_usec;
+
+  if(d_connection){
+    msgbuf = encode_objectPosition(len,objNum,Pos);
+    if (d_connection->pack_message(len,timestamp,setObjectPosition_message_id,
+				 d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+      fprintf(stderr,"Phantom: cannot write message: tossing\n");
+    }
+    delete [] msgbuf;
+  }
+}
+
+// set orientation of an object
+void vrpn_ForceDevice_Remote::setObjectOrientation(vrpn_int32 objNum, vrpn_float32 axis[3], vrpn_float32 angle)
+{
+  char	*msgbuf;
+  vrpn_int32		len;
+  struct timeval current_time;
+  
+  vrpn_gettimeofday(&current_time, NULL);
+  timestamp.tv_sec = current_time.tv_sec;
+  timestamp.tv_usec = current_time.tv_usec;
+
+  if(d_connection){
+    msgbuf = encode_objectOrientation(len,objNum,axis,angle);
+    if (d_connection->pack_message(len,timestamp,setObjectOrientation_message_id,
+				 d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+      fprintf(stderr,"Phantom: cannot write message: tossing\n");
+    }
+    delete [] msgbuf;
+  }
+}
+
+// set Scale of an object
+void vrpn_ForceDevice_Remote::setObjectScale(vrpn_int32 objNum, vrpn_float32 Scale[3])
+{
+  char	*msgbuf;
+  vrpn_int32		len;
+  struct timeval current_time;
+  
+  vrpn_gettimeofday(&current_time, NULL);
+  timestamp.tv_sec = current_time.tv_sec;
+  timestamp.tv_usec = current_time.tv_usec;
+
+  if(d_connection){
+    msgbuf = encode_objectScale(len,objNum,Scale);
+    if (d_connection->pack_message(len,timestamp,setObjectScale_message_id,
+				 d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+      fprintf(stderr,"Phantom: cannot write message: tossing\n");
+    }
+    delete [] msgbuf;
+  }
+}
+
+// remove an object from the scene
+void vrpn_ForceDevice_Remote::removeObject(vrpn_int32 objNum)
+{
+  char	*msgbuf;
+  vrpn_int32		len;
+  struct timeval current_time;
+  
+  vrpn_gettimeofday(&current_time, NULL);
+  timestamp.tv_sec = current_time.tv_sec;
+  timestamp.tv_usec = current_time.tv_usec;
+
+  if(d_connection){
+    msgbuf = encode_removeObject(len,objNum);
+    if (d_connection->pack_message(len,timestamp,removeObject_message_id,
+				 d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+      fprintf(stderr,"Phantom: cannot write message: tossing\n");
+    }
+    delete [] msgbuf;
+  }
+}
+
+void vrpn_ForceDevice_Remote::clearObjectTrimesh(vrpn_int32 objNum)
+{
+ char	*msgbuf=NULL;
   vrpn_int32		len=0;
   struct timeval current_time;
   
@@ -1400,13 +2067,129 @@ void vrpn_ForceDevice_Remote::clearTrimesh(void){
   timestamp.tv_usec = current_time.tv_usec;
 
   if(d_connection){
+	  msgbuf = encode_clearTrimesh(len,objNum);
     if (d_connection->pack_message(len,timestamp,clearTrimesh_message_id,
 				 d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
       fprintf(stderr,"Phantom: cannot write message: tossing\n");
     }
-    //delete [] msgbuf;
+    delete [] msgbuf;
   }
 }
+
+
+/** Functions to organize the scene	**********************************************************/
+// Change The parent of an object
+void vrpn_ForceDevice_Remote::moveToParent(vrpn_int32 objNum, vrpn_int32 ParentNum)
+{
+  char	*msgbuf;
+  vrpn_int32		len;
+  struct timeval current_time;
+  
+  vrpn_gettimeofday(&current_time, NULL);
+  timestamp.tv_sec = current_time.tv_sec;
+  timestamp.tv_usec = current_time.tv_usec;
+
+  if(d_connection){
+    msgbuf = encode_moveToParent(len,objNum,ParentNum);
+    if (d_connection->pack_message(len,timestamp,moveToParent_message_id,
+				 d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+      fprintf(stderr,"Phantom: cannot write message: tossing\n");
+    }
+    delete [] msgbuf;
+  }
+}
+
+// Set the Origin of the haptic scene
+void vrpn_ForceDevice_Remote::setHapticOrigin(vrpn_float32 Pos[3], vrpn_float32 axis[3], vrpn_float32 angle)
+{
+  char	*msgbuf;
+  vrpn_int32		len;
+  struct timeval current_time;
+  
+  vrpn_gettimeofday(&current_time, NULL);
+  timestamp.tv_sec = current_time.tv_sec;
+  timestamp.tv_usec = current_time.tv_usec;
+
+  if(d_connection){
+    msgbuf = encode_setHapticOrigin(len,Pos,axis,angle);
+    if (d_connection->pack_message(len,timestamp,setHapticOrigin_message_id,
+				 d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+      fprintf(stderr,"Phantom: cannot write message: tossing\n");
+    }
+    delete [] msgbuf;
+  }
+}
+
+// Set the scale of the haptic scene
+void vrpn_ForceDevice_Remote::setHapticScale(vrpn_float32 Scale)
+{
+  char	*msgbuf;
+  vrpn_int32		len;
+  struct timeval current_time;
+  
+  vrpn_gettimeofday(&current_time, NULL);
+  timestamp.tv_sec = current_time.tv_sec;
+  timestamp.tv_usec = current_time.tv_usec;
+
+  if(d_connection){
+    msgbuf = encode_setHapticScale(len,Scale);
+    if (d_connection->pack_message(len,timestamp,setHapticScale_message_id,
+				 d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+      fprintf(stderr,"Phantom: cannot write message: tossing\n");
+    }
+    delete [] msgbuf;
+  }
+}
+
+void vrpn_ForceDevice_Remote::setSceneOrigin(vrpn_float32 Pos[3], vrpn_float32 axis[3], vrpn_float32 angle)
+{
+  char	*msgbuf;
+  vrpn_int32		len;
+  struct timeval current_time;
+  
+  vrpn_gettimeofday(&current_time, NULL);
+  timestamp.tv_sec = current_time.tv_sec;
+  timestamp.tv_usec = current_time.tv_usec;
+
+  if(d_connection){
+    msgbuf = encode_setSceneOrigin(len,Pos,axis,angle);
+    if (d_connection->pack_message(len,timestamp,setSceneOrigin_message_id,
+				 d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
+      fprintf(stderr,"Phantom: cannot write message: tossing\n");
+    }
+    delete [] msgbuf;
+  }
+}  
+
+// get new ID, use only if wish to use vrpn ids and do not want to manage them yourself: ids need to be unique
+vrpn_int32 vrpn_ForceDevice_Remote::getNewObjectID()
+{
+  return m_NextAvailableObjectID++;
+}
+
+// make an object touchable or not
+void vrpn_ForceDevice_Remote::setObjectIsTouchable(vrpn_int32 objNum, vrpn_bool IsTouchable/*=true*/)
+{
+  char	*msgbuf;
+  vrpn_int32		len;
+  struct timeval current_time;
+  
+  vrpn_gettimeofday(&current_time, NULL);
+  timestamp.tv_sec = current_time.tv_sec;
+  timestamp.tv_usec = current_time.tv_usec;
+
+  if(d_connection)
+  {
+    msgbuf = encode_setObjectIsTouchable(len,objNum,IsTouchable);
+    if (d_connection->pack_message(len,timestamp,setObjectIsTouchable_message_id, d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) 
+	{
+      fprintf(stderr,"Phantom: cannot write message: tossing\n");
+    }
+    delete [] msgbuf;
+  }
+}
+
+
 
 // the next time we send a trimesh we will use the following type
 void vrpn_ForceDevice_Remote::useHcollide(void){
@@ -1419,7 +2202,7 @@ void vrpn_ForceDevice_Remote::useHcollide(void){
   timestamp.tv_usec = current_time.tv_usec;
 
   if(d_connection){
-    msgbuf = encode_setTrimeshType(len,HCOLLIDE);
+    msgbuf = encode_setTrimeshType(len,-1,HCOLLIDE);
     if (d_connection->pack_message(len,timestamp,setTrimeshType_message_id,
 				 d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
       fprintf(stderr,"Phantom: cannot write message: tossing\n");
@@ -1438,7 +2221,7 @@ void vrpn_ForceDevice_Remote::useGhost(void){
   timestamp.tv_usec = current_time.tv_usec;
 
   if(d_connection){
-    msgbuf = encode_setTrimeshType(len,GHOST);
+    msgbuf = encode_setTrimeshType(len,-1,GHOST);
     if (d_connection->pack_message(len,timestamp,setTrimeshType_message_id,
 				 d_sender_id, msgbuf, vrpn_CONNECTION_RELIABLE)) {
       fprintf(stderr,"Phantom: cannot write message: tossing\n");

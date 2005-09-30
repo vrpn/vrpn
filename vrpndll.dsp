@@ -92,7 +92,15 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
+SOURCE=.\vrpn_3DMicroscribe.C
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_3Space.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_5DT16.C
 # End Source File
 # Begin Source File
 
@@ -161,6 +169,10 @@ SOURCE=.\vrpn_Flock_Parallel.C
 # Begin Source File
 
 SOURCE=.\vrpn_ForceDevice.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_ForceDeviceServer.C
 # End Source File
 # Begin Source File
 
@@ -324,7 +336,15 @@ SOURCE=..\isense\isense.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_3DMicroscribe.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_3Space.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_5DT16.h
 # End Source File
 # Begin Source File
 

@@ -40,11 +40,6 @@
 //#define     VRPN_USE_PHANTOM_SERVER
 
 //------------------------
-// Instructs VRPN to use microscribe3D library to construct a unified
-// server
-//#define VRPN_USE_MICROSCRIBE
-
-//------------------------
 // Instructs vrpn to use SensAble's HDAPI rather than GHOST library.
 // Only used in conjuntion with VRPN_USE_PHANTOM_SERVER.
 // PLEASE SPECIFY PATH TO HDAPI IN NEXT SECTION IF YOU USE THIS.
@@ -124,6 +119,11 @@
 // Please don't anyone new use the room space transforms built
 // into VRPN -- they are a hack pulled forward from Trackerlib.
 #define	DESKTOP_PHANTOM_DEFAULTS
+
+//------------------------
+// Instructs VRPN to use microscribe3D library to construct a unified
+// server
+//#define VRPN_USE_MICROSCRIBE
 
 //-----------------------
 // Instructs VRPN to use a DLL interface on Windows systems.

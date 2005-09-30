@@ -5,6 +5,7 @@
 #include "vrpn_BaseClass.h"
 #include "vrpn_Tracker.h"
 #include "vrpn_Button.h"
+#include "../quat/quat.h"
 
 #define MAXPLANE 4   //maximum number of planes in the scene 
 
@@ -131,6 +132,13 @@ class VRPN_API vrpn_ForceDevice : public vrpn_BaseClass {
 
     // IDs for trimesh messages
 
+	vrpn_int32 addObject_message_id;
+	vrpn_int32 addObjectExScene_message_id;
+	vrpn_int32 moveToParent_message_id;
+	vrpn_int32 setObjectPosition_message_id;
+	vrpn_int32 setObjectOrientation_message_id;
+	vrpn_int32 setObjectScale_message_id;
+	vrpn_int32 removeObject_message_id;
     vrpn_int32 setVertex_message_id;   
     vrpn_int32 setNormal_message_id;   
     vrpn_int32 setTriangle_message_id;   
@@ -140,6 +148,13 @@ class VRPN_API vrpn_ForceDevice : public vrpn_BaseClass {
     vrpn_int32 setTrimeshType_message_id;    
     vrpn_int32 clearTrimesh_message_id;    
 
+	// IDs for scene messages
+	vrpn_int32 setHapticOrigin_message_id;
+	vrpn_int32 setHapticScale_message_id;
+	vrpn_int32 setSceneOrigin_message_id;
+	vrpn_int32 getNewObjectID_message_id;
+	vrpn_int32 setObjectIsTouchable_message_id;
+	
     // ajout ONDIM
     vrpn_int32 custom_effect_message_id;
     // fni ajout ONDIM
@@ -161,20 +176,37 @@ class VRPN_API vrpn_ForceDevice : public vrpn_BaseClass {
 			const vrpn_float32 k_adhesion_lat,
 		    const vrpn_float32 tex_amp, const vrpn_float32 tex_wl,
 		    const vrpn_float32 buzz_amp, const vrpn_float32 buzz_freq);
-    static char *encode_vertex(vrpn_int32 &len, const vrpn_int32 vertNum,
+    static char *encode_vertex(vrpn_int32 &len,const vrpn_int32 objNum,  const vrpn_int32 vertNum,
 		const vrpn_float32 x,const vrpn_float32 y,const vrpn_float32 z); 
-    static char *encode_normal(vrpn_int32 &len,const vrpn_int32 vertNum,
+    static char *encode_normal(vrpn_int32 &len,const vrpn_int32 objNum, const vrpn_int32 vertNum,
 		const vrpn_float32 x,const vrpn_float32 y,const vrpn_float32 z); 
-    static char *encode_triangle(vrpn_int32 &len,const vrpn_int32 triNum,
+    static char *encode_triangle(vrpn_int32 &len,const vrpn_int32 objNum, const vrpn_int32 triNum,
 	      const vrpn_int32 vert0,const vrpn_int32 vert1,const vrpn_int32 vert2,
 	      const vrpn_int32 norm0,const vrpn_int32 norm1,const vrpn_int32 norm2);	       
-    static char *encode_removeTriangle(vrpn_int32 &len,const vrpn_int32 triNum);
+    static char *encode_removeTriangle(vrpn_int32 &len,const vrpn_int32 objNum, const vrpn_int32 triNum);
     static char *encode_updateTrimeshChanges(vrpn_int32 &len,
-		const vrpn_float32 kspring, const vrpn_float32 kdamp,
+		const vrpn_int32 objNum,const vrpn_float32 kspring, const vrpn_float32 kdamp,
 		const vrpn_float32 fdyn, const vrpn_float32 fstat);
-    static char *encode_setTrimeshType(vrpn_int32 &len,const vrpn_int32 type);
-    static char *encode_trimeshTransform(vrpn_int32 &len,
+    static char *encode_setTrimeshType(vrpn_int32 &len,const vrpn_int32 objNum, const vrpn_int32 type);
+    static char *encode_trimeshTransform(vrpn_int32 &len,const vrpn_int32 objNum, 
 		const vrpn_float32 homMatrix[16]);
+
+	//*added encodes*//
+	static char *encode_addObject(vrpn_int32 &len,const vrpn_int32 objNum, const vrpn_int32 ParentNum);
+	static char *encode_addObjectExScene(vrpn_int32 &len,const vrpn_int32 objNum);
+	static char *encode_objectPosition(vrpn_int32 &len,const vrpn_int32 objNum, const vrpn_float32 Pos[3]);
+	static char *encode_objectOrientation(vrpn_int32 &len,const vrpn_int32 objNum, const vrpn_float32 axis[3], const vrpn_float32 angle);
+	static char *encode_objectScale(vrpn_int32 &len,const vrpn_int32 objNum, const vrpn_float32 Scale[3]);
+	static char *encode_removeObject(vrpn_int32 &len,const vrpn_int32 objNum);
+	static char *encode_clearTrimesh(vrpn_int32 &len,const vrpn_int32 objNum);
+	static char *encode_moveToParent(vrpn_int32 &len,const vrpn_int32 objNum, const vrpn_int32 parentNum);
+	
+	static char *encode_setHapticOrigin(vrpn_int32 &len,const vrpn_float32 Pos[3], const vrpn_float32 axis[3], const vrpn_float32 angle);
+	static char *encode_setSceneOrigin(vrpn_int32 &len,const vrpn_float32 Pos[3], const vrpn_float32 axis[3], const vrpn_float32 angle);
+	static char *encode_setHapticScale(vrpn_int32 &len,const vrpn_float32 Scale);
+	static char *encode_setObjectIsTouchable(vrpn_int32 &len,const vrpn_int32 objNum, const vrpn_bool isTouchable);
+
+	
 
     static char *encode_forcefield(vrpn_int32 &len, const vrpn_float32 origin[3],
 	const vrpn_float32 force[3], const vrpn_float32 jacobian[3][3], const vrpn_float32 radius);
@@ -200,21 +232,36 @@ class VRPN_API vrpn_ForceDevice : public vrpn_BaseClass {
 		vrpn_float32 *tex_amp, vrpn_float32 *tex_wl,
 	    vrpn_float32 *buzz_amp, vrpn_float32 *buzz_freq);
     static vrpn_int32 decode_vertex(const char *buffer, const vrpn_int32 len,
-		vrpn_int32 *vertNum,
+		vrpn_int32 *objNum, vrpn_int32 *vertNum,
 		vrpn_float32 *x,vrpn_float32 *y,vrpn_float32 *z); 
     static vrpn_int32 decode_normal(const char *buffer,const vrpn_int32 len,
-		vrpn_int32 *vertNum,vrpn_float32 *x,vrpn_float32 *y,vrpn_float32 *z); 
-    static vrpn_int32 decode_triangle(const char *buffer,const vrpn_int32 len,vrpn_int32 *triNum,
+		vrpn_int32 *objNum, vrpn_int32 *vertNum,vrpn_float32 *x,vrpn_float32 *y,vrpn_float32 *z); 
+    static vrpn_int32 decode_triangle(const char *buffer,const vrpn_int32 len,vrpn_int32 *objNum, vrpn_int32 *triNum,
 		vrpn_int32 *vert0,vrpn_int32 *vert1,vrpn_int32 *vert2,
 		vrpn_int32 *norm0,vrpn_int32 *norm1,vrpn_int32 *norm2);	       
     static vrpn_int32 decode_removeTriangle(const char *buffer,const vrpn_int32 len,
-						vrpn_int32 *triNum);
-    static vrpn_int32 decode_updateTrimeshChanges(const char *buffer,const vrpn_int32 len,
+						vrpn_int32 *objNum, vrpn_int32 *triNum);
+    static vrpn_int32 decode_updateTrimeshChanges(const char *buffer,const vrpn_int32 len,vrpn_int32 *objNum, 
 		vrpn_float32 *kspring, vrpn_float32 *kdamp, vrpn_float32 *fdyn, vrpn_float32 *fstat);
-    static vrpn_int32 decode_setTrimeshType(const char *buffer,const vrpn_int32 len,
-						vrpn_int32 *type);
+    static vrpn_int32 decode_setTrimeshType(const char *buffer, const vrpn_int32 len,
+						vrpn_int32 *objNum,vrpn_int32 *type);
     static vrpn_int32 decode_trimeshTransform(const char *buffer,const vrpn_int32 len,
-						vrpn_float32 homMatrix[16]);
+						vrpn_int32 *objNum, vrpn_float32 homMatrix[16]);
+
+	//*added decodes*//
+	static vrpn_int32 decode_addObject(const char *buffer,vrpn_int32 len,vrpn_int32 *objNum, vrpn_int32 *ParentNum);
+	static vrpn_int32 decode_addObjectExScene(const char *buffer,vrpn_int32 len,vrpn_int32 *objNum);
+	static vrpn_int32 decode_objectPosition(const char *buffer,vrpn_int32 len,vrpn_int32 *objNum, vrpn_float32 Pos[3]);
+	static vrpn_int32 decode_objectOrientation(const char *buffer,vrpn_int32 len,vrpn_int32 *objNum, vrpn_float32 axis[3], vrpn_float32 *angle);
+	static vrpn_int32 decode_objectScale(const char *buffer,vrpn_int32 len,vrpn_int32 *objNum, vrpn_float32 Scale[3]);
+	static vrpn_int32 decode_removeObject(const char *buffer,vrpn_int32 len,vrpn_int32 *objNum);
+	static vrpn_int32 decode_clearTrimesh(const char *buffer,vrpn_int32 len,vrpn_int32 *objNum);
+	static vrpn_int32 decode_moveToParent(const char *buffer,vrpn_int32 len,vrpn_int32 *objNum, vrpn_int32 *parentNum);
+	
+	static vrpn_int32 decode_setHapticOrigin(const char *buffer,vrpn_int32 len,vrpn_float32 Pos[3],vrpn_float32 axis[3], vrpn_float32 *angle);
+	static vrpn_int32 decode_setHapticScale(const char *buffer,vrpn_int32 len,vrpn_float32 *Scale);
+	static vrpn_int32 decode_setSceneOrigin(const char *buffer,vrpn_int32 len,vrpn_float32 Pos[3], vrpn_float32 axis[3], vrpn_float32 *angle);
+	static vrpn_int32 decode_setObjectIsTouchable(const char *buffer,vrpn_int32 len,vrpn_int32 *objNum,vrpn_bool *isTouchable);
 
     static vrpn_int32 decode_forcefield(const char *buffer,const vrpn_int32 len,
 	vrpn_float32 origin[3], vrpn_float32 force[3], vrpn_float32 jacobian[3][3], vrpn_float32 *radius);
@@ -378,6 +425,7 @@ public:
     void startSurface(void);
     void stopSurface(void);
 
+	/** functions for a single object **********************************************************/
     // vertNum normNum and triNum start at 0
     void setVertex(vrpn_int32 vertNum,vrpn_float32 x,vrpn_float32 y,vrpn_float32 z);
     // NOTE: ghost dosen't take normals, 
@@ -393,6 +441,49 @@ public:
     void setTrimeshTransform(vrpn_float32 homMatrix[16]);
     void clearTrimesh(void);
   
+	/** functions for multiple objects in the haptic scene *************************************/
+	// Add an object to the haptic scene as root (parent -1 = default) or as child (ParentNum =the number of the parent)
+	void addObject(vrpn_int32 objNum, vrpn_int32 ParentNum=-1); 
+	// Add an object next to the haptic scene as root 
+	void addObjectExScene(vrpn_int32 objNum); 
+	// vertNum normNum and triNum start at 0
+	void setObjectVertex(vrpn_int32 objNum, vrpn_int32 vertNum,vrpn_float32 x,vrpn_float32 y,vrpn_float32 z);
+    // NOTE: ghost dosen't take normals, 
+    //       and normals still aren't implemented for Hcollide
+    void setObjectNormal(vrpn_int32 objNum, vrpn_int32 normNum,vrpn_float32 x,vrpn_float32 y,vrpn_float32 z);
+    void setObjectTriangle(vrpn_int32 objNum, vrpn_int32 triNum,vrpn_int32 vert0,vrpn_int32 vert1,vrpn_int32 vert2,
+		  vrpn_int32 norm0=-1,vrpn_int32 norm1=-1,vrpn_int32 norm2=-1);
+    void removeObjectTriangle(vrpn_int32 objNum, vrpn_int32 triNum); 
+    // should be called to incorporate the above changes into the 
+    // displayed trimesh 
+    void updateObjectTrimeshChanges(vrpn_int32 objNum);
+    // set the trimesh's homogen transform matrix (in row major order)
+    void setObjectTrimeshTransform(vrpn_int32 objNum, vrpn_float32 homMatrix[16]);
+	// set position of an object
+	void setObjectPosition(vrpn_int32 objNum, vrpn_float32 Pos[3]);
+	// set orientation of an object
+	void setObjectOrientation(vrpn_int32 objNum, vrpn_float32 axis[3], vrpn_float32 angle);
+	// set Scale of an object only x scale is supported at the moment
+	void setObjectScale(vrpn_int32 objNum, vrpn_float32 Scale[3]);
+	// remove an object from the scene
+	void removeObject(vrpn_int32 objNum);
+    void clearObjectTrimesh(vrpn_int32 objNum);
+  
+	/** Functions to organize the scene	**********************************************************/
+	// Change The parent of an object
+	void moveToParent(vrpn_int32 objNum, vrpn_int32 ParentNum);
+	// Set the Origin of the haptic device
+	void setHapticOrigin(vrpn_float32 Pos[3], vrpn_float32 axis[3], vrpn_float32 angle);    
+	// Set the scale factor of the haptic device
+	void setHapticScale(vrpn_float32 Scale);
+	// Set the Origin of the scene
+	void setSceneOrigin(vrpn_float32 Pos[3], vrpn_float32 axis[3], vrpn_float32 angle);    
+	// get new ID, use only if wish to use vrpn ids and do not want to manage them yourself: ids need to be unique
+	vrpn_int32 getNewObjectID();
+	// make an object touchable or not
+	void setObjectIsTouchable(vrpn_int32 objNum, vrpn_bool IsTouchable=true);
+
+
     // the next time we send a trimesh we will use the following type
     void useHcollide();
     void useGhost();
@@ -471,8 +562,8 @@ public:
     virtual int unregister_error_handler(void *userdata,
 	    vrpn_FORCEERRORHANDLER handler) {
       return d_error_change_list.unregister_handler(userdata, handler);
-    }
-    ;
+    };
+
 protected:
 
     vrpn_Callback_List<vrpn_FORCECB>    d_change_list;
@@ -496,6 +587,9 @@ protected:
     vrpn_float32 d_conPlanePoint [3];
     vrpn_float64 d_conPlaneNormal [3];  // (assumed) normalized
     vrpn_float32 d_conKSpring;
+
+	// haptic scene variables
+	vrpn_int32 m_NextAvailableObjectID;
 
     // utility functions
 

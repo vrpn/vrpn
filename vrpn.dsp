@@ -174,6 +174,10 @@ SOURCE=.\vrpn_ForceDevice.C
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_ForceDeviceServer.C
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_Forwarder.C
 # End Source File
 # Begin Source File
@@ -427,6 +431,10 @@ SOURCE=.\vrpn_Flock_Parallel.h
 # Begin Source File
 
 SOURCE=.\vrpn_ForceDevice.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_ForceDeviceServer.h
 # End Source File
 # Begin Source File
 
