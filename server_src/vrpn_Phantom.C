@@ -9,7 +9,7 @@
 #include "vrpn_Connection.h"
 #include "vrpn_Button.h"
 #include "vrpn_Tracker.h"
-#include "vrpn_ForceDevice.h"
+#include "vrpn_ForceDeviceServer.h"
 #include "vrpn_Phantom.h"
 
 #include "ghost.h"
@@ -394,13 +394,13 @@ void vrpn_Phantom::getPosition(double *vec, double *orient)
 
 vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
 		:vrpn_Tracker(name, c),vrpn_Button_Filter(name,c),
-		 vrpn_ForceDevice(name,c), update_rate(hz),
+		 vrpn_ForceDeviceServer(name,c), update_rate(hz),
 #ifndef	VRPN_USE_HDAPI
                  scene(NULL), 
                  rootH(NULL),
                  hapticScene(NULL),
                  phantom(NULL),
-                 trimesh(NULL),
+                 //trimesh(NULL),
 #endif
                  pointConstraint(NULL),
                  forceField(NULL),
@@ -453,6 +453,8 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
   /* Create the phantom object.  When this line is processed, 
      the phantom position is zeroed. */
   phantom = new gstPHANToM("Default PHANToM");
+  phantomAxis = new gstSeparator;
+  phantomAxis->addChild(phantom);
   // Ghost 3.0 spec says we should make sure construction succeeded. 
   if(!phantom->getValidConstruction()) {
       fprintf(stderr, "ERROR: Invalid Phantom object created\n");
@@ -462,7 +464,7 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
      via the 'H' key, we do not want to remove the phantom from the
      scene.  Pressing the 'H' key removes hapticScene and
      its children from the scene graph. */
-  rootH->addChild(phantom);
+  rootH->addChild(phantomAxis);
   hapticScene = new gstSeparator;     
   rootH->addChild(hapticScene);
 #endif
@@ -488,10 +490,10 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
 #endif
   // fin ajout ONDIM
 
-  SurfaceKspring= 0.29f;
-  SurfaceFdynamic = 0.02f;
-  SurfaceFstatic = 0.03f;
-  SurfaceKdamping = 0.0f;
+  SurfaceKspring= 0.8f;
+  SurfaceFdynamic = 0.3f; 
+  SurfaceFstatic = 0.7f;
+  SurfaceKdamping = 0.001f;
 
   SurfaceKadhesionNormal = 0.0f;
   SurfaceKadhesionLateral = 0.0f;
@@ -525,8 +527,9 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
   which_plane = 0;
  
 #ifndef	VRPN_USE_HDAPI
-  trimesh = new Trimesh();
-  trimesh->addToScene(hapticScene);
+  addObject(0,-1);
+  //trimesh = new Trimesh();
+  //trimesh->addToScene(hapticScene);
 #endif
 
   //  status= TRACKER_RESETTING;
@@ -542,46 +545,7 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
 		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
 		vrpn_ForceDevice::d_connection = NULL;
   }
-  if (register_autodeleted_handler(setVertex_message_id, 
-	handle_setVertex_message, this, vrpn_ForceDevice::d_sender_id)) {
-		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
-		vrpn_ForceDevice::d_connection = NULL;
-  }
-  if (register_autodeleted_handler(setNormal_message_id, 
-	handle_setNormal_message, this, vrpn_ForceDevice::d_sender_id)) {
-		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
-		vrpn_ForceDevice::d_connection = NULL;
-  }
-  if (register_autodeleted_handler(setTriangle_message_id, 
-	handle_setTriangle_message, this, vrpn_ForceDevice::d_sender_id)) {
-		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
-		vrpn_ForceDevice::d_connection = NULL;
-  }
-  if (register_autodeleted_handler(removeTriangle_message_id, 
-	handle_removeTriangle_message, this, vrpn_ForceDevice::d_sender_id)) {
-		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
-		vrpn_ForceDevice::d_connection = NULL;
-  }
-  if (register_autodeleted_handler(updateTrimeshChanges_message_id, 
-	handle_updateTrimeshChanges_message, this, vrpn_ForceDevice::  d_sender_id)) {
-		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
-		vrpn_ForceDevice::d_connection = NULL;
-  }
-  if (register_autodeleted_handler(transformTrimesh_message_id, 
-	handle_transformTrimesh_message, this, vrpn_ForceDevice::d_sender_id)) {
-		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
-		vrpn_ForceDevice::d_connection = NULL;
-  }
-  if (register_autodeleted_handler(setTrimeshType_message_id, 
-	handle_setTrimeshType_message, this, vrpn_ForceDevice::d_sender_id)) {
-		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
-		vrpn_ForceDevice::d_connection = NULL;
-  }
-  if (register_autodeleted_handler(clearTrimesh_message_id, 
-	handle_clearTrimesh_message, this, vrpn_ForceDevice::d_sender_id)) {
-		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
-		vrpn_ForceDevice::d_connection = NULL;
-  }
+  
   if (register_autodeleted_handler(forcefield_message_id,
 	handle_forcefield_change_message, this, vrpn_ForceDevice::d_sender_id)) {
 		fprintf(stderr,"vrpn_Phantom:can't register handler\n");
@@ -903,9 +867,21 @@ void vrpn_Phantom::reset(){
   instantBuzzEffect->stop();
   pointConstraint->stop();
 #else
-  if(trimesh->displayStatus()) {
-    trimesh->clear();
+/*  Trimesh *mesh=GetObjectMesh(0);
+  if(mesh)
+  {
+	if(mesh->displayStatus()) 
+		mesh->clear();
+  }*/
+  scene->stopServoLoop();
+  bool found = m_hObjectList.MoveFirst();
+  while(found)
+  {
+		removeObject(m_hObjectList.GetCurrentKey());
+		found=m_hObjectList.MoveFirst();
   }
+  m_hObjectList.Clear();
+  scene->startServoLoop();
   phantom->stopEffect();
   pointConstraint->stop();
 #endif
@@ -1039,203 +1015,439 @@ int vrpn_Phantom::handle_effects_change_message(void *userdata, vrpn_HANDLERPARA
     return 0;
 }
 
-int vrpn_Phantom::handle_setVertex_message(void *userdata, 
-					   vrpn_HANDLERPARAM p){
-  vrpn_Phantom *me = (vrpn_Phantom *)userdata;
-  
-  vrpn_int32 temp;
-  int vertNum;
-  float x,y,z;
-
-  decode_vertex(p.buffer, p.payload_len, &temp, &x, &y, &z);
-  vertNum=temp;
-
-#ifdef	VRPN_USE_HDAPI
-  struct timeval now;
-  gettimeofday(&now, NULL);
-  me->send_text_message("Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
-  return 0;
-#else
-  if(me->trimesh->setVertex(vertNum,x*1000.0,y*1000.0,z*1000.0)) {
-    return 0;
-  } else {
-    fprintf(stderr,"vrpn_Phantom: error in trimesh::setVertex\n");
-    return -1;
-  }
-#endif
+#ifndef VRPN_USE_HDAPI
+gstSeparator *vrpn_Phantom::GetObject(vrpn_int32 objNum)
+{
+	vrpn_DISPLAYABLEOBJECT *obj=m_hObjectList.Find(objNum);
+	if(obj)
+	{
+		return (gstSeparator*)(obj->m_pObject);
+	}
+	return 0;
 }
-
-int vrpn_Phantom::handle_setNormal_message(void *userdata, 
-					   vrpn_HANDLERPARAM p){
-  vrpn_Phantom *me = (vrpn_Phantom *)userdata;
-  
-  vrpn_int32 temp;
-  int normNum;
-  float x, y, z;
-
-  decode_normal(p.buffer, p.payload_len, &temp, &x, &y, &z);
-  normNum = temp;
-    
-#ifdef	VRPN_USE_HDAPI
-  struct timeval now;
-  gettimeofday(&now, NULL);
-  me->send_text_message("Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
-  return 0;
-#else
-  if(me->trimesh->setNormal(normNum,x,y,z))
-    return 0;
-  else{
-      fprintf(stderr,"vrpn_Phantom: error in trimesh::setNormal\n");
-    return -1;
-  }
 #endif
+
+#ifndef VRPN_USE_HDAPI
+Trimesh *vrpn_Phantom::GetObjectMesh(vrpn_int32 objNum)
+{
+	vrpn_DISPLAYABLEOBJECT *obj=m_hObjectList.Find(objNum);
+	if(obj)
+	{
+		return (Trimesh*)(obj->m_pObjectMesh);
+	}
+	return 0;
 }
+#endif
 
-int vrpn_Phantom::handle_setTriangle_message(void *userdata, 
-					     vrpn_HANDLERPARAM p){
-  vrpn_Phantom *me = (vrpn_Phantom *)userdata;
-  
-  int triNum, v0, v1, v2, n0, n1, n2;
-  vrpn_int32 ltriNum, lv0, lv1, lv2, ln0, ln1, ln2;
-  decode_triangle(p.buffer, p.payload_len, 
-	  &ltriNum, &lv0, &lv1, &lv2, &ln0, &ln1, &ln2);
-  triNum = ltriNum; v0 = lv0; v1 = lv1; v2 = lv2;
-  n0 = ln0; n1 = ln1; n2 = ln2;
-
-#ifdef	VRPN_USE_HDAPI
+bool vrpn_Phantom::addObject(vrpn_int32 objNum, vrpn_int32 ParentNum)
+{
+#ifdef  VRPN_USE_HDAPI
   struct timeval now;
   gettimeofday(&now, NULL);
-  me->send_text_message("Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
-  return 0;
+  send_text_message("vrpn_Phantom::addObject: Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
+  return false;
 #else
-  if(me->trimesh->setTriangle(triNum,v0,v1,v2,n0,n1,n2))
-    return 0;
-  else{
-      fprintf(stderr,"vrpn_Phantom: error in trimesh::setTriangle\n");
-    return -1;
-  }
+        Trimesh *newObjectMesh= GetObjectMesh(objNum);
+	if( newObjectMesh)
+		removeObject(objNum);
+	newObjectMesh = new Trimesh();
+	gstSeparator *newObject = new gstSeparator();
+	vrpn_DISPLAYABLEOBJECT *elem= new vrpn_DISPLAYABLEOBJECT;
+	elem->m_ObjectType=1;
+	elem->m_pObject=newObject;
+	elem->m_pObjectMesh=newObjectMesh;
+	newObjectMesh->addToScene(newObject);
+	m_hObjectList.Add(objNum,elem);
+	gstSeparator *parentObj=GetObject(ParentNum);
+	if(parentObj)
+		parentObj->addChild(newObject);
+	else
+		hapticScene->addChild(newObject);
+	
+	return true;
 #endif
 }
 
 
-int vrpn_Phantom::handle_removeTriangle_message(void *userdata, 
-						vrpn_HANDLERPARAM p){
-  vrpn_Phantom *me = (vrpn_Phantom *)userdata;
-  
-  vrpn_int32 temp;
- 
-  decode_removeTriangle(p.buffer, p.payload_len, &temp);
-
-  int triNum=temp;
-
-#ifdef	VRPN_USE_HDAPI
+bool vrpn_Phantom::addObjectExScene(vrpn_int32 objNum)
+{
+#ifdef  VRPN_USE_HDAPI
   struct timeval now;
   gettimeofday(&now, NULL);
-  me->send_text_message("Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
-  return 0;
+  send_text_message("vrpn_Phantom::addObjectExScene: Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
+  return false;
 #else
-  if(me->trimesh->removeTriangle(triNum))
-    return 0;
-  else{
-      fprintf(stderr,"vrpn_Phantom: error in trimesh::removeTriangle\n");
-    return -1;
-  }
+	Trimesh *newObjectMesh= GetObjectMesh(objNum);
+	if( newObjectMesh)
+		removeObject(objNum);
+	newObjectMesh = new Trimesh();
+	gstSeparator *newObject = new gstSeparator();
+	vrpn_DISPLAYABLEOBJECT *elem= new vrpn_DISPLAYABLEOBJECT;
+	elem->m_ObjectType=1;
+	elem->m_pObject=newObject;
+	elem->m_pObjectMesh=newObjectMesh;
+	newObjectMesh->addToScene(newObject);
+	m_hObjectList.Add(objNum,elem);
+	rootH->addChild(newObject);
+	
+	return true;
 #endif
 }
 
-
-int vrpn_Phantom::handle_updateTrimeshChanges_message(void *userdata, 
-						      vrpn_HANDLERPARAM p){
-  vrpn_Phantom *me = (vrpn_Phantom *)userdata;
-  float SurfaceKspring,SurfaceKdamping,SurfaceFdynamic,SurfaceFstatic;
-
-  decode_updateTrimeshChanges(p.buffer, p.payload_len,
-	  &SurfaceKspring, &SurfaceKdamping, &SurfaceFdynamic,
-	  &SurfaceFstatic);
-
-
-#ifdef	VRPN_USE_HDAPI
+bool vrpn_Phantom::setVertex(vrpn_int32 objNum, vrpn_int32 vertNum,vrpn_float32 x,vrpn_float32 y,vrpn_float32 z)
+{
+#ifdef  VRPN_USE_HDAPI
   struct timeval now;
   gettimeofday(&now, NULL);
-  me->send_text_message("Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
-  return 0;
+  send_text_message("vrpn_Phantom::setVertex: Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
+  return false;
 #else
-  Trimesh *myTrimesh=me->trimesh;
-  
-  myTrimesh->updateChanges();
-
-  myTrimesh->setSurfaceKspring(SurfaceKspring);
-  myTrimesh->setSurfaceFstatic(SurfaceFstatic);
-  myTrimesh->setSurfaceFdynamic(SurfaceFdynamic); 
-  myTrimesh->setSurfaceKdamping(SurfaceKdamping);
-  return 0;
+	Trimesh *obj=GetObjectMesh(objNum);
+	if(obj)
+		return obj->setVertex(vertNum,x*1000.0f,y*1000.0f,z*1000.0f);
+	else
+		return false;
 #endif
 }
 
-int vrpn_Phantom::handle_setTrimeshType_message(void *userdata, 
-					       vrpn_HANDLERPARAM p){
-  vrpn_Phantom *me = (vrpn_Phantom *)userdata;
-  
-  vrpn_int32 temp;
-
-  decode_setTrimeshType(p.buffer, p.payload_len, &temp);
-
-#ifdef	VRPN_USE_HDAPI
+bool vrpn_Phantom::setNormal(vrpn_int32 objNum, vrpn_int32 normNum,vrpn_float32 x,vrpn_float32 y,vrpn_float32 z)
+{
+#ifdef  VRPN_USE_HDAPI
   struct timeval now;
   gettimeofday(&now, NULL);
-  me->send_text_message("Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
-  return 0;
+  send_text_message("vrpn_Phantom::setNormal: Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
+  return false;
 #else
-  Trimesh *myTrimesh=me->trimesh;
-  
-  myTrimesh->setType((TrimeshType)temp);
-
-  return 0;
+	Trimesh *obj=GetObjectMesh(objNum);
+	if(obj)
+		return obj->setNormal(normNum,x*1000.0f,y*1000.0f,z*1000.0f);
+	else
+		return false;
 #endif
 }
 
-int vrpn_Phantom::handle_clearTrimesh_message(void *userdata, 
-					      vrpn_HANDLERPARAM){
-  vrpn_Phantom *me = (vrpn_Phantom *)userdata;
-#ifdef	VRPN_USE_HDAPI
+bool vrpn_Phantom::setTriangle(vrpn_int32 objNum, vrpn_int32 triNum,vrpn_int32 vert0,vrpn_int32 vert1,vrpn_int32 vert2,
+	  vrpn_int32 norm0,vrpn_int32 norm1,vrpn_int32 norm2)
+{
+#ifdef  VRPN_USE_HDAPI
   struct timeval now;
   gettimeofday(&now, NULL);
-  me->send_text_message("Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
-  return 0;
+  send_text_message("vrpn_Phantom::setTriangle: Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
+  return false;
 #else
-  me->trimesh->clear();
-  return 0;
+	Trimesh *obj=GetObjectMesh(objNum);
+	if(obj)
+		return obj->setTriangle(triNum,vert0,vert1,vert2,norm0,norm1,norm2);
+	else
+		return false;
 #endif
 }
 
-int vrpn_Phantom::handle_transformTrimesh_message(void *userdata, 
-					       vrpn_HANDLERPARAM p){
+bool vrpn_Phantom::removeTriangle(vrpn_int32 objNum, vrpn_int32 triNum)
+{
+#ifdef  VRPN_USE_HDAPI
+  struct timeval now;
+  gettimeofday(&now, NULL);
+  send_text_message("vrpn_Phantom::removeTriangle: Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
+  return false;
+#else
+	Trimesh *obj=GetObjectMesh(objNum);
+	if(obj)
+		return obj->removeTriangle(triNum);
+	else 
+		return false;
+#endif
+}
 
-  vrpn_Phantom *me = (vrpn_Phantom *)userdata;
+// should be called to incorporate the above changes into the 
+// displayed trimesh 
+bool vrpn_Phantom::updateTrimeshChanges(vrpn_int32 objNum,vrpn_float32 kspring, vrpn_float32 kdamp, vrpn_float32 fdyn, vrpn_float32 fstat)
+{
+#ifdef  VRPN_USE_HDAPI
+  struct timeval now;
+  gettimeofday(&now, NULL);
+  send_text_message("vrpn_Phantom::updateTrimeshChanges: Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
+  return false;
+#else
+	Trimesh *obj=GetObjectMesh(objNum);
+	if(obj)
+	{
+		obj->updateChanges();
 
-  float xformMatrix[16];
+		obj->setSurfaceKspring(kspring);
+		obj->setSurfaceFstatic(kdamp);
+		obj->setSurfaceFdynamic(fdyn); 
+		obj->setSurfaceKdamping(fstat);
+		return true;
+	}
+	else 
+		return false;
 
-  decode_trimeshTransform(p.buffer, p.payload_len, xformMatrix);
+#endif
+}
 
-  /* now we need to scale the transformation vector of our matrix from meters
+// set the type of trimesh
+bool vrpn_Phantom::setTrimeshType(vrpn_int32 objNum,vrpn_int32 type)
+{
+#ifdef  VRPN_USE_HDAPI
+  struct timeval now;
+  gettimeofday(&now, NULL);
+  send_text_message("vrpn_Phantom::setTrimeshType: Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
+  return false;
+#else
+	Trimesh *obj=GetObjectMesh(objNum);
+	if(obj)
+	{
+		obj->setType((TrimeshType)type);
+		return true;
+	}
+	else
+		return false;
+#endif
+}
+
+// set the trimesh's homogen transform matrix (in row major order)
+bool vrpn_Phantom::setTrimeshTransform(vrpn_int32 objNum, vrpn_float32 homMatrix[16])
+{
+#ifdef  VRPN_USE_HDAPI
+  struct timeval now;
+  gettimeofday(&now, NULL);
+  send_text_message("vrpn_Phantom::setTrimeshTransform: Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
+  return false;
+#else
+	Trimesh *obj=GetObjectMesh(objNum);
+	/* now we need to scale the transformation vector of our matrix from meters
 	to millimeters */
-  xformMatrix[3]*=1000.0;
-  xformMatrix[7]*=1000.0;
-  xformMatrix[11]*=1000.0;
-
-#ifdef	VRPN_USE_HDAPI
-  struct timeval now;
-  gettimeofday(&now, NULL);
-  me->send_text_message("Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
-  return 0;
-#else
-  Trimesh *myTrimesh=me->trimesh;
-  
-  myTrimesh->setTransformMatrix(xformMatrix);
-
-  return 0;
+	homMatrix[3]*=1000.0;
+	homMatrix[7]*=1000.0;
+	homMatrix[11]*=1000.0;
+	if(obj)
+	{
+		obj->setTransformMatrix(homMatrix);
+		return true;
+	}
+	else
+		return false;
 #endif
 }
+
+// set position of an object
+bool vrpn_Phantom::setObjectPosition(vrpn_int32 objNum, vrpn_float32 Pos[3])
+{
+#ifdef  VRPN_USE_HDAPI
+  struct timeval now;
+  gettimeofday(&now, NULL);
+  send_text_message("vrpn_Phantom::setObjectPosition: Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
+  return false;
+#else
+	gstSeparator *obj=GetObject(objNum);
+	if(obj)
+	{
+		obj->setTranslate(Pos[0]*1000.0f,Pos[1]*1000.0f,Pos[2]*1000.0f);
+		return true;
+	}
+	else
+		return false;
+#endif
+}
+
+// set orientation of an object
+bool vrpn_Phantom::setObjectOrientation(vrpn_int32 objNum, vrpn_float32 axis[3], vrpn_float32 angle)
+{
+#ifdef  VRPN_USE_HDAPI
+  struct timeval now;
+  gettimeofday(&now, NULL);
+  send_text_message("vrpn_Phantom::setObjectOrientation: Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
+  return false;
+#else
+	gstSeparator *obj=GetObject(objNum);
+	if(obj)
+	{
+		gstVector Axis(axis[0],axis[1],axis[2]);
+		obj->setRotation(Axis,angle);
+		return true;
+	}
+	else
+		return false;
+#endif
+}
+
+// set Scale of an object
+bool vrpn_Phantom::setObjectScale(vrpn_int32 objNum, vrpn_float32 Scale[3])
+{
+#ifdef  VRPN_USE_HDAPI
+  struct timeval now;
+  gettimeofday(&now, NULL);
+  send_text_message("vrpn_Phantom::setObjectScale: Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
+  return false;
+#else
+	gstSeparator *obj=GetObject(objNum);
+	if(obj)
+	{
+		obj->setScale(Scale[0]/*,Scale[1],Scale[2]*/);
+		return true;
+	}
+	else
+		return false;
+#endif
+}
+
+// remove an object from the scene
+bool vrpn_Phantom::removeObject(vrpn_int32 objNum)
+{
+#ifdef  VRPN_USE_HDAPI
+  struct timeval now;
+  gettimeofday(&now, NULL);
+  send_text_message("vrpn_Phantom::removeObject: Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
+  return false;
+#else
+	gstSeparator *obj=GetObject(objNum);
+	if(obj)
+	{
+		scene->stopServoLoop();
+		gstSeparator *parent = ( gstSeparator* )obj->getParent();
+		parent->removeChild( obj );
+
+		for ( int i = obj->getNumChildren() ; i > 0 ; i-- )
+		{
+			gstSeparator *child = (gstSeparator*)obj->getChild( i - 1 );
+			if(!child->isOfType(gstShape::getClassTypeId() ))
+			{
+				obj->removeChild( i - 1 );
+				parent->addChild(child);
+				//delete child;
+			}
+			/*if ( child->isOfType( gwpVRmentPolyMesh::getClassTypeId() ) )
+				delete child;
+			else
+				parent->addChild( child->AsTransform() );*/
+		}
+
+		Trimesh *m=GetObjectMesh(objNum);
+		delete m;
+		delete obj;		
+		m_hObjectList.Remove( objNum );
+		scene->startServoLoop();
+		return true;
+	}
+	else
+		return false;
+#endif
+}
+
+bool vrpn_Phantom::clearTrimesh(vrpn_int32 objNum)
+{
+#ifdef  VRPN_USE_HDAPI
+  struct timeval now;
+  gettimeofday(&now, NULL);
+  send_text_message("vrpn_Phantom::clearTrimesh: Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
+  return false;
+#else
+	Trimesh *objmesh=GetObjectMesh(objNum);
+	if(objmesh)
+	{
+		objmesh->clear();
+		return true;
+	}
+	else
+		return false;
+#endif
+}
+
+
+/** Functions to organize the scene	**********************************************************/
+// Change The parent of an object
+bool vrpn_Phantom::moveToParent(vrpn_int32 objNum, vrpn_int32 ParentNum)
+{
+#ifdef  VRPN_USE_HDAPI
+  struct timeval now;
+  gettimeofday(&now, NULL);
+  send_text_message("vrpn_Phantom::moveToParent: Trimesh not supported under HDAPI",now, vrpn_TEXT_ERROR);
+  return false;
+#else
+	gstSeparator *obj=GetObject(objNum);
+	if(obj)
+	{
+		gstSeparator *parent = (gstSeparator*)obj->getParent();
+		parent->removeChild((gstTransform*)obj);
+		parent = GetObject(ParentNum);
+		if(parent)
+			parent->addChild(obj);
+		else
+			hapticScene->addChild(obj);
+		return true;
+	}
+	else
+		return false;
+#endif
+}
+
+// Set the Origin of the haptic device
+bool vrpn_Phantom::setHapticOrigin(vrpn_float32 Pos[3], vrpn_float32 axis[3], vrpn_float32 angle)
+{
+#ifdef  VRPN_USE_HDAPI
+  struct timeval now;
+  gettimeofday(&now, NULL);
+  send_text_message("vrpn_Phantom::setHapticOrigin: Not supported under HDAPI",now, vrpn_TEXT_ERROR);
+  return false;
+#else
+	phantomAxis->setPosition(Pos[0]*1000.0f,Pos[1]*1000.0f,Pos[2]*1000.0f);
+	phantomAxis->setRotation(gstVector(axis[0],axis[1],axis[2]),angle);
+	return true;
+#endif
+}
+
+// Set the scale factor of the haptic device
+bool vrpn_Phantom::setHapticScale(vrpn_float32 Scale)
+{
+#ifdef  VRPN_USE_HDAPI
+  struct timeval now;
+  gettimeofday(&now, NULL);
+  send_text_message("vrpn_Phantom::setHapticScale: Not supported under HDAPI",now, vrpn_TEXT_ERROR);
+  return false;
+#else
+	phantomAxis->setScale(Scale);
+	return true;
+#endif
+}
+
+// Set the Origin of the haptic scene
+bool vrpn_Phantom::setSceneOrigin(vrpn_float32 Pos[3], vrpn_float32 axis[3], vrpn_float32 angle)
+{
+#ifdef  VRPN_USE_HDAPI
+  struct timeval now;
+  gettimeofday(&now, NULL);
+  send_text_message("vrpn_Phantom::setSceneOrigin: Not supported under HDAPI",now, vrpn_TEXT_ERROR);
+  return false;
+#else
+//	static FILE *f=fopen( "sceneorigin.txt", "w" );
+
+	gstTransformMatrix matrix;
+	matrix.setTranslation( Pos[0]*1000.0f, Pos[1]*1000.0f, Pos[2]*1000.0f );
+
+	matrix.setRotation(gstVector( axis[0], axis[1], axis[2] ), angle );
+	
+	hapticScene->setTransformMatrix( matrix.getInverse() );
+	return true;
+#endif
+}
+
+// make an object touchable or not
+bool vrpn_Phantom::setObjectIsTouchable(vrpn_int32 objNum, vrpn_bool IsTouchable)
+{
+#ifdef  VRPN_USE_HDAPI
+  struct timeval now;
+  gettimeofday(&now, NULL);
+  send_text_message("vrpn_Phantom::setObjectIsTouchable: Not supported under HDAPI",now, vrpn_TEXT_ERROR);
+  return false;
+#else
+	gstSeparator *obj=GetObject(objNum);
+	obj->setTouchableByPHANToM(IsTouchable) ;
+	return true;
+#endif
+}
+
+
 
 int vrpn_Phantom::handle_forcefield_change_message(void *userdata,
 						vrpn_HANDLERPARAM p){

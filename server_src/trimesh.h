@@ -30,7 +30,7 @@ protected:
   gstTriPolyMesh *ghostPolyMesh;
   
   // this is the trimesh we are displaying
-  gstShape *gstMesh;
+  gstTriPolyMeshHaptic *gstMesh;
   // the node containing this trimesh
   gstSeparator *ourNode;
   // true once we've been added to ourNode
@@ -108,6 +108,8 @@ public:
 
   // set the transformatrix for the mesh (xFormMat is in row major order)
   void setTransformMatrix(float xFormMat[16]);
+
+  void setTouchableFromBothSides(bool touch=true);
 };
 
 #endif	// VRPN_USE_HDAPI

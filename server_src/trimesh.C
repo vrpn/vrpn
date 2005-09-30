@@ -57,9 +57,9 @@ void Trimesh::clear(){
     xFormMat[i]=0;
   xFormMat[0]=xFormMat[5]=xFormMat[10]=xFormMat[15]=1;
 
-  if(NULL!=ourNode && inNode){
-    ourNode->removeChild(gstMesh);
-  }
+  if(NULL!=ourNode && inNode)
+  	ourNode->removeChild(gstMesh);
+  
 
   delete gstMesh;
   gstMesh=NULL;
@@ -348,6 +348,15 @@ void Trimesh::setTransformMatrix(float xfMat[16]){
 						   xFormMat[3],xFormMat[7],xFormMat[11],xFormMat[15])); 
   }
 }
+
+void Trimesh::setTouchableFromBothSides(bool touch)
+{
+	if(touch)
+		gstMesh->setTouchableFrom( gstTriPolyMeshHaptic:: RV_FRONT_AND_BACK );
+	else
+		gstMesh->setTouchableFrom( gstTriPolyMeshHaptic::RV_FRONT );
+}
+
 
 #endif	VRPN_USE_HDAPI
 #endif

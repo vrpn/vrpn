@@ -1,3 +1,13 @@
+2005-09-30  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* trimesh.C : Modified to use the new version 7.0 ForceDevice
+		protocol and code.
+	* trimesh.h : Same.
+	* vrpn.cfg : Same.
+	* vrpn.cfg.SAMPLE : Same.
+	* vrpn_Phantom.C : Same.
+	* vrpn_Phantom.h : Same.
+
 2005-09-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.cfg : Adding entries for 5DT16 analog driver and
