@@ -1,3 +1,7 @@
+2005-10-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Modified to hopefully work with 64-bit Linux
+
 2005-09-30  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* trimesh.C : Modified to use the new version 7.0 ForceDevice

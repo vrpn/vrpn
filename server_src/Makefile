@@ -64,6 +64,7 @@ ifeq ($(HW_os),powerpc_aix)
 endif
 ifeq ($(HW_os),pc_linux64)
 	CC := cc -m64
+	SYSLIBS := -lgpm
 endif
 
 ifeq ($(HW_OS),pc_linux)
