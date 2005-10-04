@@ -13,6 +13,7 @@
 #HW_OS := hp700_hpux10
 #HW_OS := pc_linux
 #HW_OS := pc_linux64
+#HW_OS := pc_linux_ia64
 #HW_OS := pc_cygwin
 #HW_OS := pc_FreeBSD
 #HW_OS := powerpc_aix
@@ -54,8 +55,12 @@ ifeq ($(HW_OS),pc_linux)
   CC := g++
 endif
 
+ifeq ($(HW_OS),pc_linux_ia64)
+  CC := g++
+endif
+
 ifeq ($(HW_OS),pc_linux64)
-  CC := cc -m64
+  CC := g++ -m64
 endif
 
 ifeq ($(HW_OS),sgi_irix)

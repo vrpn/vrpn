@@ -11,6 +11,7 @@
 #HW_OS := hp700_hpux10
 #HW_OS := pc_linux
 #HW_OS := pc_linux64
+#HW_OS := pc_linux_ia64
 #HW_OS := pc_cygwin
 #HW_OS := pc_FreeBSD
 #HW_OS := powerpc_aix
@@ -62,11 +63,15 @@ endif
 ifeq ($(HW_os),powerpc_aix)
 	CC := /usr/ibmcxx/bin/xlC_r -g -qarch=pwr3 -w
 endif
-ifeq ($(HW_os),pc_linux64)
-	CC := cc -m64
+
+ifeq ($(HW_OS),pc_linux_ia64)
+	CC := g++
 	SYSLIBS := -lgpm
 endif
-
+ifeq ($(HW_os),pc_linux64)
+	CC := g++ -m64
+	SYSLIBS := -lgpm
+endif
 ifeq ($(HW_OS),pc_linux)
 	SYSLIBS := -lgpm
 endif

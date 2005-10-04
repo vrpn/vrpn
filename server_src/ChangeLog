@@ -1,5 +1,9 @@
 2005-10-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+        * Makefile : Added target for 64-bit Intel-based SGI compilation.
+
+2005-10-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* Makefile : Modified to hopefully work with 64-bit Linux
 
 2005-09-30  Russell M. Taylor II  <taylorr@cs.unc.edu>
