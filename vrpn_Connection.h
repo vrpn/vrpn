@@ -385,6 +385,25 @@ class VRPN_API vrpn_Connection {
                          vrpn_Endpoint * (* epa) (vrpn_Connection *,
                            vrpn_int32 *) = allocateEndpoint);
 
+	//   Create a connection -  if server_name is not a file: name,
+	// makes an SDI-like connection to the named remote server
+	// (otherwise functions as a non-networked messaging hub).
+	// Port less than zero forces default.
+	//   Currently, server_name is an extended URL that defaults
+	// to VRPN connections at the port, but can be file:: to read
+	// from a file.  Other extensions should maintain this, so
+	// that VRPN uses URLs to name things that are to be connected
+	// to.
+	vrpn_Connection (const char * server_name,
+		     int port = vrpn_DEFAULT_LISTEN_PORT_NO,
+		     const char * local_in_logfile_name = NULL,
+		     const char * local_out_logfile_name = NULL,
+		     const char * remote_in_logfile_name = NULL,
+		     const char * remote_out_logfile_name = NULL,
+		     const char * NIC_IPaddress = NULL,
+		     vrpn_Endpoint * (* epa) (vrpn_Connection *,
+		       vrpn_int32 *) = allocateEndpoint);
+
 	virtual ~vrpn_Connection (void);
 
 	// Returns 1 if the connection is okay, 0 if not
@@ -483,25 +502,6 @@ class VRPN_API vrpn_Connection {
         const char * remote_in_logfile_name,
         const char * remote_out_logfile_name,
         const char * NIC_IPaddress);
-
-    //   Create a connection -  if server_name is not a file: name,
-    // makes an SDI-like connection to the named remote server
-    // (otherwise functions as a non-networked messaging hub).
-    // Port less than zero forces default.
-    //   Currently, server_name is an extended URL that defaults
-    // to VRPN connections at the port, but can be file:: to read
-    // from a file.  Other extensions should maintain this, so
-    // that VRPN uses URLs to name things that are to be connected
-    // to.
-    vrpn_Connection (const char * server_name,
-                     int port = vrpn_DEFAULT_LISTEN_PORT_NO,
-                     const char * local_in_logfile_name = NULL,
-                     const char * local_out_logfile_name = NULL,
-                     const char * remote_in_logfile_name = NULL,
-                     const char * remote_out_logfile_name = NULL,
-                     const char * NIC_IPaddress = NULL,
-                     vrpn_Endpoint * (* epa) (vrpn_Connection *,
-                       vrpn_int32 *) = allocateEndpoint);
 
     int connectionStatus;		// Status of the connection
 

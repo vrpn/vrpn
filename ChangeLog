@@ -1,5 +1,12 @@
 2005-10-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Connection.h : Making a protected method public to expose
+		it; it used to be exposed by calling the same method on
+		the vrpn_Synchronized_Connection class, which no longer
+		exists.
+
+2005-10-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* Makefile : Added target for 64-bit Intel-based SGI compilation.
 
 2005-09-30  Russell M. Taylor II  <taylorr@cs.unc.edu>
