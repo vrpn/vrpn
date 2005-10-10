@@ -1,3 +1,8 @@
+2005-10-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker.h : Made some parameters const that can be.
+	* vrpn_Tracker.C : Same.
+
 2005-10-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Connection.h : Making a protected method public to expose

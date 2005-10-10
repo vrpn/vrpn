@@ -650,8 +650,8 @@ void	vrpn_Tracker_Server::mainloop()
 	server_mainloop();
 }
 
-int	vrpn_Tracker_Server::report_pose(int sensor, struct timeval t,
-	vrpn_float64 position[3], vrpn_float64 quaternion[4], vrpn_uint32 class_of_service)
+int	vrpn_Tracker_Server::report_pose(const int sensor, const struct timeval t,
+	const vrpn_float64 position[3], const vrpn_float64 quaternion[4], const vrpn_uint32 class_of_service)
 {
 	char	msgbuf[1000];
 	vrpn_int32	len;
@@ -684,9 +684,9 @@ int	vrpn_Tracker_Server::report_pose(int sensor, struct timeval t,
 	  return 0;
 }
 
-int	vrpn_Tracker_Server::report_pose_velocity(int sensor, struct timeval t,
-	vrpn_float64 position[3], vrpn_float64 quaternion[4],
-	vrpn_float64 interval, vrpn_uint32 class_of_service)
+int	vrpn_Tracker_Server::report_pose_velocity(const int sensor, const struct timeval t,
+	const vrpn_float64 position[3], const vrpn_float64 quaternion[4],
+	const vrpn_float64 interval, const vrpn_uint32 class_of_service)
 {
 	char	msgbuf[1000];
 	vrpn_int32	len;
@@ -721,9 +721,9 @@ int	vrpn_Tracker_Server::report_pose_velocity(int sensor, struct timeval t,
 	return 0;
 }
 
-int	vrpn_Tracker_Server::report_pose_acceleration(int sensor, struct timeval t,
-	vrpn_float64 position[3], vrpn_float64 quaternion[4],
-	vrpn_float64 interval, vrpn_uint32 class_of_service)
+int	vrpn_Tracker_Server::report_pose_acceleration(const int sensor, const struct timeval t,
+	const vrpn_float64 position[3], const vrpn_float64 quaternion[4],
+	const vrpn_float64 interval, const vrpn_uint32 class_of_service)
 {
 	char	msgbuf[1000];
 	vrpn_int32	len;
