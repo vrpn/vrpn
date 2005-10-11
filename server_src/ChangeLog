@@ -1,3 +1,10 @@
+2005-10-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Phantom.C : Bug fix from Tom De Weyer.
+	* vrpn_Generic_Server_Object.h : Added Keyboard_Mouse.
+	* vrpn_Generic_Server_Object.C : Added Keyboard_Mouse.
+	* vrpn.cfg : Same.
+
 2005-10-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Makefile : Fixed a typo for 64-bit compiles.

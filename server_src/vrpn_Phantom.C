@@ -1172,12 +1172,14 @@ bool vrpn_Phantom::updateTrimeshChanges(vrpn_int32 objNum,vrpn_float32 kspring, 
 	Trimesh *obj=GetObjectMesh(objNum);
 	if(obj)
 	{
-		obj->updateChanges();
-
-		obj->setSurfaceKspring(kspring);
-		obj->setSurfaceFstatic(kdamp);
-		obj->setSurfaceFdynamic(fdyn); 
-		obj->setSurfaceKdamping(fstat);
+		if(obj->updateChanges())
+		{
+			obj->setSurfaceKspring(kspring);
+			obj->setSurfaceFstatic(kdamp);
+			obj->setSurfaceFdynamic(fdyn); 
+			obj->setSurfaceKdamping(fstat);
+			return true;
+		}
 		return true;
 	}
 	else 

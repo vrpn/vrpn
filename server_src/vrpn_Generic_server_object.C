@@ -974,6 +974,73 @@ int vrpn_Generic_Server_Object::setup_5dt16 (char * & pch, char * line, FILE * c
         return 0;
 }
 
+
+int vrpn_Generic_Server_Object::setup_KeyMouse(char * & pch, char * line, FILE * config_file)
+{
+	char name [LINESIZE], li[LINESIZE];
+	int buttonNrs;
+
+	next();
+	// Get the arguments (class, name, nrButtons
+	if (sscanf(pch,"%511s%d",name, &buttonNrs) != 2)
+	{
+		fprintf(stderr,"Bad vrpn_keyboardmouse line: %s\n",line);
+		return -1;
+	}
+	// Make sure there's room for a new analog
+	if (num_trackers >= VRPN_GSO_MAX_TRACKERS) {
+		fprintf(stderr,"Too many Trackers in config file");
+		return -1;
+	}
+
+	// Open the device
+	if (verbose) {
+		printf("Opening KeyMouse: %s\n", name);
+	}
+	if ((trackers[num_trackers] = new vrpn_KeyMouse(name, connection, buttonNrs )) == NULL) 
+	{
+		fprintf(stderr,"Can't create new vrpn_keyboardmouse\n");
+		return -1;
+	} 
+	else 
+	{
+		vrpn_KeyMouse *device=(vrpn_KeyMouse*)trackers[num_trackers];
+		num_trackers++;
+		for(int i=0;i<7+buttonNrs;i++)
+		{
+			// Read in the line
+			if (fgets(li, LINESIZE, config_file) == NULL) {
+				perror("Can't read init data for keyboard mouse");
+				return -1;
+			}
+
+			char source[LINESIZE];
+			int button1, button2 = 0;
+			float scale;
+			// Get the values from the line
+			if(i<6)
+			{
+				if (sscanf(li, "%s%x%x%f",source,&button1,&button2,&scale) != 4) 
+				{
+					fprintf(stderr,"Bad center line\n");
+					return -1;
+				}
+			}
+			else
+			{
+				if (sscanf(li, "%s%x",source,&button1) != 2) 
+				{
+					fprintf(stderr,"Bad center line\n");
+					return -1;
+				}
+			}
+			device->SetDeviceParams(source,button1,button2,scale);
+		}
+	}
+
+		return 0;
+}
+
 int vrpn_Generic_Server_Object::setup_Button_5DT_Server(char * & pch, char * line, FILE * config_file)
 {
         char name[LINESIZE],deviceName[LINESIZE];
@@ -2698,7 +2765,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
             CHECK(setup_Tracker_Crossbow);
 	  } else if (isit("vrpn_3DMicroscribe")) {
             CHECK(setup_3DMicroscribe);
-
+	  } else if (isit("vrpn_KeyMouse")) {
+			CHECK(setup_KeyMouse);
 	 } else {	// Never heard of it
 		sscanf(line,"%511s",s1);	// Find out the class name
 		fprintf(stderr,"vrpn_server: Unknown Device: %s\n",s1);

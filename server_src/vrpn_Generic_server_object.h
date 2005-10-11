@@ -59,6 +59,7 @@
 #include "vrpn_Tracker_Crossbow.h"
 #include "vrpn_3DMicroscribe.h"
 #include "vrpn_5DT16.h"
+#include "vrpn_Keyboard_Mouse.h"
 
 #ifdef VRPN_INCLUDE_TIMECODE_SERVER
 #include "timecode_generator_server\vrpn_timecode_generator.h"
@@ -210,6 +211,7 @@ protected:
   int setup_3DMicroscribe (char * & pch, char * line, FILE * config_file);
   int setup_5dt16 (char * & pch, char * line, FILE * config_file);
   int setup_Button_5DT_Server(char * & pch, char * line, FILE * config_file);
+  int setup_KeyMouse(char * & pch, char * line, FILE * config_file);
 };
 
 #endif
