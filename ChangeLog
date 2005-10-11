@@ -1,3 +1,10 @@
+2005-10-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Keyboard_Mouse.h : Lets us use Windows keyboard to fly.
+		From Tom De Weyer at EDM-Uhasselt from Belgium.
+	* vrpn_Keyboard_Mouse.C : Same.
+	* Makefile : Same.
+
 2005-10-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Tracker.h : Made some parameters const that can be.
