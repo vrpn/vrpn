@@ -5,11 +5,6 @@
 #include "vrpn_Tracker.h"
 #include "vrpn_Button.h"
 
-typedef struct { 
-    vrpn_uint32 x; 
-    vrpn_uint32 y; 
-} vrpn_Keymouse_POINT; 
-
 class VRPN_API vrpn_KeyMouse: public vrpn_Tracker, public vrpn_Button
 {
   public:
@@ -44,7 +39,9 @@ class VRPN_API vrpn_KeyMouse: public vrpn_Tracker, public vrpn_Button
 	int m_Reset;
 	bool m_bTranslations[3]; //true if mouse movements are used 
 	bool m_bRotations[3]; //true if mouse movements are used 
-	vrpn_Keymouse_POINT m_prevPos[3]; // mouse movement x,y,z
+#ifdef  _WIN32
+        POINT m_prevPos[3]; // mouse movement x,y,z
+#endif
 
 	void ConvertOriToQuat(float ori[3]); //< directly put the values in the quat for message sending
 	void AddPreviousOri(float ori[4]); //< add previous rotation to the current

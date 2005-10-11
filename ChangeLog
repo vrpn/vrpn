@@ -1,5 +1,12 @@
 2005-10-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn.dsp : Adding vrpn_Keyboard_Mouse.[hC] into the build.
+	* vrpn_Keyboard_Mouse.C : Fixing bugs I introduced when making
+		it compile under Linux.
+	* vrpn_Keyboard_Mouse.h : Same.
+
+2005-10-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Keyboard_Mouse.h : Lets us use Windows keyboard to fly.
 		From Tom De Weyer at EDM-Uhasselt from Belgium.
 	* vrpn_Keyboard_Mouse.C : Same.

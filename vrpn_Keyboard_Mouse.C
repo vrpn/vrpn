@@ -158,7 +158,7 @@ int vrpn_KeyMouse::get_report(void)
 	vrpn_gettimeofday(&timestamp, NULL); // set timestamp of this event
 #ifdef	_WIN32
 	for(int i=0;i<3;i++) {
-		if(m_bTranslations[i]) // mouse movement {
+          if(m_bTranslations[i]) { // mouse movement
 			if((0x8000 & GetKeyState(m_Translations[i*2]))) {
 				POINT posi;
 				GetCursorPos(&posi);
@@ -183,7 +183,7 @@ int vrpn_KeyMouse::get_report(void)
 		
 	float ori[3]={0,0,0};
 	for(i=0;i<3;i++) {
-		if(m_bRotations[i]) // mouse movement {
+          if(m_bRotations[i]) { // mouse movement
 			if((0x8000 & GetKeyState(m_Rotations[i*2]))) {
 				POINT posi;
 				GetCursorPos(&posi);
@@ -196,10 +196,10 @@ int vrpn_KeyMouse::get_report(void)
 				report_changes();        // Report updates to VRPN
 			} else {
 				GetCursorPos(&m_prevPos[i]);
-				m_dQuatPrev[i][0] = d_quat [0];
-				m_dQuatPrev[i][1] = d_quat [1];
-				m_dQuatPrev[i][2] = d_quat [2];
-				m_dQuatPrev[i][3] = d_quat [3];
+				m_dQuatPrev[i][0] = static_cast<float>(d_quat [0]);
+				m_dQuatPrev[i][1] = static_cast<float>(d_quat [1]);
+				m_dQuatPrev[i][2] = static_cast<float>(d_quat [2]);
+				m_dQuatPrev[i][3] = static_cast<float>(d_quat [3]);
 			}
 		} else {
 			if((0x8000 & GetKeyState(m_Rotations[i*2]))) {
@@ -278,19 +278,22 @@ void vrpn_KeyMouse::ConvertOriToQuat(float ori[3])
 
 void vrpn_KeyMouse::AddPreviousOri(float ori[4])
 {
-	float dQuat[4]={d_quat[0],d_quat[1],d_quat[2],d_quat[3]};
-	// merge previous
-	d_quat[0] = dQuat[0] * ori[0] - dQuat[1] * ori[1] - dQuat[2] * ori[2] -dQuat[3] * ori[3] ;
+  float dQuat[4]={ static_cast<float>(d_quat[0]),
+                   static_cast<float>(d_quat[1]),
+                   static_cast<float>(d_quat[2]),
+                   static_cast<float>(d_quat[3]) };
+  // merge previous
+  d_quat[0] = dQuat[0] * ori[0] - dQuat[1] * ori[1] - dQuat[2] * ori[2] -dQuat[3] * ori[3] ;
 
-	if ( d_quat[0] > 1 )
-		d_quat[0] = 1;
-	else if ( d_quat[0] < -1 )
-		d_quat[0] = -1;
+  if ( d_quat[0] > 1 ) {
+    d_quat[0] = 1;
+  } else if ( d_quat[0] < -1 ) {
+    d_quat[0] = -1;
+  }
 
-	d_quat[1] = dQuat[0] * ori[1] + dQuat[1] * ori[0] + dQuat[2] * ori[3] - dQuat[3] * ori[2];
-	d_quat[2] = dQuat[0] * ori[2] + dQuat[2] * ori[0] - dQuat[1] * ori[3] + dQuat[3] * ori[1];
-	d_quat[3] = dQuat[0] * ori[3] + dQuat[3] * ori[0] + dQuat[1] * ori[2] - dQuat[2] * ori[1];
-
+  d_quat[1] = dQuat[0] * ori[1] + dQuat[1] * ori[0] + dQuat[2] * ori[3] - dQuat[3] * ori[2];
+  d_quat[2] = dQuat[0] * ori[2] + dQuat[2] * ori[0] - dQuat[1] * ori[3] + dQuat[3] * ori[1];
+  d_quat[3] = dQuat[0] * ori[3] + dQuat[3] * ori[0] + dQuat[1] * ori[2] - dQuat[2] * ori[1];
 }
 
 void vrpn_KeyMouse::report_changes(vrpn_uint32 class_of_service)

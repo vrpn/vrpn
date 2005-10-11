@@ -210,6 +210,10 @@ SOURCE=.\vrpn_Joywin32.C
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_Keyboard_Mouse.C
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_LamportClock.C
 # End Source File
 # Begin Source File
@@ -467,6 +471,10 @@ SOURCE=.\vrpn_Joylin.h
 # Begin Source File
 
 SOURCE=.\vrpn_Joywin32.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Keyboard_Mouse.h
 # End Source File
 # Begin Source File
 
