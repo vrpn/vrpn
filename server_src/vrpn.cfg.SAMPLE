@@ -1135,9 +1135,9 @@
 
 ################################################################################
 # Tektronix 4662 plotter.  Attaches to a serial port.  Acts as both a poser and
-# a tracker.  Reports positions 4x per second plus when a move command completes.
-# Multiple move commands issued before they complete will result in only the last
-# one being executed.
+# a tracker. Reports positions 4x per second plus when a move command completes.
+# Multiple move commands issued before they complete will result in only the
+# last one being executed.
 #
 # Arguments:
 #	char	name_of_this_device[]
@@ -1145,3 +1145,29 @@
 #	int	baud_rate_of_serial_device
 
 #vrpn_Tek4662	Tek4662	COM1	1200
+
+###############################################################################
+# keyboard and mouse button is a tracker with button system
+# name  devicename      number of buttons (max 16)
+# 0xFF0 for horizontal mouse movement and 0xFF1 for vertical
+# for x,y,z,rx,ry,rz use one button and the mouse direction for mouse
+#		movement and two buttons for keyboard movement
+# for example VK_LBUTTON 0x100 means mouse lbutton and horizontal movement
+# code table can be found in keycode.txt.  Letters should be in capital
+# XXX Should this be rewritten as a ButtonFly and AnalogFly, having the mouse
+# act as an Analog?
+
+#vrpn_KeyMouse KeyMouse 5
+#X	0x25	0x27 0.1
+#Y	0x26	0x28 0.1
+#Z	0x21	0x22 0.1
+#RX	0x64	0x66	1	#0X01	0XFF0 # mouse movement
+#RY	0x68	0x62	1	#0X01	0XFF1 # mouse movement
+#RZ	0x67	0x69	1	#0X02	0XFF0 # mouse movement
+#RESET	0x1B
+#BUTTON0 0x70
+#BUTTON1 0x71
+#BUTTON2 0x72
+#BUTTON3 0x73
+#BUTTON4 0x75
+

@@ -1,3 +1,9 @@
+2005-10-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg : Fixes the example configuration for the Keymouse.
+	* vrpn.cfg.SAMPLE : Same.
+	* keycodes.txt : Tells what key codes are for each key.
+
 2005-10-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Phantom.C : Bug fix from Tom De Weyer.
