@@ -23,7 +23,10 @@
  *****************************************************************************/
 
 // What type of effect the application is presenting
-typedef	enum { box, pointconstraint, lineconstraint, planeconstraint, forcefield, buzzing, quit } APP_STATE;
+typedef	enum { box, pointconstraint, lineconstraint, planeconstraint, forcefield, buzzing, geometry, quit } APP_STATE;
+
+// Which Object ID for the cube geometry object
+vrpn_int32  CUBE_ID = 0;
 
 // For the display of the box, this holds a descripton of the paramters
 // for each side.
@@ -265,7 +268,7 @@ void    VRPN_CALLBACK handle_tracker_change(void *userdata, const vrpn_TRACKERCB
       }
       break;
 
-       case lineconstraint:
+    case lineconstraint:
       // We produce a point constraint that pulls the user back towards the place where
       // they pressed the button.  The strength of this constraint is stored in a global. 
       {
@@ -279,7 +282,7 @@ void    VRPN_CALLBACK handle_tracker_change(void *userdata, const vrpn_TRACKERCB
       }
       break;
 
-       case planeconstraint:
+    case planeconstraint:
       // We produce a point constraint that pulls the user back towards the place where
       // they pressed the button.  The strength of this constraint is stored in a global. 
       {
@@ -360,6 +363,74 @@ void    VRPN_CALLBACK handle_tracker_change(void *userdata, const vrpn_TRACKERCB
       }
       break;
 
+    case geometry:
+      {
+	// Only do this creation once!
+	static bool first_time = true;
+	if (first_time) {
+	  first_time = false;
+	} else {
+	  break;
+	}
+
+	vrpn_float32  center[3] = { g_xCenter, g_yCenter, g_zCenter };
+	const vrpn_float32  halfwidth = static_cast<vrpn_float32>(0.02);
+	vrpn_float32  left = g_xCenter - halfwidth;
+	vrpn_float32  right = g_xCenter + halfwidth;
+	vrpn_float32  top = g_yCenter - halfwidth;
+	vrpn_float32  bottom = g_yCenter + halfwidth;
+	vrpn_float32  front = g_zCenter - halfwidth;
+	vrpn_float32  back = g_zCenter + halfwidth;
+
+	// Create the cube object, rooted in the world.
+	g_forceDevice->useGhost();
+	g_forceDevice->addObject(CUBE_ID);
+
+	// Create a set of points at the cube corners.
+	const vrpn_int32 LBF = 0, RBF = 1, LTF = 2, RTF = 3,
+			 LBB = 4, RBB = 5, LTB = 6, RTB = 7;
+	g_forceDevice->setObjectVertex(CUBE_ID, LBF, left, bottom, front);
+	g_forceDevice->setObjectVertex(CUBE_ID, RBF, right, bottom, front);
+	g_forceDevice->setObjectVertex(CUBE_ID, LTF, left, top, front);
+	g_forceDevice->setObjectVertex(CUBE_ID, RTF, right, top, front);
+	g_forceDevice->setObjectVertex(CUBE_ID, LBB, left, bottom, back);
+	g_forceDevice->setObjectVertex(CUBE_ID, RBB, right, bottom, back);
+	g_forceDevice->setObjectVertex(CUBE_ID, LTB, left, top, back);
+	g_forceDevice->setObjectVertex(CUBE_ID, RTB, right, top, back);
+
+	// Create a set of triangles that are the cube faces.
+	// REMEMBER to use the right-hand rule for creating of the
+	// triangles: the normal points out of that face.
+
+	// Front
+	g_forceDevice->setObjectTriangle(CUBE_ID, 0, LBF, LTF, RBF);
+	g_forceDevice->setObjectTriangle(CUBE_ID, 1, RBF, LTF, RTF);
+
+	// Back
+	g_forceDevice->setObjectTriangle(CUBE_ID, 2, LBB, RBB, LTB);
+	g_forceDevice->setObjectTriangle(CUBE_ID, 3, RBB, RTB, LTB);
+
+	// Left
+	g_forceDevice->setObjectTriangle(CUBE_ID, 4, LBF, LBB, LTF);
+	g_forceDevice->setObjectTriangle(CUBE_ID, 5, LTF, LBB, LTB);
+
+	// Right
+	g_forceDevice->setObjectTriangle(CUBE_ID, 6, RBF, RTF, RBB);
+	g_forceDevice->setObjectTriangle(CUBE_ID, 7, RTF, RTB, RBB);
+
+	// Top
+	g_forceDevice->setObjectTriangle(CUBE_ID, 8, LTF, LTB, RTF);
+	g_forceDevice->setObjectTriangle(CUBE_ID, 9, RTF, LTB, RTB);
+
+	// Bottom
+	g_forceDevice->setObjectTriangle(CUBE_ID, 10, LBF, RBF, LBB);
+	g_forceDevice->setObjectTriangle(CUBE_ID, 11, RBF, RBB, LBB);
+
+	// Push all of the changes and make them active.
+	g_forceDevice->updateObjectTrimeshChanges(CUBE_ID);
+      }
+      break;
+
     default:
       break;
   };
@@ -427,7 +498,13 @@ void	VRPN_CALLBACK handle_button_change(void *userdata, const vrpn_BUTTONCB b)
 	printf("  Frequency will increase as you move in +Y, decrease as you move in -Y\n");
 	printf("  Direction will be towards where the button was pressed\n");
 	printf("\n");
-	printf("Release button to stop buzzing and exit the program\n");
+	printf("Release button to stop buzzing\n");
+	break;
+
+      case geometry:
+	printf("  A cube 4cm on a side will be created, centered at your start location.\n");
+	printf("\n");
+	printf("Release button to stop feeling the cube\n");
 	break;
 
       default:
@@ -438,39 +515,38 @@ void	VRPN_CALLBACK handle_button_change(void *userdata, const vrpn_BUTTONCB b)
     // Not doing any forces until button pressed again.
     g_active = false;
 
-    // Turn off all active forces or set them to zero value
-    g_forceDevice->stopSurface();
-    g_forceDevice->enableConstraint(0);
-    g_forceDevice->stopForceField();
-    g_forceDevice->stopEffect();
-
     // Move from the state we are in to the next state.
     switch (g_state) {
       case box:
+	g_forceDevice->stopSurface();
 	printf("\n");
 	printf("Press button to start point constraint\n");
 	g_state = pointconstraint;
 	break;
 
       case pointconstraint:
+	g_forceDevice->enableConstraint(0);
 	printf("\n");
 	printf("Press button to line constraint\n");
 	g_state = lineconstraint;
 	break;
 
       case lineconstraint:
+	g_forceDevice->enableConstraint(0);
 	printf("\n");
 	printf("Press button to start plane constraint\n");
 	g_state = planeconstraint;
 	break;
 
       case planeconstraint:
+	g_forceDevice->enableConstraint(0);
 	printf("\n");
 	printf("Press button to start force field\n");
 	g_state = forcefield;
 	break;
 
       case forcefield:
+	g_forceDevice->stopForceField();
 	printf("\n");
 	printf("Press button to start buzzing\n");
 	g_state = buzzing;
@@ -478,6 +554,14 @@ void	VRPN_CALLBACK handle_button_change(void *userdata, const vrpn_BUTTONCB b)
 
    
       case buzzing:
+	g_forceDevice->stopEffect();
+	printf("\n");
+	printf("Press button to start geometry cube!\n");
+	g_state = geometry;
+	break;
+
+      case geometry:
+	g_forceDevice->removeObject(CUBE_ID);
 	printf("\n");
 	printf("Qutting program!\n");
 	g_state = quit;
