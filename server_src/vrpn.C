@@ -70,7 +70,7 @@ void sighandler (int)
 #endif
 
 
-main (int argc, char * argv[])
+int main (int argc, char * argv[])
 {
   char	* config_file_name = "vrpn.cfg";
   char 	* client_name = NULL;

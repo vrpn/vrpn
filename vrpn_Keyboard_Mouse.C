@@ -42,7 +42,8 @@ vrpn_KeyMouse::vrpn_KeyMouse (const char * name, vrpn_Connection * c, int num_bu
 	// Set the parameters in the parent classes
 	vrpn_Button::num_buttons = _numbuttons;
 	
-	for(int i=0;i<3;i++)
+        int i;
+	for(i=0;i<3;i++)
 	{
 		m_bTranslations[i]=false;
 		m_bRotations[i]=false;
@@ -157,7 +158,8 @@ int vrpn_KeyMouse::get_report(void)
 	status = STATUS_READING;        // ready to process event packet
 	vrpn_gettimeofday(&timestamp, NULL); // set timestamp of this event
 #ifdef	_WIN32
-	for(int i=0;i<3;i++) {
+        int i;
+	for(i=0;i<3;i++) {
           if(m_bTranslations[i]) { // mouse movement
 			if((0x8000 & GetKeyState(m_Translations[i*2]))) {
 				POINT posi;

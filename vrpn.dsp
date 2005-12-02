@@ -458,6 +458,10 @@ SOURCE=.\vrpn_GlobalHapticsOrb.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_HashST.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_Imager.h
 # End Source File
 # Begin Source File

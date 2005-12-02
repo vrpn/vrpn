@@ -1,3 +1,11 @@
+2005-12-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_HashST.h : Removed function setting non-existent
+		member variable.
+	* vrpn_Keyboard_Mouse.C : Moved definitions to make them
+		legal in modern compilers.
+	* vrpn.dsp : Added vrpn_HashST.h to the files.
+
 2005-10-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.dsp : Adding vrpn_Keyboard_Mouse.[hC] into the build.

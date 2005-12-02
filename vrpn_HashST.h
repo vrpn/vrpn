@@ -2,8 +2,8 @@
  * vrpn_HashST.H
  *
  * Last update : $Author: taylorr $
- *               $Date: 2005/09/30 21:17:42 $
- *               $Revision: 1.1 $
+ *               $Date: 2005/12/02 20:17:21 $
+ *               $Revision: 1.2 $
  */
 
 
@@ -62,8 +62,6 @@ public:
 	bool Add(TKey key, TValue value);	//!< adds a new (key, value) pair, returns true if succeeded
 	bool Remove(TKey key);			//!< removes the value that belongs to this key, returns true if succeeded
 
-	//! lets a thread take the ownership 
-	void TakeOwnership()	{ m_Owner= _threadid; }
 private:
 	//! Hash item struct
 	/**

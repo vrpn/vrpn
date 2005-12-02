@@ -42,7 +42,7 @@ void	VRPN_CALLBACK handle_tracker_update(void *userdata, const vrpn_TRACKERCB t)
   psr->request_pose(now, t.pos, t.quat);
 }
 
-main (int argc, char * argv[])
+int main (int argc, char * argv[])
 {
   char 	*tracker_client_name = "Tracker0@localhost";
   char 	*poser_client_name = "Poser0@localhost";
