@@ -1,3 +1,8 @@
+2005-12-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Switching to HDAPI default.
+	* Makefile : Fixed to compile under Cygwin.
+
 2005-12-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_HashST.h : Removed function setting non-existent

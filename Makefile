@@ -345,7 +345,7 @@ all:	client server
   endif
 else
   ifeq ($(HW_OS),pc_cygwin)
-all:	client
+all:	client server
   else
 all:	client server
   endif

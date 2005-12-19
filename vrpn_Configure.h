@@ -49,7 +49,7 @@
 // things also fail).  At least we're rid of them now.  When you
 // uncomment it (to use GHOST), add the following to the include
 // directories for the vrpn_phantom project: $(SYSTEMDRIVE)\Program Files\SensAble\GHOST\v4.0\include,$(SYSTEMDRIVE)\Program Files\SensAble\GHOST\v4.0\external\stl,
-//#define VRPN_USE_HDAPI
+#define VRPN_USE_HDAPI
 
 //------------------------
 // Instructs vrpn to use Ghost 3.1 instead of Ghost 3.4.

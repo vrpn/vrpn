@@ -98,7 +98,7 @@ ifeq ($(HW_OS),powerpc_aix)
 endif
 
 ifeq ($(HW_OS),pc_cygwin)
-  ARCH_LIBS := -lcygwin -luser32 -lgdi32 -lcomdlg32 -lwsock32
+  ARCH_LIBS := -lquat -lcygwin -luser32 -lgdi32 -lcomdlg32 -lwsock32
 endif
 
 GLUTINCLUDE = /afs/cs.unc.edu/project/walk/include
