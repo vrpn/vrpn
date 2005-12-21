@@ -5508,7 +5508,7 @@ vrpn_Connection::~vrpn_Connection (void) {
   delete d_dispatcher;
 
   if (d_references > 0) {
-    fprintf(stderr, "Connection was deleted while %d references still remain.",
+    fprintf(stderr, "Connection was deleted while %d references still remain.\n",
             d_references);
   }
 }

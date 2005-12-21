@@ -278,7 +278,7 @@ void vrpn_raw_SGIBox::get_report() {
 	}
 	
 	// See if this is a button report, which are only a single byte.
-	if ( (command >= 0xC0) && (command <= 0xFF) ) {
+	if ( command >= 0xC0 ) {
 		// Due to the strange layout of the commands to buttons,
 		// we need to check each group of 8 button messages in chunks,
 		// both for the press commands and the release commands.
@@ -350,7 +350,7 @@ void vrpn_raw_SGIBox::get_report() {
 	// check for an unrecognized command from the box
 	if (! (
 	     ( (command >= 0x30) && (command <= 0x37) ) ||
-	      ( (command >= 0xC0) && (command <= 0xFF) )
+	     (command >= 0xC0)
 	     ))
 	  {
 	    perror("vrpn_raw_SGIBOX: unrecognized command from sgiBox - reseting...");

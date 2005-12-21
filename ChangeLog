@@ -1,3 +1,11 @@
+2005-12-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Added newline to end of error print.
+	* vrpn_raw_sgibox.C : Removed spurious checks that caused
+		compiler warnings under Cygwin.  Isn't it great to
+		compile under multiple architectures -- it catches
+		so many silly things!
+
 2005-12-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Configure.h : Switching to HDAPI default.
