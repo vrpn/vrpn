@@ -1,3 +1,9 @@
+// RMT I hate that this has to be here, but things blow up in the compilation
+// if it is not.
+#ifdef __CYGWIN__
+#include <windows.h>
+#endif
+
 //XXX Problem: Recovery time seems to have gotten itself unimplemented over time.
 #include  "vrpn_Configure.h"
 #ifdef	VRPN_USE_PHANTOM_SERVER

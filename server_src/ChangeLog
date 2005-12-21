@@ -1,3 +1,24 @@
+2005-12-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* buzzForceField.C : Made generic definitions for the mutex
+		code, so that we didn't have #defines peppered all over
+		the code.  Made the Cygwin code compile using Pthreads
+		critical sections, like the SGI code.
+	* buzzForceField.h : Same.
+	* ghost.h : Defined TRUE and FALSE to true and false if they
+		were not defined that way before.
+	* Makefile : Trying to make it compile under Cygwin.  It does
+		everything but link now (cannot find a bunch of symbols
+		that should be defined in hd.lib, which it does link
+		with).
+	* plane.C : Needs to include <windows.h> under Cygwin to finish
+		compiling.
+	* plane.h : Same.
+	* vrpn_Phantom.C : Same.
+	* texture_plane.C : Even more dramatic replacement of the mutex
+		stuff, like in buzzForceField.
+	* texture_plane.h : Same.
+
 2005-10-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.cfg : Fixes the example configuration for the Keymouse.

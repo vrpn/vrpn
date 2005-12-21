@@ -102,8 +102,17 @@ endif
 OBJ_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)
 LIB_DIR := ../$(OBJ_DIR)
 
-CFLAGS = -g -I../ -I../../quat
+CFLAGS = -g -I./ -I../ -I../../quat
 LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) 
+
+# Uncomment the following section and point them at the
+# currect diretories to compile with HDAPI under Cygwin.
+# Well, to make it almost compile -- link fails to find things
+# in the libraries that should be there.
+#HDAPI_ROOT := "C:/Program Files/SensAble/3DTouch"
+#CFLAGS = -g -I./ -I../ -I../../quat -I$(HDAPI_ROOT)/include -I$(HDAPI_ROOT)/utilities/include
+#LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) -L$(HDAPI_ROOT)/lib
+#SYSLIBS := $(SYSLIBS) -lhl -lhd
 
 ifdef INTERSENSE
   ifeq ($(HW_OS),powerpc_macosx)
@@ -183,17 +192,22 @@ last_of_sequence:	$(OBJ_DIR)/last_of_sequence
 .PHONY:	testSharedObject
 testSharedObject:	$(OBJ_DIR)/testSharedObject
 
+$(OBJ_DIR)/InstantBuzzEffect.o: ghostEffects/InstantBuzzEffect.cpp
+	$(CC) $(CFLAGS) -o $@ -c $<
+
 $(OBJ_DIR)/vrpn_server: $(OBJ_DIR)/vrpn.o $(LIB_DIR)/libvrpnserver.a \
 		$(OBJ_DIR)/buzzForceField.o $(OBJ_DIR)/constraint.o \
 		$(OBJ_DIR)/forcefield.o $(OBJ_DIR)/plane.o \
 		$(OBJ_DIR)/texture_plane.o $(OBJ_DIR)/trimesh.o \
 		$(OBJ_DIR)/vrpn_Phantom.o \
+		$(OBJ_DIR)/InstantBuzzEffect.o \
 		$(OBJ_DIR)/vrpn_Generic_server_object.o 
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/vrpn_server $(OBJ_DIR)/vrpn.o \
 		$(OBJ_DIR)/buzzForceField.o $(OBJ_DIR)/constraint.o \
 		$(OBJ_DIR)/forcefield.o $(OBJ_DIR)/plane.o \
 		$(OBJ_DIR)/texture_plane.o $(OBJ_DIR)/trimesh.o \
 		$(OBJ_DIR)/vrpn_Phantom.o \
+		$(OBJ_DIR)/InstantBuzzEffect.o \
 		$(OBJ_DIR)/vrpn_Generic_server_object.o \
 		$(LIB_DIR)/libvrpnserver.a $(GL) -lquat $(SYSLIBS) -lm
 

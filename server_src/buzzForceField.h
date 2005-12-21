@@ -22,8 +22,8 @@
 
 #include "ghost.h"
 
-// MB: for SGI compilation with pthreads
-#ifdef SGI
+// MB: for compilation with pthreads
+#if defined(SGI) || defined (__CYGWIN__)
 #include "pthread.h"
 #endif
 
@@ -43,11 +43,11 @@ class BuzzForceField : public gstForceField {
 #endif
 public:
 	BuzzForceField();
-	void activate() {_active = TRUE;};
-	void deactivate() {_active = FALSE;};
+	void activate() {_active = true;};
+	void deactivate() {_active = false;};
 	void restrictToSurface(vrpn_HapticBoolean r) {_surface_only = r;};
 	void setSurface(vrpn_HapticPlane &p, double spr) {_plane = p; _spring = spr;};
-	void setPlane(vrpn_HapticPlane &p) {_plane = p;};
+	void setPlane(const vrpn_HapticPlane &p) {_plane = p;};
 	void adjustToTexturePlane(TexturePlane *p) {
 		_tex_plane = p;
 	}
@@ -72,21 +72,21 @@ public:
 
 private:
 	double _t_buzz;	// time used in force calculation
-	int _active;		// is force active
+	bool _active;		// is force active
 	int _surface_only;	// is buzzing limited to the surface of a plane
 	vrpn_HapticPlane  _plane;	// what surface is buzzing
 	double _spring;			// force/mm
 
 	double _amplitude;		// mm
 	double _new_amplitude;
-	int _amp_needs_update;
+	bool _amp_needs_update;
 
 	double _frequency;		// Hz
 	double _new_frequency;
-	int _freq_needs_update;
+	bool _freq_needs_update;
 
-// MB: for SGI compilation with pthreads
-#ifdef SGI
+// MB: for compilation with pthreads
+#if defined(SGI) || defined (__CYGWIN__)
 	pthread_mutex_t  _amp_freq_mutex;// mutex for accessing 
 #else
 	CRITICAL_SECTION _amp_freq_mutex;// mutex for accessing 

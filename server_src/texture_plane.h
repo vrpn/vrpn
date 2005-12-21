@@ -65,7 +65,7 @@ public:
 
 	// FOR_GHOST_EXTENSION:
 	// Used by system or for creating sub-classes only.
-	//  Returns TRUE if line segment defined by startPt_WC and endPt_WC
+	//  Returns true if line segment defined by startPt_WC and endPt_WC
 	//  intersects this shape object.  If so, intersectionPt_WC is set to
 	//  point of intersection and intersectionNormal_WC is set to surface
 	//  normal at intersection point.
@@ -76,7 +76,7 @@ public:
 		void **);
 
 	// Used by system or for creating sub-classes only.
-	// Returns TRUE if pt is inside of this object.
+	// Returns true if pt is inside of this object.
 	//virtual int	checkIfPointIsInside_WC(const vrpn_HapticPosition &pt) = 0;
 
 #ifndef	VRPN_USE_HDAPI
@@ -274,7 +274,7 @@ protected:
 	double textureAspect; // ratio of amplitude to wave length
 
 // MB: for SGI compilation with pthreads
-#ifdef SGI
+#if defined(SGI) || defined (__CYGWIN__)
         pthread_mutex_t  tex_param_mutex;
 #else
 	CRITICAL_SECTION tex_param_mutex;
@@ -457,7 +457,7 @@ class DynamicPlane: public gstDynamic {
   private:
 	vrpn_HapticMatrix xform;
 // MB: for SGI compilation with pthreads
-#ifdef SGI
+#if defined(SGI) || defined (__CYGWIN__)
         pthread_mutex_t  xform_mutex;
 #else
 	CRITICAL_SECTION xform_mutex;
@@ -471,9 +471,9 @@ class DynamicPlane: public gstDynamic {
 	vrpn_HapticPlane plane;
 	vrpn_HapticPlane lastPlane;
 
-	int _using_buzz;
-	int _active;
-	int _is_new_plane;
+	bool _using_buzz;
+	bool _active;
+	bool _is_new_plane;
 };
 
 #endif

@@ -7,6 +7,12 @@
 #ifndef INSTANT_BUZZ_EFFECT
 #define INSTANT_BUZZ_EFFECT
 
+// RMT I hate that this has to be here, but things blow up in the compilation
+// if it is not.
+#ifdef __CYGWIN__
+#include <windows.h>
+#endif
+
 #include <math.h>
 #include <stdio.h>
 #include "vrpn_Configure.h"

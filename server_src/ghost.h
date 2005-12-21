@@ -27,6 +27,12 @@
   #endif
 
   typedef bool	vrpn_HapticBoolean;
+#ifndef TRUE
+#define TRUE true
+#endif
+#ifndef FALSE
+#define FALSE false
+#endif
 
   class vrpn_HapticVector {
   public:

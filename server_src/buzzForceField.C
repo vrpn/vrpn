@@ -3,6 +3,17 @@
 #include "buzzForceField.h"
 #include "texture_plane.h"
 
+// So we don't have #defines throughout the code that we forget to fix.
+#if defined(SGI) || defined (__CYGWIN__)
+#define init_mutex(x) pthread_mutex_init(x,NULL);
+#define get_mutex(x)  pthread_mutex_lock(x)
+#define release_mutex(x) pthread_mutex_unlock(x);
+#else
+#define init_mutex(x) InitializeCriticalSection(x);
+#define get_mutex(x)  EnterCriticalSection(x);
+#define release_mutex(x) LeaveCriticalSection(x);
+#endif
+
 // macros for printing something out x times out of a thousand (i.e. x times per second)
 #define DEBUG_BEGIN(x)	{static int pcnt = 0; if ((pcnt % 1000 >= 0)&&(pcnt%1000 < x)){
 #define DEBUG_END	}pcnt++;}
@@ -28,11 +39,7 @@ BuzzForceField::BuzzForceField() : gstForceField(),
 #endif
 	_tex_plane = NULL;
 // MB: for SGI compilation with pthreads
-#ifdef SGI
-	pthread_mutex_init(&_amp_freq_mutex,NULL);
-#else
-	InitializeCriticalSection(&_amp_freq_mutex);
-#endif
+	init_mutex(&_amp_freq_mutex);
 }
 
 void BuzzForceField::setAmplitude(double amp) {
@@ -41,9 +48,9 @@ void BuzzForceField::setAmplitude(double amp) {
 		return;
 	}
 	_new_amplitude = amp;
-//	EnterCriticalSection(&_amp_freq_mutex);
-	_amp_needs_update = TRUE;
-//	LeaveCriticalSection(&_amp_freq_mutex);
+//	get_mutex(&_amp_freq_mutex);
+	_amp_needs_update = true;
+//	release_mutex(&_amp_freq_mutex);
 }
 
 void BuzzForceField::setFrequency(double freq) {
@@ -52,9 +59,9 @@ void BuzzForceField::setFrequency(double freq) {
 		return;
 	}
 	_new_frequency = freq;
-//	EnterCriticalSection(&_amp_freq_mutex);
-	_freq_needs_update = TRUE;
-//	LeaveCriticalSection(&_amp_freq_mutex);
+//	get_mutex(&_amp_freq_mutex);
+	_freq_needs_update = true;
+//	release_mutex(&_amp_freq_mutex);
 }
 
 // SERVOLOOP:
@@ -87,18 +94,18 @@ vrpn_HapticVector BuzzForceField::calculateForceFieldForce(gstPHANToM *phantom)
 		phase = 2.0*_t_buzz*_frequency;
 		if ( (phase - floor(phase)) < ((deltaT)*2.0*_frequency) ){
 			// its okay to update freq, amp now 
-//			EnterCriticalSection(&_amp_freq_mutex);
+//			get_mutex(&_amp_freq_mutex);
 			if (_amp_needs_update){
-				_amp_needs_update = FALSE;
+				_amp_needs_update = false;
 				_amplitude = _new_amplitude;
 			}
 			if (_freq_needs_update){
-				_freq_needs_update = FALSE;
+				_freq_needs_update = false;
 				if (_new_frequency != 0)
 					_t_buzz *= _frequency/_new_frequency;	// for continuity
 				_frequency = _new_frequency;
 			}
-//			LeaveCriticalSection(&_amp_freq_mutex);
+//			release_mutex(&_amp_freq_mutex);
 		}
 		// compute height above plane
 		if (_tex_plane) {
