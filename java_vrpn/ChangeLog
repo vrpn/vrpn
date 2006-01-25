@@ -24,7 +24,9 @@
 	lock asserted.  Made all the functions protected and added public
 	wrappers that correctly synchronize on a lock to insure that only
 	one thread is calling native vrpn code at a time.
-
+	* .cvsignore:  tells cvs to ignore vrpn_VRPNDevice.h since it 
+	  is a generated file.
+	
 2005-08-10	Ben Wilde	<wilde@cs.unc.edu>
 
 	* vrpn_ForceDeviceRemote.cpp
