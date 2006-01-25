@@ -1,13 +1,41 @@
+2006-01-25  David Marshburn  <marshbur@cs.unc.edu>
+
+	There are two things in this commit.  First, a (transparent) 
+	reorganization.  All the device classes (tracker, analog, etc) had
+	a lot of common code for managing the threads that run the devices.
+	All this code was identical, save for perhaps name changes, and has
+	been moved into a new super class VRPNDevice.  Also, the integer
+	data member in which the java-native code stored the c++ pointer to
+	the native vrpn object was moved to this class (it was also common
+	among all the specific-device classes).  Also, I moved all the 
+	connection- and log-file-name stuff from VRPN.java to VRPNDevice.java.
+		Second, replay-control methods were added to the VRPNDevice 
+	class.  These call through to the native vrpn_Connection object for
+	each device.  The native implementations of these (which will be
+	in a forthcoming VRPNDevices.cpp) have not be written yet.
+
+	* *Remote.java:  removed threading and native object pointer 
+	* *Remote.cpp:  renamed references to the native object poiner.
+	  (more changes probably forthcoming).
+	* VRPNDevice.java:  a superclass for all the specific device classes
+	* VRPN.java:  removed cnxn and log file name stuff.
+	* ForceDeviceRemote.java:  almost all the native functions were
+	public, which means they could be called without having an appropriate
+	lock asserted.  Made all the functions protected and added public
+	wrappers that correctly synchronize on a lock to insure that only
+	one thread is calling native vrpn code at a time.
+
 2005-08-10	Ben Wilde	<wilde@cs.unc.edu>
 
 	* vrpn_ForceDeviceRemote.cpp
-		-Fixed the wrapper for setConstraintMode by casting the integer 
-		to a constraint geometry.
+		-Fixed the wrapper for setConstraintMode by casting the 
+		integer to a constraint geometry.
 
 2005-08-08	Ben Wilde	<wilde@cs.unc.edu>
 
 	* vrpn_ForceDeviceRemote.cpp
-		-Wrote wrappers for all functions dealing with force device constraints
+		-Wrote wrappers for all functions dealing with force device 
+		constraints
 	* ForceDeviceRemote.java
 		-Made all of the native functions booleans rather than voids
 

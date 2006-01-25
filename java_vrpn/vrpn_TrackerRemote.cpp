@@ -6,7 +6,7 @@
 #include "vrpn_TrackerRemote.h"
 
 jclass jclass_vrpn_TrackerRemote = NULL;
-jfieldID jfid_vrpn_TrackerRemote_native_tracker = NULL;
+jfieldID jfid_vrpn_TrackerRemote_native_device = NULL;
 
 
 //////////////////////////
@@ -56,12 +56,12 @@ JNIEXPORT jint JNICALL JNI_OnLoad_Tracker_Remote( JavaVM* jvm, void* reserved )
   }
 
   ////////////////
-  // get a jfid field id reference to the "native_tracker" 
+  // get a jfid field id reference to the "native_device" 
   // field of class vrpn.TrackerRemote.
   // field ids do not have to be made into global references.
-  jfid_vrpn_TrackerRemote_native_tracker 
-    = env->GetFieldID( jclass_vrpn_TrackerRemote, "native_tracker", "I" );
-  if( jfid_vrpn_TrackerRemote_native_tracker == NULL )
+  jfid_vrpn_TrackerRemote_native_device 
+    = env->GetFieldID( jclass_vrpn_TrackerRemote, "native_device", "I" );
+  if( jfid_vrpn_TrackerRemote_native_device == NULL )
   {
     printf( "Error loading vrpn TrackerRemote native library "
             "while looking into class vrpn.TrackerRemote.\n" );
@@ -204,7 +204,7 @@ Java_vrpn_TrackerRemote_setUpdateRate( JNIEnv* env, jobject jobj, jdouble update
 {
   // look up the tracker pointer
   jclass jcls = env->GetObjectClass( jobj );
-  jfieldID jfid = env->GetFieldID( jcls, "native_tracker", "I" );
+  jfieldID jfid = env->GetFieldID( jcls, "native_device", "I" );
   if( jfid == NULL )
     return -1;
   vrpn_Tracker_Remote* t = (vrpn_Tracker_Remote*) env->GetIntField( jobj, jfid );
@@ -222,7 +222,7 @@ Java_vrpn_TrackerRemote_mainloop( JNIEnv* env, jobject jobj )
 {
   // look up the tracker pointer
   jclass jcls = env->GetObjectClass( jobj );
-  jfieldID jfid = env->GetFieldID( jcls, "native_tracker", "I" );
+  jfieldID jfid = env->GetFieldID( jcls, "native_device", "I" );
   if( jfid == NULL )
   {
     printf( "Error in native method \"mainloop\":  unable to ID native tracker field.\n" );
@@ -245,7 +245,7 @@ Java_vrpn_TrackerRemote_init( JNIEnv* env, jobject jobj, jstring jname,
 
   // look up where to store the tracker pointer
   jclass jcls = env->GetObjectClass( jobj );
-  jfieldID jfid = env->GetFieldID( jcls, "native_tracker", "I" );
+  jfieldID jfid = env->GetFieldID( jcls, "native_device", "I" );
   if( jfid == NULL )
   {
     printf( "Error in native method \"init\":  unable to ID native tracker field.\n" );
@@ -280,7 +280,7 @@ Java_vrpn_TrackerRemote_init( JNIEnv* env, jobject jobj, jstring jname,
   env->ReleaseStringUTFChars( jremoteInLogfileName, remote_in_logfile_name );
   env->ReleaseStringUTFChars( jremoteOutLogfileName, remote_out_logfile_name );
   
-  // now stash 't' in the jobj's 'native_tracker' field
+  // now stash 't' in the jobj's 'native_device' field
   jint jt = (jint) t;
   env->SetIntField( jobj, jfid, jt );
   
@@ -297,7 +297,7 @@ Java_vrpn_TrackerRemote_shutdownTracker( JNIEnv* env, jobject jobj )
 
   // look up where to store the tracker pointer
   jclass jcls = env->GetObjectClass( jobj );
-  jfieldID jfid = env->GetFieldID( jcls, "native_tracker", "I" );
+  jfieldID jfid = env->GetFieldID( jcls, "native_device", "I" );
   if( jfid == NULL )
   {
     printf( "Error in native method \"shutdownTracker\":  unable to ID native tracker field.\n" );

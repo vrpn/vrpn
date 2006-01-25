@@ -3,7 +3,7 @@ package vrpn;
 import java.util.*;
 
 
-public class TrackerRemote extends VRPN implements Runnable
+public class TrackerRemote extends VRPNDevice implements Runnable
 {
 	//////////////////
 	// Public structures and interfaces
@@ -92,9 +92,6 @@ public class TrackerRemote extends VRPN implements Runnable
 			System.out.println( " -- Unable to find the right functions.  This may be a version problem." );
 			throw new InstantiationException( e.getMessage( ) );
 		}
-		
-		this.trackerThread = new Thread( this, "vrpn TrackerRemote" );
-		this.trackerThread.start( );
 	}
 	
 	
@@ -148,39 +145,17 @@ public class TrackerRemote extends VRPN implements Runnable
 		return accelerationListeners.removeElement( listener );
 	}
 
+		
+	// end public methods
+	////////////////////////
 	
-	/**
-	 * Sets the interval between invocations of <code>mainloop()</code>, which checks
-	 * for and delivers messages.
-	 * @param period The period, in milliseconds, between the beginnings of two
-	 * consecutive message loops.
-	 */
-	public synchronized void setTimerPeriod( long period )
+	
+	////////////////////////
+	// Protected methods
+	//
+	
+	protected void stoppedRunning( )
 	{
-		mainloopPeriod = period;
-	}
-	
-	
-	/**
-	 * @return The period, in milliseconds.
-	 */
-	public synchronized long getTimerPeriod( )
-	{
-		return mainloopPeriod;
-	}
-	
-	
-	/**
-	 * Stops the tracker thread
-	 */
-	public void stopRunning( )
-	{
-		keepRunning = false;
-		while( trackerThread.isAlive( ) )
-		{
-			try { trackerThread.join( ); }
-			catch( InterruptedException e ) { }
-		}
 		changeListeners.removeAllElements( );
 		velocityListeners.removeAllElements( );
 		accelerationListeners.removeAllElements( );
@@ -189,31 +164,6 @@ public class TrackerRemote extends VRPN implements Runnable
 			this.shutdownTracker( );
 		}
 	}
-
-	
-	/**
-	 * This should <b>not</b> be called by user code.
-	 */
-	public void run( )
-	{
-		while( keepRunning )
-		{
-			synchronized( downInVrpnLock )
-			{
-				this.mainloop( );
-			}
-			try { Thread.sleep( mainloopPeriod ); }
-			catch( InterruptedException e ) { } 
-		}
-	}
-	
-	// end public methods
-	////////////////////////
-	
-	
-	////////////////////////
-	// Protected methods
-	//
 	
 	/**
 	 * Should be called only by mainloop(), a native method which is itself
@@ -303,6 +253,14 @@ public class TrackerRemote extends VRPN implements Runnable
 			}
 		} // end synchronized( notifyingAccelerationListenersLock )
 	} // end method handleAccelerationChange
+
+	
+	protected native void shutdownTracker( );
+	
+	/**
+	 * This should only be called from the method run()
+	 */
+	protected native void mainloop( );
 	
 
 	/**
@@ -315,52 +273,11 @@ public class TrackerRemote extends VRPN implements Runnable
 								   String localOutLogfileName, String remoteInLogfileName,
 								   String remoteOutLogfileName );
 
-	/**
-	 * This should only be called from the method finalize()
-	 */
-	protected native void shutdownTracker( );
-	
-	protected native void mainloop( );
-	
-	public void finalize( ) throws Throwable
-	{
-		keepRunning = false;
-		while( trackerThread.isAlive( ) )
-		{
-			try { trackerThread.join( ); }
-			catch( InterruptedException e ) { }
-		}
-		
-		changeListeners.removeAllElements( );
-		velocityListeners.removeAllElements( );
-		accelerationListeners.removeAllElements( );
-		synchronized( downInVrpnLock )
-		{
-			this.shutdownTracker( );
-		}
-	}
-	
 	// end protected methods
 	///////////////////////
 	
 	///////////////////
 	// data members
-	
-	// this is used by the native code to store a C++ pointer to the 
-	// native vrpn_TrackerRemote object
-	// this should be negative if the tracker is uninitialized or
-	// has already been shut down
-	protected int native_tracker = -1;
-	
-	// this is used to stop and to keep running the tracking thread
-	// in an orderly fashion.
-	protected boolean keepRunning = true;
-
-	// the tracking thread
-	Thread trackerThread = null;
-
-	// how long the thread sleeps between checking for messages
-	protected long mainloopPeriod = 100; // milliseconds
 	
 	protected Vector changeListeners = new Vector( );
 	protected Vector velocityListeners = new Vector( );

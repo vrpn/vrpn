@@ -8,7 +8,7 @@
 
 
 jclass jclass_vrpn_AnalogOutputRemote = NULL;
-jfieldID jfid_vrpn_AnalogOutputRemote_native_analog_output = NULL;
+jfieldID jfid_vrpn_AnalogOutputRemote_native_device = NULL;
 
 
 //////////////////////////
@@ -58,12 +58,12 @@ JNIEXPORT jint JNICALL JNI_OnLoad_AnalogOutput_Remote( JavaVM* jvm, void* reserv
   }
 
   ////////////////
-  // get a jfid field id reference to the "native_analog_output" 
+  // get a jfid field id reference to the "native_device" 
   // field of class vrpn.AnalogOutputRemote.
   // field ids do not have to be made into global references.
-  jfid_vrpn_AnalogOutputRemote_native_analog_output
-    = env->GetFieldID( jclass_vrpn_AnalogOutputRemote, "native_analog_output", "I" );
-  if( jfid_vrpn_AnalogOutputRemote_native_analog_output == NULL )
+  jfid_vrpn_AnalogOutputRemote_native_device
+    = env->GetFieldID( jclass_vrpn_AnalogOutputRemote, "native_device", "I" );
+  if( jfid_vrpn_AnalogOutputRemote_native_device == NULL )
   {
     printf( "Error loading vrpn AnalogOutputRemote native library "
             "while looking into class vrpn.AnalogOutputRemote.\n" );
@@ -108,7 +108,7 @@ Java_vrpn_AnalogOutputRemote_requestValueChange_1native__ID( JNIEnv* env, jobjec
     return false;
   }
   jclass jcls = env->GetObjectClass( jobj );
-  jfieldID jfid = env->GetFieldID( jcls, "native_analog_output", "I" );
+  jfieldID jfid = env->GetFieldID( jcls, "native_device", "I" );
   if( jfid == NULL )
   {
     printf( "Error in native method \"requestValueChange(double)\":  unable "
@@ -134,7 +134,7 @@ Java_vrpn_AnalogOutputRemote_requestValueChange_1native___3D( JNIEnv* env, jobje
 															  jdoubleArray jvalues )
 {
   jclass jcls = env->GetObjectClass( jobj );
-  jfieldID jfid = env->GetFieldID( jcls, "native_analog_output", "I" );
+  jfieldID jfid = env->GetFieldID( jcls, "native_device", "I" );
   if( jfid == NULL )
   {
     printf( "Error in native method \"requestValueChange(double[])\":  unable "
@@ -184,7 +184,7 @@ JNIEXPORT jint JNICALL
 Java_vrpn_AnalogOutputRemote_getNumActiveChannels( JNIEnv* env, jobject jobj )
 {
   jclass jcls = env->GetObjectClass( jobj );
-  jfieldID jfid = env->GetFieldID( jcls, "native_analog_output", "I" );
+  jfieldID jfid = env->GetFieldID( jcls, "native_device", "I" );
   if( jfid == NULL )
   {
     printf( "Error in native method \"getNumActiveChannels\":  unable "
@@ -210,7 +210,7 @@ Java_vrpn_AnalogOutputRemote_shutdownAnalogOutput( JNIEnv* env, jobject jobj )
 {
   // look up where to store the analog pointer
   jclass jcls = env->GetObjectClass( jobj );
-  jfieldID jfid_analog_output = env->GetFieldID( jcls, "native_analog_output", "I" );
+  jfieldID jfid_analog_output = env->GetFieldID( jcls, "native_device", "I" );
   if( jfid_analog_output == NULL )
   {
     printf( "Error in native method \"shutdownAnalogOuput\":  unable to ID native analog field.\n" );
@@ -241,7 +241,7 @@ Java_vrpn_AnalogOutputRemote_mainloop( JNIEnv *env, jobject jobj )
 
   // look up the analog pointer
   jclass jcls = env->GetObjectClass( jobj );
-  jfieldID jfid_output = env->GetFieldID( jcls, "native_analog_output", "I" );
+  jfieldID jfid_output = env->GetFieldID( jcls, "native_device", "I" );
   if( jfid_output == NULL )
   {
     printf( "Error in native method \"mainloop\":  unable to ID native analog field.\n" );
@@ -263,7 +263,7 @@ Java_vrpn_AnalogOutputRemote_init( JNIEnv *env, jobject jobj, jstring jname,
 
   // look up where to store the analog pointer
   jclass jcls = env->GetObjectClass( jobj );
-  jfieldID jfid_analog_output = env->GetFieldID( jcls, "native_analog_output", "I" );
+  jfieldID jfid_analog_output = env->GetFieldID( jcls, "native_device", "I" );
   if( jfid_analog_output == NULL )
   {
 	printf( "Error in native method \"init\":  unable to ID native analog output field.\n" );
@@ -296,7 +296,7 @@ Java_vrpn_AnalogOutputRemote_init( JNIEnv *env, jobject jobj, jstring jname,
   env->ReleaseStringUTFChars( jremoteOutLogfileName, remote_out_logfile_name );
   
 
-  // now stash 'ao' in the jobj's 'native_analog_output' field
+  // now stash 'ao' in the jobj's 'native_device' field
   jint jao = (jint) ao;
   env->SetIntField( jobj, jfid_analog_output, jao );
   

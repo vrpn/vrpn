@@ -2,7 +2,7 @@
 package vrpn;
 import java.util.*;
 
-public class AnalogOutputRemote extends VRPN implements Runnable
+public class AnalogOutputRemote extends VRPNDevice implements Runnable
 {
 	
 	//////////////////
@@ -41,9 +41,6 @@ public class AnalogOutputRemote extends VRPN implements Runnable
 			throw new InstantiationException( e.getMessage( ) );
 		}
 		
-		this.analogOutputThread = new Thread( this, "vrpn AnalogOutputRemote" );
-		this.analogOutputThread.start( );
-
 	}
 	
 	public boolean requestValueChange( int channel, double value )
@@ -70,60 +67,6 @@ public class AnalogOutputRemote extends VRPN implements Runnable
 	public int getMaxActiveChannels( )
 	{  return AnalogRemote.MAX_CHANNELS;  }
 	
-	
-	/**
-	 * Sets the interval between invocations of <code>mainloop()</code>, which checks
-	 * for and delivers messages.
-	 * @param period The period, in milliseconds, between the beginnings of two
-	 * consecutive message loops.
-	 */
-	public synchronized void setTimerPeriod( long period )
-	{
-		mainloopPeriod = period;
-	}
-	
-	/**
-	 * @return The period, in milliseconds.
-	 */
-	public synchronized long getTimerPeriod( )
-	{
-		return mainloopPeriod;
-	}
-	
-
-	/**
-	 * Stops the analogOutput thread
-	 */
-	public void stopRunning( )
-	{
-		keepRunning = false;
-		while( analogOutputThread.isAlive( ) )
-		{
-			try { analogOutputThread.join( ); }
-			catch( InterruptedException e ) { }
-		}
-		synchronized( downInVrpnLock )
-		{
-			this.shutdownAnalogOutput( );
-		}
-	}
-
-	
-	/**
-	 * This should <b>not</b> be called by user code.
-	 */
-	public void run( )
-	{
-		while( keepRunning )
-		{
-			synchronized( downInVrpnLock )
-			{
-				this.mainloop( );
-			}
-			try { Thread.sleep( mainloopPeriod ); }
-			catch( InterruptedException e ) { } 
-		}
-	}
 	
 	// end public methods
 	////////////////////////
@@ -152,49 +95,19 @@ public class AnalogOutputRemote extends VRPN implements Runnable
 	protected native boolean requestValueChange_native( int channel, double value );
 	protected native boolean requestValueChange_native( double[] values );
 	
-	public void finalize( ) throws Throwable
+	/**
+	 * Called when the thread is stopped/the device shuts down
+	 */
+	protected void stoppedRunning( )
 	{
-		keepRunning = false;
-		while( analogOutputThread.isAlive( ) )
-		{
-			try { analogOutputThread.join( ); }
-			catch( InterruptedException e ) { }
-		}
-		changeListeners.removeAllElements( );
 		synchronized( downInVrpnLock )
 		{
 			this.shutdownAnalogOutput( );
 		}
 	}
-	
-	
+
 	// end protected methods
 	///////////////////////
 	
-	///////////////////
-	// data members
-	
-	// this is used by the native code to store a C++ pointer to the 
-	// native vrpn_Analog_Output_Remote object
-	// this should be negative if the analog_output is uninitialized or
-	// has already been shut down
-	protected int native_analog_output = -1;
-	
-	// this is used to stop and to keep running the tracking thread
-	// in an orderly fashion.
-	protected boolean keepRunning = true;
-	
-	// the analogOutput thread
-	Thread analogOutputThread = null;
-
-	// how long the thread sleeps between checking for messages
-	protected long mainloopPeriod = 100; // milliseconds
-
-	/**
-	 * @see vrpn.TrackerRemote#notifyingChangeListenersLock
-	 */
-	protected final static Object notifyingChangeListenersLock = new Object( );
-	protected Vector changeListeners = new Vector( );
-
 	
 }

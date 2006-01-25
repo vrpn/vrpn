@@ -2,7 +2,7 @@ package vrpn;
 import java.util.*;
 
 
-public class TempImagerRemote extends VRPN implements Runnable
+public class TempImagerRemote extends VRPNDevice implements Runnable
 {
 	//////////////////
 	// Public structures and interfaces
@@ -83,11 +83,6 @@ public class TempImagerRemote extends VRPN implements Runnable
 			System.out.println( " -- Unable to find the right functions.  This may be a version problem." );
 			throw new InstantiationException( e.getMessage( ) );
 		}
-		
-		// initialize the regions
-		
-		this.tempImagerThread = new Thread( this, "vrpn TempImagerRemote" );
-		this.tempImagerThread.start( );
 	}
 	
 	public int getNumRows( )
@@ -147,39 +142,16 @@ public class TempImagerRemote extends VRPN implements Runnable
 		return regionListeners.removeElement( listener );
 	}
 	
-		
-	/**
-	 * Sets the interval between invocations of <code>mainloop()</code>, which checks
-	 * for and delivers messages.
-	 * @param period The period, in milliseconds, between the beginnings of two
-	 * consecutive message loops.
-	 */
-	public synchronized void setTimerPeriod( long period )
-	{
-		mainloopPeriod = period;
-	}
-	
-	/**
-	 * @return The period, in milliseconds.
-	 */
-	public synchronized long getTimerPeriod( )
-	{
-		return mainloopPeriod;
-	}
+	// end public methods
+	////////////////////////
 	
 	
-	/**
-	 * Stops the tempImager thread
-	 */
-	public void stopRunning( )
+	////////////////////////
+	// Protected methods
+	//
+	
+	protected void stoppedRunning( )
 	{
-		keepRunning = false;
-		while( tempImagerThread.isAlive( ) )
-		{
-			try { tempImagerThread.join( ); }
-			catch( InterruptedException e ) { }
-		}
-		
 		descriptionListeners.removeAllElements( );
 		regionListeners.removeAllElements( );
 		synchronized( downInVrpnLock )
@@ -188,30 +160,6 @@ public class TempImagerRemote extends VRPN implements Runnable
 		}
 	}
 
-	
-	/**
-	 * This should <b>not</b> be called by user code.
-	 */
-	public void run( )
-	{
-		while( keepRunning )
-		{
-			synchronized( downInVrpnLock )
-			{
-				this.mainloop( );
-			}
-			try { Thread.sleep( mainloopPeriod ); }
-			catch( InterruptedException e ) { } 
-		}
-	}
-	
-	// end public methods
-	////////////////////////
-	
-	
-	////////////////////////
-	// Protected methods
-	//
 	
 	/**
 	 * Should be called only by mainloop(), a native method which is itself
@@ -291,24 +239,7 @@ public class TempImagerRemote extends VRPN implements Runnable
 	
 	protected native void mainloop( );
 	
-	public void finalize( ) throws Throwable
-	{
-		keepRunning = false;
-		while( tempImagerThread.isAlive( ) )
-		{
-			try { tempImagerThread.join( ); }
-			catch( InterruptedException e ) { }
-		}
-		
-		descriptionListeners.removeAllElements( );
-		regionListeners.removeAllElements( );
-		synchronized( downInVrpnLock )
-		{
-			this.shutdownTempImager( );
-		}
-	}
-	
-	
+
 	protected void setupTempImagerDescription( int numRows, int numColumns,
 											   float minX, float maxX, float minY,
 											   float maxY, int numChannels )
@@ -360,22 +291,6 @@ public class TempImagerRemote extends VRPN implements Runnable
 	
 	// used for individual channels
 	protected short[] regionValues = new short[VRPN_IMAGER_MAX_REGION];
-	
-	// this is used by the native code to store a C++ pointer to the 
-	// native vrpn_TempImagerRemote object
-	// this should be negative if the imager is uninitialized or
-	// has already been shut down
-	protected int native_tempImager = -1;
-	
-	// this is used to stop and to keep running the tracking thread
-	// in an orderly fashion.
-	protected boolean keepRunning = true;
-
-	// the imager thread
-	protected Thread tempImagerThread = null;
-
-	// how long the thread sleeps between checking for messages
-	protected long mainloopPeriod = 100; // milliseconds
 	
 	protected Vector descriptionListeners = new Vector( );
 	protected Vector regionListeners = new Vector( );

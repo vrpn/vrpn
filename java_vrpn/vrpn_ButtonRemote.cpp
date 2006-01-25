@@ -5,7 +5,7 @@
 #include "vrpn_ButtonRemote.h"
 
 jclass jclass_vrpn_ButtonRemote = NULL;
-jfieldID jfid_vrpn_ButtonRemote_native_button = NULL;
+jfieldID jfid_vrpn_ButtonRemote_native_device = NULL;
 
 // This is called when the Java Virtual Machine loads this library
 //  and sets some global references that are used elsewhere.
@@ -50,12 +50,12 @@ JNIEXPORT jint JNICALL JNI_OnLoad_Button_Remote( JavaVM* jvm, void* reserved )
   }
 
   ////////////////
-  // get a jfid field id reference to the "native_button" 
+  // get a jfid field id reference to the "native_device" 
   // field of class vrpn.ButtonRemote.
   // field ids do not have to be made into global references.
-  jfid_vrpn_ButtonRemote_native_button 
-    = env->GetFieldID( jclass_vrpn_ButtonRemote, "native_button", "I" );
-  if( jfid_vrpn_ButtonRemote_native_button == NULL )
+  jfid_vrpn_ButtonRemote_native_device 
+    = env->GetFieldID( jclass_vrpn_ButtonRemote, "native_device", "I" );
+  if( jfid_vrpn_ButtonRemote_native_device == NULL )
   {
     printf( "Error loading vrpn ButtonRemote native library "
             "while looking into class vrpn.ButtonRemote.\n" );
@@ -116,7 +116,7 @@ Java_vrpn_ButtonRemote_mainloop( JNIEnv* env, jobject jobj )
 {
   // look up the button pointer
   jclass jcls = env->GetObjectClass( jobj );
-  jfieldID jfid = env->GetFieldID( jcls, "native_button", "I" );
+  jfieldID jfid = env->GetFieldID( jcls, "native_device", "I" );
   if( jfid == NULL )
   {
     printf( "Error in native method \"mainloop\":  unable to ID native button field.\n" );
@@ -139,7 +139,7 @@ Java_vrpn_ButtonRemote_init( JNIEnv* env, jobject jobj, jstring jname,
   
   // look up where to store the button pointer
   jclass jcls = env->GetObjectClass( jobj );
-  jfieldID jfid = env->GetFieldID( jcls, "native_button", "I" );
+  jfieldID jfid = env->GetFieldID( jcls, "native_device", "I" );
   if( jfid == NULL )
   {
     printf( "Error in native method \"init\":  unable to ID native button field.\n" );
@@ -172,7 +172,7 @@ Java_vrpn_ButtonRemote_init( JNIEnv* env, jobject jobj, jstring jname,
   env->ReleaseStringUTFChars( jremoteInLogfileName, remote_in_logfile_name );
   env->ReleaseStringUTFChars( jremoteOutLogfileName, remote_out_logfile_name );
  
-  // now stash 't' in the jobj's 'native_button' field
+  // now stash 't' in the jobj's 'native_device' field
   jint jt = (jint) t;
   env->SetIntField( jobj, jfid, jt );
   
@@ -189,7 +189,7 @@ Java_vrpn_ButtonRemote_shutdownButton( JNIEnv* env, jobject jobj )
 
   // look up where to store the button pointer
   jclass jcls = env->GetObjectClass( jobj );
-  jfieldID jfid = env->GetFieldID( jcls, "native_button", "I" );
+  jfieldID jfid = env->GetFieldID( jcls, "native_device", "I" );
   if( jfid == NULL )
   {
     printf( "Error in native method \"shutdownButton\":  unable to ID native button field.\n" );

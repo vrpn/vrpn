@@ -3,7 +3,7 @@ package vrpn;
 import java.util.*;
 
 
-public class PoserRemote extends VRPN implements Runnable
+public class PoserRemote extends VRPNDevice implements Runnable
 {
 	
 	////////////////////////////////
@@ -43,21 +43,6 @@ public class PoserRemote extends VRPN implements Runnable
 			System.out.println( " -- Unable to find the right functions.  This may be a version problem." );
 			throw new InstantiationException( e.getMessage( ) );
 		}
-		
-		this.poserThread = new Thread( this, "vrpn PoserRemote" );
-		this.poserThread.start( );
-	}
-	
-	
-	/**
-	 * Sets the interval between invocations of <code>mainloop()</code>, which checks
-	 * for and delivers messages.
-	 * @param period The period, in milliseconds, between the beginnings of two
-	 * consecutive message loops.
-	 */
-	public synchronized void setTimerPeriod( long period )
-	{
-		mainloopPeriod = period;
 	}
 	
 	
@@ -85,50 +70,6 @@ public class PoserRemote extends VRPN implements Runnable
 		{			retval = requestPoseVelocity_native( t.getTime(), t.getTime(), position, quaternion, interval );		}		return retval;
 	}
 	
-	
-	/**
-	 * @return The period, in milliseconds.
-	 */
-	public synchronized long getTimerPeriod( )
-	{
-		return mainloopPeriod;
-	}
-	
-	
-	/**
-	 * Stops the poser thread
-	 */
-	public void stopRunning( )
-	{
-		keepRunning = false;
-		while( poserThread.isAlive( ) )
-		{
-			try { poserThread.join( ); }
-			catch( InterruptedException e ) { }
-		}
-		synchronized( downInVrpnLock )
-		{
-			this.shutdownPoser( );
-		}
-	}
-
-	
-	/**
-	 * This should <b>not</b> be called by user code.
-	 */
-	public void run( )
-	{
-		while( keepRunning )
-		{
-			synchronized( downInVrpnLock )
-			{
-				this.mainloop( );
-			}
-			try { Thread.sleep( mainloopPeriod ); }
-			catch( InterruptedException e ) { } 
-		}
-	}
-	
 	// end public methods
 	////////////////////////
 	
@@ -137,7 +78,17 @@ public class PoserRemote extends VRPN implements Runnable
 	// Protected methods
 	//
 	
-	
+	/**
+	 * Stops the poser thread
+	 */
+	protected void stoppedRunning( )
+	{
+		synchronized( downInVrpnLock )
+		{
+			this.shutdownPoser( );
+		}
+	}
+
 	/**
 	 * Initialize the native poser object
 	 * @param name The name of the poser and host (e.g., <code>"Poser0@myhost.edu"</code>).
@@ -157,42 +108,8 @@ public class PoserRemote extends VRPN implements Runnable
 	protected native boolean requestPose_native( long secs, long usecs, double[] position, double[] quaternion );
 	protected native boolean requestPoseVelocity_native( long secs, long usecs, double[] position, double[] quaternion, double interval);
 	
-	public void finalize( ) throws Throwable
-	{
-		keepRunning = false;
-		while( poserThread.isAlive( ) )
-		{
-			try { poserThread.join( ); }
-			catch( InterruptedException e ) { }
-		}
-		
-		synchronized( downInVrpnLock )
-		{
-			this.shutdownPoser( );
-		}
-	}
-	
 	// end protected methods
 	///////////////////////
-	
-	///////////////////
-	// data members
-	
-	// this is used by the native code to store a C++ pointer to the 
-	// native vrpn_PoserRemote object
-	// this should be negative if the poser is uninitialized or
-	// has already been shut down
-	protected int native_poser = -1;
-	
-	// this is used to stop and to keep running the tracking thread
-	// in an orderly fashion.
-	protected boolean keepRunning = true;
-
-	// the tracking thread
-	Thread poserThread = null;
-
-	// how long the thread sleeps between checking for messages
-	protected long mainloopPeriod = 100; // milliseconds
 	
 
 }

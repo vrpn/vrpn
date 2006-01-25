@@ -1,7 +1,7 @@
 package vrpn;
 import java.util.*;
 
-public class ButtonRemote extends VRPN implements Runnable
+public class ButtonRemote extends VRPNDevice implements Runnable
 {
 	
 	//////////////////
@@ -44,10 +44,6 @@ public class ButtonRemote extends VRPN implements Runnable
 			System.out.println( " -- Unable to find the right functions.  This may be a version problem." );
 			throw new InstantiationException( e.getMessage( ) );
 		}
-		
-		this.buttonThread = new Thread( this, "vrpn ButtonRemote" );
-		this.buttonThread.start( );
-		
 	}
 	
 	public synchronized void addButtonChangeListener( ButtonChangeListener listener )
@@ -64,36 +60,10 @@ public class ButtonRemote extends VRPN implements Runnable
 	}
 	
 	/**
-	 * Sets the interval between invocations of <code>mainloop()</code>, which checks
-	 * for and delivers messages.
-	 * @param period The period, in milliseconds, between the beginnings of two
-	 * consecutive message loops.
-	 */
-	public synchronized void setTimerPeriod( long period )
-	{
-		mainloopPeriod = period;
-	}
-	
-	/**
-	 * @return The period, in milliseconds.
-	 */
-	public synchronized long getTimerPeriod( )
-	{
-		return mainloopPeriod;
-	}
-	
-	
-	/**
 	 * Stops the button device thread
 	 */
-	public void stopRunning( )
+	public void stoppedRunning( )
 	{
-		keepRunning = false;
-		while( buttonThread.isAlive( ) )
-		{
-			try { buttonThread.join( ); }
-			catch( InterruptedException e ) { }
-		}
 		changeListeners.removeAllElements( );
 		synchronized( downInVrpnLock )
 		{
@@ -101,23 +71,6 @@ public class ButtonRemote extends VRPN implements Runnable
 		}
 	}
 
-	
-	/**
-	 * This should <b>not</b> be called by user code.
-	 */
-	public void run( )
-	{
-		while( keepRunning )
-		{
-			synchronized( downInVrpnLock )
-			{
-				this.mainloop( );
-			}
-			try { Thread.sleep( mainloopPeriod ); }
-			catch( InterruptedException e ) { } 
-		}
-	}
-	
 	// end public methods
 	////////////////////////
 	
@@ -173,43 +126,11 @@ public class ButtonRemote extends VRPN implements Runnable
 	
 	protected native void mainloop( );
 	
-	public void finalize( ) throws Throwable
-	{
-		keepRunning = false;
-		while( buttonThread.isAlive( ) )
-		{
-			try { buttonThread.join( ); }
-			catch( InterruptedException e ) { }
-		}
-		changeListeners.removeAllElements( );
-		synchronized( downInVrpnLock )
-		{
-			this.shutdownButton( );
-		}
-	}
-	
-	
 	// end protected methods
 	///////////////////////
 	
 	///////////////////
 	// data members
-	
-    // this is used by the native code to store a C++ pointer to the
-    // native vrpn_ButtonRemote object
-	// this should be negative if the button is uninitialized or
-	// has already been shut down
-    protected int native_button = -1;
-
-	// this is used to stop and to keep running the tracking thread
-	// in an orderly fashion.
-	protected boolean keepRunning = true;
-	
-	// the tracking thread
-	Thread buttonThread = null;
-
-	// how long the thread sleeps between checking for messages
-	protected long mainloopPeriod = 100; // milliseconds
 	
 	protected Vector changeListeners = new Vector( );
 	

@@ -3,7 +3,7 @@ import java.util.*;
 
 
 
-public class ForceDeviceRemote extends VRPN implements Runnable
+public class ForceDeviceRemote extends VRPNDevice implements Runnable
 {
 	
 	//////////////////
@@ -83,42 +83,244 @@ public class ForceDeviceRemote extends VRPN implements Runnable
 			System.out.println( " -- Unable to find the right functions.  This may be a version problem." );
 			throw new InstantiationException( e.getMessage( ) );
 		}
-		
-		this.forceThread = new Thread( this, "vrpn ForceDeviceRemote" );
-		this.forceThread.start( );
-
 	}
 	
 	
 	
-	public native void sendSurface( );
-	public native void startSurface( );
-	public native void stopSurface( );
+	public void sendSurface( )
+	{
+		synchronized( downInVrpnLock )
+		{
+			sendSurface_native( );
+		}
+	}
+	
+	
+	public void startSurface( )
+	{
+		synchronized( downInVrpnLock )
+		{
+			startSurface_native( );
+		}
+	}
+	
+	
+	public void stopSurface( )
+	{
+		synchronized( downInVrpnLock )
+		{
+			stopSurface_native( );
+		}
+	}
+	
 
-	public native void setVertex( int number, float x, float y, float z );
-	public native void setNormal( int number, float x, float y, float z );
-	public native void setTriangle( int number, int vertex1, int vertex2, int vertex3,
-									int normal1, int normal2, int normal3 );
-	public native void removeTriangle( int number );
-	public native void updateTrimeshChanges( );
-	public native void setTrimeshTransform( float[] transform );
-	public native void clearTrimesh( );
+	public void setVertex( int number, float x, float y, float z )
+	{
+		synchronized( downInVrpnLock )
+		{
+			setVertex_native( number, x, y, z );
+		}
+	}
 	
-	public native void useHcollide( );
-	public native void useGhost( );
+
+	public void setNormal( int number, float x, float y, float z )
+	{
+		synchronized( downInVrpnLock )
+		{
+			setNormal_native( number, x, y, z );
+		}
+	}
 	
-	public native boolean enableConstraint( int enable );
-	public native boolean setConstraintMode( int mode );
-	public native boolean setConstraintPoint( float[] point );
-	public native boolean setConstraintLinePoint( float[] point );
-	public native boolean setConstraintLineDirection( float[] direction );
-	public native boolean setConstraintPlanePoint( float[] point );
-	public native boolean setConstraintPlaneNormal( float[] normal );
-	public native boolean setConstraintKSpring( float k );
+
+	public void setTriangle( int number, int vertex1, int vertex2, int vertex3,
+									int normal1, int normal2, int normal3 )
+	{
+		synchronized( downInVrpnLock )
+		{
+			setTriangle_native( number, vertex1, vertex2, vertex3,
+								normal1, normal2, normal3 );
+		}
+	}
 	
-	public native boolean sendForceField( float[] origin, float[] force, float[][] jacobian, float radius );
-	public native boolean sendForceField( );
-	public native boolean stopForceField( );
+
+	public void removeTriangle( int number )
+	{
+		synchronized( downInVrpnLock )
+		{
+			removeTriangle_native( number );
+		}
+	}
+	
+
+	public void updateTrimeshChanges( )
+	{
+		synchronized( downInVrpnLock )
+		{
+			updateTrimeshChanges_native( );
+		}
+	}
+	
+
+	public void setTrimeshTransform( float[] transform )
+	{
+		synchronized( downInVrpnLock )
+		{
+			setTrimeshTransform_native( transform );
+		}
+	}
+	
+
+	public void clearTrimesh( )
+	{
+		synchronized( downInVrpnLock )
+		{
+			clearTrimesh_native( );
+		}
+	}
+	
+
+	
+	public void useHcollide( )
+	{
+		synchronized( downInVrpnLock )
+		{
+			useHcollide_native( );
+		}
+	}
+	
+
+	public void useGhost( )
+	{
+		synchronized( downInVrpnLock )
+		{
+			useGhost_native( );
+		}
+	}
+	
+
+	
+	public boolean enableConstraint( int enable )
+	{
+		boolean retval = false;
+		synchronized( downInVrpnLock )
+		{
+			retval = enableConstraint_native( enable );
+		}
+		return retval;
+	}
+	
+
+	public boolean setConstraintMode( int mode )
+	{
+		boolean retval = false;
+		synchronized( downInVrpnLock )
+		{
+			retval = setConstraintMode_native( mode );
+		}
+		return retval;
+	}
+	
+
+	public boolean setConstraintPoint( float[] point )
+	{
+		boolean retval = false;
+		synchronized( downInVrpnLock )
+		{
+			retval = setConstraintPoint_native( point );
+		}
+		return retval;
+	}
+	
+
+	public boolean setConstraintLinePoint( float[] point )
+	{
+		boolean retval = false;
+		synchronized( downInVrpnLock )
+		{
+			retval = setConstraintLinePoint_native( point );
+		}
+		return retval;
+	}
+	
+
+	public boolean setConstraintLineDirection( float[] direction )
+	{
+		boolean retval = false;
+		synchronized( downInVrpnLock )
+		{
+			retval = setConstraintLineDirection_native( direction );
+		}
+		return retval;
+	}
+	
+
+	public boolean setConstraintPlanePoint( float[] point )
+	{
+		boolean retval = false;
+		synchronized( downInVrpnLock )
+		{
+			retval = setConstraintPlanePoint_native( point );
+		}
+		return retval;
+	}
+	
+
+	public boolean setConstraintPlaneNormal( float[] normal )
+	{
+		boolean retval = false;
+		synchronized( downInVrpnLock )
+		{
+			retval = setConstraintPlaneNormal_native( normal );
+		}
+		return retval;
+	}
+	
+
+	public boolean setConstraintKSpring( float k )
+	{
+		boolean retval = false;
+		synchronized( downInVrpnLock )
+		{
+			retval = setConstraintKSpring_native( k );
+		}
+		return retval;
+	}
+	
+
+	
+	public boolean sendForceField( float[] origin, float[] force, float[][] jacobian, float radius )
+	{
+		boolean retval = false;
+		synchronized( downInVrpnLock )
+		{
+			retval = sendForceField_native( origin, force, jacobian, radius );
+		}
+		return retval;
+	}
+	
+
+	public boolean sendForceField( )
+	{
+		boolean retval = false;
+		synchronized( downInVrpnLock )
+		{
+			retval = sendForceField_native( );
+		}
+		return retval;
+	}
+	
+
+	public boolean stopForceField( )
+	{
+		boolean retval = false;
+		synchronized( downInVrpnLock )
+		{
+			retval = stopForceField_native( );
+		}
+		return retval;
+	}
+	
+
 	
 	
 	public synchronized void addForceChangeListener( ForceChangeListener listener )
@@ -162,37 +364,49 @@ public class ForceDeviceRemote extends VRPN implements Runnable
 		return errorListeners.removeElement( listener );
 	}
 
-	/**
-	 * Sets the interval between invocations of <code>mainloop()</code>, which checks
-	 * for and delivers messages.
-	 * @param period The period, in milliseconds, between the beginnings of two
-	 * consecutive message loops.
-	 */
-	public synchronized void setTimerPeriod( long period )
-	{
-		mainloopPeriod = period;
-	}
+	// end public methods
+	////////////////////////
 	
-	/**
-	 * @return The period, in milliseconds.
-	 */
-	public synchronized long getTimerPeriod( )
-	{
-		return mainloopPeriod;
-	}
+	
+	////////////////////////
+	// Protected methods
+	//
+	
+	protected native void sendSurface_native( );
+	protected native void startSurface_native( );
+	protected native void stopSurface_native( );
+
+	protected native void setVertex_native( int number, float x, float y, float z );
+	protected native void setNormal_native( int number, float x, float y, float z );
+	protected native void setTriangle_native( int number, int vertex1, int vertex2, int vertex3,
+											  int normal1, int normal2, int normal3 );
+	protected native void removeTriangle_native( int number );
+	protected native void updateTrimeshChanges_native( );
+	protected native void setTrimeshTransform_native( float[] transform );
+	protected native void clearTrimesh_native( );
+	
+	protected native void useHcollide_native( );
+	protected native void useGhost_native( );
+	
+	protected native boolean enableConstraint_native( int enable );
+	protected native boolean setConstraintMode_native( int mode );
+	protected native boolean setConstraintPoint_native( float[] point );
+	protected native boolean setConstraintLinePoint_native( float[] point );
+	protected native boolean setConstraintLineDirection_native( float[] direction );
+	protected native boolean setConstraintPlanePoint_native( float[] point );
+	protected native boolean setConstraintPlaneNormal_native( float[] normal );
+	protected native boolean setConstraintKSpring_native( float k );
+	
+	protected native boolean sendForceField_native( float[] origin, float[] force, float[][] jacobian, float radius );
+	protected native boolean sendForceField_native( );
+	protected native boolean stopForceField_native( );
 	
 	
 	/**
 	 * Stops the force device thread
 	 */
-	public void stopRunning( )
+	protected void stoppedRunning( )
 	{
-		keepRunning = false;
-		while( forceThread.isAlive( ) )
-		{
-			try { forceThread.join( ); }
-			catch( InterruptedException e ) { }
-		}
 		forceListeners.removeAllElements( );
 		scpListeners.removeAllElements( );
 		errorListeners.removeAllElements( );
@@ -202,30 +416,6 @@ public class ForceDeviceRemote extends VRPN implements Runnable
 		}
 	}
 
-	
-	/**
-	 * This should <b>not</b> be called by user code.
-	 */
-	public void run( )
-	{
-		while( keepRunning )
-		{
-			synchronized( downInVrpnLock )
-			{
-				this.mainloop( );
-			}
-			try { Thread.sleep( mainloopPeriod ); }
-			catch( InterruptedException e ) { } 
-		}
-	}
-	
-	// end public methods
-	////////////////////////
-	
-	
-	////////////////////////
-	// Protected methods
-	//
 	
 	/**
 	 * Should be called only by mainloop(), a native method which is itself
@@ -321,45 +511,11 @@ public class ForceDeviceRemote extends VRPN implements Runnable
 	
 	protected native void mainloop( );
 	
-	public void finalize( ) throws Throwable
-	{
-		keepRunning = false;
-		while( forceThread.isAlive( ) )
-		{
-			try { forceThread.join( ); }
-			catch( InterruptedException e ) { }
-		}
-		forceListeners.removeAllElements( );
-		scpListeners.removeAllElements( );
-		errorListeners.removeAllElements( );
-		synchronized( downInVrpnLock )
-		{
-			this.shutdownForceDevice( );
-		}
-	}
-	
 	// end protected methods
 	///////////////////////
 	
 	///////////////////
 	// data members
-	
-	// this is used by the native code to store a C++ pointer to the 
-	// native vrpn_ForceDeviceRemote object
-	// this should be negative if the force_device is uninitialized or
-	// has already been shut down
-	protected int native_force_device = -1;
-	
-	// this is used to stop and to keep running the tracking thread
-	// in an orderly fashion.
-	protected boolean keepRunning = true;
-	
-	// the tracking thread
-	Thread forceThread = null;
-
-	// how long the thread sleeps between checking for messages
-	protected long mainloopPeriod = 100; // milliseconds
-
 	
 	protected Vector forceListeners = new Vector( );
 	protected Vector scpListeners = new Vector( );

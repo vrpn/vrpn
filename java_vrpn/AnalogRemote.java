@@ -2,7 +2,7 @@
 package vrpn;
 import java.util.*;
 
-public class AnalogRemote extends VRPN implements Runnable
+public class AnalogRemote extends VRPNDevice implements Runnable
 {
 	
 	//////////////////
@@ -60,9 +60,6 @@ public class AnalogRemote extends VRPN implements Runnable
 			System.out.println( " -- Unable to find the right functions.  This may be a version problem." );
 			throw new InstantiationException( e.getMessage( ) );
 		}
-		
-		this.analogThread = new Thread( this, "vrpn AnalogRemote" );
-		this.analogThread.start( );
 	}
 	
 	
@@ -79,63 +76,6 @@ public class AnalogRemote extends VRPN implements Runnable
 	public synchronized boolean removeAnalogChangeListener( AnalogChangeListener listener )
 	{
 		return changeListeners.removeElement( listener );
-	}
-	
-	
-	/**
-	 * Sets the interval between invocations of <code>mainloop()</code>, which checks
-	 * for and delivers messages.
-	 * @param period The period, in milliseconds, between the beginnings of two
-	 * consecutive message loops.
-	 */
-	public synchronized void setTimerPeriod( long period )
-	{
-		mainloopPeriod = period;
-	}
-	
-	
-	/**
-	 * @return The period, in milliseconds.
-	 */
-	public synchronized long getTimerPeriod( )
-	{
-		return mainloopPeriod;
-	}
-	
-
-	/**
-	 * Stops the analog thread
-	 */
-	public void stopRunning( )
-	{
-		keepRunning = false;
-		while( analogThread.isAlive( ) )
-		{
-			try { analogThread.join( ); }
-			catch( InterruptedException e ) { }
-		}
-		changeListeners.removeAllElements( );
-		synchronized( downInVrpnLock )
-		{
-			this.shutdownAnalog( );
-		}
-	}
-
-	
-	/**
-	 * This should <b>not</b> be called by user code.
-	 */
-	public void run( )
-	{
-		while( keepRunning )
-		{
-			synchronized( downInVrpnLock )
-			{
-				this.mainloop( );
-			}
-			try { Thread.sleep( mainloopPeriod ); }
-			catch( InterruptedException e ) { } 
-		}
 	}
 	
 	// end public methods
@@ -192,44 +132,24 @@ public class AnalogRemote extends VRPN implements Runnable
 	
 	protected native void mainloop( );
 	
-	public void finalize( ) throws Throwable
+	/**
+	 * Called when the thread is stopped/the device shuts down
+	 */
+	protected void stoppedRunning( )
 	{
-		keepRunning = false;
-		while( analogThread.isAlive( ) )
-		{
-			try { analogThread.join( ); }
-			catch( InterruptedException e ) { }
-		}
 		changeListeners.removeAllElements( );
 		synchronized( downInVrpnLock )
 		{
 			this.shutdownAnalog( );
 		}
 	}
-	
-	
+
 	// end protected methods
 	///////////////////////
 	
 	///////////////////
 	// data members
 	
-	// this is used by the native code to store a C++ pointer to the 
-	// native vrpn_AnalogRemote object
-	// this should be negative if the analog is uninitialized or
-	// has already been shut down
-	protected int native_analog = -1;
-	
-	// this is used to stop and to keep running the tracking thread
-	// in an orderly fashion.
-	protected boolean keepRunning = true;
-	
-	// the analog thread
-	Thread analogThread = null;
-
-	// how long the thread sleeps between checking for messages
-	protected long mainloopPeriod = 100; // milliseconds
-
 	/**
 	 * @see vrpn.TrackerRemote#notifyingChangeListenersLock
 	 */
