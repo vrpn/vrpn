@@ -10,6 +10,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad( JavaVM* jvm, void* reserved )
 {
   ::jvm = jvm;
   
+  if( JNI_OnLoad_VRPNDevice( jvm, reserved ) == JNI_ERR ) return JNI_ERR;
   if( JNI_OnLoad_AnalogOutput_Remote( jvm, reserved ) == JNI_ERR ) return JNI_ERR;
   if( JNI_OnLoad_Analog_Remote( jvm, reserved ) == JNI_ERR ) return JNI_ERR;
   if( JNI_OnLoad_Button_Remote( jvm, reserved ) == JNI_ERR ) return JNI_ERR;
@@ -25,7 +26,6 @@ JNIEXPORT jint JNICALL JNI_OnLoad( JavaVM* jvm, void* reserved )
 
 JNIEXPORT void JNICALL JNI_OnUnload( JavaVM* jvm, void* reserved )
 {
-
   JNI_OnUnload_AnalogOutput_Remote( jvm, reserved );
   JNI_OnUnload_Analog_Remote( jvm, reserved );
   JNI_OnUnload_Button_Remote( jvm, reserved );
@@ -33,4 +33,5 @@ JNIEXPORT void JNICALL JNI_OnUnload( JavaVM* jvm, void* reserved )
   //JNI_OnUnload_TempImagerRemote( jvm, reserved );
   JNI_OnUnload_Tracker_Remote( jvm, reserved );
   JNI_OnUnload_Poser_Remote( jvm, reserved );
+  JNI_OnUnload_VRPNDevice( jvm, reserved );
 }

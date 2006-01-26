@@ -6,12 +6,15 @@
 
 
 // this is the version of the java_vrpn library
-#define JAVA_VRPN_VERSION "0.1"
+#define JAVA_VRPN_VERSION "1.0"
 
 
 
 extern JavaVM* jvm;
 
+// VRPNDevice Load/Unload
+JNIEXPORT jint JNICALL JNI_OnLoad_VRPNDevice( JavaVM* jvm, void* reserved );
+JNIEXPORT void JNICALL JNI_OnUnload_VRPNDevice( JavaVM* jvm, void* reserved );
 
 // AnalogOutput_Remote Load/Unload
 JNIEXPORT jint JNICALL JNI_OnLoad_AnalogOutput_Remote( JavaVM* jvm, void* reserved );

@@ -8,8 +8,7 @@
 
 
 jclass jclass_vrpn_AnalogOutputRemote = NULL;
-jfieldID jfid_vrpn_AnalogOutputRemote_native_device = NULL;
-
+extern jfieldID jfid_vrpn_VRPNDevice_native_device;
 
 //////////////////////////
 //  DLL functions
@@ -57,19 +56,6 @@ JNIEXPORT jint JNICALL JNI_OnLoad_AnalogOutput_Remote( JavaVM* jvm, void* reserv
     return JNI_ERR;
   }
 
-  ////////////////
-  // get a jfid field id reference to the "native_device" 
-  // field of class vrpn.AnalogOutputRemote.
-  // field ids do not have to be made into global references.
-  jfid_vrpn_AnalogOutputRemote_native_device
-    = env->GetFieldID( jclass_vrpn_AnalogOutputRemote, "native_device", "I" );
-  if( jfid_vrpn_AnalogOutputRemote_native_device == NULL )
-  {
-    printf( "Error loading vrpn AnalogOutputRemote native library "
-            "while looking into class vrpn.AnalogOutputRemote.\n" );
-    return JNI_ERR;
-  }
-  
   return JAVA_VRPN_JNI_VERSION;
 } // end JNI_OnLoad
 
@@ -107,17 +93,9 @@ Java_vrpn_AnalogOutputRemote_requestValueChange_1native__ID( JNIEnv* env, jobjec
   {
     return false;
   }
-  jclass jcls = env->GetObjectClass( jobj );
-  jfieldID jfid = env->GetFieldID( jcls, "native_device", "I" );
-  if( jfid == NULL )
-  {
-    printf( "Error in native method \"requestValueChange(double)\":  unable "
-			"to ID native analog output field.\n" );
-    return false;
-  }
 
   // get the analog pointer
-  vrpn_Analog_Output_Remote* ao = (vrpn_Analog_Output_Remote*) env->GetIntField( jobj, jfid );
+  vrpn_Analog_Output_Remote* ao = (vrpn_Analog_Output_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
   if( ao <= 0 )  // this analog is uninitialized or has been shut down already
   {
     printf( "Error in native method \"requestValueChange(double)\":  the analog output is "
@@ -133,17 +111,8 @@ JNIEXPORT jboolean JNICALL
 Java_vrpn_AnalogOutputRemote_requestValueChange_1native___3D( JNIEnv* env, jobject jobj, 
 															  jdoubleArray jvalues )
 {
-  jclass jcls = env->GetObjectClass( jobj );
-  jfieldID jfid = env->GetFieldID( jcls, "native_device", "I" );
-  if( jfid == NULL )
-  {
-    printf( "Error in native method \"requestValueChange(double[])\":  unable "
-			"to ID native analog output field.\n" );
-    return false;
-  }
-
   // get the analog pointer
-  vrpn_Analog_Output_Remote* ao = (vrpn_Analog_Output_Remote*) env->GetIntField( jobj, jfid );
+  vrpn_Analog_Output_Remote* ao = (vrpn_Analog_Output_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
   if( ao <= 0 )  // this analog is uninitialized or has been shut down already
   {
     printf( "Error in native method \"requestValueChange(double[])\":  the analog output is "
@@ -183,17 +152,8 @@ Java_vrpn_AnalogOutputRemote_requestValueChange_1native___3D( JNIEnv* env, jobje
 JNIEXPORT jint JNICALL 
 Java_vrpn_AnalogOutputRemote_getNumActiveChannels( JNIEnv* env, jobject jobj )
 {
-  jclass jcls = env->GetObjectClass( jobj );
-  jfieldID jfid = env->GetFieldID( jcls, "native_device", "I" );
-  if( jfid == NULL )
-  {
-    printf( "Error in native method \"getNumActiveChannels\":  unable "
-			"to ID native analog output field.\n" );
-    return 0;
-  }
-
   // get the analog pointer
-  vrpn_Analog_Output_Remote* ao = (vrpn_Analog_Output_Remote*) env->GetIntField( jobj, jfid );
+  vrpn_Analog_Output_Remote* ao = (vrpn_Analog_Output_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
   if( ao <= 0 )  // this analog is uninitialized or has been shut down already
   {
     printf( "Error in native method \"getNumActiveChannels\":  the analog output is "
@@ -208,18 +168,9 @@ Java_vrpn_AnalogOutputRemote_getNumActiveChannels( JNIEnv* env, jobject jobj )
 JNIEXPORT void JNICALL 
 Java_vrpn_AnalogOutputRemote_shutdownAnalogOutput( JNIEnv* env, jobject jobj )
 {
-  // look up where to store the analog pointer
-  jclass jcls = env->GetObjectClass( jobj );
-  jfieldID jfid_analog_output = env->GetFieldID( jcls, "native_device", "I" );
-  if( jfid_analog_output == NULL )
-  {
-    printf( "Error in native method \"shutdownAnalogOuput\":  unable to ID native analog field.\n" );
-    return;
-  }
-
   // get the analog pointers
   vrpn_Analog_Output_Remote* ao 
-	  = (vrpn_Analog_Output_Remote*) env->GetIntField( jobj, jfid_analog_output );
+	  = (vrpn_Analog_Output_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
 
   if( ao > 0 )
   {
@@ -228,7 +179,7 @@ Java_vrpn_AnalogOutputRemote_shutdownAnalogOutput( JNIEnv* env, jobject jobj )
   }
    
   // set the analog pointers to -1
-  env->SetIntField( jobj, jfid_analog_output, -1 );
+  env->SetIntField( jobj, jfid_vrpn_VRPNDevice_native_device, -1 );
 
   // delete global reference to object (that was created in init)
   env->DeleteGlobalRef( jobj );
@@ -239,16 +190,8 @@ JNIEXPORT void JNICALL
 Java_vrpn_AnalogOutputRemote_mainloop( JNIEnv *env, jobject jobj )
 {
 
-  // look up the analog pointer
-  jclass jcls = env->GetObjectClass( jobj );
-  jfieldID jfid_output = env->GetFieldID( jcls, "native_device", "I" );
-  if( jfid_output == NULL )
-  {
-    printf( "Error in native method \"mainloop\":  unable to ID native analog field.\n" );
-    return;
-  }
   vrpn_Analog_Output_Remote* ao 
-	  = (vrpn_Analog_Output_Remote*) env->GetIntField( jobj, jfid_output );
+	  = (vrpn_Analog_Output_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
 
   if( ao > 0 )
 	ao->mainloop( );
@@ -260,16 +203,6 @@ Java_vrpn_AnalogOutputRemote_init( JNIEnv *env, jobject jobj, jstring jname,
 								  jstring jlocalInLogfileName, jstring jlocalOutLogfileName,
 								  jstring jremoteInLogfileName, jstring jremoteOutLogfileName )
 {
-
-  // look up where to store the analog pointer
-  jclass jcls = env->GetObjectClass( jobj );
-  jfieldID jfid_analog_output = env->GetFieldID( jcls, "native_device", "I" );
-  if( jfid_analog_output == NULL )
-  {
-	printf( "Error in native method \"init\":  unable to ID native analog output field.\n" );
-	return false;
-  }
-
   // make a global reference to the Java AnalogOutputRemote
   // object, so that it can be referenced in the function
   // handle_analog_change(...)
@@ -298,7 +231,7 @@ Java_vrpn_AnalogOutputRemote_init( JNIEnv *env, jobject jobj, jstring jname,
 
   // now stash 'ao' in the jobj's 'native_device' field
   jint jao = (jint) ao;
-  env->SetIntField( jobj, jfid_analog_output, jao );
+  env->SetIntField( jobj, jfid_vrpn_VRPNDevice_native_device, jao );
   
   return true;
 }

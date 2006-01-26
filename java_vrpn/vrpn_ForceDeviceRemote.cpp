@@ -8,7 +8,7 @@
 
 
 jclass jclass_vrpn_ForceDeviceRemote = NULL;
-jfieldID jfid_vrpn_ForceDeviceRemote_native_device = NULL;
+extern jfieldID jfid_vrpn_VRPNDevice_native_device;
 
 
 //////////////////////////
@@ -57,19 +57,6 @@ JNIEXPORT jint JNICALL JNI_OnLoad_ForceDevice_Remote( JavaVM* jvm, void* reserve
     return JNI_ERR;
   }
 
-  ////////////////
-  // get a jfid field id reference to the "native_device" 
-  // field of class vrpn.ForceDeviceRemote.
-  // field ids do not have to be made into global references.
-  jfid_vrpn_ForceDeviceRemote_native_device 
-    = env->GetFieldID( jclass_vrpn_ForceDeviceRemote, "native_device", "I" );
-  if( jfid_vrpn_ForceDeviceRemote_native_device == NULL )
-  {
-    printf( "Error loading vrpn ForceDeviceRemote native library "
-            "while looking into class vrpn.ForceDeviceRemote.\n" );
-    return JNI_ERR;
-  }
-  
   return JAVA_VRPN_JNI_VERSION;
 } // end JNI_OnLoad
 
@@ -207,16 +194,6 @@ Java_vrpn_ForceDeviceRemote_init( JNIEnv* env, jobject jobj, jstring jname,
 								  jstring jlocalInLogfileName, jstring jlocalOutLogfileName,
 								  jstring jremoteInLogfileName, jstring jremoteOutLogfileName )
 {
-
-  // look up where to store the force device pointer
-  jclass jcls = env->GetObjectClass( jobj );
-  jfieldID jfid = env->GetFieldID( jcls, "native_device", "I" );
-  if( jfid == NULL )
-  {
-    printf( "Error in native method \"init\":  unable to ID native force device field.\n" );
-    return false;
-  }
-
   // make a global reference to the Java ForceDeviceRemote
   // object, so that it can be referenced in the functions
   // handle_*_change(...)
@@ -247,7 +224,7 @@ Java_vrpn_ForceDeviceRemote_init( JNIEnv* env, jobject jobj, jstring jname,
   
   // now stash 'f' in the jobj's 'native_device' field
   jint jf = (jint) f;
-  env->SetIntField( jobj, jfid, jf );
+  env->SetIntField( jobj, jfid_vrpn_VRPNDevice_native_device, jf );
   
   return true;
 }
@@ -261,15 +238,7 @@ Java_vrpn_ForceDeviceRemote_init( JNIEnv* env, jobject jobj, jstring jname,
 JNIEXPORT void JNICALL 
 Java_vrpn_ForceDeviceRemote_mainloop( JNIEnv* env, jobject jobj )
 {
-  // look up the force device pointer
-  jclass jcls = env->GetObjectClass( jobj );
-  jfieldID jfid = env->GetFieldID( jcls, "native_device", "I" );
-  if( jfid == NULL )
-  {
-    printf( "Error in native method \"mainloop\":  unable to ID native force device field.\n" );
-    return;
-  }
-  vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid );
+  vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
   if( f <= 0 )  // this force device is uninitialized or has been shut down already
     return;
 
@@ -286,17 +255,8 @@ Java_vrpn_ForceDeviceRemote_mainloop( JNIEnv* env, jobject jobj )
 JNIEXPORT void JNICALL 
 Java_vrpn_ForceDeviceRemote_shutdownForceDevice( JNIEnv* env, jobject jobj )
 {
-  // look up where to store the force device pointer
-  jclass jcls = env->GetObjectClass( jobj );
-  jfieldID jfid = env->GetFieldID( jcls, "native_device", "I" );
-  if( jfid == NULL )
-  {
-    printf( "Error in native method \"shutdownForceDevice\":  unable to ID native force device field.\n" );
-    return;
-  }
-
   // get the force deivce pointer
-  vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid );
+  vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
   
   // unregister a handler and destroy the force device
   if( f > 0 )
@@ -309,11 +269,10 @@ Java_vrpn_ForceDeviceRemote_shutdownForceDevice( JNIEnv* env, jobject jobj )
   }
 
   // set the force device pointer to -1
-  env->SetIntField( jobj, jfid, -1 );
+  env->SetIntField( jobj, jfid_vrpn_VRPNDevice_native_device, -1 );
 
   // delete global reference to object (that was created in init)
   env->DeleteGlobalRef( jobj );
-
 }
 
 
@@ -332,18 +291,12 @@ Java_vrpn_ForceDeviceRemote_shutdownForceDevice( JNIEnv* env, jobject jobj )
 JNIEXPORT jboolean JNICALL 
 Java_vrpn_ForceDeviceRemote_sendForceField_1native__( JNIEnv* env, jobject jobj )
 {
-  // look up the force device pointer
-  jclass jcls = env->GetObjectClass( jobj );
-  jfieldID jfid = env->GetFieldID( jcls, "native_device", "I" );
-  if( jfid == NULL )
-    return false;
-  vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid );
+  vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
   if( f <= 0 )
     return false;
   
   f->sendForceField( );
   return true;
-
 }
 
 
@@ -355,18 +308,12 @@ Java_vrpn_ForceDeviceRemote_sendForceField_1native__( JNIEnv* env, jobject jobj 
 JNIEXPORT jboolean JNICALL 
 Java_vrpn_ForceDeviceRemote_stopForceField_1native( JNIEnv* env, jobject jobj )
 {
-  // look up the force device pointer
-  jclass jcls = env->GetObjectClass( jobj );
-  jfieldID jfid = env->GetFieldID( jcls, "native_device", "I" );
-  if( jfid == NULL )
-    return false;
-  vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid );
+  vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
   if( f <= 0 )
     return false;
   
   f->stopForceField( );
   return true;
-
 }
 
 
@@ -382,12 +329,7 @@ Java_vrpn_ForceDeviceRemote_sendForceField_1native___3F_3F_3_3FF( JNIEnv* env, j
                                                          jobjectArray jjacobian, 
                                                          jfloat jradius )
 {
-  // look up the force device pointer
-  jclass jcls = env->GetObjectClass( jobj );
-  jfieldID jfid = env->GetFieldID( jcls, "native_device", "I" );
-  if( jfid == NULL )
-    return false;
-  vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid );
+  vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
   if( f <= 0 )
     return false;
 
@@ -460,9 +402,7 @@ Java_vrpn_ForceDeviceRemote_sendForceField_1native___3F_3F_3_3FF( JNIEnv* env, j
 JNIEXPORT jboolean JNICALL Java_vrpn_ForceDeviceRemote_enableConstraint_1native
   (JNIEnv *env, jobject jobj, jint on_int)
 {
-	if( jfid_vrpn_ForceDeviceRemote_native_device == NULL )
-		return false;
-	vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid_vrpn_ForceDeviceRemote_native_device );
+	vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
 	if( f <= 0 )
 		return false;
 
@@ -480,9 +420,7 @@ JNIEXPORT jboolean JNICALL Java_vrpn_ForceDeviceRemote_enableConstraint_1native
 JNIEXPORT jboolean JNICALL Java_vrpn_ForceDeviceRemote_setConstraintMode_1native
   (JNIEnv *env, jobject jobj, jint mode)
 {
-  if( jfid_vrpn_ForceDeviceRemote_native_device == NULL )
-		return false;
-	vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid_vrpn_ForceDeviceRemote_native_device );
+	vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
 	if( f <= 0 )
 		return false;
 
@@ -500,9 +438,7 @@ JNIEXPORT jboolean JNICALL Java_vrpn_ForceDeviceRemote_setConstraintMode_1native
 JNIEXPORT jboolean JNICALL Java_vrpn_ForceDeviceRemote_setConstraintPoint_1native
   (JNIEnv* env, jobject jobj, jfloatArray jpoint)
 {
-  if( jfid_vrpn_ForceDeviceRemote_native_device == NULL )
-    return false;
-  vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid_vrpn_ForceDeviceRemote_native_device );
+  vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
   if( f <= 0 )
     return false;
 
@@ -512,7 +448,6 @@ JNIEXPORT jboolean JNICALL Java_vrpn_ForceDeviceRemote_setConstraintPoint_1nativ
   if( env->GetArrayLength( jpoint ) != 3 )
     return false;
   env->GetFloatArrayRegion( jpoint, 0, 3, point );
-
   
   // now call the function
   f->setConstraintPoint( point );
@@ -528,9 +463,7 @@ JNIEXPORT jboolean JNICALL Java_vrpn_ForceDeviceRemote_setConstraintPoint_1nativ
 JNIEXPORT jboolean JNICALL 
 Java_vrpn_ForceDeviceRemote_setConstraintLinePoint_1native( JNIEnv* env, jobject jobj, jfloatArray jpoint )
 {
-	if( jfid_vrpn_ForceDeviceRemote_native_device == NULL )
-		return false;
-	vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid_vrpn_ForceDeviceRemote_native_device );
+	vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
 	if( f <= 0 )
 		return false;
 
@@ -540,7 +473,6 @@ Java_vrpn_ForceDeviceRemote_setConstraintLinePoint_1native( JNIEnv* env, jobject
 	if( env->GetArrayLength( jpoint ) != 3 )
 		return false;
 	env->GetFloatArrayRegion( jpoint, 0, 3, point );
-
   
 	// now call the function
 	f->setConstraintLinePoint( point );
@@ -556,9 +488,7 @@ Java_vrpn_ForceDeviceRemote_setConstraintLinePoint_1native( JNIEnv* env, jobject
 JNIEXPORT jboolean JNICALL Java_vrpn_ForceDeviceRemote_setConstraintLineDirection_1native
   (JNIEnv* env, jobject jobj, jfloatArray jpoint)
 {
-	if( jfid_vrpn_ForceDeviceRemote_native_device == NULL )
-		return false;
-	vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid_vrpn_ForceDeviceRemote_native_device );
+	vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
 	if( f <= 0 )
 		return false;
 
@@ -568,7 +498,6 @@ JNIEXPORT jboolean JNICALL Java_vrpn_ForceDeviceRemote_setConstraintLineDirectio
 	if( env->GetArrayLength( jpoint ) != 3 )
 		return false;
 	env->GetFloatArrayRegion( jpoint, 0, 3, point );
-
   
 	// now call the function
 	f->setConstraintLineDirection( point );
@@ -584,9 +513,7 @@ JNIEXPORT jboolean JNICALL Java_vrpn_ForceDeviceRemote_setConstraintLineDirectio
 JNIEXPORT jboolean JNICALL Java_vrpn_ForceDeviceRemote_setConstraintPlaneNormal_1native
   (JNIEnv* env, jobject jobj, jfloatArray jpoint)
 {
-	if( jfid_vrpn_ForceDeviceRemote_native_device == NULL )
-		return false;
-	vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid_vrpn_ForceDeviceRemote_native_device );
+	vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
 	if( f <= 0 )
 		return false;
 
@@ -596,7 +523,6 @@ JNIEXPORT jboolean JNICALL Java_vrpn_ForceDeviceRemote_setConstraintPlaneNormal_
 	if( env->GetArrayLength( jpoint ) != 3 )
 		return false;
 	env->GetFloatArrayRegion( jpoint, 0, 3, point );
-
   
 	// now call the function
 	f->setConstraintPlaneNormal( point );
@@ -612,9 +538,7 @@ JNIEXPORT jboolean JNICALL Java_vrpn_ForceDeviceRemote_setConstraintPlaneNormal_
 JNIEXPORT jboolean JNICALL Java_vrpn_ForceDeviceRemote_setConstraintPlanePoint_1native
   (JNIEnv* env, jobject jobj, jfloatArray jpoint)
 {
-	if( jfid_vrpn_ForceDeviceRemote_native_device == NULL )
-		return false;
-	vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid_vrpn_ForceDeviceRemote_native_device );
+	vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
 	if( f <= 0 )
 		return false;
 
@@ -624,7 +548,6 @@ JNIEXPORT jboolean JNICALL Java_vrpn_ForceDeviceRemote_setConstraintPlanePoint_1
 	if( env->GetArrayLength( jpoint ) != 3 )
 		return false;
 	env->GetFloatArrayRegion( jpoint, 0, 3, point );
-
   
 	// now call the function
 	f->setConstraintPlanePoint( point );
@@ -640,9 +563,7 @@ JNIEXPORT jboolean JNICALL Java_vrpn_ForceDeviceRemote_setConstraintPlanePoint_1
 JNIEXPORT jboolean JNICALL Java_vrpn_ForceDeviceRemote_setConstraintKSpring_1native
   (JNIEnv* env, jobject jobj, jfloat springConst)
 {
-	if( jfid_vrpn_ForceDeviceRemote_native_device == NULL )
-		return false;
-	vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid_vrpn_ForceDeviceRemote_native_device );
+	vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
 	if( f <= 0 )
 		return false;
 

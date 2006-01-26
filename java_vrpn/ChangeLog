@@ -1,3 +1,21 @@
+2006-01-26  David Marshburn  <marshbur@cs.unc.edu>
+
+	* java_vrpn.dsp:  adds new files to project
+	* java_vrpn.vjp:  adds new files to project
+	* java_vrpn.h, .cpp:  ups the version to 1.0.  also, defines/calls
+	OnLoad/OnUnLoad functions for VRPNDevice.
+	* vrpn_*Remote.java:  these now all use the java field ID for the 
+	'native_device' field, as cached by VRPNDevice, instead of looking
+	this up every function call.
+	* VRPNDevice.java:  those function only valid during replay now
+	throw a NotReplayException if called when not replay.
+	(getEarliestTime):  caches the earliest time, so only needs to call
+	the native method once.
+	(getLatestTime):  same as getEarliestTime.
+	(playToElapsedTime):  now takes a long integer.
+	(getElapsedTime):  new function (and it's native wrapping).
+	* vrpn_VRPNDevice.cpp:  new.
+
 2006-01-25  David Marshburn  <marshbur@cs.unc.edu>
 
 	There are two things in this commit.  First, a (transparent) 

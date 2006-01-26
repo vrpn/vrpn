@@ -6,7 +6,7 @@
 #include "vrpn_TrackerRemote.h"
 
 jclass jclass_vrpn_TrackerRemote = NULL;
-jfieldID jfid_vrpn_TrackerRemote_native_device = NULL;
+extern jfieldID jfid_vrpn_VRPNDevice_native_device;
 
 
 //////////////////////////
@@ -55,19 +55,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad_Tracker_Remote( JavaVM* jvm, void* reserved )
     return JNI_ERR;
   }
 
-  ////////////////
-  // get a jfid field id reference to the "native_device" 
-  // field of class vrpn.TrackerRemote.
-  // field ids do not have to be made into global references.
-  jfid_vrpn_TrackerRemote_native_device 
-    = env->GetFieldID( jclass_vrpn_TrackerRemote, "native_device", "I" );
-  if( jfid_vrpn_TrackerRemote_native_device == NULL )
-  {
-    printf( "Error loading vrpn TrackerRemote native library "
-            "while looking into class vrpn.TrackerRemote.\n" );
-    return JNI_ERR;
-  }
-  
+ 
   return JAVA_VRPN_JNI_VERSION;
 } // end JNI_OnLoad
 
@@ -202,12 +190,7 @@ void VRPN_CALLBACK handle_acceleration_change( void* userdata, const vrpn_TRACKE
 JNIEXPORT jint JNICALL 
 Java_vrpn_TrackerRemote_setUpdateRate( JNIEnv* env, jobject jobj, jdouble updateRate )
 {
-  // look up the tracker pointer
-  jclass jcls = env->GetObjectClass( jobj );
-  jfieldID jfid = env->GetFieldID( jcls, "native_device", "I" );
-  if( jfid == NULL )
-    return -1;
-  vrpn_Tracker_Remote* t = (vrpn_Tracker_Remote*) env->GetIntField( jobj, jfid );
+  vrpn_Tracker_Remote* t = (vrpn_Tracker_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
   if( t <= 0 )
     return -1;
   
@@ -220,15 +203,7 @@ Java_vrpn_TrackerRemote_setUpdateRate( JNIEnv* env, jobject jobj, jdouble update
 JNIEXPORT void JNICALL 
 Java_vrpn_TrackerRemote_mainloop( JNIEnv* env, jobject jobj )
 {
-  // look up the tracker pointer
-  jclass jcls = env->GetObjectClass( jobj );
-  jfieldID jfid = env->GetFieldID( jcls, "native_device", "I" );
-  if( jfid == NULL )
-  {
-    printf( "Error in native method \"mainloop\":  unable to ID native tracker field.\n" );
-    return;
-  }
-  vrpn_Tracker_Remote* t = (vrpn_Tracker_Remote*) env->GetIntField( jobj, jfid );
+  vrpn_Tracker_Remote* t = (vrpn_Tracker_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
   if( t <= 0 )  // this tracker is uninitialized or has been shut down already
     return;
 
@@ -242,16 +217,6 @@ Java_vrpn_TrackerRemote_init( JNIEnv* env, jobject jobj, jstring jname,
 							  jstring jlocalInLogfileName, jstring jlocalOutLogfileName,
 							  jstring jremoteInLogfileName, jstring jremoteOutLogfileName )
 {
-
-  // look up where to store the tracker pointer
-  jclass jcls = env->GetObjectClass( jobj );
-  jfieldID jfid = env->GetFieldID( jcls, "native_device", "I" );
-  if( jfid == NULL )
-  {
-    printf( "Error in native method \"init\":  unable to ID native tracker field.\n" );
-    return false;
-  }
-
   // make a global reference to the Java TrackerRemote
   // object, so that it can be referenced in the function
   // handle_tracker_change(...)
@@ -282,7 +247,7 @@ Java_vrpn_TrackerRemote_init( JNIEnv* env, jobject jobj, jstring jname,
   
   // now stash 't' in the jobj's 'native_device' field
   jint jt = (jint) t;
-  env->SetIntField( jobj, jfid, jt );
+  env->SetIntField( jobj, jfid_vrpn_VRPNDevice_native_device, jt );
   
   return true;
 }
@@ -294,18 +259,8 @@ Java_vrpn_TrackerRemote_init( JNIEnv* env, jobject jobj, jstring jname,
 JNIEXPORT void JNICALL 
 Java_vrpn_TrackerRemote_shutdownTracker( JNIEnv* env, jobject jobj )
 {
-
-  // look up where to store the tracker pointer
-  jclass jcls = env->GetObjectClass( jobj );
-  jfieldID jfid = env->GetFieldID( jcls, "native_device", "I" );
-  if( jfid == NULL )
-  {
-    printf( "Error in native method \"shutdownTracker\":  unable to ID native tracker field.\n" );
-    return;
-  }
-
   // get the tracker pointer
-  vrpn_Tracker_Remote* t = (vrpn_Tracker_Remote*) env->GetIntField( jobj, jfid );
+  vrpn_Tracker_Remote* t = (vrpn_Tracker_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
   
   // unregister a handler and destroy the tracker
   if( t > 0 )
@@ -318,7 +273,7 @@ Java_vrpn_TrackerRemote_shutdownTracker( JNIEnv* env, jobject jobj )
   }
 
   // set the tracker pointer to -1
-  env->SetIntField( jobj, jfid, -1 );
+  env->SetIntField( jobj, jfid_vrpn_VRPNDevice_native_device, -1 );
 
   // delete global reference to object (that was created in init)
   env->DeleteGlobalRef( jobj );

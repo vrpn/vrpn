@@ -117,6 +117,10 @@ SOURCE=.\vrpn_PoserRemote.cpp
 
 SOURCE=.\vrpn_TrackerRemote.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_VRPNDevice.cpp
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -148,6 +152,10 @@ SOURCE=.\vrpn_PoserRemote.h
 # Begin Source File
 
 SOURCE=.\vrpn_TrackerRemote.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_VRPNDevice.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"
