@@ -1,3 +1,11 @@
+2006-01-27  David Marshburn  <marshbur@cs.unc.edu>
+
+	* VRPNDevice.java:  changed the parameter types or return values
+	of a few functions to more closely match vrpn.  also, added
+	getReplayRate.
+	* vrpn_VRPNDevice.java:  implementation of all the native functions.
+	* PoserRemote.java:  corrected how time is passed for pose requests.
+
 2006-01-26  David Marshburn  <marshbur@cs.unc.edu>
 
 	* java_vrpn.dsp:  adds new files to project

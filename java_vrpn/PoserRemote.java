@@ -52,9 +52,9 @@ public class PoserRemote extends VRPNDevice implements Runnable
 	}	
 		public boolean requestPose( Date t,  double[] position,  double[] quaternion )
 	{
-		boolean retval = false;		if( position.length != 3 || quaternion.length != 4 )			return false;		
+		boolean retval = false;		if( position.length != 3 || quaternion.length != 4 )			return false;		long msecs = t.getTime( );		long secs = msecs / 1000;
 		synchronized( downInVrpnLock )
-		{			retval = requestPose_native( t.getTime(), t.getTime(), position, quaternion );		}		return retval;
+		{			retval = requestPose_native( secs, ( msecs - secs * 1000 ) * 1000, position, quaternion );		}		return retval;
 	}
 	
 	

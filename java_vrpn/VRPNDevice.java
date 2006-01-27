@@ -127,7 +127,7 @@ public abstract class VRPNDevice extends VRPN
 	 * @param rate The fractional rate of wall-clock time.  0.0 means 
 	 *		paused.  1.0 is the default and is normal speed.
 	 */
-	final public void setReplayRate( double rate ) throws NotReplayError
+	final public void setReplayRate( float rate ) throws NotReplayError
 	{
 		if( isLive() ) throw new NotReplayError( "a live device" );
 		synchronized( downInVrpnLock )
@@ -201,13 +201,28 @@ public abstract class VRPNDevice extends VRPN
 	/**
  	 * Valid only when in replay.
 	 */
-	final public int getLengthSecs( ) throws NotReplayError
+	final public double getLengthSecs( ) throws NotReplayError
 	{
 		if( isLive() ) throw new NotReplayError( "a live device" );
-		int retval = -1;
+		double retval = -1;
 		synchronized( downInVrpnLock )
 		{
 			retval = getLengthSecs_native( );
+		}
+		return retval;
+	}
+	
+	
+	/**
+ 	 * Valid only when in replay.
+	 */
+	final public float getReplayRate( ) throws NotReplayError
+	{
+		if( isLive() ) throw new NotReplayError( "a live device" );
+		float retval = -1;
+		synchronized( downInVrpnLock )
+		{
+			retval = getReplayRate_native( );
 		}
 		return retval;
 	}
@@ -304,12 +319,13 @@ public abstract class VRPNDevice extends VRPN
 	protected native boolean doingOkay_native( );
 	protected native boolean isConnected_native( );
 	protected native long getElapsedTimeSecs_native( );
-	protected native void setReplayRate_native( double rate );
+	protected native void setReplayRate_native( float rate );
+	protected native float getReplayRate_native( );
 	protected native boolean reset_native( );
 	protected native boolean eof_native( );
 	protected native boolean playToElapsedTime_native( long seconds );
 	protected native boolean playToWallTime_native( Date d );
-	protected native int getLengthSecs_native( );
+	protected native double getLengthSecs_native( );
 	protected native boolean getEarliestTime_native( Date d );
 	protected native boolean getLatestTime_native( Date d );
 
