@@ -94,8 +94,12 @@ public:
     void set_replay_rate(vrpn_float32 rate) {
         d_filetime_accum.set_replay_rate( rate );
     }
+
+	vrpn_float32 get_replay_rate( )
+	{  return d_filetime_accum.replay_rate( );  }
     
     // resets to the beginning of the file
+	// returns 0 on success
     int reset (void);      
 
     // returns 1 if we're at the end of file

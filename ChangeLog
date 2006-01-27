@@ -1,3 +1,8 @@
+2006-01-27  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_File_Connection.h (get_replay_rate):  new.  there
+	was no accessor for replay rate, only a way to set it.
+
 2005-12-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Connection.C : Added newline to end of error print.
