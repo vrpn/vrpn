@@ -30,20 +30,6 @@ public class ButtonRemote extends VRPNDevice implements Runnable
 		throws InstantiationException
 	{
 		super( name, localInLogfileName, localOutLogfileName, remoteInLogfileName, remoteOutLogfileName );
-		try 
-		{ 
-			synchronized( downInVrpnLock )
-			{
-				this.init( name, localInLogfileName, localOutLogfileName, 
-						   remoteInLogfileName, remoteOutLogfileName ); 
-			}
-		}
-		catch( java.lang.UnsatisfiedLinkError e )
-		{  
-			System.out.println( "Error initializing remote button " + name + "." );
-			System.out.println( " -- Unable to find the right functions.  This may be a version problem." );
-			throw new InstantiationException( e.getMessage( ) );
-		}
 	}
 	
 	public synchronized void addButtonChangeListener( ButtonChangeListener listener )

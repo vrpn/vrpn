@@ -26,21 +26,6 @@ public class AnalogOutputRemote extends VRPNDevice implements Runnable
 		throws InstantiationException
 	{
 		super( name, localInLogfileName, localOutLogfileName, remoteInLogfileName, remoteOutLogfileName );
-		try	
-		{  
-			synchronized( downInVrpnLock )
-			{
-				this.init( name, localInLogfileName, localOutLogfileName, 
-						   remoteInLogfileName, remoteOutLogfileName );  
-			}
-		}
-		catch( java.lang.UnsatisfiedLinkError e )
-		{  
-			System.out.println( "Error initializing remote analogOutput device " + name + "." );
-			System.out.println( " -- Unable to find the right functions.  This may be a version problem." );
-			throw new InstantiationException( e.getMessage( ) );
-		}
-		
 	}
 	
 	public boolean requestValueChange( int channel, double value )

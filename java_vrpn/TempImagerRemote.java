@@ -70,19 +70,6 @@ public class TempImagerRemote extends VRPNDevice implements Runnable
 	public TempImagerRemote( String name ) throws InstantiationException
 	{
 		super( name, null, null, null, null );
-		try	
-		{  
-			synchronized( downInVrpnLock )
-			{
-				this.init( name );  
-			}
-		}
-		catch( java.lang.UnsatisfiedLinkError e )
-		{  
-			System.out.println( "Error initializing remote tempImager " + name + "." );
-			System.out.println( " -- Unable to find the right functions.  This may be a version problem." );
-			throw new InstantiationException( e.getMessage( ) );
-		}
 	}
 	
 	public int getNumRows( )
@@ -230,7 +217,9 @@ public class TempImagerRemote extends VRPNDevice implements Runnable
 	 * @return <code>true</code> if the tempImager was connected successfully, 
 	 *			<code>false</code> otherwise.
 	 */
-	protected native boolean init( String name );
+	protected native boolean init( String name, String localInLogfileName, 
+								   String localOutLogfileName, String remoteInLogfileName,
+								   String remoteOutLogfileName );
 
 	/**
 	 * This should only be called from the method finalize()

@@ -78,20 +78,6 @@ public class TrackerRemote extends VRPNDevice implements Runnable
 		throws InstantiationException
 	{
 		super( name, localInLogfileName, localOutLogfileName, remoteInLogfileName, remoteOutLogfileName );
-		try	
-		{  
-			synchronized( downInVrpnLock )
-			{
-				this.init( name, localInLogfileName, localOutLogfileName, 
-						   remoteInLogfileName, remoteOutLogfileName );
-			}
-		}
-		catch( java.lang.UnsatisfiedLinkError e )
-		{  
-			System.out.println( "Error initializing remote tracker " + name + "." );
-			System.out.println( " -- Unable to find the right functions.  This may be a version problem." );
-			throw new InstantiationException( e.getMessage( ) );
-		}
 	}
 	
 	

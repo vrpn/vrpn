@@ -2,7 +2,7 @@ package vrpn;
 
 import java.util.Date;
 
-public abstract class VRPNDevice extends VRPN
+public abstract class VRPNDevice extends VRPN implements Runnable
 {
 	public class NotReplayError extends Exception
 	{
@@ -15,12 +15,30 @@ public abstract class VRPNDevice extends VRPN
 	// surely break if 'name' is null).
 	public VRPNDevice( String name, String localInLogfileName, String localOutLogfileName,
 				 String remoteInLogfileName, String remoteOutLogfileName )
+		throws InstantiationException
 	{
 		this.connectionName = name;
 		this.localInLogfileName = localInLogfileName;
 		this.localOutLogfileName = localOutLogfileName;
 		this.remoteInLogfileName = remoteInLogfileName;
 		this.remoteOutLogfileName = remoteOutLogfileName;		
+		try	
+		{  
+			synchronized( downInVrpnLock )
+			{
+				this.init( name, localInLogfileName, localOutLogfileName, 
+						   remoteInLogfileName, remoteOutLogfileName );
+			}
+		}
+		catch( java.lang.UnsatisfiedLinkError e )
+		{  
+			System.out.println( "Error initializing remote device " + name + "." );
+			System.out.println( " -- Unable to find the right functions.  This may be a version problem." );
+			throw new InstantiationException( e.getMessage( ) );
+		}
+		
+		this.deviceThread = new Thread( this, "vrpn " + this.getClass().getName() );
+		this.deviceThread.start( );
 	}
 	
 	
@@ -334,6 +352,15 @@ public abstract class VRPNDevice extends VRPN
 	 */
 	protected abstract void mainloop( );
 	
+	
+	/**
+	 * This is called from the VRPNDevice constructor.
+	 * It should return <code>true</code> only if the concrete
+	 * native device was connected an initializaed successfully.
+	 */
+	protected abstract boolean init( String name, String localInLogfileName, 
+								   String localOutLogfileName, String remoteInLogfileName,
+								   String remoteOutLogfileName );
 	
 	/**
 	 * This will be called when the specific vrpn device

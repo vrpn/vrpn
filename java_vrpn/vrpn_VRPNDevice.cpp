@@ -254,7 +254,7 @@ Java_vrpn_VRPNDevice_getEarliestTime_1native( JNIEnv* env, jobject jobj, jobject
 		return false;
 	}
 	timeval t = fc->get_lowest_user_timestamp( );
-	jclass jcls = env->GetObjectClass( jobj );
+	jclass jcls = env->GetObjectClass( jdate );
 	jmethodID jmid = env->GetMethodID( jcls, "setTime", "(J)V" );
 	if( jmid == NULL )
 	{
@@ -298,7 +298,7 @@ Java_vrpn_VRPNDevice_getLatestTime_1native( JNIEnv* env, jobject jobj, jobject j
 		return false;
 	}
 	timeval t = fc->get_highest_user_timestamp( );
-	jclass jcls = env->GetObjectClass( jobj );
+	jclass jcls = env->GetObjectClass( jdate );
 	jmethodID jmid = env->GetMethodID( jcls, "setTime", "(J)V" );
 	if( jmid == NULL )
 	{
@@ -514,7 +514,7 @@ Java_vrpn_VRPNDevice_playToWallTime_1native( JNIEnv* env, jobject jobj, jobject 
 	}
 	timeval t;
 	long int msecs;
-	jclass jcls = env->GetObjectClass( jobj );
+	jclass jcls = env->GetObjectClass( jdate );
 	jmethodID jmid = env->GetMethodID( jcls, "setTime", "()J" );
 	if( jmid == NULL )
 	{
