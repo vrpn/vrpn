@@ -1,3 +1,8 @@
+2006-01-30    <marshbur@cs.unc.edu>
+
+	* all:  catching up the test applications with the recent (and, in 
+	some cases, not-so-recent) changes in java_vrpn.
+
 2005-07-28  David Marshburn  <marshbur@cs.unc.edu>
 
 	* PoserTest.java:  new, a test program for java_vrpn poser.

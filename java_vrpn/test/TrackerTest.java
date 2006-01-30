@@ -43,23 +43,26 @@ public class TrackerTest
 
 	public static void main( String[] args )
 	{
-		String trackerName = "Phantom@tungsten-cs";
+		String trackerName = "RandTracker@localhost:5000";
 		TrackerRemote tracker = null;
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		try
 		{
-			tracker = new TrackerRemote( trackerName, "localIn", "localOut", "remoteIn", "remoteOut" );
+			tracker = new TrackerRemote( trackerName, null, null, null, null );
 		}
 		catch( InstantiationException e )
 		{
 			// do something b/c you couldn't create the tracker
 			System.out.println( "We couldn't connect to tracker " + trackerName + "." );
 			System.out.println( e.getMessage( ) );
-		DataInputStream in = new DataInputStream(System.in);
-		try
-		{
-			String s = in.readLine();
-		}
-		catch( IOException ioe ) {}
+			try
+			{
+				System.out.flush();
+				System.err.flush();
+				System.out.println( "hit enter to end" );
+				String s = in.readLine();
+			}
+			catch( IOException ioe ) {}
 			return;
 		}
 		
@@ -68,9 +71,20 @@ public class TrackerTest
 		tracker.addVelocityChangeListener( test );
 		tracker.addAccelerationChangeListener( test );
 		
-		tracker.setUpdateRate( 2 );
+		//tracker.setUpdateRate( 2 );
 		
-
+		while( true );
+		/*
+		try
+		{
+			System.out.flush();
+			System.err.flush();
+			System.out.println( "hit enter to end" );
+			String s = in.readLine();
+		}
+		catch( IOException ioe ) {}
+		return;
+		*/
 	}
 	
 	

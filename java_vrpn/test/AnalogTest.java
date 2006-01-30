@@ -20,9 +20,11 @@ public class AnalogTest
 	{
 		String analogName = "tetra_force_server@palladium-cs:4700";
 		AnalogRemote analog = null;
+		AnalogOutputRemote ao = null;
 		try
 		{
-			analog = new AnalogRemote( analogName );
+			analog = new AnalogRemote( analogName, null, null, null, null );
+			ao = new AnalogOutputRemote( analogName, null, null, null, null );
 		}
 		catch( InstantiationException e )
 		{
@@ -35,7 +37,7 @@ public class AnalogTest
 		AnalogTest test = new AnalogTest( );
 		analog.addAnalogChangeListener( test );
 		
-		analog.requestValueChange( 2, 5 );
+		ao.requestValueChange( 2, 5 );
 		
 	}
 }

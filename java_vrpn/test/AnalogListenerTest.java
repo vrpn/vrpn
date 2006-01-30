@@ -8,11 +8,12 @@ public class AnalogListenerTest
 	{
 		String analogName = "tetra_force_server@gold-cs:4700";
 		vrpn.AnalogRemote analog = null;
-		AnalogRandomValueGenerator thread = new AnalogRandomValueGenerator(analog);
+		vrpn.AnalogOutputRemote ao = null;
 		
 		try
 		{
-			analog = new vrpn.AnalogRemote(analogName);
+			analog = new vrpn.AnalogRemote( analogName, null, null, null, null );
+			ao = new vrpn.AnalogOutputRemote( analogName, null, null, null, null );
 		}
 		
 		catch( InstantiationException e )
@@ -21,10 +22,11 @@ public class AnalogListenerTest
 			System.out.println(e.getMessage());
 			return;
 		}
+		AnalogRandomValueGenerator thread = new AnalogRandomValueGenerator( ao );
 		
-		AnalogRemoteListener analogListener = new AnalogRemoteListener(analog);
+		AnalogRemoteListener analogListener = new AnalogRemoteListener( analog );
 		
-		DataInputStream in = new DataInputStream(System.in);
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		
 		while(true)
 		{
@@ -110,14 +112,14 @@ public class AnalogListenerTest
 				
 				else
 				{
-					analog.requestValueChange(channel, value);
+					ao.requestValueChange(channel, value);
 					System.out.println("Request completed");
 				}
 			}
 			
 			if (s.equalsIgnoreCase("s"))
 			{
-				thread = new AnalogRandomValueGenerator(analog);
+				thread = new AnalogRandomValueGenerator( ao );
 				thread.start();
 				
 				System.out.println("Thread started");

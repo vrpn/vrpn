@@ -37,8 +37,8 @@ public class TempImagerTest
 		}
 		
 		TempImagerTest test = new TempImagerTest( );
-		imager.addDecriptionChangeListener( test );
-		imager.addDecriptionChangeListener( test );
+		imager.addDescriptionChangeListener( test );
+		imager.addRegionChangeListener( test );
 		
 		imager.setTimerPeriod( 10 );
 		

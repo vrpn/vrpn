@@ -2,13 +2,13 @@ import vrpn.*;
 
 public class AnalogRandomValueGenerator extends Thread
 {
-	vrpn.AnalogRemote analog;
+	AnalogOutputRemote ao = null;
 	boolean running = true;
 	
 	
-	public AnalogRandomValueGenerator(vrpn.AnalogRemote a)
+	public AnalogRandomValueGenerator( vrpn.AnalogOutputRemote a )
 	{
-		analog = a;
+		ao = a;
 	}
 	
 	
@@ -16,6 +16,11 @@ public class AnalogRandomValueGenerator extends Thread
 	{
 		while (running)
 		{
+			int channel = (int)(Math.random()*4);
+			double value = (double)(Math.random());
+			
+			ao.requestValueChange(channel, value);
+		}
 			try
 			{
 				Thread.sleep(10);
@@ -23,11 +28,6 @@ public class AnalogRandomValueGenerator extends Thread
 			
 			catch(Exception e){}
 			
-			int channel = (int)(Math.random()*4);
-			double value = (double)(Math.random());
-			
-			analog.requestValueChange(channel, value);
-		}
 	}
 	
 	

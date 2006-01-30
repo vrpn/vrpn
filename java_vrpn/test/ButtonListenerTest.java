@@ -23,7 +23,7 @@ public class ButtonListenerTest
 		
 		ButtonRemoteListener buttonListener = new ButtonRemoteListener(button);
 		
-		DataInputStream in = new DataInputStream(System.in);
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		
 		while(true)
 		{
