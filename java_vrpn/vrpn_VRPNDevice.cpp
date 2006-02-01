@@ -515,7 +515,7 @@ Java_vrpn_VRPNDevice_playToWallTime_1native( JNIEnv* env, jobject jobj, jobject 
 	timeval t;
 	long int msecs;
 	jclass jcls = env->GetObjectClass( jdate );
-	jmethodID jmid = env->GetMethodID( jcls, "setTime", "()J" );
+	jmethodID jmid = env->GetMethodID( jcls, "getTime", "()J" );
 	if( jmid == NULL )
 	{
 		printf( "Warning:  vrpn_VRPNDevice (playToWallTime) library was unable to find the "
