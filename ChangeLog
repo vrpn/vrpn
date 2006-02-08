@@ -1,3 +1,8 @@
+2006-02-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Making the C: drive the default in preparation
+		for release of version 7.00.
+
 2006-01-27  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_File_Connection.h (get_replay_rate):  new.  there

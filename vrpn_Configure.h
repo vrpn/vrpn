@@ -141,7 +141,7 @@
 // USED BELOW TO LOCATE LIBRARIES AND INCLUDE FILES.                //
 //------------------------------------------------------------------//
 
-#define VRPN_SYSTEMDRIVE "D:"
+#define VRPN_SYSTEMDRIVE "C:"
 
 #define VRPN_HDAPI_PATH         VRPN_SYSTEMDRIVE "/Program Files/SensAble/3DTouch/lib/"
 #define VRPN_HDAPI_UTIL_PATH    VRPN_SYSTEMDRIVE "/Program Files/SensAble/3DTouch/utilities/lib/"
