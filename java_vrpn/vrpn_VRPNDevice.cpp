@@ -262,7 +262,7 @@ Java_vrpn_VRPNDevice_getEarliestTime_1native( JNIEnv* env, jobject jobj, jobject
             "Java method \'Date::setTime\'.\n" );
 		return false;
 	}
-	env->CallVoidMethod( jdate, jmid, (jlong) ( t.tv_sec * 1000 + t.tv_usec / 1000 ) );
+	env->CallVoidMethod( jdate, jmid, ( (jlong) t.tv_sec ) * 1000 + ( (jlong) t.tv_usec ) / 1000 );
 	return true;
 }
 
@@ -306,7 +306,7 @@ Java_vrpn_VRPNDevice_getLatestTime_1native( JNIEnv* env, jobject jobj, jobject j
             "Java method \'Date::setTime\'.\n" );
 		return false;
 	}
-	env->CallVoidMethod( jdate, jmid, (jlong) ( t.tv_sec * 1000 + t.tv_usec / 1000 ) );
+	env->CallVoidMethod( jdate, jmid, ( (jlong) t.tv_sec ) * 1000 + ( (jlong) t.tv_usec ) / 1000 );
 	return true;
 }
 

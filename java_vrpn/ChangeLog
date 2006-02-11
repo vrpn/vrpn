@@ -1,3 +1,12 @@
+2006-02-10    <marshbur@cs.unc.edu>
+
+	* vrpn_VRPNDevice.cpp (Java_vrpn_VRPNDevice_getEarliestTime_1native):
+	this should prevent times from being truncated; one calculation was 
+	done at long precision (only 32 bits).
+	(Java_vrpn_VRPNDevice_getLatestTime_1native):  same
+	* java_vrpn.dsp:  path changes for a recent java installation
+	(v. 1.4.2_10, the last release before 1.5).
+
 2006-02-01  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_VRPNDevice.cpp (Java_vrpn_VRPNDevice_playToWallTime_1native):
