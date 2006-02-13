@@ -1,3 +1,13 @@
+2006-02-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Router.h : Removing the Sierra Router Server and its
+		associated files.  It was coded in a style that used
+		the serial messages directly, rather than defining its
+		own message types.  It is no longer being used at UNC,
+		and I don't know that it has ever been used elsewhere.
+		A user asked that it be removed.
+	* vrpn_Router.C : Same.
+
 2006-02-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Configure.h : Making the C: drive the default in preparation

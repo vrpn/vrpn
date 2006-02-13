@@ -147,42 +147,6 @@ Package=<4>
 
 ###############################################################################
 
-Project: "setrouter"=.\client_src\setrouter.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name make_vrpn_libs_build
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name vrpn
-    End Project Dependency
-}}}
-
-###############################################################################
-
-Project: "sierra_router_server"=.\server_src\sierra_router_server\sierra_router_server.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name make_vrpn_libs_build
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name vrpn
-    End Project Dependency
-}}}
-
-###############################################################################
-
 Project: "sphere_client"=.\client_src\sphere_client.dsp - Package Owner=<4>
 
 Package=<5>
@@ -418,24 +382,6 @@ Package=<4>
 {{{
     Begin Project Dependency
     Project_Dep_Name quatlib
-    End Project Dependency
-}}}
-
-###############################################################################
-
-Project: "vrpn_Router_Client_GUI"=.\client_src\vrpn_Router_Client_GUI.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name make_vrpn_libs_build
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name vrpn
     End Project Dependency
 }}}
 
