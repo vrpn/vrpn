@@ -171,9 +171,6 @@ test_imager:	$(OBJ_DIR)/test_imager
 .PHONY:	text
 text:	$(OBJ_DIR)/text
 
-.PHONY:	vrpn_Router_Client_GUI
-vrpn_Router_Client_GUI:	$(OBJ_DIR)/vrpn_Router_Client_GUI
-
 $(OBJ_DIR)/sound_client: $(OBJ_DIR)/sound_client.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/sound_client \
 		$(OBJ_DIR)/sound_client.o -lvrpn $(ARCH_LIBS)
@@ -189,14 +186,6 @@ $(OBJ_DIR)/printvals: $(OBJ_DIR)/printvals.o $(LIB_DIR)/libvrpn.a
 $(OBJ_DIR)/vrpn_print_devices: $(OBJ_DIR)/vrpn_print_devices.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/vrpn_print_devices \
 		$(OBJ_DIR)/vrpn_print_devices.o -lvrpn $(ARCH_LIBS)
-
-$(OBJ_DIR)/vrpn_Router_Client_GUI: $(OBJ_DIR)/vrpn_Router_Client_GUI.o $(LIB_DIR)/libvrpn.a
-	$(CC) $(LFLAGS) -o $(OBJ_DIR)/vrpn_Router_Client_GUI \
-		$(OBJ_DIR)/vrpn_Router_Client_GUI.o $(GLUTLIBS) -lvrpn $(ARCH_LIBS)
-
-$(OBJ_DIR)/setrouter: $(OBJ_DIR)/setrouter.o $(LIB_DIR)/libvrpn.a
-	$(CC) $(LFLAGS) -o $(OBJ_DIR)/setrouter \
-		$(OBJ_DIR)/setrouter.o -lvrpn $(ARCH_LIBS)
 
 $(OBJ_DIR)/printcereal: $(OBJ_DIR)/printcereal.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/printcereal \
