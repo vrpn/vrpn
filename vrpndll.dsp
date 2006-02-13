@@ -244,10 +244,6 @@ SOURCE=.\vrpn_RedundantTransmission.C
 # End Source File
 # Begin Source File
 
-SOURCE=.\vrpn_Router.C
-# End Source File
-# Begin Source File
-
 SOURCE=.\vrpn_Serial.C
 # End Source File
 # Begin Source File
@@ -485,10 +481,6 @@ SOURCE=.\vrpn_raw_sgibox.h
 # Begin Source File
 
 SOURCE=.\vrpn_RedundantTransmission.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\vrpn_Router.h
 # End Source File
 # Begin Source File
 

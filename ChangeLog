@@ -1,5 +1,10 @@
 2006-02-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn.dsp : Removing vrpn_Router.[hC]
+	* vrpndll.dsp : Same.
+
+2006-02-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Router.h : Removing the Sierra Router Server and its
 		associated files.  It was coded in a style that used
 		the serial messages directly, rather than defining its
