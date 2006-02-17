@@ -1,3 +1,11 @@
+2006-02-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* testimager_client.C : Switched to the more standard
+		GL/glut.h for the include.
+	* testimager_client.dsp : Modified so that it looks in
+		the NSRG buildime rather than a nearby local
+		directory.
+
 2005-10-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* forcedevice_test_client.cpp : Modified to also include the
