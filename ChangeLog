@@ -1,3 +1,9 @@
+2006-02-22  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Imager.h:  added is_description_valid() to vrpn_Imager_Remote.
+	this function says whether the imager has received a description
+	message yet.
+
 2006-02-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.dsp : Removing vrpn_Router.[hC]

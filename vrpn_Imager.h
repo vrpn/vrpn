@@ -531,6 +531,9 @@ public:
   /// Accessors for the member variables: can be queried in the handler for object changes
   const vrpn_Imager_Channel *channel(unsigned chanNum) const;
 
+  /// have we gotten a description message yet?
+  bool is_description_valid() {  return d_got_description;  }
+
 protected:
   bool	  d_got_description;	//< Have we gotten a description yet?
   // Lists to keep track of registered user handlers.
