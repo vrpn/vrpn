@@ -1,3 +1,12 @@
+2006-02-23  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FileConnection.C:  the bookmarking mechanism used when searching
+	through vrpn logs for start/end times did not correctly handle the
+	end-of-file case (NULL d_currentLogEntry) in the case of !preload and 
+	!accumulate.  store_stream_bookmark and return_to_bookmark now
+	correctly handle going to/from the end of file (without preload and
+	accumulate).
+
 2006-02-22  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_Imager.h:  added is_description_valid() to vrpn_Imager_Remote.

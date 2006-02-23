@@ -834,14 +834,7 @@ vrpn_File_Connection::vrpn_FileBookmark::vrpn_FileBookmark( )
 	oldTime.tv_sec = 0;
 	oldTime.tv_usec = 0;
 	oldCurrentLogEntryPtr = NULL;
-	oldCurrentLogEntryCopy = new vrpn_LOGLIST( );
-	if( oldCurrentLogEntryCopy == NULL )
-	{
-		fprintf( stderr, "Out of memory error:  vrpn_File_Connection::vrpn_FileBookmark\n" );
-		return;
-	}
-	oldCurrentLogEntryCopy->next = oldCurrentLogEntryCopy->prev = NULL;
-	oldCurrentLogEntryCopy->data.buffer = NULL;
+	oldCurrentLogEntryCopy = NULL;
 }
 
 
@@ -871,31 +864,49 @@ bool vrpn_File_Connection::store_stream_bookmark( )
 	}
 	else // !preload and !accumulate
 	{
-		if( d_bookmark.oldCurrentLogEntryCopy == NULL )
-		{
-#ifdef VERBOSE
-			printf( "vrpn_File_Connection::store_stream_bookmark:  NULL oldCurrentLogEntryCopy\n" )
-#endif
-			return false;
-		}
 		d_bookmark.oldTime = d_time;
 		d_bookmark.file_pos = ftell( d_file );
-		d_bookmark.oldCurrentLogEntryCopy->next = d_currentLogEntry->next;
-		d_bookmark.oldCurrentLogEntryCopy->prev = d_currentLogEntry->prev;
-		d_bookmark.oldCurrentLogEntryCopy->data.type = d_currentLogEntry->data.type;
-		d_bookmark.oldCurrentLogEntryCopy->data.sender = d_currentLogEntry->data.sender;
-		d_bookmark.oldCurrentLogEntryCopy->data.msg_time = d_currentLogEntry->data.msg_time;
-		d_bookmark.oldCurrentLogEntryCopy->data.payload_len = d_currentLogEntry->data.payload_len;
-		if( d_bookmark.oldCurrentLogEntryCopy->data.buffer != NULL ) 
-		{  delete [] (char*) d_bookmark.oldCurrentLogEntryCopy->data.buffer;  }
-		d_bookmark.oldCurrentLogEntryCopy->data.buffer = new char[d_currentLogEntry->data.payload_len];
-		if( d_bookmark.oldCurrentLogEntryCopy->data.buffer == NULL )
-		{  
-			d_bookmark.valid = false;
-			return false;  
+		if( d_currentLogEntry == NULL ) // at the end of the file
+		{
+		  if( d_bookmark.oldCurrentLogEntryCopy != NULL )
+		  {
+		    if( d_bookmark.oldCurrentLogEntryCopy->data.buffer != NULL )
+		      delete [] (char*) (d_bookmark.oldCurrentLogEntryCopy->data.buffer);
+		    delete d_bookmark.oldCurrentLogEntryCopy;
+		  }
+		  d_bookmark.oldCurrentLogEntryCopy = NULL;
 		}
-		memcpy( (char*) d_bookmark.oldCurrentLogEntryCopy->data.buffer, 
-				 d_currentLogEntry->data.buffer, d_currentLogEntry->data.payload_len );
+		else
+		{
+		  if( d_bookmark.oldCurrentLogEntryCopy == NULL )
+		  {
+		    d_bookmark.oldCurrentLogEntryCopy = new vrpn_LOGLIST();
+		    if( d_bookmark.oldCurrentLogEntryCopy == NULL )
+		    {
+		      fprintf( stderr, "Out of memory error:  vrpn_File_Connection::store_stream_bookmark\n" );
+		      d_bookmark.valid = false;
+		      return false;
+		    }
+		    d_bookmark.oldCurrentLogEntryCopy->next = d_bookmark.oldCurrentLogEntryCopy->prev = NULL;
+		    d_bookmark.oldCurrentLogEntryCopy->data.buffer = NULL;
+		  }
+		  d_bookmark.oldCurrentLogEntryCopy->next = d_currentLogEntry->next;
+		  d_bookmark.oldCurrentLogEntryCopy->prev = d_currentLogEntry->prev;
+		  d_bookmark.oldCurrentLogEntryCopy->data.type = d_currentLogEntry->data.type;
+		  d_bookmark.oldCurrentLogEntryCopy->data.sender = d_currentLogEntry->data.sender;
+		  d_bookmark.oldCurrentLogEntryCopy->data.msg_time = d_currentLogEntry->data.msg_time;
+		  d_bookmark.oldCurrentLogEntryCopy->data.payload_len = d_currentLogEntry->data.payload_len;
+		  if( d_bookmark.oldCurrentLogEntryCopy->data.buffer != NULL ) 
+		  {  delete [] (char*) d_bookmark.oldCurrentLogEntryCopy->data.buffer;  }
+		  d_bookmark.oldCurrentLogEntryCopy->data.buffer = new char[d_currentLogEntry->data.payload_len];
+		  if( d_bookmark.oldCurrentLogEntryCopy->data.buffer == NULL )
+		  {  
+		    d_bookmark.valid = false;
+		    return false;  
+		  }
+		  memcpy( (char*) d_bookmark.oldCurrentLogEntryCopy->data.buffer, 
+			  d_currentLogEntry->data.buffer, d_currentLogEntry->data.payload_len );
+		}
 	}
 	d_bookmark.valid = true;
 	return true;
@@ -921,29 +932,38 @@ bool vrpn_File_Connection::return_to_bookmark( )
 	{
 		if( d_bookmark.oldCurrentLogEntryCopy == NULL )
 		{
-#ifdef VERBOSE
-			printf( "vrpn_File_Connection::return_to_bookmark:  NULL oldCurrentLogEntryCopy\n" )
-#endif
-			return false;
+		  // we were at the end of the file.
+		  d_currentLogEntry = d_logHead = d_logTail = NULL;
+		  d_time = d_bookmark.oldTime;
+		  retval |= fseek( d_file, d_bookmark.file_pos, SEEK_SET );
 		}
-		char* newBuffer = new char[d_bookmark.oldCurrentLogEntryCopy->data.payload_len];
-		if( newBuffer == NULL )
-		{ // make sure we can allocate the memory before we do anything else
-			return false;
+		else
+		{
+		  char* newBuffer = new char[d_bookmark.oldCurrentLogEntryCopy->data.payload_len];
+		  if( newBuffer == NULL )
+		  { // make sure we can allocate the memory before we do anything else
+		    return false;
+		  }
+		  d_time = d_bookmark.oldTime;
+		  retval |= fseek( d_file, d_bookmark.file_pos, SEEK_SET );
+		  if( d_currentLogEntry == NULL )  // we are at the end of the file
+		  {
+		    d_currentLogEntry = new vrpn_LOGLIST();
+		    d_currentLogEntry->data.buffer = 0;
+		  }
+		  d_currentLogEntry->next = d_bookmark.oldCurrentLogEntryCopy->next;
+		  d_currentLogEntry->prev = d_bookmark.oldCurrentLogEntryCopy->prev;
+		  d_currentLogEntry->data.type = d_bookmark.oldCurrentLogEntryCopy->data.type;
+		  d_currentLogEntry->data.sender = d_bookmark.oldCurrentLogEntryCopy->data.sender;
+		  d_currentLogEntry->data.msg_time = d_bookmark.oldCurrentLogEntryCopy->data.msg_time;
+		  d_currentLogEntry->data.payload_len = d_bookmark.oldCurrentLogEntryCopy->data.payload_len;
+		  char* temp = (char*) d_currentLogEntry->data.buffer;
+		  d_currentLogEntry->data.buffer = newBuffer;
+		  memcpy( (char*) d_currentLogEntry->data.buffer, 
+		    d_bookmark.oldCurrentLogEntryCopy->data.buffer, d_currentLogEntry->data.payload_len );
+		  if( temp ) delete [] temp;
+		  d_logHead = d_logTail = d_currentLogEntry;
 		}
-		d_time = d_bookmark.oldTime;
-		retval |= fseek( d_file, d_bookmark.file_pos, SEEK_SET );
-		d_currentLogEntry->next = d_bookmark.oldCurrentLogEntryCopy->next;
-		d_currentLogEntry->prev = d_bookmark.oldCurrentLogEntryCopy->prev;
-		d_currentLogEntry->data.type = d_bookmark.oldCurrentLogEntryCopy->data.type;
-		d_currentLogEntry->data.sender = d_bookmark.oldCurrentLogEntryCopy->data.sender;
-		d_currentLogEntry->data.msg_time = d_bookmark.oldCurrentLogEntryCopy->data.msg_time;
-		d_currentLogEntry->data.payload_len = d_bookmark.oldCurrentLogEntryCopy->data.payload_len;
-		char* temp = (char*) d_currentLogEntry->data.buffer;
-		d_currentLogEntry->data.buffer = newBuffer;
-		memcpy( (char*) d_currentLogEntry->data.buffer, 
-				d_bookmark.oldCurrentLogEntryCopy->data.buffer, d_currentLogEntry->data.payload_len );
-		delete [] temp;
 	}
 	return ( retval == 0 );
 }
