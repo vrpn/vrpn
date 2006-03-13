@@ -1,3 +1,11 @@
+2006-03-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* time_test.cpp : Added type-cast.
+	* vrpn_Keyboard_Mouse.C : Added required library.
+	* vrpn_Tracker_DTrack.C : Changed from WIN to _WIN check.
+	* vrpn.sln : Visual C++ 2005 solution file for VRPN.
+	* *.vcproj : Visual C++ 2005 project files for VRPN.
+
 2006-02-23  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_FileConnection.C:  the bookmarking mechanism used when searching

@@ -1,3 +1,7 @@
+2006-03-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* *.vcproj : Visual C++ 2005 project files for VRPN.
+
 2006-02-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* testimager_client.C : Switched to the more standard

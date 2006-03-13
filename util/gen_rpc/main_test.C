@@ -9,7 +9,7 @@ int main (int argc, char ** argv) {
 
   vrpn_Connection * connection;
 
-  connection = new vrpn_Synchronized_Connection(4999);
+  connection = new vrpn_Connection(4999);
 
   int myID = connection->register_sender("rpc_Test");
 
@@ -40,13 +40,14 @@ int main (int argc, char ** argv) {
   char nm[NAME_LENGTH] = "Jones";
   char nm2[cnt]= "nM";
   char doublenm[4][NAME_LENGTH] = {"one", "two", "three", "four"};
+  int i;
 
 //    char *p_to_char[4]= {"one", "two", "three", "four"};
 //    char (*arr_of_p)[4] ;
 //    printf ("size %d %d\n", sizeof(p_to_char), sizeof(arr_of_p));
 
   char **triplenm[4]; //char **(*p_t)[4] = &triplenm;
-  for ( int i =0; i<4; i++) {
+  for (i =0; i<4; i++) {
       triplenm[i] = new char *[cnt];
       for (int j=0; j< cnt; j++) {
           triplenm[i][j] = new char[cnt];

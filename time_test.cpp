@@ -50,7 +50,7 @@ void	get_time_using_ftime(unsigned long &sec, unsigned long &usec)
 {
     struct _timeb t;
     _ftime(&t);
-    sec = t.time;
+    sec = static_cast<unsigned long>(t.time);
     usec = (long)t. millitm * 1000;
 }
 

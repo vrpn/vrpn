@@ -1,3 +1,7 @@
+2006-03-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* *.vcproj : Visual C++ 2005 project files for VRPN.
+
 2005-12-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* buzzForceField.C : Made generic definitions for the mutex

@@ -3,7 +3,8 @@
 #include "vrpn_Keyboard_Mouse.h"
 #include "vrpn_Shared.h"
 #ifdef	_WIN32
-#include <Windows.h>
+#include <windows.h>
+#pragma comment (lib, "user32.lib")     // We'll need the user32 DLL
 #endif
 
 
