@@ -1056,7 +1056,6 @@ int vrpn_Generic_Server_Object::setup_KeyMouse(char * & pch, char * line, FILE *
 
 int vrpn_Generic_Server_Object::setup_Button_USB(char * & pch, char * line, FILE * config_file)
 {
-
 	char name[LINESIZE],deviceName[LINESIZE];
 
 	next();
@@ -1073,16 +1072,22 @@ int vrpn_Generic_Server_Object::setup_Button_USB(char * & pch, char * line, FILE
 	}
 
 	// Open the button
-	if (verbose)   
+	if (verbose) {
 		printf("Opening vrpn_Button_USB: %s \n",name);
+	}
+#ifdef	_WIN32
 	if ( (buttons[num_buttons] = new vrpn_Button_USB(name,deviceName,connection)) 
 		== NULL ) {
 			fprintf(stderr,"Can't create new vrpn_Button_USB\n");
 			return -1;
-		} else 
-			num_buttons++;
+	} else {
+		num_buttons++;
+	}
+#else
+	printf("XXX vrpn_Button_USB only compiled for Windows.\n");
+#endif
 
-		return 0;
+	return 0;
 
 }
 

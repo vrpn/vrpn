@@ -1,5 +1,10 @@
 2006-03-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Generic_server_object.C : Commenting out Windows-specific
+		stuff on other architectures, replacing with error print.
+
+2006-03-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn.cfg : New configuration for vrpn_Keyboard_Mouse.
 	* vrpn_Generic_server_object.C : Update for Keyboard_Mouse
 		and added Button_USB.
