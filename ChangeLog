@@ -1,5 +1,9 @@
 2006-03-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Connection.C : Changing version number for new release.
+
+2006-03-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Button_USB.cpp : Code from Tom De Weyer to handle USB
 		buttons on Windows.
 	* vrpn_Button_USB.h : Same.
