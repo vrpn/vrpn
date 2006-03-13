@@ -455,6 +455,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\vrpn_Button_USB.cpp"
+				>
+			</File>
+			<File
 				RelativePath="vrpn_CerealBox.C"
 				>
 				<FileConfiguration
@@ -885,6 +889,10 @@
 						CompileAs="2"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\vrpn_Keyboard_Mouse.C"
+				>
 			</File>
 			<File
 				RelativePath="vrpn_LamportClock.C"
@@ -1656,6 +1664,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\vrpn_Button_USB.h"
+				>
+			</File>
+			<File
 				RelativePath="vrpn_CerealBox.h"
 				>
 			</File>
@@ -1725,6 +1737,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_Joywin32.h"
+				>
+			</File>
+			<File
+				RelativePath=".\vrpn_Keyboard_Mouse.h"
 				>
 			</File>
 			<File
