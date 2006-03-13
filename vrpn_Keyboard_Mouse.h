@@ -1,51 +1,42 @@
 #ifndef VRPN_KEYMOUSE_H
 #define VRPN_KEYMOUSE_H
 
+///////////////////////////////////////////////////////////////////////////
+// vrpn_KeyMouse is a VRPN server class to publish events from the PC's mouse
+// and keyboard.
+// It provides a x-channel vrpn_Analog depending on the config file, and a
+// x-channel vrpn_Button for mouse buttons or keyboard buttons.
+//
+// This implementation is Windows-specific, as it leverages the windows mouse calls
+//
+// Use vrpn_Mouse if you are using linux
+
 #include "vrpn_Connection.h"
-#include "vrpn_Tracker.h"
+#include "vrpn_Analog.h"
 #include "vrpn_Button.h"
 
-class VRPN_API vrpn_KeyMouse: public vrpn_Tracker, public vrpn_Button
+class VRPN_API vrpn_KeyMouse: public vrpn_Analog, public vrpn_Button
 {
   public:
-	vrpn_KeyMouse (const char * name, vrpn_Connection * c, int num_buttons);
+	vrpn_KeyMouse (const char * name, vrpn_Connection * c, int num_buttons, int num_channels);
 
-	~vrpn_KeyMouse () {};
+	~vrpn_KeyMouse () ;
 
 	/// Called once through each main loop iteration to handle updates.
 	virtual void mainloop ();
 
-	virtual int reset(void);  ///< Set device back to starting config
+	void SetAnalogParams(int channelNr,int button1,int button2, float scale);
+	void SetButtonParams( int buttonNr, int button1);
 
-	void SetDeviceParams(char source[512],int button1,int button2,float scale);
   protected:
-
-	float m_dQuatPrev[3][4]; // previous rotation
-
-	int _numbuttons;          ///< How many buttons to open
-	unsigned char buf[512];	  ///< Buffer of characters in report,
-	int bufpos;               ///< Current char pos in buffer 
-        int packtype;             ///< What kind of packet we are decoding
-        int packlen;              ///< Expected packet length
-        int escapedchar;          ///< We're processing an escaped char
-        int erroroccured;         ///< A device error has occured
-        int resetoccured;         ///< A reset event has occured
-	struct timeval timestamp; ///< Time of the last report from the device
-
-	int m_buttonCodes[16];
-	int m_Translations[6];
-	float m_Scale[6];
-	int m_Rotations[6];
-	int m_Reset;
-	bool m_bTranslations[3]; //true if mouse movements are used 
-	bool m_bRotations[3]; //true if mouse movements are used 
-#ifdef  _WIN32
-        POINT m_prevPos[3]; // mouse movement x,y,z
+	  int *m_ButtonCodesLMove; //< keeps track of keys needed to lower the analog value
+	  int *m_ButtonCodesRMove; //< keeps track of keys needed to raise the analog value
+	  bool *m_ButtonCodesUseMouse; //< is true when a analog channel uses a mouse movement
+	  float *m_Scale; //< keeps track of the size of change on the analog value per key press
+	  int *m_ButtonCodes; //< keeps track of keys needed as a button value
+#ifdef _WIN32
+	  POINT *m_PrevPos; //< keeps track of the mouse position when the mouse is inactive
 #endif
-
-	void ConvertOriToQuat(float ori[3]); //< directly put the values in the quat for message sending
-	void AddPreviousOri(float ori[4]); //< add previous rotation to the current
-	virtual	void clear_values(void); ///< Set all buttons, analogs and encoders back to 0
 
 	/// Try to read reports from the device.  Returns 1 if a complete 
         /// report received, 0 otherwise.  Sets status to current mode.
@@ -61,8 +52,6 @@ class VRPN_API vrpn_KeyMouse: public vrpn_Tracker, public vrpn_Button
                    (vrpn_uint32 class_of_service
                     = vrpn_CONNECTION_LOW_LATENCY);
 
-        // NOTE:  class_of_service is only applied to vrpn_Analog
-        //  values, not vrpn_Button, which are always vrpn_RELIABLE
 };
 
 #endif

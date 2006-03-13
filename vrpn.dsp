@@ -125,6 +125,10 @@ SOURCE=.\vrpn_Button.C
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_Button_USB.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_CerealBox.C
 # End Source File
 # Begin Source File
@@ -387,6 +391,10 @@ SOURCE=.\vrpn_BaseClass.h
 # Begin Source File
 
 SOURCE=.\vrpn_Button.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Button_USB.h
 # End Source File
 # Begin Source File
 

@@ -410,6 +410,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\vrpn_Button_USB.cpp"
+				>
+			</File>
+			<File
 				RelativePath="vrpn_CerealBox.C"
 				>
 				<FileConfiguration
@@ -1685,6 +1689,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_Button.h"
+				>
+			</File>
+			<File
+				RelativePath=".\vrpn_Button_USB.h"
 				>
 			</File>
 			<File

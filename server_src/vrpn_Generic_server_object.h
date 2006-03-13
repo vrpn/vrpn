@@ -60,6 +60,8 @@
 #include "vrpn_3DMicroscribe.h"
 #include "vrpn_5DT16.h"
 #include "vrpn_Keyboard_Mouse.h"
+// added by Tom dw
+#include "vrpn_Button_USB.h"
 
 #ifdef VRPN_INCLUDE_TIMECODE_SERVER
 #include "timecode_generator_server\vrpn_timecode_generator.h"
@@ -73,6 +75,7 @@ const int VRPN_GSO_MAX_ANALOGOUT =  8;
 const int VRPN_GSO_MAX_SGIBOX =     2;
 const int VRPN_GSO_MAX_CEREALS =    8;
 const int VRPN_GSO_MAX_MAGELLANS =  8;
+const int VRPN_GSO_MAX_MAGELLANSUSB =  8;
 const int VRPN_GSO_MAX_SPACEBALLS = 8;
 const int VRPN_GSO_MAX_IBOXES =     8;
 const int VRPN_GSO_MAX_DIALS =      8;
@@ -91,6 +94,7 @@ const int VRPN_GSO_MAX_PHANTOMS =  10;
 const int VRPN_GSO_MAX_DTRACKS =   5;
 const int VRPN_GSO_MAX_POSER =	   8;
 const int VRPN_GSO_MAX_MOUSES =	   8;
+const int VRPN_GSO_MAX_KEYMOUSE =  1;
 
 class vrpn_Generic_Server_Object {
 public:
@@ -155,6 +159,8 @@ protected:
   int		num_posers;
   vrpn_Mouse	* mouses [VRPN_GSO_MAX_MOUSES];
   int		num_mouses;
+  vrpn_KeyMouse * KeyMouses [VRPN_GSO_MAX_KEYMOUSE];
+  int		num_KeyMouses;
 
   void closeDevices (void);
 
@@ -212,6 +218,7 @@ protected:
   int setup_5dt16 (char * & pch, char * line, FILE * config_file);
   int setup_Button_5DT_Server(char * & pch, char * line, FILE * config_file);
   int setup_KeyMouse(char * & pch, char * line, FILE * config_file);
+  int setup_Button_USB(char * & pch, char * line, FILE * config_file);
 };
 
 #endif

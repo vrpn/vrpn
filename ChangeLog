@@ -1,3 +1,13 @@
+2006-03-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Button_USB.cpp : Code from Tom De Weyer to handle USB
+		buttons on Windows.
+	* vrpn_Button_USB.h : Same.
+	* vrpn.dsp : Adding vrpn_Button_USB.cpp and .h.
+	* vrpn.vcproj : Same.
+	* vrpn_Keyboard_Mouse.C : Updates to export analogs rather than tracker.
+	* vrpn_Keyboard_Mouse.h : same.
+
 2006-03-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* time_test.cpp : Added type-cast.

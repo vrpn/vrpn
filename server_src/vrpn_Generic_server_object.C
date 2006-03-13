@@ -687,6 +687,7 @@ int vrpn_Generic_Server_Object::setup_Magellan (char * & pch, char * line, FILE 
   return 0;
 }
 
+
 int vrpn_Generic_Server_Object::setup_Spaceball (char * & pch, char * line, FILE * config_file) {
   char s2 [LINESIZE], s3 [LINESIZE];
   int i1;
@@ -978,17 +979,17 @@ int vrpn_Generic_Server_Object::setup_5dt16 (char * & pch, char * line, FILE * c
 int vrpn_Generic_Server_Object::setup_KeyMouse(char * & pch, char * line, FILE * config_file)
 {
 	char name [LINESIZE], li[LINESIZE];
-	int buttonNrs;
+	int buttonNrs, analogChannelNrs;
 
 	next();
-	// Get the arguments (class, name, nrButtons
-	if (sscanf(pch,"%511s%d",name, &buttonNrs) != 2)
+	// Get the arguments (class, name, nrAnalogChannels, nrButtons
+	if (sscanf(pch,"%511s%d%d",name, &analogChannelNrs, &buttonNrs) != 3)
 	{
 		fprintf(stderr,"Bad vrpn_keyboardmouse line: %s\n",line);
 		return -1;
 	}
 	// Make sure there's room for a new analog
-	if (num_trackers >= VRPN_GSO_MAX_TRACKERS) {
+	if (num_KeyMouses >= VRPN_GSO_MAX_KEYMOUSE) {
 		fprintf(stderr,"Too many Trackers in config file");
 		return -1;
 	}
@@ -997,16 +998,17 @@ int vrpn_Generic_Server_Object::setup_KeyMouse(char * & pch, char * line, FILE *
 	if (verbose) {
 		printf("Opening KeyMouse: %s\n", name);
 	}
-	if ((trackers[num_trackers] = new vrpn_KeyMouse(name, connection, buttonNrs )) == NULL) 
+	if ((KeyMouses[num_KeyMouses] = new vrpn_KeyMouse(name, connection, buttonNrs, analogChannelNrs )) == NULL) 
 	{
 		fprintf(stderr,"Can't create new vrpn_keyboardmouse\n");
 		return -1;
 	} 
 	else 
 	{
-		vrpn_KeyMouse *device=(vrpn_KeyMouse*)trackers[num_trackers];
-		num_trackers++;
-		for(int i=0;i<7+buttonNrs;i++)
+		vrpn_KeyMouse *device=KeyMouses[num_KeyMouses];
+		num_KeyMouses++;
+		int i;
+		for(i=0;i<analogChannelNrs;i++)
 		{
 			// Read in the line
 			if (fgets(li, LINESIZE, config_file) == NULL) {
@@ -1015,30 +1017,73 @@ int vrpn_Generic_Server_Object::setup_KeyMouse(char * & pch, char * line, FILE *
 			}
 
 			char source[LINESIZE];
-			int button1, button2 = 0;
+			int button1, button2,channelNr = 0;
 			float scale;
 			// Get the values from the line
-			if(i<6)
+			if (sscanf(li, "%s%x%x%x%f",source,&channelNr,&button1,&button2,&scale) != 5) 
 			{
-				if (sscanf(li, "%s%x%x%f",source,&button1,&button2,&scale) != 4) 
-				{
-					fprintf(stderr,"Bad center line\n");
-					return -1;
-				}
+				fprintf(stderr,"Bad center line\n");
+				return -1;
 			}
-			else
+			if(!strcmp(source,"channel"))
+				device->SetAnalogParams(channelNr,button1,button2,scale);
+			
+		}
+		for(i=0;i<buttonNrs;i++)
+		{
+			// Read in the line
+			if (fgets(li, LINESIZE, config_file) == NULL) {
+				perror("Can't read init data for keyboard mouse");
+				return -1;
+			}
+
+			char source[LINESIZE];
+			int button, buttonNr = 0;
+			// Get the values from the line
+			if (sscanf(li, "%s%x%x",source,&buttonNr,&button) != 3) 
 			{
-				if (sscanf(li, "%s%x",source,&button1) != 2) 
-				{
-					fprintf(stderr,"Bad center line\n");
-					return -1;
-				}
+				fprintf(stderr,"Bad center line\n");
+				return -1;
 			}
-			device->SetDeviceParams(source,button1,button2,scale);
+			if(!strcmp(source,"button"))
+				device->SetButtonParams(buttonNr,button);
 		}
 	}
 
 		return 0;
+}
+
+
+int vrpn_Generic_Server_Object::setup_Button_USB(char * & pch, char * line, FILE * config_file)
+{
+
+	char name[LINESIZE],deviceName[LINESIZE];
+
+	next();
+	// Get the arguments (button_name)
+	if (sscanf(pch,"%511s%511s", name,deviceName) != 2) {
+		fprintf(stderr,"Bad vrpn_Button_5dt_Server line: %s\n",line);
+		return -1;
+	}
+
+	// Make sure there's room for a new button
+	if (num_buttons >= VRPN_GSO_MAX_BUTTONS) {
+		fprintf(stderr,"vrpn_Button_USB: Too many buttons in config file");
+		return -1;
+	}
+
+	// Open the button
+	if (verbose)   
+		printf("Opening vrpn_Button_USB: %s \n",name);
+	if ( (buttons[num_buttons] = new vrpn_Button_USB(name,deviceName,connection)) 
+		== NULL ) {
+			fprintf(stderr,"Can't create new vrpn_Button_USB\n");
+			return -1;
+		} else 
+			num_buttons++;
+
+		return 0;
+
 }
 
 int vrpn_Generic_Server_Object::setup_Button_5DT_Server(char * & pch, char * line, FILE * config_file)
@@ -2612,7 +2657,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
   num_analogouts(0),
   num_DTracks(0),
   num_posers(0),
-  num_mouses(0)
+  num_mouses(0),
+  num_KeyMouses(0)
 {
   FILE	* config_file;
   char 	* client_name = NULL;
@@ -2766,7 +2812,10 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
 	  } else if (isit("vrpn_3DMicroscribe")) {
             CHECK(setup_3DMicroscribe);
 	  } else if (isit("vrpn_KeyMouse")) {
-			CHECK(setup_KeyMouse);
+		  CHECK(setup_KeyMouse);
+	  } else if (isit("vrpn_Button_USB")) {
+		  CHECK(setup_Button_USB);
+
 	 } else {	// Never heard of it
 		sscanf(line,"%511s",s1);	// Find out the class name
 		fprintf(stderr,"vrpn_server: Unknown Device: %s\n",s1);
@@ -2831,7 +2880,7 @@ void  vrpn_Generic_Server_Object::mainloop( void )
   for (i=0; i< num_magellans; i++) {
 	  magellans[i]->mainloop();
   }
-
+  
   // Let all the Spaceballs do their thing
   for (i=0; i< num_spaceballs; i++) {
           spaceballs[i]->mainloop();
@@ -2878,6 +2927,9 @@ void  vrpn_Generic_Server_Object::mainloop( void )
   for (i=0; i < num_Win32Joys; i++) {
 	  win32joys[i]->mainloop();
   }
+  // Let all the win32 mouse keyboards do their thing
+  for (i=0; i < num_KeyMouses; i++)
+	  KeyMouses[i]->mainloop();
 #endif
 
   // Let all the DTracks do their thing
