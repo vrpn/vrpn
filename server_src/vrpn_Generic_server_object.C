@@ -1374,7 +1374,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_Fastrak (char * & pch, char * line
 		  delete trackers[num_trackers];
 		  return -1;
 		}
-		if (mytracker->add_is900_button(lineName, lineSensor, 5)) {
+		if (mytracker->add_is900_button(lineName, lineSensor, 6)) {
 		  fprintf(stderr,"Cannot set Wand buttons for Fastrak/Isense (%s)\n",line);
 		  delete trackers[num_trackers];
 		  return -1;

@@ -1,3 +1,8 @@
+2006-04-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Increased version number for new
+		release.
+
 2006-03-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpndll.dsp : Added Button_USB and Keyboard_Mouse.

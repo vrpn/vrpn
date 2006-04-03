@@ -1,3 +1,12 @@
+2006-04-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Generic_server_object.C : One of Virtools' partner, namely Kevin
+		from Axis 3D in Taiwan, actually spotted this issue the
+		add_is900_button is called with a hard code number of button
+		equal to 5.  This made the wand button not work.  Increased to
+		the value 6.
+	* vrpn.cfg : Had left an AnalogFly uncommented.
+
 2006-03-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Generic_server_object.C : Commenting out Windows-specific
