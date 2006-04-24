@@ -1,3 +1,14 @@
+2006-04-24    <marshbur@cs.unc.edu>
+
+	* TextReceiver.java:  new
+	* TextSender.java:  new
+	* vrpn_TextReceiver.cpp:  new
+	* vrpn_TextSender.cpp:  new
+	* java_vrpn.[vjp,dsp]:  adds the new text source files
+	* .cvsignore:  ignore the generated text header files
+	* VRPNDevice.java:  adds some constants for text stuff
+	* java_vrpn.[h,cpp]:  adds functions from the text part of the library
+
 2006-02-10    <marshbur@cs.unc.edu>
 
 	* vrpn_VRPNDevice.cpp (Java_vrpn_VRPNDevice_getEarliestTime_1native):

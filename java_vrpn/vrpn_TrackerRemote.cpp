@@ -186,6 +186,12 @@ void VRPN_CALLBACK handle_acceleration_change( void* userdata, const vrpn_TRACKE
   
 }
 
+// end dll utility function
+//////////////////////////
+
+
+/////////////////////////
+// native java functions
 
 JNIEXPORT jint JNICALL 
 Java_vrpn_TrackerRemote_setUpdateRate( JNIEnv* env, jobject jobj, jdouble updateRate )
@@ -281,3 +287,5 @@ Java_vrpn_TrackerRemote_shutdownTracker( JNIEnv* env, jobject jobj )
 
 }
 
+// end native java functions
+////////////////////////////

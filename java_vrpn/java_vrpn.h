@@ -44,3 +44,11 @@ JNIEXPORT void JNICALL JNI_OnUnload_Tracker_Remote( JavaVM* jvm, void* reserved 
 JNIEXPORT jint JNICALL JNI_OnLoad_Poser_Remote( JavaVM* jvm, void* reserved );
 JNIEXPORT void JNICALL JNI_OnUnload_Poser_Remote( JavaVM* jvm, void* reserved );
 
+// TextReceiver Load/Unload
+JNIEXPORT jint JNICALL JNI_OnLoad_Text_Receiver( JavaVM* jvm, void* reserved );
+JNIEXPORT void JNICALL JNI_OnUnload_Text_Receiver( JavaVM* jvm, void* reserved );
+
+// TextSender Load/Unload
+JNIEXPORT jint JNICALL JNI_OnLoad_Text_Sender( JavaVM* jvm, void* reserved );
+JNIEXPORT void JNICALL JNI_OnUnload_Text_Sender( JavaVM* jvm, void* reserved );
+

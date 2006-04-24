@@ -4,6 +4,30 @@ import java.util.Date;
 
 public abstract class VRPNDevice extends VRPN implements Runnable
 {
+	///////////////
+	// text-related definitions and constants
+
+	// the following values are from vrpn_BaseClass.h
+	public final static int vrpn_TEXT_NORMAL = 0;
+	public final static int vrpn_TEXT_WARNING = 1;
+	public final static int vrpn_TEXT_ERROR = 2;
+	
+	public static String getTextSeverityString( int severity )
+	{
+		switch( severity )
+		{
+		case vrpn_TEXT_NORMAL:  return "vrpn_TEXT_NORMAL";
+		case vrpn_TEXT_WARNING:  return "vrpn_TEXT_WARNING";
+		case vrpn_TEXT_ERROR:  return "vrpn_TEXT_ERROR";
+		default:  return "(unknown severity)";
+		}
+	}
+	
+	public final static Date vrpn_TEXT_NOW = new Date( 0 );
+	// end text-related stuff
+	////////////////
+	
+	
 	public class NotReplayError extends Exception
 	{
 		public NotReplayError( String msg )

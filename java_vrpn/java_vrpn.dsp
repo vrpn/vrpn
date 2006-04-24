@@ -116,6 +116,14 @@ SOURCE=.\vrpn_PoserRemote.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_TextReceiver.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_TextSender.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_TrackerRemote.cpp
 # End Source File
 # Begin Source File
@@ -149,6 +157,14 @@ SOURCE=.\vrpn_ForceDeviceRemote.h
 # Begin Source File
 
 SOURCE=.\vrpn_PoserRemote.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_TextReceiver.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_TextSender.h
 # End Source File
 # Begin Source File
 
