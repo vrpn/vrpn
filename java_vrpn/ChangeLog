@@ -1,3 +1,7 @@
+2006-04-25    <marshbur@cs.unc.edu>
+
+	* java_vrpn.vjp:  also creates vrpn_TextSender.h
+
 2006-04-24    <marshbur@cs.unc.edu>
 
 	* TextReceiver.java:  new
