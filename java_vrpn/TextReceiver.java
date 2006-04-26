@@ -70,6 +70,7 @@ public class TextReceiver extends VRPNDevice implements Runnable
 			TextMessage t = new TextMessage( );
 			t.msg_time.setTime( tv_sec * 1000 + (int) (tv_usec/1000.0) );
 			t.type = type;
+			t.level = level;
 			t.msg = msg;
 			
 			Enumeration e = textListeners.elements();
