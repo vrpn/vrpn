@@ -1,3 +1,8 @@
+2006-04-28  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_server.dsp:  made the Debug and Release include paths
+	be the same.
+
 2006-04-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Generic_server_object.C : One of Virtools' partner, namely Kevin
