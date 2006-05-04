@@ -1,7 +1,13 @@
+2006-05-04  David Marshburn  <marshbur@cs.unc.edu>
+
+	* VRPNDevice.java (getTime):  exposes the get_time method from
+	vrpn_[File]Connection.
+	* vrpn_VRPNDevice.cpp:  native implementation of ^.
+
 2006-04-26	Ben Wilde	<wilde@cs.unc.edu>
 
 	* TextReceiver.java
-		-In 'handleTextMessage' set t.level to the passed level parameter
+	-In 'handleTextMessage' set t.level to the passed level parameter
 
 2006-04-25    <marshbur@cs.unc.edu>
 

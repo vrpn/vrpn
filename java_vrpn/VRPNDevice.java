@@ -164,6 +164,17 @@ public abstract class VRPNDevice extends VRPN implements Runnable
 		return retval;
 	}
 	
+	
+	final public Date getTime( )
+	{
+		Date d = new Date( 0 );
+		synchronized( downInVrpnLock )
+		{
+			getTime_native( d );
+		}
+		return d;
+	}
+	
 	/**
 	 * Valid only when in replay.
 	 * @param rate The fractional rate of wall-clock time.  0.0 means 
@@ -370,6 +381,7 @@ public abstract class VRPNDevice extends VRPN implements Runnable
 	protected native double getLengthSecs_native( );
 	protected native boolean getEarliestTime_native( Date d );
 	protected native boolean getLatestTime_native( Date d );
+	protected native boolean getTime_native( Date d );
 
 	/**
 	 * This should only be called from the method run()

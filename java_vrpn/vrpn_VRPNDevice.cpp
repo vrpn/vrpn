@@ -135,6 +135,44 @@ Java_vrpn_VRPNDevice_getElapsedTimeSecs_1native( JNIEnv* env, jobject jobj )
 
 /*
  * Class:     vrpn_VRPNDevice
+ * Method:    getTime_native
+ * Signature: (Ljava/util/Date;)Z
+ */
+JNIEXPORT jboolean JNICALL 
+Java_vrpn_VRPNDevice_getTime_1native( JNIEnv* env, jobject jobj, jobject jdate )
+{
+	vrpn_BaseClass* device 
+		= (vrpn_BaseClass*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
+	if( device <= 0 )
+	{
+	    printf( "Error in native method \"getTime\":  "
+				"the device is uninitialized or has been shut down.\n" );
+		return false;
+	}
+	vrpn_Connection* conn = device->connectionPtr( );
+	if( conn == NULL )
+	{
+	    printf( "Error in native method \"getTime\":  "
+				"no connection\n." );
+		return false;
+	}
+	timeval t = conn->get_time( );
+	jclass jcls = env->GetObjectClass( jdate );
+	jmethodID jmid = env->GetMethodID( jcls, "setTime", "(J)V" );
+	if( jmid == NULL )
+	{
+		printf( "Warning:  vrpn_VRPNDevice (getTime) library was unable to find the "
+            "Java method \'Date::setTime\'.\n" );
+		return false;
+	}
+	env->CallVoidMethod( jdate, jmid, ( (jlong) t.tv_sec ) * 1000 + ( (jlong) t.tv_usec ) / 1000 );
+	return true;
+}
+
+
+  
+/*
+ * Class:     vrpn_VRPNDevice
  * Method:    isConnected_native
  * Signature: ()Z
  */
