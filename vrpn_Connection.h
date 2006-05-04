@@ -457,8 +457,10 @@ class VRPN_API vrpn_Connection {
 
 	// Returns the time since the connection opened.
 	// Some subclasses may redefine time.
-	virtual int time_since_connection_open
-	                        (struct timeval * elapsed_time);
+	virtual int time_since_connection_open( struct timeval * elapsed_time );
+
+	// returns the current time in the connection (since the epoch -- UTC time).
+	virtual timeval get_time( );
 
 	// Returns the name of the specified sender/type, or NULL
 	// if the parameter is invalid.  Only works for user

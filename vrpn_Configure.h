@@ -37,7 +37,7 @@
 // server, using phantom as a common device, and phantom
 // configuration in .cfg file.
 // PLEASE SPECIFY PATH TO GHOSTLIB IN NEXT SECTION IF YOU USE THIS
-//#define     VRPN_USE_PHANTOM_SERVER
+#define	VRPN_USE_PHANTOM_SERVER
 
 //------------------------
 // Instructs vrpn to use SensAble's HDAPI rather than GHOST library.
@@ -83,7 +83,7 @@
 // the DirectX SDK (from its standard installation in C:\DXSDK).
 // Later in this file, we also instruct the compiler to link with
 // the DirectX library if this is defined.
-//#define	VRPN_USE_DIRECTINPUT
+#define	VRPN_USE_DIRECTINPUT
 
 //-----------------------
 // Instructs the VRPN server to create an entry for the Adrienne

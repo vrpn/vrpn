@@ -4637,6 +4637,18 @@ int vrpn_Connection::time_since_connection_open
   return 0;
 }
 
+
+// returns the current time in the connection since the epoch (UTC time).
+// virtual
+timeval vrpn_Connection::get_time( ) 
+{
+	struct timeval now;
+	vrpn_gettimeofday(&now, NULL);
+	return now;
+}
+
+
+
 // Returns the name of the specified sender/type, or NULL
 // if the parameter is invalid.
 // virtual

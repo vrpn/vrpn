@@ -72,8 +72,12 @@ public:
     virtual ~vrpn_File_Connection (void);
     
     virtual int mainloop (const timeval * timeout = NULL);
-    
+
+    // returns the elapsed time in the file
     virtual int time_since_connection_open (timeval * elapsed_time);
+
+	// returns the current time in the file since the epoch (UTC time).
+	virtual timeval get_time( ) {  return d_time;  }
 
     virtual vrpn_File_Connection * get_File_Connection (void);
 
