@@ -1,3 +1,7 @@
+2006-05-04  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Configure.h:  undoing the change i accidentally committed.
+
 2006-05-02  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_Connection.[h,C]:  added get_time, which returns the
