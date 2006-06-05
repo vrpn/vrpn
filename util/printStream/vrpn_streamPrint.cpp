@@ -29,7 +29,7 @@ static void handle_cntl_c(int )
 
 
 // This handler gets every message, presumably from a stream file
-int handle_any_print (void * userdata, vrpn_HANDLERPARAM p) 
+int VRPN_CALLBACK handle_any_print (void * userdata, vrpn_HANDLERPARAM p) 
 {
 	static unsigned long msg_number = 0 ;
 	if( doHead && ( msg_number > msgs_to_print - 1 ) )
