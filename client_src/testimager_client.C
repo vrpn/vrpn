@@ -1,3 +1,10 @@
+// XXX There is flashing when reading from a DirectX camera and displaying
+// on the same machine.  It seems to be the blue channel that does the
+// flashing.  If we put a sleep into the display routine, then it changes
+// the frequency of the flashing.  Changing the raised program and moving
+// it around on the screen changes the flashing behavior.  Seems like a
+// classic race condition.
+
 // XXX It gets so busy reading from the network that it never updates
 // the display.  This doesn't happen when it is a local connection.
 
@@ -104,7 +111,7 @@ void  VRPN_CALLBACK handle_region_change(void *userdata, const vrpn_IMAGERREGION
     }
 
     // If we're logging, save to disk.  This is needed to keep up with
-    // logging and because to program is killed to exit it.
+    // logging and because the program is killed to exit.
     if (g_connection) { g_connection->save_log_so_far(); }
 
     // Tell Glut it is time to draw.  Make sure that we don't post the redisplay
