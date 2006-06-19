@@ -38,11 +38,11 @@ DynamicPlane::DynamicPlane() : gstDynamic()
 #endif
 {
 	// initialize transform to identity
-	xform.identity();
 	fixedPlane = new TexturePlane(0.0, 1.0, 0.0, 0.0);
 #ifdef	VRPN_USE_HDAPI
 	//XXX Probably going to need some linking code in here somewhere to keep track of objects
 #else
+	xform.identity();
 	fixedPlane->setParent(this);
 #endif
 	buzzForce = new BuzzForceField();
@@ -81,7 +81,7 @@ void DynamicPlane::setParameters(double fd, double fs, double ks,
 
 void DynamicPlane::setActive(vrpn_HapticBoolean active)
 {
-    _active = active;
+    _active = (active == TRUE);
     fixedPlane->setInEffect(active);
     if (_active && _using_buzz) {
       buzzForce->activate();
@@ -97,7 +97,7 @@ void DynamicPlane::cleanUpAfterError() {
 
 void DynamicPlane::enableBuzzing(vrpn_HapticBoolean enable)
 {
-    _using_buzz = enable;
+    _using_buzz = (enable == TRUE);
     if (_active && _using_buzz) buzzForce->activate();
     else buzzForce->deactivate();
 }
@@ -245,7 +245,11 @@ void DynamicPlane::planeEquationToTransform(vrpn_HapticPlane &prev_plane,
 
     vrpn_HapticVector next_normal = next_plane.normal();
     vrpn_HapticVector prev_normal = prev_plane.normal();
+#ifdef	VRPN_USE_HDAPI
+    double m = next_normal.magnitude();
+#else
     double m = next_normal.distToOrigin();
+#endif
 
     double distAlongNormal = -next_plane.d();
 
@@ -256,15 +260,25 @@ void DynamicPlane::planeEquationToTransform(vrpn_HapticPlane &prev_plane,
     trans = distAlongNormal*next_normal; // translation vector for xform
 
     // compute the rotation axis and angle
+#ifdef	VRPN_USE_HDAPI
+    vrpn_HapticVector crossprod = prev_normal.crossProduct(next_normal);
+    double sintheta = crossprod.magnitude();
+    double costheta = prev_normal.dotProduct(next_normal);
+#else
     vrpn_HapticVector crossprod = prev_normal.cross(next_normal);
     double sintheta = crossprod.distToOrigin();
     double costheta = prev_normal.dot(next_normal);
+#endif
     if (sintheta == 0) {	// exceptional case
         // pick an arbitrary vector perp to normal because we are either 
 	// rotating by 0 or 180 degrees
         if (next_normal[0] != 0) {
             axis = vrpn_HapticVector(next_normal[1], -next_normal[0], 0);
+#ifdef	VRPN_USE_HDAPI
+            axis /= (axis.magnitude());
+#else
             axis /= (axis.distToOrigin());
+#endif
         } else {
             axis = vrpn_HapticVector(1,0,0);
 	}
@@ -275,34 +289,64 @@ void DynamicPlane::planeEquationToTransform(vrpn_HapticPlane &prev_plane,
     if (costheta < 0) theta = M_PI - theta;
 
     // set the incremental rotation
+#ifdef	VRPN_USE_HDAPI
+    vrpn_HapticMatrix rot_incrxform;
+    rot_incrxform.createRotation(axis, theta);
+#else
     vrpn_HapticMatrix rot_incrxform;
     rot_incrxform.setRotate(axis,theta);
-    double rot_cumulative[3][3], prod[3][3], rot_incr[3][3];
+#endif
 
-    xform_to_update.getRotationMatrix(rot_cumulative);
-    rot_incrxform.getRotationMatrix(rot_incr);
+    // Set the rotation portion of the matrix based on the accumulation
+    // of its previous value and the new rotation.
+    double prod[3][3];
     int i,j;
-    for (i = 0; i < 3; i++)
+    for (i = 0; i < 3; i++) {
         for (j = 0; j < 3; j++) {
-            prod[i][j] = rot_cumulative[i][0]*rot_incr[0][j] +
-			 rot_cumulative[i][1]*rot_incr[1][j] +
-			 rot_cumulative[i][2]*rot_incr[2][j];
+            prod[i][j] = xform_to_update[i][0]*rot_incrxform[0][j] +
+			 xform_to_update[i][1]*rot_incrxform[1][j] +
+			 xform_to_update[i][2]*rot_incrxform[2][j];
         }
+    }
+    for (i = 0; i < 3; i++) {
+        for (j = 0; j < 3; j++) {
+          xform_to_update[i][j] = prod[i][j];
+        }
+    }
 
-	xform_to_update.setRotationMatrix(prod);
-	xform_to_update.setTranslate(trans);
+    // Set the translation for the new matrix.  XXX For HDAPI, I'm not sure
+    // we are putting the translation into the proper portion of the
+    // matrix.
+#ifdef	VRPN_USE_HDAPI
+    for (i = 0; i < 3; i++) {
+      xform_to_update[3][i] = trans[i];
+    }
+#else
+    xform_to_update.setTranslate(trans);
+#endif
 
-	return;
+    return;
 }
 
+// XXX This is almost certainly broken in the HDAPI implementation.
+// Don't trust it until you've verified that it works.  If you're lucky,
+// the fix will require only swapping the matrix multiplication types.
 void DynamicPlane::setPlaneFromTransform(vrpn_HapticPlane &pl, 
-					vrpn_HapticMatrix &xfm)
+					 vrpn_HapticMatrix &xfm)
 {
+#ifdef	VRPN_USE_HDAPI
+	vrpn_HapticVector normal(0,1,0);
+	normal = xfm.multMatrixVec(normal, normal);
+	vrpn_HapticPosition origin(0,0,0);
+	origin = xfm.multVecMatrix(origin, origin);
+        pl = vrpn_HapticPlane(normal[0], normal[1], normal[2], -origin.magnitude());
+#else
 	vrpn_HapticVector normal(0,1,0);
 	normal = xfm.fromLocal(normal);
 	vrpn_HapticPosition origin(0,0,0);
 	origin = xfm.fromLocal(origin);
-	pl = vrpn_HapticPlane(normal[0], normal[1], normal[2], -origin.distToOrigin());
+        pl = vrpn_HapticPlane(normal[0], normal[1], normal[2], -origin.distToOrigin());
+#endif
 	//printf("XXX %lf, %lf, %lf,  %lf\n", pl.a(), pl.b(), pl.c(), pl.d());
 }
 
@@ -355,7 +399,7 @@ TexturePlane::TexturePlane(const vrpn_HapticPlane & p)
 TexturePlane::TexturePlane(const vrpn_HapticPlane * p)
 {
 	init();
-	plane = vrpn_HapticPlane(p);
+	plane = vrpn_HapticPlane(*p);
 }
 
 TexturePlane::TexturePlane(const TexturePlane *p)
@@ -822,14 +866,10 @@ vrpn_HapticVector TexturePlane::computeNormal(double x, double z)
 	vrpn_HapticVector normal;
 
 	if (r != 0){
-		normal.setx(texAmp*x*k*sin(k*r)/r);
-		normal.sety(1.0);					
-		normal.setz(texAmp*z*k*sin(k*r)/r);
+		normal.set(texAmp*x*k*sin(k*r)/r, 1.0, texAmp*z*k*sin(k*r)/r);
 	}
 	else{
-		normal.setx(0);
-		normal.sety(1.0);
-		normal.setz(0);
+		normal.set(0, 1.0, 0);
 	}
 	return normal;
 	

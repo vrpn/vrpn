@@ -1,3 +1,19 @@
+2006-06-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* ghost.h : Continuing to try and port from GHOST to HDAPI.
+		Removed several of the home-built classes that had been
+		put in for Vector, Matrix, Position, Boolean, and Plane
+		and replaced them with HDU classes (utility classes from
+		the HDAPI library).  This required putting some #ifdef
+		blocks in the code because the HDAPI and GHOST objects
+		named methods in inconsistent ways.
+	* buzzForceField.C : Same.
+	* constraint.C : Same.
+	* forcefield.C : Same.
+	* plane.C : Same.
+	* texture_plane.C : Same.
+	* vrpn_Phantom.C : Same.
+
 2006-04-28  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_server.dsp:  made the Debug and Release include paths

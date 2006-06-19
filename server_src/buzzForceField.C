@@ -84,7 +84,7 @@ vrpn_HapticVector BuzzForceField::calculateForceFieldForce(gstPHANToM *phantom)
 		double vec[3];
 		vec[0] = state->pose[3][0]; vec[1] = state->pose[3][1]; vec[2] = state->pose[3][2];
 		//XXX We're not dealing with transforms here... make sure VRPN doesn't set them, or else deal with them!
-		phanPos.set(vec);
+		phanPos = vrpn_HapticPosition(vec);
 #else
 		double deltaT = phantom->getDeltaT();
 		phantom->getPosition_WC(phanPos);
@@ -111,8 +111,11 @@ vrpn_HapticVector BuzzForceField::calculateForceFieldForce(gstPHANToM *phantom)
 		if (_tex_plane) {
 			height_mod = _tex_plane->getTextureHeight(phanPos);
 		}
+#ifdef	VRPN_USE_HDAPI
+		double ph_height = _plane.perpDistance(phanPos)-height_mod;
+#else
 		double ph_height = _plane.error(phanPos)-height_mod;
-		
+#endif
 		if (ph_height > _amplitude) {
 			return vrpn_HapticVector(0,0,0);
 		}

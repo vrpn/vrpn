@@ -31,7 +31,7 @@ Plane::Plane(const vrpn_HapticPlane & p)
 }
 
 Plane::Plane(const vrpn_HapticPlane * p)
-{ plane = vrpn_HapticPlane(p);
+{ plane = vrpn_HapticPlane(*p);
   inEffect= FALSE;
   isNewPlane = FALSE;
   isInRecovery = FALSE;
@@ -116,7 +116,8 @@ vrpn_HapticBoolean Plane::intersection(const vrpn_HapticPosition &startPt_WC,
     //get the start and end position of the line segment against
     //which the collision will be checked
 #ifdef	VRPN_USE_HDAPI
-    //XXX We rely on planes only using world-space coordinates in VRPN
+    //XXX We rely on planes only using world-space coordinates in VRPN.
+    //XXX Actually, there are now transformations, which need to be worked into the equations.
     vrpn_HapticPosition P1 = startPt_WC;
     vrpn_HapticPosition P2 = endPt_WC;
 #else
@@ -124,26 +125,30 @@ vrpn_HapticBoolean Plane::intersection(const vrpn_HapticPosition &startPt_WC,
     vrpn_HapticPosition P2 = fromWorld(endPt_WC);
 #endif
 
-    // XXX This always returns false here, but that doesn't seem right...
-    // How can it possibly be working?
+    // XXX This always returns false here for GHOST, but that doesn't seem right...
+    // How could it possibly have been working?
 #ifndef	VRPN_USE_HDAPI
     return FALSE;
 #endif
 
+#ifdef	VRPN_USE_HDAPI
+    double t;
+    if (plane.intersectSegmentFront( hduLineSegmentd(P1,P2), t, 1e-9 ) == vrpn_HapticPlane::ResultNone) {
+      return FALSE;
+    } else {
+      //XXX We rely on planes only using world-space coordinates in VRPN
+      intersectionPt_WC = P1 + t * (P2 - P1);
+      intersectionPtNormal_WC = plane.normal();
+    }
+#else
     float t1 = (float) plane.error(P1);
     float t2 = (float) plane.error(P2);
     if(t1*t2 > 0 )  { // Segment from P2 to P1 does not intersect the plane
      return FALSE;
     }
-
     //else segment from p1 to p2 intersects the plane, find the intersection point
     plane.pointOfLineIntersection(P1,P2,intersectionPoint);
 
-#ifdef	VRPN_USE_HDAPI
-    //XXX We rely on planes only using world-space coordinates in VRPN
-    intersectionPt_WC = intersectionPoint;
-    intersectionPtNormal_WC = plane.normal();
-#else
     //set the intersection point and normal
     intersectionPt_WC = toWorld(intersectionPoint);
     //set normal
@@ -202,7 +207,11 @@ vrpn_HapticBoolean Plane::collisionDetect(gstPHANToM *PHANToM)
 	// for our purposes since we are only interested in making 
 	// sure the perceived depth does not change too quickly and
 	// this is done by interpolation
+#ifdef	VRPN_USE_HDAPI
+	depth = -plane.perpDistance(phantomPos);
+#else
 	depth = -plane.error(phantomPos);
+#endif
 	if (depth <= 0) {	// positive depth is below surface
 	    inContact = FALSE;
 #ifdef	VRPN_USE_HDAPI

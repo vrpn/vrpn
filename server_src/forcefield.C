@@ -23,7 +23,7 @@ vrpn_HapticVector ForceFieldEffect::calcEffectForce(void *phantom_info) {
 		HDAPI_state *state = (HDAPI_state *)phantom_info;
 		double vec[3];
 		vec[0] = state->pose[3][0]; vec[1] = state->pose[3][1]; vec[2] = state->pose[3][2];
-		phantomPos.set(vec);
+		phantomPos = vrpn_HapticPosition(vec);
 #else
 		gstPHANToM *phantom = (gstPHANToM *)phantom_info;
 		phantom->getPosition_WC(phantomPos);
@@ -33,7 +33,11 @@ vrpn_HapticVector ForceFieldEffect::calcEffectForce(void *phantom_info) {
 		// If the Phantom has been moved too far from the origin,
 		// drop the force to zero.
 
+#ifdef	VRPN_USE_HDAPI
+		if (dR.magnitude() > radius) {
+#else
 		if (dR.norm() > radius) {
+#endif
 		    return vrpn_HapticVector(0,0,0);
 		}
 
@@ -57,7 +61,11 @@ vrpn_HapticVector ForceFieldEffect::calcEffectForce(void *phantom_info) {
 		// Clamp to FF_MAX_FORCE if it is exceeded, leaving the
 		// direction of the force unchanged.
 
+#ifdef	VRPN_USE_HDAPI
+		forceMag = effectForce.magnitude();
+#else
 		forceMag = effectForce.norm();
+#endif
 		if (forceMag > FF_MAX_FORCE) {
 		    for (i = 0; i < 3; i++) {
 			effectForce[i] *= FF_MAX_FORCE/(forceMag);

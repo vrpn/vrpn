@@ -157,7 +157,11 @@ HDCallbackCode HDCALLBACK HDAPIForceCallback(void *pUserData)
 
       vrpn_HapticPlane	plane = g_active_force_object_list.Planes[i]->getPlane();
       bool  active = g_active_force_object_list.Planes[i]->getActive();
+#ifdef	VRPN_USE_HDAPI
+      double depth= -plane.perpDistance(where);
+#else
       double depth= -plane.error(where);
+#endif
       //if (active) { printf("%lf, %lf, %lf,  %lf  (%lf)\n", plane.a(), plane.b(), plane.c(), plane.d(), g_active_force_object_list.Planes[i]->getSurfaceKspring()  ); }
       if (active && (depth > 0) ) {
 	g_active_force_object_list.SCP = plane.projectPoint(where);
@@ -174,7 +178,7 @@ HDCallbackCode HDCALLBACK HDAPIForceCallback(void *pUserData)
     // then set the force based on the difference between the surface
     // contact point and the current hand position.
     if (!found_collision) {
-	g_active_force_object_list.SCP.set(current_position);
+	g_active_force_object_list.SCP = current_position;
     } else {
 	// We did have at least one collision, so we need to compute
 	// the reaction force due to surface penetration and friction.
