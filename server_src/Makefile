@@ -18,6 +18,14 @@
 #HW_OS := powerpc_macosx
 ##########################
 
+##########################
+# Directories for installation
+
+INSTALL_DIR := /usr/local
+BIN_DIR := $(INSTALL_DIR)/bin
+INCLUDE_DIR := $(INSTALL_DIR)/include
+LIB_DIR := $(INSTALL_DIR)/lib
+
 ifndef	HW_OS
 # hw_os does not exist on FreeBSD at UNC
 UNAME := $(shell uname -s)
@@ -144,11 +152,12 @@ $(OBJ_DIR)/%.o:	%.cpp
 	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
-
-
-all:  vrpn_server test_vrpn client_and_server test_mutex test_peerMutex \
- test_radamec_spi test_analogfly testimager_server
+INSTALL_APPS := vrpn_server test_vrpn
+APPS := $(INSTALL_APPS) client_and_server test_mutex test_peerMutex \
+test_radamec_spi test_analogfly testimager_server
 # testSharedObject
+
+all: $(APPS)
 
 .PHONY:	vrpn_server
 vrpn_server:	$(OBJ_DIR)/vrpn_server
@@ -290,14 +299,17 @@ $(OBJ_DIR)/testSharedObject:	$(OBJ_DIR)/testSharedObject.o \
 		$(OBJ_DIR)/testSharedObject.o \
 		-lvrpnserver $(SYSLIBS) -lm
 
+install: all
+	-mkdir $(BIN_DIR)
+	( cd $(BIN_DIR) ; rm -f $(INSTALL_APPS) )
+	( cd $(OBJ_DIR) ; cp $(INSTALL_APPS) $(BIN_DIR) )
+	( cd $(BIN_DIR) ; strip $(INSTALL_APPS) )
 
+uninstall:
+	( cd $(BIN_DIR) ; rm -f $(INSTALL_APPS) )
 
 clean:
-	rm -f $(OBJ_DIR)/*.o $(OBJ_DIR)/vrpn_server $(OBJ_DIR)/forward \
-	$(OBJ_DIR)/text $(OBJ_DIR)/sample_server $(OBJ_DIR)/test_mutex \
-	$(OBJ_DIR)/test_peerMutex $(OBJ_DIR)/client_and_server \
-	$(OBJ_DIR)/testimager_server $(OBJ_DIR)/test_radamec_spi \
-	$(OBJ_DIR)/test_vrpn test_analogfly
+	rm -f $(OBJ_DIR)/*
 
 $(OBJ_DIR)/vrpn.o:	vrpn.C
 $(OBJ_DIR)/vrpn_Generic_server_object.o:	vrpn_Generic_server_object.C

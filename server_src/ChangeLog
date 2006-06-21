@@ -1,5 +1,9 @@
 2006-06-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* Makefile : Adding "making install" target.
+
+2006-06-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* ghost.h : Added the friction and damping parameters to
 		the Plane class to the HDAPI implementation.
 		This ended up meaning that HL is being used for all of
