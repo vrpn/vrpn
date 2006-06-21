@@ -34,8 +34,10 @@ public:
 	//Constructor
 	Plane(double a, double b, double c, double d);
 
-	//desstructor
-	~Plane(){}
+	//Destructor
+	~Plane() {}
+
+
 
 	void update(double a, double b, double c, double d);
 
@@ -53,7 +55,11 @@ public:
 			else
 			   numRecoveryCycles = nrc;}
 
-#ifndef	VRPN_USE_HDAPI
+#ifdef	VRPN_USE_HDAPI
+        HLuint  myId;
+        void  getHLId(void) { myId = hlGenShapes(1); };
+        void  releaseHLId(void) { hlDeleteShapes(myId, 1); };
+#else
 	// Get type of this class.  No instance needed.
 	static gstType	getClassTypeId() { return PlaneClassTypeId; }
 
@@ -70,6 +76,32 @@ public:
 		    else return (gstShape::isOfType(type)); } 
 #endif
 
+#ifdef	VRPN_USE_HDAPI
+        void renderHL(void);
+
+        // intersect the line segment from startPt to endPt with
+        // the sphere.  Return the closest point of intersection 
+        // to the start point in intersectionPt.  Return the
+        // surface normal at intersectionPt in intersectionNormal.
+        // Return which face (HL_FRONT or HL_BACK) is being touched
+        // in face.
+        // Return true if there is an intersection.
+        static bool HLCALLBACK intersectSurface(
+            const HLdouble startPt_WC[3], 
+            const HLdouble endPt_WC[3],
+            HLdouble intersectionPt_WC[3], 
+            HLdouble intersectionNormal_WC[3],
+            HLenum *face,
+            void *userdata);
+
+        // find the closest surface feature(s) to queryPt
+        static bool HLCALLBACK closestSurfaceFeatures(
+            const HLdouble queryPt_WC[3], 
+            const HLdouble targetPt_WC[3],
+            HLgeom *geom_WC,
+            HLdouble closestPt_WC[3],
+            void *userdata);
+#else
 	// FOR_GHOST_EXTENSION:
 	// Used by system or for creating sub-classes only.
 	//  Returns TRUE if line segment defined by startPt_WC and endPt_WC
@@ -85,9 +117,6 @@ public:
 	// Returns TRUE if PHANToM is currently in contact with this object.
 	// If so, the collision is added to the PHANToM's list through
 	// gstPHANToM::getCollisionInfo() and gstPHANToM::collisionAdded().
-#ifdef	VRPN_USE_HDAPI
-	virtual vrpn_HapticBoolean	collisionDetect(vrpn_HapticCollisionState *collision) ;
-#else
 	virtual vrpn_HapticBoolean	collisionDetect(gstPHANToM *PHANToM) ;
 #endif
 	
@@ -124,7 +153,7 @@ protected:
 					//	equation with each call to
 					//	collisionDetect() during a recovery
 					//	- this value is computed when a new
-					//	plane is encountered
+					//	plane is received
 	int numRecoveryCycles;		// number of recovery cycles
 
 	// end of variables for recovery

@@ -36,7 +36,6 @@
 // Instructs VRPN to use phantom library to construct a unified
 // server, using phantom as a common device, and phantom
 // configuration in .cfg file.
-// PLEASE SPECIFY PATH TO GHOSTLIB IN NEXT SECTION IF YOU USE THIS
 //#define	VRPN_USE_PHANTOM_SERVER
 
 //------------------------
@@ -169,6 +168,7 @@
     #else
       #pragma comment (lib,VRPN_HDAPI_UTIL_PATH "hdu.lib")
     #endif
+    #pragma comment (lib, VRPN_HDAPI_PATH "hl.lib")
   #else
     #ifdef VRPN_USE_GHOST_31
       #pragma comment (lib,VRPN_GHOST_31_PATH "GHOST31.lib")

@@ -18,7 +18,7 @@
 #ifdef	VRPN_USE_PHANTOM_SERVER
 
 #define MIN_TEXTURE_WAVELENGTH (0.06) // [mm] reasonable value considering
-								// resolution of phantom
+				      // resolution of phantom
 
 #include "ghost.h"
 #include "buzzForceField.h"
@@ -91,7 +91,7 @@ public:
 			// coordinate system relative to the world coordinates has changed
 
 	// Get type of this class.  No instance needed.
-	static gstType	getClassTypeId() { return PlaneClassTypeId; }
+	static gstType	getClassTypeId() const { return PlaneClassTypeId; }
 
 	virtual gstType getTypeId() const { return PlaneClassTypeId;}
 
@@ -116,49 +116,49 @@ public:
 
 	void enableTexture() {usingTexture = 1;};
 	void disableTexture() {usingTexture = 0;};
-	int textureEnabled() {return usingTexture;};
+	int textureEnabled() const {return usingTexture;};
 	// for setting texture by wavelength,amplitude:
 	void setTextureWavelength(double wavelength);
-	double getTextureWavelength() {return texWL;};
+	double getTextureWavelength() const {return texWL;};
 	void updateTextureWavelength();
 
 	void setTextureAmplitude(double amplitude);
-	double getTextureAmplitude() {return texAmp;};
+	double getTextureAmplitude() const {return texAmp;};
 	void updateTextureAmplitude();
 
 	void setTextureWaveNumber(double wavenum);
-	double getTextureWaveNumber() {return texWN;};
+	double getTextureWaveNumber() const {return texWN;};
 
 	// for setting texture by size, aspect ratio:
 	// size = length of one wavelength
 	void setTextureSize(double size);
-	double getTextureSize() {return texWL;};
+	double getTextureSize() const {return texWL;};
 	void updateTextureSize();
 
 	// aspectRatio = 2*amp/wavelength, for normal sine wave this is 1/(PI)
 	void setTextureAspectRatio(double aspectRatio);
-	double getTextureAspectRatio() {return 2.0*texAmp/texWL;};
+	double getTextureAspectRatio() const {return 2.0*texAmp/texWL;};
 	void updateTextureAspectRatio();
 
 	// get a graph of what isotropic surface texture looks like
-	void getTextureShape(int nsamples, float *surface);
+	void getTextureShape(int nsamples, float *surface) const;
 
-	double getTextureHeight(vrpn_HapticPosition &position){
+	double getTextureHeight(vrpn_HapticPosition &position) const {
 		vrpn_HapticVector tex_pos = position - textureOrigin;
 		return computeHeight(tex_pos[0], tex_pos[2]);
 	}
 
-	vrpn_HapticVector getTextureNormal(vrpn_HapticPosition &position){
+	vrpn_HapticVector getTextureNormal(vrpn_HapticPosition &position) const {
 		vrpn_HapticVector tex_pos = position - textureOrigin;
 		return computeNormal(tex_pos[0], tex_pos[2]);
 	}
 
-	vrpn_HapticPlane  getTangentPlane(vrpn_HapticPosition &position){
+	vrpn_HapticPlane  getTangentPlane(vrpn_HapticPosition &position) const {
 		vrpn_HapticVector tex_pos = position - textureOrigin;
 		return computeTangentPlaneAt(tex_pos);
 	}
 
-	int isInContact() {return inContact;};
+	int isInContact() const {return inContact;};
 
 	// fading force effect
 	void fadeAway(double fadingDuration) {
@@ -168,7 +168,7 @@ public:
 	  fadeActive = TRUE;
 	  dSpring_dt = fadeOldKspring/fadingDuration;
 	}
-	int fadeDone(){
+	int fadeDone() const {
 		return !fadeActive;
 	}
 	void cancelFade() {
@@ -194,12 +194,12 @@ private:
 	void updateTextureOrigin(double x, double z);
 
 	// FOR USE IN TEXTURE COORDINATES ONLY!(i.e. phantomPos - textureOrigin):
-	double computeHeight(double x, double z);
-	double computeHeight(double r);
-	vrpn_HapticPlane computeTangentPlaneAt(vrpn_HapticPosition pnt);
-	vrpn_HapticPosition projectPointOrthogonalToStaticPlane(vrpn_HapticPosition pnt);
-	vrpn_HapticPosition computeSCPfromGradient(vrpn_HapticPosition currentPos);
-	vrpn_HapticVector computeNormal(double x, double z);
+	double computeHeight(double x, double z) const;
+	double computeHeight(double r) const;
+	vrpn_HapticPlane computeTangentPlaneAt(vrpn_HapticPosition pnt) const;
+	vrpn_HapticPosition projectPointOrthogonalToStaticPlane(vrpn_HapticPosition pnt) const;
+	vrpn_HapticPosition computeSCPfromGradient(vrpn_HapticPosition currentPos) const;
+	vrpn_HapticVector computeNormal(double x, double z) const;
 
 	// fade-related functions
 	void incrementFade(double dT);
@@ -315,18 +315,21 @@ class DynamicPlane: public gstDynamic {
 	DynamicPlane();
 	~DynamicPlane() {};
 #ifndef	VRPN_USE_HDAPI
-	static gstType getClassTypeId() {return DynamicPlaneClassTypeId;};
-	virtual gstType getTypeId() const {return DynamicPlaneClassTypeId;};
-	virtual vrpn_HapticBoolean    isOfType(gstType type) const{    
-		if (type == DynamicPlaneClassTypeId) return TRUE;
-		else // Check if type is parent class.
-			return (gstDynamic::staticIsOfType(type));}
+	static gstType              getClassTypeId() const {return DynamicPlaneClassTypeId;};
+	virtual gstType             getTypeId() const {return DynamicPlaneClassTypeId;};
+	virtual vrpn_HapticBoolean  isOfType(gstType type) const {    
+          if (type == DynamicPlaneClassTypeId) {
+            return TRUE;
+          } else {// Check if type is parent class.
+            return (gstDynamic::staticIsOfType(type));
+          }
+        }
   
 	// Allows subclasses to check if they are subclass of type.
-	static vrpn_HapticBoolean staticIsOfType(gstType type) {
+	static vrpn_HapticBoolean staticIsOfType(gstType type) const {
 		if (type == DynamicPlaneClassTypeId) return TRUE;
 		else return (gstDynamic::staticIsOfType(type));}
-	gstEvent getEvent() {
+	gstEvent getEvent() const {
 		gstEvent event;
 		event.id = 0;
 		return event;
@@ -344,45 +347,45 @@ class DynamicPlane: public gstDynamic {
 	void enableBuzzing(vrpn_HapticBoolean enable);
 	void enableTexture(vrpn_HapticBoolean enable);
 
-	int buzzingEnabled() {return _using_buzz;};
+	int buzzingEnabled() const {return _using_buzz;};
 
-	int textureEnabled() {return fixedPlane->textureEnabled();};
+	int textureEnabled() const {return fixedPlane->textureEnabled();};
 
 	void setParameters(double fd, double fs, double ks,
 			   double bpa, double bpl, 
 			   double buzzamp, double buzzfreq);
 
-	double getSurfaceFstatic() {
+	double getSurfaceFstatic() const {
 		    return fixedPlane->getSurfaceFstatic();}
 
 	void setSurfaceFstatic(double fs) {
 		fixedPlane->setSurfaceFstatic(fs);}
 
-	double getSurfaceFdynamic() {
+	double getSurfaceFdynamic() const {
 		return fixedPlane->getSurfaceFdynamic();}
 
 	void setSurfaceFdynamic(double fd) {
 		    fixedPlane->setSurfaceFdynamic(fd);}
 
-	double getSurfaceKspring() {
+	double getSurfaceKspring() const {
 		return fixedPlane->getSurfaceKspring();}
 
 	void setSurfaceKspring(double ks);
 
 	void setSurfaceKdamping(double kd) {
 		fixedPlane->setSurfaceKdamping(kd);}
-	double getSurfaceKdamping() {
+	double getSurfaceKdamping() const {
 		return fixedPlane->getSurfaceKdamping();}
 
-	double getBuzzAmplitude();
+	double getBuzzAmplitude() const { return buzzForce->getAmplitude(); };
 
-	void setBuzzAmplitude(double amp);
+        void setBuzzAmplitude(double amp);
 
-	double getBuzzFrequency();
+        double getBuzzFrequency() const { return buzzForce->getFrequency(); };
 
 	void setBuzzFrequency(double freq);
 
-	double getTextureAspectRatio() {
+	double getTextureAspectRatio() const {
 		return fixedPlane->getTextureAspectRatio();}
 
 	void setTextureAspectRatio(double ar) {
@@ -390,26 +393,26 @@ class DynamicPlane: public gstDynamic {
 
 	void setTextureSize(double size){
 		fixedPlane->setTextureSize(size);}
-	double getTextureSize() {return fixedPlane->getTextureSize();};
+	double getTextureSize() const {return fixedPlane->getTextureSize();};
 
 	void setTextureAmplitude(double amp){
 		fixedPlane->setTextureAmplitude(amp);}
-	double getTextureAmplitude() {
+	double getTextureAmplitude() const {
 		return fixedPlane->getTextureAmplitude();};
 
-	double getTextureWavelength() {
+	double getTextureWavelength() const {
 		return fixedPlane->getTextureWavelength();}
 
 	void setTextureWavelength(double wl) {
 		fixedPlane->setTextureWavelength(wl);}
 
-	double getTextureWaveNumber() {
+	double getTextureWaveNumber() const {
 		return fixedPlane->getTextureWaveNumber();}
 
 	void setTextureWaveNumber(double wn) {
 		fixedPlane->setTextureWaveNumber(wn);}
 
-	void getTextureShape(int nsamples, float *surface) {
+	void getTextureShape(int nsamples, float *surface) const {
 		fixedPlane->getTextureShape(nsamples, surface);}
 
 	bool getActive(void) const { return (_active != 0); }
@@ -418,7 +421,7 @@ class DynamicPlane: public gstDynamic {
 
 	void fadeAway(double fadingDuration) 
 		    { fixedPlane->fadeAway(fadingDuration);}
-	int fadeDone(){ return fixedPlane->fadeDone();}
+	int fadeDone() const { return fixedPlane->fadeDone();}
 	void cancelFade() {fixedPlane->cancelFade();}
 
 	void setDataCB(pos_force_dataCB func, void *ud){
@@ -429,11 +432,11 @@ class DynamicPlane: public gstDynamic {
 	// DynamicPlane-specific:
 	void planeEquationToTransform(vrpn_HapticPlane &prev_plane,
 		vrpn_HapticPlane &next_plane, vrpn_HapticMatrix &xform_to_update);
-	void setPlaneFromTransform(vrpn_HapticPlane &pl, vrpn_HapticMatrix &xfm);
-
 	void planeEquationToTransform(const vrpn_HapticPlane &prev_plane, 
 		const vrpn_HapticPlane &next_plane, const vrpn_HapticVector &p_project, 
 		vrpn_HapticMatrix &xform);
+	void setPlaneFromTransform(vrpn_HapticPlane &pl, vrpn_HapticMatrix &xfm);
+
 
 #ifdef	VRPN_USE_HDAPI
 	const vrpn_HapticPlane &getPlane(void) const { return plane; }
@@ -442,7 +445,7 @@ class DynamicPlane: public gstDynamic {
   private:
 	void updateTransform(const vrpn_HapticMatrix &xfm) {
 		xform = xfm;};
-	vrpn_HapticMatrix getTransform() {
+	vrpn_HapticMatrix getTransform() const {
 		return xform;};
 
 #ifdef	VRPN_USE_HDAPI

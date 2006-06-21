@@ -113,19 +113,9 @@ void DynamicPlane::setSurfaceKspring(double ks)
     fixedPlane->setSurfaceKspring(ks);
 }
 
-double DynamicPlane::getBuzzAmplitude()
-{
-    return buzzForce->getAmplitude();
-}
-
 void DynamicPlane::setBuzzAmplitude(double amp)
 {
     buzzForce->setAmplitude(amp);
-}
-
-double DynamicPlane::getBuzzFrequency()
-{
-    return buzzForce->getFrequency();
 }
 
 void DynamicPlane::setBuzzFrequency(double freq) {
@@ -172,7 +162,7 @@ void DynamicPlane::setBuzzFrequency(double freq) {
 
 void DynamicPlane::updateDynamics() {
 	get_mutex(&xform_mutex);
-	if (_is_new_plane){
+	if (_is_new_plane) {
 		planeEquationToTransform(lastPlane, plane, xform);
 		// if we don't compute plane from xform then any
 		// roundoff error in xform will be allowed to accumulate without
@@ -185,13 +175,15 @@ void DynamicPlane::updateDynamics() {
 		release_mutex(&xform_mutex);
 #ifdef	VRPN_USE_HDAPI
 		//XXX Probably going to need some transform code in here somewhere to keep track of motion
+                //XXXX This xform definitely changes when new planes are sent!
 #else
 		setTransformMatrixDynamic(xform);
 #endif
 		_is_new_plane = FALSE;
-	}
-	else
-	release_mutex(&xform_mutex);
+        } else {
+	        release_mutex(&xform_mutex);
+        }
+
 #ifdef	VRPN_USE_HDAPI
 	//XXX Probably going to need some code in here somewhere to emulate GHOST behavior
 #else
@@ -336,9 +328,9 @@ void DynamicPlane::setPlaneFromTransform(vrpn_HapticPlane &pl,
 {
 #ifdef	VRPN_USE_HDAPI
 	vrpn_HapticVector normal(0,1,0);
-	normal = xfm.multMatrixVec(normal, normal);
+	normal = xfm.multVecMatrix(normal, normal);
 	vrpn_HapticPosition origin(0,0,0);
-	origin = xfm.multVecMatrix(origin, origin);
+	origin = xfm.multMatrixVec(origin, origin);
         pl = vrpn_HapticPlane(normal[0], normal[1], normal[2], -origin.magnitude());
 #else
 	vrpn_HapticVector normal(0,1,0);
@@ -529,7 +521,7 @@ vrpn_HapticBoolean TexturePlane::intersection(const vrpn_HapticPosition &startPt
 			       vrpn_HapticPosition &intersectionPt_WC,
 			       vrpn_HapticVector &intersectionPtNormal_WC,
 			       void **)
-{   
+{
 	// XXX - this function doesn't do the right thing if there
 	// are any other shapes in the scene
 	return FALSE;
@@ -734,7 +726,7 @@ vrpn_HapticBoolean TexturePlane::usingAssumedTextureBasePlane(vrpn_HapticPlane &
 
 // given a point, compute the tangent to the
 // point at the orthogonal projection intersection point
-vrpn_HapticPlane TexturePlane::computeTangentPlaneAt(vrpn_HapticPosition pnt)
+vrpn_HapticPlane TexturePlane::computeTangentPlaneAt(vrpn_HapticPosition pnt) const
 {
 	// compute normal at pnt[0],pnt[2]
 	vrpn_HapticVector pNormal = computeNormal(pnt[0],pnt[2]);
@@ -745,7 +737,7 @@ vrpn_HapticPlane TexturePlane::computeTangentPlaneAt(vrpn_HapticPosition pnt)
 }
 
 
-vrpn_HapticPosition TexturePlane::projectPointOrthogonalToStaticPlane(vrpn_HapticPosition pnt)
+vrpn_HapticPosition TexturePlane::projectPointOrthogonalToStaticPlane(vrpn_HapticPosition pnt) const
 {
 	double y = computeHeight(pnt[0], pnt[2]);
 	vrpn_HapticPosition projection = pnt;
@@ -780,7 +772,7 @@ vrpn_HapticPosition TexturePlane::projectPointOrthogonalToStaticPlane(vrpn_Hapti
 	must be transformed correctly
 
   */
-vrpn_HapticPosition TexturePlane::computeSCPfromGradient(vrpn_HapticPosition currentPos)
+vrpn_HapticPosition TexturePlane::computeSCPfromGradient(vrpn_HapticPosition currentPos) const
 {
 	double pos_x, pos_y, pos_z, pos_r; // position in local coordinates
 	double scp_h;	// scp in local coordinates
@@ -840,7 +832,7 @@ void TexturePlane::updateTextureOrigin(double x, double z)
 }
 
 // for texture:
-double TexturePlane::computeHeight(double x, double z)
+double TexturePlane::computeHeight(double x, double z) const
 {
 	double r_sq = x*x + z*z;
 	double r = sqrt(r_sq);
@@ -850,14 +842,14 @@ double TexturePlane::computeHeight(double x, double z)
 }
 
 // for texture: compute height as a function of radius from texture origin
-double TexturePlane::computeHeight(double r)
+double TexturePlane::computeHeight(double r) const
 {
 	double k = 2*M_PI*texWN;
 	return texAmp*cos(k*r);
 }
 
 // for texture:
-vrpn_HapticVector TexturePlane::computeNormal(double x, double z)
+vrpn_HapticVector TexturePlane::computeNormal(double x, double z) const
 {
 	double k = 2*M_PI*texWN;
 	double r_sq = x*x + z*z;
@@ -877,7 +869,7 @@ vrpn_HapticVector TexturePlane::computeNormal(double x, double z)
 
 // returns what a single wavelength looks like (height in mm as a function
 // of distance from texture origin)
-void TexturePlane::getTextureShape(int nsamples, float *surface)
+void TexturePlane::getTextureShape(int nsamples, float *surface) const
 {
 	
 	double	radius = 0;

@@ -1,3 +1,20 @@
+2006-06-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* ghost.h : Added the friction and damping parameters to
+		the Plane class to the HDAPI implementation.
+		This ended up meaning that HL is being used for all of
+		the force generation.  This ended up requiring the
+		code to reset the ModelView transform in OpenGL (it puts
+		it back) to make sure the code works when run from within
+		an OpenGL context.
+	* forcefield.C : Same.
+	* plane.C : Same.
+	* plane.h : Same.
+	* texture_plane.C : Same.
+	* texture_plane.h : Same.
+	* vrpn_Phantom.C : Same.
+	* vrpn_Phantom.h : Same.
+
 2006-06-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* ghost.h : Continuing to try and port from GHOST to HDAPI.

@@ -5,6 +5,11 @@
 #endif
 
 //XXX Problem: Recovery time seems to have gotten itself unimplemented over time.
+
+//XXX Buzzing and texture are not currently supported on HDAPI planes because
+// only the basic Plane has been implemented within HDAPI, rather than the
+// texturePlane.  This should be changeable in the future.
+
 #include  "vrpn_Configure.h"
 #ifdef	VRPN_USE_PHANTOM_SERVER
 #include <math.h>
@@ -22,6 +27,9 @@
 #ifdef	VRPN_USE_HDAPI
   #include <HD/hd.h>
   #include <HDU/hduError.h>
+  #include <HL/hl.h>
+  #include <GL/gl.h>  // Needed to deal with the fact that HL ties in to the OpenGL state.
+  #pragma comment (lib, "opengl32.lib") // Needed for the OpenGL calls we use.
 #endif
 
 #include "plane.h"
@@ -68,8 +76,19 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 //--------------------------------------------------------------------------------
 // BEGIN HDAPI large chunk
 
+// Originally, all of the OpenHaptics code was implemented using HDAPI.  However,
+// when the proxy-geometry code was needed that does friction for the planes, it
+// was switched over to HL.  All of the low-level HDAPI force effects were turned
+// into an HL custom force effect to avoid fighting between the HL and HDAPI
+// servo callbacks.  The HDAPI servo callback was basically turned into an HL
+// custom force callback.  This custom force callback handles everything but the
+// planes.  The planes are handled within the Plane class, which knows how to
+// render itself in HL.
+
 // Structure to hold pointers to active force-generating objects,
 // and the current force and surface contact point.
+
+static void HLCALLBACK computeForceCB(HDdouble force[3], HLcache *cache, void *userdata);
 
 class ACTIVE_FORCE_OBJECT_LIST {
 public:
@@ -90,12 +109,51 @@ public:
 
 static ACTIVE_FORCE_OBJECT_LIST	g_active_force_object_list;
 
+// Initialize the HL library, so that we can do custom shapes (the
+// plane is implemented this way) and later maybe add in the
+// polygonal-object implementation.
+void vrpn_Phantom::initHL(HHD phantom)
+{
+  // Create a haptic context for the device. The haptic context maintains 
+  // the state that persists between frame intervals and is used for
+  // haptic rendering.
+  hHLRC = hlCreateContext(phantom);
+  hlMakeCurrent(hHLRC);
+
+  hlTouchableFace(HL_FRONT);
+  hlTouchModel(HL_CONTACT);
+
+  // Get IDs for all of the planes and other objects
+  int i;
+  for(i=0; i<MAXPLANE; i++ ) {
+    planes[i]->getHLId();
+  }
+
+  effectId = hlGenEffects(1);
+}
+
+void vrpn_Phantom::tearDownHL(void)
+{
+  // Release the IDs for the planes and other objects
+  // Get IDs for all of the planes and other objects
+  int i;
+  for(i=0; i<MAXPLANE; i++ ) {
+    planes[i]->releaseHLId();
+  }
+
+  hlDeleteEffects(effectId, 1);
+
+  // No longer using the context.
+  hlMakeCurrent(NULL);
+  hlDeleteContext(hHLRC);
+}
+
 // The work of reading the entire device state is done in a callback
 // handler that is scheduled synchronously between the force-calculation
 // thread and the main (communication) thread.  This makes sure we don't
 // have a collision between the two.
 
-HDCallbackCode HDCALLBACK readDeviceState(void *pUserData)
+static HDCallbackCode HDCALLBACK readDeviceState(void *pUserData)
 {
   HDAPI_state *state = (HDAPI_state *)pUserData;
 
@@ -109,118 +167,60 @@ HDCallbackCode HDCALLBACK readDeviceState(void *pUserData)
 }
 
 // This callback handler is called once during each haptic schedule frame.
-// It handles calculation of the force based on the currently-active planes,
+// It handles calculation of the force based on the currently-active
 // forcefields, constraints, effects, and other force-generating objects.
 // It relies on the above static global data structure to keep track of
 // which objects are active.
+// The planes are handled as objects with custom intersection routines
+// so they can make use of the HL-supplied friction and so forth.  They
+// are not handled in this function.
 
-HDCallbackCode HDCALLBACK HDAPIForceCallback(void *pUserData)
+static void HLCALLBACK computeForceCB(HDdouble force[3], HLcache *cache, void *userdata)
 {
-  HDErrorInfo error;
-  hdBeginFrame(hdGetCurrentDevice());
+  //---------------------------------------------------------------
+  // Handle the custom force calculation.
 
-    HDAPI_state	state;
-    hdScheduleSynchronous(readDeviceState, &state, HD_MAX_SCHEDULER_PRIORITY);
+  // Is there a better, HL way to read this state?  There is a cache version,
+  // but then we end up with two different ways to read the state: one from the
+  // main routine to get data to send back to the client and another to read it
+  // for our use here.  Unless this is a problem, lets stick with the HDAPI method
+  // in both places to avoid code drift.  Actually, we can't get the last state
+  // using HL, so we can't compute things like velocity, so we're better off
+  // sticking with HDAPI if we can.
+  HDAPI_state	state;
+  hdScheduleSynchronous(readDeviceState, &state, HD_MAX_SCHEDULER_PRIORITY);
 
-    int i;
+  // Remember: g_active_force_object_list holds both the lists
+  // of objects that generate forces and the current status of
+  // both the force and the surface contact point, if any.
+  // To start with, we have no force.
+  g_active_force_object_list.CurrentForce.set(0,0,0);
 
-    // Remember: g_active_force_object_list holds both the lists
-    // of objects that generate forces and the current status of
-    // both the force and the surface contact point, if any.
-    // To start with, we have no force.
-    g_active_force_object_list.CurrentForce.set(0,0,0);
+  // The plane forces are computed separately: they are included in the HL
+  // display as their own objects and they will add in their contributions
+  // through that mechanism.
 
-    // XXX Some day, triangles meshes (and/or height fields?)
-
-    // Update dynamics for all dynamic objects (right now just dynamic planes...)
-#ifdef	DYNAMIC_PLANES
-    for (i = 0; i < g_active_force_object_list.Planes.size(); i++) {
-      g_active_force_object_list.Planes[i]->updateDynamics();
-    }
-#endif
-
-    // Need to do collision detection with all planes and determine
-    // the final location of the SCP.
-    bool    found_collision = false;
-    double  current_position[3] = { state.pose[3][0], state.pose[3][1], state.pose[3][2] };
-    for (i = 0; i < g_active_force_object_list.Planes.size(); i++) {
-      //XXXSolveForSCPAndCheckForCollisions;
-
-      // XXX For now, just treat each plane separately and sum up
-      // the forces; we base the force on the penetration depth of
-      // the plane times its spring constant.  We say there are no
-      // collisions (not true) to avoid calling the code below.
-      vrpn_HapticPosition	  where(current_position);
-      vrpn_HapticCollisionState	  collistion_state(where);
-
-      //XXX Where did the collisionDetect() routine go for the dynamic plane?
-
-      vrpn_HapticPlane	plane = g_active_force_object_list.Planes[i]->getPlane();
-      bool  active = g_active_force_object_list.Planes[i]->getActive();
-#ifdef	VRPN_USE_HDAPI
-      double depth= -plane.perpDistance(where);
-#else
-      double depth= -plane.error(where);
-#endif
-      //if (active) { printf("%lf, %lf, %lf,  %lf  (%lf)\n", plane.a(), plane.b(), plane.c(), plane.d(), g_active_force_object_list.Planes[i]->getSurfaceKspring()  ); }
-      if (active && (depth > 0) ) {
-	g_active_force_object_list.SCP = plane.projectPoint(where);
-
-        // Scale the spring constant by the maximum stable stiffness for the device.
-        // This is because the spring constant is in terms of this factor.
-	g_active_force_object_list.CurrentForce +=
-          plane.normal() * depth * g_active_force_object_list.Planes[i]->getSurfaceKspring() * state.max_stiffness;
-      }
-    }
-
-    // If there were no collisions, then set the surface contact point
-    // to be the current hand position.  If there were collisions,
-    // then set the force based on the difference between the surface
-    // contact point and the current hand position.
-    if (!found_collision) {
-	g_active_force_object_list.SCP = current_position;
-    } else {
-	// We did have at least one collision, so we need to compute
-	// the reaction force due to surface penetration and friction.
-	// XXX Friction for each plane differs
-	// XXX Normal force for each plane differs
-	// XXX Damping in each plane differs.
-    }
-
-    // Need to add in any constraint forces
-    for (i = 0; i < g_active_force_object_list.ConstraintEffects.size(); i++) {
-	g_active_force_object_list.CurrentForce += g_active_force_object_list.ConstraintEffects[i]->calcEffectForce(&state);
-    }
-
-    // Need to add in any effect forces
-    for (i = 0; i < g_active_force_object_list.ForceFieldEffects.size(); i++) {
-	g_active_force_object_list.CurrentForce += g_active_force_object_list.ForceFieldEffects[i]->calcEffectForce(&state);
-    }
-
-    // Need to add in any instant buzzing effect
-    for (i = 0; i < g_active_force_object_list.InstantBuzzEffects.size(); i++) {
-	g_active_force_object_list.CurrentForce += g_active_force_object_list.InstantBuzzEffects[i]->calcEffectForce();
-    }
-
-    // Send the force to the device
-    double  force[3];
-    force[0] = g_active_force_object_list.CurrentForce[0];
-    force[1] = g_active_force_object_list.CurrentForce[1];
-    force[2] = g_active_force_object_list.CurrentForce[2];
-    hdSetDoublev(HD_CURRENT_FORCE, force);
-
-  hdEndFrame(hdGetCurrentDevice());
-
-  /* Check if an error occurred while attempting to render the force */
-  if (HD_DEVICE_ERROR(error = hdGetError())) {
-      if (hduIsForceError(&error)) {
-	  // XXX bRenderForce = FALSE;  // Example code from AnchoredSpringForce.c
-      } else {
-          return HD_CALLBACK_DONE;
-      }
+  // Need to add in any constraint forces
+  int i;
+  for (i = 0; i < g_active_force_object_list.ConstraintEffects.size(); i++) {
+      g_active_force_object_list.CurrentForce += g_active_force_object_list.ConstraintEffects[i]->calcEffectForce(&state);
   }
 
-  return HD_CALLBACK_CONTINUE;
+  // Need to add in any effect forces
+  for (i = 0; i < g_active_force_object_list.ForceFieldEffects.size(); i++) {
+      g_active_force_object_list.CurrentForce += g_active_force_object_list.ForceFieldEffects[i]->calcEffectForce(&state);
+  }
+
+  // Need to add in any instant buzzing effect
+  for (i = 0; i < g_active_force_object_list.InstantBuzzEffects.size(); i++) {
+      g_active_force_object_list.CurrentForce += g_active_force_object_list.InstantBuzzEffects[i]->calcEffectForce();
+  }
+
+  // Add the results of the above force calculations to the currently-displayed on
+  // within the standard HL rendering.
+  force[0] += g_active_force_object_list.CurrentForce[0];
+  force[1] += g_active_force_object_list.CurrentForce[1];
+  force[2] += g_active_force_object_list.CurrentForce[2];
 }
 
 // END HDAPI large chunk
@@ -341,10 +341,10 @@ void vrpn_Phantom::check_parameters(vrpn_Plane_PHANTOMCB *p)
 void vrpn_Phantom::resetPHANToM(void)
 {
 #ifdef	VRPN_USE_HDAPI
-  /* Cleanup by stopping the haptics loop, unscheduling the asynchronous
-     callback and disabling the device */
-  hdStopScheduler();
-  hdUnschedule(hServoCallback);
+
+  // Turn off everything in HL.
+  tearDownHL();
+
   hdDisableDevice(phantom);
 
   HDErrorInfo error;
@@ -353,19 +353,7 @@ void vrpn_Phantom::resetPHANToM(void)
       hduPrintError(stderr, &error, "Failed to initialize haptic device");
   }
 
-  /* Schedule the haptic callback function for continuously monitoring the
-     button state and rendering the anchored spring force */
-  hServoCallback = hdScheduleAsynchronous(
-      HDAPIForceCallback, this, HD_MAX_SCHEDULER_PRIORITY);
-
-  hdEnable(HD_FORCE_OUTPUT);
-  Sleep(500);
-
-  /* Start the haptic rendering loop */
-  hdStartScheduler();
-  if (HD_DEVICE_ERROR(error = hdGetError())) {
-      hduPrintError(stderr, &error, "Failed to start scheduler");
-  }
+  initHL(phantom);
 
 #else
   // Ghost 3.0 manual says you don't have to do this
@@ -410,6 +398,7 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
                  rootH(NULL),
                  hapticScene(NULL),
                  phantom(NULL),
+                 HHLRC(NULL),
                  //trimesh(NULL),
 #endif
                  pointConstraint(NULL),
@@ -593,6 +582,8 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
                                       (vrpn_dropped_last_connection),
 		handle_dropConnection, this);
 
+  // Open the Phantom and get all of the contexts we need.
+  // This is also done in resetPHANToM.
 #ifdef	VRPN_USE_HDAPI
   HDErrorInfo error;
   phantom = hdInitDevice(HD_DEFAULT_DEVICE);
@@ -600,18 +591,8 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
       hduPrintError(stderr, &error, "Failed to initialize haptic device");
   }
 
-  /* Schedule the haptic callback function for continuously monitoring the
-     button state and rendering the anchored spring force */
-  hServoCallback = hdScheduleAsynchronous(
-      HDAPIForceCallback, this, HD_MAX_SCHEDULER_PRIORITY);
-
-  hdEnable(HD_FORCE_OUTPUT);
-
-  /* Start the haptic rendering loop */
-  hdStartScheduler();
-  if (HD_DEVICE_ERROR(error = hdGetError())) {
-      hduPrintError(stderr, &error, "Failed to start scheduler");
-  }
+  // XXX When this is removed, we lose the fighting
+  initHL(phantom);
 #else
   scene->startServoLoop();
 #endif
@@ -620,10 +601,7 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
 vrpn_Phantom::~vrpn_Phantom()
 {
 #ifdef	VRPN_USE_HDAPI
-  /* Cleanup by stopping the haptics loop, unscheduling the asynchronous
-     callback and disabling the device */
-  hdStopScheduler();
-  hdUnschedule(hServoCallback);
+  tearDownHL();
   hdDisableDevice(phantom);
 #endif
 }
@@ -656,6 +634,49 @@ void vrpn_Phantom::mainloop(void) {
 
     // Allow the base server class to do its thing
     server_mainloop();
+
+#ifdef	VRPN_USE_HDAPI
+    // Okay, this is REALLY HORRIBLE.  It turns out that HL ties itself
+    // intimately into OpenGL.  It gets its original workspace to haptic
+    // mapping by looking at the OpenGL Modelview matrix when the haptic
+    // frame is begun.  To avoid having the graphics code interfere with
+    // the haptic code in an application that runs this server within
+    // the same process, we set the ModelView matrix to the identity here
+    // (after storing it).  We then restore it after the haptic rendering
+    // loop.  We also store the current matrix mode so that we can restore
+    // it afterwards.  We want to leave the OpenGL state exactly like it
+    // was before we did the haptic rendering.
+    glPushAttrib(GL_TRANSFORM_BIT);
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+
+    //---------------------------------------------------------------
+    // Handle the HL portion of the force calculation.  This currently
+    // includes only the planes.  This rendering does not work if we
+    // put it inside the HD force callback routine, so we do it here
+    // in the mainloop() function.  In fact, we should only have to
+    // re-render when something changes, but it doesn't seem to hurt
+    // to re-render all the time.
+
+    hlBeginFrame();
+
+      // Render each of the active force objects.
+      int i;
+      for (i = 0; i < g_active_force_object_list.Planes.size(); i++) {
+        g_active_force_object_list.Planes[i]->renderHL();
+      }
+
+      // Render the effect forces
+      hlCallback(HL_EFFECT_COMPUTE_FORCE, (HLcallbackProc) computeForceCB, NULL);
+      hlStartEffect(HL_EFFECT_CALLBACK, effectId);
+
+    hlEndFrame();
+
+    // Put the OpenGL state back where it was.
+    glPopMatrix();
+    glPopAttrib();
+#endif
 
     //set if it is time to generate a new report 
     vrpn_gettimeofday(&current_time, NULL);
@@ -733,6 +754,7 @@ void vrpn_Phantom::mainloop(void) {
 	d_force[0] = g_active_force_object_list.CurrentForce[0];
 	d_force[1] = g_active_force_object_list.CurrentForce[1];
 	d_force[2] = g_active_force_object_list.CurrentForce[2];
+
 #else
 	//check button status
 	if(phantom->getStylusSwitch() ) {

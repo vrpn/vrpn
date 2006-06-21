@@ -11,6 +11,8 @@
 #ifdef	VRPN_USE_HDAPI
 typedef unsigned int HHD;
 typedef unsigned long HDSchedulerHandle;
+typedef void *HHLRC;
+typedef unsigned int HLuint;
 #else
 class gstScene;
 class gstSeparator;
@@ -24,7 +26,10 @@ class ConstraintEffect;
 class ForceFieldEffect;
 
 // XXX HDAPI uses Planes rather than DynamicPlanes because I couldn't debug the
-// more complicated plane port.
+// more complicated plane port.  Symptoms of the broken-ness for the Dynamic
+// plane: The sphere_client program puts a plane facing
+// in the positive Y direction (at Y=0) which never moves.  Check the
+// updateDynamics() call, perhaps.
 #ifdef	VRPN_USE_HDAPI
 #undef	DYNAMIC_PLANES
 #else
@@ -71,7 +76,8 @@ protected:
 	double update_rate;
 #ifdef	VRPN_USE_HDAPI
 	HHD		  phantom;	    //< The Phantom hardware device we are using
-	HDSchedulerHandle hServoCallback;   //< The Haptic Servo loop callback identifier
+        HHLRC             hHLRC;            //< handle to haptic rendering context
+        HLuint            effectId;         //< Effect ID of HL custom force effect
         int   button_0_bounce_count, button_1_bounce_count; //< Used to remove button "bounce"
 #else
 	gstScene *scene;
@@ -164,7 +170,10 @@ protected:
 	// make an object touchable or not
 	virtual bool setObjectIsTouchable(vrpn_int32 objNum, vrpn_bool IsTouchable);
 
-#ifndef VRPN_USE_HDAPI
+#ifdef VRPN_USE_HDAPI
+        void initHL(HHD phantom);
+        void tearDownHL(void);
+#else
         gstSeparator *GetObject(vrpn_int32 objNum);
 #endif
 	Trimesh *GetObjectMesh(vrpn_int32 objNum);

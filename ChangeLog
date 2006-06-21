@@ -1,3 +1,9 @@
+2006-06-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Added HL library when compiling Phantom
+		driver with HDAPI library.
+	* vrpn_Connection.C : Increased version number.
+
 2006-05-04  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_Configure.h:  undoing the change i accidentally committed.
