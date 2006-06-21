@@ -20,6 +20,11 @@
 #HW_OS := powerpc_macosx
 ##########################
 
+INSTALL_DIR := /usr/local
+BIN_DIR := $(INSTALL_DIR)/bin
+INCLUDE_DIR := $(INSTALL_DIR)/include
+LIB_DIR := $(INSTALL_DIR)/lib
+
 ifndef	HW_OS
 # hw_os does not exist on FreeBSD at UNC
 UNAME := $(shell uname -s)
@@ -132,20 +137,44 @@ $(OBJ_DIR)/%.o: %.cpp
 	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
-all:	$(OBJ_DIR)/printvals $(OBJ_DIR)/printcereal \
-	$(OBJ_DIR)/vrpn_print_devices \
-	$(OBJ_DIR)/checklogfile $(OBJ_DIR)/logfilesenders \
-	$(OBJ_DIR)/logfiletypes $(OBJ_DIR)/text \
-	forwarderClient $(OBJ_DIR)/bdbox_client \
-	$(OBJ_DIR)/ff_client \
-	$(OBJ_DIR)/phan_client \
-	$(OBJ_DIR)/forcedevice_test_client \
-	$(OBJ_DIR)/sphere_client $(OBJ_DIR)/bdbox_client \
-	add_vrpn_cookie test_mutex \
-	vrpn_ping test_imager
-#	$(OBJ_DIR)/vrpn_print_messages
+INSTALL_APPS := vrpn_print_devices forcedevice_test_client vrpn_ping \
+	add_vrpn_cookie
+# vrpn_print_messages
+
+APPS := $(INSTALL_APPS) printvals printcereal checklogfile logfilesenders \
+	logfiletypes text forwarderClient bdbox_client ff_client phan_client \
+	sphere_client bdbox_client test_mutex test_imager
+
+all:	$(APPS)
 
 # $(OBJ_DIR)/ohm_client
+
+.PHONY:	vrpn_print_devices
+vrpn_print_devices:	$(OBJ_DIR)/vrpn_print_devices
+
+.PHONY:	forcedevice_test_client
+forcedevice_test_client:	$(OBJ_DIR)/forcedevice_test_client
+
+.PHONY:	printvals
+printvals:	$(OBJ_DIR)/printvals
+
+.PHONY:	printcereal
+printcereal:	$(OBJ_DIR)/printcereal
+
+.PHONY:	checklogfile
+checklogfile:	$(OBJ_DIR)/checklogfile
+
+.PHONY:	bdbox_client
+bdbox_client:	$(OBJ_DIR)/bdbox_client
+
+.PHONY:	ff_client
+ff_client:	$(OBJ_DIR)/ff_client
+
+.PHONY:	phan_client
+phan_client:	$(OBJ_DIR)/phan_client
+
+.PHONY:	sphere_client
+sphere_client:	$(OBJ_DIR)/sphere_client
 
 .PHONY:	forwarderClient
 forwarderClient:	$(OBJ_DIR)/forwarderClient
@@ -267,6 +296,14 @@ $(OBJ_DIR)/logfilesenders: $(OBJ_DIR)/logfilesenders.o
 $(OBJ_DIR)/logfiletypes: $(OBJ_DIR)/logfiletypes.o
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/logfiletypes $(OBJ_DIR)/logfiletypes.o
 
+install: all
+	-mkdir $(BIN_DIR)
+	( cd $(BIN_DIR) ; rm -f $(INSTALL_APPS) )
+	( cd $(OBJ_DIR) ; cp $(INSTALL_APPS) $(BIN_DIR) )
+	( cd $(BIN_DIR) ; strip $(INSTALL_APPS) )
+
+uninstall:
+	( cd $(BIN_DIR) ; rm -f $(INSTALL_APPS) )
 
 clean:
 	rm -f $(OBJ_DIR)/*
