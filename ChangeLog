@@ -1,5 +1,9 @@
 2006-06-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* Makefile : Added install and uninstall targets.
+
+2006-06-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Configure.h : Added HL library when compiling Phantom
 		driver with HDAPI library.
 	* vrpn_Connection.C : Increased version number.

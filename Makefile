@@ -45,6 +45,11 @@
 #HW_OS := powerpc_macosx
 ##########################
 
+INSTALL_DIR := /usr/local
+BIN_DIR := $(INSTALL_DIR)/bin
+INCLUDE_DIR := $(INSTALL_DIR)/include
+LIB_DIR := $(INSTALL_DIR)/lib
+
 MV = /bin/mv
 MVF = $(MV) -f
 
@@ -497,6 +502,17 @@ clobberwin32:
 	$(RMF) -r pc_win32/vrpn/Debug/*
 	$(RMF) -r client_src/pc_win32/printvals/Debug/*
 	$(RMF) -r server_src/pc_win32/vrpn_server/Debug/*
+
+install: all
+	-mkdir $(LIB_DIR)
+	( cd $(LIB_DIR) ; rm -f libvrpn*.a )
+	( cd $(OBJECT_DIR) ; cp *.a $(LIB_DIR) )
+	-mkdir $(INCLUDE_DIR)
+	cp vrpn*.h $(INCLUDE_DIR)
+
+uninstall:
+	( cd $(LIB_DIR) ; rm -f libvrpn*.a )
+	( cd $(INCLUDE_DIR) ; rm -f vrpn*.h )
 
 #############################################################################
 #
