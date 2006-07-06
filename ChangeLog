@@ -1,3 +1,10 @@
+2006-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker.h : Increased the maximum number of
+		tracker sensors from 100 to 500.  This is to support
+		more reported beads in the CISMM Video Spot Tracker
+		program.
+
 2006-06-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Makefile : Added install and uninstall targets.
