@@ -3217,8 +3217,6 @@ int vrpn_Endpoint::pack_log_description (void) {
 }
 
 
-
-
 // Read all messages available on the given file descriptor (a TCP link).
 // Handle each message that is received.
 // Return the number of messages read, or -1 on failure.
@@ -3227,7 +3225,7 @@ int vrpn_Endpoint::handle_tcp_messages
           (const struct timeval * timeout) {
   timeval localTimeout;
   fd_set readfds, exceptfds;
-  int num_messages_read = 0;
+  unsigned num_messages_read = 0;
   int retval;
   int sel_ret;
 
@@ -3246,7 +3244,9 @@ int vrpn_Endpoint::handle_tcp_messages
   // Read incoming messages until there are no more characters to
   // read from the other side.  For each message, determine what
   // type it is and then pass it off to the appropriate handler
-  // routine.
+  // routine.  If d_stop_processing_messages_after has been set
+  // to a nonzero value, then stop processing if we have received
+  // at least that many messages.
 
   do {
     // Select to see if ready to hear from other side, or exception
@@ -3281,6 +3281,13 @@ int vrpn_Endpoint::handle_tcp_messages
       num_messages_read++;
     }
 
+    // If we've been asked to process only a certain number of
+    // messages, then stop if we've gotten at least that many.
+    if (d_parent->get_Jane_value() != 0) {
+      if (num_messages_read >= d_parent->get_Jane_value()) {
+        break;
+      }
+    }
   } while (sel_ret);
 
   return num_messages_read;
@@ -3294,12 +3301,15 @@ int vrpn_Endpoint::handle_tcp_messages
 // the UDP socket fails, so we need the UDP version.  If we use the UDP
 // version for the TCP code, it hangs when we the client drops its
 // connection, so we need the TCP code as well.
+// If d_stop_processing_messages_after has been set
+// to a nonzero value, then stop processing if we have received
+// at least that many messages.
 
 int vrpn_Endpoint::handle_udp_messages
                (const struct timeval * timeout) {
   timeval localTimeout;
   fd_set readfds, exceptfds;
-  int num_messages_read = 0;
+  unsigned num_messages_read = 0;
   int sel_ret;
   int retval;
 
@@ -3363,6 +3373,14 @@ int vrpn_Endpoint::handle_udp_messages
 //fprintf(stderr, "  Advancing inbuf pointer %d bytes.\n", retval);
         // Got one more message
         num_messages_read++;
+      }
+    }
+
+    // If we've been asked to process only a certain number of
+    // messages, then stop if we've gotten at least that many.
+    if (d_parent->get_Jane_value() != 0) {
+      if (num_messages_read >= d_parent->get_Jane_value()) {
+        break;
       }
     }
 
@@ -4173,20 +4191,17 @@ int vrpn_Endpoint::handle_type_message(void *userdata,
   // If not, add this type locally
   if( local_id == -1 )
   {
-    if( endpoint->d_parent != NULL ) 
-	{
+    if( endpoint->d_parent != NULL ) {
 	  local_id = endpoint->d_parent->register_message_type( type_name );
     }
 #ifdef VERBOSE
-    else 
-	{
+    else {
 	  printf( "vrpn_Endpoint::handle_type_message:  NULL d_parent "
 	  "when trying to auto-register remote message type %s.\n", type_name );
     }
 #endif
   }
-  if (endpoint->newRemoteType(type_name, p.sender, local_id) == -1) 
-  {
+  if (endpoint->newRemoteType(type_name, p.sender, local_id) == -1) {
     fprintf(stderr, "vrpn: Failed to add remote type %s\n", type_name);
     return -1;
   }
@@ -4197,16 +4212,14 @@ int vrpn_Endpoint::handle_type_message(void *userdata,
 
 void vrpn_Endpoint::setLogNames (const char * inName, const char * outName) 
 {
-	if( inName != NULL )
-		d_inLog->setName(inName);
-	if( outName != NULL )
-		d_outLog->setName(outName);
+  if( inName != NULL ) { d_inLog->setName(inName); }
+  if( outName != NULL ) { d_outLog->setName(outName); }
 }
 
 int vrpn_Endpoint::openLogs (void) {
 
-  if (d_inLog->open()) return -1;
-  if (d_outLog->open()) return -1;
+  if (d_inLog->open()) { return -1; }
+  if (d_outLog->open()) { return -1; }
 
   return 0;
 }
@@ -4757,6 +4770,8 @@ void vrpn_Connection::init (void) {
         (vrpn_CONNECTION_LOG_DESCRIPTION, handle_log_message);
   d_dispatcher->setSystemHandler
         (vrpn_CONNECTION_DISCONNECT_MESSAGE, handle_disconnect_message);
+
+  d_stop_processing_messages_after = 0;
 }
 
 //---------------------------------------------------------------------------

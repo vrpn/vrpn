@@ -1,10 +1,3 @@
-// XXX There is flashing when reading from a DirectX camera and displaying
-// on the same machine.  It seems to be the blue channel that does the
-// flashing.  If we put a sleep into the display routine, then it changes
-// the frequency of the flashing.  Changing the raised program and moving
-// it around on the screen changes the flashing behavior.  Seems like a
-// classic race condition.
-
 // XXX It gets so busy reading from the network that it never updates
 // the display.  This doesn't happen when it is a local connection.
 
@@ -79,6 +72,7 @@ DWORD lastCallTime[2]={0,0};
 DWORD ReportInterval=5000;
 
 // New pixels coming: fill them into the image and tell Glut to redraw.
+
 void  VRPN_CALLBACK handle_region_change(void *userdata, const vrpn_IMAGERREGIONCB info)
 {
     const vrpn_Imager_Region  *region=info.region;
@@ -93,7 +87,7 @@ void  VRPN_CALLBACK handle_region_change(void *userdata, const vrpn_IMAGERREGION
     // display correctly in OpenGL.
     // Figure out which color to put the data in depending on the name associated
     // with the channel index.  If it is one of "red", "green", or "blue" then put
-    // it into that channel.  If it is not one of these, put it into all channels.
+    // it into that channel.
     if (strcmp(imager->channel(region->d_chanIndex)->name, "red") == 0) {
       region->decode_unscaled_region_using_base_pointer(g_image+0, 3, 3*g_Xdim, 0, g_Ydim, true);
     } else if (strcmp(imager->channel(region->d_chanIndex)->name, "green") == 0) {
@@ -123,7 +117,11 @@ void  VRPN_CALLBACK handle_region_change(void *userdata, const vrpn_IMAGERREGION
     // NOTE: This will show intermediate frames, where perhaps only one color has
     // been loaded or a fraction of some have been loaded.  Use the end-of-frame
     // callback to determine when a full frame has been filled if you want to
-    // ensure that no tearing is visible.
+    // ensure that no tearing is visible.  To make really sure there is not tearing,
+    // also double buffer: fill partial frames into one buffer and draw from the
+    // most recent full frames in another buffer.  You could use an OpenGL texture
+    // as the second buffer, sending each full frame into texture memory and
+    // rendering a textured polygon.
 
     if (!g_already_posted) {
       g_already_posted = true;
@@ -132,11 +130,39 @@ void  VRPN_CALLBACK handle_region_change(void *userdata, const vrpn_IMAGERREGION
 }
 
 //----------------------------------------------------------------------------
+// Capture timing information and print out how many frames per second
+// are being drawn.  Remove this function if you don't want timing info.
+void print_timing_info(void)
+{ static struct timeval last_print_time;
+  struct timeval now;
+  static bool first_time = true;
+  static int frame_count = 0;
+
+  if (first_time) {
+    vrpn_gettimeofday(&last_print_time, NULL);
+    first_time = false;
+  } else {
+    frame_count++;
+    vrpn_gettimeofday(&now, NULL);
+    double timesecs = 0.001 * vrpn_TimevalMsecs(vrpn_TimevalDiff(now, last_print_time));
+    if (timesecs >= 5) {
+      double frames_per_sec = frame_count / timesecs;
+      frame_count = 0;
+      printf("Displayed frames per second = %lg\n", frames_per_sec);
+      last_print_time = now;
+    }
+  }
+}
+
+
+//----------------------------------------------------------------------------
 // Glut callback handlers.
 
 void myDisplayFunc(void)
 {
-  // Clear the window and prepare to draw in the back buffer
+  // Clear the window and prepare to draw in the back buffer.
+  // This is not strictly necessary, because we're going to overwrite
+  // the entire window without Z buffering turned on.
   glDrawBuffer(GL_BACK);
   glClearColor(0.0, 0.0, 0.0, 0.0);
   glClear(GL_COLOR_BUFFER_BIT);
@@ -152,27 +178,7 @@ void myDisplayFunc(void)
 
   // Capture timing information and print out how many frames per second
   // are being drawn.
-
-  { static struct timeval last_print_time;
-    struct timeval now;
-    static bool first_time = true;
-    static int frame_count = 0;
-
-    if (first_time) {
-      vrpn_gettimeofday(&last_print_time, NULL);
-      first_time = false;
-    } else {
-      frame_count++;
-      vrpn_gettimeofday(&now, NULL);
-      double timesecs = 0.001 * vrpn_TimevalMsecs(vrpn_TimevalDiff(now, last_print_time));
-      if (timesecs >= 5) {
-	double frames_per_sec = frame_count / timesecs;
-	frame_count = 0;
-	printf("Displayed frames per second = %lg\n", frames_per_sec);
-	last_print_time = now;
-      }
-    }
-  }
+  print_timing_info();
 
   // We've no longer posted redisplay since the last display.
   g_already_posted = false;
@@ -186,7 +192,7 @@ void myIdleFunc(void)
   vrpn_SleepMsecs(5);
   if (g_quit) {
     delete g_imager;
-    if (g_image) { delete [] g_image; };
+    if (g_image) { delete [] g_image; g_image = NULL; };
     exit(0);
   }
 }
@@ -254,6 +260,16 @@ int main(int argc, char **argv)
     vrpn_SleepMsecs(1);
   }
 
+  // Because the vrpn_Imager server doesn't follow "The VRPN Way" in that
+  // it will continue to attempt to flood the network with more data than
+  // can be sent, we need to tell the client's connection to stop handling
+  // incoming messages after some finite number, to avoid getting stuck down
+  // in the imager's mainloop() and never returning control to the main
+  // program.  This strange-named function does this for us.  If the camera
+  // is not sending too many messages for the network, this should not have
+  // any effect.
+  g_imager->connectionPtr()->Jane_stop_this_crazy_thing(50);
+
   // Allocate memory for the image and clear it, so that things that
   // don't get filled in will be black.
   if ( (g_image = new unsigned char[g_Xdim * g_Ydim * 3]) == NULL) {
@@ -265,6 +281,9 @@ int main(int argc, char **argv)
   }
   g_ready_for_region = true;
   printf("Receiving images at size %dx%d\n", g_Xdim, g_Ydim);
+  printf("Press '0'-'9' in OpenGL window to throttle incoming images.\n");
+  printf("Press '-' to disable throttling.\n");
+  printf("Press 'q' or 'Q' or ESC to quit.\n");
 
   // Initialize GLUT and create the window that will display the
   // video -- name the window after the device that has been

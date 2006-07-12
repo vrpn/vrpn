@@ -218,9 +218,11 @@ class VRPN_API vrpn_BaseClass : virtual public vrpn_BaseClassUnique {
 	virtual ~vrpn_BaseClass();
 
 	/// Called once through each main loop iteration to handle updates.
-	/// Remote object mainloop() should call d_connection->mainloop().
-	/// Server object mainloop() should service the device, and should not
-	/// normally call d_connection->mainloop().
+	/// Remote object mainloop() should call client_mainloop() and
+        /// then call d_connection->mainloop().
+	/// Server object mainloop() should service the device and then
+        /// call server_mainloop(), but should not normally call
+        /// d_connection->mainloop().
 	virtual void mainloop () = 0;
 
 	/// Returns a pointer to the connection this object is using

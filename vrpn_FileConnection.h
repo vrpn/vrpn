@@ -144,14 +144,16 @@ public:
     int jump_to_time(vrpn_float64 newtime);
     int jump_to_time(timeval newtime);
 
-	// jump_to_filetime sets the current position to the given absolute time
-	// return 1 if we got to the specified time and 0 if we didn't
-	int jump_to_filetime( timeval absolute_time );
+    // jump_to_filetime sets the current position to the given absolute time
+    // return 1 if we got to the specified time and 0 if we didn't
+    int jump_to_filetime( timeval absolute_time );
 
     // Not very useful.
     // Limits the number of messages played out on any one call to mainloop.
     // 0 => no limit.
-    void limit_messages_played_back (vrpn_int32 max_playback);
+    void limit_messages_played_back (vrpn_uint32 max_playback) {
+      Jane_stop_this_crazy_thing(max_playback);\
+    };
 
     // }}}
     // {{{ tokens for VRPN control messages (data members)
@@ -305,9 +307,6 @@ protected:
     bool	   d_preload;	  // Should THIS File Connection pre-load?
     bool	   d_accumulate;  // Should THIS File Connection accumulate?
     // }}}
-
-protected:
-    vrpn_int32 d_max_message_playback;
 };
 
 

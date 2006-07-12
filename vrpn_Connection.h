@@ -225,7 +225,6 @@ class VRPN_API vrpn_Endpoint {
       ///< peer.  It is called by both the client and server setup routines.
 
     void poll_for_cookie (const timeval * timeout = NULL);
-
     int finish_new_connection_setup (void);
 
     void drop_connection (void);
@@ -295,10 +294,10 @@ class VRPN_API vrpn_Endpoint {
     static int VRPN_CALLBACK handle_sender_message (void * userdata, vrpn_HANDLERPARAM p);
     static int VRPN_CALLBACK handle_type_message (void * userdata, vrpn_HANDLERPARAM p);
 	
-	// Routines to inform the endpoing of the connection of 
-	// which it is a part.
-	void setConnection( vrpn_Connection* conn ) {  d_parent = conn;  }
-	vrpn_Connection* getConnection( ) {  return d_parent;  }
+    // Routines to inform the endpoint of the connection of 
+    // which it is a part.
+    void setConnection( vrpn_Connection* conn ) {  d_parent = conn;  }
+    vrpn_Connection* getConnection( ) {  return d_parent;  }
 
   protected:
 
@@ -375,116 +374,147 @@ class VRPN_API vrpn_Connection {
 
   public:
 
-	// Use vrpn_get_connection_by_name to create a connection
-        // for clients.
-	vrpn_Connection (unsigned short listen_port_no =
-		         vrpn_DEFAULT_LISTEN_PORT_NO,
-                         const char * local_in_logfile_name = NULL,
-                         const char * local_out_logfile_name = NULL,
-                         const char * NIC_IPaddress = NULL,
-                         vrpn_Endpoint * (* epa) (vrpn_Connection *,
-                           vrpn_int32 *) = allocateEndpoint);
+    // Use vrpn_get_connection_by_name to create a connection
+    // for clients.
+    vrpn_Connection (unsigned short listen_port_no =
+		     vrpn_DEFAULT_LISTEN_PORT_NO,
+                     const char * local_in_logfile_name = NULL,
+                     const char * local_out_logfile_name = NULL,
+                     const char * NIC_IPaddress = NULL,
+                     vrpn_Endpoint * (* epa) (vrpn_Connection *,
+                       vrpn_int32 *) = allocateEndpoint);
 
-	//   Create a connection -  if server_name is not a file: name,
-	// makes an SDI-like connection to the named remote server
-	// (otherwise functions as a non-networked messaging hub).
-	// Port less than zero forces default.
-	//   Currently, server_name is an extended URL that defaults
-	// to VRPN connections at the port, but can be file:: to read
-	// from a file.  Other extensions should maintain this, so
-	// that VRPN uses URLs to name things that are to be connected
-	// to.
-	vrpn_Connection (const char * server_name,
-		     int port = vrpn_DEFAULT_LISTEN_PORT_NO,
-		     const char * local_in_logfile_name = NULL,
-		     const char * local_out_logfile_name = NULL,
-		     const char * remote_in_logfile_name = NULL,
-		     const char * remote_out_logfile_name = NULL,
-		     const char * NIC_IPaddress = NULL,
-		     vrpn_Endpoint * (* epa) (vrpn_Connection *,
-		       vrpn_int32 *) = allocateEndpoint);
+    //   Create a connection -  if server_name is not a file: name,
+    // makes an SDI-like connection to the named remote server
+    // (otherwise functions as a non-networked messaging hub).
+    // Port less than zero forces default.
+    //   Currently, server_name is an extended URL that defaults
+    // to VRPN connections at the port, but can be file:: to read
+    // from a file.  Other extensions should maintain this, so
+    // that VRPN uses URLs to name things that are to be connected
+    // to.
+    vrpn_Connection (const char * server_name,
+		 int port = vrpn_DEFAULT_LISTEN_PORT_NO,
+		 const char * local_in_logfile_name = NULL,
+		 const char * local_out_logfile_name = NULL,
+		 const char * remote_in_logfile_name = NULL,
+		 const char * remote_out_logfile_name = NULL,
+		 const char * NIC_IPaddress = NULL,
+		 vrpn_Endpoint * (* epa) (vrpn_Connection *,
+		   vrpn_int32 *) = allocateEndpoint);
 
-	virtual ~vrpn_Connection (void);
+    virtual ~vrpn_Connection (void);
 
-	// Returns 1 if the connection is okay, 0 if not
-	vrpn_bool doing_okay (void) const;
-	virtual	vrpn_bool connected (void) const;
+    // Returns 1 if the connection is okay, 0 if not
+    vrpn_bool doing_okay (void) const;
+    virtual vrpn_bool connected (void) const;
 
-	// This is similar to check connection except that it can be
-	// used to receive requests from before a server starts up
-	virtual int connect_to_client (const char * machine, int port);
+    // This is similar to check connection except that it can be
+    // used to receive requests from before a server starts up
+    virtual int connect_to_client (const char * machine, int port);
 
-	// Returns the name of the service that the connection was first
-	// constructed to talk to, or NULL if it was built as a server.
-	//inline const char * name (void) const { return my_name; }
+    // Returns the name of the service that the connection was first
+    // constructed to talk to, or NULL if it was built as a server.
+    //inline const char * name (void) const { return my_name; }
 
-	// Call each time through program main loop to handle receiving any
-	// incoming messages and sending any packed messages.
-	// Returns -1 when connection dropped due to error, 0 otherwise.
-	// (only returns -1 once per connection drop).
-        // Optional argument is TOTAL time to block on select() calls;
-        // there may be multiple calls to select() per call to mainloop(),
-        // and this timeout will be divided evenly between them.
-	virtual int mainloop (const struct timeval * timeout = NULL);
+    // Call each time through program main loop to handle receiving any
+    // incoming messages and sending any packed messages.
+    // Returns -1 when connection dropped due to error, 0 otherwise.
+    // (only returns -1 once per connection drop).
+    // Optional argument is TOTAL time to block on select() calls;
+    // there may be multiple calls to select() per call to mainloop(),
+    // and this timeout will be divided evenly between them.
+    virtual int mainloop (const struct timeval * timeout = NULL);
 
-	// Get a token to use for the string name of the sender or type.
-	// Remember to check for -1 meaning failure.
-	virtual vrpn_int32 register_sender (const char * name);
-	virtual vrpn_int32 register_message_type (const char * name);
+    // Get a token to use for the string name of the sender or type.
+    // Remember to check for -1 meaning failure.
+    virtual vrpn_int32 register_sender (const char * name);
+    virtual vrpn_int32 register_message_type (const char * name);
 
-	// Set up (or remove) a handler for a message of a given type.
-	// Optionally, specify which sender to handle messages from.
-	// Handlers will be called during mainloop().
-	// Your handler should return 0 or a communication error is assumed
-	// and the connection will be shut down.
-	virtual int register_handler(vrpn_int32 type,
-		vrpn_MESSAGEHANDLER handler, void *userdata,
-		vrpn_int32 sender = vrpn_ANY_SENDER);
-	virtual	int unregister_handler(vrpn_int32 type,
-		vrpn_MESSAGEHANDLER handler, void *userdata,
-		vrpn_int32 sender = vrpn_ANY_SENDER);
+    // Set up (or remove) a handler for a message of a given type.
+    // Optionally, specify which sender to handle messages from.
+    // Handlers will be called during mainloop().
+    // Your handler should return 0 or a communication error is assumed
+    // and the connection will be shut down.
+    virtual int register_handler(vrpn_int32 type,
+	    vrpn_MESSAGEHANDLER handler, void *userdata,
+	    vrpn_int32 sender = vrpn_ANY_SENDER);
+    virtual	int unregister_handler(vrpn_int32 type,
+	    vrpn_MESSAGEHANDLER handler, void *userdata,
+	    vrpn_int32 sender = vrpn_ANY_SENDER);
 
-	// Pack a message that will be sent the next time mainloop() is called.
-	// Turn off the RELIABLE flag if you want low-latency (UDP) send.
-	virtual int pack_message(vrpn_uint32 len, struct timeval time,
-		vrpn_int32 type, vrpn_int32 sender, const char * buffer,
-		vrpn_uint32 class_of_service);
+    // Pack a message that will be sent the next time mainloop() is called.
+    // Turn off the RELIABLE flag if you want low-latency (UDP) send.
+    virtual int pack_message(vrpn_uint32 len, struct timeval time,
+	    vrpn_int32 type, vrpn_int32 sender, const char * buffer,
+	    vrpn_uint32 class_of_service);
 
-	// send pending report, clear the buffer.
-	// This function was protected, now is public, so we can use it
-	// to send out intermediate results without calling mainloop
-	virtual int send_pending_reports (void);
+    // send pending report, clear the buffer.
+    // This function was protected, now is public, so we can use it
+    // to send out intermediate results without calling mainloop
+    virtual int send_pending_reports (void);
 
-	// Returns the time since the connection opened.
-	// Some subclasses may redefine time.
-	virtual int time_since_connection_open( struct timeval * elapsed_time );
+    // Returns the time since the connection opened.
+    // Some subclasses may redefine time.
+    virtual int time_since_connection_open( struct timeval * elapsed_time );
 
-	// returns the current time in the connection (since the epoch -- UTC time).
-	virtual timeval get_time( );
+    // returns the current time in the connection (since the epoch -- UTC time).
+    virtual timeval get_time( );
 
-	// Returns the name of the specified sender/type, or NULL
-	// if the parameter is invalid.  Only works for user
-	// messages (type >= 0).
-	virtual const char * sender_name (vrpn_int32 sender);
-	virtual const char * message_type_name (vrpn_int32 type);
+    // Returns the name of the specified sender/type, or NULL
+    // if the parameter is invalid.  Only works for user
+    // messages (type >= 0).
+    virtual const char * sender_name (vrpn_int32 sender);
+    virtual const char * message_type_name (vrpn_int32 type);
 
-        // Sets up a filter function for logging.
-        // Any user message to be logged is first passed to this function,
-        // and will only be logged if the function returns zero (XXX).
-        // NOTE:  this only affects local logging - remote logging
-        // is unfiltered!  Only user messages are filtered;  all system
-        // messages are logged.
-        // Returns nonzero on failure.
-        virtual int register_log_filter (vrpn_LOGFILTER filter,
-                                         void * userdata);
+    // Sets up a filter function for logging.
+    // Any user message to be logged is first passed to this function,
+    // and will only be logged if the function returns zero (XXX).
+    // NOTE:  this only affects local logging - remote logging
+    // is unfiltered!  Only user messages are filtered;  all system
+    // messages are logged.
+    // Returns nonzero on failure.
+    virtual int register_log_filter (vrpn_LOGFILTER filter,
+                                     void * userdata);
 
-        // Save any messages on any endpoints which have been logged so far.
-        virtual int save_log_so_far();
-
+    // Save any messages on any endpoints which have been logged so far.
+    virtual int save_log_so_far();
 
     // vrpn_File_Connection implements this as "return this" so it
     // can be used to detect a File_Connection and get the pointer for it
     virtual vrpn_File_Connection * get_File_Connection (void);
+
+    // This function should be seldom used.  It is here for the case of
+    // the vrpn_Imager, whose servers do not follow "The VRPN Way" because
+    // they try to jam more data into the network than there is bandwidth
+    // to support it.  As a result, a client may call mainloop() on the
+    // connection and have it never return -- there is always more data
+    // in the network to read, so we never hand control back to the main
+    // program.  The reason for the name comes from an old U.S. cartoon
+    // called "The Jetsons".  In it, George Jetson is running on a
+    // treadmill when it goes out of control and starts spinning so fast
+    // that he can't even run fast enough to reach the controls and turn
+    // it off.  He cries out to his wife, "Jane!  Stop this crazy thing!"
+    // The parameter specifies a trigger: if more than the specified number
+    // of messages come in on a given input channel during one mainloop()
+    // call, the connection should stop looking for more messages.  NOTE:
+    // this does not guarantee that only this many messages will be received,
+    // only that the connection will stop looking for new ones on a given
+    // channel once that many have been recived (for example, UDP channels
+    // will parse all the rest of the messages in a packet before stopping).
+    // A value of 0 turns off the limit, and will cause all incoming messages
+    // to be handled before returning.
+    void Jane_stop_this_crazy_thing(vrpn_uint32 stop_looking_after) {
+      d_stop_processing_messages_after = stop_looking_after;
+    };
+    vrpn_uint32 get_Jane_value(void) { return d_stop_processing_messages_after; };
+
+  protected:
+
+    // If this value is greater than zero, the connection should stop
+    // looking for new messages on a given endpoint after this many
+    // are found.
+    vrpn_uint32 d_stop_processing_messages_after;
 
   protected:
 
@@ -567,30 +597,30 @@ class VRPN_API vrpn_Connection {
 
     const char * d_NIC_IP;
 
-
-	//
-	// Counting references to this connection.
+    //
+    // Counting references to this connection.
   public:
-	void addReference();
-	void removeReference();
-  private:
-	int d_references;
+    void addReference();
+    void removeReference();
 
-	//
-	// Specify whether this connection should be deleted automatically when
-	//  it is no longer need (reference count reaches zero).
-	// For connections created by the VRPN code (as is done in 
-	//  get_connection_by_name) these should be auto-deleted.
-	//  Connections created by user code should not be auto-deleted;
-	//  that is up to the user to decide when finished.
-	// By default, the constructor sets this to FALSE.
-	// VRPN code (or user code) can set this to TRUE if it wants the
-	//  connection to be deleted automatically when the last service on it
-	//  is deleted 
-  public:
-	void setAutoDeleteStatus(bool setvalue) { d_autoDeleteStatus=setvalue; }
   private:
-	bool d_autoDeleteStatus;	// FALSE by default.
+    int d_references;
+
+    //
+    // Specify whether this connection should be deleted automatically when
+    //  it is no longer need (reference count reaches zero).
+    // For connections created by the VRPN code (as is done in 
+    //  get_connection_by_name) these should be auto-deleted.
+    //  Connections created by user code should not be auto-deleted;
+    //  that is up to the user to decide when finished.
+    // By default, the constructor sets this to FALSE.
+    // VRPN code (or user code) can set this to TRUE if it wants the
+    //  connection to be deleted automatically when the last service on it
+    //  is deleted 
+  public:
+    void setAutoDeleteStatus(bool setvalue) { d_autoDeleteStatus=setvalue; }
+  private:
+    bool d_autoDeleteStatus;	// FALSE by default.
 
 
   public:

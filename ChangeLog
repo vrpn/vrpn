@@ -1,3 +1,13 @@
+2006-07-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_BaseClass.h : Edited some comments.
+	* vrpn_Connection.h : Added functions to tell the connection to only
+		handle a finite number of messages per mainloop() call.
+	* vrpn_Connection.C : Same.
+	* vrpn_FileConnection.h : Re-implemented the limit_messages_played_back
+		function and its functionality using the new capability in the
+		vrpn_Connection object (from which FileConnection derives).
+
 2006-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Tracker.h : Increased the maximum number of

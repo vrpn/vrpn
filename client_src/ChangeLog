@@ -1,3 +1,10 @@
+2006-07-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* testimager_client.C : Adding a call to make the connection limit
+		the number of messages it will handle before returning control
+		to the application.  This prevents the server from choking the
+		whole program by continually filling the network with packets.
+
 2006-06-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Makefile : Added install and uninstall.
