@@ -48,7 +48,7 @@ bool vrpn_FILE_CONNECTIONS_SHOULD_ACCUMULATE = true;
 // User code should set this
 // to "false" before calling vrpn_get_connection_by_name() or creating
 // a new vrpn_File_Connection object if it wants that file connection
-// to not preload.  The value is only checked at connection creation time;
+// to not skip the messages.  The value is only checked at connection creation time;
 // the connection behaves consistently once created.  Leaving this true
 // can help with offsets in time that happen at the beginning of files.
 
@@ -62,11 +62,6 @@ bool vrpn_FILE_CONNECTIONS_SHOULD_SKIP_TO_USER_MESSAGES = true;
 // at the top of vrpn_Connection.C!
 static const int BROKEN = (-3);
 
-
-// Since the PRELOAD feature was added, I suspect it would
-// take some work to revert to the non-preload mode.  That is,
-// both modes were not tested as features were added.  It shouldn't
-// be hard to go back, but... -PBW 3/99
 
 // }}}
 // {{{ constructor
