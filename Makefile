@@ -69,6 +69,9 @@ ifndef HW_OS
       MAKE  := make -f $(MAKEFILE)
     else
       ifeq ($(UNAME), CYGWIN_98-4.10)
+	    HW_OS := pc_cygwin
+	    MAKE := make -f $(MAKEFILE)
+      else
         ifeq ($(UNAME), CYGWIN_NT-5.0)
 	    HW_OS := pc_cygwin
 	    MAKE := make -f $(MAKEFILE)
