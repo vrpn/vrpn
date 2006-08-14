@@ -26,7 +26,7 @@ enum vrpn_FunctionGenerator_FunctionTypes
 	NULL_FUNCTION = 0,
 	SINE_FUNCTION,
 	RAMP_FUNCTION,
-
+	DEGAUSS_FUNCTION,
 	
 	CUSTOM_FUNCTION = 999 
 };
@@ -125,7 +125,13 @@ public:
 	vrpn_int32 encode_to( char** buf, vrpn_int32& len ) const;
 	vrpn_int32 decode_from( const char** buf, vrpn_int32& len );
 
-	
+	vrpn_float32 getAmplitude( ) { return amplitude; }
+	bool setAmplitude( vrpn_float32 newVal ) { amplitude = newVal;  return true; }
+
+	vrpn_float32 getFrequency( ) { return frequency; }
+	bool setFrequency( vrpn_float32 newVal ) { frequency = newVal;  return true; }
+
+protected:	
 	vrpn_float32 amplitude;
 	vrpn_float32 frequency;
 
@@ -134,7 +140,7 @@ public:
 
 
 /*
-	A generalize ramp ,square-wave and saw-tooth function
+	A generalized ramp ,square-wave and saw-tooth function
 
       /|-------|\                     <-- up voltage
      /           \
@@ -160,6 +166,37 @@ public:
 	vrpn_int32 encode_to( char** buf, vrpn_int32& len ) const;
 	vrpn_int32 decode_from( const char** buf, vrpn_int32& len );
 
+	vrpn_float32 getUpVoltage( ) { return upVoltage; }
+	bool setUpVoltage( vrpn_float32 newVal ) { upVoltage = newVal;  return true; }
+
+	vrpn_float32 getDownVoltage( ) { return downVoltage; }
+	bool setDownVoltage( vrpn_float32 newVal ) { downVoltage = newVal;  return true; }
+
+	vrpn_float32 getInitialFlat( ) { return initialFlat; }
+	bool setInitialFlat( vrpn_float32 newVal ) { initialFlat = newVal;  return true; }
+
+	vrpn_float32 getRampHighUp( ) { return rampHighUp; }
+	bool setRampHighUp( vrpn_float32 newVal ) { rampHighUp = newVal;  return true; }
+
+	vrpn_float32 getRampHighDwell( ) { return rampHighDwell; }
+	bool setRampHighDwell( vrpn_float32 newVal ) { rampHighDwell = newVal;  return true; }
+
+	vrpn_float32 getRampHighDown( ) { return rampHighDown; }
+	bool setRampHighDown( vrpn_float32 newVal ) { rampHighDown = newVal;  return true; }
+
+	vrpn_float32 getMidFlat( ) { return midFlat; }
+	bool setMidFlat( vrpn_float32 newVal ) { midFlat = newVal;  return true; }
+
+	vrpn_float32 getRampLowDown( ) { return rampLowDown; }
+	bool setRampLowDown( vrpn_float32 newVal ) { rampLowDown = newVal;  return true; }
+
+	vrpn_float32 getRampLowDwell( ) { return rampLowDwell; }
+	bool setRampLowDwell( vrpn_float32 newVal ) { rampLowDwell = newVal;  return true; }
+
+	vrpn_float32 getRampLowUp( ) { return rampLowUp; }
+	bool setRampLowUp( vrpn_float32 newVal ) { rampLowUp = newVal;  return true; }
+
+protected:
 	vrpn_float32 upVoltage;
 	vrpn_float32 downVoltage;
 
@@ -172,7 +209,61 @@ public:
 	vrpn_float32 rampLowDwell;	// t6:  time output held at downVoltage
 	vrpn_float32 rampLowUp;		// t7:  time output ramps from downVoltage to zero
 
+};
+
+
+class VRPN_API vrpn_FunctionGenerator_function_degauss
+: public vrpn_FunctionGenerator_function
+{
+public:
+	vrpn_FunctionGenerator_function_degauss( );
+	virtual ~vrpn_FunctionGenerator_function_degauss( ) { }
+
+	vrpn_FunctionGenerator_FunctionTypes getFunctionType( ) const
+	{  return DEGAUSS_FUNCTION;  }
+
+	vrpn_float32 generateValues( vrpn_float32* buf, vrpn_uint32 nValues,
+								vrpn_float32 startTime, vrpn_float32 sampleRate, 
+								vrpn_FunctionGenerator_channel* channel ) const;
+	vrpn_float32 getCycleTime( ) const;
+	vrpn_int32 encode_to( char** buf, vrpn_int32& len ) const;
+	vrpn_int32 decode_from( const char** buf, vrpn_int32& len );
+
+	vrpn_float32 getInitialValue( ) { return initialValue; }
+	bool setInitialValue( vrpn_float32 newVal ) 
+	{ 
+		initialValue = newVal;
+		return true;
+	}
+
+	vrpn_float32 getFinalValue( ) { return finalValue; }
+	bool setFinalValue( vrpn_float32 newVal ) 
+	{ 
+		finalValue = newVal;
+		return true;
+	}
+
+	vrpn_float32 getFrequency( ) { return frequency; }
+	bool setFrequency( vrpn_float32 newVal ) 
+	{ 
+		if( frequency <= 0 ) return false;
+		frequency = newVal; 
+		return true;
+	}
+
+	vrpn_float32 getDecayRate( ) { return decay; }
+	bool setDecayRate( vrpn_float32 newVal ) 
+	{ 
+		if( newVal <= 0 || newVal >= 1 ) return false;
+		decay = newVal;
+		return true;
+	}
+
 protected:
+	vrpn_float32 initialValue;
+	vrpn_float32 finalValue;
+	vrpn_float32 frequency;
+	vrpn_float32 decay; // 0 < decay < 1.  fraction each cycle decays in amplitude.
 };
 
 

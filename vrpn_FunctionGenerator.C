@@ -2,6 +2,9 @@
 #include "vrpn_FunctionGenerator.h"
 
 
+const double PI=.14159265358979323846264338327950288419716939937510;
+
+
 /////////////////////////////////////////
 /////////////////////////////////////////
 // 
@@ -59,7 +62,7 @@ generateValues( vrpn_float32* buf, vrpn_uint32 nValues,
 	for( vrpn_uint32 i = 0; i <= nValues - 1; i++ )
 	{
 		buf[i] = (vrpn_float32) ( channel->offset + channel->gain * amplitude
-				* sin( channel->scaleTime * frequency * t + channel->phaseFromRef ) );
+				* sin( 2 * PI * channel->scaleTime * frequency * t + channel->phaseFromRef ) );
 		t += dt;
 	}
 	return (vrpn_float32) (t - dt);
@@ -125,6 +128,106 @@ decode_from( const char** buf, vrpn_int32& len )
 }
 //
 // end vrpn_FunctionGenerator_function_sine
+////////////////////////////////////////
+////////////////////////////////////////
+
+
+
+/////////////////////////////////////////
+/////////////////////////////////////////
+// 
+// class vrpn_FunctionGenerator_function_degauss
+
+vrpn_float32 vrpn_FunctionGenerator_function_degauss::
+generateValues( vrpn_float32* buf, vrpn_uint32 nValues,
+				 vrpn_float32 startTime, vrpn_float32 sampleRate, 
+				 vrpn_FunctionGenerator_channel* channel ) const
+{
+	vrpn_float64 t = startTime;
+	vrpn_float64 dt = 1 / sampleRate;
+	for( vrpn_uint32 i = 0; i <= nValues - 1; i++ )
+	{
+		buf[i] = (vrpn_float32) ( channel->offset + channel->gain * initialValue
+				* pow( decay, frequency * t )
+				* sin( 2 * PI * channel->scaleTime * frequency * t + channel->phaseFromRef ) );
+		t += dt;
+	}
+	return (vrpn_float32) (t - dt);
+}
+
+
+vrpn_float32 vrpn_FunctionGenerator_function_degauss::
+getCycleTime( ) const
+{
+	// final = initial * (decay) ^ (frequency * cycleTime)
+	// so cycleTime = log(final/initial) / ( log(decay) * frequency )
+	return (vrpn_float32) ( log( finalValue / initialValue ) / log( decay ) / frequency );
+}
+
+
+vrpn_int32 vrpn_FunctionGenerator_function_degauss::
+encode_to( char** buf, vrpn_int32& len ) const
+{
+	if( len < 4 * sizeof( vrpn_float32 ) )
+	{
+		fprintf( stderr, "vrpn_FunctionGenerator_function_degauss::encode_to:  "
+				"payload error (wanted %d got %d).\n", 4 * sizeof( vrpn_float32 ), len );
+		return -1;
+	}
+	vrpn_int32 retval = 0;
+	retval |= vrpn_buffer( buf, &len, initialValue );
+	retval |= vrpn_buffer( buf, &len, finalValue );
+	retval |= vrpn_buffer( buf, &len, frequency );
+	retval |= vrpn_buffer( buf, &len, decay );
+	if( retval < 0 )
+	{
+		fprintf( stderr, "vrpn_FunctionGenerator_function_degauss::encode_to:  "
+				"payload error (couldn't buffer).\n" );
+		return -1;
+	}
+	return 2 * sizeof( vrpn_float32 );
+}
+
+
+vrpn_int32 vrpn_FunctionGenerator_function_degauss::
+decode_from( const char** buf, vrpn_int32& len )
+{
+	if( len < 4 * sizeof( vrpn_float32 ) )
+	{
+		fprintf( stderr, "vrpn_FunctionGenerator_function_degauss::decode_from:  "
+				"payload error (wanted %d got %d).\n", 4 * sizeof( vrpn_float32 ), len );
+		return -1;
+	}
+
+	vrpn_float32 newInitVal, newFinalVal, newFreq, newDecay;
+	vrpn_int32 retval = 0;
+	retval |= vrpn_unbuffer( buf, &newInitVal );
+	len -= sizeof( newInitVal );
+
+	retval |= vrpn_unbuffer( buf, &newFinalVal );
+	len -= sizeof( newFinalVal );
+	
+	retval |= vrpn_unbuffer( buf, &newFreq );
+	len -= sizeof( newFreq );
+	
+	retval |= vrpn_unbuffer( buf, &newDecay );
+	len -= sizeof( newDecay );
+	
+	if( 0 > retval )
+	{
+		fprintf( stderr, "vrpn_FunctionGenerator_function_degauss::decode_from:  "
+				"payload error (couldn't unbuffer).\n" );
+		return -1;
+	}
+	initialValue = newInitVal;
+	finalValue = newFinalVal;
+	frequency = newFreq;
+	decay = newDecay;
+
+	return 2 * sizeof( vrpn_float32 );
+}
+//
+// end vrpn_FunctionGenerator_function_degauss
 ////////////////////////////////////////
 ////////////////////////////////////////
 
