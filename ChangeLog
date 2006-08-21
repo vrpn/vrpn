@@ -1,4 +1,10 @@
-2006-08-14    <marshbur@cs.unc.edu>
+2006-08-21  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGenerator.h,C:  fixed up a few things for
+	vrpn_FunctionGenerator_function_degauss -- constructor and
+	the way cycleTime is calculated.
+
+2006-08-14  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_FunctionGenerator.h,C:  added a new function, 
 	vrpn_FunctionGenerator_function_degauss.  also, made the data

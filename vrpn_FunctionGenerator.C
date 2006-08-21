@@ -138,6 +138,16 @@ decode_from( const char** buf, vrpn_int32& len )
 // 
 // class vrpn_FunctionGenerator_function_degauss
 
+vrpn_FunctionGenerator_function_degauss::
+vrpn_FunctionGenerator_function_degauss( )
+:	initialValue(1),
+	finalValue(0.1),
+	frequency(1),
+	decay(0.9)
+{
+
+}
+
 vrpn_float32 vrpn_FunctionGenerator_function_degauss::
 generateValues( vrpn_float32* buf, vrpn_uint32 nValues,
 				 vrpn_float32 startTime, vrpn_float32 sampleRate, 
@@ -153,15 +163,6 @@ generateValues( vrpn_float32* buf, vrpn_uint32 nValues,
 		t += dt;
 	}
 	return (vrpn_float32) (t - dt);
-}
-
-
-vrpn_float32 vrpn_FunctionGenerator_function_degauss::
-getCycleTime( ) const
-{
-	// final = initial * (decay) ^ (frequency * cycleTime)
-	// so cycleTime = log(final/initial) / ( log(decay) * frequency )
-	return (vrpn_float32) ( log( finalValue / initialValue ) / log( decay ) / frequency );
 }
 
 
@@ -226,6 +227,17 @@ decode_from( const char** buf, vrpn_int32& len )
 
 	return 2 * sizeof( vrpn_float32 );
 }
+
+
+void vrpn_FunctionGenerator_function_degauss::
+calculateCycleTime( )
+{
+	// final = initial * (decay) ^ (frequency * cycleTime)
+	// so cycleTime = log(final/initial) / ( log(decay) * frequency )
+	cycleTime = ( log( finalValue / initialValue ) / log( decay ) / frequency );
+}
+
+
 //
 // end vrpn_FunctionGenerator_function_degauss
 ////////////////////////////////////////

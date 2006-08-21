@@ -225,21 +225,25 @@ public:
 	vrpn_float32 generateValues( vrpn_float32* buf, vrpn_uint32 nValues,
 								vrpn_float32 startTime, vrpn_float32 sampleRate, 
 								vrpn_FunctionGenerator_channel* channel ) const;
-	vrpn_float32 getCycleTime( ) const;
+	vrpn_float32 getCycleTime( ) const { return cycleTime; }
 	vrpn_int32 encode_to( char** buf, vrpn_int32& len ) const;
 	vrpn_int32 decode_from( const char** buf, vrpn_int32& len );
 
 	vrpn_float32 getInitialValue( ) { return initialValue; }
 	bool setInitialValue( vrpn_float32 newVal ) 
-	{ 
+	{
+		if( initialValue <= 0 ) return false;
 		initialValue = newVal;
+		calculateCycleTime();
 		return true;
 	}
 
 	vrpn_float32 getFinalValue( ) { return finalValue; }
 	bool setFinalValue( vrpn_float32 newVal ) 
-	{ 
+	{
+		if( finalValue <= 0 ) return false;
 		finalValue = newVal;
+		calculateCycleTime();
 		return true;
 	}
 
@@ -248,6 +252,7 @@ public:
 	{ 
 		if( frequency <= 0 ) return false;
 		frequency = newVal; 
+		calculateCycleTime();
 		return true;
 	}
 
@@ -256,6 +261,7 @@ public:
 	{ 
 		if( newVal <= 0 || newVal >= 1 ) return false;
 		decay = newVal;
+		calculateCycleTime();
 		return true;
 	}
 
@@ -264,6 +270,8 @@ protected:
 	vrpn_float32 finalValue;
 	vrpn_float32 frequency;
 	vrpn_float32 decay; // 0 < decay < 1.  fraction each cycle decays in amplitude.
+	vrpn_float32 cycleTime;
+	void calculateCycleTime( );
 };
 
 
