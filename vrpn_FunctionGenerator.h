@@ -5,20 +5,20 @@
 #include "vrpn_Analog.h" // for vrpn_CHANNEL_MAX
 
 
-const int vrpn_FUNCTION_CHANNELS_MAX = vrpn_CHANNEL_MAX;
+const vrpn_uint32 vrpn_FUNCTION_CHANNELS_MAX = vrpn_CHANNEL_MAX;
 
-const char* vrpn_FUNCTION_MESSAGE_TYPE_CHANNEL = "vrpn_FunctionGenerator channel";
-const char* vrpn_FUNCTION_MESSAGE_TYPE_CHANNEL_REQUEST = "vrpn_FunctionGenerator channel request";
-const char* vrpn_FUNCTION_MESSAGE_TYPE_ALL_CHANNEL_REQUEST = "vrpn_FunctionGenerator all channel request";
-const char* vrpn_FUNCTION_MESSAGE_TYPE_SAMPLE_RATE = "vrpn_FunctionGenerator sample rate";
-const char* vrpn_FUNCTION_MESSAGE_TYPE_START = "vrpn_FunctionGenerator start";
-const char* vrpn_FUNCTION_MESSAGE_TYPE_STOP = "vrpn_FunctionGenerator stop";
-const char* vrpn_FUNCTION_MESSAGE_TYPE_REFERENCE_CHANNEL = "vrpn_FunctionGenerator reference channel";
-const char* vrpn_FUNCTION_MESSAGE_TYPE_CHANNEL_REPLY = "vrpn_FunctionGenerator channel reply";
-const char* vrpn_FUNCTION_MESSAGE_TYPE_START_REPLY = "vrpn_FunctionGenerator start reply";
-const char* vrpn_FUNCTION_MESSAGE_TYPE_STOP_REPLY = "vrpn_FunctionGenerator stop reply";
-const char* vrpn_FUNCTION_MESSAGE_TYPE_SAMPLE_RATE_REPLY = "vrpn_FunctionGenerator sample rate reply";
-const char* vrpn_FUNCTION_MESSAGE_TYPE_REFERENCE_CHANNEL_REPLY = "vrpn_FunctionGenerator reference channel reply";
+extern const char* vrpn_FUNCTION_MESSAGE_TYPE_CHANNEL;
+extern const char* vrpn_FUNCTION_MESSAGE_TYPE_CHANNEL_REQUEST;
+extern const char* vrpn_FUNCTION_MESSAGE_TYPE_ALL_CHANNEL_REQUEST;
+extern const char* vrpn_FUNCTION_MESSAGE_TYPE_SAMPLE_RATE;
+extern const char* vrpn_FUNCTION_MESSAGE_TYPE_START;
+extern const char* vrpn_FUNCTION_MESSAGE_TYPE_STOP;
+extern const char* vrpn_FUNCTION_MESSAGE_TYPE_REFERENCE_CHANNEL;
+extern const char* vrpn_FUNCTION_MESSAGE_TYPE_CHANNEL_REPLY;
+extern const char* vrpn_FUNCTION_MESSAGE_TYPE_START_REPLY;
+extern const char* vrpn_FUNCTION_MESSAGE_TYPE_STOP_REPLY;
+extern const char* vrpn_FUNCTION_MESSAGE_TYPE_SAMPLE_RATE_REPLY;
+extern const char* vrpn_FUNCTION_MESSAGE_TYPE_REFERENCE_CHANNEL_REPLY;
 
 
 enum vrpn_FunctionGenerator_FunctionTypes 

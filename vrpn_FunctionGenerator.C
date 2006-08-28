@@ -4,6 +4,18 @@
 
 const double PI=.14159265358979323846264338327950288419716939937510;
 
+const char* vrpn_FUNCTION_MESSAGE_TYPE_CHANNEL = "vrpn_FunctionGenerator channel";
+const char* vrpn_FUNCTION_MESSAGE_TYPE_CHANNEL_REQUEST = "vrpn_FunctionGenerator channel request";
+const char* vrpn_FUNCTION_MESSAGE_TYPE_ALL_CHANNEL_REQUEST = "vrpn_FunctionGenerator all channel request";
+const char* vrpn_FUNCTION_MESSAGE_TYPE_SAMPLE_RATE = "vrpn_FunctionGenerator sample rate";
+const char* vrpn_FUNCTION_MESSAGE_TYPE_START = "vrpn_FunctionGenerator start";
+const char* vrpn_FUNCTION_MESSAGE_TYPE_STOP = "vrpn_FunctionGenerator stop";
+const char* vrpn_FUNCTION_MESSAGE_TYPE_REFERENCE_CHANNEL = "vrpn_FunctionGenerator reference channel";
+const char* vrpn_FUNCTION_MESSAGE_TYPE_CHANNEL_REPLY = "vrpn_FunctionGenerator channel reply";
+const char* vrpn_FUNCTION_MESSAGE_TYPE_START_REPLY = "vrpn_FunctionGenerator start reply";
+const char* vrpn_FUNCTION_MESSAGE_TYPE_STOP_REPLY = "vrpn_FunctionGenerator stop reply";
+const char* vrpn_FUNCTION_MESSAGE_TYPE_SAMPLE_RATE_REPLY = "vrpn_FunctionGenerator sample rate reply";
+
 
 /////////////////////////////////////////
 /////////////////////////////////////////
@@ -93,7 +105,7 @@ encode_to( char** buf, vrpn_int32& len ) const
 				"payload error (couldn't buffer).\n" );
 		return -1;
 	}
-	return 2 * sizeof( vrpn_float32 );
+	 return 2 * sizeof( vrpn_float32 );
 }
 
 
@@ -140,10 +152,10 @@ decode_from( const char** buf, vrpn_int32& len )
 
 vrpn_FunctionGenerator_function_degauss::
 vrpn_FunctionGenerator_function_degauss( )
-:	initialValue(1),
-	finalValue(0.1),
-	frequency(1),
-	decay(0.9)
+:	initialValue(1.0f),
+	finalValue(0.1f),
+	frequency(1.0f),
+	decay(0.9f)
 {
 
 }
@@ -234,7 +246,7 @@ calculateCycleTime( )
 {
 	// final = initial * (decay) ^ (frequency * cycleTime)
 	// so cycleTime = log(final/initial) / ( log(decay) * frequency )
-	cycleTime = ( log( finalValue / initialValue ) / log( decay ) / frequency );
+	cycleTime = (vrpn_float32) ( log( finalValue / initialValue ) / log( decay ) / frequency );
 }
 
 
