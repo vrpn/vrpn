@@ -1,5 +1,9 @@
 2006-08-28  David Marshburn  <marshbur@cs.unc.edu>
 
+	* vrpn_FunctionGenerator.C:  correct version of the file.
+
+2006-08-28  David Marshburn  <marshbur@cs.unc.edu>
+
 	* vrpn_FunctionGenerator.h,C:  moved the definition of the
 	message-type strings into the C file.  they should have
 	always been here.

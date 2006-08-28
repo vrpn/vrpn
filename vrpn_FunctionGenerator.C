@@ -15,6 +15,7 @@ const char* vrpn_FUNCTION_MESSAGE_TYPE_CHANNEL_REPLY = "vrpn_FunctionGenerator c
 const char* vrpn_FUNCTION_MESSAGE_TYPE_START_REPLY = "vrpn_FunctionGenerator start reply";
 const char* vrpn_FUNCTION_MESSAGE_TYPE_STOP_REPLY = "vrpn_FunctionGenerator stop reply";
 const char* vrpn_FUNCTION_MESSAGE_TYPE_SAMPLE_RATE_REPLY = "vrpn_FunctionGenerator sample rate reply";
+const char* vrpn_FUNCTION_MESSAGE_TYPE_REFERENCE_CHANNEL_REPLY = "vrpn_FunctionGenerator reference channel reply";
 
 
 /////////////////////////////////////////
