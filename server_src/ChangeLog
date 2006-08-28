@@ -1,3 +1,10 @@
+2006-08-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Phantom.C : Added fix sent in by Lode Vanacken.  We don't
+		need to stop and re-start the servo loop when removing an object.
+		This causes the other objects to disappear.  We just have to lock and
+		unlock the scene.
+
 2006-06-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Makefile : Adding "making install" target.

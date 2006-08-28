@@ -1338,7 +1338,11 @@ bool vrpn_Phantom::removeObject(vrpn_int32 objNum)
 	gstSeparator *obj=GetObject(objNum);
 	if(obj)
 	{
-		scene->stopServoLoop();
+                // Lock the scene when doing this change and then unlock it
+                // when we're done to avoid errors caused by our changes during
+                // a traversal of the scene.  Do not stop the servoloop here, which will
+                // remove the other objects from the scene.
+		scene->lock();
 		gstSeparator *parent = ( gstSeparator* )obj->getParent();
 		parent->removeChild( obj );
 
@@ -1361,7 +1365,7 @@ bool vrpn_Phantom::removeObject(vrpn_int32 objNum)
 		delete m;
 		delete obj;		
 		m_hObjectList.Remove( objNum );
-		scene->startServoLoop();
+		scene->unlock();
 		return true;
 	}
 	else
