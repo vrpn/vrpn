@@ -9,7 +9,6 @@
 
 #if defined(_WIN32) && defined(VRPN_USE_DIRECTINPUT)
 #include <basetsd.h>
-#include <dinput.h>
 
 class VRPN_API vrpn_DirectXFFJoystick: public vrpn_Analog
 			     ,public vrpn_Button

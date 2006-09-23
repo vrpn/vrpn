@@ -79,9 +79,12 @@
 
 //-----------------------
 // Instructs VRPN library and server to include code that uses
-// the DirectX SDK (from its standard installation in C:\DXSDK).
-// Later in this file, we also instruct the compiler to link with
-// the DirectX library if this is defined.
+// the DirectX SDK.  If you set this, you may to edit the
+// system configuration section below to point at the correct version
+// of DirectX.  WARNING: With the August 2006 DirectX SDK, you
+// cannot link against the debug library in Visual Studio 6.0,
+// only the release.  Hopefully, Visual Studio.NET doesn't have
+// this problem.
 //#define	VRPN_USE_DIRECTINPUT
 
 //-----------------------
@@ -136,7 +139,8 @@
 //#define VRPN_USE_SHARED_LIBRARY
 
 //------------------------------------------------------------------//
-// EDIT THESE DEFINITIONS IF YOUR SYSTEM IS NON-STANDARD.  THEY ARE //
+// SYSTEM CONFIGURATION SECTION                                     //
+// EDIT THESE DEFINITIONS TO POINT TO OPTIONAL LIBRARIES.  THEY ARE //
 // USED BELOW TO LOCATE LIBRARIES AND INCLUDE FILES.                //
 //------------------------------------------------------------------//
 
@@ -147,9 +151,23 @@
 #define VRPN_GHOST_31_PATH      VRPN_SYSTEMDRIVE "/Program Files/SensAble/GHOST/v3.1/lib/"
 #define VRPN_GHOST_40_PATH      VRPN_SYSTEMDRIVE "/Program Files/SensAble/GHOST/v4.0/lib/"
 
-#define VRPN_DIRECT_X_PATH      VRPN_SYSTEMDRIVE "/DXSDK/lib/"
+#define VRPN_DIRECT_X_PATH      VRPN_SYSTEMDRIVE "/Program Files/Microsoft DirectX SDK (August 2006)"
+#define VRPN_DIRECT_X_LIB_PATH  VRPN_DIRECT_X_PATH "/Lib/x86/"
+#ifdef	VRPN_USE_DIRECTINPUT
+#define	DIRECTINPUT_VERSION 0x0800
+#include <C:/Program Files/Microsoft DirectX SDK (August 2006)/Include/dinput.h>
+#endif
 
 #define VRPN_NIDAQ_PATH         VRPN_SYSTEMDRIVE "/Program Files/National Instruments/NI-DAQ/Lib/"
+
+// Load Adrienne libraries if we are using the timecode generator.
+// If this doesn't match where you have installed these libraries,
+// edit the following lines to point at the correct libraries.  Do
+// this here rather than in the project settings so that it can be
+// turned on and off using the definition above.
+#ifdef	VRPN_INCLUDE_TIMECODE_SERVER
+#pragma comment (lib, "../../Adrienne/AEC_DLL/AEC_NTTC.lib")
+#endif
 
 //---------------------------------------------------------------//
 // DO NOT EDIT BELOW THIS LINE FOR NORMAL CONFIGURATION SETTING. //
@@ -184,19 +202,9 @@
 // this here rather than in the project settings so that it can be
 // turned on and off using the definition above.
 #ifdef	VRPN_USE_DIRECTINPUT
-#define	DIRECTINPUT_VERSION 0x0800
-#pragma comment (lib, VRPN_DIRECT_X_PATH "dxguid.lib")
-#pragma comment (lib, VRPN_DIRECT_X_PATH "dxerr8.lib")
-#pragma comment (lib, VRPN_DIRECT_X_PATH "dinput8.lib")
-#endif
-
-// Load Adrienne libraries if we are using the timecode generator.
-// If this doesn't match where you have installed these libraries,
-// edit the following lines to point at the correct libraries.  Do
-// this here rather than in the project settings so that it can be
-// turned on and off using the definition above.
-#ifdef	VRPN_INCLUDE_TIMECODE_SERVER
-#pragma comment (lib, "../../Adrienne/AEC_DLL/AEC_NTTC.lib")
+#pragma comment (lib, VRPN_DIRECT_X_LIB_PATH "dxguid.lib")
+#pragma comment (lib, VRPN_DIRECT_X_LIB_PATH "dxerr8.lib")
+#pragma comment (lib, VRPN_DIRECT_X_LIB_PATH "dinput8.lib")
 #endif
 
 // Load National Instruments libraries if we are using them.

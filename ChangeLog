@@ -1,3 +1,10 @@
+2006-08-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Switched to most recent version of
+		DirectX SDK.  Moved include into config file so
+		everything can be edited in one location.
+	* vrpn_DirectXFFJoystick.h : Same.
+
 2006-08-28  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_FunctionGenerator.C:  correct version of the file.
