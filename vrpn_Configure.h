@@ -88,6 +88,16 @@
 //#define	VRPN_USE_DIRECTINPUT
 
 //-----------------------
+// Instructs VRPN library and server to include code that uses
+// the DirectShow SDK.  If you set this, you may to edit the
+// system configuration section below to point at the correct version
+// of the Platform SDK.  WARNING: With the August 2006 DirectX SDK, you
+// cannot link against the debug library in Visual Studio 6.0,
+// only the release.  Hopefully, Visual Studio.NET doesn't have
+// this problem.
+//#define	VRPN_USE_DIRECTSHOW
+
+//-----------------------
 // Instructs the VRPN server to create an entry for the Adrienne
 // time-code generator.  This is a device that produces time values
 // from an analog video stream so that events in the virtual world

@@ -1,6 +1,3 @@
-// XXX It gets so busy reading from the network that it never updates
-// the display.  This doesn't happen when it is a local connection.
-
 //----------------------------------------------------------------------------
 // Example program to read pixels from a vrpn_Imager server and display
 // them in an OpenGL window.  It assumes that the size of the imager does
@@ -108,17 +105,23 @@ void  VRPN_CALLBACK handle_region_change(void *userdata, const vrpn_IMAGERREGION
     // logging and because the program is killed to exit.
     if (g_connection) { g_connection->save_log_so_far(); }
 
+    // We do not post a redisplay here, because we want to do that only
+    // when we've gotten the end of a frame.  It is done in the
+    // end_of_frame message handler.
+}
+
+void  VRPN_CALLBACK handle_end_of_frame(void *,const struct _vrpn_IMAGERENDFRAMECB)
+{
     // Tell Glut it is time to draw.  Make sure that we don't post the redisplay
     // operation more than once by checking to make sure that it has been handled
     // since the last time we posted it.  If we don't do this check, it gums
     // up the works with tons of redisplay requests and the program won't
     // even handle windows events.
 
-    // NOTE: This will show intermediate frames, where perhaps only one color has
-    // been loaded or a fraction of some have been loaded.  Use the end-of-frame
-    // callback to determine when a full frame has been filled if you want to
-    // ensure that no tearing is visible.  To make really sure there is not tearing,
-    // also double buffer: fill partial frames into one buffer and draw from the
+    // NOTE: This exposes a race condition.  If more video messages arrive
+    // before the frame-draw is executed, then we'll end up drawing some of
+    // the new frame along with this one.  To make really sure there is not tearing,
+    // double buffer: fill partial frames into one buffer and draw from the
     // most recent full frames in another buffer.  You could use an OpenGL texture
     // as the second buffer, sending each full frame into texture memory and
     // rendering a textured polygon.
@@ -253,6 +256,7 @@ int main(int argc, char **argv)
   g_imager->register_description_handler(NULL, handle_description_message);
   g_imager->register_region_handler(g_imager, handle_region_change);
   g_imager->register_discarded_frames_handler(NULL, handle_discarded_frames);
+  g_imager->register_end_frame_handler(g_imager, handle_end_of_frame);
 
   printf("Waiting to hear the image dimensions...\n");
   while (!g_got_dimensions) {

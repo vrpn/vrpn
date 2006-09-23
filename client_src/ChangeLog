@@ -1,3 +1,9 @@
+2006-08-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* testimager_client.C : It now renders when it gets the
+		end of a frame, which helps reduce the tearing in the
+		video being displayed.
+
 2006-07-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* testimager_client.C : Adding a call to make the connection limit

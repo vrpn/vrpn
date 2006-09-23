@@ -3,6 +3,18 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
+Project: "DirectShow_baseclasses"=.\server_src\directshow_video_server\DirectShow_baseclasses.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "client_and_server"=.\server_src\client_and_server.dsp - Package Owner=<4>
 
 Package=<5>
@@ -52,6 +64,24 @@ Package=<4>
 {{{
     Begin Project Dependency
     Project_Dep_Name make_vrpn_libs_build
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "directshow_video_server"=.\SERVER_SRC\directshow_video_server\directshow_video_server.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name DirectShow_baseclasses
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name vrpn

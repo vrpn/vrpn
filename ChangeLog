@@ -1,5 +1,13 @@
 2006-08-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn.dsw : Added projects needed to implement a DirectShow
+		video imager server.
+	* vrpn_Configure.h : Added entry to tell whether to include
+		DirectShow video in the build.  This must be defined
+		to build the DirectShow video imager server.
+
+2006-08-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Configure.h : Switched to most recent version of
 		DirectX SDK.  Moved include into config file so
 		everything can be edited in one location.
