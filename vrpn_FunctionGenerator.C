@@ -171,7 +171,7 @@ generateValues( vrpn_float32* buf, vrpn_uint32 nValues,
 	for( vrpn_uint32 i = 0; i <= nValues - 1; i++ )
 	{
 		buf[i] = (vrpn_float32) ( channel->offset + channel->gain * initialValue
-				* pow( decay, frequency * t )
+				* pow( static_cast<double>(decay), frequency * t )
 				* sin( 2 * PI * channel->scaleTime * frequency * t + channel->phaseFromRef ) );
 		t += dt;
 	}

@@ -1,3 +1,19 @@
+2006-10-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* client_and_server.vcproj : Updated to use the August 2006 version
+		of the DirectX SDK and the Microsoft Platform SDK
+		for Windows Server 20003 R2.
+	* daq_server.vcproj : Same.
+	* test_analogfly.vcproj : Same.
+	* test_radamec_spi.vcproj : Same.
+	* test_vrpn.vcproj : Same.
+	* testimager_server.vcproj : Same.
+	* vrpn_phantom.vcproj : Same.
+	* vrpn_server.vcproj : Same.
+	* timecode_generator_server.vcproj : Same.
+	* directshow_video_server : New directory containing the code needed
+		for a DirectShow-based vrpn_Imager server.
+
 2006-09-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* directshow_video_server : New directory with a project file and

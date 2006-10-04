@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK\Include,$(SYSTEMDRIVE)/Program Files/SensAble/3DTouch/include,$(SYSTEMDRIVE)/Program Files/SensAble/3DTouch/utilities/include,../../quat,../,./"
+				AdditionalIncludeDirectories="$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include,$(SYSTEMDRIVE)/Program Files/SensAble/3DTouch/include,$(SYSTEMDRIVE)/Program Files/SensAble/3DTouch/utilities/include,../../quat,../,./"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -118,7 +118,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK\Include,$(SYSTEMDRIVE)/Program Files/SensAble/3DTouch/include,$(SYSTEMDRIVE)/Program Files/SensAble/3DTouch/utilities/include,../../quat,../,./"
+				AdditionalIncludeDirectories="$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include,$(SYSTEMDRIVE)/Program Files/SensAble/3DTouch/include,$(SYSTEMDRIVE)/Program Files/SensAble/3DTouch/utilities/include,../../quat,../,./"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				RuntimeLibrary="2"

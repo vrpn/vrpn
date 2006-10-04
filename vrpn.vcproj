@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK\Include,../dtrack,../quat,../isense,../Dtrack,$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\Include"
+				AdditionalIncludeDirectories="$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include,../dtrack,../quat,../isense,../Dtrack,$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\Include"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE,VRPNDLL_NOEXPORTS"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -116,7 +116,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK\Include,../quat,../isense,../Dtrack,$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\Include"
+				AdditionalIncludeDirectories="$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include,../dtrack,../quat,../isense,../Dtrack,$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\Include"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE,VRPNDLL_NOEXPORTS"
 				RuntimeLibrary="3"
 				PrecompiledHeaderFile=".\pc_win32/Debug/vrpn.pch"

@@ -1,3 +1,16 @@
+2006-10-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* time_test.vcproj : Updated to use the August 2006 version
+		of the DirectX SDK and the Microsoft Platform SDK
+		for Windows Server 20003 R2.
+	* vrpn.vcproj : Same.
+	* vrpndll.vcproj : Same.
+	* vrpn.sln : Added projects needed to do a DirectShow video
+		camera vrpn_Imager server.  Updated to latest DirectX
+		SDK and Platform SDK.
+	* vrpn_FunctionGenerator.C : Removed ambiguity about the
+		pow() operator by casting one of its inputs.
+
 2006-08-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.dsw : Added projects needed to implement a DirectShow
