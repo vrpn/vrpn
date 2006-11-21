@@ -1,3 +1,13 @@
+2006-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg : Added support for new devices whose drivers were
+		submitted by William West from Disney VR Studios.  These
+		are the US Digital analog device and a National
+		Instruments based DIO24 board.
+	* vrpn.cfg.SAMPLE : Same.
+	* vrpn_Generic_server_object.h : Same.
+	* vrpn_Generic_server_object.C : Same.
+
 2006-10-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* client_and_server.vcproj : Updated to use the August 2006 version

@@ -62,6 +62,9 @@
 #include "vrpn_Keyboard_Mouse.h"
 // added by Tom dw
 #include "vrpn_Button_USB.h"
+// added by Bill West
+#include "vrpn_Analog_USDigital_A2.h"
+#include "vrpn_Button_NI_DIO24.h"
 
 #ifdef VRPN_INCLUDE_TIMECODE_SERVER
 #include "timecode_generator_server\vrpn_timecode_generator.h"
@@ -219,6 +222,8 @@ protected:
   int setup_Button_5DT_Server(char * & pch, char * line, FILE * config_file);
   int setup_KeyMouse(char * & pch, char * line, FILE * config_file);
   int setup_Button_USB(char * & pch, char * line, FILE * config_file);
+  int setup_Analog_USDigital_A2 (char * & pch, char * line, FILE * config_file) ;
+  int setup_Button_NI_DIO24 (char * & pch, char * line, FILE * config_file) ;
 };
 
 #endif

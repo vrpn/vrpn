@@ -1,3 +1,14 @@
+2006-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Analog_USDigital_A2.h : New device driver submitted
+		by William West from Disney VR Studios.
+	* vrpn_Analog_USDigital_A2.h : Same.
+	* vrpn_Button_NI_DIO24.h : Same.
+	* vrpn_Button_NI_DIO24.C : Same.
+	* Makefile : Added the above files.
+	* vrpn_Configure.h : Adds configuration option for these
+		devices and paths needed.
+
 2006-10-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* time_test.vcproj : Updated to use the August 2006 version

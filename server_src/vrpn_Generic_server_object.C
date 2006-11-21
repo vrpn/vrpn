@@ -2639,6 +2639,129 @@ int vrpn_Generic_Server_Object::setup_Poser_Tek4662 (char * & pch, char * line, 
     return 0;
 }
 
+int vrpn_Generic_Server_Object::setup_Analog_USDigital_A2 (char * & pch, char * line, FILE * config_file) 
+{
+    char A2name[LINESIZE];
+    int  comPort, numChannels, numArgs, reportChange;
+
+    next();
+    // Get the arguments (class, USD_A2_name, comPort, numChannels, [reportChange]
+    numArgs = sscanf(pch,"%511s%d%d%d", A2name, &comPort, &numChannels, &reportChange) ;
+    if (numArgs!=3 && numArgs!=4)
+    {
+        fprintf(stderr,"Bad vrpn_Analog_USDigital_A2 line: %s\n",line);
+        return -1;
+    }
+
+    // Handle optional parameter
+    if (numArgs==3)
+    {
+        reportChange = 0 ;
+    }
+
+    // Make sure the parameters look OK
+    if (comPort<0 || comPort>100)
+    {
+          fprintf(stderr,"Invalid COM port %d in vrpn_Analog_USDigital_A2 line: %s\n",comPort, line);
+          return -1;
+    }
+    if (numChannels<1 || 
+        (vrpn_uint32) numChannels>vrpn_Analog_USDigital_A2::vrpn_Analog_USDigital_A2_CHANNEL_MAX ||
+        numChannels>vrpn_CHANNEL_MAX)
+    {
+          fprintf(stderr,"Invalid number of channels %d in vrpn_Analog_USDigital_A2 line: %s\n",
+          numChannels, line);
+          return -1;
+    }
+
+    // Make sure there's room for a new analog
+    if (num_analogs >= VRPN_GSO_MAX_ANALOG) 
+    {
+        fprintf(stderr,"Too many Analogs in config file");
+        return -1;
+    }
+
+    // Open the device
+    if (verbose)
+        printf(
+      "Opening vrpn_Analog_USDigital_A2: %s on port %d (%u=search for port), with %d channels, reporting %s\n",
+               A2name,comPort,vrpn_Analog_USDigital_A2::vrpn_Analog_USDigital_A2_FIND_PORT,
+               numChannels, (reportChange==0)?"always":"on change");
+    if ((analogs[num_analogs] =
+         new vrpn_Analog_USDigital_A2(A2name, connection, (vrpn_uint32) comPort, 
+         (vrpn_uint32) numChannels,
+         (reportChange!=0))) == NULL)
+    {
+        fprintf(stderr,"Can't create new vrpn_Analog_USDigital_A2\n");
+        return -1;
+    } 
+    else 
+    {
+        num_analogs++;
+    }
+
+    return 0;
+}    //  setup_USDigital_A2
+
+
+int vrpn_Generic_Server_Object::setup_Button_NI_DIO24 (char * & pch, char * line, FILE * config_file) 
+{
+    char DIO24name[LINESIZE];
+    int  numChannels ;
+    int  numArgs ;
+
+    next();
+    // Get the arguments (class, D24_name, numChannels)
+    numArgs = sscanf(pch,"%511s%d%d", DIO24name, &numChannels) ;
+    if (numArgs != 1 && numArgs != 2)
+    {
+        fprintf(stderr,"Bad vrpn_Button_NI_DIO24 line: %s\n",line);
+        return -1;
+    }
+
+    //  Do error checking on numChannels
+    if (numArgs>1 && 
+        (numChannels<1 || 
+        numChannels>vrpn_Button_NI_DIO24::vrpn_Button_NI_DIO24_CHANNEL_MAX ||
+        numChannels>vrpn_CHANNEL_MAX))
+    {
+        fprintf(stderr,"Invalid number of channels %d in vrpn_Button_NI_DIO24 line: %s\n",
+                numChannels, line);
+        return -1;
+    }
+
+    // Make sure there's room for a new button
+    if (num_buttons >= VRPN_GSO_MAX_BUTTONS) 
+    {
+        fprintf(stderr,"Too many Buttons in config file");
+        return -1;
+    }
+
+    //  if numChannels is wrong, use default
+    if (numArgs<2 || numChannels<1)
+        numChannels = vrpn_Button_NI_DIO24::vrpn_Button_NI_DIO24_CHANNEL_MAX ;
+
+    // Open the device
+    if (verbose)
+        printf("Opening vrpn_Button_NI_DIO24: %s with up to %d buttons\n",
+               DIO24name, numChannels);
+
+    if ((buttons[num_buttons] =
+         new vrpn_Button_NI_DIO24(DIO24name, connection, numChannels)) == NULL)
+    {
+        fprintf(stderr,"Can't create new vrpn_Button_NI_DIO24\n");
+        return -1;
+    } 
+    else 
+    {
+        num_buttons++;
+    }
+
+    return 0;
+
+}    //  setup_Button_NI_DIO24
+
+
 vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connection_to_use, const char *config_file_name, int port, bool be_verbose, bool bail_on_open_error) :
   connection(connection_to_use),
   d_doing_okay(true),
@@ -2820,6 +2943,11 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
 		  CHECK(setup_KeyMouse);
 	  } else if (isit("vrpn_Button_USB")) {
 		  CHECK(setup_Button_USB);
+	  } else if (isit("vrpn_Analog_USDigital_A2")) {
+            CHECK(setup_Analog_USDigital_A2);
+
+	  } else if (isit("vrpn_Button_NI_DIO24")) {
+            CHECK(setup_Button_NI_DIO24);
 
 	 } else {	// Never heard of it
 		sscanf(line,"%511s",s1);	// Find out the class name

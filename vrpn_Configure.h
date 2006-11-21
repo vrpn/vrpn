@@ -123,6 +123,15 @@
 // Later in this file, we also instruct the compiler to link with
 // the National Instruments libraries if this is defined.
 //#define	VRPN_USE_NATIONAL_INSTRUMENTS
+//#define	VRPN_USE_NATIONAL_INSTRUMENTS_MX
+
+//-----------------------
+// Instructs VRPN library and server to include code that uses
+// the US Digital SEI/A2 libary to control analog inputs from the
+// A2 absolute encoder.
+// Later in this file, we also instruct the compiler to link with
+// the US Digital library if this is defined.
+//#define	VRPN_USE_USDIGITAL
 
 //-----------------------
 // Instructs VRPN to use the default room space transforms for
@@ -169,6 +178,8 @@
 #endif
 
 #define VRPN_NIDAQ_PATH         VRPN_SYSTEMDRIVE "/Program Files/National Instruments/NI-DAQ/Lib/"
+#define VRPN_NIDAQ_MX_PATH      VRPN_SYSTEMDRIVE "/Program Files/National Instruments/NI-DAQ/DAQmx ANSI C Dev/lib/msvc/"
+#define VRPN_USDIGITAL_PATH     VRPN_SYSTEMDRIVE "/Program Files/SEI Explorer/"
 
 // Load Adrienne libraries if we are using the timecode generator.
 // If this doesn't match where you have installed these libraries,
@@ -228,6 +239,21 @@
 #ifdef	VRPN_USE_NATIONAL_INSTRUMENTS
 #pragma comment (lib, VRPN_NIDAQ_PATH "nidaq32.lib")
 #pragma comment (lib, VRPN_NIDAQ_PATH "nidex32.lib")
+#endif
+#ifdef	VRPN_USE_NATIONAL_INSTRUMENTS_MX
+#pragma comment (lib, VRPN_NIDAQ_MX_PATH "NIDAQmx.lib")
+#endif
+
+// Load US Digital libraries if we are using them.
+// If this doesn't match where you have installed these libraries,
+// edit the following lines to point at the correct libraries.  Do
+// this here rather than in the project settings so that it can be
+// turned on and off using the definition above.
+// NOTE: The paths to these libraries are set in the Settings/Link tab of
+// the various project files.  The paths to the include files are in the
+// Settings/C++/preprocessor tab.
+#ifdef  VRPN_USE_USDIGITAL
+#pragma comment (lib, VRPN_USDIGITAL_PATH "SEIDrv32.lib")
 #endif
 
 // Load Microscribe-3D SDK libraries 

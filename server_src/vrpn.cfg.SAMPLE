@@ -1,4 +1,4 @@
-# vrpn.cfg.SAMPLE for VRPN version 07.00
+# vrpn.cfg.SAMPLE for VRPN version 07.01
 
 ################################################################################
 ################################################################################
@@ -31,7 +31,7 @@
 #	int	number_of_sensors
 #	float	rate_at_which_to_report_updates
 
-#vrpn_Tracker_NULL	Tracker0	2	2.0
+##vrpn_Tracker_NULL	Tracker0	2	2.0
 
 ################################################################################
 # Flock-of-birds Tracker. Runs an Ascension Flock of Birds tracker that is
@@ -433,7 +433,16 @@
 #		int	which_button_to_use
 #	]
 
-#vrpn_Tracker_AnalogFly	Tracker0	60.0	differential
+#vrpn_Tracker_AnalogFly Tracker0 60.0 absolute
+#X  *KeyMouse 0 0.0 0.0 1.0 1.0
+#Y  *KeyMouse 1 0.0 0.0 1.0 1.0
+#Z  *KeyMouse 2 0.0 0.0 1.0 1.0
+#RX *KeyMouse 3 0.0 0.0 1.0 1.0
+#RY *KeyMouse 4 0.0 0.0 1.0 1.0
+#RZ *KeyMouse 5 0.0 0.0 1.0 1.0
+#RESET NULL 0
+
+#vrpn_Tracker_AnalogFly	Tracker0	60.0	absolute
 #X	*CerealBox0	4	0.0	0.021	1.0	1.0
 #Y	*CerealBox0	5	0.0	0.021	1.0	1.0
 #Z	*CerealBox0	6	0.0	0.021	3.0	1.0
@@ -1135,9 +1144,9 @@
 
 ################################################################################
 # Tektronix 4662 plotter.  Attaches to a serial port.  Acts as both a poser and
-# a tracker. Reports positions 4x per second plus when a move command completes.
-# Multiple move commands issued before they complete will result in only the
-# last one being executed.
+# a tracker.  Reports positions 4x per second plus when a move command completes.
+# Multiple move commands issued before they complete will result in only the last
+# one being executed.
 #
 # Arguments:
 #	char	name_of_this_device[]
@@ -1148,26 +1157,50 @@
 
 ###############################################################################
 # keyboard and mouse button is a tracker with button system
-# name  devicename      number of buttons (max 16)
+# name  devicename 'number of analog channels' 'number of buttons'
 # 0xFF0 for horizontal mouse movement and 0xFF1 for vertical
-# for x,y,z,rx,ry,rz use one button and the mouse direction for mouse
-#		movement and two buttons for keyboard movement
+# for the analog channels: use one button and the mouse direction for mouse
+# movement or two buttons for keyboard movement;
 # for example VK_LBUTTON 0x100 means mouse lbutton and horizontal movement
-# code table can be found in keycode.txt.  Letters should be in capital
+# code tabel can be found in keycodes.txt in the vrpn_server directory.
+# Letters should be in capital.
 # XXX Should this be rewritten as a ButtonFly and AnalogFly, having the mouse
 # act as an Analog?
+# XXX This configuration does not work.  We're waiting on one that will.
 
-#vrpn_KeyMouse KeyMouse 5
-#X	0x25	0x27 0.1
-#Y	0x26	0x28 0.1
-#Z	0x21	0x22 0.1
-#RX	0x64	0x66	1	#0X01	0XFF0 # mouse movement
-#RY	0x68	0x62	1	#0X01	0XFF1 # mouse movement
-#RZ	0x67	0x69	1	#0X02	0XFF0 # mouse movement
-#RESET	0x1B
-#BUTTON0 0x70
-#BUTTON1 0x71
-#BUTTON2 0x72
-#BUTTON3 0x73
-#BUTTON4 0x75
+#vrpn_KeyMouse KeyMouse 6 5
+#channel 0	0x25	0x27	1
+#channel 1	0x26	0x28	1
+#channel 2	0x21	0x22	1
+#channel 3	0x64	0x66	1          #0X01   0XFF0 # mouse movement
+#channel 4	0x68	0x62	1          #0X01   0XFF1 # mouse movement
+#channel 5	0x67	0x69	1          #0X02   0XFF0 # mouse movement
+#button	0	0x70
+#button	1	0x71
+#button	2	0x72
+#button	3	0x73
+#button	4	0x75
 
+
+################################################################################
+# US Digital A2 Absolute Encoder Analog Input server.  This will open the COM 
+# port specified, configure the number of channels specified, and report
+# Absolute Encoder values in tenths of a degree from 0 to 3599.
+#
+# Arguments:
+#	char	name_of_this_device[]
+#       int     COM_port.  If 0, search for correct COM port.
+#       int     number_of_channels
+#	int	0 to report always, 1 to report on change only (optional, default=0)
+
+#vrpn_Analog_USDigital_A2	Analog0 1	2
+
+################################################################################
+#      This is a driver for National Instruments DAQCard-
+# DIO-24, a PCMCIA card, which provides 24-bit digital I/O.
+#
+# Arguments:
+#	char	name_of_this_device[]
+#       int     number_of_channls to read: 1-24 (optional.  default=24).
+
+#vrpn_Button_NI_DIO24	Button0	1
