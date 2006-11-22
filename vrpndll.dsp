@@ -124,11 +124,19 @@ SOURCE=.\vrpn_Analog_Radamec_SPI.C
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_Analog_USDigital_A2.C
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_BaseClass.C
 # End Source File
 # Begin Source File
 
 SOURCE=.\vrpn_Button.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Button_NI_DIO24.C
 # End Source File
 # Begin Source File
 
@@ -372,11 +380,19 @@ SOURCE=.\vrpn_Analog_Radamec_SPI.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_Analog_USDigital_A2.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_BaseClass.h
 # End Source File
 # Begin Source File
 
 SOURCE=.\vrpn_Button.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Button_NI_DIO24.h
 # End Source File
 # Begin Source File
 

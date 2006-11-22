@@ -36,13 +36,13 @@
 // code provided by National Instruments.
 
 #include "vrpn_Button_NI_DIO24.h"
-#if defined(_WIN32) || defined(WIN32)
+#ifdef VRPN_USE_NATIONAL_INSTRUMENTS_MX
 extern "C" {
 #include <NIDAQmx.h>
 }
 #else
 typedef	vrpn_int32	int32;
-#endif // def(_WIN32) || def(WIN32)
+#endif
 #include <stdio.h>
 #include <string.h>
 
@@ -67,11 +67,11 @@ vrpn_Button_Filter (name, c)
     }    
 
     //  Initialize the task handles
-#if defined(_WIN32) || defined(WIN32)
+#ifdef VRPN_USE_NATIONAL_INSTRUMENTS_MX
     _taskHandle = 0 ;
 #else
-    fprintf(stderr,"vrpn_Button_NI_DIO24::vrpn_Button_NI_DIO24(): Not implemented on this architecture\n");
-#endif // def(_WIN32) || def(WIN32)
+    fprintf(stderr,"vrpn_Button_NI_DIO24::vrpn_Button_NI_DIO24(): Not compiled into VRPN, edit vrpn_Configure.h and define VRPN_USE_NATIONAL_INSTRUMENTS_MX and then recompile VRPN.\n");
+#endif
 
     //  Initialize the DAQCard-DIO-24 for each of the ports used
     //  Define various names the library needs
@@ -80,12 +80,12 @@ vrpn_Button_Filter (name, c)
     /*********************************************/
     // DAQmx Configure Code
     /*********************************************/
-#if defined(_WIN32) || defined(WIN32)
+#ifdef VRPN_USE_NATIONAL_INSTRUMENTS_MX
     error = DAQmxCreateTask(d_servicename,&_taskHandle);
 
     if (!error)
         error = DAQmxCreateDIChan(_taskHandle,portName,"",DAQmx_Val_ChanForAllLines);
-#endif // def(_WIN32) || def(WIN32)
+#endif
 
 /*  The following code *should* make the 0's into 1's, and vice versa, but it only works
  *  for one channel, and even then, it causes the 1's (button pressed) to "flicker" 1-0-1.
@@ -99,21 +99,21 @@ vrpn_Button_Filter (name, c)
     /*********************************************/
     // DAQmx Start Code
     /*********************************************/
-#if defined(_WIN32) || defined(WIN32)
+#ifdef VRPN_USE_NATIONAL_INSTRUMENTS_MX
     if (!error)
         error = DAQmxStartTask(_taskHandle);
 
     //  If error, report it and exit
     if (error)
         reportError(error, vrpn_true) ;
-#endif // def(_WIN32) || def(WIN32)
+#endif
 
 }    //  constructor
 
 //  This destructor closes out the SEI bus, and deallocates memory
 vrpn_Button_NI_DIO24::~vrpn_Button_NI_DIO24()
 {
-#if defined(_WIN32) || defined(WIN32)
+#ifdef VRPN_USE_NATIONAL_INSTRUMENTS_MX
     if( _taskHandle!=0 ) 
     {
         /*********************************************/
@@ -123,7 +123,7 @@ vrpn_Button_NI_DIO24::~vrpn_Button_NI_DIO24()
         DAQmxClearTask(_taskHandle);
         _taskHandle = 0 ;
     }
-#endif // def(_WIN32) || def(WIN32)
+#endif
 }    //  destructor
 
 /** This routine is called each time through the server's main loop. It will
@@ -135,8 +135,6 @@ vrpn_Button_NI_DIO24::~vrpn_Button_NI_DIO24()
 
 void    vrpn_Button_NI_DIO24::mainloop()
 {
-    int32    error ;
-    int32    bytesRead,bytesPerSamp;
 
     server_mainloop();    //  let the server do its stuff
 
@@ -144,11 +142,12 @@ void    vrpn_Button_NI_DIO24::mainloop()
     /*********************************************/
     // DAQmx Read Code
     /*********************************************/
-#if defined(_WIN32) || defined(WIN32)
+#ifdef VRPN_USE_NATIONAL_INSTRUMENTS_MX
+    int32    error ;
+    int32    bytesRead,bytesPerSamp;
     error = DAQmxReadDigitalLines(_taskHandle,1,5.0,DAQmx_Val_GroupByChannel,
                     buttons, vrpn_BUTTON_MAX_BUTTONS,
                     &bytesPerSamp,&bytesRead,NULL);
-#endif // def(_WIN32) || def(WIN32)
 
     //  check for obvious errors
     if (bytesRead < num_buttons)
@@ -156,10 +155,9 @@ void    vrpn_Button_NI_DIO24::mainloop()
             "vrpn_Button_NI_DIO24: Warning, number of bytes read was %d, not %d as expected.\n",
             bytesRead, num_buttons) ;
     //  If other error, report it and sleep
-#if defined(_WIN32) || defined(WIN32)
     if (error)
             reportError(error, vrpn_false) ;
-#endif // def(_WIN32) || def(WIN32)
+#endif
 
     //  Finally, the point of all this, deliver the data
     report_changes() ;
@@ -182,7 +180,7 @@ vrpn_int32 vrpn_Button_NI_DIO24::setNumChannels (vrpn_int32 sizeRequested)
 }    //  setNumChannels
 
 //  This handles error reporting
-#if defined(_WIN32) || defined(WIN32)
+#ifdef VRPN_USE_NATIONAL_INSTRUMENTS_MX
 void vrpn_Button_NI_DIO24::reportError(int32 errnumber, vrpn_bool exitProgram)
 {
     char    errBuff[2048]={'\0'};
@@ -203,5 +201,5 @@ void vrpn_Button_NI_DIO24::reportError(int32 errnumber, vrpn_bool exitProgram)
         }
     }
 }    //  reportError
-#endif // def(_WIN32) || def(WIN32)
+#endif
 

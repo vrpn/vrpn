@@ -41,7 +41,7 @@
 // Russ Taylor in August 2000.
 
 #include "vrpn_Analog_USDigital_A2.h"
-#if defined(_WIN32) || defined(WIN32)
+#ifdef VRPN_USE_USDIGITAL
 extern "C" {
 #include <SEIDrv32.H>
 }
@@ -68,6 +68,7 @@ _numDevices(0),
 _devAddr(0),
 _reportChange(reportOnChangeOnly!=0)
 {
+#ifdef VRPN_USE_USDIGITAL
     this->_devAddr = new long[vrpn_Analog_USDigital_A2::vrpn_Analog_USDigital_A2_CHANNEL_MAX] ;
     assert(this->_devAddr) ;
 
@@ -81,7 +82,7 @@ _reportChange(reportOnChangeOnly!=0)
 
     //  Prepare to get data from the SEI bus
     long err;
-#if defined(_WIN32) || defined(WIN32)
+#ifdef VRPN_USE_USDIGITAL
     err = InitializeSEI(portNum, AUTOASSIGN) ;
 #else
     fprintf(stderr,"vrpn_Analog_USDigital_A2::vrpn_Analog_USDigital_A2(): Not yet implemented for this architecture\n");
@@ -89,7 +90,7 @@ _reportChange(reportOnChangeOnly!=0)
 #endif
     if (err) {
         fprintf(stderr, "vrpn_Analog_USDigital_A2:  Can't initialize SEI bus for port %d.\n", 
-#if defined(_WIN32) || defined(WIN32)
+#ifdef VRPN_USE_USDIGITAL
         GetCommPort()
 #else
 	0
@@ -102,7 +103,7 @@ _reportChange(reportOnChangeOnly!=0)
     }
 
     //  Check if the number of devices matches that expected
-#if defined(_WIN32) || defined(WIN32)
+#ifdef VRPN_USE_USDIGITAL
     _numDevices = GetNumberOfDevices() ;
 #endif
     if (_numDevices<0 || _numDevices>vrpn_Analog_USDigital_A2::vrpn_Analog_USDigital_A2_CHANNEL_MAX)
@@ -125,7 +126,7 @@ _reportChange(reportOnChangeOnly!=0)
     for (vrpn_uint32 d=0 ; d<_numDevices ; d++)
     {
         long deviceInfoErr, model, serialnum, version, addr ;
-#if defined(_WIN32) || defined(WIN32)
+#ifdef VRPN_USE_USDIGITAL
         deviceInfoErr = GetDeviceInfo(d, &model, &serialnum, &version, &addr) ;
         if (!deviceInfoErr)
            _devAddr[d] = addr ;
@@ -140,23 +141,24 @@ _reportChange(reportOnChangeOnly!=0)
                     d, model, serialnum, version, addr) ;
 #endif    //  VERBOSE
     }
-
+#else
+    fprintf(stderr,"vrpn_Analog_USDigital_A2::vrpn_Analog_USDigital_A2(): Not compiled in; define VRPN_USE_USDIGITAL in vrpn_Configure.h and recompile VRPN\n");
+#endif
 }    //  constructor
 
 //  This destructor closes out the SEI bus, and deallocates memory
 vrpn_Analog_USDigital_A2::~vrpn_Analog_USDigital_A2()
 {
+#ifdef  VRPN_USE_USDIGITAL
     //  close out the SEI bus
     if (_SEIopened==vrpn_true) {
-#if defined(_WIN32) || defined(WIN32)
         (void) CloseSEI() ;
-#endif
     }
 
     //  deallocate the list of device addresses.
     delete _devAddr ; 
     _devAddr = 0 ;
-
+#endif
 }    //  destructor
 
 /** This routine is called each time through the server's main loop. It will
@@ -168,9 +170,9 @@ vrpn_Analog_USDigital_A2::~vrpn_Analog_USDigital_A2()
 
 void    vrpn_Analog_USDigital_A2::mainloop()
 {
-    long readErr, readVal ;
-
     server_mainloop();    //  let the server do its stuff
+#ifdef VRPN_USE_USDIGITAL
+    long readErr, readVal ;
 
     //  Read the data from the available channels
     for (vrpn_uint32 c=0 ; c<(vrpn_uint32) num_channel ; c++)
@@ -178,18 +180,14 @@ void    vrpn_Analog_USDigital_A2::mainloop()
         //  see if there's really a readable device there.
         if (c<_numDevices && _devAddr[c]>=0)
         {
-#if defined(_WIN32) || defined(WIN32)
             readErr = A2GetPosition(_devAddr[c], &readVal) ;
-#endif
             if (readErr)
             {
                 fprintf(stderr, 
                 "vrpn_Analog_USDigital_A2: Error code %d received while reading channel %d.\n",
                     readErr, c) ;
                 fprintf(stderr, "vrpn_Analog_USDigital_A2: Attempting to reinitialize SEI bus...") ;
-#if defined(_WIN32) || defined(WIN32)
                 readErr = ResetSEI() ;
-#endif
                 if (readErr)
                     fprintf(stderr, "failed.") ;
                 fprintf(stderr, "failed.") ;
@@ -202,13 +200,13 @@ void    vrpn_Analog_USDigital_A2::mainloop()
         else
             channel[c] = 0 ;    //  default to 0 for unreadable/unavailable.
     }    //  for
+#endif
   
     //  Finally, the point of all this, deliver the data
     if (_reportChange)
         report_changes() ;
     else
         report() ;
-
 
 }    // mainloop
 

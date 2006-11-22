@@ -1,5 +1,15 @@
 2006-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn.dsp : Adding new objects to the project to support
+		the two new devices.
+	* vrpndll.dsp : Same.
+	* vrpn_Analog_USDigital_A2.C : Modified to use the device
+		#define in vrpn_Configure.h rather than WIN32.
+	* vrpn_Button_NI_DIO24.C : same.
+	* vrpn_Button_NI_DIO24.h : same.
+
+2006-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Analog_USDigital_A2.h : New device driver submitted
 		by William West from Disney VR Studios.
 	* vrpn_Analog_USDigital_A2.h : Same.

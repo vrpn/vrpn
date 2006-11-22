@@ -39,9 +39,11 @@
 #define VRPN_BUTTON_NI_DIO24_H
 
 #include "vrpn_Button.h"
+#ifdef VRPN_USE_USDIGITAL
 #if defined(_WIN32) || defined(WIN32)
 #include <NIDAQmx.h>
 #endif // def(_WIN32) || def(WIN32)
+#endif
 
 class VRPN_API vrpn_Button_NI_DIO24 : public vrpn_Button_Filter {
 
@@ -62,7 +64,7 @@ class VRPN_API vrpn_Button_NI_DIO24 : public vrpn_Button_Filter {
 
   private:
     //  Addresses of the devices
-#if defined(_WIN32) || defined(WIN32)
+#ifdef VRPN_USE_USDIGITAL
     TaskHandle    _taskHandle ;
 #endif // def(_WIN32) || def(WIN32)
 
@@ -72,7 +74,7 @@ class VRPN_API vrpn_Button_NI_DIO24 : public vrpn_Button_Filter {
 
     //  THis handles error reporting, and halts the
     //  program if the error is irrecoverable
-#if defined(_WIN32) || defined(WIN32)
+#ifdef VRPN_USE_USDIGITAL
     void reportError(int32 errnumber, vrpn_bool exitProgram) ;
 #endif // def(_WIN32) || def(WIN32)
 };
