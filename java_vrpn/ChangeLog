@@ -1,3 +1,7 @@
+2007-01-18  David Marshburn  <marshbur@cs.unc.edu>
+
+	* make_header.sh:  adds recent classes to the list
+
 2006-05-04  David Marshburn  <marshbur@cs.unc.edu>
 
 	* VRPNDevice.java (getTime):  exposes the get_time method from
