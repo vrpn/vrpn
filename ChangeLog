@@ -1,3 +1,12 @@
+2007-01-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_isense.C : Changed the interpretation of the
+		Intersense Quaternion to match that of VRPN/Quatlib.
+		This lets us translate the positions directly, rather
+		than scrambled.  Thanks to Christian Odom for the
+		fix!
+	* vrpn_Connection.C : Updated version number to 7.04.
+
 2006-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.dsp : Adding new objects to the project to support

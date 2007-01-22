@@ -378,8 +378,8 @@ void vrpn_Tracker_InterSense::get_report(void)
           // Store the current time
           timestamp = vrpn_TimevalSum(is900_zerotime, delta_time);
         } else {
-		  vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now
-		}
+	  vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now
+	}
 
         //--------------------------------------------------------------------
         // If this sensor has an IS900 button on it, decode
@@ -389,10 +389,10 @@ void vrpn_Tracker_InterSense::get_report(void)
         // lowest bit.
         //--------------------------------------------------------------------
 
-		if (is900_buttons[station]) {
-		    for (i = 0; i < is900_buttons[station]->number_of_buttons(); i++) {
-				is900_buttons[station]->set_button(i, data.Station[station].ButtonState[i]);
-	        }
+        if (is900_buttons[station]) {
+	    for (i = 0; i < is900_buttons[station]->number_of_buttons(); i++) {
+	      is900_buttons[station]->set_button(i, data.Station[station].ButtonState[i]);
+	    }
             is900_buttons[station]->mainloop();
         }
 
@@ -405,42 +405,45 @@ void vrpn_Tracker_InterSense::get_report(void)
         //--------------------------------------------------------------------
 
         if (is900_analogs[station]) {
-			// Normalize the values to the range -1 to 1
-			is900_analogs[station]->setChannelValue(0, (data.Station[station].AnalogData[0] - 127) / 128.0);
-			is900_analogs[station]->setChannelValue(1, (data.Station[station].AnalogData[1] - 127) / 128.0);
+	  // Normalize the values to the range -1 to 1
+	  is900_analogs[station]->setChannelValue(0, (data.Station[station].AnalogData[0] - 127) / 128.0);
+	  is900_analogs[station]->setChannelValue(1, (data.Station[station].AnalogData[1] - 127) / 128.0);
 
-	        // Report the new values
-			is900_analogs[station]->report_changes();
-			is900_analogs[station]->mainloop();
-		}
+	  // Report the new values
+	  is900_analogs[station]->report_changes();
+	  is900_analogs[station]->mainloop();
+	}
 
-		// Copy the tracker data into our internal storage before sending
-		// (no unit problem as the Position vector is already in meters, see ISD_STATION_STATE_TYPE)
-		// Watch: For some reason, to get consistant rotation and translation axis permutations,
-		//        we need non direct mapping
-		pos[0] = - data.Station[station].Position[2];
-		pos[1] =   data.Station[station].Position[1];
-		pos[2] = - data.Station[station].Position[0];
+	// Copy the tracker data into our internal storage before sending
+	// (no unit problem as the Position vector is already in meters, see ISD_STATION_STATE_TYPE)
+	// Watch: For some reason, to get consistant rotation and translation axis permutations,
+	//        we need non direct mapping.
+        // RMT: Based on a report from Christian Odom, it seems like the Quaternions in the
+        //      Isense are QXYZ, whereas in Quatlib (and VRPN) they are XYZQ.  Once these
+        //      are switched correctly, the positions can be read without strange swapping.
+	pos[0] = data.Station[station].Position[0];
+	pos[1] = data.Station[station].Position[1];
+	pos[2] = data.Station[station].Position[2];
 
-		if(m_StationInfo[station].AngleFormat == ISD_QUATERNION) {	
-			d_quat[0] = data.Station[station].Orientation[0];
-			d_quat[1] = data.Station[station].Orientation[1];
-			d_quat[2] = data.Station[station].Orientation[2];
-			d_quat[3] = data.Station[station].Orientation[3];
+	if(m_StationInfo[station].AngleFormat == ISD_QUATERNION) {	
+		d_quat[0] = data.Station[station].Orientation[1];
+		d_quat[1] = data.Station[station].Orientation[2];
+		d_quat[2] = data.Station[station].Orientation[3];
+		d_quat[3] = data.Station[station].Orientation[0];
         } else {
-		  // Just return Euler for now...
-		  // nahon@virtools needs to convert to radians
-			angles[0] = DEG_TO_RAD*data.Station[station].Orientation[0];
-			angles[1] = DEG_TO_RAD*data.Station[station].Orientation[1];
-			angles[2] = DEG_TO_RAD*data.Station[station].Orientation[2];
+	        // Just return Euler for now...
+	        // nahon@virtools needs to convert to radians
+		angles[0] = DEG_TO_RAD*data.Station[station].Orientation[0];
+		angles[1] = DEG_TO_RAD*data.Station[station].Orientation[1];
+		angles[2] = DEG_TO_RAD*data.Station[station].Orientation[2];
 
-			q_from_euler(d_quat, angles[0], angles[1], angles[2]);	
-		}
-        
-		// have to just send it now
+		q_from_euler(d_quat, angles[0], angles[1], angles[2]);	
+	}
+
+	// have to just send it now
         status = vrpn_TRACKER_REPORT_READY;
-//		fprintf(stderr, "sending message len %d\n", len);
-		send_report();
+//	fprintf(stderr, "sending message len %d\n", len);
+	send_report();
 
 	//printf("Isense %f, %f, %f\n",pos[0],pos[1],pos[2]);
 	//printf("Isense a:%f, %f, %f : ",angles[0],angles[1],angles[2]); //if the tracker reports a quat, these will be garbage
