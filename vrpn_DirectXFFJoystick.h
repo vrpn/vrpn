@@ -63,6 +63,7 @@ protected:
 
     static  int	VRPN_CALLBACK handle_last_connection_dropped(void *selfPtr, vrpn_HANDLERPARAM p);
     static  int	VRPN_CALLBACK handle_plane_change_message(void *selfPtr, vrpn_HANDLERPARAM p);
+    static  int VRPN_CALLBACK handle_forcefield_change_message(void *selfPtr, vrpn_HANDLERPARAM p);
 
     //-------------------------------------------------------------------------------
     // None of the scene-orienting or object-creation methods are supported yet, but

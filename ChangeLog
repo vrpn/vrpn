@@ -1,3 +1,10 @@
+2007-01-21  David Borland  <borland@cs.unc.edu>
+
+	* vrpn_DirectXFFJoystick.h : Now handles changed force field
+	messages.  Currently, just assuming a constant force.  The center,
+	jacobian, and radius are ignored.
+	* vrpn_Connection.C : Same.
+
 2007-01-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Tracker_isense.C : Changed the interpretation of the

@@ -93,6 +93,11 @@ vrpn_DirectXFFJoystick::vrpn_DirectXFFJoystick (const char * name, vrpn_Connecti
 	fprintf(stderr,"vrpn_DirectXFFJoystick:can't register plane handler\n");
 	return;
     }
+    if (register_autodeleted_handler(forcefield_message_id, 
+	  handle_forcefield_change_message, this, vrpn_ForceDevice::d_sender_id)) {
+	fprintf(stderr,"vrpn_DirectXFFJoystick:can't register force handler\n");
+	return;
+    }
   }
 
   // Set the mode to reading.  Set time to zero, so we'll try to read
@@ -667,6 +672,25 @@ int vrpn_DirectXFFJoystick::handle_plane_change_message(void *selfPtr,
   return 0;
 }
 
+int vrpn_DirectXFFJoystick::handle_forcefield_change_message(void *selfPtr, 
+					      vrpn_HANDLERPARAM p)
+{
+  vrpn_DirectXFFJoystick *me = (vrpn_DirectXFFJoystick *)selfPtr;
+
+  vrpn_float32 center[3];
+  vrpn_float32 force[3];
+  vrpn_float32 jacobian[3][3];
+  vrpn_float32 radius;
+
+  decode_forcefield(p.buffer, p.payload_len, center, force, jacobian, &radius);
+
+  // XXX We are ignoring the center, jacobian, and radius for now.  Just use the force.
+
+  me->_fX = force[0];
+  me->_fY = force[1];
+
+  return 0;
+}
 
 // Zero the force sent to the device when the last connection is dropped.
 int	vrpn_DirectXFFJoystick::handle_last_connection_dropped(void *selfPtr, vrpn_HANDLERPARAM)
