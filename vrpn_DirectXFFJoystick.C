@@ -235,7 +235,7 @@ HRESULT vrpn_DirectXFFJoystick::InitDirectJoystick( void )
 	  ZeroMemory( &eff, sizeof(eff) );
 	  eff.dwSize                  = sizeof(DIEFFECT);
 	  eff.dwFlags                 = DIEFF_CARTESIAN | DIEFF_OBJECTOFFSETS;
-//	  eff.dwDuration              = INFINITE;
+//	    eff.dwDuration              = INFINITE;
 	  eff.dwDuration              = (DWORD)(0.02 * DI_SECONDS); 
 	  eff.dwSamplePeriod          = 0;
 	  eff.dwGain                  = DI_FFNOMINALMAX;
