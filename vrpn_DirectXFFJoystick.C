@@ -222,18 +222,20 @@ HRESULT vrpn_DirectXFFJoystick::InitDirectJoystick( void )
 	  LONG            rglDirection[2] = { 0, 0 };
 	  DICONSTANTFORCE cf              = { 0 };
 
+/*
 	  DIENVELOPE diEnvelope;      // envelope
 	  diEnvelope.dwSize = sizeof(DIENVELOPE);
 	  diEnvelope.dwAttackLevel = 0; 
 	  diEnvelope.dwAttackTime = (DWORD)(0.005 * DI_SECONDS); 
 	  diEnvelope.dwFadeLevel = 0; 
 	  diEnvelope.dwFadeTime = (DWORD)(0.005 * DI_SECONDS); 
+*/
 
 	  DIEFFECT eff;
 	  ZeroMemory( &eff, sizeof(eff) );
 	  eff.dwSize                  = sizeof(DIEFFECT);
 	  eff.dwFlags                 = DIEFF_CARTESIAN | DIEFF_OBJECTOFFSETS;
-	  //	  eff.dwDuration              = INFINITE;
+//	  eff.dwDuration              = INFINITE;
 	  eff.dwDuration              = (DWORD)(0.02 * DI_SECONDS); 
 	  eff.dwSamplePeriod          = 0;
 	  eff.dwGain                  = DI_FFNOMINALMAX;
@@ -242,12 +244,11 @@ HRESULT vrpn_DirectXFFJoystick::InitDirectJoystick( void )
 	  eff.cAxes                   = _numforceaxes;
 	  eff.rgdwAxes                = rgdwAxes;
 	  eff.rglDirection            = rglDirection;
-	  eff.lpEnvelope              = &diEnvelope;
-	  //	  eff.lpEnvelope              = 0;
+//      eff.lpEnvelope              = &diEnvelope;
+	  eff.lpEnvelope              = 0;
 	  eff.cbTypeSpecificParams    = sizeof(DICONSTANTFORCE);
 	  eff.lpvTypeSpecificParams   = &cf;
 	  eff.dwStartDelay            = 0;
-
 
 	  // Create the prepared effect
 	  if( FAILED( hr = _Joystick->CreateEffect( GUID_ConstantForce, &eff, &_ForceEffect, NULL ) ) ||
@@ -376,18 +377,18 @@ int vrpn_DirectXFFJoystick::get_report(void)
     static struct timeval forcetime = {0,0};
     struct timeval now;
     vrpn_gettimeofday(&now, NULL);
-    if (duration(now, forcetime) >= 1000000.0 / _force_rate) {
+    //if (duration(now, forcetime) >= 1000000.0 / _force_rate) {
       send_normalized_force(_fX, _fY);
       forcetime = now;
-    }
+    //}
   }
 
   // If it is not time for the next read, just return
   struct timeval reporttime;
   vrpn_gettimeofday(&reporttime, NULL);
-  if (duration(reporttime, _timestamp) < 1000000.0 / _read_rate) {
-    return 0;
-  }
+  //if (duration(reporttime, _timestamp) < 1000000.0 / _read_rate) {
+    //return 0;
+  //}
 #ifdef	VERBOSE
   printf(" now: %ld:%ld,   last %ld:%ld\n", reporttime.tv_sec, reporttime.tv_usec,
     _timestamp.tv_sec, _timestamp.tv_usec);
@@ -482,7 +483,6 @@ void	vrpn_DirectXFFJoystick::report(vrpn_uint32 class_of_service)
 // A force of 1 goes the the right in X and up in Y
 void  vrpn_DirectXFFJoystick::send_normalized_force(double fx, double fy)
 {
-
   static double fx_1 = 0, fx_2 = 0, fy_1 = 0, fy_2 = 0;
 
   // Make sure we have force capability.  If not, then set our status to
@@ -528,13 +528,14 @@ void  vrpn_DirectXFFJoystick::send_normalized_force(double fx, double fy)
   cf.lMagnitude = (DWORD)(sqrt( (double)xForce * (double)xForce +
 				(double)yForce * (double)yForce ));
 
+/*
   DIENVELOPE diEnvelope;      // envelope
   diEnvelope.dwSize = sizeof(DIENVELOPE);
   diEnvelope.dwAttackLevel = 0; 
   diEnvelope.dwAttackTime = (DWORD)(0.005 * DI_SECONDS); 
   diEnvelope.dwFadeLevel = 0; 
   diEnvelope.dwFadeTime = (DWORD)(0.005 * DI_SECONDS); 
-
+*/
 
   DIEFFECT eff;
   ZeroMemory( &eff, sizeof(eff) );
@@ -542,8 +543,8 @@ void  vrpn_DirectXFFJoystick::send_normalized_force(double fx, double fy)
   eff.dwFlags               = DIEFF_CARTESIAN | DIEFF_OBJECTOFFSETS;
   eff.cAxes                 = _numforceaxes;
   eff.rglDirection          = rglDirection;
-  //eff.lpEnvelope            = 0;
-  eff.lpEnvelope            = &diEnvelope;
+  eff.lpEnvelope            = 0;
+//  eff.lpEnvelope            = &diEnvelope;
   eff.cbTypeSpecificParams  = sizeof(DICONSTANTFORCE);
   eff.lpvTypeSpecificParams = &cf;
   eff.dwStartDelay            = 0;
@@ -685,7 +686,6 @@ int vrpn_DirectXFFJoystick::handle_forcefield_change_message(void *selfPtr,
   decode_forcefield(p.buffer, p.payload_len, center, force, jacobian, &radius);
 
   // XXX We are ignoring the center, jacobian, and radius for now.  Just use the force.
-
   me->_fX = force[0];
   me->_fY = force[1];
 
