@@ -922,6 +922,7 @@ void vrpn_Phantom::reset(){
       planes[i]->setActive(FALSE);
     }
   }
+  forceField->stop();
 }
 
 int vrpn_Phantom::register_change_handler(void *userdata,

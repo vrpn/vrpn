@@ -1,3 +1,9 @@
+2006-01-30  David Borland  <borland@cs.unc.edu>
+
+	* vrpn_Phantom.C : Added call to forceField->stop() in 
+	vrpn_Phantom::reset().  Previously, the force field would remain
+	in effect when the vrpn connection was dropped.
+
 2006-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.cfg : Added support for new devices whose drivers were
