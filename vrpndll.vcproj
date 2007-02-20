@@ -407,6 +407,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\vrpn_Analog_USDigital_A2.C"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_BaseClass.C"
 				>
 				<FileConfiguration
@@ -450,6 +470,26 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\vrpn_Button_NI_DIO24.C"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
 						CompileAs="2"
 					/>
 				</FileConfiguration>
@@ -1672,11 +1712,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\vrpn_Analog_USDigital_A2.h"
+				>
+			</File>
+			<File
 				RelativePath="vrpn_BaseClass.h"
 				>
 			</File>
 			<File
 				RelativePath="vrpn_Button.h"
+				>
+			</File>
+			<File
+				RelativePath=".\vrpn_Button_NI_DIO24.h"
 				>
 			</File>
 			<File
