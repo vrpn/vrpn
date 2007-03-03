@@ -15,7 +15,7 @@
 #include <sys/time.h>
 #endif
 
-#ifdef	linux
+#if defined(linux) && !defined(__arm__)
 #include <gpm.h>
 #endif
 
@@ -27,7 +27,7 @@ vrpn_Mouse::vrpn_Mouse( const char* name, vrpn_Connection* cxn ) :
 	vrpn_Analog( name, cxn ),
 	vrpn_Button_Filter( name, cxn )
 {
-#ifdef linux
+#if defined(linux) && !defined(__arm__)
     // attempt to connect to the GPM server
     gpm_zerobased = 1;
     gpm_visiblepointer = 1;
@@ -68,7 +68,7 @@ vrpn_Mouse::vrpn_Mouse( const char* name, vrpn_Connection* cxn ) :
 
 vrpn_Mouse::~vrpn_Mouse()
 {
-#ifdef linux
+#if defined(linux) && !defined(__arm__)
     Gpm_Close();
 #endif
 }
@@ -85,7 +85,7 @@ void vrpn_Mouse::mainloop()
 
 int vrpn_Mouse::get_report()
 {
-#ifdef linux
+#if defined(linux) && !defined(__arm__)
     fd_set readset;
 
     FD_ZERO( &readset );

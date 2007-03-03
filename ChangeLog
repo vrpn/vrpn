@@ -1,3 +1,10 @@
+2007-03-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Mouse.C : Removing the mouse library when compiling
+		for the ARM, which is the embedded version of the
+		OS.  This device was not present (at least not on
+		the ARM development I'm working on now).
+
 2007-02-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.sln : Adding required dependencies on quatlib and two
