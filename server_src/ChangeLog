@@ -1,3 +1,7 @@
+2007-03-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Making this code compile under pc_linux_arm.
+
 2006-01-30  David Borland  <borland@cs.unc.edu>
 
 	* vrpn_Phantom.C : Added call to forceField->stop() in 

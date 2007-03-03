@@ -12,6 +12,7 @@
 #HW_OS := pc_linux
 #HW_OS := pc_linux64
 #HW_OS := pc_linux_ia64
+#HW_OS := pc_linux_arm
 #HW_OS := pc_cygwin
 #HW_OS := pc_FreeBSD
 #HW_OS := powerpc_aix
@@ -79,6 +80,11 @@ endif
 ifeq ($(HW_OS),pc_linux64)
 	CC := g++ -m64
 	SYSLIBS := -lgpm
+endif
+ifeq ($(HW_OS), pc_linux_arm)
+	CC := arm-linux-g++
+	RANLIB := arm-linux-ranlib
+	AR := arm-linux-ar ruv
 endif
 ifeq ($(HW_OS),pc_linux)
 	SYSLIBS := -lgpm
