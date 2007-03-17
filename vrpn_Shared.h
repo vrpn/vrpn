@@ -163,10 +163,12 @@ extern VRPN_API	int vrpn_unbuffer (const char ** buffer, char * string, vrpn_int
 // From this we get the variable "vrpn_big_endian" set to true if the machine we are
 // on is big endian and to false if it is little endian.  This can be used by
 // custom packing and unpacking code to bypass the buffer and unbuffer routines
-// for cases that have to be particularly fast (like video data).
+// for cases that have to be particularly fast (like video data).  It is also used
+// internally by the htond() function.
+
 static	const   int     vrpn_int_data_for_endian_test = 1;
 static	const   char    *vrpn_char_data_for_endian_test = (char *)(void *)(&vrpn_int_data_for_endian_test);
-static	const   bool    vrpn_big_endian = (vrpn_char_data_for_endian_test[3] == 1);
+static	const   bool    vrpn_big_endian = (vrpn_char_data_for_endian_test[0] != 1);
 
 // XXX should this be done in cygwin?
 // No sleep() function, but Sleep(DWORD) defined in winbase.h

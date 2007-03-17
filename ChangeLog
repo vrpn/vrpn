@@ -1,5 +1,16 @@
 2007-03-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Shared.h : Made both the vrpn_big_endian and the
+		htond() code use the same test to see what the
+		endianness is.
+	* vrpn_Shared.C : It turns out that some ARM processors have
+		a mixed-endian double format, where you have to both
+		swap the bytes and then swap the two words that make
+		up the double.  Horrible.  This checks for that and
+		does it if needed.
+
+2007-03-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Mouse.C : Removing the mouse library except when the
 		new VRPN_USE_GPM_MOUSE definition is specified in
 		vrpn_Configure.h

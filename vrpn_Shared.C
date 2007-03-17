@@ -165,23 +165,44 @@ void vrpn_SleepMsecs( double dMsecs )
 }
 
 
-
-static long lTestEndian = 0x1;
-static const int fLittleEndian = (*((char *)&lTestEndian) == 0x1);
-
 // convert vrpn_float64 to/from network order
 // I have chosen big endian as the network order for vrpn_float64
+// to match the standard for htons() and htonl().
+// NOTE: There is an added complexity when we are using an ARM
+// processor in mixed-endian mode for the doubles, whereby we need
+// to not just swap all of the bytes but also swap the two 4-byte
+// words to get things in the right order.
+#ifdef  __arm__
+#include <endian.h>
+#endif
+
 vrpn_float64 htond( vrpn_float64 d )
 {
-    if (fLittleEndian) {
+    if (!vrpn_big_endian) {
         vrpn_float64 dSwapped;
         char *pchSwapped= (char *)&dSwapped;
         char *pchOrig= (char *)&d;
 
-        // swap to big
+        // swap to big-endian order.
         for(int i=0;i<sizeof(vrpn_float64);i++) {
             pchSwapped[i]=pchOrig[sizeof(vrpn_float64)-i-1];
         }
+
+        #ifdef  __arm__
+          // On ARM processor, see if we're in mixed mode.  If so,
+          // we need to swap the two words after doing the total
+          // swap of bytes.
+          #if __FLOAT_WORD_ORDER != __BYTE_ORDER
+            {
+              /* Fixup mixed endian floating point machines */
+              vrpn_uint32 *pwSwapped = (vrpn_uint32 *)&dSwapped;
+              vrpn_uint32 scratch = pwSwapped[0];
+              pwSwapped[0] = pwSwapped[1];
+              pwSwapped[1] = scratch;
+            }
+          #endif
+        #endif
+
         return dSwapped;
     } else {
         return d;
