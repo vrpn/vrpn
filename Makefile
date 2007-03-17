@@ -36,7 +36,10 @@
 #HW_OS := pc_linux
 #HW_OS := pc_linux64
 #HW_OS := pc_linux_ia64
+# Try this to cross-compile on a Linux PC for an ARM embedded controller.
 #HW_OS := pc_linux_arm
+# Try this to cross-compile on a Cygwin PC for an ARM embedded controller.
+#HW_OS := pc_cygwin_arm
 #HW_OS := pc_cygwin
 #HW_OS := pc_FreeBSD
 #HW_OS := sparc_solaris
@@ -148,6 +151,12 @@ else
 	AR := arm-linux-ar ruv
   endif
 
+  ifeq ($(HW_OS), pc_cygwin_arm)
+        CC := arm-unknown-linux-gnu-g++
+        RANLIB := arm-unknown-linux-gnu-ranlib
+	AR := arm-unknown-linux-gnu-ar ruv
+  endif
+
   ifeq ($(HW_OS),sgi_irix)
    ifndef SGI_ABI
       SGI_ABI := n32
@@ -214,6 +223,13 @@ ifeq ($(HW_OS),powerpc_macosx)
 endif
 
 ifeq ($(HW_OS),pc_linux_arm)
+  SYS_INCLUDE := -I/opt/Embedix/arm-linux/include
+#   -I/usr/local/contrib/include \
+#	  	 -I/usr/local/contrib/mod/include -I/usr/include/bsd \
+#		 -I/usr/include/g++
+endif
+
+ifeq ($(HW_OS),pc_cygwin_arm)
   SYS_INCLUDE := -I/opt/Embedix/arm-linux/include
 #   -I/usr/local/contrib/include \
 #	  	 -I/usr/local/contrib/mod/include -I/usr/include/bsd \

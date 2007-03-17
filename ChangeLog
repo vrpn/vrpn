@@ -1,3 +1,13 @@
+2007-03-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Mouse.C : Removing the mouse library except when the
+		new VRPN_USE_GPM_MOUSE definition is specified in
+		vrpn_Configure.h
+	* vrpn_Configure.h : Added entry to let us use the GPM mouse
+		under linux.
+	* Makefile : Added a build environment description for cross-
+		compiling to ARM from PCs running Cygwin
+
 2007-03-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Mouse.C : Removing the mouse library when compiling

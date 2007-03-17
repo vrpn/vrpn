@@ -157,6 +157,14 @@
 // Not implemented for .so-based Unix systems.
 //#define VRPN_USE_SHARED_LIBRARY
 
+//------------------------
+// Instructs VRPN to use GPM Linux interface mouse interface.
+// WARNING: If you define this, then you must also edit the server_src
+// Makefile to include "-lgpm" into the SYSLIBS definition line for the
+// architecture you use this on.  We had to change this because not all
+// Linux releases included this library.
+//#define VRPN_USE_GPM_MOUSE
+
 //------------------------------------------------------------------//
 // SYSTEM CONFIGURATION SECTION                                     //
 // EDIT THESE DEFINITIONS TO POINT TO OPTIONAL LIBRARIES.  THEY ARE //

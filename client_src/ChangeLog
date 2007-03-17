@@ -1,3 +1,8 @@
+2007-03-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Adding a build environment for cross-compiling to
+		ARM from PCs running Cygwin
+
 2007-03-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Makefile : Making this code compile under pc_linux_arm.

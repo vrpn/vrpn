@@ -14,7 +14,10 @@
 #HW_OS := pc_linux
 #HW_OS := pc_linux64
 #HW_OS := pc_linux_ia64
+# Try using this to cross-compile for ARM on a PC running Linux
 #HW_OS := pc_linux_arm
+# Try using this to cross-compile for ARM on a PC running Cygwin
+#HW_OS := pc_cygwin_arm
 #HW_OS := pc_cygwin
 #HW_OS := pc_FreeBSD
 #HW_OS := powerpc_aix
@@ -69,6 +72,12 @@ ifeq ($(HW_OS), pc_linux_arm)
 	CC := arm-linux-g++
 	RANLIB := arm-linux-ranlib
 	AR := arm-linux-ar ruv
+endif
+
+ifeq ($(HW_OS), pc_cygwin_arm)
+	CC := arm-unknown-linux-gnu-g++
+	RANLIB := arm-unknown-linux-gnu-ranlib
+	AR := arm-unknown-linux-gnu-ar ruv
 endif
 
 ifeq ($(HW_OS),pc_linux64)
