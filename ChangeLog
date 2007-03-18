@@ -1,3 +1,7 @@
+2007-03-18  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Changing version number to 07.05.
+
 2007-03-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Shared.h : Made both the vrpn_big_endian and the
