@@ -377,18 +377,18 @@ int vrpn_DirectXFFJoystick::get_report(void)
     static struct timeval forcetime = {0,0};
     struct timeval now;
     vrpn_gettimeofday(&now, NULL);
-    //if (duration(now, forcetime) >= 1000000.0 / _force_rate) {
+    if (duration(now, forcetime) >= 1000000.0 / _force_rate) {
       send_normalized_force(_fX, _fY);
       forcetime = now;
-    //}
+    }
   }
 
   // If it is not time for the next read, just return
   struct timeval reporttime;
   vrpn_gettimeofday(&reporttime, NULL);
-  //if (duration(reporttime, _timestamp) < 1000000.0 / _read_rate) {
-    //return 0;
-  //}
+  if (duration(reporttime, _timestamp) < 1000000.0 / _read_rate) {
+    return 0;
+  }
 #ifdef	VERBOSE
   printf(" now: %ld:%ld,   last %ld:%ld\n", reporttime.tv_sec, reporttime.tv_usec,
     _timestamp.tv_sec, _timestamp.tv_usec);
