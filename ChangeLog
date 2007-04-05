@@ -1,5 +1,11 @@
 2007-04-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_DirectXFFJoystick.C : Made the joystick report at the
+		requested rate, whether or not there have been changes
+		to its analog values.
+
+2007-04-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_DirectXFFJoystick.C : Uncommenting the lines that make sure
 		not to send force commands or read values at a rate greater
 		than was asked for.  No idea why these had been commented

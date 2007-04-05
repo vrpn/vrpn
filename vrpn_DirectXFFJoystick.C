@@ -456,9 +456,9 @@ int vrpn_DirectXFFJoystick::get_report(void)
     buttons[i] = ( (js.rgbButtons[i] & 0x80) != 0);
   }
 
-  // Send any changes out over the connection.
+  // Send the new values out over the connection.
   _timestamp = reporttime;
-  report_changes();
+  report();
   return 0;
 }
 
