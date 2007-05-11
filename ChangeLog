@@ -1,3 +1,8 @@
+2007-05-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.sln : It was building the release configuration as
+		Debug for some reason.  So changed that.
+
 2007-04-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_DirectXFFJoystick.C : Made the joystick report at the
