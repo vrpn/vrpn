@@ -1,3 +1,17 @@
+
+2007-06-04  David Marshburn  <marshbur@cs.unc.edu>
+	* .classpath, .project:  eclipse project files for java_vrpn.  
+	currently only builds the .class files.  i still need to make
+	eclipse build the .jar file automatically, generate the 
+	java-native .h files, generate the javadoc.
+	* .settings (directory):  location of project-specific eclipse
+	settings
+	* .cvsignore:  ignore the bin directory
+
+
+2007-05-31  David Marshburn  <marshbur@cs.unc.edu>
+	* .cvsignore:  don't ignore the vrpn directory
+
 2007-01-18  David Marshburn  <marshbur@cs.unc.edu>
 
 	* make_header.sh:  adds recent classes to the list

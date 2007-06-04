@@ -1,5 +1,4 @@
 import java.io.*;
-import java.util.*;
 import vrpn.*;
 
 public class TrackerTest 
@@ -60,7 +59,7 @@ public class TrackerTest
 				System.out.flush();
 				System.err.flush();
 				System.out.println( "hit enter to end" );
-				String s = in.readLine();
+				in.readLine();
 			}
 			catch( IOException ioe ) {}
 			return;
