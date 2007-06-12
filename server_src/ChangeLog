@@ -1,3 +1,13 @@
+2007-06-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * Makefile : Compiles with PhaseSpace driver submitted by
+                Lawrence Kwan.
+        * vrpn_server.vcproj : Same.
+        * vrpn.cfg : Same.
+        * vrpn.cfg.SAMPLE : Same.
+        * vrpn_Generic_server_object.h: Same.
+        * vrpn_Generic_server_object.C: Same.
+
 2007-03-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Makefile : Adding a build environment for cross-compiling to

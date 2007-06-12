@@ -2189,7 +2189,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_InterSense(char * &pch, char *line
   }
 
 #else
-	fprintf(stderr, "vrpn_server: Can't open Intersense native server: VRPN_USE_ISENSE not defined in vrpn_Configure.h!\n");
+	fprintf(stderr, "vrpn_server: Can't open Intersense native server: VRPN_INCLUDE_INTERSENSE not defined in vrpn_Configure.h!\n");
 	return -1;
 #endif
 
@@ -2641,6 +2641,7 @@ int vrpn_Generic_Server_Object::setup_Poser_Tek4662 (char * & pch, char * line, 
 
 int vrpn_Generic_Server_Object::setup_Analog_USDigital_A2 (char * & pch, char * line, FILE * config_file) 
 {
+#ifdef  VRPN_USE_USDIGITAL
     char A2name[LINESIZE];
     int  comPort, numChannels, numArgs, reportChange;
 
@@ -2701,11 +2702,16 @@ int vrpn_Generic_Server_Object::setup_Analog_USDigital_A2 (char * & pch, char * 
     }
 
     return 0;
+#else
+	printf("Warning:  Server not compiled with  VRPN_USE_USDIGITAL defined.\n");
+	return -1;
+#endif
 }    //  setup_USDigital_A2
 
 
 int vrpn_Generic_Server_Object::setup_Button_NI_DIO24 (char * & pch, char * line, FILE * config_file) 
 {
+#ifdef VRPN_USE_NATIONAL_INSTRUMENTS_MX
     char DIO24name[LINESIZE];
     int  numChannels ;
     int  numArgs ;
@@ -2758,9 +2764,249 @@ int vrpn_Generic_Server_Object::setup_Button_NI_DIO24 (char * & pch, char * line
     }
 
     return 0;
+#else
+	printf("Warning:  Server not compiled with VRPN_USE_NATIONAL_INSTRUMENTS_MX defined.\n");
+	return -1;
+#endif
 
 }    //  setup_Button_NI_DIO24
 
+int vrpn_Generic_Server_Object::setup_Tracker_PhaseSpace (char * & pch, char * line, FILE * config_file) 
+{
+#ifdef VRPN_INCLUDE_PHASESPACE
+
+  char trackerName[LINESIZE];
+  char device[LINESIZE];
+  float framerate = 0;
+  int readflag = 0;
+	
+  //get tracker name and device
+  if( sscanf(line,"vrpn_Tracker_PhaseSpace %s %s %f %d",trackerName,device,&framerate,&readflag) < 4)
+    {
+      fprintf(stderr,"Bad vrpn_Tracker_PhaseSpace line: %s\n", line);
+      return -1;
+    }
+        
+  // Make sure there's room for a new tracker
+  if (num_trackers >= VRPN_GSO_MAX_TRACKERS) {
+    fprintf(stderr,"Too many trackers in config file");
+    return -1;
+  }
+  
+  vrpn_Tracker_PhaseSpace* pstracker =  new vrpn_Tracker_PhaseSpace(trackerName, connection, device, framerate, readflag);
+
+  if(pstracker == NULL) 
+    {
+      fprintf(stderr,"Unable to create new vrpn_Tracker_PhaseSpace.\n");
+      return -1;
+    }
+
+  trackers[num_trackers] = pstracker;
+  num_trackers++;
+  
+  char tag[LINESIZE];
+  int sensor = 0;
+  int id = 0;
+  float x = 0;
+  float y = 0;
+  float z = 0;
+  bool inTag = false;
+ 
+  //read file for markers and rigid body specifications     
+  while ( fgets(line, LINESIZE, config_file) != NULL ) {  
+
+    //cut off comments
+    for(int i = 0; i < LINESIZE && line[i] != '\0'; i++)
+      {
+        if(line[i] == '#')
+          {
+            line[i] = '\0';
+            break;
+          }
+      }
+    
+    //read tags and params
+    if(sscanf(line,"%s",tag) == 1)
+      {
+        if(strcmp("<owl>",tag) == 0)
+          {
+            if(inTag)
+              {
+                fprintf(stderr,"Error, nested <owl> tag encountered.  Aborting...\n");
+                return -1;
+              }
+            else
+              {
+                inTag = true;
+                continue;
+              }
+          }
+        else if(strcmp("</owl>",tag) == 0)
+          {
+            if(inTag)
+              {
+                inTag = false;
+                break;
+              }
+            else
+              {
+                fprintf(stderr,"Error, </owl> tag without <owl> tag.  Aborting...\n");
+                return-1;
+              }
+          }
+      }
+    if(inTag) 
+      {
+        if(sscanf(line,"%d : rb+ %d %f %f %f", &sensor,&id,&x,&y,&z) == 5)
+          {
+            if(!pstracker->addRigidMarker(sensor,id,x,y,z))
+              {
+                fprintf(stderr,"Error, unable to add new rigid body marker: %d:%d %f %f %f\n",sensor,id,x,y,z);                        
+                continue;
+              }
+          }
+        else if(sscanf(line,"%d : pt %d", &sensor,&id) == 2)
+          {
+            if(!pstracker->addMarker(sensor,id))
+              {
+                fprintf(stderr,"Error, unable to add marker %d:%d\n",sensor,id);                        
+                continue;
+              }
+          }
+        else if(sscanf(line,"%d : rbnew", &sensor) == 1)
+          {
+            if(!pstracker->startNewRigidBody(sensor))
+              {
+                fprintf(stderr,"Error, unable to add new rigid body: %d\n",sensor);                        
+                continue;
+              }
+          }
+        else
+          {
+            fprintf(stderr,"Ignoring line: %s\n",line);            
+            continue;
+          }      
+      }    
+  }
+  
+  if(!pstracker->enableTracker(true))
+    {
+      fprintf(stderr,"Error, unable to enable OWL Tracker.\n");
+      return -1;
+    }
+  
+#else
+  fprintf(stderr, "vrpn_server: Can't open PhaseSpace OWL server: VRPN_INCLUDE_PHASESPACE not defined in vrpn_Configure.h!\n");
+  return -1;  
+#endif
+
+  return 0;
+}
+
+int vrpn_Generic_Server_Object::setup_Tracker_Slave (char * & pch, char * line, FILE * config_file) 
+{
+#ifdef VRPN_INCLUDE_SLAVE
+
+  char trackerName[LINESIZE];
+  char masterTracker[LINESIZE];
+	
+  //get tracker name and device
+  if( sscanf(line,"vrpn_Tracker_Slave %s %s",trackerName,masterTracker) < 2)
+    {
+      fprintf(stderr,"Bad vrpn_Tracker_Slave line: %s\n", line);
+      return -1;
+    }
+        
+  // Make sure there's room for a new tracker
+  if (num_trackers >= VRPN_GSO_MAX_TRACKERS) {
+    fprintf(stderr,"Too many trackers in config file");
+    return -1;
+  }
+  
+  vrpn_Tracker_Slave* tracker =  new vrpn_Tracker_Slave(trackerName, connection, masterTracker);
+
+  if(tracker == NULL) 
+    {
+      fprintf(stderr,"Unable to create new vrpn_Tracker_Slave.\n");
+      return -1;
+    }
+
+  trackers[num_trackers] = tracker;
+  num_trackers++;
+  
+  char tag[LINESIZE];
+  int localsensor = 0;
+  int mastersensor = 0;
+  bool inTag = false;
+ 
+  //read file for sensor specifications     
+  while ( fgets(line, LINESIZE, config_file) != NULL ) {  
+
+    //cut off comments
+    for(int i = 0; i < LINESIZE && line[i] != '\0'; i++)
+      {
+        if(line[i] == '#')
+          {
+            line[i] = '\0';
+            break;
+          }
+      }
+    
+    //read tags and params
+    if(sscanf(line,"%s",tag) == 1)
+      {
+        if(strcmp("<slave>",tag) == 0)
+          {
+            if(inTag)
+              {
+                fprintf(stderr,"Error, nested <slave> tag encountered.  Aborting...\n");
+                return -1;
+              }
+            else
+              {
+                inTag = true;
+                continue;
+              }
+          }
+        else if(strcmp("</slave>",tag) == 0)
+          {
+            if(inTag)
+              {
+                inTag = false;
+                break;
+              }
+            else
+              {
+                fprintf(stderr,"Error, </slave> tag without <slave> tag.  Aborting...\n");
+                return-1;
+              }
+          }
+      }
+    if(inTag) 
+      {
+        if(sscanf(line,"%d : %d", &localsensor,&mastersensor) == 2)
+          {
+            if(!tracker->addSensor(localsensor,mastersensor))
+              {
+                fprintf(stderr,"Error, unable to add new sensor: %d : %d",localsensor,mastersensor);
+                continue;
+              }
+          }
+        else
+          {
+            fprintf(stderr,"Ignoring line: %s\n",line);            
+            continue;
+          }      
+      }    
+  }
+  
+#else
+  fprintf(stderr, "vrpn_server:  VRPN_INCLUDE_SLAVE not defined in vrpn_Configure.h!\n");
+  return -1;  
+#endif
+
+  return 0;
+}
 
 vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connection_to_use, const char *config_file_name, int port, bool be_verbose, bool bail_on_open_error) :
   connection(connection_to_use),
@@ -2940,15 +3186,17 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
 	  } else if (isit("vrpn_3DMicroscribe")) {
             CHECK(setup_3DMicroscribe);
 	  } else if (isit("vrpn_KeyMouse")) {
-		  CHECK(setup_KeyMouse);
+            CHECK(setup_KeyMouse);
 	  } else if (isit("vrpn_Button_USB")) {
-		  CHECK(setup_Button_USB);
+            CHECK(setup_Button_USB);
 	  } else if (isit("vrpn_Analog_USDigital_A2")) {
             CHECK(setup_Analog_USDigital_A2);
-
 	  } else if (isit("vrpn_Button_NI_DIO24")) {
             CHECK(setup_Button_NI_DIO24);
-
+	  } else if (isit("vrpn_Tracker_PhaseSpace")) {
+            CHECK(setup_Tracker_PhaseSpace);
+	  } else if (isit("vrpn_Tracker_Slave")) {
+            CHECK(setup_Tracker_Slave);
 	 } else {	// Never heard of it
 		sscanf(line,"%511s",s1);	// Find out the class name
 		fprintf(stderr,"vrpn_server: Unknown Device: %s\n",s1);

@@ -66,6 +66,9 @@
 #include "vrpn_Analog_USDigital_A2.h"
 #include "vrpn_Button_NI_DIO24.h"
 
+#include "vrpn_Tracker_PhaseSpace.h"
+//#include "vrpn_Tracker_Slave.h"
+
 #ifdef VRPN_INCLUDE_TIMECODE_SERVER
 #include "timecode_generator_server\vrpn_timecode_generator.h"
 #endif
@@ -224,6 +227,8 @@ protected:
   int setup_Button_USB(char * & pch, char * line, FILE * config_file);
   int setup_Analog_USDigital_A2 (char * & pch, char * line, FILE * config_file) ;
   int setup_Button_NI_DIO24 (char * & pch, char * line, FILE * config_file) ;
+  int setup_Tracker_PhaseSpace (char * & pch, char * line, FILE * config_file) ;
+  int setup_Tracker_Slave (char * & pch, char * line, FILE * config_file) ;
 };
 
 #endif

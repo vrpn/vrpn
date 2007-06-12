@@ -143,6 +143,15 @@ ifdef INTERSENSE
   endif
 endif
 
+#uncomment the following line to include the PHASESPACE library
+#PHASESPACE := ../../phasespace/libowlsock.so
+
+ifdef PHASESPACE
+#the rpath option may not work on all platforms, remove it if necessary.
+EXTRAOPTS := -Wl,-rpath .
+LFLAGS := $(LFLAGS) $(PHASESPACE) $(EXTRAOPTS)
+endif
+
 .SUFFIXES: .cpp
 
 .C.o:
