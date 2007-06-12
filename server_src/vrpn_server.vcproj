@@ -68,7 +68,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="../../phasespace/libowlsock.lib"
 				OutputFile=".\../pc_win32/server_src/vrpn_server/Debug/vrpn_server.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"

@@ -195,7 +195,7 @@
 
 #define VRPN_SYSTEMDRIVE "C:"
 
-#define VRPN_PHASESPACE_LIB_PATH ../phasespace
+#define VRPN_PHASESPACE_LIB_PATH "../phasespace/"
 
 #define VRPN_HDAPI_PATH         VRPN_SYSTEMDRIVE "/Program Files/SensAble/3DTouch/lib/"
 #define VRPN_HDAPI_UTIL_PATH    VRPN_SYSTEMDRIVE "/Program Files/SensAble/3DTouch/utilities/lib/"
@@ -227,7 +227,7 @@
 //---------------------------------------------------------------//
 
 // Load libowlsock.lib if we're using Phasespace.
-#ifdef	VRPN_USE_PHASESPACE
+#ifdef	VRPN_INCLUDE_PHASESPACE
 #pragma comment (lib, VRPN_PHASESPACE_LIB_PATH "libowlsock.lib")
 #endif
 

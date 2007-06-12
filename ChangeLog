@@ -1,5 +1,13 @@
 2007-06-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn.dsp : Adding PhaseSpace driver submitted by
+		Lawrence Kwan.
+	* vrpndll.dsp : Same.
+	* vrpndll.vcproj : Same.
+	* vrpn_Configure.h : Fixing the path to the include files.
+
+2007-06-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* Makefile : Compiles with PhaseSpace driver submitted by
 		Lawrence Kwan.
 	* vrpn.vcproj : Same.

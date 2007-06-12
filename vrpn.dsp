@@ -338,6 +338,10 @@ SOURCE=.\vrpn_Tracker_Liberty.C
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_Tracker_PhaseSpace.C
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_UNC_Joystick.C
 # End Source File
 # Begin Source File
@@ -603,6 +607,10 @@ SOURCE=.\vrpn_Tracker_isense.h
 # Begin Source File
 
 SOURCE=.\vrpn_Tracker_Liberty.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Tracker_PhaseSpace.h
 # End Source File
 # Begin Source File
 
