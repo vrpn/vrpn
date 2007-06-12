@@ -48,6 +48,7 @@
 #HW_OS := powerpc_macosx
 ##########################
 
+
 INSTALL_DIR := /usr/local
 BIN_DIR := $(INSTALL_DIR)/bin
 INCLUDE_DIR := $(INSTALL_DIR)/include
@@ -265,6 +266,8 @@ else
   INCLUDE_FLAGS := -I. $(SYS_INCLUDE) -I../quat -I../../quat
 
 endif
+
+
 ##########################
 # Load flags
 #
@@ -291,6 +294,7 @@ endif
 ifeq ($(HW_OS),powerpc_macosx)
 	LOAD_FLAGS := $(LOAD_FLAGS)
 endif
+
 
 ##########################
 # Libraries
@@ -326,6 +330,7 @@ LIBS := -lquat -lsdi $(TCL_LIBS) -lXext -lX11 $(ARCH_LIBS) -lm
 
 CFLAGS		 := $(INCLUDE_FLAGS) -g
 
+
 #############################################################################
 #
 # implicit rule for all .c files
@@ -352,6 +357,7 @@ $(OBJECT_DIR)/%.o: %.C $(LIB_INCLUDES)
 $(SOBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) $(MAKEFILE)
 	@[ -d $(SOBJECT_DIR) ] || mkdir $(SOBJECT_DIR)
 	$(CC) $(CFLAGS) -o $@ -c $<
+
 
 #
 #
@@ -447,7 +453,9 @@ SLIB_FILES =  $(LIB_FILES) vrpn_3Space.C \
 	vrpn_Poser.C vrpn_Tracker_Crossbow.C vrpn_Tracker_3DMouse.C \
 	vrpn_Mouse.C vrpn_3DMicroscribe.C vrpn_5DT16.C \
 	vrpn_ForceDeviceServer.C vrpn_Keyboard_Mouse.C \
-	vrpn_Analog_USDigital_A2.C vrpn_Button_NI_DIO24.C
+	vrpn_Analog_USDigital_A2.C vrpn_Button_NI_DIO24.C \
+	vrpn_Tracker_PhaseSpace.C
+
 
 SLIB_OBJECTS = $(patsubst %,$(SOBJECT_DIR)/%,$(SLIB_FILES:.C=.o))
 
@@ -465,7 +473,8 @@ SLIB_INCLUDES = $(LIB_INCLUDES) vrpn_3Space.h \
 	vrpn_Poser_Tek4662.h vrpn_Tracker_Crossbow.h vrpn_Tracker_3DMouse.h \
 	vrpn_Mouse.h vrpn_3DMicroscribe.h vrpn_5DT16.h \
 	vrpn_ForceDeviceServer.h vrpn_Keyboard_Mouse.h \
-	vrpn_Analog_USDigital_A2.h vrpn_Button_NI_DIO24.h
+	vrpn_Analog_USDigital_A2.h vrpn_Button_NI_DIO24.h \
+	vrpn_Tracker_PhaseSpace.h
 
 $(LIB_OBJECTS): 
 $(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(LIB_OBJECTS)

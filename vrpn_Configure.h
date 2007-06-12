@@ -146,6 +146,28 @@
 // server
 //#define VRPN_USE_MICROSCRIBE
 
+//------------------------
+// Compiles the VRPN libary with the PhaseSpace Tracker using the 
+// PhaseSpace OWL API on Linux and Windows.
+//
+// In Linux:
+// The PhaseSpace header files (owl.h, etc) and libraries (libowlsock)
+// should be placed in the phasespace directory at the same level as 
+// the vrpn folder.  Also, PHASESPACE needs to be uncommented in the
+// server_src/Makefile so that the libraries are properly linked.  
+// libowlsock.so will need to be present in the directory of the
+// final executable or in the default library path such as /usr/lib
+//
+// In Windows: 
+// The PhaseSpace header files (owl.h, etc) should be placed in the 
+// phasespace directory at the same level as the vrpn folder.
+// libowlsock.lib will need to be located there as well.
+// libowlsock.dll will need to be in the path or with the executable
+// at run time.  Edit the path below to say where the .lib file
+// can be found.
+//
+//#define VRPN_INCLUDE_PHASESPACE
+
 //-----------------------
 // Instructs VRPN to use a DLL interface on Windows systems.
 // When using this, link with VRPNDLL.LIB (and VRPN.DLL) rather
@@ -172,6 +194,8 @@
 //------------------------------------------------------------------//
 
 #define VRPN_SYSTEMDRIVE "C:"
+
+#define VRPN_PHASESPACE_LIB_PATH ../phasespace
 
 #define VRPN_HDAPI_PATH         VRPN_SYSTEMDRIVE "/Program Files/SensAble/3DTouch/lib/"
 #define VRPN_HDAPI_UTIL_PATH    VRPN_SYSTEMDRIVE "/Program Files/SensAble/3DTouch/utilities/lib/"
@@ -201,6 +225,11 @@
 //---------------------------------------------------------------//
 // DO NOT EDIT BELOW THIS LINE FOR NORMAL CONFIGURATION SETTING. //
 //---------------------------------------------------------------//
+
+// Load libowlsock.lib if we're using Phasespace.
+#ifdef	VRPN_USE_PHASESPACE
+#pragma comment (lib, VRPN_PHASESPACE_LIB_PATH "libowlsock.lib")
+#endif
 
 // Load VRPN Phantom library if we are using phantom server as unified server
 // Load SensAble Technologies GHOST library to run the Phantom

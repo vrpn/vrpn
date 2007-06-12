@@ -1588,6 +1588,18 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\vrpn_Tracker_PhaseSpace.C"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_UNC_Joystick.C"
 				>
 				<FileConfiguration
@@ -1934,6 +1946,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_Tracker_Liberty.h"
+				>
+			</File>
+			<File
+				RelativePath=".\vrpn_Tracker_PhaseSpace.h"
 				>
 			</File>
 			<File

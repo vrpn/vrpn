@@ -1,3 +1,11 @@
+2007-06-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Compiles with PhaseSpace driver submitted by
+		Lawrence Kwan.
+	* vrpn.vcproj : Same.
+	* vrpn_Tracker_PhaseSpace.h : Same.
+	* vrpn_Tracker_PhaseSpace.C : Same.
+
 2007-05-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.sln : It was building the release configuration as
