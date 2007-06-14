@@ -1,4 +1,8 @@
 
+2007-06-14
+	* buildNativeHeaders.xml:  an ANT build file, used by eclipse
+	to create the java native header files
+
 2007-06-04  David Marshburn  <marshbur@cs.unc.edu>
 	* .classpath, .project:  eclipse project files for java_vrpn.  
 	currently only builds the .class files.  i still need to make
