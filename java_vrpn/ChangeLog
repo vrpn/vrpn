@@ -1,7 +1,15 @@
 
-2007-06-14
+2007-06-15  David Marshburn  <marshbur@cs.unc.edu>
+	* buildNativeHeaders.xml:  left one class off the list
+	* java_vrpn.dsp:  updated the include paths.  output goes
+	into the bin directory.
+	* .cvsignore:  ignore some auto-generated visual studio files
+
+
+2007-06-14  David Marshburn  <marshbur@cs.unc.edu>
 	* buildNativeHeaders.xml:  an ANT build file, used by eclipse
 	to create the java native header files
+
 
 2007-06-04  David Marshburn  <marshbur@cs.unc.edu>
 	* .classpath, .project:  eclipse project files for java_vrpn.  
