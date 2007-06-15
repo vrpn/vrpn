@@ -1,6 +1,5 @@
 
 package vrpn;
-import java.util.*;
 
 public class AnalogOutputRemote extends VRPNDevice implements Runnable
 {
