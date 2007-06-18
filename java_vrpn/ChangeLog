@@ -1,4 +1,9 @@
 
+2007-06-18  David Marshburn  <marshbur@cs.unc.edu>
+	* buildNativeHeader.xml:  removed a print statement
+	* buildJAR.xml:  new, and ANT build file for creating
+	the vrpn.jar file
+
 2007-06-15  David Marshburn  <marshbur@cs.unc.edu>
 	* buildNativeHeaders.xml:  left one class off the list
 	* java_vrpn.dsp:  updated the include paths.  output goes

@@ -1,0 +1,12 @@
+
+<!-- xml version="1.0" encoding="UTF-8" ?-->
+
+<project name="JAR file" default="jar" basedir=".">
+	<echo>$$ant.java.version=${ant.java.version}</echo>
+	<target name="jar">
+		<jar destfile="./bin/vrpn.jar"
+			basedir="bin/vrpn"
+		/>
+	</target>
+</project>
+

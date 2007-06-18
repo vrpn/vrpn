@@ -2,7 +2,6 @@
 <!-- xml version="1.0" encoding="UTF-8" ?-->
 
 <project name="native headers" default="native" basedir=".">
-	<echo>$$ant.java.version=${ant.java.version}</echo>
 	<target name="native">
 		<javah destdir="." verbose="yes" classpath="bin">
 			<class name="vrpn.AnalogOutputRemote"/>
