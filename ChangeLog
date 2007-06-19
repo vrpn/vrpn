@@ -1,3 +1,7 @@
+2007-06-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Fixing the path to the PhaseSpace libraries.
+
 2007-06-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.dsp : Adding PhaseSpace driver submitted by

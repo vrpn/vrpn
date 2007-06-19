@@ -195,7 +195,7 @@
 
 #define VRPN_SYSTEMDRIVE "C:"
 
-#define VRPN_PHASESPACE_LIB_PATH "../phasespace/"
+#define VRPN_PHASESPACE_LIB_PATH "../../phasespace/"
 
 #define VRPN_HDAPI_PATH         VRPN_SYSTEMDRIVE "/Program Files/SensAble/3DTouch/lib/"
 #define VRPN_HDAPI_UTIL_PATH    VRPN_SYSTEMDRIVE "/Program Files/SensAble/3DTouch/utilities/lib/"
