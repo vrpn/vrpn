@@ -1,5 +1,19 @@
 2007-06-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn.dsp : Removed dependencies on vrpn.lib and vrpndll.lib,
+		because they are handled indirectly and through lines in
+		vrpn_Configure.h.
+	* vrpn.dsw : Same.
+	* vrpndll.dsp : Added Poser_Tek4662 source files to the project.
+	* vrpn_Mouse.h : Added VRPN_API to class definition (needed for
+		DLL linkage).
+	* vrpn_Mouse.C : Comment clean-up.
+	* vrpn_Tracker_3DMouse.h : Added VRPN_API to class definition
+		(needed for DLL Linkage).
+	* vrpn_Configure.h : Whitespace changes.
+
+2007-06-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* Makefile : Adding patch submitted by Patrick Hartling from
 		Infiscape.com for making this compile on MacOSX
 		to create universal binaries.

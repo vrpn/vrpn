@@ -8,15 +8,16 @@
 
 #include "vrpn_Tracker_3DMouse.h"
 
-#define MAX_TIME_INTERVAL       (2000000) // max time between reports (usec)
+// max time between reports (usec)
+#define MAX_TIME_INTERVAL       (2000000) 
 #define	INCHES_TO_METERS	(2.54/100.0)
 
 vrpn_Tracker_3DMouse::vrpn_Tracker_3DMouse(const char *name, vrpn_Connection *c, 
 		      const char *port, long baud, int filtering_count):
     vrpn_Tracker_Serial(name, c, port, baud),
-	vrpn_Button(name, c),
+    vrpn_Button(name, c),
     _filtering_count(filtering_count),
-	_numbuttons(5)
+    _numbuttons(5)
 {
 	vrpn_Button::num_buttons = _numbuttons;
 	clear_values();

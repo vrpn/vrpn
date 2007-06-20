@@ -4,7 +4,7 @@
 #include "vrpn_Tracker.h"
 #include "vrpn_Button.h"
 
-class vrpn_Tracker_3DMouse : public vrpn_Tracker_Serial, public vrpn_Button {
+class VRPN_API vrpn_Tracker_3DMouse : public vrpn_Tracker_Serial, public vrpn_Button {
   
  public:
 

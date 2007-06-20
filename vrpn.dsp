@@ -262,10 +262,6 @@ SOURCE=.\vrpn_Poser_Tek4662.C
 # End Source File
 # Begin Source File
 
-SOURCE=.\vrpn_Poser_Tek4662.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\vrpn_raw_sgibox.C
 # End Source File
 # Begin Source File
@@ -535,6 +531,10 @@ SOURCE=.\vrpn_Poser.h
 # Begin Source File
 
 SOURCE=.\vrpn_Poser_Analog.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Poser_Tek4662.h
 # End Source File
 # Begin Source File
 

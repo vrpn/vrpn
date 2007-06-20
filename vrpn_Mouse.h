@@ -36,7 +36,7 @@
 #include "vrpn_Analog.h"
 #include "vrpn_Button.h"
 
-class vrpn_Mouse :
+class VRPN_API vrpn_Mouse :
 	public vrpn_Analog,
 	public vrpn_Button_Filter
 {
