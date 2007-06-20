@@ -44,7 +44,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include,../../dtrack,$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\Include,$(SYSTEMDRIVE)/Program Files/SensAble/3DTouch/include,$(SYSTEMDRIVE)/Program Files/SensAble/3DTouch/utilities/include,../../isense,..,../../quat,../../Dtrack"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE,VRPN_USE_SHARED_LIBRARY"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="3"
 				PrecompiledHeaderFile=".\../pc_win32/server_src/vrpn_server/Debug/vrpn_server.pch"
 				AssemblerListingLocation=".\../pc_win32/server_src/vrpn_server/Debug/"

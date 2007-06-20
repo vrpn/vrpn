@@ -1,5 +1,11 @@
 2007-06-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn.vcproj : Making all of the .C files compile with the C++
+		compiler.
+	* vrpndll.vcproj: Adding the Poser_Tek4662 file.
+
+2007-06-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn.dsp : Removed dependencies on vrpn.lib and vrpndll.lib,
 		because they are handled indirectly and through lines in
 		vrpn_Configure.h.

@@ -1143,6 +1143,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\vrpn_Poser_Tek4662.C"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_raw_sgibox.C"
 				>
 				<FileConfiguration
@@ -1857,6 +1877,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_Poser_Analog.h"
+				>
+			</File>
+			<File
+				RelativePath=".\vrpn_Poser_Tek4662.h"
 				>
 			</File>
 			<File
