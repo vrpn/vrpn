@@ -46,6 +46,7 @@
 #HW_OS := sparc_solaris_64
 #HW_OS := powerpc_aix
 #HW_OS := powerpc_macosx
+#HW_OS := universal_macosx
 ##########################
 
 
@@ -146,6 +147,12 @@ else
         RANLIB := ranlib
   endif
 
+  ifeq ($(HW_OS), universal_macosx)
+        CC := gcc -arch ppc -arch i386 -isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4
+        RANLIB := :
+        AR := libtool -static -o
+  endif
+
   ifeq ($(HW_OS), pc_linux_arm)
         CC := arm-linux-g++
         RANLIB := arm-linux-ranlib
@@ -206,7 +213,7 @@ endif
 # directories that we can do an rm -f on because they only contain
 # object files and executables
 SAFE_KNOWN_ARCHITECTURES :=	hp700_hpux/* hp700_hpux10/* mips_ultrix/* \
-	pc_linux/* sgi_irix.32/* sgi_irix.n32/* sparc_solaris/* sparc_solaris_64/* sparc_sunos/* pc_cygwin/* powerpc_aix/* pc_linux_arm/* powerpc_macosx/* pc_linux64/* pc_linux_ia64/*
+	pc_linux/* sgi_irix.32/* sgi_irix.n32/* sparc_solaris/* sparc_solaris_64/* sparc_sunos/* pc_cygwin/* powerpc_aix/* pc_linux_arm/* powerpc_macosx/* universal_macosx/* pc_linux64/* pc_linux_ia64/*
 
 CLIENT_SKA = $(patsubst %,client_src/%,$(SAFE_KNOWN_ARCHITECTURES))
 SERVER_SKA = $(patsubst %,server_src/%,$(SAFE_KNOWN_ARCHITECTURES))
@@ -219,6 +226,11 @@ SERVER_SKA = $(patsubst %,server_src/%,$(SAFE_KNOWN_ARCHITECTURES))
 SYS_INCLUDE :=
 
 ifeq ($(HW_OS),powerpc_macosx)
+#  SYS_INCLUDE := -I/usr/include
+   SYS_INCLUDE :=-DMACOSX -I../isense 
+endif
+
+ifeq ($(HW_OS),universal_macosx)
 #  SYS_INCLUDE := -I/usr/include
    SYS_INCLUDE :=-DMACOSX -I../isense 
 endif
@@ -267,6 +279,10 @@ else
 
 endif
 
+
+ifeq ($(HW_OS),universal_macosx)
+	LOAD_FLAGS := $(LOAD_FLAGS)
+endif
 
 ##########################
 # Load flags

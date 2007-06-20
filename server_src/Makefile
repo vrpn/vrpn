@@ -20,6 +20,7 @@
 #HW_OS := pc_FreeBSD
 #HW_OS := powerpc_aix
 #HW_OS := powerpc_macosx
+#HW_OS := universal_macosx
 ##########################
 
 ##########################
@@ -74,6 +75,12 @@ ifeq ($(HW_OS),sparc_solaris_64)
 endif
 ifeq ($(HW_OS),powerpc_aix)
 	CC := /usr/ibmcxx/bin/xlC_r -g -qarch=pwr3 -w
+endif
+
+ifeq ($(HW_OS),universal_macosx)
+	CC := gcc -arch ppc -arch i386 -isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4
+	RANLIB := :
+	AR := libtool -static -o
 endif
 
 ifeq ($(HW_OS),pc_linux_ia64)
@@ -138,6 +145,10 @@ LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX)
 
 ifdef INTERSENSE
   ifeq ($(HW_OS),powerpc_macosx)
+     CFLAGS = -g -I../ -I../../quat -I../../isense -DMACOSX
+     LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) ../../isense/MacOSX/dlcompat.o
+  endif
+  ifeq ($(HW_OS),universal_macosx)
      CFLAGS = -g -I../ -I../../quat -I../../isense -DMACOSX
      LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) ../../isense/MacOSX/dlcompat.o
   endif

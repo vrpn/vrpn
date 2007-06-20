@@ -1,3 +1,9 @@
+2007-06-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * Makefile : Adding patch submitted by Patrick Hartling from
+                Infiscape.com for making this compile on MacOSX
+                to create universal binaries.
+
 2007-03-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Makefile : Adding a build environment for cross-compiling to

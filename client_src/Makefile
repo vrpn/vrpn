@@ -22,6 +22,7 @@
 #HW_OS := pc_FreeBSD
 #HW_OS := powerpc_aix
 #HW_OS := powerpc_macosx
+#HW_OS := universal_macosx
 ##########################
 
 INSTALL_DIR := /usr/local
