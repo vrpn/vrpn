@@ -1,5 +1,9 @@
 2007-06-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Connection.C : Changed to version 7.07.
+
+2007-06-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn.dsp : Adding vrpn_DirectXRumblePad driver submitted by
 		Chris VanderKnyff and Jeff Feasel.
 	* vrpndll.dsp : Same.
