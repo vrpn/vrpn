@@ -44,10 +44,14 @@ class VRPN_API vrpn_Tracker_Flock: public vrpn_Tracker_Serial {
  public:
   vrpn_Tracker_Flock(char *name, vrpn_Connection *c, int cSensors=1,
 		     char *port = "/dev/ttyd3", long baud = 38400,
-		     int fStreamMode = 1, int useERT=1, bool invertQuaternion = false);
+		     int fStreamMode = 1, int useERT=1, bool invertQuaternion = false, int active_hemisphere=HEMI_PLUSZ);
   virtual ~vrpn_Tracker_Flock();
     
+  enum {HEMI_PLUSX, HEMI_MINUSX, HEMI_PLUSY, HEMI_MINUSY, HEMI_PLUSZ, HEMI_MINUSZ};
+
  protected:
+
+  int activeHemisphere;
 
   virtual int get_report(void);
   virtual void send_report(void);

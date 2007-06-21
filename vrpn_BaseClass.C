@@ -347,6 +347,8 @@ d_servicename(NULL)
 {
     // Initialize variables
     d_time_first_ping.tv_sec = d_time_first_ping.tv_usec = 0;
+
+    shutup = false;	// don't surpress the "No response from server" messages
 }
 
 /** Unregister all of the message handlers that were to be autodeleted.
@@ -541,28 +543,30 @@ void	vrpn_BaseClassUnique::client_mainloop(void)
     // switch to errors.  New ping requests go out each second.
 
     if (d_unanswered_ping) {
-
-	vrpn_gettimeofday(&now, NULL);
-	diff = vrpn_TimevalDiff(now, d_time_last_warned);
-	vrpn_TimevalNormalize(diff);
-
-	if (diff.tv_sec >= 1) {
-
-	    // Send a new ping, since it has been a second since the last one
-	    d_connection->pack_message(0, now, d_ping_message_id, d_sender_id,
-                             NULL, vrpn_CONNECTION_RELIABLE);
-
-	    // Send another warning or error, and say if we're flatlined (10+ seconds)
-	    d_time_last_warned = now;
-	    diff = vrpn_TimevalDiff(now, d_time_first_ping);
-	    vrpn_TimevalNormalize(diff);	    
-	    if (diff.tv_sec >= 10) {
-		send_text_message("No response from server for >= 10 seconds", now, vrpn_TEXT_ERROR, diff.tv_sec);
-		d_flatline = 1;
-	    } else if (diff.tv_sec >= 3) {
-		send_text_message("No response from server for >= 3 seconds", now, vrpn_TEXT_WARNING, diff.tv_sec);
-	    }
-	}
+    
+        vrpn_gettimeofday(&now, NULL);
+        diff = vrpn_TimevalDiff(now, d_time_last_warned);
+        vrpn_TimevalNormalize(diff);
+        
+        if (diff.tv_sec >= 1) {
+            
+            // Send a new ping, since it has been a second since the last one
+            d_connection->pack_message(0, now, d_ping_message_id, d_sender_id,
+                                       NULL, vrpn_CONNECTION_RELIABLE);
+            
+            // Send another warning or error, and say if we're flatlined (10+ seconds)
+            d_time_last_warned = now;
+            if (!shutup) {
+                diff = vrpn_TimevalDiff(now, d_time_first_ping);
+                vrpn_TimevalNormalize(diff);	    
+                if (diff.tv_sec >= 10) {
+                    send_text_message("No response from server for >= 10 seconds", now, vrpn_TEXT_ERROR, diff.tv_sec);
+                    d_flatline = 1;
+                } else if (diff.tv_sec >= 3) {
+                    send_text_message("No response from server for >= 3 seconds", now, vrpn_TEXT_WARNING, diff.tv_sec);
+                }
+            }
+        }
     }
 }
 

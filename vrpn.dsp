@@ -162,6 +162,10 @@ SOURCE=.\vrpn_DirectXFFJoystick.C
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_DirectXRumblePad.C
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_Dyna.C
 # End Source File
 # Begin Source File
@@ -431,6 +435,10 @@ SOURCE=.\vrpn_Dial.h
 # Begin Source File
 
 SOURCE=.\vrpn_DirectXFFJoystick.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_DirectXRumblePad.h
 # End Source File
 # Begin Source File
 

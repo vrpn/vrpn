@@ -140,6 +140,8 @@ class VRPN_API vrpn_BaseClassUnique {
   public:
 	vrpn_BaseClassUnique();
 	virtual ~vrpn_BaseClassUnique();
+
+	bool shutup;	// if True, don't print the "No response from server" messages.
 	
   protected:
         vrpn_Connection *d_connection;  ///< Connection that this object talks to

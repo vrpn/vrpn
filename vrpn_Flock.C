@@ -230,9 +230,10 @@ int vrpn_Tracker_Flock::checkError() {
 
 vrpn_Tracker_Flock::vrpn_Tracker_Flock(char *name, vrpn_Connection *c, 
 				       int cSensors, char *port, long baud,
-				       int fStreamMode, int useERT, bool invertQuaternion ) :
+				       int fStreamMode, int useERT, bool invertQuaternion, int active_hemisphere) :
   vrpn_Tracker_Serial(name,c,port,baud), cSensors(cSensors), cResets(0),
   fStream(fStreamMode), fGroupMode(1), cSyncs(0), fFirstStatusReport(1), d_useERT(useERT),
+  activeHemisphere(active_hemisphere),
   d_invertQuaternion(invertQuaternion) {
     if (cSensors>MAX_SENSORS) {
       fprintf(stderr, "\nvrpn_Tracker_Flock: too many sensors requested ... only %d allowed (%d specified)", MAX_SENSORS, cSensors );
@@ -401,14 +402,25 @@ void vrpn_Tracker_Flock::reset()
      reset[resetLen++] = ']';
    }
 
-   // set to lower hemisphere, send cmd to each receiver
-   // as above, first part is rs232 to fbb, 'L' is hemisphere
-   // 0xC is the 'axis' (lower), and 0x0 is the 'sign' (lower)
+   //
+   // Set the active hemisphere based on what's in the config file.
+
+   unsigned char hem, sign;
+   switch (activeHemisphere)
+   {
+       case HEMI_PLUSX :   hem = 0x00; sign = 0x00;  break;
+       case HEMI_MINUSX:   hem = 0x00; sign = 0x01;  break;
+       case HEMI_PLUSY :   hem = 0x06; sign = 0x00;  break;
+       case HEMI_MINUSY:   hem = 0x06; sign = 0x01;  break;
+       case HEMI_PLUSZ :   hem = 0x0c; sign = 0x00;  break;
+       case HEMI_MINUSZ:   hem = 0x0c; sign = 0x01;  break;
+   }
+   // prepare the command
    for (i=1;i<=cSensors;i++) {
      reset[resetLen++] = (unsigned char)(0xf0 + i + d_useERT);
      reset[resetLen++] = 'L';
-     reset[resetLen++] = 0xc;
-     reset[resetLen++] = 0;
+     reset[resetLen++] = hem;
+     reset[resetLen++] = sign;
    }
 
    // write it all out

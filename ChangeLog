@@ -1,3 +1,23 @@
+2007-06-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.dsp : Adding vrpn_DirectXRumblePad driver submitted by
+		Chris VanderKnyff and Jeff Feasel.
+	* vrpndll.dsp : Same.
+	* vrpn.vjproj : Same.
+	* vrpndll.vjproj : Same.
+	* vrpn_DirectXRumblePad.C : Same.
+	* vrpn_DirectXRumblePad.h : Same.
+	* vrpn_BaseClass.C : Added a public "shutup" boolean member that
+		makes an object not print that it cannot connect to its
+		server counterpart when set to "true".  This functionality
+		is deprecated from the start; we need to figure out a good
+		functional interface for this.  Leaving it in so as not to
+		break EVE code while a new version is implemented.
+	* vrpn_BaseClass.h : Same.
+	* vrpn_Flock.C : Added the ability to set the hemisphere for the
+		Flock (code from Jeff Feasel).
+	* vrpn_Flock.h : Same.
+
 2007-06-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.vcproj : Making all of the .C files compile with the C++

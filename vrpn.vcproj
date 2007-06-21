@@ -552,6 +552,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\vrpn_DirectXRumblePad.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_Dyna.C"
 				>
 				<FileConfiguration
@@ -1782,6 +1802,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_DirectXFFJoystick.h"
+				>
+			</File>
+			<File
+				RelativePath=".\vrpn_DirectXRumblePad.h"
 				>
 			</File>
 			<File
