@@ -38,12 +38,13 @@
 # attached to a serial port on this machine. Note that there is another driver
 # (listed below) that runs the Flock when each sensor is connected to its own
 # serial line. Arguments:
-#	char	name_of_this_device[]
-#	int	number_of_sensors
-#	char	name_of_serial_device[]
-#	int	baud_rate_of_serial_device
-#	int   invert_quaternion (0 = no, 1 = yes)
-#	optionnal char	useERT
+#   char    name_of_this_device[]
+#   int	    number_of_sensors
+#   char    name_of_serial_device[]
+#   int	    baud_rate_of_serial_device
+#   int     invert_quaternion (0 = no, 1 = yes)
+#   char    useERT  (OPTIONAL; defaults to yes)
+#   char[2] active_hemisphere (OPTIONAL; defaults to +z)
 #
 # NOTE: for useERT: use nothing, y or Y if you have an extended range
 # transmitter, use N or n if not (added by David Nahon for Virtools
@@ -54,12 +55,16 @@
 # Flock in the "wrong" hemisphere, which inverted the orientation relative
 # to the position.  The old behavior is obtained by specifying "1".  Not
 # inverting it is specified using "0".
+# NOTE: active hemisphere is one of "+x", "-x", "+y", "-y", "+z", "-z"
+# If "active_hemisphere" is not specified, it defaults to +z.
 
-#vrpn_Tracker_Flock	Tracker0	4	/dev/ttyS0	1	115200
 
-# If you have to FOB, with no Extended Range ctrler/transmitter, on Windows, use
+#vrpn_Tracker_Flock	Tracker0	4	/dev/ttyS0	115200	1
 
-#vrpn_Tracker_Flock	Tracker0	2	COM1	38400 1	N
+# If you have to FOB, with no Extended Range ctrler/transmitter, on Windows,
+# with -x as the active hemisphere, use
+
+#vrpn_Tracker_Flock	Tracker0	2	COM1	38400	1	N  -x
 
 # Watch: be sure that the serial baud rate dip switches (the 3 on the left)
 # of your master flock are properly set.
@@ -949,6 +954,14 @@
 
 #vrpn_DirectXFFJoystick	Joystick0	60	200
 #vrpn_DirectXFFJoystick	Joystick0	60	0
+
+
+################################################################################
+# Microsoft DirectX compatible rumble-pad (e.g. Wingman)
+#       char    name_of_this_device[]
+
+#vrpn_DirectXRumblePad		RumblePad0
+
 
 ################################################################################
 # Manager for joysticks under windows using standard win32 calls.

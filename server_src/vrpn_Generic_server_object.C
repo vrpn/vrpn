@@ -1526,15 +1526,34 @@ int vrpn_Generic_Server_Object::setup_Tracker_Flock (char * & pch, char * line, 
   char s2 [LINESIZE], s3 [LINESIZE];
   int i1, i2, i3;
   char useERT[LINESIZE]; strcpy(useERT, "y");
+  char hemi[LINESIZE]; strcpy(hemi, "+z");
   bool invertQuaternion;
 
   next();
-  // Get the arguments (class, tracker_name, sensors, port, baud, useERT)
-  int nb=sscanf(pch,"%511s%d%511s%d%d%511s", s2, &i1, s3, &i2, &i3, useERT);
-  if ((nb != 5) && (nb != 6)) {
+  // Get the arguments (tracker_name, sensors, port, baud, invert_quat, useERT, active_hemisphere)
+  int nb=sscanf(pch,"%511s%d%511s%d%d%511s%511s", s2, &i1, s3, &i2, &i3, useERT, hemi);
+  if ((nb != 5) && (nb != 6) && (nb != 7)) {
     fprintf(stderr,"Bad vrpn_Tracker_Flock line: %s\n",line);
     return -1;
   }
+
+  // Interpret the active hemisphere parameter
+  int hemi_id;
+  if (hemi[0] == '-')
+  { if      (hemi[1] == 'x' || hemi[1] == 'X')   hemi_id = vrpn_Tracker_Flock::HEMI_MINUSX;
+    else if (hemi[1] == 'y' || hemi[1] == 'Y')   hemi_id = vrpn_Tracker_Flock::HEMI_MINUSY;
+    else if (hemi[1] == 'z' || hemi[1] == 'Z')   hemi_id = vrpn_Tracker_Flock::HEMI_MINUSZ;
+	else {fprintf(stderr,"Bad vrpn_Tracker_Flock line: %s\n",line); return -1;}
+  }
+  else if (hemi[0] == '+')
+  { if      (hemi[1] == 'x' || hemi[1] == 'X')   hemi_id = vrpn_Tracker_Flock::HEMI_PLUSX;
+    else if (hemi[1] == 'y' || hemi[1] == 'Y')   hemi_id = vrpn_Tracker_Flock::HEMI_PLUSY;
+    else if (hemi[1] == 'z' || hemi[1] == 'Z')   hemi_id = vrpn_Tracker_Flock::HEMI_PLUSZ;
+	else {fprintf(stderr,"Bad vrpn_Tracker_Flock line: %s\n",line); return -1;}
+  }
+  else
+    {fprintf(stderr,"Bad vrpn_Tracker_Flock line: %s\n",line); return -1;}
+
 
   // Make sure there's room for a new tracker
   if (num_trackers >= VRPN_GSO_MAX_TRACKERS) {
@@ -1554,7 +1573,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_Flock (char * & pch, char * line, 
       s2, i1, s3,i2, buseERT ? "with" : "without");
   }
   if ( (trackers[num_trackers] =
-    new vrpn_Tracker_Flock(s2,connection,i1,s3,i2, 1, buseERT, invertQuaternion)) == NULL) {
+    new vrpn_Tracker_Flock(s2,connection,i1,s3,i2, 1, buseERT, invertQuaternion, hemi_id)) == NULL) {
       fprintf(stderr,"Can't create new vrpn_Tracker_Flock\n");
       return -1;
   } else {
@@ -1848,22 +1867,22 @@ int vrpn_Generic_Server_Object::setup_Tng3 (char * & pch, char * line, FILE * co
         fprintf(stderr,"Bad vrpn_Tng3 line: %s\n",line);
         return -1;
     }
-    // Make sure there's room for a new box
-    if (num_tng3s >= VRPN_GSO_MAX_TNG3S) {
-        fprintf(stderr,"Too many Tng3 boxes in config file");
-        return -1;
-    }
-    // Open the box
-    if (verbose)
-        printf("Opening vrpn_Tng3: %s on port %s, baud %d, %d digital, "
-               " %d analog\n",s2,s3,19200,i1,i2);
+	// Make sure there's room for a new box
+	if (num_tng3s >= VRPN_GSO_MAX_TNG3S) {
+		fprintf(stderr,"Too many Tng3 boxes in config file");
+		return -1;
+	}
+	// Open the box
+	if (verbose)
+		printf("Opening vrpn_Tng3: %s on port %s, baud %d, %d digital, "
+				" %d analog\n",s2,s3,19200,i1,i2);
     tng3 = new vrpn_Tng3(s2, connection, s3, 19200, i1, i2);
-    if (NULL == tng3) {
-        fprintf(stderr,"Can't create new vrpn_Tng3\n");
-        return -1;
-    }
-    tng3s[num_tng3s++] = tng3;
-    return 0;
+	if (NULL == tng3) {
+		fprintf(stderr,"Can't create new vrpn_Tng3\n");
+		return -1;
+	}
+	tng3s[num_tng3s++] = tng3;
+	return 0;
 }
 
 //================================
@@ -2235,6 +2254,45 @@ int vrpn_Generic_Server_Object::setup_DirectXFFJoystick (char * & pch, char * li
   return -1;
 #endif
 }
+
+
+//================================
+int vrpn_Generic_Server_Object::setup_RumblePad (char * & pch, char * line, FILE * config_file) {
+#ifdef	VRPN_USE_DIRECTINPUT
+  char s2 [LINESIZE];
+
+  next();
+  // Get the arguments (joystick_name, read update rate, force update rate)
+  if (sscanf(pch,"%511s",s2) != 1) {
+    fprintf(stderr,"Bad vrpn_DirectXRumblePad line: %s\n",line);
+    return -1;
+  }
+
+  // Make sure there's room for a new joystick
+  if (num_RumblePads >= VRPN_GSO_MAX_RUMBLEPADS) {
+    fprintf(stderr,"Too many Direct X Rumble Pads in config file");
+    return -1;
+  }
+
+  // Open the joystick
+  if (verbose) {
+    printf("Opening vrpn_DirectXRumblePad: %s\n", s2);
+  }
+  if ((RumblePads[num_RumblePads] = new vrpn_DirectXRumblePad(s2, connection)) == NULL)
+  {
+    fprintf(stderr,"Can't create new vrpn_DirectXRumblePad\n");
+    return -1;
+  } else {
+    num_RumblePads++;
+  }
+
+  return 0;
+#else
+  fprintf(stderr, "vrpn_server: Can't open RumblePad: VRPN_USE_DIRECTINPUT not defined in vrpn_Configure.h!\n");
+  return -1;
+#endif
+}
+
 
 int vrpn_Generic_Server_Object::setup_GlobalHapticsOrb (char * & pch, char * line, FILE * config_file) {
   char s2[LINESIZE], s3[LINESIZE];
@@ -3025,6 +3083,7 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
   num_generators(0),
   num_tng3s(0),
   num_DirectXJoys(0),
+  num_RumblePads(0),
   num_Win32Joys(0),
   num_GlobalHapticsOrbs(0),
   num_phantoms(0),
@@ -3034,157 +3093,173 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
   num_mouses(0),
   num_KeyMouses(0)
 {
-  FILE	* config_file;
-  char 	* client_name = NULL;
+    FILE    * config_file;
+    char    * client_name = NULL;
 
-  // Open the configuration file
-  if (verbose) printf("Reading from config file %s\n", config_file_name);
-  if ( (config_file = fopen(config_file_name, "r")) == NULL) {
-	  perror("vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(): Cannot open config file");
-	  fprintf(stderr,"  (filename %s)\n", config_file_name);
-	  d_doing_okay = false;
-          return;
-  }
+    // Open the configuration file
+    if (verbose) printf("Reading from config file %s\n", config_file_name);
+    if ( (config_file = fopen(config_file_name, "r")) == NULL) {
+        perror("vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(): Cannot open config file");
+        fprintf(stderr,"  (filename %s)\n", config_file_name);
+        d_doing_okay = false;
+            return;
+    }
 
-	// Read the configuration file, creating a device for each entry.
-	// Each entry is on one line, which starts with the name of the
-	//   class of the object that is to be created.
-	// If we fail to open a certain device, print a message and decide
-	//  whether we should bail.
-      {	char	line[LINESIZE];	// Line read from the input file
+    // Read the configuration file, creating a device for each entry.
+    // Each entry is on one line, which starts with the name of the
+    //   class of the object that is to be created.
+    // If we fail to open a certain device, print a message and decide
+    //  whether we should bail.
+    {   
+        char    line[LINESIZE]; // Line read from the input file
         char *pch;
-	char    scrap[LINESIZE];
-	char	s1[LINESIZE];
+        char    scrap[LINESIZE];
+        char    s1[LINESIZE];
         int retval;
 
-	// Read lines from the file until we run out
-	while ( fgets(line, LINESIZE, config_file) != NULL ) {
+        // Read lines from the file until we run out
+        while ( fgets(line, LINESIZE, config_file) != NULL ) {
 
-	  // Make sure the line wasn't too long
-	  if (strlen(line) >= LINESIZE-1) {
-		fprintf(stderr,"vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(): Line too long in config file: %s\n",line);
-		if (d_bail_on_open_error) { d_doing_okay = false; return; }
-		else { continue; }	// Skip this line
-	  }
+          // Make sure the line wasn't too long
+          if (strlen(line) >= LINESIZE-1) {
+              fprintf(stderr,"vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(): Line too long in config file: %s\n",line);
+              if (d_bail_on_open_error) { d_doing_okay = false; return; }
+              else { continue; }  // Skip this line
+          }
 
-	  if ((strlen(line)<3)||(line[0]=='#')) {
-	    // comment or empty line -- ignore
-	    continue;
-	  }
+          // Ignore comments and empty lines.  Skip white space before comment mark (#).
+          if (strlen(line)<3) {
+              continue;
+          }
+          bool ignore = false;
+          for (int j=0; line[j] != '\0'; j++) {
+              if (line[j]==' ' || line[j]=='\t') {
+                  continue;
+              }
+              if (line[j]=='#') {
+                  ignore = true;
+              }
+              break;
+          }
+          if (ignore) {
+              continue;
+          }
 
-	  // copy for strtok work
-	  strncpy(scrap, line, LINESIZE);
-	  // Figure out the device from the name and handle appropriately
+          // copy for strtok work
+          strncpy(scrap, line, LINESIZE);
+          // Figure out the device from the name and handle appropriately
 
-	  // WARNING: SUBSTRINGS WILL MATCH THE EARLIER STRING, SO 
-	  // ADD AN EMPTY SPACE TO THE END OF STATIC STRINGS!!!!
+          // WARNING: SUBSTRINGS WILL MATCH THE EARLIER STRING, SO 
+          // ADD AN EMPTY SPACE TO THE END OF STATIC STRINGS!!!!
 
-	  //	  #define isit(s) !strncmp(line,s,strlen(s))
-#define isit(s) !strcmp(pch=strtok(scrap," \t"),s)
+          //    #define isit(s) !strncmp(line,s,strlen(s))
+          #define isit(s) !strcmp(pch=strtok(scrap," \t"),s)
 
           // Rewritten to move all this code out-of-line by Tom Hudson
           // August 99.  We could even make it table-driven now.
           // It seems that we're never going to document this program
-          // and that it will allways be necessary to read the code to
+          // and that it will always be necessary to read the code to
           // figure out how to write a config file.  This code rearrangement
           // should make it easier to figure out what the possible tokens
           // are in a config file by listing them close together here
           // instead of hiding them in the middle of functions.
 
-	  if (isit("vrpn_raw_SGIBox")) {
-            CHECK(setup_raw_SGIBox);
-	  } else if (isit("vrpn_SGIBOX")) {
-            CHECK(setup_SGIBox);
-	  } else if (isit("vrpn_JoyFly")) {
-            CHECK(setup_JoyFly);
-	  } else if (isit("vrpn_Tracker_AnalogFly")) {
-            CHECK(setup_Tracker_AnalogFly);
-	  } else if (isit("vrpn_Tracker_ButtonFly")) {
-            CHECK(setup_Tracker_ButtonFly);
-	  } else  if (isit("vrpn_Joystick")) {
-            CHECK(setup_Joystick);
-	  } else  if (isit("vrpn_Joylin")) {
-            CHECK(setup_Joylin);
+          if (isit("vrpn_raw_SGIBox")) {
+              CHECK(setup_raw_SGIBox);
+          } else if (isit("vrpn_SGIBOX")) {
+              CHECK(setup_SGIBox);
+          } else if (isit("vrpn_JoyFly")) {
+              CHECK(setup_JoyFly);
+          } else if (isit("vrpn_Tracker_AnalogFly")) {
+              CHECK(setup_Tracker_AnalogFly);
+          } else if (isit("vrpn_Tracker_ButtonFly")) {
+              CHECK(setup_Tracker_ButtonFly);
+          } else  if (isit("vrpn_Joystick")) {
+              CHECK(setup_Joystick);
+          } else  if (isit("vrpn_Joylin")) {
+              CHECK(setup_Joylin);
           } else  if (isit("vrpn_Joywin32")) {
-            CHECK(setup_Joywin32);
-	  } else if (isit("vrpn_Dial_Example")) {
-            CHECK(setup_DialExample);
-	  } else if (isit("vrpn_CerealBox")) {
-            CHECK(setup_CerealBox);
-	  } else if (isit("vrpn_Magellan")) {
-            CHECK(setup_Magellan);
+              CHECK(setup_Joywin32);
+          } else if (isit("vrpn_Dial_Example")) {
+              CHECK(setup_DialExample);
+          } else if (isit("vrpn_CerealBox")) {
+              CHECK(setup_CerealBox);
+          } else if (isit("vrpn_Magellan")) {
+              CHECK(setup_Magellan);
           } else if (isit("vrpn_Spaceball")) {
-            CHECK(setup_Spaceball);
-	  } else if (isit("vrpn_Radamec_SPI")) {
-            CHECK(setup_Radamec_SPI);
-	  } else if (isit("vrpn_Zaber")) {
-            CHECK(setup_Zaber);
-	  } else if (isit("vrpn_5dt")) {
-            CHECK(setup_5dt);
-	  } else if (isit("vrpn_5dt16")) {
-            CHECK(setup_5dt16);
-	  } else if (isit("vrpn_Button_5DT_Server")) {
-            CHECK(setup_Button_5DT_Server);
-	  } else if (isit("vrpn_ImmersionBox")) {
-            CHECK(setup_ImmersionBox);
-	  } else if (isit("vrpn_Tracker_Dyna")) {
-            CHECK(setup_Tracker_Dyna);
-	  } else if (isit("vrpn_Tracker_Fastrak")) {
-            CHECK(setup_Tracker_Fastrak);
-	  } else if (isit("vrpn_Tracker_Liberty")) {
-	    CHECK(setup_Tracker_Liberty);
-	  } else if (isit("vrpn_Tracker_3Space")) {
-            CHECK(setup_Tracker_3Space);
-	  } else if (isit("vrpn_Tracker_Flock")) {
-            CHECK(setup_Tracker_Flock);
-	  } else if (isit("vrpn_Tracker_Flock_Parallel")) {
-            CHECK(setup_Tracker_Flock_Parallel);
-	  } else if (isit("vrpn_Tracker_3DMouse")) {
-	    CHECK(setup_Tracker_3DMouse);
-	  } else if (isit("vrpn_Tracker_NULL")) {
-            CHECK(setup_Tracker_NULL);
-	  } else if (isit("vrpn_Button_Python")) {
-            CHECK(setup_Button_Python);
-	  } else if (isit("vrpn_Button_PinchGlove")) {
-            CHECK(setup_Button_PinchGlove);
-	  } else if (isit("vrpn_Button_SerialMouse")) {
-            CHECK(setup_Button_SerialMouse);
-	  } else  if (isit("vrpn_Wanda")) {
-            CHECK(setup_Wanda);
-	  } else if (isit("vrpn_Mouse")) {
-            CHECK(setup_Mouse);
-	  } else if (isit("vrpn_Tng3")) {
-            CHECK(setup_Tng3);
-	  } else  if (isit("vrpn_TimeCode_Generator")) {
-	    CHECK(setup_Timecode_Generator);
-	  } else if (isit("vrpn_Tracker_InterSense")) {
-	    CHECK(setup_Tracker_InterSense);
-	  } else if (isit("vrpn_DirectXFFJoystick")) {
-	    CHECK(setup_DirectXFFJoystick);
-	  } else if (isit("vrpn_GlobalHapticsOrb")) {
-	    CHECK(setup_GlobalHapticsOrb);
-	  } else if (isit("vrpn_Phantom")) {
-	    CHECK(setup_Phantom);
-	  } else if (isit("vrpn_ADBox")) {
-	    CHECK(setup_ADBox);
-	  } else if (isit("vrpn_VPJoystick")) {
-	    CHECK(setup_VPJoystick);
-	  } else if (isit("vrpn_Tracker_DTrack")) {
-	    CHECK(setup_DTrack);
-	  } else if (isit("vrpn_NI_Analog_Output")) {
-            CHECK(setup_NationalInstrumentsOutput);
-	  } else if (isit("vrpn_National_Instruments")) {
-            CHECK(setup_NationalInstruments);
-	  } else if (isit("vrpn_nikon_controls")) {
-            CHECK(setup_nikon_controls);
-	  } else if (isit("vrpn_Tek4662")) {
-            CHECK(setup_Poser_Tek4662);
-	  } else if (isit("vrpn_Poser_Analog")) {
-            CHECK(setup_Poser_Analog);
-	  } else if (isit("vrpn_Tracker_Crossbow")) {
-            CHECK(setup_Tracker_Crossbow);
-	  } else if (isit("vrpn_3DMicroscribe")) {
-            CHECK(setup_3DMicroscribe);
+              CHECK(setup_Spaceball);
+          } else if (isit("vrpn_Radamec_SPI")) {
+              CHECK(setup_Radamec_SPI);
+          } else if (isit("vrpn_Zaber")) {
+              CHECK(setup_Zaber);
+          } else if (isit("vrpn_5dt")) {
+              CHECK(setup_5dt);
+          } else if (isit("vrpn_5dt16")) {
+              CHECK(setup_5dt16);
+          } else if (isit("vrpn_Button_5DT_Server")) {
+              CHECK(setup_Button_5DT_Server);
+          } else if (isit("vrpn_ImmersionBox")) {
+              CHECK(setup_ImmersionBox);
+          } else if (isit("vrpn_Tracker_Dyna")) {
+              CHECK(setup_Tracker_Dyna);
+          } else if (isit("vrpn_Tracker_Fastrak")) {
+              CHECK(setup_Tracker_Fastrak);
+          } else if (isit("vrpn_Tracker_Liberty")) {
+              CHECK(setup_Tracker_Liberty);
+          } else if (isit("vrpn_Tracker_3Space")) {
+              CHECK(setup_Tracker_3Space);
+          } else if (isit("vrpn_Tracker_Flock")) {
+              CHECK(setup_Tracker_Flock);
+          } else if (isit("vrpn_Tracker_Flock_Parallel")) {
+              CHECK(setup_Tracker_Flock_Parallel);
+          } else if (isit("vrpn_Tracker_3DMouse")) {
+              CHECK(setup_Tracker_3DMouse);
+          } else if (isit("vrpn_Tracker_NULL")) {
+              CHECK(setup_Tracker_NULL);
+          } else if (isit("vrpn_Button_Python")) {
+              CHECK(setup_Button_Python);
+          } else if (isit("vrpn_Button_PinchGlove")) {
+              CHECK(setup_Button_PinchGlove);
+          } else if (isit("vrpn_Button_SerialMouse")) {
+              CHECK(setup_Button_SerialMouse);
+          } else  if (isit("vrpn_Wanda")) {
+              CHECK(setup_Wanda);
+          } else if (isit("vrpn_Mouse")) {
+              CHECK(setup_Mouse);
+          } else if (isit("vrpn_Tng3")) {
+              CHECK(setup_Tng3);
+          } else  if (isit("vrpn_TimeCode_Generator")) {
+              CHECK(setup_Timecode_Generator);
+          } else if (isit("vrpn_Tracker_InterSense")) {
+              CHECK(setup_Tracker_InterSense);
+          } else if (isit("vrpn_DirectXFFJoystick")) {
+              CHECK(setup_DirectXFFJoystick);
+          } else if (isit("vrpn_DirectXRumblePad")) {
+              CHECK(setup_RumblePad);
+          } else if (isit("vrpn_GlobalHapticsOrb")) {
+              CHECK(setup_GlobalHapticsOrb);
+          } else if (isit("vrpn_Phantom")) {
+              CHECK(setup_Phantom);
+          } else if (isit("vrpn_ADBox")) {
+              CHECK(setup_ADBox);
+          } else if (isit("vrpn_VPJoystick")) {
+              CHECK(setup_VPJoystick);
+          } else if (isit("vrpn_Tracker_DTrack")) {
+              CHECK(setup_DTrack);
+          } else if (isit("vrpn_NI_Analog_Output")) {
+              CHECK(setup_NationalInstrumentsOutput);
+          } else if (isit("vrpn_National_Instruments")) {
+              CHECK(setup_NationalInstruments);
+          } else if (isit("vrpn_nikon_controls")) {
+              CHECK(setup_nikon_controls);
+          } else if (isit("vrpn_Tek4662")) {
+              CHECK(setup_Poser_Tek4662);
+          } else if (isit("vrpn_Poser_Analog")) {
+              CHECK(setup_Poser_Analog);
+          } else if (isit("vrpn_Tracker_Crossbow")) {
+              CHECK(setup_Tracker_Crossbow);
+          } else if (isit("vrpn_3DMicroscribe")) {
+              CHECK(setup_3DMicroscribe);
 	  } else if (isit("vrpn_KeyMouse")) {
             CHECK(setup_KeyMouse);
 	  } else if (isit("vrpn_Button_USB")) {
@@ -3195,22 +3270,20 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
             CHECK(setup_Button_NI_DIO24);
 	  } else if (isit("vrpn_Tracker_PhaseSpace")) {
             CHECK(setup_Tracker_PhaseSpace);
-	  } else if (isit("vrpn_Tracker_Slave")) {
-            CHECK(setup_Tracker_Slave);
-	 } else {	// Never heard of it
-		sscanf(line,"%511s",s1);	// Find out the class name
-		fprintf(stderr,"vrpn_server: Unknown Device: %s\n",s1);
-		if (d_bail_on_open_error) { d_doing_okay = false; return; }
-		else { continue; }	// Skip this line
-	  }
-	}
-      }
+          } else {    // Never heard of it
+              sscanf(line,"%511s",s1);    // Find out the class name
+              fprintf(stderr,"vrpn_server: Unknown Device: %s\n",s1);
+              if (d_bail_on_open_error) { d_doing_okay = false; return; }
+              else { continue; }  // Skip this line
+          }
+        }
+    }
 
-	// Close the configuration file
-	fclose(config_file);
+    // Close the configuration file
+    fclose(config_file);
 
-#ifdef	SGI_BDBOX
-	fprintf(stderr, "sgibox: %p\n", vrpn_special_sgibox);
+#ifdef  SGI_BDBOX
+    fprintf(stderr, "sgibox: %p\n", vrpn_special_sgibox);
 #endif
 }
 
@@ -3300,6 +3373,11 @@ void  vrpn_Generic_Server_Object::mainloop( void )
   // Let all the FF joysticks do their thing
   for (i = 0; i < num_DirectXJoys; i++) {
     DirectXJoys[i]->mainloop();
+  }
+
+  // Let all the rumblepads do their thing
+  for (i = 0; i < num_RumblePads; i++) {
+    RumblePads[i]->mainloop();
   }
 #endif
 

@@ -45,6 +45,7 @@
 #include "vrpn_Tng3.h"
 #include "vrpn_Tracker_isense.h"
 #include "vrpn_DirectXFFJoystick.h"
+#include "vrpn_DirectXRumblePad.h"
 #include "vrpn_Joywin32.h"
 #include "vrpn_GlobalHapticsOrb.h"
 #include "vrpn_Phantom.h"
@@ -91,6 +92,7 @@ const int VRPN_GSO_MAX_TIMECODE_GENERATORS = 8;
 const int VRPN_GSO_MAX_TNG3S =	   8;
 #ifdef	VRPN_USE_DIRECTINPUT
 const int VRPN_GSO_MAX_DIRECTXJOYS= 8;
+const int VRPN_GSO_MAX_RUMBLEPADS = 8;
 #endif
 const int VRPN_GSO_MAX_WIN32JOYS =  2;
 const int VRPN_GSO_MAX_GLOBALHAPTICSORBS = 8;
@@ -144,9 +146,11 @@ protected:
   vrpn_Tng3       *tng3s[VRPN_GSO_MAX_TNG3S];
   int             num_tng3s;
 #ifdef	VRPN_USE_DIRECTINPUT
-  vrpn_DirectXFFJoystick	* DirectXJoys [VRPN_GSO_MAX_DIRECTXJOYS];
+  vrpn_DirectXFFJoystick   * DirectXJoys [VRPN_GSO_MAX_DIRECTXJOYS];
+  vrpn_DirectXRumblePad    * RumblePads  [VRPN_GSO_MAX_RUMBLEPADS ];
 #endif
-  int		num_DirectXJoys;
+  int  num_DirectXJoys;
+  int  num_RumblePads;
 #ifdef	_WIN32
   vrpn_Joywin32 *win32joys[VRPN_GSO_MAX_WIN32JOYS];
 #endif
@@ -207,6 +211,7 @@ protected:
   int setup_Tng3 (char * & pch, char * line, FILE * config_file);
   int setup_Tracker_InterSense(char * &pch, char *line, FILE * config_file);
   int setup_DirectXFFJoystick (char * & pch, char * line, FILE * config_file);
+  int setup_RumblePad (char * & pch, char * line, FILE * config_file);
   int setup_GlobalHapticsOrb (char * & pch, char * line, FILE * config_file);
   int setup_ADBox(char* &pch, char *line, FILE *config_file);
   int setup_VPJoystick(char* &pch, char *line, FILE *config_file);

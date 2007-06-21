@@ -1,3 +1,10 @@
+2007-06-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg : Added entry to configure a vrpn_DirectXRumblePack.
+		Also added hemisphere setting for the Flock.
+	* vrpn_Generic_server_object.C : Same.
+	* vrpn_Generic_server_object.h : Same.
+
 2007-06-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
         * Makefile : Adding patch submitted by Patrick Hartling from
