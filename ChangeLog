@@ -1,3 +1,12 @@
+2007-06-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Serial.C : Attempting to fix some problems with RTS/CTS that
+		came in when we switched to termios serial control in version
+		7 of VRPN.  There was a bug introduced in the Windows clear
+		call that has been fixed.  Trying out a new way to control
+		the RTS/CTS that should work across Linux and Mac platform;
+		hope it works!
+
 2007-06-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Connection.C : Changed to version 7.07.

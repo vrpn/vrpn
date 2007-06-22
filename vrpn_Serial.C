@@ -11,6 +11,7 @@
 #ifndef _WIN32
 #include <termios.h>
 #include <errno.h>
+#include <sys/ioctl.h>
 #endif
 
 #if !defined(_WIN32) || defined(__GNUC__)
@@ -325,28 +326,19 @@ int vrpn_set_rts(int comm)
   return EscapeCommFunction(commConnections[comm],SETRTS) != 0;
 
 #else
-  //XXX The man pages for Linux/Irix state that this will
-  // enable RTS/CTS flow control, which is not the same thing
-  // as setting the RTS line.  I don't see how to set the RTS
-  // line any other way, so I hope this works.
-  struct termios   sttyArgs;
-
-  /* get current settings */
-  if ( tcgetattr(comm, &sttyArgs) == -1) {
-    perror("vrpn_set_rts: tcgetattr failed");
+  //XXX There are termios methods to enable/disable RTSCTS. but
+  // they do not actually seem to set the line.  We need to use
+  // an ioctl interface, which has been shown to work, to do this
+  // function.  We are doing this now by going directly to the
+  // modem bits.
+  int flags;
+  if (ioctl(comm, TIOCMGET, &flags) == -1) {
+    perror("vrpn_set_rts: Failed to get modem status bits");
     return(-1);
   }
-
-  /* set rtscts bit */
-#ifdef sgi
-  sttyArgs.c_cflag |= CNEW_RTSCTS;
-#else
-  sttyArgs.c_cflag |= CRTSCTS;
-#endif
-
-  /* pass the new settings back to the driver */
-  if ( tcsetattr(comm, TCSANOW, &sttyArgs) == -1) {
-    perror("vrpn_set_rts: tcsetattr failed");
+  flags |= TIOCM_RTS;
+  if (ioctl(comm, TIOCMSET, &flags) == -1) {
+    perror("vrpn_set_rts: Failed to set modem status bits");
     return(-1);
   }
 
@@ -365,31 +357,22 @@ int vrpn_clear_rts(int comm)
   // up in our list.  Then make the system call that Kyle from
   // Ascension told us about.  Return 0 on success; the Windows
   // function returns nonzero on success
-  return EscapeCommFunction(commConnections[comm],SETRTS) != 0;
+  return EscapeCommFunction(commConnections[comm],CLRRTS) != 0;
 
 #else
-  //XXX The man pages for Linux/Irix state that this will
-  // enable RTS/CTS flow control, which is not the same thing
-  // as setting the RTS line.  I don't see how to set the RTS
-  // line any other way, so I hope this works.
-  struct termios   sttyArgs;
-
-  /* get current settings */
-  if ( tcgetattr(comm, &sttyArgs) == -1) {
-    perror("vrpn_clear_rts: tcgetattr failed");
+  //XXX There are termios methods to enable/disable RTSCTS. but
+  // they do not actually seem to set the line.  We need to use
+  // an ioctl interface, which has been shown to work, to do this
+  // function.  We are doing this now by going directly to the
+  // modem bits.
+  int flags;
+  if (ioctl(comm, TIOCMGET, &flags) == -1) {
+    perror("vrpn_set_rts: Failed to get modem status bits");
     return(-1);
   }
-
-  /* set rtscts bit */
-#ifdef sgi
-  sttyArgs.c_cflag &= ~CNEW_RTSCTS;
-#else
-  sttyArgs.c_cflag &= ~CRTSCTS;
-#endif
-
-  /* pass the new settings back to the driver */
-  if ( tcsetattr(comm, TCSANOW, &sttyArgs) == -1) {
-    perror("vrpn_clear_rts: tcsetattr failed");
+  flags &= ~TIOCM_RTS;
+  if (ioctl(comm, TIOCMSET, &flags) == -1) {
+    perror("vrpn_set_rts: Failed to set modem status bits");
     return(-1);
   }
 
