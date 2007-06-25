@@ -1,4 +1,7 @@
 
+2007-06-25  David Marshburn  <marshbur@cs.unc.edu>
+	* buildJAR.xml:  correctly packages the class in the file
+
 2007-06-18  David Marshburn  <marshbur@cs.unc.edu>
 	* buildNativeHeader.xml:  removed a print statement
 	* buildJAR.xml:  new, and ANT build file for creating
