@@ -1,3 +1,12 @@
+2007-06-25  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Generic_server_object.C : Adding new devices from
+		Bauhaus University Weimar submitted by Jan Springer.
+	* vrpn_Generic_server_object.h : Same.
+	* clock_server.C : Removed comments that got filled
+		in with checked-out version information.
+	* vrpn.cfg : Comment mis-spelling fixed.
+
 2007-06-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.cfg : Added entry to configure a vrpn_DirectXRumblePack.

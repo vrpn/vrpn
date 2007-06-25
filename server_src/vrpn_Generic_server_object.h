@@ -68,7 +68,14 @@
 #include "vrpn_Button_NI_DIO24.h"
 
 #include "vrpn_Tracker_PhaseSpace.h"
-//#include "vrpn_Tracker_Slave.h"
+
+// BUW additions
+#include "vrpn_Atmel.h"
+#include "vrpn_inertiamouse.h"
+#include "vrpn_Event_Mouse.h"
+//#include "vrpn_Cirque_Extended.h"
+
+
 
 #ifdef VRPN_INCLUDE_TIMECODE_SERVER
 #include "timecode_generator_server\vrpn_timecode_generator.h"
@@ -103,6 +110,10 @@ const int VRPN_GSO_MAX_DTRACKS =   5;
 const int VRPN_GSO_MAX_POSER =	   8;
 const int VRPN_GSO_MAX_MOUSES =	   8;
 const int VRPN_GSO_MAX_KEYMOUSE =  1;
+
+// BUW additions
+const int VRPN_GSO_MAX_INERTIAMOUSES =  8;
+
 
 class vrpn_Generic_Server_Object {
 public:
@@ -172,6 +183,11 @@ protected:
   vrpn_KeyMouse * KeyMouses [VRPN_GSO_MAX_KEYMOUSE];
   int		num_KeyMouses;
 
+  // BUW additions
+  vrpn_inertiamouse * inertiamouses [VRPN_GSO_MAX_INERTIAMOUSES];
+  int             num_inertiamouses;
+
+
   void closeDevices (void);
 
   // Helper functions for the functions below
@@ -233,7 +249,11 @@ protected:
   int setup_Analog_USDigital_A2 (char * & pch, char * line, FILE * config_file) ;
   int setup_Button_NI_DIO24 (char * & pch, char * line, FILE * config_file) ;
   int setup_Tracker_PhaseSpace (char * & pch, char * line, FILE * config_file) ;
-  int setup_Tracker_Slave (char * & pch, char * line, FILE * config_file) ;
+
+  // BUW additions
+  int setup_Atmel(char* &pch, char *line, FILE *config_file);
+  int setup_Event_Mouse(char* &pch, char *line, FILE *config_file);
+  int setup_inertiamouse (char * & pch, char * line, FILE * config_file);
 };
 
 #endif

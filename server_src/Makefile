@@ -132,7 +132,8 @@ OBJ_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)
 LIB_DIR := ../$(OBJ_DIR)
 
 CFLAGS = -g -I./ -I../ -I../../quat
-LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) 
+LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX)
+VRPN_LIBS = -lvrpnserver -lvrpnatmel
 
 # Uncomment the following section and point them at the
 # currect diretories to compile with HDAPI under Cygwin.
@@ -252,86 +253,86 @@ $(OBJ_DIR)/vrpn_server: $(OBJ_DIR)/vrpn.o $(LIB_DIR)/libvrpnserver.a \
 		$(OBJ_DIR)/vrpn_Phantom.o \
 		$(OBJ_DIR)/InstantBuzzEffect.o \
 		$(OBJ_DIR)/vrpn_Generic_server_object.o \
-		$(LIB_DIR)/libvrpnserver.a $(GL) -lquat $(SYSLIBS) -lm
+		$(VRPN_LIBS) $(GL) -lquat $(SYSLIBS) -lm
 
 $(OBJ_DIR)/test_vrpn: $(OBJ_DIR)/test_vrpn.o  \
 			 $(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/test_vrpn \
 		$(OBJ_DIR)/test_vrpn.o \
-		-lvrpnserver $(GL) -lquat $(SYSLIBS) -lm
+		$(VRPN_LIBS) $(GL) -lquat $(SYSLIBS) -lm
 
 $(OBJ_DIR)/test_radamec_spi: $(OBJ_DIR)/test_radamec_spi.o  \
 			 $(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/test_radamec_spi \
 		$(OBJ_DIR)/test_radamec_spi.o \
-		-lvrpnserver $(GL) -lquat $(SYSLIBS) -lm
+		$(VRPN_LIBS) $(GL) -lquat $(SYSLIBS) -lm
 
 $(OBJ_DIR)/testimager_server: $(OBJ_DIR)/testimager_server.o  \
 			 $(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/testimager_server \
 		$(OBJ_DIR)/testimager_server.o \
-		-lvrpnserver $(GL) -lquat $(SYSLIBS) -lm
+		$(VRPN_LIBS) $(GL) -lquat $(SYSLIBS) -lm
 
 $(OBJ_DIR)/test_analogfly: $(OBJ_DIR)/test_analogfly.o  \
 			 $(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/test_analogfly \
 		$(OBJ_DIR)/test_analogfly.o \
-		-lvrpnserver $(GL) -lquat $(SYSLIBS) -lm
+		$(VRPN_LIBS) $(GL) -lquat $(SYSLIBS) -lm
 
 $(OBJ_DIR)/client_and_server: $(OBJ_DIR)/client_and_server.o  \
 			 $(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/client_and_server \
 		$(OBJ_DIR)/client_and_server.o \
-		-lvrpnserver $(GL) -lquat $(SYSLIBS) -lm
+		$(VRPN_LIBS) $(GL) -lquat $(SYSLIBS) -lm
 
 $(OBJ_DIR)/forward: $(OBJ_DIR)/forward.o  \
 			 $(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/forward \
 		$(OBJ_DIR)/forward.o \
-		-lvrpnserver $(SYSLIBS) -lm
+		$(VRPN_LIBS) $(SYSLIBS) -lm
 
 $(OBJ_DIR)/text: $(OBJ_DIR)/text.o  \
 			 $(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/text \
 		$(OBJ_DIR)/text.o \
-		-lvrpnserver $(SYSLIBS) -lm
+		$(VRPN_LIBS) $(SYSLIBS) -lm
 
 $(OBJ_DIR)/sample_server:	$(OBJ_DIR)/sample_server.o \
 			$(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/sample_server \
 		$(OBJ_DIR)/sample_server.o \
-		-lvrpnserver $(SYSLIBS) -lm
+		$(VRPN_LIBS) $(SYSLIBS) -lm
 
 $(OBJ_DIR)/test_mutex:	$(OBJ_DIR)/test_mutex.o \
 			$(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/test_mutex \
 		$(OBJ_DIR)/test_mutex.o \
-		-lvrpnserver $(SYSLIBS) -lm
+		$(VRPN_LIBS) $(SYSLIBS) -lm
 
 $(OBJ_DIR)/test_peerMutex:	$(OBJ_DIR)/test_peerMutex.o \
 			$(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/test_peerMutex \
 		$(OBJ_DIR)/test_peerMutex.o \
-		-lvrpnserver $(SYSLIBS) -lm
+		$(VRPN_LIBS) $(SYSLIBS) -lm
 
 $(OBJ_DIR)/sample_analog:	$(OBJ_DIR)/sample_analog.o \
 			$(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/sample_analog \
 		$(OBJ_DIR)/sample_analog.o \
-		-lvrpnserver $(SYSLIBS) -lm
+		$(VRPN_LIBS) $(SYSLIBS) -lm
 
 $(OBJ_DIR)/last_of_sequence:	$(OBJ_DIR)/last_of_sequence.o \
 			$(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/last_of_sequence \
 		$(OBJ_DIR)/last_of_sequence.o \
-		-lvrpnserver $(SYSLIBS) -lm
+		$(VRPN_LIBS) $(SYSLIBS) -lm
 
 
 $(OBJ_DIR)/testSharedObject:	$(OBJ_DIR)/testSharedObject.o \
 			$(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/testSharedObject \
 		$(OBJ_DIR)/testSharedObject.o \
-		-lvrpnserver $(SYSLIBS) -lm
+		$(VRPN_LIBS) $(SYSLIBS) -lm
 
 install: all
 	-mkdir $(BIN_DIR)

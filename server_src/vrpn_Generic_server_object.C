@@ -14,6 +14,16 @@ const int LINESIZE = 512;
 
 #define next() pch += strlen(pch) + 1
 
+
+// BUW additions
+/* some helper variables to configure the vrpn_Atmel server */
+namespace setup_vrpn_Atmel {
+  int channel_mode[vrpn_CHANNEL_MAX];
+  int channel_count=0;
+}
+
+
+
 #ifdef	SGI_BDBOX
 vrpn_SGIBox	* vrpn_special_sgibox;
 #endif
@@ -2697,6 +2707,248 @@ int vrpn_Generic_Server_Object::setup_Poser_Tek4662 (char * & pch, char * line, 
     return 0;
 }
 
+// ----------------------------------------------------------------------
+// BUW additions
+// ----------------------------------------------------------------------
+
+/******************************************************************************/
+/* setup Atmel microcontroller */
+/******************************************************************************/
+int vrpn_Generic_Server_Object::setup_Atmel(char* &pch, char *line, FILE *config_file) 
+{
+#ifndef _WIN32
+  char name[LINESIZE];
+  char port[LINESIZE];
+  int baud = 0;
+  int channel_count = 0;
+
+  next();
+
+  // first line
+  if (setup_vrpn_Atmel::channel_count == 0) {
+
+    // Get the arguments 
+    if (sscanf(pch,"%511s%511s%d%d", name, port, &baud, &channel_count) != 4) {
+      fprintf(stderr,"Bad vrpn_Atmel line: %s\n",line);
+      return -1;
+    }
+    else {
+      if (verbose) {
+        printf("name: %s\n",name);
+        printf("port: %s\n",port);
+        printf("baud: %d\n",baud);
+        printf("channel_count: %d\n",channel_count);
+      }
+    }
+
+    // Make sure there's room for a new analog
+    if (num_analogs >= VRPN_GSO_MAX_ANALOG) {
+      fprintf(stderr,"vrpn_Atmel : Too many analogs in config file");
+      return -1;
+    }
+
+    setup_vrpn_Atmel::channel_count = channel_count;
+
+    // init the channel_mode array
+    for(int k=0; k<channel_count; ++k)
+      setup_vrpn_Atmel::channel_mode[k] = VRPN_ATMEL_MODE_NA;
+
+    return 0;
+
+  } // end of handline first line
+
+  //*********************************************************
+
+  //*********************************************************
+
+
+  int channel;
+  char mode[3];
+
+  // Get the arguments 
+  if (sscanf(pch,"%d%511s", &channel, mode) != 2) {
+    fprintf(stderr,"Bad vrpn_Atmel line: %s\n",line);
+    return -1;
+  }
+  else {
+    if (verbose) {
+      printf("channel: %d - mode: %s\n",channel,mode);
+    }
+  }
+
+  // check if it is a valid channel
+  if (channel >= setup_vrpn_Atmel::channel_count)  {
+    fprintf(stderr,"channel value out of range\n\n");
+    return -1;
+  }
+
+  //**************************************************
+  //last line of vrpn_Atmel
+  if (channel == -1) {
+
+    // here we use a factory interface because a lot of init things have to be done       
+    vrpn_Analog * self = vrpn_Atmel::Create( name,
+                                             connection,
+                                             port,
+                                             baud,
+                                             channel_count ,
+                                             setup_vrpn_Atmel::channel_mode);
+
+    // reset the params so that another atmel can be configured
+    setup_vrpn_Atmel::channel_count = 0;
+
+    // check if instance has been created   
+    if (self == NULL ) {
+
+      fprintf(stderr,"Can't create new vrpn_Atmel\n\n");
+
+      return -1;
+     }
+     else {
+
+      printf("\nAtmel %s started.\n\n", name);
+
+      // the Analog_Output is handled implict by analog like done in Zaber
+
+      analogs[num_analogs] = (vrpn_Analog *) self;
+      num_analogs++;
+
+      return 0;
+    }
+  }
+
+  // check if it is a valid channel
+  if (channel < 0)  {
+    fprintf(stderr,"channel value out of range\n\n");
+    return -1;
+  }
+
+  // channel init line
+
+  //**************************************************
+  //set the mode array
+  int mode_int;
+
+  #define is_mode(s) !strcmp(pch=strtok(mode," \t"),s)
+
+  // convert the char * in an integer 
+  if (is_mode("RW"))
+    mode_int = VRPN_ATMEL_MODE_RW;
+  else if (is_mode("RO"))
+    mode_int = VRPN_ATMEL_MODE_RO;
+  else if (is_mode("WO"))
+    mode_int = VRPN_ATMEL_MODE_WO;
+  else if (is_mode("NA")) {
+    mode_int = VRPN_ATMEL_MODE_NA;
+  }
+  else {
+    fprintf(stderr,"unknown io-mode: %s\n\n", mode);
+    return -1;
+  }
+
+  // write it to the array 
+  setup_vrpn_Atmel::channel_mode[channel] = mode_int;
+
+#else
+  fprintf(stderr,"vrpn_Generic_Server_Object::setup_Atmel(): Not implemented on this architecture\n");
+#endif
+
+  return 0;
+}
+
+
+/******************************************************************************/
+/* setup mouse connected via event interface */
+/******************************************************************************/
+int vrpn_Generic_Server_Object::setup_Event_Mouse(char* &pch, char *line, FILE *config_file) 
+{
+
+  char name[LINESIZE], port[LINESIZE];
+
+  next();
+  // Get the arguments (class, button_name, port)
+  if (sscanf(pch,"%511s%511s", name, port) != 2) {
+    fprintf(stderr,"Bad vrpn_Event_Mouse line: %s\n",line);
+    return -1;
+  }
+
+  // Make sure there's room for a new button
+  if (num_buttons >= VRPN_GSO_MAX_BUTTONS) {
+    fprintf(stderr,"vrpn_Event_Mouse : Too many buttons in config file");
+    return -1;
+  }
+
+  // Make sure there's room for a new analog
+  if (num_analogs >= VRPN_GSO_MAX_ANALOG) {
+    fprintf(stderr,"vrpn_Event_Mouse : Too many analogs in config file");
+    return -1;
+  }
+
+  // Open the button
+  if (verbose) {
+
+    printf("Opening vrpn_Event_Mouse: %s on port %s\n",name,port);
+  }
+
+  buttons[num_buttons] = new vrpn_Event_Mouse( name, connection, port);
+
+  analogs[num_analogs] = (vrpn_Analog*)buttons[num_buttons];
+  num_buttons++;
+  num_analogs++;
+
+  return 0;
+}
+
+/*
+ *  inertiamouse config file setup routine
+ *
+ */
+int vrpn_Generic_Server_Object::setup_inertiamouse (char * & pch, char * line, FILE * config_file)
+{
+    char name[LINESIZE], port[LINESIZE];
+    int baud;
+    int ret;
+
+    next();
+
+    // Get the arguments (class, magellan_name, port, baud
+    if ( (ret = sscanf(pch,"%511s%511s%d",name, port, &baud)) < 3) {
+        fprintf (stderr,"Bad vrpn_intertiamouse line: %s\n",line);
+        return -1;
+    }
+
+
+    // Make sure there's room for a new magellan
+    if (num_magellans >= VRPN_GSO_MAX_INERTIAMOUSES) {
+        fprintf (stderr,"Too many intertiamouses in config file\n");
+        return -1;
+    }
+
+  // Open the device
+  if (verbose) {
+    printf("Opening vrpn_inertiamouse: %s on port %s, baud %d\n",
+           name,
+           port,
+           baud);
+  }
+  if (!(inertiamouses[num_inertiamouses] =
+      vrpn_inertiamouse::create(name, 
+                                connection,
+                                port,
+                                baud))) {
+      fprintf(stderr,"Can't create new vrpn_inertiamouse\n");
+      return -1;
+  } else {
+      ++num_inertiamouses;
+  }
+
+  return 0;
+}
+
+
+// ----------------------------------------------------------------------
+
+
 int vrpn_Generic_Server_Object::setup_Analog_USDigital_A2 (char * & pch, char * line, FILE * config_file) 
 {
 #ifdef  VRPN_USE_USDIGITAL
@@ -2961,111 +3213,6 @@ int vrpn_Generic_Server_Object::setup_Tracker_PhaseSpace (char * & pch, char * l
   return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_Tracker_Slave (char * & pch, char * line, FILE * config_file) 
-{
-#ifdef VRPN_INCLUDE_SLAVE
-
-  char trackerName[LINESIZE];
-  char masterTracker[LINESIZE];
-	
-  //get tracker name and device
-  if( sscanf(line,"vrpn_Tracker_Slave %s %s",trackerName,masterTracker) < 2)
-    {
-      fprintf(stderr,"Bad vrpn_Tracker_Slave line: %s\n", line);
-      return -1;
-    }
-        
-  // Make sure there's room for a new tracker
-  if (num_trackers >= VRPN_GSO_MAX_TRACKERS) {
-    fprintf(stderr,"Too many trackers in config file");
-    return -1;
-  }
-  
-  vrpn_Tracker_Slave* tracker =  new vrpn_Tracker_Slave(trackerName, connection, masterTracker);
-
-  if(tracker == NULL) 
-    {
-      fprintf(stderr,"Unable to create new vrpn_Tracker_Slave.\n");
-      return -1;
-    }
-
-  trackers[num_trackers] = tracker;
-  num_trackers++;
-  
-  char tag[LINESIZE];
-  int localsensor = 0;
-  int mastersensor = 0;
-  bool inTag = false;
- 
-  //read file for sensor specifications     
-  while ( fgets(line, LINESIZE, config_file) != NULL ) {  
-
-    //cut off comments
-    for(int i = 0; i < LINESIZE && line[i] != '\0'; i++)
-      {
-        if(line[i] == '#')
-          {
-            line[i] = '\0';
-            break;
-          }
-      }
-    
-    //read tags and params
-    if(sscanf(line,"%s",tag) == 1)
-      {
-        if(strcmp("<slave>",tag) == 0)
-          {
-            if(inTag)
-              {
-                fprintf(stderr,"Error, nested <slave> tag encountered.  Aborting...\n");
-                return -1;
-              }
-            else
-              {
-                inTag = true;
-                continue;
-              }
-          }
-        else if(strcmp("</slave>",tag) == 0)
-          {
-            if(inTag)
-              {
-                inTag = false;
-                break;
-              }
-            else
-              {
-                fprintf(stderr,"Error, </slave> tag without <slave> tag.  Aborting...\n");
-                return-1;
-              }
-          }
-      }
-    if(inTag) 
-      {
-        if(sscanf(line,"%d : %d", &localsensor,&mastersensor) == 2)
-          {
-            if(!tracker->addSensor(localsensor,mastersensor))
-              {
-                fprintf(stderr,"Error, unable to add new sensor: %d : %d",localsensor,mastersensor);
-                continue;
-              }
-          }
-        else
-          {
-            fprintf(stderr,"Ignoring line: %s\n",line);            
-            continue;
-          }      
-      }    
-  }
-  
-#else
-  fprintf(stderr, "vrpn_server:  VRPN_INCLUDE_SLAVE not defined in vrpn_Configure.h!\n");
-  return -1;  
-#endif
-
-  return 0;
-}
-
 vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connection_to_use, const char *config_file_name, int port, bool be_verbose, bool bail_on_open_error) :
   connection(connection_to_use),
   d_doing_okay(true),
@@ -3090,8 +3237,9 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
   num_analogouts(0),
   num_DTracks(0),
   num_posers(0),
-  num_mouses(0),
-  num_KeyMouses(0)
+  num_mouses(0)
+  , num_inertiamouses (0)
+  , num_KeyMouses(0)
 {
     FILE    * config_file;
     char    * client_name = NULL;
@@ -3270,14 +3418,22 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
             CHECK(setup_Button_NI_DIO24);
 	  } else if (isit("vrpn_Tracker_PhaseSpace")) {
             CHECK(setup_Tracker_PhaseSpace);
-          } else {    // Never heard of it
-              sscanf(line,"%511s",s1);    // Find out the class name
-              fprintf(stderr,"vrpn_server: Unknown Device: %s\n",s1);
-              if (d_bail_on_open_error) { d_doing_okay = false; return; }
-              else { continue; }  // Skip this line
-          }
-        }
-    }
+// BUW additions
+          } else if (isit("vrpn_Atmel")) {
+            CHECK(setup_Atmel);
+          } else if (isit ("vrpn_inertiamouse")) {
+            CHECK(setup_inertiamouse);
+          } else if (isit("vrpn_Event_Mouse")) {
+            CHECK(setup_Event_Mouse);
+// end of BUW additions
+	 } else {	// Never heard of it
+		sscanf(line,"%511s",s1);	// Find out the class name
+		fprintf(stderr,"vrpn_server: Unknown Device: %s\n",s1);
+		if (d_bail_on_open_error) { d_doing_okay = false; return; }
+		else { continue; }	// Skip this line
+	  }
+	}
+      }
 
     // Close the configuration file
     fclose(config_file);
