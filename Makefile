@@ -203,11 +203,13 @@ endif
 ifeq ($(FORCE_GPP),1)
 OBJECT_DIR	 := $(HW_OS)$(OBJECT_DIR_SUFFIX)/g++
 SOBJECT_DIR      := $(HW_OS)$(OBJECT_DIR_SUFFIX)/g++/server
+AOBJECT_DIR      := $(HW_OS)$(OBJECT_DIR_SUFFIX)
 else
 UNQUAL_OBJECT_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)
 UNQUAL_SOBJECT_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)/server
 OBJECT_DIR	 := $(HW_OS)$(OBJECT_DIR_SUFFIX)
 SOBJECT_DIR      := $(HW_OS)$(OBJECT_DIR_SUFFIX)/server
+AOBJECT_DIR      := $(HW_OS)$(OBJECT_DIR_SUFFIX)
 endif
 
 # directories that we can do an rm -f on because they only contain
@@ -272,11 +274,9 @@ endif
 # On the PC, place quatlib in the directory ../quat.  No actual system
 # includes should be needed.
 ifeq ($(HW_OS),pc_cygwin)
-  INCLUDE_FLAGS := -I. -I../quat
+  INCLUDE_FLAGS := -I. -I../quat -I./atmellib
 else
-
-  INCLUDE_FLAGS := -I. $(SYS_INCLUDE) -I../quat -I../../quat
-
+  INCLUDE_FLAGS := -I. $(SYS_INCLUDE) -I../quat -I../../quat -I./atmellib
 endif
 
 
@@ -374,6 +374,10 @@ $(SOBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) $(MAKEFILE)
 	@[ -d $(SOBJECT_DIR) ] || mkdir $(SOBJECT_DIR)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
+# Build objects from .C files
+$(AOBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) $(MAKEFILE)
+	@[ -d $(AOBJECT_DIR)/atmellib ] || mkdir $(AOBJECT_DIR)/atmellib
+	$(CC) $(CFLAGS) -o $@ -c $<
 
 #
 #
@@ -385,15 +389,15 @@ $(SOBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) $(MAKEFILE)
 
 ifeq ($(HW_OS),sgi_irix)
   ifeq ($(SGI_ABI),32)
-all:	client server client_g++ server_g++
+all:	client server client_g++ server_g++ atmellib
   else
-all:	client server
+all:	client server atmellib
   endif
 else
   ifeq ($(HW_OS),pc_cygwin)
-all:	client server
+all:	client server atmellib
   else
-all:	client server
+all:	client server atmellib
   endif
 endif
 
@@ -414,11 +418,18 @@ client: $(OBJECT_DIR)/libvrpn.a
 server:
 	$(MAKE) $(OBJECT_DIR)/libvrpnserver.a
 
+.PHONY: atmellib
+atmellib:
+	$(MAKE) $(OBJECT_DIR)/libvrpnatmel.a
+
 $(OBJECT_DIR):
 	-mkdir $(OBJECT_DIR)
 
 $(SOBJECT_DIR):
 	-mkdir $(SOBJECT_DIR)
+
+$(AOBJECT_DIR)/atmellib:
+	-mkdir $(AOBJECT_DIR)/atmellib
 
 #############################################################################
 #
@@ -449,7 +460,10 @@ LIB_INCLUDES = vrpn_Connection.h vrpn_Tracker.h vrpn_Button.h \
 		vrpn_BaseClass.h vrpn_Imager.h \
 		vrpn_Analog_Output.h vrpn_Poser.h
 
-# additional files for the new connection work-in-progress
+$(LIB_OBJECTS): 
+$(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(LIB_OBJECTS)
+	$(AR) $(OBJECT_DIR)/libvrpn.a $(LIB_OBJECTS)
+	-$(RANLIB) $(OBJECT_DIR)/libvrpn.a
 
 # We aren't going to use architecture-dependent sets of files.
 # If vrpn_sgibox isn't supposed to be compiled on any other architecture,
@@ -470,8 +484,9 @@ SLIB_FILES =  $(LIB_FILES) vrpn_3Space.C \
 	vrpn_Mouse.C vrpn_3DMicroscribe.C vrpn_5DT16.C \
 	vrpn_ForceDeviceServer.C vrpn_Keyboard_Mouse.C \
 	vrpn_Analog_USDigital_A2.C vrpn_Button_NI_DIO24.C \
-	vrpn_Tracker_PhaseSpace.C
-
+	vrpn_Tracker_PhaseSpace.C \
+	vrpn_Atmel.C \
+	vrpn_inertiamouse.C vrpn_Event.C vrpn_Event_Analog.C vrpn_Event_Mouse.C
 
 SLIB_OBJECTS = $(patsubst %,$(SOBJECT_DIR)/%,$(SLIB_FILES:.C=.o))
 
@@ -490,17 +505,29 @@ SLIB_INCLUDES = $(LIB_INCLUDES) vrpn_3Space.h \
 	vrpn_Mouse.h vrpn_3DMicroscribe.h vrpn_5DT16.h \
 	vrpn_ForceDeviceServer.h vrpn_Keyboard_Mouse.h \
 	vrpn_Analog_USDigital_A2.h vrpn_Button_NI_DIO24.h \
-	vrpn_Tracker_PhaseSpace.h
-
-$(LIB_OBJECTS): 
-$(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(LIB_OBJECTS)
-	$(AR) $(OBJECT_DIR)/libvrpn.a $(LIB_OBJECTS)
-	-$(RANLIB) $(OBJECT_DIR)/libvrpn.a
+	vrpn_Tracker_PhaseSpace.h vrpn_Atmel.h \
+	vrpn_inertiamouse.h vrpn_Event.h vrpn_Event_Analog.h vrpn_Event_Mouse.h
 
 $(SLIB_OBJECTS): 
 $(OBJECT_DIR)/libvrpnserver.a: $(MAKEFILE) $(SLIB_OBJECTS)
 	$(AR) $(OBJECT_DIR)/libvrpnserver.a $(SLIB_OBJECTS)
 	-$(RANLIB) $(OBJECT_DIR)/libvrpnserver.a
+
+# atmellib files.
+
+ALIB_FILES = \
+	atmellib/vrpn_atmellib_iobasic.C atmellib/vrpn_atmellib_helper.C \
+	atmellib/vrpn_atmellib_openclose.C atmellib/vrpn_atmellib_register.C atmellib/vrpn_atmellib_tester.C
+
+ALIB_OBJECTS = $(patsubst %,$(AOBJECT_DIR)/%,$(ALIB_FILES:.C=.o))
+
+ALIB_INCLUDES =  \
+	vrpn_atmellib.h vrpn_atmellib_helper.h vrpn_atmellib_errno.h
+
+$(ALIB_OBJECTS): 
+$(OBJECT_DIR)/libvrpnatmel.a: $(MAKEFILE) $(ALIB_OBJECTS)
+	$(AR) $(OBJECT_DIR)/libvrpnatmel.a $(ALIB_OBJECTS)
+	-$(RANLIB) $(OBJECT_DIR)/libvrpnatmel.a
 
 #############################################################################
 #
@@ -511,8 +538,9 @@ $(OBJECT_DIR)/libvrpnserver.a: $(MAKEFILE) $(SLIB_OBJECTS)
 .PHONY:	clean
 clean:
 	$(RMF) $(LIB_OBJECTS) $(OBJECT_DIR)/libvrpn.a \
-               $(OBJECT_DIR)/libvrpn_g++.a $(SLIB_OBJECTS) \
+               $(OBJECT_DIR)/libvrpn_g++.a $(SLIB_OBJECTS) $(ALIB_OBJECTS) \
                $(OBJECT_DIR)/libvrpnserver.a \
+               $(OBJECT_DIR)/libvrpnatmel.a \
                $(OBJECT_DIR)/libvrpnserver_g++.a \
                $(OBJECT_DIR)/.depend $(OBJECT_DIR)/.depend-old
 ifneq (xxx$(FORCE_GPP),xxx1)

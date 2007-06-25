@@ -150,7 +150,7 @@ void vrpn_SleepMsecs( double dMsecs )
     timeval timeout;
 
     // Convert milliseconds to seconds
-    timeout.tv_sec = (int)(dMsecs / 1000);
+    timeout.tv_sec = (int)(dMsecs / 1000.0);
 
     // Subtract of whole number of seconds
     dMsecs -= timeout.tv_sec * 1000;

@@ -78,11 +78,11 @@ void vrpn_Joylin::mainloop(void) {
       }
       switch(js.type & ~JS_EVENT_INIT) {
       case JS_EVENT_BUTTON:
-		  vrpn_gettimeofday(&this->vrpn_Button::timestamp, NULL);
+                  vrpn_gettimeofday((timeval *)&this->vrpn_Button::timestamp, NULL);
 		  buttons[js.number] = js.value;
 		  break;
       case JS_EVENT_AXIS:
-		  vrpn_gettimeofday(&this->vrpn_Analog::timestamp, NULL);
+		  vrpn_gettimeofday((timeval *)&this->vrpn_Analog::timestamp, NULL);
 		  channel[js.number] = js.value / 32767.0;           /* FIX LATER */
 		  break;
       }

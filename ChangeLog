@@ -1,3 +1,29 @@
+2007-06-25  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Updated version number.
+	* Makefile : Adding a number of devices from Bauhaus University Weimar
+		submitted by Jan Springer, including some helper classes
+		used by their code.
+	* vrpn_Atmel.C : Same.
+	* vrpn_Atmel.h : Same.
+	* vrpn_Event.C : Same.
+	* vrpn_Event.h : Same.
+	* vrpn_Event_Analog.C : Same.
+	* vrpn_Event_Analog.h : Same.
+	* vrpn_Event_Mouse.C : Same.
+	* vrpn_Event_Mouse.h : Same.
+	* vrpn_Joylin.C : Adding typecasts to time reads.
+	* vrpn_atmellib.h : Same.
+	* vrpn_atmellib_errno.h : Same.
+	* vrpn_atmellib_helper.h : Same.
+	* vrpn_atmellib_helper.C : Same.
+	* vrpn_atmellib_iobasic.C : Same.
+	* vrpn_atmellib_openclose.C : Same.
+	* vrpn_atmellib_register.C : Same.
+	* vrpn_atmellib_tester.C : Same.
+	* vrpn_interiamouse.C : Same.
+	* vrpn_interiamouse.h : Same.
+
 2007-06-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Serial.C : Attempting to fix some problems with RTS/CTS that

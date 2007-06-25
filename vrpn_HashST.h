@@ -1,9 +1,6 @@
 /*
  * vrpn_HashST.H
  *
- * Last update : $Author: taylorr $
- *               $Date: 2005/12/02 20:17:21 $
- *               $Revision: 1.2 $
  */
 
 

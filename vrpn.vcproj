@@ -596,6 +596,66 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\vrpn_Event.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\vrpn_Event_Analog.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\vrpn_Event_Mouse.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_FileConnection.C"
 				>
 				<FileConfiguration
@@ -879,6 +939,26 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\vrpn_inertiamouse.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
 						CompileAs="2"
 					/>
 				</FileConfiguration>
@@ -1813,6 +1893,18 @@
 				>
 			</File>
 			<File
+				RelativePath=".\vrpn_Event.h"
+				>
+			</File>
+			<File
+				RelativePath=".\vrpn_Event_Analog.h"
+				>
+			</File>
+			<File
+				RelativePath=".\vrpn_Event_Mouse.h"
+				>
+			</File>
+			<File
 				RelativePath="vrpn_FileConnection.h"
 				>
 			</File>
@@ -1862,6 +1954,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_ImmersionBox.h"
+				>
+			</File>
+			<File
+				RelativePath=".\vrpn_inertiamouse.h"
 				>
 			</File>
 			<File
