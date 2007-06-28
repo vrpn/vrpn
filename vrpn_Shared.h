@@ -1,4 +1,5 @@
 #ifndef VRPN_SHARED_H
+#define VRPN_SHARED_H
 
 // Horrible hack for old HPUX compiler
 #ifdef	hpux
@@ -176,5 +177,150 @@ static	const   bool    vrpn_big_endian = (vrpn_char_data_for_endian_test[0] != 1
 #define	sleep(x)	Sleep( DWORD(1000.0 * x) )
 #endif
 
-#define VRPN_SHARED_H
+// Semaphore and Thread classes derived from Hans Weber's classes from UNC.
+// Don't let the existence of a Thread class fool you into thinking
+// that VRPN is thread-safe.  This and the Semaphore are included as
+// building blocks towards making your own code thread-safe.  They are
+// here to enable the vrpn_Imager_Logger class to do its thing.
+
+#if defined(sgi) || (defined(_WIN32) && !defined(__CYGWIN__)) || defined(linux)
+#define vrpn_THREADS_AVAILABLE
+#else
+#undef vrpn_THREADS_AVAILABLE
+#endif
+
+// multi process stuff
+#ifdef sgi
+#include <task.h>
+#include <ulocks.h>
+#elif defined(_WIN32)
+#include <process.h>
+#else
+#include <pthread.h>
+#include <semaphore.h>
+#endif
+
+// make the SGI compile without tons of warnings
+#ifdef sgi
+#pragma set woff 1110,1424,3201
+#endif
+
+// and reset the warnings
+#ifdef sgi
+#pragma reset woff 1110,1424,3201
+#endif
+
+class VRPN_API vrpn_Semaphore {
+public:
+  // mutex by default (0 is a sync primitive)
+  vrpn_Semaphore( int cNumResources = 1 );
+
+  // This does not copy the state of the semaphore, just creates
+  // a new one with the same resource count
+  vrpn_Semaphore( const vrpn_Semaphore& s );
+  ~vrpn_Semaphore();
+
+  // routine to reset it (0 on success, -1 failure)
+  // (may create new semaphore)
+  int reset( int cNumResources = 1 );
+
+  // routines to use it (p blocks, condP does not)
+  // p returns 1 when it has acquired the resource, -1 on fail
+  // v returns 0 when it has released the resource, -1 on fail
+  // condP returns 0 if it could not access the resource
+  // and 1 if it could (-1 on fail)
+  int p();
+  int v();
+  int condP();
+
+  // read values
+  int numResources();
+
+protected:
+  // common init routine
+  void init();
+
+  int cResources;
+
+  // arch specific details
+#ifdef sgi
+  // single mem area for dynamically alloced shared mem
+  static usptr_t *ppaArena;
+  static void allocArena();
+
+  // the semaphore struct in the arena
+  usema_t *ps;
+  ulock_t l;
+  Boolean fUsingLock;
+#elif defined(_WIN32)
+  HANDLE hSemaphore;
+#else
+  sem_t	semaphore;      // Posix
+#endif
+};
+
+// A ptr to this struct will be passed to the 
+// thread function.  The user data ptr will be in pvUD,
+// and ps should contain a semaphore for mutex access to
+// the data.
+
+// The user should create and manage the semaphores.
+
+struct vrpn_ThreadData {
+  void *pvUD;
+  vrpn_Semaphore *ps;
+};
+
+typedef void (*vrpn_THREAD_FUNC) ( void *pvThreadData );
+
+// Don't let the existence of a Thread class fool you into thinking
+// that VRPN is thread-safe.  This and the Semaphore are included as
+// building blocks towards making your own code thread-safe.  They are
+// here to enable the vrpn_Imager_Logger class to do its thing.
+class VRPN_API vrpn_Thread {
+public:  
+  // args are the routine to run in the thread
+  // a ThreadData struct which will be passed into
+  // the thread (it will be passed as a void *).
+  vrpn_Thread( vrpn_THREAD_FUNC pfThread, const vrpn_ThreadData& td );
+  ~vrpn_Thread();
+
+  // start/kill the thread (0 on success, -1 on failure)
+  int go();
+  int kill();
+  
+  // thread info: check if running, get proc id
+  bool running();
+  unsigned long pid();
+
+  // run-time user function to test it threads are available
+  // (same value as #ifdef THREADS_AVAILABLE)
+  static bool available();
+
+  // Number of processors available on this machine.
+  static unsigned number_of_processors();
+
+  // This can be used to change the ThreadData user data ptr
+  // between calls to go (ie, when a thread object is used
+  // many times with different args).  This will take
+  // effect the next time go() is called.
+  void userData( void *pvNewUserData );
+  void *userData();
+  
+protected:  
+  // user func and data ptrs
+  void (*pfThread)(void *pvThreadData);
+  vrpn_ThreadData td;
+  
+  // utility func for calling the specified function.
+  static void threadFuncShell(void *pvThread);
+
+  // Posix version of the utility function, makes the
+  // function prototype match.
+  static void *threadFuncShellPosix(void *pvThread);
+
+  // the process id
+  unsigned long ulProcID;
+};
+
 #endif  // VRPN_SHARED_H

@@ -1,3 +1,13 @@
+2007-06-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_DirectXFFJoystick.C : Comment fixed.
+	* vrpn_Shared.h : Added vrpn_Semaphore and vrpn_Thread classes
+		based on Hans Weber's classes.  These are to support an
+		upcoming vrpn_Imager_Logger class that will enable full-
+		bandwidth logging while subsetting the images to a
+		client across the network.
+	* vrpn_Shared.C : Same.
+
 2007-06-25  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Connection.C : Updated version number.

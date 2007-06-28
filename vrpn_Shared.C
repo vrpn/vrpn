@@ -1137,3 +1137,522 @@ static int __iTrash = vrpn_gettimeofday(&__tv, (struct timezone *)NULL);
 
 #endif // VRPN_UNSAFE_WINDOWS_CLOCK
 
+
+#include <stdio.h>
+#include <string.h>
+
+#define ALL_ASSERT(exp, msg) if(!(exp)){ fprintf(stderr, "\nAssertion failed! \n %s (%s, %s)\n", msg, __FILE__, __LINE__); exit(-1);}
+
+// init all fields in init()
+vrpn_Semaphore::vrpn_Semaphore( int cNumResources ) : 
+  cResources(cNumResources)
+{
+  init();
+}
+
+// create a new internal structure for the semaphore
+// (binary copy is not ok)
+// This does not copy the state of the semaphore
+vrpn_Semaphore::vrpn_Semaphore( const vrpn_Semaphore& s ) : 
+  cResources(s.cResources)
+{
+  init();
+}
+
+void vrpn_Semaphore::init() {
+#ifdef sgi
+  if (vrpn_Semaphore::ppaArena==NULL) {
+    vrpn_Semaphore::allocArena();
+  }
+  if (cResources==1) {
+    fUsingLock=true;
+    ps=NULL;
+    // use lock instead of semaphore
+    if ((l = usnewlock(Semaphore::ppaArena)) == NULL) {
+      fprintf(stderr,"vrpn_Semaphore::vrpn_Semaphore: error allocating lock from arena.\n");
+      return;
+    }
+  } else {    
+    fUsingLock=false;
+    l=NULL;
+    if ((ps = usnewsema(vrpn_Semaphore::ppaArena, cResources)) == NULL) {
+      fprintf(stderr,"vrpn_Semaphore::vrpn_Semaphore: error allocating semaphore from arena.\n");
+      return;
+    }
+  }
+#elif defined(_WIN32)
+  // args are security, initial count, max count, and name
+  // TCH 20 Feb 2001 - Make the PC behavior closer to the SGI behavior.
+  int numMax = cResources;
+  if (numMax < 1) {
+    numMax = 1;
+  }
+  hSemaphore = CreateSemaphore(NULL, cResources, numMax, NULL);
+  if (!hSemaphore) {
+    // get error info from windows (from FormatMessage help page)
+    LPVOID lpMsgBuf;
+    
+    FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+		   FORMAT_MESSAGE_FROM_SYSTEM,
+		   NULL,    GetLastError(),
+		   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), 
+		     // Default language
+		   (LPTSTR) &lpMsgBuf,    0,    NULL );
+    fprintf(stderr,"vrpn_Semaphore::vrpn_Semaphore: error creating semaphore, "
+      "WIN32 CreateSemaphore call caused the following error: %s\n", (LPTSTR) lpMsgBuf);
+    // Free the buffer.
+    LocalFree( lpMsgBuf );
+    return;
+  }
+#else
+  // Posix threads are the default.
+  int numMax = cResources;
+  if (numMax < 1) {
+    numMax = 1;
+  }
+  if (sem_init(&semaphore, 0, numMax) != 0) {
+      fprintf(stderr, "vrpn_Semaphore::vrpn_Semaphore: error initializing semaphore.\n");
+      return;
+  }
+#endif
+}
+
+vrpn_Semaphore::~vrpn_Semaphore() {
+#ifdef sgi
+  if (fUsingLock) {
+    usfreelock( l, vrpn_Semaphore::ppaArena );
+  } else {
+    usfreesema( ps, vrpn_Semaphore::ppaArena );
+  }
+#elif defined(_WIN32)
+  if (!CloseHandle(hSemaphore)) {
+    // get error info from windows (from FormatMessage help page)
+    LPVOID lpMsgBuf;
+    
+    FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+		   FORMAT_MESSAGE_FROM_SYSTEM,
+		   NULL,    GetLastError(),
+		   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), 
+		     // Default language
+		   (LPTSTR) &lpMsgBuf,    0,    NULL );
+    fprintf(stderr, "vrpn_Semaphore::~vrpn_Semaphore: error destroying semaphore, "
+      "WIN32 CloseHandle call caused the following error: %s\n", (LPTSTR) lpMsgBuf);
+    // Free the buffer.
+    LocalFree( lpMsgBuf );
+  }
+#else
+  // Posix threads are the default.
+  if (sem_destroy(&semaphore) != 0) {
+      fprintf(stderr, "vrpn_Semaphore::~vrpn_Semaphore: error destroying semaphore.\n");
+  }
+#endif
+}
+
+// routine to reset it
+#ifdef sgi
+
+int vrpn_Semaphore::reset( int cNumResources ) {
+  cResources = cNumResources;
+  if (fUsingLock) {
+    if (cResources==1) {
+      if (usinitlock( l )) {
+	perror("vrpn_Semaphore::reset: usinitlock:");
+	return -1;
+      }
+    } else {
+      // need to make new semaphore
+      usfreelock( l, vrpn_Semaphore::ppaArena );
+      init();
+    }
+  } else {
+    if (cResources!=1) {
+      if (usinitsema( ps, cNumResources )) {
+	perror("vrpn_Semaphore::reset: usinitsema:");
+	return -1;
+      }
+    } else {
+      // need to make new lock
+      usfreesema( ps, vrpn_Semaphore::ppaArena );
+      init();
+    }
+  }
+
+  return 0;
+}
+
+#elif defined(_WIN32)
+
+int vrpn_Semaphore::reset( int cNumResources ) {
+  cResources = cNumResources;
+  // close the old one and create a new one
+  if (!CloseHandle(hSemaphore)) {
+    // get error info from windows (from FormatMessage help page)
+    LPVOID lpMsgBuf;
+    
+    FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+		   FORMAT_MESSAGE_FROM_SYSTEM,
+		   NULL,    GetLastError(),
+		   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), 
+		     // Default language
+		   (LPTSTR) &lpMsgBuf,    0,    NULL );
+    fprintf(stderr, "vrpn_Semaphore::reset: error destroying semaphore, "
+      "WIN32 CloseHandle call caused the following error: %s\n", (LPTSTR) lpMsgBuf);
+    // Free the buffer.
+    LocalFree( lpMsgBuf );
+  }
+  init();
+
+  return 0;
+}
+
+#else  // not sgi, not _WIN32
+
+int vrpn_Semaphore::reset( int cNumResources) {
+  // Posix by default.
+  // Destroy the old semaphore and then create a new one
+  if (sem_destroy(&semaphore) != 0) {
+      fprintf(stderr, "vrpn_Semaphore::reset: error destroying semaphore.\n");
+      return -1;
+  }
+  int numMax = cNumResources;
+  if (numMax < 1) {
+    numMax = 1;
+  }
+  if (sem_init(&semaphore, 0, numMax) != 0) {
+      fprintf(stderr, "vrpn_Semaphore::reset: error initializing semaphore.\n");
+      return -1;
+  }  
+  return 0;
+}
+
+#endif
+
+// routines to use it (p blocks, cond p does not)
+// 1 on success, -1 fail
+int vrpn_Semaphore::p() {
+#ifdef sgi
+  if (fUsingLock) {
+    if (ussetlock(l)!=1) {
+      perror("vrpn_Semaphore::p: ussetlock:");
+      return -1;
+    }
+  } else {
+    if (uspsema(ps)!=1) {
+      perror("vrpn_Semaphore::p: uspsema:");
+      return -1;
+    }
+  }
+#elif defined(_WIN32)
+  switch (WaitForSingleObject(hSemaphore, INFINITE)) {
+  case WAIT_OBJECT_0:
+    // got the resource
+    break;
+  case WAIT_TIMEOUT:
+    ALL_ASSERT(0,"vrpn_Semaphore::p: infinite wait time timed out!");
+    return -1;
+    break;
+  case WAIT_ABANDONED:
+    ALL_ASSERT(0,"vrpn_Semaphore::p: thread holding resource died");
+    return -1;
+    break;
+  case WAIT_FAILED:
+    // get error info from windows (from FormatMessage help page)
+    LPVOID lpMsgBuf;
+    
+    FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+		   FORMAT_MESSAGE_FROM_SYSTEM,
+		   NULL,    GetLastError(),
+		   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), 
+		   // Default language
+		   (LPTSTR) &lpMsgBuf,    0,    NULL );
+    fprintf(stderr, "vrpn_Semaphore::p: error waiting for resource, "
+      "WIN32 WaitForSingleObject call caused the following error: %s", (LPTSTR) lpMsgBuf);
+    // Free the buffer.
+    LocalFree( lpMsgBuf );
+    return -1;
+    break;
+  default:
+    ALL_ASSERT(0,"vrpn_Semaphore::p: unknown return code");
+    return -1;
+  }
+#else
+  // Posix by default
+  if (sem_wait(&semaphore) != 0) {
+    perror("vrpn_Semaphore::p: ");
+    return -1;
+  }
+#endif
+  return 1;
+}
+
+// 0 on success, -1 fail
+int vrpn_Semaphore::v() {
+#ifdef sgi
+  if (fUsingLock) {
+    if (usunsetlock(l)) {
+      perror("vrpn_Semaphore::v: usunsetlock:");
+      return -1;
+    }
+  } else {
+    if (usvsema(ps)) {
+      perror("vrpn_Semaphore::v: uspsema:");
+      return -1;
+    }
+  }
+#elif defined(_WIN32)
+  if (!ReleaseSemaphore(hSemaphore,1,NULL)) {
+    // get error info from windows (from FormatMessage help page)
+    LPVOID lpMsgBuf;
+    
+    FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+		   FORMAT_MESSAGE_FROM_SYSTEM,
+		   NULL,    GetLastError(),
+		   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), 
+		     // Default language
+		   (LPTSTR) &lpMsgBuf,    0,    NULL );
+    fprintf(stderr, "vrpn_Semaphore::v: error v'ing semaphore, "
+      "WIN32 ReleaseSemaphore call caused the following error: %s", (LPTSTR) lpMsgBuf);
+    // Free the buffer.
+    LocalFree( lpMsgBuf );
+    return -1;
+  }
+#else
+  // Posix by default
+  if (sem_post(&semaphore) != 0) {
+    perror("vrpn_Semaphore::p: ");
+    return -1;
+  }
+#endif
+  return 0;
+}
+
+// 0 if it can't get the resource, 1 if it can
+// -1 if fail
+int vrpn_Semaphore::condP() {
+  int iRetVal=1;
+#ifdef sgi
+  if (fUsingLock) {
+    // don't spin at all
+    iRetVal = uscsetlock(l, 0);
+    if (iRetVal<=0) {
+      perror("vrpn_Semaphore::condP: uscsetlock:");
+      return -1;
+    }
+  } else {
+    iRetVal = uscpsema(ps);
+    if (iRetVal<=0) {
+      perror("vrpn_Semaphore::condP: uscpsema:");
+      return -1;
+    }
+  }
+#elif defined(_WIN32)
+  switch (WaitForSingleObject(hSemaphore, 0)) {
+  case WAIT_OBJECT_0:
+    // got the resource
+    break;
+  case WAIT_TIMEOUT:
+    // resource not free
+    iRetVal=0;
+    break;
+  case WAIT_ABANDONED:
+    ALL_ASSERT(0,"vrpn_Semaphore::condP: thread holding resource died");
+    return -1;
+    break;
+  case WAIT_FAILED:
+    // get error info from windows (from FormatMessage help page)
+    LPVOID lpMsgBuf;
+    
+    FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+		   FORMAT_MESSAGE_FROM_SYSTEM,
+		   NULL,    GetLastError(),
+		   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), 
+		   // Default language
+		   (LPTSTR) &lpMsgBuf,    0,    NULL );
+    fprintf(stderr, "Semaphore::condP: error waiting for resource, "
+      "WIN32 WaitForSingleObject call caused the following error: %s", (LPTSTR) lpMsgBuf);
+    // Free the buffer.
+    LocalFree( lpMsgBuf );
+    return -1;
+    break;
+  default:
+    ALL_ASSERT(0,"vrpn_Semaphore::p: unknown return code");
+    return -1;
+  }
+#else
+  // Posix by default
+  iRetVal = sem_trywait(&semaphore);
+  if (iRetVal == 0) {  iRetVal = 1;
+  } else if (iRetVal == EAGAIN) { iRetVal = 0;
+  } else {
+    perror("vrpn_Semaphore::condP: ");
+    iRetVal = -1;
+  }
+#endif
+  return iRetVal;
+}
+
+int vrpn_Semaphore::numResources() {
+  return cResources;
+}
+
+// static var definition
+#ifdef sgi
+usptr_t *vrpn_Semaphore::ppaArena = NULL;
+
+// for umask stuff
+#include <sys/types.h>
+#include <sys/stat.h>
+
+void vrpn_Semaphore::allocArena() {
+  // /dev/zero is a special file which can only be shared between
+  // processes/threads which share file descriptors.
+  // It never shows up in the file system.
+  if ((ppaArena = usinit("/dev/zero"))==NULL) {
+    perror("vrpn_Thread::allocArena: usinit:");
+  }
+}
+#endif
+
+vrpn_Thread::vrpn_Thread(void (*pfThread)(void *pvThreadData), 
+	       const vrpn_ThreadData& td) :
+  pfThread(pfThread), td(td), ulProcID(0) 
+{}
+
+int vrpn_Thread::go() {
+  if (ulProcID) {
+    fprintf(stderr, "vrpn_Thread::go: already running (pid=%d)\n", ulProcID);
+    return -1;
+  }
+#ifdef sgi
+  if ((ulProcID=sproc( &threadFuncShell, PR_SALL, (void *)this ))==
+      ((unsigned long)-1)) {
+    perror("vrpn_Thread::go: sproc");
+    return -1;
+  }
+// Threads not defined for the CYGWIN environment yet...
+#elif defined(_WIN32) && !defined(__CYGWIN__)
+  // pass in func, let it pick stack size, and arg to pass to thread
+  if ((ulProcID=_beginthread( &threadFuncShell, 0, (void *)this )) ==
+      ((unsigned long)-1)) {
+    perror("vrpn_Thread::go: _beginthread");
+    return -1;
+  }
+#else
+  // Pthreads by default
+  if (pthread_create(&ulProcID, NULL, &threadFuncShellPosix, (void*)this) != 0) {
+    perror("vrpn_Thread::go:pthread_create: ");
+    return -1;
+  }
+#endif
+  return 0;
+}
+
+int vrpn_Thread::kill() {
+  // kill the os thread
+  if (ulProcID>0) {
+#ifdef sgi
+    if (::kill( (long) ulProcID, SIGKILL)<0) {
+      perror("vrpn_Thread::kill: kill:");
+      return -1;
+    }
+#elif defined(_WIN32)
+    // Return value of -1 passed to TerminateThread causes a warning.
+    if (!TerminateThread( (HANDLE) ulProcID, 1 )) {
+      fprintf(stderr, "vrpn_Thread::kill: problem with terminateThread call.\n");
+    }
+#else
+    // Posix by default
+    if (pthread_kill(ulProcID, SIGKILL) != 0) {
+      perror("vrpn_Thread::kill:pthread_kill: ");
+      return -1;
+    }
+#endif
+  } else {
+    fprintf(stderr, "vrpn_Thread::kill: thread is not currently alive.\n");
+    return -1;
+  }
+  ulProcID = 0;
+  return 0;
+}
+
+bool vrpn_Thread::running() {
+  return ulProcID!=0;
+}
+
+unsigned long vrpn_Thread::pid() {
+  return ulProcID;
+}
+
+bool vrpn_Thread::available() {
+#ifdef vrpn_THREADS_AVAILABLE
+  return true;
+#else
+  return false;
+#endif
+}
+
+void vrpn_Thread::userData( void *pvNewUserData ) {
+  td.pvUD = pvNewUserData;
+}
+
+void *vrpn_Thread::userData() {
+  return td.pvUD;
+}
+
+void vrpn_Thread::threadFuncShell( void *pvThread ) {
+  vrpn_Thread *pth = (vrpn_Thread *)pvThread;
+  pth->pfThread( &pth->td );
+  // thread has stopped running
+  pth->ulProcID = 0;
+}
+
+// This is a Posix-compatible function prototype that
+// just calls the other function.
+void *vrpn_Thread::threadFuncShellPosix( void *pvThread ) {
+  threadFuncShell(pvThread);
+  return NULL;
+}
+
+
+vrpn_Thread::~vrpn_Thread() {
+  if (running()) {
+    kill();
+  }
+}
+
+unsigned vrpn_Thread::number_of_processors() {
+#ifdef _WIN32
+  // Copy the hardware information to the SYSTEM_INFO structure. 
+  SYSTEM_INFO siSysInfo;
+  GetSystemInfo(&siSysInfo); 
+  return siSysInfo.dwNumberOfProcessors;
+#elif linux
+  // For Linux, we look at the /proc/cpuinfo file and count up the number
+  // of "processor	:" entries (tab between processor and colon) in
+  // the file to find out how many we have.
+  FILE *f = fopen("/proc/cpuinfo", "r");
+  int count = 0;
+  if (f == NULL) {
+    perror("vrpn_Thread::number_of_processors:fopen: ");
+    return 1;
+  }
+
+  char line[512];
+  while (fgets(line, sizeof(line), f) != NULL) {
+    if (strncmp(line, "processor\t:", strlen("processor\t:")) == 0) {
+      count++;
+    }
+  }
+
+  fclose(f);
+  if (count == 0) {
+    fprintf(stderr, "vrpn_Thread::number_of_processors: Found zero, returning 1\n");
+    count = 1;
+  }
+  return count;
+
+#else
+  fprintf(stderr, "vrpn_Thread::number_of_processors: Not yet implemented on this architecture.\n");
+  return 1;
+#endif
+}

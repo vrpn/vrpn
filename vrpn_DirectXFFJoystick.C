@@ -176,7 +176,7 @@ HRESULT vrpn_DirectXFFJoystick::InitDirectJoystick( void )
     // Set the cooperative level to let DInput know how this device should
     // interact with the system and with other DInput applications.
     // Exclusive access is required in order to perform force feedback.
-    // Exclusive access is also required to keep other applications (live VMD)
+    // Exclusive access is also required to keep other applications (like VMD)
     // from opening the same joystick, so we'll use it all the time.
     long access_type = DISCL_EXCLUSIVE | DISCL_BACKGROUND;
     if( FAILED( hr = _Joystick->SetCooperativeLevel( _hWnd, access_type) ) ) {
