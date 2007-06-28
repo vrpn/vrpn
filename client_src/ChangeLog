@@ -1,3 +1,7 @@
+2007-06-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Added linking with pthreads because of vrpn_Thread class.
+
 2007-06-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
         * Makefile : Adding patch submitted by Patrick Hartling from

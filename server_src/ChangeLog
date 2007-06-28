@@ -1,3 +1,8 @@
+2007-06-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Added linking with pthread library because of
+		vrpn_Thread (defined in vrpn_Shared.h).
+
 2007-06-25  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Generic_server_object.C : Adding new devices from

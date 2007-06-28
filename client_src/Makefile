@@ -59,7 +59,7 @@ ifdef PBASE_ROOT
 endif
 
 CC := g++
-ARCH_LIBS := -lquat -lm
+ARCH_LIBS := -lpthread -lquat -lm
 
 ifeq ($(HW_OS),pc_linux)
   CC := g++

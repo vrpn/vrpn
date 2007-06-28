@@ -133,7 +133,7 @@ LIB_DIR := ../$(OBJ_DIR)
 
 CFLAGS = -g -I./ -I../ -I../../quat
 LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX)
-VRPN_LIBS = -lvrpnserver -lvrpnatmel
+VRPN_LIBS = -lvrpnserver -lvrpnatmel -lpthread
 
 # Uncomment the following section and point them at the
 # currect diretories to compile with HDAPI under Cygwin.
