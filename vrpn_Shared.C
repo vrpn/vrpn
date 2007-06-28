@@ -1140,6 +1140,10 @@ static int __iTrash = vrpn_gettimeofday(&__tv, (struct timezone *)NULL);
 
 #include <stdio.h>
 #include <string.h>
+#ifndef _WIN32
+#include <errno.h>
+#include <signal.h>
+#endif
 
 #define ALL_ASSERT(exp, msg) if(!(exp)){ fprintf(stderr, "\nAssertion failed! \n %s (%s, %s)\n", msg, __FILE__, __LINE__); exit(-1);}
 
