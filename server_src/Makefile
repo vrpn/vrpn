@@ -78,7 +78,7 @@ ifeq ($(HW_OS),powerpc_aix)
 endif
 
 ifeq ($(HW_OS),universal_macosx)
-	CC := gcc -arch ppc -arch i386 -isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4
+	CC := g++ -arch ppc -arch i386 -isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4
 	RANLIB := :
 	AR := libtool -static -o
 endif
