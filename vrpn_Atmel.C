@@ -22,14 +22,11 @@
 
 #if !defined(_WIN32)
 #include <unistd.h>
+#include <termios.h>
 #endif
 
 #include <string>
 #include <string.h>
-#if defined(linux) || defined(sgi)
-#include <unistd.h>
-#include <termios.h>
-#endif
 
 /***************************************************************************************************/
 /***************************************************************************************************/
