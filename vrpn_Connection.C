@@ -177,7 +177,7 @@ int gethostname (char *, int);
 // proposed strategy handles both partial major version compatibility as well
 // as accidental partial minor version incompatibility.
 //
-const char * vrpn_MAGIC = (const char *) "vrpn: ver. 07.09";
+const char * vrpn_MAGIC = (const char *) "vrpn: ver. 07.10";
 const char * vrpn_FILE_MAGIC = (const char *) "vrpn: ver. 04.00";
 const int vrpn_MAGICLEN = 16;  // Must be a multiple of vrpn_ALIGN bytes!
 
@@ -2763,6 +2763,7 @@ int vrpn_Endpoint::mainloop (timeval * timeout,
   fd_set readfds, exceptfds;
   int tcp_messages_read;
   int udp_messages_read;
+  int fd_max = d_tcpSocket;
 
   switch (status) {
 
@@ -2782,7 +2783,6 @@ int vrpn_Endpoint::mainloop (timeval * timeout,
 
       FD_SET(d_tcpSocket, &readfds);
       FD_SET(d_tcpSocket, &exceptfds);
-      int fd_max = d_tcpSocket;
 
       if (d_udpInboundSocket != -1) {
         FD_SET(d_udpInboundSocket, &readfds);

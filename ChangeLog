@@ -1,5 +1,10 @@
 2007-07-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Connection.C : Fixed bug in the recent patch.
+		Updated version number.
+
+2007-07-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Connection.C : Applied patch from Mike Weiblen that
 		doesn't restrict the number of file descriptors to
 		32, but rather uses as many as are needed based
