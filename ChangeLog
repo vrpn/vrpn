@@ -1,3 +1,13 @@
+2007-07-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Applied patch from Mike Weiblen that
+		doesn't restrict the number of file descriptors to
+		32, but rather uses as many as are needed based
+		on the actual file descriptor being used.
+	* vrpn_Joylin.C : Same.
+	* vrpn_Mouse.C : Fix from Mike Weiblen to code cleanup that
+		I did that broke the Mouse class.
+
 2007-06-30  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Atmel.C : Making it also compile on Mac Universal.

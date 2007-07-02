@@ -15,11 +15,10 @@
 #include <sys/time.h>
 #endif
 
+#include "vrpn_Mouse.h"
 #if defined(linux) && defined(VRPN_USE_GPM_MOUSE)
 #include <gpm.h>
 #endif
-
-#include "vrpn_Mouse.h"
 
 ///////////////////////////////////////////////////////////////////////////
 

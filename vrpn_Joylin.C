@@ -69,7 +69,7 @@ void vrpn_Joylin::mainloop(void) {
 
   FD_ZERO(&fdset);                      /* clear fdset              */
   FD_SET(fd, &fdset);                   /* include fd in fdset      */ 
-  select(32, &fdset, NULL, NULL, &zerotime);
+  select(fd+1, &fdset, NULL, NULL, &zerotime);
     if (FD_ISSET(fd, &fdset)){            
       if (read(fd, &js, sizeof(struct js_event)) != sizeof(struct js_event)) {
 		  send_text_message("Error reading from joystick", vrpn_Analog::timestamp, vrpn_TEXT_ERROR);

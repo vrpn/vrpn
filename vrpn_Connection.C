@@ -1922,7 +1922,7 @@ int vrpn_noint_block_read_timeout(int infile, char buffer[],
 		FD_SET(infile, &readfds);
 		FD_ZERO(&exceptfds);
 		FD_SET(infile, &exceptfds);
-		sel_ret = vrpn_noint_select(32, &readfds, NULL, &exceptfds,
+		sel_ret = vrpn_noint_select(infile+1, &readfds, NULL, &exceptfds,
 					   timeout2ptr);
 		if (sel_ret == -1) {	/* Some sort of error on select() */
 			return -1;
@@ -2310,7 +2310,7 @@ int vrpn_poll_for_accept(SOCKET listen_sock, SOCKET *accept_sock, double timeout
 	FD_SET(listen_sock, &rfds);	/* Check for read (connect) */
 	t.tv_sec = (long)(timeout);
 	t.tv_usec = (long)( (timeout - t.tv_sec) * 1000000L );
-	if (vrpn_noint_select(32, &rfds, NULL, NULL, &t) == -1) {
+	if (vrpn_noint_select(listen_sock+1, &rfds, NULL, NULL, &t) == -1) {
 	  perror("vrpn_poll_for_accept: select() failed");
 	  return -1;
 	}
@@ -2780,16 +2780,19 @@ int vrpn_Endpoint::mainloop (timeval * timeout,
 
       // Read incoming messages from both the UDP and TCP channels
 
+      FD_SET(d_tcpSocket, &readfds);
+      FD_SET(d_tcpSocket, &exceptfds);
+      int fd_max = d_tcpSocket;
+
       if (d_udpInboundSocket != -1) {
         FD_SET(d_udpInboundSocket, &readfds);
         FD_SET(d_udpInboundSocket, &exceptfds);
+        if( d_udpInboundSocket > d_tcpSocket ) fd_max = d_udpInboundSocket;
       }
-      FD_SET(d_tcpSocket, &readfds);
-      FD_SET(d_tcpSocket, &exceptfds);
 
       // Select to see if ready to hear from other side, or exception
     
-      if (vrpn_noint_select(32, &readfds, NULL, &exceptfds, timeout) == -1) {
+      if (vrpn_noint_select(fd_max+1, &readfds, NULL, &exceptfds, timeout) == -1) {
           fprintf(stderr, "vrpn_Endpoint::mainloop: select failed.\n");
 #ifndef _WIN32_WCE
           fprintf(stderr, "  Errno (%d):  %s.\n", errno, strerror(errno));
@@ -3095,7 +3098,7 @@ int vrpn_Endpoint::send_pending_reports (void) {
   FD_ZERO(&f);
   FD_SET(d_tcpSocket, &f);
 
-  connection = vrpn_noint_select(32, NULL, NULL, &f, &timeout);
+  connection = vrpn_noint_select(d_tcpSocket+1, NULL, NULL, &f, &timeout);
   if (connection) {
     fprintf(stderr, "vrpn_Endpoint::send_pending_reports():  "
                     "select() failed.\n");
@@ -3254,7 +3257,7 @@ int vrpn_Endpoint::handle_tcp_messages
     FD_ZERO(&exceptfds);
     FD_SET(d_tcpSocket, &readfds);     /* Check for read */
     FD_SET(d_tcpSocket, &exceptfds);   /* Check for exceptions */
-    sel_ret = vrpn_noint_select(32, &readfds, NULL, &exceptfds, &localTimeout);
+    sel_ret = vrpn_noint_select(d_tcpSocket+1, &readfds, NULL, &exceptfds, &localTimeout);
     if (sel_ret == -1) {
         fprintf(stderr, "vrpn_Endpoint::handle_tcp_messages:  "
                         "select failed");
@@ -3337,7 +3340,7 @@ int vrpn_Endpoint::handle_udp_messages
     FD_ZERO(&exceptfds);
     FD_SET(d_udpInboundSocket, &readfds);     /* Check for read */
     FD_SET(d_udpInboundSocket, &exceptfds);   /* Check for exceptions */
-    sel_ret = vrpn_noint_select(32, &readfds, NULL, &exceptfds, &localTimeout);
+    sel_ret = vrpn_noint_select(d_udpInboundSocket+1, &readfds, NULL, &exceptfds, &localTimeout);
     if (sel_ret == -1) {
           perror("vrpn_Endpoint::handle_udp_messages: select failed()");
           return(-1);
@@ -3700,7 +3703,7 @@ void vrpn_Endpoint::poll_for_cookie (const timeval * pTimeout) {
 
   // Select to see if ready to hear from other side, or exception
 
-  if (vrpn_noint_select(32, &readfds, NULL ,&exceptfds, &timeout) == -1) {
+  if (vrpn_noint_select(d_tcpSocket+1, &readfds, NULL ,&exceptfds, &timeout) == -1) {
       fprintf(stderr, "vrpn_Endpoint::poll_for_cookie(): select failed.\n");
       status = BROKEN;
       return;
@@ -4354,7 +4357,7 @@ int flush_udp_socket (int fd) {
     FD_ZERO(&exceptfds);
     FD_SET(fd, &readfds);     /* Check for read */
     FD_SET(fd, &exceptfds);   /* Check for exceptions */
-    sel_ret = vrpn_noint_select(32, &readfds, NULL, &exceptfds, &localTimeout);
+    sel_ret = vrpn_noint_select(fd+1, &readfds, NULL, &exceptfds, &localTimeout);
     if (sel_ret == -1) {
         fprintf(stderr, "flush_udp_socket:  select failed().");
         return -1;
@@ -4810,7 +4813,7 @@ void vrpn_Connection::server_check_for_incoming_connections
   fd_set f;
   FD_ZERO (&f);
   FD_SET(listen_udp_sock, &f);
-  request = vrpn_noint_select(32, &f, NULL, NULL, &timeout);
+  request = vrpn_noint_select(listen_udp_sock+1, &f, NULL, NULL, &timeout);
   if (request == -1 ) {        // Error in the select()
     fprintf(stderr, "vrpn_Connection::server_check_for_incoming_connections():  "
                     "select failed.\n");
