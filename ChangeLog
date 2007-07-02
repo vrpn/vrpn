@@ -1,4 +1,9 @@
 2007-07-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
+	* vrpn_Connection.C : White space, comment, and error message
+		editing.
+	* vrpn_Log.h : Same.
+
+2007-07-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Connection.C : Fixed bug in the recent patch.
 		Updated version number.

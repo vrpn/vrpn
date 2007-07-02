@@ -524,11 +524,11 @@ vrpn_Log::~vrpn_Log (void) {
 int vrpn_Log::open (void) {
 
   if (!d_logFileName) {
-    fprintf(stderr, "vrpn_Log::open_log:  Log file has no name.\n");
+    fprintf(stderr, "vrpn_Log::open:  Log file has no name.\n");
     return -1;
   }
   if (d_file) {
-    fprintf(stderr, "vrpn_Log::open_log:  Log file is already open.\n");
+    fprintf(stderr, "vrpn_Log::open:  Log file is already open.\n");
     return 0;  // not a catastrophic failure
   }
 
@@ -536,14 +536,14 @@ int vrpn_Log::open (void) {
   // so, we don't want to overwrite it.
   d_file = fopen(d_logFileName, "r");
   if (d_file) {
-    fprintf(stderr, "vrpn_Log::open_log:  "
+    fprintf(stderr, "vrpn_Log::open:  "
                     "Log file \"%s\" already exists.\n", d_logFileName);
     fclose(d_file);
     d_file = NULL;
   } else {
     d_file = fopen(d_logFileName, "wb");
     if( d_file == NULL ) { // unable to open the file
-      fprintf(stderr, "vrpn_Log::open_log:  "
+      fprintf(stderr, "vrpn_Log::open:  "
               "Couldn't open log file \"%s\":  ", d_logFileName);
       perror( NULL /* no additional string */ );
     }
@@ -560,7 +560,7 @@ int vrpn_Log::open (void) {
     } else {
       d_file = fopen("/tmp/vrpn_emergency_log", "wb");
       if( d_file == NULL ) {
-        fprintf(stderr, "vrpn_Log::open_log:  "
+        fprintf(stderr, "vrpn_Log::open:  "
                 "Couldn't open emergency log file "
                 "\"/tmp/vrpn_emergency_log\":  ");
         perror( NULL /* no additional string */ );
@@ -582,7 +582,7 @@ int vrpn_Log::close (void) {
   final_retval = saveLogSoFar();
 
   if ( fclose(d_file)) {
-    fprintf(stderr, "vrpn_Connection::close_log:  "
+    fprintf(stderr, "vrpn_Connection::close:  "
                     "close of log file failed!\n");
     final_retval = -1;
   }
@@ -857,7 +857,7 @@ int vrpn_Log::addFilter (vrpn_LOGFILTER filter, void * userdata) {
 
   newEntry = new vrpnLogFilterEntry;
   if (!newEntry) {
-    fprintf(stderr, "vrpn_Log::register_log_filter:  Out of memory.\n");
+    fprintf(stderr, "vrpn_Log::addFilter:  Out of memory.\n");
     return -1;
   }
 
@@ -873,9 +873,6 @@ timeval vrpn_Log::lastLogTime ()
 {
   return d_lastLogTime;
 }
-
-
-
 
 int vrpn_Log::checkFilters (vrpn_int32 payloadLen, struct timeval time,
                             vrpn_int32 type, vrpn_int32 sender,
@@ -2672,12 +2669,10 @@ vrpn_Endpoint::~vrpn_Endpoint (void) {
   // Delete the log, if any
   if (d_inLog) {
     // close() is called by destructor IFF necessary
-    //d_inLog->close();
     delete d_inLog;
   }
   if (d_outLog) {
     // close() is called by destructor IFF necessary
-    //d_outLog->close();
     delete d_outLog;
   }
 
@@ -3910,7 +3905,6 @@ int vrpn_Endpoint::getOneTCPMessage (int fd, char * buf, int buflen) {
     }
   }
 
-
   // Figure out how long the message body is, and how long it
   // is including any padding to make sure that it is a
   // multiple of four bytes long.
@@ -3997,11 +3991,6 @@ int vrpn_Endpoint::getOneUDPMessage (char * inbuf_ptr, int inbuf_len) {
     fprintf(stderr, "Couldn't log incoming message.!\n");
     return -1;
   }
-
-#if 0
-        cerr << " local time is " << time.tv_sec
-             << " " << time.tv_usec << endl;
-#endif
 
   retval = dispatch(type, sender, time, payload_len, inbuf_ptr);
   if (retval) {
@@ -4501,7 +4490,7 @@ int vrpn_Connection::handle_log_message (void * userdata,
   //  the log message contains "" (an empty string) if
   //  there is no desire to log that file.
   endpoint->setLogNames( inNameLen == 0 ? NULL : *bp, 
-						 outNameLen == 0 ? NULL : *bp + inNameLen + 1);
+			 outNameLen == 0 ? NULL : *bp + inNameLen + 1);
   if( inNameLen > 0 )
 	  retval = endpoint->d_inLog->open();
   if( outNameLen > 0 )

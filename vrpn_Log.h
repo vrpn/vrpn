@@ -5,11 +5,6 @@
  * @class vrpn_Log
  * Logs a VRPN stream.
  * Used by vrpn_Endpoint.
- *
- * TODO:  progressive write - currently we wait until the log is closed,
- * typically in the Endpoint's destructor, before writing any to disk.
- * This requires maintaining a prohibitively large in-core data structure.
- * We ought to be able to write it out incrementally.
  */
 
 class VRPN_API vrpn_Log {
