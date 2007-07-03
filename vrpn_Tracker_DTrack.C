@@ -733,7 +733,7 @@ bool vrpn_Tracker_DTrack::dtrack_receive(void)
 			s += 3;
 			
 			for(i=0; i<act_num_body; i++){  // disable all existing data
-				memset(&act_body[i], 0, sizeof(dtrack_body_type));
+				memset(&act_body[i], 0, sizeof(vrpn_dtrack_body_type));
 				act_body[i].id = i;
 				act_body[i].quality = -1;
 			}
@@ -751,7 +751,7 @@ bool vrpn_Tracker_DTrack::dtrack_receive(void)
 					act_body.resize(id + 1);
 
 					for(j=act_num_body; j<=id; j++){
-						memset(&act_body[j], 0, sizeof(dtrack_body_type));
+						memset(&act_body[j], 0, sizeof(vrpn_dtrack_body_type));
 						act_body[j].id = j;
 						act_body[j].quality = -1;
 					}
@@ -949,7 +949,7 @@ bool vrpn_Tracker_DTrack::dtrack_receive(void)
 			act_body.resize(n);
 
 			for(j=act_num_body; j<n; j++){
-				memset(&act_body[j], 0, sizeof(dtrack_body_type));
+				memset(&act_body[j], 0, sizeof(vrpn_dtrack_body_type));
 				act_body[j].id = j;
 				act_body[j].quality = -1;
 			}

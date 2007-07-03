@@ -34,7 +34,7 @@ typedef struct{
 	
 	float loc[3];         // location (in mm)
 	float rot[9];         // rotation matrix (column-wise)
-} dtrack_body_type;
+} vrpn_dtrack_body_type;
 
 // A.R.T. Flystick data (6DOF + buttons):
 //  - currently not tracked bodies are getting a quality of -1
@@ -138,7 +138,7 @@ class VRPN_API vrpn_Tracker_DTrack : public vrpn_Tracker, public vrpn_Button, pu
 	unsigned int act_framecounter;                   // frame counter
 	
 	int act_num_body;                                // number of calibrated standard bodies (as far as known)
-	std::vector<dtrack_body_type> act_body;          // array containing standard body data
+	std::vector<vrpn_dtrack_body_type> act_body;          // array containing standard body data
 	bool act_has_bodycal_format;                     // DTrack sent '6dcal' format
 
 	int act_num_flystick;                            // number of calibrated Flysticks

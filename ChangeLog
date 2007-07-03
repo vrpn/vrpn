@@ -1,5 +1,13 @@
 2007-07-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Tracker_DTrack.C : Changed type of a struct so that it
+		has vrpn_ prepended to the name (don't want anything in
+		the library that can be seen globally to have a name that
+		doesn't start with vrpn_ to avoid name-collisions.
+	* vrpn_Tracker_DTrack.h : Same.
+
+2007-07-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Tracker_DTrack.C : Patch from Kurt Achatz to build for new
 		version of A.R.T. DTrack, which supports the new Flystick2
 		input device.  The patch was necessary to support the new
