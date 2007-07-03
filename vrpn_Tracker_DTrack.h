@@ -1,16 +1,17 @@
-// vrpn_Tracker_DTrack.h
-//
+// vrpn_Tracker_DTrack.h 
+// 
 // Advanced Realtime Tracking GmbH's (http://www.ar-tracking.de) DTrack client
 //
 // developed by David Nahon for Virtools VR Pack (http://www.virtools.com)
-// improved by Advanced Realtime Tracking GmbH (http://www.ar-tracking.de)
+// (07/20/2004) improved by Advanced Realtime Tracking GmbH (http://www.ar-tracking.de)
+// (07/02/2007) upgraded by Advanced Realtime Tracking GmbH to support new devices
 
 #ifndef VRPN_TRACKER_DTRACK_H
 #define VRPN_TRACKER_DTRACK_H
 
 #include <stdlib.h>
 #include <stdio.h>
-
+#include <vector>
 #ifndef _WIN32
 	#include <sys/time.h>
 #endif
@@ -21,30 +22,45 @@
 #include "vrpn_Analog.h"
 
 
-// Globals for storing DTrack data:
+// --------------------------------------------------------------------------
+// Data types:
 
-#define vrpn_DTRACK_MAX_NBODY 20
-#define vrpn_DTRACK_MAX_NFLYSTICK 4
-
+// Standard body data (6DOF):
+//  - currently not tracked bodies are getting a quality of -1
 
 typedef struct{
-	unsigned long id;     // id number
+	int id;               // id number (starting with 0)
+	float quality;        // quality (0 <= qu <= 1, no tracking if -1)
+	
 	float loc[3];         // location (in mm)
 	float rot[9];         // rotation matrix (column-wise)
 } dtrack_body_type;
 
-// DTrack flystick data (6d + buttons):
+// A.R.T. Flystick data (6DOF + buttons):
+//  - currently not tracked bodies are getting a quality of -1
+//  - note the maximum number of buttons and joystick values
+
+#define vrpn_DTRACK_FLYSTICK_MAX_BUTTON    16  // maximum number of buttons
+#define vrpn_DTRACK_FLYSTICK_MAX_JOYSTICK   8  // maximum number of joystick values
 
 typedef struct{
-	unsigned long id;     // id number
+	int id;               // id number (starting with 0)
 	float quality;        // quality (0 <= qu <= 1, no tracking if -1)
-	unsigned long bt;     // pressed buttons (binary coded)
+
+	int num_button;       // number of buttons
+	int button[vrpn_DTRACK_FLYSTICK_MAX_BUTTON];  // button state (1 pressed, 0 not pressed)
+	                                              // (0 front, 1..n-1 right to left)
+	int num_joystick;     // number of joystick values
+	float joystick[vrpn_DTRACK_FLYSTICK_MAX_JOYSTICK];  // joystick value (-1 <= joystick <= 1) 
+	                                                    // (0 horizontal, 1 vertical)
+
 	float loc[3];         // location (in mm)
 	float rot[9];         // rotation matrix (column-wise)
 } dtrack_flystick_type;
 
 
 // --------------------------------------------------------------------------
+// VRPN class:
 
 class VRPN_API vrpn_Tracker_DTrack : public vrpn_Tracker, public vrpn_Button, public vrpn_Analog
 {
@@ -54,15 +70,15 @@ class VRPN_API vrpn_Tracker_DTrack : public vrpn_Tracker, public vrpn_Button, pu
 // Constructor:
 // name (i): device name
 // c (i): vrpn_Connection
-// dtrackPort (i): DTrack udp port
+// dtrackPort (i): DTrack UDP port
 // timeToReachJoy (i): time needed to reach the maximum value of the joystick
-// fixNbody, fixNflystick (i): fixed numbers of DTrack bodies and flysticks (-1 if not wanted)
+// fixNbody, fixNflystick (i): fixed numbers of DTrack bodies and Flysticks (-1 if not wanted)
 // fixId (i): renumbering of targets; must have exact (fixNbody + fixNflystick) elements (NULL if not wanted)
 // actTracing (i): activate trace output
 
 	vrpn_Tracker_DTrack(const char *name, vrpn_Connection *c,
-	                    unsigned short dtrackPort, float timeToReachJoy = 1.f,
-	                    int fixNbody = -1, int fixNflystick = -1, unsigned long* fixId = NULL,
+	                    int dtrackPort, float timeToReachJoy = 0.f,
+	                    int fixNbody = -1, int fixNflystick = -1, int* fixId = NULL,
 	                    bool actTracing = false);
 
 	~vrpn_Tracker_DTrack();
@@ -79,54 +95,65 @@ class VRPN_API vrpn_Tracker_DTrack : public vrpn_Tracker, public vrpn_Button, pu
 	// general:
 	
 	struct timeval tim_first;      // timestamp of first frame
-	struct timeval tim_last;       // timestamp of last frame
+	struct timeval tim_last;       // timestamp of current frame
 	
 	bool tracing;			          // activate debug output
 	unsigned long tracing_frames;  // frame counter for debug output
 
 	// DTrack data:
 
-	int fix_nbody;                 // fixed number of bodies (or -1)
-	int fix_nflystick;             // fixed number of flysticks (or -1)
+	bool use_fix_numbering;        // use fixed numbers of standard bodies and Flysticks
 
-	unsigned long fix_idbody[vrpn_DTRACK_MAX_NBODY + vrpn_DTRACK_MAX_NFLYSTICK];  // fixed vrpn body IDs
-	unsigned long fix_idflystick[vrpn_DTRACK_MAX_NFLYSTICK];                      // fixed vrpn flystick IDs
+	int fix_nbody;                 // fixed number of standard bodies
+	int fix_nflystick;             // fixed number of Flysticks
 
-	int warning_nbodycal;          // already warned cause of missing '6dcal' data
+	std::vector<int> fix_idbody;      // fixed vrpn standard body IDs
+	std::vector<int> fix_idflystick;  // fixed vrpn Flystick IDs
 
-	int max_nbody;                 // max. number of tracked bodies
-	int max_nflystick;             // max. number of tracked flysticks
-
-	dtrack_body_type dtr_body[vrpn_DTRACK_MAX_NBODY];              // temporary
-	dtrack_flystick_type dtr_flystick[vrpn_DTRACK_MAX_NFLYSTICK];  // temporary
+	bool warning_nbodycal;         // already warned cause of missing '6dcal' data
 
 	// preparing data for VRPN:
 	// these functions convert DTrack data to vrpn data
 
-	double joy_x[vrpn_DTRACK_MAX_NFLYSTICK];  // current value of 'joystick' channel (hor)
-	double joy_y[vrpn_DTRACK_MAX_NFLYSTICK];  // current value of 'joystick' channel (ver)
-	double joy_incPerSec;                     // increase of 'joystick' channel (in 1/sec)
+	std::vector<bool> joy_simulate;  // simulate time varying floating values
+	std::vector<float> joy_last;     // current value of 'joystick' channel (hor, ver)
+	float joy_incPerSec;             // increase of 'joystick' channel (in 1/sec)
 	
-	int dtrack2vrpn_body(unsigned long id, char* str_dtrack, unsigned long id_dtrack,
-	                     float* loc, float* rot, struct timeval timestamp);
-	int dtrack2vrpn_flystickbuttons(unsigned long id,  unsigned long id_dtrack,
-	                                unsigned long but, double dt, struct timeval timestamp);
-	double dtrack2vrpn_butToChannel(double curVal,
-                          unsigned char incBut, unsigned char decBut, double dt);
+	int dtrack2vrpn_body(int id, const char* str_dtrack, int id_dtrack,
+	                     const float* loc, const float* rot, struct timeval timestamp);
+	int dtrack2vrpn_flystickbuttons(int id, int id_dtrack,
+	                                int num_but, const int* but, struct timeval timestamp);
+	int dtrack2vrpn_flystickanalogs(int id, int id_dtrack,
+	                                int num_ana, const float* ana, float dt, struct timeval timestamp);
 
 	// communicating with DTrack:
 	// these functions receive and parse data packets from DTrack
 
-	int udpsock;          // socket number for udp
-	char* udpbuf;         // udp buffer
+	void* d_udpsock;                // socket number for UDP
+	int d_udptimeout_us;            // timeout for receiving UDP data
 
-	int dtrack_init(unsigned short dtrack_port);
-	int dtrack_exit(void);
-	int dtrack_receive(unsigned long* framenr,
-		int* nbodycal, int* nbody, dtrack_body_type* body, int max_nbody,
-		int* nflystick, dtrack_flystick_type* flystick, int max_nflystick
-	);
+	int d_udpbufsize;               // size of UDP buffer
+	char* d_udpbuf;                 // UDP buffer
+
+	unsigned int act_framecounter;                   // frame counter
+	
+	int act_num_body;                                // number of calibrated standard bodies (as far as known)
+	std::vector<dtrack_body_type> act_body;          // array containing standard body data
+	bool act_has_bodycal_format;                     // DTrack sent '6dcal' format
+
+	int act_num_flystick;                            // number of calibrated Flysticks
+	std::vector<dtrack_flystick_type> act_flystick;  // array containing Flystick data
+	bool act_has_old_flystick_format;                // DTrack uses old Flystick format
+
+	int d_lasterror;                // last receive error
+	
+	bool dtrack_init(int udpport);
+	bool dtrack_exit(void);
+	
+	bool dtrack_receive(void);
 };
 
 #endif
+
+
 
