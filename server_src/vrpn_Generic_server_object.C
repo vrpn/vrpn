@@ -2423,10 +2423,10 @@ int vrpn_Generic_Server_Object::setup_DTrack (char* &pch, char* line, FILE* conf
 	char *s;
 	char sep[] = " ,\t,\n";
 	int  count = 0;
-	unsigned short dtrackPort;
+	int dtrackPort;
 	float timeToReachJoy;
 	int nob, nof, nidbf;
-	unsigned long idbf[vrpn_DTRACK_MAX_NBODY + vrpn_DTRACK_MAX_NFLYSTICK];
+	int idbf[VRPN_GSO_MAX_TRACKERS];
 	bool actTracing;
 	
 	next();
@@ -2441,7 +2441,7 @@ int vrpn_Generic_Server_Object::setup_DTrack (char* &pch, char* line, FILE* conf
 		str[count] = strtok( NULL, sep );
 	}
 
-	if(count < 3){
+	if(count < 2){
 		fprintf(stderr,"Bad vrpn_Tracker_DTrack line: %s\n",line);
 		return -1;
 	}
@@ -2454,18 +2454,25 @@ int vrpn_Generic_Server_Object::setup_DTrack (char* &pch, char* line, FILE* conf
 	}
 	
 	s2 = str[0];
-	dtrackPort = (unsigned short )strtol(str[1], &s, 0);
-	timeToReachJoy = (float )strtod(str[2], &s);
+	dtrackPort = (int )strtol(str[1], &s, 0);
 	
 	// tracing (optional; always last argument):
 	
 	actTracing = false;
 	
-	if(count > 3){  
+	if(count > 2){  
 		if(!strcmp(str[count-1], "-")){
 			actTracing = true;
 			count--;
 		}
+	}
+
+	// time needed to reach the maximum value of the joystick (optional):
+
+	timeToReachJoy = 0;
+
+	if(count > 2){
+		timeToReachJoy = (float )strtod(str[2], &s);
 	}
 
 	// number of bodies and flysticks (optional):
@@ -2478,8 +2485,8 @@ int vrpn_Generic_Server_Object::setup_DTrack (char* &pch, char* line, FILE* conf
 			return -1;
 		}
 
-		nob = strtol(str[3], &s, 0);
-		nof = strtol(str[4], &s, 0);
+		nob = (int )strtol(str[3], &s, 0);
+		nof = (int )strtol(str[4], &s, 0);
 	}
 
 	// renumbering of targets (optional):
@@ -2493,14 +2500,14 @@ int vrpn_Generic_Server_Object::setup_DTrack (char* &pch, char* line, FILE* conf
 		}
 
 		for(int i=0; i<nob+nof; i++){
-			idbf[i] = strtol(str[5+i], &s, 0);
+			idbf[i] = (int )strtol(str[5+i], &s, 0);
 			nidbf++;
 		}
 	}
 
 	// Open vrpn_Tracker_DTrack:
 
-	unsigned long* pidbf = NULL;
+	int* pidbf = NULL;
 
 	if(nidbf > 0){
 		pidbf = idbf;

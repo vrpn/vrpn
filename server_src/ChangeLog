@@ -1,3 +1,18 @@
+2007-07-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * vrpn.cfg : Patch from Kurt Achatz to build for new
+                version of A.R.T. DTrack, which supports the new Flystick2
+                input device.  The patch was necessary to support the new
+                (additional) DTrack output format called '6df2'; the driver
+                still understands the former output format '6df', so that
+                it can work with any existing DTrack installation too.
+                Note that there was a change how buttons of a 'Flystick'
+                device are sorted; this was done to fit DTrack's standards
+                described in A.R.T. documentation. For backward
+                compatibility the driver uses the old sorting when using
+                the old output format '6df'.
+        * vrpn_Generic_server_object.C : Same.
+
 2007-06-30  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Fixing Mac Universal build to use g++ not gcc.
