@@ -9,8 +9,6 @@
 #include "vrpn_Analog.h"
 #include "vrpn_Button.h"
 
-#include <vector>
-
 // Helper classes
 class VRPN_API dcblocker {
 public: // ctors, dtor
@@ -26,8 +24,9 @@ public: // ctors, dtor
 public: // methods
     void swap (dcblocker& o) throw ()
     {
-        std::swap (in_, o.in_);
-        std::swap (out_, o.out_);
+        double t;
+        t = in_;  in_ = o.in_;    o.in_ = t;
+        t = out_; out_ = o.out_;  o.out_ = t;
     }
     dcblocker& operator= (dcblocker const& o)
     {
@@ -112,7 +111,7 @@ public: // construction/destruction
             const char* port, 
             int baud_rate);
     // dtor
-    ~vrpn_inertiamouse () {};
+    ~vrpn_inertiamouse () { if (vel_) { delete [] vel_;} };
 
 public: // virtual methods
 
@@ -127,7 +126,7 @@ protected:
     int numchannels_;		//< How many analog channels to open
     
     int expected_chars_;	//< How many characters to expect in the report
-    std::vector<unsigned char> buffer_;	//< Buffer of characters in report
+    unsigned char buffer_[512];	//< Buffer of characters in report
     int bufcount_;		//< How many characters we have so far
     
     int null_radius_;		//< The range over which no motion should be 
@@ -135,7 +134,7 @@ protected:
     
     struct timeval timestamp;	//< Time of the last report from the device
 
-    std::vector<double> vel_; // velocity update
+    double *vel_;               // velocity update
 
     dcblocker dcb_[Channels]; // dc blockers for all Channels
     lowpass lp_[Channels];    // lowpass filters for all Channels

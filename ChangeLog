@@ -1,4 +1,15 @@
+2007-07-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_inertiamouse.h : Removing iostream and std::vector class
+		from the code.  It turns out that the standard template
+		libraries don't work across all platforms VRPN is built
+		upon, which keeps folks from using (linking to) it if it
+		has these references.  Totally horrible, but true; someone
+		had trouble linking as soon as this was added.
+	* vrpn_inertiamouse.C : Same.
+
 2007-07-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Connection.C : White space, comment, and error message
 		editing.
 	* vrpn_Log.h : Same.

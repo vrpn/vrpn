@@ -6,8 +6,7 @@
 #include "vrpn_Shared.h"
 #include "vrpn_Serial.h"
 
-#include <cmath>
-#include <iostream> // std::cerr
+#include <math.h>
 
 #undef VERBOSE
 
@@ -31,15 +30,18 @@ vrpn_inertiamouse::vrpn_inertiamouse (const char* name,
     , numbuttons_ (Buttons)
     , numchannels_ (Channels)
     , null_radius_ (0)
-    , buffer_ (512)
     , bufcount_ (0)
     , expected_chars_ (1)
-    , vel_ (numchannels_)
     , dcb_ ()
     , lp_ ()
 {
     vrpn_Button::num_buttons = numbuttons_;
     vrpn_Analog::num_channel = numchannels_;
+
+    vel_ = new double[numchannels_];
+    if (vel_ == NULL) {
+      fprintf(stderr,"vrpn_inertiamouse::vrpn_inertiamouse(): Out of memory\n");
+    }
     
     clear_values();
     
@@ -106,10 +108,7 @@ int vrpn_inertiamouse::get_report(void)
             break;
                 
         default:
-            std::cerr << "vrpn_inertiamouse:"
-                      << " Unknown command ("
-                      << buffer_[0] 
-                      << "), resetting\n";
+            fprintf(stderr, "vrpn_inertiamouse: Unknown command (%c), resetting\n", buffer_[0]);
             status_ = STATUS_RESETTING;
             return 0;
         }
@@ -158,8 +157,6 @@ int vrpn_inertiamouse::get_report(void)
 
             int chnl = (packet >> 10) & 7;
             int acc = packet & 0x3ff; // 10 bits
-
-//            std::cout << chnl <<' '<< acc <<'\n';
             
             // normalize to interval [-1,1]
             // just a guess, block dc later
@@ -190,12 +187,6 @@ int vrpn_inertiamouse::get_report(void)
 //                 if (fabs (vel_[chnl]) > 1.0)
 //                     vel_[chnl] *= 1.0 / fabs (vel_[chnl]);
 
-                  std::cout << chnl <<' '
-                            << acc <<' '
-                            << normval <<' '
-                            << vel_[chnl] <<' '
-                            << pos <<'\n';  
-               
                 channel[chnl] = pos;
 //                channel[chnl] *= 0.95;
             } else {
@@ -210,10 +201,7 @@ int vrpn_inertiamouse::get_report(void)
         buttons[1] = ((buffer_[1] & 2) != 0);
         break;
     default:
-	std::cerr << "vrpn_inertiamouse:"
-                  << " Unknown [internal] command ("
-                  << buffer_[0] 
-                  <<"), resetting\n";
+	fprintf(stderr, "vrpn_inertiamouse: Unknown [internal] command (%c), resetting\n", buffer_[0]);
 	status_ = STATUS_RESETTING;
 	return 0;
    }
@@ -267,8 +255,7 @@ void vrpn_inertiamouse::mainloop()
         break;
 
     default:
-        std::cerr << "vrpn_inertiamouse:"
-                  << " Unknown mode (internal error)\n";
+        fprintf(stderr, "vrpn_inertiamouse: Unknown mode (internal error)\n");
 	break;
     }
 }
