@@ -1,5 +1,12 @@
 2007-07-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_DirectXRumblePad.C : This code is broken (Chris
+		V. verified this).  The constructor now reports that
+		it is broken.  Once we get a bug fix, we can let the
+		constructor construct one again.
+
+2007-07-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Tracker_DTrack.C : Changed type of a struct so that it
 		has vrpn_ prepended to the name (don't want anything in
 		the library that can be seen globally to have a name that

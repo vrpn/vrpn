@@ -38,6 +38,16 @@ vrpn_DirectXRumblePad::vrpn_DirectXRumblePad(const char *name, vrpn_Connection *
 	vrpn_Button::num_buttons = 128;
         vrpn_Analog_Output::o_num_channel = 1;
 
+        // XXX This code got busted by Russ Taylor when he tried to convert it into
+        // Visual Studio 6 compilable code.  Non-static things became static and other
+        // badness.  Tell that this doesn't work until we hear a fix from Chris V.
+        struct timeval now;
+        vrpn_gettimeofday(&now, NULL);
+        send_text_message("vrpn_DirectXRumblePad::vrpn_DirectXRumblePad(): Broken, waiting for bug fixes", now, vrpn_TEXT_ERROR);
+        fprintf(stderr, "vrpn_DirectXRumblePad::vrpn_DirectXRumblePad(): Broken, waiting for bug fixes");
+        d_connection = NULL;
+        return;
+
 	// Register a handler for the request channel change message
 	if (register_autodeleted_handler(request_m_id,
 		handle_request_message, this, d_sender_id)) {
