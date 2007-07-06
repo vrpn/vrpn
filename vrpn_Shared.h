@@ -291,7 +291,11 @@ public:
   
   // thread info: check if running, get proc id
   bool running();
+#if defined(sgi) || defined(_WIN32)
   unsigned long pid();
+#else
+  pthread_t pid();
+#endif
 
   // run-time user function to test it threads are available
   // (same value as #ifdef THREADS_AVAILABLE)
@@ -320,7 +324,11 @@ protected:
   static void *threadFuncShellPosix(void *pvThread);
 
   // the process id
-  unsigned long ulProcID;
+#if defined(sgi) || defined(_WIN32)
+  unsigned long threadID;
+#else
+  pthread_t threadID;
+#endif
 };
 
 #endif  // VRPN_SHARED_H

@@ -1519,16 +1519,18 @@ void vrpn_Semaphore::allocArena() {
 
 vrpn_Thread::vrpn_Thread(void (*pfThread)(void *pvThreadData), 
 	       const vrpn_ThreadData& td) :
-  pfThread(pfThread), td(td), ulProcID(0) 
+  pfThread(pfThread), td(td),
+  threadID(0)
 {}
 
 int vrpn_Thread::go() {
-  if (ulProcID) {
-    fprintf(stderr, "vrpn_Thread::go: already running (pid=%d)\n", ulProcID);
+  if (threadID != 0) {
+    fprintf(stderr, "vrpn_Thread::go: already running\n");
     return -1;
   }
+
 #ifdef sgi
-  if ((ulProcID=sproc( &threadFuncShell, PR_SALL, (void *)this ))==
+  if ((threadID=sproc( &threadFuncShell, PR_SALL, (void *)this ))==
       ((unsigned long)-1)) {
     perror("vrpn_Thread::go: sproc");
     return -1;
@@ -1536,14 +1538,14 @@ int vrpn_Thread::go() {
 // Threads not defined for the CYGWIN environment yet...
 #elif defined(_WIN32) && !defined(__CYGWIN__)
   // pass in func, let it pick stack size, and arg to pass to thread
-  if ((ulProcID=_beginthread( &threadFuncShell, 0, (void *)this )) ==
+  if ((threadID=_beginthread( &threadFuncShell, 0, (void *)this )) ==
       ((unsigned long)-1)) {
     perror("vrpn_Thread::go: _beginthread");
     return -1;
   }
 #else
   // Pthreads by default
-  if (pthread_create(&ulProcID, NULL, &threadFuncShellPosix, (void*)this) != 0) {
+  if (pthread_create(&threadID, NULL, &threadFuncShellPosix, (void*)this) != 0) {
     perror("vrpn_Thread::go:pthread_create: ");
     return -1;
   }
@@ -1553,20 +1555,23 @@ int vrpn_Thread::go() {
 
 int vrpn_Thread::kill() {
   // kill the os thread
-  if (ulProcID>0) {
-#ifdef sgi
-    if (::kill( (long) ulProcID, SIGKILL)<0) {
-      perror("vrpn_Thread::kill: kill:");
-      return -1;
-    }
-#elif defined(_WIN32)
-    // Return value of -1 passed to TerminateThread causes a warning.
-    if (!TerminateThread( (HANDLE) ulProcID, 1 )) {
-      fprintf(stderr, "vrpn_Thread::kill: problem with terminateThread call.\n");
-    }
+#if defined(sgi) || defined(_WIN32)
+  if (threadID>0) {
+  #ifdef sgi
+      if (::kill( (long) threadID, SIGKILL)<0) {
+        perror("vrpn_Thread::kill: kill:");
+        return -1;
+      }
+  #elif defined(_WIN32)
+      // Return value of -1 passed to TerminateThread causes a warning.
+      if (!TerminateThread( (HANDLE) threadID, 1 )) {
+        fprintf(stderr, "vrpn_Thread::kill: problem with terminateThread call.\n");
+      }
+  #endif
 #else
+  if (threadID) {
     // Posix by default
-    if (pthread_kill(ulProcID, SIGKILL) != 0) {
+    if (pthread_kill(threadID, SIGKILL) != 0) {
       perror("vrpn_Thread::kill:pthread_kill: ");
       return -1;
     }
@@ -1575,16 +1580,20 @@ int vrpn_Thread::kill() {
     fprintf(stderr, "vrpn_Thread::kill: thread is not currently alive.\n");
     return -1;
   }
-  ulProcID = 0;
+  threadID = 0;
   return 0;
 }
 
 bool vrpn_Thread::running() {
-  return ulProcID!=0;
+  return threadID!=0;
 }
 
+#if defined(sgi) || defined(_WIN32)
 unsigned long vrpn_Thread::pid() {
-  return ulProcID;
+#else
+pthread_t vrpn_Thread::pid() {
+#endif
+  return threadID;
 }
 
 bool vrpn_Thread::available() {
@@ -1607,7 +1616,7 @@ void vrpn_Thread::threadFuncShell( void *pvThread ) {
   vrpn_Thread *pth = (vrpn_Thread *)pvThread;
   pth->pfThread( &pth->td );
   // thread has stopped running
-  pth->ulProcID = 0;
+  pth->threadID = 0;
 }
 
 // This is a Posix-compatible function prototype that
@@ -1623,6 +1632,12 @@ vrpn_Thread::~vrpn_Thread() {
     kill();
   }
 }
+
+// For the code to get the number of processor cores.
+#ifdef MACOSX
+#include <sys/param.h>
+#include <sys/sysctl.h>
+#endif
 
 unsigned vrpn_Thread::number_of_processors() {
 #ifdef _WIN32
@@ -1654,6 +1669,15 @@ unsigned vrpn_Thread::number_of_processors() {
     count = 1;
   }
   return count;
+
+#elif MACOSX
+  int count;
+  size_t size = sizeof(count);
+  if (sysctlbyname("hw.ncpu",&count,&size,NULL,0)) {
+	return 1;
+ } else {
+	return static_cast<unsigned>(count);
+ }
 
 #else
   fprintf(stderr, "vrpn_Thread::number_of_processors: Not yet implemented on this architecture.\n");

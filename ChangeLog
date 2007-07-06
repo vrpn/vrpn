@@ -1,3 +1,10 @@
+2007-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Shared.C : Fixed the thread code to be Posix-compliant,
+		and not specify pthread_t as unsigned long; this makes
+		it work on mac as well as Linux.
+	* vrpn_Shared.h : Same.
+
 2007-07-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_DirectXRumblePad.C : This code is broken (Chris
