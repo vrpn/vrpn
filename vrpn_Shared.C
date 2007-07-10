@@ -1486,7 +1486,7 @@ int vrpn_Semaphore::condP() {
   // Posix by default
   iRetVal = sem_trywait(&semaphore);
   if (iRetVal == 0) {  iRetVal = 1;
-  } else if (iRetVal == EAGAIN) { iRetVal = 0;
+  } else if (errno == EAGAIN) { iRetVal = 0;
   } else {
     perror("vrpn_Semaphore::condP: ");
     iRetVal = -1;
@@ -1517,55 +1517,56 @@ void vrpn_Semaphore::allocArena() {
 }
 #endif
 
-vrpn_Thread::vrpn_Thread(void (*pfThread)(void *pvThreadData), 
-	       const vrpn_ThreadData& td) :
+vrpn_Thread::vrpn_Thread(void (*pfThread)(vrpn_ThreadData &ThreadData), 
+	       vrpn_ThreadData td) :
   pfThread(pfThread), td(td),
   threadID(0)
 {}
 
-int vrpn_Thread::go() {
+bool vrpn_Thread::go() {
   if (threadID != 0) {
     fprintf(stderr, "vrpn_Thread::go: already running\n");
-    return -1;
+    return false;
   }
 
 #ifdef sgi
-  if ((threadID=sproc( &threadFuncShell, PR_SALL, (void *)this ))==
+  if ((threadID=sproc( &threadFuncShell, PR_SALL, this ))==
       ((unsigned long)-1)) {
     perror("vrpn_Thread::go: sproc");
-    return -1;
+    return false;
   }
 // Threads not defined for the CYGWIN environment yet...
 #elif defined(_WIN32) && !defined(__CYGWIN__)
   // pass in func, let it pick stack size, and arg to pass to thread
-  if ((threadID=_beginthread( &threadFuncShell, 0, (void *)this )) ==
+  if ((threadID=_beginthread( &threadFuncShell, 0, this )) ==
       ((unsigned long)-1)) {
     perror("vrpn_Thread::go: _beginthread");
-    return -1;
+    return false;
   }
 #else
   // Pthreads by default
-  if (pthread_create(&threadID, NULL, &threadFuncShellPosix, (void*)this) != 0) {
+  if (pthread_create(&threadID, NULL, &threadFuncShellPosix, this) != 0) {
     perror("vrpn_Thread::go:pthread_create: ");
-    return -1;
+    return false;
   }
 #endif
-  return 0;
+  return true;
 }
 
-int vrpn_Thread::kill() {
+bool vrpn_Thread::kill() {
   // kill the os thread
 #if defined(sgi) || defined(_WIN32)
   if (threadID>0) {
   #ifdef sgi
       if (::kill( (long) threadID, SIGKILL)<0) {
         perror("vrpn_Thread::kill: kill:");
-        return -1;
+        return false;
       }
   #elif defined(_WIN32)
       // Return value of -1 passed to TerminateThread causes a warning.
       if (!TerminateThread( (HANDLE) threadID, 1 )) {
         fprintf(stderr, "vrpn_Thread::kill: problem with terminateThread call.\n");
+	return false;
       }
   #endif
 #else
@@ -1573,15 +1574,15 @@ int vrpn_Thread::kill() {
     // Posix by default
     if (pthread_kill(threadID, SIGKILL) != 0) {
       perror("vrpn_Thread::kill:pthread_kill: ");
-      return -1;
+      return false;
     }
 #endif
   } else {
     fprintf(stderr, "vrpn_Thread::kill: thread is not currently alive.\n");
-    return -1;
+    return false;
   }
   threadID = 0;
-  return 0;
+  return true;
 }
 
 bool vrpn_Thread::running() {
@@ -1614,7 +1615,7 @@ void *vrpn_Thread::userData() {
 
 void vrpn_Thread::threadFuncShell( void *pvThread ) {
   vrpn_Thread *pth = (vrpn_Thread *)pvThread;
-  pth->pfThread( &pth->td );
+  pth->pfThread( pth->td );
   // thread has stopped running
   pth->threadID = 0;
 }
@@ -1684,3 +1685,130 @@ unsigned vrpn_Thread::number_of_processors() {
   return 1;
 #endif
 }
+
+// Thread function to call from within vrpn_test_threads_and_semaphores().
+// In this case, the userdata pointer is a pointer to a semaphore that
+// the thread should call v() on so that it will free up the main program
+// thread.
+static void vrpn_test_thread_body(vrpn_ThreadData &threadData)
+{
+  // We need to p() the semaphore that protects userdata at the beginning of this
+  // function and then v() it at the end, to make sure we're not racing with
+  // another thread.
+  threadData.udSemaphore.p();
+
+    if (threadData.pvUD == NULL) {
+      fprintf(stderr, "vrpn_test_thread_body(): pvUD is NULL\n");
+      return;
+    }
+    vrpn_Semaphore *s = static_cast<vrpn_Semaphore *>(threadData.pvUD);
+    s->v();
+
+  // We need to p() the semaphore that protects userdata at the beginning of this
+  // function and then v() it at the end, to make sure we're not racing with
+  // another thread.
+  threadData.udSemaphore.v();
+
+  return;
+}
+
+bool vrpn_test_threads_and_semaphores(void)
+{
+  //------------------------------------------------------------
+  // Make a semaphore to test in single-threaded mode.  First run its count all the way
+  // down to zero, then bring it back to the full complement and then bring it down
+  // again.  Check that all of the semaphores are available and also that there are no
+  // more than expected available.
+  const unsigned sem_count = 5;
+  vrpn_Semaphore s(sem_count);
+  unsigned i;
+  for (i = 0; i < sem_count; i++) {
+    if (s.condP() != 1) {
+      fprintf(stderr, "vrpn_test_threads_and_semaphores(): Semaphore ran out of counts\n");
+      return false;
+    }
+  }
+  if (s.condP() != 0) {
+    fprintf(stderr, "vrpn_test_threads_and_semaphores(): Semaphore had too many counts\n");
+    return false;
+  }
+  for (i = 0; i < sem_count; i++) {
+    if (s.v() != 0) {
+      fprintf(stderr, "vrpn_test_threads_and_semaphores(): Could not release Semaphore\n");
+      return false;
+    }
+  }
+  for (i = 0; i < sem_count; i++) {
+    if (s.condP() != 1) {
+      fprintf(stderr, "vrpn_test_threads_and_semaphores(): Semaphore ran out of counts, round 2\n");
+      return false;
+    }
+  }
+  if (s.condP() != 0) {
+    fprintf(stderr, "vrpn_test_threads_and_semaphores(): Semaphore had too many counts, round 2\n");
+    return false;
+  }
+
+  //------------------------------------------------------------
+  // Get a semaphore and use it to construct a thread data structure and then
+  // a thread.  Use that thread to test whether threading is enabled (if not, then
+  // this completes our testing) and to find out how many processors there are.
+  vrpn_ThreadData	td;
+  td.pvUD = NULL;
+  vrpn_Thread	t(vrpn_test_thread_body, td);
+
+  // If threading is not enabled, then we're done.
+  if (!t.available()) {
+    return true;
+  }
+
+  // Find out how many processors we have.
+  unsigned num_procs = t.number_of_processors();
+  if (num_procs == 0) {
+    fprintf(stderr, "vrpn_test_threads_and_semaphores(): vrpn_Thread::number_of_processors() returned zero\n");
+    return false;
+  }
+
+  //------------------------------------------------------------
+  // Now make sure that we can actually run a thread.  Do this by
+  // creating a semaphore with one entry and calling p() on it.
+  // Then make sure we can't p() it again and then run a thread
+  // that will call v() on it when it runs.
+  vrpn_Semaphore	sem;
+  if (sem.p() != 1) {
+    fprintf(stderr, "vrpn_test_threads_and_semaphores(): thread-test Semaphore had no count\n");
+    return false;
+  }
+  if (sem.condP() != 0) {
+    fprintf(stderr, "vrpn_test_threads_and_semaphores(): thread-test Semaphore had too many counts\n");
+    return false;
+  }
+  t.userData(&sem);
+  if (!t.go()) {
+    fprintf(stderr, "vrpn_test_threads_and_semaphores(): Could not start thread\n");
+    return false;
+  }
+  struct timeval start;
+  struct timeval now;
+  vrpn_gettimeofday(&start, NULL);
+  while (true) {
+    if (sem.condP() == 1) {
+      // The thread must have run; we got the semaphore!
+      break;
+    }
+
+    // Time out after three seconds if we haven't had the thread run to reset
+    // the semaphore.
+    vrpn_gettimeofday(&now, NULL);
+    struct timeval diff = vrpn_TimevalDiff( now, start );
+    if (diff.tv_sec >= 3) {
+      fprintf(stderr, "vrpn_test_threads_and_semaphores(): Thread didn't run\n");
+      return false;
+    }
+
+    vrpn_SleepMsecs(1);
+  }
+
+  return true;
+}
+

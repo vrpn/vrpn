@@ -264,14 +264,14 @@ protected:
 // and ps should contain a semaphore for mutex access to
 // the data.
 
-// The user should create and manage the semaphores.
+// The user should create and manage the semaphore.
 
 struct vrpn_ThreadData {
   void *pvUD;
-  vrpn_Semaphore *ps;
+  vrpn_Semaphore udSemaphore;
 };
 
-typedef void (*vrpn_THREAD_FUNC) ( void *pvThreadData );
+typedef void (*vrpn_THREAD_FUNC) ( vrpn_ThreadData &threadData );
 
 // Don't let the existence of a Thread class fool you into thinking
 // that VRPN is thread-safe.  This and the Semaphore are included as
@@ -282,12 +282,12 @@ public:
   // args are the routine to run in the thread
   // a ThreadData struct which will be passed into
   // the thread (it will be passed as a void *).
-  vrpn_Thread( vrpn_THREAD_FUNC pfThread, const vrpn_ThreadData& td );
+  vrpn_Thread( vrpn_THREAD_FUNC pfThread, vrpn_ThreadData td );
   ~vrpn_Thread();
 
-  // start/kill the thread (0 on success, -1 on failure)
-  int go();
-  int kill();
+  // start/kill the thread (true on success, false on failure)
+  bool go();
+  bool kill();
   
   // thread info: check if running, get proc id
   bool running();
@@ -297,7 +297,7 @@ public:
   pthread_t pid();
 #endif
 
-  // run-time user function to test it threads are available
+  // run-time user function to test if threads are available
   // (same value as #ifdef THREADS_AVAILABLE)
   static bool available();
 
@@ -313,7 +313,7 @@ public:
   
 protected:  
   // user func and data ptrs
-  void (*pfThread)(void *pvThreadData);
+  void (*pfThread)(vrpn_ThreadData &ThreadData);
   vrpn_ThreadData td;
   
   // utility func for calling the specified function.
@@ -330,5 +330,8 @@ protected:
   pthread_t threadID;
 #endif
 };
+
+// Returns true if they work and false if they do not.
+extern bool vrpn_test_threads_and_semaphores(void);
 
 #endif  // VRPN_SHARED_H

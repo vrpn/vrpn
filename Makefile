@@ -203,13 +203,14 @@ endif
 ifeq ($(FORCE_GPP),1)
 OBJECT_DIR	 := $(HW_OS)$(OBJECT_DIR_SUFFIX)/g++
 SOBJECT_DIR      := $(HW_OS)$(OBJECT_DIR_SUFFIX)/g++/server
-AOBJECT_DIR      := $(HW_OS)$(OBJECT_DIR_SUFFIX)
+AOBJECT_DIR      := $(HW_OS)$(OBJECT_DIR_SUFFIX)/atmel
 else
 UNQUAL_OBJECT_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)
 UNQUAL_SOBJECT_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)/server
+UNQUAL_AOBJECT_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)/atmellib
 OBJECT_DIR	 := $(HW_OS)$(OBJECT_DIR_SUFFIX)
 SOBJECT_DIR      := $(HW_OS)$(OBJECT_DIR_SUFFIX)/server
-AOBJECT_DIR      := $(HW_OS)$(OBJECT_DIR_SUFFIX)
+AOBJECT_DIR      := $(HW_OS)$(OBJECT_DIR_SUFFIX)/atmellib
 endif
 
 # directories that we can do an rm -f on because they only contain
@@ -361,22 +362,21 @@ CFLAGS		 := $(INCLUDE_FLAGS) -g
 # Build objects from .c files
 $(OBJECT_DIR)/%.o: %.c $(LIB_INCLUDES) $(MAKEFILE)
 	@[ -d $(OBJECT_DIR) ] || mkdir $(OBJECT_DIR)
-	$(CC) $(CFLAGS) -o $@ -c $<
+	$(CC) $(CFLAGS) -DVRPN_CLIENT_ONLY -o $@ -c $<
 
 # Build objects from .C files
-#$(OBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) $(MAKEFILE)
-$(OBJECT_DIR)/%.o: %.C $(LIB_INCLUDES)
+$(OBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) $(MAKEFILE)
 	@[ -d $(OBJECT_DIR) ] || mkdir $(OBJECT_DIR)
 	$(CC) $(CFLAGS) -DVRPN_CLIENT_ONLY -o $@ -c $<
 
 # Build objects from .C files
-$(SOBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) $(MAKEFILE)
+$(SOBJECT_DIR)/%.o: %.C $(SLIB_INCLUDES) $(MAKEFILE)
 	@[ -d $(SOBJECT_DIR) ] || mkdir $(SOBJECT_DIR)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 # Build objects from .C files
-$(AOBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) $(MAKEFILE)
-	@[ -d $(AOBJECT_DIR)/atmellib ] || mkdir $(AOBJECT_DIR)/atmellib
+$(AOBJECT_DIR)/%.o: %.C $(ALIB_INCLUDES) $(MAKEFILE)
+	@[ -d $(AOBJECT_DIR) ] || mkdir $(AOBJECT_DIR)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 #
@@ -429,7 +429,7 @@ $(SOBJECT_DIR):
 	-mkdir $(SOBJECT_DIR)
 
 $(AOBJECT_DIR)/atmellib:
-	-mkdir $(AOBJECT_DIR)/atmellib
+	-mkdir $(AOBJECT_DIR)
 
 #############################################################################
 #
@@ -519,7 +519,7 @@ ALIB_FILES = \
 	atmellib/vrpn_atmellib_iobasic.C atmellib/vrpn_atmellib_helper.C \
 	atmellib/vrpn_atmellib_openclose.C atmellib/vrpn_atmellib_register.C atmellib/vrpn_atmellib_tester.C
 
-ALIB_OBJECTS = $(patsubst %,$(AOBJECT_DIR)/%,$(ALIB_FILES:.C=.o))
+ALIB_OBJECTS = $(patsubst %,$(AOBJECT_DIR)/../%,$(ALIB_FILES:.C=.o))
 
 ALIB_INCLUDES =  \
 	vrpn_atmellib.h vrpn_atmellib_helper.h vrpn_atmellib_errno.h

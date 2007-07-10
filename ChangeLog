@@ -1,3 +1,14 @@
+2007-07-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Fixing problems put in when I added the atmellib
+		stuff; it was not making the client library as client-
+		only code any more.
+	* vrpn_Shared.C : Bug fixes in the Semaphore and Thread code.
+		Made the interface to them a bit cleaner (fewer
+		pointers).  Added test routine that make sure the
+		Semaphore and Thread code is working.
+	* vrpn_Shared.h : Same.
+
 2007-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Shared.C : Fixed the thread code to be Posix-compliant,
