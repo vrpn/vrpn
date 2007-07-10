@@ -220,9 +220,9 @@ public:
   vrpn_Semaphore( const vrpn_Semaphore& s );
   ~vrpn_Semaphore();
 
-  // routine to reset it (0 on success, -1 failure)
+  // routine to reset it (true on success, false on failure)
   // (may create new semaphore)
-  int reset( int cNumResources = 1 );
+  bool reset( int cNumResources = 1 );
 
   // routines to use it (p blocks, condP does not)
   // p returns 1 when it has acquired the resource, -1 on fail
@@ -237,8 +237,9 @@ public:
   int numResources();
 
 protected:
-  // common init routine
-  void init();
+  // common init and destroy routines
+  bool init();
+  bool destroy();
 
   int cResources;
 
@@ -255,7 +256,7 @@ protected:
 #elif defined(_WIN32)
   HANDLE hSemaphore;
 #else
-  sem_t	semaphore;      // Posix
+  sem_t	*semaphore;      // Posix
 #endif
 };
 

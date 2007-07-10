@@ -1163,7 +1163,7 @@ vrpn_Semaphore::vrpn_Semaphore( const vrpn_Semaphore& s ) :
   init();
 }
 
-void vrpn_Semaphore::init() {
+bool vrpn_Semaphore::init() {
 #ifdef sgi
   if (vrpn_Semaphore::ppaArena==NULL) {
     vrpn_Semaphore::allocArena();
@@ -1174,14 +1174,14 @@ void vrpn_Semaphore::init() {
     // use lock instead of semaphore
     if ((l = usnewlock(Semaphore::ppaArena)) == NULL) {
       fprintf(stderr,"vrpn_Semaphore::vrpn_Semaphore: error allocating lock from arena.\n");
-      return;
+      return false;
     }
   } else {    
     fUsingLock=false;
     l=NULL;
     if ((ps = usnewsema(vrpn_Semaphore::ppaArena, cResources)) == NULL) {
       fprintf(stderr,"vrpn_Semaphore::vrpn_Semaphore: error allocating semaphore from arena.\n");
-      return;
+      return false;
     }
   }
 #elif defined(_WIN32)
@@ -1206,22 +1206,37 @@ void vrpn_Semaphore::init() {
       "WIN32 CreateSemaphore call caused the following error: %s\n", (LPTSTR) lpMsgBuf);
     // Free the buffer.
     LocalFree( lpMsgBuf );
-    return;
+    return false;
   }
 #else
-  // Posix threads are the default.
-  int numMax = cResources;
-  if (numMax < 1) {
-    numMax = 1;
-  }
-  if (sem_init(&semaphore, 0, numMax) != 0) {
-      fprintf(stderr, "vrpn_Semaphore::vrpn_Semaphore: error initializing semaphore.\n");
-      return;
-  }
+  // Posix threads are the default.  We're still not out of the woods yet, though,
+  // because there seem to be two posix standards: sem_open (mac) and sem_init (linux)
+  // and so we need to figure out which to use.  To make things worse, the mac
+  // declares sem_init() but it fails with a "not implemented" errno.
+
+    int numMax = cResources;
+    if (numMax < 1) {
+      numMax = 1;
+    }
+  #ifdef MACOSX
+    char template_name[] = "/tmp/semaphore.XXXXXXXX";
+    char *tempname = mktemp(template_name);
+    semaphore = sem_open(tempname, O_CREAT | O_EXCL, 0xffff, numMax);
+    // Strange cast due to incompatibility in semaphore.h definition.
+    if ((int)(semaphore) == SEM_FAILED) {
+  #else
+    semaphore = new sem_t;
+    if (sem_init(&semaphore, 0, numMax) != 0) {
+  #endif
+        perror("vrpn_Semaphore::vrpn_Semaphore: error initializing semaphore");
+        return false;
+    }
 #endif
+
+    return true;
 }
 
-vrpn_Semaphore::~vrpn_Semaphore() {
+bool vrpn_Semaphore::destroy() {
 #ifdef sgi
   if (fUsingLock) {
     usfreelock( l, vrpn_Semaphore::ppaArena );
@@ -1239,97 +1254,55 @@ vrpn_Semaphore::~vrpn_Semaphore() {
 		   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), 
 		     // Default language
 		   (LPTSTR) &lpMsgBuf,    0,    NULL );
-    fprintf(stderr, "vrpn_Semaphore::~vrpn_Semaphore: error destroying semaphore, "
+    fprintf(stderr, "vrpn_Semaphore::destroy: error destroying semaphore, "
       "WIN32 CloseHandle call caused the following error: %s\n", (LPTSTR) lpMsgBuf);
     // Free the buffer.
     LocalFree( lpMsgBuf );
+    return false;
   }
 #else
   // Posix threads are the default.
-  if (sem_destroy(&semaphore) != 0) {
-      fprintf(stderr, "vrpn_Semaphore::~vrpn_Semaphore: error destroying semaphore.\n");
+#ifdef MACOSX
+  if (sem_close(semaphore) != 0) {
+      perror("vrpn_Semaphore::destroy: error destroying semaphore.");
+      return false;
+  }
+#else
+  if (sem_destroy(semaphore) != 0) {
+      fprintf(stderr, "vrpn_Semaphore::destroy: error destroying semaphore.\n");
+      return false;
   }
 #endif
+  if (semaphore) {
+    delete semaphore;
+    semaphore = NULL;
+  }
+#endif
+  return true;
+}
+
+vrpn_Semaphore::~vrpn_Semaphore() {
+  if (!destroy()) {
+      fprintf(stderr, "vrpn_Semaphore::~vrpn_Semaphore: error destroying semaphore.\n");
+  }
 }
 
 // routine to reset it
-#ifdef sgi
-
-int vrpn_Semaphore::reset( int cNumResources ) {
+bool vrpn_Semaphore::reset( int cNumResources ) {
   cResources = cNumResources;
-  if (fUsingLock) {
-    if (cResources==1) {
-      if (usinitlock( l )) {
-	perror("vrpn_Semaphore::reset: usinitlock:");
-	return -1;
-      }
-    } else {
-      // need to make new semaphore
-      usfreelock( l, vrpn_Semaphore::ppaArena );
-      init();
-    }
-  } else {
-    if (cResources!=1) {
-      if (usinitsema( ps, cNumResources )) {
-	perror("vrpn_Semaphore::reset: usinitsema:");
-	return -1;
-      }
-    } else {
-      // need to make new lock
-      usfreesema( ps, vrpn_Semaphore::ppaArena );
-      init();
-    }
-  }
 
-  return 0;
-}
-
-#elif defined(_WIN32)
-
-int vrpn_Semaphore::reset( int cNumResources ) {
-  cResources = cNumResources;
-  // close the old one and create a new one
-  if (!CloseHandle(hSemaphore)) {
-    // get error info from windows (from FormatMessage help page)
-    LPVOID lpMsgBuf;
-    
-    FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | 
-		   FORMAT_MESSAGE_FROM_SYSTEM,
-		   NULL,    GetLastError(),
-		   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), 
-		     // Default language
-		   (LPTSTR) &lpMsgBuf,    0,    NULL );
-    fprintf(stderr, "vrpn_Semaphore::reset: error destroying semaphore, "
-      "WIN32 CloseHandle call caused the following error: %s\n", (LPTSTR) lpMsgBuf);
-    // Free the buffer.
-    LocalFree( lpMsgBuf );
-  }
-  init();
-
-  return 0;
-}
-
-#else  // not sgi, not _WIN32
-
-int vrpn_Semaphore::reset( int cNumResources) {
-  // Posix by default.
-  // Destroy the old semaphore and then create a new one
-  if (sem_destroy(&semaphore) != 0) {
+  // Destroy the old semaphore and then create a new one with the correct
+  // value.
+  if (!destroy()) {
       fprintf(stderr, "vrpn_Semaphore::reset: error destroying semaphore.\n");
-      return -1;
+      return false;
   }
-  int numMax = cNumResources;
-  if (numMax < 1) {
-    numMax = 1;
-  }
-  if (sem_init(&semaphore, 0, numMax) != 0) {
+  if (!init()) {
       fprintf(stderr, "vrpn_Semaphore::reset: error initializing semaphore.\n");
-      return -1;
+      return false;
   }  
-  return 0;
+  return true;
 }
-
-#endif
 
 // routines to use it (p blocks, cond p does not)
 // 1 on success, -1 fail
@@ -1381,7 +1354,7 @@ int vrpn_Semaphore::p() {
   }
 #else
   // Posix by default
-  if (sem_wait(&semaphore) != 0) {
+  if (sem_wait(semaphore) != 0) {
     perror("vrpn_Semaphore::p: ");
     return -1;
   }
@@ -1422,7 +1395,7 @@ int vrpn_Semaphore::v() {
   }
 #else
   // Posix by default
-  if (sem_post(&semaphore) != 0) {
+  if (sem_post(semaphore) != 0) {
     perror("vrpn_Semaphore::p: ");
     return -1;
   }
@@ -1484,7 +1457,7 @@ int vrpn_Semaphore::condP() {
   }
 #else
   // Posix by default
-  iRetVal = sem_trywait(&semaphore);
+  iRetVal = sem_trywait(semaphore);
   if (iRetVal == 0) {  iRetVal = 1;
   } else if (errno == EAGAIN) { iRetVal = 0;
   } else {

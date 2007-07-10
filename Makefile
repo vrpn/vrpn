@@ -203,7 +203,7 @@ endif
 ifeq ($(FORCE_GPP),1)
 OBJECT_DIR	 := $(HW_OS)$(OBJECT_DIR_SUFFIX)/g++
 SOBJECT_DIR      := $(HW_OS)$(OBJECT_DIR_SUFFIX)/g++/server
-AOBJECT_DIR      := $(HW_OS)$(OBJECT_DIR_SUFFIX)/atmel
+AOBJECT_DIR      := $(HW_OS)$(OBJECT_DIR_SUFFIX)/atmellib
 else
 UNQUAL_OBJECT_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)
 UNQUAL_SOBJECT_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)/server
@@ -412,14 +412,14 @@ server_g++:
 	$(MV) $(UNQUAL_OBJECT_DIR)/g++/libvrpnserver.a $(UNQUAL_OBJECT_DIR)/libvrpnserver_g++.a
 
 .PHONY:	client
-client: $(OBJECT_DIR)/libvrpn.a
+client: $(OBJECT_DIR) $(OBJECT_DIR)/libvrpn.a
 
 .PHONY:	server
-server:
+server: $(SOBJECT_DIR)
 	$(MAKE) $(OBJECT_DIR)/libvrpnserver.a
 
 .PHONY: atmellib
-atmellib:
+atmellib: $(AOBJECT_DIR)
 	$(MAKE) $(OBJECT_DIR)/libvrpnatmel.a
 
 $(OBJECT_DIR):
@@ -428,7 +428,7 @@ $(OBJECT_DIR):
 $(SOBJECT_DIR):
 	-mkdir $(SOBJECT_DIR)
 
-$(AOBJECT_DIR)/atmellib:
+$(AOBJECT_DIR):
 	-mkdir $(AOBJECT_DIR)
 
 #############################################################################
@@ -480,7 +480,7 @@ SLIB_FILES =  $(LIB_FILES) vrpn_3Space.C \
 	vrpn_GlobalHapticsOrb.C vrpn_Tracker_ButtonFly.C vrpn_ADBox.C \
 	vrpn_VPJoystick.C vrpn_Tracker_Liberty.C vrpn_NationalInstruments.C \
 	vrpn_Poser_Analog.C vrpn_Tracker_DTrack.C vrpn_Poser_Tek4662.C \
-	vrpn_Poser.C vrpn_Tracker_Crossbow.C vrpn_Tracker_3DMouse.C \
+	vrpn_Tracker_Crossbow.C vrpn_Tracker_3DMouse.C \
 	vrpn_Mouse.C vrpn_3DMicroscribe.C vrpn_5DT16.C \
 	vrpn_ForceDeviceServer.C vrpn_Keyboard_Mouse.C \
 	vrpn_Analog_USDigital_A2.C vrpn_Button_NI_DIO24.C \
