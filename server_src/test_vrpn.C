@@ -8,6 +8,11 @@
 // drivers are used for this) and "Remote" devices using the same connection
 // for each. Then, the local call handlers on the connection will send the
 // information from the server to the client callbacks.
+//	Before performing the above tests, VRPN checks its thread library
+// to make sure the calls work as expected.  If that fails, the program
+// returns an error message.  Note that there is no multi-threading happening
+// in the actual message or other test code, just a testing of the thread
+// library itself.
 //
 // Tested device types so far include:
 //	vrpn_Analog_Server --> vrpn_Analog_Remote
@@ -194,6 +199,15 @@ int main (int argc, char * argv [])
 	if (argc != 1) {
 		fprintf(stderr, "Usage: %s\n", argv[0]);
 		return -1;
+	}
+
+	//---------------------------------------------------------------------
+	// test the thread library
+	if (!vrpn_test_threads_and_semaphores()) {
+		fprintf(stderr, "vrpn_test_threads_and_semaphores() failed!\n");
+		return -1;
+	} else {
+		printf("Thread code passes tests (not using for the following though)\n");
 	}
 
 	//---------------------------------------------------------------------
