@@ -266,7 +266,7 @@ protected:
 
 // The user should create and manage the semaphore.
 
-struct vrpn_ThreadData {
+struct VRPN_API vrpn_ThreadData {
   void *pvUD;
   vrpn_Semaphore udSemaphore;
 };

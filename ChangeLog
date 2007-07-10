@@ -1,5 +1,10 @@
 2007-07-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Shared.h : Added VRPN_API where needed for the
+		Thread code to compile under DLL linkage.
+
+2007-07-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* Makefile : Fixing problems put in when I added the atmellib
 		stuff; it was not making the client library as client-
 		only code any more.
