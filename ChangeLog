@@ -1,5 +1,10 @@
 2007-07-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Shared.C : This version compiles and runs under
+		Linux again (removed an &).
+
+2007-07-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* Makefile : More fixes to get the atmellib compiling
 		correctly.
 	* vrpn_Share.h : Changes to make this work on the Mac, which

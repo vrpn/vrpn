@@ -1226,7 +1226,7 @@ bool vrpn_Semaphore::init() {
     if ((int)(semaphore) == SEM_FAILED) {
   #else
     semaphore = new sem_t;
-    if (sem_init(&semaphore, 0, numMax) != 0) {
+    if (sem_init(semaphore, 0, numMax) != 0) {
   #endif
         perror("vrpn_Semaphore::vrpn_Semaphore: error initializing semaphore");
         return false;
