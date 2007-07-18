@@ -1,3 +1,9 @@
+2007-07-18  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Comment and white-space changes.
+		Converting from C-style casts to static_cast<>
+		in several locations.
+
 2007-07-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Shared.C : This version compiles and runs under

@@ -297,9 +297,6 @@ extern "C" {
 */
 
 
-
-
-
 /**
  * @class vrpn_TranslationTable
  * Handles translation of type and sender names between local and
@@ -346,16 +343,6 @@ class vrpn_TranslationTable {
     cRemoteMapping d_entry [vrpn_CONNECTION_MAX_XLATION_TABLE_SIZE];
 
 };
-
-
-
-
-
-
-
-
-
-
 
 vrpn_TranslationTable::vrpn_TranslationTable (void) :
     d_numEntries (0) {
@@ -409,13 +396,11 @@ vrpn_int32 vrpn_TranslationTable::addRemoteEntry (cName name,
     return -1;
   }
 
-/*XXX This check causes problem with vrpn_Control when reading from log file...
-  // Check to see if there is already an entry here.
-  if (d_entry[useEntry].remote_id != -1) {
-    fprintf(stderr,"Warning: Duplicate entry in translation table (%s) -- ignoring\n",name);
-    return -1;
-  }
-*/
+  // We do not check to see if this entry is already filled in.  Such
+  // a check caused problems with vrpn_Control when reading from log files.
+  // Also, it will cause problems with multi-logging, where the connection
+  // may be requested to send all of its IDs again for a log file is opeened
+  // at a time other than connection set-up.
 
   if (!d_entry[useEntry].name) {
     d_entry[useEntry].name = new cName;
@@ -3756,7 +3741,9 @@ int vrpn_Endpoint::finish_new_connection_setup (void) {
   d_inLog->setCookie(recvbuf);
 
   // Find out what log mode they want us to be in BEFORE we pack
-  // type, sender, and udp descriptions!  If it's nonzero, the
+  // type, sender, and udp descriptions!  That is because we will
+  // need the type and sender messages to go into the log file if
+  // we're logging outgoing messages.  If it's nonzero, the
   // filename to use should come in a log_description message later.
 
   received_logmode = recvbuf[vrpn_MAGICLEN + 2] - '0';
@@ -3833,8 +3820,8 @@ int vrpn_Endpoint::finish_new_connection_setup (void) {
     return -1;
   }
 
-  // Message needs to be dispatched *locally only*, so we do_callbacks_for
-  // and never pack_message()
+  // The connection-established messages need to be dispatched *locally only*,
+  // so we do_callbacks_for and never pack_message()
   struct timeval now;
   vrpn_gettimeofday(&now, NULL);
 
@@ -4155,7 +4142,7 @@ int vrpn_Endpoint::marshall_message
 int vrpn_Endpoint::handle_type_message(void *userdata,
 		vrpn_HANDLERPARAM p)
 {
-  vrpn_Endpoint * endpoint = (vrpn_Endpoint *) userdata;
+  vrpn_Endpoint * endpoint = static_cast<vrpn_Endpoint *>(userdata);
   cName	type_name;
   vrpn_int32	i;
   vrpn_int32	local_id;
@@ -4221,7 +4208,7 @@ int vrpn_Endpoint::openLogs (void) {
 int vrpn_Endpoint::handle_sender_message(void *userdata,
 		vrpn_HANDLERPARAM p)
 {
-  vrpn_Endpoint * endpoint = (vrpn_Endpoint *) userdata;
+  vrpn_Endpoint * endpoint = static_cast<vrpn_Endpoint *>(userdata);
   cName	sender_name;
   vrpn_int32 i;
   vrpn_int32 local_id;
