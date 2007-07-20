@@ -1,5 +1,11 @@
 2007-07-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn.sln : Organizing the various projects into folders
+		within the solution to make it easier to figure out
+		what is what.
+
+2007-07-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* Makefile : Adding the vrpn_Auxilliary_Logger under
 		Linux.
 
