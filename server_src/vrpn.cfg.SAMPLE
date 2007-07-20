@@ -1,4 +1,4 @@
-# vrpn.cfg.SAMPLE for VRPN version 07.06
+# vrpn.cfg.SAMPLE for VRPN version 07.10
 
 ################################################################################
 ################################################################################
@@ -17,13 +17,6 @@
 ################################################################################
 
 ################################################################################
-################################################################################
-# Tracker classes.  Lines here to start various tracker servers. A description is
-# provided for each type of tracker for the arguments it takes, then an example
-# configuration line is provided.
-################################################################################
-
-################################################################################
 # NULL Tracker. This is a "device" that reports the Identity transformation for
 # each of its sensors at the specified rate. It can be used to verify connections
 # are working and for other tests of VRPN. There are three arguments:
@@ -31,7 +24,7 @@
 #	int	number_of_sensors
 #	float	rate_at_which_to_report_updates
 
-##vrpn_Tracker_NULL	Tracker0	2	2.0
+#vrpn_Tracker_NULL	Tracker0	2	2.0
 
 ################################################################################
 # Flock-of-birds Tracker. Runs an Ascension Flock of Birds tracker that is
@@ -1016,38 +1009,39 @@
 ################################################################################
 # Advanced Realtime Tracking GmbH (http://www.ar-tracking.de) DTrack client 
 #
-# creates as many vrpn_Tracker as there are bodies or flysticks, starting with
-#   the bodies.
-# creates 2 analogs per flystick
-# creates 8 buttons per flystick
+# creates as many vrpn_Tracker as there are bodies or Flysticks, starting with the bodies
+# creates 2 analogs per Flystick
+# creates 8 buttons per Flystick
 #
-# NOTE: numbering of flystick buttons differs from DTrack documentation
+# NOTE: when using DTrack's older output format for Flystick data ('6df'), the numbering
+#       of Flystick buttons differs from DTrack documentation (for compatibility with
+#       older vrpn releases)
 #
 # Arguments:
 #  char  name_of_this_device[]
-#  int   udp_port                               (DTrack sends data to this udp port)
-#  float time_to_reach_joy                      (see below)
+#  int   udp_port                               (DTrack sends data to this UDP port)
 #
 # Optional arguments:
-#  int   number_of_bodies, number_of_flysticks  (fixed numbers of bodies and flysticks)
-#  int   renumbered_ids[]                       (vrpn_Tracker IDs of bodies and flysticks)
+#  float time_to_reach_joy                      (in seconds; see below)
+#  int   number_of_bodies, number_of_flysticks  (fixed numbers of bodies and Flysticks)
+#  int   renumbered_ids[]                       (vrpn_Tracker IDs of bodies and Flysticks)
 #  char  "-"                                    (activates tracing; always last argument)
 #
-# NOTE: time_to_reach_joy is the time needed to reach the maximum value of the
-#       joystick 
-#       (1.0 or -1.0) when the corresponding button is pressed (one of the last
-#       buttons amongst the 8)
+# NOTE: time_to_reach_joy is the time needed to reach the maximum value (1.0 or -1.0) of the
+#       joystick of older 'Flystick' devices when the corresponding button is pressed
+#       (one of the last buttons amongst the 8); not necessary for newer 'Flystick2' devices
+#       with its analog joystick
 #
-# NOTE: if fixed numbers of bodies and flysticks should be used, both arguments
+# NOTE: if fixed numbers of bodies and Flysticks should be used, both arguments
 #       number_of_bodies and number_of_flysticks have to be set
 #
 # NOTE: renumbering of tracker IDs is only possible, if fixed numbers of bodies and
-#       flysticks are set; there has to be an argument present for each
-#       body/flystick
+#       Flysticks are set; there has to be an argument present for each body/Flystick
 
-#vrpn_Tracker_DTrack DTrack  5000 0.5
-#vrpn_Tracker_DTrack DTrack  5000 0.5  2 2
-#vrpn_Tracker_DTrack DTrack  5000 0.5  2 2  2 1 0 3
+#vrpn_Tracker_DTrack DTrack  5000
+#vrpn_Tracker_DTrack DTrack  5000  0.5
+#vrpn_Tracker_DTrack DTrack  5000  0.5  2 2
+#vrpn_Tracker_DTrack DTrack  5000  0.5  2 2  2 1 0 3
 
 ################################################################################
 # National Instruments Analog Output server.  This will open the board whose
@@ -1175,7 +1169,7 @@
 # for the analog channels: use one button and the mouse direction for mouse
 # movement or two buttons for keyboard movement;
 # for example VK_LBUTTON 0x100 means mouse lbutton and horizontal movement
-# code tabel can be found in keycodes.txt in the vrpn_server directory.
+# code table can be found in keycodes.txt in the vrpn_server directory.
 # Letters should be in capital.
 # XXX Should this be rewritten as a ButtonFly and AnalogFly, having the mouse
 # act as an Analog?
@@ -1316,3 +1310,14 @@
 #3 :     pt      3      #to sensor 3 assign led 3
 #</owl>
  
+################################################################################
+# Generic Auxilliary Logger. This is a server that will listen for requests to
+# produce additional log files and the name of the connection it should make the
+# log files for.  It can only have one set of such logs open (can be more than
+# one log but all for the same connection).  There are two arguments:
+#	char	name_of_this_device[]
+#	char	name_of_connection_to_log
+
+#vrpn_Auxilliary_Logger_Server_Generic Logger0 localhost
+
+

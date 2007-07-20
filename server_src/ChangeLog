@@ -1,5 +1,13 @@
 2007-07-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* Makefile : Adding the vrpn_Auxilliary_Logger test
+		object and application.
+	* vrpn.cfg : Made it Unix format so that it can be
+		parsed on both Unix and Windows.
+	* vrpn.cfg.SAMPLE : Same.
+
+2007-07-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Generic_server_object.C : Adds the ability to create an
 		auxilliary log file connection to the same or a different
 		host.
