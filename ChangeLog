@@ -1,5 +1,10 @@
 2007-07-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* Makefile : Adding the vrpn_Auxilliary_Logger under
+		Linux.
+
+2007-07-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Auxilliary_Logger.h : New class that lets a client
 		request an additional log file to be started on a
 		local or remote server.  Intended for logging on

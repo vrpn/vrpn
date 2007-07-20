@@ -447,7 +447,7 @@ LIB_FILES =  vrpn_Connection.C vrpn_Tracker.C vrpn_Button.C \
 		vrpn_SharedObject.C vrpn_BaseClass.C \
 		vrpn_Sound.C vrpn_LamportClock.C vrpn_Mutex.C \
 		vrpn_RedundantTransmission.C vrpn_Imager.C \
-		vrpn_Analog_Output.C vrpn_Poser.C
+		vrpn_Analog_Output.C vrpn_Poser.C vrpn_Auxilliary_Logger.C
 
 LIB_OBJECTS = $(patsubst %,$(OBJECT_DIR)/%,$(LIB_FILES:.C=.o))
 
@@ -458,7 +458,7 @@ LIB_INCLUDES = vrpn_Connection.h vrpn_Tracker.h vrpn_Button.h \
 		vrpn_ForwarderController.h vrpn_Serial.h vrpn_Dial.h \
 		vrpn_SharedObject.h vrpn_LamportClock.h vrpn_Mutex.h \
 		vrpn_BaseClass.h vrpn_Imager.h \
-		vrpn_Analog_Output.h vrpn_Poser.h
+		vrpn_Analog_Output.h vrpn_Poser.h vrpn_Auxilliary_Logger.h
 
 $(LIB_OBJECTS): 
 $(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(LIB_OBJECTS)
