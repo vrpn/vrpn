@@ -66,15 +66,14 @@
 // added by Bill West
 #include "vrpn_Analog_USDigital_A2.h"
 #include "vrpn_Button_NI_DIO24.h"
-
 #include "vrpn_Tracker_PhaseSpace.h"
+#include "vrpn_Auxilliary_Logger.h"
 
 // BUW additions
 #include "vrpn_Atmel.h"
 #include "vrpn_inertiamouse.h"
 #include "vrpn_Event_Mouse.h"
 //#include "vrpn_Cirque_Extended.h"
-
 
 
 #ifdef VRPN_INCLUDE_TIMECODE_SERVER
@@ -110,6 +109,7 @@ const int VRPN_GSO_MAX_DTRACKS =   5;
 const int VRPN_GSO_MAX_POSER =	   8;
 const int VRPN_GSO_MAX_MOUSES =	   8;
 const int VRPN_GSO_MAX_KEYMOUSE =  1;
+const int VRPN_GSO_MAX_LOGGER =    10;
 
 // BUW additions
 const int VRPN_GSO_MAX_INERTIAMOUSES =  8;
@@ -182,6 +182,8 @@ protected:
   int		num_mouses;
   vrpn_KeyMouse * KeyMouses [VRPN_GSO_MAX_KEYMOUSE];
   int		num_KeyMouses;
+  vrpn_Auxilliary_Logger_Server_Generic * loggers [VRPN_GSO_MAX_LOGGER];
+  int           num_loggers;
 
   // BUW additions
   vrpn_inertiamouse * inertiamouses [VRPN_GSO_MAX_INERTIAMOUSES];
@@ -249,6 +251,7 @@ protected:
   int setup_Analog_USDigital_A2 (char * & pch, char * line, FILE * config_file) ;
   int setup_Button_NI_DIO24 (char * & pch, char * line, FILE * config_file) ;
   int setup_Tracker_PhaseSpace (char * & pch, char * line, FILE * config_file) ;
+  int setup_Logger (char * & pch, char * line, FILE * config_file) ;
 
   // BUW additions
   int setup_Atmel(char* &pch, char *line, FILE *config_file);

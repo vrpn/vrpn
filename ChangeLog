@@ -1,3 +1,28 @@
+2007-07-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Auxilliary_Logger.h : New class that lets a client
+		request an additional log file to be started on a
+		local or remote server.  Intended for logging on
+		scientific instruments in the UNC NSRG group but
+		there is a generic server for use elsewhere.
+	* vrpn_Auxilliary_Logger.C : Same.
+	* vrpn.dsp : Added to project.
+	* vrpndll.dsp : Same.
+	* vrpn.vcproj : Same.
+	* vrpndll.vcproj : Same.
+	* vrpn.dsw : Added build project for test program.
+	* vrpn.sln : Same.
+	* vrpn_Analog_Output.h : White space change.
+	* vrpn_Connection.C : Modified the pack_log_description()
+		function to remove the fixed-buffer-length hack that
+		had been in there.  It now allocates a buffer that is
+		large enough and frees it when it is done.
+		Modified code to handle empty-string ("") names for
+		log files meaning "no log file" in addition to
+		NULL pointers.
+		Comment changes.  Fixing error
+		messages to work properly with perror().
+
 2007-07-18  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Connection.C : Comment and white-space changes.

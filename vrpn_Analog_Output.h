@@ -97,9 +97,6 @@ public:
      // This routine calls the mainloop of the connection it's on
      virtual void mainloop();
 
-     // How we hear about the number of active channels
-     static int VRPN_CALLBACK handle_report_num_channels( void *userdata, vrpn_HANDLERPARAM p );
-     
      // Request the analog to change its value to the one specified.
      // Returns false on failure.
      virtual bool request_change_channel_value(unsigned int chan, vrpn_float64 val,
@@ -113,6 +110,9 @@ public:
                                           vrpn_uint32 class_of_service = vrpn_CONNECTION_RELIABLE);
      
 protected:
+     // How we hear about the number of active channels
+     static int VRPN_CALLBACK handle_report_num_channels( void *userdata, vrpn_HANDLERPARAM p );
+     
      // Routines used to send requests from the client
      virtual vrpn_int32 encode_change_to(char *buf, vrpn_int32 chan, vrpn_float64 val);
      virtual vrpn_int32 encode_change_channels_to(char* buf, vrpn_int32 num, vrpn_float64* vals);

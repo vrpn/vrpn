@@ -95,7 +95,7 @@
 // cannot link against the debug library in Visual Studio 6.0,
 // only the release.  Hopefully, Visual Studio.NET doesn't have
 // this problem.
-//#define	VRPN_USE_DIRECTSHOW
+#define	VRPN_USE_DIRECTSHOW
 
 //-----------------------
 // Instructs the VRPN server to create an entry for the Adrienne

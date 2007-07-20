@@ -382,6 +382,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\vrpn_Auxilliary_Logger.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_BaseClass.C"
 				>
 				<FileConfiguration
@@ -1846,6 +1866,10 @@
 			</File>
 			<File
 				RelativePath=".\vrpn_Analog_USDigital_A2.h"
+				>
+			</File>
+			<File
+				RelativePath=".\vrpn_Auxilliary_Logger.h"
 				>
 			</File>
 			<File

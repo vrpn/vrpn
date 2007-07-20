@@ -216,6 +216,24 @@ Package=<4>
 
 ###############################################################################
 
+Project: "test_auxilliary_logger"=.\server_src\test_auxilliary_logger.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name make_vrpn_libs_build
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
 Project: "test_gen_rpc"=.\UTIL\gen_rpc\test_gen_rpc.dsp - Package Owner=<4>
 
 Package=<5>
@@ -463,6 +481,9 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name make_vrpn_libs_build
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vrpn
     End Project Dependency
 }}}
 

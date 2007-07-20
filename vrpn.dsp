@@ -121,6 +121,10 @@ SOURCE=.\vrpn_Analog_USDigital_A2.C
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_auxilliary_Logger.C
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_BaseClass.C
 # End Source File
 # Begin Source File
@@ -415,6 +419,10 @@ SOURCE=.\vrpn_Analog_Radamec_SPI.h
 # Begin Source File
 
 SOURCE=.\vrpn_Analog_USDigital_A2.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Auxilliary_Logger.h
 # End Source File
 # Begin Source File
 

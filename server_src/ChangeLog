@@ -1,3 +1,15 @@
+2007-07-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Generic_server_object.C : Adds the ability to create an
+		auxilliary log file connection to the same or a different
+		host.
+	* vrpn_Generic_server_object.h : Same.
+	* vrpn.cfg : Same.
+	* test_auxilliary_logger.C : Source code for a test program for
+		this new object.
+	* test_auxilliary_logger.dsp : Project build file for this.
+	* test_auxilliary_logger.vcproj : Same.
+
 2007-07-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* test_vrpn.C : Added a call to the function that tests the

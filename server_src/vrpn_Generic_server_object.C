@@ -138,7 +138,7 @@ int vrpn_Generic_Server_Object::setup_SGIBox(char * & pch, char * line, FILE * c
                 printf("Opening vrpn_SGIBox on host %s done\n", s2);
 
 #else
-                fprintf(stderr,"vrpn_server: Can't open SGIbox: not an SGI!\n");
+                fprintf(stderr,"vrpn_server: Can't open SGIbox: not an SGI!  Try raw_SGIbox instead.\n");
 #endif
 
   return 0;  // successful completion
@@ -3220,6 +3220,39 @@ int vrpn_Generic_Server_Object::setup_Tracker_PhaseSpace (char * & pch, char * l
   return 0;
 }
 
+int vrpn_Generic_Server_Object::setup_Logger(char * & pch, char * line, FILE * config_file) {
+
+  char s2 [LINESIZE], s3 [LINESIZE];
+
+  // Line will be: vrpn_Auxilliary_Logger_Server_Generic NAME CONNECTION_TO_LOG
+  next();
+  if (sscanf(pch,"%511s %511s",s2,s3)!=2) {
+          fprintf(stderr,"Bad vrpn_Auxilliary_Logger_Server_Generic line: %s\n",line);
+          return -1;
+  }
+
+  // Make sure we don't have a full complement already.
+  if (num_loggers >= VRPN_GSO_MAX_LOGGER) {
+    fprintf(stderr,"Too many vrpn_Auxilliary_Logger_Server_Generic loggers.\n");
+    return -1;
+  }
+
+  // Open the logger
+  if (verbose) printf("Opening vrpn_Auxilliary_Logger_Server_Generic %s\n", s2);
+  vrpn_Auxilliary_Logger_Server_Generic* logger =  new vrpn_Auxilliary_Logger_Server_Generic(s2, s3, connection);
+
+  if(logger == NULL) {
+    fprintf(stderr,"Unable to create new vrpn_Auxilliary_Logger_Server_Generic.\n");
+    return -1;
+  }
+
+  loggers[num_loggers] = logger;
+  num_loggers++;
+  
+  return 0;  // successful completion
+}
+
+
 vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connection_to_use, const char *config_file_name, int port, bool be_verbose, bool bail_on_open_error) :
   connection(connection_to_use),
   d_doing_okay(true),
@@ -3247,6 +3280,7 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
   num_mouses(0)
   , num_inertiamouses (0)
   , num_KeyMouses(0)
+  , num_loggers(0)
 {
     FILE    * config_file;
     char    * client_name = NULL;
@@ -3425,6 +3459,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
             CHECK(setup_Button_NI_DIO24);
 	  } else if (isit("vrpn_Tracker_PhaseSpace")) {
             CHECK(setup_Tracker_PhaseSpace);
+	  } else if (isit("vrpn_Auxilliary_Logger_Server_Generic")) {
+            CHECK(setup_Logger);
 // BUW additions
           } else if (isit("vrpn_Atmel")) {
             CHECK(setup_Atmel);
@@ -3572,6 +3608,11 @@ void  vrpn_Generic_Server_Object::mainloop( void )
   // Let all the Mouses (Mice) do their thing
   for (i=0; i< num_mouses; i++) {
 	  mouses[i]->mainloop();
+  }
+
+  // Let all the Loggers do their thing
+  for (i=0; i< num_loggers; i++) {
+	  loggers[i]->mainloop();
   }
 }
 

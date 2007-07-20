@@ -539,16 +539,15 @@ int vrpn_Log::open (void) {
     if (d_file) {
       fclose(d_file);
       d_file = NULL;
-      fprintf(stderr, "vrpn_Log::open_log:  "
+      perror( "vrpn_Log::open_log:  "
               "Emergency log file \"/tmp/vrpn_emergency_log\" "
               "already exists.\n");
     } else {
       d_file = fopen("/tmp/vrpn_emergency_log", "wb");
       if( d_file == NULL ) {
-        fprintf(stderr, "vrpn_Log::open:  "
+        perror( "vrpn_Log::open:  "
                 "Couldn't open emergency log file "
                 "\"/tmp/vrpn_emergency_log\":  ");
-        perror( NULL /* no additional string */ );
       }
     }
 
@@ -3170,14 +3169,26 @@ int vrpn_Endpoint::pack_udp_description (int portno) {
 
 int vrpn_Endpoint::pack_log_description (void) {
   struct timeval now;
-  char buf [1000];  // HACK
-  char * bpp;
-  char ** bp;
-  vrpn_int32 buflen = 1000;
+
+  // Handle the case of NULL pointers in the log file names
+  // by pointing local copies at the empty string if they occur.
+  const char *inName = "";
+  const char *outName = "";
+  if (d_remoteInLogName) { inName = d_remoteInLogName; }
+  if (d_remoteOutLogName) { outName = d_remoteOutLogName; }
+  
+  // Include the NULL termination for the strings in the length of the buffer.
+  vrpn_int32 bufsize = 2*sizeof(vrpn_int32) + strlen(inName) + 1 + strlen(outName) + 1;
+  char *buf = new char[bufsize];
+  if (buf == NULL) {
+    fprintf(stderr,"vrpn_Endpoint::pack_log_description(): Out of memory\n");
+    return -1;
+  }
 
   // If we're not requesting remote logging, don't send any message.
 
   if (!d_remoteLogMode) {
+    delete [] buf;
     return 0;
   }
 
@@ -3187,16 +3198,19 @@ int vrpn_Endpoint::pack_log_description (void) {
   // to write to.
 
   vrpn_gettimeofday(&now, NULL);
-  bpp = buf;
-  bp = &bpp;
-  vrpn_buffer(bp, &buflen, (vrpn_int32) strlen(d_remoteInLogName));
-  vrpn_buffer(bp, &buflen, (vrpn_int32) strlen(d_remoteOutLogName));
-  vrpn_buffer(bp, &buflen, d_remoteInLogName, strlen(d_remoteInLogName));
-  vrpn_buffer(bp, &buflen, (char) 0);
-  vrpn_buffer(bp, &buflen, d_remoteOutLogName, strlen(d_remoteOutLogName));
-  vrpn_buffer(bp, &buflen, (char) 0);
-  return pack_message(1000 - buflen, now, vrpn_CONNECTION_LOG_DESCRIPTION,
+  char *bpp = buf;
+  char **bp = &bpp;
+  vrpn_int32 bufleft = bufsize;
+  vrpn_buffer(bp, &bufleft, (vrpn_int32) strlen(inName));
+  vrpn_buffer(bp, &bufleft, (vrpn_int32) strlen(outName));
+  vrpn_buffer(bp, &bufleft, inName, strlen(inName));
+  vrpn_buffer(bp, &bufleft, (char) 0);
+  vrpn_buffer(bp, &bufleft, outName, strlen(outName));
+  vrpn_buffer(bp, &bufleft, (char) 0);
+  int ret = pack_message(bufsize - bufleft, now, vrpn_CONNECTION_LOG_DESCRIPTION,
                       d_remoteLogMode, buf, vrpn_CONNECTION_RELIABLE);
+  delete [] buf;
+  return ret;
 }
 
 
@@ -5224,8 +5238,8 @@ vrpn_Connection::vrpn_Connection
 
   // Store the remote log file name and the remote log mode
   endpoint->d_remoteLogMode = 
-         ((remote_in_logfile_name ? vrpn_LOG_INCOMING : vrpn_LOG_NONE) |
-          (remote_out_logfile_name ? vrpn_LOG_OUTGOING : vrpn_LOG_NONE));
+         (( (remote_in_logfile_name && strlen(remote_in_logfile_name) > 0) ? vrpn_LOG_INCOMING : vrpn_LOG_NONE) |
+          ( (remote_out_logfile_name && strlen(remote_out_logfile_name) > 0) ? vrpn_LOG_OUTGOING : vrpn_LOG_NONE));
   if (!remote_in_logfile_name) {
     endpoint->d_remoteInLogName = new char [10];
     strcpy(endpoint->d_remoteInLogName, "");
@@ -5437,7 +5451,7 @@ vrpn_Connection::vrpn_Connection
   // If we are doing local logging, turn it on here. If we
   // can't open the file, then the connection is broken.
 
-  if (local_in_logfile_name) {
+  if (local_in_logfile_name && (strlen(local_in_logfile_name) != 0)) {
     endpoint->d_inLog->setName(local_in_logfile_name);
     endpoint->d_inLog->logMode() = vrpn_LOG_INCOMING;
     retval = endpoint->d_inLog->open();
@@ -5451,7 +5465,7 @@ vrpn_Connection::vrpn_Connection
 //fprintf(stderr, "vrpn_Connection: opened logfile.\n");
   }
 
-  if (local_out_logfile_name) {
+  if (local_out_logfile_name && (strlen(local_out_logfile_name) != 0)) {
     endpoint->d_outLog->setName(local_out_logfile_name);
     endpoint->d_outLog->logMode() = vrpn_LOG_OUTGOING;
     retval = endpoint->d_outLog->open();
@@ -5741,11 +5755,6 @@ vrpn_bool vrpn_Connection::connected (void) const
 // of a device name, rather than part of the connection name.  This allows
 // the opening of a connection to "Tracker0@ioglab" for example, which will
 // open a connection to ioglab.
-
-// This now always creates synchronized connections, but that is ok
-//  because they are derived from regular connections.
-// Passing freq=-1 makes it behave like a regular connection,
-//  i.e., quick-sync is disabled.
 
 // This routine adds to the reference count of the connection in question.
 // This happens regardless of whether the connection already exists
