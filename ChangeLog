@@ -1,3 +1,9 @@
+2007-07-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_DirectXRumblePad.C : Changes by Chris VanderKnyff to
+		make this work correctly on Visual Studio .NET and 6.
+	* vrpn_DirectXRumblePad.h : Same.
+
 2007-07-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.sln : Organizing the various projects into folders
