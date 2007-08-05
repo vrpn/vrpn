@@ -40,7 +40,7 @@ static const char * g_outLogName = NULL;
 // Use Forwarder as remote-controlled multiple connections.
 vrpn_Forwarder_Server * forwarderServer;
 
-bool  verbose = true;
+static bool  verbose = false;
 
 void shutDown (void)
 {
@@ -56,8 +56,8 @@ int VRPN_CALLBACK handle_dlc (void *, vrpn_HANDLERPARAM p)
     return 0;
 }
 
-// install a signal handler to shut down the trackers and buttons
-#ifndef WIN32
+// install a signal handler to shut down the devices
+#ifndef _WIN32
 #include <signal.h>
 //#ifdef sgi
 //void sighandler( ... )
@@ -88,7 +88,7 @@ int main (int argc, char * argv[])
 #else
   int	milli_sleep_time = 1;		// How long to sleep each iteration (default: 1ms)
 #endif
-#ifdef WIN32
+#ifdef _WIN32
   WSADATA wsaData; 
   int status;
   if ((status = WSAStartup(MAKEWORD(1,1), &wsaData)) != 0) {

@@ -315,6 +315,9 @@ typedef struct _vrpn_IMAGERREGIONCB {
 
 typedef void (VRPN_CALLBACK *vrpn_IMAGERREGIONHANDLER) (void * userdata,
 					  const vrpn_IMAGERREGIONCB info);
+// There is no data in the description callback other than the time; the
+// data members for the class will have been filled in, so the client should
+// call nRows() and other functions to read the new values.
 typedef void (VRPN_CALLBACK *vrpn_IMAGERDESCRIPTIONHANDLER) (void * userdata,
 					       const struct timeval msg_time);
 
@@ -473,7 +476,7 @@ public:
     return d_region_list.unregister_handler(userdata, handler);
   }
 
-  /// Register a handler for when the object's description changes (if desired)
+  /// Register a handler for when the object's description changes (if desired).
   virtual int register_description_handler(void *userdata, vrpn_IMAGERDESCRIPTIONHANDLER handler) {
     return d_description_list.register_handler(userdata, handler);
   };

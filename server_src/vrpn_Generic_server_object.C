@@ -1,7 +1,5 @@
 #include "vrpn_Generic_server_object.h"
 
-static	int	done = 0;	// Done and should exit?
-
 const int LINESIZE = 512;
 
 #define CHECK(s) \
@@ -44,7 +42,96 @@ void vrpn_Generic_Server_Object::closeDevices (void) {
     delete phantoms[i];
   }
 #endif
-  //XXX Get the other types of devices too...
+  for (i=0;i < num_sounds; i++) {
+    fprintf(stderr, "\nClosing sound %d ...", i);
+    delete sounds[i];
+  }
+  for (i=0;i < num_analogs; i++) {
+    fprintf(stderr, "\nClosing analog %d ...", i);
+    delete analogs[i];
+  }
+  for (i=0;i < num_sgiboxes; i++) {
+    fprintf(stderr, "\nClosing sgibox %d ...", i);
+    delete sgiboxes[i];
+  }
+  for (i=0;i < num_cereals; i++) {
+    fprintf(stderr, "\nClosing cereal %d ...", i);
+    delete cereals[i];
+  }
+  for (i=0;i < num_magellans; i++) {
+    fprintf(stderr, "\nClosing magellan %d ...", i);
+    delete magellans[i];
+  }
+  for (i=0;i < num_spaceballs; i++) {
+    fprintf(stderr, "\nClosing spaceball %d ...", i);
+    delete spaceballs[i];
+  }
+  for (i=0;i < num_iboxes; i++) {
+    fprintf(stderr, "\nClosing ibox %d ...", i);
+    delete iboxes[i];
+  }
+  for (i=0;i < num_dials; i++) {
+    fprintf(stderr, "\nClosing dial %d ...", i);
+    delete dials[i];
+  }
+#ifdef VRPN_INCLUDE_TIMECODE_SERVER
+  for (i=0;i < num_timecode_generators; i++) {
+    fprintf(stderr, "\nClosing timecode_generator %d ...", i);
+    delete timecode_generators[i];
+  }
+#endif
+  for (i=0;i < num_tng3s; i++) {
+    fprintf(stderr, "\nClosing tng3 %d ...", i);
+    delete tng3s[i];
+  }
+#ifdef	VRPN_USE_DIRECTINPUT
+  for (i=0;i < num_DirectXJoys; i++) {
+    fprintf(stderr, "\nClosing DirectXJoy %d ...", i);
+    delete DirectXJoys[i];
+  }
+  for (i=0;i < num_RumblePads; i++) {
+    fprintf(stderr, "\nClosing RumblePad %d ...", i);
+    delete RumblePads[i];
+  }
+#endif
+#ifdef	_WIN32
+  for (i=0;i < num_Win32Joys; i++) {
+    fprintf(stderr, "\nClosing win32joy %d ...", i);
+    delete win32joys[i];
+  }
+#endif
+  for (i=0;i < num_GlobalHapticsOrbs; i++) {
+    fprintf(stderr, "\nClosing Global Haptics Orb %d ...", i);
+    delete ghos[i];
+  }
+  for (i=0;i < num_DTracks; i++) {
+    fprintf(stderr, "\nClosing DTrack %d ...", i);
+    delete DTracks[i];
+  }
+  for (i=0;i < num_analogouts; i++) {
+    fprintf(stderr, "\nClosing analogout %d ...", i);
+    delete analogouts[i];
+  }
+  for (i=0;i < num_posers; i++) {
+    fprintf(stderr, "\nClosing poser %d ...", i);
+    delete posers[i];
+  }
+  for (i=0;i < num_KeyMouses; i++) {
+    fprintf(stderr, "\nClosing KeyMouse %d ...", i);
+    delete KeyMouses[i];
+  }
+  for (i=0;i < num_loggers; i++) {
+    fprintf(stderr, "\nClosing logger %d ...", i);
+    delete loggers[i];
+  }
+  for (i=0;i < num_imagestreams; i++) {
+    fprintf(stderr, "\nClosing imagestream %d ...", i);
+    delete imagestreams[i];
+  }
+  for (i=0;i < num_inertiamouses; i++) {
+    fprintf(stderr, "\nClosing inertiamouse %d ...", i);
+    delete inertiamouses[i];
+  }
   if (verbose) { fprintf(stderr, "\nAll devices closed...\n"); }
 }
 
@@ -3252,6 +3339,37 @@ int vrpn_Generic_Server_Object::setup_Logger(char * & pch, char * line, FILE * c
   return 0;  // successful completion
 }
 
+int vrpn_Generic_Server_Object::setup_ImageStream(char * & pch, char * line, FILE * config_file) {
+
+  char s2 [LINESIZE], s3 [LINESIZE];
+
+  // Line will be: vrpn_Imager_Stream_Buffer NAME IMAGER_SERVER_TO_LOG
+  next();
+  if (sscanf(pch,"%511s %511s",s2,s3)!=2) {
+          fprintf(stderr,"Bad vrpn_Imager_Stream_Buffer line: %s\n",line);
+          return -1;
+  }
+
+  // Make sure we don't have a full complement already.
+  if (num_imagestreams >= VRPN_GSO_MAX_IMAGE_STREAM) {
+    fprintf(stderr,"Too many vrpn_Imager_Stream_Buffer loggers.\n");
+    return -1;
+  }
+
+  // Open the stream buffer
+  if (verbose) printf("Opening vrpn_Imager_Stream_Buffer %s\n", s2);
+  vrpn_Imager_Stream_Buffer* imagestream =  new vrpn_Imager_Stream_Buffer(s2, s3, connection);
+
+  if(imagestream == NULL) {
+    fprintf(stderr,"Unable to create new vrpn_Imager_Stream_Buffer.\n");
+    return -1;
+  }
+
+  imagestreams[num_imagestreams] = imagestream;
+  num_imagestreams++;
+  
+  return 0;  // successful completion
+}
 
 vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connection_to_use, const char *config_file_name, int port, bool be_verbose, bool bail_on_open_error) :
   connection(connection_to_use),
@@ -3281,6 +3399,7 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
   , num_inertiamouses (0)
   , num_KeyMouses(0)
   , num_loggers(0)
+  , num_imagestreams(0)
 {
     FILE    * config_file;
     char    * client_name = NULL;
@@ -3461,6 +3580,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
             CHECK(setup_Tracker_PhaseSpace);
 	  } else if (isit("vrpn_Auxilliary_Logger_Server_Generic")) {
             CHECK(setup_Logger);
+	  } else if (isit("vrpn_Imager_Stream_Buffer")) {
+            CHECK(setup_ImageStream);
 // BUW additions
           } else if (isit("vrpn_Atmel")) {
             CHECK(setup_Atmel);
@@ -3613,6 +3734,11 @@ void  vrpn_Generic_Server_Object::mainloop( void )
   // Let all the Loggers do their thing
   for (i=0; i< num_loggers; i++) {
 	  loggers[i]->mainloop();
+  }
+
+  // Let all the ImageStreams do their thing
+  for (i=0; i< num_imagestreams; i++) {
+	  imagestreams[i]->mainloop();
   }
 }
 

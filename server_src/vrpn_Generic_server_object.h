@@ -61,13 +61,14 @@
 #include "vrpn_3DMicroscribe.h"
 #include "vrpn_5DT16.h"
 #include "vrpn_Keyboard_Mouse.h"
+#include "vrpn_Auxilliary_Logger.h"
+#include "vrpn_Imager_Stream_Buffer.h"
 // added by Tom dw
 #include "vrpn_Button_USB.h"
 // added by Bill West
 #include "vrpn_Analog_USDigital_A2.h"
 #include "vrpn_Button_NI_DIO24.h"
 #include "vrpn_Tracker_PhaseSpace.h"
-#include "vrpn_Auxilliary_Logger.h"
 
 // BUW additions
 #include "vrpn_Atmel.h"
@@ -80,39 +81,40 @@
 #include "timecode_generator_server\vrpn_timecode_generator.h"
 #endif
 
-const int VRPN_GSO_MAX_TRACKERS = 100;
-const int VRPN_GSO_MAX_BUTTONS =  100;
-const int VRPN_GSO_MAX_SOUNDS =     2;
-const int VRPN_GSO_MAX_ANALOG =     8;
-const int VRPN_GSO_MAX_ANALOGOUT =  8;
-const int VRPN_GSO_MAX_SGIBOX =     2;
-const int VRPN_GSO_MAX_CEREALS =    8;
-const int VRPN_GSO_MAX_MAGELLANS =  8;
-const int VRPN_GSO_MAX_MAGELLANSUSB =  8;
-const int VRPN_GSO_MAX_SPACEBALLS = 8;
-const int VRPN_GSO_MAX_IBOXES =     8;
-const int VRPN_GSO_MAX_DIALS =      8;
+const int VRPN_GSO_MAX_TRACKERS =             100;
+const int VRPN_GSO_MAX_BUTTONS =              100;
+const int VRPN_GSO_MAX_SOUNDS =               2;
+const int VRPN_GSO_MAX_ANALOG =               8;
+const int VRPN_GSO_MAX_ANALOGOUT =            8;
+const int VRPN_GSO_MAX_SGIBOX =               2;
+const int VRPN_GSO_MAX_CEREALS =              8;
+const int VRPN_GSO_MAX_MAGELLANS =            8;
+const int VRPN_GSO_MAX_MAGELLANSUSB =         8;
+const int VRPN_GSO_MAX_SPACEBALLS =           8;
+const int VRPN_GSO_MAX_IBOXES =               8;
+const int VRPN_GSO_MAX_DIALS =                8;
 #ifdef VRPN_INCLUDE_TIMECODE_SERVER
-const int VRPN_GSO_MAX_TIMECODE_GENERATORS = 8;
+const int VRPN_GSO_MAX_TIMECODE_GENERATORS =  8;
 #endif
-const int VRPN_GSO_MAX_TNG3S =	   8;
+const int VRPN_GSO_MAX_TNG3S =	              8;
 #ifdef	VRPN_USE_DIRECTINPUT
-const int VRPN_GSO_MAX_DIRECTXJOYS= 8;
-const int VRPN_GSO_MAX_RUMBLEPADS = 8;
+const int VRPN_GSO_MAX_DIRECTXJOYS=           8;
+const int VRPN_GSO_MAX_RUMBLEPADS =           8;
 #endif
-const int VRPN_GSO_MAX_WIN32JOYS =  2;
-const int VRPN_GSO_MAX_GLOBALHAPTICSORBS = 8;
+const int VRPN_GSO_MAX_WIN32JOYS =            2;
+const int VRPN_GSO_MAX_GLOBALHAPTICSORBS =    8;
 #ifdef	VRPN_USE_PHANTOM_SERVER
-const int VRPN_GSO_MAX_PHANTOMS =  10;
+const int VRPN_GSO_MAX_PHANTOMS =             10;
 #endif
-const int VRPN_GSO_MAX_DTRACKS =   5;
-const int VRPN_GSO_MAX_POSER =	   8;
-const int VRPN_GSO_MAX_MOUSES =	   8;
-const int VRPN_GSO_MAX_KEYMOUSE =  1;
-const int VRPN_GSO_MAX_LOGGER =    10;
+const int VRPN_GSO_MAX_DTRACKS =              5;
+const int VRPN_GSO_MAX_POSER =	              8;
+const int VRPN_GSO_MAX_MOUSES =	              8;
+const int VRPN_GSO_MAX_KEYMOUSE =             1;
+const int VRPN_GSO_MAX_LOGGER =               10;
+const int VRPN_GSO_MAX_IMAGE_STREAM =         10;
 
 // BUW additions
-const int VRPN_GSO_MAX_INERTIAMOUSES =  8;
+const int VRPN_GSO_MAX_INERTIAMOUSES =        8;
 
 
 class vrpn_Generic_Server_Object {
@@ -184,6 +186,8 @@ protected:
   int		num_KeyMouses;
   vrpn_Auxilliary_Logger_Server_Generic * loggers [VRPN_GSO_MAX_LOGGER];
   int           num_loggers;
+  vrpn_Imager_Stream_Buffer * imagestreams [VRPN_GSO_MAX_IMAGE_STREAM];
+  int           num_imagestreams;
 
   // BUW additions
   vrpn_inertiamouse * inertiamouses [VRPN_GSO_MAX_INERTIAMOUSES];
@@ -252,6 +256,7 @@ protected:
   int setup_Button_NI_DIO24 (char * & pch, char * line, FILE * config_file) ;
   int setup_Tracker_PhaseSpace (char * & pch, char * line, FILE * config_file) ;
   int setup_Logger (char * & pch, char * line, FILE * config_file) ;
+  int setup_ImageStream (char * & pch, char * line, FILE * config_file) ;
 
   // BUW additions
   int setup_Atmel(char* &pch, char *line, FILE *config_file);

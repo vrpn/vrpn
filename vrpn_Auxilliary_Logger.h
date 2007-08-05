@@ -61,6 +61,10 @@ class VRPN_API vrpn_Auxilliary_Logger_Server : public vrpn_Auxilliary_Logger {
 public:
   vrpn_Auxilliary_Logger_Server(const char * name, vrpn_Connection * c);
 
+  // Required for servers.
+  virtual void mainloop(void) { server_mainloop(); }
+
+protected:
   // Handle a logging-request message.  The request contains four file
   // names, two for local (to the Auxilliary server itself) and two for
   // remote (the far side of its connection to the server).  It must
@@ -88,10 +92,6 @@ public:
         remote_in_logfile_name, remote_out_logfile_name);
     }
 
-  // Required for servers.
-  virtual void mainloop(void) { server_mainloop(); }
-
-protected:
   // Handle dropped last connection on server object by turning off
   // logging.  The static method basically looks up the this
   // pointer and calls the virtual method.  A derived class should re-implement

@@ -277,7 +277,7 @@ typedef void (*vrpn_THREAD_FUNC) ( vrpn_ThreadData &threadData );
 // Don't let the existence of a Thread class fool you into thinking
 // that VRPN is thread-safe.  This and the Semaphore are included as
 // building blocks towards making your own code thread-safe.  They are
-// here to enable the vrpn_Imager_Logger class to do its thing.
+// here to enable the vrpn_Imager_Stream_Buffer class to do its thing.
 class VRPN_API vrpn_Thread {
 public:  
   // args are the routine to run in the thread

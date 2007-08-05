@@ -1,3 +1,9 @@
+2007-08-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* testimager_client.C : Fixed a race-condition bug at startup that
+		would cause a crash when a Glut function was called before
+		Glut was initialized.
+
 2007-06-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Makefile : Added linking with pthreads because of vrpn_Thread class.

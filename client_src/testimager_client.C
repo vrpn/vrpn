@@ -243,7 +243,14 @@ int main(int argc, char **argv)
   if (argc >= 3) { logfile_name = argv[2]; }
   if (argc > 3) { fprintf(stderr, "Usage: %s [device_name [logfile_name]]\n", argv[0]); exit(-1); }
 
-  // Create a log file of the video if we've been asked to do logging
+  // Say that we've posted a redisplay so that the callback handler
+  // for endframe doesn't try to post one before glut is open.
+  g_already_posted = true;
+
+  // Create a log file of the video if we've been asked to do logging.
+  // This has the side effect of having the imager also use this same
+  // connection, because VRPN maps the same connection name to the
+  // same one rather than creating a new one.
   if (logfile_name) {
     g_connection = vrpn_get_connection_by_name(device_name, logfile_name);
   }

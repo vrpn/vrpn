@@ -4832,62 +4832,63 @@ void vrpn_Connection::server_check_for_incoming_connections
 
       // Create a new endpoint and start trying to connect it to
       // the client.
-    d_endpoints[which_end] = (*d_endpointAllocator)(this, &d_numConnectedEndpoints);
-    d_endpoints[which_end]->setConnection( this );
-    d_updateEndpoint = vrpn_TRUE;
-    endpoint = d_endpoints[which_end];
-    if (!endpoint) {
-        fprintf(stderr,
-                "vrpn_Connection::server_check_for_incoming_connections:\n"
-                "    Out of memory on new endpoint\n");
-        return;
-    }
-
-    // Server-side logging under multiconnection - TCH July 2000
-    if (d_serverLogMode & vrpn_LOG_INCOMING) {
-      d_serverLogCount++;
-      endpoint->d_inLog->setCompoundName(d_serverLogName, d_serverLogCount);
-      endpoint->d_inLog->logMode() = vrpn_LOG_INCOMING;
-      retval = endpoint->d_inLog->open();
-      if (retval == -1) {
-        fprintf(stderr,
-                "vrpn_Connection::server_check_for_incoming_connections:  "
-                "Couldn't open log file.\n");
-        connectionStatus = BROKEN;
-        return;
+      d_endpoints[which_end] = (*d_endpointAllocator)(this, &d_numConnectedEndpoints);
+      d_endpoints[which_end]->setConnection( this );
+      d_updateEndpoint = vrpn_TRUE;
+      endpoint = d_endpoints[which_end];
+      if (!endpoint) {
+          fprintf(stderr,
+                  "vrpn_Connection::server_check_for_incoming_connections:\n"
+                  "    Out of memory on new endpoint\n");
+          return;
       }
-    }
 
-    endpoint->setNICaddress(d_NIC_IP);
-    // Because we sometimes use multiple-NICs, we are ignoring the IP from the
-    // client, and filling in the NIC that the udp request arrived on.
-    sscanf(msg, "%*s %d", &port);   // get the port
-    //fill in NIC address
-    unsigned long addr_num = ntohl(from.sin_addr.s_addr);
-    sprintf(msg, "%u.%u.%u.%u %d", 
-            (addr_num) >> 24,
-            (addr_num >> 16) & 0xff,
-            (addr_num >> 8) & 0xff,
-            addr_num & 0xff, port); 
-    endpoint->connect_tcp_to(msg);
+      // Server-side logging under multiconnection - TCH July 2000
+      if (d_serverLogMode & vrpn_LOG_INCOMING) {
+        d_serverLogCount++;
+        endpoint->d_inLog->setCompoundName(d_serverLogName, d_serverLogCount);
+        endpoint->d_inLog->logMode() = vrpn_LOG_INCOMING;
+        retval = endpoint->d_inLog->open();
+        if (retval == -1) {
+          fprintf(stderr,
+                  "vrpn_Connection::server_check_for_incoming_connections:  "
+                  "Couldn't open log file.\n");
+          connectionStatus = BROKEN;
+          return;
+        }
+      }
 
-    // d_numEndpoints must be incremented before handle_connection is called
-    // otherwise the functions doing_okay and connected do not check all
-    // the endpoints. Because of this topo was unable to send the header
-    // information and nano crashed...
-    d_numEndpoints++;
+      endpoint->setNICaddress(d_NIC_IP);
+      endpoint->status = TRYING_TO_CONNECT;
 
-    handle_connection(which_end);
+      // d_numEndpoints must be incremented before handle_connection is called
+      // otherwise the functions doing_okay and connected do not check all
+      // the endpoints. Because of this topo was unable to send the header
+      // information and nano crashed...
+      d_numEndpoints++;
 
-    // HACK
-    // We don't want to do this, but connection requests are soft state
-    // that will be restored in 1 second;  meanwhile, if we accept multiple
-    // connection requests from the same source we try to open multiple
-    // connections to it, which invariably makes SOMEBODY crash sooner or
-    // later.
-    flush_udp_socket(listen_udp_sock);
+      // Because we sometimes use multiple-NICs, we are ignoring the IP from the
+      // client, and filling in the NIC that the udp request arrived on.
+      sscanf(msg, "%*s %d", &port);   // get the port
+      //fill in NIC address
+      unsigned long addr_num = ntohl(from.sin_addr.s_addr);
+      sprintf(msg, "%u.%u.%u.%u %d", 
+              (addr_num) >> 24,
+              (addr_num >> 16) & 0xff,
+              (addr_num >> 8) & 0xff,
+              addr_num & 0xff, port); 
+      endpoint->connect_tcp_to(msg);
+
+      handle_connection(which_end);
+
+      // HACK
+      // We don't want to do this, but connection requests are soft state
+      // that will be restored in 1 second;  meanwhile, if we accept multiple
+      // connection requests from the same source we try to open multiple
+      // connections to it, which invariably makes SOMEBODY crash sooner or
+      // later.
+      flush_udp_socket(listen_udp_sock);
   }
-
 
   // Do a zero-time select() to see if there are incoming TCP requests on
   // the listen socket.  This is used when the client needs to punch through
@@ -4899,7 +4900,7 @@ void vrpn_Connection::server_check_for_incoming_connections
   if (retval == -1) {
     fprintf(stderr, "Error accepting on TCP socket.\n");
     return;
-  } else if (retval) {
+  } else if (retval) { // Some data to read!  Go get it.
 
     printf("vrpn: TCP connection request received.\n");
 
@@ -4943,9 +4944,6 @@ void vrpn_Connection::server_check_for_incoming_connections
     }
 
     endpoint->setNICaddress(d_NIC_IP);
-
-    // TCH OHS HACK (continued - here's a critical point)
-    //endpoint->connect_tcp_to(msg);
     endpoint->d_tcpSocket = newSocket;
 
     d_numEndpoints++;
@@ -5722,8 +5720,7 @@ vrpn_bool vrpn_Connection::doing_okay (void) const {
     return (connectionStatus >= TRYING_TO_CONNECT);
 }
 
-// XXX What's the right thing to do? For now, loop over endpoints
-// and return TRUE if any of them are connected.
+// Loop over endpoints and return TRUE if any of them are connected.
 vrpn_bool vrpn_Connection::connected (void) const
 {
     int endpointIndex;

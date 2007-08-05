@@ -959,6 +959,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\vrpn_Imager_Stream_Buffer.C"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_ImmersionBox.C"
 				>
 				<FileConfiguration
@@ -1969,6 +1989,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_Imager.h"
+				>
+			</File>
+			<File
+				RelativePath=".\vrpn_Imager_Stream_Buffer.h"
 				>
 			</File>
 			<File
