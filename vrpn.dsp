@@ -230,6 +230,10 @@ SOURCE=.\vrpn_Imager.C
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_Imager_Stream_Buffer.C
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_ImmersionBox.C
 # End Source File
 # Begin Source File
@@ -527,6 +531,10 @@ SOURCE=.\vrpn_HashST.h
 # Begin Source File
 
 SOURCE=.\vrpn_Imager.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Imager_Stream_Buffer.h
 # End Source File
 # Begin Source File
 

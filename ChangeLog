@@ -1,5 +1,10 @@
 2007-08-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn.dsp : Added vrpn_Imager_Stream_Buffer.
+	* vrpndll.dsp  : Same.
+
+2007-08-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Imager_Stream_Buffer.h : Class that provides
 		full-rate logging of a vrpn_Imager stream while
 		forwarding a subset of the stream to a client.
