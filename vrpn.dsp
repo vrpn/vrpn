@@ -226,6 +226,10 @@ SOURCE=.\vrpn_GlobalHapticsOrb.C
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_HumanInterface.C
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_Imager.C
 # End Source File
 # Begin Source File
@@ -378,6 +382,10 @@ SOURCE=.\vrpn_Wanda.C
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_Xkeys.C
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_Zaber.C
 # End Source File
 # End Group
@@ -527,6 +535,10 @@ SOURCE=.\vrpn_GlobalHapticsOrb.h
 # Begin Source File
 
 SOURCE=.\vrpn_HashST.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_HumanInterface.h
 # End Source File
 # Begin Source File
 
@@ -683,6 +695,10 @@ SOURCE=.\vrpn_VPJoystick.h
 # Begin Source File
 
 SOURCE=.\vrpn_Wanda.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Xkeys.h
 # End Source File
 # Begin Source File
 

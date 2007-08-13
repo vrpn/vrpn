@@ -1,3 +1,20 @@
+2007-08-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Added option to enable compilation
+		of the HID devices (including the Xkeys devices).
+		This will only work on Windows for now.
+	* vrpn_HumanInterface.C : Chris VanderKnyff's implementation
+		of a generic HID device interface for Windows.
+	* vrpn_HumanInterface.h : Same.
+	* vrpn_Xkeys.C : Chris VanderKnyff's implementation of a
+		driver for four of the X-Keys devices from P.I.
+		Engineering
+	* vrpn_Xkeys.h : Same.
+	* vrpn.dsp : Adding HID and XKeys to project.
+	* vrpn.vcproj : Same.
+	* vrpndll.dsp : Same.
+	* vrpndll.vcproj : Same.
+
 2007-08-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.dsp : Added vrpn_Imager_Stream_Buffer.
