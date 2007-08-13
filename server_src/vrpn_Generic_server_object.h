@@ -69,6 +69,7 @@
 #include "vrpn_Analog_USDigital_A2.h"
 #include "vrpn_Button_NI_DIO24.h"
 #include "vrpn_Tracker_PhaseSpace.h"
+#include "vrpn_Xkeys.h"
 
 // BUW additions
 #include "vrpn_Atmel.h"
@@ -193,7 +194,6 @@ protected:
   vrpn_inertiamouse * inertiamouses [VRPN_GSO_MAX_INERTIAMOUSES];
   int             num_inertiamouses;
 
-
   void closeDevices (void);
 
   // Helper functions for the functions below
@@ -257,6 +257,10 @@ protected:
   int setup_Tracker_PhaseSpace (char * & pch, char * line, FILE * config_file) ;
   int setup_Logger (char * & pch, char * line, FILE * config_file) ;
   int setup_ImageStream (char * & pch, char * line, FILE * config_file) ;
+  int setup_Xkeys_Desktop (char * & pch, char * line, FILE * config_file) ;
+  int setup_Xkeys_Pro (char * & pch, char * line, FILE * config_file) ;
+  int setup_Xkeys_Joystick (char * & pch, char * line, FILE * config_file) ;
+  int setup_Xkeys_Jog_And_Shuttle (char * & pch, char * line, FILE * config_file) ;
 
   // BUW additions
   int setup_Atmel(char* &pch, char *line, FILE *config_file);

@@ -57,7 +57,27 @@ int VRPN_CALLBACK handle_dlc (void *, vrpn_HANDLERPARAM p)
 }
 
 // install a signal handler to shut down the devices
-#ifndef _WIN32
+#if defined (_WIN32) && !defined (__CYGWIN__)
+/**
+ * Handle exiting cleanly when we get ^C or other signals. 
+ */
+BOOL WINAPI handleConsoleSignalsWin( DWORD signaltype)
+{
+    switch (signaltype) {
+    case CTRL_C_EVENT:
+    case CTRL_BREAK_EVENT:
+    case CTRL_CLOSE_EVENT:
+    case CTRL_SHUTDOWN_EVENT:
+        done = 1;
+        return TRUE;
+    // Don't exit, but return FALSE so default handler
+    // gets called. The default handler, ExitProcess, will exit. 
+    default:
+        return FALSE;
+    }
+}
+
+#else
 #include <signal.h>
 //#ifdef sgi
 //void sighandler( ... )
@@ -95,6 +115,10 @@ int main (int argc, char * argv[])
     fprintf(stderr, "WSAStartup failed with %d\n", status);
     return(1);
   }
+
+  // This handles all kinds of signals.
+  SetConsoleCtrlHandler(handleConsoleSignalsWin, TRUE);
+
 #else
 #ifdef sgi
   sigset( SIGINT, sighandler );

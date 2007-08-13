@@ -1,3 +1,12 @@
+2007-08-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Generic_server_object.C : Adding HID and XKeys from
+		Chris VanderKnyff to the objects that can be created.
+	* vrpn_Generic_server_object.h : Same.
+	* vrpn.cfg : Same.
+	* vrpn.C : Added ^C handler in Windows so that objects are
+		cleaned up nicely before exit.
+
 2007-08-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.C : Fixed some #define terms (_WIN32 rather than WIN32).

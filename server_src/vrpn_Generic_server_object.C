@@ -1181,7 +1181,7 @@ int vrpn_Generic_Server_Object::setup_Button_USB(char * & pch, char * line, FILE
 		num_buttons++;
 	}
 #else
-	printf("XXX vrpn_Button_USB only compiled for Windows.\n");
+	printf("vrpn_Button_USB only compiled for Windows.\n");
 #endif
 
 	return 0;
@@ -3371,6 +3371,143 @@ int vrpn_Generic_Server_Object::setup_ImageStream(char * & pch, char * line, FIL
   return 0;  // successful completion
 }
 
+int vrpn_Generic_Server_Object::setup_Xkeys_Desktop(char * & pch, char * line, FILE * config_file) {
+#ifdef VRPN_USE_HID
+  char s2 [LINESIZE];
+
+  next();
+  if (sscanf(pch,"%511s",s2)!=1) {
+    fprintf(stderr,"Bad Xkeys_Desktop line: %s\n",line);
+    return -1;
+  }
+
+  // Open the Xkeys
+  // Make sure there's room for a new button
+  if (num_buttons >= VRPN_GSO_MAX_BUTTONS) {
+    fprintf(stderr,"vrpn_Xkeys_Desktop: Too many buttons in config file");
+    return -1;
+  }
+
+  // Open the button
+  if (verbose) {
+    printf("Opening vrpn_Xkeys_Desktop on host %s\n", s2);
+  }
+  if ( (buttons[num_buttons] = new vrpn_Xkeys_Desktop(s2, connection)) == NULL ) {
+    fprintf(stderr,"Can't create new vrpn_Xkeys_Desktop\n");
+     return -1;
+  } else {
+    num_buttons++;
+  }
+#else
+  fprintf(stderr,"vrpn_server: Can't open Xkeys: HID not compiled in: define VRPN_USE_HID in vrpn_Configure.h and recompile.\n");
+#endif
+
+  return 0;  // successful completion
+}
+
+int vrpn_Generic_Server_Object::setup_Xkeys_Pro(char * & pch, char * line, FILE * config_file) {
+#ifdef VRPN_USE_HID
+  char s2 [LINESIZE];
+
+  next();
+  if (sscanf(pch,"%511s",s2)!=1) {
+    fprintf(stderr,"Bad Xkeys_Pro line: %s\n",line);
+    return -1;
+  }
+
+  // Open the Xkeys
+  // Make sure there's room for a new button
+  if (num_buttons >= VRPN_GSO_MAX_BUTTONS) {
+    fprintf(stderr,"vrpn_Xkeys_Pro: Too many buttons in config file");
+    return -1;
+  }
+
+  // Open the button
+  if (verbose) {
+    printf("Opening vrpn_Xkeys_Pro on host %s\n", s2);
+  }
+  if ( (buttons[num_buttons] = new vrpn_Xkeys_Pro(s2, connection)) == NULL ) {
+    fprintf(stderr,"Can't create new vrpn_Xkeys_Pro\n");
+     return -1;
+  } else {
+    num_buttons++;
+  }
+#else
+  fprintf(stderr,"vrpn_server: Can't open Xkeys: HID not compiled in: define VRPN_USE_HID in vrpn_Configure.h and recompile.\n");
+#endif
+
+  return 0;  // successful completion
+}
+
+int vrpn_Generic_Server_Object::setup_Xkeys_Joystick(char * & pch, char * line, FILE * config_file) {
+#ifdef VRPN_USE_HID
+  char s2 [LINESIZE];
+
+  next();
+  if (sscanf(pch,"%511s",s2)!=1) {
+    fprintf(stderr,"Bad Xkeys_Joystick line: %s\n",line);
+    return -1;
+  }
+
+  // Open the Xkeys
+  // Make sure there's room for a new button
+  if (num_buttons >= VRPN_GSO_MAX_BUTTONS) {
+    fprintf(stderr,"vrpn_Xkeys_Joystick: Too many buttons in config file");
+    return -1;
+  }
+
+  // Open the button
+  if (verbose) {
+    printf("Opening vrpn_Xkeys_Joystick on host %s\n", s2);
+  }
+  if ( (buttons[num_buttons] = new vrpn_Xkeys_Joystick(s2, connection)) == NULL ) {
+    fprintf(stderr,"Can't create new vrpn_Xkeys_Joystick\n");
+     return -1;
+  } else {
+    num_buttons++;
+  }
+#else
+  fprintf(stderr,"vrpn_server: Can't open Xkeys: HID not compiled in: define VRPN_USE_HID in vrpn_Configure.h and recompile.\n");
+#endif
+
+  return 0;  // successful completion
+}
+
+int vrpn_Generic_Server_Object::setup_Xkeys_Jog_And_Shuttle(char * & pch, char * line, FILE * config_file) {
+#ifdef VRPN_USE_HID
+  char s2 [LINESIZE];
+
+  next();
+  if (sscanf(pch,"%511s",s2)!=1) {
+    fprintf(stderr,"Bad Xkeys_Jog_And_Shuttle line: %s\n",line);
+    return -1;
+  }
+
+  // Open the Xkeys
+  // Make sure there's room for a new button
+  if (num_buttons >= VRPN_GSO_MAX_BUTTONS) {
+    fprintf(stderr,"vrpn_Xkeys_Jog_And_Shuttle: Too many buttons in config file");
+    return -1;
+  }
+
+  // Open the button
+  if (verbose) {
+    printf("Opening vrpn_Xkeys_Jog_And_Shuttle on host %s\n", s2);
+  }
+  if ( (buttons[num_buttons] = new vrpn_Xkeys_Jog_And_Shuttle(s2, connection)) == NULL ) {
+    fprintf(stderr,"Can't create new vrpn_Xkeys_Jog_And_Shuttle\n");
+     return -1;
+  } else {
+    num_buttons++;
+  }
+#else
+  fprintf(stderr,"vrpn_server: Can't open Xkeys: HID not compiled in: define VRPN_USE_HID in vrpn_Configure.h and recompile.\n");
+#endif
+
+  return 0;  // successful completion
+}
+
+
 vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connection_to_use, const char *config_file_name, int port, bool be_verbose, bool bail_on_open_error) :
   connection(connection_to_use),
   d_doing_okay(true),
@@ -3582,6 +3719,14 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
             CHECK(setup_Logger);
 	  } else if (isit("vrpn_Imager_Stream_Buffer")) {
             CHECK(setup_ImageStream);
+	  } else if (isit("vrpn_Xkeys_Desktop")) {
+            CHECK(setup_Xkeys_Desktop);
+	  } else if (isit("vrpn_Xkeys_Pro")) {
+            CHECK(setup_Xkeys_Pro);
+	  } else if (isit("vrpn_Xkeys_Joystick")) {
+            CHECK(setup_Xkeys_Joystick);
+	  } else if (isit("vrpn_Xkeys_Jog_And_Shuttle")) {
+            CHECK(setup_Xkeys_Jog_And_Shuttle);
 // BUW additions
           } else if (isit("vrpn_Atmel")) {
             CHECK(setup_Atmel);
