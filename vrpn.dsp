@@ -85,6 +85,10 @@ LIB32=link.exe -lib
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
+SOURCE=.\vrpn_3DConnexion.C
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_3DMicroscribe.C
 # End Source File
 # Begin Source File
@@ -395,6 +399,10 @@ SOURCE=.\vrpn_Zaber.C
 # Begin Source File
 
 SOURCE=..\isense\isense.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_3DConnexion.h
 # End Source File
 # Begin Source File
 

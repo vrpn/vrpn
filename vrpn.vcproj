@@ -170,6 +170,26 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
+				RelativePath=".\vrpn_3DConnexion.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_3DMicroscribe.C"
 				>
 				<FileConfiguration
@@ -1890,6 +1910,10 @@
 			>
 			<File
 				RelativePath="..\isense\isense.h"
+				>
+			</File>
+			<File
+				RelativePath=".\vrpn_3DConnexion.h"
 				>
 			</File>
 			<File

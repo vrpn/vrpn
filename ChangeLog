@@ -1,3 +1,19 @@
+2007-08-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3DConnexion.C : Thanks to Chris V's new HID class, I
+		was able to write a driver for the Space Traveler and
+		Space Navigator from 3DConnexion.  These are a $55 and
+		$200 replacement for the Magellans.
+	* vrpn_3DConnexion.h : Same.
+	* vrpn.dsp : Same.
+	* vrpn.vcproj : Same.
+	* vrpndll.dsp : Same.
+	* vrpndll.vcproj : Same.
+	* vrpn.dsw : Added new project from Chris VanderKnyff that
+		prints out the values from a HID device, enabling you
+		to figure out how to write a driver for it.  That's what
+		I used to figure out the bytes from the 3DConnexions.
+
 2007-08-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Configure.h : Added option to enable compilation

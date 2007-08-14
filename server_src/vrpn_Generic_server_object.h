@@ -70,6 +70,7 @@
 #include "vrpn_Button_NI_DIO24.h"
 #include "vrpn_Tracker_PhaseSpace.h"
 #include "vrpn_Xkeys.h"
+#include "vrpn_3DConnexion.h"
 
 // BUW additions
 #include "vrpn_Atmel.h"
@@ -261,6 +262,8 @@ protected:
   int setup_Xkeys_Pro (char * & pch, char * line, FILE * config_file) ;
   int setup_Xkeys_Joystick (char * & pch, char * line, FILE * config_file) ;
   int setup_Xkeys_Jog_And_Shuttle (char * & pch, char * line, FILE * config_file) ;
+  int setup_3DConnexion_Navigator (char * & pch, char * line, FILE * config_file) ;
+  int setup_3DConnexion_Traveler (char * & pch, char * line, FILE * config_file) ;
 
   // BUW additions
   int setup_Atmel(char* &pch, char *line, FILE *config_file);

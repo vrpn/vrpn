@@ -3507,6 +3507,74 @@ int vrpn_Generic_Server_Object::setup_Xkeys_Jog_And_Shuttle(char * & pch, char *
   return 0;  // successful completion
 }
 
+int vrpn_Generic_Server_Object::setup_3DConnexion_Navigator(char * & pch, char * line, FILE * config_file) {
+#ifdef VRPN_USE_HID
+  char s2 [LINESIZE];
+
+  next();
+  if (sscanf(pch,"%511s",s2)!=1) {
+    fprintf(stderr,"Bad 3DConnexion_Navigator line: %s\n",line);
+    return -1;
+  }
+
+  // Open the 3DConnexion_Navigator
+  // Make sure there's room for a new button
+  if (num_buttons >= VRPN_GSO_MAX_BUTTONS) {
+    fprintf(stderr,"vrpn_3DConnexion_Navigator: Too many buttons in config file");
+    return -1;
+  }
+
+  // Open the button
+  if (verbose) {
+    printf("Opening vrpn_3DConnexion_Navigator %s\n", s2);
+  }
+  if ( (buttons[num_buttons] = new vrpn_3DConnexion_Navigator(s2, connection)) == NULL ) {
+    fprintf(stderr,"Can't create new vrpn_3DConnexion_Navigator\n");
+     return -1;
+  } else {
+    num_buttons++;
+  }
+#else
+  fprintf(stderr,"vrpn_server: Can't open 3DConnexion_Navigator: HID not compiled in: define VRPN_USE_HID in vrpn_Configure.h and recompile.\n");
+#endif
+
+  return 0;  // successful completion
+}
+
+int vrpn_Generic_Server_Object::setup_3DConnexion_Traveler(char * & pch, char * line, FILE * config_file) {
+#ifdef VRPN_USE_HID
+  char s2 [LINESIZE];
+
+  next();
+  if (sscanf(pch,"%511s",s2)!=1) {
+    fprintf(stderr,"Bad 3DConnexion_Traveler line: %s\n",line);
+    return -1;
+  }
+
+  // Open the 3DConnexion_Traveler
+  // Make sure there's room for a new button
+  if (num_buttons >= VRPN_GSO_MAX_BUTTONS) {
+    fprintf(stderr,"vrpn_3DConnexion_Traveler: Too many buttons in config file");
+    return -1;
+  }
+
+  // Open the button
+  if (verbose) {
+    printf("Opening vrpn_3DConnexion_Traveler %s\n", s2);
+  }
+  if ( (buttons[num_buttons] = new vrpn_3DConnexion_Traveler(s2, connection)) == NULL ) {
+    fprintf(stderr,"Can't create new vrpn_3DConnexion_Traveler\n");
+     return -1;
+  } else {
+    num_buttons++;
+  }
+#else
+  fprintf(stderr,"vrpn_server: Can't open 3DConnexion_Traveler: HID not compiled in: define VRPN_USE_HID in vrpn_Configure.h and recompile.\n");
+#endif
+
+  return 0;  // successful completion
+}
+
 
 vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connection_to_use, const char *config_file_name, int port, bool be_verbose, bool bail_on_open_error) :
   connection(connection_to_use),
@@ -3727,6 +3795,10 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
             CHECK(setup_Xkeys_Joystick);
 	  } else if (isit("vrpn_Xkeys_Jog_And_Shuttle")) {
             CHECK(setup_Xkeys_Jog_And_Shuttle);
+	  } else if (isit("vrpn_3DConnexion_Navigator")) {
+            CHECK(setup_3DConnexion_Navigator);
+	  } else if (isit("vrpn_3DConnexion_Traveler")) {
+            CHECK(setup_3DConnexion_Traveler);
 // BUW additions
           } else if (isit("vrpn_Atmel")) {
             CHECK(setup_Atmel);

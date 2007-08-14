@@ -1,3 +1,16 @@
+2007-08-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Generic_server_object.C : Adding 3DConnexion Space
+		Navigator and Space Traveler devices.  An impulse buy
+		at SIGGRAPH this year.
+	* vrpn_Generic_server_object.h : Same.
+	* vrpn_HID_device_watcher.cpp : Code from Chris VanderKnyff
+		that lets you watch the messages coming from a HID
+		device.  Great for figuring out how to write a driver!
+	* vrpn_hid_device_watcher.dsp : Builds the project.
+	* vrpn_hid_device_watcher.vcproj : Same.
+	* vrpn.cfg : Entries for the new devices.
+
 2007-08-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Generic_server_object.C : Adding HID and XKeys from
