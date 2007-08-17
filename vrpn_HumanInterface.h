@@ -154,3 +154,4 @@ private:
 #endif // VRPN_USE_HID
 
 #endif // VRPN_HUMANINTERFACE_H
+

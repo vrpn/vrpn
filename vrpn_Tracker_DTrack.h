@@ -67,6 +67,12 @@ class VRPN_API vrpn_Tracker_DTrack : public vrpn_Tracker, public vrpn_Button, pu
   
  public:
 
+#ifdef _WIN32
+        typedef SOCKET socket_type;
+#else
+        typedef int socket_type;
+#endif
+
 // Constructor:
 // name (i): device name
 // c (i): vrpn_Connection
@@ -129,7 +135,7 @@ class VRPN_API vrpn_Tracker_DTrack : public vrpn_Tracker, public vrpn_Button, pu
 	// communicating with DTrack:
 	// these functions receive and parse data packets from DTrack
 
-	void* d_udpsock;                // socket number for UDP
+	socket_type d_udpsock;          // socket number for UDP
 	int d_udptimeout_us;            // timeout for receiving UDP data
 
 	int d_udpbufsize;               // size of UDP buffer

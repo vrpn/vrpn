@@ -110,9 +110,9 @@ static char* string_get_d(char* str, double* d);
 static char* string_get_f(char* str, float* f);
 static char* string_get_block(char* str, char* fmt, int* idat, float* fdat);
 
-static void* udp_init(unsigned short port);
-static int udp_exit(void* sock);
-static int udp_receive(void* sock, void *buffer, int maxlen, int tout_us);
+static vrpn_Tracker_DTrack::socket_type udp_init(unsigned short port);
+static int udp_exit(vrpn_Tracker_DTrack::socket_type sock);
+static int udp_receive(vrpn_Tracker_DTrack::socket_type sock, void *buffer, int maxlen, int tout_us);
 
 
 // --------------------------------------------------------------------------
@@ -596,7 +596,7 @@ bool vrpn_Tracker_DTrack::dtrack_init(int udpport)
 
 	d_udpsock = udp_init((unsigned short )udpport);
 	
-	if(d_udpsock == NULL){
+	if(d_udpsock == INVALID_SOCKET){
 		fprintf(stderr, "vrpn_Tracker_DTrack: Cannot Initialize UDP Socket.\n");
 		return false;
 	}
@@ -611,7 +611,7 @@ bool vrpn_Tracker_DTrack::dtrack_init(int udpport)
 	
 	if(d_udpbuf == NULL){
 		udp_exit(d_udpsock);
-		d_udpsock = NULL;
+		d_udpsock = INVALID_SOCKET;
 		fprintf(stderr, "vrpn_Tracker_DTrack: Cannot Allocate Memory for UDP Buffer.\n");
 		return false;
 	}
@@ -643,7 +643,7 @@ bool vrpn_Tracker_DTrack::dtrack_exit(void)
 
 	// release UDP socket:
 
-	if(d_udpsock != NULL){
+	if(d_udpsock != INVALID_SOCKET){
 		udp_exit(d_udpsock);
 	}
 	
@@ -665,7 +665,7 @@ bool vrpn_Tracker_DTrack::dtrack_receive(void)
 	float f;
 	int loc_num_bodycal, loc_num_flystick1, loc_num_meatool;
 
-	if(d_udpsock == NULL){
+	if(d_udpsock == INVALID_SOCKET){
 		d_lasterror = DTRACK_ERR_UDP;
 		return false;
 	}
@@ -1109,21 +1109,16 @@ static char* string_get_block(char* str, char* fmt, int* idat, float* fdat)
 // Handling UDP data:
 
 #ifdef OS_UNIX
-#define OS_SOCKET(a)  ((int )(a))    // convert general socket to Unix socket
-#define DT_SOCKET(a)  ((void *)(a))  // convert Unix socket to general socket
-#endif
-#ifdef OS_WIN
-#define OS_SOCKET(a)  ((SOCKET )(a)) // convert general socket to Windows Socket
-#define DT_SOCKET(a)  ((void *)(a))  // convert Windows socket to general socket
+#define INVALID_SOCKET -1
 #endif
 
 // Initialize UDP socket:
 // port (i): port number
 // return value (o): socket number, NULL if error
 
-static void* udp_init(unsigned short port)
+static vrpn_Tracker_DTrack::socket_type udp_init(unsigned short port)
 {
-	void* sock;
+	vrpn_Tracker_DTrack::socket_type sock;
 	struct sockaddr_in name;
 
 	// initialize socket dll (only Windows):
@@ -1150,10 +1145,9 @@ static void* udp_init(unsigned short port)
 		usock = socket(PF_INET, SOCK_DGRAM, 0);
 	
 		if(usock < 0){
-			return NULL;
+			return INVALID_SOCKET;
 		}
-
-		sock = DT_SOCKET(usock);
+		sock = usock;
 	}
 #endif
 #ifdef OS_WIN
@@ -1164,10 +1158,10 @@ static void* udp_init(unsigned short port)
 
 		if(wsock == INVALID_SOCKET){
 			WSACleanup();
-			return NULL;
+			return INVALID_SOCKET;
 		}
 
-		sock = DT_SOCKET(wsock);
+		sock = wsock;
 	}
 #endif
 
@@ -1177,9 +1171,9 @@ static void* udp_init(unsigned short port)
    name.sin_port = htons(port);
    name.sin_addr.s_addr = htonl(INADDR_ANY);
 	
-	if(bind(OS_SOCKET(sock), (struct sockaddr *) &name, sizeof(name)) < 0){
+	if(bind(sock, (struct sockaddr *) &name, sizeof(name)) < 0){
 		udp_exit(sock);
-		return NULL;
+		return INVALID_SOCKET;
 	}
         
    return sock;
@@ -1190,15 +1184,15 @@ static void* udp_init(unsigned short port)
 // sock (i): socket number
 // return value (o): 0 ok, -1 error
 
-static int udp_exit(void* sock)
+static int udp_exit(vrpn_Tracker_DTrack::socket_type sock)
 {
 	int err;
 
 #ifdef OS_UNIX
-	err = close(OS_SOCKET(sock));
+	err = close(sock);
 #endif
 #ifdef OS_WIN
-	err = closesocket(OS_SOCKET(sock));
+	err = closesocket(sock);
 	WSACleanup();
 #endif
 
@@ -1223,7 +1217,7 @@ static int udp_exit(void* sock)
 #pragma warning ( disable : 4127 )
 #endif
 
-static int udp_receive(void* sock, void *buffer, int maxlen, int tout_us)
+static int udp_receive(vrpn_Tracker_DTrack::socket_type sock, void *buffer, int maxlen, int tout_us)
 {
 	int nbytes, err;
 	fd_set set;
@@ -1232,7 +1226,7 @@ static int udp_receive(void* sock, void *buffer, int maxlen, int tout_us)
 	// waiting for data:
 
 	FD_ZERO(&set);
-	FD_SET(OS_SOCKET(sock), &set);
+	FD_SET(sock, &set);
 
 	tout.tv_sec = tout_us / 1000000;
 	tout.tv_usec = tout_us % 1000000;
@@ -1252,7 +1246,7 @@ static int udp_receive(void* sock, void *buffer, int maxlen, int tout_us)
 
 		// receive one packet:
 
-		nbytes = recv(OS_SOCKET(sock), (char *)buffer, maxlen, 0);
+		nbytes = recv(sock, (char *)buffer, maxlen, 0);
 
 		if(nbytes < 0){  // receive error
 			return -3;
@@ -1261,7 +1255,7 @@ static int udp_receive(void* sock, void *buffer, int maxlen, int tout_us)
 		// check, if more data available: if so, receive another packet
 		
 		FD_ZERO(&set);
-		FD_SET(OS_SOCKET(sock), &set);
+		FD_SET(sock, &set);
 
 		tout.tv_sec = 0;   // timeout with value of zero, thus no waiting
 		tout.tv_usec = 0;

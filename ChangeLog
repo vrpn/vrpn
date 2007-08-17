@@ -1,5 +1,15 @@
 2007-08-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* Makefile : Patch from Patrick Hartling for compilation
+		under 64-bit Windows.
+	* vrpn_Tracker_DTrack.h : Same.
+	* vrpn_Tracker_DTrack.C : Same.
+	* vrpn_HumanInterface.h : Added carriage return to last line.
+	* vrpn_XKeys.h : Same.
+	* vrpn_3DConnexion.h : Same.
+
+2007-08-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Connection.h : Adding more clarifying comments.
 	* vrpn_Imager.C : Removed line that set throttle drop count
 		to zero when it should not have.

@@ -66,3 +66,4 @@ protected:
 
 // end of VRPN_3DCONNEXION_H
 #endif
+

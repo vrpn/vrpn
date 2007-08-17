@@ -128,7 +128,7 @@ else
   endif
 
   ifeq ($(HW_OS), pc_linux64)
-        CC := cc -m64
+        CC := cc -m64 -fPIC
         RANLIB := ranlib
   endif
 
@@ -486,7 +486,8 @@ SLIB_FILES =  $(LIB_FILES) vrpn_3Space.C \
 	vrpn_Analog_USDigital_A2.C vrpn_Button_NI_DIO24.C \
 	vrpn_Tracker_PhaseSpace.C \
 	vrpn_Atmel.C vrpn_inertiamouse.C vrpn_Event.C vrpn_Event_Analog.C \
-	vrpn_Event_Mouse.C vrpn_Imager_Stream_Buffer.C
+	vrpn_Event_Mouse.C vrpn_Imager_Stream_Buffer.C \
+	vrpn_HumanInterface.C vrpn_Xkeys.C vrpn_3DConnexion.C
 
 SLIB_OBJECTS = $(patsubst %,$(SOBJECT_DIR)/%,$(SLIB_FILES:.C=.o))
 
@@ -507,7 +508,8 @@ SLIB_INCLUDES = $(LIB_INCLUDES) vrpn_3Space.h \
 	vrpn_Analog_USDigital_A2.h vrpn_Button_NI_DIO24.h \
 	vrpn_Tracker_PhaseSpace.h vrpn_Atmel.h \
 	vrpn_inertiamouse.h vrpn_Event.h vrpn_Event_Analog.h \
-	vrpn_Event_Mouse.h vrpn_Imager_Stream_Buffer.h
+	vrpn_Event_Mouse.h vrpn_Imager_Stream_Buffer.h \
+	vrpn_HumanInterface.h vrpn_Xkeys.h vrpn_3DConnexion.h
 
 $(SLIB_OBJECTS): 
 $(OBJECT_DIR)/libvrpnserver.a: $(MAKEFILE) $(SLIB_OBJECTS)
