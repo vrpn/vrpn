@@ -1,3 +1,12 @@
+2007-08-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.h : Adding more clarifying comments.
+	* vrpn_Imager.C : Removed line that set throttle drop count
+		to zero when it should not have.
+	* vrpn_Imager_Stream_Buffer.C : Completed the implementation
+		and debugging.
+	* vrpn_Imager_Stream_Buffer.h : Same.
+
 2007-08-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_3DConnexion.C : Thanks to Chris V's new HID class, I

@@ -27,7 +27,7 @@ vrpn_Auxilliary_Logger_Server(name, c)
     return;
   }
 
-  // Register a handler for the got connection message.
+  // Register a handler for the got first connection message.
   got_first_connection_m_id = d_connection->register_message_type( vrpn_got_first_connection );
   if (got_first_connection_m_id == -1) {
     fprintf(stderr,"vrpn_Imager_Stream_Buffer::vrpn_Imager_Stream_Buffer: can't register got first connection type\n");
@@ -37,6 +37,30 @@ vrpn_Auxilliary_Logger_Server(name, c)
   if (register_autodeleted_handler(got_first_connection_m_id,
     static_handle_got_first_connection, this, vrpn_ANY_SENDER)) {
     fprintf(stderr,"vrpn_Imager_Stream_Buffer::vrpn_Imager_Stream_Buffer: can't register got first connection handler\n");
+    d_connection = NULL;
+  }
+
+  // The base server class implements throttling for us, so we could just go ahead
+  // and try to send the messages all the time using the normal frame begin/end and
+  // region routines.  If we do this, though, we're going to have to unpack and repack
+  // all of the messages. If we re-implement the throttling code, then we can just
+  // watch the packets as they go by and see what types they are, discarding as
+  // appropriate (but we still have to queue and watch them).
+  //   If we implement the throttling
+  // code down in the thread that listens to the server, we can avoid putting
+  // them into the queue at all.  In that case, there can be a frame or more in
+  // the queue that would drain even after the throttle message was received.
+  //   We can subtract the number of frames in the buffer from the request if the
+  // request is large enough, thus removing the problem, but it won't work for
+  // the common case of requesting 0 or 1 frames.  This will work in the steady
+  // state, where a sender requests one more each time it gets one, but there
+  // will be an initial bolus of images.
+  //    Nonetheless, this seems like the cleanest solution.  So, we will install
+  // a handler for the throttling message that will pass it on down to the thread
+  // that is baby-sitting the server object.
+  if (register_autodeleted_handler(d_throttle_frames_m_id,
+    static_handle_throttle_message, this, vrpn_ANY_SENDER)) {
+    fprintf(stderr,"vrpn_Imager_Stream_Buffer::vrpn_Imager_Stream_Buffer: can't register throttle handler\n");
     d_connection = NULL;
   }
 }
@@ -59,6 +83,40 @@ void vrpn_Imager_Stream_Buffer::mainloop(void)
   // fill in our values and send a description to any attached clients.
   if (d_shared_state.get_imager_description(d_nRows, d_nCols, d_nDepth, d_nChannels)) {
     send_description();
+  }
+
+  // See if we have any messages waiting in the queue from the logging thread.
+  // If we do, get an initial count and then send that many messages to the
+  // client.  Don't go looking again this iteration or we may never return --
+  // the server is quite possibly packing frames faster than we can send them.
+  // Note that the messages in the queue have already been transcoded for our
+  // and sender ID.
+  unsigned count = d_shared_state.get_logger_to_client_queue_size();
+  if (count) {
+    unsigned i;
+    for (i = 0; i < count; i++) {
+      // Read the next message from the queue.
+      vrpn_HANDLERPARAM p;
+      if (!d_shared_state.retrieve_logger_to_client_message(&p)) {
+        fprintf(stderr, "vrpn_Imager_Stream_Buffer::mainloop(): Could not retrieve message from queue\n");
+        break;
+      }
+
+      // Decrement the in-buffer frame count whenever we see a begin_frame
+      // message.  This will un-block the way for later frames to be buffered.
+      if (p.type == d_begin_frame_m_id) {
+        d_shared_state.decrement_frames_in_queue();
+      }
+
+      // Pack and send the message to the client, then delete the buffer
+      // associated with the message.  Send them all reliably.  Send them
+      // all using our sender ID.
+      if (d_connection->pack_message(p.payload_len, p.msg_time, p.type, d_sender_id, p.buffer,
+        vrpn_CONNECTION_RELIABLE) != 0) {
+        fprintf(stderr, "vrpn_Imager_Stream_Buffer::mainloop(): Could not pack message\n");
+        break;
+      }
+    }
   }
 }
 
@@ -131,6 +189,24 @@ void vrpn_Imager_Stream_Buffer::handle_dropped_last_connection(void)
   }
 }
 
+// Handles a throttle request by passing it on down to the non-blocking
+// thread to deal with.
+int vrpn_Imager_Stream_Buffer::static_handle_throttle_message(void *userdata,
+	vrpn_HANDLERPARAM p)
+{
+  const char *bufptr = p.buffer;
+  vrpn_Imager_Stream_Buffer *me = static_cast<vrpn_Imager_Stream_Buffer *>(userdata);
+
+  // Get the requested number of frames from the buffer
+  vrpn_int32  frames_to_send;
+  if (vrpn_unbuffer(&bufptr, &frames_to_send)) {
+    return -1;
+  }
+
+  me->d_shared_state.set_throttle_request(frames_to_send);
+  return 0;
+}
+
 // The function that is called to become the logging thread.  It is passed
 // a pointer to "this" so that it can acces the object that created it.
 // The static function basically just unpacks the "this" pointer and
@@ -147,14 +223,17 @@ void vrpn_Imager_Stream_Buffer::static_logging_thread_func(vrpn_ThreadData &thre
 // interactions with the vrpn_Imager_Server connection(s) and the client
 // object; it forwards information both ways to the main thread that is
 // communicating with the end-user client connection.
-// DO NOT CALL VRPN message sends from this function or those it calls,
-// because we're not the thread that is connected to the client object's
-// connection and such calls are not thread-safe.
+// DO NOT CALL VRPN message sends on the client object's connection from
+// this function or those it calls, because we're not the thread that is
+// connected to the client object's connection and such calls are not thread-safe.
+// Instead, pass the data needed to make the calls to the initial thread.
 void vrpn_Imager_Stream_Buffer::logging_thread_func(void)
 {
   // Initialize everything to a clean state.
   d_log_connection = NULL;
   d_imager_remote = NULL;
+  d_server_dropped_due_to_throttle = 0; // None dropped yet!
+  d_server_frames_to_send = -1; // Send as many as you get
 
   // Open a connection to the server object, not asking it to log anything.
   // (Logging will be started later if we receive a message from our client.)
@@ -170,19 +249,41 @@ void vrpn_Imager_Stream_Buffer::logging_thread_func(void)
     return;
   }
 
-  //XXX;
-
   // Keep doing mainloop() on the client object(s) and checking
   // for commands that we're supposed to issue until we're
   // told that we're supposed to die.  Sleep a little between iterations
   // to avoid eating CPU time.
   while (!d_shared_state.time_to_exit()) {
-    if (d_imager_remote) {
-      d_imager_remote->mainloop();
-    }
-    if (d_log_connection) {
-      d_log_connection->mainloop();
-      d_log_connection->save_log_so_far();
+    // Check to see if the client has sent a new throttling message.
+    // If so, then adjust our state accordingly.  Note that we are duplicating
+    // the effort of the vrpn_Imager_Server base class here; it will still be
+    // keeping its own shadow copy of these values, but will not be doing anything
+    // with them because we'll never be calling its send routines.  This duplicates
+    // the code in the handle_throttle_message() in the vrpn_Imager_Server base
+    // class.
+    vrpn_int32 frames_to_send;
+    if (d_shared_state.get_throttle_request(&frames_to_send)) {
+      // If the requested number of frames is negative, then we set
+      // for unbounded sending.  The next time a begin_frame message
+      // arrives, it will start the process going again.
+      if (frames_to_send < 0) {
+        d_server_frames_to_send = -1;
+
+      // If we were sending continuously, store the number of frames
+      // to send.  Decrement by the number of frames already in the
+      // outgoing buffer, but don't let the number go below zero.
+      } else if (d_server_frames_to_send == -1) {
+        int frames_in_queue = d_shared_state.get_frames_in_queue();
+        if (frames_to_send >= frames_in_queue) {
+          frames_to_send -= frames_in_queue;
+        }
+        d_server_frames_to_send = frames_to_send;
+
+      // If we already had a throttle limit set, then increment it
+      // by the count.
+      } else {
+        d_server_frames_to_send += frames_to_send;
+      }
     }
 
     // Check to see if we've been asked to create new log files.  If we have,
@@ -203,7 +304,14 @@ void vrpn_Imager_Stream_Buffer::logging_thread_func(void)
       delete [] rol;
     }
 
-    //XXX;
+    // Handle all of the messages coming from the server.
+    if (d_imager_remote) {
+      d_imager_remote->mainloop();
+    }
+    if (d_log_connection) {
+      d_log_connection->mainloop();
+      d_log_connection->save_log_so_far();
+    }
 
     vrpn_SleepMsecs(1);
   }
@@ -216,6 +324,221 @@ void vrpn_Imager_Stream_Buffer::logging_thread_func(void)
   if (d_log_connection) {
     d_log_connection->removeReference();
     d_log_connection = NULL;
+  }
+}
+
+/* static */
+int VRPN_CALLBACK vrpn_Imager_Stream_Buffer::static_handle_server_messages(void *pvISB, vrpn_HANDLERPARAM p)
+{
+  vrpn_Imager_Stream_Buffer *me = static_cast<vrpn_Imager_Stream_Buffer *>(pvISB);
+  return me->handle_server_messages(p);
+}
+
+int vrpn_Imager_Stream_Buffer::handle_server_messages(const vrpn_HANDLERPARAM &p)
+{
+  // Handle begin_frame message very specially, because it has all sorts
+  // of interactions with throttling and missed-frame reporting.
+  if (p.type == d_server_begin_frame_m_id) {
+    // This duplicates code from the send_begin_frame() method in
+    // the vrpn_Imager_Server base class that handles throttling.
+    // It further adds code to handle throttling when the queue to
+    // the initial thread is too full.
+
+    // If we are throttling frames and the frame count has gone to zero,
+    // then increment the number of frames missed and do not add this
+    // message to the queue.
+    if (d_server_frames_to_send == 0) {
+      d_server_dropped_due_to_throttle++;
+      return 0;
+    }
+
+    // If there are too many frames in the queue already,
+    // add one to the number lost due to throttling (which
+    // will prevent region and end-of-frame messages until the next
+    // begin_frame message) and break without forwarding the message.
+    if (d_shared_state.get_frames_in_queue() >= 2) {
+      d_server_dropped_due_to_throttle++;
+      return 0;
+    }
+
+    // If we missed some frames due to throttling, but are now
+    // sending frames again, report how many we lost due to
+    // throttling.  This is incremented both for client-requested
+    // throttling and to queue-overflow throttling.
+    if (d_server_dropped_due_to_throttle > 0) {
+      // We create a new message header and body, using the server's
+      // type IDs, and then transcode and send the message through
+      // the initial connection.
+      vrpn_HANDLERPARAM tp = p;
+      vrpn_float64 fbuf [vrpn_CONNECTION_TCP_BUFLEN/sizeof(vrpn_float64)];
+      char	  *msgbuf = (char *) fbuf;
+      int	  buflen = sizeof(fbuf);
+      tp.type = d_server_discarded_frames_m_id;
+
+      if (vrpn_buffer(&msgbuf, &buflen, d_server_dropped_due_to_throttle)) {
+        fprintf(stderr,"vrpn_Imager_Stream_Buffer::handle_server_messages: Can't pack count\n");
+        return -1;
+      }
+      tp.buffer = static_cast<char*>(static_cast<void*>(fbuf));
+      tp.payload_len = sizeof(fbuf) - buflen;
+
+      if (!transcode_and_send(tp)) {
+        fprintf(stderr,"vrpn_Imager_Stream_Buffer::handle_server_messages: Can't send discarded frames count\n");
+        return -1;
+      }
+
+      d_server_dropped_due_to_throttle = 0;
+    }
+
+    // If we are throttling, then decrement the number of frames
+    // left to send.
+    if (d_server_frames_to_send > 0) {
+      d_server_frames_to_send--;
+    }
+
+    // No throttling going on, so add the message to the outgoing queue and
+    // also increment the count of how many outstanding frames are in the
+    // queue.
+    if (!transcode_and_send(p)) {
+      fprintf(stderr,"vrpn_Imager_Stream_Buffer::handle_server_messages: Can't transcode and send\n");
+      return -1;
+    }
+    d_shared_state.increment_frames_in_queue();
+
+  // Handle the end_frame and all of the region messages in a similar manner,
+  // dropping them if throttling is going on and passing them on if not.
+  // This duplicates code from the send_end_frame() and the region
+  // send methods in the vrpn_Imager_Server base class that handles
+  // throttling.
+  } else if ( (p.type == d_server_end_frame_m_id) ||
+              (p.type == d_server_regionu8_m_id) ||
+              (p.type == d_server_regionu12in16_m_id) ||
+              (p.type == d_server_regionu16_m_id) ||
+              (p.type == d_server_regionf32_m_id) ) {
+
+    // If we are discarding frames, do not queue this message.
+    if (d_server_dropped_due_to_throttle > 0) {
+      return 0;
+    }
+
+    // No throttling going on, so add this message to the outgoing queue.
+    if (!transcode_and_send(p)) {
+      fprintf(stderr,"vrpn_Imager_Stream_Buffer::handle_server_messages: Can't transcode and send\n");
+      return -1;
+    }
+
+  // Send these messages on without modification
+  // (Currently, these are description messages and discarded-frame
+  // messages.  It also includes the generic pong response and any
+  // text messages.)
+  } else if ( (p.type == d_server_description_m_id) ||
+              (p.type == d_server_discarded_frames_m_id) ||
+              (p.type == d_server_text_m_id) ||
+              (p.type == d_server_pong_m_id) ) {
+    if (!transcode_and_send(p)) {
+      fprintf(stderr,"vrpn_Imager_Stream_Buffer::handle_server_messages: Can't transcode and send\n");
+      return -1;
+    }
+
+  // Ignore these messages without passing them on.
+  } else if ( (p.type == d_server_ping_m_id) ) {
+    return 0;
+
+  // We need to throw a warning here on unexpected types so that we get some
+  // warning if additional messages are added.  This code is fragile because it
+  // relies on us knowing the types of base-level and imager messages and catching
+  // them all.  This way, at least we'll know if we miss one.
+  } else {
+    // We create a new message header and body, using the server's
+    // type IDs, and then transcode and send the message through
+    // the initial connection.  This is a text message saying that we
+    // got a message of unknown type.
+    vrpn_HANDLERPARAM tp = p;
+    char buffer[2 * sizeof(vrpn_int32) + vrpn_MAX_TEXT_LEN];
+    char msg[vrpn_MAX_TEXT_LEN];
+    tp.type = d_server_text_m_id;
+    tp.buffer = buffer;
+    tp.payload_len = sizeof(buffer);
+    sprintf(msg, "Unknown message type from server: %d", static_cast<int>(p.type));
+    encode_text_message_to_buffer(buffer, vrpn_TEXT_ERROR, 0, msg);
+    if (!transcode_and_send(tp)) {
+      fprintf(stderr,"vrpn_Imager_Stream_Buffer::handle_server_messages: Can't transcode text message\n");
+      return -1;
+    }
+  }
+
+  return 0;
+}
+
+// Transcode the sender and type fields from the logging server connection to
+// the initial client connection and pack the resulting message into the queue
+// from the logging thread to the initial thread.  The data buffer is copied;
+// this space is allocated by the logging thread and must be freed by the initial thread.
+// Returns true on success and false on failure.  The sender is set to the
+// d_sender_id of our server object.
+bool vrpn_Imager_Stream_Buffer::transcode_and_send(const vrpn_HANDLERPARAM &p)
+{
+  // Copy the contents of the buffer to a newly-allocated one that will be
+  // passed to the initial thread.
+  char *newbuf = new char[p.payload_len];
+  if (newbuf == NULL) {
+    fprintf(stderr,"vrpn_Imager_Stream_Buffer::transcode_and_send(): Out of memory\n");
+    return false;
+  }
+  memcpy(newbuf, p.buffer, p.payload_len);
+
+  // Copy the contents of the handlerparam to a newly-allocated one that will
+  // be passed to the initial thread.  Change the sender to match ours, set the
+  // buffer pointer to the new buffer, and transcode the type.
+  vrpn_HANDLERPARAM newp = p;
+  newp.buffer = newbuf;
+  newp.sender = d_sender_id;
+  newp.type = transcode_type(p.type);
+  if (newp.type == -1) {
+    fprintf(stderr,"vrpn_Imager_Stream_Buffer::transcode_and_send(): Unknown type (%d)\n",
+      static_cast<int>(p.type));
+    delete [] newbuf;
+    return false;
+  }
+
+  // Add the message to the queue of messages going to the initial thread.
+  if (!d_shared_state.insert_logger_to_client_message(newp)) {
+    fprintf(stderr,"vrpn_Imager_Stream_Buffer::transcode_and_send(): Can't queue message\n");
+    return false;
+  }
+
+  return true;
+}
+
+// Transcode the type from the logging thread's connection type to
+// the initial thread's connection type.  Return -1 if we don't
+// recognize the type.
+vrpn_int32 vrpn_Imager_Stream_Buffer::transcode_type(vrpn_int32 type)
+{
+  if (type == d_server_description_m_id) {
+    return d_description_m_id;
+  } else if (type == d_server_begin_frame_m_id) {
+    return d_begin_frame_m_id;
+  } else if (type == d_server_end_frame_m_id) {
+    return d_end_frame_m_id;
+  } else if (type == d_server_discarded_frames_m_id) {
+    return d_discarded_frames_m_id;
+  } else if (type == d_server_regionu8_m_id) {
+    return d_regionu8_m_id;
+  } else if (type == d_server_regionu12in16_m_id) {
+    return d_regionu12in16_m_id;
+  } else if (type == d_server_regionu16_m_id) {
+    return d_regionu16_m_id;
+  } else if (type == d_server_regionf32_m_id) {
+    return d_regionf32_m_id;
+  } else if (type == d_server_text_m_id) {
+    return d_text_message_id;
+  } else if (type == d_server_ping_m_id) {
+    return d_ping_message_id;
+  } else if (type == d_server_pong_m_id) {
+    return d_pong_message_id;
+  } else {
+    return -1;
   }
 }
 
@@ -264,6 +587,29 @@ bool vrpn_Imager_Stream_Buffer::setup_handlers_for_logging_connection(vrpn_Conne
   }
   d_imager_remote->register_description_handler(this, handle_image_description);
 
+  // Figure out the remote type IDs from the server for the messages we want
+  // to forward.  This is really dangerous, because we need to make sure to
+  // explicitly list all the ones we might need.  If we forget an important
+  // one (or it gets added later to either the base class or the imager class)
+  // then it won't get forwarded.
+  d_server_description_m_id = c->register_message_type("vrpn_Imager Description");
+  d_server_begin_frame_m_id = c->register_message_type("vrpn_Imager Begin_Frame");
+  d_server_end_frame_m_id = c->register_message_type("vrpn_Imager End_Frame");
+  d_server_discarded_frames_m_id = c->register_message_type("vrpn_Imager Discarded_Frames");
+  d_server_regionu8_m_id = c->register_message_type("vrpn_Imager Regionu8");
+  d_server_regionu16_m_id = c->register_message_type("vrpn_Imager Regionu16");
+  d_server_regionu12in16_m_id = c->register_message_type("vrpn_Imager Regionu12in16");
+  d_server_regionf32_m_id = c->register_message_type("vrpn_Imager Regionf32");
+  d_server_text_m_id = c->register_message_type("vrpn_Base text_message");
+  d_server_ping_m_id = c->register_message_type("vrpn_Base ping_message");
+  d_server_pong_m_id = c->register_message_type("vrpn_Base pong_message");
+
+  // Set up handlers for the other messages from the server so that they can
+  // be passed on up to the initial thread and on to the client as appropriate.
+  // Be sure to strip the "@" part off the device name before registering the sender
+  // so that it is the same as the one used by the d_imager_remote.
+  c->register_handler(vrpn_ANY_TYPE, static_handle_server_messages, this, c->register_sender(vrpn_copy_service_name(d_imager_server_name)));
+
   return true;
 }
 
@@ -277,6 +623,9 @@ bool vrpn_Imager_Stream_Buffer::teardown_handlers_for_logging_connection(vrpn_Co
     fprintf(stderr,"vrpn_Imager_Stream_Buffer::teardown_handlers_for_logging_connection(): Cannot unregister handler\n");
     return false;
   }
+
+  // Tear down handlers for the other messages from the server.
+  c->unregister_handler(vrpn_ANY_TYPE, static_handle_server_messages, this, c->register_sender(vrpn_copy_service_name(d_imager_server_name)));
 
   delete d_imager_remote;
   d_imager_remote = NULL;

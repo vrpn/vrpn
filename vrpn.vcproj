@@ -1332,10 +1332,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="vrpn_Poser_Tek4662.h"
-				>
-			</File>
-			<File
 				RelativePath="vrpn_raw_sgibox.C"
 				>
 				<FileConfiguration
@@ -2118,6 +2114,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_Poser_Analog.h"
+				>
+			</File>
+			<File
+				RelativePath=".\vrpn_Poser_Tek4662.h"
 				>
 			</File>
 			<File

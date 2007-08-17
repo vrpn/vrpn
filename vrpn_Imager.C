@@ -224,7 +224,7 @@ bool  vrpn_Imager_Server::send_discarded_frames(const vrpn_uint16 count,
 			 const struct timeval *time)
 {
   // msgbuf must be float64-aligned!  It is the buffer to send to the client; static to avoid reallocating
-  static  vrpn_float64 fbuf [vrpn_CONNECTION_TCP_BUFLEN/sizeof(vrpn_float64)];
+  vrpn_float64 fbuf [vrpn_CONNECTION_TCP_BUFLEN/sizeof(vrpn_float64)];
   char	  *msgbuf = (char *) fbuf;
   int	  buflen = sizeof(fbuf);
   struct  timeval timestamp;
@@ -236,7 +236,7 @@ bool  vrpn_Imager_Server::send_discarded_frames(const vrpn_uint16 count,
     vrpn_gettimeofday(&timestamp, NULL);
   }
 
-  // Tell what the borders of the region are.
+  // Tell how many frames were skipped.
   if (vrpn_buffer(&msgbuf, &buflen, count)) {
     return false;
   }
@@ -958,7 +958,8 @@ int vrpn_Imager_Server::handle_throttle_message(void *userdata,
   }
 
   // If the requested number of frames is negative, then we set
-  // for unbounded sending.
+  // for unbounded sending.  The next time a begin_frame message
+  // is sent, it will start the process going again.
   if (frames_to_send < 0) {
     me->d_frames_to_send = -1;
     return 0;
@@ -968,7 +969,6 @@ int vrpn_Imager_Server::handle_throttle_message(void *userdata,
   // to send.
   if (me->d_frames_to_send == -1) {
     me->d_frames_to_send = frames_to_send;
-    me->d_dropped_due_to_throttle = 0;
 
   // If we already had a throttle limit set, then increment it
   // by the count.

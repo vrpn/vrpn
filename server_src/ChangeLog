@@ -1,3 +1,10 @@
+2007-08-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* sgibdbox.cfg : Removed file that is no longer used.
+	* vrpn.C : Decremented reference count on connection
+		rather than deleting it (the reference-count reduction
+		deletes it the right way).
+
 2007-08-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Generic_server_object.C : Adding 3DConnexion Space

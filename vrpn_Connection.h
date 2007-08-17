@@ -22,7 +22,8 @@ typedef	int (VRPN_CALLBACK *vrpn_MESSAGEHANDLER)(void *userdata, vrpn_HANDLERPAR
 /// Type of handler for filters on logfiles is the same as connection handler
 typedef	vrpn_MESSAGEHANDLER vrpn_LOGFILTER;
 
-/// VRPN buffers are aligned on 8 byte boundaries
+/// VRPN buffers are aligned on 8 byte boundaries so that we can pack and
+// unpack doubles into them on architectures that cannot handle unaligned access.
 const	unsigned    vrpn_ALIGN = 8;
 
 // Types now have their storage dynamically allocated, so we can afford
