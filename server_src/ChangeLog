@@ -1,3 +1,8 @@
+2007-08-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Fix submitted by Christian Odom for the Wand on the
+		Intersense tracker.
+
 2007-08-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* sgibdbox.cfg : Removed file that is no longer used.
