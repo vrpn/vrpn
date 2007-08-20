@@ -1,3 +1,8 @@
+2007-08-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg : Converting back to Unix format so it works
+		with all architectures.
+
 2007-08-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Fix submitted by Christian Odom for the Wand on the
