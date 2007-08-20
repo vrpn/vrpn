@@ -1,3 +1,9 @@
+2007-08-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Changed version number to 7.12
+		(for some reason it was 7.10, even though version
+		7.11 has been out for a while).
+
 2007-08-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Makefile : Patch from Patrick Hartling for compilation
