@@ -1,5 +1,10 @@
 2007-08-25  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Connection.C : Changed version number to 7.13
+		for new release.
+
+2007-08-25  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Analog_Output.C : Moved some methods from public
 		to protected.  Added a new derived class for the server
 		that calls user-level callbacks when things change.
