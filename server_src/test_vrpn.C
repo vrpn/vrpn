@@ -31,11 +31,13 @@
 #include "vrpn_Text.h"
 #include "vrpn_Analog.h"
 #include "vrpn_Button.h"
+#include "vrpn_Analog_Output.h"
 
 char	*DIAL_NAME = "Dial0";
 char	*TRACKER_NAME = "Tracker0";
 char	*TEXT_NAME = "Text0";
 char	*ANALOG_NAME = "Analog0";
+char	*ANALOG_OUTPUT_NAME = "AnalogOutput0";
 char	*BUTTON_NAME = "Button0";
 int	CONNECTION_PORT = vrpn_DEFAULT_LISTEN_PORT_NO;	// Port for connection to listen on
 
@@ -61,6 +63,10 @@ vrpn_Text_Receiver		*rtext;
 // The analog server and remote
 vrpn_Analog_Server		*sana;
 vrpn_Analog_Remote		*rana;
+
+// The analog output server and remote
+vrpn_Analog_Output_Callback_Server	*sanaout;
+vrpn_Analog_Output_Remote		*ranaout;
 
 
 /*****************************************************************************
@@ -97,6 +103,11 @@ void	VRPN_CALLBACK handle_text (void *, const vrpn_TEXTCB t)
 void	VRPN_CALLBACK handle_analog (void *, const vrpn_ANALOGCB a)
 {
 	printf("Received %d analog channels\n", a.num_channel);
+}
+
+void	VRPN_CALLBACK handle_analog_output (void *, const vrpn_ANALOGOUTPUTCB a)
+{
+	printf("Received %d analog output channels (first is %lf)\n", a.num_channel, a.channel[0]);
 }
 
 void	VRPN_CALLBACK handle_button (void *, const vrpn_BUTTONCB b)
@@ -157,6 +168,15 @@ void	create_and_link_analog_remote(void)
 	rana->register_change_handler(NULL, handle_analog);
 }
 
+void	create_and_link_analog_output_server(void)
+{
+	// Open the analog output remote using this connection
+	sanaout = new vrpn_Analog_Output_Callback_Server (ANALOG_OUTPUT_NAME, connection, 12);
+
+	// Set up the analog output callback handlers
+	sanaout->register_change_handler(NULL, handle_analog_output);
+}
+
 /*****************************************************************************
  *
    Server routines for those devices that rely on application intervention
@@ -190,6 +210,23 @@ void	send_analog_once_in_a_while(void)
 	if ( now.tv_sec - secs >= 1 ) {
 		secs = now.tv_sec;
 		sana->report();
+	}
+}
+
+void	send_analog_output_once_in_a_while(void)
+{
+	static	long	secs = 0;
+	struct	timeval	now;
+
+	vrpn_gettimeofday(&now, NULL);
+	if (secs == 0) {	// First time through
+		secs = now.tv_sec;
+	}
+	if ( now.tv_sec - secs >= 1 ) {
+                static vrpn_float64 val = 1.0;
+		secs = now.tv_sec;
+                val++;
+		ranaout->request_change_channel_value(0, val);
 	}
 }
 
@@ -246,6 +283,12 @@ int main (int argc, char * argv [])
 	printf("Analog's name is %s.\n", ANALOG_NAME);
 	create_and_link_analog_remote();
 
+	//---------------------------------------------------------------------
+	// Open the analog output remote , using this connection.
+	ranaout = new vrpn_Analog_Output_Remote(ANALOG_OUTPUT_NAME, connection);
+	printf("Analog's name is %s.\n", ANALOG_OUTPUT_NAME);
+	create_and_link_analog_output_server();
+
 	/* 
 	 * main interactive loop
 	 */
@@ -254,6 +297,9 @@ int main (int argc, char * argv [])
 		struct	timeval	now;
 
 		// Let the servers, clients and connection do their things
+		send_analog_output_once_in_a_while();
+                ranaout->mainloop(); // The remote is on the server for AnalogOutput
+                sanaout->mainloop(); // The server is on the client for AnalogOutput
 		send_analog_once_in_a_while();
 		sana->mainloop();
 		rana->mainloop();
@@ -280,11 +326,13 @@ int main (int argc, char * argv [])
 			delete rbtn;
 			delete rtext;
 			delete rana;
+                        delete sanaout;
 			create_and_link_tracker_remote();
 			create_and_link_dial_remote();
 			create_and_link_button_remote();
 			create_and_link_text_remote();
 			create_and_link_analog_remote();
+			create_and_link_analog_output_server();
 		}
 
 		// Sleep for 1ms each iteration so we don't eat the CPU

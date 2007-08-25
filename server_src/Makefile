@@ -85,11 +85,11 @@ endif
 
 ifeq ($(HW_OS),pc_linux_ia64)
 	CC := g++
-	SYSLIBS := -lgpm
+	SYSLIBS := 
 endif
 ifeq ($(HW_OS),pc_linux64)
 	CC := g++ -m64
-	SYSLIBS := -lgpm
+	SYSLIBS := 
 endif
 ifeq ($(HW_OS), pc_linux_arm)
 	CC := arm-linux-g++
@@ -102,7 +102,7 @@ ifeq ($(HW_OS), pc_cygwin_arm)
 	AR := arm-unknown-linux-gnu-ar ruv
 endif
 ifeq ($(HW_OS),pc_linux)
-	SYSLIBS := -lgpm
+	SYSLIBS := 
 endif
 
 ifeq ($(HW_OS),sgi_irix)

@@ -197,4 +197,3 @@ class VRPN_API vrpn_Analog_Remote: public vrpn_Analog {
 };
 
 #endif
-

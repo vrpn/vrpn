@@ -1,3 +1,11 @@
+2007-08-25  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* test_vrpn.C : Added test for vrpn_Analog_Output.
+	* Makefile : Removed "-gpm" library from the default
+		build, as it is not available on some flavors
+		of Linux.  The vrpn_Configure.h file tells how
+		to fix this when GPM is being used.
+
 2007-08-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.cfg : Converting back to Unix format so it works

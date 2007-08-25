@@ -1,3 +1,13 @@
+2007-08-25  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Analog_Output.C : Moved some methods from public
+		to protected.  Added a new derived class for the server
+		that calls user-level callbacks when things change.
+		This was needed for MegaWatt Solar's tracker drive.
+	* vrpn_Analog_Output.h : Same.
+	* vrpn_Connection.C : Comment change.
+	* vrpn_Analog.h : Removed blank line.
+
 2007-08-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Connection.C : Changed version number to 7.12

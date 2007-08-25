@@ -1192,15 +1192,14 @@ int vrpn_TypeDispatcher::addHandler (vrpn_int32 type,
   new_entry->userdata = userdata;
   new_entry->sender = sender;
 
-  // Add this handler to the chain at the beginning (don't check to see
-  // if it is already there, since duplication is okay).
 #ifdef  VERBOSE
   printf("Adding user handler for type %ld, sender %ld\n",type,sender);
 #endif
 
   // TCH June 2000 - rewrote to insert at end of list instead of beginning,
   // to make sure multiple callbacks on the same type are triggered
-  // in the order registered.
+  // in the order registered.  Note that multiple entries with the same
+  // info is okay.
 
   if (type == vrpn_ANY_TYPE) {
     ptr = &d_genericCallbacks;

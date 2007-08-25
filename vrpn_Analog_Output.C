@@ -75,12 +75,10 @@ vrpn_Analog_Output_Server::vrpn_Analog_Output_Server(const char* name, vrpn_Conn
 
 	// Register a handler for vrpn_got_connection, so we can tell the
 	// client how many channels are active
-	if( register_autodeleted_handler( got_connection_m_id, handle_got_connection, this ) )
-	{
+	if( register_autodeleted_handler( got_connection_m_id, handle_got_connection, this ) ) {
 		fprintf( stderr, "vrpn_Analog_Output_Server: can't register new connection handler\n");
 		d_connection = NULL;
-	}
-	
+	}	
 }
 
 // virtual
@@ -200,6 +198,49 @@ encode_num_channels_to( char* buf, vrpn_int32 num )
     return sizeof(vrpn_int32);
 }
 
+vrpn_Analog_Output_Callback_Server::vrpn_Analog_Output_Callback_Server(const char* name, vrpn_Connection* c, 
+                                                     vrpn_int32 numChannels) :
+	vrpn_Analog_Output_Server(name, c, numChannels)
+{
+  // Register a handler for the request channel change message.  This will go
+  // in the list AFTER the one for the base class, so the values will already
+  // have been filled in.  So we just need to call the user-level callbacks
+  // and pass them a pointer to the data values.
+  if (register_autodeleted_handler(request_m_id,
+	  handle_change_message, this, d_sender_id)) {
+	  fprintf(stderr,"vrpn_Analog_Output_Callback_Server: can't register change channel request handler\n");
+	  d_connection = NULL;
+  }
+
+  // Register a handler for the request channels change message.  This will go
+  // in the list AFTER the one for the base class, so the values will already
+  // have been filled in.  So we just need to call the user-level callbacks
+  // and pass them a pointer to the data values.
+  if (register_autodeleted_handler(request_channels_m_id,
+	  handle_change_message, this, d_sender_id)) {
+	  fprintf(stderr,"vrpn_Analog_Output_Callback_Server: can't register change channels request handler\n");
+	  d_connection = NULL;
+  }
+}
+
+// virtual
+vrpn_Analog_Output_Callback_Server::~vrpn_Analog_Output_Callback_Server(void) {}
+
+/* static */
+// This is inserted into the list AFTER the 
+int vrpn_Analog_Output_Callback_Server::handle_change_message(void *userdata,
+	vrpn_HANDLERPARAM p)
+{
+    vrpn_Analog_Output_Callback_Server* me = (vrpn_Analog_Output_Callback_Server*)userdata;
+    vrpn_ANALOGOUTPUTCB callback_data;
+
+    callback_data.msg_time = p.msg_time;
+    callback_data.num_channel = me->getNumChannels();
+    callback_data.channel = me->o_channels();
+    me->d_callback_list.call_handlers(callback_data);
+
+    return 0;
+}
 
 
 vrpn_Analog_Output_Remote::vrpn_Analog_Output_Remote(const char* name, vrpn_Connection* c) :
