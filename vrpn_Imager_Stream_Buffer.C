@@ -81,7 +81,14 @@ void vrpn_Imager_Stream_Buffer::mainloop(void)
 
   // See if we have a new image description from a logging thread.  If so,
   // fill in our values and send a description to any attached clients.
-  if (d_shared_state.get_imager_description(d_nRows, d_nCols, d_nDepth, d_nChannels)) {
+  const char *channelBuffer = NULL;
+  if (d_shared_state.get_imager_description(d_nRows, d_nCols, d_nDepth, d_nChannels, &channelBuffer)) {
+    int i;
+    const char *bufptr = channelBuffer;
+    for (i = 0; i < d_nChannels; i++) {
+      d_channels[i].unbuffer(&bufptr);
+    }
+    delete [] channelBuffer;
     send_description();
   }
 
@@ -167,7 +174,14 @@ void vrpn_Imager_Stream_Buffer::handle_got_first_connection(void)
   struct timeval start, now;
   vrpn_gettimeofday(&start, NULL);
   do {
-    if (d_shared_state.get_imager_description(d_nRows, d_nCols, d_nDepth, d_nChannels)) {
+    const char *channelBuffer = NULL;
+    if (d_shared_state.get_imager_description(d_nRows, d_nCols, d_nDepth, d_nChannels, &channelBuffer)) {
+      int i;
+      const char *bufptr = channelBuffer;
+      for (i = 0; i < d_nChannels; i++) {
+        d_channels[i].unbuffer(&bufptr);
+      }
+      delete [] channelBuffer;
       return;
     }
 
@@ -674,8 +688,6 @@ bool vrpn_Imager_Stream_Buffer::make_new_logging_connection(const char *local_in
   // log file will have accumulated all images up to the new report, so we
   // can shut it off without losing any images in the switch to the new
   // log file (there may be duplicates, but not losses).
-  vrpn_int32 unused;
-  d_shared_state.get_imager_description(unused, unused, unused, unused);
   struct timeval start, now;
   vrpn_gettimeofday(&start, NULL);
   d_ready_to_drop_old_connection = false;
@@ -743,11 +755,29 @@ void vrpn_Imager_Stream_Buffer::handle_image_description(void *pvISB, const stru
 {
   vrpn_Imager_Stream_Buffer *me = static_cast<vrpn_Imager_Stream_Buffer *>(pvISB);
 
+  // Pack up description messages for all of the channels into a buffer that is at
+  // least large enough to hold them all.
+  // msgbuf must be float64-aligned!
+  vrpn_float64 *fbuf = new vrpn_float64[vrpn_CONNECTION_TCP_BUFLEN/sizeof(vrpn_float64)];
+  char *buffer = static_cast<char *>(static_cast<void*>(fbuf));
+  if (buffer == NULL) {
+    fprintf(stderr, "vrpn_Imager_Stream_Buffer::handle_image_description(): Out of memory\n");
+    me->d_shared_state.time_to_exit(true);
+    return;
+  }
+  int i;
+  char *bufptr = buffer;
+  vrpn_int32 buflen = sizeof(vrpn_float64) * vrpn_CONNECTION_TCP_BUFLEN/sizeof(vrpn_float64);
+  for (i = 0; i < me->d_imager_remote->nChannels(); i++) {
+    me->d_imager_remote->channel(i)->buffer(&bufptr, &buflen);
+  }
+
   me->d_shared_state.set_imager_description(
     me->d_imager_remote->nRows(),
     me->d_imager_remote->nCols(),
     me->d_imager_remote->nDepth(),
-    me->d_imager_remote->nChannels());
+    me->d_imager_remote->nChannels(),
+    buffer);
 
   // We've gotten a description report on the new connection, so we're ready
   // to drop the old connection.

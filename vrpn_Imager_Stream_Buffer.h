@@ -126,24 +126,30 @@ public:
   // Accessors for the parameters stored based on the
   // imager server's reports.  Returns false if nothing has
   // been set since the last time it was read, true (and fills in
-  // the values) if it has.
+  // the values) if it has.  Channel buffer must be delete [] by
+  // the one calling this function iff the function returns true.
   bool get_imager_description(vrpn_int32 &nRows, vrpn_int32 &nCols,
-                              vrpn_int32 &nDepth, vrpn_int32 &nChannels) {
+                              vrpn_int32 &nDepth, vrpn_int32 &nChannels,
+                              const char **channelBuffer) {
     d_sem.p();
     bool ret = d_description_updated;
     if (d_description_updated) {
-      nRows = d_nRows; nCols = d_nCols; nDepth = d_nDepth; nChannels = d_nChannels;
+      nRows = d_nRows; nCols = d_nCols; nDepth = d_nDepth;
+      nChannels = d_nChannels; *channelBuffer = d_channel_buffer;
     }
     d_description_updated = false;
     d_sem.v();
     return ret;
   }
-  void set_imager_description(vrpn_int32 nRows, vrpn_int32 nCols,
-                              vrpn_int32 nDepth, vrpn_int32 nChannels) {
+  bool set_imager_description(vrpn_int32 nRows, vrpn_int32 nCols,
+                              vrpn_int32 nDepth, vrpn_int32 nChannels,
+                              const char *channelBuffer) {
     d_sem.p();
-    d_nRows = nRows; d_nCols = nCols; d_nDepth = nDepth; d_nChannels = nChannels;
+    d_nRows = nRows; d_nCols = nCols; d_nDepth = nDepth;
+    d_nChannels = nChannels; d_channel_buffer = channelBuffer;
     d_description_updated = true;
     d_sem.v();
+    return true;
   }
 
   // Accessors for the initial thread to pass new logfile names down to the
@@ -334,6 +340,7 @@ protected:
   vrpn_int32  d_nCols;
   vrpn_int32  d_nDepth;
   vrpn_int32  d_nChannels;
+  const char  *d_channel_buffer;  //< Allocated by sender, freed by receiver
 
   // Names of the log files passed from the initial thread to the logging
   // thread and a flag telling whether they have been changed since last

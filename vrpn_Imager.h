@@ -38,6 +38,7 @@ const unsigned vrpn_IMAGER_MAX_REGIONf32 = (vrpn_CONNECTION_TCP_BUFLEN - 8*sizeo
 class VRPN_API vrpn_Imager_Channel {
   friend class vrpn_Imager_Remote;    // provides access to compression status
   friend class vrpn_Imager_Server;    // provides access to compression status
+  friend class vrpn_Imager_Stream_Buffer; // provides access to buffer/unbuffer
 public:
   vrpn_Imager_Channel(void) { name[0] = '\0'; units[0] = '\0'; minVal = maxVal = 0.0;
       scale = 1; offset = 0; d_compression = NONE; };
@@ -50,7 +51,7 @@ public:
 protected:
   // The following methods are here for the derived classes and are not relevant
   // to user code.
-  inline  bool	buffer(char **insertPt, vrpn_int32 *buflen) {
+  inline  bool	buffer(char **insertPt, vrpn_int32 *buflen) const {
     if (vrpn_buffer(insertPt, buflen, minVal) ||
         vrpn_buffer(insertPt, buflen, maxVal) ||
         vrpn_buffer(insertPt, buflen, offset) ||

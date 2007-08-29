@@ -1,3 +1,14 @@
+2007-08-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Imager.h : Added friend reference to the imager
+		stream buffer to enable passing values from one
+		thread to the other.
+	* vrpn_Imager_Stream_Buffer.C : Now passes the channel
+		descriptions from the real-time logging thread up
+		to the client-management thread so that it can send
+		correct descriptions when multiple clients connect.
+	* vrpn_Imager_Stream_Buffer.h : Same.
+
 2007-08-25  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Connection.C : Changed version number to 7.13
