@@ -19,10 +19,6 @@ class VRPN_API vrpn_VPJoystick : public vrpn_Button {
   void mainloop();
    
  private:
-  int ready;
-
-  struct timeval timestamp;	// time of the last report from the device
-  
   int serial_fd;
   unsigned char buffer[VRPN_BUTTON_BUF_SIZE];
 
@@ -31,7 +27,6 @@ class VRPN_API vrpn_VPJoystick : public vrpn_Button {
   unsigned int button_masks[ vrpn_VPJOY_NUM_BUTTONS ]; 
   
   unsigned int state;
-
 };
 
 #endif // #ifndef VRPN_VPJOYSTICK

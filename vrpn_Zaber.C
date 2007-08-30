@@ -51,7 +51,7 @@ vrpn_Zaber::vrpn_Zaber (const char * name, vrpn_Connection * c,
   o_num_channel = 0;
 
   // Set the mode to reset
-  _status = STATUS_RESETTING;
+  status = STATUS_RESETTING;
 
   // Register to receive the message to request changes and to receive connection
   // messages.
@@ -241,11 +241,11 @@ int vrpn_Zaber::get_report(void)
 
    if (status == STATUS_SYNCING) {
       // Try to get a character.  If none, just return.
-      if (vrpn_read_available_characters(serial_fd, _buffer, 1) != 1) {
+      if (vrpn_read_available_characters(serial_fd, d_buffer, 1) != 1) {
       	return 0;
       }
 
-      _expected_chars = 6;
+      d_expected_chars = 6;
 
       //XXX How do we know when we're out of sync?
 
@@ -254,7 +254,7 @@ int vrpn_Zaber::get_report(void)
       // bit of code will attempt to read the rest of the report.
       // The time stored here is as close as possible to when the
       // report was generated.
-      _bufcount = 1;
+      d_bufcount = 1;
       vrpn_gettimeofday(&timestamp, NULL);
       status = STATUS_READING;
 #ifdef	VERBOSE
@@ -268,18 +268,18 @@ int vrpn_Zaber::get_report(void)
    // and only try to read the rest.
    //--------------------------------------------------------------------
 
-   ret = vrpn_read_available_characters(serial_fd, &_buffer[_bufcount],
-		_expected_chars-_bufcount);
+   ret = vrpn_read_available_characters(serial_fd, &d_buffer[d_bufcount],
+		d_expected_chars-d_bufcount);
    if (ret == -1) {
 	ZAB_ERROR("Error reading");
 	status = STATUS_RESETTING;
 	return 0;
    }
-   _bufcount += ret;
+   d_bufcount += ret;
 #ifdef	VERBOSE
-   if (ret != 0) printf("... got %d characters (%d total)\n",ret, _bufcount);
+   if (ret != 0) printf("... got %d characters (%d total)\n",ret, d_bufcount);
 #endif
-   if (_bufcount < _expected_chars) {	// Not done -- go back for more
+   if (d_bufcount < d_expected_chars) {	// Not done -- go back for more
 	return 0;
    }
 
@@ -294,29 +294,29 @@ int vrpn_Zaber::get_report(void)
    // actual position in place).
    //--------------------------------------------------------------------
 
-   if ( (_buffer[1] != 10) && (_buffer[1] != 23) && (_buffer[1] != 1)
-       && (_buffer[1] != 20) && (_buffer[1] != 255) ) {
+   if ( (d_buffer[1] != 10) && (d_buffer[1] != 23) && (d_buffer[1] != 1)
+       && (d_buffer[1] != 20) && (d_buffer[1] != 255) ) {
 	   status = STATUS_SYNCING;
 	   char msg[1024];
-	   sprintf(msg,"Bad command type (%d) in report (ignoring this report)", _buffer[1]);
+	   sprintf(msg,"Bad command type (%d) in report (ignoring this report)", d_buffer[1]);
       	   ZAB_WARNING(msg);
 	   vrpn_flush_input_buffer(serial_fd);
 	   return 0;
    }
-   if (_buffer[1] == 255) {
+   if (d_buffer[1] == 255) {
      ZAB_WARNING("Requested value out of range");
    }
 
 #ifdef	VERBOSE
-   printf("got a complete report (%d of %d)!\n", _bufcount, _expected_chars);
+   printf("got a complete report (%d of %d)!\n", d_bufcount, d_expected_chars);
 #endif
 
    //--------------------------------------------------------------------
    // Decode the report and store the values in it into the analog value
    //--------------------------------------------------------------------
 
-   unsigned char chan = static_cast<unsigned char>(_buffer[0] - 1);
-   vrpn_int32 value = convert_bytes_to_reading(&_buffer[2]);
+   unsigned char chan = static_cast<unsigned char>(d_buffer[0] - 1);
+   vrpn_int32 value = convert_bytes_to_reading(&d_buffer[2]);
    if (chan >= num_channel) {	// Unsigned, so can't be < 0
      char msg[1024];
      sprintf(msg,"Invalid channel (%d of %d), resetting", chan, num_channel);
@@ -331,7 +331,7 @@ int vrpn_Zaber::get_report(void)
 
    report_changes();
    status = STATUS_SYNCING;
-   _bufcount = 0;
+   d_bufcount = 0;
 
    return 1;
 }

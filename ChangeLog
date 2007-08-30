@@ -1,5 +1,17 @@
 2007-08-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_GlobalHapticsOrb.C : Removing things that were not
+		needed.  Replacing member variables that start with
+		underscore with those that start with d_.  Code
+		cleaning that should leave the behavior unchanged.
+	* vrpn_GlobalHapticsOrb.h : Same.
+	* vrpn_VPJoystick.C : Same.
+	* vrpn_VPJoystick.h : Same.
+	* vrpn_Zaber.C : Same.
+	* vrpn_Zaber.h : Same.
+
+2007-08-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Imager_Stream_Buffer.C : Deletes the buffer for
 		each message that has been passed to the initial
 		thread from the real-time thread.  Not doing this

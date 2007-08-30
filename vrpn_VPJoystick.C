@@ -24,12 +24,11 @@
  * Derived from vrpn_ADBox.C
 */
 
-
 #include "vrpn_VPJoystick.h"
 
-#define STATE_SYNCHING		(0)
-#define STATE_READING      (1)
-#define STATE_RECEIVED     (2)
+#define STATE_SYNCHING  (0)
+#define STATE_READING   (1)
+#define STATE_RECEIVED  (2)
 
 #define SYNC_BYTE          (0xff)
 
@@ -62,7 +61,6 @@
 #include <unistd.h>
 #endif
 
-
 #include <string.h>
 #if defined(linux) || defined(sgi)
 #include <unistd.h>
@@ -74,12 +72,11 @@ vrpn_VPJoystick::vrpn_VPJoystick(char* name, vrpn_Connection *c,
   :  vrpn_Button(name, c),
      serial_fd(0), state( STATE_SYNCHING )
 {
-	int i;
+  int i;
 	
   // Open the serial port
   if ( (serial_fd=vrpn_open_commport(port, baud)) == -1) {
     fprintf(stderr,"vrpn_VPJoystick: Cannot Open serial port\n");
-    ready = 0;
   }
   
   // find out what time it is - needed?
@@ -112,7 +109,14 @@ void vrpn_VPJoystick::mainloop()
 {
 	server_mainloop();
 
+        // XXX Why not have a timeout of zero?  This would cause faster
+        // update rates for other devices in the same server.
 	struct timeval timeout = { 0,200000 };
+
+        if (serial_fd == -1) {
+          fprintf(stderr,"vrpn_VPJOystick::mainloop(): Bad serial port descriptor\n");
+          return;
+        }
 
 	if( state == STATE_SYNCHING ) {
 
@@ -125,35 +129,41 @@ void vrpn_VPJoystick::mainloop()
 				state = STATE_READING;						  		
 				bytes_read = 1;
   			}						  
-		}			 
+		}
+
 	}
-	if( state ==	STATE_READING ) {
+        
+        // The state may just have been set to this, so don't do this in a switch
+        // or if-then-else statement because we may take another whole loop iteration
+        // before checking it again.
+        if( state == STATE_READING ) {
 			  
-		//	Read the remaining bytes of the packet
+		// Read the remaining bytes of the packet
 		//
 			  	  
 		bytes_read += vrpn_read_available_characters( serial_fd, message_buffer + bytes_read, vrpn_VPJOY_MESSAGE_LENGTH - bytes_read, &timeout );
 		if( bytes_read == vrpn_VPJOY_MESSAGE_LENGTH ) {
 			state = STATE_RECEIVED;					  	
-		}					  
-	}	  
+		}
 
-	if( state == STATE_RECEIVED ) {
+	}
+        
+        // The state may just have been set to this, so don't do this in a switch
+        // or if-then-else statement because we may take another whole loop iteration
+        // before checking it again.
+        if( state == STATE_RECEIVED ) {
 
 		// decode a received packet
 			  			  
 		int i;
 		int flag = ((int) message_buffer[1])*256 + message_buffer[2];
-   	flag = (~flag) & ( VP_BUTTON_ALL | VP_HAT_ALL );
+   	        flag = (~flag) & ( VP_BUTTON_ALL | VP_HAT_ALL );
 
 		for( i = 0 ; i < num_buttons; i++ ) {
 			buttons[ i ] =  static_cast<unsigned char>( ( ( flag & button_masks[i] ) == button_masks[i] ) ? VRPN_BUTTON_ON : VRPN_BUTTON_OFF );
-
 		}
-
 		
 		vrpn_Button::report_changes();
-
 		state = STATE_SYNCHING;			  
 	}
 }

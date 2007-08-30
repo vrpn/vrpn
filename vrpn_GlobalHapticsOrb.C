@@ -34,7 +34,7 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 }
 
 // static
-int vrpn_GlobalHapticsOrb::handle_newConnection(void * userdata,
+int vrpn_GlobalHapticsOrb::handle_firstConnection(void * userdata,
                                                  vrpn_HANDLERPARAM)
 {
   ((vrpn_GlobalHapticsOrb *) userdata)->clear_values();
@@ -52,15 +52,12 @@ vrpn_GlobalHapticsOrb::vrpn_GlobalHapticsOrb(const char * name, vrpn_Connection 
 					     const char * port, int baud) :
 		vrpn_Serial_Analog(name, c, port, baud),
 		vrpn_Button(name, c),
-		vrpn_Dial(name, c),
-		d_numbuttons(30),
-		d_numchannels(3),
-		d_numencoders(3)
+		vrpn_Dial(name, c)
 {
 	// Set the parameters in the parent classes
-	vrpn_Button::num_buttons = d_numbuttons;
-	vrpn_Analog::num_channel = d_numchannels;
-	vrpn_Dial::num_dials = d_numencoders;
+	vrpn_Button::num_buttons = 30;
+	vrpn_Analog::num_channel = 3;
+	vrpn_Dial::num_dials = 3;
 
 	// Set the status of the buttons, analogs and encoders to 0 to start
 	clear_values();
@@ -69,7 +66,7 @@ vrpn_GlobalHapticsOrb::vrpn_GlobalHapticsOrb(const char * name, vrpn_Connection 
 	// that it can reset the analogs and buttons whenever this happens.
 	register_autodeleted_handler(
 		      d_connection->register_message_type(vrpn_got_first_connection),
-		      handle_newConnection, this);
+		      handle_firstConnection, this);
 
 	// Set the mode to reset
 	d_status = STATUS_RESETTING;
@@ -79,13 +76,13 @@ void	vrpn_GlobalHapticsOrb::clear_values(void)
 {
 	int	i;
 
-	for (i = 0; i < d_numbuttons; i++) {
+	for (i = 0; i < num_buttons; i++) {
 		vrpn_Button::buttons[i] = vrpn_Button::lastbuttons[i] = 0;
 	}
-	for (i = 0; i < d_numchannels; i++) {
+	for (i = 0; i < num_channel; i++) {
 		vrpn_Analog::channel[i] = vrpn_Analog::last[i] = 0;
 	}
-	for (i = 0; i < d_numencoders; i++) {
+	for (i = 0; i < num_dials; i++) {
 		vrpn_Dial::dials[i] = 0.0;
 	}
 }

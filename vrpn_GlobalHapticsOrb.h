@@ -19,7 +19,6 @@ class VRPN_API vrpn_GlobalHapticsOrb: public vrpn_Serial_Analog
 public:
 	vrpn_GlobalHapticsOrb (const char * name, vrpn_Connection * c,
 			const char * port, int baud);
-
 	~vrpn_GlobalHapticsOrb () {};
 
 	// Called once through each main loop iteration to handle
@@ -28,9 +27,6 @@ public:
 
   protected:
 	int d_status;
-	int d_numbuttons;	//< How many buttons there are
-	int d_numchannels;	//< How many analog channels there are
-	int d_numencoders;	//< How many encoders there are
 
 	int d_expected_chars;	//< How many characters to expect in the report
 	unsigned char d_buffer[512];	//< Buffer of characters in report
@@ -51,8 +47,8 @@ public:
         virtual void report(vrpn_uint32 class_of_service
                     = vrpn_CONNECTION_RELIABLE);
 
-	/// Clear all of the values when we get a new connection request
-	static	int VRPN_CALLBACK handle_newConnection(void * userdata, vrpn_HANDLERPARAM);
+	/// Clear all of the values when we get our first client connection request
+	static	int VRPN_CALLBACK handle_firstConnection(void * userdata, vrpn_HANDLERPARAM);
 };
 
 #endif

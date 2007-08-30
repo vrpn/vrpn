@@ -10,18 +10,15 @@ class VRPN_API vrpn_Zaber: public vrpn_Serial_Analog, public vrpn_Analog_Output
 public:
 	vrpn_Zaber (const char * name, vrpn_Connection * c,
 			const char * port);
-
 	~vrpn_Zaber () {};
 
 	/// Called once through each main loop iteration to handle updates.
 	virtual void mainloop ();
 
   protected:
-	int _status;		    //< Reset, Syncing, or Reading
-
-	int _expected_chars;	    //< How many characters to expect in the report
-	unsigned char _buffer[512]; //< Buffer of characters in report
-	int _bufcount;		    //< How many characters we have so far
+	int d_expected_chars;	      //< How many characters to expect in the report
+	unsigned char d_buffer[512];  //< Buffer of characters in report
+	int d_bufcount;		      //< How many characters we have so far
 
 	struct timeval timestamp;   //< Time of the last report from the device
 
