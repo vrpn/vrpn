@@ -123,6 +123,7 @@ void vrpn_Imager_Stream_Buffer::mainloop(void)
         fprintf(stderr, "vrpn_Imager_Stream_Buffer::mainloop(): Could not pack message\n");
         break;
       }
+      delete [] p.buffer;
     }
   }
 }
