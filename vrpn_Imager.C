@@ -1361,65 +1361,100 @@ bool  vrpn_Imager_Region::decode_unscaled_region_using_base_pointer(vrpn_uint16 
     fprintf(stderr,"vrpn_Imager_Region::decode_unscaled_region_using_base_pointer(): colStride must be >= repeat\n");
     return false;
   }
-
-  // If the type of data in the buffer doesn't match the type of data the user
-  // wants, we need to convert each element along the way.
-  if ( (d_valType != vrpn_IMAGER_VALTYPE_UINT16) && (d_valType != vrpn_IMAGER_VALTYPE_UINT16) ) {
-    printf("vrpn_Imager_Region::decode_unscaled_region_using_base_pointer(): Transcoding not implemented yet\n");
-    return false;
-  }
   if ( invert_rows && (nRows < d_rMax) ) {
     fprintf(stderr,"vrpn_Imager_Region::decode_unscaled_region_using_base_pointer(): nRows must not be less than _rMax\n");
     return false;
   }
 
-  // The data type matches what we the user is asking for.  No transcoding needed.
-  // Insert the data into the buffer, copying it as efficiently as possible
-  // from the network buffer into the caller's buffer .  Note that
-  // the network buffer is little-endian.  The code looks a little
-  // complicated because it short-circuits the copying for the case where the
-  // column stride and repeat are one element long (using memcpy() on each row) but has to
-  // copy one element at a time otherwise.
-  int cols = d_cMax - d_cMin+1;
-  int linelen = cols * sizeof(data[0]);
-  if ( (colStride == 1) && (repeat == 1) ) {
-    const vrpn_uint16  *msgbuf = (const vrpn_uint16 *)d_valBuf;
-    for (unsigned d = d_dMin; d <= d_dMax; d++) {
-      for (unsigned r = d_rMin; r <= d_rMax; r++) {
-	unsigned rActual;
-	if (invert_rows) {
-	  rActual = (nRows-1)-r;
-	} else {
-	  rActual = r;
-	}
-	memcpy(&data[d*depthStride + rActual*rowStride + d_cMin], msgbuf, linelen);
-	msgbuf += linelen;
+  // If the type of data in the buffer matches the type of data the user
+  // wants, no need to convert each element along the way.
+  if ( (d_valType == vrpn_IMAGER_VALTYPE_UINT16) || (d_valType == vrpn_IMAGER_VALTYPE_UINT12IN16) ) {
+
+    // The data type matches what we the user is asking for.  No transcoding needed.
+    // Insert the data into the buffer, copying it as efficiently as possible
+    // from the network buffer into the caller's buffer .  Note that
+    // the network buffer is little-endian.  The code looks a little
+    // complicated because it short-circuits the copying for the case where the
+    // column stride and repeat are one element long (using memcpy() on each row) but has to
+    // copy one element at a time otherwise.
+    int cols = d_cMax - d_cMin+1;
+    int linelen = cols * sizeof(data[0]);
+    if ( (colStride == 1) && (repeat == 1) ) {
+      const vrpn_uint16  *msgbuf = (const vrpn_uint16 *)d_valBuf;
+      for (unsigned d = d_dMin; d <= d_dMax; d++) {
+        for (unsigned r = d_rMin; r <= d_rMax; r++) {
+	  unsigned rActual;
+	  if (invert_rows) {
+	    rActual = (nRows-1)-r;
+	  } else {
+	    rActual = r;
+	  }
+	  memcpy(&data[d*depthStride + rActual*rowStride + d_cMin], msgbuf, linelen);
+	  msgbuf += linelen;
+        }
+      }
+    } else {
+      long rowStep = rowStride;
+      if (invert_rows) {
+        rowStep *= -1;
+      }
+      const vrpn_uint16  *msgbuf = (const vrpn_uint16 *)d_valBuf;
+      for (unsigned d = d_dMin; d <= d_dMax; d++) {
+        vrpn_uint16 *rowStart = &data[d*depthStride + d_rMin*rowStride + d_cMin];
+        if (invert_rows) {
+	  rowStart = &data[d*depthStride + (nRows-1 - d_rMin)*rowStride + d_cMin];
+        }
+        vrpn_uint16 *copyTo = rowStart;
+        for (unsigned r = d_rMin; r <= d_rMax; r++) {
+	  for (unsigned c = d_cMin; c <= d_cMax; c++) {
+	    for (unsigned rpt = 0; rpt < repeat; rpt++) {
+	      *(copyTo+rpt) = *msgbuf;  //< Copy the current element
+	    }
+	    msgbuf++;		    //< Skip to the next buffer location
+	    copyTo += colStride;	    //< Skip appropriate number of elements
+	  }
+	  rowStart += rowStep;	//< Skip to the start of the next row
+	  copyTo = rowStart;
+        }
       }
     }
-  } else {
+
+  // The data type sent does not match the type asked for.  We will need to trans-code
+  // from the format it is in to the format they want.
+  } else if (d_valType == vrpn_IMAGER_VALTYPE_UINT8) {
+    // Convert from unsigned integer 8-bit to unsigned integer 16-bit
+    // by shifting each left 8 bits (same as multiplying by 256).  Note
+    // that this does not map 255 to the maximum 16-bit value, but doing
+    // that would require either floating-point math or precomputing that
+    // math and using table look-up.
     long rowStep = rowStride;
     if (invert_rows) {
       rowStep *= -1;
     }
-    const vrpn_uint16  *msgbuf = (const vrpn_uint16 *)d_valBuf;
+    const vrpn_uint8  *msgbuf = (const vrpn_uint8 *)d_valBuf;
     for (unsigned d = d_dMin; d <= d_dMax; d++) {
       vrpn_uint16 *rowStart = &data[d*depthStride + d_rMin*rowStride + d_cMin];
       if (invert_rows) {
-	rowStart = &data[d*depthStride + (nRows-1 - d_rMin)*rowStride + d_cMin];
+	  rowStart = &data[d*depthStride + (nRows-1 - d_rMin)*rowStride + d_cMin];
       }
       vrpn_uint16 *copyTo = rowStart;
       for (unsigned r = d_rMin; r <= d_rMax; r++) {
-	for (unsigned c = d_cMin; c <= d_cMax; c++) {
-	  for (unsigned rpt = 0; rpt < repeat; rpt++) {
-	    *(copyTo+rpt) = *msgbuf;  //< Copy the current element
+	  for (unsigned c = d_cMin; c <= d_cMax; c++) {
+	    for (unsigned rpt = 0; rpt < repeat; rpt++) {
+              //< Shift and copy the current element
+	      *(copyTo+rpt) = (static_cast<vrpn_uint16>(*msgbuf) << 8);
+	    }
+	    msgbuf++;		    //< Skip to the next buffer location
+	    copyTo += colStride;	    //< Skip appropriate number of elements
 	  }
-	  msgbuf++;		    //< Skip to the next buffer location
-	  copyTo += colStride;	    //< Skip appropriate number of elements
-	}
-	rowStart += rowStep;	//< Skip to the start of the next row
-	copyTo = rowStart;
+	  rowStart += rowStep;	//< Skip to the start of the next row
+	  copyTo = rowStart;
       }
     }
+
+  } else {
+    fprintf(stderr, "vrpn_Imager_Region::decode_unscaled_region_using_base_pointer(): XXX Transcoding this type not yet implemented\n");
+    return false;
   }
 
   // Swap endian-ness of the buffer if we are on a big-endian machine.

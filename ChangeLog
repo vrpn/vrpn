@@ -1,3 +1,9 @@
+2007-09-01  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Imager.C : Does transcoding for the simple case
+		of an 8-bit input image going to a 16-bit output
+		image by shifting left 8 bits.
+
 2007-08-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_GlobalHapticsOrb.C : Removing things that were not
