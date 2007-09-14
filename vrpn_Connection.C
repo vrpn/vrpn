@@ -3465,7 +3465,10 @@ int vrpn_Endpoint::connect_tcp_to (const char * addr, int port) {
 
   if (connect(d_tcpSocket,(struct sockaddr*)&client,sizeof(client)) < 0 ){
     fprintf(stderr,
-  	     "vrpn_Endpoint::connect_tcp_to: Could not connect\n");
+  	     "vrpn_Endpoint::connect_tcp_to: Could not connect to machine %d.%d.%d.%d port %d\n",
+             (int)(client.sin_addr.S_un.S_un_b.s_b1), (int)(client.sin_addr.S_un.S_un_b.s_b2),
+             (int)(client.sin_addr.S_un.S_un_b.s_b3), (int)(client.sin_addr.S_un.S_un_b.s_b4),
+             (int)(ntohs(client.sin_port)));
 #ifdef VRPN_USE_WINSOCK_SOCKETS
     int error = WSAGetLastError();
     fprintf(stderr, "Winsock error: %d\n", error);
@@ -4796,8 +4799,8 @@ void vrpn_Connection::server_check_for_incoming_connections
     timeout.tv_usec = 0;
   }
 
-  // Do a zero-time select() to see if there is an incoming packet on
-  // the UDP socket.
+  // Do a select() with timeout (perhaps zero timeout) to see if
+  // there is an incoming packet on the UDP socket.
 
   fd_set f;
   FD_ZERO (&f);
@@ -4866,7 +4869,7 @@ void vrpn_Connection::server_check_for_incoming_connections
       // information and nano crashed...
       d_numEndpoints++;
 
-      // Because we sometimes use multiple-NICs, we are ignoring the IP from the
+      // Because we sometimes use multiple NICs, we are ignoring the IP from the
       // client, and filling in the NIC that the udp request arrived on.
       sscanf(msg, "%*s %d", &port);   // get the port
       //fill in NIC address
@@ -4876,8 +4879,8 @@ void vrpn_Connection::server_check_for_incoming_connections
               (addr_num >> 16) & 0xff,
               (addr_num >> 8) & 0xff,
               addr_num & 0xff, port); 
+      endpoint->remote_machine_name = msg;
       endpoint->connect_tcp_to(msg);
-
       handle_connection(which_end);
 
       // HACK

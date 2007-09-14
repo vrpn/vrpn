@@ -1,3 +1,13 @@
+2007-09-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Added the name of the endpoint to
+		the data structure so we get a reasonable error
+		message when connections fail.
+	* vrpn_Connection.h : Whitespace change.
+	* vrpn_Imager_Stream_Buffer.C : Initialized a variable so
+		we don't get a race condition when making logging
+		connections.
+
 2007-09-01  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Imager.C : Does transcoding for the simple case

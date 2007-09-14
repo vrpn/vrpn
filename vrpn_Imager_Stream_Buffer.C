@@ -691,14 +691,15 @@ bool vrpn_Imager_Stream_Buffer::make_new_logging_connection(const char *local_in
   // log file (there may be duplicates, but not losses).
   struct timeval start, now;
   vrpn_gettimeofday(&start, NULL);
+  now = start;
   d_ready_to_drop_old_connection = false;
   while ( !d_ready_to_drop_old_connection && (vrpn_TimevalDiff(now, start).tv_sec < 3)) {
-    vrpn_SleepMsecs(1);
     new_log_connection->mainloop();   // Enable connection set-up to occur
     new_log_connection->save_log_so_far();
     d_log_connection->mainloop();     // Eat up (and log) any incoming messages
     d_log_connection->save_log_so_far();
     vrpn_gettimeofday(&now, NULL);
+    vrpn_SleepMsecs(1);
   };
   if (!d_ready_to_drop_old_connection) {
     fprintf(stderr,"vrpn_Imager_Stream_Buffer::make_new_logging_connection(): Could not connect new logging connection\n");

@@ -209,7 +209,6 @@ class VRPN_API vrpn_Endpoint {
     int handle_tcp_messages (const timeval * timeout);
     int handle_udp_messages (const timeval * timeout);
 
-
     int connect_tcp_to (const char * msg);
     int connect_tcp_to (const char * addr, int port);
       ///< Connects d_tcpSocket to the specified address (msg = "IP port");
