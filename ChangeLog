@@ -1,3 +1,9 @@
+2007-09-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Imager_Stream_Buffer.C : const casts so that we
+		can delete buffers without the VC 6.0 compiler
+		complaining.
+
 2007-09-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Connection.C : Added the name of the endpoint to

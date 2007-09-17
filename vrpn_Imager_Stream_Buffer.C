@@ -88,7 +88,7 @@ void vrpn_Imager_Stream_Buffer::mainloop(void)
     for (i = 0; i < d_nChannels; i++) {
       d_channels[i].unbuffer(&bufptr);
     }
-    delete [] channelBuffer;
+    delete [] const_cast<char *>(channelBuffer);
     send_description();
   }
 
@@ -123,7 +123,7 @@ void vrpn_Imager_Stream_Buffer::mainloop(void)
         fprintf(stderr, "vrpn_Imager_Stream_Buffer::mainloop(): Could not pack message\n");
         break;
       }
-      delete [] p.buffer;
+      delete [] const_cast<char *>(p.buffer);
     }
   }
 }
@@ -182,7 +182,7 @@ void vrpn_Imager_Stream_Buffer::handle_got_first_connection(void)
       for (i = 0; i < d_nChannels; i++) {
         d_channels[i].unbuffer(&bufptr);
       }
-      delete [] channelBuffer;
+      delete [] const_cast<char *>(channelBuffer);
       return;
     }
 
