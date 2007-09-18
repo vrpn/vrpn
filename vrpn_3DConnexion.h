@@ -61,6 +61,14 @@ public:
 protected:
 };
 
+class vrpn_3DConnexion_SpaceMouse: public vrpn_3DConnexion {
+public:
+  vrpn_3DConnexion_SpaceMouse(const char *name, vrpn_Connection *c = 0);
+  virtual ~vrpn_3DConnexion_SpaceMouse() {};
+
+protected:
+};
+
 // end of VRPN_USE_HID
 #endif
 

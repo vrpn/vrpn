@@ -264,6 +264,7 @@ protected:
   int setup_Xkeys_Jog_And_Shuttle (char * & pch, char * line, FILE * config_file) ;
   int setup_3DConnexion_Navigator (char * & pch, char * line, FILE * config_file) ;
   int setup_3DConnexion_Traveler (char * & pch, char * line, FILE * config_file) ;
+  int setup_3DConnexion_SpaceMouse (char * & pch, char * line, FILE * config_file) ;
 
   // BUW additions
   int setup_Atmel(char* &pch, char *line, FILE *config_file);

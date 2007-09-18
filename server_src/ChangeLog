@@ -1,3 +1,9 @@
+2007-09-18  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Generic_server_object.h : Added 3DConnexion SpaceMouse
+	* vrpn_Generic_server_object.C : Same.
+	* vrpn.cfg : Same.
+
 2007-08-25  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* test_vrpn.C : Added test for vrpn_Analog_Output.

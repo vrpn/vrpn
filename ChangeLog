@@ -1,3 +1,9 @@
+2007-09-18  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3DConnexion.C : Added SpaceMouse code from
+		Lode Vanacken.
+	* vrpn_3DConnexion.h : Same.
+
 2007-09-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Imager_Stream_Buffer.C : const casts so that we

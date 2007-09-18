@@ -9,6 +9,8 @@ static const vrpn_uint16 vrpn_3DCONNEXION_VENDOR = 1133;
 static const vrpn_uint16 vrpn_3DCONNEXION_TRAVELER = 50723;
 static const vrpn_uint16 vrpn_3DCONNEXION_NAVIGATOR = 50726;
 
+static const vrpn_uint16 vrpn_3DCONNEXION_SPACEMOUSE = 50691;
+
 vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_buttons,
                                    const char *name, vrpn_Connection *c)
   : _filter(filter)
@@ -165,6 +167,11 @@ vrpn_3DConnexion_Navigator::vrpn_3DConnexion_Navigator(const char *name, vrpn_Co
 
 vrpn_3DConnexion_Traveler::vrpn_3DConnexion_Traveler(const char *name, vrpn_Connection *c)
   : vrpn_3DConnexion(_filter = new vrpn_HidProductAcceptor(vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_TRAVELER), 8, name, c)
+{
+}
+
+vrpn_3DConnexion_SpaceMouse::vrpn_3DConnexion_SpaceMouse(const char *name, vrpn_Connection *c)
+  : vrpn_3DConnexion(_filter = new vrpn_HidProductAcceptor(vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_SPACEMOUSE), 11, name, c)
 {
 }
 
