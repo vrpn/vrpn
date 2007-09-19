@@ -1,5 +1,14 @@
 2007-09-18  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpndll.vcproj : Added preprocessor definitions that
+		make VRPN build the files needed to link in the
+		DLL state.
+	* vrpn.sln : Making it come much closer to being able to
+		build DLL.
+	* vrpn_Connection.h : Removed redundant check for #ifdef.
+
+2007-09-18  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_3DConnexion.C : Added SpaceMouse code from
 		Lode Vanacken.
 	* vrpn_3DConnexion.h : Same.

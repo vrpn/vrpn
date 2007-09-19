@@ -2,9 +2,7 @@
 #define VRPN_CONNECTION_H
 #include <stdio.h>  // for FILE
 
-#ifndef VRPN_SHARED_H
 #include "vrpn_Shared.h"
-#endif
 
 class VRPN_API	vrpn_File_Connection;  // Forward declaration for get_File_Connection()
 
