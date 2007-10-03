@@ -14,8 +14,12 @@ int vrpn_Auxilliary_Logger::register_types(void)
        = d_connection->register_message_type("vrpn_Auxilliary_Logger Logging_request");
   report_logging_m_id 
        = d_connection->register_message_type("vrpn_Auxilliary_Logger Logging_response");
+  request_logging_status_m_id
+	  = d_connection->register_message_type( "vrpn_Auxilliary_Logger Logging_status_request" );
+
   if ( (request_logging_m_id == -1) 
-       || (report_logging_m_id == -1) ) {
+       || (report_logging_m_id == -1) 
+	   || ( request_logging_status_m_id == -1 ) ) {
     d_connection = NULL;
     return -1;
   } else {
@@ -198,6 +202,13 @@ vrpn_Auxilliary_Logger(name, c)
     d_connection = NULL;
   }
 
+  // Register a handler for the request logging-status message
+  if (register_autodeleted_handler(request_logging_status_m_id,
+    static_handle_request_logging_status, this, d_sender_id)) {
+    fprintf(stderr,"vrpn_Auxilliary_Logger_Server::vrpn_Auxilliary_Logger_Server: can't register logging-status request handler\n");
+    d_connection = NULL;
+  }
+
 }
 
 // This handles the last dropped connection message by turning off all
@@ -216,6 +227,17 @@ int vrpn_Auxilliary_Logger_Server::static_handle_dropped_last_connection(void *u
   me->handle_dropped_last_connection();
   return 0;
 }
+
+
+/* static */
+int vrpn_Auxilliary_Logger_Server::
+static_handle_request_logging_status( void* userdata, vrpn_HANDLERPARAM p )
+{
+	vrpn_Auxilliary_Logger_Server* me = static_cast<vrpn_Auxilliary_Logger_Server*> (userdata);
+	me->handle_request_logging_status( );
+	return 0;
+}
+
 
 /* static */
 // This method just parses the raw data in the Handlerparam to produce strings and then
@@ -331,6 +353,21 @@ void vrpn_Auxilliary_Logger_Server_Generic::handle_request_logging(
   // Report the logging that we're doing.
   send_report_logging(local_in_logfile_name, local_out_logfile_name,
                       remote_in_logfile_name, remote_out_logfile_name);
+}
+
+
+void vrpn_Auxilliary_Logger_Server_Generic::handle_request_logging_status( )
+{
+	char* local_in;
+	char* local_out;
+	char* remote_in;
+	char* remote_out;
+	d_logging_connection->get_log_names( &local_in, &local_out, &remote_in, &remote_out );
+	send_report_logging( local_in, local_out, remote_in, remote_out );
+	if( local_in ) delete [] local_in;
+	if( local_out ) delete [] local_out;
+	if( remote_in ) delete [] remote_in;
+	if( remote_out ) delete [] remote_out;
 }
 
 

@@ -1,3 +1,17 @@
+2007-10-02  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Log.h (vrpn_Log::getName):  new, returns the 
+	  log file name.
+	* vrpn_Connection.h (vrpn_Connection::get_log_names):
+	  returns the names of the local/remote in/out log files.
+	* vrpn_Connection.C:
+	  implementation of vrpn_Connection::get_log_names
+	  and vrpn_Log::getName.
+	* vrpn_Auxilliary_Logger.h/C: added code for a 
+	  "request logging status" message, including an example
+	  in the generic server.
+
+
 2007-09-18  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpndll.vcproj : Added preprocessor definitions that

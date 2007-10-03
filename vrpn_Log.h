@@ -16,11 +16,11 @@ class VRPN_API vrpn_Log {
     ~vrpn_Log (void);
 
     // ACCESSORS
-
+	char* getName( );
+	 ///< Allocates a new string and copies the log file name to it.
+	///< IMPORTANT:  code calling this function is responsible for freeing the memory.
 
     // MANIPULATORS
-
-
     int open (void);
       ///< Opens the log file.
 

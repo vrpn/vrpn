@@ -506,6 +506,19 @@ vrpn_Log::~vrpn_Log (void) {
   }
 }
 
+
+char* vrpn_Log::getName()
+{
+	if( this->d_logFileName == NULL )  return NULL;
+	else
+	{
+		char* s = new char[ strlen( this->d_logFileName )  + 1 ];
+		strcpy( s, this->d_logFileName );
+		return s;
+	}
+}
+
+
 int vrpn_Log::open (void) {
 
   if (!d_logFileName) {
@@ -5652,7 +5665,36 @@ int vrpn_Connection::doSystemCallbacksFor (vrpn_HANDLERPARAM p, void * ud) {
 }
 
 
+void vrpn_Connection::
+get_log_names(char **local_in_logname, char **local_out_logname, char **remote_in_logname, char **remote_out_logname)
+{
+	if( !(d_endpoints[0]) ) return;
+	vrpn_Endpoint* endpoint = d_endpoints[0];
+	// XXX it is possible to have more than one endpoint, and other endpoints may have other log names
 
+	*local_in_logname = endpoint->d_inLog->getName();
+	*local_out_logname = endpoint->d_outLog->getName();
+
+	if( endpoint->d_remoteInLogName != NULL )
+	{
+		*remote_in_logname = new char[ strlen( endpoint->d_remoteInLogName ) + 1 ];
+		strcpy( *remote_in_logname, endpoint->d_remoteInLogName );
+	}
+	else
+	{
+		*remote_in_logname = NULL;
+	}
+
+	if( endpoint->d_remoteOutLogName != NULL )
+	{
+		*remote_out_logname = new char[ strlen( endpoint->d_remoteOutLogName ) + 1 ];
+		strcpy( *remote_out_logname, endpoint->d_remoteOutLogName );
+	}
+	else
+	{
+		*remote_out_logname = NULL;
+	}
+}
 
 
 // virtual

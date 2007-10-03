@@ -30,6 +30,7 @@ protected:
   virtual int register_types(void);
   vrpn_int32 request_logging_m_id;   // ID of remote->server request message
   vrpn_int32 report_logging_m_id;    // ID of server->client response message
+  vrpn_int32 request_logging_status_m_id; // ID of remote->server status-request message
 
   // Pack a log description into the message whose type is passed
   // as the parameter (this is used to pack both the request and
@@ -52,6 +53,7 @@ protected:
                                char **remote_in_logfile_name,
                                char **remote_out_logfile_name);
 };
+
 
 // Virtual base server class for an auxiliiary logger.  An implementation must
 // implement the specified message-handling functions and must call the base-
@@ -105,7 +107,12 @@ protected:
   // Static portion of handling (unpacking) the request_logging message.  It
   // then calls the non-static virtual method above.
   static int VRPN_CALLBACK static_handle_request_logging(void *userdata, vrpn_HANDLERPARAM p );
+
+  // Handle request for logging status.
+  virtual void handle_request_logging_status( ) = 0;
+  static int VRPN_CALLBACK static_handle_request_logging_status( void* userdata, vrpn_HANDLERPARAM p );
 };
+
 
 // Generic server that will start auxilliary logs on the connection whose name
 // is passed in (which can be the same as the name of the connection it is created
@@ -130,6 +137,8 @@ public:
                                       const char *local_out_logfile_name,
                                       const char *remote_in_logfile_name,
                                       const char *remote_out_logfile_name);
+
+  virtual void handle_request_logging_status( );
 
   // If we have an active logging connection, mainloop it and save all of its
   // pending messages in addition to handling the base-class functions.
@@ -191,6 +200,12 @@ public:
         local_in_logfile_name, local_out_logfile_name,
         remote_in_logfile_name, remote_out_logfile_name);
     }
+
+  bool send_logging_status_request( )
+  {
+	  if( !d_connection ) {  return false;  }
+	  return pack_log_message_of_type( request_logging_status_m_id, NULL, NULL, NULL, NULL );
+  }
 
   // Register/unregister a callback handler for the logging response.
   virtual int register_report_handler(void *userdata,

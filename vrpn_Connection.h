@@ -407,6 +407,15 @@ class VRPN_API vrpn_Connection {
     vrpn_bool doing_okay (void) const;
     virtual vrpn_bool connected (void) const;
 
+	// This function returns the logfile names of this connection in
+	// the parameters.  It will allocate memory for the name of each 
+	// log file in use.  If no logging of a particular type is happening, 
+	// then *(X_Y_logname) will be set to NULL.
+	// IMPORTANT:  code calling this function is responsible for freeing
+	// the memory allocated for these strings.
+	void get_log_names( char** local_in_logname, char** local_out_logname,
+						char** remote_in_logname, char** remote_out_logname );
+
     // This is similar to check connection except that it can be
     // used to receive requests from before a server starts up
     virtual int connect_to_client (const char * machine, int port);
