@@ -152,11 +152,16 @@ public:
     return true;
   }
 
+
   // Accessors for the initial thread to pass new logfile names down to the
   // logging thread, which will cause it to initiate a changeover of logging
   // connections.  Space for the return strings will be allocated in these functions
   // and must be deleted by the logging thread ONLY IF the get function fills the
   // values in (it returns true if it does).
+  // NOTE:  this is used to query BOTH the presence of new logfile names 
+  // AS WELL AS the names themselves.  this function will only return values
+  // if new logfile names have been requested since the last time this 
+  // function was called.
   bool get_logfile_request(char **lil, char **lol, char **ril, char **rol) {
     d_sem.p();
     bool ret = d_new_log_request;
@@ -186,81 +191,178 @@ public:
     d_sem.v();
     return ret;
   }
+
+
   void set_logfile_request(const char *lil, const char *lol, const char *ril, const char *rol) {
     d_sem.p();
 
+	// delete file names, in case the logging thread hasn't had a chance to 
+	//  honor the request yet.
+	if( d_request_lil) {  delete [] d_request_lil; d_request_lil = NULL;  }
+	if( d_request_lol) {  delete [] d_request_lol; d_request_lol = NULL;  }
+	if( d_request_ril) {  delete [] d_request_ril; d_request_ril = NULL;  }
+	if( d_request_rol) {  delete [] d_request_rol; d_request_rol = NULL;  }
+
     // Allocate space for each string and then copy into it.
-    if ( (d_request_lil = new char[strlen(lil)+1]) != NULL) {
-      strcpy(d_request_lil, lil);
-    }
-    if ( (d_request_lol = new char[strlen(lol)+1]) != NULL) {
-      strcpy(d_request_lol, lol);
-    }
-    if ( (d_request_ril = new char[strlen(ril)+1]) != NULL) {
-      strcpy(d_request_ril, ril);
-    }
-    if ( (d_request_rol = new char[strlen(rol)+1]) != NULL) {
-      strcpy(d_request_rol, rol);
-    }
+	if( lil != NULL )
+	{
+		if ( (d_request_lil = new char[strlen(lil)+1]) != NULL) {
+			strcpy(d_request_lil, lil);
+		}
+	}
+	if( lol != NULL )
+	{
+		if ( (d_request_lol = new char[strlen(lol)+1]) != NULL) {
+			strcpy(d_request_lol, lol);
+		}
+	}
+	if( ril != NULL )
+	{
+		if ( (d_request_ril = new char[strlen(ril)+1]) != NULL) {
+			strcpy(d_request_ril, ril);
+		}
+	}
+	if( rol != NULL )
+	{
+		if ( (d_request_rol = new char[strlen(rol)+1]) != NULL) {
+			strcpy(d_request_rol, rol);
+		}
+	}
 
     d_new_log_request = true;
     d_sem.v();
   }
 
+
   // Accessors for the logfile thread to pass new logfile names back up to the
-  // initial thread, reporting a changeover of logging
-  // connections.  Space for the return strings will be allocated in these functions
+  // initial thread, reporting a changeover of logging connections.  
+  // Space for the return strings will be allocated in these functions
   // and must be deleted by the initial thread ONLY IF the get function fills the
   // values in (it returns true if it does).
+  // NOTE:  this function is intended to query BOTH the logfile names AS WELL AS 
+  // the change in logging status.  it ONLY returns filenames if logging has
+  // changed since the last time this function was called).
   bool get_logfile_result(char **lil, char **lol, char **ril, char **rol) {
     d_sem.p();
     bool ret = d_new_log_result;
     if (d_new_log_result) {
-      // Allocate space to return the names in the handles passed in.
-      // Copy the values from our local storage to the return values.
-      if ( (*lil = new char[strlen(d_result_lil)+1]) != NULL) {
-        strcpy(*lil, d_result_lil);
-      }
-      if ( (*lol = new char[strlen(d_result_lol)+1]) != NULL) {
-        strcpy(*lol, d_result_lol);
-      }
-      if ( (*ril = new char[strlen(d_result_ril)+1]) != NULL) {
-        strcpy(*ril, d_result_ril);
-      }
-      if ( (*rol = new char[strlen(d_result_rol)+1]) != NULL) {
-        strcpy(*rol, d_result_rol);
-      }
+		// Allocate space to return the names in the handles passed in.
+		// Copy the values from our local storage to the return values.
+		if( d_result_lil == NULL )  *lil = NULL;
+		else
+		{
+			if ( (*lil = new char[strlen(d_result_lil)+1]) != NULL) {
+				strcpy(*lil, d_result_lil);
+			}
+		}
+		if( d_result_lol == NULL )  *lol = NULL;
+		else
+		{
+			if ( (*lol = new char[strlen(d_result_lol)+1]) != NULL) {
+				strcpy(*lol, d_result_lol);
+			}
+		}
+		if( d_result_ril == NULL )  *ril = NULL;
+		else
+		{
+			if ( (*ril = new char[strlen(d_result_ril)+1]) != NULL) {
+				strcpy(*ril, d_result_ril);
+			}
+		}
+		if( d_result_rol == NULL )  *rol = NULL;
+		else
+		{
+			if ( (*rol = new char[strlen(d_result_rol)+1]) != NULL) {
+				strcpy(*rol, d_result_rol);
+			}
+		}
 
-      // Delete and NULL the local storage pointers.
-      delete [] d_result_lil; d_result_lil = NULL;
-      delete [] d_result_lol; d_result_lol = NULL;
-      delete [] d_result_ril; d_result_ril = NULL;
-      delete [] d_result_rol; d_result_rol = NULL;
+      // do not Delete and NULL the local storage pointers.
+	  // someone may request the filenames later.
     }
     d_new_log_result = false;
     d_sem.v();
     return ret;
   }
+
+
   void set_logfile_result(const char *lil, const char *lol, const char *ril, const char *rol) {
     d_sem.p();
 
+	if( d_result_lil ) delete [] d_result_lil;  d_result_lil = NULL;
+	if( d_result_lol ) delete [] d_result_lol;  d_result_lol = NULL;
+	if( d_result_ril ) delete [] d_result_ril;  d_result_ril = NULL;
+	if( d_result_rol ) delete [] d_result_rol;  d_result_rol = NULL;
+
     // Allocate space for each string and then copy into it.
-    if ( (d_result_lil = new char[strlen(lil)+1]) != NULL) {
-      strcpy(d_result_lil, lil);
-    }
-    if ( (d_result_lol = new char[strlen(lol)+1]) != NULL) {
-      strcpy(d_result_lol, lol);
-    }
-    if ( (d_result_ril = new char[strlen(ril)+1]) != NULL) {
-      strcpy(d_result_ril, ril);
-    }
-    if ( (d_result_rol = new char[strlen(rol)+1]) != NULL) {
-      strcpy(d_result_rol, rol);
-    }
+	if( lil != NULL )
+	{
+		if ( (d_result_lil = new char[strlen(lil)+1]) != NULL) {
+			strcpy(d_result_lil, lil);
+		}
+	}
+	if( lol != NULL )
+	{
+		if ( (d_result_lol = new char[strlen(lol)+1]) != NULL) {
+			strcpy(d_result_lol, lol);
+		}
+	}
+	if( ril != NULL )
+	{
+		if ( (d_result_ril = new char[strlen(ril)+1]) != NULL) {
+			strcpy(d_result_ril, ril);
+		}
+	}
+	if( rol != NULL )
+	{
+		if ( (d_result_rol = new char[strlen(rol)+1]) != NULL) {
+			strcpy(d_result_rol, rol);
+		}
+	}
 
     d_new_log_result = true;
     d_sem.v();
   }
+
+
+  // fills in the arguments with the logfile names currently in use
+  // for a particular log, the value will be NULL if that log is not being collected.
+  // NOTE:  this function allocates memory for each string returned.  IT IS THE
+  // RESPONSIBILITY OF THE CALLING FUNCTION TO FREE THIS MEMORY.
+  void get_logfile_names( char** local_in, char** local_out, char** remote_in, char** remote_out )
+  {
+	  d_sem.p();
+	  if( d_result_lil == NULL ) 
+		  *local_in = NULL;
+	  else
+	  {
+		  *local_in = new char[ strlen( d_result_lil ) + 1 ];
+		  strcpy( *local_in, d_result_lil );
+	  }
+	  if( d_result_lol == NULL ) 
+		  *local_out = NULL;
+	  else
+	  {
+		  *local_out = new char[ strlen( d_result_lol ) + 1 ];
+		  strcpy( *local_out, d_result_lol );
+	  }
+	  if( d_result_ril == NULL ) 
+		  *remote_in = NULL;
+	  else
+	  {
+		  *remote_in = new char[ strlen( d_result_ril ) + 1 ];
+		  strcpy( *remote_in, d_result_ril );
+	  }
+	  if( d_result_rol == NULL ) 
+		  *remote_out = NULL;
+	  else
+	  {
+		  *remote_out = new char[ strlen( d_result_rol ) + 1 ];
+		  strcpy( *remote_out, d_result_rol );
+	  }
+	  d_sem.v();
+  }
+
 
   // Accessors for the initial thread to pass new throttle values down to the
   // logging thread, which will cause it to throttle as needed.
@@ -353,7 +455,11 @@ protected:
 
   // Names of the log files passed from the logging thread to the initial
   // thread and a flag telling whether they have been changed since last
-  // read.
+  // read.  NOTE:  we maintain a copy of the log file names here, instead
+  // of using the accessor of vrpn_Connection to query the names.  Only
+  // the logging thread is supposed to have access to the logging connection,
+  // but the logging thread is banned from calling methods on the client
+  // connection.
   bool  d_new_log_result;
   char *d_result_lil;
   char *d_result_lol;
@@ -422,6 +528,9 @@ protected:
   // Static portion of handling (unpacking) the request_logging message.  It
   // then calls the non-static virtual method above.
   static int VRPN_CALLBACK static_handle_request_logging(void *userdata, vrpn_HANDLERPARAM p );
+
+  virtual void handle_request_logging_status( );
+
 
   // Handle dropped last connection on our primary connection by shutting down the
   // connection to the imager server.  The static method in the base class looks up this

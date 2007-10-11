@@ -1,3 +1,13 @@
+2007-10-11  David Marshburn  <marshbur@cs.unc.edu>
+	
+	* vrpn_Imager_Stream_Buffer.h/C:  implemented
+	handle_request_logging_status
+	(vrpn_Imager_Stream_Shared_State):  this now keeps around
+	the log-file-name results.  added appropriate memory management
+	for that.  added lots of NULL tests.  added an accessor for
+	log file names, get log file names, which doesn't depend on
+	whether the file names are unqueried.  added comments.
+
 2007-10-02  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_Log.h (vrpn_Log::getName):  new, returns the 

@@ -750,6 +750,23 @@ void vrpn_Imager_Stream_Buffer::handle_request_logging(const char *local_in_logf
   send_report_logging("","","","");
 }
 
+
+void vrpn_Imager_Stream_Buffer::
+handle_request_logging_status()
+{
+	char* local_in;
+	char* local_out;
+	char* remote_in;
+	char* remote_out;
+	d_shared_state.get_logfile_names( &local_in, &local_out, &remote_in, &remote_out );
+	send_report_logging( local_in, local_out, remote_in, remote_out );
+	if( local_in ) delete [] local_in;
+	if( local_out ) delete [] local_out;
+	if( remote_in ) delete [] remote_in;
+	if( remote_out ) delete [] remote_out;
+}
+
+
 /* Static */
 // We've gotten a new imager description, so fill it into the shared data structure
 // so that the parent object can hear about it.
