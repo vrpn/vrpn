@@ -1,3 +1,6 @@
+2007-10-16  David Marshburn  <marshbur@cs.unc.edu>
+	* java_vrpn.jvp, .sln:  removed.  old, visual j++ project files.
+
 
 2007-06-25  David Marshburn  <marshbur@cs.unc.edu>
 	* buildJAR.xml:  correctly packages the class in the file
