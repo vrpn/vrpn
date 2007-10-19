@@ -1,3 +1,8 @@
+2007-10-19  David Marshburn  <marshbur@cs.unc.edu>
+
+	* .classpath, .project:  eclipse project files
+	* .cvsignore:  ignore the bin/ directory
+
 2006-04-24    <marshbur@cs.unc.edu>
 
 	* text sender/receiver test programs
