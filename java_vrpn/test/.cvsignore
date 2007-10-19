@@ -2,4 +2,4 @@
 *.class
 codebase.dat
 *.dll
-*.bin
+bin
