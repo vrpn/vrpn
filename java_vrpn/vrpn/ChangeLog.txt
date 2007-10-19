@@ -1,3 +1,7 @@
+2007-10-19  David Marshburn  <marshbur@cs.unc.edu>
+
+	* AuxiliaryLoggerRemote.java:  new.  wrapping of logger class.
+
 
 2007-06-15  David Marshburn  <marshbur@cs.unc.edu>
 	* AnalogOutputRemote.java:  removed an unused import.
