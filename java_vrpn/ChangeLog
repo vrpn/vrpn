@@ -1,3 +1,13 @@
+2007-10-19  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_AuxiliaryLoggerRemote.cpp:  new.  java-native code for
+	aux. logger class.
+	* java_vrpn.h, .cpp:  calls logger class OnLoad/OnUnload methods
+	* java_vrpn.sln, .vcproj:  new.  visual studio 8/2005 project files.
+	* .cvsignore:  ignore vrpn_AuxiliaryLoggerRemote.h (generated code)
+	* buildNativeHeaders.xml:  adds logger class
+	* other *.cppfixed line endings (to be unix-style)
+
 2007-10-16  David Marshburn  <marshbur@cs.unc.edu>
 	* java_vrpn.jvp, .sln:  removed.  old, visual j++ project files.
 

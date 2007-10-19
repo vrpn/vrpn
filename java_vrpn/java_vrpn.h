@@ -24,6 +24,10 @@ JNIEXPORT void JNICALL JNI_OnUnload_AnalogOutput_Remote( JavaVM* jvm, void* rese
 JNIEXPORT jint JNICALL JNI_OnLoad_Analog_Remote( JavaVM* jvm, void* reserved );
 JNIEXPORT void JNICALL JNI_OnUnload_Analog_Remote( JavaVM* jvm, void* reserved );
 
+// AuxiliaryLogger_Remote Load/Unload
+JNIEXPORT jint JNICALL JNI_OnLoad_AuxiliaryLogger_Remote( JavaVM* jvm, void* reserved );
+JNIEXPORT void JNICALL JNI_OnUnload_AuxiliaryLogger_Remote( JavaVM* jvm, void* reserved );
+
 // Button_Remote Load/Unload
 JNIEXPORT jint JNICALL JNI_OnLoad_Button_Remote( JavaVM* jvm, void* reserved );
 JNIEXPORT void JNICALL JNI_OnUnload_Button_Remote( JavaVM* jvm, void* reserved );

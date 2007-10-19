@@ -6,6 +6,7 @@
 		<javah destdir="." verbose="yes" classpath="bin">
 			<class name="vrpn.AnalogOutputRemote"/>
 			<class name="vrpn.AnalogRemote"/>
+			<class name="vrpn.AuxiliaryLoggerRemote"/>
 			<class name="vrpn.ButtonRemote"/>
 			<class name="vrpn.ForceDeviceRemote"/>
 			<class name="vrpn.PoserRemote"/>
