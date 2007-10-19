@@ -3477,14 +3477,20 @@ int vrpn_Endpoint::connect_tcp_to (const char * addr, int port) {
 #endif
 
   if (connect(d_tcpSocket,(struct sockaddr*)&client,sizeof(client)) < 0 ){
+#ifdef VRPN_USE_WINSOCK_SOCKETS
     fprintf(stderr,
   	     "vrpn_Endpoint::connect_tcp_to: Could not connect to machine %d.%d.%d.%d port %d\n",
              (int)(client.sin_addr.S_un.S_un_b.s_b1), (int)(client.sin_addr.S_un.S_un_b.s_b2),
              (int)(client.sin_addr.S_un.S_un_b.s_b3), (int)(client.sin_addr.S_un.S_un_b.s_b4),
              (int)(ntohs(client.sin_port)));
-#ifdef VRPN_USE_WINSOCK_SOCKETS
     int error = WSAGetLastError();
     fprintf(stderr, "Winsock error: %d\n", error);
+#else
+    fprintf(stderr,
+  	     "vrpn_Endpoint::connect_tcp_to: Could not connect to machine %d.%d.%d.%d port %d\n",
+             (int)( (client.sin_addr.s_addr >> 24) & 0xff), (int)( (client.sin_addr.s_addr >> 16) & 0xff),
+             (int)( (client.sin_addr.s_addr >> 8) & 0xff), (int)( (client.sin_addr.s_addr >> 0) & 0xff),
+             (int)(ntohs(client.sin_port)));
 #endif
     vrpn_closeSocket(d_tcpSocket);
     status = BROKEN;

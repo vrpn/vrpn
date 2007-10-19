@@ -1,3 +1,8 @@
+2007-10-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Making an fprintf() with the
+		machine IP address work under Linux.
+
 2007-10-11  David Marshburn  <marshbur@cs.unc.edu>
 	
 	* vrpn_Imager_Stream_Buffer.h/C:  implemented
