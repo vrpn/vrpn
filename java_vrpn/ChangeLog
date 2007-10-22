@@ -1,3 +1,7 @@
+2007-10-22  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_AuxiliaryLoggerRemote.cpp:  added some NULL-tests for stability
+
 2007-10-19  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_AuxiliaryLoggerRemote.cpp:  new.  java-native code for

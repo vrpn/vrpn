@@ -114,10 +114,10 @@ Java_vrpn_AuxiliaryLoggerRemote_sendLoggingRequest( JNIEnv* env, jobject jobj,
 			"uninitialized or has been shut down.\n" );
 		return false;
 	}
-	const char* localIn = env->GetStringUTFChars( jLocalIn, NULL );
-	const char* localOut = env->GetStringUTFChars( jLocalOut, NULL );
-	const char* remoteIn = env->GetStringUTFChars( jRemoteIn, NULL );
-	const char* remoteOut = env->GetStringUTFChars( jRemoteOut, NULL );
+	const char* localIn = jLocalIn == NULL ? NULL : env->GetStringUTFChars( jLocalIn, NULL );
+	const char* localOut = jLocalOut == NULL ? NULL : env->GetStringUTFChars( jLocalOut, NULL );
+	const char* remoteIn = jRemoteIn == NULL ? NULL : env->GetStringUTFChars( jRemoteIn, NULL );
+	const char* remoteOut = jRemoteOut == NULL ? NULL : env->GetStringUTFChars( jRemoteOut, NULL );
 
 	bool retval =  r->send_logging_request( localIn, localOut, remoteIn, remoteOut );
 
