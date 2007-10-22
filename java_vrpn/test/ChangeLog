@@ -1,3 +1,8 @@
+2007-10-22  David Marshburn  <marshbur@cs.unc.edu>
+
+	* AuxiliaryLoggerTest.java:  new
+	* TrackerTest.java:  changed port
+
 2007-10-19  David Marshburn  <marshbur@cs.unc.edu>
 
 	* .classpath, .project:  eclipse project files

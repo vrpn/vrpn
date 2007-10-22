@@ -42,7 +42,7 @@ public class TrackerTest
 
 	public static void main( String[] args )
 	{
-		String trackerName = "RandTracker@localhost:5000";
+		String trackerName = "RandTracker@localhost:5500";
 		TrackerRemote tracker = null;
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		try
