@@ -14,8 +14,7 @@ codebase.dat
 vrpn.jar
 javadoc
 bin
-
-
 java_vrpn.ncb
 java_vrpn.plg
 java_vrpn.opt
+*.vcproj.*.user
