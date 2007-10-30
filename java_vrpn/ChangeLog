@@ -1,3 +1,10 @@
+2007-10-30  David Marshburn  <marshbur@cs.unc.edu>
+
+	* buildNativeHeaders.xml:  removed references to TempImager
+	* make_header.sh:  same
+	* makefile:  same
+	* *TempImager*:  renamed temp imager files, appending .obsolete
+
 2007-10-22  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_AuxiliaryLoggerRemote.cpp:  added some NULL-tests for stability

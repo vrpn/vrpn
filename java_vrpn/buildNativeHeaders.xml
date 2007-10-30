@@ -10,7 +10,6 @@
 			<class name="vrpn.ButtonRemote"/>
 			<class name="vrpn.ForceDeviceRemote"/>
 			<class name="vrpn.PoserRemote"/>
-			<class name="vrpn.TempImagerRemote"/>
 			<class name="vrpn.TextReceiver"/>
 			<class name="vrpn.TextSender"/>
 			<class name="vrpn.TrackerRemote"/>

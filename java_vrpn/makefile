@@ -325,14 +325,17 @@ $(SOBJECT_DIR):
 # files to be compiled into the client library
 
 LIB_FILES =  java_vrpn.cpp vrpn_AnalogOutputRemote.cpp vrpn_AnalogRemote.cpp \
-		vrpn_ButtonRemote.cpp vrpn_ForceDeviceRemote.cpp vrpn_TempImagerRemote.cpp \
-		vrpn_TrackerRemote.cpp
+		vrpn_AuxiliaryLoggerRemote.cpp vrpn_ButtonRemote.cpp \
+		vrpn_ForceDeviceRemote.cpp vrpn_PoserRemote.cpp vrpn_TextReceiver.cpp \
+		vrpn_TextSender.cpp vrpn_TrackerRemote.cpp vrpn_VRPNDevice.cpp
 
 LIB_OBJECTS = $(patsubst %,$(OBJECT_DIR)/%,$(LIB_FILES:.cpp=.o))
 
 LIB_INCLUDES = java_vrpn.h vrpn_AnalogOutputRemote.h vrpn_AnalogRemote.h \
-		vrpn_ButtonRemote.h vrpn_ForceDeviceRemote.h vrpn_TempImagerRemote.h \
-		vrpn_TrackerRemote.h
+		vrpn_AuxiliaryLoggerRemote.h vrpn_ButtonRemote.h \
+		vrpn_ForceDeviceRemote.h vrpn_PoserRemote.h vrpn_TextReceiver.h \
+		vrpn_TextSender.h vrpn_TrackerRemote.h vrpn_VRPNDevice.h
+
 
 # additional files for the new connection work-in-progress
 
