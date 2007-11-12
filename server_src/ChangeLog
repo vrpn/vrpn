@@ -1,3 +1,7 @@
+2007-10-12  David Marshburn  <marshbur@cs.unc.edu>
+
+	* test_auxilliary_logger.C:  also test status-request functionality
+
 2007-09-18  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Generic_server_object.h : Added 3DConnexion SpaceMouse

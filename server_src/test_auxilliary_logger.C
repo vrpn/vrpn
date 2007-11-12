@@ -41,6 +41,8 @@ void	VRPN_CALLBACK handle_log_report (void *, const vrpn_AUXLOGGERCB info)
   strncpy(g_local_out, info.local_out_logfile_name, NAMELEN);
   strncpy(g_remote_in, info.remote_in_logfile_name, NAMELEN);
   strncpy(g_remote_out, info.remote_out_logfile_name, NAMELEN);
+  printf( "log report:  \'%s\'  \'%s\'  \'%s\'  \'%s\'\n", 
+	  g_local_in, g_local_out, g_remote_in, g_remote_out );
   g_got_report = true;
 }
 
@@ -135,6 +137,14 @@ int main (int argc, char * argv [])
     fprintf(stderr,"Error creating first set of logs\n");
     ret = -1;
   }
+  vrpn_gettimeofday(&start, NULL);
+  do {
+    g_logger->mainloop();
+    vrpn_gettimeofday(&now, NULL);
+  } while (duration(now, start) < 2.0);
+
+  // send a log-file-name request
+  g_logger->send_logging_status_request( );
   vrpn_gettimeofday(&start, NULL);
   do {
     g_logger->mainloop();
