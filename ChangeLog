@@ -1,3 +1,11 @@
+2007-11-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Toook out NationalInstruments.
+		Reverted to old version of Microsoft DirectX
+		SDK (let the tug-of-war begin).
+	* vrpn.dsp : Changed name of Auxilliary to Auxiliary.
+	* vrpndll.dsp : Same.
+
 2007-11-12  David Marshburn  <marshbur@cs.unc.edu>
 
 	* corrected the spelling of Auxilliary to Auxiliary

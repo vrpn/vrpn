@@ -122,7 +122,7 @@
 // the National Instruments Nidaq libary to control analog outputa.
 // Later in this file, we also instruct the compiler to link with
 // the National Instruments libraries if this is defined.
-#define	VRPN_USE_NATIONAL_INSTRUMENTS
+//#define	VRPN_USE_NATIONAL_INSTRUMENTS
 //#define	VRPN_USE_NATIONAL_INSTRUMENTS_MX
 
 //-----------------------
@@ -207,11 +207,11 @@
 #define VRPN_GHOST_31_PATH      VRPN_SYSTEMDRIVE "/Program Files/SensAble/GHOST/v3.1/lib/"
 #define VRPN_GHOST_40_PATH      VRPN_SYSTEMDRIVE "/Program Files/SensAble/GHOST/v4.0/lib/"
 
-#define VRPN_DIRECT_X_PATH      VRPN_SYSTEMDRIVE "/Program Files/Microsoft DirectX SDK (April 2007)"
+#define VRPN_DIRECT_X_PATH      VRPN_SYSTEMDRIVE "/Program Files/Microsoft DirectX SDK (August 2006)"
 #define VRPN_DIRECT_X_LIB_PATH  VRPN_DIRECT_X_PATH "/Lib/x86/"
 #ifdef	VRPN_USE_DIRECTINPUT
 #define	DIRECTINPUT_VERSION 0x0800
-#include <C:/Program Files/Microsoft DirectX SDK (April 2007)/Include/dinput.h>
+#include <C:/Program Files/Microsoft DirectX SDK (August 2006)/Include/dinput.h>
 #endif
 
 #define VRPN_NIDAQ_PATH         VRPN_SYSTEMDRIVE "/Program Files/National Instruments/NI-DAQ/Lib/"

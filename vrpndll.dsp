@@ -132,7 +132,7 @@ SOURCE=.\vrpn_Analog_USDigital_A2.C
 # End Source File
 # Begin Source File
 
-SOURCE=.\vrpn_auxilliary_Logger.C
+SOURCE=.\vrpn_Auxiliary_Logger.C
 # End Source File
 # Begin Source File
 
@@ -436,7 +436,7 @@ SOURCE=.\vrpn_Analog_USDigital_A2.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\vrpn_Auxilliary_Logger.h
+SOURCE=.\vrpn_Auxiliary_Logger.h
 # End Source File
 # Begin Source File
 
