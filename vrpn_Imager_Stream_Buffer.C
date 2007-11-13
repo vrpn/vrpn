@@ -3,7 +3,7 @@
 #include  "vrpn_Imager_Stream_Buffer.h"
 
 vrpn_Imager_Stream_Buffer::vrpn_Imager_Stream_Buffer(const char * name, const char * imager_server_name, vrpn_Connection * c) :
-vrpn_Auxilliary_Logger_Server(name, c)
+vrpn_Auxiliary_Logger_Server(name, c)
 , vrpn_Imager_Server(name, c, 0, 0) // Default number of rows and columns for the device.
 , d_logging_thread(NULL)
 , d_imager_server_name(NULL)

@@ -3311,25 +3311,25 @@ int vrpn_Generic_Server_Object::setup_Logger(char * & pch, char * line, FILE * c
 
   char s2 [LINESIZE], s3 [LINESIZE];
 
-  // Line will be: vrpn_Auxilliary_Logger_Server_Generic NAME CONNECTION_TO_LOG
+  // Line will be: vrpn_Auxiliary_Logger_Server_Generic NAME CONNECTION_TO_LOG
   next();
   if (sscanf(pch,"%511s %511s",s2,s3)!=2) {
-          fprintf(stderr,"Bad vrpn_Auxilliary_Logger_Server_Generic line: %s\n",line);
+          fprintf(stderr,"Bad vrpn_Auxiliary_Logger_Server_Generic line: %s\n",line);
           return -1;
   }
 
   // Make sure we don't have a full complement already.
   if (num_loggers >= VRPN_GSO_MAX_LOGGER) {
-    fprintf(stderr,"Too many vrpn_Auxilliary_Logger_Server_Generic loggers.\n");
+    fprintf(stderr,"Too many vrpn_Auxiliary_Logger_Server_Generic loggers.\n");
     return -1;
   }
 
   // Open the logger
-  if (verbose) printf("Opening vrpn_Auxilliary_Logger_Server_Generic %s\n", s2);
-  vrpn_Auxilliary_Logger_Server_Generic* logger =  new vrpn_Auxilliary_Logger_Server_Generic(s2, s3, connection);
+  if (verbose) printf("Opening vrpn_Auxiliary_Logger_Server_Generic %s\n", s2);
+  vrpn_Auxiliary_Logger_Server_Generic* logger =  new vrpn_Auxiliary_Logger_Server_Generic(s2, s3, connection);
 
   if(logger == NULL) {
-    fprintf(stderr,"Unable to create new vrpn_Auxilliary_Logger_Server_Generic.\n");
+    fprintf(stderr,"Unable to create new vrpn_Auxiliary_Logger_Server_Generic.\n");
     return -1;
   }
 
@@ -3818,7 +3818,7 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
             CHECK(setup_Button_NI_DIO24);
 	  } else if (isit("vrpn_Tracker_PhaseSpace")) {
             CHECK(setup_Tracker_PhaseSpace);
-	  } else if (isit("vrpn_Auxilliary_Logger_Server_Generic")) {
+	  } else if (isit("vrpn_Auxiliary_Logger_Server_Generic")) {
             CHECK(setup_Logger);
 	  } else if (isit("vrpn_Imager_Stream_Buffer")) {
             CHECK(setup_ImageStream);

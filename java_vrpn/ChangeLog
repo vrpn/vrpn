@@ -1,3 +1,7 @@
+2007-11-12  David Marshburn  <marshbur@cs.unc.edu>
+
+	* corrected the spelling of Auxilliary to Auxiliary
+
 2007-10-30  David Marshburn  <marshbur@cs.unc.edu>
 
 	* buildNativeHeaders.xml:  removed references to TempImager

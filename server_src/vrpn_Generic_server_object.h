@@ -61,7 +61,7 @@
 #include "vrpn_3DMicroscribe.h"
 #include "vrpn_5DT16.h"
 #include "vrpn_Keyboard_Mouse.h"
-#include "vrpn_Auxilliary_Logger.h"
+#include "vrpn_Auxiliary_Logger.h"
 #include "vrpn_Imager_Stream_Buffer.h"
 // added by Tom dw
 #include "vrpn_Button_USB.h"
@@ -186,7 +186,7 @@ protected:
   int		num_mouses;
   vrpn_KeyMouse * KeyMouses [VRPN_GSO_MAX_KEYMOUSE];
   int		num_KeyMouses;
-  vrpn_Auxilliary_Logger_Server_Generic * loggers [VRPN_GSO_MAX_LOGGER];
+  vrpn_Auxiliary_Logger_Server_Generic * loggers [VRPN_GSO_MAX_LOGGER];
   int           num_loggers;
   vrpn_Imager_Stream_Buffer * imagestreams [VRPN_GSO_MAX_IMAGE_STREAM];
   int           num_imagestreams;

@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="vrpndll"
 	ProjectGUID="{5F38B32E-B5AE-4316-B15E-9E21D033B1BE}"
+	RootNamespace="vrpndll"
 	>
 	<Platforms>
 		<Platform
@@ -447,7 +448,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\vrpn_Auxilliary_Logger.C"
+				RelativePath=".\vrpn_Auxiliary_Logger.C"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1960,7 +1961,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\vrpn_Auxilliary_Logger.h"
+				RelativePath=".\vrpn_Auxiliary_Logger.h"
 				>
 			</File>
 			<File

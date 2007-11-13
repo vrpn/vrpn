@@ -216,7 +216,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "test_auxilliary_logger"=.\server_src\test_auxilliary_logger.dsp - Package Owner=<4>
+Project: "test_auxiliary_logger"=.\server_src\test_auxiliary_logger.dsp - Package Owner=<4>
 
 Package=<5>
 {{{

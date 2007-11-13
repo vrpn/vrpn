@@ -2,13 +2,13 @@
 #include <stdio.h>
 #include <signal.h>
 #include <string.h>
-#include "vrpn_Auxilliary_Logger.h"
+#include "vrpn_Auxiliary_Logger.h"
 
 #ifndef _WIN32
 #include <strings.h>
 #endif
 
-vrpn_Auxilliary_Logger_Remote *g_logger;
+vrpn_Auxiliary_Logger_Remote *g_logger;
 
 double duration(struct timeval t1, struct timeval t2)
 {
@@ -119,7 +119,7 @@ int main (int argc, char * argv [])
 
   // Open the logger and set up its callback handler.
   fprintf(stderr, "Logger's name is %s.\n", devicename);
-  g_logger = new vrpn_Auxilliary_Logger_Remote (devicename);
+  g_logger = new vrpn_Auxiliary_Logger_Remote (devicename);
   g_logger->register_report_handler(NULL, handle_log_report);
 
   // Main loop for half a second to get things started on the

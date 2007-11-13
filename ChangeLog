@@ -1,3 +1,7 @@
+2007-11-12  David Marshburn  <marshbur@cs.unc.edu>
+
+	* corrected the spelling of Auxilliary to Auxiliary
+
 2007-10-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Connection.C : Making an fprintf() with the

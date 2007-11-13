@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="vrpn"
 	ProjectGUID="{7EE1DB03-16A5-4465-9164-061BE0C88B8C}"
+	RootNamespace="vrpn"
 	>
 	<Platforms>
 		<Platform
@@ -402,7 +403,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\vrpn_Auxilliary_Logger.C"
+				RelativePath=".\vrpn_Auxiliary_Logger.C"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1949,7 +1950,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\vrpn_Auxilliary_Logger.h"
+				RelativePath=".\vrpn_Auxiliary_Logger.h"
 				>
 			</File>
 			<File

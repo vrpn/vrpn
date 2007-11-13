@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <jni.h>
 #include "java_vrpn.h"
-#include "vrpn_Auxilliary_Logger.h"
+#include "vrpn_Auxiliary_Logger.h"
 #include "vrpn_AuxiliaryLoggerRemote.h"
 
 jclass jclass_vrpn_AuxiliaryLoggerRemote = NULL;
@@ -107,7 +107,7 @@ Java_vrpn_AuxiliaryLoggerRemote_sendLoggingRequest( JNIEnv* env, jobject jobj,
 												   jstring jRemoteIn, jstring jRemoteOut )
 {
 	// get the logger pointer
-	vrpn_Auxilliary_Logger_Remote* r = (vrpn_Auxilliary_Logger_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
+	vrpn_Auxiliary_Logger_Remote* r = (vrpn_Auxiliary_Logger_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
 	if( r <= 0 )  // this logger is uninitialized or has been shut down already
 	{
 		printf( "Error in native method \"sendLoggingRequest(...)\":  the logger is "
@@ -133,7 +133,7 @@ JNIEXPORT jboolean JNICALL
 Java_vrpn_AuxiliaryLoggerRemote_sendLoggingStatusRequest( JNIEnv* env, jobject jobj )
 {
 	// get the analog pointer
-	vrpn_Auxilliary_Logger_Remote* r = (vrpn_Auxilliary_Logger_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
+	vrpn_Auxiliary_Logger_Remote* r = (vrpn_Auxiliary_Logger_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
 	if( r <= 0 )  // this analog is uninitialized or has been shut down already
 	{
 		printf( "Error in native method \"sendLoggingStatusRequest(...)\":  the  logger is "
@@ -150,7 +150,7 @@ Java_vrpn_AuxiliaryLoggerRemote_sendLoggingStatusRequest( JNIEnv* env, jobject j
 JNIEXPORT void JNICALL 
 Java_vrpn_AuxiliaryLoggerRemote_mainloop( JNIEnv* env, jobject jobj )
 {
-	vrpn_Auxilliary_Logger_Remote* l = (vrpn_Auxilliary_Logger_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
+	vrpn_Auxiliary_Logger_Remote* l = (vrpn_Auxiliary_Logger_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
 	if( l <= 0 )  // this logger is uninitialized or has been shut down already
 		return;
 
@@ -182,7 +182,7 @@ Java_vrpn_AuxiliaryLoggerRemote_init( JNIEnv* env, jobject jobj,jstring jname,
 	vrpn_Connection* conn 
 		= vrpn_get_connection_by_name( name, local_in_logfile_name, local_out_logfile_name,
 		remote_in_logfile_name, remote_out_logfile_name );
-	vrpn_Auxilliary_Logger_Remote* r = new vrpn_Auxilliary_Logger_Remote( name, conn );
+	vrpn_Auxiliary_Logger_Remote* r = new vrpn_Auxiliary_Logger_Remote( name, conn );
 	r->register_report_handler( jobj, handle_logging_report );
 	env->ReleaseStringUTFChars( jname, name );
 	env->ReleaseStringUTFChars( jlocalInLogfileName, local_in_logfile_name );
@@ -202,7 +202,7 @@ JNIEXPORT void JNICALL
 Java_vrpn_AuxiliaryLoggerRemote_shutdownAuxiliaryLogger( JNIEnv* env, jobject jobj )
 {
 	// get the logger pointer
-	vrpn_Auxilliary_Logger_Remote* r = (vrpn_Auxilliary_Logger_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
+	vrpn_Auxiliary_Logger_Remote* r = (vrpn_Auxiliary_Logger_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
 
 	// unregister a handler and destroy the button
 	if( r > 0 )

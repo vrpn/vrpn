@@ -1,6 +1,6 @@
 #ifndef	VRPN_IMAGER_STREAM_BUFFER_H
 #define	VRPN_IMAGER_STREAM_BUFFER_H
-#include  "vrpn_Auxilliary_Logger.h"
+#include  "vrpn_Auxiliary_Logger.h"
 #include  "vrpn_Imager.h"
 
 // This is a fairly complicated class that implements a multi-threaded
@@ -488,11 +488,11 @@ protected:
 // buffering.
 
 class VRPN_API vrpn_Imager_Stream_Buffer :
-               public vrpn_Auxilliary_Logger_Server,
+               public vrpn_Auxiliary_Logger_Server,
                public vrpn_Imager_Server {
 public:
   // Name of this object (the server side of the vrpn_Imager that is
-  // buffered and the vrpn_Auxilliary_Logger that the client will connect to).
+  // buffered and the vrpn_Auxiliary_Logger that the client will connect to).
   // (Optional, can be NULL) pointer to the server connection on which to
   // communicate.
   // Name of the vrpn_Imager_Server to connect to (packets from this server will
@@ -510,7 +510,7 @@ public:
 protected:
 
   // Handle a logging-request message.  The request contains four file
-  // names, two for local (to the Auxilliary server itself) and two for
+  // names, two for local (to the Auxiliary server itself) and two for
   // remote (the far side of its connection to the server).  It must
   // also respond to the client with a message saying what logging has
   // been set up (using the send_logging_response function).  Logging is
@@ -657,7 +657,7 @@ protected:
 
 //-----------------------------------------------------------
 // Client code should connect to the server twice, once as
-// a vrpn_Imager_Server and once as a vrpn_Auxilliary_Logger_Server.
+// a vrpn_Imager_Server and once as a vrpn_Auxiliary_Logger_Server.
 // There is not a special remote class for this.
 
 #endif

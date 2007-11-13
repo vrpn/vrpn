@@ -1,4 +1,8 @@
-2007-10-12  David Marshburn  <marshbur@cs.unc.edu>
+2007-11-12  David Marshburn  <marshbur@cs.unc.edu>
+
+	* corrected the spelling of Auxilliary to Auxiliary
+
+2007-11-12  David Marshburn  <marshbur@cs.unc.edu>
 
 	* test_auxilliary_logger.C:  also test status-request functionality
 

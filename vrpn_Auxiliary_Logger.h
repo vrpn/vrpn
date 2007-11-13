@@ -10,20 +10,20 @@
 // the client-side log files from filling up.  When new log file(s)
 // are requested, the old log files are closed.
 
-// Note that a particular implementation of the auxilliary logger server
+// Note that a particular implementation of the auxiliary logger server
 // may need to know about a second connection (not the one it talks
 // to its client over) in case that is where it is doing its logging. 
 
-#ifndef	VRPN_AUXILLIARY_LOGGER_H
-#define	VRPN_AUXILLIARY_LOGGER_H
+#ifndef	VRPN_AUXILIARY_LOGGER_H
+#define	VRPN_AUXILIARY_LOGGER_H
 #include <string.h>	// For memcpy()
 #include  "vrpn_Connection.h"
 #include  "vrpn_BaseClass.h"
 
-class VRPN_API vrpn_Auxilliary_Logger : public vrpn_BaseClass {
+class VRPN_API vrpn_Auxiliary_Logger : public vrpn_BaseClass {
 public:
 
-  vrpn_Auxilliary_Logger(const char * name, vrpn_Connection * c);
+  vrpn_Auxiliary_Logger(const char * name, vrpn_Connection * c);
 
 protected:
   // Handle registration of all message types we're going to deal with.
@@ -59,16 +59,16 @@ protected:
 // implement the specified message-handling functions and must call the base-
 // class constructor to set up the calling of them.
 
-class VRPN_API vrpn_Auxilliary_Logger_Server : public vrpn_Auxilliary_Logger {
+class VRPN_API vrpn_Auxiliary_Logger_Server : public vrpn_Auxiliary_Logger {
 public:
-  vrpn_Auxilliary_Logger_Server(const char * name, vrpn_Connection * c);
+  vrpn_Auxiliary_Logger_Server(const char * name, vrpn_Connection * c);
 
   // Required for servers.
   virtual void mainloop(void) { server_mainloop(); }
 
 protected:
   // Handle a logging-request message.  The request contains four file
-  // names, two for local (to the Auxilliary server itself) and two for
+  // names, two for local (to the Auxiliary server itself) and two for
   // remote (the far side of its connection to the server).  It must
   // also respond to the client with a message saying what logging has
   // been set up (using the send_logging_response function).  Logging is
@@ -114,18 +114,18 @@ protected:
 };
 
 
-// Generic server that will start auxilliary logs on the connection whose name
+// Generic server that will start auxiliary logs on the connection whose name
 // is passed in (which can be the same as the name of the connection it is created
 // on, but does not have to be).  The "local" in and out are with respect to the
 // new connection that is made; the "remote" in and out are with respect to the
 // named connection.  No logging is started in the constructor.
 
-class VRPN_API vrpn_Auxilliary_Logger_Server_Generic : public vrpn_Auxilliary_Logger_Server {
+class VRPN_API vrpn_Auxiliary_Logger_Server_Generic : public vrpn_Auxiliary_Logger_Server {
 public:
   // Does not start logging, just records what to log when it is started.
-  vrpn_Auxilliary_Logger_Server_Generic(const char *logger_name, const char *connection_to_log,
+  vrpn_Auxiliary_Logger_Server_Generic(const char *logger_name, const char *connection_to_log,
                                         vrpn_Connection *c = NULL);
-  ~vrpn_Auxilliary_Logger_Server_Generic();
+  ~vrpn_Auxiliary_Logger_Server_Generic();
 
   // Close an existing logging connection, then (if any of the file
   // names are non-empty) open a new logging connection to the
@@ -148,7 +148,7 @@ public:
       d_logging_connection->mainloop();
       d_logging_connection->save_log_so_far();
     }
-    vrpn_Auxilliary_Logger_Server::mainloop();
+    vrpn_Auxiliary_Logger_Server::mainloop();
   }
 
 protected:
@@ -176,12 +176,12 @@ typedef void (VRPN_CALLBACK *vrpn_AUXLOGGERREPORTHANDLER) (void * userdata,
 					  const vrpn_AUXLOGGERCB info);
 
 
-class VRPN_API vrpn_Auxilliary_Logger_Remote : public vrpn_Auxilliary_Logger {
+class VRPN_API vrpn_Auxiliary_Logger_Remote : public vrpn_Auxiliary_Logger {
 public:
-  vrpn_Auxilliary_Logger_Remote(const char * name, vrpn_Connection * c = NULL);
+  vrpn_Auxiliary_Logger_Remote(const char * name, vrpn_Connection * c = NULL);
 
   // Send a request to the server asking it to log the following.  Each of these
-  // is with respect to the connection that the auxilliary logger server is
+  // is with respect to the connection that the auxiliary logger server is
   // handling, which may or may not be the one that it is connected to to
   // receive this message; it refers to the other side of the new connection
   // that the server establishes to do its logging.  Passing a NULL or empty
