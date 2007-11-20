@@ -1112,7 +1112,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\vrpn_Keyboard_Mouse.C"
+				RelativePath=".\vrpn_Keyboard.C"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -2081,7 +2081,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\vrpn_Keyboard_Mouse.h"
+				RelativePath=".\vrpn_Keyboard.h"
 				>
 			</File>
 			<File

@@ -116,9 +116,9 @@ void vrpn_Generic_Server_Object::closeDevices (void) {
     fprintf(stderr, "\nClosing poser %d ...", i);
     delete posers[i];
   }
-  for (i=0;i < num_KeyMouses; i++) {
-    fprintf(stderr, "\nClosing KeyMouse %d ...", i);
-    delete KeyMouses[i];
+  for (i=0;i < num_Keyboards; i++) {
+    fprintf(stderr, "\nClosing Keyboard %d ...", i);
+    delete Keyboards[i];
   }
   for (i=0;i < num_loggers; i++) {
     fprintf(stderr, "\nClosing logger %d ...", i);
@@ -483,6 +483,20 @@ int vrpn_Generic_Server_Object::setup_Tracker_AnalogFly (char * & pch, char * li
     if (strcmp(s3,"NULL") != 0) {
             p.reset_name = s3;
             p.reset_which = i1;
+    }
+
+    // Read the clutch line
+    if (fgets(line, LINESIZE, config_file) == NULL) {
+            fprintf(stderr,"Ran past end of config file in AnalogFly\n");
+            return -1;
+    }
+    if (sscanf(line, "CLUTCH %511s%d", s3, &i1) != 2) {
+            fprintf(stderr,"Bad CLUTCH line in AnalogFly: %s\n",line);
+            return -1;
+    }
+    if (strcmp(s3,"NULL") != 0) {
+            p.clutch_name = s3;
+            p.clutch_which = i1;
     }
 
     trackers[num_trackers] = new
@@ -1073,78 +1087,36 @@ int vrpn_Generic_Server_Object::setup_5dt16 (char * & pch, char * line, FILE * c
 }
 
 
-int vrpn_Generic_Server_Object::setup_KeyMouse(char * & pch, char * line, FILE * config_file)
+int vrpn_Generic_Server_Object::setup_Keyboard(char * & pch, char * line, FILE * config_file)
 {
-	char name [LINESIZE], li[LINESIZE];
-	int buttonNrs, analogChannelNrs;
+	char name [LINESIZE];
 
 	next();
-	// Get the arguments (class, name, nrAnalogChannels, nrButtons
-	if (sscanf(pch,"%511s%d%d",name, &analogChannelNrs, &buttonNrs) != 3)
+	// Get the arguments (class, name
+	if (sscanf(pch,"%511s%d%d",name) != 1)
 	{
-		fprintf(stderr,"Bad vrpn_keyboardmouse line: %s\n",line);
+		fprintf(stderr,"Bad vrpn_Keyboard line: %s\n",line);
 		return -1;
 	}
-	// Make sure there's room for a new analog
-	if (num_KeyMouses >= VRPN_GSO_MAX_KEYMOUSE) {
-		fprintf(stderr,"Too many Trackers in config file");
+	// Make sure there's room for a new keyboard
+	if (num_Keyboards >= VRPN_GSO_MAX_KEYBOARD) {
+		fprintf(stderr,"Too many Keyboards in config file");
 		return -1;
 	}
 
 	// Open the device
 	if (verbose) {
-		printf("Opening KeyMouse: %s\n", name);
+		printf("Opening Keyboard: %s\n", name);
 	}
-	if ((KeyMouses[num_KeyMouses] = new vrpn_KeyMouse(name, connection, buttonNrs, analogChannelNrs )) == NULL) 
+	if ((Keyboards[num_Keyboards] = new vrpn_Keyboard(name, connection)) == NULL) 
 	{
-		fprintf(stderr,"Can't create new vrpn_keyboardmouse\n");
+		fprintf(stderr,"Can't create new vrpn_Keyboard\n");
 		return -1;
 	} 
 	else 
 	{
-		vrpn_KeyMouse *device=KeyMouses[num_KeyMouses];
-		num_KeyMouses++;
-		int i;
-		for(i=0;i<analogChannelNrs;i++)
-		{
-			// Read in the line
-			if (fgets(li, LINESIZE, config_file) == NULL) {
-				perror("Can't read init data for keyboard mouse");
-				return -1;
-			}
-
-			char source[LINESIZE];
-			int button1, button2,channelNr = 0;
-			float scale;
-			// Get the values from the line
-			if (sscanf(li, "%s%x%x%x%f",source,&channelNr,&button1,&button2,&scale) != 5) 
-			{
-				fprintf(stderr,"Bad center line\n");
-				return -1;
-			}
-			if(!strcmp(source,"channel"))
-				device->SetAnalogParams(channelNr,button1,button2,scale);
-			
-		}
-		for(i=0;i<buttonNrs;i++)
-		{
-			// Read in the line
-			if (fgets(li, LINESIZE, config_file) == NULL) {
-				perror("Can't read init data for keyboard mouse");
-				return -1;
-			}
-
-			char source[LINESIZE];
-			int button, buttonNr = 0;
-			// Get the values from the line
-			if (sscanf(li, "%s%x%x",source,&buttonNr,&button) != 3) 
-			{
-				fprintf(stderr,"Bad center line\n");
-				return -1;
-			}
-			if(!strcmp(source,"button"))
-				device->SetButtonParams(buttonNr,button);
-		}
+		vrpn_Keyboard *device=Keyboards[num_Keyboards];
+		num_Keyboards++;
 	}
 
 		return 0;
@@ -2009,8 +1981,10 @@ int vrpn_Generic_Server_Object::setup_Mouse (char * & pch, char * line, FILE * c
     }
     catch (...) {
 	fprintf( stderr, "could not create vrpn_Mouse\n" );
-	fprintf( stderr, "- Is the GPM server running?\n" );
+#ifdef linux
+        fprintf( stderr, "- Is the GPM server running?\n" );
 	fprintf( stderr, "- Are you running on a linux console (not an xterm)?\n" );
+#endif
 	return -1;
     }
     if (NULL == mouse) {
@@ -3637,7 +3611,7 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
   num_posers(0),
   num_mouses(0)
   , num_inertiamouses (0)
-  , num_KeyMouses(0)
+  , num_Keyboards(0)
   , num_loggers(0)
   , num_imagestreams(0)
 {
@@ -3808,8 +3782,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
               CHECK(setup_Tracker_Crossbow);
           } else if (isit("vrpn_3DMicroscribe")) {
               CHECK(setup_3DMicroscribe);
-	  } else if (isit("vrpn_KeyMouse")) {
-            CHECK(setup_KeyMouse);
+	  } else if (isit("vrpn_Keyboard")) {
+            CHECK(setup_Keyboard);
 	  } else if (isit("vrpn_Button_USB")) {
             CHECK(setup_Button_USB);
 	  } else if (isit("vrpn_Analog_USDigital_A2")) {
@@ -3961,8 +3935,8 @@ void  vrpn_Generic_Server_Object::mainloop( void )
 	  win32joys[i]->mainloop();
   }
   // Let all the win32 mouse keyboards do their thing
-  for (i=0; i < num_KeyMouses; i++)
-	  KeyMouses[i]->mainloop();
+  for (i=0; i < num_Keyboards; i++)
+	  Keyboards[i]->mainloop();
 #endif
 
   // Let all the DTracks do their thing

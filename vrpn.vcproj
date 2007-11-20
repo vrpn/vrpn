@@ -1093,15 +1093,13 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="vrpn_Keyboard_Mouse.C"
+				RelativePath=".\vrpn_Keyboard.C"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
 						CompileAs="2"
 					/>
 				</FileConfiguration>
@@ -1110,8 +1108,6 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
 						CompileAs="2"
 					/>
 				</FileConfiguration>
@@ -2082,7 +2078,7 @@
 				>
 			</File>
 			<File
-				RelativePath="vrpn_Keyboard_Mouse.h"
+				RelativePath=".\vrpn_Keyboard.h"
 				>
 			</File>
 			<File

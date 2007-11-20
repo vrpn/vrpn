@@ -1,3 +1,11 @@
+2007-11-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg : Added entries for Mouse and Keyboard,
+		remove the KeyMouse entry.  Added clutch option
+		to the vrpn_AnalogFly.
+	* vrpn_Generic_server_object.C : Added clutch option.
+	* vrpn_Generic_server_object.h : Same.
+
 2007-11-12  David Marshburn  <marshbur@cs.unc.edu>
 
 	* corrected the spelling of Auxilliary to Auxiliary

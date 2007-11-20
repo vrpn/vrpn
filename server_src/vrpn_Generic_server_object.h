@@ -60,7 +60,6 @@
 #include "vrpn_Tracker_Crossbow.h"
 #include "vrpn_3DMicroscribe.h"
 #include "vrpn_5DT16.h"
-#include "vrpn_Keyboard_Mouse.h"
 #include "vrpn_Auxiliary_Logger.h"
 #include "vrpn_Imager_Stream_Buffer.h"
 // added by Tom dw
@@ -71,6 +70,7 @@
 #include "vrpn_Tracker_PhaseSpace.h"
 #include "vrpn_Xkeys.h"
 #include "vrpn_3DConnexion.h"
+#include "vrpn_Keyboard.h"
 
 // BUW additions
 #include "vrpn_Atmel.h"
@@ -111,7 +111,7 @@ const int VRPN_GSO_MAX_PHANTOMS =             10;
 const int VRPN_GSO_MAX_DTRACKS =              5;
 const int VRPN_GSO_MAX_POSER =	              8;
 const int VRPN_GSO_MAX_MOUSES =	              8;
-const int VRPN_GSO_MAX_KEYMOUSE =             1;
+const int VRPN_GSO_MAX_KEYBOARD =             1;
 const int VRPN_GSO_MAX_LOGGER =               10;
 const int VRPN_GSO_MAX_IMAGE_STREAM =         10;
 
@@ -184,8 +184,8 @@ protected:
   int		num_posers;
   vrpn_Mouse	* mouses [VRPN_GSO_MAX_MOUSES];
   int		num_mouses;
-  vrpn_KeyMouse * KeyMouses [VRPN_GSO_MAX_KEYMOUSE];
-  int		num_KeyMouses;
+  vrpn_Keyboard * Keyboards [VRPN_GSO_MAX_KEYBOARD];
+  int		num_Keyboards;
   vrpn_Auxiliary_Logger_Server_Generic * loggers [VRPN_GSO_MAX_LOGGER];
   int           num_loggers;
   vrpn_Imager_Stream_Buffer * imagestreams [VRPN_GSO_MAX_IMAGE_STREAM];
@@ -251,7 +251,7 @@ protected:
   int setup_3DMicroscribe (char * & pch, char * line, FILE * config_file);
   int setup_5dt16 (char * & pch, char * line, FILE * config_file);
   int setup_Button_5DT_Server(char * & pch, char * line, FILE * config_file);
-  int setup_KeyMouse(char * & pch, char * line, FILE * config_file);
+  int setup_Keyboard(char * & pch, char * line, FILE * config_file);
   int setup_Button_USB(char * & pch, char * line, FILE * config_file);
   int setup_Analog_USDigital_A2 (char * & pch, char * line, FILE * config_file) ;
   int setup_Button_NI_DIO24 (char * & pch, char * line, FILE * config_file) ;

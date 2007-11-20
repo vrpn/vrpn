@@ -252,7 +252,7 @@ SOURCE=.\vrpn_Joywin32.C
 # End Source File
 # Begin Source File
 
-SOURCE=.\vrpn_Keyboard_Mouse.C
+SOURCE=.\vrpn_Keyboard.C
 # End Source File
 # Begin Source File
 
@@ -556,7 +556,7 @@ SOURCE=.\vrpn_Joywin32.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\vrpn_Keyboard_Mouse.h
+SOURCE=.\vrpn_Keyboard.h
 # End Source File
 # Begin Source File
 

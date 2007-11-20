@@ -16,8 +16,14 @@
 #endif
 
 #include "vrpn_Mouse.h"
+
 #if defined(linux) && defined(VRPN_USE_GPM_MOUSE)
 #include <gpm.h>
+#endif
+
+#ifdef	_WIN32
+#include <windows.h>
+#pragma comment (lib, "user32.lib")
 #endif
 
 ///////////////////////////////////////////////////////////////////////////
@@ -26,6 +32,20 @@ vrpn_Mouse::vrpn_Mouse( const char* name, vrpn_Connection* cxn ) :
 	vrpn_Analog( name, cxn ),
 	vrpn_Button_Filter( name, cxn )
 {
+    int i;
+
+    // initialize the vrpn_Analog
+    vrpn_Analog::num_channel = 2;
+    for( i = 0; i < vrpn_Analog::num_channel; i++) {
+	vrpn_Analog::channel[i] = vrpn_Analog::last[i] = 0;
+    }
+
+    // initialize the vrpn_Button_Filter
+    vrpn_Button_Filter::num_buttons = 3;
+    for( i = 0; i < vrpn_Button_Filter::num_buttons; i++) {
+	vrpn_Button_Filter::buttons[i] = vrpn_Button_Filter::lastbuttons[i] = 0;
+    }
+
 #if defined(linux) && defined(VRPN_USE_GPM_MOUSE)
     // attempt to connect to the GPM server
     gpm_zerobased = 1;
@@ -44,20 +64,10 @@ vrpn_Mouse::vrpn_Mouse( const char* name, vrpn_Connection* cxn ) :
 	throw GpmOpenFailure();
     }
 
-    // initialize the vrpn_Analog
-    vrpn_Analog::num_channel = 2;
-    for( int i = 0; i < vrpn_Analog::num_channel; i++)
-    {
-	vrpn_Analog::channel[i] = vrpn_Analog::last[i] = 0;
-    }
-
-    // initialize the vrpn_Button_Filter
-    vrpn_Button_Filter::num_buttons = 3;
-    for( int i = 0; i < vrpn_Button_Filter::num_buttons; i++)
-    {
-	vrpn_Button_Filter::buttons[i] = vrpn_Button_Filter::lastbuttons[i] = 0;
-    }
     set_alerts( 1 );
+#elif defined(_WIN32)
+    // Nothing needs to be opened under Windows; we just make direct
+    // calls below to find the values.
 #else
     fprintf(stderr,"vrpn_Mouse::vrpn_Mouse() Not implement on this architecture\n");
 #endif
@@ -113,6 +123,34 @@ int vrpn_Mouse::get_report()
 
     channel[0] = (vrpn_float64) evt.dx / gpm_mx;
     channel[1] = (vrpn_float64) evt.dy / gpm_my;
+    return 1;
+#elif defined(_WIN32)
+    const unsigned LEFT_MOUSE_BUTTON = 0x01;
+    const unsigned RIGHT_MOUSE_BUTTON = 0x02;
+    const unsigned MIDDLE_MOUSE_BUTTON = 0x04;
+
+    // Find out if the mouse buttons are pressed.
+    if (0x80000 & GetKeyState(LEFT_MOUSE_BUTTON)) {
+      vrpn_Button::buttons[0] = 1;
+    } else {
+      vrpn_Button::buttons[0] = 0;
+    }
+    if (0x80000 & GetKeyState(MIDDLE_MOUSE_BUTTON)) {
+      vrpn_Button::buttons[1] = 1;
+    } else {
+      vrpn_Button::buttons[1] = 0;
+    }
+    if (0x80000 & GetKeyState(RIGHT_MOUSE_BUTTON)) {
+      vrpn_Button::buttons[2] = 1;
+    } else {
+      vrpn_Button::buttons[2] = 0;
+    }
+
+    // Find the position of the cursor in X,Y with range 0..1 across the screen
+    POINT curPos;
+    GetCursorPos(&curPos);
+    vrpn_Analog::channel[0] = (vrpn_float64)(curPos.x) / GetSystemMetrics(SM_CXSCREEN);
+    vrpn_Analog::channel[1] = (vrpn_float64)(curPos.y) / GetSystemMetrics(SM_CYSCREEN);
 
     gettimeofday( &timestamp, NULL );
     report_changes();
@@ -144,5 +182,142 @@ void vrpn_Mouse::report( vrpn_uint32 class_of_service )
     vrpn_Button_Filter::report_changes();
 }
 
-/*EOF*/
+///////////////////////////////////////////////////////////////////////////
+#define BUTTON_READY 	  (1)
+#define BUTTON_FAIL	  (-1)
 
+// (RDK) serial mouse wired up as button device
+vrpn_Button_SerialMouse::vrpn_Button_SerialMouse(const char *name,vrpn_Connection *c,
+						 const char *port, int baud, vrpn_MOUSETYPE type)
+    : vrpn_Button_Filter(name, c)
+{
+    status = BUTTON_FAIL;
+    // Find out the port name and baud rate;
+    if (port == NULL) {
+		fprintf(stderr,"vrpn_Button_SerialMouse: NULL port name\n");
+		return;
+    } else {
+		strncpy(portname, port, sizeof(portname));
+		portname[sizeof(portname)-1] = '\0';
+    }
+    num_buttons = 3;
+    baudrate = baud;
+    
+    // Open the serial port we are going to use
+    if ( (serial_fd=vrpn_open_commport(portname, baudrate)) == -1) {
+		fprintf(stderr,"vrpn_Button_SerialMouse: Cannot open serial port\n");
+		return;
+    }
+    
+    for (vrpn_int32 i = 0; i < num_buttons; i++) {
+		buttons[i] = lastbuttons[i] = 0;
+		buttonstate[i] = vrpn_BUTTON_MOMENTARY;
+    }
+
+    mousetype = type;
+    lastL = lastR = 0;
+    // first time in read(), this will get set to 0
+    lastM = (mousetype == THREEBUTTON_EMULATION)?1:0;  
+
+    // Say we are ready and find out what time it is
+    status = BUTTON_READY;
+    vrpn_gettimeofday(&timestamp, NULL);      
+}
+
+void vrpn_Button_SerialMouse::mainloop()
+{
+	// Call the generic server mainloop, since we are a server
+	server_mainloop();
+ 
+    switch (status) {
+	case BUTTON_READY:
+	    read();
+	    report_changes();
+	    break;
+	case BUTTON_FAIL:
+      	{	
+	    static int first = 1;
+	    if (!first)	break;
+	    first = 0;
+	    send_text_message("vrpn_Button_SerialMouse failure!", timestamp, vrpn_TEXT_ERROR);
+        }
+      	break;
+    }
+}
+    
+// Fill in the buttons[] array with the current value of each of the
+// buttons  For a description of the protocols for a Microsoft 3button
+// mouse and a MouseSystems mouse, see http://www.hut.fi/~then/mytexts/mouse.html
+void vrpn_Button_SerialMouse::read(void)
+{ 
+    // Make sure we're ready to read
+    if (status != BUTTON_READY) {
+	    return;
+    }
+
+    unsigned char buffer;
+
+    // process as long as we can get characters
+    int num = 1;
+    int debounce = 0;
+    while (num) 
+	{
+		num = vrpn_read_available_characters(serial_fd, &buffer, 1);
+
+		if (num <= 0) {
+			if (debounce) {
+#ifdef VERBOSE		
+				fprintf (stderr,"state: %d %d %d  last: %d %d %d\n", 
+				buttons[0],buttons[1],buttons[2],
+				lastL, lastM, lastR);
+#endif
+			lastL = buttons[0];
+			lastM = buttons[1];
+			lastR = buttons[2];
+			}
+			return;  // nothing there or error, so return
+		}
+
+		switch (mousetype) {
+		  case THREEBUTTON_EMULATION:
+			// a mouse capable of 3 button emulation
+			// this mouse encodes its buttons in a byte that is one of
+			// 0xc0 0xd0 0xe0 0xf0.
+
+		        // Throw away all bytes that are not one of C0, D0, E0 or F0.
+		        if ( (buffer != 0xc0) && (buffer != 0xd0) &&
+			  (buffer != 0xe0) && (buffer != 0xf0) ) {
+			  continue;
+			}
+
+			buttons[0] = (unsigned char)( (buffer & 0x20)?1:0 );
+			buttons[2] = (unsigned char)( (buffer & 0x10)?1:0 );
+			// middle button check:: we get here without a change in left or right
+			// This means that we toggle the middle button by moving the mouse
+			// around while not pressing or releasing the other buttons!
+			if ((buttons[0] == lastL) && (buttons[2] == lastR) && !debounce) {
+				buttons[1] = (unsigned char)( lastM?0:1 );
+			}
+			debounce = 1;
+			break;
+
+		  case MOUSESYSTEMS:
+
+			// mousesystems (real PC 3 button mouse) protocol
+			// The pc three button mouse encodes its buttons in a byte 
+			// that looks like 1 0 0 0 0 lb mb rb
+
+		        if ((buffer  & 0xf8) != 0x80) {	// Ignore all bytes but first in record
+				continue;
+			}
+			debounce = 1;
+			buttons[0] = (unsigned char)( (buffer & 4)?0:1 );
+			buttons[1] = (unsigned char)( (buffer & 2)?0:1 );
+			buttons[2] = (unsigned char)( (buffer & 1)?0:1 );
+			break;
+		} // switch
+    } // while (num) 
+}
+
+
+/*EOF*/

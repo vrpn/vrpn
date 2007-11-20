@@ -55,6 +55,12 @@ class VRPN_API vrpn_Tracker_AnalogFlyParam {
 
     char * reset_name;
     int reset_which;
+
+    /// Clutch device that is used to enable relative motion over
+    // large distances
+
+    char * clutch_name;
+    int clutch_which;
 };
 
 class VRPN_API vrpn_Tracker_AnalogFly;	// Forward reference
@@ -121,7 +127,11 @@ class VRPN_API vrpn_Tracker_AnalogFly : public vrpn_Tracker {
     vrpn_Button_Remote	* d_reset_button;
     int			d_which_button;
 
-    q_matrix_type d_initMatrix, d_currentMatrix;
+    vrpn_Button_Remote	* d_clutch_button;
+    int			d_clutch_which;
+    bool                d_clutch_engaged;
+
+    q_matrix_type d_initMatrix, d_currentMatrix, d_clutchMatrix;
 
     void    update_matrix_based_on_values (double time_interval);
     void    convert_matrix_to_tracker (void);
@@ -134,6 +144,7 @@ class VRPN_API vrpn_Tracker_AnalogFly : public vrpn_Tracker {
     static void	VRPN_CALLBACK handle_analog_update (void * userdata,
                                       const vrpn_ANALOGCB info);
     static void VRPN_CALLBACK handle_reset_press (void * userdata, const vrpn_BUTTONCB info);
+    static void VRPN_CALLBACK handle_clutch_press (void * userdata, const vrpn_BUTTONCB info);
 };
 
 #endif

@@ -1,3 +1,33 @@
+2007-11-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Button.C : Moved the serial-mouse button code
+		into the vrpn_Mouse.C file to have all of the
+		mice in one place.
+	* vrpn_Button.h : Same.  Made the MAX_BUTTONS and BUF_SIZE
+		values 256, rather than 100, to support the keyboard
+		class.
+	* vrpn_Mouse.C : Added Windows interface to the class.
+		Changed Windows interface to report mouse position
+		in fraction of screen rather than pixels, so
+		that the Windows and Linux implementations match.
+		Moved the serial mouse-button class into this file
+		so all of the mice are here.
+	* vrpn_Mouse.h : Same.
+	* vrpn_Keyboard.C : Pared-down version of vrpn_KeyMouse
+		that only implements the keyboard portion.
+	* vrpn_Keyboard.h : Same.
+	* vrpn_KeyMouse.C : Removed.
+	* vrpn_KeyMouse.h : Removed.
+	* vrpn_AnalogFly.C : Added a clutch button that causes
+		the differential tracker to only move when the
+		button is pressed and causes an absolute tracker
+		to behave like a mouse, also only moving when the
+		button is down.
+	* vrpn.dsp : Removed vrpn_KeyMouse.  Added vrpn_Keyboard.
+	* vrpndll.dsp : Same.
+	* vrpn.vcproj : Same.
+	* vrpndll.vcproj : Same.
+
 2007-11-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Configure.h : Toook out NationalInstruments.

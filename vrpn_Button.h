@@ -13,8 +13,8 @@
 #include "vrpn_Serial.h"
 #endif
 
-const	int vrpn_BUTTON_MAX_BUTTONS = 100;
-const	int VRPN_BUTTON_BUF_SIZE = 100;
+const	int vrpn_BUTTON_MAX_BUTTONS = 256;
+const	int VRPN_BUTTON_BUF_SIZE = 256;
 
 // Base class for buttons.  Definition
 // of remote button class for the user is at the end.
@@ -199,35 +199,6 @@ public:
 protected:
    virtual void read();
    void report_no_timestamp(); // set the glove to report data without timestamp
-};
-
-
-// (RDK) Button device that is connected to a serial port.  This is a
-// raw driver that can be used with any of the serial-enabled architectures,
-// and does not go through the mouse driver -- it talks to the mouse
-// directly as a serial device.  This enables the user to use a mouse, or
-// a rewired serial mouse, as a simple button device.
-
-enum vrpn_MOUSETYPE {MOUSESYSTEMS, THREEBUTTON_EMULATION, MAX_MOUSE_TYPES};
-
-class VRPN_API vrpn_Button_SerialMouse: public vrpn_Button_Filter {
-public:
-    // Open a serial mouse button device connected to the local machine
-    
-    vrpn_Button_SerialMouse(const char *name, vrpn_Connection *connection,
-			    const char *port, int baud, vrpn_MOUSETYPE type);
-     
-    virtual void mainloop(void);
-
-protected:
-    char    portname[512];
-    int     baudrate;
-    int     serial_fd;
-    int	    status;
-    int     lastL, lastM, lastR;  //used in 3 button emulator
-    vrpn_MOUSETYPE mousetype;
-
-    void read(void);
 };
 
 #endif  // VRPN_CLIENT_ONLY
