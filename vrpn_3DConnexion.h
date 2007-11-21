@@ -18,7 +18,7 @@
 // product ID; the baseclass does all the work.
 
 #ifdef  _WIN32
-class vrpn_3DConnexion: public vrpn_Button, public vrpn_Analog, protected vrpn_HidInterface {
+class VRPN_API vrpn_3DConnexion: public vrpn_Button, public vrpn_Analog, protected vrpn_HidInterface {
 public:
   vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_buttons,
                    const char *name, vrpn_Connection *c = 0);
@@ -44,7 +44,7 @@ protected:
   //  values, not vrpn_Button or vrpn_Dial
 };
 #else   // not _WIN32
-class vrpn_3DConnexion: public vrpn_Button, public vrpn_Analog {
+class VRPN_API vrpn_3DConnexion: public vrpn_Button, public vrpn_Analog {
 public:
   vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_buttons,
                    const char *name, vrpn_Connection *c = 0);
@@ -58,15 +58,15 @@ protected:
   int fd;
 
   // Send report iff changed
-  void report_changes (vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
+  void report_changes(vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
   // Send report whether or not changed
-  void report (vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
+  void report(vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
   // NOTE:  class_of_service is only applied to vrpn_Analog
   //  values, not vrpn_Button or vrpn_Dial
 };
-#endif  // _WIN32
+#endif  // not _WIN32
 
-class vrpn_3DConnexion_Navigator: public vrpn_3DConnexion {
+class VRPN_API vrpn_3DConnexion_Navigator: public vrpn_3DConnexion {
 public:
   vrpn_3DConnexion_Navigator(const char *name, vrpn_Connection *c = 0);
   virtual ~vrpn_3DConnexion_Navigator() {};
@@ -74,7 +74,7 @@ public:
 protected:
 };
 
-class vrpn_3DConnexion_Traveler: public vrpn_3DConnexion {
+class VRPN_API vrpn_3DConnexion_Traveler: public vrpn_3DConnexion {
 public:
   vrpn_3DConnexion_Traveler(const char *name, vrpn_Connection *c = 0);
   virtual ~vrpn_3DConnexion_Traveler() {};
@@ -82,7 +82,7 @@ public:
 protected:
 };
 
-class vrpn_3DConnexion_SpaceMouse: public vrpn_3DConnexion {
+class VRPN_API vrpn_3DConnexion_SpaceMouse: public vrpn_3DConnexion {
 public:
   vrpn_3DConnexion_SpaceMouse(const char *name, vrpn_Connection *c = 0);
   virtual ~vrpn_3DConnexion_SpaceMouse() {};

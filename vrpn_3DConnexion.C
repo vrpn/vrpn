@@ -1,12 +1,26 @@
 // vrpn_3DConnexion.C: VRPN driver for 3DConnexion Space Navigator and Space Traveler
 
+#ifdef linux
+#include <linux/input.h>
+#endif
+
 #include "vrpn_3DConnexion.h"
+#include <fcntl.h>
+#include <stdio.h>
 #include <stdlib.h>
 #ifndef _WIN32
 #include <sys/ioctl.h>
 #include <unistd.h>
 #endif
 #include <string.h>
+
+// XXX Couldn't find this defined in the system files...
+typedef struct input_devinfo {
+        vrpn_uint16 bustype;
+        vrpn_uint16 vendor;
+        vrpn_uint16 product;
+        vrpn_uint16 version;
+};
 
 // USB vendor and product IDs for the models we support
 static const vrpn_uint16 vrpn_3DCONNEXION_VENDOR = 1133;
@@ -37,14 +51,9 @@ vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_button
   // we want.  Call the acceptor with all the devices we find
   // until we get one that we want.
 #ifndef _WIN32
-    unsigned namelen = 128;
     fd = -1;
-    name = new char[namelen];
     FILE *f;
     int i = 0;
-
-    strncpy(name, "Unknown", namelen); // paranoia for future changes of namelen
-    name[namelen-1] = 0;
 
     // try to autodetect the device
     char *fname = (char *)malloc(1000*sizeof(char));
@@ -54,15 +63,15 @@ vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_button
         if(f) {
           // We got an active device.  Fill in its values and see if it
           // is acceptible to the filter.
-          struct input_id ID;
+          struct input_devinfo ID;
           ioctl(fileno(f), EVIOCGID, &ID);
           vrpn_HIDDEVINFO info;
           info.devicePath = fname;
           info.product = ID.product;
           info.vendor = ID.vendor;
+          info.version = ID.version;
           info.usagePage = 0;   // Unknown
           info.usage = 0;       // Unknown
-          info.version = 0;     // Unknown
           if (_filter->accept(info)) {
             break;
           } else {
@@ -116,7 +125,7 @@ void vrpn_3DConnexion::mainloop()
     FD_SET(fd, &fdset);                   /* include fd in fdset      */
     vrpn_noint_select(fd + 1, &fdset, NULL, NULL, &zerotime);
     if (FD_ISSET(fd, &fdset)) {
-        if (vrpn_noint_block_read(fd, &ev, sizeof(struct input_event)) != sizeof(struct input_event)) {
+        if (vrpn_noint_block_read(fd, reinterpret_cast<char*>(&ev), sizeof(struct input_event)) != sizeof(struct input_event)) {
             send_text_message("Error reading from vrpn_3DConnexion", vrpn_Analog::timestamp, vrpn_TEXT_ERROR);
             if (d_connection) { d_connection->send_pending_reports(); }
             return;
@@ -135,29 +144,32 @@ void vrpn_3DConnexion::mainloop()
             default:
                 break;
         }
+    }
 #endif
 
-        server_mainloop();
-	vrpn_gettimeofday(&_timestamp, NULL);
-	report_changes();
+    server_mainloop();
+    vrpn_gettimeofday(&_timestamp, NULL);
+    report_changes();
 
-	vrpn_Analog::server_mainloop();
-	vrpn_Button::server_mainloop();
+    vrpn_Analog::server_mainloop();
+    vrpn_Button::server_mainloop();
 }
 
-void vrpn_3DConnexion::report(vrpn_uint32 class_of_service) {
-	vrpn_Analog::timestamp = _timestamp;
-	vrpn_Button::timestamp = _timestamp;
-
-	vrpn_Analog::report(class_of_service);
-	vrpn_Button::report_changes();
-}
-
-void vrpn_3DConnexion::report_changes(vrpn_uint32 class_of_service) {
+void vrpn_3DConnexion::report_changes(vrpn_uint32 class_of_service)
+{
 	vrpn_Analog::timestamp = _timestamp;
 	vrpn_Button::timestamp = _timestamp;
 
 	vrpn_Analog::report_changes(class_of_service);
+	vrpn_Button::report_changes();
+}
+
+void vrpn_3DConnexion::report(vrpn_uint32 class_of_service)
+{
+	vrpn_Analog::timestamp = _timestamp;
+	vrpn_Button::timestamp = _timestamp;
+
+	vrpn_Analog::report(class_of_service);
 	vrpn_Button::report_changes();
 }
 

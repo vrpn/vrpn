@@ -4,8 +4,8 @@
 #define VRPN_HUMANINTERFACE_H
 
 #include "vrpn_Configure.h"
-
 #include "vrpn_BaseClass.h"
+#include <string.h>
 
 #ifdef _WIN64
 #pragma message("Windows 64-bit compatibility is EXPERIMENTAL!")

@@ -328,6 +328,4 @@ void vrpn_HidInterface::send_data(size_t bytes, vrpn_uint8 *buffer) {
 }
 
 // End of Windows implementation
-#else
-#error("vrpn_HumanInterface.C not yet implemented on this architecture")
 #endif
