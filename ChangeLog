@@ -1,5 +1,21 @@
 2007-11-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_3DConnexion.C : Added code to run with the event
+		interface on non-Windows platforms.  This was sent
+		in by Jan Ciger.
+	* vrpn_3Dconnexion.h : Same.
+	* vrpn_Configure.h : Removed vrpn_USE_HID; this turned
+		into checks for _WIN32 all over the place.
+	* vrpn_HumanInterface.C : Pulling out the non-Windows-
+		specific parts so that all of the acceptor code
+		can be used.
+	* vrpn_HumanInterface.h : Same.
+	* vrpn_Xkeys.C : Switched to checking for _WIN32 rather than
+		vrpn_USE_HID
+	* vrpn_Xkeys.h : Same.
+
+2007-11-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Joywin32.C : Allows more than two joysticks
 		to be opened.
 

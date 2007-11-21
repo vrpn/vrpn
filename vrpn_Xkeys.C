@@ -2,7 +2,7 @@
 
 #include "vrpn_Xkeys.h"
 
-#ifdef VRPN_USE_HID
+#ifdef _WIN32
 
 // USB vendor and product IDs for the models we support
 static const vrpn_uint16 XKEYS_VENDOR = 0x05F3;

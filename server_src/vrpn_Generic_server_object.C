@@ -3346,7 +3346,7 @@ int vrpn_Generic_Server_Object::setup_ImageStream(char * & pch, char * line, FIL
 }
 
 int vrpn_Generic_Server_Object::setup_Xkeys_Desktop(char * & pch, char * line, FILE * config_file) {
-#ifdef VRPN_USE_HID
+#ifdef _WIN32
   char s2 [LINESIZE];
 
   next();
@@ -3373,14 +3373,14 @@ int vrpn_Generic_Server_Object::setup_Xkeys_Desktop(char * & pch, char * line, F
     num_buttons++;
   }
 #else
-  fprintf(stderr,"vrpn_server: Can't open Xkeys: HID not compiled in: define VRPN_USE_HID in vrpn_Configure.h and recompile.\n");
+  fprintf(stderr,"vrpn_server: Can't open Xkeys: HID not compiled in.\n");
 #endif
 
   return 0;  // successful completion
 }
 
 int vrpn_Generic_Server_Object::setup_Xkeys_Pro(char * & pch, char * line, FILE * config_file) {
-#ifdef VRPN_USE_HID
+#ifdef _WIN32
   char s2 [LINESIZE];
 
   next();
@@ -3407,14 +3407,14 @@ int vrpn_Generic_Server_Object::setup_Xkeys_Pro(char * & pch, char * line, FILE 
     num_buttons++;
   }
 #else
-  fprintf(stderr,"vrpn_server: Can't open Xkeys: HID not compiled in: define VRPN_USE_HID in vrpn_Configure.h and recompile.\n");
+  fprintf(stderr,"vrpn_server: Can't open Xkeys: HID not compiled in.\n");
 #endif
 
   return 0;  // successful completion
 }
 
 int vrpn_Generic_Server_Object::setup_Xkeys_Joystick(char * & pch, char * line, FILE * config_file) {
-#ifdef VRPN_USE_HID
+#ifdef _WIN32
   char s2 [LINESIZE];
 
   next();
@@ -3441,14 +3441,14 @@ int vrpn_Generic_Server_Object::setup_Xkeys_Joystick(char * & pch, char * line, 
     num_buttons++;
   }
 #else
-  fprintf(stderr,"vrpn_server: Can't open Xkeys: HID not compiled in: define VRPN_USE_HID in vrpn_Configure.h and recompile.\n");
+  fprintf(stderr,"vrpn_server: Can't open Xkeys: HID not compiled in.\n");
 #endif
 
   return 0;  // successful completion
 }
 
 int vrpn_Generic_Server_Object::setup_Xkeys_Jog_And_Shuttle(char * & pch, char * line, FILE * config_file) {
-#ifdef VRPN_USE_HID
+#ifdef _WIN32
   char s2 [LINESIZE];
 
   next();
@@ -3475,14 +3475,13 @@ int vrpn_Generic_Server_Object::setup_Xkeys_Jog_And_Shuttle(char * & pch, char *
     num_buttons++;
   }
 #else
-  fprintf(stderr,"vrpn_server: Can't open Xkeys: HID not compiled in: define VRPN_USE_HID in vrpn_Configure.h and recompile.\n");
+  fprintf(stderr,"vrpn_server: Can't open Xkeys: HID not compiled in.\n");
 #endif
 
   return 0;  // successful completion
 }
 
 int vrpn_Generic_Server_Object::setup_3DConnexion_Navigator(char * & pch, char * line, FILE * config_file) {
-#ifdef VRPN_USE_HID
   char s2 [LINESIZE];
 
   next();
@@ -3508,15 +3507,11 @@ int vrpn_Generic_Server_Object::setup_3DConnexion_Navigator(char * & pch, char *
   } else {
     num_buttons++;
   }
-#else
-  fprintf(stderr,"vrpn_server: Can't open 3DConnexion_Navigator: HID not compiled in: define VRPN_USE_HID in vrpn_Configure.h and recompile.\n");
-#endif
 
   return 0;  // successful completion
 }
 
 int vrpn_Generic_Server_Object::setup_3DConnexion_Traveler(char * & pch, char * line, FILE * config_file) {
-#ifdef VRPN_USE_HID
   char s2 [LINESIZE];
 
   next();
@@ -3542,15 +3537,11 @@ int vrpn_Generic_Server_Object::setup_3DConnexion_Traveler(char * & pch, char * 
   } else {
     num_buttons++;
   }
-#else
-  fprintf(stderr,"vrpn_server: Can't open 3DConnexion_Traveler: HID not compiled in: define VRPN_USE_HID in vrpn_Configure.h and recompile.\n");
-#endif
 
   return 0;  // successful completion
 }
 
 int vrpn_Generic_Server_Object::setup_3DConnexion_SpaceMouse(char * & pch, char * line, FILE * config_file) {
-#ifdef VRPN_USE_HID
   char s2 [LINESIZE];
 
   next();
@@ -3576,13 +3567,9 @@ int vrpn_Generic_Server_Object::setup_3DConnexion_SpaceMouse(char * & pch, char 
   } else {
     num_buttons++;
   }
-#else
-  fprintf(stderr,"vrpn_server: Can't open vrpn_3DConnexion_SpaceMouse: HID not compiled in: define VRPN_USE_HID in vrpn_Configure.h and recompile.\n");
-#endif
 
   return 0;  // successful completion
 }
-
 
 
 vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connection_to_use, const char *config_file_name, int port, bool be_verbose, bool bail_on_open_error) :

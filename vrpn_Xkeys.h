@@ -6,7 +6,7 @@
 #include "vrpn_Dial.h"
 #include "vrpn_Analog.h"
 
-#ifdef  VRPN_USE_HID
+#ifdef  _WIN32
 
 // Device drivers for the X-Keys USB line of products from P.I. Engineering
 // Currently supported: X-Keys Desktop, X-Keys Jog & Shuttle Pro.
@@ -122,7 +122,7 @@ protected:
   vrpn_uint8 _lastDial;
 };
 
-// end of VRPN_USE_HID
+// end of _WIN32
 #endif
 
 // end of VRPN_XKEYS_H

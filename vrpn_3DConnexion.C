@@ -1,8 +1,12 @@
 // vrpn_3DConnexion.C: VRPN driver for 3DConnexion Space Navigator and Space Traveler
 
 #include "vrpn_3DConnexion.h"
-
-#ifdef VRPN_USE_HID
+#include <stdlib.h>
+#ifndef _WIN32
+#include <sys/ioctl.h>
+#include <unistd.h>
+#endif
+#include <string.h>
 
 // USB vendor and product IDs for the models we support
 static const vrpn_uint16 vrpn_3DCONNEXION_VENDOR = 1133;
@@ -14,7 +18,9 @@ static const vrpn_uint16 vrpn_3DCONNEXION_SPACEMOUSE = 50691;
 vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_buttons,
                                    const char *name, vrpn_Connection *c)
   : _filter(filter)
+#ifdef _WIN32
   , vrpn_HidInterface(_filter)
+#endif
   , vrpn_Analog(name, c)
   , vrpn_Button(name, c)
 {
@@ -26,6 +32,54 @@ vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_button
   memset(lastbuttons, 0, sizeof(lastbuttons));
   memset(channel, 0, sizeof(channel));
   memset(last, 0, sizeof(last));
+
+  // Use the Event interface to open devices looking for the one
+  // we want.  Call the acceptor with all the devices we find
+  // until we get one that we want.
+#ifndef _WIN32
+    unsigned namelen = 128;
+    fd = -1;
+    name = new char[namelen];
+    FILE *f;
+    int i = 0;
+
+    strncpy(name, "Unknown", namelen); // paranoia for future changes of namelen
+    name[namelen-1] = 0;
+
+    // try to autodetect the device
+    char *fname = (char *)malloc(1000*sizeof(char));
+    while(i < 256) {
+        sprintf(fname, "/dev/input/event%d", i++);
+        f = fopen(fname, "rb");
+        if(f) {
+          // We got an active device.  Fill in its values and see if it
+          // is acceptible to the filter.
+          struct input_id ID;
+          ioctl(fileno(f), EVIOCGID, &ID);
+          vrpn_HIDDEVINFO info;
+          info.devicePath = fname;
+          info.product = ID.product;
+          info.vendor = ID.vendor;
+          info.usagePage = 0;   // Unknown
+          info.usage = 0;       // Unknown
+          info.version = 0;     // Unknown
+          if (_filter->accept(info)) {
+            break;
+          } else {
+            fclose(f);
+          }
+        }
+    }
+
+    if(!f) {
+        fprintf(stderr, "vrpn_3DConnexion constructor could not open the ");
+        perror(" device");
+        exit(1);
+    }
+
+    free(fname);
+    fd = fileno(f);
+#endif
 }
 
 vrpn_3DConnexion::~vrpn_3DConnexion()
@@ -33,6 +87,7 @@ vrpn_3DConnexion::~vrpn_3DConnexion()
 	delete _filter;
 }
 
+#ifdef _WIN32
 void vrpn_3DConnexion::reconnect()
 {
 	vrpn_HidInterface::reconnect();
@@ -42,11 +97,47 @@ void vrpn_3DConnexion::on_data_received(size_t bytes, vrpn_uint8 *buffer)
 {
   decodePacket(bytes, buffer);
 }
+#endif
 
 void vrpn_3DConnexion::mainloop()
 {
+#ifdef _WIN32
 	update();
-	server_mainloop();
+#else
+    struct timeval zerotime;
+    fd_set fdset;
+    struct input_event ev;
+    int i;
+
+    zerotime.tv_sec = 0;
+    zerotime.tv_usec = 0;
+
+    FD_ZERO(&fdset);                      /* clear fdset              */
+    FD_SET(fd, &fdset);                   /* include fd in fdset      */
+    vrpn_noint_select(fd + 1, &fdset, NULL, NULL, &zerotime);
+    if (FD_ISSET(fd, &fdset)) {
+        if (vrpn_noint_block_read(fd, &ev, sizeof(struct input_event)) != sizeof(struct input_event)) {
+            send_text_message("Error reading from vrpn_3DConnexion", vrpn_Analog::timestamp, vrpn_TEXT_ERROR);
+            if (d_connection) { d_connection->send_pending_reports(); }
+            return;
+        }
+        switch (ev.type) {
+            case EV_KEY:    // button movement
+                vrpn_gettimeofday((timeval *)&this->vrpn_Button::timestamp, NULL);
+                buttons[ev.code & 0x0ff] = ev.value;
+                break;
+
+            case EV_REL:    // axis movement
+                vrpn_gettimeofday((timeval *)&this->vrpn_Analog::timestamp, NULL);
+                channel[ev.code] = ev.value/400.0;           
+                break;
+
+            default:
+                break;
+        }
+#endif
+
+        server_mainloop();
 	vrpn_gettimeofday(&_timestamp, NULL);
 	report_changes();
 
@@ -70,6 +161,7 @@ void vrpn_3DConnexion::report_changes(vrpn_uint32 class_of_service) {
 	vrpn_Button::report_changes();
 }
 
+#ifdef _WIN32
 // Swap the endian-ness of the 2-byte entry in the buffer.
 // This is used to make the little-endian int 16 values
 // returned by the device into the big-endian format that is
@@ -159,6 +251,7 @@ void vrpn_3DConnexion::decodePacket(size_t bytes, vrpn_uint8 *buffer)
     }
   }
 }
+#endif
 
 vrpn_3DConnexion_Navigator::vrpn_3DConnexion_Navigator(const char *name, vrpn_Connection *c)
   : vrpn_3DConnexion(_filter = new vrpn_HidProductAcceptor(vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_NAVIGATOR), 2, name, c)
@@ -174,6 +267,3 @@ vrpn_3DConnexion_SpaceMouse::vrpn_3DConnexion_SpaceMouse(const char *name, vrpn_
   : vrpn_3DConnexion(_filter = new vrpn_HidProductAcceptor(vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_SPACEMOUSE), 11, name, c)
 {
 }
-
-// End of VPRN_USE_HID
-#endif

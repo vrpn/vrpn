@@ -4,7 +4,6 @@
 #define VRPN_HUMANINTERFACE_H
 
 #include "vrpn_Configure.h"
-#ifdef VRPN_USE_HID
 
 #include "vrpn_BaseClass.h"
 
@@ -13,10 +12,10 @@
 #endif
 
 struct vrpn_HIDDEVINFO {
-	vrpn_uint16 vendor;			// USB Vendor ID
+	vrpn_uint16 vendor;		// USB Vendor ID
 	vrpn_uint16 product;		// USB Product ID
 	vrpn_uint16 usagePage;		// HID Usage Page (major)
-	vrpn_uint16 usage;			// HID Usage (minor)
+	vrpn_uint16 usage;		// HID Usage (minor)
 	vrpn_uint16 version;		// HID Version Number (vendor-specific)
 	const char *devicePath;		// Platform-specific path to device
 };
@@ -32,6 +31,8 @@ public:
 	virtual bool accept(const vrpn_HIDDEVINFO &device) = 0;
 	virtual void reset() { }
 };
+
+#ifdef _WIN32
 
 // Main VRPN API for HID devices
 class VRPN_API vrpn_HidInterface {
@@ -89,6 +90,8 @@ private:
 	vrpn_uint16 _product;
 #endif
 };
+
+#endif // _WIN32
 
 // Some sample acceptors
 
@@ -150,8 +153,6 @@ public:
 private:
 	vrpn_HidAcceptor *first, *second;
 };
-
-#endif // VRPN_USE_HID
 
 #endif // VRPN_HUMANINTERFACE_H
 

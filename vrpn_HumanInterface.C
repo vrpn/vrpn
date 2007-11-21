@@ -1,7 +1,6 @@
 // NOTE: This currently only compiles under Windows.
 
 #include "vrpn_HumanInterface.h"
-#ifdef VRPN_USE_HID
 
 #ifdef _WIN32
 
@@ -331,7 +330,4 @@ void vrpn_HidInterface::send_data(size_t bytes, vrpn_uint8 *buffer) {
 // End of Windows implementation
 #else
 #error("vrpn_HumanInterface.C not yet implemented on this architecture")
-#endif
-
-// End of VPRN_USE_HID
 #endif

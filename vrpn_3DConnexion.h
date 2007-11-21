@@ -5,8 +5,6 @@
 #include "vrpn_Button.h"
 #include "vrpn_Analog.h"
 
-#ifdef  VRPN_USE_HID
-
 // Device drivers for the 3DConnexion SpaceNavigator and SpaceTraveler
 // devices, connecting to them as HID devices.
 
@@ -19,6 +17,7 @@
 // the appropriate number of buttons and an acceptor for the proper
 // product ID; the baseclass does all the work.
 
+#ifdef  _WIN32
 class vrpn_3DConnexion: public vrpn_Button, public vrpn_Analog, protected vrpn_HidInterface {
 public:
   vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_buttons,
@@ -44,6 +43,28 @@ protected:
   // NOTE:  class_of_service is only applied to vrpn_Analog
   //  values, not vrpn_Button or vrpn_Dial
 };
+#else   // not _WIN32
+class vrpn_3DConnexion: public vrpn_Button, public vrpn_Analog {
+public:
+  vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_buttons,
+                   const char *name, vrpn_Connection *c = 0);
+  virtual ~vrpn_3DConnexion();
+
+  virtual void mainloop();
+
+protected:
+  struct timeval _timestamp;
+  vrpn_HidAcceptor *_filter;
+  int fd;
+
+  // Send report iff changed
+  void report_changes (vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
+  // Send report whether or not changed
+  void report (vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
+  // NOTE:  class_of_service is only applied to vrpn_Analog
+  //  values, not vrpn_Button or vrpn_Dial
+};
+#endif  // _WIN32
 
 class vrpn_3DConnexion_Navigator: public vrpn_3DConnexion {
 public:
@@ -68,9 +89,6 @@ public:
 
 protected:
 };
-
-// end of VRPN_USE_HID
-#endif
 
 // end of VRPN_3DCONNEXION_H
 #endif
