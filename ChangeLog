@@ -1,5 +1,9 @@
 2007-11-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_3DConnexion.C : Picking some lint.
+
+2007-11-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_3DConnexion.C : Made this compile under Linux.
 		Had to add in a structure definition that was not
 		in the system header files.

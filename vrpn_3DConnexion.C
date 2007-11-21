@@ -14,13 +14,12 @@
 #endif
 #include <string.h>
 
-// XXX Couldn't find this defined in the system files...
 typedef struct input_devinfo {
         vrpn_uint16 bustype;
         vrpn_uint16 vendor;
         vrpn_uint16 product;
         vrpn_uint16 version;
-};
+} XXX_should_have_been_in_system_includes;
 
 // USB vendor and product IDs for the models we support
 static const vrpn_uint16 vrpn_3DCONNEXION_VENDOR = 1133;
