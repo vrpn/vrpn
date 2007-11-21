@@ -103,7 +103,7 @@ const int VRPN_GSO_MAX_TNG3S =	              8;
 const int VRPN_GSO_MAX_DIRECTXJOYS=           8;
 const int VRPN_GSO_MAX_RUMBLEPADS =           8;
 #endif
-const int VRPN_GSO_MAX_WIN32JOYS =            2;
+const int VRPN_GSO_MAX_WIN32JOYS =            100;
 const int VRPN_GSO_MAX_GLOBALHAPTICSORBS =    8;
 #ifdef	VRPN_USE_PHANTOM_SERVER
 const int VRPN_GSO_MAX_PHANTOMS =             10;

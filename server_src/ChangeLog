@@ -1,5 +1,11 @@
 2007-11-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Generic_server_object.h : Lets you open 100 joysticks on
+		the same machine, rather than just 2.  Must have been a
+		fun project...
+
+2007-11-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* Makefile : Renamed Auxilliary to Auxiliary.
 
 2007-11-20  Russell M. Taylor II  <taylorr@cs.unc.edu>

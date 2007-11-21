@@ -1,5 +1,10 @@
 2007-11-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Joywin32.C : Allows more than two joysticks
+		to be opened.
+
+2007-11-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Flock.C : Uses 36" rather than 144" as the
 		range when not using the extended-range
 		transmitter.  Fix submitted by Jo Skjermo.

@@ -38,12 +38,6 @@ vrpn_Joywin32::vrpn_Joywin32 (const char * name, vrpn_Connection * c, vrpn_uint8
 		_numbuttons(min(128,vrpn_BUTTON_MAX_BUTTONS)),     // Maximum available
 		_mode(mode)
 {
-	if (joyNumber !=1 && joyNumber!=2) {
-		fprintf(stderr,"invalid Joystick number (should be 1 or 2).\n");
-		_status = STATUS_BROKEN;
-        return;
-	}
-	
 	if (deadzone >100 || deadzone<0) {
 		fprintf(stderr,"invalid deadzone, (should be a percentage between 0 and 100).\n");
 		_status = STATUS_BROKEN;
