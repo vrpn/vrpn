@@ -447,7 +447,7 @@ LIB_FILES =  vrpn_Connection.C vrpn_Tracker.C vrpn_Button.C \
 		vrpn_SharedObject.C vrpn_BaseClass.C \
 		vrpn_Sound.C vrpn_LamportClock.C vrpn_Mutex.C \
 		vrpn_RedundantTransmission.C vrpn_Imager.C \
-		vrpn_Analog_Output.C vrpn_Poser.C vrpn_Auxilliary_Logger.C
+		vrpn_Analog_Output.C vrpn_Poser.C vrpn_Auxiliary_Logger.C
 
 LIB_OBJECTS = $(patsubst %,$(OBJECT_DIR)/%,$(LIB_FILES:.C=.o))
 
@@ -458,7 +458,7 @@ LIB_INCLUDES = vrpn_Connection.h vrpn_Tracker.h vrpn_Button.h \
 		vrpn_ForwarderController.h vrpn_Serial.h vrpn_Dial.h \
 		vrpn_SharedObject.h vrpn_LamportClock.h vrpn_Mutex.h \
 		vrpn_BaseClass.h vrpn_Imager.h \
-		vrpn_Analog_Output.h vrpn_Poser.h vrpn_Auxilliary_Logger.h
+		vrpn_Analog_Output.h vrpn_Poser.h vrpn_Auxiliary_Logger.h
 
 $(LIB_OBJECTS): 
 $(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(LIB_OBJECTS)
@@ -482,7 +482,7 @@ SLIB_FILES =  $(LIB_FILES) vrpn_3Space.C \
 	vrpn_Poser_Analog.C vrpn_Tracker_DTrack.C vrpn_Poser_Tek4662.C \
 	vrpn_Tracker_Crossbow.C vrpn_Tracker_3DMouse.C \
 	vrpn_Mouse.C vrpn_3DMicroscribe.C vrpn_5DT16.C \
-	vrpn_ForceDeviceServer.C vrpn_Keyboard_Mouse.C \
+	vrpn_ForceDeviceServer.C vrpn_Keyboard.C \
 	vrpn_Analog_USDigital_A2.C vrpn_Button_NI_DIO24.C \
 	vrpn_Tracker_PhaseSpace.C \
 	vrpn_Atmel.C vrpn_inertiamouse.C vrpn_Event.C vrpn_Event_Analog.C \
@@ -504,7 +504,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) vrpn_3Space.h \
 	vrpn_Poser_Analog.h vrpn_Tracker_DTrack.h vrpn_Poser.h \
 	vrpn_Poser_Tek4662.h vrpn_Tracker_Crossbow.h vrpn_Tracker_3DMouse.h \
 	vrpn_Mouse.h vrpn_3DMicroscribe.h vrpn_5DT16.h \
-	vrpn_ForceDeviceServer.h vrpn_Keyboard_Mouse.h \
+	vrpn_ForceDeviceServer.h vrpn_Keyboard.h \
 	vrpn_Analog_USDigital_A2.h vrpn_Button_NI_DIO24.h \
 	vrpn_Tracker_PhaseSpace.h vrpn_Atmel.h \
 	vrpn_inertiamouse.h vrpn_Event.h vrpn_Event_Analog.h \

@@ -85,7 +85,7 @@
 // cannot link against the debug library in Visual Studio 6.0,
 // only the release.  Hopefully, Visual Studio.NET doesn't have
 // this problem.
-#define	VRPN_USE_DIRECTINPUT
+//#define	VRPN_USE_DIRECTINPUT
 
 //-----------------------
 // Instructs VRPN library and server to include code that uses

@@ -1,3 +1,9 @@
+2007-11-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Renamed Auxilliary to Auxiliary.
+		Moved Keyboard_Mouse to Keyboard.
+	* vrpn_Mouse.C : Added required include file.
+
 2007-11-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Button.C : Moved the serial-mouse button code
