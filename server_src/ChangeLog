@@ -1,5 +1,9 @@
 2007-11-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* Makefile : Renamed Auxilliary to Auxiliary.
+
+2007-11-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn.cfg : Added entries for Mouse and Keyboard,
 		remove the KeyMouse entry.  Added clutch option
 		to the vrpn_AnalogFly.
