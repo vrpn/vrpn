@@ -1,5 +1,11 @@
 2007-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn.cfg : Added patch from Eric Griffith
+		to include control of a stylus.
+	* vrpn_Generic_server_object.C : Same.
+
+2007-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* Makefile : Added (commented out) options to link with
 		both the GPM and the InterSense libraries.
 

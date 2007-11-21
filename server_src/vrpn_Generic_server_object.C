@@ -1481,12 +1481,15 @@ int vrpn_Generic_Server_Object::setup_Tracker_Fastrak (char * & pch, char * line
 int vrpn_Generic_Server_Object::setup_Tracker_Liberty (char * & pch, char * line, FILE * config_file) {
 
   char s2 [LINESIZE], s3 [LINESIZE];
-  int i1;
+  int i1, i2;
+  vrpn_Tracker_Liberty	*mytracker;
+  int numparms;
 
         char    rcmd[5000];     // Reset command to send to Liberty
         next();
-        // Get the arguments (class, tracker_name, port, baud)
-        if ( sscanf(pch,"%511s%511s%d",s2,s3,&i1) < 3) {
+        // Get the arguments (class, tracker_name, port, baud, [whoami_len])
+        numparms = sscanf(pch,"%511s%511s%d%d",s2,s3,&i1,&i2); 
+        if (numparms < 3) {
           fprintf(stderr,"Bad vrpn_Tracker_Liberty line: %s\n%s %s\n",
                   line, pch, s3);
           return -1;
@@ -1542,14 +1545,62 @@ int vrpn_Generic_Server_Object::setup_Tracker_Liberty (char * & pch, char * line
             "Opening vrpn_Tracker_Liberty: %s on port %s, baud %d\n",
             s2,s3,i1);
 
-        if ( (trackers[num_trackers] = 
-             new vrpn_Tracker_Liberty(s2, connection, s3, i1, 0, 8, rcmd))
-                            == NULL) {
+        if (numparms == 3) {
+            if ( (trackers[num_trackers] = mytracker = 
+                 new vrpn_Tracker_Liberty(s2, connection, s3, i1, 0, 8, rcmd))
+                                == NULL) {
 
-          fprintf(stderr,"Can't create new vrpn_Tracker_Liberty\n");
-          return -1;
-        }
+              fprintf(stderr,"Can't create new vrpn_Tracker_Liberty\n");
+              return -1;
+            }
+         } else {
+            if ( (trackers[num_trackers] = mytracker = 
+                new vrpn_Tracker_Liberty(s2, connection, s3, i1, 0, 8, rcmd, i2))
+                                == NULL) {
 
+              fprintf(stderr,"Can't create new vrpn_Tracker_Liberty\n");
+              return -1;
+            }
+         }
+
+	  // If the last character in the line is a front slash, '/', then
+	  // the following line is a command to add a Stylus to one
+	  // of the sensors on the tracker.  Read and parse the line after,
+	  // then add the devices needed to support.  Each line has two
+	  // arguments, the string name of the devices and the integer
+	  // sensor number (starting with 0) to attach the device to.
+          while (line[strlen(line)-2] == '/') {
+	    char lineCommand[LINESIZE];
+	    char lineName[LINESIZE];
+	    int	 lineSensor;
+
+            // Read the next line
+            if (fgets(line, LINESIZE, config_file) == NULL) {
+              fprintf(stderr,"Ran past end of config file in Liberty description\n");
+                  return -1;
+	    }
+
+	    // Parse the line.
+	    if (sscanf(line, "%511s%511s%d", lineCommand, lineName, &lineSensor) != 3) {
+		fprintf(stderr,"Bad line in Stylus description for Liberty (%s)\n",line);
+		delete trackers[num_trackers];
+		return -1;
+	    }
+
+	    if (strcmp(lineCommand, "Stylus") == 0) {
+		if (mytracker->add_stylus_button(lineName, lineSensor, 2)) {
+		  fprintf(stderr,"Cannot set Stylus buttons for Liberty (%s)\n",line);
+		  delete trackers[num_trackers];
+		  return -1;
+		}
+		printf(" ...added Stylus (%s) to sensor %d\n", lineName, lineSensor);
+	    } else {
+		fprintf(stderr,"Unknown command inStylus description for Liberty (%s)\n",lineCommand);
+		delete trackers[num_trackers];
+		return -1;
+	    }
+
+	  }
 	num_trackers++;
 
   return 0;
