@@ -21,6 +21,7 @@
 #include "vrpn_Analog.h"
 
 const int vrpn_LIBERTY_MAX_STATIONS = 8;    //< How many stations can exist
+const int vrpn_LIBERTY_MAX_WHOAMI_LEN = 1024; //< Maximum whoami response length
 
 class VRPN_API vrpn_Tracker_Liberty: public vrpn_Tracker_Serial {
   
@@ -43,10 +44,13 @@ class VRPN_API vrpn_Tracker_Liberty: public vrpn_Tracker_Serial {
   vrpn_Tracker_Liberty(const char *name, vrpn_Connection *c, 
 		      const char *port = "/dev/ttyS0", long baud = 115200,
 		      int enable_filtering = 1, int numstations = vrpn_LIBERTY_MAX_STATIONS,
-		      const char *additional_reset_commands = NULL);
+		      const char *additional_reset_commands = NULL, int whoamilen = 195);
 
   ~vrpn_Tracker_Liberty();
     
+  /// Add a stylus (with button) to one of the sensors.
+  int add_stylus_button(const char *button_device_name,
+				int sensor, int numbuttons = 1);
  protected:
   
   virtual int get_report(void);
@@ -63,10 +67,13 @@ class VRPN_API vrpn_Tracker_Liberty: public vrpn_Tracker_Serial {
   int	do_filter;		//< Should we turn on filtering for pos/orient?
   int	num_stations;		//< How many stations maximum on this Liberty?
   char	add_reset_cmd[2048];	//< Additional reset commands to be sent
+  int whoami_len;
 
   struct timeval liberty_zerotime;    //< When the liberty time counter was zeroed
   struct timeval liberty_timestamp; //< The time returned from the Liberty System
   vrpn_uint32	REPORT_LEN;	    //< The length that the current report should be
+
+  vrpn_Button_Server	*stylus_buttons[vrpn_LIBERTY_MAX_STATIONS];	//< Pointer to button on each sensor (NULL if none)
 
   /// Augments the basic Liberty format
   int	set_sensor_output_format(int sensor);

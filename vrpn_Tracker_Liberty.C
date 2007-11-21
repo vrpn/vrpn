@@ -40,16 +40,25 @@ static bool DEBUGA = false; // Only errors
 
 vrpn_Tracker_Liberty::vrpn_Tracker_Liberty(const char *name, vrpn_Connection *c, 
 		      const char *port, long baud, int enable_filtering, int numstations,
-		      const char *additional_reset_commands) :
+		      const char *additional_reset_commands, int whoamilen) :
     vrpn_Tracker_Serial(name,c,port,baud),
     do_filter(enable_filtering),
-    num_stations(numstations>vrpn_LIBERTY_MAX_STATIONS ? vrpn_LIBERTY_MAX_STATIONS : numstations)
+    num_stations(numstations>vrpn_LIBERTY_MAX_STATIONS ? vrpn_LIBERTY_MAX_STATIONS : numstations),
+    whoami_len(whoamilen>vrpn_LIBERTY_MAX_WHOAMI_LEN ? vrpn_LIBERTY_MAX_WHOAMI_LEN : whoamilen)
 {
+	int i;
+
 	reset_time.tv_sec = reset_time.tv_usec = 0;
 	if (additional_reset_commands == NULL) {
 		sprintf(add_reset_cmd, "");
 	} else {
 		strncpy(add_reset_cmd, additional_reset_commands, sizeof(add_reset_cmd)-1);
+	}
+
+	// Initially, set to no buttons or analogs on the stations.  The
+	// methods to add buttons and analogs must be called to add them.
+	for (i = 0; i < num_stations; i++) {
+		stylus_buttons[i] = NULL;
 	}
 
 	if (DEBUG) fprintf(stderr,"[DEBUG] Constructed Liberty Object\n");
@@ -85,7 +94,7 @@ int vrpn_Tracker_Liberty::set_sensor_output_format(int sensor)
     // Note that the sensor number has to be bumped to map to station number.
 
     timestring = ",8";
-    buttonstring="";
+    buttonstring = stylus_buttons[sensor] ? ",10" : "";
     analogstring="";
 
      sprintf(outstring, "O%d,2,7%s%s%s,0\015", sensor+1, timestring,
@@ -112,7 +121,7 @@ int vrpn_Tracker_Liberty::set_sensor_output_format(int sensor)
     given sensor.
 */
 
-int vrpn_Tracker_Liberty::report_length(int)
+int vrpn_Tracker_Liberty::report_length(int sensor)
 {
     int	len;
 
@@ -120,6 +129,7 @@ int vrpn_Tracker_Liberty::report_length(int)
     len += 3*4;	// Four bytes/float, 3 floats for position
     len += 4*4;	// Four bytes/float, 4 floats for quaternion
     len += 4;   // Timestamp
+	len += stylus_buttons[sensor] ? 4 : 0;	// If applicable, 4 bytes for button info
 
     return len;
 }
@@ -233,17 +243,19 @@ void vrpn_Tracker_Liberty::reset()
    }
 
    // Read Status
-   unsigned char statusmsg[197];
+   unsigned char statusmsg[vrpn_LIBERTY_MAX_WHOAMI_LEN+1];
 
-   // Attempt to read 195 characters. 
-   ret = vrpn_read_available_characters(serial_fd, statusmsg, 195);
-   if (ret != 195) {
+   // Attempt to read whoami_len characters. 
+   ret = vrpn_read_available_characters(serial_fd, statusmsg, whoami_len);
+   if (ret != whoami_len) {
   	fprintf(stderr,
-	 "  Got %d of 195 characters for status\n",ret);
+	 "  Got %d of %d characters for status\n",ret, whoami_len);
    }
-   if ( (statusmsg[0]!='0') || (statusmsg[ret-1]!=(char)(10)) ) {
+   if ( (statusmsg[0]!='0') || (ret!=whoami_len) || (statusmsg[ret-1]!=(char)(10)) ) {
      int i;
-     statusmsg[55] = '\0';	// Null-terminate the string
+     if (ret != -1) {
+        statusmsg[ret] = '\0';	// Null-terminate the string
+     }
      fprintf(stderr, "  Liberty: status is (");
      for (i = 0; i < ret; i++) {
       	if (isprint(statusmsg[i])) {
@@ -689,6 +701,22 @@ int vrpn_Tracker_Liberty::get_report(void)
  
 
    //--------------------------------------------------------------------
+   // If this sensor has button on it, decode the button values
+   // into the button device and mainloop the button device so that
+   // it will report any changes.
+   //--------------------------------------------------------------------
+
+   if (stylus_buttons[d_sensor]) {
+	   vrpn_uint32 button_status;
+
+	   // Read the integer value of the bytton status from the record.
+	   swap_endian4(bufptr); vrpn_unbuffer( (const char **)&bufptr, &button_status);
+	   
+	   stylus_buttons[d_sensor]->set_button(0, button_status);
+	   stylus_buttons[d_sensor]->mainloop();
+   }
+
+   //--------------------------------------------------------------------
    // Done with the decoding, set the report to ready
    //--------------------------------------------------------------------
 
@@ -700,5 +728,26 @@ int vrpn_Tracker_Liberty::get_report(void)
 #endif
 
    return 1;
+}
+
+// this routine is called when an "Stylus" button is encountered
+// by the tracker init string parser it sets up the VRPN button
+// device
+int vrpn_Tracker_Liberty::add_stylus_button(const char *button_device_name, int sensor, int numbuttons)
+{
+    // Make sure this is a valid sensor
+    if ( (sensor < 0) || (sensor >= num_stations) ) {
+	return -1;
+    }
+
+    // Add a new button device and set the pointer to point at it.
+    stylus_buttons[sensor] = new vrpn_Button_Server(button_device_name, d_connection, numbuttons);
+    if (stylus_buttons[sensor] == NULL) {
+	FT_ERROR("Cannot open button device");
+	return -1;
+    }
+
+    // Send a new station-format command to the tracker so it will report the button states.
+    return set_sensor_output_format(sensor);
 }
 

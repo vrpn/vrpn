@@ -1,5 +1,11 @@
 2007-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Tracker_Liberty.C : Added patch from Eric Griffith
+		to include control of a stylus.
+	* vrpn_Tracker_Liberty.h : Same.
+
+2007-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* Makefile : Included definitions needed to compile with
 		the InterSense library.
 
