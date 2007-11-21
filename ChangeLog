@@ -1,5 +1,11 @@
 2007-11-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Flock.C : Uses 36" rather than 144" as the
+		range when not using the extended-range
+		transmitter.  Fix submitted by Jo Skjermo.
+
+2007-11-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* Makefile : Renamed Auxilliary to Auxiliary.
 		Moved Keyboard_Mouse to Keyboard.
 	* vrpn_Mouse.C : Added required include file.

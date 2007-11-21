@@ -638,13 +638,20 @@ int vrpn_Tracker_Flock::get_report(void)
      rgs[irgs] <<= 1;
    }
 
-   // scale factor for position 
-#define POSK144 (float)(144.0/32768.0)    /* integer to inches ER Controller */
+   // scale factor for position.
+   // According to Jo Skermo, this depends on whether we're using the
+   // extended-range transmitter or not.
+   double int_to_inches;
+   if (d_useERT) {
+     int_to_inches = 144.0/32768.0;
+   } else {
+     int_to_inches = 36.0/32768.0;
+   }
 
    int i;
    for (i=0;i<3;i++) {
      // scale and convert to meters
-     pos[i] = (double)(rgs[i] * POSK144 * 0.0254);
+     pos[i] = (double)(rgs[i] * int_to_inches * 0.0254);
    }
    
    // they code quats as w,x,y,z, we need to give out x,y,z,w
