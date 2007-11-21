@@ -103,6 +103,10 @@ ifeq ($(HW_OS), pc_cygwin_arm)
 endif
 ifeq ($(HW_OS),pc_linux)
 	SYSLIBS := 
+# For GPM mouse
+#	SYSLIBS := -lgpm
+# For Isense libraries
+#	SYSLIBS := -ldl
 endif
 
 ifeq ($(HW_OS),sgi_irix)

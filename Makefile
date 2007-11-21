@@ -238,6 +238,11 @@ ifeq ($(HW_OS),universal_macosx)
    SYS_INCLUDE :=-DMACOSX -I../isense 
 endif
 
+ifeq ($(HW_OS),pc_linux)
+	# The following is for the InterSense library.
+	SYS_INCLUDE := -DUNIX -DLINUX
+endif
+
 ifeq ($(HW_OS),pc_linux_arm)
   SYS_INCLUDE := -I/opt/Embedix/arm-linux/include
 #   -I/usr/local/contrib/include \

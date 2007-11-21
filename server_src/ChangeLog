@@ -1,3 +1,8 @@
+2007-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Added (commented out) options to link with
+		both the GPM and the InterSense libraries.
+
 2007-11-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Generic_server_object.h : Lets you open 100 joysticks on
