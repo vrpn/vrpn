@@ -774,7 +774,8 @@ int vrpn_gettimeofday(timeval *tp, void *voidp)
             tzp->tz_minuteswest = tz.Bias ;
             tzp->tz_dsttime = (tz.StandardBias != tz.Bias);
     }
-    return 0;}
+    return 0;
+}
 
 #endif //defined(_WIN32)
 

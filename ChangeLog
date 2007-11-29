@@ -1,3 +1,12 @@
+2007-11-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Removed the paths for DirectX and
+		replaced them with instructions for how to put the
+		include and lib directories into the Visual Studio
+		options.
+	* vrpn_Shared.C : Whitespace cleanup
+	* vrpn.sln : Adding required dependency.
+
 2007-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Tracker_Liberty.C : Added patch from Eric Griffith

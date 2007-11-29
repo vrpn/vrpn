@@ -85,6 +85,13 @@
 // cannot link against the debug library in Visual Studio 6.0,
 // only the release.  Hopefully, Visual Studio.NET doesn't have
 // this problem.
+// IMPORTANT!  If you define this, you need to edit the Tools/Options
+// menu:
+//    For Visual studio 6, use the Directories tab, and add the
+// include and lib paths to the TOP of the lists for all configurations.
+//    For Visual studio .NET, add to the top of the Projects and Solutions/
+//  VC++ Directories entry.
+//    This will let the code find the right version when it compiles.
 //#define	VRPN_USE_DIRECTINPUT
 
 //-----------------------
@@ -93,8 +100,7 @@
 // system configuration section below to point at the correct version
 // of the Platform SDK.  WARNING: With the August 2006 DirectX SDK, you
 // cannot link against the debug library in Visual Studio 6.0,
-// only the release.  Hopefully, Visual Studio.NET doesn't have
-// this problem.
+// only the release.  Visual Studio.NET doesn't have this problem.
 //#define	VRPN_USE_DIRECTSHOW
 
 //-----------------------
@@ -202,13 +208,6 @@
 #define VRPN_GHOST_31_PATH      VRPN_SYSTEMDRIVE "/Program Files/SensAble/GHOST/v3.1/lib/"
 #define VRPN_GHOST_40_PATH      VRPN_SYSTEMDRIVE "/Program Files/SensAble/GHOST/v4.0/lib/"
 
-#define VRPN_DIRECT_X_PATH      VRPN_SYSTEMDRIVE "/Program Files/Microsoft DirectX SDK (August 2006)"
-#define VRPN_DIRECT_X_LIB_PATH  VRPN_DIRECT_X_PATH "/Lib/x86/"
-#ifdef	VRPN_USE_DIRECTINPUT
-#define	DIRECTINPUT_VERSION 0x0800
-#include <C:/Program Files/Microsoft DirectX SDK (August 2006)/Include/dinput.h>
-#endif
-
 #define VRPN_NIDAQ_PATH         VRPN_SYSTEMDRIVE "/Program Files/National Instruments/NI-DAQ/Lib/"
 #define VRPN_NIDAQ_MX_PATH      VRPN_SYSTEMDRIVE "/Program Files/National Instruments/NI-DAQ/DAQmx ANSI C Dev/lib/msvc/"
 #define VRPN_USDIGITAL_PATH     VRPN_SYSTEMDRIVE "/Program Files/SEI Explorer/"
@@ -254,15 +253,17 @@
   #endif
 #endif
 
+// DirectInput include file and libraries.
 // Load DirectX SDK libraries and tell which version we need if we are using it.
-// If this doesn't match where you have installed these libraries,
-// edit the following lines to point at the correct libraries.  Do
-// this here rather than in the project settings so that it can be
-// turned on and off using the definition above.
 #ifdef	VRPN_USE_DIRECTINPUT
-#pragma comment (lib, VRPN_DIRECT_X_LIB_PATH "dxguid.lib")
-#pragma comment (lib, VRPN_DIRECT_X_LIB_PATH "dxerr8.lib")
-#pragma comment (lib, VRPN_DIRECT_X_LIB_PATH "dinput8.lib")
+#define	DIRECTINPUT_VERSION 0x0800
+#include <dinput.h>
+#endif
+
+#ifdef	VRPN_USE_DIRECTINPUT
+#pragma comment (lib, "dxguid.lib")
+#pragma comment (lib, "dxerr8.lib")
+#pragma comment (lib, "dinput8.lib")
 #endif
 
 // Load National Instruments libraries if we are using them.
