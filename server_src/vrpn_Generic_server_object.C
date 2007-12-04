@@ -3622,6 +3622,47 @@ int vrpn_Generic_Server_Object::setup_3DConnexion_SpaceMouse(char * & pch, char 
   return 0;  // successful completion
 }
 
+int vrpn_Generic_Server_Object::setup_Tracker_MotionNode(char * & pch, char * line, FILE * config_file)
+{
+  char name[LINESIZE];
+  unsigned num_sensors = 0;
+  char address[LINESIZE];
+  unsigned port = 0;
+
+  next();
+  // Get the arguments (class, tracker_name, sensors, rate)
+  if (4 != sscanf(pch,"%511s%u%511s%u", name, &num_sensors, address, &port)) {
+    fprintf(stderr, "Bad vrpn_Tracker_MotionNode line: %s\n", line);
+    return -1;
+  }
+
+  // Make sure there's room for a new tracker
+  if (num_trackers >= VRPN_GSO_MAX_TRACKERS) {
+    fprintf(stderr,"Too many trackers in config file");
+    return -1;
+  }
+
+#ifdef  VRPN_USE_MOTIONNODE
+  // Open the tracker
+  if (verbose) {
+    printf("Opening vrpn_Tracker_MotionNode: %s with %u sensors, address %s, port %u\n",
+      name, num_sensors, address, port);
+  }
+
+  trackers[num_trackers] = new vrpn_Tracker_MotionNode(name, connection, num_sensors, address, port);
+
+  if (NULL == trackers[num_trackers]) {
+    fprintf(stderr, "Failed to create new vrpn_Tracker_MotionNode\n");
+    return -1;
+  } else {
+    num_trackers++;
+  }
+#else
+  fprintf(stderr,"vrpn_Tracker_MotionNode: Not compiled in (add VRPN_USE_MOTIONNODE to vrpn_Configure.h and recompile)\n");
+#endif
+  return 0;
+}
+
 
 vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connection_to_use, const char *config_file_name, int port, bool be_verbose, bool bail_on_open_error) :
   connection(connection_to_use),
@@ -3848,6 +3889,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
             CHECK(setup_3DConnexion_Traveler);
 	  } else if (isit("vrpn_3DConnexion_SpaceMouse")) {
             CHECK(setup_3DConnexion_SpaceMouse);
+          } else if (isit("vrpn_Tracker_MotionNode")) {
+            CHECK(setup_Tracker_MotionNode);
 // BUW additions
           } else if (isit("vrpn_Atmel")) {
             CHECK(setup_Atmel);

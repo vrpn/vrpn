@@ -71,6 +71,7 @@
 #include "vrpn_Xkeys.h"
 #include "vrpn_3DConnexion.h"
 #include "vrpn_Keyboard.h"
+#include "vrpn_Tracker_MotionNode.h"
 
 // BUW additions
 #include "vrpn_Atmel.h"
@@ -265,6 +266,7 @@ protected:
   int setup_3DConnexion_Navigator (char * & pch, char * line, FILE * config_file) ;
   int setup_3DConnexion_Traveler (char * & pch, char * line, FILE * config_file) ;
   int setup_3DConnexion_SpaceMouse (char * & pch, char * line, FILE * config_file) ;
+  int setup_Tracker_MotionNode (char * & pch, char * line, FILE * config_file);
 
   // BUW additions
   int setup_Atmel(char* &pch, char *line, FILE *config_file);
