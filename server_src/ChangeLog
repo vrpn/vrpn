@@ -1,5 +1,9 @@
 2007-12-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn.cfg : Adding example line for vrpn_Tracker_MotionNode.
+
+2007-12-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Generic_server_object.C : Added entry for MotionNode Tracker.
 		This compiles under Visual Studio 2005 (not 6.0).
 	* vrpn_Generic_server_object.h : Same
