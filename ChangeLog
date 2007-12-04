@@ -1,3 +1,14 @@
+2007-12-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Added entry for MotionNode Tracker.
+		This compiles under Visual Studio 2005 (not 6.0).
+	* vrpn.dsp : Same.
+	* vrpn.vcproj : Same.
+	* vrpn_Tracker_MotionNode.C : Vendor-supplied server code.
+	* vrpn_Tracker_MotionNode.h : Same.
+	* vrpndll.dsp : Same.
+	* vrpndll.vcproj : Same.
+
 2007-11-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Configure.h : Removed the paths for DirectX and

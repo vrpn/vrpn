@@ -48,7 +48,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include,../quat,../isense,../Dtrack,$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\Include"
+				AdditionalIncludeDirectories="$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include,../quat,../isense,../Dtrack,$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\Include,$(SYSTEMDRIVE)\sdk\cpp,$(SYSTEMDRIVE)\Program Files\boost\boost_1_34_1"
 				PreprocessorDefinitions="VRPNDLL_EXPORTS,_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -78,7 +78,7 @@
 				OutputFile=".\pc_win32/DLL/Debug/vrpndll.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Lib"
+				AdditionalLibraryDirectories="$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Lib,$(SYSTEMDRIVE)\sdk\cpp,$(SYSTEMDRIVE)\Program Files\boost\boost_1_34_1\lib"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\pc_win32/DLL/Debug/vrpndll.pdb"
 				ImportLibrary=".\pc_win32\DLL\Debug\vrpndll.lib"
@@ -146,7 +146,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include,../quat,../isense,../Dtrack,$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\Include"
+				AdditionalIncludeDirectories="$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include,../quat,../isense,../Dtrack,$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\Include,$(SYSTEMDRIVE)\sdk\cpp,$(SYSTEMDRIVE)\Program Files\boost\boost_1_34_1"
 				PreprocessorDefinitions="VRPNDLL_EXPORTS,_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -175,7 +175,7 @@
 				OutputFile=".\pc_win32/DLL/Release/vrpndll.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Lib"
+				AdditionalLibraryDirectories="$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Lib,$(SYSTEMDRIVE)\sdk\cpp,$(SYSTEMDRIVE)\Program Files\boost\boost_1_34_1\lib"
 				ProgramDatabaseFile=".\pc_win32/DLL/Release/vrpndll.pdb"
 				ImportLibrary=".\pc_win32\DLL\Release\vrpndll.lib"
 				TargetMachine="1"
@@ -1776,6 +1776,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\vrpn_Tracker_MotionNode.C"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\vrpn_Tracker_PhaseSpace.C"
 				>
 				<FileConfiguration
@@ -2190,6 +2210,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_Tracker_Liberty.h"
+				>
+			</File>
+			<File
+				RelativePath=".\vrpn_Tracker_MotionNode.h"
 				>
 			</File>
 			<File

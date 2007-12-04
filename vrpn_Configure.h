@@ -193,6 +193,18 @@
 // Linux releases included this library.
 //#define VRPN_USE_GPM_MOUSE
 
+//------------------------
+// Instructs VRPN to use the GLI Interactive LLC MotionNode library to
+// interface VRPN to their tracker.  If you do this, you must edit
+// the include paths in the vrpn and vrpndll libraries to point to the
+// correct locations and the lib path in vrpn_server and any other
+// applications you build (including custom ones) to point to the right
+// location.  You also have to have Boost (www.boost.org) installed and
+// have pointed the vrpn and vrpndll project include paths to it and
+// the vrpndll and vrpn_server lib paths to it.
+// WARNING: This code does not compile under visual studio 6.0.
+//#define VRPN_USE_MOTIONNODE
+
 //------------------------------------------------------------------//
 // SYSTEM CONFIGURATION SECTION                                     //
 // EDIT THESE DEFINITIONS TO POINT TO OPTIONAL LIBRARIES.  THEY ARE //
@@ -219,6 +231,10 @@
 // turned on and off using the definition above.
 #ifdef	VRPN_INCLUDE_TIMECODE_SERVER
 #pragma comment (lib, "../../Adrienne/AEC_DLL/AEC_NTTC.lib")
+#endif
+
+#ifdef VRPN_USE_MOTIONNODE
+#pragma comment(lib, "libMotionNodeSDK.lib")
 #endif
 
 //---------------------------------------------------------------//

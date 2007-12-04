@@ -42,7 +42,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "pc_win32/DLL/Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "VRPNDLL_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I "./atmellib" /I "../quat" /I "../isense" /I "../Dtrack" /I "$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\Include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "VRPNDLL_EXPORTS" /YX /FD /c /Tp
+# ADD CPP /nologo /MD /W3 /GX /O2 /I "./atmellib" /I "../quat" /I "../isense" /I "../Dtrack" /I "$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\Include" /I "$(SYSTEMDRIVE)\sdk\cpp" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "VRPNDLL_EXPORTS" /YX /FD /c /Tp
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -68,7 +68,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "VRPNDLL_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "./atmellib" /I "../quat" /I "../isense" /I "../Dtrack" /I "$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\Include" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "VRPNDLL_EXPORTS" /FD /GZ /c /Tp
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "./atmellib" /I "../quat" /I "../isense" /I "../Dtrack" /I "$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\Include" /I "$(SYSTEMDRIVE)\sdk\cpp" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "VRPNDLL_EXPORTS" /FD /GZ /c /Tp
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
@@ -361,6 +361,10 @@ SOURCE=.\vrpn_Tracker_isense.C
 # Begin Source File
 
 SOURCE=.\vrpn_Tracker_Liberty.C
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Tracker_MotionNode.C
 # End Source File
 # Begin Source File
 
@@ -665,6 +669,10 @@ SOURCE=.\vrpn_Tracker_isense.h
 # Begin Source File
 
 SOURCE=.\vrpn_Tracker_Liberty.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Tracker_MotionNode.h
 # End Source File
 # Begin Source File
 
