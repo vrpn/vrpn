@@ -1223,6 +1223,12 @@ bool vrpn_Semaphore::init() {
     char template_name[] = "/tmp/semaphore.XXXXXXXX";
     char *tempname = mktemp(template_name);
     semaphore = sem_open(tempname, O_CREAT | O_EXCL, 0xffff, numMax);
+#if __APPLE_CC__ >= 5465
+     if (semaphore == SEM_FAILED) {
+#else
+     // Strange cast due to incompatibility in semaphore.h definition.
+     if ((int)(semaphore) == SEM_FAILED) {
+#endif
     // Strange cast due to incompatibility in semaphore.h definition.
     if ((int)(semaphore) == SEM_FAILED) {
   #else

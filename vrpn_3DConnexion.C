@@ -49,7 +49,7 @@ vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_button
   // Use the Event interface to open devices looking for the one
   // we want.  Call the acceptor with all the devices we find
   // until we get one that we want.
-#ifndef _WIN32
+#ifdef LINUX
     fd = -1;
     FILE *f;
     int i = 0;
@@ -111,7 +111,7 @@ void vrpn_3DConnexion::mainloop()
 {
 #ifdef _WIN32
 	update();
-#else
+#elif defined(LINUX)
     struct timeval zerotime;
     fd_set fdset;
     struct input_event ev;

@@ -1,3 +1,10 @@
+2007-12-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3DCOnnexion.C : Patch from Patrick Hartling
+		to make this compile on the Mac.
+	* vrpn_Shared.C : Patch from Patrick Hartling to
+		make this work with the most recent Apple compiler.
+
 2007-12-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Makefile : Making it include the vrpn_Tracker_MotionNode.
