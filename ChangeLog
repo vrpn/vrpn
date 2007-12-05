@@ -1,5 +1,10 @@
 2007-12-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Tracker_Liberty.C : Patch from Michael Adrian that
+		makes this work with more versions of the tracker.
+
+2007-12-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_3DCOnnexion.C : Patch from Patrick Hartling
 		to make this compile on the Mac.
 	* vrpn_Shared.C : Patch from Patrick Hartling to
