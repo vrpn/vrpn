@@ -12,15 +12,12 @@ const int LINESIZE = 512;
 
 #define next() pch += strlen(pch) + 1
 
-
 // BUW additions
 /* some helper variables to configure the vrpn_Atmel server */
 namespace setup_vrpn_Atmel {
   int channel_mode[vrpn_CHANNEL_MAX];
   int channel_count=0;
 }
-
-
 
 #ifdef	SGI_BDBOX
 vrpn_SGIBox	* vrpn_special_sgibox;
@@ -403,7 +400,7 @@ int	vrpn_Generic_Server_Object::get_AFline(FILE *config_file, char *axis_name, v
 }
 
 int vrpn_Generic_Server_Object::setup_Tracker_AnalogFly (char * & pch, char * line, FILE * config_file) {
-    char s2 [LINESIZE], s3 [LINESIZE];
+    char s2 [LINESIZE], s3 [LINESIZE], s4 [LINESIZE];
     int i1;
     float f1;
     vrpn_Tracker_AnalogFlyParam     p;
@@ -490,12 +487,12 @@ int vrpn_Generic_Server_Object::setup_Tracker_AnalogFly (char * & pch, char * li
             fprintf(stderr,"Ran past end of config file in AnalogFly\n");
             return -1;
     }
-    if (sscanf(line, "CLUTCH %511s%d", s3, &i1) != 2) {
+    if (sscanf(line, "CLUTCH %511s%d", s4, &i1) != 2) {
             fprintf(stderr,"Bad CLUTCH line in AnalogFly: %s\n",line);
             return -1;
     }
-    if (strcmp(s3,"NULL") != 0) {
-            p.clutch_name = s3;
+    if (strcmp(s4,"NULL") != 0) {
+            p.clutch_name = s4;
             p.clutch_which = i1;
     }
 

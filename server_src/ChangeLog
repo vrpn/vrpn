@@ -1,3 +1,12 @@
+2007-12-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Generic_server_object.C : Fixing a bug pointed out by
+		Jan Ciger, where the RESET and CLUTCH buttons were being
+		set to the same thing.
+
+	* vrpn.cfg : Whitespace change and added comments to the
+		vrpn_AnalogFly examples.
+
 2007-12-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.cfg : Adding example line for vrpn_Tracker_MotionNode.
