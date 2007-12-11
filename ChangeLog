@@ -1,3 +1,13 @@
+2007-12-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Finally tracked down and squashed
+		that horrible bug where the UDP packets would not
+		go on the same interface as the TCP packets sometimes
+		on hosts with multiple interfaces.  Did it by using
+		the same connection for UDP that was established for
+		TCP unless there was an explicit override in the
+		constructor.
+
 2007-12-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Tracker_Liberty.C : Patch from Michael Adrian that

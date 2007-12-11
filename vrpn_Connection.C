@@ -1561,21 +1561,24 @@ vrpn_ConnectionManager::vrpn_ConnectionManager (void) :
 }
 
 
-
-
 /**
  *   This function returns the host IP address in string form.  For example,
  * the machine "ioglab.cs.unc.edu" becomes "152.2.130.90."  This is done
  * so that the remote host can connect back even if it can't resolve the
  * DNS name of this host.  This is especially useful at conferences, where
  * DNS may not even be running.
+ *   If the NIC_IP name is passed in as NULL but the SOCKET passed in is
+ * valid, then look up the address associated with that socket; this is so
+ * that when a machine has multiple NICs, it will send the outgoing request
+ * for UDP connections to the same place that its TCP connection is on.
  */
 
 static int	vrpn_getmyIP (char * myIPchar, unsigned maxlen,
-                              const char * NIC_IP = NULL)
+                              const char * NIC_IP = NULL,
+                              SOCKET incoming_socket = INVALID_SOCKET)
 {	
   char myname [100];		// Host name of this host
-  struct hostent * host;          // Encoded host IP address, etc.
+  struct hostent * host;        // Encoded host IP address, etc.
   char myIPstring [100];	// Hold "152.2.130.90" or whatever
 
   if (myIPchar == NULL) {
@@ -1583,6 +1586,7 @@ static int	vrpn_getmyIP (char * myIPchar, unsigned maxlen,
     return -1;
   }
 
+  // If we have a specified NIC_IP address, fill it in and return it.
   if (NIC_IP) {
     if (strlen(NIC_IP) > maxlen) {
       fprintf(stderr,"vrpn_getmyIP: Name too long to return\n");
@@ -1593,6 +1597,38 @@ static int	vrpn_getmyIP (char * myIPchar, unsigned maxlen,
             NIC_IP);
 #endif
     strncpy(myIPchar, NIC_IP, maxlen);
+    return 0;
+  }
+
+  // If we have a valid specified SOCKET, then look up its address and
+  // return it.
+  if (incoming_socket != INVALID_SOCKET) {
+    struct sockaddr_in socket_name;
+    int socket_namelen = sizeof(socket_name);
+
+    if (getsockname(incoming_socket, (struct sockaddr *) &socket_name,
+                    GSN_CAST &socket_namelen)) {
+      fprintf(stderr, "vrpn_getmyIP: cannot get socket name.\n");
+      return -1;
+    }
+
+    sprintf(myIPstring, "%u.%u.%u.%u",
+  	  ntohl(socket_name.sin_addr.s_addr) >> 24,
+          (ntohl(socket_name.sin_addr.s_addr) >> 16) & 0xff,
+          (ntohl(socket_name.sin_addr.s_addr) >> 8) & 0xff,
+          ntohl(socket_name.sin_addr.s_addr) & 0xff);
+
+    // Copy this to the output
+    if ((int)strlen(myIPstring) > maxlen) {
+      fprintf(stderr,"vrpn_getmyIP: Name too long to return\n");
+      return -1;
+    }
+
+    strcpy(myIPchar, myIPstring);
+
+#ifdef VERBOSE
+    fprintf(stderr, "Decided on IP address of %s.\n", myIPchar);
+#endif
     return 0;
   }
 
@@ -2204,13 +2240,12 @@ int vrpn_udp_request_lob_packet(
 
   /* Fill in the request message, telling the machine and port that
    * the remote server should connect to.  These are ASCII, separated
-   * by a space. */
-  // NOTE when using multiple NICs, this give undesirable results, because
-  // vrpn_getmyIP always returns the IP of the primary NIC. The server will
-  // ignore the IP in this message, instead requesting a TCP connection on the
-  // same NIC that the UDP message arrived on (in
-  // server_check_for_incoming_connections).
-  if (vrpn_getmyIP(myIPchar, sizeof(myIPchar), NIC_IP)) {
+   * by a space.  vrpn_getmyIP returns the NIC_IP if it is not null,
+   * or the host name of this machine using gethostname() if it is
+   * NULL.  If the NIC_IP is NULL but we have a socket (as we do here),
+   * then it returns the address associated with the socket.
+   */
+  if (vrpn_getmyIP(myIPchar, sizeof(myIPchar), NIC_IP, udp_sock)) {
     fprintf(stderr,
        "vrpn_udp_request_lob_packet: Error finding local hostIP\n");
     vrpn_closeSocket(udp_sock);
@@ -2370,7 +2405,7 @@ int vrpn_start_server(const char * machine, char * server_name, char * args,
         int     child_socket;   /* Where the final socket is */
         int     PortNum;        /* Port number we got */
 
-        /* Open a socket and insure we can bind it */
+        /* Open a socket and ensure we can bind it */
 	if (vrpn_get_a_TCP_socket(&server_sock, &PortNum, IPaddress)) {
 		fprintf(stderr,"vrpn_start_server: Cannot get listen socket\n");
 		return -1;
@@ -2389,7 +2424,7 @@ int vrpn_start_server(const char * machine, char * server_name, char * args,
                 char    command[600];   /* Command passed to system() call */
                 char    *rsh_to_use;    /* Full path to Rsh command. */
 
-                if (vrpn_getmyIP(myIPchar,sizeof(myIPchar), IPaddress)) {
+                if (vrpn_getmyIP(myIPchar,sizeof(myIPchar), IPaddress, server_sock)) {
                         fprintf(stderr,
                            "vrpn_start_server: Error finding my IP\n");
                         vrpn_closeSocket(server_sock);
@@ -3144,9 +3179,15 @@ int vrpn_Endpoint::send_pending_reports (void) {
   return 0;
 }
 
+// Pack a message telling to call back this host on the specified
+// port number.  It is important that the IP address of the host
+// refers to the one that was used by the original TCP connection
+// rather than (for example) the default IP address for the host.
+// This is because the remote machine may not have a route to
+// that NIC, but only the one used to establish the TCP connection.
 
-
-int vrpn_Endpoint::pack_udp_description (int portno) {
+int vrpn_Endpoint::pack_udp_description (int portno)
+{
   struct timeval now;
   vrpn_uint32 portparam = portno;
   char myIPchar [1000];
@@ -3156,8 +3197,10 @@ int vrpn_Endpoint::pack_udp_description (int portno) {
   fprintf(stderr, "Getting IP address of NIC %s.\n", d_NICaddress);
 #endif
 
-  // Find the local host name
-  retval = vrpn_getmyIP(myIPchar, sizeof(myIPchar), d_NICaddress);
+  // Find the local host name that we should be using to connect.
+  // If d_NICaddress is set, use it; otherwise, use the d_tcpSocket
+  // if it is valid.
+  retval = vrpn_getmyIP(myIPchar, sizeof(myIPchar), d_NICaddress, d_tcpSocket);
   if (retval) {
     perror("vrpn_Endpoint::pack_udp_description: can't get host name");
     return -1;
@@ -4974,9 +5017,6 @@ void vrpn_Connection::server_check_for_incoming_connections
 
   return;
 }
-
-
-
 
 
 void vrpn_Connection::drop_connection (int whichEndpoint)
