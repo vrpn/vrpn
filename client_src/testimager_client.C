@@ -11,6 +11,7 @@
 #include <GL/gl.h>
 #include <GL/glut.h>
 #include <vrpn_Connection.h>
+#include <vrpn_FileConnection.h>
 #include <vrpn_Imager.h>
 
 //----------------------------------------------------------------------------
@@ -242,6 +243,11 @@ int main(int argc, char **argv)
   if (argc >= 2) { device_name = argv[1]; }
   if (argc >= 3) { logfile_name = argv[2]; }
   if (argc > 3) { fprintf(stderr, "Usage: %s [device_name [logfile_name]]\n", argv[0]); exit(-1); }
+
+  // In case we end up loading an video from a file, make sure we
+  // neither pre-load nor accumulate the images.
+  vrpn_FILE_CONNECTIONS_SHOULD_PRELOAD = false;
+  vrpn_FILE_CONNECTIONS_SHOULD_ACCUMULATE = false;
 
   // Say that we've posted a redisplay so that the callback handler
   // for endframe doesn't try to post one before glut is open.
