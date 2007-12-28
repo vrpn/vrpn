@@ -1,5 +1,10 @@
 2007-12-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Connection.C : Changing version number to 7.15 for
+		release.
+
+2007-12-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Shared.C : Making this compile on the mac by removing
 		a spurious extra if statement left over from a bad
 		patch attempt.  Removing a second deletion of an
