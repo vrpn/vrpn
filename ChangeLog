@@ -1,3 +1,12 @@
+2007-12-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Shared.C : Making this compile on the mac by removing
+		a spurious extra if statement left over from a bad
+		patch attempt.  Removing a second deletion of an
+		already-destroyed semaphore.
+
+	* Makefile : Switching mac compiler from gcc to g++.
+
 2007-12-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Connection.C : Finally tracked down and squashed
