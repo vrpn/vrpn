@@ -262,8 +262,8 @@ class VRPN_API vrpn_Endpoint {
 
 
     char * remote_machine_name;	// Machine to call
-    int	remote_UDP_port;	// UDP port on remote machine
-    timeval last_UDP_lob;	// When the last lob occured
+    int	d_remote_port_number;	// Port to connect to won remote machine
+    timeval d_last_connect_attempt;	// When the last lob occured
     long d_remoteLogMode;	// Mode to put the remote logging in
     char * d_remoteInLogName;	// Name of the remote log file
     char * d_remoteOutLogName;	// Name of the remote log file

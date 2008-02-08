@@ -2638,7 +2638,7 @@ vrpn_Endpoint::vrpn_Endpoint (vrpn_TypeDispatcher * dispatcher,
     d_tcpListenSocket (INVALID_SOCKET),
     d_tcpListenPort (0),
     remote_machine_name (NULL),
-    remote_UDP_port (0),
+    d_remote_port_number (0),
     d_remoteLogMode (0),
     d_remoteInLogName (NULL),
     d_remoteOutLogName (NULL),
@@ -2750,9 +2750,9 @@ void vrpn_Endpoint::init (void) {
   d_udpOutboundSocket = INVALID_SOCKET;
   d_udpInboundSocket = INVALID_SOCKET;
 
-  // Never lobbed a packet yet
-  last_UDP_lob.tv_sec = 0;
-  last_UDP_lob.tv_usec = 0;
+  // Never tried a reconnect yet
+  d_last_connect_attempt.tv_sec = 0;
+  d_last_connect_attempt.tv_usec = 0;
 
   // Set all of the local IDs to -1, in case the other side
   // sends a message of a type that it has not yet defined.
@@ -2790,6 +2790,7 @@ int vrpn_Endpoint::mainloop (timeval * timeout,
   int tcp_messages_read;
   int udp_messages_read;
   int fd_max = d_tcpSocket;
+  bool time_to_try_again = false;
 
   switch (status) {
 
@@ -2913,12 +2914,38 @@ int vrpn_Endpoint::mainloop (timeval * timeout,
         break;
 
     case TRYING_TO_CONNECT:
-      struct timeval	now;
+        struct timeval	now;
       	int ret;
 
 #ifdef	VERBOSE
       	printf("TRYING_TO_CONNECT\n");
 #endif
+        // See if it has been long enough since our last attempt
+        // to try again.
+      	vrpn_gettimeofday(&now, NULL);
+      	if (now.tv_sec - d_last_connect_attempt.tv_sec >= 2) {
+          d_last_connect_attempt.tv_sec = now.tv_sec;
+          time_to_try_again = true;
+        }
+
+        // If we are a TCP-only connection, then we retry to establish the connection
+        // whenever it is time to try again.  Otherwise, we're done.
+        if (d_tcp_only) {
+          if (time_to_try_again) {
+            status = TRYING_TO_CONNECT;
+            if (connect_tcp_to(remote_machine_name, d_remote_port_number) == 0) {
+      	      status = COOKIE_PENDING;
+              if (setup_new_connection()) {
+                fprintf(stderr, "vrpn_Endpoint::mainloop: "
+		                "Can't set up new connection!\n");
+                break;
+              }
+            }
+          }
+          break;
+        }
+
+        // We are not a TCP-only connect.
       	// See if we have a connection yet (nonblocking select).
       	ret = vrpn_poll_for_accept(d_tcpListenSocket, &d_tcpSocket);
       	if (ret  == -1) {
@@ -2948,19 +2975,16 @@ int vrpn_Endpoint::mainloop (timeval * timeout,
         // If we don't wait a while between these we flood buffers and
         // do BAD THINGS (TM).
 
-      	vrpn_gettimeofday(&now, NULL);
-      	if (now.tv_sec - last_UDP_lob.tv_sec >= 2) {
-          last_UDP_lob.tv_sec = now.tv_sec;
-
+      	if (time_to_try_again) {
           if (vrpn_udp_request_lob_packet(remote_machine_name,
-					  remote_UDP_port,
+					  d_remote_port_number,
 					  d_tcpListenPort,
                                           NICaddress) == -1) {
             fprintf(stderr,
             "vrpn_Endpoint: mainloop: Can't lob UDP request\n");
             status = BROKEN;
 //fprintf(stderr, "BROKEN - vrpn_Endpoint::mainloop.\n");
-	            break;
+            break;
           }
         }
       break;
@@ -3521,13 +3545,15 @@ int vrpn_Endpoint::connect_tcp_to (const char * addr, int port) {
 
   if (connect(d_tcpSocket,(struct sockaddr*)&client,sizeof(client)) < 0 ){
 #ifdef VRPN_USE_WINSOCK_SOCKETS
-    fprintf(stderr,
+    if (!d_tcp_only) {
+      fprintf(stderr,
   	     "vrpn_Endpoint::connect_tcp_to: Could not connect to machine %d.%d.%d.%d port %d\n",
              (int)(client.sin_addr.S_un.S_un_b.s_b1), (int)(client.sin_addr.S_un.S_un_b.s_b2),
              (int)(client.sin_addr.S_un.S_un_b.s_b3), (int)(client.sin_addr.S_un.S_un_b.s_b4),
              (int)(ntohs(client.sin_port)));
-    int error = WSAGetLastError();
-    fprintf(stderr, "Winsock error: %d\n", error);
+      int error = WSAGetLastError();
+      fprintf(stderr, "Winsock error: %d\n", error);
+    }
 #else
     fprintf(stderr,
   	     "vrpn_Endpoint::connect_tcp_to: Could not connect to machine %d.%d.%d.%d port %d\n",
@@ -4991,6 +5017,7 @@ void vrpn_Connection::server_check_for_incoming_connections
     // presumably coming through a firewall or NAT and UDP packets won't get
     // through).
     endpoint->d_tcp_only = vrpn_TRUE;
+    endpoint->d_remote_port_number = port;
 
     // Server-side logging under multiconnection - TCH July 2000
     if (d_serverLogMode & vrpn_LOG_INCOMING) {
@@ -5025,16 +5052,12 @@ void vrpn_Connection::drop_connection (int whichEndpoint)
 
   endpoint->drop_connection();
 
+  // If we're a client, try to reconnect to the server
+  // that just dropped its connection.
+  // If we're a server, delete the endpoint.
   if (listen_udp_sock == INVALID_SOCKET) {
-    // We're a client, so we try to reconnect to the server
-    // that just dropped its connection.
     endpoint->status = TRYING_TO_CONNECT;
-//fprintf(stderr, "TRYING_TO_CONNECT - vrpn_Connection::drop_connection.\n");
-  }
-
-  // Delete IFF a server
-
-  if (listen_udp_sock != INVALID_SOCKET) {
+  } else  {
     delete_endpoint(whichEndpoint);
   }
 }
@@ -5334,9 +5357,9 @@ vrpn_Connection::vrpn_Connection
       return;
     }
     if (port < 0) {
-  		endpoint->remote_UDP_port = vrpn_DEFAULT_LISTEN_PORT_NO;
+  		endpoint->d_remote_port_number = vrpn_DEFAULT_LISTEN_PORT_NO;
     } else {
-  		endpoint->remote_UDP_port = port;
+  		endpoint->d_remote_port_number = port;
     }
 
     endpoint->status = TRYING_TO_CONNECT;
@@ -5358,9 +5381,9 @@ vrpn_Connection::vrpn_Connection
     }
 
     // Lob a packet asking for a connection on that port.
-    vrpn_gettimeofday(&endpoint->last_UDP_lob, NULL);
+    vrpn_gettimeofday(&endpoint->d_last_connect_attempt, NULL);
     if (vrpn_udp_request_lob_packet(endpoint->remote_machine_name,
-  			            endpoint->remote_UDP_port,
+  			            endpoint->d_remote_port_number,
   			            endpoint->d_tcpListenPort,
                                     NIC_IPaddress) == -1) {
   	fprintf(stderr,"vrpn_Connection: Can't lob UDP request\n");
@@ -5420,7 +5443,7 @@ vrpn_Connection::vrpn_Connection
       connectionStatus = BROKEN;
       return;
     }
-    endpoint->remote_UDP_port = 0;
+    endpoint->d_remote_port_number = port;
 
     // Since we are doing a TCP connection, tell the endpoint not to try and
     // use any other communication mechanism to get to the server.
