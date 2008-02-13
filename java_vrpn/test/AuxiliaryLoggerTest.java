@@ -7,17 +7,17 @@ public class AuxiliaryLoggerTest implements AuxiliaryLoggerRemote.LoggingReportL
 	public void loggingReport( LoggingReport u, AuxiliaryLoggerRemote logger ) 
 	{
 		System.out.println( "logging report at (" + u.msg_time + "):  " );
-		System.out.println( "\tlocal in:  " + u.localInLogfileName );
-		System.out.println( "\tlocal out:  " + u.localOutLogfileName );
-		System.out.println( "\tremote in:  " + u.remoteInLogfileName );
-		System.out.println( "\tremote out:  " + u.remoteOutLogfileName );
+		System.out.println( "\tlocal in:  " + ( u.localInLogfileName == null ? "(null)" : u.localInLogfileName ) );
+		System.out.println( "\tlocal out:  " + ( u.localOutLogfileName == null ? "(null)" : u.localOutLogfileName ) );
+		System.out.println( "\tremote in:  " + ( u.remoteInLogfileName == null ? "(null)" : u.remoteInLogfileName ) );
+		System.out.println( "\tremote out:  " + ( u.remoteOutLogfileName == null ? "(null)" : u.remoteOutLogfileName ) );
 		
 	}
 
 	
 	public static void main( String args[] )
 	{
-		String loggerName = "Logger0@localhost";
+		String loggerName = "ImageStream0@localhost";
 		AuxiliaryLoggerRemote l = null;
 		
 		try

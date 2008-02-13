@@ -1,3 +1,8 @@
+2008-02-13  David Marshburn  <marshbur@cs.unc.edu>
+	
+	* AuxiliaryLoggerTest.java:  slightly better handling
+	of logging reports.
+
 2007-10-22  David Marshburn  <marshbur@cs.unc.edu>
 
 	* AuxiliaryLoggerTest.java:  new
