@@ -1,5 +1,6 @@
 #ifndef VRPN_CONNECTION_H
 #define VRPN_CONNECTION_H
+
 #include <stdio.h>  // for FILE
 
 #include "vrpn_Shared.h"
@@ -135,7 +136,7 @@ class VRPN_API	vrpn_Log;
 class VRPN_API	vrpn_TranslationTable;
 class VRPN_API	vrpn_TypeDispatcher;
 
-// Encapsulation of the data and methods for a single connection
+// Encapsulation of the data and methods for a single generic connection
 // to take care of one part of many clients talking to a single server.
 // This will only be used from within the vrpn_Connection class;  it should
 // not be instantiated by users or devices.
@@ -151,25 +152,19 @@ class VRPN_API vrpn_Endpoint {
 
     // ACCESSORS
 
-    /// True if the UDP outbound is open, False if not.
-    vrpn_bool outbound_udp_open (void) const;
-
     /// Returns the local mapping for the remote type (-1 if none).
     int local_type_id (vrpn_int32 remote_type) const;
 
     /// Returns the local mapping for the remote sender (-1 if none).
     int local_sender_id (vrpn_int32 remote_sender) const;
 
-    vrpn_int32 tcp_outbuf_size (void) const;
-    vrpn_int32 udp_outbuf_size (void) const;
-
-    vrpn_bool doing_okay (void) const;
+    virtual vrpn_bool doing_okay (void) const = 0;
 
     // MANIPULATORS
 
     void init (void);
 
-    int mainloop (timeval * timeout, const char * NICaddress);
+    virtual int mainloop (timeval * timeout) = 0;
 
     // Clear out the remote mapping list. This is done when a
     // connection is dropped and we want to try and re-establish
@@ -191,6 +186,140 @@ class VRPN_API vrpn_Endpoint {
 
     // Pack a message that will be sent the next time mainloop() is called.
     // Turn off the RELIABLE flag if you want low-latency (UDP) send.
+    virtual int pack_message (vrpn_uint32 len, struct timeval time,
+            vrpn_int32 type, vrpn_int32 sender, const char * buffer,
+            vrpn_uint32 class_of_service) = 0;
+
+    // send pending report, clear the buffer.
+    // This function was protected, now is public, so we can use it
+    // to send out intermediate results without calling mainloop
+    virtual int send_pending_reports (void) = 0;
+
+    int pack_log_description (void);
+      ///< Packs the log description set by setup_new_connection().
+
+    virtual int setup_new_connection (void) = 0;
+      ///< Sends the magic cookie and other information to its
+      ///< peer.  It is called by both the client and server setup routines.
+
+    virtual void poll_for_cookie (const timeval * timeout = NULL) = 0;
+    virtual int finish_new_connection_setup (void) = 0;
+
+   virtual void drop_connection (void) = 0;
+      ///< Should only be called by vrpn_Connection::drop_connection(),
+      ///< since there's more housecleaning to do at that level.  I suppose
+      ///< that argues against separating this function out.
+
+    virtual void clearBuffers (void) = 0;
+      ///< Empties out the TCP and UDP send buffers.
+      ///< Needed by vrpn_FileConnection to get at {udp,tcp}NumOut.
+
+    int pack_sender_description (vrpn_int32 which);
+      ///< Packs a sender description over our socket.
+
+    int pack_type_description (vrpn_int32 which);
+      ///< Packs a type description.
+
+    int status;
+
+//XXX These should be protected; making them so will lead to making
+//    the code split the functions between Endpoint and Connection
+//    protected:
+
+    long d_remoteLogMode;	// Mode to put the remote logging in
+    char * d_remoteInLogName;	// Name of the remote log file
+    char * d_remoteOutLogName;	// Name of the remote log file
+
+    // Name of the remote host we are connected to.  This is kept for
+    // informational purposes.  It is printed by the ceiling server,
+    // for example.
+    char rhostname [150];
+
+    // Logging - TCH 19 April 00;  changed into two logs 16 Feb 01
+
+    vrpn_Log * d_inLog;
+    vrpn_Log * d_outLog;
+
+    void setLogNames (const char * inName, const char * outName);
+    int openLogs (void);
+
+    // Routines that handle system messages
+    // Visible so that vrpn_Connection can pass them to the Dispatcher
+    static int VRPN_CALLBACK handle_sender_message (void * userdata, vrpn_HANDLERPARAM p);
+    static int VRPN_CALLBACK handle_type_message (void * userdata, vrpn_HANDLERPARAM p);
+	
+    // Routines to inform the endpoint of the connection of 
+    // which it is a part.
+    void setConnection( vrpn_Connection* conn ) {  d_parent = conn;  }
+    vrpn_Connection* getConnection( ) {  return d_parent;  }
+
+  protected:
+
+    virtual int dispatch (vrpn_int32 type, vrpn_int32 sender,
+                  timeval time, vrpn_uint32 payload_len,
+                  char * bufptr);
+
+    int tryToMarshall (char * outbuf, vrpn_int32 &buflen, vrpn_int32 &numOut,
+                       vrpn_uint32 len, timeval time,
+                       vrpn_int32 type, vrpn_int32 sender,
+                       const char * buffer, vrpn_uint32 classOfService);
+      ///< Calls marshall_message();  if that fails, calls
+      ///< send_pending_reports() and then marshalls again.
+      ///< Returns the number of characters successfully marshalled.
+
+    int marshall_message (char * outbuf,vrpn_uint32 outbuf_size,
+                          vrpn_uint32 initial_out,
+                          vrpn_uint32 len, struct timeval time,
+                          vrpn_int32 type, vrpn_int32 sender,
+                          const char * buffer,
+                          vrpn_uint32 sequenceNumber);
+
+    // The senders and types we know about that have been described by
+    // the other end of the connection.  Also, record the local mapping
+    // for ones that have been described with the same name locally.
+    // The arrays are indexed by the ID from the other side, and store
+    // the name and local ID that corresponds to each.
+
+    vrpn_TranslationTable * d_senders;
+    vrpn_TranslationTable * d_types;
+
+    vrpn_TypeDispatcher * d_dispatcher;
+    vrpn_int32 * d_connectionCounter;
+
+    vrpn_Connection * d_parent;
+};
+
+// Encapsulation of the data and methods for a single IP-based connection
+// to take care of one part of many clients talking to a single server.
+// This will only be used from within the vrpn_Connection class;  it should
+// not be instantiated by users or devices.
+// Should not be visible!
+
+class VRPN_API vrpn_Endpoint_IP : public vrpn_Endpoint {
+
+  public:
+
+    vrpn_Endpoint_IP (vrpn_TypeDispatcher * dispatcher,
+                   vrpn_int32 * connectedEndpointCounter);
+    virtual ~vrpn_Endpoint_IP (void);
+
+    // ACCESSORS
+    virtual vrpn_bool doing_okay (void) const;
+
+    /// True if the UDP outbound is open, False if not.
+    vrpn_bool outbound_udp_open (void) const;
+
+    vrpn_int32 tcp_outbuf_size (void) const;
+    vrpn_int32 udp_outbuf_size (void) const;
+
+    // MANIPULATORS
+
+    void init (void);
+
+    int mainloop (timeval * timeout);
+
+    // Pack a message that will be sent the next time mainloop() is called.
+    // Turn off the RELIABLE flag if you want low-latency (UDP) send.
     int pack_message (vrpn_uint32 len, struct timeval time,
             vrpn_int32 type, vrpn_int32 sender, const char * buffer,
             vrpn_uint32 class_of_service);
@@ -201,8 +330,6 @@ class VRPN_API vrpn_Endpoint {
     virtual int send_pending_reports (void);
 
     int pack_udp_description (int portno);
-    int pack_log_description (void);
-      ///< Packs the log description set by setup_new_connection().
 
     int handle_tcp_messages (const timeval * timeout);
     int handle_udp_messages (const timeval * timeout);
@@ -236,14 +363,6 @@ class VRPN_API vrpn_Endpoint {
 
     void setNICaddress (const char *);
 
-    int pack_sender_description (vrpn_int32 which);
-      ///< Packs a sender description over our socket.
-
-    int pack_type_description (vrpn_int32 which);
-      ///< Packs a type description.
-
-    int status;
-
 //XXX These should be protected; making them so will lead to making
 //    the code split the functions between Endpoint and Connection
 //    protected:
@@ -260,66 +379,20 @@ class VRPN_API vrpn_Endpoint {
       ///< when lobbing datagrams at the server and
       ///< waiting for it to call back.
 
-
     char * remote_machine_name;	// Machine to call
     int	d_remote_port_number;	// Port to connect to won remote machine
     timeval d_last_connect_attempt;	// When the last lob occured
-    long d_remoteLogMode;	// Mode to put the remote logging in
-    char * d_remoteInLogName;	// Name of the remote log file
-    char * d_remoteOutLogName;	// Name of the remote log file
 
-    // Name of the remote host we are connected to.  This is kept for
-    // informational purposes.  It is printed by the ceiling server,
-    // for example.
-    char rhostname [150];
-
-	vrpn_bool	d_tcp_only;
-	  ///< For connections made through firewalls or NAT with the
-	  ///< tcp: URL, we do not want to allow the endpoints on either
-	  ///< end to open a UDP link to their counterparts.  If this is
-	  ///< the case, then this flag should be set to true.
-
-    // Logging - TCH 19 April 00;  changed into two logs 16 Feb 01
-
-    vrpn_Log * d_inLog;
-    vrpn_Log * d_outLog;
-
-    void setLogNames (const char * inName, const char * outName);
-    int openLogs (void);
-
-    // Routines that handle system messages
-    // Visible so that vrpn_Connection can pass them to the Dispatcher
-    static int VRPN_CALLBACK handle_sender_message (void * userdata, vrpn_HANDLERPARAM p);
-    static int VRPN_CALLBACK handle_type_message (void * userdata, vrpn_HANDLERPARAM p);
-	
-    // Routines to inform the endpoint of the connection of 
-    // which it is a part.
-    void setConnection( vrpn_Connection* conn ) {  d_parent = conn;  }
-    vrpn_Connection* getConnection( ) {  return d_parent;  }
+    vrpn_bool	d_tcp_only;
+      ///< For connections made through firewalls or NAT with the
+      ///< tcp: URL, we do not want to allow the endpoints on either
+      ///< end to open a UDP link to their counterparts.  If this is
+      ///< the case, then this flag should be set to true.
 
   protected:
 
     int getOneTCPMessage (int fd, char * buf, int buflen);
     int getOneUDPMessage (char * buf, int buflen);
-      ///< These two functions are ALMOST identical, but hard to combine.
-    virtual int dispatch (vrpn_int32 type, vrpn_int32 sender,
-                  timeval time, vrpn_uint32 payload_len,
-                  char * bufptr);
-
-    int tryToMarshall (char * outbuf, vrpn_int32 &buflen, vrpn_int32 &numOut,
-                       vrpn_uint32 len, timeval time,
-                       vrpn_int32 type, vrpn_int32 sender,
-                       const char * buffer, vrpn_uint32 classOfService);
-      ///< Calls marshall_message();  if that fails, calls
-      ///< send_pending_reports() and then marshalls again.
-      ///< Returns the number of characters successfully marshalled.
-
-    int marshall_message (char * outbuf,vrpn_uint32 outbuf_size,
-                          vrpn_uint32 initial_out,
-                          vrpn_uint32 len, struct timeval time,
-                          vrpn_int32 type, vrpn_int32 sender,
-                          const char * buffer,
-                          vrpn_uint32 sequenceNumber);
 
     SOCKET d_udpOutboundSocket;
     SOCKET d_udpInboundSocket;
@@ -347,24 +420,7 @@ class VRPN_API vrpn_Endpoint {
     char * d_udpInbuf;
 
     char * d_NICaddress;
-
-    timeval d_controlMsgTimeOffset;
-
-    // The senders and types we know about that have been described by
-    // the other end of the connection.  Also, record the local mapping
-    // for ones that have been described with the same name locally.
-    // The arrays are indexed by the ID from the other side, and store
-    // the name and local ID that corresponds to each.
-
-    vrpn_TranslationTable * d_senders;
-    vrpn_TranslationTable * d_types;
-
-    vrpn_TypeDispatcher * d_dispatcher;
-    vrpn_int32 * d_connectionCounter;
-
-    vrpn_Connection * d_parent;
 };
-
 
 class VRPN_API vrpn_Connection {
 
@@ -379,7 +435,7 @@ class VRPN_API vrpn_Connection {
                      const char * local_in_logfile_name = NULL,
                      const char * local_out_logfile_name = NULL,
                      const char * NIC_IPaddress = NULL,
-                     vrpn_Endpoint * (* epa) (vrpn_Connection *,
+                     vrpn_Endpoint_IP * (* epa) (vrpn_Connection *,
                        vrpn_int32 *) = allocateEndpoint);
 
     //   Create a connection -  if server_name is not a file: name,
@@ -398,7 +454,7 @@ class VRPN_API vrpn_Connection {
 		 const char * remote_in_logfile_name = NULL,
 		 const char * remote_out_logfile_name = NULL,
 		 const char * NIC_IPaddress = NULL,
-		 vrpn_Endpoint * (* epa) (vrpn_Connection *,
+		 vrpn_Endpoint_IP * (* epa) (vrpn_Connection *,
 		   vrpn_int32 *) = allocateEndpoint);
 
     virtual ~vrpn_Connection (void);
@@ -525,7 +581,7 @@ class VRPN_API vrpn_Connection {
 
   protected:
 
-    static vrpn_Endpoint * allocateEndpoint (vrpn_Connection *,
+    static vrpn_Endpoint_IP * allocateEndpoint (vrpn_Connection *,
                                              vrpn_int32 * connectedEC);
 
     ///< Redefining this and passing it to constructors
@@ -546,7 +602,7 @@ class VRPN_API vrpn_Connection {
 
     // Sockets used to talk to remote Connection(s)
     // and other information needed on a per-connection basis
-    vrpn_Endpoint * d_endpoints [vrpn_MAX_ENDPOINTS];
+    vrpn_Endpoint_IP * d_endpoints [vrpn_MAX_ENDPOINTS];
     vrpn_int32 d_numEndpoints;
 
     vrpn_int32 d_numConnectedEndpoints;
@@ -657,7 +713,7 @@ class VRPN_API vrpn_Connection {
     vrpn_int32 d_serverLogMode;
     char * d_serverLogName;
 
-    vrpn_Endpoint * (* d_endpointAllocator) (vrpn_Connection *,
+    vrpn_Endpoint_IP * (* d_endpointAllocator) (vrpn_Connection *,
                                              vrpn_int32 *);
     vrpn_bool d_updateEndpoint;
 

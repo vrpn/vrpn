@@ -33,6 +33,17 @@
 #define	VRPN_EXPORT_GETTIMEOFDAY
 
 //-----------------------
+// Tells VRPN to compile with support for the Message-Passing
+// Interface (MPI) library.  There is a configuration section below
+// that has a library path for the MPI library to link against.
+// You will need to add the path to mpi.h and other needed files
+// into your Visual Studio Tools/Options/Projects and Solutions/
+// C++ Directories include path.  The original implementation is
+// done with MPICH2, but an attempt has been made to use only
+// MPI version 1 basic functions.
+//#define	vrpn_USE_MPI
+
+//-----------------------
 // Instructs VRPN to use phantom library to construct a unified
 // server, using phantom as a common device, and phantom
 // configuration in .cfg file.
@@ -223,6 +234,10 @@
 #define VRPN_NIDAQ_PATH         VRPN_SYSTEMDRIVE "/Program Files/National Instruments/NI-DAQ/Lib/"
 #define VRPN_NIDAQ_MX_PATH      VRPN_SYSTEMDRIVE "/Program Files/National Instruments/NI-DAQ/DAQmx ANSI C Dev/lib/msvc/"
 #define VRPN_USDIGITAL_PATH     VRPN_SYSTEMDRIVE "/Program Files/SEI Explorer/"
+
+#ifdef  vrpn_USE_MPI
+#pragma comment (lib, VRPN_SYSTEMDRIVE "/Program Files/MPICH2/lib/mpi.lib")
+#endif
 
 // Load Adrienne libraries if we are using the timecode generator.
 // If this doesn't match where you have installed these libraries,

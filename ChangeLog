@@ -1,3 +1,20 @@
+2008-02-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Added a configuration entry to enable VRPN
+		to link with a Message-Passing Interface (MPI) library and
+		communicate over it between a group of processes.  This is
+		a fast and low-latency communications mechanism available
+		on clusters.  So far, only the definition is in there; the
+		implementation will be committed in steps as the TCP and UDP
+		parts are teased out of the general Connection object.
+	* vrpn_Connection.h : Teasing the IP-specific (TCP, UDP) portions
+		of the vrpn_Endpoint out into a separate base class.  The
+		basic Connection object has been modified to use the IP
+		version in all cases (it is effectively an IP connection).
+		Next up will be teasing the non-IP-specific parts of the
+		Connection out.
+	* vrpn_Connection.C : Same.
+
 2008-02-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Connection.C : Modified to make the tcp: connection
