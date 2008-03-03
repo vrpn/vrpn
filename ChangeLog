@@ -1,3 +1,9 @@
+2008-03-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3DConnexion.C : Fixed a bug reported by Patric Schmitz
+		where multiple-report packets from the device were not
+		being treated correctly.
+
 2008-02-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Configure.h : Added a configuration entry to enable VRPN

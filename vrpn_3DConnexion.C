@@ -193,8 +193,8 @@ void vrpn_3DConnexion::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 
     // There are three types of reports.  Parse whichever type
     // this is.
-    char  report_type = buffer[0];
-    char *bufptr = static_cast<char *>(static_cast<void*>(&buffer[1]));
+    char  report_type = report[0];
+    char *bufptr = static_cast<char *>(static_cast<void*>(&report[1]));
     vrpn_int16 temp;
     const float scale = static_cast<float>(1.0/400.0);
     switch (report_type)  {
