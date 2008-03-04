@@ -4,7 +4,7 @@
 void Usage (const char * s)
 {
   fprintf(stderr,"Usage: %s [-f filename] [-warn] [-v] [port] [-q]\n",s);
-  fprintf(stderr,"       [-client machinename port] [-millisleep n]\n");
+  fprintf(stderr,"       [-millisleep n]\n");
   fprintf(stderr,"       [-NIC name] [-li filename] [-lo filename]\n");
   fprintf(stderr,"       -f: Full path to config file (default vrpn.cfg).\n");
   fprintf(stderr,"       -millisleep: Sleep n milliseconds each loop cycle\n"); 
@@ -19,7 +19,6 @@ void Usage (const char * s)
   fprintf(stderr,"       -warn: Only warn on errors (default is to bail).\n");
   fprintf(stderr,"       -v: Verbose.\n");
   fprintf(stderr,"       -q: Quit when last connection is dropped.\n");
-  fprintf(stderr,"       -client: Where server connects when it starts up.\n");
   fprintf(stderr,"       -NIC: Use NIC with given IP address or DNS name.\n");
   fprintf(stderr,"       -li: Log incoming messages to given filename.\n");
   fprintf(stderr,"       -lo: Log outgoing messages to given filename.\n");
@@ -93,8 +92,6 @@ void sighandler (int)
 int main (int argc, char * argv[])
 {
   char	* config_file_name = "vrpn.cfg";
-  char 	* client_name = NULL;
-  int	client_port;
   bool	bail_on_error = true;
   int	auto_quit = 0;
   int	realparams = 0;
@@ -148,11 +145,6 @@ int main (int argc, char * argv[])
       verbose = true;
     } else if (!strcmp(argv[i], "-q")) {  // quit on dropped last con
       auto_quit = 1;
-    } else if (!strcmp(argv[i], "-client")) { // specify a waiting client
-      if (++i > argc) { Usage(argv[0]); }
-      client_name = argv[i];
-      if (++i > argc) { Usage(argv[0]); }
-      client_port = atoi(argv[i]);
     } else if (!strcmp(argv[i], "-NIC")) { // specify a network interface
       if (++i > argc) { Usage(argv[0]); }
       if (verbose) { fprintf(stderr, "Listening on network interface card %s.\n", argv[i]); }
@@ -178,11 +170,18 @@ int main (int argc, char * argv[])
     i++;
   }
 
-  // Need to have a global pointer to it so we can shut it down
+  // Need to have a global pointer to the connection so we can shut it down
   // in the signal handler (so we can close any open logfiles.)
-  //vrpn_Synchronized_Connection	connection;
-  connection = new vrpn_Connection
-       (port, g_inLogName, g_outLogName, g_NICname);
+  // Form the name based on the type of connection requested.  For a standard
+  // VRPN UDP/TCP port, we give it the name "NIC:port" if there is a NIC name,
+  // otherwise just ":port" for the default NIC.
+  char  con_name[1024];
+  if (g_NICname) {
+    sprintf(con_name, "%s:%d", g_NICname, port);
+  } else {
+    sprintf(con_name, ":$d", port);
+  }
+  connection = vrpn_create_server_connection(con_name, g_inLogName, g_outLogName);
 
   // Create the generic server object and make sure it is doing okay.
   generic_server = new vrpn_Generic_Server_Object(connection, config_file_name, port, verbose, bail_on_error);
@@ -200,18 +199,6 @@ int main (int argc, char * argv[])
     int dlc_m_id = connection->register_message_type(
 			    vrpn_dropped_last_connection);
     connection->register_handler(dlc_m_id, handle_dlc, NULL);
-  }
-
-  if (client_name) {
-    if (verbose) {
-      fprintf(stderr, "vrpn_serv: connecting to client: %s:%d\n",
-	  client_name, client_port);
-    }
-    if (connection->connect_to_client(client_name, client_port)){
-	fprintf(stderr, "server: could not connect to client %s:%d\n",
-		client_name, client_port);
-	shutDown();
-    }
   }
 
   // ********************************************************************

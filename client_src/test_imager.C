@@ -42,7 +42,7 @@ int			      svrchan;	//< Server channel index for image data
 
 bool  init_server_code(void)
 {
-  if ( (svrcon = new vrpn_Connection()) == NULL) {
+  if ( (svrcon = vrpn_create_server_connection()) == NULL) {
     fprintf(stderr, "Could not open server connection\n");
     return false;
   }

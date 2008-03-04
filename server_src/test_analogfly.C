@@ -102,7 +102,7 @@ int main (int argc, char * argv [])
 
 	//---------------------------------------------------------------------
 	// explicitly open the connection
-	connection = new vrpn_Connection(CONNECTION_PORT);
+	connection = vrpn_create_server_connection(CONNECTION_PORT);
 
 	//---------------------------------------------------------------------
 	// Open the analog server, using this connection.

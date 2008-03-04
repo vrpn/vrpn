@@ -4,9 +4,6 @@
 
 #ifndef	VRPN_SOUND_H
 
-#include "vrpn_Connection.h"
-#include "vrpn_BaseClass.h"
-#include "vrpn_Shared.h"
 #include "vrpn_Tracker.h"
 #include "vrpn_Text.h"
 

@@ -1,7 +1,6 @@
 #ifndef VRPN_SPACEBALL_H
 #define VRPN_SPACEBALL_H
 
-#include "vrpn_Connection.h"
 #include "vrpn_Analog.h"
 #include "vrpn_Button.h"
 

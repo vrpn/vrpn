@@ -49,7 +49,4 @@ class VRPN_API vrpn_File_Controller {
     //long d_jump_to_time_type;
 };
 
-
-
-
 #endif  // VRPN_FILE_CONTROLLER_H

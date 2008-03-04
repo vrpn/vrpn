@@ -1,3 +1,23 @@
+2008-03-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Changing the way the server connection is created so
+		that it can handle the more general vrpn_Connection object
+		types in preparation for the MPI communication method.  Also
+		removed the option to connect to a client when it is started
+		up.
+
+	* vrpn_testimager_server.cpp : Same.
+	* test_vrpn.C : Same.
+	* test_radamec_spi.C : Same.
+	* test_imager.C : Same.
+	* test_analogfly.C : Same.
+	* directshow_video_server.cpp : Same.
+	* test_mutex.C : Same.
+	* test_logging.C : New test for logging and replay.
+	* test_logging.vcproj : Same.
+	* test_logging.dsp : Same.
+	* Makefile : Same.
+
 2007-12-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Generic_server_object.C : Fixing a bug pointed out by

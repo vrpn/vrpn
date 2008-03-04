@@ -218,18 +218,6 @@ void vrpn_Mutex::sendDenyRequest (vrpn_int32 index) {
 
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
 vrpn_Mutex_Server::vrpn_Mutex_Server (const char * name, vrpn_Connection * c) :
     vrpn_Mutex (name, c),
     d_state (FREE),
@@ -366,12 +354,6 @@ int vrpn_Mutex_Server::handle_dropLastConnection (void * userdata,
 
   return 0;
 }
-
-
-
-
-
-
 
 vrpn_Mutex_Remote::vrpn_Mutex_Remote (const char * name, vrpn_Connection * c) :
     vrpn_Mutex (name, c ? c : ((strcmp(name,"null")==0) ? (vrpn_Connection *)NULL : vrpn_get_connection_by_name(name))),
@@ -730,18 +712,6 @@ void vrpn_Mutex_Remote::triggerReleaseCallbacks (void) {
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
 // Implementation notes:
 //
 // We broadcast messages over d_peer[] tagged with our IP number in
@@ -757,9 +727,6 @@ void vrpn_Mutex_Remote::triggerReleaseCallbacks (void) {
 // ordering of station names.  But then we'd have to ensure that every 
 // instance used the same station name (evans vs. evans.cs.unc.edu vs.
 // evans.cs.unc.edu:4500) for each peer, which is ugly.
-
-
-
 
 vrpn_PeerMutex::vrpn_PeerMutex (const char * name, int port,
                                 const char * NICaddress) :
@@ -783,7 +750,10 @@ vrpn_PeerMutex::vrpn_PeerMutex (const char * name, int port,
     fprintf(stderr, "vrpn_PeerMutex:  NULL name!\n");
     return;
   }
-  d_server = new vrpn_Connection (static_cast<unsigned short>(port), NULL, NULL, NICaddress);
+  //XXX Won't work with non-IP connections (MPI, for example)
+  char con_name[512];
+  sprintf(con_name, "%s:%p", NICaddress, port);
+  d_server = vrpn_create_server_connection(con_name);
   if (d_server) {
     d_server->addReference();
     d_server->setAutoDeleteStatus(true);

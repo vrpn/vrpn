@@ -9,7 +9,6 @@
 // This implementation is Windows-specific, as it leverages the windows mouse calls.
 //
 
-#include "vrpn_Connection.h"
 #include "vrpn_Button.h"
 
 class VRPN_API vrpn_Keyboard: public vrpn_Button_Filter

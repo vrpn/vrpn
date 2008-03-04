@@ -9,7 +9,6 @@
 
 #if defined(_WIN32)
 
-#include "vrpn_Connection.h"
 #include "vrpn_Analog.h"
 #include "vrpn_Button.h"
 

@@ -1,7 +1,6 @@
 #ifndef VRPN_ZABER_H
 #define VRPN_ZABER_H
 
-#include "vrpn_Connection.h"
 #include "vrpn_Analog.h"
 #include "vrpn_Analog_Output.h"
 

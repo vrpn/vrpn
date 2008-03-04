@@ -727,7 +727,7 @@ decode_from( const char** buf, vrpn_int32& len )
 // class vrpn_FunctionGenerator
 
 vrpn_FunctionGenerator::
-vrpn_FunctionGenerator( const char* name, vrpn_Connection* c )
+vrpn_FunctionGenerator( const char* name, vrpn_Connection * c )
 :vrpn_BaseClass( name, c )
 {
 	vrpn_BaseClass::init( );
@@ -806,7 +806,7 @@ register_types( )
 //
 
 vrpn_FunctionGenerator_Server::
-vrpn_FunctionGenerator_Server( const char* name, vrpn_Connection* c )
+vrpn_FunctionGenerator_Server( const char* name, vrpn_Connection * c )
 : vrpn_FunctionGenerator( name, c )
 {
 	
@@ -1099,7 +1099,7 @@ sendStopReply( vrpn_bool stopped )
 //
 
 vrpn_FunctionGenerator_Remote::
-vrpn_FunctionGenerator_Remote( const char* name, vrpn_Connection* c )
+vrpn_FunctionGenerator_Remote( const char* name, vrpn_Connection * c )
 : vrpn_FunctionGenerator( name, c ),
   channel_reply_list( NULL ),
   start_reply_list( NULL ),

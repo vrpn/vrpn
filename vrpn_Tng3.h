@@ -1,6 +1,4 @@
 #ifndef VRPN_TNG3B_H
-#include "vrpn_Types.h"
-#include "vrpn_Connection.h"
 #include "vrpn_Analog.h"
 #include "vrpn_Button.h"
 

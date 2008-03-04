@@ -54,7 +54,7 @@ static	unsigned long	duration(struct timeval t1, struct timeval t2)
 }
 */
 
-vrpn_Poser::vrpn_Poser (const char* name, vrpn_Connection* c) : 
+vrpn_Poser::vrpn_Poser (const char* name, vrpn_Connection * c) : 
     vrpn_BaseClass(name, c)
 {
 	vrpn_BaseClass::init();
@@ -204,7 +204,7 @@ void vrpn_Poser::set_pose_velocity(const timeval t, const vrpn_float64 velocity[
 //////////////////////////////////////////////////////////////////////////////////////
 // Server Code
 
-vrpn_Poser_Server::vrpn_Poser_Server (const char* name, vrpn_Connection* c) :
+vrpn_Poser_Server::vrpn_Poser_Server (const char* name, vrpn_Connection * c) :
     vrpn_Poser(name, c)
 {
 //	register_server_handlers();
@@ -321,7 +321,7 @@ int vrpn_Poser_Server::handle_vel_change_message(void* userdata,
 //////////////////////////////////////////////////////////////////////////////////////
 // Client Code
 
-vrpn_Poser_Remote::vrpn_Poser_Remote (const char* name, vrpn_Connection* c) :
+vrpn_Poser_Remote::vrpn_Poser_Remote (const char* name, vrpn_Connection * c) :
 	vrpn_Poser (name, c)
 {
 	// Make sure that we have a valid connection

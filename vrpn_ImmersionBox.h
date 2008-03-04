@@ -1,7 +1,5 @@
 #ifndef VRPN_IMMERSIONBOX_H
 #define VRPN_IMMERSIONBOX_H
-#include "vrpn_Types.h"
-#include "vrpn_Connection.h"
 #include "vrpn_Analog.h"
 #include "vrpn_Button.h"
 #include "vrpn_Dial.h"

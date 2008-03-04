@@ -46,7 +46,7 @@ bool vrpn_FILE_CONNECTIONS_SHOULD_ACCUMULATE = true;
 // play through all system messages and get to the first user message
 // when opened or reset to the beginning.  This defaults to "true". 
 // User code should set this
-// to "false" before calling vrpn_get_connection_by_name() or creating
+// to "false" before calling vrpn_open_client_connection() or creating
 // a new vrpn_File_Connection object if it wants that file connection
 // to not skip the messages.  The value is only checked at connection creation time;
 // the connection behaves consistently once created.  Leaving this true
@@ -58,19 +58,13 @@ bool vrpn_FILE_CONNECTIONS_SHOULD_SKIP_TO_USER_MESSAGES = true;
 
 #include "vrpn_Log.h"
 
-// this should be a shared declaration with those
-// at the top of vrpn_Connection.C!
-static const int BROKEN = (-3);
-
-
 // }}}
 // {{{ constructor
 
 vrpn_File_Connection::vrpn_File_Connection (const char * file_name,
                          const char * local_in_logfile_name,
                          const char * local_out_logfile_name) :
-    vrpn_Connection (file_name, -1, local_in_logfile_name,
-                     local_out_logfile_name),
+    vrpn_Connection (local_in_logfile_name, local_out_logfile_name, NULL, NULL),
     d_controllerId (register_sender("vrpn File Controller")),
     d_set_replay_rate_type(register_message_type("vrpn_File set_replay_rate")),
     d_reset_type (register_message_type("vrpn_File reset")),
@@ -83,6 +77,15 @@ vrpn_File_Connection::vrpn_File_Connection (const char * file_name,
     d_preload(vrpn_FILE_CONNECTIONS_SHOULD_PRELOAD),
     d_accumulate(vrpn_FILE_CONNECTIONS_SHOULD_ACCUMULATE)
 {
+    // Because we are a file connection, our status should be CONNECTED
+    // Later set this to BROKEN if there is a problem opening/reading the file.
+    if (d_endpoints[0] == NULL) {
+      fprintf(stderr,"vrpn_File_Connection::vrpn_File_Connection(): NULL zeroeth endpoint\n");
+    } else {
+      connectionStatus = CONNECTED;
+      d_endpoints[0]->status = CONNECTED;
+    }
+
     // If we are preloading, then we must accumulate messages.
     if (d_preload) {
       d_accumulate = true;

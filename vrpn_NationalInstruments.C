@@ -12,7 +12,7 @@ static	double	duration(struct timeval t1, struct timeval t2)
 	       (t1.tv_sec - t2.tv_sec);
 }
 
-vrpn_National_Instruments_Server::vrpn_National_Instruments_Server (const char* name, vrpn_Connection* c, 
+vrpn_National_Instruments_Server::vrpn_National_Instruments_Server (const char* name, vrpn_Connection * c, 
                                                      const char *boardName,
 						     int numInChannels, int numOutChannels,
                                                      double minInputReportDelaySecs,
@@ -325,7 +325,7 @@ vrpn_int32 vrpn_National_Instruments_Server::encode_num_channels_to( char* buf, 
     return sizeof(vrpn_int32);
 }
 
-vrpn_Analog_Output_Server_NI::vrpn_Analog_Output_Server_NI(const char* name, vrpn_Connection* c, 
+vrpn_Analog_Output_Server_NI::vrpn_Analog_Output_Server_NI(const char* name, vrpn_Connection * c, 
                                                      const char *boardName,
 						     vrpn_int16 numChannels, bool bipolar,
 						     double minVoltage, double maxVoltage) :

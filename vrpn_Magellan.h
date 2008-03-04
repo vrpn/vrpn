@@ -1,7 +1,6 @@
 #ifndef VRPN_MAGELLAN_H
 #define VRPN_MAGELLAN_H
 
-#include "vrpn_Connection.h"
 #include "vrpn_Analog.h"
 #include "vrpn_Button.h"
 

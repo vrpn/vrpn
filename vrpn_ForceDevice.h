@@ -1,8 +1,6 @@
 #ifndef FORCEDEVICE_H
 #define  FORCEDEVICE_H
 
-#include "vrpn_Connection.h"
-#include "vrpn_BaseClass.h"
 #include "vrpn_Tracker.h"
 #include "vrpn_Button.h"
 #include "../quat/quat.h"

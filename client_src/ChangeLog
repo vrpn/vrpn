@@ -1,3 +1,13 @@
+2008_03_04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* clock_drift_estimator.C : Replaces vrpn_Connection
+		constructor with call to vrpn_create_server_connection()
+	* test_imager.C : Same.
+	* testimager_client.C : Whitespace changes
+	* vrpn_print_devices.C : Added Text_Receiver to the objects
+		being created, so you can print out text messages from an
+		object as well.
+
 2007-12-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* testimager_client.C : Has VRPN fileconnections neither preload

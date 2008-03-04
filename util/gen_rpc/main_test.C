@@ -9,7 +9,7 @@ int main (int argc, char ** argv) {
 
   vrpn_Connection * connection;
 
-  connection = new vrpn_Connection(4999);
+  connection = vrpn_create_server_connection(4999);
 
   int myID = connection->register_sender("rpc_Test");
 

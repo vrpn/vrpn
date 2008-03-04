@@ -20,7 +20,7 @@
 // handlers.
 
 bool			g_quit = false;	//< Set to true when time to quit
-vrpn_Connection		*g_connection;	//< Set if logging is enabled.
+vrpn_Connection	*g_connection;	//< Set if logging is enabled.
 vrpn_Imager_Remote	*g_imager;	//< Imager client object
 bool g_got_dimensions = false;		//< Heard image dimensions from server?
 int			g_Xdim, g_Ydim;	//< Dimensions in X and Y

@@ -321,11 +321,6 @@ void vrpn_Auxiliary_Logger_Server_Generic::handle_request_logging(
 
   // If at least one of the names passed in is not empty, create
   // a new logging connection.  If this fails, report no logging.
-  // We cannot use vrpn_get_connection_by_name() here because it
-  // will return a pointer to an existing connection without
-  // restarting logging if it is already open.  We add a reference
-  // to this connection so that it will participate correctly in
-  // not being deleted if another object gets a pointer to it.
  
   // Find the relevant part of the name (skip past last '@'
   // if there is one); also find the port number.
@@ -334,21 +329,20 @@ void vrpn_Auxiliary_Logger_Server_Generic::handle_request_logging(
   if ( (where_at = strrchr(cname, '@')) != NULL) {
 	  cname = where_at+1;	// Chop off the front of the name
   }
-  int port = vrpn_get_port_number(cname);
-  d_logging_connection = new vrpn_Connection (cname, port,
-	  local_in_logfile_name, local_out_logfile_name,
-	  remote_in_logfile_name, remote_out_logfile_name);
-  if ( !d_logging_connection->doing_okay() ) {
+
+  // Pass "true" to force_connection so that it will open a new
+  // connection even if we already have one with that name.
+  d_logging_connection = vrpn_get_connection_by_name(where_at,
+    local_in_logfile_name, local_out_logfile_name, remote_in_logfile_name, remote_out_logfile_name,
+    NULL, true);
+  if ( !d_logging_connection || !d_logging_connection->doing_okay() ) {
     struct timeval now;
     vrpn_gettimeofday(&now, NULL);
     send_text_message("handle_request_logging: Could not create connection (files already exist?)", now, vrpn_TEXT_ERROR);
     send_report_logging(NULL, NULL, NULL, NULL);
-    delete d_logging_connection;
-    d_logging_connection = NULL;
+    if (d_logging_connection) { delete d_logging_connection; d_logging_connection = NULL; }
     return;
   }
-  d_logging_connection->setAutoDeleteStatus(true);	// destroy when refcount hits zero.
-  d_logging_connection->addReference();
 
   // Report the logging that we're doing.
   send_report_logging(local_in_logfile_name, local_out_logfile_name,

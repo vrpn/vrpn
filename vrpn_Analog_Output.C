@@ -1,7 +1,7 @@
 #include "vrpn_Analog_Output.h"
 #include <stdio.h>
 
-vrpn_Analog_Output::vrpn_Analog_Output(const char* name, vrpn_Connection* c) :
+vrpn_Analog_Output::vrpn_Analog_Output(const char* name, vrpn_Connection * c) :
 	vrpn_BaseClass(name, c),
 	o_num_channel(0)
 {
@@ -48,7 +48,7 @@ void vrpn_Analog_Output::o_print(void ) {
 }
 
 
-vrpn_Analog_Output_Server::vrpn_Analog_Output_Server(const char* name, vrpn_Connection* c, 
+vrpn_Analog_Output_Server::vrpn_Analog_Output_Server(const char* name, vrpn_Connection * c, 
                                                      vrpn_int32 numChannels) :
 	vrpn_Analog_Output(name, c)
 {
@@ -198,7 +198,7 @@ encode_num_channels_to( char* buf, vrpn_int32 num )
     return sizeof(vrpn_int32);
 }
 
-vrpn_Analog_Output_Callback_Server::vrpn_Analog_Output_Callback_Server(const char* name, vrpn_Connection* c, 
+vrpn_Analog_Output_Callback_Server::vrpn_Analog_Output_Callback_Server(const char* name, vrpn_Connection * c, 
                                                      vrpn_int32 numChannels) :
 	vrpn_Analog_Output_Server(name, c, numChannels)
 {
@@ -243,7 +243,7 @@ int vrpn_Analog_Output_Callback_Server::handle_change_message(void *userdata,
 }
 
 
-vrpn_Analog_Output_Remote::vrpn_Analog_Output_Remote(const char* name, vrpn_Connection* c) :
+vrpn_Analog_Output_Remote::vrpn_Analog_Output_Remote(const char* name, vrpn_Connection * c) :
     vrpn_Analog_Output(name, c)
 {
     vrpn_int32 i;

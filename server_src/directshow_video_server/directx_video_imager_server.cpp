@@ -10,6 +10,9 @@
 const int MAJOR_VERSION = 3;
 const int MINOR_VERSION = 1;
 
+// sprintf() is okay in our usage.
+#pragma warning( disable : 4995 )
+
 //-----------------------------------------------------------------
 // This section contains code to initialize the camera and read its
 // values.  The server code reads values from the camera and sends
@@ -65,8 +68,8 @@ int			      svrchan;	//< Server channel index for image data
 
 bool  init_server_code(const char *outgoing_logfile_name)
 {
-  const int PORT = vrpn_DEFAULT_LISTEN_PORT_NO;
-  if ( (svrcon = new vrpn_Connection(PORT, NULL, outgoing_logfile_name)) == NULL) {
+  int port = vrpn_DEFAULT_LISTEN_PORT_NO;
+  if ( (svrcon = vrpn_create_server_connection(port, NULL, outgoing_logfile_name)) == NULL) {
     fprintf(stderr, "Could not open server connection\n");
     return false;
   }
@@ -79,7 +82,7 @@ bool  init_server_code(const char *outgoing_logfile_name)
     fprintf(stderr, "Could not add channel to server image\n");
     return false;
   }
-  // This relies on VRPN to hand us sequential channel numbers.  This might be
+  // XXX This relies on VRPN to hand us sequential channel numbers.  This might be
   // dangerous.
   if ( (svr->add_channel("green", "unknown", 0, (float)(g_maxval) )) == -1) {
     fprintf(stderr, "Could not add channel to server image\n");
@@ -89,7 +92,7 @@ bool  init_server_code(const char *outgoing_logfile_name)
     fprintf(stderr, "Could not add channel to server image\n");
     return false;
   }
-  printf("Waiting for video connections on %d\n", PORT);
+  printf("Waiting for video connections on port %d\n", port);
 
   return true;
 }

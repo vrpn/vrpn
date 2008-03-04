@@ -5,6 +5,19 @@
 
 #include "vrpn_Shared.h"
 
+// Don't complain about using sprintf() in Windows.
+#pragma warning ( disable : 4995 4996 )
+
+// This is the list of states that a connection can be in
+// (possible values for status).  doing_okay() returns VRPN_TRUE
+// for connections > BROKEN.
+enum vrpn_ConnectionStatus {LISTEN             = (1),
+                       CONNECTED          = (0),
+                       COOKIE_PENDING     = (-1),
+                       TRYING_TO_CONNECT  = (-2),
+                       BROKEN             = (-3),
+                       LOGGING            = (-4)};
+
 class VRPN_API	vrpn_File_Connection;  // Forward declaration for get_File_Connection()
 
 /// This structure is what is passed to a vrpn_Connection message callback.
@@ -291,7 +304,7 @@ class VRPN_API vrpn_Endpoint {
 
 // Encapsulation of the data and methods for a single IP-based connection
 // to take care of one part of many clients talking to a single server.
-// This will only be used from within the vrpn_Connection class;  it should
+// This will only be used from within the vrpn_Connection_IP class;  it should
 // not be instantiated by users or devices.
 // Should not be visible!
 
@@ -422,63 +435,47 @@ class VRPN_API vrpn_Endpoint_IP : public vrpn_Endpoint {
     char * d_NICaddress;
 };
 
+// Generic connection class not specific to the transport mechanism.
+// It abstracts all of the common functions.  Specific implementations
+// for IP, MPI, and other transport mechanisms follow.
 class VRPN_API vrpn_Connection {
 
-  //friend class VRPN_API vrpn_Endpoint;
-
-  public:
-
-    // Use vrpn_get_connection_by_name to create a connection
-    // for clients.
-    vrpn_Connection (unsigned short listen_port_no =
-		     vrpn_DEFAULT_LISTEN_PORT_NO,
-                     const char * local_in_logfile_name = NULL,
-                     const char * local_out_logfile_name = NULL,
-                     const char * NIC_IPaddress = NULL,
+  protected:
+    // Constructor for server connection.  This cannot be called
+    // directly any more because vrpn_Connection is an abstract base
+    // class.  Call vrpn_create_server_connection() to make a server
+    // of arbitrary type based on a name.
+    vrpn_Connection (const char * local_in_logfile_name,
+                     const char * local_out_logfile_name,
                      vrpn_Endpoint_IP * (* epa) (vrpn_Connection *,
                        vrpn_int32 *) = allocateEndpoint);
 
-    //   Create a connection -  if server_name is not a file: name,
-    // makes an SDI-like connection to the named remote server
-    // (otherwise functions as a non-networked messaging hub).
-    // Port less than zero forces default.
-    //   Currently, server_name is an extended URL that defaults
-    // to VRPN connections at the port, but can be file:: to read
-    // from a file.  Other extensions should maintain this, so
-    // that VRPN uses URLs to name things that are to be connected
-    // to.
-    vrpn_Connection (const char * server_name,
-		 int port = vrpn_DEFAULT_LISTEN_PORT_NO,
-		 const char * local_in_logfile_name = NULL,
-		 const char * local_out_logfile_name = NULL,
-		 const char * remote_in_logfile_name = NULL,
-		 const char * remote_out_logfile_name = NULL,
-		 const char * NIC_IPaddress = NULL,
-		 vrpn_Endpoint_IP * (* epa) (vrpn_Connection *,
-		   vrpn_int32 *) = allocateEndpoint);
+    // Constructor for client connection.  This cannot be called
+    // directly because vrpn_Connection is an abstract base class.
+    // Call vrpn_get_connection_by_name() to create a client connection.
+    vrpn_Connection (const char * local_in_logfile_name,
+		     const char * local_out_logfile_name,
+		     const char * remote_in_logfile_name,
+		     const char * remote_out_logfile_name,
+		     vrpn_Endpoint_IP * (* epa) (vrpn_Connection *,
+		          vrpn_int32 *) = allocateEndpoint);
+
+  public:
 
     virtual ~vrpn_Connection (void);
 
     // Returns 1 if the connection is okay, 0 if not
-    vrpn_bool doing_okay (void) const;
+    virtual vrpn_bool doing_okay (void) const;
     virtual vrpn_bool connected (void) const;
 
-	// This function returns the logfile names of this connection in
-	// the parameters.  It will allocate memory for the name of each 
-	// log file in use.  If no logging of a particular type is happening, 
-	// then *(X_Y_logname) will be set to NULL.
-	// IMPORTANT:  code calling this function is responsible for freeing
-	// the memory allocated for these strings.
-	void get_log_names( char** local_in_logname, char** local_out_logname,
-						char** remote_in_logname, char** remote_out_logname );
-
-    // This is similar to check connection except that it can be
-    // used to receive requests from before a server starts up
-    virtual int connect_to_client (const char * machine, int port);
-
-    // Returns the name of the service that the connection was first
-    // constructed to talk to, or NULL if it was built as a server.
-    //inline const char * name (void) const { return my_name; }
+    // This function returns the logfile names of this connection in
+    // the parameters.  It will allocate memory for the name of each 
+    // log file in use.  If no logging of a particular type is happening, 
+    // then *(X_Y_logname) will be set to NULL.
+    // IMPORTANT:  code calling this function is responsible for freeing
+    // the memory allocated for these strings.
+    void get_log_names( char** local_in_logname, char** local_out_logname,
+			char** remote_in_logname, char** remote_out_logname );
 
     // Call each time through program main loop to handle receiving any
     // incoming messages and sending any packed messages.
@@ -487,7 +484,7 @@ class VRPN_API vrpn_Connection {
     // Optional argument is TOTAL time to block on select() calls;
     // there may be multiple calls to select() per call to mainloop(),
     // and this timeout will be divided evenly between them.
-    virtual int mainloop (const struct timeval * timeout = NULL);
+    virtual int mainloop (const struct timeval * timeout = NULL) = 0;
 
     // Get a token to use for the string name of the sender or type.
     // Remember to check for -1 meaning failure.
@@ -515,7 +512,7 @@ class VRPN_API vrpn_Connection {
     // send pending report, clear the buffer.
     // This function was protected, now is public, so we can use it
     // to send out intermediate results without calling mainloop
-    virtual int send_pending_reports (void);
+    virtual int send_pending_reports (void) = 0;
 
     // Returns the time since the connection opened.
     // Some subclasses may redefine time.
@@ -579,26 +576,15 @@ class VRPN_API vrpn_Connection {
     // are found.
     vrpn_uint32 d_stop_processing_messages_after;
 
-  protected:
+    int connectionStatus;		// Status of the connection
 
     static vrpn_Endpoint_IP * allocateEndpoint (vrpn_Connection *,
                                              vrpn_int32 * connectedEC);
-
     ///< Redefining this and passing it to constructors
     ///< allows a subclass to use a different subclass of Endpoint.
     ///< It should do NOTHING but return an endpoint
     ///< of the appropriate class;  it may not access subclass data,
     ///< since it'll be called from a constructor
-
-    friend VRPN_API vrpn_Connection * vrpn_get_connection_by_name (
-        const char * cname,
-        const char * local_in_logfile_name,
-        const char * local_out_logfile_name,
-        const char * remote_in_logfile_name,
-        const char * remote_out_logfile_name,
-        const char * NIC_IPaddress);
-
-    int connectionStatus;		// Status of the connection
 
     // Sockets used to talk to remote Connection(s)
     // and other information needed on a per-connection basis
@@ -611,31 +597,12 @@ class VRPN_API vrpn_Connection {
       ///< messages.  This value is *managed* by the Endpoints, but we
       ///< need exactly one copy per Connection, so it's on the Connection.
 
-    // Only used for a vrpn_Connection that awaits incoming connections
-    int listen_udp_sock;	// UDP Connect requests come here
-    int listen_tcp_sock;	// TCP Connection requests come here
-
     // Routines that handle system messages
-    static int VRPN_CALLBACK handle_UDP_message (void * userdata, vrpn_HANDLERPARAM p);
     static int VRPN_CALLBACK handle_log_message (void * userdata, vrpn_HANDLERPARAM p);
     static int VRPN_CALLBACK handle_disconnect_message (void * userdata,
 		vrpn_HANDLERPARAM p);
 
-    virtual void init (void);	// Called by all constructors
-
-    /// This is called by a server-side process to see if there have
-    /// been any UDP packets come in asking for a connection. If there
-    /// are, it connects the TCP port and then calls handle_connection().
-    virtual void server_check_for_incoming_connections
-                  (const struct timeval * timeout = NULL);
-
-    // This routine is called by a server-side connection when a
-    // new connection has just been established, and the tcp port
-    // has been connected to it.
-    virtual void handle_connection (int whichEndpoint);
-
-    // set up network
-    virtual void drop_connection (int whichEndpoint);
+    virtual void init(void);            // Base initialization for all constructors.
 
     int delete_endpoint (int whichEndpoint);
     int compact_endpoints (void);
@@ -653,12 +620,8 @@ class VRPN_API vrpn_Connection {
     // Returns message type ID, or -1 if unregistered
     int message_type_is_registered (const char *) const;
 
-    // Thread safety modifications - TCH 19 May 98
-
     // Timekeeping - TCH 30 June 98
     timeval start_time;
-
-    const char * d_NIC_IP;
 
     //
     // Counting references to this connection.
@@ -725,18 +688,156 @@ class VRPN_API vrpn_Connection {
       ///< their constructors haven't executed yet.)
 };
 
+class VRPN_API vrpn_Connection_IP : public vrpn_Connection {
 
-// WARNING:  vrpn_get_connection_by_name() may not be thread safe.
+  protected:
+    // Make a client connection.  To access this from user code,
+    // call vrpn_get_connection_by_name().
+    //   Create a connection -  if server_name is not a file: name,
+    // makes an SDI-like connection to the named remote server
+    // (otherwise functions as a non-networked messaging hub).
+    // Port less than zero forces default.
+    //   Currently, server_name is an extended URL that defaults
+    // to VRPN connections at the port, but can be file:: to read
+    // from a file.  Other extensions should maintain this, so
+    // that VRPN uses URLs to name things that are to be connected
+    // to.
+    vrpn_Connection_IP (const char * server_name,
+		 int port = vrpn_DEFAULT_LISTEN_PORT_NO,
+		 const char * local_in_logfile_name = NULL,
+		 const char * local_out_logfile_name = NULL,
+		 const char * remote_in_logfile_name = NULL,
+		 const char * remote_out_logfile_name = NULL,
+		 const char * NIC_IPaddress = NULL,
+		 vrpn_Endpoint_IP * (* epa) (vrpn_Connection *,
+		   vrpn_int32 *) = allocateEndpoint);
+
+  public:
+
+    // Make a server that listens for client connections.
+    // DEPRECATED: Call vrpn_create_server_connection() with the
+    // NIC name and port number you want.
+    vrpn_Connection_IP (unsigned short listen_port_no =
+		     vrpn_DEFAULT_LISTEN_PORT_NO,
+                     const char * local_in_logfile_name = NULL,
+                     const char * local_out_logfile_name = NULL,
+                     const char * NIC_IPaddress = NULL,
+                     vrpn_Endpoint_IP * (* epa) (vrpn_Connection *,
+                       vrpn_int32 *) = allocateEndpoint);
+
+    virtual ~vrpn_Connection_IP (void);
+
+    // This is similar to check connection except that it can be
+    // used to receive requests from before a server starts up
+    virtual int connect_to_client (const char * machine, int port);
+
+    // Call each time through program main loop to handle receiving any
+    // incoming messages and sending any packed messages.
+    // Returns -1 when connection dropped due to error, 0 otherwise.
+    // (only returns -1 once per connection drop).
+    // Optional argument is TOTAL time to block on select() calls;
+    // there may be multiple calls to select() per call to mainloop(),
+    // and this timeout will be divided evenly between them.
+    virtual int mainloop (const struct timeval * timeout = NULL);
+
+  protected:
+
+    // If this value is greater than zero, the connection should stop
+    // looking for new messages on a given endpoint after this many
+    // are found.
+    vrpn_uint32 d_stop_processing_messages_after;
+
+  protected:
+
+    friend VRPN_API vrpn_Connection * vrpn_get_connection_by_name (
+        const char * cname,
+        const char * local_in_logfile_name,
+        const char * local_out_logfile_name,
+        const char * remote_in_logfile_name,
+        const char * remote_out_logfile_name,
+        const char * NIC_IPaddress,
+        bool force_connection);
+    friend VRPN_API vrpn_Connection * vrpn_create_server_connection (
+	const char * cname,
+	const char * local_in_logfile_name,
+	const char * local_out_logfile_name);
+
+    // Only used for a vrpn_Connection that awaits incoming connections
+    int listen_udp_sock;	// UDP Connect requests come here
+    int listen_tcp_sock;	// TCP Connection requests come here
+
+    // Routines that handle system messages
+    static int VRPN_CALLBACK handle_UDP_message (void * userdata, vrpn_HANDLERPARAM p);
+
+    virtual void init (void);	// Called by all constructors
+
+    // send pending report, clear the buffer.
+    // This function was protected, now is public, so we can use it
+    // to send out intermediate results without calling mainloop
+    virtual int send_pending_reports (void);
+
+    /// This is called by a server-side process to see if there have
+    /// been any UDP packets come in asking for a connection. If there
+    /// are, it connects the TCP port and then calls handle_connection().
+    virtual void server_check_for_incoming_connections
+                  (const struct timeval * timeout = NULL);
+
+    // This routine is called by a server-side connection when a
+    // new connection has just been established, and the tcp port
+    // has been connected to it.
+    virtual void handle_connection (int whichEndpoint);
+
+    virtual void drop_connection (int whichEndpoint);
+
+    char * d_NIC_IP;
+};
+
+// Create a client connection of arbitrary type (VRPN UDP/TCP, TCP,
+// File, MPI).
+// WARNING:  May not be thread safe.
 // If no IP address for the NIC to use is specified, uses the default
-// NIC.
+// NIC.  If the force_reopen flag is set, a new connection will be
+// made even if there was already one to that server.
+// When done with the object, call removeReference() on it (which will
+// delete it if there are no other references).
 VRPN_API vrpn_Connection * vrpn_get_connection_by_name (
     const char * cname,
     const char * local_in_logfile_name = NULL,
     const char * local_out_logfile_name = NULL,
     const char * remote_in_logfile_name = NULL,
     const char * remote_out_logfile_name = NULL,
-    const char * NIC_IPaddress       = NULL);
+    const char * NIC_IPaddress = NULL,
+    bool force_reopen = false);
 
+// Create a server connection of arbitrary type (VRPN UDP/TCP, MPI).
+// Returns NULL if the name is not understood or the connection cannot
+// be created.
+// WARNING:  May not be thread safe.
+// To create a VRPN TCP/UDP server, use a name like:
+//    vrpn:machine_name_or_ip:port
+//    machine_name_or_ip:port
+//    machine_name_or_ip
+// To create an MPI server, use a name like:
+//    mpi:MPI_COMM_WORLD
+//    mpi:comm_number
+// When done with the object, call removeReference() on it (which will
+// delete it if there are no other references).
+VRPN_API vrpn_Connection *vrpn_create_server_connection (
+    const char * cname,
+    const char * local_in_logfile_name = NULL,
+    const char * local_out_logfile_name = NULL);
+
+// Lets you make one with the default settings, or just ask for a specific
+// port number on the default NIC on this machine.
+inline VRPN_API vrpn_Connection *vrpn_create_server_connection (
+    int port = vrpn_DEFAULT_LISTEN_PORT_NO,
+    const char * local_in_logfile_name = NULL,
+    const char * local_out_logfile_name = NULL)
+{
+  char  name[64];
+  sprintf(name, "localhost:%d", port);
+  return vrpn_create_server_connection(name, local_in_logfile_name, local_out_logfile_name);
+}
 
 // Utility routines to parse names (<service>@<location specifier>)
 // Both return new char [], and it is the caller's responsibility

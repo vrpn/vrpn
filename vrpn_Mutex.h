@@ -354,7 +354,6 @@ class VRPN_API vrpn_PeerMutex {
       ///< This constructor reuses a SERVER connection for the mutex.
       ///< BUG BUG BUG - do not use this constructor;  it does not reliably
       ///< resolve race conditions.
-
 };
 
 

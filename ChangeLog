@@ -1,3 +1,32 @@
+2008-03_04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	WARNING: The changes made in this commit require any code that
+		created a vrpn_Connection (server connection) using its
+		constructor to be changed to use the new function
+		vrpn_create_server_connection() instead.  This is required
+		because a base-class constructor cannot create and return
+		an object of a derived class.
+
+	* vrpn_Connection.h : Pulling the IP-specific portions of the
+		vrpn_Connection object into a separate class so that we
+		can add an MPI implementation.
+		- Added another parameter to vrpn_get_connection_by_name
+		to force it to open a new connection even if there was
+		already one there.
+		- Should no longer create a vrpn_Connection directly; either
+		create a specific subclass (vrpn_Connection_IP) or else
+		use the vrpn_create_server_connection() function to make
+		one of arbitrary type.
+		- Made vrpn_Connection_Generic the base type.
+	* vrpn_Connection.C : Same.
+	* vrpn_Mutex.C : Makes an IP-based connection to listen on.
+	* vrpn_ForwarderController.C : Makes an IP-based connection to
+		forward on.
+	* vrpn_FileConnection.C : Modified to use the new base class.
+	* vrpn_Imager_Stream_Buffer.C : Calls vrpn_get_connection_by_name
+		rather than calling base-class constructor.
+	* vrpn_Auxilliary_Logger.C : Same.
+
 2008-03-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_3DConnexion.C : Fixed a bug reported by Patric Schmitz

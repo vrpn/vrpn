@@ -22,7 +22,7 @@ namespace {
     };
 }
 vrpn_inertiamouse::vrpn_inertiamouse (const char* name, 
-                                      vrpn_Connection* c,
+                                      vrpn_Connection * c,
                                       const char* port, 
                                       int baud_rate)
     : vrpn_Serial_Analog (name, c, port, baud_rate)
@@ -51,7 +51,7 @@ vrpn_inertiamouse::vrpn_inertiamouse (const char* name,
 // factory method
 vrpn_inertiamouse* 
 vrpn_inertiamouse::create (const char* name, 
-        vrpn_Connection* c,
+        vrpn_Connection * c,
         const char* port, 
         int baud_rate)
 {

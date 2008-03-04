@@ -25,15 +25,16 @@
 #include <vrpn_Button.h>
 #include <vrpn_Analog.h>
 #include <vrpn_Dial.h>
+#include <vrpn_Text.h>
 
 int done = 0;	    // Signals that the program should exit
 
 //-------------------------------------
 // This section contains the data structure that holds information on
 // the devices that are created.  For each named device, a remote of each
-// type (tracker, button, analog, dial) is created.  A particular device
+// type (tracker, button, analog, dial, text) is created.  A particular device
 // may only report a subset of these values, but that doesn't hurt anything --
-// there simple are no messages of the other types to receive and so
+// there simply will be no messages of the other types to receive and so
 // nothing is printed.
 
 class device_info {
@@ -43,6 +44,7 @@ class device_info {
 	vrpn_Button_Remote  *btn;
 	vrpn_Analog_Remote  *ana;
 	vrpn_Dial_Remote    *dial;
+        vrpn_Text_Receiver  *text;
 };
 const unsigned MAX_DEVICES = 50;
 
@@ -152,6 +154,16 @@ void	VRPN_CALLBACK handle_dial (void *userdata, const vrpn_DIALCB d)
 	name, d.dial, d.change);
 }
 
+void	VRPN_CALLBACK handle_text (void *userdata, const vrpn_TEXTCB t)
+{
+    const char *name = (const char *)userdata;
+
+    // Warnings and errors are printed by the system text printer.
+    if (t.type == vrpn_TEXT_NORMAL) {
+      printf("%s: Text message: %s\n", name, t.message);
+    }
+}
+
 
 // WARNING: On Windows systems, this handler is called in a separate
 // thread from the main program (this differs from Unix).  To avoid all
@@ -230,12 +242,14 @@ int main (int argc, char * argv [])
 	// Name the device and open it as everything
 	dev = &device_list[num_devices];
 	dev->name = argv[i];
+	dev->tkr = new vrpn_Tracker_Remote(dev->name);
 	dev->ana = new vrpn_Analog_Remote(dev->name);
 	dev->btn = new vrpn_Button_Remote(dev->name);
 	dev->dial = new vrpn_Dial_Remote(dev->name);
-	dev->tkr = new vrpn_Tracker_Remote(dev->name);
+        dev->text = new vrpn_Text_Receiver(dev->name);
 	if ( (dev->ana == NULL) || (dev->btn == NULL) ||
-	    (dev->dial == NULL) || (dev->tkr == NULL) ) {
+	    (dev->dial == NULL) || (dev->tkr == NULL) ||
+            (dev->text == NULL) ) {
 	    fprintf(stderr,"Error opening %s\n", dev->name);
 	    return -1;
 	} else {
@@ -292,12 +306,14 @@ int main (int argc, char * argv [])
 	}
 
 	if (print_for_text) {
-	  printf(" Warning/Error");
+	  printf(" Text");
+	  dev->text->register_message_handler(dev->name, handle_text);
 	} else {
 	  vrpn_System_TextPrinter.remove_object(dev->tkr);
 	  vrpn_System_TextPrinter.remove_object(dev->btn);
 	  vrpn_System_TextPrinter.remove_object(dev->ana);
 	  vrpn_System_TextPrinter.remove_object(dev->dial);
+	  vrpn_System_TextPrinter.remove_object(dev->text);
 	}
 
 	printf(".\n");
@@ -326,6 +342,7 @@ int main (int argc, char * argv [])
 	  device_list[i].btn->mainloop();
 	  device_list[i].ana->mainloop();
 	  device_list[i].dial->mainloop();
+	  device_list[i].text->mainloop();
       }
 
       // Sleep for 1ms so we don't eat the CPU

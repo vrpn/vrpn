@@ -193,7 +193,8 @@ $(OBJ_DIR)/%.o:	%.cpp
 
 INSTALL_APPS := vrpn_server test_vrpn
 APPS := $(INSTALL_APPS) client_and_server test_mutex test_peerMutex \
-test_radamec_spi test_analogfly testimager_server test_auxiliary_logger
+test_radamec_spi test_analogfly testimager_server test_auxiliary_logger \
+test_logging
 # testSharedObject
 
 all: $(APPS)
@@ -206,6 +207,9 @@ test_radamec_spi:	$(OBJ_DIR)/test_radamec_spi
 
 .PHONY:	testimager_server
 testimager_server:	$(OBJ_DIR)/testimager_server
+
+.PHONY:	test_logging
+test_logging:	$(OBJ_DIR)/test_logging
 
 .PHONY:	test_auxiliary_logger
 test_auxiliary_logger:	$(OBJ_DIR)/test_auxiliary_logger
@@ -284,6 +288,12 @@ $(OBJ_DIR)/test_auxiliary_logger: $(OBJ_DIR)/test_auxiliary_logger.o  \
 			 $(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/test_auxiliary_logger \
 		$(OBJ_DIR)/test_auxiliary_logger.o \
+		$(VRPN_LIBS) $(GL) -lquat $(SYSLIBS) -lm
+
+$(OBJ_DIR)/test_logging: $(OBJ_DIR)/test_logging.o  \
+			 $(LIB_DIR)/libvrpnserver.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/test_logging \
+		$(OBJ_DIR)/test_logging.o \
 		$(VRPN_LIBS) $(GL) -lquat $(SYSLIBS) -lm
 
 $(OBJ_DIR)/test_analogfly: $(OBJ_DIR)/test_analogfly.o  \

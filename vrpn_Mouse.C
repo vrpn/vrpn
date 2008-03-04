@@ -29,7 +29,7 @@
 
 ///////////////////////////////////////////////////////////////////////////
 
-vrpn_Mouse::vrpn_Mouse( const char* name, vrpn_Connection* cxn ) :
+vrpn_Mouse::vrpn_Mouse( const char* name, vrpn_Connection * cxn ) :
 	vrpn_Analog( name, cxn ),
 	vrpn_Button_Filter( name, cxn )
 {

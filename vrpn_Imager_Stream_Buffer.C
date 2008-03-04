@@ -572,19 +572,18 @@ vrpn_Connection *vrpn_Imager_Stream_Buffer::open_new_log_connection(
   if ( (where_at = strrchr(cname, '@')) != NULL) {
 	  cname = where_at+1;	// Chop off the front of the name
   }
-  int port = vrpn_get_port_number(cname);
-  ret = new vrpn_Connection (cname, port,
-	  local_in_logfile_name, local_out_logfile_name,
-	  remote_in_logfile_name, remote_out_logfile_name);
-  if ( !ret->doing_okay() ) {
+
+  // Pass "true" to force_connection so that it will open a new
+  // connection even if we already have one with that name.
+  ret = vrpn_get_connection_by_name(where_at,
+    local_in_logfile_name, local_out_logfile_name, remote_in_logfile_name, remote_out_logfile_name,
+    NULL, true);
+  if ( !ret || !ret->doing_okay() ) {
     struct timeval now;
     vrpn_gettimeofday(&now, NULL);
     fprintf(stderr, "vrpn_Imager_Stream_Buffer::open_new_log_connection: Could not create connection (files already exist?)", now, vrpn_TEXT_ERROR);
-    delete ret;
-    return NULL;
+    if (ret) { delete ret; return NULL; }
   }
-  ret->setAutoDeleteStatus(true);	// destroy when refcount hits zero.
-  ret->addReference();
 
   return ret;
 }

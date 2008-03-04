@@ -13,7 +13,9 @@ int main (int argc, char ** argv) {
     portno = atoi(argv[2]);
   }
 
-  c = new vrpn_Connection (portno);
+  char con_name[512];
+  sprintf(con_name, "localhost:%d", portno);
+  c = vrpn_create_server_connection(con_name);
   me = new vrpn_Mutex_Server (argv[1], c);
 
   while (1) {

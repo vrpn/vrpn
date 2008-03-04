@@ -218,7 +218,7 @@ protected:
 };
 
 static vrpn_Clock_Drift_Estimator *g_clock = NULL;
-static vrpn_Connection            *g_connection = NULL;
+static vrpn_Connection    *g_connection = NULL;
 static vrpn_Tracker_NULL          *g_tracker = NULL;
 
 // WARNING: On Windows systems, this handler is called in a separate
@@ -249,7 +249,7 @@ int main (int argc, char * argv [])
   } else {
     if (strcmp(argv[1], "LOCAL") == 0) {
       printf("Opening local server on dedicated connection\n");
-      g_connection = new vrpn_Connection();
+      g_connection = vrpn_create_server_connection();
       g_tracker = new vrpn_Tracker_NULL("Tracker0", g_connection);
       g_clock = new vrpn_Clock_Drift_Estimator("Tracker0@localhost", 0.01, 5);
     } else {

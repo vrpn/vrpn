@@ -39,7 +39,7 @@ bool vrpn_Poser_Analog::setup_channel(vrpn_PA_fullaxis *full)
     return true;
 }
 
-vrpn_Poser_Analog::vrpn_Poser_Analog(const char* name, vrpn_Connection* c, vrpn_Poser_AnalogParam* p, bool act_as_tracker) :
+vrpn_Poser_Analog::vrpn_Poser_Analog(const char* name, vrpn_Connection * c, vrpn_Poser_AnalogParam* p, bool act_as_tracker) :
     vrpn_Poser(name, c),
     vrpn_Tracker(name, c),
     d_act_as_tracker(act_as_tracker)
