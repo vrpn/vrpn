@@ -1,5 +1,10 @@
 2008-03_04  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Configure.h : Turned off DIRECTSHOW in the default
+		configuration.
+
+2008-03_04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	WARNING: The changes made in this commit require any code that
 		created a vrpn_Connection (server connection) using its
 		constructor to be changed to use the new function
