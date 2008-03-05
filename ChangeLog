@@ -1,5 +1,13 @@
 2008-03_04  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Connection.h : Added another optional parameter to the
+		helper version of vrpn_create_server_connection() so
+		that it matches the constructor arguments from the old
+		vrpn_Connection() server constructor to make it easier to
+		port existing servers.
+
+2008-03_04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Configure.h : Turned off DIRECTSHOW in the default
 		configuration.
 

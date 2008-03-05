@@ -828,14 +828,21 @@ VRPN_API vrpn_Connection *vrpn_create_server_connection (
     const char * local_out_logfile_name = NULL);
 
 // Lets you make one with the default settings, or just ask for a specific
-// port number on the default NIC on this machine.
+// port number on the default NIC on this machine.  This matches the
+// signature on the old constructor to make it easier to port existing
+// servers.
 inline VRPN_API vrpn_Connection *vrpn_create_server_connection (
     int port = vrpn_DEFAULT_LISTEN_PORT_NO,
     const char * local_in_logfile_name = NULL,
-    const char * local_out_logfile_name = NULL)
+    const char * local_out_logfile_name = NULL,
+    const char * NIC_NAME = NULL)
 {
-  char  name[64];
-  sprintf(name, "localhost:%d", port);
+  char  name[256];
+  if (NIC_NAME == NULL) {
+    sprintf(name, "localhost:%d", port);
+  } else {
+    sprintf(name, "%s:%d", NIC_NAME, port);
+  }
   return vrpn_create_server_connection(name, local_in_logfile_name, local_out_logfile_name);
 }
 
