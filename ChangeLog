@@ -1,5 +1,11 @@
 2008-03_09  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_JoyWin32.C : Added another error check submitted by
+		M. Casas Sanchez at Space Application Services in
+		Belgium.
+
+2008-03_09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Connection.h : Making it so that specifying a blank
 		NIC name results in opening the default NIC.
 	* vrpn_Connection.C : Same.

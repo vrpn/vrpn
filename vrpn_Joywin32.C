@@ -105,6 +105,10 @@ vrpn_Joywin32::vrpn_Joywin32 (const char * name, vrpn_Connection * c, vrpn_uint8
 			fprintf(stderr, "No valid joystick driver.\n");
 			_status = STATUS_BROKEN;
 			return;									// Return failure
+                case JOYERR_PARMS:
+                        fprintf(stderr, "Bad joystick parameters.\n");
+                        _status = STATUS_BROKEN;
+                        return;	                                                                // return failure
 		case JOYERR_NOCANDO:								// Unknown error, try restarting
 			fprintf(stderr, "Couldn't capture joystick input, try restarting.\n");
 			_status = STATUS_BROKEN;
