@@ -1,3 +1,10 @@
+2008-03-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg : Adding entry for vrpn_Tracker_NDI_Polaris
+		submitted by Sharif Razzaque from InnerOptic.
+	* vrpn_Generic_server_object.C : Same.
+	* vrpn_Generic_server_object.h : Same.
+
 2008-03-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.C : Changing the way the server connection is created so

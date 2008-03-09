@@ -72,6 +72,7 @@
 #include "vrpn_3DConnexion.h"
 #include "vrpn_Keyboard.h"
 #include "vrpn_Tracker_MotionNode.h"
+#include "vrpn_Tracker_NDI_Polaris.h"
 
 // BUW additions
 #include "vrpn_Atmel.h"
@@ -96,6 +97,7 @@ const int VRPN_GSO_MAX_MAGELLANSUSB =         8;
 const int VRPN_GSO_MAX_SPACEBALLS =           8;
 const int VRPN_GSO_MAX_IBOXES =               8;
 const int VRPN_GSO_MAX_DIALS =                8;
+const int VRPN_GSO_MAX_NDI_POLARIS_RIGIDBODIES=20; //FIXME find out from the NDI specs if there is a maximum; 
 #ifdef VRPN_INCLUDE_TIMECODE_SERVER
 const int VRPN_GSO_MAX_TIMECODE_GENERATORS =  8;
 #endif
@@ -257,6 +259,7 @@ protected:
   int setup_Analog_USDigital_A2 (char * & pch, char * line, FILE * config_file) ;
   int setup_Button_NI_DIO24 (char * & pch, char * line, FILE * config_file) ;
   int setup_Tracker_PhaseSpace (char * & pch, char * line, FILE * config_file) ;
+  int setup_Tracker_NDI_Polaris (char * & pch, char * line, FILE * config_file) ;
   int setup_Logger (char * & pch, char * line, FILE * config_file) ;
   int setup_ImageStream (char * & pch, char * line, FILE * config_file) ;
   int setup_Xkeys_Desktop (char * & pch, char * line, FILE * config_file) ;

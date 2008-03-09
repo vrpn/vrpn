@@ -3329,6 +3329,56 @@ int vrpn_Generic_Server_Object::setup_Tracker_PhaseSpace (char * & pch, char * l
   return 0;
 }
 
+int vrpn_Generic_Server_Object::setup_Tracker_NDI_Polaris (char * & pch, char * line, FILE * config_file) {
+	char trackerName[LINESIZE];
+	char device[LINESIZE];
+	int numRigidBodies;
+	char* rigidBodyFileNames[VRPN_GSO_MAX_NDI_POLARIS_RIGIDBODIES];
+	
+	
+	//get tracker name and device
+	if( sscanf(line,"vrpn_Tracker_NDI_Polaris %s %s %d",trackerName,device,&numRigidBodies) < 3)
+    {
+		fprintf(stderr,"Bad vrpn_Tracker_NDI_Polaris line: %s\n", line);
+		return -1;
+    }
+	printf("DEBUG Tracker_NDI_Polaris: num of rigidbodies %d\n",numRigidBodies);
+	
+	//parse the filename for each rigid body
+	int rbNum;
+	for (rbNum=0; rbNum<numRigidBodies; rbNum++ ) {
+		fgets(line, LINESIZE, config_file); //advance to next line of config file
+		rigidBodyFileNames[rbNum]= new char[LINESIZE]; //allocate string for filename
+		if (sscanf(line,"%s", rigidBodyFileNames[rbNum])!=1) {
+			fprintf(stderr,"Tracker_NDI_Polaris: error reading .rom filename #%d from config file in line: %s\n",rbNum,line);
+			return -1;
+		} else { 
+			printf("DEBUG Tracker_NDI_Polaris: filename >%s<\n",rigidBodyFileNames[rbNum]);
+		}
+		
+	}
+	
+	// Make sure there's room for a new tracker
+	if (num_trackers >= VRPN_GSO_MAX_TRACKERS) {
+		fprintf(stderr,"Too many trackers in config file");
+		return -1;
+	}
+	
+	vrpn_Tracker_NDI_Polaris* nditracker =  new vrpn_Tracker_NDI_Polaris(trackerName, connection, device,numRigidBodies,(const char **) rigidBodyFileNames);
+	if (nditracker==NULL) {
+		fprintf(stderr,"Tracker_NDI_Polaris: error initializing tracker object\n");
+		return -1;
+	}
+	trackers[num_trackers]=nditracker;
+	num_trackers++;
+	
+	//free the .rom filename strings
+	for (rbNum=0; rbNum<numRigidBodies; rbNum++ ) {	
+		delete(rigidBodyFileNames[rbNum]);
+	}
+	return(0); //success
+}
+
 int vrpn_Generic_Server_Object::setup_Logger(char * & pch, char * line, FILE * config_file) {
 
   char s2 [LINESIZE], s3 [LINESIZE];
@@ -3802,6 +3852,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
               CHECK(setup_Tracker_Dyna);
           } else if (isit("vrpn_Tracker_Fastrak")) {
               CHECK(setup_Tracker_Fastrak);
+		  } else if (isit("vrpn_Tracker_NDI_Polaris")) {
+              CHECK(setup_Tracker_NDI_Polaris);
           } else if (isit("vrpn_Tracker_Liberty")) {
               CHECK(setup_Tracker_Liberty);
           } else if (isit("vrpn_Tracker_3Space")) {
