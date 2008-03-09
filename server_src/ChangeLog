@@ -1,5 +1,12 @@
 2008-03-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Generic_server_object.C : Better parser
+		for AnalogFly line that can handle the
+		case where only some of the lines are present.
+		Submitted by Jan Ciger.
+
+2008-03-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn.cfg : Adding entry for vrpn_Tracker_NDI_Polaris
 		submitted by Sharif Razzaque from InnerOptic.
 	* vrpn_Generic_server_object.C : Same.

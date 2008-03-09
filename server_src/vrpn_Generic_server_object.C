@@ -357,153 +357,166 @@ int vrpn_Generic_Server_Object::setup_JoyFly (char * & pch, char * line, FILE * 
 // from, and the axis to fill in are passed as parameters. It returns 0 on success
 // and -1 on failure.
 
-int	vrpn_Generic_Server_Object::get_AFline(FILE *config_file, char *axis_name, vrpn_TAF_axis *axis)
+int vrpn_Generic_Server_Object::get_AFline(char *line, vrpn_TAF_axis *axis)
 {
-	char	line[LINESIZE];
-	char	_axis_name[LINESIZE];
-	char	*name = new char[LINESIZE];	// We need this to stay around for the param
-	int	channel;
-	float	offset, thresh, power, scale;
+    char    _axis_name[LINESIZE];
+    char *name = new char[LINESIZE]; // We need this to stay around for the param
+    int channel;
+    float   offset, thresh, power, scale;
 
-	// Read in the line
-	if (fgets(line, LINESIZE, config_file) == NULL) {
-		perror("AnalogFly Axis: Can't read axis");
-		return -1;
-	}
+    // Get the values from the line
+    if (sscanf(line, "%511s%511s%d%g%g%g%g", _axis_name, name,
+            &channel, &offset, &thresh,&scale,&power) != 7) {
+        fprintf(stderr,"AnalogFly Axis: Bad axis line\n");
+        return -1;
+    }
 
-	// Get the values from the line
-	if (sscanf(line, "%511s%511s%d%g%g%g%g", _axis_name, name,
-			&channel, &offset, &thresh,&scale,&power) != 7) {
-		fprintf(stderr,"AnalogFly Axis: Bad axis line\n");
-		return -1;
-	}
+    axis->name = name;
+    axis->channel = channel;
+    axis->offset = offset;
+    axis->thresh = thresh;
+    axis->scale = scale;
+    axis->power = power;
 
-	// Check to make sure the name of the line matches
-	if (strcmp(_axis_name, axis_name) != 0) {
-		fprintf(stderr,"AnalogFly Axis: wrong axis: wanted %s, got %s)\n",
-			axis_name, name);
-		return -1;
-	}
-
-	// Fill in the values if we didn't get the name "NULL". Otherwise, just
-	// leave them as they are, and they will have no effect.
-	if (strcmp(name,"NULL") != 0) {
-		axis->name = name;
-		axis->channel = channel;  
-		axis->offset = offset;
-		axis->thresh = thresh;
-		axis->scale = scale;
-		axis->power = power;
-	}
-
-	return 0;
+    return 0;
 }
 
-int vrpn_Generic_Server_Object::setup_Tracker_AnalogFly (char * & pch, char * line, FILE * config_file) {
-    char s2 [LINESIZE], s3 [LINESIZE], s4 [LINESIZE];
+int vrpn_Generic_Server_Object::setup_Tracker_AnalogFly (char * & pch, char * line, FILE * config_file)
+{
+    char s2 [LINESIZE], s3 [LINESIZE];
     int i1;
     float f1;
     vrpn_Tracker_AnalogFlyParam     p;
-    vrpn_bool	absolute;
+    vrpn_bool    absolute;
 
     next();
+
     if (sscanf(pch, "%511s%g%511s",s2,&f1,s3) != 3) {
-            fprintf(stderr, "Bad vrpn_Tracker_AnalogFly line: %s\n",
-		line);
-            return -1;
+        fprintf(stderr, "Bad vrpn_Tracker_AnalogFly line: %s\n", line);
+        return -1;
     }
 
     // See if this should be absolute or differential
     if (strcmp(s3, "absolute") == 0) {
-	absolute = vrpn_true;
+        absolute = vrpn_true;
     } else if (strcmp(s3, "differential") == 0) {
-	absolute = vrpn_false;
+        absolute = vrpn_false;
     } else {
-	fprintf(stderr,"vrpn_Tracker_AnalogFly: Expected 'absolute' or 'differential'\n");
-	fprintf(stderr,"   but got '%s'\n",s3);
-	return -1;
+        fprintf(stderr,"vrpn_Tracker_AnalogFly: Expected 'absolute' or 'differential'\n");
+        fprintf(stderr,"   but got '%s'\n",s3);
+        return -1;
     }
 
     // Make sure there's room for a new tracker
     if (num_trackers >= VRPN_GSO_MAX_TRACKERS) {
-      fprintf(stderr,"Too many trackers in config file");
-      return -1;
+        fprintf(stderr,"Too many trackers in config file");
+        return -1;
     }
 
     if (verbose) {
-      printf("Opening vrpn_Tracker_AnalogFly: "
-             "%s with update rate %g\n",s2,f1);
+        printf("Opening vrpn_Tracker_AnalogFly: "
+               "%s with update rate %g\n",s2,f1);
     }
 
     // Scan the following lines in the configuration file to fill
     // in the start-up parameters for the different axis.
 
-    if (get_AFline(config_file,"X", &p.x)) {
-            fprintf(stderr,"Can't read X line for AnalogFly\n");
+    // parse lines until an empty line is encountered
+    while(1)
+    {
+        char line[LINESIZE];
+
+        // Read in the line
+        if (fgets(line, LINESIZE, config_file) == NULL)
+        {
+            perror("AnalogFly Can't read line!");
             return -1;
-    }
-    
-    if (get_AFline(config_file,"Y", &p.y)) {
-            fprintf(stderr,"Can't read Y line for AnalogFly\n");
-            return -1;
+        }
+
+        // if it is an empty line, finish parsing
+        if(line[0] == '\n')
+            break;
+
+        // get the first token
+        char tok[LINESIZE];
+        sscanf(line, "%s", tok);
+
+        if(strcmp(tok, "X") == 0)
+        {
+            if (get_AFline(line, &p.x)) {
+                    fprintf(stderr,"Can't read X line for AnalogFly\n");
+                    return -1;
+            }
+
+        } else if(strcmp(tok, "Y") == 0)
+        {
+            if (get_AFline(line, &p.y)) {
+                    fprintf(stderr,"Can't read Y line for AnalogFly\n");
+                    return -1;
+            }
+
+        } else if(strcmp(tok, "Z") == 0)
+        {
+            if (get_AFline(line, &p.z)) {
+                    fprintf(stderr,"Can't read Z line for AnalogFly\n");
+                    return -1;
+            }
+
+        } else if(strcmp(tok, "RX") == 0)
+        {
+            if (get_AFline(line, &p.sx)) {
+                    fprintf(stderr,"Can't read RX line for AnalogFly\n");
+                    return -1;
+            }
+
+        } else if(strcmp(tok, "RY") == 0)
+        {
+            if (get_AFline(line, &p.sy)) {
+                    fprintf(stderr,"Can't read RY line for AnalogFly\n");
+                    return -1;
+            }
+
+        } else if(strcmp(tok, "RZ") == 0)
+        {
+            if (get_AFline(line, &p.sz)) {
+                    fprintf(stderr,"Can't read RZ line for AnalogFly\n");
+                    return -1;
+            }
+
+        } else if(strcmp(tok, "RESET") == 0)
+        {
+            // Read the reset line
+            if (sscanf(line, "RESET %511s%d", s3, &i1) != 2) {
+                fprintf(stderr,"Bad RESET line in AnalogFly: %s\n",line);
+                return -1;
+            }
+
+            if (strcmp(s3,"NULL") != 0) {
+                p.reset_name = strdup(s3);
+                p.reset_which = i1;
+            }
+
+        } else if(strcmp(tok, "CLUTCH") == 0)
+        {
+            if (sscanf(line, "CLUTCH %511s%d", s3, &i1) != 2) {
+                    fprintf(stderr,"Bad CLUTCH line in AnalogFly: %s\n",line);
+                    return -1;
+            }
+
+            if (strcmp(s3,"NULL") != 0) {
+                    p.clutch_name = strdup(s3);
+                    p.clutch_which = i1;
+            }
+        }
     }
 
-    if (get_AFline(config_file,"Z", &p.z)) {
-            fprintf(stderr,"Can't read Z line for AnalogFly\n");
-            return -1;
-    }
-
-    if (get_AFline(config_file,"RX", &p.sx)) {
-            fprintf(stderr,"Can't read RX line for AnalogFly\n");
-            return -1;
-    }
-
-    if (get_AFline(config_file,"RY", &p.sy)) {
-            fprintf(stderr,"Can't read RY line for AnalogFly\n");
-            return -1;
-    }
-
-    if (get_AFline(config_file,"RZ", &p.sz)) {
-            fprintf(stderr,"Can't read RZ line for AnalogFly\n");
-            return -1;
-    }
-
-    // Read the reset line
-    if (fgets(line, LINESIZE, config_file) == NULL) {
-            fprintf(stderr,"Ran past end of config file in AnalogFly\n");
-            return -1;
-    }
-    if (sscanf(line, "RESET %511s%d", s3, &i1) != 2) {
-            fprintf(stderr,"Bad RESET line in AnalogFly: %s\n",line);
-            return -1;
-    }
-    if (strcmp(s3,"NULL") != 0) {
-            p.reset_name = s3;
-            p.reset_which = i1;
-    }
-
-    // Read the clutch line
-    if (fgets(line, LINESIZE, config_file) == NULL) {
-            fprintf(stderr,"Ran past end of config file in AnalogFly\n");
-            return -1;
-    }
-    if (sscanf(line, "CLUTCH %511s%d", s4, &i1) != 2) {
-            fprintf(stderr,"Bad CLUTCH line in AnalogFly: %s\n",line);
-            return -1;
-    }
-    if (strcmp(s4,"NULL") != 0) {
-            p.clutch_name = s4;
-            p.clutch_which = i1;
-    }
-
-    trackers[num_trackers] = new
-       vrpn_Tracker_AnalogFly (s2, connection, &p, f1, absolute);
+    trackers[num_trackers] = new vrpn_Tracker_AnalogFly (s2, connection, &p, f1, absolute);
 
     if (!trackers[num_trackers]) {
-      fprintf(stderr,"Can't create new vrpn_Tracker_AnalogFly\n");
-      return -1;
+        fprintf(stderr,"Can't create new vrpn_Tracker_AnalogFly\n");
+        return -1;
     } else {
-      num_trackers++;
+        num_trackers++;
     }
 
     return 0;
