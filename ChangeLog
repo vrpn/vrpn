@@ -1,5 +1,13 @@
 2008-03_09  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn.dsp : Adding vrpn_Tracker_NDI_Polaris driver submitted
+		by Sharif Razzaque from InnerOptic.
+	* Makefile : Same.
+	* vrpn_Tracker_NDI_Polaris.C : Same.
+	* vrpn_Tracker_NDI_Polaris.h : Same.
+
+2008-03_09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_JoyWin32.C : Added another error check submitted by
 		M. Casas Sanchez at Space Application Services in
 		Belgium.
