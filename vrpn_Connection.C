@@ -6164,12 +6164,15 @@ char * vrpn_copy_machine_name (const char * hostspecifier)
   int len;
   char * tbuf;
 
-  // Skip past the header, if any
+  // Skip past the header, if any; this includes any tcp:// or tcp:
+  // at the beginning of the string.
   nearoffset = header_len(hostspecifier);
 
-  // stop at first occurrence of :<port #> or /<rsh arguments>
+  // stop at first occurrence of :<port #> or /<rsh arguments>.
+  // Note that this may be the beginning of the string, right at
+  // nearoffset.
   faroffset = strcspn(hostspecifier + nearoffset, ":/");
-  len = 1 + (faroffset ? faroffset : strlen(hostspecifier) - nearoffset);
+  len = 1 + (faroffset - nearoffset);
 
   tbuf = new char [len]; //XXX Memory leak, but a small one
   if (!tbuf) {

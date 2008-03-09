@@ -1,3 +1,9 @@
+2008-03_09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.h : Making it so that specifying a blank
+		NIC name results in opening the default NIC.
+	* vrpn_Connection.C : Same.
+
 2008-03_04  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Connection.h : Added another optional parameter to the

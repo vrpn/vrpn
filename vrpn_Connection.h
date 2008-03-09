@@ -817,6 +817,7 @@ VRPN_API vrpn_Connection * vrpn_get_connection_by_name (
 //    vrpn:machine_name_or_ip:port
 //    machine_name_or_ip:port
 //    machine_name_or_ip
+//    :port       (This port on any network card.)
 // To create an MPI server, use a name like:
 //    mpi:MPI_COMM_WORLD
 //    mpi:comm_number
@@ -839,7 +840,7 @@ inline VRPN_API vrpn_Connection *vrpn_create_server_connection (
 {
   char  name[256];
   if (NIC_NAME == NULL) {
-    sprintf(name, "localhost:%d", port);
+    sprintf(name, ":%d", port);
   } else {
     sprintf(name, "%s:%d", NIC_NAME, port);
   }
