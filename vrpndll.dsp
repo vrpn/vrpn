@@ -368,6 +368,10 @@ SOURCE=.\vrpn_Tracker_MotionNode.C
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_Tracker_NDI_Polaris.C
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_Tracker_PhaseSpace.C
 # End Source File
 # Begin Source File
@@ -673,6 +677,10 @@ SOURCE=.\vrpn_Tracker_Liberty.h
 # Begin Source File
 
 SOURCE=.\vrpn_Tracker_MotionNode.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Tracker_NDI_Polaris.h
 # End Source File
 # Begin Source File
 

@@ -1781,6 +1781,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\vrpn_Tracker_NDI_Polaris.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\vrpn_Tracker_PhaseSpace.C"
 				>
 				<FileConfiguration
@@ -2211,6 +2231,10 @@
 			</File>
 			<File
 				RelativePath=".\vrpn_Tracker_MotionNode.h"
+				>
+			</File>
+			<File
+				RelativePath=".\vrpn_Tracker_NDI_Polaris.h"
 				>
 			</File>
 			<File

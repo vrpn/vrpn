@@ -1,5 +1,11 @@
 2008-03_09  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn.vcproj : Added Polaris tracker to VS 2005 project.
+	* vrpndll.vcproj : Same.
+	* vrpndll.dsp : Same.
+
+2008-03_09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn.dsp : Adding vrpn_Tracker_NDI_Polaris driver submitted
 		by Sharif Razzaque from InnerOptic.
 	* Makefile : Same.
