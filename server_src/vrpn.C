@@ -179,7 +179,7 @@ int main (int argc, char * argv[])
   if (g_NICname) {
     sprintf(con_name, "%s:%d", g_NICname, port);
   } else {
-    sprintf(con_name, ":$d", port);
+    sprintf(con_name, ":%d", port);
   }
   connection = vrpn_create_server_connection(con_name, g_inLogName, g_outLogName);
 

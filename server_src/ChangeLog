@@ -1,3 +1,9 @@
+2008-03-25  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_server.C : Fixed typo bug in the connection name
+		creation that kept this from working unless you
+		specified the NIC name.
+
 2008-03-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Generic_server_object.C : Better parser
