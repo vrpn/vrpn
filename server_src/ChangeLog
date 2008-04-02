@@ -1,3 +1,9 @@
+2008-04-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Generic_server_object.h : Added patch from Mike Weiblen to add
+		3DConnexion SpaceExplorer.
+	* vrpn_Generic_server_object.C : Same.
+
 2008-03-25  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_server.C : Fixed typo bug in the connection name

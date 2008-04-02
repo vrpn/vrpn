@@ -3682,6 +3682,36 @@ int vrpn_Generic_Server_Object::setup_3DConnexion_SpaceMouse(char * & pch, char 
   return 0;  // successful completion
 }
 
+int vrpn_Generic_Server_Object::setup_3DConnexion_SpaceExplorer(char * & pch, char * line, FILE * config_file) {
+  char s2 [LINESIZE];
+
+  next();
+  if (sscanf(pch,"%511s",s2)!=1) {
+    fprintf(stderr,"Bad 3DConnexion_SpaceExplorer line: %s\n",line);
+    return -1;
+  }
+
+  // Open the 3DConnexion_Traveler
+  // Make sure there's room for a new button
+  if (num_buttons >= VRPN_GSO_MAX_BUTTONS) {
+    fprintf(stderr,"vrpn_3DConnexion_SpaceExplorer: Too many buttons in config file");
+    return -1;
+  }
+
+  // Open the button
+  if (verbose) {
+    printf("Opening vrpn_3DConnexion_SpaceExplorer %s\n", s2);
+  }
+  if ( (buttons[num_buttons] = new vrpn_3DConnexion_SpaceExplorer(s2, connection)) == NULL ) {
+    fprintf(stderr,"Can't create new vrpn_3DConnexion_SpaceExplorer\n");
+     return -1;
+  } else {
+    num_buttons++;
+  }
+
+  return 0;  // successful completion
+}
+
 int vrpn_Generic_Server_Object::setup_Tracker_MotionNode(char * & pch, char * line, FILE * config_file)
 {
   char name[LINESIZE];
@@ -3949,6 +3979,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
             CHECK(setup_3DConnexion_Navigator);
 	  } else if (isit("vrpn_3DConnexion_Traveler")) {
             CHECK(setup_3DConnexion_Traveler);
+	  } else if (isit("vrpn_3DConnexion_SpaceExplorer")) {
+            CHECK(setup_3DConnexion_SpaceExplorer);
 	  } else if (isit("vrpn_3DConnexion_SpaceMouse")) {
             CHECK(setup_3DConnexion_SpaceMouse);
           } else if (isit("vrpn_Tracker_MotionNode")) {
