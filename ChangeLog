@@ -1,10 +1,16 @@
-2008-03_09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+2008-04-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3DConnexion.h : Added patch from Mike Weiblen to
+		add SpaceExplorer.
+	* vrpn_3DConnexion.C : Same.
+
+2008-03-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.vcproj : Added Polaris tracker to VS 2005 project.
 	* vrpndll.vcproj : Same.
 	* vrpndll.dsp : Same.
 
-2008-03_09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+2008-03-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.dsp : Adding vrpn_Tracker_NDI_Polaris driver submitted
 		by Sharif Razzaque from InnerOptic.
@@ -12,19 +18,19 @@
 	* vrpn_Tracker_NDI_Polaris.C : Same.
 	* vrpn_Tracker_NDI_Polaris.h : Same.
 
-2008-03_09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+2008-03-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_JoyWin32.C : Added another error check submitted by
 		M. Casas Sanchez at Space Application Services in
 		Belgium.
 
-2008-03_09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+2008-03-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Connection.h : Making it so that specifying a blank
 		NIC name results in opening the default NIC.
 	* vrpn_Connection.C : Same.
 
-2008-03_04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+2008-03-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Connection.h : Added another optional parameter to the
 		helper version of vrpn_create_server_connection() so
@@ -32,12 +38,12 @@
 		vrpn_Connection() server constructor to make it easier to
 		port existing servers.
 
-2008-03_04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+2008-03-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Configure.h : Turned off DIRECTSHOW in the default
 		configuration.
 
-2008-03_04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+2008-03-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	WARNING: The changes made in this commit require any code that
 		created a vrpn_Connection (server connection) using its
