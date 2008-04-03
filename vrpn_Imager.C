@@ -283,7 +283,7 @@ bool  vrpn_Imager_Server::send_region_using_base_pointer(vrpn_int16 chanIndex,
 {
   // msgbuf must be float64-aligned!  It is the buffer to send to the client; static to avoid reallocating
   static  vrpn_float64 fbuf [vrpn_CONNECTION_TCP_BUFLEN/sizeof(vrpn_float64)];
-  char	  *msgbuf = (char *) fbuf;
+  char    *msgbuf = reinterpret_cast<char *>(fbuf);
   int	  buflen = sizeof(fbuf);
   struct  timeval timestamp;
 
@@ -399,7 +399,7 @@ bool  vrpn_Imager_Server::send_region_using_base_pointer(vrpn_int16 chanIndex,
       const vrpn_uint8 *copyFrom = rowStart;
       for (unsigned r = rMin; r <= rMax; r++) {
 	for (unsigned c = cMin; c <= cMax; c++) {
-	  *msgbuf = *copyFrom;	//< Copy the current element
+	  *reinterpret_cast<vrpn_uint8*>(msgbuf) = *copyFrom;	//< Copy the current element
 	  msgbuf++;		//< Skip to the next buffer location
 	  copyFrom += colStride;	//< Skip appropriate number of elements
 	}
