@@ -1,3 +1,11 @@
+2008-04_14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Changing comments on when to define the
+		various NATIONAL_INSTRUMENTS flavors.
+	* vrpn.vcproj : Pointing at the new location for NI MX header
+		files.
+	* vrpndll.vrproj : Same.
+
 2008-04_04  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Imager.C : Fixed a signed vs unsigned copy of characters in the

@@ -138,7 +138,9 @@
 // Instructs VRPN library and server to include code that uses
 // the National Instruments Nidaq libary to control analog outputa.
 // Later in this file, we also instruct the compiler to link with
-// the National Instruments libraries if this is defined.
+// the National Instruments libraries if this is defined.  Either or
+// both of these can be defined, depending on which library you
+// need to use.
 //#define	VRPN_USE_NATIONAL_INSTRUMENTS
 //#define	VRPN_USE_NATIONAL_INSTRUMENTS_MX
 
@@ -147,7 +149,9 @@
 // the US Digital SEI/A2 libary to control analog inputs from the
 // A2 absolute encoder.
 // Later in this file, we also instruct the compiler to link with
-// the US Digital library if this is defined.
+// the US Digital library if this is defined.  You also need to
+// define VRPN_USE_NATIONAL_INSTRUMENTS_MX above if you want to
+// use this.
 //#define	VRPN_USE_USDIGITAL
 
 //-----------------------
