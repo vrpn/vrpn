@@ -20,7 +20,8 @@ public:
                           vrpn_Connection *c,
                           const char* device,
                           float frequency,
-                          int readflag);
+                          int readflag,
+                          int slaveflag=0);
 
 
   ~vrpn_Tracker_PhaseSpace();
@@ -43,6 +44,7 @@ protected:
   bool owlRunning;
   float frequency;
   bool readMostRecent;
+  bool slave;
 
   OWLMarker markers[vrpn_PhaseSpace_MAXMARKERS];
   OWLRigid rigids[vrpn_PhaseSpace_MAXRIGIDS];

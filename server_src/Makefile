@@ -160,7 +160,7 @@ ifdef INTERSENSE
 endif
 
 #uncomment the following line to include the PHASESPACE library
-#PHASESPACE := ../../phasespace/libowlsock.so
+#PHASESPACE := -L../../phasespace -lowlsock
 
 ifdef PHASESPACE
 #the rpath option may not work on all platforms, remove it if necessary.

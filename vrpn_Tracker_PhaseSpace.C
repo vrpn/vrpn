@@ -4,14 +4,15 @@
 
 #ifdef VRPN_INCLUDE_PHASESPACE
 
-vrpn_Tracker_PhaseSpace::vrpn_Tracker_PhaseSpace(const char *name, vrpn_Connection *c, const char* device, float frequency,int readflag) 
+vrpn_Tracker_PhaseSpace::vrpn_Tracker_PhaseSpace(const char *name, vrpn_Connection *c, const char* device, float frequency,int readflag, int slave) 
   : vrpn_Tracker(name,c)
 {
 #ifdef DEBUG
   printf("Constructor: vrpn_Tracker_PhaseSpace( %s, %s, %f, %d)\n",name,device,frequency,readflag);
 #endif
 
-
+  this->slave = slave;
+  
   if(d_connection)
     {
       // Register a handler for the update change callback
@@ -28,7 +29,13 @@ vrpn_Tracker_PhaseSpace::vrpn_Tracker_PhaseSpace(const char *name, vrpn_Connecti
 
   this->frequency = frequency;
 
-  if(owlInit(device,0) < 0)
+  int owlflag = 0;
+  if(slave)
+    {
+      owlflag |= OWL_SLAVE ;
+    }
+
+  if(owlInit(device,owlflag) < 0)
     {
       owlRunning = false;      
       return;
@@ -49,14 +56,21 @@ vrpn_Tracker_PhaseSpace::vrpn_Tracker_PhaseSpace(const char *name, vrpn_Connecti
       printf("Unable to query OWL version.\n");
     }
 
- 
-  owlTrackeri(0, OWL_CREATE, OWL_POINT_TRACKER);  //The master point tracker is index 0.  So all rigid trackers will start from 1.
-  if(!owlGetStatus())
+  if(!slave)
     {
-      fprintf(stderr,"Error: Unable to create main point tracker.\n");
-      return;
-    }  
+      
+      owlTrackeri(0, OWL_CREATE, OWL_POINT_TRACKER);  //The master point tracker is index 0.  So all rigid trackers will start from 1.
+      if(!owlGetStatus())
+        {
+          fprintf(stderr,"Error: Unable to create main point tracker.\n");
+          return;
+        }  
+    }
+  else
+    {
 
+      printf("Ignoring tracker creation in slave mode.\n");
+    }
   readMostRecent = readflag ? true : false;
   
 }
@@ -100,6 +114,7 @@ bool vrpn_Tracker_PhaseSpace::addMarker(int sensor,int led_id)
 #endif
 
   if(!owlRunning) return false;
+  if(slave) return false;
 
   owlMarkeri(MARKER(0,sensor),OWL_SET_LED,led_id);
 
@@ -123,6 +138,7 @@ bool vrpn_Tracker_PhaseSpace::addRigidMarker(int sensor, int led_id, float x, fl
 #endif
 
   if(!owlRunning) return false;
+  if(slave) return false;
 
   if(numRigids == 0)
     {
@@ -161,6 +177,7 @@ bool vrpn_Tracker_PhaseSpace::startNewRigidBody(int sensor)
 #endif
 
   if(!owlRunning) return false;
+  if(slave) return false;
 
   numRigids++;
 
@@ -191,22 +208,26 @@ bool vrpn_Tracker_PhaseSpace::enableTracker(bool enable)
   
   if(!owlRunning) return false;
 
-  int option = enable ? OWL_ENABLE : OWL_DISABLE;
-
-  owlTracker(0,option); //enables/disables the point tracker
-
-  if(!owlGetStatus())
+  if(!slave)
     {
-      return false;
-    }
 
-  //enable/disable the rigid trackers
-  for(int i = 1; i <= numRigids; i++)
-    {
-      owlTracker(i,option);
+      int option = enable ? OWL_ENABLE : OWL_DISABLE;
+      
+      owlTracker(0,option); //enables/disables the point tracker
+      
       if(!owlGetStatus())
         {
           return false;
+        }
+      
+      //enable/disable the rigid trackers
+      for(int i = 1; i <= numRigids; i++)
+        {
+          owlTracker(i,option);
+          if(!owlGetStatus())
+            {
+              return false;
+            }
         }
     }
 
@@ -329,6 +350,7 @@ void vrpn_Tracker_PhaseSpace::setFrequency(float freq)
 #ifdef DEBUG
   printf("setFrequency: %f\n",freq);
 #endif
+  //if(slave) return;
 
   if(freq < 0 || freq > OWL_MAX_FREQUENCY)
     {

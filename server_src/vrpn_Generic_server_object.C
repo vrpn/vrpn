@@ -3210,6 +3210,7 @@ int vrpn_Generic_Server_Object::setup_Button_NI_DIO24 (char * & pch, char * line
 
 }    //  setup_Button_NI_DIO24
 
+
 int vrpn_Generic_Server_Object::setup_Tracker_PhaseSpace (char * & pch, char * line, FILE * config_file) 
 {
 #ifdef VRPN_INCLUDE_PHASESPACE
@@ -3218,11 +3219,12 @@ int vrpn_Generic_Server_Object::setup_Tracker_PhaseSpace (char * & pch, char * l
   char device[LINESIZE];
   float framerate = 0;
   int readflag = 0;
+  int slaveflag = 0;
 	
   //get tracker name and device
-  if( sscanf(line,"vrpn_Tracker_PhaseSpace %s %s %f %d",trackerName,device,&framerate,&readflag) < 4)
+  if( sscanf(line,"vrpn_Tracker_PhaseSpace %s %s %f %d %d",trackerName,device,&framerate,&readflag,&slaveflag) < 5)
     {
-      fprintf(stderr,"Bad vrpn_Tracker_PhaseSpace line: %s\n", line);
+      fprintf(stderr,"Bad vrpn_Tracker_PhaseSpace line: %s\nProper format is:  vrpn_Tracker_Phasespace [trackerName] [device] [framerate] [readflag] [slaveflag]\n", line);
       return -1;
     }
         
@@ -3232,7 +3234,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_PhaseSpace (char * & pch, char * l
     return -1;
   }
   
-  vrpn_Tracker_PhaseSpace* pstracker =  new vrpn_Tracker_PhaseSpace(trackerName, connection, device, framerate, readflag);
+  vrpn_Tracker_PhaseSpace* pstracker =  new vrpn_Tracker_PhaseSpace(trackerName, connection, device, framerate, readflag, slaveflag);
 
   if(pstracker == NULL) 
     {
@@ -3250,8 +3252,10 @@ int vrpn_Generic_Server_Object::setup_Tracker_PhaseSpace (char * & pch, char * l
   float y = 0;
   float z = 0;
   bool inTag = false;
- 
+
+
   //read file for markers and rigid body specifications     
+  //Parse these even if they aren't used in slave mode just to consume their place in the input stream.
   while ( fgets(line, LINESIZE, config_file) != NULL ) {  
 
     //cut off comments
