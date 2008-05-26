@@ -1,3 +1,8 @@
+2008-05_26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_AnalogFly.h : Setting clutch name to NULL in the
+		constructor; it was not set before, causing a crash later.
+
 2008-05_09  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Tracker_PhaseSpace.C : Added updates from Lawrence K.

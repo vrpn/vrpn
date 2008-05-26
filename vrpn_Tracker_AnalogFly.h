@@ -42,7 +42,7 @@ class VRPN_API vrpn_Tracker_AnalogFlyParam {
 
     vrpn_Tracker_AnalogFlyParam (void) {
         x.name = y.name = z.name =
-        sx.name = sy.name = sz.name = reset_name = NULL;
+        sx.name = sy.name = sz.name = reset_name = clutch_name = NULL;
     }
 
     /// Translation along each of these three axes
