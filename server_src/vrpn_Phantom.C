@@ -351,9 +351,10 @@ void vrpn_Phantom::resetPHANToM(void)
   phantom = hdInitDevice(HD_DEFAULT_DEVICE);
   if (HD_DEVICE_ERROR(error = hdGetError())) {
       hduPrintError(stderr, &error, "Failed to initialize haptic device");
+      phantom = -1;
+  } else {
+     initHL(phantom);
   }
-
-  initHL(phantom);
 
 #else
   // Ghost 3.0 manual says you don't have to do this
@@ -589,10 +590,12 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
   phantom = hdInitDevice(HD_DEFAULT_DEVICE);
   if (HD_DEVICE_ERROR(error = hdGetError())) {
       hduPrintError(stderr, &error, "Failed to initialize haptic device");
-  }
+      phantom = -1;
+  } else {
 
-  // XXX When this is removed, we lose the fighting
-  initHL(phantom);
+     // XXX When this is removed, we lose the fighting
+     initHL(phantom);
+  }
 #else
   scene->startServoLoop();
 #endif
@@ -601,8 +604,10 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
 vrpn_Phantom::~vrpn_Phantom()
 {
 #ifdef	VRPN_USE_HDAPI
-  tearDownHL();
-  hdDisableDevice(phantom);
+   if (phantom != -1) {
+      tearDownHL();
+      hdDisableDevice(phantom);
+   }
 #endif
 }
 
@@ -691,6 +696,8 @@ void vrpn_Phantom::mainloop(void) {
 	// units for VRPN and store them into local state.
 #ifdef	VRPN_USE_HDAPI
 	HDAPI_state state;
+   // if phantom is null, next call crashes. 
+   if (phantom == -1) return;
 	hdScheduleSynchronous(readDeviceState, &state, HD_MIN_SCHEDULER_PRIORITY);
 
 	// Convert buttons to VRPN.  Debounce them, making sure they have
