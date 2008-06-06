@@ -1,15 +1,20 @@
-2008-05_26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+2008-06-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Adding python_vrpn port from Thiebaut Mochel at the
+		University of Strasborg.
+
+2008-05-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Tracker_AnalogFly.h : Setting clutch name to NULL in the
 		constructor; it was not set before, causing a crash later.
 
-2008-05_09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+2008-05-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Tracker_PhaseSpace.C : Added updates from Lawrence K.
 		at PhaseSpace.
 	* vrpn_Tracker_PhaseSpace.h : Same.
 
-2008-04_14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+2008-04-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Configure.h : Changing comments on when to define the
 		various NATIONAL_INSTRUMENTS flavors.
@@ -17,7 +22,7 @@
 		files.
 	* vrpndll.vrproj : Same.
 
-2008-04_04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+2008-04-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Imager.C : Fixed a signed vs unsigned copy of characters in the
 		non-unity-stride 8-bit copy function.
