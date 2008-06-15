@@ -224,27 +224,26 @@ public:
 
   /// This is the total span of the image in columns;
   // it is how far and in what direction to go from the origin
-  // of the image to the far end of the pixel at the end of
-  // the column that (0,0,0) is in: it is the FAR side of
-  // that pixel, the side opposite the origin.
+  // of the image to one pixel past the pixel at the end of
+  // the column that (0,0,0) is in: this is the total image
+  // width.
   void	get_dCol(vrpn_float64 *dCol) const {
     memcpy(dCol, d_dCol, sizeof(d_dCol));
   }
 
   /// This is the total span of the image in rows;
   // it is how far and in what direction to go from the origin
-  // of the image to the far end of the pixel at the end of
-  // the row that (0,0,0) is in: it is the FAR side of
-  // that pixel, the side opposite the origin.
+  // of the image to one pixel past the pixel at the end of
+  // the row that (0,0,0) is in: this is the total image height.
   void	get_dRow(vrpn_float64 *dRow) const {
     memcpy(dRow, d_dRow, sizeof(d_dRow));
   }
 
   /// This is the total span of the image in depth;
   // it is how far and in what direction to go from the origin
-  // of the image to the far end of the pixel at the end of
-  // the depth pixel that (0,0,0) is in: it is the FAR side of
-  // that pixel, the side opposite the origin.
+  // of the image to one pixel past the pixel at the end of
+  // the depth pixel that (0,0,0) is in: this is the total
+  // image depth.
   void	get_dDepth(vrpn_float64 *dDepth) const {
     memcpy(dDepth, d_dDepth, sizeof(d_dDepth));
   }
@@ -254,7 +253,7 @@ public:
   // space described by this imagerpose.  Note that none of the pixel
   // centers will be at the end of the space, except where the image
   // has no dimension (Z for a 2D image).  Returns false if there is
-  // a problem (coordinates out of bound).
+  // a problem (coordinates out of bounds).
   bool	compute_pixel_center(vrpn_float64 *center, const vrpn_Imager &image,
     vrpn_uint16 col, vrpn_uint16 row, vrpn_uint16 depth = 0);
 
