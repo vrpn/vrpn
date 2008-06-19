@@ -32,6 +32,7 @@
 #include "vrpn_Analog.h"
 #include "vrpn_Button.h"
 #include "vrpn_Analog_Output.h"
+#include "vrpn_Poser.h"
 
 char	*DIAL_NAME = "Dial0";
 char	*TRACKER_NAME = "Tracker0";
@@ -39,6 +40,7 @@ char	*TEXT_NAME = "Text0";
 char	*ANALOG_NAME = "Analog0";
 char	*ANALOG_OUTPUT_NAME = "AnalogOutput0";
 char	*BUTTON_NAME = "Button0";
+char	*POSER_NAME = "Poser0";
 int	CONNECTION_PORT = vrpn_DEFAULT_LISTEN_PORT_NO;	// Port for connection to listen on
 
 // The connection that is used by all of the servers and remotes
@@ -67,6 +69,10 @@ vrpn_Analog_Remote		*rana;
 // The analog output server and remote
 vrpn_Analog_Output_Callback_Server	*sanaout;
 vrpn_Analog_Output_Remote		*ranaout;
+
+// the poser server and remote
+vrpn_Poser_Server* sposer;
+vrpn_Poser_Remote* rposer;
 
 
 /*****************************************************************************
@@ -114,6 +120,21 @@ void	VRPN_CALLBACK handle_button (void *, const vrpn_BUTTONCB b)
 {
 	printf("Button %d is now in state %d\n", b.button, b.state);
 }
+
+
+void	VRPN_CALLBACK handle_poser( void*, const vrpn_POSERCB p )
+{
+	printf( "Poser position/orientation:  (%lf, %lf, %lf)  (%lf, %lf, %lf, %lf)\n", 
+			p.pos[0], p.pos[1], p.pos[2], p.quat[0], p.quat[1], p.quat[2], p.quat[3] );
+}
+
+
+void	VRPN_CALLBACK handle_poser_relative( void*, const vrpn_POSERCB p )
+{
+	printf( "Poser position/orientation relative:  (%lf, %lf, %lf)  (%lf, %lf, %lf, %lf)\n", 
+			p.pos[0], p.pos[1], p.pos[2], p.quat[0], p.quat[1], p.quat[2], p.quat[3] );
+}
+
 
 /*****************************************************************************
  *
@@ -177,6 +198,15 @@ void	create_and_link_analog_output_server(void)
 	sanaout->register_change_handler(NULL, handle_analog_output);
 }
 
+
+void	create_and_link_poser_server( void )
+{
+	sposer = new vrpn_Poser_Server( POSER_NAME, connection );
+	sposer->register_change_handler( NULL, handle_poser );
+	sposer->register_relative_change_handler( NULL, handle_poser_relative );
+}
+
+
 /*****************************************************************************
  *
    Server routines for those devices that rely on application intervention
@@ -227,6 +257,45 @@ void	send_analog_output_once_in_a_while(void)
 		secs = now.tv_sec;
                 val++;
 		ranaout->request_change_channel_value(0, val);
+	}
+}
+
+
+void	send_poser_once_in_a_while( void )
+{
+	static long secs = 0;
+	struct timeval	now;
+	static vrpn_float64 p[3] = { 0, 0, 0 };
+	static vrpn_float64 dp[3] = {0, 0, 0 };
+	static vrpn_float64 q[4] = { 1, 1, 1, 1 };
+	static int count = 0;
+	static bool doRelative = false;
+
+	vrpn_gettimeofday( &now, NULL );
+	if( secs == 0 )
+	{	// First time through
+		secs = now.tv_sec;
+	}
+	if( now.tv_sec - secs >= 1 ) 
+	{
+		if( !doRelative )
+		{
+			// do a pose request
+			p[count%3] += 1;
+			if( p[count%3] > 1 ) p[count%3] = -1;
+			rposer->request_pose( now, p, q );
+			secs = now.tv_sec;
+			count++;
+			doRelative = true;
+		}
+		else
+		{	// do a relative pose request
+			dp[count%3] = 0.25;
+			dp[(count+1)%3] = 0;
+			dp[(count+2)%3] = 0;
+			rposer->request_pose_relative( now, dp, q );
+			doRelative = false;
+		}
 	}
 }
 
@@ -289,6 +358,12 @@ int main (int argc, char * argv [])
 	printf("Analog's name is %s.\n", ANALOG_OUTPUT_NAME);
 	create_and_link_analog_output_server();
 
+	//---------------------------------------------------------------------
+	// open the poser remote
+	rposer = new vrpn_Poser_Remote( POSER_NAME, connection );
+	printf( "Poser's name is %s.\n", POSER_NAME );
+	create_and_link_poser_server();
+
 	/* 
 	 * main interactive loop
 	 */
@@ -311,6 +386,9 @@ int main (int argc, char * argv [])
 		rbtn->mainloop();
 		stkr->mainloop();
 		rtkr->mainloop();
+		send_poser_once_in_a_while();
+		rposer->mainloop();
+		sposer->mainloop();
 		connection->mainloop();
 
 		// Every 2 seconds, delete the old remotes and create new ones
@@ -326,13 +404,15 @@ int main (int argc, char * argv [])
 			delete rbtn;
 			delete rtext;
 			delete rana;
-                        delete sanaout;
+			delete sanaout;
+			delete sposer;
 			create_and_link_tracker_remote();
 			create_and_link_dial_remote();
 			create_and_link_button_remote();
 			create_and_link_text_remote();
 			create_and_link_analog_remote();
 			create_and_link_analog_output_server();
+			create_and_link_poser_server();
 		}
 
 		// Sleep for 1ms each iteration so we don't eat the CPU
