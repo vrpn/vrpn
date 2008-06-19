@@ -124,14 +124,14 @@ void	VRPN_CALLBACK handle_button (void *, const vrpn_BUTTONCB b)
 
 void	VRPN_CALLBACK handle_poser( void*, const vrpn_POSERCB p )
 {
-	printf( "Poser position/orientation:  (%lf, %lf, %lf)  (%lf, %lf, %lf, %lf)\n", 
+	printf( "Poser position/orientation:  (%lf, %lf, %lf) \n\t (%lf, %lf, %lf, %lf)\n", 
 			p.pos[0], p.pos[1], p.pos[2], p.quat[0], p.quat[1], p.quat[2], p.quat[3] );
 }
 
 
 void	VRPN_CALLBACK handle_poser_relative( void*, const vrpn_POSERCB p )
 {
-	printf( "Poser position/orientation relative:  (%lf, %lf, %lf)  (%lf, %lf, %lf, %lf)\n", 
+	printf( "Poser position/orientation relative:  (%lf, %lf, %lf) \n\t (%lf, %lf, %lf, %lf)\n", 
 			p.pos[0], p.pos[1], p.pos[2], p.quat[0], p.quat[1], p.quat[2], p.quat[3] );
 }
 
@@ -269,7 +269,7 @@ void	send_poser_once_in_a_while( void )
 	static vrpn_float64 dp[3] = {0, 0, 0 };
 	static vrpn_float64 q[4] = { 1, 1, 1, 1 };
 	static int count = 0;
-	static bool doRelative = false;
+	static bool doRelative = true;
 
 	vrpn_gettimeofday( &now, NULL );
 	if( secs == 0 )
@@ -284,7 +284,6 @@ void	send_poser_once_in_a_while( void )
 			p[count%3] += 1;
 			if( p[count%3] > 1 ) p[count%3] = -1;
 			rposer->request_pose( now, p, q );
-			secs = now.tv_sec;
 			count++;
 			doRelative = true;
 		}
@@ -296,6 +295,7 @@ void	send_poser_once_in_a_while( void )
 			rposer->request_pose_relative( now, dp, q );
 			doRelative = false;
 		}
+		secs = now.tv_sec;
 	}
 }
 
