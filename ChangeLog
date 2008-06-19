@@ -1,3 +1,9 @@
+2008-06-19  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Poser.h, .C:  added the capability for remote objects
+	to make relative pose & velocity requests and for servers to
+	receive these requests.
+
 2008-06-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Adding python_vrpn port from Thiebaut Mochel at the
