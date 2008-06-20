@@ -1,3 +1,11 @@
+2008-06-20  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_PoserRemote.cpp:  implementation of java native
+	poser-relative methods
+	* vrpn_TextSenderRemote.cpp:  uses the new way of
+	creating vrpn connections
+	* java_vrpn.dsp:  added auxiliary logger files to project.
+
 2008-03-18  David Marshburn  <marshbur@cs.unc.edu>
 
 	* README.txt:  updated build instructions.

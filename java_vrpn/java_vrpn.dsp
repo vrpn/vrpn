@@ -104,6 +104,10 @@ SOURCE=.\vrpn_AnalogRemote.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_AuxiliaryLoggerRemote.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_ButtonRemote.cpp
 # End Source File
 # Begin Source File
@@ -145,6 +149,10 @@ SOURCE=.\vrpn_AnalogOutputRemote.h
 # Begin Source File
 
 SOURCE=.\vrpn_AnalogRemote.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_AuxiliaryLoggerRemote.h
 # End Source File
 # Begin Source File
 

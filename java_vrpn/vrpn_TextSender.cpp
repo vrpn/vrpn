@@ -153,7 +153,7 @@ Java_vrpn_TextSender_init( JNIEnv* env, jobject jobj, jstring jname,
   const char* remote_out_logfile_name = jremoteOutLogfileName == NULL ? NULL :
 	  env->GetStringUTFChars( jremoteOutLogfileName, NULL );
   vrpn_Connection* conn 
-	  = new vrpn_Connection( vrpn_DEFAULT_LISTEN_PORT_NO, local_in_logfile_name, local_out_logfile_name );
+	  = vrpn_create_server_connection( vrpn_DEFAULT_LISTEN_PORT_NO, local_in_logfile_name, local_out_logfile_name );
   vrpn_Text_Sender* t = new vrpn_Text_Sender( name, conn );
 
   env->ReleaseStringUTFChars( jname, name );

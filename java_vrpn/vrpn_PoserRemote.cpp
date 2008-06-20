@@ -229,14 +229,80 @@ Java_vrpn_PoserRemote_requestPose_1native( JNIEnv* env, jobject jobj,
 
 /*
  * Class:     vrpn_PoserRemote
+ * Method:    requestPoseRelative_native
+ * Signature: (JJ[D[D)Z
+ */
+JNIEXPORT jboolean JNICALL 
+Java_vrpn_PoserRemote_requestPoseRelative_1native( JNIEnv* env, jobject jobj, 
+										   jlong jsecs, jlong jusecs, 
+										   jdoubleArray jpositionDelta, jdoubleArray jquat )
+
+{
+  // get the poser pointer
+  vrpn_Poser_Remote* po 
+	  = (vrpn_Poser_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
+  if( po <= 0 )  // this poser is uninitialized or has been shut down already
+  {
+    printf( "Error in native method \"requestPose(long,long,double[],double[])\":  "
+			"the poser is uninitialized or has been shut down.\n" );
+    return false;
+  }
+
+  // check the array lengths
+  if( env->GetArrayLength( jpositionDelta ) != 3 )
+  {
+    printf( "Error in native method \"requestPose(long,long,double[],double[])\":  "
+			"position array was the wrong length.\n" );
+	return false;
+  }
+  if( env->GetArrayLength( jquat ) != 4 )
+  {
+    printf( "Error in native method \"requestPose(long,long,double[],double[])\":  "
+			"quaternion array was the wrong length.\n" );
+	return false;
+  }
+
+  // eventual return value
+  bool retval = true;
+
+  // get the array
+  double* position = env->GetDoubleArrayElements( jpositionDelta, NULL );
+  if( position == NULL )
+  {
+    printf( "Error in native method \"requestPose(long,long,double[],double[])\":  "
+			"couldn't get position in native form.\n" );
+	retval = false;
+  }
+  double* quat = env->GetDoubleArrayElements( jquat, NULL );
+  if( quat == NULL )
+  {
+    printf( "Error in native method \"requestPose(long,long,double[],double[])\":  "
+			"couldn't get quaternion in native form.\n" );
+	retval = false;
+  }
+
+  timeval t;
+  t.tv_sec = (long) jsecs;
+  t.tv_usec = (long) jusecs;
+
+  if( retval == true )
+	  retval = ( 0 != po->request_pose_relative( t, position, quat ) );
+  env->ReleaseDoubleArrayElements( jpositionDelta, position, JNI_ABORT /*mode*/ );
+  env->ReleaseDoubleArrayElements( jquat, quat, JNI_ABORT /*mode*/ );
+  return retval;
+}
+
+
+/*
+ * Class:     vrpn_PoserRemote
  * Method:    requestPoseVelocity_native
  * Signature: (JJ[D[DD)Z
  */
 JNIEXPORT jboolean JNICALL 
-Java_vrpn_PoserRemote_requestPoseVelocity_1native( JNIEnv* env, jobject jobj,  
-										   jlong jsecs, jlong jusecs, 
-										   jdoubleArray jposition, jdoubleArray jquat, 
-										   jdouble jinterval )
+Java_vrpn_PoserRemote_requestVelocity_1native( JNIEnv* env, jobject jobj,
+											   jlong jsecs, jlong jusecs, 
+											   jdoubleArray jvelocity, jdoubleArray jquat, 
+											   jdouble jinterval )
 {
   // get the poser pointer
   vrpn_Poser_Remote* po 
@@ -249,7 +315,7 @@ Java_vrpn_PoserRemote_requestPoseVelocity_1native( JNIEnv* env, jobject jobj,
   }
 
   // check the array lengths
-  if( env->GetArrayLength( jposition ) != 3 )
+  if( env->GetArrayLength( jvelocity ) != 3 )
   {
     printf( "Error in native method \"requestPoseVelocity(long,long,double[],double[],double)\":  "
 			"position array was the wrong length.\n" );
@@ -266,7 +332,7 @@ Java_vrpn_PoserRemote_requestPoseVelocity_1native( JNIEnv* env, jobject jobj,
   bool retval = true;
 
   // get the array
-  double* position = env->GetDoubleArrayElements( jposition, NULL );
+  double* position = env->GetDoubleArrayElements( jvelocity, NULL );
   if( position == NULL )
   {
     printf( "Error in native method \"requestPoseVelocity(long,long,double[],double[],double)\":  "
@@ -287,7 +353,74 @@ Java_vrpn_PoserRemote_requestPoseVelocity_1native( JNIEnv* env, jobject jobj,
 
   if( retval == true )
 	  retval = ( 0 != po->request_pose_velocity( t, position, quat, jinterval ) );
-  env->ReleaseDoubleArrayElements( jposition, position, JNI_ABORT /*mode*/ );
+  env->ReleaseDoubleArrayElements( jvelocity, position, JNI_ABORT /*mode*/ );
+  env->ReleaseDoubleArrayElements( jquat, quat, JNI_ABORT /*mode*/ );
+  return retval;
+}
+
+
+/*
+ * Class:     vrpn_PoserRemote
+ * Method:    requestVelocityRelative_native
+ * Signature: (JJ[D[DD)Z
+ */
+JNIEXPORT jboolean JNICALL 
+Java_vrpn_PoserRemote_requestVelocityRelative_1native( JNIEnv* env, jobject jobj,
+													   jlong jsecs, jlong jusecs, 
+													   jdoubleArray jvelocityDelta, 
+													   jdoubleArray jquat, 
+													   jdouble jinterval )
+{
+  // get the poser pointer
+  vrpn_Poser_Remote* po 
+	  = (vrpn_Poser_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
+  if( po <= 0 )  // this poser is uninitialized or has been shut down already
+  {
+    printf( "Error in native method \"requestPoseVelocity(long,long,double[],double[],double)\":  "
+			"the poser is uninitialized or has been shut down.\n" );
+    return false;
+  }
+
+  // check the array lengths
+  if( env->GetArrayLength( jvelocityDelta ) != 3 )
+  {
+    printf( "Error in native method \"requestPoseVelocity(long,long,double[],double[],double)\":  "
+			"position array was the wrong length.\n" );
+	return false;
+  }
+  if( env->GetArrayLength( jquat ) != 4 )
+  {
+    printf( "Error in native method \"requestPoseVelocity(long,long,double[],double[],double)\":  "
+			"quaternion array was the wrong length.\n" );
+	return false;
+  }
+
+  // eventual return value
+  bool retval = true;
+
+  // get the array
+  double* position = env->GetDoubleArrayElements( jvelocityDelta, NULL );
+  if( position == NULL )
+  {
+    printf( "Error in native method \"requestPoseVelocity(long,long,double[],double[],double)\":  "
+			"couldn't get position in native form.\n" );
+	retval = false;
+  }
+  double* quat = env->GetDoubleArrayElements( jquat, NULL );
+  if( quat == NULL )
+  {
+    printf( "Error in native method \"requestPoseVelocity(long,long,double[],double[],double)\":  "
+			"couldn't get quaternion in native form.\n" );
+	retval = false;
+  }
+
+  timeval t;
+  t.tv_sec = (long) jsecs;
+  t.tv_usec = (long) jusecs;
+
+  if( retval == true )
+	  retval = ( 0 != po->request_pose_velocity_relative( t, position, quat, jinterval ) );
+  env->ReleaseDoubleArrayElements( jvelocityDelta, position, JNI_ABORT /*mode*/ );
   env->ReleaseDoubleArrayElements( jquat, quat, JNI_ABORT /*mode*/ );
   return retval;
 }
