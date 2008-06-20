@@ -328,9 +328,11 @@ void DynamicPlane::setPlaneFromTransform(vrpn_HapticPlane &pl,
 {
 #ifdef	VRPN_USE_HDAPI
 	vrpn_HapticVector normal(0,1,0);
-	normal = xfm.multVecMatrix(normal, normal);
+	//normal = 
+      xfm.multVecMatrix(normal, normal);
 	vrpn_HapticPosition origin(0,0,0);
-	origin = xfm.multMatrixVec(origin, origin);
+	//origin = 
+      xfm.multMatrixVec(origin, origin);
         pl = vrpn_HapticPlane(normal[0], normal[1], normal[2], -origin.magnitude());
 #else
 	vrpn_HapticVector normal(0,1,0);

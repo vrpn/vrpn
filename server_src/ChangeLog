@@ -1,3 +1,10 @@
+2008-06-20  Aron Helser  <helser@cs.unc.edu>
+
+	* texture_plane.C (setPlaneFromTransform): Update to compile under
+	HD api and VS2005. Not verified to be correct.
+	* vrpn_phantom.vcproj: added WIN32 preprocessor define, so HD api
+	headers compile correctly.  
+
 2008-06-19  David Marshburn  <marshbur@cs.unc.edu>
 
 	* test_vrpn.C:  added Poser server/remote tests.
