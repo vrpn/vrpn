@@ -80,7 +80,7 @@ public class PoserRemote extends VRPNDevice implements Runnable
 		long secs = msecs / 1000;
 		synchronized( downInVrpnLock )
 		{
-			retval = requestPose_native( secs, ( msecs - secs * 1000 ) * 1000, positionDelta, quaternion );
+			retval = requestPoseRelative_native( secs, ( msecs - secs * 1000 ) * 1000, positionDelta, quaternion );
 		}
 		return retval;
 	}
