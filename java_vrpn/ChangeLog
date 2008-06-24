@@ -1,3 +1,8 @@
+2008-06-24  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vprn_PoserRemote.cpp:  corrected the text of
+	some error messages.
+
 2008-06-20  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_PoserRemote.cpp:  implementation of java native

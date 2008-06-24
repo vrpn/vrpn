@@ -243,7 +243,7 @@ Java_vrpn_PoserRemote_requestPoseRelative_1native( JNIEnv* env, jobject jobj,
 	  = (vrpn_Poser_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
   if( po <= 0 )  // this poser is uninitialized or has been shut down already
   {
-    printf( "Error in native method \"requestPose(long,long,double[],double[])\":  "
+    printf( "Error in native method \"requestPoseRelative(long,long,double[],double[])\":  "
 			"the poser is uninitialized or has been shut down.\n" );
     return false;
   }
@@ -251,13 +251,13 @@ Java_vrpn_PoserRemote_requestPoseRelative_1native( JNIEnv* env, jobject jobj,
   // check the array lengths
   if( env->GetArrayLength( jpositionDelta ) != 3 )
   {
-    printf( "Error in native method \"requestPose(long,long,double[],double[])\":  "
+    printf( "Error in native method \"requestPoseRelative(long,long,double[],double[])\":  "
 			"position array was the wrong length.\n" );
 	return false;
   }
   if( env->GetArrayLength( jquat ) != 4 )
   {
-    printf( "Error in native method \"requestPose(long,long,double[],double[])\":  "
+    printf( "Error in native method \"requestPoseRelative(long,long,double[],double[])\":  "
 			"quaternion array was the wrong length.\n" );
 	return false;
   }
@@ -269,14 +269,14 @@ Java_vrpn_PoserRemote_requestPoseRelative_1native( JNIEnv* env, jobject jobj,
   double* position = env->GetDoubleArrayElements( jpositionDelta, NULL );
   if( position == NULL )
   {
-    printf( "Error in native method \"requestPose(long,long,double[],double[])\":  "
+    printf( "Error in native method \"requestPoseRelative(long,long,double[],double[])\":  "
 			"couldn't get position in native form.\n" );
 	retval = false;
   }
   double* quat = env->GetDoubleArrayElements( jquat, NULL );
   if( quat == NULL )
   {
-    printf( "Error in native method \"requestPose(long,long,double[],double[])\":  "
+    printf( "Error in native method \"requestPoseRelative(long,long,double[],double[])\":  "
 			"couldn't get quaternion in native form.\n" );
 	retval = false;
   }
@@ -309,7 +309,7 @@ Java_vrpn_PoserRemote_requestVelocity_1native( JNIEnv* env, jobject jobj,
 	  = (vrpn_Poser_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
   if( po <= 0 )  // this poser is uninitialized or has been shut down already
   {
-    printf( "Error in native method \"requestPoseVelocity(long,long,double[],double[],double)\":  "
+    printf( "Error in native method \"requestVelocity(long,long,double[],double[],double)\":  "
 			"the poser is uninitialized or has been shut down.\n" );
     return false;
   }
@@ -317,13 +317,13 @@ Java_vrpn_PoserRemote_requestVelocity_1native( JNIEnv* env, jobject jobj,
   // check the array lengths
   if( env->GetArrayLength( jvelocity ) != 3 )
   {
-    printf( "Error in native method \"requestPoseVelocity(long,long,double[],double[],double)\":  "
+    printf( "Error in native method \"requestVelocity(long,long,double[],double[],double)\":  "
 			"position array was the wrong length.\n" );
 	return false;
   }
   if( env->GetArrayLength( jquat ) != 4 )
   {
-    printf( "Error in native method \"requestPoseVelocity(long,long,double[],double[],double)\":  "
+    printf( "Error in native method \"requestVelocity(long,long,double[],double[],double)\":  "
 			"quaternion array was the wrong length.\n" );
 	return false;
   }
@@ -335,14 +335,14 @@ Java_vrpn_PoserRemote_requestVelocity_1native( JNIEnv* env, jobject jobj,
   double* position = env->GetDoubleArrayElements( jvelocity, NULL );
   if( position == NULL )
   {
-    printf( "Error in native method \"requestPoseVelocity(long,long,double[],double[],double)\":  "
+    printf( "Error in native method \"requestVelocity(long,long,double[],double[],double)\":  "
 			"couldn't get position in native form.\n" );
 	retval = false;
   }
   double* quat = env->GetDoubleArrayElements( jquat, NULL );
   if( quat == NULL )
   {
-    printf( "Error in native method \"requestPoseVelocity(long,long,double[],double[],double)\":  "
+    printf( "Error in native method \"requestVelocity(long,long,double[],double[],double)\":  "
 			"couldn't get quaternion in native form.\n" );
 	retval = false;
   }
@@ -376,7 +376,7 @@ Java_vrpn_PoserRemote_requestVelocityRelative_1native( JNIEnv* env, jobject jobj
 	  = (vrpn_Poser_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
   if( po <= 0 )  // this poser is uninitialized or has been shut down already
   {
-    printf( "Error in native method \"requestPoseVelocity(long,long,double[],double[],double)\":  "
+    printf( "Error in native method \"requestVelocityRelative(long,long,double[],double[],double)\":  "
 			"the poser is uninitialized or has been shut down.\n" );
     return false;
   }
@@ -384,13 +384,13 @@ Java_vrpn_PoserRemote_requestVelocityRelative_1native( JNIEnv* env, jobject jobj
   // check the array lengths
   if( env->GetArrayLength( jvelocityDelta ) != 3 )
   {
-    printf( "Error in native method \"requestPoseVelocity(long,long,double[],double[],double)\":  "
+    printf( "Error in native method \"requestVelocityRelative(long,long,double[],double[],double)\":  "
 			"position array was the wrong length.\n" );
 	return false;
   }
   if( env->GetArrayLength( jquat ) != 4 )
   {
-    printf( "Error in native method \"requestPoseVelocity(long,long,double[],double[],double)\":  "
+    printf( "Error in native method \"requestVelocityRelative(long,long,double[],double[],double)\":  "
 			"quaternion array was the wrong length.\n" );
 	return false;
   }
@@ -402,14 +402,14 @@ Java_vrpn_PoserRemote_requestVelocityRelative_1native( JNIEnv* env, jobject jobj
   double* position = env->GetDoubleArrayElements( jvelocityDelta, NULL );
   if( position == NULL )
   {
-    printf( "Error in native method \"requestPoseVelocity(long,long,double[],double[],double)\":  "
+    printf( "Error in native method \"requestVelocityRelative(long,long,double[],double[],double)\":  "
 			"couldn't get position in native form.\n" );
 	retval = false;
   }
   double* quat = env->GetDoubleArrayElements( jquat, NULL );
   if( quat == NULL )
   {
-    printf( "Error in native method \"requestPoseVelocity(long,long,double[],double[],double)\":  "
+    printf( "Error in native method \"requestVelocityRelative(long,long,double[],double[],double)\":  "
 			"couldn't get quaternion in native form.\n" );
 	retval = false;
   }
