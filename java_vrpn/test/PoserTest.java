@@ -52,7 +52,12 @@ public class PoserTest implements vrpn.TrackerRemote.PositionChangeListener
 		double[] pos = { 0, 1, 2 };
 		double[] quat = { 3, 4, 5, 6 };
 		poser.requestPose( pos, quat );
-		
+		try
+		{
+			Thread.sleep( 1000 );
+		}
+		catch( Exception e )  { }
+		poser.requestPoseRelative( pos, quat );
 			
 	}
 }

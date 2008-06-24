@@ -1,3 +1,7 @@
+2008-06-24  David Marshburn  <marshbur@cs.unc.edu>
+
+	* PoserTest.java:  tests relative pose request
+
 2008-02-13  David Marshburn  <marshbur@cs.unc.edu>
 	
 	* AuxiliaryLoggerTest.java:  slightly better handling
