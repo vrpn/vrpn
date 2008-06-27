@@ -7,12 +7,6 @@ Compile using 'gmake'
 NOTE:	See http://www.cs.unc.edu/Research/vrpn for
 information on VRPN.
 
-Problems:
-
-***	The reports from the 3Space tracker are not yet being parsed correctly
-(orientation is wrong when it ends up at the application).  Fastrak trackers
-work fine.
-
 How to reduce latency on the tracker:
     In any case:
 	Run in a way that there isn't swapping going on.

@@ -8,8 +8,8 @@ For those not at UNC, you compile by doing the following:
 
    for Unix/Cygwin:
 	Go to ../quat.
-		For Unix: make -f Makefile.remote.[yourarch]
-		For Cygwin: make -f makefile
+		Edit 'makefile' to uncomment the architecture you are on.
+		gmake
 	Come back here (cd ../vrpn)
 		Edit Makefile to uncomment your architecture
 		gmake
