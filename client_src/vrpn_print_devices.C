@@ -26,6 +26,7 @@
 #include <vrpn_Analog.h>
 #include <vrpn_Dial.h>
 #include <vrpn_Text.h>
+#include <vrpn_FileConnection.h>  // For preload and accumulate settings
 
 int done = 0;	    // Signals that the program should exit
 
@@ -203,6 +204,11 @@ int main (int argc, char * argv [])
   int   print_for_analog = 1;	// Print analog reports?
   int   print_for_dial = 1;	// Print dial reports?
   int	print_for_text = 1;	// Print warning/error messages?
+
+  // If we happen to open a file, neither preload nor accumulate the
+  // messages in memory, to avoid crashing for huge files.
+  vrpn_FILE_CONNECTIONS_SHOULD_PRELOAD = false;
+  vrpn_FILE_CONNECTIONS_SHOULD_ACCUMULATE = false;
 
   device_info device_list[MAX_DEVICES];
   int num_devices = 0;

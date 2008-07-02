@@ -1,3 +1,8 @@
+2008_07_02  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_print_devices.C : Has the code not preload or
+		accumulate in case of reading from a file.
+
 2008_03_04  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* clock_drift_estimator.C : Replaces vrpn_Connection
