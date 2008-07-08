@@ -8,7 +8,7 @@
 #include  "directx_camera_server.h"
 
 const int MAJOR_VERSION = 3;
-const int MINOR_VERSION = 1;
+const int MINOR_VERSION = 2;
 
 // sprintf() is okay in our usage.
 #pragma warning( disable : 4995 )
@@ -121,8 +121,7 @@ void handle_cntl_c(int) {
 
 void  Usage(const char *s)
 {
-  fprintf(stderr,"Usage: %s [-expose msecs] [-bin count] [-res x y] [-swap_edt] [devicename [devicenum]]\n",s);
-  fprintf(stderr,"       -expose: Exposure time in milliseconds (default 250)\n");
+  fprintf(stderr,"Usage: %s [-res x y] [devicename] [devicenum [logfilename]]]\n",s);
   fprintf(stderr,"       -res: Resolution in x and y (default 320 200)\n");
   fprintf(stderr,"       devicename: directx or directx640x480 (default is directx)\n");
   fprintf(stderr,"       devicenum: Which (starting with 1) if there are multiple (default 1)\n");
@@ -179,7 +178,7 @@ int main(int argc, char *argv[])
   // Set up handler for all these signals to set done
   signal(SIGINT, handle_cntl_c);
 
-  printf("video_vrpnImager_server version %02d.%02d\n", MAJOR_VERSION, MINOR_VERSION);
+  printf("vrpn_DirectShow_Imager_server version %02d.%02d\n", MAJOR_VERSION, MINOR_VERSION);
 
   if (!init_camera_code(devicename, devicenum)) { return -1; }
   printf("Opened camera\n");
