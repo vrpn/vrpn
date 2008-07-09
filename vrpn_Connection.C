@@ -6172,7 +6172,7 @@ char * vrpn_copy_machine_name (const char * hostspecifier)
   // Note that this may be the beginning of the string, right at
   // nearoffset.
   faroffset = strcspn(hostspecifier + nearoffset, ":/");
-  len = 1 + (faroffset - nearoffset);
+  len = 1 + faroffset;
 
   tbuf = new char [len]; //XXX Memory leak, but a small one
   if (!tbuf) {
@@ -6181,6 +6181,7 @@ char * vrpn_copy_machine_name (const char * hostspecifier)
     strncpy(tbuf, hostspecifier + nearoffset, len - 1);
     tbuf[len - 1] = 0;
   }
+  printf("XXX hostspecifier = %s, name = %s\n", hostspecifier, tbuf);
   return tbuf;
 }
 
