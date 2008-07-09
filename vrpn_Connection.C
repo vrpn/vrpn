@@ -6181,7 +6181,6 @@ char * vrpn_copy_machine_name (const char * hostspecifier)
     strncpy(tbuf, hostspecifier + nearoffset, len - 1);
     tbuf[len - 1] = 0;
   }
-  printf("XXX hostspecifier = %s, name = %s\n", hostspecifier, tbuf);
   return tbuf;
 }
 

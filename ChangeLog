@@ -1,5 +1,9 @@
 2008-07-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Connection.C : Removed debug printout.
+
+2008-07-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn.sln : Added dependencies in quatlib to servers.
 	* vrpn_Connection.C : Fixed a bug in the determination of
 		the machine name where it was being truncated for the
