@@ -1,5 +1,9 @@
 2008-07-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Connection.C : Updating version after release of 7.16.
+
+2008-07-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Connection.C : Removed debug printout.
 
 2008-07-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
