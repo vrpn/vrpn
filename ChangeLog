@@ -1,3 +1,8 @@
+2008-07-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_AnalogFly.C : Removed a redundant copy from a
+		redundant temporary variable.
+
 2008-06-19  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_Poser.h, .C:  added the capability for remote objects

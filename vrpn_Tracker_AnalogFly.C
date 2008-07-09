@@ -472,13 +472,12 @@ void	vrpn_Tracker_AnalogFly::update_matrix_based_on_values
       q_matrix_mult(d_currentMatrix, diffM, d_clutchMatrix);
   } else {
       // Multiply the current matrix by the difference matrix to update
-      // it to the current time. Then convert the matrix into a pos/quat
-      // and copy it into the tracker position and quaternion structures.
-      q_matrix_type final;
-      q_matrix_mult(final, diffM, d_currentMatrix);
-      q_matrix_copy(d_currentMatrix, final);
+      // it to the current time. 
+      q_matrix_mult(d_currentMatrix, diffM, d_currentMatrix);
   }
 
+  // Finally, convert the matrix into a pos/quat
+  // and copy it into the tracker position and quaternion structures.
   convert_matrix_to_tracker();
 }
 
