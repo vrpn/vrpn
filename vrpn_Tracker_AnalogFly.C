@@ -140,6 +140,7 @@ vrpn_Tracker_AnalogFly::vrpn_Tracker_AnalogFly
                              d_initMatrix[3][3] = 1.0;
 	reset();
         q_matrix_copy(d_clutchMatrix, d_initMatrix);
+        q_matrix_copy(d_currentMatrix, d_initMatrix);
 
 	//--------------------------------------------------------------------
 	// Set the current timestamp to "now" and current matrix to identity
@@ -433,8 +434,8 @@ void	vrpn_Tracker_AnalogFly::update_matrix_based_on_values
   q_euler_to_col_matrix(diffM, rz, ry, rx);
   diffM[3][0] = tx; diffM[3][1] = ty; diffM[3][2] = tz;
 
-  // While the clutch is not engaged, we don't move.  Do say that
-  // the clutch was off.
+  // While the clutch is not engaged, we don't move.  Record that
+  // the clutch was off so that we know later when it is re-engaged.
   static bool clutch_was_off = false;
   if (!d_clutch_engaged) {
     clutch_was_off = true;
@@ -449,7 +450,8 @@ void	vrpn_Tracker_AnalogFly::update_matrix_based_on_values
   if (d_clutch_engaged && clutch_was_off) {
     clutch_was_off = false;
     q_type  diff_orient;
-    q_from_euler(diff_orient, rx, ry, rz);
+    // This is backwards, because Euler angles have rotation about Z first...
+    q_from_euler(diff_orient, rz, ry, rx);
     q_xyz_quat_type diff;
     q_vec_set(diff.xyz, tx, ty, tz);
     q_copy(diff.quat, diff_orient);
@@ -465,7 +467,7 @@ void	vrpn_Tracker_AnalogFly::update_matrix_based_on_values
 
   // Apply the matrix.
   if (d_absolute) {
-      // The difference matrix IS the curent matrix.  Catenate it
+      // The difference matrix IS the current matrix.  Catenate it
       // onto the clutch matrix.  If there is no clutching happening,
       // this matrix will always be the identity so this will just
       // copy the difference matrix.

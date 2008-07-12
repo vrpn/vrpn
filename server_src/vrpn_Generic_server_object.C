@@ -371,12 +371,17 @@ int vrpn_Generic_Server_Object::get_AFline(char *line, vrpn_TAF_axis *axis)
         return -1;
     }
 
-    axis->name = name;
+    if (strcmp(name, "NULL") == 0) {
+      axis->name = NULL;
+    } else {
+      axis->name = name;
+    }
     axis->channel = channel;
     axis->offset = offset;
     axis->thresh = thresh;
     axis->scale = scale;
     axis->power = power;
+
 
     return 0;
 }

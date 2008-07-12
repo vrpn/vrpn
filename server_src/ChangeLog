@@ -1,3 +1,9 @@
+2008-07-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Generic_server_object.C : Fixed the case where NULL entries are
+		made for the vrpn_Tracker_AnalogFly so that the axis did not go
+		looking for a device named "NULL".
+
 2008-06-20  Aron Helser  <helser@cs.unc.edu>
 
 	* texture_plane.C (setPlaneFromTransform): Update to compile under

@@ -1,3 +1,8 @@
+2008-07-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_AnalogFly.C : Fixed the order of rotations
+		when using the clutch on orientation.
+
 2008-07-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Connection.C : Updating version after release of 7.16.
