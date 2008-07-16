@@ -1,3 +1,9 @@
+2008-07-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Imager.c : Modified the unsigned 16 decode routine
+		to fix a bug where it was crashing when trying to read
+		from the wrong part of memory.
+
 2008-07-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Tracker_AnalogFly.C : Fixed the order of rotations

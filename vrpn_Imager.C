@@ -1390,7 +1390,7 @@ bool  vrpn_Imager_Region::decode_unscaled_region_using_base_pointer(vrpn_uint16 
 	    rActual = r;
 	  }
 	  memcpy(&data[d*depthStride + rActual*rowStride + d_cMin], msgbuf, linelen);
-	  msgbuf += linelen;
+	  msgbuf += cols;
         }
       }
     } else {
