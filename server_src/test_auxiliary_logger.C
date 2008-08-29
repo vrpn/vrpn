@@ -141,7 +141,7 @@ int main (int argc, char * argv [])
   do {
     g_logger->mainloop();
     vrpn_gettimeofday(&now, NULL);
-  } while (duration(now, start) < 2.0);
+  } while (duration(now, start) < 5.0);
 
   // send a log-file-name request
   g_logger->send_logging_status_request( );
@@ -149,7 +149,7 @@ int main (int argc, char * argv [])
   do {
     g_logger->mainloop();
     vrpn_gettimeofday(&now, NULL);
-  } while (duration(now, start) < 2.0);
+  } while (duration(now, start) < 5.0);
 
   // Try to create blank log files (no log should be made).  Wait for a second after
   // creation to give it something to log.
@@ -161,7 +161,7 @@ int main (int argc, char * argv [])
   do {
     g_logger->mainloop();
     vrpn_gettimeofday(&now, NULL);
-  } while (duration(now, start) < 2.0);
+  } while (duration(now, start) < 5.0);
 
   // Try to create just one named log file.  Wait for a second after
   // creation to give it something to log.
@@ -173,7 +173,7 @@ int main (int argc, char * argv [])
   do {
     g_logger->mainloop();
     vrpn_gettimeofday(&now, NULL);
-  } while (duration(now, start) < 2.0);
+  } while (duration(now, start) < 5.0);
 
   // Try to create blank log files (no log should be made).  Wait for a second after
   // creation to give it something to log.
@@ -185,7 +185,7 @@ int main (int argc, char * argv [])
   do {
     g_logger->mainloop();
     vrpn_gettimeofday(&now, NULL);
-  } while (duration(now, start) < 2.0);
+  } while (duration(now, start) < 5.0);
 
   // Done.
   if (ret == 0) {

@@ -1048,10 +1048,17 @@ int vrpn_File_Connection::read_entry (void)
       return -1;
     }
 
-    // get the header of the next message
+    // Get the header of the next message.  This was done as a horrible
+    // hack in the past, where we read the sizeof a struct from the file,
+    // including a pointer.  This of course changed on 64-bit architectures.
+    // The pointer value was not needed.  We now read it as an array of
+    // 32-bit values and then stuff these into the structure.  Unfortunately,
+    // we now need to both send and read the bogus pointer value if we want
+    // to be compatible with old versions of log files.
 
     vrpn_HANDLERPARAM & header = newEntry->data;
-    retval = fread(&header, sizeof(header), 1, d_file);
+    vrpn_int32  values[6];
+    retval = fread(values, sizeof(vrpn_int32), 6, d_file);
 
     // return 1 if nothing to read OR end-of-file;
     // the latter isn't an error state
@@ -1061,12 +1068,12 @@ int vrpn_File_Connection::read_entry (void)
         return 1;
     }
 
-    header.type = ntohl(header.type);
-    header.sender = ntohl(header.sender);
-    header.msg_time.tv_sec = ntohl(header.msg_time.tv_sec);
-    header.msg_time.tv_usec = ntohl(header.msg_time.tv_usec);
-    header.payload_len = ntohl(header.payload_len);
-    header.buffer = NULL;
+    header.type = ntohl(values[0]);
+    header.sender = ntohl(values[1]);
+    header.msg_time.tv_sec = ntohl(values[2]);
+    header.msg_time.tv_usec = ntohl(values[3]);
+    header.payload_len = ntohl(values[4]);
+    header.buffer = NULL; // values[5] is ignored -- it used to hold the bogus pointer.
 
     // get the body of the next message
 

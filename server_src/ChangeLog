@@ -1,3 +1,11 @@
+2008-08-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* test_auxilliary_logger.C : Changed the log duration for the test up
+		to 5 seconds from 2 seconds to enable transients to settle.
+	* vrpn.C : Fixed a bug in the local-out file naming command-line
+		argument that always named the file "-lo" rather than what
+		it was supposed to be.
+
 2008-07-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Generic_server_object.C : Fixed the case where NULL entries are

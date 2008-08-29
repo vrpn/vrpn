@@ -1,3 +1,13 @@
+2008-08-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Connection.C : Changed out a horrible hack where a
+		structure was being packed using memcpy (and a structure
+		with a pointer in it at that) into one where it is
+		explicitly marshalled and unmarshalled to the log files.
+		This fixes a bug where log files generates on 64-bit
+		machines were unreadiable on 32-bit machines and vice-versa.
+	* vrpn_FileConnection.C : Same.
+
 2008-07-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Imager.c : Modified the unsigned 16 decode routine

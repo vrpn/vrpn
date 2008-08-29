@@ -636,9 +636,29 @@ int vrpn_Log::saveLogSoFar(void) {
   // starting at d_firstEntry and working backwards
   for (lp = d_firstEntry; lp && !final_retval; lp = lp->prev) {
 
-    retval = fwrite(&lp->data, 1, sizeof(lp->data), d_file);
+    // This used to be a horrible hack that wrote the size of the
+    // structure (which included a pointer) to the file.  this broke on
+    // 64-bit machines, but could also have broken on any architecture
+    // that packed structures differently from the common packing.
+    // Here, we pull out the entries in a way that avoids doing any
+    // sign changes and then write the array of values to disk.
+    // Unfortunately, to remain backward-compatible with earlier log
+    // files, we need to write the empty pointer.
+    // XXX This involves one more copy of these six values than would
+    // be strictly needed, but this should be very small relative to the
+    // disk-write time.  To fix this would require changing the structure
+    // that stored the data.
+    vrpn_int32  values[6];
+    vrpn_int32  zero = 0;
+    memcpy(&(values[0]), &lp->data.type, sizeof(vrpn_int32));
+    memcpy(&(values[1]), &lp->data.sender, sizeof(vrpn_int32));
+    memcpy(&(values[2]), &lp->data.msg_time.tv_sec, sizeof(vrpn_int32));
+    memcpy(&(values[3]), &lp->data.msg_time.tv_usec, sizeof(vrpn_int32));
+    memcpy(&(values[4]), &lp->data.payload_len, sizeof(vrpn_int32));
+    memcpy(&(values[5]), &zero, sizeof(vrpn_int32));   // Bogus pointer.
+    retval = fwrite(values, sizeof(vrpn_int32), 6, d_file);
     
-    if (retval != sizeof(lp->data)) {
+    if (retval != 6) {
       fprintf(stderr, "vrpn_Log::saveLogSoFar:  "
                       "Couldn't write log file (got %d, expected %d).\n",
               retval, sizeof(lp->data));

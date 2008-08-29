@@ -154,9 +154,9 @@ int main (int argc, char * argv[])
       if (verbose) { fprintf(stderr, "Incoming logfile name %s.\n", argv[i]); }
       g_inLogName = argv[i];
     } else if (!strcmp(argv[i], "-lo")) { // specify server-side logging
-      g_outLogName = argv[i];
       if (++i > argc) { Usage(argv[0]); }
       if (verbose) { fprintf(stderr, "Outgoing logfile name %s.\n", argv[i]); }
+      g_outLogName = argv[i];
     } else if (argv[i][0] == '-') {	// Unknown flag
       Usage(argv[0]);
     } else switch (realparams) {		// Non-flag parameters
