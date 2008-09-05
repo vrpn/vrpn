@@ -1,3 +1,8 @@
+2008-09-05  Ryan Schubert  <res@cs.unc.edu>
+
+	* vrpn_Imager.C : Looked like 16->8 transcoding was never
+		committed.
+
 2008-08-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Connection.C : Changed out a horrible hack where a

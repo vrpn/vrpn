@@ -1342,8 +1342,37 @@ bool  vrpn_Imager_Region::decode_unscaled_region_using_base_pointer(vrpn_uint8 *
 	copyTo = rowStart;
       }
     }
+  } else if (d_valType == vrpn_IMAGER_VALTYPE_UINT16)
+  {
+	  // transcode from 16 bit image to 8 bit data for app
+
+	  long rowStep = rowStride;
+	  if (invert_rows) {
+		  rowStep *= -1;
+	  }
+	  const vrpn_uint16  *msgbuf = (const vrpn_uint16 *)d_valBuf;
+	  for (unsigned d = d_dMin; d <= d_dMax; d++) {
+		  vrpn_uint8 *rowStart = &data[d*depthStride + d_rMin*rowStride + d_cMin];
+		  if (invert_rows) {
+			  rowStart = &data[d*depthStride + (nRows-1 - d_rMin)*rowStride + d_cMin];
+		  }
+		  vrpn_uint8 *copyTo = rowStart;
+		  for (unsigned r = d_rMin; r <= d_rMax; r++) {
+			  for (unsigned c = d_cMin; c <= d_cMax; c++) {
+				  for (unsigned rpt = 0; rpt < repeat; rpt++) {
+					  *(copyTo+rpt) = *((vrpn_uint8*)msgbuf);  //< Copy the current element (take top 8 bits)
+				  }
+				  msgbuf++;		    //< Skip to the next buffer location
+				  copyTo += colStride;	    //< Skip appropriate number of elements
+			  }
+			  rowStart += rowStep;	//< Skip to the start of the next row
+			  copyTo = rowStart;
+		  }
+	  }
+
   } else {
     printf("vrpn_Imager_Region::decode_unscaled_region_using_base_pointer(): Transcoding not implemented yet for this type\n");
+	printf("d_valType = %i\n", d_valType);
     return false;
   }
 
