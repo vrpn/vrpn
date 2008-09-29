@@ -137,7 +137,10 @@ void vrpn_3DConnexion::mainloop()
 
             case EV_REL:    // axis movement
                 vrpn_gettimeofday((timeval *)&this->vrpn_Analog::timestamp, NULL);
-                channel[ev.code] = ev.value/400.0;           
+                // Convert from short to int to avoid a short/double conversion
+                // bug in GCC 3.2.
+                i = ev.value;
+                channel[ev.code] = static_cast<double>(i)/400.0;           
                 break;
 
             default:
