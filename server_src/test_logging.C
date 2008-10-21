@@ -349,6 +349,17 @@ int main (int argc, char * argv [])
     ret = -5;
   }
 
+  //---------------------------------------------------------------------
+  // Try re-writing the same log file a couple of times.  This turned up a
+  // crash case before.  We do it twice because it may save an emergency
+  // log file in temp the first time.
+  printf("Testing for crash when attempt to rewrite file with client-out\n");
+  open_client_connection_and_loop(NULL, CLIENT_CLIENT_OUTGOING_LOG, NULL, NULL);
+  if (0 == open_client_connection_and_loop(NULL, CLIENT_CLIENT_OUTGOING_LOG, NULL, NULL)) {
+    fprintf(stderr,"Unexpected success when writing to existing server-side outgoing log file\n");
+    ret = -6;
+  }
+
   // Clean up after ourselves by deleting the log files.
   printf("Deleting log files\n");
   // Don't complain about using "unlink"
@@ -371,5 +382,3 @@ int main (int argc, char * argv [])
   return ret;
 
 }   /* main */
-
-

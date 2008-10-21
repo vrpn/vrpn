@@ -4575,6 +4575,12 @@ int vrpn_Connection::pack_message(vrpn_uint32 len, struct timeval time,
 {
   int i, ret;
 
+  // Make sure I'm not broken
+  if (connectionStatus == BROKEN) {
+    printf("vrpn_Connection::pack_message: Can't pack because the connection is broken\n");
+    return -1;
+  }
+
   // Make sure type is either a system type (-) or a legal user type
   if (type >= d_dispatcher->numTypes()) {
     printf("vrpn_Connection::pack_message: bad type (%ld)\n", type);
@@ -4799,7 +4805,9 @@ vrpn_Connection::vrpn_Connection
     retval = endpoint->d_outLog->open();
     if (retval == -1) {
       fprintf(stderr, "vrpn_Connection::vrpn_Connection:  "
-                      "Couldn't open log file.\n");
+                      "Couldn't open outgoing log file.\n");
+      delete d_endpoints[0];
+      d_endpoints[0] = NULL;
       connectionStatus = BROKEN;
       return;
     }
@@ -4894,7 +4902,7 @@ vrpn_Connection::vrpn_Connection
     retval = endpoint->d_inLog->open();
     if (retval == -1) {
       fprintf(stderr, "vrpn_Connection::vrpn_Connection:  "
-    		      "Couldn't open log file.\n");
+    		      "Couldn't open incoming log file.\n");
       connectionStatus = BROKEN;
 //fprintf(stderr, "BROKEN - vrpn_Connection::vrpn_Connection.\n");
       return;
@@ -4908,7 +4916,7 @@ vrpn_Connection::vrpn_Connection
     retval = endpoint->d_outLog->open();
     if (retval == -1) {
       fprintf(stderr, "vrpn_Connection::vrpn_Connection:  "
-    		      "Couldn't open log file.\n");
+    		      "Couldn't open local outgoing log file.\n");
       connectionStatus = BROKEN;
 //fprintf(stderr, "BROKEN - vrpn_Connection::vrpn_Connection.\n");
       return;
@@ -5567,7 +5575,9 @@ void vrpn_Connection_IP::server_check_for_incoming_connections
       }
 
       // Server-side logging under multiconnection - TCH July 2000
-      if (d_serverLogMode & vrpn_LOG_INCOMING) {
+      // Check for NULL server log name, which happens when the log file
+      // already exists and it can't save it.
+      if ( (d_serverLogMode & vrpn_LOG_INCOMING) && (d_serverLogName != NULL) ) {
         d_serverLogCount++;
         endpoint->d_inLog->setCompoundName(d_serverLogName, d_serverLogCount);
         endpoint->d_inLog->logMode() = vrpn_LOG_INCOMING;
@@ -5661,7 +5671,7 @@ void vrpn_Connection_IP::server_check_for_incoming_connections
       if (retval == -1) {
         fprintf(stderr,
                 "vrpn_Connection_IP::server_check_for_incoming_connections:  "
-                "Couldn't open log file.\n");
+                "Couldn't open incoming log file.\n");
         connectionStatus = BROKEN;
         return;
       }
