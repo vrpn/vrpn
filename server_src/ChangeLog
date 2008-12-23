@@ -1,3 +1,10 @@
+2008-12-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Generic_server_object.C : Added Chris VanderKnyff's implementation of
+		the Xbox 360 game controller.
+	* vrpn_Generic_server_object.h : Same
+	* vrpn.cfg : Same
+
 2008-08-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* test_auxilliary_logger.C : Changed the log duration for the test up
