@@ -1,3 +1,11 @@
+2008-12-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_XInputGamepad.C : Chris VanderKnyff's implementation of the Xbox 360
+		game controller.
+	* vrpn_XInputGamepad.h : Same.
+	* vrpn.vcproj : Same.
+	* vrpndll.vcproj : Same.
+
 2008-10-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Connection.C : Adds some more checks and deletion to make

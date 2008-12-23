@@ -1908,6 +1908,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\vrpn_XInputGamepad.C"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\vrpn_Xkeys.C"
 				>
 				<FileConfiguration
@@ -2258,6 +2278,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_Wanda.h"
+				>
+			</File>
+			<File
+				RelativePath=".\vrpn_XInputGamepad.h"
 				>
 			</File>
 			<File
