@@ -1,5 +1,10 @@
 2008-12-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Tracker_Fastrak.C : Added fix sent in by Roger Hoang to
+		keep things working with both Fastrak and IS900s with buttons.
+
+2008-12-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_WiiMote.C : Driver for the WiiMote device using the WiiUse
 		library.  Tested under Windows; also supposed to work under
 		Linux.  Handles accelerometers, buttons, and raw IR values.

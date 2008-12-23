@@ -157,9 +157,13 @@ int vrpn_Tracker_Fastrak::report_length(int sensor)
 	len += 4;
     }
 
-    // Add in the buttons (1 byte) if present
+    // Add in the buttons (1 byte for IS900, 2 for Fastrak) if present
     if (is900_buttons[sensor]) {
-	len += 2;
+       if (really_fastrak) {
+         len += 2;
+       } else {
+         len += 1;
+       }
     }
 
     // Add in the joystick (one byte each for two values) if present

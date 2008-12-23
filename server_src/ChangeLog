@@ -1,5 +1,11 @@
 2008-12-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Generic_server_object.C : Made this compile even when the WiiMote is
+		not being used.
+	* vrpn_Generic_server_object.h : Same.
+
+2008-12-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Generic_server_object.C : Driver for the WiiMote device using the
 		WiiUse library.  Tested under Windows; also supposed to work under
 		Linux.  Handles accelerometers, buttons, and raw IR values.

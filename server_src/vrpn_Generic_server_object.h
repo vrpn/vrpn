@@ -199,8 +199,10 @@ protected:
   int           num_loggers;
   vrpn_Imager_Stream_Buffer * imagestreams [VRPN_GSO_MAX_IMAGE_STREAM];
   int           num_imagestreams;
+#ifdef	VRPN_USE_WIIUSE
   vrpn_WiiMote  * wiimotes [VRPN_GSO_MAX_WIIMOTES];
   int           num_wiimotes;
+#endif
 
   // BUW additions
   vrpn_inertiamouse * inertiamouses [VRPN_GSO_MAX_INERTIAMOUSES];

@@ -129,10 +129,12 @@ void vrpn_Generic_Server_Object::closeDevices (void) {
     fprintf(stderr, "\nClosing inertiamouse %d ...", i);
     delete inertiamouses[i];
   }
+#ifdef	VRPN_USE_WIIUSE
   for (i=0;i < num_wiimotes; i++) {
     fprintf(stderr, "\nClosing wiimote %d ...", i);
     delete wiimotes[i];
   }
+#endif
   if (verbose) { fprintf(stderr, "\nAll devices closed...\n"); }
 }
 
@@ -3899,8 +3901,10 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
   , num_Keyboards(0)
   , num_loggers(0)
   , num_imagestreams(0)
+#ifdef	VRPN_USE_WIIUSE
   , num_wiimotes(0)
-{
+#endif
+  {
     FILE    * config_file;
     char    * client_name = NULL;
 
@@ -4273,8 +4277,10 @@ void  vrpn_Generic_Server_Object::mainloop( void )
   }
 
   // Let all the WiiMotes do their thing
+#ifdef	VRPN_USE_WIIUSE
   for (i=0; i< num_wiimotes; i++) {
 	  wiimotes[i]->mainloop();
   }
+#endif
 }
 
