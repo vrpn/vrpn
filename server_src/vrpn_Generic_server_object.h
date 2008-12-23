@@ -74,6 +74,7 @@
 #include "vrpn_Keyboard.h"
 #include "vrpn_Tracker_MotionNode.h"
 #include "vrpn_Tracker_NDI_Polaris.h"
+#include "vrpn_WiiMote.h"
 
 // BUW additions
 #include "vrpn_Atmel.h"
@@ -119,6 +120,7 @@ const int VRPN_GSO_MAX_MOUSES =	              8;
 const int VRPN_GSO_MAX_KEYBOARD =             1;
 const int VRPN_GSO_MAX_LOGGER =               10;
 const int VRPN_GSO_MAX_IMAGE_STREAM =         10;
+const int VRPN_GSO_MAX_WIIMOTES =             4;
 
 // BUW additions
 const int VRPN_GSO_MAX_INERTIAMOUSES =        8;
@@ -197,6 +199,8 @@ protected:
   int           num_loggers;
   vrpn_Imager_Stream_Buffer * imagestreams [VRPN_GSO_MAX_IMAGE_STREAM];
   int           num_imagestreams;
+  vrpn_WiiMote  * wiimotes [VRPN_GSO_MAX_WIIMOTES];
+  int           num_wiimotes;
 
   // BUW additions
   vrpn_inertiamouse * inertiamouses [VRPN_GSO_MAX_INERTIAMOUSES];
@@ -276,6 +280,7 @@ protected:
   int setup_3DConnexion_SpaceMouse (char * & pch, char * line, FILE * config_file) ;
   int setup_3DConnexion_SpaceExplorer (char * & pch, char * line, FILE * config_file) ;
   int setup_Tracker_MotionNode (char * & pch, char * line, FILE * config_file);
+  int setup_WiiMote (char * & pch, char * line, FILE * config_file);
 
   // BUW additions
   int setup_Atmel(char* &pch, char *line, FILE *config_file);

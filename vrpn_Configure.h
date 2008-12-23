@@ -220,6 +220,27 @@
 // WARNING: This code does not compile under visual studio 6.0.
 //#define VRPN_USE_MOTIONNODE
 
+//------------------------
+// Instructs VRPN to compile code for the Nintendo Wii Remote controller,
+// getting access to it through the Wiiuse library in Windows and Linux.
+// Note that this requires installing a bunch of other stuff, including
+// a Windows driver developer kit to access the HID devices, and that some bluetooth
+// stacks (like the one in Windows XP) cause people trouble -- there is a
+// specific one needed for Linux and some options for Windows.  See the
+// README file in the WiiUse library for more info.  Also note that the
+// WiiUse library is GPL, which is more restrictive than the VRPN public-
+// domain license, so check out its license file before building this driver
+// into your code.
+// To get the WiiUse library to compile, you need to add the include path
+// to the driver developer kit (C:\WINDDK\3790.1830\inc\wxp) and the
+// library path to hid.lib (C:\WINDDK\3790.1830\lib\wxp\i386) to the
+// include and library directories in Visual Studio.
+// Also, edit the configuration below to point to the WiiUse include
+// file and library.
+// Note that the wiiuse.dll needs to be in the path when running a server
+// that uses WiiUse in Windows.
+//#define VRPN_USE_WIIUSE
+
 //------------------------------------------------------------------//
 // SYSTEM CONFIGURATION SECTION                                     //
 // EDIT THESE DEFINITIONS TO POINT TO OPTIONAL LIBRARIES.  THEY ARE //
@@ -229,6 +250,9 @@
 #define VRPN_SYSTEMDRIVE "C:"
 
 #define VRPN_PHASESPACE_LIB_PATH "../../phasespace/"
+
+#define VRPN_WIIUSE_H "F:/taylorr/STM/src/wiiuse_v0.12/src/wiiuse.h"
+#define VRPN_WIIUSE_LIB_PATH "F:/taylorr/STM/src/wiiuse_v0.12/src"
 
 #define VRPN_HDAPI_PATH         VRPN_SYSTEMDRIVE "/Program Files/SensAble/3DTouch/lib/"
 #define VRPN_HDAPI_UTIL_PATH    VRPN_SYSTEMDRIVE "/Program Files/SensAble/3DTouch/utilities/lib/"
@@ -259,6 +283,15 @@
 //---------------------------------------------------------------//
 // DO NOT EDIT BELOW THIS LINE FOR NORMAL CONFIGURATION SETTING. //
 //---------------------------------------------------------------//
+
+// Load the library for WiiUse.
+#ifdef  VRPN_USE_WIIUSE
+  #ifdef	_DEBUG
+    #pragma comment(lib, VRPN_WIIUSE_LIB_PATH "/msvc/Debug/wiiuse.lib")
+  #else
+    #pragma comment(lib, VRPN_WIIUSE_LIB_PATH "/msvc/Release/wiiuse.lib")
+  #endif
+#endif
 
 // Load libowlsock.lib if we're using Phasespace.
 #ifdef	VRPN_INCLUDE_PHASESPACE

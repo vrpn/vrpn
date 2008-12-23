@@ -1,3 +1,16 @@
+2008-12-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_WiiMote.C : Driver for the WiiMote device using the WiiUse
+		library.  Tested under Windows; also supposed to work under
+		Linux.  Handles accelerometers, buttons, and raw IR values.
+		Should handle nunchuck, classic remote, and guitar hero 3
+		attachments (not tested).
+	* vrpn_WiiMote.h : Same.
+	* vrpn.vcproj : Same.
+	* vrpn_Configure.h : Same.
+	* vrpndll.vcproj : Same.
+	* vrpn.sln : Added rumble test program.
+
 2008-12-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_XInputGamepad.C : Chris VanderKnyff's implementation of the Xbox 360

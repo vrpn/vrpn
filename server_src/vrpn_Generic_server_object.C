@@ -129,6 +129,10 @@ void vrpn_Generic_Server_Object::closeDevices (void) {
     fprintf(stderr, "\nClosing inertiamouse %d ...", i);
     delete inertiamouses[i];
   }
+  for (i=0;i < num_wiimotes; i++) {
+    fprintf(stderr, "\nClosing wiimote %d ...", i);
+    delete wiimotes[i];
+  }
   if (verbose) { fprintf(stderr, "\nAll devices closed...\n"); }
 }
 
@@ -3499,6 +3503,43 @@ int vrpn_Generic_Server_Object::setup_ImageStream(char * & pch, char * line, FIL
   return 0;  // successful completion
 }
 
+int vrpn_Generic_Server_Object::setup_WiiMote(char * & pch, char * line, FILE * config_file) {
+#ifdef	VRPN_USE_WIIUSE
+  char s2 [LINESIZE];
+  unsigned controller;
+
+  next();
+  // Get the arguments (wiimote_name, controller index)
+  if (sscanf(pch,"%511s%u",s2,&controller) != 2) {
+    fprintf(stderr,"Bad vrpn_WiiMote line: %s\n",line);
+    return -1;
+  }
+
+  // Make sure there's room for a new WiiMote
+  if (num_XInputPads >= VRPN_GSO_MAX_WIIMOTES) {
+    fprintf(stderr,"Too many WiiMotes in config file");
+    return -1;
+  }
+
+  // Open the WiiMote
+  if (verbose) {
+    printf("Opening vrpn_WiiMote: %s\n", s2);
+  }
+  if ((wiimotes[num_wiimotes] = new vrpn_WiiMote(s2, connection, controller)) == NULL)
+  {
+    fprintf(stderr,"Can't create new vrpn_WiiMote\n");
+    return -1;
+  } else {
+    num_wiimotes++;
+  }
+
+  return 0;
+#else
+  fprintf(stderr, "vrpn_server: Can't open WiiMote: VRPN_USE_WIIUSE not defined in vrpn_Configure.h!\n");
+  return -1;
+#endif
+}
+
 int vrpn_Generic_Server_Object::setup_Xkeys_Desktop(char * & pch, char * line, FILE * config_file) {
 #ifdef _WIN32
   char s2 [LINESIZE];
@@ -3827,6 +3868,7 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
   , num_Keyboards(0)
   , num_loggers(0)
   , num_imagestreams(0)
+  , num_wiimotes(0)
 {
     FILE    * config_file;
     char    * client_name = NULL;
@@ -4031,6 +4073,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
             CHECK(setup_3DConnexion_SpaceMouse);
           } else if (isit("vrpn_Tracker_MotionNode")) {
             CHECK(setup_Tracker_MotionNode);
+	  } else if (isit("vrpn_WiiMote")) {
+            CHECK(setup_WiiMote);
 // BUW additions
           } else if (isit("vrpn_Atmel")) {
             CHECK(setup_Atmel);
@@ -4193,6 +4237,11 @@ void  vrpn_Generic_Server_Object::mainloop( void )
   // Let all the ImageStreams do their thing
   for (i=0; i< num_imagestreams; i++) {
 	  imagestreams[i]->mainloop();
+  }
+
+  // Let all the WiiMotes do their thing
+  for (i=0; i< num_wiimotes; i++) {
+	  wiimotes[i]->mainloop();
   }
 }
 

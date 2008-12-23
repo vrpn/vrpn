@@ -1,3 +1,16 @@
+2008-12-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Generic_server_object.C : Driver for the WiiMote device using the
+		WiiUse library.  Tested under Windows; also supposed to work under
+		Linux.  Handles accelerometers, buttons, and raw IR values.
+		Should handle nunchuck, classic remote, and guitar hero 3
+		attachments (not tested).
+	* vrpn_Generic_server_object.h : Same.
+	* vrpn.cfg : Same.
+	* test_rumble.C : Test program to send rumble on/off commands through
+		an Analog_Output device, switching every two seconds.
+	* test_rumble.vcproj : Same.
+
 2008-12-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Generic_server_object.C : Added Chris VanderKnyff's implementation of
