@@ -25,6 +25,10 @@
 		things a bit more stable when connections try to overwrite
 		existing log files.
 
+2008-10-01  Ian Curington <ianc@acm.org>
+	* vrpn_3DConnexion.C/h:
+          Added 3DConnexion Spaceball 5000 device support
+
 2008-09-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_3DConnexion.C : Patch from Ian Curington to get around a

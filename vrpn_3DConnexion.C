@@ -1,4 +1,5 @@
-// vrpn_3DConnexion.C: VRPN driver for 3DConnexion Space Navigator and Space Traveler
+// vrpn_3DConnexion.C: VRPN driver for 3DConnexion
+//  Space Navigator, Space Traveler, Space Explorer, Space Mouse, Spaceball 5000
 
 #ifdef linux
 #include <linux/input.h>
@@ -27,6 +28,7 @@ static const vrpn_uint16 vrpn_3DCONNEXION_TRAVELER = 50723;
 static const vrpn_uint16 vrpn_3DCONNEXION_NAVIGATOR = 50726;
 static const vrpn_uint16 vrpn_3DCONNEXION_SPACEEXPLORER = 0xc627;   // 50727
 static const vrpn_uint16 vrpn_3DCONNEXION_SPACEMOUSE = 50691;
+static const vrpn_uint16 vrpn_3DCONNEXION_SPACEBALL5000 = 0xc621;   // 50721;
 
 vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_buttons,
                                    const char *name, vrpn_Connection *c)
@@ -283,6 +285,12 @@ vrpn_3DConnexion_SpaceMouse::vrpn_3DConnexion_SpaceMouse(const char *name, vrpn_
 }
 
 vrpn_3DConnexion_SpaceExplorer::vrpn_3DConnexion_SpaceExplorer(const char *name, vrpn_Connection *c)
-  : vrpn_3DConnexion(_filter = new vrpn_HidProductAcceptor(vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_SPACEEXPLORER), 11, name, c)
+  : vrpn_3DConnexion(_filter = new vrpn_HidProductAcceptor(vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_SPACEEXPLORER), 15, name, c)
 {
 }
+
+vrpn_3DConnexion_SpaceBall5000::vrpn_3DConnexion_SpaceBall5000(const char *name, vrpn_Connection *c)
+  : vrpn_3DConnexion(_filter = new vrpn_HidProductAcceptor(vrpn_3DCONNEXION_VENDOR, vrpn_3DCONNEXION_SPACEBALL5000), 12, name, c)
+{
+}
+

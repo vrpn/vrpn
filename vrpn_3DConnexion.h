@@ -6,12 +6,13 @@
 #include "vrpn_Analog.h"
 
 // Device drivers for the 3DConnexion SpaceNavigator and SpaceTraveler
-// devices, connecting to them as HID devices.
+// SpaceExplorer, SpaceMouse, Spaceball5000
+// devices, connecting to them as HID devices (USB).
 
 // Exposes two VRPN device classes: Button and Analog.
 // Analogs are mapped to the six channels, each in the range (-1..1).
 
-// This is the base driver for the two devices.  The Navigator has
+// This is the base driver for the devices.  The Navigator has
 // only two buttons and has product ID 50726, the traveler has 8
 // buttons and ID 50723.  The derived classes just construct with
 // the appropriate number of buttons and an acceptor for the proper
@@ -97,6 +98,15 @@ public:
 
 protected:
 };
+
+class VRPN_API vrpn_3DConnexion_SpaceBall5000: public vrpn_3DConnexion {
+public:
+  vrpn_3DConnexion_SpaceBall5000(const char *name, vrpn_Connection *c = 0);
+  virtual ~vrpn_3DConnexion_SpaceBall5000() {};
+
+protected:
+};
+
 
 // end of VRPN_3DCONNEXION_H
 #endif
