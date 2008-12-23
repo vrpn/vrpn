@@ -279,6 +279,7 @@ protected:
   int setup_3DConnexion_Traveler (char * & pch, char * line, FILE * config_file) ;
   int setup_3DConnexion_SpaceMouse (char * & pch, char * line, FILE * config_file) ;
   int setup_3DConnexion_SpaceExplorer (char * & pch, char * line, FILE * config_file) ;
+  int setup_3DConnexion_SpaceBall5000 (char * & pch, char * line, FILE * config_file) ;
   int setup_Tracker_MotionNode (char * & pch, char * line, FILE * config_file);
   int setup_WiiMote (char * & pch, char * line, FILE * config_file);
 

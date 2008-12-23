@@ -18,6 +18,11 @@
 	* vrpn_Generic_server_object.h : Same
 	* vrpn.cfg : Same
 
+2008-10-01  Ian Curington <ianc@acm.org>
+	* vrpn_Generic_server_object.C/h:
+          Added 3DConnexion Spaceball 5000 device support
+	* vrpn.cfg : Same.
+
 2008-08-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* test_auxilliary_logger.C : Changed the log duration for the test up
