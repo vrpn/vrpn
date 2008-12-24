@@ -94,8 +94,10 @@ vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_button
 
 vrpn_3DConnexion::~vrpn_3DConnexion()
 {
+#ifndef _WIN32
 	set_led(0);
-	delete _filter;
+#endif
+        delete _filter;
 }
 
 #ifdef _WIN32
@@ -178,6 +180,7 @@ void vrpn_3DConnexion::report(vrpn_uint32 class_of_service)
 	vrpn_Button::report_changes();
 }
 
+#ifndef _WIN32
 int vrpn_3DConnexion::set_led(int led_state)
 {
   struct input_event event;
@@ -193,8 +196,8 @@ int vrpn_3DConnexion::set_led(int led_state)
   }
   return ret < sizeof(struct input_event);
 }
+#endif
 
-#ifdef _WIN32
 // Swap the endian-ness of the 2-byte entry in the buffer.
 // This is used to make the little-endian int 16 values
 // returned by the device into the big-endian format that is
@@ -206,6 +209,7 @@ static void swap_endian2(char *buffer)
 	c = buffer[0]; buffer[0] = buffer[1]; buffer[1] = c;
 }
 
+#ifdef _WIN32
 void vrpn_3DConnexion::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 {
   // Decode all full reports.
