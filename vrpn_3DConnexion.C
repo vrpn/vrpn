@@ -60,7 +60,7 @@ vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_button
     char *fname = (char *)malloc(1000*sizeof(char));
     while(i < 256) {
         sprintf(fname, "/dev/input/event%d", i++);
-        f = fopen(fname, "rb");
+        f = fopen(fname, "r+b");
         if(f) {
           // We got an active device.  Fill in its values and see if it
           // is acceptible to the filter.
@@ -74,6 +74,8 @@ vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_button
           info.usagePage = 0;   // Unknown
           info.usage = 0;       // Unknown
           if (_filter->accept(info)) {
+            fd = fileno(f);
+            set_led(1);
             break;
           } else {
             fclose(f);
@@ -82,18 +84,17 @@ vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_button
     }
 
     if(!f) {
-        fprintf(stderr, "vrpn_3DConnexion constructor could not open the ");
-        perror(" device");
+        perror("Could not open the device");
         exit(1);
     }
 
     free(fname);
-    fd = fileno(f);
 #endif
 }
 
 vrpn_3DConnexion::~vrpn_3DConnexion()
 {
+	set_led(0);
 	delete _filter;
 }
 
@@ -175,6 +176,22 @@ void vrpn_3DConnexion::report(vrpn_uint32 class_of_service)
 
 	vrpn_Analog::report(class_of_service);
 	vrpn_Button::report_changes();
+}
+
+int vrpn_3DConnexion::set_led(int led_state)
+{
+  struct input_event event;
+  int ret;
+
+  event.type  = EV_LED;
+  event.code  = LED_MISC;
+  event.value = led_state;
+
+  ret = write(fd, &event, sizeof(struct input_event));
+  if (ret < 0) {
+    perror ("setting led state failed");
+  }
+  return ret < sizeof(struct input_event);
 }
 
 #ifdef _WIN32

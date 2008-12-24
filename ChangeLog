@@ -1,5 +1,11 @@
 2008-12-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_3DConnexion.C : Patch from Hans Lambermo from Virtual Proteins
+		to light up the 3DConnexion when the server runs.
+	* vrpn_3DConnexion.h : Same.
+
+2008-12-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Tracker_Fastrak.C : Added fix sent in by Roger Hoang to
 		keep things working with both Fastrak and IS900s with buttons.
 

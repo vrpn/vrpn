@@ -64,6 +64,8 @@ protected:
   void report(vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
   // NOTE:  class_of_service is only applied to vrpn_Analog
   //  values, not vrpn_Button or vrpn_Dial
+
+  int set_led(int led_state);
 };
 #endif  // not _WIN32
 
