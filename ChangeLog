@@ -1,5 +1,10 @@
 2008-12-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Connection.C : Raised version number after releasing version
+		7.19.
+
+2008-12-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_3DConnexion.C : Making it also compile under Windows.
 
 2008-12-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
