@@ -1,3 +1,9 @@
+2008-12-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Added a comment about where to find a different
+		library for dxerr8.lib, which has vanished in newer versions of
+		the SDK from Microsoft.
+
 2008-12-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Connection.C : Raised version number after releasing version

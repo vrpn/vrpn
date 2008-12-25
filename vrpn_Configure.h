@@ -330,6 +330,8 @@
 
 #ifdef	VRPN_USE_DIRECTINPUT
 #pragma comment (lib, "dxguid.lib")
+// Newer versions of the SDK have renamed this dxerr.lib;
+// dxerr9.lib has also been said to work.
 #pragma comment (lib, "dxerr8.lib")
 #pragma comment (lib, "dinput8.lib")
 #endif
