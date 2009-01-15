@@ -3874,6 +3874,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_MotionNode(char * & pch, char * li
 vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connection_to_use, const char *config_file_name, int port, bool be_verbose, bool bail_on_open_error) :
   connection(connection_to_use),
   d_doing_okay(true),
+  verbose(be_verbose),
   d_bail_on_open_error(bail_on_open_error),
   num_trackers(0),
   num_buttons(0),

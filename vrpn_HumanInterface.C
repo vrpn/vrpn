@@ -2,7 +2,7 @@
 
 #include "vrpn_HumanInterface.h"
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
 
 // SetupAPI provides the device enumeration stuff
 #pragma comment(lib, "setupapi.lib")
@@ -51,13 +51,13 @@ typedef struct _HIDP_CAPS
 
 // getProc: Quick-and-dirty wrapper around LoadLibrary/GetProcAddress
 // - entryPoint: Name of exported function (decorated if __dllexport)
-static void *getProc(const char *entryPoint) {
+static FARPROC getProc(const char *entryPoint) {
 	static HMODULE hdll = NULL;
 
 	if (!hdll)
 		hdll = LoadLibrary("HID.DLL"); 
 
-	void *p = GetProcAddress(hdll, entryPoint);
+	FARPROC p = GetProcAddress(hdll, entryPoint);
 	if (!p) {
 		throw __FILE__ ": GetProcAddress failed!";	// Should never happen in here
 	}

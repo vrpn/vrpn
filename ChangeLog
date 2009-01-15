@@ -1,5 +1,12 @@
 2009-1-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_3DConnexion.C : Making this work with Cygwin.
+	* vrpn_3DConnexion.h : Same.
+	* vrpn_HumanInterface.C : Same.
+	* vrpn_HumanInterface.h : Same.
+
+2009-1-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_3DConnexion.C : Fixed #defines so that it compiles under Cygwin.
 	* vrpn.vcproj : Removed entry for isense.h (not always present)
 	* vrpndll.vcproj : Same.

@@ -9,7 +9,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
-#ifndef _WIN32
+#if !defined(_WIN32)
 #include <sys/ioctl.h>
 #include <unistd.h>
 #endif
@@ -33,7 +33,7 @@ static const vrpn_uint16 vrpn_3DCONNEXION_SPACEBALL5000 = 0xc621;   // 50721;
 vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_buttons,
                                    const char *name, vrpn_Connection *c)
   : _filter(filter)
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
   , vrpn_HidInterface(_filter)
 #endif
   , vrpn_Analog(name, c)
@@ -100,7 +100,7 @@ vrpn_3DConnexion::~vrpn_3DConnexion()
         delete _filter;
 }
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
 void vrpn_3DConnexion::reconnect()
 {
 	vrpn_HidInterface::reconnect();
@@ -114,7 +114,7 @@ void vrpn_3DConnexion::on_data_received(size_t bytes, vrpn_uint8 *buffer)
 
 void vrpn_3DConnexion::mainloop()
 {
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
 	update();
 #elif defined(LINUX)
     struct timeval zerotime;
@@ -157,9 +157,6 @@ void vrpn_3DConnexion::mainloop()
     server_mainloop();
     vrpn_gettimeofday(&_timestamp, NULL);
     report_changes();
-
-    vrpn_Analog::server_mainloop();
-    vrpn_Button::server_mainloop();
 }
 
 void vrpn_3DConnexion::report_changes(vrpn_uint32 class_of_service)
@@ -209,7 +206,7 @@ static void swap_endian2(char *buffer)
 	c = buffer[0]; buffer[0] = buffer[1]; buffer[1] = c;
 }
 
-#if !(defined(_WIN32) || defined(__CYGWIN__))
+#if defined(_WIN32) || defined(__CYGWIN__)
 void vrpn_3DConnexion::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 {
   // Decode all full reports.

@@ -63,7 +63,7 @@ endif
 
 CC := g++
 ifeq ($(HW_OS),pc_cygwin)
-	SYSLIBS := -lcygwin -luser32 -lgdi32 -lcomdlg32 -lwsock32
+	SYSLIBS := -lcygwin -luser32 -lgdi32 -lcomdlg32 -lwsock32 -lSetupApi
 endif
 ifeq ($(HW_OS),sparc_solaris)
 	CC := /opt/SUNWspro/bin/CC

@@ -1,3 +1,8 @@
+2009-1-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Generic_server_object.C : Making HID work with Cygwin.
+	* Makefile : Same.
+
 2008-12-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Generic_server_object.C : Made this compile even when the WiiMote is

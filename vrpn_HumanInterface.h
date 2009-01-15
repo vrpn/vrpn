@@ -32,7 +32,13 @@ public:
 	virtual void reset() { }
 };
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
+#if defined(__CYGWIN__)
+// This will cause _WIN32 to be defined, which will cause us trouble later on.
+// It is needed to define the HANDLE type used below.
+#include <windows.h>
+#undef _WIN32
+#endif
 
 // Main VRPN API for HID devices
 class VRPN_API vrpn_HidInterface {
@@ -74,7 +80,7 @@ protected:
 
 	// Now the Windows-specific implementation details.
 	// Other operating systems will require their own blocks.
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
 private:
 	void start_io();
 

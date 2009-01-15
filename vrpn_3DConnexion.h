@@ -18,7 +18,7 @@
 // the appropriate number of buttons and an acceptor for the proper
 // product ID; the baseclass does all the work.
 
-#ifdef  _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
 class VRPN_API vrpn_3DConnexion: public vrpn_Button, public vrpn_Analog, protected vrpn_HidInterface {
 public:
   vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_buttons,
