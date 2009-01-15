@@ -94,7 +94,7 @@ vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_button
 
 vrpn_3DConnexion::~vrpn_3DConnexion()
 {
-#ifndef _WIN32
+#if !(defined(_WIN32) || defined(__CYGWIN__))
 	set_led(0);
 #endif
         delete _filter;
@@ -180,7 +180,7 @@ void vrpn_3DConnexion::report(vrpn_uint32 class_of_service)
 	vrpn_Button::report_changes();
 }
 
-#ifndef _WIN32
+#if !(defined(_WIN32) || defined(__CYGWIN__))
 int vrpn_3DConnexion::set_led(int led_state)
 {
   struct input_event event;
@@ -209,7 +209,7 @@ static void swap_endian2(char *buffer)
 	c = buffer[0]; buffer[0] = buffer[1]; buffer[1] = c;
 }
 
-#ifdef _WIN32
+#if !(defined(_WIN32) || defined(__CYGWIN__))
 void vrpn_3DConnexion::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 {
   // Decode all full reports.

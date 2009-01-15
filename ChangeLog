@@ -1,3 +1,9 @@
+2009-1-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3DConnexion.C : Fixed #defines so that it compiles under Cygwin.
+	* vrpn.vcproj : Removed entry for isense.h (not always present)
+	* vrpndll.vcproj : Same.
+
 2009-1-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_ForceDevice.h : Bug fix sent in by Bruno Raffin, where

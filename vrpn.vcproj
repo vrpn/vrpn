@@ -1982,10 +1982,6 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
-				RelativePath="..\isense\isense.h"
-				>
-			</File>
-			<File
 				RelativePath=".\vrpn_3DConnexion.h"
 				>
 			</File>
