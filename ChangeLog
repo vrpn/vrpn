@@ -1,3 +1,9 @@
+2009-1-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_WiiMote.C : Fixed a bug that caused the buttons on the
+		Classic controller and Guitar Hero controller to be ignored
+		by the driver.
+
 2009-1-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_3DConnexion.C : Making this work with Cygwin.

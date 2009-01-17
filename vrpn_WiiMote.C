@@ -164,7 +164,7 @@ vrpn_WiiMote::vrpn_WiiMote(const char *name, vrpn_Connection *c, unsigned which)
 
         // There are bits for up to 16 buttons on the main remote, and for
         // up to 16 more on an expansion pack.
-	vrpn_Button::num_buttons = min(32, vrpn_BUTTON_MAX_BUTTONS);
+	vrpn_Button::num_buttons = min(64, vrpn_BUTTON_MAX_BUTTONS);
         for (i = 0; i < vrpn_Button::num_buttons; i++) {
           buttons[i] = 0;
         }
