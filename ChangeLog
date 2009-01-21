@@ -1,3 +1,11 @@
+2009-1-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker.C : Removed the upper limit on the number of
+		sensors per tracker.  The client now dynamically updates
+		the list to provide sufficient entries until it runs out
+		of memory.
+	* vrpn_Tracker.h : Same.
+
 2009-1-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_WiiMote.C : Fixed a bug that caused the buttons on the

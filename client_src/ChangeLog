@@ -1,3 +1,12 @@
+2009_01_21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* forcedevice_test_client.vcproj : Making it compile with quatlib
+		in expected location.
+	* sphere_client.vcproj : Same.
+	* vrpn_print_devices.C : Removed limit on the number of sensors per
+		tracker.  Now uses a vector to keep track of counts, which
+		can add more until we run out of memory.
+
 2008_07_02  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_print_devices.C : Has the code not preload or

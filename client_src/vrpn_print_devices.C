@@ -27,8 +27,11 @@
 #include <vrpn_Dial.h>
 #include <vrpn_Text.h>
 #include <vrpn_FileConnection.h>  // For preload and accumulate settings
+#include <vector>
+using namespace std;
 
-int done = 0;	    // Signals that the program should exit
+int done = 0;	        // Signals that the program should exit
+unsigned tracker_stride = 1;	// Every nth report will be printed
 
 //-------------------------------------
 // This section contains the data structure that holds information on
@@ -52,24 +55,18 @@ const unsigned MAX_DEVICES = 50;
 //-------------------------------------
 // This section contains the data structure that is used to determine how
 // often to print a report for each sensor of each tracker.  Each element
-// contains the number of reports to skip between printing and a counter
-// that is used by the callback routine to keep track of how many it has
-// skipped.  There is an element for each possible sensor.  A new array of
-// elements is created for each new tracker object, and a pointer to it is
-// passed as the userdata pointer to the callback handlers.  A separate
-// array is kept for the position, velocity, and acceleration for each
+// contains a counter that is used by the callback routine to keep track
+// of how many it has skipped.  There is an element for each possible sensor.
+// A new array of elements is created for each new tracker object, and a
+// pointer to it is passed as the userdata pointer to the callback handlers.
+// A separate array is kept for the position, velocity, and acceleration for each
 // tracker.  The structure passed to the callback handler also has a
 // string that is the name of the tracker.
 
-class t_sensor_counter {
-    public:
-	int stride;	// Stride of 1 == print every, 2 is every other, ...
-	int count;	// How many we have gotten
-};
 class t_user_callback {
     public:
 	char		    t_name[vrpn_MAX_TEXT_LEN];
-	t_sensor_counter    t_sensor_list[vrpn_TRACKER_MAX_SENSORS];
+        vector<unsigned>    t_counts;
 };
 
 
@@ -83,10 +80,15 @@ void	VRPN_CALLBACK handle_tracker_pos_quat (void *userdata, const vrpn_TRACKERCB
 {
 	t_user_callback	*t_data = (t_user_callback *)userdata;
 
+        // Make sure we have a count value for this sensor
+        while (t_data->t_counts.size() <= static_cast<unsigned>(t.sensor)) {
+          t_data->t_counts.push_back(0);
+        }
+
 	// See if we have gotten enough reports from this sensor that we should
 	// print this one.  If so, print and reset the count.
-	if ( ++t_data->t_sensor_list[t.sensor].count >= t_data->t_sensor_list[t.sensor].stride ) {
-		t_data->t_sensor_list[t.sensor].count = 0;
+	if ( ++t_data->t_counts[t.sensor] >= tracker_stride ) {
+		t_data->t_counts[t.sensor] = 0;
 		printf("Tracker %s, sensor %ld:\n        pos (%5.2f, %5.2f, %5.2f); quat (%5.2f, %5.2f, %5.2f, %5.2f)\n",
 			t_data->t_name,
 			t.sensor,
@@ -99,10 +101,15 @@ void	VRPN_CALLBACK handle_tracker_vel (void *userdata, const vrpn_TRACKERVELCB t
 {
 	t_user_callback	*t_data = (t_user_callback *)userdata;
 
+        // Make sure we have a count value for this sensor
+        while (t_data->t_counts.size() <= static_cast<unsigned>(t.sensor)) {
+          t_data->t_counts.push_back(0);
+        }
+
 	// See if we have gotten enough reports from this sensor that we should
 	// print this one.  If so, print and reset the count.
-	if ( ++t_data->t_sensor_list[t.sensor].count >= t_data->t_sensor_list[t.sensor].stride ) {
-		t_data->t_sensor_list[t.sensor].count = 0;
+	if ( ++t_data->t_counts[t.sensor] >= tracker_stride ) {
+		t_data->t_counts[t.sensor] = 0;
 		printf("Tracker %s, sensor %ld:\n        vel (%5.2f, %5.2f, %5.2f); quatvel (%5.2f, %5.2f, %5.2f, %5.2f)\n",
 			t_data->t_name,
 			t.sensor,
@@ -115,10 +122,15 @@ void	VRPN_CALLBACK handle_tracker_acc (void *userdata, const vrpn_TRACKERACCCB t
 {
 	t_user_callback	*t_data = (t_user_callback *)userdata;
 
+        // Make sure we have a count value for this sensor
+        while (t_data->t_counts.size() <= static_cast<unsigned>(t.sensor)) {
+          t_data->t_counts.push_back(0);
+        }
+
 	// See if we have gotten enough reports from this sensor that we should
 	// print this one.  If so, print and reset the count.
-	if ( ++t_data->t_sensor_list[t.sensor].count >= t_data->t_sensor_list[t.sensor].stride ) {
-		t_data->t_sensor_list[t.sensor].count = 0;
+	if ( ++t_data->t_counts[t.sensor] >= tracker_stride ) {
+		t_data->t_counts[t.sensor] = 0;
 		printf("Tracker %s, sensor %ld:\n        acc (%5.2f, %5.2f, %5.2f); quatacc (%5.2f, %5.2f, %5.2f, %5.2f)\n",
 			t_data->t_name,
 			t.sensor,
@@ -198,7 +210,6 @@ void Usage (const char * arg0) {
 
 int main (int argc, char * argv [])
 {
-  int	tracker_stride = 1;	// Every nth report will be printed
   int   print_for_tracker = 1;	// Print tracker reports?
   int   print_for_button = 1;	// Print button reports?
   int   print_for_analog = 1;	// Print analog reports?
@@ -266,7 +277,6 @@ int main (int argc, char * argv [])
 	// user-data callbacks and hook them up to be called with
 	// the correct data for this device.
 	if (print_for_tracker) {
-	    int j;
 	    vrpn_Tracker_Remote *tkr = dev->tkr;
 	    t_user_callback *tc1 = new t_user_callback;
 	    t_user_callback *tc2 = new t_user_callback;
@@ -281,14 +291,6 @@ int main (int argc, char * argv [])
 	    strncpy(tc1->t_name, dev->name, sizeof(tc1->t_name));
 	    strncpy(tc2->t_name, dev->name, sizeof(tc2->t_name));
 	    strncpy(tc3->t_name, dev->name, sizeof(tc3->t_name));
-	    for (j = 0; j < vrpn_TRACKER_MAX_SENSORS; j++) {
-		tc1->t_sensor_list[j].count = 0;
-		tc1->t_sensor_list[j].stride = tracker_stride;
-		tc2->t_sensor_list[j].count = 0;
-		tc2->t_sensor_list[j].stride = tracker_stride;
-		tc3->t_sensor_list[j].count = 0;
-		tc3->t_sensor_list[j].stride = tracker_stride;
-	    }
 
 	    // Set up the tracker callback handlers
 	    tkr->register_change_handler(tc1, handle_tracker_pos_quat);

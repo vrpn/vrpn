@@ -47,15 +47,12 @@ const	int vrpn_TRACKER_PARTIAL 	   = (0);
 const	int vrpn_TRACKER_RESETTING	   = (-1);
 const	int vrpn_TRACKER_FAIL 	 	   = (-2);
 
-const	int vrpn_TRACKER_MAX_SENSORS = (500);
+// index for the change_list that should be called for all sensors.
+// Not an in-range index.
+const	int vrpn_ALL_SENSORS = -1;
 
-// index for the change_list that should be called for all sensors
-const	int vrpn_ALL_SENSORS = vrpn_TRACKER_MAX_SENSORS;
-
-// this is the maximum for indices into sensor-specific change lists
-// it is 1 more than the number of sensors because the last list is
-// used to specify all sensors
-const	int vrpn_TRACKER_MAX_SENSOR_LIST = vrpn_TRACKER_MAX_SENSORS + 1;
+typedef vrpn_float64  vrpn_Tracker_Pos[3];
+typedef vrpn_float64  vrpn_Tracker_Quat[4];
 
 class VRPN_API vrpn_Tracker : public vrpn_BaseClass {
   public:
@@ -115,8 +112,13 @@ class VRPN_API vrpn_Tracker : public vrpn_BaseClass {
 
    vrpn_float64 tracker2room[3], tracker2room_quat[4]; // Current t2r xform
    vrpn_int32 num_sensors;
-   vrpn_float64 unit2sensor[vrpn_TRACKER_MAX_SENSORS][3];
-   vrpn_float64 unit2sensor_quat[vrpn_TRACKER_MAX_SENSORS][4]; // Current u2s xforms
+
+   // Arrays of values, one per sensor.  Includes function to ensure there are
+   // enough there for a specified number of sensors.
+   vrpn_Tracker_Pos   *unit2sensor;
+   vrpn_Tracker_Quat  *unit2sensor_quat; // Current u2s xforms
+   unsigned num_unit2sensors;
+   bool ensure_enough_unit2sensors(unsigned num);
 
    // bounding box for the tracker workspace (in tracker space)
    // these are the points with (x,y,z) minimum and maximum
@@ -185,7 +187,6 @@ class VRPN_API vrpn_Tracker_NULL: public vrpn_Tracker {
 
   protected:
    vrpn_float64	update_rate;
-   vrpn_int32	num_sensors;
 
    vrpn_RedundantTransmission * d_redundancy;
 };
@@ -227,8 +228,6 @@ class VRPN_API vrpn_Tracker_Server: public vrpn_Tracker {
 			   const vrpn_float64 interval,
 			   const vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
 
-  protected:
-   vrpn_int32	num_sensors;
 };
 
 
@@ -306,6 +305,16 @@ typedef struct _vrpn_TRACKERWORKSPACECB {
 } vrpn_TRACKERWORKSPACECB;
 typedef void (VRPN_CALLBACK *vrpn_TRACKERWORKSPACECHANGEHANDLER)(void *userdata,
 					const vrpn_TRACKERWORKSPACECB info);
+
+// Structure to hold all of the callback lists for one sensor
+// (also used for the "all sensors" sensor).
+class vrpn_Tracker_Sensor_Callbacks {
+public:
+    vrpn_Callback_List<vrpn_TRACKERCB>	  d_change;
+    vrpn_Callback_List<vrpn_TRACKERVELCB> d_velchange;
+    vrpn_Callback_List<vrpn_TRACKERACCCB> d_accchange;
+    vrpn_Callback_List<vrpn_TRACKERUNIT2SENSORCB>   d_unit2sensorchange;
+};
 
 // Open a tracker that is on the other end of a connection
 // and handle updates from it.  This is the type of tracker that user code will
@@ -391,10 +400,10 @@ class VRPN_API vrpn_Tracker_Remote: public vrpn_Tracker {
 
   protected:
     // Callbacks with one per sensor (plus one for "all")
-    vrpn_Callback_List<vrpn_TRACKERCB>	  d_change_list[vrpn_TRACKER_MAX_SENSOR_LIST];
-    vrpn_Callback_List<vrpn_TRACKERVELCB> d_velchange_list[vrpn_TRACKER_MAX_SENSOR_LIST];
-    vrpn_Callback_List<vrpn_TRACKERACCCB> d_accchange_list[vrpn_TRACKER_MAX_SENSOR_LIST];
-    vrpn_Callback_List<vrpn_TRACKERUNIT2SENSORCB>   d_unit2sensorchange_list[vrpn_TRACKER_MAX_SENSOR_LIST];
+    vrpn_Tracker_Sensor_Callbacks   all_sensor_callbacks;
+    vrpn_Tracker_Sensor_Callbacks   *sensor_callbacks;
+    unsigned num_sensor_callbacks;
+    bool  ensure_enough_sensor_callbacks(unsigned num);
 
     // Callbacks that are one per tracker
     vrpn_Callback_List<vrpn_TRACKERTRACKER2ROOMCB>  d_tracker2roomchange_list;
