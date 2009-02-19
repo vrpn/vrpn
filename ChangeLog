@@ -1,6 +1,10 @@
 2009-02-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
-	Version 07.10 release.
+	* vrpn_Connection.C : Increasing version number after release.
+
+2009-02-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	Version 07.20 release.
 
 	* vrpn_Connection.C : Moved the connection manager class to the .h file
 		so that FileConnection can access it in its constructor and
