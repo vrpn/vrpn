@@ -157,7 +157,7 @@ int vrpn_Tracker::register_types(void)
 	if (d_connection) {
 	  position_m_id = d_connection->register_message_type("vrpn_Tracker Pos_Quat");
 	  velocity_m_id = d_connection->register_message_type("vrpn_Tracker Velocity");
-	  accel_m_id =d_connection->register_message_type("vrpn_Tracke:r Acceleration");
+	  accel_m_id =d_connection->register_message_type("vrpn_Tracker Acceleration");
 	  tracker2room_m_id = d_connection->register_message_type("vrpn_Tracker To_Room");
 	  unit2sensor_m_id = d_connection->register_message_type("vrpn_Tracker Unit_To_Sensor");
 	  request_t2r_m_id = d_connection->register_message_type("vrpn_Tracker Request_Tracker_To_Room");
@@ -1015,7 +1015,7 @@ bool vrpn_Tracker_Remote::ensure_enough_sensor_callbacks(unsigned num)
     // Make sure we allocate in large chunks, rather than one at a time.
     if (num < 2 * num_sensor_callbacks) { num = 2 * num_sensor_callbacks; }
 
-    // Allocate new space for the two lists.
+    // Allocate new space for the list.
     vrpn_Tracker_Sensor_Callbacks  *newlist = new vrpn_Tracker_Sensor_Callbacks[num];
     if (newlist == NULL) { return false; }
 

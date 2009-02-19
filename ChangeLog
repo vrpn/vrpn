@@ -1,4 +1,20 @@
-2009-1-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+2009-02-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	Version 07.10 release.
+
+	* vrpn_Connection.C : Moved the connection manager class to the .h file
+		so that FileConnection can access it in its constructor and
+		destructor.
+	* vrpn_Connection.h : Same.
+	* vrpn_FileConnection.C : Adds itself to the list of open connections in
+		constructor and removes itself in destructor, so that multiple
+		devices opening the same file share the same connection.
+	* vrpn_FileConnection.h : Changed parameter name to make it more clear
+		what it does.
+	* vrpn_Tracker.C : Removed spurious ":" that had worked its way into one
+		of the tracker report strings (for acceleration).
+
+2009-01-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Tracker.C : Removed the upper limit on the number of
 		sensors per tracker.  The client now dynamically updates
@@ -6,26 +22,26 @@
 		of memory.
 	* vrpn_Tracker.h : Same.
 
-2009-1-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+2009-01-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_WiiMote.C : Fixed a bug that caused the buttons on the
 		Classic controller and Guitar Hero controller to be ignored
 		by the driver.
 
-2009-1-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+2009-01-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_3DConnexion.C : Making this work with Cygwin.
 	* vrpn_3DConnexion.h : Same.
 	* vrpn_HumanInterface.C : Same.
 	* vrpn_HumanInterface.h : Same.
 
-2009-1-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+2009-01-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_3DConnexion.C : Fixed #defines so that it compiles under Cygwin.
 	* vrpn.vcproj : Removed entry for isense.h (not always present)
 	* vrpndll.vcproj : Same.
 
-2009-1-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+2009-01-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_ForceDevice.h : Bug fix sent in by Bruno Raffin, where
 		<quat.h> should have been used but "../quat/qua.h" was.

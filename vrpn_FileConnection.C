@@ -61,7 +61,7 @@ bool vrpn_FILE_CONNECTIONS_SHOULD_SKIP_TO_USER_MESSAGES = true;
 // }}}
 // {{{ constructor
 
-vrpn_File_Connection::vrpn_File_Connection (const char * file_name,
+vrpn_File_Connection::vrpn_File_Connection (const char * station_name,
                          const char * local_in_logfile_name,
                          const char * local_out_logfile_name) :
     vrpn_Connection (local_in_logfile_name, local_out_logfile_name, NULL, NULL),
@@ -102,7 +102,7 @@ vrpn_File_Connection::vrpn_File_Connection (const char * file_name,
     // necessary to initialize properly in mainloop()
     d_last_time.tv_usec = d_last_time.tv_sec = 0;
     
-    d_fileName = vrpn_copy_file_name(file_name);
+    d_fileName = vrpn_copy_file_name(station_name);
     if (!d_fileName) {
         fprintf(stderr, "vrpn_File_Connection:  Out of memory!\n");
         connectionStatus = BROKEN;
@@ -163,6 +163,9 @@ vrpn_File_Connection::vrpn_File_Connection (const char * file_name,
 	    d_time = d_start_time;
 	}
     }
+
+    // Add this to the list of known connections.
+    vrpn_ConnectionManager::instance().addConnection(this, station_name);
 }
 
 // }}}
@@ -193,6 +196,10 @@ void vrpn_File_Connection::play_to_user_message (void)
 vrpn_File_Connection::~vrpn_File_Connection (void)
 {
     vrpn_LOGLIST * np;
+
+    // Remove myself from the "known connections" list
+    //   (or the "anonymous connections" list).
+    vrpn_ConnectionManager::instance().deleteConnection(this);
 
     close_file();
     delete [] d_fileName;
@@ -670,12 +677,14 @@ int vrpn_File_Connection::playone_to_filetime( timeval end_filetime )
 		endpoint->other_types[header.type].name,
 		header.msg_time.tv_sec, header.msg_time.tv_usec);
 #endif
-        if (endpoint->local_type_id(header.type) >= 0)                
+        if (endpoint->local_type_id(header.type) >= 0) {
             if (do_callbacks_for(endpoint->local_type_id(header.type),
                                  endpoint->local_sender_id(header.sender),
                                  header.msg_time, header.payload_len,
-                                 header.buffer))
-                return -1;     
+                                 header.buffer)) {
+                return -1;
+            }
+        }
             
     } else {  // system handler            
 

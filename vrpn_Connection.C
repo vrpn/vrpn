@@ -910,12 +910,6 @@ int vrpn_Log::checkFilters (vrpn_int32 payloadLen, struct timeval time,
 }
 
 
-
-
-
-
-
-
 /**
  * @class vrpn_TypeDispatcher
  * Handles types, senders, and callbacks.
@@ -1338,7 +1332,6 @@ int vrpn_TypeDispatcher::doCallbacksFor
 
   // Find the head for the list of callbacks to call
   who = d_types[type].who_cares;
-
   while (who) {   // For each callback entry
     // Verify that the sender is ANY or matches
     if ((who->sender == vrpn_ANY_SENDER) ||
@@ -1431,67 +1424,6 @@ void vrpn_TypeDispatcher::clear (void) {
   }
 }
 
-
-/**
- * @class vrpn_ConnectionManager
- * Singleton class that keeps track of all known VRPN connections
- * and makes sure they're deleted on shutdown.
- * We make it static to guarantee that the destructor is called
- * on program close so that the destructors of all the vrpn_Connections
- * that have been allocated are called so that all open logs are flushed
- * to disk.
- */
-
-//      This section holds data structures and functions to open
-// connections by name.
-//      The intention of this section is that it can open connections for
-// objects that are in different libraries (trackers, buttons and sound),
-// even if they all refer to the same connection.
-
-
-class vrpn_ConnectionManager {
-
-  public:
-
-    ~vrpn_ConnectionManager (void);
-
-    static vrpn_ConnectionManager & instance (void);
-      // The only way to get access to an instance of this class.
-      // Guarantees that there is only one, global object.
-      // Also guarantees that it will be constructed the first time
-      // this function is called, and (hopefully?) destructed when
-      // the program terminates.
-
-    void addConnection (vrpn_Connection *, const char * name);
-    void deleteConnection (vrpn_Connection *);
-      // NB implementation is not particularly efficient;  we expect
-      // to have O(10) connections, not O(1000).
-
-    vrpn_Connection * getByName (const char * name);
-      // Searches through d_kcList but NOT d_anonList
-      // (Connections constructed with no name)
-
-  private:
-
-    struct knownConnection {
-      char name [1000];
-      vrpn_Connection * connection;
-      knownConnection * next;
-    };
-
-    knownConnection * d_kcList;
-      // named connections
-
-    knownConnection * d_anonList;
-      // unnamed (server) connections
-
-    vrpn_ConnectionManager (void);
-
-    vrpn_ConnectionManager (const vrpn_ConnectionManager &);
-      // copy constructor undefined to prevent instantiations
-
-    static void deleteConnection (vrpn_Connection *, knownConnection **);
-};
 
 vrpn_ConnectionManager::~vrpn_ConnectionManager (void) {
 

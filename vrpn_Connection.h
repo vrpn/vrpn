@@ -896,4 +896,68 @@ VRPN_API int write_vrpn_cookie (char * buffer, int length, long remote_log_mode)
  int VRPN_API vrpn_noint_block_read(SOCKET insock, char *buffer, int length);
 #endif /* VRPN_USE_WINSOCK_SOCKETS */
 
+/**
+ * @class vrpn_ConnectionManager
+ * Singleton class that keeps track of all known VRPN connections
+ * and makes sure they're deleted on shutdown.
+ * We make it static to guarantee that the destructor is called
+ * on program close so that the destructors of all the vrpn_Connections
+ * that have been allocated are called so that all open logs are flushed
+ * to disk.  Each connection should add itself to this list in its
+ * constructor and should remove itself from this list in its
+ * destructor.
+ */
+
+//      This section holds data structures and functions to open
+// connections by name.
+//      The intention of this section is that it can open connections for
+// objects that are in different libraries (trackers, buttons and sound),
+// even if they all refer to the same connection.
+
+
+class vrpn_ConnectionManager {
+
+  public:
+
+    ~vrpn_ConnectionManager (void);
+
+    static vrpn_ConnectionManager & instance (void);
+      // The only way to get access to an instance of this class.
+      // Guarantees that there is only one, global object.
+      // Also guarantees that it will be constructed the first time
+      // this function is called, and (hopefully?) destructed when
+      // the program terminates.
+
+    void addConnection (vrpn_Connection *, const char * name);
+    void deleteConnection (vrpn_Connection *);
+      // NB implementation is not particularly efficient;  we expect
+      // to have O(10) connections, not O(1000).
+
+    vrpn_Connection * getByName (const char * name);
+      // Searches through d_kcList but NOT d_anonList
+      // (Connections constructed with no name)
+
+  private:
+
+    struct knownConnection {
+      char name [1000];
+      vrpn_Connection * connection;
+      knownConnection * next;
+    };
+
+    knownConnection * d_kcList;
+      // named connections
+
+    knownConnection * d_anonList;
+      // unnamed (server) connections
+
+    vrpn_ConnectionManager (void);
+
+    vrpn_ConnectionManager (const vrpn_ConnectionManager &);
+      // copy constructor undefined to prevent instantiations
+
+    static void deleteConnection (vrpn_Connection *, knownConnection **);
+};
+
+
 #endif // VRPN_CONNECTION_H

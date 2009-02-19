@@ -66,7 +66,7 @@ extern VRPN_API bool vrpn_FILE_CONNECTIONS_SHOULD_SKIP_TO_USER_MESSAGES;
 class VRPN_API vrpn_File_Connection : public vrpn_Connection
 {
 public:
-    vrpn_File_Connection (const char * file_name, 
+    vrpn_File_Connection (const char * station_name, 
                          const char * local_in_logfile_name = NULL,
                          const char * local_out_logfile_name = NULL);
     virtual ~vrpn_File_Connection (void);
