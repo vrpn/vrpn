@@ -1,3 +1,8 @@
+2009-02-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Add in vrpn_WiiMote files to server library.
+	* vrpn_WiiMote.C : Define min() before use.
+
 2009-02-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Connection.C : Increasing version number after release.

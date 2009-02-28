@@ -23,6 +23,9 @@ public:
 };
 
 // Helper routines.
+#ifndef	min
+#define min(x,y) ((x)<(y)?(x):(y))
+#endif
 
 void vrpn_WiiMote::handle_event()
 {

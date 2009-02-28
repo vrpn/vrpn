@@ -103,6 +103,8 @@ ifeq ($(HW_OS), pc_cygwin_arm)
 endif
 ifeq ($(HW_OS),pc_linux)
 	SYSLIBS := 
+# For WiiMote
+#	SYSLIBS := -lwiiuse
 # For GPM mouse
 #	SYSLIBS := -lgpm
 # For Isense libraries

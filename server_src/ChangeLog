@@ -1,3 +1,7 @@
+2009-02-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Added in comment showing how to link with WiiMote.
+
 2009-1-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Generic_server_object.C : Making HID work with Cygwin.
