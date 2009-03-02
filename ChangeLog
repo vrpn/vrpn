@@ -1,3 +1,9 @@
+2009-03-02  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Tracker.C (ensure_enough_unit2sensors):  initializes
+	the new elements of the new arrays rather than the non-existant
+	elements of the old arrays.
+
 2009-02-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Makefile : Add in vrpn_WiiMote files to server library.
