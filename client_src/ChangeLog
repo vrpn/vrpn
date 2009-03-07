@@ -1,3 +1,10 @@
+2009_03_07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Added entry to compile a C-interface example program.
+	* c_interface.cpp : Code to provide a C interface to remote classes.
+	* c_interface.h : Same.
+	* c_interface_example.c : Example C program using the interface.
+
 2009_01_21  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* forcedevice_test_client.vcproj : Making it compile with quatlib

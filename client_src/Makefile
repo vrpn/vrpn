@@ -160,7 +160,7 @@ INSTALL_APPS := vrpn_print_devices forcedevice_test_client vrpn_ping \
 
 APPS := $(INSTALL_APPS) printvals printcereal checklogfile logfilesenders \
 	logfiletypes text forwarderClient bdbox_client ff_client phan_client \
-	sphere_client bdbox_client test_mutex test_imager
+	sphere_client bdbox_client test_mutex test_imager c_interface_example
 
 all:	$(APPS)
 
@@ -213,6 +213,9 @@ test_mutex:	$(OBJ_DIR)/test_mutex
 
 .PHONY: test_imager
 test_imager:	$(OBJ_DIR)/test_imager
+
+.PHONY: c_interface_example
+c_interface_example:	$(OBJ_DIR)/c_interface_example
 
 .PHONY:	text
 text:	$(OBJ_DIR)/text
@@ -302,6 +305,10 @@ $(OBJ_DIR)/test_mutex: $(OBJ_DIR)/test_mutex.o $(LIB_DIR)/libvrpn.a
 $(OBJ_DIR)/test_imager: $(OBJ_DIR)/test_imager.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/test_imager \
 		$(OBJ_DIR)/test_imager.o -lvrpn $(ARCH_LIBS)
+
+$(OBJ_DIR)/c_interface_example: $(OBJ_DIR)/c_interface_example.o $(OBJ_DIR)/c_interface.o $(LIB_DIR)/libvrpn.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/c_interface_example \
+		$(OBJ_DIR)/c_interface_example.o $(OBJ_DIR)/c_interface.o -lvrpn $(ARCH_LIBS)
 
 
 # These utilities actually DON'T use libvrpn
