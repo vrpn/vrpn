@@ -124,7 +124,7 @@ ifeq ($(HW_OS),pc_cygwin)
 endif
 
 GLUTINCLUDE = /afs/cs.unc.edu/project/walk/include
-CFLAGS = -I../ -I$(GLUTINCLUDE) -g
+CFLAGS = -I../ -I../../quat -I$(GLUTINCLUDE) -g
 
 .SUFFIXES:	.cpp
 

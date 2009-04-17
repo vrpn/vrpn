@@ -1,3 +1,8 @@
+2009_04_17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Patch from Hans Lambermont to make it compile under Linux.
+	* test_imager.C : Same.
+
 2009_03_07  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Makefile : Added entry to compile a C-interface example program.
