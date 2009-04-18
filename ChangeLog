@@ -1,3 +1,12 @@
+2009-04-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3DConnexion.C : Patch from Hans Lambermont to make the
+		Linux version read all of the messages in the buffer from
+		the device.  Also fixed both Windows and Linux versions
+		to both send all messages found in a buffer, rather than
+		just the last set.  (Not yet tested this second set of
+		fixes).
+
 2009-03-02  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_Tracker.C (ensure_enough_unit2sensors):  initializes

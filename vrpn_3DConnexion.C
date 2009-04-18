@@ -127,36 +127,41 @@ void vrpn_3DConnexion::mainloop()
 
     FD_ZERO(&fdset);                      /* clear fdset              */
     FD_SET(fd, &fdset);                   /* include fd in fdset      */
-    vrpn_noint_select(fd + 1, &fdset, NULL, NULL, &zerotime);
-    if (FD_ISSET(fd, &fdset)) {
-        if (vrpn_noint_block_read(fd, reinterpret_cast<char*>(&ev), sizeof(struct input_event)) != sizeof(struct input_event)) {
-            send_text_message("Error reading from vrpn_3DConnexion", vrpn_Analog::timestamp, vrpn_TEXT_ERROR);
-            if (d_connection) { d_connection->send_pending_reports(); }
-            return;
+    int moreData = 0;
+    do {
+        vrpn_noint_select(fd + 1, &fdset, NULL, NULL, &zerotime);
+        moreData = 0;
+        if (FD_ISSET(fd, &fdset)) {
+            moreData = 1;
+            if (vrpn_noint_block_read(fd, reinterpret_cast<char*>(&ev), sizeof(struct input_event)) != sizeof(struct input_event)) {
+                send_text_message("Error reading from vrpn_3DConnexion", vrpn_Analog::timestamp, vrpn_TEXT_ERROR);
+                if (d_connection) { d_connection->send_pending_reports(); }
+                return;
+            }
+            switch (ev.type) {
+                case EV_KEY:    // button movement
+                    vrpn_gettimeofday((timeval *)&this->vrpn_Button::timestamp, NULL);
+                    buttons[ev.code & 0x0ff] = ev.value;
+                    break;
+ 
+                case EV_REL:    // axis movement
+                    vrpn_gettimeofday((timeval *)&this->vrpn_Analog::timestamp, NULL);
+                    // Convert from short to int to avoid a short/double conversion
+                    // bug in GCC 3.2.
+                    i = ev.value;
+                    channel[ev.code] = static_cast<double>(i)/400.0;           
+                    break;
+ 
+                default:
+                    break;
+            }
         }
-        switch (ev.type) {
-            case EV_KEY:    // button movement
-                vrpn_gettimeofday((timeval *)&this->vrpn_Button::timestamp, NULL);
-                buttons[ev.code & 0x0ff] = ev.value;
-                break;
-
-            case EV_REL:    // axis movement
-                vrpn_gettimeofday((timeval *)&this->vrpn_Analog::timestamp, NULL);
-                // Convert from short to int to avoid a short/double conversion
-                // bug in GCC 3.2.
-                i = ev.value;
-                channel[ev.code] = static_cast<double>(i)/400.0;           
-                break;
-
-            default:
-                break;
-        }
-    }
+        report_changes();
+    } while (moreData == 1);
 #endif
 
     server_mainloop();
     vrpn_gettimeofday(&_timestamp, NULL);
-    report_changes();
 }
 
 void vrpn_3DConnexion::report_changes(vrpn_uint32 class_of_service)
@@ -283,6 +288,8 @@ void vrpn_3DConnexion::decodePacket(size_t bytes, vrpn_uint8 *buffer)
         vrpn_gettimeofday(&_timestamp, NULL);
         send_text_message("Unknown report type", _timestamp, vrpn_TEXT_WARNING);
     }
+    // Report this event before parsing the next.
+    report_changes();
   }
 }
 #endif
