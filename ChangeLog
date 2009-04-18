@@ -87,7 +87,7 @@
 
 2008-12-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
-	* vrpn_3DConnexion.C : Patch from Hans Lambermo from Virtual Proteins
+	* vrpn_3DConnexion.C : Patch from Hans Lambermont from Virtual Proteins
 		to light up the 3DConnexion when the server runs.
 	* vrpn_3DConnexion.h : Same.
 
