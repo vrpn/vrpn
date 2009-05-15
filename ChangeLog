@@ -1,3 +1,7 @@
+2009-05-15  Ryan Schubert  <res@cs.unc.edu>
+
+	* vrpn_Imager.C : Fixed 16->8 bit transcoding.
+
 2009-04-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_3DConnexion.C : Patch from Hans Lambermont to make the
