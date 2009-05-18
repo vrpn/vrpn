@@ -2,6 +2,7 @@
 
 	* vrpn.sln:  made the vrpn project depend on quatlib, so quatlib
 	will always be rebuilt when needed.
+	* vrpn_ForceDevice.h:  removed an unnecessary include of quat.h
 
 2009-05-15  Ryan Schubert  <res@cs.unc.edu>
 
