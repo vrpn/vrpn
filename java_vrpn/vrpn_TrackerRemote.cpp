@@ -196,7 +196,7 @@ void VRPN_CALLBACK handle_acceleration_change( void* userdata, const vrpn_TRACKE
 JNIEXPORT jint JNICALL 
 Java_vrpn_TrackerRemote_setUpdateRate( JNIEnv* env, jobject jobj, jdouble updateRate )
 {
-  vrpn_Tracker_Remote* t = (vrpn_Tracker_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
+  vrpn_Tracker_Remote* t = (vrpn_Tracker_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
   if( t <= 0 )
     return -1;
   
@@ -209,7 +209,7 @@ Java_vrpn_TrackerRemote_setUpdateRate( JNIEnv* env, jobject jobj, jdouble update
 JNIEXPORT void JNICALL 
 Java_vrpn_TrackerRemote_mainloop( JNIEnv* env, jobject jobj )
 {
-  vrpn_Tracker_Remote* t = (vrpn_Tracker_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
+  vrpn_Tracker_Remote* t = (vrpn_Tracker_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
   if( t <= 0 )  // this tracker is uninitialized or has been shut down already
     return;
 
@@ -252,8 +252,8 @@ Java_vrpn_TrackerRemote_init( JNIEnv* env, jobject jobj, jstring jname,
   env->ReleaseStringUTFChars( jremoteOutLogfileName, remote_out_logfile_name );
   
   // now stash 't' in the jobj's 'native_device' field
-  jint jt = (jint) t;
-  env->SetIntField( jobj, jfid_vrpn_VRPNDevice_native_device, jt );
+  jlong jt = (jlong) t;
+  env->SetLongField( jobj, jfid_vrpn_VRPNDevice_native_device, jt );
   
   return true;
 }
@@ -266,7 +266,7 @@ JNIEXPORT void JNICALL
 Java_vrpn_TrackerRemote_shutdownTracker( JNIEnv* env, jobject jobj )
 {
   // get the tracker pointer
-  vrpn_Tracker_Remote* t = (vrpn_Tracker_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
+  vrpn_Tracker_Remote* t = (vrpn_Tracker_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
   
   // unregister a handler and destroy the tracker
   if( t > 0 )
@@ -279,7 +279,7 @@ Java_vrpn_TrackerRemote_shutdownTracker( JNIEnv* env, jobject jobj )
   }
 
   // set the tracker pointer to -1
-  env->SetIntField( jobj, jfid_vrpn_VRPNDevice_native_device, -1 );
+  env->SetLongField( jobj, jfid_vrpn_VRPNDevice_native_device, -1 );
 
   // delete global reference to object (that was created in init)
   env->DeleteGlobalRef( jobj );

@@ -1,3 +1,11 @@
+2009-05-18  David Marshburn  <marshbur@cs.unc.edu>
+
+	* *.cpp:  changed the handling of the native_device member
+	from an java int to a java long.  this includes the get and
+	set methods as well as the cached field descriptor.  cursory
+	testing indicates that this works for at least one 32-bit 
+	environment.
+
 2008-06-24  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vprn_PoserRemote.cpp:  corrected the text of

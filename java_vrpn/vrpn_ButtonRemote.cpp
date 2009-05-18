@@ -102,7 +102,7 @@ void VRPN_CALLBACK handle_button_change( void* userdata, const vrpn_BUTTONCB inf
 JNIEXPORT void JNICALL 
 Java_vrpn_ButtonRemote_mainloop( JNIEnv* env, jobject jobj )
 {
-  vrpn_Button_Remote* t = (vrpn_Button_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
+  vrpn_Button_Remote* t = (vrpn_Button_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
   if( t <= 0 )  // this button is uninitialized or has been shut down already
     return;
 
@@ -143,8 +143,8 @@ Java_vrpn_ButtonRemote_init( JNIEnv* env, jobject jobj, jstring jname,
   env->ReleaseStringUTFChars( jremoteOutLogfileName, remote_out_logfile_name );
  
   // now stash 't' in the jobj's 'native_device' field
-  jint jt = (jint) t;
-  env->SetIntField( jobj, jfid_vrpn_VRPNDevice_native_device, jt );
+  jlong jt = (jlong) t;
+  env->SetLongField( jobj, jfid_vrpn_VRPNDevice_native_device, jt );
   
   return true;
 }
@@ -157,7 +157,7 @@ JNIEXPORT void JNICALL
 Java_vrpn_ButtonRemote_shutdownButton( JNIEnv* env, jobject jobj )
 {
   // get the button pointer
-  vrpn_Button_Remote* t = (vrpn_Button_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
+  vrpn_Button_Remote* t = (vrpn_Button_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
   
   // unregister a handler and destroy the button
   if( t > 0 )
@@ -168,7 +168,7 @@ Java_vrpn_ButtonRemote_shutdownButton( JNIEnv* env, jobject jobj )
   }
 
   // set the button pointer to -1
-  env->SetIntField( jobj, jfid_vrpn_VRPNDevice_native_device, -1 );
+  env->SetLongField( jobj, jfid_vrpn_VRPNDevice_native_device, -1 );
 
   // delete global reference to object (that was created in init)
   env->DeleteGlobalRef( jobj );

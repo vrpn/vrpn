@@ -128,7 +128,7 @@ JNIEXPORT void JNICALL
 Java_vrpn_AnalogRemote_shutdownAnalog( JNIEnv* env, jobject jobj )
 {
   // get the analog pointers
-  vrpn_Analog_Remote* a = (vrpn_Analog_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
+  vrpn_Analog_Remote* a = (vrpn_Analog_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
 
   // unregister a handler and destroy the analogs
   if( a > 0 )
@@ -139,7 +139,7 @@ Java_vrpn_AnalogRemote_shutdownAnalog( JNIEnv* env, jobject jobj )
   }
    
   // set the analog pointers to -1
-  env->SetIntField( jobj, jfid_vrpn_VRPNDevice_native_device, -1 );
+  env->SetLongField( jobj, jfid_vrpn_VRPNDevice_native_device, -1 );
 
   // delete global reference to object (that was created in init)
   env->DeleteGlobalRef( jobj );
@@ -151,7 +151,7 @@ JNIEXPORT void JNICALL
 Java_vrpn_AnalogRemote_mainloop( JNIEnv *env, jobject jobj )
 {
 
-  vrpn_Analog_Remote* a = (vrpn_Analog_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
+  vrpn_Analog_Remote* a = (vrpn_Analog_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
 
   if( a > 0 )  // this analog is still alive
     a->mainloop( );
@@ -190,8 +190,8 @@ Java_vrpn_AnalogRemote_init( JNIEnv *env, jobject jobj, jstring jname,
   env->ReleaseStringUTFChars( jremoteOutLogfileName, remote_out_logfile_name );
  
   // now stash 'a' in the jobj's 'native_device' field
-  jint ja = (jint) a;
-  env->SetIntField( jobj, jfid_vrpn_VRPNDevice_native_device, ja );
+  jlong ja = (jlong) a;
+  env->SetLongField( jobj, jfid_vrpn_VRPNDevice_native_device, ja );
   
   return true;
 }
@@ -200,7 +200,7 @@ Java_vrpn_AnalogRemote_init( JNIEnv *env, jobject jobj, jstring jname,
 JNIEXPORT jint JNICALL Java_vrpn_AnalogRemote_getNumActiveChannels( JNIEnv* env, jobject jobj )
 {
   // get the analog pointer
-  vrpn_Analog_Remote* a = (vrpn_Analog_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
+  vrpn_Analog_Remote* a = (vrpn_Analog_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
   if( a <= 0 )  // this analog is uninitialized or has been shut down already
   {
     printf( "Error in native method \"getNumActiveChannels\":  the analog is "

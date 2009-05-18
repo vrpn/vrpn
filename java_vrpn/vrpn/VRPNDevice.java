@@ -414,7 +414,7 @@ public abstract class VRPNDevice extends VRPN implements Runnable
 	// native device object (e.g., the vrpn_TrackerRemote, 
 	// vrpn_AnalogRemote, etc.).  this should be negative if the device 
 	// is uninitialized or has already been shut down
-	protected int native_device = -1;
+	protected long native_device = -1;
 	
 	// this is used to stop and to keep running the device thread
 	// in an orderly fashion.
