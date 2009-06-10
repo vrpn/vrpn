@@ -1,3 +1,10 @@
+2009-06-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Shared.C : Added fix to semaphore code on the mac sent in
+		by Simon Julier.
+	* vrpn.sln : Converted back to correct line endings so it can be
+		opened by Visual Studio.
+
 2009-05-18  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn.sln:  made the vrpn project depend on quatlib, so quatlib
