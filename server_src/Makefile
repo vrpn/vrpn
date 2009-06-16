@@ -110,6 +110,15 @@ ifeq ($(HW_OS),pc_linux)
 # For Isense libraries
 #	SYSLIBS := -ldl
 endif
+ifeq ($(HW_OS),pc_linux64)
+	SYSLIBS := 
+# For WiiMote
+#	SYSLIBS := -lwiiuse
+# For GPM mouse
+#	SYSLIBS := -lgpm
+# For Isense libraries
+#	SYSLIBS := -ldl
+endif
 
 ifeq ($(HW_OS),sgi_irix)
    ifndef SGI_ABI
