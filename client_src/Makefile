@@ -94,7 +94,7 @@ ifeq ($(HW_OS),sgi_irix)
   endif
   OBJECT_DIR_SUFFIX := .$(SGI_ABI).$(SGI_ARCH)
   CC := CC -$(SGI_ABI) -$(SGI_ARCH)
-  GLUTLIBS := -L/afs/cs.unc.edu/project/walk/lib/sgi_irix.$(SGI_ABI) -lglut -lGLU -lGL -lXmu -lXext -lX11
+  GLUTLIBS := -lglut -lGLU -lGL -lXmu -lXext -lX11
 endif
 
 ifeq ($(HW_OS),hp700_hpux10)
@@ -123,8 +123,7 @@ ifeq ($(HW_OS),pc_cygwin)
   ARCH_LIBS := -lquat -lcygwin -luser32 -lgdi32 -lcomdlg32 -lwsock32
 endif
 
-GLUTINCLUDE = /afs/cs.unc.edu/project/walk/include
-CFLAGS = -I../ -I../../quat -I$(GLUTINCLUDE) -g
+CFLAGS = -I../ -I../../quat -g
 
 .SUFFIXES:	.cpp
 

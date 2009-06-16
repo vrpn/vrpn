@@ -1,3 +1,7 @@
+2009_06_16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Removed UNC-specific include and library paths.
+
 2009_04_17  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Makefile : Patch from Hans Lambermont to make it compile under Linux.
