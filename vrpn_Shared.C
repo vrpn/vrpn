@@ -1224,7 +1224,6 @@ bool vrpn_Semaphore::init() {
     char *tempname = mktemp(template_name);
     semaphore = sem_open(tempname, O_CREAT | O_EXCL, 0xffff, numMax);
     if (semaphore == (sem_t*) SEM_FAILED) {
-   #endif
   #else
     semaphore = new sem_t;
     if (sem_init(semaphore, 0, numMax) != 0) {
