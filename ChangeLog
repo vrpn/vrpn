@@ -1,3 +1,8 @@
+2009-06-18  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3DConnexion.C : Added fix by Joseph Newman to let this compile
+		under Mac OSX.
+
 2009-06-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Shared.C : Removed a spurious #endif that was left

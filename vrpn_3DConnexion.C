@@ -94,7 +94,7 @@ vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_button
 
 vrpn_3DConnexion::~vrpn_3DConnexion()
 {
-#if !(defined(_WIN32) || defined(__CYGWIN__))
+#if !(defined(_WIN32) || defined(__CYGWIN__) || defined(MACOSX))
 	set_led(0);
 #endif
         delete _filter;
@@ -182,7 +182,7 @@ void vrpn_3DConnexion::report(vrpn_uint32 class_of_service)
 	vrpn_Button::report_changes();
 }
 
-#if !(defined(_WIN32) || defined(__CYGWIN__))
+#if !(defined(_WIN32) || defined(__CYGWIN__) || defined(MACOSX))
 int vrpn_3DConnexion::set_led(int led_state)
 {
   struct input_event event;
