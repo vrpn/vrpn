@@ -1,3 +1,11 @@
+2009-06-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_BaseClass.h : Added deep-copy operator to the callback list
+		class, so that it would work properly with the tracker code.
+	* vrpn_Tracker.h : Added deep-copy operator to the callback list
+		class, so that it would work with the copy-then-delete
+		approach to allocating more handlers in the tracker code.
+
 2009-06-18  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_3DConnexion.C : Added fix by Joseph Newman to let this compile

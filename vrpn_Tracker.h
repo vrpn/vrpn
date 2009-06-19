@@ -314,6 +314,14 @@ public:
     vrpn_Callback_List<vrpn_TRACKERVELCB> d_velchange;
     vrpn_Callback_List<vrpn_TRACKERACCCB> d_accchange;
     vrpn_Callback_List<vrpn_TRACKERUNIT2SENSORCB>   d_unit2sensorchange;
+
+    // This class requires deep copies.
+    void operator =(const vrpn_Tracker_Sensor_Callbacks &from) {
+      d_change = from.d_change;
+      d_velchange = from.d_velchange;
+      d_accchange = from.d_accchange;
+      d_unit2sensorchange = from.d_unit2sensorchange;
+    };
 };
 
 // Open a tracker that is on the other end of a connection
