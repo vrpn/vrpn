@@ -1,5 +1,12 @@
 2009-06-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	Version 07.21 released.
+
+	* vrpn_Connection.C : Changed version number higher so that compiles
+		will be above current release number.
+
+2009-06-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_BaseClass.h : Added deep-copy operator to the callback list
 		class, so that it would work properly with the tracker code.
 	* vrpn_Tracker.h : Added deep-copy operator to the callback list
