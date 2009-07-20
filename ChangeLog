@@ -1,3 +1,10 @@
+2009-07-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.sln : Added a run_auxiliary_logger test program that
+		lets you connect and ask for a log file for some
+		duration.
+	* vprn.dsw : Same.
+
 2009-06-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	Version 07.21 released.
