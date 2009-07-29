@@ -1498,6 +1498,111 @@ int vrpn_Generic_Server_Object::setup_Tracker_Fastrak (char * & pch, char * line
   return 0;
 }
 
+int vrpn_Generic_Server_Object::setup_Tracker_Isotrak (char * & pch, char * line, FILE * config_file) {
+
+  char s2 [LINESIZE], s3 [LINESIZE], s4 [LINESIZE];
+  int i1;
+  int numparms;
+  vrpn_Tracker_Isotrak    *mytracker;
+  int do_is900_timing = 0;
+
+        char    rcmd[5000];     // Reset command to send to Fastrak
+        next();
+        // Get the arguments (class, tracker_name, port, baud, [optional IS900time])
+        if ( (numparms = sscanf(pch,"%511s%511s%d%511s",s2,s3,&i1,s4)) < 3) {
+          fprintf(stderr,"Bad vrpn_Tracker_Isotrak line: %s\n%s %s\n",
+                  line, pch, s3);
+          return -1;
+        }
+
+        // Make sure there's room for a new tracker
+        if (num_trackers >= VRPN_GSO_MAX_TRACKERS) {
+        fprintf(stderr,"Too many trackers in config file");
+            return -1;
+        }
+
+        // If the last character in the line is a backslash, '\', then
+        // the following line is an additional command to send to the
+        // Fastrak at reset time. So long as we find lines with slashes
+        // at the ends, we add them to the command string to send. Note
+        // that there is a newline at the end of the line, following the
+        // backslash.
+        sprintf(rcmd, "");
+        while (line[strlen(line)-2] == '\\') {
+          // Read the next line
+          if (fgets(line, LINESIZE, config_file) == NULL) {
+              fprintf(stderr,"Ran past end of config file in Isotrak description\n");
+                  return -1;
+          }
+
+          // Copy the line into the remote command,
+          // then replace \ with \015 if present
+          // In any case, make sure we terminate with \015.
+          strncat(rcmd, line, LINESIZE);
+          if (rcmd[strlen(rcmd)-2] == '\\') {
+                  rcmd[strlen(rcmd)-2] = '\015';
+                  rcmd[strlen(rcmd)-1] = '\0';
+          } else if (rcmd[strlen(rcmd)-2] == '/') {
+                  rcmd[strlen(rcmd)-2] = '\015';
+                  rcmd[strlen(rcmd)-1] = '\0';
+          } else if (rcmd[strlen(rcmd)-1] == '\n') {
+                  rcmd[strlen(rcmd)-1] = '\015';
+          } else {        // Add one, we reached the EOF before CR
+                  rcmd[strlen(rcmd)+1] = '\0';
+                  rcmd[strlen(rcmd)] = '\015';
+          }
+
+        }
+
+        if (strlen(rcmd) > 0) {
+                printf("... additional reset commands follow:\n");
+                printf("%s\n",rcmd);
+        }
+
+        // Open the tracker
+        if (verbose) printf(
+            "Opening vrpn_Isotrak: %s on port %s, baud %d\n",
+            s2,s3,i1);
+
+        if ( (trackers[num_trackers] = mytracker =
+             new vrpn_Tracker_Isotrak(s2, connection, s3, i1, 1, 4, rcmd))
+             == NULL){
+
+          fprintf(stderr,"Can't create new vrpn_Isotrak\n");
+          return -1;
+
+        } else {
+      // If the last character in the line is a front slash, '/', then
+      // the following line is a command to add a Wand or Stylus to one
+      // of the sensors on the tracker.  Read and parse the line after,
+      // then add the devices needed to support.  Each line has two
+      // arguments, the string name of the devices and the integer
+      // sensor number (starting with 0) to attach the device to.
+          while (line[strlen(line)-2] == '/') {
+        char lineCommand[LINESIZE];
+        char lineName[LINESIZE];
+        int     lineSensor;
+
+            // Read the next line
+            if (fgets(line, LINESIZE, config_file) == NULL) {
+              fprintf(stderr,"Ran past end of config file in Fastrak/Isense description\n");
+                  return -1;
+        }
+
+        // Parse the line.  Both "Wand" and "Stylus" lines start with the name and sensor #
+        if (sscanf(line, "%511s%511s%d", lineCommand, lineName, &lineSensor) != 3) {
+        fprintf(stderr,"Bad line in Wand/Stylus description for Fastrak/Isense (%s)\n",line);
+        delete trackers[num_trackers];
+        return -1;
+        }
+      }
+
+          num_trackers++;
+        }
+
+  return 0;
+}
+
 int vrpn_Generic_Server_Object::setup_Tracker_Liberty (char * & pch, char * line, FILE * config_file) {
 
   char s2 [LINESIZE], s3 [LINESIZE];
@@ -4017,6 +4122,10 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
               CHECK(setup_Tracker_Dyna);
           } else if (isit("vrpn_Tracker_Fastrak")) {
               CHECK(setup_Tracker_Fastrak);
+		  } else if (isit("vrpn_Tracker_NDI_Polaris")) {
+              CHECK(setup_Tracker_NDI_Polaris);
+          } else if (isit("vrpn_Tracker_Isotrak")) {
+              CHECK(setup_Tracker_Isotrak);
 		  } else if (isit("vrpn_Tracker_NDI_Polaris")) {
               CHECK(setup_Tracker_NDI_Polaris);
           } else if (isit("vrpn_Tracker_Liberty")) {
