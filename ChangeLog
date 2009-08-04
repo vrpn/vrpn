@@ -1,3 +1,9 @@
+2009-08-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Imager.C : Fixed a bug in region decoding when a region less
+		than the whole image was loaded and the repeat count on the
+		pixel output was more than 1.
+
 2009-07-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Tracker_Isotrak.h : Adds an Isotrak tracker driver

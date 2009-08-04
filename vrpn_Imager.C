@@ -1290,9 +1290,9 @@ bool  vrpn_Imager_Region::decode_unscaled_region_using_base_pointer(vrpn_uint8 *
       }
       const vrpn_uint8  *msgbuf = (const vrpn_uint8 *)d_valBuf;
       for (unsigned d = d_dMin; d <= d_dMax; d++) {
-        vrpn_uint8 *rowStart = &data[d*depthStride + d_rMin*rowStride + d_cMin];
+        vrpn_uint8 *rowStart = &data[d*depthStride + d_rMin*rowStride + d_cMin*repeat];
         if (invert_rows) {
-	  rowStart = &data[d*depthStride + (nRows-1 - d_rMin)*rowStride + d_cMin];
+	  rowStart = &data[d*depthStride + (nRows-1 - d_rMin)*rowStride + d_cMin*repeat];
         }
         vrpn_uint8 *copyTo = rowStart;
         for (unsigned r = d_rMin; r <= d_rMax; r++) {
@@ -1325,9 +1325,9 @@ bool  vrpn_Imager_Region::decode_unscaled_region_using_base_pointer(vrpn_uint8 *
     }
     const vrpn_float32  *msgbuf = (const vrpn_float32 *)d_valBuf;
     for (unsigned d = d_dMin; d <= d_dMax; d++) {
-      vrpn_uint8 *rowStart = &data[d*depthStride + d_rMin*rowStride + d_cMin];
+      vrpn_uint8 *rowStart = &data[d*depthStride + d_rMin*rowStride + d_cMin*repeat];
       if (invert_rows) {
-	rowStart = &data[d*depthStride + (nRows-1 - d_rMin)*rowStride + d_cMin];
+	rowStart = &data[d*depthStride + (nRows-1 - d_rMin)*rowStride + d_cMin*repeat];
       }
       vrpn_uint8 *copyTo = rowStart;
       for (unsigned r = d_rMin; r <= d_rMax; r++) {
@@ -1342,8 +1342,7 @@ bool  vrpn_Imager_Region::decode_unscaled_region_using_base_pointer(vrpn_uint8 *
 	copyTo = rowStart;
       }
     }
-  } else if (d_valType == vrpn_IMAGER_VALTYPE_UINT16)
-  {
+  } else if (d_valType == vrpn_IMAGER_VALTYPE_UINT16) {
 	  // transcode from 16 bit image to 8 bit data for app
 
 	  long rowStep = rowStride;
@@ -1352,9 +1351,9 @@ bool  vrpn_Imager_Region::decode_unscaled_region_using_base_pointer(vrpn_uint8 *
 	  }
 	  const vrpn_uint16  *msgbuf = (const vrpn_uint16 *)d_valBuf;
 	  for (unsigned d = d_dMin; d <= d_dMax; d++) {
-		  vrpn_uint8 *rowStart = &data[d*depthStride + d_rMin*rowStride + d_cMin];
+		  vrpn_uint8 *rowStart = &data[d*depthStride + d_rMin*rowStride + d_cMin*repeat];
 		  if (invert_rows) {
-			  rowStart = &data[d*depthStride + (nRows-1 - d_rMin)*rowStride + d_cMin];
+			  rowStart = &data[d*depthStride + (nRows-1 - d_rMin)*rowStride + d_cMin*repeat];
 		  }
 		  vrpn_uint8 *copyTo = rowStart;
 		  for (unsigned r = d_rMin; r <= d_rMax; r++) {
@@ -1429,9 +1428,9 @@ bool  vrpn_Imager_Region::decode_unscaled_region_using_base_pointer(vrpn_uint16 
       }
       const vrpn_uint16  *msgbuf = (const vrpn_uint16 *)d_valBuf;
       for (unsigned d = d_dMin; d <= d_dMax; d++) {
-        vrpn_uint16 *rowStart = &data[d*depthStride + d_rMin*rowStride + d_cMin];
+        vrpn_uint16 *rowStart = &data[d*depthStride + d_rMin*rowStride + d_cMin*repeat];
         if (invert_rows) {
-	  rowStart = &data[d*depthStride + (nRows-1 - d_rMin)*rowStride + d_cMin];
+	  rowStart = &data[d*depthStride + (nRows-1 - d_rMin)*rowStride + d_cMin*repeat];
         }
         vrpn_uint16 *copyTo = rowStart;
         for (unsigned r = d_rMin; r <= d_rMax; r++) {
@@ -1462,9 +1461,9 @@ bool  vrpn_Imager_Region::decode_unscaled_region_using_base_pointer(vrpn_uint16 
     }
     const vrpn_uint8  *msgbuf = (const vrpn_uint8 *)d_valBuf;
     for (unsigned d = d_dMin; d <= d_dMax; d++) {
-      vrpn_uint16 *rowStart = &data[d*depthStride + d_rMin*rowStride + d_cMin];
+      vrpn_uint16 *rowStart = &data[d*depthStride + d_rMin*rowStride + d_cMin*repeat];
       if (invert_rows) {
-	  rowStart = &data[d*depthStride + (nRows-1 - d_rMin)*rowStride + d_cMin];
+	  rowStart = &data[d*depthStride + (nRows-1 - d_rMin)*rowStride + d_cMin*repeat];
       }
       vrpn_uint16 *copyTo = rowStart;
       for (unsigned r = d_rMin; r <= d_rMax; r++) {
@@ -1546,9 +1545,9 @@ bool  vrpn_Imager_Region::decode_unscaled_region_using_base_pointer(vrpn_float32
     }
     const vrpn_float32  *msgbuf = (const vrpn_float32 *)d_valBuf;
     for (unsigned d = d_dMin; d <= d_dMax; d++) {
-      vrpn_float32 *rowStart = &data[d*depthStride + d_rMin*rowStride + d_cMin];
+      vrpn_float32 *rowStart = &data[d*depthStride + d_rMin*rowStride + d_cMin*repeat];
       if (invert_rows) {
-	rowStart = &data[d*depthStride + (nRows-1 - d_rMin)*rowStride + d_cMin];
+	rowStart = &data[d*depthStride + (nRows-1 - d_rMin)*rowStride + d_cMin*repeat];
       }
       vrpn_float32 *copyTo = rowStart;
       for (unsigned r = d_rMin; r <= d_rMax; r++) {
