@@ -1,3 +1,8 @@
+2009-08-31  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Mouse.C : Added fix by Chris VanderKnyff to the mouse code on
+		Windows to make it work when there are multiple screens.
+
 2009-08-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Imager.C : Fixed a bug in region decoding when a region less
