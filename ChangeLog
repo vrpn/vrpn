@@ -4,6 +4,7 @@
 	(sine, degauss, ramp, etc.).  now, there's just a "script" function, 
 	which is interpreted by the server to generate values.  removed 
 	various support facilities  for the specific functions.
+	* added destructor for vrpn_FunctionGenerator_function_script
 
 2009-08-31  Russell M. Taylor II  <taylorr@cs.unc.edu>
 

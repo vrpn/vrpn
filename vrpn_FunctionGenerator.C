@@ -73,6 +73,17 @@ vrpn_FunctionGenerator_function_script( const vrpn_FunctionGenerator_function_sc
 }
 
 
+vrpn_FunctionGenerator_function_script::
+~vrpn_FunctionGenerator_function_script( )
+{
+	if( script != NULL )
+	{
+		delete [] script;
+		script = NULL;
+	}
+}
+
+
 vrpn_int32 vrpn_FunctionGenerator_function_script::
 encode_to( char** buf, vrpn_int32& len ) const
 {
