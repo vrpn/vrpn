@@ -1,3 +1,10 @@
+2009-09-02  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGenerator.h, .C:  removed all the specific functions
+	(sine, degauss, ramp, etc.).  now, there's just a "script" function, 
+	which is interpreted by the server to generate values.  removed 
+	various support facilities  for the specific functions.
+
 2009-08-31  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Mouse.C : Added fix by Chris VanderKnyff to the mouse code on
