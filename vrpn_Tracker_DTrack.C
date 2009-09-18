@@ -4,10 +4,10 @@
 
 // developped by David Nahon for Virtools VR Pack (http://www.virtools.com)
 // (07/20/2004) improved by Advanced Realtime Tracking GmbH (http://www.ar-tracking.de)
-// (07/02/2007) upgraded by Advanced Realtime Tracking GmbH to support new devices
+// (07/02/2007, 06/29/2009) upgraded by Advanced Realtime Tracking GmbH to support new devices
 //
 // Recommended settings within DTrack's 'Settings / Network' dialog:
-//   '6d', '6df' or '6df2', '6dcal'
+//   'ts', '6d', '6df' or '6df2', '6dcal'
 
 /* Configuration file:
 
@@ -108,7 +108,7 @@ static char* string_get_i(char* str, int* i);
 static char* string_get_ui(char* str, unsigned int* ui);
 static char* string_get_d(char* str, double* d);
 static char* string_get_f(char* str, float* f);
-static char* string_get_block(char* str, char* fmt, int* idat, float* fdat);
+static char* string_get_block(char* str, const char* fmt, int* idat, float* fdat);
 
 static vrpn_Tracker_DTrack::socket_type udp_init(unsigned short port);
 static int udp_exit(vrpn_Tracker_DTrack::socket_type sock);
@@ -225,6 +225,7 @@ vrpn_Tracker_DTrack::~vrpn_Tracker_DTrack()
 void vrpn_Tracker_DTrack::mainloop()
 {
 	struct timeval timestamp;
+	long tts, ttu;
 	float dt;
 	int nbody, nflystick, i;
 	int newid;
@@ -244,10 +245,25 @@ void vrpn_Tracker_DTrack::mainloop()
 
 	tracing_frames++;
 
-	// get timestamp:
+	// get time stamp:
 
 	vrpn_gettimeofday(&timestamp, NULL);
 	
+	if(act_timestamp >= 0){  // use DTrack time stamp if available
+		tts = (long )act_timestamp;
+		ttu = (long )((act_timestamp - tts) * 1000000);
+		tts += timestamp.tv_sec - timestamp.tv_sec % 86400;  // add day part of vrpn time stamp
+
+		if(tts >= timestamp.tv_sec + 43200 - 1800){  // shift closer to vrpn time stamp
+			tts -= 86400; 
+		}else if(tts <= timestamp.tv_sec - 43200 - 1800){
+			tts += 86400;
+		}
+
+		timestamp.tv_sec = tts;
+		timestamp.tv_usec = ttu;
+	}
+
 	if(tim_first.tv_sec == 0 && tim_first.tv_usec == 0){
 		tim_first = tim_last = timestamp;
 	}
@@ -619,6 +635,7 @@ bool vrpn_Tracker_DTrack::dtrack_init(int udpport)
 	// reset actual DTrack data:
 
 	act_framecounter = 0;
+	act_timestamp = -1;
 
 	act_num_body = act_num_flystick = 0;
 	act_has_bodycal_format = false;
@@ -673,7 +690,8 @@ bool vrpn_Tracker_DTrack::dtrack_receive(void)
 	// defaults:
 	
 	act_framecounter = 0;
-	
+	act_timestamp = -1;
+
 	loc_num_bodycal = -1;  // i.e. not available
 	loc_num_flystick1 = loc_num_meatool = 0;
 	
@@ -713,6 +731,19 @@ bool vrpn_Tracker_DTrack::dtrack_receive(void)
 			continue;
 		}
 
+		// line for timestamp:
+
+		if(!strncmp(s, "ts ", 3)){
+			s += 3;
+			
+			if(!(s = string_get_d(s, &act_timestamp))){   // get time stamp
+				act_timestamp = -1;
+				return false;
+			}
+
+			continue;
+		}
+		
 		// line for additional information about number of calibrated bodies:
 
 		if(!strncmp(s, "6dcal ", 6)){
@@ -1058,7 +1089,7 @@ static char* string_get_f(char* str, float* f)
 // fdat (o): array for 'float' values (long enough due to fmt)
 // return value (o): pointer behind read value in str; NULL in case of error
 
-static char* string_get_block(char* str, char* fmt, int* idat, float* fdat)
+static char* string_get_block(char* str, const char* fmt, int* idat, float* fdat)
 {
 	char* strend;
 	int index_i, index_f;

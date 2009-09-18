@@ -1,3 +1,9 @@
+2009-09-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_DTrack.C : Changes by Kurt Achatz to enable enhanced
+		timing support and new device support.
+	* vrpn_Tracker_DTrack.h : Same.
+
 2009-09-02  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_FunctionGenerator.h, .C:  removed all the specific functions
