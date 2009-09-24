@@ -1210,24 +1210,14 @@ bool vrpn_Semaphore::init() {
     return false;
   }
 #else
-  // Posix threads are the default.  We're still not out of the woods yet, though,
-  // because there seem to be two posix standards: sem_open (mac) and sem_init (linux)
-  // and so we need to figure out which to use.  To make things worse, the mac
-  // declares sem_init() but it fails with a "not implemented" errno.
-
+  // Posix threads are the default.
+  // We use sem_init on both linux and mac (instead of sem_open).
     int numMax = cResources;
     if (numMax < 1) {
       numMax = 1;
     }
-  #ifdef MACOSX
-    char template_name[] = "/tmp/semaphore.XXXXXXXX";
-    char *tempname = mktemp(template_name);
-    semaphore = sem_open(tempname, O_CREAT | O_EXCL, 0xffff, numMax);
-    if (semaphore == (sem_t*) SEM_FAILED) {
-  #else
     semaphore = new sem_t;
     if (sem_init(semaphore, 0, numMax) != 0) {
-  #endif
         perror("vrpn_Semaphore::vrpn_Semaphore: error initializing semaphore");
         return false;
     }

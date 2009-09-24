@@ -116,14 +116,16 @@ ifeq ($(HW_OS),sparc_solaris_64)
 endif
 
 ifeq ($(HW_OS),powerpc_aix)
-  CC := /usr/ibmcxx/bin/xlC_r -g -qarch=pwr3 -w -+
+#  CC := /usr/ibmcxx/bin/xlC_r -g -qarch=pwr3 -w -+
+  CC := /usr/ibmcxx/bin/xlC_r $(DEBUG_FLAGS) -qarch=pwr3 -w -+
 endif
 
 ifeq ($(HW_OS),pc_cygwin)
   ARCH_LIBS := -lquat -lcygwin -luser32 -lgdi32 -lcomdlg32 -lwsock32
 endif
 
-CFLAGS = -I../ -I../../quat -g
+#CFLAGS = -I../ -I../../quat -g
+CFLAGS = -I../ -I../../quat $(DEBUG_FLAGS)
 
 .SUFFIXES:	.cpp
 
@@ -139,7 +141,8 @@ CFLAGS = -I../ -I../../quat -g
 OBJ_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)
 LIB_DIR := ../$(OBJ_DIR)
 
-LFLAGS = -g -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX)
+#LFLAGS = -g -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX)
+LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) $(DEBUG_FLAGS)
 
 $(OBJ_DIR)/%.o: %.c
 	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)

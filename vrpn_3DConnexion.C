@@ -33,7 +33,7 @@ static const vrpn_uint16 vrpn_3DCONNEXION_SPACEBALL5000 = 0xc621;   // 50721;
 vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_buttons,
                                    const char *name, vrpn_Connection *c)
   : _filter(filter)
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if (defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__))
   , vrpn_HidInterface(_filter)
 #endif
   , vrpn_Analog(name, c)
@@ -48,10 +48,10 @@ vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_button
   memset(channel, 0, sizeof(channel));
   memset(last, 0, sizeof(last));
 
+#ifdef linux
   // Use the Event interface to open devices looking for the one
   // we want.  Call the acceptor with all the devices we find
   // until we get one that we want.
-#ifdef LINUX
     fd = -1;
     FILE *f;
     int i = 0;
@@ -100,7 +100,7 @@ vrpn_3DConnexion::~vrpn_3DConnexion()
         delete _filter;
 }
 
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__)
 void vrpn_3DConnexion::reconnect()
 {
 	vrpn_HidInterface::reconnect();
@@ -114,9 +114,9 @@ void vrpn_3DConnexion::on_data_received(size_t bytes, vrpn_uint8 *buffer)
 
 void vrpn_3DConnexion::mainloop()
 {
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__)
 	update();
-#elif defined(LINUX)
+#elif defined(linux)
     struct timeval zerotime;
     fd_set fdset;
     struct input_event ev;
@@ -211,9 +211,14 @@ static void swap_endian2(char *buffer)
 	c = buffer[0]; buffer[0] = buffer[1]; buffer[1] = c;
 }
 
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__)
 void vrpn_3DConnexion::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 {
+#if defined(__APPLE__)
+  // force 2 byte button events on APPLE into 7 bytes like we get for axis
+  // XXX Why is this done?
+  if (bytes == 2) bytes = 7;
+#endif
   // Decode all full reports.
   // Full reports for all of the pro devices are 7 bytes long.
   for (size_t i = 0; i < bytes / 7; i++) {

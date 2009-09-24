@@ -74,13 +74,15 @@ ifeq ($(HW_OS),sparc_solaris_64)
 	SYSLIBS := -lsocket -lnsl
 endif
 ifeq ($(HW_OS),powerpc_aix)
-	CC := /usr/ibmcxx/bin/xlC_r -g -qarch=pwr3 -w
+#	CC := /usr/ibmcxx/bin/xlC_r -g -qarch=pwr3 -w
+	CC := /usr/ibmcxx/bin/xlC_r $(DEBUG_FLAGS) -qarch=pwr3 -w
 endif
 
 ifeq ($(HW_OS),universal_macosx)
 	CC := g++ -arch ppc -arch i386 -isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4
 	RANLIB := :
 	AR := libtool -static -o
+	SYSLIBS := -framework CoreFoundation -framework IOKit -framework System
 endif
 
 ifeq ($(HW_OS),pc_linux_ia64)
@@ -146,7 +148,8 @@ endif
 OBJ_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)
 LIB_DIR := ../$(OBJ_DIR)
 
-CFLAGS = -g -I./ -I../ -I../../quat
+#CFLAGS = -g -I./ -I../ -I../../quat
+CFLAGS = -I./ -I../ -I../../quat $(DEBUG_FLAGS)
 LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX)
 VRPN_LIBS = -lvrpnserver -lvrpnatmel -lpthread
 
@@ -161,11 +164,13 @@ VRPN_LIBS = -lvrpnserver -lvrpnatmel -lpthread
 
 ifdef INTERSENSE
   ifeq ($(HW_OS),powerpc_macosx)
-     CFLAGS = -g -I../ -I../../quat -I../../isense -DMACOSX
+#     CFLAGS = -g -I../ -I../../quat -I../../isense -DMACOSX
+     CFLAGS = -I../ -I../../quat -I../../isense -DMACOSX $(DEBUG_FLAGS)
      LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) ../../isense/MacOSX/dlcompat.o
   endif
   ifeq ($(HW_OS),universal_macosx)
-     CFLAGS = -g -I../ -I../../quat -I../../isense -DMACOSX
+#     CFLAGS = -g -I../ -I../../quat -I../../isense -DMACOSX
+     CFLAGS = -I../ -I../../quat -I../../isense -DMACOSX $(DEBUG_FLAGS)
      LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) ../../isense/MacOSX/dlcompat.o
   endif
 endif

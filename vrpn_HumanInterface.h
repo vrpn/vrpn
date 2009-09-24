@@ -32,13 +32,22 @@ public:
 	virtual void reset() { }
 };
 
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if defined(__APPLE__)
+#include <stdio.h>
+#include <IOKit/IOCFPlugIn.h>
+#include <IOKit/hid/IOHIDLib.h>
+#include <IOKit/hid/IOHIDKeys.h>
+#include <CoreFoundation/CoreFoundation.h>
+#endif // Apple
+
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__)
+
 #if defined(__CYGWIN__)
 // This will cause _WIN32 to be defined, which will cause us trouble later on.
 // It is needed to define the HANDLE type used below.
 #include <windows.h>
 #undef _WIN32
-#endif
+#endif // Cygwin
 
 // Main VRPN API for HID devices
 class VRPN_API vrpn_HidInterface {
@@ -65,6 +74,11 @@ public:
 	// Returns USB product ID of connected device
 	vrpn_uint16 product() const;
 
+#if defined(__APPLE__)
+	void gotData(int size) {_gotdata = true; _gotsize = size; }
+	unsigned char* getBuffer() { return _buffer; }
+#endif // Apple
+
 protected:
 	// User reimplements this callback
 	virtual void on_data_received(size_t bytes, vrpn_uint8 *buffer) = 0;
@@ -78,26 +92,29 @@ protected:
 	// calling reconnect()--there won't be an acceptor there any longer!
 	vrpn_HidAcceptor *_acceptor;
 
-	// Now the Windows-specific implementation details.
-	// Other operating systems will require their own blocks.
-#if defined(_WIN32) || defined(__CYGWIN__)
 private:
+#if defined(_WIN32) || defined(__CYGWIN__)
 	void start_io();
 
 	HANDLE _device;
 	HANDLE _readEvent;
 	HANDLE _writeEvent;
-	bool _working;
 	OVERLAPPED _readOverlap;
-
 	BYTE _readBuffer[512];
-
+#endif // Windows
+#if defined(__APPLE__)
+	io_object_t _ioObject;
+	IOHIDDeviceInterface122 **_interface;
+	bool _gotdata;
+	int _gotsize;
+	unsigned char _buffer[512];
+#endif // Apple
+	bool _working;
 	vrpn_uint16 _vendor;
 	vrpn_uint16 _product;
-#endif
 };
 
-#endif // _WIN32
+#endif // Windows or Apple
 
 // Some sample acceptors
 
@@ -113,7 +130,7 @@ public:
 	vrpn_HidProductAcceptor(vrpn_uint16 vendorId, vrpn_uint16 productId): product(productId), vendor(vendorId) { }
 	bool accept(const vrpn_HIDDEVINFO &device) { return (device.vendor == vendor) && (device.product == product); }
 private:
-	vrpn_uint16 vendor, product;
+	vrpn_uint16 product, vendor;
 };
 
 // Accepts any device with a particular node filename.
@@ -137,7 +154,7 @@ public:
 	bool accept(const vrpn_HIDDEVINFO &device) { return delegate->accept(device) && (found++ == target); }
 	void reset() { found = 0; delegate->reset(); }
 private:
-	size_t found, target;
+	size_t target, found;
 	vrpn_HidAcceptor *delegate;
 };
 

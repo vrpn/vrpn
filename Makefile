@@ -49,7 +49,6 @@
 #HW_OS := universal_macosx
 ##########################
 
-
 INSTALL_DIR := /usr/local
 BIN_DIR := $(INSTALL_DIR)/bin
 INCLUDE_DIR := $(INSTALL_DIR)/include
@@ -151,6 +150,7 @@ else
         CC := g++ -arch ppc -arch i386 -isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4
         RANLIB := :
         AR := libtool -static -o
+	SYSLIBS := -framework CoreFoundation -framework IOKit -framework System
   endif
 
   ifeq ($(HW_OS), pc_linux_arm)
@@ -294,8 +294,10 @@ endif
 # Load flags
 #
 
+#LOAD_FLAGS := -L./$(HW_OS)$(OBJECT_DIR_SUFFIX) -L/usr/local/lib \
+#		-L/usr/local/contrib/unmod/lib -L/usr/local/contrib/mod/lib -g
 LOAD_FLAGS := -L./$(HW_OS)$(OBJECT_DIR_SUFFIX) -L/usr/local/lib \
-		-L/usr/local/contrib/unmod/lib -L/usr/local/contrib/mod/lib -g
+		-L/usr/local/contrib/unmod/lib -L/usr/local/contrib/mod/lib $(DEBUG_FLAGS)
 
 ifeq ($(HW_OS),sgi_irix)
 	LOAD_FLAGS := $(LOAD_FLAGS) -old_ld
@@ -350,7 +352,8 @@ LIBS := -lquat -lsdi $(TCL_LIBS) -lXext -lX11 $(ARCH_LIBS) -lm
 # Defines for the compilation, CFLAGS
 #
 
-CFLAGS		 := $(INCLUDE_FLAGS) -g
+#CFLAGS		 := $(INCLUDE_FLAGS) -g
+CFLAGS		 := $(INCLUDE_FLAGS) $(DEBUG_FLAGS)
 
 
 #############################################################################

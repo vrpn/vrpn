@@ -1,3 +1,13 @@
+2009-09-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Turned "-g" flag into "$(DEBUG_FLAGS)" throughout.
+	* vrpn_3DConnexion.C : Patch from Hans Lambermont to make the
+		3DConnexion and HID drivers work on MacOSX.
+	* vrpn_3DConnexion.h : Same.
+	* vrpn_HumanInterface.C : Same.
+	* vrpn_HumanInterface.h : Same.
+	* vrpn_Shared.C : Same.
+
 2009-09-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Tracker_DTrack.C : Changes by Kurt Achatz to enable enhanced
