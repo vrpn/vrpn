@@ -1,3 +1,8 @@
+2009-10-16  David Marshburn  <marshbur@cs.unc.edu>
+	
+	* vrpn_FunctionGenerator.C (register_types):  corrected a typo
+	in the message IDs
+
 2009-09-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Makefile : Turned "-g" flag into "$(DEBUG_FLAGS)" throughout.
