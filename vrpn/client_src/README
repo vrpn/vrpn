@@ -1,0 +1,50 @@
+vrpn/client_src:
+
+
+Makefile:
+
+checklogfile.c:
+  A utility that reads a VRPN logfile, printing out the sender, type, and
+length of every message and the meaning of system messages.
+
+clock_client.C:
+
+example.c:
+
+example.h:
+
+interaction.c:
+
+logfilesenders.c:
+  A utility that reads a VRPN logfile, printing out only the meaning of
+sender messages.
+
+logfiletypes.c:
+  A utility that reads a VRPN logfile, printing out only the meaning of
+type messages.
+
+midi_client.c:
+
+pobjects.c:
+
+printvals.c:
+  A VRPN client that connects to a Tracker and Button and prints
+some minimal data from them.  Includes the ability to log sessions
+and to playback logs.
+
+readstructs.c:
+
+sound_client.c:
+
+vrpnTrackerClient.cpp:
+
+bdbox_client.C:	connects to a button box server using vrpn_Analog and 
+	vrpn_Button; includes example of vrpn rsh server startup
+
+phan_client.C: simple phantom client that makes a flat surface
+
+sphere_client.C: phantom client that makes a sphere
+
+ff_client.C: phantom client that makes a force field
+
+ohm_client.C: vrpn ohmmeter client for ORPX2 ohmmeter

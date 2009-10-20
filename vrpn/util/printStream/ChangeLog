@@ -1,0 +1,10 @@
+2006-06-05  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_streamPrint.cpp:  added VRPN_CALLBACK in front of
+	the handler.
+
+2004-04-13  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_streamPrint.cpp:  correctly handles the -head option
+	
+

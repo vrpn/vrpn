@@ -1,0 +1,21 @@
+2009-05-18  David Marshburn  <marshbur@cs.unc.edu>
+
+	* VRPNDevice.java:  made the native_device member a long
+
+2008-06-24  David Marshburn  <marshbur@cs.unc.edu>
+
+	* PoserRemote.java (requestPoseRelative):  calls the correct
+	native method.
+
+2008-06-20  David Marshburn  <marshbur@cs.unc.edu>
+
+	* PoserRemote.java:  added relative-pose methods.
+
+2007-10-19  David Marshburn  <marshbur@cs.unc.edu>
+
+	* AuxiliaryLoggerRemote.java:  new.  wrapping of logger class.
+
+
+2007-06-15  David Marshburn  <marshbur@cs.unc.edu>
+	* AnalogOutputRemote.java:  removed an unused import.
+

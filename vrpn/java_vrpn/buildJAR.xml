@@ -1,0 +1,13 @@
+
+<!-- xml version="1.0" encoding="UTF-8" ?-->
+
+<project name="JAR file" default="jar" basedir=".">
+	<target name="jar">
+		<jar destfile="./bin/vrpn.jar"
+			basedir="bin/"
+			includes="vrpn/**"
+			update="true"
+		/>
+	</target>
+</project>
+

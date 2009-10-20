@@ -1,0 +1,41 @@
+--------- Using custom Ghost lib effects with Phantom server : ----------------
+
+You can add a specific ghost effect in a few steps following this guide :
+
+0. If you cannot find a specified location, try searching for ONDIM keyword, this is put before and after each modification.
+
+1. add files for your source code (.c and .h) for your ghost effect in "ghostEffects" folder
+
+2. go in vrpn_phantom.dsp project, and add those files in "Ghost Effects" folders
+
+3. edit vrpn_Phantom.h :
+	find and increment NB_CUSTOM_EFFECTS value of your number of additional effects
+	just below declare a "class YourEffect;"
+	and declare a const unsigned YOUR_EFFECT_ID = 1; (and so on for all your effects)
+	in the protected part of vrpn_Phantom class add a pointer on your effect : 
+	YourEffect *yourEffect;
+
+4. edit vrpn_Phantom.c :
+	include your effect header : #include "ghostEffects/YourEffect.h"
+	find vrpn_Phantom constructor and add your effect initialization : yourEffect = new YourEffect();
+	find int vrpn_Phantom::handle_custom_effect_change_message(void *userdata,vrpn_HANDLERPARAM p){ and add you own code here :
+	in switch statement, add a new case like this :
+	
+	case YOUR_EFFECT_ID:
+		if (nbParams == 1) {
+			me->instantBuzzEffect->setYourEffectParameter1(params[0]);
+		}
+
+		me->phantom->setEffect(me->yourEffect);
+		me->phantom->startEffect();	
+		
+	where setYourEffectParameter1 is your custom effect method(s).
+	you can add several parameters handling as it is done for instantBuzzEffect.
+	
+you can then compile VRPN, call your effect via vrpn interface by setCustomEffect(YOUR_EFFECT_ID, "your parameters separated by space in a string")
+to set your parameters, forceDevice->startEffect() to start Ghost effect and forceDevice->stopEffect() to stop it
+	
+	
+	
+
+	

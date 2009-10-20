@@ -1,0 +1,566 @@
+Microsoft Developer Studio Workspace File, Format Version 6.00
+# WARNING: DO NOT EDIT OR DELETE THIS WORKSPACE FILE!
+
+###############################################################################
+
+Project: "DirectShow_baseclasses"=.\server_src\directshow_video_server\DirectShow_baseclasses.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "client_and_server"=.\server_src\client_and_server.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name quatlib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name make_vrpn_libs_build
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "clock_drift_estimator"=.\client_src\clock_drift_estimator.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name make_vrpn_libs_build
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "daq_server"=.\server_src\daq_server.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name make_vrpn_libs_build
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "directshow_video_server"=.\SERVER_SRC\directshow_video_server\directshow_video_server.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name DirectShow_baseclasses
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "forcedevice_test_client"=.\client_src\forcedevice_test_client.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name quatlib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name make_vrpn_libs_build
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "make_vrpn_libs_build"=.\make_vrpn_libs_build.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vrpndll
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "printcereal"=.\client_src\printcereal.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name make_vrpn_libs_build
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "printvals"=.\client_src\printvals.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name make_vrpn_libs_build
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "quatlib"=..\quat\quatlib.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "run_auxiliary_logger"=.\client_src\run_auxiliary_logger.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name make_vrpn_libs_build
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "sphere_client"=.\client_src\sphere_client.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name make_vrpn_libs_build
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "test_analogfly"=.\server_src\test_analogfly.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name quatlib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name make_vrpn_libs_build
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "test_auxiliary_logger"=.\server_src\test_auxiliary_logger.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name make_vrpn_libs_build
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "test_gen_rpc"=.\UTIL\gen_rpc\test_gen_rpc.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name make_vrpn_libs_build
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "test_imager"=.\CLIENT_SRC\test_imager.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name make_vrpn_libs_build
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "test_logging"=.\server_src\test_logging.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "test_radamec_spi"=.\server_src\test_radamec_spi.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name make_vrpn_libs_build
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "test_vrpn"=.\server_src\test_vrpn.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name make_vrpn_libs_build
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "test_zaber"=.\client_src\test_zaber.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name quatlib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name make_vrpn_libs_build
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "testimager_client"=.\client_src\testimager_client.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name make_vrpn_libs_build
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "testimager_server"=.\server_src\testimager_server.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name make_vrpn_libs_build
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "time_test"=.\time_test.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name make_vrpn_libs_build
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "timecode_generator"=.\server_src\timecode_generator_server\timecode_generator.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name make_vrpn_libs_build
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "tracker_to_poser"=.\CLIENT_SRC\tracker_to_poser.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name quatlib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name make_vrpn_libs_build
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "vrpn"=.\vrpn.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name quatlib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "vrpn_hid_device_watcher"=.\server_src\vrpn_hid_device_watcher.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "vrpn_phantom"=.\server_src\vrpn_phantom.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "vrpn_print_devices"=.\client_src\vrpn_print_devices.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name make_vrpn_libs_build
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "vrpn_server"=.\server_src\vrpn_server.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name timecode_generator
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vrpn_phantom
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name quatlib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name make_vrpn_libs_build
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name vrpn
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "vrpndll"=.\vrpndll.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name quatlib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Global:
+
+Package=<5>
+{{{
+}}}
+
+Package=<3>
+{{{
+}}}
+
+###############################################################################
+

@@ -1,0 +1,46 @@
+Howto compile and use VRPN python wrappers
+
+vrpn_python is a quick and dirty python wrapper for the vrpn client. 
+
+What you need :
+- VRPN 07.15
+- SWIG 1.3.34
+
+Basic installation :
+cd vrpn
+tar xzvf python_vrpn.tar.gz
+cd python_vrpn
+edit Makefile.python and set the environment according to your setup
+make vrpn-python
+(as root) make install-vrpn-python
+
+ISSUES : 
+- if vrpn_Tracker fails to load on symbol handle_update_tracker, comment out line 1124 of vrpn_Tracker.h (   //static int VRPN_CALLBACK handle_update_rate_request (void *, vrpn_HANDLERPARAM); ). I didn't find other fix so far.
+
+Simple test of the tracker module :
+ 
+import vrpn_Tracker
+
+def handle_tracker(userdata,t):
+    print t
+
+t=vrpn_Tracker.vrpn_Tracker_Remote("Tracker0@localhost")
+
+vrpn_Tracker.register_tracker_change_handler(handle_tracker)
+
+vrpn_Tracker.vrpn_Tracker_Remote.register_change_handler(t,None,vrpn_Tracker.get_tracker_change_handler())
+
+while 1:
+    vrpn_Tracker.vrpn_Tracker_Remote.mainloop(t)
+
+
+produces the following output, assuming Tracker0@localhost is the NULL tracker :
+
+(0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0)
+(1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0)
+(0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0)
+(1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0)
+(0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0)
+(1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0)
+(0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0)
+(1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0)

@@ -1,0 +1,31 @@
+For those not at UNC, you compile by doing the following:
+
+   for Visual C++:
+	Open the vrpn.dsw file.
+	Compile the quat project.
+	Compile the VPRN project.
+	Then compile whichever of vrpn_server, printvals, etc you want.
+
+   for Unix/Cygwin:
+	Go to ../quat.
+		Edit 'makefile' to uncomment the architecture you are on.
+		gmake
+	Come back here (cd ../vrpn)
+		Edit Makefile to uncomment your architecture
+		gmake
+	Go to client_src
+		Edit Makefile to uncomment your architecture
+		gmake
+	Go to server_src
+		Edit Makefile to uncomment your architecture
+		gmake
+
+	edit the vrpn.cfg file to set it to start tracker you want
+		See the file vrpn.cfg.SAMPLE for examples.
+		Example:  vrpn_Tracker_NULL Tracker0@MYHOSTNAME 2 2
+	(Run the server: sgi_irix/vrpn_server -millisleep 1 -f vrpn.cfg)
+
+	Go to client_src
+		Run printvals to check the server
+		Example: sgi_irix/printvals localhost
+

@@ -1,0 +1,37 @@
+This directory contains test and example files for using a Phantom
+force-feedback device with VRPN.  They were written by John Stone
+at the NIH Resource for Macromolecular Modeling and Bioinformatics at the
+Beckman Institute at UIUC.
+
+These programs are made to compile and run on an SGI.  The VRPN portions of
+these programs should be portable across platforms, but the openGL portions
+(if any) have not been ported to Windows.
+
+This README is made by Russ Taylor, so hopefully it is accurate.
+
+testvrpn.C:
+	This opens the Phantom as a tracker, button, and forcedevice.
+It prints out all tracker messages, button messages, amd force messages
+(should there be force messages?)
+
+glwin.[hc]:
+	Helper functions to create openGL windows quickly and easily on Unix.
+
+glvrpn.C:
+	This opens and openGL window and displays the tracker as it moves
+around (along with a line from the origin to the tracker).  It is a good
+example of how to use a VRPN tracker with openGL.
+
+phantom-field.C:
+	Sends a forcefield to the Phantom when the button is held down.
+
+phantom-plane.C:
+	Sends a plane to the Phantom that the user can feel, quits when the
+button is pressed.
+
+phantom-wave.c:
+	Sends a spatially-varying force field to the Phantom while the button
+is held down.
+
+smdvrpn.C:
+	Simple molecular dynamics simulation using VRPN, graphics, and haptics.

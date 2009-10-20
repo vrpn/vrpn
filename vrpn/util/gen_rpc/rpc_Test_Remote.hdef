@@ -1,0 +1,37 @@
+OUTPUT_FILENAME rpc_Test_Remote.h
+#ifndef NM_TEST_REMOTE_H
+#define NM_TEST_REMOTE_H
+/*===3rdtech===
+  Copyright (c) 2001 by 3rdTech, Inc.
+  All Rights Reserved.
+
+  This file may not be distributed without the permission of 
+  3rdTech, Inc. 
+  ===3rdtech===*/
+USE_MSG_GROUP rpc_Test
+
+CLASSNAME rpc_Test_Remote
+
+#include <vrpn_Connection.h>
+#include "rpc_Test.h"
+
+class rpc_Test_Remote : protected rpc_Test 
+{
+private:
+    vrpn_Connection * d_connection;
+
+public:
+    rpc_Test_Remote(vrpn_Connection *);
+
+    ~rpc_Test_Remote();
+
+    //virtual int mainloop();
+
+RECEIVERS_DECL rpc_Test;
+HANDLERS_DECL rpc_Test;
+
+};
+
+NO CLASS 
+
+#endif

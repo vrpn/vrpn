@@ -1,0 +1,65 @@
+#!/bin/bash
+#
+# vrpn:       Starts the vrpn tracking server
+#
+# Version:      @(#) /etc/rc.d/init.d/vrpn
+#
+# chkconfig: 2345 95 05
+# description: Starts and stops the vrpn server at boot time and shutdown.
+#
+# processname: vrpn_server
+# config: /usr/local/vrpn/vrpn.cfg
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+# Source networking configuration.
+. /etc/sysconfig/network
+
+# Check that networking is up.
+[ ${NETWORKING} = "no" ] && exit 0
+
+VRPN_DIR=/usr/local/vrpn
+VRPN_CFG=vrpn.cfg
+VRPN_ARGS="-millisleep 1 -f $VRPN_DIR/$VRPN_CFG"
+VRPN=vrpn_server
+
+export PATH=$VRPN_DIR/bin:$PATH
+
+[ -f $VRPN_DIR/$VRPN_CFG ] || exit 0
+[ -x $VRPN_DIR/bin/$VRPN ] || exit 0
+
+# See how we were called.
+case "$1" in
+  start)
+	# Check if vrpn_server is already running
+	if [ ! -f /var/lock/subsys/$VRPN ]; then
+		echo -n "Starting vrpn server: "
+		$VRPN $VRPN_ARGS >/dev/null 2>&1 &
+		RETVAL=$?
+		[ $RETVAL -eq 0 ] && touch /var/lock/subsys/$VRPN
+		[ $RETVAL -eq 0 ] && success || failure
+		echo
+	fi
+	;;
+  stop)
+	echo -n "Shutting down vrpn_server: "
+	killproc $VRPN
+	rm -f /var/lock/subsys/$VRPN
+	echo
+	;;
+  status)
+	status $VRPN
+	;;
+  restart)
+	if [ -f /var/lock/subsys/$VRPN ]; then
+	    $0 stop
+	fi
+	$0 start
+	;;
+  *)
+	echo "*** Usage: vrpn {start|stop|status|restart}"
+	exit 1
+esac
+
+exit 0
