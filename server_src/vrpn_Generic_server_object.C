@@ -135,6 +135,12 @@ void vrpn_Generic_Server_Object::closeDevices (void) {
     delete wiimotes[i];
   }
 #endif
+#ifdef	VRPN_USE_FREESPACE
+  for (i=0;i < num_freespaces; i++) {
+    fprintf(stderr, "\nClosing freespace %d ...", i);
+    delete freespaces[i];
+  }
+#endif
   if (verbose) { fprintf(stderr, "\nAll devices closed...\n"); }
 }
 
@@ -3623,7 +3629,7 @@ int vrpn_Generic_Server_Object::setup_WiiMote(char * & pch, char * line, FILE * 
   }
 
   // Make sure there's room for a new WiiMote
-  if (num_XInputPads >= VRPN_GSO_MAX_WIIMOTES) {
+  if (num_wiimotes >= VRPN_GSO_MAX_WIIMOTES) {
     fprintf(stderr,"Too many WiiMotes in config file");
     return -1;
   }
@@ -3643,6 +3649,41 @@ int vrpn_Generic_Server_Object::setup_WiiMote(char * & pch, char * line, FILE * 
   return 0;
 #else
   fprintf(stderr, "vrpn_server: Can't open WiiMote: VRPN_USE_WIIUSE not defined in vrpn_Configure.h!\n");
+  return -1;
+#endif
+}
+
+int vrpn_Generic_Server_Object::setup_Freespace(char * & pch, char * line, FILE * config_file) {
+#ifdef	VRPN_USE_FREESPACE
+  char s2 [LINESIZE];
+  unsigned controller, sendbody, senduser;
+
+  next();
+  // Get the arguments (wiimote_name, controller index)
+  if (sscanf(pch,"%511s%u%u%u",s2,&controller,&sendbody,&senduser) != 4) {
+    fprintf(stderr,"Bad vrpn_Freespace line: %s\n",line);
+    return -1;
+  }
+
+  // Make sure there's room for a new Freespace
+  if (num_freespaces >= VRPN_GSO_MAX_FREESPACES) {
+    fprintf(stderr,"Too many Freespaces in config file");
+    return -1;
+  }
+
+  // Open the Freespace if we can.
+  if ((freespaces[num_freespaces] = vrpn_Freespace::create(s2, connection, controller,
+    (sendbody != 0), (senduser != 0) )) == NULL)
+  {
+    fprintf(stderr,"Can't create new vrpn_Freespace\n");
+    return -1;
+  } else {
+    num_freespaces++;
+  }
+
+  return 0;
+#else
+  fprintf(stderr, "vrpn_server: Can't open Freespace: VRPN_USE_FREESPACE not defined in vrpn_Configure.h!\n");
   return -1;
 #endif
 }
@@ -4010,6 +4051,9 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
 #ifdef	VRPN_USE_WIIUSE
   , num_wiimotes(0)
 #endif
+#ifdef	VRPN_USE_FREESPACE
+  , num_freespaces(0)
+#endif
   {
     FILE    * config_file;
     char    * client_name = NULL;
@@ -4222,6 +4266,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
             CHECK(setup_Tracker_MotionNode);
 	  } else if (isit("vrpn_WiiMote")) {
             CHECK(setup_WiiMote);
+	  } else if (isit("vrpn_Freespace")) {
+            CHECK(setup_Freespace);
 // BUW additions
           } else if (isit("vrpn_Atmel")) {
             CHECK(setup_Atmel);
@@ -4390,6 +4436,13 @@ void  vrpn_Generic_Server_Object::mainloop( void )
 #ifdef	VRPN_USE_WIIUSE
   for (i=0; i< num_wiimotes; i++) {
 	  wiimotes[i]->mainloop();
+  }
+#endif
+
+  // Let all the Freespaces do their thing
+#ifdef	VRPN_USE_FREESPACE
+  for (i=0; i< num_freespaces; i++) {
+	  freespaces[i]->mainloop();
   }
 #endif
 }

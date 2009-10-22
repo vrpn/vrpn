@@ -1,3 +1,15 @@
+2009-10-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Freespace.h : Added code from Phil Black at Hillcrest Labs to
+		run their Freespace devices in VRPN.
+	* vrpn_Freespace.C : Same.
+	* vrpn_Configure.h : Same.
+	* vrpn.vcproj : Same.
+	* vrpndll.vcproj : Same.
+	* vrpn.sln : Same.
+	* Makefile : Putting the files into the server library.  Still
+		won't compile on anything but Windows.
+
 2009-10-16  David Marshburn  <marshbur@cs.unc.edu>
 	
 	* vrpn_FunctionGenerator.C (register_types):  corrected a typo

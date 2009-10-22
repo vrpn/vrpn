@@ -1,3 +1,13 @@
+2009-10-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg : Added an entry for the new vrpn_Freespace submitted by
+		Phil Black from Hillcrest Labs.
+	* test_freespace.C : Same.
+	* test_freespace.vcproj : Same.
+	* vrpn_server.vcproj : Same.
+	* vrpn_Generic_server_object.h : Same.
+	* vrpn_Generic_Server_object.C : Same.
+
 2009-09-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
         * Makefile : Turned "-g" flag into "$(DEBUG_FLAGS)" throughout.
