@@ -1,5 +1,10 @@
 2009-10-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_3DConnexion.C : Put in patch from Ian Curington to work
+		with devices that have more than 8 buttons.
+
+2009-10-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Freespace.h : Added code from Phil Black at Hillcrest Labs to
 		run their Freespace devices in VRPN.
 	* vrpn_Freespace.C : Same.
