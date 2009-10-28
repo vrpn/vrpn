@@ -312,7 +312,8 @@
 
 #ifdef  VRPN_USE_FREESPACE
   #ifdef	_DEBUG
-    #pragma comment(lib, VRPN_FREESPACE_LIB_PATH "/Debug/libfreespaced.lib")
+//    #pragma comment(lib, VRPN_FREESPACE_LIB_PATH "/Debug/libfreespaced.lib")
+    #pragma comment(lib, VRPN_FREESPACE_LIB_PATH "/Release/libfreespace.lib")
   #else
     #pragma comment(lib, VRPN_FREESPACE_LIB_PATH "/Release/libfreespace.lib")
   #endif

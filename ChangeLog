@@ -1,5 +1,12 @@
 2009-10-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Configure.h : Changed to always link with the release version
+		of the libfreespace, even in debug mode, to avoid manifes problems.
+	* vrpndll.vcproj : Making vrpn_Freespace.C compile as C++ code in debug
+		mode.
+
+2009-10-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_3DConnexion.C : Put in patch from Ian Curington to work
 		with devices that have more than 8 buttons.
 
