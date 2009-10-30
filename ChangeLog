@@ -1,3 +1,10 @@
+2009-10-30  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Making this compile under Linux using new 0.4 version of
+		libfreespace; patch from Phil Black.
+	* vrpn_Freespace.C : Same.
+	* vrpn_Freespace.h : Same.
+
 2009-10-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Configure.h : Changed to always link with the release version

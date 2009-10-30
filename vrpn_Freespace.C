@@ -2,6 +2,7 @@
 #ifdef VRPN_USE_FREESPACE
 #include "quat.h"
 #include <freespace/freespace_codecs.h>
+#include <cstring>
 static q_type gs_qIdent = Q_ID_QUAT;
 // libfreespce provides acceleration values in (mm/(s^2))^-3 
 // VRPN wants these in meters/(s^2)
@@ -46,6 +47,8 @@ vrpn_Freespace* vrpn_Freespace::create(const char *name, vrpn_Connection *conn,
   // initialize libfreespace
   // XXX Should make sure this only happens once ever, I bet.
   int rc = freespace_init();
+  freespace_exit();
+  rc = freespace_init();
   if (rc != FREESPACE_SUCCESS) {
     fprintf(stderr, "vrpn_Freespace::create: failed to init freespace lib. rc=%d\n", rc);
     return NULL;
@@ -83,9 +86,9 @@ vrpn_Freespace* vrpn_Freespace::create(const char *name, vrpn_Connection *conn,
   d.inhibitPowerManager = 1;
   d.enableMouseMovement = 0;
   d.disableFreespace = 0;
-  int8_t buffer[FREESPACE_MAX_INPUT_MESSAGE_SIZE];
+  uint8_t buffer[FREESPACE_MAX_INPUT_MESSAGE_SIZE];
 
-  rc = freespace_encodeDataMotionControl(&d, (int8_t*) buffer, sizeof(buffer));
+  rc = freespace_encodeDataMotionControl(&d, buffer, sizeof(buffer));
   if (rc > 0) {
       rc = freespace_send(freespaceId, buffer, rc);
       if (rc != FREESPACE_SUCCESS) {
@@ -103,7 +106,7 @@ void vrpn_Freespace::mainloop(void)
 {
 	server_mainloop();
 #define BUFFER_SIZE 1024
-	char buffer[BUFFER_SIZE];
+	uint8_t buffer[BUFFER_SIZE];
 	int bytesRead = 0;
 	int rc;
 	// only block for 100 milliseconds....
@@ -112,14 +115,23 @@ void vrpn_Freespace::mainloop(void)
 		// no read, nothing left to do.
 		return;
 	}
-	struct freespace_UserFrame user;
-	struct freespace_BodyFrame body;
-	if (freespace_decodeBodyFrame(buffer, bytesRead, &body) == FREESPACE_SUCCESS) {
-		handleBodyFrame(body);
-	} else if (freespace_decodeUserFrame(buffer, bytesRead, &user) == FREESPACE_SUCCESS) {
-		handleUserFrame(user);
+	struct freespace_message s;
+	if (freespace_decode_message(buffer, bytesRead, &s) == FREESPACE_SUCCESS) {
+		switch(s.messageType) {
+			case FREESPACE_MESSAGE_LINKSTATUS:
+				handleLinkStatus(s.linkStatus);
+				break;
+			case FREESPACE_MESSAGE_BODYFRAME:
+				handleBodyFrame(s.bodyFrame);
+				break;
+			case FREESPACE_MESSAGE_USERFRAME:
+				handleUserFrame(s.userFrame);
+				break;
+			default:
+				fprintf(stderr, "got an unhandled message from freespace device %d\n", s.messageType);
+				break;
+		}
 	}
-
 }
 vrpn_Freespace::~vrpn_Freespace(void)
 {
@@ -132,14 +144,15 @@ vrpn_Freespace::~vrpn_Freespace(void)
         printf("freespaceInputThread: Error flushing device: %d\n", rc);
     }
 	// reset the device to just send mouse events.
+    memset(&d, 0, sizeof(d));
     d.enableBodyMotion = 0;
     d.enableUserPosition = 0;
     d.inhibitPowerManager = 0;
     d.enableMouseMovement = 1;
     d.disableFreespace = 0;
-	int8_t buffer[FREESPACE_MAX_INPUT_MESSAGE_SIZE];
+    uint8_t buffer[FREESPACE_MAX_INPUT_MESSAGE_SIZE];
 
-    rc = freespace_encodeDataMotionControl(&d, (int8_t*) buffer, sizeof(buffer));
+    rc = freespace_encodeDataMotionControl(&d, buffer, sizeof(buffer));
     if (rc > 0) {
 		rc = freespace_send(_freespaceDevice, buffer, rc);
         if (rc != FREESPACE_SUCCESS) {
@@ -153,7 +166,6 @@ vrpn_Freespace::~vrpn_Freespace(void)
 
 void vrpn_Freespace::handleBodyFrame(const struct freespace_BodyFrame& body) {
 			vrpn_gettimeofday(&(vrpn_Tracker::timestamp), NULL);
-	
 		vrpn_float64 now  = vrpn_Tracker::timestamp.tv_sec + MILLIS_TO_SECONDS(vrpn_Tracker::timestamp.tv_usec);
 		vrpn_float64 delta = now - _lastBodyFrameTime;
 		_lastBodyFrameTime = now;
@@ -197,7 +209,6 @@ void vrpn_Freespace::handleBodyFrame(const struct freespace_BodyFrame& body) {
 
 void vrpn_Freespace::handleUserFrame(const struct freespace_UserFrame& user) {
 			vrpn_gettimeofday(&(vrpn_Tracker::timestamp), NULL);
-
 		vrpn_Tracker::pos[0] = user.linearPosX;
 		vrpn_Tracker::pos[1] = user.linearPosY;
 		vrpn_Tracker::pos[2] = user.linearPosZ;
@@ -229,6 +240,9 @@ void vrpn_Freespace::handleUserFrame(const struct freespace_UserFrame& user) {
 		vrpn_Dial::dials[0] = user.deltaWheel / (vrpn_float64) 16;
 		vrpn_Dial::timestamp = vrpn_Tracker::timestamp;
 		vrpn_Dial::report_changes();
+}
+void vrpn_Freespace::handleLinkStatus(const struct freespace_LinkStatus& l) {
+	// Could be used to send messages when the loop is powered off/unavailable.
 }
 #endif //VRPN_USE_FREESPACE
 

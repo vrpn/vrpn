@@ -72,6 +72,7 @@ private:
 
         void handleUserFrame(const struct freespace_UserFrame&);
         void handleBodyFrame(const struct freespace_BodyFrame&);
+	void handleLinkStatus(const struct freespace_LinkStatus&);
 
 protected:
   FreespaceDeviceId _freespaceDevice;
