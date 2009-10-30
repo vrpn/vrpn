@@ -11,6 +11,8 @@
 #include <string.h>
 #include "vrpn_Connection.h"
 #include "vrpn_Tracker.h"
+#include "vrpn_Dial.h"
+#include "vrpn_Button.h"
 #include "vrpn_Freespace.h"
 
 char	*TRACKER_NAME = "Freespace0";
@@ -34,21 +36,21 @@ vrpn_Freespace		*freespace;
 
 void	VRPN_CALLBACK handle_pos (void *, const vrpn_TRACKERCB t)
 {
-	printf(" + pos, sensor %llf: %+08.08llf %+08.08llf %+08.08llf\n", t.quat[0], t.quat[1], t.quat[2], t.quat[3]);
+	printf(" + pos, sensor: %+08.08lf %+08.08lf %+08.08lf %+08.08lf\n", t.quat[0], t.quat[1], t.quat[2], t.quat[3]);
 }
 
 void	VRPN_CALLBACK handle_vel (void *, const vrpn_TRACKERVELCB t)
 {
-	printf(" + vel, sensor %llf: %+08.08llf %+08.08llf %+08.08llf\n", t.vel[0], t.vel[1], t.vel[2]);
+	printf(" + vel, sensor: %+08.08lf %+08.08lf %+08.08lf\n", t.vel[0], t.vel[1], t.vel[2]);
 }
 
 void	VRPN_CALLBACK handle_acc (void *, const vrpn_TRACKERACCCB t)
 {
-	printf(" + acc, sensor %llf: %+08.08llf %+08.08llf %+08.08llf\n", t.acc[0], t.acc[1], t.acc[2]);
+	printf(" + acc, sensor: %+08.08lf %+08.08lf %+08.08lf\n", t.acc[0], t.acc[1], t.acc[2]);
 }
 void	VRPN_CALLBACK handle_dial (void *, const vrpn_DIALCB d)
 {
-	printf(" + dial %d %llf: \n", d.dial, d.change);
+	printf(" + dial %d %lf: \n", d.dial, d.change);
 }
 void	VRPN_CALLBACK handle_buttons (void *, const vrpn_BUTTONCB b)
 {
@@ -90,6 +92,14 @@ void create_and_link_dial_remote(void)
 
 int main (int argc, char * argv [])
 {
+bool sendBody = 0, sendUser = 1;
+// painfully simple CL options to turn on/off body/user frame reports
+  if (argc > 1) {
+     sendBody = atoi(argv[1]);
+     if (argc > 2) { 
+       sendUser = atoi(argv[2]);
+    }
+  }
   //---------------------------------------------------------------------
   // explicitly open the connection
   connection = vrpn_create_server_connection(CONNECTION_PORT);
@@ -99,7 +109,7 @@ int main (int argc, char * argv [])
   printf("Tracker's name is %s.\n", TRACKER_NAME);
 
   // create a freespace tracker for the first device.
-  freespace = vrpn_Freespace::create(TRACKER_NAME, connection);
+  freespace = vrpn_Freespace::create(TRACKER_NAME, connection, 0, sendBody, sendUser);
   if (!freespace) {
   	fprintf(stderr, "Error opening freespace device\n");
   	return 1;
@@ -117,6 +127,10 @@ int main (int argc, char * argv [])
   create_and_link_dial_remote();
 
   /* 
+
+
+
+ 
    * main interactive loop
    */
   while ( 1 ) {
