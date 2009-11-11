@@ -21,30 +21,15 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connec
 	d_reportChanges (reportChanges)
 {
 	int i;
-
-	d_x.axis = params->x; d_y.axis = params->y; d_z.axis = params->z;
-	d_sx.axis = params->sx; d_sy.axis = params->sy; d_sz.axis = params->sz;
-
-	d_x.ana = d_y.ana = d_z.ana = NULL;
-	d_sx.ana = d_sy.ana = d_sz.ana = NULL;
-
-	d_x.value = d_y.value = d_z.value = 0.0;
-	d_sx.value = d_sy.value = d_sz.value = 0.0;
-
-	d_x.af = this; d_y.af = this; d_z.af = this;
-	d_sx.af = this; d_sy.af = this; d_sz.af = this;
-
-	//--------------------------------------------------------------------
-	// Open analog remotes for any channels that have non-NULL names.
-	// If the name starts with the "*" character, use tracker
-	//      connection rather than getting a new connection for it.
-	// Set up callbacks to handle updates to the analog values
-	setup_channel(&d_x);
-	setup_channel(&d_y);
-	setup_channel(&d_z);
-	setup_channel(&d_sx);
-	setup_channel(&d_sy);
-	setup_channel(&d_sz);
+	for (i = 0; i < 4; i++) {
+		d_blobs[i].name = wiimote->name;
+		d_blobs[i].first_channel = i * 3 + 4;
+		d_blobs[i].ana = NULL;
+		d_blobs[i].x = d_blobs[i].y = d_blobs[i].size = -1;
+		d_blobs[i].wh = this;
+		setup_blob(&d_blobs[i]);
+	}
+	/*
 
 	//--------------------------------------------------------------------
 	// Open the reset button if is has a non-NULL name.
@@ -102,6 +87,7 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connec
 	if (params->clutch_name == NULL) {
 		d_clutch_engaged = true;
 	}
+	*/
 
 	//--------------------------------------------------------------------
 	// Whenever we get the first connection to this server, we also
@@ -141,13 +127,12 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connec
 vrpn_Tracker_WiimoteHead::~vrpn_Tracker_WiimoteHead (void)
 {
 	// Tear down the analog update callbacks and remotes
-	teardown_channel(&d_x);
-	teardown_channel(&d_y);
-	teardown_channel(&d_z);
-	teardown_channel(&d_sx);
-	teardown_channel(&d_sy);
-	teardown_channel(&d_sz);
+	teardown_blob(&d_blobs[0]);
+	teardown_blob(&d_blobs[1]);
+	teardown_blob(&d_blobs[2]);
+	teardown_blob(&d_blobs[3]);
 
+	/*
 	// Tear down the reset button update callback and remote (if there is one)
 	if (d_reset_button != NULL) {
 		d_reset_button->unregister_change_handler(this,
@@ -161,6 +146,7 @@ vrpn_Tracker_WiimoteHead::~vrpn_Tracker_WiimoteHead (void)
 							   handle_clutch_press);
 		delete d_clutch_button;
 	}
+	*/
 }
 
 // This routine handles updates of the analog values. The value coming in is
@@ -170,31 +156,18 @@ vrpn_Tracker_WiimoteHead::~vrpn_Tracker_WiimoteHead (void)
 
 void	vrpn_Tracker_WiimoteHead::handle_analog_update(void* userdata, const vrpn_ANALOGCB info)
 {
-	vrpn_TAF_fullaxis* full = (vrpn_TAF_fullaxis*)userdata;
-	double value = info.channel[full->axis.channel];
-	double value_offset = value - full->axis.offset;
-	double value_abs = fabs(value_offset);
+	vrpn_TWH_blob* blob = (vrpn_TWH_blob*)userdata;
+	blob->x = info.channel[blob->first_channel];
+	blob->y = info.channel[blob->first_channel+1];
+	blob->size = info.channel[blob->first_channel+2];
 
 	// If we're an absolute channel, store the time of the report
 	// into the tracker's timestamp field.
-	if (full->af->d_absolute) {
-		full->af->vrpn_Tracker::timestamp = info.msg_time;
-	}
-
-	// If we're not above threshold, store zero and we're done!
-	if (value_abs <= full->axis.thresh) {
-		full->value = 0.0;
-		return;
-	}
-
-	// Scale and apply the power to the value (maintaining its sign)
-	if (value_offset >= 0) {
-		full->value = pow(value_offset * full->axis.scale, (double) full->axis.power);
-	} else {
-		full->value = -pow(value_abs * full->axis.scale, (double) full->axis.power);
+	if (blob->wh->d_absolute) {
+		blob->wh->vrpn_Tracker::timestamp = info.msg_time;
 	}
 }
-
+/*
 // This routine will reset the matrix to identity when the reset button is
 // pressed.
 
@@ -226,57 +199,62 @@ void vrpn_Tracker_WiimoteHead::handle_clutch_press(void* userdata, const vrpn_BU
 	}
 }
 
-// This sets up the Analog Remote for one channel, setting up the callback
-// needed to adjust the value based on changes in the analog input.
+*/
+
+// This sets up the Analog Remote for one blob (3 channels), setting up
+// the callback needed to adjust the value based on changes in the analog
+// input.
 // Returns 0 on success and -1 on failure.
 
-int	vrpn_Tracker_WiimoteHead::setup_channel(vrpn_TAF_fullaxis* full)
+int	vrpn_Tracker_WiimoteHead::setup_blob(vrpn_TWH_blob* blob)
 {
+	if (!blob) { return 0; }
+
 	// If the name is NULL, we're done.
-	if (full->axis.name == NULL) { return 0; }
+	if (blob->name == NULL) { return 0; }
 
 	// Open the analog device and point the remote at it.
 	// If the name starts with the '*' character, use the server
 	// connection rather than making a new one.
-	if (full->axis.name[0] == '*') {
-		full->ana = new vrpn_Analog_Remote( & (full->axis.name[1]), d_connection);
+	if (blob->name[0] == '*') {
+		blob->ana = new vrpn_Analog_Remote( & (full->axis.name[1]), d_connection);
 #ifdef	VERBOSE
 		printf("vrpn_Tracker_WiimoteHead: Adding local analog %s\n",
 		       &(full->axis.name[1]));
 #endif
 	} else {
-		full->ana = new vrpn_Analog_Remote(full->axis.name);
+		blob->ana = new vrpn_Analog_Remote(blob->name);
 #ifdef	VERBOSE
 		printf("vrpn_Tracker_WiimoteHead: Adding remote analog %s\n",
-		       full->axis.name);
+		       blob->name);
 #endif
 	}
-	if (full->ana == NULL) {
+	if (blob->ana == NULL) {
 		fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
-				"Can't open Analog %s\n", full->axis.name);
+				"Can't open Analog %s\n", blob->name);
 		return -1;
 	}
 
 	// Set up the callback handler for the channel
-	return full->ana->register_change_handler(full, handle_analog_update);
+	return blob->ana->register_change_handler(blob, handle_analog_update);
 }
 
 // This tears down the Analog Remote for one channel, undoing everything that
 // the setup did. Returns 0 on success and -1 on failure.
 
-int	vrpn_Tracker_WiimoteHead::teardown_channel(vrpn_TAF_fullaxis* full)
+int	vrpn_Tracker_WiimoteHead::teardown_blob(vrpn_TWH_blob* blob)
 {
 	int	ret;
 
 	// If the analog pointer is NULL, we're done.
-	if (full->ana == NULL) { return 0; }
+	if (blob->ana == NULL) { return 0; }
 
 	// Turn off the callback handler for the channel
-	ret = full->ana->unregister_change_handler((void*)full,
+	ret = blob->ana->unregister_change_handler(blob,
 						   handle_analog_update);
 
 	// Delete the analog device.
-	delete full->ana;
+	delete blob->ana;
 
 	return ret;
 }
@@ -323,14 +301,7 @@ void vrpn_Tracker_WiimoteHead::mainloop()
 
 	// Mainloop() all of the analogs that are defined and the button
 	// so that we will get all of the values fresh.
-	if (d_x.ana != NULL) { d_x.ana->mainloop(); }
-	if (d_y.ana != NULL) { d_y.ana->mainloop(); }
-	if (d_z.ana != NULL) { d_z.ana->mainloop(); }
-	if (d_sx.ana != NULL) { d_sx.ana->mainloop(); }
-	if (d_sy.ana != NULL) { d_sy.ana->mainloop(); }
-	if (d_sz.ana != NULL) { d_sz.ana->mainloop(); }
-	if (d_reset_button != NULL) { d_reset_button->mainloop(); }
-	if (d_clutch_button != NULL) { d_clutch_button->mainloop(); }
+	if (d_blobs[0].ana != NULL) { d_blobs[0].ana->mainloop(); }
 
 	// See if it has been long enough since our last report.
 	// If so, generate a new one.
@@ -357,11 +328,11 @@ void vrpn_Tracker_WiimoteHead::mainloop()
 			if (d_connection->pack_message(len, vrpn_Tracker::timestamp,
 						       position_m_id, d_sender_id, msgbuf,
 						       vrpn_CONNECTION_LOW_LATENCY)) {
-				fprintf(stderr, "Tracker AnalogFly: "
+				fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
 						"cannot write message: tossing\n");
 			}
 		} else {
-			fprintf(stderr, "Tracker AnalogFly: "
+			fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
 					"No valid connection\n");
 		}
 
@@ -409,7 +380,7 @@ void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interva
 	// Build a rotation matrix, then add in the translation
 	q_euler_to_col_matrix(diffM, rz, ry, rx);
 	diffM[3][0] = tx; diffM[3][1] = ty; diffM[3][2] = tz;
-
+/*
 	// While the clutch is not engaged, we don't move.  Record that
 	// the clutch was off so that we know later when it is re-engaged.
 	static bool clutch_was_off = false;
@@ -440,7 +411,7 @@ void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interva
 		di_matrix[3][2] = diff_inverse.xyz[2];
 		q_matrix_mult(d_clutchMatrix, di_matrix, d_currentMatrix);
 	}
-
+*/
 	// Apply the matrix.
 	if (d_absolute) {
 		// The difference matrix IS the current matrix.  Catenate it

@@ -14,7 +14,28 @@ class VRPN_API vrpn_TWH_wiimote {
 
 	vrpn_TWH_wiimote (void)
 	{ name = NULL; };
+
+	char * name;	//< Name of the Analog device corresponding to this Wiimote
 };
+
+class VPRN_API vrpn_Tracker_WiimoteHead; // forward reference
+class VRPN_API vrpn_TWH_blob {
+	public:
+
+	vrpn_TWH_blob (void)
+	{ name = NULL; first_channel = NULL; ana = NULL; wh = NULL; };
+
+	char * name;	//< Name of the Analog device corresponding to this Wiimote
+	int first_channel;	//< Which channel to start at from the Analog device
+
+	vrpn_Analog_Remote * ana;
+	vrpn_Tracker_WiimoteHead* wh;
+
+	double x;
+	double y;
+	double size;
+};
+
 /*
 class VRPN_API vrpn_Tracker_WiimoteHeadParam {
 
@@ -93,7 +114,7 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 	vrpn_bool       d_absolute;     //< Report absolute (vs. differential)?
 	vrpn_bool       d_reportChanges;
 
-	vrpn_TAF_fullaxis   d_x, d_y, d_z, d_sx, d_sy, d_sz;
+	vrpn_TWH_blob   d_blobs[4];
 
 	q_matrix_type d_initMatrix, d_currentMatrix, d_clutchMatrix;
 
@@ -102,12 +123,14 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 
 	vrpn_bool shouldReport(double elapsedInterval) const;
 
-	int setup_channel(vrpn_TAF_fullaxis* full);
-	int teardown_channel(vrpn_TAF_fullaxis* full);
+	int setup_blob(vrpn_TWH_blob* blob);
+	int teardown_blob(vrpn_TWH_blob* blob);
 
 	static void VRPN_CALLBACK handle_analog_update(void* userdata, const vrpn_ANALOGCB info);
+	/*
 	static void VRPN_CALLBACK handle_reset_press(void* userdata, const vrpn_BUTTONCB info);
 	static void VRPN_CALLBACK handle_clutch_press(void* userdata, const vrpn_BUTTONCB info);
+	*/
 };
 
 #endif
