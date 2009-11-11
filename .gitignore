@@ -33,3 +33,5 @@ config.log
 # Anjuta files
 .anjuta/
 .anjuta_sym_db.db
+
+docs/
