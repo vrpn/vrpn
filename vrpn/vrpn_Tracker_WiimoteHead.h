@@ -16,7 +16,7 @@ class VRPN_API vrpn_TWH_wiimote {
     vrpn_TWH_wiimote (void)
       { name = NULL; };
 };
-
+/*
 class VRPN_API vrpn_Tracker_WiimoteHeadParam {
 
   public:
@@ -43,7 +43,8 @@ class VRPN_API vrpn_Tracker_WiimoteHeadParam {
     char * clutch_name;
     int clutch_which;
 };
-
+*/
+/*
 class VRPN_API vrpn_Tracker_WiimoteHead;	// Forward reference
 
 class VRPN_API vrpn_TWH_fullaxis {
@@ -55,12 +56,25 @@ public:
 	vrpn_Tracker_WiimoteHead * wh;
         double value;
 };
+*/
+
+// The time reported by absolute trackers is as of the last report they have
+// had from their analog devices.  The time reported by differential trackers
+// is the local time that the report was generated.  This is to allow a
+// gen-locked camera tracker to have its time values passed forward through
+// the AnalogFly class.
+
+// If reportChanges is TRUE, updates are ONLY sent if there has been a
+// change since the last update, in which case they are generated no faster
+// than update_rate.
 
 class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
   public:
-    vrpn_Tracker_WiimoteHead (const char * name, vrpn_Connection * trackercon,
-			    vrpn_Tracker_WiimoteHeadParam * params,
-                            float update_rate, vrpn_bool absolute = vrpn_FALSE,
+    vrpn_Tracker_WiimoteHead (const char * name,
+    						vrpn_Connection * trackercon,
+			    			vrpn_TWH_wiimote * wiimote,
+                            float update_rate,
+                            vrpn_bool absolute = vrpn_TRUE,
                             vrpn_bool reportChanges = VRPN_FALSE);
 
     virtual ~vrpn_Tracker_WiimoteHead (void);
@@ -81,12 +95,6 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
     vrpn_bool       d_reportChanges;
 
     vrpn_TAF_fullaxis	d_x, d_y, d_z, d_sx, d_sy, d_sz;
-    vrpn_Button_Remote	* d_reset_button;
-    int			d_which_button;
-
-    vrpn_Button_Remote	* d_clutch_button;
-    int			d_clutch_which;
-    bool                d_clutch_engaged;
 
     q_matrix_type d_initMatrix, d_currentMatrix, d_clutchMatrix;
 

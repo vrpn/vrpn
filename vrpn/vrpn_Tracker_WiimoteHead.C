@@ -16,17 +16,12 @@ static	double	duration(struct timeval t1, struct timeval t2)
 
 vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead
          (const char * name, vrpn_Connection * trackercon,
-          vrpn_Tracker_WiimoteHeadParam * params, float update_rate,
-	  vrpn_bool absolute, vrpn_bool reportChanges) :
+         	vrpn_TWH_wiimote * wiimote, float update_rate,
+			vrpn_bool absolute, vrpn_bool reportChanges) :
 	vrpn_Tracker (name, trackercon),
-	d_reset_button(NULL),
-	d_which_button (params->reset_which),
-	d_clutch_button(NULL),
-	d_clutch_which (params->clutch_which),
-        d_clutch_engaged(false),
 	d_update_interval (update_rate ? (1/update_rate) : 1.0),
 	d_absolute (absolute),
-        d_reportChanges (reportChanges)
+    d_reportChanges (reportChanges)
 {
 	int i;
 
