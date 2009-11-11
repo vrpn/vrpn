@@ -256,6 +256,9 @@ void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interva
 	// translations and rotations are unscaled;
 	if (d_absolute) { time_interval = 1.0; }
 
+
+	// TODO RP Implement the math here!
+	
 	// compute the translation and rotation
 	/*
 	tx = d_x.value * time_interval;
