@@ -10,11 +10,10 @@
 // has a NULL pointer for the name is disabled.
 
 class VRPN_API vrpn_TWH_wiimote {
+	public:
 
-  public:
-
-    vrpn_TWH_wiimote (void)
-      { name = NULL; };
+	vrpn_TWH_wiimote (void)
+	{ name = NULL; };
 };
 /*
 class VRPN_API vrpn_Tracker_WiimoteHeadParam {
@@ -22,8 +21,8 @@ class VRPN_API vrpn_Tracker_WiimoteHeadParam {
   public:
 
     vrpn_Tracker_WiimoteHeadParam (void) {
-        x.name = y.name = z.name =
-        sx.name = sy.name = sz.name = reset_name = clutch_name = NULL;
+	x.name = y.name = z.name =
+	sx.name = sy.name = sz.name = reset_name = clutch_name = NULL;
     }
 
     /// Translation along each of these three axes
@@ -49,12 +48,12 @@ class VRPN_API vrpn_Tracker_WiimoteHead;	// Forward reference
 
 class VRPN_API vrpn_TWH_fullaxis {
 public:
-        vrpn_TAF_fullaxis (void) { ana = NULL; value = 0.0; wh = NULL; };
+	vrpn_TAF_fullaxis (void) { ana = NULL; value = 0.0; wh = NULL; };
 
 	vrpn_TAF_axis axis;
-        vrpn_Analog_Remote * ana;
+	vrpn_Analog_Remote * ana;
 	vrpn_Tracker_WiimoteHead * wh;
-        double value;
+	double value;
 };
 */
 
@@ -69,47 +68,46 @@ public:
 // than update_rate.
 
 class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
-  public:
-    vrpn_Tracker_WiimoteHead (const char * name,
-    						vrpn_Connection * trackercon,
-			    			vrpn_TWH_wiimote * wiimote,
-                            float update_rate,
-                            vrpn_bool absolute = vrpn_TRUE,
-                            vrpn_bool reportChanges = VRPN_FALSE);
+	public:
+	vrpn_Tracker_WiimoteHead (const char* name,
+				  vrpn_Connection * trackercon,
+				  vrpn_TWH_wiimote * wiimote,
+				  float update_rate,
+				  vrpn_bool absolute = vrpn_TRUE,
+				  vrpn_bool reportChanges = VRPN_FALSE);
 
-    virtual ~vrpn_Tracker_WiimoteHead (void);
+	virtual ~vrpn_Tracker_WiimoteHead (void);
 
-    virtual void mainloop ();
-    virtual void reset (void);
+	virtual void mainloop();
+	virtual void reset(void);
 
-    void update (q_matrix_type &);
+	void update(q_matrix_type &);
 
-    static void VRPN_CALLBACK handle_joystick (void *, const vrpn_ANALOGCB);
-    static int VRPN_CALLBACK handle_newConnection (void *, vrpn_HANDLERPARAM);
+	static void VRPN_CALLBACK handle_joystick(void*, const vrpn_ANALOGCB);
+	static int VRPN_CALLBACK handle_newConnection (void*, vrpn_HANDLERPARAM);
 
-  protected:
+	protected:
 
-    double	    d_update_interval;	//< How long to wait between sends
-    struct timeval  d_prevtime;		//< Time of the previous report
-    vrpn_bool	    d_absolute;		//< Report absolute (vs. differential)?
-    vrpn_bool       d_reportChanges;
+	double          d_update_interval; //< How long to wait between sends
+	struct timeval  d_prevtime;     //< Time of the previous report
+	vrpn_bool       d_absolute;     //< Report absolute (vs. differential)?
+	vrpn_bool       d_reportChanges;
 
-    vrpn_TAF_fullaxis	d_x, d_y, d_z, d_sx, d_sy, d_sz;
+	vrpn_TAF_fullaxis   d_x, d_y, d_z, d_sx, d_sy, d_sz;
 
-    q_matrix_type d_initMatrix, d_currentMatrix, d_clutchMatrix;
+	q_matrix_type d_initMatrix, d_currentMatrix, d_clutchMatrix;
 
-    void    update_matrix_based_on_values (double time_interval);
-    void    convert_matrix_to_tracker (void);
+	void    update_matrix_based_on_values(double time_interval);
+	void    convert_matrix_to_tracker(void);
 
-    vrpn_bool shouldReport (double elapsedInterval) const;
+	vrpn_bool shouldReport(double elapsedInterval) const;
 
-    int setup_channel (vrpn_TAF_fullaxis * full);
-    int teardown_channel (vrpn_TAF_fullaxis * full);
+	int setup_channel(vrpn_TAF_fullaxis* full);
+	int teardown_channel(vrpn_TAF_fullaxis* full);
 
-    static void	VRPN_CALLBACK handle_analog_update (void * userdata,
-                                      const vrpn_ANALOGCB info);
-    static void VRPN_CALLBACK handle_reset_press (void * userdata, const vrpn_BUTTONCB info);
-    static void VRPN_CALLBACK handle_clutch_press (void * userdata, const vrpn_BUTTONCB info);
+	static void VRPN_CALLBACK handle_analog_update(void* userdata, const vrpn_ANALOGCB info);
+	static void VRPN_CALLBACK handle_reset_press(void* userdata, const vrpn_BUTTONCB info);
+	static void VRPN_CALLBACK handle_clutch_press(void* userdata, const vrpn_BUTTONCB info);
 };
 
 #endif
