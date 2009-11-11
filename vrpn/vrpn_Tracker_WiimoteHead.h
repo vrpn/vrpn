@@ -1,8 +1,18 @@
-#ifndef __TRACKER_3DMOUSE_H
-#define __TRACKER_3DMOUSE_H
+#ifndef __TRACKER_WIIMOTEHEAD_H
+#define __TRACKER_WIIMOTEHEAD_H
+
+#include <time.h>
+#include <math.h>
+#include <stdlib.h>
+#include <stdio.h>
+#ifndef _WIN32
+#include <sys/time.h>
+#endif
 
 #include "vrpn_Tracker.h"
-#include "vrpn_Button.h"
+#include "vrpn_Analog.h"
+
+#include <quat.h>
 
 // This parameter is passed to the constructor for the AnalogFly; it describes
 // the wiimote device (vrpn_Wiimote) to get IR from.

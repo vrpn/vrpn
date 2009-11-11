@@ -108,7 +108,7 @@ int	vrpn_Tracker_WiimoteHead::setup_blob(vrpn_TWH_blob* blob)
 	// If the name starts with the '*' character, use the server
 	// connection rather than making a new one.
 	if (blob->name[0] == '*') {
-		blob->ana = new vrpn_Analog_Remote( & (full->axis.name[1]), d_connection);
+		blob->ana = new vrpn_Analog_Remote( & (blob->name[1]), d_connection);
 #ifdef	VERBOSE
 		printf("vrpn_Tracker_WiimoteHead: Adding local analog %s\n",
 		       &(full->axis.name[1]));
@@ -257,6 +257,7 @@ void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interva
 	if (d_absolute) { time_interval = 1.0; }
 
 	// compute the translation and rotation
+	/*
 	tx = d_x.value * time_interval;
 	ty = d_y.value * time_interval;
 	tz = d_z.value * time_interval;
@@ -264,7 +265,7 @@ void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interva
 	rx = d_sx.value * time_interval * (2 * M_PI);
 	ry = d_sy.value * time_interval * (2 * M_PI);
 	rz = d_sz.value * time_interval * (2 * M_PI);
-
+	*/
 	// Build a rotation matrix, then add in the translation
 	q_euler_to_col_matrix(diffM, rz, ry, rx);
 	diffM[3][0] = tx; diffM[3][1] = ty; diffM[3][2] = tz;
