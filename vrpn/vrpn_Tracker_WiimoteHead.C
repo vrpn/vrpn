@@ -317,10 +317,11 @@ vrpn_bool vrpn_Tracker_WiimoteHead::shouldReport(double elapsedInterval) const
 	// HACK:  This values may be unstable, depending on device characteristics;
 	// we may need to designate a small dead zone around zero and only report
 	// if the value is outside the dead zone.
-	if (d_x.value || d_y.value || d_z.value ||
-	    d_sx.value || d_sy.value || d_sz.value) {
+	// TODO RP : replace logic here
+	//if (d_x.value || d_y.value || d_z.value ||
+	//    d_sx.value || d_sy.value || d_sz.value) {
 		return VRPN_TRUE;
-	}
+	//}
 
 	// Enough time has elapsed, but nothing has changed, so return false.
 	return VRPN_FALSE;

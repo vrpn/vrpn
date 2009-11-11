@@ -481,7 +481,8 @@ SLIB_FILES =  $(LIB_FILES) vrpn_3Space.C \
 	vrpn_Flock.C vrpn_Tracker_Fastrak.C vrpn_Dyna.C \
 	vrpn_Flock_Parallel.C  vrpn_UNC_Joystick.C \
 	vrpn_JoyFly.C vrpn_sgibox.C vrpn_CerealBox.C \
-	vrpn_Tracker_AnalogFly.C vrpn_raw_sgibox.C vrpn_Magellan.C \
+	vrpn_Tracker_AnalogFly.C vrpn_Tracker_WiimoteHead.C \
+	vrpn_raw_sgibox.C vrpn_Magellan.C \
 	vrpn_Analog_Radamec_SPI.C vrpn_ImmersionBox.C vrpn_Wanda.C \
 	vrpn_Analog_5dt.C vrpn_Joylin.C vrpn_Tng3.C vrpn_Spaceball.C \
 	vrpn_Tracker_isense.C vrpn_Zaber.C vrpn_nikon_controls.C \
@@ -497,7 +498,7 @@ SLIB_FILES =  $(LIB_FILES) vrpn_3Space.C \
 	vrpn_Event_Mouse.C vrpn_Imager_Stream_Buffer.C \
 	vrpn_HumanInterface.C vrpn_Xkeys.C vrpn_3DConnexion.C \
 	vrpn_Tracker_MotionNode.C vrpn_Tracker_NDI_Polaris.C \
-	vrpn_WiiMote.C vrpn_Tracker_WiimoteHead.C vrpn_Tracker_Isotrak.C
+	vrpn_WiiMote.C vrpn_Tracker_Isotrak.C
 
 SLIB_OBJECTS = $(patsubst %,$(SOBJECT_DIR)/%,$(SLIB_FILES:.C=.o))
 
@@ -505,7 +506,8 @@ SLIB_INCLUDES = $(LIB_INCLUDES) vrpn_3Space.h \
 	vrpn_Flock.h vrpn_Tracker_Fastrak.h vrpn_Dyna.h \
 	vrpn_Flock_Parallel.h vrpn_UNC_Joystick.h \
 	vrpn_JoyFly.h vrpn_sgibox.h vrpn_raw_sgibox.h \
-	vrpn_CerealBox.h vrpn_Tracker_AnalogFly.h vrpn_Magellan.h \
+	vrpn_CerealBox.h vrpn_Tracker_AnalogFly.h vrpn_Tracker_WiimoteHead.h \
+	vrpn_Magellan.h \
 	vrpn_Analog_Radamec_SPI.h vrpn_ImmersionBox.h vrpn_Wanda.h \
 	vrpn_Analog_5dt.h vrpn_Joylin.h vrpn_Tng3.h vrpn_Spaceball.h \
 	vrpn_tracker_isense.h vrpn_Zaber.h vrpn_nikon_controls.h \
@@ -521,7 +523,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) vrpn_3Space.h \
 	vrpn_Event_Mouse.h vrpn_Imager_Stream_Buffer.h \
 	vrpn_HumanInterface.h vrpn_Xkeys.h vrpn_3DConnexion.h \
 	vrpn_Tracker_MotionNode.h vrpn_Tracker_NDI_Polaris.h \
-	vrpn_WiiMote.h vrpn_Tracker_WiimoteHead.h vrpn_Tracker_Isotrak.h
+	vrpn_WiiMote.h vrpn_Tracker_Isotrak.h
 
 $(SLIB_OBJECTS): 
 $(OBJECT_DIR)/libvrpnserver.a: $(MAKEFILE) $(SLIB_OBJECTS)

@@ -26,7 +26,8 @@ class VRPN_API vrpn_TWH_wiimote {
 	char * name;	//< Name of the Analog device corresponding to this Wiimote
 };
 
-class VPRN_API vrpn_Tracker_WiimoteHead; // forward reference
+class VRPN_API vrpn_Tracker_WiimoteHead;	// Forward reference
+
 class VRPN_API vrpn_TWH_blob {
 	public:
 
