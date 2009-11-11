@@ -29,65 +29,6 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connec
 		d_blobs[i].wh = this;
 		setup_blob(&d_blobs[i]);
 	}
-	/*
-
-	//--------------------------------------------------------------------
-	// Open the reset button if is has a non-NULL name.
-	// If the name starts with the "*" character, use tracker
-	// connection rather than getting a new connection for it.
-	// Set up callback for it to reset the matrix to identity.
-
-	// If the name is NULL, don't do anything.
-	if (params->reset_name != NULL) {
-		// Open the button device and point the remote at it.
-		// If the name starts with the '*' character, use
-		// the server connection rather than making a new one.
-		if (params->reset_name[0] == '*') {
-			d_reset_button = new vrpn_Button_Remote( & (params->reset_name[1]), d_connection);
-		} else {
-			d_reset_button = new vrpn_Button_Remote(params->reset_name);
-		}
-		if (d_reset_button == NULL) {
-			fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
-					"Can't open Button %s\n", params->reset_name);
-		} else {
-			// Set up the callback handler for the channel
-			d_reset_button->register_change_handler
-				(this, handle_reset_press);
-		}
-	}
-
-	//--------------------------------------------------------------------
-	// Open the clutch button if is has a non-NULL name.
-	// If the name starts with the "*" character, use tracker
-	// connection rather than getting a new connection for it.
-	// Set up callback for it to control clutching.
-
-	// If the name is NULL, don't do anything.
-	if (params->clutch_name != NULL) {
-		// Open the button device and point the remote at it.
-		// If the name starts with the '*' character, use
-		// the server connection rather than making a new one.
-		if (params->clutch_name[0] == '*') {
-			d_clutch_button = new vrpn_Button_Remote( & (params->clutch_name[1]), d_connection);
-		} else {
-			d_clutch_button = new vrpn_Button_Remote(params->clutch_name);
-		}
-		if (d_clutch_button == NULL) {
-			fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
-					"Can't open Button %s\n", params->clutch_name);
-		} else {
-			// Set up the callback handler for the channel
-			d_clutch_button->register_change_handler
-				(this, handle_clutch_press);
-		}
-	}
-
-	// If the clutch button is NULL, then engage the clutch always.
-	if (params->clutch_name == NULL) {
-		d_clutch_engaged = true;
-	}
-	*/
 
 	//--------------------------------------------------------------------
 	// Whenever we get the first connection to this server, we also
@@ -98,8 +39,7 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connec
 
 	//--------------------------------------------------------------------
 	// Set the initialization matrix to identity, then also set
-	// the current matrix to identity and the clutch matrix to
-	// identity.
+	// the current matrix to identity
 	for ( i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
 			d_initMatrix[i][j] = 0;
@@ -109,7 +49,7 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connec
 	d_initMatrix[0][0] = d_initMatrix[1][1] = d_initMatrix[2][2] =
 							  d_initMatrix[3][3] = 1.0;
 	reset();
-	q_matrix_copy(d_clutchMatrix, d_initMatrix);
+
 	q_matrix_copy(d_currentMatrix, d_initMatrix);
 
 	//--------------------------------------------------------------------
@@ -131,22 +71,6 @@ vrpn_Tracker_WiimoteHead::~vrpn_Tracker_WiimoteHead (void)
 	teardown_blob(&d_blobs[1]);
 	teardown_blob(&d_blobs[2]);
 	teardown_blob(&d_blobs[3]);
-
-	/*
-	// Tear down the reset button update callback and remote (if there is one)
-	if (d_reset_button != NULL) {
-		d_reset_button->unregister_change_handler(this,
-							  handle_reset_press);
-		delete d_reset_button;
-	}
-
-	// Tear down the clutch button update callback and remote (if there is one)
-	if (d_clutch_button != NULL) {
-		d_clutch_button->unregister_change_handler(this,
-							   handle_clutch_press);
-		delete d_clutch_button;
-	}
-	*/
 }
 
 // This routine handles updates of the analog values. The value coming in is
@@ -167,39 +91,6 @@ void	vrpn_Tracker_WiimoteHead::handle_analog_update(void* userdata, const vrpn_A
 		blob->wh->vrpn_Tracker::timestamp = info.msg_time;
 	}
 }
-/*
-// This routine will reset the matrix to identity when the reset button is
-// pressed.
-
-void vrpn_Tracker_WiimoteHead::handle_reset_press(void* userdata, const vrpn_BUTTONCB info)
-{
-	vrpn_Tracker_WiimoteHead* me = (vrpn_Tracker_WiimoteHead*)userdata;
-
-	// If this is the correct button, and it has just been pressed, then
-	// reset the matrix.
-	if ((info.button == me->d_which_button) && (info.state == 1)) {
-		me->reset();
-	}
-}
-
-// This handle state changes associated with the clutch button.
-
-void vrpn_Tracker_WiimoteHead::handle_clutch_press(void* userdata, const vrpn_BUTTONCB info)
-{
-	vrpn_Tracker_WiimoteHead* me = (vrpn_Tracker_WiimoteHead*)userdata;
-
-	// If this is the correct button, set the clutch state according to
-	// the value of the button.
-	if (info.button == me->d_clutch_which) {
-		if (info.state == 1) {
-			me->d_clutch_engaged = true;
-		} else {
-			me->d_clutch_engaged = false;
-		}
-	}
-}
-
-*/
 
 // This sets up the Analog Remote for one blob (3 channels), setting up
 // the callback needed to adjust the value based on changes in the analog
@@ -279,9 +170,6 @@ int vrpn_Tracker_WiimoteHead::handle_newConnection(void* userdata, vrpn_HANDLERP
 
 void vrpn_Tracker_WiimoteHead::reset(void)
 {
-	// Set the clutch matrix to the identity.
-	q_matrix_copy(d_clutchMatrix, d_initMatrix);
-
 	// Set the matrix back to the identity matrix
 	q_matrix_copy(d_currentMatrix, d_initMatrix);
 	vrpn_gettimeofday(&d_prevtime, NULL);
@@ -380,45 +268,11 @@ void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interva
 	// Build a rotation matrix, then add in the translation
 	q_euler_to_col_matrix(diffM, rz, ry, rx);
 	diffM[3][0] = tx; diffM[3][1] = ty; diffM[3][2] = tz;
-/*
-	// While the clutch is not engaged, we don't move.  Record that
-	// the clutch was off so that we know later when it is re-engaged.
-	static bool clutch_was_off = false;
-	if (!d_clutch_engaged) {
-		clutch_was_off = true;
-		return;
-	}
 
-	// When the clutch becomes re-engaged, we store the current matrix
-	// multiplied by the inverse of the present differential matrix so that
-	// the first frame of the mouse-hold leaves us in the same location.
-	// For the absolute matrix, this re-engages new motion at the previous
-	// location.
-	if (d_clutch_engaged && clutch_was_off) {
-		clutch_was_off = false;
-		q_type  diff_orient;
-		// This is backwards, because Euler angles have rotation about Z first...
-		q_from_euler(diff_orient, rz, ry, rx);
-		q_xyz_quat_type diff;
-		q_vec_set(diff.xyz, tx, ty, tz);
-		q_copy(diff.quat, diff_orient);
-		q_xyz_quat_type  diff_inverse;
-		q_xyz_quat_invert(&diff_inverse, &diff);
-		q_matrix_type di_matrix;
-		q_to_col_matrix(di_matrix, diff_inverse.quat);
-		di_matrix[3][0] = diff_inverse.xyz[0];
-		di_matrix[3][1] = diff_inverse.xyz[1];
-		di_matrix[3][2] = diff_inverse.xyz[2];
-		q_matrix_mult(d_clutchMatrix, di_matrix, d_currentMatrix);
-	}
-*/
 	// Apply the matrix.
 	if (d_absolute) {
-		// The difference matrix IS the current matrix.  Catenate it
-		// onto the clutch matrix.  If there is no clutching happening,
-		// this matrix will always be the identity so this will just
-		// copy the difference matrix.
-		q_matrix_mult(d_currentMatrix, diffM, d_clutchMatrix);
+		// The difference matrix IS the current matrix.
+		q_matrix_copy(d_currentMatrix, diffM);
 	} else {
 		// Multiply the current matrix by the difference matrix to update
 		// it to the current time.

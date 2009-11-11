@@ -5,9 +5,7 @@
 #include "vrpn_Button.h"
 
 // This parameter is passed to the constructor for the AnalogFly; it describes
-// the channel mapping and parameters of that mapping, as well as the button
-// that will be used to reset the tracker when it is pushed. Any entry which
-// has a NULL pointer for the name is disabled.
+// the wiimote device (vrpn_Wiimote) to get IR from.
 
 class VRPN_API vrpn_TWH_wiimote {
 	public:
@@ -35,48 +33,6 @@ class VRPN_API vrpn_TWH_blob {
 	double y;
 	double size;
 };
-
-/*
-class VRPN_API vrpn_Tracker_WiimoteHeadParam {
-
-  public:
-
-    vrpn_Tracker_WiimoteHeadParam (void) {
-	x.name = y.name = z.name =
-	sx.name = sy.name = sz.name = reset_name = clutch_name = NULL;
-    }
-
-    /// Translation along each of these three axes
-    vrpn_TAF_axis x, y, z;
-
-    /// Rotation in the positive direction about the three axes
-    vrpn_TAF_axis sx, sy, sz;
-
-    /// Button device that is used to reset the matrix to the origin
-
-    char * reset_name;
-    int reset_which;
-
-    /// Clutch device that is used to enable relative motion over
-    // large distances
-
-    char * clutch_name;
-    int clutch_which;
-};
-*/
-/*
-class VRPN_API vrpn_Tracker_WiimoteHead;	// Forward reference
-
-class VRPN_API vrpn_TWH_fullaxis {
-public:
-	vrpn_TAF_fullaxis (void) { ana = NULL; value = 0.0; wh = NULL; };
-
-	vrpn_TAF_axis axis;
-	vrpn_Analog_Remote * ana;
-	vrpn_Tracker_WiimoteHead * wh;
-	double value;
-};
-*/
 
 // The time reported by absolute trackers is as of the last report they have
 // had from their analog devices.  The time reported by differential trackers
@@ -116,7 +72,7 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 
 	vrpn_TWH_blob   d_blobs[4];
 
-	q_matrix_type d_initMatrix, d_currentMatrix, d_clutchMatrix;
+	q_matrix_type d_initMatrix, d_currentMatrix;
 
 	void    update_matrix_based_on_values(double time_interval);
 	void    convert_matrix_to_tracker(void);
@@ -127,10 +83,6 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 	int teardown_blob(vrpn_TWH_blob* blob);
 
 	static void VRPN_CALLBACK handle_analog_update(void* userdata, const vrpn_ANALOGCB info);
-	/*
-	static void VRPN_CALLBACK handle_reset_press(void* userdata, const vrpn_BUTTONCB info);
-	static void VRPN_CALLBACK handle_clutch_press(void* userdata, const vrpn_BUTTONCB info);
-	*/
 };
 
 #endif
