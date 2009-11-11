@@ -1,352 +1,526 @@
-#include <ctype.h>
+#include <string.h>
+#include <math.h>
+#include "vrpn_Tracker_WiimoteHead.h"
 
-#ifndef _WIN32
-#include <unistd.h>
-#else
-#define M_PI 3.14159265358979323846
+#undef	VERBOSE
+
+#ifndef	M_PI
+#define M_PI		3.14159265358979323846
 #endif
 
-#include "vrpn_Tracker_3DMouse.h"
-
-// max time between reports (usec)
-#define MAX_TIME_INTERVAL       (2000000) 
-#define	INCHES_TO_METERS	(2.54/100.0)
-
-vrpn_Tracker_3DMouse::vrpn_Tracker_3DMouse(const char *name, vrpn_Connection *c, 
-		      const char *port, long baud, int filtering_count):
-    vrpn_Tracker_Serial(name, c, port, baud),
-    vrpn_Button(name, c),
-    _filtering_count(filtering_count),
-    _numbuttons(5)
+static	double	duration(struct timeval t1, struct timeval t2)
 {
-	vrpn_Button::num_buttons = _numbuttons;
-	clear_values();
+	return (t1.tv_usec - t2.tv_usec) / 1000000.0 +
+	       (t1.tv_sec - t2.tv_sec);
 }
 
-void vrpn_Tracker_3DMouse::clear_values()
+vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead
+         (const char * name, vrpn_Connection * trackercon,
+          vrpn_Tracker_WiimoteHeadParam * params, float update_rate,
+	  vrpn_bool absolute, vrpn_bool reportChanges) :
+	vrpn_Tracker (name, trackercon),
+	d_reset_button(NULL),
+	d_which_button (params->reset_which),
+	d_clutch_button(NULL),
+	d_clutch_which (params->clutch_which),
+        d_clutch_engaged(false),
+	d_update_interval (update_rate ? (1/update_rate) : 1.0),
+	d_absolute (absolute),
+        d_reportChanges (reportChanges)
 {
 	int i;
-	for (i=0; i <_numbuttons; i++)
-		vrpn_Button::buttons[i] = vrpn_Button::lastbuttons[i] = 0;
-}
 
-vrpn_Tracker_3DMouse::~vrpn_Tracker_3DMouse()
-{
-}
+	d_x.axis = params->x; d_y.axis = params->y; d_z.axis = params->z;
+	d_sx.axis = params->sx; d_sy.axis = params->sy; d_sz.axis = params->sz;
 
-void vrpn_Tracker_3DMouse::reset()
-{
-	static int numResets = 0;	// How many resets have we tried?
-	int ret, i;
+	d_x.ana = d_y.ana = d_z.ana = NULL;
+	d_sx.ana = d_sy.ana = d_sz.ana = NULL;
 
-	numResets++;		  	// We're trying another reset
+	d_x.value = d_y.value = d_z.value = 0.0;
+	d_sx.value = d_sy.value = d_sz.value = 0.0;
 
-	clear_values();
+	d_x.af = this; d_y.af = this; d_z.af = this;
+	d_sx.af = this; d_sy.af = this; d_sz.af = this;
 
-	fprintf(stderr, "Resetting the 3DMouse (attempt %d)\n", numResets);
-	if (vrpn_write_characters(serial_fd, (unsigned char*)"*R", 2) == 2)
-	{
-		fprintf(stderr,".");
-		sleep(2);  // Wait after each character to give it time to respond
-	}
-	else
-	{
-		perror("3DMouse: Failed writing to 3DMouse");
-		status = vrpn_TRACKER_FAIL;
-		return;
-	}
+	//--------------------------------------------------------------------
+	// Open analog remotes for any channels that have non-NULL names.
+	// If the name starts with the "*" character, use tracker
+        //      connection rather than getting a new connection for it.
+	// Set up callbacks to handle updates to the analog values
+	setup_channel(&d_x);
+	setup_channel(&d_y);
+	setup_channel(&d_z);
+	setup_channel(&d_sx);
+	setup_channel(&d_sy);
+	setup_channel(&d_sz);
 
-	fprintf(stderr,"\n");
+	//--------------------------------------------------------------------
+	// Open the reset button if is has a non-NULL name.
+	// If the name starts with the "*" character, use tracker
+        // connection rather than getting a new connection for it.
+	// Set up callback for it to reset the matrix to identity.
 
-	// Get rid of the characters left over from before the reset
-	vrpn_flush_input_buffer(serial_fd);
+	// If the name is NULL, don't do anything.
+	if (params->reset_name != NULL) {
 
-	// Make sure that the tracker has stopped sending characters
-	sleep(2);
-
-	if ( (ret = vrpn_read_available_characters(serial_fd, _buffer, 80)) != 0)
-	{
-		fprintf(stderr, "Got >=%d characters after reset\n", ret);
-		for (i = 0; i < ret; i++)
-		{
-			if (isprint(_buffer[i])) fprintf(stderr,"%c",_buffer[i]);
-			else fprintf(stderr,"[0x%02X]",_buffer[i]);
+		// Open the button device and point the remote at it.
+		// If the name starts with the '*' character, use
+                // the server connection rather than making a new one.
+		if (params->reset_name[0] == '*') {
+			d_reset_button = new vrpn_Button_Remote
+                               (&(params->reset_name[1]),
+				d_connection);
+		} else {
+			d_reset_button = new vrpn_Button_Remote
+                               (params->reset_name);
 		}
-		fprintf(stderr, "\n");
-		vrpn_flush_input_buffer(serial_fd);		// Flush what's left
+		if (d_reset_button == NULL) {
+			fprintf(stderr,"vrpn_Tracker_WiimoteHead: "
+                             "Can't open Button %s\n",params->reset_name);
+		} else {
+			// Set up the callback handler for the channel
+			d_reset_button->register_change_handler
+                             (this, handle_reset_press);
+		}
 	}
 
-	// Asking for tracker status
-	if (vrpn_write_characters(serial_fd, (const unsigned char *) "*\x05", 2) == 2)
-		sleep(1); // Sleep for a second to let it respond
-	else
-	{
-		perror("  3DMouse write failed");
-		status = vrpn_TRACKER_FAIL;
+	//--------------------------------------------------------------------
+	// Open the clutch button if is has a non-NULL name.
+	// If the name starts with the "*" character, use tracker
+        // connection rather than getting a new connection for it.
+	// Set up callback for it to control clutching.
+
+	// If the name is NULL, don't do anything.
+	if (params->clutch_name != NULL) {
+
+		// Open the button device and point the remote at it.
+		// If the name starts with the '*' character, use
+                // the server connection rather than making a new one.
+		if (params->clutch_name[0] == '*') {
+			d_clutch_button = new vrpn_Button_Remote
+                               (&(params->clutch_name[1]),
+				d_connection);
+		} else {
+			d_clutch_button = new vrpn_Button_Remote
+                               (params->clutch_name);
+		}
+		if (d_clutch_button == NULL) {
+			fprintf(stderr,"vrpn_Tracker_WiimoteHead: "
+                             "Can't open Button %s\n",params->clutch_name);
+		} else {
+			// Set up the callback handler for the channel
+			d_clutch_button->register_change_handler
+                             (this, handle_clutch_press);
+		}
+	}
+
+        // If the clutch button is NULL, then engage the clutch always.
+        if (params->clutch_name == NULL) {
+          d_clutch_engaged = true;
+        }
+
+	//--------------------------------------------------------------------
+	// Whenever we get the first connection to this server, we also
+        // want to reset the matrix to identity, so that you start at the
+        // beginning. Set up a handler to do this.
+	register_autodeleted_handler(d_connection->register_message_type(vrpn_got_first_connection),
+		      handle_newConnection, this);
+
+	//--------------------------------------------------------------------
+	// Set the initialization matrix to identity, then also set
+        // the current matrix to identity and the clutch matrix to
+        // identity.
+        for ( i =0; i< 4; i++) {
+          for (int j=0; j< 4; j++)  {
+	    d_initMatrix[i][j] = 0;
+          }
+        }
+
+	d_initMatrix[0][0] = d_initMatrix[1][1] = d_initMatrix[2][2] =
+                             d_initMatrix[3][3] = 1.0;
+	reset();
+        q_matrix_copy(d_clutchMatrix, d_initMatrix);
+        q_matrix_copy(d_currentMatrix, d_initMatrix);
+
+	//--------------------------------------------------------------------
+	// Set the current timestamp to "now" and current matrix to identity
+	// for absolute trackers.  This is done in case we never hear from the
+	// analog devices.  Reset doesn't do this for absolute trackers.
+	if (d_absolute) {
+	    vrpn_gettimeofday(&d_prevtime, NULL);
+	    vrpn_Tracker::timestamp = d_prevtime;
+	    q_matrix_copy(d_currentMatrix, d_initMatrix);
+	    convert_matrix_to_tracker();
+	}
+}
+
+vrpn_Tracker_WiimoteHead::~vrpn_Tracker_WiimoteHead (void)
+{
+	// Tear down the analog update callbacks and remotes
+	teardown_channel(&d_x);
+	teardown_channel(&d_y);
+	teardown_channel(&d_z);
+	teardown_channel(&d_sx);
+	teardown_channel(&d_sy);
+	teardown_channel(&d_sz);
+
+	// Tear down the reset button update callback and remote (if there is one)
+	if (d_reset_button != NULL) {
+		d_reset_button->unregister_change_handler(this,
+                                        handle_reset_press);
+		delete d_reset_button;
+	}
+
+	// Tear down the clutch button update callback and remote (if there is one)
+	if (d_clutch_button != NULL) {
+		d_clutch_button->unregister_change_handler(this,
+                                        handle_clutch_press);
+		delete d_clutch_button;
+	}
+}
+
+// This routine handles updates of the analog values. The value coming in is
+// adjusted per the parameters in the full axis description, and then used to
+// update the value there. The value is used by the matrix-generation code in
+// mainloop() to update the transformations; that work is not done here.
+
+void	vrpn_Tracker_WiimoteHead::handle_analog_update
+                     (void *userdata, const vrpn_ANALOGCB info)
+{
+	vrpn_TAF_fullaxis	*full = (vrpn_TAF_fullaxis *)userdata;
+	double value = info.channel[full->axis.channel];
+	double value_offset = value - full->axis.offset;
+	double value_abs = fabs(value_offset);
+
+	// If we're an absolute channel, store the time of the report
+	// into the tracker's timestamp field.
+	if (full->af->d_absolute) {
+	    full->af->vrpn_Tracker::timestamp = info.msg_time;
+	}
+
+	// If we're not above threshold, store zero and we're done!
+	if (value_abs <= full->axis.thresh) {
+		full->value = 0.0;
 		return;
 	}
 
-	// Read Status
-	bool success = true;
-
-	ret = vrpn_read_available_characters(serial_fd, _buffer, 2);
-	if (ret != 2) fprintf(stderr, "  Got %d of 5 characters for status\n",ret);
-
-	fprintf(stderr, "	Control Unit test       : ");
-	if (_buffer[0] & 1) fprintf(stderr, "success\n");
-	else
-	{
-		fprintf(stderr, "fail\n");
-		success = false;
+	// Scale and apply the power to the value (maintaining its sign)
+	if (value_offset >=0) {
+		full->value = pow(value_offset*full->axis.scale, (double) full->axis.power);
+	} else {
+		full->value = -pow(value_abs*full->axis.scale, (double) full->axis.power);
 	}
-
-	fprintf(stderr, "	Processor test          : ");
-	if (_buffer[0] & 2) fprintf(stderr, "success\n");
-	else
-	{
-		fprintf(stderr, "fail\n");
-		success = false;
-	}
-
-	fprintf(stderr, "	EPROM checksum test     : ");
-	if (_buffer[0] & 4) fprintf(stderr, "success\n");
-	else
-	{
-		fprintf(stderr, "fail\n");
-		success = false;
-	}
-
-	fprintf(stderr, "	RAM checksum test       : ");
-	if (_buffer[0] & 8) fprintf(stderr, "success\n");
-	else
-	{
-		fprintf(stderr, "fail\n");
-		success = false;
-	}
-
-	fprintf(stderr, "	Transmitter test        : ");
-	if (_buffer[0] & 16) fprintf(stderr, "success\n");
-	else
-	{
-		fprintf(stderr, "fail\n");
-		success = false;
-	}
-
-	fprintf(stderr, "	Receiver test           : ");
-	if (_buffer[0] & 32) fprintf(stderr, "success\n");
-	else
-	{
-		fprintf(stderr, "fail\n");
-		success = false;
-	}
-
-	fprintf(stderr, "	Serial Port test        : ");
-	if (_buffer[1] & 1) fprintf(stderr, "success\n");
-	else
-	{
-		fprintf(stderr, "fail\n");
-		success = false;
-	}
-
-	fprintf(stderr, "	EEPROM test             : ");
-	if (_buffer[0] & 2) fprintf(stderr, "success\n");
-	else
-	{
-		fprintf(stderr, "fail\n");
-		success = false;
-	}
-
-	if (!success)
-	{
-		fprintf(stderr, "Bad status report from 3DMouse, retrying reset\n");
-		status = vrpn_TRACKER_FAIL;
-		return;
-	}
-	else
-	{
-		fprintf(stderr, "3DMouse gives status (this is good)\n");
-		numResets = 0; 	// Success, use simple reset next time
-	}
-
-	// Set filtering count if the constructor parameter said to.
-	if (_filtering_count > 1)
-	{
-		if (!set_filtering_count(_filtering_count)) return;
-	}
-	fprintf(stderr, "Reset Completed (this is good)\n");
-	status = vrpn_TRACKER_SYNCING;	// We're trying for a new reading
 }
 
-bool vrpn_Tracker_3DMouse::set_filtering_count(int count)
+// This routine will reset the matrix to identity when the reset button is
+// pressed.
+
+void vrpn_Tracker_WiimoteHead::handle_reset_press
+                     (void *userdata, const vrpn_BUTTONCB info)
 {
-	char sBuf[16];
+	vrpn_Tracker_WiimoteHead	*me = (vrpn_Tracker_WiimoteHead*)userdata;
 
-	sBuf[0] = 0x2a;
-	sBuf[1] = 0x24;
-	sBuf[2] = 2;
-	sBuf[3] = 7;
-	sBuf[4] = count;
-
-	if (vrpn_write_characters(serial_fd, (const unsigned char*)sBuf, 5) == 5)
-	{
-		sleep(1);
+	// If this is the correct button, and it has just been pressed, then
+	// reset the matrix.
+	if ( (info.button == me->d_which_button) && (info.state == 1) ) {
+		me->reset();
 	}
-	else
-	{
-		perror("  3DMouse write filtering count failed");
-		status = vrpn_TRACKER_FAIL;
-		return false;
-	}
-
-	return true;
 }
 
-int vrpn_Tracker_3DMouse::get_report(void)
+// This handle state changes associated with the clutch button.
+
+void vrpn_Tracker_WiimoteHead::handle_clutch_press
+                     (void *userdata, const vrpn_BUTTONCB info)
 {
-   int ret;		// Return value from function call to be checked
-   static int count = 0;
-   timeval waittime;
-   waittime.tv_sec = 2;
+  vrpn_Tracker_WiimoteHead	*me = (vrpn_Tracker_WiimoteHead*)userdata;
 
-   if (status == vrpn_TRACKER_SYNCING) {
-	unsigned char tmpc;
+  // If this is the correct button, set the clutch state according to
+  // the value of the button.
+  if (info.button == me->d_clutch_which) {
+    if (info.state == 1) {
+      me->d_clutch_engaged = true;
+    } else {
+      me->d_clutch_engaged = false;
+    }
+  }
+}
 
-	if (vrpn_write_characters(serial_fd, (const unsigned char*)"*d", 2) !=2)
-	{
-		perror("  3DMouse write command failed");
-		status = vrpn_TRACKER_RESETTING;
-		return 0;
+// This sets up the Analog Remote for one channel, setting up the callback
+// needed to adjust the value based on changes in the analog input.
+// Returns 0 on success and -1 on failure.
+
+int	vrpn_Tracker_WiimoteHead::setup_channel(vrpn_TAF_fullaxis *full)
+{
+	// If the name is NULL, we're done.
+	if (full->axis.name == NULL) { return 0; }
+
+	// Open the analog device and point the remote at it.
+	// If the name starts with the '*' character, use the server
+        // connection rather than making a new one.
+	if (full->axis.name[0] == '*') {
+		full->ana = new vrpn_Analog_Remote(&(full->axis.name[1]),
+                      d_connection);
+#ifdef	VERBOSE
+		printf("vrpn_Tracker_WiimoteHead: Adding local analog %s\n",
+                          &(full->axis.name[1]));
+#endif
+	} else {
+		full->ana = new vrpn_Analog_Remote(full->axis.name);
+#ifdef	VERBOSE
+		printf("vrpn_Tracker_WiimoteHead: Adding remote analog %s\n",
+                          full->axis.name);
+#endif
 	}
-	ret = vrpn_read_available_characters(serial_fd, _buffer+count, 16-count, &waittime);
-	if (ret < 0)
-	{
-		perror("  3DMouse read failed (disconnected)");
-		status = vrpn_TRACKER_RESETTING;
-		return 0;
-	}
-
-	count += ret;
-	if (count < 16) return 0;
-	if (count > 16)
-	{
-		perror("  3DMouse read failed (wrong message)");
-		status = vrpn_TRACKER_RESETTING;
-		return 0;
-	}
-
-	count = 0;
-	
-	tmpc = _buffer[0];
-	if (tmpc & 32)
-	{
-		//printf("port%d: Out of Range\n", i);
-		//ret |= 1 << (3-i);
-	} else
-	{
-		long ax, ay, az;           // integer form of absolute translational data
-		short arx, ary, arz;       // integer form of absolute rotational data
-		float p, y, r;
-
-		ax = (_buffer[1] & 0x40) ? 0xFFE00000 : 0;
-		ax |= (long)(_buffer[1] & 0x7f) << 14;
-		ax |= (long)(_buffer[2] & 0x7f) << 7;
-		ax |= (_buffer[3] & 0x7f);
-
-		ay = (_buffer[4] & 0x40) ? 0xFFE00000 : 0;
-		ay |= (long)(_buffer[4] & 0x7f) << 14;
-		ay |= (long)(_buffer[5] & 0x7f) << 7;
-		ay |= (_buffer[6] & 0x7f);
-
-		az = (_buffer[7] & 0x40) ? 0xFFE00000 : 0;
-		az |= (long)(_buffer[7] & 0x7f) << 14;
-		az |= (long)(_buffer[8] & 0x7f) << 7;
-		az |= (_buffer[9] & 0x7f);
-
-		pos[0] = static_cast<float>(ax / 100000.0 * 2.54);
-		pos[2] = static_cast<float>(ay / 100000.0 * 2.54);
-		pos[1] = -static_cast<float>(az / 100000.0f * 2.54);
-
-		arx  = (_buffer[10] & 0x7f) << 7;
-		arx += (_buffer[11] & 0x7f);
-
-		ary  = (_buffer[12] & 0x7f) << 7;
-		ary += (_buffer[13] & 0x7f);
-
-		arz  = (_buffer[14] & 0x7f) << 7;
-		arz += (_buffer[15] & 0x7f);
-
-		p = static_cast<float>(arx / 40.0);		// pitch
-		y = static_cast<float>(ary / 40.0);		// yaw
-		r = static_cast<float>(arz / 40.0);		// roll
-
-		p = static_cast<float>(p * M_PI / 180);
-		y = static_cast<float>(y * M_PI / 180);
-		r = static_cast<float>((360-r) * M_PI / 180);
-
-		float cosp2 = static_cast<float>(cos(p/2));
-		float cosy2 = static_cast<float>(cos(y/2));
-		float cosr2 = static_cast<float>(cos(r/2));
-		float sinp2 = static_cast<float>(sin(p/2));
-		float siny2 = static_cast<float>(sin(y/2));
-		float sinr2 = static_cast<float>(sin(r/2));
-
-		d_quat[0] = cosr2*sinp2*cosy2 + sinr2*cosp2*siny2;
-		d_quat[1] = sinr2*cosp2*cosy2 + cosr2*sinp2*siny2;
-		d_quat[2] = cosr2*cosp2*siny2 + sinr2*sinp2*cosy2;
-		d_quat[3] = cosr2*cosp2*cosy2 + sinr2*sinp2*siny2;
-
+	if (full->ana == NULL) {
+		fprintf(stderr,"vrpn_Tracker_WiimoteHead: "
+                        "Can't open Analog %s\n",full->axis.name);
+		return -1;
 	}
 
-	buttons[0] = tmpc & 16;		// Mouse stand button
-	buttons[1] = tmpc & 8;		// Suspend button
-	buttons[2] = tmpc & 4;		// Left button
-	buttons[3] = tmpc & 2;		// Middle button
-	buttons[4] = tmpc & 1;		// Right button
+	// Set up the callback handler for the channel
+	return full->ana->register_change_handler(full, handle_analog_update);
+}
+
+// This tears down the Analog Remote for one channel, undoing everything that
+// the setup did. Returns 0 on success and -1 on failure.
+
+int	vrpn_Tracker_WiimoteHead::teardown_channel(vrpn_TAF_fullaxis *full)
+{
+	int	ret;
+
+	// If the analog pointer is NULL, we're done.
+	if (full->ana == NULL) { return 0; }
+
+	// Turn off the callback handler for the channel
+	ret = full->ana->unregister_change_handler((void*)full,
+                          handle_analog_update);
+
+	// Delete the analog device.
+	delete full->ana;
+
+	return ret;
+}
+
+// static
+int vrpn_Tracker_WiimoteHead::handle_newConnection(void * userdata,
+                                                 vrpn_HANDLERPARAM)
+{
+
+  printf("Get a new connection, reset virtual_Tracker\n");
+  ((vrpn_Tracker_WiimoteHead *) userdata)->reset();
+
+  // Always return 0 here, because nonzero return means that the input data
+  // was garbage, not that there was an error. If we return nonzero from a
+  // vrpn_Connection handler, it shuts down the connection.
+  return 0;
+}
+
+/** Reset the current matrix to zero and store it into the tracker
+    position/quaternion location.  This is is not done for an absolute
+    tracker, whose position and orientation are locked to the reports from
+    the analog device.
+*/
+
+void vrpn_Tracker_WiimoteHead::reset (void)
+{
+  // Set the clutch matrix to the identity.
+  q_matrix_copy(d_clutchMatrix, d_initMatrix);
+
+  // Set the matrix back to the identity matrix
+  q_matrix_copy(d_currentMatrix, d_initMatrix);
+  vrpn_gettimeofday(&d_prevtime, NULL);
+
+  // Convert the matrix into quaternion notation and copy into the
+  // tracker pos and quat elements.
+  convert_matrix_to_tracker();
+}
+
+void vrpn_Tracker_WiimoteHead::mainloop()
+{
+  struct timeval	now;
+  double	interval;	// How long since the last report, in secs
+
+  // Call generic server mainloop, since we are a server
+  server_mainloop();
+
+  // Mainloop() all of the analogs that are defined and the button
+  // so that we will get all of the values fresh.
+  if (d_x.ana != NULL) { d_x.ana->mainloop(); };
+  if (d_y.ana != NULL) { d_y.ana->mainloop(); };
+  if (d_z.ana != NULL) { d_z.ana->mainloop(); };
+  if (d_sx.ana != NULL) { d_sx.ana->mainloop(); };
+  if (d_sy.ana != NULL) { d_sy.ana->mainloop(); };
+  if (d_sz.ana != NULL) { d_sz.ana->mainloop(); };
+  if (d_reset_button != NULL) { d_reset_button->mainloop(); };
+  if (d_clutch_button != NULL) { d_clutch_button->mainloop(); };
+
+  // See if it has been long enough since our last report.
+  // If so, generate a new one.
+  vrpn_gettimeofday(&now, NULL);
+  interval = duration(now, d_prevtime);
+
+  if (shouldReport(interval)) {
+
+    // Set the time on the report to now, if not an absolute
+    // tracker.  Absolute trackers have their time values set
+    // to match the time at which their analog devices gave the
+    // last report.
+    if (!d_absolute) {
+      vrpn_Tracker::timestamp = now;
     }
 
-    vrpn_Button::report_changes();
+    // Figure out the new matrix based on the current values and
+    // the length of the interval since the last report
+    update_matrix_based_on_values(interval);
 
-    status = vrpn_TRACKER_SYNCING;
-    bufcount = 0;
+    // pack and deliver tracker report;
+    if (d_connection) {
+      char	msgbuf[1000];
+      int	len = encode_to(msgbuf);
+      if (d_connection->pack_message(len, vrpn_Tracker::timestamp,
+	      position_m_id, d_sender_id, msgbuf,
+	      vrpn_CONNECTION_LOW_LATENCY)) {
+      fprintf(stderr,"Tracker AnalogFly: "
+              "cannot write message: tossing\n");
+      }
+    } else {
+      fprintf(stderr,"Tracker AnalogFly: "
+              "No valid connection\n");
+    }
 
-#ifdef VERBOSE2
-      print_latest_report();
-#endif
+    // We just sent a report, so reset the time
+    d_prevtime = now;
+  }
 
-   return 1;
+  // We're not always sending reports, but we still want to
+  // update the interval clock so that we don't integrate over
+  // too long a timespan when we do finally report a change.
+  if (interval >= d_update_interval) {
+    d_prevtime = now;
+  }
 }
 
-void vrpn_Tracker_3DMouse::mainloop()
+// This routine will update the current matrix based on the current values
+// in the offsets list for each axis, and the length of time over which the
+// action is taking place (time_interval).
+// Handling of non-absolute trackers: It treats the values as either
+// meters/second or else rotations/second to be integrated over the interval
+// to adjust the current matrix.
+// Handling of absolute trackers: It always assumes that the starting matrix
+// is the identity, so that the values are absolute offsets/rotations.
+// XXX Later, it would be cool to have non-absolute trackers send velocity
+// information as well, since it knows what this is.
+
+void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values
+                  (double time_interval)
 {
-	server_mainloop();
+  double tx,ty,tz, rx,ry,rz;	// Translation (m/s) and rotation (rad/sec)
+  q_matrix_type diffM;		// Difference (delta) matrix
 
-	switch(status)
-	{
-		case vrpn_TRACKER_AWAITING_STATION:
-		case vrpn_TRACKER_PARTIAL:
-		case vrpn_TRACKER_SYNCING:
-			if (get_report()) send_report();
-			break;
-		case vrpn_TRACKER_RESETTING:
-			reset();
-			break;
-		case vrpn_TRACKER_FAIL:
-			fprintf(stderr, "3DMouse failed, trying to reset (Try power cycle if more than 4 attempts made)\n");
-			if (serial_fd >= 0)
-			{
-				vrpn_close_commport(serial_fd);
-				serial_fd = -1;
-			}
-			if ( (serial_fd=vrpn_open_commport(portname, baudrate)) == -1)
-			{
-				fprintf(stderr,"vrpn_Tracker_3DMouse::mainloop(): Cannot Open serial port\n");
-				status = vrpn_TRACKER_FAIL;
-				return;
-			}
-			status = vrpn_TRACKER_RESETTING;
-			break;
-		default:
-			break;
-	}
+  // For absolute trackers, the interval is treated as "1", so that the
+  // translations and rotations are unscaled;
+  if (d_absolute) { time_interval = 1.0; };
+
+  // compute the translation and rotation
+  tx = d_x.value * time_interval;
+  ty = d_y.value * time_interval;
+  tz = d_z.value * time_interval;
+
+  rx = d_sx.value * time_interval * (2*M_PI);
+  ry = d_sy.value * time_interval * (2*M_PI);
+  rz = d_sz.value * time_interval * (2*M_PI);
+
+  // Build a rotation matrix, then add in the translation
+  q_euler_to_col_matrix(diffM, rz, ry, rx);
+  diffM[3][0] = tx; diffM[3][1] = ty; diffM[3][2] = tz;
+
+  // While the clutch is not engaged, we don't move.  Record that
+  // the clutch was off so that we know later when it is re-engaged.
+  static bool clutch_was_off = false;
+  if (!d_clutch_engaged) {
+    clutch_was_off = true;
+    return;
+  }
+
+  // When the clutch becomes re-engaged, we store the current matrix
+  // multiplied by the inverse of the present differential matrix so that
+  // the first frame of the mouse-hold leaves us in the same location.
+  // For the absolute matrix, this re-engages new motion at the previous
+  // location.
+  if (d_clutch_engaged && clutch_was_off) {
+    clutch_was_off = false;
+    q_type  diff_orient;
+    // This is backwards, because Euler angles have rotation about Z first...
+    q_from_euler(diff_orient, rz, ry, rx);
+    q_xyz_quat_type diff;
+    q_vec_set(diff.xyz, tx, ty, tz);
+    q_copy(diff.quat, diff_orient);
+    q_xyz_quat_type  diff_inverse;
+    q_xyz_quat_invert(&diff_inverse, &diff);
+    q_matrix_type di_matrix;
+    q_to_col_matrix(di_matrix, diff_inverse.quat);
+    di_matrix[3][0] = diff_inverse.xyz[0];
+    di_matrix[3][1] = diff_inverse.xyz[1];
+    di_matrix[3][2] = diff_inverse.xyz[2];
+    q_matrix_mult(d_clutchMatrix, di_matrix, d_currentMatrix);
+  }
+
+  // Apply the matrix.
+  if (d_absolute) {
+      // The difference matrix IS the current matrix.  Catenate it
+      // onto the clutch matrix.  If there is no clutching happening,
+      // this matrix will always be the identity so this will just
+      // copy the difference matrix.
+      q_matrix_mult(d_currentMatrix, diffM, d_clutchMatrix);
+  } else {
+      // Multiply the current matrix by the difference matrix to update
+      // it to the current time.
+      q_matrix_mult(d_currentMatrix, diffM, d_currentMatrix);
+  }
+
+  // Finally, convert the matrix into a pos/quat
+  // and copy it into the tracker position and quaternion structures.
+  convert_matrix_to_tracker();
 }
 
+void vrpn_Tracker_WiimoteHead::convert_matrix_to_tracker (void)
+{
+  q_xyz_quat_type xq;
+  int i;
+
+  q_row_matrix_to_xyz_quat( & xq, d_currentMatrix);
+
+  for (i=0; i< 3; i++) {
+    pos[i] = xq.xyz[i]; // position;
+  }
+  for (i=0; i< 4; i++) {
+    d_quat[i] = xq.quat[i]; // orientation.
+  }
+}
+
+vrpn_bool vrpn_Tracker_WiimoteHead::shouldReport
+                  (double elapsedInterval) const {
+
+  // If we haven't had enough time pass yet, don't report.
+  if (elapsedInterval < d_update_interval) {
+    return VRPN_FALSE;
+  }
+
+  // If we're sending a report every interval, regardless of
+  // whether or not there are changes, then send one now.
+  if (!d_reportChanges) {
+    return VRPN_TRUE;
+  }
+
+  // If anything's nonzero, send the report.
+  // HACK:  This values may be unstable, depending on device characteristics;
+  // we may need to designate a small dead zone around zero and only report
+  // if the value is outside the dead zone.
+  if (d_x.value || d_y.value || d_z.value ||
+      d_sx.value || d_sy.value || d_sz.value) {
+    return VRPN_TRUE;
+  }
+
+  // Enough time has elapsed, but nothing has changed, so return false.
+  return VRPN_FALSE;
+}
