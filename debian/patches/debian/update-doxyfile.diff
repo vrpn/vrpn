@@ -678,7 +678,7 @@ Index: vrpn-wiimote/vrpn/doxygen/Doxyfile
  # with spaces.
  
 -INPUT                = ..
-+INPUT                  = ../../../../../../vrpn
++INPUT                  = ..
  
 -# If the value of the INPUT tag contains directories, you can use the 
 -# FILE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp 

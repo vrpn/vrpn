@@ -1,3 +1,4 @@
+fix/add-install-target-to-quat.diff
 debian/update-doxyfile.diff
 #debian/unify-build-process.diff
 #debian/makefile-substitution.diff

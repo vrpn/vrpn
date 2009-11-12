@@ -1,0 +1,32 @@
+Index: vrpn-wiimote/quat/makefile
+===================================================================
+--- vrpn-wiimote.orig/quat/makefile
++++ vrpn-wiimote/quat/makefile
+@@ -28,6 +28,10 @@
+ #HW_OS := universal_macosx
+ ##########################
+ 
++INSTALL_DIR := /usr/local
++BIN_DIR := $(INSTALL_DIR)/bin
++INCLUDE_DIR := $(INSTALL_DIR)/include
++LIB_DIR := $(INSTALL_DIR)/lib
+ 
+ ifndef HW_OS
+   # hw_os does not exist on FreeBSD at UNC or on CYGWIN
+@@ -262,6 +266,16 @@ $(QUAT_OBJ_FILES) : $(QUAT_INCLUDES)
+ lint :
+ 	lint $(LINT_FLAGS) $(COORD_FILES)
+ 
++install: lib
++	#-mkdir $(BIN_DIR)
++	#( cd $(BIN_DIR) ; rm -f $(INSTALL_APPS) )
++	#( cd $(OBJ_DIR) ; cp $(INSTALL_APPS) $(BIN_DIR) )
++	#( cd $(BIN_DIR) ; strip $(INSTALL_APPS) )
++	-mkdir -p $(LIB_DIR)
++	( cd $(OBJ_DIR) ; cp $(QUAT_LIB) $(LIB_DIR) )
++	-mkdir -p $(INCLUDE_DIR)
++	cp quat.h $(INCLUDE_DIR)
++
+ allclean :
+ 	-/bin/rm -f *.o *.a *~ *.j foo a.out $(TEST_FILES)
+ 	-/bin/rm -fr $(HW_OS)$(OBJECT_DIR_SUFFIX)/*.o $(HW_OS)$(OBJECT_DIR_SUFFIX)/*.a

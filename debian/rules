@@ -5,7 +5,7 @@ build/libvrpn1:: build/libvrpn-quat1
 build/libvrpn-server1 build/libvrpn-client1:: build/libvrpn1
 
 include /usr/share/cdbs/1/rules/debhelper.mk
-#include /usr/share/cdbs/1/class/makefile.mk
+include /usr/share/cdbs/1/class/makefile.mk
 include /usr/share/cdbs/1/rules/patchsys-quilt.mk
 
 VER_MAJ=07
@@ -29,14 +29,11 @@ ifeq ($(DEB_HOST_ARCH),armel)
 HW_OS := pc_linux_arm
 endif
 
-
-
-# Minor hack to build in the right (main) directory
 DEB_MAKE_VARS := HW_OS=$(HW_OS)
-DEB_MAKE_BUILD_TARGET :=
+DEB_MAKE_BUILD_TARGET := 
 DEB_MAKE_INSTALL_TARGET := install INSTALL_DIR=$(DEB_DESTDIR)/usr
 DEB_MAKE_CLEAN_TARGET := clean clean_g++
-DEB_MAKE_INVOKE = $(DEB_MAKE_ENVVARS) $(MAKE) $(if $(DEB_MAKE_MAKEFILE), -f $(DEB_MAKE_MAKEFILE),) -C $(DEB_BUILDDIR) CFLAGS=$(if $(CFLAGS_$(cdbs_curpkg)),"$(CFLAGS_$(cdbs_curpkg))","$(CFLAGS)") CXXFLAGS=$(if $(CXXFLAGS_$(cdbs_curpkg)),"$(CXXFLAGS_$(cdbs_curpkg))","$(CXXFLAGS)") CPPFLAGS=$(if $(CPPFLAGS_$(cdbs_curpkg)),"$(CPPFLAGS_$(cdbs_curpkg))","$(CPPFLAGS)") LDFLAGS=$(if $(LDFLAGS_$(cdbs_curpkg)),"$(LDFLAGS_$(cdbs_curpkg))","$(LDFLAGS)") $(DEB_MAKE_VARS)
+
 
 DEB_DESTDIR := $(CURDIR)/debian/tmp
 
@@ -46,34 +43,29 @@ DEB_INSTALL_CHANGELOGS_ALL := $(CURDIR)/vrpn/ChangeLog
 #DEB_DH_SHLIBDEPS_ARGS := -- $(patsubst %,-x%,$(DEB_ALL_PACKAGES))
 
 
-MAKEFILES_TO_PROCESS := $(CURDIR)/quat/makefile \
-						$(CURDIR)/vrpn/Makefile \
-						$(CURDIR)/vrpn/client_src/Makefile \
-						$(CURDIR)/vrpn/server_src/Makefile
-post-patches::
-	# Process makefiles to configure HW_OS and INSTALL_DIR
-	#for mkf in $(MAKEFILES_TO_PROCESS); do \
-	#	cp $$mkf $$mkf.pre-sed; \
-	#	sed -i s/INSTALL_DIR := \/usr\/local/INSTALL_DIR := $(DEB_DESTDIR)/usr- $$mkf; \
-	#	sed -i s-INSTALL_DIR := /usr/local-INSTALL_DIR := $(DEB_DESTDIR)/usr- $$mkf; \
-	#	sed -i s-@VRPN_HOST_PLATFORM@-$(MAKEFILE_PLATFORM_LINE)- $$mkf; \
-	#done
-	#sed -i s-INSTALL_DIR)/include-INSTALL_DIR)/include/vrpn- $$mkf; \
+DO_MAKE := libvrpn-quat1 libvrpn1 libvrpn-client1 libvrpn-server1
+DEB_BUILDDIR := $(CURDIR)/quat
+DEB_BUILDDIR_libvrpn1 := $(CURDIR)/vrpn
+DEB_BUILDDIR_libvrpn-client1 := $(CURDIR)/vrpn/client_src
+DEB_BUILDDIR_libvrpn-server1 := $(CURDIR)/vrpn/server_src
+# Override DEB_MAKE_INVOKE to add DEB_MAKE_VARS, separate build dirs,
+# and remove CFLAGS/CXXFLAGS
+DEB_MAKE_INVOKE = cd $(if $(DEB_BUILDDIR_$(cdbs_curpkg)),"$(DEB_BUILDDIR_$(cdbs_curpkg))","$(DEB_BUILDDIR)") && \
+	$(DEB_MAKE_ENVVARS) $(MAKE) \
+	$(if $(DEB_MAKE_MAKEFILE), -f $(DEB_MAKE_MAKEFILE),) \
+	CPPFLAGS=$(if $(CPPFLAGS_$(cdbs_curpkg)),"$(CPPFLAGS_$(cdbs_curpkg))","$(CPPFLAGS)") \
+	LDFLAGS=$(if $(LDFLAGS_$(cdbs_curpkg)),"$(LDFLAGS_$(cdbs_curpkg))","$(LDFLAGS)") \
+	$(DEB_MAKE_VARS)
 
-build/libvprn-quat1::
-	cd $(CURDIR)/quat && $(DEB_MAKE_INVOKE) $(DEB_MAKE_BUILD_TARGET)
+$(patsubst %,build/%,$(DO_MAKE))::
+	$(DEB_MAKE_INVOKE) $(DEB_MAKE_BUILD_TARGET)
 
-build/libvprn1::
-	cd $(CURDIR)/vrpn && $(DEB_MAKE_INVOKE) $(DEB_MAKE_BUILD_TARGET)
+$(patsubst %,install/%,$(DO_MAKE))::
+	$(DEB_MAKE_INVOKE) $(DEB_MAKE_INSTALL_TARGET)
 
-build/libvprn-server1::
-	cd $(CURDIR)/vrpn/server_src && $(DEB_MAKE_INVOKE) $(DEB_MAKE_BUILD_TARGET)
+$(patsubst %,clean/%,$(DO_MAKE))::
+	$(DEB_MAKE_INVOKE) $(DEB_MAKE_CLEAN_TARGET)
 
-build/libvprn-client1::
-	cd $(CURDIR)/vrpn/client_src && $(DEB_MAKE_INVOKE) $(DEB_MAKE_BUILD_TARGET)
-
-install/libvprn-quat1::
-	#cd $(CURDIR)/quat && $(DEB_MAKE_INVOKE) $(DEB_MAKE_BUILD_TARGET)
 
 build/libvrpn1-doc::
 	# Reconfigure doxyfile
@@ -84,8 +76,8 @@ build/libvrpn1-doc::
 		$(CURDIR)/vrpn/doxygen/Doxyfile
 
 	# Specify improved path to source
-	#sed -i "s/INPUT                \= ../INPUT                \= ..\/..\/..\/..\/..\/..\/vrpn/" \
-	#	$(CURDIR)/vrpn/doxygen/Doxyfile
+	sed -i "s-INPUT                  \= ..-INPUT                  \= $(CURDIR)/vrpn-" \
+		$(CURDIR)/vrpn/doxygen/Doxyfile
 
 	# Build the documentation
 	mkdir -p $(DEB_DESTDIR)/usr/share/doc/libvrpn1/api
@@ -96,17 +88,9 @@ build/libvrpn1-doc::
 	# Restore the doxyfile
 	mv -f $(CURDIR)/vrpn/doxygen/Doxyfile.pre-sed $(CURDIR)/vrpn/doxygen/Doxyfile
 
-install/libvprn1::
-	cd $(CURDIR)/vrpn && $(DEB_MAKE_INVOKE) $(DEB_MAKE_INSTALL_TARGET)
-
-install/libvprn-server1::
-	cd $(CURDIR)/vrpn/server_src && $(DEB_MAKE_INVOKE) $(DEB_MAKE_INSTALL_TARGET)
-
-install/libvprn-client1::
-	cd $(CURDIR)/vrpn/client_src && $(DEB_MAKE_INVOKE) $(DEB_MAKE_INSTALL_TARGET)
-
 install/vrpn::
-	find $(DEB_DESTDIR) -name "CVS" -depth -exec rm -rf {} \;
+	# Delete CVS directories
+	find $(DEB_DESTDIR) -name "CVS" | rm -rf
 
 clean::
 	# Clean up editing detritus
