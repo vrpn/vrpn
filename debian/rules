@@ -43,7 +43,7 @@ DEB_INSTALL_CHANGELOGS_ALL := $(CURDIR)/vrpn/ChangeLog
 #DEB_DH_SHLIBDEPS_ARGS := -- $(patsubst %,-x%,$(DEB_ALL_PACKAGES))
 
 
-DO_MAKE := libvrpn-quat1 libvrpn1 libvrpn-client1 libvrpn-server1
+DO_MAKE := libvrpn1 libvrpn-client1 libvrpn-server1
 DEB_BUILDDIR := $(CURDIR)/quat
 DEB_BUILDDIR_libvrpn1 := $(CURDIR)/vrpn
 DEB_BUILDDIR_libvrpn-client1 := $(CURDIR)/vrpn/client_src
@@ -90,7 +90,7 @@ build/libvrpn1-doc::
 
 install/vrpn::
 	# Delete CVS directories
-	find $(DEB_DESTDIR) -name "CVS" | xargs rm -rf
+	find $(CURDIR)/debian -name "CVS" | xargs rm -rf
 
 clean::
 	# Clean up editing detritus

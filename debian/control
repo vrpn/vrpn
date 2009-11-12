@@ -13,7 +13,7 @@ Homepage: http://www.cs.unc.edu/Research/vrpn
 Package: vrpn
 Architecture: any
 Section: libs
-Depends: ${misc:Depends}, ${shlibs:Depends}
+Depends: ${misc:Depends}, ${shlibs:Depends}, libvrpn-dev, libvrpn-doc,
 Description: Virtual Reality Peripheral Network - runtime metapackage
  The Virtual-Reality Peripheral Network (VRPN) is a set of classes within a
  library and a set of servers that are designed to implement a network-
@@ -28,82 +28,55 @@ Description: Virtual Reality Peripheral Network - runtime metapackage
  that the application is running on, either using separate control programs
  or running all as a single program.
  .
- Install this package to install all libraries needed to run VRPN-based
- applications that have already been compiled.
+ Install this package to install all VRPN packages.
 
-Package: vrpn-dev
-Architecture: any
+Package: libvrpn-dev
 Section: libdevel
-Depends: ${misc:Depends}, ${shlibs:Depends},
-	vrpn,
-Recommends: libvrpn1-doc
-Description: Virtual Reality Peripheral Network - development metapackage
- The Virtual-Reality Peripheral Network (VRPN) is a set of classes within a
- library and a set of servers that are designed to implement a network-
- transparent  interface between application programs and the set of physical
- devices (tracker, etc.) used in a virtual-reality (VR) system. The idea is to
- have a PC or other host at each VR station that controls the peripherals
- (tracker, button device, haptic device, analog inputs, sound, etc). VRPN
- provides connections between the application and all of the devices using
- the appropriate class-of-service for each type of device sharing this link.
- The application remains unaware of the network topology. Note that it is
- possible to use VRPN with devices that are directly connected to the machine
- that the application is running on, either using separate control programs
- or running all as a single program.
- .
- Install this package to install all libraries and development files needed
- to compile and run applications against VRPN.
-
-Package: libvrpn1
-Architecture: any
-Section: libs
-Priority: optional
-Depends: ${misc:Depends}, ${shlibs:Depends}
-Description: Virtual Reality Peripheral Network - library
- The Virtual-Reality Peripheral Network (VRPN) is a set of classes within a
- library and a set of servers that are designed to implement a network-
- transparent  interface between application programs and the set of physical
- devices (tracker, etc.) used in a virtual-reality (VR) system.
- .
- This package is a part of the VRPN suite.
- .
- For a full VRPN runtime installation, install the vrpn package.
-
-Package: libvrpn1-dev
-Section: libdevel
-Architecture: any
-Depends: ${misc:Depends}, libvrpn1 (= ${binary:Version})
-Recommends: libvrpn1-doc
-Description: Virtual Reality Peripheral Network - library development files
- The Virtual-Reality Peripheral Network (VRPN) is a set of classes within a
- library and a set of servers that are designed to implement a network-
- transparent  interface between application programs and the set of physical
- devices (tracker, etc.) used in a virtual-reality (VR) system.
- .
- This package is a part of the VRPN suite, and provides headers
- and other files required to compile applications using this component.
- .
- For a full VRPN runtime and development installation, install vrpn-dev
-
-Package: libvrpn1-doc
-Section: doc
 Architecture: all
-Depends: ${misc:Depends}, libvrpn1 (= ${binary:Version})
+Depends: ${misc:Depends}, libvrpn-quat-dev
+Recommends: libvrpn-doc
 Description: Virtual Reality Peripheral Network - library development files
  The Virtual-Reality Peripheral Network (VRPN) is a set of classes within a
  library and a set of servers that are designed to implement a network-
  transparent  interface between application programs and the set of physical
  devices (tracker, etc.) used in a virtual-reality (VR) system.
  .
- This package is a part of the VRPN suite, and provides developer and user
- documenation about this component.
+ This package is a part of the VRPN suite.  For a full VRPN runtime and
+ development installation, install the "vrpn" package.
+ 
+Package: libvrpn-server-dev
+Section: libdevel
+Architecture: all
+Depends: ${misc:Depends}, libvrpn-dev, libvrpn-quat-dev
+Recommends: libvrpn-doc
+Description: Virtual Reality Peripheral Network - server development files
+ The Virtual-Reality Peripheral Network (VRPN) is a set of classes within a
+ library and a set of servers that are designed to implement a network-
+ transparent  interface between application programs and the set of physical
+ devices (tracker, etc.) used in a virtual-reality (VR) system.
  .
- For a full VRPN runtime and development installation, install vrpn-dev
+ This package is a part of the VRPN suite.  For a full VRPN runtime and
+ development installation, install the "vrpn" package.
 
-Package: libvrpn-quat1
+Package: libvrpn-doc
+Section: doc
 Architecture: any
-Section: libs
-Priority: optional
+Depends: ${misc:Depends}
+Description: Virtual Reality Peripheral Network - developer documentation
+ The Virtual-Reality Peripheral Network (VRPN) is a set of classes within a
+ library and a set of servers that are designed to implement a network-
+ transparent  interface between application programs and the set of physical
+ devices (tracker, etc.) used in a virtual-reality (VR) system.
+ .
+ This package provides developer documentation of the  VPRN system and
+ its API.
+ .
+ This package is a part of the VRPN suite.  For a full VRPN runtime and
+ development installation, install the "vrpn" package.
+
+Package: libvrpn-quat-dev
+Architecture: all
+Section: libdevel
 Depends: ${misc:Depends}, ${shlibs:Depends}
 Description: Virtual Reality Peripheral Network - quaternion library
  The Virtual-Reality Peripheral Network (VRPN) is a set of classes within a
@@ -111,51 +84,51 @@ Description: Virtual Reality Peripheral Network - quaternion library
  transparent  interface between application programs and the set of physical
  devices (tracker, etc.) used in a virtual-reality (VR) system.
  .
- This package is a part of the VRPN suite.
+ This package provides the "quat" library containing quaternion and
+ matrix manipulations used by VRPN components.
  .
- For a full VRPN runtime installation, install the vrpn package.
+ This package is a part of the VRPN suite.  For a full VRPN runtime and
+ development installation, install the "vrpn" package.
 
-Package: libvrpn-quat1-dev
-Section: libdevel
-Architecture: any
-Depends: ${misc:Depends}, libvrpn-quat1 (= ${binary:Version})
-Description: Virtual Reality Peripheral Network - quaternion development files
+Package: vrpn-clients
+Architecture: all
+Section: net
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: Virtual Reality Peripheral Network - client applications
  The Virtual-Reality Peripheral Network (VRPN) is a set of classes within a
  library and a set of servers that are designed to implement a network-
  transparent  interface between application programs and the set of physical
  devices (tracker, etc.) used in a virtual-reality (VR) system.
  .
- This package is a part of the VRPN suite, and provides headers
- and other files required to compile applications using this component.
+ The following applications (from the upstream "client_src") are included:
  .
- For a full VRPN runtime and development installation, install vrpn-dev
+   - add_vprn_cookie
+   - forcedevice_test_client
+   - vprn_ping
+   - vprn_print_devices
+ .
+ This package is a part of the VRPN suite.  For a full VRPN runtime and
+ development installation, install the "vrpn" package.
 
-Package: libvrpn-client1
+Package: vrpn-server
 Architecture: any
 Section: libs
 Priority: optional
 Depends: ${misc:Depends}, ${shlibs:Depends}
-Description: Virtual Reality Peripheral Network - client library
+Description: Virtual Reality Peripheral Network - generic multi-function server
  The Virtual-Reality Peripheral Network (VRPN) is a set of classes within a
  library and a set of servers that are designed to implement a network-
  transparent  interface between application programs and the set of physical
  devices (tracker, etc.) used in a virtual-reality (VR) system.
  .
- This package is a part of the VRPN suite.
+ This package provides a generalized server that can load most, but perhaps
+ not all, server devices provided with this VRPN release.  It is configured
+ using a vrpn.cfg file - examples can be found in
+ /usr/share/docs/vrpn-server/ once you have installed the package.
+ The package provides the following applications (upstream's "server_src"):
  .
- For a full VRPN runtime installation, install the vrpn package.
-
-Package: libvrpn-server1
-Architecture: any
-Section: libs
-Priority: optional
-Depends: ${misc:Depends}, ${shlibs:Depends}
-Description: Virtual Reality Peripheral Network - client library
- The Virtual-Reality Peripheral Network (VRPN) is a set of classes within a
- library and a set of servers that are designed to implement a network-
- transparent  interface between application programs and the set of physical
- devices (tracker, etc.) used in a virtual-reality (VR) system.
+   - vrpn_server
+   - test_vprn
  .
- This package is a part of the VRPN suite.
- .
- For a full VRPN runtime installation, install the vrpn package.
+ This package is a part of the VRPN suite.  For a full VRPN runtime and
+ development installation, install the "vrpn" package.
