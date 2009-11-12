@@ -76,7 +76,7 @@ build/libvrpn1-doc::
 		$(CURDIR)/vrpn/doxygen/Doxyfile
 
 	# Specify improved path to source
-	sed -i "s-INPUT                  \= ..-INPUT                  \= $(CURDIR)/vrpn-" \
+	sed -i "s_INPUT( )*\= \.\._INPUT \= $(CURDIR)/vrpn_" \
 		$(CURDIR)/vrpn/doxygen/Doxyfile
 
 	# Build the documentation
