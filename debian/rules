@@ -103,6 +103,8 @@ clean::
 	
 	# Remove files left behind by build
 	find $(DEB_CURDIR) -name "pc_linux" | xargs rm -rf
+	-rm -rf $(DEB_CURDIR)/vrpn/client_src/logfilesenders
+	-rm -rf $(DEB_CURDIR)/vrpn/client_src/logfiletypes
 
 
 # workaround for http://bugs.debian.org/526392
