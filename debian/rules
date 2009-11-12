@@ -7,28 +7,28 @@ include /usr/share/cdbs/1/rules/patchsys-quilt.mk
 # Set up configure settings based on architecture
 DEB_HOST_ARCH ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
 ifeq ($(DEB_HOST_ARCH),i386)
-MAKEFILE_PLATFORM_LINE :=HW_OS := pc_linux
+HW_OS := pc_linux
 endif
 ifeq ($(DEB_HOST_ARCH),lpia)
-MAKEFILE_PLATFORM_LINE :=HW_OS := pc_linux
+HW_OS := pc_linux
 endif
 ifeq ($(DEB_HOST_ARCH),amd64)
-MAKEFILE_PLATFORM_LINE :=HW_OS := pc_linux64
+HW_OS := pc_linux64
 endif
 ifeq ($(DEB_HOST_ARCH),arm)
-MAKEFILE_PLATFORM_LINE :=HW_OS := pc_linux_arm
+HW_OS := pc_linux_arm
 endif
 ifeq ($(DEB_HOST_ARCH),armel)
-MAKEFILE_PLATFORM_LINE :=HW_OS := pc_linux_arm
+HW_OS := pc_linux_arm
 endif
 
 
 
 # Minor hack to build in the right (main) directory
-DEB_MAKE_ENVVARS := cd $(CURDIR)/vrpn &&
-DEB_MAKE_BUILD_TARGET := all
-DEB_MAKE_INSTALL_TARGET := install
-DEB_MAKE_CLEAN_TARGET := clean clean_g++
+DEB_BUILDIR := $(CURDIR)/vrpn
+DEB_MAKE_BUILD_TARGET := all  HW_OS=$(HW_OS)
+DEB_MAKE_INSTALL_TARGET := install INSTALL_DIR=$(DEB_DESTDIR)/usr HW_OS=$(HW_OS)
+DEB_MAKE_CLEAN_TARGET := clean clean_g++ HW_OS=$(HW_OS)
 
 DEB_DESTDIR := $(CURDIR)/debian/tmp
 
@@ -44,12 +44,12 @@ MAKEFILES_TO_PROCESS := $(CURDIR)/quat/makefile \
 						$(CURDIR)/vrpn/server_src/Makefile
 post-patches::
 	# Process makefiles to configure HW_OS and INSTALL_DIR
-	for mkf in $(MAKEFILES_TO_PROCESS); do \
-		cp $$mkf $$mkf.pre-sed; \
-		sed -i s-INSTALL_DIR := /usr/local-INSTALL_DIR := $(DEB_DESTDIR)/usr- $$mkf; \
-		sed -i s-INSTALL_DIR := /usr/local-INSTALL_DIR := $(DEB_DESTDIR)/usr- $$mkf; \
-		sed -i s-@VRPN_HOST_PLATFORM@-$(MAKEFILE_PLATFORM_LINE)- $$mkf; \
-	done
+	#for mkf in $(MAKEFILES_TO_PROCESS); do \
+	#	cp $$mkf $$mkf.pre-sed; \
+	#	sed -i s/INSTALL_DIR := \/usr\/local/INSTALL_DIR := $(DEB_DESTDIR)/usr- $$mkf; \
+	#	sed -i s-INSTALL_DIR := /usr/local-INSTALL_DIR := $(DEB_DESTDIR)/usr- $$mkf; \
+	#	sed -i s-@VRPN_HOST_PLATFORM@-$(MAKEFILE_PLATFORM_LINE)- $$mkf; \
+	#done
 	#sed -i s-INSTALL_DIR)/include-INSTALL_DIR)/include/vrpn- $$mkf; \
 
 build/libvrpn1-doc::
