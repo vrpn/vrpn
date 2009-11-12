@@ -23,7 +23,7 @@ Index: vrpn-wiimote/quat/makefile
 +	#( cd $(OBJ_DIR) ; cp $(INSTALL_APPS) $(BIN_DIR) )
 +	#( cd $(BIN_DIR) ; strip $(INSTALL_APPS) )
 +	-mkdir -p $(LIB_DIR)
-+	( cd $(OBJ_DIR) ; cp $(QUAT_LIB) $(LIB_DIR) )
++	( cd $(HW_OS)$(OBJECT_DIR_SUFFIX) ; cp $(QUAT_LIB) $(LIB_DIR) )
 +	-mkdir -p $(INCLUDE_DIR)
 +	cp quat.h $(INCLUDE_DIR)
 +

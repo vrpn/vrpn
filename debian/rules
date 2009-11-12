@@ -90,7 +90,7 @@ build/libvrpn1-doc::
 
 install/vrpn::
 	# Delete CVS directories
-	find $(DEB_DESTDIR) -name "CVS" | rm -rf
+	find $(DEB_DESTDIR) -name "CVS" | xargs rm -rf
 
 clean::
 	# Clean up editing detritus
@@ -100,6 +100,9 @@ clean::
 	for mkf in $(MAKEFILES_TO_PROCESS); do \
 		[ -f $$mkf.pre-sed ] && mv -f $$mkf.pre-sed $$mkf || echo . ; \
 	done
+	
+	# Remove files left behind by build
+	find $(DEB_CURDIR) -name "pc_linux" | xargs rm -rf
 
 
 # workaround for http://bugs.debian.org/526392
