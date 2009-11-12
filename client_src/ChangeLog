@@ -1,3 +1,9 @@
+2009-11-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* sound_client.c : Fixed it so that it compiles.  There must
+		have been an inadvertent cutting out of some lines in
+		the code.
+
 2009-09-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
         * Makefile : Turned "-g" flag into "$(DEBUG_FLAGS)" throughout.
