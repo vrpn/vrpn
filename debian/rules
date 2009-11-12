@@ -7,19 +7,19 @@ include /usr/share/cdbs/1/rules/patchsys-quilt.mk
 # Set up configure settings based on architecture
 DEB_HOST_ARCH ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
 ifeq ($(DEB_HOST_ARCH),i386)
-MAKEFILE_PLATFORM_LINE := "HW_OS := pc_linux"
+MAKEFILE_PLATFORM_LINE :=HW_OS := pc_linux
 endif
 ifeq ($(DEB_HOST_ARCH),lpia)
-MAKEFILE_PLATFORM_LINE := "HW_OS := pc_linux"
+MAKEFILE_PLATFORM_LINE :=HW_OS := pc_linux
 endif
 ifeq ($(DEB_HOST_ARCH),amd64)
-MAKEFILE_PLATFORM_LINE := "HW_OS := pc_linux64"
+MAKEFILE_PLATFORM_LINE :=HW_OS := pc_linux64
 endif
 ifeq ($(DEB_HOST_ARCH),arm)
-MAKEFILE_PLATFORM_LINE := "HW_OS := pc_linux_arm"
+MAKEFILE_PLATFORM_LINE :=HW_OS := pc_linux_arm
 endif
 ifeq ($(DEB_HOST_ARCH),armel)
-MAKEFILE_PLATFORM_LINE := "HW_OS := pc_linux_arm"
+MAKEFILE_PLATFORM_LINE :=HW_OS := pc_linux_arm
 endif
 
 
@@ -42,7 +42,7 @@ MAKEFILES_TO_PROCESS := $(CURDIR)/quat/makefile \
 						$(CURDIR)/vrpn/Makefile \
 						$(CURDIR)/vrpn/client_src/Makefile \
 						$(CURDIR)/vrpn/server_src/Makefile
-common-configure::
+post-patches::
 	# Process makefiles to configure HW_OS and INSTALL_DIR
 	for mkf in $(MAKEFILES_TO_PROCESS); do \
 		cp $$mkf $$mkf.pre-sed; \
@@ -82,7 +82,7 @@ clean::
 
 	# Restore files processed by debian/rules
 	for mkf in $(MAKEFILES_TO_PROCESS); do \
-		mv -f $$mkf.pre-sed $$mkf; \
+		[ -f $$mkf.pre-sed ] && mv -f $$mkf.pre-sed $$mkf || echo . ; \
 	done
 
 
