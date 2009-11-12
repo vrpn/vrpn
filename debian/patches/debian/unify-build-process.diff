@@ -65,16 +65,7 @@ Index: vrpn-07.22/vrpn/Makefile
    SYS_INCLUDE := -I/usr/local/contrib/include -I/usr/local/contrib/mod/include \
                   -I/usr/include/bsd -DFLOW
  endif
-@@ -394,6 +394,8 @@ $(AOBJECT_DIR)/%.o: %.C $(ALIB_INCLUDES)
- # If we're building for sgi_irix, we need both g++ and non-g++ versions,
- # unless we're building for one of the weird ABIs, which are only supported
- # by the native compiler.
-+all:
-+	$(MAKE) -C ../quat
- 
- ifeq ($(HW_OS),sgi_irix)
-   ifeq ($(SGI_ABI),32)
-@@ -419,6 +421,13 @@ server_g++:
+@@ -419,6 +419,13 @@ server_g++:
  	$(MAKE) FORCE_GPP=1 $(UNQUAL_OBJECT_DIR)/g++/libvrpnserver.a
  	$(MV) $(UNQUAL_OBJECT_DIR)/g++/libvrpnserver.a $(UNQUAL_OBJECT_DIR)/libvrpnserver_g++.a
  
@@ -88,7 +79,7 @@ Index: vrpn-07.22/vrpn/Makefile
  .PHONY:	client
  client: $(OBJECT_DIR) $(OBJECT_DIR)/libvrpn.a
  
-@@ -468,7 +477,7 @@ LIB_INCLUDES = vrpn_Connection.h vrpn_Tr
+@@ -468,7 +475,7 @@ LIB_INCLUDES = vrpn_Connection.h vrpn_Tr
  		vrpn_BaseClass.h vrpn_Imager.h \
  		vrpn_Analog_Output.h vrpn_Poser.h vrpn_Auxiliary_Logger.h
  
@@ -97,7 +88,7 @@ Index: vrpn-07.22/vrpn/Makefile
  $(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(LIB_OBJECTS)
  	$(AR) $(OBJECT_DIR)/libvrpn.a $(LIB_OBJECTS)
  	-$(RANLIB) $(OBJECT_DIR)/libvrpn.a
-@@ -523,7 +532,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) vrpn_3Sp
+@@ -523,7 +530,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) vrpn_3Sp
  	vrpn_Tracker_MotionNode.h vrpn_Tracker_NDI_Polaris.h \
  	vrpn_WiiMote.h vrpn_Tracker_Isotrak.h
  
@@ -106,7 +97,7 @@ Index: vrpn-07.22/vrpn/Makefile
  $(OBJECT_DIR)/libvrpnserver.a: $(MAKEFILE) $(SLIB_OBJECTS)
  	$(AR) $(OBJECT_DIR)/libvrpnserver.a $(SLIB_OBJECTS)
  	-$(RANLIB) $(OBJECT_DIR)/libvrpnserver.a
-@@ -539,7 +548,7 @@ ALIB_OBJECTS = $(patsubst %,$(AOBJECT_DI
+@@ -539,7 +546,7 @@ ALIB_OBJECTS = $(patsubst %,$(AOBJECT_DI
  ALIB_INCLUDES =  \
  	vrpn_atmellib.h vrpn_atmellib_helper.h vrpn_atmellib_errno.h
  
@@ -115,7 +106,7 @@ Index: vrpn-07.22/vrpn/Makefile
  $(OBJECT_DIR)/libvrpnatmel.a: $(MAKEFILE) $(ALIB_OBJECTS)
  	$(AR) $(OBJECT_DIR)/libvrpnatmel.a $(ALIB_OBJECTS)
  	-$(RANLIB) $(OBJECT_DIR)/libvrpnatmel.a
-@@ -598,6 +607,11 @@ install: all
+@@ -598,6 +605,11 @@ install: all
  	( cd $(OBJECT_DIR) ; cp *.a $(LIB_DIR) )
  	-mkdir $(INCLUDE_DIR)
  	cp vrpn*.h $(INCLUDE_DIR)

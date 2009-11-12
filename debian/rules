@@ -1,5 +1,9 @@
 #!/usr/bin/make -f
 
+#debian/stamp-makefile-build: build/libvrpn-quat1
+build/libvrpn1:: build/libvrpn-quat1
+build/libvrpn-server1 build/libvrpn-client1:: build/libvrpn1
+
 include /usr/share/cdbs/1/rules/debhelper.mk
 include /usr/share/cdbs/1/class/makefile.mk
 include /usr/share/cdbs/1/rules/patchsys-quilt.mk
@@ -25,8 +29,7 @@ endif
 
 
 # Minor hack to build in the right (main) directory
-DEB_BUILDIR := $(CURDIR)/vrpn
-DEB_MAKE_BUILD_TARGET := all  HW_OS=$(HW_OS)
+DEB_MAKE_BUILD_TARGET := HW_OS=$(HW_OS)
 DEB_MAKE_INSTALL_TARGET := install INSTALL_DIR=$(DEB_DESTDIR)/usr HW_OS=$(HW_OS)
 DEB_MAKE_CLEAN_TARGET := clean clean_g++ HW_OS=$(HW_OS)
 
