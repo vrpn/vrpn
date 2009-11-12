@@ -5,7 +5,7 @@ build/libvrpn1:: build/libvrpn-quat1
 build/libvrpn-server1 build/libvrpn-client1:: build/libvrpn1
 
 include /usr/share/cdbs/1/rules/debhelper.mk
-include /usr/share/cdbs/1/class/makefile.mk
+#include /usr/share/cdbs/1/class/makefile.mk
 include /usr/share/cdbs/1/rules/patchsys-quilt.mk
 
 # Set up configure settings based on architecture
@@ -54,6 +54,17 @@ post-patches::
 	#	sed -i s-@VRPN_HOST_PLATFORM@-$(MAKEFILE_PLATFORM_LINE)- $$mkf; \
 	#done
 	#sed -i s-INSTALL_DIR)/include-INSTALL_DIR)/include/vrpn- $$mkf; \
+build/libvprn-quat1::
+	cd $(CURDIR)/quat && $(DEB_MAKE_ENVVARS) $(MAKE) $(if $(DEB_MAKE_MAKEFILE), -f $(DEB_MAKE_MAKEFILE),) -C $(DEB_BUILDDIR) CFLAGS=$(if $(CFLAGS_$(cdbs_curpkg)),"$(CFLAGS_$(cdbs_curpkg))","$(CFLAGS)") CXXFLAGS=$(if $(CXXFLAGS_$(cdbs_curpkg)),"$(CXXFLAGS_$(cdbs_curpkg))","$(CXXFLAGS)") CPPFLAGS=$(if $(CPPFLAGS_$(cdbs_curpkg)),"$(CPPFLAGS_$(cdbs_curpkg))","$(CPPFLAGS)") LDFLAGS=$(if $(LDFLAGS_$(cdbs_curpkg)),"$(LDFLAGS_$(cdbs_curpkg))","$(LDFLAGS)")
+
+build/libvprn1::
+	cd $(CURDIR)/vrpn && $(DEB_MAKE_ENVVARS) $(MAKE) $(if $(DEB_MAKE_MAKEFILE), -f $(DEB_MAKE_MAKEFILE),) -C $(DEB_BUILDDIR) CFLAGS=$(if $(CFLAGS_$(cdbs_curpkg)),"$(CFLAGS_$(cdbs_curpkg))","$(CFLAGS)") CXXFLAGS=$(if $(CXXFLAGS_$(cdbs_curpkg)),"$(CXXFLAGS_$(cdbs_curpkg))","$(CXXFLAGS)") CPPFLAGS=$(if $(CPPFLAGS_$(cdbs_curpkg)),"$(CPPFLAGS_$(cdbs_curpkg))","$(CPPFLAGS)") LDFLAGS=$(if $(LDFLAGS_$(cdbs_curpkg)),"$(LDFLAGS_$(cdbs_curpkg))","$(LDFLAGS)")
+
+build/libvprn-server1::
+	cd $(CURDIR)/vrpn/server_src && $(DEB_MAKE_ENVVARS) $(MAKE) $(if $(DEB_MAKE_MAKEFILE), -f $(DEB_MAKE_MAKEFILE),) -C $(DEB_BUILDDIR) CFLAGS=$(if $(CFLAGS_$(cdbs_curpkg)),"$(CFLAGS_$(cdbs_curpkg))","$(CFLAGS)") CXXFLAGS=$(if $(CXXFLAGS_$(cdbs_curpkg)),"$(CXXFLAGS_$(cdbs_curpkg))","$(CXXFLAGS)") CPPFLAGS=$(if $(CPPFLAGS_$(cdbs_curpkg)),"$(CPPFLAGS_$(cdbs_curpkg))","$(CPPFLAGS)") LDFLAGS=$(if $(LDFLAGS_$(cdbs_curpkg)),"$(LDFLAGS_$(cdbs_curpkg))","$(LDFLAGS)")
+
+build/libvprn-client1::
+	cd $(CURDIR)/vrpn/client_src && $(DEB_MAKE_ENVVARS) $(MAKE) $(if $(DEB_MAKE_MAKEFILE), -f $(DEB_MAKE_MAKEFILE),) -C $(DEB_BUILDDIR) CFLAGS=$(if $(CFLAGS_$(cdbs_curpkg)),"$(CFLAGS_$(cdbs_curpkg))","$(CFLAGS)") CXXFLAGS=$(if $(CXXFLAGS_$(cdbs_curpkg)),"$(CXXFLAGS_$(cdbs_curpkg))","$(CXXFLAGS)") CPPFLAGS=$(if $(CPPFLAGS_$(cdbs_curpkg)),"$(CPPFLAGS_$(cdbs_curpkg))","$(CPPFLAGS)") LDFLAGS=$(if $(LDFLAGS_$(cdbs_curpkg)),"$(LDFLAGS_$(cdbs_curpkg))","$(LDFLAGS)")
 
 build/libvrpn1-doc::
 	# Reconfigure doxyfile
