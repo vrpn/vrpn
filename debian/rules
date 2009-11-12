@@ -1,8 +1,6 @@
 #!/usr/bin/make -f
 
-#debian/stamp-makefile-build: build/libvrpn-quat1
-build/libvrpn1:: build/libvrpn-quat1
-build/libvrpn-server1 build/libvrpn-client1:: build/libvrpn1
+build/vrpn-server build/vrpn-clients:: build/libvrpn-dev
 
 include /usr/share/cdbs/1/rules/debhelper.mk
 include /usr/share/cdbs/1/class/makefile.mk
@@ -12,7 +10,6 @@ VER_MAJ=07
 VER_MIN=22
 
 # Set up configure settings based on architecture
-DEB_HOST_ARCH ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
 ifeq ($(DEB_HOST_ARCH),i386)
 HW_OS := pc_linux
 endif
@@ -34,6 +31,12 @@ DEB_MAKE_BUILD_TARGET :=
 DEB_MAKE_INSTALL_TARGET := install INSTALL_DIR=$(DEB_DESTDIR)/usr
 DEB_MAKE_CLEAN_TARGET := clean clean_g++
 
+ifeq ($(HW_OS),)
+# If other hardware platform, tell it pc_linux
+HW_OS := pc_linux
+# TODO: pass appropriate flags here, in addition
+DEB_MAKE_VARS := HW_OS=$(HW_OS)
+endif
 
 DEB_DESTDIR := $(CURDIR)/debian/tmp
 
@@ -42,12 +45,12 @@ DEB_INSTALL_CHANGELOGS_ALL := $(CURDIR)/vrpn/ChangeLog
 
 #DEB_DH_SHLIBDEPS_ARGS := -- $(patsubst %,-x%,$(DEB_ALL_PACKAGES))
 
-
-DO_MAKE := libvrpn1 libvrpn-client1 libvrpn-server1
+DO_MAKE := libvrpn-dev vrpn-clients vrpn-server
 DEB_BUILDDIR := $(CURDIR)/quat
-DEB_BUILDDIR_libvrpn1 := $(CURDIR)/vrpn
-DEB_BUILDDIR_libvrpn-client1 := $(CURDIR)/vrpn/client_src
-DEB_BUILDDIR_libvrpn-server1 := $(CURDIR)/vrpn/server_src
+DEB_BUILDDIR_libvrpn-dev := $(CURDIR)/vrpn
+DEB_BUILDDIR_vrpn-clients := $(CURDIR)/vrpn/client_src
+DEB_BUILDDIR_vrpn-server := $(CURDIR)/vrpn/server_src
+
 # Override DEB_MAKE_INVOKE to add DEB_MAKE_VARS, separate build dirs,
 # and remove CFLAGS/CXXFLAGS
 DEB_MAKE_INVOKE = cd $(if $(DEB_BUILDDIR_$(cdbs_curpkg)),"$(DEB_BUILDDIR_$(cdbs_curpkg))","$(DEB_BUILDDIR)") && \
@@ -67,7 +70,7 @@ $(patsubst %,clean/%,$(DO_MAKE))::
 	$(DEB_MAKE_INVOKE) $(DEB_MAKE_CLEAN_TARGET)
 
 
-build/libvrpn1-doc::
+build/libvrpn-doc::
 	# Reconfigure doxyfile
 	cp $(CURDIR)/vrpn/doxygen/Doxyfile $(CURDIR)/vrpn/doxygen/Doxyfile.pre-sed
 
@@ -98,7 +101,7 @@ clean::
 
 	# Restore files processed by debian/rules
 	for mkf in $(MAKEFILES_TO_PROCESS); do \
-		[ -f $$mkf.pre-sed ] && mv -f $$mkf.pre-sed $$mkf || echo . ; \
+		[ -f $$mkf.pre-sed ] && mv -f $$mkf.pre-sed $$mkf || echo . > /dev/null ; \
 	done
 	
 	# Remove files left behind by build
@@ -106,8 +109,3 @@ clean::
 	-rm -rf $(DEB_CURDIR)/vrpn/client_src/logfilesenders
 	-rm -rf $(DEB_CURDIR)/vrpn/client_src/logfiletypes
 
-
-# workaround for http://bugs.debian.org/526392
-#QUILT_PATCH_DIR := debian/patches
-#QUILT_STAMPFN := patch
-#-include /usr/share/topgit/tg2quilt.mk
