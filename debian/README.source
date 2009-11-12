@@ -1,0 +1,2 @@
+This package uses quilt at build-time to apply patches. See
+/usr/share/doc/quilt/README.source for information on how to use quilt.

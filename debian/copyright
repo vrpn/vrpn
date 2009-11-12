@@ -1,0 +1,71 @@
+Files in the vrpn packages and souce directory:
+
+VRPN (The Virtual Reality Peripheral Network) has been placed into the
+public domain by the copyright owner Russell M. Taylor II at the University
+of North Carolina at Chapel Hill.  Additional terms and requests follow:
+
+1. Please acknowledge this library in any publication, written, videotaped,
+	or otherwise produced, that results from making programs using it.
+	The acknowledgement will credit
+
+	GRIP Project
+	Department of Computer Science,
+	University of North Carolina at Chapel Hill,
+	Supported by the NIH National Centers for Research Resources.
+
+2. Please furnish us a copy of any publication, including videotape,
+	that you produce and disseminate outside your group using our
+	program.  These should be addressed to Professor R.M. Taylor.
+
+3. The program and associated files are provided "as is," with no
+	express or implied warranty.  You agree to hold the University
+	of North Carolina and its employees and students, as well as
+	all involved in the development of the system, not liable in
+	the event of damages resulting from the use of this product.
+
+4. You understand that the University cannot provide support for this
+	product.  While we may release future, updated versions of the
+	software and fix reported bugs, we may be unable to do so.
+	Such releases and updates are likely to be reported on the
+	project web page at http://www.cs.unc.edu/Research/vrpn.
+
+5. Please send us derived classes and drivers for new devices that you
+	create for the library.  We will attempt to include them in
+	future releases of the library for you and others to use.  This
+	is the fastest way to get a working system for everyone.
+
+--
+
+Files in quat packages and source directory:
+This directory contains the source and test files for the quaternion
+library, libquat.a.  It is based on Warren Robinett's adapted version of Ken
+Shoemake's code, as seen in Shoemake's 1985 SIGGRAPH paper.
+
+This code is has been placed into the public domain by the University of
+North Carolina at Chapel Hill on January 9th, 2005; after consultation
+with its authors, Warren Robinett and Richard Holloway.  It is provided
+"as is", with no guarantee or warranty of any kind, even fitness for a
+specific purpose.
+
+--
+
+The Debian packaging is copyright (C) 2009 Ryan Pavlik <abiryan@ryand.net>
+and is licensed under the "MIT" license.  Text follows:
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.

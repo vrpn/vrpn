@@ -1,0 +1,3 @@
+debian/update-doxyfile.diff
+debian/unify-build-process.diff
+debian/makefile-substitution.diff
