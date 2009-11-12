@@ -8,6 +8,9 @@ include /usr/share/cdbs/1/rules/debhelper.mk
 #include /usr/share/cdbs/1/class/makefile.mk
 include /usr/share/cdbs/1/rules/patchsys-quilt.mk
 
+VER_MAJ=07
+VER_MIN=22
+
 # Set up configure settings based on architecture
 DEB_HOST_ARCH ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
 ifeq ($(DEB_HOST_ARCH),i386)
@@ -29,9 +32,11 @@ endif
 
 
 # Minor hack to build in the right (main) directory
-DEB_MAKE_BUILD_TARGET := HW_OS=$(HW_OS)
-DEB_MAKE_INSTALL_TARGET := install INSTALL_DIR=$(DEB_DESTDIR)/usr HW_OS=$(HW_OS)
-DEB_MAKE_CLEAN_TARGET := clean clean_g++ HW_OS=$(HW_OS)
+DEB_MAKE_VARS := HW_OS=$(HW_OS)
+DEB_MAKE_BUILD_TARGET :=
+DEB_MAKE_INSTALL_TARGET := install INSTALL_DIR=$(DEB_DESTDIR)/usr
+DEB_MAKE_CLEAN_TARGET := clean clean_g++
+DEB_MAKE_INVOKE = $(DEB_MAKE_ENVVARS) $(MAKE) $(if $(DEB_MAKE_MAKEFILE), -f $(DEB_MAKE_MAKEFILE),) -C $(DEB_BUILDDIR) CFLAGS=$(if $(CFLAGS_$(cdbs_curpkg)),"$(CFLAGS_$(cdbs_curpkg))","$(CFLAGS)") CXXFLAGS=$(if $(CXXFLAGS_$(cdbs_curpkg)),"$(CXXFLAGS_$(cdbs_curpkg))","$(CXXFLAGS)") CPPFLAGS=$(if $(CPPFLAGS_$(cdbs_curpkg)),"$(CPPFLAGS_$(cdbs_curpkg))","$(CPPFLAGS)") LDFLAGS=$(if $(LDFLAGS_$(cdbs_curpkg)),"$(LDFLAGS_$(cdbs_curpkg))","$(LDFLAGS)") $(DEB_MAKE_VARS)
 
 DEB_DESTDIR := $(CURDIR)/debian/tmp
 
@@ -54,29 +59,33 @@ post-patches::
 	#	sed -i s-@VRPN_HOST_PLATFORM@-$(MAKEFILE_PLATFORM_LINE)- $$mkf; \
 	#done
 	#sed -i s-INSTALL_DIR)/include-INSTALL_DIR)/include/vrpn- $$mkf; \
+
 build/libvprn-quat1::
-	cd $(CURDIR)/quat && $(DEB_MAKE_ENVVARS) $(MAKE) $(if $(DEB_MAKE_MAKEFILE), -f $(DEB_MAKE_MAKEFILE),) -C $(DEB_BUILDDIR) CFLAGS=$(if $(CFLAGS_$(cdbs_curpkg)),"$(CFLAGS_$(cdbs_curpkg))","$(CFLAGS)") CXXFLAGS=$(if $(CXXFLAGS_$(cdbs_curpkg)),"$(CXXFLAGS_$(cdbs_curpkg))","$(CXXFLAGS)") CPPFLAGS=$(if $(CPPFLAGS_$(cdbs_curpkg)),"$(CPPFLAGS_$(cdbs_curpkg))","$(CPPFLAGS)") LDFLAGS=$(if $(LDFLAGS_$(cdbs_curpkg)),"$(LDFLAGS_$(cdbs_curpkg))","$(LDFLAGS)")
+	cd $(CURDIR)/quat && $(DEB_MAKE_INVOKE) $(DEB_MAKE_BUILD_TARGET)
 
 build/libvprn1::
-	cd $(CURDIR)/vrpn && $(DEB_MAKE_ENVVARS) $(MAKE) $(if $(DEB_MAKE_MAKEFILE), -f $(DEB_MAKE_MAKEFILE),) -C $(DEB_BUILDDIR) CFLAGS=$(if $(CFLAGS_$(cdbs_curpkg)),"$(CFLAGS_$(cdbs_curpkg))","$(CFLAGS)") CXXFLAGS=$(if $(CXXFLAGS_$(cdbs_curpkg)),"$(CXXFLAGS_$(cdbs_curpkg))","$(CXXFLAGS)") CPPFLAGS=$(if $(CPPFLAGS_$(cdbs_curpkg)),"$(CPPFLAGS_$(cdbs_curpkg))","$(CPPFLAGS)") LDFLAGS=$(if $(LDFLAGS_$(cdbs_curpkg)),"$(LDFLAGS_$(cdbs_curpkg))","$(LDFLAGS)")
+	cd $(CURDIR)/vrpn && $(DEB_MAKE_INVOKE) $(DEB_MAKE_BUILD_TARGET)
 
 build/libvprn-server1::
-	cd $(CURDIR)/vrpn/server_src && $(DEB_MAKE_ENVVARS) $(MAKE) $(if $(DEB_MAKE_MAKEFILE), -f $(DEB_MAKE_MAKEFILE),) -C $(DEB_BUILDDIR) CFLAGS=$(if $(CFLAGS_$(cdbs_curpkg)),"$(CFLAGS_$(cdbs_curpkg))","$(CFLAGS)") CXXFLAGS=$(if $(CXXFLAGS_$(cdbs_curpkg)),"$(CXXFLAGS_$(cdbs_curpkg))","$(CXXFLAGS)") CPPFLAGS=$(if $(CPPFLAGS_$(cdbs_curpkg)),"$(CPPFLAGS_$(cdbs_curpkg))","$(CPPFLAGS)") LDFLAGS=$(if $(LDFLAGS_$(cdbs_curpkg)),"$(LDFLAGS_$(cdbs_curpkg))","$(LDFLAGS)")
+	cd $(CURDIR)/vrpn/server_src && $(DEB_MAKE_INVOKE) $(DEB_MAKE_BUILD_TARGET)
 
 build/libvprn-client1::
-	cd $(CURDIR)/vrpn/client_src && $(DEB_MAKE_ENVVARS) $(MAKE) $(if $(DEB_MAKE_MAKEFILE), -f $(DEB_MAKE_MAKEFILE),) -C $(DEB_BUILDDIR) CFLAGS=$(if $(CFLAGS_$(cdbs_curpkg)),"$(CFLAGS_$(cdbs_curpkg))","$(CFLAGS)") CXXFLAGS=$(if $(CXXFLAGS_$(cdbs_curpkg)),"$(CXXFLAGS_$(cdbs_curpkg))","$(CXXFLAGS)") CPPFLAGS=$(if $(CPPFLAGS_$(cdbs_curpkg)),"$(CPPFLAGS_$(cdbs_curpkg))","$(CPPFLAGS)") LDFLAGS=$(if $(LDFLAGS_$(cdbs_curpkg)),"$(LDFLAGS_$(cdbs_curpkg))","$(LDFLAGS)")
+	cd $(CURDIR)/vrpn/client_src && $(DEB_MAKE_INVOKE) $(DEB_MAKE_BUILD_TARGET)
+
+install/libvprn-quat1::
+	#cd $(CURDIR)/quat && $(DEB_MAKE_INVOKE) $(DEB_MAKE_BUILD_TARGET)
 
 build/libvrpn1-doc::
 	# Reconfigure doxyfile
 	cp $(CURDIR)/vrpn/doxygen/Doxyfile $(CURDIR)/vrpn/doxygen/Doxyfile.pre-sed
 
 	# Set version from debian version
-	sed -i s-PROJECT_NUMBER         =-PROJECT_NUMBER         = $(DEB_VERSION)- \
+	sed -i "s/PROJECT_NUMBER         \=/PROJECT_NUMBER         \= $(VER_MAJ)\.$(VER_MIN)/" \
 		$(CURDIR)/vrpn/doxygen/Doxyfile
 
-	# Specify absolute path to source
-	sed -i s-INPUT                = ..-INPUT                = $(CURDIR)/vrpn- \
-		$(CURDIR)/vrpn/doxygen/Doxyfile
+	# Specify improved path to source
+	#sed -i "s/INPUT                \= ../INPUT                \= ..\/..\/..\/..\/..\/..\/vrpn/" \
+	#	$(CURDIR)/vrpn/doxygen/Doxyfile
 
 	# Build the documentation
 	mkdir -p $(DEB_DESTDIR)/usr/share/doc/libvrpn1/api
@@ -86,6 +95,15 @@ build/libvrpn1-doc::
 
 	# Restore the doxyfile
 	mv -f $(CURDIR)/vrpn/doxygen/Doxyfile.pre-sed $(CURDIR)/vrpn/doxygen/Doxyfile
+
+install/libvprn1::
+	cd $(CURDIR)/vrpn && $(DEB_MAKE_INVOKE) $(DEB_MAKE_INSTALL_TARGET)
+
+install/libvprn-server1::
+	cd $(CURDIR)/vrpn/server_src && $(DEB_MAKE_INVOKE) $(DEB_MAKE_INSTALL_TARGET)
+
+install/libvprn-client1::
+	cd $(CURDIR)/vrpn/client_src && $(DEB_MAKE_INVOKE) $(DEB_MAKE_INSTALL_TARGET)
 
 install/vrpn::
 	find $(DEB_DESTDIR) -name "CVS" -depth -exec rm -rf {} \;
