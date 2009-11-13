@@ -1,0 +1,194 @@
+Index: vrpn-wiimote/quat/makefile
+===================================================================
+--- vrpn-wiimote.orig/quat/makefile
++++ vrpn-wiimote/quat/makefile
+@@ -134,8 +134,7 @@ ifeq ($(HW_OS), hp_flow_aCC)
+   CC = /opt/aCC/bin/aCC
+ endif
+ 
+-CFLAGS = -g $(INCLUDE_FLAGS)
+-OPT_CFLAGS = -O $(INCLUDE_FLAGS)
++
+ MAKEFILE = makefile
+ 
+ QUAT_LIB = libquat.a
+@@ -155,7 +154,10 @@ ifeq ($(HW_OS), hp_flow_aCC)
+   INCLUDE_FLAGS =  -I. -I$(INCLUDE_DIR) -DFLOW
+ endif
+ 
+-LDFLAGS = -L. -L$(HW_OS)
++CFLAGS := -g $(INCLUDE_FLAGS) $(CFLAGS)
++OPT_CFLAGS := -O $(INCLUDE_FLAGS) $(CFLAGS)
++
++LDFLAGS := -L. -L$(HW_OS) $(LDFLAGS)
+ LINT_FLAGS = $(INCLUDE_FLAGS)
+ 
+ #############################################################################
+Index: vrpn-wiimote/vrpn/Makefile
+===================================================================
+--- vrpn-wiimote.orig/vrpn/Makefile
++++ vrpn-wiimote/vrpn/Makefile
+@@ -297,7 +297,7 @@ endif
+ #LOAD_FLAGS := -L./$(HW_OS)$(OBJECT_DIR_SUFFIX) -L/usr/local/lib \
+ #		-L/usr/local/contrib/unmod/lib -L/usr/local/contrib/mod/lib -g
+ LOAD_FLAGS := -L./$(HW_OS)$(OBJECT_DIR_SUFFIX) -L/usr/local/lib \
+-		-L/usr/local/contrib/unmod/lib -L/usr/local/contrib/mod/lib $(DEBUG_FLAGS)
++		-L/usr/local/contrib/unmod/lib -L/usr/local/contrib/mod/lib $(DEBUG_FLAGS) $(LDFLAGS)
+ 
+ ifeq ($(HW_OS),sgi_irix)
+ 	LOAD_FLAGS := $(LOAD_FLAGS) -old_ld
+@@ -353,8 +353,8 @@ LIBS := -lquat -lsdi $(TCL_LIBS) -lXext 
+ #
+ 
+ #CFLAGS		 := $(INCLUDE_FLAGS) -g
+-CFLAGS		 := $(INCLUDE_FLAGS) $(DEBUG_FLAGS)
+-
++CFLAGS		 := $(INCLUDE_FLAGS) $(DEBUG_FLAGS) $(CFLAGS)
++CXXFLAGS     := $(INCLUDE_FLAGS) $(DEBUG_FLAGS) $(CXXFLAGS)
+ 
+ #############################################################################
+ #
+@@ -375,17 +375,17 @@ $(OBJECT_DIR)/%.o: %.c $(LIB_INCLUDES) $
+ # Build objects from .C files
+ $(OBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) $(MAKEFILE)
+ 	@[ -d $(OBJECT_DIR) ] || mkdir $(OBJECT_DIR)
+-	$(CC) $(CFLAGS) -DVRPN_CLIENT_ONLY -o $@ -c $<
++	$(CC) $(CXXFLAGS) $-DVRPN_CLIENT_ONLY -o $@ -c $<
+ 
+ # Build objects from .C files
+ $(SOBJECT_DIR)/%.o: %.C $(SLIB_INCLUDES) $(MAKEFILE)
+ 	@[ -d $(SOBJECT_DIR) ] || mkdir $(SOBJECT_DIR)
+-	$(CC) $(CFLAGS) -o $@ -c $<
++	$(CC) $(CXXFLAGS) -o $@ -c $<
+ 
+ # Build objects from .C files
+ $(AOBJECT_DIR)/%.o: %.C $(ALIB_INCLUDES) $(MAKEFILE)
+ 	@[ -d $(AOBJECT_DIR) ] || mkdir $(AOBJECT_DIR)
+-	$(CC) $(CFLAGS) -o $@ -c $<
++	$(CC) $(CXXFLAGS) -o $@ -c $<
+ 
+ #
+ #
+Index: vrpn-wiimote/vrpn/client_src/Makefile
+===================================================================
+--- vrpn-wiimote.orig/vrpn/client_src/Makefile
++++ vrpn-wiimote/vrpn/client_src/Makefile
+@@ -125,7 +125,8 @@ ifeq ($(HW_OS),pc_cygwin)
+ endif
+ 
+ #CFLAGS = -I../ -I../../quat -g
+-CFLAGS = -I../ -I../../quat $(DEBUG_FLAGS)
++CFLAGS = -I../ -I../../quat $(DEBUG_FLAGS) $(CFLAGS)
++CXXFLAGS = -I../ -I../../quat $(DEBUG_FLAGS) $(CXXFLAGS)
+ 
+ .SUFFIXES:	.cpp
+ 
+@@ -133,16 +134,16 @@ CFLAGS = -I../ -I../../quat $(DEBUG_FLAG
+ 	$(CC) $(CFLAGS) -c $*.c
+ 
+ .C.o:
+-	$(CC) $(CFLAGS) -c $*.C
++	$(CC) $(CXXFLAGS) -c $*.C
+ 
+ .cpp.o:
+-	$(CC) $(CFLAGS) -c $*.cpp
++	$(CC) $(CXXFLAGS) -c $*.cpp
+ 
+ OBJ_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)
+ LIB_DIR := ../$(OBJ_DIR)
+ 
+ #LFLAGS = -g -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX)
+-LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) $(DEBUG_FLAGS)
++LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) $(DEBUG_FLAGS) $(LDFLAGS)
+ 
+ $(OBJ_DIR)/%.o: %.c
+ 	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
+@@ -150,11 +151,11 @@ $(OBJ_DIR)/%.o: %.c
+ 
+ $(OBJ_DIR)/%.o: %.C
+ 	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
+-	$(CC) $(CFLAGS) -o $@ -c $<
++	$(CC) $(CXXFLAGS) -o $@ -c $<
+ 
+ $(OBJ_DIR)/%.o: %.cpp
+ 	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
+-	$(CC) $(CFLAGS) -o $@ -c $<
++	$(CC) $(CXXFLAGS) -o $@ -c $<
+ 
+ INSTALL_APPS := vrpn_print_devices forcedevice_test_client vrpn_ping \
+ 	add_vrpn_cookie
+Index: vrpn-wiimote/vrpn/server_src/Makefile
+===================================================================
+--- vrpn-wiimote.orig/vrpn/server_src/Makefile
++++ vrpn-wiimote/vrpn/server_src/Makefile
+@@ -149,8 +149,9 @@ OBJ_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)
+ LIB_DIR := ../$(OBJ_DIR)
+ 
+ #CFLAGS = -g -I./ -I../ -I../../quat
+-CFLAGS = -I./ -I../ -I../../quat $(DEBUG_FLAGS)
+-LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX)
++CFLAGS := -I./ -I../ -I../../quat $(DEBUG_FLAGS) $(CFLAGS)
++CXXFLAGS := -I./ -I../ -I../../quat $(DEBUG_FLAGS) $(CXXFLAGS)
++LFLAGS := -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) $(LDFLAGS)
+ VRPN_LIBS = -lvrpnserver -lvrpnatmel -lpthread
+ 
+ # Uncomment the following section and point them at the
+@@ -165,13 +166,15 @@ VRPN_LIBS = -lvrpnserver -lvrpnatmel -lp
+ ifdef INTERSENSE
+   ifeq ($(HW_OS),powerpc_macosx)
+ #     CFLAGS = -g -I../ -I../../quat -I../../isense -DMACOSX
+-     CFLAGS = -I../ -I../../quat -I../../isense -DMACOSX $(DEBUG_FLAGS)
+-     LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) ../../isense/MacOSX/dlcompat.o
++     CFLAGS += -I../../isense -DMACOSX
++     CXXFLAGS += -I../../isense -DMACOSX
++     LFLAGS += ../../isense/MacOSX/dlcompat.o
+   endif
+   ifeq ($(HW_OS),universal_macosx)
+ #     CFLAGS = -g -I../ -I../../quat -I../../isense -DMACOSX
+-     CFLAGS = -I../ -I../../quat -I../../isense -DMACOSX $(DEBUG_FLAGS)
+-     LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) ../../isense/MacOSX/dlcompat.o
++     CFLAGS += -I../../isense -DMACOSX
++     CXXFLAGS += -I../../isense -DMACOSX
++     LFLAGS += ../../isense/MacOSX/dlcompat.o
+   endif
+ endif
+ 
+@@ -187,13 +190,13 @@ endif
+ .SUFFIXES: .cpp
+ 
+ .C.o:
+-	$(CC) $(CFLAGS) -c $*.C
++	$(CC) $(CXXFLAGS) -c $*.C
+ 
+ .c.o:
+ 	$(CC) $(CFLAGS) -c $*.c
+ 
+ .cpp.o:
+-	$(CC) $(CFLAGS) -c $*.cpp
++	$(CC) $(CXXFLAGS) -c $*.cpp
+ 
+ $(OBJ_DIR)/%.o:	%.c
+ 	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
+@@ -201,11 +204,11 @@ $(OBJ_DIR)/%.o:	%.c
+ 
+ $(OBJ_DIR)/%.o:	%.C
+ 	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
+-	$(CC) $(CFLAGS) -o $@ -c $<
++	$(CC) $(CXXFLAGS) -o $@ -c $<
+ 
+ $(OBJ_DIR)/%.o:	%.cpp
+ 	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
+-	$(CC) $(CFLAGS) -o $@ -c $<
++	$(CC) $(CXXFLAGS) -o $@ -c $<
+ 
+ INSTALL_APPS := vrpn_server test_vrpn
+ APPS := $(INSTALL_APPS) client_and_server test_mutex test_peerMutex \
+@@ -264,7 +267,7 @@ last_of_sequence:	$(OBJ_DIR)/last_of_seq
+ testSharedObject:	$(OBJ_DIR)/testSharedObject
+ 
+ $(OBJ_DIR)/InstantBuzzEffect.o: ghostEffects/InstantBuzzEffect.cpp
+-	$(CC) $(CFLAGS) -o $@ -c $<
++	$(CC) $(CXXFLAGS) -o $@ -c $<
+ 
+ $(OBJ_DIR)/vrpn_server: $(OBJ_DIR)/vrpn.o $(LIB_DIR)/libvrpnserver.a \
+ 		$(OBJ_DIR)/buzzForceField.o $(OBJ_DIR)/constraint.o \

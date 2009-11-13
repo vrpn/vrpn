@@ -13,7 +13,7 @@ Index: vrpn-wiimote/quat/makefile
  
  ifndef HW_OS
    # hw_os does not exist on FreeBSD at UNC or on CYGWIN
-@@ -262,6 +266,16 @@ $(QUAT_OBJ_FILES) : $(QUAT_INCLUDES)
+@@ -264,6 +268,16 @@ $(QUAT_OBJ_FILES) : $(QUAT_INCLUDES)
  lint :
  	lint $(LINT_FLAGS) $(COORD_FILES)
  

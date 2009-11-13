@@ -1,3 +1,4 @@
+fix/use-provided-flags-too.diff
 fix/update-python-connection.diff
 fix/fix-python-makefile.diff
 fix/add-install-target-to-quat.diff

@@ -2,7 +2,7 @@ Index: vrpn-wiimote/quat/makefile
 ===================================================================
 --- vrpn-wiimote.orig/quat/makefile
 +++ vrpn-wiimote/quat/makefile
-@@ -171,7 +171,7 @@ LINT_FLAGS = $(INCLUDE_FLAGS)
+@@ -173,7 +173,7 @@ LINT_FLAGS = $(INCLUDE_FLAGS)
  lib:	$(HW_OS)$(OBJECT_DIR_SUFFIX) libquat.a
  
  $(HW_OS)$(OBJECT_DIR_SUFFIX):
@@ -15,7 +15,7 @@ Index: vrpn-wiimote/vrpn/Makefile
 ===================================================================
 --- vrpn-wiimote.orig/vrpn/Makefile
 +++ vrpn-wiimote/vrpn/Makefile
-@@ -369,22 +369,22 @@ CFLAGS		 := $(INCLUDE_FLAGS) $(DEBUG_FLA
+@@ -369,22 +369,22 @@ CXXFLAGS     := $(INCLUDE_FLAGS) $(DEBUG
  
  # Build objects from .c files
  $(OBJECT_DIR)/%.o: %.c $(LIB_INCLUDES) $(MAKEFILE)
@@ -27,19 +27,19 @@ Index: vrpn-wiimote/vrpn/Makefile
  $(OBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) $(MAKEFILE)
 -	@[ -d $(OBJECT_DIR) ] || mkdir $(OBJECT_DIR)
 +	@[ -d $(OBJECT_DIR) ] || mkdir -p $(OBJECT_DIR)
- 	$(CC) $(CFLAGS) -DVRPN_CLIENT_ONLY -o $@ -c $<
+ 	$(CC) $(CXXFLAGS) $-DVRPN_CLIENT_ONLY -o $@ -c $<
  
  # Build objects from .C files
  $(SOBJECT_DIR)/%.o: %.C $(SLIB_INCLUDES) $(MAKEFILE)
 -	@[ -d $(SOBJECT_DIR) ] || mkdir $(SOBJECT_DIR)
 +	@[ -d $(SOBJECT_DIR) ] || mkdir -p $(SOBJECT_DIR)
- 	$(CC) $(CFLAGS) -o $@ -c $<
+ 	$(CC) $(CXXFLAGS) -o $@ -c $<
  
  # Build objects from .C files
  $(AOBJECT_DIR)/%.o: %.C $(ALIB_INCLUDES) $(MAKEFILE)
 -	@[ -d $(AOBJECT_DIR) ] || mkdir $(AOBJECT_DIR)
 +	@[ -d $(AOBJECT_DIR) ] || mkdir -p $(AOBJECT_DIR)
- 	$(CC) $(CFLAGS) -o $@ -c $<
+ 	$(CC) $(CXXFLAGS) -o $@ -c $<
  
  #
 @@ -431,13 +431,13 @@ atmellib: $(AOBJECT_DIR)
@@ -85,8 +85,8 @@ Index: vrpn-wiimote/vrpn/client_src/Makefile
 ===================================================================
 --- vrpn-wiimote.orig/vrpn/client_src/Makefile
 +++ vrpn-wiimote/vrpn/client_src/Makefile
-@@ -145,15 +145,15 @@ LIB_DIR := ../$(OBJ_DIR)
- LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) $(DEBUG_FLAGS)
+@@ -146,15 +146,15 @@ LIB_DIR := ../$(OBJ_DIR)
+ LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) $(DEBUG_FLAGS) $(LDFLAGS)
  
  $(OBJ_DIR)/%.o: %.c
 -	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
@@ -96,15 +96,15 @@ Index: vrpn-wiimote/vrpn/client_src/Makefile
  $(OBJ_DIR)/%.o: %.C
 -	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
 +	@[ -d $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
- 	$(CC) $(CFLAGS) -o $@ -c $<
+ 	$(CC) $(CXXFLAGS) -o $@ -c $<
  
  $(OBJ_DIR)/%.o: %.cpp
 -	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
 +	@[ -d $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
- 	$(CC) $(CFLAGS) -o $@ -c $<
+ 	$(CC) $(CXXFLAGS) -o $@ -c $<
  
  INSTALL_APPS := vrpn_print_devices forcedevice_test_client vrpn_ping \
-@@ -323,7 +323,7 @@ $(OBJ_DIR)/logfiletypes: $(OBJ_DIR)/logf
+@@ -324,7 +324,7 @@ $(OBJ_DIR)/logfiletypes: $(OBJ_DIR)/logf
  	$(CC) $(LFLAGS) -o $(OBJ_DIR)/logfiletypes $(OBJ_DIR)/logfiletypes.o
  
  install: all
@@ -117,8 +117,8 @@ Index: vrpn-wiimote/vrpn/server_src/Makefile
 ===================================================================
 --- vrpn-wiimote.orig/vrpn/server_src/Makefile
 +++ vrpn-wiimote/vrpn/server_src/Makefile
-@@ -196,15 +196,15 @@ endif
- 	$(CC) $(CFLAGS) -c $*.cpp
+@@ -199,15 +199,15 @@ endif
+ 	$(CC) $(CXXFLAGS) -c $*.cpp
  
  $(OBJ_DIR)/%.o:	%.c
 -	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
@@ -128,15 +128,15 @@ Index: vrpn-wiimote/vrpn/server_src/Makefile
  $(OBJ_DIR)/%.o:	%.C
 -	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
 +	@[ -d $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
- 	$(CC) $(CFLAGS) -o $@ -c $<
+ 	$(CC) $(CXXFLAGS) -o $@ -c $<
  
  $(OBJ_DIR)/%.o:	%.cpp
 -	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
 +	@[ -d $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
- 	$(CC) $(CFLAGS) -o $@ -c $<
+ 	$(CC) $(CXXFLAGS) -o $@ -c $<
  
  INSTALL_APPS := vrpn_server test_vrpn
-@@ -374,7 +374,7 @@ $(OBJ_DIR)/testSharedObject:	$(OBJ_DIR)/
+@@ -377,7 +377,7 @@ $(OBJ_DIR)/testSharedObject:	$(OBJ_DIR)/
  		$(VRPN_LIBS) $(SYSLIBS) -lm
  
  install: all

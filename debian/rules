@@ -63,6 +63,8 @@ DOXYGEN := doxygen
 DEB_MAKE_INVOKE = cd $(if $(DEB_BUILDDIR_$(cdbs_curpkg)),"$(DEB_BUILDDIR_$(cdbs_curpkg))","$(DEB_BUILDDIR)") && \
 	$(DEB_MAKE_ENVVARS) $(MAKE) \
 	$(if $(DEB_MAKE_MAKEFILE), -f $(DEB_MAKE_MAKEFILE),) \
+	CFLAGS=$(if $(CFLAGS_$(cdbs_curpkg)),"$(CFLAGS_$(cdbs_curpkg))","$(CFLAGS)") \
+	CXXFLAGS=$(if $(CXXFLAGS_$(cdbs_curpkg)),"$(CXXFLAGS_$(cdbs_curpkg))","$(CXXFLAGS)") \
 	CPPFLAGS=$(if $(CPPFLAGS_$(cdbs_curpkg)),"$(CPPFLAGS_$(cdbs_curpkg))","$(CPPFLAGS)") \
 	LDFLAGS=$(if $(LDFLAGS_$(cdbs_curpkg)),"$(LDFLAGS_$(cdbs_curpkg))","$(LDFLAGS)") \
 	$(DEB_MAKE_VARS)
