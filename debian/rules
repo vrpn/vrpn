@@ -9,9 +9,10 @@ include /usr/share/cdbs/1/rules/utils.mk
 include /usr/share/cdbs/1/rules/patchsys-quilt.mk
 include debian/cdbs/1/rules/buildinfo.mk
 
-# Set the version
-VER_MAJ=07
-VER_MIN=22
+# Get the version from the source code, in separate "major" and "minor" components
+VER_MAJ := $(shell grep "const char \* vrpn_MAGIC \=" $(CURDIR)/vrpn/vrpn_Connection.C | sed 's/^[^0-9]*\([0-9]\+\).[0-9]\+[^0-9].*/\1/')
+VER_MIN := $(shell grep "const char \* vrpn_MAGIC \=" $(CURDIR)/vrpn/vrpn_Connection.C | sed 's/^[^0-9]*[0-9]\+.\([0-9]\+\)[^0-9].*/\1/')
+SOURCE_VER := $(VER_MAJ).$(VER_MIN)
 
 # Set up configure settings based on architecture
 ifeq ($(DEB_HOST_ARCH),i386)
