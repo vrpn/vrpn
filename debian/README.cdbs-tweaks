@@ -1,0 +1,128 @@
+CDBS tweak
+==========
+
+CDBS is great. In some corner cases, however, some parts of CDBS
+sometimes needs a few tweaks to work optimally.
+
+This is a collection of such tweaks. The goal is for these tweaks to be
+absorbed into upstream CDBS. We just haven't found time yet to discuss
+them at the CDBS developers' mailinglist. And possible we do not all
+agree that the tweaks are so great - therefore this "staging area".
+
+If you found this file below debian/ subdir in a source package, most
+probably only a subset of the below mentioned tweaks are relevant and
+have been shipped with the package. The repository of all these tweaks
+is here: svn://svn.debian.org/build-common/people/js/overlay/
+
+Web access: http://svn.debian.org/wsvn/build-common/people/js/overlay/
+
+
+
+New buildinfo rule
+------------------
+
+See package description for "buildinfo" for more info.
+
+
+
+Improved support for multiple compilations
+------------------------------------------
+
+Create and clean builddir _after_ resolving per-package DEB_BUILDDIR.
+
+Honour per-package DEB_BUILDDIR in makefile and autotools classes.
+
+Support multiple build flavors in makefile and autotools classes.
+
+
+
+Various improvements to python-distutils class
+----------------------------------------------
+
+Use full path to Python interpreter (Python Policy section 1.3.2).
+
+Add CDBS_BUILD_DEPENDS to old policy method.
+
+Fix CDBS_BUILD_DEPENDS in new policy methods to only depend on debhelper
+when actually used.
+
+Fix DEB_PYTHON_SIMPLE_PACKAGES sometimes installed twice (and only one
+of them honouring DEB_PYTHON_COMPILE_VERSION).
+
+Unify install path using new DEB_PYTHON_DESTDIR.
+
+Quote install path.
+
+
+
+New python-autotools class
+--------------------------
+
+Handle autotools-based Python packaging.
+
+
+
+New python-sugar class
+----------------------
+
+Handle packaging of Sugar activities.
+
+
+
+New perl-build class
+--------------------
+
+Handle Perl modules using Module::Build.
+
+
+
+New copyright-check rule
+------------------------
+
+Refuse to build if the source is found to contain different copyright
+info than earlier builds.
+
+
+
+New kernelpatches rule
+----------------------
+
+Small wrapper around dh-kpatches, taking care of build-dependencies too.
+
+
+
+New package-relations rule
+--------------------------
+
+Improved build-dependency handling (merging multiple dependencies on
+same packages), and add dependency handling for binary packages (to ease
+maintaining identical build-dependencies and dependencies for eg. Perl
+modules meeding runtime stuff for buildtime tests).
+
+
+
+New routines for handling upstream tarball
+------------------------------------------
+
+Rules and variables to help downloading, validating and repackaging
+upstream tarball.
+
+Implements the rules print-version and get-orig-source commonly used
+for group-maintained packages with Debian-specific patches maintained in
+SVN or some other VCS, and automated fetching virgin upstream tarball
+(possibly massaged after download e.g. to strip non-DFSG material).
+
+
+
+Support for custom BTS info
+---------------------------
+
+Include BTS control info found in debian/*.bts files, or alternatively
+redirect bug reports to the email address defined in DEB_BTS_EMAIL.
+
+
+
+New dict class
+--------------
+
+Rules for packaging ispell, aspell, myspell and wordlist dictionaries.

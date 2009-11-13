@@ -1,3 +1,9 @@
+vrpn (07.22-0ubuntu1~rp2) jaunty; urgency=low
+
+  * Add package for python bindings.
+
+ -- Ryan Pavlik <abiryan@ryand.net>  Fri, 13 Nov 2009 10:22:49 -0600
+
 vrpn (07.22-0ubuntu1~rp1) jaunty; urgency=low
 
   * Create CDBS-based package.

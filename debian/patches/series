@@ -1,3 +1,4 @@
+fix/fix-python-makefile.diff
 fix/add-install-target-to-quat.diff
 fix/ensure-all-mkdir-p.diff
 debian/update-doxyfile.diff

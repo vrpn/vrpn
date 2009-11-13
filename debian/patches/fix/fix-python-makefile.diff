@@ -1,0 +1,39 @@
+Index: vrpn-wiimote/vrpn/python_vrpn/Makefile.python
+===================================================================
+--- vrpn-wiimote.orig/vrpn/python_vrpn/Makefile.python
++++ vrpn-wiimote/vrpn/python_vrpn/Makefile.python
+@@ -10,11 +10,12 @@
+ 
+ include ../Makefile
+ 
++PYTHON_VER := $(shell /usr/bin/python -V 2>&1 | sed 's/^[^0-9]*\([0-9]\+.[0-9]\+\)[^0-9].*/\1/')
+ VRPN_ROOT_DIR := ../..
+ OBJECT_DIR := $(VRPN_ROOT_DIR)/vrpn/$(OBJECT_DIR)
+-PYTHON_INCLUDE_DIR := /usr/include/python2.4
+-PYTHON_LIB := python2.4
+-PYTHON_PACKAGES_DIR := /usr/lib/python2.4/site-packages
++PYTHON_INCLUDE_DIR := /usr/include/python$(PYTHON_VER)
++PYTHON_LIB := python$(PYTHON_VER)
++PYTHON_PACKAGES_DIR := $(LIB_DIR)/python$(PYTHON_VER)/dist-packages
+ QUAT_INCLUDE_DIR := $(VRPN_ROOT_DIR)/quat
+ QUAT_LIB_DIR := $(QUAT_INCLUDE_DIR)
+ QUAT_LIB := quat
+@@ -26,8 +27,9 @@ vrpn-libs := $(addprefix _,$(vrpn-wrappe
+ 
+ vrpn-python: $(vrpn-wrapper)
+ 
+-$(vrpn-wrapper): $(MAKEFILE) $(LIB_OBJECTS) 
+-	cp ../pc_linux/.depend pc_linux
++$(vrpn-wrapper): $(MAKEFILE) $(LIB_OBJECTS)
++	mkdir -p $(HW_OS)
++	cp ../$(HW_OS)/.depend $(HW_OS)
+ 	swig -Wall -classic -c++ -python $(patsubst %.so,%.i,$@)
+ 	g++ -ggdb -c $(patsubst %.so,%_wrap.cxx,$@) -I$(PYTHON_INCLUDE_DIR) -I$(VRPN_ROOT_DIR) -I$(QUAT_INCLUDE_DIR)
+ 	cp $(patsubst %.so,%_wrap.o,$@) $(HW_OS)
+@@ -39,4 +41,4 @@ install-vrpn-python: $(vrpn-libs)
+ 
+ clean-vrpn-python:
+ 	rm -f *.cxx *.py *.pyc *.o *.so 
+-	rm -rf $(HW_OS)/*
+\ No newline at end of file
++	rm -rf $(HW_OS)/*
