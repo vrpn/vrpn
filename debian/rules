@@ -52,7 +52,7 @@ DEB_BUILDDIR_libvrpn-dev := $(CURDIR)/vrpn
 DEB_BUILDDIR_vrpn-clients := $(CURDIR)/vrpn/client_src
 DEB_BUILDDIR_vrpn-server := $(CURDIR)/vrpn/server_src
 
-DOXYGEN := echo Skipping Doxygen
+DOXYGEN := mkdir -p $(CURDIR)/vrpn/doxygen/html $(CURDIR)/vrpn/doxygen/man
 
 # Override DEB_MAKE_INVOKE to add DEB_MAKE_VARS, separate build dirs,
 # and remove CFLAGS/CXXFLAGS

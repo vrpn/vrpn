@@ -5,13 +5,12 @@ Priority: optional
 Build-Depends: cdbs (>=0.4.49), debhelper (>= 7),
 	doxygen,
 	graphviz,
-	quilt,
-	sed
+	quilt
 Standards-Version: 3.8.3
 Homepage: http://www.cs.unc.edu/Research/vrpn
 
 Package: vrpn
-Architecture: all
+Architecture: any
 Section: libs
 Depends: ${misc:Depends}, ${shlibs:Depends}, libvrpn-dev, libvrpn-doc,
 Description: Virtual Reality Peripheral Network - runtime metapackage
@@ -32,9 +31,8 @@ Description: Virtual Reality Peripheral Network - runtime metapackage
 
 Package: libvrpn-dev
 Section: libdevel
-Architecture: all
+Architecture: any
 Depends: ${misc:Depends}, libvrpn-quat-dev
-Recommends: libvrpn-doc
 Description: Virtual Reality Peripheral Network - library development files
  The Virtual-Reality Peripheral Network (VRPN) is a set of classes within a
  library and a set of servers that are designed to implement a network-
@@ -46,9 +44,8 @@ Description: Virtual Reality Peripheral Network - library development files
  
 Package: libvrpn-server-dev
 Section: libdevel
-Architecture: all
+Architecture: any
 Depends: ${misc:Depends}, libvrpn-dev, libvrpn-quat-dev
-Recommends: libvrpn-doc
 Description: Virtual Reality Peripheral Network - server development files
  The Virtual-Reality Peripheral Network (VRPN) is a set of classes within a
  library and a set of servers that are designed to implement a network-
@@ -60,7 +57,7 @@ Description: Virtual Reality Peripheral Network - server development files
 
 Package: libvrpn-doc
 Section: doc
-Architecture: any
+Architecture: all
 Depends: ${misc:Depends}
 Description: Virtual Reality Peripheral Network - developer documentation
  The Virtual-Reality Peripheral Network (VRPN) is a set of classes within a
@@ -75,7 +72,7 @@ Description: Virtual Reality Peripheral Network - developer documentation
  development installation, install the "vrpn" package.
 
 Package: libvrpn-quat-dev
-Architecture: all
+Architecture: any
 Section: libdevel
 Depends: ${misc:Depends}, ${shlibs:Depends}
 Description: Virtual Reality Peripheral Network - quaternion library
@@ -91,7 +88,7 @@ Description: Virtual Reality Peripheral Network - quaternion library
  development installation, install the "vrpn" package.
 
 Package: vrpn-clients
-Architecture: all
+Architecture: any
 Section: net
 Depends: ${misc:Depends}, ${shlibs:Depends}
 Description: Virtual Reality Peripheral Network - client applications
@@ -111,7 +108,7 @@ Description: Virtual Reality Peripheral Network - client applications
  development installation, install the "vrpn" package.
 
 Package: vrpn-server
-Architecture: all
+Architecture: any
 Section: libs
 Priority: optional
 Depends: ${misc:Depends}, ${shlibs:Depends}
