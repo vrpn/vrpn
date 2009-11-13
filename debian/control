@@ -36,8 +36,8 @@ Description: Virtual Reality Peripheral Network - runtime metapackage
  that the application is running on, either using separate control programs
  or running all as a single program.
  .
- VRPN is developed primarily at the University of North Carolina: for more info, see
- http://www.cs.unc.edu/Research/vrpn/
+ VRPN is developed primarily at the University of North Carolina: for more
+ information, see their site at http://www.cs.unc.edu/Research/vrpn/
  .
  Install this package to install all VRPN packages.
 
@@ -143,7 +143,7 @@ Description: Virtual Reality Peripheral Network - generic multi-function server
 
 Package: python-vrpn
 Architecture: any
-Section: net
+Section: python
 Depends: ${misc:Depends}, ${shlibs:Depends}, python
 Description: Virtual Reality Peripheral Network - Python bindings
  The Virtual-Reality Peripheral Network (VRPN) is a set of classes within a
