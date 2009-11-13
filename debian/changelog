@@ -1,8 +1,14 @@
-vrpn (07.22-0ubuntu1~rp2~intrepid1) intrepid; urgency=low
+vrpn (07.22-0ubuntu1~rp3~intrepid1) intrepid; urgency=low
 
   * Port to intrepid
 
- -- Ryan Pavlik <abiryan@ryand.net>  Fri, 13 Nov 2009 14:14:54 -0600
+ -- Ryan Pavlik <abiryan@ryand.net>  Fri, 13 Nov 2009 14:36:51 -0600
+
+vrpn (07.22-0ubuntu1~rp3) jaunty; urgency=low
+
+  * Fix FTBFS by adding build dep on python dev files.
+
+ -- Ryan Pavlik <abiryan@ryand.net>  Fri, 13 Nov 2009 14:36:51 -0600
 
 vrpn (07.22-0ubuntu1~rp2) jaunty; urgency=low
 
