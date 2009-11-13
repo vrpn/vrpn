@@ -1,0 +1,19 @@
+Index: vrpn-wiimote/vrpn/python_vrpn/vrpn_Tracker.i
+===================================================================
+--- vrpn-wiimote.orig/vrpn/python_vrpn/vrpn_Tracker.i
++++ vrpn-wiimote/vrpn/python_vrpn/vrpn_Tracker.i
+@@ -26,7 +26,6 @@
+ #include "../vrpn_Tracker_isense.h"
+ %}
+ 
+-%feature("notabstract") vrpn_Tracker;
+ %ignore vrpn_Tracker_Remote::tracker_state;
+ %include "../vrpn_Configure.h"
+ %include "../vrpn_BaseClass.h"
+@@ -67,4 +66,4 @@ PYTHON_CALLBACK_WRAPPER(trackervel,vrpn_
+ PYTHON_CALLBACK_WRAPPER(trackeracc,vrpn_TRACKERACCCB,vrpn_TRACKERACCCHANGEHANDLER)
+ PYTHON_CALLBACK_WRAPPER(tracker2room,vrpn_TRACKERTRACKER2ROOMCB,vrpn_TRACKERTRACKER2ROOMCHANGEHANDLER)
+ PYTHON_CALLBACK_WRAPPER(trackerunit2sensor,vrpn_TRACKERUNIT2SENSORCB,vrpn_TRACKERUNIT2SENSORCHANGEHANDLER)
+-PYTHON_CALLBACK_WRAPPER(trackerworkspace,vrpn_TRACKERWORKSPACECB,vrpn_TRACKERWORKSPACECHANGEHANDLER)
+\ No newline at end of file
++PYTHON_CALLBACK_WRAPPER(trackerworkspace,vrpn_TRACKERWORKSPACECB,vrpn_TRACKERWORKSPACECHANGEHANDLER)
