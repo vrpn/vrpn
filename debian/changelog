@@ -1,3 +1,9 @@
+vrpn (07.22-0ubuntu1~rp2~intrepid1) intrepid; urgency=low
+
+  * Port to intrepid
+
+ -- Ryan Pavlik <abiryan@ryand.net>  Fri, 13 Nov 2009 14:14:54 -0600
+
 vrpn (07.22-0ubuntu1~rp2) jaunty; urgency=low
 
   * Add package for python bindings - untested.
