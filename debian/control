@@ -4,6 +4,7 @@ Section: libs
 Priority: optional
 Build-Depends: cdbs (>=0.4.49), debhelper (>= 7),
 	doxygen,
+	dh-buildinfo,
 	graphviz,
 	quilt,
 	python-all-dev,
