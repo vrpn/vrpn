@@ -1,0 +1,147 @@
+Index: vrpn-wiimote/quat/makefile
+===================================================================
+--- vrpn-wiimote.orig/quat/makefile
++++ vrpn-wiimote/quat/makefile
+@@ -171,7 +171,7 @@ LINT_FLAGS = $(INCLUDE_FLAGS)
+ lib:	$(HW_OS)$(OBJECT_DIR_SUFFIX) libquat.a
+ 
+ $(HW_OS)$(OBJECT_DIR_SUFFIX):
+-	-mkdir $(HW_OS)$(OBJECT_DIR_SUFFIX)
++	-mkdir -p $(HW_OS)$(OBJECT_DIR_SUFFIX)
+ 
+ #############################################################################
+ #
+Index: vrpn-wiimote/vrpn/Makefile
+===================================================================
+--- vrpn-wiimote.orig/vrpn/Makefile
++++ vrpn-wiimote/vrpn/Makefile
+@@ -369,22 +369,22 @@ CFLAGS		 := $(INCLUDE_FLAGS) $(DEBUG_FLA
+ 
+ # Build objects from .c files
+ $(OBJECT_DIR)/%.o: %.c $(LIB_INCLUDES) $(MAKEFILE)
+-	@[ -d $(OBJECT_DIR) ] || mkdir $(OBJECT_DIR)
++	@[ -d $(OBJECT_DIR) ] || mkdir -p $(OBJECT_DIR)
+ 	$(CC) $(CFLAGS) -DVRPN_CLIENT_ONLY -o $@ -c $<
+ 
+ # Build objects from .C files
+ $(OBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) $(MAKEFILE)
+-	@[ -d $(OBJECT_DIR) ] || mkdir $(OBJECT_DIR)
++	@[ -d $(OBJECT_DIR) ] || mkdir -p $(OBJECT_DIR)
+ 	$(CC) $(CFLAGS) -DVRPN_CLIENT_ONLY -o $@ -c $<
+ 
+ # Build objects from .C files
+ $(SOBJECT_DIR)/%.o: %.C $(SLIB_INCLUDES) $(MAKEFILE)
+-	@[ -d $(SOBJECT_DIR) ] || mkdir $(SOBJECT_DIR)
++	@[ -d $(SOBJECT_DIR) ] || mkdir -p $(SOBJECT_DIR)
+ 	$(CC) $(CFLAGS) -o $@ -c $<
+ 
+ # Build objects from .C files
+ $(AOBJECT_DIR)/%.o: %.C $(ALIB_INCLUDES) $(MAKEFILE)
+-	@[ -d $(AOBJECT_DIR) ] || mkdir $(AOBJECT_DIR)
++	@[ -d $(AOBJECT_DIR) ] || mkdir -p $(AOBJECT_DIR)
+ 	$(CC) $(CFLAGS) -o $@ -c $<
+ 
+ #
+@@ -431,13 +431,13 @@ atmellib: $(AOBJECT_DIR)
+ 	$(MAKE) $(OBJECT_DIR)/libvrpnatmel.a
+ 
+ $(OBJECT_DIR):
+-	-mkdir $(OBJECT_DIR)
++	-mkdir -p $(OBJECT_DIR)
+ 
+ $(SOBJECT_DIR):
+-	-mkdir $(SOBJECT_DIR)
++	-mkdir -p $(SOBJECT_DIR)
+ 
+ $(AOBJECT_DIR):
+-	-mkdir $(AOBJECT_DIR)
++	-mkdir -p $(AOBJECT_DIR)
+ 
+ #############################################################################
+ #
+@@ -593,10 +593,10 @@ clobberwin32:
+ 	$(RMF) -r server_src/pc_win32/vrpn_server/Debug/*
+ 
+ install: all
+-	-mkdir $(LIB_DIR)
++	-mkdir -p $(LIB_DIR)
+ 	( cd $(LIB_DIR) ; rm -f libvrpn*.a )
+ 	( cd $(OBJECT_DIR) ; cp *.a $(LIB_DIR) )
+-	-mkdir $(INCLUDE_DIR)
++	-mkdir -p $(INCLUDE_DIR)
+ 	cp vrpn*.h $(INCLUDE_DIR)
+ 
+ uninstall:
+@@ -643,7 +643,7 @@ $(OBJECT_DIR)/.depend:
+ 	@echo -- or add/remove includes from a .h or .C file, then you should
+ 	@echo -- remake the dependency file by typing \"$(MAKE) depend\"
+ 	@echo ----------------------------------------------------------------
+-	-mkdir $(OBJECT_DIR)
++	-mkdir -p $(OBJECT_DIR)
+ ifeq ($(HW_OS),hp700_hpux10)
+ 	@echo -- $(HW_OS): Using g++ since HP CC does not understand -M
+ 	@echo -- if this causes an error, then delete .depend and type
+Index: vrpn-wiimote/vrpn/client_src/Makefile
+===================================================================
+--- vrpn-wiimote.orig/vrpn/client_src/Makefile
++++ vrpn-wiimote/vrpn/client_src/Makefile
+@@ -145,15 +145,15 @@ LIB_DIR := ../$(OBJ_DIR)
+ LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) $(DEBUG_FLAGS)
+ 
+ $(OBJ_DIR)/%.o: %.c
+-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
++	@[ -d $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
+ 	$(CC) $(CFLAGS) -o $@ -c $<
+ 
+ $(OBJ_DIR)/%.o: %.C
+-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
++	@[ -d $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
+ 	$(CC) $(CFLAGS) -o $@ -c $<
+ 
+ $(OBJ_DIR)/%.o: %.cpp
+-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
++	@[ -d $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
+ 	$(CC) $(CFLAGS) -o $@ -c $<
+ 
+ INSTALL_APPS := vrpn_print_devices forcedevice_test_client vrpn_ping \
+@@ -323,7 +323,7 @@ $(OBJ_DIR)/logfiletypes: $(OBJ_DIR)/logf
+ 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/logfiletypes $(OBJ_DIR)/logfiletypes.o
+ 
+ install: all
+-	-mkdir $(BIN_DIR)
++	-mkdir -p $(BIN_DIR)
+ 	( cd $(BIN_DIR) ; rm -f $(INSTALL_APPS) )
+ 	( cd $(OBJ_DIR) ; cp $(INSTALL_APPS) $(BIN_DIR) )
+ 	( cd $(BIN_DIR) ; strip $(INSTALL_APPS) )
+Index: vrpn-wiimote/vrpn/server_src/Makefile
+===================================================================
+--- vrpn-wiimote.orig/vrpn/server_src/Makefile
++++ vrpn-wiimote/vrpn/server_src/Makefile
+@@ -196,15 +196,15 @@ endif
+ 	$(CC) $(CFLAGS) -c $*.cpp
+ 
+ $(OBJ_DIR)/%.o:	%.c
+-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
++	@[ -d $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
+ 	$(CC) $(CFLAGS) -o $@ -c $<
+ 
+ $(OBJ_DIR)/%.o:	%.C
+-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
++	@[ -d $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
+ 	$(CC) $(CFLAGS) -o $@ -c $<
+ 
+ $(OBJ_DIR)/%.o:	%.cpp
+-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
++	@[ -d $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
+ 	$(CC) $(CFLAGS) -o $@ -c $<
+ 
+ INSTALL_APPS := vrpn_server test_vrpn
+@@ -374,7 +374,7 @@ $(OBJ_DIR)/testSharedObject:	$(OBJ_DIR)/
+ 		$(VRPN_LIBS) $(SYSLIBS) -lm
+ 
+ install: all
+-	-mkdir $(BIN_DIR)
++	-mkdir -p $(BIN_DIR)
+ 	( cd $(BIN_DIR) ; rm -f $(INSTALL_APPS) )
+ 	( cd $(OBJ_DIR) ; cp $(INSTALL_APPS) $(BIN_DIR) )
+ 	( cd $(BIN_DIR) ; strip $(INSTALL_APPS) )

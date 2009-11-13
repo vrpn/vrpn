@@ -26,19 +26,18 @@ ifeq ($(DEB_HOST_ARCH),armel)
 HW_OS := pc_linux_arm
 endif
 
-DEB_MAKE_VARS := HW_OS=$(HW_OS)
-DEB_MAKE_BUILD_TARGET := 
-DEB_MAKE_INSTALL_TARGET := install INSTALL_DIR=$(DEB_DESTDIR)/usr
-DEB_MAKE_CLEAN_TARGET := clean clean_g++
-
 ifeq ($(HW_OS),)
 # If other hardware platform, tell it pc_linux
 HW_OS := pc_linux
 # TODO: pass appropriate flags here, in addition
-DEB_MAKE_VARS := HW_OS=$(HW_OS)
 endif
 
 DEB_DESTDIR := $(CURDIR)/debian/tmp
+
+DEB_MAKE_VARS += HW_OS=$(HW_OS)
+DEB_MAKE_BUILD_TARGET := 
+DEB_MAKE_INSTALL_TARGET := install INSTALL_DIR=$(DEB_DESTDIR)/usr
+DEB_MAKE_CLEAN_TARGET := clean clean_g++
 
 DEB_INSTALL_DOCS_ALL := $(CURDIR)/vrpn/README $(CURDIR)/vrpn/README.Compiling $(CURDIR)/vrpn/README.Legal
 DEB_INSTALL_CHANGELOGS_ALL := $(CURDIR)/vrpn/ChangeLog
@@ -60,14 +59,18 @@ DEB_MAKE_INVOKE = cd $(if $(DEB_BUILDDIR_$(cdbs_curpkg)),"$(DEB_BUILDDIR_$(cdbs_
 	LDFLAGS=$(if $(LDFLAGS_$(cdbs_curpkg)),"$(LDFLAGS_$(cdbs_curpkg))","$(LDFLAGS)") \
 	$(DEB_MAKE_VARS)
 
+#common-build-arch common-build-indep:: $(patsubst %,build/%,$(DO_MAKE))
 $(patsubst %,build/%,$(DO_MAKE))::
 	$(DEB_MAKE_INVOKE) $(DEB_MAKE_BUILD_TARGET)
-
-$(patsubst %,install/%,$(DO_MAKE))::
 	$(DEB_MAKE_INVOKE) $(DEB_MAKE_INSTALL_TARGET)
 
-$(patsubst %,clean/%,$(DO_MAKE))::
-	$(DEB_MAKE_INVOKE) $(DEB_MAKE_CLEAN_TARGET)
+#common-install-arch common-install-indep:: $(patsubst %,install/%,$(DO_MAKE))
+#$(patsubst %,install/%,$(DO_MAKE))::
+	
+
+#clean:: $(patsubst %,clean/%,$(DO_MAKE))
+#$(patsubst %,clean/%,$(DO_MAKE))::
+#	$(DEB_MAKE_INVOKE) $(DEB_MAKE_CLEAN_TARGET)
 
 
 build/libvrpn-doc::
@@ -91,9 +94,11 @@ build/libvrpn-doc::
 	# Restore the doxyfile
 	mv -f $(CURDIR)/vrpn/doxygen/Doxyfile.pre-sed $(CURDIR)/vrpn/doxygen/Doxyfile
 
+
 install/vrpn::
 	# Delete CVS directories
 	find $(CURDIR)/debian -name "CVS" | xargs rm -rf
+
 
 clean::
 	# Clean up editing detritus
@@ -105,7 +110,7 @@ clean::
 	done
 	
 	# Remove files left behind by build
-	find $(DEB_CURDIR) -name "pc_linux" | xargs rm -rf
-	-rm -rf $(DEB_CURDIR)/vrpn/client_src/logfilesenders
-	-rm -rf $(DEB_CURDIR)/vrpn/client_src/logfiletypes
+	find $(CURDIR) -name "pc_linux" | xargs rm -rf
+	-rm -rf $(CURDIR)/vrpn/client_src/logfilesenders
+	-rm -rf $(CURDIR)/vrpn/client_src/logfiletypes
 

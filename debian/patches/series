@@ -1,4 +1,5 @@
 fix/add-install-target-to-quat.diff
+fix/ensure-all-mkdir-p.diff
 debian/update-doxyfile.diff
 #debian/unify-build-process.diff
 #debian/makefile-substitution.diff
