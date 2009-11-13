@@ -1,3 +1,9 @@
+vrpn (07.22-0ubuntu1~rp4) jaunty; urgency=low
+
+  * build-dep on dh-buildinfo
+
+ -- Ryan Pavlik <abiryan@ryand.net>  Fri, 13 Nov 2009 15:00:47 -0600
+
 vrpn (07.22-0ubuntu1~rp3) jaunty; urgency=low
 
   * Fix FTBFS by adding build dep on python dev files.
