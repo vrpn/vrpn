@@ -93,7 +93,7 @@ install/python-vrpn::
 		INSTALL_DIR=$(DEB_DESTDIR)/usr
 		
 clean/python-vrpn::
-	$(DEB_MAKE_INVOKE) -f Makefile.python clean-vrpn-python \
+	-$(DEB_MAKE_INVOKE) -f Makefile.python clean-vrpn-python \
 		OBJECT_DIR=$(CURDIR)/vrpn/$(HW_OS) \
 		INSTALL_DIR=$(DEB_DESTDIR)/usr
 
