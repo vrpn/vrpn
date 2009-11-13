@@ -1,12 +1,14 @@
 #!/usr/bin/make -f
 
 build/vrpn-server build/vrpn-clients:: build/libvrpn-dev
+binary/vrpn-server binary/vrpn-clients:: binary/libvrpn-dev
 
 include /usr/share/cdbs/1/rules/debhelper.mk
 include /usr/share/cdbs/1/class/makefile.mk
 include /usr/share/cdbs/1/rules/utils.mk
 include /usr/share/cdbs/1/rules/patchsys-quilt.mk
 
+# Set the version
 VER_MAJ=07
 VER_MIN=22
 
@@ -39,12 +41,10 @@ DEB_DESTDIR := $(CURDIR)/debian/tmp
 DEB_MAKE_VARS += HW_OS=$(HW_OS)
 DEB_MAKE_BUILD_TARGET := 
 DEB_MAKE_INSTALL_TARGET := install INSTALL_DIR=$(DEB_DESTDIR)/usr
-DEB_MAKE_CLEAN_TARGET := clean clean_g++
+DEB_MAKE_CLEAN_TARGET := clean
 
 DEB_INSTALL_DOCS_ALL := $(CURDIR)/vrpn/README $(CURDIR)/vrpn/README.Compiling $(CURDIR)/vrpn/README.Legal
 DEB_INSTALL_CHANGELOGS_ALL := $(CURDIR)/vrpn/ChangeLog
-
-#DEB_DH_SHLIBDEPS_ARGS := -- $(patsubst %,-x%,$(DEB_ALL_PACKAGES))
 
 DO_MAKE := libvrpn-dev vrpn-clients vrpn-server
 DEB_BUILDDIR := $(CURDIR)/quat
@@ -52,7 +52,8 @@ DEB_BUILDDIR_libvrpn-dev := $(CURDIR)/vrpn
 DEB_BUILDDIR_vrpn-clients := $(CURDIR)/vrpn/client_src
 DEB_BUILDDIR_vrpn-server := $(CURDIR)/vrpn/server_src
 
-DOXYGEN := mkdir -p $(CURDIR)/vrpn/doxygen/html $(CURDIR)/vrpn/doxygen/man
+#DOXYGEN := mkdir -p $(CURDIR)/vrpn/doxygen/html $(CURDIR)/vrpn/doxygen/man
+DOXYGEN := doxygen
 
 # Override DEB_MAKE_INVOKE to add DEB_MAKE_VARS, separate build dirs,
 # and remove CFLAGS/CXXFLAGS
@@ -63,20 +64,11 @@ DEB_MAKE_INVOKE = cd $(if $(DEB_BUILDDIR_$(cdbs_curpkg)),"$(DEB_BUILDDIR_$(cdbs_
 	LDFLAGS=$(if $(LDFLAGS_$(cdbs_curpkg)),"$(LDFLAGS_$(cdbs_curpkg))","$(LDFLAGS)") \
 	$(DEB_MAKE_VARS)
 
-#common-build-arch common-build-indep:: $(patsubst %,build/%,$(DO_MAKE))
 $(patsubst %,build/%,$(DO_MAKE))::
 	$(DEB_MAKE_INVOKE) $(DEB_MAKE_BUILD_TARGET)
 	
-
-#common-install-arch common-install-indep:: $(patsubst %,install/%,$(DO_MAKE))
 $(patsubst %,install/%,$(DO_MAKE))::
 	$(DEB_MAKE_INVOKE) $(DEB_MAKE_INSTALL_TARGET)
-	
-
-#clean:: $(patsubst %,clean/%,$(DO_MAKE))
-#$(patsubst %,clean/%,$(DO_MAKE))::
-#	$(DEB_MAKE_INVOKE) $(DEB_MAKE_CLEAN_TARGET)
-
 
 build/libvrpn-doc::
 	# Reconfigure doxyfile
@@ -86,14 +78,7 @@ build/libvrpn-doc::
 	sed -i "s/PROJECT_NUMBER         \=/PROJECT_NUMBER         \= $(VER_MAJ)\.$(VER_MIN)/" \
 		$(CURDIR)/vrpn/doxygen/Doxyfile
 
-	# Specify improved path to source
-	#sed -i "s_INPUT( )*\= \.\._INPUT \= $(CURDIR)/vrpn_" \
-	#	$(CURDIR)/vrpn/doxygen/Doxyfile
-
 	# Build the documentation
-	#mkdir -p $(DEB_DESTDIR)/usr/share/doc/libvrpn1/api
-
-	#cd $(DEB_DESTDIR)/usr/share/doc/libvrpn1/api && \
 	cd $(CURDIR)/vrpn/doxygen/ && $(DOXYGEN)
 
 	# Restore the doxyfile
@@ -116,14 +101,13 @@ reverse-config::
 
 clean::
 	# Clean up editing detritus
-	-rm -f debian/*~ debian/._* .DS_Store
-
-	
+	find $(CURDIR) -name *\~ | xargs rm -rf
+	find $(CURDIR) -name ._* | xargs rm -rf
+	find $(CURDIR) -name .DS_Store | xargs rm -rf
 	
 	# Remove files left behind by build
-	find $(CURDIR) -name "pc_linux" | xargs rm -rf
+	find $(CURDIR) -name "pc_linux*" | xargs rm -rf
 	-rm -rf $(CURDIR)/vrpn/client_src/logfilesenders
 	-rm -rf $(CURDIR)/vrpn/client_src/logfiletypes
 	-rm -rf $(CURDIR)/vrpn/doxygen/html
 	-rm -rf $(CURDIR)/vrpn/doxygen/man
-
