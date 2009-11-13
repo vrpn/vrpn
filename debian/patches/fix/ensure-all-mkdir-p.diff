@@ -16,7 +16,7 @@ Index: vrpn-wiimote/vrpn/client_src/Makefile
 --- vrpn-wiimote.orig/vrpn/client_src/Makefile
 +++ vrpn-wiimote/vrpn/client_src/Makefile
 @@ -146,15 +146,15 @@ LIB_DIR := ../$(OBJ_DIR)
- LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) $(DEBUG_FLAGS) $(LDFLAGS)
+ override LFLAGS := -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) $(DEBUG_FLAGS) $(LDFLAGS)
  
  $(OBJ_DIR)/%.o: %.c
 -	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
@@ -47,7 +47,7 @@ Index: vrpn-wiimote/vrpn/server_src/Makefile
 ===================================================================
 --- vrpn-wiimote.orig/vrpn/server_src/Makefile
 +++ vrpn-wiimote/vrpn/server_src/Makefile
-@@ -199,15 +199,15 @@ endif
+@@ -200,15 +200,15 @@ endif
  	$(CC) $(CXXFLAGS) -c $*.cpp
  
  $(OBJ_DIR)/%.o:	%.c
@@ -66,7 +66,7 @@ Index: vrpn-wiimote/vrpn/server_src/Makefile
  	$(CC) $(CXXFLAGS) -o $@ -c $<
  
  INSTALL_APPS := vrpn_server test_vrpn
-@@ -377,7 +377,7 @@ $(OBJ_DIR)/testSharedObject:	$(OBJ_DIR)/
+@@ -378,7 +378,7 @@ $(OBJ_DIR)/testSharedObject:	$(OBJ_DIR)/
  		$(VRPN_LIBS) $(SYSLIBS) -lm
  
  install: all
@@ -123,3 +123,51 @@ Index: vrpn-wiimote/vrpn/java_vrpn/makefile
  ifeq ($(HW_OS),hp700_hpux10)
  	@echo -- $(HW_OS): Using g++ since HP CC does not understand -M
  	@echo -- if this causes an error, then delete .depend and type
+Index: vrpn-wiimote/vrpn/Makefile
+===================================================================
+--- vrpn-wiimote.orig/vrpn/Makefile
++++ vrpn-wiimote/vrpn/Makefile
+@@ -369,22 +369,22 @@ override CXXFLAGS     := $(INCLUDE_FLAGS
+ 
+ # Build objects from .c files
+ $(OBJECT_DIR)/%.o: %.c $(LIB_INCLUDES) $(MAKEFILE)
+-	@[ -d $(OBJECT_DIR) ] || mkdir $(OBJECT_DIR)
++	@[ -d $(OBJECT_DIR) ] || mkdir -p $(OBJECT_DIR)
+ 	$(CC) $(CFLAGS) -DVRPN_CLIENT_ONLY -o $@ -c $<
+ 
+ # Build objects from .C files
+ $(OBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) $(MAKEFILE)
+-	@[ -d $(OBJECT_DIR) ] || mkdir $(OBJECT_DIR)
++	@[ -d $(OBJECT_DIR) ] || mkdir -p $(OBJECT_DIR)
+ 	$(CC) $(CXXFLAGS) -DVRPN_CLIENT_ONLY -o $@ -c $<
+ 
+ # Build objects from .C files
+ $(SOBJECT_DIR)/%.o: %.C $(SLIB_INCLUDES) $(MAKEFILE)
+-	@[ -d $(SOBJECT_DIR) ] || mkdir $(SOBJECT_DIR)
++	@[ -d $(SOBJECT_DIR) ] || mkdir -p $(SOBJECT_DIR)
+ 	$(CC) $(CXXFLAGS) -o $@ -c $<
+ 
+ # Build objects from .C files
+ $(AOBJECT_DIR)/%.o: %.C $(ALIB_INCLUDES) $(MAKEFILE)
+-	@[ -d $(AOBJECT_DIR) ] || mkdir $(AOBJECT_DIR)
++	@[ -d $(AOBJECT_DIR) ] || mkdir -p $(AOBJECT_DIR)
+ 	$(CC) $(CXXFLAGS) -o $@ -c $<
+ 
+ #
+@@ -431,13 +431,13 @@ atmellib: $(AOBJECT_DIR)
+ 	$(MAKE) $(OBJECT_DIR)/libvrpnatmel.a
+ 
+ $(OBJECT_DIR):
+-	-mkdir $(OBJECT_DIR)
++	-mkdir -p $(OBJECT_DIR)
+ 
+ $(SOBJECT_DIR):
+-	-mkdir $(SOBJECT_DIR)
++	-mkdir -p $(SOBJECT_DIR)
+ 
+ $(AOBJECT_DIR):
+-	-mkdir $(AOBJECT_DIR)
++	-mkdir -p $(AOBJECT_DIR)
+ 
+ #############################################################################
+ #
