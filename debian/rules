@@ -91,7 +91,7 @@ build/libvrpn-doc::
 	#mkdir -p $(DEB_DESTDIR)/usr/share/doc/libvrpn1/api
 
 	#cd $(DEB_DESTDIR)/usr/share/doc/libvrpn1/api && \
-	cd $(CURDIR)/vrpn/doxygen/ && $(CURDIR)/vrpn/doxygen/Doxyfile
+	cd $(CURDIR)/vrpn/doxygen/ && doxygen
 
 	# Restore the doxyfile
 	mv -f $(CURDIR)/vrpn/doxygen/Doxyfile.pre-sed $(CURDIR)/vrpn/doxygen/Doxyfile
