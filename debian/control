@@ -6,7 +6,7 @@ Build-Depends: cdbs (>=0.4.49), debhelper (>= 7),
 	doxygen,
 	graphviz,
 	quilt,
-	python,
+	python-all-dev,
 	swig
 Standards-Version: 3.8.3
 Homepage: http://www.cs.unc.edu/Research/vrpn
