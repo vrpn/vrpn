@@ -1,3 +1,8 @@
+2009-11-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_HumanInterface.C : Patch from Bruno Raffin from imag.fr that
+		makes it compile cleanly on macosx.
+
 2009-10-30  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Makefile : Making this compile under Linux using new 0.4 version of
