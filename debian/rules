@@ -75,10 +75,16 @@ $(patsubst %,install/%,$(DO_MAKE))::
 	$(DEB_MAKE_INVOKE) $(DEB_MAKE_INSTALL_TARGET)
 	
 build/python-vrpn::
-	$(DEB_MAKE_INVOKE) vrpn-python
+	$(DEB_MAKE_INVOKE) -f Makefile.python vrpn-python OBJECT_DIR=$(CURDIR)/vrpn/$(HW_OS)
 	
 install/python-vrpn::
-	$(DEB_MAKE_INVOKE) install-vrpn-python \
+	$(DEB_MAKE_INVOKE) -f Makefile.python install-vrpn-python \
+		OBJECT_DIR=$(CURDIR)/vrpn/$(HW_OS) \
+		INSTALL_DIR=$(DEB_DESTDIR)/usr
+		
+clean/python-vrpn::
+	$(DEB_MAKE_INVOKE) -f Makefile.python clean-vrpn-python \
+		OBJECT_DIR=$(CURDIR)/vrpn/$(HW_OS) \
 		INSTALL_DIR=$(DEB_DESTDIR)/usr
 
 build/libvrpn-doc::
@@ -110,7 +116,7 @@ reverse-config::
 		[ -f $$mkf.pre-sed ] && mv -f $$mkf.pre-sed $$mkf || echo . > /dev/null ; \
 	done
 
-clean::
+clean:: clean/python-vrpn
 	# Clean up editing detritus
 	find $(CURDIR) -name *\~ | xargs rm -rf
 	find $(CURDIR) -name ._* | xargs rm -rf

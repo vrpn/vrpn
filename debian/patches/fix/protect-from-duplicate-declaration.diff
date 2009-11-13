@@ -1,0 +1,76 @@
+Index: vrpn-wiimote/vrpn/vrpn_Connection.h
+===================================================================
+--- vrpn-wiimote.orig/vrpn/vrpn_Connection.h
++++ vrpn-wiimote/vrpn/vrpn_Connection.h
+@@ -24,6 +24,8 @@ class VRPN_API	vrpn_File_Connection;  //
+ 
+ /// This structure is what is passed to a vrpn_Connection message callback.
+ /// It is used by objects, but not normally by user code.
++#ifndef _DEFINED_HANDLERPARAM
++#define _DEFINED_HANDLERPARAM
+ struct vrpn_HANDLERPARAM {
+ 	vrpn_int32	type;
+ 	vrpn_int32	sender;
+@@ -31,6 +33,8 @@ struct vrpn_HANDLERPARAM {
+ 	vrpn_int32	payload_len;
+ 	const char	*buffer;
+ };
++#endif
++
+ /// Type of a message handler for vrpn_Connection messages.
+ typedef	int (VRPN_CALLBACK *vrpn_MESSAGEHANDLER)(void *userdata, vrpn_HANDLERPARAM p);
+ /// Type of handler for filters on logfiles is the same as connection handler
+@@ -133,6 +137,8 @@ struct VRPN_API vrpn_LOGLIST {
+ // because aCC on PixelFlow doesn't handle nested classes correctly.
+ 
+ // Description of a callback entry for a user type.
++#ifndef _DEFINED_MSGCALLBACKENTRY
++#define _DEFINED_MSGCALLBACKENTRY
+ struct vrpnMsgCallbackEntry {
+   vrpn_MESSAGEHANDLER	handler;	// Routine to call
+   void			* userdata;	// Passed along
+@@ -145,6 +151,7 @@ struct vrpnLogFilterEntry {
+   void * userdata;         // passed along
+   vrpnLogFilterEntry * next;
+ };
++#endif
+ 
+ class VRPN_API	vrpn_Connection;
+ class VRPN_API	vrpn_Log;
+Index: vrpn-wiimote/vrpn/vrpn_ConnectionTypes.h
+===================================================================
+--- vrpn-wiimote.orig/vrpn/vrpn_ConnectionTypes.h
++++ vrpn-wiimote/vrpn/vrpn_ConnectionTypes.h
+@@ -6,6 +6,8 @@
+ /// and its helper classes.
+ 
+ 
++#ifndef _DEFINED_HANDLERPARAM
++#define _DEFINED_HANDLERPARAM
+ struct vrpn_HANDLERPARAM {
+         vrpn_int32      type;
+         vrpn_int32      sender;
+@@ -13,6 +15,7 @@ struct vrpn_HANDLERPARAM {
+         vrpn_int32      payload_len;
+         const char      *buffer;
+ };
++#endif
+ typedef int  (*vrpn_MESSAGEHANDLER)(void *userdata, vrpn_HANDLERPARAM p);
+ 
+ 
+@@ -29,12 +32,15 @@ typedef int  (*vrpn_MESSAGEHANDLER)(void
+ typedef char cName [100];
+ 
+ // Description of a callback entry for a user type.
++#ifndef _DEFINED_MSGCALLBACKENTRY
++#define _DEFINED_MSGCALLBACKENTRY
+ struct vrpnMsgCallbackEntry {
+   vrpn_MESSAGEHANDLER   handler;        // Routine to call
+   void                  * userdata;     // Passed along
+   vrpn_int32            sender;         // Only if from sender
+   vrpnMsgCallbackEntry  * next;         // Next handler
+ };
++#endif
+ 
+ 
+ // Types now have their storage dynamically allocated, so we can afford

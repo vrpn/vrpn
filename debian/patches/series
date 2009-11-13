@@ -5,3 +5,4 @@ fix/ensure-all-mkdir-p.diff
 debian/update-doxyfile.diff
 #debian/unify-build-process.diff
 #debian/makefile-substitution.diff
+fix/protect-from-duplicate-declaration.diff
