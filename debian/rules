@@ -1,7 +1,7 @@
 #!/usr/bin/make -f
 
-build/vrpn-server build/vrpn-clients:: build/libvrpn-dev
-binary/vrpn-server binary/vrpn-clients:: binary/libvrpn-dev
+build/vrpn-server build/vrpn-clients build/python-vrpn:: build/libvrpn-dev
+binary/vrpn-server binary/vrpn-clients binary/python-vrpn:: binary/libvrpn-dev
 
 include /usr/share/cdbs/1/rules/debhelper.mk
 include /usr/share/cdbs/1/class/makefile.mk
@@ -74,10 +74,10 @@ $(patsubst %,install/%,$(DO_MAKE))::
 	$(DEB_MAKE_INVOKE) $(DEB_MAKE_INSTALL_TARGET)
 	
 build/python-vrpn::
-	$(DEB_MAKE_INVOKE) -f Makefile.python vrpn-python
+	$(DEB_MAKE_INVOKE) vrpn-python
 	
 install/python-vrpn::
-	$(DEB_MAKE_INVOKE) -f Makefile.python install-vrpn-python \
+	$(DEB_MAKE_INVOKE) install-vrpn-python \
 		INSTALL_DIR=$(DEB_DESTDIR)/usr
 
 build/libvrpn-doc::
