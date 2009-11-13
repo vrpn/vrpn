@@ -46,7 +46,6 @@ DEB_MAKE_INSTALL_TARGET := install INSTALL_DIR=$(DEB_DESTDIR)/usr
 DEB_MAKE_CLEAN_TARGET := clean
 
 DEB_INSTALL_DOCS_ALL := $(CURDIR)/vrpn/README $(CURDIR)/vrpn/README.Compiling $(CURDIR)/vrpn/README.Legal
-DEB_INSTALL_CHANGELOGS_ALL := $(CURDIR)/vrpn/ChangeLog
 
 DO_MAKE := libvrpn-dev vrpn-clients vrpn-server
 DEB_BUILDDIR := $(CURDIR)/quat
