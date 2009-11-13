@@ -1,7 +1,7 @@
 #!/usr/bin/make -f
 
-build/vrpn-server build/vrpn-clients build/python-vrpn:: build/libvrpn-dev
-binary/vrpn-server binary/vrpn-clients binary/python-vrpn:: binary/libvrpn-dev
+build/vrpn-server build/vrpn-clients build/python-vrpn:: build/libvrpn-dev debian/stamp-makefile-build
+binary/vrpn-server binary/vrpn-clients binary/python-vrpn:: binary/libvrpn-dev debian/stamp-makefile-build
 
 include /usr/share/cdbs/1/rules/debhelper.mk
 include /usr/share/cdbs/1/class/makefile.mk
@@ -67,11 +67,22 @@ DEB_MAKE_INVOKE = cd $(if $(DEB_BUILDDIR_$(cdbs_curpkg)),"$(DEB_BUILDDIR_$(cdbs_
 	LDFLAGS=$(if $(LDFLAGS_$(cdbs_curpkg)),"$(LDFLAGS_$(cdbs_curpkg))","$(LDFLAGS)") \
 	$(DEB_MAKE_VARS)
 
+common-configure-arch common-configure-indep:: make-dep
+make-dep::
+	cd $(DEB_BUILDDIR_libvrpn-dev) && \
+	$(DEB_MAKE_ENVVARS) $(MAKE) \
+	CPPFLAGS=$(if $(CPPFLAGS_$(cdbs_curpkg)),"$(CPPFLAGS_$(cdbs_curpkg))","$(CPPFLAGS)") \
+	LDFLAGS=$(if $(LDFLAGS_$(cdbs_curpkg)),"$(LDFLAGS_$(cdbs_curpkg))","$(LDFLAGS)") \
+	$(DEB_MAKE_VARS) depend
+
 $(patsubst %,build/%,$(DO_MAKE))::
 	$(DEB_MAKE_INVOKE) $(DEB_MAKE_BUILD_TARGET)
 	
 $(patsubst %,install/%,$(DO_MAKE))::
 	$(DEB_MAKE_INVOKE) $(DEB_MAKE_INSTALL_TARGET)
+	
+$(patsubst %,clean/%,$(DO_MAKE))::
+	-$(DEB_MAKE_INVOKE) $(DEB_MAKE_CLEAN_TARGET)
 	
 build/python-vrpn::
 	$(DEB_MAKE_INVOKE) -f Makefile.python vrpn-python OBJECT_DIR=$(CURDIR)/vrpn/$(HW_OS)
@@ -115,7 +126,7 @@ reverse-config::
 		[ -f $$mkf.pre-sed ] && mv -f $$mkf.pre-sed $$mkf || echo . > /dev/null ; \
 	done
 
-clean:: clean/python-vrpn
+clean:: clean/python-vrpn $(patsubst %,clean/%,$(DO_MAKE))
 	# Clean up editing detritus
 	find $(CURDIR) -name *\~ | xargs rm -rf
 	find $(CURDIR) -name ._* | xargs rm -rf
