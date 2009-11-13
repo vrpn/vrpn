@@ -31,6 +31,7 @@ ifeq ($(HW_OS),)
 # If other hardware platform, tell it pc_linux
 HW_OS := pc_linux
 # TODO: pass appropriate flags here, in addition
+# DEB_MAKE_VARS += 
 endif
 
 DEB_DESTDIR := $(CURDIR)/debian/tmp
@@ -50,6 +51,8 @@ DEB_BUILDDIR := $(CURDIR)/quat
 DEB_BUILDDIR_libvrpn-dev := $(CURDIR)/vrpn
 DEB_BUILDDIR_vrpn-clients := $(CURDIR)/vrpn/client_src
 DEB_BUILDDIR_vrpn-server := $(CURDIR)/vrpn/server_src
+
+DOXYGEN := echo Skipping Doxygen
 
 # Override DEB_MAKE_INVOKE to add DEB_MAKE_VARS, separate build dirs,
 # and remove CFLAGS/CXXFLAGS
@@ -91,7 +94,7 @@ build/libvrpn-doc::
 	#mkdir -p $(DEB_DESTDIR)/usr/share/doc/libvrpn1/api
 
 	#cd $(DEB_DESTDIR)/usr/share/doc/libvrpn1/api && \
-	cd $(CURDIR)/vrpn/doxygen/ && doxygen
+	cd $(CURDIR)/vrpn/doxygen/ && $(DOXYGEN)
 
 	# Restore the doxyfile
 	mv -f $(CURDIR)/vrpn/doxygen/Doxyfile.pre-sed $(CURDIR)/vrpn/doxygen/Doxyfile
@@ -100,17 +103,27 @@ install/vrpn::
 	# Delete CVS directories
 	find $(CURDIR)/debian -name "CVS" | xargs rm -rf
 
-clean::
-	# Clean up editing detritus
-	-rm -f debian/*~ debian/._* .DS_Store
-
+reverse-config::
+	# Restore the doxyfile
+	[ -f $(CURDIR)/vrpn/doxygen/Doxyfile.pre-sed ] && \
+		mv -f $(CURDIR)/vrpn/doxygen/Doxyfile.pre-sed $(CURDIR)/vrpn/doxygen/Doxyfile || \
+		echo . > /dev/null
+	
 	# Restore files processed by debian/rules
 	for mkf in $(MAKEFILES_TO_PROCESS); do \
 		[ -f $$mkf.pre-sed ] && mv -f $$mkf.pre-sed $$mkf || echo . > /dev/null ; \
 	done
+
+clean::
+	# Clean up editing detritus
+	-rm -f debian/*~ debian/._* .DS_Store
+
+	
 	
 	# Remove files left behind by build
 	find $(CURDIR) -name "pc_linux" | xargs rm -rf
 	-rm -rf $(CURDIR)/vrpn/client_src/logfilesenders
 	-rm -rf $(CURDIR)/vrpn/client_src/logfiletypes
+	-rm -rf $(CURDIR)/vrpn/doxygen/html
+	-rm -rf $(CURDIR)/vrpn/doxygen/man
 

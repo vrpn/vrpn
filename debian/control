@@ -11,7 +11,7 @@ Standards-Version: 3.8.3
 Homepage: http://www.cs.unc.edu/Research/vrpn
 
 Package: vrpn
-Architecture: any
+Architecture: all
 Section: libs
 Depends: ${misc:Depends}, ${shlibs:Depends}, libvrpn-dev, libvrpn-doc,
 Description: Virtual Reality Peripheral Network - runtime metapackage
@@ -111,7 +111,7 @@ Description: Virtual Reality Peripheral Network - client applications
  development installation, install the "vrpn" package.
 
 Package: vrpn-server
-Architecture: any
+Architecture: all
 Section: libs
 Priority: optional
 Depends: ${misc:Depends}, ${shlibs:Depends}
