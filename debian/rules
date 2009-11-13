@@ -4,6 +4,7 @@ build/vrpn-server build/vrpn-clients:: build/libvrpn-dev
 
 include /usr/share/cdbs/1/rules/debhelper.mk
 include /usr/share/cdbs/1/class/makefile.mk
+include /usr/share/cdbs/1/rules/utils.mk
 include /usr/share/cdbs/1/rules/patchsys-quilt.mk
 
 VER_MAJ=07
@@ -62,10 +63,11 @@ DEB_MAKE_INVOKE = cd $(if $(DEB_BUILDDIR_$(cdbs_curpkg)),"$(DEB_BUILDDIR_$(cdbs_
 #common-build-arch common-build-indep:: $(patsubst %,build/%,$(DO_MAKE))
 $(patsubst %,build/%,$(DO_MAKE))::
 	$(DEB_MAKE_INVOKE) $(DEB_MAKE_BUILD_TARGET)
-	$(DEB_MAKE_INVOKE) $(DEB_MAKE_INSTALL_TARGET)
+	
 
 #common-install-arch common-install-indep:: $(patsubst %,install/%,$(DO_MAKE))
-#$(patsubst %,install/%,$(DO_MAKE))::
+$(patsubst %,install/%,$(DO_MAKE))::
+	$(DEB_MAKE_INVOKE) $(DEB_MAKE_INSTALL_TARGET)
 	
 
 #clean:: $(patsubst %,clean/%,$(DO_MAKE))
@@ -82,23 +84,21 @@ build/libvrpn-doc::
 		$(CURDIR)/vrpn/doxygen/Doxyfile
 
 	# Specify improved path to source
-	sed -i "s_INPUT( )*\= \.\._INPUT \= $(CURDIR)/vrpn_" \
-		$(CURDIR)/vrpn/doxygen/Doxyfile
+	#sed -i "s_INPUT( )*\= \.\._INPUT \= $(CURDIR)/vrpn_" \
+	#	$(CURDIR)/vrpn/doxygen/Doxyfile
 
 	# Build the documentation
-	mkdir -p $(DEB_DESTDIR)/usr/share/doc/libvrpn1/api
+	#mkdir -p $(DEB_DESTDIR)/usr/share/doc/libvrpn1/api
 
-	cd $(DEB_DESTDIR)/usr/share/doc/libvrpn1/api && \
-		doxygen $(CURDIR)/vrpn/doxygen/Doxyfile
+	#cd $(DEB_DESTDIR)/usr/share/doc/libvrpn1/api && \
+	cd $(CURDIR)/vrpn/doxygen/ && $(CURDIR)/vrpn/doxygen/Doxyfile
 
 	# Restore the doxyfile
 	mv -f $(CURDIR)/vrpn/doxygen/Doxyfile.pre-sed $(CURDIR)/vrpn/doxygen/Doxyfile
 
-
 install/vrpn::
 	# Delete CVS directories
 	find $(CURDIR)/debian -name "CVS" | xargs rm -rf
-
 
 clean::
 	# Clean up editing detritus
