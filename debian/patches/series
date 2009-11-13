@@ -1,6 +1,7 @@
 fix/fix-python-makefile.diff
 fix/add-install-target-to-quat.diff
 fix/ensure-all-mkdir-p.diff
+#fix/make-depend-error.diff
 debian/update-doxyfile.diff
 #debian/unify-build-process.diff
 #debian/makefile-substitution.diff

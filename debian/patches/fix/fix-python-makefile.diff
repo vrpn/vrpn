@@ -30,10 +30,3 @@ Index: vrpn-wiimote/vrpn/python_vrpn/Makefile.python
  	swig -Wall -classic -c++ -python $(patsubst %.so,%.i,$@)
  	g++ -ggdb -c $(patsubst %.so,%_wrap.cxx,$@) -I$(PYTHON_INCLUDE_DIR) -I$(VRPN_ROOT_DIR) -I$(QUAT_INCLUDE_DIR)
  	cp $(patsubst %.so,%_wrap.o,$@) $(HW_OS)
-@@ -39,4 +41,4 @@ install-vrpn-python: $(vrpn-libs)
- 
- clean-vrpn-python:
- 	rm -f *.cxx *.py *.pyc *.o *.so 
--	rm -rf $(HW_OS)/*
-\ No newline at end of file
-+	rm -rf $(HW_OS)/*
