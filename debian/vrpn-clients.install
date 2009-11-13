@@ -1,4 +1,4 @@
-usr/bin/add_vprn_cookie
+usr/bin/add_vrpn_cookie
 usr/bin/forcedevice_test_client
-usr/bin/vprn_ping
-usr/bin/vprn_print_devices
+usr/bin/vrpn_ping
+usr/bin/vrpn_print_devices

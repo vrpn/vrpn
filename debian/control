@@ -102,10 +102,10 @@ Description: Virtual Reality Peripheral Network - client applications
  .
  The following applications (from the upstream "client_src") are included:
  .
-   - add_vprn_cookie
+   - add_vrpn_cookie
    - forcedevice_test_client
-   - vprn_ping
-   - vprn_print_devices
+   - vrpn_ping
+   - vrpn_print_devices
  .
  This package is a part of the VRPN suite.  For a full VRPN runtime and
  development installation, install the "vrpn" package.
@@ -128,7 +128,7 @@ Description: Virtual Reality Peripheral Network - generic multi-function server
  The package provides the following applications (upstream's "server_src"):
  .
    - vrpn_server
-   - test_vprn
+   - test_vrpn
  .
  This package is a part of the VRPN suite.  For a full VRPN runtime and
  development installation, install the "vrpn" package.

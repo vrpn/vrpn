@@ -1,3 +1,3 @@
 usr/bin/vrpn_server
-usr/bin/test_vprn
+usr/bin/test_vrpn
 #vrpn/server_src/vrpn.rc etc/init.d/vrpn.rc
