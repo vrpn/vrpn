@@ -99,7 +99,7 @@ build/libvrpn-doc::
 	# Restore the doxyfile
 	mv -f $(CURDIR)/vrpn/doxygen/Doxyfile.pre-sed $(CURDIR)/vrpn/doxygen/Doxyfile
 
-install/vrpn::
+binary/vrpn::
 	# Delete CVS directories
 	find $(CURDIR)/debian -name "CVS" | xargs rm -rf
 
