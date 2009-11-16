@@ -12,20 +12,6 @@
 #include <sys/time.h>
 #endif
 
-
-
-// This parameter is passed to the constructor for the AnalogFly; it describes
-// the wiimote device (vrpn_Wiimote) to get IR from.
-
-class VRPN_API vrpn_TWH_wiimote {
-	public:
-
-	vrpn_TWH_wiimote (void)
-	{ name = NULL; };
-
-	char * name;	//< Name of the Analog device corresponding to this Wiimote
-};
-
 class VRPN_API vrpn_Tracker_WiimoteHead;	// Forward reference
 
 class VRPN_API vrpn_TWH_blob {
