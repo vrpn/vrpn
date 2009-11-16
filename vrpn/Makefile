@@ -600,7 +600,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_Flock.h \
 	vrpn_Flock_Parallel.h \
 	vrpn_ForceDeviceServer.h \
-	vrpn_GlobalHapticsOrb.C \
+	vrpn_GlobalHapticsOrb.h \
 	vrpn_HumanInterface.h \
 	vrpn_Imager_Stream_Buffer.h \
 	vrpn_ImmersionBox.h \
@@ -613,7 +613,6 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_NationalInstruments.h \
 	vrpn_nikon_controls.h \
 	vrpn_Poser_Analog.h \
-	vrpn_Poser.h \
 	vrpn_Poser_Tek4662.h \
 	vrpn_raw_sgibox.h \
 	vrpn_sgibox.h \
