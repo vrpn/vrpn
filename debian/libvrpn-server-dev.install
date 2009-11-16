@@ -16,7 +16,7 @@ usr/include/vrpn_Event_Mouse.h
 usr/include/vrpn_Flock.h
 usr/include/vrpn_Flock_Parallel.h
 usr/include/vrpn_ForceDeviceServer.h
-usr/include/vrpn_GlobalHapticsOrb.C
+usr/include/vrpn_GlobalHapticsOrb.h
 usr/include/vrpn_HumanInterface.h
 usr/include/vrpn_Imager_Stream_Buffer.h
 usr/include/vrpn_ImmersionBox.h
