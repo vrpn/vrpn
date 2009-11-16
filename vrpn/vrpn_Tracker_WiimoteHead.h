@@ -1,5 +1,8 @@
 #ifndef __TRACKER_WIIMOTEHEAD_H
 #define __TRACKER_WIIMOTEHEAD_H
+#include "vrpn_Tracker.h"
+#include "vrpn_Analog.h"
+#include <quat.h>
 
 #include <time.h>
 #include <math.h>
@@ -9,10 +12,7 @@
 #include <sys/time.h>
 #endif
 
-#include "vrpn_Tracker.h"
-#include "vrpn_Analog.h"
 
-#include <quat.h>
 
 // This parameter is passed to the constructor for the AnalogFly; it describes
 // the wiimote device (vrpn_Wiimote) to get IR from.
@@ -38,7 +38,7 @@ class VRPN_API vrpn_TWH_blob {
 	int first_channel;	//< Which channel to start at from the Analog device
 
 	vrpn_Analog_Remote * ana;
-	vrpn_Tracker_WiimoteHead* wh;
+	vrpn_Tracker_WiimoteHead * wh;
 
 	double x;
 	double y;
@@ -80,6 +80,7 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 	struct timeval  d_prevtime;     //< Time of the previous report
 	vrpn_bool       d_absolute;     //< Report absolute (vs. differential)?
 	vrpn_bool       d_reportChanges;
+	int				d_blobDistance;
 
 	vrpn_TWH_blob   d_blobs[4];
 

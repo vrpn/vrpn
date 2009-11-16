@@ -1,5 +1,6 @@
 #include <string.h>
 #include <math.h>
+#include <vector>
 #include "vrpn_Tracker_WiimoteHead.h"
 
 #undef	VERBOSE
@@ -18,7 +19,8 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connec
 	vrpn_Tracker (name, trackercon),
 	d_update_interval (update_rate ? (1 / update_rate) : 1.0),
 	d_absolute (absolute),
-	d_reportChanges (reportChanges)
+	d_reportChanges (reportChanges),
+	d_blobDistance (.15)
 {
 	int i;
 	for (i = 0; i < 4; i++) {
@@ -250,7 +252,7 @@ void vrpn_Tracker_WiimoteHead::mainloop()
 void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interval)
 {
 	double tx, ty, tz, rx, ry, rz; // Translation (m/s) and rotation (rad/sec)
-	q_matrix_type diffM;    // Difference (delta) matrix
+	q_matrix_type newM;    // Difference (delta) matrix
 
 	// For absolute trackers, the interval is treated as "1", so that the
 	// translations and rotations are unscaled;
@@ -258,7 +260,37 @@ void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interva
 
 
 	// TODO RP Implement the math here!
-	
+	tx = ty = tz = 0;
+ 	std::vector<double> x, y, size;
+ 	int points = 0, i;
+ 	for (i = 0; i < 4; i++) {
+ 		if (d_blobs[i].x != -1 && d_blobs[i].y != -1 && d_blobs[i].size != -1) {
+ 			x[points] = d_blobs[i].x;
+ 			y[points] = d_blobs[i].y;
+ 			size[points] = d_blobs[i].size;
+ 			points++;
+ 		}
+ 	}
+ 
+ 	if (points == 2) {
+ 		// TODO right now only handling the 2-LED glasses at 15cm distance.
+ 		double dx, dy;
+ 		dx = x[0] - x[1];
+ 		dy = y[0] - y[1];
+ 		double dist = sqrt(dx * dx + dy * dy);
+ 		// ~33 degree horizontal FOV - source http://wiibrew.org/wiki/Wiimote#IR_Camera
+ 		double radPerPx = (33 / 180 * M_PI) / 1024;
+ 		double angle = radPerPx * dist / 2;
+ 		double headDist = (d_blobDistance / 2) / tan(angle);
+ 
+ 		float avgX = (x[0] + x[1]) / 2;
+ 		float avgY = (y[0] + y[1]) / 2;
+ 
+ 		tz = headDist;
+ 			
+ 
+ 	}
+ 		
 	// compute the translation and rotation
 	/*
 	tx = d_x.value * time_interval;
@@ -270,17 +302,18 @@ void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interva
 	rz = d_sz.value * time_interval * (2 * M_PI);
 	*/
 	// Build a rotation matrix, then add in the translation
-	q_euler_to_col_matrix(diffM, rz, ry, rx);
-	diffM[3][0] = tx; diffM[3][1] = ty; diffM[3][2] = tz;
+	rx = ry = rz = 0;
+	q_euler_to_col_matrix(newM, rz, ry, rx);
+	newM[3][0] = tx; newM[3][1] = ty; newM[3][2] = tz;
 
 	// Apply the matrix.
 	if (d_absolute) {
 		// The difference matrix IS the current matrix.
-		q_matrix_copy(d_currentMatrix, diffM);
+		q_matrix_copy(d_currentMatrix, newM);
 	} else {
 		// Multiply the current matrix by the difference matrix to update
 		// it to the current time.
-		q_matrix_mult(d_currentMatrix, diffM, d_currentMatrix);
+		q_matrix_mult(d_currentMatrix, newM, d_currentMatrix);
 	}
 
 	// Finally, convert the matrix into a pos/quat
