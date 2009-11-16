@@ -1,7 +1,7 @@
-Index: vrpn-wiimote/quat/makefile
+Index: vrpn-07.22/quat/makefile
 ===================================================================
---- vrpn-wiimote.orig/quat/makefile
-+++ vrpn-wiimote/quat/makefile
+--- vrpn-07.22.orig/quat/makefile
++++ vrpn-07.22/quat/makefile
 @@ -173,7 +173,7 @@ LINT_FLAGS = $(INCLUDE_FLAGS)
  lib:	$(HW_OS)$(OBJECT_DIR_SUFFIX) libquat.a
  
@@ -11,10 +11,10 @@ Index: vrpn-wiimote/quat/makefile
  
  #############################################################################
  #
-Index: vrpn-wiimote/vrpn/client_src/Makefile
+Index: vrpn-07.22/vrpn/client_src/Makefile
 ===================================================================
---- vrpn-wiimote.orig/vrpn/client_src/Makefile
-+++ vrpn-wiimote/vrpn/client_src/Makefile
+--- vrpn-07.22.orig/vrpn/client_src/Makefile
++++ vrpn-07.22/vrpn/client_src/Makefile
 @@ -146,15 +146,15 @@ LIB_DIR := ../$(OBJ_DIR)
  override LFLAGS := -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) $(DEBUG_FLAGS) $(LDFLAGS)
  
@@ -43,10 +43,10 @@ Index: vrpn-wiimote/vrpn/client_src/Makefile
  	( cd $(BIN_DIR) ; rm -f $(INSTALL_APPS) )
  	( cd $(OBJ_DIR) ; cp $(INSTALL_APPS) $(BIN_DIR) )
  	( cd $(BIN_DIR) ; strip $(INSTALL_APPS) )
-Index: vrpn-wiimote/vrpn/server_src/Makefile
+Index: vrpn-07.22/vrpn/server_src/Makefile
 ===================================================================
---- vrpn-wiimote.orig/vrpn/server_src/Makefile
-+++ vrpn-wiimote/vrpn/server_src/Makefile
+--- vrpn-07.22.orig/vrpn/server_src/Makefile
++++ vrpn-07.22/vrpn/server_src/Makefile
 @@ -200,15 +200,15 @@ endif
  	$(CC) $(CXXFLAGS) -c $*.cpp
  
@@ -75,10 +75,10 @@ Index: vrpn-wiimote/vrpn/server_src/Makefile
  	( cd $(BIN_DIR) ; rm -f $(INSTALL_APPS) )
  	( cd $(OBJ_DIR) ; cp $(INSTALL_APPS) $(BIN_DIR) )
  	( cd $(BIN_DIR) ; strip $(INSTALL_APPS) )
-Index: vrpn-wiimote/vrpn/java_vrpn/makefile
+Index: vrpn-07.22/vrpn/java_vrpn/makefile
 ===================================================================
---- vrpn-wiimote.orig/vrpn/java_vrpn/makefile
-+++ vrpn-wiimote/vrpn/java_vrpn/makefile
+--- vrpn-07.22.orig/vrpn/java_vrpn/makefile
++++ vrpn-07.22/vrpn/java_vrpn/makefile
 @@ -282,18 +282,18 @@ CFLAGS		 := $(INCLUDE_FLAGS) -g
  # Build objects from .cpp files
  #$(OBJECT_DIR)/%.o: %.cpp $(LIB_INCLUDES) $(MAKEFILE)
@@ -123,11 +123,11 @@ Index: vrpn-wiimote/vrpn/java_vrpn/makefile
  ifeq ($(HW_OS),hp700_hpux10)
  	@echo -- $(HW_OS): Using g++ since HP CC does not understand -M
  	@echo -- if this causes an error, then delete .depend and type
-Index: vrpn-wiimote/vrpn/Makefile
+Index: vrpn-07.22/vrpn/Makefile
 ===================================================================
---- vrpn-wiimote.orig/vrpn/Makefile
-+++ vrpn-wiimote/vrpn/Makefile
-@@ -369,22 +369,22 @@ override CXXFLAGS     := $(INCLUDE_FLAGS
+--- vrpn-07.22.orig/vrpn/Makefile
++++ vrpn-07.22/vrpn/Makefile
+@@ -384,22 +384,22 @@ override CXXFLAGS     := $(INCLUDE_FLAGS
  
  # Build objects from .c files
  $(OBJECT_DIR)/%.o: %.c $(LIB_INCLUDES) $(MAKEFILE)
@@ -154,7 +154,7 @@ Index: vrpn-wiimote/vrpn/Makefile
  	$(CC) $(CXXFLAGS) -o $@ -c $<
  
  #
-@@ -431,13 +431,13 @@ atmellib: $(AOBJECT_DIR)
+@@ -446,13 +446,13 @@ atmellib: $(AOBJECT_DIR)
  	$(MAKE) $(OBJECT_DIR)/libvrpnatmel.a
  
  $(OBJECT_DIR):

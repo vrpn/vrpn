@@ -1,7 +1,7 @@
-Index: vrpn-wiimote/vrpn/python_vrpn/Makefile.python
+Index: vrpn-07.22/vrpn/python_vrpn/Makefile.python
 ===================================================================
---- vrpn-wiimote.orig/vrpn/python_vrpn/Makefile.python
-+++ vrpn-wiimote/vrpn/python_vrpn/Makefile.python
+--- vrpn-07.22.orig/vrpn/python_vrpn/Makefile.python
++++ vrpn-07.22/vrpn/python_vrpn/Makefile.python
 @@ -10,11 +10,12 @@
  
  include ../Makefile

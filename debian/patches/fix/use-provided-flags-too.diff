@@ -1,7 +1,7 @@
-Index: vrpn-wiimote/quat/makefile
+Index: vrpn-07.22/quat/makefile
 ===================================================================
---- vrpn-wiimote.orig/quat/makefile
-+++ vrpn-wiimote/quat/makefile
+--- vrpn-07.22.orig/quat/makefile
++++ vrpn-07.22/quat/makefile
 @@ -134,8 +134,7 @@ ifeq ($(HW_OS), hp_flow_aCC)
    CC = /opt/aCC/bin/aCC
  endif
@@ -24,11 +24,11 @@ Index: vrpn-wiimote/quat/makefile
  LINT_FLAGS = $(INCLUDE_FLAGS)
  
  #############################################################################
-Index: vrpn-wiimote/vrpn/Makefile
+Index: vrpn-07.22/vrpn/Makefile
 ===================================================================
---- vrpn-wiimote.orig/vrpn/Makefile
-+++ vrpn-wiimote/vrpn/Makefile
-@@ -297,7 +297,7 @@ endif
+--- vrpn-07.22.orig/vrpn/Makefile
++++ vrpn-07.22/vrpn/Makefile
+@@ -312,7 +312,7 @@ endif
  #LOAD_FLAGS := -L./$(HW_OS)$(OBJECT_DIR_SUFFIX) -L/usr/local/lib \
  #		-L/usr/local/contrib/unmod/lib -L/usr/local/contrib/mod/lib -g
  LOAD_FLAGS := -L./$(HW_OS)$(OBJECT_DIR_SUFFIX) -L/usr/local/lib \
@@ -37,7 +37,7 @@ Index: vrpn-wiimote/vrpn/Makefile
  
  ifeq ($(HW_OS),sgi_irix)
  	LOAD_FLAGS := $(LOAD_FLAGS) -old_ld
-@@ -353,8 +353,8 @@ LIBS := -lquat -lsdi $(TCL_LIBS) -lXext 
+@@ -368,8 +368,8 @@ LIBS := -lquat -lsdi $(TCL_LIBS) -lXext 
  #
  
  #CFLAGS		 := $(INCLUDE_FLAGS) -g
@@ -48,7 +48,7 @@ Index: vrpn-wiimote/vrpn/Makefile
  
  #############################################################################
  #
-@@ -365,7 +365,7 @@ CFLAGS		 := $(INCLUDE_FLAGS) $(DEBUG_FLA
+@@ -380,7 +380,7 @@ CFLAGS		 := $(INCLUDE_FLAGS) $(DEBUG_FLA
  .c.o:
  	$(CC) -c $(CFLAGS) $<
  .C.o:
@@ -57,7 +57,7 @@ Index: vrpn-wiimote/vrpn/Makefile
  
  # Build objects from .c files
  $(OBJECT_DIR)/%.o: %.c $(LIB_INCLUDES) $(MAKEFILE)
-@@ -375,17 +375,17 @@ $(OBJECT_DIR)/%.o: %.c $(LIB_INCLUDES) $
+@@ -390,17 +390,17 @@ $(OBJECT_DIR)/%.o: %.c $(LIB_INCLUDES) $
  # Build objects from .C files
  $(OBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) $(MAKEFILE)
  	@[ -d $(OBJECT_DIR) ] || mkdir $(OBJECT_DIR)
@@ -78,7 +78,7 @@ Index: vrpn-wiimote/vrpn/Makefile
  
  #
  #
-@@ -593,10 +593,10 @@ clobberwin32:
+@@ -715,10 +715,10 @@ clobberwin32:
  	$(RMF) -r server_src/pc_win32/vrpn_server/Debug/*
  
  install: all
@@ -91,7 +91,7 @@ Index: vrpn-wiimote/vrpn/Makefile
  	cp vrpn*.h $(INCLUDE_DIR)
  
  uninstall:
-@@ -643,13 +643,13 @@ $(OBJECT_DIR)/.depend:
+@@ -765,13 +765,13 @@ $(OBJECT_DIR)/.depend:
  	@echo -- or add/remove includes from a .h or .C file, then you should
  	@echo -- remake the dependency file by typing \"$(MAKE) depend\"
  	@echo ----------------------------------------------------------------
@@ -107,7 +107,7 @@ Index: vrpn-wiimote/vrpn/Makefile
  	    | sed '\''s/\(.*\.o[ ]*:[ ]*\)/$(OBJECT_DIR)\/\1/g'\'' > $(OBJECT_DIR)/.depend'
  else
    ifeq ($(HW_OS),hp_flow_aCC)
-@@ -657,7 +657,7 @@ else
+@@ -779,7 +779,7 @@ else
  	@echo -- if this causes an error, then delete .depend and type
  	@echo -- \"touch .depend\" to create an empty file
  	@echo ----------------------------------------------------------------
@@ -116,10 +116,10 @@ Index: vrpn-wiimote/vrpn/Makefile
  	    | sed '\''s/\(.*\.o[ ]*:[ ]*\)/$(OBJECT_DIR)\/\1/g'\'' > $(OBJECT_DIR)/.depend'
    else
      ifeq ($(HW_OS),powerpc_aix)
-Index: vrpn-wiimote/vrpn/client_src/Makefile
+Index: vrpn-07.22/vrpn/client_src/Makefile
 ===================================================================
---- vrpn-wiimote.orig/vrpn/client_src/Makefile
-+++ vrpn-wiimote/vrpn/client_src/Makefile
+--- vrpn-07.22.orig/vrpn/client_src/Makefile
++++ vrpn-07.22/vrpn/client_src/Makefile
 @@ -125,7 +125,8 @@ ifeq ($(HW_OS),pc_cygwin)
  endif
  
@@ -164,10 +164,10 @@ Index: vrpn-wiimote/vrpn/client_src/Makefile
  
  INSTALL_APPS := vrpn_print_devices forcedevice_test_client vrpn_ping \
  	add_vrpn_cookie
-Index: vrpn-wiimote/vrpn/server_src/Makefile
+Index: vrpn-07.22/vrpn/server_src/Makefile
 ===================================================================
---- vrpn-wiimote.orig/vrpn/server_src/Makefile
-+++ vrpn-wiimote/vrpn/server_src/Makefile
+--- vrpn-07.22.orig/vrpn/server_src/Makefile
++++ vrpn-07.22/vrpn/server_src/Makefile
 @@ -149,8 +149,9 @@ OBJ_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)
  LIB_DIR := ../$(OBJ_DIR)
  

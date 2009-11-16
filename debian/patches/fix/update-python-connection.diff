@@ -1,7 +1,7 @@
-Index: vrpn-wiimote/vrpn/python_vrpn/vrpn_Tracker.i
+Index: vrpn-07.22/vrpn/python_vrpn/vrpn_Tracker.i
 ===================================================================
---- vrpn-wiimote.orig/vrpn/python_vrpn/vrpn_Tracker.i
-+++ vrpn-wiimote/vrpn/python_vrpn/vrpn_Tracker.i
+--- vrpn-07.22.orig/vrpn/python_vrpn/vrpn_Tracker.i
++++ vrpn-07.22/vrpn/python_vrpn/vrpn_Tracker.i
 @@ -26,7 +26,6 @@
  #include "../vrpn_Tracker_isense.h"
  %}

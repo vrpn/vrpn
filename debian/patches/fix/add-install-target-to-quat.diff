@@ -1,7 +1,7 @@
-Index: vrpn-wiimote/quat/makefile
+Index: vrpn-07.22/quat/makefile
 ===================================================================
---- vrpn-wiimote.orig/quat/makefile
-+++ vrpn-wiimote/quat/makefile
+--- vrpn-07.22.orig/quat/makefile
++++ vrpn-07.22/quat/makefile
 @@ -28,6 +28,10 @@
  #HW_OS := universal_macosx
  ##########################

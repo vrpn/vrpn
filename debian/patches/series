@@ -1,3 +1,4 @@
+fix/cleanup-makefile.diff
 fix/use-provided-flags-too.diff
 fix/update-python-connection.diff
 fix/fix-python-makefile.diff
