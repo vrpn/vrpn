@@ -138,3 +138,14 @@ clean:: clean/python-vrpn $(patsubst %,clean/%,$(DO_MAKE))
 	-rm -rf $(CURDIR)/vrpn/client_src/logfiletypes
 	-rm -rf $(CURDIR)/vrpn/doxygen/html
 	-rm -rf $(CURDIR)/vrpn/doxygen/man
+
+
+PACKAGE := $(shell dpkg-parsechangelog | sed -n 's/^Source: //p')
+get-orig-source:
+	rm -rf $@
+	mkdir -p $@/$(PACKAGE)-$(SOURCE_VER)
+	cd $@ && wget ftp://ftp.cs.unc.edu/pub/packages/GRIP/vrpn/vrpn_$(VER_MAJ)_$(VER_MIN).zip
+	unzip -o $@/vrpn_$(VER_MAJ)_$(VER_MIN).zip -d $@/$(PACKAGE)-$(SOURCE_VER)
+	cd $@ && tar -cf - $(PACKAGE)-$(SOURCE_VER) | gzip -9f - > ../../$(PACKAGE)_$(SOURCE_VER).orig.tar.gz
+	rm -r $@
+
