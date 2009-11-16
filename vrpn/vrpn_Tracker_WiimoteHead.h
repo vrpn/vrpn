@@ -59,7 +59,7 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 	public:
 	vrpn_Tracker_WiimoteHead (const char* name,
 				  vrpn_Connection * trackercon,
-				  vrpn_TWH_wiimote * wiimote,
+				  char * wiimote,
 				  float update_rate,
 				  vrpn_bool absolute = vrpn_TRUE,
 				  vrpn_bool reportChanges = VRPN_FALSE);

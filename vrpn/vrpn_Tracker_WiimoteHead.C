@@ -15,7 +15,7 @@ static	double	duration(struct timeval t1, struct timeval t2)
 	       (t1.tv_sec - t2.tv_sec);
 }
 
-vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connection* trackercon, vrpn_TWH_wiimote* wiimote, float update_rate,	vrpn_bool absolute, vrpn_bool reportChanges) :
+vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connection* trackercon, char* wiimote, float update_rate,	vrpn_bool absolute, vrpn_bool reportChanges) :
 	vrpn_Tracker (name, trackercon),
 	d_update_interval (update_rate ? (1 / update_rate) : 1.0),
 	d_absolute (absolute),
@@ -24,7 +24,7 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connec
 {
 	int i;
 	for (i = 0; i < 4; i++) {
-		d_blobs[i].name = wiimote->name;
+		d_blobs[i].name = wiimote;
 		d_blobs[i].first_channel = i * 3 + 4;
 		d_blobs[i].ana = NULL;
 		d_blobs[i].x = d_blobs[i].y = d_blobs[i].size = -1;

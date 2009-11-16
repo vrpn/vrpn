@@ -239,7 +239,7 @@
 // file and library.
 // Note that the wiiuse.dll needs to be in the path when running a server
 // that uses WiiUse in Windows.
-//#define VRPN_USE_WIIUSE
+#define VRPN_USE_WIIUSE
 
 //------------------------------------------------------------------//
 // SYSTEM CONFIGURATION SECTION                                     //
@@ -251,8 +251,8 @@
 
 #define VRPN_PHASESPACE_LIB_PATH "../../phasespace/"
 
-#define VRPN_WIIUSE_H "F:/taylorr/STM/src/wiiuse_v0.12/src/wiiuse.h"
-#define VRPN_WIIUSE_LIB_PATH "F:/taylorr/STM/src/wiiuse_v0.12/src"
+#define VRPN_WIIUSE_H "/usr/include/wiiuse.h"
+#define VRPN_WIIUSE_LIB_PATH "/usr/lib"
 
 #define VRPN_HDAPI_PATH         VRPN_SYSTEMDRIVE "/Program Files/SensAble/3DTouch/lib/"
 #define VRPN_HDAPI_UTIL_PATH    VRPN_SYSTEMDRIVE "/Program Files/SensAble/3DTouch/utilities/lib/"
