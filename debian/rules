@@ -1,7 +1,7 @@
 #!/usr/bin/make -f
 
-build/vrpn-server build/vrpn-clients build/python-vrpn:: build/libvrpn-dev debian/stamp-makefile-build
-binary/vrpn-server binary/vrpn-clients binary/python-vrpn:: binary/libvrpn-dev debian/stamp-makefile-build
+build/vrpn-server build/vrpn-clients build/python-vrpn build/libvrpn-java:: build/libvrpn-dev debian/stamp-makefile-build
+binary/vrpn-server binary/vrpn-clients binary/python-vrpn binary/libvrpn-java:: binary/libvrpn-dev debian/stamp-makefile-build
 
 include /usr/share/cdbs/1/rules/debhelper.mk
 include /usr/share/cdbs/1/class/makefile.mk
@@ -97,6 +97,55 @@ clean/python-vrpn::
 		OBJECT_DIR=$(CURDIR)/vrpn/$(HW_OS) \
 		INSTALL_DIR=$(DEB_DESTDIR)/usr
 
+build/libvrpn-java::
+	-mkdir -p $(CURDIR)/vrpn/java_vrpn/bin
+	cd $(CURDIR)/vrpn/java_vrpn/ && \
+		javac vrpn/*.java -d bin/ && \
+		ant -f buildJAR.xml && \
+		ant -f buildNativeHeaders.xml
+	$(DEB_MAKE_INVOKE) $(DEB_MAKE_BUILD_TARGET)
+	
+install/libvrpn-java::
+	 install -m 644 -D $(CURDIR)/vrpn/java_vrpn/bin/vrpn.jar $(DEB_DESTDIR)/usr/share/java/vrpn-$(SOURCE_VER).jar
+	 dh_link /usr/share/java/vrpn-$(SOURCE_VER).jar /usr/share/java/vrpn.jar
+	 install -m 644 -D $(CURDIR)/vrpn/java_vrpn/$(HW_OS)/libjava_vrpn.so $(DEB_DESTDIR)/usr/lib/libjava_vrpn.so
+
+clean/libvrpn-java::
+	-rm -rf $(CURDIR)/vrpn/java_vrpn/bin
+	-rm -rf $(CURDIR)/vrpn/java_vrpn/$(HW_OS)
+	-cd $(CURDIR)/vrpn/java_vrpn && rm -f \
+		vrpn_AnalogOutputRemote.h \
+		vrpn_AnalogRemote_AnalogChangeListener.h \
+		vrpn_AnalogRemote_AnalogUpdate.h \
+		vrpn_AnalogRemote.h \
+		vrpn_AuxiliaryLoggerRemote.h \
+		vrpn_AuxiliaryLoggerRemote_LoggingReport.h \
+		vrpn_AuxiliaryLoggerRemote_LoggingReportListener.h \
+		vrpn_ButtonRemote_ButtonChangeListener.h \
+		vrpn_ButtonRemote_ButtonUpdate.h \
+		vrpn_ButtonRemote.h \
+		vrpn_ForceDeviceRemote_ForceChange.h \
+		vrpn_ForceDeviceRemote_ForceChangeListener.h \
+		vrpn_ForceDeviceRemote_ForceError.h \
+		vrpn_ForceDeviceRemote_ForceErrorListener.h \
+		vrpn_ForceDeviceRemote.h \
+		vrpn_ForceDeviceRemote_SCPChange.h \
+		vrpn_ForceDeviceRemote_SCPChangeListener.h \
+		vrpn_PoserRemote.h \
+		vrpn_TextReceiver.h \
+		vrpn_TextReceiver_TextMessage.h \
+		vrpn_TextReceiver_TextMessageListener.h \
+		vrpn_TextSender.h \
+		vrpn_TrackerRemote_AccelerationChangeListener.h \
+		vrpn_TrackerRemote_AccelerationUpdate.h \
+		vrpn_TrackerRemote.h \
+		vrpn_TrackerRemote_PositionChangeListener.h \
+		vrpn_TrackerRemote_TrackerUpdate.h \
+		vrpn_TrackerRemote_VelocityChangeListener.h \
+		vrpn_TrackerRemote_VelocityUpdate.h \
+		vrpn_VRPNDevice.h \
+		vrpn_VRPNDevice_NotReplayError.h
+
 build/libvrpn-doc::
 	# Reconfigure doxyfile
 	cp $(CURDIR)/vrpn/doxygen/Doxyfile $(CURDIR)/vrpn/doxygen/Doxyfile.pre-sed
@@ -126,7 +175,7 @@ reverse-config::
 		[ -f $$mkf.pre-sed ] && mv -f $$mkf.pre-sed $$mkf || echo . > /dev/null ; \
 	done
 
-clean:: clean/python-vrpn $(patsubst %,clean/%,$(DO_MAKE))
+clean:: clean/python-vrpn clean/libvrpn-java $(patsubst %,clean/%,$(DO_MAKE))
 	# Clean up editing detritus
 	find $(CURDIR) -name *\~ | xargs rm -rf
 	find $(CURDIR) -name ._* | xargs rm -rf

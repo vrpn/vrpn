@@ -2,11 +2,12 @@ Source: vrpn
 Maintainer: Ryan Pavlik <abiryan@ryand.net>
 Section: libs
 Priority: optional
-Build-Depends: cdbs (>=0.4.49), debhelper (>= 7),
+Build-Depends: cdbs (>=0.4.49), debhelper (>= 7), quilt,
+	ant,
 	doxygen,
 	dh-buildinfo,
 	graphviz,
-	quilt,
+	openjdk-6-jdk
 	python-all-dev,
 	swig
 Standards-Version: 3.8.3
@@ -17,6 +18,7 @@ Architecture: any
 Section: libs
 Depends: ${misc:Depends}, ${shlibs:Depends},
 	libvrpn-dev,
+	libvrpn-java,
 	libvrpn-server-dev,
 	libvrpn-doc,
 	libvrpn-quat-dev,
@@ -47,6 +49,19 @@ Section: libdevel
 Architecture: any
 Depends: ${misc:Depends}, libvrpn-quat-dev
 Description: Virtual Reality Peripheral Network - library development files
+ The Virtual-Reality Peripheral Network (VRPN) is a set of classes within a
+ library and a set of servers that are designed to implement a network-
+ transparent  interface between application programs and the set of physical
+ devices (tracker, etc.) used in a virtual-reality (VR) system.
+ .
+ This package is a part of the VRPN suite.  For a full VRPN runtime and
+ development installation, install the "vrpn" package.
+ 
+Package: libvrpn-java
+Section: libdevel
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}, default-jre-headless | java2-runtime-headless
+Description: Virtual Reality Peripheral Network - java wrapper
  The Virtual-Reality Peripheral Network (VRPN) is a set of classes within a
  library and a set of servers that are designed to implement a network-
  transparent  interface between application programs and the set of physical
