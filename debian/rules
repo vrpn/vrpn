@@ -72,24 +72,24 @@ common-configure-arch common-configure-indep:: make-dep
 make-dep::
 	cd $(DEB_BUILDDIR_libvrpn-dev) && \
 	$(DEB_MAKE_ENVVARS) $(MAKE) \
-	CPPFLAGS=$(if $(CPPFLAGS_$(cdbs_curpkg)),"$(CPPFLAGS_$(cdbs_curpkg))","$(CPPFLAGS)") \
-	LDFLAGS=$(if $(LDFLAGS_$(cdbs_curpkg)),"$(LDFLAGS_$(cdbs_curpkg))","$(LDFLAGS)") \
-	$(DEB_MAKE_VARS) depend
+		CPPFLAGS=$(if $(CPPFLAGS_$(cdbs_curpkg)),"$(CPPFLAGS_$(cdbs_curpkg))","$(CPPFLAGS)") \
+		LDFLAGS=$(if $(LDFLAGS_$(cdbs_curpkg)),"$(LDFLAGS_$(cdbs_curpkg))","$(LDFLAGS)") \
+		$(DEB_MAKE_VARS) depend
 
 $(patsubst %,build/%,$(DO_MAKE))::
-	$(DEB_MAKE_INVOKE) $(DEB_MAKE_BUILD_TARGET)
+	+$(DEB_MAKE_INVOKE) $(DEB_MAKE_BUILD_TARGET)
 	
 $(patsubst %,install/%,$(DO_MAKE))::
-	$(DEB_MAKE_INVOKE) $(DEB_MAKE_INSTALL_TARGET)
+	+$(DEB_MAKE_INVOKE) $(DEB_MAKE_INSTALL_TARGET)
 	
 $(patsubst %,clean/%,$(DO_MAKE))::
 	-$(DEB_MAKE_INVOKE) $(DEB_MAKE_CLEAN_TARGET)
 	
 build/python-vrpn::
-	$(DEB_MAKE_INVOKE) -f Makefile.python vrpn-python OBJECT_DIR=$(CURDIR)/vrpn/$(HW_OS)
+	+$(DEB_MAKE_INVOKE) -f Makefile.python vrpn-python OBJECT_DIR=$(CURDIR)/vrpn/$(HW_OS)
 	
 install/python-vrpn::
-	$(DEB_MAKE_INVOKE) -f Makefile.python install-vrpn-python \
+	+$(DEB_MAKE_INVOKE) -f Makefile.python install-vrpn-python \
 		OBJECT_DIR=$(CURDIR)/vrpn/$(HW_OS) \
 		INSTALL_DIR=$(DEB_DESTDIR)/usr
 		
@@ -104,7 +104,7 @@ build/libvrpn-java::
 		javac vrpn/*.java -d bin/ && \
 		ant -f buildJAR.xml && \
 		ant -f buildNativeHeaders.xml
-	$(DEB_MAKE_INVOKE) $(DEB_MAKE_BUILD_TARGET)
+	+$(DEB_MAKE_INVOKE) $(DEB_MAKE_BUILD_TARGET)
 	
 install/libvrpn-java::
 	 install -m 644 -D $(CURDIR)/vrpn/java_vrpn/bin/vrpn.jar $(DEB_DESTDIR)/usr/share/java/vrpn-$(SOURCE_VER).jar
