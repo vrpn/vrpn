@@ -18,27 +18,20 @@ Index: vrpn-07.22/vrpn/python_vrpn/Makefile.python
  QUAT_INCLUDE_DIR := $(VRPN_ROOT_DIR)/quat
  QUAT_LIB_DIR := $(QUAT_INCLUDE_DIR)
  QUAT_LIB := quat
-@@ -26,17 +27,19 @@ vrpn-libs := $(addprefix _,$(vrpn-wrappe
- 
+@@ -33,13 +34,15 @@ vrpn-libs := $(addprefix _,$(vrpn-wrappe
  vrpn-python: $(vrpn-wrapper)
  
--$(vrpn-wrapper): $(MAKEFILE) $(LIB_OBJECTS) 
+ $(vrpn-wrapper): $(MAKEFILE) $(LIB_OBJECTS) 
 -	cp ../pc_linux/.depend pc_linux
-+$(vrpn-wrapper): $(MAKEFILE) $(LIB_OBJECTS)
 +	mkdir -p $(HW_OS)
 +	cp ../$(HW_OS)/.depend $(HW_OS)
  	swig -Wall -classic -c++ -python $(patsubst %.so,%.i,$@)
- 	g++ -ggdb -c $(patsubst %.so,%_wrap.cxx,$@) -I$(PYTHON_INCLUDE_DIR) -I$(VRPN_ROOT_DIR) -I$(QUAT_INCLUDE_DIR)
+ 	$(CXX) -ggdb -c $(patsubst %.so,%_wrap.cxx,$@) -I$(PYTHON_INCLUDE_DIR) -I$(VRPN_ROOT_DIR) -I$(QUAT_INCLUDE_DIR)
  	cp $(patsubst %.so,%_wrap.o,$@) $(HW_OS)
- 	g++ -ggdb -shared $(patsubst _%,%,$(patsubst %.so,%_wrap.o,$@)) $(LIB_OBJECTS) -o _$@ -I$(VRPN_ROOT_DIR) -I$(QUAT_INCLUDE_DIR) -I$(PYTHON_INCLUDE_DIR) -l$(PYTHON_LIB) -L$(QUAT_LIB_DIR)/$(HW_OS) -l$(QUAT_LIB)
+ 	$(CXX) -ggdb -shared $(patsubst _%,%,$(patsubst %.so,%_wrap.o,$@)) $(LIB_OBJECTS) -o _$@ -I$(VRPN_ROOT_DIR) -I$(QUAT_INCLUDE_DIR) -I$(PYTHON_INCLUDE_DIR) -l$(PYTHON_LIB) -L$(QUAT_LIB_DIR)/$(HW_OS) -l$(QUAT_LIB)
  
  install-vrpn-python: $(vrpn-libs)
 +	-mkdir -p $(PYTHON_PACKAGES_DIR)
  	cp $(vrpn-libs) $(PYTHON_PACKAGES_DIR)
  	cp *.py $(PYTHON_PACKAGES_DIR)
  
- clean-vrpn-python:
- 	rm -f *.cxx *.py *.pyc *.o *.so 
--	rm -rf $(HW_OS)/*
-\ No newline at end of file
-+	rm -rf $(HW_OS)/*
