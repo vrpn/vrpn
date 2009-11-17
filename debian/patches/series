@@ -1,3 +1,4 @@
+fix/vrpn-mispelling.diff
 fix/python-64.diff
 fix/cleanup-makefile.diff
 fix/use-provided-flags-too.diff
@@ -5,9 +6,6 @@ fix/update-python-connection.diff
 fix/fix-python-makefile.diff
 fix/add-install-target-to-quat.diff
 fix/ensure-all-mkdir-p.diff
-#fix/make-depend-error.diff
 debian/update-doxyfile.diff
-#debian/unify-build-process.diff
-#debian/makefile-substitution.diff
 fix/protect-from-duplicate-declaration.diff
 fix/update-java-makefile.diff

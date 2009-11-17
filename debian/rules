@@ -52,6 +52,7 @@ DEB_BUILDDIR_vrpn-clients := $(CURDIR)/vrpn/client_src
 DEB_BUILDDIR_vrpn-server := $(CURDIR)/vrpn/server_src
 # Not listed in DO_MAKE because the targets are different.
 DEB_BUILDDIR_python-vrpn := $(CURDIR)/vrpn/python_vrpn
+DEB_BUILDDIR_libvrpn-java := $(CURDIR)/vrpn/java_vrpn
 
 #DOXYGEN := mkdir -p $(CURDIR)/vrpn/doxygen/html $(CURDIR)/vrpn/doxygen/man
 DOXYGEN := doxygen

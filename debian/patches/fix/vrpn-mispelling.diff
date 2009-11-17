@@ -1,0 +1,306 @@
+Index: vrpn-07.22/vrpn/ChangeLog
+===================================================================
+--- vrpn-07.22.orig/vrpn/ChangeLog
++++ vrpn-07.22/vrpn/ChangeLog
+@@ -50,7 +50,7 @@
+ 	* vrpn.sln : Added a run_auxiliary_logger test program that
+ 		lets you connect and ask for a log file for some
+ 		duration.
+-	* vprn.dsw : Same.
++	* vrpn.dsw : Same.
+ 
+ 2009-06-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+ 
+@@ -1550,7 +1550,7 @@
+ 	* vrpn_Tracker_3DMouse.C : Driver for Logitech 3D Mouse
+ 		provided by Jinseok Seo from the VR Lab of
+ 		POSTECH in Korea.
+-	* vprn_Tracker_3DMouse.h : Same.
++	* vrpn_Tracker_3DMouse.h : Same.
+ 	* Makefile : Added the 3D mouse into the build.
+ 
+ 2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+@@ -1701,7 +1701,7 @@
+ 		a bunch of uncompleted functions).  Fixed a few bugs
+ 		that turned up along the way.  Ripped out every trace
+ 		of iostream (old or new type) from the base library.
+-		Also removed VPRN_NO_STREAMS, which was obviated by
++		Also removed VRPN_NO_STREAMS, which was obviated by
+ 		this.
+ 	* vrpn_ADBox.C : Same.
+ 	* vrpn_Analog.C : Same.
+@@ -2389,7 +2389,7 @@
+ 		the user specify whether to do a boresight reset at startup.
+ 		Also changes the sensor numbers to be zero-indexed like all
+ 		other VRPN trackers.  Also changes units to meters and
+-		radians to match other VPRN trackers.
++		radians to match other VRPN trackers.
+ 	* vrpn_Tracker_isense.h : Same.
+ 
+ 2003-11-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+@@ -2729,9 +2729,9 @@
+ 
+ 	* time_test.dsp : DSP files have been modified to not do definitions of
+ 		VRPN_NO_STREAMS and other constants directly, rather these are
+-		now set by editing vprn_Configure.h.  Also, made projects
++		now set by editing vrpn_Configure.h.  Also, made projects
+ 		compile in both debug and release versions.
+-	* vprn.dsp : Same.
++	* vrpn.dsp : Same.
+ 	* vrpn.dsw : Removed vrpn_server_with_timecode project because you
+ 		can now build vrpn_server.exe with the proper definition in
+ 		the vrpn_Configure.h file to do this.
+Index: vrpn-07.22/vrpn/README.Compiling
+===================================================================
+--- vrpn-07.22.orig/vrpn/README.Compiling
++++ vrpn-07.22/vrpn/README.Compiling
+@@ -3,7 +3,7 @@ For those not at UNC, you compile by doi
+    for Visual C++:
+ 	Open the vrpn.dsw file.
+ 	Compile the quat project.
+-	Compile the VPRN project.
++	Compile the VRPN project.
+ 	Then compile whichever of vrpn_server, printvals, etc you want.
+ 
+    for Unix/Cygwin:
+Index: vrpn-07.22/vrpn/client_src/ChangeLog
+===================================================================
+--- vrpn-07.22.orig/vrpn/client_src/ChangeLog
++++ vrpn-07.22/vrpn/client_src/ChangeLog
+@@ -370,7 +370,7 @@
+ 
+ 	* printcereal.dsp : DSP files have been modified to not do definitions
+ 		of VRPN_NO_STREAMS and other constants directly, rather these
+-		are now set by editing vprn_Configure.h.  Also, made projects
++		are now set by editing vrpn_Configure.h.  Also, made projects
+                 compile in both debug and release versions.
+ 	* printvals.dsp : Same.
+ 	* setrouter.dsp : Same.
+Index: vrpn-07.22/vrpn/java_vrpn/ChangeLog
+===================================================================
+--- vrpn-07.22.orig/vrpn/java_vrpn/ChangeLog
++++ vrpn-07.22/vrpn/java_vrpn/ChangeLog
+@@ -8,7 +8,7 @@
+ 
+ 2008-06-24  David Marshburn  <marshbur@cs.unc.edu>
+ 
+-	* vprn_PoserRemote.cpp:  corrected the text of
++	* vrpn_PoserRemote.cpp:  corrected the text of
+ 	some error messages.
+ 
+ 2008-06-20  David Marshburn  <marshbur@cs.unc.edu>
+@@ -505,7 +505,7 @@
+ 
+ 2002-08-15  David Marshburn  <marshbur@cs.unc.edu>
+ 
+-	* .cvsignore:  ignore vprn.jar
++	* .cvsignore:  ignore vrpn.jar
+ 	* java_vrpn.vjp:  now creates vrpn.jar
+ 
+ 2002-08-13  David Marshburn  <marshbur@cs.unc.edu>
+Index: vrpn-07.22/vrpn/java_vrpn/vrpn_AnalogRemote.cpp
+===================================================================
+--- vrpn-07.22.orig/vrpn/java_vrpn/vrpn_AnalogRemote.cpp
++++ vrpn-07.22/vrpn/java_vrpn/vrpn_AnalogRemote.cpp
+@@ -73,7 +73,7 @@ JNIEXPORT void JNICALL JNI_OnUnload_Anal
+ }
+ 
+ 
+-// This is the callback for vprn to notify us of a new analog message
++// This is the callback for vrpn to notify us of a new analog message
+ void VRPN_CALLBACK handle_analog_change( void* userdata, const vrpn_ANALOGCB info )
+ {
+   if( jvm == NULL )
+Index: vrpn-07.22/vrpn/java_vrpn/vrpn_ButtonRemote.cpp
+===================================================================
+--- vrpn-07.22.orig/vrpn/java_vrpn/vrpn_ButtonRemote.cpp
++++ vrpn-07.22/vrpn/java_vrpn/vrpn_ButtonRemote.cpp
+@@ -69,7 +69,7 @@ JNIEXPORT void JNICALL JNI_OnUnload_Butt
+ }
+ 
+ 
+-// This is the callback for vprn to notify us of a new button message
++// This is the callback for vrpn to notify us of a new button message
+ void VRPN_CALLBACK handle_button_change( void* userdata, const vrpn_BUTTONCB info )
+ {
+   if( jvm == NULL )
+Index: vrpn-07.22/vrpn/java_vrpn/vrpn_TextReceiver.cpp
+===================================================================
+--- vrpn-07.22.orig/vrpn/java_vrpn/vrpn_TextReceiver.cpp
++++ vrpn-07.22/vrpn/java_vrpn/vrpn_TextReceiver.cpp
+@@ -84,7 +84,7 @@ JNIEXPORT void JNICALL JNI_OnUnload_Text
+ // dll utility functions
+ 
+ 
+-// This is the callback for vprn to notify us of a new tracker message
++// This is the callback for vrpn to notify us of a new tracker message
+ void VRPN_CALLBACK handle_text_message( void* userdata, const vrpn_TEXTCB info )
+ {
+   if( jvm == NULL )
+Index: vrpn-07.22/vrpn/java_vrpn/vrpn_TrackerRemote.cpp
+===================================================================
+--- vrpn-07.22.orig/vrpn/java_vrpn/vrpn_TrackerRemote.cpp
++++ vrpn-07.22/vrpn/java_vrpn/vrpn_TrackerRemote.cpp
+@@ -83,7 +83,7 @@ JNIEXPORT void JNICALL JNI_OnUnload_Trac
+ // dll utility functions
+ 
+ 
+-// This is the callback for vprn to notify us of a new tracker message
++// This is the callback for vrpn to notify us of a new tracker message
+ void VRPN_CALLBACK handle_tracker_change( void* userdata, const vrpn_TRACKERCB info )
+ {
+   if( jvm == NULL )
+@@ -117,7 +117,7 @@ void VRPN_CALLBACK handle_tracker_change
+ }
+ 
+ 
+-// This is the callback for vprn to notify us of a new velocity message
++// This is the callback for vrpn to notify us of a new velocity message
+ void VRPN_CALLBACK handle_velocity_change( void* userdata, const vrpn_TRACKERVELCB info )
+ {
+   if( jvm == NULL )
+@@ -152,7 +152,7 @@ void VRPN_CALLBACK handle_velocity_chang
+ }
+ 
+ 
+-// This is the callback for vprn to notify us of a new tracker message
++// This is the callback for vrpn to notify us of a new tracker message
+ void VRPN_CALLBACK handle_acceleration_change( void* userdata, const vrpn_TRACKERACCCB info )
+ {
+   if( jvm == NULL )
+Index: vrpn-07.22/vrpn/server_src/ChangeLog
+===================================================================
+--- vrpn-07.22.orig/vrpn/server_src/ChangeLog
++++ vrpn-07.22/vrpn/server_src/ChangeLog
+@@ -155,7 +155,7 @@
+ 	* vrpn_Generic_server_object.C : Added entry for MotionNode Tracker.
+ 		This compiles under Visual Studio 2005 (not 6.0).
+ 	* vrpn_Generic_server_object.h : Same
+-	* vprn_server.vcproj : Same.
++	* vrpn_server.vcproj : Same.
+ 
+ 2007-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+ 
+@@ -690,7 +690,7 @@
+ 		a bunch of uncompleted functions).  Fixed a few bugs
+ 		that turned up along the way.  Ripped out every trace
+ 		of iostream (old or new type) from the base library.
+-		Also removed VPRN_NO_NO_STREAMS, which was obviated by
++		Also removed VRPN_NO_NO_STREAMS, which was obviated by
+ 		this.
+ 	* NIUtil.h : Same.
+ 	* nidaqClient.cpp : Same.
+@@ -959,8 +959,8 @@
+ 
+ 	* vrpn.C : Added changes by David Nahon to enable optional use
+ 		of the extended-range transmitter (no longer required).
+-	* vprn.cfg : Same.
+-	* vprn.cfg.SAMPLE : Same.
++	* vrpn.cfg : Same.
++	* vrpn.cfg.SAMPLE : Same.
+ 
+ 2003-11-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+ 
+@@ -968,7 +968,7 @@
+                 the user specify whether to do a boresight reset at startup.
+                 Also changes the sensor numbers to be zero-indexed like all
+                 other VRPN trackers.  Also changes units to meters and
+-                radians to match other VPRN trackers.
++                radians to match other VRPN trackers.
+ 	* vrpn.cfg : Same.
+ 	* vrpn.cfg.SAMPLE : Same.
+ 
+@@ -1060,7 +1060,7 @@
+ 2003-06-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
+ 
+ 	* vrpn.cfg.SAMPLE : Comments to avoid confusion.
+-	* vprn.cfg : Same.
++	* vrpn.cfg : Same.
+ 
+ 2003-05-30  David Marshburn  <marshbur@cs.unc.edu>
+ 
+@@ -1162,7 +1162,7 @@
+ 
+         * client_and_server.dsp : DSP files have been modified to not do
+ 		definitions of VRPN_NO_STREAMS and other constants directly,
+-		rather these are now set by editing vprn_Configure.h.  Also,
++		rather these are now set by editing vrpn_Configure.h.  Also,
+ 		made projects compile in both debug and release versions.
+ 	* daq_server.dsp : Same.
+ 	* phan_server.dsp : Same.
+Index: vrpn-07.22/vrpn/server_src/timecode_generator_server/ChangeLog
+===================================================================
+--- vrpn-07.22.orig/vrpn/server_src/timecode_generator_server/ChangeLog
++++ vrpn-07.22/vrpn/server_src/timecode_generator_server/ChangeLog
+@@ -2,7 +2,7 @@
+ 
+ 	* vrpn_timecode_generator.dsp : DSP files have been modified to not do
+ 		definitions of VRPN_NO_STREAMS and other constants directly,
+-		rather these are now set by editing vprn_Configure.h.  Also,
++		rather these are now set by editing vrpn_Configure.h.  Also,
+ 		made projects compile in both debug and release versions.
+ 	* vrpn_timecode_generator.cpp : Whitespace changes.  Guard by checking
+ 		to see if INCLUDE_TIMECODE_SERVER is defined so that this
+Index: vrpn-07.22/vrpn/server_src/vrpn.cfg
+===================================================================
+--- vrpn-07.22.orig/vrpn/server_src/vrpn.cfg
++++ vrpn-07.22/vrpn/server_src/vrpn.cfg
+@@ -1274,7 +1274,7 @@
+ # keyboard and mouse button is a tracker with button system
+ # XXX These have been removed and replaced with vrpn_Mouse
+ # and vrpn_Keyboard.  Use the clutch option on vrpn_AnalogFly to
+-# replicate the mouse behavior.  The vprn_Keyboard does not
++# replicate the mouse behavior.  The vrpn_Keyboard does not
+ # enable key mapping, just sends all of the keys' scancodes
+ # through.
+ 
+Index: vrpn-07.22/vrpn/util/gen_rpc/ChangeLog
+===================================================================
+--- vrpn-07.22.orig/vrpn/util/gen_rpc/ChangeLog
++++ vrpn-07.22/vrpn/util/gen_rpc/ChangeLog
+@@ -26,7 +26,7 @@
+ 
+ 	* test_gen_rpc.dsp : DSP files have been modified to not do definitions
+ 		of VRPN_NO_STREAMS and other constants directly, rather these
+-		are now set by editing vprn_Configure.h.  Also, made projects
++		are now set by editing vrpn_Configure.h.  Also, made projects
+ 		compile in both debug and release versions.
+ 
+ 2002-03-20  Aron Helser  <helser@cs.unc.edu>
+Index: vrpn-07.22/vrpn/vrpn_Imager_Stream_Buffer.C
+===================================================================
+--- vrpn-07.22.orig/vrpn/vrpn_Imager_Stream_Buffer.C
++++ vrpn-07.22/vrpn/vrpn_Imager_Stream_Buffer.C
+@@ -596,7 +596,7 @@ bool vrpn_Imager_Stream_Buffer::setup_ha
+   // through the member variable pointer.
+   d_imager_remote = new vrpn_Imager_Remote(d_imager_server_name, c);
+   if (d_imager_remote == NULL) {
+-    fprintf(stderr,"vrpn_Imager_Stream_Buffer::setup_handlers_for_logging_connection(): Cannot create vprn_Imager_Remote\n");
++    fprintf(stderr,"vrpn_Imager_Stream_Buffer::setup_handlers_for_logging_connection(): Cannot create vrpn_Imager_Remote\n");
+     return false;
+   }
+   d_imager_remote->register_description_handler(this, handle_image_description);
+Index: vrpn-07.22/vrpn/vrpn_Shared.h
+===================================================================
+--- vrpn-07.22.orig/vrpn/vrpn_Shared.h
++++ vrpn-07.22/vrpn/vrpn_Shared.h
+@@ -58,7 +58,7 @@
+ // define "struct timezone", although Winsock.h does define
+ // "struct timeval".  The painful solution has been to define a
+ // vrpn_gettimeofday() function that takes a void * as a second
+-// argument (the timezone) and have all VPRN code call this function
++// argument (the timezone) and have all VRPN code call this function
+ // rather than gettimeofday().  On non-WINSOCK implementations,
+ // we alias vrpn_gettimeofday() right back to gettimeofday(), so
+ // that we are calling the system routine.  On Windows, we will
+Index: vrpn-07.22/vrpn/vrpn_Xkeys.C
+===================================================================
+--- vrpn-07.22.orig/vrpn/vrpn_Xkeys.C
++++ vrpn-07.22/vrpn/vrpn_Xkeys.C
+@@ -361,5 +361,5 @@ void vrpn_Xkeys_Pro::decodePacket(size_t
+ 	}
+ }
+ 
+-// End of VPRN_USE_HID
++// End of VRPN_USE_HID
+ #endif

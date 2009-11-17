@@ -2,8 +2,9 @@ vrpn (07.22-0ubuntu1~rp6) jaunty; urgency=low
 
   * Add patch to fix python binding build on AMD64.
   * Add libvrpn-java package.
+  * Fix mispellings of vrpn as vprn with a patch.
 
- -- Ryan Pavlik <abiryan@ryand.net>  Tue, 17 Nov 2009 11:03:26 -0600
+ -- Ryan Pavlik <abiryan@ryand.net>  Tue, 17 Nov 2009 11:10:42 -0600
 
 vrpn (07.22-0ubuntu1~rp5) jaunty; urgency=low
 

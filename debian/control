@@ -93,7 +93,7 @@ Description: Virtual Reality Peripheral Network - developer documentation
  transparent  interface between application programs and the set of physical
  devices (tracker, etc.) used in a virtual-reality (VR) system.
  .
- This package provides developer documentation of the  VPRN system and
+ This package provides developer documentation of the VRPN system and
  its API.
  .
  This package is a part of the VRPN suite.  For a full VRPN runtime and
