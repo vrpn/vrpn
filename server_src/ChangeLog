@@ -1,3 +1,11 @@
+2009-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CMakeLists.txt : File to describe to the Cmake build system how
+		to compile VRPN.
+	* test_freespace.C : Upgrade to make it compile on Windows on new VRPN.
+	* text.C : Same.
+	* vrpn_Phantom.C : Same.
+
 2009-10-30  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
         * Makefile : Making this compile under Linux using new 0.4 version of

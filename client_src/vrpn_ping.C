@@ -7,7 +7,9 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <sys/time.h>
+#ifndef _WIN32
+  #include <sys/time.h>
+#endif
 #include <signal.h>
 #include <vrpn_Connection.h>
 #include <vrpn_Text.h>
@@ -26,7 +28,7 @@ void handle_cntl_c (int)
   exit(0);
 }
 
-int	my_pong_handler(void *userdata, vrpn_HANDLERPARAM p)
+int	VRPN_CALLBACK my_pong_handler(void *userdata, vrpn_HANDLERPARAM p)
 {
 	static	int	count = 0;
 	static	double	min = 10000, max = 0, sum = 0;

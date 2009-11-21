@@ -1,3 +1,13 @@
+2009-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CMakeLists.txt : File to describe to the Cmake build system how
+		to compile VRPN.
+	* ff_client.C : Upgrade to compile on Windows with recent VRPN.
+	* phan_client.C : same.
+	* testSharedObject.C : same.
+	* text.C : same.
+	* vrpn_ping.C : same.
+
 2009-11-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* sound_client.c : Fixed it so that it compiles.  There must

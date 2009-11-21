@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <sys/time.h>
+#ifndef _WIN32
+  #include <sys/time.h>
+#endif
 #include <signal.h>
 #include <vrpn_Connection.h>
 #include <vrpn_Text.h>
@@ -25,7 +27,7 @@ void handle_cntl_c (int) {
   exit(0);
 }
 
-void  my_handler(void * userdata, const vrpn_TEXTCB info){
+void  VRPN_CALLBACK my_handler(void * userdata, const vrpn_TEXTCB info){
 	printf("%ld %ld %s\n", info.type, info.level, info.message);
 }
 

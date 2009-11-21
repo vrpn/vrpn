@@ -5,6 +5,7 @@
 // Most of this code was copied from the test_radamec_spi.C file
 //
 
+#ifdef VRPN_USE_FREESPACE
 #include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
@@ -146,4 +147,12 @@ bool sendBody = 0, sendUser = 1;
   return 0;
 }   /* main */
 
+#else
+#include <stdio.h>
+int main (void)
+{
+  printf("vrpn_FreeSpace not compiled in, set this in Cmake config or vrpn_Configuration.h and recompile\n");
+  return -1;
+}
+#endif
 

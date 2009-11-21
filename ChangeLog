@@ -1,3 +1,16 @@
+2009-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CMakeLists.txt : File to describe to the Cmake build system how
+		to compile VRPN.
+	* FindHDAPI.cmake : Same.
+	* Findquatlib.cmake : Same.
+	* vrpn_Configure.h.cmake_in : Same, plus letting user set things to
+		be compiled in using the Cmake interface.  This needs to be
+		improved -- it overwrites the vrpn_Configure.h file now.
+	* time_test.cpp : Include adjustments to make it compile on Windows.
+	* vrpn_Atmel.C : Make it compile on Windows.
+	* vrpn_Shared.C : Disabled spurious compiler warning on Windows.
+
 2009-11-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_HumanInterface.C : Patch from Bruno Raffin from imag.fr that

@@ -1,3 +1,8 @@
+// Avoid warning on the call of _ftime()
+#ifdef  _WIN32
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #include <Windows.h>
 #include <Winbase.h>
 #include <stdio.h>

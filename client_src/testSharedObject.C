@@ -3,7 +3,7 @@
 #include <vrpn_Connection.h>
 #include <vrpn_SharedObject.h>
 
-int noteChange (void * userdata, vrpn_int32 newValue, vrpn_bool isLocal) {
+int VRPN_CALLBACK noteChange (void * userdata, vrpn_int32 newValue, vrpn_bool isLocal) {
   vrpn_Shared_int32_Remote * ip;
 
   ip = (vrpn_Shared_int32_Remote *) userdata;
