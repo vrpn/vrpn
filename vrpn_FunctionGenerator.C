@@ -1,4 +1,6 @@
 
+#include <string.h>
+
 #include "vrpn_FunctionGenerator.h"
 
 

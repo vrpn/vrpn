@@ -1,7 +1,6 @@
 // Avoid warning on the call of _ftime()
 #ifdef  _WIN32
 #define _CRT_SECURE_NO_WARNINGS
-#endif
 
 #include <Windows.h>
 #include <Winbase.h>
@@ -101,3 +100,12 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+
+#else
+#include <stdio.h>
+int main(void)
+{
+	fprintf(stderr,"Program not ported to other than Windows\n");
+	return -1;
+}
+#endif

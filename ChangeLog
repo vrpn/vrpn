@@ -1,5 +1,12 @@
 2009-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* CMakeLists.txt : Removing duplicate entries.
+	* Findquatlib.cmake : To Unix line endings.
+	* time_test.cpp : Compiles under Linux.
+	* vrpn_FunctionGenerator.C : same.
+
+2009-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* CMakeLists.txt : File to describe to the Cmake build system how
 		to compile VRPN.
 	* FindHDAPI.cmake : Same.
