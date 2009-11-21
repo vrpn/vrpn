@@ -42,7 +42,7 @@ OPTION(VRPN_USE_SHARED_LIBRARY "Enable to use DLLs on Windows (see vrpn_Configur
 OPTION(VRPN_USE_GPM_MOUSE "Enable to include GPM Linux mouse interface in build (see vrpn_Configure.h for more info)" OFF)
 OPTION(VRPN_USE_MOTIONNODE "Enable to include GLI Interactive LLC MotionNode library in build (see vrpn_Configure.h for more info)" OFF)
 OPTION(VRPN_USE_WIIUSE "Enable to include WiiUse library in build (see vrpn_Configure.h for more info)" OFF)
-OPTION(VRPN_USE_FREESPACE "Enable to include Hillcrest Labs' FreeSpace devices in build (see vrpn_Configure.h for more info)" OFF)
+OPTION(VRPN_USE_FREESPACE "Enable to include Hillcrest Labs' Freespace devices in build (see vrpn_Configure.h for more info)" OFF)
 
 #OPTION(vrpn_USE_MPI "Enable to include MPI in build (see vrpn_Configure.h for more info)" OFF)
 
@@ -112,7 +112,7 @@ ELSE(VRPN_CLIENT_ONLY)
 		vrpn_HumanInterface.C vrpn_Xkeys.C vrpn_3DConnexion.C 
 		vrpn_Tracker_MotionNode.C vrpn_Tracker_NDI_Polaris.C 
 		vrpn_WiiMote.C vrpn_Tracker_Isotrak.C vrpn_Freespace.C
-		vrpn_Button_USB.cpp vrpn_Joywin32.C vrpn_FreeSpace.C
+		vrpn_Button_USB.cpp vrpn_Joywin32.C vrpn_Freespace.C
 		vrpn_DirectXFFJoystick.C vrpn_DirectXRumblePad.C
 		vrpn_FunctionGenerator.C vrpn_Keyboard.C vrpn_Mouse.C
 		vrpn_RedundantTransmission.C vrpn_Tracker_Crossbow.C
@@ -133,7 +133,7 @@ ELSE(VRPN_CLIENT_ONLY)
 		vrpn_CerealBox.h vrpn_Tracker_AnalogFly.h vrpn_Magellan.h
 		vrpn_Analog_Radamec_SPI.h vrpn_ImmersionBox.h vrpn_Wanda.h
 		vrpn_Analog_5dt.h vrpn_Joylin.h vrpn_Tng3.h vrpn_Spaceball.h
-		vrpn_tracker_isense.h vrpn_Zaber.h vrpn_nikon_controls.h
+		vrpn_Tracker_isense.h vrpn_Zaber.h vrpn_nikon_controls.h
 		vrpn_GlobalHapticsOrb.C vrpn_Tracker_ButtonFly.h vrpn_ADBox.h
 		vrpn_VPJoystick.h vrpn_Tracker_Liberty.h vrpn_NationalInstruments.h
 		vrpn_Poser_Analog.h vrpn_Tracker_DTrack.h vrpn_Poser.h
@@ -147,7 +147,7 @@ ELSE(VRPN_CLIENT_ONLY)
 		vrpn_HumanInterface.h vrpn_Xkeys.h vrpn_3DConnexion.h
 		vrpn_Tracker_MotionNode.h vrpn_Tracker_NDI_Polaris.h
 		vrpn_WiiMote.h vrpn_Tracker_Isotrak.h vrpn_Freespace.h
-		vrpn_Button_USB.h vrpn_Joywin32.h vrpn_FreeSpace.h
+		vrpn_Button_USB.h vrpn_Joywin32.h vrpn_Freespace.h
 		vrpn_DirectXFFJoystick.h vrpn_DirectXRumblePad.h
 		vrpn_FunctionGenerator.h vrpn_Keyboard.h vrpn_Mouse.h
 		vrpn_RedundantTransmission.h vrpn_Tracker_Crossbow.h
@@ -174,7 +174,7 @@ INSTALL(FILES
 		vrpn_CerealBox.h vrpn_Tracker_AnalogFly.h vrpn_Magellan.h
 		vrpn_Analog_Radamec_SPI.h vrpn_ImmersionBox.h vrpn_Wanda.h
 		vrpn_Analog_5dt.h vrpn_Joylin.h vrpn_Tng3.h vrpn_Spaceball.h
-		vrpn_tracker_isense.h vrpn_Zaber.h vrpn_nikon_controls.h
+		vrpn_Tracker_isense.h vrpn_Zaber.h vrpn_nikon_controls.h
 		vrpn_GlobalHapticsOrb.C vrpn_Tracker_ButtonFly.h vrpn_ADBox.h
 		vrpn_VPJoystick.h vrpn_Tracker_Liberty.h vrpn_NationalInstruments.h
 		vrpn_Poser_Analog.h vrpn_Tracker_DTrack.h vrpn_Poser.h
@@ -188,7 +188,7 @@ INSTALL(FILES
 		vrpn_HumanInterface.h vrpn_Xkeys.h vrpn_3DConnexion.h
 		vrpn_Tracker_MotionNode.h vrpn_Tracker_NDI_Polaris.h
 		vrpn_WiiMote.h vrpn_Tracker_Isotrak.h vrpn_Freespace.h
-		vrpn_Button_USB.h vrpn_Joywin32.h vrpn_FreeSpace.h
+		vrpn_Button_USB.h vrpn_Joywin32.h vrpn_Freespace.h
 		vrpn_DirectXFFJoystick.h vrpn_DirectXRumblePad.h
 		vrpn_FunctionGenerator.h vrpn_Keyboard.h vrpn_Mouse.h
 		vrpn_RedundantTransmission.h vrpn_Tracker_Crossbow.h
