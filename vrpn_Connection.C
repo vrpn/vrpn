@@ -2491,7 +2491,7 @@ int write_vrpn_cookie (char * buffer, int length, long remote_log_mode)
   if (length < vrpn_MAGICLEN + vrpn_ALIGN + 1)
     return -1;
 
-  sprintf(buffer, "%s  %c", vrpn_MAGIC, remote_log_mode + '0');
+  sprintf(buffer, "%s  %c", vrpn_MAGIC, static_cast<char>(remote_log_mode + '0'));
   return 0;
 }
 
@@ -3804,7 +3804,7 @@ int vrpn_Endpoint_IP::finish_new_connection_setup (void) {
   if ((received_logmode < 0) ||
       (received_logmode > (vrpn_LOG_INCOMING | vrpn_LOG_OUTGOING))) {
     fprintf(stderr, "vrpn_Endpoint::finish_new_connection_setup:  "
-                    "Got invalid log mode %d\n", received_logmode);
+                    "Got invalid log mode %d\n", static_cast<int>(received_logmode));
     status = BROKEN;
     return -1;
   }
@@ -4515,14 +4515,14 @@ int vrpn_Connection::pack_message(vrpn_uint32 len, struct timeval time,
 
   // Make sure type is either a system type (-) or a legal user type
   if (type >= d_dispatcher->numTypes()) {
-    printf("vrpn_Connection::pack_message: bad type (%ld)\n", type);
+    printf("vrpn_Connection::pack_message: bad type (%d)\n", type);
     return -1;
   }
 
   // If this is not a system message, make sure the sender is legal.
   if (type >= 0) {
     if ((sender < 0) || (sender >= d_dispatcher->numSenders())) {
-      printf("vrpn_Connection::pack_message: bad sender (%ld)\n", sender);
+      printf("vrpn_Connection::pack_message: bad sender (%d)\n", sender);
       return -1;
     }
   }
@@ -5537,7 +5537,7 @@ void vrpn_Connection_IP::server_check_for_incoming_connections
       sscanf(msg, "%*s %d", &port);   // get the port
       //fill in NIC address
       unsigned long addr_num = ntohl(from.sin_addr.s_addr);
-      sprintf(msg, "%u.%u.%u.%u %d", 
+      sprintf(msg, "%lu.%lu.%lu.%lu %d", 
               (addr_num) >> 24,
               (addr_num >> 16) & 0xff,
               (addr_num >> 8) & 0xff,

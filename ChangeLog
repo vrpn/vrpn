@@ -1,5 +1,10 @@
 2009-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Button.C : Type conversions to remove compiler warnings.
+	* vrpn_Connection.C : Same.
+
+2009-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* CMakeLists.txt : Removing duplicate entries.
 	* Findquatlib.cmake : To Unix line endings.
 	* time_test.cpp : Compiles under Linux.

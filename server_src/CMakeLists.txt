@@ -14,6 +14,10 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 # Libraries we need to do our thing.
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${VRPN_SOURCE_DIR})
 FIND_PACKAGE(quatlib REQUIRED)	# Sets QUATLIB_INCLUDE_DIR and QUATLIB_LIBRARIES
+if (NOT WIN32)
+        set (PTHREAD_LIBRARY pthread)
+	set (VRPN_ATMEL_LIBRARY vrpn_atmel)
+endif (NOT WIN32)
 
 #-----------------------------------------------------------------------------
 # Phantom library (if configured)
@@ -63,8 +67,10 @@ ADD_EXECUTABLE(vrpn_server vrpn.C vrpn_Generic_server_object.C
 	vrpn_Generic_server_object.h)
 TARGET_LINK_LIBRARIES(vrpn_server
 	vrpn vrpn_timecode_generator
+	${VRPN_ATMEL_LIBRARY}
 	${PHANTOM_LIBS}
 	${QUATLIB_LIBRARY}
+	${PTHREAD_LIBRARY}
 )
 
 #-----------------------------------------------------------------------------
@@ -72,13 +78,13 @@ TARGET_LINK_LIBRARIES(vrpn_server
 MACRO(CAPC_APPLICATION APPLICATION_NAME)
   SET(TARGET_NAME ${APPLICATION_NAME})
   ADD_EXECUTABLE(${APPLICATION_NAME} ${APPLICATION_NAME}.C)
-  TARGET_LINK_LIBRARIES(${APPLICATION_NAME} vrpn ${QUATLIB_LIBRARY})
+  TARGET_LINK_LIBRARIES(${APPLICATION_NAME} vrpn ${QUATLIB_LIBRARY} ${PTHREAD_LIBRARY})
 ENDMACRO(CAPC_APPLICATION)
 
 MACRO(CPP_APPLICATION APPLICATION_NAME)
   SET(TARGET_NAME ${APPLICATION_NAME})
   ADD_EXECUTABLE(${APPLICATION_NAME} ${APPLICATION_NAME}.cpp)
-  TARGET_LINK_LIBRARIES(${APPLICATION_NAME} vrpn ${QUATLIB_LIBRARY})
+  TARGET_LINK_LIBRARIES(${APPLICATION_NAME} vrpn ${QUATLIB_LIBRARY} ${PTHREAD_LIBRARY})
 ENDMACRO(CPP_APPLICATION)
 
 #-----------------------------------------------------------------------------
