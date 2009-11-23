@@ -1,3 +1,14 @@
+2009-11-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_CerealBox.C : Picking lint found by a new compiler (const declarations
+		and printf format changes).
+	* vrpn_JoyFly.C : Same.
+	* vrpn_Magellan.C : Same.
+	* vrpn_Mutex.C : Same.
+	* vrpn_RedundantTransmission.C : Same.
+	* vrpn_Tracker_Crossbow.C : Same.
+	* vrpn_Tracker_NDI_Polaris.C : Same.
+
 2009-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Button.C : Type conversions to remove compiler warnings.

@@ -87,7 +87,7 @@ void vrpn_Tracker_JoyFly::handle_joystick
 
   vrpn_Tracker_JoyFly * pts = (vrpn_Tracker_JoyFly *) userdata;
 
-  printf("Joy total = %ld,Chan[0] = %lf\n",
+  printf("Joy total = %d,Chan[0] = %lf\n",
 	 b.num_channel,b.channel[0]);
 
   if (pts->prevtime.tv_sec == -1) {
