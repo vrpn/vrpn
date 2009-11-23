@@ -1119,7 +1119,7 @@ int vrpn_Generic_Server_Object::setup_Keyboard(char * & pch, char * line, FILE *
 
 	next();
 	// Get the arguments (class, name
-	if (sscanf(pch,"%511s%d%d",name) != 1)
+	if (sscanf(pch,"%511s",name) != 1)
 	{
 		fprintf(stderr,"Bad vrpn_Keyboard line: %s\n",line);
 		return -1;
@@ -2824,7 +2824,7 @@ int vrpn_Generic_Server_Object::setup_DTrack (char* &pch, char* line, FILE* conf
 // from, and the axis to fill in are passed as parameters. It returns 0 on success
 // and -1 on failure.
 
-int	vrpn_Generic_Server_Object::get_poser_axis_line(FILE *config_file, char *axis_name, vrpn_PA_axis *axis, vrpn_float64 *min, vrpn_float64 *max)
+int	vrpn_Generic_Server_Object::get_poser_axis_line(FILE *config_file, const char *axis_name, vrpn_PA_axis *axis, vrpn_float64 *min, vrpn_float64 *max)
 {
 	char	line[LINESIZE];
 	char	_axis_name[LINESIZE];

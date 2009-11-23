@@ -14,8 +14,8 @@
 #include "vrpn_Analog.h"
 #include "vrpn_Analog_Radamec_SPI.h"
 
-char	*TRACKER_NAME = "Tracker0";
-char	*ANALOG_NAME = "Analog0";
+const char	*TRACKER_NAME = "Tracker0";
+const char	*ANALOG_NAME = "Analog0";
 int	CONNECTION_PORT = vrpn_DEFAULT_LISTEN_PORT_NO;	// Port for connection to listen on
 
 // The connection that is used by all of the servers and remotes
@@ -38,17 +38,17 @@ vrpn_Radamec_SPI		*sana;
 
 void	VRPN_CALLBACK handle_pos (void *, const vrpn_TRACKERCB t)
 {
-	printf("Got tracker pos, sensor %ld", t.sensor);
+	printf("Got tracker pos, sensor %d", t.sensor);
 }
 
 void	VRPN_CALLBACK handle_vel (void *, const vrpn_TRACKERVELCB t)
 {
-	printf(" + vel, sensor %ld", t.sensor);
+	printf(" + vel, sensor %d", t.sensor);
 }
 
 void	VRPN_CALLBACK handle_acc (void *, const vrpn_TRACKERACCCB t)
 {
-	printf(" + acc, sensor %ld\n", t.sensor);
+	printf(" + acc, sensor %d\n", t.sensor);
 }
 
 void	VRPN_CALLBACK handle_analog (void *, const vrpn_ANALOGCB a)

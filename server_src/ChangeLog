@@ -1,3 +1,14 @@
+2009-11-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* client_and_server.C : Picking lint found by a new compiler.  Const 
+		declarations and printf format descriptions.
+	* test_analogfly.C : Same.
+	* test_radamec_spi.C : Same.
+	* test_vrpn.C : Same.
+	* vrpn.C : Same.
+	* vrpn_Generic_server_object.C : Same.
+	* vrpn_Generic_server_object.h : Same.
+
 2009-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* CMakeLists.txt : File to describe to the Cmake build system how
