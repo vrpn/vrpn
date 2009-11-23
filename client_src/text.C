@@ -28,7 +28,7 @@ void handle_cntl_c (int) {
 }
 
 void  VRPN_CALLBACK my_handler(void * userdata, const vrpn_TEXTCB info){
-	printf("%ld %ld %s\n", info.type, info.level, info.message);
+	printf("%d %d %s\n", info.type, info.level, info.message);
 }
 
 int main(int argc, char* argv[])

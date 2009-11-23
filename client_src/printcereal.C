@@ -29,7 +29,7 @@ vrpn_float64	cur_dial_values[MAX_DIALS];
 
 void	VRPN_CALLBACK handle_button (void *, const vrpn_BUTTONCB b)
 {
-	printf("B%ld->%ld\n", b.button, b.state);
+	printf("B%d->%d\n", b.button, b.state);
 }
 
 void	VRPN_CALLBACK handle_analog (void *, const vrpn_ANALOGCB a)
@@ -46,7 +46,7 @@ void	VRPN_CALLBACK handle_analog (void *, const vrpn_ANALOGCB a)
 void	VRPN_CALLBACK handle_dial (void *, const vrpn_DIALCB d)
 {
 	cur_dial_values[d.dial] += d.change;
-	printf("Dial %ld spun by %lf (currently at %lf)\n", d.dial, d.change,
+	printf("Dial %d spun by %lf (currently at %lf)\n", d.dial, d.change,
 		cur_dial_values[d.dial]);
 }
 

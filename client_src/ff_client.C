@@ -58,7 +58,7 @@ void	VRPN_CALLBACK handle_button_change(void *userdata, const vrpn_BUTTONCB b)
   static int buttonstate = 1;
 
   if (b.state != buttonstate) {
-    printf("button #%ld is in state %ld\n", b.button, b.state);
+    printf("button #%d is in state %d\n", b.button, b.state);
     buttonstate = b.state;
   }
 

@@ -89,7 +89,7 @@ void	VRPN_CALLBACK handle_tracker_pos_quat (void *userdata, const vrpn_TRACKERCB
 	// print this one.  If so, print and reset the count.
 	if ( ++t_data->t_counts[t.sensor] >= tracker_stride ) {
 		t_data->t_counts[t.sensor] = 0;
-		printf("Tracker %s, sensor %ld:\n        pos (%5.2f, %5.2f, %5.2f); quat (%5.2f, %5.2f, %5.2f, %5.2f)\n",
+		printf("Tracker %s, sensor %d:\n        pos (%5.2f, %5.2f, %5.2f); quat (%5.2f, %5.2f, %5.2f, %5.2f)\n",
 			t_data->t_name,
 			t.sensor,
 			t.pos[0], t.pos[1], t.pos[2],
@@ -110,7 +110,7 @@ void	VRPN_CALLBACK handle_tracker_vel (void *userdata, const vrpn_TRACKERVELCB t
 	// print this one.  If so, print and reset the count.
 	if ( ++t_data->t_counts[t.sensor] >= tracker_stride ) {
 		t_data->t_counts[t.sensor] = 0;
-		printf("Tracker %s, sensor %ld:\n        vel (%5.2f, %5.2f, %5.2f); quatvel (%5.2f, %5.2f, %5.2f, %5.2f)\n",
+		printf("Tracker %s, sensor %d:\n        vel (%5.2f, %5.2f, %5.2f); quatvel (%5.2f, %5.2f, %5.2f, %5.2f)\n",
 			t_data->t_name,
 			t.sensor,
 			t.vel[0], t.vel[1], t.vel[2],
@@ -131,7 +131,7 @@ void	VRPN_CALLBACK handle_tracker_acc (void *userdata, const vrpn_TRACKERACCCB t
 	// print this one.  If so, print and reset the count.
 	if ( ++t_data->t_counts[t.sensor] >= tracker_stride ) {
 		t_data->t_counts[t.sensor] = 0;
-		printf("Tracker %s, sensor %ld:\n        acc (%5.2f, %5.2f, %5.2f); quatacc (%5.2f, %5.2f, %5.2f, %5.2f)\n",
+		printf("Tracker %s, sensor %d:\n        acc (%5.2f, %5.2f, %5.2f); quatacc (%5.2f, %5.2f, %5.2f, %5.2f)\n",
 			t_data->t_name,
 			t.sensor,
 			t.acc[0], t.acc[1], t.acc[2],
@@ -143,7 +143,7 @@ void	VRPN_CALLBACK handle_button (void *userdata, const vrpn_BUTTONCB b)
 {
     const char *name = (const char *)userdata;
 
-    printf("Button %s, number %ld was just %s\n",
+    printf("Button %s, number %d was just %s\n",
 	name, b.button, b.state?"pressed":"released");
 }
 
@@ -156,14 +156,14 @@ void	VRPN_CALLBACK handle_analog (void *userdata, const vrpn_ANALOGCB a)
     for (i = 1; i < a.num_channel; i++) {
 	printf(", %5.2f", a.channel[i]);
     }
-    printf(" (%ld chans)\n", a.num_channel);
+    printf(" (%d chans)\n", a.num_channel);
 }
 
 void	VRPN_CALLBACK handle_dial (void *userdata, const vrpn_DIALCB d)
 {
     const char *name = (const char *)userdata;
 
-    printf("Dial %s, number %ld was moved by %5.2f\n",
+    printf("Dial %s, number %d was moved by %5.2f\n",
 	name, d.dial, d.change);
 }
 
