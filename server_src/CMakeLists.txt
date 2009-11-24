@@ -6,6 +6,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 # Move applications into subprojects in visual studio
 # XXX tracker_to_poser
 # XXX daq_server
+# XXX vrpn_hid_device_watcher
 # Fix the ones that are commented out so that they compile and run?
 
 #-----------------------------------------------------------------------------
@@ -94,6 +95,7 @@ if (BUILD_DIRECTSHOW_VIDEO_SERVER)
 		${DirectShow_LIBS}
 		${PTHREAD_LIBRARY}
 	)
+	SET_TARGET_PROPERTIES(directshow_video_server PROPERTIES SOLUTION_FOLDER servers)
 endif (BUILD_DIRECTSHOW_VIDEO_SERVER)
 
 add_subdirectory (timecode_generator_server)
@@ -124,37 +126,40 @@ TARGET_LINK_LIBRARIES(vrpn_server
 	${QUATLIB_LIBRARY}
 	${PTHREAD_LIBRARY}
 )
+SET_TARGET_PROPERTIES(vrpn_server PROPERTIES SOLUTION_FOLDER servers)
 
 #-----------------------------------------------------------------------------
 # A little utility helper macro to setup default linkages and filenames
-MACRO(CAPC_APPLICATION APPLICATION_NAME)
+MACRO(CAPC_APPLICATION APPLICATION_NAME SOLUTION_NAME)
   SET(TARGET_NAME ${APPLICATION_NAME})
   ADD_EXECUTABLE(${APPLICATION_NAME} ${APPLICATION_NAME}.C)
   TARGET_LINK_LIBRARIES(${APPLICATION_NAME} vrpn ${QUATLIB_LIBRARY} ${PTHREAD_LIBRARY})
+  SET_TARGET_PROPERTIES(${APPLICATION_NAME} PROPERTIES SOLUTION_FOLDER ${SOLUTION_NAME})
 ENDMACRO(CAPC_APPLICATION)
 
-MACRO(CPP_APPLICATION APPLICATION_NAME)
+MACRO(CPP_APPLICATION APPLICATION_NAME SOLUTION_NAME)
   SET(TARGET_NAME ${APPLICATION_NAME})
   ADD_EXECUTABLE(${APPLICATION_NAME} ${APPLICATION_NAME}.cpp)
   TARGET_LINK_LIBRARIES(${APPLICATION_NAME} vrpn ${QUATLIB_LIBRARY} ${PTHREAD_LIBRARY})
+  SET_TARGET_PROPERTIES(${APPLICATION_NAME} PROPERTIES SOLUTION_FOLDER ${SOLUTION_NAME})
 ENDMACRO(CPP_APPLICATION)
 
 #-----------------------------------------------------------------------------
 # Declaration of the simple test applications that don't have extra files
 
-CAPC_APPLICATION(client_and_server)
-CAPC_APPLICATION(test_analogfly)
-CAPC_APPLICATION(test_freespace)
-CAPC_APPLICATION(test_radamec_spi)
-CAPC_APPLICATION(test_logging)
-CAPC_APPLICATION(test_rumble)
-CPP_APPLICATION(testimager_server)
-CAPC_APPLICATION(test_auxiliary_logger)
-CAPC_APPLICATION(test_vrpn)
-CAPC_APPLICATION(test_peerMutex)
-#CAPC_APPLICATION(forward)
-#CAPC_APPLICATION(last_of_sequence)
-#CAPC_APPLICATION(testSharedObject)
-#CAPC_APPLICATION(text)
-#CAPC_APPLICATION(sample_server)
-#CAPC_APPLICATION(sample_analog)
+CAPC_APPLICATION(client_and_server tests)
+CAPC_APPLICATION(test_analogfly tests)
+CAPC_APPLICATION(test_freespace tests)
+CAPC_APPLICATION(test_radamec_spi tests)
+CAPC_APPLICATION(test_logging tests)
+CAPC_APPLICATION(test_rumble tests)
+CPP_APPLICATION(testimager_server tests)
+CAPC_APPLICATION(test_auxiliary_logger tests)
+CAPC_APPLICATION(test_vrpn tests)
+CAPC_APPLICATION(test_peerMutex tests)
+#CAPC_APPLICATION(forward tests)
+#CAPC_APPLICATION(last_of_sequence tests)
+#CAPC_APPLICATION(testSharedObject tests)
+#CAPC_APPLICATION(text tests)
+#CAPC_APPLICATION(sample_server tests)
+#CAPC_APPLICATION(sample_analog tests)
