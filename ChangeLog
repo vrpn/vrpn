@@ -1,5 +1,11 @@
 2009-11-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* CMakeLists.txt : Added code to compile the DirectShow video
+		server and the gen_rpc tests.
+	* FindDirectShow.cmake : Same.
+
+2009-11-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_CerealBox.C : Picking lint found by a new compiler (const declarations
 		and printf format changes).
 	* vrpn_JoyFly.C : Same.

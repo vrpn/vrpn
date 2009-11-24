@@ -4,18 +4,16 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 # XXX Things to make better.
 # 
 # Move applications into subprojects in visual studio
-# Fix the ones that are commented out so that they compile and run.
-# XXX test_gen_rpc
-# XXX directshow_video_server
 # XXX tracker_to_poser
 # XXX daq_server
+# Fix the ones that are commented out so that they compile and run?
 
 #-----------------------------------------------------------------------------
 # Libraries we need to do our thing.
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${VRPN_SOURCE_DIR})
 FIND_PACKAGE(quatlib REQUIRED)	# Sets QUATLIB_INCLUDE_DIR and QUATLIB_LIBRARIES
 if (NOT WIN32)
-        set (PTHREAD_LIBRARY pthread)
+	set (PTHREAD_LIBRARY pthread)
 	set (VRPN_ATMEL_LIBRARY vrpn_atmel)
 endif (NOT WIN32)
 
@@ -47,6 +45,57 @@ IF (VRPN_USE_PHANTOM_SERVER)
 	set (PHANTOM_LIBS vrpn_phantom ${HDAPI_LIBRARIES})
 ENDIF (VRPN_USE_PHANTOM_SERVER)
 
+#-----------------------------------------------------------------------------
+# DirectShow base-class library (if configured)
+if (BUILD_DIRECTSHOW_VIDEO_SERVER)
+	FIND_PACKAGE(DirectShow REQUIRED)	# Need to have DirectShow SDK
+	ADD_DEFINITIONS( -DCOINIT_DISABLE_OLE1DDE=0x4 )
+	ADD_LIBRARY (DirectShow_baseclasses
+		${DirectShow_BASECLASS_DIR}/amextra.cpp
+		${DirectShow_BASECLASS_DIR}/amfilter.cpp
+		${DirectShow_BASECLASS_DIR}/amvideo.cpp
+		${DirectShow_BASECLASS_DIR}/combase.cpp
+		${DirectShow_BASECLASS_DIR}/cprop.cpp
+		${DirectShow_BASECLASS_DIR}/ctlutil.cpp
+		${DirectShow_BASECLASS_DIR}/ddmm.cpp
+		${DirectShow_BASECLASS_DIR}/dllentry.cpp
+		${DirectShow_BASECLASS_DIR}/dllsetup.cpp
+		${DirectShow_BASECLASS_DIR}/mtype.cpp
+		${DirectShow_BASECLASS_DIR}/outputq.cpp
+		${DirectShow_BASECLASS_DIR}/pstream.cpp
+		${DirectShow_BASECLASS_DIR}/pullpin.cpp
+		${DirectShow_BASECLASS_DIR}/refclock.cpp
+		${DirectShow_BASECLASS_DIR}/renbase.cpp
+		${DirectShow_BASECLASS_DIR}/schedule.cpp
+		${DirectShow_BASECLASS_DIR}/seekpt.cpp
+		${DirectShow_BASECLASS_DIR}/source.cpp
+		${DirectShow_BASECLASS_DIR}/strmctl.cpp
+		${DirectShow_BASECLASS_DIR}/sysclock.cpp
+		${DirectShow_BASECLASS_DIR}/transfrm.cpp
+		${DirectShow_BASECLASS_DIR}/transip.cpp
+		${DirectShow_BASECLASS_DIR}/videoctl.cpp
+		${DirectShow_BASECLASS_DIR}/vtrans.cpp
+		${DirectShow_BASECLASS_DIR}/winctrl.cpp
+		${DirectShow_BASECLASS_DIR}/winutil.cpp
+		${DirectShow_BASECLASS_DIR}/wxdebug.cpp
+		${DirectShow_BASECLASS_DIR}/wxlist.cpp
+		${DirectShow_BASECLASS_DIR}/wxutil.cpp
+	)
+	set (DirectShow_LIBS DirectShow_baseclasses)
+
+	SET(TARGET_NAME directshow_video_server)
+	ADD_EXECUTABLE(directshow_video_server
+		directshow_video_server/directx_video_imager_server.cpp
+		directshow_video_server/directx_camera_server.cpp
+		directshow_video_server/directx_camera_server.h
+	)
+	TARGET_LINK_LIBRARIES(directshow_video_server
+		vrpn
+		${DirectShow_LIBS}
+		${PTHREAD_LIBRARY}
+	)
+endif (BUILD_DIRECTSHOW_VIDEO_SERVER)
+
 add_subdirectory (timecode_generator_server)
 
 #-----------------------------------------------------------------------------
@@ -58,6 +107,9 @@ INCLUDE_DIRECTORIES(
 	${VRPN_SOURCE_DIR}/server_src/timecode_generator_server
 	${VRPN_SOURCE_DIR}/server_src/ghostEffects
 	${HDAPI_INCLUDE_DIR} ${HDAPI_HDU_INCLUDE_DIR}
+	${DirectShow_BASECLASS_DIR} ${PLATFORM_SDK_INCLUDE_DIR}
+		${PLATFORM_SDK_ATL_INCLUDE_DIR}
+		${PLATFORM_SDK_ATL_INCLUDE_DIR} ${DIRECTX_SDK_INCLUDE_DIR}
 )
 
 #-----------------------------------------------------------------------------

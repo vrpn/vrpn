@@ -4,11 +4,12 @@ PROJECT(VRPN)
 #-----------------------------------------------------------------------------
 # XXX Things to make better.
 # 
-# Make sure this works on Linux
 # Move applications into subprojects in Visual Studio
-# Get atmellib working (at least under Linux)
 # Make Quatlib and VRPN into packages as described by Cory
 # Put in hints or whatever to load the libraries when selected in Cmake configure?
+# Move HDAPI libraries out of vrpn_Configure.h and into the Cmake realm (they seem there but may not be)
+# Move DirectInput libraries out of vrpn_Configure.h and into the Cmake realm
+# Move WiiUse libraries out of vrpn_Configure.h and into the Cmake realm
 # Figure out how to handle vrpn_Configure.h without overwriting the source dir
 # Move the shared-library code over to CMake's normal definition
 # Move the version number into Cmake.
@@ -55,6 +56,8 @@ OPTION(VRPN_CLIENT_ONLY "Enable to build a library including only client code" O
 # Build various applications if we want them.
 OPTION(BUILD_VRPN_CLIENTS "Enable to build VRPN clients" ON)
 OPTION(BUILD_VRPN_SERVERS "Enable to build VRPN servers" ON)
+OPTION(BUILD_TEST_RPC_GENERATION "Enable to build VRPN RPC generation" OFF)
+OPTION(BUILD_DIRECTSHOW_VIDEO_SERVER "Enable to build DirectShow Video Server (Windows)" OFF)
 
 #-----------------------------------------------------------------------------
 # Build the library itself and declare what bits need to be installed
@@ -70,6 +73,7 @@ IF(VRPN_CLIENT_ONLY)
 		vrpn_RedundantTransmission.C vrpn_Imager.C 
 		vrpn_Analog_Output.C vrpn_Poser.C vrpn_Auxiliary_Logger.C
 
+		vrpn_Configure.h
 		vrpn_Connection.h vrpn_Tracker.h vrpn_Button.h
 		vrpn_Sound.h vrpn_ForceDevice.h vrpn_Shared.h
 		vrpn_Analog.h vrpn_FileConnection.h
@@ -116,6 +120,7 @@ ELSE(VRPN_CLIENT_ONLY)
 		vrpn_DirectXFFJoystick.C vrpn_DirectXRumblePad.C
 		vrpn_FunctionGenerator.C vrpn_XInputGamepad.C
 
+		vrpn_Configure.h
 		vrpn_Connection.h vrpn_Tracker.h vrpn_Button.h
 		vrpn_Sound.h vrpn_ForceDevice.h vrpn_Shared.h
 		vrpn_Analog.h vrpn_FileConnection.h
@@ -217,6 +222,13 @@ ENDIF(NOT VRPN_CLIENT_ONLY)
 IF(BUILD_VRPN_SERVERS AND NOT VRPN_CLIENT_ONLY)
 	add_subdirectory (server_src)
 ENDIF(BUILD_VRPN_SERVERS AND NOT VRPN_CLIENT_ONLY)
+
+#-----------------------------------------------------------------------------
+# Build the RPC generation if we've been asked to
+
+IF(BUILD_TEST_RPC_GENERATION)
+	add_subdirectory (util/gen_rpc)
+ENDIF(BUILD_TEST_RPC_GENERATION)
 
 #-----------------------------------------------------------------------------
 # A little utility helper macro to setup default linkages and filenames
