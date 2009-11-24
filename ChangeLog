@@ -1,3 +1,7 @@
+2009-11-24  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGenerator.h:  added VRPN_CALLBACK to the callback type definitions.
+
 2009-11-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* CMakeLists.txt : Added code to compile the DirectShow video
