@@ -70,8 +70,7 @@ public class ForceDeviceRemote extends VRPNDevice implements Runnable
 	{
 		super( name, localInLogfileName, localOutLogfileName, remoteInLogfileName, remoteOutLogfileName );
 	}
-	
-	
+		
 	
 	public void sendSurface( )
 	{
@@ -164,7 +163,6 @@ public class ForceDeviceRemote extends VRPNDevice implements Runnable
 		}
 	}
 	
-
 	
 	public void useHcollide( )
 	{
@@ -183,7 +181,6 @@ public class ForceDeviceRemote extends VRPNDevice implements Runnable
 		}
 	}
 	
-
 	
 	public boolean enableConstraint( int enable )
 	{
@@ -272,7 +269,6 @@ public class ForceDeviceRemote extends VRPNDevice implements Runnable
 		return retval;
 	}
 	
-
 	
 	public boolean sendForceField( float[] origin, float[] force, float[][] jacobian, float radius )
 	{
@@ -305,8 +301,6 @@ public class ForceDeviceRemote extends VRPNDevice implements Runnable
 		}
 		return retval;
 	}
-	
-
 	
 	
 	public synchronized void addForceChangeListener( ForceChangeListener listener )

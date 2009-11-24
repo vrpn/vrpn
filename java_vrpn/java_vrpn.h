@@ -36,6 +36,10 @@ JNIEXPORT void JNICALL JNI_OnUnload_Button_Remote( JavaVM* jvm, void* reserved )
 JNIEXPORT jint JNICALL JNI_OnLoad_ForceDevice_Remote( JavaVM* jvm, void* reserved );
 JNIEXPORT void JNICALL JNI_OnUnload_ForceDevice_Remote( JavaVM* jvm, void* reserved );
 
+// FunctionGenerator_Remote Load/Unload
+JNIEXPORT jint JNICALL JNI_OnLoad_FunctionGenerator_Remote( JavaVM* jvm, void* reserved );
+JNIEXPORT void JNICALL JNI_OnUnload_FunctionGenerator_Remote( JavaVM* jvm, void* reserved );
+
 // TempImage_Remote Load/Unload
 //JNIEXPORT jint JNICALL JNI_OnLoad_TempImagerRemote( JavaVM* jvm, void* reserved );
 //JNIEXPORT void JNICALL JNI_OnUnload_TempImagerRemote( JavaVM* jvm, void* reserved );

@@ -332,6 +332,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\vrpn_FunctionGeneratorRemote.cpp"
+				>
+			</File>
+			<File
 				RelativePath="vrpn_PoserRemote.cpp"
 				>
 				<FileConfiguration
@@ -468,6 +472,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_ForceDeviceRemote.h"
+				>
+			</File>
+			<File
+				RelativePath=".\vrpn_FunctionGeneratorRemote.h"
 				>
 			</File>
 			<File
