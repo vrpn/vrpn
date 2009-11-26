@@ -4,7 +4,6 @@ PROJECT(VRPN)
 #-----------------------------------------------------------------------------
 # XXX Things to make better.
 # 
-# Move applications into subprojects in Visual Studio
 # Make Quatlib and VRPN into packages as described by Cory
 # Put in hints or whatever to load the libraries when selected in Cmake configure?
 # Move HDAPI libraries out of vrpn_Configure.h and into the Cmake realm (they seem there but may not be)
@@ -250,18 +249,24 @@ ENDIF(BUILD_TEST_RPC_GENERATION)
 
 #-----------------------------------------------------------------------------
 # A little utility helper macro to setup default linkages and filenames
-MACRO(CAPC_APPLICATION APPLICATION_NAME)
+MACRO(CAPC_APPLICATION APPLICATION_NAME SOLUTION_NAME)
   SET(TARGET_NAME ${APPLICATION_NAME})
   ADD_EXECUTABLE(${APPLICATION_NAME} ${APPLICATION_NAME}.C)
-  TARGET_LINK_LIBRARIES(${APPLICATION_NAME} vrpn ${QUATLIB_LIBRARY})
+  TARGET_LINK_LIBRARIES(${APPLICATION_NAME} vrpn ${QUATLIB_LIBRARY} ${SYSTEM_LIBRARY})
+  SET_TARGET_PROPERTIES(${APPLICATION_NAME} PROPERTIES SOLUTION_FOLDER ${SOLUTION_NAME})
+  install(TARGETS ${APPLICATION_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 ENDMACRO(CAPC_APPLICATION)
 
-MACRO(CPP_APPLICATION APPLICATION_NAME)
+MACRO(CPP_APPLICATION APPLICATION_NAME SOLUTION_NAME)
   SET(TARGET_NAME ${APPLICATION_NAME})
   ADD_EXECUTABLE(${APPLICATION_NAME} ${APPLICATION_NAME}.cpp)
-  TARGET_LINK_LIBRARIES(${APPLICATION_NAME} vrpn ${QUATLIB_LIBRARY})
+  TARGET_LINK_LIBRARIES(${APPLICATION_NAME} vrpn ${QUATLIB_LIBRARY} ${SYSTEM_LIBRARY})
+  SET_TARGET_PROPERTIES(${APPLICATION_NAME} PROPERTIES SOLUTION_FOLDER ${SOLUTION_NAME})
+  install(TARGETS ${APPLICATION_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 ENDMACRO(CPP_APPLICATION)
 
 #-----------------------------------------------------------------------------
 # Applications that live in the main directory.
-CPP_APPLICATION( time_test )
+IF(BUILD_VRPN_SERVERS AND NOT VRPN_CLIENT_ONLY)
+	CPP_APPLICATION( time_test tests )
+ENDIF(BUILD_VRPN_SERVERS AND NOT VRPN_CLIENT_ONLY)
