@@ -16,6 +16,23 @@ PROJECT(VRPN)
 # Make a CPack installer.
 
 #-----------------------------------------------------------------------------
+# Compiler flags we got from Hans
+if(WIN32) # MS-Windows, both 32 and 64 bits
+  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   /fp:fast")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /FIXED:NO")
+elseif(APPLE) # Apple
+  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -Wall")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+  set(CMAKE_VERBOSE_MAKEFILE ON)
+elseif(UNIX) # other than Apple UNIXes
+  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -Wall")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+  set(CMAKE_VERBOSE_MAKEFILE ON)
+  # note : maybe move CMAKE_C_COMPILER part of vrpn/client_src/CMakeLists.txt here
+endif()
+
+#-----------------------------------------------------------------------------
 # Libraries we need to do our thing.
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${VRPN_SOURCE_DIR})
 FIND_PACKAGE(quatlib REQUIRED)	# Sets QUATLIB_INCLUDE_DIR and QUATLIB_LIBRARIES
@@ -120,7 +137,7 @@ ELSE(VRPN_CLIENT_ONLY)
 		vrpn_DirectXFFJoystick.C vrpn_DirectXRumblePad.C
 		vrpn_FunctionGenerator.C vrpn_XInputGamepad.C
 
-		vrpn_Configure.h
+		vrpn_Configure.h vrpn_Types.h
 		vrpn_Connection.h vrpn_Tracker.h vrpn_Button.h
 		vrpn_Sound.h vrpn_ForceDevice.h vrpn_Shared.h
 		vrpn_Analog.h vrpn_FileConnection.h
@@ -161,6 +178,7 @@ ENDIF(VRPN_CLIENT_ONLY)
 INSTALL(TARGETS vrpn ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
 INSTALL(FILES
+		vrpn_Configure.h vrpn_Types.h
 		vrpn_Connection.h vrpn_Tracker.h vrpn_Button.h
 		vrpn_Sound.h vrpn_ForceDevice.h vrpn_Shared.h
 		vrpn_Analog.h vrpn_FileConnection.h
