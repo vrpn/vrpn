@@ -22,13 +22,13 @@ if(WIN32) # MS-Windows, both 32 and 64 bits
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast")
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /FIXED:NO")
 elseif(APPLE) # Apple
-  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -Wall")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-  set(CMAKE_VERBOSE_MAKEFILE ON)
+#  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -Wall")
+#  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+#  set(CMAKE_VERBOSE_MAKEFILE ON)
 elseif(UNIX) # other than Apple UNIXes
-  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -Wall")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-  set(CMAKE_VERBOSE_MAKEFILE ON)
+#  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -Wall")
+#  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+#  set(CMAKE_VERBOSE_MAKEFILE ON)
   # note : maybe move CMAKE_C_COMPILER part of vrpn/client_src/CMakeLists.txt here
 endif()
 
