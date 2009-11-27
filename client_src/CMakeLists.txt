@@ -15,7 +15,7 @@ FIND_PACKAGE(quatlib REQUIRED)	# Sets QUATLIB_INCLUDE_DIR and QUATLIB_LIBRARIES
 FIND_PACKAGE(GLUT)
 
 if (NOT WIN32)
-	set (SYSTEM_LIBRARY GL pthread m)
+	set (SYSTEM_LIBRARY pthread m)
 endif (NOT WIN32)
 
 # Keep GLUT from generating a lot of errors if it is not found.
