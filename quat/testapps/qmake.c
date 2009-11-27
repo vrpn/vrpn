@@ -1,4 +1,3 @@
-
 /*****************************************************************************
  *
     qmake.c -  make a quaternion from an axis & angle;  show result as
@@ -14,11 +13,10 @@
  *
  *****************************************************************************/
 
-
+#pragma warning( disable : 4996 ) // Don't complain about scanf
 
 #include <stdio.h>
 #include "quat.h"
-
 
 int
 main(argc, argv)
@@ -34,8 +32,6 @@ char	*argv[];
    q_type  	resultQuat;
     
    q_matrix_type   resultMatrix;
-
-
 
    /*
     * read in vector and angle

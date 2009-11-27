@@ -1,5 +1,3 @@
-
-
 /*****************************************************************************
  *
     qmult.c - multiplies two quaternions and shows result as a matrix and
@@ -17,11 +15,10 @@
  *
  *****************************************************************************/
 
-
+#pragma warning( disable : 4996 ) // Don't complain about scanf
 
 #include <stdio.h>
 #include "quat.h"
-
 
 int
 main(argc, argv)
@@ -31,17 +28,12 @@ char	*argv[];
 
 {
 
-   int	    	i, j;
    q_type	multQuat;
    q_type	candQuat;
    q_type	invertedQuat;
    q_type	productQuat;
-   q_type 	xformedQuat;
     
    double  	matrix[4][4];
-
-
-
 
    /*
     * read in, echo, and normalize 2 quaternions

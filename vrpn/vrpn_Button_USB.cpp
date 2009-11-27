@@ -1,4 +1,4 @@
-#include "vrpn_button_USB.h"
+#include "vrpn_Button_USB.h"
 #ifdef _WIN32
 
 vrpn_Button_USB::vrpn_Button_USB(const char *name, const char *deviceName,vrpn_Connection *c)

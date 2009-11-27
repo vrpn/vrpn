@@ -1,8 +1,10 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <unistd.h>
 #include <sys/types.h>
+#ifndef _WIN32
+#include <unistd.h>
 #include <sys/time.h>
+#endif
 #include <vrpn_Connection.h>
 #include "vrpn_Text.h"
 

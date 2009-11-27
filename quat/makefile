@@ -28,6 +28,10 @@
 #HW_OS := universal_macosx
 ##########################
 
+INSTALL_DIR := /usr/local
+INCLUDE_INSTALL_DIR := $(INSTALL_DIR)/include
+LIB_INSTALL_DIR := $(INSTALL_DIR)/lib
+
 
 ifndef HW_OS
   # hw_os does not exist on FreeBSD at UNC or on CYGWIN
@@ -148,11 +152,11 @@ ifeq ($(HW_OS), pc_cygwin)
 endif
 
 ifeq ($(HW_OS), hp_flow)
-  INCLUDE_FLAGS =  -I. -I$(INCLUDE_DIR) -DFLOW
+  INCLUDE_FLAGS =  -I. -I$(INCLUDE_INSTALL_DIR) -DFLOW
 endif
 
 ifeq ($(HW_OS), hp_flow_aCC)
-  INCLUDE_FLAGS =  -I. -I$(INCLUDE_DIR) -DFLOW
+  INCLUDE_FLAGS =  -I. -I$(INCLUDE_INSTALL_DIR) -DFLOW
 endif
 
 LDFLAGS = -L. -L$(HW_OS)
@@ -269,4 +273,13 @@ allclean :
 clean :
 	-/bin/rm -f *.o *.a *~ *.j foo a.out $(TEST_FILES)
 	-/bin/rm -fr $(HW_OS)$(OBJECT_DIR_SUFFIX)/*.o $(HW_OS)$(OBJECT_DIR_SUFFIX)/*.a
+
+
+install: lib
+	-mkdir $(LIB_INSTALL_DIR)
+	( cd $(LIB_INSTALL_DIR) ; rm -f libquat.a )
+	( cd $(HW_OS)$(OBJECT_DIR_SUFFIX) ; cp lib*.a $(LIB_INSTALL_DIR) )
+	-mkdir $(INCLUDE_INSTALL_DIR)
+	cp quat.h $(INCLUDE_INSTALL_DIR)
+
 

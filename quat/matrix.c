@@ -205,7 +205,7 @@ void q_matrix_mult(q_matrix_type resultMatrix, const q_matrix_type leftMatrix,
       }
 
 
-   q_matrix_copy(resultMatrix, tmpResultMatrix);
+   q_matrix_copy(resultMatrix, ( const double (*)[4] ) tmpResultMatrix);
 
 }	/* q_matrix_mult */
 

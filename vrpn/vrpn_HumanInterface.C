@@ -368,7 +368,7 @@ vrpn_HidInterface::~vrpn_HidInterface()
 }
 
 void ReaderReportCallback(
-	void *target, IOReturn result, void *refcon, void *sender, uint32_t size
+	void *target, IOReturn result, void *refcon, void *sender, UInt32 size
 	)
 {
 	vrpn_HidInterface* vrpnHidInterface = (vrpn_HidInterface*) target;

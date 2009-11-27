@@ -1,3 +1,38 @@
+2009-11-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* client_and_server.C : Picking lint found by a new compiler.  Const 
+		declarations and printf format descriptions.
+	* test_analogfly.C : Same.
+	* test_radamec_spi.C : Same.
+	* test_vrpn.C : Same.
+	* vrpn.C : Same.
+	* vrpn_Generic_server_object.C : Same.
+	* vrpn_Generic_server_object.h : Same.
+
+2009-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CMakeLists.txt : File to describe to the Cmake build system how
+		to compile VRPN.
+	* test_freespace.C : Upgrade to make it compile on Windows on new VRPN.
+	* text.C : Same.
+	* vrpn_Phantom.C : Same.
+
+2009-10-30  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * Makefile : Making this compile under Linux using new 0.4 version of
+                libfreespace; patch from Phil Black.
+	* test_freespace.C : Same.
+
+2009-10-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg : Added an entry for the new vrpn_Freespace submitted by
+		Phil Black from Hillcrest Labs.
+	* test_freespace.C : Same.
+	* test_freespace.vcproj : Same.
+	* vrpn_server.vcproj : Same.
+	* vrpn_Generic_server_object.h : Same.
+	* vrpn_Generic_Server_object.C : Same.
+
 2009-09-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
         * Makefile : Turned "-g" flag into "$(DEBUG_FLAGS)" throughout.

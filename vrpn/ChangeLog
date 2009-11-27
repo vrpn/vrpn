@@ -1,3 +1,90 @@
+2009-11-24  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGenerator.h:  added VRPN_CALLBACK to the callback type definitions.
+
+2009-11-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CMakeLists.txt : Added code to compile the DirectShow video
+		server and the gen_rpc tests.
+	* FindDirectShow.cmake : Same.
+
+2009-11-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_CerealBox.C : Picking lint found by a new compiler (const declarations
+		and printf format changes).
+	* vrpn_JoyFly.C : Same.
+	* vrpn_Magellan.C : Same.
+	* vrpn_Mutex.C : Same.
+	* vrpn_RedundantTransmission.C : Same.
+	* vrpn_Tracker_Crossbow.C : Same.
+	* vrpn_Tracker_NDI_Polaris.C : Same.
+
+2009-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Button.C : Type conversions to remove compiler warnings.
+	* vrpn_Connection.C : Same.
+
+2009-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CMakeLists.txt : Removing duplicate entries.
+	* Findquatlib.cmake : To Unix line endings.
+	* time_test.cpp : Compiles under Linux.
+	* vrpn_FunctionGenerator.C : same.
+
+2009-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CMakeLists.txt : File to describe to the Cmake build system how
+		to compile VRPN.
+	* FindHDAPI.cmake : Same.
+	* Findquatlib.cmake : Same.
+	* vrpn_Configure.h.cmake_in : Same, plus letting user set things to
+		be compiled in using the Cmake interface.  This needs to be
+		improved -- it overwrites the vrpn_Configure.h file now.
+	* time_test.cpp : Include adjustments to make it compile on Windows.
+	* vrpn_Atmel.C : Make it compile on Windows.
+	* vrpn_Shared.C : Disabled spurious compiler warning on Windows.
+
+2009-11-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_HumanInterface.C : Patch from Bruno Raffin from imag.fr that
+		makes it compile cleanly on macosx.
+
+2009-10-30  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Making this compile under Linux using new 0.4 version of
+		libfreespace; patch from Phil Black.
+	* vrpn_Freespace.C : Same.
+	* vrpn_Freespace.h : Same.
+
+2009-10-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Changed to always link with the release version
+		of the libfreespace, even in debug mode, to avoid manifes problems.
+	* vrpndll.vcproj : Making vrpn_Freespace.C compile as C++ code in debug
+		mode.
+
+2009-10-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3DConnexion.C : Put in patch from Ian Curington to work
+		with devices that have more than 8 buttons.
+
+2009-10-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Freespace.h : Added code from Phil Black at Hillcrest Labs to
+		run their Freespace devices in VRPN.
+	* vrpn_Freespace.C : Same.
+	* vrpn_Configure.h : Same.
+	* vrpn.vcproj : Same.
+	* vrpndll.vcproj : Same.
+	* vrpn.sln : Same.
+	* Makefile : Putting the files into the server library.  Still
+		won't compile on anything but Windows.
+
+2009-10-16  David Marshburn  <marshbur@cs.unc.edu>
+	
+	* vrpn_FunctionGenerator.C (register_types):  corrected a typo
+	in the message IDs
+
 2009-09-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* Makefile : Turned "-g" flag into "$(DEBUG_FLAGS)" throughout.

@@ -1,3 +1,7 @@
+2009-11-24  David marshburn  <marshbur@cs.unc.edu>
+
+	* all:  added function generator wrapping.
+
 2009-05-18  David Marshburn  <marshbur@cs.unc.edu>
 
 	* *.cpp:  changed the handling of the native_device member

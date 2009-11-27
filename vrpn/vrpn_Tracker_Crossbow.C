@@ -154,7 +154,7 @@ int vrpn_Tracker_Crossbow::get_report() {
 }
 
 void vrpn_Tracker_Crossbow::reset() {
-	char *cmd;
+	const	char *cmd;
 	unsigned char recv_buf[8];
 	struct timeval timeout;
 
@@ -181,12 +181,12 @@ void vrpn_Tracker_Crossbow::reset() {
 	vrpn_flush_input_buffer(serial_fd);
 
 	cmd = "P";
-	vrpn_write_characters(serial_fd, reinterpret_cast<unsigned char*> (cmd), 1);
+	vrpn_write_characters(serial_fd, reinterpret_cast<const unsigned char*> (cmd), 1);
 	vrpn_SleepMsecs(50); // Sleep long enough to stop receiving data
 	vrpn_flush_input_buffer(serial_fd);
 
 	cmd = "RSv";
-	vrpn_write_characters(serial_fd, reinterpret_cast<unsigned char*> (cmd), 3);
+	vrpn_write_characters(serial_fd, reinterpret_cast<const unsigned char*> (cmd), 3);
 	vrpn_drain_output_buffer(serial_fd);
 	if (vrpn_read_available_characters(serial_fd, recv_buf, 8, &timeout) != 8) {
 		fprintf(stderr, "vrpn_Tracker_Crossbow::reset: Crossbow not responding to stimulus\n");

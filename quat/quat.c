@@ -28,7 +28,7 @@
 
 /* version information for use with "ident"  */
 static char rcsid[] = 
-"$Id: quat.c,v 2.29 2007/06/24 18:46:00 taylorr Exp $";
+"$Id: quat.c,v 2.30 2009/11/03 13:54:39 taylorr Exp $";
 
 /*****************************************************************************
  *
@@ -515,7 +515,7 @@ void q_to_euler(q_vec_type yawPitchRoll, const q_type q)
    q_matrix_type matrix;
 
    q_to_col_matrix(matrix, q);
-   q_col_matrix_to_euler(yawPitchRoll, matrix);
+   q_col_matrix_to_euler(yawPitchRoll, ( const double (*)[4] ) matrix);
 }
 
 

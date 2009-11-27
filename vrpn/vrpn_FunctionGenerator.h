@@ -241,7 +241,7 @@ typedef	struct _vrpn_FUNCTION_CHANNEL_REPLY_CB
 	vrpn_uint32	channelNum;		// Which channel is being reported
 	vrpn_FunctionGenerator_channel*	channel;
 } vrpn_FUNCTION_CHANNEL_REPLY_CB;
-typedef void (*vrpn_FUNCTION_CHANGE_REPLY_HANDLER)( void *userdata,
+typedef void (VRPN_CALLBACK *vrpn_FUNCTION_CHANGE_REPLY_HANDLER)( void *userdata,
 					  const vrpn_FUNCTION_CHANNEL_REPLY_CB info );
 
 // User routine to handle function-generator start replies.  This
@@ -252,7 +252,7 @@ typedef	struct _vrpn_FUNCTION_START_REPLY_CB
 	struct timeval	msg_time;	// Time of the report
 	vrpn_bool isStarted;		// did the function generation start?
 } vrpn_FUNCTION_START_REPLY_CB;
-typedef void (*vrpn_FUNCTION_START_REPLY_HANDLER)( void *userdata,
+typedef void (VRPN_CALLBACK *vrpn_FUNCTION_START_REPLY_HANDLER)( void *userdata,
 					     const vrpn_FUNCTION_START_REPLY_CB info );
 
 // User routine to handle function-generator stop replies.  This
@@ -263,7 +263,7 @@ typedef	struct _vrpn_FUNCTION_STOP_REPLY_CB
 	struct timeval	msg_time;	// Time of the report
 	vrpn_bool isStopped;		// did the function generation stop?
 } vrpn_FUNCTION_STOP_REPLY_CB;
-typedef void (*vrpn_FUNCTION_STOP_REPLY_HANDLER)( void *userdata,
+typedef void (VRPN_CALLBACK *vrpn_FUNCTION_STOP_REPLY_HANDLER)( void *userdata,
 					     const vrpn_FUNCTION_STOP_REPLY_CB info );
 
 // User routine to handle function-generator sample-rate replies.  
@@ -274,7 +274,7 @@ typedef	struct _vrpn_FUNCTION_SAMPLE_RATE_REPLY_CB
 	struct timeval	msg_time;	// Time of the report
 	vrpn_float32 sampleRate;		
 } vrpn_FUNCTION_SAMPLE_RATE_REPLY_CB;
-typedef void (*vrpn_FUNCTION_SAMPLE_RATE_REPLY_HANDLER)( void *userdata,
+typedef void (VRPN_CALLBACK *vrpn_FUNCTION_SAMPLE_RATE_REPLY_HANDLER)( void *userdata,
 					     const vrpn_FUNCTION_SAMPLE_RATE_REPLY_CB info );
 
 
@@ -286,7 +286,7 @@ typedef	struct _vrpn_FUNCTION_INTERPRETER_REPLY_CB
 	struct timeval	msg_time;	// Time of the report
 	char* description;		
 } vrpn_FUNCTION_INTERPRETER_REPLY_CB;
-typedef void (*vrpn_FUNCTION_INTERPRETER_REPLY_HANDLER)( void *userdata,
+typedef void (VRPN_CALLBACK *vrpn_FUNCTION_INTERPRETER_REPLY_HANDLER)( void *userdata,
 					     const vrpn_FUNCTION_INTERPRETER_REPLY_CB info );
 
 

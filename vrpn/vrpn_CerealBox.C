@@ -102,7 +102,7 @@ int	vrpn_CerealBox::reset(void)
 {
 	struct	timeval	timeout;
 	unsigned char	inbuf[45];
-	char	*Cpy = "Copyright (c), BG Systems";
+	const char	*Cpy = "Copyright (c), BG Systems";
 	int	major, minor, bug;	// Version of the EEPROM
 	unsigned char	reset_str[32];		// Reset string sent to box
 	int	ret;

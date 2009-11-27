@@ -1,5 +1,4 @@
-
-
+#include <stdlib.h>
 #include <stdio.h>
 #include "quat.h"
 
@@ -53,12 +52,10 @@ main(argc, argv)
        }
     }
 
-
-
     for ( i = 0; i < numCycles; i++ )
     {
        j = i;
-       q_xyz_quat_to_row_matrix(&xyzQuat, matrix);
+       q_xyz_quat_to_row_matrix(matrix, &xyzQuat);
     }
 
     printf("done, j = %d.\n", j);

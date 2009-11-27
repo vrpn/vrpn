@@ -47,7 +47,7 @@
 // Instructs VRPN to use phantom library to construct a unified
 // server, using phantom as a common device, and phantom
 // configuration in .cfg file.
-//#define	VRPN_USE_PHANTOM_SERVER
+#define	VRPN_USE_PHANTOM_SERVER
 
 //------------------------
 // Instructs vrpn to use SensAble's HDAPI rather than GHOST library.
@@ -241,6 +241,17 @@
 // that uses WiiUse in Windows.
 //#define VRPN_USE_WIIUSE
 
+// Instructs VRPN to compile code to handle Hillcrest Labs' Freespace 
+// devices such as the Loop, and FRCM.  You will also need the libfreespace
+// library which is available at http://libfreespace.hillcrestlabs.com/content/download.
+// There are prebuilt binaries for Windows, and source available that should work 
+// on Windows, Linux or OS X.  You will need to make sure the header files
+// and library are accessible to the compiler.  libfreespace is released under
+// the LGPL and we (Hillcrest Labs) view static and dynamic linking as the same.
+// We (Hillcrest Labs) do not require code linked to libfreespace (statically or 
+// dynamically) to be released under any particular license.
+//#define VRPN_USE_FREESPACE
+
 //------------------------------------------------------------------//
 // SYSTEM CONFIGURATION SECTION                                     //
 // EDIT THESE DEFINITIONS TO POINT TO OPTIONAL LIBRARIES.  THEY ARE //
@@ -253,6 +264,12 @@
 
 #define VRPN_WIIUSE_H "F:/taylorr/STM/src/wiiuse_v0.12/src/wiiuse.h"
 #define VRPN_WIIUSE_LIB_PATH "F:/taylorr/STM/src/wiiuse_v0.12/src"
+
+#if defined(VRPNDLL_EXPORTS) && !defined(VRPN_USE_SHARED_LIBRARY)
+  #define VRPN_FREESPACE_LIB_PATH "../libfreespace/lib"
+#else
+  #define VRPN_FREESPACE_LIB_PATH "../../libfreespace/lib"
+#endif
 
 #define VRPN_HDAPI_PATH         VRPN_SYSTEMDRIVE "/Program Files/SensAble/3DTouch/lib/"
 #define VRPN_HDAPI_UTIL_PATH    VRPN_SYSTEMDRIVE "/Program Files/SensAble/3DTouch/utilities/lib/"
@@ -290,6 +307,15 @@
     #pragma comment(lib, VRPN_WIIUSE_LIB_PATH "/msvc/Debug/wiiuse.lib")
   #else
     #pragma comment(lib, VRPN_WIIUSE_LIB_PATH "/msvc/Release/wiiuse.lib")
+  #endif
+#endif
+
+#ifdef  VRPN_USE_FREESPACE
+  #ifdef	_DEBUG
+//    #pragma comment(lib, VRPN_FREESPACE_LIB_PATH "/Debug/libfreespaced.lib")
+    #pragma comment(lib, VRPN_FREESPACE_LIB_PATH "/Release/libfreespace.lib")
+  #else
+    #pragma comment(lib, VRPN_FREESPACE_LIB_PATH "/Release/libfreespace.lib")
   #endif
 #endif
 
