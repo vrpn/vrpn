@@ -15,7 +15,7 @@ FIND_PACKAGE(quatlib REQUIRED)	# Sets QUATLIB_INCLUDE_DIR and QUATLIB_LIBRARIES
 FIND_PACKAGE(GLUT)
 
 if (NOT WIN32)
-	set (SYSTEM_LIBRARY pthread m)
+	set (SYSTEM_LIBRARY GL pthread m)
 endif (NOT WIN32)
 
 # Keep GLUT from generating a lot of errors if it is not found.
@@ -63,7 +63,9 @@ CAPC_APPLICATION(test_mutex tests)
 CAPC_APPLICATION(text tests)
 CAPC_APPLICATION(test_imager tests)
 IF(GLUT_INCLUDE_DIR)
-	CAPC_APPLICATION(testimager_client tests)
+	if (WIN32)
+		CAPC_APPLICATION(testimager_client tests)
+	endif (WIN32)
 ENDIF(GLUT_INCLUDE_DIR)
 CAPC_APPLICATION(run_auxiliary_logger servers)
 CAPC_APPLICATION(test_Zaber tests)

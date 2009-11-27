@@ -1,3 +1,12 @@
+2009-11-27  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3DConnexion.C : Replaced MACOSX with __APPLE__ to make things compile
+		on more Mac platforms.
+	* Findquatlib.cmake : Knows to look one directory up from the present one
+		to find quatlib.
+	* vrpn_Button.C : Patch from Hans Labermont to make it compile under 64-bit
+		Windows.
+
 2009-11-24  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_FunctionGenerator.h:  added VRPN_CALLBACK to the callback type definitions.
