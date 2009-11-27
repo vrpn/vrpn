@@ -35,11 +35,23 @@ endif()
 # Libraries we need to do our thing.
 list(APPEND CMAKE_MODULE_PATH ${VRPN_SOURCE_DIR}/cmake)
 find_package(quatlib REQUIRED)	# Sets QUATLIB_INCLUDE_DIR and QUATLIB_LIBRARIES
+find_package(Threads)
+set(EXTRA_LIBS ${QUATLIB_LIBRARIES})
+
+if(NOT WIN32)
+	list(APPEND EXTRA_LIBS ${CMAKE_THREAD_LIBS_INIT})
+endif()
+
+if(APPLE)
+	find_library(COREFOUNDATION_LIBRARY CoreFoundation)
+	find_library(IOKIT_LIBRARY IOKit)
+	list(APPEND EXTRA_LIBS ${COREFOUNDATION_LIBRARY} ${IOKIT_LIBRARY})
+endif()
 
 #-----------------------------------------------------------------------------
 # configure a header file to pass some of the CMake settings
 # to the source code
-configure_file (
+configure_file(
   "${PROJECT_SOURCE_DIR}/vrpn_Configure.h.cmake_in"
   "${PROJECT_BINARY_DIR}/vrpn_Configure.h"
 )
@@ -67,13 +79,13 @@ option(VRPN_USE_FREESPACE "Enable to include Hillcrest Labs' Freespace devices i
 # Options that control what gets built and how.
 
 # Build a server version of the library
-option(VRPN_CLIENT_ONLY "Enable to build a library including only client code" OFF)
+option(VRPN_BUILD_LIBRARY_CLIENT_ONLY "Enable to build a library including only client code" OFF)
 
 # Build various applications if we want them.
-option(BUILD_VRPN_CLIENTS "Enable to build VRPN clients" ON)
-option(BUILD_VRPN_SERVERS "Enable to build VRPN servers" ON)
-option(BUILD_TEST_RPC_GENERATION "Enable to build VRPN RPC generation" OFF)
-option(BUILD_DIRECTSHOW_VIDEO_SERVER "Enable to build DirectShow Video Server (Windows)" OFF)
+option(VRPN_BUILD_CLIENTS "Enable to build VRPN clients" ON)
+option(VRPN_BUILD_SERVERS "Enable to build VRPN servers" ON)
+option(VRPN_BUILD_TEST_RPC_GENERATION "Enable to build VRPN RPC generation" OFF)
+option(VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER "Enable to build DirectShow Video Server (Windows)" OFF)
 
 #-----------------------------------------------------------------------------
 # Build the library itself and declare what bits need to be installed
@@ -264,24 +276,22 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_XInputGamepad.h
 )
 
-if(VRPN_CLIENT_ONLY)
+if(VRPN_BUILD_LIBRARY_CLIENT_ONLY)
 	add_library(vrpn ${VRPN_CLIENT_SOURCES} ${VRPN_CLIENT_PUBLIC_HEADERS})
 	set_property(TARGET vrpn PROPERTY PUBLIC_HEADER ${VRPN_CLIENT_PUBLIC_HEADERS})
-	install(TARGETS vrpn
-		ARCHIVE DESTINATION lib
-		PUBLIC_HEADER DESTINATION include)
 else()
 	add_library(vrpn ${VRPN_SERVER_SOURCES} ${VRPN_SERVER_PUBLIC_HEADERS})
 	set_property(TARGET vrpn PROPERTY PUBLIC_HEADER ${VRPN_SERVER_PUBLIC_HEADERS})
 endif()
 
+target_link_libraries(vrpn quat ${EXTRA_LIBS})
 install(TARGETS vrpn
 		ARCHIVE DESTINATION lib
 		PUBLIC_HEADER DESTINATION include)
 
 
 # Include directory needed by all of the files
-INCLUDE_DIRECTORIES(${VRPN_SOURCE_DIR} ${VRPN_SOURCE_DIR}/atmellib ${QUATLIB_INCLUDE_DIR})
+include_directories(${VRPN_SOURCE_DIR} ${VRPN_SOURCE_DIR}/atmellib ${QUATLIB_INCLUDE_DIR})
 
 
 add_subdirectory (client_src)
@@ -289,7 +299,7 @@ add_subdirectory (client_src)
 #-----------------------------------------------------------------------------
 # Build the atmellib library if we're building a server library
 
-if(NOT VRPN_CLIENT_ONLY)
+if(NOT VRPN_BUILD_LIBRARY_CLIENT_ONLY)
 	add_subdirectory (atmellib)
 endif()
 
@@ -297,37 +307,26 @@ endif()
 # Build the server applications if we've been asked to and we didn't build
 # the library client-only.
 
-if(BUILD_VRPN_SERVERS AND NOT VRPN_CLIENT_ONLY)
+if(VRPN_BUILD_SERVERS AND NOT VRPN_BUILD_LIBRARY_CLIENT_ONLY)
 	add_subdirectory (server_src)
 endif()
 
 #-----------------------------------------------------------------------------
 # Build the RPC generation if we've been asked to
 
-if(BUILD_TEST_RPC_GENERATION)
+if(VRPN_BUILD_TEST_RPC_GENERATION)
 	add_subdirectory (util/gen_rpc)
 endif()
 
 #-----------------------------------------------------------------------------
-# A little utility helper macro to setup default linkages and filenames
-macro(CAPC_APPLICATION APPLICATION_NAME SOLUTION_NAME)
-  set(TARGET_NAME ${APPLICATION_NAME})
-  add_executable(${APPLICATION_NAME} ${APPLICATION_NAME}.C)
-  target_link_libraries(${APPLICATION_NAME} vrpn ${QUATLIB_LIBRARY} ${SYSTEM_LIBRARY})
-  set_target_properties(${APPLICATION_NAME} PROPERTIES SOLUTION_FOLDER ${SOLUTION_NAME})
-  install(TARGETS ${APPLICATION_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
-endmacro()
-
-macro(CPP_APPLICATION APPLICATION_NAME SOLUTION_NAME)
-  set(TARGET_NAME ${APPLICATION_NAME})
-  add_executable(${APPLICATION_NAME} ${APPLICATION_NAME}.cpp)
-  target_link_libraries(${APPLICATION_NAME} vrpn ${QUATLIB_LIBRARY} ${SYSTEM_LIBRARY})
-  set_target_properties(${APPLICATION_NAME} PROPERTIES SOLUTION_FOLDER ${SOLUTION_NAME})
-  install(TARGETS ${APPLICATION_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
-endmacro()
-
-#-----------------------------------------------------------------------------
 # Applications that live in the main directory.
-if(BUILD_VRPN_SERVERS AND NOT VRPN_CLIENT_ONLY)
-	CPP_APPLICATION( time_test tests )
+if(BUILD_VRPN_SERVERS AND NOT VRPN_BUILD_LIBRARY_CLIENT_ONLY)
+	foreach(SOURCE time_test.cpp)
+		get_filename_component(APP ${SOURCE} NAME_WE)
+		add_executable(${APP} ${SOURCE})
+		target_link_libraries(${APP} vrpn)
+		set_target_properties(${APP} PROPERTIES SOLUTION_FOLDER tests)
+		install(TARGETS ${APP}
+			RUNTIME DESTINATION bin)
+	endforeach()
 endif()

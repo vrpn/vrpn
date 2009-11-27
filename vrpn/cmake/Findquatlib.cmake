@@ -5,29 +5,44 @@
 #  QUATLIB_LIBRARIES    - List of libraries when using quatlib.
 #  QUATLIB_FOUND        - True if quatlib found.
 
-# Look for the header file.
-FIND_PATH(QUATLIB_INCLUDE_DIR NAMES quat.h
-		PATHS
-		"C:/Program Files/quatlib/include"
-)
-MARK_AS_ADVANCED(QUATLIB_INCLUDE_DIR)
+if(TARGET quat)
+	# Look for the header file.
+	find_path(QUATLIB_INCLUDE_DIR NAMES quat.h
+			PATHS
+			${quatlib_SOURCE_DIR}
+	)
+	mark_as_advanced(QUATLIB_INCLUDE_DIR)
+	
+	set(QUATLIB_LIBRARY "quat")
 
-# Look for the library.
-FIND_LIBRARY(QUATLIB_LIBRARY NAMES quat.lib libquat.a
-		PATHS
-		"C:/Program Files/quatlib/lib"
-)
-MARK_AS_ADVANCED(QUATLIB_LIBRARY)
+else()
+	# Look for the header file.
+	find_path(QUATLIB_INCLUDE_DIR NAMES quat.h
+			PATHS
+			"C:/Program Files/quatlib/include"
+	)
+	mark_as_advanced(QUATLIB_INCLUDE_DIR)
+	
+	# Look for the library.
+	find_library(QUATLIB_LIBRARY NAMES quat.lib libquat.a
+			PATHS
+			"C:/Program Files/quatlib/lib"
+	)
+	mark_as_advanced(QUATLIB_LIBRARY)
+endif()
 
 # handle the QUIETLY and REQUIRED arguments and set QUATLIB_FOUND to TRUE if 
 # all listed variables are TRUE
-INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(QUATLIB DEFAULT_MSG QUATLIB_LIBRARY QUATLIB_INCLUDE_DIR)
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(QUATLIB DEFAULT_MSG QUATLIB_LIBRARY QUATLIB_INCLUDE_DIR)
 
-IF(QUATLIB_FOUND)
-  SET(QUATLIB_LIBRARIES ${QUATLIB_LIBRARY})
-  SET(QUATLIB_INCLUDE_DIRS ${QUATLIB_INCLUDE_DIR})
-ELSE(QUATLIB_FOUND)
-  SET(QUATLIB_LIBRARIES)
-  SET(QUATLIB_INCLUDE_DIRS)
-ENDIF(QUATLIB_FOUND)
+if(QUATLIB_FOUND)
+  set(QUATLIB_LIBRARIES ${QUATLIB_LIBRARY})
+  if(NOT WIN32)
+  	list(APPEND QUATLIB_LIBRARIES m)
+  endif()
+  set(QUATLIB_INCLUDE_DIRS ${QUATLIB_INCLUDE_DIR})
+else()
+  set(QUATLIB_LIBRARIES)
+  set(QUATLIB_INCLUDE_DIRS)
+endif()
