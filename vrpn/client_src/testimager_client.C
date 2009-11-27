@@ -5,11 +5,17 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #ifdef	_WIN32
 #include <windows.h>
 #endif
+#ifdef __APPLE__
+#include <OpenGL/OpenGL.h>
+#include <GLUT/glut.h>
+#else
 #include <GL/gl.h>
 #include <GL/glut.h>
+#endif
 #include <vrpn_Connection.h>
 #include <vrpn_FileConnection.h>
 #include <vrpn_Imager.h>
@@ -66,8 +72,8 @@ void  VRPN_CALLBACK handle_description_message(void *, const struct timeval)
 
 void myDisplayFunc();
 float fps[2]={0,0};
-DWORD lastCallTime[2]={0,0};
-DWORD ReportInterval=5000;
+uint32_t lastCallTime[2]={0,0};
+uint32_t ReportInterval=5000;
 
 // New pixels coming: fill them into the image and tell Glut to redraw.
 
