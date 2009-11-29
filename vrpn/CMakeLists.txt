@@ -3,7 +3,7 @@ project(VRPN)
 
 #-----------------------------------------------------------------------------
 # XXX Things to make better.
-# 
+#
 # Make Quatlib and VRPN into packages as described by Cory
 # Put in hints or whatever to load the libraries when selected in Cmake configure?
 # Move HDAPI libraries out of vrpn_Configure.h and into the Cmake realm (they seem there but may not be)
@@ -56,6 +56,7 @@ configure_file(
   "${PROJECT_BINARY_DIR}/vrpn_Configure.h"
 )
 
+
 # Configuration options controlling what gets included in the build.
 option(VRPN_USE_PHANTOM_SERVER "Enable to include SensAble Phantom code in build (see vrpn_Configure.h for more info)" OFF)
 option(VRPN_USE_DIRECTINPUT "Enable to include Microsoft DirectInput code in build (see vrpn_Configure.h for more info)" OFF)
@@ -95,7 +96,7 @@ set(VRPN_CLIENT_SOURCES
 	"${PROJECT_BINARY_DIR}/vrpn_Configure.h"
 	vrpn_Connection.C
 	vrpn_Tracker.C
-	vrpn_Button.C 
+	vrpn_Button.C
 	vrpn_ForceDevice.C
 	vrpn_Shared.C
 	vrpn_Analog.C
@@ -292,7 +293,6 @@ install(TARGETS vrpn
 
 # Include directory needed by all of the files
 include_directories(${VRPN_SOURCE_DIR} ${VRPN_SOURCE_DIR}/atmellib ${QUATLIB_INCLUDE_DIR})
-
 
 add_subdirectory (client_src)
 

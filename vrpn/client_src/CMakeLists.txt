@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.6)
 
 #-----------------------------------------------------------------------------
 # XXX Things to make better.
-# 
+#
 # XXX clock_drift_estimator
 # Move applications into subprojects in visual studio
 # Make the files with ".c" extension also compile as C++.
@@ -21,7 +21,7 @@ if(BUILD_VRPN_CLIENTS)
 		vrpn_print_devices.C
 		#vrpn_print_messages.C
 	)
-	
+
 	set(TEST_SOURCES
 		add_vrpn_cookie.C
 		bdbox_client.C

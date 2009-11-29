@@ -11,12 +11,12 @@ if(QUATLIB_BUILD_EXAMPLES)
 		qmult
 		qxform
 		timer)
-	
-	
+
+
 	foreach(APP ${TESTAPPS})
 		add_executable(quat_${APP} ${APP}.c)
 		target_link_libraries(quat_${APP} quat)
-	
+
 		if(WIN32) # MS-Windows, both 32 and 64 bits
 	      # nothing here yet
 	    elseif(APPLE) # Apple
@@ -24,7 +24,7 @@ if(QUATLIB_BUILD_EXAMPLES)
 	    elseif(UNIX) # other UNIXes
 	      target_link_libraries(quat_${APP} m) # Math library
 	    endif()
-	
+
 	endforeach()
 
 endif()

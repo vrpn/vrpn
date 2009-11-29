@@ -2,7 +2,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
 #-----------------------------------------------------------------------------
 # XXX Things to make better.
-# 
+#
 # Move applications into subprojects in visual studio
 # XXX tracker_to_poser
 # XXX daq_server
