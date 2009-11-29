@@ -19,6 +19,9 @@ if(VRPN_BUILD_CLIENTS)
 	#-----------------------------------------------------------------------------
 	# Libraries we need to do our thing.
 	find_package(GLUT)
+	if(APPLE)
+		mark_as_advanced(GLUT_cocoa_LIBRARY)
+	endif()
 	find_package(OpenGL)
 
 	set(CLIENTS_SOURCES
