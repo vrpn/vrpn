@@ -135,42 +135,71 @@ install(TARGETS vrpn_server
 #-----------------------------------------------------------------------------
 # Install the vrpn.cfg file needed by the server.
 install(FILES ${VRPN_SOURCE_DIR}/server_src/vrpn.cfg
-	DESTINATION bin)
+	DESTINATION etc)
 
-#-----------------------------------------------------------------------------
-# A little utility helper macro to setup default linkages and filenames
-macro(CAPC_APPLICATION APPLICATION_NAME SOLUTION_NAME)
-  set(TARGET_NAME ${APPLICATION_NAME})
-  add_executable(${APPLICATION_NAME} ${APPLICATION_NAME}.C)
-  target_link_libraries(${APPLICATION_NAME} ${VRPN_SERVER_LIBRARY})
-  set_target_properties(${APPLICATION_NAME} PROPERTIES SOLUTION_FOLDER ${SOLUTION_NAME})
-  install(TARGETS ${APPLICATION_NAME} RUNTIME DESTINATION bin)
-endmacro(CAPC_APPLICATION)
-
-macro(CPP_APPLICATION APPLICATION_NAME SOLUTION_NAME)
-  set(TARGET_NAME ${APPLICATION_NAME})
-  add_executable(${APPLICATION_NAME} ${APPLICATION_NAME}.cpp)
-  target_link_libraries(${APPLICATION_NAME} ${VRPN_SERVER_LIBRARY})
-  set_target_properties(${APPLICATION_NAME} PROPERTIES SOLUTION_FOLDER ${SOLUTION_NAME})
-  install(TARGETS ${APPLICATION_NAME} RUNTIME DESTINATION bin)
-endmacro(CPP_APPLICATION)
 
 #-----------------------------------------------------------------------------
 # Declaration of the simple test applications that don't have extra files
 
-CAPC_APPLICATION(client_and_server tests)
-CAPC_APPLICATION(test_analogfly tests)
-CAPC_APPLICATION(test_freespace tests)
-CAPC_APPLICATION(test_radamec_spi tests)
-CAPC_APPLICATION(test_logging tests)
-CAPC_APPLICATION(test_rumble tests)
-CPP_APPLICATION(testimager_server tests)
-CAPC_APPLICATION(test_auxiliary_logger tests)
-CAPC_APPLICATION(test_vrpn tests)
-CAPC_APPLICATION(test_peerMutex tests)
-#CAPC_APPLICATION(forward tests)
-#CAPC_APPLICATION(last_of_sequence tests)
-#CAPC_APPLICATION(testSharedObject tests)
-#CAPC_APPLICATION(text tests)
-#CAPC_APPLICATION(sample_server tests)
-#CAPC_APPLICATION(sample_analog tests)
+# XXX Are these files compiled somewhere?
+# NIUtil.cpp
+# NIUtil.h
+#clock_server.C
+#constraint.C
+#constraint.h
+#daq_server.C
+#directXFF.C
+#forcefield.C
+#forcefield.h
+#ghost.h
+#make_vrpn_libs_build.cpp
+#nidaqClient.cpp
+#nidaqServer.cpp
+#plane.C
+#plane.h
+#texture_plane.C
+#texture_plane.h
+#trimesh.C
+#trimesh.h
+#vrpn.C
+#vrpn_Generic_server_object.C
+#vrpn_Generic_server_object.h
+#vrpn_HID_device_watcher.cpp
+#vrpn_Phantom.C
+#vrpn_Phantom.h
+
+
+
+set(SRV_TEST_SOURCES
+	client_and_server.C
+	#forward.C
+	#last_of_sequence.C
+	#sample_analog.C
+	#sample_server.C
+	#testSharedObject.C
+	test_analogfly.C
+	test_auxiliary_logger.C
+	test_freespace.C
+	test_logging.C
+	#test_mutex.C
+	test_peerMutex.C
+	test_radamec_spi.C
+	test_rumble.C
+	test_vrpn.C
+	testimager_server.cpp
+	#text.C
+)
+
+
+###
+# Tests
+###
+foreach(SOURCE ${SRV_TEST_SOURCES})
+	get_filename_component(APP ${SOURCE} NAME_WE)
+	add_executable(${APP} ${SOURCE})
+	target_link_libraries(${APP} ${VRPN_SERVER_LIBRARY})
+	set_target_properties(${APP} PROPERTIES SOLUTION_FOLDER tests)
+	set_target_properties(${APP} PROPERTIES HAS_CXX yes)
+	install(TARGETS ${APP}
+		RUNTIME DESTINATION bin)
+endforeach()
