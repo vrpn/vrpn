@@ -56,6 +56,7 @@ configure_file(
   "${PROJECT_SOURCE_DIR}/vrpn_Configure.h.cmake_in"
   "${PROJECT_BINARY_DIR}/vrpn_Configure.h"
 )
+include_directories(${PROJECT_BINARY_DIR})
 
 
 # Configuration options controlling what gets included in the build.
