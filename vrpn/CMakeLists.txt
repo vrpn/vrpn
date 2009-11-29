@@ -43,9 +43,10 @@ if(NOT WIN32)
 endif()
 
 if(APPLE)
-	find_library(COREFOUNDATION_LIBRARY CoreFoundation)
-	find_library(IOKIT_LIBRARY IOKit)
-	list(APPEND EXTRA_LIBS ${COREFOUNDATION_LIBRARY} ${IOKIT_LIBRARY})
+	find_library(MACOSX_COREFOUNDATION_LIBRARY CoreFoundation)
+	find_library(MACOSX_IOKIT_LIBRARY IOKit)
+	list(APPEND EXTRA_LIBS ${MACOSX_COREFOUNDATION_LIBRARY} ${MACOSX_IOKIT_LIBRARY})
+	mark_as_advanced(MACOSX_COREFOUNDATION_LIBRARY MACOSX_IOKIT_LIBRARY)
 endif()
 
 #-----------------------------------------------------------------------------
@@ -79,14 +80,17 @@ option(VRPN_USE_FREESPACE "Enable to include Hillcrest Labs' Freespace devices i
 #-----------------------------------------------------------------------------
 # Options that control what gets built and how.
 
-# Build a server version of the library
-option(VRPN_BUILD_LIBRARY_CLIENT_ONLY "Enable to build a library including only client code" OFF)
+# We can build two configurations (passing defs to the compile lines) - which do we want?
+option(VRPN_BUILD_CLIENT_LIBRARY "Build the vrpn library including only client code" ON)
+option(VRPN_BUILD_SERVER_LIBRARY "Build the vrpnserver library including client and server code" ON)
 
 # Build various applications if we want them.
-option(VRPN_BUILD_CLIENTS "Enable to build VRPN clients" ON)
-option(VRPN_BUILD_SERVERS "Enable to build VRPN servers" ON)
-option(VRPN_BUILD_TEST_RPC_GENERATION "Enable to build VRPN RPC generation" OFF)
-option(VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER "Enable to build DirectShow Video Server (Windows)" OFF)
+option(VRPN_BUILD_CLIENTS "Build VRPN client apps and tests" ON)
+option(VRPN_BUILD_SERVERS "Build VRPN servers" ON)
+option(VRPN_BUILD_TEST_RPC_GENERATION "Build VRPN RPC generation" OFF)
+if(WIN32)
+	option(VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER "Enable to build DirectShow Video Server (Windows)" OFF)
+endif()
 
 #-----------------------------------------------------------------------------
 # Build the library itself and declare what bits need to be installed
@@ -277,18 +281,44 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_XInputGamepad.h
 )
 
-if(VRPN_BUILD_LIBRARY_CLIENT_ONLY)
-	add_library(vrpn ${VRPN_CLIENT_SOURCES} ${VRPN_CLIENT_PUBLIC_HEADERS})
-	set_property(TARGET vrpn PROPERTY PUBLIC_HEADER ${VRPN_CLIENT_PUBLIC_HEADERS})
-else()
-	add_library(vrpn ${VRPN_SERVER_SOURCES} ${VRPN_SERVER_PUBLIC_HEADERS})
-	set_property(TARGET vrpn PROPERTY PUBLIC_HEADER ${VRPN_SERVER_PUBLIC_HEADERS})
-endif()
+set(VRPN_SERVER_LIBRARY NO)
+set(VRPN_CLIENT_LIBRARY NO)
 
-target_link_libraries(vrpn quat ${EXTRA_LIBS})
-install(TARGETS vrpn
+if(VRPN_BUILD_SERVER_LIBRARY)
+	set(VRPN_SERVER_LIBRARY vrpnserver)
+	set(VRPN_CLIENT_LIBRARY vrpnserver) # If we build the client, this gets overridden.
+
+	add_library(vrpnserver ${VRPN_SERVER_SOURCES} ${VRPN_SERVER_PUBLIC_HEADERS})
+	target_link_libraries(vrpnserver ${QUATLIB_LIBRARIES} ${EXTRA_LIBS})
+	if(VRPN_USE_GPM_MOUSE)
+		# XXX use a find_package here
+		target_link_libraries(vrpnserver gpm)
+	endif()
+	set_property(TARGET vrpnserver PROPERTY PUBLIC_HEADER ${VRPN_SERVER_PUBLIC_HEADERS})
+
+	install(TARGETS vrpnserver
 		ARCHIVE DESTINATION lib
 		PUBLIC_HEADER DESTINATION include)
+endif()
+
+
+
+if(VRPN_BUILD_CLIENT_LIBRARY)
+	set(VRPN_CLIENT_LIBRARY vrpn)
+	add_library(vrpn ${VRPN_CLIENT_SOURCES} ${VRPN_CLIENT_PUBLIC_HEADERS})
+	target_link_libraries(vrpn ${QUATLIB_LIBRARIES} ${EXTRA_LIBS})
+
+	if(NOT VRPN_BUILD_SERVER_LIBRARY)
+		# Only install these headers if we aren't building a server library.
+		set_property(TARGET vrpn PROPERTY PUBLIC_HEADER ${VRPN_CLIENT_PUBLIC_HEADERS})
+	endif()
+
+	set_property(TARGET vrpn PROPERTY COMPILE_DEFINITIONS "VRPN_CLIENT_ONLY")
+
+	install(TARGETS vrpn
+		ARCHIVE DESTINATION lib
+		PUBLIC_HEADER DESTINATION include)
+endif()
 
 
 # Include directory needed by all of the files
