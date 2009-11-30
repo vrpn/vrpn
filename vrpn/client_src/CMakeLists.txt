@@ -32,19 +32,19 @@ if(VRPN_BUILD_CLIENTS)
 	set(TEST_SOURCES
 		add_vrpn_cookie.C
 		bdbox_client.C
-		#checklogfile.c
+		checklogfile.c
 		clock_drift_estimator.C
 		ff_client.C
 		forcedevice_test_client.cpp
 		forwarderClient.C
-		#logfilesenders.c
-		#logfiletypes.c
-		#midi_client.c
+		logfilesenders.c
+		logfiletypes.c
+		#midi_client.c # cannot find type vrpn_Sound_Remote
 		#ohm_client.C
 		phan_client.C
 		printcereal.C
-		#printvals.c
-		#sound_client.c
+		printvals.c
+		#sound_client.c # cannot find type vrpn_Sound_Remote
 		sphere_client.C
 		testSharedObject.C
 		test_Zaber.C
@@ -56,9 +56,6 @@ if(VRPN_BUILD_CLIENTS)
 		vrpn_ping.C
 	)
 
-	#set(ORIG_C_COMPILER ${CMAKE_C_COMPILER})
-	#set(CMAKE_C_COMPILER ${CMAKE_CXX_COMPILER})
-
 	###
 	# Tests
 	###
@@ -66,8 +63,12 @@ if(VRPN_BUILD_CLIENTS)
 		get_filename_component(APP ${SOURCE} NAME_WE)
 		add_executable(${APP} ${SOURCE})
 		target_link_libraries(${APP} ${VRPN_CLIENT_LIBRARY})
+		
 		set_target_properties(${APP} PROPERTIES SOLUTION_FOLDER tests)
+		# Force C compilation and linking
+		set_property(SOURCE ${SOURCE} PROPERTY LANGUAGE CXX)
 		set_target_properties(${APP} PROPERTIES HAS_CXX yes)
+		
 		install(TARGETS ${APP}
 			RUNTIME DESTINATION bin)
 	endforeach()
@@ -76,17 +77,22 @@ if(VRPN_BUILD_CLIENTS)
 		include_directories(${GLUT_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR})
 		add_executable(testimager_client testimager_client.C)
 		target_link_libraries(testimager_client ${VRPN_CLIENT_LIBRARY} ${GLUT_LIBRARIES} ${OPENGL_LIBRARIES})
+		
 		set_target_properties(testimager_client PROPERTIES SOLUTION_FOLDER tests)
+		
 		install(TARGETS testimager_client
 			RUNTIME DESTINATION bin)
 	endif()
 
-	#add_executable(c_interface_example c_interface_example.c c_interface.cpp)
-	#target_link_libraries(c_interface_example ${VRPN_CLIENT_LIBRARY})
-	#set_target_properties(c_interface_example PROPERTIES SOLUTION_FOLDER tests)
-	#set_target_properties(c_interface_example PROPERTIES HAS_CXX yes)
-	#install(TARGETS c_interface_example RUNTIME DESTINATION bin)
-	#set(CMAKE_C_COMPILER ${ORIG_C_COMPILER})
+	add_executable(c_interface_example c_interface_example.c c_interface.cpp)
+	target_link_libraries(c_interface_example ${VRPN_CLIENT_LIBRARY})
+	
+	set_target_properties(c_interface_example PROPERTIES SOLUTION_FOLDER tests)
+	# Force C compilation and linking
+	set_property(SOURCE c_interface_example.c PROPERTY LANGUAGE CXX)
+	set_target_properties(c_interface_example PROPERTIES HAS_CXX yes)
+	
+	install(TARGETS c_interface_example RUNTIME DESTINATION bin)
 
 
 	###
@@ -96,8 +102,12 @@ if(VRPN_BUILD_CLIENTS)
 		get_filename_component(APP ${SOURCE} NAME_WE)
 		add_executable(${APP} ${SOURCE})
 		target_link_libraries(${APP} ${VRPN_CLIENT_LIBRARY})
+		
 		set_target_properties(${APP} PROPERTIES SOLUTION_FOLDER clients)
+		# Force C compilation and linking
+		set_property(SOURCE ${SOURCE} PROPERTY LANGUAGE CXX)
 		set_target_properties(${APP} PROPERTIES HAS_CXX yes)
+		
 		install(TARGETS ${APP}
 			RUNTIME DESTINATION bin)
 	endforeach()
