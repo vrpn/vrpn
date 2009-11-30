@@ -20,6 +20,7 @@ else()
 	find_path(QUATLIB_INCLUDE_DIR NAMES quat.h
 			PATHS
 			"C:/Program Files/quatlib/include"
+			"../quat"
 	)
 	mark_as_advanced(QUATLIB_INCLUDE_DIR)
 	
@@ -27,6 +28,8 @@ else()
 	find_library(QUATLIB_LIBRARY NAMES quat.lib libquat.a
 			PATHS
 			"C:/Program Files/quatlib/lib"
+			"../buildquat"
+			"../buildquat/release"
 	)
 	mark_as_advanced(QUATLIB_LIBRARY)
 endif()

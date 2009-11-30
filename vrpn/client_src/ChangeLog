@@ -1,3 +1,9 @@
+2009-11-27  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CMakeLists.txt : Turning off testimager_client on all but Windows.
+	* testimager_client.C : Removing declarations that aren't needed but that
+		only worked on Windows.
+
 2009-11-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* ff_client.C : Picking lint found by a new compiler (const declarations and

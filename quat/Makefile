@@ -140,7 +140,7 @@ endif
 
 CFLAGS = -g $(INCLUDE_FLAGS)
 OPT_CFLAGS = -O $(INCLUDE_FLAGS)
-MAKEFILE = makefile
+MAKEFILE = Makefile
 
 QUAT_LIB = libquat.a
 
