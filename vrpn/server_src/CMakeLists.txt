@@ -151,7 +151,6 @@ install(FILES ${VRPN_SOURCE_DIR}/server_src/vrpn.cfg
 #make_vrpn_libs_build.cpp
 #nidaqClient.cpp
 #nidaqServer.cpp
-#vrpn_HID_device_watcher.cpp
 
 
 
@@ -173,6 +172,7 @@ set(SRV_TEST_SOURCES
 	test_vrpn.C
 	testimager_server.cpp
 	#text.C
+	#vrpn_HID_device_watcher.cpp
 )
 
 
