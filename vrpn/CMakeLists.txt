@@ -58,8 +58,11 @@ configure_file(
   "${PROJECT_SOURCE_DIR}/vrpn_Configure.h.cmake_in"
   "${PROJECT_BINARY_DIR}/vrpn_Configure.h"
 )
-include_directories(${PROJECT_BINARY_DIR})
 
+# Force use of our CMake-processed configuration header
+if(CMAKE_COMPILER_IS_GNUCXX)
+	add_definitions("-include \"${PROJECT_BINARY_DIR}/vrpn_Configure.h\"")
+endif()
 
 # Configuration options controlling what gets included in the build.
 option(VRPN_USE_PHANTOM_SERVER "Enable to include SensAble Phantom code in build (see vrpn_Configure.h for more info)" OFF)
