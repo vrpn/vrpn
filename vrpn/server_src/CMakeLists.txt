@@ -28,7 +28,7 @@ if(VRPN_USE_PHANTOM_SERVER)
 		constraint.C
 		forcefield.C
 		plane.C
-		texture_plane.h texture_plane.C
+		texture_plane.C
 		trimesh.C
 		vrpn_Phantom.C
 	)
@@ -40,6 +40,7 @@ if(VRPN_USE_PHANTOM_SERVER)
 		forcefield.h
 		ghost.h
 		plane.h
+		texture_plane.h
 		trimesh.h
 		vrpn_Phantom.h
 	)
@@ -142,31 +143,15 @@ install(FILES ${VRPN_SOURCE_DIR}/server_src/vrpn.cfg
 # Declaration of the simple test applications that don't have extra files
 
 # XXX Are these files compiled somewhere?
-# NIUtil.cpp
-# NIUtil.h
+#NIUtil.cpp
+#NIUtil.h
 #clock_server.C
-#constraint.C
-#constraint.h
 #daq_server.C
 #directXFF.C
-#forcefield.C
-#forcefield.h
-#ghost.h
 #make_vrpn_libs_build.cpp
 #nidaqClient.cpp
 #nidaqServer.cpp
-#plane.C
-#plane.h
-#texture_plane.C
-#texture_plane.h
-#trimesh.C
-#trimesh.h
-#vrpn.C
-#vrpn_Generic_server_object.C
-#vrpn_Generic_server_object.h
 #vrpn_HID_device_watcher.cpp
-#vrpn_Phantom.C
-#vrpn_Phantom.h
 
 
 
