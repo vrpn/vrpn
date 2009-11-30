@@ -10,6 +10,7 @@
 \*****************************************************************************/
 
 #include "vrpn_Nidaq.h"
+#if defined(WIN32) || defined(_WIN32)
 #include <uptime.h>
 
 // for fNice stuff
@@ -19,7 +20,7 @@
 #include <process.h>
 // must link to multithreaded libs
 
-#if defined(WIN32) || defined(_WIN32)
+
 //#define VERBOSE
 vrpn_Nidaq::vrpn_Nidaq(char *pchName, vrpn_Connection *pConnection,
 		       double dSamplingRate, double dInterChannelRate, 
