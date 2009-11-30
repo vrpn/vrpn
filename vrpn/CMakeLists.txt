@@ -105,6 +105,7 @@ endif()
 set(VRPN_CLIENT_SOURCES
 	"${PROJECT_BINARY_DIR}/vrpn_Configure.h"
 	vrpn_Connection.C
+	vrpn_TypeDispatcher.C
 	vrpn_Tracker.C
 	vrpn_Button.C
 	vrpn_ForceDevice.C
@@ -131,6 +132,8 @@ set(VRPN_CLIENT_SOURCES
 
 set(VRPN_CLIENT_PUBLIC_HEADERS
 	vrpn_Connection.h
+	vrpn_ConnectionTypes.h
+	vrpn_TypeDispatcher.h
 	vrpn_Tracker.h
 	vrpn_Button.h
 	vrpn_Sound.h
@@ -152,6 +155,7 @@ set(VRPN_CLIENT_PUBLIC_HEADERS
 	vrpn_Analog_Output.h
 	vrpn_Poser.h
 	vrpn_Auxiliary_Logger.h
+	vrpn_Types.h
 )
 
 set(VRPN_SERVER_SOURCES
@@ -259,6 +263,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_3DMicroscribe.h
 	vrpn_5DT16.h
 	vrpn_ForceDeviceServer.h
+	vrpn_HashST.h
 	vrpn_Keyboard.h
 	vrpn_Analog_USDigital_A2.h
 	vrpn_Button_NI_DIO24.h
