@@ -1,3 +1,7 @@
+2009-11-27  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CMakeLists.txt : Added libraries required on the Mac.
+
 2009-11-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* client_and_server.C : Picking lint found by a new compiler.  Const 

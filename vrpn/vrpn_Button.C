@@ -24,7 +24,7 @@
 
 #ifndef __CYGWIN__
 #ifndef _WIN32_WCE
-#include <conio.h>  // for _inp()
+#include <intrin.h>  // for _inp()
 #endif
 #endif
 

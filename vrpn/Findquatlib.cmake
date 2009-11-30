@@ -9,6 +9,7 @@
 FIND_PATH(QUATLIB_INCLUDE_DIR NAMES quat.h
 		PATHS
 		"C:/Program Files/quatlib/include"
+		"../quat"
 )
 MARK_AS_ADVANCED(QUATLIB_INCLUDE_DIR)
 
@@ -16,6 +17,8 @@ MARK_AS_ADVANCED(QUATLIB_INCLUDE_DIR)
 FIND_LIBRARY(QUATLIB_LIBRARY NAMES quat.lib libquat.a
 		PATHS
 		"C:/Program Files/quatlib/lib"
+		"../buildquat"
+		"../buildquat/release"
 )
 MARK_AS_ADVANCED(QUATLIB_LIBRARY)
 

@@ -65,9 +65,6 @@ void  VRPN_CALLBACK handle_description_message(void *, const struct timeval)
 }
 
 void myDisplayFunc();
-float fps[2]={0,0};
-DWORD lastCallTime[2]={0,0};
-DWORD ReportInterval=5000;
 
 // New pixels coming: fill them into the image and tell Glut to redraw.
 
