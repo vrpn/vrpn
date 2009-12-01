@@ -23,7 +23,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad_ForceDevice_Remote( JavaVM* jvm, void* reserve
   // make sure the general library code set jvm
   if( jvm == NULL )
   {
-	printf( "vrpn_TrackerRemote native:  no jvm.\n" );
+	printf( "vrpn_ForceDevice native:  no jvm.\n" );
     return JNI_ERR;
   }
 
@@ -255,7 +255,7 @@ Java_vrpn_ForceDeviceRemote_mainloop( JNIEnv* env, jobject jobj )
 JNIEXPORT void JNICALL 
 Java_vrpn_ForceDeviceRemote_shutdownForceDevice( JNIEnv* env, jobject jobj )
 {
-  // get the force deivce pointer
+  // get the force device pointer
   vrpn_ForceDevice_Remote* f = (vrpn_ForceDevice_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
   
   // unregister a handler and destroy the force device

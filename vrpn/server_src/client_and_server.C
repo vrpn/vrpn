@@ -13,7 +13,7 @@
 #include "vrpn_Tracker.h"
 #include <string.h>
 
-char	*TRACKER_NAME = "Tracker0";
+const char	*TRACKER_NAME = "Tracker0";
 int	CONNECTION_PORT = vrpn_DEFAULT_LISTEN_PORT_NO;	// Port for connection to listen on
 
 vrpn_Tracker_NULL	*ntkr;
@@ -30,7 +30,7 @@ void	VRPN_CALLBACK handle_pos (void *, const vrpn_TRACKERCB t)
 {
 	static	int	count = 0;
 
-	fprintf(stderr, "%ld.", t.sensor);
+	fprintf(stderr, "%d.", t.sensor);
 	if ((++count % 20) == 0) {
 		fprintf(stderr, "\n");
 		if (count > 300) {
@@ -45,14 +45,14 @@ void	VRPN_CALLBACK handle_vel (void *, const vrpn_TRACKERVELCB t)
 {
 	//static	int	count = 0;
 
-	fprintf(stderr, "%ld/", t.sensor);
+	fprintf(stderr, "%d/", t.sensor);
 }
 
 void	VRPN_CALLBACK handle_acc (void *, const vrpn_TRACKERACCCB t)
 {
 	//static	int	count = 0;
 
-	fprintf(stderr, "%ld~", t.sensor);
+	fprintf(stderr, "%d~", t.sensor);
 }
 
 int main (int argc, char * argv [])

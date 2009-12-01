@@ -24,7 +24,7 @@
 
 #ifndef __CYGWIN__
 #ifndef _WIN32_WCE
-#include <conio.h>  // for _inp()
+#include <intrin.h>  // for _inp()
 #endif
 #endif
 
@@ -442,7 +442,7 @@ vrpn_Button_Parallel::vrpn_Button_Parallel(const char *name,
 	: vrpn_Button_Filter(name, c)
 {      
 #ifdef linux
-    char *portname;
+    const char *portname;
     switch (portno) {
 	case 1: portname = "/dev/lp0";
 		break;

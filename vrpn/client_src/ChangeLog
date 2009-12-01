@@ -1,3 +1,35 @@
+2009-11-27  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CMakeLists.txt : Turning off testimager_client on all but Windows.
+	* testimager_client.C : Removing declarations that aren't needed but that
+		only worked on Windows.
+
+2009-11-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* ff_client.C : Picking lint found by a new compiler (const declarations and
+		printf format descriptions.
+	* phan_client.C : Same.
+	* printceral.C : Same.
+	* sphere_client.C : Same.
+	* text.C : Same.
+	* vrpn_print_devices.C : Same.
+
+2009-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CMakeLists.txt : File to describe to the Cmake build system how
+		to compile VRPN.
+	* ff_client.C : Upgrade to compile on Windows with recent VRPN.
+	* phan_client.C : same.
+	* testSharedObject.C : same.
+	* text.C : same.
+	* vrpn_ping.C : same.
+
+2009-11-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* sound_client.c : Fixed it so that it compiles.  There must
+		have been an inadvertent cutting out of some lines in
+		the code.
+
 2009-09-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
         * Makefile : Turned "-g" flag into "$(DEBUG_FLAGS)" throughout.
