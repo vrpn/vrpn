@@ -215,6 +215,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Tracker_MotionNode.C
 	vrpn_Tracker_NDI_Polaris.C
 	vrpn_Tracker_PhaseSpace.C
+	vrpn_Tracker_WiimoteHead.C
 	vrpn_UNC_Joystick.C
 	vrpn_VPJoystick.C
 	vrpn_Wanda.C
@@ -284,6 +285,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Tracker_MotionNode.h
 	vrpn_Tracker_NDI_Polaris.h
 	vrpn_Tracker_PhaseSpace.h
+	vrpn_Tracker_WiimoteHead.h
 	vrpn_UNC_Joystick.h
 	vrpn_VPJoystick.h
 	vrpn_Wanda.h
