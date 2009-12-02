@@ -20,7 +20,7 @@ class VRPN_API vrpn_TWH_blob {
 	vrpn_TWH_blob (void)
 	{ name = NULL; first_channel = NULL; ana = NULL; wh = NULL; };
 
-	char * name;	//< Name of the Analog device corresponding to this Wiimote
+	const char * name;	//< Name of the Analog device corresponding to this Wiimote
 	int first_channel;	//< Which channel to start at from the Analog device
 
 	vrpn_Analog_Remote * ana;
@@ -45,7 +45,7 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 	public:
 	vrpn_Tracker_WiimoteHead (const char* name,
 				  vrpn_Connection * trackercon,
-				  char * wiimote,
+				  const char * wiimote,
 				  float update_rate,
 				  vrpn_bool absolute = vrpn_TRUE,
 				  vrpn_bool reportChanges = VRPN_FALSE);

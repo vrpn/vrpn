@@ -10,12 +10,24 @@
 #include <stdio.h>
 #include <signal.h>
 #include <string.h>
-#include "vrpn_Tracker.h"
 #include <string.h>
 
+#include "vrpn_Tracker.h"
+#if defined(VRPN_USE_WIIUSE)
+#include "vrpn_WiiMote.h"
+#include "vrpn_Tracker_WiimoteHead.h"
+#endif
+
+
 const char	*TRACKER_NAME = "Tracker0";
+const char	*WIIMOTE_NAME = "Wiimote0";
+const char	*WIIMOTE_REMOTE_NAME = "*Wiimote0";
 int	CONNECTION_PORT = vrpn_DEFAULT_LISTEN_PORT_NO;	// Port for connection to listen on
 
+#if defined(VRPN_USE_WIIUSE)
+vrpn_Tracker_WiimoteHead	*wmtkr;
+vrpn_WiiMote		*wiimote;
+#endif
 vrpn_Tracker_NULL	*ntkr;
 vrpn_Tracker_Remote	*tkr;
 vrpn_Connection		*connection;
@@ -64,9 +76,21 @@ int main (int argc, char * argv [])
 
 	// explicitly open the connection
 	connection = vrpn_create_server_connection(CONNECTION_PORT);
-
+#if defined(VRPN_USE_WIIUSE)
+	wiimote = new vrpn_WiiMote(WIIMOTE_NAME, connection);
+	if (!wiimote) {
+			fprintf(stderr, "Could not open Wiimote named %s.\n", WIIMOTE_NAME);
+	}
+	wmtkr = new vrpn_Tracker_WiimoteHead(TRACKER_NAME, connection, WIIMOTE_REMOTE_NAME, 1.0);
+	if (!wmtkr) {
+			fprintf(stderr, "Could not open Wiimote Head Tracker named %s.\n", TRACKER_NAME);
+	}
+#else
 	// Open the tracker server, using this connection, 2 sensors, update 60 times/sec
 	ntkr = new vrpn_Tracker_NULL(TRACKER_NAME, connection, 2, 60.0);
+#endif
+
+
 
 	// Open the tracker remote using this connection
 	fprintf(stderr, "Tracker's name is %s.\n", TRACKER_NAME);
@@ -78,12 +102,17 @@ int main (int argc, char * argv [])
 	tkr->register_change_handler(NULL, handle_vel);
 	tkr->register_change_handler(NULL, handle_acc);
 
-	/* 
+	/*
 	 * main interactive loop
 	 */
 	while ( 1 ) {
 		// Let the tracker server, client and connection do their things
+#if defined(VRPN_USE_WIIUSE)
+		wiimote->mainloop();
+		wmtkr->mainloop();
+#else
 		ntkr->mainloop();
+#endif
 		tkr->mainloop();
 		connection->mainloop();
 

@@ -15,7 +15,7 @@ static	double	duration(struct timeval t1, struct timeval t2)
 	       (t1.tv_sec - t2.tv_sec);
 }
 
-vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connection* trackercon, char* wiimote, float update_rate,	vrpn_bool absolute, vrpn_bool reportChanges) :
+vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connection* trackercon, const char* wiimote, float update_rate,	vrpn_bool absolute, vrpn_bool reportChanges) :
 	vrpn_Tracker (name, trackercon),
 	d_update_interval (update_rate ? (1 / update_rate) : 1.0),
 	d_absolute (absolute),
@@ -271,7 +271,7 @@ void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interva
  			points++;
  		}
  	}
- 
+
  	if (points == 2) {
  		// TODO right now only handling the 2-LED glasses at 15cm distance.
  		double dx, dy;
@@ -282,15 +282,15 @@ void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interva
  		double radPerPx = (33 / 180 * M_PI) / 1024;
  		double angle = radPerPx * dist / 2;
  		double headDist = (d_blobDistance / 2) / tan(angle);
- 
+
  		float avgX = (x[0] + x[1]) / 2;
  		float avgY = (y[0] + y[1]) / 2;
- 
+
  		tz = headDist;
- 			
- 
+
+
  	}
- 		
+
 	// compute the translation and rotation
 	/*
 	tx = d_x.value * time_interval;
