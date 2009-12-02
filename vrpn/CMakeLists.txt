@@ -310,6 +310,11 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 		# XXX use a find_package here
 		target_link_libraries(vrpnserver gpm)
 	endif()
+	if(VRPN_USE_WIIUSE)
+		# XXX use a find_package here
+		find_library(WIIUSE_LIBRARY wiiuse)
+		target_link_libraries(vrpnserver ${WIIUSE_LIBRARY})
+	endif()
 	set_property(TARGET vrpnserver PROPERTY PUBLIC_HEADER ${VRPN_SERVER_PUBLIC_HEADERS})
 
 	install(TARGETS vrpnserver
