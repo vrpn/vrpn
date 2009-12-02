@@ -62,6 +62,8 @@ configure_file(
 # Force use of our CMake-processed configuration header
 if(CMAKE_COMPILER_IS_GNUCXX)
 	add_definitions("-include \"${PROJECT_BINARY_DIR}/vrpn_Configure.h\"")
+elseif(MSVC)
+	add_definitions("/FI \"${PROJECT_BINARY_DIR}/vrpn_Configure.h\"")
 endif()
 
 # Configuration options controlling what gets included in the build.
