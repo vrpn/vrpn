@@ -9,9 +9,11 @@ cmake_minimum_required(VERSION 2.6)
 # XXX vrpn_hid_device_watcher
 # Fix the ones that are commented out so that they compile and run?
 
-if(NOT VRPN_SERVER_LIBRARY)
+if(NOT VRPN_BUILD_SERVER_LIBRARY)
 	message(FATAL_ERROR "Cannot compile servers without the full (server) library.  Enable it and try again.")
 endif()
+
+set(VRPN_SERVER_LIBRARY vrpnserver)
 
 if(NOT WIN32)
 	set(VRPN_ATMEL_LIBRARY vrpn_atmel)
