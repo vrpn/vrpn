@@ -12,7 +12,7 @@
 #include <sys/time.h>
 #endif
 
-class VRPN_API vrpn_Tracker_WiimoteHead;	// Forward reference
+class VRPN_API vrpn_Tracker_WiimoteHead;        // Forward reference
 
 class VRPN_API vrpn_TWH_blob {
 	public:
@@ -20,11 +20,11 @@ class VRPN_API vrpn_TWH_blob {
 	vrpn_TWH_blob (void)
 	{ name = NULL; first_channel = NULL; ana = NULL; wh = NULL; };
 
-	const char * name;	//< Name of the Analog device corresponding to this Wiimote
-	int first_channel;	//< Which channel to start at from the Analog device
+	const char* name;       //< Name of the Analog device corresponding to this Wiimote
+	int first_channel;      //< Which channel to start at from the Analog device
 
-	vrpn_Analog_Remote * ana;
-	vrpn_Tracker_WiimoteHead * wh;
+	vrpn_Analog_Remote* ana;
+	vrpn_Tracker_WiimoteHead* wh;
 
 	double x;
 	double y;
@@ -45,7 +45,7 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 	public:
 	vrpn_Tracker_WiimoteHead (const char* name,
 				  vrpn_Connection * trackercon,
-				  const char * wiimote,
+				  const char* wiimote,
 				  float update_rate,
 				  vrpn_bool absolute = vrpn_TRUE,
 				  vrpn_bool reportChanges = VRPN_FALSE);

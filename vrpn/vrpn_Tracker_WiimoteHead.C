@@ -9,8 +9,7 @@
 #define M_PI		3.14159265358979323846
 #endif
 
-static	double	duration(struct timeval t1, struct timeval t2)
-{
+static	double	duration(struct timeval t1, struct timeval t2) {
 	return (t1.tv_usec - t2.tv_usec) / 1000000.0 +
 	       (t1.tv_sec - t2.tv_sec);
 }
@@ -20,9 +19,9 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connec
 	d_update_interval (update_rate ? (1 / update_rate) : 1.0),
 	d_absolute (absolute),
 	d_reportChanges (reportChanges),
-	d_blobDistance (.15)
-{
+	d_blobDistance (.15) {
 	int i;
+
 	for (i = 0; i < 4; i++) {
 		d_blobs[i].name = wiimote;
 		d_blobs[i].first_channel = i * 3 + 4;
@@ -42,7 +41,7 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connec
 	//--------------------------------------------------------------------
 	// Set the initialization matrix to identity, then also set
 	// the current matrix to identity
-	for ( i = 0; i < 4; i++) {
+	for (i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
 			d_initMatrix[i][j] = 0;
 		}
@@ -66,8 +65,7 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connec
 	}
 }
 
-vrpn_Tracker_WiimoteHead::~vrpn_Tracker_WiimoteHead (void)
-{
+vrpn_Tracker_WiimoteHead::~vrpn_Tracker_WiimoteHead (void) {
 	// Tear down the analog update callbacks and remotes
 	teardown_blob(&d_blobs[0]);
 	teardown_blob(&d_blobs[1]);
@@ -80,12 +78,12 @@ vrpn_Tracker_WiimoteHead::~vrpn_Tracker_WiimoteHead (void)
 // update the value there. The value is used by the matrix-generation code in
 // mainloop() to update the transformations; that work is not done here.
 
-void	vrpn_Tracker_WiimoteHead::handle_analog_update(void* userdata, const vrpn_ANALOGCB info)
-{
+void	vrpn_Tracker_WiimoteHead::handle_analog_update(void* userdata, const vrpn_ANALOGCB info) {
 	vrpn_TWH_blob* blob = (vrpn_TWH_blob*)userdata;
+
 	blob->x = info.channel[blob->first_channel];
-	blob->y = info.channel[blob->first_channel+1];
-	blob->size = info.channel[blob->first_channel+2];
+	blob->y = info.channel[blob->first_channel + 1];
+	blob->size = info.channel[blob->first_channel + 2];
 
 	// If we're an absolute channel, store the time of the report
 	// into the tracker's timestamp field.
@@ -99,8 +97,7 @@ void	vrpn_Tracker_WiimoteHead::handle_analog_update(void* userdata, const vrpn_A
 // input.
 // Returns 0 on success and -1 on failure.
 
-int	vrpn_Tracker_WiimoteHead::setup_blob(vrpn_TWH_blob* blob)
-{
+int	vrpn_Tracker_WiimoteHead::setup_blob(vrpn_TWH_blob* blob) {
 	if (!blob) { return 0; }
 
 	// If the name is NULL, we're done.
@@ -135,8 +132,7 @@ int	vrpn_Tracker_WiimoteHead::setup_blob(vrpn_TWH_blob* blob)
 // This tears down the Analog Remote for one channel, undoing everything that
 // the setup did. Returns 0 on success and -1 on failure.
 
-int	vrpn_Tracker_WiimoteHead::teardown_blob(vrpn_TWH_blob* blob)
-{
+int	vrpn_Tracker_WiimoteHead::teardown_blob(vrpn_TWH_blob* blob) {
 	int	ret;
 
 	// If the analog pointer is NULL, we're done.
@@ -153,8 +149,7 @@ int	vrpn_Tracker_WiimoteHead::teardown_blob(vrpn_TWH_blob* blob)
 }
 
 // static
-int vrpn_Tracker_WiimoteHead::handle_newConnection(void* userdata, vrpn_HANDLERPARAM)
-{
+int vrpn_Tracker_WiimoteHead::handle_newConnection(void* userdata, vrpn_HANDLERPARAM) {
 	printf("Get a new connection, reset virtual_Tracker\n");
 	((vrpn_Tracker_WiimoteHead*) userdata)->reset();
 
@@ -170,8 +165,7 @@ int vrpn_Tracker_WiimoteHead::handle_newConnection(void* userdata, vrpn_HANDLERP
     the analog device.
 */
 
-void vrpn_Tracker_WiimoteHead::reset(void)
-{
+void vrpn_Tracker_WiimoteHead::reset(void) {
 	// Set the matrix back to the identity matrix
 	q_matrix_copy(d_currentMatrix, d_initMatrix);
 	vrpn_gettimeofday(&d_prevtime, NULL);
@@ -181,10 +175,9 @@ void vrpn_Tracker_WiimoteHead::reset(void)
 	convert_matrix_to_tracker();
 }
 
-void vrpn_Tracker_WiimoteHead::mainloop()
-{
-	struct timeval	      now;
-	double	      interval; // How long since the last report, in secs
+void vrpn_Tracker_WiimoteHead::mainloop() {
+	struct timeval        now;
+	double        interval; // How long since the last report, in secs
 
 	// Call generic server mainloop, since we are a server
 	server_mainloop();
@@ -213,8 +206,8 @@ void vrpn_Tracker_WiimoteHead::mainloop()
 
 		// pack and deliver tracker report;
 		if (d_connection) {
-			char	  msgbuf[1000];
-			int	  len = encode_to(msgbuf);
+			char      msgbuf[1000];
+			int       len = encode_to(msgbuf);
 			if (d_connection->pack_message(len, vrpn_Tracker::timestamp,
 						       position_m_id, d_sender_id, msgbuf,
 						       vrpn_CONNECTION_LOW_LATENCY)) {
@@ -249,8 +242,7 @@ void vrpn_Tracker_WiimoteHead::mainloop()
 // XXX Later, it would be cool to have non-absolute trackers send velocity
 // information as well, since it knows what this is.
 
-void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interval)
-{
+void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interval) {
 	double tx, ty, tz, rx, ry, rz; // Translation (m/s) and rotation (rad/sec)
 	q_matrix_type newM;    // Difference (delta) matrix
 
@@ -261,34 +253,32 @@ void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interva
 
 	// TODO RP Implement the math here!
 	tx = ty = tz = 0;
- 	std::vector<double> x, y, size;
- 	int points = 0, i = 0;
- 	while(i < 4 && d_blobs[i].x != -1 && d_blobs[i].y != -1 && d_blobs[i].size != -1) {
- 			x.push_back(d_blobs[i].x);
- 			y.push_back(d_blobs[i].y);
- 			size.push_back(d_blobs[i].size);
- 			points++;
- 			i++;
- 	}
+	std::vector<double> x, y, size;
+	int points = 0, i = 0;
+	while (i < 4 && d_blobs[i].x != -1 && d_blobs[i].y != -1 && d_blobs[i].size != -1) {
+		x.push_back(d_blobs[i].x);
+		y.push_back(d_blobs[i].y);
+		size.push_back(d_blobs[i].size);
+		points++;
+		i++;
+	}
 
- 	if (points == 2) {
- 		// TODO right now only handling the 2-LED glasses at 15cm distance.
- 		double dx, dy;
- 		dx = x[0] - x[1];
- 		dy = y[0] - y[1];
- 		double dist = sqrt(dx * dx + dy * dy);
- 		// ~33 degree horizontal FOV - source http://wiibrew.org/wiki/Wiimote#IR_Camera
- 		double radPerPx = (33.0 / 180.0 * M_PI) / 1024.0;
- 		double angle = radPerPx * dist / 2.0;
- 		double headDist = (d_blobDistance / 2.0) / tan(angle);
+	if (points == 2) {
+		// TODO right now only handling the 2-LED glasses at 15cm distance.
+		double dx, dy;
+		dx = x[0] - x[1];
+		dy = y[0] - y[1];
+		double dist = sqrt(dx * dx + dy * dy);
+		// ~33 degree horizontal FOV - source http://wiibrew.org/wiki/Wiimote#IR_Camera
+		double radPerPx = (33.0 / 180.0 * M_PI) / 1024.0;
+		double angle = radPerPx * dist / 2.0;
+		double headDist = (d_blobDistance / 2.0) / tan(angle);
 
- 		float avgX = (x[0] + x[1]) / 2;
- 		float avgY = (y[0] + y[1]) / 2;
+		float avgX = (x[0] + x[1]) / 2;
+		float avgY = (y[0] + y[1]) / 2;
 
- 		tz = headDist;
-
-
- 	}
+		tz = headDist;
+	}
 
 	// compute the translation and rotation
 	/*
@@ -320,12 +310,11 @@ void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interva
 	convert_matrix_to_tracker();
 }
 
-void vrpn_Tracker_WiimoteHead::convert_matrix_to_tracker(void)
-{
+void vrpn_Tracker_WiimoteHead::convert_matrix_to_tracker(void) {
 	q_xyz_quat_type xq;
 	int i;
 
-	q_row_matrix_to_xyz_quat( &xq, d_currentMatrix);
+	q_row_matrix_to_xyz_quat(&xq, d_currentMatrix);
 
 	for (i = 0; i < 3; i++) {
 		pos[i] = xq.xyz[i]; // position;
@@ -335,8 +324,7 @@ void vrpn_Tracker_WiimoteHead::convert_matrix_to_tracker(void)
 	}
 }
 
-vrpn_bool vrpn_Tracker_WiimoteHead::shouldReport(double elapsedInterval) const
-{
+vrpn_bool vrpn_Tracker_WiimoteHead::shouldReport(double elapsedInterval) const {
 	// If we haven't had enough time pass yet, don't report.
 	if (elapsedInterval < d_update_interval) {
 		return VRPN_FALSE;
@@ -355,7 +343,8 @@ vrpn_bool vrpn_Tracker_WiimoteHead::shouldReport(double elapsedInterval) const
 	// TODO RP : replace logic here
 	//if (d_x.value || d_y.value || d_z.value ||
 	//    d_sx.value || d_sy.value || d_sz.value) {
-		return VRPN_TRUE;
+	return VRPN_TRUE;
+
 	//}
 
 	// Enough time has elapsed, but nothing has changed, so return false.

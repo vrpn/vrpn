@@ -19,18 +19,18 @@
 #endif
 
 
-const char	*TRACKER_NAME = "Tracker0";
-const char	*WIIMOTE_NAME = "Wiimote0";
-const char	*WIIMOTE_REMOTE_NAME = "*Wiimote0";
-int	CONNECTION_PORT = vrpn_DEFAULT_LISTEN_PORT_NO;	// Port for connection to listen on
+const char* TRACKER_NAME = "Tracker0";
+const char* WIIMOTE_NAME = "Wiimote0";
+const char* WIIMOTE_REMOTE_NAME = "*Wiimote0";
+int	CONNECTION_PORT = vrpn_DEFAULT_LISTEN_PORT_NO;  // Port for connection to listen on
 
 #if defined(VRPN_USE_WIIUSE)
-vrpn_Tracker_WiimoteHead	*wmtkr;
-vrpn_WiiMote		*wiimote;
+vrpn_Tracker_WiimoteHead* wmtkr;
+vrpn_WiiMote* wiimote;
 #endif
-vrpn_Tracker_NULL	*ntkr;
-vrpn_Tracker_Remote	*tkr;
-vrpn_Connection		*connection;
+vrpn_Tracker_NULL* ntkr;
+vrpn_Tracker_Remote* tkr;
+vrpn_Connection* connection;
 
 /*****************************************************************************
  *
@@ -38,8 +38,7 @@ vrpn_Connection		*connection;
  *
  *****************************************************************************/
 
-void	VRPN_CALLBACK handle_pos (void *, const vrpn_TRACKERCB t)
-{
+void	VRPN_CALLBACK handle_pos(void*, const vrpn_TRACKERCB t) {
 	static	int	count = 0;
 
 	fprintf(stderr, "%d.", t.sensor);
@@ -47,28 +46,25 @@ void	VRPN_CALLBACK handle_pos (void *, const vrpn_TRACKERCB t)
 		fprintf(stderr, "\n");
 		if (count > 300) {
 			printf("Pos, sensor %d = %f, %f, %f\n", t.sensor,
-				t.pos[0], t.pos[1], t.pos[2]);
+			       t.pos[0], t.pos[1], t.pos[2]);
 			count = 0;
 		}
 	}
 }
 
-void	VRPN_CALLBACK handle_vel (void *, const vrpn_TRACKERVELCB t)
-{
+void	VRPN_CALLBACK handle_vel(void*, const vrpn_TRACKERVELCB t) {
 	//static	int	count = 0;
 
 	fprintf(stderr, "%d/", t.sensor);
 }
 
-void	VRPN_CALLBACK handle_acc (void *, const vrpn_TRACKERACCCB t)
-{
+void	VRPN_CALLBACK handle_acc(void*, const vrpn_TRACKERACCCB t) {
 	//static	int	count = 0;
 
 	fprintf(stderr, "%d~", t.sensor);
 }
 
-int main (int argc, char * argv [])
-{
+int main(int argc, char* argv []) {
 	if (argc != 1) {
 		fprintf(stderr, "Usage: %s\n", argv[0]);
 		return -1;
@@ -78,15 +74,15 @@ int main (int argc, char * argv [])
 	connection = vrpn_create_server_connection(CONNECTION_PORT);
 #if defined(VRPN_USE_WIIUSE)
 	if (!connection) {
-			fprintf(stderr, "Could not create connection!\n");
+		fprintf(stderr, "Could not create connection!\n");
 	}
 	wiimote = new vrpn_WiiMote(WIIMOTE_NAME, connection);
 	if (!wiimote) {
-			fprintf(stderr, "Could not open Wiimote named %s.\n", WIIMOTE_NAME);
+		fprintf(stderr, "Could not open Wiimote named %s.\n", WIIMOTE_NAME);
 	}
 	wmtkr = new vrpn_Tracker_WiimoteHead(TRACKER_NAME, connection, WIIMOTE_REMOTE_NAME, 1.0);
 	if (!wmtkr) {
-			fprintf(stderr, "Could not open Wiimote Head Tracker named %s.\n", TRACKER_NAME);
+		fprintf(stderr, "Could not open Wiimote Head Tracker named %s.\n", TRACKER_NAME);
 	}
 #else
 	// Open the tracker server, using this connection, 2 sensors, update 60 times/sec
@@ -97,7 +93,7 @@ int main (int argc, char * argv [])
 
 	// Open the tracker remote using this connection
 	fprintf(stderr, "Tracker's name is %s.\n", TRACKER_NAME);
-	tkr = new vrpn_Tracker_Remote (TRACKER_NAME, connection);
+	tkr = new vrpn_Tracker_Remote(TRACKER_NAME, connection);
 
 	// Set up the tracker callback handlers
 	printf("Tracker update: '.' = pos, '/' = vel, '~' = acc\n");
@@ -108,7 +104,7 @@ int main (int argc, char * argv [])
 	/*
 	 * main interactive loop
 	 */
-	while ( 1 ) {
+	while (1) {
 		// Let the tracker server, client and connection do their things
 #if defined(VRPN_USE_WIIUSE)
 		wiimote->mainloop();
@@ -124,7 +120,4 @@ int main (int argc, char * argv [])
 	}
 
 	return 0;
-
 }   /* main */
-
-
