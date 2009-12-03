@@ -447,7 +447,7 @@
 #endif
 #else
 #ifndef VRPNDLL_NOEXPORTS
-#pragma comment (lib, "vrpn.lib")     // We'll need the VRPN library
+//#pragma comment (lib, "vrpn.lib")     // We'll need the VRPN library
 #endif
 #define  VRPN_API
 #endif
