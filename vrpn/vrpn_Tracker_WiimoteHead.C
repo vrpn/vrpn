@@ -262,14 +262,13 @@ void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interva
 	// TODO RP Implement the math here!
 	tx = ty = tz = 0;
  	std::vector<double> x, y, size;
- 	int points = 0, i;
- 	for (i = 0; i < 4; i++) {
- 		if (d_blobs[i].x != -1 && d_blobs[i].y != -1 && d_blobs[i].size != -1) {
- 			x[points] = d_blobs[i].x;
- 			y[points] = d_blobs[i].y;
- 			size[points] = d_blobs[i].size;
+ 	int points = 0, i = 0;
+ 	while(i < 4 && d_blobs[i].x != -1 && d_blobs[i].y != -1 && d_blobs[i].size != -1) {
+ 			x.push_back(d_blobs[i].x);
+ 			y.push_back(d_blobs[i].y);
+ 			size.push_back(d_blobs[i].size);
  			points++;
- 		}
+ 			i++;
  	}
 
  	if (points == 2) {
@@ -279,9 +278,9 @@ void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interva
  		dy = y[0] - y[1];
  		double dist = sqrt(dx * dx + dy * dy);
  		// ~33 degree horizontal FOV - source http://wiibrew.org/wiki/Wiimote#IR_Camera
- 		double radPerPx = (33 / 180 * M_PI) / 1024;
- 		double angle = radPerPx * dist / 2;
- 		double headDist = (d_blobDistance / 2) / tan(angle);
+ 		double radPerPx = (33.0 / 180.0 * M_PI) / 1024.0;
+ 		double angle = radPerPx * dist / 2.0;
+ 		double headDist = (d_blobDistance / 2.0) / tan(angle);
 
  		float avgX = (x[0] + x[1]) / 2;
  		float avgY = (y[0] + y[1]) / 2;

@@ -77,6 +77,9 @@ int main (int argc, char * argv [])
 	// explicitly open the connection
 	connection = vrpn_create_server_connection(CONNECTION_PORT);
 #if defined(VRPN_USE_WIIUSE)
+	if (!connection) {
+			fprintf(stderr, "Could not create connection!\n");
+	}
 	wiimote = new vrpn_WiiMote(WIIMOTE_NAME, connection);
 	if (!wiimote) {
 			fprintf(stderr, "Could not open Wiimote named %s.\n", WIIMOTE_NAME);

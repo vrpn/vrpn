@@ -66,7 +66,7 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 	struct timeval  d_prevtime;     //< Time of the previous report
 	vrpn_bool       d_absolute;     //< Report absolute (vs. differential)?
 	vrpn_bool       d_reportChanges;
-	int				d_blobDistance;
+	double				d_blobDistance;
 
 	vrpn_TWH_blob   d_blobs[4];
 
