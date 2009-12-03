@@ -253,6 +253,7 @@ void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interva
 
 	// TODO RP Implement the math here!
 	tx = ty = tz = 0;
+	rx = ry = rz = 0;
 	std::vector<double> x, y, size;
 	int points = 0, i = 0;
 	while (i < 4 && d_blobs[i].x != -1 && d_blobs[i].y != -1 && d_blobs[i].size != -1) {
@@ -274,10 +275,11 @@ void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interva
 		double angle = radPerPx * dist / 2.0;
 		double headDist = (d_blobDistance / 2.0) / tan(angle);
 
-		float avgX = (x[0] + x[1]) / 2;
-		float avgY = (y[0] + y[1]) / 2;
+		double avgX = (x[0] + x[1]) / 2.0;
+		double avgY = (y[0] + y[1]) / 2.0;
 
 		tz = headDist;
+		rz = atan2(dy, dx);
 	}
 
 	// compute the translation and rotation
@@ -291,7 +293,6 @@ void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interva
 	rz = d_sz.value * time_interval * (2 * M_PI);
 	*/
 	// Build a rotation matrix, then add in the translation
-	rx = ry = rz = 0;
 	q_euler_to_col_matrix(newM, rz, ry, rx);
 	newM[3][0] = tx; newM[3][1] = ty; newM[3][2] = tz;
 
