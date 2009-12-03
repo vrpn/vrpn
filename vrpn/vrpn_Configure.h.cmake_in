@@ -157,6 +157,8 @@
 #cmakedefine VRPN_USE_NATIONAL_INSTRUMENTS
 #cmakedefine VRPN_USE_NATIONAL_INSTRUMENTS_MX
 
+#cmakedefine VRPN_USE_NIDAQ
+
 //-----------------------
 // Instructs VRPN library and server to include code that uses
 // the US Digital SEI/A2 libary to control analog inputs from the

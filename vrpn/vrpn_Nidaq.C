@@ -11,6 +11,7 @@
 
 #include "vrpn_Nidaq.h"
 #if defined(WIN32) || defined(_WIN32)
+#if defined(VRPN_USE_NIDAQ)
 #include <uptime.h>
 
 // for fNice stuff
@@ -196,4 +197,5 @@ void vrpn_Nidaq::report_changes() {
 		cerr << "vrpn_Nidaq::report_changes: no valid connection.\n";
 	}
 }
+#endif // def(VRPN_USE_NIDAQ)
 #endif  // def(WIN32) || def(_WIN32)

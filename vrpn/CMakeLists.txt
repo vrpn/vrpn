@@ -74,6 +74,7 @@ option(VRPN_INCLUDE_TIMECODE_SERVER "Build with Adrienne time-code server suppor
 option(VRPN_INCLUDE_INTERSENSE "Build with InterSense native library support" OFF)
 option(VRPN_USE_NATIONAL_INSTRUMENTS "Build with National Instruments (old library) support" OFF)
 option(VRPN_USE_NATIONAL_INSTRUMENTS_MX "Build with National Instruments (new library) support" OFF)
+option(VRPN_USE_NIDAQ "Build with NIDAQ support" OFF)
 option(VRPN_USE_USDIGITAL "Build with US Digital SEI/A2 library support" OFF)
 option(VRPN_USE_MICROSCRIBE "Build with MicroScribe3D library support" OFF)
 option(VRPN_INCLUDE_PHASESPACE "Build with PhaseSpace library support" OFF)
