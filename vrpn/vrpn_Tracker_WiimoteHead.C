@@ -266,32 +266,39 @@ void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interva
 
 	if (points == 2) {
 		// TODO right now only handling the 2-LED glasses at 15cm distance.
+		const double xResSensor = 1024.0, yResSensor = 768.0;
+		// ~33 degree horizontal FOV - source http://wiibrew.org/wiki/Wiimote#IR_Camera
+		const double fovX = 33.0, fovY = 23.0;
 		double dx, dy;
 		dx = x[0] - x[1];
 		dy = y[0] - y[1];
 		double dist = sqrt(dx * dx + dy * dy);
-		// ~33 degree horizontal FOV - source http://wiibrew.org/wiki/Wiimote#IR_Camera
-		double radPerPx = (33.0 / 180.0 * M_PI) / 1024.0;
+		double radPerPx = (fovX / 180.0 * M_PI) / xResSensor;
 		double angle = radPerPx * dist / 2.0;
 		double headDist = (d_blobDistance / 2.0) / tan(angle);
+
+		tz = headDist;
+		rz = atan2(dy, dx);
 
 		double avgX = (x[0] + x[1]) / 2.0;
 		double avgY = (y[0] + y[1]) / 2.0;
 
-		tz = headDist;
-		rz = atan2(dy, dx);
+		# b is the virtual depth in the sensor from a point to the full sensor
+		# used for finding similar triangles
+		const double bHoriz = xResSensor / 2 / tan(fovX / 2);
+		const double bVert = yResSensor / 2 / tan(fovY / 2);
+
+		double worldXdispl = headDist * (avgX - xResSensor / 2) / bHoriz;
+		double worldYdispl = headDist * (avgY - yResSensor / 2) / bVert;
+
+		double worldHalfWidth = headDist * tan(fovX / 2);
+		double worldHalfHeight = headDist * tan(fovY / 2);
+
+		tx = worldXdispl + worldHalfWidth;
+		ty = worldYdispl + worldHalfHeight;
+
 	}
 
-	// compute the translation and rotation
-	/*
-	tx = d_x.value * time_interval;
-	ty = d_y.value * time_interval;
-	tz = d_z.value * time_interval;
-
-	rx = d_sx.value * time_interval * (2 * M_PI);
-	ry = d_sy.value * time_interval * (2 * M_PI);
-	rz = d_sz.value * time_interval * (2 * M_PI);
-	*/
 	// Build a rotation matrix, then add in the translation
 	q_euler_to_col_matrix(newM, rz, ry, rx);
 	newM[3][0] = tx; newM[3][1] = ty; newM[3][2] = tz;
