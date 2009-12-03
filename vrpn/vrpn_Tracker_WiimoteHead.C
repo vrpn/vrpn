@@ -266,6 +266,7 @@ void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interva
 
 	if (points == 2) {
 		// TODO right now only handling the 2-LED glasses at 15cm distance.
+		// we simply stop updating if we lost LED's
 		const double xResSensor = 1024.0, yResSensor = 768.0;
 		// ~33 degree horizontal FOV - source http://wiibrew.org/wiki/Wiimote#IR_Camera
 		const double fovX = 33.0, fovY = 23.0;
@@ -296,26 +297,26 @@ void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interva
 
 		tx = worldXdispl + worldHalfWidth;
 		ty = worldYdispl + worldHalfHeight;
+		
+		// Build a rotation matrix, then add in the translation
+		q_euler_to_col_matrix(newM, rz, ry, rx);
+		newM[3][0] = tx; newM[3][1] = ty; newM[3][2] = tz;
+		
+		// Apply the matrix.
+		if (d_absolute) {
+			// The difference matrix IS the current matrix.
+			q_matrix_copy(d_currentMatrix, newM);
+		} else {
+			// Multiply the current matrix by the difference matrix to update
+			// it to the current time.
+			q_matrix_mult(d_currentMatrix, newM, d_currentMatrix);
+		}
+		
+		// Finally, convert the matrix into a pos/quat
+		// and copy it into the tracker position and quaternion structures.
+		convert_matrix_to_tracker();
 
 	}
-
-	// Build a rotation matrix, then add in the translation
-	q_euler_to_col_matrix(newM, rz, ry, rx);
-	newM[3][0] = tx; newM[3][1] = ty; newM[3][2] = tz;
-
-	// Apply the matrix.
-	if (d_absolute) {
-		// The difference matrix IS the current matrix.
-		q_matrix_copy(d_currentMatrix, newM);
-	} else {
-		// Multiply the current matrix by the difference matrix to update
-		// it to the current time.
-		q_matrix_mult(d_currentMatrix, newM, d_currentMatrix);
-	}
-
-	// Finally, convert the matrix into a pos/quat
-	// and copy it into the tracker position and quaternion structures.
-	convert_matrix_to_tracker();
 }
 
 void vrpn_Tracker_WiimoteHead::convert_matrix_to_tracker(void) {
