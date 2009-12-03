@@ -325,9 +325,9 @@
 // Load the library for WiiUse.
 #ifdef  VRPN_USE_WIIUSE
   #ifdef	_DEBUG
-    #pragma comment(lib, VRPN_WIIUSE_LIB_PATH "/msvc/Debug/wiiuse.lib")
+//    #pragma comment(lib, VRPN_WIIUSE_LIB_PATH "/msvc/Debug/wiiuse.lib")
   #else
-    #pragma comment(lib, VRPN_WIIUSE_LIB_PATH "/msvc/Release/wiiuse.lib")
+//    #pragma comment(lib, VRPN_WIIUSE_LIB_PATH "/msvc/Release/wiiuse.lib")
   #endif
 #endif
 
