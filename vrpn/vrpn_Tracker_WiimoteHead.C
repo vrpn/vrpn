@@ -248,27 +248,13 @@ void vrpn_Tracker_WiimoteHead::mainloop() {
 	}
 }
 
-// This routine will update the current matrix based on the current values
-// in the offsets list for each axis, and the length of time over which the
-// action is taking place (time_interval).
-// Handling of non-absolute trackers: It treats the values as either
-// meters/second or else rotations/second to be integrated over the interval
-// to adjust the current matrix.
-// Handling of absolute trackers: It always assumes that the starting matrix
-// is the identity, so that the values are absolute offsets/rotations.
-// XXX Later, it would be cool to have non-absolute trackers send velocity
-// information as well, since it knows what this is.
+// This routine will update the current matrix based on the most recent values
+// received from the Wiimote regarding IR blob location.
 
 void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interval) {
-	double tx, ty, tz, rx, ry, rz; // Translation (m/s) and rotation (rad/sec)
-	q_matrix_type newM;    // Difference (delta) matrix
+	double tx, ty, tz, rx, ry, rz; // Translation (m) and rotation (rad)
+	q_matrix_type newM;    // New position matrix
 
-	// For absolute trackers, the interval is treated as "1", so that the
-	// translations and rotations are unscaled;
-	if (d_absolute) { time_interval = 1.0; }
-
-
-	// TODO RP Implement the math here!
 	tx = ty = tz = 0;
 	rx = ry = rz = 0;
 	std::vector<double> x, y, size;
@@ -281,6 +267,8 @@ void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interva
 		i++;
 	}
 
+	// If our gravity vector has changed and it's not 0,
+	// we need to update our gravity correction matrix.
 	if (d_gravDirty) {
 		if (d_vGrav[0] != 0 || 
 			d_vGrav[1] != 0 ||
@@ -295,38 +283,54 @@ void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interva
 	}
 
 	if (points == 2) {
-		// TODO right now only handling the 2-LED glasses at 15cm distance.
+		// TODO right now only handling the 2-LED glasses at 14.5cm distance.
 		// we simply stop updating if we lost LED's
+		
+		// Wiimote stats source: http://wiibrew.org/wiki/Wiimote#IR_Camera
 		const double xResSensor = 1024.0, yResSensor = 768.0;
-		// ~33 degree horizontal FOV - source http://wiibrew.org/wiki/Wiimote#IR_Camera
 		const double fovX = 33.0, fovY = 23.0;
 		double dx, dy;
 		dx = x[0] - x[1];
 		dy = y[0] - y[1];
 		double dist = sqrt(dx * dx + dy * dy);
+		// Note that this is an approximation, since we don't know the
+		// distance/horizontal position.  (I think...)
 		double radPerPx = (fovX / 180.0 * M_PI) / xResSensor;
 		double angle = radPerPx * dist / 2.0;
 		double headDist = (d_blobDistance / 2.0) / tan(angle);
 
+		// Translate the distance along z axis, and tilt the head
+		// TODO - the 3-led version will have a more complex rotation
+		// calculation to perform, since this one assumes the user
+		// does not rotate their head around x or y axes
 		tz = headDist;
 		rz = atan2(dy, dx);
 
+		// Find the sensor pixel of the line of sight - directly between
+		// the led's
 		double avgX = (x[0] + x[1]) / 2.0;
 		double avgY = (y[0] + y[1]) / 2.0;
 
 		// b is the virtual depth in the sensor from a point to the full sensor
-		// used for finding similar triangles
+		// used for finding similar triangles to calculate x/y translation
 		const double bHoriz = xResSensor / 2 / tan(fovX / 2);
 		const double bVert = -1 * yResSensor / 2 / tan(fovY / 2);
 
+		// World head displacement from a centered origin at the calculated
+		// distance from the sensor
 		double worldXdispl = headDist * (avgX - xResSensor / 2) / bHoriz;
 		double worldYdispl = headDist * (avgY - yResSensor / 2) / bVert;
 
 		double worldHalfWidth = headDist * tan(fovX / 2);
 		double worldHalfHeight = headDist * tan(fovY / 2);
 
-		tx = worldXdispl + worldHalfWidth;
-		ty = worldYdispl + worldHalfHeight;
+		// Finally, give us position from lower-left corner of the
+		// sensor's view frustrum (?)
+		//tx = worldXdispl + worldHalfWidth;
+		//ty = worldYdispl + worldHalfHeight;
+		
+		tx = worldXdispl;
+		ty = worldYdispl;
 		
 		// Build a rotation matrix, then add in the translation
 		q_euler_to_col_matrix(newM, rz, ry, rx);
@@ -340,19 +344,11 @@ void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interva
 		}
 		
 		// Apply the matrix.
-		if (d_absolute) {
-			// The difference matrix IS the current matrix.
-			q_matrix_copy(d_currentMatrix, newM);
-		} else {
-			// Multiply the current matrix by the difference matrix to update
-			// it to the current time.
-			q_matrix_mult(d_currentMatrix, newM, d_currentMatrix);
-		}
-		
+		q_matrix_copy(d_currentMatrix, newM);
+				
 		// Finally, convert the matrix into a pos/quat
 		// and copy it into the tracker position and quaternion structures.
 		convert_matrix_to_tracker();
-
 	}
 }
 
@@ -394,5 +390,5 @@ vrpn_bool vrpn_Tracker_WiimoteHead::shouldReport(double elapsedInterval) const {
 	//}
 
 	// Enough time has elapsed, but nothing has changed, so return false.
-	return VRPN_FALSE;
+	//return VRPN_FALSE;
 }
