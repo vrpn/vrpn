@@ -32,6 +32,7 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 	void update(q_matrix_type &);
 
 	static int VRPN_CALLBACK handle_newConnection (void*, vrpn_HANDLERPARAM);
+	static int VRPN_CALLBACK handle_dropLastConnection (void*, vrpn_HANDLERPARAM);
 
 	protected:
 
@@ -45,6 +46,7 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 
 	bool d_hasBlob;
 	bool d_updated;
+	bool d_needWiimote;
 
 	vrpn_Analog_Remote* d_ana;
 	const char* d_name;
@@ -63,9 +65,6 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 
 	vrpn_bool shouldReport(double elapsedInterval) const;
 	bool haveGravity() const;
-
-	//int setup_blob(vrpn_TWH_blob* blob);
-	//int teardown_blob(vrpn_TWH_blob* blob);
 
 	static void VRPN_CALLBACK handle_analog_update(void* userdata, const vrpn_ANALOGCB info);
 };

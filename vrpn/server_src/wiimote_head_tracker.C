@@ -96,7 +96,7 @@ int main(int argc, char* argv []) {
 
 	wiimote = new vrpn_WiiMote(WIIMOTE_NAME, connection, wmnum);
 	if (!wiimote) {
-		fprintf(stderr, "Could not open Wiimote named %s!\n", WIIMOTE_NAME);
+		fprintf(stderr, "Could not create Wiimote server named %s!\n", WIIMOTE_NAME);
 		fprintf(stderr, "Press 'enter' to exit...\n");
 		int tmp;
 		std::cin >> tmp;
@@ -105,7 +105,7 @@ int main(int argc, char* argv []) {
 
 	wmtkr = new vrpn_Tracker_WiimoteHead(TRACKER_NAME, connection, WIIMOTE_REMOTE_NAME, 60.0);
 	if (!wmtkr) {
-		fprintf(stderr, "Could not open own Wiimote Head Tracker named %s!\n", TRACKER_NAME);
+		fprintf(stderr, "Could not create Wiimote Head Tracker named %s!\n", TRACKER_NAME);
 		fprintf(stderr, "Press 'enter' to exit...\n");
 		int tmp;
 		std::cin >> tmp;
@@ -113,7 +113,7 @@ int main(int argc, char* argv []) {
 	}
 
 	// Open the tracker remote using this connection
-	fprintf(stderr, "\n\nTracker's name is %s.\n", TRACKER_NAME);
+	fprintf(stderr, "\nTracker's name is %s.\n", TRACKER_NAME);
 	tkr = new vrpn_Tracker_Remote(TRACKER_NAME, connection);
 
 	// Set up the tracker callback handlers

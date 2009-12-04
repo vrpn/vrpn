@@ -16,14 +16,15 @@ static	double	duration(struct timeval t1, struct timeval t2) {
 
 vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connection* trackercon, const char* wiimote, float update_rate) :
 	vrpn_Tracker (name, trackercon),
-	d_update_interval (update_rate ? (1 / update_rate) : 1.0),
+	d_update_interval (update_rate ? (1 / update_rate) : 60.0),
 	d_blobDistance (.145),
 	d_hasBlob (false),
 	d_updated (false),
+	d_needWiimote (false),
 	d_gravDirty (true),
-	d_name(wiimote) {
+	d_name(wiimote)
+{
 
-	int i;
 	d_vGrav[0] = 0;
 	d_vGrav[1] = -1;
 	d_vGrav[2] = 0;
@@ -65,7 +66,7 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connec
 				"Can't setup change handler on Analog %s\n", d_name);
 		delete d_ana;
 		d_ana = NULL;
-		return;
+		//return;
 	}
 
 	//--------------------------------------------------------------------
@@ -151,8 +152,22 @@ void	vrpn_Tracker_WiimoteHead::handle_analog_update(void* userdata, const vrpn_A
 
 // static
 int vrpn_Tracker_WiimoteHead::handle_newConnection(void* userdata, vrpn_HANDLERPARAM) {
-	printf("Get a new connection, reset virtual_Tracker\n");
-	((vrpn_Tracker_WiimoteHead*) userdata)->reset();
+	vrpn_Tracker_WiimoteHead* wh = reinterpret_cast<vrpn_Tracker_WiimoteHead*>(userdata);
+	// Indicate that we should grab the wiimote, if we haven't already
+	// and that we should send a report with whatever we have.
+	wh->d_needWiimote = true;
+	wh->d_updated = true;
+
+	// Always return 0 here, because nonzero return means that the input data
+	// was garbage, not that there was an error. If we return nonzero from a
+	// vrpn_Connection handler, it shuts down the connection.
+	return 0;
+}
+
+// static
+int vrpn_Tracker_WiimoteHead::handle_dropLastConnection(void* userdata, vrpn_HANDLERPARAM) {
+	vrpn_Tracker_WiimoteHead* wh = reinterpret_cast<vrpn_Tracker_WiimoteHead*>(userdata);
+	wh->d_needWiimote = false;
 
 	// Always return 0 here, because nonzero return means that the input data
 	// was garbage, not that there was an error. If we return nonzero from a
@@ -191,11 +206,15 @@ void vrpn_Tracker_WiimoteHead::mainloop() {
 	// Call generic server mainloop, since we are a server
 	server_mainloop();
 
+	if (d_needWiimote && d_ana == NULL) {
+		// TODO try to get the wiimote anew here
+		// and register the handlers
+	}
+
 	// Mainloop() the wiimote to get fresh values
 	if (d_ana != NULL) {
+		d_needWiimote = false;
 		d_ana->mainloop();
-	} else {
-		// TODO try to get the wiimote anew here
 	}
 
 	// See if it has been long enough since our last report.
@@ -237,9 +256,9 @@ void vrpn_Tracker_WiimoteHead::mainloop() {
 	}
 }
 
-// This routine will update the current matrix based on the most recent values
-// received from the Wiimote regarding IR blob location.
-
+/// Update the current matrix based on the most recent values
+/// received from the Wiimote regarding IR blob location.
+/// Time interval is passed for potential future Kalman filter, etc.
 void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interval) {
 	double tx, ty, tz, rx, ry, rz; // Translation (m) and rotation (rad)
 	q_matrix_type newM;    // New position matrix
