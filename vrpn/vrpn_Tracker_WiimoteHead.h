@@ -31,24 +31,14 @@ class VRPN_API vrpn_TWH_blob {
 	double size;
 };
 
-// The time reported by absolute trackers is as of the last report they have
-// had from their analog devices.  The time reported by differential trackers
-// is the local time that the report was generated.  This is to allow a
-// gen-locked camera tracker to have its time values passed forward through
-// the AnalogFly class.
-
-// If reportChanges is TRUE, updates are ONLY sent if there has been a
-// change since the last update, in which case they are generated no faster
-// than update_rate.
-
+// The time reported by this tracker is as of the last report it has had
+// from the Wiimote, to ensure accurate timing.
 class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 	public:
 	vrpn_Tracker_WiimoteHead (const char* name,
 				  vrpn_Connection * trackercon,
 				  const char* wiimote,
-				  float update_rate,
-				  vrpn_bool absolute = vrpn_TRUE,
-				  vrpn_bool reportChanges = VRPN_FALSE);
+				  float update_rate);
 
 	virtual ~vrpn_Tracker_WiimoteHead (void);
 
@@ -64,18 +54,20 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 
 	double          d_update_interval; //< How long to wait between sends
 	struct timeval  d_prevtime;     //< Time of the previous report
-	vrpn_bool       d_absolute;     //< Report absolute (vs. differential)?
-	vrpn_bool       d_reportChanges;
 	double				d_blobDistance;
 
 	vrpn_TWH_blob   d_blobs[4];
+	
+	vrpn_Analog_Remote* ana;
+	const char* name;
 
 	q_matrix_type d_initMatrix, d_currentMatrix;
 
-	bool	d_gravDirty;
-	q_vec_type d_vGrav;
-	q_type	d_qCorrectGravity;
-	q_matrix_type d_mCorrectGravity;
+	bool		d_gravDirty;
+	q_vec_type	d_vGrav;
+	
+	q_type			d_qCorrectGravity;
+	q_matrix_type	d_mCorrectGravity;
 
 	void	update_gravity(const vrpn_ANALOGCB & info);
 	void    update_matrix_based_on_values(double time_interval);

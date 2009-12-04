@@ -14,11 +14,9 @@ static	double	duration(struct timeval t1, struct timeval t2) {
 	       (t1.tv_sec - t2.tv_sec);
 }
 
-vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connection* trackercon, const char* wiimote, float update_rate,	vrpn_bool absolute, vrpn_bool reportChanges) :
+vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connection* trackercon, const char* wiimote, float update_rate) :
 	vrpn_Tracker (name, trackercon),
 	d_update_interval (update_rate ? (1 / update_rate) : 1.0),
-	d_absolute (absolute),
-	d_reportChanges (reportChanges),
 	d_blobDistance (.145),
 	d_gravDirty (true) {
 
@@ -60,14 +58,11 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connec
 
 	//--------------------------------------------------------------------
 	// Set the current timestamp to "now" and current matrix to identity
-	// for absolute trackers.  This is done in case we never hear from the
-	// analog devices.  Reset doesn't do this for absolute trackers.
-	if (d_absolute) {
-		vrpn_gettimeofday(&d_prevtime, NULL);
-		vrpn_Tracker::timestamp = d_prevtime;
-		q_matrix_copy(d_currentMatrix, d_initMatrix);
-		convert_matrix_to_tracker();
-	}
+	// in case we never hear from the Wiimote.
+	vrpn_gettimeofday(&d_prevtime, NULL);
+	vrpn_Tracker::timestamp = d_prevtime;
+	q_matrix_copy(d_currentMatrix, d_initMatrix);
+	convert_matrix_to_tracker();
 }
 
 vrpn_Tracker_WiimoteHead::~vrpn_Tracker_WiimoteHead (void) {
@@ -90,12 +85,8 @@ void	vrpn_Tracker_WiimoteHead::handle_analog_update(void* userdata, const vrpn_A
 	blob->y = info.channel[blob->first_channel + 1];
 	blob->size = info.channel[blob->first_channel + 2];
 
-	// If we're an absolute channel, store the time of the report
-	// into the tracker's timestamp field.
-	if (blob->wh->d_absolute) {
-		blob->wh->vrpn_Tracker::timestamp = info.msg_time;
-	}
-
+	// Store the time of the report into the tracker's timestamp field.
+	blob->wh->vrpn_Tracker::timestamp = info.msg_time;
 	blob->wh->update_gravity(info);
 }
 
@@ -209,14 +200,6 @@ void vrpn_Tracker_WiimoteHead::mainloop() {
 	interval = duration(now, d_prevtime);
 
 	if (shouldReport(interval)) {
-		// Set the time on the report to now, if not an absolute
-		// tracker.  Absolute trackers have their time values set
-		// to match the time at which their analog devices gave the
-		// last report.
-		if (!d_absolute) {
-			vrpn_Tracker::timestamp = now;
-		}
-
 		// Figure out the new matrix based on the current values and
 		// the length of the interval since the last report
 		update_matrix_based_on_values(interval);
@@ -374,9 +357,9 @@ vrpn_bool vrpn_Tracker_WiimoteHead::shouldReport(double elapsedInterval) const {
 
 	// If we're sending a report every interval, regardless of
 	// whether or not there are changes, then send one now.
-	if (!d_reportChanges) {
-		return VRPN_TRUE;
-	}
+	//if (!d_reportChanges) {
+	//	return VRPN_TRUE;
+	//}
 
 	// If anything's nonzero, send the report.
 	// HACK:  This values may be unstable, depending on device characteristics;
