@@ -80,7 +80,7 @@ int main(int argc, char* argv []) {
 	if (!wiimote) {
 		fprintf(stderr, "Could not open Wiimote named %s.\n", WIIMOTE_NAME);
 	}
-	wmtkr = new vrpn_Tracker_WiimoteHead(TRACKER_NAME, connection, WIIMOTE_REMOTE_NAME, 1.0);
+	wmtkr = new vrpn_Tracker_WiimoteHead(TRACKER_NAME, connection, WIIMOTE_REMOTE_NAME, 60.0);
 	if (!wmtkr) {
 		fprintf(stderr, "Could not open Wiimote Head Tracker named %s.\n", TRACKER_NAME);
 	}
