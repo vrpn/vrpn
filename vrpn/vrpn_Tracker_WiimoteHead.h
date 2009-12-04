@@ -54,6 +54,8 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 	q_matrix_type d_initMatrix, d_currentMatrix;
 
 	bool		d_gravDirty;
+	q_vec_type	d_vGravAntepenultimate;
+	q_vec_type	d_vGravPenultimate;
 	q_vec_type	d_vGrav;
 
 	q_type			d_qCorrectGravity;

@@ -38,9 +38,9 @@ vrpn_Connection* connection;
 
 void	VRPN_CALLBACK handle_pos(void*, const vrpn_TRACKERCB t) {
 	static int count = 0;
-	//fprintf(stderr, ".");
+	fprintf(stderr, ".");
 	if ((++count % 20) == 0) {
-		//fprintf(stderr, "\n");
+		fprintf(stderr, "\n");
 		if (count > 300) {
 			printf("\nXl:(%5f, %5f, %5f) Rt:((%5f, %5f, %5f) %5f)\n",
 			       t.pos[0], t.pos[1], t.pos[2], t.quat[0], t.quat[1], t.quat[2], t.quat[3]);
@@ -128,6 +128,7 @@ int main(int argc, char* argv []) {
 	while (1) {
 		// Let the tracker server, client and connection do their things
 		// The wiimote tracker runs the wiimote's mainloop.
+		wiimote->mainloop();
 		wmtkr->mainloop();
 		tkr->mainloop();
 		connection->mainloop();

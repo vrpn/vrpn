@@ -61,7 +61,7 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connec
 
 	// register callback
 	int ret = d_ana->register_change_handler(this, handle_analog_update);
-	if (!ret) {
+	if (ret == -1) {
 		fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
 				"Can't setup change handler on Analog %s\n", d_name);
 		delete d_ana;
@@ -136,14 +136,27 @@ void	vrpn_Tracker_WiimoteHead::handle_analog_update(void* userdata, const vrpn_A
 	wh->d_vSize = size;
 	wh->d_hasBlob = true;
 	wh->d_updated = true;
-
+	
+	bool newgrav = false;
 
 	// Grab gravity
 	for (i = 0; i < 3; i++) {
 		if (info.channel[1 + i] != wh->d_vGrav[i]) {
-			wh->d_vGrav[i] = info.channel[1 + i];
-			wh->d_gravDirty = true;
+			newgrav = true;
+			break;
 		}
+	}
+
+	if (newgrav) {
+		for (i = 0; i < 3; i++) {
+			if (!wh->d_gravDirty) {
+				// only slide back the previous gravity if we actually used it once.
+				wh->d_vGravAntepenultimate[i] = wh->d_vGravPenultimate[i];
+				wh->d_vGravPenultimate[i] = wh->d_vGrav[i];
+			}
+			wh->d_vGrav[i] = info.channel[1 + i];
+		}
+		wh->d_gravDirty = true;
 	}
 
 	// Store the time of the report into the tracker's timestamp field.
@@ -251,9 +264,11 @@ void vrpn_Tracker_WiimoteHead::mainloop() {
 	// update the interval clock so that we don't integrate over
 	// too long a timespan when we do finally report a change.
 	// TODO RP is this still needed/useful?
+	/*
 	if (interval >= d_update_interval) {
 		d_prevtime = now;
 	}
+	*/
 }
 
 /// Update the current matrix based on the most recent values
@@ -273,9 +288,18 @@ void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interva
 	// we need to update our gravity correction matrix.
 	if (d_gravDirty && haveGravity()) {
 		// TODO perhaps set this quaternion as our tracker2room transform?
-		q_type regulargravity;
-		regulargravity[1] = -1;
-		q_from_two_vecs (d_qCorrectGravity, regulargravity, d_vGrav);
+		q_vec_type movingAvg = Q_NULL_VECTOR;
+		q_vec_copy (movingAvg, d_vGrav);
+		q_vec_add (movingAvg, movingAvg, d_vGravPenultimate);
+		q_vec_add (movingAvg, movingAvg, d_vGravAntepenultimate);
+		q_vec_scale (movingAvg, 0.33333, movingAvg);
+
+		q_vec_type regulargravity;
+		
+		regulargravity[1] = 1;
+		q_from_two_vecs (d_qCorrectGravity, regulargravity, movingAvg);
+
+		//q_euler_to_col_matrix(destMatrix, zRot, yRot, xRot)
 		q_to_col_matrix (d_mCorrectGravity, d_qCorrectGravity);
 		d_gravDirty = false;
 	}
@@ -304,7 +328,7 @@ void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interva
 		// calculation to perform, since this one assumes the user
 		// does not rotate their head around x or y axes
 		tz = headDist;
-		rz = atan2(dy, dx);
+		rz = atan2(dx, dy);
 
 		// Find the sensor pixel of the line of sight - directly between
 		// the led's
@@ -318,22 +342,8 @@ void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interva
 
 		// World head displacement from a centered origin at the calculated
 		// distance from the sensor
-		// TODO verify this math!
-		//double worldXdispl
 		tx = headDist * (avgX - xResSensor / 2) / bHoriz;
-		//double worldYdispl
 		ty = headDist * (avgY - yResSensor / 2) / bVert;
-
-		//double worldHalfWidth = headDist * tan(fovX / 2);
-		//double worldHalfHeight = headDist * tan(fovY / 2);
-
-		// Finally, give us position from lower-left corner of the
-		// sensor's view frustrum (?)
-		//tx = worldXdispl + worldHalfWidth;
-		//ty = worldYdispl + worldHalfHeight;
-
-		//tx = worldXdispl;
-		//ty = worldYdispl;
 
 		// Build a rotation matrix, then add in the translation
 		q_euler_to_col_matrix(newM, rz, ry, rx);
@@ -343,9 +353,9 @@ void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interva
 			// we know gravity, so we are correcting for it.
 			// TODO: improve vrpn driver in juggler to handle tracker-to-room
 			// transform and set that there, instead?
-			q_matrix_mult(newM, d_mCorrectGravity, newM);
+			
+			//q_matrix_mult(newM, d_mCorrectGravity, newM);
 		}
-
 		// Apply the matrix.
 		q_matrix_copy(d_currentMatrix, newM);
 
@@ -360,6 +370,15 @@ void vrpn_Tracker_WiimoteHead::convert_matrix_to_tracker(void) {
 	int i;
 
 	q_row_matrix_to_xyz_quat(&xq, d_currentMatrix);
+	/*
+	if (haveGravity()) {
+		// we know gravity, so we are correcting for it.
+		// TODO: improve vrpn driver in juggler to handle tracker-to-room
+		// transform and set that there, instead?
+		q_xform(xq.xyz, d_qCorrectGravity, xq.xyz);
+		//q_matrix_mult(newM, newM, d_mCorrectGravity);
+	}
+	*/
 
 	for (i = 0; i < 3; i++) {
 		pos[i] = xq.xyz[i]; // position;
@@ -377,6 +396,11 @@ vrpn_bool vrpn_Tracker_WiimoteHead::shouldReport(double elapsedInterval) const {
 
 	// If we've gotten new wiimote reports since our last report, return true.
 	if (d_updated) {
+		return VRPN_TRUE;
+	}
+
+	// If it's been more than a second, send an update anyway
+	if (elapsedInterval >= 1/d_update_interval) {
 		return VRPN_TRUE;
 	}
 
