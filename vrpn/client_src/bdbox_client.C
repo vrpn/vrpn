@@ -40,7 +40,7 @@ dial layout:
  *****************************************************************************/
 
 
-void	handle_button_change(void *userdata, const vrpn_BUTTONCB b)
+void VRPN_CALLBACK	handle_button_change(void *userdata, const vrpn_BUTTONCB b)
 {
 	static int count=0;
 	static int buttonstate = 1;
@@ -55,7 +55,7 @@ void	handle_button_change(void *userdata, const vrpn_BUTTONCB b)
 	}
 }
 
-void	handle_dial_change(void *userdata, const vrpn_ANALOGCB info)
+void VRPN_CALLBACK	handle_dial_change(void *userdata, const vrpn_ANALOGCB info)
 {
     double channel_values[vrpn_CHANNEL_MAX];
 

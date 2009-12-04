@@ -41,8 +41,6 @@ if(VRPN_BUILD_CLIENTS)
 		ff_client.C
 		forcedevice_test_client.cpp
 		forwarderClient.C
-		logfilesenders.c
-		logfiletypes.c
 		#midi_client.c # cannot find type vrpn_Sound_Remote
 		#ohm_client.C
 		phan_client.C
@@ -59,6 +57,14 @@ if(VRPN_BUILD_CLIENTS)
 		vrpn_LamportClock.t.C
 		vrpn_ping.C
 	)
+	
+	if(NOT WIN32)
+		# These need "open" calls modified to build on win.
+		list(APPEND TEST_SOURCES
+			logfilesenders.c
+			logfiletypes.c
+		)
+	endif()
 
 	###
 	# Tests
