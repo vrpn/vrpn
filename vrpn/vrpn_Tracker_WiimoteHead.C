@@ -284,10 +284,10 @@ void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interva
 		double avgX = (x[0] + x[1]) / 2.0;
 		double avgY = (y[0] + y[1]) / 2.0;
 
-		# b is the virtual depth in the sensor from a point to the full sensor
-		# used for finding similar triangles
+		// b is the virtual depth in the sensor from a point to the full sensor
+		// used for finding similar triangles
 		const double bHoriz = xResSensor / 2 / tan(fovX / 2);
-		const double bVert = yResSensor / 2 / tan(fovY / 2);
+		const double bVert = -1 * yResSensor / 2 / tan(fovY / 2);
 
 		double worldXdispl = headDist * (avgX - xResSensor / 2) / bHoriz;
 		double worldYdispl = headDist * (avgY - yResSensor / 2) / bVert;
