@@ -29,9 +29,9 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connec
 
 	// If the name is NULL, we're done.
 	if (wiimote == NULL) {
-		fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
-				"Can't start without a valid specified Wiimote device!\n");
 		d_name = NULL;
+		fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
+				"Can't start without a valid specified Wiimote device!");
 		return;
 	}
 	//d_name = new char[128];
@@ -130,6 +130,10 @@ void	vrpn_Tracker_WiimoteHead::handle_analog_update(void* userdata, const vrpn_A
 	vrpn_Tracker_WiimoteHead* wh = (vrpn_Tracker_WiimoteHead*)userdata;
 	if (!wh) { return; }
 	std::vector<double> x, y, size;
+	if (!wh->d_hasBlob) {
+		fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
+						"got first report from Wiimote!\n");
+	}
 
 	int i, firstchan;
 	// Grab all the blobs
