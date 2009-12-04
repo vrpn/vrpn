@@ -1,5 +1,6 @@
 #ifndef __TRACKER_WIIMOTEHEAD_H
 #define __TRACKER_WIIMOTEHEAD_H
+
 #include "vrpn_Tracker.h"
 #include "vrpn_Analog.h"
 #include <quat.h>
@@ -8,30 +9,11 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <vector>
+
 #ifndef _WIN32
 #include <sys/time.h>
 #endif
-#include <vector>
-
-//class VRPN_API vrpn_Tracker_WiimoteHead;        // Forward reference
-/*
-class VRPN_API vrpn_TWH_blob {
-	public:
-
-	vrpn_TWH_blob (void)
-	{ name = NULL; first_channel = NULL; ana = NULL; wh = NULL; };
-
-	const char* name;       //< Name of the Analog device corresponding to this Wiimote
-	int first_channel;      //< Which channel to start at from the Analog device
-
-	vrpn_Analog_Remote* ana;
-	vrpn_Tracker_WiimoteHead* wh;
-
-	double x;
-	double y;
-	double size;
-};
-*/
 
 // The time reported by this tracker is as of the last report it has had
 // from the Wiimote, to ensure accurate timing.
@@ -49,7 +31,6 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 
 	void update(q_matrix_type &);
 
-	static void VRPN_CALLBACK handle_joystick(void*, const vrpn_ANALOGCB);
 	static int VRPN_CALLBACK handle_newConnection (void*, vrpn_HANDLERPARAM);
 
 	protected:
@@ -58,12 +39,12 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 	struct timeval  d_prevtime;     //< Time of the previous report
 	double				d_blobDistance;
 
-	//vrpn_TWH_blob   d_blobs[4];
 	std::vector<double> d_vX;
 	std::vector<double> d_vY;
 	std::vector<double> d_vSize;
 
 	bool d_hasBlob;
+	bool d_updated;
 
 	vrpn_Analog_Remote* d_ana;
 	const char* d_name;
@@ -81,6 +62,7 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 	void    convert_matrix_to_tracker(void);
 
 	vrpn_bool shouldReport(double elapsedInterval) const;
+	bool haveGravity() const;
 
 	//int setup_blob(vrpn_TWH_blob* blob);
 	//int teardown_blob(vrpn_TWH_blob* blob);
