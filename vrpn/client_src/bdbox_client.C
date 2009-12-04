@@ -23,7 +23,9 @@ dial layout:
 #include <stdio.h>
 #include <vrpn_Analog.h>
 #include <vrpn_Button.h>
+#ifndef _WIN32
 #include <unistd.h>	// for gethostname()
+#endif
 /*  
 // this is the one in the PIT area
 #define BDBOX_SERVER "sgibox0@x-vrsh://152.2.128.163/~seeger/src/vrpn/server_src/sgi_irix/vrpn_server,-f,~seeger/src/config/sgibox.cfg,-q" 

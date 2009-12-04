@@ -1,10 +1,12 @@
 #include <fcntl.h>
+#ifndef _WIN32
 #include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <netinet/in.h>
+#endif
+#include <stdio.h>
+#include <stdlib.h>
 
 #include <vrpn_Connection.h>  // for vrpn_ALIGN
 
