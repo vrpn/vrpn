@@ -12,23 +12,22 @@
 #include <string.h>
 #include <string.h>
 
-#include "vrpn_Tracker.h"
 #if defined(VRPN_USE_WIIUSE)
+
+#include "vrpn_Tracker.h"
 #include "vrpn_WiiMote.h"
 #include "vrpn_Tracker_WiimoteHead.h"
-#endif
 
 
 const char* TRACKER_NAME = "Tracker0";
 const char* WIIMOTE_NAME = "Wiimote0";
 const char* WIIMOTE_REMOTE_NAME = "*Wiimote0";
-int	CONNECTION_PORT = vrpn_DEFAULT_LISTEN_PORT_NO;  // Port for connection to listen on
+const int	CONNECTION_PORT = vrpn_DEFAULT_LISTEN_PORT_NO;  // Port for connection to listen on
+const int TRACKER_FREQUENCY = 60;
+const int DEBUG_DISPLAY_INTERVAL = 3; // # of seconds between status displays
 
-#if defined(VRPN_USE_WIIUSE)
 vrpn_Tracker_WiimoteHead* wmtkr;
 vrpn_WiiMote* wiimote;
-#endif
-vrpn_Tracker_NULL* ntkr;
 vrpn_Tracker_Remote* tkr;
 vrpn_Connection* connection;
 
@@ -39,14 +38,13 @@ vrpn_Connection* connection;
  *****************************************************************************/
 
 void	VRPN_CALLBACK handle_pos(void*, const vrpn_TRACKERCB t) {
-	static	int	count = 0;
-
-	fprintf(stderr, "%d.", t.sensor);
+	static int count = 0;
+	fprintf(stderr, ".");
 	if ((++count % 20) == 0) {
 		fprintf(stderr, "\n");
 		if (count > 300) {
-			printf("Pos, sensor %d = %f, %f, %f\n", t.sensor,
-			       t.pos[0], t.pos[1], t.pos[2]);
+			printf("Xlate: (%5f, %5f, %5f)  Rot: (%5f, (%5f, %5f, %5f))\n", t.sensor,
+			       t.pos[0], t.pos[1], t.pos[2], t.quat[0], t.quat[1], t.quat[2], t.quat[3]);
 			count = 0;
 		}
 	}
@@ -55,14 +53,15 @@ void	VRPN_CALLBACK handle_pos(void*, const vrpn_TRACKERCB t) {
 void	VRPN_CALLBACK handle_vel(void*, const vrpn_TRACKERVELCB t) {
 	//static	int	count = 0;
 
-	fprintf(stderr, "%d/", t.sensor);
+	fprintf(stderr, "/");
 }
 
 void	VRPN_CALLBACK handle_acc(void*, const vrpn_TRACKERACCCB t) {
 	//static	int	count = 0;
 
-	fprintf(stderr, "%d~", t.sensor);
+	fprintf(stderr, "~");
 }
+
 
 int main(int argc, char* argv []) {
 	if (argc != 1) {
@@ -72,7 +71,7 @@ int main(int argc, char* argv []) {
 
 	// explicitly open the connection
 	connection = vrpn_create_server_connection(CONNECTION_PORT);
-#if defined(VRPN_USE_WIIUSE)
+
 	if (!connection) {
 		fprintf(stderr, "Could not create connection!\n");
 	}
@@ -84,10 +83,7 @@ int main(int argc, char* argv []) {
 	if (!wmtkr) {
 		fprintf(stderr, "Could not open Wiimote Head Tracker named %s.\n", TRACKER_NAME);
 	}
-#else
-	// Open the tracker server, using this connection, 2 sensors, update 60 times/sec
-	ntkr = new vrpn_Tracker_NULL(TRACKER_NAME, connection, 2, 60.0);
-#endif
+
 
 
 
@@ -106,12 +102,8 @@ int main(int argc, char* argv []) {
 	 */
 	while (1) {
 		// Let the tracker server, client and connection do their things
-#if defined(VRPN_USE_WIIUSE)
 		wiimote->mainloop();
 		wmtkr->mainloop();
-#else
-		ntkr->mainloop();
-#endif
 		tkr->mainloop();
 		connection->mainloop();
 
@@ -121,3 +113,13 @@ int main(int argc, char* argv []) {
 
 	return 0;
 }   /* main */
+
+#else 
+
+// if not defined(VRPN_USE_WIIUSE)
+int main(int argc, char* argv []) {
+	fprintf(stderr, "Error: This app doesn't do anything if you didn't compile against WiiUse.\n");
+	return -1;
+}
+
+#endif // defined(VRPN_USE_WIIUSE)
