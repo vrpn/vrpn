@@ -43,7 +43,7 @@ void	VRPN_CALLBACK handle_pos(void*, const vrpn_TRACKERCB t) {
 	if ((++count % 20) == 0) {
 		fprintf(stderr, "\n");
 		if (count > 300) {
-			printf("Xlate: (%5f, %5f, %5f)  Rot: (%5f, (%5f, %5f, %5f))\n", t.sensor,
+			printf("Xlate: (%5f, %5f, %5f)  Rot: (%5f, (%5f, %5f, %5f))\n",
 			       t.pos[0], t.pos[1], t.pos[2], t.quat[0], t.quat[1], t.quat[2], t.quat[3]);
 			count = 0;
 		}
@@ -114,7 +114,7 @@ int main(int argc, char* argv []) {
 	return 0;
 }   /* main */
 
-#else 
+#else
 
 // if not defined(VRPN_USE_WIIUSE)
 int main(int argc, char* argv []) {
