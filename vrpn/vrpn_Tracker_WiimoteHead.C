@@ -19,8 +19,13 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connec
 	d_update_interval (update_rate ? (1 / update_rate) : 1.0),
 	d_absolute (absolute),
 	d_reportChanges (reportChanges),
-	d_blobDistance (.15) {
+	d_blobDistance (.145),
+	d_gravDirty (true) {
+
 	int i;
+	d_vGrav[0] = 0;
+	d_vGrav[1] = -1;
+	d_vGrav[2] = 0;
 
 	for (i = 0; i < 4; i++) {
 		d_blobs[i].name = wiimote;
@@ -89,6 +94,18 @@ void	vrpn_Tracker_WiimoteHead::handle_analog_update(void* userdata, const vrpn_A
 	// into the tracker's timestamp field.
 	if (blob->wh->d_absolute) {
 		blob->wh->vrpn_Tracker::timestamp = info.msg_time;
+	}
+
+	blob->wh->update_gravity(info);
+}
+
+void vrpn_Tracker_WiimoteHead::update_gravity(const vrpn_ANALOGCB & info) {
+	int i;
+	for (i = 0; i < 3; i++) {
+		if (info.channel[1 + i] != d_vGrav[i]) {
+			d_vGrav[i] = info.channel[1 + i];
+			d_gravDirty = true;
+		}
 	}
 }
 
@@ -264,6 +281,19 @@ void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interva
 		i++;
 	}
 
+	if (d_gravDirty) {
+		if (d_vGrav[0] != 0 || 
+			d_vGrav[1] != 0 ||
+			d_vGrav[2] != 0) {
+
+			q_type regulargravity;
+			regulargravity[1] = -1;
+			q_from_two_vecs (d_qCorrectGravity, regulargravity, d_vGrav);
+			q_to_col_matrix (d_mCorrectGravity, d_qCorrectGravity);
+			d_gravDirty = false;
+		}
+	}
+
 	if (points == 2) {
 		// TODO right now only handling the 2-LED glasses at 15cm distance.
 		// we simply stop updating if we lost LED's
@@ -301,6 +331,13 @@ void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interva
 		// Build a rotation matrix, then add in the translation
 		q_euler_to_col_matrix(newM, rz, ry, rx);
 		newM[3][0] = tx; newM[3][1] = ty; newM[3][2] = tz;
+
+		if (d_vGrav[0] != 0 || 
+			d_vGrav[1] != 0 ||
+			d_vGrav[2] != 0) {
+			// we know gravity, so we are correcting for it.
+			q_matrix_mult(newM, d_mCorrectGravity, newM);
+		}
 		
 		// Apply the matrix.
 		if (d_absolute) {

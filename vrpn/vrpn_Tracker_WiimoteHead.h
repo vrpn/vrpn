@@ -72,6 +72,12 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 
 	q_matrix_type d_initMatrix, d_currentMatrix;
 
+	bool	d_gravDirty;
+	q_vec_type d_vGrav;
+	q_type	d_qCorrectGravity;
+	q_matrix_type d_mCorrectGravity;
+
+	void	update_gravity(const vrpn_ANALOGCB & info);
 	void    update_matrix_based_on_values(double time_interval);
 	void    convert_matrix_to_tracker(void);
 
