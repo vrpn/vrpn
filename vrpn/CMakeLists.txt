@@ -28,20 +28,41 @@ elseif(UNIX) # other than Apple UNIXes
 #  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -Wall")
 #  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 #  set(CMAKE_VERBOSE_MAKEFILE ON)
-  # note : maybe move CMAKE_C_COMPILER part of vrpn/client_src/CMakeLists.txt here
 endif()
 
 #-----------------------------------------------------------------------------
 # Libraries we need to do our thing.
-list(APPEND CMAKE_MODULE_PATH ${VRPN_SOURCE_DIR}/cmake)
-find_package(quatlib REQUIRED)	# Sets QUATLIB_INCLUDE_DIR and QUATLIB_LIBRARIES
-find_package(Threads)
-set(EXTRA_LIBS ${QUATLIB_LIBRARIES})
 
+###
+# Local CMake Modules
+###
+list(APPEND CMAKE_MODULE_PATH ${VRPN_SOURCE_DIR}/cmake)
+
+###
+# Quatlib
+###
+
+# If we haven't been called by a parent CMakeLists.txt but there's a
+# quat/ dir next to us, make it part of our build anyway
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../quat AND NOT TARGET quat)
+	message(STATUS "Found quatlib source in ../quat - adding to build")
+	add_subdirectory(../quat quatlib/)
+endif()
+
+find_package(quatlib REQUIRED)	# Sets QUATLIB_INCLUDE_DIR and QUATLIB_LIBRARIES
+list(APPEND EXTRA_LIBS ${QUATLIB_LIBRARIES})
+
+###
+# Threading (not on win32?)
+###
+find_package(Threads)
 if(NOT WIN32)
 	list(APPEND EXTRA_LIBS ${CMAKE_THREAD_LIBS_INIT})
 endif()
 
+###
+# Mac HID
+###
 if(APPLE)
 	find_library(MACOSX_COREFOUNDATION_LIBRARY CoreFoundation)
 	find_library(MACOSX_IOKIT_LIBRARY IOKit)
@@ -59,7 +80,7 @@ configure_file(
   "${PROJECT_BINARY_DIR}/vrpn_Configure.h"
 )
 
-# Force use of our CMake-processed configuration header
+# Force use of our CMake-processed configuration header before the stock one.
 if(CMAKE_COMPILER_IS_GNUCXX)
 	add_definitions("-include \"${PROJECT_BINARY_DIR}/vrpn_Configure.h\"")
 elseif(MSVC)
@@ -353,7 +374,7 @@ add_subdirectory (client_src)
 #-----------------------------------------------------------------------------
 # Build the atmellib library if we're building a server library
 
-if(NOT VRPN_BUILD_LIBRARY_CLIENT_ONLY)
+if(VRPN_BUILD_SERVER_LIBRARY)
 	add_subdirectory (atmellib)
 endif()
 
@@ -361,7 +382,7 @@ endif()
 # Build the server applications if we've been asked to and we didn't build
 # the library client-only.
 
-if(VRPN_BUILD_SERVERS AND NOT VRPN_BUILD_LIBRARY_CLIENT_ONLY)
+if(VRPN_BUILD_SERVERS AND VRPN_BUILD_SERVER_LIBRARY)
 	add_subdirectory (server_src)
 endif()
 
@@ -374,7 +395,7 @@ endif()
 
 #-----------------------------------------------------------------------------
 # Applications that live in the main directory.
-if(BUILD_VRPN_SERVERS AND NOT VRPN_BUILD_LIBRARY_CLIENT_ONLY)
+if(BUILD_VRPN_SERVERS AND VRPN_BUILD_SERVER_LIBRARY)
 	foreach(SOURCE time_test.cpp)
 		get_filename_component(APP ${SOURCE} NAME_WE)
 		add_executable(${APP} ${SOURCE})

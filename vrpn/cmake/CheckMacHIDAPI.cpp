@@ -1,8 +1,19 @@
-/*
- *  CheckMacHIDAPI.cpp
- *  
+/**
+ * \file CheckMacHIDAPI.cpp
+ * \brief C++ source file used by CMake module CheckMacHIDAPI.cmake
  *
- *  Created by Ryan Pavlik on 11/29/09.
+ * \author
+ * Ryan Pavlik, 2009
+ * <rpavlik@iastate.edu>
+ * http://academic.cleardefinition.com/
+ *
+ * \author
+ * Based on code extracted from VRPN 07.22 for use as a minimal test case
+ *
+ * Attempts to compile a difficult bit of code against the Mac
+ * HID API, as two different types have been required in the callback
+ * function (UInt32 and uint32_t) and testing is the best way to know
+ * which one is correct for a given system.
  *
  */
 
