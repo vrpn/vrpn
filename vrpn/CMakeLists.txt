@@ -316,12 +316,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Zaber.h
 )
 
-set(VRPN_SERVER_LIBRARY NO)
-set(VRPN_CLIENT_LIBRARY NO)
-
 if(VRPN_BUILD_SERVER_LIBRARY)
-	set(VRPN_SERVER_LIBRARY vrpnserver)
-	set(VRPN_CLIENT_LIBRARY vrpnserver) # If we build the client, this gets overridden.
 
 	add_library(vrpnserver ${VRPN_SERVER_SOURCES} ${VRPN_SERVER_PUBLIC_HEADERS})
 	target_link_libraries(vrpnserver ${QUATLIB_LIBRARIES} ${EXTRA_LIBS})
@@ -330,7 +325,6 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 		target_link_libraries(vrpnserver gpm)
 	endif()
 	if(VRPN_USE_WIIUSE)
-		# XXX use a find_package here
 		find_package(WiiUse)
 		if(NOT WIIUSE_FOUND)
 			message(FATAL_ERROR "Cannot find WiiUse, and VRPN_USE_WIIUSE enabled!")
@@ -348,7 +342,6 @@ endif()
 
 
 if(VRPN_BUILD_CLIENT_LIBRARY)
-	set(VRPN_CLIENT_LIBRARY vrpn)
 	add_library(vrpn ${VRPN_CLIENT_SOURCES} ${VRPN_CLIENT_PUBLIC_HEADERS})
 	target_link_libraries(vrpn ${QUATLIB_LIBRARIES} ${EXTRA_LIBS})
 

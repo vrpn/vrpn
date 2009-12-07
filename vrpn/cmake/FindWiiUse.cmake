@@ -12,6 +12,7 @@
 # Requires these CMake modules:
 #  FindPackageHandleStandardArgs (known included with CMake >=2.6.2)
 #
+# Original Author:
 # 2009 Ryan Pavlik <rpavlik@iastate.edu>
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
