@@ -5,11 +5,8 @@ project(VRPN)
 # XXX Things to make better.
 #
 # Make Quatlib and VRPN into packages as described by Cory
-# Put in hints or whatever to load the libraries when selected in Cmake configure?
 # Move HDAPI libraries out of vrpn_Configure.h and into the Cmake realm (they seem there but may not be)
 # Move DirectInput libraries out of vrpn_Configure.h and into the Cmake realm
-# Move WiiUse libraries out of vrpn_Configure.h and into the Cmake realm
-# Figure out how to handle vrpn_Configure.h without overwriting the source dir
 # Move the shared-library code over to CMake's normal definition
 # Move the version number into Cmake.
 # Make a CPack installer.
@@ -20,14 +17,6 @@ if(WIN32) # MS-Windows, both 32 and 64 bits
   set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   /fp:fast")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast")
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /FIXED:NO")
-elseif(APPLE) # Apple
-#  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -Wall")
-#  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-#  set(CMAKE_VERBOSE_MAKEFILE ON)
-elseif(UNIX) # other than Apple UNIXes
-#  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -Wall")
-#  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-#  set(CMAKE_VERBOSE_MAKEFILE ON)
 endif()
 
 #-----------------------------------------------------------------------------

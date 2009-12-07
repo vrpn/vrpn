@@ -11,6 +11,7 @@
 #  MACHID_DEFINITIONS
 #  MACHID_LIBRARIES
 #  MACHID_INCLUDE_DIRS
+#  MACHID_FOUND - if this is not true, do not attempt to use this library
 #
 # Requires these CMake modules:
 #  CheckMacHIDAPI
