@@ -354,13 +354,6 @@
 // Settings/C++/preprocessor tab.
 #ifdef VRPN_USE_PHANTOM_SERVER
   #ifdef VRPN_USE_HDAPI
-    #pragma comment (lib, VRPN_HDAPI_PATH "hd.lib")
-    #ifdef	_DEBUG
-      #pragma comment (lib,VRPN_HDAPI_UTIL_PATH "hdud.lib")
-    #else
-      #pragma comment (lib,VRPN_HDAPI_UTIL_PATH "hdu.lib")
-    #endif
-    #pragma comment (lib, VRPN_HDAPI_PATH "hl.lib")
   #else
     #ifdef VRPN_USE_GHOST_31
       #pragma comment (lib,VRPN_GHOST_31_PATH "GHOST31.lib")

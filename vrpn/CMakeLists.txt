@@ -5,7 +5,6 @@ project(VRPN)
 # XXX Things to make better.
 #
 # Make Quatlib and VRPN into packages as described by Cory
-# Move HDAPI libraries out of vrpn_Configure.h and into the Cmake realm (they seem there but may not be)
 # Move DirectInput libraries out of vrpn_Configure.h and into the Cmake realm
 # Move the shared-library code over to CMake's normal definition
 # Move the version number into Cmake.
@@ -26,6 +25,10 @@ endif()
 # Local CMake Modules
 ###
 list(APPEND CMAKE_MODULE_PATH ${VRPN_SOURCE_DIR}/cmake)
+if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" VERSION_LESS "2.8.0")
+	# Use backported modules if we're earlier than the cmake version above
+	list(APPEND CMAKE_MODULE_PATH ${VRPN_SOURCE_DIR}/cmake/cmake-2.8.0-features)
+endif()
 
 ###
 # Quatlib
@@ -35,16 +38,64 @@ list(APPEND CMAKE_MODULE_PATH ${VRPN_SOURCE_DIR}/cmake)
 # quat/ dir next to us, make it part of our build anyway
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../quat AND NOT TARGET quat)
 	message(STATUS "Found quatlib source in ../quat - adding to build")
-	add_subdirectory(../quat quatlib/)
+	add_subdirectory(../quat # source directory
+					quatlib/) # relative path for build output
 endif()
 
 find_package(quatlib REQUIRED)	# Sets QUATLIB_INCLUDE_DIR and QUATLIB_LIBRARIES
+
+###
+# Threading
+###
+find_package(Threads)
+
+###
+# Mac HID
+###
+if(APPLE AND VRPN_BUILD_SERVER_LIBRARY)
+	find_package(MacHID REQUIRED)
+	if(MACHID_FOUND)
+		list(APPEND EXTRA_LIBS ${MACHID_LIBRARIES})
+		add_definitions(${MACHID_DEFINITIONS})
+	endif()
+endif()
+
+###
+# MPI
+###
+find_package(MPI)
+if(MPI_FOUND AND NOT DEFINED vrpn_USE_MPI)
+	option(vrpn_USE_MPI "Build with MPI support" ON)
+endif()
+
+###
+# OpenHaptics HDAPI/HLAPI
+###
+find_package(OpenHaptics)
+if(OPENHAPTICS_FOUND AND NOT DEFINED VRPN_USE_PHANTOM_SERVER)
+	option(VRPN_USE_PHANTOM_SERVER "Build with SensAble Phantom support" ON)
+endif()
+
+###
+# WiiUse
+###
+find_package(WiiUse)
+if(WIIUSE_FOUND AND VRPN_GPL_SERVER AND NOT DEFINED VRPN_USE_WIIUSE)
+	option(VRPN_USE_WIIUSE "Build with WiiUse library support - makes servers GPL!" ON)
+endif()
+
+
+#-----------------------------------------------------------------------------
+# Set up build for requested libraries.
+
+###
+# Quatlib
+###
 list(APPEND EXTRA_LIBS ${QUATLIB_LIBRARIES})
 
 ###
 # Threading (not on win32?)
 ###
-find_package(Threads)
 if(NOT WIN32)
 	list(APPEND EXTRA_LIBS ${CMAKE_THREAD_LIBS_INIT})
 endif()
@@ -52,12 +103,49 @@ endif()
 ###
 # Mac HID
 ###
-if(APPLE)
-	find_package(MacHID)
-	if(MACHID_FOUND)
-		list(APPEND EXTRA_LIBS ${MACHID_LIBRARIES})
-		add_definitions(${MACHID_DEFINITIONS})
+if(MACHID_FOUND)
+	list(APPEND SERVER_LIBS ${MACHID_LIBRARIES})
+	add_definitions(${MACHID_DEFINITIONS})
+endif()
+
+###
+# MPI
+###
+if(vrpn_USE_MPI)
+	if(NOT MPI_FOUND)
+		message(FATAL_ERROR "ERROR: vrpn_USE_MPI set but MPI not found!")
 	endif()
+	add_definitions(${MPI_COMPILE_FLAGS})
+	include_directories(${MPI_INCLUDE_PATH})
+	list(APPEND EXTRA_LIBS ${MPI_LIBRARIES})
+endif()
+
+###
+# OpenHaptics HDAPI/HLAPI
+###
+if(VRPN_USE_PHANTOM_SERVER)
+	if(NOT OPENHAPTICS_FOUND)
+		message(FATAL_ERROR "ERROR: VRPN_USE_PHANTOM_SERVER set but HDAPI/HLAPI not found!")
+	endif()
+	if(VRPN_BUILD_SERVER_LIBRARY AND VRPN_GPL_SERVER)
+		message(SEND_ERROR "ERROR: Building with VRPN_USE_PHANTOM_SERVER and VRPN_GPL_SERVER may produce a legally non-distributable binary!")
+	endif()
+	include_directories(${OPENHAPTICS_INCLUDE_DIRS})
+	list(APPEND SERVER_EXTRA_LIBS ${OPENHAPTICS_LIBRARIES})
+endif()
+
+###
+# WiiUse
+###
+if(VRPN_USE_WIIUSE)
+	if(NOT WIIUSE_FOUND)
+		message(FATAL_ERROR "ERROR: VRPN_USE_WIIUSE set but WIIUSE not found!")
+	endif()
+	if(VRPN_BUILD_SERVER_LIBRARY AND NOT VRPN_GPL_SERVER)
+		message(FATAL_ERROR "ERROR: VRPN_USE_WIIUSE produces a GPL server library - set VRPN_GPL_SERVER to acknowledge this and build.")
+	endif()
+	include_directories(${WIIUSE_INCLUDE_DIRS})
+	list(APPEND SERVER_EXTRA_LIBS ${WIIUSE_LIBRARIES})
 endif()
 
 #-----------------------------------------------------------------------------
@@ -98,7 +186,8 @@ option(VRPN_USE_FREESPACE "Build with Hillcrest Labs' Freespace devices support"
 #-----------------------------------------------------------------------------
 # Options that control what gets built and how.
 
-# We can build two configurations (passing defs to the compile lines) - which do we want?
+# We can build two configurations (passing defs to the compile lines) - which ones do we want?
+# Note that we can build both now, if desired!
 option(VRPN_BUILD_CLIENT_LIBRARY "Build the vrpn library including only client code" ON)
 option(VRPN_BUILD_SERVER_LIBRARY "Build the vrpnserver library including client and server code" ON)
 
@@ -308,18 +397,10 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 if(VRPN_BUILD_SERVER_LIBRARY)
 
 	add_library(vrpnserver ${VRPN_SERVER_SOURCES} ${VRPN_SERVER_PUBLIC_HEADERS})
-	target_link_libraries(vrpnserver ${QUATLIB_LIBRARIES} ${EXTRA_LIBS})
+	target_link_libraries(vrpnserver ${EXTRA_LIBS} ${SERVER_LIBS})
 	if(VRPN_USE_GPM_MOUSE)
 		# XXX use a find_package here
 		target_link_libraries(vrpnserver gpm)
-	endif()
-	if(VRPN_USE_WIIUSE)
-		find_package(WiiUse)
-		if(NOT WIIUSE_FOUND)
-			message(FATAL_ERROR "Cannot find WiiUse, and VRPN_USE_WIIUSE enabled!")
-		endif()
-		include_directories(${WIIUSE_INCLUDE_DIRS})
-		target_link_libraries(vrpnserver ${WIIUSE_LIBRARIES})
 	endif()
 	set_property(TARGET vrpnserver PROPERTY PUBLIC_HEADER ${VRPN_SERVER_PUBLIC_HEADERS})
 
@@ -332,7 +413,7 @@ endif()
 
 if(VRPN_BUILD_CLIENT_LIBRARY)
 	add_library(vrpn ${VRPN_CLIENT_SOURCES} ${VRPN_CLIENT_PUBLIC_HEADERS})
-	target_link_libraries(vrpn ${QUATLIB_LIBRARIES} ${EXTRA_LIBS})
+	target_link_libraries(vrpn ${EXTRA_LIBS})
 
 	if(NOT VRPN_BUILD_SERVER_LIBRARY)
 		# Only install these headers if we aren't building a server library.
