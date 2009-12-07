@@ -12,7 +12,7 @@ if(TARGET quat)
 			${quatlib_SOURCE_DIR}
 	)
 	mark_as_advanced(QUATLIB_INCLUDE_DIR)
-	
+
 	set(QUATLIB_LIBRARY "quat")
 
 else()
@@ -23,7 +23,7 @@ else()
 			"../quat"
 	)
 	mark_as_advanced(QUATLIB_INCLUDE_DIR)
-	
+
 	# Look for the library.
 	find_library(QUATLIB_LIBRARY NAMES quat.lib libquat.a
 			PATHS
@@ -34,7 +34,7 @@ else()
 	mark_as_advanced(QUATLIB_LIBRARY)
 endif()
 
-# handle the QUIETLY and REQUIRED arguments and set QUATLIB_FOUND to TRUE if 
+# handle the QUIETLY and REQUIRED arguments and set QUATLIB_FOUND to TRUE if
 # all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(QUATLIB DEFAULT_MSG QUATLIB_LIBRARY QUATLIB_INCLUDE_DIR)

@@ -368,7 +368,7 @@ vrpn_HidInterface::~vrpn_HidInterface()
 }
 
 void ReaderReportCallback(
-	void *target, IOReturn result, void *refcon, void *sender, uint32_t size
+	void *target, IOReturn result, void *refcon, void *sender, MACOSX_HID_UINT32T size
 	)
 {
 	vrpn_HidInterface* vrpnHidInterface = (vrpn_HidInterface*) target;
