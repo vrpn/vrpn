@@ -1,7 +1,3 @@
-cmake_minimum_required(VERSION 2.6)
-
-
-
 if(NOT WIN32)
 	set(ATMELLIB_PUBLIC_HEADERS
 		vrpn_atmellib_errno.h
@@ -22,6 +18,5 @@ if(NOT WIN32)
 	install(TARGETS vrpn_atmel
 		ARCHIVE DESTINATION lib
 		PUBLIC_HEADER DESTINATION include)
-
 endif()
 

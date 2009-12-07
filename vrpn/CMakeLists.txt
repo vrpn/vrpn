@@ -151,7 +151,7 @@ option(VRPN_INCLUDE_TIMECODE_SERVER "Build with Adrienne time-code server suppor
 option(VRPN_INCLUDE_INTERSENSE "Build with InterSense native library support" OFF)
 option(VRPN_USE_NATIONAL_INSTRUMENTS "Build with National Instruments (old library) support" OFF)
 option(VRPN_USE_NATIONAL_INSTRUMENTS_MX "Build with National Instruments (new library) support" OFF)
-option(VRPN_USE_NIDAQ "Build with NIDAQ support" OFF)
+option(VRPN_USE_NIDAQ "Build with NIDAQ support ca. 1999" OFF)
 option(VRPN_USE_USDIGITAL "Build with US Digital SEI/A2 library support" OFF)
 option(VRPN_USE_MICROSCRIBE "Build with MicroScribe3D library support" OFF)
 option(VRPN_INCLUDE_PHASESPACE "Build with PhaseSpace library support" OFF)
@@ -479,7 +479,7 @@ if(GPL_SERVER_FLAGS)
 	message(STATUS "NOTE: The following build options may produce a GPL-licensed server library/binary.")
 	message(STATUS "  ${GPL_SERVER_FLAGS}")
 	message(STATUS "NOTE: I am not a lawyer, and this is not legal advice!")
-	
+
 	option(VRPN_GPL_SERVER "Check this to accept the possibility of linking GPL libraries with the server." OFF)
 endif()
 
@@ -500,7 +500,7 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 		message(STATUS "You may disable them, otherwise set VRPN_GPL_SERVER to acknowledge this and build anyway.")
 		message(FATAL_ERROR "Need VRPN_GPL_SERVER to build server library with GPL options enabled!")
 	endif()
-	
+
 	if(GPL_SERVER_FLAGS AND GPLINCOMPAT_SERVER_FLAGS)
 		message(STATUS "")
 		message(SEND_ERROR "IMPORTANT LICENSING NOTE!")
