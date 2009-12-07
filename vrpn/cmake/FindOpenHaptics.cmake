@@ -14,7 +14,8 @@
 #  HLAPI_HLU_LIBRARY_RELEASE
 #  HLAPI_HLU_LIBRARY_DEBUG
 #
-# Non-cache variables you should use in your CMakeLists.txt:
+# Non-cache variables you might use in your CMakeLists.txt:
+#  OPENHAPTICS_FOUND
 #  HDAPI_INCLUDE_DIRS
 #  HDAPI_LIBRARIES
 #  HDAPI_HDU_INCLUDE_DIRS
@@ -23,8 +24,11 @@
 #  HLAPI_LIBRARIES
 #  HLAPI_HLU_INCLUDE_DIRS
 #  HLAPI_HLU_LIBRARIES
-#  OPENHAPTICS_LIBRARIES - HD, HDU, HL, HLU
+#  OPENHAPTICS_LIBRARIES - includes HD, HDU, HL, HLU
 #  OPENHAPTICS_LIBRARY_DIRS
+#  OPENHAPTICS_INCLUDE_DIRS
+#  OPENHAPTICS_MARK_AS_ADVANCED - whether to mark our vars as advanced even
+#    if we don't find this library.
 #
 # Requires these CMake modules:
 #  CleanDirectoryList
@@ -224,7 +228,9 @@ if(OPENHAPTICS_FOUND)
 
 	include(CleanLibraryList)
 	clean_library_list(OPENHAPTICS_LIBRARIES)
+endif()
 
+if(OPENHAPTICS_FOUND OR OPENHAPTICS_MARK_AS_ADVANCED)
 	foreach(_cachevar
 		HDAPI_INCLUDE_DIR
 		HDAPI_LIBRARY
@@ -239,5 +245,4 @@ if(OPENHAPTICS_FOUND)
 
 		mark_as_advanced(${_cachevar})
 	endforeach()
-
 endif()

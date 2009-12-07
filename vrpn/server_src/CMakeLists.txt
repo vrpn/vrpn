@@ -22,8 +22,7 @@ endif()
 #-----------------------------------------------------------------------------
 # Phantom library (if configured)
 # XXX Does not work with GHOST library
-if(VRPN_USE_PHANTOM_SERVER)
-	find_package(HDAPI REQUIRED)
+if(VRPN_USE_PHANTOM_SERVER AND OPENHAPTICS_FOUND)
 	set(PHANTOM_SOURCES
 		ghostEffects/InstantBuzzEffect.cpp
 		buzzForceField.C
@@ -46,8 +45,10 @@ if(VRPN_USE_PHANTOM_SERVER)
 		trimesh.h
 		vrpn_Phantom.h
 	)
-
+	include_directories(${OPENHAPTICS_INCLUDE_DIRS})
+	include_directories(${VRPN_SOURCE_DIR}/server_src/ghostEffects)
 	add_library(vrpn_phantom ${PHANTOM_SOURCES} ${PHANTOM_HEADERS})
+	target_link_library(vrpn_phantom ${OPENHAPTICS_LIBRARIES}
 
 	set_property(TARGET vrpn_phantom PROPERTY
 		PUBLIC_HEADER ${PHANTOM_HEADERS})
@@ -55,13 +56,12 @@ if(VRPN_USE_PHANTOM_SERVER)
 	install(TARGETS vrpn_phantom
 		ARCHIVE DESTINATION lib
 		PUBLIC_HEADER DESTINATION include)
-	set (PHANTOM_LIBS vrpn_phantom ${HDAPI_LIBRARIES})
+	set (VRPNPHANTOMLIB vrpn_phantom)
 endif()
 
 #-----------------------------------------------------------------------------
 # DirectShow base-class library (if configured)
-if(VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER)
-	find_package(DirectShow REQUIRED)	# Need to have DirectShow SDK
+if(VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER AND DIRECTSHOW_FOUND)
 	add_definitions( -DCOINIT_DISABLE_OLE1DDE=0x4 )
 	add_library(DirectShow_baseclasses
 		${DirectShow_BASECLASS_DIR}/amextra.cpp
@@ -96,6 +96,9 @@ if(VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER)
 	)
 	set(DirectShow_LIBS DirectShow_baseclasses)
 
+	include_directories( ${DirectShow_BASECLASS_DIR} ${PLATFORM_SDK_INCLUDE_DIR}
+		${PLATFORM_SDK_ATL_INCLUDE_DIR}
+		${PLATFORM_SDK_ATL_INCLUDE_DIR} ${DIRECTX_SDK_INCLUDE_DIR})
 	add_executable(directshow_video_server
 		directshow_video_server/directx_video_imager_server.cpp
 		directshow_video_server/directx_camera_server.cpp
@@ -115,11 +118,6 @@ add_subdirectory (timecode_generator_server)
 include_directories(
 	${VRPN_SOURCE_DIR}/server_src
 	${VRPN_SOURCE_DIR}/server_src/timecode_generator_server
-	${VRPN_SOURCE_DIR}/server_src/ghostEffects
-	${HDAPI_INCLUDE_DIR} ${HDAPI_HDU_INCLUDE_DIR}
-	${DirectShow_BASECLASS_DIR} ${PLATFORM_SDK_INCLUDE_DIR}
-		${PLATFORM_SDK_ATL_INCLUDE_DIR}
-		${PLATFORM_SDK_ATL_INCLUDE_DIR} ${DIRECTX_SDK_INCLUDE_DIR}
 )
 
 #-----------------------------------------------------------------------------
@@ -129,7 +127,7 @@ add_executable(vrpn_server vrpn.C vrpn_Generic_server_object.C
 target_link_libraries(vrpn_server
 	${VRPN_SERVER_LIBRARY} vrpn_timecode_generator
 	${VRPN_ATMEL_LIBRARY}
-	${PHANTOM_LIBS}
+	${VRPNPHANTOMLIB}
 )
 set_target_properties(vrpn_server PROPERTIES SOLUTION_FOLDER servers)
 install(TARGETS vrpn_server

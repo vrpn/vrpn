@@ -25,10 +25,7 @@ endif()
 # Local CMake Modules
 ###
 list(APPEND CMAKE_MODULE_PATH ${VRPN_SOURCE_DIR}/cmake)
-if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" VERSION_LESS "2.8.0")
-	# Use backported modules if we're earlier than the cmake version above
-	list(APPEND CMAKE_MODULE_PATH ${VRPN_SOURCE_DIR}/cmake/cmake-2.8.0-features)
-endif()
+include(UseBackportedModules)
 
 ###
 # Quatlib
@@ -41,13 +38,16 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../quat AND NOT TARGET quat)
 	add_subdirectory(../quat # source directory
 					quatlib/) # relative path for build output
 endif()
-
-find_package(quatlib REQUIRED)	# Sets QUATLIB_INCLUDE_DIR and QUATLIB_LIBRARIES
+find_package(quatlib REQUIRED)
+list(APPEND EXTRA_LIBS ${QUATLIB_LIBRARIES})
 
 ###
-# Threading
+# Threading (not on win32?)
 ###
-find_package(Threads)
+if(NOT WIN32)
+	find_package(Threads REQUIRED)
+	list(APPEND EXTRA_LIBS ${CMAKE_THREAD_LIBS_INIT})
+endif()
 
 ###
 # Mac HID
@@ -64,53 +64,10 @@ endif()
 # MPI
 ###
 find_package(MPI)
-if(MPI_FOUND AND NOT DEFINED vrpn_USE_MPI)
+if(MPI_FOUND)
 	option(vrpn_USE_MPI "Build with MPI support" ON)
 endif()
 
-###
-# OpenHaptics HDAPI/HLAPI
-###
-find_package(OpenHaptics)
-if(OPENHAPTICS_FOUND AND NOT DEFINED VRPN_USE_PHANTOM_SERVER)
-	option(VRPN_USE_PHANTOM_SERVER "Build with SensAble Phantom support" ON)
-endif()
-
-###
-# WiiUse
-###
-find_package(WiiUse)
-if(WIIUSE_FOUND AND VRPN_GPL_SERVER AND NOT DEFINED VRPN_USE_WIIUSE)
-	option(VRPN_USE_WIIUSE "Build with WiiUse library support - makes servers GPL!" ON)
-endif()
-
-
-#-----------------------------------------------------------------------------
-# Set up build for requested libraries.
-
-###
-# Quatlib
-###
-list(APPEND EXTRA_LIBS ${QUATLIB_LIBRARIES})
-
-###
-# Threading (not on win32?)
-###
-if(NOT WIN32)
-	list(APPEND EXTRA_LIBS ${CMAKE_THREAD_LIBS_INIT})
-endif()
-
-###
-# Mac HID
-###
-if(MACHID_FOUND)
-	list(APPEND SERVER_LIBS ${MACHID_LIBRARIES})
-	add_definitions(${MACHID_DEFINITIONS})
-endif()
-
-###
-# MPI
-###
 if(vrpn_USE_MPI)
 	if(NOT MPI_FOUND)
 		message(FATAL_ERROR "ERROR: vrpn_USE_MPI set but MPI not found!")
@@ -123,12 +80,15 @@ endif()
 ###
 # OpenHaptics HDAPI/HLAPI
 ###
+set(OPENHAPTICS_MARK_AS_ADVANCED ON)
+find_package(OpenHaptics)
+if(OPENHAPTICS_FOUND)
+	option(VRPN_USE_PHANTOM_SERVER "Build with SensAble Phantom support" ON)
+endif()
+
 if(VRPN_USE_PHANTOM_SERVER)
 	if(NOT OPENHAPTICS_FOUND)
 		message(FATAL_ERROR "ERROR: VRPN_USE_PHANTOM_SERVER set but HDAPI/HLAPI not found!")
-	endif()
-	if(VRPN_BUILD_SERVER_LIBRARY AND VRPN_GPL_SERVER)
-		message(SEND_ERROR "ERROR: Building with VRPN_USE_PHANTOM_SERVER and VRPN_GPL_SERVER may produce a legally non-distributable binary!")
 	endif()
 	include_directories(${OPENHAPTICS_INCLUDE_DIRS})
 	list(APPEND SERVER_EXTRA_LIBS ${OPENHAPTICS_LIBRARIES})
@@ -137,15 +97,34 @@ endif()
 ###
 # WiiUse
 ###
+set(WIIUSE_MARK_AS_ADVANCED ON)
+find_package(WiiUse)
+if(WIIUSE_FOUND)
+	option(VRPN_USE_WIIUSE "Build with WiiUse library support (makes servers GPL)" ON)
+endif()
+
 if(VRPN_USE_WIIUSE)
 	if(NOT WIIUSE_FOUND)
-		message(FATAL_ERROR "ERROR: VRPN_USE_WIIUSE set but WIIUSE not found!")
-	endif()
-	if(VRPN_BUILD_SERVER_LIBRARY AND NOT VRPN_GPL_SERVER)
-		message(FATAL_ERROR "ERROR: VRPN_USE_WIIUSE produces a GPL server library - set VRPN_GPL_SERVER to acknowledge this and build.")
+		message(FATAL_ERROR "ERROR: VRPN_USE_WIIUSE set but WiiUse not found!")
 	endif()
 	include_directories(${WIIUSE_INCLUDE_DIRS})
 	list(APPEND SERVER_EXTRA_LIBS ${WIIUSE_LIBRARIES})
+endif()
+
+###
+# DirectShow
+###
+find_package(DirectShow)
+if(DIRECTSHOW_FOUND)
+	option(VRPN_USE_DIRECTSHOW "Build with Microsoft DirectShow support" ON)
+	option(VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER "Enable to build DirectShow Video Server (Windows)" ON)
+endif()
+
+if(VRPN_USE_DIRECTSHOW)
+	if(NOT DIRECTSHOW_FOUND)
+		message(FATAL_ERROR "ERROR: VRPN_USE_DIRECTSHOW set but DIRECTSHOW not found!")
+	endif()
+	include_directories(${DirectShow_INCLUDE_DIRS})
 endif()
 
 #-----------------------------------------------------------------------------
@@ -153,8 +132,7 @@ endif()
 # to the source code
 configure_file(
   "${PROJECT_SOURCE_DIR}/vrpn_Configure.h.cmake_in"
-  "${PROJECT_BINARY_DIR}/vrpn_Configure.h"
-)
+  "${PROJECT_BINARY_DIR}/vrpn_Configure.h")
 
 # Force use of our CMake-processed configuration header before the stock one.
 if(CMAKE_COMPILER_IS_GNUCXX)
@@ -164,6 +142,8 @@ elseif(MSVC)
 endif()
 
 # Configuration options controlling what gets included in the build.
+# These are the default options - if a library is detected above it will
+# be pre-set to ON instead.
 option(VRPN_USE_PHANTOM_SERVER "Build with SensAble Phantom support" OFF)
 option(VRPN_USE_DIRECTINPUT "Build with Microsoft DirectInput support" OFF)
 option(VRPN_USE_DIRECTSHOW "Build with Microsoft DirectShow support" OFF)
@@ -410,7 +390,6 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 endif()
 
 
-
 if(VRPN_BUILD_CLIENT_LIBRARY)
 	add_library(vrpn ${VRPN_CLIENT_SOURCES} ${VRPN_CLIENT_PUBLIC_HEADERS})
 	target_link_libraries(vrpn ${EXTRA_LIBS})
@@ -466,4 +445,66 @@ if(BUILD_VRPN_SERVERS AND VRPN_BUILD_SERVER_LIBRARY)
 		install(TARGETS ${APP}
 			RUNTIME DESTINATION bin)
 	endforeach()
+endif()
+
+#-----------------------------------------------------------------------------
+# Do a little check for GPL and GPL-incompatible libraries
+
+# What flags cause us to link against GPL libraries?
+set(ALL_GPL_SERVER_FLAGS
+		VRPN_USE_WIIUSE)
+
+set(GPL_SERVER_FLAGS)
+foreach(POSSIBLE_GPL_FLAG ${ALL_GPL_SERVER_FLAGS})
+	if (${POSSIBLE_GPL_FLAG})
+		list(APPEND GPL_SERVER_FLAGS "${POSSIBLE_GPL_FLAG}")
+	endif()
+endforeach()
+
+# What flags cause us to link against GPL-incompatible libraries?
+set(ALL_GPLINCOMPAT_SERVER_FLAGS
+		VRPN_USE_PHANTOM_SERVER)
+
+set(GPLINCOMPAT_SERVER_FLAGS)
+foreach(POSSIBLE_GPLINCOMPAT_FLAG ${ALL_GPLINCOMPAT_SERVER_FLAGS})
+	if (${POSSIBLE_GPLINCOMPAT_FLAG})
+		list(APPEND GPLINCOMPAT_SERVER_FLAGS "${POSSIBLE_GPLINCOMPAT_FLAG}")
+	endif()
+endforeach()
+
+
+if(GPL_SERVER_FLAGS)
+	# Some GPL options are enabled
+	message(STATUS "")
+	message(STATUS "NOTE: The following build options may produce a GPL-licensed server library/binary.")
+	message(STATUS "  ${GPL_SERVER_FLAGS}")
+	message(STATUS "NOTE: I am not a lawyer, and this is not legal advice!")
+	
+	option(VRPN_GPL_SERVER "Check this to accept the possibility of linking GPL libraries with the server." OFF)
+endif()
+
+if(GPLINCOMPAT_SERVER_FLAGS)
+	# Some GPL-incompatible options are enabled
+	message(STATUS "")
+	message(STATUS "NOTE: The following build options may produce a server library/binary")
+	message(STATUS "  that is incompatible with the GPL/undistributable if linked with GPL libraries.")
+	message(STATUS "  ${GPLINCOMPAT_SERVER_FLAGS}")
+	message(STATUS "NOTE: I am not a lawyer, and this is not legal advice!")
+endif()
+
+# Check for errors.
+if(VRPN_BUILD_SERVER_LIBRARY)
+	if(GPL_SERVER_FLAGS AND NOT VRPN_GPL_SERVER)
+		message(STATUS "")
+		message(STATUS "Selected build options produce a GPL server library.")
+		message(STATUS "You may disable them, otherwise set VRPN_GPL_SERVER to acknowledge this and build anyway.")
+		message(FATAL_ERROR "Need VRPN_GPL_SERVER to build server library with GPL options enabled!")
+	endif()
+	
+	if(GPL_SERVER_FLAGS AND GPLINCOMPAT_SERVER_FLAGS)
+		message(STATUS "")
+		message(SEND_ERROR "IMPORTANT LICENSING NOTE!")
+		message(SEND_ERROR "Building with the current settings may produce a legally non-distributable server binary!")
+		message(SEND_ERROR "NOTE: I am not a lawyer, and this is not legal advice!")
+	endif()
 endif()

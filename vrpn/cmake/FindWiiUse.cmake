@@ -1,13 +1,16 @@
 # - try to find WiiUse library
 #
-# Cache Variables: (probably not for direct using in your scripts)
+# Cache Variables: (probably not for direct use in your scripts)
 #  WIIUSE_INCLUDE_DIR
 #  WIIUSE_LIBRARY
 #
-# Non-cache variables you should use in your CMakeLists.txt:
+# Non-cache variables you might use in your CMakeLists.txt:
+#  WIIUSE_FOUND
 #  WIIUSE_INCLUDE_DIRS
 #  WIIUSE_LIBRARIES
 #  WIIUSE_RUNTIME_LIBRARY_DIRS
+#  WIIUSE_MARK_AS_ADVANCED - whether to mark our vars as advanced even
+#    if we don't find this library.
 #
 # Requires these CMake modules:
 #  FindPackageHandleStandardArgs (known included with CMake >=2.6.2)
@@ -36,11 +39,13 @@ if(WIIUSE_FOUND)
 
 	set(WIIUSE_INCLUDE_DIRS "${WIIUSE_INCLUDE_DIR}")
 
+endif()
+
+if(WIIUSE_FOUND OR WIIUSE_MARK_AS_ADVANCED)
 	foreach(_cachevar
 		WIIUSE_INCLUDE_DIR
 		WIIUSE_LIBRARY)
 
 		mark_as_advanced(${_cachevar})
 	endforeach()
-
 endif()
