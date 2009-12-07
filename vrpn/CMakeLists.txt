@@ -1,14 +1,28 @@
 cmake_minimum_required(VERSION 2.6)
 project(VRPN)
 
+# Changes made by:
+# 2009 Ryan Pavlik <rpavlik@iastate.edu>
+# http://academic.cleardefinition.com
+# Iowa State University HCI Graduate Program/VRAC
+
 #-----------------------------------------------------------------------------
 # XXX Things to make better.
 #
-# Make Quatlib and VRPN into packages as described by Cory
+# Make Quatlib and VRPN into packages as described by Cory (?)
 # Move DirectInput libraries out of vrpn_Configure.h and into the Cmake realm
+# Repeat for all other configurable headers/libraries - see below for a list
 # Move the shared-library code over to CMake's normal definition
-# Move the version number into Cmake.
-# Make a CPack installer.
+# Move the version number into Cmake more fully (defined elsewhere?).
+# Improve this CPack installer.
+
+set(CPACK_PACKAGE_VENDOR "Russell M. Taylor II at the University of North Carolina at Chapel Hill")
+set(CPACK_PACKAGE_VERSION_MAJOR "07")
+set(CPACK_PACKAGE_VERSION_MINOR "24")
+set(CPACK_PACKAGE_VERSION_PATCH "1")
+set(CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}" )
+set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
+set(CPACK_SOURCE_PACKAGE_FILE_NAME "${CPACK_PACKAGE_FILE_NAME}-src")
 
 #-----------------------------------------------------------------------------
 # Compiler flags we got from Hans
@@ -19,7 +33,33 @@ if(WIN32) # MS-Windows, both 32 and 64 bits
 endif()
 
 #-----------------------------------------------------------------------------
+# Options that control what gets built and how.
+
+# We can build two configurations (passing defs to the compile lines) - which ones do we want?
+# Note that we can build both now, if desired!
+option(VRPN_BUILD_CLIENT_LIBRARY "Build the vrpn library including only client code" ON)
+option(VRPN_BUILD_SERVER_LIBRARY "Build the vrpnserver library including client and server code" ON)
+
+# Build various applications if we want them.
+option(VRPN_BUILD_CLIENTS "Build VRPN client apps and tests" ON)
+option(VRPN_BUILD_SERVERS "Build VRPN servers" ON)
+option(VRPN_BUILD_TEST_RPC_GENERATION "Build VRPN RPC generation" OFF)
+if(WIN32)
+	option(VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER "Enable to build DirectShow Video Server (Windows)" OFF)
+endif()
+
+
+#-----------------------------------------------------------------------------
 # Libraries we need to do our thing.
+#
+# CMake variables:
+#   SERVER_EXTRA_LIBS - libraries to link against when building the server lib
+#   EXTRA_LIBS - libraries to link against when building any VRPN lib
+#
+# Note that library linking is, by default, transitive:
+# Specify linking here (even though static libraries might not use it
+# directly - think of shared libs and your fellow developer) rather than
+# in the included apps.
 
 ###
 # Local CMake Modules
@@ -65,13 +105,15 @@ endif()
 ###
 find_package(MPI)
 if(MPI_FOUND)
-	option(vrpn_USE_MPI "Build with MPI support" ON)
+	# XXX Safe to enable by default if we find it?
+	#option(vrpn_USE_MPI "Build with MPI support" ON)
 endif()
 
 if(vrpn_USE_MPI)
 	if(NOT MPI_FOUND)
 		message(FATAL_ERROR "ERROR: vrpn_USE_MPI set but MPI not found!")
 	endif()
+	# XXX what else needs to be done here?
 	add_definitions(${MPI_COMPILE_FLAGS})
 	include_directories(${MPI_INCLUDE_PATH})
 	list(APPEND EXTRA_LIBS ${MPI_LIBRARIES})
@@ -114,6 +156,8 @@ endif()
 ###
 # DirectShow
 ###
+# Note: FindDirectShow.cmake still needs some TLC to bring it in line
+# with CMake standards and make it work in a variety of environments
 find_package(DirectShow)
 if(DIRECTSHOW_FOUND)
 	option(VRPN_USE_DIRECTSHOW "Build with Microsoft DirectShow support" ON)
@@ -122,10 +166,45 @@ endif()
 
 if(VRPN_USE_DIRECTSHOW)
 	if(NOT DIRECTSHOW_FOUND)
-		message(FATAL_ERROR "ERROR: VRPN_USE_DIRECTSHOW set but DIRECTSHOW not found!")
+		message(FATAL_ERROR "ERROR: VRPN_USE_DIRECTSHOW set but DirectShow not found!")
 	endif()
 	include_directories(${DirectShow_INCLUDE_DIRS})
+	# XXX What else should be done here?
 endif()
+
+###
+# GPM
+###
+set(GPM_MARK_AS_ADVANCED ON)
+find_package(GPM)
+if(GPM_FOUND)
+	option(VRPN_USE_GPM_MOUSE "Build with GPM Linux mouse interface support" ON)
+endif()
+
+if(VRPN_USE_GPM_MOUSE)
+	if(NOT GPM_FOUND)
+		message(FATAL_ERROR "ERROR: VRPN_USE_GPM_MOUSE set but GPM not found!")
+	endif()
+	list(APPEND SERVER_EXTRA_LIBS ${GPM_LIBRARIES})
+endif()
+
+###
+# XXX Other libraries needing detection and handling (TODO)
+###
+# possibly GHOST?
+# DirectX (for DirectInput)
+# Adrienne time-code generator
+# InterSense Interface Libraries SDK
+# National Instruments Nidaq (both new [MX] and old)
+# US Digital SEI/A2
+# microscribe3D library
+# PhaseSpace OWL API
+# GLI Interactive LLC MotionNode library
+# Hillcrest Labs' Freespace 
+#
+# All include paths should be moved out of at least vrpn_Configure.h.cmake_in
+# as well as all #pragma comment (lib, "" ) lines, since cmake replaces
+# them more flexibly (include_directories and target_link_libraries)
 
 #-----------------------------------------------------------------------------
 # configure a header file to pass some of the CMake settings
@@ -163,21 +242,6 @@ option(VRPN_USE_FREESPACE "Build with Hillcrest Labs' Freespace devices support"
 
 #option(vrpn_USE_MPI "Build with MPI support" OFF)
 
-#-----------------------------------------------------------------------------
-# Options that control what gets built and how.
-
-# We can build two configurations (passing defs to the compile lines) - which ones do we want?
-# Note that we can build both now, if desired!
-option(VRPN_BUILD_CLIENT_LIBRARY "Build the vrpn library including only client code" ON)
-option(VRPN_BUILD_SERVER_LIBRARY "Build the vrpnserver library including client and server code" ON)
-
-# Build various applications if we want them.
-option(VRPN_BUILD_CLIENTS "Build VRPN client apps and tests" ON)
-option(VRPN_BUILD_SERVERS "Build VRPN servers" ON)
-option(VRPN_BUILD_TEST_RPC_GENERATION "Build VRPN RPC generation" OFF)
-if(WIN32)
-	option(VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER "Enable to build DirectShow Video Server (Windows)" OFF)
-endif()
 
 #-----------------------------------------------------------------------------
 # Build the library itself and declare what bits need to be installed
@@ -377,11 +441,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 if(VRPN_BUILD_SERVER_LIBRARY)
 
 	add_library(vrpnserver ${VRPN_SERVER_SOURCES} ${VRPN_SERVER_PUBLIC_HEADERS})
-	target_link_libraries(vrpnserver ${EXTRA_LIBS} ${SERVER_LIBS})
-	if(VRPN_USE_GPM_MOUSE)
-		# XXX use a find_package here
-		target_link_libraries(vrpnserver gpm)
-	endif()
+	target_link_libraries(vrpnserver ${EXTRA_LIBS} ${SERVER_EXTRA_LIBS})
 	set_property(TARGET vrpnserver PROPERTY PUBLIC_HEADER ${VRPN_SERVER_PUBLIC_HEADERS})
 
 	install(TARGETS vrpnserver
@@ -436,11 +496,11 @@ endif()
 
 #-----------------------------------------------------------------------------
 # Applications that live in the main directory.
-if(BUILD_VRPN_SERVERS AND VRPN_BUILD_SERVER_LIBRARY)
+if(VRPN_BUILD_SERVERS AND VRPN_BUILD_SERVER_LIBRARY)
 	foreach(SOURCE time_test.cpp)
 		get_filename_component(APP ${SOURCE} NAME_WE)
 		add_executable(${APP} ${SOURCE})
-		target_link_libraries(${APP} vrpn)
+		target_link_libraries(${APP} vrpnserver)
 		set_target_properties(${APP} PROPERTIES SOLUTION_FOLDER tests)
 		install(TARGETS ${APP}
 			RUNTIME DESTINATION bin)
@@ -508,3 +568,7 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 		message(SEND_ERROR "NOTE: I am not a lawyer, and this is not legal advice!")
 	endif()
 endif()
+
+#-----------------------------------------------------------------------------
+# If we succeeded, we can go on and include packaging!
+include(CPack)
