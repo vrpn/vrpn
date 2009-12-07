@@ -64,12 +64,11 @@ endif()
 # Mac HID
 ###
 if(APPLE)
-	find_library(MACOSX_COREFOUNDATION_LIBRARY CoreFoundation)
-	find_library(MACOSX_IOKIT_LIBRARY IOKit)
-	list(APPEND EXTRA_LIBS ${MACOSX_COREFOUNDATION_LIBRARY} ${MACOSX_IOKIT_LIBRARY})
-	mark_as_advanced(MACOSX_COREFOUNDATION_LIBRARY MACOSX_IOKIT_LIBRARY)
-	include(CheckMacHIDAPI)
-	add_definitions(-DMACOSX_HID_UINT32T=${MACOSX_HID_UINT32T})
+	find_package(MacHID)
+	if(MACHID_FOUND)
+		list(APPEND EXTRA_LIBS ${MACHID_LIBRARIES})
+		add_definitions(${MACHID_DEFINITIONS})
+	endif()
 endif()
 
 #-----------------------------------------------------------------------------
