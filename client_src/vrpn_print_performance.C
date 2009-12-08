@@ -70,6 +70,9 @@ class t_user_callback {
 	vector<struct timeval>	t_last_report;
 };
 
+struct timeval	t_analog_last_report;
+unsigned		t_analog_count;
+
 static	double	duration(struct timeval t1, struct timeval t2) {
 	return (t1.tv_usec - t2.tv_usec) / 1000000.0 +
 	       (t1.tv_sec - t2.tv_sec);
@@ -189,6 +192,25 @@ void	VRPN_CALLBACK handle_button (void *userdata, const vrpn_BUTTONCB b)
 
 void	VRPN_CALLBACK handle_analog (void *userdata, const vrpn_ANALOGCB a)
 {
+    int i;
+    const char *name = (const char *)userdata;
+    struct timeval now;
+	double interval;
+	vrpn_gettimeofday(&now, NULL);
+
+
+	interval = duration(now, t_analog_last_report);
+	t_analog_count++;
+	// See if it's been long enough to display a frequency notification
+	if (interval >= report_interval ) {
+		double frequency = t_analog_count / interval;
+		t_analog_count = 0;
+		t_analog_last_report = now;
+		printf("Analog %s:\t\t%5.2f messages per second averaged over %5.2f seconds\n",
+			name,
+			frequency,
+			interval);
+	}
 /*
     const char *name = (const char *)userdata;
     int i;
@@ -267,7 +289,7 @@ int main (int argc, char * argv [])
   vrpn_FILE_CONNECTIONS_SHOULD_ACCUMULATE = false;
 
   device_info device_list[MAX_DEVICES];
-  unsigned num_devices = 0;
+  int num_devices = 0;
 
   int i;
 
@@ -287,7 +309,7 @@ int main (int argc, char * argv [])
       print_for_text = 0;
     } else if (!strcmp(argv[i], "--reportinterval")) {
       if (++i >= argc) { Usage(argv[0]); }
-      report_interval = atof(argv[i]);
+      report_interval = atoi(argv[i]);
       if (report_interval <= 0) {
 	  fprintf(stderr, "--reportinterval argument must be 1 or greater\n");
 	  return -1;
@@ -317,6 +339,9 @@ int main (int argc, char * argv [])
 	} else {
 	    printf("Opened %s as:", dev->name);
 	}
+
+	struct timeval now;
+	vrpn_gettimeofday(&now, NULL);
 
 	// If we are printing the tracker reports, prepare the
 	// user-data callbacks and hook them up to be called with
@@ -350,6 +375,8 @@ int main (int argc, char * argv [])
 
 	if (print_for_analog) {
 	    printf(" Analog");
+	    t_analog_last_report = now;
+	    t_analog_count = 0;
 	    dev->ana->register_change_handler(dev->name, handle_analog);
 	}
 
@@ -387,7 +414,7 @@ int main (int argc, char * argv [])
  */
   printf("Press ^C to exit.\n");
   while ( ! done ) {
-      unsigned i;
+      int i;
 
       // Let all the devices do their things
       for (i = 0; i < num_devices; i++) {
