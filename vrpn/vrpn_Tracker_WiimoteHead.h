@@ -34,6 +34,10 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 	static int VRPN_CALLBACK handle_newConnection (void*, vrpn_HANDLERPARAM);
 	static int VRPN_CALLBACK handle_dropLastConnection (void*, vrpn_HANDLERPARAM);
 
+	long needwiimote_m_id;
+	long refreshwiimote_m_id;
+	long wmheadtrackserver_s_id;
+
 	protected:
 
 	double          d_update_interval; //< How long to wait between sends
@@ -61,7 +65,7 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 	q_type			d_qCorrectGravity;
 	q_matrix_type	d_mCorrectGravity;
 
-	void	update_gravity(const vrpn_ANALOGCB & info);
+	bool	register_custom_types();
 	void    update_matrix_based_on_values(double time_interval);
 	void    convert_matrix_to_tracker(void);
 
@@ -69,6 +73,8 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 	bool haveGravity() const;
 
 	static void VRPN_CALLBACK handle_analog_update(void* userdata, const vrpn_ANALOGCB info);
+	static void VRPN_CALLBACK handle_refresh_wiimote(void* userdata, const vrpn_ANALOGCB info);
+
 };
 
 #endif

@@ -29,6 +29,7 @@ vrpn_Tracker_WiimoteHead* wmtkr;
 vrpn_WiiMote* wiimote;
 vrpn_Tracker_Remote* tkr;
 vrpn_Connection* connection;
+long sender_id;
 
 /*****************************************************************************
  *
@@ -84,7 +85,6 @@ int main(int argc, char* argv []) {
 
 	// explicitly open the connection
 	connection = vrpn_create_server_connection(CONNECTION_PORT);
-
 
 	if (!connection) {
 		fprintf(stderr, "Could not create connection!\n");

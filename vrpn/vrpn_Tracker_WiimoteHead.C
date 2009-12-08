@@ -69,6 +69,15 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connec
 		//return;
 	}
 
+	ret = register_custom_types();
+	if (!ret) {
+		fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
+				"Can't setup custom message and sender types\n");
+		delete d_ana;
+		d_ana = NULL;
+		return;
+	}
+
 	//--------------------------------------------------------------------
 	// Whenever we get the first connection to this server, we also
 	// want to reset the matrix to identity, so that you start at the
@@ -210,6 +219,36 @@ void vrpn_Tracker_WiimoteHead::reset(void) {
 	// Convert the matrix into quaternion notation and copy into the
 	// tracker pos and quat elements.
 	convert_matrix_to_tracker();
+}
+
+bool vrpn_Tracker_WiimoteHead::register_custom_types()
+{
+    if (d_connection == NULL) {
+		return false;
+    }
+
+    needwiimote_m_id = d_connection->register_message_type("vrpn_Tracker_WiimoteHead needWiimote");
+	if (needwiimote_m_id == -1) {
+		fprintf(stderr,"vrpn_Tracker_WiimoteHead: Can't register type IDs\n");
+		d_connection = NULL;
+		return false;
+    }
+
+    refreshwiimote_m_id = d_connection->register_message_type("vrpn_Tracker_WiimoteHead refreshWiimote");
+	if (refreshwiimote_m_id == -1) {
+		fprintf(stderr,"vrpn_Tracker_WiimoteHead: Can't register type IDs\n");
+		d_connection = NULL;
+		return false;
+    }
+
+    wmheadtrackserver_s_id = d_connection->register_sender("WMHeadTrackServer");
+	if (wmheadtrackserver_s_id == -1) {
+		fprintf(stderr,"vrpn_Tracker_WiimoteHead: Can't register sender IDs\n");
+		d_connection = NULL;
+		return false;
+    }
+
+    return true;
 }
 
 void vrpn_Tracker_WiimoteHead::mainloop() {
