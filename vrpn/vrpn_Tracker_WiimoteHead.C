@@ -145,7 +145,7 @@ void	vrpn_Tracker_WiimoteHead::handle_analog_update(void* userdata, const vrpn_A
 	wh->d_vSize = size;
 	wh->d_hasBlob = true;
 	wh->d_updated = true;
-	
+
 	bool newgrav = false;
 
 	// Grab gravity
@@ -274,7 +274,7 @@ void vrpn_Tracker_WiimoteHead::mainloop() {
 	vrpn_gettimeofday(&now, NULL);
 	interval = duration(now, d_prevtime);
 
-	if (shouldReport(interval)) {
+	if (true /*shouldReport(interval)*/) {
 		// Figure out the new matrix based on the current values and
 		// the length of the interval since the last report
 		update_matrix_based_on_values(interval);
@@ -334,7 +334,7 @@ void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interva
 		q_vec_scale (movingAvg, 0.33333, movingAvg);
 
 		q_vec_type regulargravity;
-		
+
 		regulargravity[1] = 1;
 		q_from_two_vecs (d_qCorrectGravity, regulargravity, movingAvg);
 
@@ -392,7 +392,7 @@ void	vrpn_Tracker_WiimoteHead::update_matrix_based_on_values(double time_interva
 			// we know gravity, so we are correcting for it.
 			// TODO: improve vrpn driver in juggler to handle tracker-to-room
 			// transform and set that there, instead?
-			
+
 			//q_matrix_mult(newM, d_mCorrectGravity, newM);
 		}
 		// Apply the matrix.
