@@ -1,10 +1,10 @@
-/*			vrpn_print_devices.C
+/*			vrpn_print_performance.C
 
 	This is a VRPN client program that will connect to one or more VRPN
-	server devices and print out descriptions of any of a number of
-	message types.  These include at least tracker, button, dial and analog
-	messages.  It is useful for testing whether a server is up and running,
-	and perhaps for simple debugging.
+	server devices and print out the rate of any of a number of	message types.
+	These include only tracker messages at this time, but the rest are easy.  While it
+	doesn't (currently) attempt to consider latency, its measurement of update
+	rate might be informative to some.
 */
 
 #include <stdlib.h>
@@ -31,7 +31,7 @@
 using namespace std;
 
 int done = 0;	        // Signals that the program should exit
-unsigned tracker_stride = 1;	// Every nth report will be printed
+float report_interval = 1;	// Every n seconds a report will be printed
 
 //-------------------------------------
 // This section contains the data structure that holds information on
@@ -48,7 +48,7 @@ class device_info {
 	vrpn_Button_Remote  *btn;
 	vrpn_Analog_Remote  *ana;
 	vrpn_Dial_Remote    *dial;
-        vrpn_Text_Receiver  *text;
+    vrpn_Text_Receiver  *text;
 };
 const unsigned MAX_DEVICES = 50;
 
@@ -66,9 +66,14 @@ const unsigned MAX_DEVICES = 50;
 class t_user_callback {
     public:
 	char		    t_name[vrpn_MAX_TEXT_LEN];
-        vector<unsigned>    t_counts;
+    vector<unsigned>	t_counts;
+	vector<struct timeval>	t_last_report;
 };
 
+static	double	duration(struct timeval t1, struct timeval t2) {
+	return (t1.tv_usec - t2.tv_usec) / 1000000.0 +
+	       (t1.tv_sec - t2.tv_sec);
+}
 
 /*****************************************************************************
  *
@@ -80,20 +85,32 @@ void	VRPN_CALLBACK handle_tracker_pos_quat (void *userdata, const vrpn_TRACKERCB
 {
 	t_user_callback	*t_data = (t_user_callback *)userdata;
 
-        // Make sure we have a count value for this sensor
-        while (t_data->t_counts.size() <= static_cast<unsigned>(t.sensor)) {
-          t_data->t_counts.push_back(0);
-        }
+	// Make sure we have a count value for this sensor
+	while (t_data->t_counts.size() <= static_cast<unsigned>(t.sensor)) {
+	  t_data->t_counts.push_back(0);
+	}
+	struct timeval now;
+	double interval;
+	vrpn_gettimeofday(&now, NULL);
+	// Make sure we have a count value for this sensor
+	while (t_data->t_last_report.size() <= static_cast<unsigned>(t.sensor)) {
+	  t_data->t_last_report.push_back(now);
+	}
 
-	// See if we have gotten enough reports from this sensor that we should
-	// print this one.  If so, print and reset the count.
-	if ( ++t_data->t_counts[t.sensor] >= tracker_stride ) {
+
+	interval = duration(now, t_data->t_last_report[t.sensor]);
+	t_data->t_counts[t.sensor]++;
+
+	// See if it's been long enough to display a frequency notification
+	if (interval >= report_interval ) {
+		double frequency = t_data->t_counts[t.sensor] / interval;
 		t_data->t_counts[t.sensor] = 0;
-		printf("Tracker %s, sensor %d:\n        pos (%5.2f, %5.2f, %5.2f); quat (%5.2f, %5.2f, %5.2f, %5.2f)\n",
+		t_data->t_last_report[t.sensor] = now;
+		printf("Tracker %s, sensor %d:\t%5.2f Hz (%5.2f sec)\n",
 			t_data->t_name,
 			t.sensor,
-			t.pos[0], t.pos[1], t.pos[2],
-			t.quat[0], t.quat[1], t.quat[2], t.quat[3]);
+			frequency,
+			interval);
 	}
 }
 
@@ -101,20 +118,32 @@ void	VRPN_CALLBACK handle_tracker_vel (void *userdata, const vrpn_TRACKERVELCB t
 {
 	t_user_callback	*t_data = (t_user_callback *)userdata;
 
-        // Make sure we have a count value for this sensor
-        while (t_data->t_counts.size() <= static_cast<unsigned>(t.sensor)) {
-          t_data->t_counts.push_back(0);
-        }
+	// Make sure we have a count value for this sensor
+	while (t_data->t_counts.size() <= static_cast<unsigned>(t.sensor)) {
+	  t_data->t_counts.push_back(0);
+	}
+	struct timeval now;
+	double interval;
+	vrpn_gettimeofday(&now, NULL);
+	// Make sure we have a count value for this sensor
+	while (t_data->t_last_report.size() <= static_cast<unsigned>(t.sensor)) {
+	  t_data->t_last_report.push_back(now);
+	}
 
-	// See if we have gotten enough reports from this sensor that we should
-	// print this one.  If so, print and reset the count.
-	if ( ++t_data->t_counts[t.sensor] >= tracker_stride ) {
+
+	interval = duration(now, t_data->t_last_report[t.sensor]);
+	t_data->t_counts[t.sensor]++;
+
+	// See if it's been long enough to display a frequency notification
+	if (interval >= report_interval ) {
+		double frequency = t_data->t_counts[t.sensor] / interval;
 		t_data->t_counts[t.sensor] = 0;
-		printf("Tracker %s, sensor %d:\n        vel (%5.2f, %5.2f, %5.2f); quatvel (%5.2f, %5.2f, %5.2f, %5.2f)\n",
+		t_data->t_last_report[t.sensor] = now;
+		printf("Tracker %s, sensor %d:\t\t%5.2f messages per second averaged over %5.2f seconds\n",
 			t_data->t_name,
 			t.sensor,
-			t.vel[0], t.vel[1], t.vel[2],
-			t.vel_quat[0], t.vel_quat[1], t.vel_quat[2], t.vel_quat[3]);
+			frequency,
+			interval);
 	}
 }
 
@@ -122,20 +151,31 @@ void	VRPN_CALLBACK handle_tracker_acc (void *userdata, const vrpn_TRACKERACCCB t
 {
 	t_user_callback	*t_data = (t_user_callback *)userdata;
 
-        // Make sure we have a count value for this sensor
-        while (t_data->t_counts.size() <= static_cast<unsigned>(t.sensor)) {
-          t_data->t_counts.push_back(0);
-        }
+	// Make sure we have a count value for this sensor
+	while (t_data->t_counts.size() <= static_cast<unsigned>(t.sensor)) {
+	  t_data->t_counts.push_back(0);
+	}
+	struct timeval now;
+	double interval;
+	vrpn_gettimeofday(&now, NULL);
+	// Make sure we have a count value for this sensor
+	while (t_data->t_last_report.size() <= static_cast<unsigned>(t.sensor)) {
+	  t_data->t_last_report.push_back(now);
+	}
 
-	// See if we have gotten enough reports from this sensor that we should
-	// print this one.  If so, print and reset the count.
-	if ( ++t_data->t_counts[t.sensor] >= tracker_stride ) {
+
+	interval = duration(now, t_data->t_last_report[t.sensor]);
+	t_data->t_counts[t.sensor]++;
+	// See if it's been long enough to display a frequency notification
+	if (interval >= report_interval ) {
+		double frequency = t_data->t_counts[t.sensor] / interval;
 		t_data->t_counts[t.sensor] = 0;
-		printf("Tracker %s, sensor %d:\n        acc (%5.2f, %5.2f, %5.2f); quatacc (%5.2f, %5.2f, %5.2f, %5.2f)\n",
+		t_data->t_last_report[t.sensor] = now;
+		printf("Tracker %s, sensor %d:\t\t%5.2f messages per second averaged over %5.2f seconds\n",
 			t_data->t_name,
 			t.sensor,
-			t.acc[0], t.acc[1], t.acc[2],
-			t.acc_quat[0], t.acc_quat[1], t.acc_quat[2], t.acc_quat[3]);
+			frequency,
+			interval);
 	}
 }
 
@@ -151,30 +191,35 @@ void	VRPN_CALLBACK handle_analog (void *userdata, const vrpn_ANALOGCB a)
 {
     int i;
     const char *name = (const char *)userdata;
-
+/*
     printf("Analog %s:\n         %5.2f", name, a.channel[0]);
     for (i = 1; i < a.num_channel; i++) {
 	printf(", %5.2f", a.channel[i]);
     }
     printf(" (%d chans)\n", a.num_channel);
+*/
 }
 
 void	VRPN_CALLBACK handle_dial (void *userdata, const vrpn_DIALCB d)
 {
+	/*
     const char *name = (const char *)userdata;
 
     printf("Dial %s, number %d was moved by %5.2f\n",
 	name, d.dial, d.change);
+	*/
 }
 
 void	VRPN_CALLBACK handle_text (void *userdata, const vrpn_TEXTCB t)
 {
+	/*
     const char *name = (const char *)userdata;
 
     // Warnings and errors are printed by the system text printer.
     if (t.type == vrpn_TEXT_NORMAL) {
       printf("%s: Text message: %s\n", name, t.message);
     }
+    */
 }
 
 
@@ -191,14 +236,14 @@ void handle_cntl_c(int) {
 
 void Usage (const char * arg0) {
   fprintf(stderr,
-"Usage:  %s [-notracker] [-nobutton] [-noanalog] [-nodial]\n"
-"           [-trackerstride n]\n"
-"           [-notext] device1 [device2] [device3] [device4] [...]\n"
-"  -trackerstride:  Print every nth report from each tracker sensor\n" 
-"  -notracker:  Don't print tracker reports for following devices\n" 
-"  -nobutton:  Don't print button reports for following devices\n" 
-"  -noanalog:  Don't print analog reports for following devices\n" 
-"  -nodial:  Don't print dial reports for following devices\n" 
+"Usage:  %s [--notracker] [--nobutton] [--noanalog] [--nodial]\n"
+"           [--reportinterval n]\n"
+"           [--notext] device1 [device2] [device3] [device4] [...]\n"
+"  -trackerstride:  Print every nth report from each tracker sensor\n"
+"  -notracker:  Don't print tracker reports for following devices\n"
+"  -nobutton:  Don't print button reports for following devices\n"
+"  -noanalog:  Don't print analog reports for following devices\n"
+"  -nodial:  Don't print dial reports for following devices\n"
 "  -notext:  Don't print text messages (warnings, errors) for following devices\n"
 "  deviceX:  VRPN name of device to connect to (eg: Tracker0@ioglab)\n"
 "  The default behavior is to print all message types for all devices listed\n"
@@ -232,19 +277,19 @@ int main (int argc, char * argv [])
   for (i = 1; i < argc; i++) {
     if (!strcmp(argv[i], "-notracker")) {
       print_for_tracker = 0;
-    } else if (!strcmp(argv[i], "-nobutton")) {
+    } else if (!strcmp(argv[i], "--nobutton")) {
       print_for_button = 0;
-    } else if (!strcmp(argv[i], "-noanalog")) {
+    } else if (!strcmp(argv[i], "--noanalog")) {
       print_for_analog = 0;
-    } else if (!strcmp(argv[i], "-nodial")) {
+    } else if (!strcmp(argv[i], "--nodial")) {
       print_for_dial = 0;
-    } else if (!strcmp(argv[i], "-notext")) {
+    } else if (!strcmp(argv[i], "--notext")) {
       print_for_text = 0;
-    } else if (!strcmp(argv[i], "-trackerstride")) {
+    } else if (!strcmp(argv[i], "--reportinterval")) {
       if (++i >= argc) { Usage(argv[0]); }
-      tracker_stride = atoi(argv[i]);
-      if (tracker_stride <= 0) {
-	  fprintf(stderr, "-trackerstride argument must be 1 or greater\n");
+      report_interval = atoi(argv[i]);
+      if (report_interval <= 0) {
+	  fprintf(stderr, "--reportinterval argument must be 1 or greater\n");
 	  return -1;
       }
     } else {	// Create a device and connect to it.
@@ -337,7 +382,7 @@ int main (int argc, char * argv [])
   signal(SIGINT, handle_cntl_c);
 #endif
 
-/* 
+/*
  * main interactive loop
  */
   printf("Press ^C to exit.\n");
