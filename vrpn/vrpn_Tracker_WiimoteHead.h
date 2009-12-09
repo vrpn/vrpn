@@ -9,7 +9,6 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <vector>
 
 #ifndef _WIN32
 #include <sys/time.h>
@@ -44,9 +43,10 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 	struct timeval  d_prevtime;     //< Time of the previous report
 	double				d_blobDistance;
 
-	std::vector<double> d_vX;
-	std::vector<double> d_vY;
-	std::vector<double> d_vSize;
+	double d_vX[4];
+	double d_vY[4];
+	double d_vSize[4];
+	double d_points;
 	
 	bool d_contact;
 	bool d_lock;

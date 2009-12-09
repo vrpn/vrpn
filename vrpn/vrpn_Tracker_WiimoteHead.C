@@ -16,8 +16,9 @@ static	double	duration(struct timeval t1, struct timeval t2) {
 
 vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connection* trackercon, const char* wiimote, float update_rate) :
 	vrpn_Tracker (name, trackercon),
-	d_update_interval (update_rate ? (1 / update_rate) : 60.0),
-	d_blobDistance (.145),
+	d_update_interval(update_rate ? (1 / update_rate) : 60.0),
+	d_blobDistance(.145),
+	d_points(0),
 	d_contact(false),
 	d_updated(false),
 	d_lock(false),
@@ -133,16 +134,15 @@ void	vrpn_Tracker_WiimoteHead::handle_analog_update(void* userdata, const vrpn_A
 		if (   info.channel[firstchan] != -1
 			&& info.channel[firstchan + 1] != -1
 			&& info.channel[firstchan + 2] != -1) {
-				x.push_back(info.channel[firstchan]);
-				y.push_back(info.channel[firstchan + 1]);
-				size.push_back(info.channel[firstchan + 2]);
+				wh->d_vX[i] = info.channel[firstchan];
+				wh->d_vY[i] = info.channel[firstchan + 1];
+				wh->d_vSize[i] = info.channel[firstchan + 2];
+				wh->d_points = i + 1;
 			} else {
 				break;
 			}
 	}
-	wh->d_vX = x;
-	wh->d_vY = y;
-	wh->d_vSize = size;
+	
 	wh->d_contact = true;
 	wh->d_updated = true;
 
@@ -157,12 +157,12 @@ void	vrpn_Tracker_WiimoteHead::handle_analog_update(void* userdata, const vrpn_A
 	}
 
 	if (newgrav) {
+		if (!wh->d_gravDirty) {
+			// only slide back the previous gravity if we actually used it once.
+			q_vec_copy(wh->d_vGravAntepenultimate, wh->d_vGravPenultimate);
+			q_vec_copy(wh->d_vGravPenultimate, wh->d_vGrav);
+		}
 		for (i = 0; i < 3; i++) {
-			if (!wh->d_gravDirty) {
-				// only slide back the previous gravity if we actually used it once.
-				wh->d_vGravAntepenultimate[i] = wh->d_vGravPenultimate[i];
-				wh->d_vGravPenultimate[i] = wh->d_vGrav[i];
-			}
 			wh->d_vGrav[i] = info.channel[1 + i];
 		}
 		wh->d_gravDirty = true;
@@ -348,10 +348,8 @@ void	vrpn_Tracker_WiimoteHead::update_pose(double time_interval) {
 	}
 
 	rx = ry = rz = 0;
-	int points = 0;
-	points = d_vX.size();
 	
-	if (points == 2) {
+	if (d_points == 2) {
 		d_lock = true;
 		// we simply stop updating our pos+orientation if we lost LED's
 
