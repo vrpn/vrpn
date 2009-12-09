@@ -29,7 +29,7 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 	virtual void mainloop();
 	virtual void reset(void);
 
-	void update(q_matrix_type &);
+	void report();
 
 	static int VRPN_CALLBACK handle_newConnection (void*, vrpn_HANDLERPARAM);
 	static int VRPN_CALLBACK handle_dropLastConnection (void*, vrpn_HANDLERPARAM);
@@ -47,7 +47,14 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 	std::vector<double> d_vX;
 	std::vector<double> d_vY;
 	std::vector<double> d_vSize;
-
+	
+	enum WH_STATUS {
+		WH_NO_CONTACT,
+		WH_CONTACT_NO_LOCK,
+		WH_LOCK
+	};
+		
+	WH_STATUS d_status;
 	bool d_hasBlob;
 	bool d_updated;
 	bool d_needWiimote;
@@ -55,19 +62,21 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 	vrpn_Analog_Remote* d_ana;
 	const char* d_name;
 
-	q_matrix_type d_initMatrix, d_currentMatrix;
+	//q_matrix_type d_initMatrix, d_currentMatrix;
+	q_xyz_quat_type d_gravityXform;
+	q_xyz_quat_type d_currentPose;
 
 	bool		d_gravDirty;
 	q_vec_type	d_vGravAntepenultimate;
 	q_vec_type	d_vGravPenultimate;
 	q_vec_type	d_vGrav;
 
-	q_type			d_qCorrectGravity;
-	q_matrix_type	d_mCorrectGravity;
+	//q_type			d_qCorrectGravity;
+	//q_matrix_type	d_mCorrectGravity;
 
 	bool	register_custom_types();
-	void    update_matrix_based_on_values(double time_interval);
-	void    convert_matrix_to_tracker(void);
+	void    update_pose(double time_interval);
+	void    convert_pose_to_tracker(void);
 
 	vrpn_bool shouldReport(double elapsedInterval) const;
 	bool haveGravity() const;
