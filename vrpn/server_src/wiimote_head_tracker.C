@@ -17,6 +17,7 @@
 #include "vrpn_WiiMote.h"
 #include "vrpn_Tracker_WiimoteHead.h"
 
+#define RP_PROFILING
 
 const char* TRACKER_NAME = "Tracker0";
 const char* WIIMOTE_NAME = "WiimoteForHead";
@@ -24,6 +25,10 @@ const char* WIIMOTE_REMOTE_NAME = "*WiimoteForHead";
 const int	CONNECTION_PORT = vrpn_DEFAULT_LISTEN_PORT_NO;  // Port for connection to listen on
 const int	TRACKER_FREQUENCY = 60;
 const int	DEBUG_DISPLAY_INTERVAL = 3; // # of seconds between status displays
+
+#ifdef RP_PROFILING
+int reports = 0;
+#endif
 
 vrpn_Tracker_WiimoteHead* wmtkr;
 vrpn_WiiMote* wiimote;
@@ -39,6 +44,9 @@ long sender_id;
 
 void	VRPN_CALLBACK handle_pos(void*, const vrpn_TRACKERCB t) {
 	static int count = 0;
+#ifdef RP_PROFILING
+	reports++;
+#endif
 	fprintf(stderr, ".");
 	if ((++count % 20) == 0) {
 		fprintf(stderr, "\n");
@@ -135,6 +143,9 @@ int main(int argc, char* argv []) {
 
 		// Sleep for 1ms so we don't eat the CPU
 		vrpn_SleepMsecs(1);
+#ifdef RP_PROFILING
+		if (reports >= 30000) { return 0; }
+#endif
 	}
 
 	return 0;
