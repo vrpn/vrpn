@@ -17,6 +17,7 @@ static	double	duration(struct timeval t1, struct timeval t2) {
 vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connection* trackercon, const char* wiimote, float update_rate) :
 	vrpn_Tracker (name, trackercon),
 	d_update_interval(update_rate ? (1 / update_rate) : 60.0),
+	d_ana(NULL),
 	d_blobDistance(.145),
 	d_points(0),
 	d_contact(false),
@@ -37,6 +38,38 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connec
 		fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
 				"Can't start without a valid specified Wiimote device!");
 		return;
+	}
+
+	setupWiimote();
+
+	int ret = register_custom_types();
+	if (!ret) {
+		fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
+				"Can't setup custom message and sender types\n");
+		delete d_ana;
+		d_ana = NULL;
+		return;
+	}
+
+	//--------------------------------------------------------------------
+	// Whenever we get a connection, set a flag so we try to get a Wiimote
+	// if we haven't got one already. Set up a handler to do this.
+	register_autodeleted_handler(d_connection->register_message_type(vrpn_got_connection),
+				     handle_connection, this);
+
+	//--------------------------------------------------------------------
+	// Set the current matrix to identity, the current timestamp to "now",
+	// the current matrix to identity in case we never hear from the Wiimote.
+	// Also, set the updated flag to send a single report
+	reset();
+}
+
+void vrpn_Tracker_WiimoteHead::setupWiimote() {
+	if (d_ana) {
+		// Turn off the callback handler
+		d_ana->unregister_change_handler(this, handle_analog_update);
+		delete d_ana;
+		d_ana = NULL;
 	}
 
 	// Open the analog device and point the remote at it.
@@ -60,7 +93,7 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connec
 				"Can't open Analog %s\n", d_name);
 		return;
 	}
-
+	
 	// register callback
 	int ret = d_ana->register_change_handler(this, handle_analog_update);
 	if (ret == -1) {
@@ -68,29 +101,13 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connec
 				"Can't setup change handler on Analog %s\n", d_name);
 		delete d_ana;
 		d_ana = NULL;
-		//return;
-	}
-
-	ret = register_custom_types();
-	if (!ret) {
-		fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
-				"Can't setup custom message and sender types\n");
-		delete d_ana;
-		d_ana = NULL;
 		return;
 	}
+	
+	// Alright, we got one!
+	d_needWiimote = false;
 
-	//--------------------------------------------------------------------
-	// Whenever we get a connection, set a flag so we try to get a Wiimote
-	// if we haven't got one already. Set up a handler to do this.
-	register_autodeleted_handler(d_connection->register_message_type(vrpn_got_connection),
-				     handle_connection, this);
 
-	//--------------------------------------------------------------------
-	// Set the current matrix to identity, the current timestamp to "now",
-	// the current matrix to identity in case we never hear from the Wiimote.
-	// Also, set the updated flag to send a single report
-	reset();
 }
 
 vrpn_Tracker_WiimoteHead::~vrpn_Tracker_WiimoteHead (void) {
@@ -195,6 +212,14 @@ int vrpn_Tracker_WiimoteHead::handle_dropLastConnection(void* userdata, vrpn_HAN
 	// was garbage, not that there was an error. If we return nonzero from a
 	// vrpn_Connection handler, it shuts down the connection.
 	return 0;
+}
+
+// static
+void handle_refresh_wiimote(void* userdata, vrpn_HANDLERPARAM) {
+	vrpn_Tracker_WiimoteHead* wh = reinterpret_cast<vrpn_Tracker_WiimoteHead*>(userdata);
+	if (wh) {
+		wh->setupWiimote();
+	}
 }
 
 /** Pack and send message with latest state information.
@@ -316,7 +341,7 @@ void vrpn_Tracker_WiimoteHead::mainloop() {
 /// received from the Wiimote regarding IR blob location.
 /// Time interval is passed for potential future Kalman filter, etc.
 void	vrpn_Tracker_WiimoteHead::update_pose(double time_interval) {
-	double rx, ry, rz; // Rotation (rad)
+	
 	q_xyz_quat_type newPose;
 	
 	// Start at the identity pose
@@ -346,15 +371,16 @@ void	vrpn_Tracker_WiimoteHead::update_pose(double time_interval) {
 		
 		d_gravDirty = false;
 	}
-
-	rx = ry = rz = 0;
-	
+		
 	if (d_points == 2) {
 		d_lock = true;
 		// we simply stop updating our pos+orientation if we lost LED's
 
 		// TODO right now only handling the 2-LED glasses
 		// TODO at a fixed 14.5cm distance (set in the constructor)
+
+		double rx, ry, rz; // Rotation (rad)
+		rx = ry = rz = 0;
 
 		// Wiimote stats source: http://wiibrew.org/wiki/Wiimote#IR_Camera
 		// TODO: verify this with spec sheet or experimental data

@@ -35,6 +35,7 @@ vrpn_WiiMote* wiimote;
 vrpn_Tracker_Remote* tkr;
 vrpn_Connection* connection;
 long sender_id;
+long need_wiimote = 0;
 
 /*****************************************************************************
  *
@@ -70,6 +71,9 @@ void	VRPN_CALLBACK handle_acc(void*, const vrpn_TRACKERACCCB t) {
 	fprintf(stderr, "~");
 }
 
+void	VRPN_CALLBACK handle_need_wiimote(void*, vrpn_HANDLERPARAM) {
+	need_wiimote++;
+}
 
 int main(int argc, char* argv []) {
 	int wmnum = -1;
@@ -135,11 +139,31 @@ int main(int argc, char* argv []) {
 	 */
 	while (1) {
 		// Let the tracker server, client and connection do their things
-		// The wiimote tracker runs the wiimote's mainloop.
 		wiimote->mainloop();
 		wmtkr->mainloop();
 		tkr->mainloop();
 		connection->mainloop();
+		
+		if (need_wiimote > -1) {
+			need_wiimote = need_wiimote % 300; // only check one in 300 mainloop spins
+			if (need_wiimote == 0) {
+				delete wiimote;
+				wiimote = NULL;
+				wiimote = new vrpn_WiiMote(WIIMOTE_NAME, connection, wmnum);
+				if (!wiimote) {
+					fprintf(stderr, "Could not create Wiimote server named %s!\n", WIIMOTE_NAME);
+					fprintf(stderr, "Press 'enter' to exit...\n");
+					int tmp;
+					std::cin >> tmp;
+					return -1;
+				}
+				struct timeval now;
+				vrpn_gettimeofday(&now, NULL);
+				connection->pack_message(7, now,
+					 wmtkr->refreshwiimote_m_id, wmtkr->wmheadtrackserver_s_id, "refresh",
+					 vrpn_CONNECTION_LOW_LATENCY);
+			}
+		}
 
 		// Sleep for 1ms so we don't eat the CPU
 		vrpn_SleepMsecs(1);

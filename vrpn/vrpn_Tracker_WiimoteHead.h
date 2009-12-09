@@ -24,6 +24,8 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 				  float update_rate);
 
 	virtual ~vrpn_Tracker_WiimoteHead (void);
+	
+	void setupWiimote();
 
 	virtual void mainloop();
 	virtual void reset(void);
