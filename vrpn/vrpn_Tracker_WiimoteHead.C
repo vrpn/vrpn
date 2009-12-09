@@ -80,11 +80,10 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connec
 	}
 
 	//--------------------------------------------------------------------
-	// Whenever we get the first connection to this server, we also
-	// want to reset the matrix to identity, so that you start at the
-	// beginning. Set up a handler to do this.
-	register_autodeleted_handler(d_connection->register_message_type(vrpn_got_first_connection),
-				     handle_newConnection, this);
+	// Whenever we get a connection, set a flag so we try to get a Wiimote
+	// if we haven't got one already. Set up a handler to do this.
+	register_autodeleted_handler(d_connection->register_message_type(vrpn_got_connection),
+				     handle_connection, this);
 
 	//--------------------------------------------------------------------
 	// Set the current matrix to identity, the current timestamp to "now",
@@ -177,7 +176,7 @@ void	vrpn_Tracker_WiimoteHead::handle_analog_update(void* userdata, const vrpn_A
 }
 
 // static
-int vrpn_Tracker_WiimoteHead::handle_newConnection(void* userdata, vrpn_HANDLERPARAM) {
+int vrpn_Tracker_WiimoteHead::handle_connection(void* userdata, vrpn_HANDLERPARAM) {
 	vrpn_Tracker_WiimoteHead* wh = reinterpret_cast<vrpn_Tracker_WiimoteHead*>(userdata);
 	// Indicate that we should grab the wiimote, if we haven't already
 	// and that we should send a report with whatever we have.
@@ -238,22 +237,16 @@ void vrpn_Tracker_WiimoteHead::report() {
 
 }
 
-/** Reset the current matrix to zero and store it into the tracker
+/** Reset the current pose to identity and store it into the tracker
     position/quaternion location, and set the updated flag.
 */
 
 void vrpn_Tracker_WiimoteHead::reset(void) {
-	// Set the matrix back to the identity matrix
-	/*
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			d_currentMatrix[i][j] = 0;
-		}
-	}
-
-	d_currentMatrix[0][0] = d_currentMatrix[1][1] = d_currentMatrix[2][2] =
-							  d_currentMatrix[3][3] = 1.0;
-	*/
+	// Reset to the identity pose.
+	d_currentPose.xyz[0] = d_currentPose.xyz[1] = d_currentPose.xyz[2] = 0;
+	d_currentPose.quat[0] = d_currentPose.quat[1] = d_currentPose.quat[2] = 0;
+	d_currentPose.quat[3] = 1;
+	
 	vrpn_gettimeofday(&d_prevtime, NULL);
 
 	// Set the updated flag to send a report
@@ -326,20 +319,20 @@ void vrpn_Tracker_WiimoteHead::mainloop() {
 /// received from the Wiimote regarding IR blob location.
 /// Time interval is passed for potential future Kalman filter, etc.
 void	vrpn_Tracker_WiimoteHead::update_pose(double time_interval) {
-	//double tx, ty, tz;
-	double rx, ry, rz; // Translation (m) and rotation (rad)
-	//q_matrix_type newM;    // New position matrix
+	double rx, ry, rz; // Rotation (rad)
 	q_xyz_quat_type newPose;
 	
-	// Start at the identity quaternion
+	// Start at the identity pose
 	newPose.xyz[0] = newPose.xyz[1] = newPose.xyz[2] = 0;
 	newPose.quat[0] = newPose.quat[1] = newPose.quat[2] = 0;
 	newPose.quat[3] = 1;
 
 	// If our gravity vector has changed and it's not 0,
-	// we need to update our gravity correction matrix.
+	// we need to update our gravity correction transform.
 	if (d_gravDirty && haveGravity()) {
 		// TODO perhaps set this quaternion as our tracker2room transform?
+		
+		// Moving average
 		q_vec_type movingAvg = Q_NULL_VECTOR;
 		q_vec_copy (movingAvg, d_vGrav);
 		q_vec_add (movingAvg, movingAvg, d_vGravPenultimate);
@@ -352,15 +345,11 @@ void	vrpn_Tracker_WiimoteHead::update_pose(double time_interval) {
 		q_vec_type regulargravity;
 
 		regulargravity[1] = 1;
-		//q_from_two_vecs (d_qCorrectGravity, regulargravity, movingAvg);
 		q_from_two_vecs (d_gravityXform.quat, regulargravity, movingAvg);
-
-		//q_euler_to_col_matrix(destMatrix, zRot, yRot, xRot)
-		//q_to_col_matrix (d_mCorrectGravity, d_qCorrectGravity);
+		
 		d_gravDirty = false;
 	}
 
-	// tx = ty = tz = 0;
 	rx = ry = rz = 0;
 	int points = 0;
 	points = d_vX.size();
