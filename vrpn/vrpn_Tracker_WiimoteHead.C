@@ -18,7 +18,6 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connec
 	vrpn_Tracker (name, trackercon),
 	d_update_interval (update_rate ? (1 / update_rate) : 60.0),
 	d_blobDistance (.145),
-	d_status(WH_NO_CONTACT),
 	d_contact(false),
 	d_updated(false),
 	d_lock(false),
@@ -145,7 +144,7 @@ void	vrpn_Tracker_WiimoteHead::handle_analog_update(void* userdata, const vrpn_A
 	wh->d_vX = x;
 	wh->d_vY = y;
 	wh->d_vSize = size;
-	wh->d_hasBlob = true;
+	wh->d_contact = true;
 	wh->d_updated = true;
 
 	bool newgrav = false;
@@ -216,7 +215,7 @@ void vrpn_Tracker_WiimoteHead::report() {
 
 	// Figure out the new matrix based on the current values and
 	// the length of the interval since the last report
-	update_matrix_based_on_values(interval);
+	update_pose(interval);
 	
 	// pack and deliver tracker report;
 	if (d_connection) {
@@ -245,6 +244,7 @@ void vrpn_Tracker_WiimoteHead::report() {
 
 void vrpn_Tracker_WiimoteHead::reset(void) {
 	// Set the matrix back to the identity matrix
+	/*
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
 			d_currentMatrix[i][j] = 0;
@@ -253,6 +253,7 @@ void vrpn_Tracker_WiimoteHead::reset(void) {
 
 	d_currentMatrix[0][0] = d_currentMatrix[1][1] = d_currentMatrix[2][2] =
 							  d_currentMatrix[3][3] = 1.0;
+	*/
 	vrpn_gettimeofday(&d_prevtime, NULL);
 
 	// Set the updated flag to send a report
@@ -260,7 +261,7 @@ void vrpn_Tracker_WiimoteHead::reset(void) {
 
 	// Convert the matrix into quaternion notation and copy into the
 	// tracker pos and quat elements.
-	convert_matrix_to_tracker();
+	convert_pose_to_tracker();
 }
 
 bool vrpn_Tracker_WiimoteHead::register_custom_types()
@@ -345,7 +346,9 @@ void	vrpn_Tracker_WiimoteHead::update_pose(double time_interval) {
 		q_vec_add (movingAvg, movingAvg, d_vGravAntepenultimate);
 		q_vec_scale (movingAvg, 0.33333, movingAvg);
 		
-		q_copy(d_gravxyzquat, newPos); // reset gravity transform
+		// reset gravity transform
+		q_copy(d_gravityXform.quat, newPose.quat); 
+		q_vec_copy(d_gravityXform.xyz, newPose.xyz);
 		q_vec_type regulargravity;
 
 		regulargravity[1] = 1;
@@ -363,6 +366,7 @@ void	vrpn_Tracker_WiimoteHead::update_pose(double time_interval) {
 	points = d_vX.size();
 	
 	if (points == 2) {
+		d_lock = true;
 		// we simply stop updating our pos+orientation if we lost LED's
 
 		// TODO right now only handling the 2-LED glasses
@@ -409,11 +413,15 @@ void	vrpn_Tracker_WiimoteHead::update_pose(double time_interval) {
 		q_from_euler(newPose.quat, rx, ry, rz);
 		
 		// Apply the new pose
-		q_copy(d_currentPose, newPose);
+		q_vec_copy(d_currentPose.xyz, newPose.xyz);
+		q_copy(d_currentPose.quat, newPose.quat);
 
 		// Finally, apply gravity to our pose and
 		// and copy it into the tracker position and quaternion structures.
 		convert_pose_to_tracker();
+	} else {
+		// TODO: right now if we don't have exactly 2 points we lose the lock
+		d_lock = false;
 	}
 }
 
@@ -423,7 +431,7 @@ void vrpn_Tracker_WiimoteHead::convert_pose_to_tracker() {
 		// we know gravity, so we are correcting for it.
 		// TODO (maybe): improve vrpn driver in juggler to handle tracker-to-room
 		// transform and set that there, instead?
-		q_xyz_quat_xform(d_currentPose, d_gravityXform, d_currentPose);
+		q_xyz_quat_compose(&d_currentPose, &d_gravityXform, &d_currentPose);
 	}
 	q_vec_copy(pos, d_currentPose.xyz); // set position;
 	q_copy(d_quat, d_currentPose.quat); // set orientation

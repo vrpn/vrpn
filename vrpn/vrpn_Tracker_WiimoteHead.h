@@ -55,7 +55,8 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 	};
 		
 	WH_STATUS d_status;
-	bool d_hasBlob;
+	bool d_contact;
+	bool d_lock;
 	bool d_updated;
 	bool d_needWiimote;
 
