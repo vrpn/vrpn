@@ -170,9 +170,6 @@ void	vrpn_Tracker_WiimoteHead::handle_analog_update(void* userdata, const vrpn_A
 
 	// Store the time of the report into the tracker's timestamp field.
 	wh->vrpn_Tracker::timestamp = info.msg_time;
-	
-	// report our position now
-	wh->report();
 }
 
 // static
@@ -305,8 +302,8 @@ void vrpn_Tracker_WiimoteHead::mainloop() {
 		d_ana->mainloop();
 	}
 	
-	// See if it has been too long since our last report.
-	// If so, generate a new one even though we didn't get more data.
+	// See if we have new data, or if it has been too long since our last
+	// report.  Send a new report in either case.
 	vrpn_gettimeofday(&now, NULL);
 	interval = duration(now, d_prevtime);
 	
@@ -427,22 +424,17 @@ void vrpn_Tracker_WiimoteHead::convert_pose_to_tracker() {
 }
 
 vrpn_bool vrpn_Tracker_WiimoteHead::shouldReport(double elapsedInterval) const {
-	// If we haven't had enough time pass yet, don't report.
-	if (elapsedInterval < d_update_interval) {
-		return VRPN_FALSE;
-	}
-
 	// If we've gotten new wiimote reports since our last report, return true.
 	if (d_updated) {
 		return VRPN_TRUE;
 	}
-
-	// If it's been more than a second, send an update anyway
-	if (elapsedInterval >= 1/d_update_interval) {
+	
+	// If it's been more than our max interval, send an update anyway
+	if (elapsedInterval >= d_update_interval) {
 		return VRPN_TRUE;
 	}
 
-	// Enough time has elapsed, but nothing has changed, so return false.
+	// Not time has elapsed, and nothing has changed, so return false.
 	return VRPN_FALSE;
 }
 
