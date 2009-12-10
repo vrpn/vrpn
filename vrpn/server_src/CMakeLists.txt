@@ -48,7 +48,7 @@ if(VRPN_USE_PHANTOM_SERVER AND OPENHAPTICS_FOUND)
 	include_directories(${OPENHAPTICS_INCLUDE_DIRS})
 	include_directories(${VRPN_SOURCE_DIR}/server_src/ghostEffects)
 	add_library(vrpn_phantom ${PHANTOM_SOURCES} ${PHANTOM_HEADERS})
-	target_link_library(vrpn_phantom ${OPENHAPTICS_LIBRARIES})
+	target_link_libraries(vrpn_phantom ${OPENHAPTICS_LIBRARIES})
 
 	set_property(TARGET vrpn_phantom PROPERTY
 		PUBLIC_HEADER ${PHANTOM_HEADERS})
