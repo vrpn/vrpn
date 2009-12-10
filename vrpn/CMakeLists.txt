@@ -565,9 +565,9 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 
 	if(GPL_SERVER_FLAGS AND GPLINCOMPAT_SERVER_FLAGS)
 		message(STATUS "")
-		message(SEND_ERROR "IMPORTANT LICENSING NOTE!")
-		message(SEND_ERROR "Building with the current settings may produce a legally non-distributable server binary!")
-		message(SEND_ERROR "NOTE: I am not a lawyer, and this is not legal advice!")
+		message(STATUS "IMPORTANT LICENSING NOTE!")
+		message(STATUS "Building with the current settings may produce a legally non-distributable server binary!")
+		message(STATUS "NOTE: I am not a lawyer, and this is not legal advice!")
 	endif()
 endif()
 
