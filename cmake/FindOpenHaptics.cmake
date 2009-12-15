@@ -59,7 +59,7 @@ set(_libsearchdirs)
 
 if(WIN32)
 	include(ProgramFilesGlob)
-	program_files_glob(_dirs "/Sensable/3DTouch*/")
+	program_files_glob(_dirs "/SensAble/3DTouch*/")
 		
 	if(CMAKE_SIZEOF_VOID_P MATCHES "8")
 		# 64-bit
@@ -67,8 +67,8 @@ if(WIN32)
 		list_combinations(_libsearch2 PREFIXES "${_dirs}" SUFFIXES "/utilities/lib/x64")
 	else()
 		# 32-bit
-		list_combinations(_libsearch PREFIXES "${_dirs}" SUFFIXES "/lib/win32")
-		list_combinations(_libsearch2 PREFIXES "${_dirs}" SUFFIXES "/utilities/lib/Win32")
+		list_combinations(_libsearch PREFIXES "${_dirs}" SUFFIXES "/lib/win32" "/lib")
+		list_combinations(_libsearch2 PREFIXES "${_dirs}" SUFFIXES "/utilities/lib/Win32" "/utilities/lib")
 	endif()
 	clean_directory_list(_libsearchdirs ${_libsearch} ${_libsearch2})
 
