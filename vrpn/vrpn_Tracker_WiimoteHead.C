@@ -93,7 +93,7 @@ void vrpn_Tracker_WiimoteHead::setupWiimote() {
 				"Can't open Analog %s\n", d_name);
 		return;
 	}
-	
+
 	// register callback
 	int ret = d_ana->register_change_handler(this, handle_analog_update);
 	if (ret == -1) {
@@ -103,9 +103,12 @@ void vrpn_Tracker_WiimoteHead::setupWiimote() {
 		d_ana = NULL;
 		return;
 	}
-	
+
 	// Alright, we got one!
 	d_needWiimote = false;
+
+	// will re-notify when we catch a report.
+	d_contact = false;
 
 
 }
@@ -159,7 +162,7 @@ void	vrpn_Tracker_WiimoteHead::handle_analog_update(void* userdata, const vrpn_A
 				break;
 			}
 	}
-	
+
 	wh->d_contact = true;
 	wh->d_updated = true;
 
@@ -232,12 +235,12 @@ void vrpn_Tracker_WiimoteHead::report() {
 	// If so, generate a new one.
 	vrpn_gettimeofday(&now, NULL);
 	interval = duration(now, d_prevtime);
-	
+
 
 	// Figure out the new matrix based on the current values and
 	// the length of the interval since the last report
 	update_pose(interval);
-	
+
 	// pack and deliver tracker report;
 	if (d_connection) {
 		char      msgbuf[1000];
@@ -252,7 +255,7 @@ void vrpn_Tracker_WiimoteHead::report() {
 		fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
 				"No valid connection\n");
 	}
-	
+
 	// We just sent a report, so reset the time
 	d_prevtime = now;
 	d_updated = false;
@@ -268,7 +271,7 @@ void vrpn_Tracker_WiimoteHead::reset(void) {
 	d_currentPose.xyz[0] = d_currentPose.xyz[1] = d_currentPose.xyz[2] = 0;
 	d_currentPose.quat[0] = d_currentPose.quat[1] = d_currentPose.quat[2] = 0;
 	d_currentPose.quat[3] = 1;
-	
+
 	vrpn_gettimeofday(&d_prevtime, NULL);
 
 	// Set the updated flag to send a report
@@ -326,12 +329,12 @@ void vrpn_Tracker_WiimoteHead::mainloop() {
 		d_needWiimote = false;
 		d_ana->mainloop();
 	}
-	
+
 	// See if we have new data, or if it has been too long since our last
 	// report.  Send a new report in either case.
 	vrpn_gettimeofday(&now, NULL);
 	interval = duration(now, d_prevtime);
-	
+
 	if (shouldReport(interval)) {
 		report();
 	}
@@ -341,9 +344,9 @@ void vrpn_Tracker_WiimoteHead::mainloop() {
 /// received from the Wiimote regarding IR blob location.
 /// Time interval is passed for potential future Kalman filter, etc.
 void	vrpn_Tracker_WiimoteHead::update_pose(double time_interval) {
-	
+
 	q_xyz_quat_type newPose;
-	
+
 	// Start at the identity pose
 	newPose.xyz[0] = newPose.xyz[1] = newPose.xyz[2] = 0;
 	newPose.quat[0] = newPose.quat[1] = newPose.quat[2] = 0;
@@ -353,25 +356,25 @@ void	vrpn_Tracker_WiimoteHead::update_pose(double time_interval) {
 	// we need to update our gravity correction transform.
 	if (d_gravDirty && haveGravity()) {
 		// TODO perhaps set this quaternion as our tracker2room transform?
-		
+
 		// Moving average
 		q_vec_type movingAvg = Q_NULL_VECTOR;
 		q_vec_copy (movingAvg, d_vGrav);
 		q_vec_add (movingAvg, movingAvg, d_vGravPenultimate);
 		q_vec_add (movingAvg, movingAvg, d_vGravAntepenultimate);
 		q_vec_scale (movingAvg, 0.33333, movingAvg);
-		
+
 		// reset gravity transform
-		q_copy(d_gravityXform.quat, newPose.quat); 
+		q_copy(d_gravityXform.quat, newPose.quat);
 		q_vec_copy(d_gravityXform.xyz, newPose.xyz);
 		q_vec_type regulargravity;
 
 		regulargravity[1] = 1;
 		q_from_two_vecs (d_gravityXform.quat, regulargravity, movingAvg);
-		
+
 		d_gravDirty = false;
 	}
-		
+
 	if (d_points == 2) {
 		d_lock = true;
 		// we simply stop updating our pos+orientation if we lost LED's
@@ -400,7 +403,7 @@ void	vrpn_Tracker_WiimoteHead::update_pose(double time_interval) {
 		// TODO - the 3-led version will have a more complex rotation
 		// calculation to perform, since this one assumes the user
 		// does not rotate their head around x or y axes
-		
+
 		newPose.xyz[2] = headDist; // translate along Z
 		rz = atan2(dx, dy); // rotate around Z
 
@@ -421,7 +424,7 @@ void	vrpn_Tracker_WiimoteHead::update_pose(double time_interval) {
 
 		// set the quat. part of our pose with rotation angles
 		q_from_euler(newPose.quat, rx, ry, rz);
-		
+
 		// Apply the new pose
 		q_vec_copy(d_currentPose.xyz, newPose.xyz);
 		q_copy(d_currentPose.quat, newPose.quat);
@@ -452,7 +455,7 @@ vrpn_bool vrpn_Tracker_WiimoteHead::shouldReport(double elapsedInterval) const {
 	if (d_updated) {
 		return VRPN_TRUE;
 	}
-	
+
 	// If it's been more than our max interval, send an update anyway
 	if (elapsedInterval >= d_update_interval) {
 		return VRPN_TRUE;
