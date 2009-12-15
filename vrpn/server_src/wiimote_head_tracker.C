@@ -49,15 +49,15 @@ void	VRPN_CALLBACK handle_pos(void*, const vrpn_TRACKERCB t) {
 #ifdef RP_PROFILING
 	reports++;
 #endif
-	fprintf(stderr, ".");
-	if ((++count % 20) == 0) {
-		fprintf(stderr, "\n");
+	//fprintf(stderr, ".");
+	//if ((++count % 20) == 0) {
+	//	fprintf(stderr, "\n");
 		if (count > 300) {
 			printf("\nXl:(%5f, %5f, %5f) Rt:((%5f, %5f, %5f) %5f)\n",
 			       t.pos[0], t.pos[1], t.pos[2], t.quat[0], t.quat[1], t.quat[2], t.quat[3]);
 			count = 0;
 		}
-	}
+	//}
 }
 
 void	VRPN_CALLBACK handle_vel(void*, const vrpn_TRACKERVELCB t) {
