@@ -8,8 +8,13 @@
 #ifdef	_WIN32
 #include <windows.h>
 #endif
+#ifdef __APPLE__
+#include <OpenGL/OpenGL.h>
+#include <GLUT/glut.h>
+#else
 #include <GL/gl.h>
 #include <GL/glut.h>
+#endif
 #include <vrpn_Connection.h>
 #include <vrpn_FileConnection.h>
 #include <vrpn_Imager.h>

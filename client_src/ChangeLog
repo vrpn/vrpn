@@ -1,3 +1,14 @@
+2009-12-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CmakeLists.txt : Improvements by Ryan Pavlik to the Cmake files that
+		make them cleaner and use more modern constructions.  Also various
+		bug fixes to make code compile on a number of architectures.
+	* bdbox_client.C : Compiles with modern VRPN.
+	* logfilesenders.c : Compiles on all architectures.
+	* logfiletypes.c : Same.
+	* testimager_client.C : Compiles on Apple.
+	* tracker_to_poser.cpp : Compiles on all architectures.
+
 2009-11-27  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* CMakeLists.txt : Turning off testimager_client on all but Windows.
