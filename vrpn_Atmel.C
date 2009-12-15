@@ -449,3 +449,4 @@ vrpn_Atmel::handle_new_connection()
 }
 
 #endif
+

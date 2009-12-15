@@ -47,7 +47,7 @@
 // Instructs VRPN to use phantom library to construct a unified
 // server, using phantom as a common device, and phantom
 // configuration in .cfg file.
-#define	VRPN_USE_PHANTOM_SERVER
+//#define	VRPN_USE_PHANTOM_SERVER
 
 //------------------------
 // Instructs vrpn to use SensAble's HDAPI rather than GHOST library.
