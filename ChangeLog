@@ -1,5 +1,11 @@
 2009-12-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* CMakeLists.txt : Remove un-needed vrpn_TypeDispatcher.[hC]
+	* vrpn_TypeDispatcher.h : Removed (included in vrpn_Connection.h).
+	* vrpn_TypeDispatcher.C : Removed (included in vrpn_Connection.C).
+
+2009-12-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* CMakeLists.txt : Improved version from Ryan Pavlik.  Refactored to make
 		them cleaner and updated them to more modern Cmake usage.  Also
 		added CPack descriptions.
