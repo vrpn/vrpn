@@ -1,5 +1,9 @@
 2009-12-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* c_interface_example.cpp : Gets rid of a compiler warning.
+
+2009-12-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* CmakeLists.txt : Improvements by Ryan Pavlik to the Cmake files that
 		make them cleaner and use more modern constructions.  Also various
 		bug fixes to make code compile on a number of architectures.
