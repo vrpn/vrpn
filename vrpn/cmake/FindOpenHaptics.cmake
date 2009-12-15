@@ -32,6 +32,7 @@
 #
 # Requires these CMake modules:
 #  CleanDirectoryList
+#  CleanLibraryList
 #  ListCombinations
 #  ProgramFilesGlob
 #  SelectLibraryConfigurations (included with CMake >=2.8.0)
