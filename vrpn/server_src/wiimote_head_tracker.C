@@ -35,7 +35,8 @@ vrpn_WiiMote* wiimote;
 vrpn_Tracker_Remote* tkr;
 vrpn_Connection* connection;
 long sender_id;
-long need_wiimote = 0;
+long need_wiimote = false;
+long wiimote_timeout = 10;
 
 /*****************************************************************************
  *
@@ -72,7 +73,8 @@ void	VRPN_CALLBACK handle_acc(void*, const vrpn_TRACKERACCCB t) {
 }
 
 void	VRPN_CALLBACK handle_need_wiimote(void*, vrpn_HANDLERPARAM) {
-	need_wiimote++;
+	need_wiimote = true;
+	wiimote_timeout = 10;
 }
 
 int main(int argc, char* argv []) {
@@ -92,6 +94,8 @@ int main(int argc, char* argv []) {
 	if (argc > 2) {
 		fprintf(stderr, "Please run this with no arguments or optionally a wiimote number (0-3)\n");
 		fprintf(stderr, "Usage: %s [WIIMOTENUM]\n", argv[0]);
+		int tmp;
+		std::cin >> tmp;
 		return -1;
 	}
 
@@ -143,10 +147,10 @@ int main(int argc, char* argv []) {
 		wmtkr->mainloop();
 		tkr->mainloop();
 		connection->mainloop();
-		
-		if (need_wiimote > -1) {
-			need_wiimote = need_wiimote % 300; // only check one in 300 mainloop spins
-			if (need_wiimote == 0) {
+
+		if (need_wiimote) {
+			wiimote_timeout--;
+			if (wiimote_timeout == 0) {
 				delete wiimote;
 				wiimote = NULL;
 				wiimote = new vrpn_WiiMote(WIIMOTE_NAME, connection, wmnum);
@@ -157,6 +161,7 @@ int main(int argc, char* argv []) {
 					std::cin >> tmp;
 					return -1;
 				}
+				need_wiimote = false;
 				struct timeval now;
 				vrpn_gettimeofday(&now, NULL);
 				connection->pack_message(7, now,
