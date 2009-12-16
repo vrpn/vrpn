@@ -1,6 +1,17 @@
 #ifndef	VRPN_CONFIGURE_H
 
 //--------------------------------------------------------------
+/* IMPORTANT NOTE: If you are using CMake to build VRPN (in any
+   version newer than 07.24), this file DOES NOT affect your
+   build.  vrpn_Configure.h.cmake_in is processed automatically
+   into a vrpn_Configure.h file placed in your build directory
+   using the choices you make in CMake.  Until all modules are
+   fully configured using CMake, you may have to edit the paths
+   that are listed near the bottom of the first section of that
+   file, then re-run CMake to regenerate vrpn_Configure.h. */
+//--------------------------------------------------------------
+
+//--------------------------------------------------------------
 /* This file contains configuration options for VRPN.  The first
    section has definition lines that can be commented in or out
    at build time.  The second session has automaticly-generated
