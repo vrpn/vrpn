@@ -1,5 +1,10 @@
 2009-12-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* CmakeLists.txt : Major version number now 7.25.
+	* vrpn_Connection.C : Same.
+
+2009-12-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* CmakeLists.txt : Improved version from Ryan Pavlik.
 
 2009-12-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
