@@ -62,6 +62,14 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connec
 	// the current matrix to identity in case we never hear from the Wiimote.
 	// Also, set the updated flag to send a single report
 	reset();
+
+	// put a little z translation as a saner default
+	d_currentPose.xyz[0] = 0;
+	d_currentPose.xyz[1] = 0;
+	d_currentPose.xyz[2] = 1;
+	d_currentPose.quat[0] = d_currentPose.quat[1] = d_currentPose.quat[2] = 0;
+	d_currentPose.quat[3] = 1;
+
 }
 
 void vrpn_Tracker_WiimoteHead::setupWiimote() {
@@ -267,8 +275,10 @@ void vrpn_Tracker_WiimoteHead::report() {
 */
 
 void vrpn_Tracker_WiimoteHead::reset(void) {
-	// Reset to the identity pose.
-	d_currentPose.xyz[0] = d_currentPose.xyz[1] = d_currentPose.xyz[2] = 0;
+	// Reset to the identity pose
+	d_currentPose.xyz[0] = 0;
+	d_currentPose.xyz[1] = 0;
+	d_currentPose.xyz[2] = 0;
 	d_currentPose.quat[0] = d_currentPose.quat[1] = d_currentPose.quat[2] = 0;
 	d_currentPose.quat[3] = 1;
 
@@ -367,7 +377,7 @@ void	vrpn_Tracker_WiimoteHead::update_pose(double time_interval) {
 		// reset gravity transform
 		q_copy(d_gravityXform.quat, newPose.quat);
 		q_vec_copy(d_gravityXform.xyz, newPose.xyz);
-		q_vec_type regulargravity;
+		q_vec_type regulargravity = Q_NULL_VECTOR;
 
 		regulargravity[1] = 1;
 		q_from_two_vecs (d_gravityXform.quat, regulargravity, movingAvg);
@@ -405,7 +415,8 @@ void	vrpn_Tracker_WiimoteHead::update_pose(double time_interval) {
 		// does not rotate their head around x or y axes
 
 		newPose.xyz[2] = headDist; // translate along Z
-		rz = atan2(dx, dy); // rotate around Z
+		// double atan2 (double y, double x);
+		rz = atan2(dy, dx); // rotate around Z
 
 		// Find the sensor pixel of the line of sight - directly between
 		// the led's
@@ -444,7 +455,7 @@ void vrpn_Tracker_WiimoteHead::convert_pose_to_tracker() {
 		// we know gravity, so we are correcting for it.
 		// TODO (maybe): improve vrpn driver in juggler to handle tracker-to-room
 		// transform and set that there, instead?
-		q_xyz_quat_compose(&d_currentPose, &d_gravityXform, &d_currentPose);
+		//q_xyz_quat_compose(&d_currentPose, &d_currentPose, &d_gravityXform);
 	}
 	q_vec_copy(pos, d_currentPose.xyz); // set position;
 	q_copy(d_quat, d_currentPose.quat); // set orientation
