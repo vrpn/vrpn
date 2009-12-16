@@ -17,7 +17,7 @@
 #include "vrpn_WiiMote.h"
 #include "vrpn_Tracker_WiimoteHead.h"
 
-#define RP_PROFILING
+#undef RP_PROFILING
 
 const char* TRACKER_NAME = "Tracker0";
 const char* WIIMOTE_NAME = "WiimoteForHead";
@@ -38,6 +38,13 @@ long sender_id;
 long need_wiimote = false;
 long wiimote_timeout = 10;
 
+struct timeval last_display;
+
+static	double	duration(struct timeval t1, struct timeval t2) {
+	return (t1.tv_usec - t2.tv_usec) / 1000000.0 +
+	       (t1.tv_sec - t2.tv_sec);
+}
+
 /*****************************************************************************
  *
    Callback handlers
@@ -49,15 +56,20 @@ void	VRPN_CALLBACK handle_pos(void*, const vrpn_TRACKERCB t) {
 #ifdef RP_PROFILING
 	reports++;
 #endif
-	//fprintf(stderr, ".");
-	//if ((++count % 20) == 0) {
-	//	fprintf(stderr, "\n");
-		if (count > 300) {
-			printf("\nXl:(%5f, %5f, %5f) Rt:((%5f, %5f, %5f) %5f)\n",
-			       t.pos[0], t.pos[1], t.pos[2], t.quat[0], t.quat[1], t.quat[2], t.quat[3]);
-			count = 0;
-		}
-	//}
+	count++;
+	if (count > 300) {
+		printf("\n(%5f, %5f, %5f) ((%5f, %5f, %5f) %5f)\n",
+			   t.pos[0], t.pos[1], t.pos[2], t.quat[0], t.quat[1], t.quat[2], t.quat[3]);
+		struct timeval now;
+		vrpn_gettimeofday(&now, NULL);
+		double interval = duration(now, last_display);
+		double frequency = count / interval;
+		count = 0;
+		printf("Update frequency:\t%5.2f Hz (%5.2f sec)\n",
+			frequency,
+			interval);
+		last_display = now;
+	}
 }
 
 void	VRPN_CALLBACK handle_vel(void*, const vrpn_TRACKERVELCB t) {
@@ -128,6 +140,7 @@ int main(int argc, char* argv []) {
 		return -1;
 	}
 
+	vrpn_gettimeofday(&last_display, NULL);
 	// Open the tracker remote using this connection
 	fprintf(stderr, "\nTracker's name is %s.\n", TRACKER_NAME);
 	tkr = new vrpn_Tracker_Remote(TRACKER_NAME, connection);
