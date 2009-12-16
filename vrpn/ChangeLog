@@ -1,3 +1,40 @@
+2009-12-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CmakeLists.txt : Major version number now 7.25.
+	* vrpn_Connection.C : Same.
+
+2009-12-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CmakeLists.txt : Improved version from Ryan Pavlik.
+
+2009-12-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Removed #pragmas calling for linking with the
+		libraries because it breaks things when running Cmake. All
+		app builds will need to explicitly link with VRPN now.
+	* vrpn_Configure.h.cmake_in : Same.
+
+2009-12-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CMakeLists.txt : Remove un-needed vrpn_TypeDispatcher.[hC]
+	* vrpn_TypeDispatcher.h : Removed (included in vrpn_Connection.h).
+	* vrpn_TypeDispatcher.C : Removed (included in vrpn_Connection.C).
+
+2009-12-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CMakeLists.txt : Improved version from Ryan Pavlik.  Refactored to make
+		them cleaner and updated them to more modern Cmake usage.  Also
+		added CPack descriptions.
+	* cmake : New directory in support of the above.
+	* FindDirectShow.cmake : Moved to cmake/ subdirectory.
+	* FindHDAPI.cmake : Same.
+	* Findquatlib.cmake : Same.
+	* vrpn_Atmel.C : Added newline at end of file.
+	* vrpn_Configure.h : Commented definition of VRPN_USE_PHANTOM_SERVER.
+	* vrpn_HumanInterface.C : Mac version-agnostic type definition.
+	* vrpn_Nidaq.C : Turns off inclusion of function when USE_NIDAQ not there.
+	* vrpn_Nidaq.h : Same.
+
 2009-11-27  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_3DConnexion.C : Replaced MACOSX with __APPLE__ to make things compile

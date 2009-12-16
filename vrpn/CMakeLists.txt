@@ -18,8 +18,8 @@ project(VRPN)
 
 set(CPACK_PACKAGE_VENDOR "Russell M. Taylor II at the University of North Carolina at Chapel Hill")
 set(CPACK_PACKAGE_VERSION_MAJOR "07")
-set(CPACK_PACKAGE_VERSION_MINOR "24")
-set(CPACK_PACKAGE_VERSION_PATCH "2")
+set(CPACK_PACKAGE_VERSION_MINOR "25")
+set(CPACK_PACKAGE_VERSION_PATCH "1")
 set(CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}" )
 set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-src")
@@ -215,6 +215,7 @@ configure_file(
   "${PROJECT_BINARY_DIR}/vrpn_Configure.h")
 
 # Force use of our CMake-processed configuration header before the stock one.
+include_directories("${PROJECT_BINARY_DIR}")
 include(GetForceIncludeDefinitions)
 get_force_include_definitions(CONFIG_H_FLAG "${PROJECT_BINARY_DIR}/vrpn_Configure.h")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CONFIG_H_FLAG}")
@@ -250,9 +251,7 @@ endif()
 #-----------------------------------------------------------------------------
 # Build the library itself and declare what bits need to be installed
 
-# Note: configure is here so we don't distribute it as a public header.
 set(VRPN_CLIENT_SOURCES
-	"${PROJECT_BINARY_DIR}/vrpn_Configure.h"
 	vrpn_Analog.C
 	vrpn_Analog_Output.C
 	vrpn_Auxiliary_Logger.C
@@ -276,10 +275,10 @@ set(VRPN_CLIENT_SOURCES
 	vrpn_Sound.C
 	vrpn_Text.C
 	vrpn_Tracker.C
-	vrpn_TypeDispatcher.C
 )
 
 set(VRPN_CLIENT_PUBLIC_HEADERS
+	"${PROJECT_BINARY_DIR}/vrpn_Configure.h"
 	vrpn_Analog.h
 	vrpn_Analog_Output.h
 	vrpn_Auxiliary_Logger.h
@@ -303,7 +302,6 @@ set(VRPN_CLIENT_PUBLIC_HEADERS
 	vrpn_Sound.h
 	vrpn_Text.h
 	vrpn_Tracker.h
-	vrpn_TypeDispatcher.h
 	vrpn_Types.h
 )
 

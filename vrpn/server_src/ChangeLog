@@ -1,3 +1,7 @@
+2009-12-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CmakeLists.txt : Added fix from Ryan Pavlik for SensAble.
+
 2009-11-27  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* CMakeLists.txt : Added libraries required on the Mac.
