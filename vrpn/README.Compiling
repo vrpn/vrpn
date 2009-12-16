@@ -7,10 +7,12 @@ more.
 Get CMake from your Linux distribution and/or from www.cmake.org
 
 If there is a CMakeLists.txt file in the parent directory, you can use
-that directory as the "source code" directory in the CMake GUI.  Choose
-any directory you want (the source directory plus /build is suggested)
-as the "build binaries" directory: generated build files will be placed
-here rather than your source tree.
+that directory as the "source code" directory in the CMake GUI; otherwise
+use this directory as the "source code" directory - the quat directory
+will be automatically detected and built anyway.  Choose any directory
+you want (the source directory plus /build is suggested) as the "build
+binaries" directory: generated build files will be placed here rather
+than your source tree.
 
 Many options can be fully configured using CMake as of Dec 2009, and more
 are sure to come.  Until then, if you need specific compilation needs
