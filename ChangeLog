@@ -1,5 +1,9 @@
 2009-12-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* CmakeLists.txt : Improved version from Ryan Pavlik.
+
+2009-12-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Configure.h : Removed #pragmas calling for linking with the
 		libraries because it breaks things when running Cmake. All
 		app builds will need to explicitly link with VRPN now.

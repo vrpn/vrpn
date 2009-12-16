@@ -19,10 +19,10 @@ project(VRPN)
 set(CPACK_PACKAGE_VENDOR "Russell M. Taylor II at the University of North Carolina at Chapel Hill")
 set(CPACK_PACKAGE_VERSION_MAJOR "07")
 set(CPACK_PACKAGE_VERSION_MINOR "24")
-set(CPACK_PACKAGE_VERSION_PATCH "1")
+set(CPACK_PACKAGE_VERSION_PATCH "2")
 set(CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}" )
 set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
-set(CPACK_SOURCE_PACKAGE_FILE_NAME "${CPACK_PACKAGE_FILE_NAME}-src")
+set(CPACK_SOURCE_PACKAGE_FILE_NAME "${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-src")
 
 #-----------------------------------------------------------------------------
 # Compiler flags we got from Hans
@@ -66,6 +66,7 @@ endif()
 ###
 list(APPEND CMAKE_MODULE_PATH ${VRPN_SOURCE_DIR}/cmake)
 include(UseBackportedModules)
+include(FixWinInstallPrefix)
 
 ###
 # Quatlib
@@ -200,7 +201,7 @@ endif()
 # microscribe3D library
 # PhaseSpace OWL API
 # GLI Interactive LLC MotionNode library
-# Hillcrest Labs' Freespace 
+# Hillcrest Labs' Freespace
 #
 # All include paths should be moved out of at least vrpn_Configure.h.cmake_in
 # as well as all #pragma comment (lib, "" ) lines, since cmake replaces
@@ -214,18 +215,15 @@ configure_file(
   "${PROJECT_BINARY_DIR}/vrpn_Configure.h")
 
 # Force use of our CMake-processed configuration header before the stock one.
-if(CMAKE_COMPILER_IS_GNUCXX)
-	add_definitions("-include \"${PROJECT_BINARY_DIR}/vrpn_Configure.h\"")
-elseif(MSVC)
-	add_definitions("/FI \"${PROJECT_BINARY_DIR}/vrpn_Configure.h\"")
-endif()
+include(GetForceIncludeDefinitions)
+get_force_include_definitions(CONFIG_H_FLAG "${PROJECT_BINARY_DIR}/vrpn_Configure.h")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CONFIG_H_FLAG}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CONFIG_H_FLAG}")
 
 # Configuration options controlling what gets included in the build.
 # These are the default options - if a library is detected above it will
 # be pre-set to ON instead.
 option(VRPN_USE_PHANTOM_SERVER "Build with SensAble Phantom support" OFF)
-option(VRPN_USE_DIRECTINPUT "Build with Microsoft DirectInput support" OFF)
-option(VRPN_USE_DIRECTSHOW "Build with Microsoft DirectShow support" OFF)
 option(VRPN_INCLUDE_TIMECODE_SERVER "Build with Adrienne time-code server support" OFF)
 option(VRPN_INCLUDE_INTERSENSE "Build with InterSense native library support" OFF)
 option(VRPN_USE_NATIONAL_INSTRUMENTS "Build with National Instruments (old library) support" OFF)
@@ -234,11 +232,17 @@ option(VRPN_USE_NIDAQ "Build with NIDAQ support ca. 1999" OFF)
 option(VRPN_USE_USDIGITAL "Build with US Digital SEI/A2 library support" OFF)
 option(VRPN_USE_MICROSCRIBE "Build with MicroScribe3D library support" OFF)
 option(VRPN_INCLUDE_PHASESPACE "Build with PhaseSpace library support" OFF)
-option(VRPN_USE_SHARED_LIBRARY "Enable to use DLLs on Windows (see vrpn_Configure.h for more info)" OFF)
-option(VRPN_USE_GPM_MOUSE "Build with GPM Linux mouse interface support" OFF)
 option(VRPN_USE_MOTIONNODE "Build with GLI Interactive LLC MotionNode library support" OFF)
 option(VRPN_USE_WIIUSE "Build with WiiUse library support" OFF)
 option(VRPN_USE_FREESPACE "Build with Hillcrest Labs' Freespace devices support" OFF)
+
+if(WIN32)
+	option(VRPN_USE_DIRECTINPUT "Build with Microsoft DirectInput support" OFF)
+	option(VRPN_USE_DIRECTSHOW "Build with Microsoft DirectShow support" OFF)
+	option(VRPN_USE_SHARED_LIBRARY "Enable to use DLLs on Windows (see vrpn_Configure.h for more info)" OFF)
+elseif (UNIX)
+	option(VRPN_USE_GPM_MOUSE "Build with GPM Linux mouse interface support" OFF)
+endif()
 
 #option(vrpn_USE_MPI "Build with MPI support" OFF)
 
@@ -272,6 +276,7 @@ set(VRPN_CLIENT_SOURCES
 	vrpn_Sound.C
 	vrpn_Text.C
 	vrpn_Tracker.C
+	vrpn_TypeDispatcher.C
 )
 
 set(VRPN_CLIENT_PUBLIC_HEADERS
@@ -298,6 +303,7 @@ set(VRPN_CLIENT_PUBLIC_HEADERS
 	vrpn_Sound.h
 	vrpn_Text.h
 	vrpn_Tracker.h
+	vrpn_TypeDispatcher.h
 	vrpn_Types.h
 )
 
@@ -561,9 +567,9 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 
 	if(GPL_SERVER_FLAGS AND GPLINCOMPAT_SERVER_FLAGS)
 		message(STATUS "")
-		message(SEND_ERROR "IMPORTANT LICENSING NOTE!")
-		message(SEND_ERROR "Building with the current settings may produce a legally non-distributable server binary!")
-		message(SEND_ERROR "NOTE: I am not a lawyer, and this is not legal advice!")
+		message(STATUS "IMPORTANT LICENSING NOTE!")
+		message(STATUS "Building with the current settings may produce a legally non-distributable server binary!")
+		message(STATUS "NOTE: I am not a lawyer, and this is not legal advice!")
 	endif()
 endif()
 
