@@ -276,7 +276,6 @@ set(VRPN_CLIENT_SOURCES
 	vrpn_Sound.C
 	vrpn_Text.C
 	vrpn_Tracker.C
-	vrpn_TypeDispatcher.C
 )
 
 set(VRPN_CLIENT_PUBLIC_HEADERS
@@ -303,7 +302,6 @@ set(VRPN_CLIENT_PUBLIC_HEADERS
 	vrpn_Sound.h
 	vrpn_Text.h
 	vrpn_Tracker.h
-	vrpn_TypeDispatcher.h
 	vrpn_Types.h
 )
 
