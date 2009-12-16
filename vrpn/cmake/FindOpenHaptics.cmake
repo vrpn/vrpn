@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # - try to find OpenHaptics libraries
 #
 # Cache Variables: (probably not for direct use in your scripts)
