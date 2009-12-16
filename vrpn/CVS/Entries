@@ -1,9 +1,6 @@
 /.cvsignore/1.4/Mon Oct 29 21:21:23 2007//
-/CMakeLists.txt/1.7/Thu Nov 26 22:35:48 2009//
-/ChangeLog/1.475/Fri Nov 27 22:02:58 2009//
-/FindDirectShow.cmake/1.1/Tue Nov 24 03:31:55 2009//
-/FindHDAPI.cmake/1.1/Sat Nov 21 18:00:02 2009//
-/Findquatlib.cmake/1.3/Fri Nov 27 22:02:58 2009//
+/CMakeLists.txt/1.12/Wed Dec 16 15:45:09 2009//
+/ChangeLog/1.480/Wed Dec 16 15:45:09 2009//
 /Format/1.2/Sat Sep 27 02:03:38 2003//
 /Makefile/1.145/Sat Nov 21 18:00:02 2009//
 /README/1.11/Fri Jun 27 13:06:40 2008//
@@ -38,7 +35,7 @@
 /vrpn_Analog_Radamec_SPI.h/1.3/Thu Sep 16 18:11:41 2004//
 /vrpn_Analog_USDigital_A2.C/1.2/Wed Nov 22 00:01:20 2006//
 /vrpn_Analog_USDigital_A2.h/1.1/Tue Nov 21 22:54:55 2006//
-/vrpn_Atmel.C/1.3/Sat Nov 21 18:00:02 2009//
+/vrpn_Atmel.C/1.4/Tue Dec 15 19:54:33 2009//
 /vrpn_Atmel.h/1.1/Mon Jun 25 19:56:01 2007//
 /vrpn_Auxiliary_Logger.C/1.2/Tue Mar  4 21:11:41 2008//
 /vrpn_Auxiliary_Logger.h/1.1/Tue Nov 13 00:15:00 2007//
@@ -52,8 +49,9 @@
 /vrpn_Button_USB.h/1.1/Mon Mar 13 15:39:20 2006//
 /vrpn_CerealBox.C/1.10/Mon Nov 23 16:46:16 2009//
 /vrpn_CerealBox.h/1.6/Thu Sep 16 18:11:41 2004//
-/vrpn_Configure.h/1.69/Tue Nov 24 21:46:19 2009//
-/vrpn_Configure.h.cmake_in/1.1/Sat Nov 21 18:00:02 2009//
+/vrpn_Configure.h/1.71/Tue Dec 15 20:49:23 2009//
+/vrpn_Configure.h.cmake_in/1.2/Tue Dec 15 20:49:23 2009//
+/vrpn_Connection.C/1.284/Wed Dec 16 15:45:09 2009//
 /vrpn_Connection.h/1.108/Thu Sep 24 15:15:53 2009//
 /vrpn_ConnectionTypes.h/1.1/Sun Jul 29 11:36:23 2001//
 /vrpn_Dial.C/1.9/Tue Dec 14 16:40:59 2004//
@@ -93,7 +91,7 @@
 /vrpn_GlobalHapticsOrb.C/1.3/Thu Aug 30 02:09:16 2007//
 /vrpn_GlobalHapticsOrb.h/1.4/Tue Mar  4 21:11:42 2008//
 /vrpn_HashST.h/1.3/Mon Jun 25 19:56:02 2007//
-/vrpn_HumanInterface.C/1.6/Fri Nov 13 15:03:58 2009//
+/vrpn_HumanInterface.C/1.7/Tue Dec 15 19:54:33 2009//
 /vrpn_HumanInterface.h/1.6/Thu Sep 24 15:15:53 2009//
 /vrpn_Imager.C/1.12/Tue Aug  4 02:28:43 2009//
 /vrpn_Imager.h/1.9/Sun Jun 15 19:39:48 2008//
@@ -120,8 +118,8 @@
 /vrpn_Mutex.h/1.10/Tue Mar  4 21:11:42 2008//
 /vrpn_NationalInstruments.C/1.4/Tue Mar  4 21:11:42 2008//
 /vrpn_NationalInstruments.h/1.2/Tue Apr  5 21:43:27 2005//
-/vrpn_Nidaq.C/1.10/Wed Apr  7 14:32:36 2004//
-/vrpn_Nidaq.h/1.13/Thu Sep 16 18:11:44 2004//
+/vrpn_Nidaq.C/1.11/Tue Dec 15 19:54:33 2009//
+/vrpn_Nidaq.h/1.14/Tue Dec 15 19:54:33 2009//
 /vrpn_Poser.C/1.13/Thu Jun 19 21:59:35 2008//
 /vrpn_Poser.h/1.10/Thu Jun 19 21:59:35 2008//
 /vrpn_Poser_Analog.C/1.13/Tue Mar  4 21:11:42 2008//
@@ -170,8 +168,6 @@
 /vrpn_Tracker_PhaseSpace.h/1.2/Fri May  9 14:12:26 2008//
 /vrpn_Tracker_isense.C/1.11/Mon Jan 22 15:34:31 2007//
 /vrpn_Tracker_isense.h/1.6/Thu Sep 16 18:11:47 2004//
-/vrpn_TypeDispatcher.C/1.1/Sun Jul 29 11:36:47 2001//
-/vrpn_TypeDispatcher.h/1.2/Thu Sep 16 18:11:47 2004//
 /vrpn_Types.h/1.17/Wed Dec  8 20:37:27 2004//
 /vrpn_UNC_Joystick.C/1.6/Tue Dec 14 22:54:09 2004//
 /vrpn_UNC_Joystick.h/1.3/Thu Sep 16 18:11:47 2004//
@@ -199,6 +195,7 @@
 /vrpndll.vcproj/1.24/Wed Oct 28 18:27:03 2009//
 D/atmellib////
 D/client_src////
+D/cmake////
 D/doxygen////
 D/installers////
 D/java_vrpn////
@@ -206,4 +203,3 @@ D/python_vrpn////
 D/server_src////
 D/util////
 D/vrpn_embedded////
-/vrpn_Connection.C/1.283/Fri Nov 27 22:23:50 2009//

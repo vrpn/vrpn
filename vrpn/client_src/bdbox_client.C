@@ -23,7 +23,9 @@ dial layout:
 #include <stdio.h>
 #include <vrpn_Analog.h>
 #include <vrpn_Button.h>
+#ifndef _WIN32
 #include <unistd.h>	// for gethostname()
+#endif
 /*  
 // this is the one in the PIT area
 #define BDBOX_SERVER "sgibox0@x-vrsh://152.2.128.163/~seeger/src/vrpn/server_src/sgi_irix/vrpn_server,-f,~seeger/src/config/sgibox.cfg,-q" 
@@ -38,7 +40,7 @@ dial layout:
  *****************************************************************************/
 
 
-void	handle_button_change(void *userdata, const vrpn_BUTTONCB b)
+void VRPN_CALLBACK	handle_button_change(void *userdata, const vrpn_BUTTONCB b)
 {
 	static int count=0;
 	static int buttonstate = 1;
@@ -53,7 +55,7 @@ void	handle_button_change(void *userdata, const vrpn_BUTTONCB b)
 	}
 }
 
-void	handle_dial_change(void *userdata, const vrpn_ANALOGCB info)
+void VRPN_CALLBACK	handle_dial_change(void *userdata, const vrpn_ANALOGCB info)
 {
     double channel_values[vrpn_CHANNEL_MAX];
 

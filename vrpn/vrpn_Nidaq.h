@@ -22,6 +22,7 @@
 #ifndef VRPN_NIDAQ
 #define VRPN_NIDAQ
 #if defined(_WIN32) || defined(WIN32)
+#if defined(VRPN_USE_NIDAQ)
 #include "vrpn_Analog.h"
 #include <daq.h>
 #include <windows.h>
@@ -73,5 +74,6 @@ private:
   int fNice;
 };
 
+#endif // def(VRPN_USE_NIDAQ)
 #endif // def(_WIN32) || def(WIN32)
 #endif // ndef(VRPN_NIDAQ)

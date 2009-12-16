@@ -441,12 +441,8 @@
 #define  VRPN_API		 __declspec(dllexport) 
 #else
 #define  VRPN_API		 __declspec(dllimport)
-#pragma comment (lib, "vrpndll.lib")
 #endif
 #else
-#ifndef VRPNDLL_NOEXPORTS
-#pragma comment (lib, "vrpn.lib")     // We'll need the VRPN library
-#endif
 #define  VRPN_API
 #endif
 #define	 VRPN_CALLBACK	 __stdcall
