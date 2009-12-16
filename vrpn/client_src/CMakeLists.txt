@@ -36,7 +36,6 @@ if(VRPN_BUILD_CLIENTS)
 	set(TEST_SOURCES
 		add_vrpn_cookie.C
 		bdbox_client.C
-		checklogfile.c
 		clock_drift_estimator.C
 		ff_client.C
 		forcedevice_test_client.cpp
@@ -63,6 +62,7 @@ if(VRPN_BUILD_CLIENTS)
 		list(APPEND TEST_SOURCES
 			logfilesenders.c
 			logfiletypes.c
+			checklogfile.c
 		)
 	endif()
 

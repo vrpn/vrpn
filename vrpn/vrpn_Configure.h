@@ -58,7 +58,7 @@
 // Instructs VRPN to use phantom library to construct a unified
 // server, using phantom as a common device, and phantom
 // configuration in .cfg file.
-#define	VRPN_USE_PHANTOM_SERVER
+//#define	VRPN_USE_PHANTOM_SERVER
 
 //------------------------
 // Instructs vrpn to use SensAble's HDAPI rather than GHOST library.
@@ -431,12 +431,8 @@
 #define  VRPN_API		 __declspec(dllexport) 
 #else
 #define  VRPN_API		 __declspec(dllimport)
-#pragma comment (lib, "vrpndll.lib")
 #endif
 #else
-#ifndef VRPNDLL_NOEXPORTS
-#pragma comment (lib, "vrpn.lib")     // We'll need the VRPN library
-#endif
 #define  VRPN_API
 #endif
 #define	 VRPN_CALLBACK	 __stdcall
