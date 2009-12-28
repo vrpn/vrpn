@@ -321,6 +321,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_CerealBox.C
 	vrpn_DirectXFFJoystick.C
 	vrpn_DirectXRumblePad.C
+	vrpn_DreamCheeky.C
 	vrpn_Dyna.C
 	vrpn_Event_Analog.C
 	vrpn_Event.C
@@ -387,6 +388,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_CerealBox.h
 	vrpn_DirectXFFJoystick.h
 	vrpn_DirectXRumblePad.h
+	vrpn_DreamCheeky.h
 	vrpn_Dyna.h
 	vrpn_Event_Analog.h
 	vrpn_Event.h

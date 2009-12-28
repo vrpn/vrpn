@@ -1,3 +1,13 @@
+2009-12-27  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_DreamCheeky.h : Added support for the Dream Cheeky USB
+		roll-up drum kit, which is a HID device.
+	* vrpn_DreamCheeky.C : Same.
+	* CMakeLists.txt : Same.
+	* Makefile : Same.
+	* vrpn.vcproj : Same.
+	* vrpndll.vcproj : Same.
+
 2009-12-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	All changes here are from Ryan Pavlik.  I'm just adding them in.

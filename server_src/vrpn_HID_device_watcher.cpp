@@ -16,6 +16,7 @@ protected:
 HidDebug::HidDebug(vrpn_HidAcceptor *a): vrpn_HidInterface(a) { }
 
 void HidDebug::on_data_received(size_t bytes, vrpn_uint8 *buffer) {
+        printf("%d bytes: ", bytes);
 	for (size_t i = 0; i < bytes; i++)
 		printf("%02X ", buffer[i]);
 	puts("");
