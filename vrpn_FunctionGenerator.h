@@ -85,12 +85,13 @@ class VRPN_API vrpn_FunctionGenerator_function_script
 {
 public:
 	vrpn_FunctionGenerator_function_script( );
+	vrpn_FunctionGenerator_function_script( const char* script );
 	vrpn_FunctionGenerator_function_script( const vrpn_FunctionGenerator_function_script& );
 	virtual ~vrpn_FunctionGenerator_function_script();
 
 	virtual vrpn_float32 generateValues( vrpn_float32* buf, vrpn_uint32 nValues,
 								vrpn_float32 startTime, vrpn_float32 sampleRate, 
-								vrpn_FunctionGenerator_channel* channel ) const = 0;
+								vrpn_FunctionGenerator_channel* channel ) const;
 
 	vrpn_int32 encode_to( char** buf, vrpn_int32& len ) const;
 	vrpn_int32 decode_from( const char** buf, vrpn_int32& len );
