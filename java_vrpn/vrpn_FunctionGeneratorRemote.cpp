@@ -1,4 +1,5 @@
 
+#include <typeinfo.h>
 #include <jni.h>
 #include <vrpn_FunctionGenerator.h>
 
@@ -17,61 +18,61 @@ extern jfieldID jfid_vrpn_VRPNDevice_native_device;
 //  and sets some global references that are used elsewhere.
 JNIEXPORT jint JNICALL JNI_OnLoad_FunctionGenerator_Remote( JavaVM* jvm, void* reserved )
 {
-  ///////////////
-  // make sure the general library code set jvm
-  if( jvm == NULL )
-  {
-	printf( "vrpn_FunctionGeneratorRemote native:  no jvm.\n" );
-    return JNI_ERR;
-  }
+	///////////////
+	// make sure the general library code set jvm
+	if( jvm == NULL )
+	{
+		printf( "vrpn_FunctionGeneratorRemote native:  no jvm.\n" );
+		return JNI_ERR;
+	}
 
-  ///////////////
-  // get the JNIEnv pointer
-  JNIEnv* env;
-  if( jvm->GetEnv( (void**) &env, JAVA_VRPN_JNI_VERSION ) != JNI_OK )
-  {
-    printf( "Error loading vrpn FunctionGeneratorRemote native library.\n" );
-    return JNI_ERR;
-  }
-  
-  ///////////////
-  // get the jclass reference to vrpn.FunctionGeneratorRemote
-  jclass cls = env->FindClass( "vrpn/FunctionGeneratorRemote" );
-  if( cls == NULL )
-  {
-    printf( "Error loading vrpn FunctionGeneratorRemote native library "
-            "while trying to find class vrpn.FunctionGeneratorRemote.\n" );
-    return JNI_ERR;
-  }
+	///////////////
+	// get the JNIEnv pointer
+	JNIEnv* env;
+	if( jvm->GetEnv( (void**) &env, JAVA_VRPN_JNI_VERSION ) != JNI_OK )
+	{
+		printf( "Error loading vrpn FunctionGeneratorRemote native library.\n" );
+		return JNI_ERR;
+	}
 
-  // make a global reference so the class can be referenced later.
-  // this must be a _WEAK_ global reference, so the class will be
-  // garbage collected, and so the JNI_OnUnLoad handler will be called
-  jclass_vrpn_FunctionGeneratorRemote = (jclass) env->NewWeakGlobalRef( cls );
-  if( jclass_vrpn_FunctionGeneratorRemote == NULL )
-  {
-    printf( "Error loading vrpn FunctionGeneratorRemote native library "
-            "while setting up class vrpn.FunctionGeneratorRemote.\n" );
-    return JNI_ERR;
-  }
+	///////////////
+	// get the jclass reference to vrpn.FunctionGeneratorRemote
+	jclass cls = env->FindClass( "vrpn/FunctionGeneratorRemote" );
+	if( cls == NULL )
+	{
+		printf( "Error loading vrpn FunctionGeneratorRemote native library "
+			"while trying to find class vrpn.FunctionGeneratorRemote.\n" );
+		return JNI_ERR;
+	}
 
-  return JAVA_VRPN_JNI_VERSION;
+	// make a global reference so the class can be referenced later.
+	// this must be a _WEAK_ global reference, so the class will be
+	// garbage collected, and so the JNI_OnUnLoad handler will be called
+	jclass_vrpn_FunctionGeneratorRemote = (jclass) env->NewWeakGlobalRef( cls );
+	if( jclass_vrpn_FunctionGeneratorRemote == NULL )
+	{
+		printf( "Error loading vrpn FunctionGeneratorRemote native library "
+			"while setting up class vrpn.FunctionGeneratorRemote.\n" );
+		return JNI_ERR;
+	}
+
+	return JAVA_VRPN_JNI_VERSION;
 } // end JNI_OnLoad
 
 
 
 JNIEXPORT void JNICALL JNI_OnUnload_FunctionGenerator_Remote( JavaVM* jvm, void* reserved )
 {
-  // get the JNIEnv pointer
-  JNIEnv* env;
-  if( jvm->GetEnv( (void**) &env, JAVA_VRPN_JNI_VERSION ) != JNI_OK )
-  {
-    printf( "Error unloading vrpn FunctionGeneratorRemote native library.\n" );
-    return;
-  }
+	// get the JNIEnv pointer
+	JNIEnv* env;
+	if( jvm->GetEnv( (void**) &env, JAVA_VRPN_JNI_VERSION ) != JNI_OK )
+	{
+		printf( "Error unloading vrpn FunctionGeneratorRemote native library.\n" );
+		return;
+	}
 
-  // delete the global reference to the vrpn.ForceDeviceRemote class
-  env->DeleteWeakGlobalRef( jclass_vrpn_FunctionGeneratorRemote );
+	// delete the global reference to the vrpn.ForceDeviceRemote class
+	env->DeleteWeakGlobalRef( jclass_vrpn_FunctionGeneratorRemote );
 }
 
 // end DLL functions
@@ -82,120 +83,252 @@ JNIEXPORT void JNICALL JNI_OnUnload_FunctionGenerator_Remote( JavaVM* jvm, void*
 // java_vrpn utility funcitons
 
 void VRPN_CALLBACK handle_channel_reply( void *userdata,
-					  const vrpn_FUNCTION_CHANNEL_REPLY_CB info )
+										const vrpn_FUNCTION_CHANNEL_REPLY_CB info )
 {
-  if( jvm == NULL )
-  {
-    printf( "Error in handle_channel_reply:  uninitialized jvm.\n" );
-    return;
-  }
+	if( jvm == NULL )
+	{
+		printf( "Error in handle_channel_reply:  uninitialized jvm.\n" );
+		return;
+	}
 
-  /*
-  printf( "fg channel change (C):  time:  %d.%d;\n"
-          info.msg_time.tv_sec, info.msg_time.tv_usec );
-  */
-  
-  JNIEnv* env;
-  jvm->AttachCurrentThread( (void**) &env, NULL );
-  
-  jobject jobj = (jobject) userdata;
-  jclass jcls = env->GetObjectClass( jobj );
-  
-  //xxx
-  jmethodID jmid = env->GetMethodID( jcls, "handleForceChange", "(JJDDD)V" );
-  if( jmid == NULL )
-  {
-    printf( "Warning:  vrpn_ForceDeviceRemote library was unable to find the "
-            "Java method \'handleForceChange\'.  This may indicate a version mismatch.\n" );
-    return;
-  }
-  env->CallVoidMethod( jobj, jmid, (jlong) info.msg_time.tv_sec, (jlong) info.msg_time.tv_usec,
-                       (jdouble) info.force[0], (jdouble) info.force[1], (jdouble) info.force[2] );
+	/*
+	printf( "fg channel change (C):  time:  %d.%d;\n"
+	info.msg_time.tv_sec, info.msg_time.tv_usec );
+	*/
 
+	JNIEnv* env;
+	jvm->AttachCurrentThread( (void**) &env, NULL );
+
+	jobject jobj = (jobject) userdata;
+	jclass jcls = env->GetObjectClass( jobj );
+
+	//determine what type of channel change this is
+	const vrpn_FunctionGenerator_function* fxn = info.channel->getFunction();
+	jmethodID jmid = NULL;
+	if( typeid( fxn ) == typeid( vrpn_FunctionGenerator_function_NULL* ) )
+	{
+		jmid = env->GetMethodID( jcls, "handleForceChange_NULL", "(JJI)V" );
+		if( jmid == NULL )
+		{
+			printf( "Warning:  vrpn_ForceDeviceRemote library was unable to find the "
+					"Java method \'handleForceChange_NULL\'.  This may indicate a version mismatch.\n" );
+			return;
+		}
+		env->CallVoidMethod( jobj, jmid, (jlong) info.msg_time.tv_sec, (jlong) info.msg_time.tv_usec,
+							 (jint) info.channelNum );
+	}
+	else if( typeid( fxn ) == typeid( vrpn_FunctionGenerator_function_script* ) )
+	{
+		jmid = env->GetMethodID( jcls, "handleForceChange_Script", "(JJILjava/lang/String;)V" );
+		if( jmid == NULL )
+		{
+			printf( "Warning:  vrpn_ForceDeviceRemote library was unable to find the "
+					"Java method \'handleForceChange_Script\'.  This may indicate a version mismatch.\n" );
+			return;
+		}
+		jstring jscript 
+			= env->NewStringUTF( (dynamic_cast<const vrpn_FunctionGenerator_function_script*>(fxn))->getScript() );
+		if( jscript == NULL ) // out of memory
+		{
+			printf( "Error:  vrpn_FunctionGeneratorRemote library (handle_channel_reply) "
+				"was unable to create the script string.\n" );
+			return;
+		}
+		env->CallVoidMethod( jobj, jmid, (jlong) info.msg_time.tv_sec, (jlong) info.msg_time.tv_usec,
+							 (jint) info.channelNum, jscript );
+	}
+	else 
+	{
+		printf( "Error:  vrpn_ForceDeviceRemote library (handle_channel_reply):  unknown function type\n" );
+		return;
+	}
 }
 
 
 void VRPN_CALLBACK handle_start( void *userdata,
-					     const vrpn_FUNCTION_START_REPLY_CB info )
+								const vrpn_FUNCTION_START_REPLY_CB info )
 {
+	if( jvm == NULL )
+	{
+		printf( "Error in handle_start:  uninitialized jvm.\n" );
+		return;
+	}
+	/*
+	printf( "fg start (C):  time:  %d.%d;\n"
+	info.msg_time.tv_sec, info.msg_time.tv_usec );
+	*/
 
+	JNIEnv* env;
+	jvm->AttachCurrentThread( (void**) &env, NULL );
+
+	jobject jobj = (jobject) userdata;
+	jclass jcls = env->GetObjectClass( jobj );
+
+	jmethodID jmid = env->GetMethodID( jcls, "handleStartReply", "(JJZ)V" );
+	if( jmid == NULL )
+	{
+		printf( "Warning:  vrpn_FunctionGeneratorRemote library was unable to find the "
+			"Java method \'handleStartReply\'.  This may indicate a version mismatch.\n" );
+		return;
+	}
+	env->CallVoidMethod( jobj, jmid, (jlong) info.msg_time.tv_sec, (jlong) info.msg_time.tv_usec,
+		(jboolean) info.isStarted );
 }
 
 
 void VRPN_CALLBACK handle_stop( void *userdata,
-					     const vrpn_FUNCTION_STOP_REPLY_CB info )
+							   const vrpn_FUNCTION_STOP_REPLY_CB info )
 {
+	if( jvm == NULL )
+	{
+		printf( "Error in handle_stop:  uninitialized jvm.\n" );
+		return;
+	}
+	/*
+	printf( "fg stop (C):  time:  %d.%d;\n"
+	info.msg_time.tv_sec, info.msg_time.tv_usec );
+	*/
 
+	JNIEnv* env;
+	jvm->AttachCurrentThread( (void**) &env, NULL );
+
+	jobject jobj = (jobject) userdata;
+	jclass jcls = env->GetObjectClass( jobj );
+
+	jmethodID jmid = env->GetMethodID( jcls, "handleStopReply", "(JJZ)V" );
+	if( jmid == NULL )
+	{
+		printf( "Warning:  vrpn_FunctionGeneratorRemote library was unable to find the "
+			"Java method \'handleStopReply\'.  This may indicate a version mismatch.\n" );
+		return;
+	}
+	env->CallVoidMethod( jobj, jmid, (jlong) info.msg_time.tv_sec, (jlong) info.msg_time.tv_usec,
+		(jboolean) info.isStopped );
 }
 
 
 void VRPN_CALLBACK handle_sample_rate( void *userdata,
-					     const vrpn_FUNCTION_SAMPLE_RATE_REPLY_CB info )
+									  const vrpn_FUNCTION_SAMPLE_RATE_REPLY_CB info )
 {
+	if( jvm == NULL )
+	{
+		printf( "Error in handle_sample_rate:  uninitialized jvm.\n" );
+		return;
+	}
+	/*
+	printf( "fg sample rate (C):  time:  %d.%d;\n"
+	info.msg_time.tv_sec, info.msg_time.tv_usec );
+	*/
 
+	JNIEnv* env;
+	jvm->AttachCurrentThread( (void**) &env, NULL );
+
+	jobject jobj = (jobject) userdata;
+	jclass jcls = env->GetObjectClass( jobj );
+
+	jmethodID jmid = env->GetMethodID( jcls, "handleSampleRateReply", "(JJD)V" );
+	if( jmid == NULL )
+	{
+		printf( "Warning:  vrpn_FunctionGeneratorRemote library was unable to find the "
+			"Java method \'handleSampleRateReply\'.  This may indicate a version mismatch.\n" );
+		return;
+	}
+	env->CallVoidMethod( jobj, jmid, (jlong) info.msg_time.tv_sec, (jlong) info.msg_time.tv_usec,
+		(jdouble) info.sampleRate );
 }
 
 
 void VRPN_CALLBACK handle_interpreter_description( void *userdata,
-					     const vrpn_FUNCTION_INTERPRETER_REPLY_CB info )
+												  const vrpn_FUNCTION_INTERPRETER_REPLY_CB info )
 {
+	if( jvm == NULL )
+	{
+		printf( "Error in handle_interpreter_description:  uninitialized jvm.\n" );
+		return;
+	}
+	/*
+	printf( "fg interpreter description (C):  time:  %d.%d;\n"
+	info.msg_time.tv_sec, info.msg_time.tv_usec );
+	*/
 
+	JNIEnv* env;
+	jvm->AttachCurrentThread( (void**) &env, NULL );
+
+	jobject jobj = (jobject) userdata;
+	jclass jcls = env->GetObjectClass( jobj );
+
+	jmethodID jmid = env->GetMethodID( jcls, "handleInterpreterDescription", "(JJLjava/lang/String;)V" );
+	if( jmid == NULL )
+	{
+		printf( "Warning:  vrpn_FunctionGeneratorRemote library was unable to find the "
+			"Java method \'handleInterpreterDescription\'.  This may indicate a version mismatch.\n" );
+		return;
+	}
+
+	jstring jdesc = env->NewStringUTF( info.description );
+	if( jdesc == NULL ) // out of memory
+	{
+		printf( "Warning:  vrpn_FunctionGeneratorRemote library (handle_interpreter_description) "
+			"was unable to create the description string.\n" );
+		return;
+	}
+	env->CallVoidMethod( jobj, jmid, (jlong) info.msg_time.tv_sec, (jlong) info.msg_time.tv_usec, jdesc );
 }
 
 
 /*
- * Class:     vrpn_FunctionGeneratorRemote
- * Method:    init
- * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Z
- */
+* Class:     vrpn_FunctionGeneratorRemote
+* Method:    init
+* Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Z
+*/
 JNIEXPORT jboolean JNICALL 
 Java_vrpn_FunctionGeneratorRemote_init( JNIEnv* env, jobject jobj, jstring jname, 
-										jstring jlocalInLogfileName, jstring jlocalOutLogfileName,
-										jstring jremoteInLogfileName, jstring jremoteOutLogfileName )
+									   jstring jlocalInLogfileName, jstring jlocalOutLogfileName,
+									   jstring jremoteInLogfileName, jstring jremoteOutLogfileName )
 {
-  // make a global reference to the Java FunctionGeneratorRemote
-  // object, so that it can be referenced in the functions
-  // handle_*_change(...)
-  jobj = env->NewGlobalRef( jobj );
+	// make a global reference to the Java FunctionGeneratorRemote
+	// object, so that it can be referenced in the functions
+	// handle_*_change(...)
+	jobj = env->NewGlobalRef( jobj );
 
-  // create the function generator
-  const char* name = env->GetStringUTFChars( jname, NULL );
-  const char* local_in_logfile_name = jlocalInLogfileName == NULL ? NULL :
-	  env->GetStringUTFChars( jlocalInLogfileName, NULL );
-  const char* local_out_logfile_name = jlocalOutLogfileName == NULL ? NULL :
-	  env->GetStringUTFChars( jlocalOutLogfileName, NULL );
-  const char* remote_in_logfile_name = jremoteInLogfileName == NULL ? NULL :
-	  env->GetStringUTFChars( jremoteInLogfileName, NULL );
-  const char* remote_out_logfile_name = jremoteOutLogfileName == NULL ? NULL :
-	  env->GetStringUTFChars( jremoteOutLogfileName, NULL );
-  vrpn_Connection* conn 
-	  = vrpn_get_connection_by_name( name, local_in_logfile_name, local_out_logfile_name,
-									 remote_in_logfile_name, remote_out_logfile_name );
-  vrpn_FunctionGenerator_Remote* f = new vrpn_FunctionGenerator_Remote( name, conn );
-  f->register_channel_reply_handler( jobj, handle_channel_reply );
-  f->register_start_reply_handler( jobj, handle_start );
-  f->register_stop_reply_handler( jobj, handle_stop );
-  f->register_sample_rate_reply_handler( jobj, handle_sample_rate );
-  f->register_interpreter_reply_handler( jobj, handle_interpreter_description );
-  env->ReleaseStringUTFChars( jname, name );
-  env->ReleaseStringUTFChars( jlocalInLogfileName, local_in_logfile_name );
-  env->ReleaseStringUTFChars( jlocalOutLogfileName, local_out_logfile_name );
-  env->ReleaseStringUTFChars( jremoteInLogfileName, remote_in_logfile_name );
-  env->ReleaseStringUTFChars( jremoteOutLogfileName, remote_out_logfile_name );
-  
-  // now stash 'f' in the jobj's 'native_device' field
-  jlong jf = (jlong) f;
-  env->SetLongField( jobj, jfid_vrpn_VRPNDevice_native_device, jf );
-  
-  return true;
+	// create the function generator
+	const char* name = env->GetStringUTFChars( jname, NULL );
+	const char* local_in_logfile_name = jlocalInLogfileName == NULL ? NULL :
+		env->GetStringUTFChars( jlocalInLogfileName, NULL );
+	const char* local_out_logfile_name = jlocalOutLogfileName == NULL ? NULL :
+		env->GetStringUTFChars( jlocalOutLogfileName, NULL );
+	const char* remote_in_logfile_name = jremoteInLogfileName == NULL ? NULL :
+		env->GetStringUTFChars( jremoteInLogfileName, NULL );
+	const char* remote_out_logfile_name = jremoteOutLogfileName == NULL ? NULL :
+		env->GetStringUTFChars( jremoteOutLogfileName, NULL );
+	vrpn_Connection* conn 
+		= vrpn_get_connection_by_name( name, local_in_logfile_name, local_out_logfile_name,
+		remote_in_logfile_name, remote_out_logfile_name );
+	vrpn_FunctionGenerator_Remote* f = new vrpn_FunctionGenerator_Remote( name, conn );
+	f->register_channel_reply_handler( jobj, handle_channel_reply );
+	f->register_start_reply_handler( jobj, handle_start );
+	f->register_stop_reply_handler( jobj, handle_stop );
+	f->register_sample_rate_reply_handler( jobj, handle_sample_rate );
+	f->register_interpreter_reply_handler( jobj, handle_interpreter_description );
+	env->ReleaseStringUTFChars( jname, name );
+	env->ReleaseStringUTFChars( jlocalInLogfileName, local_in_logfile_name );
+	env->ReleaseStringUTFChars( jlocalOutLogfileName, local_out_logfile_name );
+	env->ReleaseStringUTFChars( jremoteInLogfileName, remote_in_logfile_name );
+	env->ReleaseStringUTFChars( jremoteOutLogfileName, remote_out_logfile_name );
+
+	// now stash 'f' in the jobj's 'native_device' field
+	jlong jf = (jlong) f;
+	env->SetLongField( jobj, jfid_vrpn_VRPNDevice_native_device, jf );
+
+	return true;
 }
 
 
 /*
- * Class:     vrpn_FunctionGeneratorRemote
- * Method:    shutdownFunctionGenerator
- * Signature: ()V
- */
+* Class:     vrpn_FunctionGeneratorRemote
+* Method:    shutdownFunctionGenerator
+* Signature: ()V
+*/
 JNIEXPORT void JNICALL 
 Java_vrpn_FunctionGeneratorRemote_shutdownFunctionGenerator( JNIEnv* env, jobject jobj )
 {
@@ -223,10 +356,10 @@ Java_vrpn_FunctionGeneratorRemote_shutdownFunctionGenerator( JNIEnv* env, jobjec
 
 
 /*
- * Class:     vrpn_FunctionGeneratorRemote
- * Method:    mainloop
- * Signature: ()V
- */
+* Class:     vrpn_FunctionGeneratorRemote
+* Method:    mainloop
+* Signature: ()V
+*/
 JNIEXPORT void JNICALL 
 Java_vrpn_FunctionGeneratorRemote_mainloop( JNIEnv* env, jobject jobj )
 {
@@ -243,65 +376,151 @@ Java_vrpn_FunctionGeneratorRemote_mainloop( JNIEnv* env, jobject jobj )
 
 
 ////////////////////////////////////
-// native functions from java class ForceDeviceRemote
+// native functions from java class FunctionGeneratorRemote
 
+/*
+ * Class:     vrpn_FunctionGeneratorRemote
+ * Method:    setChannelNULL_native
+ * Signature: (I)Z
+ */
+JNIEXPORT jboolean JNICALL 
+Java_vrpn_FunctionGeneratorRemote_setChannelNULL_1native( JNIEnv* env, jobject jobj, jint jchannelNum )
+{
+  vrpn_FunctionGenerator_Remote* f = (vrpn_FunctionGenerator_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
+  if( f <= 0 )
+    return false;
+  vrpn_FunctionGenerator_channel c;
+  vrpn_FunctionGenerator_function_NULL func;
+  c.setFunction( &func );
+  if( f->setChannel( jchannelNum, &c ) < 0 )
+	  return false;
+  return true;
+}
 
 
 /*
  * Class:     vrpn_FunctionGeneratorRemote
- * Method:    setChannel_native
- * Signature: (ILvrpn/FunctionGeneratorRemote$Channel;)I
+ * Method:    setChannelScript_native
+ * Signature: (ILjava/lang/String;)Z
  */
-JNIEXPORT jint JNICALL Java_vrpn_FunctionGeneratorRemote_setChannel_1native
-  (JNIEnv *, jobject, jint, jobject);
+JNIEXPORT jboolean JNICALL 
+Java_vrpn_FunctionGeneratorRemote_setChannelScript_1native( JNIEnv* env, jobject jobj, jint jchannelNum, jstring jscript )
+{
+	vrpn_FunctionGenerator_Remote* f = (vrpn_FunctionGenerator_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
+	if( f <= 0 )
+		return false;
+	vrpn_FunctionGenerator_channel c;
+	const char* msg = env->GetStringUTFChars( jscript, NULL );
+	vrpn_FunctionGenerator_function_script func( msg );
+	env->ReleaseStringUTFChars( jscript, msg );
+	c.setFunction( &func );
+	if( f->setChannel( jchannelNum, &c ) < 0 )
+		return false;
+	return true;
+}
+
 
 /*
- * Class:     vrpn_FunctionGeneratorRemote
- * Method:    requestChannel_native
- * Signature: (I)I
- */
-JNIEXPORT jint JNICALL Java_vrpn_FunctionGeneratorRemote_requestChannel_1native
-  (JNIEnv *, jobject, jint);
+* Class:     vrpn_FunctionGeneratorRemote
+* Method:    requestChannel_native
+* Signature: (I)I
+*/
+JNIEXPORT jboolean JNICALL 
+Java_vrpn_FunctionGeneratorRemote_requestChannel_1native( JNIEnv* env, jobject jobj, jint jchannelNum )
+{
+	vrpn_FunctionGenerator_Remote* f = (vrpn_FunctionGenerator_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
+	if( f <= 0 )
+		return false;
+	if( f->requestChannel( jchannelNum ) < 0 )
+		return false;
+	return true;
+}
+
 
 /*
- * Class:     vrpn_FunctionGeneratorRemote
- * Method:    requestAllChannels_native
- * Signature: ()I
- */
-JNIEXPORT jint JNICALL Java_vrpn_FunctionGeneratorRemote_requestAllChannels_1native
-  (JNIEnv *, jobject);
+* Class:     vrpn_FunctionGeneratorRemote
+* Method:    requestAllChannels_native
+* Signature: ()I
+*/
+JNIEXPORT jboolean JNICALL 
+Java_vrpn_FunctionGeneratorRemote_requestAllChannels_1native( JNIEnv* env, jobject jobj )
+{
+	vrpn_FunctionGenerator_Remote* f = (vrpn_FunctionGenerator_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
+	if( f <= 0 )
+		return false;
+	if( f->requestAllChannels( ) < 0 )
+		return false;
+	return true;
+}
+
 
 /*
- * Class:     vrpn_FunctionGeneratorRemote
- * Method:    requestStart_native
- * Signature: ()I
- */
-JNIEXPORT jint JNICALL Java_vrpn_FunctionGeneratorRemote_requestStart_1native
-  (JNIEnv *, jobject);
+* Class:     vrpn_FunctionGeneratorRemote
+* Method:    requestStart_native
+* Signature: ()I
+*/
+JNIEXPORT jboolean JNICALL 
+Java_vrpn_FunctionGeneratorRemote_requestStart_1native( JNIEnv* env, jobject jobj )
+{
+	vrpn_FunctionGenerator_Remote* f = (vrpn_FunctionGenerator_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
+	if( f <= 0 )
+		return false;
+	if( f->requestStart( ) < 0 )
+		return false;
+	return true;
+}
+
 
 /*
- * Class:     vrpn_FunctionGeneratorRemote
- * Method:    requestStop_native
- * Signature: ()I
- */
-JNIEXPORT jint JNICALL Java_vrpn_FunctionGeneratorRemote_requestStop_1native
-  (JNIEnv *, jobject);
+* Class:     vrpn_FunctionGeneratorRemote
+* Method:    requestStop_native
+* Signature: ()I
+*/
+JNIEXPORT jboolean JNICALL 
+Java_vrpn_FunctionGeneratorRemote_requestStop_1native( JNIEnv* env, jobject jobj )
+{
+	vrpn_FunctionGenerator_Remote* f = (vrpn_FunctionGenerator_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
+	if( f <= 0 )
+		return false;
+	if( f->requestStop( ) < 0 )
+		return false;
+	return true;
+}
+
 
 /*
- * Class:     vrpn_FunctionGeneratorRemote
- * Method:    requestSampleRate_native
- * Signature: (F)I
- */
-JNIEXPORT jint JNICALL Java_vrpn_FunctionGeneratorRemote_requestSampleRate_1native
-  (JNIEnv *, jobject, jfloat);
+* Class:     vrpn_FunctionGeneratorRemote
+* Method:    requestSampleRate_native
+* Signature: (F)I
+*/
+JNIEXPORT jboolean JNICALL \
+Java_vrpn_FunctionGeneratorRemote_requestSampleRate_1native( JNIEnv* env, jobject jobj, jfloat jrate)
+{
+	vrpn_FunctionGenerator_Remote* f = (vrpn_FunctionGenerator_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
+	if( f <= 0 )
+		return false;
+	if( f->requestSampleRate( jrate ) < 0 )
+		return false;
+	return true;
+}
+
 
 /*
- * Class:     vrpn_FunctionGeneratorRemote
- * Method:    requestInterpreterDescription_native
- * Signature: ()I
- */
-JNIEXPORT jint JNICALL Java_vrpn_FunctionGeneratorRemote_requestInterpreterDescription_1native
-  (JNIEnv *, jobject);
+* Class:     vrpn_FunctionGeneratorRemote
+* Method:    requestInterpreterDescription_native
+* Signature: ()I
+*/
+JNIEXPORT jboolean JNICALL 
+Java_vrpn_FunctionGeneratorRemote_requestInterpreterDescription_1native( JNIEnv* env, jobject jobj )
+{
+  vrpn_FunctionGenerator_Remote* f = (vrpn_FunctionGenerator_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
+  if( f <= 0 )
+    return false;
+  if( f->requestInterpreterDescription( ) < 0 )
+	  return false;
+  return true;
+}
+
 
 // end native functions for java class ForceDeviceRemote
 ///////////////////////////////////////////

@@ -1,4 +1,10 @@
-2009-11-24  David marshburn  <marshbur@cs.unc.edu>
+2009-12-28  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGeneratorRemote.cpp:  finished the
+	implementation of the java native methods and the
+	vrpn handler methods.
+
+2009-11-24  David Marshburn  <marshbur@cs.unc.edu>
 
 	* all:  added function generator wrapping.
 
