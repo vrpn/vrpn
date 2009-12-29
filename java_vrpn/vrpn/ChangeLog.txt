@@ -1,3 +1,9 @@
+2009-12-29  David Marshburn  <marshbur@cs.unc.edu>
+
+	* FunctionGeneratorRemote.java:  changed the return type
+	of the mutators from 'int' to 'boolean'.  also, removed
+	some unneeded import statements.
+
 2009-05-18  David Marshburn  <marshbur@cs.unc.edu>
 
 	* VRPNDevice.java:  made the native_device member a long

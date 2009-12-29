@@ -1,8 +1,6 @@
 package vrpn;
 import java.util.*;
 
-import vrpn.ForceDeviceRemote.ForceChange;
-import vrpn.ForceDeviceRemote.ForceChangeListener;
 
 public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 {
@@ -97,20 +95,23 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 	}
 	
 	
-	public int setChannel( int channelNumber, Channel c )
+	public boolean setChannel( int channelNumber, Channel c )
 	{
-		int retval = 0;
+		boolean retval = false;
 		synchronized( downInVrpnLock )
 		{
-			retval = setChannel_native( channelNumber, c );
+			if( c.function instanceof Function_NULL )
+				retval = setChannelNULL_native( channelNumber );
+			else if( c.function instanceof Function_script )
+				retval = setChannelScript_native( channelNumber, ((Function_script)c.function).script );
 		}
 		return retval;
 	}
 	
 	
-	public int requestChannel( int channelNumber )
+	public boolean requestChannel( int channelNumber )
 	{
-		int retval = 0;
+		boolean retval = false;
 		synchronized( downInVrpnLock )
 		{
 			retval = requestChannel_native( channelNumber );
@@ -119,9 +120,9 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 	}
 	
 	
-	public int requestAllChannels( )
+	public boolean requestAllChannels( )
 	{
-		int retval = 0;
+		boolean retval = false;
 		synchronized( downInVrpnLock )
 		{
 			retval = requestAllChannels_native( );
@@ -130,9 +131,9 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 	}
 	
 	
-	public int requestStart( )
+	public boolean requestStart( )
 	{
-		int retval = 0;
+		boolean retval = false;
 		synchronized( downInVrpnLock )
 		{
 			retval = requestStart_native( );
@@ -141,9 +142,9 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 	}
 	
 	
-	public int requestStop( )
+	public boolean requestStop( )
 	{
-		int retval = 0;
+		boolean retval = false;
 		synchronized( downInVrpnLock )
 		{
 			retval = requestStop_native( );
@@ -152,9 +153,9 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 	}
 	
 	
-	public int requestSampleRate( float rate )
+	public boolean requestSampleRate( float rate )
 	{
-		int retval = 0;
+		boolean retval = false;
 		synchronized( downInVrpnLock )
 		{
 			retval = requestSampleRate_native( rate );
@@ -163,9 +164,9 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 	}
 	
 	
-	public int requestInterpreterDescription( )
+	public boolean requestInterpreterDescription( )
 	{
-		int retval = 0;
+		boolean retval = false;
 		synchronized( downInVrpnLock )
 		{
 			retval = requestInterpreterDescription_native( );
@@ -239,13 +240,14 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 	// Protected methods
 	//
 	
-	protected native int setChannel_native( int channelNumber, Channel c );
-	protected native int requestChannel_native( int channelNumber );
-	protected native int requestAllChannels_native( );
-	protected native int requestStart_native( );
-	protected native int requestStop_native( );
-	protected native int requestSampleRate_native( float rate );
-	protected native int requestInterpreterDescription_native( );
+	protected native boolean setChannelNULL_native( int channelNumber );
+	protected native boolean setChannelScript_native( int channelNumber, String script );
+	protected native boolean requestChannel_native( int channelNumber );
+	protected native boolean requestAllChannels_native( );
+	protected native boolean requestStart_native( );
+	protected native boolean requestStop_native( );
+	protected native boolean requestSampleRate_native( float rate );
+	protected native boolean requestInterpreterDescription_native( );
 	
 	
 	protected void stoppedRunning()
