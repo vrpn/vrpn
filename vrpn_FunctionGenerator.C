@@ -16,6 +16,7 @@ const char* vrpn_FUNCTION_MESSAGE_TYPE_STOP_REPLY = "vrpn_FunctionGenerator stop
 const char* vrpn_FUNCTION_MESSAGE_TYPE_SAMPLE_RATE_REPLY = "vrpn_FunctionGenerator sample rate reply";
 const char* vrpn_FUNCTION_MESSAGE_TYPE_INTERPRETER_REQUEST = "vrpn_FunctionGenerator interpreter-description request";
 const char* vrpn_FUNCTION_MESSAGE_TYPE_INTERPRETER_REPLY = "vrpn_FunctionGenerator interpreter-description reply";
+const char* vrpn_FUNCTION_MESSAGE_TYPE_ERROR = "vrpn_FunctionGenerator error report";
 
 
 /////////////////////////////////////////
@@ -92,6 +93,17 @@ vrpn_FunctionGenerator_function_script::
 		script = NULL;
 	}
 }
+
+vrpn_float32 vrpn_FunctionGenerator_function_script::
+generateValues( vrpn_float32* buf, vrpn_uint32 nValues, vrpn_float32 startTime, 
+			    vrpn_float32 sampleRate, vrpn_FunctionGenerator_channel* channel ) const
+{
+	for( vrpn_uint32 i = 0; i <= nValues - 1; i++ )
+	{
+		buf[i] = 0;
+	}
+	return startTime + nValues / sampleRate;
+};
 
 
 vrpn_int32 vrpn_FunctionGenerator_function_script::
@@ -291,6 +303,7 @@ register_types( )
 	stopFunctionReplyMessageID = d_connection->register_message_type( vrpn_FUNCTION_MESSAGE_TYPE_STOP_REPLY );
 	sampleRateReplyMessageID = d_connection->register_message_type( vrpn_FUNCTION_MESSAGE_TYPE_SAMPLE_RATE_REPLY );
 	interpreterReplyMessageID = d_connection->register_message_type( vrpn_FUNCTION_MESSAGE_TYPE_INTERPRETER_REPLY );
+	errorMessageID = d_connection->register_message_type( vrpn_FUNCTION_MESSAGE_TYPE_ERROR );
 
 	gotConnectionMessageID = d_connection->register_message_type( vrpn_got_connection );
 
@@ -300,7 +313,8 @@ register_types( )
 		|| stopFunctionMessageID == -1 || channelReplyMessageID == -1 
 		|| startFunctionReplyMessageID == -1 || stopFunctionReplyMessageID == -1 
 		|| sampleRateReplyMessageID == -1 || gotConnectionMessageID == -1
-		|| requestInterpreterMessageID == -1 || interpreterReplyMessageID == -1 )
+		|| requestInterpreterMessageID == -1 || interpreterReplyMessageID == -1 
+		|| errorMessageID == -1 )
 	{
 		fprintf( stderr, "vrpn_FunctionGenerator::register_types:  error registering types.\n" );
 		return -1;
@@ -340,7 +354,7 @@ vrpn_FunctionGenerator_Server::
 void vrpn_FunctionGenerator_Server::
 mainloop( )
 {
-	// call the base class's server mainloop
+	// call the base class' server mainloop
 	server_mainloop( );
 }
 
@@ -592,6 +606,34 @@ sendInterpreterDescription( )
 	}
 	return 0;
 }
+
+
+int vrpn_FunctionGenerator_Server::
+sendError( FGError error, vrpn_int32 channel )
+{
+	vrpn_gettimeofday( &timestamp, NULL );
+	if( this->d_connection )
+	{
+		int buflen = vrpn_CONNECTION_TCP_BUFLEN;
+		char* buf = &msgbuf[0];
+		if( this->encode_error_report( &buf, buflen, error, channel ) )
+		{
+			fprintf( stderr, "vrpn_FunctionGenerator_Server::sendError:  "
+				"could not buffer message.\n" );
+			return -1;
+		}
+		if( d_connection->pack_message( vrpn_CONNECTION_TCP_BUFLEN - buflen, timestamp, 
+										this->errorMessageID,	this->d_sender_id, 
+										msgbuf, vrpn_CONNECTION_RELIABLE ) )
+		{
+			fprintf( stderr, "vrpn_FunctionGenerator_Server::sendError:  "
+				"could not write message.\n" );
+			return -1;
+		}
+	}
+	return 0;
+}
+
 //
 // end vrpn_FunctionGenerator_Server
 //  (except for encode and decode functions)
@@ -1642,7 +1684,7 @@ decode_sampleRate_reply( const char* buf, const vrpn_int32 len )
 	if( 0 > vrpn_unbuffer( &buf, &myRate ) )
 	{
 		fprintf( stderr, "vrpn_FunctionGenerator_Remote::decode_sampleRate_reply:  "
-				"unable to unbuffer stop condition.\n" );
+				"unable to unbuffer sample rate.\n" );
 		return -1;
 	}
 	this->sampleRate = myRate;
@@ -1692,6 +1734,54 @@ decode_interpreterDescription_reply( const char* buf, const vrpn_int32 len, char
 	*desc = new char[ dlength + 1 ];
 	return vrpn_unbuffer( &buf, *desc, dlength );
 }
+
+
+vrpn_int32 vrpn_FunctionGenerator_Server::
+encode_error_report( char** buf, vrpn_int32& len, const FGError error, const vrpn_int32 channel )
+{
+	if( len <= sizeof( FGError ) + sizeof( vrpn_int32 ) )
+	{
+		fprintf( stderr, "vrpn_FunctionGenerator_Server::encode_error_report:  "
+				"insufficient buffer space given (got %d, wanted %d).\n", 
+				len, sizeof( FGError) + sizeof( vrpn_int32 ) );
+		return -1;
+	}
+	vrpn_int32 mylen = len;
+	if( 0 > vrpn_buffer( buf, &mylen, sampleRate ) || 0 > vrpn_buffer( buf, &mylen, channel ) )
+	{
+		fprintf( stderr, "vrpn_FunctionGenerator_Server::encode_error_report:  "
+				"unable to buffer error & channel" );
+		return -1;
+	}
+	len = mylen;
+	return 0;
+}
+
+
+vrpn_int32 vrpn_FunctionGenerator_Remote::
+decode_error_reply( const char* buf, const vrpn_int32 len, FGError& error, vrpn_int32& channel )
+{
+	if( len <= sizeof( FGError ) + sizeof( vrpn_int32 ) )
+	{
+		fprintf( stderr, "vrpn_FunctionGenerator_Remote::decode_error_reply:  "
+				"insufficient buffer space given (got %d, wanted %d).\n", 
+				len, sizeof( FGError) + sizeof( vrpn_int32 ) );
+		return -1;
+	}
+	int myError = NO_FG_ERROR;
+	vrpn_int32 myChannel = -1;
+	if( 0 > vrpn_unbuffer( &buf, &myError ) 
+		|| 0 > vrpn_unbuffer( &buf, &myChannel ) )
+	{
+		fprintf( stderr, "vrpn_FunctionGenerator_Remote::decode_error_reply:  "
+				"unable to unbuffer error & channel.\n" );
+		return -1;
+	}
+	error = FGError( myError );
+	channel = myChannel;
+	return 0;
+}
+
 
 
 //

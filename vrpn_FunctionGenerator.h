@@ -19,7 +19,7 @@ extern const char* vrpn_FUNCTION_MESSAGE_TYPE_STOP_REPLY;
 extern const char* vrpn_FUNCTION_MESSAGE_TYPE_SAMPLE_RATE_REPLY;
 extern const char* vrpn_FUNCTION_MESSAGE_TYPE_INTERPRETER_REQUEST;
 extern const char* vrpn_FUNCTION_MESSAGE_TYPE_INTERPRETER_REPLY;
-
+extern const char* vrpn_FUNCTION_MESSAGE_TYPE_ERROR;
 
 class VRPN_API vrpn_FunctionGenerator_channel;
 
@@ -142,6 +142,15 @@ public:
 	vrpn_float32 getSampleRate( )
 	{  return sampleRate;  }
 
+	enum FGError 
+	{
+		NO_FG_ERROR,
+		INTERPRETER_ERROR, // the interpreter (for script) had some problem
+		TAKING_TOO_LONG, // samples were not generated quickly enough
+		INVALID_RESULT_QUANTITY, // an incorrect number of values was generated
+		INVALID_RESULT_RANGE // generated values were out of range
+	};
+
 protected:
 	// should this  wait for a start trigger, or should the server immediately
 	// start generating a function on this channel.  true -> wait for a start message.
@@ -163,6 +172,7 @@ protected:
 	vrpn_int32 stopFunctionReplyMessageID;   // id for reply to stop-function message (server -> remote)
 	vrpn_int32 sampleRateReplyMessageID;     // id for reply to request-sample-rate message (server -> remote)
 	vrpn_int32 interpreterReplyMessageID;    // id for reply to request-interpreter message (server -> remote)
+	vrpn_int32 errorMessageID;				 // id for error reports
 
 	vrpn_int32	gotConnectionMessageID;  // for new-connection message
 
@@ -216,6 +226,9 @@ protected:
 	int sendStopReply( vrpn_bool stopped );
 	int sendInterpreterDescription( );
 
+	// sub-classes should use this function to report an error in function generation
+	int sendError( FGError error, vrpn_int32 channel );
+
 	vrpn_int32 decode_channel( const char* buf, const vrpn_int32 len, vrpn_uint32& channelNum,
 								vrpn_FunctionGenerator_channel& channel );
 	vrpn_int32 decode_channel_request( const char* buf, const vrpn_int32 len, vrpn_uint32& channelNum );
@@ -226,6 +239,7 @@ protected:
 	vrpn_int32 encode_stop_reply( char** buf, vrpn_int32& len, const vrpn_bool isStopped );
 	vrpn_int32 encode_sampleRate_reply( char** buf, vrpn_int32& len, const vrpn_float32 sampleRate );
 	vrpn_int32 encode_interpreterDescription_reply( char** buf, vrpn_int32& len, const char* desc );
+	vrpn_int32 encode_error_report( char** buf, vrpn_int32& len, const FGError err, const vrpn_int32 channel );
 
 }; // end class vrpn_FunctionGenerator_Server
 
@@ -391,6 +405,7 @@ protected:
 	vrpn_int32 decode_stop_reply( const char* buf, const vrpn_int32 len, vrpn_bool& isStopped );
 	vrpn_int32 decode_sampleRate_reply( const char* buf, const vrpn_int32 len );
 	vrpn_int32 decode_interpreterDescription_reply( const char* buf, const vrpn_int32 len, char** desc );
+	vrpn_int32 decode_error_reply( const char* buf, const vrpn_int32 len, FGError& error, vrpn_int32& channel );
 
 	vrpn_int32 encode_channel( char** buf, vrpn_int32& len, const vrpn_uint32 channelNum, 
 							   const vrpn_FunctionGenerator_channel* channel );
