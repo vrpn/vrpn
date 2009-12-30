@@ -38,6 +38,8 @@ foreach(_mod "${_bpmods}")
 	list(APPEND _bppaths "${_path}")
 endforeach()
 
-list(REMOVE_DUPLICATES _bppaths)
+if(_bppaths)
+	list(REMOVE_DUPLICATES _bppaths)
+endif()
 list(APPEND CMAKE_MODULE_PATH "${_bppaths}")
 
