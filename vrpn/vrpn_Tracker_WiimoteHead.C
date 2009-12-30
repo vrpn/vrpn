@@ -434,7 +434,7 @@ void	vrpn_Tracker_WiimoteHead::update_pose(double time_interval) {
 		newPose.xyz[1] = headDist * (avgY - yResSensor / 2) / bVert;
 
 		// set the quat. part of our pose with rotation angles
-		q_from_euler(newPose.quat, rx, ry, rz);
+		q_from_euler(newPose.quat, rz, ry, rx);
 
 		// Apply the new pose
 		q_vec_copy(d_currentPose.xyz, newPose.xyz);
