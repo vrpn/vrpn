@@ -41,9 +41,9 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 
 	protected:
 
-	double          d_update_interval; //< How long to wait between sends
 	struct timeval  d_prevtime;     //< Time of the previous report
-	double				d_blobDistance;
+	const double          d_update_interval; //< How long to wait between sends
+	const double				d_blobDistance;
 
 	double d_vX[4];
 	double d_vY[4];

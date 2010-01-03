@@ -1,6 +1,5 @@
 #include <string.h>
 #include <math.h>
-#include <vector>
 #include "vrpn_Tracker_WiimoteHead.h"
 
 #undef	VERBOSE
@@ -17,20 +16,25 @@ static	double	duration(struct timeval t1, struct timeval t2) {
 vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connection* trackercon, const char* wiimote, float update_rate) :
 	vrpn_Tracker (name, trackercon),
 	d_update_interval(update_rate ? (1 / update_rate) : 60.0),
-	d_ana(NULL),
 	d_blobDistance(.145),
 	d_points(0),
 	d_contact(false),
-	d_updated(false),
 	d_lock(false),
+	d_updated(false),
 	d_needWiimote(false),
-	d_gravDirty(true),
-	d_name(wiimote)
+	d_ana(NULL),
+	d_name(wiimote),
+	d_gravDirty(true)
 {
 
 	d_vGrav[0] = 0;
 	d_vGrav[1] = -1;
 	d_vGrav[2] = 0;
+	
+	d_vX[0] = d_vX[1] = d_vX[2] = d_vX[3] = -1;
+	d_vY[0] = d_vY[1] = d_vY[2] = d_vY[3] = -1;
+	d_vSize[0] = d_vSize[1] = d_vSize[2] = d_vSize[3] = -1;
+
 
 	// If the name is NULL, we're done.
 	if (wiimote == NULL) {
@@ -42,7 +46,7 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connec
 
 	setupWiimote();
 
-	int ret = register_custom_types();
+	bool ret = register_custom_types();
 	if (!ret) {
 		fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
 				"Can't setup custom message and sender types\n");
@@ -63,12 +67,15 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connec
 	// Also, set the updated flag to send a single report
 	reset();
 
+	d_gravityXform = d_currentPose;
+
 	// put a little z translation as a saner default
-	d_currentPose.xyz[0] = 0;
-	d_currentPose.xyz[1] = 0;
 	d_currentPose.xyz[2] = 1;
-	d_currentPose.quat[0] = d_currentPose.quat[1] = d_currentPose.quat[2] = 0;
-	d_currentPose.quat[3] = 1;
+	
+	// Finish initializing these vectors
+	d_vGravAntepenultimate[0] = d_vGravPenultimate[0] = d_vGrav[0] = 0;
+	d_vGravAntepenultimate[1] = d_vGravPenultimate[1] = d_vGrav[1] = 0;
+	d_vGravAntepenultimate[2] = d_vGravPenultimate[2] = d_vGrav[2] = 1;
 
 }
 
@@ -127,13 +134,11 @@ vrpn_Tracker_WiimoteHead::~vrpn_Tracker_WiimoteHead (void) {
 		d_name = NULL;
 	}
 
-	// Tear down the analog update callback and remotes
-	int	ret;
-
 	// If the analog pointer is NULL, we're done.
 	if (d_ana == NULL) { return; }
 
 	// Turn off the callback handler
+	int	ret;
 	ret = d_ana->unregister_change_handler(this,
 						   handle_analog_update);
 
@@ -149,7 +154,6 @@ vrpn_Tracker_WiimoteHead::~vrpn_Tracker_WiimoteHead (void) {
 void	vrpn_Tracker_WiimoteHead::handle_analog_update(void* userdata, const vrpn_ANALOGCB info) {
 	vrpn_Tracker_WiimoteHead* wh = (vrpn_Tracker_WiimoteHead*)userdata;
 	if (!wh) { return; }
-	std::vector<double> x, y, size;
 	if (!wh->d_contact) {
 		fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
 						"got first report from Wiimote!\n");
