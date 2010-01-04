@@ -1,3 +1,12 @@
+2009-12-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	All changes here are from Ryan Pavlik.  I'm just adding them in.
+	* CMakeLists.txt : Adds vrpn_Configure.h into developer files.
+	* README.Compiling : Describes building using Cmake.
+	* vrpn_Configure.h : Added note telling about Cmake build/config.
+	* vrpn_Configure.h.cmake_in : Same.
+	* vrpn_HumanInterface.h : Adds default for non-Cmake compilation.
+
 2009-12-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* CmakeLists.txt : Major version number now 7.25.

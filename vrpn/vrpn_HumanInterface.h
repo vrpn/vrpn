@@ -38,6 +38,18 @@ public:
 #include <IOKit/hid/IOHIDLib.h>
 #include <IOKit/hid/IOHIDKeys.h>
 #include <CoreFoundation/CoreFoundation.h>
+
+// If using CMake, the correct type name here will be detected.  If not
+// using CMake, we have to just guess and pick one of the two that seem
+// to be possible and mutually exclusive.
+// Chose UInt32 as our fallback (over uint32_t) based on:
+// http://developer.apple.com/hardwaredrivers/customusbdrivers.html
+// retrieved 16 Dec 2009
+#if !defined(MACOSX_HID_UINT32T)
+#define MACOSX_HID_UINT32T UInt32
+#endif
+
+
 #endif // Apple
 
 #if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__)
