@@ -28,7 +28,7 @@ FIND_PATH(DIRECTX_SDK_INCLUDE_DIR NAMES comdecl.h
 )
 MARK_AS_ADVANCED(DIRECTX_SDK_INCLUDE_DIR)
 
-# handle the QUIETLY and REQUIRED arguments and set DirectShow_FOUND to TRUE if 
+# handle the QUIETLY and REQUIRED arguments and set DirectShow_FOUND to TRUE if
 # all listed variables are TRUE.  The package name seems to need to be all-caps for this
 # to work.
 INCLUDE(FindPackageHandleStandardArgs)

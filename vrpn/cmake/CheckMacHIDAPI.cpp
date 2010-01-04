@@ -3,7 +3,7 @@
  * \brief C++ source file used by CMake module CheckMacHIDAPI.cmake
  *
  * \author
- * Ryan Pavlik, 2009
+ * Ryan Pavlik, 2009-2010
  * <rpavlik@iastate.edu>
  * http://academic.cleardefinition.com/
  *
@@ -37,7 +37,7 @@ int main(int argc, char* argv[]) {
 	IOHIDDeviceInterface122 **_interface;
 	bool _gotdata;
 	int _gotsize;
-	unsigned char _buffer[512];	
+	unsigned char _buffer[512];
 	IOReturn result = (*_interface)->setInterruptReportHandlerCallback(_interface,
 															  _buffer, 512,
 															  ReaderReportCallback,

@@ -4,13 +4,16 @@
 #  QUATLIB_INCLUDE_DIRS - where to find quat.h
 #  QUATLIB_LIBRARIES    - List of libraries when using quatlib.
 #  QUATLIB_FOUND        - True if quatlib found.
+#
+# Original Author:
+# 2009-2010 Ryan Pavlik <rpavlik@iastate.edu> <abiryan@ryand.net>
+# http://academic.cleardefinition.com
+# Iowa State University HCI Graduate Program/VRAC
 
 if(TARGET quat)
 	# Look for the header file.
 	find_path(QUATLIB_INCLUDE_DIR NAMES quat.h
-			PATHS
-			${quatlib_SOURCE_DIR}
-	)
+			PATHS ${quatlib_SOURCE_DIR})
 	mark_as_advanced(QUATLIB_INCLUDE_DIR)
 
 	set(QUATLIB_LIBRARY "quat")
@@ -20,8 +23,7 @@ else()
 	find_path(QUATLIB_INCLUDE_DIR NAMES quat.h
 			PATHS
 			"C:/Program Files/quatlib/include"
-			"../quat"
-	)
+			"../quat")
 	mark_as_advanced(QUATLIB_INCLUDE_DIR)
 
 	# Look for the library.
@@ -29,8 +31,7 @@ else()
 			PATHS
 			"C:/Program Files/quatlib/lib"
 			"../buildquat"
-			"../buildquat/release"
-	)
+			"../buildquat/release")
 	mark_as_advanced(QUATLIB_LIBRARY)
 endif()
 

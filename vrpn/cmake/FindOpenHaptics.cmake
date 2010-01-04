@@ -39,7 +39,7 @@
 #  FindPackageHandleStandardArgs (known included with CMake >=2.6.2)
 #
 # Original Author:
-# 2009 Ryan Pavlik <rpavlik@iastate.edu>
+# 2009-2010 Ryan Pavlik <rpavlik@iastate.edu> <abiryan@ryand.net>
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
 
@@ -61,7 +61,7 @@ set(_libsearchdirs)
 if(WIN32)
 	include(ProgramFilesGlob)
 	program_files_glob(_dirs "/Sensable/3DTouch*/")
-		
+
 	if(CMAKE_SIZEOF_VOID_P MATCHES "8")
 		# 64-bit
 		list_combinations(_libsearch PREFIXES "${_dirs}" SUFFIXES "/lib/x64")
