@@ -2,7 +2,7 @@
 
 	* vrpn_timecode_generator.dsp : DSP files have been modified to not do
 		definitions of VRPN_NO_STREAMS and other constants directly,
-		rather these are now set by editing vprn_Configure.h.  Also,
+		rather these are now set by editing vrpn_Configure.h.  Also,
 		made projects compile in both debug and release versions.
 	* vrpn_timecode_generator.cpp : Whitespace changes.  Guard by checking
 		to see if INCLUDE_TIMECODE_SERVER is defined so that this

@@ -153,8 +153,9 @@ OBJ_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)
 LIB_DIR := ../$(OBJ_DIR)
 
 #CFLAGS = -g -I./ -I../ -I../../quat
-CFLAGS = -I./ -I../ -I../../quat -I../../libfreespace/include $(DEBUG_FLAGS)
-LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) -L../../libfreespace/lib
+override CFLAGS := -I./ -I../ -I../../quat -I../../libfreespace/include $(DEBUG_FLAGS) $(CFLAGS)
+override CXXFLAGS := -I./ -I../ -I../../quat -I../../libfreespace/include $(DEBUG_FLAGS) $(CXXFLAGS)
+override LFLAGS := -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) $(LDFLAGS)
 VRPN_LIBS = -lvrpnserver -lvrpnatmel -lpthread
 
 # Uncomment the following section and point them at the
@@ -162,20 +163,23 @@ VRPN_LIBS = -lvrpnserver -lvrpnatmel -lpthread
 # Well, to make it almost compile -- link fails to find things
 # in the libraries that should be there.
 #HDAPI_ROOT := "C:/Program Files/SensAble/3DTouch"
-#CFLAGS = -g -I./ -I../ -I../../quat -I$(HDAPI_ROOT)/include -I$(HDAPI_ROOT)/utilities/include
-#LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) -L$(HDAPI_ROOT)/lib
+#override CFLAGS += -I$(HDAPI_ROOT)/include -I$(HDAPI_ROOT)/utilities/include
+#override CXXFLAGS += -I$(HDAPI_ROOT)/include -I$(HDAPI_ROOT)/utilities/include
+#override LFLAGS += -L$(HDAPI_ROOT)/lib
 #SYSLIBS := $(SYSLIBS) -lhl -lhd
 
 ifdef INTERSENSE
   ifeq ($(HW_OS),powerpc_macosx)
 #     CFLAGS = -g -I../ -I../../quat -I../../isense -DMACOSX
-     CFLAGS = -I../ -I../../quat -I../../isense -DMACOSX $(DEBUG_FLAGS)
-     LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) ../../isense/MacOSX/dlcompat.o
+     override CFLAGS += -I../../isense -DMACOSX
+     override CXXFLAGS += -I../../isense -DMACOSX
+     override LFLAGS += ../../isense/MacOSX/dlcompat.o
   endif
   ifeq ($(HW_OS),universal_macosx)
 #     CFLAGS = -g -I../ -I../../quat -I../../isense -DMACOSX
-     CFLAGS = -I../ -I../../quat -I../../isense -DMACOSX $(DEBUG_FLAGS)
-     LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) ../../isense/MacOSX/dlcompat.o
+     override CFLAGS += -I../../isense -DMACOSX
+     override CXXFLAGS += -I../../isense -DMACOSX
+     override LFLAGS += ../../isense/MacOSX/dlcompat.o
   endif
 endif
 
@@ -185,19 +189,19 @@ endif
 ifdef PHASESPACE
 #the rpath option may not work on all platforms, remove it if necessary.
 EXTRAOPTS := -Wl,-rpath .
-LFLAGS := $(LFLAGS) $(PHASESPACE) $(EXTRAOPTS)
+override LFLAGS := $(LFLAGS) $(PHASESPACE) $(EXTRAOPTS)
 endif
 
 .SUFFIXES: .cpp
 
 .C.o:
-	$(CC) $(CFLAGS) -c $*.C
+	$(CC) $(CXXFLAGS) -c $*.C
 
 .c.o:
 	$(CC) $(CFLAGS) -c $*.c
 
 .cpp.o:
-	$(CC) $(CFLAGS) -c $*.cpp
+	$(CC) $(CXXFLAGS) -c $*.cpp
 
 $(OBJ_DIR)/%.o:	%.c
 	@[ -d $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
@@ -272,7 +276,7 @@ last_of_sequence:	$(OBJ_DIR)/last_of_sequence
 testSharedObject:	$(OBJ_DIR)/testSharedObject
 
 $(OBJ_DIR)/InstantBuzzEffect.o: ghostEffects/InstantBuzzEffect.cpp
-	$(CC) $(CFLAGS) -o $@ -c $<
+	$(CC) $(CXXFLAGS) -o $@ -c $<
 
 $(OBJ_DIR)/vrpn_server: $(OBJ_DIR)/vrpn.o $(LIB_DIR)/libvrpnserver.a \
 		$(OBJ_DIR)/buzzForceField.o $(OBJ_DIR)/constraint.o \

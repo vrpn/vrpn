@@ -29,9 +29,9 @@
 ##########################
 
 INSTALL_DIR := /usr/local
+BIN_DIR := $(INSTALL_DIR)/bin
 INCLUDE_INSTALL_DIR := $(INSTALL_DIR)/include
 LIB_INSTALL_DIR := $(INSTALL_DIR)/lib
-
 
 ifndef HW_OS
   # hw_os does not exist on FreeBSD at UNC or on CYGWIN
@@ -138,8 +138,7 @@ ifeq ($(HW_OS), hp_flow_aCC)
   CC = /opt/aCC/bin/aCC
 endif
 
-CFLAGS = -g $(INCLUDE_FLAGS)
-OPT_CFLAGS = -O $(INCLUDE_FLAGS)
+
 MAKEFILE = Makefile
 
 QUAT_LIB = libquat.a
@@ -159,7 +158,10 @@ ifeq ($(HW_OS), hp_flow_aCC)
   INCLUDE_FLAGS =  -I. -I$(INCLUDE_INSTALL_DIR) -DFLOW
 endif
 
-LDFLAGS = -L. -L$(HW_OS)
+override CFLAGS := -g $(INCLUDE_FLAGS) $(CFLAGS)
+override OPT_CFLAGS := -O $(INCLUDE_FLAGS) $(CFLAGS)
+
+override LDFLAGS := -L. -L$(HW_OS) $(LDFLAGS)
 LINT_FLAGS = $(INCLUDE_FLAGS)
 
 #############################################################################
@@ -171,7 +173,7 @@ LINT_FLAGS = $(INCLUDE_FLAGS)
 lib:	$(HW_OS)$(OBJECT_DIR_SUFFIX) libquat.a
 
 $(HW_OS)$(OBJECT_DIR_SUFFIX):
-	-mkdir $(HW_OS)$(OBJECT_DIR_SUFFIX)
+	-mkdir -p $(HW_OS)$(OBJECT_DIR_SUFFIX)
 
 #############################################################################
 #
@@ -265,6 +267,16 @@ $(QUAT_OBJ_FILES) : $(QUAT_INCLUDES)
 
 lint :
 	lint $(LINT_FLAGS) $(COORD_FILES)
+
+install: lib
+	#-mkdir $(BIN_DIR)
+	#( cd $(BIN_DIR) ; rm -f $(INSTALL_APPS) )
+	#( cd $(OBJ_DIR) ; cp $(INSTALL_APPS) $(BIN_DIR) )
+	#( cd $(BIN_DIR) ; strip $(INSTALL_APPS) )
+	-mkdir -p $(LIB_DIR)
+	( cd $(HW_OS)$(OBJECT_DIR_SUFFIX) ; cp $(QUAT_LIB) $(LIB_DIR) )
+	-mkdir -p $(INCLUDE_DIR)
+	cp quat.h $(INCLUDE_DIR)
 
 allclean :
 	-/bin/rm -f *.o *.a *~ *.j foo a.out $(TEST_FILES)

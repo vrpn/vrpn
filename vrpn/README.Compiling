@@ -44,7 +44,7 @@ For those not at UNC, you compile by doing the following:
    for Visual C++:
 	Open the vrpn.dsw file.
 	Compile the quat project.
-	Compile the VPRN project.
+	Compile the VRPN project.
 	Then compile whichever of vrpn_server, printvals, etc you want.
 
    for Unix/Cygwin:

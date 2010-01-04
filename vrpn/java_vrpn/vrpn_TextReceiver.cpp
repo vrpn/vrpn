@@ -84,7 +84,7 @@ JNIEXPORT void JNICALL JNI_OnUnload_Text_Receiver( JavaVM* jvm, void* reserved )
 // dll utility functions
 
 
-// This is the callback for vprn to notify us of a new tracker message
+// This is the callback for vrpn to notify us of a new tracker message
 void VRPN_CALLBACK handle_text_message( void* userdata, const vrpn_TEXTCB info )
 {
   if( jvm == NULL )

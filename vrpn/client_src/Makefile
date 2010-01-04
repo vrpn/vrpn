@@ -125,7 +125,8 @@ ifeq ($(HW_OS),pc_cygwin)
 endif
 
 #CFLAGS = -I../ -I../../quat -g
-CFLAGS = -I../ -I../../quat $(DEBUG_FLAGS)
+override CFLAGS := -I../ -I../../quat $(DEBUG_FLAGS) $(CFLAGS)
+override CXXFLAGS := -I../ -I../../quat $(DEBUG_FLAGS) $(CXXFLAGS)
 
 .SUFFIXES:	.cpp
 
@@ -133,16 +134,16 @@ CFLAGS = -I../ -I../../quat $(DEBUG_FLAGS)
 	$(CC) $(CFLAGS) -c $*.c
 
 .C.o:
-	$(CC) $(CFLAGS) -c $*.C
+	$(CC) $(CXXFLAGS) -c $*.C
 
 .cpp.o:
-	$(CC) $(CFLAGS) -c $*.cpp
+	$(CC) $(CXXFLAGS) -c $*.cpp
 
 OBJ_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)
 LIB_DIR := ../$(OBJ_DIR)
 
 #LFLAGS = -g -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX)
-LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) $(DEBUG_FLAGS)
+override LFLAGS := -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) $(DEBUG_FLAGS) $(LDFLAGS)
 
 $(OBJ_DIR)/%.o: %.c
 	@[ -d $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
@@ -150,11 +151,11 @@ $(OBJ_DIR)/%.o: %.c
 
 $(OBJ_DIR)/%.o: %.C
 	@[ -d $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
-	$(CC) $(CFLAGS) -o $@ -c $<
+	$(CC) $(CXXFLAGS) -o $@ -c $<
 
 $(OBJ_DIR)/%.o: %.cpp
 	@[ -d $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
-	$(CC) $(CFLAGS) -o $@ -c $<
+	$(CC) $(CXXFLAGS) -o $@ -c $<
 
 INSTALL_APPS := vrpn_print_devices forcedevice_test_client vrpn_ping \
 	add_vrpn_cookie

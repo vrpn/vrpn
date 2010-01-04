@@ -312,7 +312,7 @@ endif
 #LOAD_FLAGS := -L./$(HW_OS)$(OBJECT_DIR_SUFFIX) -L/usr/local/lib \
 #		-L/usr/local/contrib/unmod/lib -L/usr/local/contrib/mod/lib -g
 LOAD_FLAGS := -L./$(HW_OS)$(OBJECT_DIR_SUFFIX) -L/usr/local/lib \
-		-L/usr/local/contrib/unmod/lib -L/usr/local/contrib/mod/lib $(DEBUG_FLAGS)
+		-L/usr/local/contrib/unmod/lib -L/usr/local/contrib/mod/lib $(DEBUG_FLAGS) $(LDFLAGS)
 
 ifeq ($(HW_OS),sgi_irix)
 	LOAD_FLAGS := $(LOAD_FLAGS) -old_ld
@@ -368,8 +368,8 @@ LIBS := -lquat -lsdi $(TCL_LIBS) -lXext -lX11 $(ARCH_LIBS) -lm
 #
 
 #CFLAGS		 := $(INCLUDE_FLAGS) -g
-CFLAGS		 := $(INCLUDE_FLAGS) $(DEBUG_FLAGS)
-
+override CFLAGS		 := $(INCLUDE_FLAGS) $(DEBUG_FLAGS) $(CFLAGS)
+override CXXFLAGS     := $(INCLUDE_FLAGS) $(DEBUG_FLAGS) $(CXXFLAGS)
 
 #############################################################################
 #
@@ -380,27 +380,27 @@ CFLAGS		 := $(INCLUDE_FLAGS) $(DEBUG_FLAGS)
 .c.o:
 	$(CC) -c $(CFLAGS) $<
 .C.o:
-	$(CC) -c $(CFLAGS) $<
+	$(CC) -c $(CXXFLAGS) $<
 
 # Build objects from .c files
 $(OBJECT_DIR)/%.o: %.c $(LIB_INCLUDES) $(MAKEFILE)
-	@[ -d $(OBJECT_DIR) ] || mkdir $(OBJECT_DIR)
+	@[ -d $(OBJECT_DIR) ] || mkdir -p $(OBJECT_DIR)
 	$(CC) $(CFLAGS) -DVRPN_CLIENT_ONLY -o $@ -c $<
 
 # Build objects from .C files
 $(OBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) $(MAKEFILE)
-	@[ -d $(OBJECT_DIR) ] || mkdir $(OBJECT_DIR)
-	$(CC) $(CFLAGS) -DVRPN_CLIENT_ONLY -o $@ -c $<
+	@[ -d $(OBJECT_DIR) ] || mkdir -p $(OBJECT_DIR)
+	$(CC) $(CXXFLAGS) -DVRPN_CLIENT_ONLY -o $@ -c $<
 
 # Build objects from .C files
 $(SOBJECT_DIR)/%.o: %.C $(SLIB_INCLUDES) $(MAKEFILE)
-	@[ -d $(SOBJECT_DIR) ] || mkdir $(SOBJECT_DIR)
-	$(CC) $(CFLAGS) -o $@ -c $<
+	@[ -d $(SOBJECT_DIR) ] || mkdir -p $(SOBJECT_DIR)
+	$(CC) $(CXXFLAGS) -o $@ -c $<
 
 # Build objects from .C files
 $(AOBJECT_DIR)/%.o: %.C $(ALIB_INCLUDES) $(MAKEFILE)
-	@[ -d $(AOBJECT_DIR) ] || mkdir $(AOBJECT_DIR)
-	$(CC) $(CFLAGS) -o $@ -c $<
+	@[ -d $(AOBJECT_DIR) ] || mkdir -p $(AOBJECT_DIR)
+	$(CC) $(CXXFLAGS) -o $@ -c $<
 
 #
 #
@@ -446,13 +446,13 @@ atmellib: $(AOBJECT_DIR)
 	$(MAKE) $(OBJECT_DIR)/libvrpnatmel.a
 
 $(OBJECT_DIR):
-	-mkdir $(OBJECT_DIR)
+	-mkdir -p $(OBJECT_DIR)
 
 $(SOBJECT_DIR):
-	-mkdir $(SOBJECT_DIR)
+	-mkdir -p $(SOBJECT_DIR)
 
 $(AOBJECT_DIR):
-	-mkdir $(AOBJECT_DIR)
+	-mkdir -p $(AOBJECT_DIR)
 
 #############################################################################
 #
@@ -541,6 +541,7 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_Flock.C \
 	vrpn_Flock_Parallel.C \
 	vrpn_ForceDeviceServer.C \
+	vrpn_Freespace.C \
 	vrpn_GlobalHapticsOrb.C \
 	vrpn_HumanInterface.C \
 	vrpn_Imager_Stream_Buffer.C \
@@ -601,6 +602,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_Flock.h \
 	vrpn_Flock_Parallel.h \
 	vrpn_ForceDeviceServer.h \
+	vrpn_Freespace.h \
 	vrpn_GlobalHapticsOrb.h \
 	vrpn_HumanInterface.h \
 	vrpn_Imager_Stream_Buffer.h \
@@ -717,10 +719,10 @@ clobberwin32:
 	$(RMF) -r server_src/pc_win32/vrpn_server/Debug/*
 
 install: all
-	-mkdir $(LIB_DIR)
+	-mkdir -p $(LIB_DIR)
 	( cd $(LIB_DIR) ; rm -f libvrpn*.a )
 	( cd $(OBJECT_DIR) ; cp *.a $(LIB_DIR) )
-	-mkdir $(INCLUDE_DIR)
+	-mkdir -p $(INCLUDE_DIR)
 	cp vrpn*.h $(INCLUDE_DIR)
 
 uninstall:
@@ -767,13 +769,13 @@ $(OBJECT_DIR)/.depend:
 	@echo -- or add/remove includes from a .h or .C file, then you should
 	@echo -- remake the dependency file by typing \"$(MAKE) depend\"
 	@echo ----------------------------------------------------------------
-	-mkdir $(OBJECT_DIR)
+	-mkdir -p $(OBJECT_DIR)
 ifeq ($(HW_OS),hp700_hpux10)
 	@echo -- $(HW_OS): Using g++ since HP CC does not understand -M
 	@echo -- if this causes an error, then delete .depend and type
 	@echo -- \"touch .depend\" to create an empty file
 	@echo ----------------------------------------------------------------
-	$(SHELL) -ec 'g++ -MM $(CFLAGS) $(LIB_FILES) \
+	$(SHELL) -ec 'g++ -MM $(CXXFLAGS) $(LIB_FILES) \
 	    | sed '\''s/\(.*\.o[ ]*:[ ]*\)/$(OBJECT_DIR)\/\1/g'\'' > $(OBJECT_DIR)/.depend'
 else
   ifeq ($(HW_OS),hp_flow_aCC)
@@ -781,7 +783,7 @@ else
 	@echo -- if this causes an error, then delete .depend and type
 	@echo -- \"touch .depend\" to create an empty file
 	@echo ----------------------------------------------------------------
-	$(SHELL) -ec 'g++ -MM $(CFLAGS) $(LIB_FILES) \
+	$(SHELL) -ec 'g++ -MM $(CXXFLAGS) $(LIB_FILES) \
 	    | sed '\''s/\(.*\.o[ ]*:[ ]*\)/$(OBJECT_DIR)\/\1/g'\'' > $(OBJECT_DIR)/.depend'
   else
     ifeq ($(HW_OS),powerpc_aix)
