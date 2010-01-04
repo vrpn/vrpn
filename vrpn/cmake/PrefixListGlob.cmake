@@ -2,7 +2,7 @@
 #
 #
 # Original Author:
-# 2009 Ryan Pavlik <rpavlik@iastate.edu>
+# 2009-2010 Ryan Pavlik <rpavlik@iastate.edu> <abiryan@ryand.net>
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
 
@@ -11,8 +11,10 @@ function(prefix_list_glob var pattern)
 	set(_result)
 	foreach(prefix ${ARGN})
 		file(GLOB _globbed ${prefix}${pattern})
-		list(SORT _globbed)
-		list(REVERSE _globbed)
+		if(_globbed)
+			list(SORT _globbed)
+			list(REVERSE _globbed)
+		endif()
 		list(APPEND _out ${_globbed})
 	endforeach()
 	foreach(_name "${_out}")

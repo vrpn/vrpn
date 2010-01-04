@@ -1,5 +1,5 @@
 # - Do a version-dependent check and auto-include backported modules dirs
-# 
+#
 # Name your module directories cmake-*-modules where * is the full
 # (maj.min.patch) version number that they came from.  You can use
 # subdirectories within those directories, if you like - all directories
@@ -11,7 +11,7 @@
 # instructions (usually updating copyright notices)
 #
 # Original Author:
-# 2009 Ryan Pavlik <rpavlik@iastate.edu>
+# 2009-2010 Ryan Pavlik <rpavlik@iastate.edu> <abiryan@ryand.net>
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
 
@@ -26,7 +26,7 @@ file(GLOB _globbed "${_moddir}/cmake-*-modules")
 foreach(_dir "${_globbed}")
 	string(REGEX MATCH "cmake-[0-9].[0-9].[0-9]-modules" _dirname "${_dir}")
 	string(REGEX REPLACE "cmake-([0-9].[0-9].[0-9])-modules" "\\1" _ver "${_dirname}")
-	
+
 	if("${_cmver}" VERSION_LESS "${_ver}")
 		file(GLOB_RECURSE _modules "${_dir}/*.cmake")
 		list(APPEND _bpmods "${_modules}")
@@ -38,6 +38,7 @@ foreach(_mod "${_bpmods}")
 	list(APPEND _bppaths "${_path}")
 endforeach()
 
-list(REMOVE_DUPLICATES _bppaths)
+if(_bppaths)
+	list(REMOVE_DUPLICATES _bppaths)
+endif()
 list(APPEND CMAKE_MODULE_PATH "${_bppaths}")
-
