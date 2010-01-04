@@ -174,7 +174,7 @@ Index: vrpn-07.22/vrpn/Makefile
 -	vrpn_Event_Mouse.C vrpn_Imager_Stream_Buffer.C \
 -	vrpn_HumanInterface.C vrpn_Xkeys.C vrpn_3DConnexion.C \
 -	vrpn_Tracker_MotionNode.C vrpn_Tracker_NDI_Polaris.C \
--	vrpn_WiiMote.C vrpn_Tracker_Isotrak.C
+-	vrpn_WiiMote.C vrpn_Tracker_Isotrak.C vrpn_Freespace.C
 +	vrpn_UNC_Joystick.C \
 +	vrpn_VPJoystick.C \
 +	vrpn_Wanda.C \
@@ -205,7 +205,7 @@ Index: vrpn-07.22/vrpn/Makefile
 -	vrpn_Event_Mouse.h vrpn_Imager_Stream_Buffer.h \
 -	vrpn_HumanInterface.h vrpn_Xkeys.h vrpn_3DConnexion.h \
 -	vrpn_Tracker_MotionNode.h vrpn_Tracker_NDI_Polaris.h \
--	vrpn_WiiMote.h vrpn_Tracker_Isotrak.h
+-	vrpn_WiiMote.h vrpn_Tracker_Isotrak.h vrpn_Freespace.h
 +SLIB_INCLUDES = $(LIB_INCLUDES) \
 +	vrpn_3DConnexion.h \
 +	vrpn_3DMicroscribe.h \
