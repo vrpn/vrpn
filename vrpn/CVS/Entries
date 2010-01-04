@@ -1,10 +1,9 @@
 /.cvsignore/1.4/Mon Oct 29 21:21:23 2007//
-/CMakeLists.txt/1.12/Wed Dec 16 15:45:09 2009//
-/ChangeLog/1.480/Wed Dec 16 15:45:09 2009//
+/ChangeLog/1.481/Sun Dec 20 01:52:34 2009//
 /Format/1.2/Sat Sep 27 02:03:38 2003//
 /Makefile/1.145/Sat Nov 21 18:00:02 2009//
 /README/1.11/Fri Jun 27 13:06:40 2008//
-/README.Compiling/1.5/Fri Jun 27 13:06:40 2008//
+/README.Compiling/1.6/Sun Dec 20 01:52:34 2009//
 /README.Legal/1.5/Wed Mar  5 16:14:20 2003//
 /make_vrpn_libs_build.dsp/1.1/Thu Sep 16 18:11:40 2004//
 /make_vrpn_libs_build.vcproj/1.1/Mon Mar 13 02:09:05 2006//
@@ -49,9 +48,8 @@
 /vrpn_Button_USB.h/1.1/Mon Mar 13 15:39:20 2006//
 /vrpn_CerealBox.C/1.10/Mon Nov 23 16:46:16 2009//
 /vrpn_CerealBox.h/1.6/Thu Sep 16 18:11:41 2004//
-/vrpn_Configure.h/1.71/Tue Dec 15 20:49:23 2009//
-/vrpn_Configure.h.cmake_in/1.2/Tue Dec 15 20:49:23 2009//
-/vrpn_Connection.C/1.284/Wed Dec 16 15:45:09 2009//
+/vrpn_Configure.h/1.72/Sun Dec 20 01:52:34 2009//
+/vrpn_Configure.h.cmake_in/1.3/Sun Dec 20 01:52:34 2009//
 /vrpn_Connection.h/1.108/Thu Sep 24 15:15:53 2009//
 /vrpn_ConnectionTypes.h/1.1/Sun Jul 29 11:36:23 2001//
 /vrpn_Dial.C/1.9/Tue Dec 14 16:40:59 2004//
@@ -92,7 +90,7 @@
 /vrpn_GlobalHapticsOrb.h/1.4/Tue Mar  4 21:11:42 2008//
 /vrpn_HashST.h/1.3/Mon Jun 25 19:56:02 2007//
 /vrpn_HumanInterface.C/1.7/Tue Dec 15 19:54:33 2009//
-/vrpn_HumanInterface.h/1.6/Thu Sep 24 15:15:53 2009//
+/vrpn_HumanInterface.h/1.7/Sun Dec 20 01:52:34 2009//
 /vrpn_Imager.C/1.12/Tue Aug  4 02:28:43 2009//
 /vrpn_Imager.h/1.9/Sun Jun 15 19:39:48 2008//
 /vrpn_Imager_Stream_Buffer.C/1.10/Tue Mar  4 21:11:42 2008//
@@ -203,3 +201,5 @@ D/python_vrpn////
 D/server_src////
 D/util////
 D/vrpn_embedded////
+/CMakeLists.txt/1.14/Sun Dec 20 01:58:13 2009//
+/vrpn_Connection.C/1.285/Sun Dec 20 01:58:03 2009//
