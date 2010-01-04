@@ -1,7 +1,7 @@
 # - Removes duplicate entries and non-directories from a provided list
 #
 # Original Author:
-# 2009 Ryan Pavlik <rpavlik@iastate.edu>
+# 2009-2010 Ryan Pavlik <rpavlik@iastate.edu> <abiryan@ryand.net>
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
 

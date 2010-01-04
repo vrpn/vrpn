@@ -9,7 +9,7 @@
 #   a list item to be filtered.
 #
 # Original Author:
-# 2009 Ryan Pavlik <rpavlik@iastate.edu>
+# 2009-2010 Ryan Pavlik <rpavlik@iastate.edu> <abiryan@ryand.net>
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
 
@@ -25,7 +25,7 @@ function(get_force_include_definitions var)
 		message(SEND_ERROR "Contact this project with the name of your")
 		message(FATAL_ERROR "compiler and preferably the flag to force includes")
 	endif()
-	
+
 	set(_out)
 	foreach(_item ${ARGN})
 		list(APPEND _out "${_flag} \"${_item}\"")
