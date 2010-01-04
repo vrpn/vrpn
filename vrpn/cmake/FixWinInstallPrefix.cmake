@@ -7,7 +7,8 @@
 # include after setting your project name (and your module search path,
 # obviously)
 #
-# 2009 Ryan Pavlik <rpavlik@iastate.edu>
+# Original Author:
+# 2009-2010 Ryan Pavlik <rpavlik@iastate.edu> <abiryan@ryand.net>
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
 
@@ -16,16 +17,16 @@ if(WIN32)
 	# of the running executable which, since CMake is 32-bit on Windows as
 	# I write this, will always be = $ENV{ProgramFiles(x86)}.
 	# Thus, we only use this environment variable if we are on a 32 machine
-	
+
 	# 32-bit dir on win32, useless to us on win64
 	file(TO_CMAKE_PATH "$ENV{ProgramFiles}" _PROG_FILES)
-	
+
 	# 32-bit dir: only set on win64
 	file(TO_CMAKE_PATH "$ENV{ProgramFiles(x86)}" _PROG_FILES_X86)
-	
+
 	# 64-bit dir: only set on win64
 	file(TO_CMAKE_PATH "$ENV{ProgramW6432}" _PROG_FILES_W6432)
-	
+
 	if(CMAKE_SIZEOF_VOID_P MATCHES "8")
 		# 64-bit build on win64
 		set(_PROGFILESDIR "${_PROG_FILES_W6432}")
@@ -46,7 +47,7 @@ if(WIN32)
 	else()
 		set(_needsfix)
 	endif()
-	
+
 	if(_needsfix)
 		if("${CMAKE_INSTALL_PREFIX}" STREQUAL "${_PROG_FILES}/${CMAKE_PROJECT_NAME}")
 			# The user didn't change this yet - it's the potentially broken default

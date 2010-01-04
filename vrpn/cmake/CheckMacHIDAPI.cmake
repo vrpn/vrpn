@@ -2,7 +2,7 @@
 # Requires that the associated CPP file be present: CheckMacHIDAPI.cpp.
 #
 #	MACOSX_HID_UINT32T, set according to the results of our test.
-# 
+#
 # Use add_definitions(-DMACOSX_HID_UINT32T=${MACOSX_HID_UINT32T}) in your
 # listfile and the following prototype for the function you'd like to
 # register using setInterruptReportHandlerCallback:
@@ -14,8 +14,8 @@
 #                            MACOSX_HID_UINT32T size
 #                            )
 #
-# Original author:
-# 2009 Ryan Pavlik <rpavlik@iastate.edu>
+# Original Author:
+# 2009-2010 Ryan Pavlik <rpavlik@iastate.edu> <abiryan@ryand.net>
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
 
@@ -23,12 +23,12 @@
 if(APPLE)
 	if(NOT MACOSX_HID_UINT32T)
 		get_filename_component(_moddir ${CMAKE_CURRENT_LIST_FILE} PATH)
-		
+
 		try_compile(_HID_uint32t ${CMAKE_BINARY_DIR} ${_moddir}/CheckMacHIDAPI.cpp
 					OUTPUT_VARIABLE _HID_uint32t_OUTPUT
 					COMPILE_DEFINITIONS -DMACOSX_HID_UINT32T=uint32_t)
 		message(STATUS "Checking uint32_t in HID callback signature... ${_HID_uint32t}")
-		
+
 		try_compile(_HID_UInt32 ${CMAKE_BINARY_DIR} ${_moddir}/CheckMacHIDAPI.cpp
 					OUTPUT_VARIABLE _HID_UInt32_OUTPUT
 					COMPILE_DEFINITIONS -DMACOSX_HID_UINT32T=UInt32)

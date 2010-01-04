@@ -18,14 +18,14 @@
 #  FindPackageHandleStandardArgs (known included with CMake >=2.6.2)
 #
 # Original Author:
-# 2009 Ryan Pavlik <rpavlik@iastate.edu>
+# 2009-2010 Ryan Pavlik <rpavlik@iastate.edu> <abiryan@ryand.net>
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
 
 if(APPLE)
 	find_library(MACHID_CoreFoundation_LIBRARY CoreFoundation)
 	find_path(MACHID_CoreFoundation_INCLUDE_DIR CoreFoundation/CoreFoundation.h)
-	
+
 	find_library(MACHID_IOKit_LIBRARY IOKit)
 	find_path(MACHID_IOKit_INCLUDE_DIR IOKit/hid/IOHIDLib.h)
 

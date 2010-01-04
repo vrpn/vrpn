@@ -3,11 +3,12 @@
 #  clean_library_list(WHATEVER_LIBRARIES) - where WHATEVER_LIBRARIES is
 #  the name of a variable, such as a variable being created in a Find
 #  script.
-# 
+#
 # Removes duplicates from the list then sorts while preserving "optimized",
 # "debug", and "general" labeling
 #
-# 2009 Ryan Pavlik <rpavlik@iastate.edu>
+# Original Author:
+# 2009-2010 Ryan Pavlik <rpavlik@iastate.edu> <abiryan@ryand.net>
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
 
