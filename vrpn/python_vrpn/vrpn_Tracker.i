@@ -26,7 +26,6 @@
 #include "../vrpn_Tracker_isense.h"
 %}
 
-%feature("notabstract") vrpn_Tracker;
 %ignore vrpn_Tracker_Remote::tracker_state;
 %include "../vrpn_Configure.h"
 %include "../vrpn_BaseClass.h"

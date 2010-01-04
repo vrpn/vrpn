@@ -6,6 +6,8 @@
 /// and its helper classes.
 
 
+#ifndef _DEFINED_HANDLERPARAM
+#define _DEFINED_HANDLERPARAM
 struct vrpn_HANDLERPARAM {
         vrpn_int32      type;
         vrpn_int32      sender;
@@ -13,6 +15,7 @@ struct vrpn_HANDLERPARAM {
         vrpn_int32      payload_len;
         const char      *buffer;
 };
+#endif
 typedef int  (*vrpn_MESSAGEHANDLER)(void *userdata, vrpn_HANDLERPARAM p);
 
 
@@ -29,12 +32,15 @@ typedef int  (*vrpn_MESSAGEHANDLER)(void *userdata, vrpn_HANDLERPARAM p);
 typedef char cName [100];
 
 // Description of a callback entry for a user type.
+#ifndef _DEFINED_MSGCALLBACKENTRY
+#define _DEFINED_MSGCALLBACKENTRY
 struct vrpnMsgCallbackEntry {
   vrpn_MESSAGEHANDLER   handler;        // Routine to call
   void                  * userdata;     // Passed along
   vrpn_int32            sender;         // Only if from sender
   vrpnMsgCallbackEntry  * next;         // Next handler
 };
+#endif
 
 
 // Types now have their storage dynamically allocated, so we can afford
