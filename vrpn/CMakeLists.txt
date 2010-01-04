@@ -13,16 +13,55 @@ project(VRPN)
 # Move DirectInput libraries out of vrpn_Configure.h and into the Cmake realm
 # Repeat for all other configurable headers/libraries - see below for a list
 # Move the shared-library code over to CMake's normal definition
-# Move the version number into Cmake more fully (defined elsewhere?).
 # Improve this CPack installer.
 
+###
+# Local CMake Modules
+###
+list(APPEND CMAKE_MODULE_PATH ${VRPN_SOURCE_DIR}/cmake)
+include(UseBackportedModules)
+include(FixWinInstallPrefix)
+include(WarningDev)
+
+###
+# Basic packaging options
+#
 set(CPACK_PACKAGE_VENDOR "Russell M. Taylor II at the University of North Carolina at Chapel Hill")
-set(CPACK_PACKAGE_VERSION_MAJOR "07")
-set(CPACK_PACKAGE_VERSION_MINOR "26")
+
+
+###
+# Get the version number by parsing vrpn_Connection.C
+###
+set(_vrpn_version_file "${CMAKE_CURRENT_SOURCE_DIR}/vrpn_Connection.C")
+if(EXISTS "${_vrpn_version_file}")
+	file(READ "${_vrpn_version_file}" _vrpn_version_contents)
+endif()
+set(_vrpn_version_regex "vrpn: ver. ([0-9]+).([0-9]+)")
+string(REGEX MATCH "${_vrpn_version_regex}" _dummy "${_vrpn_version_contents}")
+
+if(CMAKE_MATCH_1)
+	set(CPACK_PACKAGE_VERSION_MAJOR "${CMAKE_MATCH_1}")
+else()
+	set(CPACK_PACKAGE_VERSION_MAJOR "07")
+	warning_dev("Could not parse major version from vrpn_Connection.C")
+endif()
+
+if(CMAKE_MATCH_2)
+	set(CPACK_PACKAGE_VERSION_MINOR "${CMAKE_MATCH_2}")
+else()
+	set(CPACK_PACKAGE_VERSION_MAJOR "26")
+	warning_dev("Could not parse minor version from vrpn_Connection.C")
+endif()
+
+# This may be incremented manually
 set(CPACK_PACKAGE_VERSION_PATCH "1")
-set(CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}" )
+
+set(CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
+message(STATUS "Configuring the VRPN suite version ${CPACK_PACKAGE_VERSION} using the CMake-based build system")
+
 set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-src")
+
 
 #-----------------------------------------------------------------------------
 # Compiler flags we got from Hans
@@ -62,13 +101,6 @@ endif()
 # in the included apps.
 
 ###
-# Local CMake Modules
-###
-list(APPEND CMAKE_MODULE_PATH ${VRPN_SOURCE_DIR}/cmake)
-include(UseBackportedModules)
-include(FixWinInstallPrefix)
-
-###
 # Quatlib
 ###
 
@@ -100,6 +132,13 @@ if(APPLE AND VRPN_BUILD_SERVER_LIBRARY)
 		add_definitions(${MACHID_DEFINITIONS})
 	endif()
 endif()
+
+###
+# Optional packages
+###
+message(STATUS "")
+message(STATUS "Now searching for auto-configurable optional packages...")
+message(STATUS "")
 
 ###
 # MPI
