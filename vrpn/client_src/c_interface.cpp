@@ -63,7 +63,7 @@ extern "C" bool vrpn_c_close_tracker(void *device)
 void	VRPN_CALLBACK handle_button_event (void *userdata, const vrpn_BUTTONCB b)
 {
 	vrpn_c_button_callback_function f = (vrpn_c_button_callback_function)(userdata);
-	f(b.button, b.state);
+	f(b.button, (b.state != 0));
 };
 
 /* Open a button device, returning an opaque pointer to it.  Returns NULL on

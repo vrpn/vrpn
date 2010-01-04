@@ -1,4 +1,6 @@
 
+#include <string.h>
+
 #include "vrpn_FunctionGenerator.h"
 
 
@@ -289,8 +291,8 @@ register_types( )
 		|| sampleRateMessageID == -1 || startFunctionMessageID == -1
 		|| stopFunctionMessageID == -1 || channelReplyMessageID == -1 
 		|| startFunctionReplyMessageID == -1 || stopFunctionReplyMessageID == -1 
-		|| sampleRateReplyMessageID == -1 || gotConnectionMessageID 
-		|| requestInterpreterMessageID || interpreterReplyMessageID == -1 )
+		|| sampleRateReplyMessageID == -1 || gotConnectionMessageID == -1
+		|| requestInterpreterMessageID == -1 || interpreterReplyMessageID == -1 )
 	{
 		fprintf( stderr, "vrpn_FunctionGenerator::register_types:  error registering types.\n" );
 		return -1;

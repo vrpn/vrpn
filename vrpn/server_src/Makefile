@@ -111,6 +111,8 @@ ifeq ($(HW_OS),pc_linux)
 #	SYSLIBS := -lgpm
 # For Isense libraries
 #	SYSLIBS := -ldl
+# For Freespace Devices
+#	SYSLIBS := -lfreespace
 endif
 ifeq ($(HW_OS),pc_linux64)
 	SYSLIBS := 
@@ -120,6 +122,8 @@ ifeq ($(HW_OS),pc_linux64)
 #	SYSLIBS := -lgpm
 # For Isense libraries
 #	SYSLIBS := -ldl
+# For Freespace Devices
+#	SYSLIBS := -lfreespace
 endif
 
 ifeq ($(HW_OS),sgi_irix)
@@ -149,8 +153,8 @@ OBJ_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)
 LIB_DIR := ../$(OBJ_DIR)
 
 #CFLAGS = -g -I./ -I../ -I../../quat
-CFLAGS = -I./ -I../ -I../../quat $(DEBUG_FLAGS)
-LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX)
+CFLAGS = -I./ -I../ -I../../quat -I../../libfreespace/include $(DEBUG_FLAGS)
+LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) -L../../libfreespace/lib
 VRPN_LIBS = -lvrpnserver -lvrpnatmel -lpthread
 
 # Uncomment the following section and point them at the
@@ -210,7 +214,8 @@ $(OBJ_DIR)/%.o:	%.cpp
 INSTALL_APPS := vrpn_server test_vrpn
 APPS := $(INSTALL_APPS) client_and_server test_mutex test_peerMutex \
 test_radamec_spi test_analogfly testimager_server test_auxiliary_logger \
-test_logging
+test_logging 
+# test_freespace
 # testSharedObject
 
 all: $(APPS)
@@ -226,6 +231,9 @@ testimager_server:	$(OBJ_DIR)/testimager_server
 
 .PHONY:	test_logging
 test_logging:	$(OBJ_DIR)/test_logging
+
+.PHONY:	test_freespace
+test_freespace:	$(OBJ_DIR)/test_freespace
 
 .PHONY:	test_auxiliary_logger
 test_auxiliary_logger:	$(OBJ_DIR)/test_auxiliary_logger
@@ -310,6 +318,12 @@ $(OBJ_DIR)/test_logging: $(OBJ_DIR)/test_logging.o  \
 			 $(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/test_logging \
 		$(OBJ_DIR)/test_logging.o \
+		$(VRPN_LIBS) $(GL) -lquat $(SYSLIBS) -lm
+
+$(OBJ_DIR)/test_freespace: $(OBJ_DIR)/test_freespace.o  \
+			 $(LIB_DIR)/libvrpnserver.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/test_freespace \
+		$(OBJ_DIR)/test_freespace.o \
 		$(VRPN_LIBS) $(GL) -lquat $(SYSLIBS) -lm
 
 $(OBJ_DIR)/test_analogfly: $(OBJ_DIR)/test_analogfly.o  \

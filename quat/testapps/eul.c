@@ -10,6 +10,8 @@
  *
  *****************************************************************************/
 
+#pragma warning( disable : 4996 ) // Don't complain about scanf
+
 #include <stdio.h>
 #include "quat.h"
 

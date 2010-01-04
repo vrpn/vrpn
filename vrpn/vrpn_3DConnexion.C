@@ -94,7 +94,7 @@ vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_button
 
 vrpn_3DConnexion::~vrpn_3DConnexion()
 {
-#if !(defined(_WIN32) || defined(__CYGWIN__) || defined(MACOSX))
+#if !(defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__))
 	set_led(0);
 #endif
         delete _filter;
@@ -182,7 +182,7 @@ void vrpn_3DConnexion::report(vrpn_uint32 class_of_service)
 	vrpn_Button::report_changes();
 }
 
-#if !(defined(_WIN32) || defined(__CYGWIN__) || defined(MACOSX))
+#if !(defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__))
 int vrpn_3DConnexion::set_led(int led_state)
 {
   struct input_event event;
@@ -273,18 +273,33 @@ void vrpn_3DConnexion::decodePacket(size_t bytes, vrpn_uint8 *buffer)
       case 3: { // Button report
         int btn;
 
-        // Button reports are encoded as bits in the first byte
-        // after the type.  Presumably, there can be more if there
-        // are more then 8 buttons on a future device but for now
-        // we just unpack this byte into however many buttons we
-        // have.
+        // Button reports are encoded as bits in the first 2 bytes
+        // after the type.  There can be more than one byte if there
+        // are more than 8 buttons such as on SpaceExplorer or SpaceBall5000.
+        // If 8 or less, we don't look at 2nd byte. No known devices with >15 buttons.
+        // SpaceExplorer buttons are (for example):
+        // Name           Number
+        // 1              0
+        // 2              1
+        // T              2
+        // L              3
+        // R              4
+        // F              5
+        // ESC            6
+        // ALT            7
+        // SHIFT          8
+        // CTRL           9
+        // FIT            10
+        // PANEL          11
+        // +              12
+        // -              13
+        // 2D             14
+
         for (btn = 0; btn < vrpn_Button::num_buttons; btn++) {
-	        vrpn_uint8 *location, mask;
-
-	        location = report + 1;
-	        mask = 1 << (btn % 8);
-
-	        buttons[btn] = (*location & mask) != 0;
+            vrpn_uint8 *location, mask;
+            location = report + 1 + (btn / 8);
+            mask = 1 << (btn % 8);
+            buttons[btn] = ( (*location) & mask) != 0;
         }
         break;
       }

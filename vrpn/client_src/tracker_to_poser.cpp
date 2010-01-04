@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "vrpn_Tracker.h"
 #include "vrpn_Poser.h"

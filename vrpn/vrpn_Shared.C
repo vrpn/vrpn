@@ -6,6 +6,11 @@
 #include <sys/types.h>
 #endif
 
+// Don't tell us about strcpy being dangerous.
+#ifdef	_WIN32
+#pragma	warning ( disable : 4996)
+#endif
+
 #if defined(__APPLE__)
 #include <unistd.h>
 #endif
