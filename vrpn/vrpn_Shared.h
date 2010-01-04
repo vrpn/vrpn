@@ -58,7 +58,7 @@
 // define "struct timezone", although Winsock.h does define
 // "struct timeval".  The painful solution has been to define a
 // vrpn_gettimeofday() function that takes a void * as a second
-// argument (the timezone) and have all VPRN code call this function
+// argument (the timezone) and have all VRPN code call this function
 // rather than gettimeofday().  On non-WINSOCK implementations,
 // we alias vrpn_gettimeofday() right back to gettimeofday(), so
 // that we are calling the system routine.  On Windows, we will

@@ -198,7 +198,7 @@
 	* vrpn_Generic_server_object.C : Added entry for MotionNode Tracker.
 		This compiles under Visual Studio 2005 (not 6.0).
 	* vrpn_Generic_server_object.h : Same
-	* vprn_server.vcproj : Same.
+	* vrpn_server.vcproj : Same.
 
 2007-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
@@ -733,7 +733,7 @@
 		a bunch of uncompleted functions).  Fixed a few bugs
 		that turned up along the way.  Ripped out every trace
 		of iostream (old or new type) from the base library.
-		Also removed VPRN_NO_NO_STREAMS, which was obviated by
+		Also removed VRPN_NO_NO_STREAMS, which was obviated by
 		this.
 	* NIUtil.h : Same.
 	* nidaqClient.cpp : Same.
@@ -1002,8 +1002,8 @@
 
 	* vrpn.C : Added changes by David Nahon to enable optional use
 		of the extended-range transmitter (no longer required).
-	* vprn.cfg : Same.
-	* vprn.cfg.SAMPLE : Same.
+	* vrpn.cfg : Same.
+	* vrpn.cfg.SAMPLE : Same.
 
 2003-11-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
@@ -1011,7 +1011,7 @@
                 the user specify whether to do a boresight reset at startup.
                 Also changes the sensor numbers to be zero-indexed like all
                 other VRPN trackers.  Also changes units to meters and
-                radians to match other VPRN trackers.
+                radians to match other VRPN trackers.
 	* vrpn.cfg : Same.
 	* vrpn.cfg.SAMPLE : Same.
 
@@ -1103,7 +1103,7 @@
 2003-06-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.cfg.SAMPLE : Comments to avoid confusion.
-	* vprn.cfg : Same.
+	* vrpn.cfg : Same.
 
 2003-05-30  David Marshburn  <marshbur@cs.unc.edu>
 
@@ -1205,7 +1205,7 @@
 
         * client_and_server.dsp : DSP files have been modified to not do
 		definitions of VRPN_NO_STREAMS and other constants directly,
-		rather these are now set by editing vprn_Configure.h.  Also,
+		rather these are now set by editing vrpn_Configure.h.  Also,
 		made projects compile in both debug and release versions.
 	* daq_server.dsp : Same.
 	* phan_server.dsp : Same.
