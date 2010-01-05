@@ -54,12 +54,14 @@ endif()
 
 include(SelectLibraryConfigurations)
 include(ListCombinations)
+include(CleanDirectoryList)
+include(CleanLibraryList)
+include(ProgramFilesGlob)
 
 set(_incsearchdirs)
 set(_libsearchdirs)
 
 if(WIN32)
-	include(ProgramFilesGlob)
 	program_files_glob(_dirs "/Sensable/3DTouch*/")
 
 	if(CMAKE_SIZEOF_VOID_P MATCHES "8")
@@ -71,6 +73,7 @@ if(WIN32)
 		list_combinations(_libsearch PREFIXES "${_dirs}" SUFFIXES "/lib/win32")
 		list_combinations(_libsearch2 PREFIXES "${_dirs}" SUFFIXES "/utilities/lib/Win32")
 	endif()
+
 	clean_directory_list(_libsearchdirs ${_libsearch} ${_libsearch2})
 
 	list_combinations(_incsearch PREFIXES "${_dirs}" SUFFIXES "/include")
@@ -222,12 +225,11 @@ if(OPENHAPTICS_FOUND)
 		list(APPEND OPENHAPTICS_LIBRARY_DIRS ${_libdir})
 	endforeach()
 
-	include(CleanDirectoryList)
-	clean_directory_list(OPENHAPTICS_LIBRARY_DIRS ${OPENHAPTICS_LIBRARY_DIRS})
+	set(OPENHAPTICS_INCLUDE_DIRS ${HLAPI_HLU_INCLUDE_DIRS} ${HDAPI_HDU_INCLUDE_DIRS})
 
-	clean_directory_list(OPENHAPTICS_INCLUDE_DIRS ${HLAPI_HLU_INCLUDE_DIRS} ${HDAPI_HDU_INCLUDE_DIRS})
+	clean_directory_list(OPENHAPTICS_LIBRARY_DIRS)
+	clean_directory_list(OPENHAPTICS_INCLUDE_DIRS)
 
-	include(CleanLibraryList)
 	clean_library_list(OPENHAPTICS_LIBRARIES)
 endif()
 
