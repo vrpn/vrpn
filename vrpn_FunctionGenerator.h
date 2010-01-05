@@ -144,11 +144,11 @@ public:
 
 	enum FGError 
 	{
-		NO_FG_ERROR,
-		INTERPRETER_ERROR, // the interpreter (for script) had some problem
-		TAKING_TOO_LONG, // samples were not generated quickly enough
-		INVALID_RESULT_QUANTITY, // an incorrect number of values was generated
-		INVALID_RESULT_RANGE // generated values were out of range
+		NO_FG_ERROR = 0,
+		INTERPRETER_ERROR = 1, // the interpreter (for script) had some problem
+		TAKING_TOO_LONG = 2, // samples were not generated quickly enough
+		INVALID_RESULT_QUANTITY = 3, // an incorrect number of values was generated
+		INVALID_RESULT_RANGE = 4 // generated values were out of range
 	};
 
 protected:
