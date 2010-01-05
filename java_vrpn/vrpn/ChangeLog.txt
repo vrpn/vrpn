@@ -1,3 +1,8 @@
+2010-01-05  David Marshburn  <marshbur@cs.unc.edu>
+
+	* FunctionGeneratorRemote.java:  added error listeners
+	and reporting.
+
 2009-12-29  David Marshburn  <marshbur@cs.unc.edu>
 
 	* FunctionGeneratorRemote.java:  changed the return type
