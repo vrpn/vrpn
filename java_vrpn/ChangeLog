@@ -1,3 +1,8 @@
+2010-01-05  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGeneratorRemote.cpp:  added a handler
+	for error reports.
+
 2009-12-28  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_FunctionGeneratorRemote.cpp:  finished the

@@ -276,6 +276,38 @@ void VRPN_CALLBACK handle_interpreter_description( void *userdata,
 }
 
 
+void VRPN_CALLBACK handle_error( void *userdata,
+								 const vrpn_FUNCTION_ERROR_CB info )
+{
+	if( jvm == NULL )
+	{
+		printf( "Error in handle_error:  uninitialized jvm.\n" );
+		return;
+	}
+	/*
+	printf( "fg error (C):  time:  %d.%d;\n"
+	info.msg_time.tv_sec, info.msg_time.tv_usec );
+	*/
+
+	JNIEnv* env;
+	jvm->AttachCurrentThread( (void**) &env, NULL );
+
+	jobject jobj = (jobject) userdata;
+	jclass jcls = env->GetObjectClass( jobj );
+
+	jmethodID jmid = env->GetMethodID( jcls, "handleErrorReport", "(JJII)V" );
+	if( jmid == NULL )
+	{
+		printf( "Warning:  vrpn_FunctionGeneratorRemote library was unable to find the "
+			"Java method \'handleErrorReport\'.  This may indicate a version mismatch.\n" );
+		return;
+	}
+
+	env->CallVoidMethod( jobj, jmid, (jlong) info.msg_time.tv_sec, (jlong) info.msg_time.tv_usec, 
+						 (jint) info.err, (jint) info.channel );
+}
+
+
 /*
 * Class:     vrpn_FunctionGeneratorRemote
 * Method:    init
@@ -310,6 +342,7 @@ Java_vrpn_FunctionGeneratorRemote_init( JNIEnv* env, jobject jobj, jstring jname
 	f->register_stop_reply_handler( jobj, handle_stop );
 	f->register_sample_rate_reply_handler( jobj, handle_sample_rate );
 	f->register_interpreter_reply_handler( jobj, handle_interpreter_description );
+	f->register_error_handler( jobj, handle_error );
 	env->ReleaseStringUTFChars( jname, name );
 	env->ReleaseStringUTFChars( jlocalInLogfileName, local_in_logfile_name );
 	env->ReleaseStringUTFChars( jlocalOutLogfileName, local_out_logfile_name );
@@ -343,6 +376,7 @@ Java_vrpn_FunctionGeneratorRemote_shutdownFunctionGenerator( JNIEnv* env, jobjec
 		f->unregister_stop_reply_handler( jobj, handle_stop );
 		f->unregister_sample_rate_reply_handler( jobj, handle_sample_rate );
 		f->unregister_interpreter_reply_handler( jobj, handle_interpreter_description );
+		f->unregister_error_handler( jobj, handle_error );
 		f->connectionPtr()->removeReference(); // because we called vrpn_get_connection_by_name
 		delete f;
 	}
