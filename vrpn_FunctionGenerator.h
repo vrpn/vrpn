@@ -293,9 +293,9 @@ typedef void (VRPN_CALLBACK *vrpn_FUNCTION_SAMPLE_RATE_REPLY_HANDLER)( void *use
 					     const vrpn_FUNCTION_SAMPLE_RATE_REPLY_CB info );
 
 
-// User routine to handle function-generator sample-rate replies.  
-// This is called when the function-generator server reports that 
-// the function-generation sample rate has changed.
+// User routine to handle function-generator interpreter-description replies.  
+// This is called when the function-generator server reports the description
+// of its interpreter.
 typedef	struct _vrpn_FUNCTION_INTERPRETER_REPLY_CB
 {
 	struct timeval	msg_time;	// Time of the report
@@ -303,6 +303,19 @@ typedef	struct _vrpn_FUNCTION_INTERPRETER_REPLY_CB
 } vrpn_FUNCTION_INTERPRETER_REPLY_CB;
 typedef void (VRPN_CALLBACK *vrpn_FUNCTION_INTERPRETER_REPLY_HANDLER)( void *userdata,
 					     const vrpn_FUNCTION_INTERPRETER_REPLY_CB info );
+
+
+// User routine to handle function-generator error notifications.  
+// This is called when the function-generator server reports some
+// error in the generation of a function.
+typedef	struct _vrpn_FUNCTION_ERROR_CB
+{
+	struct timeval	msg_time;	// Time of the report
+	vrpn_FunctionGenerator::FGError err;
+	vrpn_int32 channel;
+} vrpn_FUNCTION_ERROR_CB;
+typedef void (VRPN_CALLBACK *vrpn_FUNCTION_ERROR_HANDLER)( void *userdata,
+					     const vrpn_FUNCTION_ERROR_CB info );
 
 
 class VRPN_API vrpn_FunctionGenerator_Remote : public vrpn_FunctionGenerator
@@ -345,17 +358,23 @@ public:
 	virtual int unregister_sample_rate_reply_handler( void *userdata,
 		vrpn_FUNCTION_SAMPLE_RATE_REPLY_HANDLER handler );
 	
-	// (un)Register a callback handler to handle a sample-rate reply
+	// (un)Register a callback handler to handle an interpreter message
 	virtual int register_interpreter_reply_handler( void *userdata,
 		vrpn_FUNCTION_INTERPRETER_REPLY_HANDLER handler );
 	virtual int unregister_interpreter_reply_handler( void *userdata,
 		vrpn_FUNCTION_INTERPRETER_REPLY_HANDLER handler );
+
+	virtual int register_error_handler( void* userdata, 
+		vrpn_FUNCTION_ERROR_HANDLER handler );
+	virtual int unregister_error_handler( void* userdata,
+		vrpn_FUNCTION_ERROR_HANDLER handler );
 	
 	static int VRPN_CALLBACK handle_channelReply_message( void* userdata, vrpn_HANDLERPARAM p );
 	static int VRPN_CALLBACK VRPN_CALLBACK handle_startReply_message( void* userdata, vrpn_HANDLERPARAM p );
 	static int VRPN_CALLBACK handle_stopReply_message( void* userdata, vrpn_HANDLERPARAM p );
 	static int VRPN_CALLBACK handle_sampleRateReply_message( void* userdata, vrpn_HANDLERPARAM p );
 	static int VRPN_CALLBACK handle_interpreterReply_message( void* userdata, vrpn_HANDLERPARAM p );
+	static int VRPN_CALLBACK handle_error_message( void* userdata, vrpn_HANDLERPARAM p );
 
 protected:
 	typedef	struct vrpn_FGCRL
@@ -399,6 +418,15 @@ protected:
 		struct vrpn_FGIRL* next;
 	} vrpn_FGINTERPRETERREPLYLIST;
 	vrpn_FGINTERPRETERREPLYLIST* interpreter_reply_list;
+
+	typedef struct vrpn_FGEL
+	{
+		void* userdata;
+		vrpn_FUNCTION_ERROR_HANDLER handler;
+		struct vrpn_FGEL* next;
+	} vrpn_FGERRORLIST;
+	vrpn_FGERRORLIST* error_list;
+
 
 	vrpn_int32 decode_channel_reply( const char* buf, const vrpn_int32 len, vrpn_uint32& channelNum );
 	vrpn_int32 decode_start_reply( const char* buf, const vrpn_int32 len, vrpn_bool& isStarted );
