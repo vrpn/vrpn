@@ -1,3 +1,8 @@
+2010-01-14  David Marshburn  <marshbur@cs.unc.edu>
+
+	* FunctionGeneratorRemote.java:  added methods to add and
+	remove error listeners.
+
 2010-01-05  David Marshburn  <marshbur@cs.unc.edu>
 
 	* FunctionGeneratorRemote.java:  added error listeners

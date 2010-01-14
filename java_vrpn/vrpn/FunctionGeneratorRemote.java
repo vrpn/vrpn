@@ -215,9 +215,7 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 		channelListeners.addElement( listener );
 	}
 
-	/**
-	 * @return true on success; false on failure
-	 */
+
 	public synchronized boolean removeChannelReplyListener( ChannelReplyListener listener )
 	{
 		return channelListeners.removeElement( listener );
@@ -229,9 +227,7 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 		startStopListeners.addElement( listener );
 	}
 
-	/**
-	 * @return true on success; false on failure
-	 */
+
 	public synchronized boolean removeStartStopReplyListener( StartStopReplyListener listener )
 	{
 		return startStopListeners.removeElement( listener );
@@ -243,9 +239,7 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 		sampleRateListeners.addElement( listener );
 	}
 
-	/**
-	 * @return true on success; false on failure
-	 */
+
 	public synchronized boolean removeSampleRateReplyListener( SampleRateReplyListener listener )
 	{
 		return sampleRateListeners.removeElement( listener );
@@ -257,12 +251,22 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 		interpreterListeners.addElement( listener );
 	}
 
-	/**
-	 * @return true on success; false on failure
-	 */
+
 	public synchronized boolean removeInterpreterReplyListener( InterpreterReplyListener listener )
 	{
 		return interpreterListeners.removeElement( listener );
+	}
+	
+	
+	public synchronized void addErrorListener( ErrorListener listener )
+	{
+		errorListeners.addElement(  listener );
+	}
+	
+	
+	public synchronized boolean removeErrorListener( ErrorListener listener )
+	{
+		return errorListeners.removeElement( listener );
 	}
 	
 	
