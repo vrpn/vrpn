@@ -7,17 +7,17 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 	//////////////////
 	// Public structures and interfaces
 	
-	public interface Function { }
+	public static interface Function { }
 	
-	public class Function_NULL implements Function { }
+	public static class Function_NULL implements Function { }
 	
-	public class Function_script implements Function
+	public static class Function_script implements Function
 	{
 		public String script = "";
 		public Function_script( String script ) { this.script = script; }
 	}
 	
-	public class Channel
+	public static class Channel
 	{
 		public Function function = new Function_NULL();
 	}
