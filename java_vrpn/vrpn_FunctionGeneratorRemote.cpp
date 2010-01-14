@@ -1,5 +1,6 @@
 
 #include <typeinfo.h>
+#include <iostream>
 #include <jni.h>
 #include <vrpn_FunctionGenerator.h>
 
@@ -105,25 +106,25 @@ void VRPN_CALLBACK handle_channel_reply( void *userdata,
 	//determine what type of channel change this is
 	const vrpn_FunctionGenerator_function* fxn = info.channel->getFunction();
 	jmethodID jmid = NULL;
-	if( typeid( fxn ) == typeid( vrpn_FunctionGenerator_function_NULL* ) )
+	if( typeid( *fxn ) == typeid( vrpn_FunctionGenerator_function_NULL ) )
 	{
-		jmid = env->GetMethodID( jcls, "handleForceChange_NULL", "(JJI)V" );
+		jmid = env->GetMethodID( jcls, "handleChannelChange_NULL", "(JJI)V" );
 		if( jmid == NULL )
 		{
-			printf( "Warning:  vrpn_ForceDeviceRemote library was unable to find the "
-					"Java method \'handleForceChange_NULL\'.  This may indicate a version mismatch.\n" );
+			printf( "Warning:  vrpn_FunctionGeneratorRemote library was unable to find the "
+					"Java method \'handleChannelChange_NULL\'.  This may indicate a version mismatch.\n" );
 			return;
 		}
 		env->CallVoidMethod( jobj, jmid, (jlong) info.msg_time.tv_sec, (jlong) info.msg_time.tv_usec,
 							 (jint) info.channelNum );
 	}
-	else if( typeid( fxn ) == typeid( vrpn_FunctionGenerator_function_script* ) )
+	else if( typeid( *fxn ) == typeid( vrpn_FunctionGenerator_function_script ) )
 	{
-		jmid = env->GetMethodID( jcls, "handleForceChange_Script", "(JJILjava/lang/String;)V" );
+		jmid = env->GetMethodID( jcls, "handleChannelChange_Script", "(JJILjava/lang/String;)V" );
 		if( jmid == NULL )
 		{
-			printf( "Warning:  vrpn_ForceDeviceRemote library was unable to find the "
-					"Java method \'handleForceChange_Script\'.  This may indicate a version mismatch.\n" );
+			printf( "Warning:  vrpn_FunctionGeneratorRemote library was unable to find the "
+					"Java method \'handleChannelChange_Script\'.  This may indicate a version mismatch.\n" );
 			return;
 		}
 		jstring jscript 
@@ -139,7 +140,8 @@ void VRPN_CALLBACK handle_channel_reply( void *userdata,
 	}
 	else 
 	{
-		printf( "Error:  vrpn_ForceDeviceRemote library (handle_channel_reply):  unknown function type\n" );
+		printf( "Error:  vrpn_FunctionGeneratorRemote library (handle_channel_reply):  unknown function type\n" );
+		std::cout << "handle_channel_reply:  function type " << typeid( *fxn ).name() << std::endl;
 		return;
 	}
 }
@@ -420,15 +422,17 @@ Java_vrpn_FunctionGeneratorRemote_mainloop( JNIEnv* env, jobject jobj )
 JNIEXPORT jboolean JNICALL 
 Java_vrpn_FunctionGeneratorRemote_setChannelNULL_1native( JNIEnv* env, jobject jobj, jint jchannelNum )
 {
-  vrpn_FunctionGenerator_Remote* f = (vrpn_FunctionGenerator_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-  if( f <= 0 )
-    return false;
-  vrpn_FunctionGenerator_channel c;
-  vrpn_FunctionGenerator_function_NULL func;
-  c.setFunction( &func );
-  if( f->setChannel( jchannelNum, &c ) < 0 )
-	  return false;
-  return true;
+	vrpn_FunctionGenerator_Remote* f = (vrpn_FunctionGenerator_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
+	if( f <= 0 )
+		return false;
+	if( jchannelNum < 0 )
+		return false;
+	vrpn_FunctionGenerator_channel c;
+	vrpn_FunctionGenerator_function_NULL func;
+	c.setFunction( &func );
+	if( f->setChannel( jchannelNum, &c ) < 0 )
+		return false;
+	return true;
 }
 
 
@@ -442,6 +446,8 @@ Java_vrpn_FunctionGeneratorRemote_setChannelScript_1native( JNIEnv* env, jobject
 {
 	vrpn_FunctionGenerator_Remote* f = (vrpn_FunctionGenerator_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
 	if( f <= 0 )
+		return false;
+	if( jchannelNum < 0 )
 		return false;
 	vrpn_FunctionGenerator_channel c;
 	const char* msg = env->GetStringUTFChars( jscript, NULL );
@@ -464,6 +470,8 @@ Java_vrpn_FunctionGeneratorRemote_requestChannel_1native( JNIEnv* env, jobject j
 {
 	vrpn_FunctionGenerator_Remote* f = (vrpn_FunctionGenerator_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
 	if( f <= 0 )
+		return false;
+	if( jchannelNum < 0 )
 		return false;
 	if( f->requestChannel( jchannelNum ) < 0 )
 		return false;
@@ -533,6 +541,8 @@ Java_vrpn_FunctionGeneratorRemote_requestSampleRate_1native( JNIEnv* env, jobjec
 	vrpn_FunctionGenerator_Remote* f = (vrpn_FunctionGenerator_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
 	if( f <= 0 )
 		return false;
+	if( jrate < 0 )
+		return false;
 	if( f->requestSampleRate( jrate ) < 0 )
 		return false;
 	return true;
@@ -547,12 +557,12 @@ Java_vrpn_FunctionGeneratorRemote_requestSampleRate_1native( JNIEnv* env, jobjec
 JNIEXPORT jboolean JNICALL 
 Java_vrpn_FunctionGeneratorRemote_requestInterpreterDescription_1native( JNIEnv* env, jobject jobj )
 {
-  vrpn_FunctionGenerator_Remote* f = (vrpn_FunctionGenerator_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
-  if( f <= 0 )
-    return false;
-  if( f->requestInterpreterDescription( ) < 0 )
-	  return false;
-  return true;
+	vrpn_FunctionGenerator_Remote* f = (vrpn_FunctionGenerator_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
+	if( f <= 0 )
+		return false;
+	if( f->requestInterpreterDescription( ) < 0 )
+		return false;
+	return true;
 }
 
 

@@ -29,6 +29,7 @@
 #HW_OS := sparc_solaris
 #HW_OS := powerpc_aix
 #HW_OS := powerpc_macosx
+#HW_OS := linux_x64
 ##########################
 
 MV = /bin/mv
@@ -97,6 +98,11 @@ else
 
   ifeq ($(HW_OS), pc_linux)
         CC := g++
+        RANLIB := ranlib
+  endif
+
+  ifeq ($(HW_OS), linux_x64)
+        CC := g++ -fPIC
         RANLIB := ranlib
   endif
 
@@ -327,14 +333,16 @@ $(SOBJECT_DIR):
 LIB_FILES =  java_vrpn.cpp vrpn_AnalogOutputRemote.cpp vrpn_AnalogRemote.cpp \
 		vrpn_AuxiliaryLoggerRemote.cpp vrpn_ButtonRemote.cpp \
 		vrpn_ForceDeviceRemote.cpp vrpn_PoserRemote.cpp vrpn_TextReceiver.cpp \
-		vrpn_TextSender.cpp vrpn_TrackerRemote.cpp vrpn_VRPNDevice.cpp
+		vrpn_TextSender.cpp vrpn_TrackerRemote.cpp vrpn_VRPNDevice.cpp \
+		vrpn_FunctionGeneratorRemote.cpp
 
 LIB_OBJECTS = $(patsubst %,$(OBJECT_DIR)/%,$(LIB_FILES:.cpp=.o))
 
 LIB_INCLUDES = java_vrpn.h vrpn_AnalogOutputRemote.h vrpn_AnalogRemote.h \
 		vrpn_AuxiliaryLoggerRemote.h vrpn_ButtonRemote.h \
 		vrpn_ForceDeviceRemote.h vrpn_PoserRemote.h vrpn_TextReceiver.h \
-		vrpn_TextSender.h vrpn_TrackerRemote.h vrpn_VRPNDevice.h
+		vrpn_TextSender.h vrpn_TrackerRemote.h vrpn_VRPNDevice.h \
+		 vrpn_FunctionGeneratorRemote.h
 
 
 # additional files for the new connection work-in-progress
