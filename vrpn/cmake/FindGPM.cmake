@@ -26,7 +26,8 @@ find_path(GPM_INCLUDE_DIR
 	NAMES gpm.h)
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(GPM DEFAULT_MSG
+find_package_handle_standard_args(GPM
+	DEFAULT_MSG
 	GPM_LIBRARY
 	GPM_INCLUDE_DIR)
 

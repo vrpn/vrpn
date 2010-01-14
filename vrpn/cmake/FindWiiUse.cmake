@@ -29,7 +29,8 @@ find_path(WIIUSE_INCLUDE_DIR
 	HINTS "${_libdir}")
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(WiiUse DEFAULT_MSG
+find_package_handle_standard_args(WiiUse
+	DEFAULT_MSG
 	WIIUSE_LIBRARY
 	WIIUSE_INCLUDE_DIR)
 

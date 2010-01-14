@@ -10,7 +10,8 @@ cmake_minimum_required(VERSION 2.6)
 # Fix the ones that are commented out so that they compile and run?
 
 if(NOT VRPN_BUILD_SERVER_LIBRARY)
-	message(FATAL_ERROR "Cannot compile servers without the full (server) library.  Enable it and try again.")
+	message(FATAL_ERROR
+		"Cannot compile servers without the full (server) library.  Enable it and try again.")
 endif()
 
 set(VRPN_SERVER_LIBRARY vrpnserver)
@@ -31,8 +32,7 @@ if(VRPN_USE_PHANTOM_SERVER AND OPENHAPTICS_FOUND)
 		plane.C
 		texture_plane.C
 		trimesh.C
-		vrpn_Phantom.C
-	)
+		vrpn_Phantom.C)
 
 	set(PHANTOM_HEADERS
 		ghostEffects/InstantBuzzEffect.h
@@ -43,8 +43,7 @@ if(VRPN_USE_PHANTOM_SERVER AND OPENHAPTICS_FOUND)
 		plane.h
 		texture_plane.h
 		trimesh.h
-		vrpn_Phantom.h
-	)
+		vrpn_Phantom.h)
 	include_directories(${OPENHAPTICS_INCLUDE_DIRS})
 	include_directories(${VRPN_SOURCE_DIR}/server_src/ghostEffects)
 	add_library(vrpn_phantom ${PHANTOM_SOURCES} ${PHANTOM_HEADERS})
@@ -56,13 +55,13 @@ if(VRPN_USE_PHANTOM_SERVER AND OPENHAPTICS_FOUND)
 	install(TARGETS vrpn_phantom
 		ARCHIVE DESTINATION lib
 		PUBLIC_HEADER DESTINATION include)
-	set (VRPNPHANTOMLIB vrpn_phantom)
+	set(VRPNPHANTOMLIB vrpn_phantom)
 endif()
 
 #-----------------------------------------------------------------------------
 # DirectShow base-class library (if configured)
 if(VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER AND DIRECTSHOW_FOUND)
-	add_definitions( -DCOINIT_DISABLE_OLE1DDE=0x4 )
+	add_definitions(-DCOINIT_DISABLE_OLE1DDE=0x4)
 	add_library(DirectShow_baseclasses
 		${DirectShow_BASECLASS_DIR}/amextra.cpp
 		${DirectShow_BASECLASS_DIR}/amfilter.cpp
@@ -92,43 +91,44 @@ if(VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER AND DIRECTSHOW_FOUND)
 		${DirectShow_BASECLASS_DIR}/winutil.cpp
 		${DirectShow_BASECLASS_DIR}/wxdebug.cpp
 		${DirectShow_BASECLASS_DIR}/wxlist.cpp
-		${DirectShow_BASECLASS_DIR}/wxutil.cpp
-	)
+		${DirectShow_BASECLASS_DIR}/wxutil.cpp)
 	set(DirectShow_LIBS DirectShow_baseclasses)
 
-	include_directories( ${DirectShow_BASECLASS_DIR} ${PLATFORM_SDK_INCLUDE_DIR}
+	include_directories(${DirectShow_BASECLASS_DIR}
+		${PLATFORM_SDK_INCLUDE_DIR}
 		${PLATFORM_SDK_ATL_INCLUDE_DIR}
-		${PLATFORM_SDK_ATL_INCLUDE_DIR} ${DIRECTX_SDK_INCLUDE_DIR})
+		${DIRECTX_SDK_INCLUDE_DIR})
 	add_executable(directshow_video_server
 		directshow_video_server/directx_video_imager_server.cpp
 		directshow_video_server/directx_camera_server.cpp
-		directshow_video_server/directx_camera_server.h
-	)
+		directshow_video_server/directx_camera_server.h)
 	target_link_libraries(directshow_video_server
 		${VRPN_SERVER_LIBRARY}
-		${DirectShow_LIBS}
-	)
-	set_target_properties(directshow_video_server PROPERTIES SOLUTION_FOLDER servers)
+		${DirectShow_LIBS})
+	set_target_properties(directshow_video_server
+		PROPERTIES
+		SOLUTION_FOLDER
+		servers)
 endif()
 
 add_subdirectory(timecode_generator_server)
 
 #-----------------------------------------------------------------------------
 # Include directories needed
-include_directories(
-	${VRPN_SOURCE_DIR}/server_src
-	${VRPN_SOURCE_DIR}/server_src/timecode_generator_server
-)
+include_directories(${VRPN_SOURCE_DIR}/server_src
+	${VRPN_SOURCE_DIR}/server_src/timecode_generator_server)
 
 #-----------------------------------------------------------------------------
 # Applications that need more than one file to run.
-add_executable(vrpn_server vrpn.C vrpn_Generic_server_object.C
+add_executable(vrpn_server
+	vrpn.C
+	vrpn_Generic_server_object.C
 	vrpn_Generic_server_object.h)
 target_link_libraries(vrpn_server
-	${VRPN_SERVER_LIBRARY} vrpn_timecode_generator
+	${VRPN_SERVER_LIBRARY}
+	vrpn_timecode_generator
 	${VRPN_ATMEL_LIBRARY}
-	${VRPNPHANTOMLIB}
-)
+	${VRPNPHANTOMLIB})
 set_target_properties(vrpn_server PROPERTIES SOLUTION_FOLDER servers)
 install(TARGETS vrpn_server
 	RUNTIME DESTINATION bin)
