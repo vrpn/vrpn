@@ -67,17 +67,33 @@ if(WIN32)
 	if(CMAKE_SIZEOF_VOID_P MATCHES "8")
 		# 64-bit
 		list_combinations(_libsearch PREFIXES "${_dirs}" SUFFIXES "/lib/x64")
-		list_combinations(_libsearch2 PREFIXES "${_dirs}" SUFFIXES "/utilities/lib/x64")
+		list_combinations(_libsearch2
+			PREFIXES
+			"${_dirs}"
+			SUFFIXES
+			"/utilities/lib/x64")
 	else()
 		# 32-bit
-		list_combinations(_libsearch PREFIXES "${_dirs}" SUFFIXES "/lib/win32")
-		list_combinations(_libsearch2 PREFIXES "${_dirs}" SUFFIXES "/utilities/lib/Win32")
+		list_combinations(_libsearch
+			PREFIXES
+			"${_dirs}"
+			SUFFIXES
+			"/lib/win32")
+		list_combinations(_libsearch2
+			PREFIXES
+			"${_dirs}"
+			SUFFIXES
+			"/utilities/lib/Win32")
 	endif()
 
 	clean_directory_list(_libsearchdirs ${_libsearch} ${_libsearch2})
 
 	list_combinations(_incsearch PREFIXES "${_dirs}" SUFFIXES "/include")
-	list_combinations(_incsearch2 PREFIXES "${_dirs}" SUFFIXES "/utilities/include")
+	list_combinations(_incsearch2
+		PREFIXES
+		"${_dirs}"
+		SUFFIXES
+		"/utilities/include")
 	clean_directory_list(_incsearchdirs ${_incsearch} ${_incsearch2})
 endif()
 
@@ -185,13 +201,17 @@ if(HDAPI_INCLUDE_DIR)
 	set(HDAPI_INCLUDE_DIRS ${HDAPI_INCLUDE_DIR})
 
 	if(HDAPI_HDU_INCLUDE_DIR)
-		set(HDAPI_HDU_INCLUDE_DIRS ${HDAPI_INCLUDE_DIRS} ${HDAPI_HDU_INCLUDE_DIR})
+		set(HDAPI_HDU_INCLUDE_DIRS
+			${HDAPI_INCLUDE_DIRS}
+			${HDAPI_HDU_INCLUDE_DIR})
 
 		if(HDAPI_HDU_INCLUDE_DIR)
 			set(HLAPI_INCLUDE_DIRS ${HDAPI_INCLUDE_DIRS} ${HLAPI_INCLUDE_DIR})
 
 			if(HLAPI_HLU_INCLUDE_DIR)
-				set(HLAPI_HLU_INCLUDE_DIRS ${HLAPI_INCLUDE_DIRS} ${HLAPI_HLU_INCLUDE_DIR})
+				set(HLAPI_HLU_INCLUDE_DIRS
+					${HLAPI_INCLUDE_DIRS}
+					${HLAPI_HLU_INCLUDE_DIR})
 
 			endif()
 		endif()
@@ -203,7 +223,8 @@ endif()
 # handle the QUIETLY and REQUIRED arguments and set xxx_FOUND to TRUE if
 # all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(OpenHaptics DEFAULT_MSG
+find_package_handle_standard_args(OpenHaptics
+	DEFAULT_MSG
 	HDAPI_INCLUDE_DIR
 	HDAPI_LIBRARY
 	HDAPI_HDU_INCLUDE_DIR
@@ -214,18 +235,26 @@ find_package_handle_standard_args(OpenHaptics DEFAULT_MSG
 	HLAPI_HLU_LIBRARY)
 
 if(OPENHAPTICS_FOUND)
-	set(OPENHAPTICS_LIBRARIES ${HDAPI_LIBRARY} ${HDAPI_HDU_LIBRARY} ${HLAPI_LIBRARY} ${HLAPI_HLU_LIBRARY})
+	set(OPENHAPTICS_LIBRARIES
+		${HDAPI_LIBRARY}
+		${HDAPI_HDU_LIBRARY}
+		${HLAPI_LIBRARY}
+		${HLAPI_HLU_LIBRARY})
 	set(OPENHAPTICS_LIBRARY_DIRS)
 	foreach(_lib
 		HDAPI_LIBRARY
-		HDAPI_HDU_LIBRARY_RELEASE HDAPI_HDU_LIBRARY_DEBUG
+		HDAPI_HDU_LIBRARY_RELEASE
+		HDAPI_HDU_LIBRARY_DEBUG
 		HLAPI_LIBRARY
-		HLAPI_HLU_LIBRARY_RELEASE HLAPI_HLU_LIBRARY_DEBUG)
+		HLAPI_HLU_LIBRARY_RELEASE
+		HLAPI_HLU_LIBRARY_DEBUG)
 		get_filename_component(_libdir ${${_lib}} PATH)
 		list(APPEND OPENHAPTICS_LIBRARY_DIRS ${_libdir})
 	endforeach()
 
-	set(OPENHAPTICS_INCLUDE_DIRS ${HLAPI_HLU_INCLUDE_DIRS} ${HDAPI_HDU_INCLUDE_DIRS})
+	set(OPENHAPTICS_INCLUDE_DIRS
+		${HLAPI_HLU_INCLUDE_DIRS}
+		${HDAPI_HDU_INCLUDE_DIRS})
 
 	clean_directory_list(OPENHAPTICS_LIBRARY_DIRS)
 	clean_directory_list(OPENHAPTICS_INCLUDE_DIRS)

@@ -24,23 +24,39 @@ if(APPLE)
 	if(NOT MACOSX_HID_UINT32T)
 		get_filename_component(_moddir ${CMAKE_CURRENT_LIST_FILE} PATH)
 
-		try_compile(_HID_uint32t ${CMAKE_BINARY_DIR} ${_moddir}/CheckMacHIDAPI.cpp
-					OUTPUT_VARIABLE _HID_uint32t_OUTPUT
-					COMPILE_DEFINITIONS -DMACOSX_HID_UINT32T=uint32_t)
-		message(STATUS "Checking uint32_t in HID callback signature... ${_HID_uint32t}")
+		try_compile(_HID_uint32t
+			${CMAKE_BINARY_DIR}
+			${_moddir}/CheckMacHIDAPI.cpp
+			OUTPUT_VARIABLE
+			_HID_uint32t_OUTPUT
+			COMPILE_DEFINITIONS
+			-DMACOSX_HID_UINT32T=uint32_t)
+		message(STATUS
+			"Checking uint32_t in HID callback signature... ${_HID_uint32t}")
 
-		try_compile(_HID_UInt32 ${CMAKE_BINARY_DIR} ${_moddir}/CheckMacHIDAPI.cpp
-					OUTPUT_VARIABLE _HID_UInt32_OUTPUT
-					COMPILE_DEFINITIONS -DMACOSX_HID_UINT32T=UInt32)
-		message(STATUS "Checking UInt32 in HID callback signature... ${_HID_UInt32}")
+		try_compile(_HID_UInt32
+			${CMAKE_BINARY_DIR}
+			${_moddir}/CheckMacHIDAPI.cpp
+			OUTPUT_VARIABLE
+			_HID_UInt32_OUTPUT
+			COMPILE_DEFINITIONS
+			-DMACOSX_HID_UINT32T=UInt32)
+		message(STATUS
+			"Checking UInt32 in HID callback signature... ${_HID_UInt32}")
 
 
 		if(_HID_uint32t)
-			set(MACOSX_HID_UINT32T "uint32_t" CACHE STRING
+			set(MACOSX_HID_UINT32T
+				"uint32_t"
+				CACHE
+				STRING
 				"The 32-bit uint type desired in the callback set by setInterruptReportHandlerCallback")
 			mark_as_advanced(MACOSX_HID_UINT32T)
 		elseif(_HID_UInt32)
-			set(MACOSX_HID_UINT32T "UInt32" CACHE STRING
+			set(MACOSX_HID_UINT32T
+				"UInt32"
+				CACHE
+				STRING
 				"The 32-bit uint type desired in the callback set by setInterruptReportHandlerCallback")
 			mark_as_advanced(MACOSX_HID_UINT32T)
 		else()

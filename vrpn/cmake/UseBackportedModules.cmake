@@ -15,8 +15,9 @@
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
 
-if(NOT CMAKE_VERSION) # defined in >=2.6.3
-	set(_cmver "${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}")
+if(NOT CMAKE_VERSION)	# defined in >=2.6.3
+	set(_cmver
+		"${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}")
 else()
 	set(_cmver "${CMAKE_VERSION}")
 endif()
@@ -24,8 +25,17 @@ endif()
 get_filename_component(_moddir ${CMAKE_CURRENT_LIST_FILE} PATH)
 file(GLOB _globbed "${_moddir}/cmake-*-modules")
 foreach(_dir "${_globbed}")
-	string(REGEX MATCH "cmake-[0-9].[0-9].[0-9]-modules" _dirname "${_dir}")
-	string(REGEX REPLACE "cmake-([0-9].[0-9].[0-9])-modules" "\\1" _ver "${_dirname}")
+	string(REGEX
+		MATCH
+		"cmake-[0-9].[0-9].[0-9]-modules"
+		_dirname
+		"${_dir}")
+	string(REGEX
+		REPLACE
+		"cmake-([0-9].[0-9].[0-9])-modules"
+		"\\1"
+		_ver
+		"${_dirname}")
 
 	if("${_cmver}" VERSION_LESS "${_ver}")
 		file(GLOB_RECURSE _modules "${_dir}/*.cmake")
