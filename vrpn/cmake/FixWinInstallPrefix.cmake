@@ -42,17 +42,31 @@ if(WIN32)
 
 	if(NOT FIXWININSTALLPREFIX_PREFIX)
 		set(_needsfix yes)
-	elseif(NOT "${FIXWININSTALLPREFIX_PREFIX}" STREQUALS "${CMAKE_INSTALL_PREFIX}")
+	elseif(NOT
+		"${FIXWININSTALLPREFIX_PREFIX}"
+		STREQUALS
+		"${CMAKE_INSTALL_PREFIX}")
 		set(_needsfix yes)
 	else()
 		set(_needsfix)
 	endif()
 
 	if(_needsfix)
-		if("${CMAKE_INSTALL_PREFIX}" STREQUAL "${_PROG_FILES}/${CMAKE_PROJECT_NAME}")
+		if("${CMAKE_INSTALL_PREFIX}"
+			STREQUAL
+			"${_PROG_FILES}/${CMAKE_PROJECT_NAME}")
 			# The user didn't change this yet - it's the potentially broken default
-			set(CMAKE_INSTALL_PREFIX "${_PROGFILESDIR}/${CMAKE_PROJECT_NAME}" CACHE PATH "Where to install the project - has been adjusted by FixWinInstallPrefix" FORCE)
+			set(CMAKE_INSTALL_PREFIX
+				"${_PROGFILESDIR}/${CMAKE_PROJECT_NAME}"
+				CACHE
+				PATH
+				"Where to install the project - has been adjusted by FixWinInstallPrefix"
+				FORCE)
 		endif()
-		set(FIXWININSTALLPREFIX_PREFIX CACHE INTERNAL "We've fixed the prefix." ${CMAKE_INSTALL_PREFIX})
+		set(FIXWININSTALLPREFIX_PREFIX
+			CACHE
+			INTERNAL
+			"We've fixed the prefix."
+			${CMAKE_INSTALL_PREFIX})
 	endif()
 endif()

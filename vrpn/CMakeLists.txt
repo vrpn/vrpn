@@ -26,7 +26,8 @@ include(WarningDev)
 ###
 # Basic packaging options
 #
-set(CPACK_PACKAGE_VENDOR "Russell M. Taylor II at the University of North Carolina at Chapel Hill")
+set(CPACK_PACKAGE_VENDOR
+	"Russell M. Taylor II at the University of North Carolina at Chapel Hill")
 
 
 ###
@@ -37,7 +38,11 @@ if(EXISTS "${_vrpn_version_file}")
 	file(READ "${_vrpn_version_file}" _vrpn_version_contents)
 endif()
 set(_vrpn_version_regex "vrpn: ver. ([0-9]+).([0-9]+)")
-string(REGEX MATCH "${_vrpn_version_regex}" _dummy "${_vrpn_version_contents}")
+string(REGEX
+	MATCH
+	"${_vrpn_version_regex}"
+	_dummy
+	"${_vrpn_version_contents}")
 
 if(CMAKE_MATCH_1)
 	set(CPACK_PACKAGE_VERSION_MAJOR "${CMAKE_MATCH_1}")
@@ -56,19 +61,23 @@ endif()
 # This may be incremented manually
 set(CPACK_PACKAGE_VERSION_PATCH "1")
 
-set(CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
-message(STATUS "Configuring the VRPN suite version ${CPACK_PACKAGE_VERSION} using the CMake-based build system")
+set(CPACK_PACKAGE_VERSION
+	"${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
+message(STATUS
+	"Configuring the VRPN suite version ${CPACK_PACKAGE_VERSION} using the CMake-based build system")
 
-set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
-set(CPACK_SOURCE_PACKAGE_FILE_NAME "${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-src")
+set(CPACK_PACKAGE_FILE_NAME
+	"${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
+set(CPACK_SOURCE_PACKAGE_FILE_NAME
+	"${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-src")
 
 
 #-----------------------------------------------------------------------------
 # Compiler flags we got from Hans
-if(WIN32) # MS-Windows, both 32 and 64 bits
-  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   /fp:fast")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast")
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /FIXED:NO")
+if(WIN32)	# MS-Windows, both 32 and 64 bits
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}   /fp:fast")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast")
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /FIXED:NO")
 endif()
 
 #-----------------------------------------------------------------------------
@@ -76,15 +85,21 @@ endif()
 
 # We can build two configurations (passing defs to the compile lines) - which ones do we want?
 # Note that we can build both now, if desired!
-option(VRPN_BUILD_CLIENT_LIBRARY "Build the vrpn library including only client code" ON)
-option(VRPN_BUILD_SERVER_LIBRARY "Build the vrpnserver library including client and server code" ON)
+option(VRPN_BUILD_CLIENT_LIBRARY
+	"Build the vrpn library including only client code"
+	ON)
+option(VRPN_BUILD_SERVER_LIBRARY
+	"Build the vrpnserver library including client and server code"
+	ON)
 
 # Build various applications if we want them.
 option(VRPN_BUILD_CLIENTS "Build VRPN client apps and tests" ON)
 option(VRPN_BUILD_SERVERS "Build VRPN servers" ON)
 option(VRPN_BUILD_TEST_RPC_GENERATION "Build VRPN RPC generation" OFF)
 if(WIN32)
-	option(VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER "Enable to build DirectShow Video Server (Windows)" OFF)
+	option(VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER
+		"Enable to build DirectShow Video Server (Windows)"
+		OFF)
 endif()
 
 
@@ -137,7 +152,8 @@ endif()
 # Optional packages
 ###
 message(STATUS "")
-message(STATUS "Now searching for auto-configurable optional packages...")
+message(STATUS
+	"Now searching for auto-configurable optional packages...")
 message(STATUS "")
 
 ###
@@ -165,12 +181,15 @@ endif()
 set(OPENHAPTICS_MARK_AS_ADVANCED ON)
 find_package(OpenHaptics)
 if(OPENHAPTICS_FOUND)
-	option(VRPN_USE_PHANTOM_SERVER "Build with SensAble Phantom support" ON)
+	option(VRPN_USE_PHANTOM_SERVER
+		"Build with SensAble Phantom support"
+		ON)
 endif()
 
 if(VRPN_USE_PHANTOM_SERVER)
 	if(NOT OPENHAPTICS_FOUND)
-		message(FATAL_ERROR "ERROR: VRPN_USE_PHANTOM_SERVER set but HDAPI/HLAPI not found!")
+		message(FATAL_ERROR
+			"ERROR: VRPN_USE_PHANTOM_SERVER set but HDAPI/HLAPI not found!")
 	endif()
 	include_directories(${OPENHAPTICS_INCLUDE_DIRS})
 	list(APPEND SERVER_EXTRA_LIBS ${OPENHAPTICS_LIBRARIES})
@@ -182,12 +201,15 @@ endif()
 set(WIIUSE_MARK_AS_ADVANCED ON)
 find_package(WiiUse)
 if(WIIUSE_FOUND)
-	option(VRPN_USE_WIIUSE "Build with WiiUse library support (makes servers GPL)" ON)
+	option(VRPN_USE_WIIUSE
+		"Build with WiiUse library support (makes servers GPL)"
+		ON)
 endif()
 
 if(VRPN_USE_WIIUSE)
 	if(NOT WIIUSE_FOUND)
-		message(FATAL_ERROR "ERROR: VRPN_USE_WIIUSE set but WiiUse not found!")
+		message(FATAL_ERROR
+			"ERROR: VRPN_USE_WIIUSE set but WiiUse not found!")
 	endif()
 	include_directories(${WIIUSE_INCLUDE_DIRS})
 	list(APPEND SERVER_EXTRA_LIBS ${WIIUSE_LIBRARIES})
@@ -200,13 +222,18 @@ endif()
 # with CMake standards and make it work in a variety of environments
 find_package(DirectShow)
 if(DIRECTSHOW_FOUND)
-	option(VRPN_USE_DIRECTSHOW "Build with Microsoft DirectShow support" ON)
-	option(VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER "Enable to build DirectShow Video Server (Windows)" ON)
+	option(VRPN_USE_DIRECTSHOW
+		"Build with Microsoft DirectShow support"
+		ON)
+	option(VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER
+		"Enable to build DirectShow Video Server (Windows)"
+		ON)
 endif()
 
 if(VRPN_USE_DIRECTSHOW)
 	if(NOT DIRECTSHOW_FOUND)
-		message(FATAL_ERROR "ERROR: VRPN_USE_DIRECTSHOW set but DirectShow not found!")
+		message(FATAL_ERROR
+			"ERROR: VRPN_USE_DIRECTSHOW set but DirectShow not found!")
 	endif()
 	include_directories(${DirectShow_INCLUDE_DIRS})
 	# XXX What else should be done here?
@@ -218,12 +245,15 @@ endif()
 set(GPM_MARK_AS_ADVANCED ON)
 find_package(GPM)
 if(GPM_FOUND)
-	option(VRPN_USE_GPM_MOUSE "Build with GPM Linux mouse interface support" ON)
+	option(VRPN_USE_GPM_MOUSE
+		"Build with GPM Linux mouse interface support"
+		ON)
 endif()
 
 if(VRPN_USE_GPM_MOUSE)
 	if(NOT GPM_FOUND)
-		message(FATAL_ERROR "ERROR: VRPN_USE_GPM_MOUSE set but GPM not found!")
+		message(FATAL_ERROR
+			"ERROR: VRPN_USE_GPM_MOUSE set but GPM not found!")
 	endif()
 	list(APPEND SERVER_EXTRA_LIBS ${GPM_LIBRARIES})
 endif()
@@ -249,39 +279,67 @@ endif()
 #-----------------------------------------------------------------------------
 # configure a header file to pass some of the CMake settings
 # to the source code
-configure_file(
-  "${PROJECT_SOURCE_DIR}/vrpn_Configure.h.cmake_in"
-  "${PROJECT_BINARY_DIR}/vrpn_Configure.h")
+configure_file("${PROJECT_SOURCE_DIR}/vrpn_Configure.h.cmake_in"
+	"${PROJECT_BINARY_DIR}/vrpn_Configure.h")
 
 # Force use of our CMake-processed configuration header before the stock one.
 include_directories("${PROJECT_BINARY_DIR}")
 include(GetForceIncludeDefinitions)
-get_force_include_definitions(CONFIG_H_FLAG "${PROJECT_BINARY_DIR}/vrpn_Configure.h")
+get_force_include_definitions(CONFIG_H_FLAG
+	"${PROJECT_BINARY_DIR}/vrpn_Configure.h")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CONFIG_H_FLAG}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CONFIG_H_FLAG}")
 
 # Configuration options controlling what gets included in the build.
 # These are the default options - if a library is detected above it will
 # be pre-set to ON instead.
-option(VRPN_USE_PHANTOM_SERVER "Build with SensAble Phantom support" OFF)
-option(VRPN_INCLUDE_TIMECODE_SERVER "Build with Adrienne time-code server support" OFF)
-option(VRPN_INCLUDE_INTERSENSE "Build with InterSense native library support" OFF)
-option(VRPN_USE_NATIONAL_INSTRUMENTS "Build with National Instruments (old library) support" OFF)
-option(VRPN_USE_NATIONAL_INSTRUMENTS_MX "Build with National Instruments (new library) support" OFF)
+option(VRPN_USE_PHANTOM_SERVER
+	"Build with SensAble Phantom support"
+	OFF)
+option(VRPN_INCLUDE_TIMECODE_SERVER
+	"Build with Adrienne time-code server support"
+	OFF)
+option(VRPN_INCLUDE_INTERSENSE
+	"Build with InterSense native library support"
+	OFF)
+option(VRPN_USE_NATIONAL_INSTRUMENTS
+	"Build with National Instruments (old library) support"
+	OFF)
+option(VRPN_USE_NATIONAL_INSTRUMENTS_MX
+	"Build with National Instruments (new library) support"
+	OFF)
 option(VRPN_USE_NIDAQ "Build with NIDAQ support ca. 1999" OFF)
-option(VRPN_USE_USDIGITAL "Build with US Digital SEI/A2 library support" OFF)
-option(VRPN_USE_MICROSCRIBE "Build with MicroScribe3D library support" OFF)
-option(VRPN_INCLUDE_PHASESPACE "Build with PhaseSpace library support" OFF)
-option(VRPN_USE_MOTIONNODE "Build with GLI Interactive LLC MotionNode library support" OFF)
+option(VRPN_USE_USDIGITAL
+	"Build with US Digital SEI/A2 library support"
+	OFF)
+option(VRPN_USE_MICROSCRIBE
+	"Build with MicroScribe3D library support"
+	OFF)
+option(VRPN_INCLUDE_PHASESPACE
+	"Build with PhaseSpace library support"
+	OFF)
+option(VRPN_USE_MOTIONNODE
+	"Build with GLI Interactive LLC MotionNode library support"
+	OFF)
 option(VRPN_USE_WIIUSE "Build with WiiUse library support" OFF)
-option(VRPN_USE_FREESPACE "Build with Hillcrest Labs' Freespace devices support" OFF)
+option(VRPN_USE_FREESPACE
+	"Build with Hillcrest Labs' Freespace devices support"
+	OFF)
 
 if(WIN32)
-	option(VRPN_USE_DIRECTINPUT "Build with Microsoft DirectInput support" OFF)
-	option(VRPN_USE_DIRECTSHOW "Build with Microsoft DirectShow support" OFF)
-	option(VRPN_USE_SHARED_LIBRARY "Enable to use DLLs on Windows (see vrpn_Configure.h for more info)" OFF)
-elseif (UNIX)
-	option(VRPN_USE_GPM_MOUSE "Build with GPM Linux mouse interface support" OFF)
+	option(VRPN_USE_DIRECTINPUT
+		"Build with Microsoft DirectInput support"
+		OFF)
+	option(VRPN_USE_DIRECTSHOW
+		"Build with Microsoft DirectShow support"
+		OFF)
+	option(VRPN_USE_SHARED_LIBRARY
+		"Enable to use DLLs on Windows (see vrpn_Configure.h for more info)"
+		OFF)
+elseif(UNIX)
+	option(VRPN_USE_GPM_MOUSE
+		"Build with GPM Linux mouse interface support"
+		OFF)
 endif()
 
 #option(vrpn_USE_MPI "Build with MPI support" OFF)
@@ -313,8 +371,7 @@ set(VRPN_CLIENT_SOURCES
 	vrpn_SharedObject.C
 	vrpn_Sound.C
 	vrpn_Text.C
-	vrpn_Tracker.C
-)
+	vrpn_Tracker.C)
 
 set(VRPN_CLIENT_PUBLIC_HEADERS
 	"${PROJECT_BINARY_DIR}/vrpn_Configure.h"
@@ -341,8 +398,7 @@ set(VRPN_CLIENT_PUBLIC_HEADERS
 	vrpn_Sound.h
 	vrpn_Text.h
 	vrpn_Tracker.h
-	vrpn_Types.h
-)
+	vrpn_Types.h)
 
 set(VRPN_SERVER_SOURCES
 	${VRPN_CLIENT_SOURCES}
@@ -408,8 +464,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_WiiMote.C
 	vrpn_XInputGamepad.C
 	vrpn_Xkeys.C
-	vrpn_Zaber.C
-)
+	vrpn_Zaber.C)
 
 set(VRPN_SERVER_PUBLIC_HEADERS
 	${VRPN_CLIENT_PUBLIC_HEADERS}
@@ -478,14 +533,19 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_WiiMote.h
 	vrpn_XInputGamepad.h
 	vrpn_Xkeys.h
-	vrpn_Zaber.h
-)
+	vrpn_Zaber.h)
 
 if(VRPN_BUILD_SERVER_LIBRARY)
 
-	add_library(vrpnserver ${VRPN_SERVER_SOURCES} ${VRPN_SERVER_PUBLIC_HEADERS})
+	add_library(vrpnserver
+		${VRPN_SERVER_SOURCES}
+		${VRPN_SERVER_PUBLIC_HEADERS})
 	target_link_libraries(vrpnserver ${EXTRA_LIBS} ${SERVER_EXTRA_LIBS})
-	set_property(TARGET vrpnserver PROPERTY PUBLIC_HEADER ${VRPN_SERVER_PUBLIC_HEADERS})
+	set_property(TARGET
+		vrpnserver
+		PROPERTY
+		PUBLIC_HEADER
+		${VRPN_SERVER_PUBLIC_HEADERS})
 
 	install(TARGETS vrpnserver
 		ARCHIVE DESTINATION lib
@@ -499,10 +559,18 @@ if(VRPN_BUILD_CLIENT_LIBRARY)
 
 	if(NOT VRPN_BUILD_SERVER_LIBRARY)
 		# Only install these headers if we aren't building a server library.
-		set_property(TARGET vrpn PROPERTY PUBLIC_HEADER ${VRPN_CLIENT_PUBLIC_HEADERS})
+		set_property(TARGET
+			vrpn
+			PROPERTY
+			PUBLIC_HEADER
+			${VRPN_CLIENT_PUBLIC_HEADERS})
 	endif()
 
-	set_property(TARGET vrpn PROPERTY COMPILE_DEFINITIONS "VRPN_CLIENT_ONLY")
+	set_property(TARGET
+		vrpn
+		PROPERTY
+		COMPILE_DEFINITIONS
+		"VRPN_CLIENT_ONLY")
 
 	install(TARGETS vrpn
 		ARCHIVE DESTINATION lib
@@ -511,15 +579,17 @@ endif()
 
 
 # Include directory needed by all of the files
-include_directories(${VRPN_SOURCE_DIR} ${VRPN_SOURCE_DIR}/atmellib ${QUATLIB_INCLUDE_DIR})
+include_directories(${VRPN_SOURCE_DIR}
+	${VRPN_SOURCE_DIR}/atmellib
+	${QUATLIB_INCLUDE_DIR})
 
-add_subdirectory (client_src)
+add_subdirectory(client_src)
 
 #-----------------------------------------------------------------------------
 # Build the atmellib library if we're building a server library
 
 if(VRPN_BUILD_SERVER_LIBRARY)
-	add_subdirectory (atmellib)
+	add_subdirectory(atmellib)
 endif()
 
 #-----------------------------------------------------------------------------
@@ -527,14 +597,14 @@ endif()
 # the library client-only.
 
 if(VRPN_BUILD_SERVERS AND VRPN_BUILD_SERVER_LIBRARY)
-	add_subdirectory (server_src)
+	add_subdirectory(server_src)
 endif()
 
 #-----------------------------------------------------------------------------
 # Build the RPC generation if we've been asked to
 
 if(VRPN_BUILD_TEST_RPC_GENERATION)
-	add_subdirectory (util/gen_rpc)
+	add_subdirectory(util/gen_rpc)
 endif()
 
 #-----------------------------------------------------------------------------
@@ -545,8 +615,7 @@ if(VRPN_BUILD_SERVERS AND VRPN_BUILD_SERVER_LIBRARY)
 		add_executable(${APP} ${SOURCE})
 		target_link_libraries(${APP} vrpnserver)
 		set_target_properties(${APP} PROPERTIES SOLUTION_FOLDER tests)
-		install(TARGETS ${APP}
-			RUNTIME DESTINATION bin)
+		install(TARGETS ${APP} RUNTIME DESTINATION bin)
 	endforeach()
 endif()
 
@@ -559,7 +628,7 @@ set(ALL_GPL_SERVER_FLAGS
 
 set(GPL_SERVER_FLAGS)
 foreach(POSSIBLE_GPL_FLAG ${ALL_GPL_SERVER_FLAGS})
-	if (${POSSIBLE_GPL_FLAG})
+	if(${POSSIBLE_GPL_FLAG})
 		list(APPEND GPL_SERVER_FLAGS "${POSSIBLE_GPL_FLAG}")
 	endif()
 endforeach()
@@ -570,7 +639,7 @@ set(ALL_GPLINCOMPAT_SERVER_FLAGS
 
 set(GPLINCOMPAT_SERVER_FLAGS)
 foreach(POSSIBLE_GPLINCOMPAT_FLAG ${ALL_GPLINCOMPAT_SERVER_FLAGS})
-	if (${POSSIBLE_GPLINCOMPAT_FLAG})
+	if(${POSSIBLE_GPLINCOMPAT_FLAG})
 		list(APPEND GPLINCOMPAT_SERVER_FLAGS "${POSSIBLE_GPLINCOMPAT_FLAG}")
 	endif()
 endforeach()
@@ -579,20 +648,27 @@ endforeach()
 if(GPL_SERVER_FLAGS)
 	# Some GPL options are enabled
 	message(STATUS "")
-	message(STATUS "NOTE: The following build options may produce a GPL-licensed server library/binary.")
+	message(STATUS
+		"NOTE: The following build options may produce a GPL-licensed server library/binary.")
 	message(STATUS "  ${GPL_SERVER_FLAGS}")
-	message(STATUS "NOTE: I am not a lawyer, and this is not legal advice!")
+	message(STATUS
+		"NOTE: I am not a lawyer, and this is not legal advice!")
 
-	option(VRPN_GPL_SERVER "Check this to accept the possibility of linking GPL libraries with the server." OFF)
+	option(VRPN_GPL_SERVER
+		"Check this to accept the possibility of linking GPL libraries with the server."
+		OFF)
 endif()
 
 if(GPLINCOMPAT_SERVER_FLAGS)
 	# Some GPL-incompatible options are enabled
 	message(STATUS "")
-	message(STATUS "NOTE: The following build options may produce a server library/binary")
-	message(STATUS "  that is incompatible with the GPL/undistributable if linked with GPL libraries.")
+	message(STATUS
+		"NOTE: The following build options may produce a server library/binary")
+	message(STATUS
+		"  that is incompatible with the GPL/undistributable if linked with GPL libraries.")
 	message(STATUS "  ${GPLINCOMPAT_SERVER_FLAGS}")
-	message(STATUS "NOTE: I am not a lawyer, and this is not legal advice!")
+	message(STATUS
+		"NOTE: I am not a lawyer, and this is not legal advice!")
 endif()
 
 # Check for errors.
@@ -600,15 +676,19 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 	if(GPL_SERVER_FLAGS AND NOT VRPN_GPL_SERVER)
 		message(STATUS "")
 		message(STATUS "Selected build options produce a GPL server library.")
-		message(STATUS "You may disable them, otherwise set VRPN_GPL_SERVER to acknowledge this and build anyway.")
-		message(FATAL_ERROR "Need VRPN_GPL_SERVER to build server library with GPL options enabled!")
+		message(STATUS
+			"You may disable them, otherwise set VRPN_GPL_SERVER to acknowledge this and build anyway.")
+		message(FATAL_ERROR
+			"Need VRPN_GPL_SERVER to build server library with GPL options enabled!")
 	endif()
 
 	if(GPL_SERVER_FLAGS AND GPLINCOMPAT_SERVER_FLAGS)
 		message(STATUS "")
 		message(STATUS "IMPORTANT LICENSING NOTE!")
-		message(STATUS "Building with the current settings may produce a legally non-distributable server binary!")
-		message(STATUS "NOTE: I am not a lawyer, and this is not legal advice!")
+		message(STATUS
+			"Building with the current settings may produce a legally non-distributable server binary!")
+		message(STATUS
+			"NOTE: I am not a lawyer, and this is not legal advice!")
 	endif()
 endif()
 

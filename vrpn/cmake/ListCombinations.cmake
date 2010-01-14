@@ -29,7 +29,8 @@ function(list_combinations var)
 		message(STATUS "_prefixes ${_prefixes}")
 		message(STATUS "_prefixes ${_suffixes}")
 		message(STATUS "_prefixes ${_nowhere}")
-		message(FATAL_ERROR "Syntax error in use of ${CMAKE_CURRENT_LIST_FILE}")
+		message(FATAL_ERROR
+			"Syntax error in use of ${CMAKE_CURRENT_LIST_FILE}")
 	endif()
 
 	foreach(_prefix ${_prefixes})
