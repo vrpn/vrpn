@@ -1,3 +1,7 @@
+2010-01-14  David Marshburn  <marshbur@cs.unc.edu>
+
+	* FunctionGeneratorTest.java:  new.
+
 2009-09-10  David Marshburn  <marshbur@cs.unc.edu>
 
 	* TestTempImager.java:  removed.  TempImager no longer exists.
