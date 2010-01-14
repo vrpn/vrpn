@@ -1,3 +1,8 @@
+2010-01-14  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGenerator.h/C:  various bug fixes and additions,
+	mostly involved with sending and receiving channel messages.
+
 2010-01-05  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_FunctionGenerator.h/C:  added error-reporting handlers

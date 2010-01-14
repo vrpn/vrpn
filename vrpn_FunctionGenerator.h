@@ -55,6 +55,17 @@ public:
 	// of failure, when negative should be returned
 	virtual vrpn_int32 decode_from( const char** buf, vrpn_int32& len ) = 0;
 
+	// used when encoding/decoding to specify function type
+	enum FunctionCode
+	{
+		FUNCTION_NULL = 0,
+		FUNCTION_SCRIPT = 1
+	};
+
+	// concrete classes should implement this to return the
+	// appropriate FunctionCode, from above
+	virtual FunctionCode getFunctionCode( ) const = 0;
+
 protected:
 	vrpn_float32 lerp( vrpn_float32 t, vrpn_float32 t0, vrpn_float32 t1,
 						vrpn_float32 v0, vrpn_float32 v1 ) const
@@ -77,6 +88,9 @@ public:
 
 	vrpn_int32 encode_to( char** buf, vrpn_int32& len ) const;
 	vrpn_int32 decode_from( const char** buf, vrpn_int32& len );
+protected:
+	FunctionCode getFunctionCode( ) const {  return FUNCTION_NULL;  }
+
 };
 
 
@@ -102,6 +116,7 @@ public:
 	vrpn_bool setScript( char* script );
 
 protected:
+	FunctionCode getFunctionCode( ) const {  return FUNCTION_SCRIPT;  }
 	char* script;
 
 };
@@ -370,7 +385,7 @@ public:
 		vrpn_FUNCTION_ERROR_HANDLER handler );
 	
 	static int VRPN_CALLBACK handle_channelReply_message( void* userdata, vrpn_HANDLERPARAM p );
-	static int VRPN_CALLBACK VRPN_CALLBACK handle_startReply_message( void* userdata, vrpn_HANDLERPARAM p );
+	static int VRPN_CALLBACK handle_startReply_message( void* userdata, vrpn_HANDLERPARAM p );
 	static int VRPN_CALLBACK handle_stopReply_message( void* userdata, vrpn_HANDLERPARAM p );
 	static int VRPN_CALLBACK handle_sampleRateReply_message( void* userdata, vrpn_HANDLERPARAM p );
 	static int VRPN_CALLBACK handle_interpreterReply_message( void* userdata, vrpn_HANDLERPARAM p );
