@@ -30,7 +30,7 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connec
 	d_vGrav[0] = 0;
 	d_vGrav[1] = -1;
 	d_vGrav[2] = 0;
-	
+
 	d_vX[0] = d_vX[1] = d_vX[2] = d_vX[3] = -1;
 	d_vY[0] = d_vY[1] = d_vY[2] = d_vY[3] = -1;
 	d_vSize[0] = d_vSize[1] = d_vSize[2] = d_vSize[3] = -1;
@@ -71,12 +71,15 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connec
 
 	// put a little z translation as a saner default
 	d_currentPose.xyz[2] = 1;
-	
-	// Finish initializing these vectors
+
+	// Initialize all gravity vecs to a default
 	d_vGravAntepenultimate[0] = d_vGravPenultimate[0] = d_vGrav[0] = 0;
 	d_vGravAntepenultimate[1] = d_vGravPenultimate[1] = d_vGrav[1] = 0;
 	d_vGravAntepenultimate[2] = d_vGravPenultimate[2] = d_vGrav[2] = 1;
 
+	// Set up our initial "default" pose to make sure everything is
+	// safely initialized before our first report.
+	convert_pose_to_tracker();
 }
 
 void vrpn_Tracker_WiimoteHead::setupWiimote() {
