@@ -1,3 +1,9 @@
+2010-01-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Generic_server_object.C : Making DreamCheeky not try to compile
+		in except on Windows and Cygwin and Apple, where it has been
+		implemented.
+
 2009-12-27  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn.cfg : Added support for the Dream Cheeky USB

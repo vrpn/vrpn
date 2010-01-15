@@ -4025,7 +4025,9 @@ int vrpn_Generic_Server_Object::setup_DreamCheeky(char * & pch, char * line, FIL
     return -1;
   }
 
-  // Open the Xkeys
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__)
+
+  // Open the DreamCheeky
   // Make sure there's room for a new button
   if (num_buttons >= VRPN_GSO_MAX_BUTTONS) {
     fprintf(stderr,"vrpn_Dream_Cheeky_USB_roll_up_drums: Too many buttons in config file");
@@ -4044,6 +4046,11 @@ int vrpn_Generic_Server_Object::setup_DreamCheeky(char * & pch, char * line, FIL
   }
 
   return 0;  // successful completion
+
+#else
+  fprintf(stderr,"vrpn_DreamCheeky not yet implemented for this architecture.\n");
+  return -1;
+#endif
 }
 
 
