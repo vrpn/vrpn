@@ -2,6 +2,8 @@
 
 #include "vrpn_DreamCheeky.h"
 
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__)
+
 // USB vendor and product IDs for the models we support
 static const vrpn_uint16 DREAMCHEEKY_VENDOR = 6465;
 static const vrpn_uint16 USB_ROLL_UP_DRUM_KIT = 32801;
@@ -108,3 +110,6 @@ void vrpn_DreamCheeky_Drum_Kit::decodePacket(size_t bytes, vrpn_uint8 *buffer)
     }
   }
 }
+
+#endif
+

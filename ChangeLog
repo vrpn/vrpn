@@ -1,3 +1,12 @@
+2010-01-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CMakeLists.txt : Added -fPIC option submitted by Sheldon
+		Andrews from McGill to non-Windows builds.  This was
+		important for his 64-bit Java code.
+	* vrpn_DreamCheeky.C : Makes it not try to compile except
+		under Windows, Cygwin, Apple.
+	* vrpn_DreamCheaky.h : Same.
+
 2010-01-14  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_FunctionGenerator.h/C:  various bug fixes and additions,
