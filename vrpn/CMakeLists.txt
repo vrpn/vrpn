@@ -694,7 +694,7 @@ endif()
 # Enable testing/dashboards
 include(CTest)
 include(CreateDashboardScripts)
-create_dashboard_scripts("${VRPN_SOURCE_DIRECTORY}/DashboardBuildInitialCache.cmake.in")
+create_dashboard_scripts("${CMAKE_CURRENT_SOURCE_DIRECTORY}/DashboardBuildInitialCache.cmake.in")
 
 #-----------------------------------------------------------------------------
 # If we succeeded, we can go on and include packaging!
