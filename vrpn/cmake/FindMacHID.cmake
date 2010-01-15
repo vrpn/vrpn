@@ -53,13 +53,9 @@ if(MACHID_FOUND)
 		"${MACHID_CoreFoundation_INCLUDE_DIR}"
 		"${MACHID_IOKit_INCLUDE_DIR}")
 
-	foreach(_cachevar
-		MACHID_CoreFoundation_LIBRARY
+	mark_as_advanced(MACHID_CoreFoundation_LIBRARY
 		MACHID_CoreFoundation_INCLUDE_DIR
 		MACHID_IOKit_LIBRARY
 		MACHID_IOKit_INCLUDE_DIR)
-
-		mark_as_advanced(${_cachevar})
-	endforeach()
 
 endif()
