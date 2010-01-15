@@ -14,7 +14,6 @@ if(TARGET quat)
 	# Look for the header file.
 	find_path(QUATLIB_INCLUDE_DIR NAMES quat.h
 			PATHS ${quatlib_SOURCE_DIR})
-	mark_as_advanced(QUATLIB_INCLUDE_DIR)
 
 	set(QUATLIB_LIBRARY "quat")
 
@@ -26,7 +25,6 @@ else()
 		PATHS
 		"C:/Program Files/quatlib/include"
 		"../quat")
-	mark_as_advanced(QUATLIB_INCLUDE_DIR)
 
 	# Look for the library.
 	find_library(QUATLIB_LIBRARY
@@ -37,7 +35,6 @@ else()
 		"C:/Program Files/quatlib/lib"
 		"../buildquat"
 		"../buildquat/release")
-	mark_as_advanced(QUATLIB_LIBRARY)
 endif()
 
 # handle the QUIETLY and REQUIRED arguments and set QUATLIB_FOUND to TRUE if
@@ -54,7 +51,10 @@ if(QUATLIB_FOUND)
 		list(APPEND QUATLIB_LIBRARIES m)
 	endif()
 	set(QUATLIB_INCLUDE_DIRS ${QUATLIB_INCLUDE_DIR})
+
 else()
 	set(QUATLIB_LIBRARIES)
 	set(QUATLIB_INCLUDE_DIRS)
 endif()
+
+mark_as_advanced(QUATLIB_LIBRARY QUATLIB_INCLUDE_DIR)
