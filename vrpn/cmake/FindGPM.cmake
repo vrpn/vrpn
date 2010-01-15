@@ -38,10 +38,5 @@ if(GPM_FOUND)
 endif()
 
 if(GPM_FOUND OR GPM_MARK_AS_ADVANCED)
-	foreach(_cachevar
-		GPM_INCLUDE_DIR
-		GPM_LIBRARY)
-
-		mark_as_advanced(${_cachevar})
-	endforeach()
+	mark_as_advanced(GPM_INCLUDE_DIR GPM_LIBRARY)
 endif()

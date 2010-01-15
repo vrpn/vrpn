@@ -3,14 +3,13 @@
 # Cache Variables: (probably not for direct use in your scripts)
 #  WIIUSE_INCLUDE_DIR
 #  WIIUSE_LIBRARY
+#  WIIUSE_DLL - you may use this one directly
 #
 # Non-cache variables you might use in your CMakeLists.txt:
 #  WIIUSE_FOUND
 #  WIIUSE_INCLUDE_DIRS
 #  WIIUSE_LIBRARIES
 #  WIIUSE_RUNTIME_LIBRARY_DIRS
-#  WIIUSE_MARK_AS_ADVANCED - whether to mark our vars as advanced even
-#    if we don't find this library.
 #
 # Requires these CMake modules:
 #  FindPackageHandleStandardArgs (known included with CMake >=2.6.2)
@@ -20,13 +19,33 @@
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
 
+set(WIIUSE_ROOT_DIR "${WIIUSE_ROOT_DIR}" CACHE PATH "Directory to search for WiiUse")
+
+if(CMAKE_SIZEOF_VOID_P MATCHES "8")
+	set(_LIBSUFFIXES /lib64 /lib)
+else()
+	set(_LIBSUFFIXES /lib)
+endif()
+
 find_library(WIIUSE_LIBRARY
-	NAMES wiiuse)
+	NAMES wiiuse
+	PATHS "${WIIUSE_ROOT_DIR}"
+	PATH_SUFFIXES "${_LIBSUFFIXES}")
+
 get_filename_component(_libdir "${WIIUSE_LIBRARY}" PATH)
 
 find_path(WIIUSE_INCLUDE_DIR
 	NAMES wiiuse.h
-	HINTS "${_libdir}")
+	HINTS "${_libdir}" "${_libdir}/.."
+	PATHS "${WIIUSE_ROOT_DIR}"
+	PATH_SUFFIXES include/)
+
+if(WIN32)
+	find_file(WIIUSE_DLL
+		NAMES wiiuse.dll
+		HINTS "${_libdir}")
+	get_filename_component(WIIUSE_RUNTIME_LIBRARY_DIRS "${WIIUSE_DLL}" PATH)
+endif()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(WiiUse
@@ -36,17 +55,8 @@ find_package_handle_standard_args(WiiUse
 
 if(WIIUSE_FOUND)
 	set(WIIUSE_LIBRARIES "${WIIUSE_LIBRARY}")
-	set(WIIUSE_LIBRARY_DIRS "${_libdir}")
-
 	set(WIIUSE_INCLUDE_DIRS "${WIIUSE_INCLUDE_DIR}")
-
+	mark_as_advanced(WIIUSE_ROOT_DIR)
 endif()
 
-if(WIIUSE_FOUND OR WIIUSE_MARK_AS_ADVANCED)
-	foreach(_cachevar
-		WIIUSE_INCLUDE_DIR
-		WIIUSE_LIBRARY)
-
-		mark_as_advanced(${_cachevar})
-	endforeach()
-endif()
+mark_as_advanced(WIIUSE_INCLUDE_DIR WIIUSE_LIBRARY WIIUSE_DLL)

@@ -1,0 +1,72 @@
+# - Dashboard driver script for use with ctest.
+#
+# Generated file processed by CreateDashboardScripts.cmake
+# Run it like:
+#  ctest -S nameofthisfile
+# with -V or -V -VV if you want more feedback.
+#
+# Generally you do not need to edit this file by hand!
+#
+# If this file isn't named DashboardScript.cmake.in and located
+# in the same directory as CreateDashboardScripts.cmake, it has been
+# auto-generated and will be overwritten every time CMake configures
+# itself.  (This may be every build!)
+#
+# Original Author:
+# 2009-2010 Ryan Pavlik <rpavlik@iastate.edu> <abiryan@ryand.net>
+# http://academic.cleardefinition.com
+# Iowa State University HCI Graduate Program/VRAC
+
+cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+
+set(CTEST_CMAKE_GENERATOR "@CMAKE_GENERATOR@")
+
+set(CTEST_NOTES_FILES "${CTEST_SCRIPT_DIRECTORY}/${CTEST_SCRIPT_NAME}")
+set(CTEST_DASHBOARD_ROOT "@DASHBOARDSCRIPT_BASE_DIRECTORY@")
+set(CTEST_SOURCE_DIRECTORY "@DASHBOARDSCRIPT_SOURCE_DIRECTORY@")
+set(DASH_TYPE "@DASHBOARDSCRIPT_DASH_TYPE@")
+set(CTEST_BINARY_DIRECTORY "${CTEST_DASHBOARD_ROOT}/build-${DASH_TYPE}")
+
+set(CTEST_BUILD_NAME "@BUILDNAME@")
+set(CTEST_SITE "@SITE@")
+
+set(CTEST_COMMAND "@DASHBOARDSCRIPT_CTEST_EXECUTABLE@")
+set(CTEST_CMAKE_COMMAND "@DASHBOARDSCRIPT_CMAKE_COMMAND@")
+set(CTEST_UPDATE_TYPE "@UPDATE_TYPE@")
+set(CTEST_UPDATE_COMMAND "@UPDATE_COMMAND@")
+set(CTEST_UPDATE_OPTIONS "@UPDATE_OPTIONS@")
+
+
+# Avoid non-ascii characters in tool output.
+set(ENV{LC_ALL} C)
+
+file(READ "${CTEST_DASHBOARD_ROOT}/GeneratedInitialCache.${CTEST_SCRIPT_NAME}" _initcache)
+if(EXISTS "${CTEST_DASHBOARD_ROOT}/CustomInitialCache.cmake")
+	file(READ "${CTEST_DASHBOARD_ROOT}/CustomInitialCache.cmake" _customcache)
+	set(_initcache "${_initcache}
+${_customcache}")
+endif()
+set(_initcache "# This file is automatically regenerated every dashboard build -
+# Do not edit it directly!
+# If you want to add initial cache values, you can create/modify
+# the CustomInitialCache.cmake file in this directory.
+${_initcache}")
+
+file(WRITE "${CTEST_DASHBOARD_ROOT}/GeneratedCombinedCache.${CTEST_SCRIPT_NAME}" "${_initcache}")
+
+ctest_empty_binary_directory("${CTEST_BINARY_DIRECTORY}")
+
+ctest_start(${DASH_TYPE})
+
+if(CTEST_UPDATE_COMMAND AND NOT "${DASH_TYPE}" STREQUAL "Experimental")
+	ctest_update(SOURCE "${CTEST_SOURCE_DIRECTORY}" RETURN_VALUE res)
+endif()
+
+# Only proceed if we updated a file or if we're not a continuous build
+if("${res}" GREATER 0 OR NOT "${DASH_TYPE}" STREQUAL "Continuous")
+	ctest_configure(BUILD "${CTEST_BINARY_DIRECTORY}" RETURN_VALUE res
+		OPTIONS "-C${CTEST_DASHBOARD_ROOT}/GeneratedCombinedCache.${CTEST_SCRIPT_NAME}")
+	ctest_build(BUILD "${CTEST_BINARY_DIRECTORY}" RETURN_VALUE res)
+	ctest_test(BUILD "${CTEST_BINARY_DIRECTORY}" RETURN_VALUE res)
+	ctest_submit(RETURN_VALUE res)
+endif()
