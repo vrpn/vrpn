@@ -43,10 +43,7 @@
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
 
-if(HDAPI_LIBRARY AND HLAPI_LIBRARY)
-	# in cache already
-	set(OPENHAPTICS_FIND_QUIETLY TRUE)
-endif()
+set(OPENHAPTICS_ROOT_DIR "${OPENHAPTICS_ROOT_DIR}" CACHE PATH "Path to search for OpenHaptics")
 
 ###
 # Configure OpenHaptics
@@ -63,12 +60,19 @@ set(_libsearchdirs)
 
 if(WIN32)
 	program_files_glob(_dirs "/Sensable/3DTouch*/")
-
+	if(MSVC60)
+		set(_vc "vc6")
+	elseif(MSVC70 OR MSVC71)
+		set(_vc "vc7")
+	elseif(MSVC80)
+		set(_vc "vc8")
+	endif()
 	if(CMAKE_SIZEOF_VOID_P MATCHES "8")
 		# 64-bit
-		list_combinations(_libsearch PREFIXES "${_dirs}" SUFFIXES "/lib/x64")
+		list_combinations(_libsearch PREFIXES "${OPENHAPTICS_ROOT_DIR}" "${_dirs}" SUFFIXES "/lib/x64")
 		list_combinations(_libsearch2
 			PREFIXES
+			"${OPENHAPTICS_ROOT_DIR}"
 			"${_dirs}"
 			SUFFIXES
 			"/utilities/lib/x64")
@@ -76,21 +80,27 @@ if(WIN32)
 		# 32-bit
 		list_combinations(_libsearch
 			PREFIXES
+			"${OPENHAPTICS_ROOT_DIR}"
 			"${_dirs}"
 			SUFFIXES
+			"/lib"
 			"/lib/win32")
 		list_combinations(_libsearch2
 			PREFIXES
+			"${OPENHAPTICS_ROOT_DIR}"
 			"${_dirs}"
 			SUFFIXES
-			"/utilities/lib/Win32")
+			"/utilities/lib/Win32"
+			"/utilities/lib"
+			"/utilities/lib/${_vc}")
 	endif()
 
 	clean_directory_list(_libsearchdirs ${_libsearch} ${_libsearch2})
 
-	list_combinations(_incsearch PREFIXES "${_dirs}" SUFFIXES "/include")
+	list_combinations(_incsearch PREFIXES "${OPENHAPTICS_ROOT_DIR}" "${_dirs}" SUFFIXES "/include")
 	list_combinations(_incsearch2
 		PREFIXES
+		"${OPENHAPTICS_ROOT_DIR}"
 		"${_dirs}"
 		SUFFIXES
 		"/utilities/include")
@@ -260,6 +270,8 @@ if(OPENHAPTICS_FOUND)
 	clean_directory_list(OPENHAPTICS_INCLUDE_DIRS)
 
 	clean_library_list(OPENHAPTICS_LIBRARIES)
+
+	mark_as_advanced(OPENHAPTICS_ROOT_DIR)
 endif()
 
 if(OPENHAPTICS_FOUND OR OPENHAPTICS_MARK_AS_ADVANCED)

@@ -21,7 +21,8 @@
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
 
-set(CPPCHECK_ROOT_DIR "" CACHE PATH "Path to search for cppcheck")
+file(TO_CMAKE_PATH "${CPPCHECK_ROOT_DIR}" CPPCHECK_ROOT_DIR)
+set(CPPCHECK_ROOT_DIR "${CPPCHECK_ROOT_DIR}" CACHE PATH "Path to search for cppcheck")
 
 # cppcheck app bundles on Mac OS X are GUI, we want command line only
 set(_oldappbundlesetting ${CMAKE_FIND_APPBUNDLE})

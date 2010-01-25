@@ -59,12 +59,7 @@ function(add_cppcheck _targetname)
 			${CPPCHECK_QUIET_ARG}
 			${CPPCHECK_TEMPLATE_ARG}
 			${_cppcheck_args}
-			${_files}
-			WORKING_DIRECTORY
-			"${CMAKE_CURRENT_SOURCE_DIR}"
-			COMMENT
-			"Running cppcheck on target ${_targetname}..."
-			VERBATIM)
+			${_files})
 
 		set_tests_properties(${_targetname}_cppcheck_test
 			PROPERTIES
@@ -73,10 +68,10 @@ function(add_cppcheck _targetname)
 
 		if(NOT TARGET all_cppcheck)
 			add_custom_target(all_cppcheck)
-			set_target_properties(all_cppcheck PROPERTIES EXCLUDE_FROM_ALL true)
+			set_target_properties(all_cppcheck PROPERTIES EXCLUDE_FROM_ALL TRUE)
 		endif()
 
-		add_custom_target(${_targetname}_cppcheck
+		add_custom_command(TARGET all_cppcheck PRE_BUILD
 			COMMAND
 			${CPPCHECK_EXECUTABLE}
 			${CPPCHECK_QUIET_ARG}
@@ -88,12 +83,5 @@ function(add_cppcheck _targetname)
 			COMMENT
 			"${_targetname}_cppcheck: Running cppcheck on target ${_targetname}..."
 			VERBATIM)
-
-		set_target_properties(${_targetname}_cppcheck
-			PROPERTIES
-			EXCLUDE_FROM_ALL
-			true)
-
-		add_dependencies(all_cppcheck ${_targetname}_cppcheck)
 	endif()
 endfunction()

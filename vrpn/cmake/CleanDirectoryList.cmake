@@ -15,7 +15,6 @@ function(clean_directory_list _var)
 
 	if(_in)
 		# Initial list cleaning
-		list(SORT _in)
 		list(REMOVE_DUPLICATES _in)
 
 		# Grab the absolute path of each actual directory
@@ -30,7 +29,6 @@ function(clean_directory_list _var)
 
 		if(_out)
 			# Clean up the output list now
-			list(SORT _out)
 			list(REMOVE_DUPLICATES _out)
 		endif()
 
