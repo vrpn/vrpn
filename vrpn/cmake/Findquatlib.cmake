@@ -18,10 +18,30 @@ if(TARGET quat)
 	set(QUATLIB_LIBRARY "quat")
 
 else()
+	set(QUATLIB_ROOT_DIR
+		"${QUATLIB_ROOT_DIR}"
+		CACHE
+		PATH
+		"Root directory to search for quatlib")
+	if(DEFINED VRPN_ROOT_DIR AND NOT QUATLIB_ROOT_DIR)
+		set(QUATLIB_ROOT_DIR "${VRPN_ROOT_DIR}")
+		mark_as_advanced(QUATLIB_ROOT_DIR)
+	endif()
+
+	if("${CMAKE_SIZEOF_VOID_P}" MATCHES "8")
+		set(_libsuffixes lib64 lib)
+	else()
+		set(_libsuffixes lib)
+	endif()
+
 	# Look for the header file.
 	find_path(QUATLIB_INCLUDE_DIR
 		NAMES
 		quat.h
+		HINTS
+		"${QUATLIB_ROOT_DIR}"
+		PATH_SUFFIXES
+		include
 		PATHS
 		"C:/Program Files/quatlib/include"
 		"../quat")
@@ -31,6 +51,10 @@ else()
 		NAMES
 		quat.lib
 		libquat.a
+		HINTS
+		"${QUATLIB_ROOT_DIR}"
+		PATH_SUFFIXES
+		${_libsuffixes}
 		PATHS
 		"C:/Program Files/quatlib/lib"
 		"../buildquat"
@@ -40,7 +64,7 @@ endif()
 # handle the QUIETLY and REQUIRED arguments and set QUATLIB_FOUND to TRUE if
 # all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(QUATLIB
+find_package_handle_standard_args(quatlib
 	DEFAULT_MSG
 	QUATLIB_LIBRARY
 	QUATLIB_INCLUDE_DIR)
@@ -52,6 +76,7 @@ if(QUATLIB_FOUND)
 	endif()
 	set(QUATLIB_INCLUDE_DIRS ${QUATLIB_INCLUDE_DIR})
 
+	mark_as_advanced(QUATLIB_ROOT_DIR)
 else()
 	set(QUATLIB_LIBRARIES)
 	set(QUATLIB_INCLUDE_DIRS)
