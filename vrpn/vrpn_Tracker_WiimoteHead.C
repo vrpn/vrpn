@@ -13,9 +13,19 @@ static	double	duration(struct timeval t1, struct timeval t2) {
 	       (t1.tv_sec - t2.tv_sec);
 }
 
+void make_identity_quat(q_type &dest) {
+	dest[0] = dest[1] = dest[2] = 0;
+	dest[3] = 1;
+}
+
+void make_null_vec(q_vec_type &dest) {
+	dest[0] = dest[1] = dest[2] = 0;
+}
+
 vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connection* trackercon, const char* wiimote, float update_rate) :
 	vrpn_Tracker (name, trackercon),
 	d_update_interval(update_rate ? (1 / update_rate) : 60.0),
+	d_flipState(FLIP_UNKNOWN),
 	d_blobDistance(.145),
 	d_points(0),
 	d_contact(false),
@@ -26,15 +36,6 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connec
 	d_name(wiimote),
 	d_gravDirty(true)
 {
-
-	d_vGrav[0] = 0;
-	d_vGrav[1] = -1;
-	d_vGrav[2] = 0;
-
-	d_vX[0] = d_vX[1] = d_vX[2] = d_vX[3] = -1;
-	d_vY[0] = d_vY[1] = d_vY[2] = d_vY[3] = -1;
-	d_vSize[0] = d_vSize[1] = d_vSize[2] = d_vSize[3] = -1;
-
 
 	// If the name is NULL, we're done.
 	if (wiimote == NULL) {
@@ -67,14 +68,13 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connec
 	// Also, set the updated flag to send a single report
 	reset();
 
-	d_gravityXform = d_currentPose;
-
 	// put a little z translation as a saner default
 	d_currentPose.xyz[2] = 1;
 
 	// Initialize all gravity vecs to a default
-	d_vGravAntepenultimate[0] = d_vGravPenultimate[0] = d_vGrav[0] = 0;
-	d_vGravAntepenultimate[1] = d_vGravPenultimate[1] = d_vGrav[1] = 0;
+	make_null_vec(d_vGrav);
+	make_null_vec(d_vGravPenultimate);
+	make_null_vec(d_vGravAntepenultimate);
 	d_vGravAntepenultimate[2] = d_vGravPenultimate[2] = d_vGrav[2] = 1;
 
 	// Set up our initial "default" pose to make sure everything is
@@ -283,16 +283,27 @@ void vrpn_Tracker_WiimoteHead::report() {
 
 void vrpn_Tracker_WiimoteHead::reset(void) {
 	// Reset to the identity pose
-	d_currentPose.xyz[0] = 0;
-	d_currentPose.xyz[1] = 0;
-	d_currentPose.xyz[2] = 0;
-	d_currentPose.quat[0] = d_currentPose.quat[1] = d_currentPose.quat[2] = 0;
-	d_currentPose.quat[3] = 1;
+	make_null_vec(d_currentPose.xyz);
+	make_identity_quat(d_currentPose.quat);
+
+	make_null_vec(d_gravityXform.xyz);
+	make_identity_quat(d_gravityXform.quat);
 
 	vrpn_gettimeofday(&d_prevtime, NULL);
 
 	// Set the updated flag to send a report
 	d_updated = true;
+	d_flipState = FLIP_UNKNOWN;
+	d_lock = false;
+
+	make_null_vec(d_vGrav);
+	make_null_vec(d_vSensorZAxis);
+
+	make_identity_quat(d_flip);
+
+	d_vX[0] = d_vX[1] = d_vX[2] = d_vX[3] = -1;
+	d_vY[0] = d_vY[1] = d_vY[2] = d_vY[3] = -1;
+	d_vSize[0] = d_vSize[1] = d_vSize[2] = d_vSize[3] = -1;
 
 	// Convert the matrix into quaternion notation and copy into the
 	// tracker pos and quat elements.
@@ -365,9 +376,8 @@ void	vrpn_Tracker_WiimoteHead::update_pose(double time_interval) {
 	q_xyz_quat_type newPose;
 
 	// Start at the identity pose
-	newPose.xyz[0] = newPose.xyz[1] = newPose.xyz[2] = 0;
-	newPose.quat[0] = newPose.quat[1] = newPose.quat[2] = 0;
-	newPose.quat[3] = 1;
+	make_null_vec(newPose.xyz);
+	make_identity_quat(newPose.quat);
 
 	// If our gravity vector has changed and it's not 0,
 	// we need to update our gravity correction transform.
@@ -382,12 +392,18 @@ void	vrpn_Tracker_WiimoteHead::update_pose(double time_interval) {
 		q_vec_scale (movingAvg, 0.33333, movingAvg);
 
 		// reset gravity transform
-		q_copy(d_gravityXform.quat, newPose.quat);
-		q_vec_copy(d_gravityXform.xyz, newPose.xyz);
-		q_vec_type regulargravity = Q_NULL_VECTOR;
+		make_identity_quat(d_gravityXform.quat);
+		make_null_vec(d_gravityXform.xyz);
 
+		q_vec_type regulargravity = Q_NULL_VECTOR;
 		regulargravity[1] = 1;
+
 		q_from_two_vecs (d_gravityXform.quat, regulargravity, movingAvg);
+
+		// Set up a 180-degree rotation around sensor Z for future use
+		q_vec_type zAxis = {0,0,1};
+		q_xyz_quat_xform(zAxis, &d_gravityXform, zAxis);
+		q_from_axis_angle(d_flip, zAxis[0], zAxis[1], zAxis[2], Q_PI);
 
 		d_gravDirty = false;
 	}
@@ -453,6 +469,7 @@ void	vrpn_Tracker_WiimoteHead::update_pose(double time_interval) {
 	} else {
 		// TODO: right now if we don't have exactly 2 points we lose the lock
 		d_lock = false;
+		d_flipState = FLIP_UNKNOWN;
 	}
 }
 
@@ -462,8 +479,26 @@ void vrpn_Tracker_WiimoteHead::convert_pose_to_tracker() {
 		// we know gravity, so we are correcting for it.
 		// TODO (maybe): improve vrpn driver in juggler to handle tracker-to-room
 		// transform and set that there, instead?
-		//q_xyz_quat_compose(&d_currentPose, &d_currentPose, &d_gravityXform);
+		q_xyz_quat_compose(&d_currentPose, &d_currentPose, &d_gravityXform);
+
 	}
+
+	if (d_flipState == FLIP_UNKNOWN) {
+		q_vec_type upVec = {0, 1, 0};
+		q_xform(upVec, d_currentPose.quat, upVec);
+		if (upVec[1] < 0) {
+			// We are upside down - we will need to rotate 180 about the sensor Z
+			d_flipState = FLIP_180;
+		} else {
+			// OK, we are fine - there is a positive Y component to our up vector
+			d_flipState = FLIP_NORMAL;
+		}
+	}
+
+	if (d_flipState == FLIP_180) {
+		q_mult(d_currentPose.quat, d_currentPose.quat, d_flip);
+	}
+
 	q_vec_copy(pos, d_currentPose.xyz); // set position;
 	q_copy(d_quat, d_currentPose.quat); // set orientation
 }

@@ -24,7 +24,7 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 				  float update_rate);
 
 	virtual ~vrpn_Tracker_WiimoteHead (void);
-	
+
 	void setupWiimote();
 
 	virtual void mainloop();
@@ -45,11 +45,19 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 	const double          d_update_interval; //< How long to wait between sends
 	const double				d_blobDistance;
 
+	enum FlipState {
+		FLIP_NORMAL,
+		FLIP_180,
+		FLIP_UNKNOWN
+	};
+
+	FlipState d_flipState;
+
 	double d_vX[4];
 	double d_vY[4];
 	double d_vSize[4];
 	double d_points;
-	
+
 	bool d_contact;
 	bool d_lock;
 	bool d_updated;
@@ -59,7 +67,9 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 	const char* d_name;
 
 	q_xyz_quat_type d_gravityXform;
+	q_type d_flip;
 	q_xyz_quat_type d_currentPose;
+	q_vec_type d_vSensorZAxis;
 
 	bool		d_gravDirty;
 	q_vec_type	d_vGravAntepenultimate;
