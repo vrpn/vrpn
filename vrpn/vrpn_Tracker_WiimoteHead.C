@@ -1,5 +1,6 @@
 #include <string.h>
 #include <math.h>
+#include <algorithm>
 #include "vrpn_Tracker_WiimoteHead.h"
 
 #undef	VERBOSE
@@ -398,10 +399,10 @@ void	vrpn_Tracker_WiimoteHead::update_pose(double time_interval) {
 		q_vec_type regulargravity = Q_NULL_VECTOR;
 		regulargravity[1] = 1;
 
-		q_from_two_vecs (d_gravityXform.quat, regulargravity, movingAvg);
+		q_from_two_vecs (d_gravityXform.quat, movingAvg, regulargravity);
 
 		// Set up a 180-degree rotation around sensor Z for future use
-		q_vec_type zAxis = {0,0,1};
+		q_vec_type zAxis = {0,1,0};
 		q_xyz_quat_xform(zAxis, &d_gravityXform, zAxis);
 		q_from_axis_angle(d_flip, zAxis[0], zAxis[1], zAxis[2], Q_PI);
 
@@ -423,8 +424,21 @@ void	vrpn_Tracker_WiimoteHead::update_pose(double time_interval) {
 		const double xResSensor = 1024.0, yResSensor = 768.0;
 		const double fovX = 33.0, fovY = 23.0;
 		const double radPerPx = (fovX / 180.0 * M_PI) / xResSensor;
-		double dx = d_vX[0] - d_vX[1];
-		double dy = d_vY[0] - d_vY[1];
+		double X0, X1, Y0, Y1;
+
+		X0 = d_vX[0];
+		X1 = d_vX[1];
+		Y0 = d_vY[0];
+		Y1 = d_vY[1];
+
+		if (d_flipState == FLIP_180) {
+			std::swap(X0, X1);
+			std::swap(Y0, Y1);
+
+		}
+
+		double dx = X0 - X1;
+		double dy = Y0 - Y1;
 		double dist = sqrt(dx * dx + dy * dy);
 
 		// Note that this is an approximation, since we don't know the
@@ -443,8 +457,8 @@ void	vrpn_Tracker_WiimoteHead::update_pose(double time_interval) {
 
 		// Find the sensor pixel of the line of sight - directly between
 		// the led's
-		double avgX = (d_vX[0] + d_vX[1]) / 2.0;
-		double avgY = (d_vY[0] + d_vY[1]) / 2.0;
+		double avgX = (X0 + X1) / 2.0;
+		double avgY = (Y0 + Y1) / 2.0;
 
 		// b is the virtual depth in the sensor from a point to the full sensor
 		// used for finding similar triangles to calculate x/y translation
@@ -489,14 +503,17 @@ void vrpn_Tracker_WiimoteHead::convert_pose_to_tracker() {
 		if (upVec[1] < 0) {
 			// We are upside down - we will need to rotate 180 about the sensor Z
 			d_flipState = FLIP_180;
+			fprintf(stderr,"vrpn_Tracker_WiimoteHead: d_flipState = FLIP_180\n");
+			return;
 		} else {
 			// OK, we are fine - there is a positive Y component to our up vector
 			d_flipState = FLIP_NORMAL;
+			fprintf(stderr,"vrpn_Tracker_WiimoteHead: d_flipState = FLIP_NORMAL\n");
 		}
 	}
 
 	if (d_flipState == FLIP_180) {
-		q_mult(d_currentPose.quat, d_currentPose.quat, d_flip);
+		//q_mult(d_currentPose.quat, d_flip, d_currentPose.quat);
 	}
 
 	q_vec_copy(pos, d_currentPose.xyz); // set position;
