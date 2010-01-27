@@ -397,7 +397,7 @@ void	vrpn_Tracker_WiimoteHead::update_pose(double time_interval) {
 		make_null_vec(d_gravityXform.xyz);
 
 		q_vec_type regulargravity = Q_NULL_VECTOR;
-		regulargravity[1] = 1;
+		regulargravity[2] = 1;
 
 		q_from_two_vecs (d_gravityXform.quat, movingAvg, regulargravity);
 
