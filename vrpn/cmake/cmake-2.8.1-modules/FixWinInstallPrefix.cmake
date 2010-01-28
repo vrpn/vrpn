@@ -44,7 +44,7 @@ if(WIN32)
 		set(_needsfix yes)
 	elseif(NOT
 		"${FIXWININSTALLPREFIX_PREFIX}"
-		STREQUALS
+		STREQUAL
 		"${CMAKE_INSTALL_PREFIX}")
 		set(_needsfix yes)
 	else()
@@ -64,9 +64,9 @@ if(WIN32)
 				FORCE)
 		endif()
 		set(FIXWININSTALLPREFIX_PREFIX
+			"${CMAKE_INSTALL_PREFIX}"
 			CACHE
 			INTERNAL
-			"We've fixed the prefix."
-			${CMAKE_INSTALL_PREFIX})
+			"We've fixed the prefix.")
 	endif()
 endif()

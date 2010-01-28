@@ -20,8 +20,9 @@ project(VRPN)
 ###
 list(APPEND CMAKE_MODULE_PATH ${VRPN_SOURCE_DIR}/cmake)
 include(UseBackportedModules)
-include(FixWinInstallPrefix)
 include(WarningDev)
+include(GetForceIncludeDefinitions)
+include(MSVCMultipleProcessCompile)
 
 ###
 # Basic packaging options
@@ -178,7 +179,6 @@ endif()
 ###
 # OpenHaptics HDAPI/HLAPI
 ###
-set(OPENHAPTICS_MARK_AS_ADVANCED ON)
 find_package(OpenHaptics)
 if(OPENHAPTICS_FOUND)
 	option(VRPN_USE_PHANTOM_SERVER
@@ -198,7 +198,6 @@ endif()
 ###
 # WiiUse
 ###
-set(WIIUSE_MARK_AS_ADVANCED ON)
 find_package(WiiUse)
 if(WIIUSE_FOUND)
 	option(VRPN_USE_WIIUSE
@@ -242,7 +241,6 @@ endif()
 ###
 # GPM
 ###
-set(GPM_MARK_AS_ADVANCED ON)
 find_package(GPM)
 if(GPM_FOUND)
 	option(VRPN_USE_GPM_MOUSE
@@ -284,7 +282,7 @@ configure_file("${PROJECT_SOURCE_DIR}/vrpn_Configure.h.cmake_in"
 
 # Force use of our CMake-processed configuration header before the stock one.
 include_directories("${PROJECT_BINARY_DIR}")
-include(GetForceIncludeDefinitions)
+
 get_force_include_definitions(CONFIG_H_FLAG
 	"${PROJECT_BINARY_DIR}/vrpn_Configure.h")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CONFIG_H_FLAG}")
@@ -547,9 +545,14 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 		PUBLIC_HEADER
 		${VRPN_SERVER_PUBLIC_HEADERS})
 
-	install(TARGETS vrpnserver
-		ARCHIVE DESTINATION lib
-		PUBLIC_HEADER DESTINATION include)
+	install(TARGETS
+		vrpnserver
+		ARCHIVE
+		DESTINATION
+		lib
+		PUBLIC_HEADER
+		DESTINATION
+		include)
 endif()
 
 
@@ -572,9 +575,14 @@ if(VRPN_BUILD_CLIENT_LIBRARY)
 		COMPILE_DEFINITIONS
 		"VRPN_CLIENT_ONLY")
 
-	install(TARGETS vrpn
-		ARCHIVE DESTINATION lib
-		PUBLIC_HEADER DESTINATION include)
+	install(TARGETS
+		vrpn
+		ARCHIVE
+		DESTINATION
+		lib
+		PUBLIC_HEADER
+		DESTINATION
+		include)
 endif()
 
 
