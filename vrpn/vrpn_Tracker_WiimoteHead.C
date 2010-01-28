@@ -422,8 +422,12 @@ void	vrpn_Tracker_WiimoteHead::update_pose(double time_interval) {
 		// Wiimote stats source: http://wiibrew.org/wiki/Wiimote#IR_Camera
 		// TODO: verify this with spec sheet or experimental data
 		const double xResSensor = 1024.0, yResSensor = 768.0;
-		const double fovX = 33.0, fovY = 23.0;
-		const double radPerPx = (fovX / 180.0 * M_PI) / xResSensor;
+		//const double fovX = 33.0, fovY = 23.0;
+		//const double fovX = 66.0, fovY = 25.0;
+		const double fovX = Q_DEG_TO_RAD(45.0), fovY = (fovX / xResSensor) * yResSensor;
+		//const double fovX = 45.0, fovY = 23.00;
+
+		const double radPerPx = fovX / xResSensor;
 		double X0, X1, Y0, Y1;
 
 		X0 = d_vX[0];
@@ -463,7 +467,7 @@ void	vrpn_Tracker_WiimoteHead::update_pose(double time_interval) {
 		// b is the virtual depth in the sensor from a point to the full sensor
 		// used for finding similar triangles to calculate x/y translation
 		const double bHoriz = xResSensor / 2 / tan(fovX / 2);
-		const double bVert = -1 * yResSensor / 2 / tan(fovY / 2);
+		const double bVert =  yResSensor / 2 / tan(fovY / 2);
 
 		// World head displacement (X and Y) from a centered origin at
 		// the calculated distance from the sensor
