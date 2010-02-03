@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.6)
 project(VRPN)
 
 # Changes made by:
-# 2009 Ryan Pavlik <rpavlik@iastate.edu>
+# 2009-2010 Ryan Pavlik <rpavlik@iastate.edu>
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
 
@@ -23,7 +23,6 @@ include(UseBackportedModules)
 include(WarningDev)
 include(GetForceIncludeDefinitions)
 include(MSVCMultipleProcessCompile)
-include(DoxygenTargets)
 
 ###
 # Basic packaging options
@@ -616,9 +615,7 @@ endif()
 
 #-----------------------------------------------------------------------------
 # Create documentation
-add_doxygen(doxygen/Doxyfile
-	INSTALL_DESTINATION
-	share/doc/vrpn-${CPACK_PACKAGE_VERSION}/source-docs)
+add_subdirectory(doxygen)
 
 
 #-----------------------------------------------------------------------------

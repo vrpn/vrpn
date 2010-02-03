@@ -158,7 +158,6 @@ function(add_doxygen _doxyfile)
 
 		configure_file("${_doxygenmoddir}/DoxygenTargets.doxyfile.in"
 			"${CMAKE_CURRENT_BINARY_DIR}/${_doxyfile}.additional"
-			ESCAPE_QUOTES
 			@ONLY)
 
 		add_custom_command(TARGET
