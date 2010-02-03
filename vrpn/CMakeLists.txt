@@ -23,6 +23,7 @@ include(UseBackportedModules)
 include(WarningDev)
 include(GetForceIncludeDefinitions)
 include(MSVCMultipleProcessCompile)
+include(DoxygenTargets)
 
 ###
 # Basic packaging options
@@ -612,6 +613,13 @@ endif()
 if(VRPN_BUILD_TEST_RPC_GENERATION)
 	add_subdirectory(util/gen_rpc)
 endif()
+
+#-----------------------------------------------------------------------------
+# Create documentation
+add_doxygen(doxygen/Doxyfile
+	INSTALL_DESTINATION
+	share/doc/vrpn-${CPACK_PACKAGE_VERSION}/source-docs)
+
 
 #-----------------------------------------------------------------------------
 # Applications that live in the main directory.
