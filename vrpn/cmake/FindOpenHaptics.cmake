@@ -43,7 +43,11 @@
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
 
-set(OPENHAPTICS_ROOT_DIR "${OPENHAPTICS_ROOT_DIR}" CACHE PATH "Path to search for OpenHaptics")
+set(OPENHAPTICS_ROOT_DIR
+	"${OPENHAPTICS_ROOT_DIR}"
+	CACHE
+	PATH
+	"Path to search for OpenHaptics")
 
 ###
 # Configure OpenHaptics
@@ -69,7 +73,12 @@ if(WIN32)
 	endif()
 	if(CMAKE_SIZEOF_VOID_P MATCHES "8")
 		# 64-bit
-		list_combinations(_libsearch PREFIXES "${OPENHAPTICS_ROOT_DIR}" "${_dirs}" SUFFIXES "/lib/x64")
+		list_combinations(_libsearch
+			PREFIXES
+			"${OPENHAPTICS_ROOT_DIR}"
+			"${_dirs}"
+			SUFFIXES
+			"/lib/x64")
 		list_combinations(_libsearch2
 			PREFIXES
 			"${OPENHAPTICS_ROOT_DIR}"
@@ -97,7 +106,12 @@ if(WIN32)
 
 	clean_directory_list(_libsearchdirs ${_libsearch} ${_libsearch2})
 
-	list_combinations(_incsearch PREFIXES "${OPENHAPTICS_ROOT_DIR}" "${_dirs}" SUFFIXES "/include")
+	list_combinations(_incsearch
+		PREFIXES
+		"${OPENHAPTICS_ROOT_DIR}"
+		"${_dirs}"
+		SUFFIXES
+		"/include")
 	list_combinations(_incsearch2
 		PREFIXES
 		"${OPENHAPTICS_ROOT_DIR}"
@@ -112,34 +126,51 @@ endif()
 # HDAPI: HD
 ###
 find_path(HDAPI_INCLUDE_DIR
-	NAMES HD/hd.h
-	HINTS ${_incsearchdirs})
+	NAMES
+	HD/hd.h
+	HINTS
+	${_incsearchdirs})
 
 find_library(HDAPI_LIBRARY
-	NAMES hd
-	HINTS ${_libsearchdirs})
+	NAMES
+	hd
+	HINTS
+	${_libsearchdirs})
 
 ###
 # HDAPI: HDU
 ###
 find_path(HDAPI_HDU_INCLUDE_DIR
-	NAMES HDU/hdu.h
-	HINTS ${_incsearchdirs})
+	NAMES
+	HDU/hdu.h
+	HINTS
+	${_incsearchdirs})
 
 find_library(HDAPI_HDU_LIBRARY_RELEASE
-	NAMES hdu
-	PATH_SUFFIXES ReleaseAcademicEdition Release
-	HINTS ${_libsearchdirs})
+	NAMES
+	hdu
+	PATH_SUFFIXES
+	ReleaseAcademicEdition
+	Release
+	HINTS
+	${_libsearchdirs})
 
 find_library(HDAPI_HDU_LIBRARY_DEBUG
-	NAMES hdu
-	PATH_SUFFIXES DebugAcademicEdition Debug
-	HINTS ${_libsearchdirs})
+	NAMES
+	hdu
+	PATH_SUFFIXES
+	DebugAcademicEdition
+	Debug
+	HINTS
+	${_libsearchdirs})
 
 # Fallback
 find_library(HDAPI_HDU_LIBRARY_DEBUG
-	NAMES hdud
-	PATH_SUFFIXES DebugAcademicEdition Debug)
+	NAMES
+	hdud
+	PATH_SUFFIXES
+	DebugAcademicEdition
+	Debug)
 
 select_library_configurations(HDAPI_HDU)
 
@@ -148,35 +179,52 @@ select_library_configurations(HDAPI_HDU)
 # HLAPI: HL
 ###
 find_path(HLAPI_INCLUDE_DIR
-	NAMES HL/hl.h
-	HINTS ${_incsearchdirs})
+	NAMES
+	HL/hl.h
+	HINTS
+	${_incsearchdirs})
 
 find_library(HLAPI_LIBRARY
-	NAMES hl
-	HINTS ${_libsearchdirs})
+	NAMES
+	hl
+	HINTS
+	${_libsearchdirs})
 
 
 ###
 # HLAPI: HLU
 ###
 find_path(HLAPI_HLU_INCLUDE_DIR
-	NAMES HLU/hlu.h
-	HINTS ${_incsearchdirs})
+	NAMES
+	HLU/hlu.h
+	HINTS
+	${_incsearchdirs})
 
 find_library(HLAPI_HLU_LIBRARY_RELEASE
-	NAMES hlu
-	PATH_SUFFIXES ReleaseAcademicEdition Release
-	HINTS ${_libsearchdirs})
+	NAMES
+	hlu
+	PATH_SUFFIXES
+	ReleaseAcademicEdition
+	Release
+	HINTS
+	${_libsearchdirs})
 
 find_library(HLAPI_HLU_LIBRARY_DEBUG
-	NAMES hlu
-	PATH_SUFFIXES DebugAcademicEdition Debug
-	HINTS ${_libsearchdirs})
+	NAMES
+	hlu
+	PATH_SUFFIXES
+	DebugAcademicEdition
+	Debug
+	HINTS
+	${_libsearchdirs})
 
 # fallback
 find_library(HLAPI_HLU_LIBRARY_DEBUG
-	NAMES hlud
-	PATH_SUFFIXES DebugAcademicEdition Debug)
+	NAMES
+	hlud
+	PATH_SUFFIXES
+	DebugAcademicEdition
+	Debug)
 
 select_library_configurations(HLAPI_HLU)
 
