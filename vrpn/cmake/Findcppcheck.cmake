@@ -22,7 +22,11 @@
 # Iowa State University HCI Graduate Program/VRAC
 
 file(TO_CMAKE_PATH "${CPPCHECK_ROOT_DIR}" CPPCHECK_ROOT_DIR)
-set(CPPCHECK_ROOT_DIR "${CPPCHECK_ROOT_DIR}" CACHE PATH "Path to search for cppcheck")
+set(CPPCHECK_ROOT_DIR
+	"${CPPCHECK_ROOT_DIR}"
+	CACHE
+	PATH
+	"Path to search for cppcheck")
 
 # cppcheck app bundles on Mac OS X are GUI, we want command line only
 set(_oldappbundlesetting ${CMAKE_FIND_APPBUNDLE})
@@ -31,14 +35,17 @@ set(CMAKE_FIND_APPBUNDLE NEVER)
 # If we have a custom path, look there first.
 if(CPPCHECK_ROOT_DIR)
 	find_program(CPPCHECK_EXECUTABLE
-		NAMES cppcheck cli
-		PATHS "${CPPCHECK_ROOT_DIR}"
-		PATH_SUFFIXES cli
+		NAMES
+		cppcheck
+		cli
+		PATHS
+		"${CPPCHECK_ROOT_DIR}"
+		PATH_SUFFIXES
+		cli
 		NO_DEFAULT_PATH)
 endif()
 
-find_program(CPPCHECK_EXECUTABLE
-	NAMES cppcheck)
+find_program(CPPCHECK_EXECUTABLE NAMES cppcheck)
 
 # Restore original setting for appbundle finding
 set(CMAKE_FIND_APPBUNDLE ${_oldappbundlesetting})

@@ -19,7 +19,11 @@
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
 
-set(WIIUSE_ROOT_DIR "${WIIUSE_ROOT_DIR}" CACHE PATH "Directory to search for WiiUse")
+set(WIIUSE_ROOT_DIR
+	"${WIIUSE_ROOT_DIR}"
+	CACHE
+	PATH
+	"Directory to search for WiiUse")
 
 if(CMAKE_SIZEOF_VOID_P MATCHES "8")
 	set(_LIBSUFFIXES /lib64 /lib)
@@ -28,23 +32,31 @@ else()
 endif()
 
 find_library(WIIUSE_LIBRARY
-	NAMES wiiuse
-	PATHS "${WIIUSE_ROOT_DIR}"
-	PATH_SUFFIXES "${_LIBSUFFIXES}")
+	NAMES
+	wiiuse
+	PATHS
+	"${WIIUSE_ROOT_DIR}"
+	PATH_SUFFIXES
+	"${_LIBSUFFIXES}")
 
 get_filename_component(_libdir "${WIIUSE_LIBRARY}" PATH)
 
 find_path(WIIUSE_INCLUDE_DIR
-	NAMES wiiuse.h
-	HINTS "${_libdir}" "${_libdir}/.."
-	PATHS "${WIIUSE_ROOT_DIR}"
-	PATH_SUFFIXES include/)
+	NAMES
+	wiiuse.h
+	HINTS
+	"${_libdir}"
+	"${_libdir}/.."
+	PATHS
+	"${WIIUSE_ROOT_DIR}"
+	PATH_SUFFIXES
+	include/)
 
 if(WIN32)
-	find_file(WIIUSE_DLL
-		NAMES wiiuse.dll
-		HINTS "${_libdir}")
-	get_filename_component(WIIUSE_RUNTIME_LIBRARY_DIRS "${WIIUSE_DLL}" PATH)
+	find_file(WIIUSE_DLL NAMES wiiuse.dll HINTS "${_libdir}")
+	get_filename_component(WIIUSE_RUNTIME_LIBRARY_DIRS
+		"${WIIUSE_DLL}"
+		PATH)
 endif()
 
 include(FindPackageHandleStandardArgs)

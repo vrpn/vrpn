@@ -71,7 +71,9 @@ function(add_cppcheck _targetname)
 			set_target_properties(all_cppcheck PROPERTIES EXCLUDE_FROM_ALL TRUE)
 		endif()
 
-		add_custom_command(TARGET all_cppcheck PRE_BUILD
+		add_custom_command(TARGET
+			all_cppcheck
+			PRE_BUILD
 			COMMAND
 			${CPPCHECK_EXECUTABLE}
 			${CPPCHECK_QUIET_ARG}

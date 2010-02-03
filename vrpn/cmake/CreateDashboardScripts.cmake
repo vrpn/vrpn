@@ -81,12 +81,16 @@ if(NOT IN_DASHBOARD_SCRIPT)
 		get_filename_component(_cmake_dir ${CMAKE_COMMAND} PATH)
 	endif()
 	find_program(DASHBOARDSCRIPT_CTEST_EXECUTABLE
-		NAMES ctest
-		HINTS "${_cmake_dir}"
+		NAMES
+		ctest
+		HINTS
+		"${_cmake_dir}"
 		NO_DEFAULT_PATH)
 	find_program(DASHBOARDSCRIPT_CTEST_EXECUTABLE
-		NAMES ctest
-		HINTS "${_cmake_dir}")
+		NAMES
+		ctest
+		HINTS
+		"${_cmake_dir}")
 
 
 	set(DASHBOARDSCRIPT_CTEST_EXECUTABLE
