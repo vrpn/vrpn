@@ -13,8 +13,12 @@
 if(MSVC)
 	string(TOUPPER "${CMAKE_CONFIGURATION_TYPES}" _conftypesUC)
 	include(ListCombinations)
-	list_combinations(_varnames PREFIXES CMAKE_C_FLAGS_ CMAKE_CXX_FLAGS_
-		SUFFIXES ${_conftypesUC})
+	list_combinations(_varnames
+		PREFIXES
+		CMAKE_C_FLAGS_
+		CMAKE_CXX_FLAGS_
+		SUFFIXES
+		${_conftypesUC})
 	foreach(_var ${_varnames})
 		set(${_var} "${${_var}} /MP")
 	endforeach()

@@ -34,7 +34,8 @@ get_filename_component(_moddir ${CMAKE_CURRENT_LIST_FILE} PATH)
 file(GLOB _globbed "${_moddir}/cmake-*-modules")
 
 if(USE_BACKPORTED_MODULES_VERBOSE)
-	message(STATUS "UseBackportedModules: Detected use of CMake version ${_cmver}")
+	message(STATUS
+		"UseBackportedModules: Detected use of CMake version ${_cmver}")
 	message(STATUS "Checking these base directories: ${_globbed}")
 endif()
 
