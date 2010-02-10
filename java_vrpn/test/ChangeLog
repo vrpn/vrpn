@@ -1,3 +1,8 @@
+2010-02-10  David Marshburn  <marshbur@cs.unc.edu>
+
+	* FunctionGeneratorTest.java:  a few additional tests to 
+	exercise the function-generator class
+
 2010-01-14  David Marshburn  <marshbur@cs.unc.edu>
 
 	* FunctionGeneratorTest.java:  new.

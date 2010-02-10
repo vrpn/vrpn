@@ -94,17 +94,15 @@ public class FunctionGeneratorTest
 		fg.requestSampleRate( 10 );
 		try { Thread.sleep( 1000 ); }
 		catch( InterruptedException e ) { }
-		
-		fg.requestStart();
-		try { Thread.sleep( 1000 ); }
-		catch( InterruptedException e ) { }
-	
+
+		// this is before anything has started, so nothing should happen
 		fg.requestStop();
 		try { Thread.sleep( 1000 ); }
 		catch( InterruptedException e ) { }
+	
 		
 		//fg.requestAllChannels();
-		fg.requestChannel( -1 ); // illegal channel
+		fg.requestChannel( -1 ); // invalid channel
 		fg.requestChannel( 0 );
 		fg.requestChannel( 1 );
 		fg.requestChannel( 2 );
@@ -118,13 +116,23 @@ public class FunctionGeneratorTest
 		try { Thread.sleep( 1000 ); }
 		catch( InterruptedException e ) { }
 
-		fg.setChannel( -1, chan );
+		fg.setChannel( -1, chan );  // invalid channel
 		try { Thread.sleep( 1000 ); }
 		catch( InterruptedException e ) { }
 
 		func = new FunctionGeneratorRemote.Function_NULL( );
 		chan.function = func;
 		fg.setChannel( 2, chan );
+		
+		fg.requestStart();
+		try { Thread.sleep( 3000 ); }
+		catch( InterruptedException e ) { }
+	
+		fg.requestStop();
+		try { Thread.sleep( 1000 ); }
+		catch( InterruptedException e ) { }
+		
+
 	}
 
 }
