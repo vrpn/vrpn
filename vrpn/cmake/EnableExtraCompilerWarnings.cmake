@@ -1,9 +1,9 @@
 # - Add flags to compile with extra warnings
 #
 #  enable_extra_compiler_warnings(<targetname>)
+#  globally_enable_extra_compiler_warnings() - to modify CMAKE_CXX_FLAGS, etc
+#    to change for all targets declared after the command, instead of per-command
 #
-# Requires these CMake modules:
-#  CleanDirectoryList
 #
 # Original Author:
 # 2010 Ryan Pavlik <rpavlik@iastate.edu> <abiryan@ryand.net>
@@ -37,4 +37,15 @@ function(enable_extra_compiler_warnings _target)
 			"${_flags}")
 	endif()
 
+endfunction()
+
+function(globally_enable_extra_compiler_warnings)
+	set(_flags)
+	if(MSVC)
+		set(_flags /W4)
+	elseif(CMAKE_COMPILER_IS_GNUCXX)
+		set(_flags "-W -Wall")
+	endif()
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${_flags}" PARENT_SCOPE)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${_flags}" PARENT_SCOPE)
 endfunction()

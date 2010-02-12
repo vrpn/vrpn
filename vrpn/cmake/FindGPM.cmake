@@ -8,8 +8,6 @@
 #  GPM_FOUND
 #  GPM_INCLUDE_DIRS
 #  GPM_LIBRARIES
-#  GPM_MARK_AS_ADVANCED - whether to mark our vars as advanced even
-#    if we don't find this library.
 #
 # Requires these CMake modules:
 #  FindPackageHandleStandardArgs (known included with CMake >=2.6.2)
@@ -37,6 +35,4 @@ if(GPM_FOUND)
 	set(GPM_INCLUDE_DIRS "${GPM_INCLUDE_DIR}")
 endif()
 
-if(GPM_FOUND OR GPM_MARK_AS_ADVANCED)
-	mark_as_advanced(GPM_INCLUDE_DIR GPM_LIBRARY)
-endif()
+mark_as_advanced(GPM_INCLUDE_DIR GPM_LIBRARY)

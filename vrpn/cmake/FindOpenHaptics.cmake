@@ -29,8 +29,6 @@
 #  OPENHAPTICS_ENVIRONMENT
 #  OPENHAPTICS_LIBRARY_DIRS
 #  OPENHAPTICS_INCLUDE_DIRS
-#  OPENHAPTICS_MARK_AS_ADVANCED - whether to mark our vars as advanced even
-#    if we don't find this library.
 #
 # Requires these CMake modules:
 #  CleanDirectoryList
@@ -64,6 +62,7 @@ include(ProgramFilesGlob)
 set(_incsearchdirs)
 set(_libsearchdirs)
 set(OPENHAPTICS_ENVIRONMENT)
+set(OPENHAPTICS_RUNTIME_LIBRARY_DIRS)
 
 if(WIN32)
 	program_files_glob(_dirs "/Sensable/3DTouch*/")
@@ -136,9 +135,8 @@ if(UNIX)
 		NAMES
 		PHANToMIO
 		HINTS
-		${_libsearchdirs}
-		PATHS
-		${OPENHAPTICS_ROOT}/${_libdirfallback})
+		${_libsearchdirs})
+	mark_as_advanced(HDAPI_PHANToMIO_LIBRARY)
 	list(APPEND _deps_check HDAPI_PHANToMIO_LIBRARY)
 	list(APPEND _deps_libs "${HDAPI_PHANToMIO_LIBRARY}")
 endif()
@@ -188,7 +186,9 @@ find_library(HDAPI_HDU_LIBRARY_DEBUG
 	HDUD
 	PATH_SUFFIXES
 	DebugAcademicEdition
-	Debug)
+	Debug
+	HINTS
+	${_libsearchdirs})
 
 select_library_configurations(HDAPI_HDU)
 
@@ -242,7 +242,9 @@ find_library(HLAPI_HLU_LIBRARY_DEBUG
 	HLUD
 	PATH_SUFFIXES
 	DebugAcademicEdition
-	Debug)
+	Debug
+	HINTS
+	${_libsearchdirs})
 
 select_library_configurations(HLAPI_HLU)
 
@@ -250,7 +252,7 @@ select_library_configurations(HLAPI_HLU)
 # Unix: check stdc++ version
 ###
 
-if(UNIX)
+if(UNIX AND HDAPI_LIBRARY AND HDAPI_PHANToMIO_LIBRARY AND HDAPI_INCLUDE_DIR)
 	find_file(OPENHAPTICS_LINKTEST_FILE
 		FindOpenHaptics.cpp
 		PATHS
@@ -261,7 +263,7 @@ if(UNIX)
 		${CMAKE_CURRENT_BINARY_DIR}/FindOpenHaptics
 		"${OPENHAPTICS_LINKTEST_FILE}"
 		CMAKE_FLAGS
-		"-DLINK_LIBRARIES=${HDAPI_LIBRARY}\;${HDAPI_PHANToMIO_LIBRARY}")
+		"-DLINK_LIBRARIES=${HDAPI_LIBRARY}\;${HDAPI_PHANToMIO_LIBRARY} -DINCLUDE_DIRECTORIES=${HDAPI_INCLUDE_DIR}")
 	if(NOT _result)
 		set(OPENHAPTICS_LIBSTDCPP_DIR
 			"${OPENHAPTICS_LIBSTDCPP_DIR}"
@@ -284,6 +286,7 @@ if(UNIX)
 
 		get_filename_component(_stdcppdir "${OPENHAPTICS_LIBSTDCPP_LIBRARY}" PATH)
 		list(APPEND OPENHAPTICS_ENVIRONMENT "LD_LIBRARY_PATH=${_stdcppdir}:$LD_LIBRARY_PATH")
+		list(APPEND OPENHAPTICS_RUNTIME_LIBRARY_DIRS "${_stdcppdir}")
 	endif()
 endif()
 
@@ -378,22 +381,20 @@ if(OPENHAPTICS_FOUND)
 	clean_directory_list(OPENHAPTICS_LIBRARY_DIRS)
 	clean_directory_list(OPENHAPTICS_INCLUDE_DIRS)
 
-	set(OPENHAPTICS_RUNTIME_LIBRARY_DIRS ${OPENHAPTICS_LIBRARY_DIRS})
+	list(APPEND OPENHAPTICS_RUNTIME_LIBRARY_DIRS ${OPENHAPTICS_LIBRARY_DIRS})
 
 	clean_library_list(OPENHAPTICS_LIBRARIES)
 
 	mark_as_advanced(OPENHAPTICS_ROOT_DIR)
 endif()
 
-if(OPENHAPTICS_FOUND OR OPENHAPTICS_MARK_AS_ADVANCED)
-	mark_as_advanced(HDAPI_INCLUDE_DIR
-		HDAPI_LIBRARY
-		HDAPI_HDU_INCLUDE_DIR
-		HDAPI_HDU_LIBRARY_RELEASE
-		HDAPI_HDU_LIBRARY_DEBUG
-		HLAPI_INCLUDE_DIR
-		HLAPI_LIBRARY
-		HLAPI_HLU_INCLUDE_DIR
-		HLAPI_HLU_LIBRARY_RELEASE
-		HLAPI_HLU_LIBRARY_DEBUG)
-endif()
+mark_as_advanced(HDAPI_INCLUDE_DIR
+	HDAPI_LIBRARY
+	HDAPI_HDU_INCLUDE_DIR
+	HDAPI_HDU_LIBRARY_RELEASE
+	HDAPI_HDU_LIBRARY_DEBUG
+	HLAPI_INCLUDE_DIR
+	HLAPI_LIBRARY
+	HLAPI_HLU_INCLUDE_DIR
+	HLAPI_HLU_LIBRARY_RELEASE
+	HLAPI_HLU_LIBRARY_DEBUG)

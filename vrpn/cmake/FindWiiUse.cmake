@@ -52,12 +52,14 @@ find_path(WIIUSE_INCLUDE_DIR
 	PATH_SUFFIXES
 	include/)
 
+set(_deps_check)
 if(WIN32)
 	find_file(WIIUSE_RUNTIME_LIBRARY NAMES wiiuse.dll HINTS "${_libdir}")
 	set(WIIUSE_RUNTIME_LIBRARIES "${WIIUSE_RUNTIME_LIBRARY}")
 	get_filename_component(WIIUSE_RUNTIME_LIBRARY_DIRS
 		"${WIIUSE_RUNTIME_LIBRARY}"
 		PATH)
+	list(APPEND _deps_check WIIUSE_RUNTIME_LIBRARY)
 else()
 	get_filename_component(WIIUSE_RUNTIME_LIBRARY_DIRS
 		"${WIIUSE_LIBRARY}"
@@ -69,7 +71,7 @@ find_package_handle_standard_args(WiiUse
 	DEFAULT_MSG
 	WIIUSE_LIBRARY
 	WIIUSE_INCLUDE_DIR
-	WIIUSE_RUNTIME_LIBRARY)
+	${_deps_check})
 
 if(WIIUSE_FOUND)
 	set(WIIUSE_LIBRARIES "${WIIUSE_LIBRARY}")

@@ -322,6 +322,9 @@ option(VRPN_USE_WIIUSE "Build with WiiUse library support" OFF)
 option(VRPN_USE_FREESPACE
 	"Build with Hillcrest Labs' Freespace devices support"
 	OFF)
+option(VRPN_EXTRA_BUILD_WARNINGS
+	"Build with flags to enable extra warnings."
+	OFF)
 
 if(WIN32)
 	option(VRPN_USE_DIRECTINPUT
@@ -340,6 +343,11 @@ elseif(UNIX)
 endif()
 
 #option(vrpn_USE_MPI "Build with MPI support" OFF)
+
+if(VRPN_EXTRA_BUILD_WARNINGS)
+	include(EnableExtraCompilerWarnings)
+	globally_enable_extra_compiler_warnings()
+endif()
 
 
 #-----------------------------------------------------------------------------
