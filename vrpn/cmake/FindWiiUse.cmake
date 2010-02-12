@@ -3,12 +3,12 @@
 # Cache Variables: (probably not for direct use in your scripts)
 #  WIIUSE_INCLUDE_DIR
 #  WIIUSE_LIBRARY
-#  WIIUSE_DLL - you may use this one directly
 #
 # Non-cache variables you might use in your CMakeLists.txt:
 #  WIIUSE_FOUND
 #  WIIUSE_INCLUDE_DIRS
 #  WIIUSE_LIBRARIES
+#  WIIUSE_RUNTIME_LIBRARIES - aka the dll for installing
 #  WIIUSE_RUNTIME_LIBRARY_DIRS
 #
 # Requires these CMake modules:
@@ -53,9 +53,14 @@ find_path(WIIUSE_INCLUDE_DIR
 	include/)
 
 if(WIN32)
-	find_file(WIIUSE_DLL NAMES wiiuse.dll HINTS "${_libdir}")
+	find_file(WIIUSE_RUNTIME_LIBRARY NAMES wiiuse.dll HINTS "${_libdir}")
+	set(WIIUSE_RUNTIME_LIBRARIES "${WIIUSE_RUNTIME_LIBRARY}")
 	get_filename_component(WIIUSE_RUNTIME_LIBRARY_DIRS
-		"${WIIUSE_DLL}"
+		"${WIIUSE_RUNTIME_LIBRARY}"
+		PATH)
+else()
+	get_filename_component(WIIUSE_RUNTIME_LIBRARY_DIRS
+		"${WIIUSE_LIBRARY}"
 		PATH)
 endif()
 
@@ -63,7 +68,8 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(WiiUse
 	DEFAULT_MSG
 	WIIUSE_LIBRARY
-	WIIUSE_INCLUDE_DIR)
+	WIIUSE_INCLUDE_DIR
+	WIIUSE_RUNTIME_LIBRARY)
 
 if(WIIUSE_FOUND)
 	set(WIIUSE_LIBRARIES "${WIIUSE_LIBRARY}")

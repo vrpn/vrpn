@@ -62,14 +62,18 @@ if(CPPCHECK_EXECUTABLE)
 		"--quiet"
 		"${_cppcheckdummyfile}"
 		RESULT_VARIABLE
-		_cppcheck_new_result)
+		_cppcheck_new_result
+		OUTPUT_QUIET
+		ERROR_QUIET)
 	execute_process(COMMAND
 		"${CPPCHECK_EXECUTABLE}"
 		"--style"
 		"--quiet"
 		"${_cppcheckdummyfile}"
 		RESULT_VARIABLE
-		_cppcheck_old_result)
+		_cppcheck_old_result
+		OUTPUT_QUIET
+		ERROR_QUIET)
 	if("${_cppcheck_new_result}" EQUAL 0)
 		# New arguments
 		set(CPPCHECK_UNUSEDFUNC_ARG "--enable=unusedFunctions")

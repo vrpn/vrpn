@@ -65,6 +65,12 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #=============================================================================
 
+if(__get_compiler_info_string)
+	return()
+endif()
+set(__get_compiler_info_string YES)
+
+
 function(get_compiler_info_string _var)
 	set(_out)
 

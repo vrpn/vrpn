@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.6.2)
 project(VRPN)
 
 # Changes made by:
@@ -29,7 +29,6 @@ include(MSVCMultipleProcessCompile)
 #
 set(CPACK_PACKAGE_VENDOR
 	"Russell M. Taylor II at the University of North Carolina at Chapel Hill")
-
 
 ###
 # Get the version number by parsing vrpn_Connection.C

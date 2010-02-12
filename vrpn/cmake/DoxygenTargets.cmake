@@ -19,6 +19,11 @@
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
 
+if(__add_doxygen)
+	return()
+endif()
+set(__add_doxygen YES)
+
 # We must run the following at "include" time, not at function call time,
 # to find the path to this module rather than the path to a calling list file
 get_filename_component(_doxygenmoddir ${CMAKE_CURRENT_LIST_FILE} PATH)
@@ -89,6 +94,8 @@ function(add_doxygen _doxyfile)
 		set(OUTPUT_DIRECTORY "docs-generated")
 	endif()
 
+	file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${OUTPUT_DIRECTORY}")
+
 	if(NOT INSTALL_PDF_NAME)
 		set(INSTALL_PDF_NAME "docs-generated.pdf")
 	endif()
@@ -105,6 +112,10 @@ function(add_doxygen _doxyfile)
 				set_target_properties(${DOC_TARGET}
 					PROPERTIES
 					EXCLUDE_FROM_ALL
+					TRUE)
+				set_target_properties(${DOC_TARGET}
+					PROPERTIES
+					EXCLUDE_FROM_DEFAULT_BUILD
 					TRUE)
 			else()
 				add_custom_target(${DOC_TARGET} ALL)

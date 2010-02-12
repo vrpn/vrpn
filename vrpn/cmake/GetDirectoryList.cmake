@@ -1,6 +1,6 @@
-# - Removes duplicate entries and non-directories from a provided list
+# - Returns a list of the parent directories of all files passed
 #
-#  clean_directory_list(<listvar> [<additional list items>...])
+#  get_directory_list(<listvar> <file path> [<additional file paths>...])
 #
 # Requires CMake 2.6 or newer (uses the 'function' command)
 #
@@ -9,14 +9,14 @@
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
 
-if(__clean_directory_list)
+if(__get_directory_list)
 	return()
 endif()
-set(__clean_directory_list YES)
+set(__get_directory_list YES)
 
-function(clean_directory_list _var)
+function(get_directory_list _var)
 	# combine variable's current value with additional list items
-	set(_in ${${_var}} ${ARGN})
+	set(_in ${ARGN})
 
 	if(_in)
 		# Initial list cleaning
@@ -24,7 +24,8 @@ function(clean_directory_list _var)
 
 		# Grab the absolute path of each actual directory
 		set(_out)
-		foreach(_dir ${_in})
+		foreach(_file ${_in})
+			get_filename_component(_dir "${_file}" PATH)
 			if(IS_DIRECTORY "${_dir}")
 				get_filename_component(_dir "${_dir}" ABSOLUTE)
 				file(TO_CMAKE_PATH "${_dir}" _dir)
