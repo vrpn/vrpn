@@ -12,6 +12,11 @@
 include(PrefixListGlob)
 include(CleanDirectoryList)
 
+if(__program_files_glob)
+	return()
+endif()
+set(__program_files_glob YES)
+
 function(program_files_glob var pattern)
 	# caution - ENV{ProgramFiles} on Win64 is adjusted to point to the arch
 	# of the running executable which, since CMake is 32-bit on Windows as

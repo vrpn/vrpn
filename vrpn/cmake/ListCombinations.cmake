@@ -10,6 +10,11 @@
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
 
+if(__list_combinations)
+	return()
+endif()
+set(__list_combinations YES)
+
 function(list_combinations var)
 	# Parse arguments
 	set(_prefixes)

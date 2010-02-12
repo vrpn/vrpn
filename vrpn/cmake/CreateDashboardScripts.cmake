@@ -125,14 +125,15 @@ endif()
 
 function(create_dashboard_scripts _cache_template)
 	# Only create the script if we have all the required variables
-	# and are not already in it.
+	# and are not already in it, and are at least 2.8.0.
 	if(DASHBOARDSCRIPT_BASE_DIRECTORY AND
 		DASHBOARDSCRIPT_SOURCE_DIRECTORY AND
 		DASHBOARDSCRIPT_BASE_DIRECTORY AND
 		BUILDNAME AND
 		DASHBOARDSCRIPT_CMAKE_COMMAND AND
 		DASHBOARDSCRIPT_CTEST_EXECUTABLE AND
-		NOT IN_DASHBOARD_SCRIPT)
+		NOT IN_DASHBOARD_SCRIPT AND
+		NOT "${CMAKE_VERSION}" VERSION_LESS "2.8.0")
 
 		set(_Continuous_cron "15 * * * * ")
 		set(_Nightly_cron "15 0 * * * ")

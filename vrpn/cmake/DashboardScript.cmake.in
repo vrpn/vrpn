@@ -40,7 +40,12 @@ set(CTEST_UPDATE_OPTIONS "@UPDATE_OPTIONS@")
 # Avoid non-ascii characters in tool output.
 set(ENV{LC_ALL} C)
 
-file(READ "${CTEST_DASHBOARD_ROOT}/GeneratedInitialCache.${CTEST_SCRIPT_NAME}" _initcache)
+if(EXISTS "${CTEST_DASHBOARD_ROOT}/GeneratedInitialCache.${CTEST_SCRIPT_NAME}")
+	file(READ "${CTEST_DASHBOARD_ROOT}/GeneratedInitialCache.${CTEST_SCRIPT_NAME}" _initcache)
+else()
+	set(_initcache)
+endif()
+
 if(EXISTS "${CTEST_DASHBOARD_ROOT}/CustomInitialCache.cmake")
 	file(READ "${CTEST_DASHBOARD_ROOT}/CustomInitialCache.cmake" _customcache)
 	set(_initcache "${_initcache}

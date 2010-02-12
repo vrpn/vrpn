@@ -6,6 +6,11 @@
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
 
+if(__prefix_list_glob)
+	return()
+endif()
+set(__prefix_list_glob YES)
+
 function(prefix_list_glob var pattern)
 	set(_out)
 	set(_result)

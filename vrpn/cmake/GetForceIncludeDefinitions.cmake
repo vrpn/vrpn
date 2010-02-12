@@ -13,6 +13,11 @@
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
 
+if(__get_force_include_definitions)
+	return()
+endif()
+set(__get_force_include_definitions YES)
+
 function(get_force_include_definitions var)
 	set(_flagprefix)
 	if(CMAKE_COMPILER_IS_GNUCXX)
