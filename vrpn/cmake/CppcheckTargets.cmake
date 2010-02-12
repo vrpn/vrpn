@@ -17,6 +17,13 @@ if(NOT CPPCHECK_FOUND)
 	find_package(cppcheck QUIET)
 endif()
 
+if(CPPCHECK_FOUND)
+	if(NOT TARGET all_cppcheck)
+		add_custom_target(all_cppcheck)
+		set_target_properties(all_cppcheck PROPERTIES EXCLUDE_FROM_ALL TRUE)
+	endif()
+endif()
+
 function(add_cppcheck _targetname)
 	if(CPPCHECK_FOUND)
 		set(_cppcheck_args)
@@ -52,24 +59,30 @@ function(add_cppcheck _targetname)
 			endif()
 		endforeach()
 
-		add_test(NAME
-			${_targetname}_cppcheck_test
-			COMMAND
-			${CPPCHECK_EXECUTABLE}
-			${CPPCHECK_QUIET_ARG}
-			${CPPCHECK_TEMPLATE_ARG}
-			${_cppcheck_args}
-			${_files})
+		if("1.${CMAKE_VERSION}" VERSION_LESS "1.2.8.0")
+			# Older than CMake 2.8.0
+			add_test(${_targetname}_cppcheck_test
+				"${CPPCHECK_EXECUTABLE}"
+				${CPPCHECK_QUIET_ARG}
+				${CPPCHECK_TEMPLATE_ARG}
+				${_cppcheck_args}
+				${_files})
+		else()
+			# CMake 2.8.0 and newer
+			add_test(NAME
+				${_targetname}_cppcheck_test
+				COMMAND
+				"${CPPCHECK_EXECUTABLE}"
+				${CPPCHECK_QUIET_ARG}
+				${CPPCHECK_TEMPLATE_ARG}
+				${_cppcheck_args}
+				${_files})
+		endif()
 
 		set_tests_properties(${_targetname}_cppcheck_test
 			PROPERTIES
 			FAIL_REGULAR_EXPRESSION
 			"[(]error[)]")
-
-		if(NOT TARGET all_cppcheck)
-			add_custom_target(all_cppcheck)
-			set_target_properties(all_cppcheck PROPERTIES EXCLUDE_FROM_ALL TRUE)
-		endif()
 
 		add_custom_command(TARGET
 			all_cppcheck

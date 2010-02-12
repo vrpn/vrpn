@@ -21,6 +21,11 @@
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
 
+if(__clean_library_list)
+	return()
+endif()
+set(__clean_library_list YES)
+
 function(clean_library_list _var)
 	# combine variable's current value with additional list items
 	set(_work ${${_var}} ${ARGN})
