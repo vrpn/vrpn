@@ -1,7 +1,7 @@
-# - Add flags to compile with extra warnings
+# - Add flags to compile with profiling support - currently only for GCC
 #
-#  enable_extra_compiler_warnings(<targetname>)
-#  globally_enable_extra_compiler_warnings() - to modify CMAKE_CXX_FLAGS, etc
+#  enable_profiling(<targetname>)
+#  globally_enable_profiling() - to modify CMAKE_CXX_FLAGS, etc
 #    to change for all targets declared after the command, instead of per-command
 #
 #
@@ -10,22 +10,23 @@
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
 
-if(__enable_extra_compiler_warnings)
+if(__enable_profiling)
 	return()
 endif()
-set(__enable_extra_compiler_warnings YES)
+set(__enable_profiling YES)
 
-macro(_enable_extra_compiler_warnings_flags)
+macro(_enable_profiling_flags)
 	set(_flags)
 	if(MSVC)
-		set(_flags /W4)
+		# TODO: what kind of flags are needed to profile on MSVC?
+		#set(_flags /W4)
 	elseif(CMAKE_COMPILER_IS_GNUCXX)
-		set(_flags "-W -Wall")
+		set(_flags "-p")
 	endif()
 endmacro()
 
-function(enable_extra_compiler_warnings _target)
-	_enable_extra_compiler_warnings_flags()
+function(enable_profiling _target)
+	_enable_profiling_flags()
 	get_target_property(_origflags ${_target} COMPILE_FLAGS)
 	if(_origflags)
 		set_property(TARGET
@@ -43,8 +44,8 @@ function(enable_extra_compiler_warnings _target)
 
 endfunction()
 
-function(globally_enable_extra_compiler_warnings)
-	_enable_extra_compiler_warnings_flags()
+function(globally_enable_profiling)
+	_enable_profiling_flags()
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${_flags}" PARENT_SCOPE)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${_flags}" PARENT_SCOPE)
 endfunction()
