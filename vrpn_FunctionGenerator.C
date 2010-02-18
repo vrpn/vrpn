@@ -19,6 +19,7 @@ const char* vrpn_FUNCTION_MESSAGE_TYPE_INTERPRETER_REQUEST = "vrpn_FunctionGener
 const char* vrpn_FUNCTION_MESSAGE_TYPE_INTERPRETER_REPLY = "vrpn_FunctionGenerator interpreter-description reply";
 const char* vrpn_FUNCTION_MESSAGE_TYPE_ERROR = "vrpn_FunctionGenerator error report";
 
+vrpn_FunctionGenerator_function::~vrpn_FunctionGenerator_function() {}
 
 /////////////////////////////////////////
 /////////////////////////////////////////
@@ -50,6 +51,13 @@ decode_from( const char** , vrpn_int32& )
 {
 	return 0;
 }
+
+vrpn_FunctionGenerator_function* vrpn_FunctionGenerator_function_NULL::
+clone( ) const
+{
+	return new vrpn_FunctionGenerator_function_NULL();
+}
+
 
 //
 // end vrpn_FunctionGenerator_function_NULL
@@ -176,6 +184,12 @@ decode_from( const char** buf, vrpn_int32& len )
 }
 
 
+vrpn_FunctionGenerator_function* vrpn_FunctionGenerator_function_script::
+clone( ) const
+{
+	return new vrpn_FunctionGenerator_function_script( *this );
+}
+
 char* vrpn_FunctionGenerator_function_script::
 getScript( ) const
 {
@@ -217,8 +231,7 @@ vrpn_FunctionGenerator_channel( )
 vrpn_FunctionGenerator_channel::
 vrpn_FunctionGenerator_channel( vrpn_FunctionGenerator_function* function )
 {
-	this->function = function;
-	// XXX need copy constructors for functions and to use them here
+	this->function = function->clone();
 }
 
 
@@ -233,7 +246,7 @@ void vrpn_FunctionGenerator_channel::
 setFunction( vrpn_FunctionGenerator_function* function )
 {
 	delete (this->function);
-	this->function = function;
+	this->function = function->clone();
 }
 
 
@@ -318,8 +331,8 @@ decode_from( const char** buf, vrpn_int32& len )
 vrpn_FunctionGenerator::
 vrpn_FunctionGenerator( const char* name, vrpn_Connection * c )
 : vrpn_BaseClass( name, c ),
-	triggered( true ),
-	sampleRate( 0 )
+	sampleRate( 0 ),
+	numChannels( 0 )
 {
 	vrpn_BaseClass::init( );
 
@@ -404,9 +417,10 @@ register_types( )
 //
 
 vrpn_FunctionGenerator_Server::
-vrpn_FunctionGenerator_Server( const char* name, vrpn_Connection * c )
+vrpn_FunctionGenerator_Server( const char* name, vrpn_uint32 numChannels, vrpn_Connection * c )
 : vrpn_FunctionGenerator( name, c )
 {
+	this->numChannels = numChannels;
 	// Check if we have a connection
 	if( d_connection == NULL )
 	{
@@ -470,6 +484,16 @@ vrpn_FunctionGenerator_Server::
 ~vrpn_FunctionGenerator_Server( )
 {
 
+}
+
+
+vrpn_uint32 vrpn_FunctionGenerator_Server::
+setNumChannels( vrpn_uint32 numChannels )
+{
+	if( numChannels > vrpn_FUNCTION_CHANNELS_MAX )
+		numChannels = vrpn_FUNCTION_CHANNELS_MAX;
+	this->numChannels = numChannels;
+	return this->numChannels;
 }
 
 

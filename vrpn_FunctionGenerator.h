@@ -28,6 +28,7 @@ class VRPN_API vrpn_FunctionGenerator_channel;
 class VRPN_API vrpn_FunctionGenerator_function
 {
 public:
+	virtual ~vrpn_FunctionGenerator_function() = 0;
 
 	// concrete classes should implement this to generate the appropriate
 	// values for the function the class represents.  nValue samples should be
@@ -55,6 +56,8 @@ public:
 	// of failure, when negative should be returned
 	virtual vrpn_int32 decode_from( const char** buf, vrpn_int32& len ) = 0;
 
+	virtual vrpn_FunctionGenerator_function* clone( ) const = 0;
+
 	// used when encoding/decoding to specify function type
 	enum FunctionCode
 	{
@@ -66,10 +69,6 @@ public:
 	// appropriate FunctionCode, from above
 	virtual FunctionCode getFunctionCode( ) const = 0;
 
-protected:
-	vrpn_float32 lerp( vrpn_float32 t, vrpn_float32 t0, vrpn_float32 t1,
-						vrpn_float32 v0, vrpn_float32 v1 ) const
-	{  return v0 + ( t - t0 ) * ( v1 - v0 ) / ( t1 - t0 );  }
 
 };
 
@@ -88,6 +87,7 @@ public:
 
 	vrpn_int32 encode_to( char** buf, vrpn_int32& len ) const;
 	vrpn_int32 decode_from( const char** buf, vrpn_int32& len );
+	vrpn_FunctionGenerator_function* clone( ) const;
 protected:
 	FunctionCode getFunctionCode( ) const {  return FUNCTION_NULL;  }
 
@@ -109,8 +109,10 @@ public:
 
 	vrpn_int32 encode_to( char** buf, vrpn_int32& len ) const;
 	vrpn_int32 decode_from( const char** buf, vrpn_int32& len );
+	vrpn_FunctionGenerator_function* clone( ) const;
 
-	// caller is responsible for calling 'delete []' to free the returned string.
+	// returns a copy of the script.  caller is responsible for 
+	// calling 'delete []' to free the returned string.
 	char* getScript( ) const;
 
 	vrpn_bool setScript( char* script );
@@ -131,7 +133,7 @@ public:
 	vrpn_FunctionGenerator_channel( vrpn_FunctionGenerator_function* function );
 	virtual ~vrpn_FunctionGenerator_channel( );
 
-	const vrpn_FunctionGenerator_function* getFunction( )  { return function; }
+	const vrpn_FunctionGenerator_function* getFunction( ) const { return function; }
 	void setFunction( vrpn_FunctionGenerator_function* function );
 
 	// these return zero on success and negative on some failure.
@@ -154,6 +156,8 @@ public:
 	// greater than the maximum number of channels.
 	const vrpn_FunctionGenerator_channel* const getChannel( vrpn_uint32 channelNum );
 
+	vrpn_uint32 getNumChannels( ) const { return numChannels; }
+
 	vrpn_float32 getSampleRate( )
 	{  return sampleRate;  }
 
@@ -167,11 +171,8 @@ public:
 	};
 
 protected:
-	// should this  wait for a start trigger, or should the server immediately
-	// start generating a function on this channel.  true -> wait for a start message.
-	vrpn_bool triggered;
-
 	vrpn_float32 sampleRate;  // samples per second
+	vrpn_uint32 numChannels;
 	vrpn_FunctionGenerator_channel* channels[vrpn_FUNCTION_CHANNELS_MAX];
 
 	vrpn_int32 channelMessageID;             // id for channel message (remote -> server)
@@ -193,7 +194,6 @@ protected:
 
 	virtual int register_types( );
 
-
 	char msgbuf[vrpn_CONNECTION_TCP_BUFLEN];
 	struct timeval timestamp;
 }; // end class vrpn_FunctionGenerator
@@ -202,7 +202,7 @@ protected:
 class VRPN_API vrpn_FunctionGenerator_Server : public vrpn_FunctionGenerator
 {
 public:
-	vrpn_FunctionGenerator_Server( const char* name, vrpn_Connection* c = NULL );
+	vrpn_FunctionGenerator_Server( const char* name, vrpn_uint32 numChannels = vrpn_FUNCTION_CHANNELS_MAX, vrpn_Connection* c = NULL );
 	virtual ~vrpn_FunctionGenerator_Server( );
 
 	virtual void mainloop( );
@@ -215,6 +215,8 @@ public:
 	virtual void start( ) = 0;
 	virtual void stop( ) = 0;
 	virtual void setSampleRate( vrpn_float32 rate ) = 0;
+
+	vrpn_uint32 setNumChannels( vrpn_uint32 numChannels );
 
 	// sub-classes should implement this function to provide a description of the type
 	// of interpreter used to interpret vrpn_FunctionGenerator_function_script

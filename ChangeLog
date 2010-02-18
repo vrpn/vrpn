@@ -1,3 +1,10 @@
+2010-02-18  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGenerator.h/C:  a few tweaks and additions, 
+	including:  the ability for servers to keep up with the number
+	of channels they're really using, the ability to copy functions,
+	and some additional, correct const-ing.
+
 2010-01-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* CMakeLists.txt : Added -fPIC option submitted by Sheldon
