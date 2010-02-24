@@ -21,6 +21,10 @@
 
 # Only do any of the prep work if not already in a dashboard script
 if(NOT IN_DASHBOARD_SCRIPT)
+
+	# Hide a CTest variable
+	mark_as_advanced(DART_TESTING_TIMEOUT)
+
 	include(GetCompilerInfoString)
 
 	get_compiler_info_string(_COMPILERID)
