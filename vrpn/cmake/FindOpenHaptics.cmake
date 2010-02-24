@@ -65,7 +65,7 @@ set(OPENHAPTICS_ENVIRONMENT)
 set(OPENHAPTICS_RUNTIME_LIBRARY_DIRS)
 
 if(WIN32)
-	program_files_glob(_dirs "/Sensable/3DTouch*/")
+	program_files_fallback_glob(_dirs "/Sensable/3DTouch*/")
 	if(MSVC60)
 		set(_vc "vc6")
 	elseif(MSVC70 OR MSVC71)

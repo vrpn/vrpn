@@ -2,6 +2,10 @@
 #
 #  get_compiler_info_string(<resultvar>)
 #
+# and some helper functions:
+#  get_gcc_version(<resultvar>)
+#  get_vs_short_version_string(<generator> <resultvar>)
+#
 # You might consider using it when setting up CTest options, for example:
 #  include(GetCompilerInfoString)
 #  get_compiler_info_string(COMPILERID)
@@ -86,14 +90,14 @@ function(get_compiler_info_string _var)
 
 	if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
 		# Parse version for Visual Studio
-		_compilerinfo_get_vs_version_string("${CMAKE_GENERATOR}" _verstring)
+		get_vs_short_version_string("${CMAKE_GENERATOR}" _verstring)
 		if(${CMAKE_GENERATOR} MATCHES "Win64")
 			set(_verstring "${_verstring}win64")
 		endif()
 
 	elseif(CMAKE_COMPILER_IS_GNUCXX)
 		# Parse version for GCC
-		_compilerinfo_compiler_dumpversion(_gccver)
+		get_gcc_version(_gccver)
 		set(_verstring "gcc${_gccver}")
 
 	else()
@@ -114,7 +118,7 @@ endfunction()
 # Runs compiler with "-dumpversion" and parses major/minor
 # version with a regex.
 #
-function(_compilerinfo_compiler_dumpversion _var)
+function(get_gcc_version _var)
 	exec_program(${CMAKE_CXX_COMPILER}
 		ARGS
 		${CMAKE_CXX_COMPILER_ARG1}
@@ -138,7 +142,7 @@ endfunction()
 # function to turn generator name into a version string
 # like vs7 vs71 vs8 vs9
 #
-function(_compilerinfo_get_vs_version_string _generator _var)
+function(get_vs_short_version_string _generator _var)
 	string(REGEX
 		REPLACE
 		"Visual Studio ([0-9][0-9]?)($|.*)"
