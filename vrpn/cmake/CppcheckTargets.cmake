@@ -13,6 +13,11 @@
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
 
+if(__add_cppcheck)
+	return()
+endif()
+set(__add_cppcheck YES)
+
 if(NOT CPPCHECK_FOUND)
 	find_package(cppcheck QUIET)
 endif()
@@ -63,7 +68,6 @@ function(add_cppcheck _targetname)
 			# Older than CMake 2.8.0
 			add_test(${_targetname}_cppcheck_test
 				"${CPPCHECK_EXECUTABLE}"
-				${CPPCHECK_QUIET_ARG}
 				${CPPCHECK_TEMPLATE_ARG}
 				${_cppcheck_args}
 				${_files})
@@ -73,7 +77,6 @@ function(add_cppcheck _targetname)
 				${_targetname}_cppcheck_test
 				COMMAND
 				"${CPPCHECK_EXECUTABLE}"
-				${CPPCHECK_QUIET_ARG}
 				${CPPCHECK_TEMPLATE_ARG}
 				${_cppcheck_args}
 				${_files})
