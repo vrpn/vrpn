@@ -88,7 +88,7 @@ function(get_compiler_info_string _var)
 		include(CMakeDetermineCXXCompiler)
 	endif()
 
-	if(${CMAKE_GENERATOR} MATCHES "Visual Studio")
+	if(MSVC)
 		# Parse version for Visual Studio
 		get_vs_short_version_string("${CMAKE_GENERATOR}" _verstring)
 		if(${CMAKE_GENERATOR} MATCHES "Win64")
@@ -143,18 +143,34 @@ endfunction()
 # like vs7 vs71 vs8 vs9
 #
 function(get_vs_short_version_string _generator _var)
-	string(REGEX
-		REPLACE
-		"Visual Studio ([0-9][0-9]?)($|.*)"
-		"\\1"
-		_vsver
-		"${_generator}")
-	if("${_generator}" MATCHES "Visual Studio 7 .NET 2003")
-		# handle the weird one
-		set(_ver_string "vs71")
-	else()
-		set(_ver_string "vs${_vsver}")
+	set(_ver_string)
+	if("${_generator}" MATCHES "Visual Studio")
+		string(REGEX
+			REPLACE
+			"Visual Studio ([0-9][0-9]?)($|.*)"
+			"\\1"
+			_vsver
+			"${_generator}")
+		if("${_generator}" MATCHES "Visual Studio 7 .NET 2003")
+			# handle the weird one
+			set(_ver_string "vs71")
+		else()
+			set(_ver_string "vs${_vsver}")
+		endif()
+	elseif(MSVC)
+		if(MSVC71)
+			set(_ver_string "vs71")
+		else()
+			foreach(_ver 6 7 8 9 10)
+				if(MSVC${_ver}0)
+					set(_ver_string "vs${_ver}")
+					break()
+				endif()
+			endforeach()
+		endif()
 	endif()
 
-	set(${_var} ${_ver_string} PARENT_SCOPE)
+	if(_ver_string)
+		set(${_var} ${_ver_string} PARENT_SCOPE)
+	endif()
 endfunction()
