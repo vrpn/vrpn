@@ -1,3 +1,9 @@
+2010-03-08  David Marshburn  <marshbur@cs.unc.edu>
+	* vrpn_FunctionGenerator.h (vrpn_FunctionGenerator_function_script::getConstScript):
+	  const accessor for the script string.
+	* vrpn_FunctionGenerator.C (vrpn_FunctionGenerator_Remote::encode_channel):
+	  encodes the correct, desired channel.  
+
 2010-02-18  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_FunctionGenerator.h/C:  a few tweaks and additions, 

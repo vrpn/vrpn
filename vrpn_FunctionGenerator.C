@@ -1852,7 +1852,7 @@ encode_channel( char** buf, vrpn_int32& len, const vrpn_uint32 channelNum,
 		fflush( stderr );
 		return -1;
 	}
-	if( 0 > channels[channelNum]->encode_to( buf, len ) )
+	if( 0 > channel->encode_to( buf, len ) )
 	{
 		fprintf( stderr, "vrpn_FunctionGenerator_Remote::encode_channel:  "
 				"message payload error (couldn't buffer channel).\n" );

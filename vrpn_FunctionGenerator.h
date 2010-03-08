@@ -115,6 +115,9 @@ public:
 	// calling 'delete []' to free the returned string.
 	char* getScript( ) const;
 
+	const char* getConstScript( ) const
+	{ return script; }
+
 	vrpn_bool setScript( char* script );
 
 protected:
