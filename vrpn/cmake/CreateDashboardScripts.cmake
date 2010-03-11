@@ -1,7 +1,11 @@
 # - Create ctest -S scripts to use to run dashboard builds
 #
 #  include(CreateDashboardScripts)
-#  create_dashboard_scripts(<initialcachetemplatefilename>)
+#  create_dashboard_scripts([<initialcachetemplatefilename>])
+#
+# If you need additional settings to persist from the "parent" CMake instance
+# to the initial cache created by the dashboard script,
+# you may pass a filename which will be configured into the initial cache.
 #
 # In the resulting DASHBOARDSCRIPT_BASE_DIRECTORY, an end-user
 # may optionally create a file named
@@ -127,7 +131,7 @@ else()
 		"CreateDashboardScripts detected that we're in a dashboard script already.")
 endif()
 
-function(create_dashboard_scripts _cache_template)
+function(create_dashboard_scripts)
 	# Only create the script if we have all the required variables
 	# and are not already in it, and are at least 2.8.0.
 	if(DASHBOARDSCRIPT_BASE_DIRECTORY AND
@@ -143,6 +147,7 @@ function(create_dashboard_scripts _cache_template)
 		set(_Nightly_cron "15 0 * * * ")
 		set(_Experimental_cron
 			"\nor run this command for an one-off experimental test build:\n")
+		set(_Experimental_flags "-VV")
 
 		message(STATUS
 			"\nDashboard scripts have been generated for automatic nightly and continuous builds.")
@@ -157,8 +162,8 @@ function(create_dashboard_scripts _cache_template)
 
 		foreach(DASHBOARDSCRIPT_DASH_TYPE Nightly Continuous Experimental)
 			# If given a cache template, configure it
-			if(_cache_template)
-				configure_file(${_cache_template}
+			if(ARGN)
+				configure_file(${ARGN}
 					"${DASHBOARDSCRIPT_BASE_DIRECTORY}/GeneratedInitialCache.run${DASHBOARDSCRIPT_DASH_TYPE}.cmake"
 					@ONLY)
 			endif()
@@ -169,7 +174,7 @@ function(create_dashboard_scripts _cache_template)
 				@ONLY)
 
 			message(STATUS
-				"${_${DASHBOARDSCRIPT_DASH_TYPE}_cron} \"${DASHBOARDSCRIPT_CTEST_EXECUTABLE}\" -S \"${DASHBOARDSCRIPT_BASE_DIRECTORY}/run${DASHBOARDSCRIPT_DASH_TYPE}.cmake\"")
+				"${_${DASHBOARDSCRIPT_DASH_TYPE}_cron} \"${DASHBOARDSCRIPT_CTEST_EXECUTABLE}\" -S \"${DASHBOARDSCRIPT_BASE_DIRECTORY}/run${DASHBOARDSCRIPT_DASH_TYPE}.cmake\" ${_${DASHBOARDSCRIPT_DASH_TYPE}_flags}")
 
 		endforeach()
 		message(STATUS "")
