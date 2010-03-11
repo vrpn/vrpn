@@ -110,18 +110,6 @@ void	VRPN_CALLBACK handle_pos(void*, const vrpn_TRACKERCB t) {
 	}
 }
 
-void	VRPN_CALLBACK handle_vel(void*, const vrpn_TRACKERVELCB t) {
-	//static	int	count = 0;
-
-	fprintf(stderr, "/");
-}
-
-void	VRPN_CALLBACK handle_acc(void*, const vrpn_TRACKERACCCB t) {
-	//static	int	count = 0;
-
-	fprintf(stderr, "~");
-}
-
 void	VRPN_CALLBACK handle_need_wiimote(void*, vrpn_HANDLERPARAM) {
 	need_wiimote = true;
 	wiimote_timeout = 10;
@@ -138,14 +126,14 @@ int main(int argc, char* argv []) {
 		if (wmnum == -1) {
 			// improper # provided - pretend as if we had too many arguments
 			// so we error out.
+			argc = 3;
 		}
 	}
 
 	if (argc > 2) {
 		fprintf(stderr, "Please run this with no arguments or optionally a wiimote number (0-3)\n");
 		fprintf(stderr, "Usage: %s [WIIMOTENUM]\n", argv[0]);
-		int tmp;
-		std::cin >> tmp;
+		std::cin.get();
 		return -1;
 	}
 
@@ -155,8 +143,7 @@ int main(int argc, char* argv []) {
 	if (!connection) {
 		fprintf(stderr, "Could not create connection!\n");
 		fprintf(stderr, "Press 'enter' to exit...\n");
-		int tmp;
-		std::cin >> tmp;
+		std::cin.get();
 		return -1;
 	}
 
@@ -164,8 +151,7 @@ int main(int argc, char* argv []) {
 	if (!wiimote) {
 		fprintf(stderr, "Could not create Wiimote server named %s!\n", WIIMOTE_NAME);
 		fprintf(stderr, "Press 'enter' to exit...\n");
-		int tmp;
-		std::cin >> tmp;
+		std::cin.get();
 		return -1;
 	}
 
@@ -173,8 +159,7 @@ int main(int argc, char* argv []) {
 	if (!wmtkr) {
 		fprintf(stderr, "Could not create Wiimote Head Tracker named %s!\n", TRACKER_NAME);
 		fprintf(stderr, "Press 'enter' to exit...\n");
-		int tmp;
-		std::cin >> tmp;
+		std::cin.get();
 		return -1;
 	}
 
@@ -182,12 +167,15 @@ int main(int argc, char* argv []) {
 	// Open the tracker remote using this connection
 	fprintf(stderr, "\nTracker's name is %s.\n", TRACKER_NAME);
 	tkr = new vrpn_Tracker_Remote(TRACKER_NAME, connection);
+	if (!wmtkr) {
+		fprintf(stderr, "Could not create a remote for our own tracker %s!\n", TRACKER_NAME);
+		fprintf(stderr, "Press 'enter' to exit...\n");
+		std::cin.get();
+		return -1;
+	}
 
-	// Set up the tracker callback handlers
-	printf("Tracker update: '.' = pos, '/' = vel, '~' = acc\n");
+	// Set up the tracker callback handler
 	tkr->register_change_handler(NULL, handle_pos);
-	tkr->register_change_handler(NULL, handle_vel);
-	tkr->register_change_handler(NULL, handle_acc);
 
 	/*
 	 * main interactive loop
@@ -200,6 +188,9 @@ int main(int argc, char* argv []) {
 		connection->mainloop();
 
 		if (need_wiimote) {
+			// In theory, handle auto-reconnect.
+			// In practice, this code doesn't go yet, and Windows Bluetooth
+			// is weird enough that it might not be worth the added complexity.
 			wiimote_timeout--;
 			if (wiimote_timeout == 0) {
 				delete wiimote;
@@ -208,8 +199,7 @@ int main(int argc, char* argv []) {
 				if (!wiimote) {
 					fprintf(stderr, "Could not create Wiimote server named %s!\n", WIIMOTE_NAME);
 					fprintf(stderr, "Press 'enter' to exit...\n");
-					int tmp;
-					std::cin >> tmp;
+					std::cin.get();
 					return -1;
 				}
 				need_wiimote = false;

@@ -550,12 +550,16 @@ void vrpn_Tracker_WiimoteHead::convert_pose_to_tracker() {
 		if (upVec[1] < 0) {
 			// We are upside down - we will need to rotate 180 about the sensor Z
 			d_flipState = FLIP_180;
+#ifdef	VERBOSE
 			fprintf(stderr,"vrpn_Tracker_WiimoteHead: d_flipState = FLIP_180\n");
+#endif
 			return;
 		} else {
 			// OK, we are fine - there is a positive Y component to our up vector
 			d_flipState = FLIP_NORMAL;
+#ifdef	VERBOSE
 			fprintf(stderr,"vrpn_Tracker_WiimoteHead: d_flipState = FLIP_NORMAL\n");
+#endif
 		}
 	}
 
