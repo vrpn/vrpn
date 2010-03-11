@@ -20,6 +20,7 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
 set(CTEST_CMAKE_GENERATOR "@CMAKE_GENERATOR@")
+set(CTEST_PROJECT_NAME "@PROJECT_NAME@")
 
 set(CTEST_DASHBOARD_ROOT "@DASHBOARDSCRIPT_BASE_DIRECTORY@")
 set(CTEST_SOURCE_DIRECTORY "@DASHBOARDSCRIPT_SOURCE_DIRECTORY@")
@@ -60,6 +61,20 @@ set(_initcache "# This file is automatically regenerated every dashboard build -
 # Do not edit it directly!
 # If you want to add initial cache values, you can create/modify
 # the CustomInitialCache.cmake file in this directory.
+
+# Pretty typical settings to preseve from the generating cache
+set(BUILD_TESTING ON CACHE BOOL docstring)
+set(IN_DASHBOARD_SCRIPT ON CACHE BOOL docstring)
+set(CTEST_USE_LAUNCHERS ON CACHE BOOL docstring)
+set(CMAKE_PREFIX_PATH \"@CMAKE_PREFIX_PATH@\" CACHE STRING docstring)
+set(CMAKE_BUILD_TYPE \"@CMAKE_BUILD_TYPE@\" CACHE STRING docstring)
+set(CTEST_CONFIGURATION_TYPE \"@CMAKE_BUILD_TYPE@\" CACHE STRING docstring)
+
+# testing tool locations
+# Saved here because the tools in the path might be outdated
+set(CPPCHECK_EXECUTABLE \"@CPPCHECK_EXECUTABLE@\" CACHE FILEPATH docstring)
+set(DOXYGEN_EXECUTABLE \"@DOXYGEN_EXECUTABLE@\" CACHE FILEPATH docstring)
+
 ${_initcache}")
 
 file(WRITE "${CTEST_DASHBOARD_ROOT}/GeneratedCombinedCache.${CTEST_SCRIPT_NAME}" "${_initcache}")
