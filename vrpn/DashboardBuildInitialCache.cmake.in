@@ -1,13 +1,3 @@
-# Pretty typical settings to preseve from the generating cache
-set(BUILD_TESTING "ON" CACHE BOOL "")
-set(IN_DASHBOARD_SCRIPT "ON" CACHE BOOL "")
-set(CMAKE_BUILD_TYPE "@CMAKE_BUILD_TYPE@" CACHE STRING "")
-set(CTEST_CONFIGURATION_TYPE "@CMAKE_BUILD_TYPE@" CACHE STRING "")
-
-# cppcheck testing tool location
-# Saved here because the cppcheck in the path might be outdated
-set(CPPCHECK_EXECUTABLE "@CPPCHECK_EXECUTABLE@" CACHE FILEPATH "")
-
 # Project configuration settings
 set(VRPN_USE_PHANTOM_SERVER "@VRPN_USE_PHANTOM_SERVER@" CACHE BOOL "")
 set(VRPN_INCLUDE_TIMECODE_SERVER "@VRPN_INCLUDE_TIMECODE_SERVER@" CACHE BOOL "")
