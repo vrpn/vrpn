@@ -176,6 +176,7 @@ decode_from( const char** buf, vrpn_int32& len )
 		fflush( stderr );
 		return -1;
 	}
+	newscript[newlen] = '\0';
 	if( this->script != NULL )
 		delete [] this->script;
 	this->script = newscript;
@@ -662,7 +663,7 @@ sendChannelReply( vrpn_uint32 channelNum )
 	{
 		int buflen = vrpn_CONNECTION_TCP_BUFLEN;
 		char* buf = &msgbuf[0];
-		if( this->encode_channel_reply( &buf, buflen, channelNum ) )
+		if( 0 > this->encode_channel_reply( &buf, buflen, channelNum ) )
 		{
 			fprintf( stderr, "vrpn_FunctionGenerator_Server::sendChannelReply:  "
 				"could not buffer message.\n" );
@@ -1938,7 +1939,14 @@ encode_channel_reply( char** buf, vrpn_int32& len, const vrpn_uint32 channelNum 
 		fflush( stderr );
 		return -1;
 	}
-	return channels[channelNum]->encode_to( buf, len );
+	if( 0 > channels[channelNum]->encode_to( buf, len ) )
+	{
+		fprintf( stderr, "vrpn_FunctionGenerator_Server::encode_channel_reply:  "
+				"unable to encode channel.\n" );
+		fflush( stderr );
+		return -1;
+	}
+	return 0;
 }
 
 
@@ -2286,7 +2294,9 @@ decode_interpreterDescription_reply( const char* buf, const vrpn_int32 len, char
 		return -1;
 	}
 	*desc = new char[ dlength + 1 ];
-	return vrpn_unbuffer( &buf, *desc, dlength );
+	int retval = vrpn_unbuffer( &buf, *desc, dlength );
+	(*desc)[dlength] = '\0';
+	return retval;
 }
 
 

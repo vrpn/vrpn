@@ -1,3 +1,7 @@
+2010-03-16  David Marshburn  <marshbur@cs.unc.edu>
+	* vrpn_FunctionGenerator.C:  correctly NULL-terminates decoded
+	script and description strings.
+
 2010-03-08  David Marshburn  <marshbur@cs.unc.edu>
 	* vrpn_FunctionGenerator.h (vrpn_FunctionGenerator_function_script::getConstScript):
 	  new, const accessor for the script string.
