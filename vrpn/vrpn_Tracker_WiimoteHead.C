@@ -102,7 +102,7 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name,
 		return;
 	}
 
-	_setup_wiimote();
+	setup_wiimote();
 
 	//--------------------------------------------------------------------
 	// Whenever we get a connection, set a flag so we make sure to send an
@@ -124,7 +124,33 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name,
 	_convert_pose_to_tracker();
 }
 
-void vrpn_Tracker_WiimoteHead::_setup_wiimote() {
+vrpn_Tracker_WiimoteHead::~vrpn_Tracker_WiimoteHead (void) {
+	if (d_name) {
+		delete [] d_name;
+		d_name = NULL;
+	}
+
+	// If the analog pointer is NULL, we're done.
+	if (d_ana == NULL) { return; }
+
+	// Turn off the callback handler
+	int	ret;
+	ret = d_ana->unregister_change_handler(this, handle_analog_update);
+
+	// Delete the analog device.
+	delete d_ana;
+}
+
+/** Reset the current pose to identity and store it into the tracker
+    position/quaternion location, and set the updated flag.
+*/
+void vrpn_Tracker_WiimoteHead::reset() {
+	_reset_gravity();
+	_reset_pose();
+	_reset_points();
+}
+
+void vrpn_Tracker_WiimoteHead::setup_wiimote() {
 	if (d_ana) {
 		// Turn off the callback handler and delete old analog
 		// if we already have an analog source
@@ -162,27 +188,89 @@ void vrpn_Tracker_WiimoteHead::_setup_wiimote() {
 	d_contact = false;
 }
 
-vrpn_Tracker_WiimoteHead::~vrpn_Tracker_WiimoteHead (void) {
-	if (d_name) {
-		delete [] d_name;
-		d_name = NULL;
+void vrpn_Tracker_WiimoteHead::mainloop() {
+	struct timeval now;
+
+	// Call generic server mainloop, since we are a server
+	server_mainloop();
+
+	// Mainloop() the wiimote to get fresh values
+	if (d_ana != NULL) {
+		d_ana->mainloop();
 	}
 
-	// If the analog pointer is NULL, we're done.
-	if (d_ana == NULL) { return; }
+	// See if we have new data, or if it has been too long since our last
+	// report.  Send a new report in either case.
+	vrpn_gettimeofday(&now, NULL);
+	double interval = duration(now, d_prevtime);
 
-	// Turn off the callback handler
-	int	ret;
-	ret = d_ana->unregister_change_handler(this, handle_analog_update);
+	if (_should_report(interval)) {
+		// Figure out the new matrix based on the current values and
+		// the length of the interval since the last report
+		update_pose();
 
-	// Delete the analog device.
-	delete d_ana;
+		report();
+	}
 }
 
-// This routine handles updates of the analog values. It caches the point
-// data and the gravity data for later processing.
+void vrpn_Tracker_WiimoteHead::update_pose() {
+	q_xyz_quat_type newPose;
 
-void	vrpn_Tracker_WiimoteHead::handle_analog_update(void* userdata, const vrpn_ANALOGCB info) {
+	// Start at the identity pose
+	make_null_vec(newPose.xyz);
+	make_identity_quat(newPose.quat);
+
+	// If our gravity vector has changed and it's not 0,
+	// we need to update our gravity correction transform.
+	if (d_gravDirty && _have_gravity()) {
+		_update_gravity_moving_avg();
+		d_gravDirty = false;
+	}
+
+	// Update pose estimate
+	_update_2_LED_pose(newPose);
+
+	if (d_lock) {
+		// Gravity correction
+		if (_have_gravity()) {
+			q_xyz_quat_compose(&d_currentPose, &d_currentPose, &d_gravityXform);
+		}
+
+		if (d_flipState == FLIP_UNKNOWN) {
+			_update_flip_state();
+			if (d_flipState == FLIP_180) {
+				return; // must throw away first update after setting flip to 180
+			}
+		}
+
+		// Copy final pose into the tracker position and quaternion structures.
+		_convert_pose_to_tracker();
+	}
+}
+
+void vrpn_Tracker_WiimoteHead::report() {
+	// pack and deliver tracker report;
+	if (d_connection) {
+		char      msgbuf[1000];
+		int       len = encode_to(msgbuf);
+		if (d_connection->pack_message(len, vrpn_Tracker::timestamp,
+					       position_m_id, d_sender_id, msgbuf,
+					       vrpn_CONNECTION_LOW_LATENCY)) {
+			fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
+					"cannot write message: tossing\n");
+		}
+	} else {
+		fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
+				"No valid connection\n");
+	}
+
+	// We just sent a report, so reset the time
+	vrpn_gettimeofday(&d_prevtime, NULL);
+	d_updated = false;
+}
+
+// static
+void vrpn_Tracker_WiimoteHead::handle_analog_update(void* userdata, const vrpn_ANALOGCB info) {
 	vrpn_Tracker_WiimoteHead* wh = (vrpn_Tracker_WiimoteHead*)userdata;
 
 	if (!wh) { return; }
@@ -251,116 +339,9 @@ int vrpn_Tracker_WiimoteHead::handle_connection(void* userdata, vrpn_HANDLERPARA
 	return 0;
 }
 
-void vrpn_Tracker_WiimoteHead::_reset_gravity() {
-	make_null_vec(d_gravityXform.xyz);
-	make_identity_quat(d_gravityXform.quat);
-
-	make_null_vec(d_vGrav);
-	make_null_vec(d_vGravPenultimate);
-	make_null_vec(d_vGravAntepenultimate);
-
-	d_vGravAntepenultimate[2] = d_vGravPenultimate[2] = d_vGrav[2] = 1;
-
-	d_gravDirty = true;
-}
-
-void vrpn_Tracker_WiimoteHead::_reset_points() {
-	d_vX[0] = d_vX[1] = d_vX[2] = d_vX[3] = -1;
-	d_vY[0] = d_vY[1] = d_vY[2] = d_vY[3] = -1;
-	d_vSize[0] = d_vSize[1] = d_vSize[2] = d_vSize[3] = -1;
-}
-
-void vrpn_Tracker_WiimoteHead::_reset_pose() {
-	// Reset to the identity pose
-	make_null_vec(d_currentPose.xyz);
-	make_identity_quat(d_currentPose.quat);
-
-	vrpn_gettimeofday(&d_prevtime, NULL);
-
-	// Convert the matrix into quaternion notation and copy into the
-	// tracker pos and quat elements.
-	_convert_pose_to_tracker();
-
-	// Set the updated flag to send a report
-	d_updated = true;
-	d_flipState = FLIP_UNKNOWN;
-	d_lock = false;
-}
-
-/** Reset the current pose to identity and store it into the tracker
-    position/quaternion location, and set the updated flag.
-*/
-void vrpn_Tracker_WiimoteHead::reset() {
-	_reset_gravity();
-	_reset_pose();
-	_reset_points();
-}
-
-void vrpn_Tracker_WiimoteHead::mainloop() {
-	struct timeval        now;
-
-	// Call generic server mainloop, since we are a server
-	server_mainloop();
-
-	// Mainloop() the wiimote to get fresh values
-	if (d_ana != NULL) {
-		d_ana->mainloop();
-	}
-
-	// See if we have new data, or if it has been too long since our last
-	// report.  Send a new report in either case.
-	vrpn_gettimeofday(&now, NULL);
-	double interval = duration(now, d_prevtime);
-
-	if (_should_report(interval)) {
-		// Figure out the new matrix based on the current values and
-		// the length of the interval since the last report
-		_update_pose();
-
-		report();
-	}
-}
-
-/// Update the current matrix based on the most recent values
-/// received from the Wiimote regarding IR blob location.
-void	vrpn_Tracker_WiimoteHead::_update_pose() {
-	q_xyz_quat_type newPose;
-
-	// Start at the identity pose
-	make_null_vec(newPose.xyz);
-	make_identity_quat(newPose.quat);
-
-	// If our gravity vector has changed and it's not 0,
-	// we need to update our gravity correction transform.
-	if (d_gravDirty && _have_gravity()) {
-		_update_gravity_moving_avg();
-		d_gravDirty = false;
-	}
-
-	// Update pose estimate
-	_update_2_LED_pose(newPose);
-
-	if (d_lock) {
-		// Gravity correction
-		if (_have_gravity()) {
-			q_xyz_quat_compose(&d_currentPose, &d_currentPose, &d_gravityXform);
-		}
-
-		if (d_flipState == FLIP_UNKNOWN) {
-			_update_flip_state();
-			if (d_flipState == FLIP_180) {
-				return; // must throw away first update after setting flip to 180
-			}
-		}
-
-		// Copy final pose into the tracker position and quaternion structures.
-		_convert_pose_to_tracker();
-	}
-}
-
 void vrpn_Tracker_WiimoteHead::_update_gravity_moving_avg() {
 	// Moving average of last three gravity vectors
-	/// @todo replace/supplement gravity moving avg with kalman filter
+	/// @todo replace/supplement gravity moving average with Kalman filter
 	q_vec_type movingAvg = Q_NULL_VECTOR;
 
 	q_vec_copy(movingAvg, d_vGrav);
@@ -427,7 +408,7 @@ void vrpn_Tracker_WiimoteHead::_update_2_LED_pose(q_xyz_quat_type & newPose) {
 	// Note that this is an approximation, since we don't know the
 	// distance/horizontal position.  (I think...)
 	const double angle = radPerPx * dist / 2.0;
-	double headDist = (d_blobDistance / 2.0) / tan(angle);
+	const double headDist = (d_blobDistance / 2.0) / tan(angle);
 
 	// Translate the distance along z axis, and tilt the head
 	newPose.xyz[2] = headDist;      // translate along Z
@@ -435,8 +416,8 @@ void vrpn_Tracker_WiimoteHead::_update_2_LED_pose(q_xyz_quat_type & newPose) {
 
 	// Find the sensor pixel of the line of sight - directly between
 	// the LEDs
-	double avgX = (X0 + X1) / 2.0;
-	double avgY = (Y0 + Y1) / 2.0;
+	const double avgX = (X0 + X1) / 2.0;
+	const double avgY = (Y0 + Y1) / 2.0;
 
 	// b is the virtual depth in the sensor from a point to the full sensor
 	// used for finding similar triangles to calculate x/y translation
@@ -457,6 +438,10 @@ void vrpn_Tracker_WiimoteHead::_update_2_LED_pose(q_xyz_quat_type & newPose) {
 }
 
 void vrpn_Tracker_WiimoteHead::_update_flip_state() {
+	if (d_flipState != FLIP_UNKNOWN) {
+		return;
+	}
+
 	q_vec_type upVec = {0, 1, 0};
 
 	q_xform(upVec, d_currentPose.quat, upVec);
@@ -467,7 +452,7 @@ void vrpn_Tracker_WiimoteHead::_update_flip_state() {
 		fprintf(stderr, "vrpn_Tracker_WiimoteHead: d_flipState = FLIP_180\n");
 #endif
 		d_flipState = FLIP_180;
-		_update_pose();
+		update_pose();
 	} else {
 		// OK, we are fine - there is a positive Y component to our up vector
 #ifdef VERBOSE
@@ -482,28 +467,47 @@ void vrpn_Tracker_WiimoteHead::_convert_pose_to_tracker() {
 	q_copy(d_quat, d_currentPose.quat); // set orientation
 }
 
-/** Pack and send message with latest state information.
-*/
 
-void vrpn_Tracker_WiimoteHead::report() {
-	// pack and deliver tracker report;
-	if (d_connection) {
-		char      msgbuf[1000];
-		int       len = encode_to(msgbuf);
-		if (d_connection->pack_message(len, vrpn_Tracker::timestamp,
-					       position_m_id, d_sender_id, msgbuf,
-					       vrpn_CONNECTION_LOW_LATENCY)) {
-			fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
-					"cannot write message: tossing\n");
-		}
-	} else {
-		fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
-				"No valid connection\n");
-	}
+void vrpn_Tracker_WiimoteHead::_reset_gravity() {
+	make_null_vec(d_gravityXform.xyz);
+	make_identity_quat(d_gravityXform.quat);
 
-	// We just sent a report, so reset the time
+	make_null_vec(d_vGrav);
+	make_null_vec(d_vGravPenultimate);
+	make_null_vec(d_vGravAntepenultimate);
+
+	// Default earth gravity is (0, 1, 0)
+	d_vGravAntepenultimate[2] = d_vGravPenultimate[2] = d_vGrav[2] = 1;
+
+	d_gravDirty = true;
+}
+
+void vrpn_Tracker_WiimoteHead::_reset_points() {
+	d_vX[0] = d_vX[1] = d_vX[2] = d_vX[3] = -1;
+	d_vY[0] = d_vY[1] = d_vY[2] = d_vY[3] = -1;
+	d_vSize[0] = d_vSize[1] = d_vSize[2] = d_vSize[3] = -1;
+	d_points = 0;
+
+
+	d_flipState = FLIP_UNKNOWN;
+	d_lock = false;
+}
+
+void vrpn_Tracker_WiimoteHead::_reset_pose() {
+	// Reset to the identity pose
+	make_null_vec(d_currentPose.xyz);
+	make_identity_quat(d_currentPose.quat);
+
 	vrpn_gettimeofday(&d_prevtime, NULL);
-	d_updated = false;
+
+	// Set the updated flag to send a report
+	d_updated = true;
+	d_flipState = FLIP_UNKNOWN;
+	d_lock = false;
+
+	// Convert the matrix into quaternion notation and copy into the
+	// tracker pos and quat elements.
+	_convert_pose_to_tracker();
 }
 
 bool vrpn_Tracker_WiimoteHead::_should_report(double elapsedInterval) const {
