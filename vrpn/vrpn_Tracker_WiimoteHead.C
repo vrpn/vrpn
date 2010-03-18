@@ -41,24 +41,24 @@
 	DEALINGS IN THE SOFTWARE.
 */
 
+// Standard includes
 #include <string.h>
 #include <math.h>
+#include <stdio.h>
+
+// Local Includes
 #include "vrpn_Tracker_WiimoteHead.h"
 
 #undef	VERBOSE
 
-#ifndef	M_PI
-#define M_PI		3.14159265358979323846
-#endif
-
-static	double	duration(struct timeval t1, struct timeval t2) {
+static double duration(struct timeval t1, struct timeval t2) {
 	return (t1.tv_usec - t2.tv_usec) / 1000000.0 +
 	       (t1.tv_sec - t2.tv_sec);
 }
 
 /** @brief Utility function so we don't have to include all of <algorithm>
  */
-void swap(double & a, double & b) {
+static void swap(double & a, double & b) {
 	double c = a;
 
 	a = b;
@@ -67,14 +67,14 @@ void swap(double & a, double & b) {
 
 /** @brief Utility function to set a quat equal to the identity rotation
  */
-void make_identity_quat(q_type & dest) {
+static void make_identity_quat(q_type & dest) {
 	dest[0] = dest[1] = dest[2] = 0;
 	dest[3] = 1;
 }
 
 /** @brief Utility function to set a 3-vector equal to the zero vector
  */
-void make_null_vec(q_vec_type & dest) {
+static void make_null_vec(q_vec_type & dest) {
 	dest[0] = dest[1] = dest[2] = 0;
 }
 

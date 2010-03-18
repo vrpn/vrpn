@@ -49,15 +49,6 @@
 #include "vrpn_Analog.h"
 #include <quat.h>
 
-#include <time.h>
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-
-#ifndef _WIN32
-#include <sys/time.h>
-#endif
-
 // The time reported by this tracker is as of the last report it has had
 // from the Wiimote, to ensure accurate timing.
 class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
@@ -115,6 +106,7 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 	q_xyz_quat_type d_currentPose;
 
 	// flags
+
 	/// @brief Flag: Have we received the first message from the Wiimote?
 	bool d_contact;
 
