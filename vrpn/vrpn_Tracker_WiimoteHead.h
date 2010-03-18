@@ -105,9 +105,7 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 	const char* d_name;
 
 	q_xyz_quat_type d_gravityXform;
-	q_type d_flip;
 	q_xyz_quat_type d_currentPose;
-	q_vec_type d_vSensorZAxis;
 
 	bool		d_gravDirty;
 	q_vec_type	d_vGravAntepenultimate;

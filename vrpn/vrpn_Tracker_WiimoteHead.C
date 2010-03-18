@@ -308,9 +308,6 @@ void vrpn_Tracker_WiimoteHead::reset(void) {
 	d_lock = false;
 
 	make_null_vec(d_vGrav);
-	make_null_vec(d_vSensorZAxis);
-
-	make_identity_quat(d_flip);
 
 	d_vX[0] = d_vX[1] = d_vX[2] = d_vX[3] = -1;
 	d_vY[0] = d_vY[1] = d_vY[2] = d_vY[3] = -1;
@@ -374,11 +371,6 @@ void	vrpn_Tracker_WiimoteHead::update_pose(double time_interval) {
 		regulargravity[2] = 1;
 
 		q_from_two_vecs (d_gravityXform.quat, movingAvg, regulargravity);
-
-		// Set up a 180-degree rotation around sensor Z for future use
-		q_vec_type zAxis = {0,1,0};
-		q_xyz_quat_xform(zAxis, &d_gravityXform, zAxis);
-		q_from_axis_angle(d_flip, zAxis[0], zAxis[1], zAxis[2], Q_PI);
 
 		d_gravDirty = false;
 	}
