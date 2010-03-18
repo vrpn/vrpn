@@ -44,13 +44,14 @@
 	DEALINGS IN THE SOFTWARE.
 */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <signal.h>
-#include <string.h>
 #include <iostream>
+#include <string>
+
+using namespace std;
 
 #include <vrpn_Configure.h>
+
+#define FATAL_ERROR cerr << endl << "Press 'enter' to exit..." << endl;	cin.get(); return -1;
 
 #if defined(VRPN_USE_WIIUSE)
 #include "vrpn_Tracker.h"
@@ -116,60 +117,73 @@ void	VRPN_CALLBACK handle_pos(void*, const vrpn_TRACKERCB t) {
 int main(int argc, char* argv []) {
 	int wmnum = -1;
 	if (argc == 1) {
-		fprintf(stderr, "Using wiimote 0 by default... to specify another (0-3):\n");
-		fprintf(stderr, "%s WIIMOTENUM\n\n", argv[0]);
+		cout << "Note: Using Wiimote 0 by default... to specify another [0-3]:" << endl;
+		cout <<  "Usage: " << argv[0] << " [WIIMOTENUM]" << endl;
 		wmnum = 0;
 	} else if (argc == 2) {
 		wmnum = atoi(argv[1]);
-		if (wmnum == -1) {
+		if (wmnum < 0 || wmnum > 3) {
 			// improper # provided - pretend as if we had too many arguments
 			// so we error out.
 			argc = 3;
+		} else {
+			cout << "Using specified Wiimote number " << wmnum << endl;
 		}
 	}
 
 	if (argc > 2) {
-		fprintf(stderr, "Please run this with no arguments or optionally a wiimote number (0-3)\n");
-		fprintf(stderr, "Usage: %s [WIIMOTENUM]\n", argv[0]);
-		std::cin.get();
-		return -1;
+		cerr <<  "ERROR: Please run this with no arguments or optionally a Wiimote number (0-3)" << endl;
+		cerr <<  "Usage: " << argv[0] << " [WIIMOTENUM]" << endl;
+		FATAL_ERROR;
 	}
 
 	// explicitly open the connection
 	connection = vrpn_create_server_connection(CONNECTION_PORT);
 
 	if (!connection) {
-		fprintf(stderr, "Could not create connection!\n");
-		fprintf(stderr, "Press 'enter' to exit...\n");
-		std::cin.get();
-		return -1;
+		cerr << "Could not create VRPN server connection!" << endl;
+		FATAL_ERROR;
 	}
+
+	// Message not valid on Windows, where you must remove existing pairings
+	// and create a new one without a passcode before each time you start
+	// the tracker
+#ifndef _WIN32
+	cout << endl;
+	cout << "************************************************" << endl;
+	cout << "Press the 1 and 2 buttons on your Wiimote now..." << endl;
+	cout << "************************************************" << endl << endl;
+#endif
 
 	wiimote = new vrpn_WiiMote(WIIMOTE_NAME, connection, wmnum);
 	if (!wiimote) {
-		fprintf(stderr, "Could not create Wiimote server named %s!\n", WIIMOTE_NAME);
-		fprintf(stderr, "Press 'enter' to exit...\n");
-		std::cin.get();
-		return -1;
+		cerr << "Could not create Wiimote server named " << WIIMOTE_NAME << endl;
+		FATAL_ERROR;
 	}
+
+	cout << endl;
+	cout << "************************************************" << endl;
+	cout << "Wiimote successfully paired, starting tracker..." << endl;
+	cout << "************************************************" << endl << endl;
 
 	wmtkr = new vrpn_Tracker_WiimoteHead(TRACKER_NAME, connection, WIIMOTE_REMOTE_NAME, 60.0);
 	if (!wmtkr) {
-		fprintf(stderr, "Could not create Wiimote Head Tracker named %s!\n", TRACKER_NAME);
-		fprintf(stderr, "Press 'enter' to exit...\n");
-		std::cin.get();
-		return -1;
+		cerr <<  "Could not create Wiimote Head Tracker named " << TRACKER_NAME << endl;
+		FATAL_ERROR;
 	}
 
+	cout << endl;
+	cout << "************************************************" << endl;
+	cout << "Tracker's name is: " << TRACKER_NAME << endl;
+	cout << "************************************************" << endl << endl;
+
 	vrpn_gettimeofday(&last_display, NULL);
+
 	// Open the tracker remote using this connection
-	fprintf(stderr, "\nTracker's name is %s.\n", TRACKER_NAME);
 	tkr = new vrpn_Tracker_Remote(TRACKER_NAME, connection);
 	if (!wmtkr) {
-		fprintf(stderr, "Could not create a remote for our own tracker %s!\n", TRACKER_NAME);
-		fprintf(stderr, "Press 'enter' to exit...\n");
-		std::cin.get();
-		return -1;
+		cerr <<  "Could not create a remote for our own tracker " << TRACKER_NAME << endl;
+		FATAL_ERROR;
 	}
 
 	// Set up the tracker callback handler
@@ -188,7 +202,12 @@ int main(int argc, char* argv []) {
 		vrpn_SleepMsecs(1);
 #ifdef RP_PROFILING
 		// gprof on Linux requires a clean exit
-		if (reports >= MAX_REPORTS) { return 0; }
+		if (reports >= MAX_REPORTS) {
+			cout << "RP_PROFILING defined at build time and MAX_REPORTS=";
+			cout << MAX_REPORTS << " reached:" << endl;
+			cout << "Exiting cleanly." << endl;
+			return 0;
+		}
 #endif
 	}
 
@@ -199,8 +218,9 @@ int main(int argc, char* argv []) {
 
 // if not defined(VRPN_USE_WIIUSE)
 int main(int argc, char* argv []) {
-	fprintf(stderr, "Error: This app doesn't do anything if you didn't compile against WiiUse.\n");
-	return -1;
+	cerr << "Error: This app doesn't do anything if you didn't compile the" << endl;
+	cerr << "VRPN server lib against WiiUse." << endl;
+	FATAL_ERROR;
 }
 
 #endif // defined(VRPN_USE_WIIUSE)
