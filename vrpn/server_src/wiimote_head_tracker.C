@@ -184,6 +184,7 @@ int main(int argc, char* argv []) {
 		// Sleep for 1ms so we don't eat the CPU
 		vrpn_SleepMsecs(1);
 #ifdef RP_PROFILING
+		// gprof on Linux requires a clean exit
 		if (reports >= 30000) { return 0; }
 #endif
 	}

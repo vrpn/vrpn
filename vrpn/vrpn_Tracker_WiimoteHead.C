@@ -187,8 +187,10 @@ void	vrpn_Tracker_WiimoteHead::handle_analog_update(void* userdata, const vrpn_A
 	vrpn_Tracker_WiimoteHead* wh = (vrpn_Tracker_WiimoteHead*)userdata;
 	if (!wh) { return; }
 	if (!wh->d_contact) {
+#ifdef VERBOSE
 		fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
 						"got first report from Wiimote!\n");
+#endif
 	}
 
 	int i, firstchan;
@@ -467,10 +469,7 @@ void vrpn_Tracker_WiimoteHead::convert_pose_to_tracker() {
 
 	if (haveGravity()) {
 		// we know gravity, so we are correcting for it.
-		// TODO (maybe): improve vrpn driver in juggler to handle tracker-to-room
-		// transform and set that there, instead?
 		q_xyz_quat_compose(&d_currentPose, &d_currentPose, &d_gravityXform);
-
 	}
 
 	if (d_flipState == FLIP_UNKNOWN) {
@@ -490,10 +489,6 @@ void vrpn_Tracker_WiimoteHead::convert_pose_to_tracker() {
 			fprintf(stderr,"vrpn_Tracker_WiimoteHead: d_flipState = FLIP_NORMAL\n");
 #endif
 		}
-	}
-
-	if (d_flipState == FLIP_180) {
-		//q_mult(d_currentPose.quat, d_flip, d_currentPose.quat);
 	}
 
 	q_vec_copy(pos, d_currentPose.xyz); // set position;
