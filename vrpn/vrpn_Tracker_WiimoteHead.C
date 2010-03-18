@@ -78,17 +78,21 @@ static void make_null_vec(q_vec_type & dest) {
 	dest[0] = dest[1] = dest[2] = 0;
 }
 
-vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connection* trackercon, const char* wiimote, float update_rate) :
+vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name,
+		vrpn_Connection* trackercon,
+		const char* wiimote,
+		float update_rate,
+		float led_spacing) :
 	vrpn_Tracker (name, trackercon),
-	d_update_interval(update_rate ? (1 / update_rate) : 60.0),
+	d_name(wiimote),
+	d_update_interval(update_rate ? (1.0 / update_rate) : 1.0 / 60.0),
+	d_blobDistance(led_spacing),
 	d_flipState(FLIP_UNKNOWN),
-	d_blobDistance(.145),
 	d_points(0),
+	d_ana(NULL),
 	d_contact(false),
 	d_lock(false),
 	d_updated(false),
-	d_ana(NULL),
-	d_name(wiimote),
 	d_gravDirty(true) {
 	// If the name is NULL, we're done.
 	if (wiimote == NULL) {
@@ -114,12 +118,6 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connec
 
 	// put a little z translation as a saner default
 	d_currentPose.xyz[2] = 1;
-
-	// Initialize all gravity vecs to a default
-	make_null_vec(d_vGrav);
-	make_null_vec(d_vGravPenultimate);
-	make_null_vec(d_vGravAntepenultimate);
-	d_vGravAntepenultimate[2] = d_vGravPenultimate[2] = d_vGrav[2] = 1;
 
 	// Set up our initial "default" pose to make sure everything is
 	// safely initialized before our first report.
@@ -181,10 +179,8 @@ vrpn_Tracker_WiimoteHead::~vrpn_Tracker_WiimoteHead (void) {
 	delete d_ana;
 }
 
-// This routine handles updates of the analog values. The value coming in is
-// adjusted per the parameters in the full axis description, and then used to
-// update the value there. The value is used by the matrix-generation code in
-// mainloop() to update the transformations; that work is not done here.
+// This routine handles updates of the analog values. It caches the point
+// data and the gravity data for later processing.
 
 void	vrpn_Tracker_WiimoteHead::handle_analog_update(void* userdata, const vrpn_ANALOGCB info) {
 	vrpn_Tracker_WiimoteHead* wh = (vrpn_Tracker_WiimoteHead*)userdata;
@@ -255,34 +251,49 @@ int vrpn_Tracker_WiimoteHead::handle_connection(void* userdata, vrpn_HANDLERPARA
 	return 0;
 }
 
-/** Reset the current pose to identity and store it into the tracker
-    position/quaternion location, and set the updated flag.
-*/
+void vrpn_Tracker_WiimoteHead::_reset_gravity() {
+	make_null_vec(d_gravityXform.xyz);
+	make_identity_quat(d_gravityXform.quat);
 
-void vrpn_Tracker_WiimoteHead::reset() {
+	make_null_vec(d_vGrav);
+	make_null_vec(d_vGravPenultimate);
+	make_null_vec(d_vGravAntepenultimate);
+
+	d_vGravAntepenultimate[2] = d_vGravPenultimate[2] = d_vGrav[2] = 1;
+
+	d_gravDirty = true;
+}
+
+void vrpn_Tracker_WiimoteHead::_reset_points() {
+	d_vX[0] = d_vX[1] = d_vX[2] = d_vX[3] = -1;
+	d_vY[0] = d_vY[1] = d_vY[2] = d_vY[3] = -1;
+	d_vSize[0] = d_vSize[1] = d_vSize[2] = d_vSize[3] = -1;
+}
+
+void vrpn_Tracker_WiimoteHead::_reset_pose() {
 	// Reset to the identity pose
 	make_null_vec(d_currentPose.xyz);
 	make_identity_quat(d_currentPose.quat);
 
-	make_null_vec(d_gravityXform.xyz);
-	make_identity_quat(d_gravityXform.quat);
-
 	vrpn_gettimeofday(&d_prevtime, NULL);
+
+	// Convert the matrix into quaternion notation and copy into the
+	// tracker pos and quat elements.
+	_convert_pose_to_tracker();
 
 	// Set the updated flag to send a report
 	d_updated = true;
 	d_flipState = FLIP_UNKNOWN;
 	d_lock = false;
+}
 
-	make_null_vec(d_vGrav);
-
-	d_vX[0] = d_vX[1] = d_vX[2] = d_vX[3] = -1;
-	d_vY[0] = d_vY[1] = d_vY[2] = d_vY[3] = -1;
-	d_vSize[0] = d_vSize[1] = d_vSize[2] = d_vSize[3] = -1;
-
-	// Convert the matrix into quaternion notation and copy into the
-	// tracker pos and quat elements.
-	_convert_pose_to_tracker();
+/** Reset the current pose to identity and store it into the tracker
+    position/quaternion location, and set the updated flag.
+*/
+void vrpn_Tracker_WiimoteHead::reset() {
+	_reset_gravity();
+	_reset_pose();
+	_reset_points();
 }
 
 void vrpn_Tracker_WiimoteHead::mainloop() {

@@ -49,34 +49,71 @@
 #include "vrpn_Analog.h"
 #include <quat.h>
 
-// The time reported by this tracker is as of the last report it has had
-// from the Wiimote, to ensure accurate timing.
+/** @brief Provides a tracker device given data from a Wii Remote and LED glasses.
+
+	Assumes a reasonably-stationary Wii Remote (on a tripod, for example)
+	and two LEDs on a pair of glasses, some fixed distance (default 0.145m)
+	apart. You can use the "Johnny Lee" glasses with this.
+
+	Reports poses in a right-hand coordinate system, y-up, that is always
+	level with respect to gravity no matter how your Wii Remote is tilted.
+ */
 class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 	public:
+	/** @brief constructor
+
+		@param name Name for the tracker device to expose
+		@param trackercon Connection to provide tracker device over
+		@param wiimote VRPN device name for existing vrpn_WiiMote device or
+			device with a compatible interface - see
+			vrpn_Tracker_WiimoteHead::d_ana for more info. If it starts
+			with *, the server connection will be used instead of creating a
+			new connection.
+		@param update_rate Minimum number of updates per second to issue
+		@param led_spacing Distance between LEDs in meters (0.145 is default)
+	 */
 	vrpn_Tracker_WiimoteHead (const char* name,
 				  vrpn_Connection * trackercon,
 				  const char* wiimote,
-				  float update_rate);
+				  float update_rate,
+				  float led_spacing = 0.145);
 
-	virtual ~vrpn_Tracker_WiimoteHead (void);
+	/// @brief destructor
+	virtual ~vrpn_Tracker_WiimoteHead ();
 
+	/// @brief reset pose, gravity transform, and cached points and gravity
+	virtual void reset();
+
+	/// @brief set up connection to wiimote-like analog device
 	void _setup_wiimote();
 
+	/// @brief VRPN mainloop function
 	virtual void mainloop();
-	virtual void reset(void);
 
+	/// @brief send tracker report
 	void report();
 
+	/// @brief Callback triggered when a new client connects to the tracker
 	static int VRPN_CALLBACK VRPN_CALLBACK handle_connection(void*, vrpn_HANDLERPARAM);
+
+	/// @brief Callback triggered when our data source issues an update
 	static void VRPN_CALLBACK VRPN_CALLBACK handle_analog_update(void* userdata, const vrpn_ANALOGCB info);
 
 	protected:
 	// Configuration Parameters
+
+	/// @brief Tracker device name
 	const char* d_name;
+
+	/// @brief maximum time between updates, in seconds
 	const double d_update_interval;
+
+	/// @brief distance between LEDs on glasses, in meters
 	const double d_blobDistance;
 
 	enum FlipState { FLIP_NORMAL, FLIP_180, FLIP_UNKNOWN };
+	/// @brief Whether we need to flip the order of the tracked points
+	///			before calculating a pose.
 	FlipState d_flipState;
 
 	/// @brief Time of last tracker report issued
@@ -94,7 +131,7 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 			- (0,0,1) is nominal Earth gravity
 		- four 3-tuples containing either:
 			- (x, y, size) for a tracked point (ranges [0, 1023], [0, 1023], [1,16])
-			- (-1, -1, -1) as a placeholder - point not seen
+			- (-1, -1, -1) as a place holder - point not seen
 	 */
 	vrpn_Analog_Remote* d_ana;
 
@@ -116,13 +153,18 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 	/// @brief Flag: Have we received updated Wiimote data since last report?
 	bool d_updated;
 
-	/// @brief Flag: Have we received updated gravity data since last grav update?
+	/// @brief Flag: Have we received updated gravity data since
+	/// last gravity update?
 	bool d_gravDirty;
 
 	// Gravity moving avg, window of 3
 	q_vec_type d_vGravAntepenultimate;
 	q_vec_type d_vGravPenultimate;
 	q_vec_type d_vGrav;
+
+	void _reset_gravity();
+	void _reset_points();
+	void _reset_pose();
 
 	// Pose update steps
 	void _update_pose();
