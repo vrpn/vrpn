@@ -380,7 +380,7 @@ void vrpn_Tracker_WiimoteHead::_update_2_LED_pose(q_xyz_quat_type & newPose) {
 
 	/// Field of view experimentally determined at Iowa State University
 	/// March 2010
-	const double fovX = 43.0, fovY = 32.00;
+	const double fovX = Q_DEG_TO_RAD(43.0), fovY = Q_DEG_TO_RAD(32.00);
 	//const double fovX = Q_DEG_TO_RAD(45.0), fovY = (fovX / xResSensor) * yResSensor;
 
 	const double radPerPx = fovX / xResSensor;
