@@ -354,9 +354,8 @@ void	vrpn_Tracker_WiimoteHead::update_pose(double time_interval) {
 	// If our gravity vector has changed and it's not 0,
 	// we need to update our gravity correction transform.
 	if (d_gravDirty && haveGravity()) {
-		// TODO perhaps set this quaternion as our tracker2room transform?
-
-		// Moving average
+		// Moving average of last three gravity vectors
+		/// @todo replace/supplement gravity moving avg with kalman filter
 		q_vec_type movingAvg = Q_NULL_VECTOR;
 		q_vec_copy (movingAvg, d_vGrav);
 		q_vec_add (movingAvg, movingAvg, d_vGravPenultimate);
@@ -385,13 +384,12 @@ void	vrpn_Tracker_WiimoteHead::update_pose(double time_interval) {
 		double rx, ry, rz; // Rotation (rad)
 		rx = ry = rz = 0;
 
-		// Wiimote stats source: http://wiibrew.org/wiki/Wiimote#IR_Camera
-		// TODO: verify this with spec sheet or experimental data
+		// Some stats source: http://wiibrew.org/wiki/Wiimote#IR_Camera
 		const double xResSensor = 1024.0, yResSensor = 768.0;
-		//const double fovX = 33.0, fovY = 23.0;
-		//const double fovX = 66.0, fovY = 25.0;
-		const double fovX = Q_DEG_TO_RAD(45.0), fovY = (fovX / xResSensor) * yResSensor;
-		//const double fovX = 45.0, fovY = 23.00;
+		//const double fovX = Q_DEG_TO_RAD(45.0), fovY = (fovX / xResSensor) * yResSensor;
+		/// Field of view experimentally determined at Iowa State University
+		/// March 2010
+		const double fovX = 43.0, fovY = 32.00;
 
 		const double radPerPx = fovX / xResSensor;
 		double X0, X1, Y0, Y1;
@@ -404,7 +402,6 @@ void	vrpn_Tracker_WiimoteHead::update_pose(double time_interval) {
 		if (d_flipState == FLIP_180) {
 			std::swap(X0, X1);
 			std::swap(Y0, Y1);
-
 		}
 
 		double dx = X0 - X1;
@@ -417,12 +414,8 @@ void	vrpn_Tracker_WiimoteHead::update_pose(double time_interval) {
 		double headDist = (d_blobDistance / 2.0) / tan(angle);
 
 		// Translate the distance along z axis, and tilt the head
-		// TODO - the 3-led version will have a more complex rotation
-		// calculation to perform, since this one assumes the user
-		// does not rotate their head around x or y axes
 
 		newPose.xyz[2] = headDist; // translate along Z
-		// double atan2 (double y, double x);
 		rz = atan2(dy, dx); // rotate around Z
 
 		// Find the sensor pixel of the line of sight - directly between
@@ -469,6 +462,8 @@ void vrpn_Tracker_WiimoteHead::convert_pose_to_tracker() {
 		q_xform(upVec, d_currentPose.quat, upVec);
 		if (upVec[1] < 0) {
 			// We are upside down - we will need to rotate 180 about the sensor Z
+			// We throw away this first report since we'd have to recalculate
+			/// @todo just call the recalculation here instead of returning
 			d_flipState = FLIP_180;
 #ifdef	VERBOSE
 			fprintf(stderr,"vrpn_Tracker_WiimoteHead: d_flipState = FLIP_180\n");
