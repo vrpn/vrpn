@@ -69,56 +69,79 @@ class VRPN_API vrpn_Tracker_WiimoteHead : public vrpn_Tracker {
 
 	virtual ~vrpn_Tracker_WiimoteHead (void);
 
-	void setupWiimote();
+	void _setup_wiimote();
 
 	virtual void mainloop();
 	virtual void reset(void);
 
 	void report();
 
-	static int VRPN_CALLBACK handle_connection (void*, vrpn_HANDLERPARAM);
+	static int VRPN_CALLBACK VRPN_CALLBACK handle_connection(void*, vrpn_HANDLERPARAM);
+	static void VRPN_CALLBACK VRPN_CALLBACK handle_analog_update(void* userdata, const vrpn_ANALOGCB info);
 
 	protected:
+	// Configuration Parameters
+	const char* d_name;
+	const double d_update_interval;
+	const double d_blobDistance;
 
-	struct timeval  d_prevtime;     //< Time of the previous report
-	const double          d_update_interval; //< How long to wait between sends
-	const double				d_blobDistance;
-
-	enum FlipState {
-		FLIP_NORMAL,
-		FLIP_180,
-		FLIP_UNKNOWN
-	};
-
+	enum FlipState { FLIP_NORMAL, FLIP_180, FLIP_UNKNOWN };
 	FlipState d_flipState;
 
+	/// @brief Time of last tracker report issued
+	struct timeval d_prevtime;
+
+	//Cached data from Wiimote update
 	double d_vX[4];
 	double d_vY[4];
 	double d_vSize[4];
 	double d_points;
 
-	bool d_contact;
-	bool d_lock;
-	bool d_updated;
-
+	/** @brief Source of analog data, traditionally vrpn_WiiMote
+		Must present analog channels in this order:
+		- x, y, z components of vector opposed to gravity
+			- (0,0,1) is nominal Earth gravity
+		- four 3-tuples containing either:
+			- (x, y, size) for a tracked point (ranges [0, 1023], [0, 1023], [1,16])
+			- (-1, -1, -1) as a placeholder - point not seen
+	 */
 	vrpn_Analog_Remote* d_ana;
-	const char* d_name;
 
+
+	/// @brief Gravity correction transformation
 	q_xyz_quat_type d_gravityXform;
+
+	/// @brief Current pose estimate
 	q_xyz_quat_type d_currentPose;
 
-	bool		d_gravDirty;
-	q_vec_type	d_vGravAntepenultimate;
-	q_vec_type	d_vGravPenultimate;
-	q_vec_type	d_vGrav;
+	// flags
+	/// @brief Flag: Have we received the first message from the Wiimote?
+	bool d_contact;
 
-	void    update_pose(double time_interval);
-	void    convert_pose_to_tracker(void);
+	/// @brief Flag: Does the tracking algorithm report a lock?
+	bool d_lock;
 
-	vrpn_bool shouldReport(double elapsedInterval) const;
-	bool haveGravity() const;
+	/// @brief Flag: Have we received updated Wiimote data since last report?
+	bool d_updated;
 
-	static void VRPN_CALLBACK handle_analog_update(void* userdata, const vrpn_ANALOGCB info);
+	/// @brief Flag: Have we received updated gravity data since last grav update?
+	bool d_gravDirty;
+
+	// Gravity moving avg, window of 3
+	q_vec_type d_vGravAntepenultimate;
+	q_vec_type d_vGravPenultimate;
+	q_vec_type d_vGrav;
+
+	// Pose update steps
+	void _update_pose();
+	void _update_gravity_moving_avg();
+	void _update_2_LED_pose(q_xyz_quat_type & newPose);
+	void _update_flip_state();
+	void _convert_pose_to_tracker();
+
+	// Internal query/accessor functions
+	bool _should_report(double elapsedInterval) const;
+	bool _have_gravity() const;
 };
 
 #endif

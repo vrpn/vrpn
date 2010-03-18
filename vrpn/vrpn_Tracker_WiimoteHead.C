@@ -43,7 +43,6 @@
 
 #include <string.h>
 #include <math.h>
-#include <algorithm>
 #include "vrpn_Tracker_WiimoteHead.h"
 
 #undef	VERBOSE
@@ -57,12 +56,25 @@ static	double	duration(struct timeval t1, struct timeval t2) {
 	       (t1.tv_sec - t2.tv_sec);
 }
 
-void make_identity_quat(q_type &dest) {
+/** @brief Utility function so we don't have to include all of <algorithm>
+ */
+void swap(double & a, double & b) {
+	double c = a;
+
+	a = b;
+	b = c;
+}
+
+/** @brief Utility function to set a quat equal to the identity rotation
+ */
+void make_identity_quat(q_type & dest) {
 	dest[0] = dest[1] = dest[2] = 0;
 	dest[3] = 1;
 }
 
-void make_null_vec(q_vec_type &dest) {
+/** @brief Utility function to set a 3-vector equal to the zero vector
+ */
+void make_null_vec(q_vec_type & dest) {
 	dest[0] = dest[1] = dest[2] = 0;
 }
 
@@ -77,9 +89,7 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connec
 	d_updated(false),
 	d_ana(NULL),
 	d_name(wiimote),
-	d_gravDirty(true)
-{
-
+	d_gravDirty(true) {
 	// If the name is NULL, we're done.
 	if (wiimote == NULL) {
 		d_name = NULL;
@@ -88,7 +98,7 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connec
 		return;
 	}
 
-	setupWiimote();
+	_setup_wiimote();
 
 	//--------------------------------------------------------------------
 	// Whenever we get a connection, set a flag so we make sure to send an
@@ -113,12 +123,13 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connec
 
 	// Set up our initial "default" pose to make sure everything is
 	// safely initialized before our first report.
-	convert_pose_to_tracker();
+	_convert_pose_to_tracker();
 }
 
-void vrpn_Tracker_WiimoteHead::setupWiimote() {
+void vrpn_Tracker_WiimoteHead::_setup_wiimote() {
 	if (d_ana) {
-		// Turn off the callback handler
+		// Turn off the callback handler and delete old analog
+		// if we already have an analog source
 		d_ana->unregister_change_handler(this, handle_analog_update);
 		delete d_ana;
 		d_ana = NULL;
@@ -128,18 +139,11 @@ void vrpn_Tracker_WiimoteHead::setupWiimote() {
 	// If the name starts with the '*' character, use the server
 	// connection rather than making a new one.
 	if (d_name[0] == '*') {
-		d_ana = new vrpn_Analog_Remote( & (d_name[1]), d_connection);
-#ifdef	VERBOSE
-		printf("vrpn_Tracker_WiimoteHead: Adding local analog %s\n",
-		       &(d_name[1]));
-#endif
+		d_ana = new vrpn_Analog_Remote(&(d_name[1]), d_connection);
 	} else {
 		d_ana = new vrpn_Analog_Remote(d_name);
-#ifdef	VERBOSE
-		printf("vrpn_Tracker_WiimoteHead: Adding remote analog %s\n",
-		       d_name);
-#endif
 	}
+
 	if (d_ana == NULL) {
 		fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
 				"Can't open Analog %s\n", d_name);
@@ -156,12 +160,12 @@ void vrpn_Tracker_WiimoteHead::setupWiimote() {
 		return;
 	}
 
-	// will re-notify when we catch a report.
+	// will notify when we catch the first report.
 	d_contact = false;
 }
 
 vrpn_Tracker_WiimoteHead::~vrpn_Tracker_WiimoteHead (void) {
-	if(d_name) {
+	if (d_name) {
 		delete [] d_name;
 		d_name = NULL;
 	}
@@ -171,8 +175,7 @@ vrpn_Tracker_WiimoteHead::~vrpn_Tracker_WiimoteHead (void) {
 
 	// Turn off the callback handler
 	int	ret;
-	ret = d_ana->unregister_change_handler(this,
-						   handle_analog_update);
+	ret = d_ana->unregister_change_handler(this, handle_analog_update);
 
 	// Delete the analog device.
 	delete d_ana;
@@ -185,11 +188,12 @@ vrpn_Tracker_WiimoteHead::~vrpn_Tracker_WiimoteHead (void) {
 
 void	vrpn_Tracker_WiimoteHead::handle_analog_update(void* userdata, const vrpn_ANALOGCB info) {
 	vrpn_Tracker_WiimoteHead* wh = (vrpn_Tracker_WiimoteHead*)userdata;
+
 	if (!wh) { return; }
 	if (!wh->d_contact) {
 #ifdef VERBOSE
 		fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
-						"got first report from Wiimote!\n");
+				"got first report from Wiimote!\n");
 #endif
 	}
 
@@ -200,13 +204,13 @@ void	vrpn_Tracker_WiimoteHead::handle_analog_update(void* userdata, const vrpn_A
 		if (   info.channel[firstchan] != -1
 			&& info.channel[firstchan + 1] != -1
 			&& info.channel[firstchan + 2] != -1) {
-				wh->d_vX[i] = info.channel[firstchan];
-				wh->d_vY[i] = info.channel[firstchan + 1];
-				wh->d_vSize[i] = info.channel[firstchan + 2];
-				wh->d_points = i + 1;
-			} else {
-				break;
-			}
+			wh->d_vX[i] = info.channel[firstchan];
+			wh->d_vY[i] = info.channel[firstchan + 1];
+			wh->d_vSize[i] = info.channel[firstchan + 2];
+			wh->d_points = i + 1;
+		} else {
+			break;
+		}
 	}
 
 	wh->d_contact = true;
@@ -241,8 +245,8 @@ void	vrpn_Tracker_WiimoteHead::handle_analog_update(void* userdata, const vrpn_A
 // static
 int vrpn_Tracker_WiimoteHead::handle_connection(void* userdata, vrpn_HANDLERPARAM) {
 	vrpn_Tracker_WiimoteHead* wh = reinterpret_cast<vrpn_Tracker_WiimoteHead*>(userdata);
-	// Indicate that we should grab the wiimote, if we haven't already
-	// and that we should send a report with whatever we have.
+
+	// Indicate that we should send a report with whatever we have.
 	wh->d_updated = true;
 
 	// Always return 0 here, because nonzero return means that the input data
@@ -251,48 +255,11 @@ int vrpn_Tracker_WiimoteHead::handle_connection(void* userdata, vrpn_HANDLERPARA
 	return 0;
 }
 
-/** Pack and send message with latest state information.
-*/
-
-void vrpn_Tracker_WiimoteHead::report() {
-	struct timeval now;
-	double interval;
-	// See if it has been long enough since our last report.
-	// If so, generate a new one.
-	vrpn_gettimeofday(&now, NULL);
-	interval = duration(now, d_prevtime);
-
-
-	// Figure out the new matrix based on the current values and
-	// the length of the interval since the last report
-	update_pose(interval);
-
-	// pack and deliver tracker report;
-	if (d_connection) {
-		char      msgbuf[1000];
-		int       len = encode_to(msgbuf);
-		if (d_connection->pack_message(len, vrpn_Tracker::timestamp,
-									   position_m_id, d_sender_id, msgbuf,
-									   vrpn_CONNECTION_LOW_LATENCY)) {
-			fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
-					"cannot write message: tossing\n");
-		}
-	} else {
-		fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
-				"No valid connection\n");
-	}
-
-	// We just sent a report, so reset the time
-	d_prevtime = now;
-	d_updated = false;
-
-}
-
 /** Reset the current pose to identity and store it into the tracker
     position/quaternion location, and set the updated flag.
 */
 
-void vrpn_Tracker_WiimoteHead::reset(void) {
+void vrpn_Tracker_WiimoteHead::reset() {
 	// Reset to the identity pose
 	make_null_vec(d_currentPose.xyz);
 	make_identity_quat(d_currentPose.quat);
@@ -315,12 +282,11 @@ void vrpn_Tracker_WiimoteHead::reset(void) {
 
 	// Convert the matrix into quaternion notation and copy into the
 	// tracker pos and quat elements.
-	convert_pose_to_tracker();
+	_convert_pose_to_tracker();
 }
 
 void vrpn_Tracker_WiimoteHead::mainloop() {
 	struct timeval        now;
-	double        interval; // How long since the last report, in secs
 
 	// Call generic server mainloop, since we are a server
 	server_mainloop();
@@ -333,18 +299,20 @@ void vrpn_Tracker_WiimoteHead::mainloop() {
 	// See if we have new data, or if it has been too long since our last
 	// report.  Send a new report in either case.
 	vrpn_gettimeofday(&now, NULL);
-	interval = duration(now, d_prevtime);
+	double interval = duration(now, d_prevtime);
 
-	if (shouldReport(interval)) {
+	if (_should_report(interval)) {
+		// Figure out the new matrix based on the current values and
+		// the length of the interval since the last report
+		_update_pose();
+
 		report();
 	}
 }
 
 /// Update the current matrix based on the most recent values
 /// received from the Wiimote regarding IR blob location.
-/// Time interval is passed for potential future Kalman filter, etc.
-void	vrpn_Tracker_WiimoteHead::update_pose(double time_interval) {
-
+void	vrpn_Tracker_WiimoteHead::_update_pose() {
 	q_xyz_quat_type newPose;
 
 	// Start at the identity pose
@@ -353,150 +321,195 @@ void	vrpn_Tracker_WiimoteHead::update_pose(double time_interval) {
 
 	// If our gravity vector has changed and it's not 0,
 	// we need to update our gravity correction transform.
-	if (d_gravDirty && haveGravity()) {
-		// Moving average of last three gravity vectors
-		/// @todo replace/supplement gravity moving avg with kalman filter
-		q_vec_type movingAvg = Q_NULL_VECTOR;
-		q_vec_copy (movingAvg, d_vGrav);
-		q_vec_add (movingAvg, movingAvg, d_vGravPenultimate);
-		q_vec_add (movingAvg, movingAvg, d_vGravAntepenultimate);
-		q_vec_scale (movingAvg, 0.33333, movingAvg);
-
-		// reset gravity transform
-		make_identity_quat(d_gravityXform.quat);
-		make_null_vec(d_gravityXform.xyz);
-
-		q_vec_type regulargravity = Q_NULL_VECTOR;
-		regulargravity[2] = 1;
-
-		q_from_two_vecs (d_gravityXform.quat, movingAvg, regulargravity);
-
+	if (d_gravDirty && _have_gravity()) {
+		_update_gravity_moving_avg();
 		d_gravDirty = false;
 	}
 
-	if (d_points == 2) {
-		d_lock = true;
-		// we simply stop updating our pos+orientation if we lost LED's
+	// Update pose estimate
+	_update_2_LED_pose(newPose);
 
-		// TODO right now only handling the 2-LED glasses
-		// TODO at a fixed 14.5cm distance (set in the constructor)
-
-		double rx, ry, rz; // Rotation (rad)
-		rx = ry = rz = 0;
-
-		// Some stats source: http://wiibrew.org/wiki/Wiimote#IR_Camera
-		const double xResSensor = 1024.0, yResSensor = 768.0;
-		//const double fovX = Q_DEG_TO_RAD(45.0), fovY = (fovX / xResSensor) * yResSensor;
-		/// Field of view experimentally determined at Iowa State University
-		/// March 2010
-		const double fovX = 43.0, fovY = 32.00;
-
-		const double radPerPx = fovX / xResSensor;
-		double X0, X1, Y0, Y1;
-
-		X0 = d_vX[0];
-		X1 = d_vX[1];
-		Y0 = d_vY[0];
-		Y1 = d_vY[1];
-
-		if (d_flipState == FLIP_180) {
-			std::swap(X0, X1);
-			std::swap(Y0, Y1);
+	if (d_lock) {
+		// Gravity correction
+		if (_have_gravity()) {
+			q_xyz_quat_compose(&d_currentPose, &d_currentPose, &d_gravityXform);
 		}
 
-		double dx = X0 - X1;
-		double dy = Y0 - Y1;
-		double dist = sqrt(dx * dx + dy * dy);
+		if (d_flipState == FLIP_UNKNOWN) {
+			_update_flip_state();
+			if (d_flipState == FLIP_180) {
+				return; // must throw away first update after setting flip to 180
+			}
+		}
 
-		// Note that this is an approximation, since we don't know the
-		// distance/horizontal position.  (I think...)
-		double angle = radPerPx * dist / 2.0;
-		double headDist = (d_blobDistance / 2.0) / tan(angle);
-
-		// Translate the distance along z axis, and tilt the head
-
-		newPose.xyz[2] = headDist; // translate along Z
-		rz = atan2(dy, dx); // rotate around Z
-
-		// Find the sensor pixel of the line of sight - directly between
-		// the led's
-		double avgX = (X0 + X1) / 2.0;
-		double avgY = (Y0 + Y1) / 2.0;
-
-		// b is the virtual depth in the sensor from a point to the full sensor
-		// used for finding similar triangles to calculate x/y translation
-		const double bHoriz = xResSensor / 2 / tan(fovX / 2);
-		const double bVert =  yResSensor / 2 / tan(fovY / 2);
-
-		// World head displacement (X and Y) from a centered origin at
-		// the calculated distance from the sensor
-		newPose.xyz[0] = headDist * (avgX - xResSensor / 2) / bHoriz;
-		newPose.xyz[1] = headDist * (avgY - yResSensor / 2) / bVert;
-
-		// set the quat. part of our pose with rotation angles
-		q_from_euler(newPose.quat, rz, ry, rx);
-
-		// Apply the new pose
-		q_vec_copy(d_currentPose.xyz, newPose.xyz);
-		q_copy(d_currentPose.quat, newPose.quat);
-
-		// Finally, apply gravity to our pose and
-		// and copy it into the tracker position and quaternion structures.
-		convert_pose_to_tracker();
-	} else {
-		// TODO: right now if we don't have exactly 2 points we lose the lock
-		d_lock = false;
-		d_flipState = FLIP_UNKNOWN;
+		// Copy final pose into the tracker position and quaternion structures.
+		_convert_pose_to_tracker();
 	}
 }
 
-void vrpn_Tracker_WiimoteHead::convert_pose_to_tracker() {
+void vrpn_Tracker_WiimoteHead::_update_gravity_moving_avg() {
+	// Moving average of last three gravity vectors
+	/// @todo replace/supplement gravity moving avg with kalman filter
+	q_vec_type movingAvg = Q_NULL_VECTOR;
 
-	if (haveGravity()) {
-		// we know gravity, so we are correcting for it.
-		q_xyz_quat_compose(&d_currentPose, &d_currentPose, &d_gravityXform);
+	q_vec_copy(movingAvg, d_vGrav);
+	q_vec_add(movingAvg, movingAvg, d_vGravPenultimate);
+	q_vec_add(movingAvg, movingAvg, d_vGravAntepenultimate);
+	q_vec_scale(movingAvg, 0.33333, movingAvg);
+
+	// reset gravity transform
+	make_identity_quat(d_gravityXform.quat);
+	make_null_vec(d_gravityXform.xyz);
+
+	q_vec_type regulargravity = Q_NULL_VECTOR;
+	regulargravity[2] = 1;
+
+	q_from_two_vecs(d_gravityXform.quat, movingAvg, regulargravity);
+}
+
+void vrpn_Tracker_WiimoteHead::_update_2_LED_pose(q_xyz_quat_type & newPose) {
+	if (d_points != 2) {
+		// we simply stop updating our pos+orientation if we lost LED's
+		// TODO: right now if we don't have exactly 2 points we lose the lock
+		d_lock = false;
+		d_flipState = FLIP_UNKNOWN;
+		return;
 	}
 
-	if (d_flipState == FLIP_UNKNOWN) {
-		q_vec_type upVec = {0, 1, 0};
-		q_xform(upVec, d_currentPose.quat, upVec);
-		if (upVec[1] < 0) {
-			// We are upside down - we will need to rotate 180 about the sensor Z
-			// We throw away this first report since we'd have to recalculate
-			/// @todo just call the recalculation here instead of returning
-			d_flipState = FLIP_180;
-#ifdef	VERBOSE
-			fprintf(stderr,"vrpn_Tracker_WiimoteHead: d_flipState = FLIP_180\n");
-#endif
-			return;
-		} else {
-			// OK, we are fine - there is a positive Y component to our up vector
-			d_flipState = FLIP_NORMAL;
-#ifdef	VERBOSE
-			fprintf(stderr,"vrpn_Tracker_WiimoteHead: d_flipState = FLIP_NORMAL\n");
-#endif
-		}
+	// TODO right now only handling the 2-LED glasses
+	// TODO at a fixed 14.5cm distance (set in the constructor)
+
+	d_lock = true;
+	double rx, ry, rz;
+	rx = ry = rz = 0;
+
+	// Some stats source: http://wiibrew.org/wiki/Wiimote#IR_Camera
+	const double xResSensor = 1024.0, yResSensor = 768.0;
+
+	/// Field of view experimentally determined at Iowa State University
+	/// March 2010
+	const double fovX = 43.0, fovY = 32.00;
+	//const double fovX = Q_DEG_TO_RAD(45.0), fovY = (fovX / xResSensor) * yResSensor;
+
+	const double radPerPx = fovX / xResSensor;
+	double X0, X1, Y0, Y1;
+
+	X0 = d_vX[0];
+	X1 = d_vX[1];
+	Y0 = d_vY[0];
+	Y1 = d_vY[1];
+
+	if (d_flipState == FLIP_180) {
+		/// If the first report of a new tracking lock indicated that
+		/// our "up" vector had no positive y component, we have the
+		/// points in the wrong order - flip them around.
+		/// This uses the assumption that the first time we see the glasses,
+		/// they ought to be right-side up (a reasonable assumption for
+		/// head tracking)
+		swap(X0, X1);
+		swap(Y0, Y1);
 	}
 
+	const double dx = X0 - X1;
+	const double dy = Y0 - Y1;
+	const double dist = sqrt(dx * dx + dy * dy);
+	// Note that this is an approximation, since we don't know the
+	// distance/horizontal position.  (I think...)
+	const double angle = radPerPx * dist / 2.0;
+	double headDist = (d_blobDistance / 2.0) / tan(angle);
+
+	// Translate the distance along z axis, and tilt the head
+	newPose.xyz[2] = headDist;      // translate along Z
+	rz = atan2(dy, dx);     // rotate around Z
+
+	// Find the sensor pixel of the line of sight - directly between
+	// the LEDs
+	double avgX = (X0 + X1) / 2.0;
+	double avgY = (Y0 + Y1) / 2.0;
+
+	// b is the virtual depth in the sensor from a point to the full sensor
+	// used for finding similar triangles to calculate x/y translation
+	const double bHoriz = xResSensor / 2 / tan(fovX / 2);
+	const double bVert = yResSensor / 2 / tan(fovY / 2);
+
+	// World head displacement (X and Y) from a centered origin at
+	// the calculated distance from the sensor
+	newPose.xyz[0] = headDist * (avgX - xResSensor / 2) / bHoriz;
+	newPose.xyz[1] = headDist * (avgY - yResSensor / 2) / bVert;
+
+	// set the quat. part of our pose with rotation angles
+	q_from_euler(newPose.quat, rz, ry, rx);
+
+	// Apply the new pose
+	q_vec_copy(d_currentPose.xyz, newPose.xyz);
+	q_copy(d_currentPose.quat, newPose.quat);
+}
+
+void vrpn_Tracker_WiimoteHead::_update_flip_state() {
+	q_vec_type upVec = {0, 1, 0};
+
+	q_xform(upVec, d_currentPose.quat, upVec);
+	if (upVec[1] < 0) {
+		// We are upside down - we will need to rotate 180 about the sensor Z
+		// Must recalculate now.
+#ifdef VERBOSE
+		fprintf(stderr, "vrpn_Tracker_WiimoteHead: d_flipState = FLIP_180\n");
+#endif
+		d_flipState = FLIP_180;
+		_update_pose();
+	} else {
+		// OK, we are fine - there is a positive Y component to our up vector
+#ifdef VERBOSE
+		fprintf(stderr, "vrpn_Tracker_WiimoteHead: d_flipState = FLIP_NORMAL\n");
+#endif
+		d_flipState = FLIP_NORMAL;
+	}
+}
+
+void vrpn_Tracker_WiimoteHead::_convert_pose_to_tracker() {
 	q_vec_copy(pos, d_currentPose.xyz); // set position;
 	q_copy(d_quat, d_currentPose.quat); // set orientation
 }
 
-vrpn_bool vrpn_Tracker_WiimoteHead::shouldReport(double elapsedInterval) const {
+/** Pack and send message with latest state information.
+*/
+
+void vrpn_Tracker_WiimoteHead::report() {
+	// pack and deliver tracker report;
+	if (d_connection) {
+		char      msgbuf[1000];
+		int       len = encode_to(msgbuf);
+		if (d_connection->pack_message(len, vrpn_Tracker::timestamp,
+					       position_m_id, d_sender_id, msgbuf,
+					       vrpn_CONNECTION_LOW_LATENCY)) {
+			fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
+					"cannot write message: tossing\n");
+		}
+	} else {
+		fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
+				"No valid connection\n");
+	}
+
+	// We just sent a report, so reset the time
+	vrpn_gettimeofday(&d_prevtime, NULL);
+	d_updated = false;
+}
+
+bool vrpn_Tracker_WiimoteHead::_should_report(double elapsedInterval) const {
 	// If we've gotten new wiimote reports since our last report, return true.
 	if (d_updated) {
-		return VRPN_TRUE;
+		return true;
 	}
 
 	// If it's been more than our max interval, send an update anyway
 	if (elapsedInterval >= d_update_interval) {
-		return VRPN_TRUE;
+		return true;
 	}
 
 	// Not time has elapsed, and nothing has changed, so return false.
-	return VRPN_FALSE;
+	return false;
 }
 
-bool vrpn_Tracker_WiimoteHead::haveGravity() const {
+bool vrpn_Tracker_WiimoteHead::_have_gravity() const {
 	return (d_vGrav[0] != 0 || d_vGrav[1] != 0 || d_vGrav[2] != 0);
 }
