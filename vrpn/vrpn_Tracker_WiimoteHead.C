@@ -224,7 +224,6 @@ void vrpn_Tracker_WiimoteHead::update_pose() {
 	// we need to update our gravity correction transform.
 	if (d_gravDirty && _have_gravity()) {
 		_update_gravity_moving_avg();
-		d_gravDirty = false;
 	}
 
 	// Update pose estimate
@@ -357,6 +356,7 @@ void vrpn_Tracker_WiimoteHead::_update_gravity_moving_avg() {
 	regulargravity[2] = 1;
 
 	q_from_two_vecs(d_gravityXform.quat, movingAvg, regulargravity);
+	d_gravDirty = false;
 }
 
 void vrpn_Tracker_WiimoteHead::_update_2_LED_pose(q_xyz_quat_type & newPose) {
@@ -526,5 +526,5 @@ bool vrpn_Tracker_WiimoteHead::_should_report(double elapsedInterval) const {
 }
 
 bool vrpn_Tracker_WiimoteHead::_have_gravity() const {
-	return (d_vGrav[0] != 0 || d_vGrav[1] != 0 || d_vGrav[2] != 0);
+	return (d_vGrav[0] != 0 || d_vGrav[1] != 1 || d_vGrav[2] != 0);
 }
