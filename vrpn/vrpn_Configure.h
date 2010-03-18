@@ -250,7 +250,7 @@
 // file and library.
 // Note that the wiiuse.dll needs to be in the path when running a server
 // that uses WiiUse in Windows.
-#define VRPN_USE_WIIUSE
+//#define VRPN_USE_WIIUSE
 
 // Instructs VRPN to compile code to handle Hillcrest Labs' Freespace
 // devices such as the Loop, and FRCM.  You will also need the libfreespace
@@ -273,8 +273,8 @@
 
 #define VRPN_PHASESPACE_LIB_PATH "../../phasespace/"
 
-#define VRPN_WIIUSE_H "/usr/include/wiiuse.h"
-#define VRPN_WIIUSE_LIB_PATH "/usr/lib"
+#define VRPN_WIIUSE_H "F:/taylorr/STM/src/wiiuse_v0.12/src/wiiuse.h"
+#define VRPN_WIIUSE_LIB_PATH "F:/taylorr/STM/src/wiiuse_v0.12/src"
 
 #if defined(VRPNDLL_EXPORTS) && !defined(VRPN_USE_SHARED_LIBRARY)
   #define VRPN_FREESPACE_LIB_PATH "../libfreespace/lib"

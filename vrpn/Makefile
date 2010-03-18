@@ -254,8 +254,13 @@ ifeq ($(HW_OS),universal_macosx)
 endif
 
 ifeq ($(HW_OS),pc_linux)
-	# The following is for the InterSense library.
-	SYS_INCLUDE := -DUNIX -DLINUX
+	# The following is for the InterSense and Freespace libraries.
+	SYS_INCLUDE := -DUNIX -DLINUX -I../libfreespace/include
+endif
+
+ifeq ($(HW_OS),pc_linux64)
+	# The following is for the InterSense and Freespace libraries.
+	SYS_INCLUDE := -DUNIX -DLINUX -I../libfreespace/include
 endif
 
 ifeq ($(HW_OS),pc_linux_arm)

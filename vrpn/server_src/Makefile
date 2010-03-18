@@ -106,7 +106,7 @@ endif
 ifeq ($(HW_OS),pc_linux)
 	SYSLIBS := 
 # For WiiMote
-	SYSLIBS := -lwiiuse
+#	SYSLIBS := -lwiiuse
 # For GPM mouse
 #	SYSLIBS := -lgpm
 # For Isense libraries
@@ -209,11 +209,11 @@ $(OBJ_DIR)/%.o:	%.c
 
 $(OBJ_DIR)/%.o:	%.C
 	@[ -d $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
-	$(CC) $(CFLAGS) -o $@ -c $<
+	$(CC) $(CXXFLAGS) -o $@ -c $<
 
 $(OBJ_DIR)/%.o:	%.cpp
 	@[ -d $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
-	$(CC) $(CFLAGS) -o $@ -c $<
+	$(CC) $(CXXFLAGS) -o $@ -c $<
 
 INSTALL_APPS := vrpn_server test_vrpn
 APPS := $(INSTALL_APPS) client_and_server test_mutex test_peerMutex \
@@ -392,7 +392,7 @@ $(OBJ_DIR)/testSharedObject:	$(OBJ_DIR)/testSharedObject.o \
 		$(VRPN_LIBS) $(SYSLIBS) -lm
 
 install: all
-	@[ -d $(BIN_DIR) ] || mkdir -p $(BIN_DIR)
+	-mkdir -p $(BIN_DIR)
 	( cd $(BIN_DIR) ; rm -f $(INSTALL_APPS) )
 	( cd $(OBJ_DIR) ; cp $(INSTALL_APPS) $(BIN_DIR) )
 	( cd $(BIN_DIR) ; strip $(INSTALL_APPS) )

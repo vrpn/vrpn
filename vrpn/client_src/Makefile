@@ -324,7 +324,7 @@ $(OBJ_DIR)/logfiletypes: $(OBJ_DIR)/logfiletypes.o
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/logfiletypes $(OBJ_DIR)/logfiletypes.o
 
 install: all
-	@[ -d $(BIN_DIR) ] || mkdir -p $(BIN_DIR)
+	-mkdir -p $(BIN_DIR)
 	( cd $(BIN_DIR) ; rm -f $(INSTALL_APPS) )
 	( cd $(OBJ_DIR) ; cp $(INSTALL_APPS) $(BIN_DIR) )
 	( cd $(BIN_DIR) ; strip $(INSTALL_APPS) )
