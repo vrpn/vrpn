@@ -678,6 +678,9 @@ $(OBJECT_DIR)/libvrpnatmel.a: $(MAKEFILE) $(ALIB_OBJECTS)
 
 .PHONY:	clean
 clean:
+ifeq ($(HW_OS),)
+		echo "Must specify HW_OS !"
+else
 	$(RMF) $(LIB_OBJECTS) $(OBJECT_DIR)/libvrpn.a \
                $(OBJECT_DIR)/libvrpn_g++.a \
                $(SLIB_OBJECTS) \
@@ -696,6 +699,7 @@ endif
 #ifneq ($(CC), g++)
 #	$(MAKE) FORCE_GPP=1 clean
 #endif
+endif
 
 .PHONY:	clean
 clean_g++:

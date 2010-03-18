@@ -401,7 +401,11 @@ uninstall:
 	( cd $(BIN_DIR) ; rm -f $(INSTALL_APPS) )
 
 clean:
-	rm -f $(OBJ_DIR)/*
+ifeq ($(HW_OS),)
+		echo "Must specify HW_OS !"
+else
+		rm -f $(OBJ_DIR)/*
+endif
 
 $(OBJ_DIR)/vrpn.o:	vrpn.C
 $(OBJ_DIR)/vrpn_Generic_server_object.o:	vrpn_Generic_server_object.C
