@@ -153,9 +153,9 @@ OBJ_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)
 LIB_DIR := ../$(OBJ_DIR)
 
 #CFLAGS = -g -I./ -I../ -I../../quat
-override CFLAGS := -I./ -I../ -I../../quat -I../../libfreespace/include $(DEBUG_FLAGS) $(CFLAGS)
-override CXXFLAGS := -I./ -I../ -I../../quat -I../../libfreespace/include $(DEBUG_FLAGS) $(CXXFLAGS)
-override LFLAGS := -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) $(LDFLAGS)
+override CFLAGS := $(CFLAGS) -I./ -I../ -I../../quat -I../../libfreespace/include $(DEBUG_FLAGS) $(CFLAGS)
+override CXXFLAGS := $(CXXFLAGS) -I./ -I../ -I../../quat -I../../libfreespace/include $(DEBUG_FLAGS) $(CXXFLAGS)
+override LFLAGS := $(LFLAGS) -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) $(LDFLAGS)
 VRPN_LIBS = -lvrpnserver -lvrpnatmel -lpthread
 
 # Uncomment the following section and point them at the
@@ -189,7 +189,7 @@ endif
 ifdef PHASESPACE
 #the rpath option may not work on all platforms, remove it if necessary.
 EXTRAOPTS := -Wl,-rpath .
-override LFLAGS := $(LFLAGS) $(PHASESPACE) $(EXTRAOPTS)
+override LFLAGS += $(PHASESPACE) $(EXTRAOPTS)
 endif
 
 .SUFFIXES: .cpp
