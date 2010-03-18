@@ -75,7 +75,6 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connec
 	d_contact(false),
 	d_lock(false),
 	d_updated(false),
-	d_needWiimote(false),
 	d_ana(NULL),
 	d_name(wiimote),
 	d_gravDirty(true)
@@ -91,18 +90,9 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name, vrpn_Connec
 
 	setupWiimote();
 
-	bool ret = register_custom_types();
-	if (!ret) {
-		fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
-				"Can't setup custom message and sender types\n");
-		delete d_ana;
-		d_ana = NULL;
-		return;
-	}
-
 	//--------------------------------------------------------------------
-	// Whenever we get a connection, set a flag so we try to get a Wiimote
-	// if we haven't got one already. Set up a handler to do this.
+	// Whenever we get a connection, set a flag so we make sure to send an
+	// update. Set up a handler to do this.
 	register_autodeleted_handler(d_connection->register_message_type(vrpn_got_connection),
 				     handle_connection, this);
 
@@ -166,13 +156,8 @@ void vrpn_Tracker_WiimoteHead::setupWiimote() {
 		return;
 	}
 
-	// Alright, we got one!
-	d_needWiimote = false;
-
 	// will re-notify when we catch a report.
 	d_contact = false;
-
-
 }
 
 vrpn_Tracker_WiimoteHead::~vrpn_Tracker_WiimoteHead (void) {
@@ -256,32 +241,12 @@ int vrpn_Tracker_WiimoteHead::handle_connection(void* userdata, vrpn_HANDLERPARA
 	vrpn_Tracker_WiimoteHead* wh = reinterpret_cast<vrpn_Tracker_WiimoteHead*>(userdata);
 	// Indicate that we should grab the wiimote, if we haven't already
 	// and that we should send a report with whatever we have.
-	wh->d_needWiimote = true;
 	wh->d_updated = true;
 
 	// Always return 0 here, because nonzero return means that the input data
 	// was garbage, not that there was an error. If we return nonzero from a
 	// vrpn_Connection handler, it shuts down the connection.
 	return 0;
-}
-
-// static
-int vrpn_Tracker_WiimoteHead::handle_dropLastConnection(void* userdata, vrpn_HANDLERPARAM) {
-	vrpn_Tracker_WiimoteHead* wh = reinterpret_cast<vrpn_Tracker_WiimoteHead*>(userdata);
-	wh->d_needWiimote = false;
-
-	// Always return 0 here, because nonzero return means that the input data
-	// was garbage, not that there was an error. If we return nonzero from a
-	// vrpn_Connection handler, it shuts down the connection.
-	return 0;
-}
-
-// static
-void handle_refresh_wiimote(void* userdata, vrpn_HANDLERPARAM) {
-	vrpn_Tracker_WiimoteHead* wh = reinterpret_cast<vrpn_Tracker_WiimoteHead*>(userdata);
-	if (wh) {
-		wh->setupWiimote();
-	}
 }
 
 /** Pack and send message with latest state information.
@@ -354,36 +319,6 @@ void vrpn_Tracker_WiimoteHead::reset(void) {
 	convert_pose_to_tracker();
 }
 
-bool vrpn_Tracker_WiimoteHead::register_custom_types()
-{
-    if (d_connection == NULL) {
-		return false;
-    }
-
-    needwiimote_m_id = d_connection->register_message_type("vrpn_Tracker_WiimoteHead needWiimote");
-	if (needwiimote_m_id == -1) {
-		fprintf(stderr,"vrpn_Tracker_WiimoteHead: Can't register type IDs\n");
-		d_connection = NULL;
-		return false;
-    }
-
-    refreshwiimote_m_id = d_connection->register_message_type("vrpn_Tracker_WiimoteHead refreshWiimote");
-	if (refreshwiimote_m_id == -1) {
-		fprintf(stderr,"vrpn_Tracker_WiimoteHead: Can't register type IDs\n");
-		d_connection = NULL;
-		return false;
-    }
-
-    wmheadtrackserver_s_id = d_connection->register_sender("WMHeadTrackServer");
-	if (wmheadtrackserver_s_id == -1) {
-		fprintf(stderr,"vrpn_Tracker_WiimoteHead: Can't register sender IDs\n");
-		d_connection = NULL;
-		return false;
-    }
-
-    return true;
-}
-
 void vrpn_Tracker_WiimoteHead::mainloop() {
 	struct timeval        now;
 	double        interval; // How long since the last report, in secs
@@ -391,14 +326,8 @@ void vrpn_Tracker_WiimoteHead::mainloop() {
 	// Call generic server mainloop, since we are a server
 	server_mainloop();
 
-	if (d_needWiimote && d_ana == NULL) {
-		// TODO try to get the wiimote anew here
-		// and register the handlers
-	}
-
 	// Mainloop() the wiimote to get fresh values
 	if (d_ana != NULL) {
-		d_needWiimote = false;
 		d_ana->mainloop();
 	}
 

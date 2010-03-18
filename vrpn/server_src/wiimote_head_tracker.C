@@ -85,7 +85,7 @@ static	double	duration(struct timeval t1, struct timeval t2) {
 
 /*****************************************************************************
  *
-   Callback handlers
+   Callback handler
  *
  *****************************************************************************/
 
@@ -108,11 +108,6 @@ void	VRPN_CALLBACK handle_pos(void*, const vrpn_TRACKERCB t) {
 			interval);
 		last_display = now;
 	}
-}
-
-void	VRPN_CALLBACK handle_need_wiimote(void*, vrpn_HANDLERPARAM) {
-	need_wiimote = true;
-	wiimote_timeout = 10;
 }
 
 int main(int argc, char* argv []) {
@@ -186,31 +181,6 @@ int main(int argc, char* argv []) {
 		wmtkr->mainloop();
 		tkr->mainloop();
 		connection->mainloop();
-
-		if (need_wiimote) {
-			// In theory, handle auto-reconnect.
-			// In practice, this code doesn't go yet, and Windows Bluetooth
-			// is weird enough that it might not be worth the added complexity.
-			wiimote_timeout--;
-			if (wiimote_timeout == 0) {
-				delete wiimote;
-				wiimote = NULL;
-				wiimote = new vrpn_WiiMote(WIIMOTE_NAME, connection, wmnum);
-				if (!wiimote) {
-					fprintf(stderr, "Could not create Wiimote server named %s!\n", WIIMOTE_NAME);
-					fprintf(stderr, "Press 'enter' to exit...\n");
-					std::cin.get();
-					return -1;
-				}
-				need_wiimote = false;
-				struct timeval now;
-				vrpn_gettimeofday(&now, NULL);
-				connection->pack_message(7, now,
-					 wmtkr->refreshwiimote_m_id, wmtkr->wmheadtrackserver_s_id, "refresh",
-					 vrpn_CONNECTION_LOW_LATENCY);
-			}
-		}
-
 		// Sleep for 1ms so we don't eat the CPU
 		vrpn_SleepMsecs(1);
 #ifdef RP_PROFILING
