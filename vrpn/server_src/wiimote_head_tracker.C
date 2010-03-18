@@ -50,6 +50,8 @@
 #include <string.h>
 #include <iostream>
 
+#include <vrpn_Configure.h>
+
 #if defined(VRPN_USE_WIIUSE)
 #include "vrpn_Tracker.h"
 #include "vrpn_WiiMote.h"
@@ -66,6 +68,7 @@ const int	DEBUG_DISPLAY_INTERVAL = 3; // # of seconds between status displays
 
 #ifdef RP_PROFILING
 int reports = 0;
+const int	MAX_REPORTS = 3000;
 #endif
 
 vrpn_Tracker_WiimoteHead* wmtkr;
@@ -185,7 +188,7 @@ int main(int argc, char* argv []) {
 		vrpn_SleepMsecs(1);
 #ifdef RP_PROFILING
 		// gprof on Linux requires a clean exit
-		if (reports >= 30000) { return 0; }
+		if (reports >= MAX_REPORTS) { return 0; }
 #endif
 	}
 
