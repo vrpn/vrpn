@@ -157,6 +157,13 @@ message(STATUS
 message(STATUS "")
 
 ###
+# SWIG and Python Libs (for python wrapper)
+###
+find_package(SWIG)
+find_package(PythonLibs)
+
+
+###
 # MPI
 ###
 find_package(MPI)
@@ -632,6 +639,9 @@ endif()
 # Create documentation
 add_subdirectory(doxygen)
 
+#-----------------------------------------------------------------------------
+# Python wrappers
+add_subdirectory(python_vrpn)
 
 #-----------------------------------------------------------------------------
 # Applications that live in the main directory.
