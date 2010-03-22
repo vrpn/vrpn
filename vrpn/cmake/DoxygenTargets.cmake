@@ -7,7 +7,8 @@
 #   [INSTALL_PDF_NAME <installpdfname>] ]
 #   [DOC_TARGET <targetname>]
 #   [PROJECT_NUMBER <versionnumber>]
-#   [NO_WARNINGS])
+#   [NO_WARNINGS]
+#   [NO_PDF])
 #
 # Requires these CMake modules:
 #  FindDoxygen
@@ -67,15 +68,19 @@ function(add_doxygen _doxyfile)
 		INSTALL_COMPONENT
 		INSTALL_PDF_NAME
 		PROJECT_NUMBER)
-	foreach(_val_arg ${_val_args})
-		set(${_val_arg})
+	set(_bool_args
+		NO_WARNINGS
+		NO_PDF)
+	foreach(_arg ${_val_args} ${_bool_args})
+		set(${_arg})
 	endforeach()
 	foreach(_element ${ARGN})
 		list(FIND _val_args "${_element}" _val_arg_find)
+		list(FIND _bool_args "${_element}" _bool_arg_find)
 		if("${_val_arg_find}" GREATER "-1")
 			set(_curdest "${_element}")
-		elseif("${_element}" STREQUAL "NO_WARNINGS")
-			set(WARNINGS NO)
+		elseif("${_bool_arg_find}" GREATER "-1")
+			set("${_element}" ON)
 			set(_curdest _nowhere)
 		else()
 			list(APPEND ${_curdest} "${_element}")
@@ -84,6 +89,10 @@ function(add_doxygen _doxyfile)
 
 	if(_nowhere)
 		message(FATAL_ERROR "Syntax error in use of add_doxygen!")
+	endif()
+
+	if(NO_WARNINGS)
+		set(WARNINGS NO)
 	endif()
 
 	if(NOT DOC_TARGET)
@@ -139,13 +148,15 @@ function(add_doxygen _doxyfile)
 		get_filename_component(INCLUDE_FILE "${_doxyfileabs}" NAME)
 		get_filename_component(INCLUDE_PATH "${_doxyfileabs}" PATH)
 
-		if(DOXYGEN_LATEX)
+		if(DOXYGEN_LATEX AND NOT NO_PDF)
+			set(MAKE_PDF YES)
 			set(GENERATE_LATEX YES)
 		else()
+			set(MAKE_PDF NO)
 			set(GENERATE_LATEX NO)
 		endif()
 
-		if(DOXYGEN_PDFLATEX)
+		if(DOXYGEN_PDFLATEX AND MAKE_PDF)
 			set(USE_PDFLATEX YES)
 		else()
 			set(USE_PDFLATEX NO)
@@ -156,7 +167,7 @@ function(add_doxygen _doxyfile)
 			set(DOT_PATH ${DOXYGEN_DOT_PATH})
 		else()
 			set(HAVE_DOT NO)
-			set(DOT_PATH "")
+			set(DOT_PATH)
 		endif()
 
 		# See http://www.cmake.org/pipermail/cmake/2006-August/010786.html
@@ -183,7 +194,7 @@ function(add_doxygen _doxyfile)
 			"Running Doxygen with configuration ${_doxyfile}..."
 			VERBATIM)
 
-		if(DOXYGEN_PDFLATEX)
+		if(MAKE_PDF)
 			add_custom_command(TARGET
 				${DOC_TARGET}
 				POST_BUILD
@@ -204,7 +215,7 @@ function(add_doxygen _doxyfile)
 					"${INSTALL_DESTINATION}"
 					COMPONENT
 					"${INSTALL_COMPONENT}")
-				if(DOXYGEN_PDFLATEX)
+				if(MAKE_PDF)
 					install(FILES "${OUTPUT_DIRECTORY}/latex/refman.pdf"
 						DESTINATION "${INSTALL_DESTINATION}"
 						COMPONENT "${INSTALL_COMPONENT}"
@@ -216,7 +227,7 @@ function(add_doxygen _doxyfile)
 					"${OUTPUT_DIRECTORY}/html"
 					DESTINATION
 					"${INSTALL_DESTINATION}")
-				if(DOXYGEN_PDFLATEX)
+				if(MAKE_PDF)
 					install(FILES "${OUTPUT_DIRECTORY}/latex/refman.pdf"
 						DESTINATION "${INSTALL_DESTINATION}"
 						RENAME "${INSTALL_PDF_NAME}")
