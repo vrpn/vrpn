@@ -205,3 +205,16 @@ foreach(SOURCE ${SRV_SERVER_SOURCES})
 	install(TARGETS ${APP}
 		RUNTIME DESTINATION bin)
 endforeach()
+
+###
+# Install extra files
+###
+
+# Wiimote jconf files for fishtank VR
+set(VRPN_WIIMOTE_JCONFS
+	vrpn.wiimoteheadtracker.fishtankvr.1280x1024.jconf
+	vrpn.wiimoteheadtracker.fishtankvr.1024x768.jconf
+	vrpn.wiimoteheadtracker.fishtankvr.800x600.jconf)
+
+install(FILES ${VRPN_WIIMOTE_JCONFS}
+	DESTINATION share/vrpn-${CPACK_PACKAGE_VERSION}/vrjuggler-2.2-config)
