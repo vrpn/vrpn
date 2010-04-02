@@ -1,0 +1,222 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#define APSTUDIO_HIDDEN_SYMBOLS
+#include "windows.h"
+#undef APSTUDIO_HIDDEN_SYMBOLS
+#include "c:\miles6\include\mss.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+SOUNDSERVERWIN32 DIALOG DISCARDABLE  100, 100, 319, 265
+STYLE WS_MINIMIZEBOX | WS_CAPTION | WS_SYSMENU
+CAPTION "VRPN Sound Server v1.0a"
+CLASS "SoundServerWin32"
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        " Digital Sound Controls: ",IDC_STATIC,5,40,190,44
+    LTEXT           "Choose the 3D &technology to use:",IDC_STATIC,15,55,125,
+                    8
+    COMBOBOX        100,15,65,178,108,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    PUSHBUTTON      "&Stop all sounds",110,45,245,61,12
+    PUSHBUTTON      "&Close",112,225,245,60,12
+    EDITTEXT        114,55,225,255,12,ES_MULTILINE | ES_AUTOHSCROLL | 
+                    ES_READONLY
+    LTEXT           "Y",IDC_STATIC,20,145,10,10
+    LTEXT           "X",IDC_STATIC,20,130,10,10
+    LTEXT           "Z",IDC_STATIC,20,160,8,8
+    EDITTEXT        120,30,130,30,10,ES_AUTOHSCROLL | ES_READONLY | 
+                    ES_NUMBER
+    EDITTEXT        121,30,145,30,10,ES_AUTOHSCROLL | ES_READONLY | 
+                    ES_NUMBER
+    EDITTEXT        122,30,160,30,10,ES_AUTOHSCROLL | ES_READONLY | 
+                    ES_NUMBER
+    COMBOBOX        131,15,100,40,45,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
+                    WS_TABSTOP
+    GROUPBOX        "Position",IDC_STATIC,15,120,50,55
+    GROUPBOX        "Current sound",IDC_STATIC,5,90,140,115
+    GROUPBOX        "Orientation",IDC_STATIC,75,120,60,55
+    GROUPBOX        "",IDC_STATIC,5,215,310,25
+    LTEXT           "Z",IDC_STATIC,85,130,8,8
+    LTEXT           "Y",IDC_STATIC,85,145,8,8
+    LTEXT           "X",IDC_STATIC,85,160,8,8
+    EDITTEXT        300,100,130,30,10,ES_AUTOHSCROLL | ES_READONLY | 
+                    ES_NUMBER
+    EDITTEXT        301,100,145,30,10,ES_AUTOHSCROLL | ES_READONLY | 
+                    ES_NUMBER
+    EDITTEXT        302,100,160,30,10,ES_AUTOHSCROLL | ES_READONLY | 
+                    ES_NUMBER
+    LTEXT           "Last Error:",IDC_STATIC,10,225,40,8
+    GROUPBOX        "Listener",IDC_STATIC,155,105,160,100
+    EDITTEXT        141,180,130,35,10,ES_AUTOHSCROLL | ES_READONLY | 
+                    ES_NUMBER
+    EDITTEXT        142,180,145,35,10,ES_AUTOHSCROLL | ES_READONLY | 
+                    ES_NUMBER
+    EDITTEXT        143,180,160,35,10,ES_AUTOHSCROLL | ES_READONLY | 
+                    ES_NUMBER
+    LTEXT           "X",IDC_STATIC,170,130,8,10
+    LTEXT           "Y",IDC_STATIC,170,145,10,10
+    LTEXT           "Z",IDC_STATIC,170,160,10,10
+    LTEXT           "Z",IDC_STATIC,245,130,8,8
+    LTEXT           "Y",IDC_STATIC,245,145,8,8
+    LTEXT           "X",IDC_STATIC,245,160,8,8
+    EDITTEXT        303,260,130,30,10,ES_AUTOHSCROLL | ES_READONLY | 
+                    ES_NUMBER
+    EDITTEXT        304,260,145,30,10,ES_AUTOHSCROLL | ES_READONLY | 
+                    ES_NUMBER
+    EDITTEXT        305,260,160,30,10,ES_AUTOHSCROLL | ES_READONLY | 
+                    ES_NUMBER
+    GROUPBOX        "Position",IDC_STATIC,165,120,55,55
+    GROUPBOX        "Orientation",IDC_STATIC,240,120,55,55
+    PUSHBUTTON      "More Info",162,87,101,40,15
+    LTEXT           "Distance to listener:",IDC_STATIC,15,185,65,9
+    EDITTEXT        181,85,180,46,13,ES_AUTOHSCROLL | ES_READONLY | 
+                    ES_NUMBER
+    GROUPBOX        "Speaker type",IDC_STATIC,200,40,115,44
+    COMBOBOX        102,205,65,105,50,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Choose speaker type:",IDC_STATIC,205,55,70,10
+    EDITTEXT        434,55,20,25,10,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Server rate:",IDC_STATIC,10,20,40,10
+    GROUPBOX        "Server Information",IDC_STATIC,5,5,190,35
+END
+
+SND_INFO DIALOG DISCARDABLE  120, 120, 209, 85
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Sound Information"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Volume",IDC_STATIC,20,5,30,10
+    LTEXT           "Replay Rate:",IDC_STATIC,105,5,45,10
+    EDITTEXT        115,64,5,30,12,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        116,155,5,30,12,ES_AUTOHSCROLL | ES_READONLY
+    GROUPBOX        "Distances",IDC_STATIC,10,30,185,40
+    LTEXT           "Min Front",IDC_STATIC,25,40,35,10
+    EDITTEXT        151,65,40,30,10,ES_AUTOHSCROLL | ES_READONLY | ES_NUMBER
+    LTEXT           "Max Front",IDC_STATIC,25,55,35,10
+    LTEXT           "Min Back",IDC_STATIC,115,40,35,10,WS_DISABLED
+    LTEXT           "Max Back",IDC_STATIC,115,55,35,10,WS_DISABLED
+    EDITTEXT        152,65,55,30,10,ES_AUTOHSCROLL | ES_READONLY | ES_NUMBER
+    EDITTEXT        153,155,40,30,10,ES_AUTOHSCROLL | ES_READONLY | 
+                    ES_NUMBER | WS_DISABLED
+    EDITTEXT        154,155,55,30,10,ES_AUTOHSCROLL | ES_READONLY | 
+                    ES_NUMBER | WS_DISABLED
+    LTEXT           "(Automatically closes in 5 seconds)",IDC_STATIC,51,75,
+                    108,10
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+VRPN                    ICON    DISCARDABLE     "SoundServer.ico"
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "#include ""windows.h""\r\n"
+    "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "#include ""c:\\miles6\\include\\mss.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    "SND_INFO", DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 202
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 78
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+SOUNDSERVERWIN32 DLGINIT
+BEGIN
+    102, 0x403, 23, 0
+0x6f4e, 0x6d72, 0x6c61, 0x7320, 0x6574, 0x6572, 0x206f, 0x7073, 0x6165, 
+0x656b, 0x7372, "\000" 
+    102, 0x403, 11, 0
+0x6548, 0x6461, 0x6870, 0x6e6f, 0x7365, "\000" 
+    102, 0x403, 29, 0
+0x2833, 0x292b, 0x5320, 0x7275, 0x6f72, 0x6e75, 0x2064, 0x6f73, 0x6e75, 
+0x2064, 0x7073, 0x6165, 0x656b, 0x7372, "\000" 
+    102, 0x403, 27, 0
+0x6f46, 0x7275, 0x7320, 0x6570, 0x6b61, 0x7265, 0x2073, 0x7128, 0x6175, 
+0x2d64, 0x6f73, 0x6e75, 0x2964, "\000" 
+    0
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

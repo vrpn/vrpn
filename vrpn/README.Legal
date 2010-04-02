@@ -1,0 +1,34 @@
+VRPN (The Virtual Reality Peripheral Network) has been placed into the
+public domain by the copyright owner Russell M. Taylor II at the University
+of North Carolina at Chapel Hill.  Additional terms and requests follow:
+
+1. Please acknowledge this library in any publication, written, videotaped,
+	or otherwise produced, that results from making programs using it.
+	The acknowledgement will credit
+
+	GRIP Project
+	Department of Computer Science,
+	University of North Carolina at Chapel Hill,
+	Supported by the NIH National Centers for Research Resources.
+
+2. Please furnish us a copy of any publication, including videotape,
+	that you produce and disseminate outside your group using our
+	program.  These should be addressed to Professor R.M. Taylor.
+
+3. The program and associated files are provided "as is," with no
+	express or implied warranty.  You agree to hold the University
+	of North Carolina and its employees and students, as well as
+	all involved in the development of the system, not liable in
+	the event of damages resulting from the use of this product.
+
+4. You understand that the University cannot provide support for this
+	product.  While we may release future, updated versions of the
+	software and fix reported bugs, we may be unable to do so.
+	Such releases and updates are likely to be reported on the
+	project web page at http://www.cs.unc.edu/Research/vrpn.
+
+5. Please send us derived classes and drivers for new devices that you
+	create for the library.  We will attempt to include them in
+	future releases of the library for you and others to use.  This
+	is the fastest way to get a working system for everyone.
+

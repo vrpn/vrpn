@@ -1,0 +1,7 @@
+/unc/hmd/bin/pc_linux/sbiset \
+	/unc/hmd/data/sbi/piano.sbi \
+	/unc/hmd/data/sbi/bells.sbi \
+	/unc/hmd/data/sbi/flute.sbi \
+	/unc/hmd/data/sbi/guitar1.sbi
+
+#mixer vol 90

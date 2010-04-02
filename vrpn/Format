@@ -1,0 +1,144 @@
+
+/*
+ *
+ *  VRPN Header Format
+ *
+ * +------------+------------+------------+------------+
+ * |                    Total Length                   |
+ * +------------+------------+------------+------------+
+ * |                Timestamp (Seconds)                |
+ * +------------+------------+------------+------------+
+ * |              Timestamp (Microseconds)             |
+ * +------------+------------+------------+------------+
+ * |                       Sender                      |
+ * +------------+------------+------------+------------+
+ * |                        Type                       |
+ * +------------+------------+------------+------------+
+ * |                       padding                     |
+ * +------------+------------+------------+------------+
+ *
+ * Total Length = Padded Payload Length + Padded Header Length.
+ * Padded Header Length = 24 bytes.
+ * Padded Payload Length = Payload Length + (Payload Length % 8).
+ *
+ * All header fields are 32-bit integers sent in network order.
+ * Both header and payload are padded to end on 8-byte boundaries.
+ *
+ * Implementation in vrpn_Connection::marshall_message().
+ *
+ */
+
+/*
+ *
+ *  VRPN Connection setup sequence
+ *
+ * Server opens a TCP socket and listens() on port - default vrpn_DEFAULT_LISTEN_PORT_NO
+ * Client connects() to port
+ * Server and client both write a COOKIE
+ * Server and client both wait (nonblocking) for a COOKIE and
+ *   verify version #, etc.
+ * If either peer is requesting remote logging, a log_description message
+ *   is sent.
+ * Server and client both open UDP sockets.
+ * Server and client both send udp_description messages.
+ * Server and client both send sender_description messages for all senders
+ *   registered locally.
+ * Server and client both send type_description messages for all types
+ *   registered locally.
+ *
+ * Implementation in vrpn_Connection::setup_new_connection(),
+ *   finish_new_connection_setup(),
+ */
+
+/*
+ * VRPN Cookie Format
+ *
+ * +------------+------------+------------+------------+
+ * +    'v'     |    'r'     |    'p'     |    'n'     +
+ * +------------+------------+------------+------------+
+ * +    ':'     |    ' '     |    'v'     |    'e'     +
+ * +------------+------------+------------+------------+
+ * +    'r'     |    '.'     |    ' '     |     X      +
+ * +------------+------------+------------+------------+
+ * +     X      |    '.'     |     Y      |     Y      +
+ * +------------+------------+------------+------------+
+ * +    ' '     |    ' '     |     L      |   padding  |
+ * +------------+------------+------------+------------+
+ * +                      padding                      |
+ * +------------+------------+------------+------------+
+ *
+ * XX = major version number (2 ASCII characters)
+ * YY = minor version number (2 ASCII characters)
+ *  L = remote log mode requested (ASCII '0', '1', '2', or '3')
+ *
+ * This cookie is in ASCII so that humans scanning a dump can
+ * quickly determine whether or not it is a VRPN session.
+ */
+
+/*
+ * VRPN Log description message:
+ *
+ * type = vrpn_CONNECTION_LOG_DESCRIPTION (-4)
+ * sender = logging mode (0, 1, 2, or 3)
+ * payload length = strlen(logfile name) + 1
+ * data = null-terminated ASCII string giving pathname of file to log to
+ */
+
+/*
+ * VRPN UDP description message:
+ *
+ * type = vrpn_CONNECTION_UDP_DESCRIPTION (-3)
+ * sender = UDP port number to contact
+ * payload length = strlen(IP address) + 1
+ * data = ASCII string containing host's IP address
+ */
+
+/*
+ * VRPN Sender description message:
+ *
+ * type = vrpn_CONNECTION_SENDER_DESCRIPTION (-1)
+ * sender = ID of sender
+ * payload length = 5 + strlen(sender name)
+ * data = 
+ *
+ * +------------+------------+------------+------------+
+ * +             length of sender name + 1             |
+ * +------------+------------+------------+------------+
+ * +                    sender name                    |
+ * +------------+------------+------------+------------+
+ * +                        ...                        |
+ * +------------+------------+------------+------------+
+ *
+ * N.B. There is redundant length data here
+ */
+
+/*
+ * VRPN Type description message:
+ *
+ * type = vrpn_CONNECTION_TYPE_DESCRIPTION (-2)
+ * sender = ID of type
+ * payload length = 5 + strlen(sender name)
+ * data =
+ *
+ * +------------+------------+------------+------------+
+ * +              length of type name + 1              |
+ * +------------+------------+------------+------------+
+ * +                     type name                     |
+ * +------------+------------+------------+------------+
+ * +                        ...                        |
+ * +------------+------------+------------+------------+
+ *
+ * N.B. There is redundant length data here
+ */
+
+/*
+ * VRPN disconnect message:
+ *
+ * type = vrpn_CONNECTION_DISCONNECT_MESSAGE (-5)
+ * sender = 0
+ * payload length = 0
+ *
+ * This message is never sent over the wire;  it is written into logs
+ * to mark the point at which a connection was broken.
+ */
+

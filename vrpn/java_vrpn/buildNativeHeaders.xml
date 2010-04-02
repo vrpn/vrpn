@@ -1,0 +1,23 @@
+
+<!-- xml version="1.0" encoding="UTF-8" ?-->
+
+<project name="native headers" default="native" basedir=".">
+	<target name="native">
+		<javah destdir="." verbose="yes" classpath="bin">
+			<class name="vrpn.AnalogOutputRemote"/>
+			<class name="vrpn.AnalogRemote"/>
+			<class name="vrpn.AuxiliaryLoggerRemote"/>
+			<class name="vrpn.ButtonRemote"/>
+			<class name="vrpn.ForceDeviceRemote"/>
+			<class name="vrpn.FunctionGeneratorRemote"/>
+			<class name="vrpn.PoserRemote"/>
+			<class name="vrpn.TextReceiver"/>
+			<class name="vrpn.TextSender"/>
+			<class name="vrpn.TrackerRemote"/>
+			<class name="vrpn.VRPNDevice"/>
+		</javah>
+	</target>
+</project>
+
+
+

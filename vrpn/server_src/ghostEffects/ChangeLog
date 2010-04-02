@@ -1,0 +1,26 @@
+2005-12-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* InstantBuzzEffect.h : Trying to make it build under Cygwin.
+	* InstantBuzzEffect.cpp : Adding CR at end of file.
+
+2004-07-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* InstantBuzzEffect.h : Port to use GHOST or HDAPI (full port).
+	* InstantBuzzEffect.cpp : Same.
+
+2004-03-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* InstantBuzzEffect.h : Adding credits.
+	* InstantBuzzEffect.cpp : Same.
+
+2003-12-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* InstantBuzzEffect.h : Making it compile again WITH Ghost.
+	* InstantBuzzEffect.cpp : Same.
+
+2003-11-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* InstantBuzzEffect.h : Makes it compile without requiring Ghost
+		libraries if VRPN_USE_PHANTOM_SERVER is not defined.
+	* InstantBuzzEffect.cpp : Same.
+

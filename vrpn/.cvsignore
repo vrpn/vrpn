@@ -1,0 +1,5 @@
+pc_cygwin
+.depend
+ptrepository
+sgi_irix.n32.mips3
+*.vcproj.*.user

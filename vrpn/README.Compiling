@@ -1,0 +1,65 @@
+VRPN has had a CMake-based build system since version 07.23.  CMake is
+similar in purpose but not in implementation to the Autoconf collection
+of tools, and permits building on multiple platforms by creating native
+project files for MSVC, XCode, Eclipse, Code::Blocks, makefiles, and
+more.
+
+Get CMake from your Linux distribution and/or from www.cmake.org
+
+If there is a CMakeLists.txt file in the parent directory, you can use
+that directory as the "source code" directory in the CMake GUI; otherwise
+use this directory as the "source code" directory - the quat directory
+will be automatically detected and built anyway.  Choose any directory
+you want (the source directory plus /build is suggested) as the "build
+binaries" directory: generated build files will be placed here rather
+than your source tree.
+
+Many options can be fully configured using CMake as of Dec 2009, and more
+are sure to come.  Until then, if you need specific compilation needs
+that CMake doesn't appear to provide an interface for, look in the
+vrpn_Configure.h.cmake_in file.
+
+If you'd rather use the command line, here's the basics:
+   mkdir build
+   cd build
+   ccmake ../
+   make
+   
+   and any/all of these if desired:
+   make package
+   make package_source
+   make install
+
+Instructions for the original Makefile-based build follow.
+
+For those not at UNC, you compile by doing the following:
+
+   for Visual C++:
+	Open the vrpn.dsw file.
+	Compile the quat project.
+	Compile the VPRN project.
+	Then compile whichever of vrpn_server, printvals, etc you want.
+
+   for Unix/Cygwin:
+	Go to ../quat.
+		Edit 'makefile' to uncomment the architecture you are on.
+		gmake
+	Come back here (cd ../vrpn)
+		Edit Makefile to uncomment your architecture
+		gmake
+	Go to client_src
+		Edit Makefile to uncomment your architecture
+		gmake
+	Go to server_src
+		Edit Makefile to uncomment your architecture
+		gmake
+
+	edit the vrpn.cfg file to set it to start tracker you want
+		See the file vrpn.cfg.SAMPLE for examples.
+		Example:  vrpn_Tracker_NULL Tracker0@MYHOSTNAME 2 2
+	(Run the server: sgi_irix/vrpn_server -millisleep 1 -f vrpn.cfg)
+
+	Go to client_src
+		Run printvals to check the server
+		Example: sgi_irix/printvals localhost
+

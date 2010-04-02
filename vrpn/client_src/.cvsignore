@@ -1,0 +1,9 @@
+.depend
+make.out
+makefile
+pc_cygwin
+pc_linux
+sgi_irix
+sparc_solaris
+powerpc_aix
+*.vcproj.*.user

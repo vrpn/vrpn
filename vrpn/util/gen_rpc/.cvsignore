@@ -1,0 +1,8 @@
+pc_win32_MTd
+printmsg.C
+rpc_Test.C
+rpc_Test.h
+rpc_Test_Remote.C
+rpc_Test_Remote.h
+test_gen_rpc.plg
+*.vcproj.*.user

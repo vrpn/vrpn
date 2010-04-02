@@ -1,0 +1,71 @@
+Phantom@phantom3
+0.0 0.0 -0.28
+0.0 0.0 0.0 1.0
+-0.2 -0.2 -0.1 0.2 0.2 0.2
+1
+0
+0.0 0.0 0.0
+0.0 0.0 0.0 1.0
+Phantom@phantom
+0.0 0.0 -0.28
+0.0 0.0 0.0 1.0
+-0.2 -0.2 -0.1 0.2 0.2 0.2
+1
+0
+0.0 0.0 0.0
+0.0 0.0 0.0 1.0
+Phantom@phantom1
+0.0 0.0 -0.28
+0.0 0.0 0.0 1.0
+-0.2 -0.2 -0.1 0.2 0.2 0.2
+1
+0
+0.0 0.0 0.0
+0.0 0.0 0.0 1.0
+Phantom@tantalum-cs
+0.0 0.0 -0.28
+0.0 0.0 0.0 1.0
+-0.2 -0.2 -0.1 0.2 0.2 0.2
+1
+0
+0.0 0.0 0.0
+0.0 0.0 0.0 1.0
+Phantom@phantom2	# nWB phantom, values from .tracker, not sure if right
+-0.424 -0.1146 -0.0166
+0.130526 0.0 -0.991445 0.0
+-0.2 -0.2 -0.1 0.2 0.2 0.2
+1
+0
+0.0 0.0 0.0
+0.0 0.0 0.0 1.0
+Tracker0@ionanowb	# nWB dynasight head tracker, values from .tracker
+-0.49 0.251 0.486
+0.521334 0.521334 0.477714 0.477714
+-0.2 -0.2 -0.1 0.2 0.2 0.2
+1
+0
+0.0 0.0 0.0
+0.0 0.0 0.0 1.0
+PhantomNULLhead@phantom
+0.0 0.0 0.0
+0.0 0.0 0.0 1.0
+-0.2 -0.2 -0.1 0.2 0.2 0.2
+1
+0
+0.0 0.0 0.0
+0.0 0.0 0.0 1.0
+
+ all PHANToMs have only 1 sensor, (sensor number 0)
+ This is a sample vrpn_Tracker.cfg file
+ format:
+ 
+<tracker name>
+<room from tracker translation (x,y,z)>
+<room from tracker quaternion (x,y,z,w)>
+<workspace (xmin,ymin,zmin) (xmax,ymax,zmax) in tracker coordinate system>
+<number of sensors>
+<sensor #>
+<sensor from unit translation (x,y,z)>
+<sensor from unit quaternion (x,y,z,w)>
+...
+...
