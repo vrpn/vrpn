@@ -1336,6 +1336,39 @@ int vrpn_Generic_Server_Object::setup_Tracker_3DMouse (char * & pch, char * line
   return 0;
 }
 
+int vrpn_Generic_Server_Object::setup_Tracker_NovintFalcon (char * & pch, char *line, FILE * config_file) {
+#if defined(VRPN_USE_LIBNIFALCON)
+	char s2 [LINESIZE];
+	int i1;
+	int numparms;
+	vrpn_Tracker_NovintFalcon	*mytracker;
+
+	next();
+
+	// Get the arguments (class, tracker_name, device id)
+	if ( (numparms = sscanf(pch,"%511s%d",s2,&i1)) < 2)
+	{
+		fprintf(stderr,"Bad vrpn_Tracker_NovintFalcon line: %s\n%s %s\n", line, pch, s2);
+		return -1;
+	}
+
+	// Open the tracker
+	if (verbose) {
+		printf("Opening vrpn_Tracker_NovintFalcon: %s device id %d\n", s2,i1);
+	}
+
+	if ( (trackers[num_trackers] = mytracker =
+		 new vrpn_Tracker_NovintFalcon(s2, connection, i1)) == NULL)
+	{
+		fprintf(stderr, "Can't create new vrpn_Tracker_NovintFalcon\n");
+		return -1;
+        } else {
+          num_trackers++;
+        }
+#endif
+  return 0;
+}
+
 int vrpn_Generic_Server_Object::setup_Tracker_Fastrak (char * & pch, char * line, FILE * config_file) {
 
   char s2 [LINESIZE], s3 [LINESIZE], s4 [LINESIZE];
@@ -4268,6 +4301,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
             CHECK(setup_WiiMote);
 	  } else if (isit("vrpn_Freespace")) {
             CHECK(setup_Freespace);
+          } else if (isit("vrpn_Tracker_NovintFalcon")) {
+              CHECK(setup_Tracker_NovintFalcon);
 // BUW additions
           } else if (isit("vrpn_Atmel")) {
             CHECK(setup_Atmel);
