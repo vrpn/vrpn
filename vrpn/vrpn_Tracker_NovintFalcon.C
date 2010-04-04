@@ -14,11 +14,6 @@
 #include <ctype.h>
 #include <string.h>
 
-#ifndef _WIN32
-#include <unistd.h>
-#define M_PI 3.14159265358979323846
-#endif
-
 #include "vrpn_Tracker_NovintFalcon.h"
 
 #if defined(VRPN_USE_LIBNIFALCON)
@@ -28,7 +23,13 @@
 #include "falcon/firmware/FalconFirmwareNovintSDK.h"
 #include "falcon/kinematic/FalconKinematicStamper.h"
 #include "falcon/util/FalconFirmwareBinaryNvent.h"
-#define FALCON_DEBUG 1
+
+// define to activate additional messages about
+// what the driver is currently trying to do.
+#undef VERBOSE
+
+// define for detailed status tracking. very versbose
+#undef VERBOSE2
 
 class vrpn_NovintFalcon_Device 
 {
@@ -62,7 +63,7 @@ public:
         }
 
     ~vrpn_NovintFalcon_Device() {
-#if FALCON_DEBUG
+#ifdef VERBOSE
         fprintf(stderr, "Closing Falcon device %d.\n", m_flags & MASK_DEVICEIDX);
 #endif
         if (m_falconDevice) {
@@ -82,7 +83,7 @@ public:
         m_falconDevice->getDeviceCount(count);
         int devidx = m_flags & MASK_DEVICEIDX;
 
-#if FALCON_DEBUG
+#ifdef VERBOSE 
         fprintf(stderr, "Trying to open Falcon device %d/%d\n", devidx, count);
 #endif
         if (devidx < count) {
@@ -97,17 +98,16 @@ public:
         }
 
         if (!m_falconDevice->isFirmwareLoaded()) {
-#if FALCON_DEBUG            
+#ifdef VERBOSE
             fprintf(stderr, "Loading Falcon Firmware\n");
 #endif
             int i;
+            // 10 chances to load the firmware.
             for (i=0; i<10; ++i) {
                 if(!m_falconDevice->getFalconFirmware()->loadFirmware(false, libnifalcon::NOVINT_FALCON_NVENT_FIRMWARE_SIZE, const_cast<uint8_t*>(libnifalcon::NOVINT_FALCON_NVENT_FIRMWARE)))
                 {
-#if FALCON_DEBUG            
                     fprintf(stderr, "Firmware loading attempt %d failed.\n", i);
-#endif
-                    //Completely close and reopen
+                    // Completely close and reopen device and try again
                     m_falconDevice->close();
                     if(!m_falconDevice->open(devidx))
                     {
@@ -116,14 +116,14 @@ public:
                         return false;
                     }
                 } else {
-#if FALCON_DEBUG            
+#ifdef VERBOSE
                     fprintf(stderr, "Falcon firmware successfully loaded.\n");
 #endif
                     break;
                 }
             }
         } else {
-#if FALCON_DEBUG            
+#ifdef VERBOSE
             fprintf(stderr, "Falcon Firmware already loaded.\n");
 #endif
         }
@@ -144,7 +144,9 @@ public:
             } else {
                 m_falconDevice->getFalconFirmware()->setLEDStatus(libnifalcon::FalconFirmware::BLUE_LED);
                 for (i=0; !m_falconDevice->runIOLoop() && i < 10; ++i) continue;
+#ifdef VERBOSE
                 fprintf(stderr, "Falcon calibrated successfully.\n");
+#endif
                 break;
             }
         }
@@ -164,7 +166,9 @@ public:
             if (pos[2] > 0.170) {
                 m_falconDevice->getFalconFirmware()->setLEDStatus(libnifalcon::FalconFirmware::GREEN_LED);
                 for (i=0; !m_falconDevice->runIOLoop() && i < 10; ++i) continue;
+#ifdef VERBOSE
                 fprintf(stderr, "Falcon activated successfully.\n");
+#endif
                 break;
             }
         }
@@ -186,11 +190,11 @@ public:
 
         // update position information
         boost::array<double, 3> my_pos = m_falconDevice->getPosition();
-        const double convert_pos = 1.0;
+        const double convert_pos = 1.0; // empirical. need to measure properly.
         pos[0] = convert_pos * my_pos[0];
         pos[1] = convert_pos * my_pos[1];
-        pos[2] = convert_pos * my_pos[2];
-#if FALCON_DEBUG & 0
+        pos[2] = convert_pos * (my_pos[2]-0.11); // apply offset to make z axis data centered.
+#if VERBOSE2
         fprintf(stderr, "position %5.3f %5.3f %5.3f\n", pos[0],pos[1],pos[2]);
 #endif
         
@@ -199,7 +203,7 @@ public:
         int num_buttons = m_falconDevice->getFalconGrip()->getNumDigitalInputs();
         int i;
         for (i=0; i < num_buttons; ++i) {
-#if FALCON_DEBUG & 0
+#if VERBOSE2
             fprintf(stderr, "button [%d]: %s\n", i, (my_buttons & 1<<i) ? "on" : "off");
 #endif
             buttons[i] = (my_buttons & 1<<i) ? vrpn_BUTTON_TOGGLE_ON : vrpn_BUTTON_TOGGLE_OFF;
@@ -212,11 +216,13 @@ protected:
     libnifalcon::FalconDevice *m_falconDevice;
 
 private:
-    // disable default and copy constructor
+    /// default constructor is disabled
     vrpn_NovintFalcon_Device() {};
+    /// copy constructor is disabled
     vrpn_NovintFalcon_Device(const vrpn_NovintFalcon_Device &dev) {};   
 
 public:
+    /// constants to parse device flags.
     enum falconflags {
         NONE            = 0x0000, //< empty
         MASK_DEVICEIDX  = 0x000f, //< max. 15 falcons
