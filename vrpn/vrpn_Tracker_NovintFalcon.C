@@ -12,311 +12,327 @@
 // tested on:   Linux x86_64 w/ gcc 4.4.1
 
 #include <ctype.h>
+#include <string.h>
 
 #ifndef _WIN32
 #include <unistd.h>
-#else
 #define M_PI 3.14159265358979323846
 #endif
 
 #include "vrpn_Tracker_NovintFalcon.h"
 
 #if defined(VRPN_USE_LIBNIFALCON)
+#include "boost/shared_ptr.hpp"
+#include "falcon/core/FalconDevice.h"
+#include "falcon/grip/FalconGripFourButton.h"
+#include "falcon/firmware/FalconFirmwareNovintSDK.h"
+#include "falcon/kinematic/FalconKinematicStamper.h"
+#include "falcon/util/FalconFirmwareBinaryNvent.h"
+#define FALCON_DEBUG 1
 
 class vrpn_NovintFalcon_Device 
 {
 public:
-    int device_index;
-    bool found;
-    bool connected;
+    vrpn_NovintFalcon_Device(int flags) 
+            : m_flags(flags)
+        {
+            if (m_flags < 0) {
+                m_falconDevice = NULL;
+                return;
+            } else {
+                m_falconDevice = new libnifalcon::FalconDevice;
+                m_falconDevice->setFalconFirmware<libnifalcon::FalconFirmwareNovintSDK>();
+            }
+
+            if (m_flags & KINE_STAMPER) {
+                m_falconDevice->setFalconKinematic<libnifalcon::FalconKinematicStamper>();
+            } else {
+                delete m_falconDevice;
+                m_falconDevice=NULL;
+                return;
+            }
+            
+            if (m_flags & GRIP_FOURBUTTON) {
+                m_falconDevice->setFalconGrip<libnifalcon::FalconGripFourButton>();
+            } else {
+                delete m_falconDevice;
+                m_falconDevice=NULL;
+                return;
+            }
+        }
+
+    ~vrpn_NovintFalcon_Device() {
+#if FALCON_DEBUG
+        fprintf(stderr, "Closing Falcon device %d.\n", m_flags & MASK_DEVICEIDX);
+#endif
+        if (m_falconDevice) {
+            m_falconDevice->close();
+        }
+        delete m_falconDevice;
+        m_flags=-1;
+    };
+
+public:
+    // open device, load firmware and calibrate.
+    bool init() {
+        if (!m_falconDevice) 
+            return false;
+        
+        unsigned int count;
+        m_falconDevice->getDeviceCount(count);
+        int devidx = m_flags & MASK_DEVICEIDX;
+
+#if FALCON_DEBUG
+        fprintf(stderr, "Trying to open Falcon device %d/%d\n", devidx, count);
+#endif
+        if (devidx < count) {
+            if (!m_falconDevice->open(devidx)) {
+                fprintf(stderr, "Cannot open falcon device %d - Lib Error Code: %d - Device Error Code: %d\n",
+                        devidx, m_falconDevice->getErrorCode(), m_falconDevice->getFalconComm()->getDeviceErrorCode());
+                return false;
+            }
+        } else {
+            fprintf(stderr, "Trying to open non-existing Novint Falcon device %d\n", devidx);
+            return false;
+        }
+
+        if (!m_falconDevice->isFirmwareLoaded()) {
+#if FALCON_DEBUG            
+            fprintf(stderr, "Loading Falcon Firmware\n");
+#endif
+            int i;
+            for (i=0; i<10; ++i) {
+                if(!m_falconDevice->getFalconFirmware()->loadFirmware(false, libnifalcon::NOVINT_FALCON_NVENT_FIRMWARE_SIZE, const_cast<uint8_t*>(libnifalcon::NOVINT_FALCON_NVENT_FIRMWARE)))
+                {
+#if FALCON_DEBUG            
+                    fprintf(stderr, "Firmware loading attempt %d failed.\n", i);
+#endif
+                    //Completely close and reopen
+                    m_falconDevice->close();
+                    if(!m_falconDevice->open(devidx))
+                    {
+                        fprintf(stderr, "Cannot open falcon device %d - Lib Error Code: %d - Device Error Code: %d\n",
+                                devidx, m_falconDevice->getErrorCode(), m_falconDevice->getFalconComm()->getDeviceErrorCode());
+                        return false;
+                    }
+                } else {
+#if FALCON_DEBUG            
+                    fprintf(stderr, "Falcon firmware successfully loaded.\n");
+#endif
+                    break;
+                }
+            }
+        } else {
+#if FALCON_DEBUG            
+            fprintf(stderr, "Falcon Firmware already loaded.\n");
+#endif
+        }
+        
+        bool message = false;
+        while(1) { // XXX: add timeout to declare device dead after a while.
+            int i;
+            
+            m_falconDevice->getFalconFirmware()->setHomingMode(true);
+            for (i=0; !m_falconDevice->runIOLoop() && i < 10; ++i) continue;
+            if(!m_falconDevice->getFalconFirmware()->isHomed()) {
+                m_falconDevice->getFalconFirmware()->setLEDStatus(libnifalcon::FalconFirmware::RED_LED);
+                for (i=0; !m_falconDevice->runIOLoop() && i < 10; ++i) continue;
+                if (!message) {
+                    fprintf(stderr, "Falcon not currently calibrated. Move control all the way out then push straight all the way in.\n");
+                    message = true;
+                }
+            } else {
+                m_falconDevice->getFalconFirmware()->setLEDStatus(libnifalcon::FalconFirmware::BLUE_LED);
+                for (i=0; !m_falconDevice->runIOLoop() && i < 10; ++i) continue;
+                fprintf(stderr, "Falcon calibrated successfully.\n");
+                break;
+            }
+        }
+        
+        message = false;
+        
+        while(1) { // XXX: add timeout to declare device dead after a while.
+            int i;
+            
+            for (i=0; !m_falconDevice->runIOLoop() && i < 10; ++i) continue;
+            boost::array<double, 3> pos = m_falconDevice->getPosition();
+            
+            if (!message) {
+                fprintf(stderr, "Move control all the way out to activate device.\n");
+                message = true;
+            } 
+            if (pos[2] > 0.170) {
+                m_falconDevice->getFalconFirmware()->setLEDStatus(libnifalcon::FalconFirmware::GREEN_LED);
+                for (i=0; !m_falconDevice->runIOLoop() && i < 10; ++i) continue;
+                fprintf(stderr, "Falcon activated successfully.\n");
+                break;
+            }
+        }
+        return true;
+    };
+
+    // open device, load firmware and calibrate.
+    bool get_status(vrpn_float64 *pos, vrpn_float64 *quat, unsigned char *buttons) {
+        if (!m_falconDevice) 
+            return false;
+
+        if(!m_falconDevice->runIOLoop())
+            return false;
+
+        quat[0] = 1.0;
+        quat[1] = 0.0;
+        quat[2] = 0.0;
+        quat[3] = 0.0;
+
+        // update position information
+        boost::array<double, 3> my_pos = m_falconDevice->getPosition();
+        const double convert_pos = 1.0;
+        pos[0] = convert_pos * my_pos[0];
+        pos[1] = convert_pos * my_pos[1];
+        pos[2] = convert_pos * my_pos[2];
+#if FALCON_DEBUG & 0
+        fprintf(stderr, "position %5.3f %5.3f %5.3f\n", pos[0],pos[1],pos[2]);
+#endif
+        
+        // update button information
+        unsigned int my_buttons = m_falconDevice->getFalconGrip()->getDigitalInputs();
+        int num_buttons = m_falconDevice->getFalconGrip()->getNumDigitalInputs();
+        int i;
+        for (i=0; i < num_buttons; ++i) {
+#if FALCON_DEBUG & 0
+            fprintf(stderr, "button [%d]: %s\n", i, (my_buttons & 1<<i) ? "on" : "off");
+#endif
+            buttons[i] = (my_buttons & 1<<i) ? vrpn_BUTTON_TOGGLE_ON : vrpn_BUTTON_TOGGLE_OFF;
+        }
+        return true;
+    };
+    
+protected:
+    int m_flags;
+    libnifalcon::FalconDevice *m_falconDevice;
+
+private:
+    // disable default and copy constructor
+    vrpn_NovintFalcon_Device() {};
+    vrpn_NovintFalcon_Device(const vrpn_NovintFalcon_Device &dev) {};   
+
+public:
+    enum falconflags {
+        NONE            = 0x0000, //< empty
+        MASK_DEVICEIDX  = 0x000f, //< max. 15 falcons
+        KINE_STAMPER    = 0x0010, //< stamper kinematics model
+        GRIP_FOURBUTTON = 0x0100  //< 4-button grip (the default)
+    };
 };
-
-
-// max time between reports (usec)
-#define MAX_TIME_INTERVAL       (2000000) 
-#define	INCHES_TO_METERS	(2.54/100.0)
 
 vrpn_Tracker_NovintFalcon::vrpn_Tracker_NovintFalcon(const char *name, 
                                                      vrpn_Connection *c, 
-                                                     const int devidx):
-        vrpn_Tracker(name, c),
-        vrpn_Button(name, c),
-        _numbuttons(4) // assume default grip
+                                                     const int devidx,
+                                                     const char *grip,
+                                                     const char *kine)
+        : vrpn_Tracker(name, c), vrpn_Button(name, c), m_dev(NULL)
 {
-	vrpn_Button::num_buttons = _numbuttons;
+    m_devflags=vrpn_NovintFalcon_Device::MASK_DEVICEIDX & devidx;
+    if (grip != NULL) {
+        if (0 == strcmp(grip,"4-button")) {
+            m_devflags |= vrpn_NovintFalcon_Device::GRIP_FOURBUTTON;
+            vrpn_Button::num_buttons = 4;
+        } else {
+            fprintf(stderr, "WARNING: Unknown grip for Novint Falcon: %s \n", grip);
+            m_devflags = -1;
+            return;
+        }
+    }
+
+    if (kine != NULL) {
+        if (0 == strcmp(kine,"stamper")) {
+            m_devflags |= vrpn_NovintFalcon_Device::KINE_STAMPER;
+        } else {
+            fprintf(stderr, "WARNING: Unknown kinematic model for Novint Falcon: %s \n", kine);
+            m_devflags = -1;
+            return;
+        }
+    }
 	clear_values();
+    status = vrpn_TRACKER_RESETTING;
 }
 
 void vrpn_Tracker_NovintFalcon::clear_values()
 {
+    // nothing to do
+    if (m_devflags < 0) return;
+
 	int i;
-	for (i=0; i <_numbuttons; i++)
+	for (i=0; i <vrpn_Button::num_buttons; i++)
 		vrpn_Button::buttons[i] = vrpn_Button::lastbuttons[i] = 0;
 }
 
 vrpn_Tracker_NovintFalcon::~vrpn_Tracker_NovintFalcon()
 {
+    if (m_dev)
+        delete m_dev;
 }
 
 void vrpn_Tracker_NovintFalcon::reset()
 {
+
+    // nothing to do
+    if (m_devflags < 0) return;
+    
 	static int numResets = 0;	// How many resets have we tried?
 	int ret, i;
-
-	numResets++;		  	// We're trying another reset
+    numResets++;		  	// We're trying another reset
 
 	clear_values();
 
 	fprintf(stderr, "Resetting the NovintFalcon (attempt %d)\n", numResets);
-#if 0
-	if (vrpn_write_characters(serial_fd, (unsigned char*)"*R", 2) == 2)
-	{
-		fprintf(stderr,".");
-		sleep(2);  // Wait after each character to give it time to respond
-	}
-	else
-	{
-		perror("NovintFalcon: Failed writing to NovintFalcon");
+
+    if (m_dev)
+        delete m_dev;
+    
+    m_dev = new vrpn_NovintFalcon_Device(m_devflags);
+    if (!m_dev) {
 		status = vrpn_TRACKER_FAIL;
 		return;
 	}
 
-	fprintf(stderr,"\n");
-
-	// Get rid of the characters left over from before the reset
-	vrpn_flush_input_buffer(serial_fd);
-
-	// Make sure that the tracker has stopped sending characters
-	sleep(2);
-
-	if ( (ret = vrpn_read_available_characters(serial_fd, _buffer, 80)) != 0)
-	{
-		fprintf(stderr, "Got >=%d characters after reset\n", ret);
-		for (i = 0; i < ret; i++)
-		{
-			if (isprint(_buffer[i])) fprintf(stderr,"%c",_buffer[i]);
-			else fprintf(stderr,"[0x%02X]",_buffer[i]);
-		}
-		fprintf(stderr, "\n");
-		vrpn_flush_input_buffer(serial_fd);		// Flush what's left
-	}
-
-	// Asking for tracker status
-	if (vrpn_write_characters(serial_fd, (const unsigned char *) "*\x05", 2) == 2)
-		sleep(1); // Sleep for a second to let it respond
-	else
-	{
-		perror("  NovintFalcon write failed");
+    if (!m_dev->init()) {
 		status = vrpn_TRACKER_FAIL;
 		return;
 	}
 
-	// Read Status
-	bool success = true;
-
-	ret = vrpn_read_available_characters(serial_fd, _buffer, 2);
-	if (ret != 2) fprintf(stderr, "  Got %d of 5 characters for status\n",ret);
-
-	fprintf(stderr, "	Control Unit test       : ");
-	if (_buffer[0] & 1) fprintf(stderr, "success\n");
-	else
-	{
-		fprintf(stderr, "fail\n");
-		success = false;
-	}
-
-	fprintf(stderr, "	Processor test          : ");
-	if (_buffer[0] & 2) fprintf(stderr, "success\n");
-	else
-	{
-		fprintf(stderr, "fail\n");
-		success = false;
-	}
-
-	fprintf(stderr, "	EPROM checksum test     : ");
-	if (_buffer[0] & 4) fprintf(stderr, "success\n");
-	else
-	{
-		fprintf(stderr, "fail\n");
-		success = false;
-	}
-
-	fprintf(stderr, "	RAM checksum test       : ");
-	if (_buffer[0] & 8) fprintf(stderr, "success\n");
-	else
-	{
-		fprintf(stderr, "fail\n");
-		success = false;
-	}
-
-	fprintf(stderr, "	Transmitter test        : ");
-	if (_buffer[0] & 16) fprintf(stderr, "success\n");
-	else
-	{
-		fprintf(stderr, "fail\n");
-		success = false;
-	}
-
-	fprintf(stderr, "	Receiver test           : ");
-	if (_buffer[0] & 32) fprintf(stderr, "success\n");
-	else
-	{
-		fprintf(stderr, "fail\n");
-		success = false;
-	}
-
-	fprintf(stderr, "	Serial Port test        : ");
-	if (_buffer[1] & 1) fprintf(stderr, "success\n");
-	else
-	{
-		fprintf(stderr, "fail\n");
-		success = false;
-	}
-
-	fprintf(stderr, "	EEPROM test             : ");
-	if (_buffer[0] & 2) fprintf(stderr, "success\n");
-	else
-	{
-		fprintf(stderr, "fail\n");
-		success = false;
-	}
-
-	if (!success)
-	{
-		fprintf(stderr, "Bad status report from NovintFalcon, retrying reset\n");
-		status = vrpn_TRACKER_FAIL;
-		return;
-	}
-	else
-	{
-		fprintf(stderr, "NovintFalcon gives status (this is good)\n");
-		numResets = 0; 	// Success, use simple reset next time
-	}
-
-	// Set filtering count if the constructor parameter said to.
-	if (_filtering_count > 1)
-	{
-		if (!set_filtering_count(_filtering_count)) return;
-	}
-#endif
-	fprintf(stderr, "Reset Completed (this is good)\n");
+	fprintf(stderr, "Reset Completed.\n");
 	status = vrpn_TRACKER_SYNCING;	// We're trying for a new reading
 }
 
 int vrpn_Tracker_NovintFalcon::get_report(void)
 {
-   int ret;		// Return value from function call to be checked
-   static int count = 0;
-   timeval waittime;
-   waittime.tv_sec = 2;
-
-   if (status == vrpn_TRACKER_SYNCING) {
-	unsigned char tmpc;
-
-#if 0
-	if (vrpn_write_characters(serial_fd, (const unsigned char*)"*d", 2) !=2)
-	{
-		perror("  NovintFalcon write command failed");
-		status = vrpn_TRACKER_RESETTING;
-		return 0;
-	}
-	ret = vrpn_read_available_characters(serial_fd, _buffer+count, 16-count, &waittime);
-	if (ret < 0)
-	{
-		perror("  NovintFalcon read failed (disconnected)");
-		status = vrpn_TRACKER_RESETTING;
-		return 0;
-	}
-
-	count += ret;
-	if (count < 16) return 0;
-	if (count > 16)
-	{
-		perror("  NovintFalcon read failed (wrong message)");
-		status = vrpn_TRACKER_RESETTING;
-		return 0;
-	}
-
-	count = 0;
-	
-	tmpc = _buffer[0];
-	if (tmpc & 32)
-	{
-		//printf("port%d: Out of Range\n", i);
-		//ret |= 1 << (3-i);
-	} else
-	{
-		long ax, ay, az;           // integer form of absolute translational data
-		short arx, ary, arz;       // integer form of absolute rotational data
-		float p, y, r;
-
-		ax = (_buffer[1] & 0x40) ? 0xFFE00000 : 0;
-		ax |= (long)(_buffer[1] & 0x7f) << 14;
-		ax |= (long)(_buffer[2] & 0x7f) << 7;
-		ax |= (_buffer[3] & 0x7f);
-
-		ay = (_buffer[4] & 0x40) ? 0xFFE00000 : 0;
-		ay |= (long)(_buffer[4] & 0x7f) << 14;
-		ay |= (long)(_buffer[5] & 0x7f) << 7;
-		ay |= (_buffer[6] & 0x7f);
-
-		az = (_buffer[7] & 0x40) ? 0xFFE00000 : 0;
-		az |= (long)(_buffer[7] & 0x7f) << 14;
-		az |= (long)(_buffer[8] & 0x7f) << 7;
-		az |= (_buffer[9] & 0x7f);
-
-		pos[0] = static_cast<float>(ax / 100000.0 * 2.54);
-		pos[2] = static_cast<float>(ay / 100000.0 * 2.54);
-		pos[1] = -static_cast<float>(az / 100000.0f * 2.54);
-
-		arx  = (_buffer[10] & 0x7f) << 7;
-		arx += (_buffer[11] & 0x7f);
-
-		ary  = (_buffer[12] & 0x7f) << 7;
-		ary += (_buffer[13] & 0x7f);
-
-		arz  = (_buffer[14] & 0x7f) << 7;
-		arz += (_buffer[15] & 0x7f);
-
-		p = static_cast<float>(arx / 40.0);		// pitch
-		y = static_cast<float>(ary / 40.0);		// yaw
-		r = static_cast<float>(arz / 40.0);		// roll
-
-		p = static_cast<float>(p * M_PI / 180);
-		y = static_cast<float>(y * M_PI / 180);
-		r = static_cast<float>((360-r) * M_PI / 180);
-
-		float cosp2 = static_cast<float>(cos(p/2));
-		float cosy2 = static_cast<float>(cos(y/2));
-		float cosr2 = static_cast<float>(cos(r/2));
-		float sinp2 = static_cast<float>(sin(p/2));
-		float siny2 = static_cast<float>(sin(y/2));
-		float sinr2 = static_cast<float>(sin(r/2));
-
-		d_quat[0] = cosr2*sinp2*cosy2 + sinr2*cosp2*siny2;
-		d_quat[1] = sinr2*cosp2*cosy2 + cosr2*sinp2*siny2;
-		d_quat[2] = cosr2*cosp2*siny2 + sinr2*sinp2*cosy2;
-		d_quat[3] = cosr2*cosp2*cosy2 + sinr2*sinp2*siny2;
-
-	}
-
-	buttons[0] = tmpc & 16;		// Mouse stand button
-	buttons[1] = tmpc & 8;		// Suspend button
-	buttons[2] = tmpc & 4;		// Left button
-	buttons[3] = tmpc & 2;		// Middle button
-	buttons[4] = tmpc & 1;		// Right button
-#endif
+    if (!m_dev) 
+        return 0;
+    
+    if (status == vrpn_TRACKER_SYNCING) {
+        if (m_dev->get_status(pos, d_quat, buttons))
+            send_report();
+            vrpn_Button::report_changes();
     }
-    vrpn_Button::report_changes();
-
     status = vrpn_TRACKER_SYNCING;
-//    bufcount = 0;
 
 #ifdef VERBOSE2
       print_latest_report();
 #endif
 
    return 1;
+}
+
+void vrpn_Tracker_NovintFalcon::send_report(void)
+{
+    if (d_connection) {
+        char        msgbuf[1000];
+        int len = vrpn_Tracker::encode_to(msgbuf);
+        if (d_connection->pack_message(len, vrpn_Tracker::timestamp, position_m_id, d_sender_id, msgbuf,
+                                       vrpn_CONNECTION_LOW_LATENCY)) {
+        }
+    }
 }
 
 void vrpn_Tracker_NovintFalcon::mainloop()
@@ -328,30 +344,19 @@ void vrpn_Tracker_NovintFalcon::mainloop()
 		case vrpn_TRACKER_AWAITING_STATION:
 		case vrpn_TRACKER_PARTIAL:
 		case vrpn_TRACKER_SYNCING:
-#if 0
-			if (get_report()) send_report();
-#endif
+			if (get_report()) {
+                send_report();
+            }
 			break;
 		case vrpn_TRACKER_RESETTING:
 			reset();
 			break;
+
 		case vrpn_TRACKER_FAIL:
 			fprintf(stderr, "NovintFalcon failed, trying to reset (Try power cycle if more than 4 attempts made)\n");
-#if 0
-			if (serial_fd >= 0)
-			{
-				vrpn_close_commport(serial_fd);
-				serial_fd = -1;
-			}
-			if ( (serial_fd=vrpn_open_commport(portname, baudrate)) == -1)
-			{
-				fprintf(stderr,"vrpn_Tracker_NovintFalcon::mainloop(): Cannot Open serial port\n");
-				status = vrpn_TRACKER_FAIL;
-				return;
-			}
-#endif
 			status = vrpn_TRACKER_RESETTING;
 			break;
+            
 		default:
 			break;
 	}

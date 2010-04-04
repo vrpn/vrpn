@@ -33,7 +33,9 @@ public:
     /// custom constructor
     vrpn_Tracker_NovintFalcon(const char *name, 
                               vrpn_Connection *c = NULL,
-                              const int devidx = 0);
+                              const int devidx = 0,
+                              const char *grip = NULL,
+                              const char *kine = NULL);
 
     /// destructor
     ~vrpn_Tracker_NovintFalcon();
@@ -46,11 +48,11 @@ protected:
 
     virtual void reset();
     virtual int get_report(void);
+    virtual void send_report(void);
     virtual void clear_values(void);
     
-    vrpn_NovintFalcon_Device *_dev; //< device handle
-    
-    int           _numbuttons;
+    int m_devflags;
+    vrpn_NovintFalcon_Device *m_dev; //< device handle
 };
 
 #endif /* defined(VRPN_USE_LIBNIFALCON) */
