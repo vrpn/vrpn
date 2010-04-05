@@ -129,9 +129,9 @@ public:
         }
         
         bool message = false;
+        m_falconDevice->runIOLoop();
         while(1) { // XXX: add timeout to declare device dead after a while.
             int i;
-            
             m_falconDevice->getFalconFirmware()->setHomingMode(true);
             for (i=0; !m_falconDevice->runIOLoop() && i < 10; ++i) continue;
             if(!m_falconDevice->getFalconFirmware()->isHomed()) {
@@ -183,6 +183,8 @@ public:
         if(!m_falconDevice->runIOLoop())
             return false;
 
+        // we have no orientation of the effector.
+        // so we just pick one.
         quat[0] = 1.0;
         quat[1] = 0.0;
         quat[2] = 0.0;
@@ -206,7 +208,7 @@ public:
 #if VERBOSE2
             fprintf(stderr, "button [%d]: %s\n", i, (my_buttons & 1<<i) ? "on" : "off");
 #endif
-            buttons[i] = (my_buttons & 1<<i) ? vrpn_BUTTON_TOGGLE_ON : vrpn_BUTTON_TOGGLE_OFF;
+            buttons[i] = (my_buttons & 1<<i) ? 1 : 0;
         }
         return true;
     };
