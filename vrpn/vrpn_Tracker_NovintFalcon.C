@@ -18,18 +18,82 @@
 
 #if defined(VRPN_USE_LIBNIFALCON)
 #include "boost/shared_ptr.hpp"
+#include "boost/array.hpp"
+#include "boost/ptr_container/ptr_vector.hpp"
 #include "falcon/core/FalconDevice.h"
 #include "falcon/grip/FalconGripFourButton.h"
 #include "falcon/firmware/FalconFirmwareNovintSDK.h"
 #include "falcon/kinematic/FalconKinematicStamper.h"
 #include "falcon/util/FalconFirmwareBinaryNvent.h"
 
+/**************************************************************************/
 // define to activate additional messages about
 // what the driver is currently trying to do.
 #undef VERBOSE
 
-// define for detailed status tracking. very versbose
+// define for detailed status tracking. very verbose.
 #undef VERBOSE2
+
+/**************************************************************************/
+
+/// save some typing
+typedef boost::array<double, 3> d_vector;
+
+/// allow to add two vectors
+static d_vector operator+(const d_vector &a,const d_vector &b) 
+{
+    d_vector ret;
+    ret[0] = a[0] + b[0];
+    ret[1] = a[1] + b[1];
+    ret[2] = a[2] + b[2];
+    return ret;
+}
+
+/// difference of two vectors
+static d_vector operator-(const d_vector &a,const d_vector &b) 
+{
+    d_vector ret;
+    ret[0] = a[0] + b[0];
+    ret[1] = a[1] + b[1];
+    ret[2] = a[2] + b[2];
+    return ret;
+}
+    
+/// length of a vector
+static double d_length(const d_vector &a) 
+{
+    double ret;
+    ret  = a[0] * a[0];
+    ret += a[1] * a[1];
+    ret += a[2] * a[2];
+    return sqrt(ret);
+}
+
+/*************************************************************************/
+#if defined(_MSC_VER)
+#include <windows.h>
+#else
+#include <sys/time.h>
+#endif
+
+// get the time of day from the system clock, and store it (in seconds)
+static double hires_time(void) {
+#if defined(_MSC_VER)
+  double t;
+ 
+  t = GetTickCount(); 
+  t = t / 1000.0;
+
+  return t;
+#else
+  struct timeval tm;
+
+  gettimeofday(&tm, NULL);
+  return((double)(tm.tv_sec) + (double)(tm.tv_usec)/1000000.0);
+#endif
+}
+
+/*************************************************************************/    
 
 class vrpn_NovintFalcon_Device 
 {
@@ -152,18 +216,19 @@ public:
         }
         
         message = false;
-        
         while(1) { // XXX: add timeout to declare device dead after a while.
             int i;
             
             for (i=0; !m_falconDevice->runIOLoop() && i < 10; ++i) continue;
-            boost::array<double, 3> pos = m_falconDevice->getPosition();
+            d_vector pos = m_falconDevice->getPosition();
+            m_oldpos = pos;
+            m_oldtime = hires_time();
             
             if (!message) {
                 fprintf(stderr, "Move control all the way out to activate device.\n");
                 message = true;
             } 
-            if (pos[2] > 0.170) {
+            if (pos[2] > 0.170) { // XXX: value taken from libnifalcon test example
                 m_falconDevice->getFalconFirmware()->setLEDStatus(libnifalcon::FalconFirmware::GREEN_LED);
                 for (i=0; !m_falconDevice->runIOLoop() && i < 10; ++i) continue;
 #ifdef VERBOSE
@@ -175,8 +240,10 @@ public:
         return true;
     };
 
-    // open device, load firmware and calibrate.
-    bool get_status(vrpn_float64 *pos, vrpn_float64 *quat, unsigned char *buttons) {
+    // query status of device.
+    bool get_status(vrpn_float64 *pos, vrpn_float64 *vel, 
+                    vrpn_float64 *quat, vrpn_float64 *vel_quat,
+                    vrpn_float64 *vel_dt, unsigned char *buttons) {
         if (!m_falconDevice) 
             return false;
 
@@ -184,21 +251,66 @@ public:
             return false;
 
         // we have no orientation of the effector.
-        // so we just pick one.
-        quat[0] = 1.0;
-        quat[1] = 0.0;
-        quat[2] = 0.0;
-        quat[3] = 0.0;
+        // so we just pick one. to tell them apart
+        // more easily, we just give each a different
+        // orientation.
+        if (quat) {
+            switch (m_flags & MASK_DEVICEIDX) {
+              case 0:
+                  quat[0] =  0.0;
+                  quat[1] =  0.0;
+                  quat[2] =  1.0;
+                  quat[3] =  0.0;
+                  break;
+              case 1:
+                  quat[0] =  1.0;
+                  quat[1] =  0.0;
+                  quat[2] =  0.0;
+                  quat[3] =  0.0;
+                  break;
+              default:
+                  quat[0] =  1.0;
+                  quat[1] =  0.0;
+                  quat[2] =  0.0;
+                  quat[3] =  0.0;
+                  break;
+            }
+        }
+        
+        if (vel_quat) {
+            vel_quat[0] =  0.0;
+            vel_quat[1] =  0.0;
+            vel_quat[2] =  0.0;
+            vel_quat[3] =  0.0;
+        }
 
         // update position information
-        boost::array<double, 3> my_pos = m_falconDevice->getPosition();
+        d_vector my_pos = m_falconDevice->getPosition();
         const double convert_pos = 1.0; // empirical. need to measure properly.
         pos[0] = convert_pos * my_pos[0];
         pos[1] = convert_pos * my_pos[1];
-        pos[2] = convert_pos * (my_pos[2]-0.11); // apply offset to make z axis data centered.
+        pos[2] = convert_pos * (my_pos[2]-0.125); // apply offset to make z axis data centered.
 #if VERBOSE2
         fprintf(stderr, "position %5.3f %5.3f %5.3f\n", pos[0],pos[1],pos[2]);
 #endif
+        if (vel) {
+            double deltat = hires_time() - m_oldtime;
+            *vel_dt= deltat;
+            if (deltat > 0) {
+                vel[0] = convert_pos * (my_pos[0] - m_oldpos[0]) / deltat;
+                vel[1] = convert_pos * (my_pos[1] - m_oldpos[1]) / deltat;
+                vel[2] = convert_pos * (my_pos[2] - m_oldpos[2]) / deltat;
+            } else {
+                vel[0] = 0.0;
+                vel[1] = 0.0;
+                vel[2] = 0.0;
+            }
+#if VERBOSE2
+            fprintf(stderr, "velocity %5.3f %5.3f %5.3f\n", vel[0],vel[1],vel[2]);
+#endif
+            m_oldpos = my_pos;
+            m_oldtime = hires_time();
+        }
         
         // update button information
         unsigned int my_buttons = m_falconDevice->getFalconGrip()->getDigitalInputs();
@@ -213,9 +325,22 @@ public:
         return true;
     };
     
+    // set feedback force
+    bool set_force(const d_vector &force) {
+        if (!m_falconDevice) 
+            return false;
+
+        // update position information
+        m_falconDevice->setForce(force);
+        if(!m_falconDevice->runIOLoop())
+            return false;
+    };
+    
 protected:
     int m_flags;
     libnifalcon::FalconDevice *m_falconDevice;
+    d_vector m_oldpos;
+    double m_oldtime;
 
 private:
     /// default constructor is disabled
@@ -233,12 +358,137 @@ public:
     };
 };
 
+/// force field effect for Novint Falcon. XXX: TODO allow object velocity
+class ForceFieldEffect 
+{
+public:
+    /// constructor
+    ForceFieldEffect() : m_active(false), m_time(0), m_cutoff(0.0) {}
+    /// destructor
+    ~ForceFieldEffect() {}
+
+public:
+    /// sets member variables to specificed values
+    void setForce(vrpn_float32 ori[3], vrpn_float32 frc[3], vrpn_float32 jac[3][3], vrpn_float32 rad) {
+        int i,j;
+        for (i=0; i < 3; i++) {
+            m_origin[i] = ori[i];
+            m_addforce[i]  = frc[i];
+            for (j=0; j < 3; j++) {
+                m_jacobian[i][j] = jac[i][j];
+            }
+        }
+        m_cutoff = rad;
+    }
+
+    /// start effect
+    virtual bool start() {
+        m_active = true;
+        m_time = 0.0;
+        // this will delay the effect until it 
+        // is (re-)initialized with setForce()
+        m_cutoff = 0.0; 
+        return m_active;
+    }
+    
+    /// stop effect
+    virtual void stop() {
+        m_active = false;
+    }
+    
+    /// query active status
+    virtual bool isActive() const { return m_active; }
+
+    /// calculate the effect force
+    d_vector calcForce(const d_vector &pos) {
+        d_vector force, offset;
+        force.assign(0.0);
+        if (m_active) {
+            offset = pos - m_origin;
+            // no force too far away.
+            if (d_length(offset) > m_cutoff) {
+                return force;
+            }
+            // Compute the force, which is the constant force plus
+            // a force that varies as the effector position deviates
+            // from the origin of the force field.  The Jacobian
+            // determines how the force changes in different directions
+            // away from the origin (generalizing spring forces of different
+            // magnitudes that constrain the Phantom to the point of the
+            // origin, to a line containing the origin, or to a plane
+            // containing the origin).
+            force = m_addforce;
+            int i,j;
+            for (i=0; i<3; ++i) {
+                for (j=0; j<3; ++j) {
+                    force[i] += offset[j]*m_jacobian[i][j];
+                }
+            }
+        }
+        return force;
+    }
+
+protected:
+    bool   m_active;            /// true if effect is active
+    double m_time;              /// time since last update
+    double m_cutoff;            /// force cutoff radius
+    d_vector m_origin;          /// origin of effect
+    d_vector m_addforce;        /// additional constant force 
+    double m_jacobian[3][3];    /// describes increase in force away from origin in differnt directions.    
+};
+
+/// callback for receiving new force field effects.
+static int VRPN_CALLBACK handle_forcefield_change_message(void *userdata, vrpn_HANDLERPARAM p)
+{
+  vrpn_Tracker_NovintFalcon *dev = (vrpn_Tracker_NovintFalcon *)userdata;
+  dev->update_forcefield_effect(p);
+  return 0;
+}
+
+/// class to collect all force generating objects.
+class vrpn_NovintFalcon_ForceObjects {
+public:
+    boost::ptr_vector<ForceFieldEffect> m_FFEffects;
+    
+    d_vector m_curforce;
+    d_vector m_curpos;
+    d_vector m_curvel;
+    
+    /// constructor
+    vrpn_NovintFalcon_ForceObjects() {
+            m_curforce.assign(0.0);
+            m_curpos.assign(0.0);
+    };
+    /// destructor
+    ~vrpn_NovintFalcon_ForceObjects() {};
+public:
+    /// compute the resulting force of all force field objects.
+    d_vector getObjForce(vrpn_float64 *pos, vrpn_float64 *vel) {
+        int i;
+        
+        for (i=0; i<3; ++i) {
+            m_curforce[i]=0.0;
+            m_curpos[i]=pos[i];
+            m_curvel[i]=vel[i];
+        }
+
+        // force field objects
+        int nobj = m_FFEffects.size();
+        for (i=0; i<nobj; ++i) {
+            m_curforce = m_curforce + m_FFEffects[i].calcForce (m_curpos);
+        }
+        return m_curforce;
+    };
+};
+
+/// custom contructor for falcon device tracker. handles a single device.
 vrpn_Tracker_NovintFalcon::vrpn_Tracker_NovintFalcon(const char *name, 
                                                      vrpn_Connection *c, 
                                                      const int devidx,
                                                      const char *grip,
                                                      const char *kine)
-        : vrpn_Tracker(name, c), vrpn_Button(name, c), m_dev(NULL)
+        : vrpn_Tracker(name, c), vrpn_Button(name, c), 
+          vrpn_ForceDevice(name, c), m_dev(NULL), m_obj(NULL)
 {
     m_devflags=vrpn_NovintFalcon_Device::MASK_DEVICEIDX & devidx;
     if (grip != NULL) {
@@ -262,6 +512,12 @@ vrpn_Tracker_NovintFalcon::vrpn_Tracker_NovintFalcon(const char *name,
         }
     }
 	clear_values();
+
+    if (register_autodeleted_handler(forcefield_message_id, 
+                                     handle_forcefield_change_message, this, vrpn_ForceDevice::d_sender_id)) {
+        fprintf(stderr,"vrpn_Tracker_NovintFalcon:can't register force handler\n");
+        return;
+    }
     status = vrpn_TRACKER_RESETTING;
 }
 
@@ -273,12 +529,22 @@ void vrpn_Tracker_NovintFalcon::clear_values()
 	int i;
 	for (i=0; i <vrpn_Button::num_buttons; i++)
 		vrpn_Button::buttons[i] = vrpn_Button::lastbuttons[i] = 0;
+
+    if (m_obj) delete m_obj;
+    m_obj = new vrpn_NovintFalcon_ForceObjects;
+
+    // add dummy effect object
+    ForceFieldEffect *ffe = new ForceFieldEffect;
+    ffe->stop();
+    m_obj->m_FFEffects.push_back(ffe);
 }
 
 vrpn_Tracker_NovintFalcon::~vrpn_Tracker_NovintFalcon()
 {
     if (m_dev)
         delete m_dev;
+    if (m_obj)
+        delete m_obj;
 }
 
 void vrpn_Tracker_NovintFalcon::reset()
@@ -319,14 +585,13 @@ int vrpn_Tracker_NovintFalcon::get_report(void)
         return 0;
     
     if (status == vrpn_TRACKER_SYNCING) {
-        if (m_dev->get_status(pos, d_quat, buttons))
-            send_report();
-            vrpn_Button::report_changes();
+        if (!m_dev->get_status(pos, vel, d_quat, vel_quat, &vel_quat_dt, buttons))
+            return 0;
     }
     status = vrpn_TRACKER_SYNCING;
 
 #ifdef VERBOSE2
-      print_latest_report();
+    print_latest_report();
 #endif
 
    return 1;
@@ -340,8 +605,41 @@ void vrpn_Tracker_NovintFalcon::send_report(void)
         if (d_connection->pack_message(len, vrpn_Tracker::timestamp, position_m_id, d_sender_id, msgbuf,
                                        vrpn_CONNECTION_LOW_LATENCY)) {
         }
+        len = vrpn_Tracker::encode_vel_to(msgbuf);
+        if (d_connection->pack_message(len, vrpn_Tracker::timestamp, velocity_m_id, d_sender_id, msgbuf,
+                                       vrpn_CONNECTION_LOW_LATENCY)) {
+        }
     }
 }
+
+void vrpn_Tracker_NovintFalcon::handle_forces(void)
+{
+    if (!m_dev) return;
+    if (!m_obj) return;
+
+    // we have just updated our published position and can use that
+    d_vector force= m_obj->getObjForce(pos,vel);
+    m_dev->set_force(force);
+}
+
+
+int vrpn_Tracker_NovintFalcon::update_forcefield_effect(vrpn_HANDLERPARAM p)
+{
+    if (!m_obj) return 1;
+
+    vrpn_float32 center[3];
+    vrpn_float32 force[3];
+    vrpn_float32 jacobian[3][3];
+    vrpn_float32 radius;
+
+    decode_forcefield(p.buffer, p.payload_len, center, force, jacobian, &radius);
+    // XXX: only one force field effect. sufficient for VMD.
+    // we have just updated our published position and can use that
+    m_obj->m_FFEffects[0].start();
+    m_obj->m_FFEffects[0].setForce(center, force, jacobian, radius);
+    return 0;
+}
+
 
 void vrpn_Tracker_NovintFalcon::mainloop()
 {
@@ -354,8 +652,10 @@ void vrpn_Tracker_NovintFalcon::mainloop()
 		case vrpn_TRACKER_SYNCING:
 			if (get_report()) {
                 send_report();
+                vrpn_Button::report_changes();
+                handle_forces();
             }
-			break;
+            break;
 		case vrpn_TRACKER_RESETTING:
 			reset();
 			break;
@@ -369,5 +669,6 @@ void vrpn_Tracker_NovintFalcon::mainloop()
 			break;
 	}
 }
+
 
 #endif

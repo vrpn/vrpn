@@ -20,14 +20,18 @@
 
 #include "vrpn_Tracker.h"
 #include "vrpn_Button.h"
+#include "vrpn_ForceDevice.h"
 
 // Forward declaration for proxy class that wraps 
 // the device management of the falcon.
 class vrpn_NovintFalcon_Device;
 
+// Forward declaration for proxy class that maintains
+// the list of objects that contribute to the force.
+class vrpn_NovintFalcon_ForceObjects;
 
-class VRPN_API vrpn_Tracker_NovintFalcon // XXX: add force feedback
-    : public vrpn_Tracker, public vrpn_Button {
+class VRPN_API vrpn_Tracker_NovintFalcon
+    : public vrpn_Tracker, public vrpn_Button, public vrpn_ForceDevice {
     
 public:
     /// custom constructor
@@ -42,17 +46,23 @@ public:
 
     /// Called once through each main loop iteration to handle updates.
     virtual void mainloop();
-
     
-protected:
-
+protected: // methods for tracker and button functionality
     virtual void reset();
     virtual int get_report(void);
     virtual void send_report(void);
     virtual void clear_values(void);
-    
-    int m_devflags;
-    vrpn_NovintFalcon_Device *m_dev; //< device handle
+
+protected: // methods for force feedback functionality
+    /// apply forces from known objects
+    virtual void handle_forces(void);
+public:
+    /// apply received information about force field effects.
+    virtual int  update_forcefield_effect(vrpn_HANDLERPARAM p);
+protected:
+    int m_devflags;                         //< device configuration flags
+    vrpn_NovintFalcon_Device *m_dev;        //< device handle
+    vrpn_NovintFalcon_ForceObjects *m_obj;  //< handle to force generating objects
 };
 
 #endif /* defined(VRPN_USE_LIBNIFALCON) */
