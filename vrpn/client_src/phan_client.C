@@ -6,7 +6,7 @@
 #include <vrpn_Tracker.h>
 #include <vrpn_Button.h>
 
-#define PHANTOM_SERVER "Phantom@europium-cs"
+#define PHANTOM_SERVER "Tracker0@localhost"
 
 /*****************************************************************************
  *
