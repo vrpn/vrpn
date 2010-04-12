@@ -314,13 +314,14 @@ public:
         
         // update button information
         unsigned int my_buttons = m_falconDevice->getFalconGrip()->getDigitalInputs();
-        int num_buttons = m_falconDevice->getFalconGrip()->getNumDigitalInputs();
-        int i;
-        for (i=0; i < num_buttons; ++i) {
+        if (m_flags & GRIP_FOURBUTTON) {
+            buttons[0] = (my_buttons & libnifalcon::FalconGripFourButton::CENTER_BUTTON)  ? 1 : 0;
+            buttons[1] = (my_buttons & libnifalcon::FalconGripFourButton::PLUS_BUTTON)    ? 1 : 0;
+            buttons[2] = (my_buttons & libnifalcon::FalconGripFourButton::MINUS_BUTTON)   ? 1 : 0;
+            buttons[3] = (my_buttons & libnifalcon::FalconGripFourButton::FORWARD_BUTTON) ? 1 : 0;
 #if VERBOSE2
             fprintf(stderr, "button [%d]: %s\n", i, (my_buttons & 1<<i) ? "on" : "off");
 #endif
-            buttons[i] = (my_buttons & 1<<i) ? 1 : 0;
         }
         return true;
     };
@@ -358,7 +359,7 @@ public:
     };
 };
 
-/// force field effect for Novint Falcon. XXX: TODO allow object velocity
+/// force field effect for Novint Falcon. 
 class ForceFieldEffect 
 {
 public:
