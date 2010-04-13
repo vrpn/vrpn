@@ -290,7 +290,7 @@ public:
         pos[0] = convert_pos * my_pos[0];
         pos[1] = convert_pos * my_pos[1];
         pos[2] = convert_pos * (my_pos[2]-0.125); // apply offset to make z axis data centered.
-#if VERBOSE2
+#ifdef VERBOSE2
         fprintf(stderr, "position %5.3f %5.3f %5.3f\n", pos[0],pos[1],pos[2]);
 #endif
         if (vel) {
@@ -305,7 +305,7 @@ public:
                 vel[1] = 0.0;
                 vel[2] = 0.0;
             }
-#if VERBOSE2
+#ifdef VERBOSE2
             fprintf(stderr, "velocity %5.3f %5.3f %5.3f\n", vel[0],vel[1],vel[2]);
 #endif
             m_oldpos = my_pos;
@@ -319,9 +319,6 @@ public:
             buttons[1] = (my_buttons & libnifalcon::FalconGripFourButton::PLUS_BUTTON)    ? 1 : 0;
             buttons[2] = (my_buttons & libnifalcon::FalconGripFourButton::MINUS_BUTTON)   ? 1 : 0;
             buttons[3] = (my_buttons & libnifalcon::FalconGripFourButton::FORWARD_BUTTON) ? 1 : 0;
-#if VERBOSE2
-            fprintf(stderr, "button [%d]: %s\n", i, (my_buttons & 1<<i) ? "on" : "off");
-#endif
         }
         return true;
     };
