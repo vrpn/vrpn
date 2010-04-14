@@ -130,7 +130,7 @@ public:
         int devidx = m_flags & MASK_DEVICEIDX;
 
 #ifdef VERBOSE 
-        fprintf(stderr, "Trying to open Falcon device %d/%d\n", devidx, count);
+        fprintf(stderr, "Trying to open Falcon device %d/%d.\n", devidx, count);
 #endif
         if (devidx < count) {
             if (!m_falconDevice->open(devidx)) {
@@ -562,6 +562,7 @@ void vrpn_Tracker_NovintFalcon::reset()
 	}
 
 	fprintf(stderr, "Reset Completed.\n");
+	numResets = 0;	// clear variable to avoid confusion.
 	status = vrpn_TRACKER_SYNCING;	// We're trying for a new reading
 }
 
