@@ -70,27 +70,9 @@ static double d_length(const d_vector &a)
 }
 
 /*************************************************************************/
-#if defined(_MSC_VER)
-#include <windows.h>
-#else
-#include <sys/time.h>
-#endif
-
-// get the time of day from the system clock, and store it (in seconds)
-static double hires_time(void) {
-#if defined(_MSC_VER)
-  double t;
- 
-  t = GetTickCount(); 
-  t = t / 1000.0;
-
-  return t;
-#else
-  struct timeval tm;
-
-  gettimeofday(&tm, NULL);
-  return((double)(tm.tv_sec) + (double)(tm.tv_usec)/1000000.0);
-#endif
+// compute time difference in microseconds
+static double timediff(struct timeval t1, struct timeval t2) {
+    return (t1.tv_usec - t2.tv_usec) * 0.000001 + 1.0 * (t1.tv_sec - t2.tv_sec);
 }
 
 /*************************************************************************/    
@@ -224,7 +206,7 @@ public:
             for (i=0; !m_falconDevice->runIOLoop() && i < 10; ++i) continue;
             d_vector pos = m_falconDevice->getPosition();
             m_oldpos = pos;
-            m_oldtime = hires_time();
+            vrpn_gettimeofday(&m_oldtime, NULL);
             
             if (!message) {
                 fprintf(stderr, "Move control all the way out to activate device.\n");
@@ -296,7 +278,9 @@ public:
         fprintf(stderr, "position %5.3f %5.3f %5.3f\n", pos[0],pos[1],pos[2]);
 #endif
         if (vel) {
-            double deltat = hires_time() - m_oldtime;
+            struct timeval current_time;
+            vrpn_gettimeofday(&current_time, NULL);
+            double deltat = timediff(m_oldtime, current_time);
             *vel_dt= deltat;
             if (deltat > 0) {
                 vel[0] = convert_pos * (my_pos[0] - m_oldpos[0]) / deltat;
@@ -311,7 +295,8 @@ public:
             fprintf(stderr, "velocity %5.3f %5.3f %5.3f\n", vel[0],vel[1],vel[2]);
 #endif
             m_oldpos = my_pos;
-            m_oldtime = hires_time();
+            m_oldtime.tv_sec = current_time.tv_sec;
+            m_oldtime.tv_usec = current_time.tv_usec;
         }
         
         // update button information
@@ -340,7 +325,7 @@ protected:
     int m_flags;
     libnifalcon::FalconDevice *m_falconDevice;
     d_vector m_oldpos;
-    double m_oldtime;
+    struct timeval m_oldtime;
 
 private:
     /// default constructor is disabled
@@ -488,7 +473,7 @@ vrpn_Tracker_NovintFalcon::vrpn_Tracker_NovintFalcon(const char *name,
                                                      const char *grip,
                                                      const char *kine)
         : vrpn_Tracker(name, c), vrpn_Button(name, c), 
-          vrpn_ForceDevice(name, c), m_dev(NULL), m_obj(NULL)
+          vrpn_ForceDevice(name, c), m_dev(NULL), m_obj(NULL), m_update_rate(1000.0)
 {
     m_devflags=vrpn_NovintFalcon_Device::MASK_DEVICEIDX & devidx;
     if (grip != NULL) {
@@ -518,6 +503,7 @@ vrpn_Tracker_NovintFalcon::vrpn_Tracker_NovintFalcon(const char *name,
         fprintf(stderr,"vrpn_Tracker_NovintFalcon:can't register force handler\n");
         return;
     }
+    vrpn_gettimeofday(&m_timestamp, NULL);
     status = vrpn_TRACKER_RESETTING;
 }
 
@@ -602,11 +588,11 @@ void vrpn_Tracker_NovintFalcon::send_report(void)
     if (d_connection) {
         char        msgbuf[1000];
         int len = vrpn_Tracker::encode_to(msgbuf);
-        if (d_connection->pack_message(len, vrpn_Tracker::timestamp, position_m_id, d_sender_id, msgbuf,
+        if (d_connection->pack_message(len, m_timestamp, position_m_id, d_sender_id, msgbuf,
                                        vrpn_CONNECTION_LOW_LATENCY)) {
         }
         len = vrpn_Tracker::encode_vel_to(msgbuf);
-        if (d_connection->pack_message(len, vrpn_Tracker::timestamp, velocity_m_id, d_sender_id, msgbuf,
+        if (d_connection->pack_message(len, m_timestamp, velocity_m_id, d_sender_id, msgbuf,
                                        vrpn_CONNECTION_LOW_LATENCY)) {
         }
     }
@@ -643,31 +629,40 @@ int vrpn_Tracker_NovintFalcon::update_forcefield_effect(vrpn_HANDLERPARAM p)
 
 void vrpn_Tracker_NovintFalcon::mainloop()
 {
+    struct timeval current_time;
 	server_mainloop();
 
-	switch(status)
-	{
-		case vrpn_TRACKER_AWAITING_STATION:
-		case vrpn_TRACKER_PARTIAL:
-		case vrpn_TRACKER_SYNCING:
-			if (get_report()) {
-                send_report();
-                vrpn_Button::report_changes();
-                handle_forces();
-            }
-            break;
-		case vrpn_TRACKER_RESETTING:
-			reset();
-			break;
+    // no need to report more often than we can poll the device
+    vrpn_gettimeofday(&current_time, NULL);
+    if ( timediff(current_time,m_timestamp) >= 1.0/m_update_rate) {
 
-		case vrpn_TRACKER_FAIL:
-			fprintf(stderr, "NovintFalcon failed, trying to reset (Try power cycle if more than 4 attempts made)\n");
-			status = vrpn_TRACKER_RESETTING;
-			break;
+        // Update the time
+        m_timestamp.tv_sec = current_time.tv_sec;
+        m_timestamp.tv_usec = current_time.tv_usec;
+        switch(status)
+        {
+          case vrpn_TRACKER_AWAITING_STATION:
+          case vrpn_TRACKER_PARTIAL:
+          case vrpn_TRACKER_SYNCING:
+              if (get_report()) {
+                  send_report();
+                  vrpn_Button::report_changes();
+                  handle_forces();
+              }
+              break;
+          case vrpn_TRACKER_RESETTING:
+              reset();
+              break;
+
+          case vrpn_TRACKER_FAIL:
+              fprintf(stderr, "NovintFalcon failed, trying to reset (Try power cycle if more than 4 attempts made)\n");
+              status = vrpn_TRACKER_RESETTING;
+              break;
             
-		default:
-			break;
-	}
+          default:
+              break;
+        }
+    }
 }
 
 

@@ -61,6 +61,8 @@ public:
     virtual int  update_forcefield_effect(vrpn_HANDLERPARAM p);
 protected:
     int m_devflags;                         //< device configuration flags
+    vrpn_float64 m_update_rate;             //< update rate of device
+    struct timeval m_timestamp;             //< last update of device status
     vrpn_NovintFalcon_Device *m_dev;        //< device handle
     vrpn_NovintFalcon_ForceObjects *m_obj;  //< handle to force generating objects
 };
