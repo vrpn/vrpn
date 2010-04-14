@@ -193,20 +193,22 @@ public:
         }
         
         bool message = false;
+        boost::shared_ptr<libnifalcon::FalconFirmware> f;
+        f=m_falconDevice->getFalconFirmware();
         m_falconDevice->runIOLoop();
         while(1) { // XXX: add timeout to declare device dead after a while.
             int i;
-            m_falconDevice->getFalconFirmware()->setHomingMode(true);
+            f->setHomingMode(true);
             for (i=0; !m_falconDevice->runIOLoop() && i < 10; ++i) continue;
-            if(!m_falconDevice->getFalconFirmware()->isHomed()) {
-                m_falconDevice->getFalconFirmware()->setLEDStatus(libnifalcon::FalconFirmware::RED_LED);
+            if(!f->isHomed()) {
+                f->setLEDStatus(libnifalcon::FalconFirmware::RED_LED);
                 for (i=0; !m_falconDevice->runIOLoop() && i < 10; ++i) continue;
                 if (!message) {
                     fprintf(stderr, "Falcon not currently calibrated. Move control all the way out then push straight all the way in.\n");
                     message = true;
                 }
             } else {
-                m_falconDevice->getFalconFirmware()->setLEDStatus(libnifalcon::FalconFirmware::BLUE_LED);
+                f->setLEDStatus(libnifalcon::FalconFirmware::BLUE_LED);
                 for (i=0; !m_falconDevice->runIOLoop() && i < 10; ++i) continue;
 #ifdef VERBOSE
                 fprintf(stderr, "Falcon calibrated successfully.\n");
@@ -229,7 +231,7 @@ public:
                 message = true;
             } 
             if (pos[2] > 0.170) { // XXX: value taken from libnifalcon test example
-                m_falconDevice->getFalconFirmware()->setLEDStatus(libnifalcon::FalconFirmware::GREEN_LED);
+                f->setLEDStatus(libnifalcon::FalconFirmware::GREEN_LED);
                 for (i=0; !m_falconDevice->runIOLoop() && i < 10; ++i) continue;
 #ifdef VERBOSE
                 fprintf(stderr, "Falcon activated successfully.\n");
