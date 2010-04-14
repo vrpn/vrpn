@@ -5,7 +5,7 @@
 // http://libnifalcon.nonpolynomial.org/
 // 
 // file:        vrpn_Tracker_NovintFalcon.C
-// author:      Axel Kohlmeyer akohlmey@gmail.com 2010-04-02
+// author:      Axel Kohlmeyer akohlmey@gmail.com 2010-04-14
 // copyright:   (C) 2010 Axel Kohlmeyer
 // license:     Released to the Public Domain.
 // depends:     libnifalcon-1.0.1, libusb-1.0, VRPN 07_26
