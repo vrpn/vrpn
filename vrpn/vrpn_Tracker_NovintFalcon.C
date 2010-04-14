@@ -27,13 +27,15 @@
 #include "falcon/util/FalconFirmwareBinaryNvent.h"
 
 /**************************************************************************/
+// number of retries for the I/O loop.
+#define FALCON_NUM_RETRIES 10
+
 // define to activate additional messages about
 // what the driver is currently trying to do.
 #undef VERBOSE
 
 // define for detailed status tracking. very verbose.
 #undef VERBOSE2
-
 /**************************************************************************/
 
 /// save some typing
@@ -149,7 +151,7 @@ public:
 #endif
             int i;
             // 10 chances to load the firmware.
-            for (i=0; i<10; ++i) {
+            for (i=0; i<FALCON_NUM_RETRIES; ++i) {
                 if(!m_falconDevice->getFalconFirmware()->loadFirmware(false, libnifalcon::NOVINT_FALCON_NVENT_FIRMWARE_SIZE, const_cast<uint8_t*>(libnifalcon::NOVINT_FALCON_NVENT_FIRMWARE)))
                 {
                     fprintf(stderr, "Firmware loading attempt %d failed.\n", i);
@@ -174,24 +176,24 @@ public:
 #endif
         }
         
+        int i;
         bool message = false;
         boost::shared_ptr<libnifalcon::FalconFirmware> f;
         f=m_falconDevice->getFalconFirmware();
-        m_falconDevice->runIOLoop();
+        for (i=0; !m_falconDevice->runIOLoop() && i < FALCON_NUM_RETRIES; ++i) continue;
         while(1) { // XXX: add timeout to declare device dead after a while.
-            int i;
             f->setHomingMode(true);
-            for (i=0; !m_falconDevice->runIOLoop() && i < 10; ++i) continue;
+            for (i=0; !m_falconDevice->runIOLoop() && i < FALCON_NUM_RETRIES; ++i) continue;
             if(!f->isHomed()) {
                 f->setLEDStatus(libnifalcon::FalconFirmware::RED_LED);
-                for (i=0; !m_falconDevice->runIOLoop() && i < 10; ++i) continue;
+                for (i=0; !m_falconDevice->runIOLoop() && i < FALCON_NUM_RETRIES; ++i) continue;
                 if (!message) {
                     fprintf(stderr, "Falcon not currently calibrated. Move control all the way out then push straight all the way in.\n");
                     message = true;
                 }
             } else {
                 f->setLEDStatus(libnifalcon::FalconFirmware::BLUE_LED);
-                for (i=0; !m_falconDevice->runIOLoop() && i < 10; ++i) continue;
+                for (i=0; !m_falconDevice->runIOLoop() && i < FALCON_NUM_RETRIES; ++i) continue;
 #ifdef VERBOSE
                 fprintf(stderr, "Falcon calibrated successfully.\n");
 #endif
@@ -203,18 +205,18 @@ public:
         while(1) { // XXX: add timeout to declare device dead after a while.
             int i;
             
-            for (i=0; !m_falconDevice->runIOLoop() && i < 10; ++i) continue;
+            for (i=0; !m_falconDevice->runIOLoop() && i < FALCON_NUM_RETRIES; ++i) continue;
             d_vector pos = m_falconDevice->getPosition();
             m_oldpos = pos;
             vrpn_gettimeofday(&m_oldtime, NULL);
             
             if (!message) {
-                fprintf(stderr, "Move control all the way out to activate device.\n");
+                fprintf(stderr, "Move control all the way out until led turns green to activate device.\n");
                 message = true;
             } 
             if (pos[2] > 0.170) { // XXX: value taken from libnifalcon test example
                 f->setLEDStatus(libnifalcon::FalconFirmware::GREEN_LED);
-                for (i=0; !m_falconDevice->runIOLoop() && i < 10; ++i) continue;
+                for (i=0; !m_falconDevice->runIOLoop() && i < FALCON_NUM_RETRIES; ++i) continue;
 #ifdef VERBOSE
                 fprintf(stderr, "Falcon activated successfully.\n");
 #endif
@@ -231,8 +233,8 @@ public:
         if (!m_falconDevice) 
             return false;
 
-        if(!m_falconDevice->runIOLoop())
-            return false;
+        int i;
+        for (i=0; !m_falconDevice->runIOLoop() && i < FALCON_NUM_RETRIES; ++i) continue;
 
         // we have no orientation of the effector.
         // so we just pick one. to tell them apart
