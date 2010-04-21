@@ -5,7 +5,7 @@
 
 # XXX TODO Install these bindings, don't just build them!
 
-if(SWIG_FOUND AND PYTHONLIBS_FOUND)
+if(SWIG_FOUND AND PYTHONLIBS_FOUND AND VRPN_BUILD_PYTHON)
 	include(${SWIG_USE_FILE})
 	include_directories(${PYTHON_INCLUDE_DIRS})
 
