@@ -10,7 +10,7 @@
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
 
-if(MSVC)
+if(MSVC AND NOT MSVC71)
 	string(TOUPPER "${CMAKE_CONFIGURATION_TYPES}" _conftypesUC)
 	include(ListCombinations)
 	list_combinations(_varnames
