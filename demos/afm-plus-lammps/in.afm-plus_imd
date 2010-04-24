@@ -1,5 +1,5 @@
 # virtual atomic force microscope demo
-# $Id$
+# $Id $
 dimension	3
 units		lj
 atom_style	molecular
