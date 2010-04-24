@@ -1,0 +1,48 @@
+#!/usr/bin/tclsh
+# $Id$
+
+display distance     -2.000000
+display projection   Perspective
+display nearclip set 0.000100
+display farclip  set 30.000000
+display depthcue   off
+display backgroundgradiend on
+if {0} {
+  display rendermode GLSL
+} else {
+  display rendermode Normal
+}
+
+
+set thismol [ mol new afm-plus.psf type psf first 0 last -1 step 1 filebonds 1 autobonds 1 waitfor all ]
+mol delrep 0 top
+mol representation VDW 0.500000 16.000000
+mol color Name
+mol selection {name SU NS CS OS HS}
+mol material Glossy
+mol addrep top
+mol selection {name ZN PS}
+mol material AOEdgy
+mol addrep top
+mol rename top {Simulated AFM Experiment}
+
+draw delete all
+draw material Glass3
+#draw material Chalky
+draw color white
+draw triangle {-26.0 -26.0 -26.0} { 26.0 -26.0 -26.0} { 26.0  0.0 -26.0}
+draw triangle {-26.0 -26.0 -26.0} {-26.0   0.0 -26.0} { 26.0  0.0 -26.0}
+draw triangle {-26.0 -26.0  26.0} { 26.0 -26.0  26.0} { 26.0  0.0  26.0}
+draw triangle {-26.0 -26.0  26.0} {-26.0   0.0  26.0} { 26.0  0.0  26.0}
+draw triangle { 26.0 -26.0 -26.0} { 26.0 -26.0  26.0} { 26.0  0.0  26.0}
+draw triangle { 26.0 -26.0 -26.0} { 26.0   0.0 -26.0} { 26.0  0.0  26.0}
+
+imd connect localhost 6789
+
+display resize 1024 768
+rotate y by 90
+translate by 0.0 -0.5 0.0
+
+after idle {
+ play falcon.tcl
+}
