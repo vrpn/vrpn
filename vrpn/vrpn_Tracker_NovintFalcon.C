@@ -353,7 +353,18 @@ class ForceFieldEffect
 {
 public:
     /// constructor
-    ForceFieldEffect() : m_active(false), m_time(0), m_cutoff(0.0) {}
+    ForceFieldEffect() : m_active(false), m_time(0), m_cutoff(0.0), m_damping(0.9)
+    {
+        int i,j;
+        for (i=0; i < 3; i++) {
+            m_origin[i] = 0.0;
+            m_addforce[i]  = 0.0;
+            for (j=0; j < 3; j++) {
+                m_jacobian[i][j] = 0.0;
+            }
+        }
+    };
+
     /// destructor
     ~ForceFieldEffect() {}
 
@@ -362,13 +373,13 @@ public:
     void setForce(vrpn_float32 ori[3], vrpn_float32 frc[3], vrpn_float32 jac[3][3], vrpn_float32 rad) {
         int i,j;
         for (i=0; i < 3; i++) {
-            m_origin[i] = ori[i];
-            m_addforce[i]  = frc[i];
+            m_neworig[i] = ori[i];
+            m_newadd[i]  = frc[i];
             for (j=0; j < 3; j++) {
-                m_jacobian[i][j] = jac[i][j];
+                m_newjacob[i][j] = jac[i][j];
             }
         }
-        m_cutoff = rad;
+        m_newcut = rad;
     }
 
     /// start effect
@@ -394,6 +405,18 @@ public:
         d_vector force, offset;
         force.assign(0.0);
         if (m_active) {
+            // apply damping to effect values
+            const double mix = 1.0 - m_damping;
+            int i,j;
+            for (i=0; i < 3; i++) {
+                m_origin[i]    = m_damping*m_origin[i] + mix*m_neworig[i];
+                m_addforce[i]  = m_damping*m_addforce[i] + mix*m_newadd[i];
+                for (j=0; j < 3; j++) {
+                    m_jacobian[i][j] = m_damping*m_jacobian[i][j] + mix*m_newjacob[i][j];
+                }
+            }
+            m_cutoff = m_damping*m_cutoff + mix*m_newcut;
+
             offset = pos - m_origin;
             // no force too far away.
             if (d_length(offset) > m_cutoff) {
@@ -408,7 +431,6 @@ public:
             // origin, to a line containing the origin, or to a plane
             // containing the origin).
             force = m_addforce;
-            int i,j;
             for (i=0; i<3; ++i) {
                 for (j=0; j<3; ++j) {
                     force[i] += offset[j]*m_jacobian[i][j];
@@ -425,6 +447,11 @@ protected:
     d_vector m_origin;          /// origin of effect
     d_vector m_addforce;        /// additional constant force 
     double m_jacobian[3][3];    /// describes increase in force away from origin in differnt directions.    
+    double m_newcut;            /// new force cutoff radius
+    d_vector m_neworig;         /// new effect origin handed over at update
+    d_vector m_newadd;          /// new additional constant force 
+    double m_newjacob[3][3];    /// new jacobian handed over at update
+    double m_damping;           /// damping coefficient for updates
 };
 
 /// callback for receiving new force field effects.
@@ -439,11 +466,13 @@ static int VRPN_CALLBACK handle_forcefield_change_message(void *userdata, vrpn_H
 class vrpn_NovintFalcon_ForceObjects {
 public:
     boost::ptr_vector<ForceFieldEffect> m_FFEffects;
-    
-    d_vector m_curforce;
-    d_vector m_curpos;
-    d_vector m_curvel;
-    
+
+protected: 
+    d_vector m_curforce; //< collected force value
+    d_vector m_curpos;   //< position for force calculation
+    d_vector m_curvel;   //< velocity for force calculation
+
+public:
     /// constructor
     vrpn_NovintFalcon_ForceObjects() {
             m_curforce.assign(0.0);
