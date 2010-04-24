@@ -4,11 +4,12 @@
 // It uses libnifalcon to communicate with the device.
 // http://libnifalcon.nonpolynomial.org/
 // 
-// file:        vrpn_Tracker_NovintFalcon.C
-// author:      Axel Kohlmeyer akohlmey@gmail.com 2010-04-14
-// copyright:   (C) 2010 Axel Kohlmeyer
-// license:     Released to the Public Domain.
-// depends:     libnifalcon-1.0.1, libusb-1.0, VRPN 07_26
+// File:        vrpn_Tracker_NovintFalcon.C
+// Author:      Axel Kohlmeyer akohlmey@gmail.com 
+// Date:        2010-04-24
+// Copyright:   (C) 2010 Axel Kohlmeyer
+// License:     Released to the Public Domain.
+// depends:     libnifalcon-1.0.1+, libusb-1.0, VRPN 07_26
 // tested on:   Linux x86_64 w/ gcc 4.4.1
 
 #include <ctype.h>
@@ -38,7 +39,7 @@
 #undef VERBOSE2
 /**************************************************************************/
 
-/// save some typing
+// save us some typing
 typedef boost::array<double, 3> d_vector;
 
 /// allow to add two vectors
@@ -282,7 +283,7 @@ public:
         if (vel) {
             struct timeval current_time;
             vrpn_gettimeofday(&current_time, NULL);
-            double deltat = timediff(m_oldtime, current_time);
+            double deltat = timediff(current_time, m_oldtime);
             *vel_dt= deltat;
             if (deltat > 0) {
                 vel[0] = convert_pos * (my_pos[0] - m_oldpos[0]) / deltat;
@@ -321,6 +322,8 @@ public:
         m_falconDevice->setForce(force);
         if(!m_falconDevice->runIOLoop())
             return false;
+
+        return true;
     };
     
 protected:
