@@ -72,9 +72,9 @@ static double d_length(const d_vector &a)
 }
 
 /*************************************************************************/
-// compute time difference in microseconds
+// compute time difference in microseconds. 
 static double timediff(struct timeval t1, struct timeval t2) {
-    return (t1.tv_usec - t2.tv_usec) * 0.000001 + 1.0 * (t1.tv_sec - t2.tv_sec);
+    return (t1.tv_usec - t2.tv_usec)*1.0 + 1000000.0 * (t1.tv_sec - t2.tv_sec);
 }
 
 /*************************************************************************/    
@@ -637,7 +637,7 @@ void vrpn_Tracker_NovintFalcon::mainloop()
 
     // no need to report more often than we can poll the device
     vrpn_gettimeofday(&current_time, NULL);
-    if ( timediff(current_time,m_timestamp) >= 1.0/m_update_rate) {
+    if ( timediff(current_time, m_timestamp) >= 1000000.0/m_update_rate) {
 
         // Update the time
         m_timestamp.tv_sec = current_time.tv_sec;
