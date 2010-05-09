@@ -93,6 +93,7 @@ option(VRPN_BUILD_SERVER_LIBRARY
 	ON)
 
 # Build various applications if we want them.
+option(VRPN_BUILD_PYTHON "Build VRPN Python bindings (development)" OFF)
 option(VRPN_BUILD_CLIENTS "Build VRPN client apps and tests" ON)
 option(VRPN_BUILD_SERVERS "Build VRPN servers" ON)
 option(VRPN_BUILD_TEST_RPC_GENERATION "Build VRPN RPC generation" OFF)
@@ -155,6 +156,13 @@ message(STATUS "")
 message(STATUS
 	"Now searching for auto-configurable optional packages...")
 message(STATUS "")
+
+###
+# SWIG and Python Libs (for python wrapper)
+###
+find_package(SWIG)
+find_package(PythonLibs)
+
 
 ###
 # MPI
@@ -634,6 +642,9 @@ endif()
 # Create documentation
 add_subdirectory(doxygen)
 
+#-----------------------------------------------------------------------------
+# Python wrappers
+add_subdirectory(python_vrpn)
 
 #-----------------------------------------------------------------------------
 # Applications that live in the main directory.
