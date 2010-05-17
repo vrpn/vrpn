@@ -10,7 +10,8 @@
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
 
-if(MSVC AND NOT MSVC71)
+if(MSVC AND NOT "${MSVC_VERSION}" LESS 1400)
+	# Only available in VS 2005 and newer
 	string(TOUPPER "${CMAKE_CONFIGURATION_TYPES}" _conftypesUC)
 	include(ListCombinations)
 	list_combinations(_varnames

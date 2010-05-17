@@ -214,12 +214,14 @@ function(add_doxygen _doxyfile)
 					DESTINATION
 					"${INSTALL_DESTINATION}"
 					COMPONENT
-					"${INSTALL_COMPONENT}")
+					"${INSTALL_COMPONENT}"
+					OPTIONAL)
 				if(MAKE_PDF)
 					install(FILES "${OUTPUT_DIRECTORY}/latex/refman.pdf"
 						DESTINATION "${INSTALL_DESTINATION}"
 						COMPONENT "${INSTALL_COMPONENT}"
-						RENAME "${INSTALL_PDF_NAME}")
+						RENAME "${INSTALL_PDF_NAME}"
+						OPTIONAL)
 				endif()
 
 			else()
