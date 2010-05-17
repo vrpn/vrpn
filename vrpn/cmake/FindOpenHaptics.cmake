@@ -48,7 +48,10 @@ set(OPENHAPTICS_ROOT_DIR
 	CACHE
 	PATH
 	"Path to search for OpenHaptics")
-set(OPENHAPTICS_NESTED_TARGETS ON)
+option(OPENHAPTICS_NESTED_TARGETS
+	"Whether we should compile HDU and HLU, if needed, as a part of the solution"
+	ON)
+mark_as_advanced(OPENHAPTICS_NESTED_TARGETS)
 
 ###
 # Configure OpenHaptics
