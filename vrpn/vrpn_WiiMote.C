@@ -305,6 +305,10 @@ void vrpn_WiiMote::mainloop() {
 	report_changes();
 }
 
+bool vrpn_WiiMote::isValid() const {
+  return (wiimote->found) && (wiimote->connected);
+}
+
 void vrpn_WiiMote::report(vrpn_uint32 class_of_service) {
 	vrpn_Analog::timestamp = _timestamp;
 	vrpn_Button::timestamp = _timestamp;
