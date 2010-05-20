@@ -83,6 +83,8 @@ public:
 
 	virtual void mainloop();
 
+	bool isValid() const;
+
 protected:
 	// Handle the rumble-magnitude setting (channel 0).
 	static int VRPN_CALLBACK handle_request_message( void *userdata,

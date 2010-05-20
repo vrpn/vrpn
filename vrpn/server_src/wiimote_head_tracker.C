@@ -12,6 +12,8 @@
 	http://academic.cleardefinition.com/
 	Iowa State University Virtual Reality Applications Center
 	Human-Computer Interaction Graduate Program
+
+	See ASME paper WINVR2010-3771 for more details on this system.
 */
 /*
 	Copyright Iowa State University 2009-2010

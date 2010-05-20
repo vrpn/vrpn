@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?org-vrjuggler-jccl-settings configuration.version="3.0"?>
-<configuration xmlns="http://www.vrjuggler.org/jccl/xsd/3.0/configuration" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.vrjuggler.org/jccl/xsd/3.0/configuration http://www.vrjuggler.org/jccl/xsd/3.0/configuration.xsd" name="Wiimote Fishtank VR 800x600">
+<configuration xmlns="http://www.vrjuggler.org/jccl/xsd/3.0/configuration" name="vrpn.wiimoteheadtracker.fishtankvr.1280x800.jconf" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.vrjuggler.org/jccl/xsd/3.0/configuration http://www.vrjuggler.org/jccl/xsd/3.0/configuration.xsd">
    <elements>
       <keyboard_mouse_proxy name="Keyboard Proxy" version="1">
          <device>Keyboard/Mouse Device</device>
@@ -271,8 +271,8 @@
       <display_window name="FishtankVR" version="5">
          <origin>0</origin>
          <origin>0</origin>
+         <size>1280</size>
          <size>800</size>
-         <size>600</size>
          <pipe>0</pipe>
          <frame_buffer_config>
             <opengl_frame_buffer_config name="GL Frame Buffer" version="3">
@@ -299,23 +299,23 @@
          <always_on_top>false</always_on_top>
          <active>true</active>
          <surface_viewports>
-            <surface_viewport name="VRViewport-1m-x-.75m" version="2">
+            <surface_viewport name="VRViewport-1m-x-.625m" version="2">
                <origin>0.0</origin>
                <origin>0.0</origin>
                <size>1.0</size>
                <size>1.0</size>
                <view>Left Eye</view>
                <lower_left_corner>-0.5</lower_left_corner>
-               <lower_left_corner>1.475</lower_left_corner>
+               <lower_left_corner>1.4</lower_left_corner>
                <lower_left_corner>0.0</lower_left_corner>
                <lower_right_corner>0.5</lower_right_corner>
-               <lower_right_corner>1.475</lower_right_corner>
+               <lower_right_corner>1.4</lower_right_corner>
                <lower_right_corner>0.0</lower_right_corner>
                <upper_right_corner>0.5</upper_right_corner>
-               <upper_right_corner>2.125</upper_right_corner>
+               <upper_right_corner>2.0</upper_right_corner>
                <upper_right_corner>0.0</upper_right_corner>
                <upper_left_corner>-0.5</upper_left_corner>
-               <upper_left_corner>2.125</upper_left_corner>
+               <upper_left_corner>2.0</upper_left_corner>
                <upper_left_corner>0.0</upper_left_corner>
                <user>User1</user>
                <active>true</active>
@@ -346,7 +346,7 @@
          <proxy>VJSystemStopKernelProxy</proxy>
       </alias>
       <simulated_relative_position name="SimWandRelativePos" version="1">
-         <base_frame_proxy>Head Proxy</base_frame_proxy>
+         <base_frame_proxy>HeadProxy</base_frame_proxy>
          <relative_proxy>RelativeWand Proxy</relative_proxy>
          <device_host />
       </simulated_relative_position>
