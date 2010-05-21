@@ -69,16 +69,14 @@ static void swap(double & a, double & b) {
 
 /** @brief Utility function to set a quat equal to the identity rotation
  */
-static void make_identity_quat(q_type & dest) {
-	dest[0] = dest[1] = dest[2] = 0;
-	dest[3] = 1;
-}
+#define MAKE_IDENTITY_QUAT(dest) \
+	dest[0] = dest[1] = dest[2] = 0; dest[3] = 1
 
 /** @brief Utility function to set a 3-vector equal to the zero vector
  */
-static void make_null_vec(q_vec_type & dest) {
-	dest[0] = dest[1] = dest[2] = 0;
-}
+#define MAKE_NULL_VEC(dest) \
+	dest[0] = dest[1] = dest[2] = 0
+
 
 vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name,
 		vrpn_Connection* trackercon,
@@ -219,8 +217,8 @@ void vrpn_Tracker_WiimoteHead::update_pose() {
 	q_xyz_quat_type newPose;
 
 	// Start at the identity pose
-	make_null_vec(newPose.xyz);
-	make_identity_quat(newPose.quat);
+	MAKE_NULL_VEC(newPose.xyz);
+	MAKE_IDENTITY_QUAT(newPose.quat);
 
 	// If our gravity vector has changed and it's not 0,
 	// we need to update our gravity correction transform.
@@ -351,8 +349,8 @@ void vrpn_Tracker_WiimoteHead::_update_gravity_moving_avg() {
 	q_vec_scale(movingAvg, 0.33333, movingAvg);
 
 	// reset gravity transform
-	make_identity_quat(d_gravityXform.quat);
-	make_null_vec(d_gravityXform.xyz);
+	MAKE_IDENTITY_QUAT(d_gravityXform.quat);
+	MAKE_NULL_VEC(d_gravityXform.xyz);
 
 	q_vec_type regulargravity = Q_NULL_VECTOR;
 	regulargravity[2] = 1;
@@ -471,12 +469,12 @@ void vrpn_Tracker_WiimoteHead::_convert_pose_to_tracker() {
 
 
 void vrpn_Tracker_WiimoteHead::_reset_gravity() {
-	make_null_vec(d_gravityXform.xyz);
-	make_identity_quat(d_gravityXform.quat);
+	MAKE_NULL_VEC(d_gravityXform.xyz);
+	MAKE_IDENTITY_QUAT(d_gravityXform.quat);
 
-	make_null_vec(d_vGrav);
-	make_null_vec(d_vGravPenultimate);
-	make_null_vec(d_vGravAntepenultimate);
+	MAKE_NULL_VEC(d_vGrav);
+	MAKE_NULL_VEC(d_vGravPenultimate);
+	MAKE_NULL_VEC(d_vGravAntepenultimate);
 
 	// Default earth gravity is (0, 1, 0)
 	d_vGravAntepenultimate[2] = d_vGravPenultimate[2] = d_vGrav[2] = 1;
@@ -497,8 +495,8 @@ void vrpn_Tracker_WiimoteHead::_reset_points() {
 
 void vrpn_Tracker_WiimoteHead::_reset_pose() {
 	// Reset to the identity pose
-	make_null_vec(d_currentPose.xyz);
-	make_identity_quat(d_currentPose.quat);
+	MAKE_NULL_VEC(d_currentPose.xyz);
+	MAKE_IDENTITY_QUAT(d_currentPose.quat);
 
 	vrpn_gettimeofday(&d_prevtime, NULL);
 
