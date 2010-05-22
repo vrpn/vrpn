@@ -57,18 +57,9 @@
 
 /// We need isnan but don't want to go crazy on requirements
 /// hence the following
-#ifdef _MSC_VER
-// Visual Studio should have _isnan
 inline static bool wm_isnan(const double x) {
 	return (x != x);
 }
-#else
-// What to do if not visual studio?
-inline static bool wm_isnan(const double x) {
-	return std::isnan(x);
-}
-#endif
-
 
 /// @name Constants 
 /// @{
