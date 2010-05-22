@@ -308,9 +308,11 @@ void vrpn_Tracker_WiimoteHead::handle_analog_update(void* userdata, const vrpn_A
 	// Grab all the blobs
 	for (i = 0; i < 4; i++) {
 		firstchan = i * 3 + 4;
-		if (   info.channel[firstchan] != -1
-			&& info.channel[firstchan + 1] != -1
-			&& info.channel[firstchan + 2] != -1) {
+		// -1 should signal a missing blob, but experimentally
+		// we sometimes get 0 instead
+		if (   info.channel[firstchan] > 0
+			&& info.channel[firstchan + 1] > 0
+			&& info.channel[firstchan + 2] > 0) {
 			wh->d_vX[i] = info.channel[firstchan];
 			wh->d_vY[i] = info.channel[firstchan + 1];
 			wh->d_vSize[i] = info.channel[firstchan + 2];
