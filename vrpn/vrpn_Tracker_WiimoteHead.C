@@ -47,24 +47,48 @@
 #include <string.h>
 #include <math.h>
 #include <stdio.h>
+#include <algorithm>
+#include <iostream>
 
 // Local Includes
 #include "vrpn_Tracker_WiimoteHead.h"
 
 #undef	VERBOSE
 
+/// We need isnan but don't want to go crazy on requirements
+/// hence the following
+#ifdef _MSC_VER
+// Visual Studio should have _isnan
+inline static bool wm_isnan(const double x) {
+	return (x != x);
+}
+#else
+// What to do if not visual studio?
+inline static bool wm_isnan(const double x) {
+	return std::isnan(x);
+}
+#endif
+
+
+/// @name Constants 
+/// @{
+const double two = 2;
+
+// Some stats source: http://wiibrew.org/wiki/Wiimote#IR_Camera
+const double xResSensor = 1024.0, yResSensor = 768.0;
+
+/// Field of view experimentally determined at Iowa State University
+/// March 2010
+const double fovX = Q_DEG_TO_RAD(43.0), fovY = Q_DEG_TO_RAD(32.00);
+//const double fovX = Q_DEG_TO_RAD(45.0), fovY = (fovX / xResSensor) * yResSensor;
+
+const double radPerPx = fovX / xResSensor;
+const double cvtDistToAngle = radPerPx / two;
+/// @}
+
 static double duration(struct timeval t1, struct timeval t2) {
 	return (t1.tv_usec - t2.tv_usec) / 1000000.0 +
 	       (t1.tv_sec - t2.tv_sec);
-}
-
-/** @brief Utility function so we don't have to include all of <algorithm>
- */
-static void swap(double & a, double & b) {
-	double c = a;
-
-	a = b;
-	b = c;
 }
 
 /** @brief Utility function to set a quat equal to the identity rotation
@@ -369,21 +393,11 @@ void vrpn_Tracker_WiimoteHead::_update_2_LED_pose(q_xyz_quat_type & newPose) {
 	}
 
 	// TODO right now only handling the 2-LED glasses
-	// TODO at a fixed 14.5cm distance (set in the constructor)
 
 	d_lock = true;
 	double rx, ry, rz;
 	rx = ry = rz = 0;
-
-	// Some stats source: http://wiibrew.org/wiki/Wiimote#IR_Camera
-	const double xResSensor = 1024.0, yResSensor = 768.0;
-
-	/// Field of view experimentally determined at Iowa State University
-	/// March 2010
-	const double fovX = Q_DEG_TO_RAD(43.0), fovY = Q_DEG_TO_RAD(32.00);
-	//const double fovX = Q_DEG_TO_RAD(45.0), fovY = (fovX / xResSensor) * yResSensor;
-
-	const double radPerPx = fovX / xResSensor;
+	
 	double X0, X1, Y0, Y1;
 
 	X0 = d_vX[0];
@@ -398,16 +412,17 @@ void vrpn_Tracker_WiimoteHead::_update_2_LED_pose(q_xyz_quat_type & newPose) {
 		/// This uses the assumption that the first time we see the glasses,
 		/// they ought to be right-side up (a reasonable assumption for
 		/// head tracking)
-		swap(X0, X1);
-		swap(Y0, Y1);
+		std::swap(X0, X1);
+		std::swap(Y0, Y1);
 	}
-
+	
 	const double dx = X0 - X1;
 	const double dy = Y0 - Y1;
 	const double dist = sqrt(dx * dx + dy * dy);
+	const double angle = dist * cvtDistToAngle;
 	// Note that this is an approximation, since we don't know the
 	// distance/horizontal position.  (I think...)
-	const double angle = radPerPx * dist / 2.0;
+	
 	const double headDist = (d_blobDistance / 2.0) / tan(angle);
 
 	// Translate the distance along z axis, and tilt the head
