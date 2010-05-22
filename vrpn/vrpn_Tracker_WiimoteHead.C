@@ -436,6 +436,20 @@ void vrpn_Tracker_WiimoteHead::_update_2_LED_pose(q_xyz_quat_type & newPose) {
 	const double avgX = (X0 + X1) / 2.0;
 	const double avgY = (Y0 + Y1) / 2.0;
 
+	/// @todo For some unnerving reason, in release builds, avgX tends to become NaN/undefined
+	/// However, any kind of inspection (such as the following, or even a simple cout)
+	/// appears to prevent the issue.  This makes me uneasy, but I won't argue with
+	/// what is working.
+	if (wm_isnan(avgX)) {
+		std::cerr << "NaN detected in avgX: X0 = " << X0 << ", X1 = " << X1 << std::endl;
+		return;
+	}
+
+	if (wm_isnan(avgY)) {
+		std::cerr << "NaN detected in avgY: Y0 = " << Y0 << ", Y1 = " << Y1 << std::endl;
+		return;
+	}
+
 	// b is the virtual depth in the sensor from a point to the full sensor
 	// used for finding similar triangles to calculate x/y translation
 	const double bHoriz = xResSensor / 2 / tan(fovX / 2);
