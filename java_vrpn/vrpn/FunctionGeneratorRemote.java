@@ -20,6 +20,12 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 	public static class Channel
 	{
 		public Function function = new Function_NULL();
+		
+		public Channel( Function f )
+		{
+			this.function = f;
+		}
+		public Channel() {}
 	}
 	
 	public class ChannelReply
@@ -372,7 +378,7 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 			s.isStarted = isStarted;
 			
 			// notify all listeners
-			Enumeration e = channelListeners.elements( );
+			Enumeration e = startStopListeners.elements( );
 			while( e.hasMoreElements( ) )
 			{
 				StartStopReplyListener l = (StartStopReplyListener) e.nextElement( );
@@ -394,7 +400,7 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 			s.isStopped = isStopped;
 			
 			// notify all listeners
-			Enumeration e = channelListeners.elements( );
+			Enumeration e = startStopListeners.elements( );
 			while( e.hasMoreElements( ) )
 			{
 				StartStopReplyListener l = (StartStopReplyListener) e.nextElement( );
@@ -416,7 +422,7 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 			s.sampleRate = rate;
 			
 			// notify all listeners
-			Enumeration e = channelListeners.elements( );
+			Enumeration e = sampleRateListeners.elements( );
 			while( e.hasMoreElements( ) )
 			{
 				SampleRateReplyListener l = (SampleRateReplyListener) e.nextElement( );
@@ -438,7 +444,7 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 			r.description = desc;
 			
 			// notify all listeners
-			Enumeration e = channelListeners.elements( );
+			Enumeration e = interpreterListeners.elements( );
 			while( e.hasMoreElements( ) )
 			{
 				InterpreterReplyListener l = (InterpreterReplyListener) e.nextElement( );
@@ -461,7 +467,7 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 			r.channel = channel;
 			
 			// notify all listeners
-			Enumeration e = channelListeners.elements( );
+			Enumeration e = errorListeners.elements( );
 			while( e.hasMoreElements( ) )
 			{
 				ErrorListener l = (ErrorListener) e.nextElement( );

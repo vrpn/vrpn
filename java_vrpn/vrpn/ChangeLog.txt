@@ -1,3 +1,9 @@
+2010-06-03  David Marshburn  <marshbur@cs.unc.edu>
+
+	* FunctionGeneratorRemote.java:  corrected a bug in which
+	several of the listener-calling methods were using the
+	wrong list of listeners.
+
 2010-01-14  David Marshburn  <marshbur@cs.unc.edu>
 
 	* FunctionGeneratorRemote.java:  added methods to add and
