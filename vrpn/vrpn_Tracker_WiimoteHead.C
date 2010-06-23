@@ -47,38 +47,51 @@
 #include <string.h>
 #include <math.h>
 #include <stdio.h>
+#include <algorithm>
+#include <iostream>
 
 // Local Includes
 #include "vrpn_Tracker_WiimoteHead.h"
 
 #undef	VERBOSE
 
+/// We need isnan but don't want to go crazy on requirements
+/// hence the following
+inline static bool wm_isnan(const double x) {
+	return (x != x);
+}
+
+/// @name Constants 
+/// @{
+const double two = 2;
+
+// Some stats source: http://wiibrew.org/wiki/Wiimote#IR_Camera
+const double xResSensor = 1024.0, yResSensor = 768.0;
+
+/// Field of view experimentally determined at Iowa State University
+/// March 2010
+const double fovX = Q_DEG_TO_RAD(43.0), fovY = Q_DEG_TO_RAD(32.00);
+//const double fovX = Q_DEG_TO_RAD(45.0), fovY = (fovX / xResSensor) * yResSensor;
+
+const double radPerPx = fovX / xResSensor;
+const double cvtDistToAngle = radPerPx / two;
+/// @}
+
 static double duration(struct timeval t1, struct timeval t2) {
 	return (t1.tv_usec - t2.tv_usec) / 1000000.0 +
 	       (t1.tv_sec - t2.tv_sec);
 }
 
-/** @brief Utility function so we don't have to include all of <algorithm>
- */
-static void swap(double & a, double & b) {
-	double c = a;
-
-	a = b;
-	b = c;
-}
-
 /** @brief Utility function to set a quat equal to the identity rotation
  */
-static void make_identity_quat(q_type & dest) {
-	dest[0] = dest[1] = dest[2] = 0;
-	dest[3] = 1;
-}
+#define MAKE_IDENTITY_QUAT(dest) \
+	dest[0] = dest[1] = dest[2] = 0; dest[3] = 1
 
 /** @brief Utility function to set a 3-vector equal to the zero vector
  */
-static void make_null_vec(q_vec_type & dest) {
-	dest[0] = dest[1] = dest[2] = 0;
-}
+#define MAKE_NULL_VEC(dest) \
+	dest[0] = dest[1] = dest[2] = 0
+
 
 vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name,
 		vrpn_Connection* trackercon,
@@ -220,8 +233,8 @@ void vrpn_Tracker_WiimoteHead::update_pose() {
 	q_xyz_quat_type newPose;
 
 	// Start at the identity pose
-	make_null_vec(newPose.xyz);
-	make_identity_quat(newPose.quat);
+	MAKE_NULL_VEC(newPose.xyz);
+	MAKE_IDENTITY_QUAT(newPose.quat);
 
 	// If our gravity vector has changed and it's not 0,
 	// we need to update our gravity correction transform.
@@ -287,9 +300,11 @@ void vrpn_Tracker_WiimoteHead::handle_analog_update(void* userdata, const vrpn_A
 	// Grab all the blobs
 	for (i = 0; i < 4; i++) {
 		firstchan = i * 3 + 4;
-		if (   info.channel[firstchan] != -1
-			&& info.channel[firstchan + 1] != -1
-			&& info.channel[firstchan + 2] != -1) {
+		// -1 should signal a missing blob, but experimentally
+		// we sometimes get 0 instead
+		if (   info.channel[firstchan] > 0
+			&& info.channel[firstchan + 1] > 0
+			&& info.channel[firstchan + 2] > 0) {
 			wh->d_vX[i] = info.channel[firstchan];
 			wh->d_vY[i] = info.channel[firstchan + 1];
 			wh->d_vSize[i] = info.channel[firstchan + 2];
@@ -352,8 +367,8 @@ void vrpn_Tracker_WiimoteHead::_update_gravity_moving_avg() {
 	q_vec_scale(movingAvg, 0.33333, movingAvg);
 
 	// reset gravity transform
-	make_identity_quat(d_gravityXform.quat);
-	make_null_vec(d_gravityXform.xyz);
+	MAKE_IDENTITY_QUAT(d_gravityXform.quat);
+	MAKE_NULL_VEC(d_gravityXform.xyz);
 
 	q_vec_type regulargravity = Q_NULL_VECTOR;
 	regulargravity[2] = 1;
@@ -372,21 +387,11 @@ void vrpn_Tracker_WiimoteHead::_update_2_LED_pose(q_xyz_quat_type & newPose) {
 	}
 
 	// TODO right now only handling the 2-LED glasses
-	// TODO at a fixed 14.5cm distance (set in the constructor)
 
 	d_lock = true;
 	double rx, ry, rz;
 	rx = ry = rz = 0;
-
-	// Some stats source: http://wiibrew.org/wiki/Wiimote#IR_Camera
-	const double xResSensor = 1024.0, yResSensor = 768.0;
-
-	/// Field of view experimentally determined at Iowa State University
-	/// March 2010
-	const double fovX = Q_DEG_TO_RAD(43.0), fovY = Q_DEG_TO_RAD(32.00);
-	//const double fovX = Q_DEG_TO_RAD(45.0), fovY = (fovX / xResSensor) * yResSensor;
-
-	const double radPerPx = fovX / xResSensor;
+	
 	double X0, X1, Y0, Y1;
 
 	X0 = d_vX[0];
@@ -401,16 +406,17 @@ void vrpn_Tracker_WiimoteHead::_update_2_LED_pose(q_xyz_quat_type & newPose) {
 		/// This uses the assumption that the first time we see the glasses,
 		/// they ought to be right-side up (a reasonable assumption for
 		/// head tracking)
-		swap(X0, X1);
-		swap(Y0, Y1);
+		std::swap(X0, X1);
+		std::swap(Y0, Y1);
 	}
-
+	
 	const double dx = X0 - X1;
 	const double dy = Y0 - Y1;
 	const double dist = sqrt(dx * dx + dy * dy);
+	const double angle = dist * cvtDistToAngle;
 	// Note that this is an approximation, since we don't know the
 	// distance/horizontal position.  (I think...)
-	const double angle = radPerPx * dist / 2.0;
+	
 	const double headDist = (d_blobDistance / 2.0) / tan(angle);
 
 	// Translate the distance along z axis, and tilt the head
@@ -421,6 +427,20 @@ void vrpn_Tracker_WiimoteHead::_update_2_LED_pose(q_xyz_quat_type & newPose) {
 	// the LEDs
 	const double avgX = (X0 + X1) / 2.0;
 	const double avgY = (Y0 + Y1) / 2.0;
+
+	/// @todo For some unnerving reason, in release builds, avgX tends to become NaN/undefined
+	/// However, any kind of inspection (such as the following, or even a simple cout)
+	/// appears to prevent the issue.  This makes me uneasy, but I won't argue with
+	/// what is working.
+	if (wm_isnan(avgX)) {
+		std::cerr << "NaN detected in avgX: X0 = " << X0 << ", X1 = " << X1 << std::endl;
+		return;
+	}
+
+	if (wm_isnan(avgY)) {
+		std::cerr << "NaN detected in avgY: Y0 = " << Y0 << ", Y1 = " << Y1 << std::endl;
+		return;
+	}
 
 	// b is the virtual depth in the sensor from a point to the full sensor
 	// used for finding similar triangles to calculate x/y translation
@@ -472,12 +492,12 @@ void vrpn_Tracker_WiimoteHead::_convert_pose_to_tracker() {
 
 
 void vrpn_Tracker_WiimoteHead::_reset_gravity() {
-	make_null_vec(d_gravityXform.xyz);
-	make_identity_quat(d_gravityXform.quat);
+	MAKE_NULL_VEC(d_gravityXform.xyz);
+	MAKE_IDENTITY_QUAT(d_gravityXform.quat);
 
-	make_null_vec(d_vGrav);
-	make_null_vec(d_vGravPenultimate);
-	make_null_vec(d_vGravAntepenultimate);
+	MAKE_NULL_VEC(d_vGrav);
+	MAKE_NULL_VEC(d_vGravPenultimate);
+	MAKE_NULL_VEC(d_vGravAntepenultimate);
 
 	// Default earth gravity is (0, 1, 0)
 	d_vGravAntepenultimate[2] = d_vGravPenultimate[2] = d_vGrav[2] = 1;
@@ -498,8 +518,8 @@ void vrpn_Tracker_WiimoteHead::_reset_points() {
 
 void vrpn_Tracker_WiimoteHead::_reset_pose() {
 	// Reset to the identity pose
-	make_null_vec(d_currentPose.xyz);
-	make_identity_quat(d_currentPose.quat);
+	MAKE_NULL_VEC(d_currentPose.xyz);
+	MAKE_IDENTITY_QUAT(d_currentPose.quat);
 
 	vrpn_gettimeofday(&d_prevtime, NULL);
 
