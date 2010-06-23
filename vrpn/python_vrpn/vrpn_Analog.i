@@ -25,7 +25,7 @@
 
 %{
 static PyObject* convert_analog_cb(vrpn_ANALOGCB* t) {
-       return Py_BuildValue("(i|ddddd)",t->num_channel,t->channel[0],t->channel[1],t->channel[2],t->channel[3],t->channel[4]);
+       return Py_BuildValue("(iddddd)",t->num_channel,t->channel[0],t->channel[1],t->channel[2],t->channel[3],t->channel[4]);
 }
 %}
 
