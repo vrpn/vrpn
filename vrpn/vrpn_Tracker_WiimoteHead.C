@@ -141,6 +141,7 @@ vrpn_Tracker_WiimoteHead::~vrpn_Tracker_WiimoteHead (void) {
 
 	// Delete the analog device.
 	delete d_ana;
+	d_ana = NULL;
 }
 
 /** Reset the current pose to identity and store it into the tracker
