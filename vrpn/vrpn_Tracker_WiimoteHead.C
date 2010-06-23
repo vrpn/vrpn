@@ -61,7 +61,7 @@ inline static bool wm_isnan(const double x) {
 	return (x != x);
 }
 
-/// @name Constants 
+/// @name Constants
 /// @{
 const double two = 2;
 
@@ -140,10 +140,6 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name,
 }
 
 vrpn_Tracker_WiimoteHead::~vrpn_Tracker_WiimoteHead (void) {
-	if (d_name) {
-		delete [] d_name;
-		d_name = NULL;
-	}
 
 	// If the analog pointer is NULL, we're done.
 	if (d_ana == NULL) { return; }
@@ -391,7 +387,7 @@ void vrpn_Tracker_WiimoteHead::_update_2_LED_pose(q_xyz_quat_type & newPose) {
 	d_lock = true;
 	double rx, ry, rz;
 	rx = ry = rz = 0;
-	
+
 	double X0, X1, Y0, Y1;
 
 	X0 = d_vX[0];
@@ -409,14 +405,14 @@ void vrpn_Tracker_WiimoteHead::_update_2_LED_pose(q_xyz_quat_type & newPose) {
 		std::swap(X0, X1);
 		std::swap(Y0, Y1);
 	}
-	
+
 	const double dx = X0 - X1;
 	const double dy = Y0 - Y1;
 	const double dist = sqrt(dx * dx + dy * dy);
 	const double angle = dist * cvtDistToAngle;
 	// Note that this is an approximation, since we don't know the
 	// distance/horizontal position.  (I think...)
-	
+
 	const double headDist = (d_blobDistance / 2.0) / tan(angle);
 
 	// Translate the distance along z axis, and tilt the head
