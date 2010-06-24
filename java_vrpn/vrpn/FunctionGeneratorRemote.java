@@ -459,7 +459,7 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 		// putting the body of this function into a synchronized block prevents
 		// other instances of FunctionGeneratorRemote from calling listeners' fgErrorReply
 		// method concurrently.
-		synchronized( notifyingInterpreterListenersLock )
+		synchronized( notifyingErrorListenersLock )
 		{
 			ErrorReply r = new ErrorReply();
 			r.msg_time.setTime( tv_sec * 1000 + (int) (tv_usec/1000.0) );
