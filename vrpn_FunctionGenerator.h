@@ -342,7 +342,7 @@ class VRPN_API vrpn_FunctionGenerator_Remote : public vrpn_FunctionGenerator
 {
 public:
 	vrpn_FunctionGenerator_Remote( const char* name, vrpn_Connection* c = NULL );
-	virtual ~vrpn_FunctionGenerator_Remote( );
+	virtual ~vrpn_FunctionGenerator_Remote( ) { }
 
 	int setChannel( const vrpn_uint32 channelNum, const vrpn_FunctionGenerator_channel* channel );
 	int requestChannel( const vrpn_uint32 channelNum );
@@ -397,55 +397,12 @@ public:
 	static int VRPN_CALLBACK handle_error_message( void* userdata, vrpn_HANDLERPARAM p );
 
 protected:
-	typedef	struct vrpn_FGCRL
-	{
-		void* userdata;
-		vrpn_FUNCTION_CHANGE_REPLY_HANDLER handler;
-		struct vrpn_FGCRL* next;
-	} vrpn_FGCHANNELREPLYLIST;
-	vrpn_FGCHANNELREPLYLIST* channel_reply_list;
-
-	
-	typedef	struct vrpn_FGStartRL
-	{
-		void* userdata;
-		vrpn_FUNCTION_START_REPLY_HANDLER handler;
-		struct vrpn_FGStartRL* next;
-	} vrpn_FGSTARTREPLYLIST;
-	vrpn_FGSTARTREPLYLIST* start_reply_list;
-
-	
-	typedef	struct vrpn_FGStopRL
-	{
-		void* userdata;
-		vrpn_FUNCTION_STOP_REPLY_HANDLER handler;
-		struct vrpn_FGStopRL* next;
-	} vrpn_FGSTOPREPLYLIST;
-	vrpn_FGSTOPREPLYLIST* stop_reply_list;
-
-	typedef	struct vrpn_FGSRRL
-	{
-		void* userdata;
-		vrpn_FUNCTION_SAMPLE_RATE_REPLY_HANDLER handler;
-		struct vrpn_FGSRRL* next;
-	} vrpn_FGSAMPLERATEREPLYLIST;
-	vrpn_FGSAMPLERATEREPLYLIST* sample_rate_reply_list;
-
-	typedef	struct vrpn_FGIRL
-	{
-		void* userdata;
-		vrpn_FUNCTION_INTERPRETER_REPLY_HANDLER handler;
-		struct vrpn_FGIRL* next;
-	} vrpn_FGINTERPRETERREPLYLIST;
-	vrpn_FGINTERPRETERREPLYLIST* interpreter_reply_list;
-
-	typedef struct vrpn_FGEL
-	{
-		void* userdata;
-		vrpn_FUNCTION_ERROR_HANDLER handler;
-		struct vrpn_FGEL* next;
-	} vrpn_FGERRORLIST;
-	vrpn_FGERRORLIST* error_list;
+	vrpn_Callback_List<vrpn_FUNCTION_CHANNEL_REPLY_CB> channel_reply_list;
+	vrpn_Callback_List<vrpn_FUNCTION_START_REPLY_CB> start_reply_list;
+	vrpn_Callback_List<vrpn_FUNCTION_STOP_REPLY_CB> stop_reply_list;
+	vrpn_Callback_List<vrpn_FUNCTION_SAMPLE_RATE_REPLY_CB> sample_rate_reply_list;
+	vrpn_Callback_List<vrpn_FUNCTION_INTERPRETER_REPLY_CB> interpreter_reply_list;
+	vrpn_Callback_List<vrpn_FUNCTION_ERROR_CB> error_list;
 
 
 	vrpn_int32 decode_channel_reply( const char* buf, const vrpn_int32 len, vrpn_uint32& channelNum );

@@ -1,3 +1,9 @@
+2010-06-25  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Connection.C (get_log_names):  does not attempt to return
+	names for NULL input parameters.
+	* vrpn_FunctionGenerator.h/c:  uses vrpn_Callback_List.
+
 2010-03-16  David Marshburn  <marshbur@cs.unc.edu>
 	* vrpn_FunctionGenerator.C:  correctly NULL-terminates decoded
 	script and description strings.

@@ -865,13 +865,7 @@ sendError( FGError error, vrpn_int32 channel )
 
 vrpn_FunctionGenerator_Remote::
 vrpn_FunctionGenerator_Remote( const char* name, vrpn_Connection * c )
-: vrpn_FunctionGenerator( name, c ),
-  channel_reply_list( NULL ),
-  start_reply_list( NULL ),
-  stop_reply_list( NULL ),
-  sample_rate_reply_list( NULL ),
-  interpreter_reply_list( NULL ),
-  error_list( NULL )
+: vrpn_FunctionGenerator( name, c )
 {
 	// Check if we have a connection
 	if( d_connection == NULL )
@@ -923,48 +917,6 @@ vrpn_FunctionGenerator_Remote( const char* name, vrpn_Connection * c )
 		d_connection = NULL;
 	}
 	
-}
-
-
-vrpn_FunctionGenerator_Remote::
-~vrpn_FunctionGenerator_Remote( )
-{
-	while( channel_reply_list != NULL )
-	{
-		vrpn_FGCHANNELREPLYLIST* member = channel_reply_list;
-		channel_reply_list = member->next;
-		delete member;
-	}
-	while( start_reply_list != NULL )
-	{
-		vrpn_FGSTARTREPLYLIST* member = start_reply_list;
-		start_reply_list = member->next;
-		delete member;
-	}
-	while( stop_reply_list != NULL )
-	{
-		vrpn_FGSTOPREPLYLIST* member = stop_reply_list;
-		stop_reply_list = member->next;
-		delete member;
-	}
-	while( sample_rate_reply_list != NULL )
-	{
-		vrpn_FGSAMPLERATEREPLYLIST* member = sample_rate_reply_list;
-		sample_rate_reply_list = member->next;
-		delete member;
-	}
-	while( interpreter_reply_list != NULL )
-	{
-		vrpn_FGINTERPRETERREPLYLIST* member = interpreter_reply_list;
-		interpreter_reply_list = member->next;
-		delete member;
-	}
-	while( error_list != NULL );
-	{
-		vrpn_FGERRORLIST* member = error_list;
-		error_list = member->next;
-		delete member;
-	}
 }
 
 
@@ -1240,26 +1192,7 @@ int vrpn_FunctionGenerator_Remote::
 register_channel_reply_handler( void *userdata,
 							   vrpn_FUNCTION_CHANGE_REPLY_HANDLER handler )
 {
-	if( handler == NULL )
-	{
-		fprintf( stderr, "vrpn_FunctionGenerator_Remote::register_channel_reply_handler:  "
-				"NULL handler.\n" );
-		fflush( stderr );
-		return -1;
-	}
-	vrpn_FGCHANNELREPLYLIST* newHandler = new vrpn_FGCHANNELREPLYLIST;
-	if( newHandler == NULL )
-	{
-		fprintf( stderr, "vrpn_FunctionGenerator_Remote::register_channel_reply_handler:  "
-				"out of memory.\n" );
-		fflush( stderr );
-		return -1;
-	}
-	newHandler->userdata = userdata;
-	newHandler->handler = handler;
-	newHandler->next = channel_reply_list;
-	channel_reply_list = newHandler;
-	return 0;
+	return channel_reply_list.register_handler(userdata, handler);
 }
 
 
@@ -1267,33 +1200,7 @@ int vrpn_FunctionGenerator_Remote::
 unregister_channel_reply_handler( void *userdata,
 								 vrpn_FUNCTION_CHANGE_REPLY_HANDLER handler )
 {
-	// The pointer at *snitch points to victim
-	vrpn_FGCHANNELREPLYLIST	*victim, **snitch;
-
-	// Find a handler with this registry in the list (any one will do,
-	// since all duplicates are the same).
-	snitch = &channel_reply_list;
-	victim = *snitch;
-	while ( (victim != NULL) &&
-		( (victim->handler != handler) ||
-		  (victim->userdata != userdata) )) {
-	    snitch = &( (*snitch)->next );
-	    victim = victim->next;
-	}
-
-	// Make sure we found one
-	if (victim == NULL) {
-		fprintf(stderr,
-		   "vrpn_FunctionGenerator_Remote::unregister_channel_reply_handler: No such handler\n");
-		fflush( stderr );
-		return -1;
-	}
-
-	// Remove the entry from the list
-	*snitch = victim->next;
-	delete victim;
-
-	return 0;
+	return channel_reply_list.unregister_handler(userdata, handler);
 }
 
 
@@ -1301,26 +1208,7 @@ int vrpn_FunctionGenerator_Remote::
 register_start_reply_handler( void *userdata,
 							 vrpn_FUNCTION_START_REPLY_HANDLER handler )
 {
-	if( handler == NULL )
-	{
-		fprintf( stderr, "vrpn_FunctionGenerator_Remote::register_start_reply_handler:  "
-				"NULL handler.\n" );
-		fflush( stderr );
-		return -1;
-	}
-	vrpn_FGSTARTREPLYLIST* newHandler = new vrpn_FGSTARTREPLYLIST;
-	if( newHandler == NULL )
-	{
-		fprintf( stderr, "vrpn_FunctionGenerator_Remote::register_start_reply_handler:  "
-				"out of memory.\n" );
-		fflush( stderr );
-		return -1;
-	}
-	newHandler->userdata = userdata;
-	newHandler->handler = handler;
-	newHandler->next = start_reply_list;
-	start_reply_list = newHandler;
-	return 0;
+	return start_reply_list.register_handler(userdata, handler);
 }
 
 
@@ -1328,33 +1216,7 @@ int vrpn_FunctionGenerator_Remote::
 unregister_start_reply_handler( void *userdata,
 							   vrpn_FUNCTION_START_REPLY_HANDLER handler )
 {
-	// The pointer at *snitch points to victim
-	vrpn_FGSTARTREPLYLIST	*victim, **snitch;
-
-	// Find a handler with this registry in the list (any one will do,
-	// since all duplicates are the same).
-	snitch = &start_reply_list;
-	victim = *snitch;
-	while ( (victim != NULL) &&
-		( (victim->handler != handler) ||
-		  (victim->userdata != userdata) )) {
-	    snitch = &( (*snitch)->next );
-	    victim = victim->next;
-	}
-
-	// Make sure we found one
-	if (victim == NULL) {
-		fprintf(stderr,
-		   "vrpn_FunctionGenerator_Remote::unregister_start_reply_handler: No such handler\n");
-		fflush( stderr );
-		return -1;
-	}
-
-	// Remove the entry from the list
-	*snitch = victim->next;
-	delete victim;
-
-	return 0;
+	return start_reply_list.unregister_handler(userdata, handler);
 }
 
 
@@ -1362,26 +1224,7 @@ int vrpn_FunctionGenerator_Remote::
 register_stop_reply_handler( void *userdata,
 							vrpn_FUNCTION_STOP_REPLY_HANDLER handler )
 {
-	if( handler == NULL )
-	{
-		fprintf( stderr, "vrpn_FunctionGenerator_Remote::register_stop_reply_handler:  "
-				"NULL handler.\n" );
-		fflush( stderr );
-		return -1;
-	}
-	vrpn_FGSTOPREPLYLIST* newHandler = new vrpn_FGSTOPREPLYLIST;
-	if( newHandler == NULL )
-	{
-		fprintf( stderr, "vrpn_FunctionGenerator_Remote::register_stop_reply_handler:  "
-				"out of memory.\n" );
-		fflush( stderr );
-		return -1;
-	}
-	newHandler->userdata = userdata;
-	newHandler->handler = handler;
-	newHandler->next = stop_reply_list;
-	stop_reply_list = newHandler;
-	return 0;
+	return stop_reply_list.register_handler(userdata, handler);
 }
 
 
@@ -1389,33 +1232,7 @@ int vrpn_FunctionGenerator_Remote::
 unregister_stop_reply_handler( void *userdata,
 							  vrpn_FUNCTION_STOP_REPLY_HANDLER handler )
 {
-	// The pointer at *snitch points to victim
-	vrpn_FGSTOPREPLYLIST	*victim, **snitch;
-
-	// Find a handler with this registry in the list (any one will do,
-	// since all duplicates are the same).
-	snitch = &stop_reply_list;
-	victim = *snitch;
-	while ( (victim != NULL) &&
-		( (victim->handler != handler) ||
-		  (victim->userdata != userdata) )) {
-	    snitch = &( (*snitch)->next );
-	    victim = victim->next;
-	}
-
-	// Make sure we found one
-	if (victim == NULL) {
-		fprintf(stderr,
-		   "vrpn_FunctionGenerator_Remote::unregister_stop_reply_handler: No such handler\n");
-		fflush( stderr );
-		return -1;
-	}
-
-	// Remove the entry from the list
-	*snitch = victim->next;
-	delete victim;
-
-	return 0;
+	return stop_reply_list.unregister_handler(userdata, handler);
 }
 
 
@@ -1423,26 +1240,7 @@ int vrpn_FunctionGenerator_Remote::
 register_sample_rate_reply_handler( void *userdata,
 								   vrpn_FUNCTION_SAMPLE_RATE_REPLY_HANDLER handler )
 {
-	if( handler == NULL )
-	{
-		fprintf( stderr, "vrpn_FunctionGenerator_Remote::register_sample_rate_reply_handler:  "
-				"NULL handler.\n" );
-		fflush( stderr );
-		return -1;
-	}
-	vrpn_FGSAMPLERATEREPLYLIST* newHandler = new vrpn_FGSAMPLERATEREPLYLIST;
-	if( newHandler == NULL )
-	{
-		fprintf( stderr, "vrpn_FunctionGenerator_Remote::register_sample_rate_reply_handler:  "
-				"out of memory.\n" );
-		fflush( stderr );
-		return -1;
-	}
-	newHandler->userdata = userdata;
-	newHandler->handler = handler;
-	newHandler->next = sample_rate_reply_list;
-	sample_rate_reply_list = newHandler;
-	return 0;
+	return sample_rate_reply_list.register_handler(userdata, handler);
 }
 
 
@@ -1450,33 +1248,7 @@ int vrpn_FunctionGenerator_Remote::
 unregister_sample_rate_reply_handler( void *userdata,
 									 vrpn_FUNCTION_SAMPLE_RATE_REPLY_HANDLER handler )
 {
-	// The pointer at *snitch points to victim
-	vrpn_FGSAMPLERATEREPLYLIST	*victim, **snitch;
-
-	// Find a handler with this registry in the list (any one will do,
-	// since all duplicates are the same).
-	snitch = &sample_rate_reply_list;
-	victim = *snitch;
-	while ( (victim != NULL) &&
-		( (victim->handler != handler) ||
-		  (victim->userdata != userdata) )) {
-	    snitch = &( (*snitch)->next );
-	    victim = victim->next;
-	}
-
-	// Make sure we found one
-	if (victim == NULL) {
-		fprintf(stderr,
-		   "vrpn_FunctionGenerator_Remote::unregister_sample_rate_reply_handler: No such handler\n");
-		fflush( stderr );
-		return -1;
-	}
-
-	// Remove the entry from the list
-	*snitch = victim->next;
-	delete victim;
-
-	return 0;
+	return sample_rate_reply_list.unregister_handler(userdata, handler);
 }
 
 
@@ -1484,26 +1256,7 @@ int vrpn_FunctionGenerator_Remote::
 register_interpreter_reply_handler( void *userdata,
 								   vrpn_FUNCTION_INTERPRETER_REPLY_HANDLER handler )
 {
-	if( handler == NULL )
-	{
-		fprintf( stderr, "vrpn_FunctionGenerator_Remote::register_interpreter_reply_handler:  "
-				"NULL handler.\n" );
-		fflush( stderr );
-		return -1;
-	}
-	vrpn_FGINTERPRETERREPLYLIST* newHandler = new vrpn_FGINTERPRETERREPLYLIST;
-	if( newHandler == NULL )
-	{
-		fprintf( stderr, "vrpn_FunctionGenerator_Remote::register_interpreter_reply_handler:  "
-				"out of memory.\n" );
-		fflush( stderr );
-		return -1;
-	}
-	newHandler->userdata = userdata;
-	newHandler->handler = handler;
-	newHandler->next = interpreter_reply_list;
-	interpreter_reply_list = newHandler;
-	return 0;
+	return interpreter_reply_list.register_handler(userdata, handler);
 }
 
 
@@ -1511,34 +1264,7 @@ int vrpn_FunctionGenerator_Remote::
 unregister_interpreter_reply_handler( void *userdata,
 									 vrpn_FUNCTION_INTERPRETER_REPLY_HANDLER handler )
 {
-	// The pointer at *snitch points to victim
-	vrpn_FGINTERPRETERREPLYLIST	*victim, **snitch;
-
-	// Find a handler with this registry in the list (any one will do,
-	// since all duplicates are the same).
-	snitch = &interpreter_reply_list;
-	victim = *snitch;
-	while ( (victim != NULL) &&
-		( (victim->handler != handler) ||
-		  (victim->userdata != userdata) )) {
-	    snitch = &( (*snitch)->next );
-	    victim = victim->next;
-	}
-
-	// Make sure we found one
-	if (victim == NULL) {
-		fprintf(stderr,
-		   "vrpn_FunctionGenerator_Remote::unregister_interpreter_reply_handler:  "
-		   "No such handler\n");
-		fflush( stderr );
-		return -1;
-	}
-
-	// Remove the entry from the list
-	*snitch = victim->next;
-	delete victim;
-
-	return 0;
+	return interpreter_reply_list.unregister_handler(userdata, handler);
 }
 
 
@@ -1546,26 +1272,7 @@ int vrpn_FunctionGenerator_Remote::
 register_error_handler( void *userdata,
 						vrpn_FUNCTION_ERROR_HANDLER handler )
 {
-	if( handler == NULL )
-	{
-		fprintf( stderr, "vrpn_FunctionGenerator_Remote::register_error_handler:  "
-				"NULL handler.\n" );
-		fflush( stderr );
-		return -1;
-	}
-	vrpn_FGERRORLIST* newHandler = new vrpn_FGERRORLIST;
-	if( newHandler == NULL )
-	{
-		fprintf( stderr, "vrpn_FunctionGenerator_Remote::register_error_handler:  "
-				"out of memory.\n" );
-		fflush( stderr );
-		return -1;
-	}
-	newHandler->userdata = userdata;
-	newHandler->handler = handler;
-	newHandler->next = error_list;
-	error_list = newHandler;
-	return 0;
+	return error_list.register_handler(userdata, handler);
 }
 
 
@@ -1573,34 +1280,7 @@ int vrpn_FunctionGenerator_Remote::
 unregister_error_handler( void *userdata,
 						  vrpn_FUNCTION_ERROR_HANDLER handler )
 {
-	// The pointer at *snitch points to victim
-	vrpn_FGERRORLIST	*victim, **snitch;
-
-	// Find a handler with this registry in the list (any one will do,
-	// since all duplicates are the same).
-	snitch = &error_list;
-	victim = *snitch;
-	while ( (victim != NULL) &&
-		( (victim->handler != handler) ||
-		  (victim->userdata != userdata) )) {
-	    snitch = &( (*snitch)->next );
-	    victim = victim->next;
-	}
-
-	// Make sure we found one
-	if (victim == NULL) {
-		fprintf(stderr,
-		   "vrpn_FunctionGenerator_Remote::unregister_error_handler:  "
-		   "No such handler\n");
-		fflush( stderr );
-		return -1;
-	}
-
-	// Remove the entry from the list
-	*snitch = victim->next;
-	delete victim;
-
-	return 0;
+	return error_list.unregister_handler(userdata, handler);
 }
 
 
@@ -1635,12 +1315,7 @@ handle_channelReply_message( void* userdata, vrpn_HANDLERPARAM p )
 	cb.channelNum = channelNum;
 	cb.channel = me->channels[channelNum];
 
-	vrpn_FGCHANNELREPLYLIST* handler = me->channel_reply_list;
-	while( handler != NULL )
-	{
-		handler->handler( handler->userdata, cb );
-		handler = handler->next;
-	}
+    me->channel_reply_list.call_handlers( cb );
 	return 0;
 }
 
@@ -1668,12 +1343,7 @@ handle_startReply_message( void* userdata, vrpn_HANDLERPARAM p )
 	cb.msg_time.tv_usec = p.msg_time.tv_usec;
 	cb.isStarted = isStarted;
 
-	vrpn_FGSTARTREPLYLIST* handler = me->start_reply_list;
-	while( handler != NULL )
-	{
-		handler->handler( handler->userdata, cb );
-		handler = handler->next;
-	}
+    me->start_reply_list.call_handlers( cb );
 	return 0;
 }
 
@@ -1701,12 +1371,7 @@ handle_stopReply_message( void* userdata, vrpn_HANDLERPARAM p )
 	cb.msg_time.tv_usec = p.msg_time.tv_usec;
 	cb.isStopped = isStopped;
 
-	vrpn_FGSTOPREPLYLIST* handler = me->stop_reply_list;
-	while( handler != NULL )
-	{
-		handler->handler( handler->userdata, cb );
-		handler = handler->next;
-	}
+    me->stop_reply_list.call_handlers( cb );
 	return 0;
 }
 
@@ -1733,12 +1398,7 @@ handle_sampleRateReply_message( void* userdata, vrpn_HANDLERPARAM p )
 	cb.msg_time.tv_usec = p.msg_time.tv_usec;
 	cb.sampleRate = me->sampleRate;
 
-	vrpn_FGSAMPLERATEREPLYLIST* handler = me->sample_rate_reply_list;
-	while( handler != NULL )
-	{
-		handler->handler( handler->userdata, cb );
-		handler = handler->next;
-	}
+    me->sample_rate_reply_list.call_handlers( cb );
 	return 0;
 }
 
@@ -1764,12 +1424,7 @@ handle_interpreterReply_message( void* userdata, vrpn_HANDLERPARAM p )
 	cb.msg_time.tv_sec = p.msg_time.tv_sec;
 	cb.msg_time.tv_usec = p.msg_time.tv_usec;
 
-	vrpn_FGINTERPRETERREPLYLIST* handler = me->interpreter_reply_list;
-	while( handler != NULL )
-	{
-		handler->handler( handler->userdata, cb );
-		handler = handler->next;
-	}
+    me->interpreter_reply_list.call_handlers( cb );
 	return 0;
 }
 
@@ -1795,12 +1450,7 @@ handle_error_message( void* userdata, vrpn_HANDLERPARAM p )
 	cb.msg_time.tv_sec = p.msg_time.tv_sec;
 	cb.msg_time.tv_usec = p.msg_time.tv_usec;
 
-	vrpn_FGERRORLIST* handler = me->error_list;
-	while( handler != NULL )
-	{
-		handler->handler( handler->userdata, cb );
-		handler = handler->next;
-	}
+    me->error_list.call_handlers( cb );
 	return 0;
 }
 
