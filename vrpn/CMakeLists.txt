@@ -539,6 +539,11 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 		PROPERTY
 		PUBLIC_HEADER
 		${VRPN_SERVER_PUBLIC_HEADERS})
+	set_property(TARGET
+		vrpnserver
+		PROPERTY
+		PROJECT_LABEL
+		"Core: VRPN Server Library")
 
 	install(TARGETS
 		vrpnserver
@@ -569,6 +574,11 @@ if(VRPN_BUILD_CLIENT_LIBRARY)
 		PROPERTY
 		COMPILE_DEFINITIONS
 		"VRPN_CLIENT_ONLY")
+	set_property(TARGET
+		vrpn
+		PROPERTY
+		PROJECT_LABEL
+		"Core: VRPN Client Library")
 
 	install(TARGETS
 		vrpn

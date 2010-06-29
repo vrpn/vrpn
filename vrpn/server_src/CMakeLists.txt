@@ -130,6 +130,11 @@ target_link_libraries(vrpn_server
 	${VRPN_ATMEL_LIBRARY}
 	${VRPNPHANTOMLIB})
 set_target_properties(vrpn_server PROPERTIES SOLUTION_FOLDER servers)
+set_property(TARGET
+	vrpn_server
+	PROPERTY
+	PROJECT_LABEL
+	"VRPN Generic Server Application")
 install(TARGETS vrpn_server
 	RUNTIME DESTINATION bin)
 
