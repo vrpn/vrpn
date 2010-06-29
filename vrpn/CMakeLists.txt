@@ -553,6 +553,8 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 		PUBLIC_HEADER
 		DESTINATION
 		include)
+
+	add_cppcheck(vrpnserver STYLE UNUSED_FUNCTIONS)
 endif()
 
 
@@ -588,6 +590,8 @@ if(VRPN_BUILD_CLIENT_LIBRARY)
 		PUBLIC_HEADER
 		DESTINATION
 		include)
+
+	add_cppcheck(vrpn STYLE UNUSED_FUNCTIONS)
 endif()
 
 
