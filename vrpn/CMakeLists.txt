@@ -20,43 +20,17 @@ project(VRPN)
 ###
 list(APPEND CMAKE_MODULE_PATH ${VRPN_SOURCE_DIR}/cmake)
 include(UseBackportedModules)
-include(WarningDev)
 include(GetForceIncludeDefinitions)
 include(MSVCMultipleProcessCompile)
+include(CppcheckTargets)
 
 ###
 # Basic packaging options
-#
+
 set(CPACK_PACKAGE_VENDOR
 	"Russell M. Taylor II at the University of North Carolina at Chapel Hill")
 
-###
-# Get the version number by parsing vrpn_Connection.C
-###
-set(_vrpn_version_file "${CMAKE_CURRENT_SOURCE_DIR}/vrpn_Connection.C")
-if(EXISTS "${_vrpn_version_file}")
-	file(READ "${_vrpn_version_file}" _vrpn_version_contents)
-endif()
-set(_vrpn_version_regex "vrpn: ver. ([0-9]+).([0-9]+)")
-string(REGEX
-	MATCH
-	"${_vrpn_version_regex}"
-	_dummy
-	"${_vrpn_version_contents}")
-
-if(CMAKE_MATCH_1)
-	set(CPACK_PACKAGE_VERSION_MAJOR "${CMAKE_MATCH_1}")
-else()
-	set(CPACK_PACKAGE_VERSION_MAJOR "07")
-	warning_dev("Could not parse major version from vrpn_Connection.C")
-endif()
-
-if(CMAKE_MATCH_2)
-	set(CPACK_PACKAGE_VERSION_MINOR "${CMAKE_MATCH_2}")
-else()
-	set(CPACK_PACKAGE_VERSION_MAJOR "26")
-	warning_dev("Could not parse minor version from vrpn_Connection.C")
-endif()
+include("${CMAKE_CURRENT_SOURCE_DIR}/ParseVersion.cmake")
 
 # This may be incremented manually
 set(CPACK_PACKAGE_VERSION_PATCH "1")
@@ -567,6 +541,11 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 		PROPERTY
 		PUBLIC_HEADER
 		${VRPN_SERVER_PUBLIC_HEADERS})
+	set_property(TARGET
+		vrpnserver
+		PROPERTY
+		PROJECT_LABEL
+		"Core: VRPN Server Library")
 
 	install(TARGETS
 		vrpnserver
@@ -576,6 +555,8 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 		PUBLIC_HEADER
 		DESTINATION
 		include)
+
+	add_cppcheck(vrpnserver STYLE UNUSED_FUNCTIONS)
 endif()
 
 
@@ -597,6 +578,11 @@ if(VRPN_BUILD_CLIENT_LIBRARY)
 		PROPERTY
 		COMPILE_DEFINITIONS
 		"VRPN_CLIENT_ONLY")
+	set_property(TARGET
+		vrpn
+		PROPERTY
+		PROJECT_LABEL
+		"Core: VRPN Client Library")
 
 	install(TARGETS
 		vrpn
@@ -606,6 +592,8 @@ if(VRPN_BUILD_CLIENT_LIBRARY)
 		PUBLIC_HEADER
 		DESTINATION
 		include)
+
+	add_cppcheck(vrpn STYLE UNUSED_FUNCTIONS)
 endif()
 
 
