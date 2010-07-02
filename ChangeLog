@@ -1,3 +1,11 @@
+2010-07-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_isense.C : Modified to compile with the latest version
+		of the Intersense library based on comments from Andrew Roth at
+		York University, Toronto based on info from Rand Kmiec at
+		Intersense.
+	* vrpn_Tracker_isense.h : Same.
+
 2010-06-25  David Marshburn  <marshbur@cs.unc.edu>
 
 	* vrpn_Connection.C (get_log_names):  does not attempt to return
