@@ -20,7 +20,7 @@ usr/include/vrpn_Spaceball.h
 usr/include/vrpn_Tracker_isense.h
 usr/include/vrpn_Zaber.h
 usr/include/vrpn_nikon_controls.h
-usr/include/vrpn_GlobalHapticsOrb.C
+usr/include/vrpn_GlobalHapticsOrb.h
 usr/include/vrpn_Tracker_ButtonFly.h
 usr/include/vrpn_ADBox.h
 usr/include/vrpn_VPJoystick.h
