@@ -17,7 +17,7 @@ usr/include/vrpn_Analog_5dt.h
 usr/include/vrpn_Joylin.h
 usr/include/vrpn_Tng3.h
 usr/include/vrpn_Spaceball.h
-usr/include/vrpn_tracker_isense.h
+usr/include/vrpn_Tracker_isense.h
 usr/include/vrpn_Zaber.h
 usr/include/vrpn_nikon_controls.h
 usr/include/vrpn_GlobalHapticsOrb.C
