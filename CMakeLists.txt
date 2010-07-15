@@ -78,13 +78,8 @@ include(FixWinInstallPrefix)
 
 # If we haven't been called by a parent CMakeLists.txt but there's a
 # quat/ dir next to us, make it part of our build anyway
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../quat AND NOT TARGET quat)
-	message(STATUS "Found quatlib source in ../quat - adding to build")
-	add_subdirectory(../quat # source directory
-					quatlib/) # relative path for build output
-endif()
-find_package(quatlib REQUIRED)
-list(APPEND EXTRA_LIBS ${QUATLIB_LIBRARIES})
+add_subdirectory (quat)
+list(APPEND EXTRA_LIBS quat)
 
 ###
 # Threading (not on win32?)
@@ -476,7 +471,7 @@ endif()
 
 
 # Include directory needed by all of the files
-include_directories(${VRPN_SOURCE_DIR} ${VRPN_SOURCE_DIR}/atmellib ${QUATLIB_INCLUDE_DIR})
+include_directories(${VRPN_SOURCE_DIR} ${VRPN_SOURCE_DIR}/atmellib ${VRPN_SOURCE_DIR}/quat)
 
 add_subdirectory (client_src)
 
