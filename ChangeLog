@@ -1,5 +1,10 @@
 2010-07-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
+	* vrpn_Types.h : Making the "Need to compile with C++
+		error message more verbose.
+
+2010-07-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
 	* vrpn_Button.C : Change to make this compile under Visual Studio
 		6.0 submitted by Andrei State.
 	* vrpn_Mouse.C : Same.
