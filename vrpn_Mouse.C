@@ -25,6 +25,15 @@
 #ifdef	_WIN32
 #include <windows.h>
 #pragma comment (lib, "user32.lib")
+
+// Fix sent in by Andrei State to make this compile under Visual Studio 6.0.
+// If you need this, you also have to copy multimon.h from the DirectX or
+// another Windows SDK into a place where the compiler can find it.
+#ifndef SM_XVIRTUALSCREEN
+#define COMPILE_MULTIMON_STUBS
+#include "multimon.h"
+#endif
+
 #endif
 
 ///////////////////////////////////////////////////////////////////////////
