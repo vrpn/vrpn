@@ -1,0 +1,10 @@
+pc_win32
+make.out
+makefile
+pc_cygwin
+pc_linux
+powerpc_aix
+sgi_irix
+sparc_solaris
+.depend
+ptrepository
