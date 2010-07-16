@@ -1,7 +1,7 @@
 ###
 # Get the version number by parsing vrpn_Connection.C
 ###
-include(WarningDev)
+include(WarningDev.cmake)
 set(_vrpn_version_file "${CMAKE_CURRENT_SOURCE_DIR}/vrpn_Connection.C")
 if(EXISTS "${_vrpn_version_file}")
 	file(READ "${_vrpn_version_file}" _vrpn_version_contents)
