@@ -2,20 +2,27 @@
 #
 #
 # Original Author:
-# 2009 Ryan Pavlik <rpavlik@iastate.edu>
+# 2009-2010 Ryan Pavlik <rpavlik@iastate.edu> <abiryan@ryand.net>
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
+
+if(__prefix_list_glob)
+	return()
+endif()
+set(__prefix_list_glob YES)
 
 function(prefix_list_glob var pattern)
 	set(_out)
 	set(_result)
 	foreach(prefix ${ARGN})
 		file(GLOB _globbed ${prefix}${pattern})
-		list(SORT _globbed)
-		list(REVERSE _globbed)
-		list(APPEND _out ${_globbed})
+		if(_globbed)
+			list(SORT _globbed)
+			list(REVERSE _globbed)
+			list(APPEND _out ${_globbed})
+		endif()
 	endforeach()
-	foreach(_name "${_out}")
+	foreach(_name ${_out})
 		get_filename_component(_name "${_name}" ABSOLUTE)
 		list(APPEND _result "${_name}")
 	endforeach()

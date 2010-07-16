@@ -5,12 +5,17 @@
 #  PrefixListGlob
 #
 # Original Author:
-# 2009 Ryan Pavlik <rpavlik@iastate.edu>
+# 2009-2010 Ryan Pavlik <rpavlik@iastate.edu> <abiryan@ryand.net>
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
 
 include(PrefixListGlob)
 include(CleanDirectoryList)
+
+if(__program_files_glob)
+	return()
+endif()
+set(__program_files_glob YES)
 
 function(program_files_glob var pattern)
 	# caution - ENV{ProgramFiles} on Win64 is adjusted to point to the arch
@@ -40,9 +45,9 @@ function(program_files_glob var pattern)
 		endif()
 	endif()
 
-	prefix_list_glob(_prefixed "${pattern}" "${_PROGFILESDIRS}")
-	clean_directory_list(_pruned "${_prefixed}")
-	set(${var} "${_pruned}" PARENT_SCOPE)
+	prefix_list_glob(_prefixed "${pattern}" ${_PROGFILESDIRS})
+	clean_directory_list(_prefixed)
+	set(${var} ${_prefixed} PARENT_SCOPE)
 endfunction()
 
 function(program_files_fallback_glob var pattern)
@@ -78,7 +83,7 @@ function(program_files_fallback_glob var pattern)
 		endif()
 	endif()
 
-	prefix_list_glob(_prefixed "${pattern}" "${_PROGFILESDIRS}")
-	clean_directory_list(_pruned "${_prefixed}")
-	set(${var} "${_pruned}" PARENT_SCOPE)
+	prefix_list_glob(_prefixed "${pattern}" ${_PROGFILESDIRS})
+	clean_directory_list(_prefixed)
+	set(${var} ${_prefixed} PARENT_SCOPE)
 endfunction()

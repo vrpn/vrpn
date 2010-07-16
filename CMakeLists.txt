@@ -1,8 +1,8 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.6.2)
 project(VRPN)
 
 # Changes made by:
-# 2009 Ryan Pavlik <rpavlik@iastate.edu>
+# 20092010 Ryan Pavlik <rpavlik@iastate.edu>
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
 
@@ -15,6 +15,9 @@ project(VRPN)
 # Move the shared-library code over to CMake's normal definition
 # Move the version number into Cmake more fully (defined elsewhere?).
 # Improve this CPack installer.
+
+###
+# Basic packaging options
 
 set(CPACK_PACKAGE_VENDOR "Russell M. Taylor II at the University of North Carolina at Chapel Hill")
 set(CPACK_PACKAGE_VERSION_MAJOR "07")
@@ -43,6 +46,7 @@ endif()
 # Note that we can build both now, if desired!
 option(VRPN_BUILD_CLIENT_LIBRARY "Build the vrpn library including only client code" ON)
 option(VRPN_BUILD_SERVER_LIBRARY "Build the vrpnserver library including client and server code" ON)
+option(VRPN_BUILD_PYTHON "Build VRPN Python bindings (development)" OFF)
 
 # Build various applications if we want them.
 option(VRPN_BUILD_CLIENTS "Build VRPN client apps and tests" ON)
@@ -71,6 +75,8 @@ endif()
 list(APPEND CMAKE_MODULE_PATH ${VRPN_SOURCE_DIR}/cmake)
 include(UseBackportedModules)
 include(FixWinInstallPrefix)
+include(MSVCMultipleProcessCompile)
+include(CppcheckTargets)
 
 ###
 # Quatlib
@@ -80,6 +86,19 @@ include(FixWinInstallPrefix)
 # quat/ dir next to us, make it part of our build anyway
 add_subdirectory (quat)
 list(APPEND EXTRA_LIBS quat)
+
+# Optional packages
+###
+message(STATUS "")
+message(STATUS
+      "Now searching for auto-configurable optional packages...")
+message(STATUS "")
+
+###
+# SWIG and Python Libs (for python wrapper)
+###
+find_package(SWIG)
+find_package(PythonLibs)
 
 ###
 # Threading (not on win32?)
@@ -235,16 +254,31 @@ option(VRPN_INCLUDE_PHASESPACE "Build with PhaseSpace library support" OFF)
 option(VRPN_USE_MOTIONNODE "Build with GLI Interactive LLC MotionNode library support" OFF)
 option(VRPN_USE_WIIUSE "Build with WiiUse library support" OFF)
 option(VRPN_USE_FREESPACE "Build with Hillcrest Labs' Freespace devices support" OFF)
-
+option(VRPN_BUILD_EXTRA_COMPILER_WARNINGS
+	"Build with flags to enable extra warnings."
+	OFF)
 if(WIN32)
 	option(VRPN_USE_DIRECTINPUT "Build with Microsoft DirectInput support" OFF)
 	option(VRPN_USE_DIRECTSHOW "Build with Microsoft DirectShow support" OFF)
 	option(VRPN_USE_SHARED_LIBRARY "Enable to use DLLs on Windows (see vrpn_Configure.h for more info)" OFF)
 elseif (UNIX)
 	option(VRPN_USE_GPM_MOUSE "Build with GPM Linux mouse interface support" OFF)
+	option(VRPN_BUILD_PROFILING_SUPPORT
+		"Build with flags to enable profiling."
+		OFF)
 endif()
 
 #option(vrpn_USE_MPI "Build with MPI support" OFF)
+
+if(VRPN_BUILD_EXTRA_COMPILER_WARNINGS)
+	include(EnableExtraCompilerWarnings)
+	globally_enable_extra_compiler_warnings()
+endif()
+
+if(VRPN_BUILD_PROFILING_SUPPORT)
+	include(EnableProfiling)
+	globally_enable_profiling()
+endif()
 
 
 #-----------------------------------------------------------------------------
@@ -445,7 +479,16 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 
 	add_library(vrpnserver ${VRPN_SERVER_SOURCES} ${VRPN_SERVER_PUBLIC_HEADERS})
 	target_link_libraries(vrpnserver ${EXTRA_LIBS} ${SERVER_EXTRA_LIBS})
-	set_property(TARGET vrpnserver PROPERTY PUBLIC_HEADER ${VRPN_SERVER_PUBLIC_HEADERS})
+	set_property(TARGET
+		vrpnserver
+		PROPERTY
+		PUBLIC_HEADER
+		${VRPN_SERVER_PUBLIC_HEADERS})
+	set_property(TARGET
+		vrpnserver
+		PROPERTY
+		PROJECT_LABEL
+		"Core: VRPN Server Library")
 
 	install(TARGETS vrpnserver
 		ARCHIVE DESTINATION lib
@@ -463,10 +506,17 @@ if(VRPN_BUILD_CLIENT_LIBRARY)
 	endif()
 
 	set_property(TARGET vrpn PROPERTY COMPILE_DEFINITIONS "VRPN_CLIENT_ONLY")
+	set_property(TARGET
+		vrpn
+		PROPERTY
+		PROJECT_LABEL
+		"Core: VRPN Server Library")
 
 	install(TARGETS vrpn
 		ARCHIVE DESTINATION lib
 		PUBLIC_HEADER DESTINATION include)
+
+	add_cppcheck(vrpn STYLE UNUSED_FUNCTIONS)
 endif()
 
 
@@ -573,5 +623,19 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 endif()
 
 #-----------------------------------------------------------------------------
+# Create documentation
+add_subdirectory(doxygen)
+
+#-----------------------------------------------------------------------------
+# Python wrappers
+add_subdirectory(python_vrpn)
+
+#-----------------------------------------------------------------------------
 # If we succeeded, we can go on and include packaging!
 include(CPack)
+
+# Enable testing/dashboards
+include(CTest)
+include(CreateDashboardScripts)
+create_dashboard_scripts("${CMAKE_CURRENT_SOURCE_DIR}/DashboardBuildInitialCache.cmake.in")
+

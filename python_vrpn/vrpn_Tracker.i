@@ -12,7 +12,6 @@
 %{
 #include "../vrpn_Types.h"
 #include "../vrpn_BaseClass.h"
-#include "../vrpn_TypeDispatcher.h"
 #include "../vrpn_Connection.h"
 #include "../vrpn_Tracker.h"
 #include "../vrpn_Tracker_3DMouse.h"
@@ -26,7 +25,6 @@
 #include "../vrpn_Tracker_isense.h"
 %}
 
-%feature("notabstract") vrpn_Tracker;
 %ignore vrpn_Tracker_Remote::tracker_state;
 %include "../vrpn_Configure.h"
 %include "../vrpn_BaseClass.h"
@@ -68,3 +66,4 @@ PYTHON_CALLBACK_WRAPPER(trackeracc,vrpn_TRACKERACCCB,vrpn_TRACKERACCCHANGEHANDLE
 PYTHON_CALLBACK_WRAPPER(tracker2room,vrpn_TRACKERTRACKER2ROOMCB,vrpn_TRACKERTRACKER2ROOMCHANGEHANDLER)
 PYTHON_CALLBACK_WRAPPER(trackerunit2sensor,vrpn_TRACKERUNIT2SENSORCB,vrpn_TRACKERUNIT2SENSORCHANGEHANDLER)
 PYTHON_CALLBACK_WRAPPER(trackerworkspace,vrpn_TRACKERWORKSPACECB,vrpn_TRACKERWORKSPACECHANGEHANDLER)
+

@@ -6,9 +6,14 @@
 #   list of prefixes or suffixes respectively.
 #
 # Original Author:
-# 2009 Ryan Pavlik <rpavlik@iastate.edu>
+# 2009-2010 Ryan Pavlik <rpavlik@iastate.edu> <abiryan@ryand.net>
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
+
+if(__list_combinations)
+	return()
+endif()
+set(__list_combinations YES)
 
 function(list_combinations var)
 	# Parse arguments
@@ -29,7 +34,8 @@ function(list_combinations var)
 		message(STATUS "_prefixes ${_prefixes}")
 		message(STATUS "_prefixes ${_suffixes}")
 		message(STATUS "_prefixes ${_nowhere}")
-		message(FATAL_ERROR "Syntax error in use of ${CMAKE_CURRENT_LIST_FILE}")
+		message(FATAL_ERROR
+			"Syntax error in use of ${CMAKE_CURRENT_LIST_FILE}")
 	endif()
 
 	foreach(_prefix ${_prefixes})
