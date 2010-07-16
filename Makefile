@@ -282,12 +282,12 @@ ifeq ($(HW_OS),hp_flow_aCC)
                  -I/usr/include/bsd -DFLOW
 endif
 
-# On the PC, place quatlib in the directory ../quat.  No actual system
+# On the PC, place quatlib in the directory ./quat.  No actual system
 # includes should be needed.
 ifeq ($(HW_OS),pc_cygwin)
-  INCLUDE_FLAGS := -I. -I../quat -I./atmellib
+  INCLUDE_FLAGS := -I. -I./quat -I./atmellib
 else
-  INCLUDE_FLAGS := -I. $(SYS_INCLUDE) -I../quat -I../../quat -I./atmellib
+  INCLUDE_FLAGS := -I. $(SYS_INCLUDE) -I./quat -I../quat -I./atmellib
 endif
 
 
