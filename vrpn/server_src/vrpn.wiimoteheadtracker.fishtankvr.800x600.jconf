@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?org-vrjuggler-jccl-settings configuration.version="3.0"?>
+<configuration xmlns="http://www.vrjuggler.org/jccl/xsd/3.0/configuration" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.vrjuggler.org/jccl/xsd/3.0/configuration http://www.vrjuggler.org/jccl/xsd/3.0/configuration.xsd" name="Wiimote Fishtank VR 800x600">
+   <elements>
+      <keyboard_mouse_proxy name="Keyboard Proxy" version="1">
+         <device>Keyboard/Mouse Device</device>
+      </keyboard_mouse_proxy>
+      <alias name="VJWand" version="1">
+         <proxy>Wand Proxy</proxy>
+      </alias>
+      <alias name="VJButton0" version="1">
+         <proxy>Button0Proxy</proxy>
+      </alias>
+      <alias name="VJButton1" version="1">
+         <proxy>Button1Proxy</proxy>
+      </alias>
+      <alias name="VJButton2" version="1">
+         <proxy>Button2Proxy</proxy>
+      </alias>
+      <alias name="VJButton3" version="1">
+         <proxy>Button3Proxy</proxy>
+      </alias>
+      <alias name="VJButton4" version="1">
+         <proxy>Button4Proxy</proxy>
+      </alias>
+      <alias name="VJButton5" version="1">
+         <proxy>Button5Proxy</proxy>
+      </alias>
+      <alias name="VJKeyboard" version="1">
+         <proxy>Keyboard Proxy</proxy>
+      </alias>
+      <simulated_positional_device name="SimWandOffsetPos" version="3">
+         <keyboard_mouse_proxy>Keyboard Proxy</keyboard_mouse_proxy>
+         <key_pair>
+            <key_modifier_pair name="Forward" version="1">
+               <modifier_key>ALT</modifier_key>
+               <key>48</key>
+            </key_modifier_pair>
+         </key_pair>
+         <key_pair>
+            <key_modifier_pair name="Back" version="1">
+               <modifier_key>ALT</modifier_key>
+               <key>47</key>
+            </key_modifier_pair>
+         </key_pair>
+         <key_pair>
+            <key_modifier_pair name="Left" version="1">
+               <modifier_key>CTRL</modifier_key>
+               <key>46</key>
+            </key_modifier_pair>
+         </key_pair>
+         <key_pair>
+            <key_modifier_pair name="Right" version="1">
+               <modifier_key>CTRL</modifier_key>
+               <key>45</key>
+            </key_modifier_pair>
+         </key_pair>
+         <key_pair>
+            <key_modifier_pair name="Up" version="1">
+               <modifier_key>CTRL</modifier_key>
+               <key>48</key>
+            </key_modifier_pair>
+         </key_pair>
+         <key_pair>
+            <key_modifier_pair name="Down" version="1">
+               <modifier_key>CTRL</modifier_key>
+               <key>47</key>
+            </key_modifier_pair>
+         </key_pair>
+         <key_pair>
+            <key_modifier_pair name="Rot Right" version="1">
+               <modifier_key>SHIFT</modifier_key>
+               <key>46</key>
+            </key_modifier_pair>
+         </key_pair>
+         <key_pair>
+            <key_modifier_pair name="Rot Left" version="1">
+               <modifier_key>SHIFT</modifier_key>
+               <key>45</key>
+            </key_modifier_pair>
+         </key_pair>
+         <key_pair>
+            <key_modifier_pair name="Rot Up" version="1">
+               <modifier_key>SHIFT</modifier_key>
+               <key>47</key>
+            </key_modifier_pair>
+         </key_pair>
+         <key_pair>
+            <key_modifier_pair name="Rot Down" version="1">
+               <modifier_key>SHIFT</modifier_key>
+               <key>48</key>
+            </key_modifier_pair>
+         </key_pair>
+         <key_pair>
+            <key_modifier_pair name="Rot CCW" version="1">
+               <modifier_key>NONE</modifier_key>
+               <key>43</key>
+            </key_modifier_pair>
+         </key_pair>
+         <key_pair>
+            <key_modifier_pair name="Rot CW" version="1">
+               <modifier_key>NONE</modifier_key>
+               <key>41</key>
+            </key_modifier_pair>
+         </key_pair>
+         <initial_position>0.2</initial_position>
+         <initial_position>-0.4</initial_position>
+         <initial_position>-0.6</initial_position>
+         <initial_rotation>0.0</initial_rotation>
+         <initial_rotation>0.0</initial_rotation>
+         <initial_rotation>0.0</initial_rotation>
+         <translation_delta>0.01</translation_delta>
+         <rotation_delta>0.1</rotation_delta>
+         <translation_coordinate_system>0</translation_coordinate_system>
+         <rotation_coordinate_system>0</rotation_coordinate_system>
+         <position_filters>
+            <position_transform_filter name="Position Filters" version="1">
+               <pre_translate>0.0</pre_translate>
+               <pre_translate>0.0</pre_translate>
+               <pre_translate>0.0</pre_translate>
+               <pre_rotation>0.0</pre_rotation>
+               <pre_rotation>0.0</pre_rotation>
+               <pre_rotation>0.0</pre_rotation>
+               <custom_scale>1.0</custom_scale>
+               <device_units>1.0</device_units>
+               <post_translate>0.0</post_translate>
+               <post_translate>0.0</post_translate>
+               <post_translate>0.0</post_translate>
+               <post_rotation>0.0</post_rotation>
+               <post_rotation>0.0</post_rotation>
+               <post_rotation>0.0</post_rotation>
+            </position_transform_filter>
+         </position_filters>
+         <device_host />
+      </simulated_positional_device>
+      <position_proxy name="Wand Proxy" version="1">
+         <device>SimWandRelativePos</device>
+         <unit>0</unit>
+         <position_filters>
+            <position_transform_filter name="Position Filters" version="1">
+               <pre_translate>0.0</pre_translate>
+               <pre_translate>0.0</pre_translate>
+               <pre_translate>0.0</pre_translate>
+               <pre_rotation>0.0</pre_rotation>
+               <pre_rotation>0.0</pre_rotation>
+               <pre_rotation>0.0</pre_rotation>
+               <custom_scale>1.0</custom_scale>
+               <device_units>1.0</device_units>
+               <post_translate>0.0</post_translate>
+               <post_translate>0.0</post_translate>
+               <post_translate>0.0</post_translate>
+               <post_rotation>0.0</post_rotation>
+               <post_rotation>0.0</post_rotation>
+               <post_rotation>0.0</post_rotation>
+            </position_transform_filter>
+         </position_filters>
+      </position_proxy>
+      <position_proxy name="RelativeWand Proxy" version="1">
+         <device>SimWandOffsetPos</device>
+         <unit>0</unit>
+         <position_filters>
+            <position_transform_filter name="Position Filters" version="1">
+               <pre_translate>0.0</pre_translate>
+               <pre_translate>0.0</pre_translate>
+               <pre_translate>0.0</pre_translate>
+               <pre_rotation>0.0</pre_rotation>
+               <pre_rotation>0.0</pre_rotation>
+               <pre_rotation>0.0</pre_rotation>
+               <custom_scale>1.0</custom_scale>
+               <device_units>1.0</device_units>
+               <post_translate>0.0</post_translate>
+               <post_translate>0.0</post_translate>
+               <post_translate>0.0</post_translate>
+               <post_rotation>0.0</post_rotation>
+               <post_rotation>0.0</post_rotation>
+               <post_rotation>0.0</post_rotation>
+            </position_transform_filter>
+         </position_filters>
+      </position_proxy>
+      <digital_proxy name="Button0Proxy" version="1">
+         <device>SimWandButtons</device>
+         <unit>0</unit>
+      </digital_proxy>
+      <digital_proxy name="Button2Proxy" version="1">
+         <device>SimWandButtons</device>
+         <unit>2</unit>
+      </digital_proxy>
+      <digital_proxy name="Button1Proxy" version="1">
+         <device>SimWandButtons</device>
+         <unit>1</unit>
+      </digital_proxy>
+      <digital_proxy name="Button3Proxy" version="1">
+         <device>SimWandButtons</device>
+         <unit>3</unit>
+      </digital_proxy>
+      <digital_proxy name="Button4Proxy" version="1">
+         <device>SimWandButtons</device>
+         <unit>4</unit>
+      </digital_proxy>
+      <digital_proxy name="Button5Proxy" version="1">
+         <device>SimWandButtons</device>
+         <unit>5</unit>
+      </digital_proxy>
+      <display_system name="Pipe Setup" version="3">
+         <number_of_pipes>1</number_of_pipes>
+         <pipes>-1</pipes>
+         <use_swap_group>false</use_swap_group>
+      </display_system>
+      <user name="User1" version="1">
+         <head_position>VJHead</head_position>
+         <interocular_distance>0.0</interocular_distance>
+      </user>
+      <simulated_digital_device name="SimWandButtons" version="2">
+         <keyboard_mouse_proxy>Keyboard Proxy</keyboard_mouse_proxy>
+         <key_pair>
+            <key_modifier_pair name="KeyPresses 0" version="1">
+               <modifier_key>ANY</modifier_key>
+               <key>MOUSE_BUT1</key>
+            </key_modifier_pair>
+         </key_pair>
+         <key_pair>
+            <key_modifier_pair name="KeyPresses 1" version="1">
+               <modifier_key>ANY</modifier_key>
+               <key>KEY_0</key>
+            </key_modifier_pair>
+         </key_pair>
+         <key_pair>
+            <key_modifier_pair name="KeyPresses 2" version="1">
+               <modifier_key>ANY</modifier_key>
+               <key>MOUSE_BUT3</key>
+            </key_modifier_pair>
+         </key_pair>
+         <key_pair>
+            <key_modifier_pair name="KeyPresses 3" version="1">
+               <modifier_key>NONE</modifier_key>
+               <key>KEY_8</key>
+            </key_modifier_pair>
+         </key_pair>
+         <key_pair>
+            <key_modifier_pair name="KeyPresses 4" version="1">
+               <modifier_key>NONE</modifier_key>
+               <key>KEY_2</key>
+            </key_modifier_pair>
+         </key_pair>
+         <key_pair>
+            <key_modifier_pair name="KeyPresses 5" version="1">
+               <modifier_key>NONE</modifier_key>
+               <key>KEY_5</key>
+            </key_modifier_pair>
+         </key_pair>
+         <key_pair>
+            <key_modifier_pair name="KeyPresses 6" version="1">
+               <modifier_key>NONE</modifier_key>
+               <key>KEY_6</key>
+            </key_modifier_pair>
+         </key_pair>
+         <key_pair>
+            <key_modifier_pair name="KeyPresses 7" version="1">
+               <modifier_key>NONE</modifier_key>
+               <key>KEY_7</key>
+            </key_modifier_pair>
+         </key_pair>
+         <key_pair>
+            <key_modifier_pair name="KeyPresses 8" version="1">
+               <modifier_key>NONE</modifier_key>
+               <key>KEY_8</key>
+            </key_modifier_pair>
+         </key_pair>
+         <device_host />
+      </simulated_digital_device>
+      <display_window name="FishtankVR" version="5">
+         <origin>0</origin>
+         <origin>0</origin>
+         <size>800</size>
+         <size>600</size>
+         <pipe>0</pipe>
+         <frame_buffer_config>
+            <opengl_frame_buffer_config name="GL Frame Buffer" version="3">
+               <visual_id>-1</visual_id>
+               <red_size>1</red_size>
+               <green_size>1</green_size>
+               <blue_size>1</blue_size>
+               <alpha_size>1</alpha_size>
+               <auxiliary_buffer_count>0</auxiliary_buffer_count>
+               <depth_buffer_size>1</depth_buffer_size>
+               <stencil_buffer_size>1</stencil_buffer_size>
+               <accum_red_size>1</accum_red_size>
+               <accum_green_size>1</accum_green_size>
+               <accum_blue_size>1</accum_blue_size>
+               <accum_alpha_size>1</accum_alpha_size>
+               <num_sample_buffers>0</num_sample_buffers>
+               <num_samples>0</num_samples>
+            </opengl_frame_buffer_config>
+         </frame_buffer_config>
+         <stereo>false</stereo>
+         <border>false</border>
+         <hide_mouse>true</hide_mouse>
+         <full_screen>true</full_screen>
+         <always_on_top>false</always_on_top>
+         <active>true</active>
+         <surface_viewports>
+            <surface_viewport name="VRViewport-1m-x-.75m" version="2">
+               <origin>0.0</origin>
+               <origin>0.0</origin>
+               <size>1.0</size>
+               <size>1.0</size>
+               <view>Left Eye</view>
+               <lower_left_corner>-0.5</lower_left_corner>
+               <lower_left_corner>1.475</lower_left_corner>
+               <lower_left_corner>0.0</lower_left_corner>
+               <lower_right_corner>0.5</lower_right_corner>
+               <lower_right_corner>1.475</lower_right_corner>
+               <lower_right_corner>0.0</lower_right_corner>
+               <upper_right_corner>0.5</upper_right_corner>
+               <upper_right_corner>2.125</upper_right_corner>
+               <upper_right_corner>0.0</upper_right_corner>
+               <upper_left_corner>-0.5</upper_left_corner>
+               <upper_left_corner>2.125</upper_left_corner>
+               <upper_left_corner>0.0</upper_left_corner>
+               <user>User1</user>
+               <active>true</active>
+               <tracked>false</tracked>
+               <tracker_proxy />
+            </surface_viewport>
+         </surface_viewports>
+         <keyboard_mouse_device_name>Keyboard/Mouse Device</keyboard_mouse_device_name>
+         <lock_key>KEY_NONE</lock_key>
+         <start_locked>false</start_locked>
+         <sleep_time>75</sleep_time>
+      </display_window>
+      <digital_proxy name="VJSystemStopKernelProxy" version="1">
+         <device>DigitalSystemControls</device>
+         <unit>0</unit>
+      </digital_proxy>
+      <simulated_digital_device name="DigitalSystemControls" version="2">
+         <keyboard_mouse_proxy>Keyboard Proxy</keyboard_mouse_proxy>
+         <key_pair>
+            <key_modifier_pair name="KeyPresses 0" version="1">
+               <modifier_key>ANY</modifier_key>
+               <key>KEY_ESC</key>
+            </key_modifier_pair>
+         </key_pair>
+         <device_host />
+      </simulated_digital_device>
+      <alias name="VJSystemStopKernel" version="1">
+         <proxy>VJSystemStopKernelProxy</proxy>
+      </alias>
+      <simulated_relative_position name="SimWandRelativePos" version="1">
+         <base_frame_proxy>Head Proxy</base_frame_proxy>
+         <relative_proxy>RelativeWand Proxy</relative_proxy>
+         <device_host />
+      </simulated_relative_position>
+      <corba_remote_reconfig name="CORBA Remote Run-Time Reconfiguration" version="1">
+         <naming_service_host>localhost</naming_service_host>
+         <naming_service_port>2809</naming_service_port>
+         <iiop_version>1.0</iiop_version>
+      </corba_remote_reconfig>
+      <keyboard_mouse_device name="Keyboard/Mouse Device" version="1">
+         <mouse_sensitivity>1.0</mouse_sensitivity>
+         <device_host />
+      </keyboard_mouse_device>
+      <input_manager name="VRPNWiimoteInputMgr" version="2">
+         <driver>VRPN_drv</driver>
+      </input_manager>
+      <alias name="VJHead" version="1">
+         <proxy>HeadProxy</proxy>
+      </alias>
+      <position_proxy name="HeadProxy" version="1">
+         <device>VrpnWiimoteHead</device>
+         <unit>0</unit>
+      </position_proxy>
+      <vrpn name="VrpnWiimoteHead" version="2">
+         <tracker_server>Tracker0@localhost</tracker_server>
+         <button_server>Button0@localhost</button_server>
+         <analog_server>Analog0@localhost</analog_server>
+         <tracker_count>1</tracker_count>
+         <button_count>0</button_count>
+         <analog_count>0</analog_count>
+         <min>-1.0</min>
+         <max>1.0</max>
+         <position_filters>
+            <position_transform_filter name="Position Filters" version="1">
+               <pre_translate>0.0</pre_translate>
+               <pre_translate>1.5</pre_translate>
+               <pre_translate>-0.1</pre_translate>
+               <pre_rotation>0.0</pre_rotation>
+               <pre_rotation>0.0</pre_rotation>
+               <pre_rotation>0.0</pre_rotation>
+               <custom_scale>2.0</custom_scale>
+               <device_units>Custom</device_units>
+               <post_translate>0.0</post_translate>
+               <post_translate>0.0</post_translate>
+               <post_translate>0.0</post_translate>
+               <post_rotation>0.0</post_rotation>
+               <post_rotation>0.0</post_rotation>
+               <post_rotation>0.0</post_rotation>
+            </position_transform_filter>
+         </position_filters>
+         <device_host />
+      </vrpn>
+   </elements>
+</configuration>
+
