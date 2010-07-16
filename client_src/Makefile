@@ -145,15 +145,15 @@ LIB_DIR := ../$(OBJ_DIR)
 LFLAGS = -L$(LIB_DIR) -L../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) $(DEBUG_FLAGS)
 
 $(OBJ_DIR)/%.o: %.c
-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
+	@[ -d $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 $(OBJ_DIR)/%.o: %.C
-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
+	@[ -d $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 $(OBJ_DIR)/%.o: %.cpp
-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
+	@[ -d $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 INSTALL_APPS := vrpn_print_devices forcedevice_test_client vrpn_ping \
@@ -323,7 +323,7 @@ $(OBJ_DIR)/logfiletypes: $(OBJ_DIR)/logfiletypes.o
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/logfiletypes $(OBJ_DIR)/logfiletypes.o
 
 install: all
-	-mkdir $(BIN_DIR)
+	-mkdir -p $(BIN_DIR)
 	( cd $(BIN_DIR) ; rm -f $(INSTALL_APPS) )
 	( cd $(OBJ_DIR) ; cp $(INSTALL_APPS) $(BIN_DIR) )
 	( cd $(BIN_DIR) ; strip $(INSTALL_APPS) )

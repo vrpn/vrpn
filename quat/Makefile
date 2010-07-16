@@ -171,7 +171,7 @@ LINT_FLAGS = $(INCLUDE_FLAGS)
 lib:	$(HW_OS)$(OBJECT_DIR_SUFFIX) libquat.a
 
 $(HW_OS)$(OBJECT_DIR_SUFFIX):
-	-mkdir $(HW_OS)$(OBJECT_DIR_SUFFIX)
+	-mkdir -p $(HW_OS)$(OBJECT_DIR_SUFFIX)
 
 #############################################################################
 #
@@ -276,10 +276,10 @@ clean :
 
 
 install: lib
-	-mkdir $(LIB_INSTALL_DIR)
+	-mkdir -p $(LIB_INSTALL_DIR)
 	( cd $(LIB_INSTALL_DIR) ; rm -f libquat.a )
 	( cd $(HW_OS)$(OBJECT_DIR_SUFFIX) ; cp lib*.a $(LIB_INSTALL_DIR) )
-	-mkdir $(INCLUDE_INSTALL_DIR)
+	-mkdir -p $(INCLUDE_INSTALL_DIR)
 	cp quat.h $(INCLUDE_INSTALL_DIR)
 
 

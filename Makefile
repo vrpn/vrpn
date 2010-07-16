@@ -374,22 +374,22 @@ CFLAGS		 := $(INCLUDE_FLAGS) $(DEBUG_FLAGS)
 
 # Build objects from .c files
 $(OBJECT_DIR)/%.o: %.c $(LIB_INCLUDES) $(MAKEFILE)
-	@[ -d $(OBJECT_DIR) ] || mkdir $(OBJECT_DIR)
+	@[ -d $(OBJECT_DIR) ] || mkdir -p $(OBJECT_DIR)
 	$(CC) $(CFLAGS) -DVRPN_CLIENT_ONLY -o $@ -c $<
 
 # Build objects from .C files
 $(OBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) $(MAKEFILE)
-	@[ -d $(OBJECT_DIR) ] || mkdir $(OBJECT_DIR)
+	@[ -d $(OBJECT_DIR) ] || mkdir -p $(OBJECT_DIR)
 	$(CC) $(CFLAGS) -DVRPN_CLIENT_ONLY -o $@ -c $<
 
 # Build objects from .C files
 $(SOBJECT_DIR)/%.o: %.C $(SLIB_INCLUDES) $(MAKEFILE)
-	@[ -d $(SOBJECT_DIR) ] || mkdir $(SOBJECT_DIR)
+	@[ -d $(SOBJECT_DIR) ] || mkdir -p $(SOBJECT_DIR)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 # Build objects from .C files
 $(AOBJECT_DIR)/%.o: %.C $(ALIB_INCLUDES) $(MAKEFILE)
-	@[ -d $(AOBJECT_DIR) ] || mkdir $(AOBJECT_DIR)
+	@[ -d $(AOBJECT_DIR) ] || mkdir -p $(AOBJECT_DIR)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 #
@@ -436,13 +436,13 @@ atmellib: $(AOBJECT_DIR)
 	$(MAKE) $(OBJECT_DIR)/libvrpnatmel.a
 
 $(OBJECT_DIR):
-	-mkdir $(OBJECT_DIR)
+	-mkdir -p $(OBJECT_DIR)
 
 $(SOBJECT_DIR):
-	-mkdir $(SOBJECT_DIR)
+	-mkdir -p $(SOBJECT_DIR)
 
 $(AOBJECT_DIR):
-	-mkdir $(AOBJECT_DIR)
+	-mkdir -p $(AOBJECT_DIR)
 
 #############################################################################
 #
@@ -600,10 +600,10 @@ clobberwin32:
 	$(RMF) -r server_src/pc_win32/vrpn_server/Debug/*
 
 install: all
-	-mkdir $(LIB_DIR)
+	-mkdir -p $(LIB_DIR)
 	( cd $(LIB_DIR) ; rm -f libvrpn*.a )
 	( cd $(OBJECT_DIR) ; cp *.a $(LIB_DIR) )
-	-mkdir $(INCLUDE_DIR)
+	-mkdir -p $(INCLUDE_DIR)
 	cp vrpn*.h $(INCLUDE_DIR)
 
 uninstall:
@@ -650,7 +650,7 @@ $(OBJECT_DIR)/.depend:
 	@echo -- or add/remove includes from a .h or .C file, then you should
 	@echo -- remake the dependency file by typing \"$(MAKE) depend\"
 	@echo ----------------------------------------------------------------
-	-mkdir $(OBJECT_DIR)
+	-mkdir -p $(OBJECT_DIR)
 ifeq ($(HW_OS),hp700_hpux10)
 	@echo -- $(HW_OS): Using g++ since HP CC does not understand -M
 	@echo -- if this causes an error, then delete .depend and type
