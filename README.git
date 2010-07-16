@@ -29,3 +29,10 @@ Getting to the Git repository using a public/private key pair from a UNC Linux h
 
 	git clone git@git.cs.unc.edu:vrpn.git
 	git push git@git.cs.unc.edu:vrpn.git master
+
+---------------------
+Random: If you end up pushing in a way that requires a password, you may need to do the following in your shell ahead of time:
+unset DISPLAY
+unset SSH_ASKPASS
+
+
