@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.6.2)
 project(VRPN)
 
 # Changes made by:
-# 20092010 Ryan Pavlik <rpavlik@iastate.edu>
+# 2009-2010 Ryan Pavlik <rpavlik@iastate.edu>
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
 
@@ -13,17 +13,25 @@ project(VRPN)
 # Move DirectInput libraries out of vrpn_Configure.h and into the Cmake realm
 # Repeat for all other configurable headers/libraries - see below for a list
 # Move the shared-library code over to CMake's normal definition
-# Move the version number into Cmake more fully (defined elsewhere?).
 # Improve this CPack installer.
 
 ###
 # Basic packaging options
 
 set(CPACK_PACKAGE_VENDOR "Russell M. Taylor II at the University of North Carolina at Chapel Hill")
-set(CPACK_PACKAGE_VERSION_MAJOR "07")
-set(CPACK_PACKAGE_VERSION_MINOR "26")
+
+# Find the major and minor version numbers from the source code.
+include("${CMAKE_CURRENT_SOURCE_DIR}/ParseVersion.cmake")
+
+# This may be incremented manually
+set(CPACK_PACKAGE_VERSION_PATCH "1")
+
 set(CPACK_PACKAGE_VERSION_PATCH "0")
 set(CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}" )
+message(STATUS
+	"Configuring the VRPN suite version ${CPACK_PACKAGE_VERSION} using the
+	CMake-based build system")
+
 set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-src")
 
