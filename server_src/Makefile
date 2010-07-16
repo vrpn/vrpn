@@ -152,9 +152,9 @@ endif
 OBJ_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)
 LIB_DIR := ../$(OBJ_DIR)
 
-#CFLAGS = -g -I./ -I../ -I../../quat
-CFLAGS = -I./ -I../ -I../../quat -I../../libfreespace/include $(DEBUG_FLAGS)
-LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) -L../../libfreespace/lib
+#CFLAGS = -g -I./ -I../ -I../quat
+CFLAGS = -I./ -I../ -I../quat -I../../libfreespace/include $(DEBUG_FLAGS)
+LFLAGS = -L$(LIB_DIR) -L../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) -L../../libfreespace/lib
 VRPN_LIBS = -lvrpnserver -lvrpnatmel -lpthread
 
 # Uncomment the following section and point them at the
@@ -162,20 +162,20 @@ VRPN_LIBS = -lvrpnserver -lvrpnatmel -lpthread
 # Well, to make it almost compile -- link fails to find things
 # in the libraries that should be there.
 #HDAPI_ROOT := "C:/Program Files/SensAble/3DTouch"
-#CFLAGS = -g -I./ -I../ -I../../quat -I$(HDAPI_ROOT)/include -I$(HDAPI_ROOT)/utilities/include
-#LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) -L$(HDAPI_ROOT)/lib
+#CFLAGS = -g -I./ -I../ -I../quat -I$(HDAPI_ROOT)/include -I$(HDAPI_ROOT)/utilities/include
+#LFLAGS = -L$(LIB_DIR) -L../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) -L$(HDAPI_ROOT)/lib
 #SYSLIBS := $(SYSLIBS) -lhl -lhd
 
 ifdef INTERSENSE
   ifeq ($(HW_OS),powerpc_macosx)
-#     CFLAGS = -g -I../ -I../../quat -I../../isense -DMACOSX
-     CFLAGS = -I../ -I../../quat -I../../isense -DMACOSX $(DEBUG_FLAGS)
-     LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) ../../isense/MacOSX/dlcompat.o
+#     CFLAGS = -g -I../ -I../quat -I../../isense -DMACOSX
+     CFLAGS = -I../ -I../quat -I../../isense -DMACOSX $(DEBUG_FLAGS)
+     LFLAGS = -L$(LIB_DIR) -L../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) ../../isense/MacOSX/dlcompat.o
   endif
   ifeq ($(HW_OS),universal_macosx)
-#     CFLAGS = -g -I../ -I../../quat -I../../isense -DMACOSX
-     CFLAGS = -I../ -I../../quat -I../../isense -DMACOSX $(DEBUG_FLAGS)
-     LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) ../../isense/MacOSX/dlcompat.o
+#     CFLAGS = -g -I../ -I../quat -I../../isense -DMACOSX
+     CFLAGS = -I../ -I../quat -I../../isense -DMACOSX $(DEBUG_FLAGS)
+     LFLAGS = -L$(LIB_DIR) -L../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) ../../isense/MacOSX/dlcompat.o
   endif
 endif
 
