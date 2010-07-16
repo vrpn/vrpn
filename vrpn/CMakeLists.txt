@@ -23,6 +23,7 @@ include(UseBackportedModules)
 include(GetForceIncludeDefinitions)
 include(MSVCMultipleProcessCompile)
 include(CppcheckTargets)
+include(SetDefaultBuildType)
 
 ###
 # Basic packaging options
@@ -77,6 +78,7 @@ if(WIN32)
 		OFF)
 endif()
 
+set_default_build_type("RelWithDebInfo")
 
 #-----------------------------------------------------------------------------
 # Libraries we need to do our thing.
