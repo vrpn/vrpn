@@ -606,8 +606,18 @@ int vrpn_Tracker_NovintFalcon::get_report(void)
         return 0;
     
     if (status == vrpn_TRACKER_SYNCING) {
-        if (!m_dev->get_status(pos, vel, d_quat, vel_quat, &vel_quat_dt, buttons))
+        if (!m_dev->get_status(pos, vel, d_quat, vel_quat, &vel_quat_dt, buttons)) {
             return 0;
+        } else {
+            // if all buttons are pressed. we force a reset.
+            int i,j;
+            j=0;
+	        for (i=0; i < num_buttons; i++)
+                j += buttons[i];
+            if (j == num_buttons)
+                status = vrpn_TRACKER_FAIL;
+            return 0;
+        }
     }
     status = vrpn_TRACKER_SYNCING;
 
