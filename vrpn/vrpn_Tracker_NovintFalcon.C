@@ -669,7 +669,9 @@ void vrpn_Tracker_NovintFalcon::mainloop()
 
     // no need to report more often than we can poll the device
     vrpn_gettimeofday(&current_time, NULL);
+#if 0
     if ( timediff(current_time, m_timestamp) >= 1000000.0/m_update_rate) {
+#endif
 
         // Update the time
         m_timestamp.tv_sec = current_time.tv_sec;
@@ -697,7 +699,9 @@ void vrpn_Tracker_NovintFalcon::mainloop()
           default:
               break;
         }
+#if 0
     }
+#endif
 }
 
 
