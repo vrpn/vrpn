@@ -1,7 +1,5 @@
-#!/usr/bin/csh
-javac *.java
-/bin/cp -f *.java vrpn/
-/bin/mv -f *.class vrpn/
+#!/bin/csh
+javac vrpn/*.java
 
 javah -jni -classpath . vrpn.AnalogOutputRemote
 javah -jni -classpath . vrpn.AnalogRemote

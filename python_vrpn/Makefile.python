@@ -34,7 +34,7 @@ vrpn-libs := $(addprefix _,$(vrpn-wrapper))
 vrpn-python: $(vrpn-wrapper)
 
 $(vrpn-wrapper): $(MAKEFILE) $(LIB_OBJECTS) 
-	mkdir -p $(HW_OS)
+	-mkdir -p $(HW_OS)
 	cp ../$(HW_OS)/.depend $(HW_OS)
 	swig -Wall -classic -c++ -python $(patsubst %.so,%.i,$@)
 	$(CXX) -ggdb -c $(patsubst %.so,%_wrap.cxx,$@) -I$(PYTHON_INCLUDE_DIR) -I$(VRPN_ROOT_DIR) -I$(QUAT_INCLUDE_DIR)

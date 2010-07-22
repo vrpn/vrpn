@@ -7,7 +7,7 @@
 # On the sgi, both g++ and CC verisons are built by default.
 #
 # Author: Russ Taylor, 10/2/1997
-#	  
+#
 # modified:
 # * Oliver Otto, 15/10/2003
 #    * modified client makefile to create shared library libjava_vrpn.so
@@ -51,6 +51,9 @@ ifndef HW_OS
       MAKE  := make -f $(MAKEFILE)
     else
       ifeq ($(UNAME), CYGWIN_98-4.10)
+	    HW_OS := pc_cygwin
+	    MAKE := make -f $(MAKEFILE)
+      else
         ifeq ($(UNAME), CYGWIN_NT-5.0)
 	    HW_OS := pc_cygwin
 	    MAKE := make -f $(MAKEFILE)
@@ -139,7 +142,7 @@ else
 	CC := /usr/local/lib/CenterLine/bin/CC
   endif
   ifeq ($(HW_OS), hp_flow_aCC)
-	CC := /opt/aCC/bin/aCC 
+	CC := /opt/aCC/bin/aCC
   endif
 endif
 
@@ -171,8 +174,23 @@ endif
 
 # directories that we can do an rm -f on because they only contain
 # object files and executables
-SAFE_KNOWN_ARCHITECTURES :=	hp700_hpux/* hp700_hpux10/* mips_ultrix/* \
-	pc_linux/* sgi_irix.32/* sgi_irix.n32/* sparc_solaris/* sparc_sunos/* pc_cygwin/* powerpc_aix/* pc_linux_arm/* powerpc_macosx/*
+SAFE_KNOWN_ARCHITECTURES :=	\
+	hp700_hpux/* \
+	hp700_hpux10/* \
+	mips_ultrix/* \
+	pc_linux/* \
+	sgi_irix.32/* \
+	sgi_irix.n32/* \
+	sparc_solaris/* \
+	sparc_solaris_64/* \
+	sparc_sunos/* \
+	pc_cygwin/* \
+	powerpc_aix/* \
+	pc_linux_arm/* \
+	powerpc_macosx/* \
+	universal_macosx/* \
+	pc_linux64/* \
+	pc_linux_ia64/*
 
 CLIENT_SKA = $(patsubst %,client_src/%,$(SAFE_KNOWN_ARCHITECTURES))
 SERVER_SKA = $(patsubst %,server_src/%,$(SAFE_KNOWN_ARCHITECTURES))
@@ -186,17 +204,38 @@ SYS_INCLUDE :=
 
 ifeq ($(HW_OS),powerpc_macosx)
 #  SYS_INCLUDE := -I/usr/include
-   SYS_INCLUDE :=-DMACOSX -I../isense 
+   SYS_INCLUDE :=-DMACOSX -I../isense
+endif
+
+ifeq ($(HW_OS),universal_macosx)
+#  SYS_INCLUDE := -I/usr/include
+   SYS_INCLUDE :=-DMACOSX -I../isense
 endif
 
 ifeq ($(HW_OS),pc_linux)
-  SYS_INCLUDE := -I/opt/Embedix/arm-linux/include -I/usr/lib/java2/include -I/usr/lib/java2/include/linux -I./ -I../
+  SYS_INCLUDE := -I/opt/Embedix/arm-linux/include \
+				-I/usr/lib/jvm/default-java/include/ \
+				-I/usr/lib/jvm/default-java/include/linux \
+				-I./ \
+				-I../
+endif
+
+ifeq ($(HW_OS),pc_linux64)
+  SYS_INCLUDE := -I/opt/Embedix/arm-linux/include \
+				-I/usr/lib/jvm/default-java/include/ \
+				-I/usr/lib/jvm/default-java/include/linux \
+				-I./ \
+				-I../
+endif
+
+ifeq ($(HW_OS),pc_linux_arm)
+  SYS_INCLUDE := -I/opt/Embedix/arm-linux/include
 #   -I/usr/local/contrib/include \
 #	  	 -I/usr/local/contrib/mod/include -I/usr/include/bsd \
 #		 -I/usr/include/g++
 endif
 
-ifeq ($(HW_OS),pc_linux_arm)
+ifeq ($(HW_OS),pc_cygwin_arm)
   SYS_INCLUDE := -I/opt/Embedix/arm-linux/include
 #   -I/usr/local/contrib/include \
 #	  	 -I/usr/local/contrib/mod/include -I/usr/include/bsd \
@@ -208,17 +247,17 @@ ifeq ($(HW_OS),sgi_irix)
   SYS_INCLUDE := -I/usr/java2/include -I/usr/java2/include/irix -I./ -I../
 endif
 
-ifeq ($(HW_OS),hp700_hpux10) 
+ifeq ($(HW_OS),hp700_hpux10)
   SYS_INCLUDE := -I/usr/local/contrib/include -I/usr/local/contrib/mod/include \
                  -I/usr/include/bsd
 endif
 
-ifeq ($(HW_OS),hp_flow) 
+ifeq ($(HW_OS),hp_flow)
   SYS_INCLUDE := -I/usr/local/contrib/include -I/usr/local/contrib/mod/include \
                  -I/usr/include/bsd -DFLOW
 endif
 
-ifeq ($(HW_OS),hp_flow_aCC) 
+ifeq ($(HW_OS),hp_flow_aCC)
   SYS_INCLUDE := -I/usr/local/contrib/include -I/usr/local/contrib/mod/include \
                  -I/usr/include/bsd -DFLOW
 endif
@@ -226,7 +265,7 @@ endif
 # On the PC, place quatlib in the directory ../../quat.  No actual system
 # includes should be needed.
 ifeq ($(HW_OS),pc_cygwin)
-  INCLUDE_FLAGS := -I. -I../../quat 
+  INCLUDE_FLAGS := -I. -I../../quat
 else
 
   INCLUDE_FLAGS := -I. $(SYS_INCLUDE) -I../../quat -I../../../quat -I../
@@ -237,13 +276,21 @@ endif
 #
 
 LOAD_FLAGS := -L./$(HW_OS)$(OBJECT_DIR_SUFFIX) -L/usr/local/lib \
-		-L/usr/local/contrib/unmod/lib -L/usr/local/contrib/mod/lib -g
+		-L/usr/local/contrib/unmod/lib -L/usr/local/contrib/mod/lib $(DEBUG_FLAGS) $(LDFLAGS)
 
 ifeq ($(HW_OS),sgi_irix)
 	LOAD_FLAGS := $(LOAD_FLAGS) -old_ld
 endif
 
 ifeq ($(HW_OS),pc_linux)
+	LOAD_FLAGS := $(LOAD_FLAGS) -L/usr/X11R6/lib
+endif
+
+ifeq ($(HW_OS),pc_linux_ia64)
+	LOAD_FLAGS := $(LOAD_FLAGS) -L/usr/X11R6/lib
+endif
+
+ifeq ($(HW_OS),pc_linux64)
 	LOAD_FLAGS := $(LOAD_FLAGS) -L/usr/X11R6/lib
 endif
 
@@ -255,16 +302,19 @@ endif
 # Libraries
 #
 
-ifeq ($(HW_OS),pc_linux)
-        ARCH_LIBS := -lbsd -ldl
+ifeq ($(HW_OS),pc_linux64)
+          ARCH_LIBS := -lbsd -ldl
 else
-  ifeq ($(HW_OS),sparc_solaris)
-        ARCH_LIBS := -lsocket -lnsl
+  ifeq ($(HW_OS),pc_linux)
+          ARCH_LIBS := -lbsd -ldl
   else
-        ARCH_LIBS :=
+    ifeq ($(HW_OS),sparc_solaris)
+          ARCH_LIBS := -lsocket -lnsl
+    else
+          ARCH_LIBS :=
+    endif
   endif
 endif
-
 
 LIBS := -lquat -lsdi $(TCL_LIBS) -lXext -lX11 $(ARCH_LIBS) -lm
 
@@ -272,7 +322,9 @@ LIBS := -lquat -lsdi $(TCL_LIBS) -lXext -lX11 $(ARCH_LIBS) -lm
 # Defines for the compilation, CFLAGS
 #
 
-CFLAGS		 := $(INCLUDE_FLAGS) -g
+#CFLAGS		 := $(INCLUDE_FLAGS) -g
+override CFLAGS		 := $(INCLUDE_FLAGS) $(DEBUG_FLAGS) $(CFLAGS)
+override CXXFLAGS     := $(INCLUDE_FLAGS) $(DEBUG_FLAGS) $(CXXFLAGS)
 
 #############################################################################
 #
@@ -358,7 +410,7 @@ LIB_INCLUDES = java_vrpn.h vrpn_AnalogOutputRemote.h vrpn_AnalogRemote.h \
 #                         lib_depends \
 #                         $(LIB_OBJECTS) $(LIB_INCLUDES)
 
-$(LIB_OBJECTS): 
+$(LIB_OBJECTS):
 $(OBJECT_DIR)/libjava_vrpn.a: $(MAKEFILE) $(LIB_OBJECTS)
 	$(AR) $(OBJECT_DIR)/libjava_vrpn.a $(LIB_OBJECTS)
 	-$(RANLIB) $(OBJECT_DIR)/libjava_vrpn.a
@@ -412,6 +464,18 @@ clobberwin32:
 	$(RMF) -r client_src/pc_win32/printvals/Debug/*
 	$(RMF) -r server_src/pc_win32/vrpn_server/Debug/*
 
+install: all
+	-mkdir -p $(LIB_DIR)
+	( cp -f $(OBJECT_DIR)/libjava_vrpn.so $(LIB_DIR) )
+	-mkdir -p $(JAVA_LIB_DIR)
+	cp -f bin/vrpn.jar $(JAVA_LIB_DIR)/vrpn-$(VERSION).jar
+	ln -s $(JAVA_LIB_DIR)/vrpn.jar $(JAVA_LIB_DIR)/vrpn-$(VERSION).jar
+	#-mkdir -p $(INCLUDE_DIR)
+	#cp vrpn*.h $(INCLUDE_DIR)
+
+uninstall:
+	( cd $(LIB_DIR) ; rm -f libjava_vrpn.so )
+	( rm -f $(JAVA_LIB_DIR)/vrpn.jar $(JAVA_LIB_DIR)/vrpn-$(VERSION).jar )
 
 .PHONY:	beta
 beta :
@@ -423,7 +487,7 @@ beta :
 #	-$(RANLIB) $(BETA_LIB_DIR)/$(OBJECT_DIR)/libvrpn.a
 #	-$(RANLIB) $(BETA_LIB_DIR)/$(OBJECT_DIR)/libvrpnserver.a
 #	-( cd $(BETA_INCLUDE_DIR); $(RMF) $(SLIB_INCLUDES) )
-#	cp $(SLIB_INCLUDES) $(BETA_INCLUDE_DIR) 
+#	cp $(SLIB_INCLUDES) $(BETA_INCLUDE_DIR)
 
 #############################################################################
 #
@@ -471,7 +535,7 @@ ifeq ($(HW_OS),hp700_hpux10)
 	@echo -- if this causes an error, then delete .depend and type
 	@echo -- \"touch .depend\" to create an empty file
 	@echo ----------------------------------------------------------------
-	$(SHELL) -ec 'g++ -MM $(CFLAGS) $(LIB_FILES) \
+	$(SHELL) -ec 'g++ -MM $(CXXLAGS) $(LIB_FILES) \
 	    | sed '\''s/\(.*\.o[ ]*:[ ]*\)/$(OBJECT_DIR)\/\1/g'\'' > $(OBJECT_DIR)/.depend'
 else
   ifeq ($(HW_OS),hp_flow_aCC)
@@ -479,7 +543,7 @@ else
 	@echo -- if this causes an error, then delete .depend and type
 	@echo -- \"touch .depend\" to create an empty file
 	@echo ----------------------------------------------------------------
-	$(SHELL) -ec 'g++ -MM $(CFLAGS) $(LIB_FILES) \
+	$(SHELL) -ec 'g++ -MM $(CXXFLAGS) $(LIB_FILES) \
 	    | sed '\''s/\(.*\.o[ ]*:[ ]*\)/$(OBJECT_DIR)\/\1/g'\'' > $(OBJECT_DIR)/.depend'
   else
     ifeq ($(HW_OS),powerpc_aix)

@@ -215,8 +215,23 @@ endif
 
 # directories that we can do an rm -f on because they only contain
 # object files and executables
-SAFE_KNOWN_ARCHITECTURES :=	hp700_hpux/* hp700_hpux10/* mips_ultrix/* \
-	pc_linux/* sgi_irix.32/* sgi_irix.n32/* sparc_solaris/* sparc_solaris_64/* sparc_sunos/* pc_cygwin/* powerpc_aix/* pc_linux_arm/* powerpc_macosx/* universal_macosx/* pc_linux64/* pc_linux_ia64/*
+SAFE_KNOWN_ARCHITECTURES :=	\
+	hp700_hpux/* \
+	hp700_hpux10/* \
+	mips_ultrix/* \
+	pc_linux/* \
+	sgi_irix.32/* \
+	sgi_irix.n32/* \
+	sparc_solaris/* \
+	sparc_solaris_64/* \
+	sparc_sunos/* \
+	pc_cygwin/* \
+	powerpc_aix/* \
+	pc_linux_arm/* \
+	powerpc_macosx/* \
+	universal_macosx/* \
+	pc_linux64/* \
+	pc_linux_ia64/*
 
 CLIENT_SKA = $(patsubst %,client_src/%,$(SAFE_KNOWN_ARCHITECTURES))
 SERVER_SKA = $(patsubst %,server_src/%,$(SAFE_KNOWN_ARCHITECTURES))
@@ -452,26 +467,56 @@ $(AOBJECT_DIR):
 
 # files to be compiled into the client library
 
-LIB_FILES =  vrpn_Connection.C vrpn_Tracker.C vrpn_Button.C \
-		vrpn_ForceDevice.C vrpn_Shared.C \
-		vrpn_Analog.C vrpn_FileConnection.C \
-		vrpn_FileController.C vrpn_Forwarder.C vrpn_Text.C \
-		vrpn_ForwarderController.C vrpn_Serial.C vrpn_Dial.C \
-		vrpn_SharedObject.C vrpn_BaseClass.C \
-		vrpn_Sound.C vrpn_LamportClock.C vrpn_Mutex.C \
-		vrpn_RedundantTransmission.C vrpn_Imager.C \
-		vrpn_Analog_Output.C vrpn_Poser.C vrpn_Auxiliary_Logger.C
+LIB_FILES =  \
+	vrpn_Analog.C \
+	vrpn_Analog_Output.C \
+	vrpn_Auxiliary_Logger.C \
+	vrpn_BaseClass.C \
+	vrpn_Button.C \
+	vrpn_Connection.C \
+	vrpn_Dial.C \
+	vrpn_FileConnection.C \
+	vrpn_FileController.C \
+	vrpn_ForceDevice.C \
+	vrpn_Forwarder.C \
+	vrpn_ForwarderController.C \
+	vrpn_Imager.C \
+	vrpn_LamportClock.C \
+	vrpn_Mutex.C \
+	vrpn_Poser.C \
+	vrpn_RedundantTransmission.C \
+	vrpn_Serial.C \
+	vrpn_Shared.C \
+	vrpn_SharedObject.C \
+	vrpn_Sound.C \
+	vrpn_Text.C \
+	vrpn_Tracker.C
 
 LIB_OBJECTS = $(patsubst %,$(OBJECT_DIR)/%,$(LIB_FILES:.C=.o))
 
-LIB_INCLUDES = vrpn_Connection.h vrpn_Tracker.h vrpn_Button.h \
-		vrpn_Sound.h vrpn_ForceDevice.h vrpn_Shared.h \
-		vrpn_Analog.h vrpn_FileConnection.h \
-		vrpn_FileController.h vrpn_Forwarder.h vrpn_Text.h \
-		vrpn_ForwarderController.h vrpn_Serial.h vrpn_Dial.h \
-		vrpn_SharedObject.h vrpn_LamportClock.h vrpn_Mutex.h \
-		vrpn_BaseClass.h vrpn_Imager.h \
-		vrpn_Analog_Output.h vrpn_Poser.h vrpn_Auxiliary_Logger.h
+LIB_INCLUDES = \
+	vrpn_Connection.h \
+	vrpn_Tracker.h \
+	vrpn_Button.h \
+	vrpn_Sound.h \
+	vrpn_ForceDevice.h \
+	vrpn_Shared.h \
+	vrpn_Analog.h \
+	vrpn_FileConnection.h \
+	vrpn_FileController.h \
+	vrpn_Forwarder.h \
+	vrpn_Text.h \
+	vrpn_ForwarderController.h \
+	vrpn_Serial.h \
+	vrpn_Dial.h \
+	vrpn_SharedObject.h \
+	vrpn_LamportClock.h \
+	vrpn_Mutex.h \
+	vrpn_BaseClass.h \
+	vrpn_Imager.h \
+	vrpn_Analog_Output.h \
+	vrpn_Poser.h \
+	vrpn_Auxiliary_Logger.h
 
 $(LIB_OBJECTS): 
 $(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(LIB_OBJECTS)
@@ -538,13 +583,18 @@ $(OBJECT_DIR)/libvrpnserver.a: $(MAKEFILE) $(SLIB_OBJECTS)
 # atmellib files.
 
 ALIB_FILES = \
-	atmellib/vrpn_atmellib_iobasic.C atmellib/vrpn_atmellib_helper.C \
-	atmellib/vrpn_atmellib_openclose.C atmellib/vrpn_atmellib_register.C atmellib/vrpn_atmellib_tester.C
+	atmellib/vrpn_atmellib_helper.C \
+	atmellib/vrpn_atmellib_iobasic.C \
+	atmellib/vrpn_atmellib_openclose.C \
+	atmellib/vrpn_atmellib_register.C \
+	atmellib/vrpn_atmellib_tester.C
 
 ALIB_OBJECTS = $(patsubst %,$(AOBJECT_DIR)/../%,$(ALIB_FILES:.C=.o))
 
 ALIB_INCLUDES =  \
-	vrpn_atmellib.h vrpn_atmellib_helper.h vrpn_atmellib_errno.h
+	vrpn_atmellib.h \
+	vrpn_atmellib_helper.h \
+	vrpn_atmellib_errno.h
 
 $(ALIB_OBJECTS): 
 $(OBJECT_DIR)/libvrpnatmel.a: $(MAKEFILE) $(ALIB_OBJECTS)
@@ -560,11 +610,14 @@ $(OBJECT_DIR)/libvrpnatmel.a: $(MAKEFILE) $(ALIB_OBJECTS)
 .PHONY:	clean
 clean:
 	$(RMF) $(LIB_OBJECTS) $(OBJECT_DIR)/libvrpn.a \
-               $(OBJECT_DIR)/libvrpn_g++.a $(SLIB_OBJECTS) $(ALIB_OBJECTS) \
+               $(OBJECT_DIR)/libvrpn_g++.a \
+               $(SLIB_OBJECTS) \
+               $(ALIB_OBJECTS) \
                $(OBJECT_DIR)/libvrpnserver.a \
                $(OBJECT_DIR)/libvrpnatmel.a \
                $(OBJECT_DIR)/libvrpnserver_g++.a \
-               $(OBJECT_DIR)/.depend $(OBJECT_DIR)/.depend-old
+               $(OBJECT_DIR)/.depend \
+               $(OBJECT_DIR)/.depend-old
 ifneq (xxx$(FORCE_GPP),xxx1)
 	@echo -----------------------------------------------------------------
 	@echo -- Wart: type \"$(MAKE) clean_g++\" to clean up after g++
