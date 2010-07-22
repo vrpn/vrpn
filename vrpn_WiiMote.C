@@ -87,27 +87,44 @@ void vrpn_WiiMote::handle_event()
   }
 
   // See which secondary controller is installed and report
-  if (wiimote->device->exp.type == EXP_NUNCHUK) {
-    channel[16 + 0] = wiimote->device->exp.nunchuk.gforce.x;
-    channel[16 + 1] = wiimote->device->exp.nunchuk.gforce.y;
-    channel[16 + 2] = wiimote->device->exp.nunchuk.gforce.z;
-    channel[16 + 3] = wiimote->device->exp.nunchuk.js.ang;
-    channel[16 + 4] = wiimote->device->exp.nunchuk.js.mag;
-  }
+  switch (wiimote->device->exp.type) {
+    case EXP_NUNCHUK:
+	    channel[16 + 0] = wiimote->device->exp.nunchuk.gforce.x;
+	    channel[16 + 1] = wiimote->device->exp.nunchuk.gforce.y;
+	    channel[16 + 2] = wiimote->device->exp.nunchuk.gforce.z;
+	    channel[16 + 3] = wiimote->device->exp.nunchuk.js.ang;
+	    channel[16 + 4] = wiimote->device->exp.nunchuk.js.mag;
+		break;
 
-  if (wiimote->device->exp.type == EXP_CLASSIC) {
-    channel[32 + 0] = wiimote->device->exp.classic.l_shoulder;
-    channel[32 + 1] = wiimote->device->exp.classic.r_shoulder;
-    channel[32 + 2] = wiimote->device->exp.classic.ljs.ang;
-    channel[32 + 3] = wiimote->device->exp.classic.ljs.mag;
-    channel[32 + 4] = wiimote->device->exp.classic.rjs.ang;
-    channel[32 + 5] = wiimote->device->exp.classic.rjs.mag;
-  }
+	case EXP_CLASSIC:
+	    channel[32 + 0] = wiimote->device->exp.classic.l_shoulder;
+	    channel[32 + 1] = wiimote->device->exp.classic.r_shoulder;
+	    channel[32 + 2] = wiimote->device->exp.classic.ljs.ang;
+	    channel[32 + 3] = wiimote->device->exp.classic.ljs.mag;
+	    channel[32 + 4] = wiimote->device->exp.classic.rjs.ang;
+	    channel[32 + 5] = wiimote->device->exp.classic.rjs.mag;
+		break;
 
-  if (wiimote->device->exp.type == EXP_GUITAR_HERO_3) {
-    channel[48 + 0] = wiimote->device->exp.gh3.whammy_bar;
-    channel[48 + 1] = wiimote->device->exp.gh3.js.ang;
-    channel[48 + 2] = wiimote->device->exp.gh3.js.mag;
+  	case EXP_GUITAR_HERO_3:
+	    channel[48 + 0] = wiimote->device->exp.gh3.whammy_bar;
+	    channel[48 + 1] = wiimote->device->exp.gh3.js.ang;
+	    channel[48 + 2] = wiimote->device->exp.gh3.js.mag;
+		break;
+
+  	case EXP_WII_BOARD:
+		printf("Got a wii board report: %d, %d, %d, %d\n", wiimote->device->exp.wb.tl, wiimote->device->exp.wb.tr, wiimote->device->exp.wb.bl, wiimote->device->exp.wb.br);
+		channel[64 + 0] = wiimote->device->exp.wb.tl;
+	    channel[64 + 1] = wiimote->device->exp.wb.tr;
+	    channel[64 + 2] = wiimote->device->exp.wb.bl;
+		channel[64 + 2] = wiimote->device->exp.wb.br;
+		break;
+
+	default:
+		struct timeval now; 
+		vrpn_gettimeofday(&now, NULL); 
+		char msg[1024];
+		sprintf(msg, "I have no idea what kind of expansion this is!  device->exp.type = %d", wiimote->device->exp.type);
+		send_text_message(msg, now, vrpn_TEXT_ERROR);
   }
 
   //-------------------------------------------------------------------------
@@ -166,7 +183,7 @@ vrpn_WiiMote::vrpn_WiiMote(const char *name, vrpn_Connection *c, unsigned which)
         int i;
         char  msg[1024];
 
-	vrpn_Analog::num_channel = min(64, vrpn_CHANNEL_MAX);
+	vrpn_Analog::num_channel = min(96, vrpn_CHANNEL_MAX);
         for (i = 0; i < vrpn_Analog::num_channel; i++) {
           channel[i] = 0;
         }
@@ -293,12 +310,21 @@ void vrpn_WiiMote::mainloop() {
               send_text_message("Guitar Hero 3 controller inserted", _timestamp);
               break;
 
+			case WIIUSE_WII_BOARD_CTRL_INSERTED:
+			  send_text_message("Wii Balance Board controller inserted/detected", _timestamp);
+			  break;
+
             case WIIUSE_NUNCHUK_REMOVED:
             case WIIUSE_CLASSIC_CTRL_REMOVED:
             case WIIUSE_GUITAR_HERO_3_CTRL_REMOVED:
               send_text_message("An expansion controller was removed", _timestamp,
                 vrpn_TEXT_WARNING);
               break;
+
+			case WIIUSE_WII_BOARD_CTRL_REMOVED:
+			  send_text_message("Wii Balance Board controller removed/disconnected", _timestamp,
+                vrpn_TEXT_WARNING);
+			  break;
 
             default:
               send_text_message("unknown event", _timestamp);
