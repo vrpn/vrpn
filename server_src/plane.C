@@ -9,6 +9,13 @@
   #include <HDU/hduError.h>
 #endif
 
+#ifndef	TRUE
+#define TRUE true
+#endif
+#ifndef	FALSE
+#define FALSE false
+#endif
+
 #ifndef	VRPN_USE_HDAPI
 gstType Plane::PlaneClassTypeId;
 static int temp = Plane::initClass();

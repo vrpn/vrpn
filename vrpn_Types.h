@@ -79,6 +79,7 @@ typedef  float           vrpn_float32;
 typedef  double          vrpn_float64;
 #endif
 
+
 #ifdef  linux
 #define  VRPN_ARCH  linux
 typedef  char            vrpn_int8;

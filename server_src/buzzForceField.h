@@ -23,7 +23,7 @@
 #include "ghost.h"
 
 // MB: for compilation with pthreads
-#if defined(SGI) || defined (__CYGWIN__)
+#if defined(SGI) || defined (__CYGWIN__) || defined(linux)
 #include "pthread.h"
 #endif
 
@@ -86,7 +86,7 @@ private:
 	bool _freq_needs_update;
 
 // MB: for compilation with pthreads
-#if defined(SGI) || defined (__CYGWIN__)
+#if defined(SGI) || defined (__CYGWIN__) || defined(linux)
 	pthread_mutex_t  _amp_freq_mutex;// mutex for accessing 
 #else
 	CRITICAL_SECTION _amp_freq_mutex;// mutex for accessing 

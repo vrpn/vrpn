@@ -11,7 +11,9 @@
 #else
 #include <gstPHANToM.h>
 #endif
+#ifndef linux
 #include <windows.h>
+#endif
 #include <math.h>
 #include "InstantBuzzEffect.h"
 
@@ -30,11 +32,13 @@ gstVector InstantBuzzEffect::calcEffectForce(void *phantom) {
     if (currentPerformanceFrequency.HighPart == 0 && currentPerformanceFrequency.LowPart == 0) {
       return vrpn_HapticVector(0,0,0);
     }
-    
+
+#ifdef	_WIN32
     if (QueryPerformanceCounter(&counter) != TRUE){
 	fprintf(stderr, "unable to get perfo counter\n");
-      return vrpn_HapticVector(0,0,0);
+	return vrpn_HapticVector(0,0,0);
     }
+#endif
 
     double elapsedSec =  (counter.QuadPart - debut.QuadPart) / (double) currentPerformanceFrequency.QuadPart;
     if (elapsedSec < getDuration()) {
