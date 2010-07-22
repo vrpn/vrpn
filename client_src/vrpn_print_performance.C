@@ -31,7 +31,7 @@
 using namespace std;
 
 int done = 0;	        // Signals that the program should exit
-float report_interval = 1;	// Every n seconds a report will be printed
+double report_interval = 1;	// Every n seconds a report will be printed
 
 //-------------------------------------
 // This section contains the data structure that holds information on
@@ -189,9 +189,9 @@ void	VRPN_CALLBACK handle_button (void *userdata, const vrpn_BUTTONCB b)
 
 void	VRPN_CALLBACK handle_analog (void *userdata, const vrpn_ANALOGCB a)
 {
-    int i;
     const char *name = (const char *)userdata;
 /*
+    int i;
     printf("Analog %s:\n         %5.2f", name, a.channel[0]);
     for (i = 1; i < a.num_channel; i++) {
 	printf(", %5.2f", a.channel[i]);
@@ -287,7 +287,7 @@ int main (int argc, char * argv [])
       print_for_text = 0;
     } else if (!strcmp(argv[i], "--reportinterval")) {
       if (++i >= argc) { Usage(argv[0]); }
-      report_interval = atoi(argv[i]);
+      report_interval = atof(argv[i]);
       if (report_interval <= 0) {
 	  fprintf(stderr, "--reportinterval argument must be 1 or greater\n");
 	  return -1;
