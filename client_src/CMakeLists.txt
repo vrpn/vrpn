@@ -55,6 +55,7 @@ if(VRPN_BUILD_CLIENTS)
 		tracker_to_poser.cpp
 		vrpn_LamportClock.t.C
 		vrpn_ping.C
+		vrpn_print_performance.C
 	)
 	
 	if(NOT WIN32)

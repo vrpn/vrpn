@@ -81,6 +81,8 @@ endif()
 ###
 list(APPEND CMAKE_MODULE_PATH ${VRPN_SOURCE_DIR}/cmake)
 include(UseBackportedModules)
+include(GetForceIncludeDefinitions)
+include(SetDefaultBuildType)
 include(FixWinInstallPrefix)
 include(MSVCMultipleProcessCompile)
 include(CppcheckTargets)
@@ -125,6 +127,8 @@ if(APPLE AND VRPN_BUILD_SERVER_LIBRARY)
 		add_definitions(${MACHID_DEFINITIONS})
 	endif()
 endif()
+
+set_default_build_type("RelWithDebInfo")
 
 ###
 # MPI
@@ -325,7 +329,6 @@ set(VRPN_CLIENT_PUBLIC_HEADERS
 	vrpn_BaseClass.h
 	vrpn_Button.h
 	vrpn_Connection.h
-	vrpn_ConnectionTypes.h
 	vrpn_Dial.h
 	vrpn_FileConnection.h
 	vrpn_FileController.h
@@ -403,6 +406,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Tracker_MotionNode.C
 	vrpn_Tracker_NDI_Polaris.C
 	vrpn_Tracker_PhaseSpace.C
+	vrpn_Tracker_WiimoteHead.C
 	vrpn_UNC_Joystick.C
 	vrpn_VPJoystick.C
 	vrpn_Wanda.C
@@ -473,6 +477,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Tracker_MotionNode.h
 	vrpn_Tracker_NDI_Polaris.h
 	vrpn_Tracker_PhaseSpace.h
+	vrpn_Tracker_WiimoteHead.h
 	vrpn_UNC_Joystick.h
 	vrpn_VPJoystick.h
 	vrpn_Wanda.h

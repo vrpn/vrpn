@@ -503,7 +503,7 @@ SLIB_FILES =  $(LIB_FILES) vrpn_3Space.C \
 	vrpn_HumanInterface.C vrpn_Xkeys.C vrpn_3DConnexion.C \
 	vrpn_Tracker_MotionNode.C vrpn_Tracker_NDI_Polaris.C \
 	vrpn_WiiMote.C vrpn_Tracker_Isotrak.C vrpn_Freespace.C \
-	vrpn_DreamCheeky.C
+	vrpn_DreamCheeky.C vrpn_Tracker_WiimoteHead.C
 
 SLIB_OBJECTS = $(patsubst %,$(SOBJECT_DIR)/%,$(SLIB_FILES:.C=.o))
 
@@ -528,7 +528,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) vrpn_3Space.h \
 	vrpn_HumanInterface.h vrpn_Xkeys.h vrpn_3DConnexion.h \
 	vrpn_Tracker_MotionNode.h vrpn_Tracker_NDI_Polaris.h \
 	vrpn_WiiMote.h vrpn_Tracker_Isotrak.h vrpn_Freespace.h \
-	vrpn_DreamCheeky.h
+	vrpn_DreamCheeky.h vrpn_Tracker_WiimoteHead.h
 
 $(SLIB_OBJECTS): 
 $(OBJECT_DIR)/libvrpnserver.a: $(MAKEFILE) $(SLIB_OBJECTS)

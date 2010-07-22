@@ -157,7 +157,7 @@ $(OBJ_DIR)/%.o: %.cpp
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 INSTALL_APPS := vrpn_print_devices forcedevice_test_client vrpn_ping \
-	add_vrpn_cookie
+	add_vrpn_cookie vrpn_print_performance
 # vrpn_print_messages
 
 APPS := $(INSTALL_APPS) printvals printcereal checklogfile logfilesenders \
@@ -170,6 +170,9 @@ all:	$(APPS)
 
 .PHONY:	vrpn_print_devices
 vrpn_print_devices:	$(OBJ_DIR)/vrpn_print_devices
+
+.PHONY:	vrpn_print_performance
+vrpn_print_performance:	$(OBJ_DIR)/vrpn_print_performance
 
 .PHONY:	forcedevice_test_client
 forcedevice_test_client:	$(OBJ_DIR)/forcedevice_test_client
@@ -237,6 +240,10 @@ $(OBJ_DIR)/printvals: $(OBJ_DIR)/printvals.o $(LIB_DIR)/libvrpn.a
 $(OBJ_DIR)/vrpn_print_devices: $(OBJ_DIR)/vrpn_print_devices.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/vrpn_print_devices \
 		$(OBJ_DIR)/vrpn_print_devices.o -lvrpn $(ARCH_LIBS)
+
+$(OBJ_DIR)/vrpn_print_performance: $(OBJ_DIR)/vrpn_print_performance.o $(LIB_DIR)/libvrpn.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/vrpn_print_performance \
+		$(OBJ_DIR)/vrpn_print_performance.o -lvrpn $(ARCH_LIBS)
 
 $(OBJ_DIR)/printcereal: $(OBJ_DIR)/printcereal.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/printcereal \
