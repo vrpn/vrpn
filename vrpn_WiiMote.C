@@ -62,6 +62,15 @@ void vrpn_WiiMote::handle_event()
     }
   }
 
+  if (wiimote->device->exp.type == EXP_WII_BOARD) {
+	  // The balance board pretends to be its own wiimote, with only an "a" button
+	  // Use to calibrate.
+	  if (IS_PRESSED(wiimote->device, WIIMOTE_BUTTON_A))
+	  {
+	    wiiuse_set_wii_board_calib(wiimote->device);
+	  }
+  }
+
   //-------------------------------------------------------------------------
   // Read the status of the analog values.  There are six of them for the
   // base unit and extras for expansion units.
@@ -112,16 +121,24 @@ void vrpn_WiiMote::handle_event()
 		break;
 
   	case EXP_WII_BOARD:
-		printf("Got a wii board report: %d, %d, %d, %d\n", wiimote->device->exp.wb.tl, wiimote->device->exp.wb.tr, wiimote->device->exp.wb.bl, wiimote->device->exp.wb.br);
+		//printf("Got a wii board report: %f, %f, %f, %f\n", wiimote->device->exp.wb.tl, wiimote->device->exp.wb.tr, wiimote->device->exp.wb.bl, wiimote->device->exp.wb.br);
+		printf("Got a wii board report: %d, %d, %d, %d\n", wiimote->device->exp.wb.rtl, wiimote->device->exp.wb.rtr, wiimote->device->exp.wb.rbl, wiimote->device->exp.wb.rbr);
+  		//printf("")
 		channel[64 + 0] = wiimote->device->exp.wb.tl;
 	    channel[64 + 1] = wiimote->device->exp.wb.tr;
 	    channel[64 + 2] = wiimote->device->exp.wb.bl;
-		channel[64 + 2] = wiimote->device->exp.wb.br;
+		channel[64 + 3] = wiimote->device->exp.wb.br;
+		/* raw channels
+		channel[64 + 4] = wiimote->device->exp.wb.rtl;
+	    channel[64 + 5] = wiimote->device->exp.wb.rtr;
+	    channel[64 + 6] = wiimote->device->exp.wb.rbl;
+		channel[64 + 7] = wiimote->device->exp.wb.rbr;
+		*/
 		break;
 
 	default:
-		struct timeval now; 
-		vrpn_gettimeofday(&now, NULL); 
+		struct timeval now;
+		vrpn_gettimeofday(&now, NULL);
 		char msg[1024];
 		sprintf(msg, "I have no idea what kind of expansion this is!  device->exp.type = %d", wiimote->device->exp.type);
 		send_text_message(msg, now, vrpn_TEXT_ERROR);
