@@ -275,7 +275,7 @@ last_of_sequence:	$(OBJ_DIR)/last_of_sequence
 testSharedObject:	$(OBJ_DIR)/testSharedObject
 
 $(OBJ_DIR)/InstantBuzzEffect.o: ghostEffects/InstantBuzzEffect.cpp
-	$(CC) $(CFLAGS) -o $@ -c $<
+	$(CC) $(CXXFLAGS) -o $@ -c $<
 
 $(OBJ_DIR)/vrpn_server: $(OBJ_DIR)/vrpn.o $(LIB_DIR)/libvrpnserver.a \
 		$(OBJ_DIR)/buzzForceField.o $(OBJ_DIR)/constraint.o \
