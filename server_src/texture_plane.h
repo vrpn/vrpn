@@ -18,10 +18,10 @@
 #ifdef	VRPN_USE_PHANTOM_SERVER
 
 #ifndef	TRUE
-#define TRUE true
+#define TRUE 1
 #endif
 #ifndef	FALSE
-#define FALSE false
+#define FALSE 0
 #endif
 
 #define MIN_TEXTURE_WAVELENGTH (0.06) // [mm] reasonable value considering

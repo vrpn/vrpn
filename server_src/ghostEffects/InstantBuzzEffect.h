@@ -8,16 +8,19 @@
 #define INSTANT_BUZZ_EFFECT
 
 #ifndef	TRUE
-#define TRUE true
+#define TRUE 1
 #endif
 #ifndef	FALSE
-#define FALSE false
+#define FALSE 0
 #endif
 
+#ifdef  linux
 typedef struct{long QuadPart,HighPart,LowPart;} LARGE_INTEGER;
+#endif
+
 // RMT I hate that this has to be here, but things blow up in the compilation
 // if it is not.
-#ifdef __CYGWIN__
+#ifndef linux
 #include <windows.h>
 #endif
 
@@ -160,7 +163,8 @@ public:
 	/*if (!active) { 
 	    printf("starting Buzz Effect\n"); 
 	}*/
-#ifdef _WIN32	if (QueryPerformanceCounter(&counter) != TRUE){
+#ifdef _WIN32
+        if (QueryPerformanceCounter(&counter) != TRUE){
 	    fprintf(stderr, "unable to get perfo counter\n");
 	    return FALSE;
 	}
