@@ -33,7 +33,7 @@ set(CPACK_PACKAGE_VENDOR
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/ParseVersion.cmake")
 
-# This may be incremented manually
+# This may be incremented manually - reset to 0 for each upstream release
 set(CPACK_PACKAGE_VERSION_PATCH "1")
 
 set(CPACK_PACKAGE_VERSION
@@ -54,7 +54,10 @@ if(WIN32) # MS-Windows, both 32 and 64 bits
   set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   /fp:fast")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast")
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /FIXED:NO")
-else()
+
+elseif(CMAKE_COMPILER_IS_GNUCXX AND CMAKE_SIZEOF_VOID_P EQUAL 8)
+  # GCC compilers on 64-bit machines require -fPIC for shared libraries or libs
+  # linked into shared libraries.
   set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -fPIC")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 endif()
@@ -99,13 +102,9 @@ set_default_build_type("RelWithDebInfo")
 ###
 # Quatlib
 ###
-
-# If we haven't been called by a parent CMakeLists.txt but there's a
-# quat/ dir next to us, make it part of our build anyway
 add_subdirectory (quat)
 list(APPEND EXTRA_LIBS quat)
 
-# Optional packages
 ###
 # Threading (not on win32?)
 ###
@@ -138,7 +137,6 @@ message(STATUS "")
 ###
 find_package(SWIG)
 find_package(PythonLibs)
-
 
 ###
 # MPI
@@ -581,7 +579,7 @@ if(VRPN_BUILD_CLIENT_LIBRARY)
 		vrpn
 		PROPERTY
 		PROJECT_LABEL
-		"Core: VRPN Server Library")
+		"Core: VRPN Client Library")
 
 	install(TARGETS vrpn
 		ARCHIVE DESTINATION lib
