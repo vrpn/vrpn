@@ -27,15 +27,13 @@
 #HW_OS := pc_linux_ia64
 # Try this to cross-compile on a Linux PC for an ARM embedded controller.
 #HW_OS := pc_linux_arm
-# Try this to cross-compile on a Cygwin PC for an ARM embedded controller.
-#HW_OS := pc_cygwin_arm
 #HW_OS := pc_cygwin
 #HW_OS := pc_FreeBSD
 #HW_OS := sparc_solaris
 #HW_OS := sparc_solaris_64
 #HW_OS := powerpc_aix
 #HW_OS := powerpc_macosx
-#HW_OS := universal_macosx
+#HW_OS := linux_x64
 ##########################
 
 INSTALL_DIR := /usr/local
@@ -128,8 +126,8 @@ else
         RANLIB := ranlib
   endif
 
-  ifeq ($(HW_OS), pc_linux_ia64)
-        CC := g++
+  ifeq ($(HW_OS), linux_x64)
+        CC := g++ -fPIC
         RANLIB := ranlib
   endif
 
@@ -376,13 +374,13 @@ override CXXFLAGS     := $(INCLUDE_FLAGS) $(DEBUG_FLAGS) $(CXXFLAGS)
 
 # Build objects from .cpp files
 #$(OBJECT_DIR)/%.o: %.cpp $(LIB_INCLUDES) $(MAKEFILE)
-$(OBJECT_DIR)/%.o: %.cpp $(LIB_INCLUDES)
+$(OBJECT_DIR)/%.o: %.cpp $(LIB_INCLUDES) 
 	@[ -d $(OBJECT_DIR) ] || mkdir -p $(OBJECT_DIR)
 	$(CC) $(CXXFLAGS) -o $@ -c $<
 
 # Build objects from .C files
 #$(OBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) $(MAKEFILE)
-#$(OBJECT_DIR)/%.o: %.C $(LIB_INCLUDES)
+#$(OBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) 
 #	@[ -d $(OBJECT_DIR) ] || mkdir -p $(OBJECT_DIR)
 #	$(CC) $(CXXFLAGS) -o $@ -c $< $(LIBS) -lvrpn -exceptions
 
@@ -395,7 +393,7 @@ $(OBJECT_DIR)/%.o: %.cpp $(LIB_INCLUDES)
 #
 #############################################################################
 
-all:	client
+all:	client 
 
 .PHONY:	client
 client: $(OBJECT_DIR)/libjava_vrpn.a
@@ -422,14 +420,16 @@ $(SOBJECT_DIR):
 LIB_FILES =  java_vrpn.cpp vrpn_AnalogOutputRemote.cpp vrpn_AnalogRemote.cpp \
 		vrpn_AuxiliaryLoggerRemote.cpp vrpn_ButtonRemote.cpp \
 		vrpn_ForceDeviceRemote.cpp vrpn_PoserRemote.cpp vrpn_TextReceiver.cpp \
-		vrpn_TextSender.cpp vrpn_TrackerRemote.cpp vrpn_VRPNDevice.cpp
+		vrpn_TextSender.cpp vrpn_TrackerRemote.cpp vrpn_VRPNDevice.cpp \
+		vrpn_FunctionGeneratorRemote.cpp
 
 LIB_OBJECTS = $(patsubst %,$(OBJECT_DIR)/%,$(LIB_FILES:.cpp=.o))
 
 LIB_INCLUDES = java_vrpn.h vrpn_AnalogOutputRemote.h vrpn_AnalogRemote.h \
 		vrpn_AuxiliaryLoggerRemote.h vrpn_ButtonRemote.h \
 		vrpn_ForceDeviceRemote.h vrpn_PoserRemote.h vrpn_TextReceiver.h \
-		vrpn_TextSender.h vrpn_TrackerRemote.h vrpn_VRPNDevice.h
+		vrpn_TextSender.h vrpn_TrackerRemote.h vrpn_VRPNDevice.h \
+		 vrpn_FunctionGeneratorRemote.h
 
 
 # additional files for the new connection work-in-progress

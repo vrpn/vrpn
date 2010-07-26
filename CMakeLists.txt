@@ -48,11 +48,15 @@ set(CPACK_SOURCE_PACKAGE_FILE_NAME
 
 
 #-----------------------------------------------------------------------------
-# Compiler flags we got from Hans
-if(WIN32)	# MS-Windows, both 32 and 64 bits
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}   /fp:fast")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast")
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /FIXED:NO")
+# Compiler flags we got from Hans for Windows and from Sheldon Andrews
+# for other architectures.
+if(WIN32) # MS-Windows, both 32 and 64 bits
+  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   /fp:fast")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /FIXED:NO")
+else()
+  set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -fPIC")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 endif()
 
 #-----------------------------------------------------------------------------
@@ -98,14 +102,10 @@ set_default_build_type("RelWithDebInfo")
 
 # If we haven't been called by a parent CMakeLists.txt but there's a
 # quat/ dir next to us, make it part of our build anyway
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../quat AND NOT TARGET quat)
-	message(STATUS "Found quatlib source in ../quat - adding to build")
-	add_subdirectory(../quat # source directory
-					quatlib/) # relative path for build output
-endif()
-find_package(quatlib REQUIRED)
-list(APPEND EXTRA_LIBS ${QUATLIB_LIBRARIES})
+add_subdirectory (quat)
+list(APPEND EXTRA_LIBS quat)
 
+# Optional packages
 ###
 # Threading (not on win32?)
 ###
@@ -261,7 +261,7 @@ endif()
 # configure a header file to pass some of the CMake settings
 # to the source code
 configure_file("${PROJECT_SOURCE_DIR}/vrpn_Configure.h.cmake_in"
-	"${PROJECT_BINARY_DIR}/vrpn_Configure.h")
+  "${PROJECT_BINARY_DIR}/vrpn_Configure.h")
 
 # Force use of our CMake-processed configuration header before the stock one.
 include_directories("${PROJECT_BINARY_DIR}")
@@ -320,7 +320,7 @@ if(WIN32)
 	option(VRPN_USE_SHARED_LIBRARY
 		"Enable to use DLLs on Windows (see vrpn_Configure.h for more info)"
 		OFF)
-elseif(UNIX)
+elseif (UNIX)
 	option(VRPN_USE_GPM_MOUSE
 		"Build with GPM Linux mouse interface support"
 		OFF)
@@ -378,7 +378,6 @@ set(VRPN_CLIENT_PUBLIC_HEADERS
 	vrpn_BaseClass.h
 	vrpn_Button.h
 	vrpn_Connection.h
-	vrpn_ConnectionTypes.h
 	vrpn_Dial.h
 	vrpn_FileConnection.h
 	vrpn_FileController.h
@@ -413,6 +412,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_CerealBox.C
 	vrpn_DirectXFFJoystick.C
 	vrpn_DirectXRumblePad.C
+	vrpn_DreamCheeky.C
 	vrpn_Dyna.C
 	vrpn_Event_Analog.C
 	vrpn_Event.C
@@ -479,6 +479,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_CerealBox.h
 	vrpn_DirectXFFJoystick.h
 	vrpn_DirectXRumblePad.h
+	vrpn_DreamCheeky.h
 	vrpn_Dyna.h
 	vrpn_Event_Analog.h
 	vrpn_Event.h
@@ -575,42 +576,31 @@ if(VRPN_BUILD_CLIENT_LIBRARY)
 			${VRPN_CLIENT_PUBLIC_HEADERS})
 	endif()
 
-	set_property(TARGET
-		vrpn
-		PROPERTY
-		COMPILE_DEFINITIONS
-		"VRPN_CLIENT_ONLY")
+	set_property(TARGET vrpn PROPERTY COMPILE_DEFINITIONS "VRPN_CLIENT_ONLY")
 	set_property(TARGET
 		vrpn
 		PROPERTY
 		PROJECT_LABEL
-		"Core: VRPN Client Library")
+		"Core: VRPN Server Library")
 
-	install(TARGETS
-		vrpn
-		ARCHIVE
-		DESTINATION
-		lib
-		PUBLIC_HEADER
-		DESTINATION
-		include)
+	install(TARGETS vrpn
+		ARCHIVE DESTINATION lib
+		PUBLIC_HEADER DESTINATION include)
 
 	add_cppcheck(vrpn STYLE UNUSED_FUNCTIONS)
 endif()
 
 
 # Include directory needed by all of the files
-include_directories(${VRPN_SOURCE_DIR}
-	${VRPN_SOURCE_DIR}/atmellib
-	${QUATLIB_INCLUDE_DIR})
+include_directories(${VRPN_SOURCE_DIR} ${VRPN_SOURCE_DIR}/atmellib ${VRPN_SOURCE_DIR}/quat)
 
-add_subdirectory(client_src)
+add_subdirectory (client_src)
 
 #-----------------------------------------------------------------------------
 # Build the atmellib library if we're building a server library
 
 if(VRPN_BUILD_SERVER_LIBRARY)
-	add_subdirectory(atmellib)
+	add_subdirectory (atmellib)
 endif()
 
 #-----------------------------------------------------------------------------
@@ -618,14 +608,14 @@ endif()
 # the library client-only.
 
 if(VRPN_BUILD_SERVERS AND VRPN_BUILD_SERVER_LIBRARY)
-	add_subdirectory(server_src)
+	add_subdirectory (server_src)
 endif()
 
 #-----------------------------------------------------------------------------
 # Build the RPC generation if we've been asked to
 
 if(VRPN_BUILD_TEST_RPC_GENERATION)
-	add_subdirectory(util/gen_rpc)
+	add_subdirectory (util/gen_rpc)
 endif()
 
 #-----------------------------------------------------------------------------
@@ -657,7 +647,7 @@ set(ALL_GPL_SERVER_FLAGS
 
 set(GPL_SERVER_FLAGS)
 foreach(POSSIBLE_GPL_FLAG ${ALL_GPL_SERVER_FLAGS})
-	if(${POSSIBLE_GPL_FLAG})
+	if (${POSSIBLE_GPL_FLAG})
 		list(APPEND GPL_SERVER_FLAGS "${POSSIBLE_GPL_FLAG}")
 	endif()
 endforeach()
@@ -668,7 +658,7 @@ set(ALL_GPLINCOMPAT_SERVER_FLAGS
 
 set(GPLINCOMPAT_SERVER_FLAGS)
 foreach(POSSIBLE_GPLINCOMPAT_FLAG ${ALL_GPLINCOMPAT_SERVER_FLAGS})
-	if(${POSSIBLE_GPLINCOMPAT_FLAG})
+	if (${POSSIBLE_GPLINCOMPAT_FLAG})
 		list(APPEND GPLINCOMPAT_SERVER_FLAGS "${POSSIBLE_GPLINCOMPAT_FLAG}")
 	endif()
 endforeach()

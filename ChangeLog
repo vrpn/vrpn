@@ -1,3 +1,86 @@
+2010-07-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Types.h : Making the "Need to compile with C++
+		error message more verbose.
+
+2010-07-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Button.C : Change to make this compile under Visual Studio
+		6.0 submitted by Andrei State.
+	* vrpn_Mouse.C : Same.
+
+2010-07-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_isense.C : Modified to compile with the latest version
+		of the Intersense library based on comments from Andrew Roth at
+		York University, Toronto based on info from Rand Kmiec at
+		Intersense.
+	* vrpn_Tracker_isense.h : Same.
+
+2010-06-25  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Connection.C (get_log_names):  does not attempt to return
+	names for NULL input parameters.
+	* vrpn_FunctionGenerator.h/c:  uses vrpn_Callback_List.
+
+2010-03-16  David Marshburn  <marshbur@cs.unc.edu>
+	* vrpn_FunctionGenerator.C:  correctly NULL-terminates decoded
+	script and description strings.
+
+2010-03-08  David Marshburn  <marshbur@cs.unc.edu>
+	* vrpn_FunctionGenerator.h (vrpn_FunctionGenerator_function_script::getConstScript):
+	  new, const accessor for the script string.
+	* vrpn_FunctionGenerator.C (vrpn_FunctionGenerator_Remote::encode_channel):
+	  encodes the correct, desired channel.  
+
+2010-02-18  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGenerator.h/C:  a few tweaks and additions, 
+	including:  the ability for servers to keep up with the number
+	of channels they're really using, the ability to copy functions,
+	and some additional, correct const-ing.
+
+2010-01-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CMakeLists.txt : Added -fPIC option submitted by Sheldon
+		Andrews from McGill to non-Windows builds.  This was
+		important for his 64-bit Java code.
+	* vrpn_DreamCheeky.C : Makes it not try to compile except
+		under Windows, Cygwin, Apple.
+	* vrpn_DreamCheaky.h : Same.
+
+2010-01-14  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGenerator.h/C:  various bug fixes and additions,
+	mostly involved with sending and receiving channel messages.
+
+2010-01-05  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGenerator.h/C:  added error-reporting handlers
+	for remote objects.  also, explicitly defined value for the
+	enumeration of error codes.
+
+2009-12-30  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGenerator.h/C:  added error-reporting capabilities
+	for servers (intended to be used for script malfunctions).
+
+2009-12-29  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGenerator.h/C:  added another constructor to
+	vrpn_FunctionGenerator_function_script and removed the pure-virtual
+	specifier from the method generateValues.
+
+2009-12-27  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_DreamCheeky.h : Added support for the Dream Cheeky USB
+		roll-up drum kit, which is a HID device.
+	* vrpn_DreamCheeky.C : Same.
+	* CMakeLists.txt : Same.
+	* Makefile : Same.
+	* vrpn.vcproj : Same.
+	* vrpndll.vcproj : Same.
+
 2009-12-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	All changes here are from Ryan Pavlik.  I'm just adding them in.

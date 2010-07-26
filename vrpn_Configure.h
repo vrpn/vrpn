@@ -282,7 +282,11 @@
   #define VRPN_FREESPACE_LIB_PATH "../../libfreespace/lib"
 #endif
 
+#ifdef linux
+#define VRPN_HDAPI_PATH         VRPN_SYSTEMDRIVE "/usr/lib64"
+#else
 #define VRPN_HDAPI_PATH         VRPN_SYSTEMDRIVE "/Program Files/SensAble/3DTouch/lib/"
+#endif
 #define VRPN_HDAPI_UTIL_PATH    VRPN_SYSTEMDRIVE "/Program Files/SensAble/3DTouch/utilities/lib/"
 #define VRPN_GHOST_31_PATH      VRPN_SYSTEMDRIVE "/Program Files/SensAble/GHOST/v3.1/lib/"
 #define VRPN_GHOST_40_PATH      VRPN_SYSTEMDRIVE "/Program Files/SensAble/GHOST/v4.0/lib/"

@@ -19,7 +19,7 @@ extern const char* vrpn_FUNCTION_MESSAGE_TYPE_STOP_REPLY;
 extern const char* vrpn_FUNCTION_MESSAGE_TYPE_SAMPLE_RATE_REPLY;
 extern const char* vrpn_FUNCTION_MESSAGE_TYPE_INTERPRETER_REQUEST;
 extern const char* vrpn_FUNCTION_MESSAGE_TYPE_INTERPRETER_REPLY;
-
+extern const char* vrpn_FUNCTION_MESSAGE_TYPE_ERROR;
 
 class VRPN_API vrpn_FunctionGenerator_channel;
 
@@ -28,6 +28,7 @@ class VRPN_API vrpn_FunctionGenerator_channel;
 class VRPN_API vrpn_FunctionGenerator_function
 {
 public:
+	virtual ~vrpn_FunctionGenerator_function() = 0;
 
 	// concrete classes should implement this to generate the appropriate
 	// values for the function the class represents.  nValue samples should be
@@ -55,10 +56,19 @@ public:
 	// of failure, when negative should be returned
 	virtual vrpn_int32 decode_from( const char** buf, vrpn_int32& len ) = 0;
 
-protected:
-	vrpn_float32 lerp( vrpn_float32 t, vrpn_float32 t0, vrpn_float32 t1,
-						vrpn_float32 v0, vrpn_float32 v1 ) const
-	{  return v0 + ( t - t0 ) * ( v1 - v0 ) / ( t1 - t0 );  }
+	virtual vrpn_FunctionGenerator_function* clone( ) const = 0;
+
+	// used when encoding/decoding to specify function type
+	enum FunctionCode
+	{
+		FUNCTION_NULL = 0,
+		FUNCTION_SCRIPT = 1
+	};
+
+	// concrete classes should implement this to return the
+	// appropriate FunctionCode, from above
+	virtual FunctionCode getFunctionCode( ) const = 0;
+
 
 };
 
@@ -77,6 +87,10 @@ public:
 
 	vrpn_int32 encode_to( char** buf, vrpn_int32& len ) const;
 	vrpn_int32 decode_from( const char** buf, vrpn_int32& len );
+	vrpn_FunctionGenerator_function* clone( ) const;
+protected:
+	FunctionCode getFunctionCode( ) const {  return FUNCTION_NULL;  }
+
 };
 
 
@@ -85,22 +99,29 @@ class VRPN_API vrpn_FunctionGenerator_function_script
 {
 public:
 	vrpn_FunctionGenerator_function_script( );
+	vrpn_FunctionGenerator_function_script( const char* script );
 	vrpn_FunctionGenerator_function_script( const vrpn_FunctionGenerator_function_script& );
 	virtual ~vrpn_FunctionGenerator_function_script();
 
 	virtual vrpn_float32 generateValues( vrpn_float32* buf, vrpn_uint32 nValues,
 								vrpn_float32 startTime, vrpn_float32 sampleRate, 
-								vrpn_FunctionGenerator_channel* channel ) const = 0;
+								vrpn_FunctionGenerator_channel* channel ) const;
 
 	vrpn_int32 encode_to( char** buf, vrpn_int32& len ) const;
 	vrpn_int32 decode_from( const char** buf, vrpn_int32& len );
+	vrpn_FunctionGenerator_function* clone( ) const;
 
-	// caller is responsible for calling 'delete []' to free the returned string.
+	// returns a copy of the script.  caller is responsible for 
+	// calling 'delete []' to free the returned string.
 	char* getScript( ) const;
+
+	const char* getConstScript( ) const
+	{ return script; }
 
 	vrpn_bool setScript( char* script );
 
 protected:
+	FunctionCode getFunctionCode( ) const {  return FUNCTION_SCRIPT;  }
 	char* script;
 
 };
@@ -115,7 +136,7 @@ public:
 	vrpn_FunctionGenerator_channel( vrpn_FunctionGenerator_function* function );
 	virtual ~vrpn_FunctionGenerator_channel( );
 
-	const vrpn_FunctionGenerator_function* getFunction( )  { return function; }
+	const vrpn_FunctionGenerator_function* getFunction( ) const { return function; }
 	void setFunction( vrpn_FunctionGenerator_function* function );
 
 	// these return zero on success and negative on some failure.
@@ -138,15 +159,23 @@ public:
 	// greater than the maximum number of channels.
 	const vrpn_FunctionGenerator_channel* const getChannel( vrpn_uint32 channelNum );
 
+	vrpn_uint32 getNumChannels( ) const { return numChannels; }
+
 	vrpn_float32 getSampleRate( )
 	{  return sampleRate;  }
 
-protected:
-	// should this  wait for a start trigger, or should the server immediately
-	// start generating a function on this channel.  true -> wait for a start message.
-	vrpn_bool triggered;
+	enum FGError 
+	{
+		NO_FG_ERROR = 0,
+		INTERPRETER_ERROR = 1, // the interpreter (for script) had some problem
+		TAKING_TOO_LONG = 2, // samples were not generated quickly enough
+		INVALID_RESULT_QUANTITY = 3, // an incorrect number of values was generated
+		INVALID_RESULT_RANGE = 4 // generated values were out of range
+	};
 
+protected:
 	vrpn_float32 sampleRate;  // samples per second
+	vrpn_uint32 numChannels;
 	vrpn_FunctionGenerator_channel* channels[vrpn_FUNCTION_CHANNELS_MAX];
 
 	vrpn_int32 channelMessageID;             // id for channel message (remote -> server)
@@ -162,11 +191,11 @@ protected:
 	vrpn_int32 stopFunctionReplyMessageID;   // id for reply to stop-function message (server -> remote)
 	vrpn_int32 sampleRateReplyMessageID;     // id for reply to request-sample-rate message (server -> remote)
 	vrpn_int32 interpreterReplyMessageID;    // id for reply to request-interpreter message (server -> remote)
+	vrpn_int32 errorMessageID;				 // id for error reports
 
 	vrpn_int32	gotConnectionMessageID;  // for new-connection message
 
 	virtual int register_types( );
-
 
 	char msgbuf[vrpn_CONNECTION_TCP_BUFLEN];
 	struct timeval timestamp;
@@ -176,7 +205,7 @@ protected:
 class VRPN_API vrpn_FunctionGenerator_Server : public vrpn_FunctionGenerator
 {
 public:
-	vrpn_FunctionGenerator_Server( const char* name, vrpn_Connection* c = NULL );
+	vrpn_FunctionGenerator_Server( const char* name, vrpn_uint32 numChannels = vrpn_FUNCTION_CHANNELS_MAX, vrpn_Connection* c = NULL );
 	virtual ~vrpn_FunctionGenerator_Server( );
 
 	virtual void mainloop( );
@@ -189,6 +218,8 @@ public:
 	virtual void start( ) = 0;
 	virtual void stop( ) = 0;
 	virtual void setSampleRate( vrpn_float32 rate ) = 0;
+
+	vrpn_uint32 setNumChannels( vrpn_uint32 numChannels );
 
 	// sub-classes should implement this function to provide a description of the type
 	// of interpreter used to interpret vrpn_FunctionGenerator_function_script
@@ -215,6 +246,9 @@ protected:
 	int sendStopReply( vrpn_bool stopped );
 	int sendInterpreterDescription( );
 
+	// sub-classes should use this function to report an error in function generation
+	int sendError( FGError error, vrpn_int32 channel );
+
 	vrpn_int32 decode_channel( const char* buf, const vrpn_int32 len, vrpn_uint32& channelNum,
 								vrpn_FunctionGenerator_channel& channel );
 	vrpn_int32 decode_channel_request( const char* buf, const vrpn_int32 len, vrpn_uint32& channelNum );
@@ -225,6 +259,7 @@ protected:
 	vrpn_int32 encode_stop_reply( char** buf, vrpn_int32& len, const vrpn_bool isStopped );
 	vrpn_int32 encode_sampleRate_reply( char** buf, vrpn_int32& len, const vrpn_float32 sampleRate );
 	vrpn_int32 encode_interpreterDescription_reply( char** buf, vrpn_int32& len, const char* desc );
+	vrpn_int32 encode_error_report( char** buf, vrpn_int32& len, const FGError err, const vrpn_int32 channel );
 
 }; // end class vrpn_FunctionGenerator_Server
 
@@ -278,9 +313,9 @@ typedef void (VRPN_CALLBACK *vrpn_FUNCTION_SAMPLE_RATE_REPLY_HANDLER)( void *use
 					     const vrpn_FUNCTION_SAMPLE_RATE_REPLY_CB info );
 
 
-// User routine to handle function-generator sample-rate replies.  
-// This is called when the function-generator server reports that 
-// the function-generation sample rate has changed.
+// User routine to handle function-generator interpreter-description replies.  
+// This is called when the function-generator server reports the description
+// of its interpreter.
 typedef	struct _vrpn_FUNCTION_INTERPRETER_REPLY_CB
 {
 	struct timeval	msg_time;	// Time of the report
@@ -290,11 +325,24 @@ typedef void (VRPN_CALLBACK *vrpn_FUNCTION_INTERPRETER_REPLY_HANDLER)( void *use
 					     const vrpn_FUNCTION_INTERPRETER_REPLY_CB info );
 
 
+// User routine to handle function-generator error notifications.  
+// This is called when the function-generator server reports some
+// error in the generation of a function.
+typedef	struct _vrpn_FUNCTION_ERROR_CB
+{
+	struct timeval	msg_time;	// Time of the report
+	vrpn_FunctionGenerator::FGError err;
+	vrpn_int32 channel;
+} vrpn_FUNCTION_ERROR_CB;
+typedef void (VRPN_CALLBACK *vrpn_FUNCTION_ERROR_HANDLER)( void *userdata,
+					     const vrpn_FUNCTION_ERROR_CB info );
+
+
 class VRPN_API vrpn_FunctionGenerator_Remote : public vrpn_FunctionGenerator
 {
 public:
 	vrpn_FunctionGenerator_Remote( const char* name, vrpn_Connection* c = NULL );
-	virtual ~vrpn_FunctionGenerator_Remote( );
+	virtual ~vrpn_FunctionGenerator_Remote( ) { }
 
 	int setChannel( const vrpn_uint32 channelNum, const vrpn_FunctionGenerator_channel* channel );
 	int requestChannel( const vrpn_uint32 channelNum );
@@ -330,66 +378,39 @@ public:
 	virtual int unregister_sample_rate_reply_handler( void *userdata,
 		vrpn_FUNCTION_SAMPLE_RATE_REPLY_HANDLER handler );
 	
-	// (un)Register a callback handler to handle a sample-rate reply
+	// (un)Register a callback handler to handle an interpreter message
 	virtual int register_interpreter_reply_handler( void *userdata,
 		vrpn_FUNCTION_INTERPRETER_REPLY_HANDLER handler );
 	virtual int unregister_interpreter_reply_handler( void *userdata,
 		vrpn_FUNCTION_INTERPRETER_REPLY_HANDLER handler );
+
+	virtual int register_error_handler( void* userdata, 
+		vrpn_FUNCTION_ERROR_HANDLER handler );
+	virtual int unregister_error_handler( void* userdata,
+		vrpn_FUNCTION_ERROR_HANDLER handler );
 	
 	static int VRPN_CALLBACK handle_channelReply_message( void* userdata, vrpn_HANDLERPARAM p );
-	static int VRPN_CALLBACK VRPN_CALLBACK handle_startReply_message( void* userdata, vrpn_HANDLERPARAM p );
+	static int VRPN_CALLBACK handle_startReply_message( void* userdata, vrpn_HANDLERPARAM p );
 	static int VRPN_CALLBACK handle_stopReply_message( void* userdata, vrpn_HANDLERPARAM p );
 	static int VRPN_CALLBACK handle_sampleRateReply_message( void* userdata, vrpn_HANDLERPARAM p );
 	static int VRPN_CALLBACK handle_interpreterReply_message( void* userdata, vrpn_HANDLERPARAM p );
+	static int VRPN_CALLBACK handle_error_message( void* userdata, vrpn_HANDLERPARAM p );
 
 protected:
-	typedef	struct vrpn_FGCRL
-	{
-		void* userdata;
-		vrpn_FUNCTION_CHANGE_REPLY_HANDLER handler;
-		struct vrpn_FGCRL* next;
-	} vrpn_FGCHANNELREPLYLIST;
-	vrpn_FGCHANNELREPLYLIST* channel_reply_list;
+	vrpn_Callback_List<vrpn_FUNCTION_CHANNEL_REPLY_CB> channel_reply_list;
+	vrpn_Callback_List<vrpn_FUNCTION_START_REPLY_CB> start_reply_list;
+	vrpn_Callback_List<vrpn_FUNCTION_STOP_REPLY_CB> stop_reply_list;
+	vrpn_Callback_List<vrpn_FUNCTION_SAMPLE_RATE_REPLY_CB> sample_rate_reply_list;
+	vrpn_Callback_List<vrpn_FUNCTION_INTERPRETER_REPLY_CB> interpreter_reply_list;
+	vrpn_Callback_List<vrpn_FUNCTION_ERROR_CB> error_list;
 
-	
-	typedef	struct vrpn_FGStartRL
-	{
-		void* userdata;
-		vrpn_FUNCTION_START_REPLY_HANDLER handler;
-		struct vrpn_FGStartRL* next;
-	} vrpn_FGSTARTREPLYLIST;
-	vrpn_FGSTARTREPLYLIST* start_reply_list;
-
-	
-	typedef	struct vrpn_FGStopRL
-	{
-		void* userdata;
-		vrpn_FUNCTION_STOP_REPLY_HANDLER handler;
-		struct vrpn_FGStopRL* next;
-	} vrpn_FGSTOPREPLYLIST;
-	vrpn_FGSTOPREPLYLIST* stop_reply_list;
-
-	typedef	struct vrpn_FGSRRL
-	{
-		void* userdata;
-		vrpn_FUNCTION_SAMPLE_RATE_REPLY_HANDLER handler;
-		struct vrpn_FGSRRL* next;
-	} vrpn_FGSAMPLERATEREPLYLIST;
-	vrpn_FGSAMPLERATEREPLYLIST* sample_rate_reply_list;
-
-	typedef	struct vrpn_FGIRL
-	{
-		void* userdata;
-		vrpn_FUNCTION_INTERPRETER_REPLY_HANDLER handler;
-		struct vrpn_FGIRL* next;
-	} vrpn_FGINTERPRETERREPLYLIST;
-	vrpn_FGINTERPRETERREPLYLIST* interpreter_reply_list;
 
 	vrpn_int32 decode_channel_reply( const char* buf, const vrpn_int32 len, vrpn_uint32& channelNum );
 	vrpn_int32 decode_start_reply( const char* buf, const vrpn_int32 len, vrpn_bool& isStarted );
 	vrpn_int32 decode_stop_reply( const char* buf, const vrpn_int32 len, vrpn_bool& isStopped );
 	vrpn_int32 decode_sampleRate_reply( const char* buf, const vrpn_int32 len );
 	vrpn_int32 decode_interpreterDescription_reply( const char* buf, const vrpn_int32 len, char** desc );
+	vrpn_int32 decode_error_reply( const char* buf, const vrpn_int32 len, FGError& error, vrpn_int32& channel );
 
 	vrpn_int32 encode_channel( char** buf, vrpn_int32& len, const vrpn_uint32 channelNum, 
 							   const vrpn_FunctionGenerator_channel* channel );

@@ -7,9 +7,20 @@
 #ifndef INSTANT_BUZZ_EFFECT
 #define INSTANT_BUZZ_EFFECT
 
+#ifndef	TRUE
+#define TRUE 1
+#endif
+#ifndef	FALSE
+#define FALSE 0
+#endif
+
+#ifdef  linux
+typedef struct{long QuadPart,HighPart,LowPart;} LARGE_INTEGER;
+#endif
+
 // RMT I hate that this has to be here, but things blow up in the compilation
 // if it is not.
-#ifdef __CYGWIN__
+#ifndef linux
 #include <windows.h>
 #endif
 
@@ -47,10 +58,12 @@ public:
 	x = 0;
 	y = 0;
 	z = 1;
+#ifdef	_WIN32
 	if (QueryPerformanceFrequency(&currentPerformanceFrequency) != TRUE) {
 	    fprintf(stderr, "unable to get performance counter frequency\n");
 	    currentPerformanceFrequency.QuadPart = 0;
 	}
+#endif
 	debut.QuadPart = 0;
 #ifdef	VRPN_USE_HDAPI
 	active = FALSE;	  // XXX Should this be true?
@@ -150,10 +163,12 @@ public:
 	/*if (!active) { 
 	    printf("starting Buzz Effect\n"); 
 	}*/
-	if (QueryPerformanceCounter(&counter) != TRUE){
+#ifdef _WIN32
+        if (QueryPerformanceCounter(&counter) != TRUE){
 	    fprintf(stderr, "unable to get perfo counter\n");
 	    return FALSE;
 	}
+#endif
 	debut = counter;
 	active = TRUE;
 	time = 0.0;

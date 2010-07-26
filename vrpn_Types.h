@@ -4,12 +4,13 @@
 #include  "vrpn_Configure.h"
 
 //------------------------------------------------------------------
-// do the test for a C++ compiler first, to ensure it's the first
-// error message.  
+// Do a test for a C++ compiler first, to ensure it's the first
+// error message.  Otherwise, the error messages you get are
+// completely cryptic.
 //------------------------------------------------------------------
 #ifndef __cplusplus
 #ifndef	VRPN_IGNORE_NO_CPLUSPLUS
-#error Need to compile with a C++ compiler, not a C compiler
+#error Need to compile with a C++ compiler, not a C compiler.  The problem is that in Windows, filenames are case-insensitive.  So the compiler can't tell mumble.c from mumble.C.  So Visual Studio decided to make .cpp (which used to mean run the C preprocessor) mean C++ and both .c and .C mean C.  The other problem is that when you insert a new file into a project, it FOR THAT FILE makes an override.  The project settings say C++ but if you right-click on the file itself it has an override to compile with C.  This needs to be changed for both the .C file and the .h file.
 #endif
 #endif
 
@@ -77,6 +78,7 @@ typedef  unsigned int    vrpn_uint32;
 typedef  float           vrpn_float32;
 typedef  double          vrpn_float64;
 #endif
+
 
 #ifdef  linux
 #define  VRPN_ARCH  linux

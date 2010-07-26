@@ -124,9 +124,9 @@ ifeq ($(HW_OS),pc_cygwin)
   ARCH_LIBS := -lquat -lcygwin -luser32 -lgdi32 -lcomdlg32 -lwsock32
 endif
 
-#CFLAGS = -I../ -I../../quat -g
-override CFLAGS := -I../ -I../../quat $(DEBUG_FLAGS) $(CFLAGS)
-override CXXFLAGS := -I../ -I../../quat $(DEBUG_FLAGS) $(CXXFLAGS)
+#CFLAGS = -I../ -I../quat -g
+override CFLAGS := -I../ -I../quat $(DEBUG_FLAGS) $(CFLAGS)
+override CXXFLAGS := -I../ -I../quat $(DEBUG_FLAGS) $(CXXFLAGS)
 
 .SUFFIXES:	.cpp
 
@@ -142,8 +142,8 @@ override CXXFLAGS := -I../ -I../../quat $(DEBUG_FLAGS) $(CXXFLAGS)
 OBJ_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)
 LIB_DIR := ../$(OBJ_DIR)
 
-#LFLAGS = -g -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX)
-override LFLAGS := -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) $(DEBUG_FLAGS) $(LDFLAGS)
+#LFLAGS = -g -L$(LIB_DIR) -L../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX)
+override LFLAGS := -L$(LIB_DIR) -L../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) $(DEBUG_FLAGS) $(LDFLAGS)
 
 $(OBJ_DIR)/%.o: %.c
 	@[ -d $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
@@ -158,7 +158,7 @@ $(OBJ_DIR)/%.o: %.cpp
 	$(CC) $(CXXFLAGS) -o $@ -c $<
 
 INSTALL_APPS := vrpn_print_devices forcedevice_test_client vrpn_ping \
-	add_vrpn_cookie
+	add_vrpn_cookie vrpn_print_performance
 # vrpn_print_messages
 
 APPS := $(INSTALL_APPS) printvals printcereal checklogfile logfilesenders \
@@ -171,6 +171,9 @@ all:	$(APPS)
 
 .PHONY:	vrpn_print_devices
 vrpn_print_devices:	$(OBJ_DIR)/vrpn_print_devices
+
+.PHONY:	vrpn_print_performance
+vrpn_print_performance:	$(OBJ_DIR)/vrpn_print_performance
 
 .PHONY:	forcedevice_test_client
 forcedevice_test_client:	$(OBJ_DIR)/forcedevice_test_client
@@ -238,6 +241,10 @@ $(OBJ_DIR)/printvals: $(OBJ_DIR)/printvals.o $(LIB_DIR)/libvrpn.a
 $(OBJ_DIR)/vrpn_print_devices: $(OBJ_DIR)/vrpn_print_devices.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/vrpn_print_devices \
 		$(OBJ_DIR)/vrpn_print_devices.o -lvrpn $(ARCH_LIBS)
+
+$(OBJ_DIR)/vrpn_print_performance: $(OBJ_DIR)/vrpn_print_performance.o $(LIB_DIR)/libvrpn.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/vrpn_print_performance \
+		$(OBJ_DIR)/vrpn_print_performance.o -lvrpn $(ARCH_LIBS)
 
 $(OBJ_DIR)/printcereal: $(OBJ_DIR)/printcereal.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/printcereal \

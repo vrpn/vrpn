@@ -55,13 +55,13 @@ if(VRPN_USE_PHANTOM_SERVER AND OPENHAPTICS_FOUND)
 	install(TARGETS vrpn_phantom
 		ARCHIVE DESTINATION lib
 		PUBLIC_HEADER DESTINATION include)
-	set(VRPNPHANTOMLIB vrpn_phantom)
+	set (VRPNPHANTOMLIB vrpn_phantom)
 endif()
 
 #-----------------------------------------------------------------------------
 # DirectShow base-class library (if configured)
 if(VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER AND DIRECTSHOW_FOUND)
-	add_definitions(-DCOINIT_DISABLE_OLE1DDE=0x4)
+	add_definitions( -DCOINIT_DISABLE_OLE1DDE=0x4 )
 	add_library(DirectShow_baseclasses
 		${DirectShow_BASECLASS_DIR}/amextra.cpp
 		${DirectShow_BASECLASS_DIR}/amfilter.cpp
@@ -181,7 +181,7 @@ set(SRV_TEST_SOURCES
 )
 
 set(SRV_SERVER_SOURCES
-	wiimote_head_tracker.C
+        wiimote_head_tracker.C
 )
 
 
@@ -202,13 +202,13 @@ endforeach()
 # Servers
 ###
 foreach(SOURCE ${SRV_SERVER_SOURCES})
-	get_filename_component(APP ${SOURCE} NAME_WE)
-	add_executable(${APP} ${SOURCE})
-	target_link_libraries(${APP} ${VRPN_SERVER_LIBRARY})
-	set_target_properties(${APP} PROPERTIES SOLUTION_FOLDER servers)
-	set_target_properties(${APP} PROPERTIES HAS_CXX yes)
-	install(TARGETS ${APP}
-		RUNTIME DESTINATION bin)
+        get_filename_component(APP ${SOURCE} NAME_WE)
+        add_executable(${APP} ${SOURCE})
+        target_link_libraries(${APP} ${VRPN_SERVER_LIBRARY})
+        set_target_properties(${APP} PROPERTIES SOLUTION_FOLDER servers)
+        set_target_properties(${APP} PROPERTIES HAS_CXX yes)
+        install(TARGETS ${APP}
+                RUNTIME DESTINATION bin)
 endforeach()
 
 ###
@@ -217,9 +217,10 @@ endforeach()
 
 # Wiimote jconf files for fishtank VR
 set(VRPN_WIIMOTE_JCONFS
-	vrpn.wiimoteheadtracker.fishtankvr.1280x1024.jconf
-	vrpn.wiimoteheadtracker.fishtankvr.1024x768.jconf
-	vrpn.wiimoteheadtracker.fishtankvr.800x600.jconf)
+        vrpn.wiimoteheadtracker.fishtankvr.1280x1024.jconf
+        vrpn.wiimoteheadtracker.fishtankvr.1024x768.jconf
+        vrpn.wiimoteheadtracker.fishtankvr.800x600.jconf)
 
 install(FILES ${VRPN_WIIMOTE_JCONFS}
-	DESTINATION share/vrpn-${CPACK_PACKAGE_VERSION}/vrjuggler-2.2-config)
+        DESTINATION share/vrpn-${CPACK_PACKAGE_VERSION}/vrjuggler-2.2-config)
+

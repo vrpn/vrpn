@@ -288,10 +288,10 @@ clean :
 
 
 install: lib
-	-mkdir $(LIB_INSTALL_DIR)
+	-mkdir -p $(LIB_INSTALL_DIR)
 	( cd $(LIB_INSTALL_DIR) ; rm -f libquat.a )
 	( cd $(HW_OS)$(OBJECT_DIR_SUFFIX) ; cp lib*.a $(LIB_INSTALL_DIR) )
-	-mkdir $(INCLUDE_INSTALL_DIR)
+	-mkdir -p $(INCLUDE_INSTALL_DIR)
 	cp quat.h $(INCLUDE_INSTALL_DIR)
 
 

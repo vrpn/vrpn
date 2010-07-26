@@ -152,10 +152,10 @@ endif
 OBJ_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)
 LIB_DIR := ../$(OBJ_DIR)
 
-#CFLAGS = -g -I./ -I../ -I../../quat
-override CFLAGS := $(CFLAGS) -I./ -I../ -I../../quat -I../../libfreespace/include $(DEBUG_FLAGS) $(CFLAGS)
-override CXXFLAGS := $(CXXFLAGS) -I./ -I../ -I../../quat -I../../libfreespace/include $(DEBUG_FLAGS) $(CXXFLAGS)
-override LFLAGS := $(LFLAGS) -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) $(LDFLAGS)
+#CFLAGS = -g -I./ -I../ -I../quat
+override CFLAGS := $(CFLAGS) -I./ -I../ -I../quat -I../../libfreespace/include $(DEBUG_FLAGS) $(CFLAGS)
+override CXXFLAGS := $(CXXFLAGS) -I./ -I../ -I../quat -I../../libfreespace/include $(DEBUG_FLAGS) $(CXXFLAGS)
+override LFLAGS := $(LFLAGS) -L$(LIB_DIR) -L../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) $(LDFLAGS)
 VRPN_LIBS = -lvrpnserver -lvrpnatmel -lpthread
 
 # Uncomment the following section and point them at the
@@ -413,7 +413,7 @@ clean:
 ifeq ($(HW_OS),)
 		echo "Must specify HW_OS !"
 else
-		rm -f $(OBJ_DIR)/*
+	rm -f $(OBJ_DIR)/*
 endif
 
 $(OBJ_DIR)/vrpn.o:	vrpn.C

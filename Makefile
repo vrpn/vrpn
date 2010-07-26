@@ -297,12 +297,12 @@ ifeq ($(HW_OS),hp_flow_aCC)
                  -I/usr/include/bsd -DFLOW
 endif
 
-# On the PC, place quatlib in the directory ../quat.  No actual system
+# On the PC, place quatlib in the directory ./quat.  No actual system
 # includes should be needed.
 ifeq ($(HW_OS),pc_cygwin)
-  INCLUDE_FLAGS := -I. -I../quat -I./atmellib
+  INCLUDE_FLAGS := -I. -I./quat -I./atmellib
 else
-  INCLUDE_FLAGS := -I. $(SYS_INCLUDE) -I../quat -I../../quat -I./atmellib
+  INCLUDE_FLAGS := -I. $(SYS_INCLUDE) -I./quat -I../quat -I./atmellib
 endif
 
 
@@ -395,17 +395,17 @@ $(OBJECT_DIR)/%.o: %.c $(LIB_INCLUDES) $(MAKEFILE)
 # Build objects from .C files
 $(OBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) $(MAKEFILE)
 	@[ -d $(OBJECT_DIR) ] || mkdir -p $(OBJECT_DIR)
-	$(CC) $(CXXFLAGS) -DVRPN_CLIENT_ONLY -o $@ -c $<
+	$(CC) $(CFLAGS) -DVRPN_CLIENT_ONLY -o $@ -c $<
 
 # Build objects from .C files
 $(SOBJECT_DIR)/%.o: %.C $(SLIB_INCLUDES) $(MAKEFILE)
 	@[ -d $(SOBJECT_DIR) ] || mkdir -p $(SOBJECT_DIR)
-	$(CC) $(CXXFLAGS) -o $@ -c $<
+	$(CC) $(CFLAGS) -o $@ -c $<
 
 # Build objects from .C files
 $(AOBJECT_DIR)/%.o: %.C $(ALIB_INCLUDES) $(MAKEFILE)
 	@[ -d $(AOBJECT_DIR) ] || mkdir -p $(AOBJECT_DIR)
-	$(CC) $(CXXFLAGS) -o $@ -c $<
+	$(CC) $(CFLAGS) -o $@ -c $<
 
 #
 #
@@ -540,6 +540,7 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_Button_NI_DIO24.C \
 	vrpn_CerealBox.C \
 	vrpn_Dyna.C \
+	vrpn_DreamCheeky.C \
 	vrpn_Event_Analog.C \
 	vrpn_Event.C \
 	vrpn_Event_Mouse.C \
@@ -585,7 +586,6 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_Xkeys.C \
 	vrpn_Zaber.C \
 
-
 SLIB_OBJECTS = $(patsubst %,$(SOBJECT_DIR)/%,$(SLIB_FILES:.C=.o))
 
 SLIB_INCLUDES = $(LIB_INCLUDES) \
@@ -601,6 +601,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_Button_NI_DIO24.h \
 	vrpn_CerealBox.h \
 	vrpn_Dyna.h \
+	vrpn_DreamCheeky.h \
 	vrpn_Event_Analog.h \
 	vrpn_Event.h \
 	vrpn_Event_Mouse.h \

@@ -349,10 +349,10 @@ void vrpn_Tracker_InterSense::get_report(void)
 {
 #ifdef  VRPN_INCLUDE_INTERSENSE
   q_vec_type angles;
-  ISD_TRACKER_DATA_TYPE data;
+  ISD_TRACKING_DATA_TYPE data;
   int i;
 
-  if(ISD_GetData(m_Handle,&data)) {
+  if(ISD_GetTrackingData(m_Handle,&data)) {
     for(int station=0;station<ISD_MAX_STATIONS;station++) {
       if(data.Station[station].NewData == TRUE) {
 
@@ -426,16 +426,16 @@ void vrpn_Tracker_InterSense::get_report(void)
 	pos[2] = data.Station[station].Position[2];
 
 	if(m_StationInfo[station].AngleFormat == ISD_QUATERNION) {	
-		d_quat[0] = data.Station[station].Orientation[1];
-		d_quat[1] = data.Station[station].Orientation[2];
-		d_quat[2] = data.Station[station].Orientation[3];
-		d_quat[3] = data.Station[station].Orientation[0];
+		d_quat[0] = data.Station[station].Quaternion[1];
+		d_quat[1] = data.Station[station].Quaternion[2];
+		d_quat[2] = data.Station[station].Quaternion[3];
+		d_quat[3] = data.Station[station].Quaternion[0];
         } else {
 	        // Just return Euler for now...
 	        // nahon@virtools needs to convert to radians
-		angles[0] = DEG_TO_RAD*data.Station[station].Orientation[0];
-		angles[1] = DEG_TO_RAD*data.Station[station].Orientation[1];
-		angles[2] = DEG_TO_RAD*data.Station[station].Orientation[2];
+		angles[0] = DEG_TO_RAD*data.Station[station].Euler[0];
+		angles[1] = DEG_TO_RAD*data.Station[station].Euler[1];
+		angles[2] = DEG_TO_RAD*data.Station[station].Euler[2];
 
 		q_from_euler(d_quat, angles[0], angles[1], angles[2]);	
 	}

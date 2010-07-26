@@ -11,8 +11,8 @@
 include ../Makefile
 
 PYTHON_VER := $(shell /usr/bin/python -V 2>&1 | sed 's/^[^0-9]*\([0-9]\+.[0-9]\+\)[^0-9].*/\1/')
-VRPN_ROOT_DIR := ../..
-OBJECT_DIR := $(VRPN_ROOT_DIR)/vrpn/$(OBJECT_DIR)
+VRPN_ROOT_DIR := ..
+OBJECT_DIR := $(VRPN_ROOT_DIR)/$(OBJECT_DIR)
 PYTHON_INCLUDE_DIR := /usr/include/python$(PYTHON_VER)
 PYTHON_LIB := python$(PYTHON_VER)
 PYTHON_PACKAGES_DIR := $(LIB_DIR)/python$(PYTHON_VER)/dist-packages
@@ -34,7 +34,7 @@ vrpn-libs := $(addprefix _,$(vrpn-wrapper))
 vrpn-python: $(vrpn-wrapper)
 
 $(vrpn-wrapper): $(MAKEFILE) $(LIB_OBJECTS) 
-	mkdir -p $(HW_OS)
+	-mkdir -p $(HW_OS)
 	cp ../$(HW_OS)/.depend $(HW_OS)
 	swig -Wall -classic -c++ -python $(patsubst %.so,%.i,$@)
 	$(CXX) -ggdb -c $(patsubst %.so,%_wrap.cxx,$@) -I$(PYTHON_INCLUDE_DIR) -I$(VRPN_ROOT_DIR) -I$(QUAT_INCLUDE_DIR)

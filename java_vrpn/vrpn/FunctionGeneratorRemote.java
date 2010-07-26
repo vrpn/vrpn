@@ -1,27 +1,31 @@
 package vrpn;
 import java.util.*;
 
-import vrpn.ForceDeviceRemote.ForceChange;
-import vrpn.ForceDeviceRemote.ForceChangeListener;
 
 public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 {
 	//////////////////
 	// Public structures and interfaces
 	
-	public interface Function { }
+	public static interface Function { }
 	
-	public class Function_NULL implements Function { }
+	public static class Function_NULL implements Function { }
 	
-	public class Function_script implements Function
+	public static class Function_script implements Function
 	{
 		public String script = "";
 		public Function_script( String script ) { this.script = script; }
 	}
 	
-	public class Channel
+	public static class Channel
 	{
 		public Function function = new Function_NULL();
+		
+		public Channel( Function f )
+		{
+			this.function = f;
+		}
+		public Channel() {}
 	}
 	
 	public class ChannelReply
@@ -76,6 +80,41 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 		public void fgInterpreterReply( InterpreterReply r, FunctionGeneratorRemote fg );
 	}
 	
+	public enum FGError
+	{
+		NO_FG_ERROR (0),
+		INTERPRETER_ERROR (1),
+		TAKING_TOO_LONG (2),
+		INVALID_RESULT_QUANTITY (3),
+		INVALID_RESULT_RANGE (4),
+		
+		UNKNOWN_ERROR (9999);
+		
+		private final int errorCode;
+		private FGError( int err ) { this.errorCode = err; }
+		public static FGError getErrorFromCode( int err )
+		{
+			for( FGError fgerror : FGError.values() )
+			{
+				if( err == fgerror.errorCode )
+					return fgerror;
+			}
+			return UNKNOWN_ERROR;
+		}
+	}
+	
+	public class ErrorReply
+	{
+		public Date msg_time = new Date();
+		public FGError error;
+		public int channel;
+	}
+	
+	public interface ErrorListener
+	{
+		public void fgErrorReply( ErrorReply r, FunctionGeneratorRemote fg );
+	}
+	
 	// end of the public structures and interfaces
 	//////////////////////////////////
 	
@@ -97,20 +136,23 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 	}
 	
 	
-	public int setChannel( int channelNumber, Channel c )
+	public boolean setChannel( int channelNumber, Channel c )
 	{
-		int retval = 0;
+		boolean retval = false;
 		synchronized( downInVrpnLock )
 		{
-			retval = setChannel_native( channelNumber, c );
+			if( c.function instanceof Function_NULL )
+				retval = setChannelNULL_native( channelNumber );
+			else if( c.function instanceof Function_script )
+				retval = setChannelScript_native( channelNumber, ((Function_script)c.function).script );
 		}
 		return retval;
 	}
 	
 	
-	public int requestChannel( int channelNumber )
+	public boolean requestChannel( int channelNumber )
 	{
-		int retval = 0;
+		boolean retval = false;
 		synchronized( downInVrpnLock )
 		{
 			retval = requestChannel_native( channelNumber );
@@ -119,9 +161,9 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 	}
 	
 	
-	public int requestAllChannels( )
+	public boolean requestAllChannels( )
 	{
-		int retval = 0;
+		boolean retval = false;
 		synchronized( downInVrpnLock )
 		{
 			retval = requestAllChannels_native( );
@@ -130,9 +172,9 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 	}
 	
 	
-	public int requestStart( )
+	public boolean requestStart( )
 	{
-		int retval = 0;
+		boolean retval = false;
 		synchronized( downInVrpnLock )
 		{
 			retval = requestStart_native( );
@@ -141,9 +183,9 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 	}
 	
 	
-	public int requestStop( )
+	public boolean requestStop( )
 	{
-		int retval = 0;
+		boolean retval = false;
 		synchronized( downInVrpnLock )
 		{
 			retval = requestStop_native( );
@@ -152,9 +194,9 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 	}
 	
 	
-	public int requestSampleRate( float rate )
+	public boolean requestSampleRate( float rate )
 	{
-		int retval = 0;
+		boolean retval = false;
 		synchronized( downInVrpnLock )
 		{
 			retval = requestSampleRate_native( rate );
@@ -163,9 +205,9 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 	}
 	
 	
-	public int requestInterpreterDescription( )
+	public boolean requestInterpreterDescription( )
 	{
-		int retval = 0;
+		boolean retval = false;
 		synchronized( downInVrpnLock )
 		{
 			retval = requestInterpreterDescription_native( );
@@ -179,9 +221,7 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 		channelListeners.addElement( listener );
 	}
 
-	/**
-	 * @return true on success; false on failure
-	 */
+
 	public synchronized boolean removeChannelReplyListener( ChannelReplyListener listener )
 	{
 		return channelListeners.removeElement( listener );
@@ -193,9 +233,7 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 		startStopListeners.addElement( listener );
 	}
 
-	/**
-	 * @return true on success; false on failure
-	 */
+
 	public synchronized boolean removeStartStopReplyListener( StartStopReplyListener listener )
 	{
 		return startStopListeners.removeElement( listener );
@@ -207,9 +245,7 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 		sampleRateListeners.addElement( listener );
 	}
 
-	/**
-	 * @return true on success; false on failure
-	 */
+
 	public synchronized boolean removeSampleRateReplyListener( SampleRateReplyListener listener )
 	{
 		return sampleRateListeners.removeElement( listener );
@@ -221,12 +257,22 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 		interpreterListeners.addElement( listener );
 	}
 
-	/**
-	 * @return true on success; false on failure
-	 */
+
 	public synchronized boolean removeInterpreterReplyListener( InterpreterReplyListener listener )
 	{
 		return interpreterListeners.removeElement( listener );
+	}
+	
+	
+	public synchronized void addErrorListener( ErrorListener listener )
+	{
+		errorListeners.addElement(  listener );
+	}
+	
+	
+	public synchronized boolean removeErrorListener( ErrorListener listener )
+	{
+		return errorListeners.removeElement( listener );
 	}
 	
 	
@@ -239,13 +285,14 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 	// Protected methods
 	//
 	
-	protected native int setChannel_native( int channelNumber, Channel c );
-	protected native int requestChannel_native( int channelNumber );
-	protected native int requestAllChannels_native( );
-	protected native int requestStart_native( );
-	protected native int requestStop_native( );
-	protected native int requestSampleRate_native( float rate );
-	protected native int requestInterpreterDescription_native( );
+	protected native boolean setChannelNULL_native( int channelNumber );
+	protected native boolean setChannelScript_native( int channelNumber, String script );
+	protected native boolean requestChannel_native( int channelNumber );
+	protected native boolean requestAllChannels_native( );
+	protected native boolean requestStart_native( );
+	protected native boolean requestStop_native( );
+	protected native boolean requestSampleRate_native( float rate );
+	protected native boolean requestInterpreterDescription_native( );
 	
 	
 	protected void stoppedRunning()
@@ -255,6 +302,7 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 		startStopListeners.removeAllElements();
 		sampleRateListeners.removeAllElements();
 		interpreterListeners.removeAllElements();
+		errorListeners.removeAllElements();
 		
 		// shut down the native object
 		synchronized( downInVrpnLock )
@@ -273,7 +321,7 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 	protected void handleChannelChange_NULL( long tv_sec, long tv_usec,  int channelNumber )
 	{
 		// putting the body of this function into a synchronized block prevents
-		// other instances of FunctionGeneratorRemote from calling listeners' forceUpdate
+		// other instances of FunctionGeneratorRemote from calling listeners' fgChannelReply
 		// method concurrently.
 		synchronized( notifyingChannelListenersLock )
 		{
@@ -297,7 +345,7 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 												String script )
 	{
 		// putting the body of this function into a synchronized block prevents
-		// other instances of FunctionGeneratorRemote from calling listeners' forceUpdate
+		// other instances of FunctionGeneratorRemote from calling listeners' fgChannelReply
 		// method concurrently.
 		synchronized( notifyingChannelListenersLock )
 		{
@@ -321,7 +369,7 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 	protected void handleStartReply( long tv_sec, long tv_usec, boolean isStarted )
 	{
 		// putting the body of this function into a synchronized block prevents
-		// other instances of FunctionGeneratorRemote from calling listeners' forceUpdate
+		// other instances of FunctionGeneratorRemote from calling listeners' fgStartReply
 		// method concurrently.
 		synchronized( notifyingStartStopListenersLock )
 		{
@@ -330,7 +378,7 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 			s.isStarted = isStarted;
 			
 			// notify all listeners
-			Enumeration e = channelListeners.elements( );
+			Enumeration e = startStopListeners.elements( );
 			while( e.hasMoreElements( ) )
 			{
 				StartStopReplyListener l = (StartStopReplyListener) e.nextElement( );
@@ -343,7 +391,7 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 	protected void handleStopReply( long tv_sec, long tv_usec, boolean isStopped )
 	{
 		// putting the body of this function into a synchronized block prevents
-		// other instances of FunctionGeneratorRemote from calling listeners' forceUpdate
+		// other instances of FunctionGeneratorRemote from calling listeners' fgStopReply
 		// method concurrently.
 		synchronized( notifyingStartStopListenersLock )
 		{
@@ -352,7 +400,7 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 			s.isStopped = isStopped;
 			
 			// notify all listeners
-			Enumeration e = channelListeners.elements( );
+			Enumeration e = startStopListeners.elements( );
 			while( e.hasMoreElements( ) )
 			{
 				StartStopReplyListener l = (StartStopReplyListener) e.nextElement( );
@@ -365,7 +413,7 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 	protected void handleSampleRateReply( long tv_sec, long tv_usec, double rate )
 	{
 		// putting the body of this function into a synchronized block prevents
-		// other instances of FunctionGeneratorRemote from calling listeners' forceUpdate
+		// other instances of FunctionGeneratorRemote from calling listeners' fgSampleRateReply
 		// method concurrently.
 		synchronized( notifyingSampleRateListenersLock )
 		{
@@ -374,7 +422,7 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 			s.sampleRate = rate;
 			
 			// notify all listeners
-			Enumeration e = channelListeners.elements( );
+			Enumeration e = sampleRateListeners.elements( );
 			while( e.hasMoreElements( ) )
 			{
 				SampleRateReplyListener l = (SampleRateReplyListener) e.nextElement( );
@@ -396,11 +444,34 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 			r.description = desc;
 			
 			// notify all listeners
-			Enumeration e = channelListeners.elements( );
+			Enumeration e = interpreterListeners.elements( );
 			while( e.hasMoreElements( ) )
 			{
 				InterpreterReplyListener l = (InterpreterReplyListener) e.nextElement( );
 				l.fgInterpreterReply( r, this );
+			}
+		} 
+	}
+	
+	
+	protected void handleErrorReport( long tv_sec, long tv_usec, int err, int channel )
+	{
+		// putting the body of this function into a synchronized block prevents
+		// other instances of FunctionGeneratorRemote from calling listeners' fgErrorReply
+		// method concurrently.
+		synchronized( notifyingErrorListenersLock )
+		{
+			ErrorReply r = new ErrorReply();
+			r.msg_time.setTime( tv_sec * 1000 + (int) (tv_usec/1000.0) );
+			r.error = FGError.getErrorFromCode( err );
+			r.channel = channel;
+			
+			// notify all listeners
+			Enumeration e = errorListeners.elements( );
+			while( e.hasMoreElements( ) )
+			{
+				ErrorListener l = (ErrorListener) e.nextElement( );
+				l.fgErrorReply( r, this );
 			}
 		} 
 	}
@@ -434,6 +505,7 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 	protected Vector startStopListeners = new Vector();
 	protected Vector sampleRateListeners = new Vector();
 	protected Vector interpreterListeners = new Vector();
+	protected Vector errorListeners = new Vector();
 
 	/**
 	 * @see vrpn.TrackerRemote#notifyingChangeListenersLock
@@ -442,6 +514,7 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 	protected final static Object notifyingStartStopListenersLock = new Object( );
 	protected final static Object notifyingSampleRateListenersLock = new Object( );
 	protected final static Object notifyingInterpreterListenersLock = new Object( );
+	protected final static Object notifyingErrorListenersLock = new Object( );
 	
 
 }

@@ -4994,27 +4994,33 @@ get_log_names(char **local_in_logname, char **local_out_logname, char **remote_i
 	vrpn_Endpoint* endpoint = d_endpoints[0];
 	// XXX it is possible to have more than one endpoint, and other endpoints may have other log names
 
-	*local_in_logname = endpoint->d_inLog->getName();
-	*local_out_logname = endpoint->d_outLog->getName();
+	if( local_in_logname != NULL ) *local_in_logname = endpoint->d_inLog->getName();
+	if( local_out_logname != NULL )*local_out_logname = endpoint->d_outLog->getName();
 
-	if( endpoint->d_remoteInLogName != NULL )
+	if( remote_in_logname != NULL )
 	{
-		*remote_in_logname = new char[ strlen( endpoint->d_remoteInLogName ) + 1 ];
-		strcpy( *remote_in_logname, endpoint->d_remoteInLogName );
-	}
-	else
-	{
-		*remote_in_logname = NULL;
+		if( endpoint->d_remoteInLogName != NULL )
+		{
+			*remote_in_logname = new char[ strlen( endpoint->d_remoteInLogName ) + 1 ];
+			strcpy( *remote_in_logname, endpoint->d_remoteInLogName );
+		}
+		else
+		{
+			*remote_in_logname = NULL;
+		}
 	}
 
-	if( endpoint->d_remoteOutLogName != NULL )
+	if( remote_out_logname != NULL )
 	{
-		*remote_out_logname = new char[ strlen( endpoint->d_remoteOutLogName ) + 1 ];
-		strcpy( *remote_out_logname, endpoint->d_remoteOutLogName );
-	}
-	else
-	{
-		*remote_out_logname = NULL;
+		if( endpoint->d_remoteOutLogName != NULL )
+		{
+			*remote_out_logname = new char[ strlen( endpoint->d_remoteOutLogName ) + 1 ];
+			strcpy( *remote_out_logname, endpoint->d_remoteOutLogName );
+		}
+		else
+		{
+			*remote_out_logname = NULL;
+		}
 	}
 }
 
