@@ -29,7 +29,7 @@ include(SetDefaultBuildType)
 # Basic packaging options and versioning
 
 # This may be incremented manually - reset to 0 for each upstream release
-set(CPACK_PACKAGE_VERSION_PATCH "1")
+set(CPACK_PACKAGE_VERSION_PATCH "2")
 
 set(CPACK_PACKAGE_VENDOR
 	"Russell M. Taylor II at the University of North Carolina at Chapel Hill")
