@@ -77,6 +77,7 @@ option(VRPN_BUILD_SERVER_LIBRARY
 
 # Build various applications if we want them.
 option(VRPN_BUILD_PYTHON "Build VRPN Python bindings (development)" OFF)
+option(VRPN_BUILD_JAVA "Build VRPN Java bindings (development)" OFF)
 option(VRPN_BUILD_CLIENTS "Build VRPN client apps and tests" ON)
 option(VRPN_BUILD_SERVERS "Build VRPN servers" ON)
 option(VRPN_BUILD_TEST_RPC_GENERATION "Build VRPN RPC generation" OFF)
@@ -138,6 +139,14 @@ message(STATUS "")
 ###
 find_package(SWIG)
 find_package(PythonLibs)
+
+###
+# javac, jar, and javah (for java wrapper)
+###
+find_package(Java COMPONENTS Development)
+find_package(JNI)
+find_program(JAVAH_EXECUTABLE NAMES javah)
+mark_as_advanced(JAVAH_EXECUTABLE)
 
 ###
 # MPI
@@ -624,6 +633,10 @@ add_subdirectory(doxygen)
 #-----------------------------------------------------------------------------
 # Python wrappers
 add_subdirectory(python_vrpn)
+
+#-----------------------------------------------------------------------------
+# Java wrappers
+add_subdirectory(java_vrpn)
 
 #-----------------------------------------------------------------------------
 # Applications that live in the main directory.
