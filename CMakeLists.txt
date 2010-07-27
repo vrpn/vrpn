@@ -16,7 +16,7 @@ project(VRPN)
 # Improve this CPack installer.
 
 ###
-# Local CMake Modules
+# Local CMake Modules - keep this first
 ###
 list(APPEND CMAKE_MODULE_PATH ${VRPN_SOURCE_DIR}/cmake)
 include(UseBackportedModules)
@@ -26,15 +26,16 @@ include(CppcheckTargets)
 include(SetDefaultBuildType)
 
 ###
-# Basic packaging options
+# Basic packaging options and versioning
+
+# This may be incremented manually - reset to 0 for each upstream release
+set(CPACK_PACKAGE_VERSION_PATCH "1")
 
 set(CPACK_PACKAGE_VENDOR
 	"Russell M. Taylor II at the University of North Carolina at Chapel Hill")
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/ParseVersion.cmake")
 
-# This may be incremented manually - reset to 0 for each upstream release
-set(CPACK_PACKAGE_VERSION_PATCH "1")
 
 set(CPACK_PACKAGE_VERSION
 	"${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
