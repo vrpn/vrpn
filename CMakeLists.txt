@@ -51,7 +51,7 @@ set(CPACK_SOURCE_PACKAGE_FILE_NAME
 #-----------------------------------------------------------------------------
 # Compiler flags we got from Hans for Windows and from Sheldon Andrews
 # for other architectures.
-if(WIN32) # MS-Windows, both 32 and 64 bits
+if(MSVC) # MS-Windows Visual Studio, both 32 and 64 bits
   set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   /fp:fast")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast")
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /FIXED:NO")
