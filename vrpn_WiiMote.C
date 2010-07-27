@@ -44,31 +44,36 @@ void vrpn_WiiMote::handle_event()
     buttons[i] = ( wiimote->device->btns & (1 << i) ) != 0;
   }
 
-  if (wiimote->device->exp.type == EXP_NUNCHUK) {
-    for (i = 0; i < 16; i++) {
-      buttons[16+i] = ( wiimote->device->exp.nunchuk.btns & (1 << i) ) != 0;
-    }
-  }
+  switch (wiimote->device->exp.type) {
+    case EXP_NONE:
+		// No expansion buttons to grab
+		break;
+    case EXP_NUNCHUK:
+        for (i = 0; i < 16; i++) {
+            buttons[16+i] = ( wiimote->device->exp.nunchuk.btns & (1 << i) ) != 0;
+        }
+        break;
 
-  if (wiimote->device->exp.type == EXP_CLASSIC) {
-    for (i = 0; i < 16; i++) {
-      buttons[32+i] = ( wiimote->device->exp.classic.btns & (1 << i) ) != 0;
-    }
-  }
+    case EXP_CLASSIC:
+        for (i = 0; i < 16; i++) {
+            buttons[32+i] = ( wiimote->device->exp.classic.btns & (1 << i) ) != 0;
+        }
+        break;
 
-  if (wiimote->device->exp.type == EXP_GUITAR_HERO_3) {
-    for (i = 0; i < 16; i++) {
-      buttons[48+i] = ( wiimote->device->exp.gh3.btns & (1 << i) ) != 0;
-    }
-  }
+    case EXP_GUITAR_HERO_3:
+        for (i = 0; i < 16; i++) {
+            buttons[48+i] = ( wiimote->device->exp.gh3.btns & (1 << i) ) != 0;
+        }
+        break;
 
-  if (wiimote->device->exp.type == EXP_WII_BOARD) {
-	  // The balance board pretends to be its own wiimote, with only an "a" button
-	  // Use to calibrate.
-	  if (IS_PRESSED(wiimote->device, WIIMOTE_BUTTON_A))
-	  {
-	    wiiuse_set_wii_board_calib(wiimote->device);
-	  }
+    case EXP_WII_BOARD:
+        // The balance board pretends to be its own wiimote, with only an "a" button
+        // Use to calibrate, in a perfect world..
+        if (IS_PRESSED(wiimote->device, WIIMOTE_BUTTON_A))
+        {
+            wiiuse_set_wii_board_calib(wiimote->device);
+        }
+        break;
   }
 
   //-------------------------------------------------------------------------
@@ -97,6 +102,10 @@ void vrpn_WiiMote::handle_event()
 
   // See which secondary controller is installed and report
   switch (wiimote->device->exp.type) {
+	case EXP_NONE:
+		// No expansion analogs to grab
+		break;
+
     case EXP_NUNCHUK:
 	    channel[16 + 0] = wiimote->device->exp.nunchuk.gforce.x;
 	    channel[16 + 1] = wiimote->device->exp.nunchuk.gforce.y;
@@ -121,8 +130,8 @@ void vrpn_WiiMote::handle_event()
 		break;
 
   	case EXP_WII_BOARD:
-		//printf("Got a wii board report: %f, %f, %f, %f\n", wiimote->device->exp.wb.tl, wiimote->device->exp.wb.tr, wiimote->device->exp.wb.bl, wiimote->device->exp.wb.br);
-		printf("Got a wii board report: %d, %d, %d, %d\n", wiimote->device->exp.wb.rtl, wiimote->device->exp.wb.rtr, wiimote->device->exp.wb.rbl, wiimote->device->exp.wb.rbr);
+		printf("Got a wii board report: %f, %f, %f, %f\n", wiimote->device->exp.wb.tl, wiimote->device->exp.wb.tr, wiimote->device->exp.wb.bl, wiimote->device->exp.wb.br);
+		//printf("Got a wii board report: %d, %d, %d, %d\n", wiimote->device->exp.wb.rtl, wiimote->device->exp.wb.rtr, wiimote->device->exp.wb.rbl, wiimote->device->exp.wb.rbr);
   		//printf("")
 		channel[64 + 0] = wiimote->device->exp.wb.tl;
 	    channel[64 + 1] = wiimote->device->exp.wb.tr;
@@ -140,7 +149,7 @@ void vrpn_WiiMote::handle_event()
 		struct timeval now;
 		vrpn_gettimeofday(&now, NULL);
 		char msg[1024];
-		sprintf(msg, "I have no idea what kind of expansion this is!  device->exp.type = %d", wiimote->device->exp.type);
+		sprintf(msg, "Unknown Wii Remote expansion type: device->exp.type = %d", wiimote->device->exp.type);
 		send_text_message(msg, now, vrpn_TEXT_ERROR);
   }
 
