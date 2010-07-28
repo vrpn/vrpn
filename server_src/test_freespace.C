@@ -151,7 +151,7 @@ int main (int argc, char * argv [])
   //---------------------------------------------------------------------
   // create a freespace tracker for the first device.
   printf("Tracker's name is %s.\n", trackerName);
-  freespace = vrpn_Freespace::create(trackerName, connection, 0, sendBody, sendUser);
+  freespace = vrpn_Freespace::create(trackerName, connection, 0, (sendBody != 0), (sendUser != 0));
   if (!freespace) {
       fprintf(stderr, "Error opening freespace device: %s\n", trackerName);
   	  return 1;
