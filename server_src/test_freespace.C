@@ -4,7 +4,7 @@
 // Hillcrest Labs Freespace powered device is working properly.
 // Most of this code was copied from the test_radamec_spi.C file
 //
-
+#define VRPN_USE_FREESPACE
 #ifdef VRPN_USE_FREESPACE
 #include <stdlib.h>
 #include <stdio.h>
@@ -16,7 +16,8 @@
 #include "vrpn_Button.h"
 #include "vrpn_Freespace.h"
 
-char	*TRACKER_NAME = "Freespace0";
+char *TRACKER_NAME = "Freespace0";
+char trackerName[512];
 int	CONNECTION_PORT = vrpn_DEFAULT_LISTEN_PORT_NO;	// Port for connection to listen on
 
 // The connection that is used by all of the servers and remotes
@@ -28,6 +29,40 @@ vrpn_Dial_Remote	*rdial;
 vrpn_Button_Remote	*rbutton;
 // The freespace device
 vrpn_Freespace		*freespace;
+
+/*****************************************************************************
+ * Console handlers for CTRL-C
+ ****************************************************************************/
+int quit = 0;
+#ifdef _WIN32
+static BOOL CtrlHandler(DWORD fdwCtrlType) {
+    quit = 1;
+    return TRUE;
+}
+
+void addControlHandler() {
+    if (!SetConsoleCtrlHandler( (PHANDLER_ROUTINE) CtrlHandler, TRUE )) {
+        printf("Could not install control handler\n");
+    }
+}
+
+#else
+
+static void sighandler(int num) {
+    quit = 1;
+}
+void addControlHandler() {
+    // Set up the signal handler to catch
+    // CTRL-C and clean up gracefully.
+    struct sigaction setmask;
+    sigemptyset(&setmask.sa_mask);
+    setmask.sa_handler = sighandler;
+    setmask.sa_flags = 0;
+
+    sigaction(SIGHUP, &setmask, NULL);
+    sigaction(SIGINT, &setmask, NULL);
+}
+#endif
 
 /*****************************************************************************
  *
@@ -64,27 +99,27 @@ void	VRPN_CALLBACK handle_buttons (void *, const vrpn_BUTTONCB b)
  *
  *****************************************************************************/
 
-void	create_and_link_tracker_remote(void)
+void	create_and_link_tracker_remote(const char * trackerName)
 {
 	// Open the tracker remote using this connection
-	rtkr = new vrpn_Tracker_Remote (TRACKER_NAME, connection);
+	rtkr = new vrpn_Tracker_Remote (trackerName, connection);
 
 	// Set up the tracker callback handlers
 	rtkr->register_change_handler(NULL, handle_pos);
 	rtkr->register_change_handler(NULL, handle_vel);
 	rtkr->register_change_handler(NULL, handle_acc);
 }
-void create_and_link_button_remote(void)
+void create_and_link_button_remote(const char * trackerName)
 {
 	// Open the tracker remote using this connection
-	rbutton = new vrpn_Button_Remote (TRACKER_NAME, connection);
+	rbutton = new vrpn_Button_Remote (trackerName, connection);
 	// Set up the tracker callback handlers
 	rbutton->register_change_handler(NULL, handle_buttons);
 }
-void create_and_link_dial_remote(void)
+void create_and_link_dial_remote(const char * trackerName)
 {
 	// Open the tracker remote using this connection
-	rdial = new vrpn_Dial_Remote (TRACKER_NAME, connection);
+	rdial = new vrpn_Dial_Remote (trackerName, connection);
 
 	// Set up the tracker callback handlers
 	rdial->register_change_handler(NULL, handle_dial);
@@ -93,27 +128,33 @@ void create_and_link_dial_remote(void)
 
 int main (int argc, char * argv [])
 {
-bool sendBody = 0, sendUser = 1;
-// painfully simple CL options to turn on/off body/user frame reports
+  unsigned controller = 0, sendBody = 0, sendUser = 1;
+  sprintf(trackerName, "%s", TRACKER_NAME);
+
+  // The only command line argument is a string for the configuration
   if (argc > 1) {
-     sendBody = atoi(argv[1]);
-     if (argc > 2) { 
-       sendUser = atoi(argv[2]);
-    }
+      // Get the arguments (device_name, controller_index, bodyFrame, userFrame)
+      if (sscanf(argv[1], "%511s%u%u%u", trackerName, &controller, &sendBody, &sendUser) != 4) {
+        fprintf(stderr, "Bad vrpn_Freespace line: %s\n", argv[1]);
+        fprintf(stderr, "Expect: deviceName controllerIndex bodyFrame userFrame\n");
+        return -1;
+      }
   }
+
+  // Correctly handle command line input
+  addControlHandler();
+
   //---------------------------------------------------------------------
   // explicitly open the connection
   connection = vrpn_create_server_connection(CONNECTION_PORT);
 
   //---------------------------------------------------------------------
-  // Open the tracker server, using this connection, 2 sensors, update 1 times/sec
-  printf("Tracker's name is %s.\n", TRACKER_NAME);
-
   // create a freespace tracker for the first device.
-  freespace = vrpn_Freespace::create(TRACKER_NAME, connection, 0, sendBody, sendUser);
+  printf("Tracker's name is %s.\n", trackerName);
+  freespace = vrpn_Freespace::create(trackerName, connection, 0, sendBody, sendUser);
   if (!freespace) {
-  	fprintf(stderr, "Error opening freespace device\n");
-  	return 1;
+      fprintf(stderr, "Error opening freespace device: %s\n", trackerName);
+  	  return 1;
   }
   // the freespace device exposes 3 vrpn interfaces.  Tracker, buttons, 
   // and a Dial (scrollwheel)
@@ -123,18 +164,11 @@ bool sendBody = 0, sendUser = 1;
   // compelled to generate the messages, though the additional code is fairly 
   // straight forward
 
-  create_and_link_tracker_remote();
-  create_and_link_button_remote();
-  create_and_link_dial_remote();
+  create_and_link_tracker_remote(trackerName);
+  create_and_link_button_remote(trackerName);
+  create_and_link_dial_remote(trackerName);
 
-  /* 
-
-
-
- 
-   * main interactive loop
-   */
-  while ( 1 ) {
+  while ( !quit ) {
 
 	// Let the servers, clients and connection do their things
   	freespace->mainloop();
@@ -144,6 +178,11 @@ bool sendBody = 0, sendUser = 1;
   	// Sleep for 1ms each iteration so we don't eat the CPU
   	vrpn_SleepMsecs(1);
   }
+
+  delete freespace;
+  delete rtkr;
+  delete connection;
+
   return 0;
 }   /* main */
 
