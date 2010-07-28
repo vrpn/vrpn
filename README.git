@@ -31,7 +31,7 @@ Getting to the Git repository using a public/private key pair from a UNC Linux h
 	git push git@git.cs.unc.edu:vrpn.git master
 
 ---------------------
-Random: If you end up pushing in a way that requires a password, you may need to do the following in your shell ahead of time:
+Random: If you end up pushing in a way that requires a password, you may need to do the following in your shell ahead of time to avoid having it attempt to display via an X server:
 unset DISPLAY
 unset SSH_ASKPASS
 
