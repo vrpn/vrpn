@@ -1,9 +1,9 @@
 // -*- c++ -*-
-// This file provides an interface to a Novint Falcon. 
+// This file provides an interface to a Novint Falcon.
 // http://home.novint.com/products/novint_falcon.php
 // It uses libnifalcon to communicate with the device.
 // http://libnifalcon.nonpolynomial.org/
-// 
+//
 // file:        vrpn_Tracker_NovintFalcon.h
 // author:      Axel Kohlmeyer akohlmey@gmail.com 2010-04-14
 // copyright:   (C) 2010 Axel Kohlmeyer
@@ -22,7 +22,7 @@
 #include "vrpn_Button.h"
 #include "vrpn_ForceDevice.h"
 
-// Forward declaration for proxy class that wraps 
+// Forward declaration for proxy class that wraps
 // the device management of the falcon.
 class vrpn_NovintFalcon_Device;
 
@@ -32,10 +32,10 @@ class vrpn_NovintFalcon_ForceObjects;
 
 class VRPN_API vrpn_Tracker_NovintFalcon
     : public vrpn_Tracker, public vrpn_Button, public vrpn_ForceDevice {
-    
+
 public:
     /// custom constructor
-    vrpn_Tracker_NovintFalcon(const char *name, 
+    vrpn_Tracker_NovintFalcon(const char *name,
                               vrpn_Connection *c = NULL,
                               const int devidx = 0,
                               const char *grip = NULL,
@@ -46,7 +46,7 @@ public:
 
     /// Called once through each main loop iteration to handle updates.
     virtual void mainloop();
-    
+
 protected: // methods for tracker and button functionality
     virtual void reset();
     virtual int get_report(void);
