@@ -13,7 +13,7 @@
 #    if we don't find this library.
 #
 # Requires these CMake modules:
-#  FindPackageHandleStandardArgs (known included with CMake >=2.6.2)
+#  FindPackageHandleStandardArgs (known to be included with CMake >=2.6.2)
 #
 # 2010 Axel Kohlmeyer, <akohlmey@gmail.com>
 
@@ -26,7 +26,8 @@ find_path(LIBNIFALCON_INCLUDE_DIR
 	HINTS "${_libdir}")
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(Libnifalcon DEFAULT_MSG
+find_package_handle_standard_args(libnifalcon 
+	DEFAULT_MSG
 	LIBNIFALCON_LIBRARY
 	LIBNIFALCON_INCLUDE_DIR)
 
@@ -38,11 +39,4 @@ if(LIBNIFALCON_FOUND)
 
 endif()
 
-if(LIBNIFALCON_FOUND OR LIBNIFALCON_MARK_AS_ADVANCED)
-	foreach(_cachevar
-		LIBNIFALCON_INCLUDE_DIR
-		LIBNIFALCON_LIBRARY)
-
-		mark_as_advanced(${_cachevar})
-	endforeach()
-endif()
+mark_as_advanced(LIBNIFALCON_INCLUDE_DIR LIBNIFALCON_LIBRARY)
