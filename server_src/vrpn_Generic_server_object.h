@@ -77,11 +77,8 @@
 #include "vrpn_Tracker_NDI_Polaris.h"
 #include "vrpn_WiiMote.h"
 #include "vrpn_Freespace.h"
-<<<<<<< HEAD
 #include "vrpn_DreamCheeky.h"
-=======
 #include "vrpn_Tracker_NovintFalcon.h"
->>>>>>> vrpn-svn
 
 // BUW additions
 #include "vrpn_Atmel.h"
