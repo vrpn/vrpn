@@ -6,10 +6,10 @@
 //
 // File:        vrpn_Tracker_NovintFalcon.C
 // Author:      Axel Kohlmeyer akohlmey@gmail.com
-// Date:        2010-04-24
+// Date:        2010-07-29
 // Copyright:   (C) 2010 Axel Kohlmeyer
-// License:     Released to the Public Domain.
-// depends:     libnifalcon-1.0.1+, libusb-1.0, VRPN 07_26
+// License:     Boost Software License 1.0
+// depends:     libnifalcon-1.0.1+, libusb-1.0, boost, VRPN 07_26
 // tested on:   Linux x86_64 w/ gcc 4.4.1
 
 #include <ctype.h>
@@ -679,39 +679,33 @@ void vrpn_Tracker_NovintFalcon::mainloop()
 
     // no need to report more often than we can poll the device
     vrpn_gettimeofday(&current_time, NULL);
-#if 0
-    if ( timediff(current_time, m_timestamp) >= 1000000.0/m_update_rate) {
-#endif
 
-        // Update the time
-        m_timestamp.tv_sec = current_time.tv_sec;
-        m_timestamp.tv_usec = current_time.tv_usec;
-        switch(status)
-        {
-          case vrpn_TRACKER_AWAITING_STATION:
-          case vrpn_TRACKER_PARTIAL:
-          case vrpn_TRACKER_SYNCING:
-              if (get_report()) {
-                  send_report();
-                  vrpn_Button::report_changes();
-                  handle_forces();
-              }
-              break;
-          case vrpn_TRACKER_RESETTING:
-              reset();
-              break;
+    // Update the time
+    m_timestamp.tv_sec = current_time.tv_sec;
+    m_timestamp.tv_usec = current_time.tv_usec;
+    switch(status)
+    {
+      case vrpn_TRACKER_AWAITING_STATION:
+      case vrpn_TRACKER_PARTIAL:
+      case vrpn_TRACKER_SYNCING:
+          if (get_report()) {
+              send_report();
+              vrpn_Button::report_changes();
+              handle_forces();
+          }
+          break;
+      case vrpn_TRACKER_RESETTING:
+          reset();
+          break;
 
-          case vrpn_TRACKER_FAIL:
-              fprintf(stderr, "NovintFalcon failed, trying to reset (Try power cycle if more than 4 attempts made)\n");
-              status = vrpn_TRACKER_RESETTING;
-              break;
+      case vrpn_TRACKER_FAIL:
+          fprintf(stderr, "NovintFalcon failed, trying to reset (Try power cycle if more than 4 attempts made)\n");
+          status = vrpn_TRACKER_RESETTING;
+          break;
 
-          default:
-              break;
-        }
-#if 0
+      default:
+          break;
     }
-#endif
 }
 
 
