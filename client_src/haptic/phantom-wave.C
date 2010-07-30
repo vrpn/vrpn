@@ -6,7 +6,7 @@
 #include <vrpn_Button.h>
 
 
-#define PHANTOM_SERVER "Phantom@nuuk"
+#define PHANTOM_SERVER "Tracker0@localhost"
 
 /*****************************************************************************
  *
@@ -32,7 +32,7 @@ void    handle_force_change(void *userdata, const vrpn_FORCECB f)
 void    handle_tracker_change(void *userdata, const vrpn_TRACKERCB t)
 {
   static vrpn_TRACKERCB lr; // last report
-  static float dist_interval_sq = 0.004;
+  static float dist_interval_sq = 0.04;
   float *pos = (float *)userdata;
 
   if ((lr.pos[0] - t.pos[0])*(lr.pos[0] - t.pos[0]) +
@@ -110,15 +110,15 @@ int main(int argc, char *argv[]) {
 
         fy = (py - pos[1]) * 14.0;
         // units = dynes
-        forceDevice->setFF_Force(0.20 * cos(t + pos[0]*40.0*M_PI),
+        forceDevice->setFF_Force(0.20 * cos(t + pos[0]*200.0*M_PI),
                                  fy,
-                                 0.0 * cos(    pos[2]*40.0*M_PI));
+                                 0.0 * cos(    pos[2]*200.0*M_PI));
         // set derivatives of force field:
         // units = dynes/meter
         forceDevice->setFF_Jacobian(
-            -4.0*sin(t + pos[0]*40.0*M_PI), 0, 0, 
+            -20.0*sin(t + pos[0]*200.0*M_PI), 0, 0, 
              0, -14.0, 0, 
-             0, 0, -0.0*M_PI*sin(pos[2]*40.0*M_PI)
+             0, 0, -0.0*M_PI*sin(pos[2]*200.0*M_PI)
         );
   
         forceDevice->setFF_Radius(0.02); // 2cm radius of validity

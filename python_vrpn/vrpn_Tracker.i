@@ -12,6 +12,7 @@
 %{
 #include "../vrpn_Types.h"
 #include "../vrpn_BaseClass.h"
+#include "../vrpn_TypeDispatcher.h"
 #include "../vrpn_Connection.h"
 #include "../vrpn_Tracker.h"
 #include "../vrpn_Tracker_3DMouse.h"

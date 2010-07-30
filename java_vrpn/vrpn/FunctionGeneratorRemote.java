@@ -401,7 +401,6 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 			
 			// notify all listeners
 			Enumeration e = startStopListeners.elements( );
-			while( e.hasMoreElements( ) )
 			{
 				StartStopReplyListener l = (StartStopReplyListener) e.nextElement( );
 				l.fgStopReply( s, this );
@@ -414,7 +413,6 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 	{
 		// putting the body of this function into a synchronized block prevents
 		// other instances of FunctionGeneratorRemote from calling listeners' fgSampleRateReply
-		// method concurrently.
 		synchronized( notifyingSampleRateListenersLock )
 		{
 			SampleRateReply s = new SampleRateReply();
@@ -423,7 +421,6 @@ public class FunctionGeneratorRemote extends VRPNDevice implements Runnable
 			
 			// notify all listeners
 			Enumeration e = sampleRateListeners.elements( );
-			while( e.hasMoreElements( ) )
 			{
 				SampleRateReplyListener l = (SampleRateReplyListener) e.nextElement( );
 				l.fgSampleRateReply( s, this );

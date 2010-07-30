@@ -228,7 +228,7 @@ int main(int argc, char **argv) {
   state *atom_state  = new state;
 
   int ff_enabled, ff_active;
-  double kspr = 50;  // Units???
+  double kspr = 500.0;  // Units???
 
   vrpn_Tracker_Remote *tkr;
   vrpn_Button_Remote *btn;
@@ -277,18 +277,18 @@ int main(int argc, char **argv) {
     if (ff_enabled ) {
       if (!ff_active) {
 	// Set up force field so initially the force is zero
-	phan_offset->x = phan_position->x - .1*atom_state->x;
-	phan_offset->y = phan_position->y - .1*atom_state->y;
-	phan_offset->z = phan_position->z - .1*atom_state->z;
+	phan_offset->x = phan_position->x - .2*atom_state->x;
+	phan_offset->y = phan_position->y - .2*atom_state->y;
+	phan_offset->z = phan_position->z - .2*atom_state->z;
       }
 
       // Now turn the force field on
       // scene -> haptic: rotate 180 about the y axis
       fdv->setConstraintMode(vrpn_ForceDevice::POINT_CONSTRAINT);
       float cpos[3];
-      cpos[0] = -(.1*atom_state->x + phan_offset->x);
-      cpos[1] =  (.1*atom_state->y + phan_offset->y);
-      cpos[2] = -(.1*atom_state->z + phan_offset->z);
+      cpos[0] = -(.2*atom_state->x + phan_offset->x);
+      cpos[1] =  (.2*atom_state->y + phan_offset->y);
+      cpos[2] = -(.2*atom_state->z + phan_offset->z);
       fdv->setConstraintPoint(cpos);
       fdv->setConstraintKSpring(kspr);
       fdv->enableConstraint(1); // enable force field

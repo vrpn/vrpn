@@ -184,6 +184,23 @@ if(VRPN_USE_WIIUSE)
 endif()
 
 ###
+# libnifalcon
+###
+set(LIBNIFALCON_MARK_AS_ADVANCED ON)
+find_package(LibNifalcon)
+if(LIBNIFALCON_FOUND)
+	option(VRPN_USE_LIBNIFALCON "Build with libnifalcon support to access Novint Falcon devices" ON)
+endif()
+
+if(VRPN_USE_LIBNIFALCON)
+	if(NOT LIBNIFALCON_FOUND)
+		message(FATAL_ERROR "ERROR: VRPN_USE_LIBNIFALCON set but libnifalcon not found!")
+	endif()
+	include_directories(${LIBNIFALCON_INCLUDE_DIRS})
+	list(APPEND SERVER_EXTRA_LIBS ${LIBNIFALCON_LIBRARIES})
+endif()
+
+###
 # DirectShow
 ###
 # Note: FindDirectShow.cmake still needs some TLC to bring it in line
@@ -265,6 +282,7 @@ option(VRPN_INCLUDE_PHASESPACE "Build with PhaseSpace library support" OFF)
 option(VRPN_USE_MOTIONNODE "Build with GLI Interactive LLC MotionNode library support" OFF)
 option(VRPN_USE_WIIUSE "Build with WiiUse library support" OFF)
 option(VRPN_USE_FREESPACE "Build with Hillcrest Labs' Freespace devices support" OFF)
+option(VRPN_USE_LIBNIFALCON "Build with support for Novint Falcon devices through libnifalcon" OFF)
 option(VRPN_BUILD_EXTRA_COMPILER_WARNINGS
 	"Build with flags to enable extra warnings."
 	OFF)
@@ -405,6 +423,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Tracker_Liberty.C
 	vrpn_Tracker_MotionNode.C
 	vrpn_Tracker_NDI_Polaris.C
+	vrpn_Tracker_NovintFalcon.C
 	vrpn_Tracker_PhaseSpace.C
 	vrpn_Tracker_WiimoteHead.C
 	vrpn_UNC_Joystick.C
@@ -476,6 +495,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Tracker_Liberty.h
 	vrpn_Tracker_MotionNode.h
 	vrpn_Tracker_NDI_Polaris.h
+	vrpn_Tracker_NovintFalcon.h
 	vrpn_Tracker_PhaseSpace.h
 	vrpn_Tracker_WiimoteHead.h
 	vrpn_UNC_Joystick.h

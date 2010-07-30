@@ -1,3 +1,4 @@
+// -*- c++ -*-
 #ifndef	VRPN_CONFIGURE_H
 
 //--------------------------------------------------------------
@@ -262,6 +263,13 @@
 // We (Hillcrest Labs) do not require code linked to libfreespace (statically or 
 // dynamically) to be released under any particular license.
 //#define VRPN_USE_FREESPACE
+
+//------------------------
+// Instructs VRPN to include code for the Novint Falcon haptic device.
+// Access is provided through the libnifalcon library library on Windows,
+// MacOSX and Linux. This may require additional libraries for programming
+// USB devices. Please consult the corresponding homepages.
+//#define VRPN_USE_LIBNIFALCON
 
 //------------------------------------------------------------------//
 // SYSTEM CONFIGURATION SECTION                                     //

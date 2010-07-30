@@ -1,0 +1,83 @@
+From 6edfbdb7b1c77fade1afd1c1790102e185f2ee07 Mon Sep 17 00:00:00 2001
+From: Axel Kohlmeyer <akohlmey@gmail.com>
+Date: Sun, 11 Apr 2010 22:25:39 -0400
+Subject: [PATCH 2/2] provide symbolic names for the individual buttons in the standard grip.
+ this makes selecting them in applications much easier.
+
+---
+ examples/falcon_test_cli/FalconSphereTest.cpp |    8 ++++----
+ include/falcon/grip/FalconGripFourButton.h    |   12 +++++++++---
+ 2 files changed, 13 insertions(+), 7 deletions(-)
+
+diff --git a/examples/falcon_test_cli/FalconSphereTest.cpp b/examples/falcon_test_cli/FalconSphereTest.cpp
+index 9c62c74..bb7a9f0 100644
+--- a/examples/falcon_test_cli/FalconSphereTest.cpp
++++ b/examples/falcon_test_cli/FalconSphereTest.cpp
+@@ -49,7 +49,7 @@ void FalconSphereTest::runFunction()
+ 
+ 	// increase radius
+ 	if(m_falconDevice->getFalconGrip()->getDigitalInputs() 
+-	   & libnifalcon::FalconGripFourButton::BUTTON_1)
++	   & libnifalcon::FalconGripFourButton::PLUS_BUTTON)
+ 	{
+ 		m_plusButtonDown = true;
+ 	}
+@@ -63,7 +63,7 @@ void FalconSphereTest::runFunction()
+ 
+ 	// decrease radius
+ 	if(m_falconDevice->getFalconGrip()->getDigitalInputs() 
+-	   & libnifalcon::FalconGripFourButton::BUTTON_4)
++	   & libnifalcon::FalconGripFourButton::MINUS_BUTTON)
+ 	{
+ 		m_minusButtonDown = true;
+ 	}
+@@ -76,7 +76,7 @@ void FalconSphereTest::runFunction()
+ 	}
+ 
+ 	if(m_falconDevice->getFalconGrip()->getDigitalInputs() 
+-	   & libnifalcon::FalconGripFourButton::BUTTON_2)
++	   & libnifalcon::FalconGripFourButton::FORWARD_BUTTON)
+ 	{
+ 		m_forwardButtonDown = true;
+ 	} else{
+@@ -85,7 +85,7 @@ void FalconSphereTest::runFunction()
+ 
+ 	// make sphere soft radius or "slippery"
+ 	if(m_falconDevice->getFalconGrip()->getDigitalInputs() 
+-	   & libnifalcon::FalconGripFourButton::BUTTON_3)
++	   & libnifalcon::FalconGripFourButton::CENTER_BUTTON)
+ 	{
+ 		if(m_forwardButtonDown)
+ 		{
+diff --git a/include/falcon/grip/FalconGripFourButton.h b/include/falcon/grip/FalconGripFourButton.h
+index 486a49d..216a5a0 100644
+--- a/include/falcon/grip/FalconGripFourButton.h
++++ b/include/falcon/grip/FalconGripFourButton.h
+@@ -26,15 +26,21 @@ namespace libnifalcon
+ 	{
+ 	public:
+ 		/**
+-		 * Enumeration for the default 4 button grip that comes with the falcon
+-		 *
++		 * Enumeration for the default 4 button grip that comes with the falcon.
++		 * This grip has plus and minus buttonsr, one button in the center and 
++		 * one pointing forward. For convenience also symbolic names are provided.
+ 		 */
+ 		enum
+ 		{
+ 			BUTTON_1 = 0x1,
+ 			BUTTON_2 = 0x2,
+ 			BUTTON_3 = 0x4,
+-			BUTTON_4 = 0x8
++			BUTTON_4 = 0x8,
++		/* symbolic names */
++			PLUS_BUTTON    = 0x1,
++			FORWARD_BUTTON = 0x2,
++			CENTER_BUTTON  = 0x4,
++			MINUS_BUTTON   = 0x8
+ 		} FourButtonGripButtons;
+ 		
+ 		/**
+-- 
+1.6.6.1
+
