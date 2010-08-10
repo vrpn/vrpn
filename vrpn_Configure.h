@@ -179,19 +179,19 @@
 //#define VRPN_USE_MICROSCRIBE
 
 //------------------------
-// Compiles the VRPN libary with the PhaseSpace Tracker using the 
+// Compiles the VRPN libary with the PhaseSpace Tracker using the
 // PhaseSpace OWL API on Linux and Windows.
 //
 // In Linux:
 // The PhaseSpace header files (owl.h, etc) and libraries (libowlsock)
-// should be placed in the phasespace directory at the same level as 
+// should be placed in the phasespace directory at the same level as
 // the vrpn folder.  Also, PHASESPACE needs to be uncommented in the
-// server_src/Makefile so that the libraries are properly linked.  
+// server_src/Makefile so that the libraries are properly linked.
 // libowlsock.so will need to be present in the directory of the
 // final executable or in the default library path such as /usr/lib
 //
-// In Windows: 
-// The PhaseSpace header files (owl.h, etc) should be placed in the 
+// In Windows:
+// The PhaseSpace header files (owl.h, etc) should be placed in the
 // phasespace directory at the same level as the vrpn folder.
 // libowlsock.lib will need to be located there as well.
 // libowlsock.dll will need to be in the path or with the executable
@@ -252,14 +252,14 @@
 // that uses WiiUse in Windows.
 //#define VRPN_USE_WIIUSE
 
-// Instructs VRPN to compile code to handle Hillcrest Labs' Freespace 
+// Instructs VRPN to compile code to handle Hillcrest Labs' Freespace
 // devices such as the Loop, and FRCM.  You will also need the libfreespace
 // library which is available at http://libfreespace.hillcrestlabs.com/content/download.
-// There are prebuilt binaries for Windows, and source available that should work 
+// There are prebuilt binaries for Windows, and source available that should work
 // on Windows, Linux or OS X.  You will need to make sure the header files
 // and library are accessible to the compiler.  libfreespace is released under
 // the LGPL and we (Hillcrest Labs) view static and dynamic linking as the same.
-// We (Hillcrest Labs) do not require code linked to libfreespace (statically or 
+// We (Hillcrest Labs) do not require code linked to libfreespace (statically or
 // dynamically) to be released under any particular license.
 //#define VRPN_USE_FREESPACE
 
@@ -283,7 +283,7 @@
 #endif
 
 #ifdef linux
-#define VRPN_HDAPI_PATH         VRPN_SYSTEMDRIVE "/usr/lib64"
+#define VRPN_HDAPI_PATH         "/usr/lib64"
 #else
 #define VRPN_HDAPI_PATH         VRPN_SYSTEMDRIVE "/Program Files/SensAble/3DTouch/lib/"
 #endif
@@ -405,7 +405,7 @@
 #pragma comment (lib, VRPN_USDIGITAL_PATH "SEIDrv32.lib")
 #endif
 
-// Load Microscribe-3D SDK libraries 
+// Load Microscribe-3D SDK libraries
 // If this doesn't match where you have installed these libraries,
 // edit the following lines to point at the correct libraries.  Do
 // this here rather than in the project settings so that it can be
@@ -432,7 +432,7 @@
 #pragma comment (lib, "wsock32.lib")  // VRPN requires the Windows Sockets library.
 #ifdef VRPN_USE_SHARED_LIBRARY
 #ifdef VRPNDLL_EXPORTS
-#define  VRPN_API		 __declspec(dllexport) 
+#define  VRPN_API		 __declspec(dllexport)
 #else
 #define  VRPN_API		 __declspec(dllimport)
 #endif
@@ -448,4 +448,3 @@
 
 #define	VRPN_CONFIGURE_H
 #endif
-

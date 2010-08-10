@@ -11,7 +11,7 @@
 #else
 #include <gstPHANToM.h>
 #endif
-#ifndef linux
+#ifdef _WIN32
 #include <windows.h>
 #endif
 #include <math.h>

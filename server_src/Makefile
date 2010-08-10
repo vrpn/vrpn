@@ -153,8 +153,9 @@ OBJ_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)
 LIB_DIR := ../$(OBJ_DIR)
 
 #CFLAGS = -g -I./ -I../ -I../quat
-CFLAGS = -I./ -I../ -I../quat -I../../libfreespace/include $(DEBUG_FLAGS)
-LFLAGS = -L$(LIB_DIR) -L../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) -L../../libfreespace/lib
+override CFLAGS := $(CFLAGS) -I./ -I../ -I../quat -I../../libfreespace/include $(DEBUG_FLAGS) $(CFLAGS)
+override CXXFLAGS := $(CXXFLAGS) -I./ -I../ -I../quat -I../../libfreespace/include $(DEBUG_FLAGS) $(CXXFLAGS)
+override LFLAGS := $(LFLAGS) -L$(LIB_DIR) -L../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) $(LDFLAGS)
 VRPN_LIBS = -lvrpnserver -lvrpnatmel -lpthread
 
 # Uncomment the following section and point them at the
@@ -162,20 +163,23 @@ VRPN_LIBS = -lvrpnserver -lvrpnatmel -lpthread
 # Well, to make it almost compile -- link fails to find things
 # in the libraries that should be there.
 #HDAPI_ROOT := "C:/Program Files/SensAble/3DTouch"
-#CFLAGS = -g -I./ -I../ -I../quat -I$(HDAPI_ROOT)/include -I$(HDAPI_ROOT)/utilities/include
-#LFLAGS = -L$(LIB_DIR) -L../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) -L$(HDAPI_ROOT)/lib
+#override CFLAGS += -I$(HDAPI_ROOT)/include -I$(HDAPI_ROOT)/utilities/include
+#override CXXFLAGS += -I$(HDAPI_ROOT)/include -I$(HDAPI_ROOT)/utilities/include
+#override LFLAGS += -L$(HDAPI_ROOT)/lib
 #SYSLIBS := $(SYSLIBS) -lhl -lhd
 
 ifdef INTERSENSE
   ifeq ($(HW_OS),powerpc_macosx)
-#     CFLAGS = -g -I../ -I../quat -I../../isense -DMACOSX
-     CFLAGS = -I../ -I../quat -I../../isense -DMACOSX $(DEBUG_FLAGS)
-     LFLAGS = -L$(LIB_DIR) -L../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) ../../isense/MacOSX/dlcompat.o
+#     CFLAGS = -g -I../ -I../../quat -I../../isense -DMACOSX
+     override CFLAGS += -I../../isense -DMACOSX
+     override CXXFLAGS += -I../../isense -DMACOSX
+     override LFLAGS += ../../isense/MacOSX/dlcompat.o
   endif
   ifeq ($(HW_OS),universal_macosx)
-#     CFLAGS = -g -I../ -I../quat -I../../isense -DMACOSX
-     CFLAGS = -I../ -I../quat -I../../isense -DMACOSX $(DEBUG_FLAGS)
-     LFLAGS = -L$(LIB_DIR) -L../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) ../../isense/MacOSX/dlcompat.o
+#     CFLAGS = -g -I../ -I../../quat -I../../isense -DMACOSX
+     override CFLAGS += -I../../isense -DMACOSX
+     override CXXFLAGS += -I../../isense -DMACOSX
+     override LFLAGS += ../../isense/MacOSX/dlcompat.o
   endif
 endif
 
@@ -185,19 +189,19 @@ endif
 ifdef PHASESPACE
 #the rpath option may not work on all platforms, remove it if necessary.
 EXTRAOPTS := -Wl,-rpath .
-LFLAGS := $(LFLAGS) $(PHASESPACE) $(EXTRAOPTS)
+override LFLAGS += $(PHASESPACE) $(EXTRAOPTS)
 endif
 
 .SUFFIXES: .cpp
 
 .C.o:
-	$(CC) $(CFLAGS) -c $*.C
+	$(CC) $(CXXFLAGS) -c $*.C
 
 .c.o:
 	$(CC) $(CFLAGS) -c $*.c
 
 .cpp.o:
-	$(CC) $(CFLAGS) -c $*.cpp
+	$(CC) $(CXXFLAGS) -c $*.cpp
 
 $(OBJ_DIR)/%.o:	%.c
 	@[ -d $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
@@ -205,11 +209,11 @@ $(OBJ_DIR)/%.o:	%.c
 
 $(OBJ_DIR)/%.o:	%.C
 	@[ -d $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
-	$(CC) $(CFLAGS) -o $@ -c $<
+	$(CC) $(CXXFLAGS) -o $@ -c $<
 
 $(OBJ_DIR)/%.o:	%.cpp
 	@[ -d $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
-	$(CC) $(CFLAGS) -o $@ -c $<
+	$(CC) $(CXXFLAGS) -o $@ -c $<
 
 INSTALL_APPS := vrpn_server test_vrpn wiimote_head_tracker
 APPS := $(INSTALL_APPS) client_and_server test_mutex test_peerMutex \
@@ -222,9 +226,6 @@ all: $(APPS)
 
 .PHONY:	vrpn_server
 vrpn_server:	$(OBJ_DIR)/vrpn_server
-
-.PHONY:	wiimote_head_tracker
-wiimote_head_tracker:	$(OBJ_DIR)/wiimote_head_tracker
 
 .PHONY:	test_radamec_spi
 test_radamec_spi:	$(OBJ_DIR)/test_radamec_spi
@@ -274,8 +275,11 @@ last_of_sequence:	$(OBJ_DIR)/last_of_sequence
 .PHONY:	testSharedObject
 testSharedObject:	$(OBJ_DIR)/testSharedObject
 
+.PHONY:	wiimote_head_tracker
+wiimote_head_tracker:	$(OBJ_DIR)/wiimote_head_tracker
+
 $(OBJ_DIR)/InstantBuzzEffect.o: ghostEffects/InstantBuzzEffect.cpp
-	$(CC) $(CFLAGS) -o $@ -c $<
+	$(CC) $(CXXFLAGS) -o $@ -c $<
 
 $(OBJ_DIR)/vrpn_server: $(OBJ_DIR)/vrpn.o $(LIB_DIR)/libvrpnserver.a \
 		$(OBJ_DIR)/buzzForceField.o $(OBJ_DIR)/constraint.o \
@@ -291,12 +295,6 @@ $(OBJ_DIR)/vrpn_server: $(OBJ_DIR)/vrpn.o $(LIB_DIR)/libvrpnserver.a \
 		$(OBJ_DIR)/vrpn_Phantom.o \
 		$(OBJ_DIR)/InstantBuzzEffect.o \
 		$(OBJ_DIR)/vrpn_Generic_server_object.o \
-		$(VRPN_LIBS) $(GL) -lquat $(SYSLIBS) -lm
-
-$(OBJ_DIR)/wiimote_head_tracker: $(OBJ_DIR)/wiimote_head_tracker.o  \
-			 $(LIB_DIR)/libvrpnserver.a
-	$(CC) $(LFLAGS) -o $(OBJ_DIR)/wiimote_head_tracker \
-		$(OBJ_DIR)/wiimote_head_tracker.o \
 		$(VRPN_LIBS) $(GL) -lquat $(SYSLIBS) -lm
 
 $(OBJ_DIR)/test_vrpn: $(OBJ_DIR)/test_vrpn.o  \
@@ -396,6 +394,12 @@ $(OBJ_DIR)/testSharedObject:	$(OBJ_DIR)/testSharedObject.o \
 		$(OBJ_DIR)/testSharedObject.o \
 		$(VRPN_LIBS) $(SYSLIBS) -lm
 
+$(OBJ_DIR)/wiimote_head_tracker:	$(OBJ_DIR)/wiimote_head_tracker.o \
+			$(LIB_DIR)/libvrpnserver.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/wiimote_head_tracker \
+		$(OBJ_DIR)/wiimote_head_tracker.o \
+		$(VRPN_LIBS) -lquat $(SYSLIBS) -lm
+
 install: all
 	-mkdir -p $(BIN_DIR)
 	( cd $(BIN_DIR) ; rm -f $(INSTALL_APPS) )
@@ -406,7 +410,11 @@ uninstall:
 	( cd $(BIN_DIR) ; rm -f $(INSTALL_APPS) )
 
 clean:
+ifeq ($(HW_OS),)
+		echo "Must specify HW_OS !"
+else
 	rm -f $(OBJ_DIR)/*
+endif
 
 $(OBJ_DIR)/vrpn.o:	vrpn.C
 $(OBJ_DIR)/vrpn_Generic_server_object.o:	vrpn_Generic_server_object.C
