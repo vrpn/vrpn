@@ -134,7 +134,7 @@ set_property(TARGET
 	vrpn_server
 	PROPERTY
 	PROJECT_LABEL
-	"VRPN Generic Server Application")
+	"vrpn_server")
 install(TARGETS vrpn_server
 	RUNTIME DESTINATION bin)
 
