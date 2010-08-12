@@ -6,10 +6,10 @@
 //
 // File:        vrpn_Tracker_NovintFalcon.C
 // Author:      Axel Kohlmeyer akohlmey@gmail.com
-// Date:        2010-07-29
+// Date:        2010-08-12
 // Copyright:   (C) 2010 Axel Kohlmeyer
 // License:     Boost Software License 1.0
-// depends:     libnifalcon-1.0.1+, libusb-1.0, boost, VRPN 07_26
+// depends:     libnifalcon-1.0.1+, libusb-1.0, boost 1.39, VRPN 07_27
 // tested on:   Linux x86_64 w/ gcc 4.4.1
 
 #include <ctype.h>
@@ -606,16 +606,18 @@ int vrpn_Tracker_NovintFalcon::get_report(void)
         return 0;
 
     if (status == vrpn_TRACKER_SYNCING) {
-        if (!m_dev->get_status(pos, vel, d_quat, vel_quat, &vel_quat_dt, buttons)) {
-            return 0;
-        } else {
+        if (m_dev->get_status(pos, vel, d_quat, vel_quat, &vel_quat_dt, buttons)) {
             // if all buttons are pressed. we force a reset.
             int i,j;
             j=0;
-	        for (i=0; i < num_buttons; i++)
+            for (i=0; i < num_buttons; i++)
                 j += buttons[i];
-            if (j == num_buttons)
+            // all buttons pressed
+            if (j == num_buttons) {
                 status = vrpn_TRACKER_FAIL;
+                return 0;
+            }
+        } else {
             return 0;
         }
     }
