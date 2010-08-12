@@ -681,32 +681,34 @@ void vrpn_Tracker_NovintFalcon::mainloop()
 
     // no need to report more often than we can poll the device
     vrpn_gettimeofday(&current_time, NULL);
+    if ( timediff(current_time, m_timestamp) >= 1000000.0/m_update_rate) {
 
-    // Update the time
-    m_timestamp.tv_sec = current_time.tv_sec;
-    m_timestamp.tv_usec = current_time.tv_usec;
-    switch(status)
-    {
-      case vrpn_TRACKER_AWAITING_STATION:
-      case vrpn_TRACKER_PARTIAL:
-      case vrpn_TRACKER_SYNCING:
-          if (get_report()) {
-              send_report();
-              vrpn_Button::report_changes();
-              handle_forces();
-          }
-          break;
-      case vrpn_TRACKER_RESETTING:
-          reset();
-          break;
+        // Update the time
+        m_timestamp.tv_sec = current_time.tv_sec;
+        m_timestamp.tv_usec = current_time.tv_usec;
+        switch(status)
+        {
+          case vrpn_TRACKER_AWAITING_STATION:
+          case vrpn_TRACKER_PARTIAL:
+          case vrpn_TRACKER_SYNCING:
+              if (get_report()) {
+                  send_report();
+                  vrpn_Button::report_changes();
+                  handle_forces();
+              }
+              break;
+          case vrpn_TRACKER_RESETTING:
+              reset();
+              break;
 
-      case vrpn_TRACKER_FAIL:
-          fprintf(stderr, "NovintFalcon failed, trying to reset (Try power cycle if more than 4 attempts made)\n");
-          status = vrpn_TRACKER_RESETTING;
-          break;
+          case vrpn_TRACKER_FAIL:
+              fprintf(stderr, "NovintFalcon failed, trying to reset (Try power cycle if more than 4 attempts made)\n");
+              status = vrpn_TRACKER_RESETTING;
+              break;
 
-      default:
-          break;
+          default:
+              break;
+        }
     }
 }
 
