@@ -1353,7 +1353,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_NovintFalcon (char * & pch, char *
 	}
 
     // set kinematics model to "stamper", if not set
-    if (numparms < 4) { 
+    if (numparms < 4) {
         strcpy(s4,"stamper");
     }
     // set grip to "4-button" (the default one), if not set.
