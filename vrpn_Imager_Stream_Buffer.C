@@ -596,7 +596,7 @@ bool vrpn_Imager_Stream_Buffer::setup_handlers_for_logging_connection(vrpn_Conne
   // through the member variable pointer.
   d_imager_remote = new vrpn_Imager_Remote(d_imager_server_name, c);
   if (d_imager_remote == NULL) {
-    fprintf(stderr,"vrpn_Imager_Stream_Buffer::setup_handlers_for_logging_connection(): Cannot create vprn_Imager_Remote\n");
+    fprintf(stderr,"vrpn_Imager_Stream_Buffer::setup_handlers_for_logging_connection(): Cannot create vrpn_Imager_Remote\n");
     return false;
   }
   d_imager_remote->register_description_handler(this, handle_image_description);

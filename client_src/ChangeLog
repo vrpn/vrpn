@@ -417,7 +417,7 @@
 
 	* printcereal.dsp : DSP files have been modified to not do definitions
 		of VRPN_NO_STREAMS and other constants directly, rather these
-		are now set by editing vprn_Configure.h.  Also, made projects
+		are now set by editing vrpn_Configure.h.  Also, made projects
                 compile in both debug and release versions.
 	* printvals.dsp : Same.
 	* setrouter.dsp : Same.

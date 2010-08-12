@@ -73,7 +73,7 @@ void vrpn_WiiMote::handle_event()
   }
   if (WIIUSE_USING_IR(wiimote->device)) {
     unsigned dot;
-    for (dot = 0; dot < 3; dot++) {
+    for (dot = 0; dot < 4; dot++) {
       if (wiimote->device->ir.dot[dot].visible) {
         channel[4 + 3*dot + 0] = wiimote->device->ir.dot[dot].rx;
         channel[4 + 3*dot + 1] = wiimote->device->ir.dot[dot].ry;

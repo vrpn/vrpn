@@ -23,14 +23,26 @@
 #
 #HW_OS := sgi_irix
 #HW_OS := pc_linux
+#HW_OS := pc_linux64
+#HW_OS := pc_linux_ia64
+# Try this to cross-compile on a Linux PC for an ARM embedded controller.
 #HW_OS := pc_linux_arm
 #HW_OS := pc_cygwin
 #HW_OS := pc_FreeBSD
 #HW_OS := sparc_solaris
+#HW_OS := sparc_solaris_64
 #HW_OS := powerpc_aix
 #HW_OS := powerpc_macosx
 #HW_OS := linux_x64
 ##########################
+
+INSTALL_DIR := /usr/local
+BIN_DIR := $(INSTALL_DIR)/bin
+INCLUDE_DIR := $(INSTALL_DIR)/include
+LIB_DIR := $(INSTALL_DIR)/lib
+JAVA_LIB_DIR := $(INSTALL_DIR)/share/java/
+
+VERSION := 07.22
 
 MV = /bin/mv
 MVF = $(MV) -f
@@ -94,9 +106,19 @@ else
 	AR := /opt/SUNWspro/bin/CC -xar -o
   endif
 
+  ifeq ($(HW_OS),sparc_solaris_64)
+	CC := /opt/SUNWspro/bin/CC -xarch=v9a
+	AR := /opt/SUNWspro/bin/CC -xarch=v9a -xar -o
+  endif
+
   ifeq ($(HW_OS),powerpc_aix)
 	CC := /usr/ibmcxx/bin/xlC_r -g -qarch=pwr3 -w
 	RANLIB := ranlib
+  endif
+
+  ifeq ($(HW_OS), pc_linux64)
+        CC := g++ -m64 -fPIC
+        RANLIB := ranlib
   endif
 
   ifeq ($(HW_OS), pc_linux)
@@ -114,10 +136,23 @@ else
         RANLIB := ranlib
   endif
 
+  ifeq ($(HW_OS), universal_macosx)
+        CC := g++ -arch ppc -arch i386 -isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4
+        RANLIB := :
+        AR := libtool -static -o
+	SYSLIBS := -framework CoreFoundation -framework IOKit -framework System
+  endif
+
   ifeq ($(HW_OS), pc_linux_arm)
         CC := arm-linux-g++
         RANLIB := arm-linux-ranlib
 	AR := arm-linux-ar ruv
+  endif
+
+  ifeq ($(HW_OS), pc_cygwin_arm)
+        CC := arm-unknown-linux-gnu-g++
+        RANLIB := arm-unknown-linux-gnu-ranlib
+	AR := arm-unknown-linux-gnu-ar ruv
   endif
 
   ifeq ($(HW_OS),sgi_irix)
@@ -333,26 +368,26 @@ override CXXFLAGS     := $(INCLUDE_FLAGS) $(DEBUG_FLAGS) $(CXXFLAGS)
 .SUFFIXES:	.cpp .C .o .a
 
 .cpp.o:
-	$(CC) -c $(CFLAGS) $<
+	$(CC) -c $(CXXFLAGS) $<
 .C.o:
-	$(CC) -c $(CFLAGS) $<
+	$(CC) -c $(CFXXLAGS) $<
 
 # Build objects from .cpp files
 #$(OBJECT_DIR)/%.o: %.cpp $(LIB_INCLUDES) $(MAKEFILE)
 $(OBJECT_DIR)/%.o: %.cpp $(LIB_INCLUDES) 
-	@[ -d $(OBJECT_DIR) ] || mkdir $(OBJECT_DIR)
-	$(CC) $(CFLAGS) -o $@ -c $<
+	@[ -d $(OBJECT_DIR) ] || mkdir -p $(OBJECT_DIR)
+	$(CC) $(CXXFLAGS) -o $@ -c $<
 
 # Build objects from .C files
 #$(OBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) $(MAKEFILE)
 #$(OBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) 
-#	@[ -d $(OBJECT_DIR) ] || mkdir $(OBJECT_DIR)
-#	$(CC) $(CFLAGS) -o $@ -c $< $(LIBS) -lvrpn -exceptions
+#	@[ -d $(OBJECT_DIR) ] || mkdir -p $(OBJECT_DIR)
+#	$(CC) $(CXXFLAGS) -o $@ -c $< $(LIBS) -lvrpn -exceptions
 
 # Build objects from .C files
 #$(SOBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) $(MAKEFILE)
-#	@[ -d $(SOBJECT_DIR) ] || mkdir $(SOBJECT_DIR)
-#	$(CC) $(CFLAGS) -o $@ -c $<
+#	@[ -d $(SOBJECT_DIR) ] || mkdir -p $(SOBJECT_DIR)
+#	$(CC) $(CXXFLAGS) -o $@ -c $<
 
 #
 #
@@ -369,10 +404,10 @@ client: $(OBJECT_DIR)/libjava_vrpn.a
 
 
 $(OBJECT_DIR):
-	-mkdir $(OBJECT_DIR)
+	-mkdir -p $(OBJECT_DIR)
 
 $(SOBJECT_DIR):
-	-mkdir $(SOBJECT_DIR)
+	-mkdir -p $(SOBJECT_DIR)
 
 #############################################################################
 #
@@ -529,7 +564,7 @@ $(OBJECT_DIR)/.depend:
 	@echo -- or add/remove includes from a .h or .cpp file, then you should
 	@echo -- remake the dependency file by typing \"$(MAKE) depend\"
 	@echo ----------------------------------------------------------------
-	-mkdir $(OBJECT_DIR)
+	-mkdir -p $(OBJECT_DIR)
 ifeq ($(HW_OS),hp700_hpux10)
 	@echo -- $(HW_OS): Using g++ since HP CC does not understand -M
 	@echo -- if this causes an error, then delete .depend and type
