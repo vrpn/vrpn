@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.6.2)
-project(VRPN)
+#project(VRPN)
+project(VRPN-ICMS)
 
 # Changes made by:
 # 2009-2010 Ryan Pavlik <rpavlik@iastate.edu>
@@ -31,8 +32,10 @@ include(SetDefaultBuildType)
 # This may be incremented manually - reset to 0 for each upstream release
 set(CPACK_PACKAGE_VERSION_PATCH "2")
 
+#set(CPACK_PACKAGE_VENDOR
+#	"Russell M. Taylor II at the University of North Carolina at Chapel Hill")
 set(CPACK_PACKAGE_VENDOR
-	"Russell M. Taylor II at the University of North Carolina at Chapel Hill")
+	"Axel Kohlmeyer / Institute for Computational Molecular Science - Temple University")
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/ParseVersion.cmake")
 
