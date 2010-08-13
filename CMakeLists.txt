@@ -19,7 +19,7 @@ project(VRPN-ICMS)
 ###
 # Local CMake Modules - keep this first
 ###
-list(APPEND CMAKE_MODULE_PATH ${VRPN_SOURCE_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH ${VRPN-ICMS_SOURCE_DIR}/cmake)
 include(UseBackportedModules)
 include(GetForceIncludeDefinitions)
 include(MSVCMultipleProcessCompile)
@@ -202,7 +202,7 @@ endif()
 ###
 # libnifalcon
 ###
-set(LIBNIFALCON_MARK_AS_ADVANCED ON)
+set(LIBNIFALCON_MARK_AS_ADVANCED OFF)
 find_package(LibNifalcon)
 if(LIBNIFALCON_FOUND)
 	option(VRPN_USE_LIBNIFALCON "Build with libnifalcon support to access Novint Falcon devices" ON)
@@ -616,7 +616,7 @@ endif()
 
 
 # Include directory needed by all of the files
-include_directories(${VRPN_SOURCE_DIR} ${VRPN_SOURCE_DIR}/atmellib ${VRPN_SOURCE_DIR}/quat)
+include_directories(${VRPN-ICMS_SOURCE_DIR} ${VRPN-ICMS_SOURCE_DIR}/atmellib ${VRPN-ICMS_SOURCE_DIR}/quat)
 
 add_subdirectory (client_src)
 
