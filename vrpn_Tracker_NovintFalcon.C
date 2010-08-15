@@ -382,6 +382,11 @@ public:
         m_newcut = rad;
     }
 
+    /// updates damping factor
+    void setDamping(double damp) {
+        m_damping = damp;
+    }
+
     /// start effect
     virtual bool start() {
         m_active = true;
@@ -505,9 +510,10 @@ vrpn_Tracker_NovintFalcon::vrpn_Tracker_NovintFalcon(const char *name,
                                                      vrpn_Connection *c,
                                                      const int devidx,
                                                      const char *grip,
-                                                     const char *kine)
+                                                     const char *kine,
+                                                     const char *damp)
         : vrpn_Tracker(name, c), vrpn_Button(name, c),
-          vrpn_ForceDevice(name, c), m_dev(NULL), m_obj(NULL), m_update_rate(1000.0)
+          vrpn_ForceDevice(name, c), m_dev(NULL), m_obj(NULL), m_update_rate(1000.0), m_damp(0.9)
 {
     m_devflags=vrpn_NovintFalcon_Device::MASK_DEVICEIDX & devidx;
     if (grip != NULL) {
@@ -528,6 +534,15 @@ vrpn_Tracker_NovintFalcon::vrpn_Tracker_NovintFalcon(const char *name,
             fprintf(stderr, "WARNING: Unknown kinematic model for Novint Falcon: %s \n", kine);
             m_devflags = -1;
             return;
+        }
+    }
+
+    if (damp != NULL) {
+        vrpn_float64 val= atof(damp);
+        if (val > 0.2 && val <= 1.0) { 
+            m_damp = val;
+        } else {
+            fprintf(stderr, "WARNING: Ignoring illegal force effect damping factor: %g \n", val);
         }
     }
 	clear_values();
@@ -555,6 +570,7 @@ void vrpn_Tracker_NovintFalcon::clear_values()
 
     // add dummy effect object
     ForceFieldEffect *ffe = new ForceFieldEffect;
+    ffe->setDamping(m_damp);
     ffe->stop();
     m_obj->m_FFEffects.push_back(ffe);
 }

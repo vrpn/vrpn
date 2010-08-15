@@ -39,7 +39,8 @@ public:
                               vrpn_Connection *c = NULL,
                               const int devidx = 0,
                               const char *grip = NULL,
-                              const char *kine = NULL);
+                              const char *kine = NULL,
+                              const char *damp = NULL);
 
     /// destructor
     ~vrpn_Tracker_NovintFalcon();
@@ -62,6 +63,7 @@ public:
 protected:
     int m_devflags;                         //< device configuration flags
     vrpn_float64 m_update_rate;             //< update rate of device
+    vrpn_float64 m_damp;                    //< damping factor for force updates
     struct timeval m_timestamp;             //< last update of device status
     vrpn_NovintFalcon_Device *m_dev;        //< device handle
     vrpn_NovintFalcon_ForceObjects *m_obj;  //< handle to force generating objects

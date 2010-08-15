@@ -1338,20 +1338,24 @@ int vrpn_Generic_Server_Object::setup_Tracker_3DMouse (char * & pch, char * line
 
 int vrpn_Generic_Server_Object::setup_Tracker_NovintFalcon (char * & pch, char *line, FILE * config_file) {
 #if defined(VRPN_USE_LIBNIFALCON)
-	char s2[LINESIZE], s3[LINESIZE], s4[LINESIZE];
+	char s2[LINESIZE], s3[LINESIZE], s4[LINESIZE], s5[LINESIZE];
 	int i1;
 	int numparms;
 	vrpn_Tracker_NovintFalcon	*mytracker;
 
 	next();
 
-	// Get the arguments (class, tracker_name, device id, grip, kinematics)
-	if ( (numparms = sscanf(pch,"%511s%d%511s%511s",s2,&i1,s3,s4)) < 2)
+	// Get the arguments (class, tracker_name, device id, grip, kinematics, damp)
+	if ( (numparms = sscanf(pch,"%511s%d%511s%511s%511s",s2,&i1,s3,s4,s5)) < 2)
 	{
-		fprintf(stderr,"Bad vrpn_Tracker_NovintFalcon line: %s\n%s %s %s %s\n", line, pch, s2, s3, s4);
+		fprintf(stderr,"Bad vrpn_Tracker_NovintFalcon line: %s\n%s %s %s %s %s\n", line, pch, s2, s3, s4, s5);
 		return -1;
 	}
 
+    // set damping to 0.9.
+    if (numparms < 5) {
+        strcpy(s5,"0.9");
+    }
     // set kinematics model to "stamper", if not set
     if (numparms < 4) {
         strcpy(s4,"stamper");
@@ -1363,11 +1367,11 @@ int vrpn_Generic_Server_Object::setup_Tracker_NovintFalcon (char * & pch, char *
 
 	// Open the tracker
 	if (verbose) {
-		printf("Opening vrpn_Tracker_NovintFalcon: %s device: %d, grip: %s, kinematics: %s\n", s2,i1,s3,s4);
+		printf("Opening vrpn_Tracker_NovintFalcon: %s device: %d, grip: %s, kinematics: %s damping: %s\n", s2,i1,s3,s4,s5);
 	}
 
 	if ( (trackers[num_trackers] = mytracker =
-          new vrpn_Tracker_NovintFalcon(s2, connection, i1, s3, s4)) == NULL)
+          new vrpn_Tracker_NovintFalcon(s2, connection, i1, s3, s4, s5)) == NULL)
 	{
 		fprintf(stderr, "Can't create new vrpn_Tracker_NovintFalcon\n");
 		return -1;
