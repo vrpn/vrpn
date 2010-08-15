@@ -539,8 +539,8 @@ vrpn_Tracker_NovintFalcon::vrpn_Tracker_NovintFalcon(const char *name,
 
     if (damp != NULL) {
         vrpn_float64 val= atof(damp);
-        if (val > 0.2 && val <= 1.0) { 
-            m_damp = val;
+        if (val >= 1.0 && val <= 10000.0) { 
+            m_damp = 1.0 - 1.0/val;
         } else {
             fprintf(stderr, "WARNING: Ignoring illegal force effect damping factor: %g \n", val);
         }
