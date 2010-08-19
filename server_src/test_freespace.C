@@ -4,7 +4,7 @@
 // Hillcrest Labs Freespace powered device is working properly.
 // Most of this code was copied from the test_radamec_spi.C file
 //
-#define VRPN_USE_FREESPACE
+
 #ifdef VRPN_USE_FREESPACE
 #include <stdlib.h>
 #include <stdio.h>
