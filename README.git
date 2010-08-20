@@ -1,3 +1,6 @@
+vrpn_devel is currently accessed over https:// at git.cs.unc.edu.
+Use a password to push changes.
+
 Getting to the Git repository using a public/private key pair from a UNC Linux host.
 
 ---------------------
