@@ -19,13 +19,11 @@ Architecture: any
 Section: libs
 Depends: ${misc:Depends}, ${shlibs:Depends},
 	libvrpn-dev,
-	libvrpn-java,
 	libvrpn-server-dev,
 	libvrpn-doc,
 	libvrpn-quat-dev,
 	vrpn-clients,
-	vrpn-server,
-	python-vrpn
+	vrpn-server
 Description: Virtual Reality Peripheral Network - metapackage
  The Virtual-Reality Peripheral Network (VRPN) is a set of classes within a
  library and a set of servers that are designed to implement a network-
@@ -57,20 +55,7 @@ Description: Virtual Reality Peripheral Network - library development files
  .
  This package is a part of the VRPN suite.  For a full VRPN runtime and
  development installation, install the "vrpn" package.
- 
-Package: libvrpn-java
-Section: java
-Architecture: any
-Depends: ${misc:Depends}, ${shlibs:Depends}, default-jre-headless | java2-runtime-headless
-Description: Virtual Reality Peripheral Network - Java bindings
- The Virtual-Reality Peripheral Network (VRPN) is a set of classes within a
- library and a set of servers that are designed to implement a network-
- transparent  interface between application programs and the set of physical
- devices (tracker, etc.) used in a virtual-reality (VR) system.
- .
- This package is a part of the VRPN suite.  For a full VRPN runtime and
- development installation, install the "vrpn" package.
- 
+
 Package: libvrpn-server-dev
 Section: libdevel
 Architecture: any
@@ -154,22 +139,6 @@ Description: Virtual Reality Peripheral Network - generic multi-function server
  .
    - vrpn_server
    - test_vrpn
- .
- This package is a part of the VRPN suite.  For a full VRPN runtime and
- development installation, install the "vrpn" package.
-
-Package: python-vrpn
-Architecture: any
-Section: python
-Depends: ${misc:Depends}, ${shlibs:Depends}, python
-Description: Virtual Reality Peripheral Network - Python bindings
- The Virtual-Reality Peripheral Network (VRPN) is a set of classes within a
- library and a set of servers that are designed to implement a network-
- transparent  interface between application programs and the set of physical
- devices (tracker, etc.) used in a virtual-reality (VR) system.
- .
- This package provides a Python interface to the VRPN system, generated
- using SWIG and custom interface files.
  .
  This package is a part of the VRPN suite.  For a full VRPN runtime and
  development installation, install the "vrpn" package.
