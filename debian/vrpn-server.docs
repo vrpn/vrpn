@@ -1,4 +1,4 @@
-vrpn/server_src/ChangeLog
-vrpn/server_src/vrpn.rc
-vrpn/server_src/vrpn.cfg
-vrpn/server_src/vrpn_Tracker.cfg.UNC
+server_src/ChangeLog
+server_src/vrpn.rc
+server_src/vrpn.cfg
+server_src/vrpn_Tracker.cfg.UNC
