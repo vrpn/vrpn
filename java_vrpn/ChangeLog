@@ -1,0 +1,714 @@
+2010-01-14  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGeneratorRemote.cpp:  corrected several
+	errors in the way channel messages were handled.  also,
+	tested for invalid values in various functions before
+	calling any vrpn functions.
+	* makefile:  additions from Sheldon Andrews to build
+	on 64-bit Linux.
+
+2010-01-05  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGeneratorRemote.cpp:  added a handler
+	for error reports.
+
+2009-12-28  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGeneratorRemote.cpp:  finished the
+	implementation of the java native methods and the
+	vrpn handler methods.
+
+2009-11-24  David Marshburn  <marshbur@cs.unc.edu>
+
+	* all:  added function generator wrapping.
+
+2009-05-18  David Marshburn  <marshbur@cs.unc.edu>
+
+	* *.cpp:  changed the handling of the native_device member
+	from an java int to a java long.  this includes the get and
+	set methods as well as the cached field descriptor.  cursory
+	testing indicates that this works for at least one 32-bit 
+	environment.
+
+2008-06-24  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_PoserRemote.cpp:  corrected the text of
+	some error messages.
+
+2008-06-20  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_PoserRemote.cpp:  implementation of java native
+	poser-relative methods
+	* vrpn_TextSenderRemote.cpp:  uses the new way of
+	creating vrpn connections
+	* java_vrpn.dsp:  added auxiliary logger files to project.
+
+2008-03-18  David Marshburn  <marshbur@cs.unc.edu>
+
+	* README.txt:  updated build instructions.
+
+2007-11-12  David Marshburn  <marshbur@cs.unc.edu>
+
+	* corrected the spelling of Auxilliary to Auxiliary
+
+2007-10-30  David Marshburn  <marshbur@cs.unc.edu>
+
+	* buildNativeHeaders.xml:  removed references to TempImager
+	* make_header.sh:  same
+	* makefile:  same
+	* *TempImager*:  renamed temp imager files, appending .obsolete
+
+2007-10-22  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_AuxiliaryLoggerRemote.cpp:  added some NULL-tests for stability
+
+2007-10-19  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_AuxiliaryLoggerRemote.cpp:  new.  java-native code for
+	aux. logger class.
+	* java_vrpn.h, .cpp:  calls logger class OnLoad/OnUnload methods
+	* java_vrpn.sln, .vcproj:  new.  visual studio 8/2005 project files.
+	* .cvsignore:  ignore vrpn_AuxiliaryLoggerRemote.h (generated code)
+	* buildNativeHeaders.xml:  adds logger class
+	* other *.cppfixed line endings (to be unix-style)
+
+2007-10-16  David Marshburn  <marshbur@cs.unc.edu>
+	* java_vrpn.jvp, .sln:  removed.  old, visual j++ project files.
+
+
+2007-06-25  David Marshburn  <marshbur@cs.unc.edu>
+	* buildJAR.xml:  correctly packages the class in the file
+
+2007-06-18  David Marshburn  <marshbur@cs.unc.edu>
+	* buildNativeHeader.xml:  removed a print statement
+	* buildJAR.xml:  new, and ANT build file for creating
+	the vrpn.jar file
+
+2007-06-15  David Marshburn  <marshbur@cs.unc.edu>
+	* buildNativeHeaders.xml:  left one class off the list
+	* java_vrpn.dsp:  updated the include paths.  output goes
+	into the bin directory.
+	* .cvsignore:  ignore some auto-generated visual studio files
+
+
+2007-06-14  David Marshburn  <marshbur@cs.unc.edu>
+	* buildNativeHeaders.xml:  an ANT build file, used by eclipse
+	to create the java native header files
+
+
+2007-06-04  David Marshburn  <marshbur@cs.unc.edu>
+	* .classpath, .project:  eclipse project files for java_vrpn.  
+	currently only builds the .class files.  i still need to make
+	eclipse build the .jar file automatically, generate the 
+	java-native .h files, generate the javadoc.
+	* .settings (directory):  location of project-specific eclipse
+	settings
+	* .cvsignore:  ignore the bin directory
+
+
+2007-05-31  David Marshburn  <marshbur@cs.unc.edu>
+	* .cvsignore:  don't ignore the vrpn directory
+
+2007-01-18  David Marshburn  <marshbur@cs.unc.edu>
+
+	* make_header.sh:  adds recent classes to the list
+
+2006-05-04  David Marshburn  <marshbur@cs.unc.edu>
+
+	* VRPNDevice.java (getTime):  exposes the get_time method from
+	vrpn_[File]Connection.
+	* vrpn_VRPNDevice.cpp:  native implementation of ^.
+
+2006-04-26	Ben Wilde	<wilde@cs.unc.edu>
+
+	* TextReceiver.java
+	-In 'handleTextMessage' set t.level to the passed level parameter
+
+2006-04-25    <marshbur@cs.unc.edu>
+
+	* java_vrpn.vjp:  also creates vrpn_TextSender.h
+
+2006-04-24    <marshbur@cs.unc.edu>
+
+	* TextReceiver.java:  new
+	* TextSender.java:  new
+	* vrpn_TextReceiver.cpp:  new
+	* vrpn_TextSender.cpp:  new
+	* java_vrpn.[vjp,dsp]:  adds the new text source files
+	* .cvsignore:  ignore the generated text header files
+	* VRPNDevice.java:  adds some constants for text stuff
+	* java_vrpn.[h,cpp]:  adds functions from the text part of the library
+
+2006-02-10    <marshbur@cs.unc.edu>
+
+	* vrpn_VRPNDevice.cpp (Java_vrpn_VRPNDevice_getEarliestTime_1native):
+	this should prevent times from being truncated; one calculation was 
+	done at long precision (only 32 bits).
+	(Java_vrpn_VRPNDevice_getLatestTime_1native):  same
+	* java_vrpn.dsp:  path changes for a recent java installation
+	(v. 1.4.2_10, the last release before 1.5).
+
+2006-02-01  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_VRPNDevice.cpp (Java_vrpn_VRPNDevice_playToWallTime_1native):
+	uses the correct signature/name for java's Date::getTime.
+
+2006-01-31  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_VRPNDevice.cpp:  corrected the way some Date functions
+	are caused (this was causing errors in some time-related functions).
+
+2006-01-30    <marshbur@cs.unc.edu>
+
+	* VRPNDevice.java (constructor):  now correctly starts the thread
+	for the device.  also calls the init() method for the concrete
+	device classes.
+	* *Remote.java:  removed code from constructors to VRPNDevice
+	* vrpn_VRPNDevice.cpp:  corrected a typo in the way a function
+	from java's Date class was looked up in several places.
+
+2006-01-27  David Marshburn  <marshbur@cs.unc.edu>
+
+	* VRPNDevice.java:  changed the parameter types or return values
+	of a few functions to more closely match vrpn.  also, added
+	getReplayRate.
+	* vrpn_VRPNDevice.java:  implementation of all the native functions.
+	* PoserRemote.java:  corrected how time is passed for pose requests.
+
+2006-01-26  David Marshburn  <marshbur@cs.unc.edu>
+
+	* java_vrpn.dsp:  adds new files to project
+	* java_vrpn.vjp:  adds new files to project
+	* java_vrpn.h, .cpp:  ups the version to 1.0.  also, defines/calls
+	OnLoad/OnUnLoad functions for VRPNDevice.
+	* vrpn_*Remote.java:  these now all use the java field ID for the 
+	'native_device' field, as cached by VRPNDevice, instead of looking
+	this up every function call.
+	* VRPNDevice.java:  those function only valid during replay now
+	throw a NotReplayException if called when not replay.
+	(getEarliestTime):  caches the earliest time, so only needs to call
+	the native method once.
+	(getLatestTime):  same as getEarliestTime.
+	(playToElapsedTime):  now takes a long integer.
+	(getElapsedTime):  new function (and it's native wrapping).
+	* vrpn_VRPNDevice.cpp:  new.
+
+2006-01-25  David Marshburn  <marshbur@cs.unc.edu>
+
+	There are two things in this commit.  First, a (transparent) 
+	reorganization.  All the device classes (tracker, analog, etc) had
+	a lot of common code for managing the threads that run the devices.
+	All this code was identical, save for perhaps name changes, and has
+	been moved into a new super class VRPNDevice.  Also, the integer
+	data member in which the java-native code stored the c++ pointer to
+	the native vrpn object was moved to this class (it was also common
+	among all the specific-device classes).  Also, I moved all the 
+	connection- and log-file-name stuff from VRPN.java to VRPNDevice.java.
+		Second, replay-control methods were added to the VRPNDevice 
+	class.  These call through to the native vrpn_Connection object for
+	each device.  The native implementations of these (which will be
+	in a forthcoming VRPNDevices.cpp) have not be written yet.
+
+	* *Remote.java:  removed threading and native object pointer 
+	* *Remote.cpp:  renamed references to the native object poiner.
+	  (more changes probably forthcoming).
+	* VRPNDevice.java:  a superclass for all the specific device classes
+	* VRPN.java:  removed cnxn and log file name stuff.
+	* ForceDeviceRemote.java:  almost all the native functions were
+	public, which means they could be called without having an appropriate
+	lock asserted.  Made all the functions protected and added public
+	wrappers that correctly synchronize on a lock to insure that only
+	one thread is calling native vrpn code at a time.
+	* .cvsignore:  tells cvs to ignore vrpn_VRPNDevice.h since it 
+	  is a generated file.
+	
+2005-08-10	Ben Wilde	<wilde@cs.unc.edu>
+
+	* vrpn_ForceDeviceRemote.cpp
+		-Fixed the wrapper for setConstraintMode by casting the 
+		integer to a constraint geometry.
+
+2005-08-08	Ben Wilde	<wilde@cs.unc.edu>
+
+	* vrpn_ForceDeviceRemote.cpp
+		-Wrote wrappers for all functions dealing with force device 
+		constraints
+	* ForceDeviceRemote.java
+		-Made all of the native functions booleans rather than voids
+
+2005-07-28  David Marshburn  <marshbur@cs.unc.edu>
+
+	* java_vrpn.vjp:  adds a custom build rule for the poser native .h file
+	* vrpn_PoserRemote.cpp:  includes vrpn_PoserRemote.h now.
+
+2005-07-25  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_AnalogOutputRemote.cpp (shutdownAnalog):  changed the name
+	to shutdownAnalogOutput, as it should have been.  Also, 
+	call vrpn_Connection::removeReference, needed because we
+	initially got the connection with vrpn_get_connection_by_name.
+	* vrpn_AnalogRemote.cpp (shutdownAnalog):  call 
+	vrpn_Connection::removeReference, needed because we
+	initially got the connection with vrpn_get_connection_by_name.
+	* vrpn_ButtonRemote.cpp (shutdownButton):  same
+	* vrpn_ForceDeviceRemote.cpp (shutdownForceDevice):  same
+	* vrpn_PoserRemote.cpp (shutdownPoser):  same
+	* vrpn_TrackerRemote.cpp (shutdownTracker):  same
+
+2005-07-24    <marshbur@cs.unc.edu>
+
+	* PoserRemote.java:  new, first implementation of java wrapping
+	for poser
+	* vrpn_PoserRemote.cpp:  new.  native code for java wrapping
+	* .cvsignore:  also ignore vrpn_PoserRemote.h (generated file)
+	* java_vrpn.vjp:  adds poser to the project.  removed temp imager
+	* java_vrpn.dsp:  adds poser to the project.
+	* java_vrpn.h,cpp:  adds function for poser.  commented out
+	functions for temp_imager.
+	* vrpn_AnalogOutputRemote.cpp:  corrected an error print statement
+	
+2004-10-20  David Marshburn  <marshbur@cs.unc.edu>
+
+	* java_vrpn.dsp:  rolled this back to before Oct. 2004.  Something
+	had been corrupted in it (perhaps newline characters).
+
+2004-10-15	Ben Wilde	<wilde@cs.unc.edu>
+
+	* Added the line 'VRPN_CALLBACK' in front of handler functions
+	so that java_vrpn would compile.
+
+2004-10-14  David Marshburn  <marshbur@cs.unc.edu>
+
+	* java_vrpn.vjp:  added back the custom build rule for the post-build
+	step.  these create the .jar file, build the javadoc documentation
+	and generate the native-code header files.
+
+2004-07-22  David Marshburn  <marshbur@cs.unc.edu>
+
+	* *Remote.java (stopRunning):  added most of the functionality of
+	finalize to this function (this should be used instead of finalize).
+
+2004-07-13  David Marshburn  <marshbur@cs.unc.edu>
+
+	* VRPN.java:  added data members to store the connection name and
+	the names of the local-in, local-out, remote-in and remote-out
+	logfiles.  added accessors for the same.  added a constructor
+	where these are specified.  made the default constructor private.
+	* *Remote.java:  all call the new constructor of class VRPN
+
+2004-07-12  David Marshburn  <marshbur@cs.unc.edu>
+
+	* *Remote.java:  made the finalize function public instead of
+	protected.  This is the only reliable way to shut down a vrpn
+	device, force any log files to be written, etc.  Also expanded
+	a comment in each file.
+
+2004-04-20  David Marshburn  <marshbur@cs.unc.edu>
+
+	* *Remote.java:  time was being calculated/presented incorrectly
+	in all cases for message delivery in java.  i'd incorrectly 
+	used the tv_usec number of messages as milliseconds instead of 
+	microseconds when putting it into the Date member of the various
+	*Update structures.
+
+2003-10-24  Oliver Otto <o.otto@reading.ac.uk>
+
+	* makefile:  builds java_vrpn on unix (linux and iris tested)
+	* make_header.sh:  script to build the C++ header files
+	* README.txt:  updated build instructions for Irix/Linux
+
+2003-05-16  David Marshburn  <marshbur@cs.unc.edu>
+
+	* *Remote.java:  removed the 'synchronized' keyword from a number
+	of functions.  This was allowing users to deadlock in certain 
+	situations.  This per-oject synchronization is not necessary, as
+	all java_vrpn objects obtain a lock, anyway, before calling any
+	c++ vrpn code.
+
+2003-05-09  David Marshburn  <marshbur@cs.unc.edu>
+
+	* *Remote.java:  each device type now gives its thread a name
+	* java_vrpn.dsp:  build browse info, also
+	* java_vrpn.vjp:  also zip up the java source (for debugging)
+
+2003-04-01  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* java_vrpn.cpp : Removed ^Ms.
+	* vrpn_AnalogOutputRemote.cpp : Same.
+	* vrpn_AnalogRemote.cpp : Same.
+	* vrpn_ButtonRemote.cpp : Same.
+	* vrpn_ForceDeviceRemote.cpp : Same.
+	* vrpn_TempImagerRemote.cpp : Same.
+	* vrpn_TrackerRemote.cpp : Same.
+
+2003-01-15  David Marshburn  <marshbur@cs.unc.edu>
+
+	* AnalogOutputRemote.java:
+	(requestValueChange_native):  new, the native functions
+	(requestValueChange):  these are now java functions that aquire
+	the library-wide lock before calling the native functions.
+	* vrpn_AnalogOutputRemote.cpp:  renames the requestValueChange 
+	functions to match the new declarations, as above.
+
+2003-01-09  David Marshburn  <marshbur@cs.unc.edu>
+
+	* AnalogOutputRemote.java:  
+	(requestValueChange):  array version, new
+	(getNumActiveChannels):  new
+	(getMaxActiveChannels):  new
+	* AnalogRemote.java:
+	(getNumActiveChannels):  new
+	(getMaxActiveChannels):  new
+	* vrpn_AnalogOutputRemote.cpp:
+	(Java_vrpn_AnalogOutputRemote_requestValueChange__ID):  name change
+	(Java_vrpn_AnalogOutputRemote_requestValueChange___3D): new.
+	implementation of java native function AnalogOutputRemote::
+	requestValueChange (array version).
+	(Java_vrpn_AnalogOutputRemote_getNumActiveChannels):  new.
+	implementation of java native function AnalogOutputRemote::
+	getNumActiveChannels.
+	* vrpn_AnalogRemote.cpp:
+	(Java_vrpn_AnalogRemote_getNumActiveChannels):  new.
+	implementation of java native function AnalogRemote::
+	getNumActiveChannels.
+
+2002-12-16  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_TempImager_Remote.cpp:  changed the names of the vrpn
+	TempImager variables to match current implementation.
+
+2002-11-25    <marshbur@cs.unc.edu>
+
+	* TempImagerRemote.java:  made all data members protected (were default
+	visibility before).
+	* vrpn_TempImager_Remote.cpp:  changed the names of the functions
+	handle_region_changed and handle_description_change to prepend 
+	"java_vrpn_" to the names.  Changes to match recent naming changes
+	in vrpn_TempImager_Region.
+	(java_vrpn_handle_region_change):  recognizes if it's been passed
+	something other than 16-bit image data and fails (temporary, until
+	we write something to deal with other size pixels).
+
+2002-10-24  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_ForceDeviceRemote.cpp (handle_force_error):  corrected
+	signature for java handleForceError.
+
+2002-10-08  David Marshburn  <marshbur@cs.unc.edu>
+
+	* VRPN.java:  adds a static variable (downInVrpnLock) on which all 
+	the vrpn devices can synchronize their access to the vrpn libray.  
+	Also, loads the native library.
+	* AnalogOutputRemote.java:  synchronizes on downInVrpnLock all calls 
+	to init, mainloop and shutdown native methods.  Also removes
+	library-loading, static-initialization block.
+	* AnalogRemote.java:  same
+	* ButtonRemote.java:  same
+	* ForceDeviceRemote.java:  same
+	* TempImagerRemote.java:  same
+	* TrackerRemote.java:  same
+	
+	* vrpn_AnalogOutputRemote.cpp:  JNI_Onload and JNI_OnUnload renamed
+	to be device specific.  Removed 'jvm' global variable.  Check that
+	jvm has been defined in JNI_Onload function.
+	* vrpn_AnalogRemote.cpp:  same
+	* vrpn_ButtonRemote.cpp:  same
+	* vrpn_ForceDeviceRemote.cpp: same
+	* vrpn_TempImagerRemote.cpp:  same
+	* vrpn_TrackerRemote.cpp:  same
+
+	* java_vrpn.h:  global 'jvm' variable.  Functions definitons for
+	device-specific JNI_Onload/OnUnload function.
+	* java_vrpn.cpp:  new.  contains JNI_Onload and JNI_OnUnload, whick
+	call the device-specific versions of these functions.
+
+	* java_vrpn.dsp:  new.  everything in a single project.
+	* AnalogOutputRemote.dsp, AnalogRemote.dsp, ButtonRemote.dsp,
+	ForceDeviceRemote.dsp, TempImagerRemote.dsp, TrackerRemote.dsp:
+	all removed in favor of java_vrpn.dsp.
+	* java_vrpn.dsw:  added/removed projects.
+
+2002-10-07  David Marshburn  <marshbur@cs.unc.edu>
+
+	* VRPN.java:  new, pending superclass for java vrpn devices
+	* java_vrpn.vjp:  added VRPN.java
+
+2002-09-24  Chris Weigle  <weigle@cs.unc.edu>
+
+   * TempImagerRemote.java:
+      (removeDescriptionChangeListner): fixed name
+
+2002-09-23  Chris Weigle  <weigle@cs.unc.edu>
+
+   * TempImagerRemote.java:
+      (setChannel): unneeded warning message removed
+
+2002-09-23  Chris Weigle  <weigle@cs.unc.edu>
+
+   * vrpn_TempImagerRemote.cpp: Minor changes (commented-out debug messages)
+   * TempImagerRemote.java:
+      (getNumRows): new
+      (addDescriptionChangeListener): fixed name of addDecriptionChangeListener
+      (setChannel): fixed guard (off by on at upper bound)
+                    added test for null channel reference, create if needed
+                       - Note: This shouldn't have to be here. The array of
+                         TempImagerChannels is allocated, but we wind up with
+                         an array of null pointers instead of instantiated
+                         objects. Have I lost my mind, or shouldn't 
+                         "new TempImagerChannel[10]" give me 10 init'd
+                         TICs and not 10 null references to TICs?
+
+2002-09-19  David Marshburn  <marshbur@cs.unc.edu>
+
+	* TempImagerRemote.java:  change the function named
+	handleTempImagerChange to be named handleDescriptionChange
+	* vrpn_TempImagerRemote.cpp:  comment changes.
+
+2002-09-19  Chris Weigle  <weigle@cs.unc.edu>
+   * TempImagerRemote.java: TempImagerChanel and TempImagerRegion now have
+     public data members
+
+2002-09-18  David Marshburn  <marshbur@cs.unc.edu>
+
+	* .cvsignore:  ignore vrpn_AnalogOutputRemote.h (generated)
+	* AnalogOutputRemote.dsp:  new, project file for AnalogOutput
+	* AnalogOutputRemote.java:  new, first implementation of AnalogOutput.
+		This includes logging.
+	* AnalogRemote.java:  removed AnalogOutput stuff and the
+		function requestChannelChange.  Also, added logging
+		functionality (init) and (AnalogRemote).
+	* java_vrpn.dsw:  added AnalogRemoteOutput project
+	* java_vrpn.vjp:  added AnalogRemoteOutput class
+	* vrpn_AnalogOutputRemote.cpp:  new, implementation of native 
+		Java functions.  This includes logging.
+	* vrpn_AnalogRemote.cpp:  removed AnalogOutput stuff and function
+		Java_vrpn_AnalogRemote_requestChannelChange.  Also added
+		logging functionality (Java_vrpn_AnalogRemote_init)
+
+2002-09-16  David Marshburn  <marshbur@cs.unc.edu>
+
+	* ButtonRemote.java (init):  takes extra params for log file names
+			    (ButtonRemote):  same
+	* ForceDeviceRemote.java (init):  same
+	                         (ForceDeviceRemote):  same
+	* TrackerRemote.java (init):  same
+	                     (TrackerRemote):  same
+	* vrpn_ButtonRemote.cpp (Java_vrpn_ButtonRemote_init):  same
+	* vrpn_ForceDeviceRemote.cpp (Java_vrpn_ForceDeviceRemote_init):  same
+	* vrpn_TrackerRemote.cpp (Java_vrpn_TrackerRemote_init):  same
+	* TrackerRemote.dsp:  include java_vrpn.h
+	
+
+2002-09-15  David Marshburn  <marshbur@cs.unc.edu>
+
+	* AnalogRemote.java:  added another data member to hold
+	a pointer to a vrpn_Analog_Output_Remote (used by the
+	native code).
+	* vrpn_AnalogRemote.cpp:  changed this to also use 
+	vrpn_Analog_Output_Remote (corresponds to recent changes
+	in vrpn_Analog_Remote).
+
+2002-09-11  David Marshburn  <marshbur@cs.unc.edu>
+
+	* java_vrpn.dsw, java_vrpn.vjp:  added TempImager stuff
+	* TempImagerRemote.java:  new.  first pass at an imager.
+	* vrpn_TempImagerRemote.cpp:  same
+	* TempImagerRemote.dsp:  project file for TempImager
+	* .cvsignore:  ignore vrpn_TempImagerRemote.h (generated)
+
+2002-08-20  David Marshburn  <marshbur@cs.unc.edu>
+
+	* *.java:  comment changes
+
+2002-08-19  David Marshburn  <marshbur@cs.unc.edu>
+
+	* *.java:  fixed up the javadoc comments
+	* java_vrpn.vjp:  builds the javadoc documentation from the
+	class files along with everything else.
+	* .cvsignore:  ignore the javadoc directory
+
+2002-08-15  David Marshburn  <marshbur@cs.unc.edu>
+
+	* .cvsignore:  ignore vrpn.jar
+	* java_vrpn.vjp:  now creates vrpn.jar
+
+2002-08-13  David Marshburn  <marshbur@cs.unc.edu>
+
+	* AnalogRemoteListener.java:  cosmetic & comment changes
+	* ButtonRemoteListener.java:  changes exactly corresponsing to
+	those committed for AnalogRemoteListener.java on 2002-08-12
+	* ForceDeviceRemoteListener.java:  same
+	* TrackerRemoteListener.java:  same
+	* java_vrpn.vjp:  changes from moving the *Listener classes
+	into the vrpn package.
+
+2002-08-12  David Marshburn  <marshbur@cs.unc.edu>
+
+	* AnalogRemoteListener.java:  
+	- more and better comments.
+	- Added two new symbols, ALL_UPDATES and LAST_UPDATE to denote
+	how an instance of this Listener buffers updates.
+	(constructor):  changed the order in which things are initialized
+	to prevent a race condition.
+	(setModeLastAnalogUpdate):  uses ALL_UPDATES/LAST_UPDATE symbols
+	(setModeAllAnalogUpdates):  uses ALL_UPDATES/LAST_UPDATE symbols.
+	Also, only clear the buffer of updates if we're coming from
+	LAST_UPDATE mode.
+	(getModeAnalogUpdate):  now returns an integer, one of ALL_UPDATES 
+	or  LAST_UPDATE, instead of a boolean.
+	(getAnalogUpdate):   if there are no updates to report, this now 
+	returns an empty vector rather than null.
+	
+
+2002-08-09  David Marshburn  <marshbur@cs.unc.edu>
+
+	* AnalogRemoteListener.java:  moved this into the vrpn package.
+	* ButtonRemoteListener.java:  same
+	* ForceDeviceRemoteListener.java:  same
+	* TrackerRemoteListener.java:  same
+
+2002-08-01  David Marshburn  <marshbur@cs.unc.edu>
+
+	* AnalogRemote.java (stopRunning):  new; let's the vrpn device
+	be shut down nicely if you need to disconnect from one device
+	and connect to another while your program is still running.
+	* ButtonRemote.java:  same
+	* ForceDeviceRemote.java:  same
+	* TrackerRemote.java:  same
+
+2002-07-25  Tatsuhiro Segi  <segi@email.unc.edu>
+
+	* AnalogRemoteListener.java:  revised and commented
+	* ButtonRemoteListener.java:  same
+	* ForceDeviceRemoteListener.java:  same
+	* TrackerRemoteListener.java:  same
+
+2002-07-16  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_AnalogRemote.cpp:  cleaned out some errant print statements.
+	* vrpn_ButtonRemote.cpp:  same
+	* vrpn_ForceDeviceRemote.cpp:  same
+	* vrpn_TrackerRemote.cpp:  same
+
+2002-07-11  David Marshburn  <marshbur@cs.unc.edu>
+
+	* TrackerRemote.java:  starts the thread in the constructor.
+
+2002-07-11  David Marshburn  <marshbur@cs.unc.edu>
+
+	* AnalogRemote.java:  removes all references to java.util.Timer
+	and TimerTask, as these could not be rescheduled.  This version
+	returns to the method of spawning a thread and sleeping.
+	* ButtonRemote.java:  same
+	* ForceDeviceRemote.java:  same
+	* TrackerRemote.java:  same
+
+2002-07-08  Tatsuhiro Segi  <segi@email.unc.edu>
+
+	* AnalogRemoteListener.java:  new file that acts as a wrapper 
+	for updates.
+	* ButtonRemoteListener.java:  same
+	* ForceDeviceRemoteListener.java:  same
+	* TrackerRemoteListener.java:  same
+
+2002-07-08  David Marshburn  <marshbur@cs.unc.edu>
+
+	* AnalogRemote.java (SetTimerPeriod):  fixed this so that it no
+	longer causes an exception when rescheduling the thread.
+	* ButtonRemote.java:  same
+	* ForceDeviceRemote.java:  same
+	* TrackerRemote.java:  same
+
+2002-07-01  David Marshburn  <marshbur@cs.unc.edu>
+
+	* ButtonRemote.java: restored the native_button data member,
+	which I accidentally deleted at last commit :)
+
+2002-06-28  David Marshburn  <marshbur@cs.unc.edu>
+
+	* AnalogRemote.java:  two new functions, Get/SetTimerPeriod, to 
+	control how often vrpn looks for messages.  Also, instead of 
+	spawning its own thread and sleeping, this uses the Java Timer
+	and TimerTask class to check for vrpn messages reliably.
+	* ButtonRemote.java:  same
+	* ForceDeviceRemote.java:  same
+	* TrackerRemote.java:  same
+	* java_vrpn.vjp:  added a classpath link to the Sun Java 1.4.0 SDK
+	* README.txt:  updated instructions for building and using this.
+	* ButtonRemote.dsp:  adds java_vrpn.h to source files.
+
+2002-06-27  David Marshburn  <marshbur@cs.unc.edu>
+
+	* AnalogRemote.java:  more and more correct error messages when
+	the native library dll can't be found or has problems...
+	* ButtonRemote.java:  same
+	* ForceDeviceRemote.java:  same
+	* TrackerRemote.java:  same
+	* vrpn_AnalogRemote.cpp:  same
+
+2002-06-25  David Marshburn  <marshbur@cs.unc.edu>
+
+	* ForceDeviceRemote.java:  *ForceField methods return boolean. 
+	(stopForceField, sendForceField x2)
+	* vrpn_ForceDeviceRemote.java:  *ForceField method implementations.
+
+2002-06-24  David Marshburn  <marshbur@cs.unc.edu>
+
+	* java_vrpn.vjp:  adds ForceDevice
+	* java_vrpn.dsw:  adds ForceDeviceRemote.dsp
+	* ForceDeviceRemote.dsp:  new project for force device
+	* ForceDeviceRemote.java:  new
+	* vrpn_ForceDeviceRemote.java:  new, partial implementation of
+	native functions.
+	* .cvsignore:  now ignores vrpn_ForceDeviceRemote.h (generated)
+
+2002-06-19  David Marshburn  <marshbur@cs.unc.edu>
+
+	* AnalogRemote.java (requestValueChange):  new
+	* vrpn_AnalogRemote.cpp (Java_vrpn_AnalogRemote_requestValueChange):  
+	  new.
+
+2002-06-18 Tatsuhiro Segi <segi@email.unc.edu>
+
+	* ButtonRemote.java:  minor comment changes
+	* vrpn_ButtonRemote.cpp:  comment changes
+
+2002-06-12  Tatsuhiro Segi  <segi@email.unc.edu>
+
+	* java_vrpn.dsw:  added ButtonRemote.dsp project
+	* java_vrpn.vjp:  added ButtonRemote.java
+	* ButtonRemote.dsp:  new project file
+	* ButtonRemote.java:  new.  the java part of the vrpn button remote
+	* vrpn_ButtonRemote.cpp:  new. c++ part of the same thing
+	* .cvsignore:  added vrpn_ButtonRemote.h
+
+2002-06-10  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_TrackerRemote.cpp:  minor comment changes
+	* vrpn_AnalogRemote.cpp:  implementations for JNI_OnLoad, 
+	  JNI_OnUnload, handle_analog_change, 
+	  Java_vrpn_AnalogRemote_shutdownAnalog, 
+	  Java_vrpn_AnalogRemote_mainloop, and
+	  Java_vrpn_AnalogRemote_init.
+	* AnalogRemote.java:  comment changes
+	* AnalogRemote.dsp:  build/link updates & corrections
+
+2002-06-07  David Marshburn  <marshbur@cs.unc.edu>
+
+	* TrackerRemote.dsw:  removed in favor of java_vrpn.dsw
+	* java_vrpn.dsw:  new; workspace for a project for each vrpn device
+	* AnalogRemote.dsp:  new
+	* AnalogRemote.java:  new.  the java part of a java vrpn analog remote
+	* vrpn_AnalogRemote.cpp:  new.  the c++ part of java vrpn analog remote
+	* .cvsignore:  new
+	* java_vrpn.h:  new.  some common constants for the c++ part
+	* TrackerRemote.java:  comment changes.  also throws an exception
+	if the tracker can't be created in native code.
+	* java_vrpn.vjp:  added AnalogRemote
+	* vrpn_TrackerRemote.cpp:  added handlers for velocity and
+	acceleration.
+
+2002-06-02  David Marshburn  <marshbur@cs.unc.edu>
+
+	* creation of java_vrpn repository
+

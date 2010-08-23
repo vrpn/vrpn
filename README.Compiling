@@ -1,0 +1,71 @@
+VRPN has had a CMake-based build system since version 07.23.  CMake is
+similar in purpose but not in implementation to the Autoconf collection
+of tools, and permits building on multiple platforms by creating native
+project files for MSVC, XCode, Eclipse, Code::Blocks, makefiles, and
+more.
+
+Get CMake from your Linux distribution and/or from www.cmake.org
+
+Use the current directory (vrpn_XX_XX/vrpn) as the "source code" directory
+in the CMake GUI; the quat directory (vrpn_XX_XX/quat) will be automatically
+detected and built as well.  Choose any directory you want (the source
+directory followed by /build is suggested) as the "build binaries"
+directory: generated build files will be placed there rather than cluttering
+up your source tree.
+
+Many options can be fully configured using CMake as of Dec 2009, and more
+are sure to come.  Until then, if you need specific compilation needs
+that CMake doesn't appear to provide an interface for, look in the
+vrpn_Configure.h.cmake_in file.
+
+If you'd rather use the command line, here's the basics:
+    mkdir build
+    cd build
+    ccmake ../
+        - Press 'c' to run the initial configuration
+        - Change any options, pressing 'c' to re-configure after each change
+        - when satisfied, after configuring, press 'g' to create makefiles, etc
+    make
+
+and any/all of these if desired:
+    make package
+        - Create binary install packages of your configured build using CPack
+    make package_source
+        - Create source code packages using CPack
+    make install
+        - Install all libraries, executables, and headers (as configured)
+          to your system, to the configured path.  Add DESTDIR=whatever/
+          to place the installation tree somewhere other than root.
+
+Instructions for the original Makefile-based build follow.
+
+For those not at UNC, you compile by doing the following:
+
+   for Visual C++:
+	Open the vrpn.dsw file.
+	Compile the quat project.
+	Compile the VRPN project.
+	Then compile whichever of vrpn_server, printvals, etc you want.
+
+   for Unix/Cygwin:
+	Go to ../quat.
+		Edit 'makefile' to uncomment the architecture you are on.
+		gmake
+	Come back here (cd ../vrpn)
+		Edit Makefile to uncomment your architecture
+		gmake
+	Go to client_src
+		Edit Makefile to uncomment your architecture
+		gmake
+	Go to server_src
+		Edit Makefile to uncomment your architecture
+		gmake
+
+	edit the vrpn.cfg file to set it to start tracker you want
+		See the file vrpn.cfg.SAMPLE for examples.
+		Example:  vrpn_Tracker_NULL Tracker0@MYHOSTNAME 2 2
+	(Run the server: sgi_irix/vrpn_server -millisleep 1 -f vrpn.cfg)
+
+	Go to client_src
+		Run printvals to check the server
+		Example: sgi_irix/printvals localhost

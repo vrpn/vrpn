@@ -1,0 +1,570 @@
+2009-12-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* c_interface_example.cpp : Gets rid of a compiler warning.
+
+2009-12-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CmakeLists.txt : Improvements by Ryan Pavlik to the Cmake files that
+		make them cleaner and use more modern constructions.  Also various
+		bug fixes to make code compile on a number of architectures.
+	* bdbox_client.C : Compiles with modern VRPN.
+	* logfilesenders.c : Compiles on all architectures.
+	* logfiletypes.c : Same.
+	* testimager_client.C : Compiles on Apple.
+	* tracker_to_poser.cpp : Compiles on all architectures.
+
+2009-11-27  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CMakeLists.txt : Turning off testimager_client on all but Windows.
+	* testimager_client.C : Removing declarations that aren't needed but that
+		only worked on Windows.
+
+2009-11-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* ff_client.C : Picking lint found by a new compiler (const declarations and
+		printf format descriptions.
+	* phan_client.C : Same.
+	* printceral.C : Same.
+	* sphere_client.C : Same.
+	* text.C : Same.
+	* vrpn_print_devices.C : Same.
+
+2009-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CMakeLists.txt : File to describe to the Cmake build system how
+		to compile VRPN.
+	* ff_client.C : Upgrade to compile on Windows with recent VRPN.
+	* phan_client.C : same.
+	* testSharedObject.C : same.
+	* text.C : same.
+	* vrpn_ping.C : same.
+
+2009-11-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* sound_client.c : Fixed it so that it compiles.  There must
+		have been an inadvertent cutting out of some lines in
+		the code.
+
+2009-09-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * Makefile : Turned "-g" flag into "$(DEBUG_FLAGS)" throughout.
+
+2009-07-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* run_auxiliary_logger.C : Added a test program that
+		lets you connect and ask for a log file for some
+		duration.
+	* run_auxiliary_logger.dsp : Same.
+	* run_auxiliary_logger.vcproj : Same.
+
+2009_06_16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Removed UNC-specific include and library paths.
+
+2009_04_17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Patch from Hans Lambermont to make it compile under Linux.
+	* test_imager.C : Same.
+
+2009_03_07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Added entry to compile a C-interface example program.
+	* c_interface.cpp : Code to provide a C interface to remote classes.
+	* c_interface.h : Same.
+	* c_interface_example.c : Example C program using the interface.
+
+2009_01_21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* forcedevice_test_client.vcproj : Making it compile with quatlib
+		in expected location.
+	* sphere_client.vcproj : Same.
+	* vrpn_print_devices.C : Removed limit on the number of sensors per
+		tracker.  Now uses a vector to keep track of counts, which
+		can add more until we run out of memory.
+
+2008_07_02  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_print_devices.C : Has the code not preload or
+		accumulate in case of reading from a file.
+
+2008_03_04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* clock_drift_estimator.C : Replaces vrpn_Connection
+		constructor with call to vrpn_create_server_connection()
+	* test_imager.C : Same.
+	* testimager_client.C : Whitespace changes
+	* vrpn_print_devices.C : Added Text_Receiver to the objects
+		being created, so you can print out text messages from an
+		object as well.
+
+2007-12-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* testimager_client.C : Has VRPN fileconnections neither preload
+		nor accumulate in case we open a logfile to read the
+		device.
+
+2007-08-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* testimager_client.C : Fixed a race-condition bug at startup that
+		would cause a crash when a Glut function was called before
+		Glut was initialized.
+
+2007-06-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Added linking with pthreads because of vrpn_Thread class.
+
+2007-06-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * Makefile : Adding patch submitted by Patrick Hartling from
+                Infiscape.com for making this compile on MacOSX
+                to create universal binaries.
+
+2007-03-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Adding a build environment for cross-compiling to
+		ARM from PCs running Cygwin
+
+2007-03-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Making this code compile under pc_linux_arm.
+
+2006-10-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* clock_drift_estimator.vcproj : Updated to use the August 2006 version
+		of the DirectX SDK and the Microsoft Platform SDK
+		for Windows Server 20003 R2.
+	* forcedevice_test_client.vcproj : Same.
+	* printcerial.vcproj : Same.
+	* printvals.vcproj : Same.
+	* sphere_client.vcproj : Same.
+	* test_imager.vcproj : Same.
+	* test_zaber.vcproj : Same.
+	* testimager_client.vcproj : Same.
+	* tracker_to_poser.vcproj : Same.
+	* vrpn_print_devices.vcproj : Same.
+
+2006-08-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* testimager_client.C : It now renders when it gets the
+		end of a frame, which helps reduce the tearing in the
+		video being displayed.
+
+2006-07-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* testimager_client.C : Adding a call to make the connection limit
+		the number of messages it will handle before returning control
+		to the application.  This prevents the server from choking the
+		whole program by continually filling the network with packets.
+
+2006-06-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Added install and uninstall.
+
+2006-03-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* *.vcproj : Visual C++ 2005 project files for VRPN.
+
+2006-02-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* testimager_client.C : Switched to the more standard
+		GL/glut.h for the include.
+	* testimager_client.dsp : Modified so that it looks in
+		the NSRG buildime rather than a nearby local
+		directory.
+
+2005-10-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* forcedevice_test_client.cpp : Modified to also include the
+		presentation of a cube using the triangle interface.
+
+2005-10-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * Makefile : Added target for 64-bit Intel-based SGI compilation.
+
+2005-09-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* forcedevice_test_client.C : Modified to only put
+		in normalized directions.
+
+2005-08-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* clock_drift_estimator.C : Diff went crazy, so it is hard to
+		tell.  Newer version.
+
+2005-08-10	Ben Wilde	<wilde@cs.unc.edu>
+
+	* forcedevice_test_client.cpp
+		-Added tests for the line and plane constraints.  The plane 
+		seems to work fine, but the line constraint has a strange
+		behavior.  Either due to poor implementation or vrpn problem.
+
+2005-07-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* clock_drift_estimator.C : Application to estimate the drift between
+		the local machine's clock and another machine's clock using
+		the PING/PONG response from an arbitrary server object.
+	* clock_drift_estimator.dsp : Project file for this.
+
+2005-07-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* forcedevice_test_client.cpp : Deleted objects before exiting.
+	* phan_client.C : Same.
+	* sphere_client.C : Same.
+
+2005-07-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* printcereal.dsp : Added include directories on $(SYSTEMDRIVE)
+		and lib directories also on $(SYSTEMDRIVE) so that the
+		apps can build correctly with only edits in the
+		vrpn_Configure.h file if things are installed in standard
+		locations.
+	* forcedevice_test_client.dsp : Same.
+	* printvals.h : Same.
+	* setrouter.dsp : Same.
+	* test_imager.dsp : Same.
+	* test_zaber.dsp : Same.
+	* testimager_client.dsp : Same.
+	* tracker_to_poser.dsp : Same.
+	* vrpn_Router_Client_GUI.dsp : Same.
+	* vrpn_print_devices.dsp : Same.
+
+2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* clock_client.C : Removed.
+	* vrpnTrackerClient.cpp : Same.
+	* printcereal.C : Removed Synchronized.
+	* printvals.c : Same.
+	* sound_client.c : same.
+	* test_imager.C : Deleted objects that had been created, to
+		avoid reference-count warning at the end.
+
+2005-04-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* testimager_client.C : Clears image to black so that
+		anything not filled in has a definite value.
+
+2005-02-25  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Removed -LANG:std from compile, no streams
+		used in the code anymore.
+
+2005-02-01  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Added John Stone's definitions to make
+		things compile under 64-bit Linux.
+
+2005-01-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* testimager_client.C : Modified to handle red, green,
+		blue channels from client.
+
+2004-12-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpnTrackerClient.cpp : Fixed compiler warnings.
+
+2004-12-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Swapped out test_tempimager for test_imager.
+	* test_imager.dsp : Same.
+	* test_imager.C : Same.
+	* test_tempimager.dsp : Same.
+	* test_tempimager.C : Same.
+
+2004-12-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Modified to use vrpn_Imager rather than vrpn_TempImager.
+
+2004-11-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * Happy Birthday to me!
+        * Makefile : Added John Stone's additions to make it compile on
+                64-bit Solaris
+
+2004-09-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        Adding Chris VanderKnyff's changes that enable DLL linkage
+        for applications.  Heading towards enabling C# and other language
+        support.
+
+	* forcedevice_test_client.cpp : Adding VRPN_CALLBACK.
+	* printcereal.C : same.
+	* printvals.C : same.
+	* sphere_client.C : same.
+	* test_Zaber.C : same.
+	* test_tempimager.C : same.
+	* testimager_client.C : same.
+	* tracker_to_poser.cpp : same.
+	* vrpn_Router_Client_GUI.C : same.
+	* vrpn_print_devices.C : same.
+	* forcedevice_test_client.dsp : Making it depend on the project
+		that causes both VRPN and VRPNDLL projects to be built, rather
+                than on VRPN.  If you try to make it depend on both
+                VRPN and VRPNDLL, you get linking trouble.
+	* printcereal.dsp : same.
+	* printvals.dsp : same.
+	* setrouter.dsp : same.
+	* sphere_client.dsp : same.
+	* test_tempimager.dsp : same.
+	* test_zaber.dsp : same.
+	* testimager_client.dsp : same.
+	* tracker_to_poser.dsp : same.
+	* vrpn_Router_Client_GUI.dsp : same.
+	* vrpn_print_devices.dsp : same.
+
+2004-09-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* forcedevice_test_client.dsp : Changing code generation back to
+		DLL-based for all classes, like it was supposed to be in
+		the first place.  Confusion over the cause for a crash led
+		us to incorrectly change it before.
+	* printcereal.dsp : Same.
+	* printvals.dsp : Same.
+	* setrouter.dsp : Same.
+	* sphere_client.dsp : Same.
+	* test_tempimager.dsp : Same.
+	* test_zaber.dsp : Same.
+	* testimager_client.dsp : Same.
+	* tracker_to_poser.dsp : Same.
+	* vrpn_Router_Client_GUI.dsp : Same.
+	* vrpn_print_devices.dsp : Same.
+
+2004-08-31  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* forcedevice_test_client.dsp : Changing code generation to use
+		multithreaded non-DLL for both debug and release.  This turns
+		out to have always been the proper setting to use.
+		Unfortunately, all apps have to be rebuild with new settings,
+		and all libraries have to use the same setting.
+	* printcereal.dsp : Same.
+	* printvals.dsp : Same.
+	* setrouter.dsp : Same.
+	* sphere_client.dsp : Same.
+	* test_tempimager.dsp : Same.
+	* test_zaber.dsp : Same.
+	* testimager_client.dsp : Same.
+	* tracker_to_poser.dsp : Same.
+	* vrpn_Router_Client_GUI.dsp : Same.
+	* vrpn_print_devices.dsp : Same.
+
+2004-08-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* printcereal.C : Removed references to objects that were never
+		created.
+
+2004-07-27  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Adding build rule for .cpp (Horrible Windows extension
+		that is the same as the default rule in Unix for running the
+		C-pre-processor).  Adding rule to build force test client.
+	* forcedevice_test.client.cpp : Removing unused variables.
+
+2004-07-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* testimager_client.C : Changed default port number.
+	* test_force_device_client.cpp : Test program for vrpn_ForceDevice/
+	* test_force_device_client.dsp : Project file to build this.
+
+2004-05-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* tracker_to_poser.cpp : Can specify name of tracker and poser
+		on command line.
+
+2004-05-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* client_to_poser.cpp : New application to read from tracker
+		and send to poser.
+	* client_to_poser.dsp : Project file for this app.
+
+2004-04-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Adding flag to SGI compile in the hope that it would
+		fix things and let us use the new streams libraries.  It
+		got us part of the way there on my system.
+	* clock_client.C : Added Patrick Hartling's changes to make VRPN
+		compile with Visual Studio.NET, which required switching to
+		new streams, which required retrofitting SGIs to use old
+		streams (using yet another define in vrpn_Configure.h).
+	* test_tempimager.C : same.
+	* vrpnTrackerClient.cpp : Same.
+	* vrpn_LamportClock.t.C : Same.
+
+2004-04-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* test_Zaber.C : Using vrpn_gettimeofday() not gettimeofday().
+	* testimager_client.C : Same.
+	* vrpn_ping.C : Same.
+	* vrpn_print_devices.C : Same.
+
+2003-12-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* testimager_client.C : Added #ifdef-ed out line to save log.
+
+2003-07-24  Matt McCallus  <mccallus@cs.unc.edu>
+
+	* sound_client.c : white space, include path removed.
+
+2003-05-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* printcereal.C : main() now returns int like it should.
+	* printvals.C : Same.
+	* sphere_clien.C : Same.
+	* test_Zaber.C : Same.
+	* test_tempimager.C : Uses new interface to TempImager.
+	* test_tempimager.dsp : Release version compiles now.
+	* test_zaber.dsp : Same.
+
+2002-12-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* printcereal.dsp : DSP files have been modified to not do definitions
+		of VRPN_NO_STREAMS and other constants directly, rather these
+		are now set by editing vrpn_Configure.h.  Also, made projects
+                compile in both debug and release versions.
+	* printvals.dsp : Same.
+	* setrouter.dsp : Same.
+	* sphere_client.dsp : Same.
+	* test_zaber.dsp : Same.
+	* vrpn_Router_Client_GUI.dsp : Same.
+	* vrpn_print_devices.dsp : Same.
+	* testimager_client.C : Comment change.
+
+
+2002-11-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* testimager_client.C : Modified to use new vrpn_Tempimager class.
+	* testimager_client.dsp : Made os that Release version can be built
+		and is stored in the correct place.
+
+2002-10-30  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* testimager_client.C : Only post redisplay to Glut once before it
+		actually calls the display function.  Otherwise, the calls
+		bunch up and the application even stops responding to windows
+		events.
+	* test_tempimager.dsp : Enables build for Release.
+	* test_zaber.dsp : Same.
+	* testimager_client.dsp : Same.
+
+2002-10-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* testimager_client.C : Scales faster, puts in more timing info.
+
+2002-09-27  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* testimager_client.C : Displays TempImager server output in OpenGL/Glut.
+	* testimager_client.dsp : Project file for testimager_client.C.
+
+2002-09-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * test_Zaber.C : Modified to use vrpn_Analog_Output.  Not tested.
+
+2002-09-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* test_tempimager.C : Test file for TempImager class.
+	* test_tempimager.dsp : build file.
+	* Makefile : same.
+
+2002-07-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Removing seldom-used clients that don't compile on
+		all architectures.
+
+2002-07-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_print_devices.C : Added handlers for velocity and
+		acceleration to the tracker device.
+
+2002-05-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* haptic : New directory with examples of using a Phantom.
+
+2002-05-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* test_Zaber.C : Program to joj the Zaber back and forth once we have gotten
+		a response to see where it is.
+	* vrpn_zaber.dsp : Build file to make the test program.
+
+2001-11-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_print_devices.C : Modify to compile under Windows CE development environment.
+
+2001-06-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_print_devices.C : Updates to use cleaner Tracker code.
+
+2001-06-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_print_devices.C : Program to print all message types from a list
+		of devices (Tracker, Button, Analog, Dial).
+	* Makefile : Changed to include building the new application.
+
+2001-04-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* sound_client.c : Changed to compile with more recent version.
+
+2001-04-19  Adam Seeger  <seeger@cs.unc.edu>
+
+	* phan_client.C, sphere_client.C (main): added while-loop to wait until
+	the connection is established before sending commands
+
+2001-02-17  Tom Hudson  <hudson@cs.unc.edu>
+
+	* printvals.c (main) : remove code to Usage(), change command-line
+	parameters to work with new logging methods.
+	(init) : work with new logging methods.
+	(Usage) : new function.
+
+2000-11-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* printvals.c (handle_cntl_c) : The ^C handler in Windows is
+		multi-threaded, which means it is busy tearing down
+		the connections while the main loop is still going.
+		This fixes it so that a flag is set and the main thread
+		does the shutdown.
+
+2000-10-18  Tom Hudson  <hudson@cs.unc.edu>
+
+	* printvals.c (init) : sometimes use vrpn_DelayedConnection instead
+	of a straight vrpn_(Synchronized_)Connection
+	(Usage) : new option -delay
+	(main) : parse new option -delay, fix set of redundant
+	transmission time
+	(handle_gotConnection) : fix set of redundant transmission time
+
+2000-10-17  Tom Hudson  <hudson@cs.unc.edu>
+
+	* printvals.c (handle_gotConnection) : new function
+	(init) : register handle_gotConnection
+
+2000-10-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Added vrpn_ping test program
+
+2000-10-11  Tom Hudson  <hudson@cs.unc.edu>
+
+	* printvals.c : add vrpn_RedundantRemote, global parameters
+        (init) : create vrpn_RedundantRemote
+        (main) : add parameters -quiet, -red
+
+2000-09-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Added vrpn_ping compilation
+	* vrpn_ping.C : New file
+
+2000-09-12  Tom Hudson  <hudson@cs.unc.edu>
+
+	* testSharedObject : added more complete test of features
+
+2000-08-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Added AIX compile
+
+2000-08-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* setrouter : New file
+	* vrpn_Router_Client_GUI : New file
+	* Makefile : Added two router test clients, one of which uses GLUT
+
+2000-08-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* printcereal.C (handle_control_C) : fixed deletion bug
+

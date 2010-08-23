@@ -1,0 +1,56 @@
+2004-09-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* gen_vrpn_rpc.pl : Making it add VRPN_CALLBACK where it should.
+
+2004-09-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	Adding Chris VanderKnyff's changes that enable DLL linkage
+	for applications.  Heading towards enabling C# and other language
+	support.
+
+	* test_gen_rpc.dsp : Making it depend on the project
+		that causes both VRPN and VRPNDLL projects to be built, rather
+		than on VRPN.  If you try to make it depend on both
+		VRPN and VRPNDLL, you get linking trouble.
+
+2004-04-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* main_tes.C : Using vrpn_gettimeofday() not gettimeofday().
+
+2004-03-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* test_gen_rpc.dsp : Point to Cygwin installed in C: rather than
+		on the E: drive.
+
+2002-12-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* test_gen_rpc.dsp : DSP files have been modified to not do definitions
+		of VRPN_NO_STREAMS and other constants directly, rather these
+		are now set by editing vrpn_Configure.h.  Also, made projects
+		compile in both debug and release versions.
+
+2002-03-20  Aron Helser  <helser@cs.unc.edu>
+
+	* test_gen_rpc.dsp: Standardized settings, object files and
+	executable live in ../../pc_win32/util/gen_rpc/Debug
+
+2001-11-20  Aron Helser  <helser@cs.unc.edu>
+
+	* gen_vrpn_rpc.pl (emitHandler): Changed generated variable names
+	to allow "p" and "me" in user code. 
+
+2001-03-02  Aron Helser  <helser@cs.unc.edu>
+
+	* gen_vrpn_rpc.pl (outputGrammar): Changes USE_MSG_GROUP so it
+	will handle filenames with paths. 
+
+2001-03-01  Aron Helser  <helser@cs.unc.edu>
+
+	* gen_vrpn_rpc.pl: new. Perl script. Generates vrpn rpc .C and .h
+	files from message lists or def files.
+
+	* main_test.C: new. Tests rpn generation
+	* rpc_Test_Remote.hdef: new. Test rpc generation
+	* rpc_Test_Remote.Cdef: new. Test rpc generation
+
+

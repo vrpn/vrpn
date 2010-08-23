@@ -1,0 +1,101 @@
+2010-06-03  David Marshburn  <marshbur@cs.unc.edu>
+
+	* FunctionGeneratorTest.java:  a more complete collection
+	of tests and example usage.
+
+2010-02-10  David Marshburn  <marshbur@cs.unc.edu>
+
+	* FunctionGeneratorTest.java:  a few additional tests to 
+	exercise the function-generator class
+
+2010-01-14  David Marshburn  <marshbur@cs.unc.edu>
+
+	* FunctionGeneratorTest.java:  new.
+
+2009-09-10  David Marshburn  <marshbur@cs.unc.edu>
+
+	* TestTempImager.java:  removed.  TempImager no longer exists.
+	* .classpath:  fixed location of vrpn.jar.
+
+2008-06-24  David Marshburn  <marshbur@cs.unc.edu>
+
+	* PoserTest.java:  tests relative pose request
+
+2008-02-13  David Marshburn  <marshbur@cs.unc.edu>
+	
+	* AuxiliaryLoggerTest.java:  slightly better handling
+	of logging reports.
+
+2007-10-22  David Marshburn  <marshbur@cs.unc.edu>
+
+	* AuxiliaryLoggerTest.java:  new
+	* TrackerTest.java:  changed port
+
+2007-10-19  David Marshburn  <marshbur@cs.unc.edu>
+
+	* .classpath, .project:  eclipse project files
+	* .cvsignore:  ignore the bin/ directory
+
+2006-04-24    <marshbur@cs.unc.edu>
+
+	* text sender/receiver test programs
+
+2006-01-30    <marshbur@cs.unc.edu>
+
+	* all:  catching up the test applications with the recent (and, in 
+	some cases, not-so-recent) changes in java_vrpn.
+
+2005-07-28  David Marshburn  <marshbur@cs.unc.edu>
+
+	* PoserTest.java:  new, a test program for java_vrpn poser.
+
+2003-10-24  Oliver Otto <o.otto@reading.ac.uk>
+
+	* PrintCereals.java:  java version of the printcereals utility.
+
+2002-09-16  David Marshburn  <marshbur@cs.unc.edu>
+
+	* ButtonListenerTest.java, ButtonTest.java, ForceDeviceTest.java,
+	TrackerTest.java:  use new constructors with log file arguments.
+	* .cvsignore:  ignore dll files in this directory
+	* test.vjp:  changed debugging/execution options
+
+2002-09-12  David Marshburn  <marshbur@cs.unc.edu>
+
+	* AnalogListenerTest.java:  fixed up this example to match recent
+	changes in AnalogRemoteListener.java
+	* ButtonListenerTest.java:  ditto
+	* TempImagerTest.java:  beginning of a test program for TempImager
+	* test.vjp:  adds TempImagerTest
+
+2002-07-25  Tatsuhiro Segi  <segi@email.unc.edu>
+
+	* AnalogListenerTest.java:  new file to test and demonstrate
+	  how to use Remote Listener classes.
+	* ButtonListenerTest.java:  same
+	* AnalogRandomValueGenerator.java:  thread to generate bunch
+	  of random value requests to analogRemote for testing
+
+2002-06-25  David Marshburn  <marshbur@cs.unc.edu>
+
+	* AnalogTest.java:  new
+	* ForceDeviceTest.java:  new
+	* test.vjp:  adds the above two files.
+
+2002-06-18  Tatsuhiro Segi  <segi@email.unc.edu>
+
+	* ButtonTest.java:  implemented
+	* test.jvp:  added ButtonTest.java file
+
+2002-06-12  Tatsuhiro Segi  <segi@email.unc.edu>
+
+	* ButtonTest.java:  new.
+
+2002-06-07  David Marshburn  <marshbur@cs.unc.edu>
+
+	* .cvsignore:  new
+	* TrackerTest.java:  changes to keep up with vrpn.TrackerRemote
+	(velocity, acceleration and exception)
+	* test.vjp:  build setting (CLASSPATH)
+	
+

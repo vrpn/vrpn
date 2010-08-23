@@ -1,0 +1,1433 @@
+2010-01-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Generic_server_object.C : Making DreamCheeky not try to compile
+		in except on Windows and Cygwin and Apple, where it has been
+		implemented.
+
+2009-12-27  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg : Added support for the Dream Cheeky USB
+		roll-up drum kit, which is a HID device.
+	* vrpn_Generic_server_object.C : Same.
+	* vrpn_Generic_server_object.h : Same.
+	* vrpn_Hid_device_watcher.cpp : Added a print-out of the number of
+		bytes per packet.
+
+2009-12-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CmakeLists.txt : Added fix from Ryan Pavlik for SensAble.
+
+2009-11-27  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CMakeLists.txt : Added libraries required on the Mac.
+
+2009-11-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* client_and_server.C : Picking lint found by a new compiler.  Const 
+		declarations and printf format descriptions.
+	* test_analogfly.C : Same.
+	* test_radamec_spi.C : Same.
+	* test_vrpn.C : Same.
+	* vrpn.C : Same.
+	* vrpn_Generic_server_object.C : Same.
+	* vrpn_Generic_server_object.h : Same.
+
+2009-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CMakeLists.txt : File to describe to the Cmake build system how
+		to compile VRPN.
+	* test_freespace.C : Upgrade to make it compile on Windows on new VRPN.
+	* text.C : Same.
+	* vrpn_Phantom.C : Same.
+
+2009-10-30  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * Makefile : Making this compile under Linux using new 0.4 version of
+                libfreespace; patch from Phil Black.
+	* test_freespace.C : Same.
+
+2009-10-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg : Added an entry for the new vrpn_Freespace submitted by
+		Phil Black from Hillcrest Labs.
+	* test_freespace.C : Same.
+	* test_freespace.vcproj : Same.
+	* vrpn_server.vcproj : Same.
+	* vrpn_Generic_server_object.h : Same.
+	* vrpn_Generic_Server_object.C : Same.
+
+2009-09-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * Makefile : Turned "-g" flag into "$(DEBUG_FLAGS)" throughout.
+
+2009-07-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Generic_server_object.h : Adds an Isotrak tracker driver
+		submitted by Burno Herbelin from the Sensorama Laboratory
+		at AAlborg University.
+	* vrpn_Generic_server_object.C : Same.
+	* vrpn.cfg : Same.
+
+2009-06-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Added comment showing how to link on 64-bit Linux
+		with WiiMote.
+
+2009-02-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Added in comment showing how to link with WiiMote.
+
+2009-1-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Generic_server_object.C : Making HID work with Cygwin.
+	* Makefile : Same.
+
+2008-12-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Generic_server_object.C : Made this compile even when the WiiMote is
+		not being used.
+	* vrpn_Generic_server_object.h : Same.
+
+2008-12-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Generic_server_object.C : Driver for the WiiMote device using the
+		WiiUse library.  Tested under Windows; also supposed to work under
+		Linux.  Handles accelerometers, buttons, and raw IR values.
+		Should handle nunchuck, classic remote, and guitar hero 3
+		attachments (not tested).
+	* vrpn_Generic_server_object.h : Same.
+	* vrpn.cfg : Same.
+	* test_rumble.C : Test program to send rumble on/off commands through
+		an Analog_Output device, switching every two seconds.
+	* test_rumble.vcproj : Same.
+
+2008-12-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Generic_server_object.C : Added Chris VanderKnyff's implementation of
+		the Xbox 360 game controller.
+	* vrpn_Generic_server_object.h : Same
+	* vrpn.cfg : Same
+
+2008-10-01  Ian Curington <ianc@acm.org>
+	* vrpn_Generic_server_object.C/h:
+          Added 3DConnexion Spaceball 5000 device support
+	* vrpn.cfg : Same.
+
+2008-08-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* test_auxilliary_logger.C : Changed the log duration for the test up
+		to 5 seconds from 2 seconds to enable transients to settle.
+	* vrpn.C : Fixed a bug in the local-out file naming command-line
+		argument that always named the file "-lo" rather than what
+		it was supposed to be.
+
+2008-07-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Generic_server_object.C : Fixed the case where NULL entries are
+		made for the vrpn_Tracker_AnalogFly so that the axis did not go
+		looking for a device named "NULL".
+
+2008-06-20  Aron Helser  <helser@cs.unc.edu>
+
+	* texture_plane.C (setPlaneFromTransform): Update to compile under
+	HD api and VS2005. Not verified to be correct.
+	* vrpn_phantom.vcproj: added WIN32 preprocessor define, so HD api
+	headers compile correctly.  
+
+2008-06-19  David Marshburn  <marshbur@cs.unc.edu>
+
+	* test_vrpn.C:  added Poser server/remote tests.
+
+2008-05-28  Aron Helser  <helser@cs.unc.edu>
+
+	* vrpn_Phantom.C : Additional initialization checks for HD api
+	errors, to avoid a crash.
+
+2008-05-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Adding changes from Lawrence K. at PhaseSpace.
+	* vrpn.cfg : Same.
+	* vrpn_Generic_server_object.C : Same.
+
+2008-04-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Generic_server_object.h : Added patch from Mike Weiblen to add
+		3DConnexion SpaceExplorer.
+	* vrpn_Generic_server_object.C : Same.
+
+2008-03-25  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_server.C : Fixed typo bug in the connection name
+		creation that kept this from working unless you
+		specified the NIC name.
+
+2008-03-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Generic_server_object.C : Better parser
+		for AnalogFly line that can handle the
+		case where only some of the lines are present.
+		Submitted by Jan Ciger.
+
+2008-03-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg : Adding entry for vrpn_Tracker_NDI_Polaris
+		submitted by Sharif Razzaque from InnerOptic.
+	* vrpn_Generic_server_object.C : Same.
+	* vrpn_Generic_server_object.h : Same.
+
+2008-03-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Changing the way the server connection is created so
+		that it can handle the more general vrpn_Connection object
+		types in preparation for the MPI communication method.  Also
+		removed the option to connect to a client when it is started
+		up.
+
+	* vrpn_testimager_server.cpp : Same.
+	* test_vrpn.C : Same.
+	* test_radamec_spi.C : Same.
+	* test_imager.C : Same.
+	* test_analogfly.C : Same.
+	* directshow_video_server.cpp : Same.
+	* test_mutex.C : Same.
+	* test_logging.C : New test for logging and replay.
+	* test_logging.vcproj : Same.
+	* test_logging.dsp : Same.
+	* Makefile : Same.
+
+2007-12-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Generic_server_object.C : Fixing a bug pointed out by
+		Jan Ciger, where the RESET and CLUTCH buttons were being
+		set to the same thing.
+
+	* vrpn.cfg : Whitespace change and added comments to the
+		vrpn_AnalogFly examples.
+
+2007-12-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg : Adding example line for vrpn_Tracker_MotionNode.
+
+2007-12-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Generic_server_object.C : Added entry for MotionNode Tracker.
+		This compiles under Visual Studio 2005 (not 6.0).
+	* vrpn_Generic_server_object.h : Same
+	* vrpn_server.vcproj : Same.
+
+2007-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg : Added patch from Eric Griffith
+		to include control of a stylus.
+	* vrpn_Generic_server_object.C : Same.
+
+2007-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Added (commented out) options to link with
+		both the GPM and the InterSense libraries.
+
+2007-11-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Generic_server_object.h : Lets you open 100 joysticks on
+		the same machine, rather than just 2.  Must have been a
+		fun project...
+
+2007-11-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Renamed Auxilliary to Auxiliary.
+
+2007-11-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg : Added entries for Mouse and Keyboard,
+		remove the KeyMouse entry.  Added clutch option
+		to the vrpn_AnalogFly.
+	* vrpn_Generic_server_object.C : Added clutch option.
+	* vrpn_Generic_server_object.h : Same.
+
+2007-11-12  David Marshburn  <marshbur@cs.unc.edu>
+
+	* corrected the spelling of Auxilliary to Auxiliary
+
+2007-11-12  David Marshburn  <marshbur@cs.unc.edu>
+
+	* test_auxilliary_logger.C:  also test status-request functionality
+
+2007-09-18  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Generic_server_object.h : Added 3DConnexion SpaceMouse
+	* vrpn_Generic_server_object.C : Same.
+	* vrpn.cfg : Same.
+
+2007-08-25  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* test_vrpn.C : Added test for vrpn_Analog_Output.
+	* Makefile : Removed "-gpm" library from the default
+		build, as it is not available on some flavors
+		of Linux.  The vrpn_Configure.h file tells how
+		to fix this when GPM is being used.
+
+2007-08-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg : Converting back to Unix format so it works
+		with all architectures.
+
+2007-08-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Fix submitted by Christian Odom for the Wand on the
+		Intersense tracker.
+
+2007-08-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* sgibdbox.cfg : Removed file that is no longer used.
+	* vrpn.C : Decremented reference count on connection
+		rather than deleting it (the reference-count reduction
+		deletes it the right way).
+
+2007-08-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Generic_server_object.C : Adding 3DConnexion Space
+		Navigator and Space Traveler devices.  An impulse buy
+		at SIGGRAPH this year.
+	* vrpn_Generic_server_object.h : Same.
+	* vrpn_HID_device_watcher.cpp : Code from Chris VanderKnyff
+		that lets you watch the messages coming from a HID
+		device.  Great for figuring out how to write a driver!
+	* vrpn_hid_device_watcher.dsp : Builds the project.
+	* vrpn_hid_device_watcher.vcproj : Same.
+	* vrpn.cfg : Entries for the new devices.
+
+2007-08-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Generic_server_object.C : Adding HID and XKeys from
+		Chris VanderKnyff to the objects that can be created.
+	* vrpn_Generic_server_object.h : Same.
+	* vrpn.cfg : Same.
+	* vrpn.C : Added ^C handler in Windows so that objects are
+		cleaned up nicely before exit.
+
+2007-08-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Fixed some #define terms (_WIN32 rather than WIN32).
+		Made non-verbose the default.
+	* vrpn.cfg : Added vrpn_Imager_Stream_Buffer object.
+	* vrpn_Generic_Server_Object.h : Same.
+	* vrpn_Generic_Server_Object.C : Same.
+
+2007-07-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Adding the vrpn_Auxilliary_Logger test
+		object and application.
+	* vrpn.cfg : Made it Unix format so that it can be
+		parsed on both Unix and Windows.
+	* vrpn.cfg.SAMPLE : Same.
+
+2007-07-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Generic_server_object.C : Adds the ability to create an
+		auxilliary log file connection to the same or a different
+		host.
+	* vrpn_Generic_server_object.h : Same.
+	* vrpn.cfg : Same.
+	* test_auxilliary_logger.C : Source code for a test program for
+		this new object.
+	* test_auxilliary_logger.dsp : Project build file for this.
+	* test_auxilliary_logger.vcproj : Same.
+
+2007-07-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* test_vrpn.C : Added a call to the function that tests the
+		vrpn_Semaphore and vrpn_Thread classes to make sure
+		they work.  It does not use the threads in the rest
+		of the code, just tests them.
+
+2007-07-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * vrpn.cfg : Patch from Kurt Achatz to build for new
+                version of A.R.T. DTrack, which supports the new Flystick2
+                input device.  The patch was necessary to support the new
+                (additional) DTrack output format called '6df2'; the driver
+                still understands the former output format '6df', so that
+                it can work with any existing DTrack installation too.
+                Note that there was a change how buttons of a 'Flystick'
+                device are sorted; this was done to fit DTrack's standards
+                described in A.R.T. documentation. For backward
+                compatibility the driver uses the old sorting when using
+                the old output format '6df'.
+        * vrpn_Generic_server_object.C : Same.
+
+2007-06-30  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Fixing Mac Universal build to use g++ not gcc.
+
+2007-06-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Added linking with pthread library because of
+		vrpn_Thread (defined in vrpn_Shared.h).
+
+2007-06-25  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Generic_server_object.C : Adding new devices from
+		Bauhaus University Weimar submitted by Jan Springer.
+	* vrpn_Generic_server_object.h : Same.
+	* clock_server.C : Removed comments that got filled
+		in with checked-out version information.
+	* vrpn.cfg : Comment mis-spelling fixed.
+
+2007-06-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg : Added entry to configure a vrpn_DirectXRumblePack.
+		Also added hemisphere setting for the Flock.
+	* vrpn_Generic_server_object.C : Same.
+	* vrpn_Generic_server_object.h : Same.
+
+2007-06-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * Makefile : Adding patch submitted by Patrick Hartling from
+                Infiscape.com for making this compile on MacOSX
+                to create universal binaries.
+
+2007-06-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * Makefile : Compiles with PhaseSpace driver submitted by
+                Lawrence Kwan.
+        * vrpn_server.vcproj : Same.
+        * vrpn.cfg : Same.
+        * vrpn.cfg.SAMPLE : Same.
+        * vrpn_Generic_server_object.h: Same.
+        * vrpn_Generic_server_object.C: Same.
+
+2007-03-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Adding a build environment for cross-compiling to
+		ARM from PCs running Cygwin
+
+2007-03-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Making this code compile under pc_linux_arm.
+
+2006-01-30  David Borland  <borland@cs.unc.edu>
+
+	* vrpn_Phantom.C : Added call to forceField->stop() in 
+	vrpn_Phantom::reset().  Previously, the force field would remain
+	in effect when the vrpn connection was dropped.
+
+2006-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg : Added support for new devices whose drivers were
+		submitted by William West from Disney VR Studios.  These
+		are the US Digital analog device and a National
+		Instruments based DIO24 board.
+	* vrpn.cfg.SAMPLE : Same.
+	* vrpn_Generic_server_object.h : Same.
+	* vrpn_Generic_server_object.C : Same.
+
+2006-10-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* client_and_server.vcproj : Updated to use the August 2006 version
+		of the DirectX SDK and the Microsoft Platform SDK
+		for Windows Server 20003 R2.
+	* daq_server.vcproj : Same.
+	* test_analogfly.vcproj : Same.
+	* test_radamec_spi.vcproj : Same.
+	* test_vrpn.vcproj : Same.
+	* testimager_server.vcproj : Same.
+	* vrpn_phantom.vcproj : Same.
+	* vrpn_server.vcproj : Same.
+	* timecode_generator_server.vcproj : Same.
+	* directshow_video_server : New directory containing the code needed
+		for a DirectShow-based vrpn_Imager server.
+
+2006-09-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* directshow_video_server : New directory with a project file and
+		source code to build a DirectShow-based video imager
+		server.
+
+2006-08-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Phantom.C : Added fix sent in by Lode Vanacken.  We don't
+		need to stop and re-start the servo loop when removing an object.
+		This causes the other objects to disappear.  We just have to lock and
+		unlock the scene.
+
+2006-06-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Adding "making install" target.
+
+2006-06-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* ghost.h : Added the friction and damping parameters to
+		the Plane class to the HDAPI implementation.
+		This ended up meaning that HL is being used for all of
+		the force generation.  This ended up requiring the
+		code to reset the ModelView transform in OpenGL (it puts
+		it back) to make sure the code works when run from within
+		an OpenGL context.
+	* forcefield.C : Same.
+	* plane.C : Same.
+	* plane.h : Same.
+	* texture_plane.C : Same.
+	* texture_plane.h : Same.
+	* vrpn_Phantom.C : Same.
+	* vrpn_Phantom.h : Same.
+
+2006-06-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* ghost.h : Continuing to try and port from GHOST to HDAPI.
+		Removed several of the home-built classes that had been
+		put in for Vector, Matrix, Position, Boolean, and Plane
+		and replaced them with HDU classes (utility classes from
+		the HDAPI library).  This required putting some #ifdef
+		blocks in the code because the HDAPI and GHOST objects
+		named methods in inconsistent ways.
+	* buzzForceField.C : Same.
+	* constraint.C : Same.
+	* forcefield.C : Same.
+	* plane.C : Same.
+	* texture_plane.C : Same.
+	* vrpn_Phantom.C : Same.
+
+2006-04-28  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_server.dsp:  made the Debug and Release include paths
+	be the same.
+
+2006-04-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Generic_server_object.C : One of Virtools' partner, namely Kevin
+		from Axis 3D in Taiwan, actually spotted this issue the
+		add_is900_button is called with a hard code number of button
+		equal to 5.  This made the wand button not work.  Increased to
+		the value 6.
+	* vrpn.cfg : Had left an AnalogFly uncommented.
+
+2006-03-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Generic_server_object.C : Commenting out Windows-specific
+		stuff on other architectures, replacing with error print.
+
+2006-03-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg : New configuration for vrpn_Keyboard_Mouse.
+	* vrpn_Generic_server_object.C : Update for Keyboard_Mouse
+		and added Button_USB.
+	* vrpn_Generic_server_object.h : Same.
+
+2006-03-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* *.vcproj : Visual C++ 2005 project files for VRPN.
+
+2005-12-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* buzzForceField.C : Made generic definitions for the mutex
+		code, so that we didn't have #defines peppered all over
+		the code.  Made the Cygwin code compile using Pthreads
+		critical sections, like the SGI code.
+	* buzzForceField.h : Same.
+	* ghost.h : Defined TRUE and FALSE to true and false if they
+		were not defined that way before.
+	* Makefile : Trying to make it compile under Cygwin.  It does
+		everything but link now (cannot find a bunch of symbols
+		that should be defined in hd.lib, which it does link
+		with).
+	* plane.C : Needs to include <windows.h> under Cygwin to finish
+		compiling.
+	* plane.h : Same.
+	* vrpn_Phantom.C : Same.
+	* texture_plane.C : Even more dramatic replacement of the mutex
+		stuff, like in buzzForceField.
+	* texture_plane.h : Same.
+
+2005-10-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg : Fixes the example configuration for the Keymouse.
+	* vrpn.cfg.SAMPLE : Same.
+	* keycodes.txt : Tells what key codes are for each key.
+
+2005-10-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Phantom.C : Bug fix from Tom De Weyer.
+	* vrpn_Generic_Server_Object.h : Added Keyboard_Mouse.
+	* vrpn_Generic_Server_Object.C : Added Keyboard_Mouse.
+	* vrpn.cfg : Same.
+
+2005-10-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Fixed a typo for 64-bit compiles.
+
+2005-10-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * Makefile : Added target for 64-bit Intel-based SGI compilation.
+
+2005-10-04  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Modified to hopefully work with 64-bit Linux
+
+2005-09-30  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* trimesh.C : Modified to use the new version 7.0 ForceDevice
+		protocol and code.
+	* trimesh.h : Same.
+	* vrpn.cfg : Same.
+	* vrpn.cfg.SAMPLE : Same.
+	* vrpn_Phantom.C : Same.
+	* vrpn_Phantom.h : Same.
+
+2005-09-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg : Adding entries for 5DT16 analog driver and
+		for the button wrapper for it.
+	* vrpn.cfg.SAMPLE : Same.
+	* vrpn_Generic_server_object.h : Same.
+	* vrpn_Generic_server_object.C : Same.
+
+2005-09-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg : Added entry for Microscribe.
+	* vrpn.cfg.SAMPLE : Added entry for Microscribe.
+	* vrpn_Generic_server_object.h : Same.
+	* vrpn_Generic_server_object.C : Same.
+
+2005-09-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Generic_server_object.h : Added support for Crossbow
+		tracker.
+	* vrpn_Generic_server_object.C : Same.
+	* vrpn.cfg : Same.
+	* vrpn.cfg.SAMPLE : Same.
+
+2005-09-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Phantom.h : Added debounce counters for the buttons.
+		This is to overcome problems found on a particular
+		Omni device.  Also set 2 buttons when using HDAPI,
+		in case we have an Omni.
+	* vrpn_Phantom.C : Same.
+
+2005-08-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_phantom.dsp : Swiched from GHOST to HDAPI include paths.
+
+2005-08-13  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Phantom.C (mainloop):  call vrpn_Button_Filter::report_changes
+	instead of vrpn_Button::report_changes (to get correct toggle
+	functionality).
+	(handle_plane):  commented out a call to 
+	DynamicPlane::setNumRecCycles, which seems not to exist any more.
+	* vrpn_phantom.dsp:  builds browse info also
+
+2005-07-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg : Adds entry for serial mouse on mac through a
+		Keyspan serial-to-USB converter.  Adds entry for
+		a Linux box.
+	* vrpn.cfg.SAMPLE : Same.
+	* Makefile : Fixes so that it compiles on a mac without
+		the intersense libraries.
+
+2005-07-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* ghost.h : Normalizing planes as they come in to avoid having their
+		stiffness depend on the scaling of their A,B,C coefficients.
+	* texture_plane.h : Removing print statement.
+	* vrpn_Phantom.C : Making the error reporting that is supposed to
+		happen rarely indeed happen rarely.
+
+2005-07-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* client_and_server.dsp : Added include directories on $(SYSTEMDRIVE)
+		and lib directories also on $(SYSTEMDRIVE) so that the
+		apps can build correctly with only edits in the
+		vrpn_Configure.h file if things are installed in standard
+		locations.
+	* daq_server.dsp : Same.
+	* test_analogfly.dsp : Same.
+	* test_radamec_spi.dsp : Same.
+	* test_vrpn.dsp : Same.
+	* testimager_server.dsp : Same.
+	* vrpn_phantom.dsp : Same.
+	* vrpn_server.dsp : Same.
+
+2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* test_mutex.C : Removed Synchronized.
+
+2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* client_and_server.C : Removed Synchronized.
+	* test_analogfly.C : Same.
+	* test_radamec_spi.C : Same.
+	* test_vrpn.C : Same.
+	* testimager_server.cpp : Same.
+	* vrpn.C : Same.
+
+2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * Makefile : Adds new library on Linux needed by mouse driver.
+        * vrpn_Generic_Server_Object.h : Adds Linux GPM-based mouse driver
+		submitted by Mike Weiblen at 3DLabs.
+        * vrpn_Generic_Server_Object.C : Same.
+
+2005-06-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Generic_Server_Object.h : Added support for the Logitech
+		3DMouse.
+	* vrpn.cfg : Same.
+	* vrpn.cfg.SAMPLE : Same.
+	* vrpn_Generic_Server_Object.C : Same.  Removed guards by
+		architecture around some tracker creations.
+
+2005-05-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* NIUtil.cpp : Whitespace change.
+	* testimager_server.cpp : Same.
+	* vrpn.cfg : Same.
+	* vrpn.cfg.SAMPLE : Same.
+
+2005-04-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg : Added entries to run the Mad City Labs
+		stages using a Microsoft Force-Feedback Joystick.
+		When you run a server with these configs, and
+		the Tracker_To_Poser, you can fly the focus all
+		through the volume.  Things should now be ready
+		for Eli Holder's amazingly cool 3D optical
+		microscope program!
+
+2005-02-25  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Removed -LANG:std from compile, no streams
+		used in the code anymore.
+
+2005-02-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg : Added entries for NationalInstruments
+		server.  Modified Poser to add additional
+		parameter to turn off tracking reporting.
+	* vrpn_Generic_server_object.C : Added NationalInstruments
+		parser and generator.
+	* vrpn_Generic_server_object.h : Same.
+
+2005-02-01  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * Makefile : Added John Stone's definitions to make
+                things compile under 64-bit Linux.
+
+2005-01-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Generic_server_object.h : Added final newline.
+	* vrpn_Generic_server_object.C : Added final newline.
+
+2005-01-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Pulled most of the code out into an object that
+		parses the configuration file, creates the objects, and
+		provides a loop to mainloop() the objects.  The connection
+		code and other functions are still within this file.
+	* vrpn_Generic_server_object.h : Object that performs most of the
+		functions of the server, making it possible to include as
+		part of an application.  This should make it easier for
+		folks to run both clients and servers in the same application,
+		using one or more configuration files to create the objects.
+	* vrpn_Generic_server_object.C : Same.
+	* vrpn_phantom.dsp : Modified to compile correctly with STL.
+	* vrpn_server.dsp : Modified to include the above two files.
+	* Makefile : Same.
+
+2005-01-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* testimager_server.cpp : Comment change.
+
+2004-12-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* NIUtil.cpp : Turned on a higher level of warnings in
+		Windows and then went through and fixed all of the
+		warnings, except a few on FunctionGenerator (which
+		has an uncompleted function) and on Sound (which has
+		a bunch of uncompleted functions).  Fixed a few bugs
+		that turned up along the way.  Ripped out every trace
+		of iostream (old or new type) from the base library.
+		Also removed VRPN_NO_NO_STREAMS, which was obviated by
+		this.
+	* NIUtil.h : Same.
+	* nidaqClient.cpp : Same.
+
+2004-12-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* testimager_server.cpp : Guarded min() definition.
+
+2004-12-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Makes testimager_server as well.
+	* testimager_server.cpp : Defined min()
+
+2004-12-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* testimager_server.cpp : Simple server that makes an 8-bit
+		gray-scale image and sends a changing pattern in it.
+	* testimager_server.dsp : Same.
+
+2004-11-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * Happy Birthday to me!
+        * Makefile : Added John Stone's additions to make it compile on
+                64-bit Solaris
+
+2004-10-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Added parsing for the config file for a Python joystick
+		so that the IO port address of the device can be specified
+		in the configuration file.  This lets PC-card ports be used,
+		which use nonstandard I/O ports even for LPT1 and LPT2.
+	* vrpn.cfg : Comment in the config file saying how to do this.
+	* vrpn.cfg.SAMPLE : Same.
+
+2004-10-01  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Phantom.h : Hides the GHOST headers again.
+
+2004-09-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Phantom.C : Added HDCALLBACK definition so that HDAPI will
+		unambiguously link this the right way.
+
+2004-09-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	Adding Chris VanderKnyff's changes that enable DLL linkage
+	for applications.  Heading towards enabling C# and other language
+	support.
+
+	* client_and_server.C : Adding VRPN_CALLBACK.
+	* daq_server.C : same.
+	* test_analogfly.C : same.
+	* test_radamec_spi.C : same.
+	* vrpn_Phantom.h : same.
+	* test_vrpn.C : same.
+	* vrpn.C : same.  Also, removed NI code when not compiled in.
+	* client_and_server.dsp : Making it depend on the project
+		that causes both VRPN and VRPNDLL projects to be built, rather
+		than on VRPN.  If you try to make it depend on both
+		VRPN and VRPNDLL, you get linking trouble.
+	* daq_server.dsp : same.
+	* test_analogfly.dsp : same.
+	* test_radamec_spi.dsp : same.
+	* test_vrpn.dsp : same.
+	* vrpn_server.dsp : same.
+
+2004-09-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * client_and_server.dsp : Changing code generation back to DLL
+		linkage, which turned out to be correct after all.
+	* daq_server.dsp : Same.
+	* test_analogfly.dsp : Same.
+	* test_radamec_spi.dsp : Same.
+	* test_vrpn.dsp : Same.
+	* vrpn_phantom.dsp : Same.
+	* vrpn_server.dsp : Same.
+	* sierra_router_server.dsp : Same.
+	* timecode_generator.dsp : Same.
+	* test_gen_rpc.dsp : Same.
+	* vrpn.C : Added Tek4662 Poser parser and creator.  Whitespace changes.
+	* vrpn.cfg : Same.  Comment changes.
+	* vrpn.cfg.SAMPLE : Same.
+
+2004-08-31  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * client_and_server.dsp : Changing code generation to use
+                multithreaded non-DLL for both debug and release.  This turns
+                out to have always been the proper setting to use.
+                Unfortunately, all apps have to be rebuild with new settings,
+                and all libraries have to use the same setting.
+	* daq_server.dsp : Same.
+	* test_analogfly.dsp : Same.
+	* test_radamec_spi.dsp : Same.
+	* test_vrpn.dsp : Same.
+	* vrpn_phantom.dsp : Same.
+	* vrpn_server.dsp : Same.
+	* sierra_router_server.dsp : Same.
+	* timecode_generator.dsp : Same.
+	* test_gen_rpc.dsp : Same.
+	* vrpn.C : Added Tek4662 Poser parser and creator.  Whitespace changes.
+	* vrpn.cfg : Same.  Comment changes.
+	* vrpn.cfg.SAMPLE : Same.
+
+2004-08-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* NIUtil.cpp : Added another D/A board to the list of known boards.
+	* vrpn_phantom.dsp : Added C: and D: versions of HDAPI includes.
+	* vrpn_server.dsp : Same.
+
+2004-08-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : changes added by Kurt Achatz of A.R.T. to handle
+		up to four Flysticks on A.R.T. tracker.  Also avoids
+		target renumbering.
+	* vrpn.cfg : Same.
+	* vrpn.cfg.SAMPLE : Same.
+
+2004-07-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* constraint.h : Hiding the HDAPI include files to avoid exposing
+		the old-style stream header includes to apps that have to
+		include the server.
+	* forcefield.h : Same.
+	* ghost.h : Same.
+	* plane.C : Same.
+	* vrpn_Phantom.C : Same.
+	* vrpn_Phantom.h : Same.
+	* vrpn_phantom.dsp : Removing GHOST include directories.
+	* vrpn_server.dsp : Same.
+
+2004-07-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* BuzzForceField.C : Modified to work with GHOST or HDAPI (partial port)
+	* BuzzForceField.h : Same.
+	* constraint.C : Modified to work with GHOST or HDAPI (full port).
+	* constraint.h : Same.
+	* forcefield.C : Modified to work with GHOST or HDAPI (full port).
+	* forcefield.h : Same.
+	* ghost.h : Added helper classes for port to HDAPI (partial).
+	* plane.C : Modified to work with GHOST or HDAPI (full port).
+	* plane.h : Same.
+	* texture_plane.C : Modified to work with GHOST or HDAPI (partial port).
+	* texture_plane.h : Same.
+	* trimesh.C : Modified to work with GHOST or HDAPI (beginning of port).
+	* trimesh.h : Same.
+	* vrpn_Phantom.C : Modified to work with GHOST or HDAPI (partial port).
+	* vrpn_Phantom.h : Same.
+	* vrpn_phantom.dsp : Modified include paths to look on C or D for GHOST
+		or HDAPI.  Need to remove the GHOST ones if use HDAPI.
+	* vrpn_server.dsp : Same
+
+2004-05-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* NIUtil.cpp : Will return more than one instance of the same
+		type of device if they are plugged into the same PC.
+	* NIUtil.h : Comment change.
+	* vrpn.C : Modified Poser remote to include an entry for the
+		analog_out name for each channel, rather than one for
+		the whole device.
+	* vrpn.cfg : Same.  Plus modified entry for DTU/MIC Poser and
+		Analog_Output devices.
+	* vrpn.cfg.SAMPLE : Same.
+
+2004-05-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* NIUtil.cpp : Added description for another board.
+	* vrpn.C : Added handlers for vrpn_Analog_Output_NI and
+		vrpn_Poser_Analog.
+	* vrpn.cfg : Added entries for vrpn_Analog_Output_NI and
+		vrpn_Poser_Analog.  Added entry for settings needed
+		at DTU/MIC for their optical nanohand control.
+
+2004-04-08  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Adding flag to SGI compile in the hope that it would
+		fix things and let us use the new streams libraries.  It
+		got us part of the way there on my system.
+	* NIUtil.cpp : Same.
+	* clock_server.C : Same.
+	* nidaqClient.cpp : Same.
+
+2004-04-07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* directXFF.C : Using vrpn_gettimeofday() not gettimeofday().
+	* nidaqClient.cpp : Same.
+	* sample_analog.C : Same.
+	* test_analogfly.C : Same.
+	* test_vrpn.C : Same.
+	* vrpn_Phantom.C : Same.
+
+2004-03-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Added a better description of how the -millisleep
+		option works in Windows and non-Windows environments.
+	* vrpn_Phantom.C : Adding credits.
+	* vrpn_Phantom.h : Same.
+
+2004-01-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg : Whitespace.
+	* vrpn_server.dsp : Told it where to find the DTrack include file.
+
+2004-01-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	Added changes from David Nahon at Virtools.
+	* vrpn.C : Adds support for the DTrack tracker from
+		Advanced Realtime Tracking GmbH.
+		Also modifies the way sleep happens on Windows,
+		which will free up the time slice used by the process
+		but not sleep if it is passed 0.  Still the same
+		on Unix.
+	* vrpn.cfg : Adds entry for DTrack.
+	* vrpn.cfg.SAMPLE : Same.
+
+2004-01-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* plane.C : Making this compile with version 3.1 of GHOST
+		(It was supposed to, but a capitalization error kept
+		it from actually working).
+	* texture_plane.C : Same.
+	* vrpn_phantom.dsp : Modified to include both 4.0 (first) and 3.1
+		(second) in include list.  This is in the hopes that people
+		using version 3.1 won't also have 4.0 installed.  Otherwise,
+		they will have to edit this manually.
+
+2003-12-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Added parser for new Flock parameter telling whether
+		to invert the Quaternion orientation report.  Default is
+		to invert it, which was the previous behavior.
+	* vrpn.cfg : Same.
+	* vrpn.cfg.SAMPLE : Same.
+
+2003-12-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Added optional parameter to specify 9 or 10 bytes.
+	* vrpn.cfg : Same.
+	* vrpn.cfg.SAMPLE : Same.
+
+2003-12-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Cleaned up code so that the Liberty tracker server
+		compiles on several architectures.  Removed code that
+		caused compiler warnings.
+
+2003-12-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Adds driver submitted by Daniel Myall
+                from Westco for the Polhemus Liberty tracker.
+	* vrpn.cfg : Same.
+	* vrpn.cfg.SAMPLE : Same.
+	* LibertyLinuxUSB.tar.gz : Instructions for making Linux USB work
+		with Liberty tracker.
+
+2003-11-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg : Removing DOS end-of-lines.
+	* vrpn.cfg.SAMPLE : Same.
+
+2003-11-25  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg : Update from David Nahon fixing the Wanda startup.
+	* vrpn.cfg.SAMPLE : Same.
+
+2003-11-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Added changes by David Nahon to enable optional use
+		of the extended-range transmitter (no longer required).
+	* vrpn.cfg : Same.
+	* vrpn.cfg.SAMPLE : Same.
+
+2003-11-14  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Added changed by David Nahon that lets
+                the user specify whether to do a boresight reset at startup.
+                Also changes the sensor numbers to be zero-indexed like all
+                other VRPN trackers.  Also changes units to meters and
+                radians to match other VRPN trackers.
+	* vrpn.cfg : Same.
+	* vrpn.cfg.SAMPLE : Same.
+
+2003-09-26  Matt Harvey  <m.j.harvey@ucl.ac.uk>
+
+	* vrpn.cfg : Added new joystick device.
+	* vrpn.C : Added new joystick device.
+
+2003-09-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker.cfg : Removed because it caused lots of error
+		messages.
+	* vrpn_Tracker.cfg.UNC : Added so that we can remember the
+		settings for the Phantoms that we use in the systems
+		at UNC.
+
+2003-09-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg : Added description for UNC joystick on a
+		Windows machine.  Removed redundant example.
+	* vrpn_Phantom.C : Made it stop doing planes, meshes,
+		and effects when the last connection is dropped.
+	* vrpn_Phantom.h : Same.
+
+2003-09-26  Blair MacIntyre     <blair@cc.gatech.edu>
+
+	* vrpn.cfg.SAMPLE : Added description of the parameters
+		that could be made to the native-mode Intersense
+		tracker driver.
+	* vrpn.cfg : Same.
+
+2003-09-26  Sebastien MARAUX  <maraux@ondim.fr>
+
+	* vrpn_Phantom.C : Added support for InstantBuzzEffect.
+	* vrpn_Phantom.h : Same.
+	* vrpn_phantom.dsp : Same.
+
+2003-09-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * vrpn.C : Fixing things that broke the build.
+                Bad Russ.  No Cookie!
+
+2003-09-16  Blair MacIntyre     <blair@cc.gatech.edu>
+
+	* vrpn.C : Added handlers for wands and other things attached
+		to the native isense tracker driver to match the ones
+		that could be connected to the Fastrak version.
+
+2003-08-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Added changes by Sebastien Maraux to include
+		reading from joysticks in Windows without going
+		through DirectX.
+	* vrpn.cfg : Same.
+	* vrpn.cfg.SAMPLE : Same.
+
+2003-07-21  Sascha Scholz  <sascha.scholz@imk.fraunhofer.de>
+
+	* client_and_server.C : Changed main() to return int.
+	* test_radamec_spi.C : Changed main() to return int.
+	* test_vrpn.C : Changed main() to return int.
+
+2003-07-07  Sascha Scholz  <sascha.scholz@imk.fraunhofer.de>
+
+        * vrpn.cfg : added ADBox/CubicMouse driver
+
+2003-06-20  David Marshburn  <marshbur@cs.unc.edu>
+
+	* plane.C:  uses Ghost 4.0/3.1 syntax depending on VRPN_USE_GHOST_31
+	* texture_plane.C:  same
+	* vrpn_Phantom.C:  same
+
+2003-06-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_server.dsp : Removed isense.c file (this file is included
+		in the vrpn_Tracker_isense.C file in the library, so putting
+		it in here again is duplication that causes the link to
+		fail.
+
+2003-06-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Changes to enable opening InterSense tracker on
+		an arbitrary port (even USB).
+	* vrpn.cfg : Same.
+	* vrpn.cfg.SAMPLE : Same.
+	* vrpn_server.dsp : Modified to work with isense library files
+		in ../../isense.
+
+2003-06-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.cfg.SAMPLE : Comments to avoid confusion.
+	* vrpn.cfg : Same.
+
+2003-05-30  David Marshburn  <marshbur@cs.unc.edu>
+
+	These changes move vrpn from Ghost 3.1 to Ghost 4.0.
+	* plane.C:  uses new isTouchableByPhantom function
+	* texture_plane.C:  uses new isTouchableByPhantom function
+	* vrpn_Phantom.C:  removes the use of the setQuitByDefault
+	function, which has been removed from Ghost 4.0.  The servo
+	loops now restart themselves.
+	* vrpn_phantom.dsp:  Ghost 4.0 include paths.
+
+2003-05-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* daq_server.dsp : Compiles with libraries in their new location
+		within the external directory.
+
+2003-04-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Includes files needed to build Phantom server.
+	* Makefile.phan.sgi_irix.n32.mips4 : No longer needed.
+
+2003-04-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* buzzForceField.C : Included only if VRPN_USE_PHANTOM_SERVER defined.
+	* buzzForceField.h : Included only if VRPN_USE_PHANTOM_SERVER defined.
+	* constraint.C : Included only if VRPN_USE_PHANTOM_SERVER defined.
+	* constraint.h : Included only if VRPN_USE_PHANTOM_SERVER defined.
+	* forcefield.C : Included only if VRPN_USE_PHANTOM_SERVER defined.
+	* forcefield.h : Included only if VRPN_USE_PHANTOM_SERVER defined.
+	* ghost.h : Included only if VRPN_USE_PHANTOM_SERVER defined.
+	* phantom.C : Included only if VRPN_USE_PHANTOM_SERVER defined.
+	* phan_server.dsp : Not needed any more (included in vrpn_server).
+	* phantom.C : Not needed any more (included in vrpn_server).
+	* phantom.cfg : Not needed any more (included in vrpn_server).
+	* plane.C : Included only if VRPN_USE_PHANTOM_SERVER defined.
+	* plane.h : Included only if VRPN_USE_PHANTOM_SERVER defined.
+	* texture_plane.C : Included only if VRPN_USE_PHANTOM_SERVER defined.
+	* texture_plane.h : Included only if VRPN_USE_PHANTOM_SERVER defined.
+	* vrpn_Phantom.C : Included only if VRPN_USE_PHANTOM_SERVER defined.
+	* vrpn_Phantom.h : Included only if VRPN_USE_PHANTOM_SERVER defined.
+	* vrpn.C : Now includes Phantom server.
+	* vrpn.cfg : Now includes Phantom server.
+	* vrpn.cfg.SAMPLE : Now includes Phantom server.
+
+2003-04-01  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* test_analogfly.C : Test program for analogfly that
+		deletes the objects.
+
+2003-03-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* plane.C : Inserting changes made by Marc Baaden.
+		Fixes the capitalization on an #include statement.
+	* buzzForceField.C : Inserting changes made by Marc Baaden.
+		Changes to make it compile on an SGI using GHOST 3.1.
+	* buzzForceField.h : Inserting changes made by Marc Baaden.
+		Changes to make it compile on an SGI using GHOST 3.1.
+	* texture_plane.C : Inserting changes made by Marc Baaden.
+		Fixes the capitalization on an #include statement.
+		Changes to make it compile on an SGI using GHOST 3.1.
+	* texture_plane.h : Inserting changes made by Marc Baaden.
+		Changes to make it compile on an SGI using GHOST 3.1.
+	* trimesh.h : Inserting changes made by Marc Baaden.
+		Fixes the capitalization on an #include statement.
+		Changes to make it compile on an SGI using GHOST 3.1.
+	* Makefile.phan.sgi_irix.n32.mips4 : Makefile for SGI with GHOST 3.1.
+	* SGI_GHOST_EXTRAS : Directory containing files from Marc Baaden.
+		Extras for getting things running on an SGI using GHOST 3.1.
+
+2003-01-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* directXFF.C : Comments.  Modified to compile without warnings.
+	* directXFF_server.dsp : Modified to have the libraries specified in
+		the vrpn_Config.h file.
+
+2003-01-15  Alexandra Bokinsky  <bokinsky@cs.unc.edu>
+
+	* directXFF.C : Server for Direct X joystick in case you don't want
+		to run the vrpn_server program with special config file.
+	* directXFF_server.dsp : File to build the above server.
+
+2003-01-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Added code to use a ButtonFly and Global Haptics GeoOrb.
+			Fixed string format conversion for Magellan so that
+			it will accept the alternative reset string.
+			Guarded const definitions to avoid compiler warnings.
+	* vrpn.cfg : Added sample description of ButtonFly and Orb.
+	* vrpn.cfg.SAMPLE : Same.
+
+2002-12-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Added Deepak's code to run fastraks that have a stylus
+		with a button on them.
+	* vrpn.cfg.SAMPLE : Same.  Also modified examples for AnalogFly to
+		use correct term.  Also fixed comments.
+
+2002-12-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * client_and_server.dsp : DSP files have been modified to not do
+		definitions of VRPN_NO_STREAMS and other constants directly,
+		rather these are now set by editing vrpn_Configure.h.  Also,
+		made projects compile in both debug and release versions.
+	* daq_server.dsp : Same.
+	* phan_server.dsp : Same.
+	* test_analogfly.dsp : Same.
+	* test_radamec_spi.dsp : Same.
+	* test_vrpn.dsp : Same.
+	* vrpn_phantom.dsp : Same.
+	* vrpn_server.dsp : Same.
+	* vrpn.C : Comment fix.  More useful error messages.  Whitespace
+		changes.
+	* vrpn.cfg.SAMPLE : Comment fixes for vrpn_AnalogFly.
+ 
+
+2002-09-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Added "altreset" parameter to Magellan startup.
+	* vrpn.cfg.SAMPLE : Added example of alt reset and more info for
+		Magellan.
+
+2002-08-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Deleted whitespace.
+	* vrpn.cfg : Added examples for force-feedback joystick.
+	* vrpn.cfg.SAMPLE : Added examples for force-feedback joystick.
+
+2002-08-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * vrpn_server.dsp : Adds in definition of VRPN_USE_DIRECTINPUT to
+		enable the compilation of force-feedback joystick code under
+		DirectX (this first implementation doesn't use force feedback,
+		just reads from the joystick).  Remove this definition from
+		VRPN and from vrpn_server to compile without the DirectX 8.0
+		SDK.
+	* vrpn.C : Adds in code to read and control a DirectX Force Feedback
+		joystick.
+
+2002-07-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* phantom.C : Making the Phantom server sleep 1ms between
+		main loops so that it doesn't eat a whole CPU
+		doing busy-waits.
+
+2002-07-09  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Removed seldom-used servers that don't compile on
+		all architectures
+
+2002-05-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Added code to enable controlling an Intersense tracker
+	* vrpn.cfg : Same
+	* vrpn.cfg.SAMPLE : Same
+
+2002-05-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Added code to enable controlling a Zaber linear actuator.
+	* vrpn.cfg : Same
+	* vrpn.cfg.SAMPLE : Same
+
+2002-03-20  Aron Helser  <helser@cs.unc.edu>
+
+	* test_analogfly.C (main): Replaced cerr with fprintf.
+	* vrpn_phantom.dsp: Standardized settings, object files live in
+	../pc_win32/server_src . 
+	
+	* client_and_server.dsp: moved here, standardized settings, object
+	files live in ../pc_win32/server_src
+	* daq_server.dsp: same
+	* test_analogfly.dsp: same
+	* vrpn_server.dsp: same
+	* vrpn_server_with_timecode.dsp: same
+
+2002-03-13  Aron Helser  <helser@cs.unc.edu>
+
+	* vrpn_Phantom.h: Avoid ghost includes here, instead declare
+	classes, and include in .C file. Allows apps that use vrpn_phantom
+	lib to not include Ghost headers, and non-standard ghost-stl. 
+
+2002-01-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Added code from John Stone to enable using Spaceballs.
+
+2001-11-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* daq_server.C : Added ability to set range from command line.
+
+2001-06-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* daq_server.C : Added (runs a D/A server for UNC 3DFM)
+	* NIUtil.h : Added, support files
+	* NIUtil.cpp : Added, support files
+
+2001-06-26  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* constraint.h : Massive cleanup
+	* forcefield.C : Massive cleanup
+	* forcefield.h : Massive cleanup
+	* phan_server.dsp : Massive cleanup
+	* plane.C : Massive cleanup
+	* test_analogfly.C : Massive cleanup
+	* texture_plane.C : Massive cleanup
+	* texture_plane.h : Massive cleanup
+	* vrpn_Phantom.C : Massive cleanup
+	* vrpn_Phantom.h : Massive cleanup
+
+2001-06-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Added code to drive the buttons on a PC mouse treated as
+		a serial device.  Also added code to run a TNG3.
+	* vrpn.cfg.SAMPLE : Example startup code for these devices.
+
+2001-06-01  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Adding code to drive a 5DT glove sent by DAVID Philippe.
+		Added code to run PC joysticks under Linux.
+	* vrpn.cfg.SAMPLE : Added example of starting a 5DT glove.
+		Added example of starting a PC joystick under Linux.
+
+2001-06-01  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Moved the code from the timecode generator version of
+		the VRPN server into here, guarded by INCLUDE_TIMECODE_SERVER
+		definitions so that it won't go in for the default build.
+
+	* vrpn_with_timecode.C : Removed (its functions have been moved into
+		the default server, as described above).
+
+2001-05-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C (setup_Magellan) : Counts the number of magellans, rather
+		than the number of cereals.
+
+2001-02-14  Tom Hudson <hudson@cs.unc.edu>
+
+	* vrpn.C : remove g_logMode, change g_logName to g_inLogName,
+        add g_outLogName.
+	(Usage) : change output to match new arguments for logging.
+	(main) : parse and process new arguments for logging.
+
+2001-02-07  Kwan Torrich Skinner <skinner@cs.unc.edu>
+
+	* server_src/timecode_generator_server (all) : new files for a
+AEC_NTTC timecode reader board.  Win32 specific.
+	* server_src/pc_win32/vrpn_server_with_timecode (all) : same.
+
+2000-11-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C (shutDown) (handle_dlc) (sighandler) :
+		Rewrote so they all call the same shutDown() routine, and
+		to handle the case where ^C is handled in a separate thread
+		(Windows does this).
+
+2000-10-20  Aron Helser  <helser@cs.unc.edu>
+
+	* server_src/vrpn_Phantom.C (phantomErrorHandler): Adds error code
+	for force error discovered by using a debugger - undocumented in GHOST?
+
+2000-10-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Set default sleep back to 0 milliseconds
+
+2000-10-11  Tom Hudson  <hudson@cs.unc.edu>
+
+	* vrpn.C : add vrpn_RedundantTransmission, vrpn_RedundantController
+        (setup_Tracker_NULL) : call setRedundantTransmission()
+        (main) : create vrpn_RedundantTransmission, vrpn_RedundantController,
+        call mainloops
+
+2000-08-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile.remote : Removed; use Makefile.
+
+	* vrpn.rc : Brown's startup code for Linux
+
+	* Makefile : Added AIX compile
+
+	* vrpn.C : Added Wanda code.  Added code to handle MS-DOS
+		formatting for Fastrak startup.
+
+2000-08-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C : Replaced 512 with LINESIZE throughout
+		Added a Wanda device loader
+
+2000-08-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* sierra_router_server : New directory with router server in it
+		This server only compiles on PCs
+
+2000-08-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Added test_analogfly compile
+
+	* vrpn.C : Made default millisleep be 1 millisecond
+		Added parameters to vrpn_Tracker_AnalogFly
+
+	* vrpn.cfg : Updated AnalogFly -- LOOK AT THIS IF YOU ARE USING!!!
+		Added "absolute/differential" and per-axis offset
+
+2000-08-11  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* test_radamec_spi.C : Added baud rate specification
+
+	* vrpn.C : Added code for ImmersionBox and Radamec_SPI
+
+2000-08-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.C (setup_Tracker_Fastrak): Handles an IS600 line extension
+	(the IS900 code had broken it)
+

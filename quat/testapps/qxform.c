@@ -1,5 +1,3 @@
-
-
 /*****************************************************************************
  *
     qxform.c - does xform of a vector
@@ -16,11 +14,10 @@
  *
  *****************************************************************************/
 
-
+#pragma warning( disable : 4996 ) // Don't complain about scanf
 
 #include <stdio.h>
 #include "quat.h"
-
 
 int
 main(int argc, char	*argv[])
