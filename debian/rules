@@ -1,194 +1,20 @@
 #!/usr/bin/make -f
 
-build/vrpn-server build/vrpn-clients build/python-vrpn build/libvrpn-java:: build/libvrpn-dev debian/stamp-makefile-build
-binary/vrpn-server binary/vrpn-clients binary/python-vrpn binary/libvrpn-java:: binary/libvrpn-dev debian/stamp-makefile-build
-
 include /usr/share/cdbs/1/rules/debhelper.mk
-include /usr/share/cdbs/1/class/makefile.mk
-include /usr/share/cdbs/1/rules/utils.mk
-include /usr/share/cdbs/1/rules/patchsys-quilt.mk
+include /usr/share/cdbs/1/class/cmake.mk
 include debian/cdbs/1/rules/buildinfo.mk
 
 # Get the version from the source code, in separate "major" and "minor" components
-VER_MAJ := $(shell grep "const char \* vrpn_MAGIC \=" $(CURDIR)/vrpn/vrpn_Connection.C | sed 's/^[^0-9]*\([0-9]\+\).[0-9]\+[^0-9].*/\1/')
-VER_MIN := $(shell grep "const char \* vrpn_MAGIC \=" $(CURDIR)/vrpn/vrpn_Connection.C | sed 's/^[^0-9]*[0-9]\+.\([0-9]\+\)[^0-9].*/\1/')
+VER_MAJ := $(shell grep "const char \* vrpn_MAGIC \=" $(CURDIR)/vrpn_Connection.C | sed 's/^[^0-9]*\([0-9]\+\).[0-9]\+[^0-9].*/\1/')
+VER_MIN := $(shell grep "const char \* vrpn_MAGIC \=" $(CURDIR)/vrpn_Connection.C | sed 's/^[^0-9]*[0-9]\+.\([0-9]\+\)[^0-9].*/\1/')
 SOURCE_VER := $(VER_MAJ).$(VER_MIN)
-
-# Set up configure settings based on architecture
-ifeq ($(DEB_HOST_ARCH),i386)
-HW_OS := pc_linux
-endif
-ifeq ($(DEB_HOST_ARCH),lpia)
-HW_OS := pc_linux
-endif
-ifeq ($(DEB_HOST_ARCH),amd64)
-HW_OS := pc_linux64
-endif
-ifeq ($(DEB_HOST_ARCH),arm)
-HW_OS := pc_linux_arm
-endif
-ifeq ($(DEB_HOST_ARCH),armel)
-HW_OS := pc_linux_arm
-endif
-
-ifeq ($(HW_OS),)
-# If other hardware platform, tell it pc_linux
-HW_OS := pc_linux
-endif
 
 DEB_DESTDIR := $(CURDIR)/debian/tmp
 
-DEB_MAKE_VARS += HW_OS=$(HW_OS)
-DEB_MAKE_BUILD_TARGET := 
-DEB_MAKE_INSTALL_TARGET := install INSTALL_DIR=$(DEB_DESTDIR)/usr
-DEB_MAKE_CLEAN_TARGET := clean
+DEB_INSTALL_DOCS_ALL := $(CURDIR)/README $(CURDIR)/README.Compiling $(CURDIR)/README.Legal
 
-DEB_INSTALL_DOCS_ALL := $(CURDIR)/vrpn/README $(CURDIR)/vrpn/README.Compiling $(CURDIR)/vrpn/README.Legal
-
-DO_MAKE := libvrpn-dev vrpn-clients vrpn-server
-DEB_BUILDDIR := $(CURDIR)/quat
-DEB_BUILDDIR_libvrpn-dev := $(CURDIR)/vrpn
-DEB_BUILDDIR_vrpn-clients := $(CURDIR)/vrpn/client_src
-DEB_BUILDDIR_vrpn-server := $(CURDIR)/vrpn/server_src
-# Not listed in DO_MAKE because the targets are different.
-DEB_BUILDDIR_python-vrpn := $(CURDIR)/vrpn/python_vrpn
-DEB_BUILDDIR_libvrpn-java := $(CURDIR)/vrpn/java_vrpn
-
-#DOXYGEN := mkdir -p $(CURDIR)/vrpn/doxygen/html $(CURDIR)/vrpn/doxygen/man
-DOXYGEN := doxygen
-
-# Override DEB_MAKE_INVOKE to add DEB_MAKE_VARS, separate build dirs,
-# and remove CFLAGS/CXXFLAGS
-DEB_MAKE_INVOKE = cd $(if $(DEB_BUILDDIR_$(cdbs_curpkg)),"$(DEB_BUILDDIR_$(cdbs_curpkg))","$(DEB_BUILDDIR)") && \
-	$(DEB_MAKE_ENVVARS) $(MAKE) \
-	$(if $(DEB_MAKE_MAKEFILE), -f $(DEB_MAKE_MAKEFILE),) \
-	CFLAGS=$(if $(CFLAGS_$(cdbs_curpkg)),"$(CFLAGS_$(cdbs_curpkg))","$(CFLAGS)") \
-	CXXFLAGS=$(if $(CXXFLAGS_$(cdbs_curpkg)),"$(CXXFLAGS_$(cdbs_curpkg))","$(CXXFLAGS)") \
-	CPPFLAGS=$(if $(CPPFLAGS_$(cdbs_curpkg)),"$(CPPFLAGS_$(cdbs_curpkg))","$(CPPFLAGS)") \
-	LDFLAGS=$(if $(LDFLAGS_$(cdbs_curpkg)),"$(LDFLAGS_$(cdbs_curpkg))","$(LDFLAGS)") \
-	$(DEB_MAKE_VARS)
-
-common-configure-arch common-configure-indep:: make-dep
-make-dep::
-	cd $(DEB_BUILDDIR_libvrpn-dev) && \
-	$(DEB_MAKE_ENVVARS) $(MAKE) \
-		CPPFLAGS=$(if $(CPPFLAGS_$(cdbs_curpkg)),"$(CPPFLAGS_$(cdbs_curpkg))","$(CPPFLAGS)") \
-		LDFLAGS=$(if $(LDFLAGS_$(cdbs_curpkg)),"$(LDFLAGS_$(cdbs_curpkg))","$(LDFLAGS)") \
-		$(DEB_MAKE_VARS) depend
-
-$(patsubst %,build/%,$(DO_MAKE))::
-	+$(DEB_MAKE_INVOKE) $(DEB_MAKE_BUILD_TARGET)
-	
-$(patsubst %,install/%,$(DO_MAKE))::
-	+$(DEB_MAKE_INVOKE) $(DEB_MAKE_INSTALL_TARGET)
-	
-$(patsubst %,clean/%,$(DO_MAKE))::
-	-$(DEB_MAKE_INVOKE) $(DEB_MAKE_CLEAN_TARGET)
-	
-build/python-vrpn::
-	+$(DEB_MAKE_INVOKE) -f Makefile.python vrpn-python OBJECT_DIR=$(CURDIR)/vrpn/$(HW_OS)
-	
-install/python-vrpn::
-	+$(DEB_MAKE_INVOKE) -f Makefile.python install-vrpn-python \
-		OBJECT_DIR=$(CURDIR)/vrpn/$(HW_OS) \
-		INSTALL_DIR=$(DEB_DESTDIR)/usr
-		
-clean/python-vrpn::
-	-$(DEB_MAKE_INVOKE) -f Makefile.python clean-vrpn-python \
-		OBJECT_DIR=$(CURDIR)/vrpn/$(HW_OS) \
-		INSTALL_DIR=$(DEB_DESTDIR)/usr
-
-build/libvrpn-java::
-	-mkdir -p $(CURDIR)/vrpn/java_vrpn/bin
-	cd $(CURDIR)/vrpn/java_vrpn/ && \
-		javac vrpn/*.java -d bin/ && \
-		ant -f buildJAR.xml && \
-		ant -f buildNativeHeaders.xml
-	+$(DEB_MAKE_INVOKE) $(DEB_MAKE_BUILD_TARGET)
-	
-install/libvrpn-java::
-	 install -m 644 -D $(CURDIR)/vrpn/java_vrpn/bin/vrpn.jar $(DEB_DESTDIR)/usr/share/java/vrpn-$(SOURCE_VER).jar
-	 dh_link /usr/share/java/vrpn-$(SOURCE_VER).jar /usr/share/java/vrpn.jar
-	 install -m 644 -D $(CURDIR)/vrpn/java_vrpn/$(HW_OS)/libjava_vrpn.so $(DEB_DESTDIR)/usr/lib/libjava_vrpn.so
-
-clean/libvrpn-java::
-	-rm -rf $(CURDIR)/vrpn/java_vrpn/bin
-	-rm -rf $(CURDIR)/vrpn/java_vrpn/$(HW_OS)
-	-cd $(CURDIR)/vrpn/java_vrpn && rm -f \
-		vrpn_AnalogOutputRemote.h \
-		vrpn_AnalogRemote_AnalogChangeListener.h \
-		vrpn_AnalogRemote_AnalogUpdate.h \
-		vrpn_AnalogRemote.h \
-		vrpn_AuxiliaryLoggerRemote.h \
-		vrpn_AuxiliaryLoggerRemote_LoggingReport.h \
-		vrpn_AuxiliaryLoggerRemote_LoggingReportListener.h \
-		vrpn_ButtonRemote_ButtonChangeListener.h \
-		vrpn_ButtonRemote_ButtonUpdate.h \
-		vrpn_ButtonRemote.h \
-		vrpn_ForceDeviceRemote_ForceChange.h \
-		vrpn_ForceDeviceRemote_ForceChangeListener.h \
-		vrpn_ForceDeviceRemote_ForceError.h \
-		vrpn_ForceDeviceRemote_ForceErrorListener.h \
-		vrpn_ForceDeviceRemote.h \
-		vrpn_ForceDeviceRemote_SCPChange.h \
-		vrpn_ForceDeviceRemote_SCPChangeListener.h \
-		vrpn_PoserRemote.h \
-		vrpn_TextReceiver.h \
-		vrpn_TextReceiver_TextMessage.h \
-		vrpn_TextReceiver_TextMessageListener.h \
-		vrpn_TextSender.h \
-		vrpn_TrackerRemote_AccelerationChangeListener.h \
-		vrpn_TrackerRemote_AccelerationUpdate.h \
-		vrpn_TrackerRemote.h \
-		vrpn_TrackerRemote_PositionChangeListener.h \
-		vrpn_TrackerRemote_TrackerUpdate.h \
-		vrpn_TrackerRemote_VelocityChangeListener.h \
-		vrpn_TrackerRemote_VelocityUpdate.h \
-		vrpn_VRPNDevice.h \
-		vrpn_VRPNDevice_NotReplayError.h
-
-build/libvrpn-doc::
-	# Reconfigure doxyfile
-	cp $(CURDIR)/vrpn/doxygen/Doxyfile $(CURDIR)/vrpn/doxygen/Doxyfile.pre-sed
-
-	# Set version from debian version
-	sed -i "s/PROJECT_NUMBER         \=/PROJECT_NUMBER         \= $(VER_MAJ)\.$(VER_MIN)/" \
-		$(CURDIR)/vrpn/doxygen/Doxyfile
-
-	# Build the documentation
-	cd $(CURDIR)/vrpn/doxygen/ && $(DOXYGEN)
-
-	# Restore the doxyfile
-	mv -f $(CURDIR)/vrpn/doxygen/Doxyfile.pre-sed $(CURDIR)/vrpn/doxygen/Doxyfile
-
-binary/vrpn::
-	# Delete CVS directories
-	find $(CURDIR)/debian -name "CVS" | xargs rm -rf
-
-reverse-config::
-	# Restore the doxyfile
-	[ -f $(CURDIR)/vrpn/doxygen/Doxyfile.pre-sed ] && \
-		mv -f $(CURDIR)/vrpn/doxygen/Doxyfile.pre-sed $(CURDIR)/vrpn/doxygen/Doxyfile || \
-		echo . > /dev/null
-	
-	# Restore files processed by debian/rules
-	for mkf in $(MAKEFILES_TO_PROCESS); do \
-		[ -f $$mkf.pre-sed ] && mv -f $$mkf.pre-sed $$mkf || echo . > /dev/null ; \
-	done
-
-clean:: clean/python-vrpn clean/libvrpn-java $(patsubst %,clean/%,$(DO_MAKE))
-	# Clean up editing detritus
-	find $(CURDIR) -name *\~ | xargs rm -rf
-	find $(CURDIR) -name ._* | xargs rm -rf
-	find $(CURDIR) -name .DS_Store | xargs rm -rf
-	
-	# Remove files left behind by build
-	find $(CURDIR) -name "pc_linux*" | xargs rm -rf
-	-rm -rf $(CURDIR)/vrpn/client_src/logfilesenders
-	-rm -rf $(CURDIR)/vrpn/client_src/logfiletypes
-	-rm -rf $(CURDIR)/vrpn/doxygen/html
-	-rm -rf $(CURDIR)/vrpn/doxygen/man
-
+DEB_MAKE_BUILD_TARGET := all doc
+DEB_CMAKE_EXTRA_FLAGS := -DVRPN_BUILD_PYTHON=ON
 
 PACKAGE := $(shell dpkg-parsechangelog | sed -n 's/^Source: //p')
 get-orig-source:

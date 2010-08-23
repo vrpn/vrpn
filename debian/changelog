@@ -1,3 +1,11 @@
+vrpn (7.26.2.rpgit1-1) lucid; urgency=low
+
+  * New upstream version - using git from github.com/rpavlik/vrpn
+  * Using the CMake-based build.
+  * Disabling the java and python bindings for now.
+
+ -- Ryan Pavlik <abiryan@ryand.net>  Mon, 23 Aug 2010 13:08:12 -0500
+
 vrpn (07.22-0ubuntu1~rp6) jaunty; urgency=low
 
   * Add patch to fix python binding build on AMD64.

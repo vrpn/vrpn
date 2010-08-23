@@ -2,13 +2,14 @@ Source: vrpn
 Maintainer: Ryan Pavlik <abiryan@ryand.net>
 Section: libs
 Priority: optional
-Build-Depends: cdbs (>=0.4.49), debhelper (>= 7), quilt,
-	ant,
-	doxygen,
+Build-Depends: cdbs (>=0.4.49), debhelper (>= 7),
+	cmake,
 	dh-buildinfo,
+	doxygen,
 	graphviz,
 	openjdk-6-jdk,
 	python-all-dev,
+	quilt,
 	swig
 Standards-Version: 3.8.3
 Homepage: http://www.cs.unc.edu/Research/vrpn
