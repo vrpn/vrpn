@@ -62,6 +62,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkIncremental="2"
+				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				TargetMachine="1"
@@ -93,8 +94,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory=".\../pc_win32/server_src/test_freespace/Release"
+			IntermediateDirectory=".\../pc_win32/server_src/test_freespace/Release"
 			ConfigurationType="1"
 			CharacterSet="1"
 			WholeProgramOptimization="1"

@@ -283,7 +283,7 @@
 #endif
 
 #ifdef linux
-#define VRPN_HDAPI_PATH         VRPN_SYSTEMDRIVE "/usr/lib64"
+#define VRPN_HDAPI_PATH         "/usr/lib64"
 #else
 #define VRPN_HDAPI_PATH         VRPN_SYSTEMDRIVE "/Program Files/SensAble/3DTouch/lib/"
 #endif

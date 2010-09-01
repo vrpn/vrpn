@@ -37,23 +37,25 @@ class VRPN_API vrpn_Freespace :
 public:
 	/**
 	 * Create a freespace server using the given FreespaceDeviceId.  This 
-	 * factory doesn't do anything to initialize the libfreespace library.
+	 * factory will automatically initialize the libfreespace library as needed.
 	 * This method will open the device and configure it to receive relavant 
 	 * messages.  See the test_freespace.C, or libfreespace-examples, for steps to 
 	 * initialize the library and enumerate devices.
 	 */
-        // Freespace devices may report User frames (position and orientation in a quaternion),
-        // Body frames (angular velocity and linear acceleration), Mouse reports (delta X, delta Y)
-        // or some combination of them.  You will probably want at least body or user frame
-        // messages.
-        // Another thing to note is that for some devices, enabling multiple reports dimishes 
-        // the effective rate of data since the device can only send so many bits per second.
-        // This could fairly easily get added as a configuration setting.
 
-	static vrpn_Freespace* create(const char *name, vrpn_Connection *conn, 
-				      int device_index = 0,
-                                      bool send_body_frames = false,
-                                      bool send_user_frames = true);
+    // Freespace devices may report User frames (position and orientation in a quaternion),
+    // Body frames (angular velocity and linear acceleration), Mouse reports (delta X, delta Y)
+    // or some combination of them.  You will probably want at least body or user frame
+    // messages.
+    // Another thing to note is that for some devices, enabling multiple reports dimishes 
+    // the effective rate of data since the device can only send so many bits per second.
+    // This could fairly easily get added as a configuration setting.
+
+	static vrpn_Freespace* create(const char *name, 
+                                  vrpn_Connection *conn, 
+				                  int device_index = 0,
+                                  bool send_body_frames = false,
+                                  bool send_user_frames = true);
 	virtual ~vrpn_Freespace(void);
 	/**
 	 * Main loop.  This will try to read data from the loop, and send 
@@ -63,21 +65,31 @@ public:
 	virtual void mainloop(void);
 
 private:
+	static void freespaceInit();
 	/**
 	 * private constructor since opening of the device can fail.
 	 */
 	vrpn_Freespace(FreespaceDeviceId freespaceId,
 		struct FreespaceDeviceInfo* deviceInfo,
-		const char *name, vrpn_Connection *c);
+		const char *name, 
+        vrpn_Connection *c);
 
-        void handleUserFrame(const struct freespace_UserFrame&);
-        void handleBodyFrame(const struct freespace_BodyFrame&);
+    void handleUserFrame(const struct freespace_UserFrame&);
+    void handleBodyFrame(const struct freespace_BodyFrame&);
 	void handleLinkStatus(const struct freespace_LinkStatus&);
 
+    void deviceSetConfiguration(bool send_body_frames, bool send_user_frames);
+    void deviceConfigure();
+    void deviceUnconfigure();
+
+    bool _sendBodyFrames;
+    bool _sendUserFrames;
+    struct timeval _timestamp;
+
 protected:
-  FreespaceDeviceId _freespaceDevice;
-  FreespaceDeviceInfo _deviceInfo;
-  vrpn_float64 _lastBodyFrameTime;
+    FreespaceDeviceId _freespaceDevice;
+    FreespaceDeviceInfo _deviceInfo;
+    vrpn_float64 _lastBodyFrameTime;
 };
 #endif //VRPN_USE_FREESPACE
 
