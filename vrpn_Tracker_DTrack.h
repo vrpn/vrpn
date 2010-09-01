@@ -1,10 +1,11 @@
 // vrpn_Tracker_DTrack.h 
 // 
-// Advanced Realtime Tracking GmbH's (http://www.ar-tracking.de) DTrack client
+// Advanced Realtime Tracking GmbH's (http://www.ar-tracking.de) DTrack/DTrack2 client
 //
 // developed by David Nahon for Virtools VR Pack (http://www.virtools.com)
 // (07/20/2004) improved by Advanced Realtime Tracking GmbH (http://www.ar-tracking.de)
 // (07/02/2007, 06/29/2009) upgraded by Advanced Realtime Tracking GmbH to support new devices
+// (08/25/2010) a correction added by Advanced Realtime Tracking GmbH
 
 #ifndef VRPN_TRACKER_DTRACK_H
 #define VRPN_TRACKER_DTRACK_H
@@ -143,9 +144,10 @@ class VRPN_API vrpn_Tracker_DTrack : public vrpn_Tracker, public vrpn_Button, pu
 	unsigned int act_framecounter;                   // frame counter
 	double act_timestamp;                            // time stamp
 	
-	int act_num_body;                                // number of calibrated standard bodies (as far as known)
-	std::vector<vrpn_dtrack_body_type> act_body;          // array containing standard body data
+	int act_num_body;                                // number of calibrated standard bodies (due to '6d' line)
+	std::vector<vrpn_dtrack_body_type> act_body;     // array containing standard body data
 	bool act_has_bodycal_format;                     // DTrack sent '6dcal' format
+	int act_num_bodycal;                             // number of calibrated standard bodies (due to '6dcal' line)
 
 	int act_num_flystick;                            // number of calibrated Flysticks
 	std::vector<vrpn_dtrack_flystick_type> act_flystick;  // array containing Flystick data
