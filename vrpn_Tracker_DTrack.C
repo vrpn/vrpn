@@ -1,18 +1,19 @@
 // vrpn_Tracker_DTrack.C
 //
-// Advanced Realtime Tracking GmbH's (http://www.ar-tracking.de) DTrack client
+// Advanced Realtime Tracking GmbH's (http://www.ar-tracking.de) DTrack/DTrack2 client
 
 // developped by David Nahon for Virtools VR Pack (http://www.virtools.com)
 // (07/20/2004) improved by Advanced Realtime Tracking GmbH (http://www.ar-tracking.de)
 // (07/02/2007, 06/29/2009) upgraded by Advanced Realtime Tracking GmbH to support new devices
+// (08/25/2010) a correction added by Advanced Realtime Tracking GmbH
 //
-// Recommended settings within DTrack's 'Settings / Network' dialog:
+// Recommended settings within DTrack's 'Settings / Network' or DTrack2's 'Settings / Output' dialog:
 //   'ts', '6d', '6df' or '6df2', '6dcal'
 
 /* Configuration file:
 
 ################################################################################
-# Advanced Realtime Tracking GmbH (http://www.ar-tracking.de) DTrack client 
+# Advanced Realtime Tracking GmbH (http://www.ar-tracking.de) DTrack/DTrack2 client 
 #
 # creates as many vrpn_Tracker as there are bodies or Flysticks, starting with the bodies
 # creates 2 analogs per Flystick
@@ -281,19 +282,20 @@ void vrpn_Tracker_DTrack::mainloop()
 	//     calibrated targets, if available
 	// (3) otherwise tracks the maximum number of appeared targets
 
-	if(use_fix_numbering){         // fixed numbers should be used
-		nbody = fix_nbody;          // number of bodies visible for vrpn
-		nflystick = fix_nflystick;  // number of Flysticks visible for vrpn
-	}else{                         // else track the maximum number of appeared targets (at least)
-		if(!act_has_bodycal_format){  // does DTrack send information about the number of calibrated targets
-			if(!warning_nbodycal){   // mention warning (once)
-				fprintf(stderr, "vrpn_Tracker_DTrack warning: no DTrack '6dcal' data available.\n");
-				warning_nbodycal = true;
-			}
+	if(use_fix_numbering){             // fixed numbers should be used
+		nbody = fix_nbody;                // number of bodies visible for vrpn
+		nflystick = fix_nflystick;        // number of Flysticks visible for vrpn
+	}else if(act_has_bodycal_format){  // DTrack/DTrack2 sent information about the number of calibrated targets
+		nbody = act_num_bodycal;          // number of bodies visible for vrpn
+		nflystick = act_num_flystick;     // number of Flysticks visible for vrpn
+	}else{                             // else track the maximum number of appeared targets (at least)
+		if(!warning_nbodycal){            // mention warning (once)
+			fprintf(stderr, "vrpn_Tracker_DTrack warning: no DTrack '6dcal' data available.\n");
+			warning_nbodycal = true;
 		}
-		
-		nbody = act_num_body;          // number of bodies visible for vrpn
-		nflystick = act_num_flystick;  // number of flysticks visible for vrpn
+
+		nbody = act_num_body;             // number of bodies visible for vrpn
+		nflystick = act_num_flystick;     // number of Flysticks visible for vrpn
 	}
 
 	// report tracker data to vrpn:
@@ -302,8 +304,8 @@ void vrpn_Tracker_DTrack::mainloop()
 	num_buttons = nflystick * DTRACK2VRPN_BUTTONS_PER_FLYSTICK;  // 8 buttons per Flystick
 	num_channel = nflystick * DTRACK2VRPN_ANALOGS_PER_FLYSTICK;  // 2 channels per joystick/Flystick
 
-	for(i=0; i<act_num_body; i++){       // DTrack bodies
-		if(act_body[i].id < nbody){       // there might be more DTrack bodies than wanted
+	for(i=0; i<act_num_body; i++){       // DTrack standard bodies
+		if(act_body[i].id < nbody){       // there might be more DTrack standard bodies than wanted
 			if(act_body[i].quality >= 0){     // report position only if body is tracked
 				if(use_fix_numbering){
 					newid = fix_idbody[act_body[i].id];  // renumbered ID
@@ -640,7 +642,7 @@ bool vrpn_Tracker_DTrack::dtrack_init(int udpport)
 	act_num_body = act_num_flystick = 0;
 	act_has_bodycal_format = false;
 	act_has_old_flystick_format = false;
-	
+
 	return true;
 }
 
@@ -974,19 +976,7 @@ bool vrpn_Tracker_DTrack::dtrack_receive(void)
 	// set number of calibrated standard bodies, if necessary:
 
 	if(loc_num_bodycal >= 0){  // '6dcal' information was available
-		n = loc_num_bodycal - loc_num_flystick1 - loc_num_meatool;
-		
-		if(n > act_num_body){  // adjust length of vector
-			act_body.resize(n);
-
-			for(j=act_num_body; j<n; j++){
-				memset(&act_body[j], 0, sizeof(vrpn_dtrack_body_type));
-				act_body[j].id = j;
-				act_body[j].quality = -1;
-			}
-		}
-
-		act_num_body = n;
+		act_num_bodycal = loc_num_bodycal - loc_num_flystick1 - loc_num_meatool;
 	}
 
 	d_lasterror = DTRACK_ERR_NONE;
