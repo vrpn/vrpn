@@ -1,3 +1,6 @@
+vrpn_devel is currently accessed over https:// at git.cs.unc.edu.
+Use a password to push changes.
+
 Getting to the Git repository using a public/private key pair from a UNC Linux host.
 
 ---------------------
@@ -16,10 +19,10 @@ Getting to the Git repository using a public/private key pair from a UNC Linux h
 2) Tell SSH to share this key with the other side when you're connecting to the server by adding the following lines into the file ~/.ssh/config under Linux:
 
 	Host cvs.cs.unc.edu
-		IdentitiFile ~/.ssh-private/git_dsa
+		IdentityFile ~/.ssh-private/git_dsa
 
 	Host git.cs.unc.edu
-		IdentitiFile ~/.ssh-private/git_dsa
+		IdentityFile ~/.ssh-private/git_dsa
 
 ---------------------
 3) Send the public key to Murray to be added to the list of users who can log on to CVS as the git user.  You can paste the text of the key into an email to him.
