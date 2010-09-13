@@ -58,7 +58,7 @@ if(VRPN_BUILD_CLIENTS)
 		vrpn_LamportClock.t.C
 		vrpn_ping.C
 	)
-	
+
 	if(NOT WIN32)
 		# These need "open" calls modified to build on win.
 		list(APPEND

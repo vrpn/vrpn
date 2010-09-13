@@ -103,7 +103,7 @@ set_default_build_type("RelWithDebInfo")
 ###
 # Quatlib
 ###
-add_subdirectory (quat)
+add_subdirectory(quat)
 list(APPEND EXTRA_LIBS quat)
 
 ###
