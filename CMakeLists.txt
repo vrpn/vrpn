@@ -626,8 +626,8 @@ add_subdirectory(doxygen)
 add_subdirectory(python_vrpn)
 
 #-----------------------------------------------------------------------------
-# Applications that live in the main directory.
-if(VRPN_BUILD_SERVERS AND VRPN_BUILD_SERVER_LIBRARY)
+# Testing applications that live in the main directory.
+if(VRPN_BUILD_SERVERS AND VRPN_BUILD_SERVER_LIBRARY AND BUILD_TESTING)
 	foreach(SOURCE time_test.cpp)
 		get_filename_component(APP ${SOURCE} NAME_WE)
 		add_executable(${APP} ${SOURCE})

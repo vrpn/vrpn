@@ -71,34 +71,37 @@ if(VRPN_BUILD_CLIENTS)
 	###
 	# Tests
 	###
-	foreach(SOURCE ${TEST_SOURCES})
-		get_filename_component(APP ${SOURCE} NAME_WE)
-		add_executable(${APP} ${SOURCE})
-		target_link_libraries(${APP} ${VRPN_CLIENT_LIBRARY})
+	if(BUILD_TESTING)
+		foreach(SOURCE ${TEST_SOURCES})
+			get_filename_component(APP ${SOURCE} NAME_WE)
+			add_executable(${APP} ${SOURCE})
+			target_link_libraries(${APP} ${VRPN_CLIENT_LIBRARY})
 
-		set_target_properties(${APP} PROPERTIES SOLUTION_FOLDER tests)
-		# Force C compilation and linking
-		set_property(SOURCE ${SOURCE} PROPERTY LANGUAGE CXX)
-		set_target_properties(${APP} PROPERTIES HAS_CXX yes)
+			set_target_properties(${APP} PROPERTIES SOLUTION_FOLDER tests)
+			# Force C compilation and linking
+			set_property(SOURCE ${SOURCE} PROPERTY LANGUAGE CXX)
+			set_target_properties(${APP} PROPERTIES HAS_CXX yes)
 
-		install(TARGETS ${APP} RUNTIME DESTINATION bin)
-	endforeach()
+			install(TARGETS ${APP} RUNTIME DESTINATION bin)
+		endforeach()
 
-	if(GLUT_FOUND AND OPENGL_FOUND)
-		include_directories(${GLUT_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR})
-		add_executable(testimager_client testimager_client.C)
-		target_link_libraries(testimager_client
-			${VRPN_CLIENT_LIBRARY}
-			${GLUT_LIBRARIES}
-			${OPENGL_LIBRARIES})
+		if(GLUT_FOUND AND OPENGL_FOUND)
+			include_directories(${GLUT_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR})
+			add_executable(testimager_client testimager_client.C)
+			target_link_libraries(testimager_client
+				${VRPN_CLIENT_LIBRARY}
+				${GLUT_LIBRARIES}
+				${OPENGL_LIBRARIES})
 
-		set_target_properties(testimager_client
-			PROPERTIES
-			SOLUTION_FOLDER
-			tests)
+			set_target_properties(testimager_client
+				PROPERTIES
+				SOLUTION_FOLDER
+				tests)
 
-		install(TARGETS testimager_client
-			RUNTIME DESTINATION bin)
+			install(TARGETS testimager_client
+				RUNTIME DESTINATION bin)
+		endif()
+
 	endif()
 
 	add_executable(c_interface_example

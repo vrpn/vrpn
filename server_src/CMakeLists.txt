@@ -188,15 +188,17 @@ set(SRV_SERVER_SOURCES
 ###
 # Tests
 ###
-foreach(SOURCE ${SRV_TEST_SOURCES})
-	get_filename_component(APP ${SOURCE} NAME_WE)
-	add_executable(${APP} ${SOURCE})
-	target_link_libraries(${APP} ${VRPN_SERVER_LIBRARY})
-	set_target_properties(${APP} PROPERTIES SOLUTION_FOLDER tests)
-	set_target_properties(${APP} PROPERTIES HAS_CXX yes)
-	install(TARGETS ${APP}
-		RUNTIME DESTINATION bin)
-endforeach()
+if(BUILD_TESTING)
+	foreach(SOURCE ${SRV_TEST_SOURCES})
+		get_filename_component(APP ${SOURCE} NAME_WE)
+		add_executable(${APP} ${SOURCE})
+		target_link_libraries(${APP} ${VRPN_SERVER_LIBRARY})
+		set_target_properties(${APP} PROPERTIES SOLUTION_FOLDER tests)
+		set_target_properties(${APP} PROPERTIES HAS_CXX yes)
+		install(TARGETS ${APP}
+			RUNTIME DESTINATION bin)
+	endforeach()
+endif()
 
 ###
 # Servers
