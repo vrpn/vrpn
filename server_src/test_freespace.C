@@ -4,6 +4,7 @@
 // Hillcrest Labs Freespace powered device is working properly.
 // Most of this code was copied from the test_radamec_spi.C file
 //
+#ifdef VRPN_USE_FREESPACE
 #include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
@@ -14,7 +15,6 @@
 #include "vrpn_Button.h"
 #include "vrpn_Freespace.h"
 
-#ifdef VRPN_USE_FREESPACE
 char *TRACKER_NAME = "Freespace0";
 char trackerName[512];
 int	CONNECTION_PORT = vrpn_DEFAULT_LISTEN_PORT_NO;	// Port for connection to listen on
