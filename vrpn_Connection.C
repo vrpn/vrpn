@@ -3768,13 +3768,19 @@ void vrpn_Endpoint_IP::poll_for_cookie (const timeval * pTimeout) {
 }
 
 int vrpn_Endpoint_IP::finish_new_connection_setup (void) {
-  char recvbuf [501];  // HACK
+  char *recvbuf = NULL;
   vrpn_int32 sendlen;
   long received_logmode;
   unsigned short udp_portnum;
   int i;
 
   sendlen = vrpn_cookie_size();
+  recvbuf = new char(sendlen);
+  if (recvbuf == NULL) {
+    fprintf(stderr,"vrpn_Endpoint_IP::finish_new_connection_setup(): Out of memory when allocating receiver buffer\n");
+    status = BROKEN;
+    return -1;
+  }
 
   // Try to read the magic cookie from the server.
   int ret = vrpn_noint_block_read(d_tcpSocket, recvbuf, sendlen);
@@ -3899,6 +3905,7 @@ int vrpn_Endpoint_IP::finish_new_connection_setup (void) {
     (*d_connectionCounter)++;
   }
 
+  delete [] recvbuf;
   return 0;
 }
 
