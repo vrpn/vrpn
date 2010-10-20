@@ -347,29 +347,34 @@ void vrpn_Tracker_Isotrak::reset()
 
     FT_WARNING("Reset Completed.");
 
+    status = vrpn_TRACKER_SYNCING;	// We're trying for a new reading
+
     // Ok, device is ready, we want to calibrate to sensor 1 current position/orientation
     while(get_report() != 1);
 
-    // Set ALIGNMENT : current position as origin
-    char    outstring[68];
-    sprintf(outstring, "A1,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\r", -pos[0], -pos[1], -pos[2], -pos[0] + 1.0, -pos[1], -pos[2], -pos[0], -pos[1] + 1.0, -pos[2]);
-    
-    if (vrpn_write_characters(serial_fd, (const unsigned char *)outstring, strlen(outstring)) == (int)strlen(outstring)) {
-            vrpn_SleepMsecs(50);	// Sleep for a bit to let command run
-    } else {
-            FT_ERROR("  Isotrack write failed on set ALIGNMENT command");
-            status = vrpn_TRACKER_FAIL;
-            return;
-    }
-    
-    // set BORESIGHT : current orientation as identity
-    if (vrpn_write_characters(serial_fd, (const unsigned char *) "B1\r", 3) != 3) {
-            FT_ERROR("  Isotrack write failed on set BORESIGHT");
-            status = vrpn_TRACKER_FAIL;
-            return;
-    } 
+    // CBO: I have commented out the following code, as it sets the alignment and boresight
+    // in a way that does not make sense. 
 
-    FT_WARNING("Calibration Completed.");
+    //// Set ALIGNMENT : current position as origin
+    //char    outstring[68];
+    //sprintf(outstring, "A1,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\r", -pos[0], -pos[1], -pos[2], -pos[0] + 1.0, -pos[1], -pos[2], -pos[0], -pos[1] + 1.0, -pos[2]);
+    //
+    //if (vrpn_write_characters(serial_fd, (const unsigned char *)outstring, strlen(outstring)) == (int)strlen(outstring)) {
+    //        vrpn_SleepMsecs(50);	// Sleep for a bit to let command run
+    //} else {
+    //        FT_ERROR("  Isotrack write failed on set ALIGNMENT command");
+    //        status = vrpn_TRACKER_FAIL;
+    //        return;
+    //}
+    //
+    //// set BORESIGHT : current orientation as identity
+    //if (vrpn_write_characters(serial_fd, (const unsigned char *) "B1\r", 3) != 3) {
+    //        FT_ERROR("  Isotrack write failed on set BORESIGHT");
+    //        status = vrpn_TRACKER_FAIL;
+    //        return;
+    //} 
+
+    //FT_WARNING("Calibration Completed.");
 
 
     // Done with reset.
@@ -512,7 +517,11 @@ int vrpn_Tracker_Isotrak::get_report(void)
     
     if (buffer[0] != '0') {
             status = vrpn_TRACKER_SYNCING;
-            FT_WARNING("Not '0' in record, re-syncing");
+            
+            sprintf(errmsg,"Not '0' in record, re-syncing '%s'", buffer);
+            FT_WARNING(errmsg);
+
+            //FT_WARNING("Not '0' in record, re-syncing");
             vrpn_flush_input_buffer(serial_fd);
             return 0;
     }

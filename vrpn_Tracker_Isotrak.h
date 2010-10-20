@@ -23,7 +23,7 @@
 #include "quat.h"
 
 
-const int vrpn_ISOTRAK_MAX_STATIONS = 1;    // How many stations can exist
+const int vrpn_ISOTRAK_MAX_STATIONS = 2;    // How many stations can exist
 
 class VRPN_API vrpn_Tracker_Isotrak: public vrpn_Tracker_Serial {
   
