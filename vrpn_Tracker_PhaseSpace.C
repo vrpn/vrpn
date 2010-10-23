@@ -2,6 +2,8 @@
 
 #include <string.h>
 
+#define MM_TO_METERS (0.001)
+
 #ifdef VRPN_INCLUDE_PHASESPACE
 
 vrpn_Tracker_PhaseSpace::vrpn_Tracker_PhaseSpace(const char *name, vrpn_Connection *c, const char* device, float frequency,int readflag, int slave) 
@@ -88,9 +90,6 @@ vrpn_Tracker_PhaseSpace::~vrpn_Tracker_PhaseSpace()
       owlDone();
     }
 }
-
-
-
 
 
 // This function should be called each time through the main loop
@@ -291,10 +290,10 @@ int vrpn_Tracker_PhaseSpace::get_report(void)
       //set the sensor 
       d_sensor = INDEX(markers[i].id);
       
-      //set the position
-      pos[0] = markers[i].x;
-      pos[1] = markers[i].y;
-      pos[2] = markers[i].z;
+      //set the position in METERS (VRPN standard) rather than MM
+      pos[0] = markers[i].x * MM_TO_METERS;
+      pos[1] = markers[i].y * MM_TO_METERS;
+      pos[2] = markers[i].z * MM_TO_METERS;
 
       //raw positions have no rotation
       d_quat[0] = 0;
@@ -313,9 +312,9 @@ int vrpn_Tracker_PhaseSpace::get_report(void)
       d_sensor = r2s_map[rigids[j].id ];
 
       //set the position
-      pos[0] = rigids[j].pose[0];
-      pos[1] = rigids[j].pose[1];
-      pos[2] = rigids[j].pose[2];
+      pos[0] = rigids[j].pose[0] * MM_TO_METERS;
+      pos[1] = rigids[j].pose[1] * MM_TO_METERS;
+      pos[2] = rigids[j].pose[2] * MM_TO_METERS;
 
       //set the orientation quaternion
       //OWL has the scale factor first, whereas VRPN has it last.
