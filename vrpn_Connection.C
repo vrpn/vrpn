@@ -3775,7 +3775,7 @@ int vrpn_Endpoint_IP::finish_new_connection_setup (void) {
   int i;
 
   sendlen = vrpn_cookie_size();
-  recvbuf = new char(sendlen);
+  recvbuf = new char[sendlen];
   if (recvbuf == NULL) {
     fprintf(stderr,"vrpn_Endpoint_IP::finish_new_connection_setup(): Out of memory when allocating receiver buffer\n");
     status = BROKEN;
