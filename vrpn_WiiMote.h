@@ -14,9 +14,13 @@
 #include "vrpn_Button.h"
 #include "vrpn_Analog_Output.h"
 
+// maximum number of wiimotes connected to the system
+#define VRPN_WIIUSE_MAX_WIIMOTES 4
+
 // Opaque class to keep us from having to include wiiuse.h in user files.
 // This is defined in vrpn_WiiMote.C.
 class vrpn_Wiimote_Device;
+struct wiimote_t;
 
 // The buttons are as read from the bit-fields of the primary controller (bits 0-15)
 //  and then a second set for any extended controller (nunchuck bits 16-31),
@@ -78,7 +82,8 @@ class VRPN_API vrpn_WiiMote: public vrpn_Analog, public vrpn_Button, public vrpn
 public:
         // If there is more than one WiiMote on the machine, the zero-indexed 'which'
         // parameter tells which one we want to open.
-	vrpn_WiiMote(const char *name, vrpn_Connection *c = NULL, unsigned which = 0);
+	vrpn_WiiMote(const char *name, vrpn_Connection *c = NULL, unsigned which = 0
+		, unsigned useMS = 0, unsigned useIR = 0, unsigned reorderButtons = 0);
 	~vrpn_WiiMote();
 
 	virtual void mainloop();
@@ -96,6 +101,8 @@ protected:
 private:
         // The WiiMote to use
         vrpn_Wiimote_Device  *wiimote;
+		// a list of available wiimotes
+		wiimote_t **available_wiimotes;
 
 	// Error-handling procedure (spit out a message and die)
 	inline void FAIL(const char *msg) { 
@@ -120,6 +127,12 @@ private:
 
         // Helper functions to handle events
         void handle_event(void);
+
+		// Helper function to connect a wiimote
+		void connect_wiimote(int timeout);
+
+		// Helper function that defines a mapping for button ids:
+		unsigned map_button(unsigned btn);
 };
 
 #endif  // VRPN_USE_WIIUSE
