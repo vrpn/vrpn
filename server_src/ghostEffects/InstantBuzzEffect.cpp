@@ -11,7 +11,13 @@
 #else
 #include <gstPHANToM.h>
 #endif
+// Jean SIMARD <jean.simard@limsi.fr>
+// This inclusion of <windows.h> doesn't seems to be necessary because it is 
+// already include in 'InstantBuzzEffect.h'. But there is probably a reason 
+// then I just protect it with '#ifdef'.
+#ifdef __CYGWIN__
 #include <windows.h>
+#endif
 #include <math.h>
 #include "InstantBuzzEffect.h"
 

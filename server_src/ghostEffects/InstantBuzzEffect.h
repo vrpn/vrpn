@@ -9,8 +9,23 @@
 
 // RMT I hate that this has to be here, but things blow up in the compilation
 // if it is not.
-#ifdef __CYGWIN__
+#if defined(WIN32) || defined(__CYGWIN__)
 #include <windows.h>
+#else
+// Jean SIMARD <jean.simard@limsi.fr>
+// Without <windows.h>, we need to define the type 'LARGE_INTEGER'.
+typedef union {
+	struct {
+		unsigned long int LowPart;
+		long int HighPart;
+	};
+	long long int QuadPart; // The 'long long int' is a 64 bit integer
+} LARGE_INTEGER, * PLARGE_INTEGER;
+// Jean SIMARD <jean.simard@limsi.fr>
+// Without <windows.h>, we don't have these two functions.
+// Because I don't really know their role, I made them inactive.
+#define QueryPerformanceFrequency(x) (true)
+#define QueryPerformanceCounter(x) (true)
 #endif
 
 #include <math.h>

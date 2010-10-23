@@ -79,6 +79,10 @@ protected:
         HHLRC             hHLRC;            //< handle to haptic rendering context
         HLuint            effectId;         //< Effect ID of HL custom force effect
         int   button_0_bounce_count, button_1_bounce_count; //< Used to remove button "bounce"
+	// Jean SIMARD <jean.simard@limsi.fr>
+	// Add a field which contain the name of the PHANToM configuration
+	char sconf[512];
+
 #else
 	gstScene *scene;
 	gstSeparator *rootH;	    //< The haptics root separator attached to the scene.
@@ -178,7 +182,10 @@ protected:
 #endif
 	Trimesh *GetObjectMesh(vrpn_int32 objNum);
 public:
-	vrpn_Phantom(char *name, vrpn_Connection *c, float hz=1.0);
+	// Jean SIMARD <jean.simard@limsi.fr>
+	// Modification of the constructor
+	// The default value is the default value use by the tool of SensAble
+	vrpn_Phantom(char *name, vrpn_Connection *c, float hz=1.0, char * newsconf="Default PHANToM");
 	~vrpn_Phantom();
 
 	virtual void mainloop(void);

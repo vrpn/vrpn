@@ -274,9 +274,21 @@ int vrpn_Generic_Server_Object::setup_Phantom(char * &pch, char *line, FILE * co
 	char	s2[512];	// String parameters
 	int	i1;		// Integer parameters
 	float	f1;		// Float parameters
+	// Jean SIMARD <jean.simard@limsi.fr>
+	// Add the variable for the configuration name of the PHANToM interface
+	char sconf[512];
 
 	next();
-	if (sscanf(pch, "%511s%d%f",s2,&i1,&f1) != 3) {
+
+	// Jean SIMARD <jean.simard@limsi.fr>
+	// Modify the analyse of the configuration name of 'vrpn.cfg'
+	// The new version use the advantages of 'strtok' function
+	if ( !( sscanf( strtok( pch, " \t" ), "%511s", s2 )
+				&& sscanf( strtok( NULL, " \t" ), "%d", &i1 )
+				&& sscanf( strtok( NULL, " \t" ), "%f", &f1 )
+				&& sscanf( strtok( NULL, "\n" ), "%511[^\n]", sconf ) )
+		 )
+	{
 		fprintf(stderr,"Bad vrpn_Phantom line: %s\n",line);
 		return -1;
 	}
@@ -286,8 +298,14 @@ int vrpn_Generic_Server_Object::setup_Phantom(char * &pch, char *line, FILE * co
 		return -1;
 	}
 
+	// Jean SIMARD <jean.simard@limsi.fr>
+	// Put a more verbose version when a PHANToM connection is opened.
 	if (verbose) {
 		printf("Opening vrpn_Phantom:\n");
+		printf("\tVRPN name: %s\n", s2 );
+		printf("\tConfiguration name: \"%s\"\n", sconf );
+		printf("\tCalibration: %s\n", ((i1==0)?"no":"yes") );
+		printf("\tFrequence: %.3f\n", f1 );
 	}
 
 	// i1 is a boolean that tells whether to let the user establish the reset
@@ -297,7 +315,9 @@ int vrpn_Generic_Server_Object::setup_Phantom(char * &pch, char *line, FILE * co
 	  vrpn_SleepMsecs(10000);
 	}
 
-	phantoms[num_phantoms] =  new vrpn_Phantom(s2, connection, f1);
+	// Jean SIMARD <jean.simard@limsi.fr>
+	// Modification of the call of the constructor
+	phantoms[num_phantoms] =  new vrpn_Phantom(s2, connection, f1, sconf);
 	if (phantoms[num_phantoms] == NULL) {
 	  fprintf(stderr,"Can't create new vrpn_Phantom\n");
 	  return -1;

@@ -274,7 +274,7 @@ protected:
 	double textureAspect; // ratio of amplitude to wave length
 
 // MB: for SGI compilation with pthreads
-#if defined(SGI) || defined (__CYGWIN__)
+#if defined(SGI) || defined (__CYGWIN__) || defined (__linux__)
         pthread_mutex_t  tex_param_mutex;
 #else
 	CRITICAL_SECTION tex_param_mutex;
@@ -460,7 +460,7 @@ class DynamicPlane: public gstDynamic {
   private:
 	vrpn_HapticMatrix xform;
 // MB: for SGI compilation with pthreads
-#if defined(SGI) || defined (__CYGWIN__)
+#if defined(SGI) || defined (__CYGWIN__) || defined (__linux__)
         pthread_mutex_t  xform_mutex;
 #else
 	CRITICAL_SECTION xform_mutex;

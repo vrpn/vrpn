@@ -135,7 +135,11 @@ endif
 OBJ_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)
 LIB_DIR := ../$(OBJ_DIR)
 
-CFLAGS = -g -I./ -I../ -I../../quat
+# Jean SIMARD <jean.simard@limsi.fr>
+# Definition of the 'TRUE' and 'FALSE' constant for Linux (by default, they are 
+# defined in <windows.h>)
+# XXX This would be better done in the .h/.C files with #ifndef
+CFLAGS = -g -I./ -I../ -I../../quat -DTRUE=true -DFALSE=false
 LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX)
 VRPN_LIBS = -lvrpnserver -lvrpnatmel -lpthread
 
@@ -146,7 +150,11 @@ VRPN_LIBS = -lvrpnserver -lvrpnatmel -lpthread
 #HDAPI_ROOT := "C:/Program Files/SensAble/3DTouch"
 #CFLAGS = -g -I./ -I../ -I../../quat -I$(HDAPI_ROOT)/include -I$(HDAPI_ROOT)/utilities/include
 #LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) -L$(HDAPI_ROOT)/lib
-#SYSLIBS := $(SYSLIBS) -lhl -lhd
+
+# Jean SIMARD <jean.simard@limsi.fr>
+# This is only for the PHANToM server on Linux (not tested on other plateform)
+# Put in comment if you don't want a PHANToM server
+#SYSLIBS := $(SYSLIBS) -lHL -lHD -lHLU -lHDU
 
 ifdef INTERSENSE
   ifeq ($(HW_OS),powerpc_macosx)

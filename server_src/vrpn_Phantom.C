@@ -391,7 +391,7 @@ void vrpn_Phantom::getPosition(double *vec, double *orient)
     orient[3] = d_quat[3];
 }
 
-vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
+vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz, char * newsconf)
 		:vrpn_Tracker(name, c),vrpn_Button_Filter(name,c),
 		 vrpn_ForceDeviceServer(name,c), update_rate(hz),
 #ifndef	VRPN_USE_HDAPI
@@ -411,6 +411,9 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
 		 // fin ajout ONDIM
 {  
 #ifdef	VRPN_USE_HDAPI
+	// Jean SIMARD <jean.simard@limsi.fr>
+	// Initialize the 'sconf' field
+	strcpy( sconf, newsconf );
   vrpn_Button_Filter::num_buttons = 2;  // Omni has 2 buttons, others have 1. XXX This overestimates it
   button_0_bounce_count = 0;
   button_1_bounce_count = 0;
@@ -452,6 +455,9 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
   
   /* Create the phantom object.  When this line is processed, 
      the phantom position is zeroed. */
+	// Jean SIMARD <jean.simard@limsi.fr>
+	// I don't made some modifications here because I never used Ghost but I 
+	// suppose that 'sconf' should be use instead of "Default PHANToM".
   phantom = new gstPHANToM("Default PHANToM");
   phantomAxis = new gstSeparator;
   phantomAxis->addChild(phantom);
@@ -587,7 +593,9 @@ vrpn_Phantom::vrpn_Phantom(char *name, vrpn_Connection *c, float hz)
   // This is also done in resetPHANToM.
 #ifdef	VRPN_USE_HDAPI
   HDErrorInfo error;
-  phantom = hdInitDevice(HD_DEFAULT_DEVICE);
+	// Jean SIMARD <jean.simard@limsi.fr>
+	// Modify the configuration name called by 'hdInitDevice'
+  phantom = hdInitDevice(sconf);
   if (HD_DEVICE_ERROR(error = hdGetError())) {
       hduPrintError(stderr, &error, "Failed to initialize haptic device");
       phantom = -1;

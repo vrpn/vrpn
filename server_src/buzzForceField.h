@@ -86,7 +86,7 @@ private:
 	bool _freq_needs_update;
 
 // MB: for compilation with pthreads
-#if defined(SGI) || defined (__CYGWIN__)
+#if defined(SGI) || defined (__CYGWIN__) || defined (__linux__)
 	pthread_mutex_t  _amp_freq_mutex;// mutex for accessing 
 #else
 	CRITICAL_SECTION _amp_freq_mutex;// mutex for accessing 

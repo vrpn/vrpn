@@ -3,7 +3,7 @@
 #include "texture_plane.h"
 
 // So we don't have #defines throughout the code that we forget to fix.
-#if defined(SGI) || defined (__CYGWIN__)
+#if defined(SGI) || defined (__CYGWIN__) || defined (__linux__)
 #define init_mutex(x) pthread_mutex_init(x,NULL);
 #define get_mutex(x)  pthread_mutex_lock(x)
 #define release_mutex(x) pthread_mutex_unlock(x);
