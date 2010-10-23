@@ -62,7 +62,7 @@ void vrpn_Tracker_3Space::reset()
    send_text_message("Resetting", timestamp, vrpn_TEXT_ERROR, numResets);
    for (i = 0; i < resetLen; i++) {
 	if (vrpn_write_characters(serial_fd, &reset[i], 1) == 1) {
-		sleep(2);  // Wait 2 seconds each character
+		vrpn_SleepMsecs(1000*2);  // Wait 2 seconds each character
    	} else {
 		send_text_message("Failed writing to tracker", timestamp, vrpn_TEXT_ERROR, numResets);
 		perror("3Space: Failed writing to tracker");
@@ -70,13 +70,13 @@ void vrpn_Tracker_3Space::reset()
 		return;
 	}
    }
-   sleep(10);	// Sleep to let the reset happen
+   vrpn_SleepMsecs(1000.0*10);	// Sleep to let the reset happen
 
    // Get rid of the characters left over from before the reset
    vrpn_flush_input_buffer(serial_fd);
 
    // Make sure that the tracker has stopped sending characters
-   sleep(2);
+   vrpn_SleepMsecs(1000.0*2);
    unsigned char scrap[80];
    if ( (ret = vrpn_read_available_characters(serial_fd, scrap, 80)) != 0) {
      fprintf(stderr,"  3Space warning: got >=%d characters after reset:\n",ret);
@@ -93,7 +93,7 @@ void vrpn_Tracker_3Space::reset()
 
    // Asking for tracker status
    if (vrpn_write_characters(serial_fd, (const unsigned char *) "S", 1) == 1) {
-      sleep(1); // Sleep for a second to let it respond
+      vrpn_SleepMsecs(1000.0*1); // Sleep for a second to let it respond
    } else {
 	perror("  3Space write failed");
 	status = vrpn_TRACKER_FAIL;
@@ -128,7 +128,7 @@ void vrpn_Tracker_3Space::reset()
    // indicate data sets according to appendix F of the 3Space manual,
    // then followed by character 13 (octal 15).
    if (vrpn_write_characters(serial_fd, (const unsigned char *)"O2,11\015", 6) == 6) {
-	sleep(1); // Sleep for a second to let it respond
+	vrpn_SleepMsecs(1000.0*1); // Sleep for a second to let it respond
    } else {
 	perror("  3Space write failed");
 	status = vrpn_TRACKER_FAIL;

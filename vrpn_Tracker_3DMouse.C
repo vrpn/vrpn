@@ -47,7 +47,7 @@ void vrpn_Tracker_3DMouse::reset()
 	if (vrpn_write_characters(serial_fd, (unsigned char*)"*R", 2) == 2)
 	{
 		fprintf(stderr,".");
-		sleep(2);  // Wait after each character to give it time to respond
+		vrpn_SleepMsecs(1000.0*2);  // Wait after each character to give it time to respond
 	}
 	else
 	{
@@ -62,7 +62,7 @@ void vrpn_Tracker_3DMouse::reset()
 	vrpn_flush_input_buffer(serial_fd);
 
 	// Make sure that the tracker has stopped sending characters
-	sleep(2);
+	vrpn_SleepMsecs(1000.0*2);
 
 	if ( (ret = vrpn_read_available_characters(serial_fd, _buffer, 80)) != 0)
 	{
@@ -78,7 +78,7 @@ void vrpn_Tracker_3DMouse::reset()
 
 	// Asking for tracker status
 	if (vrpn_write_characters(serial_fd, (const unsigned char *) "*\x05", 2) == 2)
-		sleep(1); // Sleep for a second to let it respond
+		vrpn_SleepMsecs(1000.0*1); // Sleep for a second to let it respond
 	else
 	{
 		perror("  3DMouse write failed");
@@ -189,7 +189,7 @@ bool vrpn_Tracker_3DMouse::set_filtering_count(int count)
 
 	if (vrpn_write_characters(serial_fd, (const unsigned char*)sBuf, 5) == 5)
 	{
-		sleep(1);
+		vrpn_SleepMsecs(1000.0*1);
 	}
 	else
 	{

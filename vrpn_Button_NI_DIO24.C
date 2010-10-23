@@ -197,7 +197,7 @@ void vrpn_Button_NI_DIO24::reportError(int32 errnumber, vrpn_bool exitProgram)
         else
         {
             printf("Sleeping...\n") ;
-            sleep(1) ;    //  so at least the log will slow down so someone can see the error
+            vrpn_SleepMsecs(1000.0*1) ;    //  so at least the log will slow down so someone can see the error
         }
     }
 }    //  reportError

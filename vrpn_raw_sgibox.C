@@ -122,7 +122,7 @@ int vrpn_raw_SGIBox::reset() {  /* Button/Dial box setup */
 		return -1;
 	  }
   }
-  sleep(1);	// Give the box time to respond
+  vrpn_SleepMsecs(1000.0*1);	// Give the box time to respond
   if ( (ret=vrpn_read_available_characters(serialfd, inbuf, 2)) <= 0) {
 	  //XXX Turn this into a vrpn text message
 	  perror("vrpn_raw_SGIBox::reset(): Can't read or no data from serial port");
@@ -147,7 +147,7 @@ int vrpn_raw_SGIBox::reset() {  /* Button/Dial box setup */
 		perror("vrpn_raw_SGIBox::reset(): Can't turn the lights on");
 		return -1;
 	}
-	sleep(5);
+	vrpn_SleepMsecs(1000.0*5);
 	if (write_slowly(serialfd, lightsoff,5) != 5) {
 		perror("vrpn_raw_SGIBox::reset(): Can't turn the lights off");
 		return -1;

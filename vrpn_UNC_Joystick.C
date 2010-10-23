@@ -119,7 +119,7 @@ void vrpn_Joystick::reset() {
       status = vrpn_ANALOG_FAIL;
       return;
     }
-    sleep(1);
+    vrpn_SleepMsecs(1000.0*1);
 
 	// Read the report and parse each entry.  For each one, have
 	// the parse routine store the restvalue, so that it will be

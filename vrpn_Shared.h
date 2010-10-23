@@ -171,12 +171,6 @@ static	const   int     vrpn_int_data_for_endian_test = 1;
 static	const   char    *vrpn_char_data_for_endian_test = (char *)(void *)(&vrpn_int_data_for_endian_test);
 static	const   bool    vrpn_big_endian = (vrpn_char_data_for_endian_test[0] != 1);
 
-// XXX should this be done in cygwin?
-// No sleep() function, but Sleep(DWORD) defined in winbase.h
-#if defined(_WIN32) && (!defined(__CYGWIN__))
-#define	sleep(x)	Sleep( DWORD(1000.0 * x) )
-#endif
-
 // Semaphore and Thread classes derived from Hans Weber's classes from UNC.
 // Don't let the existence of a Thread class fool you into thinking
 // that VRPN is thread-safe.  This and the Semaphore are included as

@@ -52,7 +52,7 @@ int vrpn_Tracker_Dyna::get_status()
 
     vrpn_write_characters(serial_fd,(const unsigned char *) "\021", 1);
     vrpn_drain_output_buffer(serial_fd);
-    sleep(2);
+    vrpn_SleepMsecs(1000.0*2);
 
     /* do non-blocking read of status record    */
     bytesRead = vrpn_read_available_characters(serial_fd, statusBuffer, 8);
@@ -105,8 +105,7 @@ void vrpn_Tracker_Dyna::reset() {
   vrpn_write_characters(serial_fd,(const unsigned char *) "4", 1); // set to polling mode;
       
   /* pause 1 second to allow the Dynasight buffer to stabilize	*/
-  sleep(1);
-	 
+  vrpn_SleepMsecs(1000.0*1);
 
   status = get_status();
       
@@ -134,7 +133,7 @@ void vrpn_Tracker_Dyna::reset() {
    //vrpn_write_characters(serial_fd, (const unsigned char *)"V", 1);
    vrpn_write_characters(serial_fd, (const unsigned char *)"0", 1);
    //T_PDYN_C_CONTINUOUS = "V"
-   sleep(1);
+   vrpn_SleepMsecs(1000.0*1);
    //vrpn_gettimeofday(&timestamp, NULL);	// Set watchdog now;
    timestamp.tv_sec = -1;
    status = vrpn_TRACKER_SYNCING;	// We are trying for a new reading;

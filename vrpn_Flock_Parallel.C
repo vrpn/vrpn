@@ -174,7 +174,7 @@ void vrpn_Tracker_Flock_Parallel::mainloop()
     checkError();
     if (cResets==4) {
       fprintf(stderr, "\nvrpn_Tracker_Flock_Parallel: problems resetting ... check that: a) all cables are attached, b) all units have FLY/STANDBY switches in FLY mode, and c) no receiver is laying too close to the transmitter.  When done checking, power cycle the flock.\nWill attempt to reset in 15 seconds.\n");
-      sleep(15);
+      vrpn_SleepMsecs(1000.0*15);
       cResets=0;
     }
     fprintf(stderr, 

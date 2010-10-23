@@ -103,7 +103,7 @@ void vrpn_ADBox::mainloop()
       else
         {
           fprintf(stderr,"vrpn_ADBox: trying to detect ad-box\n");
-          sleep(1);
+          vrpn_SleepMsecs(1000.0*1);
         }
     }
   else

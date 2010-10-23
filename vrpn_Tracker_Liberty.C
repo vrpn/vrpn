@@ -190,7 +190,7 @@ void vrpn_Tracker_Liberty::reset()
    for (i = 0; i < resetLen; i++) {
 	if (vrpn_write_characters(serial_fd, (unsigned char*)&reset[i], 1) == 1) {
 		fprintf(stderr,".");
-		sleep(2);  // Wait after each character to give it time to respond
+		vrpn_SleepMsecs(1000.0*2);  // Wait after each character to give it time to respond
    	} else {
 		perror("Liberty: Failed writing to tracker");
 		status = vrpn_TRACKER_FAIL;
@@ -202,7 +202,7 @@ void vrpn_Tracker_Liberty::reset()
    // For the Intersense trackers, you need to sleep 20. So,
    // sleeping 20 is the more general solution...
    if (numResets > 2) {
-       sleep(20);	// Sleep to let the reset happen, if we're doing ^Y
+       vrpn_SleepMsecs(1000.0*20);	// Sleep to let the reset happen, if we're doing ^Y
    }
 
    fprintf(stderr,"\n");
@@ -211,7 +211,7 @@ void vrpn_Tracker_Liberty::reset()
    vrpn_flush_input_buffer(serial_fd);
 
    // Make sure that the tracker has stopped sending characters
-   sleep(2);
+   vrpn_SleepMsecs(1000.0*2);
    unsigned char scrap[80];
    if ( (ret = vrpn_read_available_characters(serial_fd, scrap, 80)) != 0) {
      sprintf(errmsg,"Got >=%d characters after reset",ret);
@@ -235,7 +235,7 @@ void vrpn_Tracker_Liberty::reset()
    statusCommand[1]=(char)(13); // Return Key
 
    if (vrpn_write_characters(serial_fd, (const unsigned char *) &statusCommand[0], 2) == 2) {
-      sleep(1); // Sleep for a second to let it respond
+      vrpn_SleepMsecs(1000.0*1); // Sleep for a second to let it respond
    } else {
 	perror("  Liberty write failed");
 	status = vrpn_TRACKER_FAIL;
@@ -301,7 +301,7 @@ void vrpn_Tracker_Liberty::reset()
 
      if (vrpn_write_characters(serial_fd,
 	     (const unsigned char *)"X0.2,0.2,0.8,0.8\015", 17) == 17) {
-	sleep(1); // Sleep for a second to let it respond
+	vrpn_SleepMsecs(1000.0*1); // Sleep for a second to let it respond
      } else {
 	perror("  Liberty write position filter failed");
 	status = vrpn_TRACKER_FAIL;
@@ -309,7 +309,7 @@ void vrpn_Tracker_Liberty::reset()
      }
      if (vrpn_write_characters(serial_fd,
 	     (const unsigned char *)"Y0.2,0.2,0.8,0.8\015", 17) == 17) {
-	sleep(1); // Sleep for a second to let it respond
+	vrpn_SleepMsecs(1000.0*1); // Sleep for a second to let it respond
      } else {
 	perror("  Liberty write orientation filter failed");
 	status = vrpn_TRACKER_FAIL;
@@ -320,7 +320,7 @@ void vrpn_Tracker_Liberty::reset()
 
      if (vrpn_write_characters(serial_fd,
 	     (const unsigned char *)"X0,1,0,0\015", 9) == 9) {
-	sleep(1); // Sleep for a second to let it respond
+	vrpn_SleepMsecs(1000.0*1); // Sleep for a second to let it respond
      } else {
 	perror("  Liberty write position filter failed");
 	status = vrpn_TRACKER_FAIL;
@@ -328,7 +328,7 @@ void vrpn_Tracker_Liberty::reset()
      }
      if (vrpn_write_characters(serial_fd,
 	     (const unsigned char *)"Y0,1,0,0\015", 9) == 9) {
-	sleep(1); // Sleep for a second to let it respond
+	vrpn_SleepMsecs(1000.0*1); // Sleep for a second to let it respond
      } else {
 	perror("  Liberty write orientation filter failed");
 	status = vrpn_TRACKER_FAIL;
@@ -366,7 +366,7 @@ void vrpn_Tracker_Liberty::reset()
 		if (next_line[0] == '*') {	// This is a "sleep" line, see how long
 			seconds_to_wait = atoi(&next_line[1]);
 			fprintf(stderr,"   ...sleeping %d seconds\n",seconds_to_wait);
-			sleep(seconds_to_wait);
+			vrpn_SleepMsecs(1000.0*seconds_to_wait);
 		} else {	// This is a command line, send it
 			sprintf(string_to_send, "%s\015", next_line);
 			fprintf(stderr, "   ...sending command: %s\n", string_to_send);
@@ -377,7 +377,7 @@ void vrpn_Tracker_Liberty::reset()
 	}
 
 	// Sleep a little while to let this finish, then clear the input buffer
-	sleep(2);
+	vrpn_SleepMsecs(1000.0*2);
 	vrpn_flush_input_buffer(serial_fd);
    }
    

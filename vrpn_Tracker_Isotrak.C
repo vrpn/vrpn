@@ -145,7 +145,7 @@ void vrpn_Tracker_Isotrak::reset()
     for (i = 0; i < resetLen; i++) {
             if (vrpn_write_characters(serial_fd, &reset[i], 1) == 1) {
                     fprintf(stderr,".");
-                    sleep(2);  // Wait after each character to give it time to respond
+                    vrpn_SleepMsecs(1000.0*2);  // Wait after each character to give it time to respond
             } else {
                     perror("Isotrack: Failed writing to tracker");
                     status = vrpn_TRACKER_FAIL;
@@ -154,7 +154,7 @@ void vrpn_Tracker_Isotrak::reset()
     }
     //XXX Take out the sleep and make it keep spinning quickly
     if (numResets > 2) {
-        sleep(20);	// Sleep to let the reset happen, if we're doing ^Y
+        vrpn_SleepMsecs(1000.0*20);	// Sleep to let the reset happen, if we're doing ^Y
     }
     
     fprintf(stderr,"\n");
@@ -163,7 +163,7 @@ void vrpn_Tracker_Isotrak::reset()
     vrpn_flush_input_buffer(serial_fd);
     
     // Make sure that the tracker has stopped sending characters
-    sleep(2);
+    vrpn_SleepMsecs(1000.0*2);
     unsigned char scrap[80];
     if ( (ret = vrpn_read_available_characters(serial_fd, scrap, 80)) != 0) {
         sprintf(errmsg,"Got >=%d characters after reset",ret);
@@ -181,7 +181,7 @@ void vrpn_Tracker_Isotrak::reset()
     
     // Asking for tracker status
     if (vrpn_write_characters(serial_fd, (const unsigned char *) "S", 1) == 1) {
-        sleep(1); // Sleep for a second to let it respond
+        vrpn_SleepMsecs(1000.0*1); // Sleep for a second to let it respond
     } else {
             perror("  Isotrack write failed");
             status = vrpn_TRACKER_FAIL;
@@ -240,14 +240,14 @@ void vrpn_Tracker_Isotrak::reset()
 
     if (do_filter) {
         if (vrpn_write_characters(serial_fd, (const unsigned char *)"x0.2,0.2,0.8,0.8\015", 17) == 17) {
-            sleep(1); // Sleep for a second to let it respond
+            vrpn_SleepMsecs(1000.0*1); // Sleep for a second to let it respond
         } else {
             perror("  Isotrack write position filter failed");
             status = vrpn_TRACKER_FAIL;
             return;
         }
         if (vrpn_write_characters(serial_fd, (const unsigned char *)"v0.2,0.2,0.8,0.8\015", 17) == 17) {
-            sleep(1); // Sleep for a second to let it respond
+            vrpn_SleepMsecs(1000.0*1); // Sleep for a second to let it respond
         } else {
             perror("  Isotrack write orientation filter failed");
             status = vrpn_TRACKER_FAIL;
@@ -320,7 +320,7 @@ void vrpn_Tracker_Isotrak::reset()
                 if (next_line[0] == '*') {	// This is a "sleep" line, see how long
                         seconds_to_wait = atoi(&next_line[1]);
                         fprintf(stderr,"   ...sleeping %d seconds\n",seconds_to_wait);
-                        sleep(seconds_to_wait);
+                        vrpn_SleepMsecs(1000.0*seconds_to_wait);
                 } else {	// This is a command line, send it
                         sprintf(string_to_send, "%s\015", next_line);
                         fprintf(stderr, "   ...sending command: %s\n", string_to_send);
@@ -331,7 +331,7 @@ void vrpn_Tracker_Isotrak::reset()
         }
 
         // Sleep a little while to let this finish, then clear the input buffer
-        sleep(2);
+        vrpn_SleepMsecs(1000.0*2);
         vrpn_flush_input_buffer(serial_fd);
     }
     
