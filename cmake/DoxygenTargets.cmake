@@ -226,11 +226,11 @@ function(add_doxygen _doxyfile)
 				endif()
 
 			else()
-				install(DIRECTORY
-					"${OUTPUT_DIRECTORY}/html"
-					DESTINATION
-					"${INSTALL_DESTINATION}"
-					OPTIONAL)
+			#	install(DIRECTORY
+			#		"${OUTPUT_DIRECTORY}/html"
+			#		DESTINATION
+			#		"${INSTALL_DESTINATION}"
+			#		OPTIONAL)
 				if(MAKE_PDF)
 					install(FILES "${OUTPUT_DIRECTORY}/latex/refman.pdf"
 						DESTINATION "${INSTALL_DESTINATION}"

@@ -71,7 +71,7 @@ class  ForceFieldEffect:public gstEffect
 	// is needed to calculate the forces.  deltaT should 
 	// be used to update the time.  Also, if the effect is
 	// not active, the zero vector should be returned.
-	// ACTUNG!
+	// ACHTUNG!
 	// WARNING!: Never call PHANToM->setForce or
 	//			PHANToM->setForce_WC from this function.
 	//			It will cause an infinite recursion.

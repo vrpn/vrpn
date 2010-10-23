@@ -1,22 +1,17 @@
 
-CC = cc
-CXX = CC
+CC = gcc
+CXX = g++
 
-# SGI IRIX 6.x compile flags
-CFLAGS =   -n32 -mips3 -O
-CCFLAGS =  -n32 -mips3 -O
+CFLAGS =   -O
+CCFLAGS =  -O
 
 
-VRPNDIR = ../..
-VRPNINC = -I$(VRPNDIR)
-VRPNLIB = -L$(VRPNDIR)/sgi_irix.n32.mips3 -lvrpn
+VRPNDIR = $(HOME)/vrpn
+VRPNINC = -I$(VRPNDIR)/include
+VRPNLIB = -L$(VRPNDIR)/lib -lvrpn -lquat -lpthread
 
-QUATDIR = ../../../quat
-QUATINC = -I$(QUATDIR)
-QUATLIB = -L$(QUATDIR)/sgi_irix.n32.mips3 -lquat
-
-INCS = $(VRPNINC) $(QUATINC)
-LIBS = $(VRPNLIB) $(QUATLIB) -lm
+INCS = $(VRPNINC) 
+LIBS = $(VRPNLIB) -lm
 
 OBJS = testvrpn.o phantom-field.o phantom-plane.o phantom-wave.o \
 	glwin.o glvrpn.o smdvrpn.o

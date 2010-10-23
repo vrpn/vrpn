@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.6.2)
-project(VRPN)
+#project(VRPN)
+project(VRPN-ICMS)
 
 # Changes made by:
 # 2009-2010 Ryan Pavlik <rpavlik@iastate.edu>
@@ -18,7 +19,7 @@ project(VRPN)
 ###
 # Local CMake Modules - keep this first
 ###
-list(APPEND CMAKE_MODULE_PATH ${VRPN_SOURCE_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH ${VRPN-ICMS_SOURCE_DIR}/cmake)
 include(UseBackportedModules)
 include(GetForceIncludeDefinitions)
 include(MSVCMultipleProcessCompile)
@@ -31,8 +32,10 @@ include(SetDefaultBuildType)
 # This may be incremented manually - reset to 0 for each upstream release
 set(CPACK_PACKAGE_VERSION_PATCH "2")
 
+#set(CPACK_PACKAGE_VENDOR
+#	"Russell M. Taylor II at the University of North Carolina at Chapel Hill")
 set(CPACK_PACKAGE_VENDOR
-	"Russell M. Taylor II at the University of North Carolina at Chapel Hill")
+	"Axel Kohlmeyer / Institute for Computational Molecular Science - Temple University")
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/ParseVersion.cmake")
 
@@ -197,6 +200,23 @@ if(VRPN_USE_WIIUSE)
 endif()
 
 ###
+# libnifalcon
+###
+set(LIBNIFALCON_MARK_AS_ADVANCED OFF)
+find_package(LibNifalcon)
+if(LIBNIFALCON_FOUND)
+	option(VRPN_USE_LIBNIFALCON "Build with libnifalcon support to access Novint Falcon devices" ON)
+endif()
+
+if(VRPN_USE_LIBNIFALCON)
+	if(NOT LIBNIFALCON_FOUND)
+		message(FATAL_ERROR "ERROR: VRPN_USE_LIBNIFALCON set but libnifalcon not found!")
+	endif()
+	include_directories(${LIBNIFALCON_INCLUDE_DIRS})
+	list(APPEND SERVER_EXTRA_LIBS ${LIBNIFALCON_LIBRARIES})
+endif()
+
+###
 # DirectShow
 ###
 # Note: FindDirectShow.cmake still needs some TLC to bring it in line
@@ -305,6 +325,9 @@ option(VRPN_USE_WIIUSE "Build with WiiUse library support" OFF)
 option(VRPN_USE_FREESPACE
 	"Build with Hillcrest Labs' Freespace devices support"
 	OFF)
+option(VRPN_USE_LIBNIFALCON
+	"Build with support for Novint Falcon devices through libnifalcon"
+	 OFF)
 option(VRPN_BUILD_EXTRA_COMPILER_WARNINGS
 	"Build with flags to enable extra warnings."
 	OFF)
@@ -452,6 +475,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Tracker_Liberty.C
 	vrpn_Tracker_MotionNode.C
 	vrpn_Tracker_NDI_Polaris.C
+	vrpn_Tracker_NovintFalcon.C
 	vrpn_Tracker_PhaseSpace.C
 	vrpn_Tracker_WiimoteHead.C
 	vrpn_UNC_Joystick.C
@@ -522,6 +546,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Tracker_Liberty.h
 	vrpn_Tracker_MotionNode.h
 	vrpn_Tracker_NDI_Polaris.h
+	vrpn_Tracker_NovintFalcon.h
 	vrpn_Tracker_PhaseSpace.h
 	vrpn_Tracker_WiimoteHead.h
 	vrpn_UNC_Joystick.h
@@ -591,7 +616,7 @@ endif()
 
 
 # Include directory needed by all of the files
-include_directories(${VRPN_SOURCE_DIR} ${VRPN_SOURCE_DIR}/atmellib ${VRPN_SOURCE_DIR}/quat)
+include_directories(${VRPN-ICMS_SOURCE_DIR} ${VRPN-ICMS_SOURCE_DIR}/atmellib ${VRPN-ICMS_SOURCE_DIR}/quat)
 
 add_subdirectory (client_src)
 

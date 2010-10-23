@@ -140,7 +140,7 @@ install(TARGETS vrpn_server
 
 #-----------------------------------------------------------------------------
 # Install the vrpn.cfg file needed by the server.
-install(FILES ${VRPN_SOURCE_DIR}/server_src/vrpn.cfg
+install(FILES ${VRPN-ICMS_SOURCE_DIR}/server_src/vrpn.cfg
 	DESTINATION etc)
 
 

@@ -12,7 +12,7 @@
 #define M_PI  (2*asin(0.0))
 #endif
 
-#define PHANTOM_SERVER "Phantom@phantom"
+#define PHANTOM_SERVER "Tracker0@localhost"
 
 /*****************************************************************************
  *
@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
        forceDevice->setFF_Jacobian((float)(-20.0*M_PI*sin(pos[0]*20.0*M_PI)), 0, 0, 
 				    0, (float)(-20.0*M_PI*sin(pos[1]*20.0*M_PI)), 0, 
 				    0, 0, (float)(-20.0*M_PI*sin(pos[2]*20.0*M_PI)));
-       forceDevice->setFF_Radius(0.02f);	// 2cm radius of validity
+       forceDevice->setFF_Radius(0.05f);	// 2cm radius of validity
        forceDevice->sendForceField();
        forceInEffect = 1;
     }
