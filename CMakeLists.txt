@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 2.6.2)
-#project(VRPN)
-project(VRPN-ICMS)
+project(VRPN)
 
 # Changes made by:
 # 2009-2010 Ryan Pavlik <rpavlik@iastate.edu>
@@ -19,7 +18,7 @@ project(VRPN-ICMS)
 ###
 # Local CMake Modules - keep this first
 ###
-list(APPEND CMAKE_MODULE_PATH ${VRPN-ICMS_SOURCE_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH ${VRPN_SOURCE_DIR}/cmake)
 include(UseBackportedModules)
 include(GetForceIncludeDefinitions)
 include(MSVCMultipleProcessCompile)
@@ -32,10 +31,8 @@ include(SetDefaultBuildType)
 # This may be incremented manually - reset to 0 for each upstream release
 set(CPACK_PACKAGE_VERSION_PATCH "2")
 
-#set(CPACK_PACKAGE_VENDOR
-#	"Russell M. Taylor II at the University of North Carolina at Chapel Hill")
 set(CPACK_PACKAGE_VENDOR
-	"Axel Kohlmeyer / Institute for Computational Molecular Science - Temple University")
+	"Russell M. Taylor II at the University of North Carolina at Chapel Hill")
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/ParseVersion.cmake")
 
@@ -616,7 +613,7 @@ endif()
 
 
 # Include directory needed by all of the files
-include_directories(${VRPN-ICMS_SOURCE_DIR} ${VRPN-ICMS_SOURCE_DIR}/atmellib ${VRPN-ICMS_SOURCE_DIR}/quat)
+include_directories(${VRPN_SOURCE_DIR} ${VRPN_SOURCE_DIR}/atmellib ${VRPN_SOURCE_DIR}/quat)
 
 add_subdirectory (client_src)
 

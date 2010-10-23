@@ -108,7 +108,7 @@ int main(int argc, char **argv) {
        forceDevice->setFF_Jacobian(-4.0*M_PI*sin(pos[0]*200.0*M_PI), 0, 0, 0, 
                                    -4.0*M_PI*sin(pos[1]*200.0*M_PI), 0, 0, 0, 
                                    -4.0*M_PI*sin(pos[2]*200.0*M_PI));
-       forceDevice->setFF_Radius(0.15); // 2cm radius of validity
+       forceDevice->setFF_Radius(0.15); // radius of validity
        forceDevice->sendForceField();
        forceInEffect = 1;
     }

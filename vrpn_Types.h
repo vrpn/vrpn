@@ -10,7 +10,7 @@
 //------------------------------------------------------------------
 #ifndef __cplusplus
 #ifndef	VRPN_IGNORE_NO_CPLUSPLUS
-#error Need to compile with a C++ compiler, not a C compiler.  The problem is that in Windows, filenames are case-insensitive.  So the compiler cannot tell mumble.c from mumble.C.  So Visual Studio decided to make .cpp (which used to mean run the C preprocessor) mean C++ and both .c and .C mean C.  The other problem is that when you insert a new file into a project, it FOR THAT FILE makes an override.  The project settings say C++ but if you right-click on the file itself it has an override to compile with C.  This needs to be changed for both the .C file and the .h file.
+#error Need to compile with a C++ compiler, not a C compiler.  The problem is that in Windows, filenames are case-insensitive.  So the compiler cannot tell mumble.c from mumble.C.  Visual Studio decided to make .cpp (which used to mean run the C preprocessor) mean C++ and both .c and .C mean C.  The other problem is that when you insert a new file into a project, it FOR THAT FILE makes an override.  The project settings say C++ but if you right-click on the file itself it has an override to compile with C.  This needs to be changed for both the .C file and the .h file.
 #endif
 #endif
 
