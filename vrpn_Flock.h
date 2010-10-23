@@ -66,8 +66,8 @@ class VRPN_API vrpn_Tracker_Flock: public vrpn_Tracker_Serial {
   bool d_invertQuaternion;	// Do we invert the Quaternion before returning it?
 
   // class members used to help with error recovery
-  int cResets;
-  int cSyncs;
+  unsigned cResets;
+  unsigned cSyncs;
 
   // class members used for statistics only
   int fFirstStatusReport;

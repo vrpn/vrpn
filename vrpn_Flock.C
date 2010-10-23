@@ -569,7 +569,7 @@ int vrpn_Tracker_Flock::get_report(void)
      if ( (buffer[0] & 0x80) == 0) {
        fprintf(stderr,"\nvrpn_Tracker_Flock: Syncing (high bit not set)");
        cSyncs++;
-       if (cSyncs>20) {
+       if (cSyncs>RECORD_SIZE) {
 	 // reset the tracker if more than a few syncs occur
 	 status = vrpn_TRACKER_RESETTING;
        }
