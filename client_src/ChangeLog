@@ -1,3 +1,78 @@
+2009-12-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* c_interface_example.cpp : Gets rid of a compiler warning.
+
+2009-12-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CmakeLists.txt : Improvements by Ryan Pavlik to the Cmake files that
+		make them cleaner and use more modern constructions.  Also various
+		bug fixes to make code compile on a number of architectures.
+	* bdbox_client.C : Compiles with modern VRPN.
+	* logfilesenders.c : Compiles on all architectures.
+	* logfiletypes.c : Same.
+	* testimager_client.C : Compiles on Apple.
+	* tracker_to_poser.cpp : Compiles on all architectures.
+
+2009-11-27  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CMakeLists.txt : Turning off testimager_client on all but Windows.
+	* testimager_client.C : Removing declarations that aren't needed but that
+		only worked on Windows.
+
+2009-11-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* ff_client.C : Picking lint found by a new compiler (const declarations and
+		printf format descriptions.
+	* phan_client.C : Same.
+	* printceral.C : Same.
+	* sphere_client.C : Same.
+	* text.C : Same.
+	* vrpn_print_devices.C : Same.
+
+2009-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CMakeLists.txt : File to describe to the Cmake build system how
+		to compile VRPN.
+	* ff_client.C : Upgrade to compile on Windows with recent VRPN.
+	* phan_client.C : same.
+	* testSharedObject.C : same.
+	* text.C : same.
+	* vrpn_ping.C : same.
+
+2009-11-12  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* sound_client.c : Fixed it so that it compiles.  There must
+		have been an inadvertent cutting out of some lines in
+		the code.
+
+2009-09-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+        * Makefile : Turned "-g" flag into "$(DEBUG_FLAGS)" throughout.
+
+2009-07-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* run_auxiliary_logger.C : Added a test program that
+		lets you connect and ask for a log file for some
+		duration.
+	* run_auxiliary_logger.dsp : Same.
+	* run_auxiliary_logger.vcproj : Same.
+
+2009_06_16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Removed UNC-specific include and library paths.
+
+2009_04_17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Patch from Hans Lambermont to make it compile under Linux.
+	* test_imager.C : Same.
+
+2009_03_07  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Added entry to compile a C-interface example program.
+	* c_interface.cpp : Code to provide a C interface to remote classes.
+	* c_interface.h : Same.
+	* c_interface_example.c : Example C program using the interface.
+
 2009_01_21  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* forcedevice_test_client.vcproj : Making it compile with quatlib
@@ -342,7 +417,7 @@
 
 	* printcereal.dsp : DSP files have been modified to not do definitions
 		of VRPN_NO_STREAMS and other constants directly, rather these
-		are now set by editing vprn_Configure.h.  Also, made projects
+		are now set by editing vrpn_Configure.h.  Also, made projects
                 compile in both debug and release versions.
 	* printvals.dsp : Same.
 	* setrouter.dsp : Same.

@@ -1,6 +1,38 @@
+2010-01-14  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGeneratorRemote.cpp:  corrected several
+	errors in the way channel messages were handled.  also,
+	tested for invalid values in various functions before
+	calling any vrpn functions.
+	* makefile:  additions from Sheldon Andrews to build
+	on 64-bit Linux.
+
+2010-01-05  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGeneratorRemote.cpp:  added a handler
+	for error reports.
+
+2009-12-28  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGeneratorRemote.cpp:  finished the
+	implementation of the java native methods and the
+	vrpn handler methods.
+
+2009-11-24  David Marshburn  <marshbur@cs.unc.edu>
+
+	* all:  added function generator wrapping.
+
+2009-05-18  David Marshburn  <marshbur@cs.unc.edu>
+
+	* *.cpp:  changed the handling of the native_device member
+	from an java int to a java long.  this includes the get and
+	set methods as well as the cached field descriptor.  cursory
+	testing indicates that this works for at least one 32-bit 
+	environment.
+
 2008-06-24  David Marshburn  <marshbur@cs.unc.edu>
 
-	* vprn_PoserRemote.cpp:  corrected the text of
+	* vrpn_PoserRemote.cpp:  corrected the text of
 	some error messages.
 
 2008-06-20  David Marshburn  <marshbur@cs.unc.edu>
@@ -497,7 +529,7 @@
 
 2002-08-15  David Marshburn  <marshbur@cs.unc.edu>
 
-	* .cvsignore:  ignore vprn.jar
+	* .cvsignore:  ignore vrpn.jar
 	* java_vrpn.vjp:  now creates vrpn.jar
 
 2002-08-13  David Marshburn  <marshbur@cs.unc.edu>

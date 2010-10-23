@@ -33,7 +33,7 @@ static const vrpn_uint16 vrpn_3DCONNEXION_SPACEBALL5000 = 0xc621;   // 50721;
 vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_buttons,
                                    const char *name, vrpn_Connection *c)
   : _filter(filter)
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if (defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__))
   , vrpn_HidInterface(_filter)
 #endif
   , vrpn_Analog(name, c)
@@ -48,10 +48,10 @@ vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_button
   memset(channel, 0, sizeof(channel));
   memset(last, 0, sizeof(last));
 
+#ifdef linux
   // Use the Event interface to open devices looking for the one
   // we want.  Call the acceptor with all the devices we find
   // until we get one that we want.
-#ifdef LINUX
     fd = -1;
     FILE *f;
     int i = 0;
@@ -94,13 +94,13 @@ vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_button
 
 vrpn_3DConnexion::~vrpn_3DConnexion()
 {
-#if !(defined(_WIN32) || defined(__CYGWIN__))
+#if !(defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__))
 	set_led(0);
 #endif
         delete _filter;
 }
 
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__)
 void vrpn_3DConnexion::reconnect()
 {
 	vrpn_HidInterface::reconnect();
@@ -114,9 +114,9 @@ void vrpn_3DConnexion::on_data_received(size_t bytes, vrpn_uint8 *buffer)
 
 void vrpn_3DConnexion::mainloop()
 {
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__)
 	update();
-#elif defined(LINUX)
+#elif defined(linux)
     struct timeval zerotime;
     fd_set fdset;
     struct input_event ev;
@@ -127,36 +127,41 @@ void vrpn_3DConnexion::mainloop()
 
     FD_ZERO(&fdset);                      /* clear fdset              */
     FD_SET(fd, &fdset);                   /* include fd in fdset      */
-    vrpn_noint_select(fd + 1, &fdset, NULL, NULL, &zerotime);
-    if (FD_ISSET(fd, &fdset)) {
-        if (vrpn_noint_block_read(fd, reinterpret_cast<char*>(&ev), sizeof(struct input_event)) != sizeof(struct input_event)) {
-            send_text_message("Error reading from vrpn_3DConnexion", vrpn_Analog::timestamp, vrpn_TEXT_ERROR);
-            if (d_connection) { d_connection->send_pending_reports(); }
-            return;
+    int moreData = 0;
+    do {
+        vrpn_noint_select(fd + 1, &fdset, NULL, NULL, &zerotime);
+        moreData = 0;
+        if (FD_ISSET(fd, &fdset)) {
+            moreData = 1;
+            if (vrpn_noint_block_read(fd, reinterpret_cast<char*>(&ev), sizeof(struct input_event)) != sizeof(struct input_event)) {
+                send_text_message("Error reading from vrpn_3DConnexion", vrpn_Analog::timestamp, vrpn_TEXT_ERROR);
+                if (d_connection) { d_connection->send_pending_reports(); }
+                return;
+            }
+            switch (ev.type) {
+                case EV_KEY:    // button movement
+                    vrpn_gettimeofday((timeval *)&this->vrpn_Button::timestamp, NULL);
+                    buttons[ev.code & 0x0ff] = ev.value;
+                    break;
+ 
+                case EV_REL:    // axis movement
+                    vrpn_gettimeofday((timeval *)&this->vrpn_Analog::timestamp, NULL);
+                    // Convert from short to int to avoid a short/double conversion
+                    // bug in GCC 3.2.
+                    i = ev.value;
+                    channel[ev.code] = static_cast<double>(i)/400.0;           
+                    break;
+ 
+                default:
+                    break;
+            }
         }
-        switch (ev.type) {
-            case EV_KEY:    // button movement
-                vrpn_gettimeofday((timeval *)&this->vrpn_Button::timestamp, NULL);
-                buttons[ev.code & 0x0ff] = ev.value;
-                break;
-
-            case EV_REL:    // axis movement
-                vrpn_gettimeofday((timeval *)&this->vrpn_Analog::timestamp, NULL);
-                // Convert from short to int to avoid a short/double conversion
-                // bug in GCC 3.2.
-                i = ev.value;
-                channel[ev.code] = static_cast<double>(i)/400.0;           
-                break;
-
-            default:
-                break;
-        }
-    }
+        report_changes();
+    } while (moreData == 1);
 #endif
 
     server_mainloop();
     vrpn_gettimeofday(&_timestamp, NULL);
-    report_changes();
 }
 
 void vrpn_3DConnexion::report_changes(vrpn_uint32 class_of_service)
@@ -177,7 +182,7 @@ void vrpn_3DConnexion::report(vrpn_uint32 class_of_service)
 	vrpn_Button::report_changes();
 }
 
-#if !(defined(_WIN32) || defined(__CYGWIN__))
+#if !(defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__))
 int vrpn_3DConnexion::set_led(int led_state)
 {
   struct input_event event;
@@ -206,9 +211,14 @@ static void swap_endian2(char *buffer)
 	c = buffer[0]; buffer[0] = buffer[1]; buffer[1] = c;
 }
 
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__)
 void vrpn_3DConnexion::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 {
+#if defined(__APPLE__)
+  // force 2 byte button events on APPLE into 7 bytes like we get for axis
+  // XXX Why is this done?
+  if (bytes == 2) bytes = 7;
+#endif
   // Decode all full reports.
   // Full reports for all of the pro devices are 7 bytes long.
   for (size_t i = 0; i < bytes / 7; i++) {
@@ -263,18 +273,33 @@ void vrpn_3DConnexion::decodePacket(size_t bytes, vrpn_uint8 *buffer)
       case 3: { // Button report
         int btn;
 
-        // Button reports are encoded as bits in the first byte
-        // after the type.  Presumably, there can be more if there
-        // are more then 8 buttons on a future device but for now
-        // we just unpack this byte into however many buttons we
-        // have.
+        // Button reports are encoded as bits in the first 2 bytes
+        // after the type.  There can be more than one byte if there
+        // are more than 8 buttons such as on SpaceExplorer or SpaceBall5000.
+        // If 8 or less, we don't look at 2nd byte. No known devices with >15 buttons.
+        // SpaceExplorer buttons are (for example):
+        // Name           Number
+        // 1              0
+        // 2              1
+        // T              2
+        // L              3
+        // R              4
+        // F              5
+        // ESC            6
+        // ALT            7
+        // SHIFT          8
+        // CTRL           9
+        // FIT            10
+        // PANEL          11
+        // +              12
+        // -              13
+        // 2D             14
+
         for (btn = 0; btn < vrpn_Button::num_buttons; btn++) {
-	        vrpn_uint8 *location, mask;
-
-	        location = report + 1;
-	        mask = 1 << (btn % 8);
-
-	        buttons[btn] = (*location & mask) != 0;
+            vrpn_uint8 *location, mask;
+            location = report + 1 + (btn / 8);
+            mask = 1 << (btn % 8);
+            buttons[btn] = ( (*location) & mask) != 0;
         }
         break;
       }
@@ -283,6 +308,8 @@ void vrpn_3DConnexion::decodePacket(size_t bytes, vrpn_uint8 *buffer)
         vrpn_gettimeofday(&_timestamp, NULL);
         send_text_message("Unknown report type", _timestamp, vrpn_TEXT_WARNING);
     }
+    // Report this event before parsing the next.
+    report_changes();
   }
 }
 #endif

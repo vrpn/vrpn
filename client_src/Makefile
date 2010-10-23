@@ -94,7 +94,7 @@ ifeq ($(HW_OS),sgi_irix)
   endif
   OBJECT_DIR_SUFFIX := .$(SGI_ABI).$(SGI_ARCH)
   CC := CC -$(SGI_ABI) -$(SGI_ARCH)
-  GLUTLIBS := -L/afs/cs.unc.edu/project/walk/lib/sgi_irix.$(SGI_ABI) -lglut -lGLU -lGL -lXmu -lXext -lX11
+  GLUTLIBS := -lglut -lGLU -lGL -lXmu -lXext -lX11
 endif
 
 ifeq ($(HW_OS),hp700_hpux10)
@@ -116,15 +116,17 @@ ifeq ($(HW_OS),sparc_solaris_64)
 endif
 
 ifeq ($(HW_OS),powerpc_aix)
-  CC := /usr/ibmcxx/bin/xlC_r -g -qarch=pwr3 -w -+
+#  CC := /usr/ibmcxx/bin/xlC_r -g -qarch=pwr3 -w -+
+  CC := /usr/ibmcxx/bin/xlC_r $(DEBUG_FLAGS) -qarch=pwr3 -w -+
 endif
 
 ifeq ($(HW_OS),pc_cygwin)
   ARCH_LIBS := -lquat -lcygwin -luser32 -lgdi32 -lcomdlg32 -lwsock32
 endif
 
-GLUTINCLUDE = /afs/cs.unc.edu/project/walk/include
-CFLAGS = -I../ -I$(GLUTINCLUDE) -g
+#CFLAGS = -I../ -I../quat -g
+override CFLAGS := -I../ -I../quat $(DEBUG_FLAGS) $(CFLAGS)
+override CXXFLAGS := -I../ -I../quat $(DEBUG_FLAGS) $(CXXFLAGS)
 
 .SUFFIXES:	.cpp
 
@@ -132,35 +134,36 @@ CFLAGS = -I../ -I$(GLUTINCLUDE) -g
 	$(CC) $(CFLAGS) -c $*.c
 
 .C.o:
-	$(CC) $(CFLAGS) -c $*.C
+	$(CC) $(CXXFLAGS) -c $*.C
 
 .cpp.o:
-	$(CC) $(CFLAGS) -c $*.cpp
+	$(CC) $(CXXFLAGS) -c $*.cpp
 
 OBJ_DIR := $(HW_OS)$(OBJECT_DIR_SUFFIX)
 LIB_DIR := ../$(OBJ_DIR)
 
-LFLAGS = -g -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX)
+#LFLAGS = -g -L$(LIB_DIR) -L../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX)
+override LFLAGS := -L$(LIB_DIR) -L../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) $(DEBUG_FLAGS) $(LDFLAGS)
 
 $(OBJ_DIR)/%.o: %.c
-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
+	@[ -d $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 $(OBJ_DIR)/%.o: %.C
-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
-	$(CC) $(CFLAGS) -o $@ -c $<
+	@[ -d $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
+	$(CC) $(CXXFLAGS) -o $@ -c $<
 
 $(OBJ_DIR)/%.o: %.cpp
-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
-	$(CC) $(CFLAGS) -o $@ -c $<
+	@[ -d $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
+	$(CC) $(CXXFLAGS) -o $@ -c $<
 
 INSTALL_APPS := vrpn_print_devices forcedevice_test_client vrpn_ping \
-	add_vrpn_cookie
+	add_vrpn_cookie vrpn_print_performance
 # vrpn_print_messages
 
 APPS := $(INSTALL_APPS) printvals printcereal checklogfile logfilesenders \
 	logfiletypes text forwarderClient bdbox_client ff_client phan_client \
-	sphere_client bdbox_client test_mutex test_imager
+	sphere_client bdbox_client test_mutex test_imager c_interface_example
 
 all:	$(APPS)
 
@@ -168,6 +171,9 @@ all:	$(APPS)
 
 .PHONY:	vrpn_print_devices
 vrpn_print_devices:	$(OBJ_DIR)/vrpn_print_devices
+
+.PHONY:	vrpn_print_performance
+vrpn_print_performance:	$(OBJ_DIR)/vrpn_print_performance
 
 .PHONY:	forcedevice_test_client
 forcedevice_test_client:	$(OBJ_DIR)/forcedevice_test_client
@@ -214,6 +220,9 @@ test_mutex:	$(OBJ_DIR)/test_mutex
 .PHONY: test_imager
 test_imager:	$(OBJ_DIR)/test_imager
 
+.PHONY: c_interface_example
+c_interface_example:	$(OBJ_DIR)/c_interface_example
+
 .PHONY:	text
 text:	$(OBJ_DIR)/text
 
@@ -232,6 +241,10 @@ $(OBJ_DIR)/printvals: $(OBJ_DIR)/printvals.o $(LIB_DIR)/libvrpn.a
 $(OBJ_DIR)/vrpn_print_devices: $(OBJ_DIR)/vrpn_print_devices.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/vrpn_print_devices \
 		$(OBJ_DIR)/vrpn_print_devices.o -lvrpn $(ARCH_LIBS)
+
+$(OBJ_DIR)/vrpn_print_performance: $(OBJ_DIR)/vrpn_print_performance.o $(LIB_DIR)/libvrpn.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/vrpn_print_performance \
+		$(OBJ_DIR)/vrpn_print_performance.o -lvrpn $(ARCH_LIBS)
 
 $(OBJ_DIR)/printcereal: $(OBJ_DIR)/printcereal.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/printcereal \
@@ -303,6 +316,10 @@ $(OBJ_DIR)/test_imager: $(OBJ_DIR)/test_imager.o $(LIB_DIR)/libvrpn.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/test_imager \
 		$(OBJ_DIR)/test_imager.o -lvrpn $(ARCH_LIBS)
 
+$(OBJ_DIR)/c_interface_example: $(OBJ_DIR)/c_interface_example.o $(OBJ_DIR)/c_interface.o $(LIB_DIR)/libvrpn.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/c_interface_example \
+		$(OBJ_DIR)/c_interface_example.o $(OBJ_DIR)/c_interface.o -lvrpn $(ARCH_LIBS)
+
 
 # These utilities actually DON'T use libvrpn
 
@@ -314,7 +331,7 @@ $(OBJ_DIR)/logfiletypes: $(OBJ_DIR)/logfiletypes.o
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/logfiletypes $(OBJ_DIR)/logfiletypes.o
 
 install: all
-	-mkdir $(BIN_DIR)
+	-mkdir -p $(BIN_DIR)
 	( cd $(BIN_DIR) ; rm -f $(INSTALL_APPS) )
 	( cd $(OBJ_DIR) ; cp $(INSTALL_APPS) $(BIN_DIR) )
 	( cd $(BIN_DIR) ; strip $(INSTALL_APPS) )

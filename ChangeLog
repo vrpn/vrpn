@@ -1,3 +1,344 @@
+2010-07-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Types.h : Making the "Need to compile with C++
+		error message more verbose.
+
+2010-07-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Button.C : Change to make this compile under Visual Studio
+		6.0 submitted by Andrei State.
+	* vrpn_Mouse.C : Same.
+
+2010-07-02  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_isense.C : Modified to compile with the latest version
+		of the Intersense library based on comments from Andrew Roth at
+		York University, Toronto based on info from Rand Kmiec at
+		Intersense.
+	* vrpn_Tracker_isense.h : Same.
+
+2010-06-25  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Connection.C (get_log_names):  does not attempt to return
+	names for NULL input parameters.
+	* vrpn_FunctionGenerator.h/c:  uses vrpn_Callback_List.
+
+2010-03-16  David Marshburn  <marshbur@cs.unc.edu>
+	* vrpn_FunctionGenerator.C:  correctly NULL-terminates decoded
+	script and description strings.
+
+2010-03-08  David Marshburn  <marshbur@cs.unc.edu>
+	* vrpn_FunctionGenerator.h (vrpn_FunctionGenerator_function_script::getConstScript):
+	  new, const accessor for the script string.
+	* vrpn_FunctionGenerator.C (vrpn_FunctionGenerator_Remote::encode_channel):
+	  encodes the correct, desired channel.  
+
+2010-02-18  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGenerator.h/C:  a few tweaks and additions, 
+	including:  the ability for servers to keep up with the number
+	of channels they're really using, the ability to copy functions,
+	and some additional, correct const-ing.
+
+2010-01-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CMakeLists.txt : Added -fPIC option submitted by Sheldon
+		Andrews from McGill to non-Windows builds.  This was
+		important for his 64-bit Java code.
+	* vrpn_DreamCheeky.C : Makes it not try to compile except
+		under Windows, Cygwin, Apple.
+	* vrpn_DreamCheaky.h : Same.
+
+2010-01-14  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGenerator.h/C:  various bug fixes and additions,
+	mostly involved with sending and receiving channel messages.
+
+2010-01-05  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGenerator.h/C:  added error-reporting handlers
+	for remote objects.  also, explicitly defined value for the
+	enumeration of error codes.
+
+2009-12-30  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGenerator.h/C:  added error-reporting capabilities
+	for servers (intended to be used for script malfunctions).
+
+2009-12-29  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGenerator.h/C:  added another constructor to
+	vrpn_FunctionGenerator_function_script and removed the pure-virtual
+	specifier from the method generateValues.
+
+2009-12-27  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_DreamCheeky.h : Added support for the Dream Cheeky USB
+		roll-up drum kit, which is a HID device.
+	* vrpn_DreamCheeky.C : Same.
+	* CMakeLists.txt : Same.
+	* Makefile : Same.
+	* vrpn.vcproj : Same.
+	* vrpndll.vcproj : Same.
+
+2009-12-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	All changes here are from Ryan Pavlik.  I'm just adding them in.
+	* CMakeLists.txt : Adds vrpn_Configure.h into developer files.
+	* README.Compiling : Describes building using Cmake.
+	* vrpn_Configure.h : Added note telling about Cmake build/config.
+	* vrpn_Configure.h.cmake_in : Same.
+	* vrpn_HumanInterface.h : Adds default for non-Cmake compilation.
+
+2009-12-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CmakeLists.txt : Major version number now 7.25.
+	* vrpn_Connection.C : Same.
+
+2009-12-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CmakeLists.txt : Improved version from Ryan Pavlik.
+
+2009-12-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Removed #pragmas calling for linking with the
+		libraries because it breaks things when running Cmake. All
+		app builds will need to explicitly link with VRPN now.
+	* vrpn_Configure.h.cmake_in : Same.
+
+2009-12-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CMakeLists.txt : Remove un-needed vrpn_TypeDispatcher.[hC]
+	* vrpn_TypeDispatcher.h : Removed (included in vrpn_Connection.h).
+	* vrpn_TypeDispatcher.C : Removed (included in vrpn_Connection.C).
+
+2009-12-15  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CMakeLists.txt : Improved version from Ryan Pavlik.  Refactored to make
+		them cleaner and updated them to more modern Cmake usage.  Also
+		added CPack descriptions.
+	* cmake : New directory in support of the above.
+	* FindDirectShow.cmake : Moved to cmake/ subdirectory.
+	* FindHDAPI.cmake : Same.
+	* Findquatlib.cmake : Same.
+	* vrpn_Atmel.C : Added newline at end of file.
+	* vrpn_Configure.h : Commented definition of VRPN_USE_PHANTOM_SERVER.
+	* vrpn_HumanInterface.C : Mac version-agnostic type definition.
+	* vrpn_Nidaq.C : Turns off inclusion of function when USE_NIDAQ not there.
+	* vrpn_Nidaq.h : Same.
+
+2009-11-27  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3DConnexion.C : Replaced MACOSX with __APPLE__ to make things compile
+		on more Mac platforms.
+	* Findquatlib.cmake : Knows to look one directory up from the present one
+		to find quatlib.
+	* vrpn_Button.C : Patch from Hans Labermont to make it compile under 64-bit
+		Windows.
+
+2009-11-24  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGenerator.h:  added VRPN_CALLBACK to the callback type definitions.
+
+2009-11-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CMakeLists.txt : Added code to compile the DirectShow video
+		server and the gen_rpc tests.
+	* FindDirectShow.cmake : Same.
+
+2009-11-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_CerealBox.C : Picking lint found by a new compiler (const declarations
+		and printf format changes).
+	* vrpn_JoyFly.C : Same.
+	* vrpn_Magellan.C : Same.
+	* vrpn_Mutex.C : Same.
+	* vrpn_RedundantTransmission.C : Same.
+	* vrpn_Tracker_Crossbow.C : Same.
+	* vrpn_Tracker_NDI_Polaris.C : Same.
+
+2009-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Button.C : Type conversions to remove compiler warnings.
+	* vrpn_Connection.C : Same.
+
+2009-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CMakeLists.txt : Removing duplicate entries.
+	* Findquatlib.cmake : To Unix line endings.
+	* time_test.cpp : Compiles under Linux.
+	* vrpn_FunctionGenerator.C : same.
+
+2009-11-21  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* CMakeLists.txt : File to describe to the Cmake build system how
+		to compile VRPN.
+	* FindHDAPI.cmake : Same.
+	* Findquatlib.cmake : Same.
+	* vrpn_Configure.h.cmake_in : Same, plus letting user set things to
+		be compiled in using the Cmake interface.  This needs to be
+		improved -- it overwrites the vrpn_Configure.h file now.
+	* time_test.cpp : Include adjustments to make it compile on Windows.
+	* vrpn_Atmel.C : Make it compile on Windows.
+	* vrpn_Shared.C : Disabled spurious compiler warning on Windows.
+
+2009-11-13  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_HumanInterface.C : Patch from Bruno Raffin from imag.fr that
+		makes it compile cleanly on macosx.
+
+2009-10-30  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Making this compile under Linux using new 0.4 version of
+		libfreespace; patch from Phil Black.
+	* vrpn_Freespace.C : Same.
+	* vrpn_Freespace.h : Same.
+
+2009-10-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Configure.h : Changed to always link with the release version
+		of the libfreespace, even in debug mode, to avoid manifes problems.
+	* vrpndll.vcproj : Making vrpn_Freespace.C compile as C++ code in debug
+		mode.
+
+2009-10-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3DConnexion.C : Put in patch from Ian Curington to work
+		with devices that have more than 8 buttons.
+
+2009-10-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Freespace.h : Added code from Phil Black at Hillcrest Labs to
+		run their Freespace devices in VRPN.
+	* vrpn_Freespace.C : Same.
+	* vrpn_Configure.h : Same.
+	* vrpn.vcproj : Same.
+	* vrpndll.vcproj : Same.
+	* vrpn.sln : Same.
+	* Makefile : Putting the files into the server library.  Still
+		won't compile on anything but Windows.
+
+2009-10-16  David Marshburn  <marshbur@cs.unc.edu>
+	
+	* vrpn_FunctionGenerator.C (register_types):  corrected a typo
+	in the message IDs
+
+2009-09-24  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Turned "-g" flag into "$(DEBUG_FLAGS)" throughout.
+	* vrpn_3DConnexion.C : Patch from Hans Lambermont to make the
+		3DConnexion and HID drivers work on MacOSX.
+	* vrpn_3DConnexion.h : Same.
+	* vrpn_HumanInterface.C : Same.
+	* vrpn_HumanInterface.h : Same.
+	* vrpn_Shared.C : Same.
+
+2009-09-22  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_DTrack.C : Changes by Kurt Achatz to enable enhanced
+		timing support and new device support.
+	* vrpn_Tracker_DTrack.h : Same.
+
+2009-09-02  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_FunctionGenerator.h, .C:  removed all the specific functions
+	(sine, degauss, ramp, etc.).  now, there's just a "script" function, 
+	which is interpreted by the server to generate values.  removed 
+	various support facilities  for the specific functions.
+	* added destructor for vrpn_FunctionGenerator_function_script
+
+2009-08-31  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Mouse.C : Added fix by Chris VanderKnyff to the mouse code on
+		Windows to make it work when there are multiple screens.
+
+2009-08-03  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Imager.C : Fixed a bug in region decoding when a region less
+		than the whole image was loaded and the repeat count on the
+		pixel output was more than 1.
+
+2009-07-29  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Tracker_Isotrak.h : Adds an Isotrak tracker driver
+		submitted by Burno Herbelin from the Sensorama Laboratory
+		at AAlborg University.
+	* vrpn_Tracker_Isotrak.C : Same.
+	* vrpn.dsp : Same.
+	* vrpndll.dsp : Same.
+	* vrpn.vcproj : Same.
+	* vrpndll.vcproj : Same.
+	* Makefile : Same.
+
+2009-07-20  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn.sln : Added a run_auxiliary_logger test program that
+		lets you connect and ask for a log file for some
+		duration.
+	* vrpn.dsw : Same.
+
+2009-06-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	Version 07.21 released.
+
+	* vrpn_Connection.C : Changed version number higher so that compiles
+		will be above current release number.
+
+2009-06-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_BaseClass.h : Added deep-copy operator to the callback list
+		class, so that it would work properly with the tracker code.
+	* vrpn_Tracker.h : Added deep-copy operator to the callback list
+		class, so that it would work with the copy-then-delete
+		approach to allocating more handlers in the tracker code.
+
+2009-06-18  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3DConnexion.C : Added fix by Joseph Newman to let this compile
+		under Mac OSX.
+
+2009-06-16  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Shared.C : Removed a spurious #endif that was left
+		behind from my previous commit.
+
+2009-06-10  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_Shared.C : Added fix to semaphore code on the mac sent in
+		by Simon Julier.
+	* vrpn.sln : Converted back to correct line endings so it can be
+		opened by Visual Studio.
+
+2009-05-18  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn.sln:  made the vrpn project depend on quatlib, so quatlib
+	will always be rebuilt when needed.
+	* vrpn_ForceDevice.h:  removed an unnecessary include of quat.h
+
+2009-05-15  Ryan Schubert  <res@cs.unc.edu>
+
+	* vrpn_Imager.C : Fixed 16->8 bit transcoding.
+
+2009-04-17  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* vrpn_3DConnexion.C : Patch from Hans Lambermont to make the
+		Linux version read all of the messages in the buffer from
+		the device.  Also fixed both Windows and Linux versions
+		to both send all messages found in a buffer, rather than
+		just the last set.  (Not yet tested this second set of
+		fixes).
+
+2009-03-02  David Marshburn  <marshbur@cs.unc.edu>
+
+	* vrpn_Tracker.C (ensure_enough_unit2sensors):  initializes
+	the new elements of the new arrays rather than the non-existant
+	elements of the old arrays.
+
+2009-02-28  Russell M. Taylor II  <taylorr@cs.unc.edu>
+
+	* Makefile : Add in vrpn_WiiMote files to server library.
+	* vrpn_WiiMote.C : Define min() before use.
+
 2009-02-19  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
 	* vrpn_Connection.C : Increasing version number after release.
@@ -67,7 +408,7 @@
 
 2008-12-23  Russell M. Taylor II  <taylorr@cs.unc.edu>
 
-	* vrpn_3DConnexion.C : Patch from Hans Lambermo from Virtual Proteins
+	* vrpn_3DConnexion.C : Patch from Hans Lambermont from Virtual Proteins
 		to light up the 3DConnexion when the server runs.
 	* vrpn_3DConnexion.h : Same.
 
@@ -1434,7 +1775,7 @@
 	* vrpn_Tracker_3DMouse.C : Driver for Logitech 3D Mouse
 		provided by Jinseok Seo from the VR Lab of
 		POSTECH in Korea.
-	* vprn_Tracker_3DMouse.h : Same.
+	* vrpn_Tracker_3DMouse.h : Same.
 	* Makefile : Added the 3D mouse into the build.
 
 2005-07-06  Russell M. Taylor II  <taylorr@cs.unc.edu>
@@ -1585,7 +1926,7 @@
 		a bunch of uncompleted functions).  Fixed a few bugs
 		that turned up along the way.  Ripped out every trace
 		of iostream (old or new type) from the base library.
-		Also removed VPRN_NO_STREAMS, which was obviated by
+		Also removed VRPN_NO_STREAMS, which was obviated by
 		this.
 	* vrpn_ADBox.C : Same.
 	* vrpn_Analog.C : Same.
@@ -2273,7 +2614,7 @@
 		the user specify whether to do a boresight reset at startup.
 		Also changes the sensor numbers to be zero-indexed like all
 		other VRPN trackers.  Also changes units to meters and
-		radians to match other VPRN trackers.
+		radians to match other VRPN trackers.
 	* vrpn_Tracker_isense.h : Same.
 
 2003-11-05  Russell M. Taylor II  <taylorr@cs.unc.edu>
@@ -2613,9 +2954,9 @@
 
 	* time_test.dsp : DSP files have been modified to not do definitions of
 		VRPN_NO_STREAMS and other constants directly, rather these are
-		now set by editing vprn_Configure.h.  Also, made projects
+		now set by editing vrpn_Configure.h.  Also, made projects
 		compile in both debug and release versions.
-	* vprn.dsp : Same.
+	* vrpn.dsp : Same.
 	* vrpn.dsw : Removed vrpn_server_with_timecode project because you
 		can now build vrpn_server.exe with the proper definition in
 		the vrpn_Configure.h file to do this.

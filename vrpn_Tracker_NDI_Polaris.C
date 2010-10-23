@@ -254,7 +254,7 @@ int vrpn_Tracker_NDI_Polaris::convertBinaryFileToAsciiEncodedHex(const char* fil
 	rewind(fptr);
 	
 	if (fileSizeInBytes>MAX_NDI_ROM_FILE_SIZE_IN_BYTES) {
-		fprintf(stderr,"vrpn_Tracker_NDI_Polaris: file is %d bytes long - which is larger than expected NDI ROM file size of %d bytes.\n",
+		fprintf(stderr,"vrpn_Tracker_NDI_Polaris: file is %ld bytes long - which is larger than expected NDI ROM file size of %d bytes.\n",
 			fileSizeInBytes,MAX_NDI_ROM_FILE_SIZE_IN_BYTES);
 		return (-1);
 	}

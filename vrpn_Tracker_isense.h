@@ -16,7 +16,7 @@
 #ifdef __APPLE__
 #define MACOSX
 #endif
-#include "isense.h"
+#include "../isense/isense.h"
 #endif
 
 #ifdef VRPN_INCLUDE_INTERSENSE

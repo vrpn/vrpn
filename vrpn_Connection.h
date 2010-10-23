@@ -6,7 +6,9 @@
 #include "vrpn_Shared.h"
 
 // Don't complain about using sprintf() in Windows.
+#ifdef _WIN32
 #pragma warning ( disable : 4995 4996 )
+#endif
 
 // This is the list of states that a connection can be in
 // (possible values for status).  doing_okay() returns VRPN_TRUE
@@ -22,6 +24,8 @@ class VRPN_API	vrpn_File_Connection;  // Forward declaration for get_File_Connec
 
 /// This structure is what is passed to a vrpn_Connection message callback.
 /// It is used by objects, but not normally by user code.
+#ifndef _DEFINED_HANDLERPARAM
+#define _DEFINED_HANDLERPARAM
 struct vrpn_HANDLERPARAM {
 	vrpn_int32	type;
 	vrpn_int32	sender;
@@ -29,6 +33,8 @@ struct vrpn_HANDLERPARAM {
 	vrpn_int32	payload_len;
 	const char	*buffer;
 };
+#endif
+
 /// Type of a message handler for vrpn_Connection messages.
 typedef	int (VRPN_CALLBACK *vrpn_MESSAGEHANDLER)(void *userdata, vrpn_HANDLERPARAM p);
 /// Type of handler for filters on logfiles is the same as connection handler
@@ -131,6 +137,8 @@ struct VRPN_API vrpn_LOGLIST {
 // because aCC on PixelFlow doesn't handle nested classes correctly.
 
 // Description of a callback entry for a user type.
+#ifndef _DEFINED_MSGCALLBACKENTRY
+#define _DEFINED_MSGCALLBACKENTRY
 struct vrpnMsgCallbackEntry {
   vrpn_MESSAGEHANDLER	handler;	// Routine to call
   void			* userdata;	// Passed along
@@ -143,6 +151,7 @@ struct vrpnLogFilterEntry {
   void * userdata;         // passed along
   vrpnLogFilterEntry * next;
 };
+#endif
 
 class VRPN_API	vrpn_Connection;
 class VRPN_API	vrpn_Log;

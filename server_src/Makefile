@@ -74,13 +74,15 @@ ifeq ($(HW_OS),sparc_solaris_64)
 	SYSLIBS := -lsocket -lnsl
 endif
 ifeq ($(HW_OS),powerpc_aix)
-	CC := /usr/ibmcxx/bin/xlC_r -g -qarch=pwr3 -w
+#	CC := /usr/ibmcxx/bin/xlC_r -g -qarch=pwr3 -w
+	CC := /usr/ibmcxx/bin/xlC_r $(DEBUG_FLAGS) -qarch=pwr3 -w
 endif
 
 ifeq ($(HW_OS),universal_macosx)
 	CC := g++ -arch ppc -arch i386 -isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4
 	RANLIB := :
 	AR := libtool -static -o
+	SYSLIBS := -framework CoreFoundation -framework IOKit -framework System
 endif
 
 ifeq ($(HW_OS),pc_linux_ia64)
@@ -103,10 +105,25 @@ ifeq ($(HW_OS), pc_cygwin_arm)
 endif
 ifeq ($(HW_OS),pc_linux)
 	SYSLIBS := 
+# For WiiMote
+#	SYSLIBS := -lwiiuse
 # For GPM mouse
 #	SYSLIBS := -lgpm
 # For Isense libraries
 #	SYSLIBS := -ldl
+# For Freespace Devices
+#	SYSLIBS := -lfreespace
+endif
+ifeq ($(HW_OS),pc_linux64)
+	SYSLIBS := 
+# For WiiMote
+#	SYSLIBS := -lwiiuse
+# For GPM mouse
+#	SYSLIBS := -lgpm
+# For Isense libraries
+#	SYSLIBS := -ldl
+# For Freespace Devices
+#	SYSLIBS := -lfreespace
 endif
 
 ifeq ($(HW_OS),sgi_irix)
@@ -139,8 +156,9 @@ LIB_DIR := ../$(OBJ_DIR)
 # Definition of the 'TRUE' and 'FALSE' constant for Linux (by default, they are 
 # defined in <windows.h>)
 # XXX This would be better done in the .h/.C files with #ifndef
-CFLAGS = -g -I./ -I../ -I../../quat -DTRUE=true -DFALSE=false
-LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX)
+override CFLAGS := $(CFLAGS) -I./ -I../ -I../quat -I../../libfreespace/include $(DEBUG_FLAGS) $(CFLAGS) -DTRUE=true =DFALSE=false
+override CXXFLAGS := $(CXXFLAGS) -I./ -I../ -I../quat -I../../libfreespace/include $(DEBUG_FLAGS) $(CXXFLAGS)
+override LFLAGS := $(LFLAGS) -L$(LIB_DIR) -L../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) $(LDFLAGS)
 VRPN_LIBS = -lvrpnserver -lvrpnatmel -lpthread
 
 # Uncomment the following section and point them at the
@@ -148,22 +166,27 @@ VRPN_LIBS = -lvrpnserver -lvrpnatmel -lpthread
 # Well, to make it almost compile -- link fails to find things
 # in the libraries that should be there.
 #HDAPI_ROOT := "C:/Program Files/SensAble/3DTouch"
-#CFLAGS = -g -I./ -I../ -I../../quat -I$(HDAPI_ROOT)/include -I$(HDAPI_ROOT)/utilities/include
-#LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) -L$(HDAPI_ROOT)/lib
 
 # Jean SIMARD <jean.simard@limsi.fr>
 # This is only for the PHANToM server on Linux (not tested on other plateform)
 # Put in comment if you don't want a PHANToM server
+#override CFLAGS += -I$(HDAPI_ROOT)/include -I$(HDAPI_ROOT)/utilities/include
+#override CXXFLAGS += -I$(HDAPI_ROOT)/include -I$(HDAPI_ROOT)/utilities/include
+#override LFLAGS += -L$(HDAPI_ROOT)/lib
 #SYSLIBS := $(SYSLIBS) -lHL -lHD -lHLU -lHDU
 
 ifdef INTERSENSE
   ifeq ($(HW_OS),powerpc_macosx)
-     CFLAGS = -g -I../ -I../../quat -I../../isense -DMACOSX
-     LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) ../../isense/MacOSX/dlcompat.o
+#     CFLAGS = -g -I../ -I../../quat -I../../isense -DMACOSX
+     override CFLAGS += -I../../isense -DMACOSX
+     override CXXFLAGS += -I../../isense -DMACOSX
+     override LFLAGS += ../../isense/MacOSX/dlcompat.o
   endif
   ifeq ($(HW_OS),universal_macosx)
-     CFLAGS = -g -I../ -I../../quat -I../../isense -DMACOSX
-     LFLAGS = -L$(LIB_DIR) -L../../quat/$(HW_OS)$(OBJECT_DIR_SUFFIX) ../../isense/MacOSX/dlcompat.o
+#     CFLAGS = -g -I../ -I../../quat -I../../isense -DMACOSX
+     override CFLAGS += -I../../isense -DMACOSX
+     override CXXFLAGS += -I../../isense -DMACOSX
+     override LFLAGS += ../../isense/MacOSX/dlcompat.o
   endif
 endif
 
@@ -173,36 +196,37 @@ endif
 ifdef PHASESPACE
 #the rpath option may not work on all platforms, remove it if necessary.
 EXTRAOPTS := -Wl,-rpath .
-LFLAGS := $(LFLAGS) $(PHASESPACE) $(EXTRAOPTS)
+override LFLAGS += $(PHASESPACE) $(EXTRAOPTS)
 endif
 
 .SUFFIXES: .cpp
 
 .C.o:
-	$(CC) $(CFLAGS) -c $*.C
+	$(CC) $(CXXFLAGS) -c $*.C
 
 .c.o:
 	$(CC) $(CFLAGS) -c $*.c
 
 .cpp.o:
-	$(CC) $(CFLAGS) -c $*.cpp
+	$(CC) $(CXXFLAGS) -c $*.cpp
 
 $(OBJ_DIR)/%.o:	%.c
-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
+	@[ -d $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 $(OBJ_DIR)/%.o:	%.C
-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
-	$(CC) $(CFLAGS) -o $@ -c $<
+	@[ -d $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
+	$(CC) $(CXXFLAGS) -o $@ -c $<
 
 $(OBJ_DIR)/%.o:	%.cpp
-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR)
-	$(CC) $(CFLAGS) -o $@ -c $<
+	@[ -d $(OBJ_DIR) ] || mkdir -p $(OBJ_DIR)
+	$(CC) $(CXXFLAGS) -o $@ -c $<
 
-INSTALL_APPS := vrpn_server test_vrpn
+INSTALL_APPS := vrpn_server test_vrpn wiimote_head_tracker
 APPS := $(INSTALL_APPS) client_and_server test_mutex test_peerMutex \
 test_radamec_spi test_analogfly testimager_server test_auxiliary_logger \
-test_logging
+test_logging 
+# test_freespace
 # testSharedObject
 
 all: $(APPS)
@@ -218,6 +242,9 @@ testimager_server:	$(OBJ_DIR)/testimager_server
 
 .PHONY:	test_logging
 test_logging:	$(OBJ_DIR)/test_logging
+
+.PHONY:	test_freespace
+test_freespace:	$(OBJ_DIR)/test_freespace
 
 .PHONY:	test_auxiliary_logger
 test_auxiliary_logger:	$(OBJ_DIR)/test_auxiliary_logger
@@ -255,8 +282,11 @@ last_of_sequence:	$(OBJ_DIR)/last_of_sequence
 .PHONY:	testSharedObject
 testSharedObject:	$(OBJ_DIR)/testSharedObject
 
+.PHONY:	wiimote_head_tracker
+wiimote_head_tracker:	$(OBJ_DIR)/wiimote_head_tracker
+
 $(OBJ_DIR)/InstantBuzzEffect.o: ghostEffects/InstantBuzzEffect.cpp
-	$(CC) $(CFLAGS) -o $@ -c $<
+	$(CC) $(CXXFLAGS) -o $@ -c $<
 
 $(OBJ_DIR)/vrpn_server: $(OBJ_DIR)/vrpn.o $(LIB_DIR)/libvrpnserver.a \
 		$(OBJ_DIR)/buzzForceField.o $(OBJ_DIR)/constraint.o \
@@ -302,6 +332,12 @@ $(OBJ_DIR)/test_logging: $(OBJ_DIR)/test_logging.o  \
 			 $(LIB_DIR)/libvrpnserver.a
 	$(CC) $(LFLAGS) -o $(OBJ_DIR)/test_logging \
 		$(OBJ_DIR)/test_logging.o \
+		$(VRPN_LIBS) $(GL) -lquat $(SYSLIBS) -lm
+
+$(OBJ_DIR)/test_freespace: $(OBJ_DIR)/test_freespace.o  \
+			 $(LIB_DIR)/libvrpnserver.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/test_freespace \
+		$(OBJ_DIR)/test_freespace.o \
 		$(VRPN_LIBS) $(GL) -lquat $(SYSLIBS) -lm
 
 $(OBJ_DIR)/test_analogfly: $(OBJ_DIR)/test_analogfly.o  \
@@ -365,8 +401,14 @@ $(OBJ_DIR)/testSharedObject:	$(OBJ_DIR)/testSharedObject.o \
 		$(OBJ_DIR)/testSharedObject.o \
 		$(VRPN_LIBS) $(SYSLIBS) -lm
 
+$(OBJ_DIR)/wiimote_head_tracker:	$(OBJ_DIR)/wiimote_head_tracker.o \
+			$(LIB_DIR)/libvrpnserver.a
+	$(CC) $(LFLAGS) -o $(OBJ_DIR)/wiimote_head_tracker \
+		$(OBJ_DIR)/wiimote_head_tracker.o \
+		$(VRPN_LIBS) -lquat $(SYSLIBS) -lm
+
 install: all
-	-mkdir $(BIN_DIR)
+	-mkdir -p $(BIN_DIR)
 	( cd $(BIN_DIR) ; rm -f $(INSTALL_APPS) )
 	( cd $(OBJ_DIR) ; cp $(INSTALL_APPS) $(BIN_DIR) )
 	( cd $(BIN_DIR) ; strip $(INSTALL_APPS) )
@@ -375,7 +417,11 @@ uninstall:
 	( cd $(BIN_DIR) ; rm -f $(INSTALL_APPS) )
 
 clean:
+ifeq ($(HW_OS),)
+		echo "Must specify HW_OS !"
+else
 	rm -f $(OBJ_DIR)/*
+endif
 
 $(OBJ_DIR)/vrpn.o:	vrpn.C
 $(OBJ_DIR)/vrpn_Generic_server_object.o:	vrpn_Generic_server_object.C

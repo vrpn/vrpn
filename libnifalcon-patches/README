@@ -1,0 +1,9 @@
+these patches are currently 04/11/2010 needed to compile 
+the ICMS version of VRPN with support for the Novint 
+Falcon using the development version of libnifalcon.
+
+the numbered patches update the development code from
+git://github.com/qdot/libnifalcon.git
+
+the update patch updates the 1.0.1 release version
+of libnifalcon to what is needed.

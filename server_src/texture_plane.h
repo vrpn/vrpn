@@ -17,6 +17,13 @@
 #include  "vrpn_ForceDevice.h"
 #ifdef	VRPN_USE_PHANTOM_SERVER
 
+#ifndef	TRUE
+#define TRUE 1
+#endif
+#ifndef	FALSE
+#define FALSE 0
+#endif
+
 #define MIN_TEXTURE_WAVELENGTH (0.06) // [mm] reasonable value considering
 				      // resolution of phantom
 
@@ -274,7 +281,7 @@ protected:
 	double textureAspect; // ratio of amplitude to wave length
 
 // MB: for SGI compilation with pthreads
-#if defined(SGI) || defined (__CYGWIN__) || defined (__linux__)
+#if defined(SGI) || defined (__CYGWIN__) || defined(linux)
         pthread_mutex_t  tex_param_mutex;
 #else
 	CRITICAL_SECTION tex_param_mutex;
@@ -460,7 +467,7 @@ class DynamicPlane: public gstDynamic {
   private:
 	vrpn_HapticMatrix xform;
 // MB: for SGI compilation with pthreads
-#if defined(SGI) || defined (__CYGWIN__) || defined (__linux__)
+#if defined(SGI) || defined (__CYGWIN__) || defined(linux)
         pthread_mutex_t  xform_mutex;
 #else
 	CRITICAL_SECTION xform_mutex;

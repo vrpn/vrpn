@@ -19,6 +19,7 @@
 #include "vrpn_Poser.h"
 #include "vrpn_3Space.h"
 #include "vrpn_Tracker_Fastrak.h"
+#include "vrpn_Tracker_Isotrak.h"
 #include "vrpn_Tracker_Liberty.h"
 #include "vrpn_Tracker_3DMouse.h"
 #include "vrpn_Flock.h"
@@ -75,6 +76,9 @@
 #include "vrpn_Tracker_MotionNode.h"
 #include "vrpn_Tracker_NDI_Polaris.h"
 #include "vrpn_WiiMote.h"
+#include "vrpn_Freespace.h"
+#include "vrpn_DreamCheeky.h"
+#include "vrpn_Tracker_NovintFalcon.h"
 
 // BUW additions
 #include "vrpn_Atmel.h"
@@ -121,6 +125,7 @@ const int VRPN_GSO_MAX_KEYBOARD =             1;
 const int VRPN_GSO_MAX_LOGGER =               10;
 const int VRPN_GSO_MAX_IMAGE_STREAM =         10;
 const int VRPN_GSO_MAX_WIIMOTES =             4;
+const int VRPN_GSO_MAX_FREESPACES =           10;
 
 // BUW additions
 const int VRPN_GSO_MAX_INERTIAMOUSES =        8;
@@ -203,6 +208,10 @@ protected:
   vrpn_WiiMote  * wiimotes [VRPN_GSO_MAX_WIIMOTES];
   int           num_wiimotes;
 #endif
+#ifdef	VRPN_USE_FREESPACE
+  vrpn_Freespace  * freespaces [VRPN_GSO_MAX_FREESPACES];
+  int           num_freespaces;
+#endif
 
   // BUW additions
   vrpn_inertiamouse * inertiamouses [VRPN_GSO_MAX_INERTIAMOUSES];
@@ -212,7 +221,7 @@ protected:
 
   // Helper functions for the functions below
    int   get_AFline(char *line, vrpn_TAF_axis *axis);
-   int	get_poser_axis_line(FILE *config_file, char *axis_name, vrpn_PA_axis *axis, vrpn_float64 *min, vrpn_float64 *max);
+   int	get_poser_axis_line(FILE *config_file, const char *axis_name, vrpn_PA_axis *axis, vrpn_float64 *min, vrpn_float64 *max);
 
   // Functions to parse each kind of device from the configuration file
   // and create a device of that type linked to the appropriate lists.
@@ -234,6 +243,7 @@ protected:
   int setup_Wanda (char * & pch, char * line, FILE * config_file);
   int setup_Tracker_Dyna (char * & pch, char * line, FILE * config_file);
   int setup_Tracker_Fastrak (char * & pch, char * line, FILE * config_file);
+  int setup_Tracker_Isotrak (char * & pch, char * line, FILE * config_file);
   int setup_Tracker_Liberty (char * & pch, char * line, FILE * config_file);
   int setup_Tracker_3Space (char * & pch, char * line, FILE * config_file);
   int setup_Tracker_Flock (char * & pch, char * line, FILE * config_file);
@@ -284,6 +294,9 @@ protected:
   int setup_3DConnexion_SpaceBall5000 (char * & pch, char * line, FILE * config_file) ;
   int setup_Tracker_MotionNode (char * & pch, char * line, FILE * config_file);
   int setup_WiiMote (char * & pch, char * line, FILE * config_file);
+  int setup_Freespace (char * & pch, char * line, FILE * config_file);
+  int setup_DreamCheeky (char * & pch, char * line, FILE * config_file) ;
+  int setup_Tracker_NovintFalcon (char * & pch, char * line, FILE * config_file);
 
   // BUW additions
   int setup_Atmel(char* &pch, char *line, FILE *config_file);

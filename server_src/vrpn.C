@@ -91,7 +91,7 @@ void sighandler (int)
 
 int main (int argc, char * argv[])
 {
-  char	* config_file_name = "vrpn.cfg";
+  const char	* config_file_name = "vrpn.cfg";
   bool	bail_on_error = true;
   int	auto_quit = 0;
   int	realparams = 0;

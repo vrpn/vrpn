@@ -156,7 +156,7 @@ void  mainloop_client_code(void)
 // the main() program body without trouble (except for the callback
 // handler, of course).
 
-int main(unsigned argc, char *argv[])
+int main(int argc, char *argv[])
 {
   if (!init_test_image()) { return -1; }
   if (!init_server_code()) { return -1; }

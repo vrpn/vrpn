@@ -15,9 +15,9 @@
 #include "vrpn_Analog.h"
 #include "vrpn_Tracker_AnalogFly.h"
 
-char	*TRACKER1_NAME = "Tracker1";
-char	*TRACKER2_NAME = "Tracker2";
-char	*ANALOG_NAME = "Analog0";
+const char	*TRACKER1_NAME = "Tracker1";
+const char	*TRACKER2_NAME = "Tracker2";
+const char	*ANALOG_NAME = "Analog0";
 int	CONNECTION_PORT = vrpn_DEFAULT_LISTEN_PORT_NO;	// Port for connection to listen on
 
 int getting_analog_values = 0;	//< Are we getting analog reports?
@@ -47,13 +47,13 @@ vrpn_Tracker_AnalogFly	*stkr2;
 
 void	VRPN_CALLBACK handle_pos1 (void *, const vrpn_TRACKERCB t)
 {
-	printf("Got tracker1 pos: sensor %ld at (%f, %f, %f)\n", t.sensor,
+	printf("Got tracker1 pos: sensor %d at (%f, %f, %f)\n", t.sensor,
 	    t.pos[0], t.pos[1], t.pos[2]);
 }
 
 void	VRPN_CALLBACK handle_pos2 (void *, const vrpn_TRACKERCB t)
 {
-	printf("Got tracker2 pos: sensor %ld at (%f, %f, %f)\n", t.sensor,
+	printf("Got tracker2 pos: sensor %d at (%f, %f, %f)\n", t.sensor,
 	    t.pos[0], t.pos[1], t.pos[2]);
 }
 

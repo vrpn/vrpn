@@ -1,0 +1,29 @@
+
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "quatlib", "quatlib.vcproj", "{0C16E98C-A372-4E58-990D-EE276B32644E}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "xform_to_components", "testapps\xform_to_components.vcproj", "{CDE91DDD-1BFC-4BF0-B5E6-611C9AED47D0}"
+	ProjectSection(ProjectDependencies) = postProject
+		{0C16E98C-A372-4E58-990D-EE276B32644E} = {0C16E98C-A372-4E58-990D-EE276B32644E}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0C16E98C-A372-4E58-990D-EE276B32644E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0C16E98C-A372-4E58-990D-EE276B32644E}.Debug|Win32.Build.0 = Debug|Win32
+		{0C16E98C-A372-4E58-990D-EE276B32644E}.Release|Win32.ActiveCfg = Release|Win32
+		{0C16E98C-A372-4E58-990D-EE276B32644E}.Release|Win32.Build.0 = Release|Win32
+		{CDE91DDD-1BFC-4BF0-B5E6-611C9AED47D0}.Debug|Win32.ActiveCfg = Debug|Win32
+		{CDE91DDD-1BFC-4BF0-B5E6-611C9AED47D0}.Debug|Win32.Build.0 = Debug|Win32
+		{CDE91DDD-1BFC-4BF0-B5E6-611C9AED47D0}.Release|Win32.ActiveCfg = Release|Win32
+		{CDE91DDD-1BFC-4BF0-B5E6-611C9AED47D0}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

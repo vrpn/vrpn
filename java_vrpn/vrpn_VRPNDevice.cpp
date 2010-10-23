@@ -59,7 +59,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad_VRPNDevice( JavaVM* jvm, void* reserved )
   // field of class vrpn.VRPNDevice.
   // field ids do not have to be made into global references.
   jfid_vrpn_VRPNDevice_native_device
-    = env->GetFieldID( jclass_vrpn_VRPNDevice, "native_device", "I" );
+    = env->GetFieldID( jclass_vrpn_VRPNDevice, "native_device", "J" );
   if( jfid_vrpn_VRPNDevice_native_device == NULL )
   {
     printf( "Error loading vrpn native library "
@@ -96,7 +96,7 @@ JNIEXPORT jboolean JNICALL
 Java_vrpn_VRPNDevice_doingOkay_1native( JNIEnv* env, jobject jobj )
 {
 	vrpn_BaseClass* device 
-		= (vrpn_BaseClass*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
+		= (vrpn_BaseClass*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
 	if( device <= 0 )  return false;
 	vrpn_Connection* conn = device->connectionPtr( );
 	if( conn == NULL ) return false;
@@ -113,7 +113,7 @@ JNIEXPORT jlong JNICALL
 Java_vrpn_VRPNDevice_getElapsedTimeSecs_1native( JNIEnv* env, jobject jobj )
 {
 	vrpn_BaseClass* device 
-		= (vrpn_BaseClass*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
+		= (vrpn_BaseClass*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
 	if( device <= 0 )
 	{
 	    printf( "Error in native method \"getElapsedTimeSecs\":  "
@@ -142,7 +142,7 @@ JNIEXPORT jboolean JNICALL
 Java_vrpn_VRPNDevice_getTime_1native( JNIEnv* env, jobject jobj, jobject jdate )
 {
 	vrpn_BaseClass* device 
-		= (vrpn_BaseClass*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
+		= (vrpn_BaseClass*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
 	if( device <= 0 )
 	{
 	    printf( "Error in native method \"getTime\":  "
@@ -180,7 +180,7 @@ JNIEXPORT jboolean JNICALL
 Java_vrpn_VRPNDevice_isConnected_1native( JNIEnv* env, jobject jobj )
 {
 	vrpn_BaseClass* device 
-		= (vrpn_BaseClass*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
+		= (vrpn_BaseClass*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
 	if( device <= 0 )
 	{
 	    printf( "Error in native method \"isConnected\":  "
@@ -207,7 +207,7 @@ JNIEXPORT jboolean JNICALL
 Java_vrpn_VRPNDevice_isLive_1native( JNIEnv* env, jobject jobj )
 {
 	vrpn_BaseClass* device 
-		= (vrpn_BaseClass*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
+		= (vrpn_BaseClass*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
 	if( device <= 0 )
 	{
 	    printf( "Error in native method \"isLive\":  "
@@ -234,7 +234,7 @@ JNIEXPORT jboolean JNICALL
 Java_vrpn_VRPNDevice_playToElapsedTime_1native( JNIEnv* env, jobject jobj, jlong time )
 {
 	vrpn_BaseClass* device 
-		= (vrpn_BaseClass*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
+		= (vrpn_BaseClass*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
 	if( device <= 0 )
 	{
 	    printf( "Error in native method \"playToElapsedTime\":  "
@@ -270,7 +270,7 @@ JNIEXPORT jboolean JNICALL
 Java_vrpn_VRPNDevice_getEarliestTime_1native( JNIEnv* env, jobject jobj, jobject jdate)
 {
 	vrpn_BaseClass* device 
-		= (vrpn_BaseClass*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
+		= (vrpn_BaseClass*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
 	if( device <= 0 )
 	{
 	    printf( "Error in native method \"getEarliestTime\":  "
@@ -314,7 +314,7 @@ JNIEXPORT jboolean JNICALL
 Java_vrpn_VRPNDevice_getLatestTime_1native( JNIEnv* env, jobject jobj, jobject jdate )
 {
 	vrpn_BaseClass* device 
-		= (vrpn_BaseClass*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
+		= (vrpn_BaseClass*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
 	if( device <= 0 )
 	{
 	    printf( "Error in native method \"getLatestTime\":  "
@@ -358,7 +358,7 @@ JNIEXPORT jboolean JNICALL
 Java_vrpn_VRPNDevice_eof_1native( JNIEnv* env, jobject jobj )
 {
 	vrpn_BaseClass* device 
-		= (vrpn_BaseClass*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
+		= (vrpn_BaseClass*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
 	if( device <= 0 )
 	{
 	    printf( "Error in native method \"eof\":  "
@@ -392,7 +392,7 @@ JNIEXPORT jdouble JNICALL
 Java_vrpn_VRPNDevice_getLengthSecs_1native( JNIEnv* env, jobject jobj )
 {
 	vrpn_BaseClass* device 
-		= (vrpn_BaseClass*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
+		= (vrpn_BaseClass*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
 	if( device <= 0 )
 	{
 	    printf( "Error in native method \"getLengthSecs\":  "
@@ -426,7 +426,7 @@ JNIEXPORT void JNICALL
 Java_vrpn_VRPNDevice_setReplayRate_1native( JNIEnv* env, jobject jobj, jfloat jrate )
 {
 	vrpn_BaseClass* device 
-		= (vrpn_BaseClass*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
+		= (vrpn_BaseClass*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
 	if( device <= 0 )
 	{
 	    printf( "Error in native method \"setReplayRate\":  "
@@ -460,7 +460,7 @@ JNIEXPORT jfloat JNICALL
 Java_vrpn_VRPNDevice_getReplayRate_1native( JNIEnv* env, jobject jobj )
 {
 	vrpn_BaseClass* device 
-		= (vrpn_BaseClass*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
+		= (vrpn_BaseClass*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
 	if( device <= 0 )
 	{
 	    printf( "Error in native method \"setReplayRate\":  "
@@ -495,7 +495,7 @@ JNIEXPORT jboolean JNICALL
 Java_vrpn_VRPNDevice_reset_1native( JNIEnv* env, jobject jobj )
 {
 	vrpn_BaseClass* device 
-		= (vrpn_BaseClass*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
+		= (vrpn_BaseClass*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
 	if( device <= 0 )
 	{
 	    printf( "Error in native method \"reset\":  "
@@ -529,7 +529,7 @@ JNIEXPORT jboolean JNICALL
 Java_vrpn_VRPNDevice_playToWallTime_1native( JNIEnv* env, jobject jobj, jobject jdate )
 {
 	vrpn_BaseClass* device 
-		= (vrpn_BaseClass*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
+		= (vrpn_BaseClass*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
 	if( device <= 0 )
 	{
 	    printf( "Error in native method \"playToElapsedTime\":  "

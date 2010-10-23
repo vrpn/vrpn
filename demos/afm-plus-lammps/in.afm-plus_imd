@@ -1,0 +1,113 @@
+# virtual atomic force microscope demo
+# $Id $
+dimension	3
+units		lj
+atom_style	molecular
+bond_style	harmonic
+angle_style harmonic
+boundary	s s s
+newton		on off  # apply newton's 3rd law only for nonbonded.
+special_bonds lj/coul 0.0 0.0 1.0
+
+# override original processor grid for maximum performance.
+# since there are few atoms in y direction we don't want
+# to do domain decomposition in that direction. so optimally
+# is should be set to that the middle number is always 1.
+# use this for 6 CPUs
+#processors  3 1 2
+# use this for 7 CPUs
+processors  1 1 7
+
+# we are pushing the limits with the time step,
+# make sure we don't miss neighbor list updates.
+neighbor	0.45 bin
+neigh_modify delay 2 every 1 check yes 
+
+# an fcc lattice will be our base lattice
+# not really needed with a data file, but...
+lattice		fcc 0.9
+
+# system definition
+read_data data.afm-plus
+
+# atom masses.
+mass	1	 1.0   # substrate, doesn't move so mass doesn't matter.
+mass	2	 1.0   # light, soft atoms => liquid.
+mass	3	 5.0   # medium weight, medium hard atoms => soft solid.
+mass	4	25.0   # heavy, hard atoms => hard solid.
+mass	5    0.005 # tip atoms. have to be very light, so we can "feel" something.
+mass    6    1.0   # buckyballs.
+
+# surface and buckballs are integrated normally.
+group mobile type 2 3 4 6 
+velocity mobile create 0.6 46659 mom yes rot yes dist gaussian
+
+# temperature is based on mobile atoms only
+compute mobtemp mobile temp
+
+# contain mobile atoms within the original simulation cell
+fix bounds  all wall/lj93  xlo -16.0 1.0 1.7 1.36 xhi 16.0 1.0 1.7 1.36 &
+                           ylo -16.0 1.0 1.7 1.36 yhi 10.0 1.0 1.7 1.36 &
+                           zlo -16.0 1.0 1.7 1.36 zhi 16.0 1.0 1.7 1.36 &
+                           units lattice
+
+# make probe rigid and keep it from rotating.
+group afm type 5
+fix afmtip afm rigid group 1 afm torque * off off off
+velocity afm set 0.0 0.0 0.0
+
+# damping through friction makes the probe much easier
+# to control and keeps it in place if not grabbed.
+fix dampen afm viscous 0.02
+# with bouncing walls we need to slow down regular atoms, too
+fix frict mobile viscous 0.05
+
+pair_style  lj/cut 2.5
+# GPU version dies in cell list.
+#pair_style  lj/cut/gpu one/node 1 3.0
+pair_coeff  * *  1.0 1.05 
+pair_coeff	3 3  2.0 1.05 
+pair_coeff	4 4  3.0 1.05 
+pair_coeff  6 6  0.2 1.05
+
+# reset parameters for interactions with the tip 
+# and make tip atoms a bit hard and large and
+# mostly repulsive so that they are more "feely" 
+# (not physically correct, but much nicer).
+pair_coeff	1 5  3.0 1.30 1.50
+pair_coeff	2 5  3.0 1.30 1.50
+pair_coeff	3 5  3.0 1.30 1.50
+pair_coeff	4 5  3.0 1.30 1.50
+pair_coeff	5 6  3.0 1.30 1.50
+
+# buckballs are purely repulsive with 
+# type 2 atoms to make them float on top.
+pair_coeff  2 6  0.6 1.05 1.178
+
+# buckball bonded parameters, adapted from CHARMM benzene.
+bond_coeff	1	340.0   0.72
+angle_coeff	1	570.0 120.00 
+
+#
+run_style respa 2 3 bond 1 angle 1 dihedral 1 pair 2
+timestep	0.015
+# use verlet for smoother interactions through higher TimeS/S, 
+# but slower progress
+#run_style verlet
+#timestep   0.005 
+
+fix		integrate 	mobile nve
+fix		thermostat	mobile langevin 0.5 0.5 10.0 699483 
+
+thermo_style	custom step pe ke evdwl emol c_mobtemp tpt tps
+thermo		    1000
+thermo_modify	norm yes
+thermo_modify	temp mobtemp
+
+#write_restart	afm-plus.restart
+
+#dump traj all atom 100 afm-plus.lammpstrj
+fix  comm       all imd 6789 unwrap off trate 10
+#run		10000 
+# XXX: need to correct fix imd to handle multiple runs.
+run		5000000000 

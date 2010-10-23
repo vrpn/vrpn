@@ -1,0 +1,61 @@
+
+This directory contains the source and test files for the quaternion 
+library, libquat.a.  It is based on Warren Robinett's adapted version of Ken
+Shoemake's code, as seen in Shoemake's 1985 SIGGRAPH paper.
+
+For those not familiar with quaternions, they are a
+concise and efficient way of describing rotations and orientations of
+three-dimensional objects.  (Two good references for this subject are
+Ken Shoemake's 1985 SIGGRAPH papers "Quaternion Calculus for Animation"
+and "Animating Rotation with Quaternion Curves" in the '85
+proceedings.)
+
+The library is built on Ken Shoemake's code (as presented in the appendix of
+the first paper listed above) and implements the most common quaternion
+functions, as well as some more obscure ones.  In particular, there are
+conversion routines between vectors, matrices and quaternions, as well as
+various vector and matrix operations.
+
+This code is has been placed into the public domain by the University of
+North Carolina at Chapel Hill on January 9th, 2005; after consultation
+with its authors, Warren Robinett and Richard Holloway.  It is provided
+"as is", with no guarantee or warranty of any kind, even fitness for a
+specific purpose.
+
+Documentation on individual routines is in quat.h.
+
+See header of quat.c and quat.h for more info.
+
+Compilation :
+=============
+
+Unix :
+Edit makefile and uncomment the line corresponding to your architecture,
+then do 'make'
+
+Windows :
+See ../vrpn/README.Compiling
+
+
+Example Programs
+================
+
+These files are here for running random tests on the source code, and for
+doing conversions between quats and matrices, etc.  They are handy for
+debugging source programs using quaternions.
+
+Files:
+------
+
+    eul.c - convert from euler angles to quaternion
+    
+    qmat.c - converts matrix to quaternion
+
+    qmult.c - multiplies two quaternions and shows result as a matrix and
+                a quat
+
+    qxform.c - does xform of a vector
+
+    qmake.c -  make a quaternion from an axis & angle;  show result as
+    	    	quat and matrix
+

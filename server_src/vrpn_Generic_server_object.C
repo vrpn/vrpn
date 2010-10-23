@@ -135,6 +135,12 @@ void vrpn_Generic_Server_Object::closeDevices (void) {
     delete wiimotes[i];
   }
 #endif
+#ifdef	VRPN_USE_FREESPACE
+  for (i=0;i < num_freespaces; i++) {
+    fprintf(stderr, "\nClosing freespace %d ...", i);
+    delete freespaces[i];
+  }
+#endif
   if (verbose) { fprintf(stderr, "\nAll devices closed...\n"); }
 }
 
@@ -1133,7 +1139,7 @@ int vrpn_Generic_Server_Object::setup_Keyboard(char * & pch, char * line, FILE *
 
 	next();
 	// Get the arguments (class, name
-	if (sscanf(pch,"%511s%d%d",name) != 1)
+	if (sscanf(pch,"%511s",name) != 1)
 	{
 		fprintf(stderr,"Bad vrpn_Keyboard line: %s\n",line);
 		return -1;
@@ -1350,6 +1356,52 @@ int vrpn_Generic_Server_Object::setup_Tracker_3DMouse (char * & pch, char * line
   return 0;
 }
 
+int vrpn_Generic_Server_Object::setup_Tracker_NovintFalcon (char * & pch, char *line, FILE * config_file) {
+#if defined(VRPN_USE_LIBNIFALCON)
+	char s2[LINESIZE], s3[LINESIZE], s4[LINESIZE], s5[LINESIZE];
+	int i1;
+	int numparms;
+	vrpn_Tracker_NovintFalcon	*mytracker;
+
+	next();
+
+	// Get the arguments (class, tracker_name, device id, grip, kinematics, damp)
+	if ( (numparms = sscanf(pch,"%511s%d%511s%511s%511s",s2,&i1,s3,s4,s5)) < 2)
+	{
+		fprintf(stderr,"Bad vrpn_Tracker_NovintFalcon line: %s\n%s %s %s %s %s\n", line, pch, s2, s3, s4, s5);
+		return -1;
+	}
+
+    // set damping to 0.9.
+    if (numparms < 5) {
+        strcpy(s5,"0.9");
+    }
+    // set kinematics model to "stamper", if not set
+    if (numparms < 4) {
+        strcpy(s4,"stamper");
+    }
+    // set grip to "4-button" (the default one), if not set.
+    if (numparms < 3) {
+        strcpy(s3,"4-button");
+    }
+
+	// Open the tracker
+	if (verbose) {
+		printf("Opening vrpn_Tracker_NovintFalcon: %s device: %d, grip: %s, kinematics: %s damping: %s\n", s2,i1,s3,s4,s5);
+	}
+
+	if ( (trackers[num_trackers] = mytracker =
+          new vrpn_Tracker_NovintFalcon(s2, connection, i1, s3, s4, s5)) == NULL)
+	{
+		fprintf(stderr, "Can't create new vrpn_Tracker_NovintFalcon\n");
+		return -1;
+        } else {
+          num_trackers++;
+        }
+#endif
+  return 0;
+}
+
 int vrpn_Generic_Server_Object::setup_Tracker_Fastrak (char * & pch, char * line, FILE * config_file) {
 
   char s2 [LINESIZE], s3 [LINESIZE], s4 [LINESIZE];
@@ -1511,6 +1563,111 @@ int vrpn_Generic_Server_Object::setup_Tracker_Fastrak (char * & pch, char * line
 	    }
 
 	  }
+
+          num_trackers++;
+        }
+
+  return 0;
+}
+
+int vrpn_Generic_Server_Object::setup_Tracker_Isotrak (char * & pch, char * line, FILE * config_file) {
+
+  char s2 [LINESIZE], s3 [LINESIZE], s4 [LINESIZE];
+  int i1;
+  int numparms;
+  vrpn_Tracker_Isotrak    *mytracker;
+  int do_is900_timing = 0;
+
+        char    rcmd[5000];     // Reset command to send to Fastrak
+        next();
+        // Get the arguments (class, tracker_name, port, baud, [optional IS900time])
+        if ( (numparms = sscanf(pch,"%511s%511s%d%511s",s2,s3,&i1,s4)) < 3) {
+          fprintf(stderr,"Bad vrpn_Tracker_Isotrak line: %s\n%s %s\n",
+                  line, pch, s3);
+          return -1;
+        }
+
+        // Make sure there's room for a new tracker
+        if (num_trackers >= VRPN_GSO_MAX_TRACKERS) {
+        fprintf(stderr,"Too many trackers in config file");
+            return -1;
+        }
+
+        // If the last character in the line is a backslash, '\', then
+        // the following line is an additional command to send to the
+        // Fastrak at reset time. So long as we find lines with slashes
+        // at the ends, we add them to the command string to send. Note
+        // that there is a newline at the end of the line, following the
+        // backslash.
+        sprintf(rcmd, "");
+        while (line[strlen(line)-2] == '\\') {
+          // Read the next line
+          if (fgets(line, LINESIZE, config_file) == NULL) {
+              fprintf(stderr,"Ran past end of config file in Isotrak description\n");
+                  return -1;
+          }
+
+          // Copy the line into the remote command,
+          // then replace \ with \015 if present
+          // In any case, make sure we terminate with \015.
+          strncat(rcmd, line, LINESIZE);
+          if (rcmd[strlen(rcmd)-2] == '\\') {
+                  rcmd[strlen(rcmd)-2] = '\015';
+                  rcmd[strlen(rcmd)-1] = '\0';
+          } else if (rcmd[strlen(rcmd)-2] == '/') {
+                  rcmd[strlen(rcmd)-2] = '\015';
+                  rcmd[strlen(rcmd)-1] = '\0';
+          } else if (rcmd[strlen(rcmd)-1] == '\n') {
+                  rcmd[strlen(rcmd)-1] = '\015';
+          } else {        // Add one, we reached the EOF before CR
+                  rcmd[strlen(rcmd)+1] = '\0';
+                  rcmd[strlen(rcmd)] = '\015';
+          }
+
+        }
+
+        if (strlen(rcmd) > 0) {
+                printf("... additional reset commands follow:\n");
+                printf("%s\n",rcmd);
+        }
+
+        // Open the tracker
+        if (verbose) printf(
+            "Opening vrpn_Isotrak: %s on port %s, baud %d\n",
+            s2,s3,i1);
+
+        if ( (trackers[num_trackers] = mytracker =
+             new vrpn_Tracker_Isotrak(s2, connection, s3, i1, 1, 4, rcmd))
+             == NULL){
+
+          fprintf(stderr,"Can't create new vrpn_Isotrak\n");
+          return -1;
+
+        } else {
+      // If the last character in the line is a front slash, '/', then
+      // the following line is a command to add a Wand or Stylus to one
+      // of the sensors on the tracker.  Read and parse the line after,
+      // then add the devices needed to support.  Each line has two
+      // arguments, the string name of the devices and the integer
+      // sensor number (starting with 0) to attach the device to.
+          while (line[strlen(line)-2] == '/') {
+        char lineCommand[LINESIZE];
+        char lineName[LINESIZE];
+        int     lineSensor;
+
+            // Read the next line
+            if (fgets(line, LINESIZE, config_file) == NULL) {
+              fprintf(stderr,"Ran past end of config file in Fastrak/Isense description\n");
+                  return -1;
+        }
+
+        // Parse the line.  Both "Wand" and "Stylus" lines start with the name and sensor #
+        if (sscanf(line, "%511s%511s%d", lineCommand, lineName, &lineSensor) != 3) {
+        fprintf(stderr,"Bad line in Wand/Stylus description for Fastrak/Isense (%s)\n",line);
+        delete trackers[num_trackers];
+        return -1;
+        }
+      }
 
           num_trackers++;
         }
@@ -2733,7 +2890,7 @@ int vrpn_Generic_Server_Object::setup_DTrack (char* &pch, char* line, FILE* conf
 // from, and the axis to fill in are passed as parameters. It returns 0 on success
 // and -1 on failure.
 
-int	vrpn_Generic_Server_Object::get_poser_axis_line(FILE *config_file, char *axis_name, vrpn_PA_axis *axis, vrpn_float64 *min, vrpn_float64 *max)
+int	vrpn_Generic_Server_Object::get_poser_axis_line(FILE *config_file, const char *axis_name, vrpn_PA_axis *axis, vrpn_float64 *min, vrpn_float64 *max)
 {
 	char	line[LINESIZE];
 	char	_axis_name[LINESIZE];
@@ -3528,17 +3685,17 @@ int vrpn_Generic_Server_Object::setup_ImageStream(char * & pch, char * line, FIL
 int vrpn_Generic_Server_Object::setup_WiiMote(char * & pch, char * line, FILE * config_file) {
 #ifdef	VRPN_USE_WIIUSE
   char s2 [LINESIZE];
-  unsigned controller;
+  unsigned controller,useMS,useIR, reorderBtns;
 
   next();
   // Get the arguments (wiimote_name, controller index)
-  if (sscanf(pch,"%511s%u",s2,&controller) != 2) {
+  if (sscanf(pch,"%511s%u %u %u %u",s2,&controller,&useMS,&useIR, &reorderBtns) != 5) {
     fprintf(stderr,"Bad vrpn_WiiMote line: %s\n",line);
     return -1;
   }
 
   // Make sure there's room for a new WiiMote
-  if (num_XInputPads >= VRPN_GSO_MAX_WIIMOTES) {
+  if (num_wiimotes >= VRPN_GSO_MAX_WIIMOTES) {
     fprintf(stderr,"Too many WiiMotes in config file");
     return -1;
   }
@@ -3547,7 +3704,7 @@ int vrpn_Generic_Server_Object::setup_WiiMote(char * & pch, char * line, FILE * 
   if (verbose) {
     printf("Opening vrpn_WiiMote: %s\n", s2);
   }
-  if ((wiimotes[num_wiimotes] = new vrpn_WiiMote(s2, connection, controller)) == NULL)
+  if ((wiimotes[num_wiimotes] = new vrpn_WiiMote(s2, connection, controller, useMS, useIR, reorderBtns)) == NULL)
   {
     fprintf(stderr,"Can't create new vrpn_WiiMote\n");
     return -1;
@@ -3558,6 +3715,41 @@ int vrpn_Generic_Server_Object::setup_WiiMote(char * & pch, char * line, FILE * 
   return 0;
 #else
   fprintf(stderr, "vrpn_server: Can't open WiiMote: VRPN_USE_WIIUSE not defined in vrpn_Configure.h!\n");
+  return -1;
+#endif
+}
+
+int vrpn_Generic_Server_Object::setup_Freespace(char * & pch, char * line, FILE * config_file) {
+#ifdef	VRPN_USE_FREESPACE
+  char s2 [LINESIZE];
+  unsigned controller, sendbody, senduser;
+
+  next();
+  // Get the arguments (wiimote_name, controller index)
+  if (sscanf(pch,"%511s%u%u%u",s2,&controller,&sendbody,&senduser) != 4) {
+    fprintf(stderr,"Bad vrpn_Freespace line: %s\n",line);
+    return -1;
+  }
+
+  // Make sure there's room for a new Freespace
+  if (num_freespaces >= VRPN_GSO_MAX_FREESPACES) {
+    fprintf(stderr,"Too many Freespaces in config file");
+    return -1;
+  }
+
+  // Open the Freespace if we can.
+  if ((freespaces[num_freespaces] = vrpn_Freespace::create(s2, connection, controller,
+    (sendbody != 0), (senduser != 0) )) == NULL)
+  {
+    fprintf(stderr,"Can't create new vrpn_Freespace\n");
+    return -1;
+  } else {
+    num_freespaces++;
+  }
+
+  return 0;
+#else
+  fprintf(stderr, "vrpn_server: Can't open Freespace: VRPN_USE_FREESPACE not defined in vrpn_Configure.h!\n");
   return -1;
 #endif
 }
@@ -3890,6 +4082,43 @@ int vrpn_Generic_Server_Object::setup_Tracker_MotionNode(char * & pch, char * li
   return 0;
 }
 
+int vrpn_Generic_Server_Object::setup_DreamCheeky(char * & pch, char * line, FILE * config_file) {
+  char s2 [LINESIZE];
+
+  next();
+  if (sscanf(pch,"%511s",s2)!=1) {
+    fprintf(stderr,"Bad DreamCheeky line: %s\n",line);
+    return -1;
+  }
+
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__)
+
+  // Open the DreamCheeky
+  // Make sure there's room for a new button
+  if (num_buttons >= VRPN_GSO_MAX_BUTTONS) {
+    fprintf(stderr,"vrpn_Dream_Cheeky_USB_roll_up_drums: Too many buttons in config file");
+    return -1;
+  }
+
+  // Open the button
+  if (verbose) {
+    printf("Opening vrpn_Dream_Cheeky_USB_roll_up_drums as device %s\n", s2);
+  }
+  if ( (buttons[num_buttons] = new vrpn_DreamCheeky_Drum_Kit(s2, connection)) == NULL ) {
+    fprintf(stderr,"Can't create new vrpn_Dream_Cheeky_USB_roll_up_drums\n");
+     return -1;
+  } else {
+    num_buttons++;
+  }
+
+  return 0;  // successful completion
+
+#else
+  fprintf(stderr,"vrpn_DreamCheeky not yet implemented for this architecture.\n");
+  return -1;
+#endif
+}
+
 
 vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connection_to_use, const char *config_file_name, int port, bool be_verbose, bool bail_on_open_error) :
   connection(connection_to_use),
@@ -3924,6 +4153,9 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
   , num_imagestreams(0)
 #ifdef	VRPN_USE_WIIUSE
   , num_wiimotes(0)
+#endif
+#ifdef	VRPN_USE_FREESPACE
+  , num_freespaces(0)
 #endif
   {
     FILE    * config_file;
@@ -4039,6 +4271,10 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
               CHECK(setup_Tracker_Fastrak);
 		  } else if (isit("vrpn_Tracker_NDI_Polaris")) {
               CHECK(setup_Tracker_NDI_Polaris);
+          } else if (isit("vrpn_Tracker_Isotrak")) {
+              CHECK(setup_Tracker_Isotrak);
+		  } else if (isit("vrpn_Tracker_NDI_Polaris")) {
+              CHECK(setup_Tracker_NDI_Polaris);
           } else if (isit("vrpn_Tracker_Liberty")) {
               CHECK(setup_Tracker_Liberty);
           } else if (isit("vrpn_Tracker_3Space")) {
@@ -4133,6 +4369,10 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
             CHECK(setup_Tracker_MotionNode);
 	  } else if (isit("vrpn_WiiMote")) {
             CHECK(setup_WiiMote);
+	  } else if (isit("vrpn_Freespace")) {
+            CHECK(setup_Freespace);
+      } else if (isit("vrpn_Tracker_NovintFalcon")) {
+            CHECK(setup_Tracker_NovintFalcon);
 // BUW additions
           } else if (isit("vrpn_Atmel")) {
             CHECK(setup_Atmel);
@@ -4141,7 +4381,9 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
           } else if (isit("vrpn_Event_Mouse")) {
             CHECK(setup_Event_Mouse);
 // end of BUW additions
-	 } else {	// Never heard of it
+	  } else if (isit("vrpn_Dream_Cheeky_USB_roll_up_drums")) {
+            CHECK(setup_DreamCheeky);
+	  } else {	// Never heard of it
 		sscanf(line,"%511s",s1);	// Find out the class name
 		fprintf(stderr,"vrpn_server: Unknown Device: %s\n",s1);
 		if (d_bail_on_open_error) { d_doing_okay = false; return; }
@@ -4301,6 +4543,13 @@ void  vrpn_Generic_Server_Object::mainloop( void )
 #ifdef	VRPN_USE_WIIUSE
   for (i=0; i< num_wiimotes; i++) {
 	  wiimotes[i]->mainloop();
+  }
+#endif
+
+  // Let all the Freespaces do their thing
+#ifdef	VRPN_USE_FREESPACE
+  for (i=0; i< num_freespaces; i++) {
+	  freespaces[i]->mainloop();
   }
 #endif
 }

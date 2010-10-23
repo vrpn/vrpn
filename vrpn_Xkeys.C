@@ -361,5 +361,5 @@ void vrpn_Xkeys_Pro::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 	}
 }
 
-// End of VPRN_USE_HID
+// End of VRPN_USE_HID
 #endif

@@ -13,6 +13,8 @@
 /*                                                                                                 */
 /***************************************************************************************************/
 
+#ifndef _WIN32
+
 #include "vrpn_Atmel.h"
 #include "vrpn_atmellib.h"
 #include "vrpn_atmellib_helper.h"
@@ -445,4 +447,6 @@ vrpn_Atmel::handle_new_connection()
 
   return true;
 }
+
+#endif
 

@@ -49,7 +49,6 @@
 #HW_OS := universal_macosx
 ##########################
 
-
 INSTALL_DIR := /usr/local
 BIN_DIR := $(INSTALL_DIR)/bin
 INCLUDE_DIR := $(INSTALL_DIR)/include
@@ -151,6 +150,7 @@ else
         CC := g++ -arch ppc -arch i386 -isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4
         RANLIB := :
         AR := libtool -static -o
+	SYSLIBS := -framework CoreFoundation -framework IOKit -framework System
   endif
 
   ifeq ($(HW_OS), pc_linux_arm)
@@ -215,8 +215,23 @@ endif
 
 # directories that we can do an rm -f on because they only contain
 # object files and executables
-SAFE_KNOWN_ARCHITECTURES :=	hp700_hpux/* hp700_hpux10/* mips_ultrix/* \
-	pc_linux/* sgi_irix.32/* sgi_irix.n32/* sparc_solaris/* sparc_solaris_64/* sparc_sunos/* pc_cygwin/* powerpc_aix/* pc_linux_arm/* powerpc_macosx/* universal_macosx/* pc_linux64/* pc_linux_ia64/*
+SAFE_KNOWN_ARCHITECTURES :=	\
+	hp700_hpux/* \
+	hp700_hpux10/* \
+	mips_ultrix/* \
+	pc_linux/* \
+	sgi_irix.32/* \
+	sgi_irix.n32/* \
+	sparc_solaris/* \
+	sparc_solaris_64/* \
+	sparc_sunos/* \
+	pc_cygwin/* \
+	powerpc_aix/* \
+	pc_linux_arm/* \
+	powerpc_macosx/* \
+	universal_macosx/* \
+	pc_linux64/* \
+	pc_linux_ia64/*
 
 CLIENT_SKA = $(patsubst %,client_src/%,$(SAFE_KNOWN_ARCHITECTURES))
 SERVER_SKA = $(patsubst %,server_src/%,$(SAFE_KNOWN_ARCHITECTURES))
@@ -239,8 +254,13 @@ ifeq ($(HW_OS),universal_macosx)
 endif
 
 ifeq ($(HW_OS),pc_linux)
-	# The following is for the InterSense library.
-	SYS_INCLUDE := -DUNIX -DLINUX
+	# The following is for the InterSense and Freespace libraries.
+	SYS_INCLUDE := -DUNIX -DLINUX -I../libfreespace/include
+endif
+
+ifeq ($(HW_OS),pc_linux64)
+	# The following is for the InterSense and Freespace libraries.
+	SYS_INCLUDE := -DUNIX -DLINUX -I../libfreespace/include
 endif
 
 ifeq ($(HW_OS),pc_linux_arm)
@@ -277,12 +297,12 @@ ifeq ($(HW_OS),hp_flow_aCC)
                  -I/usr/include/bsd -DFLOW
 endif
 
-# On the PC, place quatlib in the directory ../quat.  No actual system
+# On the PC, place quatlib in the directory ./quat.  No actual system
 # includes should be needed.
 ifeq ($(HW_OS),pc_cygwin)
-  INCLUDE_FLAGS := -I. -I../quat -I./atmellib
+  INCLUDE_FLAGS := -I. -I./quat -I./atmellib
 else
-  INCLUDE_FLAGS := -I. $(SYS_INCLUDE) -I../quat -I../../quat -I./atmellib
+  INCLUDE_FLAGS := -I. $(SYS_INCLUDE) -I./quat -I../quat -I./atmellib
 endif
 
 
@@ -294,8 +314,10 @@ endif
 # Load flags
 #
 
+#LOAD_FLAGS := -L./$(HW_OS)$(OBJECT_DIR_SUFFIX) -L/usr/local/lib \
+#		-L/usr/local/contrib/unmod/lib -L/usr/local/contrib/mod/lib -g
 LOAD_FLAGS := -L./$(HW_OS)$(OBJECT_DIR_SUFFIX) -L/usr/local/lib \
-		-L/usr/local/contrib/unmod/lib -L/usr/local/contrib/mod/lib -g
+		-L/usr/local/contrib/unmod/lib -L/usr/local/contrib/mod/lib $(DEBUG_FLAGS) $(LDFLAGS)
 
 ifeq ($(HW_OS),sgi_irix)
 	LOAD_FLAGS := $(LOAD_FLAGS) -old_ld
@@ -350,8 +372,9 @@ LIBS := -lquat -lsdi $(TCL_LIBS) -lXext -lX11 $(ARCH_LIBS) -lm
 # Defines for the compilation, CFLAGS
 #
 
-CFLAGS		 := $(INCLUDE_FLAGS) -g
-
+#CFLAGS		 := $(INCLUDE_FLAGS) -g
+override CFLAGS		 := $(INCLUDE_FLAGS) $(DEBUG_FLAGS) $(CFLAGS)
+override CXXFLAGS     := $(INCLUDE_FLAGS) $(DEBUG_FLAGS) $(CXXFLAGS)
 
 #############################################################################
 #
@@ -362,26 +385,26 @@ CFLAGS		 := $(INCLUDE_FLAGS) -g
 .c.o:
 	$(CC) -c $(CFLAGS) $<
 .C.o:
-	$(CC) -c $(CFLAGS) $<
+	$(CC) -c $(CXXFLAGS) $<
 
 # Build objects from .c files
 $(OBJECT_DIR)/%.o: %.c $(LIB_INCLUDES) $(MAKEFILE)
-	@[ -d $(OBJECT_DIR) ] || mkdir $(OBJECT_DIR)
+	@[ -d $(OBJECT_DIR) ] || mkdir -p $(OBJECT_DIR)
 	$(CC) $(CFLAGS) -DVRPN_CLIENT_ONLY -o $@ -c $<
 
 # Build objects from .C files
 $(OBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) $(MAKEFILE)
-	@[ -d $(OBJECT_DIR) ] || mkdir $(OBJECT_DIR)
+	@[ -d $(OBJECT_DIR) ] || mkdir -p $(OBJECT_DIR)
 	$(CC) $(CFLAGS) -DVRPN_CLIENT_ONLY -o $@ -c $<
 
 # Build objects from .C files
 $(SOBJECT_DIR)/%.o: %.C $(SLIB_INCLUDES) $(MAKEFILE)
-	@[ -d $(SOBJECT_DIR) ] || mkdir $(SOBJECT_DIR)
+	@[ -d $(SOBJECT_DIR) ] || mkdir -p $(SOBJECT_DIR)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 # Build objects from .C files
 $(AOBJECT_DIR)/%.o: %.C $(ALIB_INCLUDES) $(MAKEFILE)
-	@[ -d $(AOBJECT_DIR) ] || mkdir $(AOBJECT_DIR)
+	@[ -d $(AOBJECT_DIR) ] || mkdir -p $(AOBJECT_DIR)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 #
@@ -428,13 +451,13 @@ atmellib: $(AOBJECT_DIR)
 	$(MAKE) $(OBJECT_DIR)/libvrpnatmel.a
 
 $(OBJECT_DIR):
-	-mkdir $(OBJECT_DIR)
+	-mkdir -p $(OBJECT_DIR)
 
 $(SOBJECT_DIR):
-	-mkdir $(SOBJECT_DIR)
+	-mkdir -p $(SOBJECT_DIR)
 
 $(AOBJECT_DIR):
-	-mkdir $(AOBJECT_DIR)
+	-mkdir -p $(AOBJECT_DIR)
 
 #############################################################################
 #
@@ -444,26 +467,56 @@ $(AOBJECT_DIR):
 
 # files to be compiled into the client library
 
-LIB_FILES =  vrpn_Connection.C vrpn_Tracker.C vrpn_Button.C \
-		vrpn_ForceDevice.C vrpn_Shared.C \
-		vrpn_Analog.C vrpn_FileConnection.C \
-		vrpn_FileController.C vrpn_Forwarder.C vrpn_Text.C \
-		vrpn_ForwarderController.C vrpn_Serial.C vrpn_Dial.C \
-		vrpn_SharedObject.C vrpn_BaseClass.C \
-		vrpn_Sound.C vrpn_LamportClock.C vrpn_Mutex.C \
-		vrpn_RedundantTransmission.C vrpn_Imager.C \
-		vrpn_Analog_Output.C vrpn_Poser.C vrpn_Auxiliary_Logger.C
+LIB_FILES =  \
+	vrpn_Analog.C \
+	vrpn_Analog_Output.C \
+	vrpn_Auxiliary_Logger.C \
+	vrpn_BaseClass.C \
+	vrpn_Button.C \
+	vrpn_Connection.C \
+	vrpn_Dial.C \
+	vrpn_FileConnection.C \
+	vrpn_FileController.C \
+	vrpn_ForceDevice.C \
+	vrpn_Forwarder.C \
+	vrpn_ForwarderController.C \
+	vrpn_Imager.C \
+	vrpn_LamportClock.C \
+	vrpn_Mutex.C \
+	vrpn_Poser.C \
+	vrpn_RedundantTransmission.C \
+	vrpn_Serial.C \
+	vrpn_Shared.C \
+	vrpn_SharedObject.C \
+	vrpn_Sound.C \
+	vrpn_Text.C \
+	vrpn_Tracker.C
 
 LIB_OBJECTS = $(patsubst %,$(OBJECT_DIR)/%,$(LIB_FILES:.C=.o))
 
-LIB_INCLUDES = vrpn_Connection.h vrpn_Tracker.h vrpn_Button.h \
-		vrpn_Sound.h vrpn_ForceDevice.h vrpn_Shared.h \
-		vrpn_Analog.h vrpn_FileConnection.h \
-		vrpn_FileController.h vrpn_Forwarder.h vrpn_Text.h \
-		vrpn_ForwarderController.h vrpn_Serial.h vrpn_Dial.h \
-		vrpn_SharedObject.h vrpn_LamportClock.h vrpn_Mutex.h \
-		vrpn_BaseClass.h vrpn_Imager.h \
-		vrpn_Analog_Output.h vrpn_Poser.h vrpn_Auxiliary_Logger.h
+LIB_INCLUDES = \
+	vrpn_Connection.h \
+	vrpn_Tracker.h \
+	vrpn_Button.h \
+	vrpn_Sound.h \
+	vrpn_ForceDevice.h \
+	vrpn_Shared.h \
+	vrpn_Analog.h \
+	vrpn_FileConnection.h \
+	vrpn_FileController.h \
+	vrpn_Forwarder.h \
+	vrpn_Text.h \
+	vrpn_ForwarderController.h \
+	vrpn_Serial.h \
+	vrpn_Dial.h \
+	vrpn_SharedObject.h \
+	vrpn_LamportClock.h \
+	vrpn_Mutex.h \
+	vrpn_BaseClass.h \
+	vrpn_Imager.h \
+	vrpn_Analog_Output.h \
+	vrpn_Poser.h \
+	vrpn_Auxiliary_Logger.h
 
 $(LIB_OBJECTS): 
 $(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(LIB_OBJECTS)
@@ -474,49 +527,127 @@ $(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(LIB_OBJECTS)
 # If vrpn_sgibox isn't supposed to be compiled on any other architecture,
 # then put all of it inside "#ifdef sgi"!
 
-SLIB_FILES =  $(LIB_FILES) vrpn_3Space.C \
-	vrpn_Flock.C vrpn_Tracker_Fastrak.C vrpn_Dyna.C \
-	vrpn_Flock_Parallel.C  vrpn_UNC_Joystick.C \
-	vrpn_JoyFly.C vrpn_sgibox.C vrpn_CerealBox.C \
-	vrpn_Tracker_AnalogFly.C vrpn_raw_sgibox.C vrpn_Magellan.C \
-	vrpn_Analog_Radamec_SPI.C vrpn_ImmersionBox.C vrpn_Wanda.C \
-	vrpn_Analog_5dt.C vrpn_Joylin.C vrpn_Tng3.C vrpn_Spaceball.C \
-	vrpn_Tracker_isense.C vrpn_Zaber.C vrpn_nikon_controls.C \
-	vrpn_GlobalHapticsOrb.C vrpn_Tracker_ButtonFly.C vrpn_ADBox.C \
-	vrpn_VPJoystick.C vrpn_Tracker_Liberty.C vrpn_NationalInstruments.C \
-	vrpn_Poser_Analog.C vrpn_Tracker_DTrack.C vrpn_Poser_Tek4662.C \
-	vrpn_Tracker_Crossbow.C vrpn_Tracker_3DMouse.C \
-	vrpn_Mouse.C vrpn_3DMicroscribe.C vrpn_5DT16.C \
-	vrpn_ForceDeviceServer.C vrpn_Keyboard.C \
-	vrpn_Analog_USDigital_A2.C vrpn_Button_NI_DIO24.C \
+SLIB_FILES =  $(LIB_FILES) \
+	vrpn_3DConnexion.C \
+	vrpn_3DMicroscribe.C \
+	vrpn_3Space.C \
+	vrpn_5DT16.C \
+	vrpn_ADBox.C \
+	vrpn_Analog_5dt.C \
+	vrpn_Analog_Radamec_SPI.C \
+	vrpn_Analog_USDigital_A2.C \
+	vrpn_Atmel.C \
+	vrpn_Button_NI_DIO24.C \
+	vrpn_CerealBox.C \
+	vrpn_Dyna.C \
+	vrpn_DreamCheeky.C \
+	vrpn_Event_Analog.C \
+	vrpn_Event.C \
+	vrpn_Event_Mouse.C \
+	vrpn_Flock.C \
+	vrpn_Flock_Parallel.C \
+	vrpn_ForceDeviceServer.C \
+	vrpn_Freespace.C \
+	vrpn_GlobalHapticsOrb.C \
+	vrpn_HumanInterface.C \
+	vrpn_Imager_Stream_Buffer.C \
+	vrpn_ImmersionBox.C \
+	vrpn_inertiamouse.C \
+	vrpn_JoyFly.C \
+	vrpn_Joylin.C \
+	vrpn_Keyboard.C \
+	vrpn_Magellan.C \
+	vrpn_Mouse.C \
+	vrpn_NationalInstruments.C \
+	vrpn_nikon_controls.C \
+	vrpn_Poser_Analog.C \
+	vrpn_Poser_Tek4662.C \
+	vrpn_raw_sgibox.C \
+	vrpn_sgibox.C \
+	vrpn_Spaceball.C \
+	vrpn_Tng3.C \
+	vrpn_Tracker_3DMouse.C \
+	vrpn_Tracker_AnalogFly.C \
+	vrpn_Tracker_ButtonFly.C \
+	vrpn_Tracker_Crossbow.C \
+	vrpn_Tracker_DTrack.C \
+	vrpn_Tracker_Fastrak.C \
+	vrpn_Tracker_isense.C \
+	vrpn_Tracker_Isotrak.C \
+	vrpn_Tracker_Liberty.C \
+	vrpn_Tracker_MotionNode.C \
+	vrpn_Tracker_NDI_Polaris.C \
 	vrpn_Tracker_PhaseSpace.C \
-	vrpn_Atmel.C vrpn_inertiamouse.C vrpn_Event.C vrpn_Event_Analog.C \
-	vrpn_Event_Mouse.C vrpn_Imager_Stream_Buffer.C \
-	vrpn_HumanInterface.C vrpn_Xkeys.C vrpn_3DConnexion.C \
-	vrpn_Tracker_MotionNode.C vrpn_Tracker_NDI_Polaris.C
+	vrpn_Tracker_NovintFalcon.C \
+	vrpn_Tracker_WiimoteHead.C \
+	vrpn_UNC_Joystick.C \
+	vrpn_VPJoystick.C \
+	vrpn_Wanda.C \
+	vrpn_WiiMote.C \
+	vrpn_Xkeys.C \
+	vrpn_Zaber.C \
 
 SLIB_OBJECTS = $(patsubst %,$(SOBJECT_DIR)/%,$(SLIB_FILES:.C=.o))
 
-SLIB_INCLUDES = $(LIB_INCLUDES) vrpn_3Space.h \
-	vrpn_Flock.h vrpn_Tracker_Fastrak.h vrpn_Dyna.h \
-	vrpn_Flock_Parallel.h vrpn_UNC_Joystick.h \
-	vrpn_JoyFly.h vrpn_sgibox.h vrpn_raw_sgibox.h \
-	vrpn_CerealBox.h vrpn_Tracker_AnalogFly.h vrpn_Magellan.h \
-	vrpn_Analog_Radamec_SPI.h vrpn_ImmersionBox.h vrpn_Wanda.h \
-	vrpn_Analog_5dt.h vrpn_Joylin.h vrpn_Tng3.h vrpn_Spaceball.h \
-	vrpn_tracker_isense.h vrpn_Zaber.h vrpn_nikon_controls.h \
-	vrpn_GlobalHapticsOrb.C vrpn_Tracker_ButtonFly.h vrpn_ADBox.h \
-	vrpn_VPJoystick.h vrpn_Tracker_Liberty.h vrpn_NationalInstruments.h \
-	vrpn_Poser_Analog.h vrpn_Tracker_DTrack.h vrpn_Poser.h \
-	vrpn_Poser_Tek4662.h vrpn_Tracker_Crossbow.h vrpn_Tracker_3DMouse.h \
-	vrpn_Mouse.h vrpn_3DMicroscribe.h vrpn_5DT16.h \
-	vrpn_ForceDeviceServer.h vrpn_Keyboard.h \
-	vrpn_Analog_USDigital_A2.h vrpn_Button_NI_DIO24.h \
-	vrpn_Tracker_PhaseSpace.h vrpn_Atmel.h \
-	vrpn_inertiamouse.h vrpn_Event.h vrpn_Event_Analog.h \
-	vrpn_Event_Mouse.h vrpn_Imager_Stream_Buffer.h \
-	vrpn_HumanInterface.h vrpn_Xkeys.h vrpn_3DConnexion.h \
-	vrpn_Tracker_MotionNode.h vrpn_Tracker_NDI_Polaris.h
+SLIB_INCLUDES = $(LIB_INCLUDES) \
+	vrpn_3DConnexion.h \
+	vrpn_3DMicroscribe.h \
+	vrpn_3Space.h \
+	vrpn_5DT16.h \
+	vrpn_ADBox.h \
+	vrpn_Analog_5dt.h \
+	vrpn_Analog_Radamec_SPI.h \
+	vrpn_Analog_USDigital_A2.h \
+	vrpn_Atmel.h \
+	vrpn_Button_NI_DIO24.h \
+	vrpn_CerealBox.h \
+	vrpn_Dyna.h \
+	vrpn_DreamCheeky.h \
+	vrpn_Event_Analog.h \
+	vrpn_Event.h \
+	vrpn_Event_Mouse.h \
+	vrpn_Flock.h \
+	vrpn_Flock_Parallel.h \
+	vrpn_ForceDeviceServer.h \
+	vrpn_Freespace.h \
+	vrpn_GlobalHapticsOrb.h \
+	vrpn_HumanInterface.h \
+	vrpn_Imager_Stream_Buffer.h \
+	vrpn_ImmersionBox.h \
+	vrpn_inertiamouse.h \
+	vrpn_JoyFly.h \
+	vrpn_Joylin.h \
+	vrpn_Keyboard.h \
+	vrpn_Magellan.h \
+	vrpn_Mouse.h \
+	vrpn_NationalInstruments.h \
+	vrpn_nikon_controls.h \
+	vrpn_Poser_Analog.h \
+	vrpn_Poser_Tek4662.h \
+	vrpn_raw_sgibox.h \
+	vrpn_sgibox.h \
+	vrpn_Spaceball.h \
+	vrpn_Tng3.h \
+	vrpn_Tracker_3DMouse.h \
+	vrpn_Tracker_AnalogFly.h \
+	vrpn_Tracker_ButtonFly.h \
+	vrpn_Tracker_Crossbow.h \
+	vrpn_Tracker_DTrack.h \
+	vrpn_Tracker_Fastrak.h \
+	vrpn_Tracker_isense.h \
+	vrpn_Tracker_Isotrak.h \
+	vrpn_Tracker_Liberty.h \
+	vrpn_Tracker_MotionNode.h \
+	vrpn_Tracker_NDI_Polaris.h \
+	vrpn_Tracker_PhaseSpace.h \
+	vrpn_Tracker_NovintFalcon.h \
+	vrpn_Tracker_WiimoteHead.h \
+	vrpn_UNC_Joystick.h \
+	vrpn_VPJoystick.h \
+	vrpn_Wanda.h \
+	vrpn_WiiMote.h \
+	vrpn_Xkeys.h \
+	vrpn_Zaber.h
 
 $(SLIB_OBJECTS): 
 $(OBJECT_DIR)/libvrpnserver.a: $(MAKEFILE) $(SLIB_OBJECTS)
@@ -526,13 +657,18 @@ $(OBJECT_DIR)/libvrpnserver.a: $(MAKEFILE) $(SLIB_OBJECTS)
 # atmellib files.
 
 ALIB_FILES = \
-	atmellib/vrpn_atmellib_iobasic.C atmellib/vrpn_atmellib_helper.C \
-	atmellib/vrpn_atmellib_openclose.C atmellib/vrpn_atmellib_register.C atmellib/vrpn_atmellib_tester.C
+	atmellib/vrpn_atmellib_helper.C \
+	atmellib/vrpn_atmellib_iobasic.C \
+	atmellib/vrpn_atmellib_openclose.C \
+	atmellib/vrpn_atmellib_register.C \
+	atmellib/vrpn_atmellib_tester.C
 
 ALIB_OBJECTS = $(patsubst %,$(AOBJECT_DIR)/../%,$(ALIB_FILES:.C=.o))
 
 ALIB_INCLUDES =  \
-	vrpn_atmellib.h vrpn_atmellib_helper.h vrpn_atmellib_errno.h
+	vrpn_atmellib.h \
+	vrpn_atmellib_helper.h \
+	vrpn_atmellib_errno.h
 
 $(ALIB_OBJECTS): 
 $(OBJECT_DIR)/libvrpnatmel.a: $(MAKEFILE) $(ALIB_OBJECTS)
@@ -547,12 +683,18 @@ $(OBJECT_DIR)/libvrpnatmel.a: $(MAKEFILE) $(ALIB_OBJECTS)
 
 .PHONY:	clean
 clean:
+ifeq ($(HW_OS),)
+		echo "Must specify HW_OS !"
+else
 	$(RMF) $(LIB_OBJECTS) $(OBJECT_DIR)/libvrpn.a \
-               $(OBJECT_DIR)/libvrpn_g++.a $(SLIB_OBJECTS) $(ALIB_OBJECTS) \
+               $(OBJECT_DIR)/libvrpn_g++.a \
+               $(SLIB_OBJECTS) \
+               $(ALIB_OBJECTS) \
                $(OBJECT_DIR)/libvrpnserver.a \
                $(OBJECT_DIR)/libvrpnatmel.a \
                $(OBJECT_DIR)/libvrpnserver_g++.a \
-               $(OBJECT_DIR)/.depend $(OBJECT_DIR)/.depend-old
+               $(OBJECT_DIR)/.depend \
+               $(OBJECT_DIR)/.depend-old
 ifneq (xxx$(FORCE_GPP),xxx1)
 	@echo -----------------------------------------------------------------
 	@echo -- Wart: type \"$(MAKE) clean_g++\" to clean up after g++
@@ -562,6 +704,7 @@ endif
 #ifneq ($(CC), g++)
 #	$(MAKE) FORCE_GPP=1 clean
 #endif
+endif
 
 .PHONY:	clean
 clean_g++:
@@ -588,10 +731,10 @@ clobberwin32:
 	$(RMF) -r server_src/pc_win32/vrpn_server/Debug/*
 
 install: all
-	-mkdir $(LIB_DIR)
+	-mkdir -p $(LIB_DIR)
 	( cd $(LIB_DIR) ; rm -f libvrpn*.a )
 	( cd $(OBJECT_DIR) ; cp *.a $(LIB_DIR) )
-	-mkdir $(INCLUDE_DIR)
+	-mkdir -p $(INCLUDE_DIR)
 	cp vrpn*.h $(INCLUDE_DIR)
 
 uninstall:
@@ -638,13 +781,13 @@ $(OBJECT_DIR)/.depend:
 	@echo -- or add/remove includes from a .h or .C file, then you should
 	@echo -- remake the dependency file by typing \"$(MAKE) depend\"
 	@echo ----------------------------------------------------------------
-	-mkdir $(OBJECT_DIR)
+	-mkdir -p $(OBJECT_DIR)
 ifeq ($(HW_OS),hp700_hpux10)
 	@echo -- $(HW_OS): Using g++ since HP CC does not understand -M
 	@echo -- if this causes an error, then delete .depend and type
 	@echo -- \"touch .depend\" to create an empty file
 	@echo ----------------------------------------------------------------
-	$(SHELL) -ec 'g++ -MM $(CFLAGS) $(LIB_FILES) \
+	$(SHELL) -ec 'g++ -MM $(CXXFLAGS) $(LIB_FILES) \
 	    | sed '\''s/\(.*\.o[ ]*:[ ]*\)/$(OBJECT_DIR)\/\1/g'\'' > $(OBJECT_DIR)/.depend'
 else
   ifeq ($(HW_OS),hp_flow_aCC)
@@ -652,7 +795,7 @@ else
 	@echo -- if this causes an error, then delete .depend and type
 	@echo -- \"touch .depend\" to create an empty file
 	@echo ----------------------------------------------------------------
-	$(SHELL) -ec 'g++ -MM $(CFLAGS) $(LIB_FILES) \
+	$(SHELL) -ec 'g++ -MM $(CXXFLAGS) $(LIB_FILES) \
 	    | sed '\''s/\(.*\.o[ ]*:[ ]*\)/$(OBJECT_DIR)\/\1/g'\'' > $(OBJECT_DIR)/.depend'
   else
     ifeq ($(HW_OS),powerpc_aix)

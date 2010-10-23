@@ -25,6 +25,15 @@
 #ifdef	_WIN32
 #include <windows.h>
 #pragma comment (lib, "user32.lib")
+
+// Fix sent in by Andrei State to make this compile under Visual Studio 6.0.
+// If you need this, you also have to copy multimon.h from the DirectX or
+// another Windows SDK into a place where the compiler can find it.
+#ifndef SM_XVIRTUALSCREEN
+#define COMPILE_MULTIMON_STUBS
+#include "multimon.h"
+#endif
+
 #endif
 
 ///////////////////////////////////////////////////////////////////////////
@@ -150,8 +159,8 @@ int vrpn_Mouse::get_report()
     // Find the position of the cursor in X,Y with range 0..1 across the screen
     POINT curPos;
     GetCursorPos(&curPos);
-    vrpn_Analog::channel[0] = (vrpn_float64)(curPos.x) / GetSystemMetrics(SM_CXSCREEN);
-    vrpn_Analog::channel[1] = (vrpn_float64)(curPos.y) / GetSystemMetrics(SM_CYSCREEN);
+    vrpn_Analog::channel[0] = (vrpn_float64)(curPos.x - GetSystemMetrics(SM_XVIRTUALSCREEN)) / GetSystemMetrics(SM_CXVIRTUALSCREEN);
+    vrpn_Analog::channel[1] = (vrpn_float64)(curPos.y - GetSystemMetrics(SM_YVIRTUALSCREEN)) / GetSystemMetrics(SM_CYVIRTUALSCREEN);
 
     gettimeofday( &timestamp, NULL );
     report_changes();

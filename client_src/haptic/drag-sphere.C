@@ -1,4 +1,4 @@
-#include <iostream.h>
+#include <iostream>
 #include <stdlib.h>
 #include <stdio.h>
 #include <vrpn_ForceDevice.h>
@@ -6,7 +6,7 @@
 #include <vrpn_Button.h>
 
 
-#define PHANTOM_SERVER "Phantom@budapest"
+#define PHANTOM_SERVER "Tracker0@localhost"
 
 /*****************************************************************************
  *

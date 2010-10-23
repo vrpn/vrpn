@@ -43,7 +43,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="&quot;$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include&quot;;../dtrack;../quat;../isense;../Dtrack;&quot;$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\DAQmx ANSI C Dev\include&quot;;&quot;$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\Include&quot;;&quot;$(SYSTEMDRIVE)\sdk\cpp&quot;;&quot;$(SYSTEMDRIVE)\Program Files\boost\boost_1_34_1&quot;"
+				AdditionalIncludeDirectories="&quot;$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include&quot;;../dtrack;quat;../isense;../Dtrack;../libfreespace/include;&quot;$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\DAQmx ANSI C Dev\include&quot;;&quot;$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\Include&quot;;&quot;$(SYSTEMDRIVE)\sdk\cpp&quot;;&quot;$(SYSTEMDRIVE)\Program Files\boost\boost_1_34_1&quot;"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE,VRPNDLL_NOEXPORTS"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -117,7 +117,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include&quot;;../dtrack;../quat;../isense;../Dtrack;&quot;$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\DAQmx ANSI C Dev\include&quot;;&quot;$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\Include&quot;;&quot;$(SYSTEMDRIVE)\sdk\cpp&quot;;&quot;$(SYSTEMDRIVE)\Program Files\boost\boost_1_34_1&quot;"
+				AdditionalIncludeDirectories="&quot;$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include&quot;;../dtrack;quat;../isense;../Dtrack;../libfreespace/include;&quot;$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\DAQmx ANSI C Dev\include&quot;;&quot;$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\Include&quot;;&quot;$(SYSTEMDRIVE)\sdk\cpp&quot;;&quot;$(SYSTEMDRIVE)\Program Files\boost\boost_1_34_1&quot;"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE,VRPNDLL_NOEXPORTS"
 				RuntimeLibrary="3"
 				PrecompiledHeaderFile=".\pc_win32/Debug/vrpn.pch"
@@ -613,6 +613,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\vrpn_dreamcheeky.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_Dyna.C"
 				>
 				<FileConfiguration
@@ -884,6 +904,26 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\vrpn_Freespace.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
 						CompileAs="2"
 					/>
 				</FileConfiguration>
@@ -1737,6 +1777,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\vrpn_Tracker_Isotrak.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_Tracker_Liberty.C"
 				>
 				<FileConfiguration
@@ -2066,6 +2126,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\vrpn_dreamcheeky.h"
+				>
+			</File>
+			<File
 				RelativePath="vrpn_Dyna.h"
 				>
 			</File>
@@ -2111,6 +2175,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_ForwarderController.h"
+				>
+			</File>
+			<File
+				RelativePath=".\vrpn_Freespace.h"
 				>
 			</File>
 			<File
@@ -2259,6 +2327,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_Tracker_isense.h"
+				>
+			</File>
+			<File
+				RelativePath=".\vrpn_Tracker_Isotrak.h"
 				>
 			</File>
 			<File

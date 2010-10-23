@@ -1,10 +1,11 @@
 // vrpn_Tracker_DTrack.h 
 // 
-// Advanced Realtime Tracking GmbH's (http://www.ar-tracking.de) DTrack client
+// Advanced Realtime Tracking GmbH's (http://www.ar-tracking.de) DTrack/DTrack2 client
 //
 // developed by David Nahon for Virtools VR Pack (http://www.virtools.com)
 // (07/20/2004) improved by Advanced Realtime Tracking GmbH (http://www.ar-tracking.de)
-// (07/02/2007) upgraded by Advanced Realtime Tracking GmbH to support new devices
+// (07/02/2007, 06/29/2009) upgraded by Advanced Realtime Tracking GmbH to support new devices
+// (08/25/2010) a correction added by Advanced Realtime Tracking GmbH
 
 #ifndef VRPN_TRACKER_DTRACK_H
 #define VRPN_TRACKER_DTRACK_H
@@ -55,7 +56,7 @@ typedef struct{
 
 	float loc[3];         // location (in mm)
 	float rot[9];         // rotation matrix (column-wise)
-} dtrack_flystick_type;
+} vrpn_dtrack_flystick_type;
 
 
 // --------------------------------------------------------------------------
@@ -102,8 +103,8 @@ class VRPN_API vrpn_Tracker_DTrack : public vrpn_Tracker, public vrpn_Button, pu
 	struct timeval tim_first;      // timestamp of first frame
 	struct timeval tim_last;       // timestamp of current frame
 	
-	bool tracing;			          // activate debug output
-	unsigned long tracing_frames;  // frame counter for debug output
+	bool tracing;                  // activate debug output
+	unsigned int tracing_frames;   // frame counter for debug output
 
 	// DTrack data:
 
@@ -141,13 +142,15 @@ class VRPN_API vrpn_Tracker_DTrack : public vrpn_Tracker, public vrpn_Button, pu
 	char* d_udpbuf;                 // UDP buffer
 
 	unsigned int act_framecounter;                   // frame counter
+	double act_timestamp;                            // time stamp
 	
-	int act_num_body;                                // number of calibrated standard bodies (as far as known)
-	std::vector<vrpn_dtrack_body_type> act_body;          // array containing standard body data
+	int act_num_body;                                // number of calibrated standard bodies (due to '6d' line)
+	std::vector<vrpn_dtrack_body_type> act_body;     // array containing standard body data
 	bool act_has_bodycal_format;                     // DTrack sent '6dcal' format
+	int act_num_bodycal;                             // number of calibrated standard bodies (due to '6dcal' line)
 
 	int act_num_flystick;                            // number of calibrated Flysticks
-	std::vector<dtrack_flystick_type> act_flystick;  // array containing Flystick data
+	std::vector<vrpn_dtrack_flystick_type> act_flystick;  // array containing Flystick data
 	bool act_has_old_flystick_format;                // DTrack uses old Flystick format
 
 	int d_lasterror;                // last receive error

@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="vrpn_server"
 	ProjectGUID="{92162D21-8739-4DF2-89AC-7629B294F1C4}"
+	RootNamespace="vrpn_server"
 	>
 	<Platforms>
 		<Platform
@@ -43,7 +44,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include,../../dtrack,$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\Include,$(SYSTEMDRIVE)/Program Files/SensAble/3DTouch/include,$(SYSTEMDRIVE)/Program Files/SensAble/3DTouch/utilities/include,../../isense,..,../../quat,../../Dtrack"
+				AdditionalIncludeDirectories="&quot;$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include&quot;;../../dtrack;&quot;$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\Include&quot;;&quot;$(SYSTEMDRIVE)/Program Files/SensAble/3DTouch/include&quot;;&quot;$(SYSTEMDRIVE)/Program Files/SensAble/3DTouch/utilities/include&quot;;../../isense;..;../quat;../../Dtrack;../../libfreespace/include"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="3"
 				PrecompiledHeaderFile=".\../pc_win32/server_src/vrpn_server/Debug/vrpn_server.pch"
@@ -135,7 +136,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include,../../dtrack,$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\Include,$(SYSTEMDRIVE)/Program Files/SensAble/3DTouch/include,$(SYSTEMDRIVE)/Program Files/SensAble/3DTouch/utilities/include,../../isense,..,../../quat,../../Dtrack"
+				AdditionalIncludeDirectories="&quot;$(SYSTEMDRIVE)\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include&quot;;../../dtrack;&quot;$(SYSTEMDRIVE)\Program Files\National Instruments\NI-DAQ\Include&quot;;&quot;$(SYSTEMDRIVE)/Program Files/SensAble/3DTouch/include&quot;;&quot;$(SYSTEMDRIVE)/Program Files/SensAble/3DTouch/utilities/include&quot;;../../isense;..;../quat;../../Dtrack;../../libfreespace/include"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				RuntimeLibrary="2"

@@ -87,7 +87,7 @@ JNIEXPORT void JNICALL
 Java_vrpn_PoserRemote_mainloop( JNIEnv* env, jobject jobj )
 {
   vrpn_Poser_Remote* po 
-	  = (vrpn_Poser_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
+	  = (vrpn_Poser_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
 
   if( po > 0 )
 	po->mainloop( );
@@ -104,7 +104,7 @@ Java_vrpn_PoserRemote_shutdownPoser( JNIEnv* env, jobject jobj )
 {
   // get the poser pointers
   vrpn_Poser_Remote* po 
-	  = (vrpn_Poser_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
+	  = (vrpn_Poser_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
 
   if( po > 0 )
   {
@@ -113,7 +113,7 @@ Java_vrpn_PoserRemote_shutdownPoser( JNIEnv* env, jobject jobj )
   }
    
   // set the poser pointers to -1
-  env->SetIntField( jobj, jfid_vrpn_VRPNDevice_native_device, -1 );
+  env->SetLongField( jobj, jfid_vrpn_VRPNDevice_native_device, -1 );
 
   // delete global reference to object (that was created in init)
   env->DeleteGlobalRef( jobj );
@@ -155,8 +155,8 @@ Java_vrpn_PoserRemote_init( JNIEnv* env, jobject jobj, jstring jname,
 	env->ReleaseStringUTFChars( jremoteOutLogfileName, remote_out_logfile_name );
 	
 	// now stash 'po' in the jobj's 'native_device field
-	jint jpo = (jint) po;
-	env->SetIntField( jobj, jfid_vrpn_VRPNDevice_native_device, jpo );
+	jlong jpo = (jlong) po;
+	env->SetLongField( jobj, jfid_vrpn_VRPNDevice_native_device, jpo );
 	
 	return true;
 }
@@ -174,7 +174,7 @@ Java_vrpn_PoserRemote_requestPose_1native( JNIEnv* env, jobject jobj,
 {
   // get the poser pointer
   vrpn_Poser_Remote* po 
-	  = (vrpn_Poser_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
+	  = (vrpn_Poser_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
   if( po <= 0 )  // this poser is uninitialized or has been shut down already
   {
     printf( "Error in native method \"requestPose(long,long,double[],double[])\":  "
@@ -240,7 +240,7 @@ Java_vrpn_PoserRemote_requestPoseRelative_1native( JNIEnv* env, jobject jobj,
 {
   // get the poser pointer
   vrpn_Poser_Remote* po 
-	  = (vrpn_Poser_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
+	  = (vrpn_Poser_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
   if( po <= 0 )  // this poser is uninitialized or has been shut down already
   {
     printf( "Error in native method \"requestPoseRelative(long,long,double[],double[])\":  "
@@ -306,7 +306,7 @@ Java_vrpn_PoserRemote_requestVelocity_1native( JNIEnv* env, jobject jobj,
 {
   // get the poser pointer
   vrpn_Poser_Remote* po 
-	  = (vrpn_Poser_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
+	  = (vrpn_Poser_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
   if( po <= 0 )  // this poser is uninitialized or has been shut down already
   {
     printf( "Error in native method \"requestVelocity(long,long,double[],double[],double)\":  "
@@ -373,7 +373,7 @@ Java_vrpn_PoserRemote_requestVelocityRelative_1native( JNIEnv* env, jobject jobj
 {
   // get the poser pointer
   vrpn_Poser_Remote* po 
-	  = (vrpn_Poser_Remote*) env->GetIntField( jobj, jfid_vrpn_VRPNDevice_native_device );
+	  = (vrpn_Poser_Remote*) env->GetLongField( jobj, jfid_vrpn_VRPNDevice_native_device );
   if( po <= 0 )  // this poser is uninitialized or has been shut down already
   {
     printf( "Error in native method \"requestVelocityRelative(long,long,double[],double[],double)\":  "

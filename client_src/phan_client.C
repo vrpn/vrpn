@@ -6,7 +6,7 @@
 #include <vrpn_Tracker.h>
 #include <vrpn_Button.h>
 
-#define PHANTOM_SERVER "Phantom@europium-cs"
+#define PHANTOM_SERVER "Tracker0@localhost"
 
 /*****************************************************************************
  *
@@ -14,7 +14,7 @@
  *
  *****************************************************************************/
 
-void    handle_force_change(void *userdata, const vrpn_FORCECB f)
+void    VRPN_CALLBACK handle_force_change(void *userdata, const vrpn_FORCECB f)
 {
 	static vrpn_FORCECB lr;        // last report
 	static int first_report_done = 0;
@@ -27,10 +27,10 @@ void    handle_force_change(void *userdata, const vrpn_FORCECB f)
 	lr = f;
 }
 
-void    handle_tracker_change(void *userdata, const vrpn_TRACKERCB t)
+void    VRPN_CALLBACK handle_tracker_change(void *userdata, const vrpn_TRACKERCB t)
 {
 	static vrpn_TRACKERCB lr; // last report
-	static float dist_interval_sq = 0.004;
+	static float dist_interval_sq = 0.004f;
 
 	if ((lr.pos[0] - t.pos[0])*(lr.pos[0] - t.pos[0]) + 
 	    (lr.pos[1] - t.pos[1])*(lr.pos[1] - t.pos[1]) +
@@ -41,14 +41,14 @@ void    handle_tracker_change(void *userdata, const vrpn_TRACKERCB t)
 	}
 }
 
-void	handle_button_change(void *userdata, const vrpn_BUTTONCB b)
+void	VRPN_CALLBACK handle_button_change(void *userdata, const vrpn_BUTTONCB b)
 {
 	static int count=0;
 	static int buttonstate = 1;
 	int done = 0;
 
 	if (b.state != buttonstate) {
-	     printf("button #%ld is in state %ld\n", b.button, b.state);
+	     printf("button #%d is in state %d\n", b.button, b.state);
 	     buttonstate = b.state;
 	     count++;
 	}
@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 
         // Set plane and surface parameters
         forceDevice->set_plane(0.0, 1.0, 0.0, 0.0);
-        forceDevice->setSurfaceKspring(0.8); 	// spring constant - units of
+        forceDevice->setSurfaceKspring(0.8f); 	// spring constant - units of
 						// dynes/cm
         forceDevice->setSurfaceKdamping(0.0);	// damping constant - 
                                                 // units of dynes*sec/cm
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
         forceDevice->setSurfaceBuzzAmplitude(0.0);
         forceDevice->setSurfaceBuzzFrequency(60.0);
         forceDevice->setSurfaceTextureAmplitude(0.0);
-        forceDevice->setSurfaceTextureWavelength(0.01);
+        forceDevice->setSurfaceTextureWavelength(0.01f);
 
         // enable force device and send first surface
         forceDevice->startSurface();  

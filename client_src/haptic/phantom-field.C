@@ -100,15 +100,15 @@ int main(int argc, char **argv) {
     if (forceEnabled) {
        forceDevice->setFF_Origin(pos[0],pos[1],pos[2]);
        // units = dynes
-       forceDevice->setFF_Force(cos(pos[0]*20.0*M_PI),
-                                cos(pos[1]*20.0*M_PI),
-                                cos(pos[2]*20.0*M_PI));
+       forceDevice->setFF_Force(0.02*cos(pos[0]*200.0*M_PI),
+                                0.02*cos(pos[1]*200.0*M_PI),
+                                0.02*cos(pos[2]*200.0*M_PI));
        // set derivatives of force field:
        // units = dynes/meter
-       forceDevice->setFF_Jacobian(-20.0*M_PI*sin(pos[0]*20.0*M_PI), 0, 0, 0, 
-                                   -20.0*M_PI*sin(pos[1]*20.0*M_PI), 0, 0, 0, 
-                                   -20.0*M_PI*sin(pos[2]*20.0*M_PI));
-       forceDevice->setFF_Radius(0.02); // 2cm radius of validity
+       forceDevice->setFF_Jacobian(-4.0*M_PI*sin(pos[0]*200.0*M_PI), 0, 0, 0, 
+                                   -4.0*M_PI*sin(pos[1]*200.0*M_PI), 0, 0, 0, 
+                                   -4.0*M_PI*sin(pos[2]*200.0*M_PI));
+       forceDevice->setFF_Radius(0.15); // radius of validity
        forceDevice->sendForceField();
        forceInEffect = 1;
     }

@@ -18,7 +18,7 @@
 // the appropriate number of buttons and an acceptor for the proper
 // product ID; the baseclass does all the work.
 
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__)
 class VRPN_API vrpn_3DConnexion: public vrpn_Button, public vrpn_Analog, protected vrpn_HidInterface {
 public:
   vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_buttons,
@@ -65,7 +65,9 @@ protected:
   // NOTE:  class_of_service is only applied to vrpn_Analog
   //  values, not vrpn_Button or vrpn_Dial
 
+#ifdef linux
   int set_led(int led_state);
+#endif
 };
 #endif  // not _WIN32
 

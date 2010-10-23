@@ -201,7 +201,7 @@ static void HLCALLBACK computeForceCB(HDdouble force[3], HLcache *cache, void *u
   // through that mechanism.
 
   // Need to add in any constraint forces
-  int i;
+ unsigned i;
   for (i = 0; i < g_active_force_object_list.ConstraintEffects.size(); i++) {
       g_active_force_object_list.CurrentForce += g_active_force_object_list.ConstraintEffects[i]->calcEffectForce(&state);
   }
@@ -675,7 +675,7 @@ void vrpn_Phantom::mainloop(void) {
     hlBeginFrame();
 
       // Render each of the active force objects.
-      int i;
+      unsigned i;
       for (i = 0; i < g_active_force_object_list.Planes.size(); i++) {
         g_active_force_object_list.Planes[i]->renderHL();
       }

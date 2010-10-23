@@ -9,6 +9,7 @@
 			<class name="vrpn.AuxiliaryLoggerRemote"/>
 			<class name="vrpn.ButtonRemote"/>
 			<class name="vrpn.ForceDeviceRemote"/>
+			<class name="vrpn.FunctionGeneratorRemote"/>
 			<class name="vrpn.PoserRemote"/>
 			<class name="vrpn.TextReceiver"/>
 			<class name="vrpn.TextSender"/>

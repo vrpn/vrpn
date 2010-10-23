@@ -341,6 +341,25 @@ template<class CALLBACK_STRUCT> class VRPN_API vrpn_Callback_List {
 public:
   typedef void (VRPN_CALLBACK *HANDLER_TYPE)(void *userdata, const CALLBACK_STRUCT info);
 
+  /// This class requires deep copies.
+  void operator =(const vrpn_Callback_List &from) {
+    // Delete any existing elements in the list.
+    CHANGELIST_ENTRY  *current, *next;
+    current = d_change_list;
+    while (current != NULL) {
+      next = current->next;
+      delete current;
+      current = next;
+    }
+
+    // Copy all elements from the other list.  XXX Side effect, this inverts the order
+    current = from.d_change_list;
+    while (current != NULL) {
+      register_handler(current->userdata, current->handler);
+      current = current->next;
+    }
+  }
+
   /// Call this to add a handler to the list.
   int register_handler(void *userdata, HANDLER_TYPE handler) {
 	CHANGELIST_ENTRY  *new_entry;

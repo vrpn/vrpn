@@ -360,6 +360,10 @@ SOURCE=.\vrpn_Tracker_isense.C
 # End Source File
 # Begin Source File
 
+SOURCE=.\vrpn_Tracker_Isotrak.C
+# End Source File
+# Begin Source File
+
 SOURCE=.\vrpn_Tracker_Liberty.C
 # End Source File
 # Begin Source File
@@ -669,6 +673,10 @@ SOURCE=.\vrpn_Tracker_Fastrak.h
 # Begin Source File
 
 SOURCE=.\vrpn_Tracker_isense.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vrpn_Tracker_Isotrak.h
 # End Source File
 # Begin Source File
 

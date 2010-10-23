@@ -16,13 +16,59 @@
 // to include wiimote.h in the vrpn_WiiMote.h file.
 class vrpn_Wiimote_Device {
 public:
+  vrpn_Wiimote_Device() :
+    device(NULL),
+    which(0),
+	useMS(0),
+	useIR(0),
+	reorderButtons(false),
+    found(false),
+    connected(false) {}
   struct wiimote_t *device;
   unsigned  which;
+  unsigned  useMS;
+  unsigned  useIR;
+  bool reorderButtons;
   bool      found;
   bool      connected;
+
 };
 
 // Helper routines.
+#ifndef	min
+#define min(x,y) ((x)<(y)?(x):(y))
+#endif
+
+unsigned vrpn_WiiMote::map_button(unsigned btn)
+{
+	switch (btn)
+	{
+		case 0: //WIIMOTE_BUTTON_TWO:
+			return 2;
+		case 1: //WIIMOTE_BUTTON_ONE:
+			return 1;
+		case 2: //WIIMOTE_BUTTON_B:
+			return 4;
+		case 3: //WIIMOTE_BUTTON_A:
+			return 3;
+		case 4: //WIIMOTE_BUTTON_MINUS:
+			return 5;
+		case 7: //WIIMOTE_BUTTON_HOME:
+			return 0;
+		case 8: //WIIMOTE_BUTTON_LEFT:
+			return 7;
+		case 9: //WIIMOTE_BUTTON_RIGHT:
+			return 8;
+		case 10: //WIIMOTE_BUTTON_DOWN:
+			return 9;
+		case 11: //WIIMOTE_BUTTON_UP:
+			return 10;
+		case 12: //WIIMOTE_BUTTON_PLUS:
+			return 6;
+		default:
+			return btn;
+	}
+}
 
 void vrpn_WiiMote::handle_event()
 {
@@ -32,7 +78,10 @@ void vrpn_WiiMote::handle_event()
   // then there is a second set of up to 16 buttons that can be read from it.
   unsigned i;
   for (i = 0; i < 16; i++) {
-    buttons[i] = ( wiimote->device->btns & (1 << i) ) != 0;
+	if (wiimote->reorderButtons)
+      buttons[map_button(i)] = ( wiimote->device->btns & (1 << i) ) != 0;
+	else
+      buttons[i] = ( wiimote->device->btns & (1 << i) ) != 0;
   }
 
   if (wiimote->device->exp.type == EXP_NUNCHUK) {
@@ -40,7 +89,7 @@ void vrpn_WiiMote::handle_event()
       buttons[16+i] = ( wiimote->device->exp.nunchuk.btns & (1 << i) ) != 0;
     }
   }
-  
+
   if (wiimote->device->exp.type == EXP_CLASSIC) {
     for (i = 0; i < 16; i++) {
       buttons[32+i] = ( wiimote->device->exp.classic.btns & (1 << i) ) != 0;
@@ -64,7 +113,7 @@ void vrpn_WiiMote::handle_event()
   }
   if (WIIUSE_USING_IR(wiimote->device)) {
     unsigned dot;
-    for (dot = 0; dot < 3; dot++) {
+    for (dot = 0; dot < 4; dot++) {
       if (wiimote->device->ir.dot[dot].visible) {
         channel[4 + 3*dot + 0] = wiimote->device->ir.dot[dot].rx;
         channel[4 + 3*dot + 1] = wiimote->device->ir.dot[dot].ry;
@@ -105,6 +154,44 @@ void vrpn_WiiMote::handle_event()
   // Read the state of the Infrared sensors.
 }
 
+void vrpn_WiiMote::connect_wiimote(int timeout)
+{
+	struct timeval now;
+	char msg[1024];
+	// TODO: use this function in place of the initial connect code!
+
+	wiimote->device = 0;
+	unsigned num_available = wiiuse_find(available_wiimotes, VRPN_WIIUSE_MAX_WIIMOTES, timeout);
+	wiimote->device = wiiuse_get_by_id(available_wiimotes, VRPN_WIIUSE_MAX_WIIMOTES, wiimote->which);
+	if (! wiimote->device ) {
+		vrpn_gettimeofday(&now, NULL);
+		sprintf(msg, "Could not open remote %d (%d found)", wiimote->which, num_available);
+		send_text_message(msg, now, vrpn_TEXT_ERROR);
+		wiimote->found = false;
+	} else {
+		wiimote->found = true;
+	}
+
+	// Make a list containing just the one we want, and then connect to it.
+	wiimote_t *selected_one[1];
+	selected_one[0] = wiimote->device;
+	wiimote->connected = (wiiuse_connect(selected_one, 1) != 0);
+	if (wiimote->connected) {
+		vrpn_gettimeofday(&now, NULL);
+		sprintf(msg, "Connected to remote %d", wiimote->which);
+		send_text_message(msg, now);
+
+		// rumble shortly to acknowledge connection:
+		wiiuse_rumble(wiimote->device, 1);
+		vrpn_SleepMsecs(200);
+		initialize_wiimote_state();
+	} else {
+		vrpn_gettimeofday(&now, NULL);
+		sprintf(msg, "No connection to remote %d", wiimote->which);
+		send_text_message(msg, now, vrpn_TEXT_ERROR);
+	}
+}
+
 void vrpn_WiiMote::initialize_wiimote_state(void)
 {
   if ( !wiimote->device || !wiimote->found || !wiimote->connected) {
@@ -113,49 +200,48 @@ void vrpn_WiiMote::initialize_wiimote_state(void)
 
   // Turn on a light so we know which device we are.
   switch (wiimote->which) {
-    case 0:
+    case 1:
       wiiuse_set_leds(wiimote->device, WIIMOTE_LED_1);
       break;
-    case 1:
+    case 2:
       wiiuse_set_leds(wiimote->device, WIIMOTE_LED_2);
       break;
-    case 2:
+    case 3:
       wiiuse_set_leds(wiimote->device, WIIMOTE_LED_3);
       break;
-    case 3:
+    case 4:
       wiiuse_set_leds(wiimote->device, WIIMOTE_LED_4);
       break;
     default:
-      struct timeval now; 
-      vrpn_gettimeofday(&now, NULL); 
+      struct timeval now;
+      vrpn_gettimeofday(&now, NULL);
       char msg[1024];
-      sprintf(msg, "Too-large remote %d (0-3 available)", wiimote->which);
+      sprintf(msg, "Too-large remote %d (1-4 available)", wiimote->which);
       send_text_message(msg, now, vrpn_TEXT_ERROR);
       break;
   }
 
-  // Ask to look for motion sensing
-  wiiuse_motion_sensing(wiimote->device, 1);
+  // Set motion sensing on or off
+  wiiuse_motion_sensing(wiimote->device, wiimote->useMS);
 
   // Turn off rumbling
   wiiuse_rumble(wiimote->device, 0);
 
-  // Turn on IR sensing
-  wiiuse_set_ir(wiimote->device, 1);
+  // Set IR sensing on or off
+  wiiuse_set_ir(wiimote->device, wiimote->useIR);
 }
 
 // Device constructor.
 // Parameters:
 // - name: VRPN name to assign to this server
 // - c: VRPN connection this device should be attached to
-vrpn_WiiMote::vrpn_WiiMote(const char *name, vrpn_Connection *c, unsigned which):
+vrpn_WiiMote::vrpn_WiiMote(const char *name, vrpn_Connection *c, unsigned which, unsigned useMS, unsigned useIR, unsigned reorderButtons):
 	vrpn_Analog(name, c),
 	vrpn_Button(name, c),
         vrpn_Analog_Output(name, c),
         wiimote(new vrpn_Wiimote_Device)
 {
         int i;
-        char  msg[1024];
 
 	vrpn_Analog::num_channel = min(64, vrpn_CHANNEL_MAX);
         for (i = 0; i < vrpn_Analog::num_channel; i++) {
@@ -187,46 +273,25 @@ vrpn_WiiMote::vrpn_WiiMote(const char *name, vrpn_Connection *c, unsigned which)
 
 	// Register a handler for the no-one's-connected-now message
 	if (register_autodeleted_handler(
-	  d_connection->register_message_type(vrpn_dropped_last_connection), 
+	  d_connection->register_message_type(vrpn_dropped_last_connection),
 	  handle_last_connection_dropped, this)) {
 		FAIL("Can't register self-destruct handler");
 		return;
 	}
 
         // Get a list of available devices and select the one we want.
-        // Look for up to 4 motes.  Timeout in 5 seconds if one not found.
+        // Look for up to VRPN_WIIUSE_MAX_WIIMOTES motes.  Timeout in 5 seconds if one not found.
         wiimote->which = which;
-        wiimote_t **available_wiimotes = wiiuse_init(4);
-        unsigned num_available = wiiuse_find(available_wiimotes, 4, 5);
-        if (num_available < (wiimote->which + 1)) {
-          struct timeval now; 
-          vrpn_gettimeofday(&now, NULL); 
-          sprintf(msg, "Could not open remote %d (%d found)", wiimote->which, num_available);
-          send_text_message(msg, now, vrpn_TEXT_ERROR);
-          wiimote->found = false;
-        } else {
-          wiimote->found = true;
-
-          // Make a list containing just the one we want, and then connect to it.
-          wiimote_t *selected_one[1];
-          wiimote->device = selected_one[0] = available_wiimotes[wiimote->which];
-          wiimote->connected = (wiiuse_connect(selected_one, 1) == 1);
-          if (!wiimote->connected) {
-            struct timeval now; 
-            vrpn_gettimeofday(&now, NULL); 
-            sprintf(msg, "Could not connect to remote %d", wiimote->which);
-            send_text_message(msg, now, vrpn_TEXT_ERROR);
-          }
-        }
-
-        if (wiimote->connected) {
-          initialize_wiimote_state();
-        }
+		wiimote->useMS = useMS;
+		wiimote->useIR = useIR;
+		wiimote->reorderButtons = (reorderButtons!=0);
+        available_wiimotes = wiiuse_init(VRPN_WIIUSE_MAX_WIIMOTES);
+		connect_wiimote(3);
 }
 
 // Device destructor
 vrpn_WiiMote::~vrpn_WiiMote() {
-  // Close the device and 
+  // Close the device and
 
   if (wiimote->connected) {
     wiiuse_disconnect(wiimote->device);
@@ -238,10 +303,22 @@ vrpn_WiiMote::~vrpn_WiiMote() {
 // Poll the device and let the VRPN change notifications fire
 void vrpn_WiiMote::mainloop() {
 	static time_t last_error = time(NULL);
+	static timeval last_reconnect_attempt;
 
         vrpn_gettimeofday(&_timestamp, NULL);
 
-        //XXX Try to connect once a second if we have found but not connected device.
+		if ( wiimote->found && ! wiimote->connected )
+		{
+			// try reconnect every second:
+			timeval diff = vrpn_TimevalDiff(_timestamp, last_reconnect_attempt);
+			if ( diff.tv_sec >= 1 )
+			{
+				last_reconnect_attempt = _timestamp;
+				//reconnect
+				// XXX: timeout=1 means that we block the vrpn server for a whole second!
+				connect_wiimote(1);
+			}
+		}
 
 	server_mainloop();
 
@@ -264,7 +341,9 @@ void vrpn_WiiMote::mainloop() {
             case WIIUSE_DISCONNECT:
             case WIIUSE_UNEXPECTED_DISCONNECT:
               wiimote->connected = false;
+			  wiiuse_disconnect(wiimote->device);
               send_text_message("Disconnected", _timestamp, vrpn_TEXT_ERROR);
+			  last_reconnect_attempt = _timestamp;
               break;
 
             case WIIUSE_READ_DATA:
@@ -300,6 +379,10 @@ void vrpn_WiiMote::mainloop() {
 	// Send any changes out over the connection.
 	vrpn_gettimeofday(&_timestamp, NULL);
 	report_changes();
+}
+
+bool vrpn_WiiMote::isValid() const {
+  return (wiimote->found) && (wiimote->connected);
 }
 
 void vrpn_WiiMote::report(vrpn_uint32 class_of_service) {
@@ -364,7 +447,7 @@ int vrpn_WiiMote::handle_request_channels_message(void* userdata,
     // Read the values from the buffer
     vrpn_unbuffer(&bufptr, &num);
     vrpn_unbuffer(&bufptr, &pad);
-    if (num > me->o_num_channel) 
+    if (num > me->o_num_channel)
     {
          char msg[1024];
          sprintf( msg, "Error:  (handle_request_channels_message):  channels above %d not active; "
@@ -372,7 +455,7 @@ int vrpn_WiiMote::handle_request_channels_message(void* userdata,
          me->send_text_message( msg, p.msg_time, vrpn_TEXT_ERROR );
          num = me->o_num_channel;
     }
-    if (num < 0) 
+    if (num < 0)
     {
          char msg[1024];
          sprintf( msg, "Error:  (handle_request_channels_message):  invalid channel %d.  Squelching.", num );
@@ -388,7 +471,7 @@ int vrpn_WiiMote::handle_request_channels_message(void* userdata,
     } else {
       wiiuse_rumble(me->wiimote->device, 0);
     }
-    
+
     return 0;
 }
 
@@ -396,5 +479,6 @@ int VRPN_CALLBACK vrpn_WiiMote::handle_last_connection_dropped(void *selfPtr, vr
   //XXX Turn off any rumble.
   return 0;
 }
+
 
 #endif  // VRPN_USE_WIIUSE

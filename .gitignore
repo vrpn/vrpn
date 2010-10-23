@@ -1,0 +1,35 @@
+# xcode/mac files
+*~.nib/
+*.perspective
+*.perspectivev3
+*.pbxuser
+*.mode1v3
+.DS_Store
+profile
+._*
+
+# backup files
+*~
+*.bak
+
+# compiled or object files
+*.o
+*.pyc
+*.pyo
+
+# Build/Output Files Directories
+# Xcode/some of my SCons builds
+build/
+# Other SCons builds
+output/
+
+# SCons files
+.sconf_temp/
+.sconsign.dblite
+config.log
+
+# Anjuta files
+.anjuta/
+.anjuta_sym_db.db
+
+docs/

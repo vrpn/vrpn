@@ -108,8 +108,8 @@ int	vrpn_Magellan::reset(void)
 {
 	struct	timeval	timeout, now;
 	unsigned char	inbuf[45];
-	char	*reset_str = "z\rm3\rc30\rnH\rbH\r";	// Reset string sent to box
-	char	*expect_back = "z\rm3\rc30\rnH\rb\r";	// What we expect back
+	const	char	*reset_str = "z\rm3\rc30\rnH\rbH\r";	// Reset string sent to box
+	const	char	*expect_back = "z\rm3\rc30\rnH\rb\r";	// What we expect back
 	int	ret;
 
 	//-----------------------------------------------------------------------

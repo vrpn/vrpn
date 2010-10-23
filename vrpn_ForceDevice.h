@@ -3,7 +3,6 @@
 
 #include "vrpn_Tracker.h"
 #include "vrpn_Button.h"
-#include <quat.h>
 
 #define MAXPLANE 4   //maximum number of planes in the scene 
 

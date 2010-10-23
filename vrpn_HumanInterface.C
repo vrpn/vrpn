@@ -1,5 +1,3 @@
-// NOTE: This currently only compiles under Windows.
-
 #include "vrpn_HumanInterface.h"
 
 #if defined(_WIN32) || defined(__CYGWIN__)
@@ -77,7 +75,7 @@ HID_FUNC(HidD_GetProductString, BOOLEAN, (HANDLE, PVOID, ULONG));
 HID_FUNC(HidD_GetSerialNumberString, BOOLEAN, (HANDLE, PVOID, ULONG));
 HID_FUNC(HidP_GetCaps, LONG, (void *, PHIDP_CAPS));
 
-#endif
+#endif // _HIDSDI_H (Windows DDK)
 
 // createUnnamedEvent creates a manual-reset unnamed event object.
 // This is just a wrapper around CreateEvent.
@@ -116,7 +114,25 @@ vrpn_HidInterface::~vrpn_HidInterface() {
 	CloseHandle(_writeEvent);
 	CloseHandle(_device);
 }
+#endif // Windows
 
+#if defined(__APPLE__)
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <sys/errno.h>
+#include <sysexits.h>
+#include <mach/mach.h>
+#include <mach/mach_error.h>
+#include <IOKit/IOKitLib.h>
+#include <IOKit/IOCFPlugIn.h>
+#include <IOKit/hid/IOHIDLib.h>
+#include <IOKit/hid/IOHIDKeys.h>
+#include <CoreFoundation/CoreFoundation.h>
+#endif // Apple
+
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__)
 // Accessor for USB vendor ID of connected device
 vrpn_uint16 vrpn_HidInterface::vendor() const {
 	return _vendor;
@@ -131,7 +147,9 @@ vrpn_uint16 vrpn_HidInterface::product() const {
 bool vrpn_HidInterface::connected() const {
 	return _working;
 }
+#endif // Windows or Apple
 
+#if defined(_WIN32) || defined(__CYGWIN__)
 // Reconnects the device I/O for the first acceptable device
 // Called automatically by constructor, but userland code can
 // use it to reacquire a hotplugged device.
@@ -326,6 +344,224 @@ void vrpn_HidInterface::send_data(size_t bytes, vrpn_uint8 *buffer) {
 	// Wait for write operation to complete
 	WaitForSingleObject(_writeEvent, INFINITE);
 }
+#endif // Windows
 
-// End of Windows implementation
+#if defined(__APPLE__)
+vrpn_HidInterface::vrpn_HidInterface(vrpn_HidAcceptor *acceptor)
+	: _acceptor(acceptor)
+	, _ioObject(IO_OBJECT_NULL)
+	, _interface(0)
+	, _gotdata(0)
+	, _gotsize(0)
+	, _working(false)
+	, _vendor(0)
+	, _product(0)
+{
+	// _buffer
+	_acceptor->reset();
+	reconnect();
+}
+
+vrpn_HidInterface::~vrpn_HidInterface()
+{
+	// TODO
+}
+
+void ReaderReportCallback(
+	void *target, IOReturn result, void *refcon, void *sender, MACOSX_HID_UINT32T size
+	)
+{
+	vrpn_HidInterface* vrpnHidInterface = (vrpn_HidInterface*) target;
+	unsigned char* buffer = vrpnHidInterface->getBuffer();
+//	printf("ReaderReportCallback, got %d bytes for report type %d\n", size, buffer[0]);
+/*
+	if (size == 2)
+	{
+		printf("ReaderReportCallback, got %d bytes %d %d\n", size, buffer[0], buffer[1]);
+	}
+*/
+	vrpnHidInterface->gotData(size);
+}
+
+void vrpn_HidInterface::reconnect()
+{
+	io_iterator_t hidObjectIterator = 0;
+	io_object_t hidDevice = IO_OBJECT_NULL;
+	CFMutableDictionaryRef hidMatchDictionary = IOServiceMatching(kIOHIDDeviceKey);
+	IOReturn result = IOServiceGetMatchingServices(kIOMasterPortDefault, hidMatchDictionary, &hidObjectIterator);
+	if ((result != kIOReturnSuccess) || (hidObjectIterator == 0))
+	{
+		fprintf(stderr, "%s\n", "No matching HID class devices found.");
+		return;
+	}
+
+	if (hidObjectIterator)
+	{
+		while ((hidDevice = IOIteratorNext(hidObjectIterator)))
+		{
+			CFMutableDictionaryRef hidProperties = 0;
+			int vendorID = 0 , productID = 0 , version = 0 , usage = 0 , usagePage = 0;
+			char path[512] = "", manufacturer[256] = "", product[256] = "";
+			result = IORegistryEntryCreateCFProperties(hidDevice, &hidProperties, kCFAllocatorDefault, kNilOptions);
+			if ((result == KERN_SUCCESS) && hidProperties)
+			{
+				CFNumberRef vendorIDRef, productIDRef, versionRef, usageRef, usagePageRef;
+				CFStringRef manufacturerRef, productRef;
+
+				vendorIDRef = (CFNumberRef)CFDictionaryGetValue(hidProperties, CFSTR(kIOHIDVendorIDKey));
+				if (vendorIDRef)
+				{
+					CFNumberGetValue(vendorIDRef, kCFNumberIntType, &vendorID);
+					CFRelease(vendorIDRef);
+				}
+				productIDRef = (CFNumberRef)CFDictionaryGetValue(hidProperties, CFSTR(kIOHIDProductIDKey));
+				if (productIDRef)
+				{
+					CFNumberGetValue(productIDRef, kCFNumberIntType, &productID);
+					CFRelease(productIDRef);
+				}
+				versionRef = (CFNumberRef)CFDictionaryGetValue(hidProperties, CFSTR(kIOHIDVersionNumberKey));
+				if (versionRef)
+				{
+					CFNumberGetValue(versionRef, kCFNumberIntType, &version);
+					CFRelease(versionRef);
+				}
+				usageRef = (CFNumberRef)CFDictionaryGetValue(hidProperties, CFSTR(kIOHIDPrimaryUsageKey));
+				if (usageRef)
+				{
+					CFNumberGetValue(usageRef, kCFNumberIntType, &usage);
+					CFRelease(usageRef);
+				}
+				usagePageRef = (CFNumberRef)CFDictionaryGetValue(hidProperties, CFSTR(kIOHIDPrimaryUsagePageKey));
+				if (usagePageRef)
+				{
+					CFNumberGetValue(usagePageRef, kCFNumberIntType, &usagePage);
+					CFRelease(usagePageRef);
+				}
+				manufacturerRef = (CFStringRef)CFDictionaryGetValue(hidProperties, CFSTR(kIOHIDManufacturerKey));
+				if (manufacturerRef)
+				{
+					CFStringGetCString(manufacturerRef, manufacturer, 256, CFStringGetSystemEncoding() );
+					CFRelease(manufacturerRef);
+				}
+				productRef = (CFStringRef)CFDictionaryGetValue(hidProperties, CFSTR(kIOHIDProductKey));
+				if (productRef)
+				{
+					CFStringGetCString(productRef, product, 256, CFStringGetSystemEncoding() );
+					CFRelease(productRef);
+				}
+				result = IORegistryEntryGetPath(hidDevice, kIOServicePlane, path);
+				// TODO handle result
+			}
+
+			vrpn_HIDDEVINFO vrpnInfo = {0};
+			vrpnInfo.vendor = vendorID;
+			vrpnInfo.product = productID;
+			vrpnInfo.version = version;
+			vrpnInfo.usagePage = usagePage;
+			vrpnInfo.usage =  usage;
+			vrpnInfo.devicePath = path;
+			if (_acceptor->accept(vrpnInfo))
+			{
+				fprintf(stderr, "vrpn_HidInterface: found %04x:%04x - %s - %s\n",
+					vendorID,
+					productID,
+					manufacturer,
+					product);
+				_vendor = vendorID;
+				_product = productID;
+				_ioObject = hidDevice;
+				break;
+			}
+#if 0
+			else
+			{
+				fprintf(stderr, "vrpn_HidInterface: ignoring device %04x:%04x - %s - %s\n",
+					vendorID,
+					productID,
+					manufacturer,
+					product);
+			}
 #endif
+			IOObjectRelease(hidDevice);
+		}
+		IOObjectRelease(hidObjectIterator);
+	}
+	if (_ioObject)
+	{
+		IOCFPlugInInterface **plugInInterface;
+		SInt32 score;
+		result = IOCreatePlugInInterfaceForService(hidDevice, kIOHIDDeviceUserClientTypeID, kIOCFPlugInInterfaceID, &plugInInterface, &score);
+		if (result != kIOReturnSuccess)
+		{
+			fprintf(stderr, "vrpn_HidInterface: Unable to IOCreatePlugInInterfaceForService\n");
+		}
+		IOHIDDeviceInterface122** hidDeviceInterface = 0;
+		(*plugInInterface)->QueryInterface(plugInInterface,
+										   CFUUIDGetUUIDBytes(kIOHIDDeviceInterfaceID),
+										   (LPVOID *) &(_interface));
+		(*plugInInterface)->Release(plugInInterface);
+		// we have the _interface
+
+		CFRunLoopSourceRef eventSource;
+		mach_port_t port;
+		result = (*_interface)->open(_interface, 0);
+		if (result != kIOReturnSuccess)
+		{
+			fprintf(stderr, "vrpn_HidInterface: Unable to open interface\n");
+		}
+		result = (*_interface)->createAsyncPort(_interface, &port);
+		if (result != kIOReturnSuccess)
+		{
+			fprintf(stderr, "vrpn_HidInterface: Unable to createAsyncPort\n");
+		}
+		result = (*_interface)->createAsyncEventSource(_interface, &eventSource);
+		if (result != kIOReturnSuccess)
+		{
+			fprintf(stderr, "vrpn_HidInterface: Unable to createAsyncEventSource\n");
+		}
+		result = (*_interface)->setInterruptReportHandlerCallback(_interface,
+														 _buffer, 512,
+														 ReaderReportCallback,
+														 this, 0);
+		if (result != kIOReturnSuccess)
+		{
+			fprintf(stderr, "vrpn_HidInterface: Unable to setInterruptReportHandlerCallback\n");
+		}
+		result = (*_interface)->startAllQueues(_interface);
+		if (result != kIOReturnSuccess)
+		{
+			fprintf(stderr, "vrpn_HidInterface: Unable to startAllQueues\n");
+		}
+
+		CFRunLoopAddSource(CFRunLoopGetCurrent(), eventSource, kCFRunLoopCommonModes);
+		if (CFRunLoopContainsSource(CFRunLoopGetCurrent(), eventSource,
+									kCFRunLoopCommonModes) != true)
+		{
+			fprintf(stderr, "vrpn_HidInterface: Unable to CFRunLoopAddSource\n");
+		}
+	}
+}
+
+void vrpn_HidInterface::update() {
+	SInt32 reason = CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0, true);
+	if (reason == kCFRunLoopRunHandledSource)
+	{
+//		printf("kCFRunLoopRunHandledSource\n");
+	}
+
+	if (_gotdata)
+	{
+//		printf("call on_data_received\n");
+		on_data_received(_gotsize, _buffer);
+		_gotdata = false;
+		_gotsize = 0;
+	}
+}
+
+void vrpn_HidInterface::send_data(size_t bytes, vrpn_uint8 *buffer) {
+	// TODO
+}
+
+#endif // Apple
+

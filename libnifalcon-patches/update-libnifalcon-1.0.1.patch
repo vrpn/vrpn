@@ -1,0 +1,454 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 87f2f45..d8382e0 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -147,32 +149,32 @@ IF(BUILD_SWIG_BINDINGS)
+   ADD_SUBDIRECTORY(lang/swig)
+ ENDIF(BUILD_SWIG_BINDINGS)
+ 
+-# pkg-config (use the CPack information)
+-# FIND_PACKAGE(PkgConfig)
+-# if(PKG_CONFIG_EXECUTABLE)
+-#   set(PC_SHORT_NAME "${BUILDSYS_CPACK_NAME}")
+-#   set(PC_LONG_NAME "${BUILDSYS_CPACK_NAME}")
+-#   set(PC_LIBRARY_NAME "${LIBNIFALCON_CPP}")
+-#   set(PC_DESCRIPTION "${CPACK_PACKAGE_DESCRIPTION_SUMMARY}")
+-#   set(PC_VERSION "${LIBNIFALCON_MAJOR_VERSION}.${LIBNIFALCON_MINOR_VERSION}.${LIBNIFALCON_BUILD_VERSION}")
+-
+-#   if(LIBUSB_1_FOUND)
+-#     set(PC_REQUIRES "${PC_REQUIRES}libusb-1.0 ")
+-#     set(PC_LINK_FLAGS "${PC_LINK_FLAGS}-lnifalcon_comm_libusb ")
+-#   endif(LIBUSB_1_FOUND)
+-
+-#   set(PC_LINK_FLAGS "${lib${PC_LIBRARY_NAME}_LINK_FLAGS} ${PC_LINK_FLAGS}")
+-#   set(PC_LINK_FLAGS "-l${PC_LIBRARY_NAME} ${PC_LINK_FLAGS}")
+-#   set(PC_COMPILE_FLAGS "${lib${PC_LIBRARY_NAME}_COMPILE_FLAGS}")
+-#   set(PC_CONFIGURED_FILE
+-#     ${CMAKE_BINARY_DIR}/libnifalcon.pc
+-#     )
+-#   MESSAGE("-- Generating ${PC_CONFIGURED_FILE}")
+-#   configure_file(
+-#     ${CMAKE_SOURCE_DIR}/libnifalcon.pc.cmake
+-#     ${PC_CONFIGURED_FILE}
+-#     @ONLY
+-#     )
+-#   set(PKG_CONFIG_DIR "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig")
+-#   install(FILES ${PC_CONFIGURED_FILE} DESTINATION ${PKG_CONFIG_DIR})
+-# endif(PKG_CONFIG_EXECUTABLE)
++#pkg-config (use the CPack information)
++FIND_PACKAGE(PkgConfig)
++if(PKG_CONFIG_EXECUTABLE)
++  set(PC_SHORT_NAME "${BUILDSYS_CPACK_NAME}")
++  set(PC_LONG_NAME "${BUILDSYS_CPACK_NAME}")
++  set(PC_LIBRARY_NAME "${LIBNIFALCON_CPP}")
++  set(PC_DESCRIPTION "${CPACK_PACKAGE_DESCRIPTION_SUMMARY}")
++  set(PC_VERSION "${LIBNIFALCON_MAJOR_VERSION}.${LIBNIFALCON_MINOR_VERSION}.${LIBNIFALCON_BUILD_VERSION}")
++
++  if(LIBUSB_1_FOUND)
++    set(PC_REQUIRES "${PC_REQUIRES}libusb-1.0 ")
++    set(PC_LINK_FLAGS "${PC_LINK_FLAGS}-lnifalcon_comm_libusb ")
++  endif(LIBUSB_1_FOUND)
++
++  set(PC_LINK_FLAGS "${lib${PC_LIBRARY_NAME}_LINK_FLAGS} ${PC_LINK_FLAGS}")
++  set(PC_LINK_FLAGS "-l${PC_LIBRARY_NAME} ${PC_LINK_FLAGS}")
++  set(PC_COMPILE_FLAGS "${lib${PC_LIBRARY_NAME}_COMPILE_FLAGS}")
++  set(PC_CONFIGURED_FILE
++    ${CMAKE_BINARY_DIR}/libnifalcon.pc
++    )
++  MESSAGE("-- Generating ${PC_CONFIGURED_FILE}")
++  configure_file(
++    ${CMAKE_SOURCE_DIR}/libnifalcon.pc.cmake
++    ${PC_CONFIGURED_FILE}
++    @ONLY
++    )
++  set(PKG_CONFIG_DIR "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig")
++  install(FILES ${PC_CONFIGURED_FILE} DESTINATION ${PKG_CONFIG_DIR})
++endif(PKG_CONFIG_EXECUTABLE)
+diff --git a/README.txt b/README.txt
+index 66ba252..ce864cd 100644
+--- a/README.txt
++++ b/README.txt
+@@ -110,6 +110,7 @@ Jared Allen
+ Alastair Barrow
+ Niall Begley
+ Edgar Berdahl
++Axel Kohlmeyer
+ Steven Martin
+ Kevin Ouellet
+ Devanshi Shah
+diff --git a/examples/CMakeLists.txt b/examples/CMakeLists.txt
+index f3e4626..04eadb6 100644
+--- a/examples/CMakeLists.txt
++++ b/examples/CMakeLists.txt
+@@ -96,6 +96,7 @@ ELSE(NOT Boost_PROGRAM_OPTIONS_FOUND)
+     falcon_test_cli/FalconTestBase.cpp 
+     falcon_test_cli/FalconLoopTimeTest.cpp 
+     falcon_test_cli/FalconCubeTest.cpp 
++    falcon_test_cli/FalconSphereTest.cpp 
+     falcon_test_cli/FalconWallTest.cpp 
+     falcon_test_cli/FalconColorTest.cpp
+     )
+diff --git a/examples/falcon_test_cli/FalconSphereTest.cpp b/examples/falcon_test_cli/FalconSphereTest.cpp
+new file mode 100644
+index 0000000..bb7a9f0
+--- /dev/null
++++ b/examples/falcon_test_cli/FalconSphereTest.cpp
+@@ -0,0 +1,137 @@
++#include "FalconSphereTest.h"
++
++#include "falcon/core/FalconDevice.h"
++#include "falcon/grip/FalconGripFourButton.h"
++#include "falcon/kinematic/FalconKinematicStamper.h"
++
++FalconSphereTest::FalconSphereTest(boost::shared_ptr<libnifalcon::FalconDevice> d) :
++	FalconTestBase(d),
++	m_radius(0.028),
++	m_stiffness(1000.0),
++	m_isInitializing(true),
++	m_hasPrintedInitMsg(false),
++	m_plusButtonDown(false),
++	m_minusButtonDown(false),
++	m_centerButtonDown(false),
++	m_forwardButtonDown(false)
++{
++	setPrintOnCount(1000);
++	m_falconDevice->setFalconKinematic<libnifalcon::FalconKinematicStamper>();
++	m_falconDevice->setFalconGrip<libnifalcon::FalconGripFourButton>();
++	m_oldpos[0] = m_oldpos[1] = m_oldpos[2] = 0.0;
++}
++
++void FalconSphereTest::runFunction()
++{
++	if(!m_falconDevice->runIOLoop())
++		return;
++
++	boost::array<double, 3> pos = m_falconDevice->getPosition();
++
++	if(m_isInitializing)
++	{
++		if(!m_hasPrintedInitMsg)
++		{
++			std::cout << "Move the end effector all the way out" << std::endl;
++			m_hasPrintedInitMsg = true;
++		}
++		if(pos[2] > .170)
++		{
++			std::cout << "Starting sphere simulation..." << std::endl;
++			m_isInitializing = false;
++			tstart();
++		} else {
++			m_oldpos = pos;
++		}
++		m_lastLoopCount = m_falconDevice->getFalconFirmware()->getLoopCount();
++		return;
++	}
++
++	// increase radius
++	if(m_falconDevice->getFalconGrip()->getDigitalInputs() 
++	   & libnifalcon::FalconGripFourButton::PLUS_BUTTON)
++	{
++		m_plusButtonDown = true;
++	}
++	else if(m_plusButtonDown)
++	{
++		m_plusButtonDown = false;
++		m_radius += 0.002;
++		std::cout << "Plus button pressed... radius now:" << m_radius << std::endl;
++		return;
++	}
++
++	// decrease radius
++	if(m_falconDevice->getFalconGrip()->getDigitalInputs() 
++	   & libnifalcon::FalconGripFourButton::MINUS_BUTTON)
++	{
++		m_minusButtonDown = true;
++	}
++	else if(m_minusButtonDown)
++	{
++		m_minusButtonDown = false;
++		m_radius -= 0.002;
++		std::cout << "Minus button pressed... radius now:" << m_radius << std::endl;
++		return;
++	}
++
++	if(m_falconDevice->getFalconGrip()->getDigitalInputs() 
++	   & libnifalcon::FalconGripFourButton::FORWARD_BUTTON)
++	{
++		m_forwardButtonDown = true;
++	} else{
++		m_forwardButtonDown = false;
++	}
++
++	// make sphere soft radius or "slippery"
++	if(m_falconDevice->getFalconGrip()->getDigitalInputs() 
++	   & libnifalcon::FalconGripFourButton::CENTER_BUTTON)
++	{
++		if(m_forwardButtonDown)
++		{
++			m_stiffness = -300.0;
++                } 
++                else 
++                {
++			m_stiffness = 1000.0;
++                }
++	} else{
++                if(m_forwardButtonDown)
++                {
++			m_stiffness = 500.0;
++		} 
++		else 
++		{
++			m_stiffness = 100.0;
++		}
++	}
++
++
++	boost::array<double, 3> force;
++	force[0] = 0.0;
++	force[1] = 0.0;
++	force[2] = 0.0;
++	
++	// offset z 
++	pos[2] -= 0.11;
++	
++	double dist = sqrt(pos[0]*pos[0]+pos[1]*pos[1]+pos[2]*pos[2]);
++
++	if (dist < m_radius) {
++		if (m_forwardButtonDown) {
++			force[0] = (m_oldpos[0] - pos[0]) * m_stiffness * 10.0;
++			force[1] = (m_oldpos[1] - pos[1]) * m_stiffness * 10.0;
++			force[2] = (m_oldpos[2] - pos[2]) * m_stiffness * 10.0;
++		} else {
++			force[0] = (pos[0] / dist) * (m_radius - dist) * m_stiffness;
++			force[1] = (pos[1] / dist) * (m_radius - dist) * m_stiffness;
++			force[2] = (pos[2] / dist) * (m_radius - dist) * m_stiffness;
++		} 
++	}
++        // dampen position update to remove noise.
++	m_oldpos[0] = 0.4*m_oldpos[0]+ 0.6*pos[0];
++	m_oldpos[1] = 0.4*m_oldpos[1]+ 0.6*pos[1];
++	m_oldpos[2] = 0.4*m_oldpos[2]+ 0.6*pos[2];
++	m_falconDevice->setForce(force);
++}
++
+diff --git a/examples/falcon_test_cli/FalconSphereTest.h b/examples/falcon_test_cli/FalconSphereTest.h
+new file mode 100644
+index 0000000..c06bc11
+--- /dev/null
++++ b/examples/falcon_test_cli/FalconSphereTest.h
+@@ -0,0 +1,27 @@
++#ifndef FALCON_SPHERE_TEST_H
++#define FALCON_SPHERE_TEST_H
++
++#include "FalconTestBase.h"
++#include "falcon/gmtl/Vec.h"
++
++class FalconSphereTest : public FalconTestBase
++{
++public:
++	FalconSphereTest(boost::shared_ptr<libnifalcon::FalconDevice> d);
++protected:
++	double m_stiffness;
++    double m_radius;
++    boost::array<double, 3> m_oldpos;
++    bool m_plusButtonDown;
++    bool m_minusButtonDown;
++    bool m_centerButtonDown;
++    bool m_forwardButtonDown;
++    
++
++	void runFunction();
++	bool m_isInitializing;
++	bool m_hasPrintedInitMsg;
++
++};
++
++#endif
+diff --git a/examples/falcon_test_cli/falcon_test_cli.cpp b/examples/falcon_test_cli/falcon_test_cli.cpp
+index e6879e8..ef3f72f 100644
+--- a/examples/falcon_test_cli/falcon_test_cli.cpp
++++ b/examples/falcon_test_cli/falcon_test_cli.cpp
+@@ -24,6 +24,7 @@
+ #include "falcon/util/FalconCLIBase.h"
+ #include "FalconLoopTimeTest.h"
+ #include "FalconCubeTest.h"
++#include "FalconSphereTest.h"
+ #include "FalconWallTest.h"
+ #include "FalconColorTest.h"
+ 
+@@ -60,6 +61,7 @@ public:
+ 			("loop_time_test", "Loops infinitely, printing time every 1000 I/O loops (should be as near 1.0 as possible)")
+ #endif
+ 			("cube_test", "Presents a cube-shaped surface to touch")
++			("sphere_test", "Presents a sphere-shaped surface to touch")
+ 			("color_test", "Fades LEDs based on the position of the end effector")
+ 			("x_wall_test", "Presents a wall surface to touch (force along x axis)")
+ 			("y_wall_test", "Presents a wall surface to touch (force along y axis)")
+@@ -84,6 +86,12 @@ public:
+ 			std::cout << "Running cube test" << std::endl;
+ 			t.reset(new FalconCubeTest(m_falconDevice));
+ 		}
++		else if(m_varMap.count("sphere_test"))
++		{
++			while(!calibrateDevice() && !stop);
++			std::cout << "Running sphere test" << std::endl;
++			t.reset(new FalconSphereTest(m_falconDevice));
++		}
+ 		else if(m_varMap.count("color_test"))
+ 		{
+ 			while(!calibrateDevice() && !stop);
+diff --git a/include/falcon/core/FalconDevice.h b/include/falcon/core/FalconDevice.h
+index 300616d..d4488d9 100644
+--- a/include/falcon/core/FalconDevice.h
++++ b/include/falcon/core/FalconDevice.h
+@@ -103,7 +103,7 @@ namespace libnifalcon
+ 		bool setFirmwareFile(const std::string& filename);
+ 
+ 		/**
+-		 * Conveinence function, calls loadFirmware with a certain number of retries
++		 * Convenience function, calls loadFirmware with a certain number of retries
+ 		 *
+ 		 * @param retries Number of times to retry loading firmware before quitting
+ 		 * @param skip_checksum Whether or not to skip checksum tests when loading firmware (useful with ftd2xx on non-windows platforms)
+diff --git a/include/falcon/gmtl/MatrixOps.h b/include/falcon/gmtl/MatrixOps.h
+index f0bef0a..943c8aa 100644
+--- a/include/falcon/gmtl/MatrixOps.h
++++ b/include/falcon/gmtl/MatrixOps.h
+@@ -436,7 +436,7 @@ namespace gmtl
+    {
+       //gmtlASSERT( ROWS == COLS && "invertFull only works with nxn matrices" );
+ 
+-      const DATA_TYPE pivot_eps(1e-20);         // Epsilon for the pivot value test (delta with test against zero)
++      const DATA_TYPE pivot_eps(1e-10);         // Epsilon for the pivot value test (delta with test against zero)
+ 
+       // Computer inverse of matrix using a Gaussian-Jordan elimination.
+       // Uses max pivot at each point
+@@ -468,7 +468,7 @@ namespace gmtl
+ 
+          if(gmtl::Math::isEqual(DATA_TYPE(0),pivot_value,pivot_eps))
+          {
+-            std::cerr << "*** pivot = " << pivot_value << " in mat_inv. ***\n";
++            // std::cerr << "*** pivot = " << pivot_value << " in mat_inv. ***\n";
+             result.setError();
+             return result;
+          }
+@@ -551,6 +551,7 @@ namespace gmtl
+              n        dimenstion of matrix a.
+       */
+ 
++      const DATA_TYPE pivot_eps(1e-10);         // Epsilon for the pivot value test (delta with test against zero)
+       const DATA_TYPE* a = src.getData();
+       DATA_TYPE* b = result.mData;
+ 
+@@ -601,9 +602,9 @@ namespace gmtl
+          pivot = m[ r[ k] ][ c[ k] ];
+ 
+ 
+-         if ( gmtl::Math::abs( pivot) <= 1e-20)
++         if ( gmtl::Math::abs( pivot) <= pivot_eps)
+          {
+-            std::cerr << "*** pivot = " << pivot << " in mat_inv. ***\n";
++            // std::cerr << "*** pivot = " << pivot << " in mat_inv. ***\n";
+             result.setError();
+             return result;
+          }
+diff --git a/include/falcon/grip/FalconGripFourButton.h b/include/falcon/grip/FalconGripFourButton.h
+index 486a49d..216a5a0 100644
+--- a/include/falcon/grip/FalconGripFourButton.h
++++ b/include/falcon/grip/FalconGripFourButton.h
+@@ -26,15 +26,21 @@ namespace libnifalcon
+ 	{
+ 	public:
+ 		/**
+-		 * Enumeration for the default 4 button grip that comes with the falcon
+-		 *
++		 * Enumeration for the default 4 button grip that comes with the falcon.
++		 * This grip has plus and minus buttonsr, one button in the center and 
++		 * one pointing forward. For convenience also symbolic names are provided.
+ 		 */
+ 		enum
+ 		{
+ 			BUTTON_1 = 0x1,
+ 			BUTTON_2 = 0x2,
+ 			BUTTON_3 = 0x4,
+-			BUTTON_4 = 0x8
++			BUTTON_4 = 0x8,
++		/* symbolic names */
++			PLUS_BUTTON    = 0x1,
++			FORWARD_BUTTON = 0x2,
++			CENTER_BUTTON  = 0x4,
++			MINUS_BUTTON   = 0x8
+ 		} FourButtonGripButtons;
+ 		
+ 		/**
+diff --git a/src/comm/FalconCommLibUSB.cpp b/src/comm/FalconCommLibUSB.cpp
+index b38b3a0..1ff056a 100644
+--- a/src/comm/FalconCommLibUSB.cpp
++++ b/src/comm/FalconCommLibUSB.cpp
+@@ -649,13 +649,11 @@ namespace libnifalcon
+ 			((FalconCommLibUSB*)transfer->user_data)->setHasBytesAvailable(true);
+ 			((FalconCommLibUSB*)transfer->user_data)->setReceived();
+ 		}
+-		//We will always at least get modem status bytes back
+-		//If we get nothing back, we have disconnected.
+-		//Thanks to Devanshi Shah for this fix.
+ 		else
+ 		{
+-			LOG_ERROR("Device disconnected");
+-			((FalconCommLibUSB*)transfer->user_data)->m_isCommOpen = false;
++			// We can't assume 0 bytes back = disconnected on linux, as it causes massive problems
++			// with other applications (mainly Pd). So, just set that we got nothing back and try to figure out
++			// some other way to detect unplugs
+ 			((FalconCommLibUSB*)transfer->user_data)->setBytesAvailable(0);
+ 			((FalconCommLibUSB*)transfer->user_data)->setHasBytesAvailable(false);
+ 			((FalconCommLibUSB*)transfer->user_data)->setReceived();
+diff --git a/src/util/FalconCLIBase.cpp b/src/util/FalconCLIBase.cpp
+index 6723622..a8d70cc 100644
+--- a/src/util/FalconCLIBase.cpp
++++ b/src/util/FalconCLIBase.cpp
+@@ -154,8 +154,12 @@ namespace libnifalcon
+ 		}
+ 		else
+ 		{
+-			std::cout << "No device index specified to open, cannot continue (--help for options)" << std::endl;
+-			return false;
++                        // assume device index 0, if none given
++			if(!m_falconDevice->open(0))
++			{
++				std::cout << "Cannot open falcon device index 0 - Lib Error Code: " << m_falconDevice->getErrorCode() << " Device Error Code: " << m_falconDevice->getFalconComm()->getDeviceErrorCode() << std::endl;
++				return false;
++			}
+ 		}
+ 
+ 		//There's only one kind of firmware right now, so automatically set that.
+@@ -256,26 +260,20 @@ namespace libnifalcon
+ 
+ 	bool FalconCLIBase::calibrateDevice()
+ 	{
+-		bool homing = false;
+ 		m_falconDevice->getFalconFirmware()->setHomingMode(true);
+ 		m_falconDevice->runIOLoop();
+ 		if(!m_falconDevice->getFalconFirmware()->isHomed())
+ 		{
+-			if(!homing)
++			m_falconDevice->getFalconFirmware()->setLEDStatus(libnifalcon::FalconFirmware::RED_LED);
++			if(m_displayCalibrationMessage)
+ 			{
+-				m_falconDevice->getFalconFirmware()->setLEDStatus(libnifalcon::FalconFirmware::RED_LED);
+-				if(m_displayCalibrationMessage)
+-				{
+-					std::cout << "Falcon not currently calibrated. Move control all the way out then push straight all the way in." << std::endl;
+-					m_displayCalibrationMessage = false;
+-				}
++				std::cout << "Falcon not currently calibrated. Move control all the way out then push straight all the way in." << std::endl;
++				m_displayCalibrationMessage = false;
+ 			}
+-			homing = true;
+ 			return false;
+ 		}
+ 		std::cout << "Falcon calibrated successfully." << std::endl;
+ 		m_falconDevice->getFalconFirmware()->setLEDStatus(libnifalcon::FalconFirmware::GREEN_LED);
+-		homing = false;
+ 		return true;
+ 	}
+ }

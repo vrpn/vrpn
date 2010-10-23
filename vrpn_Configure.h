@@ -1,4 +1,16 @@
+// -*- c++ -*-
 #ifndef	VRPN_CONFIGURE_H
+
+//--------------------------------------------------------------
+/* IMPORTANT NOTE: If you are using CMake to build VRPN, this
+   file DOES NOT affect your build.  vrpn_Configure.h.cmake_in
+   is processed automatically into a vrpn_Configure.h file
+   placed in your build directory using the choices you make in
+   CMake.  Until all modules are fully configured using CMake,
+   you may have to edit the paths that are listed near the
+   bottom of the first section of that file, then re-run CMake
+   to regenerate vrpn_Configure.h. */
+//--------------------------------------------------------------
 
 //--------------------------------------------------------------
 /* This file contains configuration options for VRPN.  The first
@@ -168,19 +180,19 @@
 //#define VRPN_USE_MICROSCRIBE
 
 //------------------------
-// Compiles the VRPN libary with the PhaseSpace Tracker using the 
+// Compiles the VRPN libary with the PhaseSpace Tracker using the
 // PhaseSpace OWL API on Linux and Windows.
 //
 // In Linux:
 // The PhaseSpace header files (owl.h, etc) and libraries (libowlsock)
-// should be placed in the phasespace directory at the same level as 
+// should be placed in the phasespace directory at the same level as
 // the vrpn folder.  Also, PHASESPACE needs to be uncommented in the
-// server_src/Makefile so that the libraries are properly linked.  
+// server_src/Makefile so that the libraries are properly linked.
 // libowlsock.so will need to be present in the directory of the
 // final executable or in the default library path such as /usr/lib
 //
-// In Windows: 
-// The PhaseSpace header files (owl.h, etc) should be placed in the 
+// In Windows:
+// The PhaseSpace header files (owl.h, etc) should be placed in the
 // phasespace directory at the same level as the vrpn folder.
 // libowlsock.lib will need to be located there as well.
 // libowlsock.dll will need to be in the path or with the executable
@@ -241,6 +253,24 @@
 // that uses WiiUse in Windows.
 //#define VRPN_USE_WIIUSE
 
+// Instructs VRPN to compile code to handle Hillcrest Labs' Freespace
+// devices such as the Loop, and FRCM.  You will also need the libfreespace
+// library which is available at http://libfreespace.hillcrestlabs.com/content/download.
+// There are prebuilt binaries for Windows, and source available that should work
+// on Windows, Linux or OS X.  You will need to make sure the header files
+// and library are accessible to the compiler.  libfreespace is released under
+// the LGPL and we (Hillcrest Labs) view static and dynamic linking as the same.
+// We (Hillcrest Labs) do not require code linked to libfreespace (statically or
+// dynamically) to be released under any particular license.
+//#define VRPN_USE_FREESPACE
+
+//------------------------
+// Instructs VRPN to include code for the Novint Falcon haptic device.
+// Access is provided through the libnifalcon library library on Windows,
+// MacOSX and Linux. This may require additional libraries for programming
+// USB devices. Please consult the corresponding homepages.
+//#define VRPN_USE_LIBNIFALCON
+
 //------------------------------------------------------------------//
 // SYSTEM CONFIGURATION SECTION                                     //
 // EDIT THESE DEFINITIONS TO POINT TO OPTIONAL LIBRARIES.  THEY ARE //
@@ -254,7 +284,17 @@
 #define VRPN_WIIUSE_H "F:/taylorr/STM/src/wiiuse_v0.12/src/wiiuse.h"
 #define VRPN_WIIUSE_LIB_PATH "F:/taylorr/STM/src/wiiuse_v0.12/src"
 
+#if defined(VRPNDLL_EXPORTS) && !defined(VRPN_USE_SHARED_LIBRARY)
+  #define VRPN_FREESPACE_LIB_PATH "../libfreespace/lib"
+#else
+  #define VRPN_FREESPACE_LIB_PATH "../../libfreespace/lib"
+#endif
+
+#ifdef linux
+#define VRPN_HDAPI_PATH         "/usr/lib64"
+#else
 #define VRPN_HDAPI_PATH         VRPN_SYSTEMDRIVE "/Program Files/SensAble/3DTouch/lib/"
+#endif
 #define VRPN_HDAPI_UTIL_PATH    VRPN_SYSTEMDRIVE "/Program Files/SensAble/3DTouch/utilities/lib/"
 #define VRPN_GHOST_31_PATH      VRPN_SYSTEMDRIVE "/Program Files/SensAble/GHOST/v3.1/lib/"
 #define VRPN_GHOST_40_PATH      VRPN_SYSTEMDRIVE "/Program Files/SensAble/GHOST/v4.0/lib/"
@@ -290,6 +330,15 @@
     #pragma comment(lib, VRPN_WIIUSE_LIB_PATH "/msvc/Debug/wiiuse.lib")
   #else
     #pragma comment(lib, VRPN_WIIUSE_LIB_PATH "/msvc/Release/wiiuse.lib")
+  #endif
+#endif
+
+#ifdef  VRPN_USE_FREESPACE
+  #ifdef	_DEBUG
+//    #pragma comment(lib, VRPN_FREESPACE_LIB_PATH "/Debug/libfreespaced.lib")
+    #pragma comment(lib, VRPN_FREESPACE_LIB_PATH "/Release/libfreespace.lib")
+  #else
+    #pragma comment(lib, VRPN_FREESPACE_LIB_PATH "/Release/libfreespace.lib")
   #endif
 #endif
 
@@ -364,7 +413,7 @@
 #pragma comment (lib, VRPN_USDIGITAL_PATH "SEIDrv32.lib")
 #endif
 
-// Load Microscribe-3D SDK libraries 
+// Load Microscribe-3D SDK libraries
 // If this doesn't match where you have installed these libraries,
 // edit the following lines to point at the correct libraries.  Do
 // this here rather than in the project settings so that it can be
@@ -391,15 +440,11 @@
 #pragma comment (lib, "wsock32.lib")  // VRPN requires the Windows Sockets library.
 #ifdef VRPN_USE_SHARED_LIBRARY
 #ifdef VRPNDLL_EXPORTS
-#define  VRPN_API		 __declspec(dllexport) 
+#define  VRPN_API		 __declspec(dllexport)
 #else
 #define  VRPN_API		 __declspec(dllimport)
-#pragma comment (lib, "vrpndll.lib")
 #endif
 #else
-#ifndef VRPNDLL_NOEXPORTS
-#pragma comment (lib, "vrpn.lib")     // We'll need the VRPN library
-#endif
 #define  VRPN_API
 #endif
 #define	 VRPN_CALLBACK	 __stdcall
@@ -411,4 +456,3 @@
 
 #define	VRPN_CONFIGURE_H
 #endif
-

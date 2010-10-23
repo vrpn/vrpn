@@ -184,7 +184,7 @@ int gethostname (char *, int);
 // proposed strategy handles both partial major version compatibility as well
 // as accidental partial minor version incompatibility.
 //
-const char * vrpn_MAGIC = (const char *) "vrpn: ver. 07.21";
+const char * vrpn_MAGIC = (const char *) "vrpn: ver. 07.26";
 const char * vrpn_FILE_MAGIC = (const char *) "vrpn: ver. 04.00";
 const int vrpn_MAGICLEN = 16;  // Must be a multiple of vrpn_ALIGN bytes!
 
@@ -2491,7 +2491,7 @@ int write_vrpn_cookie (char * buffer, int length, long remote_log_mode)
   if (length < vrpn_MAGICLEN + vrpn_ALIGN + 1)
     return -1;
 
-  sprintf(buffer, "%s  %c", vrpn_MAGIC, remote_log_mode + '0');
+  sprintf(buffer, "%s  %c", vrpn_MAGIC, static_cast<char>(remote_log_mode + '0'));
   return 0;
 }
 
@@ -3768,13 +3768,19 @@ void vrpn_Endpoint_IP::poll_for_cookie (const timeval * pTimeout) {
 }
 
 int vrpn_Endpoint_IP::finish_new_connection_setup (void) {
-  char recvbuf [501];  // HACK
+  char *recvbuf = NULL;
   vrpn_int32 sendlen;
   long received_logmode;
   unsigned short udp_portnum;
   int i;
 
   sendlen = vrpn_cookie_size();
+  recvbuf = new char[sendlen];
+  if (recvbuf == NULL) {
+    fprintf(stderr,"vrpn_Endpoint_IP::finish_new_connection_setup(): Out of memory when allocating receiver buffer\n");
+    status = BROKEN;
+    return -1;
+  }
 
   // Try to read the magic cookie from the server.
   int ret = vrpn_noint_block_read(d_tcpSocket, recvbuf, sendlen);
@@ -3804,7 +3810,7 @@ int vrpn_Endpoint_IP::finish_new_connection_setup (void) {
   if ((received_logmode < 0) ||
       (received_logmode > (vrpn_LOG_INCOMING | vrpn_LOG_OUTGOING))) {
     fprintf(stderr, "vrpn_Endpoint::finish_new_connection_setup:  "
-                    "Got invalid log mode %d\n", received_logmode);
+                    "Got invalid log mode %d\n", static_cast<int>(received_logmode));
     status = BROKEN;
     return -1;
   }
@@ -3899,6 +3905,7 @@ int vrpn_Endpoint_IP::finish_new_connection_setup (void) {
     (*d_connectionCounter)++;
   }
 
+  delete [] recvbuf;
   return 0;
 }
 
@@ -4515,14 +4522,14 @@ int vrpn_Connection::pack_message(vrpn_uint32 len, struct timeval time,
 
   // Make sure type is either a system type (-) or a legal user type
   if (type >= d_dispatcher->numTypes()) {
-    printf("vrpn_Connection::pack_message: bad type (%ld)\n", type);
+    printf("vrpn_Connection::pack_message: bad type (%d)\n", type);
     return -1;
   }
 
   // If this is not a system message, make sure the sender is legal.
   if (type >= 0) {
     if ((sender < 0) || (sender >= d_dispatcher->numSenders())) {
-      printf("vrpn_Connection::pack_message: bad sender (%ld)\n", sender);
+      printf("vrpn_Connection::pack_message: bad sender (%d)\n", sender);
       return -1;
     }
   }
@@ -4994,27 +5001,33 @@ get_log_names(char **local_in_logname, char **local_out_logname, char **remote_i
 	vrpn_Endpoint* endpoint = d_endpoints[0];
 	// XXX it is possible to have more than one endpoint, and other endpoints may have other log names
 
-	*local_in_logname = endpoint->d_inLog->getName();
-	*local_out_logname = endpoint->d_outLog->getName();
+	if( local_in_logname != NULL ) *local_in_logname = endpoint->d_inLog->getName();
+	if( local_out_logname != NULL )*local_out_logname = endpoint->d_outLog->getName();
 
-	if( endpoint->d_remoteInLogName != NULL )
+	if( remote_in_logname != NULL )
 	{
-		*remote_in_logname = new char[ strlen( endpoint->d_remoteInLogName ) + 1 ];
-		strcpy( *remote_in_logname, endpoint->d_remoteInLogName );
-	}
-	else
-	{
-		*remote_in_logname = NULL;
+		if( endpoint->d_remoteInLogName != NULL )
+		{
+			*remote_in_logname = new char[ strlen( endpoint->d_remoteInLogName ) + 1 ];
+			strcpy( *remote_in_logname, endpoint->d_remoteInLogName );
+		}
+		else
+		{
+			*remote_in_logname = NULL;
+		}
 	}
 
-	if( endpoint->d_remoteOutLogName != NULL )
+	if( remote_out_logname != NULL )
 	{
-		*remote_out_logname = new char[ strlen( endpoint->d_remoteOutLogName ) + 1 ];
-		strcpy( *remote_out_logname, endpoint->d_remoteOutLogName );
-	}
-	else
-	{
-		*remote_out_logname = NULL;
+		if( endpoint->d_remoteOutLogName != NULL )
+		{
+			*remote_out_logname = new char[ strlen( endpoint->d_remoteOutLogName ) + 1 ];
+			strcpy( *remote_out_logname, endpoint->d_remoteOutLogName );
+		}
+		else
+		{
+			*remote_out_logname = NULL;
+		}
 	}
 }
 
@@ -5537,7 +5550,7 @@ void vrpn_Connection_IP::server_check_for_incoming_connections
       sscanf(msg, "%*s %d", &port);   // get the port
       //fill in NIC address
       unsigned long addr_num = ntohl(from.sin_addr.s_addr);
-      sprintf(msg, "%u.%u.%u.%u %d", 
+      sprintf(msg, "%lu.%lu.%lu.%lu %d", 
               (addr_num) >> 24,
               (addr_num >> 16) & 0xff,
               (addr_num >> 8) & 0xff,

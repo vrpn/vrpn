@@ -203,11 +203,11 @@ bool vrpn_Tracker::ensure_enough_unit2sensors(unsigned num)
 
     // Initialize all of the new elements
     for (i = num_unit2sensors; i < num; i++) {
-      unit2sensor[i][0] = unit2sensor[i][1] = unit2sensor[i][2] = 0.0;
-      unit2sensor_quat[i][0] = 0.0;
-      unit2sensor_quat[i][1] = 0.0;
-      unit2sensor_quat[i][2] = 0.0;
-      unit2sensor_quat[i][3] = 1.0;
+      newlist[i][0] = newlist[i][1] = newlist[i][2] = 0.0;
+      newqlist[i][0] = 0.0;
+      newqlist[i][1] = 0.0;
+      newqlist[i][2] = 0.0;
+      newqlist[i][3] = 1.0;
     }
 
     // Switch the new lists in for the old, and delete the old.
