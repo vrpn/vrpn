@@ -207,6 +207,10 @@ bool vrpn_Tracker_PhaseSpace::enableTracker(bool enable)
   
   if(!owlRunning) return false;
 
+  // Scale the reports for this tracker to be in meters rather than
+  // in MM, to match the VRPN standard.
+  owlScale(MM_TO_METERS);
+
   if(!slave)
     {
 
@@ -290,10 +294,9 @@ int vrpn_Tracker_PhaseSpace::get_report(void)
       //set the sensor 
       d_sensor = INDEX(markers[i].id);
       
-      //set the position in METERS (VRPN standard) rather than MM
-      pos[0] = markers[i].x * MM_TO_METERS;
-      pos[1] = markers[i].y * MM_TO_METERS;
-      pos[2] = markers[i].z * MM_TO_METERS;
+      pos[0] = markers[i].x;
+      pos[1] = markers[i].y;
+      pos[2] = markers[i].z;
 
       //raw positions have no rotation
       d_quat[0] = 0;
@@ -312,9 +315,9 @@ int vrpn_Tracker_PhaseSpace::get_report(void)
       d_sensor = r2s_map[rigids[j].id ];
 
       //set the position
-      pos[0] = rigids[j].pose[0] * MM_TO_METERS;
-      pos[1] = rigids[j].pose[1] * MM_TO_METERS;
-      pos[2] = rigids[j].pose[2] * MM_TO_METERS;
+      pos[0] = rigids[j].pose[0];
+      pos[1] = rigids[j].pose[1];
+      pos[2] = rigids[j].pose[2];
 
       //set the orientation quaternion
       //OWL has the scale factor first, whereas VRPN has it last.
