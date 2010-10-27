@@ -199,7 +199,6 @@ endif()
 ###
 # libnifalcon
 ###
-set(LIBNIFALCON_MARK_AS_ADVANCED OFF)
 find_package(LibNifalcon)
 if(LIBNIFALCON_FOUND)
 	option(VRPN_USE_LIBNIFALCON "Build with libnifalcon support to access Novint Falcon devices" ON)
