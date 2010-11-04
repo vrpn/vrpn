@@ -474,7 +474,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Tracker_NDI_Polaris.C
 	vrpn_Tracker_NovintFalcon.C
 	vrpn_Tracker_PhaseSpace.C
-	vrpn_Tracker_TrivisioColaibri.C
+	vrpn_Tracker_TrivisioColibri.C
 	vrpn_Tracker_WiimoteHead.C
 	vrpn_UNC_Joystick.C
 	vrpn_VPJoystick.C
@@ -546,7 +546,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Tracker_NDI_Polaris.h
 	vrpn_Tracker_NovintFalcon.h
 	vrpn_Tracker_PhaseSpace.h
-	vrpn_Tracker_TrivisioColaibri.h
+	vrpn_Tracker_TrivisioColibri.h
 	vrpn_Tracker_WiimoteHead.h
 	vrpn_UNC_Joystick.h
 	vrpn_VPJoystick.h
