@@ -145,6 +145,7 @@
 // executable lives or somewhere on the path.
 //#define VRPN_INCLUDE_INTERSENSE
 
+
 //-----------------------
 // Instructs VRPN library and server to include code that uses
 // the National Instruments Nidaq libary to control analog outputa.
@@ -179,19 +180,19 @@
 //#define VRPN_USE_MICROSCRIBE
 
 //------------------------
-// Compiles the VRPN libary with the PhaseSpace Tracker using the 
+// Compiles the VRPN libary with the PhaseSpace Tracker using the
 // PhaseSpace OWL API on Linux and Windows.
 //
 // In Linux:
 // The PhaseSpace header files (owl.h, etc) and libraries (libowlsock)
-// should be placed in the phasespace directory at the same level as 
+// should be placed in the phasespace directory at the same level as
 // the vrpn folder.  Also, PHASESPACE needs to be uncommented in the
-// server_src/Makefile so that the libraries are properly linked.  
+// server_src/Makefile so that the libraries are properly linked.
 // libowlsock.so will need to be present in the directory of the
 // final executable or in the default library path such as /usr/lib
 //
-// In Windows: 
-// The PhaseSpace header files (owl.h, etc) should be placed in the 
+// In Windows:
+// The PhaseSpace header files (owl.h, etc) should be placed in the
 // phasespace directory at the same level as the vrpn folder.
 // libowlsock.lib will need to be located there as well.
 // libowlsock.dll will need to be in the path or with the executable
@@ -252,16 +253,25 @@
 // that uses WiiUse in Windows.
 //#define VRPN_USE_WIIUSE
 
-// Instructs VRPN to compile code to handle Hillcrest Labs' Freespace 
+// Instructs VRPN to compile code to handle Hillcrest Labs' Freespace
 // devices such as the Loop, and FRCM.  You will also need the libfreespace
 // library which is available at http://libfreespace.hillcrestlabs.com/content/download.
-// There are prebuilt binaries for Windows, and source available that should work 
+// There are prebuilt binaries for Windows, and source available that should work
 // on Windows, Linux or OS X.  You will need to make sure the header files
 // and library are accessible to the compiler.  libfreespace is released under
 // the LGPL and we (Hillcrest Labs) view static and dynamic linking as the same.
-// We (Hillcrest Labs) do not require code linked to libfreespace (statically or 
+// We (Hillcrest Labs) do not require code linked to libfreespace (statically or
 // dynamically) to be released under any particular license.
 //#define VRPN_USE_FREESPACE
+
+// Instructs VRPN to compile code to use Trivisio's Colibri inertial
+// tracker.  You will also need the SDK, which is available at 
+// http://www.trivisio.com/products/motiontracking/colibri#download
+// (tested on Windows).  VRPN_TRIVISIOCOLIBRI_H and VRPN_TRIVISIOCOLIBRI_LIB_PATH
+// below point to the default installation locations on Windows.  Edit them 
+// if installed elsewhere.  Note that Trivisio.dll and pthreadVC2.dll need to be in 
+// the path when running the server on Windows
+#define VRPN_USE_TRIVISIOCOLIBRI
 
 //------------------------------------------------------------------//
 // SYSTEM CONFIGURATION SECTION                                     //
@@ -282,7 +292,14 @@
   #define VRPN_FREESPACE_LIB_PATH "../../libfreespace/lib"
 #endif
 
+#define VRPN_TRIVISIOCOLIBRI_H          "C:/Program Files/Trivisio/Colibri/include/TrivisioColibri.h"
+#define VRPN_TRIVISIOCOLIBRI_LIB_PATH   "C:/Program Files/Trivisio/Colibri/lib/"
+
+#ifdef linux
+#define VRPN_HDAPI_PATH         "/usr/lib64"
+#else
 #define VRPN_HDAPI_PATH         VRPN_SYSTEMDRIVE "/Program Files/SensAble/3DTouch/lib/"
+#endif
 #define VRPN_HDAPI_UTIL_PATH    VRPN_SYSTEMDRIVE "/Program Files/SensAble/3DTouch/utilities/lib/"
 #define VRPN_GHOST_31_PATH      VRPN_SYSTEMDRIVE "/Program Files/SensAble/GHOST/v3.1/lib/"
 #define VRPN_GHOST_40_PATH      VRPN_SYSTEMDRIVE "/Program Files/SensAble/GHOST/v4.0/lib/"
@@ -401,13 +418,18 @@
 #pragma comment (lib, VRPN_USDIGITAL_PATH "SEIDrv32.lib")
 #endif
 
-// Load Microscribe-3D SDK libraries 
+// Load Microscribe-3D SDK libraries
 // If this doesn't match where you have installed these libraries,
 // edit the following lines to point at the correct libraries.  Do
 // this here rather than in the project settings so that it can be
 // turned on and off using the definition above.
 #ifdef        VRPN_USE_MICROSCRIBE
 #pragma comment (lib, "armdll32.lib")
+#endif
+
+// Load Trivisio Colibri library
+#ifdef  VRPN_USE_TRIVISIOCOLIBRI
+#pragma comment (lib, VRPN_TRIVISIOCOLIBRI_LIB_PATH "Trivisio.lib")
 #endif
 
 // This will be defined in the VRPN (non-DLL) project and nothing else
@@ -428,7 +450,7 @@
 #pragma comment (lib, "wsock32.lib")  // VRPN requires the Windows Sockets library.
 #ifdef VRPN_USE_SHARED_LIBRARY
 #ifdef VRPNDLL_EXPORTS
-#define  VRPN_API		 __declspec(dllexport) 
+#define  VRPN_API		 __declspec(dllexport)
 #else
 #define  VRPN_API		 __declspec(dllimport)
 #endif
@@ -444,4 +466,3 @@
 
 #define	VRPN_CONFIGURE_H
 #endif
-

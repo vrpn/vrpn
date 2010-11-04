@@ -4053,6 +4053,46 @@ int vrpn_Generic_Server_Object::setup_DreamCheeky(char * & pch, char * line, FIL
 #endif
 }
 
+int vrpn_Generic_Server_Object::setup_Tracker_TrivisioColibri(char * & pch, char * line, FILE * config_file) {
+#ifdef	VRPN_USE_TRIVISIOCOLIBRI
+  char s2 [LINESIZE];
+  int numSensors, Hz, bufLen;
+
+  next();
+  // Get the arguments (wiimote_name, controller index)
+  if (sscanf(pch,"%511s%d%d%d",s2,&numSensors,&Hz,&bufLen) != 4) {
+    fprintf(stderr,"Bad vrpn_Tracker_TrivisioColibri line: %s\n",line);
+    return -1;
+  }
+
+  // Make sure there's room for a new tracker
+  if (num_trackers >= VRPN_GSO_MAX_TRACKERS) {
+    fprintf(stderr,"Too many trackers in config file");
+    return -1;
+  }
+
+  // Open the Trivisio Colibri if we can.
+  if (verbose) {
+    printf("Opening vrpn_Tracker_TrivisioColibri: %s with %d sensors, %d Hz, and %d bufLen", 
+      s2, numSensors, Hz, bufLen);
+  }
+
+  trackers[num_trackers] = new vrpn_Tracker_TrivisioColibri(s2, connection, numSensors, Hz, bufLen);
+
+  if (NULL == trackers[num_trackers]) {
+    fprintf(stderr, "Failed to create new vrpn_Tracker_TrivisioColibri\n");
+    return -1;
+  } else {
+    num_trackers++;
+  }
+
+  return 0;
+#else
+  fprintf(stderr, "vrpn_server: Can't open Trivisio Colibri: VRPN_USE_TRIVISIOCOLIBRI not defined in vrpn_Configure.h!\n");
+  return -1;
+#endif
+}
+
 
 vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connection_to_use, const char *config_file_name, int port, bool be_verbose, bool bail_on_open_error) :
   connection(connection_to_use),
@@ -4305,6 +4345,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
             CHECK(setup_WiiMote);
 	  } else if (isit("vrpn_Freespace")) {
             CHECK(setup_Freespace);
+      } else if (isit("vrpn_Tracker_TrivisioColibri")) {
+            CHECK(setup_Tracker_TrivisioColibri);
 // BUW additions
           } else if (isit("vrpn_Atmel")) {
             CHECK(setup_Atmel);

@@ -78,6 +78,8 @@
 #include "vrpn_WiiMote.h"
 #include "vrpn_Freespace.h"
 #include "vrpn_DreamCheeky.h"
+// added by David Borland
+#include "vrpn_Tracker_TrivisioColibri.h"
 
 // BUW additions
 #include "vrpn_Atmel.h"
@@ -295,11 +297,12 @@ protected:
   int setup_WiiMote (char * & pch, char * line, FILE * config_file);
   int setup_Freespace (char * & pch, char * line, FILE * config_file);
   int setup_DreamCheeky (char * & pch, char * line, FILE * config_file) ;
+  int setup_Tracker_TrivisioColibri(char * &pch, char * line, FILE * config_file);
 
   // BUW additions
   int setup_Atmel(char* &pch, char *line, FILE *config_file);
   int setup_Event_Mouse(char* &pch, char *line, FILE *config_file);
-  int setup_inertiamouse (char * & pch, char * line, FILE * config_file);
+  int setup_inertiamouse (char * & pch, char * line, FILE * config_file); 
 };
 
 #endif
