@@ -271,7 +271,7 @@
 // below point to the default installation locations on Windows.  Edit them 
 // if installed elsewhere.  Note that Trivisio.dll and pthreadVC2.dll need to be in 
 // the path when running the server on Windows
-#define VRPN_USE_TRIVISIOCOLIBRI
+//#define VRPN_USE_TRIVISIOCOLIBRI
 
 //------------------------------------------------------------------//
 // SYSTEM CONFIGURATION SECTION                                     //

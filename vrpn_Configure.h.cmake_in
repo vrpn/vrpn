@@ -287,6 +287,16 @@
 //#define VRPN_USE_FREESPACE
 #cmakedefine VRPN_USE_FREESPACE
 
+// Instructs VRPN to compile code to use Trivisio's Colibri inertial
+// tracker.  You will also need the SDK, which is available at 
+// http://www.trivisio.com/products/motiontracking/colibri#download
+// (tested on Windows).  VRPN_TRIVISIOCOLIBRI_H and VRPN_TRIVISIOCOLIBRI_LIB_PATH
+// below point to the default installation locations on Windows.  Edit them 
+// if installed elsewhere.  Note that Trivisio.dll and pthreadVC2.dll need to be in 
+// the path when running the server on Windows
+//#define VRPN_USE_TRIVISIOCOLIBRI
+#cmakedefine VRPN_USE_TRIVISIOCOLIBRI
+
 //------------------------------------------------------------------//
 // SYSTEM CONFIGURATION SECTION                                     //
 // EDIT THESE DEFINITIONS TO POINT TO OPTIONAL LIBRARIES.  THEY ARE //
@@ -305,6 +315,9 @@
 #else
   #define VRPN_FREESPACE_LIB_PATH "../../libfreespace/lib"
 #endif
+
+#define VRPN_TRIVISIOCOLIBRI_H          "C:/Program Files/Trivisio/Colibri/include/TrivisioColibri.h"
+#define VRPN_TRIVISIOCOLIBRI_LIB_PATH   "C:/Program Files/Trivisio/Colibri/lib/"
 
 #define VRPN_HDAPI_PATH         VRPN_SYSTEMDRIVE "/Program Files/SensAble/3DTouch/lib/"
 #define VRPN_HDAPI_UTIL_PATH    VRPN_SYSTEMDRIVE "/Program Files/SensAble/3DTouch/utilities/lib/"
@@ -425,6 +438,11 @@
 // turned on and off using the definition above.
 #ifdef        VRPN_USE_MICROSCRIBE
 #pragma comment (lib, "armdll32.lib")
+#endif
+
+// Load Trivisio Colibri library
+#ifdef  VRPN_USE_TRIVISIOCOLIBRI
+#pragma comment (lib, VRPN_TRIVISIOCOLIBRI_LIB_PATH "Trivisio.lib")
 #endif
 
 // This will be defined in the VRPN (non-DLL) project and nothing else
