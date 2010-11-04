@@ -20,9 +20,9 @@ typedef struct{long QuadPart,HighPart,LowPart;} LARGE_INTEGER;
 
 // RMT I hate that this has to be here, but things blow up in the compilation
 // if it is not.
-#if defined(WIN32) || defined(__CYGWIN__) || defined(linux)
+#if defined(_WIN32) || defined(__CYGWIN__)
 #include <windows.h>
-#else
+#elif !defined(linux)
 // Jean SIMARD <jean.simard@limsi.fr>
 // Without <windows.h>, we need to define the type 'LARGE_INTEGER'.
 typedef union {
