@@ -84,22 +84,36 @@ void vrpn_WiiMote::handle_event()
       buttons[i] = ( wiimote->device->btns & (1 << i) ) != 0;
   }
 
-  if (wiimote->device->exp.type == EXP_NUNCHUK) {
-    for (i = 0; i < 16; i++) {
-      buttons[16+i] = ( wiimote->device->exp.nunchuk.btns & (1 << i) ) != 0;
-    }
-  }
+  switch (wiimote->device->exp.type) {
+    case EXP_NONE:
+		// No expansion buttons to grab
+		break;
+    case EXP_NUNCHUK:
+        for (i = 0; i < 16; i++) {
+            buttons[16+i] = ( wiimote->device->exp.nunchuk.btns & (1 << i) ) != 0;
+        }
+        break;
 
-  if (wiimote->device->exp.type == EXP_CLASSIC) {
-    for (i = 0; i < 16; i++) {
-      buttons[32+i] = ( wiimote->device->exp.classic.btns & (1 << i) ) != 0;
-    }
-  }
+    case EXP_CLASSIC:
+        for (i = 0; i < 16; i++) {
+            buttons[32+i] = ( wiimote->device->exp.classic.btns & (1 << i) ) != 0;
+        }
+        break;
 
-  if (wiimote->device->exp.type == EXP_GUITAR_HERO_3) {
-    for (i = 0; i < 16; i++) {
-      buttons[48+i] = ( wiimote->device->exp.gh3.btns & (1 << i) ) != 0;
-    }
+    case EXP_GUITAR_HERO_3:
+        for (i = 0; i < 16; i++) {
+            buttons[48+i] = ( wiimote->device->exp.gh3.btns & (1 << i) ) != 0;
+        }
+        break;
+
+    case EXP_WII_BOARD:
+        // The balance board pretends to be its own wiimote, with only an "a" button
+        // Use to calibrate, in a perfect world..
+        if (IS_PRESSED(wiimote->device, WIIMOTE_BUTTON_A))
+        {
+            wiiuse_set_wii_board_calib(wiimote->device);
+        }
+        break;
   }
 
   //-------------------------------------------------------------------------
@@ -127,27 +141,56 @@ void vrpn_WiiMote::handle_event()
   }
 
   // See which secondary controller is installed and report
-  if (wiimote->device->exp.type == EXP_NUNCHUK) {
-    channel[16 + 0] = wiimote->device->exp.nunchuk.gforce.x;
-    channel[16 + 1] = wiimote->device->exp.nunchuk.gforce.y;
-    channel[16 + 2] = wiimote->device->exp.nunchuk.gforce.z;
-    channel[16 + 3] = wiimote->device->exp.nunchuk.js.ang;
-    channel[16 + 4] = wiimote->device->exp.nunchuk.js.mag;
-  }
+  switch (wiimote->device->exp.type) {
+	case EXP_NONE:
+		// No expansion analogs to grab
+		break;
 
-  if (wiimote->device->exp.type == EXP_CLASSIC) {
-    channel[32 + 0] = wiimote->device->exp.classic.l_shoulder;
-    channel[32 + 1] = wiimote->device->exp.classic.r_shoulder;
-    channel[32 + 2] = wiimote->device->exp.classic.ljs.ang;
-    channel[32 + 3] = wiimote->device->exp.classic.ljs.mag;
-    channel[32 + 4] = wiimote->device->exp.classic.rjs.ang;
-    channel[32 + 5] = wiimote->device->exp.classic.rjs.mag;
-  }
+    case EXP_NUNCHUK:
+	    channel[16 + 0] = wiimote->device->exp.nunchuk.gforce.x;
+	    channel[16 + 1] = wiimote->device->exp.nunchuk.gforce.y;
+	    channel[16 + 2] = wiimote->device->exp.nunchuk.gforce.z;
+	    channel[16 + 3] = wiimote->device->exp.nunchuk.js.ang;
+	    channel[16 + 4] = wiimote->device->exp.nunchuk.js.mag;
+		break;
 
-  if (wiimote->device->exp.type == EXP_GUITAR_HERO_3) {
-    channel[48 + 0] = wiimote->device->exp.gh3.whammy_bar;
-    channel[48 + 1] = wiimote->device->exp.gh3.js.ang;
-    channel[48 + 2] = wiimote->device->exp.gh3.js.mag;
+	case EXP_CLASSIC:
+	    channel[32 + 0] = wiimote->device->exp.classic.l_shoulder;
+	    channel[32 + 1] = wiimote->device->exp.classic.r_shoulder;
+	    channel[32 + 2] = wiimote->device->exp.classic.ljs.ang;
+	    channel[32 + 3] = wiimote->device->exp.classic.ljs.mag;
+	    channel[32 + 4] = wiimote->device->exp.classic.rjs.ang;
+	    channel[32 + 5] = wiimote->device->exp.classic.rjs.mag;
+		break;
+
+  	case EXP_GUITAR_HERO_3:
+	    channel[48 + 0] = wiimote->device->exp.gh3.whammy_bar;
+	    channel[48 + 1] = wiimote->device->exp.gh3.js.ang;
+	    channel[48 + 2] = wiimote->device->exp.gh3.js.mag;
+		break;
+
+  	case EXP_WII_BOARD:
+		printf("Got a wii board report: %f, %f, %f, %f\n", wiimote->device->exp.wb.tl, wiimote->device->exp.wb.tr, wiimote->device->exp.wb.bl, wiimote->device->exp.wb.br);
+		//printf("Got a wii board report: %d, %d, %d, %d\n", wiimote->device->exp.wb.rtl, wiimote->device->exp.wb.rtr, wiimote->device->exp.wb.rbl, wiimote->device->exp.wb.rbr);
+  		//printf("")
+		channel[64 + 0] = wiimote->device->exp.wb.tl;
+	    channel[64 + 1] = wiimote->device->exp.wb.tr;
+	    channel[64 + 2] = wiimote->device->exp.wb.bl;
+		channel[64 + 3] = wiimote->device->exp.wb.br;
+		/* raw channels
+		channel[64 + 4] = wiimote->device->exp.wb.rtl;
+	    channel[64 + 5] = wiimote->device->exp.wb.rtr;
+	    channel[64 + 6] = wiimote->device->exp.wb.rbl;
+		channel[64 + 7] = wiimote->device->exp.wb.rbr;
+		*/
+		break;
+
+	default:
+		struct timeval now;
+		vrpn_gettimeofday(&now, NULL);
+		char msg[1024];
+		sprintf(msg, "Unknown Wii Remote expansion type: device->exp.type = %d", wiimote->device->exp.type);
+		send_text_message(msg, now, vrpn_TEXT_ERROR);
   }
 
   //-------------------------------------------------------------------------
@@ -243,7 +286,7 @@ vrpn_WiiMote::vrpn_WiiMote(const char *name, vrpn_Connection *c, unsigned which,
 {
         int i;
 
-	vrpn_Analog::num_channel = min(64, vrpn_CHANNEL_MAX);
+	vrpn_Analog::num_channel = min(96, vrpn_CHANNEL_MAX);
         for (i = 0; i < vrpn_Analog::num_channel; i++) {
           channel[i] = 0;
         }
@@ -363,12 +406,21 @@ void vrpn_WiiMote::mainloop() {
               send_text_message("Guitar Hero 3 controller inserted", _timestamp);
               break;
 
+			case WIIUSE_WII_BOARD_CTRL_INSERTED:
+			  send_text_message("Wii Balance Board controller inserted/detected", _timestamp);
+			  break;
+
             case WIIUSE_NUNCHUK_REMOVED:
             case WIIUSE_CLASSIC_CTRL_REMOVED:
             case WIIUSE_GUITAR_HERO_3_CTRL_REMOVED:
               send_text_message("An expansion controller was removed", _timestamp,
                 vrpn_TEXT_WARNING);
               break;
+
+			case WIIUSE_WII_BOARD_CTRL_REMOVED:
+			  send_text_message("Wii Balance Board controller removed/disconnected", _timestamp,
+                vrpn_TEXT_WARNING);
+			  break;
 
             default:
               send_text_message("unknown event", _timestamp);
