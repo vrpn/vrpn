@@ -200,6 +200,8 @@ void vrpn_WiiMote::initialize_wiimote_state(void)
 
   // Turn on a light so we know which device we are.
   switch (wiimote->which) {
+    case 0: /// number 0 is deprecated
+      wiimote->which = 1;
     case 1:
       wiiuse_set_leds(wiimote->device, WIIMOTE_LED_1);
       break;
