@@ -160,7 +160,7 @@ void vrpn_WiiMote::connect_wiimote(int timeout)
 	char msg[1024];
 	// TODO: use this function in place of the initial connect code!
 
-	wiimote->device = 0;
+	wiimote->device = NULL;
 	unsigned num_available = wiiuse_find(available_wiimotes, VRPN_WIIUSE_MAX_WIIMOTES, timeout);
 	wiimote->device = wiiuse_get_by_id(available_wiimotes, VRPN_WIIUSE_MAX_WIIMOTES, wiimote->which);
 	if (! wiimote->device ) {
