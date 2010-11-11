@@ -105,7 +105,7 @@ void vrpn_WiiMote::handle_event()
             buttons[48+i] = ( wiimote->device->exp.gh3.btns & (1 << i) ) != 0;
         }
         break;
-
+#ifdef EXP_WII_BOARD
     case EXP_WII_BOARD:
         // The balance board pretends to be its own wiimote, with only an "a" button
         // Use to calibrate, in a perfect world..
@@ -114,6 +114,7 @@ void vrpn_WiiMote::handle_event()
             wiiuse_set_wii_board_calib(wiimote->device);
         }
         break;
+#endif
   }
 
   //-------------------------------------------------------------------------
@@ -169,6 +170,7 @@ void vrpn_WiiMote::handle_event()
 	    channel[48 + 2] = wiimote->device->exp.gh3.js.mag;
 		break;
 
+#ifdef EXP_WII_BOARD
   	case EXP_WII_BOARD:
 		printf("Got a wii board report: %f, %f, %f, %f\n", wiimote->device->exp.wb.tl, wiimote->device->exp.wb.tr, wiimote->device->exp.wb.bl, wiimote->device->exp.wb.br);
 		//printf("Got a wii board report: %d, %d, %d, %d\n", wiimote->device->exp.wb.rtl, wiimote->device->exp.wb.rtr, wiimote->device->exp.wb.rbl, wiimote->device->exp.wb.rbr);
@@ -184,7 +186,7 @@ void vrpn_WiiMote::handle_event()
 		channel[64 + 7] = wiimote->device->exp.wb.rbr;
 		*/
 		break;
-
+#endif
 	default:
 		struct timeval now;
 		vrpn_gettimeofday(&now, NULL);
@@ -406,9 +408,11 @@ void vrpn_WiiMote::mainloop() {
               send_text_message("Guitar Hero 3 controller inserted", _timestamp);
               break;
 
+#ifdef EXP_WII_BOARD
 			case WIIUSE_WII_BOARD_CTRL_INSERTED:
 			  send_text_message("Wii Balance Board controller inserted/detected", _timestamp);
 			  break;
+#endif
 
             case WIIUSE_NUNCHUK_REMOVED:
             case WIIUSE_CLASSIC_CTRL_REMOVED:
@@ -416,11 +420,12 @@ void vrpn_WiiMote::mainloop() {
               send_text_message("An expansion controller was removed", _timestamp,
                 vrpn_TEXT_WARNING);
               break;
-
+#ifdef EXP_WII_BOARD
 			case WIIUSE_WII_BOARD_CTRL_REMOVED:
 			  send_text_message("Wii Balance Board controller removed/disconnected", _timestamp,
                 vrpn_TEXT_WARNING);
 			  break;
+#endif
 
             default:
               send_text_message("unknown event", _timestamp);
