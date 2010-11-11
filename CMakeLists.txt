@@ -88,6 +88,15 @@ endif()
 
 set_default_build_type("RelWithDebInfo")
 
+# Force use of our CMake-processed configuration header before the stock one.
+include_directories("${PROJECT_BINARY_DIR}")
+
+
+# Include directory needed by all of the files
+include_directories(${VRPN_SOURCE_DIR}
+	${VRPN_SOURCE_DIR}/atmellib
+	${VRPN_SOURCE_DIR}/quat)
+
 #-----------------------------------------------------------------------------
 # Libraries we need to do our thing.
 #
@@ -280,9 +289,6 @@ endif()
 # to the source code
 configure_file("${PROJECT_SOURCE_DIR}/vrpn_Configure.h.cmake_in"
 	"${PROJECT_BINARY_DIR}/vrpn_Configure.h")
-
-# Force use of our CMake-processed configuration header before the stock one.
-include_directories("${PROJECT_BINARY_DIR}")
 
 get_force_include_definitions(CONFIG_H_FLAG
 	"${PROJECT_BINARY_DIR}/vrpn_Configure.h")
@@ -621,12 +627,6 @@ if(VRPN_BUILD_CLIENT_LIBRARY)
 
 	add_cppcheck(vrpn STYLE UNUSED_FUNCTIONS)
 endif()
-
-
-# Include directory needed by all of the files
-include_directories(${VRPN_SOURCE_DIR}
-	${VRPN_SOURCE_DIR}/atmellib
-	${VRPN_SOURCE_DIR}/quat)
 
 add_subdirectory(client_src)
 
