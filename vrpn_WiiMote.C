@@ -200,8 +200,6 @@ void vrpn_WiiMote::initialize_wiimote_state(void)
 
   // Turn on a light so we know which device we are.
   switch (wiimote->which) {
-    case 0: /// number 0 is deprecated
-      wiimote->which = 1;
     case 1:
       wiiuse_set_leds(wiimote->device, WIIMOTE_LED_1);
       break;
@@ -283,7 +281,7 @@ vrpn_WiiMote::vrpn_WiiMote(const char *name, vrpn_Connection *c, unsigned which,
 
         // Get a list of available devices and select the one we want.
         // Look for up to VRPN_WIIUSE_MAX_WIIMOTES motes.  Timeout in 5 seconds if one not found.
-        wiimote->which = which;
+        wiimote->which = which > 0 ? which : 1;
 		wiimote->useMS = useMS;
 		wiimote->useIR = useIR;
 		wiimote->reorderButtons = (reorderButtons!=0);
