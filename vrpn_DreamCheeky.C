@@ -74,8 +74,15 @@ void vrpn_DreamCheeky_Drum_Kit::decodePacket(size_t bytes, vrpn_uint8 *buffer)
   // all in one packet.
 
   size_t i, r;
-  // Decode all full reports, each of which is 9 bytes long
-  for (i = 0; i < bytes / 9; i++) {
+  // Truncate the count to an even number of 9 bytes.  This will
+  // throw out any partial reports (which is not necessarily what
+  // we want, because this will start us off parsing at the wrong
+  // place if the rest of the report comes next, but it is not
+  // clear how to handle that cleanly).
+  bytes -= (bytes % 9);
+  
+  // Decode all full reports, each of which is 9 bytes long.
+  for (i = 0; i < (bytes / 9); i++) {
 
     // If we're debouncing the buttons, then we set the button
     // to "pressed" if it has 4 or more pressed events in the
@@ -85,7 +92,7 @@ void vrpn_DreamCheeky_Drum_Kit::decodePacket(size_t bytes, vrpn_uint8 *buffer)
       for (btn = 0; btn < vrpn_Button::num_buttons; btn++) {
         unsigned count = 0;
         vrpn_uint8 mask = 1 << btn;
-        for (r = 1; r < bytes; r++) { // Skip the all-zeroes byte
+        for (r = 1; r < 9; r++) { // Skip the all-zeroes byte
           vrpn_uint8 *report = buffer + 9*i + r;
           count += ((*report & mask) != 0);
         }
@@ -97,7 +104,7 @@ void vrpn_DreamCheeky_Drum_Kit::decodePacket(size_t bytes, vrpn_uint8 *buffer)
     // If we're not debouncing, then we report each button event
     // independently.
     }else {
-      for (r = 1; r < bytes; r++) { // Skip the all-zeroes byte
+      for (r = 1; r < 9; r++) { // Skip the all-zeroes byte
         vrpn_uint8 *report = buffer + 9*i + r;
         int btn;
         for (btn = 0; btn < vrpn_Button::num_buttons; btn++) {
