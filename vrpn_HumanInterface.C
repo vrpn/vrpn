@@ -698,25 +698,60 @@ void vrpn_HidInterface::update()
 		return;
 	}
 
+	// We read from endpoint 1.  Endpoint 0 is defined as a system endpoint.
+	// It is possible to parse the information from the device to find additional
+	// endpoints, but we just use endpoint 1 and hope it is right.  We OR this
+	// with 0x80 to mean "input", per the documentation for hid_interrupt_read().
 	int ret;
-	char inbuf[1024];	// Longest set of characters we can receive
-	unsigned int timeout = 10;	// Milliseconds, 100 times/second if we have no data.
-	// XXX No idea which to pick, using the example of 0x01 but ORing it with 0x80 per
-	// the documentation for hid_interrupt_read().
+	char inbuf[256];	// Longest set of characters we can receive
+	unsigned int timeout = 300;	// Milliseconds, 100 times/second if we have no data.
+	// XXX If we wait long enough when calling usb_intterrupt_read(), we get 512 characters
+	// but they report a bunch of
+	// press/release events from a DreamCheeky that aren't happening.  But if we don't
+	// wait long enough, we get no characters... so it does not seem to be sending
+	// back a partial report.  This happens whether I use a bulk read or an interrupt
+	// read.  It seems to get all or nothing in each case.
+	// Someone posted about there being a problem if you used the max size, so I went
+	// down to 511 from 512, but that didn't help.
+	// DreamCheeky is working, except for the fact that we're waiting for all of
+	// the bytes.
+	// IF WE use hid_interrupt_read(), then we get 21 bytes of 512 requested whether
+	// the timeout is 10ms or 50ms.  With a timeout of 1, we still get 21 bytes, but
+	// much more often some are nonzero (3 are nonzero very frequently).  For the
+	// DreamCheeky, I'd expect a multiple of 9 bytes.  When I quickly press and
+	// release two buttons, I get a bunch of press/release events in the report,
+	// as if we've got mis-aligned bytes.  This is a bit strange, because this just
+	// goes and calls the usb_interrupt_read() call.  Of course!  hid_interrupt is
+	// returning a hid_return type, not the count of characters.  So it is returning
+	// a timeout error that way!  ... but them how did me pushing the buttons cause
+	// reports to get generated?  It must be that the bytes ARE going in even when
+	// the timeout is happening.
+	// XXX There is a more subtle libusb_interrupt_transfer() function that is buried
+	// down in libusb somewhere... how to get at it?
+
 	unsigned int endpoint = 0x01 | 0x80;
 	ret = usb_interrupt_read(_hid->dev_handle, endpoint, inbuf, sizeof(inbuf), timeout);
 	if (ret == -ETIMEDOUT) {
+		printf("XXX timeout\n");
 		return;
 	}
 	if (ret < 0) {
 		fprintf(stderr,"vrpn_HidInterface::update(): failed to read from device %s: %s\n",
 			_hid->id, usb_strerror());
+		_working = false;
 		return;
 	}
 
 	// Handle any data we got.
 	if (ret > 0) {
 		vrpn_uint8 *data = static_cast<vrpn_uint8 *>(static_cast<void*>(inbuf));
+		printf("XXX %d bytes of %d requested\n", ret, sizeof(inbuf));
+		unsigned XXXnonzero = 0;
+		unsigned XXXloop;
+		for (XXXloop = 0; XXXloop < ret; XXXloop++) {
+			if (data[XXXloop] != 0) { XXXnonzero++; }
+		}
+		if (XXXnonzero) printf("  (XXX %d were nonzero)\n", XXXnonzero);
 		on_data_received(ret, data);
 	}
 }
