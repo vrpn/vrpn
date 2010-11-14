@@ -131,6 +131,7 @@ private:
 #endif // Apple
 #if defined(VRPN_USE_LIBHID)
 	HIDInterface *_hid;
+	static bool match_wrapper(const struct usb_dev_handle *usbdev, void *custom, unsigned int len);
 #endif
 	bool _working;
 	vrpn_uint16 _vendor;

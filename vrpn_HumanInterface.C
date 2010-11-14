@@ -1,6 +1,7 @@
 #include "vrpn_HumanInterface.h"
 #if defined(VRPN_USE_LIBHID)
 #include <usb.h>
+#include <errno.h>
 #endif
 
 #if !defined(VRPN_USE_LIBHID) && ( defined(_WIN32) || defined(__CYGWIN__) )
@@ -576,7 +577,14 @@ vrpn_HidInterface::vrpn_HidInterface(vrpn_HidAcceptor *acceptor)
 	, _vendor(0)
 	, _product(0)
 {
+	if (acceptor == NULL) {
+		fprintf(stderr,"vrpn_HidInterface::vrpn_HidInterface(): NULL acceptor\n");
+		return;
+	}
+
 	// Initialize the HID interface and open the device.
+//	hid_set_debug(HID_DEBUG_ALL);
+//	hid_set_debug_stream(stderr);
 	hid_set_usb_debug(0);
 	hid_return ret;
 	if ( (ret = hid_init()) != HID_RET_SUCCESS) {
@@ -613,96 +621,119 @@ vrpn_HidInterface::~vrpn_HidInterface()
 	}
 }
 
+// Wrapper for the libhid match function that pulls needed information
+// from the device and then calls the VRPN match function.  It gets a
+// pointer to the vrpn_HidInterface object as its custom pointer.
+
+bool vrpn_HidInterface:: match_wrapper(const struct usb_dev_handle *usbdev, void *custom,
+					unsigned int /* unused */)
+{
+	vrpn_HidInterface	*hid_interface = static_cast<vrpn_HidInterface *>(custom);
+
+	// Horrible const() casts happen here because we had to pass a const usb_dev_handle
+	// into this function (based on its rquired prototype) but then we need to convert
+	// it to its device instance so that we can query things.  But the converter
+	// requires a non-const variable.
+
+	// Prepare a vrpn_HIDDEVINFO structure
+	vrpn_HIDDEVINFO vrpnInfo;
+	vrpnInfo.vendor = usb_device(const_cast<struct usb_dev_handle *>(usbdev))->descriptor.idVendor;
+	vrpnInfo.product = usb_device(const_cast<struct usb_dev_handle *>(usbdev))->descriptor.idProduct;
+	vrpnInfo.version = 0;	// XXX Don't know where to get this info from.
+	// According to test_libhid.c, the usage information can be found by
+	// using command-line queries to the device.
+	vrpnInfo.usagePage = 0;	// XXX Don't know where to get this info from.
+	vrpnInfo.usage = 0;	// XXX Don't know where to get this info from.
+	vrpnInfo.devicePath = usb_device(const_cast<struct usb_dev_handle *>(usbdev))->filename;
+
+	// Ask if this is the one.  Return a bool saying whether it is or not.
+	return hid_interface->_acceptor->accept(vrpnInfo);
+}
+
+
 // Reconnects the device I/O for the first acceptable device
 // Called automatically by constructor, but userland code can
 // use it to reacquire a hotplugged device.
 void vrpn_HidInterface::reconnect() {
+	hid_return ret;
+	if (!_hid) {
+		return;
+	}
+
 	// Clean up after our old selves
 	// XXX CancelIo(_device);
 	if (_hid->dev_handle) {
-		usb_close(_hid->dev_handle);
-		_hid->dev_handle = NULL;
-		_hid->device = NULL;
+		hid_close(_hid);
 	}
 
 	// Variable initialization
 	_acceptor->reset();
 	_working = false;
 
-	// Go through the list of USB busses and devices on each bus.  This code is
-	// pulled from the hid_find_usb_device() function within libhid.
-	// For each device, check against the acceptor function.
-	// If it matches, then open it (using code pulled from hid_force_open().
-	struct usb_bus	*usbbus = usb_get_busses();
-	struct usb_device *usbdev;
-
-	// In at least one Linux implementation, the linked list of buses went
-	// right back to the first device on the list, rather than having a NULL
-	// next pointer.  So we need to check if we're revisiting the first one
-	// and stop if we are.
-	bool saw_first_bus = false;
-	for (;
-	     (usbbus != NULL) && (!saw_first_bus || (usbbus != usb_get_busses()));
-	     usbbus->next) {
-		// We've checked the first one now.  We're done if we
-		// see it again.
-		saw_first_bus = true;
-
-		// In at least one Linux implementation, the linked list of devices went
-		// right back to the first device on the list, rather than having a NULL
-		// next pointer.  So we need to check if we're revisiting the first one
-		// and stop if we are.
-		bool saw_first_device = false;
-		for (usbdev = usbbus->devices;
-		     (usbdev != NULL) && (!saw_first_device || (usbdev != usbbus->devices));
-		     usbdev = usbdev->next) {
-			// We've checked the first one now.  We're done if we
-			// see it again.
-			saw_first_device = true;
-
-			// Get a handle for the device.
-			usb_dev_handle *usbdev_h = usb_open(usbdev);
-			if (!usb_claim_interface(usbdev_h, _hid->interface)) {
-				fprintf(stderr,"vrpn_HidInterface::reconnect(): Cannot claim interface\n");
-				continue;
-			}
-
-			// Prepare a vrpn_HIDDEVINFO structure
-			vrpn_HIDDEVINFO vrpnInfo;
-			vrpnInfo.vendor = usbdev->descriptor.idVendor;
-			vrpnInfo.product = usbdev->descriptor.idProduct;
-			vrpnInfo.version = 0;	// XXX Don't know where to get this info from.
-			// According to test_libhid.c, the usage information can be found by
-			// using command-line queries to the device.
-			vrpnInfo.usagePage = 0;	// XXX Don't know where to get this info from.
-			vrpnInfo.usage = 0;	// XXX Don't know where to get this info from.
-			vrpnInfo.devicePath = usbdev->filename;
-
-			// Check to see if it matches.  If so, set the device to
-			// this one, mark things as okay, and return.  If not, keep on looking.
-			if (_acceptor->accept(vrpnInfo)) {
-				if (hid_is_opened(_hid)) {
-					fprintf(stderr,"vrpn_HidInterface::reconnect(): Device %s already open\n", _hid->id);
-					return;
-				}
-				_vendor = vrpnInfo.vendor;
-				_product = vrpnInfo.product;
-				_hid->dev_handle = usbdev_h;
-				_hid->device = usbdev;
-				//XXX Start IO
-				_working = true;
-				return;
-			}
-
-		}
+	// Open the device.  We use a static method to pass to the acceptor function
+	// in libHid.  This will be used as the custom acceptor function.  We put in
+	// 0 for the vendor and product tag, so that these will always match and
+	// the custom function will be the arbiter (it can match on either of these
+	// or both, but it gets to decide).
+	// NOTE: You need to be root on Linux for this command to complete correctly.
+	HIDInterfaceMatcher match = { 0, 0, match_wrapper, this, 0 };
+	if ( (ret = hid_open(_hid, 0, &match)) != HID_RET_SUCCESS) {
+		fprintf(stderr,"vrpn_HidInterface::reconnect(): Cannot open device (code %d)\n", ret);
+		fprintf(stderr,"   (make sure you're running as root so you can open /dev/bus/usb devices for writing)\n");
+		return;
 	}
 
-	// Oops, we ran out of devices somehow
-	fprintf(stderr, "vrpn_HidInterface: Couldn't find any acceptable devices!\n");
+	_working = true;
+	// XXX Start an asynchronous read I/O transfer.
 }
 
-void vrpn_HidInterface::update() {
-// XXX		on_data_received(_gotsize, _buffer);
+// Check for incoming characters.  If we get some, pass them on to the handler code.
+// This is based on the source code for the hid_interrupt_read() function; it goes
+// down to the libusb interface directly to get any available characters.
+
+void vrpn_HidInterface::update()
+{
+	if (!_working) {
+		fprintf(stderr,"vrpn_HidInterface::update(): Interface not currently working\n");
+		return;
+	}
+
+	int ret;
+	char inbuf[1024];	// Longest set of characters we can receive
+	unsigned int timeout = 10;	// Milliseconds, 100 times/second if we have no data.
+	// XXX No idea which to pick, using the example of 0x01 but ORing it with 0x80 per
+	// the documentation for hid_interrupt_read().
+	unsigned int endpoint = 0x01 | 0x80;
+	ret = usb_interrupt_read(_hid->dev_handle, endpoint, inbuf, sizeof(inbuf), timeout);
+	if (ret == -ETIMEDOUT) {
+		return;
+	}
+	if (ret < 0) {
+		fprintf(stderr,"vrpn_HidInterface::update(): failed to read from device %s: %s\n",
+			_hid->id, usb_strerror());
+		return;
+	}
+
+	// Handle any data we got.
+	if (ret > 0) {
+		vrpn_uint8 *data = static_cast<vrpn_uint8 *>(static_cast<void*>(inbuf));
+		on_data_received(ret, data);
+	}
+}
+
+// This is based on sample code from UMinn Duluth at
+// http://www.google.com/url?sa=t&source=web&cd=4&ved=0CDUQFjAD&url=http%3A%2F%2Fwww.d.umn.edu%2F~cprince%2FPubRes%2FHardware%2FLinuxUSB%2FPICDEM%2Ftutorial1.c&rct=j&q=hid_interrrupt_read&ei=3C3gTKWeN4GClAeX9qCXAw&usg=AFQjCNHp94pwNFKjZTMqrgPfhV1nk7p5Lg&sig2=rG1A7PL-Up0Yv-sbvEMaCw&cad=rja
+// It has not yet been tested.
+
+void vrpn_HidInterface::send_data(size_t bytes, vrpn_uint8 *buffer)
+{
+	unsigned int timeout = 1000;	// Milliseconds
+	unsigned int endpoint = 0x1;	// XXX No idea how to pick which one to use.
+	char *charbuf = static_cast<char *>(static_cast<void*>(buffer));
+	hid_return ret;
+	if ( (ret = hid_interrupt_write(_hid, endpoint, charbuf, bytes, timeout)) != HID_RET_SUCCESS) {
+		fprintf(stderr,"vrpn_HidInterface::send_data(): hid_interrupt_write() failed with code %d\n", ret);
+	}
 }
 
 #endif

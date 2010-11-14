@@ -287,8 +287,9 @@
 // works well, we may consider enabling this use on Windows and Mac as
 // well and get at all the devices this way.  For now, we'll just be glad
 // if it works on Linux.  Note that you will need to install the package
-// libhid-dev on your system to be able to use this.  You may also need to have
-// the usbfs mounted.
+// libhid-dev on your system to be able to use this.  Note that you will
+// need to run the server as root on linux if you want to be able to
+// open the USB device.
 #define VRPN_USE_LIBHID
 
 //------------------------------------------------------------------//
