@@ -32,7 +32,7 @@ public:
 	virtual void reset() { }
 };
 
-#if defined(__APPLE__)
+#if defined(__APPLE__) && !defined(VRPN_USE_LIBHID)
 #include <stdio.h>
 #include <IOKit/IOCFPlugIn.h>
 #include <IOKit/hid/IOHIDLib.h>
@@ -49,12 +49,19 @@ public:
 #define MACOSX_HID_UINT32T UInt32
 #endif
 
-
 #endif // Apple
 
-#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__)
+#ifdef VRPN_USE_LIBHID
+#ifdef linux
+// I don't know why this is in the hid.h file, but it causes problems unless defined.
+#define HAVE_STDBOOL_H
+#endif
+#include <hid.h>
+#endif
 
-#if defined(__CYGWIN__)
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__) || defined(VRPN_USE_LIBHID)
+
+#if defined(__CYGWIN__) && !defined(VRPN_USE_LIBHID)
 // This will cause _WIN32 to be defined, which will cause us trouble later on.
 // It is needed to define the HANDLE type used below.
 #include <windows.h>
@@ -86,13 +93,14 @@ public:
 	// Returns USB product ID of connected device
 	vrpn_uint16 product() const;
 
-#if defined(__APPLE__)
+protected:
+
+#if defined(__APPLE__) && !defined(VRPN_USE_LIBHID)
 	void gotData(int size) {_gotdata = true; _gotsize = size; }
 	unsigned char* getBuffer() { return _buffer; }
 #endif // Apple
 
-protected:
-	// User reimplements this callback
+	// Derived class reimplements this callback
 	virtual void on_data_received(size_t bytes, vrpn_uint8 *buffer) = 0;
 	
 	// Call this to send data to the device
@@ -105,7 +113,7 @@ protected:
 	vrpn_HidAcceptor *_acceptor;
 
 private:
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if !defined(VRPN_USE_LIBHID) && ( defined(_WIN32) || defined(__CYGWIN__) )
 	void start_io();
 
 	HANDLE _device;
@@ -114,13 +122,16 @@ private:
 	OVERLAPPED _readOverlap;
 	BYTE _readBuffer[512];
 #endif // Windows
-#if defined(__APPLE__)
+#if defined(__APPLE__) && !defined(VRPN_USE_LIBHID)
 	io_object_t _ioObject;
 	IOHIDDeviceInterface122 **_interface;
 	bool _gotdata;
 	int _gotsize;
 	unsigned char _buffer[512];
 #endif // Apple
+#if defined(VRPN_USE_LIBHID)
+	HIDInterface *_hid;
+#endif
 	bool _working;
 	vrpn_uint16 _vendor;
 	vrpn_uint16 _product;

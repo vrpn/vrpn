@@ -4091,7 +4091,7 @@ int vrpn_Generic_Server_Object::setup_DreamCheeky(char * & pch, char * line, FIL
     return -1;
   }
 
-#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__)
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__) || defined(VRPN_USE_LIBHID)
 
   // Open the DreamCheeky
   // Make sure there's room for a new button

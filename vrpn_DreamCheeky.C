@@ -2,7 +2,7 @@
 
 #include "vrpn_DreamCheeky.h"
 
-#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__)
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__) || defined(VRPN_USE_LIBHID)
 
 // USB vendor and product IDs for the models we support
 static const vrpn_uint16 DREAMCHEEKY_VENDOR = 6465;

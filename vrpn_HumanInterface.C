@@ -1,6 +1,9 @@
 #include "vrpn_HumanInterface.h"
+#if defined(VRPN_USE_LIBHID)
+#include <usb.h>
+#endif
 
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if !defined(VRPN_USE_LIBHID) && ( defined(_WIN32) || defined(__CYGWIN__) )
 
 // SetupAPI provides the device enumeration stuff
 #pragma comment(lib, "setupapi.lib")
@@ -116,7 +119,7 @@ vrpn_HidInterface::~vrpn_HidInterface() {
 }
 #endif // Windows
 
-#if defined(__APPLE__)
+#if defined(__APPLE__) && !defined(VRPN_USE_LIBHID)
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -132,7 +135,7 @@ vrpn_HidInterface::~vrpn_HidInterface() {
 #include <CoreFoundation/CoreFoundation.h>
 #endif // Apple
 
-#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__)
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__) || defined(VRPN_USE_LIBHID)
 // Accessor for USB vendor ID of connected device
 vrpn_uint16 vrpn_HidInterface::vendor() const {
 	return _vendor;
@@ -147,9 +150,9 @@ vrpn_uint16 vrpn_HidInterface::product() const {
 bool vrpn_HidInterface::connected() const {
 	return _working;
 }
-#endif // Windows or Apple
+#endif // any interface
 
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if !defined(VRPN_USE_LIBHID) && ( defined(_WIN32) || defined(__CYGWIN__) )
 // Reconnects the device I/O for the first acceptable device
 // Called automatically by constructor, but userland code can
 // use it to reacquire a hotplugged device.
@@ -240,7 +243,6 @@ void vrpn_HidInterface::reconnect() {
 			start_io();
 			return;
 		}
-
 
 enumLoopCloseDevice:
 		CloseHandle(_device);
@@ -346,7 +348,7 @@ void vrpn_HidInterface::send_data(size_t bytes, vrpn_uint8 *buffer) {
 }
 #endif // Windows
 
-#if defined(__APPLE__)
+#if defined(__APPLE__) && !defined(VRPN_USE_LIBHID)
 vrpn_HidInterface::vrpn_HidInterface(vrpn_HidAcceptor *acceptor)
 	: _acceptor(acceptor)
 	, _ioObject(IO_OBJECT_NULL)
@@ -560,8 +562,148 @@ void vrpn_HidInterface::update() {
 }
 
 void vrpn_HidInterface::send_data(size_t bytes, vrpn_uint8 *buffer) {
-	// TODO
+	// XXX TODO
 }
 
 #endif // Apple
+
+#if defined(VRPN_USE_LIBHID)
+
+vrpn_HidInterface::vrpn_HidInterface(vrpn_HidAcceptor *acceptor)
+	: _acceptor(acceptor)
+	, _hid(NULL)
+	, _working(false)
+	, _vendor(0)
+	, _product(0)
+{
+	// Initialize the HID interface and open the device.
+	hid_set_usb_debug(0);
+	hid_return ret;
+	if ( (ret = hid_init()) != HID_RET_SUCCESS) {
+		fprintf(stderr,"vrpn_HidInterface::vrpn_HidInterface(): hid_init() failed with code %d\n", ret);
+		return;
+	}
+	if ( (_hid = hid_new_HIDInterface()) == NULL) {
+		fprintf(stderr,"vrpn_HidInterface::vrpn_HidInterface(): hid_new_Interface() failed\n");
+		return;
+	}
+
+	// Reset the acceptor and then attempt to connect to a device.
+	_acceptor->reset();
+	reconnect();
+}
+
+vrpn_HidInterface::~vrpn_HidInterface()
+{
+	hid_return ret;
+	if (_hid) {
+		// XXX CancelIo(_device);
+
+		hid_return ret;
+		if ( (ret = hid_close(_hid)) != HID_RET_SUCCESS) {
+			fprintf(stderr,"vrpn_HidInterface::~vrpn_HidInterface(): hid_close() failed with error %d\n", ret);
+		}
+		_hid->dev_handle = NULL;
+		_hid->device = NULL;
+		hid_delete_HIDInterface(&_hid);
+		_hid = NULL;
+	}
+	if ( (ret = hid_cleanup()) != HID_RET_SUCCESS) {
+		fprintf(stderr,"vrpn_HidInterface::~vrpn_HidInterface(): hid_cleanup() failed with error %d\n", ret);
+	}
+}
+
+// Reconnects the device I/O for the first acceptable device
+// Called automatically by constructor, but userland code can
+// use it to reacquire a hotplugged device.
+void vrpn_HidInterface::reconnect() {
+	// Clean up after our old selves
+	// XXX CancelIo(_device);
+	if (_hid->dev_handle) {
+		usb_close(_hid->dev_handle);
+		_hid->dev_handle = NULL;
+		_hid->device = NULL;
+	}
+
+	// Variable initialization
+	_acceptor->reset();
+	_working = false;
+
+	// Go through the list of USB busses and devices on each bus.  This code is
+	// pulled from the hid_find_usb_device() function within libhid.
+	// For each device, check against the acceptor function.
+	// If it matches, then open it (using code pulled from hid_force_open().
+	struct usb_bus	*usbbus = usb_get_busses();
+	struct usb_device *usbdev;
+
+	// In at least one Linux implementation, the linked list of buses went
+	// right back to the first device on the list, rather than having a NULL
+	// next pointer.  So we need to check if we're revisiting the first one
+	// and stop if we are.
+	bool saw_first_bus = false;
+	for (;
+	     (usbbus != NULL) && (!saw_first_bus || (usbbus != usb_get_busses()));
+	     usbbus->next) {
+		// We've checked the first one now.  We're done if we
+		// see it again.
+		saw_first_bus = true;
+
+		// In at least one Linux implementation, the linked list of devices went
+		// right back to the first device on the list, rather than having a NULL
+		// next pointer.  So we need to check if we're revisiting the first one
+		// and stop if we are.
+		bool saw_first_device = false;
+		for (usbdev = usbbus->devices;
+		     (usbdev != NULL) && (!saw_first_device || (usbdev != usbbus->devices));
+		     usbdev = usbdev->next) {
+			// We've checked the first one now.  We're done if we
+			// see it again.
+			saw_first_device = true;
+
+			// Get a handle for the device.
+			usb_dev_handle *usbdev_h = usb_open(usbdev);
+			if (!usb_claim_interface(usbdev_h, _hid->interface)) {
+				fprintf(stderr,"vrpn_HidInterface::reconnect(): Cannot claim interface\n");
+				continue;
+			}
+
+			// Prepare a vrpn_HIDDEVINFO structure
+			vrpn_HIDDEVINFO vrpnInfo;
+			vrpnInfo.vendor = usbdev->descriptor.idVendor;
+			vrpnInfo.product = usbdev->descriptor.idProduct;
+			vrpnInfo.version = 0;	// XXX Don't know where to get this info from.
+			// According to test_libhid.c, the usage information can be found by
+			// using command-line queries to the device.
+			vrpnInfo.usagePage = 0;	// XXX Don't know where to get this info from.
+			vrpnInfo.usage = 0;	// XXX Don't know where to get this info from.
+			vrpnInfo.devicePath = usbdev->filename;
+
+			// Check to see if it matches.  If so, set the device to
+			// this one, mark things as okay, and return.  If not, keep on looking.
+			if (_acceptor->accept(vrpnInfo)) {
+				if (hid_is_opened(_hid)) {
+					fprintf(stderr,"vrpn_HidInterface::reconnect(): Device %s already open\n", _hid->id);
+					return;
+				}
+				_vendor = vrpnInfo.vendor;
+				_product = vrpnInfo.product;
+				_hid->dev_handle = usbdev_h;
+				_hid->device = usbdev;
+				//XXX Start IO
+				_working = true;
+				return;
+			}
+
+		}
+	}
+
+	// Oops, we ran out of devices somehow
+	fprintf(stderr, "vrpn_HidInterface: Couldn't find any acceptable devices!\n");
+}
+
+void vrpn_HidInterface::update() {
+// XXX		on_data_received(_gotsize, _buffer);
+}
+
+#endif
 
