@@ -299,7 +299,7 @@ void vrpn_HidInterface::start_io() {
 // If any data reports have been received, this will fire the
 // associated on_data_received callback.
 // Multiple data reports waiting = one big on_data_received.
-void vrpn_HidInterface::update() {
+void vrpn_HidInterface::update(unsigned msg_size, unsigned timeout_ms) {
 	DWORD rv = WaitForSingleObject(_readEvent, 0);
 	if (rv == WAIT_OBJECT_0) {
 		// Data received from device
@@ -546,7 +546,7 @@ void vrpn_HidInterface::reconnect()
 	}
 }
 
-void vrpn_HidInterface::update() {
+void vrpn_HidInterface::update(unsigned msg_size, unsigned timeout_ms) {
 	SInt32 reason = CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0, true);
 	if (reason == kCFRunLoopRunHandledSource)
 	{
@@ -689,9 +689,14 @@ void vrpn_HidInterface::reconnect() {
 
 // Check for incoming characters.  If we get some, pass them on to the handler code.
 // This is based on the source code for the hid_interrupt_read() function; it goes
-// down to the libusb interface directly to get any available characters.
+// down to the libusb interface directly to get any available characters.  Because
+// we're trying to support a generic device, we can't say in advance how large any
+// particular transfer should be.  So we try to read more characters than will be
+// available (to avoid truncating a message).  This update() routine must be called
+// frequently to make sure we don't get partial results, which would mean sending
+// truncated reports to the devices derived from us.
 
-void vrpn_HidInterface::update()
+void vrpn_HidInterface::update(unsigned msg_size, unsigned timeout_ms)
 {
 	if (!_working) {
 		fprintf(stderr,"vrpn_HidInterface::update(): Interface not currently working\n");
@@ -703,57 +708,52 @@ void vrpn_HidInterface::update()
 	// endpoints, but we just use endpoint 1 and hope it is right.  We OR this
 	// with 0x80 to mean "input", per the documentation for hid_interrupt_read().
 	int ret;
-	char inbuf[256];	// Longest set of characters we can receive
-	unsigned int timeout = 300;	// Milliseconds, 100 times/second if we have no data.
-	// XXX If we wait long enough when calling usb_intterrupt_read(), we get 512 characters
-	// but they report a bunch of
-	// press/release events from a DreamCheeky that aren't happening.  But if we don't
-	// wait long enough, we get no characters... so it does not seem to be sending
-	// back a partial report.  This happens whether I use a bulk read or an interrupt
-	// read.  It seems to get all or nothing in each case.
-	// Someone posted about there being a problem if you used the max size, so I went
-	// down to 511 from 512, but that didn't help.
-	// DreamCheeky is working, except for the fact that we're waiting for all of
-	// the bytes.
-	// IF WE use hid_interrupt_read(), then we get 21 bytes of 512 requested whether
-	// the timeout is 10ms or 50ms.  With a timeout of 1, we still get 21 bytes, but
-	// much more often some are nonzero (3 are nonzero very frequently).  For the
-	// DreamCheeky, I'd expect a multiple of 9 bytes.  When I quickly press and
-	// release two buttons, I get a bunch of press/release events in the report,
-	// as if we've got mis-aligned bytes.  This is a bit strange, because this just
-	// goes and calls the usb_interrupt_read() call.  Of course!  hid_interrupt is
-	// returning a hid_return type, not the count of characters.  So it is returning
-	// a timeout error that way!  ... but them how did me pushing the buttons cause
-	// reports to get generated?  It must be that the bytes ARE going in even when
-	// the timeout is happening.
-	// XXX There is a more subtle libusb_interrupt_transfer() function that is buried
-	// down in libusb somewhere... how to get at it?
+	char *inbuf = new char[msg_size];
+	if (inbuf == NULL) {
+		fprintf(stderr,"vrpn_HidInterface::update(): Out of memory\n");
+		return;
+	}
+
+	// XXX Wish the installed usb interface didn't have this characteristic...
+	//     given that it does, we should rewrite this using the lower-level
+	//     libusb interface with asynchronous reads.
+	// The usb_interrupt_read() call does not return partial results.  It either
+	// returns all the characters asked for (and truncates whatever partial result
+	// came last) or times out and does not say how many characters it got.  This
+	// means that it is important for the device calling this update() to tell the
+	// expected message size and reduce the timeout so that we don't lose/truncate
+	// messages and so that we don't have a ton of latency waiting for many reports
+	// to come in.
 
 	unsigned int endpoint = 0x01 | 0x80;
-	ret = usb_interrupt_read(_hid->dev_handle, endpoint, inbuf, sizeof(inbuf), timeout);
-	if (ret == -ETIMEDOUT) {
-		printf("XXX timeout\n");
-		return;
-	}
-	if (ret < 0) {
-		fprintf(stderr,"vrpn_HidInterface::update(): failed to read from device %s: %s\n",
-			_hid->id, usb_strerror());
-		_working = false;
-		return;
-	}
 
-	// Handle any data we got.
-	if (ret > 0) {
-		vrpn_uint8 *data = static_cast<vrpn_uint8 *>(static_cast<void*>(inbuf));
-		printf("XXX %d bytes of %d requested\n", ret, sizeof(inbuf));
-		unsigned XXXnonzero = 0;
-		unsigned XXXloop;
-		for (XXXloop = 0; XXXloop < ret; XXXloop++) {
-			if (data[XXXloop] != 0) { XXXnonzero++; }
+	// Read buffers until we can't find any more.  After the first one, time out
+	// almost immediately so that we don't go into an infinite loop getting a new
+	// report every time after we've handled one.
+	unsigned timeout = timeout_ms;
+	do {
+		ret = usb_interrupt_read(_hid->dev_handle, endpoint, inbuf, msg_size, timeout);
+		timeout = 1;
+		if (ret == -ETIMEDOUT) {
+			delete [] inbuf;
+			return;
 		}
-		if (XXXnonzero) printf("  (XXX %d were nonzero)\n", XXXnonzero);
-		on_data_received(ret, data);
-	}
+		if (ret < 0) {
+			fprintf(stderr,"vrpn_HidInterface::update(): failed to read from device %s: %s\n",
+				_hid->id, usb_strerror());
+			_working = false;
+			delete [] inbuf;
+			return;
+		}
+
+		// Handle any data we got.
+		if (ret > 0) {
+			vrpn_uint8 *data = static_cast<vrpn_uint8 *>(static_cast<void*>(inbuf));
+			on_data_received(ret, data);
+		}
+	} while (ret > 0);
+
+	delete [] inbuf;
 }
 
 // This is based on sample code from UMinn Duluth at
@@ -762,8 +762,11 @@ void vrpn_HidInterface::update()
 
 void vrpn_HidInterface::send_data(size_t bytes, vrpn_uint8 *buffer)
 {
+	// We read from endpoint 1.  Endpoint 0 is defined as a system endpoint.
+	// It is possible to parse the information from the device to find additional
+	// endpoints, but we just use endpoint 1 and hope it is right.
 	unsigned int timeout = 1000;	// Milliseconds
-	unsigned int endpoint = 0x1;	// XXX No idea how to pick which one to use.
+	unsigned int endpoint = 0x1;
 	char *charbuf = static_cast<char *>(static_cast<void*>(buffer));
 	hid_return ret;
 	if ( (ret = hid_interrupt_write(_hid, endpoint, charbuf, bytes, timeout)) != HID_RET_SUCCESS) {

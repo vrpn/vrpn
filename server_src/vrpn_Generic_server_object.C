@@ -3755,7 +3755,7 @@ int vrpn_Generic_Server_Object::setup_Freespace(char * & pch, char * line, FILE 
 }
 
 int vrpn_Generic_Server_Object::setup_Xkeys_Desktop(char * & pch, char * line, FILE * config_file) {
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__) || defined(VRPN_USE_LIBHID)
   char s2 [LINESIZE];
 
   next();

@@ -290,7 +290,7 @@
 // libhid-dev on your system to be able to use this.  Note that you will
 // need to run the server as root on linux if you want to be able to
 // open the USB device.
-#define VRPN_USE_LIBHID
+//#define VRPN_USE_LIBHID
 
 //------------------------------------------------------------------//
 // SYSTEM CONFIGURATION SECTION                                     //

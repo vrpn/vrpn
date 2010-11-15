@@ -81,7 +81,11 @@ public:
 	// You NEED to call this frequently to ensure the OS doesn't drop data
 	// Note that ReadFile() is buffered by default on Windows, so it doesn't have to
 	// be called every 60th of a second unless you've got a really verbose device.
-	virtual void update();
+	// The message-length and timeout hints can be used to optimize throughput and
+	// minimize latency from the device, particularly with the LIBHID interface.
+	// The message size is particularly important to avoid truncating and losing
+	// packets from the device.
+	virtual void update(unsigned msg_size = 512, unsigned timeout_ms = 1000);
 
 	// Tries to reconnect to an acceptable device.
 	// Call this if you suspect a hotplug event has occurred.
