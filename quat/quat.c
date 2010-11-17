@@ -26,10 +26,6 @@
 #define W      Q_W
 
 
-/* version information for use with "ident"  */
-static char rcsid[] = 
-"$Id: quat.c,v 2.30 2009/11/03 13:54:39 taylorr Exp $";
-
 /*****************************************************************************
  *
    q_print- print a quaternion

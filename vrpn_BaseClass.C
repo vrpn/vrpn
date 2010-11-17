@@ -338,12 +338,12 @@ int vrpn_BaseClass::register_senders()
 
 
 vrpn_BaseClassUnique::vrpn_BaseClassUnique()  :
+d_connection(NULL),
+d_servicename(NULL),
 d_num_autodeletions(0),
 d_first_mainloop(1),
 d_unanswered_ping(0),
-d_flatline(0),
-d_connection(NULL),
-d_servicename(NULL)
+d_flatline(0)
 {
     // Initialize variables
     d_time_first_ping.tv_sec = d_time_first_ping.tv_usec = 0;
@@ -460,7 +460,7 @@ int vrpn_BaseClassUnique::send_text_message(const char *msg, struct timeval time
                             vrpn_uint32 level)
 {
 	char buffer [2 * sizeof(vrpn_int32) + vrpn_MAX_TEXT_LEN];
-	int  len = strlen(msg)+1; // +1 is for the NULL terminator
+	size_t  len = strlen(msg)+1; // +1 is for the NULL terminator
 
 	if (len > vrpn_MAX_TEXT_LEN) {
 	    fprintf(stderr,"vrpn_BaseClassUnique::send_message: Attempt to encode string that is too long\n");

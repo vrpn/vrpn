@@ -67,7 +67,7 @@ int vrpn_Imager_Server::add_channel(const char *name, const char *units,
 		    vrpn_float32 minVal, vrpn_float32 maxVal,
 		    vrpn_float32 scale, vrpn_float32 offset)
 {
-  if (d_nChannels >= vrpn_IMAGER_MAX_CHANNELS) {
+  if (static_cast<unsigned>(d_nChannels) >= vrpn_IMAGER_MAX_CHANNELS) {
     return -1;
   }
   strncpy(d_channels[d_nChannels].name, name, sizeof(cName));
@@ -312,7 +312,7 @@ bool  vrpn_Imager_Server::send_region_using_base_pointer(vrpn_int16 chanIndex,
     fprintf(stderr,"vrpn_Imager_Server::send_region_using_base_pointer(): Invalid column range (%d..%d)\n", cMin, cMax);
     return false;
   }
-  if ( (rMax-rMin+1) * (cMax-cMin+1) * (dMax-dMin+1) > vrpn_IMAGER_MAX_REGIONu8) {
+  if ( static_cast<unsigned>((rMax-rMin+1) * (cMax-cMin+1) * (dMax-dMin+1)) > vrpn_IMAGER_MAX_REGIONu8) {
     fprintf(stderr,"vrpn_Imager_Server::send_region_using_base_pointer(): Region too large (%d,%d,%d to %d,%d,%d)\n",
       cMin,rMin,dMin, cMax,rMax,dMax);
     return false;
@@ -477,7 +477,7 @@ bool  vrpn_Imager_Server::send_region_using_base_pointer(vrpn_int16 chanIndex, v
     fprintf(stderr,"vrpn_Imager_Server::send_region_using_base_pointer(): Invalid column range (%d..%d)\n", cMin, cMax);
     return false;
   }
-  if ( (rMax-rMin+1) * (cMax-cMin+1) * (dMax-dMin+1) > vrpn_IMAGER_MAX_REGIONu16) {
+  if ( static_cast<unsigned>((rMax-rMin+1) * (cMax-cMin+1) * (dMax-dMin+1)) > vrpn_IMAGER_MAX_REGIONu16) {
     fprintf(stderr,"vrpn_Imager_Server::send_region_using_base_pointer(): Region too large (%d,%d,%d to %d,%d,%d)\n",
       cMin,rMin,dMin, cMax,rMax,dMax);
     return false;
@@ -646,7 +646,7 @@ bool  vrpn_Imager_Server::send_region_using_base_pointer(vrpn_int16 chanIndex, v
     fprintf(stderr,"vrpn_Imager_Server::send_region_using_base_pointer(): Invalid column range (%d..%d)\n", cMin, cMax);
     return false;
   }
-  if ( (rMax-rMin+1) * (cMax-cMin+1) * (dMax-dMin+1) > vrpn_IMAGER_MAX_REGIONf32) {
+  if ( static_cast<unsigned>((rMax-rMin+1) * (cMax-cMin+1) * (dMax-dMin+1)) > vrpn_IMAGER_MAX_REGIONf32) {
     fprintf(stderr,"vrpn_Imager_Server::send_region_using_base_pointer(): Region too large (%d,%d,%d to %d,%d,%d)\n",
       cMin,rMin,dMin, cMax,rMax,dMax);
     return false;

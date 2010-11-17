@@ -198,7 +198,7 @@ void vrpn_ForceDevice::print_plane(void)
 void vrpn_ForceDevice::print_report(void)
 {
   // Nothing sets d_force any more!
-  printf("Timestamp:%ld:%ld\n", timestamp.tv_sec, timestamp.tv_usec);
+  printf("Timestamp:%ld:%ld\n", timestamp.tv_sec, static_cast<long>(timestamp.tv_usec));
   //printf("Force    :%lf, %lf, %lf\n", d_force[0],d_force[1],d_force[2]);
 }
 
@@ -237,7 +237,7 @@ vrpn_int32 vrpn_ForceDevice::decode_force (const char *buffer, const vrpn_int32 
 
     if (len !=  (3*sizeof(vrpn_float64)) ) {
       fprintf(stderr,"vrpn_ForceDevice: force message payload error\n");
-      fprintf(stderr,"             (got %d, expected %d)\n",
+      fprintf(stderr,"             (got %d, expected %lud)\n",
 		    len, 3*sizeof(vrpn_float64) );
       return -1;
     }
@@ -280,9 +280,9 @@ vrpn_int32 vrpn_ForceDevice::decode_custom_effect (const char *buffer, const vrp
 
 	//OutputDebugString("decoding custom effect\n");
 
-    if (len < (sizeof(vrpn_uint32)*2)) {
+    if (static_cast<size_t>(len) < (sizeof(vrpn_uint32)*2)) {
 	  fprintf(stderr,"vrpn_ForceDevice: custom effect message payload error\n");
-      fprintf(stderr,"             (got %d, expected at least %d)\n",
+      fprintf(stderr,"             (got %d, expected at least %lud)\n",
 		    len, 2*sizeof(vrpn_uint32) );
       return -1;
     }
@@ -292,7 +292,7 @@ vrpn_int32 vrpn_ForceDevice::decode_custom_effect (const char *buffer, const vrp
 
     if ((vrpn_uint32)(len) < (2*sizeof(vrpn_uint32) + (*nbParams)*sizeof(vrpn_float32))) {
 	  fprintf(stderr,"vrpn_ForceDevice: custom effect message payload error\n");
-      fprintf(stderr,"             (got %d, expected at least %d)\n",
+      fprintf(stderr,"             (got %d, expected at least %lud)\n",
 		    len,(2*sizeof(vrpn_uint32) + (*nbParams)*sizeof(vrpn_float32)));
       return -2;
     }
@@ -400,7 +400,7 @@ vrpn_int32 vrpn_ForceDevice::decode_plane(const char *buffer, const vrpn_int32 l
 
     if (len != 8*sizeof(vrpn_float32)+2*sizeof(vrpn_int32)){
 	    fprintf(stderr,"vrpn_ForceDevice: plane message payload error\n");
-	    fprintf(stderr,"             (got %d, expected %d)\n",
+	    fprintf(stderr,"             (got %d, expected %lud)\n",
 		    len, 8*sizeof(vrpn_float32)+2*sizeof(vrpn_int32) );
 	    return -1;
     }
@@ -455,7 +455,7 @@ vrpn_int32 vrpn_ForceDevice::decode_surface_effects(const char *buffer, const vr
 
     if (len != 6*sizeof(vrpn_float32)){
         fprintf(stderr,"vrpn_ForceDevice: surface effects message payload ");
-        fprintf(stderr,"error\n             (got %d, expected %d)\n",
+        fprintf(stderr,"error\n             (got %d, expected %lud)\n",
 		    len, 6*sizeof(vrpn_float32) );
 	return -1;
     }
@@ -501,7 +501,7 @@ vrpn_int32 vrpn_ForceDevice::decode_vertex(const char *buffer,
 
     if (len != (sizeof(objNum) + sizeof(vertNum) + 3*sizeof(vrpn_float32))){
 	    fprintf(stderr,"vrpn_ForceDevice: vertex message payload error\n");
-	    fprintf(stderr,"             (got %d, expected %d)\n",
+	    fprintf(stderr,"             (got %d, expected %lud)\n",
 		    len, sizeof(objNum) +sizeof(vertNum) + 3*sizeof(vrpn_float32) );
 	    return -1;
     }
@@ -545,7 +545,7 @@ vrpn_int32 vrpn_ForceDevice::decode_normal(const char *buffer,const vrpn_int32 l
 
     if (len != (sizeof(vrpn_int32) + sizeof(vrpn_int32) + 3*sizeof(vrpn_float32))){
 	    fprintf(stderr,"vrpn_ForceDevice: normal message payload error\n");
-	    fprintf(stderr,"             (got %d, expected %d)\n",
+	    fprintf(stderr,"             (got %d, expected %lud)\n",
 		    len, sizeof(vrpn_int32) + sizeof(vrpn_int32) + 3*sizeof(vrpn_float32) );
 	    return -1;
     }
@@ -595,7 +595,7 @@ vrpn_int32 vrpn_ForceDevice::decode_triangle(const char *buffer,
 
     if (len != (sizeof(vrpn_int32) + 7*sizeof(vrpn_int32))){
 	    fprintf(stderr,"vrpn_ForceDevice: triangle message payload error\n");
-	    fprintf(stderr,"             (got %d, expected %d)\n",
+	    fprintf(stderr,"             (got %d, expected %lud)\n",
 		    len, sizeof(vrpn_int32) + 7*sizeof(vrpn_int32) );
 	    return -1;
     }
@@ -638,7 +638,7 @@ vrpn_int32 vrpn_ForceDevice::decode_removeTriangle(const char *buffer,
 
     if (len != (sizeof(vrpn_int32) + sizeof(vrpn_int32))){
 	fprintf(stderr,"vrpn_ForceDevice: remove triangle message payload");
-	    fprintf(stderr," error\n             (got %d, expected %d)\n",
+	    fprintf(stderr," error\n             (got %d, expected %lud)\n",
 		    len, sizeof(vrpn_int32) +sizeof(vrpn_int32) );
 	    return -1;
     }
@@ -683,7 +683,7 @@ vrpn_int32 vrpn_ForceDevice::decode_updateTrimeshChanges(const char *buffer,
 
     if (len != (sizeof(vrpn_int32) +4*sizeof(vrpn_float32))){
 	fprintf(stderr,"vrpn_ForceDevice: update trimesh message payload");
-	    fprintf(stderr," error\n             (got %d, expected %d)\n",
+	    fprintf(stderr," error\n             (got %d, expected %lud)\n",
 		    len, sizeof(vrpn_int32) +4*sizeof(vrpn_float32) );
 	    return -1;
     }
@@ -724,7 +724,7 @@ vrpn_int32 vrpn_ForceDevice::decode_setTrimeshType(const char *buffer,const vrpn
 
     if (len != (sizeof(vrpn_int32) +sizeof(vrpn_int32))){
 	fprintf(stderr,"vrpn_ForceDevice: trimesh type message payload");
-	    fprintf(stderr," error\n             (got %d, expected %d)\n",
+	    fprintf(stderr," error\n             (got %d, expected %lud)\n",
 		    len, sizeof(vrpn_int32) +sizeof(vrpn_int32) );
 	    return -1;
     }
@@ -764,7 +764,7 @@ vrpn_int32 vrpn_ForceDevice::decode_trimeshTransform(const char *buffer,
 
     if (len != (sizeof(vrpn_int32) +16*sizeof(vrpn_float32))){
 	fprintf(stderr,"vrpn_ForceDevice: trimesh transform message payload ");
-	    fprintf(stderr,"error\n             (got %d, expected %d)\n",
+	    fprintf(stderr,"error\n             (got %d, expected %lud)\n",
 		    len, sizeof(vrpn_int32) +16*sizeof(vrpn_float32) );
 	    return -1;
     }
@@ -800,7 +800,7 @@ vrpn_int32 vrpn_ForceDevice::decode_addObject(const char *buffer,vrpn_int32 len,
 
     if (len != 2*sizeof(vrpn_int32) ){
 	fprintf(stderr,"vrpn_ForceDevice: add object message payload ");
-	    fprintf(stderr,"error\n             (got %d, expected %d)\n",
+	    fprintf(stderr,"error\n             (got %d, expected %lud)\n",
 		    len, 2*sizeof(vrpn_int32) );
 	    return -1;
     }
@@ -834,7 +834,7 @@ vrpn_int32 vrpn_ForceDevice::decode_addObjectExScene(const char *buffer,vrpn_int
 
     if (len != sizeof(vrpn_int32)){
 	fprintf(stderr,"vrpn_ForceDevice: add object message payload ");
-	    fprintf(stderr,"error\n             (got %d, expected %d)\n",
+	    fprintf(stderr,"error\n             (got %d, expected %lud)\n",
 		    len, sizeof(vrpn_int32) );
 	    return -1;
     }
@@ -871,7 +871,7 @@ vrpn_int32 vrpn_ForceDevice::decode_objectPosition(const char *buffer,vrpn_int32
 
     if (len != (sizeof(vrpn_int32) + 3*sizeof(vrpn_float32))){
 	fprintf(stderr,"vrpn_ForceDevice: object position message payload ");
-	    fprintf(stderr,"error\n             (got %d, expected %d)\n",
+	    fprintf(stderr,"error\n             (got %d, expected %lud)\n",
 		    len, sizeof(vrpn_int32) + 3*sizeof(vrpn_float32) );
 	    return -1;
     }
@@ -911,7 +911,7 @@ vrpn_int32 vrpn_ForceDevice::decode_objectOrientation(const char *buffer,vrpn_in
 
     if (len != (sizeof(vrpn_int32) + 4*sizeof(vrpn_float32))){
 	fprintf(stderr,"vrpn_ForceDevice: object orientation message payload ");
-	    fprintf(stderr,"error\n             (got %d, expected %d)\n",
+	    fprintf(stderr,"error\n             (got %d, expected %lud)\n",
 		    len, sizeof(vrpn_int32) + 4*sizeof(vrpn_float32) );
 	    return -1;
     }
@@ -951,7 +951,7 @@ vrpn_int32 vrpn_ForceDevice::decode_objectScale(const char *buffer,vrpn_int32 le
 
     if (len != (sizeof(vrpn_int32) + 3*sizeof(vrpn_float32))){
 	fprintf(stderr,"vrpn_ForceDevice: object scale message payload ");
-	    fprintf(stderr,"error\n             (got %d, expected %d)\n",
+	    fprintf(stderr,"error\n             (got %d, expected %lud)\n",
 		    len, sizeof(vrpn_int32) + 3*sizeof(vrpn_float32) );
 	    return -1;
     }
@@ -987,7 +987,7 @@ vrpn_int32 vrpn_ForceDevice::decode_removeObject(const char *buffer,vrpn_int32 l
 
     if (len != sizeof(vrpn_int32) ){
 	fprintf(stderr,"vrpn_ForceDevice: remove object message payload ");
-	    fprintf(stderr,"error\n             (got %d, expected %d)\n",
+	    fprintf(stderr,"error\n             (got %d, expected %lud)\n",
 		    len, sizeof(vrpn_int32) );
 	    return -1;
     }
@@ -1020,7 +1020,7 @@ vrpn_int32 vrpn_ForceDevice::decode_clearTrimesh(const char *buffer,vrpn_int32 l
 
     if (len != sizeof(vrpn_int32) ){
 	fprintf(stderr,"vrpn_ForceDevice: clear TriMesh message payload ");
-	    fprintf(stderr,"error\n             (got %d, expected %d)\n",
+	    fprintf(stderr,"error\n             (got %d, expected %lud)\n",
 		    len, sizeof(vrpn_int32) );
 	    return -1;
     }
@@ -1054,7 +1054,7 @@ vrpn_int32 vrpn_ForceDevice::decode_moveToParent(const char *buffer,vrpn_int32 l
 
     if (len != (sizeof(vrpn_int32) +sizeof(vrpn_int32)) ){
 	fprintf(stderr,"vrpn_ForceDevice: move object to parent message payload ");
-	    fprintf(stderr,"error\n             (got %d, expected %d)\n",
+	    fprintf(stderr,"error\n             (got %d, expected %lud)\n",
 		    len, sizeof(vrpn_int32) +sizeof(vrpn_int32) );
 	    return -1;
     }
@@ -1096,7 +1096,7 @@ vrpn_int32 vrpn_ForceDevice::decode_setHapticOrigin(const char *buffer,vrpn_int3
 
     if (len != 7*sizeof(vrpn_int32)){
 	    fprintf(stderr,"vrpn_ForceDevice: sethapticorigin message payload error\n");
-	    fprintf(stderr,"             (got %d, expected %d)\n",
+	    fprintf(stderr,"             (got %d, expected %lud)\n",
 		    len, 7*sizeof(vrpn_int32) );
 	    return -1;
     }
@@ -1134,7 +1134,7 @@ vrpn_int32 vrpn_ForceDevice::decode_setHapticScale(const char *buffer,vrpn_int32
 
     if (len != sizeof(vrpn_float32)){
 	    fprintf(stderr,"vrpn_ForceDevice: sethapticscale message payload error\n");
-	    fprintf(stderr,"             (got %d, expected %d)\n",
+	    fprintf(stderr,"             (got %d, expected %lud)\n",
 		    len, 7*sizeof(vrpn_float32) );
 	    return -1;
     }
@@ -1175,7 +1175,7 @@ vrpn_int32 vrpn_ForceDevice::decode_setSceneOrigin(const char *buffer,vrpn_int32
 
     if (len != 7*sizeof(vrpn_int32)){
 	    fprintf(stderr,"vrpn_ForceDevice: setsceneorigin message payload error\n");
-	    fprintf(stderr,"             (got %d, expected %d)\n",
+	    fprintf(stderr,"             (got %d, expected %lud)\n",
 		    len, 7*sizeof(vrpn_int32) );
 	    return -1;
     }
@@ -1215,7 +1215,7 @@ vrpn_int32 vrpn_ForceDevice::decode_setObjectIsTouchable(const char *buffer,vrpn
 
     if (len != (sizeof(vrpn_int32)+sizeof(vrpn_bool))){
 	    fprintf(stderr,"vrpn_ForceDevice: set object is touchable message payload error\n");
-	    fprintf(stderr,"             (got %d, expected %d)\n",
+	    fprintf(stderr,"             (got %d, expected %lud)\n",
 		    len, sizeof(vrpn_int32)+sizeof(vrpn_bool) );
 	    return -1;
     }
@@ -1265,7 +1265,7 @@ vrpn_int32 vrpn_ForceDevice::decode_forcefield(const char *buffer,
 
     if (len != 16*sizeof(vrpn_float32)){
        fprintf(stderr,"vrpn_ForceDevice: force field message payload error\n");
-	    fprintf(stderr,"             (got %d, expected %d)\n",
+	    fprintf(stderr,"             (got %d, expected %lud)\n",
 		    len, 16*sizeof(vrpn_float32) );
 	    return -1;
     }
@@ -1311,7 +1311,7 @@ vrpn_int32 vrpn_ForceDevice::decode_error(const char *buffer,
 
     if (len != sizeof(vrpn_int32)){
 	    fprintf(stderr,"vrpn_ForceDevice: error message payload error\n");
-	    fprintf(stderr,"             (got %d, expected %d)\n",
+	    fprintf(stderr,"             (got %d, expected %lud)\n",
 		    len, sizeof(vrpn_int32) );
 	    return -1;
     }
@@ -1395,7 +1395,7 @@ vrpn_int32 vrpn_ForceDevice::decode_enableConstraint
   if (len != sizeof(vrpn_int32)) {
     fprintf(stderr,"vrpn_ForceDevice:  "
                    "enable constraint message payload error\n"
-                   "             (got %d, expected %d)\n",
+                   "             (got %d, expected %lud)\n",
             len, sizeof(vrpn_int32));
     return -1;
   }
@@ -1448,7 +1448,7 @@ vrpn_int32 vrpn_ForceDevice::decode_setConstraintMode
   if (len != sizeof(vrpn_int32)) {
     fprintf(stderr,"vrpn_ForceDevice:  "
                    "constraint mode payload error\n"
-                   "             (got %d, expected %d)\n",
+                   "             (got %d, expected %lud)\n",
             len, sizeof(vrpn_int32));
     return -1;
   }
@@ -1577,7 +1577,7 @@ vrpn_int32 vrpn_ForceDevice::decode_setConstraintKSpring
   if (len != sizeof(vrpn_float32)) {
     fprintf(stderr,"vrpn_ForceDevice:  "
                    "set constraint spring message payload error\n"
-                   "             (got %d, expected %d)\n",
+                   "             (got %d, expected %lud)\n",
             len, sizeof(vrpn_float32));
     return -1;
   }
@@ -1621,7 +1621,7 @@ vrpn_int32 vrpn_ForceDevice::decodePoint (const char * buffer,
   if (len != 3 * sizeof(vrpn_float32)) {
     fprintf(stderr,"vrpn_ForceDevice:  "
                    "decode point message payload error\n"
-                   "             (got size %d, expected %d)\n",
+                   "             (got size %d, expected %lud)\n",
             len, 3 * sizeof(vrpn_float32));
     return -1;
   }
@@ -2482,7 +2482,7 @@ int vrpn_ForceDevice_Remote::handle_error_change_message(void *userdata,
 
     if (p.payload_len != sizeof(vrpn_int32)) {
 	    fprintf(stderr, "vrpn_ForceDevice: error message payload"
-		    " error\n(got %d, expected %d)\n",
+		    " error\n(got %d, expected %lud)\n",
 		    p.payload_len, sizeof(vrpn_int32));
 	    return -1;
     }

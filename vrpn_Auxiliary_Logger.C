@@ -91,7 +91,7 @@ bool vrpn_Auxiliary_Logger::unpack_log_message_from_buffer(
   // Make sure that the buffer contains at least enough space for the four length
   // values, then pull the lengths of the strings out of the buffer
   vrpn_int32 localInNameLen, localOutNameLen, remoteInNameLen, remoteOutNameLen;
-  if (buflen < 4 * sizeof(localInNameLen)) {
+  if (static_cast<size_t>(buflen) < 4 * sizeof(localInNameLen)) {
     fprintf(stderr,"vrpn_Auxiliary_Logger::unpack_log_message_from_buffer: Buffer too small for lengths.\n");
     return false;
   }

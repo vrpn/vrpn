@@ -555,7 +555,7 @@ void vrpn_RedundantReceiver::writeMemory (const char * filename) {
   }
 
   for (mp = d_memory; mp; mp = mp->next) {
-    fprintf(fp, "%ld.%ld %d\n", mp->timestamp.tv_sec, mp->timestamp.tv_usec,
+    fprintf(fp, "%ld.%ld %d\n", mp->timestamp.tv_sec, static_cast<long>(mp->timestamp.tv_usec),
             mp->numSeen);
   }
 

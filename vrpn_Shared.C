@@ -189,7 +189,8 @@ vrpn_float64 htond( vrpn_float64 d )
         char *pchOrig= (char *)&d;
 
         // swap to big-endian order.
-        for(int i=0;i<sizeof(vrpn_float64);i++) {
+		unsigned i;
+        for(i=0;i<sizeof(vrpn_float64);i++) {
             pchSwapped[i]=pchOrig[sizeof(vrpn_float64)-i-1];
         }
 
