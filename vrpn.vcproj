@@ -1881,6 +1881,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\vrpn_Tracker_TrivisioColibri.C"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_UNC_Joystick.C"
 				>
 				<FileConfiguration
@@ -2347,6 +2367,10 @@
 			</File>
 			<File
 				RelativePath=".\vrpn_Tracker_PhaseSpace.h"
+				>
+			</File>
+			<File
+				RelativePath=".\vrpn_Tracker_TrivisioColibri.h"
 				>
 			</File>
 			<File

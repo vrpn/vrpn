@@ -146,6 +146,7 @@
 // executable lives or somewhere on the path.
 //#define VRPN_INCLUDE_INTERSENSE
 
+
 //-----------------------
 // Instructs VRPN library and server to include code that uses
 // the National Instruments Nidaq libary to control analog outputa.
@@ -271,6 +272,26 @@
 // USB devices. Please consult the corresponding homepages.
 //#define VRPN_USE_LIBNIFALCON
 
+//------------------------
+// Instructs VRPN to compile code to use Trivisio's Colibri inertial
+// tracker.  You will also need the SDK, which is available at 
+// http://www.trivisio.com/products/motiontracking/colibri#download
+// (tested on Windows).  VRPN_TRIVISIOCOLIBRI_H and VRPN_TRIVISIOCOLIBRI_LIB_PATH
+// below point to the default installation locations on Windows.  Edit them 
+// if installed elsewhere.  Note that Trivisio.dll and pthreadVC2.dll need to be in 
+// the path when running the server on Windows
+//#define VRPN_USE_TRIVISIOCOLIBRI
+
+//------------------------
+// Instructs VRPN to use libhid to access USB devices on Linux.  If this
+// works well, we may consider enabling this use on Windows and Mac as
+// well and get at all the devices this way.  For now, we'll just be glad
+// if it works on Linux.  Note that you will need to install the package
+// libhid-dev on your system to be able to use this.  Note that you will
+// need to run the server as root on linux if you want to be able to
+// open the USB device.
+//#define VRPN_USE_LIBHID
+
 //------------------------------------------------------------------//
 // SYSTEM CONFIGURATION SECTION                                     //
 // EDIT THESE DEFINITIONS TO POINT TO OPTIONAL LIBRARIES.  THEY ARE //
@@ -289,6 +310,9 @@
 #else
   #define VRPN_FREESPACE_LIB_PATH "../../libfreespace/lib"
 #endif
+
+#define VRPN_TRIVISIOCOLIBRI_H          "C:/Program Files/Trivisio/Colibri/include/TrivisioColibri.h"
+#define VRPN_TRIVISIOCOLIBRI_LIB_PATH   "C:/Program Files/Trivisio/Colibri/lib/"
 
 #ifdef linux
 #define VRPN_HDAPI_PATH         "/usr/lib64"
@@ -420,6 +444,11 @@
 // turned on and off using the definition above.
 #ifdef        VRPN_USE_MICROSCRIBE
 #pragma comment (lib, "armdll32.lib")
+#endif
+
+// Load Trivisio Colibri library
+#ifdef  VRPN_USE_TRIVISIOCOLIBRI
+#pragma comment (lib, VRPN_TRIVISIOCOLIBRI_LIB_PATH "Trivisio.lib")
 #endif
 
 // This will be defined in the VRPN (non-DLL) project and nothing else
