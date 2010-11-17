@@ -386,15 +386,15 @@ int vrpn_CerealBox::get_report(void)
 	}
    }
 
-   {	// Analog code. Looks like there are two characters for each
+   {// Analog code. Looks like there are two characters for each
 	// analog value; this conversion code grabbed right from the
 	// BG code. They seem to come in lowest-numbered first.
 
 	int	intval, i;
 	double	realval;
 	for (i = 0; i < _numchannels; i++) {
-		intval = ((0x3f & (_buffer[nextchar++]-offset)) << 6) |
-			  (0x3f & (_buffer[nextchar++]-offset));
+		intval =  (0x3f & (_buffer[nextchar++]-offset)) << 6;
+		intval |= (0x3f & (_buffer[nextchar++]-offset));
 		realval = -1.0 + (2.0 * intval/4095.0);
 		channel[i] = realval;
 	}
@@ -487,7 +487,9 @@ void	vrpn_CerealBox::mainloop()
 		struct timeval current_time;
 		vrpn_gettimeofday(&current_time, NULL);
 		if ( duration(current_time,timestamp) > MAX_TIME_INTERVAL) {
-			fprintf(stderr,"CerealBox failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n",current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);
+			fprintf(stderr,"CerealBox failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n",
+					current_time.tv_sec, static_cast<long>(current_time.tv_usec),
+					timestamp.tv_sec, static_cast<long>(timestamp.tv_usec));
 			send_text_message("Too long since last report, resetting", current_time, vrpn_TEXT_ERROR);
 			status = STATUS_RESETTING;
 		}

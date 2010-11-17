@@ -57,7 +57,6 @@ vrpn_Button_NI_DIO24::vrpn_Button_NI_DIO24 (const char * name,
 vrpn_Button_Filter (name, c)
 {
     char    portName[127] ;
-    int32    error=0;
     
     this->setNumChannels( numChannels );
 
@@ -81,6 +80,7 @@ vrpn_Button_Filter (name, c)
     // DAQmx Configure Code
     /*********************************************/
 #ifdef VRPN_USE_NATIONAL_INSTRUMENTS_MX
+    int32    error=0;
     error = DAQmxCreateTask(d_servicename,&_taskHandle);
 
     if (!error)
