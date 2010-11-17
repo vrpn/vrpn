@@ -2,7 +2,7 @@
 
 #include "vrpn_Xkeys.h"
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__) || defined(VRPN_USE_LIBHID)
 
 // USB vendor and product IDs for the models we support
 static const vrpn_uint16 XKEYS_VENDOR = 0x05F3;
@@ -85,7 +85,9 @@ vrpn_Xkeys_Desktop::vrpn_Xkeys_Desktop(const char *name, vrpn_Connection *c)
 
 void vrpn_Xkeys_Desktop::mainloop()
 {
-	update();
+	// Tell it the packet size and that we don't want to wait more than
+	// 1/50th of a second for a report.
+	update(12,20);
 	server_mainloop();
 	vrpn_gettimeofday(&_timestamp, NULL);
 	report_changes();
@@ -149,7 +151,9 @@ vrpn_Xkeys_Jog_And_Shuttle::vrpn_Xkeys_Jog_And_Shuttle(const char *name, vrpn_Co
 
 void vrpn_Xkeys_Jog_And_Shuttle::mainloop()
 {
-	update();
+	// Tell it the packet size and that we don't want to wait more than
+	// 1/50th of a second for a report.
+	update(15,20);
 	server_mainloop();
 	vrpn_gettimeofday(&_timestamp, NULL);
 	report_changes();
@@ -240,7 +244,9 @@ vrpn_Xkeys_Joystick::vrpn_Xkeys_Joystick(const char *name, vrpn_Connection *c)
 
 void vrpn_Xkeys_Joystick::mainloop()
 {
-	update();
+	// Tell it the packet size and that we don't want to wait more than
+	// 1/50th of a second for a report.
+	update(15,20);
 	server_mainloop();
 	vrpn_gettimeofday(&_timestamp, NULL);
 	report_changes();
@@ -313,7 +319,9 @@ vrpn_Xkeys_Pro::vrpn_Xkeys_Pro(const char *name, vrpn_Connection *c)
 
 void vrpn_Xkeys_Pro::mainloop()
 {
-	update();
+	// Tell it the packet size and that we don't want to wait more than
+	// 1/50th of a second for a report.
+	update(15,20);
 	server_mainloop();
 	vrpn_gettimeofday(&_timestamp, NULL);
 	report_changes();

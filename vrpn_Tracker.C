@@ -295,7 +295,7 @@ void vrpn_Tracker::print_latest_report(void)
 {
    printf("----------------------------------------------------\n");
    printf("Sensor   :%d\n", d_sensor);
-   printf("Timestamp:%ld:%ld\n", timestamp.tv_sec, timestamp.tv_usec);
+   printf("Timestamp:%ld:%ld\n", timestamp.tv_sec, static_cast<long>(timestamp.tv_usec));
    printf("Pos      :%lf, %lf, %lf\n", pos[0],pos[1],pos[2]);
    printf("Quat     :%lf, %lf, %lf, %lf\n",
           d_quat[0],d_quat[1],d_quat[2],d_quat[3]);
@@ -905,7 +905,7 @@ void vrpn_Tracker_Serial::mainloop()
 	    if (time_lapsed > vrpn_ser_tkr_MAX_TIME_INTERVAL) {
 	      char errmsg[1024];
 	      sprintf(errmsg,"Tracker failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n", \
-		      current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);
+		      current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, static_cast<long>(timestamp.tv_usec));
 	      send_text_message(errmsg, current_time, vrpn_TEXT_ERROR);
 	      status = vrpn_TRACKER_FAIL;
 
@@ -1354,7 +1354,7 @@ int vrpn_Tracker_Remote::handle_change_message(void *userdata,
 	// Fill in the parameters to the tracker from the message
 	if (p.payload_len != (8*sizeof(vrpn_float64)) ) {
 		fprintf(stderr,"vrpn_Tracker: change message payload error\n");
-		fprintf(stderr,"             (got %d, expected %d)\n",
+		fprintf(stderr,"             (got %d, expected %lud)\n",
 			p.payload_len, 8*sizeof(vrpn_float64) );
 		return -1;
 	}
@@ -1399,7 +1399,7 @@ int vrpn_Tracker_Remote::handle_vel_change_message(void *userdata,
 	// Fill in the parameters to the tracker from the message
 	if (p.payload_len != (9*sizeof(vrpn_float64)) ) {
 		fprintf(stderr,"vrpn_Tracker: vel message payload error\n");
-		fprintf(stderr,"             (got %d, expected %d)\n",
+		fprintf(stderr,"             (got %d, expected %lud)\n",
 			p.payload_len, 9*sizeof(vrpn_float64) );
 		return -1;
 	}
@@ -1443,7 +1443,7 @@ int vrpn_Tracker_Remote::handle_acc_change_message(void *userdata,
 	// Fill in the parameters to the tracker from the message
 	if (p.payload_len != (9*sizeof(vrpn_float64)) ) {
 		fprintf(stderr, "vrpn_Tracker: acc message payload error\n");
-		fprintf(stderr, "(got %d, expected %d)\n",
+		fprintf(stderr, "(got %d, expected %lud)\n",
 			p.payload_len, 9*sizeof(vrpn_float64) );
 		return -1;
 	}
@@ -1487,7 +1487,7 @@ int vrpn_Tracker_Remote::handle_unit2sensor_change_message(void *userdata,
         // Fill in the parameters to the tracker from the message
         if (p.payload_len != (8*sizeof(vrpn_float64))) {
                 fprintf(stderr, "vrpn_Tracker: unit2sensor message payload");
-                fprintf(stderr, " error\n(got %d, expected %d)\n",
+                fprintf(stderr, " error\n(got %d, expected %lud)\n",
                         p.payload_len, 8*sizeof(vrpn_float64));
                 return -1;
         }
@@ -1531,7 +1531,7 @@ int vrpn_Tracker_Remote::handle_tracker2room_change_message(void *userdata,
 	// Fill in the parameters to the tracker from the message
 	if (p.payload_len != (7*sizeof(vrpn_float64))) {
 		fprintf(stderr, "vrpn_Tracker: tracker2room message payload");
-		fprintf(stderr, " error\n(got %d, expected %d)\n",
+		fprintf(stderr, " error\n(got %d, expected %lud)\n",
 			p.payload_len, 7*sizeof(vrpn_float64));
 		return -1;
 	}
@@ -1562,7 +1562,7 @@ int vrpn_Tracker_Remote::handle_workspace_change_message(void *userdata,
 	// Fill in the parameters to the tracker from the message
 	if (p.payload_len != (6*sizeof(vrpn_float64))) {
 		fprintf(stderr, "vrpn_Tracker: tracker2room message payload");
-		fprintf(stderr, " error\n(got %d, expected %d)\n",
+		fprintf(stderr, " error\n(got %d, expected %lud)\n",
 			p.payload_len, 6*sizeof(vrpn_float64));
 		return -1;
 	}

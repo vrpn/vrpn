@@ -6,7 +6,7 @@
 #include "vrpn_Dial.h"
 #include "vrpn_Analog.h"
 
-#ifdef  _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__) || defined(VRPN_USE_LIBHID)
 
 // Device drivers for the X-Keys USB line of products from P.I. Engineering
 // Currently supported: X-Keys Desktop, X-Keys Jog & Shuttle Pro.

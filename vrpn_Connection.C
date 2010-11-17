@@ -660,7 +660,7 @@ int vrpn_Log::saveLogSoFar(void) {
     
     if (retval != 6) {
       fprintf(stderr, "vrpn_Log::saveLogSoFar:  "
-                      "Couldn't write log file (got %d, expected %d).\n",
+                      "Couldn't write log file (got %d, expected %lud).\n",
               retval, sizeof(lp->data));
       lp = d_logTail;
       final_retval = -1;
@@ -1566,7 +1566,7 @@ static int	vrpn_getmyIP (char * myIPchar, unsigned maxlen,
           ntohl(socket_name.sin_addr.s_addr) & 0xff);
 
     // Copy this to the output
-    if ((int)strlen(myIPstring) > maxlen) {
+    if (strlen(myIPstring) > maxlen) {
       fprintf(stderr,"vrpn_getmyIP: Name too long to return\n");
       return -1;
     }
@@ -1607,7 +1607,7 @@ static int	vrpn_getmyIP (char * myIPchar, unsigned maxlen,
   	(unsigned int)(unsigned char)host->h_addr_list[0][3]);
 
   // Copy this to the output
-  if ((int)strlen(myIPstring) > maxlen) {
+  if (strlen(myIPstring) > maxlen) {
     fprintf(stderr,"vrpn_getmyIP: Name too long to return\n");
     return -1;
   }
@@ -2488,7 +2488,7 @@ int vrpn_start_server(const char * machine, char * server_name, char * args,
 
 int write_vrpn_cookie (char * buffer, int length, long remote_log_mode)
 {
-  if (length < vrpn_MAGICLEN + vrpn_ALIGN + 1)
+  if (static_cast<unsigned>(length) < vrpn_MAGICLEN + vrpn_ALIGN + 1)
     return -1;
 
   sprintf(buffer, "%s  %c", vrpn_MAGIC, static_cast<char>(remote_log_mode + '0'));
@@ -3940,7 +3940,7 @@ int vrpn_Endpoint_IP::getOneTCPMessage (int fd, char * buf, int buflen) {
 #endif
 
   // skip up to alignment
-  vrpn_int32 header_len = sizeof(header);
+  size_t header_len = sizeof(header);
   if (header_len%vrpn_ALIGN) {header_len += vrpn_ALIGN - header_len%vrpn_ALIGN;}
   if (header_len > sizeof(header)) {
     // the difference can be no larger than this
@@ -4274,7 +4274,7 @@ int vrpn_Endpoint::handle_sender_message(void *userdata,
   vrpn_int32 i;
   vrpn_int32 local_id;
 
-  if (p.payload_len > sizeof(cName)) {
+  if (static_cast<size_t>(p.payload_len) > sizeof(cName)) {
     fprintf(stderr,"vrpn: vrpn_Endpoint::handle_sender_message():Sender name too long\n");
      return -1;
   }

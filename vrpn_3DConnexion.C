@@ -1,7 +1,9 @@
 // vrpn_3DConnexion.C: VRPN driver for 3DConnexion
 //  Space Navigator, Space Traveler, Space Explorer, Space Mouse, Spaceball 5000
 
-#ifdef linux
+// There is a non-HID Linux-based driver for this device that has a capability
+// not implemented in the HID interface.  It uses the input.h interface.
+#if defined(linux) && !defined(VRPN_USE_LIBHID)
 #include <linux/input.h>
 #endif
 
@@ -33,7 +35,7 @@ static const vrpn_uint16 vrpn_3DCONNEXION_SPACEBALL5000 = 0xc621;   // 50721;
 vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_buttons,
                                    const char *name, vrpn_Connection *c)
   : _filter(filter)
-#if (defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__))
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__) || defined(VRPN_USE_LIBHID)
   , vrpn_HidInterface(_filter)
 #endif
   , vrpn_Analog(name, c)
@@ -48,7 +50,10 @@ vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_button
   memset(channel, 0, sizeof(channel));
   memset(last, 0, sizeof(last));
 
-#ifdef linux
+// There is a non-HID Linux-based driver for this device that has a capability
+// not implemented in the HID interface.  It is implemented using the Event
+// interface.
+#if defined(linux) && !defined(VRPN_USE_LIBHID)
   // Use the Event interface to open devices looking for the one
   // we want.  Call the acceptor with all the devices we find
   // until we get one that we want.
@@ -94,13 +99,13 @@ vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_button
 
 vrpn_3DConnexion::~vrpn_3DConnexion()
 {
-#if !(defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__))
+#if defined(linux) && !defined(VRPN_USE_LIBHID)
 	set_led(0);
 #endif
         delete _filter;
 }
 
-#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__)
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__) || defined(VRPN_USE_LIBHID)
 void vrpn_3DConnexion::reconnect()
 {
 	vrpn_HidInterface::reconnect();
@@ -114,9 +119,12 @@ void vrpn_3DConnexion::on_data_received(size_t bytes, vrpn_uint8 *buffer)
 
 void vrpn_3DConnexion::mainloop()
 {
-#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__)
-	update();
-#elif defined(linux)
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__) || defined(VRPN_USE_LIBHID)
+	// Full reports are 7 bytes long.
+	// XXX If we get a 2-byte report mixed in, then something is going to get
+	// truncated.
+	update(7, 20);
+#elif defined(linux) && !defined(VRPN_USE_LIBHID)
     struct timeval zerotime;
     fd_set fdset;
     struct input_event ev;
@@ -182,7 +190,7 @@ void vrpn_3DConnexion::report(vrpn_uint32 class_of_service)
 	vrpn_Button::report_changes();
 }
 
-#if !(defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__))
+#if !(defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__) || defined(VRPN_USE_LIBHID) )
 int vrpn_3DConnexion::set_led(int led_state)
 {
   struct input_event event;
@@ -211,7 +219,7 @@ static void swap_endian2(char *buffer)
 	c = buffer[0]; buffer[0] = buffer[1]; buffer[1] = c;
 }
 
-#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__)
+#if (defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__)) || defined(VRPN_USE_LIBHID)
 void vrpn_3DConnexion::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 {
 #if defined(__APPLE__)

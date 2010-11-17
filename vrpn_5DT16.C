@@ -289,9 +289,9 @@ void vrpn_5dt16::mainloop ()
 	  {
 	    sprintf (l_errmsg, "vrpn_5dt16::mainloop: Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",
 		     current_time.tv_sec,
-		     current_time.tv_usec,
+		     static_cast<long>(current_time.tv_usec),
 		     timestamp.tv_sec,
-		     timestamp.tv_usec);
+		     static_cast<long>(timestamp.tv_usec));
 	    _5DT_ERROR (l_errmsg);
 	    _status = STATUS_RESETTING;
 	  }

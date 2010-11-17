@@ -16,7 +16,7 @@
 // Button 4 is the lower-center round pad
 // Button 5 is the lower-left round pad
 
-#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__)
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__) || defined(VRPN_USE_LIBHID)
 
 class vrpn_DreamCheeky: public vrpn_BaseClass, protected vrpn_HidInterface {
 public:

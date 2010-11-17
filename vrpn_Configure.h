@@ -272,6 +272,7 @@
 // USB devices. Please consult the corresponding homepages.
 //#define VRPN_USE_LIBNIFALCON
 
+//------------------------
 // Instructs VRPN to compile code to use Trivisio's Colibri inertial
 // tracker.  You will also need the SDK, which is available at 
 // http://www.trivisio.com/products/motiontracking/colibri#download
@@ -280,6 +281,16 @@
 // if installed elsewhere.  Note that Trivisio.dll and pthreadVC2.dll need to be in 
 // the path when running the server on Windows
 //#define VRPN_USE_TRIVISIOCOLIBRI
+
+//------------------------
+// Instructs VRPN to use libhid to access USB devices on Linux.  If this
+// works well, we may consider enabling this use on Windows and Mac as
+// well and get at all the devices this way.  For now, we'll just be glad
+// if it works on Linux.  Note that you will need to install the package
+// libhid-dev on your system to be able to use this.  Note that you will
+// need to run the server as root on linux if you want to be able to
+// open the USB device.
+//#define VRPN_USE_LIBHID
 
 //------------------------------------------------------------------//
 // SYSTEM CONFIGURATION SECTION                                     //
