@@ -461,7 +461,9 @@ void	vrpn_Zaber::mainloop()
 	    }
 
 	    if ( duration(current_time,timestamp) > TIMEOUT_TIME_INTERVAL) {
-		    sprintf(errmsg,"Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);
+		    sprintf(errmsg,"Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",
+					current_time.tv_sec, static_cast<long>(current_time.tv_usec),
+					timestamp.tv_sec, static_cast<long>(timestamp.tv_usec));
 		    ZAB_ERROR(errmsg);
 		    status = STATUS_RESETTING;
 	    }

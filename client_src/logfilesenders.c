@@ -67,7 +67,7 @@ int main (int argc, char ** argv) {
       case vrpn_CONNECTION_SENDER_DESCRIPTION:
         len2 = ntohl(* ((int *) buffer));
         buffer[len2 + sizeof(int)] = 0;
-	printf(" The name of sender #%d is \"%s\".\n", sender, buffer + sizeof(int));
+	printf(" The name of sender #%ld is \"%s\".\n", sender, buffer + sizeof(int));
         break;
 
       case vrpn_CONNECTION_TYPE_DESCRIPTION:

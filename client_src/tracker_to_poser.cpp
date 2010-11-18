@@ -45,8 +45,10 @@ void	VRPN_CALLBACK handle_tracker_update(void *userdata, const vrpn_TRACKERCB t)
 
 int main (int argc, char * argv[])
 {
-  char 	*tracker_client_name = "Tracker0@localhost";
-  char 	*poser_client_name = "Poser0@localhost";
+  char default_tracker[] = "Tracker0@localhost";
+  char default_poser[] = "Poser0@localhost";
+  char 	*tracker_client_name = default_tracker;
+  char 	*poser_client_name = default_poser;
   int	realparams = 0;
   int	i;
 

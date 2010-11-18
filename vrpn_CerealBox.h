@@ -27,9 +27,9 @@ public:
 	int _numchannels;	// How many analog channels to open
 	int _numencoders;	// How many encoders to open
 
-	int _expected_chars;	// How many characters to expect in the report
+	unsigned _expected_chars;	// How many characters to expect in the report
 	unsigned char _buffer[512];	// Buffer of characters in report
-	int _bufcount;		// How many characters we have so far
+	unsigned _bufcount;		// How many characters we have so far
 
 	struct timeval timestamp;	// Time of the last report from the device
 

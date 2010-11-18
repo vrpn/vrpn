@@ -374,9 +374,11 @@ void ReaderReportCallback(
 	void *target, IOReturn result, void *refcon, void *sender, MACOSX_HID_UINT32T size
 	)
 {
-	vrpn_HidInterface* vrpnHidInterface = (vrpn_HidInterface*) target;
+    vrpn_HidInterface* vrpnHidInterface = (vrpn_HidInterface*) target;
+/*
 	unsigned char* buffer = vrpnHidInterface->getBuffer();
-//	printf("ReaderReportCallback, got %d bytes for report type %d\n", size, buffer[0]);
+	printf("ReaderReportCallback, got %d bytes for report type %d\n", size, buffer[0]);
+*/
 /*
 	if (size == 2)
 	{
@@ -499,7 +501,7 @@ void vrpn_HidInterface::reconnect()
 		{
 			fprintf(stderr, "vrpn_HidInterface: Unable to IOCreatePlugInInterfaceForService\n");
 		}
-		IOHIDDeviceInterface122** hidDeviceInterface = 0;
+		//IOHIDDeviceInterface122** hidDeviceInterface = 0;
 		(*plugInInterface)->QueryInterface(plugInInterface,
 										   CFUUIDGetUUIDBytes(kIOHIDDeviceInterfaceID),
 										   (LPVOID *) &(_interface));

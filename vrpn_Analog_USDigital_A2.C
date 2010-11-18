@@ -214,7 +214,7 @@ vrpn_int32 vrpn_Analog_USDigital_A2::setNumChannels (vrpn_int32 sizeRequested)
 {
     if (sizeRequested < 0) 
         num_channel = 0;
-    else if (sizeRequested > vrpn_Analog_USDigital_A2::vrpn_Analog_USDigital_A2_CHANNEL_MAX) 
+    else if (static_cast<unsigned>(sizeRequested) > vrpn_Analog_USDigital_A2::vrpn_Analog_USDigital_A2_CHANNEL_MAX) 
         num_channel = (vrpn_int32) vrpn_Analog_USDigital_A2::vrpn_Analog_USDigital_A2_CHANNEL_MAX;
     else
         num_channel = (vrpn_int32) sizeRequested;

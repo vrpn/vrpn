@@ -391,7 +391,7 @@ int vrpn_DirectXFFJoystick::get_report(void)
   }
 #ifdef	VERBOSE
   printf(" now: %ld:%ld,   last %ld:%ld\n", reporttime.tv_sec, reporttime.tv_usec,
-    _timestamp.tv_sec, _timestamp.tv_usec);
+    _timestamp.tv_sec, static_cast<long>(_timestamp.tv_usec));
   printf(" DirectX joystick: Getting report\n");
 #endif
 

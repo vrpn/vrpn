@@ -72,7 +72,7 @@ int main (int argc, char ** argv) {
       case vrpn_CONNECTION_TYPE_DESCRIPTION:
         len2 = ntohl(* ((int *) buffer));
         buffer[len2 + sizeof(int)] = 0;
-	printf(" The name of type #%d is \"%s\".\n", sender, buffer + sizeof(int));
+	printf(" The name of type #%ld is \"%s\".\n", sender, buffer + sizeof(int));
         break;
 
       case vrpn_CONNECTION_UDP_DESCRIPTION:

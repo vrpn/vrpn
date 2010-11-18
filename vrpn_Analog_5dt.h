@@ -23,9 +23,9 @@ public:
 	int _status;		    //< Reset, Syncing, or Reading
 	int _numchannels;	    //< How many analog channels to open
 	int _mode ;                  //< glove mode for reporting data (see glove manual)
-	int _expected_chars;	    //< How many characters to expect in the report
+	unsigned _expected_chars;	    //< How many characters to expect in the report
 	unsigned char _buffer[512]; //< Buffer of characters in report
-	int _bufcount;		    //< How many characters we have so far
+	unsigned _bufcount;		    //< How many characters we have so far
 	bool  _tenbytes;	    //< Whether there are 10-byte responses (unusual, but seen)
 
 	struct timeval timestamp;   //< Time of the last report from the device

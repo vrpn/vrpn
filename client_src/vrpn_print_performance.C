@@ -189,8 +189,8 @@ void	VRPN_CALLBACK handle_button (void *userdata, const vrpn_BUTTONCB b)
 
 void	VRPN_CALLBACK handle_analog (void *userdata, const vrpn_ANALOGCB a)
 {
-    const char *name = (const char *)userdata;
 /*
+    const char *name = (const char *)userdata;
     int i;
     printf("Analog %s:\n         %5.2f", name, a.channel[0]);
     for (i = 1; i < a.num_channel; i++) {
@@ -267,7 +267,7 @@ int main (int argc, char * argv [])
   vrpn_FILE_CONNECTIONS_SHOULD_ACCUMULATE = false;
 
   device_info device_list[MAX_DEVICES];
-  int num_devices = 0;
+  unsigned num_devices = 0;
 
   int i;
 
@@ -387,7 +387,7 @@ int main (int argc, char * argv [])
  */
   printf("Press ^C to exit.\n");
   while ( ! done ) {
-      int i;
+      unsigned i;
 
       // Let all the devices do their things
       for (i = 0; i < num_devices; i++) {

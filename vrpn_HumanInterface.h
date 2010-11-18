@@ -97,12 +97,14 @@ public:
 	// Returns USB product ID of connected device
 	vrpn_uint16 product() const;
 
-protected:
-
+	// These cannot be protected because they are used in a
+	// static callback.
 #if defined(__APPLE__) && !defined(VRPN_USE_LIBHID)
 	void gotData(int size) {_gotdata = true; _gotsize = size; }
 	unsigned char* getBuffer() { return _buffer; }
 #endif // Apple
+	
+protected:
 
 	// Derived class reimplements this callback
 	virtual void on_data_received(size_t bytes, vrpn_uint8 *buffer) = 0;

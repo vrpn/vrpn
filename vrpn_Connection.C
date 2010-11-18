@@ -4208,7 +4208,7 @@ int vrpn_Endpoint::handle_type_message(void *userdata,
   vrpn_int32	i;
   vrpn_int32	local_id;
 
-  if (p.payload_len > sizeof(cName)) {
+  if (static_cast<unsigned>(p.payload_len) > sizeof(cName)) {
     fprintf(stderr,"vrpn: vrpn_Endpoint::handle_type_message:  "
 			"Type name too long\n");
     return -1;

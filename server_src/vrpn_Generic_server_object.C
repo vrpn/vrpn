@@ -1161,7 +1161,6 @@ int vrpn_Generic_Server_Object::setup_Keyboard(char * & pch, char * line, FILE *
 	}
 	else
 	{
-		vrpn_Keyboard *device=Keyboards[num_Keyboards];
 		num_Keyboards++;
 	}
 
@@ -1446,7 +1445,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_Fastrak (char * & pch, char * line
         // at the ends, we add them to the command string to send. Note
         // that there is a newline at the end of the line, following the
         // backslash.
-        sprintf(rcmd, "");
+		rcmd[0] = 0;
         while (line[strlen(line)-2] == '\\') {
           // Read the next line
           if (fgets(line, LINESIZE, config_file) == NULL) {
@@ -1576,7 +1575,6 @@ int vrpn_Generic_Server_Object::setup_Tracker_Isotrak (char * & pch, char * line
   int i1;
   int numparms;
   vrpn_Tracker_Isotrak    *mytracker;
-  int do_is900_timing = 0;
 
         char    rcmd[5000];     // Reset command to send to Fastrak
         next();
@@ -1599,7 +1597,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_Isotrak (char * & pch, char * line
         // at the ends, we add them to the command string to send. Note
         // that there is a newline at the end of the line, following the
         // backslash.
-        sprintf(rcmd, "");
+		rcmd[0] = 0;
         while (line[strlen(line)-2] == '\\') {
           // Read the next line
           if (fgets(line, LINESIZE, config_file) == NULL) {
@@ -1705,7 +1703,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_Liberty (char * & pch, char * line
         // at the ends, we add them to the command string to send. Note
         // that there is a newline at the end of the line, following the
         // backslash.
-        sprintf(rcmd, "");
+		rcmd[0] = 0;
         while (line[strlen(line)-2] == '\\') {
           // Read the next line
           if (fgets(line, LINESIZE, config_file) == NULL) {
@@ -4199,7 +4197,6 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
 #endif
   {
     FILE    * config_file;
-    char    * client_name = NULL;
 
     // Open the configuration file
     if (verbose) printf("Reading from config file %s\n", config_file_name);

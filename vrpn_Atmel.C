@@ -43,8 +43,6 @@ struct timeval wait;
 bool
 check_serial(int fd)
 {
-  char user_in;
-
   int ret=0;
 	  
   // make a new fd set to watch
@@ -384,7 +382,7 @@ vrpn_Atmel::mainloop_serial_io()
 
 
 /***************************************************************************************************/
-/* init the io mode of the channels:
+/* init the io mode of the channels: */
 /***************************************************************************************************/
 void
 vrpn_Atmel::init_channel_mode(int * channel_mode)
@@ -432,7 +430,7 @@ vrpn_Atmel::init_channel_mode(int * channel_mode)
 
 
 /***************************************************************************************************/
-/* init the io mode of the channels:
+/* init the io mode of the channels: */
 /***************************************************************************************************/
 bool
 vrpn_Atmel::handle_new_connection()

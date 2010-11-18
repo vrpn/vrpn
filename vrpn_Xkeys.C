@@ -112,7 +112,7 @@ void vrpn_Xkeys_Desktop::decodePacket(size_t bytes, vrpn_uint8 *buffer) {
 
 		if ((report[0] != 0) || !(report[11] & 0x08)) {
 			// Apparently we got a corrupted report; skip this one.
-			fprintf(stderr, "vrpn_Xkeys: Found a corrupted report; # total bytes = %u\n", bytes);
+			fprintf(stderr, "vrpn_Xkeys: Found a corrupted report; # total bytes = %u\n", static_cast<unsigned>(bytes));
 			continue;
 		}
 
@@ -192,7 +192,7 @@ void vrpn_Xkeys_Jog_And_Shuttle::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 
 		if ((report[0] != 0) || !(report[14] & 0x08)) {
 			// Garbled report; skip it
-			fprintf(stderr, "vrpn_Xkeys: Found a corrupted report; # total bytes = %u\n", bytes);
+			fprintf(stderr, "vrpn_Xkeys: Found a corrupted report; # total bytes = %u\n", static_cast<unsigned>(bytes));
 			continue;
 		}
 
@@ -280,7 +280,7 @@ void vrpn_Xkeys_Joystick::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 
 		if ((report[0] != 0) || !(report[14] & 0x08)) {
 			// Garbled report; skip it
-			fprintf(stderr, "vrpn_Xkeys: Found a corrupted report; # total bytes = %u\n", bytes);
+			fprintf(stderr, "vrpn_Xkeys: Found a corrupted report; # total bytes = %u\n", static_cast<unsigned>(bytes));
 			continue;
 		}
 
@@ -348,7 +348,7 @@ void vrpn_Xkeys_Pro::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 
 		if ((report[0] != 0) || !(report[14] & 0x08)) {
 			// Garbled report; skip it
-			fprintf(stderr, "vrpn_Xkeys: Found a corrupted report; # total bytes = %u\n", bytes);
+			fprintf(stderr, "vrpn_Xkeys: Found a corrupted report; # total bytes = %u\n", static_cast<unsigned>(bytes));
 			continue;
 		}
 

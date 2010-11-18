@@ -222,7 +222,7 @@ int main (int argc, char * argv [])
   vrpn_FILE_CONNECTIONS_SHOULD_ACCUMULATE = false;
 
   device_info device_list[MAX_DEVICES];
-  int num_devices = 0;
+  unsigned num_devices = 0;
 
   int i;
 
@@ -342,7 +342,7 @@ int main (int argc, char * argv [])
  */
   printf("Press ^C to exit.\n");
   while ( ! done ) {
-      int i;
+      unsigned i;
 
       // Let all the devices do their things
       for (i = 0; i < num_devices; i++) {
