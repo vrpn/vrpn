@@ -22,6 +22,7 @@ void Usage (const char * s)
   fprintf(stderr,"       -NIC: Use NIC with given IP address or DNS name.\n");
   fprintf(stderr,"       -li: Log incoming messages to given filename.\n");
   fprintf(stderr,"       -lo: Log outgoing messages to given filename.\n");
+  fprintf(stderr,"       -flush: Flush logs to disk after every mainloop().\n");
   exit(0);
 }
 
@@ -93,7 +94,8 @@ int main (int argc, char * argv[])
 {
   const char	* config_file_name = "vrpn.cfg";
   bool	bail_on_error = true;
-  int	auto_quit = 0;
+  bool	auto_quit = false;
+  bool  flush_continuously = false;
   int	realparams = 0;
   int	i;
   int	port = vrpn_DEFAULT_LISTEN_PORT_NO;
@@ -144,7 +146,7 @@ int main (int argc, char * argv[])
     } else if (!strcmp(argv[i], "-v")) {	// Verbose
       verbose = true;
     } else if (!strcmp(argv[i], "-q")) {  // quit on dropped last con
-      auto_quit = 1;
+      auto_quit = true;
     } else if (!strcmp(argv[i], "-NIC")) { // specify a network interface
       if (++i > argc) { Usage(argv[0]); }
       if (verbose) { fprintf(stderr, "Listening on network interface card %s.\n", argv[i]); }
@@ -157,6 +159,8 @@ int main (int argc, char * argv[])
       if (++i > argc) { Usage(argv[0]); }
       if (verbose) { fprintf(stderr, "Outgoing logfile name %s.\n", argv[i]); }
       g_outLogName = argv[i];
+    } else if (!strcmp(argv[i], "-flush")) {
+      flush_continuously = true;
     } else if (argv[i][0] == '-') {	// Unknown flag
       Usage(argv[0]);
     } else switch (realparams) {		// Non-flag parameters
@@ -212,14 +216,20 @@ int main (int argc, char * argv[])
       generic_server->mainloop();
     }
 
-    // Send and receive all messages
+    // Send and receive all messages.
     connection->mainloop();
+
+    // Save all log messages that are pending so that they are on disk
+    // in case we end up exiting improperly.
+    if (flush_continuously) { connection->save_log_so_far(); }
+
+    // Bail if the connection is in trouble.
     if (!connection->doing_okay()) {
       shutDown();
     }
 
     // Handle forwarding requests;  send messages
-    // on auxiliary connections
+    // on auxiliary connections.
     forwarderServer->mainloop();
 
     // Sleep so we don't eat the CPU
