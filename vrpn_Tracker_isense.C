@@ -184,9 +184,11 @@ vrpn_Tracker_InterSense::~vrpn_Tracker_InterSense()
     for (i = 0; i < ISD_MAX_STATIONS; i++) {
 		if (is900_buttons[i]) {
 		    delete is900_buttons[i];
+                    is900_buttons[i] = NULL;
 		}
 		if (is900_analogs[i]) {
 			delete is900_analogs[i];
+                        is900_analogs[i] = NULL;
 		}
     }
 #endif

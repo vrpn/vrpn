@@ -57,6 +57,10 @@ int VRPN_CALLBACK handle_dlc (void *, vrpn_HANDLERPARAM p)
 }
 
 // install a signal handler to shut down the devices
+// On Windows, the signal handler is run in a different thread from
+// the main application.  We don't want to go destroying things in
+// here while they are being used there, so we set a flag telling the
+// main program it is time to exit.
 #if defined (_WIN32) && !defined (__CYGWIN__)
 /**
  * Handle exiting cleanly when we get ^C or other signals. 
@@ -210,6 +214,8 @@ int main (int argc, char * argv[])
   // **                MAIN LOOP                                       **
   // **                                                                **
   // ********************************************************************
+
+  // ^C handler sets done to let us know to quit.
   while (!done) {
     // Let the generic object server do its thing.
     if (generic_server) {
@@ -220,7 +226,9 @@ int main (int argc, char * argv[])
     connection->mainloop();
 
     // Save all log messages that are pending so that they are on disk
-    // in case we end up exiting improperly.
+    // in case we end up exiting improperly.  This may slow down the
+    // server waiting for disk writes to complete, but will more reliably
+    // log messages.
     if (flush_continuously) { connection->save_log_so_far(); }
 
     // Bail if the connection is in trouble.
