@@ -378,6 +378,7 @@ vrpn_BaseClassUnique::~vrpn_BaseClassUnique ()
     // objects that are sharing this unique destructor.
     if (d_connection!=NULL) {
         d_connection->removeReference();
+    }
 
     // Delete the space allocated in the constructor for the servicename
     if (d_servicename) {
