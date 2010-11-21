@@ -243,6 +243,7 @@ vrpn_BaseClass::vrpn_BaseClass (const char * name, vrpn_Connection * c)
             d_connection = c;
             d_connection->addReference();
         } else {
+            // This will implicitly add the reference to the connection.
             d_connection = vrpn_get_connection_by_name(name);
         }
 
