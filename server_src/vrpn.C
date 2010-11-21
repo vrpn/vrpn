@@ -44,7 +44,11 @@ static bool  verbose = false;
 
 void shutDown (void)
 {
+  if (verbose) { fprintf(stderr,"Deleting forwarder server\n"); }
+  if (forwarderServer) { delete forwarderServer; forwarderServer = NULL; }
+  if (verbose) { fprintf(stderr,"Deleting generic server object..."); }
   if (generic_server) { delete generic_server; generic_server = NULL; }
+  if (verbose) { fprintf(stderr,"Deleting connection\n"); }
   if (connection) { connection->removeReference(); connection = NULL; }
   if (verbose) { fprintf(stderr,"Deleted server and connection, Exiting.\n"); }
   exit(0);
