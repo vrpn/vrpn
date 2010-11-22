@@ -235,11 +235,15 @@ vrpn_BaseClass::vrpn_BaseClass (const char * name, vrpn_Connection * c)
         // the object itself (for example, Tracker0@mumble.cs.unc.edu will make a
         // connection to the machine mumble on the standard VRPN port).
         //
-        // The vrpn_BassClassUnique destructor handles the deletion of this connection.
+        // The vrpn_BassClassUnique destructor handles telling the connection we
+        // are no longer referring to it.  Since we only add the reference once
+        // here (when d_connection is NULL), it is okay for the unique destructor
+        // to remove the reference.
         if (c) {	// using existing connection.
             d_connection = c;
             d_connection->addReference();
         } else {
+            // This will implicitly add the reference to the connection.
             d_connection = vrpn_get_connection_by_name(name);
         }
 
@@ -371,6 +375,8 @@ vrpn_BaseClassUnique::~vrpn_BaseClassUnique ()
     }
 
     // notify the connection that this object is no longer using it.
+    // This was added in the vrpn_BaseClass constructor for exactly one of the
+    // objects that are sharing this unique destructor.
     if (d_connection!=NULL) {
         d_connection->removeReference();
     }

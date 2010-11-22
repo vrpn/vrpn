@@ -121,10 +121,10 @@ static	float g_forceFieldRadius = (float)0.3;
 
 void    VRPN_CALLBACK handle_force_change(void *userdata, const vrpn_FORCECB f)
 {
+/*XXX
   static vrpn_FORCECB lr;        // last report
   static int first_report_done = 0;
 
-  /*XXX
   if ((!first_report_done) ||
     ((f.force[0] != lr.force[0]) || (f.force[1] != lr.force[1])
       || (f.force[2] != lr.force[2]))) {
@@ -373,7 +373,6 @@ void    VRPN_CALLBACK handle_tracker_change(void *userdata, const vrpn_TRACKERCB
 	  break;
 	}
 
-	vrpn_float32  center[3] = { g_xCenter, g_yCenter, g_zCenter };
 	const vrpn_float32  halfwidth = static_cast<vrpn_float32>(0.02);
 	vrpn_float32  left = g_xCenter - halfwidth;
 	vrpn_float32  right = g_xCenter + halfwidth;

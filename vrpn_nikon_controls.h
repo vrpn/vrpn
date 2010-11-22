@@ -15,7 +15,7 @@ protected:
   int _status;
 
   unsigned char _buffer[512]; //< Buffer of characters in report
-  int _bufcount;	      //< How many characters we have so far
+  unsigned _bufcount;	      //< How many characters we have so far
 
   double  _requested_focus;   //< Where we asked the focus to be set to
 

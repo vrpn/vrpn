@@ -278,7 +278,9 @@ void vrpn_Tng3::mainloop(void)
 	    struct timeval current_time;
 	    vrpn_gettimeofday(&current_time, NULL);
 	    if ( duration(current_time,_timestamp) > MAX_TIME_INTERVAL) {
-		    fprintf(stderr,"TNG3 failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n",current_time.tv_sec, current_time.tv_usec, _timestamp.tv_sec, _timestamp.tv_usec);
+		    fprintf(stderr,"TNG3 failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n",
+					current_time.tv_sec, static_cast<long>(current_time.tv_usec),
+					_timestamp.tv_sec, static_cast<long>(_timestamp.tv_usec));
 		    send_text_message("Too long since last report, resetting", current_time, vrpn_TEXT_ERROR);
 		    status = STATUS_RESETTING;
 	    }

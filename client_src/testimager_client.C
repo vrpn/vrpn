@@ -236,7 +236,8 @@ void myKeyboardFunc(unsigned char key, int x, int y)
 
 int main(int argc, char **argv)
 {
-  char	*device_name = "TestImage@localhost";
+  char  default_imager[] = "TestImage@localhost";
+  char	*device_name = default_imager;
   char	*logfile_name = NULL;
   int i;
 

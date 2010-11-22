@@ -46,7 +46,7 @@ void VRPN_CALLBACK	handle_button_change(void *userdata, const vrpn_BUTTONCB b)
 	static int buttonstate = 1;
 
 	if (b.state != buttonstate) {
-	     printf("button #%ld is in state %ld\n", b.button, b.state);
+	     printf("button #%d is in state %d\n", b.button, b.state);
 	     buttonstate = b.state;
 	     count++;
 	}
@@ -59,9 +59,10 @@ void VRPN_CALLBACK	handle_dial_change(void *userdata, const vrpn_ANALOGCB info)
 {
     double channel_values[vrpn_CHANNEL_MAX];
 
-    for (int i = 0; i < info.num_channel; i++){
+	int i;
+    for (i = 0; i < info.num_channel; i++){
 	if (channel_values[i] != info.channel[i])
-	    printf("dial #%ld has value %f\n", i, (float)(info.channel[i])); 
+	    printf("dial #%d has value %f\n", i, (float)(info.channel[i])); 
 	channel_values[i] = info.channel[i];
     }
 

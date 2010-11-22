@@ -26,11 +26,11 @@ vrpn_SGIBox	* vrpn_special_sgibox;
 void vrpn_Generic_Server_Object::closeDevices (void) {
   int i;
   for (i=0;i < num_buttons; i++) {
-    fprintf(stderr, "\nClosing button %d ...", i);
+    if (verbose) fprintf(stderr, "\nClosing button %d ...", i);
     delete buttons[i];
   }
   for (i=0;i < num_trackers; i++) {
-    fprintf(stderr, "\nClosing tracker %d ...", i);
+    if (verbose) fprintf(stderr, "\nClosing tracker %d ...", i);
     delete trackers[i];
   }
 #ifdef VRPN_USE_PHANTOM_SERVER
@@ -40,104 +40,104 @@ void vrpn_Generic_Server_Object::closeDevices (void) {
   }
 #endif
   for (i=0;i < num_sounds; i++) {
-    fprintf(stderr, "\nClosing sound %d ...", i);
+    if (verbose) fprintf(stderr, "\nClosing sound %d ...", i);
     delete sounds[i];
   }
   for (i=0;i < num_analogs; i++) {
-    fprintf(stderr, "\nClosing analog %d ...", i);
+    if (verbose) fprintf(stderr, "\nClosing analog %d ...", i);
     delete analogs[i];
   }
   for (i=0;i < num_sgiboxes; i++) {
-    fprintf(stderr, "\nClosing sgibox %d ...", i);
+    if (verbose) fprintf(stderr, "\nClosing sgibox %d ...", i);
     delete sgiboxes[i];
   }
   for (i=0;i < num_cereals; i++) {
-    fprintf(stderr, "\nClosing cereal %d ...", i);
+    if (verbose) fprintf(stderr, "\nClosing cereal %d ...", i);
     delete cereals[i];
   }
   for (i=0;i < num_magellans; i++) {
-    fprintf(stderr, "\nClosing magellan %d ...", i);
+    if (verbose) fprintf(stderr, "\nClosing magellan %d ...", i);
     delete magellans[i];
   }
   for (i=0;i < num_spaceballs; i++) {
-    fprintf(stderr, "\nClosing spaceball %d ...", i);
+    if (verbose) fprintf(stderr, "\nClosing spaceball %d ...", i);
     delete spaceballs[i];
   }
   for (i=0;i < num_iboxes; i++) {
-    fprintf(stderr, "\nClosing ibox %d ...", i);
+    if (verbose) fprintf(stderr, "\nClosing ibox %d ...", i);
     delete iboxes[i];
   }
   for (i=0;i < num_dials; i++) {
-    fprintf(stderr, "\nClosing dial %d ...", i);
+    if (verbose) fprintf(stderr, "\nClosing dial %d ...", i);
     delete dials[i];
   }
 #ifdef VRPN_INCLUDE_TIMECODE_SERVER
   for (i=0;i < num_timecode_generators; i++) {
-    fprintf(stderr, "\nClosing timecode_generator %d ...", i);
+    if (verbose) fprintf(stderr, "\nClosing timecode_generator %d ...", i);
     delete timecode_generators[i];
   }
 #endif
   for (i=0;i < num_tng3s; i++) {
-    fprintf(stderr, "\nClosing tng3 %d ...", i);
+    if (verbose) fprintf(stderr, "\nClosing tng3 %d ...", i);
     delete tng3s[i];
   }
 #ifdef	VRPN_USE_DIRECTINPUT
   for (i=0;i < num_DirectXJoys; i++) {
-    fprintf(stderr, "\nClosing DirectXJoy %d ...", i);
+    if (verbose) fprintf(stderr, "\nClosing DirectXJoy %d ...", i);
     delete DirectXJoys[i];
   }
   for (i=0;i < num_RumblePads; i++) {
-    fprintf(stderr, "\nClosing RumblePad %d ...", i);
+    if (verbose) fprintf(stderr, "\nClosing RumblePad %d ...", i);
     delete RumblePads[i];
   }
 #endif
 #ifdef	_WIN32
   for (i=0;i < num_Win32Joys; i++) {
-    fprintf(stderr, "\nClosing win32joy %d ...", i);
+    if (verbose) fprintf(stderr, "\nClosing win32joy %d ...", i);
     delete win32joys[i];
   }
 #endif
   for (i=0;i < num_GlobalHapticsOrbs; i++) {
-    fprintf(stderr, "\nClosing Global Haptics Orb %d ...", i);
+    if (verbose) fprintf(stderr, "\nClosing Global Haptics Orb %d ...", i);
     delete ghos[i];
   }
   for (i=0;i < num_DTracks; i++) {
-    fprintf(stderr, "\nClosing DTrack %d ...", i);
+    if (verbose) fprintf(stderr, "\nClosing DTrack %d ...", i);
     delete DTracks[i];
   }
   for (i=0;i < num_analogouts; i++) {
-    fprintf(stderr, "\nClosing analogout %d ...", i);
+    if (verbose) fprintf(stderr, "\nClosing analogout %d ...", i);
     delete analogouts[i];
   }
   for (i=0;i < num_posers; i++) {
-    fprintf(stderr, "\nClosing poser %d ...", i);
+    if (verbose) fprintf(stderr, "\nClosing poser %d ...", i);
     delete posers[i];
   }
   for (i=0;i < num_Keyboards; i++) {
-    fprintf(stderr, "\nClosing Keyboard %d ...", i);
+    if (verbose) fprintf(stderr, "\nClosing Keyboard %d ...", i);
     delete Keyboards[i];
   }
   for (i=0;i < num_loggers; i++) {
-    fprintf(stderr, "\nClosing logger %d ...", i);
+    if (verbose) fprintf(stderr, "\nClosing logger %d ...", i);
     delete loggers[i];
   }
   for (i=0;i < num_imagestreams; i++) {
-    fprintf(stderr, "\nClosing imagestream %d ...", i);
+    if (verbose) fprintf(stderr, "\nClosing imagestream %d ...", i);
     delete imagestreams[i];
   }
   for (i=0;i < num_inertiamouses; i++) {
-    fprintf(stderr, "\nClosing inertiamouse %d ...", i);
+    if (verbose) fprintf(stderr, "\nClosing inertiamouse %d ...", i);
     delete inertiamouses[i];
   }
 #ifdef	VRPN_USE_WIIUSE
   for (i=0;i < num_wiimotes; i++) {
-    fprintf(stderr, "\nClosing wiimote %d ...", i);
+    if (verbose) fprintf(stderr, "\nClosing wiimote %d ...", i);
     delete wiimotes[i];
   }
 #endif
 #ifdef	VRPN_USE_FREESPACE
   for (i=0;i < num_freespaces; i++) {
-    fprintf(stderr, "\nClosing freespace %d ...", i);
+    if (verbose) fprintf(stderr, "\nClosing freespace %d ...", i);
     delete freespaces[i];
   }
 #endif
@@ -1161,7 +1161,6 @@ int vrpn_Generic_Server_Object::setup_Keyboard(char * & pch, char * line, FILE *
 	}
 	else
 	{
-		vrpn_Keyboard *device=Keyboards[num_Keyboards];
 		num_Keyboards++;
 	}
 
@@ -1446,7 +1445,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_Fastrak (char * & pch, char * line
         // at the ends, we add them to the command string to send. Note
         // that there is a newline at the end of the line, following the
         // backslash.
-        sprintf(rcmd, "");
+		rcmd[0] = 0;
         while (line[strlen(line)-2] == '\\') {
           // Read the next line
           if (fgets(line, LINESIZE, config_file) == NULL) {
@@ -1576,7 +1575,6 @@ int vrpn_Generic_Server_Object::setup_Tracker_Isotrak (char * & pch, char * line
   int i1;
   int numparms;
   vrpn_Tracker_Isotrak    *mytracker;
-  int do_is900_timing = 0;
 
         char    rcmd[5000];     // Reset command to send to Fastrak
         next();
@@ -1599,7 +1597,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_Isotrak (char * & pch, char * line
         // at the ends, we add them to the command string to send. Note
         // that there is a newline at the end of the line, following the
         // backslash.
-        sprintf(rcmd, "");
+		rcmd[0] = 0;
         while (line[strlen(line)-2] == '\\') {
           // Read the next line
           if (fgets(line, LINESIZE, config_file) == NULL) {
@@ -1705,7 +1703,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_Liberty (char * & pch, char * line
         // at the ends, we add them to the command string to send. Note
         // that there is a newline at the end of the line, following the
         // backslash.
-        sprintf(rcmd, "");
+		rcmd[0] = 0;
         while (line[strlen(line)-2] == '\\') {
           // Read the next line
           if (fgets(line, LINESIZE, config_file) == NULL) {
@@ -4199,7 +4197,6 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
 #endif
   {
     FILE    * config_file;
-    char    * client_name = NULL;
 
     // Open the configuration file
     if (verbose) printf("Reading from config file %s\n", config_file_name);

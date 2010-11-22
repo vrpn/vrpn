@@ -581,7 +581,7 @@ vrpn_Connection *vrpn_Imager_Stream_Buffer::open_new_log_connection(
   if ( !ret || !ret->doing_okay() ) {
     struct timeval now;
     vrpn_gettimeofday(&now, NULL);
-    fprintf(stderr, "vrpn_Imager_Stream_Buffer::open_new_log_connection: Could not create connection (files already exist?)", now, vrpn_TEXT_ERROR);
+    fprintf(stderr, "vrpn_Imager_Stream_Buffer::open_new_log_connection: Could not create connection (files already exist?)");
     if (ret) { delete ret; return NULL; }
   }
 

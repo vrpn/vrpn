@@ -390,7 +390,9 @@ void	vrpn_ImmersionBox::mainloop(void)
 	    struct timeval current_time;
 	    vrpn_gettimeofday(&current_time, NULL);
 	    if ( duration(current_time,timestamp) > MAX_TIME_INTERVAL) {
-		    fprintf(stderr,"Tracker failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n",current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, timestamp.tv_usec);
+		    fprintf(stderr,"Tracker failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n",
+					current_time.tv_sec, static_cast<long>(current_time.tv_usec),
+					timestamp.tv_sec, static_cast<long>(timestamp.tv_usec));
 		    send_text_message("Too long since last report, resetting", current_time, vrpn_TEXT_ERROR);
 		    status = STATUS_RESETTING;
 	    }

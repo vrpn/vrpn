@@ -235,7 +235,7 @@ void handle_cntl_c(int) {
 void Usage (const char * arg0) {
   fprintf(stderr,
 "Usage:  %s server_to_use | LOCAL\n"
-"  server_to_use:  VRPN name of device to connect to (eg: Tracker0@ioglab)\n",
+"  server_to_use:  VRPN name of device to connect to (eg: Tracker0@ioglab)\n"
 "                  'LOCAL' means to launch a local server on a dedicated connection\n",
   arg0);
 

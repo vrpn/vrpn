@@ -325,6 +325,10 @@ void vrpn_Button_SerialMouse::read(void)
 			buttons[1] = (unsigned char)( (buffer & 2)?0:1 );
 			buttons[2] = (unsigned char)( (buffer & 1)?0:1 );
 			break;
+				
+		default:
+			printf("vrpn_Button_SerialMouse::read(): Unknown mouse type\n");
+			break;
 		} // switch
     } // while (num) 
 }

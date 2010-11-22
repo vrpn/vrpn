@@ -74,10 +74,10 @@ int main (int argc, char ** argv) {
     if (retval < 0) { printf("ERROR\n"); close(file); exit(0); }
     if (!retval) {
         if (summary_mode) {
-            printf("Last timestamp in file: %ld:%ld\n", time.tv_sec, time.tv_usec);
+            printf("Last timestamp in file: %ld:%ld\n", time.tv_sec, static_cast<long>(time.tv_usec));
             timeval tvDuration = vrpn_TimevalDiff(time, tvFirst);
             double dDuration = vrpn_TimevalMsecs(tvDuration) / 1000.0;
-            printf("Duration: %ld:%ld\n", tvDuration.tv_sec, tvDuration.tv_usec);
+            printf("Duration: %ld:%ld\n", tvDuration.tv_sec, static_cast<long>(tvDuration.tv_usec));
             printf("%d enties over %gs = %.3fHz\n",
                 cEntries, dDuration, cEntries/dDuration);
         } else {
@@ -97,7 +97,7 @@ int main (int argc, char ** argv) {
     if (summary_mode) {
         static int first = 1;
         if (first) {
-            printf("First timestamp in file: %ld:%ld\n", time.tv_sec, time.tv_usec);
+            printf("First timestamp in file: %ld:%ld\n", time.tv_sec, static_cast<long>(time.tv_usec));
             tvFirst = time;
             first = 0;
         }
@@ -120,25 +120,25 @@ int main (int argc, char ** argv) {
         continue;
     }
 
-    printf(" <%d bytes> at %ld:%ld\n", retval, time.tv_sec, time.tv_usec);
+    printf(" <%d bytes> at %ld:%ld\n", retval, time.tv_sec, static_cast<long>(time.tv_usec));
 
     switch (type) {
 
       case vrpn_CONNECTION_SENDER_DESCRIPTION:
         len2 = ntohl(* ((int *) buffer));
         buffer[len2 + sizeof(int)] = 0;
-	    printf(" The name of sender #%d is \"%s\".\n", sender, buffer + sizeof(int));
+	    printf(" The name of sender #%ld is \"%s\".\n", sender, buffer + sizeof(int));
         break;
 
       case vrpn_CONNECTION_TYPE_DESCRIPTION:
         len2 = ntohl(* ((int *) buffer));
         buffer[len2 + sizeof(int)] = 0;
-	    printf(" The name of type #%d is \"%s\".\n", sender, buffer + sizeof(int));
+	    printf(" The name of type #%ld is \"%s\".\n", sender, buffer + sizeof(int));
         break;
 
       case vrpn_CONNECTION_UDP_DESCRIPTION:
         buffer[len] = 0;
-        printf(" UDP host is \"%s\", port %d.\n", buffer, sender);
+        printf(" UDP host is \"%s\", port %ld.\n", buffer, sender);
         break;
 
       case vrpn_CONNECTION_LOG_DESCRIPTION:

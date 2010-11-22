@@ -24,9 +24,9 @@ public:
 	int _numbuttons;		//< How many buttons to open
 	int _numchannels;		//< How many analog channels to open
 
-	int _expected_chars;		//< How many characters to expect in the report
+	unsigned _expected_chars;		//< How many characters to expect in the report
 	unsigned char _buffer[512];	//< Buffer of characters in report
-	int _bufcount;			//< How many characters we have so far
+	unsigned _bufcount;			//< How many characters we have so far
 
 	int _null_radius;		//< The range over which no motion should be reported
 

@@ -65,7 +65,7 @@ int main (int argc, char * argv[])
     g_is->send_begin_frame(0, g_size-1, 0, g_size-1);
     g_is->mainloop();
     int nRowsPerRegion=vrpn_IMAGER_MAX_REGIONu8/g_size;
-    int y;
+    unsigned y;
     for(y=0; y<g_size; y+=nRowsPerRegion) {
       g_is->send_region_using_base_pointer(channel_id,0,g_size-1,y,min(g_size,y+nRowsPerRegion)-1,
 	buffer, 1, g_size, g_size);

@@ -905,7 +905,8 @@ void vrpn_Tracker_Serial::mainloop()
 	    if (time_lapsed > vrpn_ser_tkr_MAX_TIME_INTERVAL) {
 	      char errmsg[1024];
 	      sprintf(errmsg,"Tracker failed to read... current_time=%ld:%ld, timestamp=%ld:%ld\n", \
-		      current_time.tv_sec, current_time.tv_usec, timestamp.tv_sec, static_cast<long>(timestamp.tv_usec));
+		      current_time.tv_sec, static_cast<long>(current_time.tv_usec),
+			  timestamp.tv_sec, static_cast<long>(timestamp.tv_usec));
 	      send_text_message(errmsg, current_time, vrpn_TEXT_ERROR);
 	      status = vrpn_TRACKER_FAIL;
 

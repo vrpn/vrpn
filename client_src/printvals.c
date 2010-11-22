@@ -42,7 +42,7 @@ void	VRPN_CALLBACK handle_pos (void *, const vrpn_TRACKERCB t)
 	static	int	count = 0;
 
 	if (!print_for_tracker) { return; };
-	fprintf(stderr, "%ld.", t.sensor);
+	fprintf(stderr, "%d.", t.sensor);
 	if ((++count % 20) == 0) {
 		fprintf(stderr, "\n");
 		if (count > 300) {
@@ -60,7 +60,7 @@ void	VRPN_CALLBACK handle_vel (void *, const vrpn_TRACKERVELCB t)
 	//static	int	count = 0;
 
 	if (!print_for_tracker) { return; };
-	fprintf(stderr, "%ld/", t.sensor);
+	fprintf(stderr, "%d/", t.sensor);
 }
 
 void	VRPN_CALLBACK handle_acc (void *, const vrpn_TRACKERACCCB t)
@@ -68,12 +68,12 @@ void	VRPN_CALLBACK handle_acc (void *, const vrpn_TRACKERACCCB t)
 	//static	int	count = 0;
 
 	if (!print_for_tracker) { return; };
-	fprintf(stderr, "%ld~", t.sensor);
+	fprintf(stderr, "%d~", t.sensor);
 }
 
 void	VRPN_CALLBACK handle_button (void *, const vrpn_BUTTONCB b)
 {
-	printf("B%ld is %ld\n", b.button, b.state);
+	printf("B%d is %d\n", b.button, b.state);
 }
 
 int VRPN_CALLBACK handle_gotConnection (void *, vrpn_HANDLERPARAM) {

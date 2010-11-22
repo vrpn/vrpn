@@ -27,9 +27,9 @@ public:
   protected:
 	int d_status;
 
-	int d_expected_chars;	//< How many characters to expect in the report
+	unsigned d_expected_chars;	//< How many characters to expect in the report
 	unsigned char d_buffer[512];	//< Buffer of characters in report
-	int d_bufcount;		//< How many characters we have so far
+	unsigned d_bufcount;		//< How many characters we have so far
 
 	struct timeval d_timestamp;	//< Time of the last report from the device
 
