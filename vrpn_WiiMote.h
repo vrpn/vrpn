@@ -83,7 +83,7 @@ public:
         // If there is more than one WiiMote on the machine, the zero-indexed 'which'
         // parameter tells which one we want to open.
 	vrpn_WiiMote(const char *name, vrpn_Connection *c = NULL, unsigned which = 0
-		, unsigned useMS = 0, unsigned useIR = 0, unsigned reorderButtons = 0);
+		, unsigned useMS = 1, unsigned useIR = 1, unsigned reorderButtons = 0);
 	~vrpn_WiiMote();
 
 	virtual void mainloop();

@@ -18,6 +18,11 @@
 # 2009-2010 Ryan Pavlik <rpavlik@iastate.edu> <abiryan@ryand.net>
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
+#
+#          Copyright Iowa State University 2009-2010
+# Distributed under the Boost Software License, Version 1.0.
+#    (See accompanying file LICENSE_1_0.txt or copy at
+#          http://www.boost.org/LICENSE_1_0.txt)
 
 set(WIIUSE_ROOT_DIR
 	"${WIIUSE_ROOT_DIR}"
@@ -54,7 +59,15 @@ find_path(WIIUSE_INCLUDE_DIR
 
 set(_deps_check)
 if(WIN32)
-	find_file(WIIUSE_RUNTIME_LIBRARY NAMES wiiuse.dll HINTS "${_libdir}")
+	find_file(WIIUSE_RUNTIME_LIBRARY
+		NAMES
+		wiiuse.dll
+		HINTS
+		"${_libdir}"
+		"${_libdir}/.."
+		PATH_SUFFIXES
+		bin)
+
 	set(WIIUSE_RUNTIME_LIBRARIES "${WIIUSE_RUNTIME_LIBRARY}")
 	get_filename_component(WIIUSE_RUNTIME_LIBRARY_DIRS
 		"${WIIUSE_RUNTIME_LIBRARY}"
@@ -79,4 +92,6 @@ if(WIIUSE_FOUND)
 	mark_as_advanced(WIIUSE_ROOT_DIR)
 endif()
 
-mark_as_advanced(WIIUSE_INCLUDE_DIR WIIUSE_LIBRARY WIIUSE_RUNTIME_LIBRARY)
+mark_as_advanced(WIIUSE_INCLUDE_DIR
+	WIIUSE_LIBRARY
+	WIIUSE_RUNTIME_LIBRARY)

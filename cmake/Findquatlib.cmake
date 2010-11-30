@@ -9,6 +9,11 @@
 # 2009-2010 Ryan Pavlik <rpavlik@iastate.edu> <abiryan@ryand.net>
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
+#
+#          Copyright Iowa State University 2009-2010
+# Distributed under the Boost Software License, Version 1.0.
+#    (See accompanying file LICENSE_1_0.txt or copy at
+#          http://www.boost.org/LICENSE_1_0.txt)
 
 if(TARGET quat)
 	# Look for the header file.
@@ -42,10 +47,9 @@ else()
 		"${QUATLIB_ROOT_DIR}"
 		PATH_SUFFIXES
 		include
-			PATHS
-			"C:/Program Files/quatlib/include"
-		"C:/Program Files/vrpn/include"
-		"./quat")
+		PATHS
+		"C:/Program Files/quatlib/include"
+		"../quat")
 
 	# Look for the library.
 	find_library(QUATLIB_LIBRARY
@@ -56,10 +60,9 @@ else()
 		"${QUATLIB_ROOT_DIR}"
 		PATH_SUFFIXES
 		${_libsuffixes}
-			PATHS
-			"C:/Program Files/quatlib/lib"
-			"C:/Program Files/vrpn/lib"
-			"../buildquat"
+		PATHS
+		"C:/Program Files/quatlib/lib"
+		"../buildquat"
 		"../buildquat/release")
 endif()
 
@@ -72,16 +75,16 @@ find_package_handle_standard_args(quatlib
 	QUATLIB_INCLUDE_DIR)
 
 if(QUATLIB_FOUND)
-  set(QUATLIB_LIBRARIES ${QUATLIB_LIBRARY})
-  if(NOT WIN32)
-  	list(APPEND QUATLIB_LIBRARIES m)
-  endif()
-  set(QUATLIB_INCLUDE_DIRS ${QUATLIB_INCLUDE_DIR})
+	set(QUATLIB_LIBRARIES ${QUATLIB_LIBRARY})
+	if(NOT WIN32)
+		list(APPEND QUATLIB_LIBRARIES m)
+	endif()
+	set(QUATLIB_INCLUDE_DIRS ${QUATLIB_INCLUDE_DIR})
 
 	mark_as_advanced(QUATLIB_ROOT_DIR)
 else()
-  set(QUATLIB_LIBRARIES)
-  set(QUATLIB_INCLUDE_DIRS)
+	set(QUATLIB_LIBRARIES)
+	set(QUATLIB_INCLUDE_DIRS)
 endif()
 
 mark_as_advanced(QUATLIB_LIBRARY QUATLIB_INCLUDE_DIR)

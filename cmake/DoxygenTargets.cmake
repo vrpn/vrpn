@@ -19,6 +19,11 @@
 # 2009-2010 Ryan Pavlik <rpavlik@iastate.edu> <abiryan@ryand.net>
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
+#
+#          Copyright Iowa State University 2009-2010
+# Distributed under the Boost Software License, Version 1.0.
+#    (See accompanying file LICENSE_1_0.txt or copy at
+#          http://www.boost.org/LICENSE_1_0.txt)
 
 if(__add_doxygen)
 	return()
@@ -54,7 +59,88 @@ if(PDFLATEX_COMPILER)
 	set(DOXYGEN_PDFLATEX "YES")
 endif()
 
+# An optional single-file install that supports cmake older than 2.8.0
+# For internal use
+function(_dt_install_file target filename dest rename)
+	if(CMAKE_VER VERSION_LESS 2.8.0)
+		set(INSTALL_CODE  "
+			if(EXISTS \"${filename}\")
+				message(STATUS \"Found: ${filename}\")
+				file(INSTALL
+					DESTINATION \"\${CMAKE_INSTALL_PREFIX}/${dest}\"
+					TYPE FILE
+					RENAME \"${rename}\"
+					FILES \"${filename}\")
+			else()
+				message(STATUS \"Skipping (build '${target}' to create): ${filename}\")
+			endif()
+			")
+		if(NOT ARGN STREQUAL "")
+			set(INSTALL_COMPONENT "${ARGN}")
+			set(INSTALL_CODE "
+			if(NOT CMAKE_INSTALL_COMPONENT OR \"\${CMAKE_INSTALL_COMPONENT}\" STREQUAL \"${INSTALL_COMPONENT}\")
+				${INSTALL_CODE}
+			endif()
+			")
+		endif()
+		message(STATUS "Will be installing file using this code: \n ${INSTALL_CODE}")
+		install(CODE "${INSTALL_CODE}")
+	else()
+		set(COMPONENT_ARGS)
+		if(NOT ARGN STREQUAL "")
+			set(COMPONENT_ARGS COMPONENT "${ARGN}")
+		endif()
+		install(FILES
+			"${filename}"
+			DESTINATION
+			"${dest}"
+			RENAME "${rename}"
+			${COMPONENT_ARGS}
+			OPTIONAL)
+	endif()
 
+endfunction()
+
+# An optional single-directory install that supports cmake older than 2.8.0
+# For internal use
+function(_dt_install_dir target dir dest)
+	if(CMAKE_VER VERSION_LESS 2.8.0)
+		set(INSTALL_CODE  "
+			if(EXISTS \"${dir}\")
+				message(STATUS \"Found: ${dir}\")
+				file(INSTALL
+					DESTINATION \"\${CMAKE_INSTALL_PREFIX}/${dest}\"
+					TYPE DIRECTORY
+					FILES \"${dir}\")
+			else()
+				message(STATUS \"Skipping (build '${target}' to create): ${dir}\")
+			endif()
+			")
+		if(NOT ARGN STREQUAL "")
+			set(INSTALL_COMPONENT "${ARGN}")
+			set(INSTALL_CODE "
+
+			if(NOT CMAKE_INSTALL_COMPONENT OR \"\${CMAKE_INSTALL_COMPONENT}\" STREQUAL \"${INSTALL_COMPONENT}\")
+				${INSTALL_CODE}
+			endif()
+			")
+		endif()
+		message(STATUS "Will be installing directory using this code: \n ${INSTALL_CODE}")
+		install(CODE "${INSTALL_CODE}")
+	else()
+		set(COMPONENT_ARGS)
+		if(NOT ARGN STREQUAL "")
+			set(COMPONENT_ARGS COMPONENT "${ARGN}")
+		endif()
+		install(DIRECTORY
+			"${dir}"
+			DESTINATION
+			"${dest}"
+			${COMPONENT_ARGS}
+			OPTIONAL)
+	endif()
+
+endfunction()
 
 function(add_doxygen _doxyfile)
 	# parse arguments
@@ -148,7 +234,7 @@ function(add_doxygen _doxyfile)
 		get_filename_component(INCLUDE_FILE "${_doxyfileabs}" NAME)
 		get_filename_component(INCLUDE_PATH "${_doxyfileabs}" PATH)
 
-        # Doesn't currently work on Windows, so don't bother
+		# Doesn't currently work on Windows, so don't bother
 		if(DOXYGEN_LATEX AND NOT NO_PDF AND NOT WIN32)
 			set(MAKE_PDF YES)
 			set(GENERATE_LATEX YES)
@@ -210,32 +296,15 @@ function(add_doxygen _doxyfile)
 
 		if(INSTALL_DESTINATION)
 			if(INSTALL_COMPONENT)
-				install(DIRECTORY
-					"${OUTPUT_DIRECTORY}/html"
-					DESTINATION
-					"${INSTALL_DESTINATION}"
-					COMPONENT
-					"${INSTALL_COMPONENT}"
-					OPTIONAL)
+				_dt_install_dir("${DOC_TARGET}" "${OUTPUT_DIRECTORY}/html" "${INSTALL_DESTINATION}" "${INSTALL_COMPONENT}")
 				if(MAKE_PDF)
-					install(FILES "${OUTPUT_DIRECTORY}/latex/refman.pdf"
-						DESTINATION "${INSTALL_DESTINATION}"
-						COMPONENT "${INSTALL_COMPONENT}"
-						RENAME "${INSTALL_PDF_NAME}"
-						OPTIONAL)
+					_dt_install_file("${DOC_TARGET}" "${OUTPUT_DIRECTORY}/latex/refman.pdf" "${INSTALL_DESTINATION}" "${INSTALL_PDF_NAME}" "${INSTALL_COMPONENT}")
 				endif()
 
 			else()
-			#	install(DIRECTORY
-			#		"${OUTPUT_DIRECTORY}/html"
-			#		DESTINATION
-			#		"${INSTALL_DESTINATION}"
-			#		OPTIONAL)
+				_dt_install_dir("${DOC_TARGET}" "${OUTPUT_DIRECTORY}/html" "${INSTALL_DESTINATION}")
 				if(MAKE_PDF)
-					install(FILES "${OUTPUT_DIRECTORY}/latex/refman.pdf"
-						DESTINATION "${INSTALL_DESTINATION}"
-						RENAME "${INSTALL_PDF_NAME}"
-						OPTIONAL)
+					_dt_install_file("${DOC_TARGET}" "${OUTPUT_DIRECTORY}/latex/refman.pdf" "${INSTALL_DESTINATION}" "${INSTALL_PDF_NAME}")
 				endif()
 			endif()
 		endif()

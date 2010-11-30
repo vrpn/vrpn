@@ -17,6 +17,11 @@ set_property(TARGET
 	PUBLIC_HEADER
 	${TIMECODE_GENSERV_PUBLIC_HEADERS})
 
-install(TARGETS vrpn_timecode_generator
-	ARCHIVE DESTINATION lib
-	PUBLIC_HEADER DESTINATION include)
+install(TARGETS
+	vrpn_timecode_generator
+	ARCHIVE
+	DESTINATION
+	lib
+	PUBLIC_HEADER
+	DESTINATION
+	include)

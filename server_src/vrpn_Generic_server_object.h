@@ -76,6 +76,7 @@
 #include "vrpn_Tracker_MotionNode.h"
 #include "vrpn_Tracker_NDI_Polaris.h"
 #include "vrpn_WiiMote.h"
+#include "vrpn_Tracker_WiimoteHead.h"
 #include "vrpn_Freespace.h"
 #include "vrpn_DreamCheeky.h"
 #include "vrpn_Tracker_NovintFalcon.h"
@@ -295,6 +296,7 @@ protected:
   int setup_3DConnexion_SpaceBall5000 (char * & pch, char * line, FILE * config_file) ;
   int setup_Tracker_MotionNode (char * & pch, char * line, FILE * config_file);
   int setup_WiiMote (char * & pch, char * line, FILE * config_file);
+  int setup_Tracker_WiimoteHead (char * & pch, char * line, FILE * config_file);
   int setup_Freespace (char * & pch, char * line, FILE * config_file);
   int setup_DreamCheeky (char * & pch, char * line, FILE * config_file) ;
   int setup_Tracker_NovintFalcon (char * & pch, char * line, FILE * config_file);
