@@ -40,7 +40,7 @@ include("${CMAKE_CURRENT_SOURCE_DIR}/ParseVersion.cmake")
 set(CPACK_PACKAGE_VERSION
 	"${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
 message(STATUS
-	"Configuring the VRPN suite version ${CPACK_PACKAGE_VERSION} using the CMake-based build system")
+	"Configuring the VRPN suite version ${CPACK_PACKAGE_VERSION} using the CMake-based build system\n")
 
 set(CPACK_PACKAGE_FILE_NAME
 	"${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
@@ -137,10 +137,8 @@ endif()
 ###
 # Optional packages
 ###
-message(STATUS "")
 message(STATUS
-	"Now searching for auto-configurable optional packages...")
-message(STATUS "")
+	"Now searching for auto-configurable optional packages...\n")
 
 ###
 # SWIG and Python Libs (for python wrapper)
