@@ -85,7 +85,7 @@ public:
 	// minimize latency from the device, particularly with the LIBHID interface.
 	// The message size is particularly important to avoid truncating and losing
 	// packets from the device.
-	virtual void update(unsigned msg_size = 512, unsigned timeout_ms = 1000);
+	virtual void update(unsigned endpoint = 1);
 
 	// Tries to reconnect to an acceptable device.
 	// Call this if you suspect a hotplug event has occurred.

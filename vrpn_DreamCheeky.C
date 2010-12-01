@@ -45,9 +45,7 @@ vrpn_DreamCheeky_Drum_Kit::vrpn_DreamCheeky_Drum_Kit(const char *name, vrpn_Conn
 
 void vrpn_DreamCheeky_Drum_Kit::mainloop()
 {
-	// Tell it that we expect 9-character messages and that we want to only
-	// wait 1/50th of a second if there is not one ready.
-	update(9, 20);
+	update();
 	server_mainloop();
 	vrpn_gettimeofday(&_timestamp, NULL);
 	report_changes();
