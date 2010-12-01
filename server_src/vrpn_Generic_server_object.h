@@ -80,6 +80,7 @@
 #include "vrpn_DreamCheeky.h"
 #include "vrpn_Tracker_NovintFalcon.h"
 #include "vrpn_Tracker_TrivisioColibri.h" // added by David Borland
+#include "vrpn_LUDL.h"
 
 // BUW additions
 #include "vrpn_Atmel.h"
@@ -299,6 +300,7 @@ protected:
   int setup_DreamCheeky (char * & pch, char * line, FILE * config_file) ;
   int setup_Tracker_NovintFalcon (char * & pch, char * line, FILE * config_file);
   int setup_Tracker_TrivisioColibri(char * &pch, char * line, FILE * config_file);
+  int setup_LUDL_USBMAC6000(char * &pch, char * line, FILE * config_file);
 
   // BUW additions
   int setup_Atmel(char* &pch, char *line, FILE *config_file);

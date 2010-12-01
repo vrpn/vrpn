@@ -123,7 +123,7 @@ void vrpn_3DConnexion::mainloop()
 	// Full reports are 7 bytes long.
 	// XXX If we get a 2-byte report mixed in, then something is going to get
 	// truncated.
-	update(7, 20);
+	update();
 #elif defined(linux) && !defined(VRPN_USE_LIBHID)
     struct timeval zerotime;
     fd_set fdset;

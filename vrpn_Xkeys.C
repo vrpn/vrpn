@@ -85,9 +85,7 @@ vrpn_Xkeys_Desktop::vrpn_Xkeys_Desktop(const char *name, vrpn_Connection *c)
 
 void vrpn_Xkeys_Desktop::mainloop()
 {
-	// Tell it the packet size and that we don't want to wait more than
-	// 1/50th of a second for a report.
-	update(12,20);
+	update();
 	server_mainloop();
 	vrpn_gettimeofday(&_timestamp, NULL);
 	report_changes();
@@ -151,9 +149,7 @@ vrpn_Xkeys_Jog_And_Shuttle::vrpn_Xkeys_Jog_And_Shuttle(const char *name, vrpn_Co
 
 void vrpn_Xkeys_Jog_And_Shuttle::mainloop()
 {
-	// Tell it the packet size and that we don't want to wait more than
-	// 1/50th of a second for a report.
-	update(15,20);
+	update();
 	server_mainloop();
 	vrpn_gettimeofday(&_timestamp, NULL);
 	report_changes();
@@ -244,9 +240,7 @@ vrpn_Xkeys_Joystick::vrpn_Xkeys_Joystick(const char *name, vrpn_Connection *c)
 
 void vrpn_Xkeys_Joystick::mainloop()
 {
-	// Tell it the packet size and that we don't want to wait more than
-	// 1/50th of a second for a report.
-	update(15,20);
+	update();
 	server_mainloop();
 	vrpn_gettimeofday(&_timestamp, NULL);
 	report_changes();
@@ -319,9 +313,7 @@ vrpn_Xkeys_Pro::vrpn_Xkeys_Pro(const char *name, vrpn_Connection *c)
 
 void vrpn_Xkeys_Pro::mainloop()
 {
-	// Tell it the packet size and that we don't want to wait more than
-	// 1/50th of a second for a report.
-	update(15,20);
+	update();
 	server_mainloop();
 	vrpn_gettimeofday(&_timestamp, NULL);
 	report_changes();

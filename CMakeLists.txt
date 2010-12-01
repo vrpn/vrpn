@@ -450,6 +450,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Joylin.C
 	vrpn_Joywin32.C
 	vrpn_Keyboard.C
+	vrpn_LUDL.C
 	vrpn_Magellan.C
 	vrpn_Mouse.C
 	vrpn_NationalInstruments.C
@@ -520,6 +521,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Joylin.h
 	vrpn_Joywin32.h
 	vrpn_Keyboard.h
+	vrpn_LUDL.h
 	vrpn_Magellan.h
 	vrpn_Mouse.h
 	vrpn_NationalInstruments.h

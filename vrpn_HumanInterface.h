@@ -85,7 +85,7 @@ public:
 	// minimize latency from the device, particularly with the LIBHID interface.
 	// The message size is particularly important to avoid truncating and losing
 	// packets from the device.
-	virtual void update(unsigned msg_size = 512, unsigned timeout_ms = 1000);
+	virtual void update(unsigned endpoint = 1);
 
 	// Tries to reconnect to an acceptable device.
 	// Call this if you suspect a hotplug event has occurred.
@@ -118,6 +118,10 @@ protected:
 	// calling reconnect()--there won't be an acceptor there any longer!
 	vrpn_HidAcceptor *_acceptor;
 
+	bool _working;
+	vrpn_uint16 _vendor;
+	vrpn_uint16 _product;
+
 private:
 #if !defined(VRPN_USE_LIBHID) && ( defined(_WIN32) || defined(__CYGWIN__) )
 	void start_io();
@@ -139,9 +143,6 @@ private:
 	HIDInterface *_hid;
 	static bool match_wrapper(const struct usb_dev_handle *usbdev, void *custom, unsigned int len);
 #endif
-	bool _working;
-	vrpn_uint16 _vendor;
-	vrpn_uint16 _product;
 };
 
 #endif // Windows or Apple
