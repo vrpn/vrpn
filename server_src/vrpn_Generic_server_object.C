@@ -4157,6 +4157,44 @@ int vrpn_Generic_Server_Object::setup_Tracker_TrivisioColibri(char * & pch, char
 #endif
 }
 
+int vrpn_Generic_Server_Object::setup_LUDL_USBMAC6000(char * & pch, char * line, FILE * config_file) {
+  char s2 [LINESIZE];
+  int recenter;
+
+  next();
+  if (sscanf(pch,"%511s%i",s2, &recenter)!=2) {
+    fprintf(stderr,"Bad LUDL_USBMAC6000 line: %s\n",line);
+    return -1;
+  }
+
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__) || defined(VRPN_USE_LIBHID)
+
+  // Open the LUDL_USBMAC6000
+  // Make sure there's room for a new button
+  if (num_analogs >= VRPN_GSO_MAX_ANALOG) {
+    fprintf(stderr,"vrpn_LUDL_USBMAC6000: Too many analogs in config file");
+    return -1;
+  }
+
+  // Open the button
+  if (verbose) {
+    printf("Opening vrpn_LUDL_USBMAC6000 as device %s\n", s2);
+  }
+  if ( (analogs[num_analogs] = new vrpn_LUDL_USBMAC6000(s2, connection, recenter == 0)) == NULL ) {
+    fprintf(stderr,"Can't create new vrpn_LUDL_USBMAC6000\n");
+     return -1;
+  } else {
+    num_analogs++;
+  }
+
+  return 0;  // successful completion
+
+#else
+  fprintf(stderr,"vrpn_LUDL_USBMAC6000 not yet implemented for this architecture.\n");
+  return -1;
+#endif
+}
+
 
 vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connection_to_use, const char *config_file_name, int port, bool be_verbose, bool bail_on_open_error) :
   connection(connection_to_use),
