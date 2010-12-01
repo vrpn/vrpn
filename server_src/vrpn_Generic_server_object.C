@@ -4460,6 +4460,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
 // end of BUW additions
 	  } else if (isit("vrpn_Dream_Cheeky_USB_roll_up_drums")) {
             CHECK(setup_DreamCheeky);
+	  } else if (isit("vrpn_LUDL_USBMAC6000")) {
+            CHECK(setup_LUDL_USBMAC6000);
 	  } else {	// Never heard of it
 		sscanf(line,"%511s",s1);	// Find out the class name
 		fprintf(stderr,"vrpn_server: Unknown Device: %s\n",s1);
