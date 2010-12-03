@@ -3719,35 +3719,34 @@ int vrpn_Generic_Server_Object::setup_WiiMote(char * & pch, char * line, FILE * 
 
 int vrpn_Generic_Server_Object::setup_Tracker_WiimoteHead(char * & pch, char * line, FILE * config_file) {
 	char s2[LINESIZE], s3[LINESIZE];
-	int i1;
-	float f1;
+	float f1,f2;
 	int numparms;
 	vrpn_Tracker_WiimoteHead	*mytracker;
 
 	next();
 
 	// Get the arguments (tracker_name, wiimote_name, min_update_rate, led_distance)
-	if ( (numparms = sscanf(pch,"%511s%511s%d%f",s2,s3,&i1,&f1)) < 2)
+	if ( (numparms = sscanf(pch,"%511s%511s%d%f",s2,s3,&f1,&f2)) < 2)
 	{
-		fprintf(stderr,"Bad vrpn_Tracker_WiimoteHead line: %s\n%s %s %s %d %f\n", line, pch, s2, s3, i1, f1);
+		fprintf(stderr,"Bad vrpn_Tracker_WiimoteHead line: %s\n%s %s %s %f %f\n", line, pch, s2, s3, f1, f2);
 		return -1;
 	}
 
     // set LED distance to .205, if not set
     if (numparms < 4) {
-        f1 = .205;
+        f1 = .205f;
     }
     // set min update rate to 60, if not set
     if (numparms < 3) {
-        i1 = 60;
+        f1 = 60.0f;
     }
 
 	// Open the tracker
 	if (verbose) {
-		printf("Opening vrpn_Tracker_WiimoteHead: %s wiimote: %s, updaterate: %d, leddistance: %f\n", s2,s3,i1,f1);
+		printf("Opening vrpn_Tracker_WiimoteHead: %s wiimote: %s, updaterate: %f, leddistance: %f\n", s2,s3,f1,f2);
 	}
 
-	mytracker = new vrpn_Tracker_WiimoteHead(s2, connection, s3, i1, f1);
+	mytracker = new vrpn_Tracker_WiimoteHead(s2, connection, s3, f1, f2);
 	if ( mytracker == NULL)
 	{
 		fprintf(stderr, "Can't create new vrpn_Tracker_WiimoteHead\n");
