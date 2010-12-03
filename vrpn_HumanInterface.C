@@ -299,7 +299,7 @@ void vrpn_HidInterface::start_io() {
 // If any data reports have been received, this will fire the
 // associated on_data_received callback.
 // Multiple data reports waiting = one big on_data_received.
-void vrpn_HidInterface::update(unsigned msg_size, unsigned timeout_ms) {
+void vrpn_HidInterface::update(unsigned /* endpoint */) {
 	DWORD rv = WaitForSingleObject(_readEvent, 0);
 	if (rv == WAIT_OBJECT_0) {
 		// Data received from device
@@ -548,7 +548,7 @@ void vrpn_HidInterface::reconnect()
 	}
 }
 
-void vrpn_HidInterface::update(unsigned msg_size, unsigned timeout_ms) {
+void vrpn_HidInterface::update(unsigned /*endpoint*/) {
 	SInt32 reason = CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0, true);
 	if (reason == kCFRunLoopRunHandledSource)
 	{
@@ -693,24 +693,25 @@ void vrpn_HidInterface::reconnect() {
 // This is based on the source code for the hid_interrupt_read() function; it goes
 // down to the libusb interface directly to get any available characters.  Because
 // we're trying to support a generic device, we can't say in advance how large any
-// particular transfer should be.  So we try to read more characters than will be
-// available (to avoid truncating a message).  This update() routine must be called
+// particular transfer should be.  So we try to one character at a time until we
+// don't have any more to read.  This update() routine must be called
 // frequently to make sure we don't get partial results, which would mean sending
 // truncated reports to the devices derived from us.
 
-void vrpn_HidInterface::update(unsigned msg_size, unsigned timeout_ms)
+void vrpn_HidInterface::update(unsigned endpoint_param)
 {
 	if (!_working) {
 		fprintf(stderr,"vrpn_HidInterface::update(): Interface not currently working\n");
 		return;
 	}
 
-	// We read from endpoint 1.  Endpoint 0 is defined as a system endpoint.
-	// It is possible to parse the information from the device to find additional
-	// endpoints, but we just use endpoint 1 and hope it is right.  We OR this
-	// with 0x80 to mean "input", per the documentation for hid_interrupt_read().
+	// We OR the endpoint with 0x80 to mean "input", per the documentation for
+        // hid_interrupt_read().
 	int ret;
-	char *inbuf = new char[msg_size];
+
+        // Maximum packet size for USB is 512 characters.
+	char inbuf[512];
+        size_t received = 0;
 	if (inbuf == NULL) {
 		fprintf(stderr,"vrpn_HidInterface::update(): Out of memory\n");
 		return;
@@ -722,40 +723,39 @@ void vrpn_HidInterface::update(unsigned msg_size, unsigned timeout_ms)
 	// The usb_interrupt_read() call does not return partial results.  It either
 	// returns all the characters asked for (and truncates whatever partial result
 	// came last) or times out and does not say how many characters it got.  This
-	// means that it is important for the device calling this update() to tell the
-	// expected message size and reduce the timeout so that we don't lose/truncate
-	// messages and so that we don't have a ton of latency waiting for many reports
-	// to come in.
+	// means that we need to read one character at a time so that we don't have a
+        // ton of latency waiting for many reports to come in.  This is a lot of busy-
+        // work.
 
-	unsigned int endpoint = 0x01 | 0x80;
+	unsigned int endpoint = endpoint_param | 0x80;
 
-	// Read buffers until we can't find any more.  After the first one, time out
+	// Read characters until we can't find any more.  For each, time out
 	// almost immediately so that we don't go into an infinite loop getting a new
 	// report every time after we've handled one.
-	unsigned timeout = timeout_ms;
+	unsigned timeout = 1; // One millisecond
 	do {
-		ret = usb_interrupt_read(_hid->dev_handle, endpoint, inbuf, msg_size, timeout);
+		ret = usb_interrupt_read(_hid->dev_handle, endpoint, &inbuf[received], 1, timeout);
 		timeout = 1;
 		if (ret == -ETIMEDOUT) {
-			delete [] inbuf;
 			return;
 		}
 		if (ret < 0) {
 			fprintf(stderr,"vrpn_HidInterface::update(): failed to read from device %s: %s\n",
 				_hid->id, usb_strerror());
 			_working = false;
-			delete [] inbuf;
 			return;
 		}
+                if (ret > 0) {
+                  received += ret;
+                }
 
-		// Handle any data we got.
-		if (ret > 0) {
-			vrpn_uint8 *data = static_cast<vrpn_uint8 *>(static_cast<void*>(inbuf));
-			on_data_received(ret, data);
-		}
 	} while (ret > 0);
 
-	delete [] inbuf;
+        // Handle any data we got.
+        if (received > 0) {
+          vrpn_uint8 *data = static_cast<vrpn_uint8 *>(static_cast<void*>(inbuf));
+          on_data_received(received, data);
+        }
 }
 
 // This is based on sample code from UMinn Duluth at
