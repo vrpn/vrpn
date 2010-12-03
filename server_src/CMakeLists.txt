@@ -129,6 +129,7 @@ include_directories(${VRPN_SOURCE_DIR}/server_src
 #-----------------------------------------------------------------------------
 # Applications that need more than one file to run.
 add_executable(vrpn_server
+	vrpn.cfg
 	vrpn.C
 	vrpn_Generic_server_object.C
 	vrpn_Generic_server_object.h)
