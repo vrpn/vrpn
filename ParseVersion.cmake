@@ -29,6 +29,7 @@ endif()
 
 set(CPACK_PACKAGE_VERSION
  	"${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}")
+set(CONFIG_VERSION "${CPACK_PACKAGE_VERSION}")
 
 include(GetGitRevisionDescription)
 git_get_exact_tag(GIT_EXACT_TAG --tags --match version_*)
@@ -60,10 +61,12 @@ else()
 			# Prerelease
 			message(STATUS "Git's description of the current revision indicates this is a prerelease of ${CPACK_PACKAGE_VERSION}: ${GIT_REVISION_DESCRIPTION}\n")
 			set(CPACK_PACKAGE_VERSION_PATCH "0~prerelease-git-${GIT_REVISION_DESCRIPTION}")
+			set(CONFIG_VERSION "pre-${CONFIG_VERSION}")
 		else()
 			# OK, this is a followup version
 			# TODO verify assumption
 			message(STATUS "Git's description of the current revision indicates this is a patched version of ${CPACK_PACKAGE_VERSION}: ${GIT_REVISION_DESCRIPTION}\n")
+			set(CONFIG_VERSION "post-${CONFIG_VERSION}")
 			set(CPACK_PACKAGE_VERSION_PATCH "0-git-${GIT_REVISION_DESCRIPTION}")
 		endif()
 		set(CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION}.${CPACK_PACKAGE_VERSION_PATCH}")

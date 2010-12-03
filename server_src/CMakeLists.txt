@@ -129,6 +129,7 @@ include_directories(${VRPN_SOURCE_DIR}/server_src
 #-----------------------------------------------------------------------------
 # Applications that need more than one file to run.
 add_executable(vrpn_server
+	vrpn.cfg
 	vrpn.C
 	vrpn_Generic_server_object.C
 	vrpn_Generic_server_object.h)
@@ -148,7 +149,8 @@ install(TARGETS vrpn_server
 
 #-----------------------------------------------------------------------------
 # Install the vrpn.cfg file needed by the server.
-install(FILES ${VRPN_SOURCE_DIR}/server_src/vrpn.cfg
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/vrpn.cfg" "${CMAKE_CURRENT_BINARY_DIR}/vrpn.cfg" @ONLY)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/vrpn.cfg"
 	DESTINATION etc)
 
 
