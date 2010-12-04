@@ -554,6 +554,7 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_Flock_Parallel.C \
 	vrpn_ForceDeviceServer.C \
 	vrpn_Freespace.C \
+	vrpn_FunctionGenerator.C \
 	vrpn_GlobalHapticsOrb.C \
 	vrpn_HumanInterface.C \
 	vrpn_Imager_Stream_Buffer.C \

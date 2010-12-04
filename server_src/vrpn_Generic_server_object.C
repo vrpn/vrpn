@@ -3584,7 +3584,10 @@ int vrpn_Generic_Server_Object::setup_Tracker_NDI_Polaris (char * & pch, char * 
 	//parse the filename for each rigid body
 	int rbNum;
 	for (rbNum=0; rbNum<numRigidBodies; rbNum++ ) {
-		fgets(line, LINESIZE, config_file); //advance to next line of config file
+		if (fgets(line, LINESIZE, config_file) == NULL) { //advance to next line of config file
+		    perror("NDI_Polaris RigidBody can't read line!");
+		    return -1;
+		}
 		rigidBodyFileNames[rbNum]= new char[LINESIZE]; //allocate string for filename
 		if (sscanf(line,"%s", rigidBodyFileNames[rbNum])!=1) {
 			fprintf(stderr,"Tracker_NDI_Polaris: error reading .rom filename #%d from config file in line: %s\n",rbNum,line);

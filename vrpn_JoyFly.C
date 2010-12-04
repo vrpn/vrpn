@@ -31,12 +31,19 @@ vrpn_Tracker_JoyFly::vrpn_Tracker_JoyFly
       initMatrix[1][1] =     initMatrix[3][3] = 1.0;
   } else {
     for (i=0; i< 7; i++) {
-      fscanf(fp, "%lf %d", &chanAccel[i], &chanPower[i]);
+      if (fscanf(fp, "%lf %d", &chanAccel[i], &chanPower[i]) != 2) {
+	fprintf(stderr,"Cannot read acceleration and power from file\n");
+	return;
+      }
       fprintf(stderr, "Chan[%d] = (%lf %d)\n", i, chanAccel[i], chanPower[i]);
     }
     for (i =0; i< 4; i++)
-      for (int j=0; j< 4; j++) 
-	fscanf(fp, "%lf", &initMatrix[i][j]);
+      for (int j=0; j< 4; j++) {
+	if (fscanf(fp, "%lf", &initMatrix[i][j]) < 0) {
+		perror("vrpn_Tracker_JoyFly::vrpn_Tracker_JoyFly(): Could not read matrix value");
+		return;
+	}
+      }
     fclose(fp);
   }  
   

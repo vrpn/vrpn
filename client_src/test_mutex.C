@@ -40,7 +40,10 @@ int main (int argc, char ** argv) {
 
     me->mainloop();
     memset(inputLine, 0, 100);
-    fgets(inputLine, 100, stdin);
+    if (fgets(inputLine, 100, stdin) == NULL) {
+	perror("Could not read line");
+	exit(-1);
+    }
 
     if (!strncmp(inputLine, "req", 3)) {
       printf("test_mutex:  sending request.\n");
