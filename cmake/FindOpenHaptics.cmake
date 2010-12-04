@@ -43,6 +43,11 @@
 # 2009-2010 Ryan Pavlik <rpavlik@iastate.edu> <abiryan@ryand.net>
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
+#
+#          Copyright Iowa State University 2009-2010
+# Distributed under the Boost Software License, Version 1.0.
+#    (See accompanying file LICENSE_1_0.txt or copy at
+#          http://www.boost.org/LICENSE_1_0.txt)
 
 cmake_minimum_required(VERSION 2.6.3)
 
@@ -317,7 +322,13 @@ endif()
 # Unix: check stdc++ version
 ###
 
-if(UNIX AND HDAPI_LIBRARY AND HDAPI_PHANToMIO_LIBRARY AND HDAPI_INCLUDE_DIR)
+if(UNIX
+	AND
+	HDAPI_LIBRARY
+	AND
+	HDAPI_PHANToMIO_LIBRARY
+	AND
+	HDAPI_INCLUDE_DIR)
 	find_file(OPENHAPTICS_LINKTEST_FILE
 		FindOpenHaptics.cpp
 		PATHS
@@ -349,8 +360,12 @@ if(UNIX AND HDAPI_LIBRARY AND HDAPI_PHANToMIO_LIBRARY AND HDAPI_INCLUDE_DIR)
 		list(APPEND _deps_check OPENHAPTICS_LIBSTDCPP_LIBRARY)
 		list(APPEND _deps_libs "${OPENHAPTICS_LIBSTDCPP_LIBRARY}")
 
-		get_filename_component(_stdcppdir "${OPENHAPTICS_LIBSTDCPP_LIBRARY}" PATH)
-		list(APPEND OPENHAPTICS_ENVIRONMENT "LD_LIBRARY_PATH=${_stdcppdir}:$LD_LIBRARY_PATH")
+		get_filename_component(_stdcppdir
+			"${OPENHAPTICS_LIBSTDCPP_LIBRARY}"
+			PATH)
+		list(APPEND
+			OPENHAPTICS_ENVIRONMENT
+			"LD_LIBRARY_PATH=${_stdcppdir}:$LD_LIBRARY_PATH")
 		list(APPEND OPENHAPTICS_RUNTIME_LIBRARY_DIRS "${_stdcppdir}")
 	endif()
 endif()
@@ -450,7 +465,9 @@ if(OPENHAPTICS_FOUND)
 	clean_directory_list(OPENHAPTICS_LIBRARY_DIRS)
 	clean_directory_list(OPENHAPTICS_INCLUDE_DIRS)
 
-	list(APPEND OPENHAPTICS_RUNTIME_LIBRARY_DIRS ${OPENHAPTICS_LIBRARY_DIRS})
+	list(APPEND
+		OPENHAPTICS_RUNTIME_LIBRARY_DIRS
+		${OPENHAPTICS_LIBRARY_DIRS})
 
 	clean_library_list(OPENHAPTICS_LIBRARIES)
 

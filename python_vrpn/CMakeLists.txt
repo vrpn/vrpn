@@ -9,9 +9,11 @@ if(SWIG_FOUND AND PYTHONLIBS_FOUND AND VRPN_BUILD_PYTHON)
 	include(${SWIG_USE_FILE})
 	include_directories(${PYTHON_INCLUDE_DIRS})
 
-	set(_client_lib_src ${VRPN_CLIENT_SOURCES} ${VRPN_CLIENT_PUBLIC_HEADERS})
+	set(_client_lib_src
+		${VRPN_CLIENT_SOURCES}
+		${VRPN_CLIENT_PUBLIC_HEADERS})
 	set(LIBS ${EXTRA_LIBS})
-	
+
 	set(libsrc)
 	foreach(_src ${_client_lib_src})
 		if(IS_ABSOLUTE "${_src}")
@@ -20,21 +22,20 @@ if(SWIG_FOUND AND PYTHONLIBS_FOUND AND VRPN_BUILD_PYTHON)
 			list(APPEND libsrc "../${_src}")
 		endif()
 	endforeach()
-	
+
 	get_property(_quat_src TARGET quat PROPERTY SOURCES)
 	foreach(_src ${_quat_src})
 		list(APPEND libsrc "../../quat/${_src}")
 	endforeach()
-	
 
-#	XXX TODO: add dependency on these files - perhaps change extension to .h?
-#
-#	set(COMMON
-#		client-only.i
-#		python-callback-wrapper.i)
-#	set_source_files_properties(${COMMON} PROPERTIES CPLUSPLUS ON)
+	#	XXX TODO: add dependency on these files - perhaps change extension to .h?
+	#
+	#	set(COMMON
+	#		client-only.i
+	#		python-callback-wrapper.i)
+	#	set_source_files_properties(${COMMON} PROPERTIES CPLUSPLUS ON)
 
-	
+
 
 	set(MODULES
 		vrpn_Analog

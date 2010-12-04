@@ -9,6 +9,11 @@
 # 2010 Ryan Pavlik <rpavlik@iastate.edu> <abiryan@ryand.net>
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
+#
+#          Copyright Iowa State University 2009-2010
+# Distributed under the Boost Software License, Version 1.0.
+#    (See accompanying file LICENSE_1_0.txt or copy at
+#          http://www.boost.org/LICENSE_1_0.txt)
 
 if(__enable_extra_compiler_warnings)
 	return()
@@ -18,7 +23,9 @@ set(__enable_extra_compiler_warnings YES)
 macro(_enable_extra_compiler_warnings_flags)
 	set(_flags)
 	if(MSVC)
-		option(COMPILER_WARNINGS_EXTREME "Use compiler warnings that are probably overkill." off)
+		option(COMPILER_WARNINGS_EXTREME
+			"Use compiler warnings that are probably overkill."
+			off)
 		mark_as_advanced(COMPILER_WARNINGS_EXTREME)
 		set(_flags "/W4")
 		if(COMPILER_WARNINGS_EXTREME)

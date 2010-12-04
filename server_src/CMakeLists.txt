@@ -49,19 +49,27 @@ if(VRPN_USE_PHANTOM_SERVER AND OPENHAPTICS_FOUND)
 	add_library(vrpn_phantom ${PHANTOM_SOURCES} ${PHANTOM_HEADERS})
 	target_link_libraries(vrpn_phantom ${OPENHAPTICS_LIBRARIES})
 
-	set_property(TARGET vrpn_phantom PROPERTY
-		PUBLIC_HEADER ${PHANTOM_HEADERS})
+	set_property(TARGET
+		vrpn_phantom
+		PROPERTY
+		PUBLIC_HEADER
+		${PHANTOM_HEADERS})
 
-	install(TARGETS vrpn_phantom
-		ARCHIVE DESTINATION lib
-		PUBLIC_HEADER DESTINATION include)
-	set (VRPNPHANTOMLIB vrpn_phantom)
+	install(TARGETS
+		vrpn_phantom
+		ARCHIVE
+		DESTINATION
+		lib
+		PUBLIC_HEADER
+		DESTINATION
+		include)
+	set(VRPNPHANTOMLIB vrpn_phantom)
 endif()
 
 #-----------------------------------------------------------------------------
 # DirectShow base-class library (if configured)
 if(VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER AND DIRECTSHOW_FOUND)
-	add_definitions( -DCOINIT_DISABLE_OLE1DDE=0x4 )
+	add_definitions(-DCOINIT_DISABLE_OLE1DDE=0x4)
 	add_library(DirectShow_baseclasses
 		${DirectShow_BASECLASS_DIR}/amextra.cpp
 		${DirectShow_BASECLASS_DIR}/amfilter.cpp
@@ -121,6 +129,7 @@ include_directories(${VRPN_SOURCE_DIR}/server_src
 #-----------------------------------------------------------------------------
 # Applications that need more than one file to run.
 add_executable(vrpn_server
+	vrpn.cfg
 	vrpn.C
 	vrpn_Generic_server_object.C
 	vrpn_Generic_server_object.h)
@@ -140,7 +149,8 @@ install(TARGETS vrpn_server
 
 #-----------------------------------------------------------------------------
 # Install the vrpn.cfg file needed by the server.
-install(FILES ${VRPN_SOURCE_DIR}/server_src/vrpn.cfg
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/vrpn.cfg" "${CMAKE_CURRENT_BINARY_DIR}/vrpn.cfg" @ONLY)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/vrpn.cfg"
 	DESTINATION etc)
 
 
@@ -181,7 +191,7 @@ set(SRV_TEST_SOURCES
 )
 
 set(SRV_SERVER_SOURCES
-        wiimote_head_tracker.C
+       wiimote_head_tracker.C
 )
 
 
@@ -204,13 +214,12 @@ endif()
 # Servers
 ###
 foreach(SOURCE ${SRV_SERVER_SOURCES})
-        get_filename_component(APP ${SOURCE} NAME_WE)
-        add_executable(${APP} ${SOURCE})
-        target_link_libraries(${APP} ${VRPN_SERVER_LIBRARY})
-        set_target_properties(${APP} PROPERTIES SOLUTION_FOLDER servers)
-        set_target_properties(${APP} PROPERTIES HAS_CXX yes)
-        install(TARGETS ${APP}
-                RUNTIME DESTINATION bin)
+	get_filename_component(APP ${SOURCE} NAME_WE)
+	add_executable(${APP} ${SOURCE})
+	target_link_libraries(${APP} ${VRPN_SERVER_LIBRARY})
+	set_target_properties(${APP} PROPERTIES SOLUTION_FOLDER servers)
+	set_target_properties(${APP} PROPERTIES HAS_CXX yes)
+	install(TARGETS ${APP} RUNTIME DESTINATION bin)
 endforeach()
 
 ###
@@ -219,10 +228,12 @@ endforeach()
 
 # Wiimote jconf files for fishtank VR
 set(VRPN_WIIMOTE_JCONFS
-        vrpn.wiimoteheadtracker.fishtankvr.1280x1024.jconf
-        vrpn.wiimoteheadtracker.fishtankvr.1024x768.jconf
-        vrpn.wiimoteheadtracker.fishtankvr.800x600.jconf)
+	vrpn.wiimoteheadtracker.fishtankvr.1280x1024.jconf
+	vrpn.wiimoteheadtracker.fishtankvr.1024x768.jconf
+	vrpn.wiimoteheadtracker.fishtankvr.800x600.jconf)
 
-install(FILES ${VRPN_WIIMOTE_JCONFS}
-        DESTINATION share/vrpn-${CPACK_PACKAGE_VERSION}/vrjuggler-2.2-config)
+install(FILES
+	${VRPN_WIIMOTE_JCONFS}
+	DESTINATION
+	share/vrpn-${CPACK_PACKAGE_VERSION}/vrjuggler-2.2-config)
 

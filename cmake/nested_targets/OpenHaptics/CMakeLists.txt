@@ -1,3 +1,14 @@
+# - Build the OpenHaptics utility libraries as a part of your solution.
+#
+# Original Author:
+# 2009-2010 Ryan Pavlik <rpavlik@iastate.edu> <abiryan@ryand.net>
+# http://academic.cleardefinition.com
+# Iowa State University HCI Graduate Program/VRAC
+#
+#          Copyright Iowa State University 2009-2010
+# Distributed under the Boost Software License, Version 1.0.
+#    (See accompanying file ../../LICENSE_1_0.txt or copy at
+#          http://www.boost.org/LICENSE_1_0.txt)
 
 include_directories("${HDAPI_HDU_INCLUDE_DIR}"
 	"${HDAPI_INCLUDE_DIR}"
@@ -41,12 +52,6 @@ if(HDAPI_HDU_LIBRARY STREQUAL "openhaptics_hdu_nested_target")
 		PROJECT_LABEL
 		"OpenHaptics HDU Library")
 
-	set_property(TARGET
-		openhaptics_hdu_nested_target
-		PROPERTY
-		EXCLUDE_FROM_ALL
-		YES)
-
 	if(MSVC)
 		# Disable warnings - no sense in warning about Sensable's potential bugs.
 		set_property(TARGET
@@ -73,12 +78,6 @@ if(HLAPI_HLU_LIBRARY STREQUAL "openhaptics_hlu_nested_target")
 		PROPERTY
 		PROJECT_LABEL
 		"OpenHaptics HLU Library")
-
-	set_property(TARGET
-		openhaptics_hlu_nested_target
-		PROPERTY
-		EXCLUDE_FROM_ALL
-		YES)
 
 	if(MSVC)
 		# Disable warnings - no sense in warning about Sensable's potential bugs.

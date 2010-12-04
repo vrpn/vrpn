@@ -10,4 +10,4 @@ include(DoxygenTargets)
 add_doxygen(Doxyfile
 	INSTALL_DESTINATION
 	share/doc/vrpn-${CPACK_PACKAGE_VERSION}/source-docs
-	NO_PDF) # For some reason, LaTeX bails with a nesting-too-deep error
+	NO_PDF)	# For some reason, LaTeX bails with a nesting-too-deep error

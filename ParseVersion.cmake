@@ -26,3 +26,50 @@ else()
 	set(CPACK_PACKAGE_VERSION_MAJOR "26")
 	warning_dev("Could not parse minor version from vrpn_Connection.C")
 endif()
+
+set(CPACK_PACKAGE_VERSION
+ 	"${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}")
+set(CONFIG_VERSION "${CPACK_PACKAGE_VERSION}")
+
+include(GetGitRevisionDescription)
+git_get_exact_tag(GIT_EXACT_TAG --tags --match version_*)
+if(GIT_EXACT_TAG)
+	# Extract simple version number from description to verify it
+	string(REPLACE "version_" "" GIT_LAST_TAGGED_VER "${GIT_EXACT_TAG}")
+	string(REGEX REPLACE "-.*" "" GIT_LAST_TAGGED_VER "${GIT_LAST_TAGGED_VER}")
+	if(GIT_LAST_TAGGED_VER VERSION_EQUAL CPACK_PACKAGE_VERSION)
+		# OK, they match.  All done!
+		return()
+	endif()
+
+	message("WARNING: Git reports that the current source code is tagged '${GIT_EXACT_TAG}',
+	but the version extracted from the source code (${CPACK_PACKAGE_VERSION}) differs!
+	You may need to fix the source code's version and/or update the tag!
+
+	The version extracted from the source code will be trusted for now,
+	but please fix this issue!\n")
+
+else()
+	# Not an exact tag, let's try a description
+	git_describe(GIT_REVISION_DESCRIPTION --tags --match version_*)
+	if(GIT_REVISION_DESCRIPTION)
+		# Extract simple version number from description
+		string(REPLACE "version_" "" GIT_LAST_TAGGED_VER "${GIT_REVISION_DESCRIPTION}")
+		string(REGEX REPLACE "-.*" "" GIT_LAST_TAGGED_VER "${GIT_LAST_TAGGED_VER}")
+
+		if(GIT_LAST_TAGGED_VER VERSION_LESS CPACK_PACKAGE_VERSION)
+			# Prerelease
+			message(STATUS "Git's description of the current revision indicates this is a prerelease of ${CPACK_PACKAGE_VERSION}: ${GIT_REVISION_DESCRIPTION}\n")
+			set(CPACK_PACKAGE_VERSION_PATCH "0~prerelease-git-${GIT_REVISION_DESCRIPTION}")
+			set(CONFIG_VERSION "pre-${CONFIG_VERSION}")
+		else()
+			# OK, this is a followup version
+			# TODO verify assumption
+			message(STATUS "Git's description of the current revision indicates this is a patched version of ${CPACK_PACKAGE_VERSION}: ${GIT_REVISION_DESCRIPTION}\n")
+			set(CONFIG_VERSION "post-${CONFIG_VERSION}")
+			set(CPACK_PACKAGE_VERSION_PATCH "0-git-${GIT_REVISION_DESCRIPTION}")
+		endif()
+		set(CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION}.${CPACK_PACKAGE_VERSION_PATCH}")
+	endif()
+endif()
+

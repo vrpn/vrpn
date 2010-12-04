@@ -12,11 +12,19 @@ if(NOT WIN32)
 		vrpn_atmellib_tester.C)
 
 	add_library(vrpn_atmel ${ATMELLIB_PUBLIC_HEADERS} ${ATMELLIB_SOURCES})
-	set_property(TARGET vrpn_atmel PROPERTY
-		PUBLIC_HEADER ${ATMELLIB_PUBLIC_HEADERS})
+	set_property(TARGET
+		vrpn_atmel
+		PROPERTY
+		PUBLIC_HEADER
+		${ATMELLIB_PUBLIC_HEADERS})
 
-	install(TARGETS vrpn_atmel
-		ARCHIVE DESTINATION lib
-		PUBLIC_HEADER DESTINATION include)
+	install(TARGETS
+		vrpn_atmel
+		ARCHIVE
+		DESTINATION
+		lib
+		PUBLIC_HEADER
+		DESTINATION
+		include)
 endif()
 
