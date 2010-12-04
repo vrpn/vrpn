@@ -255,12 +255,12 @@ endif
 
 ifeq ($(HW_OS),pc_linux)
 	# The following is for the InterSense and Freespace libraries.
-	SYS_INCLUDE := -DUNIX -DLINUX -I../libfreespace/include
+	SYS_INCLUDE := -DUNIX -DLINUX -I../libfreespace/include -I./submodules/hidapi/hidapi
 endif
 
 ifeq ($(HW_OS),pc_linux64)
 	# The following is for the InterSense and Freespace libraries.
-	SYS_INCLUDE := -DUNIX -DLINUX -I../libfreespace/include
+	SYS_INCLUDE := -DUNIX -DLINUX -I../libfreespace/include -I./submodules/hidapi/hidapi
 endif
 
 ifeq ($(HW_OS),pc_linux_arm)
@@ -376,41 +376,6 @@ LIBS := -lquat -lsdi $(TCL_LIBS) -lXext -lX11 $(ARCH_LIBS) -lm
 override CFLAGS		 := $(INCLUDE_FLAGS) $(DEBUG_FLAGS) $(CFLAGS)
 override CXXFLAGS     := $(INCLUDE_FLAGS) $(DEBUG_FLAGS) $(CXXFLAGS)
 
-#############################################################################
-#
-# implicit rule for all .c files
-#
-.SUFFIXES:	.c .C .o .a
-
-.c.o:
-	$(CC) -c $(CFLAGS) $<
-.C.o:
-	$(CC) -c $(CXXFLAGS) $<
-
-# Build objects from .c files
-$(OBJECT_DIR)/%.o: %.c $(LIB_INCLUDES) $(MAKEFILE)
-	@[ -d $(OBJECT_DIR) ] || mkdir -p $(OBJECT_DIR)
-	$(CC) $(CFLAGS) -DVRPN_CLIENT_ONLY -o $@ -c $<
-
-# Build objects from .C files
-$(OBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) $(MAKEFILE)
-	@[ -d $(OBJECT_DIR) ] || mkdir -p $(OBJECT_DIR)
-	$(CC) $(CFLAGS) -DVRPN_CLIENT_ONLY -o $@ -c $<
-
-# Build objects from .C files
-$(SOBJECT_DIR)/%.o: %.C $(SLIB_INCLUDES) $(MAKEFILE)
-	@[ -d $(SOBJECT_DIR) ] || mkdir -p $(SOBJECT_DIR)
-	$(CC) $(CFLAGS) -o $@ -c $<
-
-# Build objects from .C files
-$(AOBJECT_DIR)/%.o: %.C $(ALIB_INCLUDES) $(MAKEFILE)
-	@[ -d $(AOBJECT_DIR) ] || mkdir -p $(AOBJECT_DIR)
-	$(CC) $(CFLAGS) -o $@ -c $<
-
-#
-#
-#############################################################################
-
 # If we're building for sgi_irix, we need both g++ and non-g++ versions,
 # unless we're building for one of the weird ABIs, which are only supported
 # by the native compiler.
@@ -458,6 +423,47 @@ $(SOBJECT_DIR):
 
 $(AOBJECT_DIR):
 	-mkdir -p $(AOBJECT_DIR)
+
+#############################################################################
+#
+# implicit rule for all .c files
+#
+.SUFFIXES:	.c .C .o .a
+
+.c.o:
+	$(CC) -c $(CFLAGS) $<
+.C.o:
+	$(CC) -c $(CXXFLAGS) $<
+
+# Build objects from .c files
+$(OBJECT_DIR)/%.o: %.c $(LIB_INCLUDES) $(MAKEFILE)
+	@[ -d $(OBJECT_DIR) ] || mkdir -p $(OBJECT_DIR)
+	$(CC) $(CFLAGS) -DVRPN_CLIENT_ONLY -o $@ -c $<
+
+# Build objects from .C files
+$(OBJECT_DIR)/%.o: %.C $(LIB_INCLUDES) $(MAKEFILE)
+	@[ -d $(OBJECT_DIR) ] || mkdir -p $(OBJECT_DIR)
+	$(CC) $(CFLAGS) -DVRPN_CLIENT_ONLY -o $@ -c $<
+
+# Build objects from .C files
+$(SOBJECT_DIR)/%.o: %.C $(SLIB_INCLUDES) $(MAKEFILE)
+	@[ -d $(SOBJECT_DIR) ] || mkdir -p $(SOBJECT_DIR)
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+# Build objects from .C files
+$(AOBJECT_DIR)/%.o: %.C $(ALIB_INCLUDES) $(MAKEFILE)
+	@[ -d $(AOBJECT_DIR) ] || mkdir -p $(AOBJECT_DIR)
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+# Special rule for vrpn_Local_HIDAPI.C, which must be build with
+# the C compiler.
+$(SOBJECT_DIR)/vrpn_Local_HIDAPI.o : vrpn_Local_HIDAPI.C $(SLIB_INCLUDES) $(MAKEFILE)
+	@[ -d $(SOBJECT_DIR) ] || mkdir -p $(SOBJECT_DIR)
+	$(CC) $(CFLAGS) -x c -o $@ -c $<
+
+#
+#
+#############################################################################
 
 #############################################################################
 #
@@ -556,6 +562,7 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_JoyFly.C \
 	vrpn_Joylin.C \
 	vrpn_Keyboard.C \
+	vrpn_Local_HIDAPI.C \
 	vrpn_LUDL.C \
 	vrpn_Magellan.C \
 	vrpn_Mouse.C \
@@ -587,7 +594,7 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_Wanda.C \
 	vrpn_WiiMote.C \
 	vrpn_Xkeys.C \
-	vrpn_Zaber.C \
+	vrpn_Zaber.C
 
 SLIB_OBJECTS = $(patsubst %,$(SOBJECT_DIR)/%,$(SLIB_FILES:.C=.o))
 

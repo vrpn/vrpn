@@ -3794,7 +3794,8 @@ int vrpn_Generic_Server_Object::setup_Freespace(char * & pch, char * line, FILE 
 }
 
 int vrpn_Generic_Server_Object::setup_Xkeys_Desktop(char * & pch, char * line, FILE * config_file) {
-#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__) || defined(VRPN_USE_LIBHID)
+#if defined(VRPN_USE_HID)
+
   char s2 [LINESIZE];
 
   next();
@@ -3828,7 +3829,8 @@ int vrpn_Generic_Server_Object::setup_Xkeys_Desktop(char * & pch, char * line, F
 }
 
 int vrpn_Generic_Server_Object::setup_Xkeys_Pro(char * & pch, char * line, FILE * config_file) {
-#ifdef _WIN32
+#if defined(VRPN_USE_HID)
+
   char s2 [LINESIZE];
 
   next();
@@ -3862,7 +3864,8 @@ int vrpn_Generic_Server_Object::setup_Xkeys_Pro(char * & pch, char * line, FILE 
 }
 
 int vrpn_Generic_Server_Object::setup_Xkeys_Joystick(char * & pch, char * line, FILE * config_file) {
-#ifdef _WIN32
+#if defined(VRPN_USE_HID)
+
   char s2 [LINESIZE];
 
   next();
@@ -3896,7 +3899,8 @@ int vrpn_Generic_Server_Object::setup_Xkeys_Joystick(char * & pch, char * line, 
 }
 
 int vrpn_Generic_Server_Object::setup_Xkeys_Jog_And_Shuttle(char * & pch, char * line, FILE * config_file) {
-#ifdef _WIN32
+#if defined(VRPN_USE_HID)
+
   char s2 [LINESIZE];
 
   next();
@@ -4130,7 +4134,7 @@ int vrpn_Generic_Server_Object::setup_DreamCheeky(char * & pch, char * line, FIL
     return -1;
   }
 
-#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__) || defined(VRPN_USE_LIBHID)
+#if defined(VRPN_USE_HID)
 
   // Open the DreamCheeky
   // Make sure there's room for a new button
@@ -4208,7 +4212,7 @@ int vrpn_Generic_Server_Object::setup_LUDL_USBMAC6000(char * & pch, char * line,
     return -1;
   }
 
-#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__) || defined(VRPN_USE_LIBHID)
+#if defined(VRPN_USE_HID)
 
   // Open the LUDL_USBMAC6000
   // Make sure there's room for a new button

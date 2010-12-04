@@ -3,7 +3,7 @@
 
 // There is a non-HID Linux-based driver for this device that has a capability
 // not implemented in the HID interface.  It uses the input.h interface.
-#if defined(linux) && !defined(VRPN_USE_LIBHID)
+#if defined(linux) && !defined(VRPN_USE_HID)
 #include <linux/input.h>
 #endif
 
@@ -35,7 +35,7 @@ static const vrpn_uint16 vrpn_3DCONNEXION_SPACEBALL5000 = 0xc621;   // 50721;
 vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_buttons,
                                    const char *name, vrpn_Connection *c)
   : _filter(filter)
-#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__) || defined(VRPN_USE_LIBHID)
+#if defined(VRPN_USE_HID)
   , vrpn_HidInterface(_filter)
 #endif
   , vrpn_Analog(name, c)
@@ -53,7 +53,7 @@ vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_button
 // There is a non-HID Linux-based driver for this device that has a capability
 // not implemented in the HID interface.  It is implemented using the Event
 // interface.
-#if defined(linux) && !defined(VRPN_USE_LIBHID)
+#if defined(linux) && !defined(VRPN_USE_HID)
   // Use the Event interface to open devices looking for the one
   // we want.  Call the acceptor with all the devices we find
   // until we get one that we want.
@@ -72,12 +72,8 @@ vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_button
           struct input_devinfo ID;
           ioctl(fileno(f), EVIOCGID, &ID);
           vrpn_HIDDEVINFO info;
-          info.devicePath = fname;
           info.product = ID.product;
           info.vendor = ID.vendor;
-          info.version = ID.version;
-          info.usagePage = 0;   // Unknown
-          info.usage = 0;       // Unknown
           if (_filter->accept(info)) {
             fd = fileno(f);
             set_led(1);
@@ -99,13 +95,13 @@ vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_button
 
 vrpn_3DConnexion::~vrpn_3DConnexion()
 {
-#if defined(linux) && !defined(VRPN_USE_LIBHID)
+#if defined(linux) && !defined(VRPN_USE_HID)
 	set_led(0);
 #endif
         delete _filter;
 }
 
-#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__) || defined(VRPN_USE_LIBHID)
+#if defined(VRPN_USE_HID)
 void vrpn_3DConnexion::reconnect()
 {
 	vrpn_HidInterface::reconnect();
@@ -119,12 +115,12 @@ void vrpn_3DConnexion::on_data_received(size_t bytes, vrpn_uint8 *buffer)
 
 void vrpn_3DConnexion::mainloop()
 {
-#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__) || defined(VRPN_USE_LIBHID)
+#if defined(VRPN_USE_HID)
 	// Full reports are 7 bytes long.
 	// XXX If we get a 2-byte report mixed in, then something is going to get
 	// truncated.
 	update();
-#elif defined(linux) && !defined(VRPN_USE_LIBHID)
+#elif defined(linux) && !defined(VRPN_USE_HID)
     struct timeval zerotime;
     fd_set fdset;
     struct input_event ev;
@@ -190,7 +186,7 @@ void vrpn_3DConnexion::report(vrpn_uint32 class_of_service)
 	vrpn_Button::report_changes();
 }
 
-#if !(defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__) || defined(VRPN_USE_LIBHID) )
+#if defined(linux) && !defined(VRPN_USE_HID)
 int vrpn_3DConnexion::set_led(int led_state)
 {
   struct input_event event;
@@ -219,7 +215,7 @@ static void swap_endian2(char *buffer)
 	c = buffer[0]; buffer[0] = buffer[1]; buffer[1] = c;
 }
 
-#if (defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__)) || defined(VRPN_USE_LIBHID)
+#if defined(VRPN_USE_HID)
 void vrpn_3DConnexion::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 {
 #if defined(__APPLE__)
@@ -228,7 +224,9 @@ void vrpn_3DConnexion::decodePacket(size_t bytes, vrpn_uint8 *buffer)
   if (bytes == 2) bytes = 7;
 #endif
   // Decode all full reports.
-  // Full reports for all of the pro devices are 7 bytes long.
+  // Full reports for all of the pro devices are 7 bytes long (the first
+  // byte is the report type, because this device has multiple ones the
+  // HIDAPI library leaves it in the report).
   for (size_t i = 0; i < bytes / 7; i++) {
     vrpn_uint8 *report = buffer + (i * 7);
 

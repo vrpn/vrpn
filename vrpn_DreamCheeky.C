@@ -2,7 +2,7 @@
 
 #include "vrpn_DreamCheeky.h"
 
-#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__) || defined(VRPN_USE_LIBHID)
+#if defined(VRPN_USE_HID)
 
 // USB vendor and product IDs for the models we support
 static const vrpn_uint16 DREAMCHEEKY_VENDOR = 6465;
@@ -65,8 +65,9 @@ void vrpn_DreamCheeky_Drum_Kit::report_changes(void) {
 
 void vrpn_DreamCheeky_Drum_Kit::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 {
-  // The reports are each 9 bytes long.  The first byte of each report
-  // is zero.  The others are 8 identical reports.
+  // The reports are each 8 bytes long.  Since there is only one type of
+  // report for this device, the report type is not included (stripped by
+  // the HIDAPI driver).  The bytes are 8 identical reports.
   // There is one byte per report, and it holds a binary encoding of
   // the buttons.  Button 0 is in the LSB, and the others proceed up
   // the bit chain.  Parse each report and then send any changes on.
@@ -74,15 +75,15 @@ void vrpn_DreamCheeky_Drum_Kit::decodePacket(size_t bytes, vrpn_uint8 *buffer)
   // all in one packet.
 
   size_t i, r;
-  // Truncate the count to an even number of 9 bytes.  This will
+  // Truncate the count to an even number of 8 bytes.  This will
   // throw out any partial reports (which is not necessarily what
   // we want, because this will start us off parsing at the wrong
   // place if the rest of the report comes next, but it is not
   // clear how to handle that cleanly).
-  bytes -= (bytes % 9);
+  bytes -= (bytes % 8);
   
-  // Decode all full reports, each of which is 9 bytes long.
-  for (i = 0; i < (bytes / 9); i++) {
+  // Decode all full reports, each of which is 8 bytes long.
+  for (i = 0; i < (bytes / 8); i++) {
 
     // If we're debouncing the buttons, then we set the button
     // to "pressed" if it has 4 or more pressed events in the
@@ -92,7 +93,7 @@ void vrpn_DreamCheeky_Drum_Kit::decodePacket(size_t bytes, vrpn_uint8 *buffer)
       for (btn = 0; btn < vrpn_Button::num_buttons; btn++) {
         unsigned count = 0;
         vrpn_uint8 mask = 1 << btn;
-        for (r = 1; r < 9; r++) { // Skip the all-zeroes byte
+        for (r = 0; r < 8; r++) { // Skip the all-zeroes byte
           vrpn_uint8 *report = buffer + 9*i + r;
           count += ((*report & mask) != 0);
         }
@@ -104,7 +105,7 @@ void vrpn_DreamCheeky_Drum_Kit::decodePacket(size_t bytes, vrpn_uint8 *buffer)
     // If we're not debouncing, then we report each button event
     // independently.
     }else {
-      for (r = 1; r < 9; r++) { // Skip the all-zeroes byte
+      for (r = 0; r < 8; r++) { // Skip the all-zeroes byte
         vrpn_uint8 *report = buffer + 9*i + r;
         int btn;
         for (btn = 0; btn < vrpn_Button::num_buttons; btn++) {
