@@ -3726,7 +3726,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_WiimoteHead(char * & pch, char * l
 	next();
 
 	// Get the arguments (tracker_name, wiimote_name, min_update_rate, led_distance)
-	if ( (numparms = sscanf(pch,"%511s%511s%d%f",s2,s3,&f1,&f2)) < 2)
+	if ( (numparms = sscanf(pch,"%511s%511s%f%f",s2,s3,&f1,&f2)) < 2)
 	{
 		fprintf(stderr,"Bad vrpn_Tracker_WiimoteHead line: %s\n%s %s %s %f %f\n", line, pch, s2, s3, f1, f2);
 		return -1;
