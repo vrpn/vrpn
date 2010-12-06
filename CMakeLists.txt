@@ -24,6 +24,7 @@ include(GetForceIncludeDefinitions)
 include(MSVCMultipleProcessCompile)
 include(CppcheckTargets)
 include(SetDefaultBuildType)
+include(OptionRequires)
 
 ###
 # Basic packaging options and versioning
@@ -69,15 +70,9 @@ option(VRPN_BUILD_SERVER_LIBRARY
 	ON)
 
 # Build various applications if we want them.
-option(VRPN_BUILD_PYTHON "Build VRPN Python bindings (development)" OFF)
 option(VRPN_BUILD_CLIENTS "Build VRPN client apps and tests" ON)
 option(VRPN_BUILD_SERVERS "Build VRPN servers" ON)
 option(VRPN_BUILD_TEST_RPC_GENERATION "Build VRPN RPC generation" OFF)
-if(WIN32)
-	option(VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER
-		"Enable to build DirectShow Video Server (Windows)"
-		OFF)
-endif()
 
 set_default_build_type("RelWithDebInfo")
 
@@ -139,20 +134,16 @@ message(STATUS
 ###
 find_package(SWIG)
 find_package(PythonLibs)
+option_requires(VRPN_BUILD_PYTHON "Build VRPN Python bindings (development)" OFF_BY_DEFAULT SWIG_FOUND PYTHONLIBS_FOUND)
 
 ###
 # MPI
 ###
 find_package(MPI)
-if(MPI_FOUND)
-	# XXX Safe to enable by default if we find it?
-	#option(VRPN_USE_MPI "Build with MPI support" ON)
-endif()
+# XXX Safe to enable by default if we find it?
+option_requires(VRPN_USE_MPI "Build with MPI support" OFF_BY_DEFAULT MPI_FOUND)
 
 if(VRPN_USE_MPI)
-	if(NOT MPI_FOUND)
-		message(FATAL_ERROR "ERROR: VRPN_USE_MPI set but MPI not found!")
-	endif()
 	# XXX what else needs to be done here?
 	add_definitions(${MPI_COMPILE_FLAGS})
 	include_directories(${MPI_INCLUDE_PATH})
@@ -170,17 +161,11 @@ endif()
 # OpenHaptics HDAPI/HLAPI
 ###
 find_package(OpenHaptics)
-if(OPENHAPTICS_FOUND)
-	option(VRPN_USE_PHANTOM_SERVER
-		"Build with SensAble Phantom support"
-		ON)
-endif()
+option_requires(VRPN_USE_PHANTOM_SERVER
+	"Build with SensAble Phantom support"
+	OPENHAPTICS_FOUND)
 
 if(VRPN_USE_PHANTOM_SERVER)
-	if(NOT OPENHAPTICS_FOUND)
-		message(FATAL_ERROR
-			"ERROR: VRPN_USE_PHANTOM_SERVER set but HDAPI/HLAPI not found!")
-	endif()
 	include_directories(${OPENHAPTICS_INCLUDE_DIRS})
 	list(APPEND SERVER_EXTRA_LIBS ${OPENHAPTICS_LIBRARIES})
 endif()
@@ -189,17 +174,11 @@ endif()
 # WiiUse
 ###
 find_package(WiiUse)
-if(WIIUSE_FOUND)
-	option(VRPN_USE_WIIUSE
+option_requires(VRPN_USE_WIIUSE
 		"Build with WiiUse library support (makes servers GPL)"
-		ON)
-endif()
+		WIIUSE_FOUND)
 
 if(VRPN_USE_WIIUSE)
-	if(NOT WIIUSE_FOUND)
-		message(FATAL_ERROR
-			"ERROR: VRPN_USE_WIIUSE set but WiiUse not found!")
-	endif()
 	include_directories(${WIIUSE_INCLUDE_DIRS})
 	list(APPEND SERVER_EXTRA_LIBS ${WIIUSE_LIBRARIES})
 endif()
@@ -208,17 +187,11 @@ endif()
 # libnifalcon
 ###
 find_package(LibNifalcon)
-if(LIBNIFALCON_FOUND)
-	option(VRPN_USE_LIBNIFALCON
+option_requires(VRPN_USE_LIBNIFALCON
 		"Build with libnifalcon support to access Novint Falcon devices"
-		ON)
-endif()
+		LIBNIFALCON_FOUND)
 
 if(VRPN_USE_LIBNIFALCON)
-	if(NOT LIBNIFALCON_FOUND)
-		message(FATAL_ERROR
-			"ERROR: VRPN_USE_LIBNIFALCON set but libnifalcon not found!")
-	endif()
 	include_directories(${LIBNIFALCON_INCLUDE_DIRS})
 	list(APPEND SERVER_EXTRA_LIBS ${LIBNIFALCON_LIBRARIES})
 endif()
@@ -228,40 +201,32 @@ endif()
 ###
 # Note: FindDirectShow.cmake still needs some TLC to bring it in line
 # with CMake standards and make it work in a variety of environments
-find_package(DirectShow)
-if(DIRECTSHOW_FOUND)
-	option(VRPN_USE_DIRECTSHOW
-		"Build with Microsoft DirectShow support"
-		ON)
-	option(VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER
-		"Enable to build DirectShow Video Server (Windows)"
-		ON)
-endif()
+if(WIN32)
+	find_package(DirectShow)
+	option_requires(VRPN_USE_DIRECTSHOW
+			"Build with Microsoft DirectShow support"
+			DIRECTSHOW_FOUND)
+	option_requires(VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER
+			"Enable to build DirectShow Video Server (Windows)"
+			DIRECTSHOW_FOUND)
 
-if(VRPN_USE_DIRECTSHOW)
-	if(NOT DIRECTSHOW_FOUND)
-		message(FATAL_ERROR
-			"ERROR: VRPN_USE_DIRECTSHOW set but DirectShow not found!")
+	if(VRPN_USE_DIRECTSHOW)
+		include_directories(${DirectShow_INCLUDE_DIRS})
+		# XXX What else should be done here?
 	endif()
-	include_directories(${DirectShow_INCLUDE_DIRS})
-	# XXX What else should be done here?
 endif()
 
 ###
 # GPM
 ###
-find_package(GPM)
-if(GPM_FOUND)
-	option(VRPN_USE_GPM_MOUSE
+if(UNIX)
+	find_package(GPM)
+	option_requires(VRPN_USE_GPM_MOUSE
 		"Build with GPM Linux mouse interface support"
-		ON)
+		GPM_FOUND)
 endif()
 
 if(VRPN_USE_GPM_MOUSE)
-	if(NOT GPM_FOUND)
-		message(FATAL_ERROR
-			"ERROR: VRPN_USE_GPM_MOUSE set but GPM not found!")
-	endif()
 	list(APPEND SERVER_EXTRA_LIBS ${GPM_LIBRARIES})
 endif()
 
@@ -297,9 +262,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CONFIG_H_FLAG}")
 # Configuration options controlling what gets included in the build.
 # These are the default options - if a library is detected above it will
 # be pre-set to ON instead.
-option(VRPN_USE_PHANTOM_SERVER
-	"Build with SensAble Phantom support"
-	OFF)
 option(VRPN_INCLUDE_TIMECODE_SERVER
 	"Build with Adrienne time-code server support"
 	OFF)
@@ -325,12 +287,8 @@ option(VRPN_INCLUDE_PHASESPACE
 option(VRPN_USE_MOTIONNODE
 	"Build with GLI Interactive LLC MotionNode library support"
 	OFF)
-option(VRPN_USE_WIIUSE "Build with WiiUse library support" OFF)
 option(VRPN_USE_FREESPACE
 	"Build with Hillcrest Labs' Freespace devices support"
-	OFF)
-option(VRPN_USE_LIBNIFALCON
-	"Build with support for Novint Falcon devices through libnifalcon"
 	OFF)
 option(VRPN_USE_TRIVISIOCOLIBRI
 	"Build with support for TrivisioColibri tracker"
@@ -358,22 +316,14 @@ if(WIN32)
 	option(VRPN_USE_DIRECTINPUT
 		"Build with Microsoft DirectInput support"
 		OFF)
-	option(VRPN_USE_DIRECTSHOW
-		"Build with Microsoft DirectShow support"
-		OFF)
 	option(VRPN_USE_SHARED_LIBRARY
 		"Enable to use DLLs on Windows (see vrpn_Configure.h for more info)"
 		OFF)
 elseif(UNIX)
-	option(VRPN_USE_GPM_MOUSE
-		"Build with GPM Linux mouse interface support"
-		OFF)
 	option(VRPN_BUILD_PROFILING_SUPPORT
 		"Build with flags to enable profiling."
 		OFF)
 endif()
-
-#option(VRPN_USE_MPI "Build with MPI support" OFF)
 
 if(VRPN_BUILD_EXTRA_COMPILER_WARNINGS)
 	include(EnableExtraCompilerWarnings)
