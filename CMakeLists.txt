@@ -105,7 +105,7 @@ add_subdirectory(quat)
 list(APPEND EXTRA_LIBS quat)
 
 ###
-# Threading (not on win32?)
+# Threading (not on win32)
 ###
 if(NOT WIN32)
 	find_package(Threads REQUIRED)
