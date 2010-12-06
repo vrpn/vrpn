@@ -181,8 +181,7 @@ if(VRPN_USE_LOCAL_HIDAPI)
 		
 	elseif(WIN32)
 		list(APPEND HIDAPI_SOURCES vrpn_Local_HIDAPI.C)
-		list(APPEND SERVER_EXTRA_LIBS ${WINHID_LIBRARIES})
-		include_directories(${WINHID_INCLUDE_DIRS})
+		list(APPEND SERVER_EXTRA_LIBS ${WINHID_LIBRARIES} setupapi)
 		
 	else()
 		list(APPEND HIDAPI_SOURCES vrpn_HIDAPI_Linux_Hack.c)
