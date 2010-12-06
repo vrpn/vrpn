@@ -255,12 +255,12 @@ endif
 
 ifeq ($(HW_OS),pc_linux)
 	# The following is for the InterSense and Freespace libraries.
-	SYS_INCLUDE := -DUNIX -DLINUX -I../libfreespace/include -I./submodules/hidapi/hidapi
+	SYS_INCLUDE := -DUNIX -DLINUX -I../libfreespace/include -I./submodules/hidapi/hidapi -I/usr/include/libusb-1.0
 endif
 
 ifeq ($(HW_OS),pc_linux64)
 	# The following is for the InterSense and Freespace libraries.
-	SYS_INCLUDE := -DUNIX -DLINUX -I../libfreespace/include -I./submodules/hidapi/hidapi
+	SYS_INCLUDE := -DUNIX -DLINUX -I../libfreespace/include -I./submodules/hidapi/hidapi -I/usr/include/libusb-1.0
 endif
 
 ifeq ($(HW_OS),pc_linux_arm)

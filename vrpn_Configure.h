@@ -286,7 +286,9 @@
 // Instructs VRPN to attempt to use HID.  If you don't have libusb installed
 // on Linux, you'll want to turn this off so that it doesn't fail to compile.
 // This should work fine on Windows and Mac, so we define it by default there.
-#if defined(_WIN32) || defined(__APPLE__) || defined(linux)
+// For Linux, you need to have HIDAPI (either local or otherwise) for this
+// to work, so this definition is not in by default there.
+#if defined(_WIN32) || defined(__APPLE__)
 #define VRPN_USE_HID
 #endif
 
@@ -299,10 +301,10 @@
 // If you have a system hidapi and you prefer to use it, then do not
 // define this here.  Otherwise, define it so that VRPN will be able
 // to access HID devices.
-// Note that on Linux you will also need to have the libudev-dev
-// package installed so that we can compile the hidraw code.  You
-// will also need to uncommment the SYSLIBS line for UDEV in the
-// Makefile in server_src for this to link.
+// Note that on Linux you will also need to have the libusb-1.0-0-dev
+// package installed so that we can compile the code.  You
+// will also need to uncommment the SYSLIBS line for HID in the
+// server_src/Makefile for this to link.
 #define VRPN_USE_LOCAL_HIDAPI
 
 //------------------------------------------------------------------//
