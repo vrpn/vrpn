@@ -2,7 +2,7 @@
 
 #include "vrpn_Xkeys.h"
 
-#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__) || defined(VRPN_USE_LIBHID)
+#if defined(VRPN_USE_HID)
 
 // USB vendor and product IDs for the models we support
 static const vrpn_uint16 XKEYS_VENDOR = 0x05F3;
@@ -104,24 +104,26 @@ void vrpn_Xkeys_Desktop::report_changes(void) {
 }
 
 void vrpn_Xkeys_Desktop::decodePacket(size_t bytes, vrpn_uint8 *buffer) {
-	// Decode all full reports, each of which is 12 bytes long
-	for (size_t i = 0; i < bytes / 12; i++) {
-		vrpn_uint8 *report = buffer + (i * 12);
+	// Decode all full reports, each of which is 11 bytes long.
+        // Because there is only one type of report, the initial "0" report-type
+        // byte is removed by the HIDAPI driver.
+	for (size_t i = 0; i < bytes / 11; i++) {
+		vrpn_uint8 *report = buffer + (i * 11);
 
-		if ((report[0] != 0) || !(report[11] & 0x08)) {
+		if (!(report[10] & 0x08)) {
 			// Apparently we got a corrupted report; skip this one.
 			fprintf(stderr, "vrpn_Xkeys: Found a corrupted report; # total bytes = %u\n", static_cast<unsigned>(bytes));
 			continue;
 		}
 
 		// Decode the "programming switch"
-		buttons[0] = (report[11] & 0x10) != 0;
+		buttons[0] = (report[10] & 0x10) != 0;
 
 		// Decode the other buttons into column-major order
 		for (int btn = 0; btn < 20; btn++) {
 			vrpn_uint8 *offset, mask;
 			
-			offset = buffer + btn / 5 + 1;
+			offset = buffer + btn / 5;
 			mask = 1 << (btn % 5);
 
 			buttons[btn + 1] = (*offset & mask) != 0;

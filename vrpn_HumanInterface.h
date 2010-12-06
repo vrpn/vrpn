@@ -1,4 +1,9 @@
 // vrpn_HumanInterface.h: Generic USB HID driver I/O interface.
+//    This implementation uses the cross-platform HIDAPI library
+//    from http://www.signal11.us/oss/hidapi/ to handle the cross-
+//    platform HID device interface.  The older version had a different
+//    implementation for each platform; it has been discontinued as
+//    of version 7.29.
 
 #ifndef VRPN_HUMANINTERFACE_H
 #define VRPN_HUMANINTERFACE_H
@@ -6,18 +11,14 @@
 #include "vrpn_Configure.h"
 #include "vrpn_BaseClass.h"
 #include <string.h>
-
-#ifdef _WIN64
-#pragma message("Windows 64-bit compatibility is EXPERIMENTAL!")
-#endif
+#include <wchar.h>
 
 struct vrpn_HIDDEVINFO {
 	vrpn_uint16 vendor;		// USB Vendor ID
 	vrpn_uint16 product;		// USB Product ID
-	vrpn_uint16 usagePage;		// HID Usage Page (major)
-	vrpn_uint16 usage;		// HID Usage (minor)
-	vrpn_uint16 version;		// HID Version Number (vendor-specific)
-	const char *devicePath;		// Platform-specific path to device
+        wchar_t     *serial_number;     // USB device serial number
+        wchar_t     *manufacturer_string;
+        wchar_t     *product_string;
 };
 
 // General interface for device enumeration:
@@ -32,41 +33,14 @@ public:
 	virtual void reset() { }
 };
 
-#if defined(__APPLE__) && !defined(VRPN_USE_LIBHID)
-#include <stdio.h>
-#include <IOKit/IOCFPlugIn.h>
-#include <IOKit/hid/IOHIDLib.h>
-#include <IOKit/hid/IOHIDKeys.h>
-#include <CoreFoundation/CoreFoundation.h>
 
-// If using CMake, the correct type name here will be detected.  If not
-// using CMake, we have to just guess and pick one of the two that seem
-// to be possible and mutually exclusive.
-// Chose UInt32 as our fallback (over uint32_t) based on:
-// http://developer.apple.com/hardwaredrivers/customusbdrivers.html
-// retrieved 16 Dec 2009
-#if !defined(MACOSX_HID_UINT32T)
-#define MACOSX_HID_UINT32T UInt32
+#if defined(VRPN_USE_HID)
+
+#ifdef  VRPN_USE_LOCAL_HIDAPI
+#include "./submodules/hidapi/hidapi/hidapi.h"
+#else
+#include "hidapi.h"
 #endif
-
-#endif // Apple
-
-#ifdef VRPN_USE_LIBHID
-#ifdef linux
-// I don't know why this is in the hid.h file, but it causes problems unless defined.
-#define HAVE_STDBOOL_H
-#endif
-#include <hid.h>
-#endif
-
-#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__) || defined(VRPN_USE_LIBHID)
-
-#if defined(__CYGWIN__) && !defined(VRPN_USE_LIBHID)
-// This will cause _WIN32 to be defined, which will cause us trouble later on.
-// It is needed to define the HANDLE type used below.
-#include <windows.h>
-#undef _WIN32
-#endif // Cygwin
 
 // Main VRPN API for HID devices
 class VRPN_API vrpn_HidInterface {
@@ -79,13 +53,7 @@ public:
 
 	// Polls the device buffers and causes on_data_received callbacks if appropriate
 	// You NEED to call this frequently to ensure the OS doesn't drop data
-	// Note that ReadFile() is buffered by default on Windows, so it doesn't have to
-	// be called every 60th of a second unless you've got a really verbose device.
-	// The message-length and timeout hints can be used to optimize throughput and
-	// minimize latency from the device, particularly with the LIBHID interface.
-	// The message size is particularly important to avoid truncating and losing
-	// packets from the device.
-	virtual void update(unsigned endpoint = 1);
+	virtual void update();
 
 	// Tries to reconnect to an acceptable device.
 	// Call this if you suspect a hotplug event has occurred.
@@ -97,20 +65,20 @@ public:
 	// Returns USB product ID of connected device
 	vrpn_uint16 product() const;
 
-	// These cannot be protected because they are used in a
-	// static callback.
-#if defined(__APPLE__) && !defined(VRPN_USE_LIBHID)
-	void gotData(int size) {_gotdata = true; _gotsize = size; }
-	unsigned char* getBuffer() { return _buffer; }
-#endif // Apple
-	
 protected:
 
-	// Derived class reimplements this callback
+	// Derived class reimplements this callback.  It is called whenever a
+        // read returns some data.
+        // WARNING!  The data returned by this function differs when the device
+        // sends multiple report types and when it only has one.  When it
+        // can have more than one, the report type is sent as the first byte.
+        // When it only has one, the report type is NOT included.  This is
+        // the behavior of the HIDAPI library we are using.  It is surprising
+        // to me, but that's how it behaves.
 	virtual void on_data_received(size_t bytes, vrpn_uint8 *buffer) = 0;
 	
 	// Call this to send data to the device
-	void send_data(size_t bytes, vrpn_uint8 *buffer);
+	void send_data(size_t bytes, const vrpn_uint8 *buffer);
 
 	// This is the HidAcceptor we use when reconnecting.
 	// We do not take ownership of the pointer; it is the user's responsibility.
@@ -123,29 +91,10 @@ protected:
 	vrpn_uint16 _product;
 
 private:
-#if !defined(VRPN_USE_LIBHID) && ( defined(_WIN32) || defined(__CYGWIN__) )
-	void start_io();
-
-	HANDLE _device;
-	HANDLE _readEvent;
-	HANDLE _writeEvent;
-	OVERLAPPED _readOverlap;
-	BYTE _readBuffer[512];
-#endif // Windows
-#if defined(__APPLE__) && !defined(VRPN_USE_LIBHID)
-	io_object_t _ioObject;
-	IOHIDDeviceInterface122 **_interface;
-	bool _gotdata;
-	int _gotsize;
-	unsigned char _buffer[512];
-#endif // Apple
-#if defined(VRPN_USE_LIBHID)
-	HIDInterface *_hid;
-	static bool match_wrapper(const struct usb_dev_handle *usbdev, void *custom, unsigned int len);
-#endif
+        hid_device  *_device;   // The HID device to use.
 };
 
-#endif // Windows or Apple
+#endif  // VRPN_USE_HID
 
 // Some sample acceptors
 
@@ -164,14 +113,13 @@ private:
 	vrpn_uint16 product, vendor;
 };
 
-// Accepts any device with a particular node filename.
-// Note that filenames tend to change upon hotplug/replug events.
-class VRPN_API vrpn_HidFilenameAcceptor: public vrpn_HidAcceptor {
+// Accepts any device with a particular serial number.
+class VRPN_API vrpn_HidSerialNumberAcceptor: public vrpn_HidAcceptor {
 public:
-	vrpn_HidFilenameAcceptor(const char *filename) : devPath(filename) { }
-	bool accept(const vrpn_HIDDEVINFO &device) { return !strcmp(devPath, device.devicePath); }
+	vrpn_HidSerialNumberAcceptor(const wchar_t *serial) : devNum(serial) { }
+	bool accept(const vrpn_HIDDEVINFO &device) { return !wcscmp(devNum, device.serial_number); }
 private:
-	const char *devPath;
+	const wchar_t *devNum;
 };
 
 // Accepts the Nth device matching a given acceptor.

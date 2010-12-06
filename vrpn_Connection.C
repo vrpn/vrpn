@@ -661,7 +661,7 @@ int vrpn_Log::saveLogSoFar(void) {
     if (retval != 6) {
       fprintf(stderr, "vrpn_Log::saveLogSoFar:  "
                       "Couldn't write log file (got %d, expected %lud).\n",
-              retval, sizeof(lp->data));
+              retval, static_cast<unsigned long>(sizeof(lp->data)));
       lp = d_logTail;
       final_retval = -1;
       continue;

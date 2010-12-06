@@ -283,14 +283,29 @@
 //#define VRPN_USE_TRIVISIOCOLIBRI
 
 //------------------------
-// Instructs VRPN to use libhid to access USB devices on Linux.  If this
-// works well, we may consider enabling this use on Windows and Mac as
-// well and get at all the devices this way.  For now, we'll just be glad
-// if it works on Linux.  Note that you will need to install the package
-// libhid-dev on your system to be able to use this.  Note that you will
-// need to run the server as root on linux if you want to be able to
-// open the USB device.
-//#define VRPN_USE_LIBHID
+// Instructs VRPN to attempt to use HID.  If you don't have libusb installed
+// on Linux, you'll want to turn this off so that it doesn't fail to compile.
+// This should work fine on Windows and Mac, so we define it by default there.
+// For Linux, you need to have HIDAPI (either local or otherwise) for this
+// to work, so this definition is not in by default there.
+#if defined(_WIN32) || defined(__APPLE__)
+#define VRPN_USE_HID
+#endif
+
+//------------------------
+// Instructs VRPN to link in the source code to a local version of
+// hidapi to access HID devices.  The source code for this project
+// is included as a git submodule under submodule/hidapi.  To pull
+// this down if it is not present, use the commands:
+// 'git submodule init; git submodule update' from the vrpn directory.
+// If you have a system hidapi and you prefer to use it, then do not
+// define this here.  Otherwise, define it so that VRPN will be able
+// to access HID devices.
+// Note that on Linux you will also need to have the libusb-1.0-0-dev
+// package installed so that we can compile the code.  You
+// will also need to uncommment the SYSLIBS line for HID in the
+// server_src/Makefile for this to link.
+#define VRPN_USE_LOCAL_HIDAPI
 
 //------------------------------------------------------------------//
 // SYSTEM CONFIGURATION SECTION                                     //

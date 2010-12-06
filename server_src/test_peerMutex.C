@@ -41,7 +41,10 @@ int main (int argc, char ** argv) {
 
     me->mainloop();
     memset(inputLine, 0, 100);
-    fgets(inputLine, 100, stdin);
+    if (fgets(inputLine, 100, stdin) == NULL) {
+	perror("could not read line");
+	return -1;
+    }
 
     if (!strncmp(inputLine, "req", 3)) {
       printf("test_mutex:  sending request.\n");
@@ -57,7 +60,10 @@ int main (int argc, char ** argv) {
     } else if (!strncmp(inputLine, "add", 3)) {
       printf("Name of peer:  ");
       fflush(stdout);
-      fgets(inputLine, 100, stdin);
+      if (fgets(inputLine, 100, stdin) == NULL) {
+	perror("could not read line");
+	return -1;
+      }
       me->addPeer(inputLine);
     } else if (!strncmp(inputLine, "quit", 4)) {
       delete me;

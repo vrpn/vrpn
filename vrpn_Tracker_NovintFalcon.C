@@ -236,6 +236,8 @@ public:
 
         int i;
         for (i=0; !m_falconDevice->runIOLoop() && i < FALCON_NUM_RETRIES; ++i) continue;
+               if ( i == FALCON_NUM_RETRIES )
+                       return false;
 
         // we have no orientation of the effector.
         // so we just pick one. to tell them apart
@@ -602,11 +604,17 @@ void vrpn_Tracker_NovintFalcon::reset()
 
     m_dev = new vrpn_NovintFalcon_Device(m_devflags);
     if (!m_dev) {
-		status = vrpn_TRACKER_FAIL;
+#ifdef VERBOSE
+                fprintf(stderr, "Device constructor failed!\n");
+#endif
+                status = vrpn_TRACKER_FAIL;
 		return;
 	}
 
     if (!m_dev->init()) {
+#ifdef VERBOSE
+                fprintf(stderr, "Device init failed!\n");
+#endif		
 		status = vrpn_TRACKER_FAIL;
 		return;
 	}
@@ -634,6 +642,7 @@ int vrpn_Tracker_NovintFalcon::get_report(void)
                 return 0;
             }
         } else {
+            status = vrpn_TRACKER_FAIL;
             return 0;
         }
     }

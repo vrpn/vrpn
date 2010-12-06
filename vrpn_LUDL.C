@@ -4,7 +4,7 @@
 
 #define	REPORT_ERROR(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_ERROR) ; if (d_connection && d_connection->connected()) d_connection->send_pending_reports(); }
 
-#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__) || defined(VRPN_USE_LIBHID)
+#if defined(VRPN_USE_HID)
 
 // USB vendor and product IDs for the models we support
 static const vrpn_uint16 LUDL_VENDOR = 0x6969;
@@ -136,7 +136,7 @@ void vrpn_LUDL_USBMAC6000::flush_input_from_ludl(void)
   // from the endpoint we're supposed to use, then clear it
   // again -- throwing away all data that was coming from the device.
   _incount = 0;
-  update(_endpoint);
+  update(/*_endpoint*/);
   _incount = 0;
 }
 
@@ -243,7 +243,7 @@ bool vrpn_LUDL_USBMAC6000::ludl_axis_moving(unsigned axis)
   // this because some HID implementations don't return partially-full
   // buffer results.  XXX May lock up indefintely if LUDL does not respond.
   while (_incount == 0) {
-    update(_endpoint);
+    update(/*_endpoint*/);
   }
   int status = 0;
   if (!interpret_usbmac_ascii_response(_inbuffer, &status)) {

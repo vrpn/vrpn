@@ -5,7 +5,7 @@
 #include "vrpn_Analog.h"
 #include "vrpn_Analog_Output.h"
 
-#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__) || defined(VRPN_USE_LIBHID)
+#if defined(VRPN_USE_HID)
 
 // Device drivers for the LUDL family of translation stage controllers.
 // XXX Problem: This device is not a HID device, even though it is USB.
