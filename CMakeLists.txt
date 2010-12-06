@@ -167,6 +167,8 @@ endif()
 
 if(EXISTS "${VRPN_SOURCE_DIR}/submodules/hidapi/hidapi/hidapi.h")
 	set(LOCAL_HIDAPI_SUBMODULE_RETRIEVED TRUE)
+else()
+	message(STATUS "Local HIDAPI submodule not found. To download with Git, run git submodule init; git submodule update")
 endif()
 
 option_requires(VRPN_USE_LOCAL_HIDAPI
