@@ -163,7 +163,7 @@ endif()
 # If we're using the local HIDAPI library
 ###
 if(VRPN_USE_LOCAL_HIDAPI)
-	include_directories(${VRPN_SOURCE_DIR}/submodules/hidapi/hidapi)
+	include_directories(${VRPN_SOURCE_DIR}/submodules/hidapi/hidapi /usr/include/libhid-1.0)
 endif()
 
 ###
@@ -519,7 +519,7 @@ if(VRPN_USE_LOCAL_HIDAPI)
     set(VRPN_SERVER_SOURCES
 	${VRPN_SERVER_SOURCES}
 	vrpn_HIDAPI_Linux_Hack.c)
-    list(APPEND EXTRA_LIBS udev)
+    list(APPEND EXTRA_LIBS libusb-1.0)
   else()
     set(VRPN_SERVER_SOURCES
 	${VRPN_SERVER_SOURCES}

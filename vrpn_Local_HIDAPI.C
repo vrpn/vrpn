@@ -4,19 +4,18 @@
 	
 #if defined(_WIN32) || defined(__CYGWIN__)
 
-// I had to include these extras to get the hid.cpp file to compile
-// under Visual Studio 2005.  Hopefully they don't conflict with the environments
-// of others.  In future versions, if HIDP_PREPARSED_DATA is located by
-// the compiler then we can remove the second of these definitions.  Also, if
-// it compiles without the DDK in the future, we can remove the first one.
-#define HIDAPI_USE_DDK
-#ifndef HIDP_PREPARSED_DATA
-typedef struct _HIDP_PREPARSED_DATA HIDP_PREPARSED_DATA;
+// I had to include this definition to get the hid.cpp file to compile
+// under Visual Studio 2005.  Hopefully this won't conflict with the environments
+// of others.  In future versions, if NTSTATUS is located by
+// the compiler then we can remove this definition.
+
+#ifndef NTSTATUS
+typedef long NTSTATUS;
 #endif
+#include "submodules/hidapi/windows/hid.cpp"
+
 #pragma comment( lib, "Hid.lib" )
 #pragma comment( lib, "Setupapi.lib" )
-
-#include "submodules/hidapi/windows/hid.cpp"
 
 #elif defined(linux)
 // On linux, we need to compile this code as C code rather than C++ code
