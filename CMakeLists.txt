@@ -105,22 +105,11 @@ add_subdirectory(quat)
 list(APPEND EXTRA_LIBS quat)
 
 ###
-# Threading (not on win32?)
+# Threading (not on win32)
 ###
 if(NOT WIN32)
 	find_package(Threads REQUIRED)
 	list(APPEND EXTRA_LIBS ${CMAKE_THREAD_LIBS_INIT})
-endif()
-
-###
-# Mac HID
-###
-if(APPLE AND VRPN_BUILD_SERVER_LIBRARY)
-	find_package(MacHID REQUIRED)
-	if(MACHID_FOUND)
-		list(APPEND EXTRA_LIBS ${MACHID_LIBRARIES})
-		add_definitions(${MACHID_DEFINITIONS})
-	endif()
 endif()
 
 ###
@@ -154,15 +143,18 @@ endif()
 # HID and HIDAPI
 ###
 
-# Local HIDAPI requires libusb
-if(NOT APPLE AND NOT WIN32)
-	find_package(Libusb1)
-	set(HIDAPI_DEPS_CHECK LIBUSB1_FOUND)
-endif()
-
+# Local HIDAPI requirements
 if(WIN32)
 	find_package(WinHID)
 	set(HIDAPI_DEPS_CHECK WINHID_FOUND)
+
+elseif(APPLE)
+	find_package(MacHID)
+	set(HIDAPI_DEPS_CHECK MACHID_FOUND)
+
+else()
+	find_package(Libusb1)
+	set(HIDAPI_DEPS_CHECK LIBUSB1_FOUND)
 endif()
 
 if(EXISTS "${VRPN_SOURCE_DIR}/submodules/hidapi/hidapi/hidapi.h")
@@ -180,6 +172,7 @@ if(VRPN_USE_LOCAL_HIDAPI)
 	set(HIDAPI_SOURCES submodules/hidapi/hidapi/hidapi.h)
 	if(APPLE)
 		list(APPEND HIDAPI_SOURCES submodules/hidapi/mac/hid.c)
+		list(APPEND SERVER_EXTRA_LIBS ${MACHID_LIBRARIES})
 		
 	elseif(WIN32)
 		list(APPEND HIDAPI_SOURCES vrpn_Local_HIDAPI.C)
@@ -196,6 +189,9 @@ if(VRPN_USE_LOCAL_HIDAPI)
 endif()
 
 # HID requires either local or system-installed HIDAPI
+if(VRPN_USE_LOCAL_HIDAPI)
+	set(HIDAPI_FOUND)
+endif()
 find_package(HIDAPI)
 if(HIDAPI_FOUND OR VRPN_USE_LOCAL_HIDAPI)
 	set(LOCAL_HIDAPI_SUBMODULE_OR_HIDAPI_FOUND TRUE)
