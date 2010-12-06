@@ -151,11 +151,58 @@ if(VRPN_USE_MPI)
 endif()
 
 ###
-# If we're using the local HIDAPI library
+# HID and HIDAPI
 ###
-if(VRPN_USE_LOCAL_HIDAPI)
-	include_directories(${VRPN_SOURCE_DIR}/submodules/hidapi/hidapi /usr/include/libusb-1.0)
+
+# Local HIDAPI requires libusb
+if(NOT APPLE AND NOT WIN32)
+	find_package(Libusb1)
+	set(HIDAPI_DEPS_CHECK LIBUSB1_FOUND)
 endif()
+
+if(WIN32)
+	find_package(WinHID)
+	set(HIDAPI_DEPS_CHECK WINHID_FOUND)
+endif()
+
+if(EXISTS "${VRPN_SOURCE_DIR}/submodules/hidapi/hidapi/hidapi.h")
+	set(LOCAL_HIDAPI_SUBMODULE_RETRIEVED TRUE)
+endif()
+
+option_requires(VRPN_USE_LOCAL_HIDAPI
+	"Build with HIDAPI code from within VRPN source directory"
+	LOCAL_HIDAPI_SUBMODULE_RETRIEVED
+	${HIDAPI_DEPS_CHECK})
+
+if(VRPN_USE_LOCAL_HIDAPI)
+	set(HIDAPI_SOURCES submodules/hidapi/hidapi/hidapi.h)
+	if(APPLE)
+		list(APPEND HIDAPI_SOURCES submodules/hidapi/mac/hid.c)
+		
+	elseif(WIN32)
+		list(APPEND HIDAPI_SOURCES vrpn_Local_HIDAPI.C)
+		list(APPEND SERVER_EXTRA_LIBS ${WINHID_LIBRARIES})
+		include_directories(${WINHID_INCLUDE_DIRS})
+		
+	else()
+		list(APPEND HIDAPI_SOURCES vrpn_HIDAPI_Linux_Hack.c)
+		list(APPEND SERVER_EXTRA_LIBS ${LIBUSB1_LIBRARIES})
+		include_directories(${LIBUSB1_INCLUDE_DIRS})
+	endif()
+	
+	include_directories(${VRPN_SOURCE_DIR}/submodules/hidapi/hidapi)
+	source_group("HIDAPI Submodule" FILES ${HIDAPI_SOURCES})
+endif()
+
+# HID requires either local or system-installed HIDAPI
+find_package(HIDAPI)
+if(HIDAPI_FOUND OR VRPN_USE_LOCAL_HIDAPI)
+	set(LOCAL_HIDAPI_SUBMODULE_OR_HIDAPI_FOUND TRUE)
+endif()
+
+option_requires(VRPN_USE_HID
+	"Build with support for HID devices using HIDAPI"
+	LOCAL_HIDAPI_SUBMODULE_OR_HIDAPI_FOUND)
 
 ###
 # OpenHaptics HDAPI/HLAPI
@@ -293,21 +340,6 @@ option(VRPN_USE_FREESPACE
 option(VRPN_USE_TRIVISIOCOLIBRI
 	"Build with support for TrivisioColibri tracker"
 	OFF)
-if(WIN32 OR APPLE)
-	option(VRPN_USE_HID
-		"Build with support for HID devices using HIDAPI"
-		ON)
-	option(VRPN_USE_LOCAL_HIDAPI
-		"Build with HIDAPI code from within VRPN source directory"
-		ON)
-else()
-	option(VRPN_USE_HID
-		"Build with support for HID devices using HIDAPI"
-		OFF)
-	option(VRPN_USE_LOCAL_HIDAPI
-		"Build with HIDAPI code from within VRPN source directory"
-		OFF)
-endif()
 option(VRPN_BUILD_EXTRA_COMPILER_WARNINGS
 	"Build with flags to enable extra warnings."
 	OFF)
@@ -458,24 +490,8 @@ set(VRPN_SERVER_SOURCES
 	vrpn_WiiMote.C
 	vrpn_XInputGamepad.C
 	vrpn_Xkeys.C
-	vrpn_Zaber.C)
-
-if(VRPN_USE_LOCAL_HIDAPI)
-  if(APPLE)
-    set(VRPN_SERVER_SOURCES
-	${VRPN_SERVER_SOURCES}
-	submodules/hidapi/mac/hid.c)
-  elseif (CMAKE_SYSTEM_NAME MATCHES Linux)
-    set(VRPN_SERVER_SOURCES
-	${VRPN_SERVER_SOURCES}
-	vrpn_HIDAPI_Linux_Hack.c)
-    list(APPEND EXTRA_LIBS usb-1.0)
-  else()
-    set(VRPN_SERVER_SOURCES
-	${VRPN_SERVER_SOURCES}
-	vrpn_Local_HIDAPI.C)
-  endif()
-endif()
+	vrpn_Zaber.C
+	${HIDAPI_SOURCES})
 
 set(VRPN_SERVER_PUBLIC_HEADERS
 	${VRPN_CLIENT_PUBLIC_HEADERS}
