@@ -187,6 +187,9 @@ if(VRPN_USE_LOCAL_HIDAPI)
 endif()
 
 # HID requires either local or system-installed HIDAPI
+if(VRPN_USE_LOCAL_HIDAPI)
+	set(HIDAPI_FOUND)
+endif()
 find_package(HIDAPI)
 if(HIDAPI_FOUND OR VRPN_USE_LOCAL_HIDAPI)
 	set(LOCAL_HIDAPI_SUBMODULE_OR_HIDAPI_FOUND TRUE)
