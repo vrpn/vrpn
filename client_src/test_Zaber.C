@@ -108,6 +108,13 @@ int main (int argc, char * argv [])
   // signal handler so logfiles get closed right
   signal(SIGINT, handle_cntl_c);
 
+  // Wait until we hear a value from analog0 so we know where
+  // to start.
+  analog_0_set = false;
+  while (!analog_0_set) {
+    ana->mainloop();
+  }
+
   /* 
    * main interactive loop
    */

@@ -4228,7 +4228,7 @@ int vrpn_Generic_Server_Object::setup_LUDL_USBMAC6000(char * & pch, char * line,
   if (verbose) {
     printf("Opening vrpn_LUDL_USBMAC6000 as device %s\n", s2);
   }
-  if ( (analogs[num_analogs] = new vrpn_LUDL_USBMAC6000(s2, connection, recenter == 0)) == NULL ) {
+  if ( (analogs[num_analogs] = new vrpn_LUDL_USBMAC6000(s2, connection, recenter != 0)) == NULL ) {
     fprintf(stderr,"Can't create new vrpn_LUDL_USBMAC6000\n");
      return -1;
   } else {
