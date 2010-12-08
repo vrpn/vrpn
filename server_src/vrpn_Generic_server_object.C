@@ -2767,11 +2767,11 @@ int vrpn_Generic_Server_Object::setup_DTrack (char* &pch, char* line, FILE* conf
 	char *s;
 	char sep[] = " ,\t,\n";
 	int  count = 0;
-	int dtrackPort;
+	int dtrackPort, isok;
 	float timeToReachJoy;
 	int nob, nof, nidbf;
 	int idbf[VRPN_GSO_MAX_TRACKERS];
-	bool actTracing;
+	bool actTracing, act3DOFout;
 
 	next();
 
@@ -2800,14 +2800,24 @@ int vrpn_Generic_Server_Object::setup_DTrack (char* &pch, char* line, FILE* conf
 	s2 = str[0];
 	dtrackPort = (int )strtol(str[1], &s, 0);
 
-	// tracing (optional; always last argument):
+	// tracing/3dof (optional; always last arguments):
 
 	actTracing = false;
+	act3DOFout = false;
 
-	if(count > 2){
+	isok = 1;
+	while(isok && count > 2){
+		isok = 0;
+
 		if(!strcmp(str[count-1], "-")){
 			actTracing = true;
 			count--;
+			isok = 1;
+		}
+		else if(!strcmp(str[count-1], "3d")){
+			act3DOFout = true;
+			count--;
+			isok = 1;
 		}
 	}
 
@@ -2872,7 +2882,7 @@ int vrpn_Generic_Server_Object::setup_DTrack (char* &pch, char* line, FILE* conf
 	}
 
 	if((DTracks[num_DTracks] = new vrpn_Tracker_DTrack(s2, connection, dtrackPort, timeToReachJoy,
-		                                                nob, nof, pidbf, actTracing)) == NULL)
+		                                                nob, nof, pidbf, act3DOFout, actTracing)) == NULL)
 	{
 		fprintf(stderr,"Can't create new vrpn_Tracker_DTrack\n");
 		return -1;
