@@ -834,7 +834,7 @@ bool vrpn_Tracker_DTrack::dtrack_receive(void)
 				return false;
 			}
 
-			if (n > act_marker.size()) {
+			if (static_cast<unsigned>(n) > act_marker.size()) {
 				act_marker.resize(n);
 			}
 

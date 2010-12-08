@@ -123,6 +123,9 @@ bool vrpn_LUDL_USBMAC6000::check_for_data(void)
     return false;
   }
 
+  // Let libusb handle any outstanding events
+  libusb_handle_events(_context);
+
   // Try to read as many characters as are left in the buffer from
   // the device.  Keep track of how many we get.
 
@@ -146,6 +149,9 @@ void vrpn_LUDL_USBMAC6000::mainloop()
   if (_device_handle == NULL) {
     return;
   }
+
+  // Let libusb handle any outstanding events
+  libusb_handle_events(_context);
 
   // If one of the axes is moving, check to see whether it has stopped.
   // If so, report its new position.
@@ -202,6 +208,9 @@ bool vrpn_LUDL_USBMAC6000::send_usbmac_command(unsigned device, unsigned command
     return false;
   }
 
+  // Let libusb handle any outstanding events
+  libusb_handle_events(_context);
+
   char msg[1024];
   sprintf(msg, "can %u %u %u %i\n", device, command, index, value);
   int len = strlen(msg);
@@ -252,9 +261,16 @@ bool vrpn_LUDL_USBMAC6000::recenter(void)
     return false;
   }
   printf("vrpn_LUDL_USBMAC6000::recenter(): Waiting for X-axis center\n");
-  vrpn_SleepMsecs(500); // Why sleep?
+  vrpn_SleepMsecs(500); // XXX Why sleep?
+
+  // Let libusb handle any outstanding events
+  libusb_handle_events(_context);
+
   flush_input_from_ludl();
-  while(ludl_axis_moving(1)) { vrpn_SleepMsecs(100); }
+  while(ludl_axis_moving(1)) {
+    vrpn_SleepMsecs(10);
+    libusb_handle_events(_context);
+  }
 
   // Send the command to record the value at the center of the X axis as
   // 694576 ticks (XXX magic number from where?)
@@ -271,9 +287,16 @@ bool vrpn_LUDL_USBMAC6000::recenter(void)
     return false;
   }
   printf("vrpn_LUDL_USBMAC6000::recenter(): Waiting for Y-axis center\n");
-  vrpn_SleepMsecs(500); // Why sleep?
+  vrpn_SleepMsecs(500); // XXX Why sleep?
+
+  // Let libusb handle any outstanding events
+  libusb_handle_events(_context);
+
   flush_input_from_ludl();
-  while(ludl_axis_moving(2)) { vrpn_SleepMsecs(100); }
+  while(ludl_axis_moving(2)) {
+    vrpn_SleepMsecs(10);
+    libusb_handle_events(_context);
+  }
 
   // Send the command to record the value at the center of the Y axis as
   // 1124201 ticks (XXX magic number from where?)
