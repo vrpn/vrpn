@@ -258,7 +258,7 @@ encode_to( char** buf, vrpn_int32& len ) const
 	{
 		fprintf( stderr, "vrpn_FunctionGenerator_channel::encode_to:  "
 				"insufficient buffer space given (got %d, wanted %lud).\n", 
-				len, sizeof( vrpn_FunctionGenerator_function::FunctionCode ) );
+				len, static_cast<unsigned long>(sizeof( vrpn_FunctionGenerator_function::FunctionCode )) );
 		fflush( stderr );
 		return -1;
 	}
@@ -280,7 +280,7 @@ decode_from( const char** buf, vrpn_int32& len )
 	{
 		fprintf( stderr, "vrpn_FunctionGenerator_channel::decode_from:  "
 				"insufficient buffer space given (got %d, wanted %lud).\n", 
-				len, sizeof( vrpn_FunctionGenerator_function::FunctionCode ) );
+				len, static_cast<unsigned long>(sizeof( vrpn_FunctionGenerator_function::FunctionCode )) );
 		fflush( stderr );
 		return -1;
 	}
@@ -1495,7 +1495,7 @@ encode_channel( char** buf, vrpn_int32& len, const vrpn_uint32 channelNum,
 		// at least encode the channel number.
 		fprintf( stderr, "vrpn_FunctionGenerator_Remote::encode_channel:  "
 				"couldn't buffer (got %d, wanted at least %lud).\n", 
-				len, sizeof( vrpn_int32) );
+				len, static_cast<unsigned long>(sizeof( vrpn_int32)) );
 		fflush( stderr );
 		return -1;
 	}
@@ -1532,7 +1532,7 @@ decode_channel( const char* buf, const vrpn_int32 len, vrpn_uint32& channelNum,
 		// at least decode the channel number.
 		fprintf( stderr, "vrpn_FunctionGenerator_Server::decode_channel:  "
 				"channel message payload error (got %d, wanted at least %lud).\n", 
-				len, sizeof( vrpn_int32) );
+				len, static_cast<unsigned long>(sizeof( vrpn_int32)) );
 		fflush( stderr );
 		return -1;
 	}
@@ -1581,7 +1581,7 @@ encode_channel_reply( char** buf, vrpn_int32& len, const vrpn_uint32 channelNum 
 		// at least encode the channel number.
 		fprintf( stderr, "vrpn_FunctionGenerator_Server::encode_channel_reply:  "
 				"insufficient buffer space given (got %d, wanted %lud).\n", 
-				len, sizeof( vrpn_uint32) );
+				len, static_cast<unsigned long>(sizeof( vrpn_uint32)) );
 		fflush( stderr );
 		return -1;
 	}
@@ -1617,7 +1617,7 @@ decode_channel_reply( const char* buf, const vrpn_int32 len, vrpn_uint32& channe
 		// at least decode the channel number.
 		fprintf( stderr, "vrpn_FunctionGenerator_Remote::decode_channel_reply:  "
 				"insufficient buffer space given (got %d, wanted %lud).\n", 
-				len, sizeof( vrpn_uint32) );
+				len, static_cast<unsigned long>(sizeof( vrpn_uint32)) );
 		fflush( stderr );
 		return -1;
 	}
@@ -1655,7 +1655,7 @@ encode_channel_request( char** buf, vrpn_int32& len, const vrpn_uint32 channelNu
 	{
 		fprintf( stderr, "vrpn_FunctionGenerator_Remote::encode_channel_request:  "
 				"channel message payload error (got %d, wanted at least %lud).\n", 
-				len, sizeof( vrpn_int32) );
+				len, static_cast<unsigned long>(sizeof( vrpn_int32)) );
 		fflush( stderr );
 		return -1;
 	}
@@ -1686,7 +1686,7 @@ decode_channel_request( const char* buf, const vrpn_int32 len, vrpn_uint32& chan
 		// at least encode the channel number.
 		fprintf( stderr, "vrpn_FunctionGenerator_Server::decode_channel_request:  "
 				"channel message payload error (got %d, wanted at least %lud).\n", 
-				len, sizeof( vrpn_int32) );
+				len, static_cast<unsigned long>(sizeof( vrpn_int32)) );
 		fflush( stderr );
 		return -1;
 	}
@@ -1713,7 +1713,7 @@ encode_sampleRate_request( char** buf, vrpn_int32& len, const vrpn_float32 sampl
 	{
 		fprintf( stderr, "vrpn_FunctionGenerator_Remote::encode_sampleRate_request:  "
 				"channel message payload error (got %d, wanted at least %lud).\n", 
-				len, sizeof( vrpn_float32) );
+				len, static_cast<unsigned long>(sizeof( vrpn_float32)) );
 		fflush( stderr );
 		return -1;
 	}
@@ -1741,7 +1741,7 @@ decode_sampleRate_request( const char* buf, const vrpn_int32 len, vrpn_float32& 
 	{
 		fprintf( stderr, "vrpn_FunctionGenerator_Server::decode_sampleRate_request:  "
 				"channel message payload error (got %d, wanted at least %lud).\n", 
-				len, sizeof( vrpn_float32) );
+				len, static_cast<unsigned long>(sizeof( vrpn_float32)) );
 		fflush( stderr );
 		return -1;
 	}
@@ -1768,7 +1768,7 @@ encode_start_reply( char** buf, vrpn_int32& len, const vrpn_bool isStarted )
 	{
 		fprintf( stderr, "vrpn_FunctionGenerator_Server::encode_start_reply:  "
 				"insufficient buffer space given (got %d, wanted %lud).\n", 
-				len, sizeof( vrpn_bool) );
+				len, static_cast<unsigned long>(sizeof( vrpn_bool)) );
 		fflush( stderr );
 		return -1;
 	}
@@ -1787,7 +1787,7 @@ decode_start_reply( const char* buf, const vrpn_int32 len, vrpn_bool& isStarted 
 	{
 		fprintf( stderr, "vrpn_FunctionGenerator_Remote::decode_start_reply:  "
 				"insufficient buffer space given (got %d, wanted %lud).\n", 
-				len, sizeof( vrpn_bool) );
+				len, static_cast<unsigned long>(sizeof( vrpn_bool)) );
 		fflush( stderr );
 		return -1;
 	}
@@ -1814,7 +1814,7 @@ encode_stop_reply( char** buf, vrpn_int32& len, const vrpn_bool isStopped )
 	{
 		fprintf( stderr, "vrpn_FunctionGenerator_Server::encode_stop_reply:  "
 				"insufficient buffer space given (got %d, wanted %lud).\n", 
-				len, sizeof( vrpn_bool) );
+				len, static_cast<unsigned long>(sizeof( vrpn_bool)) );
 		fflush( stderr );
 		return -1;
 	}
@@ -1833,7 +1833,7 @@ decode_stop_reply( const char* buf, const vrpn_int32 len, vrpn_bool& isStopped )
 	{
 		fprintf( stderr, "vrpn_FunctionGenerator_Remote::decode_stop_reply:  "
 				"insufficient buffer space given (got %d, wanted %lud).\n", 
-				len, sizeof( vrpn_bool) );
+				len, static_cast<unsigned long>(sizeof( vrpn_bool)) );
 		fflush( stderr );
 		return -1;
 	}
@@ -1859,7 +1859,7 @@ encode_sampleRate_reply( char** buf, vrpn_int32& len, const vrpn_float32 sampleR
 	{
 		fprintf( stderr, "vrpn_FunctionGenerator_Server::encode_sampleRate_reply:  "
 				"insufficient buffer space given (got %d, wanted %lud).\n", 
-				len, sizeof( vrpn_float32) );
+				len, static_cast<unsigned long>(sizeof( vrpn_float32)) );
 		fflush( stderr );
 		return -1;
 	}
@@ -1878,7 +1878,7 @@ decode_sampleRate_reply( const char* buf, const vrpn_int32 len )
 	{
 		fprintf( stderr, "vrpn_FunctionGenerator_Remote::decode_sampleRate_reply:  "
 				"insufficient buffer space given (got %d, wanted %lud).\n", 
-				len, sizeof( vrpn_float32) );
+				len, static_cast<unsigned long>(sizeof( vrpn_float32)) );
 		fflush( stderr );
 		return -1;
 	}
@@ -1907,7 +1907,7 @@ encode_interpreterDescription_reply( char** buf, vrpn_int32& len, const char* de
 	{
 		fprintf( stderr, "vrpn_FunctionGenerator_Server::encode_interpreterDescription_reply:  "
 				"insufficient buffer space given (got %d, wanted %lud).\n", 
-				len, dlength + sizeof( vrpn_int32 ) );
+				len, dlength + static_cast<unsigned long>(sizeof( vrpn_int32 )) );
 		fflush( stderr );
 		return -1;
 	}
@@ -1934,7 +1934,7 @@ decode_interpreterDescription_reply( const char* buf, const vrpn_int32 len, char
 	{
 		fprintf( stderr, "vrpn_FunctionGenerator_Remote::decode_interpreterDescription_reply:  "
 				"insufficient buffer space given (got %d, wanted at least %lud).\n", 
-				len, sizeof( vrpn_int32) );
+				len, static_cast<unsigned long>(sizeof( vrpn_int32)) );
 		fflush( stderr );
 		return -1;
 	}
@@ -1964,7 +1964,7 @@ encode_error_report( char** buf, vrpn_int32& len, const FGError error, const vrp
 	{
 		fprintf( stderr, "vrpn_FunctionGenerator_Server::encode_error_report:  "
 				"insufficient buffer space given (got %d, wanted %lud).\n", 
-				len, sizeof( FGError) + sizeof( vrpn_int32 ) );
+				len, static_cast<unsigned long>(sizeof( FGError) + sizeof( vrpn_int32 )) );
 		fflush( stderr );
 		return -1;
 	}
@@ -1992,7 +1992,7 @@ decode_error_reply( const char* buf, const vrpn_int32 len, FGError& error, vrpn_
 	{
 		fprintf( stderr, "vrpn_FunctionGenerator_Remote::decode_error_reply:  "
 				"insufficient buffer space given (got %d, wanted %lud).\n", 
-				len, sizeof( FGError) + sizeof( vrpn_int32 ) );
+				len, static_cast<unsigned long>(sizeof( FGError) + sizeof( vrpn_int32 )) );
 		fflush( stderr );
 		return -1;
 	}

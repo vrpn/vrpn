@@ -6,9 +6,10 @@
 // (07/20/2004) improved by Advanced Realtime Tracking GmbH (http://www.ar-tracking.de)
 // (07/02/2007, 06/29/2009) upgraded by Advanced Realtime Tracking GmbH to support new devices
 // (08/25/2010) a correction added by Advanced Realtime Tracking GmbH
+// (12/01/2010) support of 3dof objects added by Advanced Realtime Tracking GmbH
 //
 // Recommended settings within DTrack's 'Settings / Network' or DTrack2's 'Settings / Output' dialog:
-//   'ts', '6d', '6df' or '6df2', '6dcal'
+//   'ts', '6d', '6df' or '6df2', '6dcal', '3d' (optional)
 
 /* Configuration file:
 
@@ -31,6 +32,8 @@
 #  float time_to_reach_joy                      (in seconds; see below)
 #  int   number_of_bodies, number_of_flysticks  (fixed numbers of bodies and Flysticks)
 #  int   renumbered_ids[]                       (vrpn_Tracker IDs of bodies and Flysticks)
+#  char  "3d"                                   (activates 3dof marker output if available;
+#                                                always last argument if "-" is not present)
 #  char  "-"                                    (activates tracing; always last argument)
 #
 # NOTE: time_to_reach_joy is the time needed to reach the maximum value (1.0 or -1.0) of the
@@ -45,9 +48,13 @@
 #       Flysticks are set; there has to be an argument present for each body/Flystick
 
 #vrpn_Tracker_DTrack DTrack  5000
+#vrpn_Tracker_DTrack DTrack  5000  -
+#vrpn_Tracker_DTrack DTrack  5000  3d
+#vrpn_Tracker_DTrack DTrack  5000  3d  -
 #vrpn_Tracker_DTrack DTrack  5000  0.5
 #vrpn_Tracker_DTrack DTrack  5000  0.5  2 2
 #vrpn_Tracker_DTrack DTrack  5000  0.5  2 2  2 1 0 3
+#vrpn_Tracker_DTrack DTrack  5000  0.5  2 2  2 1 0 3  3d  -
 
 ################################################################################
 */
@@ -129,7 +136,7 @@ static int udp_receive(vrpn_Tracker_DTrack::socket_type sock, void *buffer, int 
 vrpn_Tracker_DTrack::vrpn_Tracker_DTrack(const char *name, vrpn_Connection *c, 
 	                                      int dtrackPort, float timeToReachJoy,
 	                                      int fixNbody, int fixNflystick, int* fixId,
-	                                      bool actTracing) :
+	                                      bool act3DOFout, bool actTracing) :
 	vrpn_Tracker(name, c),	  
 	vrpn_Button(name, c),
 	vrpn_Analog(name, c)
@@ -144,7 +151,7 @@ vrpn_Tracker_DTrack::vrpn_Tracker_DTrack(const char *name, vrpn_Connection *c,
 	num_buttons = 0;
 	
 	// init variables: general
-
+	output_3dof_marker = act3DOFout;
 	tracing = actTracing;
 	tracing_frames = 0;
 
@@ -357,6 +364,14 @@ void vrpn_Tracker_DTrack::mainloop()
 		}
 	}
 	
+	if (output_3dof_marker) {
+		int offset = num_sensors;
+		num_sensors += act_num_marker;
+		for(i=0; i<act_num_marker; i++){       // DTrack 3dof marker
+			dtrack2vrpn_marker(offset + i, "m", act_marker[i].id, act_marker[i].loc, timestamp);
+		}
+	}
+
 	// finish main loop:
 
 	vrpn_Analog::report_changes();       // report any analog event;
@@ -381,6 +396,55 @@ static double duration_sec(struct timeval t1, struct timeval t2)
 // ---------------------------------------------------------------------------------------------------
 // Preparing data for VRPN:
 // these functions convert DTrack data to vrpn data
+
+// Preparing marker data:
+// id (i): VRPN body ID
+// str_dtrack (i): DTrack marker name (just used for trace output)
+// id_dtrack (i): DTrack marker ID (just used for trace output)
+// loc (i): position
+// timestamp (i): timestamp for body data
+// return value (o): 0 ok, -1 error
+
+int vrpn_Tracker_DTrack::dtrack2vrpn_marker(int id, const char* str_dtrack, int id_dtrack,
+                                          const float* loc, struct timeval timestamp)
+{
+
+	d_sensor = id;
+	
+	// position (plus converting to unit meter):
+	  
+	pos[0] = loc[0] / 1000.;
+	pos[1] = loc[1] / 1000.;
+	pos[2] = loc[2] / 1000.;
+
+	// orientation: none
+
+	q_make(d_quat, 1, 0, 0, 0);
+	
+	// pack and deliver tracker report:
+
+	if(d_connection){
+		char msgbuf[1000];
+		int len = vrpn_Tracker::encode_to(msgbuf);
+		
+		if(d_connection->pack_message(len, timestamp, position_m_id, d_sender_id, msgbuf,
+		                              vrpn_CONNECTION_LOW_LATENCY))
+		{
+			fprintf(stderr, "vrpn_Tracker_DTrack: cannot write message: tossing.\n");
+		}
+	}
+
+	// tracing:
+
+	if(tracing && ((tracing_frames % 10) == 0)){
+			
+		printf("marker id (DTrack vrpn): %s%d %d  pos (x y z): %.4f %.4f %.4f\n",
+			str_dtrack, id_dtrack, id, pos[0], pos[1], pos[2]);
+	}
+
+	return 0;
+}
+
 
 // Preparing body data:
 // id (i): VRPN body ID
@@ -639,7 +703,7 @@ bool vrpn_Tracker_DTrack::dtrack_init(int udpport)
 	act_framecounter = 0;
 	act_timestamp = -1;
 
-	act_num_body = act_num_flystick = 0;
+	act_num_marker = act_num_body = act_num_flystick = 0;
 	act_has_bodycal_format = false;
 	act_has_old_flystick_format = false;
 
@@ -755,6 +819,37 @@ bool vrpn_Tracker_DTrack::dtrack_receive(void)
 
 			if(!(s = string_get_i(s, &loc_num_bodycal))){  // get number of calibrated bodies
 				return false;
+			}
+
+			continue;
+		}
+
+		// line for 3dof marker data:
+
+		if(!strncmp(s, "3d ", 3)){
+			s += 3;
+			act_num_marker = 0;
+
+			if(!(s = string_get_i(s, &n))){               // get number of standard bodies (in line)
+				return false;
+			}
+
+			if (static_cast<unsigned>(n) > act_marker.size()) {
+				act_marker.resize(n);
+			}
+
+			for(i=0; i<n; i++){                           // get data of standard bodies
+				if(!(s = string_get_block(s, "if", &id, &f))){
+					return false;
+				}
+
+				act_marker[act_num_marker].id = id;
+
+				if(!(s = string_get_block(s, "fff", NULL, act_marker[act_num_marker].loc))){
+					return false;
+				}
+
+				act_num_marker++;
 			}
 
 			continue;

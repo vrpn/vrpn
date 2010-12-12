@@ -2767,11 +2767,11 @@ int vrpn_Generic_Server_Object::setup_DTrack (char* &pch, char* line, FILE* conf
 	char *s;
 	char sep[] = " ,\t,\n";
 	int  count = 0;
-	int dtrackPort;
+	int dtrackPort, isok;
 	float timeToReachJoy;
 	int nob, nof, nidbf;
 	int idbf[VRPN_GSO_MAX_TRACKERS];
-	bool actTracing;
+	bool actTracing, act3DOFout;
 
 	next();
 
@@ -2800,14 +2800,24 @@ int vrpn_Generic_Server_Object::setup_DTrack (char* &pch, char* line, FILE* conf
 	s2 = str[0];
 	dtrackPort = (int )strtol(str[1], &s, 0);
 
-	// tracing (optional; always last argument):
+	// tracing/3dof (optional; always last arguments):
 
 	actTracing = false;
+	act3DOFout = false;
 
-	if(count > 2){
+	isok = 1;
+	while(isok && count > 2){
+		isok = 0;
+
 		if(!strcmp(str[count-1], "-")){
 			actTracing = true;
 			count--;
+			isok = 1;
+		}
+		else if(!strcmp(str[count-1], "3d")){
+			act3DOFout = true;
+			count--;
+			isok = 1;
 		}
 	}
 
@@ -2872,7 +2882,7 @@ int vrpn_Generic_Server_Object::setup_DTrack (char* &pch, char* line, FILE* conf
 	}
 
 	if((DTracks[num_DTracks] = new vrpn_Tracker_DTrack(s2, connection, dtrackPort, timeToReachJoy,
-		                                                nob, nof, pidbf, actTracing)) == NULL)
+		                                                nob, nof, pidbf, act3DOFout, actTracing)) == NULL)
 	{
 		fprintf(stderr,"Can't create new vrpn_Tracker_DTrack\n");
 		return -1;
@@ -3584,7 +3594,10 @@ int vrpn_Generic_Server_Object::setup_Tracker_NDI_Polaris (char * & pch, char * 
 	//parse the filename for each rigid body
 	int rbNum;
 	for (rbNum=0; rbNum<numRigidBodies; rbNum++ ) {
-		fgets(line, LINESIZE, config_file); //advance to next line of config file
+		if (fgets(line, LINESIZE, config_file) == NULL) { //advance to next line of config file
+		    perror("NDI_Polaris RigidBody can't read line!");
+		    return -1;
+		}
 		rigidBodyFileNames[rbNum]= new char[LINESIZE]; //allocate string for filename
 		if (sscanf(line,"%s", rigidBodyFileNames[rbNum])!=1) {
 			fprintf(stderr,"Tracker_NDI_Polaris: error reading .rom filename #%d from config file in line: %s\n",rbNum,line);
@@ -3726,7 +3739,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_WiimoteHead(char * & pch, char * l
 	next();
 
 	// Get the arguments (tracker_name, wiimote_name, min_update_rate, led_distance)
-	if ( (numparms = sscanf(pch,"%511s%511s%d%f",s2,s3,&f1,&f2)) < 2)
+	if ( (numparms = sscanf(pch,"%511s%511s%f%f",s2,s3,&f1,&f2)) < 2)
 	{
 		fprintf(stderr,"Bad vrpn_Tracker_WiimoteHead line: %s\n%s %s %s %f %f\n", line, pch, s2, s3, f1, f2);
 		return -1;
@@ -3794,7 +3807,8 @@ int vrpn_Generic_Server_Object::setup_Freespace(char * & pch, char * line, FILE 
 }
 
 int vrpn_Generic_Server_Object::setup_Xkeys_Desktop(char * & pch, char * line, FILE * config_file) {
-#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__) || defined(VRPN_USE_LIBHID)
+#if defined(VRPN_USE_HID)
+
   char s2 [LINESIZE];
 
   next();
@@ -3828,7 +3842,8 @@ int vrpn_Generic_Server_Object::setup_Xkeys_Desktop(char * & pch, char * line, F
 }
 
 int vrpn_Generic_Server_Object::setup_Xkeys_Pro(char * & pch, char * line, FILE * config_file) {
-#ifdef _WIN32
+#if defined(VRPN_USE_HID)
+
   char s2 [LINESIZE];
 
   next();
@@ -3862,7 +3877,8 @@ int vrpn_Generic_Server_Object::setup_Xkeys_Pro(char * & pch, char * line, FILE 
 }
 
 int vrpn_Generic_Server_Object::setup_Xkeys_Joystick(char * & pch, char * line, FILE * config_file) {
-#ifdef _WIN32
+#if defined(VRPN_USE_HID)
+
   char s2 [LINESIZE];
 
   next();
@@ -3896,7 +3912,8 @@ int vrpn_Generic_Server_Object::setup_Xkeys_Joystick(char * & pch, char * line, 
 }
 
 int vrpn_Generic_Server_Object::setup_Xkeys_Jog_And_Shuttle(char * & pch, char * line, FILE * config_file) {
-#ifdef _WIN32
+#if defined(VRPN_USE_HID)
+
   char s2 [LINESIZE];
 
   next();
@@ -4130,7 +4147,7 @@ int vrpn_Generic_Server_Object::setup_DreamCheeky(char * & pch, char * line, FIL
     return -1;
   }
 
-#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__) || defined(VRPN_USE_LIBHID)
+#if defined(VRPN_USE_HID)
 
   // Open the DreamCheeky
   // Make sure there's room for a new button
@@ -4208,7 +4225,7 @@ int vrpn_Generic_Server_Object::setup_LUDL_USBMAC6000(char * & pch, char * line,
     return -1;
   }
 
-#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__) || defined(VRPN_USE_LIBHID)
+#if defined(VRPN_USE_HID)
 
   // Open the LUDL_USBMAC6000
   // Make sure there's room for a new button
@@ -4221,7 +4238,7 @@ int vrpn_Generic_Server_Object::setup_LUDL_USBMAC6000(char * & pch, char * line,
   if (verbose) {
     printf("Opening vrpn_LUDL_USBMAC6000 as device %s\n", s2);
   }
-  if ( (analogs[num_analogs] = new vrpn_LUDL_USBMAC6000(s2, connection, recenter == 0)) == NULL ) {
+  if ( (analogs[num_analogs] = new vrpn_LUDL_USBMAC6000(s2, connection, recenter != 0)) == NULL ) {
     fprintf(stderr,"Can't create new vrpn_LUDL_USBMAC6000\n");
      return -1;
   } else {

@@ -6,6 +6,7 @@
 // (07/20/2004) improved by Advanced Realtime Tracking GmbH (http://www.ar-tracking.de)
 // (07/02/2007, 06/29/2009) upgraded by Advanced Realtime Tracking GmbH to support new devices
 // (08/25/2010) a correction added by Advanced Realtime Tracking GmbH
+// (12/01/2010) support of 3dof objects added by Advanced Realtime Tracking GmbH
 
 #ifndef VRPN_TRACKER_DTRACK_H
 #define VRPN_TRACKER_DTRACK_H
@@ -24,6 +25,13 @@
 
 // --------------------------------------------------------------------------
 // Data types:
+
+// Standard marker data (3DOF):
+
+typedef struct{
+	int id;               // id number (starting with 0)
+	float loc[3];         // location (in mm)
+} vrpn_dtrack_marker_type;
 
 // Standard body data (6DOF):
 //  - currently not tracked bodies are getting a quality of -1
@@ -80,12 +88,13 @@ class VRPN_API vrpn_Tracker_DTrack : public vrpn_Tracker, public vrpn_Button, pu
 // timeToReachJoy (i): time needed to reach the maximum value of the joystick
 // fixNbody, fixNflystick (i): fixed numbers of DTrack bodies and Flysticks (-1 if not wanted)
 // fixId (i): renumbering of targets; must have exact (fixNbody + fixNflystick) elements (NULL if not wanted)
+// act3DOFout (i): activate 3dof marker output if present
 // actTracing (i): activate trace output
 
 	vrpn_Tracker_DTrack(const char *name, vrpn_Connection *c,
 	                    int dtrackPort, float timeToReachJoy = 0.f,
 	                    int fixNbody = -1, int fixNflystick = -1, int* fixId = NULL,
-	                    bool actTracing = false);
+	                    bool act3DOFout = false, bool actTracing = false);
 
 	~vrpn_Tracker_DTrack();
 
@@ -124,7 +133,9 @@ class VRPN_API vrpn_Tracker_DTrack : public vrpn_Tracker, public vrpn_Button, pu
 	std::vector<bool> joy_simulate;  // simulate time varying floating values
 	std::vector<float> joy_last;     // current value of 'joystick' channel (hor, ver)
 	float joy_incPerSec;             // increase of 'joystick' channel (in 1/sec)
-	
+
+	int dtrack2vrpn_marker(int id, const char* str_dtrack, int id_dtrack,
+	                     const float* loc, struct timeval timestamp);
 	int dtrack2vrpn_body(int id, const char* str_dtrack, int id_dtrack,
 	                     const float* loc, const float* rot, struct timeval timestamp);
 	int dtrack2vrpn_flystickbuttons(int id, int id_dtrack,
@@ -144,6 +155,10 @@ class VRPN_API vrpn_Tracker_DTrack : public vrpn_Tracker, public vrpn_Button, pu
 	unsigned int act_framecounter;                   // frame counter
 	double act_timestamp;                            // time stamp
 	
+	bool output_3dof_marker;                         // 3dof marker output if available
+	int act_num_marker;                              // number of 3dof marker (due to '3d' line)
+	std::vector<vrpn_dtrack_marker_type> act_marker; // array containing 3dof marker data
+
 	int act_num_body;                                // number of calibrated standard bodies (due to '6d' line)
 	std::vector<vrpn_dtrack_body_type> act_body;     // array containing standard body data
 	bool act_has_bodycal_format;                     // DTrack sent '6dcal' format

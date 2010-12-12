@@ -1,22 +1,19 @@
+// Device drivers for the LUDL family of translation stage controllers.
+// The only device currently implemented is the USBMAC6000 controller in its
+// two-axis configuration controlling the stage for the Panoptes system
+// at UNC Chapel Hill.
+
 #ifndef VRPN_LUDL_H
 #define VRPN_LUDL_H
 
-#include "vrpn_HumanInterface.h"
 #include "vrpn_Analog.h"
 #include "vrpn_Analog_Output.h"
 
-#if defined(_WIN32) || defined(__CYGWIN__) || defined(__APPLE__) || defined(VRPN_USE_LIBHID)
+#if defined(VRPN_USE_LIBUSB_1_0)
+#include <libusb/libusb.h>
 
-// Device drivers for the LUDL family of translation stage controllers.
-// XXX Problem: This device is not a HID device, even though it is USB.
-// This means that the device is not detected as part of the HID device
-// identification, so we can't control it using the HID interface.  We'll
-// need to write a lower-level USB driver for it.
-
-// The only device currently implemented is the USBMAC6000 controller in its
-// two-axis configuration controlling the stage for the Panoptes system
-// at UNC Chapel Hill.  This driver uses the vrpn_HumanInterface driver (HID
-// interface) to control the device.  It exposes the vrpn_Analog and the
+// This driver uses the VRPN-preferred LibUSB-1.0 to control the device.
+// It exposes the vrpn_Analog and the
 // vrpn_Analog_Output interfaces, to report and set the stage position.
 //
 // Analog/Analog_Output channel 0 is X (0 to maximum #ticks, in ticks).
@@ -24,8 +21,7 @@
 
 class vrpn_LUDL_USBMAC6000 :
   public vrpn_Analog, 
-  public vrpn_Analog_Output,
-  protected vrpn_HidInterface
+  public vrpn_Analog_Output
 {
 public:
   vrpn_LUDL_USBMAC6000(const char *name, vrpn_Connection *c = 0, bool do_recenter = false);
@@ -34,21 +30,18 @@ public:
   virtual void mainloop();
 
 protected:
+  struct libusb_context       *_context;          // LibUSB context used for this device
+  struct libusb_device_handle *_device_handle;    // Handle for the USB device
   struct timeval _timestamp;
-  vrpn_HidAcceptor *_filter;
   unsigned  _endpoint;        // Which endpoint to use to communicate with the device
 
-  // When we get data, we store it into a growing buffer.  Once we've stopped
-  // getting data, we call the parse routine on the buffer.  The data-received
-  // function adds it onto the end of the buffer, dropping characters if it
-  // overflows.  The interpret function reads the characters in the buffer and
-  // handles them.  The interpret function reads one ASCII response from the
-  // buffer and reports the value that it returned; it does not adjust the
-  // buffer pointer.
+  // Buffer to store incoming data from the device and count of how many characters
+  // we got.  Function to check and read any incoming data (and set _incount).
+  // Function to parse accumulated data.
   static const unsigned _INBUFFER_SIZE = 1024;
   vrpn_uint8 _inbuffer[_INBUFFER_SIZE]; // MUST CHANGE the sizeof() code if this becomes not an array.
   unsigned _incount;
-  void on_data_received(size_t bytes, vrpn_uint8 *buffer);
+  bool check_for_data();  // False if error.  True even if no data.
   bool interpret_usbmac_ascii_response(const vrpn_uint8 *buffer, int *value_return);
 
   // XXX I think we're using ASCII send and response because Ryan had some kind of trouble

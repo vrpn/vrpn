@@ -1356,7 +1356,7 @@ int vrpn_Tracker_Remote::handle_change_message(void *userdata,
 	if (p.payload_len != (8*sizeof(vrpn_float64)) ) {
 		fprintf(stderr,"vrpn_Tracker: change message payload error\n");
 		fprintf(stderr,"             (got %d, expected %lud)\n",
-			p.payload_len, 8*sizeof(vrpn_float64) );
+			p.payload_len, static_cast<unsigned long>(8*sizeof(vrpn_float64)) );
 		return -1;
 	}
 	tp.msg_time = p.msg_time;
@@ -1401,7 +1401,7 @@ int vrpn_Tracker_Remote::handle_vel_change_message(void *userdata,
 	if (p.payload_len != (9*sizeof(vrpn_float64)) ) {
 		fprintf(stderr,"vrpn_Tracker: vel message payload error\n");
 		fprintf(stderr,"             (got %d, expected %lud)\n",
-			p.payload_len, 9*sizeof(vrpn_float64) );
+			p.payload_len, static_cast<unsigned long>(9*sizeof(vrpn_float64)) );
 		return -1;
 	}
 	tp.msg_time = p.msg_time;
@@ -1445,7 +1445,7 @@ int vrpn_Tracker_Remote::handle_acc_change_message(void *userdata,
 	if (p.payload_len != (9*sizeof(vrpn_float64)) ) {
 		fprintf(stderr, "vrpn_Tracker: acc message payload error\n");
 		fprintf(stderr, "(got %d, expected %lud)\n",
-			p.payload_len, 9*sizeof(vrpn_float64) );
+			p.payload_len, static_cast<unsigned long>(9*sizeof(vrpn_float64)) );
 		return -1;
 	}
 	tp.msg_time = p.msg_time;
@@ -1489,7 +1489,7 @@ int vrpn_Tracker_Remote::handle_unit2sensor_change_message(void *userdata,
         if (p.payload_len != (8*sizeof(vrpn_float64))) {
                 fprintf(stderr, "vrpn_Tracker: unit2sensor message payload");
                 fprintf(stderr, " error\n(got %d, expected %lud)\n",
-                        p.payload_len, 8*sizeof(vrpn_float64));
+                        p.payload_len, static_cast<unsigned long>(8*sizeof(vrpn_float64)));
                 return -1;
         }
         tp.msg_time = p.msg_time;
@@ -1533,7 +1533,7 @@ int vrpn_Tracker_Remote::handle_tracker2room_change_message(void *userdata,
 	if (p.payload_len != (7*sizeof(vrpn_float64))) {
 		fprintf(stderr, "vrpn_Tracker: tracker2room message payload");
 		fprintf(stderr, " error\n(got %d, expected %lud)\n",
-			p.payload_len, 7*sizeof(vrpn_float64));
+			p.payload_len, static_cast<unsigned long>(7*sizeof(vrpn_float64)));
 		return -1;
 	}
 	tp.msg_time = p.msg_time;
@@ -1564,7 +1564,7 @@ int vrpn_Tracker_Remote::handle_workspace_change_message(void *userdata,
 	if (p.payload_len != (6*sizeof(vrpn_float64))) {
 		fprintf(stderr, "vrpn_Tracker: tracker2room message payload");
 		fprintf(stderr, " error\n(got %d, expected %lud)\n",
-			p.payload_len, 6*sizeof(vrpn_float64));
+			p.payload_len, static_cast<unsigned long>(6*sizeof(vrpn_float64)));
 		return -1;
 	}
 	tp.msg_time = p.msg_time;

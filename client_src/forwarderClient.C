@@ -41,12 +41,15 @@ int main (int argc, char ** argv) {
          "  open <port>\n"
          "  forward <port> \"<service name>\" \"<message type>\"\n");
   do {
-    fgets(ib, 1000, stdin);
-fprintf(stderr, "Got:  >%s<\n", ib);
+    if (fgets(ib, 1000, stdin) == NULL) {
+	perror("Could not read line");
+	return -1;
+    }
+    fprintf(stderr, "Got:  >%s<\n", ib);
     if (!strncmp(ib, "open", 4)) {
       port = atoi(ib + 5);
       controller->start_remote_forwarding(port);
-fprintf(stderr, "Opening %d.\n", port);
+      fprintf(stderr, "Opening %d.\n", port);
     }
     if (!strncmp(ib, "forward", 7)) {
       port = atoi(ib + 8);

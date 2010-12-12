@@ -90,6 +90,7 @@ include_directories(${VRPN_SOURCE_DIR}
 	${VRPN_SOURCE_DIR}/atmellib
 	${VRPN_SOURCE_DIR}/quat)
 
+
 #-----------------------------------------------------------------------------
 # Libraries we need to do our thing.
 #
@@ -145,17 +146,24 @@ find_package(PythonLibs)
 find_package(MPI)
 if(MPI_FOUND)
 	# XXX Safe to enable by default if we find it?
-	#option(vrpn_USE_MPI "Build with MPI support" ON)
+	#option(VRPN_USE_MPI "Build with MPI support" ON)
 endif()
 
-if(vrpn_USE_MPI)
+if(VRPN_USE_MPI)
 	if(NOT MPI_FOUND)
-		message(FATAL_ERROR "ERROR: vrpn_USE_MPI set but MPI not found!")
+		message(FATAL_ERROR "ERROR: VRPN_USE_MPI set but MPI not found!")
 	endif()
 	# XXX what else needs to be done here?
 	add_definitions(${MPI_COMPILE_FLAGS})
 	include_directories(${MPI_INCLUDE_PATH})
 	list(APPEND EXTRA_LIBS ${MPI_LIBRARIES})
+endif()
+
+###
+# If we're using the local HIDAPI library
+###
+if(VRPN_USE_LOCAL_HIDAPI)
+	include_directories(${VRPN_SOURCE_DIR}/submodules/hidapi/hidapi /usr/include/libusb-1.0)
 endif()
 
 ###
@@ -324,6 +332,24 @@ option(VRPN_USE_FREESPACE
 option(VRPN_USE_LIBNIFALCON
 	"Build with support for Novint Falcon devices through libnifalcon"
 	OFF)
+option(VRPN_USE_TRIVISIOCOLIBRI
+	"Build with support for TrivisioColibri tracker"
+	OFF)
+if(WIN32 OR APPLE)
+	option(VRPN_USE_HID
+		"Build with support for HID devices using HIDAPI"
+		ON)
+	option(VRPN_USE_LOCAL_HIDAPI
+		"Build with HIDAPI code from within VRPN source directory"
+		ON)
+else()
+	option(VRPN_USE_HID
+		"Build with support for HID devices using HIDAPI"
+		OFF)
+	option(VRPN_USE_LOCAL_HIDAPI
+		"Build with HIDAPI code from within VRPN source directory"
+		OFF)
+endif()
 option(VRPN_BUILD_EXTRA_COMPILER_WARNINGS
 	"Build with flags to enable extra warnings."
 	OFF)
@@ -347,7 +373,7 @@ elseif(UNIX)
 		OFF)
 endif()
 
-#option(vrpn_USE_MPI "Build with MPI support" OFF)
+#option(VRPN_USE_MPI "Build with MPI support" OFF)
 
 if(VRPN_BUILD_EXTRA_COMPILER_WARNINGS)
 	include(EnableExtraCompilerWarnings)
@@ -483,6 +509,23 @@ set(VRPN_SERVER_SOURCES
 	vrpn_XInputGamepad.C
 	vrpn_Xkeys.C
 	vrpn_Zaber.C)
+
+if(VRPN_USE_LOCAL_HIDAPI)
+  if(APPLE)
+    set(VRPN_SERVER_SOURCES
+	${VRPN_SERVER_SOURCES}
+	submodules/hidapi/mac/hid.c)
+  elseif (CMAKE_SYSTEM_NAME MATCHES Linux)
+    set(VRPN_SERVER_SOURCES
+	${VRPN_SERVER_SOURCES}
+	vrpn_HIDAPI_Linux_Hack.c)
+    list(APPEND EXTRA_LIBS usb-1.0)
+  else()
+    set(VRPN_SERVER_SOURCES
+	${VRPN_SERVER_SOURCES}
+	vrpn_Local_HIDAPI.C)
+  endif()
+endif()
 
 set(VRPN_SERVER_PUBLIC_HEADERS
 	${VRPN_CLIENT_PUBLIC_HEADERS}
