@@ -39,6 +39,17 @@ public:
 #define min(x,y) ((x)<(y)?(x):(y))
 #endif
 
+#if defined (vrpn_THREADS_AVAILABLE)
+struct vrpn_WiiMote_SharedData {
+	vrpn_WiiMote_SharedData(vrpn_WiiMote* wm)
+	 : connectLock(), wmHandle(wm), msgLock() 
+	 {}
+	vrpn_Semaphore connectLock;
+	vrpn_WiiMote *wmHandle;
+	vrpn_Semaphore msgLock;
+};
+#endif
+
 unsigned vrpn_WiiMote::map_button(unsigned btn)
 {
 	switch (btn)
@@ -53,6 +64,10 @@ unsigned vrpn_WiiMote::map_button(unsigned btn)
 			return 3;
 		case 4: //WIIMOTE_BUTTON_MINUS:
 			return 5;
+		case 5: //WIIMOTE_BUTTON_ZACCEL_BIT6
+			return 13;
+		case 6: //WIIMOTE_BUTTON_ZACCEL_BIT7
+			return 14;
 		case 7: //WIIMOTE_BUTTON_HOME:
 			return 0;
 		case 8: //WIIMOTE_BUTTON_LEFT:
@@ -65,7 +80,16 @@ unsigned vrpn_WiiMote::map_button(unsigned btn)
 			return 10;
 		case 12: //WIIMOTE_BUTTON_PLUS:
 			return 6;
+		case 13: //WIIMOTE_BUTTON_ZACCEL_BIT4
+			return 11;
+		case 14: //WIIMOTE_BUTTON_ZACCEL_BIT5
+			return 12;
+		case 15: //WIIMOTE_BUTTON_UNKNOWN
+			return 15;
 		default:
+#ifdef DEBUG
+			fprintf(stderr, "WiiMote: unhandled button %d\n",btn);
+#endif
 			return btn;
 	}
 }
@@ -203,15 +227,21 @@ void vrpn_WiiMote::connect_wiimote(int timeout)
 {
 	struct timeval now;
 	char msg[1024];
-	// TODO: use this function in place of the initial connect code!
 
 	wiimote->device = NULL;
 	unsigned num_available = wiiuse_find(available_wiimotes, VRPN_WIIUSE_MAX_WIIMOTES, timeout);
 	wiimote->device = wiiuse_get_by_id(available_wiimotes, VRPN_WIIUSE_MAX_WIIMOTES, wiimote->which);
 	if (! wiimote->device ) {
+#if defined (vrpn_THREADS_AVAILABLE)
+                // altering server state needs to be synced with server main loop!
+                sharedData->msgLock.p();
+#endif
 		vrpn_gettimeofday(&now, NULL);
 		sprintf(msg, "Could not open remote %d (%d found)", wiimote->which, num_available);
 		send_text_message(msg, now, vrpn_TEXT_ERROR);
+#if defined (vrpn_THREADS_AVAILABLE)
+                sharedData->msgLock.v();
+#endif
 		wiimote->found = false;
 	} else {
 		wiimote->found = true;
@@ -222,18 +252,32 @@ void vrpn_WiiMote::connect_wiimote(int timeout)
 	selected_one[0] = wiimote->device;
 	wiimote->connected = (wiiuse_connect(selected_one, 1) != 0);
 	if (wiimote->connected) {
+#if defined (vrpn_THREADS_AVAILABLE)
+		// altering server state needs to be synced with server main loop!
+		sharedData->msgLock.p();
+#endif
 		vrpn_gettimeofday(&now, NULL);
 		sprintf(msg, "Connected to remote %d", wiimote->which);
 		send_text_message(msg, now);
+#if defined (vrpn_THREADS_AVAILABLE)
+		sharedData->msgLock.v();
+#endif
 
 		// rumble shortly to acknowledge connection:
 		wiiuse_rumble(wiimote->device, 1);
 		vrpn_SleepMsecs(200);
 		initialize_wiimote_state();
 	} else {
+#if defined (vrpn_THREADS_AVAILABLE)
+		// altering server state needs to be synced with server main loop!
+		sharedData->msgLock.p();
+#endif
 		vrpn_gettimeofday(&now, NULL);
 		sprintf(msg, "No connection to remote %d", wiimote->which);
 		send_text_message(msg, now, vrpn_TEXT_ERROR);
+#if defined (vrpn_THREADS_AVAILABLE)
+		sharedData->msgLock.v();
+#endif
 	}
 }
 
@@ -284,6 +328,11 @@ vrpn_WiiMote::vrpn_WiiMote(const char *name, vrpn_Connection *c, unsigned which,
 	vrpn_Analog(name, c),
 	vrpn_Button(name, c),
         vrpn_Analog_Output(name, c),
+#if defined (vrpn_THREADS_AVAILABLE)
+		waitingForConnection(true),
+		sharedData(0),
+		connectThread(0),
+#endif
         wiimote(new vrpn_Wiimote_Device)
 {
         int i;
@@ -331,11 +380,28 @@ vrpn_WiiMote::vrpn_WiiMote(const char *name, vrpn_Connection *c, unsigned which,
 		wiimote->useIR = useIR;
 		wiimote->reorderButtons = (reorderButtons!=0);
         available_wiimotes = wiiuse_init(VRPN_WIIUSE_MAX_WIIMOTES);
+#if defined  (vrpn_THREADS_AVAILABLE)
+		// Pack the sharedData into another ThreadData 
+		// (this is an API flaw in vrpn_Thread)
+		vrpn_ThreadData connectThreadData;
+		sharedData = new vrpn_WiiMote_SharedData(this);
+		connectThreadData.pvUD = sharedData;
+		// take ownership of msgLock:
+		sharedData->msgLock.p();
+		// initialize connectThread:
+		connectThread = new vrpn_Thread(&vrpn_WiiMote::connectThreadFunc,connectThreadData);
+		connectThread->go();
+#else
 		connect_wiimote(3);
+#endif
 }
 
 // Device destructor
 vrpn_WiiMote::~vrpn_WiiMote() {
+  // stop connectThread
+  connectThread->kill();
+  delete connectThread;
+  delete sharedData;
   // Close the device and
 
   if (wiimote->connected) {
@@ -348,21 +414,51 @@ vrpn_WiiMote::~vrpn_WiiMote() {
 // Poll the device and let the VRPN change notifications fire
 void vrpn_WiiMote::mainloop() {
 	static time_t last_error = time(NULL);
+#ifndef vrpn_THREADS_AVAILABLE
 	static timeval last_reconnect_attempt;
+#endif
 
         vrpn_gettimeofday(&_timestamp, NULL);
 
-		if ( wiimote->found && ! wiimote->connected )
+#if defined (vrpn_THREADS_AVAILABLE)
+		if ( waitingForConnection )
 		{
+			// did connectThread establish a connection?
+			if ( sharedData->connectLock.condP() )
+			{
+				// yay, we can use wiimote again!
+				waitingForConnection = false;
+			} else {
+				// allow connectThread to send its messages:
+				sharedData->msgLock.v();
+				vrpn_SleepMsecs(10);
+				sharedData->msgLock.p();
+				// still waiting
+				// do housekeeping and return:
+				server_mainloop();
+				// no need to update timestamp?
+				// no need to call report_changes?
+				return;
+			}
+		}
+#endif
+		if ( ! isValid())
+		{
+#if defined (vrpn_THREADS_AVAILABLE)
+			waitingForConnection = true;
+			// release semaphore, so connectThread gets active again:
+			sharedData->connectLock.v();
+#else // no thread support: we have to block the server:
 			// try reconnect every second:
 			timeval diff = vrpn_TimevalDiff(_timestamp, last_reconnect_attempt);
 			if ( diff.tv_sec >= 1 )
 			{
 				last_reconnect_attempt = _timestamp;
 				//reconnect
-				// XXX: timeout=1 means that we block the vrpn server for a whole second!
+				// timeout=1 means that we block the vrpn server for a whole second!
 				connect_wiimote(1);
 			}
+#endif
 		}
 
 	server_mainloop();
@@ -388,7 +484,9 @@ void vrpn_WiiMote::mainloop() {
               wiimote->connected = false;
 			  wiiuse_disconnect(wiimote->device);
               send_text_message("Disconnected", _timestamp, vrpn_TEXT_ERROR);
+#ifndef vrpn_THREADS_AVAILABLE
 			  last_reconnect_attempt = _timestamp;
+#endif
               break;
 
             case WIIUSE_READ_DATA:
@@ -537,5 +635,24 @@ int VRPN_CALLBACK vrpn_WiiMote::handle_last_connection_dropped(void *selfPtr, vr
   return 0;
 }
 
+#if defined (vrpn_THREADS_AVAILABLE)
+/* static */
+void vrpn_WiiMote::connectThreadFunc(vrpn_ThreadData &threadData)
+{
+	vrpn_WiiMote_SharedData *sharedData = static_cast<vrpn_WiiMote_SharedData *>(threadData.pvUD);
+	if ( ! sharedData || ! sharedData->wmHandle)
+		return;
+	while (true)
+	{
+		// wait for semaphore
+		sharedData->connectLock.p();
+		sharedData->wmHandle->connect_wiimote(3);
+		// release seamphore
+		sharedData->connectLock.v();
+		// make sure that main thread gets semaphore:
+		vrpn_SleepMsecs(100);
+	}
+}
+#endif
 
 #endif  // VRPN_USE_WIIUSE

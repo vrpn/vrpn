@@ -4225,7 +4225,7 @@ int vrpn_Generic_Server_Object::setup_LUDL_USBMAC6000(char * & pch, char * line,
     return -1;
   }
 
-#if defined(VRPN_USE_HID)
+#if defined(VRPN_USE_LIBUSB_1_0)
 
   // Open the LUDL_USBMAC6000
   // Make sure there's room for a new button
