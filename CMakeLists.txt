@@ -353,6 +353,9 @@ endif()
 option(VRPN_BUILD_EXTRA_COMPILER_WARNINGS
 	"Build with flags to enable extra warnings."
 	OFF)
+option(VRPN_USE_LIBUSB_1_0
+	"Attempt to use LibUSB-1.0 to talk directly to USB devices."
+	OFF)
 
 if(WIN32)
 	option(VRPN_USE_DIRECTINPUT
