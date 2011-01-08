@@ -163,8 +163,9 @@ endif()
 # If we're using the local HIDAPI library
 ###
 if(VRPN_USE_LOCAL_HIDAPI)
-	include_directories(${VRPN_SOURCE_DIR}/submodules/hidapi/hidapi /usr/include/libusb-1.0)
+	include_directories(${VRPN_SOURCE_DIR}/submodules/hidapi/hidapi)
 endif()
+include_directories(/usr/include/libusb-1.0)
 
 ###
 # OpenHaptics HDAPI/HLAPI
