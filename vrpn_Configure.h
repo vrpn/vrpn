@@ -326,6 +326,8 @@
 // consider using the libUSB Zadig.exe program; do not do this for a
 // HID device or a device that has another driver, as it can prevent the
 // device from operating except through LibUSB.
+// Note that on Linux you will also need to have the libusb-1.0-0-dev
+// package installed so that we can compile the code.  
 //#define VRPN_USE_LIBUSB_1_0
 
 //------------------------------------------------------------------//
