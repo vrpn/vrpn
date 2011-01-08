@@ -319,7 +319,7 @@
 // Note that to compile on Windows you will need to have downloaded and installed
 // the libusb.h file and libusb-1.0.lib files; the default location for
 // the library is C:Program Files\libusb-1.0 and for the include file
-// is is C:Program Files\libusb-1.0\libusb.  To open a device on Windows, you
+// is in C:Program Files\libusb-1.0\libusb.  To open a device on Windows, you
 // will need to have installed a driver that lets LibUSB open the
 // device.  Generic HID devices and devices that use a WinUSB driver
 // should work without adding a driver.  If you need to add a driver,
