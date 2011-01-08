@@ -10,6 +10,7 @@
 // XXX Check for running into the limits.
 
 #include "vrpn_LUDL.h"
+#include <string.h>
 
 #define	REPORT_ERROR(msg)	{ send_text_message(msg, timestamp, vrpn_TEXT_ERROR) ; if (d_connection && d_connection->connected()) d_connection->send_pending_reports(); }
 
@@ -135,8 +136,14 @@ bool vrpn_LUDL_USBMAC6000::check_for_data(void)
   ret = libusb_interrupt_transfer(_device_handle, _endpoint | LIBUSB_ENDPOINT_IN,
     &_inbuffer[_incount], chars_to_read, &chars_read, 1);
   if ( (ret != LIBUSB_SUCCESS) && (ret != LIBUSB_ERROR_TIMEOUT) ) {
+#ifdef libusb_strerror
     fprintf(stderr, "vrpn_LUDL_USBMAC6000::check_for_data(): Could not read data: %s\n",
       libusb_strerror(static_cast<libusb_error>(ret)));
+#else
+    fprintf(stderr, "vrpn_LUDL_USBMAC6000::check_for_data(): Could not read data: code %d\n",
+      ret);
+#endif
+
     return false;
   }
   _incount += chars_read;
@@ -221,8 +228,13 @@ bool vrpn_LUDL_USBMAC6000::send_usbmac_command(unsigned device, unsigned command
             static_cast<vrpn_uint8 *>(static_cast<void*>(msg)),
             len, &sent_len, 0);
   if ((ret != 0) || (sent_len != len)) {
+#ifdef libusb_strerror
     fprintf(stderr,"vrpn_LUDL_USBMAC6000::send_usbmac_command(): Could not send: %s\n",
       libusb_strerror(static_cast<libusb_error>(ret)));
+#else
+    fprintf(stderr,"vrpn_LUDL_USBMAC6000::send_usbmac_command(): Could not send: code %d\n",
+      ret);
+#endif
     return false;
   }
   return true;
