@@ -14,7 +14,6 @@ typedef long NTSTATUS;
 #endif
 #include "submodules/hidapi/windows/hid.cpp"
 
-#pragma comment( lib, "Hid.lib" )
 #pragma comment( lib, "Setupapi.lib" )
 
 #elif defined(linux)
