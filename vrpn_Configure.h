@@ -328,7 +328,7 @@
 // device from operating except through LibUSB.
 // Note that on Linux you will also need to have the libusb-1.0-0-dev
 // package installed so that we can compile the code.  
-#define VRPN_USE_LIBUSB_1_0
+//#define VRPN_USE_LIBUSB_1_0
 
 //------------------------------------------------------------------//
 // SYSTEM CONFIGURATION SECTION                                     //
