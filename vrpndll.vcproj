@@ -1808,6 +1808,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\vrpn_Tracker_GameTrak.C"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_Tracker_isense.C"
 				>
 				<FileConfiguration
@@ -1937,6 +1957,26 @@
 			</File>
 			<File
 				RelativePath=".\vrpn_Tracker_PhaseSpace.C"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\vrpn_Tracker_SpacePoint.C"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -2433,6 +2473,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\vrpn_Tracker_GameTrak.h"
+				>
+			</File>
+			<File
 				RelativePath="vrpn_Tracker_isense.h"
 				>
 			</File>
@@ -2458,6 +2502,10 @@
 			</File>
 			<File
 				RelativePath=".\vrpn_Tracker_PhaseSpace.h"
+				>
+			</File>
+			<File
+				RelativePath=".\vrpn_Tracker_SpacePoint.h"
 				>
 			</File>
 			<File

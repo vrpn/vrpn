@@ -497,6 +497,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Tracker_Crossbow.C
 	vrpn_Tracker_DTrack.C
 	vrpn_Tracker_Fastrak.C
+    vrpn_Tracker_GameTrak.C
 	vrpn_Tracker_isense.C
 	vrpn_Tracker_Isotrak.C
 	vrpn_Tracker_Liberty.C
@@ -504,6 +505,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Tracker_NDI_Polaris.C
 	vrpn_Tracker_NovintFalcon.C
 	vrpn_Tracker_PhaseSpace.C
+    vrpn_Tracker_SpacePoint.C
 	vrpn_Tracker_TrivisioColibri.C
 	vrpn_Tracker_WiimoteHead.C
 	vrpn_UNC_Joystick.C
@@ -587,6 +589,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Tracker_Crossbow.h
 	vrpn_Tracker_DTrack.h
 	vrpn_Tracker_Fastrak.h
+    vrpn_Tracker_GameTrak.h
 	vrpn_Tracker_isense.h
 	vrpn_Tracker_Isotrak.h
 	vrpn_Tracker_Liberty.h
@@ -594,6 +597,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Tracker_NDI_Polaris.h
 	vrpn_Tracker_NovintFalcon.h
 	vrpn_Tracker_PhaseSpace.h
+    vrpn_Tracker_SpacePoint.h
 	vrpn_Tracker_TrivisioColibri.h
 	vrpn_Tracker_WiimoteHead.h
 	vrpn_UNC_Joystick.h
