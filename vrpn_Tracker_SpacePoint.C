@@ -1,0 +1,98 @@
+/*
+ * vrpn_Tracker_SpacePoint.cpp
+ *
+ *  Created on: Nov 22, 2010
+ *      Author: janoc
+ */
+
+#include <stdio.h>
+#include <string.h>
+
+#include "quat.h"
+#include "vrpn_Tracker_SpacePoint.h"
+
+const unsigned SPACEPOINT_VENDOR = 0x20ff;
+const unsigned SPACEPOINT_PRODUCT = 0x0100;
+
+#ifdef VRPN_USE_HID
+vrpn_Tracker_SpacePoint::vrpn_Tracker_SpacePoint(const char * name, vrpn_Connection * trackercon) :
+                    vrpn_Tracker(name, trackercon), vrpn_Button(name, trackercon),
+                    vrpn_HidInterface(new vrpn_HidProductAcceptor(SPACEPOINT_VENDOR, SPACEPOINT_PRODUCT))
+{
+    _name = name;
+    _con = trackercon;
+
+    memset(d_quat, 0, 4 * sizeof(float));
+    d_quat[3] = 1.0;
+
+    vrpn_Button::num_buttons = 2;
+}
+
+void vrpn_Tracker_SpacePoint::on_data_received(size_t bytes, vrpn_uint8 *buffer)
+{
+    /*
+     * Horrible kludge - as we do not have a way to select the correct endpoint, we have to use a hack
+     * to identify the correct device. In Windows the SpacePoint appears as 2 devices with same VID/PID, one for each endpoint
+     * The correct device sends a report 15 bytes long. If we get a report of a different length, we try to open
+     * the other device instead.
+     */
+
+    // test from the app note
+    // the quaternion should be: 02474, -0.1697, -0.1713, 0.9384
+    /*
+    bytes = 15;
+    vrpn_uint8 test_dta[] =
+                    { 0x2f, 0x85, 0x23, 0x8a, 0x5b, 0x90, 0xac, 0x9f, 0x49, 0x6a, 0x12, 0x6a, 0x1e, 0xf8, 0xd0 };
+    memcpy(buffer, test_dta, 15 * sizeof(vrpn_uint8));
+    */
+
+    if (bytes == 15)
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            unsigned short value = buffer[2*i + 6] + (buffer[2*i + 7] << 8);
+            d_quat[i] = (value - 32768) / 32768.0;
+        }
+
+        buttons[0] = buffer[14] & 0x1;
+        buttons[1] = buffer[14] & 0x2;
+    }
+
+    else
+    {
+        // try the other iface
+        // as we are keeping the first one open,
+        // it will not enumerate and we get the next one. Horrible kludge :(
+        reconnect();
+    }
+}
+
+void vrpn_Tracker_SpacePoint::mainloop()
+{
+    if (connected())
+    {
+        // device update
+        update();
+
+        // server update
+        server_mainloop();
+
+        vrpn_Tracker::timestamp = _timestamp;
+
+        // send tracker orientation
+        d_sensor = 0;
+        memset(pos, 0, sizeof(vrpn_float64) * 3); // no position
+
+        char msgbuf[1000];
+        int len = vrpn_Tracker::encode_to(msgbuf);
+        if (d_connection->pack_message(len, _timestamp, position_m_id, d_sender_id, msgbuf, vrpn_CONNECTION_LOW_LATENCY))
+        {
+            fprintf(stderr, "SpacePoint tracker: can't write message: tossing\n");
+        }
+
+        // send buttons
+        vrpn_Button::report_changes();
+    }
+}
+
+#endif

@@ -10,7 +10,7 @@
 #include "vrpn_Analog_Output.h"
 
 #if defined(VRPN_USE_LIBUSB_1_0)
-#include <libusb/libusb.h>
+#include <libusb.h>
 
 // This driver uses the VRPN-preferred LibUSB-1.0 to control the device.
 // It exposes the vrpn_Analog and the

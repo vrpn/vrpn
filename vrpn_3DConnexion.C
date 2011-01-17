@@ -68,7 +68,7 @@ vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_button
         f = fopen(fname, "r+b");
         if(f) {
           // We got an active device.  Fill in its values and see if it
-          // is acceptible to the filter.
+          // is acceptable to the filter.
           struct input_devinfo ID;
           ioctl(fileno(f), EVIOCGID, &ID);
           vrpn_HIDDEVINFO info;
@@ -90,6 +90,9 @@ vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_button
     }
 
     free(fname);
+
+    // turn the LED on
+    set_led(1);
 #endif
 }
 
@@ -149,6 +152,7 @@ void vrpn_3DConnexion::mainloop()
                     break;
  
                 case EV_REL:    // axis movement
+                case EV_ABS:    // new kernels send more logical _ABS instead of _REL
                     vrpn_gettimeofday((timeval *)&this->vrpn_Analog::timestamp, NULL);
                     // Convert from short to int to avoid a short/double conversion
                     // bug in GCC 3.2.

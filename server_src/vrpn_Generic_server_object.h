@@ -82,6 +82,8 @@
 #include "vrpn_Tracker_NovintFalcon.h"
 #include "vrpn_Tracker_TrivisioColibri.h" // added by David Borland
 #include "vrpn_LUDL.h"
+#include "vrpn_Tracker_GameTrak.h"
+#include "vrpn_Tracker_SpacePoint.h"
 
 // BUW additions
 #include "vrpn_Atmel.h"
@@ -297,11 +299,13 @@ protected:
   int setup_3DConnexion_SpaceBall5000 (char * & pch, char * line, FILE * config_file) ;
   int setup_Tracker_MotionNode (char * & pch, char * line, FILE * config_file);
   int setup_WiiMote (char * & pch, char * line, FILE * config_file);
+  int setup_SpacePoint(char * & pch, char * line, FILE * config_file);
   int setup_Tracker_WiimoteHead (char * & pch, char * line, FILE * config_file);
   int setup_Freespace (char * & pch, char * line, FILE * config_file);
   int setup_DreamCheeky (char * & pch, char * line, FILE * config_file) ;
   int setup_Tracker_NovintFalcon (char * & pch, char * line, FILE * config_file);
   int setup_Tracker_TrivisioColibri(char * &pch, char * line, FILE * config_file);
+  int setup_Tracker_GameTrak(char *pch, char *line, FILE * config_file);
   int setup_LUDL_USBMAC6000(char * &pch, char * line, FILE * config_file);
 
   // BUW additions

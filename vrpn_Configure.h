@@ -319,13 +319,15 @@
 // Note that to compile on Windows you will need to have downloaded and installed
 // the libusb.h file and libusb-1.0.lib files; the default location for
 // the library is C:Program Files\libusb-1.0 and for the include file
-// is is C:Program Files\libusb-1.0\libusb.  To open a device on Windows, you
+// is in C:Program Files\libusb-1.0\libusb.  To open a device on Windows, you
 // will need to have installed a driver that lets LibUSB open the
 // device.  Generic HID devices and devices that use a WinUSB driver
 // should work without adding a driver.  If you need to add a driver,
 // consider using the libUSB Zadig.exe program; do not do this for a
 // HID device or a device that has another driver, as it can prevent the
 // device from operating except through LibUSB.
+// Note that on Linux you will also need to have the libusb-1.0-0-dev
+// package installed so that we can compile the code.  
 //#define VRPN_USE_LIBUSB_1_0
 
 //------------------------------------------------------------------//
