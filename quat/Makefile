@@ -1,5 +1,5 @@
 #############################################################################
-# 
+#
 # makefile for quaternion lib
 #
 #############################################################################
@@ -27,6 +27,17 @@
 #HW_OS := powerpc_macosx
 #HW_OS := universal_macosx
 ##########################
+
+##########################
+# Mac OS X-specific options. If HW_OS is powerpc_macosx or universal_macosx,
+# uncomment one line below to choose the minimum targeted OS X version and
+# corresponding SDK. If none of the lines below is commented out, 10.4 will
+# be the minimum version.
+##########################
+#MAC_OS_MIN_VERSION := 10.4
+#MAC_OS_MIN_VERSION := 10.5
+#MAC_OS_MIN_VERSION := 10.6
+
 
 INSTALL_DIR := /usr/local
 BIN_DIR := $(INSTALL_DIR)/bin
@@ -104,8 +115,31 @@ ifeq ($(HW_OS), pc_linux64)
   CC = gcc -m64 -fPIC
 endif
 
+ifneq (,$(findstring macosx,$(HW_OS)))
+  ifndef MAC_OS_MIN_VERSION
+    MAC_OS_MIN_VERSION := 10.4
+  endif
+
+  # Select which compiler and MAC OS X SDK to use
+  MAC_GCC := gcc
+  ifeq ($(MAC_OS_MIN_VERSION), 10.6)
+    MAC_OS_SDK := MacOSX10.6.sdk
+  else ifeq ($(MAC_OS_MIN_VERSION), 10.5)
+    MAC_OS_SDK := MacOSX10.5.sdk
+  else
+    MAC_OS_SDK := MacOSX10.4u.sdk
+    MAC_GCC := gcc-4.0
+  endif
+endif
+
+ifeq ($(HW_OS), powerpc_macosx)
+  CC = $(MAC_GCC) -arch ppc -isysroot /Developer/SDKs/$(MAC_OS_SDK) -mmacosx-version-min=$(MAC_OS_MIN_VERSION)
+  AR = libtool -static -o
+  RANLIB = :
+endif
+
 ifeq ($(HW_OS), universal_macosx)
-  CC = gcc -arch ppc -arch i386 -isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4
+  CC = $(MAC_GCC) -arch ppc -arch i386 -isysroot /Developer/SDKs/$(MAC_OS_SDK) -mmacosx-version-min=$(MAC_OS_MIN_VERSION)
   AR = libtool -static -o
   RANLIB = :
 endif
@@ -224,7 +258,7 @@ qxform : testapps/qxform.c
 	$(CC) -o $(HW_OS)/$@ $(CFLAGS) $(LDFLAGS) testapps/$@.c -lquat -lm
 
 #
-# qmat- matrix to quaternion 
+# qmat- matrix to quaternion
 #
 qmat : qmat.c
 	$(CC) -o $(HW_OS)/$@ $(CFLAGS) $(LDFLAGS) testapps/$@.c -lquat -lm
@@ -247,7 +281,7 @@ oglmult : oglmult.c
 #
 #############################################################################
 
-QUAT_INCLUDES = quat.h 
+QUAT_INCLUDES = quat.h
 QUAT_C_FILES = quat.c matrix.c vector.c xyzquat.c
 QUAT_OBJ_FILES = $(QUAT_C_FILES:.c=.o)
 
