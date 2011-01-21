@@ -1658,22 +1658,12 @@ unsigned vrpn_Thread::number_of_processors() {
 // thread.
 static void vrpn_test_thread_body(vrpn_ThreadData &threadData)
 {
-  // We need to p() the semaphore that protects userdata at the beginning of this
-  // function and then v() it at the end, to make sure we're not racing with
-  // another thread.
-  threadData.udSemaphore.p();
-
-    if (threadData.pvUD == NULL) {
-      fprintf(stderr, "vrpn_test_thread_body(): pvUD is NULL\n");
-      return;
-    }
-    vrpn_Semaphore *s = static_cast<vrpn_Semaphore *>(threadData.pvUD);
-    s->v();
-
-  // We need to p() the semaphore that protects userdata at the beginning of this
-  // function and then v() it at the end, to make sure we're not racing with
-  // another thread.
-  threadData.udSemaphore.v();
+  if (threadData.pvUD == NULL) {
+    fprintf(stderr, "vrpn_test_thread_body(): pvUD is NULL\n");
+    return;
+  }
+  vrpn_Semaphore *s = static_cast<vrpn_Semaphore *>(threadData.pvUD);
+  s->v();
 
   return;
 }

@@ -6,7 +6,7 @@
 # On the sgi, both g++ and CC verisons are built by default.
 #
 # Author: Russ Taylor, 10/2/1997
-#	  
+#
 # modified:
 # * Jeff Juliano, 10/99
 #    * added "make depend"  (see comments at end of this makefile)
@@ -48,6 +48,17 @@
 #HW_OS := powerpc_macosx
 #HW_OS := universal_macosx
 ##########################
+
+##########################
+# Mac OS X-specific options. If HW_OS is powerpc_macosx or universal_macosx,
+# uncomment one line below to choose the minimum targeted OS X version and
+# corresponding SDK. If none of the lines below is commented out, 10.4 will
+# be the minimum version.
+##########################
+#MAC_OS_MIN_VERSION := 10.4
+#MAC_OS_MIN_VERSION := 10.5
+#MAC_OS_MIN_VERSION := 10.6
+
 
 INSTALL_DIR := /usr/local
 BIN_DIR := $(INSTALL_DIR)/bin
@@ -140,14 +151,33 @@ else
         CC := gcc
         RANLIB := ranlib
   endif
-  
+
+  ifneq (,$(findstring macosx,$(HW_OS)))
+    ifndef MAC_OS_MIN_VERSION
+      MAC_OS_MIN_VERSION := 10.4
+    endif
+
+    # Select which compiler and MAC OS X SDK to use
+    MAC_GCC := g++
+    ifeq ($(MAC_OS_MIN_VERSION), 10.6)
+      MAC_OS_SDK := MacOSX10.6.sdk
+    else ifeq ($(MAC_OS_MIN_VERSION), 10.5)
+      MAC_OS_SDK := MacOSX10.5.sdk
+    else
+      MAC_OS_SDK := MacOSX10.4u.sdk
+      MAC_GCC := g++-4.0
+    endif
+  endif
+
   ifeq ($(HW_OS), powerpc_macosx)
-        CC := cc
+        CC := $(MAC_GCC) -arch ppc -isysroot /Developer/SDKs/$(MAC_OS_SDK) -mmacosx-version-min=$(MAC_OS_MIN_VERSION)
         RANLIB := ranlib
+        AR := libtool -static -o
+	SYSLIBS := -framework CoreFoundation -framework IOKit -framework System
   endif
 
   ifeq ($(HW_OS), universal_macosx)
-        CC := g++ -arch ppc -arch i386 -isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4
+        CC := $(MAC_GCC) -arch ppc -arch i386 -isysroot /Developer/SDKs/$(MAC_OS_SDK) -mmacosx-version-min=$(MAC_OS_MIN_VERSION)
         RANLIB := :
         AR := libtool -static -o
 	SYSLIBS := -framework CoreFoundation -framework IOKit -framework System
@@ -187,7 +217,7 @@ else
 	CC := /usr/local/lib/CenterLine/bin/CC
   endif
   ifeq ($(HW_OS), hp_flow_aCC)
-	CC := /opt/aCC/bin/aCC 
+	CC := /opt/aCC/bin/aCC
   endif
 endif
 
@@ -245,12 +275,12 @@ SYS_INCLUDE :=
 
 ifeq ($(HW_OS),powerpc_macosx)
 #  SYS_INCLUDE := -I/usr/include
-   SYS_INCLUDE :=-DMACOSX -I../isense 
+   SYS_INCLUDE :=-DMACOSX -I../isense
 endif
 
 ifeq ($(HW_OS),universal_macosx)
 #  SYS_INCLUDE := -I/usr/include
-   SYS_INCLUDE :=-DMACOSX -I../isense 
+   SYS_INCLUDE :=-DMACOSX -I../isense
 endif
 
 ifeq ($(HW_OS),pc_linux)
@@ -282,17 +312,17 @@ ifeq ($(HW_OS),sgi_irix)
   SYS_INCLUDE :=
 endif
 
-ifeq ($(HW_OS),hp700_hpux10) 
+ifeq ($(HW_OS),hp700_hpux10)
   SYS_INCLUDE := -I/usr/local/contrib/include -I/usr/local/contrib/mod/include \
                  -I/usr/include/bsd
 endif
 
-ifeq ($(HW_OS),hp_flow) 
+ifeq ($(HW_OS),hp_flow)
   SYS_INCLUDE := -I/usr/local/contrib/include -I/usr/local/contrib/mod/include \
                  -I/usr/include/bsd -DFLOW
 endif
 
-ifeq ($(HW_OS),hp_flow_aCC) 
+ifeq ($(HW_OS),hp_flow_aCC)
   SYS_INCLUDE := -I/usr/local/contrib/include -I/usr/local/contrib/mod/include \
                  -I/usr/include/bsd -DFLOW
 endif
@@ -524,7 +554,7 @@ LIB_INCLUDES = \
 	vrpn_Poser.h \
 	vrpn_Auxiliary_Logger.h
 
-$(LIB_OBJECTS): 
+$(LIB_OBJECTS):
 $(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(LIB_OBJECTS)
 	$(AR) $(OBJECT_DIR)/libvrpn.a $(LIB_OBJECTS)
 	-$(RANLIB) $(OBJECT_DIR)/libvrpn.a
@@ -661,7 +691,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_Xkeys.h \
 	vrpn_Zaber.h
 
-$(SLIB_OBJECTS): 
+$(SLIB_OBJECTS):
 $(OBJECT_DIR)/libvrpnserver.a: $(MAKEFILE) $(SLIB_OBJECTS)
 	$(AR) $(OBJECT_DIR)/libvrpnserver.a $(SLIB_OBJECTS)
 	-$(RANLIB) $(OBJECT_DIR)/libvrpnserver.a
@@ -682,7 +712,7 @@ ALIB_INCLUDES =  \
 	vrpn_atmellib_helper.h \
 	vrpn_atmellib_errno.h
 
-$(ALIB_OBJECTS): 
+$(ALIB_OBJECTS):
 $(OBJECT_DIR)/libvrpnatmel.a: $(MAKEFILE) $(ALIB_OBJECTS)
 	$(AR) $(OBJECT_DIR)/libvrpnatmel.a $(ALIB_OBJECTS)
 	-$(RANLIB) $(OBJECT_DIR)/libvrpnatmel.a

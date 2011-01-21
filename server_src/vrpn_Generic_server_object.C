@@ -2767,11 +2767,11 @@ int vrpn_Generic_Server_Object::setup_DTrack (char* &pch, char* line, FILE* conf
 	char *s;
 	char sep[] = " ,\t,\n";
 	int  count = 0;
-	int dtrackPort;
+	int dtrackPort, isok;
 	float timeToReachJoy;
 	int nob, nof, nidbf;
 	int idbf[VRPN_GSO_MAX_TRACKERS];
-	bool actTracing;
+	bool actTracing, act3DOFout;
 
 	next();
 
@@ -2800,14 +2800,24 @@ int vrpn_Generic_Server_Object::setup_DTrack (char* &pch, char* line, FILE* conf
 	s2 = str[0];
 	dtrackPort = (int )strtol(str[1], &s, 0);
 
-	// tracing (optional; always last argument):
+	// tracing/3dof (optional; always last arguments):
 
 	actTracing = false;
+	act3DOFout = false;
 
-	if(count > 2){
+	isok = 1;
+	while(isok && count > 2){
+		isok = 0;
+
 		if(!strcmp(str[count-1], "-")){
 			actTracing = true;
 			count--;
+			isok = 1;
+		}
+		else if(!strcmp(str[count-1], "3d")){
+			act3DOFout = true;
+			count--;
+			isok = 1;
 		}
 	}
 
@@ -2872,7 +2882,7 @@ int vrpn_Generic_Server_Object::setup_DTrack (char* &pch, char* line, FILE* conf
 	}
 
 	if((DTracks[num_DTracks] = new vrpn_Tracker_DTrack(s2, connection, dtrackPort, timeToReachJoy,
-		                                                nob, nof, pidbf, actTracing)) == NULL)
+                                                        nob, nof, pidbf, actTracing)) == NULL)
 	{
 		fprintf(stderr,"Can't create new vrpn_Tracker_DTrack\n");
 		return -1;
@@ -4086,6 +4096,101 @@ int vrpn_Generic_Server_Object::setup_3DConnexion_SpaceBall5000(char * & pch, ch
   return 0;  // successful completion
 }
 
+int vrpn_Generic_Server_Object::setup_SpacePoint(char * & pch, char * line, FILE * config_file) {
+#ifdef VRPN_USE_HID
+
+    char s2[LINESIZE];
+
+    next();
+
+    if (sscanf(pch,"%511s", s2) != 1)
+    {
+        fprintf(stderr,"Bad SpacePoint line: %s\n",line);
+        return -1;
+    }
+
+    // Open the SpacePoint
+    // Make sure there's room for a new tracker
+    if (num_trackers >= VRPN_GSO_MAX_TRACKERS) {
+        fprintf(stderr,"vrpn_Tracker_SpacePoint: Too many trackers in config file");
+        return -1;
+    }
+
+    // Open the tracker
+    if (verbose) {
+        printf("Opening vrpn_Tracker_SpacePoint %s\n", s2);
+    }
+
+    if ( (trackers[num_trackers] = new vrpn_Tracker_SpacePoint(s2, connection)) == NULL ) {
+        fprintf(stderr,"Can't create new vrpn_SpacePoint\n");
+        return -1;
+    } else {
+        num_trackers++;
+    }
+#else
+    fprintf(stderr, "SpacePoint driver works only with VRPN_USE_HID defined!\n");
+#endif
+
+    return 0;  // successful completion
+}
+
+int vrpn_Generic_Server_Object::setup_Tracker_GameTrak(char *pch, char *line, FILE * config_file)
+{
+    char s2[LINESIZE];
+    char s3[LINESIZE];
+
+    next();
+    if (sscanf(pch,"%511s%511s",s2,s3)!=2) {
+        fprintf(stderr,"Bad GameTrak line: %s\n",line);
+        return -1;
+    }
+
+    // read axis mapping line if present
+    if (fgets(line, LINESIZE, config_file) == NULL)
+    {
+        perror("GameTrak Can't read line!");
+        return -1;
+    }
+
+    // if it is an empty line, finish parsing
+    int mapping[] = {0, 1, 2, 3, 4, 5};
+    if(line[0] != '\n')
+    {
+        // get the first token
+        char tok[LINESIZE];
+        sscanf(line, "%s", tok);
+
+        if(strcmp(tok, "axis_mapping") == 0)
+            sscanf(line, "%s %d %d %d %d %d %d", tok, &mapping[0], &mapping[1], &mapping[2], &mapping[3], &mapping[4], &mapping[5]);
+        else
+        {
+            fprintf(stderr, "Incorrect GameTrak line %s (did you forget an empty line?)\n", line);
+            return -1;
+        }
+    }
+
+    // Open the GameTrak
+    // Make sure there's room for a new tracker
+    if (num_trackers >= VRPN_GSO_MAX_TRACKERS) {
+        fprintf(stderr,"vrpn_Tracker_GameTrak: Too many trackers in config file");
+        return -1;
+    }
+
+    // Open the tracker
+    if (verbose) {
+        printf("Opening vrpn_Tracker_GameTrak %s by using joystick device %s\n", s2, s3);
+        printf("GameTrak axis mapping: %d %d %d %d %d %d\n", mapping[0], mapping[1], mapping[2], mapping[3], mapping[4], mapping[5]);
+    }
+
+    if ( (trackers[num_trackers] = new vrpn_Tracker_GameTrak(s2, connection, s3, mapping)) == NULL ) {
+        fprintf(stderr,"Can't create new vrpn_Tracker_GameTrak\n");
+        return -1;
+    } else {
+        num_trackers++;
+    }
+
+    return 0;  // successful completion
+}
 
 int vrpn_Generic_Server_Object::setup_Tracker_MotionNode(char * & pch, char * line, FILE * config_file)
 {
@@ -4215,7 +4320,7 @@ int vrpn_Generic_Server_Object::setup_LUDL_USBMAC6000(char * & pch, char * line,
     return -1;
   }
 
-#if defined(VRPN_USE_HID)
+#if defined(VRPN_USE_LIBUSB_1_0)
 
   // Open the LUDL_USBMAC6000
   // Make sure there's room for a new button
@@ -4228,7 +4333,7 @@ int vrpn_Generic_Server_Object::setup_LUDL_USBMAC6000(char * & pch, char * line,
   if (verbose) {
     printf("Opening vrpn_LUDL_USBMAC6000 as device %s\n", s2);
   }
-  if ( (analogs[num_analogs] = new vrpn_LUDL_USBMAC6000(s2, connection, recenter == 0)) == NULL ) {
+  if ( (analogs[num_analogs] = new vrpn_LUDL_USBMAC6000(s2, connection, recenter != 0)) == NULL ) {
     fprintf(stderr,"Can't create new vrpn_LUDL_USBMAC6000\n");
      return -1;
   } else {
@@ -4500,6 +4605,10 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
             CHECK(setup_Tracker_NovintFalcon);
       } else if (isit("vrpn_Tracker_TrivisioColibri")) {
             CHECK(setup_Tracker_TrivisioColibri);
+      } else if (isit("vrpn_Tracker_SpacePoint")) {
+                CHECK(setup_SpacePoint);
+      } else if (isit("vrpn_Tracker_GameTrak")) {
+                CHECK(setup_Tracker_GameTrak);
 // BUW additions
           } else if (isit("vrpn_Atmel")) {
             CHECK(setup_Atmel);

@@ -48,6 +48,7 @@ else()
 		PATH_SUFFIXES
 		include
 		PATHS
+		"C:/Program Files/VRPN/include"
 		"C:/Program Files/quatlib/include"
 		"../quat")
 
@@ -61,6 +62,7 @@ else()
 		PATH_SUFFIXES
 		${_libsuffixes}
 		PATHS
+		"C:/Program Files/VRPN/lib"
 		"C:/Program Files/quatlib/lib"
 		"../buildquat"
 		"../buildquat/release")

@@ -9,6 +9,7 @@
 #include "vrpn_Configure.h"
 #if defined(VRPN_USE_WIIUSE)
 
+#include "vrpn_Shared.h"
 #include "vrpn_Connection.h"
 #include "vrpn_Analog.h"
 #include "vrpn_Button.h"
@@ -21,6 +22,9 @@
 // This is defined in vrpn_WiiMote.C.
 class vrpn_Wiimote_Device;
 struct wiimote_t;
+#ifdef vrpn_THREADS_AVAILABLE
+struct vrpn_WiiMote_SharedData;
+#endif
 
 // The buttons are as read from the bit-fields of the primary controller (bits 0-15)
 //  and then a second set for any extended controller (nunchuck bits 16-31),
@@ -99,6 +103,16 @@ protected:
 	static int VRPN_CALLBACK handle_last_connection_dropped(void *selfPtr, vrpn_HANDLERPARAM data);
 
 private:
+#ifdef vrpn_THREADS_AVAILABLE
+	// function to (re)connect to wiimote in background:
+	static void connectThreadFunc(vrpn_ThreadData &threadData);
+	// mainloop is waiting for the connectThread to reestablish the connection:
+	bool waitingForConnection;
+	// the struct holding the shared data pointer and the mutex:
+	vrpn_WiiMote_SharedData *sharedData;
+	// thread for asynchronous reconnection function:
+	vrpn_Thread *connectThread;
+#endif
         // The WiiMote to use
         vrpn_Wiimote_Device  *wiimote;
 		// a list of available wiimotes

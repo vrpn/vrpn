@@ -255,15 +255,17 @@ protected:
 };
 
 // A ptr to this struct will be passed to the 
-// thread function.  The user data ptr will be in pvUD,
-// and ps should contain a semaphore for mutex access to
-// the data.
+// thread function.  The user data ptr will be in pvUD.
+// (There used to be a non-functional semaphore object
+// also in this structure, but it was removed.  This leaves
+// a struct with only one element, which is a pain but
+// at least it doesn't break existing code.  If we need
+// to add something else later, there is a place for it.
 
 // The user should create and manage the semaphore.
 
 struct VRPN_API vrpn_ThreadData {
   void *pvUD;
-  vrpn_Semaphore udSemaphore;
 };
 
 typedef void (*vrpn_THREAD_FUNC) ( vrpn_ThreadData &threadData );

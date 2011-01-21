@@ -49,7 +49,9 @@ find_path(VRPN_INCLUDE_DIR
 	include
 	include/vrpn
 	HINTS
-	"${VRPN_ROOT_DIR}")
+	"${VRPN_ROOT_DIR}"
+	PATHS
+	"C:/Program Files/VRPN/include")
 
 find_library(VRPN_LIBRARY
 	NAMES
@@ -57,7 +59,9 @@ find_library(VRPN_LIBRARY
 	PATH_SUFFIXES
 	${_libsuffixes}
 	HINTS
-	"${VRPN_ROOT_DIR}")
+	"${VRPN_ROOT_DIR}"
+	PATHS
+	"C:/Program Files/VRPN/lib")
 
 find_library(VRPN_SERVER_LIBRARY
 	NAMES
@@ -65,7 +69,9 @@ find_library(VRPN_SERVER_LIBRARY
 	PATH_SUFFIXES
 	${_libsuffixes}
 	HINTS
-	"${VRPN_ROOT_DIR}")
+	"${VRPN_ROOT_DIR}"
+	PATHS
+	"C:/Program Files/VRPN/lib")
 
 ###
 # Dependencies
