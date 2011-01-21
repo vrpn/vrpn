@@ -178,6 +178,9 @@ option_requires(VRPN_USE_HID
 if(VRPN_USE_HID)
 	include_directories(${HIDAPI_INCLUDE_DIRS})
 	list(APPEND SERVER_EXTRA_LIBS ${HIDAPI_LIBRARIES})
+else()
+	# Clear this variable if they don't want HID after all.
+	set(HIDAPI_SOURCES)
 endif()
 
 ###
