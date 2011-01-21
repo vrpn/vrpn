@@ -119,6 +119,11 @@ message(STATUS
 	"Now searching for auto-configurable optional packages...\n")
 
 ###
+# Submodules - bundled libraries/sources
+###
+add_subdirectory(submodules)
+
+###
 # SWIG and Python Libs (for python wrapper)
 ###
 find_package(SWIG)
@@ -139,67 +144,28 @@ if(VRPN_USE_MPI)
 	list(APPEND EXTRA_LIBS ${MPI_LIBRARIES})
 endif()
 
+
 ###
 # HID and HIDAPI
 ###
 
-# Local HIDAPI requirements
-if(WIN32)
-	find_package(WinHID)
-	set(HIDAPI_DEPS_CHECK WINHID_FOUND)
-
-elseif(APPLE)
-	find_package(MacHID)
-	set(HIDAPI_DEPS_CHECK MACHID_FOUND)
-
-else()
-	find_package(Libusb1)
-	set(HIDAPI_DEPS_CHECK LIBUSB1_FOUND)
-endif()
-
-if(EXISTS "${VRPN_SOURCE_DIR}/submodules/hidapi/hidapi/hidapi.h")
-	set(LOCAL_HIDAPI_SUBMODULE_RETRIEVED TRUE)
-else()
-	message(STATUS "Local HIDAPI submodule not found. To download with Git, run git submodule init; git submodule update")
-endif()
-
-option_requires(VRPN_USE_LOCAL_HIDAPI
-	"Build with HIDAPI code from within VRPN source directory"
-	LOCAL_HIDAPI_SUBMODULE_RETRIEVED
-	${HIDAPI_DEPS_CHECK})
-
-if(VRPN_USE_LOCAL_HIDAPI)
-	set(HIDAPI_SOURCES submodules/hidapi/hidapi/hidapi.h)
-	if(APPLE)
-		list(APPEND HIDAPI_SOURCES submodules/hidapi/mac/hid.c)
-		list(APPEND SERVER_EXTRA_LIBS ${MACHID_LIBRARIES})
-		
-	elseif(WIN32)
-		list(APPEND HIDAPI_SOURCES vrpn_Local_HIDAPI.C)
-		list(APPEND SERVER_EXTRA_LIBS ${WINHID_LIBRARIES} setupapi)
-		
-	else()
-		list(APPEND HIDAPI_SOURCES vrpn_HIDAPI_Linux_Hack.c)
-		list(APPEND SERVER_EXTRA_LIBS ${LIBUSB1_LIBRARIES})
-		include_directories(${LIBUSB1_INCLUDE_DIRS})
-	endif()
-	
-	include_directories(${VRPN_SOURCE_DIR}/submodules/hidapi/hidapi)
-	source_group("HIDAPI Submodule" FILES ${HIDAPI_SOURCES})
+# Setting up the local HIDAPI was handled above, in the submodules directory
+if(NOT VRPN_USE_LOCAL_HIDAPI)
+	find_package(HIDAPI)	
 endif()
 
 # HID requires either local or system-installed HIDAPI
-if(VRPN_USE_LOCAL_HIDAPI)
-	set(HIDAPI_FOUND)
-endif()
-find_package(HIDAPI)
-if(HIDAPI_FOUND OR VRPN_USE_LOCAL_HIDAPI)
-	set(LOCAL_HIDAPI_SUBMODULE_OR_HIDAPI_FOUND TRUE)
-endif()
-
+# Both set HIDAPI_FOUND, HIDAPI_LIBRARIES, and HIDAPI_INCLUDE_DIRS
+# If the user chose VRPN_USE_LOCAL_HIDAPI, the HIDAPI_SOURCES
+# variable, as included in the source list below, will also be set.
 option_requires(VRPN_USE_HID
 	"Build with support for HID devices using HIDAPI"
-	LOCAL_HIDAPI_SUBMODULE_OR_HIDAPI_FOUND)
+	HIDAPI_FOUND)
+
+if(VRPN_USE_HID)
+	include_directories(${HIDAPI_INCLUDE_DIRS})
+	list(APPEND SERVER_EXTRA_LIBS ${HIDAPI_LIBRARIES})
+endif()
 
 ###
 # OpenHaptics HDAPI/HLAPI
