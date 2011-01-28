@@ -29,6 +29,26 @@ struct vrpn_WiiMote_SharedData;
 // The buttons are as read from the bit-fields of the primary controller (bits 0-15)
 //  and then a second set for any extended controller (nunchuck bits 16-31),
 //  (classic controller bits 32-47), (guitar hero 3 bits 48-63).
+//
+// If you enable "reorderButtons" by setting it to 1, the buttons on the Wiimote
+// itself are re-ordered to be reported as follows:
+//    button[0] = Home
+//    button[1] = "1"
+//    button[2] = "2"
+//    button[3] = "A"
+//    button[4] = "B"
+//    button[5] = "-"
+//    button[6] = "+"
+//    button[7] = direction pad: left
+//    button[8] = direction pad: right
+//    button[9] = direction pad: down
+//    button[10] = direction pad: up
+//    button[11] = WIIMOTE_BUTTON_ZACCEL_BIT4
+//    button[12] = WIIMOTE_BUTTON_ZACCEL_BIT5
+//    button[13] = WIIMOTE_BUTTON_ZACCEL_BIT6
+//    button[14] = WIIMOTE_BUTTON_ZACCEL_BIT7
+//    button[15] = WIIMOTE_BUTTON_UNKNOWN
+//
 // The Analogs are in an even more random order, both from the primary controller:
 //    channel[0] = battery level (0-1)
 //    channel[1] = gravity X vector calculation (1 = Earth gravity)

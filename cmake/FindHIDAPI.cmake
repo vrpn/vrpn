@@ -1,13 +1,14 @@
-# - try to find GPM library
+# - try to find HIDAPI library
+# from http://www.signal11.us/oss/hidapi/
 #
 # Cache Variables: (probably not for direct use in your scripts)
-#  GPM_INCLUDE_DIR
-#  GPM_LIBRARY
+#  HIDAPI_INCLUDE_DIR
+#  HIDAPI_LIBRARY
 #
 # Non-cache variables you might use in your CMakeLists.txt:
-#  GPM_FOUND
-#  GPM_INCLUDE_DIRS
-#  GPM_LIBRARIES
+#  HIDAPI_FOUND
+#  HIDAPI_INCLUDE_DIRS
+#  HIDAPI_LIBRARIES
 #
 # Requires these CMake modules:
 #  FindPackageHandleStandardArgs (known included with CMake >=2.6.2)
@@ -22,22 +23,22 @@
 # (See accompanying file LICENSE_1_0.txt or copy at
 # http://www.boost.org/LICENSE_1_0.txt)
 
-find_library(GPM_LIBRARY
-	NAMES gpm)
+find_library(HIDAPI_LIBRARY
+	NAMES hidapi)
 
-find_path(GPM_INCLUDE_DIR
-	NAMES gpm.h)
+find_path(HIDAPI_INCLUDE_DIR
+	NAMES hidapi.h)
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(GPM
+find_package_handle_standard_args(HIDAPI
 	DEFAULT_MSG
-	GPM_LIBRARY
-	GPM_INCLUDE_DIR)
+	HIDAPI_LIBRARY
+	HIDAPI_INCLUDE_DIR)
 
-if(GPM_FOUND)
-	set(GPM_LIBRARIES "${GPM_LIBRARY}")
+if(HIDAPI_FOUND)
+	set(HIDAPI_LIBRARIES "${HIDAPI_LIBRARY}")
 
-	set(GPM_INCLUDE_DIRS "${GPM_INCLUDE_DIR}")
+	set(HIDAPI_INCLUDE_DIRS "${HIDAPI_INCLUDE_DIR}")
 endif()
 
-mark_as_advanced(GPM_INCLUDE_DIR GPM_LIBRARY)
+mark_as_advanced(HIDAPI_INCLUDE_DIR HIDAPI_LIBRARY)
