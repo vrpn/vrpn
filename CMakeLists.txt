@@ -74,6 +74,18 @@ option(VRPN_BUILD_CLIENTS "Build VRPN client apps and tests" ON)
 option(VRPN_BUILD_SERVERS "Build VRPN servers" ON)
 option(VRPN_BUILD_TEST_RPC_GENERATION "Build VRPN RPC generation" OFF)
 
+# Development tools
+if(MSVC)
+	set(VRPN_USE_PROJECT_FOLDERS_DEFAULT OFF)
+else()
+	set(VRPN_USE_PROJECT_FOLDERS_DEFAULT ON)
+endif()
+option(VRPN_USE_PROJECT_FOLDERS
+	"Use project folders in build system - not compatible with Visual C++ Express editions!"
+	${VRPN_USE_PROJECT_FOLDERS_DEFAULT})
+set_property(GLOBAL PROPERTY USE_FOLDERS ${VRPN_USE_PROJECT_FOLDERS})
+
+# Set a default build type
 set_default_build_type("RelWithDebInfo")
 
 # Force use of our CMake-processed configuration header before the stock one.
