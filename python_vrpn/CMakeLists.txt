@@ -55,6 +55,7 @@ if(SWIG_FOUND AND PYTHONLIBS_FOUND AND VRPN_BUILD_PYTHON)
 		set_source_files_properties(${module}.i PROPERTIES CPLUSPLUS ON)
 		swig_add_module(${module} Python ${module}.i ${clientlib_fullsrc} ${quatlib_fullsrc})
 		swig_link_libraries(${module} ${PYTHON_LIBRARIES} ${LIBS})
+		set_target_properties(_${module} PROPERTIES FOLDER "Python Bindings")
 		install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${module}.py"
 			DESTINATION lib/${PYTHONVERSIONDIR}dist-packages/
 			COMPONENT python)

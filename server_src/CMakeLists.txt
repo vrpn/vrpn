@@ -54,6 +54,7 @@ if(VRPN_USE_PHANTOM_SERVER AND OPENHAPTICS_FOUND)
 		PROPERTY
 		PUBLIC_HEADER
 		${PHANTOM_HEADERS})
+	set_target_properties(vrpn_phantom PROPERTIES FOLDER Library)
 
 	install(TARGETS
 		vrpn_phantom
@@ -115,8 +116,8 @@ if(VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER AND DIRECTSHOW_FOUND)
 		${DirectShow_LIBS})
 	set_target_properties(directshow_video_server
 		PROPERTIES
-		SOLUTION_FOLDER
-		servers)
+		FOLDER
+		Servers)
 endif()
 
 add_subdirectory(timecode_generator_server)
@@ -144,6 +145,7 @@ set_property(TARGET
 	PROPERTY
 	PROJECT_LABEL
 	"vrpn_server")
+set_target_properties(${APP} PROPERTIES FOLDER "Main Server")
 install(TARGETS vrpn_server
 	RUNTIME DESTINATION bin)
 
@@ -203,7 +205,7 @@ if(BUILD_TESTING)
 		get_filename_component(APP ${SOURCE} NAME_WE)
 		add_executable(${APP} ${SOURCE})
 		target_link_libraries(${APP} ${VRPN_SERVER_LIBRARY})
-		set_target_properties(${APP} PROPERTIES SOLUTION_FOLDER tests)
+		set_target_properties(${APP} PROPERTIES FOLDER Tests)
 		set_target_properties(${APP} PROPERTIES HAS_CXX yes)
 		install(TARGETS ${APP}
 			RUNTIME DESTINATION bin)
@@ -217,7 +219,7 @@ foreach(SOURCE ${SRV_SERVER_SOURCES})
 	get_filename_component(APP ${SOURCE} NAME_WE)
 	add_executable(${APP} ${SOURCE})
 	target_link_libraries(${APP} ${VRPN_SERVER_LIBRARY})
-	set_target_properties(${APP} PROPERTIES SOLUTION_FOLDER servers)
+	set_target_properties(${APP} PROPERTIES FOLDER Servers)
 	set_target_properties(${APP} PROPERTIES HAS_CXX yes)
 	install(TARGETS ${APP} RUNTIME DESTINATION bin)
 endforeach()

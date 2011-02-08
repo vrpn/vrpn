@@ -77,7 +77,7 @@ if(VRPN_BUILD_CLIENTS)
 			add_executable(${APP} ${SOURCE})
 			target_link_libraries(${APP} ${VRPN_CLIENT_LIBRARY})
 
-			set_target_properties(${APP} PROPERTIES SOLUTION_FOLDER tests)
+			set_target_properties(${APP} PROPERTIES FOLDER Tests)
 			# Force C compilation and linking
 			set_property(SOURCE ${SOURCE} PROPERTY LANGUAGE CXX)
 			set_target_properties(${APP} PROPERTIES HAS_CXX yes)
@@ -95,8 +95,8 @@ if(VRPN_BUILD_CLIENTS)
 
 			set_target_properties(testimager_client
 				PROPERTIES
-				SOLUTION_FOLDER
-				tests)
+				FOLDER
+				Tests)
 
 			install(TARGETS testimager_client
 				RUNTIME DESTINATION bin)
@@ -111,8 +111,8 @@ if(VRPN_BUILD_CLIENTS)
 
 	set_target_properties(c_interface_example
 		PROPERTIES
-		SOLUTION_FOLDER
-		tests)
+		FOLDER
+		Tests)
 	# Force C compilation and linking
 	set_property(SOURCE c_interface_example.c PROPERTY LANGUAGE CXX)
 	set_target_properties(c_interface_example PROPERTIES HAS_CXX yes)
@@ -128,7 +128,7 @@ if(VRPN_BUILD_CLIENTS)
 		add_executable(${APP} ${SOURCE})
 		target_link_libraries(${APP} ${VRPN_CLIENT_LIBRARY})
 
-		set_target_properties(${APP} PROPERTIES SOLUTION_FOLDER clients)
+		set_target_properties(${APP} PROPERTIES FOLDER Clients)
 		# Force C compilation and linking
 		set_property(SOURCE ${SOURCE} PROPERTY LANGUAGE CXX)
 		set_target_properties(${APP} PROPERTIES HAS_CXX yes)
@@ -144,8 +144,8 @@ if(VRPN_BUILD_CLIENTS)
 	target_link_libraries(run_auxiliary_logger ${VRPN_CLIENT_LIBRARY})
 	set_target_properties(run_auxiliary_logger
 		PROPERTIES
-		SOLUTION_FOLDER
-		servers)
+		FOLDER
+		Servers)
 	install(TARGETS run_auxiliary_logger
 		RUNTIME DESTINATION bin)
 

@@ -567,6 +567,11 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 		PROPERTY
 		PROJECT_LABEL
 		"Core: VRPN Server Library")
+	set_property(TARGET
+		vrpnserver
+		PROPERTY
+		FOLDER
+		"Library")
 
 	install(TARGETS
 		vrpnserver
@@ -604,6 +609,11 @@ if(VRPN_BUILD_CLIENT_LIBRARY)
 		PROPERTY
 		PROJECT_LABEL
 		"Core: VRPN Client Library")
+	set_property(TARGET
+		vrpnserver
+		PROPERTY
+		FOLDER
+		"Library")
 
 	install(TARGETS
 		vrpn
@@ -656,7 +666,7 @@ if(VRPN_BUILD_SERVERS AND VRPN_BUILD_SERVER_LIBRARY AND BUILD_TESTING)
 		get_filename_component(APP ${SOURCE} NAME_WE)
 		add_executable(${APP} ${SOURCE})
 		target_link_libraries(${APP} vrpnserver)
-		set_target_properties(${APP} PROPERTIES SOLUTION_FOLDER tests)
+		set_target_properties(${APP} PROPERTIES FOLDER Tests)
 		install(TARGETS ${APP} RUNTIME DESTINATION bin)
 	endforeach()
 endif()
