@@ -36,8 +36,8 @@ if(SWIG_FOUND AND PYTHONLIBS_FOUND AND VRPN_BUILD_PYTHON)
 	#		python-callback-wrapper.i)
 	#	set_source_files_properties(${COMMON} PROPERTIES CPLUSPLUS ON)
 
-	set(PYTHONVERSIONDIR)
-	if(PYTHON_INCLUDE_DIR MATCHES "python(2.[0-9])")
+	set(PYTHONVERSIONDIR python)
+	if(PYTHON_LIBRARY MATCHES "python(2.[0-9])")
 		set(PYTHONVERSIONDIR "python${CMAKE_MATCH_1}/")
 	endif()
 
@@ -56,10 +56,10 @@ if(SWIG_FOUND AND PYTHONLIBS_FOUND AND VRPN_BUILD_PYTHON)
 		swig_add_module(${module} Python ${module}.i ${clientlib_fullsrc} ${quatlib_fullsrc})
 		swig_link_libraries(${module} ${PYTHON_LIBRARIES} ${LIBS})
 		install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${module}.py"
-			DESTINATION share/pyshared/vrpn/
+			DESTINATION lib/${PYTHONVERSIONDIR}dist-packages/
 			COMPONENT python)
-		install(FILES "${CMAKE_CURRENT_BINARY_DIR}/_${module}.${CMAKE_SHARED_LIBRARY_SUFFIX}"
-			DESTINATION lib/pyshared/${PYTHONVERSIONDIR}vrpn/
+		install(FILES "${CMAKE_CURRENT_BINARY_DIR}/_${module}${CMAKE_SHARED_LIBRARY_SUFFIX}"
+			DESTINATION lib/${PYTHONVERSIONDIR}dist-packages/
 			COMPONENT python)
 	endforeach()
 
