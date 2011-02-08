@@ -17,6 +17,8 @@ set_property(TARGET
 	PUBLIC_HEADER
 	${TIMECODE_GENSERV_PUBLIC_HEADERS})
 
+set_target_properties(vrpn_timecode_generator PROPERTIES FOLDER "Main Server")
+
 install(TARGETS
 	vrpn_timecode_generator
 	ARCHIVE

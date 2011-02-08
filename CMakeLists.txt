@@ -620,7 +620,7 @@ if(VRPN_BUILD_CLIENT_LIBRARY)
 		PROJECT_LABEL
 		"Core VRPN Client Library")
 	set_property(TARGET
-		vrpnserver
+		vrpn
 		PROPERTY
 		FOLDER
 		"Library")

@@ -147,7 +147,7 @@ set_property(TARGET
 	PROPERTY
 	PROJECT_LABEL
 	"vrpn_server")
-set_target_properties(${APP} PROPERTIES FOLDER "Main Server")
+set_target_properties(vrpn_server PROPERTIES FOLDER "Main Server")
 install(TARGETS vrpn_server
 	RUNTIME DESTINATION bin
 	COMPONENT mainserver)
