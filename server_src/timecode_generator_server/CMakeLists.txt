@@ -24,6 +24,7 @@ install(TARGETS
 	ARCHIVE
 	DESTINATION
 	lib
+	COMPONENT serversdk
 	PUBLIC_HEADER
 	DESTINATION
 	include

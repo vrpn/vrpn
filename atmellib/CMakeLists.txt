@@ -28,8 +28,11 @@ if(NOT WIN32)
 		ARCHIVE
 		DESTINATION
 		lib
+		COMPONENT serversdk
+
 		PUBLIC_HEADER
 		DESTINATION
-		include)
+		include
+		COMPONENT serversdk)
 endif()
 

@@ -590,6 +590,8 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 		ARCHIVE
 		DESTINATION
 		lib
+		COMPONENT serversdk
+
 		PUBLIC_HEADER
 		DESTINATION
 		include
@@ -630,6 +632,8 @@ if(VRPN_BUILD_CLIENT_LIBRARY)
 		ARCHIVE
 		DESTINATION
 		lib
+		COMPONENT clientsdk
+
 		PUBLIC_HEADER
 		DESTINATION
 		include
@@ -678,7 +682,7 @@ if(VRPN_BUILD_SERVERS AND VRPN_BUILD_SERVER_LIBRARY AND BUILD_TESTING)
 		add_executable(${APP} ${SOURCE})
 		target_link_libraries(${APP} vrpnserver)
 		set_target_properties(${APP} PROPERTIES FOLDER Tests)
-		install(TARGETS ${APP} RUNTIME DESTINATION bin)
+		install(TARGETS ${APP} RUNTIME DESTINATION bin COMPONENT tests)
 	endforeach()
 endif()
 

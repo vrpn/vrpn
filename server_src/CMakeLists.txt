@@ -61,6 +61,7 @@ if(VRPN_USE_PHANTOM_SERVER AND OPENHAPTICS_FOUND)
 		ARCHIVE
 		DESTINATION
 		lib
+		COMPONENT serversdk
 		PUBLIC_HEADER
 		DESTINATION
 		include
@@ -156,7 +157,8 @@ install(TARGETS vrpn_server
 # Install the vrpn.cfg file needed by the server.
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/vrpn.cfg" "${CMAKE_CURRENT_BINARY_DIR}/vrpn.cfg" @ONLY)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/vrpn.cfg"
-	DESTINATION etc)
+	DESTINATION etc
+	COMPONENT mainserver)
 
 
 #-----------------------------------------------------------------------------
