@@ -60,7 +60,7 @@ if(VRPN_BUILD_CLIENTS)
 	)
 
 	if(NOT WIN32)
-		# These need "open" calls modified to build on win.
+		# TODO: These need "open" calls modified to build on win.
 		list(APPEND
 			TEST_SOURCES
 			logfilesenders.c
