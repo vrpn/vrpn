@@ -76,14 +76,14 @@ option(VRPN_BUILD_TEST_RPC_GENERATION "Build VRPN RPC generation" OFF)
 
 # Development tools
 if(MSVC)
-	set(VRPN_USE_PROJECT_FOLDERS_DEFAULT OFF)
+	set(VRPN_BUILD_WITH_PROJECT_FOLDERS_DEFAULT OFF)
 else()
-	set(VRPN_USE_PROJECT_FOLDERS_DEFAULT ON)
+	set(VRPN_BUILD_WITH_PROJECT_FOLDERS_DEFAULT ON)
 endif()
-option(VRPN_USE_PROJECT_FOLDERS
+option(VRPN_BUILD_WITH_PROJECT_FOLDERS
 	"Use project folders in build system - not compatible with Visual C++ Express editions!"
-	${VRPN_USE_PROJECT_FOLDERS_DEFAULT})
-set_property(GLOBAL PROPERTY USE_FOLDERS ${VRPN_USE_PROJECT_FOLDERS})
+	${VRPN_BUILD_WITH_PROJECT_FOLDERS_DEFAULT})
+set_property(GLOBAL PROPERTY USE_FOLDERS ${VRPN_BUILD_WITH_PROJECT_FOLDERS})
 
 # Set a default build type
 set_default_build_type("RelWithDebInfo")
