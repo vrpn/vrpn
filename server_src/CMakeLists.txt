@@ -63,7 +63,8 @@ if(VRPN_USE_PHANTOM_SERVER AND OPENHAPTICS_FOUND)
 		lib
 		PUBLIC_HEADER
 		DESTINATION
-		include)
+		include
+		COMPONENT serversdk)
 	set(VRPNPHANTOMLIB vrpn_phantom)
 endif()
 
@@ -118,6 +119,7 @@ if(VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER AND DIRECTSHOW_FOUND)
 		PROPERTIES
 		FOLDER
 		Servers)
+	install(TARGETS directshow_video_server RUNTIME DESTINATION bin COMPONENT servers)
 endif()
 
 add_subdirectory(timecode_generator_server)
@@ -147,7 +149,8 @@ set_property(TARGET
 	"vrpn_server")
 set_target_properties(${APP} PROPERTIES FOLDER "Main Server")
 install(TARGETS vrpn_server
-	RUNTIME DESTINATION bin)
+	RUNTIME DESTINATION bin
+	COMPONENT mainserver)
 
 #-----------------------------------------------------------------------------
 # Install the vrpn.cfg file needed by the server.
@@ -208,7 +211,7 @@ if(BUILD_TESTING)
 		set_target_properties(${APP} PROPERTIES FOLDER Tests)
 		set_target_properties(${APP} PROPERTIES HAS_CXX yes)
 		install(TARGETS ${APP}
-			RUNTIME DESTINATION bin)
+			RUNTIME DESTINATION bin COMPONENT tests)
 	endforeach()
 endif()
 
@@ -221,7 +224,7 @@ foreach(SOURCE ${SRV_SERVER_SOURCES})
 	target_link_libraries(${APP} ${VRPN_SERVER_LIBRARY})
 	set_target_properties(${APP} PROPERTIES FOLDER Servers)
 	set_target_properties(${APP} PROPERTIES HAS_CXX yes)
-	install(TARGETS ${APP} RUNTIME DESTINATION bin)
+	install(TARGETS ${APP} RUNTIME DESTINATION bin COMPONENT servers)
 endforeach()
 
 ###
@@ -237,5 +240,6 @@ set(VRPN_WIIMOTE_JCONFS
 install(FILES
 	${VRPN_WIIMOTE_JCONFS}
 	DESTINATION
-	share/vrpn-${CPACK_PACKAGE_VERSION}/vrjuggler-2.2-config)
+	share/vrpn-${CPACK_PACKAGE_VERSION}/vrjuggler-2.2-config
+	COMPONENT servers)
 

@@ -592,7 +592,8 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 		lib
 		PUBLIC_HEADER
 		DESTINATION
-		include)
+		include
+		COMPONENT serversdk)
 
 	add_cppcheck(vrpnserver STYLE UNUSED_FUNCTIONS)
 endif()
@@ -631,7 +632,8 @@ if(VRPN_BUILD_CLIENT_LIBRARY)
 		lib
 		PUBLIC_HEADER
 		DESTINATION
-		include)
+		include
+		COMPONENT clientsdk)
 
 	add_cppcheck(vrpn STYLE UNUSED_FUNCTIONS)
 endif()

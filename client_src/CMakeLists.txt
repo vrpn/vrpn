@@ -82,7 +82,7 @@ if(VRPN_BUILD_CLIENTS)
 			set_property(SOURCE ${SOURCE} PROPERTY LANGUAGE CXX)
 			set_target_properties(${APP} PROPERTIES HAS_CXX yes)
 
-			install(TARGETS ${APP} RUNTIME DESTINATION bin)
+			install(TARGETS ${APP} RUNTIME DESTINATION bin COMPONENT tests)
 		endforeach()
 
 		if(GLUT_FOUND AND OPENGL_FOUND)
@@ -99,7 +99,7 @@ if(VRPN_BUILD_CLIENTS)
 				Tests)
 
 			install(TARGETS testimager_client
-				RUNTIME DESTINATION bin)
+				RUNTIME DESTINATION bin COMPONENT tests)
 		endif()
 
 	endif()
@@ -117,7 +117,7 @@ if(VRPN_BUILD_CLIENTS)
 	set_property(SOURCE c_interface_example.c PROPERTY LANGUAGE CXX)
 	set_target_properties(c_interface_example PROPERTIES HAS_CXX yes)
 
-	install(TARGETS c_interface_example RUNTIME DESTINATION bin)
+	install(TARGETS c_interface_example RUNTIME DESTINATION bin COMPONENT tests)
 
 
 	###
@@ -134,7 +134,7 @@ if(VRPN_BUILD_CLIENTS)
 		set_target_properties(${APP} PROPERTIES HAS_CXX yes)
 
 		install(TARGETS ${APP}
-			RUNTIME DESTINATION bin)
+			RUNTIME DESTINATION bin COMPONENT clients)
 	endforeach()
 
 	###
@@ -147,6 +147,6 @@ if(VRPN_BUILD_CLIENTS)
 		FOLDER
 		Servers)
 	install(TARGETS run_auxiliary_logger
-		RUNTIME DESTINATION bin)
+		RUNTIME DESTINATION bin COMPONENT servers)
 
 endif()
