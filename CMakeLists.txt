@@ -602,14 +602,11 @@ if(VRPN_BUILD_CLIENT_LIBRARY)
 	add_library(vrpn ${VRPN_CLIENT_SOURCES} ${VRPN_CLIENT_PUBLIC_HEADERS})
 	target_link_libraries(vrpn ${EXTRA_LIBS})
 
-	if(NOT VRPN_BUILD_SERVER_LIBRARY)
-		# Only install these headers if we aren't building a server library.
-		set_property(TARGET
-			vrpn
-			PROPERTY
-			PUBLIC_HEADER
-			${VRPN_CLIENT_PUBLIC_HEADERS})
-	endif()
+	set_property(TARGET
+		vrpn
+		PROPERTY
+		PUBLIC_HEADER
+		${VRPN_CLIENT_PUBLIC_HEADERS})
 
 	set_property(TARGET
 		vrpn
