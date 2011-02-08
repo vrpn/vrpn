@@ -3,8 +3,6 @@
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
 
-# XXX TODO Install these bindings, don't just build them!
-
 if(SWIG_FOUND AND PYTHONLIBS_FOUND AND VRPN_BUILD_PYTHON)
 	include(${SWIG_USE_FILE})
 	include_directories(${PYTHON_INCLUDE_DIRS})
@@ -38,7 +36,10 @@ if(SWIG_FOUND AND PYTHONLIBS_FOUND AND VRPN_BUILD_PYTHON)
 	#		python-callback-wrapper.i)
 	#	set_source_files_properties(${COMMON} PROPERTIES CPLUSPLUS ON)
 
-
+	set(PYTHONVERSIONDIR)
+	if(PYTHON_INCLUDE_DIR MATCHES "python(2.[0-9])")
+		set(PYTHONVERSIONDIR "python${CMAKE_MATCH_1}/")
+	endif()
 
 	set(MODULES
 		vrpn_Analog
@@ -54,6 +55,12 @@ if(SWIG_FOUND AND PYTHONLIBS_FOUND AND VRPN_BUILD_PYTHON)
 		set_source_files_properties(${module}.i PROPERTIES CPLUSPLUS ON)
 		swig_add_module(${module} Python ${module}.i ${clientlib_fullsrc} ${quatlib_fullsrc})
 		swig_link_libraries(${module} ${PYTHON_LIBRARIES} ${LIBS})
+		install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${module}.py"
+			DESTINATION share/pyshared/vrpn/
+			COMPONENT python)
+		install(FILES "${CMAKE_CURRENT_BINARY_DIR}/_${module}.${CMAKE_SHARED_LIBRARY_SUFFIX}"
+			DESTINATION lib/pyshared/${PYTHONVERSIONDIR}vrpn/
+			COMPONENT python)
 	endforeach()
 
 endif()
