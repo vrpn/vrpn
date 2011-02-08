@@ -578,7 +578,7 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 		vrpnserver
 		PROPERTY
 		PROJECT_LABEL
-		"Core: VRPN Server Library")
+		"Core VRPN Server Library")
 	set_property(TARGET
 		vrpnserver
 		PROPERTY
@@ -617,7 +617,7 @@ if(VRPN_BUILD_CLIENT_LIBRARY)
 		vrpn
 		PROPERTY
 		PROJECT_LABEL
-		"Core: VRPN Client Library")
+		"Core VRPN Client Library")
 	set_property(TARGET
 		vrpnserver
 		PROPERTY
