@@ -15,6 +15,16 @@ install(TARGETS
 	lib
 	PUBLIC_HEADER
 	DESTINATION
-	include)
+	include
+	COMPONENT serversdk)
+install(TARGETS
+	quat
+	ARCHIVE
+	DESTINATION
+	lib
+	PUBLIC_HEADER
+	DESTINATION
+	include
+	COMPONENT clientsdk)
 
 add_subdirectory(testapps)

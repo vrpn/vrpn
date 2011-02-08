@@ -24,4 +24,5 @@ install(TARGETS
 	lib
 	PUBLIC_HEADER
 	DESTINATION
-	include)
+	include
+	COMPONENT serversdk)
