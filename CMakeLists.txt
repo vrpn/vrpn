@@ -74,6 +74,18 @@ option(VRPN_BUILD_CLIENTS "Build VRPN client apps and tests" ON)
 option(VRPN_BUILD_SERVERS "Build VRPN servers" ON)
 option(VRPN_BUILD_TEST_RPC_GENERATION "Build VRPN RPC generation" OFF)
 
+# Development tools
+if(MSVC)
+	option(VRPN_BUILD_WITH_PROJECT_FOLDERS
+		"Use project folders in build system - not compatible with Visual C++ Express editions!"
+		OFF)
+else()
+	set(VRPN_BUILD_WITH_PROJECT_FOLDERS ON)
+endif()
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ${VRPN_BUILD_WITH_PROJECT_FOLDERS})
+
+# Set a default build type
 set_default_build_type("RelWithDebInfo")
 
 # Force use of our CMake-processed configuration header before the stock one.
@@ -566,16 +578,24 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 		vrpnserver
 		PROPERTY
 		PROJECT_LABEL
-		"Core: VRPN Server Library")
+		"Core VRPN Server Library")
+	set_property(TARGET
+		vrpnserver
+		PROPERTY
+		FOLDER
+		"Library")
 
 	install(TARGETS
 		vrpnserver
 		ARCHIVE
 		DESTINATION
 		lib
+		COMPONENT serversdk
+
 		PUBLIC_HEADER
 		DESTINATION
-		include)
+		include
+		COMPONENT serversdk)
 
 	add_cppcheck(vrpnserver STYLE UNUSED_FUNCTIONS)
 endif()
@@ -585,14 +605,11 @@ if(VRPN_BUILD_CLIENT_LIBRARY)
 	add_library(vrpn ${VRPN_CLIENT_SOURCES} ${VRPN_CLIENT_PUBLIC_HEADERS})
 	target_link_libraries(vrpn ${EXTRA_LIBS})
 
-	if(NOT VRPN_BUILD_SERVER_LIBRARY)
-		# Only install these headers if we aren't building a server library.
-		set_property(TARGET
-			vrpn
-			PROPERTY
-			PUBLIC_HEADER
-			${VRPN_CLIENT_PUBLIC_HEADERS})
-	endif()
+	set_property(TARGET
+		vrpn
+		PROPERTY
+		PUBLIC_HEADER
+		${VRPN_CLIENT_PUBLIC_HEADERS})
 
 	set_property(TARGET
 		vrpn
@@ -603,16 +620,24 @@ if(VRPN_BUILD_CLIENT_LIBRARY)
 		vrpn
 		PROPERTY
 		PROJECT_LABEL
-		"Core: VRPN Client Library")
+		"Core VRPN Client Library")
+	set_property(TARGET
+		vrpn
+		PROPERTY
+		FOLDER
+		"Library")
 
 	install(TARGETS
 		vrpn
 		ARCHIVE
 		DESTINATION
 		lib
+		COMPONENT clientsdk
+
 		PUBLIC_HEADER
 		DESTINATION
-		include)
+		include
+		COMPONENT clientsdk)
 
 	add_cppcheck(vrpn STYLE UNUSED_FUNCTIONS)
 endif()
@@ -656,8 +681,8 @@ if(VRPN_BUILD_SERVERS AND VRPN_BUILD_SERVER_LIBRARY AND BUILD_TESTING)
 		get_filename_component(APP ${SOURCE} NAME_WE)
 		add_executable(${APP} ${SOURCE})
 		target_link_libraries(${APP} vrpnserver)
-		set_target_properties(${APP} PROPERTIES SOLUTION_FOLDER tests)
-		install(TARGETS ${APP} RUNTIME DESTINATION bin)
+		set_target_properties(${APP} PROPERTIES FOLDER Tests)
+		install(TARGETS ${APP} RUNTIME DESTINATION bin COMPONENT tests)
 	endforeach()
 endif()
 
@@ -743,3 +768,19 @@ create_dashboard_scripts("${CMAKE_CURRENT_SOURCE_DIR}/DashboardBuildInitialCache
 #-----------------------------------------------------------------------------
 # If we succeeded, we can go on and include packaging!
 include(CPack)
+cpack_add_component(serversdk
+	DISPLAY_NAME "VRPN Server Library and C++ Headers")
+cpack_add_component(clientsdk
+	DISPLAY_NAME "VRPN Client Library and C++ Headers")
+cpack_add_component(tests
+	DISPLAY_NAME "Test applications")
+cpack_add_component(clients
+	DISPLAY_NAME "Client applications")
+cpack_add_component(servers
+	DISPLAY_NAME "Server applications")
+cpack_add_component(mainserver
+	DISPLAY_NAME "VRPN main server application")
+cpack_add_component(python
+	DISPLAY_NAME "Python bindings")
+cpack_add_component(doc
+	DISPLAY_NAME "C++ API Documentation")

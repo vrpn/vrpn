@@ -60,7 +60,7 @@ if(VRPN_BUILD_CLIENTS)
 	)
 
 	if(NOT WIN32)
-		# These need "open" calls modified to build on win.
+		# TODO: These need "open" calls modified to build on win.
 		list(APPEND
 			TEST_SOURCES
 			logfilesenders.c
@@ -77,12 +77,12 @@ if(VRPN_BUILD_CLIENTS)
 			add_executable(${APP} ${SOURCE})
 			target_link_libraries(${APP} ${VRPN_CLIENT_LIBRARY})
 
-			set_target_properties(${APP} PROPERTIES SOLUTION_FOLDER tests)
+			set_target_properties(${APP} PROPERTIES FOLDER Tests)
 			# Force C compilation and linking
 			set_property(SOURCE ${SOURCE} PROPERTY LANGUAGE CXX)
 			set_target_properties(${APP} PROPERTIES HAS_CXX yes)
 
-			install(TARGETS ${APP} RUNTIME DESTINATION bin)
+			install(TARGETS ${APP} RUNTIME DESTINATION bin COMPONENT tests)
 		endforeach()
 
 		if(GLUT_FOUND AND OPENGL_FOUND)
@@ -95,11 +95,11 @@ if(VRPN_BUILD_CLIENTS)
 
 			set_target_properties(testimager_client
 				PROPERTIES
-				SOLUTION_FOLDER
-				tests)
+				FOLDER
+				Tests)
 
 			install(TARGETS testimager_client
-				RUNTIME DESTINATION bin)
+				RUNTIME DESTINATION bin COMPONENT tests)
 		endif()
 
 	endif()
@@ -111,13 +111,13 @@ if(VRPN_BUILD_CLIENTS)
 
 	set_target_properties(c_interface_example
 		PROPERTIES
-		SOLUTION_FOLDER
-		tests)
+		FOLDER
+		Tests)
 	# Force C compilation and linking
 	set_property(SOURCE c_interface_example.c PROPERTY LANGUAGE CXX)
 	set_target_properties(c_interface_example PROPERTIES HAS_CXX yes)
 
-	install(TARGETS c_interface_example RUNTIME DESTINATION bin)
+	install(TARGETS c_interface_example RUNTIME DESTINATION bin COMPONENT tests)
 
 
 	###
@@ -128,13 +128,13 @@ if(VRPN_BUILD_CLIENTS)
 		add_executable(${APP} ${SOURCE})
 		target_link_libraries(${APP} ${VRPN_CLIENT_LIBRARY})
 
-		set_target_properties(${APP} PROPERTIES SOLUTION_FOLDER clients)
+		set_target_properties(${APP} PROPERTIES FOLDER Clients)
 		# Force C compilation and linking
 		set_property(SOURCE ${SOURCE} PROPERTY LANGUAGE CXX)
 		set_target_properties(${APP} PROPERTIES HAS_CXX yes)
 
 		install(TARGETS ${APP}
-			RUNTIME DESTINATION bin)
+			RUNTIME DESTINATION bin COMPONENT clients)
 	endforeach()
 
 	###
@@ -144,9 +144,9 @@ if(VRPN_BUILD_CLIENTS)
 	target_link_libraries(run_auxiliary_logger ${VRPN_CLIENT_LIBRARY})
 	set_target_properties(run_auxiliary_logger
 		PROPERTIES
-		SOLUTION_FOLDER
-		servers)
+		FOLDER
+		Servers)
 	install(TARGETS run_auxiliary_logger
-		RUNTIME DESTINATION bin)
+		RUNTIME DESTINATION bin COMPONENT servers)
 
 endif()

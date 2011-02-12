@@ -17,14 +17,22 @@ if(NOT WIN32)
 		PROPERTY
 		PUBLIC_HEADER
 		${ATMELLIB_PUBLIC_HEADERS})
+	set_property(TARGET
+		vrpn_atmel
+		PROPERTY
+		FOLDER
+		"Library")
 
 	install(TARGETS
 		vrpn_atmel
 		ARCHIVE
 		DESTINATION
 		lib
+		COMPONENT serversdk
+
 		PUBLIC_HEADER
 		DESTINATION
-		include)
+		include
+		COMPONENT serversdk)
 endif()
 
