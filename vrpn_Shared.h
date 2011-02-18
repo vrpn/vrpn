@@ -262,7 +262,8 @@ protected:
 // at least it doesn't break existing code.  If we need
 // to add something else later, there is a place for it.
 
-// The user should create and manage the semaphore.
+// The user should create and manage any semaphore needed
+// to handle access control to the userdata.
 
 struct VRPN_API vrpn_ThreadData {
   void *pvUD;
@@ -275,7 +276,7 @@ typedef void (*vrpn_THREAD_FUNC) ( vrpn_ThreadData &threadData );
 // building blocks towards making your own code thread-safe.  They are
 // here to enable the vrpn_Imager_Stream_Buffer class to do its thing.
 class VRPN_API vrpn_Thread {
-public:  
+public:
   // args are the routine to run in the thread
   // a ThreadData struct which will be passed into
   // the thread (it will be passed as a void *).
