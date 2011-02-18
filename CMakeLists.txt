@@ -143,6 +143,15 @@ find_package(PythonLibs)
 option_requires(VRPN_BUILD_PYTHON "Build VRPN Python bindings (development)" OFF_BY_DEFAULT SWIG_FOUND PYTHONLIBS_FOUND)
 
 ###
+# javac, jar, and javah (for java wrapper)
+###
+find_package(Java COMPONENTS Development)
+find_package(JNI)
+find_program(JAVAH_EXECUTABLE NAMES javah)
+mark_as_advanced(JAVAH_EXECUTABLE)
+option(VRPN_BUILD_JAVA "Build VRPN Java bindings (development)" OFF)
+
+###
 # MPI
 ###
 find_package(MPI)
@@ -673,6 +682,10 @@ add_subdirectory(doxygen)
 #-----------------------------------------------------------------------------
 # Python wrappers
 add_subdirectory(python_vrpn)
+
+#-----------------------------------------------------------------------------
+# Java wrappers
+add_subdirectory(java_vrpn)
 
 #-----------------------------------------------------------------------------
 # Testing applications that live in the main directory.
