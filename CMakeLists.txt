@@ -795,5 +795,7 @@ cpack_add_component(mainserver
 	DISPLAY_NAME "VRPN main server application")
 cpack_add_component(python
 	DISPLAY_NAME "Python bindings")
+cpack_add_component(java
+	DISPLAY_NAME "Java bindings")
 cpack_add_component(doc
 	DISPLAY_NAME "C++ API Documentation")

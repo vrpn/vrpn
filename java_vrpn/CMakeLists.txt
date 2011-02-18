@@ -5,7 +5,7 @@
 # XXX TODO Install these bindings, don't just build them!
 
 if(JAVA_FOUND AND JNI_FOUND AND JAVAH_EXECUTABLE AND VRPN_BUILD_JAVA)
-	
+
 	# Set up file lists
 	set(JAVA_CLASSES
 		AnalogOutputRemote
@@ -32,13 +32,13 @@ if(JAVA_FOUND AND JNI_FOUND AND JAVAH_EXECUTABLE AND VRPN_BUILD_JAVA)
 		list(APPEND JAVAC_INPUT "${CMAKE_CURRENT_SOURCE_DIR}/vrpn/${class}.java")
 		list(APPEND JAVA_JNI_HEADERS "${CMAKE_CURRENT_BINARY_DIR}/vrpn_${class}.h")
 	endforeach()
-	
+
 	# *.java -> *.class
 	add_custom_command(OUTPUT ${JAVAC_OUTPUT}
 		DEPENDS ${JAVAC_INPUT}
 		COMMAND "${Java_JAVAC_EXECUTABLE}" -d "${CMAKE_CURRENT_BINARY_DIR}" ${JAVAC_INPUT}
 		COMMENT "Compiling Java sources to class files...")
-	
+
 	# *.class -> vrpn.jar
 	add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/vrpn.jar"
 		DEPENDS ${JAVAC_OUTPUT}
@@ -54,7 +54,7 @@ if(JAVA_FOUND AND JNI_FOUND AND JAVAH_EXECUTABLE AND VRPN_BUILD_JAVA)
 			COMMAND "${JAVAH_EXECUTABLE}" -d "${CMAKE_CURRENT_BINARY_DIR}" -jni -classpath "${CMAKE_CURRENT_BINARY_DIR}" vrpn.${in}
 			COMMENT "Generating JNI header file for vrpn.${in}")
 	endforeach()
-	
+
 	# target for vrpn.jar
 	add_custom_target(java_vrpn_jar
 		DEPENDS
@@ -74,10 +74,20 @@ if(JAVA_FOUND AND JNI_FOUND AND JAVAH_EXECUTABLE AND VRPN_BUILD_JAVA)
 		vrpn_TrackerRemote.cpp
 		vrpn_VRPNDevice.cpp
 		vrpn_FunctionGeneratorRemote.cpp)
-	
+
 	include_directories("${CMAKE_CURRENT_BINARY_DIR}" ${JNI_INCLUDE_DIRS})
 	add_library(java_vrpn SHARED ${LIB_SOURCES} ${JAVA_JNI_HEADERS})
 	target_link_libraries(java_vrpn vrpnserver ${JNI_LIBRARIES})
 	add_dependencies(java_vrpn java_vrpn_jar)
+
+	install(TARGETS java_vrpn
+		ARCHIVE DESTINATION lib COMPONENT java
+		LIBRARY DESTINATION lib COMPONENT java
+		RUNTIME DESTINATION lib COMPONENT java)
+
+	install(FILES "${CMAKE_CURRENT_BINARY_DIR}/vrpn.jar"
+		DESTINATION share/java
+		COMPONENT java
+		RENAME vrpn-${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.jar)
 
 endif()
