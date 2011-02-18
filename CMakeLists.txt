@@ -141,8 +141,7 @@ add_subdirectory(submodules)
 find_package(SWIG)
 find_package(PythonLibs)
 option_requires(VRPN_BUILD_PYTHON
-	"Build VRPN Python bindings (development)"
-	OFF_BY_DEFAULT
+	"Build VRPN Python bindings"
 	SWIG_FOUND
 	PYTHONLIBS_FOUND)
 
@@ -154,8 +153,7 @@ find_package(JNI)
 find_program(JAVAH_EXECUTABLE NAMES javah)
 mark_as_advanced(JAVAH_EXECUTABLE)
 option_requires(VRPN_BUILD_JAVA
-	"Build VRPN Java bindings (development)"
-	OFF_BY_DEFAULT
+	"Build VRPN Java bindings"
 	Java_JAVAC_EXECUTABLE
 	Java_JAR_EXECUTABLE
 	JNI_FOUND
