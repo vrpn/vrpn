@@ -140,7 +140,11 @@ add_subdirectory(submodules)
 ###
 find_package(SWIG)
 find_package(PythonLibs)
-option_requires(VRPN_BUILD_PYTHON "Build VRPN Python bindings (development)" OFF_BY_DEFAULT SWIG_FOUND PYTHONLIBS_FOUND)
+option_requires(VRPN_BUILD_PYTHON
+	"Build VRPN Python bindings (development)"
+	OFF_BY_DEFAULT
+	SWIG_FOUND
+	PYTHONLIBS_FOUND)
 
 ###
 # javac, jar, and javah (for java wrapper)
@@ -149,7 +153,13 @@ find_package(Java COMPONENTS Development)
 find_package(JNI)
 find_program(JAVAH_EXECUTABLE NAMES javah)
 mark_as_advanced(JAVAH_EXECUTABLE)
-option(VRPN_BUILD_JAVA "Build VRPN Java bindings (development)" OFF)
+option_requires(VRPN_BUILD_JAVA
+	"Build VRPN Java bindings (development)"
+	OFF_BY_DEFAULT
+	Java_JAVAC_EXECUTABLE
+	Java_JAR_EXECUTABLE
+	JNI_FOUND
+	JAVAH_EXECUTABLE)
 
 ###
 # MPI
