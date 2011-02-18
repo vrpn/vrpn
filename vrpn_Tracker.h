@@ -77,7 +77,7 @@ class VRPN_API vrpn_Tracker : public vrpn_BaseClass {
    static int VRPN_CALLBACK handle_t2r_request(void *userdata, vrpn_HANDLERPARAM p);
    static int VRPN_CALLBACK handle_u2s_request(void *userdata, vrpn_HANDLERPARAM p);
    static int VRPN_CALLBACK handle_workspace_request(void *userdata, vrpn_HANDLERPARAM p);
-   static int VRPN_CALLBACK handle_update_rate_request (void *, vrpn_HANDLERPARAM);
+   //static int VRPN_CALLBACK handle_update_rate_request (void *, vrpn_HANDLERPARAM);
 
   protected:
    vrpn_int32 position_m_id;		// ID of tracker position message
