@@ -1,4 +1,9 @@
 // -*- c++ -*-
+
+#ifndef VRPN_USING_CMAKE
+// Only using this configuration file if not using CMake.
+// An #else follows at the bottom of the file.
+
 #ifndef	VRPN_CONFIGURE_H
 
 //--------------------------------------------------------------
@@ -530,4 +535,14 @@
 #endif
 
 #define	VRPN_CONFIGURE_H
+#endif
+
+#else // VRPN_USING_CMAKE
+
+// When using CMake, we need to use the vrpn_Configure.h generated in the
+// build directory instead.
+
+//#pragma message "NOTE: File included \"vrpn_Configure.h\" from the source dir even though this is a CMake build!"
+
+#include <vrpn_Configure.h>
 #endif
