@@ -382,6 +382,7 @@ set(VRPN_CLIENT_SOURCES
 	vrpn_Mutex.C
 	vrpn_Poser.C
 	vrpn_RedundantTransmission.C
+	vrpn_Serial.C
 	vrpn_Shared.C
 	vrpn_SharedObject.C
 	vrpn_Sound.C
@@ -406,6 +407,7 @@ set(VRPN_CLIENT_PUBLIC_HEADERS
 	vrpn_LamportClock.h
 	vrpn_Log.h
 	vrpn_Mutex.h
+	vrpn_Serial.h
 	vrpn_Shared.h
 	vrpn_SharedObject.h
 	vrpn_Sound.h
@@ -457,7 +459,6 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Poser_Analog.C
 	vrpn_Poser_Tek4662.C
 	vrpn_raw_sgibox.C
-	vrpn_Serial.C
 	vrpn_sgibox.C
 	vrpn_Spaceball.C
 	vrpn_Tng3.C
@@ -534,7 +535,6 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Poser_Tek4662.h
 	vrpn_raw_sgibox.h
 	vrpn_RedundantTransmission.h
-	vrpn_Serial.h
 	vrpn_sgibox.h
 	vrpn_Spaceball.h
 	vrpn_Tng3.h
