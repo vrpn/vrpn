@@ -13,8 +13,6 @@
 
 #include VRPN_WIIUSE_H
 
-#include <iostream>
-
 // Opaque class to hold WiiMote device information so we don't have
 // to include wiimote.h in the vrpn_WiiMote.h file.
 class vrpn_Wiimote_Device {
@@ -418,7 +416,6 @@ vrpn_WiiMote::vrpn_WiiMote(const char *name, vrpn_Connection *c, unsigned which,
 vrpn_WiiMote::~vrpn_WiiMote() {
 #if defined (vrpn_THREADS_AVAILABLE)
   // stop connectThread
-  std::cout << "Stopping the connection thread" << std::endl;
   sharedData->stopFlag = true;
   // Release the lock blocking the connection thread.
   if (!waitingForConnection) {
@@ -430,15 +427,13 @@ vrpn_WiiMote::~vrpn_WiiMote() {
 	vrpn_SleepMsecs(10);
 	sharedData->msgLock.p();
   }
-  //connectThread->kill();
+
+  //connectThread->kill(); // This kills the entire app!
   
-  std::cout << "Deleting the connection thread" << std::endl;
   delete connectThread;
-  
-  std::cout << "Deleting the shared data" << std::endl;
   delete sharedData;
 #endif
-  // Close the device and
+  // Close the device and delete
 
   if (wiimote->connected) {
     wiiuse_disconnect(wiimote->device);
@@ -681,18 +676,13 @@ void vrpn_WiiMote::connectThreadFunc(vrpn_ThreadData &threadData)
 	while (true)
 	{
 		// wait for semaphore
-		std::cout << "Connect Thread: waiting for the connect lock" << std::endl << std::flush;
 		sharedData->connectLock.p();
-		std::cout << "Connect Thread: got the connect lock" << std::endl << std::flush;
 		if (sharedData->stopFlag) {
-			std::cout << "Connect Thread: stop flag set, exiting" << std::endl << std::flush;
 			break;
 		}
 		sharedData->wmHandle->connect_wiimote(3);
-		std::cout << "Connect Thread: returned from connect_wiimote" << std::endl << std::flush;
-		// release seamphore
+		// release semaphore
 		sharedData->connectLock.v();
-		std::cout << "Connect Thread: released the connect lock" << std::endl << std::flush;
 		// make sure that main thread gets semaphore:
 		vrpn_SleepMsecs(100);
 	}
