@@ -425,7 +425,10 @@ vrpn_WiiMote::~vrpn_WiiMote() {
   	sharedData->connectLock.v();
   }
   while (connectThread->running()) {
-  	vrpn_SleepMsecs(100);
+    // Let the connect thread send messages
+	sharedData->msgLock.v();
+	vrpn_SleepMsecs(10);
+	sharedData->msgLock.p();
   }
   //connectThread->kill();
   
