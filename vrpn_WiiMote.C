@@ -235,6 +235,19 @@ void vrpn_WiiMote::connect_wiimote(int timeout)
 
 	wiimote->device = NULL;
 	unsigned num_available = wiiuse_find(available_wiimotes, VRPN_WIIUSE_MAX_WIIMOTES, timeout);
+	if (num_available == 0) {
+#if defined (vrpn_THREADS_AVAILABLE)
+        // altering server state needs to be synced with server main loop!
+        sharedData->msgLock.p();
+#endif
+		vrpn_gettimeofday(&now, NULL);
+		send_text_message("No Wii remotes found!", now, vrpn_TEXT_ERROR);
+#if defined (vrpn_THREADS_AVAILABLE)
+        sharedData->msgLock.v();
+#endif
+		wiimote->found = false;
+		return;
+	}
 	wiimote->device = wiiuse_get_by_id(available_wiimotes, VRPN_WIIUSE_MAX_WIIMOTES, wiimote->which);
 	if (! wiimote->device ) {
 #if defined (vrpn_THREADS_AVAILABLE)
