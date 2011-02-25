@@ -198,7 +198,7 @@ set(SRV_TEST_SOURCES
 )
 
 set(SRV_SERVER_SOURCES
-       wiimote_head_tracker.C
+   wiimote_head_tracker.C
 )
 
 
@@ -242,6 +242,6 @@ set(VRPN_WIIMOTE_JCONFS
 install(FILES
 	${VRPN_WIIMOTE_JCONFS}
 	DESTINATION
-	share/vrpn-${CPACK_PACKAGE_VERSION}/vrjuggler-2.2-config
+	share/vrpn-${BRIEF_VERSION}/vrjuggler-2.2-config
 	COMPONENT servers)
 

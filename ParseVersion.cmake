@@ -30,6 +30,7 @@ endif()
 set(CPACK_PACKAGE_VERSION
  	"${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}")
 set(CONFIG_VERSION "${CPACK_PACKAGE_VERSION}")
+set(BRIEF_VERSION "${CPACK_PACKAGE_VERSION}")
 
 include(GetGitRevisionDescription)
 git_get_exact_tag(GIT_EXACT_TAG --tags --match version_*)
