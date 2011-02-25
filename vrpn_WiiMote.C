@@ -409,8 +409,6 @@ vrpn_WiiMote::~vrpn_WiiMote() {
 		acquireMessageLock();
 	}
 
-	//connectThread->kill(); // This kills the entire app!
-
 	delete connectThread;
 	delete sharedData;
 #endif

@@ -131,21 +131,21 @@ class VRPN_API vrpn_WiiMote: public vrpn_Analog, public vrpn_Button, public vrpn
 		void releaseMessageLock();
 		/// @}
 #ifdef vrpn_THREADS_AVAILABLE
-		// function to (re)connect to wiimote in background:
+		/// function to (re)connect to wiimote in background:
 		static void connectThreadFunc(vrpn_ThreadData &threadData);
-		// mainloop is waiting for the connectThread to reestablish the connection:
+		/// mainloop is waiting for the connectThread to reestablish the connection:
 		bool waitingForConnection;
-		// the struct holding the shared data pointer and the mutex:
+		/// the struct holding the shared data pointer and the mutex:
 		vrpn_WiiMote_SharedData *sharedData;
-		// thread for asynchronous reconnection function:
+		/// thread for asynchronous reconnection function:
 		vrpn_Thread *connectThread;
 #endif
-		// The WiiMote to use
+		/// The WiiMote to use
 		vrpn_Wiimote_Device  *wiimote;
-		// a list of available wiimotes
+		/// a list of available wiimotes
 		wiimote_t **available_wiimotes;
 
-		// Error-handling procedure (spit out a message and die)
+		/// Error-handling procedure (spit out a message and die)
 		inline void FAIL(const char *msg) {
 			struct timeval now;
 			vrpn_gettimeofday(&now, NULL);
@@ -153,26 +153,32 @@ class VRPN_API vrpn_WiiMote: public vrpn_Analog, public vrpn_Button, public vrpn
 			d_connection = NULL;
 		}
 
-		// send report iff changed
-		void report_changes(vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
-		// send report whether or not changed
-		void report(vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
-		// NOTE:  class_of_service is only applied to vrpn_Analog
-		//  values, not vrpn_Button
+		/** @brief send report iff changed
 
-		// Time stamp of last read event
+			@note class_of_service is only applied to vrpn_Analog values,
+			not vrpn_Button
+		*/
+		void report_changes(vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
+		/** @brief send report whether or not changed
+
+			@note class_of_service is only applied to vrpn_Analog values,
+			not vrpn_Button
+		*/
+		void report(vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
+
+		/// Time stamp of last read event
 		struct timeval _timestamp;
 
-		// Helper routine to initialize state of the WiiMote.
+		/// Helper routine to initialize state of the WiiMote.
 		void initialize_wiimote_state(void);
 
-		// Helper functions to handle events
+		/// Helper functions to handle events
 		void handle_event(void);
 
-		// Helper function to connect a wiimote
+		/// Helper function to connect a wiimote
 		void connect_wiimote(int timeout);
 
-		// Helper function that defines a mapping for button ids:
+		/// Helper function that defines a mapping for button ids:
 		unsigned map_button(unsigned btn);
 };
 
