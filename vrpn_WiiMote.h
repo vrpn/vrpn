@@ -103,64 +103,64 @@ struct vrpn_WiiMote_SharedData;
 //      the speaker on the WiiMote.
 
 class VRPN_API vrpn_WiiMote: public vrpn_Analog, public vrpn_Button, public vrpn_Analog_Output {
-public:
-        // If there is more than one WiiMote on the machine, the zero-indexed 'which'
-        // parameter tells which one we want to open.
-	vrpn_WiiMote(const char *name, vrpn_Connection *c = NULL, unsigned which = 0
-		, unsigned useMS = 1, unsigned useIR = 1, unsigned reorderButtons = 0);
-	~vrpn_WiiMote();
+	public:
+		// If there is more than one WiiMote on the machine, the zero-indexed 'which'
+		// parameter tells which one we want to open.
+		vrpn_WiiMote(const char *name, vrpn_Connection *c = NULL, unsigned which = 0
+		             , unsigned useMS = 1, unsigned useIR = 1, unsigned reorderButtons = 0);
+		~vrpn_WiiMote();
 
-	virtual void mainloop();
+		virtual void mainloop();
 
-	bool isValid() const;
+		bool isValid() const;
 
-protected:
-	// Handle the rumble-magnitude setting (channel 0).
-	static int VRPN_CALLBACK handle_request_message( void *userdata,
-		vrpn_HANDLERPARAM p );
-	static int VRPN_CALLBACK handle_request_channels_message( void* userdata,
-		vrpn_HANDLERPARAM p);
-	static int VRPN_CALLBACK handle_last_connection_dropped(void *selfPtr, vrpn_HANDLERPARAM data);
+	protected:
+		// Handle the rumble-magnitude setting (channel 0).
+		static int VRPN_CALLBACK handle_request_message(void *userdata,
+		        vrpn_HANDLERPARAM p);
+		static int VRPN_CALLBACK handle_request_channels_message(void* userdata,
+		        vrpn_HANDLERPARAM p);
+		static int VRPN_CALLBACK handle_last_connection_dropped(void *selfPtr, vrpn_HANDLERPARAM data);
 
-private:
+	private:
 #ifdef vrpn_THREADS_AVAILABLE
-	// function to (re)connect to wiimote in background:
-	static void connectThreadFunc(vrpn_ThreadData &threadData);
-	// mainloop is waiting for the connectThread to reestablish the connection:
-	bool waitingForConnection;
-	// the struct holding the shared data pointer and the mutex:
-	vrpn_WiiMote_SharedData *sharedData;
-	// thread for asynchronous reconnection function:
-	vrpn_Thread *connectThread;
+		// function to (re)connect to wiimote in background:
+		static void connectThreadFunc(vrpn_ThreadData &threadData);
+		// mainloop is waiting for the connectThread to reestablish the connection:
+		bool waitingForConnection;
+		// the struct holding the shared data pointer and the mutex:
+		vrpn_WiiMote_SharedData *sharedData;
+		// thread for asynchronous reconnection function:
+		vrpn_Thread *connectThread;
 #endif
-        // The WiiMote to use
-        vrpn_Wiimote_Device  *wiimote;
+		// The WiiMote to use
+		vrpn_Wiimote_Device  *wiimote;
 		// a list of available wiimotes
 		wiimote_t **available_wiimotes;
 
-	// Error-handling procedure (spit out a message and die)
-	inline void FAIL(const char *msg) { 
-		struct timeval now; 
-		vrpn_gettimeofday(&now, NULL); 
-		send_text_message(msg, now, vrpn_TEXT_ERROR);
-		d_connection = NULL;
-	}
-	
-	// send report iff changed
-        void report_changes (vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
-        // send report whether or not changed
-        void report (vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
-        // NOTE:  class_of_service is only applied to vrpn_Analog
-        //  values, not vrpn_Button
+		// Error-handling procedure (spit out a message and die)
+		inline void FAIL(const char *msg) {
+			struct timeval now;
+			vrpn_gettimeofday(&now, NULL);
+			send_text_message(msg, now, vrpn_TEXT_ERROR);
+			d_connection = NULL;
+		}
 
-        // Time stamp of last read event
-        struct timeval _timestamp;
+		// send report iff changed
+		void report_changes(vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
+		// send report whether or not changed
+		void report(vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
+		// NOTE:  class_of_service is only applied to vrpn_Analog
+		//  values, not vrpn_Button
 
-        // Helper routine to initialize state of the WiiMote.
-        void initialize_wiimote_state(void);
+		// Time stamp of last read event
+		struct timeval _timestamp;
 
-        // Helper functions to handle events
-        void handle_event(void);
+		// Helper routine to initialize state of the WiiMote.
+		void initialize_wiimote_state(void);
+
+		// Helper functions to handle events
+		void handle_event(void);
 
 		// Helper function to connect a wiimote
 		void connect_wiimote(int timeout);
