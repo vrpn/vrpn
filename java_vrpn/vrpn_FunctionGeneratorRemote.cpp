@@ -1,5 +1,5 @@
 
-#include <typeinfo.h>
+#include <typeinfo>
 #include <iostream>
 #include <jni.h>
 #include <vrpn_FunctionGenerator.h>

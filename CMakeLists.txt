@@ -140,7 +140,24 @@ add_subdirectory(submodules)
 ###
 find_package(SWIG)
 find_package(PythonLibs)
-option_requires(VRPN_BUILD_PYTHON "Build VRPN Python bindings (development)" OFF_BY_DEFAULT SWIG_FOUND PYTHONLIBS_FOUND)
+option_requires(VRPN_BUILD_PYTHON
+	"Build VRPN Python bindings"
+	SWIG_FOUND
+	PYTHONLIBS_FOUND)
+
+###
+# javac, jar, and javah (for java wrapper)
+###
+find_package(Java COMPONENTS Development)
+find_package(JNI)
+find_program(JAVAH_EXECUTABLE NAMES javah)
+mark_as_advanced(JAVAH_EXECUTABLE)
+option_requires(VRPN_BUILD_JAVA
+	"Build VRPN Java bindings"
+	Java_JAVAC_EXECUTABLE
+	Java_JAR_EXECUTABLE
+	JNI_FOUND
+	JAVAH_EXECUTABLE)
 
 ###
 # MPI
@@ -298,6 +315,7 @@ get_force_include_definitions(CONFIG_H_FLAG
 	"${PROJECT_BINARY_DIR}/vrpn_Configure.h")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CONFIG_H_FLAG}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CONFIG_H_FLAG}")
+add_definitions(-DVRPN_USING_CMAKE)
 
 # Configuration options controlling what gets included in the build.
 # These are the default options - if a library is detected above it will
@@ -675,6 +693,10 @@ add_subdirectory(doxygen)
 add_subdirectory(python_vrpn)
 
 #-----------------------------------------------------------------------------
+# Java wrappers
+add_subdirectory(java_vrpn)
+
+#-----------------------------------------------------------------------------
 # Testing applications that live in the main directory.
 if(VRPN_BUILD_SERVERS AND VRPN_BUILD_SERVER_LIBRARY AND BUILD_TESTING)
 	foreach(SOURCE time_test.cpp)
@@ -782,5 +804,7 @@ cpack_add_component(mainserver
 	DISPLAY_NAME "VRPN main server application")
 cpack_add_component(python
 	DISPLAY_NAME "Python bindings")
+cpack_add_component(java
+	DISPLAY_NAME "Java bindings")
 cpack_add_component(doc
 	DISPLAY_NAME "C++ API Documentation")
