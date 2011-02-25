@@ -123,6 +123,13 @@ class VRPN_API vrpn_WiiMote: public vrpn_Analog, public vrpn_Button, public vrpn
 		static int VRPN_CALLBACK handle_last_connection_dropped(void *selfPtr, vrpn_HANDLERPARAM data);
 
 	private:
+		/// @name Message lock functions
+		/// Used to reduce the amount of in-line ifdefs: these are no-ops
+		/// if threading support isn't available
+		/// @{
+		void acquireMessageLock();
+		void releaseMessageLock();
+		/// @}
 #ifdef vrpn_THREADS_AVAILABLE
 		// function to (re)connect to wiimote in background:
 		static void connectThreadFunc(vrpn_ThreadData &threadData);

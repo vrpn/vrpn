@@ -53,6 +53,20 @@ struct vrpn_WiiMote_SharedData {
 };
 #endif
 
+
+inline void vrpn_WiiMote::acquireMessageLock() {
+#if defined (vrpn_THREADS_AVAILABLE)
+	// altering server state needs to be synced with server main loop!
+	sharedData->msgLock.p();
+#endif
+}
+
+inline void vrpn_WiiMote::releaseMessageLock() {
+#if defined (vrpn_THREADS_AVAILABLE)
+	sharedData->msgLock.v();
+#endif
+}
+
 unsigned vrpn_WiiMote::map_button(unsigned btn) {
 	switch (btn) {
 		case 0: //WIIMOTE_BUTTON_TWO:
@@ -231,16 +245,11 @@ void vrpn_WiiMote::connect_wiimote(int timeout) {
 	unsigned num_available = wiiuse_find(available_wiimotes, VRPN_WIIUSE_MAX_WIIMOTES, timeout);
 	wiimote->device = wiiuse_get_by_id(available_wiimotes, VRPN_WIIUSE_MAX_WIIMOTES, wiimote->which);
 	if (! wiimote->device) {
-#if defined (vrpn_THREADS_AVAILABLE)
-		// altering server state needs to be synced with server main loop!
-		sharedData->msgLock.p();
-#endif
+		acquireMessageLock();
 		vrpn_gettimeofday(&now, NULL);
 		sprintf(msg, "Could not open remote %d (%d found)", wiimote->which, num_available);
 		send_text_message(msg, now, vrpn_TEXT_ERROR);
-#if defined (vrpn_THREADS_AVAILABLE)
-		sharedData->msgLock.v();
-#endif
+		releaseMessageLock();
 		wiimote->found = false;
 	} else {
 		wiimote->found = true;
@@ -251,32 +260,22 @@ void vrpn_WiiMote::connect_wiimote(int timeout) {
 	selected_one[0] = wiimote->device;
 	wiimote->connected = (wiiuse_connect(selected_one, 1) != 0);
 	if (wiimote->connected) {
-#if defined (vrpn_THREADS_AVAILABLE)
-		// altering server state needs to be synced with server main loop!
-		sharedData->msgLock.p();
-#endif
+		acquireMessageLock();
 		vrpn_gettimeofday(&now, NULL);
 		sprintf(msg, "Connected to remote %d", wiimote->which);
 		send_text_message(msg, now);
-#if defined (vrpn_THREADS_AVAILABLE)
-		sharedData->msgLock.v();
-#endif
+		releaseMessageLock();
 
 		// rumble shortly to acknowledge connection:
 		wiiuse_rumble(wiimote->device, 1);
 		vrpn_SleepMsecs(200);
 		initialize_wiimote_state();
 	} else {
-#if defined (vrpn_THREADS_AVAILABLE)
-		// altering server state needs to be synced with server main loop!
-		sharedData->msgLock.p();
-#endif
+		acquireMessageLock();
 		vrpn_gettimeofday(&now, NULL);
 		sprintf(msg, "No connection to remote %d", wiimote->which);
 		send_text_message(msg, now, vrpn_TEXT_ERROR);
-#if defined (vrpn_THREADS_AVAILABLE)
-		sharedData->msgLock.v();
-#endif
+		releaseMessageLock();
 	}
 }
 
@@ -384,7 +383,7 @@ vrpn_WiiMote::vrpn_WiiMote(const char *name, vrpn_Connection *c, unsigned which,
 	sharedData = new vrpn_WiiMote_SharedData(this);
 	connectThreadData.pvUD = sharedData;
 	// take ownership of msgLock:
-	sharedData->msgLock.p();
+	acquireMessageLock();
 	// initialize connectThread:
 	connectThread = new vrpn_Thread(&vrpn_WiiMote::connectThreadFunc, connectThreadData);
 	connectThread->go();
@@ -404,9 +403,10 @@ vrpn_WiiMote::~vrpn_WiiMote() {
 	}
 	while (connectThread->running()) {
 		// Let the connect thread send messages
-		sharedData->msgLock.v();
+
+		releaseMessageLock();
 		vrpn_SleepMsecs(10);
-		sharedData->msgLock.p();
+		acquireMessageLock();
 	}
 
 	//connectThread->kill(); // This kills the entire app!
@@ -440,9 +440,9 @@ void vrpn_WiiMote::mainloop() {
 			waitingForConnection = false;
 		} else {
 			// allow connectThread to send its messages:
-			sharedData->msgLock.v();
+			releaseMessageLock();
 			vrpn_SleepMsecs(10);
-			sharedData->msgLock.p();
+			acquireMessageLock();
 			// still waiting
 			// do housekeeping and return:
 			server_mainloop();
