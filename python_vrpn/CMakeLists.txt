@@ -41,6 +41,12 @@ if(SWIG_FOUND AND PYTHONLIBS_FOUND AND VRPN_BUILD_PYTHON)
 		set(PYTHONVERSIONDIR "python${CMAKE_MATCH_1}/")
 	endif()
 
+	#Make sure Python wrapper files get correctly generated in Windows
+	if(WIN32 AND NOT CYGWIN)
+		#Define the preprocessor symbol VRPN_USE_WINSOCK_SOCKETS in swig, since the latter doesn't take the preprocessor definitions from vrpn_Shared.h in account
+		SET(CMAKE_SWIG_FLAGS "-DVRPN_USE_WINSOCK_SOCKETS")
+	endif()
+
 	set(MODULES
 		vrpn_Analog
 		vrpn_Analog_Output
