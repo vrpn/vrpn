@@ -441,6 +441,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_5DT16.C
 	vrpn_ADBox.C
 	vrpn_Analog_5dt.C
+	vrpn_Analog_5dtUSB.C
 	vrpn_Analog_Radamec_SPI.C
 	vrpn_Analog_USDigital_A2.C
 	vrpn_Atmel.C
@@ -514,6 +515,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_5DT16.h
 	vrpn_ADBox.h
 	vrpn_Analog_5dt.h
+	vrpn_Analog_5dtUSB.h
 	vrpn_Analog_Radamec_SPI.h
 	vrpn_Analog_USDigital_A2.h
 	vrpn_Atmel.h
