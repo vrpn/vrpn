@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 
 #if defined(VRPN_USE_HID)
 
@@ -45,6 +46,11 @@ vrpn_Analog_5dtUSB::vrpn_Analog_5dtUSB(vrpn_HidAcceptor *filter,
 	vrpn_HidInterface(filter),
 	_filter(filter),
 	_isLeftHand(isLeftHand) {
+	
+	if (num_sensors != 5 && num_sensors != 14) {
+		throw std::logic_error("The vrpn_Analog_5dtUSB driver only supports 5 or 14 sensors, and a different number was passed!");
+	}
+
 	vrpn_Analog::num_channel = num_sensors;
 
 	// Initialize the state of all the analogs
