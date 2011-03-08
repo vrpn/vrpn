@@ -1,0 +1,53 @@
+
+
+Cases:
+
+	--No connections--
+	Emulator running, 
+	app started successfully
+	app closed
+	app restarted successfully (no port errors)
+	
+	(note, app CAN connect to client after this sequence)
+	
+	--With connections(tcp), not closing the android app--
+	App running, client connects -> good
+	App running, client connects and closes and reconnects -> good
+	App not running, client starts, app starts, client connects -> good
+		*Here, before the app is started, i DO get the cookie errors... :(
+		
+	--With connections(tcp), closing the android app
+	App starts successfully
+	client connects succesfully
+	app closes
+	cookie errors appear
+	app cannot reconnect (port in use error on emulator, cookie errors appearing on client log)
+	
+	
+QUESTIONS - 
+
+	Reconnection problem - why?
+		Show him the test cases and exactly when it breaks. 
+	
+	Analog servers - Are they fundamentally different from button servers? 
+		-Can we get an example that creates an analog server?
+		
+	UDP - can connect and reconnect, but doesnt send analog values. 
+	
+	
+HYPOTHESIS:
+
+	Telnet is messing up the connection because of the redirection stuff. 
+		Accepting connections on 5000, and never communicating to 3883, so client is confused that there's no cookie/connection when server isn't running. 
+		Try this on an actual android. 
+		
+	0.0 values in analog -> check byte order. 
+		vrpn_Shared.h -> contains htond function (host to network double), ntohd, need to implement these for android.
+		-Changes were made to vrpn_Shared.c, line 196
+		
+	UDP not working with analog ->
+		Check the code where this happens. the error message might be lying to us. 
+		
+		
+	
+	
