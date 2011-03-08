@@ -77,7 +77,7 @@ class VRPN_API vrpn_HidProductMaskAcceptor: public vrpn_HidAcceptor {
 		~vrpn_HidProductMaskAcceptor() {}
 
 		bool accept(const vrpn_HIDDEVINFO &device) {
-			return (device.vendor == vendor) && (device.product & mask == product & mask);
+			return (device.vendor == vendor) && ((device.product & mask) == (product & mask));
 		}
 	private:
 		vrpn_uint16 vendor;
