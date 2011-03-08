@@ -41,7 +41,7 @@ vrpn_Analog_5dtUSB::vrpn_Analog_5dtUSB(vrpn_HidAcceptor *filter,
                                        const char *name,
                                        vrpn_Connection *c) :
 	vrpn_Analog(name, c),
-	vrpn_HidInterface(_filter),
+	vrpn_HidInterface(filter),
 	_filter(filter),
 	_isLeftHand(isLeftHand) {
 	vrpn_Analog::num_channel = num_sensors;
