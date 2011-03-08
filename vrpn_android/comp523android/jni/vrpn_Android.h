@@ -2,7 +2,6 @@
 #define VRPN_ANDROID_H
 
 #include <jni.h>
-#include <android_includes.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
