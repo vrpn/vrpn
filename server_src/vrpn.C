@@ -153,6 +153,7 @@ int main (int argc, char * argv[])
       bail_on_error = false;
     } else if (!strcmp(argv[i], "-v")) {	// Verbose
       verbose = true;
+      vrpn_System_TextPrinter.set_min_level_to_print(vrpn_TEXT_NORMAL);
     } else if (!strcmp(argv[i], "-q")) {  // quit on dropped last con
       auto_quit = true;
     } else if (!strcmp(argv[i], "-NIC")) { // specify a network interface
