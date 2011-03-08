@@ -4,6 +4,7 @@
 #include "vrpn_Analog_5dtUSB.h"
 
 #include <iostream>
+#include <sstream>
 
 #if defined(VRPN_USE_HID)
 
@@ -57,9 +58,14 @@ vrpn_Analog_5dtUSB::~vrpn_Analog_5dtUSB() {
 
 void vrpn_Analog_5dtUSB::on_data_received(size_t bytes, vrpn_uint8 *buffer) {
 	if (bytes != 64) {
-		std::cerr << "Report too short: " << bytes << std::endl;
+		std::ostringstream ss;
+		ss << "Received a too-short report: " << bytes;
+		struct timeval ts;
+		vrpn_gettimeofday(&ts, NULL);
+		send_text_message(ss.str().c_str(), ts, vrpn_TEXT_WARNING);
 		return;
 	}
+
 	// Decode all full reports.
 	const float scale = static_cast<float>(1.0 / 4096.0);
 	for (size_t i = 0; i < 16; i++) {
