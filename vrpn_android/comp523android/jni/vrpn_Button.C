@@ -832,8 +832,8 @@ int vrpn_Button_Remote::handle_change_message(void *userdata,
 	// Fill in the parameters to the button from the message
 	if (p.payload_len != 2*sizeof(vrpn_int32)) {
 		fprintf(stderr,"vrpn_Button: change message payload error\n");
-		fprintf(stderr,"             (got %d, expected %d)\n",
-			p.payload_len, 2*sizeof(vrpn_int32));
+		fprintf(stderr,"             (got %d, expected %lud)\n",
+			p.payload_len, static_cast<unsigned long>(2*sizeof(vrpn_int32)));
 		return -1;
 	}
 	bp.msg_time = p.msg_time;

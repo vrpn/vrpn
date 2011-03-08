@@ -1566,7 +1566,7 @@ static int	vrpn_getmyIP (char * myIPchar, unsigned maxlen,
           ntohl(socket_name.sin_addr.s_addr) & 0xff);
 
     // Copy this to the output
-    if (strlen(myIPstring) > maxlen) {
+    if ((unsigned)strlen(myIPstring) > maxlen) {
       fprintf(stderr,"vrpn_getmyIP: Name too long to return\n");
       return -1;
     }
@@ -1607,7 +1607,7 @@ static int	vrpn_getmyIP (char * myIPchar, unsigned maxlen,
   	(unsigned int)(unsigned char)host->h_addr_list[0][3]);
 
   // Copy this to the output
-  if (strlen(myIPstring) > maxlen) {
+  if ((unsigned)strlen(myIPstring) > maxlen) {
     fprintf(stderr,"vrpn_getmyIP: Name too long to return\n");
     return -1;
   }
@@ -1984,6 +1984,13 @@ static SOCKET open_socket (int type,
     return (SOCKET) -1;
   }
 
+// Added by Eric Boren to address socket reconnectivity on the Android
+#ifdef __ANDROID__
+  vrpn_int32 optval = 1;
+  vrpn_int32 sockoptsuccess = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval);
+  fprintf(stderr, "setsockopt returned %i, optval: %i\n", sockoptsuccess, optval);
+#endif 
+  
   namelen = sizeof(name);
 
   // bind to local address
@@ -2296,7 +2303,7 @@ int vrpn_poll_for_accept(SOCKET listen_sock, SOCKET *accept_sock, double timeout
 		perror("vrpn_poll_for_accept: accept() failed");
 		return -1;
 	    }
-#ifndef	_WIN32_WCE
+#if	!defined(_WIN32_WCE) && !defined(__ANDROID__)
 	    {	struct	protoent	*p_entry;
 		int	nonzero = 1;
 
@@ -2421,7 +2428,7 @@ int vrpn_start_server(const char * machine, char * server_name, char * args,
                 for (waitloop = 0; waitloop < (SERVCOUNT); waitloop++) {
 		    int ret;
                     pid_t deadkid;
-#if defined(sparc) || defined(FreeBSD) || defined(_AIX)
+#if defined(sparc) || defined(FreeBSD) || defined(_AIX) || defined(__ANDROID__)
                     int status;  // doesn't exist on sparc_solaris or FreeBSD
 #else
                     union wait status;
@@ -3519,7 +3526,7 @@ int vrpn_Endpoint_IP::connect_tcp_to (const char * addr, int port) {
   }
 
 	/* Set the socket for TCP_NODELAY */
-#ifndef _WIN32_WCE
+#if	!defined(_WIN32_WCE) && !defined(__ANDROID__)
 	{	struct	protoent	*p_entry;
 		int	nonzero = 1;
 
@@ -3940,7 +3947,7 @@ int vrpn_Endpoint_IP::getOneTCPMessage (int fd, char * buf, int buflen) {
 #endif
 
   // skip up to alignment
-  size_t header_len = sizeof(header);
+  vrpn_int32 header_len = sizeof(header);
   if (header_len%vrpn_ALIGN) {header_len += vrpn_ALIGN - header_len%vrpn_ALIGN;}
   if (header_len > sizeof(header)) {
     // the difference can be no larger than this

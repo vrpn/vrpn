@@ -184,7 +184,7 @@ int gethostname (char *, int);
 // proposed strategy handles both partial major version compatibility as well
 // as accidental partial minor version incompatibility.
 //
-const char * vrpn_MAGIC = (const char *) "vrpn: ver. 07.26";
+const char * vrpn_MAGIC = (const char *) "vrpn: ver. 07.29";
 const char * vrpn_FILE_MAGIC = (const char *) "vrpn: ver. 04.00";
 const int vrpn_MAGICLEN = 16;  // Must be a multiple of vrpn_ALIGN bytes!
 
@@ -660,8 +660,8 @@ int vrpn_Log::saveLogSoFar(void) {
     
     if (retval != 6) {
       fprintf(stderr, "vrpn_Log::saveLogSoFar:  "
-                      "Couldn't write log file (got %d, expected %d).\n",
-              retval, sizeof(lp->data));
+                      "Couldn't write log file (got %d, expected %lud).\n",
+              retval, static_cast<unsigned long>(sizeof(lp->data)));
       lp = d_logTail;
       final_retval = -1;
       continue;
@@ -1566,7 +1566,7 @@ static int	vrpn_getmyIP (char * myIPchar, unsigned maxlen,
           ntohl(socket_name.sin_addr.s_addr) & 0xff);
 
     // Copy this to the output
-    if ((int)strlen(myIPstring) > maxlen) {
+    if ((unsigned)strlen(myIPstring) > maxlen) {
       fprintf(stderr,"vrpn_getmyIP: Name too long to return\n");
       return -1;
     }
@@ -1607,7 +1607,7 @@ static int	vrpn_getmyIP (char * myIPchar, unsigned maxlen,
   	(unsigned int)(unsigned char)host->h_addr_list[0][3]);
 
   // Copy this to the output
-  if ((int)strlen(myIPstring) > maxlen) {
+  if ((unsigned)strlen(myIPstring) > maxlen) {
     fprintf(stderr,"vrpn_getmyIP: Name too long to return\n");
     return -1;
   }
@@ -2262,7 +2262,6 @@ int vrpn_get_a_TCP_socket (SOCKET * listen_sock, int * listen_portnum,
   }
 
   *listen_portnum = ntohs(listen_name.sin_port);
-  
 
 //fprintf(stderr, "Listening on port %d, address %d %d %d %d.\n",
 //*listen_portnum, listen_name.sin_addr.s_addr >> 24,
@@ -2429,7 +2428,7 @@ int vrpn_start_server(const char * machine, char * server_name, char * args,
                 for (waitloop = 0; waitloop < (SERVCOUNT); waitloop++) {
 		    int ret;
                     pid_t deadkid;
-#if defined(sparc) || defined(FreeBSD) || defined(_AIX) || defined(__ANDROID__) // ANDROID added by Eric Boren
+#if defined(sparc) || defined(FreeBSD) || defined(_AIX) || defined(__ANDROID__)
                     int status;  // doesn't exist on sparc_solaris or FreeBSD
 #else
                     union wait status;
@@ -2496,7 +2495,7 @@ int vrpn_start_server(const char * machine, char * server_name, char * args,
 
 int write_vrpn_cookie (char * buffer, int length, long remote_log_mode)
 {
-  if (length < vrpn_MAGICLEN + vrpn_ALIGN + 1)
+  if (static_cast<unsigned>(length) < vrpn_MAGICLEN + vrpn_ALIGN + 1)
     return -1;
 
   sprintf(buffer, "%s  %c", vrpn_MAGIC, static_cast<char>(remote_log_mode + '0'));
@@ -3776,13 +3775,19 @@ void vrpn_Endpoint_IP::poll_for_cookie (const timeval * pTimeout) {
 }
 
 int vrpn_Endpoint_IP::finish_new_connection_setup (void) {
-  char recvbuf [501];  // HACK
+  char *recvbuf = NULL;
   vrpn_int32 sendlen;
   long received_logmode;
   unsigned short udp_portnum;
   int i;
 
   sendlen = vrpn_cookie_size();
+  recvbuf = new char[sendlen];
+  if (recvbuf == NULL) {
+    fprintf(stderr,"vrpn_Endpoint_IP::finish_new_connection_setup(): Out of memory when allocating receiver buffer\n");
+    status = BROKEN;
+    return -1;
+  }
 
   // Try to read the magic cookie from the server.
   int ret = vrpn_noint_block_read(d_tcpSocket, recvbuf, sendlen);
@@ -3907,6 +3912,7 @@ int vrpn_Endpoint_IP::finish_new_connection_setup (void) {
     (*d_connectionCounter)++;
   }
 
+  delete [] recvbuf;
   return 0;
 }
 
@@ -4209,7 +4215,7 @@ int vrpn_Endpoint::handle_type_message(void *userdata,
   vrpn_int32	i;
   vrpn_int32	local_id;
 
-  if (p.payload_len > sizeof(cName)) {
+  if (static_cast<unsigned>(p.payload_len) > sizeof(cName)) {
     fprintf(stderr,"vrpn: vrpn_Endpoint::handle_type_message:  "
 			"Type name too long\n");
     return -1;
@@ -4275,7 +4281,7 @@ int vrpn_Endpoint::handle_sender_message(void *userdata,
   vrpn_int32 i;
   vrpn_int32 local_id;
 
-  if (p.payload_len > sizeof(cName)) {
+  if (static_cast<size_t>(p.payload_len) > sizeof(cName)) {
     fprintf(stderr,"vrpn: vrpn_Endpoint::handle_sender_message():Sender name too long\n");
      return -1;
   }

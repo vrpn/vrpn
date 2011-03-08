@@ -189,7 +189,8 @@ vrpn_float64 htond( vrpn_float64 d )
         char *pchOrig= (char *)&d;
 
         // swap to big-endian order.
-        for(int i=0;i<sizeof(vrpn_float64);i++) {
+		unsigned i;
+        for(i=0;i<sizeof(vrpn_float64);i++) {
             pchSwapped[i]=pchOrig[sizeof(vrpn_float64)-i-1];
         }
 
@@ -627,16 +628,16 @@ int vrpn_unbuffer (const char ** buffer, vrpn_float32 * fval)
     parameter type). These routines handle byte-swapping to and from
     the VRPN defined wire protocol.
 */
+#if defined (__ANDROID__)
 #include <bitset>
+#endif
 int vrpn_unbuffer (const char ** buffer, vrpn_float64 * dval)
 {
     vrpn_float64 aligned;
 
-    memcpy( &aligned, *buffer, sizeof( aligned ) );    
-	
-	*dval = ntohd( aligned );
+    memcpy( &aligned, *buffer, sizeof( aligned ) );
+    *dval = ntohd( aligned );
     *buffer += sizeof( aligned );
-	
     return 0;
 }
 
@@ -1659,22 +1660,12 @@ unsigned vrpn_Thread::number_of_processors() {
 // thread.
 static void vrpn_test_thread_body(vrpn_ThreadData &threadData)
 {
-  // We need to p() the semaphore that protects userdata at the beginning of this
-  // function and then v() it at the end, to make sure we're not racing with
-  // another thread.
-  threadData.udSemaphore.p();
-
-    if (threadData.pvUD == NULL) {
-      fprintf(stderr, "vrpn_test_thread_body(): pvUD is NULL\n");
-      return;
-    }
-    vrpn_Semaphore *s = static_cast<vrpn_Semaphore *>(threadData.pvUD);
-    s->v();
-
-  // We need to p() the semaphore that protects userdata at the beginning of this
-  // function and then v() it at the end, to make sure we're not racing with
-  // another thread.
-  threadData.udSemaphore.v();
+  if (threadData.pvUD == NULL) {
+    fprintf(stderr, "vrpn_test_thread_body(): pvUD is NULL\n");
+    return;
+  }
+  vrpn_Semaphore *s = static_cast<vrpn_Semaphore *>(threadData.pvUD);
+  s->v();
 
   return;
 }

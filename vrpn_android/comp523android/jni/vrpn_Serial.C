@@ -14,7 +14,7 @@
 #include <sys/ioctl.h>
 #endif
 
-#if !defined(_WIN32) || defined(__GNUC__)
+#if !defined(_WIN32) || defined(__GNUC__) && !defined(__MINGW32__)
 #include <unistd.h>
 #include <netinet/in.h>
 #endif
@@ -25,7 +25,7 @@
 
 #if defined(_WIN32)
 #include <io.h>
-#if defined(__GNUC__)
+#if defined(__GNUC__) && !defined(__MINGW32__)
 #include <netinet/in.h>
 #include <sys/socket.h>
 #else
@@ -447,7 +447,7 @@ int vrpn_drain_output_buffer(int comm)
 #if defined(_WIN32)
    return FlushFileBuffers(commConnections[comm]) == 0;
 #else
-   return tcdrain(comm);
+  return tcdrain(comm);
 #endif
 
 #endif

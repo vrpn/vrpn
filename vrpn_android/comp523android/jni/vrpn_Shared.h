@@ -171,12 +171,6 @@ static	const   int     vrpn_int_data_for_endian_test = 1;
 static	const   char    *vrpn_char_data_for_endian_test = (char *)(void *)(&vrpn_int_data_for_endian_test);
 static	const   bool    vrpn_big_endian = (vrpn_char_data_for_endian_test[0] != 1);
 
-// XXX should this be done in cygwin?
-// No sleep() function, but Sleep(DWORD) defined in winbase.h
-#if defined(_WIN32) && (!defined(__CYGWIN__))
-#define	sleep(x)	Sleep( DWORD(1000.0 * x) )
-#endif
-
 // Semaphore and Thread classes derived from Hans Weber's classes from UNC.
 // Don't let the existence of a Thread class fool you into thinking
 // that VRPN is thread-safe.  This and the Semaphore are included as
@@ -261,15 +255,18 @@ protected:
 };
 
 // A ptr to this struct will be passed to the 
-// thread function.  The user data ptr will be in pvUD,
-// and ps should contain a semaphore for mutex access to
-// the data.
+// thread function.  The user data ptr will be in pvUD.
+// (There used to be a non-functional semaphore object
+// also in this structure, but it was removed.  This leaves
+// a struct with only one element, which is a pain but
+// at least it doesn't break existing code.  If we need
+// to add something else later, there is a place for it.
 
-// The user should create and manage the semaphore.
+// The user should create and manage any semaphore needed
+// to handle access control to the userdata.
 
 struct VRPN_API vrpn_ThreadData {
   void *pvUD;
-  vrpn_Semaphore udSemaphore;
 };
 
 typedef void (*vrpn_THREAD_FUNC) ( vrpn_ThreadData &threadData );
@@ -279,7 +276,7 @@ typedef void (*vrpn_THREAD_FUNC) ( vrpn_ThreadData &threadData );
 // building blocks towards making your own code thread-safe.  They are
 // here to enable the vrpn_Imager_Stream_Buffer class to do its thing.
 class VRPN_API vrpn_Thread {
-public:  
+public:
   // args are the routine to run in the thread
   // a ThreadData struct which will be passed into
   // the thread (it will be passed as a void *).
