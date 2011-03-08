@@ -56,6 +56,7 @@ class VRPN_API vrpn_Analog_5dtUSB : public vrpn_Analog, protected vrpn_HidInterf
 
 		double _rawVals[16];
 		bool _isLeftHand;
+		bool _wasConnected;
 
 		/// Send report iff changed
 		void report_changes(vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);

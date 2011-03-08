@@ -45,7 +45,8 @@ vrpn_Analog_5dtUSB::vrpn_Analog_5dtUSB(vrpn_HidAcceptor *filter,
 	vrpn_Analog(name, c),
 	vrpn_HidInterface(filter),
 	_filter(filter),
-	_isLeftHand(isLeftHand) {
+	_isLeftHand(isLeftHand),
+	_wasConnected(false) {
 	
 	if (num_sensors != 5 && num_sensors != 14) {
 		throw std::logic_error("The vrpn_Analog_5dtUSB driver only supports 5 or 14 sensors, and a different number was passed!");
@@ -131,6 +132,13 @@ void vrpn_Analog_5dtUSB::mainloop() {
 	vrpn_gettimeofday(&_timestamp, NULL);
 
 	update();
+
+	if (connected() && !_wasConnected) {
+		std::ostringstream ss;
+		ss << "Successfully connected to 5DT glove, " << get_description();
+        send_text_message(ss.str().c_str(), _timestamp, vrpn_TEXT_WARNING);
+	}
+	_wasConnected = connected();
 
 	server_mainloop();
 }
