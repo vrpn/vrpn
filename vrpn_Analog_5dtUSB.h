@@ -52,7 +52,6 @@ class VRPN_API vrpn_Analog_5dtUSB : public vrpn_Analog, protected vrpn_HidInterf
 		void on_data_received(size_t bytes, vrpn_uint8 *buffer);
 
 		struct timeval _timestamp;
-		vrpn_HidAcceptor *_filter;
 
 		double _rawVals[16];
 		bool _isLeftHand;

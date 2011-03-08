@@ -44,7 +44,6 @@ vrpn_Analog_5dtUSB::vrpn_Analog_5dtUSB(vrpn_HidAcceptor *filter,
                                        vrpn_Connection *c) :
 	vrpn_Analog(name, c),
 	vrpn_HidInterface(filter),
-	_filter(filter),
 	_isLeftHand(isLeftHand),
 	_wasConnected(false) {
 	
@@ -60,7 +59,7 @@ vrpn_Analog_5dtUSB::vrpn_Analog_5dtUSB(vrpn_HidAcceptor *filter,
 }
 
 vrpn_Analog_5dtUSB::~vrpn_Analog_5dtUSB() {
-	delete _filter;
+	delete _acceptor;
 }
 std::string vrpn_Analog_5dtUSB::get_description() const {
 	std::ostringstream ss;
