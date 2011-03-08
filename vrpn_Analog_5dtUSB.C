@@ -136,7 +136,7 @@ void vrpn_Analog_5dtUSB::mainloop() {
 	if (connected() && !_wasConnected) {
 		std::ostringstream ss;
 		ss << "Successfully connected to 5DT glove, " << get_description();
-        send_text_message(ss.str().c_str(), _timestamp, vrpn_TEXT_WARNING);
+        send_text_message(ss.str().c_str(), _timestamp, vrpn_TEXT_NORMAL);
 	}
 	_wasConnected = connected();
 
