@@ -14,8 +14,6 @@
 #if defined(VRPN_USE_HID)
 class VRPN_API vrpn_Analog_5dtUSB : public vrpn_Analog, protected vrpn_HidInterface {
 	public:
-		vrpn_Analog_5dtUSB(vrpn_HidAcceptor *filter, int num_sensors,
-		                   bool isLeftHand, const char *name, vrpn_Connection *c = 0);
 		virtual ~vrpn_Analog_5dtUSB();
 
 		virtual void mainloop();
@@ -31,6 +29,9 @@ class VRPN_API vrpn_Analog_5dtUSB : public vrpn_Analog, protected vrpn_HidInterf
 		bool isRightHand() const { return !_isLeftHand; }
 
 	protected:
+		/// Protected constructor: use a subclass to specify the glove variant to use.
+		vrpn_Analog_5dtUSB(vrpn_HidAcceptor *filter, int num_sensors,
+		                   bool isLeftHand, const char *name, vrpn_Connection *c = 0);
 		// Set up message handlers, etc.
 		void on_data_received(size_t bytes, vrpn_uint8 *buffer);
 
