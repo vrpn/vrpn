@@ -27,6 +27,13 @@ On remote machine:
 	Analog2: The Accelerometer.
 
 -----------------------------------------------------------
+Compiling the JNI code:
+	To turn the C source code into an .so library for linking into the Java code, run ndk-build in the jni subdirectory (where the Android.mk file lives).
+	Note: After you do this, you need to make clean and then make the project in Eclipse; there are a bunch of errors if you don't make clean first.
+
+	I've not yet figured out how to use javah to create the .h files.
+
+-----------------------------------------------------------
 Notes made by Russ Taylor as he was working with Eric Boren
 to get the code to compile on his laptop:
 

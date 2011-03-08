@@ -1,5 +1,5 @@
 #include "jni_layer.h"
-#include <vrpn_Android.h>
+#include "vrpn_Android.h"
 
 /*
  * This is JNI code for interaction between the Java and C++ components.
