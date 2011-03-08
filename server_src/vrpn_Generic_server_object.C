@@ -4372,7 +4372,7 @@ int setup_Analog_5dtUSB(const char * specialization, bool verbose, vrpn_Connecti
   } else {
     num_analogs++;
   }
-
+  return 0;
 #else
   fprintf(stderr, "vrpn_server: Can't open vrpn_Analog_5dtUSB_%s: VRPN_USE_HID not defined in vrpn_Configure.h!\n", specialization);
   return -1;
@@ -4386,17 +4386,17 @@ int vrpn_Generic_Server_Object::setup_Analog_5dtUSB_Glove5Left(char * &pch, char
 
 int vrpn_Generic_Server_Object::setup_Analog_5dtUSB_Glove5Right(char * &pch, char * line, FILE * config_file) {
   next();
-  setup_Analog_5dtUSB<vrpn_Analog_5dtUSB_Glove5Right>("Glove5Right", verbose, connection, analogs, num_analogs, pch, line, config_file);
+  return setup_Analog_5dtUSB<vrpn_Analog_5dtUSB_Glove5Right>("Glove5Right", verbose, connection, analogs, num_analogs, pch, line, config_file);
 }
 
 int vrpn_Generic_Server_Object::setup_Analog_5dtUSB_Glove14Left(char * &pch, char * line, FILE * config_file) {
   next();
-  setup_Analog_5dtUSB<vrpn_Analog_5dtUSB_Glove14Left>("Glove14Left", verbose, connection, analogs, num_analogs, pch, line, config_file);
+  return setup_Analog_5dtUSB<vrpn_Analog_5dtUSB_Glove14Left>("Glove14Left", verbose, connection, analogs, num_analogs, pch, line, config_file);
 }
 
 int vrpn_Generic_Server_Object::setup_Analog_5dtUSB_Glove14Right(char * &pch, char * line, FILE * config_file) {
   next();
-  setup_Analog_5dtUSB<vrpn_Analog_5dtUSB_Glove14Right>("Glove14Right", verbose, connection, analogs, num_analogs, pch, line, config_file);
+  return setup_Analog_5dtUSB<vrpn_Analog_5dtUSB_Glove14Right>("Glove14Right", verbose, connection, analogs, num_analogs, pch, line, config_file);
 }
 
 vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connection_to_use, const char *config_file_name, int port, bool be_verbose, bool bail_on_open_error) :
