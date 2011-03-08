@@ -11,7 +11,7 @@
 #pragma	warning ( disable : 4996)
 #endif
 
-#if defined(__APPLE__)
+#if defined(__APPLE__) || defined(__ANDROID__)
 #include <unistd.h>
 #endif
 
