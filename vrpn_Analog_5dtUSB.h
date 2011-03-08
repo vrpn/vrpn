@@ -3,6 +3,7 @@
 
 #include "vrpn_HumanInterface.h"
 #include "vrpn_Analog.h"
+#include <string>
 
 // Device drivers for the 5th Dimension Technologies (5dt) data gloves
 // connecting to them as HID devices (USB). The base class does all the work:
@@ -18,6 +19,16 @@ class VRPN_API vrpn_Analog_5dtUSB : public vrpn_Analog, protected vrpn_HidInterf
 		virtual ~vrpn_Analog_5dtUSB();
 
 		virtual void mainloop();
+
+		/// Returns a string description of the device we've connected to. Used internally,
+		/// but also possibly useful externally.
+		std::string get_description() const;
+
+		/// Accessor to know if this is a left hand glove.
+		bool isLeftHand() const { return _isLeftHand; }
+
+		/// Accessor to know if this is a right hand glove.
+		bool isRightHand() const { return !_isLeftHand; }
 
 	protected:
 		// Set up message handlers, etc.

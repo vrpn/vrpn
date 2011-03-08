@@ -55,6 +55,31 @@ vrpn_Analog_5dtUSB::vrpn_Analog_5dtUSB(vrpn_HidAcceptor *filter,
 vrpn_Analog_5dtUSB::~vrpn_Analog_5dtUSB() {
 	delete _filter;
 }
+std::string vrpn_Analog_5dtUSB::get_description() const {
+	std::ostringstream ss;
+	if (product() & vrpn_5DT_LEFT_MASK) {
+		ss << "left";
+	} else {
+		ss << "right";
+	}
+
+	ss << " hand, ";
+	if (product() & vrpn_5DT_DATAGLOVE5_MASK) {
+		ss << "5";
+	} else {
+		ss << "14";
+	}
+
+	ss << " sensors, ";
+	if (product() & vrpn_5DT_WIRELESS_PORTA_MASK) {
+		ss << "wireless port A";
+	} else if (product() & vrpn_5DT_WIRELESS_PORTB_MASK) {
+		ss << "wireless port B";
+	} else {
+		ss << "wired USB";
+	}
+	return ss.str();
+}
 
 void vrpn_Analog_5dtUSB::on_data_received(size_t bytes, vrpn_uint8 *buffer) {
 	if (bytes != 64) {
