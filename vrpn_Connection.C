@@ -5269,7 +5269,7 @@ vrpn_Connection * vrpn_create_server_connection (
         delete [] machine;
         machine = NULL;
       }
-      int port = vrpn_get_port_number(location);
+      unsigned short port = static_cast<unsigned short>(vrpn_get_port_number(location));
       c = new vrpn_Connection_IP(port,
         local_in_logfile_name, local_out_logfile_name,
         machine);
@@ -5612,7 +5612,15 @@ void vrpn_Connection_IP::server_check_for_incoming_connections
     // presumably coming through a firewall or NAT and UDP packets won't get
     // through).
     endpoint->d_tcp_only = vrpn_TRUE;
-    endpoint->d_remote_port_number = port;
+
+    // Find out the remote port number and store it.
+    struct sockaddr_in peer;
+    int peerlen = sizeof(peer);
+    unsigned short peer_port = 0;
+    if (getpeername(newSocket, static_cast<struct sockaddr *>(static_cast<void*>(&peer)), &peerlen) == 0) {
+      peer_port = ntohs(peer.sin_port);
+    }
+    endpoint->d_remote_port_number = peer_port;
 
     // Server-side logging under multiconnection - TCH July 2000
     if (d_serverLogMode & vrpn_LOG_INCOMING) {

@@ -31,7 +31,7 @@ Compiling the JNI code:
 	To turn the C source code into an .so library for linking into the Java code, run ndk-build in the jni subdirectory (where the Android.mk file lives).
 	Note: After you do this, you need to make clean and then make the project in Eclipse; there are a bunch of errors if you don't make clean first.
 
-	I've not yet figured out how to use javah to create the .h files.
+	I've not yet figured out how to use javah to create the jni_layer.h file as listed in the manual, but the code compiles fine without it so I think maybe that was a leftover that is no longer needed.  I can make the .so and then build the project and then run the resulting executable, so I think we're done!
 
 -----------------------------------------------------------
 Notes made by Russ Taylor as he was working with Eric Boren
