@@ -30,8 +30,10 @@
 */
 class VRPN_API vrpn_Analog_5dtUSB : public vrpn_Analog, protected vrpn_HidInterface {
 	public:
+		/// Destructor
 		virtual ~vrpn_Analog_5dtUSB();
 
+		/// Standard VRPN mainloop method.
 		virtual void mainloop();
 
 		/// Returns a string description of the device we've connected to. Used internally,
@@ -51,10 +53,19 @@ class VRPN_API vrpn_Analog_5dtUSB : public vrpn_Analog, protected vrpn_HidInterf
 		/// Extracts the sensor values from each report.
 		void on_data_received(size_t bytes, vrpn_uint8 *buffer);
 
+		/// Timestamp updated during mainloop()
 		struct timeval _timestamp;
 
+		/// The raw values extracted from the report: which ones we use to set
+		/// analog channels varies based on the kind of device this is.
 		double _rawVals[16];
+
+		/// Flag for left handedness.
 		bool _isLeftHand;
+
+		/// Flag indicating whether we were connected last time through the mainloop.
+		/// Used to send a "normal"-severity message when we connect with info on the
+		/// device.
 		bool _wasConnected;
 
 		/// Send report iff changed
@@ -63,38 +74,38 @@ class VRPN_API vrpn_Analog_5dtUSB : public vrpn_Analog, protected vrpn_HidInterf
 		void report(vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
 };
 
+/// Specialization of vrpn_Analog_5dtUSB for a 5-sensor, left-hand glove.
 class VRPN_API vrpn_Analog_5dtUSB_Glove5Left: public vrpn_Analog_5dtUSB {
 	public:
 		vrpn_Analog_5dtUSB_Glove5Left(const char *name, vrpn_Connection *c = 0);
 		virtual ~vrpn_Analog_5dtUSB_Glove5Left() {};
-
-	protected:
 };
 
+/// Specialization of vrpn_Analog_5dtUSB for a 5-sensor, right-hand glove.
 class VRPN_API vrpn_Analog_5dtUSB_Glove5Right: public vrpn_Analog_5dtUSB {
 	public:
 		vrpn_Analog_5dtUSB_Glove5Right(const char *name, vrpn_Connection *c = 0);
 		virtual ~vrpn_Analog_5dtUSB_Glove5Right() {};
-
-	protected:
 };
 
+/// Specialization of vrpn_Analog_5dtUSB for a 14-sensor, left-hand glove.
+/// Not tested as of 8-Mar-2011 because I don't have access to one.
 class VRPN_API vrpn_Analog_5dtUSB_Glove14Left: public vrpn_Analog_5dtUSB {
 	public:
 		vrpn_Analog_5dtUSB_Glove14Left(const char *name, vrpn_Connection *c = 0);
 		virtual ~vrpn_Analog_5dtUSB_Glove14Left() {};
-
-	protected:
 };
 
+/// Specialization of vrpn_Analog_5dtUSB for a 14-sensor, right-hand glove.
+/// Not tested as of 8-Mar-2011 because I don't have access to one.
 class VRPN_API vrpn_Analog_5dtUSB_Glove14Right: public vrpn_Analog_5dtUSB {
 	public:
 		vrpn_Analog_5dtUSB_Glove14Right(const char *name, vrpn_Connection *c = 0);
 		virtual ~vrpn_Analog_5dtUSB_Glove14Right() {};
-
-	protected:
 };
 
+/// HID acceptor subclass used by vrpn_Analog_5dtUSB since the bits of
+/// the product ID describe the device in a useful way.
 class VRPN_API vrpn_HidProductMaskAcceptor: public vrpn_HidAcceptor {
 	public:
 		vrpn_HidProductMaskAcceptor(vrpn_uint16 vendorId, vrpn_uint16 productMask = 0x0000, vrpn_uint16 desiredProduct = 0x0000) :

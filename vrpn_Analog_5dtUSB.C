@@ -183,7 +183,5 @@ vrpn_Analog_5dtUSB_Glove14Right::vrpn_Analog_5dtUSB_Glove14Right(const char *nam
 	                   name,
 	                   c) { }
 
-
-
 #endif
 
