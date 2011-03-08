@@ -5,13 +5,29 @@
 #include "vrpn_Analog.h"
 #include <string>
 
-// Device drivers for the 5th Dimension Technologies (5dt) data gloves
-// connecting to them as HID devices (USB). The base class does all the work:
-// the inherited classes just create the right filters and input for the base class;
-
-// Exposes Analog channels for the raw values of each sensor.
-
 #if defined(VRPN_USE_HID)
+
+/** @brief 5th Dimension Technologies (5dt) USB data glove driver
+
+	This supports connecting to 5dt gloves over USB that present a HID device interface.
+	This includes the 5DT Data Glove 5 Ultra and the 5DT Data Glove 14 Ultra, as well
+	as either of those using the wireless kit. (I, Ryan Pavlik, have only tested this
+	with the 5DT Data Glove 5 Ultras since that's all I have access to, but support based
+	on what I would expect from a 14-sensor glove is included.)
+	
+	Each sensor's raw values are exposed as an analog channel (5 or 14) between 0.0 and 1.0.
+	Note that there is pretty significant need for calibration since the used range within the
+	entire representable range is pretty small and seemingly device-dependent.
+	Your code will probably have to at least perform some scaling based on establishing a
+	"min" and "max" for each sensor.
+
+	For serial 5dt glove access, see the vrpn_5DT16 and vrpn_Analog_5dt classes.
+
+	The inherited method vrpn_Analog::getNumChannels() 
+
+	This base class does all the work: the inherited classes just create the right filters
+	and input for the base class.
+*/
 class VRPN_API vrpn_Analog_5dtUSB : public vrpn_Analog, protected vrpn_HidInterface {
 	public:
 		virtual ~vrpn_Analog_5dtUSB();
@@ -32,7 +48,7 @@ class VRPN_API vrpn_Analog_5dtUSB : public vrpn_Analog, protected vrpn_HidInterf
 		/// Protected constructor: use a subclass to specify the glove variant to use.
 		vrpn_Analog_5dtUSB(vrpn_HidAcceptor *filter, int num_sensors,
 		                   bool isLeftHand, const char *name, vrpn_Connection *c = 0);
-		// Set up message handlers, etc.
+		/// Extracts the sensor values from each report.
 		void on_data_received(size_t bytes, vrpn_uint8 *buffer);
 
 		struct timeval _timestamp;
