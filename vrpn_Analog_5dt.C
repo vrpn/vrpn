@@ -48,8 +48,15 @@ static unsigned long duration (struct timeval p_t1, struct timeval p_t2)
 vrpn_5dt::vrpn_5dt (const char * p_name, vrpn_Connection * p_c, const char * p_port, int p_baud, int p_mode, bool tenbytes):
   vrpn_Serial_Analog (p_name, p_c, p_port, p_baud, 8, vrpn_SER_PARITY_NONE),
   _numchannels (8),	// This is an estimate; will change when reports come
-  _tenbytes(tenbytes)	// Do we expect ten-byte messages?
+  _tenbytes(tenbytes),	// Do we expect ten-byte messages?
+  _wireless(p_baud == 9600) // 9600 baud implies a wireless glove.
 {
+  if (_wireless) {
+    // All wireless gloves continually send 10 byte reports and ignore
+    // all requests.
+    _tenbytes = true;
+    p_mode = 2;
+  }
   // Set the parameters in the parent classes
   vrpn_Analog::num_channel = _numchannels;
 
@@ -119,6 +126,14 @@ vrpn_5dt::reset (void)
   char           l_errmsg[256];
 
   vrpn_flush_input_buffer (serial_fd);
+  if (_wireless) {
+    // Wireless gloves can't be reset - just enter the reading mode and
+    // exit this method.
+    _status = STATUS_READING;
+    vrpn_gettimeofday (&timestamp, NULL);	// Set watchdog now
+    return 0;
+  }
+
   send_command ((unsigned char *) "A", 1); // Command to init the glove
   vrpn_SleepMsecs (100);  //Give it time to respond
   l_timeout.tv_sec = 2;
@@ -282,6 +297,17 @@ void vrpn_5dt::get_report (void)
    channel[5] = _buffer[5]/255.0; // Pinkie
    channel[6] = 180 * _buffer[6]/255.0; // Pitch
    channel[7] = 180 * _buffer[7]/255.0; // Roll
+
+   if (_wireless && !_gotInfo) {
+      _gotInfo = true;
+      // Bit 0 set in the capability byte implies a right-hand glove.
+      bool isRight = (_buffer[9] & 0x01) > 0;
+      if (isRight) {
+        _5DT_INFO ("A 'wireless-type' right glove is ready and reporting");
+	  } else {
+		_5DT_INFO ("A 'wireless-type' left glove is ready and reporting");
+	  }
+   }
 
    //--------------------------------------------------------------------
    // Done with the decoding, send the reports and go back to syncing
