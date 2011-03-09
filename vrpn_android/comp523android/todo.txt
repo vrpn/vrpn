@@ -1,0 +1,7 @@
+TODO:
+
+5) Add everything to GIT 
+
+6) UI - Move value reports  - try to fit on one line, fit to same width
+
+7) Name formats for credits page

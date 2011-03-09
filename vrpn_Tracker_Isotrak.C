@@ -66,7 +66,7 @@ vrpn_Tracker_Isotrak::~vrpn_Tracker_Isotrak()
 /// Documentation ISOTRAK 2 USER's MANUAL p60
 */
 
-int vrpn_Tracker_Isotrak::report_length(int sensor)
+int vrpn_Tracker_Isotrak::report_length(int /*sensor*/)
 {
     int	len;
 
@@ -85,7 +85,7 @@ int vrpn_Tracker_Isotrak::report_length(int sensor)
     Returns 0 on success and -1 on failure.
 */
 
-int vrpn_Tracker_Isotrak::set_sensor_output_format(int sensor)
+int vrpn_Tracker_Isotrak::set_sensor_output_format(int /*sensor*/)
 {
     char    outstring[16];
 

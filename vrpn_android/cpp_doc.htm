@@ -1,0 +1,66 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0046)http://www.unc.edu/~boren/comp523/cpp_doc.html -->
+<HTML><HEAD>
+<META content="text/html; charset=windows-1252" http-equiv=Content-Type>
+<STYLE type=text/css>CODE {
+	WHITE-SPACE: nowrap; FONT-SIZE: 16px
+}
+LI {
+	MARGIN-BOTTOM: 10px
+}
+</STYLE>
+
+<META name=GENERATOR content="MSHTML 8.00.6001.18999"></HEAD>
+<BODY>
+<H1>vrpn_Android_Server</H1>
+<P>This is an Android server implementation. It has as members a 
+<CODE>vrpn_Button_Server</CODE> and some number of 
+<CODE>vrpn_Analog_Servers</CODE>, as determined by the Java side. This 
+implementation also has <CODE>vrpn_Button_Remote</CODE> and 
+<CODE>vrpn_Analog_Remote</CODE> clients for the sole purpose of testing. All 
+data from the Android is represented here as either Analogs or Buttons. </P>
+<P>All interaction between this class and the Java side are handled by the jni 
+layer. </P>
+<P>It's worth noting that it is possible to pipe stdout to the Android log - 
+directions for doing so are in the manual for this project - and all output is 
+in the form of: <CODE>fprintf(stderr, "...")</CODE>, which we've found to be 
+more reliable than other methods, including <CODE>fprintf(stdout, "...")</CODE>. 
+</P>
+<H2>class vrpn_Android_Server:</H2>
+<H3>public members:</H3>
+<UL>
+  <LI><CODE>vrpn_Android_Server(vrpn_int32 num_analogs, vrpn_int32 * 
+  analog_sizes, vrpn_int32 num_buttons, vrpn_int32 port);</CODE><BR>Constructor. 
+  Takes an array of integers representing the number of channels for each analog 
+  server, the number of buttons, and the port number. 
+  <LI><CODE>~vrpn_Android_Server();</CODE><BR>Destructor. 
+  <LI><CODE>void mainloop();</CODE><BR>Main loop to be called at every time 
+  step. Calls the <CODE>mainloop()</CODE> functions of the member servers. 
+  <LI><CODE>void set_analog(vrpn_int32 analog_id, vrpn_int32 channel, 
+  vrpn_float64 val);</CODE><BR>Set the value for the given channel of the given 
+  vrpn_Analog_Server 
+  <LI><CODE>void set_button(vrpn_int32 button_id, vrpn_int32 
+  state);</CODE><BR>Set the value for the given button 
+  <LI><CODE>void report_analog_chg(vrpn_int32 analog_id);</CODE><BR>Called when 
+  changes are made to any of the analog values </LI></UL>
+<H3>private members:</H3>
+<UL>
+  <LI><CODE>void initialize(vrpn_int32 num_analogs, vrpn_int32 * analog_sizes, 
+  vrpn_int32 num_buttons);</CODE><BR>Sets up the member servers 
+  <LI><CODE>const char * ANALOG_SERVER_NAME;</CODE> 
+  <LI><CODE>const char * BUTTON_SERVER_NAME;</CODE><BR>Names of the member 
+  servers. Only used by the local clients 
+  <LI><CODE>vrpn_int32 num_analogs;</CODE><BR>Number of vrpn_Analog_Servers 
+  <LI><CODE>vrpn_int32 * analog_sizes;</CODE><BR>Array of numbers of channels in 
+  the analog servers 
+  <LI><CODE>vrpn_Analog_Server ** analog_server;</CODE><BR>Handles multi-touch x 
+  and y as well as any sliders, dials, etc 
+  <LI><CODE>vrpn_Button_Server * button_server;</CODE><BR>Handles all button 
+  press data 
+  <LI><CODE>vrpn_Analog_Remote ** analog_client;</CODE> 
+  <LI><CODE>vrpn_Button_Remote * button_client;</CODE><BR>Local test clients, 
+  used for testing only. 
+  <LI><CODE>vrpn_Connection * connection;</CODE><BR>The connection over which 
+  data from the phone is sent 
+  <LI><CODE>vrpn_int32 port;</CODE><BR>The port over which the 
+  <CODE>vrpn_Connection</CODE> communicates </LI></UL><PRE></PRE></BODY></HTML>

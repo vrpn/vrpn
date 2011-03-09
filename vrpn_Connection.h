@@ -2,13 +2,19 @@
 #define VRPN_CONNECTION_H
 
 #include <stdio.h>  // for FILE
-
 #include "vrpn_Shared.h"
 
 // Don't complain about using sprintf() in Windows.
 #ifdef _WIN32
 #pragma warning ( disable : 4995 4996 )
 #endif
+
+#if defined (__ANDROID__)
+#include <bitset>
+#endif
+
+
+
 
 // This is the list of states that a connection can be in
 // (possible values for status).  doing_okay() returns VRPN_TRUE

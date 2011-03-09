@@ -1,0 +1,88 @@
+Instructions for compiling JNI libraries.
+
+1. Make java file w/ interface methods
+2. Cygwin:
+
+cd $WORKSPACE/jniTest/bin
+"$JAVA"/javah -o jni_vrpn_button.h jni.VrpnButton
+
+3. Move the created .h file into the $CRYSTAX/sources/xxx/jni folder
+4. Implement in a .cpp file
+5. Update the Android.mk file
+6. Cygwin:
+
+cd $CRYSTAX/sources/xxx
+$CRYSTAX/ndk-build
+
+7. Fix errors, rinse, repeat.
+
+
+
+NOTE: To convert jstring to char* :
+
+char* xxx = strdup(env->GetStringUTFChars(yyy, 0));
+
+and back:
+
+jstring yyy = env->NewStringUTF((xxx).c_str());
+
+
+NOTE: To call java methods from c++:
+
+	Log example:
+	
+	jclass c = env->GetObjectClass(obj);
+	const char * name = "log";
+	const char * type = "(Ljava/lang/String;)V";
+	jmethodID method = env->GetMethodID(c, name, type);
+	env->CallVoidMethod(obj, method, env->NewStringUTF((s).c_str()));
+	
+	Note that this calls the method: "void log(String s)" which must exist in the corresponding java class.
+	
+NOTE: To redirect stdio to Android log:
+	Create a local.prop file.
+	With the line: log.redirect-stdio=true
+	Run the emulator and add the file to the /data/ folder.
+	Restart the emulator.
+
+
+NOTE: Some includes req'd: placed in "android_includes.h" and referenced in "vrpn_Types.h"
+		Need to find the compiled versions (or source) for these.
+		
+		Also had to define __ANDROID__ in ndk/build/toolchains/arm-eabi4.4.0/setup.mk as well as forcing compilation as c++
+		
+CHANGES TO EXISTING VRPN:
+	vrpn_Types.h		:	Added #include for __ANDROID__, lines 4-9
+	vrpn_Connection.C	:	Added __ANDROID___ to ifdef on line 2424
+						:	Added import "jni_layer" for logging
+						:	Changed lines 3523, 2299, 198
+	vrpn_Shared.h		:	Added extern pointer for logging on line 5
+	vrpn_Shared.C		:	Line 196: added && !defined(__ANDROID__) to the ifdef
+	
+--- Testing the app with echo-apps on your local machine ---
+	To access the virtual network on the android emulator, you must do port forwarding.
+	Basic idea is that we'll take a port on our localhost (127.0.0.1) and map it to
+	a port on the emulators virtual network interface (10.0.2.15)
+	
+	To set up port-forwarding, do the following:
+	
+	1) Have your emulator/virtual android instance running
+	2) Open a terminal/command prompt (you must have Telnet to do this)
+	3) Enter 'telnet localhost 5554'. This will connect you to the emulators console
+	4) Enter 'redir add (udp|tcp):xxxx:yyyy', 
+	   where:
+			(udp|tcp) is your choice of either udp or tcp protocol,
+	   		xxxx is the port on 127.0.0.1 you want to use (i.e. 127.0.0.1:5000, where xxxx = 5000*)
+	   		yyyy is the port on the emulators network interface that you want to listen to (i.e. 10.0.2.15:3883, where yyyy = 3883**)
+	   		
+	   		* 5000 is just an arbitrary port
+	   		** 3883 is the default port for vrpn to use. This will most likely always be the port you are forwarding to, unless you have
+	   		changed something. 
+	   		
+	 5) Now you should have port forwarding to the emulator set up. Run your echo/test app with the target as 'name@127.0.0.1:xxxx'
+	 6) ????
+	 7) Profit
+	   		
+	   		
+
+	

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hello">Hello World, Main!</string>
+    <string name="app_name">VRPN Controller</string>
+<string name="rotate">Rotate</string>
+<string name="controller_button_00">Button 1</string>
+<string name="controller_button_01">Button 2</string>
+<string name="textView_cordReport">x: , y: </string>
+<string name="textView_incReport">Int: </string>
+<color name="myColor">#3399CC</color>
+<string name="textView_address">IP Address:</string>
+<string name="textView_seekBar_01">Bar</string>
+<string name="textView_track">TRACKING</string>
+<string name="ip_address">IP Address: %s</string>
+<color name="black">#000</color>
+<string name="textView_portNumber">Port Number:</string>
+
+<string name="port_number">:%s</string>
+</resources>
