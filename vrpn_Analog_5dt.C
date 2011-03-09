@@ -389,7 +389,13 @@ void vrpn_5dt::mainloop ()
   char l_errmsg[256];
 
   server_mainloop();
-
+  if (_wireless) {
+    static bool announced = false;
+    if (!announced) {
+      _5DT_INFO ("Will connect to a receive-only 'wireless-type' glove - there may be a few warnings before we succeed.");
+      announced = true;
+    }
+  }
   switch (_status)
     {
     case STATUS_RESETTING:
