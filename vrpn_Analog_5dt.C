@@ -34,7 +34,7 @@
 static unsigned long duration (struct timeval p_t1, struct timeval p_t2)
 {
   return (p_t1.tv_usec - p_t2.tv_usec) +
-    1000000L * (p_t1.tv_sec - p_t2.tv_sec);
+         1000000L * (p_t1.tv_sec - p_t2.tv_sec);
 }
 
 
@@ -48,9 +48,9 @@ static unsigned long duration (struct timeval p_t1, struct timeval p_t2)
 vrpn_5dt::vrpn_5dt (const char * p_name, vrpn_Connection * p_c, const char * p_port, int p_baud, int p_mode, bool tenbytes):
   vrpn_Serial_Analog (p_name, p_c, p_port, p_baud, 8, vrpn_SER_PARITY_NONE),
   _numchannels (8),	// This is an estimate; will change when reports come
-  _tenbytes(tenbytes),	// Do we expect ten-byte messages?
-  _wireless(p_baud == 9600), // 9600 baud implies a wireless glove.
-  _gotInfo(false) // used to know if we have gotten a first full wireless report.
+  _tenbytes (tenbytes),	// Do we expect ten-byte messages?
+  _wireless (p_baud == 9600), // 9600 baud implies a wireless glove.
+  _gotInfo (false)  // used to know if we have gotten a first full wireless report.
 {
   if (_wireless) {
     // All wireless gloves continually send 10 byte reports and ignore
@@ -69,7 +69,7 @@ vrpn_5dt::vrpn_5dt (const char * p_name, vrpn_Connection * p_c, const char * p_p
 
   //Init the mode
   _mode =  p_mode;
-  
+
   // XXX Sebastien Kuntz reports the following about the driver they have
   // written:  It works great except for one small detail :
   // for unknown reasons, there's an extra byte hanging around in the data
@@ -120,10 +120,11 @@ vrpn_5dt::send_command (const unsigned char *p_cmd, int p_len)
   // Send the command
   l_ret = vrpn_write_characters (serial_fd, p_cmd, p_len);
   // Tell if this all worked.
-  if (l_ret == p_len)
+  if (l_ret == p_len) {
     return 0;
-  else
+  } else {
     return -1;
+  }
 }
 
 
@@ -153,7 +154,7 @@ vrpn_5dt::reset (void)
     l_timeout.tv_usec = 0;
     l_ret = vrpn_read_available_characters (serial_fd, l_inbuf, 1, &l_timeout);
     if (l_ret != 1) {
-      _5DT_ERROR  ("vrpn_5dt: Unable to read from the glove\n");
+      _5DT_ERROR ("vrpn_5dt: Unable to read from the glove\n");
       return -1;
     }
     if (l_inbuf[0] == 0x80) {
@@ -161,10 +162,10 @@ vrpn_5dt::reset (void)
       _buffer[0] = l_inbuf[0];
       _bufcount = 1;
       vrpn_gettimeofday (&timestamp, NULL);	// Set watchdog now
-      _5DT_INFO("vrpn_5dt: Got a possible header byte!");
+      _5DT_INFO ("vrpn_5dt: Got a possible header byte!");
       return 0;
     }
-    printf("got 0x%02X not 0x80\n", l_inbuf[0]);
+    printf ("got 0x%02X not 0x80\n", l_inbuf[0]);
     return 0;
   }
   vrpn_flush_input_buffer (serial_fd);
@@ -175,48 +176,48 @@ vrpn_5dt::reset (void)
   l_ret = vrpn_read_available_characters (serial_fd, l_inbuf, 1, &l_timeout);
 
   if (l_ret != 1) {
-      _5DT_ERROR  ("vrpn_5dt: Unable to read from the glove\n");
-      return -1;
+    _5DT_ERROR ("vrpn_5dt: Unable to read from the glove\n");
+    return -1;
   }
 
   if (l_inbuf[0] != 85) {
-      _5DT_ERROR ("vrpn_5dt: Cannot get response on init command");
-      return -1;
+    _5DT_ERROR ("vrpn_5dt: Cannot get response on init command");
+    return -1;
   } else {
-      vrpn_flush_input_buffer (serial_fd);
-      send_command ((unsigned char *) "G", 1); //Command to Query informations from the glove
-      vrpn_SleepMsecs (100);  //Give it time to respond
-      l_timeout.tv_sec = 2;
-      l_timeout.tv_usec = 0;
-      l_ret = vrpn_read_available_characters (serial_fd, l_inbuf, 32, &l_timeout);
+    vrpn_flush_input_buffer (serial_fd);
+    send_command ( (unsigned char *) "G", 1); //Command to Query informations from the glove
+    vrpn_SleepMsecs (100);  //Give it time to respond
+    l_timeout.tv_sec = 2;
+    l_timeout.tv_usec = 0;
+    l_ret = vrpn_read_available_characters (serial_fd, l_inbuf, 32, &l_timeout);
 
-      if (l_ret != 32) {
-		_5DT_ERROR ("vrpn_5dt: Cannot get info. from the glove");
-		return -1;
-	  }
-      if ( (l_inbuf[0] != 66) || (l_inbuf[1] != 82) ) {
-		_5DT_ERROR ("vrpn_5dt: Cannot get good header on info command");
-		return -1;
-	  }
-      
-      sprintf (l_errmsg, "vrpn_5dt: glove \"%s\"version %d.%d\n", &l_inbuf [16], l_inbuf [2], l_inbuf [3]);
-      _5DT_INFO (l_errmsg);
-
-      if (l_inbuf[4] | 1) {
-		_5DT_INFO ("A right glove is ready");
-	  } else {
-		_5DT_INFO ("A left glove is ready");
-	  }
-      if (l_inbuf[5] | 16) {
-		_5DT_INFO ("Pitch and Roll are available");
-	  } else {
-		_5DT_INFO ("Pitch and Roll are not available");
-	  }
+    if (l_ret != 32) {
+      _5DT_ERROR ("vrpn_5dt: Cannot get info. from the glove");
+      return -1;
     }
+    if ( (l_inbuf[0] != 66) || (l_inbuf[1] != 82)) {
+      _5DT_ERROR ("vrpn_5dt: Cannot get good header on info command");
+      return -1;
+    }
+
+    sprintf (l_errmsg, "vrpn_5dt: glove \"%s\"version %d.%d\n", &l_inbuf [16], l_inbuf [2], l_inbuf [3]);
+    _5DT_INFO (l_errmsg);
+
+    if (l_inbuf[4] | 1) {
+      _5DT_INFO ("A right glove is ready");
+    } else {
+      _5DT_INFO ("A left glove is ready");
+    }
+    if (l_inbuf[5] | 16) {
+      _5DT_INFO ("Pitch and Roll are available");
+    } else {
+      _5DT_INFO ("Pitch and Roll are not available");
+    }
+  }
 
   // If we're in continuous mode, request continuous sends
   if (_mode == 2) {
-	  send_command ((unsigned char *) "D", 1);  // Command to query streaming data from the glove
+    send_command ( (unsigned char *) "D", 1); // Command to query streaming data from the glove
   }
 
   // We're now entering the syncing mode which send the read command to the glove
@@ -237,30 +238,30 @@ void vrpn_5dt::syncing (void)
 {
 
   if (_wireless) {
-      // For a wireless glove, syncing means we got a header byte and need
-      // to wait for the end of the report to see if we guessed right and
-      // will get a capability byte.
-      int l_ret;
-	  l_ret = vrpn_read_available_characters (serial_fd, &_buffer [_bufcount],
-						  _expected_chars - _bufcount);
-	  if (l_ret == -1) {
-		  _5DT_ERROR ("Error reading the glove");
-		  _status = STATUS_RESETTING;
-		  return;
-	  }
-	  _bufcount += l_ret;
-	  if (_bufcount < _expected_chars) {	// Not done -- go back for more
-		  return;
-	  }
-	  if (_buffer[_bufcount - 1] == 0x40 || _buffer[_bufcount - 1] == 0x01) {
-	    _5DT_WARNING("Got capability byte as expected - switching into read mode.");
-	    _bufcount = 0;
-	    _status = STATUS_READING;
-	  } else {
-	    _5DT_WARNING("Got a header byte, but capability byte not found - resetting.");
-	    _status = STATUS_RESETTING;
-	  }
-	  return;
+    // For a wireless glove, syncing means we got a header byte and need
+    // to wait for the end of the report to see if we guessed right and
+    // will get a capability byte.
+    int l_ret;
+    l_ret = vrpn_read_available_characters (serial_fd, &_buffer [_bufcount],
+                                            _expected_chars - _bufcount);
+    if (l_ret == -1) {
+      _5DT_ERROR ("Error reading the glove");
+      _status = STATUS_RESETTING;
+      return;
+    }
+    _bufcount += l_ret;
+    if (_bufcount < _expected_chars) {	// Not done -- go back for more
+      return;
+    }
+    if (_buffer[_bufcount - 1] == 0x40 || _buffer[_bufcount - 1] == 0x01) {
+      _5DT_WARNING ("Got capability byte as expected - switching into read mode.");
+      _bufcount = 0;
+      _status = STATUS_READING;
+    } else {
+      _5DT_WARNING ("Got a header byte, but capability byte not found - resetting.");
+      _status = STATUS_RESETTING;
+    }
+    return;
   }
 
   switch (_mode)
@@ -269,7 +270,7 @@ void vrpn_5dt::syncing (void)
       send_command ((unsigned char *) "C", 1);  // Command to query data from the glove
       break;
     case 2:
-	  // Nothing to be done here -- continuous mode was requested in the reset.
+      // Nothing to be done here -- continuous mode was requested in the reset.
       break;
     default :
       _5DT_ERROR ("vrpn_5dt::syncing : internal error : unknown state");
@@ -304,11 +305,11 @@ void vrpn_5dt::get_report (void)
   //--------------------------------------------------------------------
 
   l_ret = vrpn_read_available_characters (serial_fd, &_buffer [_bufcount],
-					  _expected_chars - _bufcount);
+                                          _expected_chars - _bufcount);
   if (l_ret == -1) {
-      _5DT_ERROR ("Error reading the glove");
-      _status = STATUS_RESETTING;
-      return;
+    _5DT_ERROR ("Error reading the glove");
+    _status = STATUS_RESETTING;
+    return;
   }
   _bufcount += l_ret;
 #ifdef	VERBOSE
@@ -316,7 +317,7 @@ void vrpn_5dt::get_report (void)
 #endif
 
   if (_bufcount < _expected_chars) {	// Not done -- go back for more
-      return;
+    return;
   }
 
   //--------------------------------------------------------------------
@@ -324,84 +325,83 @@ void vrpn_5dt::get_report (void)
   // make sure that the first one is what we expect.
   if (_wireless && !_gotInfo) {
     char msg[500];
-    sprintf(msg,
-            "Report: 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X",
-            _buffer[0],
-            _buffer[1],
-            _buffer[2],
-            _buffer[3],
-            _buffer[4],
-            _buffer[5],
-            _buffer[6],
-            _buffer[7],
-            _buffer[8],
-            _buffer[9]
+    sprintf (msg,
+             "Report: 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X",
+             _buffer[0],
+             _buffer[1],
+             _buffer[2],
+             _buffer[3],
+             _buffer[4],
+             _buffer[5],
+             _buffer[6],
+             _buffer[7],
+             _buffer[8],
+             _buffer[9]
             );
-    
+
     _5DT_INFO (msg);
   }
   if (_buffer[0] != 128) {
-  	_5DT_WARNING ("Unexpected first character in report, resetting");
-  	_status = STATUS_RESETTING;
-  	_bufcount =0;
-  	return;
+    _5DT_WARNING ("Unexpected first character in report, resetting");
+    _status = STATUS_RESETTING;
+    _bufcount = 0;
+    return;
   }
 
   if (_wireless) {
-  	if (_buffer[_bufcount -1] != 0x40 && _buffer[_bufcount -1] != 0x01) {
-  	  // The last byte wasn't a capability byte, so this report is invalid.
-  	  // Reset!
+    if (_buffer[_bufcount - 1] != 0x40 && _buffer[_bufcount - 1] != 0x01) {
+      // The last byte wasn't a capability byte, so this report is invalid.
+      // Reset!
       _5DT_WARNING ("Unexpected last character in report, resetting");
       _status = STATUS_RESETTING;
       _bufcount = 0;
       return;
-  	}
+    }
   }
 
 #ifdef	VERBOSE
-   printf ("Got a complete report (%d of %d)!\n", _bufcount, _expected_chars);
+  printf ("Got a complete report (%d of %d)!\n", _bufcount, _expected_chars);
 #endif
 
-   //--------------------------------------------------------------------
-   // Decode the report and store the values in it into the analog values
-   // if appropriate.
-   //--------------------------------------------------------------------
+  //--------------------------------------------------------------------
+  // Decode the report and store the values in it into the analog values
+  // if appropriate.
+  //--------------------------------------------------------------------
 
-   channel[1] = _buffer[1]/255.0; //Thumb
-   channel[2] = _buffer[2]/255.0; 
-   channel[3] = _buffer[3]/255.0;
-   channel[4] = _buffer[4]/255.0;
-   channel[5] = _buffer[5]/255.0; // Pinkie
-   channel[6] = 180 * _buffer[6]/255.0; // Pitch
-   channel[7] = 180 * _buffer[7]/255.0; // Roll
+  channel[1] = _buffer[1] / 255.0; //Thumb
+  channel[2] = _buffer[2] / 255.0;
+  channel[3] = _buffer[3] / 255.0;
+  channel[4] = _buffer[4] / 255.0;
+  channel[5] = _buffer[5] / 255.0; // Pinkie
+  channel[6] = 180 * _buffer[6] / 255.0; // Pitch
+  channel[7] = 180 * _buffer[7] / 255.0; // Roll
 
-   if (_wireless && !_gotInfo) {
-      _gotInfo = true;
-      // Bit 0 set in the capability byte implies a right-hand glove.
-      if (_buffer[9] == 0x01) {
-        _5DT_INFO ("A 'wireless-type' right glove is ready and reporting");
-	  } else {
-		_5DT_INFO ("A 'wireless-type' left glove is ready and reporting");
-	  }
-   }
+  if (_wireless && !_gotInfo) {
+    _gotInfo = true;
+    // Bit 0 set in the capability byte implies a right-hand glove.
+    if (_buffer[9] == 0x01) {
+      _5DT_INFO ("A 'wireless-type' right glove is ready and reporting");
+    } else {
+      _5DT_INFO ("A 'wireless-type' left glove is ready and reporting");
+    }
+  }
 
-   //--------------------------------------------------------------------
-   // Done with the decoding, send the reports and go back to syncing
-   //--------------------------------------------------------------------
+  //--------------------------------------------------------------------
+  // Done with the decoding, send the reports and go back to syncing
+  //--------------------------------------------------------------------
 
-   report_changes();
-   switch (_mode)
-     {
-     case 1:
-       _status = STATUS_SYNCING;
-       break;
-     case 2:           // Streaming Mode, just go back for the next report.
-       _bufcount =0;
-       break;
-     default :
-       _5DT_ERROR ("vrpn_5dt::get_report : internal error : unknown state");
-       break;
-     }
+  report_changes();
+  switch (_mode) {
+    case 1:
+      _status = STATUS_SYNCING;
+      break;
+    case 2:           // Streaming Mode, just go back for the next report.
+      _bufcount = 0;
+      break;
+    default :
+      _5DT_ERROR ("vrpn_5dt::get_report : internal error : unknown state");
+      break;
+  }
 }
 
 
@@ -468,28 +468,27 @@ void vrpn_5dt::mainloop ()
 
     case STATUS_READING:
       {
-	  // It turns out to be important to get the report before checking
-	  // to see if it has been too long since the last report.  This is
-	  // because there is the possibility that some other device running
-	  // in the same server may have taken a long time on its last pass
-	  // through mainloop().  Trackers that are resetting do this.  When
-	  // this happens, you can get an infinite loop -- where one tracker
-	  // resets and causes the other to timeout, and then it returns the
-	  // favor.  By checking for the report here, we reset the timestamp
-	  // if there is a report ready (ie, if THIS device is still operating).
-	  get_report();
-	  struct timeval current_time;
-	  vrpn_gettimeofday(&current_time, NULL);
-	  if ( duration(current_time,timestamp) > MAX_TIME_INTERVAL)
-	  {
-	    sprintf (l_errmsg, "vrpn_5dt::mainloop: Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",
-		     current_time.tv_sec,
-		     static_cast<long>(current_time.tv_usec),
-		     timestamp.tv_sec,
-		     static_cast<long>(timestamp.tv_usec));
-	    _5DT_ERROR (l_errmsg);
-	    _status = STATUS_RESETTING;
-	  }
+        // It turns out to be important to get the report before checking
+        // to see if it has been too long since the last report.  This is
+        // because there is the possibility that some other device running
+        // in the same server may have taken a long time on its last pass
+        // through mainloop().  Trackers that are resetting do this.  When
+        // this happens, you can get an infinite loop -- where one tracker
+        // resets and causes the other to timeout, and then it returns the
+        // favor.  By checking for the report here, we reset the timestamp
+        // if there is a report ready (ie, if THIS device is still operating).
+        get_report();
+        struct timeval current_time;
+        vrpn_gettimeofday (&current_time, NULL);
+        if (duration (current_time, timestamp) > MAX_TIME_INTERVAL) {
+          sprintf (l_errmsg, "vrpn_5dt::mainloop: Timeout... current_time=%ld:%ld, timestamp=%ld:%ld",
+                   current_time.tv_sec,
+                   static_cast<long> (current_time.tv_usec),
+                   timestamp.tv_sec,
+                   static_cast<long> (timestamp.tv_usec));
+          _5DT_ERROR (l_errmsg);
+          _status = STATUS_RESETTING;
+        }
       }
       break;
 
