@@ -4379,6 +4379,14 @@ int setup_Analog_5dtUSB(const char * specialization, bool verbose, vrpn_Connecti
 #endif
 }
 
+
+#if !defined(VRPN_USE_HID)
+// Have to make these types exist for the sake of simplifying the calls below.
+typedef int vrpn_Analog_5dtUSB_Glove5Left;
+typedef int vrpn_Analog_5dtUSB_Glove5Right;
+typedef int vrpn_Analog_5dtUSB_Glove14Left;
+typedef int vrpn_Analog_5dtUSB_Glove14Right;
+#endif
 int vrpn_Generic_Server_Object::setup_Analog_5dtUSB_Glove5Left(char * &pch, char * line, FILE * config_file) {
   next();
   return setup_Analog_5dtUSB<vrpn_Analog_5dtUSB_Glove5Left>("Glove5Left", verbose, connection, analogs, num_analogs, pch, line, config_file);
