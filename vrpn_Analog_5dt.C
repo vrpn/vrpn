@@ -165,7 +165,6 @@ vrpn_5dt::reset (void)
       _5DT_INFO ("vrpn_5dt: Got a possible header byte!");
       return 0;
     }
-    printf ("got 0x%02X not 0x80\n", l_inbuf[0]);
     return 0;
   }
   vrpn_flush_input_buffer (serial_fd);
@@ -323,24 +322,7 @@ void vrpn_5dt::get_report (void)
   //--------------------------------------------------------------------
   // We now have enough characters to make a full report.  First check to
   // make sure that the first one is what we expect.
-  if (_wireless && !_gotInfo) {
-    char msg[500];
-    sprintf (msg,
-             "Report: 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X",
-             _buffer[0],
-             _buffer[1],
-             _buffer[2],
-             _buffer[3],
-             _buffer[4],
-             _buffer[5],
-             _buffer[6],
-             _buffer[7],
-             _buffer[8],
-             _buffer[9]
-            );
 
-    _5DT_INFO (msg);
-  }
   if (_buffer[0] != 128) {
     _5DT_WARNING ("Unexpected first character in report, resetting");
     _status = STATUS_RESETTING;
