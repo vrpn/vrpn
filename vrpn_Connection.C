@@ -5615,7 +5615,11 @@ void vrpn_Connection_IP::server_check_for_incoming_connections
 
     // Find out the remote port number and store it.
     struct sockaddr_in peer;
+#ifdef VRPN_USE_WINSOCK_SOCKETS
     int peerlen = sizeof(peer);
+#else
+	socklen_t peerlen = sizeof(peer);
+#endif
     unsigned short peer_port = 0;
     if (getpeername(newSocket, static_cast<struct sockaddr *>(static_cast<void*>(&peer)), &peerlen) == 0) {
       peer_port = ntohs(peer.sin_port);
