@@ -33,9 +33,8 @@ public:
 	void syncing (void);
 
   protected:
-	bool _wireless;
-	bool _gotInfo;
-	int _firstInterestingByte;
+	bool _wireless;			//< Whether this glove is using the wireless protocol
+	bool _gotInfo;			//< Whether we've sent a message about this wireless glove
 	int _status;		    //< Reset, Syncing, or Reading
 	int _numchannels;	    //< How many analog channels to open
 	int _mode ;                  //< glove mode for reporting data (see glove manual)

@@ -50,8 +50,7 @@ vrpn_5dt::vrpn_5dt (const char * p_name, vrpn_Connection * p_c, const char * p_p
   _numchannels (8),	// This is an estimate; will change when reports come
   _tenbytes(tenbytes),	// Do we expect ten-byte messages?
   _wireless(p_baud == 9600), // 9600 baud implies a wireless glove.
-  _gotInfo(false), // used to know if we have gotten a first full wireless report.
-  _firstInterestingByte(0) // Start looking at byte 0 for finding a wireless report
+  _gotInfo(false) // used to know if we have gotten a first full wireless report.
 {
   if (_wireless) {
     // All wireless gloves continually send 10 byte reports and ignore
@@ -142,15 +141,33 @@ vrpn_5dt::reset (void)
   int            l_ret;
   char           l_errmsg[256];
 
-  vrpn_flush_input_buffer (serial_fd);
   if (_wireless) {
-    // Wireless gloves can't be reset - just enter the reading mode and
-    // exit this method.
-    _status = STATUS_READING;
-    vrpn_gettimeofday (&timestamp, NULL);	// Set watchdog now
+    // Wireless gloves can't be reset, but we do need to wait for a header byte.
+    // Then, syncing will wait to see if we get a capability byte as expected
+    // at the end of a report.
+    _gotInfo = false;
+    vrpn_SleepMsecs (100);  //Give it time to respond
+
+    // Will wait at most 2 seconds
+    l_timeout.tv_sec = 2;
+    l_timeout.tv_usec = 0;
+    l_ret = vrpn_read_available_characters (serial_fd, l_inbuf, 1, &l_timeout);
+    if (l_ret != 1) {
+      _5DT_ERROR  ("vrpn_5dt: Unable to read from the glove\n");
+      return -1;
+    }
+    if (l_inbuf[0] == 0x80) {
+      _status = STATUS_SYNCING;
+      _buffer[0] = l_inbuf[0];
+      _bufcount = 1;
+      vrpn_gettimeofday (&timestamp, NULL);	// Set watchdog now
+      _5DT_INFO("vrpn_5dt: Got a possible header byte!");
+      return 0;
+    }
+    printf("got 0x%02X not 0x80\n", l_inbuf[0]);
     return 0;
   }
-
+  vrpn_flush_input_buffer (serial_fd);
   send_command ((unsigned char *) "A", 1); // Command to init the glove
   vrpn_SleepMsecs (100);  //Give it time to respond
   l_timeout.tv_sec = 2;
@@ -218,6 +235,34 @@ vrpn_5dt::reset (void)
  ******************************************************************************/
 void vrpn_5dt::syncing (void)
 {
+
+  if (_wireless) {
+      // For a wireless glove, syncing means we got a header byte and need
+      // to wait for the end of the report to see if we guessed right and
+      // will get a capability byte.
+      int l_ret;
+	  l_ret = vrpn_read_available_characters (serial_fd, &_buffer [_bufcount],
+						  _expected_chars - _bufcount);
+	  if (l_ret == -1) {
+		  _5DT_ERROR ("Error reading the glove");
+		  _status = STATUS_RESETTING;
+		  return;
+	  }
+	  _bufcount += l_ret;
+	  if (_bufcount < _expected_chars) {	// Not done -- go back for more
+		  return;
+	  }
+	  if (_buffer[_bufcount - 1] == 0x40 || _buffer[_bufcount - 1] == 0x01) {
+	    _5DT_WARNING("Got capability byte as expected - switching into read mode.");
+	    _bufcount = 0;
+	    _status = STATUS_READING;
+	  } else {
+	    _5DT_WARNING("Got a header byte, but capability byte not found - resetting.");
+	    _status = STATUS_RESETTING;
+	  }
+	  return;
+  }
+
   switch (_mode)
     {
     case 1:
@@ -296,10 +341,21 @@ void vrpn_5dt::get_report (void)
     _5DT_INFO (msg);
   }
   if (_buffer[0] != 128) {
-      _5DT_WARNING ("Unexpected first character in report, resetting");
+  	_5DT_WARNING ("Unexpected first character in report, resetting");
+  	_status = STATUS_RESETTING;
+  	_bufcount =0;
+  	return;
+  }
+
+  if (_wireless) {
+  	if (_buffer[_bufcount -1] != 0x40 && _buffer[_bufcount -1] != 0x01) {
+  	  // The last byte wasn't a capability byte, so this report is invalid.
+  	  // Reset!
+      _5DT_WARNING ("Unexpected last character in report, resetting");
       _status = STATUS_RESETTING;
-      _bufcount =0;
+      _bufcount = 0;
       return;
+  	}
   }
 
 #ifdef	VERBOSE
@@ -322,8 +378,7 @@ void vrpn_5dt::get_report (void)
    if (_wireless && !_gotInfo) {
       _gotInfo = true;
       // Bit 0 set in the capability byte implies a right-hand glove.
-      bool isRight = (_buffer[9] & 0x01) > 0;
-      if (isRight) {
+      if (_buffer[9] == 0x01) {
         _5DT_INFO ("A 'wireless-type' right glove is ready and reporting");
 	  } else {
 		_5DT_INFO ("A 'wireless-type' left glove is ready and reporting");
