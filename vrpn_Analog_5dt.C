@@ -253,7 +253,7 @@ void vrpn_5dt::syncing (void)
       return;
     }
     if (_buffer[_bufcount - 1] == 0x40 || _buffer[_bufcount - 1] == 0x01) {
-      _5DT_WARNING ("Got capability byte as expected - switching into read mode.");
+      _5DT_INFO ("Got capability byte as expected - switching into read mode.");
       _bufcount = 0;
       _status = STATUS_READING;
     } else {
