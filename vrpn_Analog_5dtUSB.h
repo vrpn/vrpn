@@ -1,3 +1,16 @@
+/** @file	vrpn_Analog_5dtUSB.h
+	@brief	header for 5DT USB (HID) dataglove driver
+
+	@date	2011
+
+	@author
+	Ryan Pavlik
+	<rpavlik@iastate.edu> and <abiryan@ryand.net>
+	http://academic.cleardefinition.com/
+	Iowa State University Virtual Reality Applications Center
+	Human-Computer Interaction Graduate Program
+*/
+
 #ifndef VRPN_ANALOG_5DTUSB_H
 #define VRPN_ANALOG_5DTUSB_H
 
@@ -7,7 +20,7 @@
 
 #if defined(VRPN_USE_HID)
 
-/** @brief 5th Dimension Technologies (5dt) USB data glove driver
+/** @brief 5th Dimension Technologies (5dt) "Ultra" USB data glove driver
 
 	This supports connecting to 5dt gloves over USB that present a HID device interface.
 	This includes the 5DT Data Glove 5 Ultra and the 5DT Data Glove 14 Ultra, as well
@@ -21,7 +34,8 @@
 	Your code will probably have to at least perform some scaling based on establishing a
 	"min" and "max" for each sensor.
 
-	For serial 5dt glove access, see the vrpn_5DT16 and vrpn_Analog_5dt classes.
+	For serial 5dt glove access, see the vrpn_5DT16 (for the 16-sensor model) and 
+	vrpn_5dt (for the 5-sensor wired or wireless model, in vrpn_Analog_5dt.h) classes.
 
 	The inherited method vrpn_Analog::getNumChannels() 
 
@@ -105,7 +119,7 @@ class VRPN_API vrpn_Analog_5dtUSB_Glove14Right: public vrpn_Analog_5dtUSB {
 };
 
 /// HID acceptor subclass used by vrpn_Analog_5dtUSB since the bits of
-/// the product ID describe the device in a useful way.
+/// the product ID for these devices describe the device in a useful way.
 class VRPN_API vrpn_HidProductMaskAcceptor: public vrpn_HidAcceptor {
 	public:
 		vrpn_HidProductMaskAcceptor(vrpn_uint16 vendorId, vrpn_uint16 productMask = 0x0000, vrpn_uint16 desiredProduct = 0x0000) :

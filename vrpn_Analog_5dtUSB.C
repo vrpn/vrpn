@@ -1,5 +1,15 @@
-// vrpn_Analog_5dtUSB.C: VRPN driver for 5dt datagloves over USB (HID)
+/** @file	vrpn_Analog_5dtUSB.C
+	@brief	Implemendation of 5DT USB (HID) dataglove driver
 
+	@date	2011
+
+	@author
+	Ryan Pavlik
+	<rpavlik@iastate.edu> and <abiryan@ryand.net>
+	http://academic.cleardefinition.com/
+	Iowa State University Virtual Reality Applications Center
+	Human-Computer Interaction Graduate Program
+*/
 
 #include "vrpn_Analog_5dtUSB.h"
 
