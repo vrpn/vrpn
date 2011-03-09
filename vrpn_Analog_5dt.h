@@ -35,6 +35,7 @@ public:
   protected:
 	bool _wireless;
 	bool _gotInfo;
+	int _firstInterestingByte;
 	int _status;		    //< Reset, Syncing, or Reading
 	int _numchannels;	    //< How many analog channels to open
 	int _mode ;                  //< glove mode for reporting data (see glove manual)
