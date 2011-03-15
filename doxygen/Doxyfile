@@ -389,7 +389,23 @@ INCLUDE_PATH         =
 # or name=definition (no spaces). If the definition and the = are 
 # omitted =1 is assumed.
 
-PREDEFINED           =
+PREDEFINED           = VRPN_USE_PHANTOM_SERVER \
+	VRPN_USE_DIRECTINPUT \
+	VRPN_USE_DIRECTSHOW \
+	VRPN_INCLUDE_INTERSENSE \
+	VRPN_USE_NATIONAL_INSTRUMENTS \
+	VRPN_USE_NATIONAL_INSTRUMENTS_MX \
+	VRPN_USE_USDIGITAL \
+	VRPN_USE_MICROSCRIBE \
+	VRPN_INCLUDE_PHASESPACE \
+	VRPN_USE_GPM_MOUSE \
+	VRPN_USE_MOTIONNODE \
+	VRPN_USE_WIIUSE \
+	VRPN_USE_FREESPACE \
+	VRPN_USE_TRIVISIOCOLIBRI \
+	VRPN_USE_HID \
+	VRPN_USE_LIBUSB_1_0 \
+	
 
 # If the EXPAND_ONLY_PREDEF and MACRO_EXPANSION tags are both set to YES
 # then the macro expansion is limited to the macros specified with the
