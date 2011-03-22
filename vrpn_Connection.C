@@ -3113,7 +3113,9 @@ int vrpn_Endpoint_IP::send_pending_reports (void) {
   if (connection) {
     fprintf(stderr, "vrpn_Endpoint::send_pending_reports():  "
                     "select() failed.\n");
-#ifndef _WIN32_WCE
+#ifdef VRPN_USE_WINSOCK_SOCKETS
+		fprintf(stderr, "Windows Sockets Error (%d):  %s.\n", WSAGetLastError());
+#else
     fprintf(stderr, "Errno (%d):  %s.\n", errno, strerror(errno));
 #endif
     status = BROKEN;
