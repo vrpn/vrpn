@@ -248,7 +248,8 @@
 // README file in the WiiUse library for more info.  Also note that the
 // WiiUse library is GPL, which is more restrictive than the VRPN public-
 // domain license, so check out its license file before building this driver
-// into your code.
+// into your code.  The original WiiUse library was abandoned and a new
+// fork by Ryan Pavlik is available at https://github.com/rpavlik/wiiuse.
 // To get the WiiUse library to compile, you need to add the include path
 // to the driver developer kit (C:\WINDDK\3790.1830\inc\wxp) and the
 // library path to hid.lib (C:\WINDDK\3790.1830\lib\wxp\i386) to the
