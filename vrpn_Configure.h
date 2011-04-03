@@ -295,7 +295,9 @@
 // For Linux, you need to have HIDAPI (either local or otherwise) for this
 // to work, so this definition is not in by default there.
 #if defined(_WIN32) || defined(__APPLE__)
+#if !defined(__MINGW__)
 #define VRPN_USE_HID
+#endif
 #endif
 
 //------------------------
@@ -311,7 +313,9 @@
 // package installed so that we can compile the code.  You
 // will also need to uncommment the SYSLIBS line for HID in the
 // server_src/Makefile for this to link.
+#if !defined(__MINGW__)
 #define VRPN_USE_LOCAL_HIDAPI
+#endif
 
 //------------------------
 // Instructs VRPN to attempt to use LibUSB-1.0. This will compile and
