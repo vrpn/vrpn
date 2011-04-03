@@ -507,7 +507,7 @@ vrpn_Button_Parallel::vrpn_Button_Parallel(const char *name,
       //  requirement (IR blocking device on same port)
       //  - BCE 08 July 03
 
-#ifdef _WIN32
+#ifdef _outp
         static const unsigned short DATA_REGISTER_OFFSET = 0;
         _outp((unsigned short)(port + DATA_REGISTER_OFFSET), 3);
 #else
@@ -584,7 +584,11 @@ void vrpn_Button_Python::read(void)
   #ifndef __CYGWIN__
 	static const unsigned short STATUS_REGISTER_OFFSET = 1;
     for (i = 0; i < debounce_count; i++) {
+      #ifdef _inp
 	status_register[i] = _inp((unsigned short)(port + STATUS_REGISTER_OFFSET));
+      #else
+        status_register[i] = 0;
+      #endif
     }
   #else
     for (i = 0; i < debounce_count; i++) {
