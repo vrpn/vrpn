@@ -250,7 +250,8 @@
 // domain license, so check out its license file before building this driver
 // into your code.  The original WiiUse library was abandoned and a new
 // fork by Ryan Pavlik is available at https://github.com/rpavlik/wiiuse.
-// To get the WiiUse library to compile, you need to add the include path
+// To get the WiiUse library to compile on Visual Studio 2005 (apparently
+// not for VS 2008), you need to add the include path
 // to the driver developer kit (C:\WINDDK\3790.1830\inc\wxp) and the
 // library path to hid.lib (C:\WINDDK\3790.1830\lib\wxp\i386) to the
 // include and library directories in Visual Studio.
