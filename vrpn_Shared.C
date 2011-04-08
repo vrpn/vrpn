@@ -11,7 +11,7 @@
 #pragma	warning ( disable : 4996)
 #endif
 
-#if defined(__APPLE__)
+#if defined(__APPLE__) || defined(__ANDROID__)
 #include <unistd.h>
 #endif
 
@@ -177,7 +177,7 @@ void vrpn_SleepMsecs( double dMsecs )
 // processor in mixed-endian mode for the doubles, whereby we need
 // to not just swap all of the bytes but also swap the two 4-byte
 // words to get things in the right order.
-#ifdef  __arm__
+#if defined  (__arm__)
 #include <endian.h>
 #endif
 
@@ -194,7 +194,7 @@ vrpn_float64 htond( vrpn_float64 d )
             pchSwapped[i]=pchOrig[sizeof(vrpn_float64)-i-1];
         }
 
-        #ifdef  __arm__
+        #if defined  (__arm__) && !defined (__ANDROID__)
           // On ARM processor, see if we're in mixed mode.  If so,
           // we need to swap the two words after doing the total
           // swap of bytes.
@@ -628,7 +628,9 @@ int vrpn_unbuffer (const char ** buffer, vrpn_float32 * fval)
     parameter type). These routines handle byte-swapping to and from
     the VRPN defined wire protocol.
 */
-
+#if defined (__ANDROID__)
+#include <bitset>
+#endif
 int vrpn_unbuffer (const char ** buffer, vrpn_float64 * dval)
 {
     vrpn_float64 aligned;

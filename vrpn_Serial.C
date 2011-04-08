@@ -14,7 +14,7 @@
 #include <sys/ioctl.h>
 #endif
 
-#if !defined(_WIN32) || defined(__GNUC__)
+#if !defined(_WIN32) || defined(__GNUC__) && !defined(__MINGW32__)
 #include <unistd.h>
 #include <netinet/in.h>
 #endif
@@ -25,7 +25,7 @@
 
 #if defined(_WIN32)
 #include <io.h>
-#if defined(__GNUC__)
+#if defined(__GNUC__) && !defined(__MINGW32__)
 #include <netinet/in.h>
 #include <sys/socket.h>
 #else
@@ -437,9 +437,10 @@ int vrpn_drain_output_buffer(int comm)
 #ifdef VERBOSE
 	printf("vrpn_drain_output_buffer(): Entering\n");
 #endif
-#if defined(hpux) || defined(__hpux) || defined(ultrix) || defined(__CYGWIN__)
+#if defined(hpux) || defined(__hpux) || defined(ultrix) || defined(__CYGWIN__) || defined(__ANDROID__)
+
    fprintf(stderr,
-	"vrpn_drain_output_buffer: Not impemented on NT, ultrix, or HP\n");
+	"vrpn_drain_output_buffer: Not impemented on NT, ultrix, android, or HP\n");
    return -1;
 #else
 

@@ -4348,6 +4348,64 @@ int vrpn_Generic_Server_Object::setup_LUDL_USBMAC6000(char * & pch, char * line,
 #endif
 }
 
+template<class T>
+int setup_Analog_5dtUSB(const char * specialization, bool verbose, vrpn_Connection * connection, vrpn_Analog * analogs[], int & num_analogs, char * &pch, char * line, FILE * config_file) {
+  char s2 [LINESIZE];
+  // Get the arguments
+  if (sscanf(pch,"%511s",s2) != 1) {
+    fprintf(stderr,"Bad vrpn_Analog_5dtUSB_%s line: %s\n", specialization, line);
+    return -1;
+  }
+#if defined(VRPN_USE_HID)
+  if (num_analogs >= VRPN_GSO_MAX_ANALOG) {
+    fprintf(stderr,"vrpn_Analog_5dtUSB_%s: Too many analogs in config file", specialization);
+    return -1;
+  }
+
+  // Open the device
+  if (verbose) {
+    printf("Opening vrpn_Analog_5dtUSB_%s as device %s\n", specialization, s2);
+  }
+  if ( (analogs[num_analogs] = new T(s2, connection)) == NULL ) {
+    fprintf(stderr,"Can't create new vrpn_Analog_5dtUSB_%s!\n", specialization);
+    return -1;
+  } else {
+    num_analogs++;
+  }
+  return 0;
+#else
+  fprintf(stderr, "vrpn_server: Can't open vrpn_Analog_5dtUSB_%s: VRPN_USE_HID not defined in vrpn_Configure.h!\n", specialization);
+  return -1;
+#endif
+}
+
+
+#if !defined(VRPN_USE_HID)
+// Have to make these types exist for the sake of simplifying the calls below.
+typedef int vrpn_Analog_5dtUSB_Glove5Left;
+typedef int vrpn_Analog_5dtUSB_Glove5Right;
+typedef int vrpn_Analog_5dtUSB_Glove14Left;
+typedef int vrpn_Analog_5dtUSB_Glove14Right;
+#endif
+int vrpn_Generic_Server_Object::setup_Analog_5dtUSB_Glove5Left(char * &pch, char * line, FILE * config_file) {
+  next();
+  return setup_Analog_5dtUSB<vrpn_Analog_5dtUSB_Glove5Left>("Glove5Left", verbose, connection, analogs, num_analogs, pch, line, config_file);
+}
+
+int vrpn_Generic_Server_Object::setup_Analog_5dtUSB_Glove5Right(char * &pch, char * line, FILE * config_file) {
+  next();
+  return setup_Analog_5dtUSB<vrpn_Analog_5dtUSB_Glove5Right>("Glove5Right", verbose, connection, analogs, num_analogs, pch, line, config_file);
+}
+
+int vrpn_Generic_Server_Object::setup_Analog_5dtUSB_Glove14Left(char * &pch, char * line, FILE * config_file) {
+  next();
+  return setup_Analog_5dtUSB<vrpn_Analog_5dtUSB_Glove14Left>("Glove14Left", verbose, connection, analogs, num_analogs, pch, line, config_file);
+}
+
+int vrpn_Generic_Server_Object::setup_Analog_5dtUSB_Glove14Right(char * &pch, char * line, FILE * config_file) {
+  next();
+  return setup_Analog_5dtUSB<vrpn_Analog_5dtUSB_Glove14Right>("Glove14Right", verbose, connection, analogs, num_analogs, pch, line, config_file);
+}
 
 vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connection_to_use, const char *config_file_name, int port, bool be_verbose, bool bail_on_open_error) :
   connection(connection_to_use),
@@ -4621,6 +4679,14 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
             CHECK(setup_DreamCheeky);
 	  } else if (isit("vrpn_LUDL_USBMAC6000")) {
             CHECK(setup_LUDL_USBMAC6000);
+	  } else if (isit("vrpn_Analog_5dtUSB_Glove5Left")) {
+            CHECK(setup_Analog_5dtUSB_Glove5Left);
+	  } else if (isit("vrpn_Analog_5dtUSB_Glove5Right")) {
+            CHECK(setup_Analog_5dtUSB_Glove5Right);
+	  } else if (isit("vrpn_Analog_5dtUSB_Glove14Left")) {
+            CHECK(setup_Analog_5dtUSB_Glove14Left);
+	  } else if (isit("vrpn_Analog_5dtUSB_Glove14Right")) {
+            CHECK(setup_Analog_5dtUSB_Glove14Right);
 	  } else {	// Never heard of it
 		sscanf(line,"%511s",s1);	// Find out the class name
 		fprintf(stderr,"vrpn_server: Unknown Device: %s\n",s1);

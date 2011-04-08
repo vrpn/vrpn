@@ -21,10 +21,10 @@
 # http://academic.cleardefinition.com
 # Iowa State University HCI Graduate Program/VRAC
 #
-#          Copyright Iowa State University 2009-2010
+# Copyright Iowa State University 2009-2010.
 # Distributed under the Boost Software License, Version 1.0.
-#    (See accompanying file LICENSE_1_0.txt or copy at
-#          http://www.boost.org/LICENSE_1_0.txt)
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
 
 set(VRPN_ROOT_DIR
 	"${VRPN_ROOT_DIR}"
@@ -34,8 +34,18 @@ set(VRPN_ROOT_DIR
 
 if("${CMAKE_SIZEOF_VOID_P}" MATCHES "8")
 	set(_libsuffixes lib64 lib)
+
+	# 64-bit dir: only set on win64
+	file(TO_CMAKE_PATH "$ENV{ProgramW6432}" _progfiles)
 else()
 	set(_libsuffixes lib)
+	if(NOT "$ENV{ProgramFiles(x86)}" STREQUAL "")
+		# 32-bit dir: only set on win64
+		file(TO_CMAKE_PATH "$ENV{ProgramFiles(x86)}" _progfiles)
+	else()
+		# 32-bit dir on win32, useless to us on win64
+		file(TO_CMAKE_PATH "$ENV{ProgramFiles}" _progfiles)
+	endif()
 endif()
 
 ###
@@ -51,7 +61,7 @@ find_path(VRPN_INCLUDE_DIR
 	HINTS
 	"${VRPN_ROOT_DIR}"
 	PATHS
-	"C:/Program Files/VRPN/include")
+	"${_progfiles}/VRPN")
 
 find_library(VRPN_LIBRARY
 	NAMES
@@ -61,7 +71,7 @@ find_library(VRPN_LIBRARY
 	HINTS
 	"${VRPN_ROOT_DIR}"
 	PATHS
-	"C:/Program Files/VRPN/lib")
+	"${_progfiles}/VRPN")
 
 find_library(VRPN_SERVER_LIBRARY
 	NAMES
@@ -71,7 +81,7 @@ find_library(VRPN_SERVER_LIBRARY
 	HINTS
 	"${VRPN_ROOT_DIR}"
 	PATHS
-	"C:/Program Files/VRPN/lib")
+	"${_progfiles}/VRPN")
 
 ###
 # Dependencies

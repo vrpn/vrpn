@@ -94,11 +94,11 @@ static double duration(struct timeval t1, struct timeval t2) {
 
 
 vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name,
-		vrpn_Connection* trackercon,
-		const char* wiimote,
-		float update_rate,
-		float led_spacing) :
-	vrpn_Tracker (name, trackercon),
+        vrpn_Connection* trackercon,
+        const char* wiimote,
+        float update_rate,
+        float led_spacing) :
+	vrpn_Tracker(name, trackercon),
 	d_name(wiimote),
 	d_update_interval(update_rate ? (1.0 / update_rate) : 1.0 / 60.0),
 	d_blobDistance(led_spacing),
@@ -113,7 +113,7 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name,
 	if (wiimote == NULL) {
 		d_name = NULL;
 		fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
-				"Can't start without a valid specified Wiimote device!");
+		        "Can't start without a valid specified Wiimote device!");
 		return;
 	}
 
@@ -123,7 +123,7 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name,
 	// Whenever we get a connection, set a flag so we make sure to send an
 	// update. Set up a handler to do this.
 	register_autodeleted_handler(d_connection->register_message_type(vrpn_got_connection),
-				     handle_connection, this);
+	                             handle_connection, this);
 
 	//--------------------------------------------------------------------
 	// Set the current matrix to identity, the current timestamp to "now",
@@ -139,10 +139,12 @@ vrpn_Tracker_WiimoteHead::vrpn_Tracker_WiimoteHead(const char* name,
 	_convert_pose_to_tracker();
 }
 
-vrpn_Tracker_WiimoteHead::~vrpn_Tracker_WiimoteHead (void) {
+vrpn_Tracker_WiimoteHead::~vrpn_Tracker_WiimoteHead(void) {
 
 	// If the analog pointer is NULL, we're done.
-	if (d_ana == NULL) { return; }
+	if (d_ana == NULL) {
+		return;
+	}
 
 	// Turn off the callback handler
 	int	ret;
@@ -182,7 +184,7 @@ void vrpn_Tracker_WiimoteHead::setup_wiimote() {
 
 	if (d_ana == NULL) {
 		fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
-				"Can't open Analog %s\n", d_name);
+		        "Can't open Analog %s\n", d_name);
 		return;
 	}
 
@@ -190,7 +192,7 @@ void vrpn_Tracker_WiimoteHead::setup_wiimote() {
 	int ret = d_ana->register_change_handler(this, handle_analog_update);
 	if (ret == -1) {
 		fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
-				"Can't setup change handler on Analog %s\n", d_name);
+		        "Can't setup change handler on Analog %s\n", d_name);
 		delete d_ana;
 		d_ana = NULL;
 		return;
@@ -265,14 +267,14 @@ void vrpn_Tracker_WiimoteHead::report() {
 		char      msgbuf[1000];
 		int       len = encode_to(msgbuf);
 		if (d_connection->pack_message(len, vrpn_Tracker::timestamp,
-					       position_m_id, d_sender_id, msgbuf,
-					       vrpn_CONNECTION_LOW_LATENCY)) {
+		                               position_m_id, d_sender_id, msgbuf,
+		                               vrpn_CONNECTION_LOW_LATENCY)) {
 			fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
-					"cannot write message: tossing\n");
+			        "cannot write message: tossing\n");
 		}
 	} else {
 		fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
-				"No valid connection\n");
+		        "No valid connection\n");
 	}
 
 	// We just sent a report, so reset the time
@@ -284,11 +286,13 @@ void vrpn_Tracker_WiimoteHead::report() {
 void vrpn_Tracker_WiimoteHead::handle_analog_update(void* userdata, const vrpn_ANALOGCB info) {
 	vrpn_Tracker_WiimoteHead* wh = (vrpn_Tracker_WiimoteHead*)userdata;
 
-	if (!wh) { return; }
+	if (!wh) {
+		return;
+	}
 	if (!wh->d_contact) {
 #ifdef VERBOSE
 		fprintf(stderr, "vrpn_Tracker_WiimoteHead: "
-				"got first report from Wiimote!\n");
+		        "got first report from Wiimote!\n");
 #endif
 	}
 
@@ -298,9 +302,9 @@ void vrpn_Tracker_WiimoteHead::handle_analog_update(void* userdata, const vrpn_A
 		firstchan = i * 3 + 4;
 		// -1 should signal a missing blob, but experimentally
 		// we sometimes get 0 instead
-		if (   info.channel[firstchan] > 0
-			&& info.channel[firstchan + 1] > 0
-			&& info.channel[firstchan + 2] > 0) {
+		if (info.channel[firstchan] > 0
+		        && info.channel[firstchan + 1] > 0
+		        && info.channel[firstchan + 2] > 0) {
 			wh->d_vX[i] = info.channel[firstchan];
 			wh->d_vY[i] = info.channel[firstchan + 1];
 			wh->d_vSize[i] = info.channel[firstchan + 2];

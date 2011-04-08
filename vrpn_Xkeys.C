@@ -51,7 +51,7 @@ void vrpn_Xkeys::on_data_received(size_t bytes, vrpn_uint8 *buffer)
   decodePacket(bytes, buffer);
 }
 
-int vrpn_Xkeys::on_last_disconnect(void *thisPtr, vrpn_HANDLERPARAM p) {
+int vrpn_Xkeys::on_last_disconnect(void *thisPtr, vrpn_HANDLERPARAM /*p*/) {
 	// Set light to red to indicate we have no active connections
 	vrpn_uint8 outputs[9] = {0};
 	outputs[8] = 128;
@@ -61,7 +61,7 @@ int vrpn_Xkeys::on_last_disconnect(void *thisPtr, vrpn_HANDLERPARAM p) {
 	return 0;
 }
 
-int vrpn_Xkeys::on_connect(void *thisPtr, vrpn_HANDLERPARAM p) {
+int vrpn_Xkeys::on_connect(void *thisPtr, vrpn_HANDLERPARAM /*p*/) {
 	// Set light to green to indicate we have an active connection
 	vrpn_uint8 outputs[9] = {0};
 	outputs[8] = 64;
@@ -124,7 +124,7 @@ void vrpn_Xkeys_Desktop::decodePacket(size_t bytes, vrpn_uint8 *buffer) {
 			vrpn_uint8 *offset, mask;
 			
 			offset = buffer + btn / 5;
-			mask = 1 << (btn % 5);
+			mask = static_cast<vrpn_uint8>(1 << (btn % 5));
 
 			buttons[btn + 1] = (*offset & mask) != 0;
 		}
@@ -204,7 +204,7 @@ void vrpn_Xkeys_Jog_And_Shuttle::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 			vrpn_uint8 *offset, mask;
 
 			offset = buffer + btn / 7 + 4;
-			mask = 1 << (btn % 7);
+			mask = static_cast<vrpn_uint8>(1 << (btn % 7));
 
 			buttons[btn + 1] = (*offset & mask) != 0;
 		}
@@ -290,7 +290,7 @@ void vrpn_Xkeys_Joystick::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 			vrpn_uint8 *offset, mask;
 
 			offset = buffer + btn / 7 + 4;
-			mask = 1 << (btn % 7);
+			mask = static_cast<vrpn_uint8>(1 << (btn % 7));
 
 			buttons[btn + 1] = (*offset & mask) != 0;
 		}
@@ -356,7 +356,7 @@ void vrpn_Xkeys_Pro::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 			vrpn_uint8 *offset, mask;
 
 			offset = buffer + btn / 7 + 4;
-			mask = 1 << (btn % 7);
+			mask = static_cast<vrpn_uint8>(1 << (btn % 7));
 
 			buttons[btn + 1] = (*offset & mask) != 0;
 		}

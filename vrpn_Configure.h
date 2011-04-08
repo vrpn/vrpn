@@ -1,4 +1,9 @@
 // -*- c++ -*-
+
+#ifndef VRPN_USING_CMAKE
+// Only using this configuration file if not using CMake.
+// An #else follows at the bottom of the file.
+
 #ifndef	VRPN_CONFIGURE_H
 
 //--------------------------------------------------------------
@@ -243,8 +248,10 @@
 // README file in the WiiUse library for more info.  Also note that the
 // WiiUse library is GPL, which is more restrictive than the VRPN public-
 // domain license, so check out its license file before building this driver
-// into your code.
-// To get the WiiUse library to compile, you need to add the include path
+// into your code.  The original WiiUse library was abandoned and a new
+// fork by Ryan Pavlik is available at https://github.com/rpavlik/wiiuse.
+// To get the WiiUse library to compile on Visual Studio 2005 (apparently
+// not for VS 2008), you need to add the include path
 // to the driver developer kit (C:\WINDDK\3790.1830\inc\wxp) and the
 // library path to hid.lib (C:\WINDDK\3790.1830\lib\wxp\i386) to the
 // include and library directories in Visual Studio.
@@ -285,11 +292,15 @@
 //------------------------
 // Instructs VRPN to attempt to use HID.  If you don't have libusb installed
 // on Linux, you'll want to turn this off so that it doesn't fail to compile.
-// This should work fine on Windows and Mac, so we define it by default there.
+// This should work fine on Windows, so we define it by default there.
+// For the Mac, let CMake configure this; the built-in Makefile doesn't know
+// how to compile with local HIDAPI, which we now need.
 // For Linux, you need to have HIDAPI (either local or otherwise) for this
 // to work, so this definition is not in by default there.
-#if defined(_WIN32) || defined(__APPLE__)
+#if defined(_WIN32)
+#if !defined(__MINGW__)
 #define VRPN_USE_HID
+#endif
 #endif
 
 //------------------------
@@ -305,7 +316,11 @@
 // package installed so that we can compile the code.  You
 // will also need to uncommment the SYSLIBS line for HID in the
 // server_src/Makefile for this to link.
+// On the Mac, this needs to be configured via CMake; the standard
+// Makefile doesn't know how to handle HIDAPI.
+#if !defined(__MINGW__) && !defined(__APPLE__)
 #define VRPN_USE_LOCAL_HIDAPI
+#endif
 
 //------------------------
 // Instructs VRPN to attempt to use LibUSB-1.0. This will compile and
@@ -530,4 +545,14 @@
 #endif
 
 #define	VRPN_CONFIGURE_H
+#endif
+
+#else // VRPN_USING_CMAKE
+
+// When using CMake, we need to use the vrpn_Configure.h generated in the
+// build directory instead.
+
+//#pragma message "NOTE: File included \"vrpn_Configure.h\" from the source dir even though this is a CMake build!"
+
+#include <vrpn_Configure.h>
 #endif

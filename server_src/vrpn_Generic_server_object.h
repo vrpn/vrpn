@@ -84,6 +84,7 @@
 #include "vrpn_LUDL.h"
 #include "vrpn_Tracker_GameTrak.h"
 #include "vrpn_Tracker_SpacePoint.h"
+#include "vrpn_Analog_5dtUSB.h"
 
 // BUW additions
 #include "vrpn_Atmel.h"
@@ -307,6 +308,10 @@ protected:
   int setup_Tracker_TrivisioColibri(char * &pch, char * line, FILE * config_file);
   int setup_Tracker_GameTrak(char *pch, char *line, FILE * config_file);
   int setup_LUDL_USBMAC6000(char * &pch, char * line, FILE * config_file);
+  int setup_Analog_5dtUSB_Glove5Left(char * &pch, char * line, FILE * config_file);
+  int setup_Analog_5dtUSB_Glove5Right(char * &pch, char * line, FILE * config_file);
+  int setup_Analog_5dtUSB_Glove14Left(char * &pch, char * line, FILE * config_file);
+  int setup_Analog_5dtUSB_Glove14Right(char * &pch, char * line, FILE * config_file);
 
   // BUW additions
   int setup_Atmel(char* &pch, char *line, FILE *config_file);

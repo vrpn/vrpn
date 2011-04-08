@@ -131,12 +131,12 @@ int vrpn_Tracker_NDI_Polaris::get_report(void)
 	readResponse();
 	//printf("DEBUG: TX response: >%s %i<\n",latestResponseStr);
 	
-	int numOfHandles=parse2CharIntFromNDIResponse(latestResponseStr);
+	//int numOfHandles=parse2CharIntFromNDIResponse(latestResponseStr);
 	int TXResponseStrIndex=2;
 	bool gotAtLeastOneReport=false;
 	
 	for (int t=0; t<numOfRigidBodies; t++) {
-		int handleNum=parse2CharIntFromNDIResponse(latestResponseStr,&TXResponseStrIndex);
+		//int handleNum=parse2CharIntFromNDIResponse(latestResponseStr,&TXResponseStrIndex);
 		// check if the tool is present. Parse and print out the transform data if and only if
 		// it's not missing
 		if (strncmp("MISSING",(char *) &latestResponseStr[TXResponseStrIndex],7)!=0) {

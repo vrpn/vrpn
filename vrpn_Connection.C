@@ -1566,7 +1566,7 @@ static int	vrpn_getmyIP (char * myIPchar, unsigned maxlen,
           ntohl(socket_name.sin_addr.s_addr) & 0xff);
 
     // Copy this to the output
-    if (strlen(myIPstring) > maxlen) {
+    if ((unsigned)strlen(myIPstring) > maxlen) {
       fprintf(stderr,"vrpn_getmyIP: Name too long to return\n");
       return -1;
     }
@@ -1607,7 +1607,7 @@ static int	vrpn_getmyIP (char * myIPchar, unsigned maxlen,
   	(unsigned int)(unsigned char)host->h_addr_list[0][3]);
 
   // Copy this to the output
-  if (strlen(myIPstring) > maxlen) {
+  if ((unsigned)strlen(myIPstring) > maxlen) {
     fprintf(stderr,"vrpn_getmyIP: Name too long to return\n");
     return -1;
   }
@@ -1984,6 +1984,13 @@ static SOCKET open_socket (int type,
     return (SOCKET) -1;
   }
 
+// Added by Eric Boren to address socket reconnectivity on the Android
+#ifdef __ANDROID__
+  vrpn_int32 optval = 1;
+  vrpn_int32 sockoptsuccess = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval);
+  fprintf(stderr, "setsockopt returned %i, optval: %i\n", sockoptsuccess, optval);
+#endif 
+  
   namelen = sizeof(name);
 
   // bind to local address
@@ -2296,7 +2303,7 @@ int vrpn_poll_for_accept(SOCKET listen_sock, SOCKET *accept_sock, double timeout
 		perror("vrpn_poll_for_accept: accept() failed");
 		return -1;
 	    }
-#ifndef	_WIN32_WCE
+#if	!defined(_WIN32_WCE) && !defined(__ANDROID__)
 	    {	struct	protoent	*p_entry;
 		int	nonzero = 1;
 
@@ -2421,7 +2428,7 @@ int vrpn_start_server(const char * machine, char * server_name, char * args,
                 for (waitloop = 0; waitloop < (SERVCOUNT); waitloop++) {
 		    int ret;
                     pid_t deadkid;
-#if defined(sparc) || defined(FreeBSD) || defined(_AIX)
+#if defined(sparc) || defined(FreeBSD) || defined(_AIX) || defined(__ANDROID__)
                     int status;  // doesn't exist on sparc_solaris or FreeBSD
 #else
                     union wait status;
@@ -3106,7 +3113,9 @@ int vrpn_Endpoint_IP::send_pending_reports (void) {
   if (connection) {
     fprintf(stderr, "vrpn_Endpoint::send_pending_reports():  "
                     "select() failed.\n");
-#ifndef _WIN32_WCE
+#ifdef VRPN_USE_WINSOCK_SOCKETS
+		fprintf(stderr, "Windows Sockets Error (%d):  %s.\n", WSAGetLastError());
+#else
     fprintf(stderr, "Errno (%d):  %s.\n", errno, strerror(errno));
 #endif
     status = BROKEN;
@@ -3519,7 +3528,7 @@ int vrpn_Endpoint_IP::connect_tcp_to (const char * addr, int port) {
   }
 
 	/* Set the socket for TCP_NODELAY */
-#ifndef _WIN32_WCE
+#if	!defined(_WIN32_WCE) && !defined(__ANDROID__)
 	{	struct	protoent	*p_entry;
 		int	nonzero = 1;
 
@@ -3940,7 +3949,7 @@ int vrpn_Endpoint_IP::getOneTCPMessage (int fd, char * buf, int buflen) {
 #endif
 
   // skip up to alignment
-  size_t header_len = sizeof(header);
+  vrpn_int32 header_len = sizeof(header);
   if (header_len%vrpn_ALIGN) {header_len += vrpn_ALIGN - header_len%vrpn_ALIGN;}
   if (header_len > sizeof(header)) {
     // the difference can be no larger than this
@@ -5262,7 +5271,7 @@ vrpn_Connection * vrpn_create_server_connection (
         delete [] machine;
         machine = NULL;
       }
-      int port = vrpn_get_port_number(location);
+      unsigned short port = static_cast<unsigned short>(vrpn_get_port_number(location));
       c = new vrpn_Connection_IP(port,
         local_in_logfile_name, local_out_logfile_name,
         machine);
@@ -5605,7 +5614,19 @@ void vrpn_Connection_IP::server_check_for_incoming_connections
     // presumably coming through a firewall or NAT and UDP packets won't get
     // through).
     endpoint->d_tcp_only = vrpn_TRUE;
-    endpoint->d_remote_port_number = port;
+
+    // Find out the remote port number and store it.
+    struct sockaddr_in peer;
+#ifdef VRPN_USE_WINSOCK_SOCKETS
+    int peerlen = sizeof(peer);
+#else
+	socklen_t peerlen = sizeof(peer);
+#endif
+    unsigned short peer_port = 0;
+    if (getpeername(newSocket, static_cast<struct sockaddr *>(static_cast<void*>(&peer)), &peerlen) == 0) {
+      peer_port = ntohs(peer.sin_port);
+    }
+    endpoint->d_remote_port_number = peer_port;
 
     // Server-side logging under multiconnection - TCH July 2000
     if (d_serverLogMode & vrpn_LOG_INCOMING) {

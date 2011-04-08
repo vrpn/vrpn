@@ -1359,7 +1359,7 @@ bool  vrpn_Imager_Region::decode_unscaled_region_using_base_pointer(vrpn_uint8 *
 		  for (unsigned r = d_rMin; r <= d_rMax; r++) {
 			  for (unsigned c = d_cMin; c <= d_cMax; c++) {
 				  for (unsigned rpt = 0; rpt < repeat; rpt++) {
-					  *(copyTo+rpt) = ((*msgbuf) >> 8);  //< Copy the current element (take top 8 bits)
+					  *(copyTo+rpt) = static_cast<vrpn_uint8>((*msgbuf) >> 8);  //< Copy the current element (take top 8 bits)
 				  }
 				  msgbuf++;		    //< Skip to the next buffer location
 				  copyTo += colStride;	    //< Skip appropriate number of elements

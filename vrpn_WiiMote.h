@@ -29,6 +29,26 @@ struct vrpn_WiiMote_SharedData;
 // The buttons are as read from the bit-fields of the primary controller (bits 0-15)
 //  and then a second set for any extended controller (nunchuck bits 16-31),
 //  (classic controller bits 32-47), (guitar hero 3 bits 48-63).
+//
+// If you enable "reorderButtons" by setting it to 1, the buttons on the Wiimote
+// itself are re-ordered to be reported as follows:
+//    button[0] = Home
+//    button[1] = "1"
+//    button[2] = "2"
+//    button[3] = "A"
+//    button[4] = "B"
+//    button[5] = "-"
+//    button[6] = "+"
+//    button[7] = direction pad: left
+//    button[8] = direction pad: right
+//    button[9] = direction pad: down
+//    button[10] = direction pad: up
+//    button[11] = WIIMOTE_BUTTON_ZACCEL_BIT4
+//    button[12] = WIIMOTE_BUTTON_ZACCEL_BIT5
+//    button[13] = WIIMOTE_BUTTON_ZACCEL_BIT6
+//    button[14] = WIIMOTE_BUTTON_ZACCEL_BIT7
+//    button[15] = WIIMOTE_BUTTON_UNKNOWN
+//
 // The Analogs are in an even more random order, both from the primary controller:
 //    channel[0] = battery level (0-1)
 //    channel[1] = gravity X vector calculation (1 = Earth gravity)
@@ -83,69 +103,82 @@ struct vrpn_WiiMote_SharedData;
 //      the speaker on the WiiMote.
 
 class VRPN_API vrpn_WiiMote: public vrpn_Analog, public vrpn_Button, public vrpn_Analog_Output {
-public:
-        // If there is more than one WiiMote on the machine, the zero-indexed 'which'
-        // parameter tells which one we want to open.
-	vrpn_WiiMote(const char *name, vrpn_Connection *c = NULL, unsigned which = 0
-		, unsigned useMS = 1, unsigned useIR = 1, unsigned reorderButtons = 0);
-	~vrpn_WiiMote();
+	public:
+		// If there is more than one WiiMote on the machine, the zero-indexed 'which'
+		// parameter tells which one we want to open.
+		vrpn_WiiMote(const char *name, vrpn_Connection *c = NULL, unsigned which = 0
+		             , unsigned useMS = 1, unsigned useIR = 1, unsigned reorderButtons = 0);
+		~vrpn_WiiMote();
 
-	virtual void mainloop();
+		virtual void mainloop();
 
-	bool isValid() const;
+		bool isValid() const;
 
-protected:
-	// Handle the rumble-magnitude setting (channel 0).
-	static int VRPN_CALLBACK handle_request_message( void *userdata,
-		vrpn_HANDLERPARAM p );
-	static int VRPN_CALLBACK handle_request_channels_message( void* userdata,
-		vrpn_HANDLERPARAM p);
-	static int VRPN_CALLBACK handle_last_connection_dropped(void *selfPtr, vrpn_HANDLERPARAM data);
+	protected:
+		// Handle the rumble-magnitude setting (channel 0).
+		static int VRPN_CALLBACK handle_request_message(void *userdata,
+		        vrpn_HANDLERPARAM p);
+		static int VRPN_CALLBACK handle_request_channels_message(void* userdata,
+		        vrpn_HANDLERPARAM p);
+		static int VRPN_CALLBACK handle_last_connection_dropped(void *selfPtr, vrpn_HANDLERPARAM data);
 
-private:
+	private:
+		/// @name Message lock functions
+		/// Used to reduce the amount of in-line ifdefs: these are no-ops
+		/// if threading support isn't available
+		/// @{
+		void acquireMessageLock();
+		void releaseMessageLock();
+		/// @}
 #ifdef vrpn_THREADS_AVAILABLE
-	// function to (re)connect to wiimote in background:
-	static void connectThreadFunc(vrpn_ThreadData &threadData);
-	// mainloop is waiting for the connectThread to reestablish the connection:
-	bool waitingForConnection;
-	// the struct holding the shared data pointer and the mutex:
-	vrpn_WiiMote_SharedData *sharedData;
-	// thread for asynchronous reconnection function:
-	vrpn_Thread *connectThread;
+		/// function to (re)connect to wiimote in background:
+		static void connectThreadFunc(vrpn_ThreadData &threadData);
+		/// mainloop is waiting for the connectThread to reestablish the connection:
+		bool waitingForConnection;
+		/// the struct holding the shared data pointer and the mutex:
+		vrpn_WiiMote_SharedData *sharedData;
+		/// thread for asynchronous reconnection function:
+		vrpn_Thread *connectThread;
 #endif
-        // The WiiMote to use
-        vrpn_Wiimote_Device  *wiimote;
-		// a list of available wiimotes
+		/// The WiiMote to use
+		vrpn_Wiimote_Device  *wiimote;
+		/// a list of available wiimotes
 		wiimote_t **available_wiimotes;
 
-	// Error-handling procedure (spit out a message and die)
-	inline void FAIL(const char *msg) { 
-		struct timeval now; 
-		vrpn_gettimeofday(&now, NULL); 
-		send_text_message(msg, now, vrpn_TEXT_ERROR);
-		d_connection = NULL;
-	}
-	
-	// send report iff changed
-        void report_changes (vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
-        // send report whether or not changed
-        void report (vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
-        // NOTE:  class_of_service is only applied to vrpn_Analog
-        //  values, not vrpn_Button
+		/// Error-handling procedure (spit out a message and die)
+		inline void FAIL(const char *msg) {
+			struct timeval now;
+			vrpn_gettimeofday(&now, NULL);
+			send_text_message(msg, now, vrpn_TEXT_ERROR);
+			d_connection = NULL;
+		}
 
-        // Time stamp of last read event
-        struct timeval _timestamp;
+		/** @brief send report iff changed
 
-        // Helper routine to initialize state of the WiiMote.
-        void initialize_wiimote_state(void);
+			@note class_of_service is only applied to vrpn_Analog values,
+			not vrpn_Button
+		*/
+		void report_changes(vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
+		/** @brief send report whether or not changed
 
-        // Helper functions to handle events
-        void handle_event(void);
+			@note class_of_service is only applied to vrpn_Analog values,
+			not vrpn_Button
+		*/
+		void report(vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY);
 
-		// Helper function to connect a wiimote
+		/// Time stamp of last read event
+		struct timeval _timestamp;
+
+		/// Helper routine to initialize state of the WiiMote.
+		void initialize_wiimote_state(void);
+
+		/// Helper functions to handle events
+		void handle_event(void);
+
+		/// Helper function to connect a wiimote
 		void connect_wiimote(int timeout);
 
-		// Helper function that defines a mapping for button ids:
+		/// Helper function that defines a mapping for button ids:
 		unsigned map_button(unsigned btn);
 };
 
