@@ -24,6 +24,17 @@
 ##########################
 
 ##########################
+# Mac OS X-specific options. If HW_OS is powerpc_macosx or universal_macosx,
+# uncomment one line below to choose the minimum targeted OS X version and
+# corresponding SDK. If none of the lines below is commented out, 10.5 will
+# be the minimum version.
+##########################
+#MAC_OS_MIN_VERSION := 10.4
+#MAC_OS_MIN_VERSION := 10.5
+#MAC_OS_MIN_VERSION := 10.6
+
+
+##########################
 # Directories for installation
 
 INSTALL_DIR := /usr/local
@@ -61,6 +72,23 @@ ifdef PBASE_ROOT
   endif
 endif
 
+  ifneq (,$(findstring macosx,$(HW_OS)))
+    ifndef MAC_OS_MIN_VERSION
+      MAC_OS_MIN_VERSION := 10.5
+    endif
+
+    # Select which compiler and MAC OS X SDK to use
+    MAC_GCC := g++
+    ifeq ($(MAC_OS_MIN_VERSION), 10.6)
+      MAC_OS_SDK := MacOSX10.6.sdk
+    else ifeq ($(MAC_OS_MIN_VERSION), 10.5)
+      MAC_OS_SDK := MacOSX10.5.sdk
+    else
+      MAC_OS_SDK := MacOSX10.4u.sdk
+      MAC_GCC := g++-4.0
+    endif
+  endif
+
 CC := g++
 ifeq ($(HW_OS),pc_cygwin)
 	SYSLIBS := -lcygwin -luser32 -lgdi32 -lcomdlg32 -lwsock32 -lSetupApi
@@ -78,8 +106,15 @@ ifeq ($(HW_OS),powerpc_aix)
 	CC := /usr/ibmcxx/bin/xlC_r $(DEBUG_FLAGS) -qarch=pwr3 -w
 endif
 
+ifeq ($(HW_OS), powerpc_macosx)
+	CC := $(MAC_GCC) -arch ppc -isysroot /Developer/SDKs/$(MAC_OS_SDK) -mmacosx-version-min=$(MAC_OS_MIN_VERSION)
+	RANLIB := ranlib
+	AR := libtool -static -o
+	SYSLIBS := -framework CoreFoundation -framework IOKit -framework System
+endif
+
 ifeq ($(HW_OS),universal_macosx)
-	CC := g++ -arch ppc -arch i386 -isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4
+        CC := $(MAC_GCC) -arch i386 -isysroot /Developer/SDKs/$(MAC_OS_SDK) -mmacosx-version-min=$(MAC_OS_MIN_VERSION)
 	RANLIB := :
 	AR := libtool -static -o
 	SYSLIBS := -framework CoreFoundation -framework IOKit -framework System

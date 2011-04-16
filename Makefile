@@ -52,7 +52,7 @@
 ##########################
 # Mac OS X-specific options. If HW_OS is powerpc_macosx or universal_macosx,
 # uncomment one line below to choose the minimum targeted OS X version and
-# corresponding SDK. If none of the lines below is commented out, 10.4 will
+# corresponding SDK. If none of the lines below is commented out, 10.5 will
 # be the minimum version.
 ##########################
 #MAC_OS_MIN_VERSION := 10.4
@@ -154,7 +154,7 @@ else
 
   ifneq (,$(findstring macosx,$(HW_OS)))
     ifndef MAC_OS_MIN_VERSION
-      MAC_OS_MIN_VERSION := 10.4
+      MAC_OS_MIN_VERSION := 10.5
     endif
 
     # Select which compiler and MAC OS X SDK to use
@@ -611,6 +611,7 @@ SLIB_FILES =  $(LIB_FILES) \
 	vrpn_Tracker_Crossbow.C \
 	vrpn_Tracker_DTrack.C \
 	vrpn_Tracker_Fastrak.C \
+	vrpn_Tracker_GameTrak.C \
 	vrpn_Tracker_isense.C \
 	vrpn_Tracker_Isotrak.C \
 	vrpn_Tracker_Liberty.C \
@@ -675,6 +676,7 @@ SLIB_INCLUDES = $(LIB_INCLUDES) \
 	vrpn_Tracker_Crossbow.h \
 	vrpn_Tracker_DTrack.h \
 	vrpn_Tracker_Fastrak.h \
+	vrpn_Tracker_GameTrak.h \
 	vrpn_Tracker_isense.h \
 	vrpn_Tracker_Isotrak.h \
 	vrpn_Tracker_Liberty.h \
