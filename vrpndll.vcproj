@@ -380,6 +380,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\vrpn_Analog_5dtUSB.C"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="vrpn_Analog_Output.C"
 				>
 				<FileConfiguration
@@ -2222,6 +2242,10 @@
 			</File>
 			<File
 				RelativePath="vrpn_Analog_5dt.h"
+				>
+			</File>
+			<File
+				RelativePath=".\vrpn_Analog_5dtUSB.h"
 				>
 			</File>
 			<File
