@@ -80,6 +80,11 @@ vrpn_Magellan::vrpn_Magellan (const char * name, vrpn_Connection * c,
 
 	// Set the mode to reset
 	_status = STATUS_RESETTING;
+
+	// Wait before the first time we attempt a reset - seems to be a race condition
+	// with the device needing time between opening of the serial connection and
+	// receiving the reset commands. (SpaceMouse Plus XT Serial, version 6.60)
+	vrpn_SleepMsecs(1000);
 }
 
 void	vrpn_Magellan::clear_values(void)
