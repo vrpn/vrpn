@@ -1,0 +1,1 @@
+..\Bin\bin\Release\vrpn_Qt_GUI.exe -xmlFile vrpn_Qt_GUI.xml -serverName qt -vrpnPort 3883

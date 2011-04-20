@@ -1,0 +1,1 @@
+..\Bin\bin\Release\vrpn_Qt_AppExample.exe -serverName qt -vrpnPort 3883
