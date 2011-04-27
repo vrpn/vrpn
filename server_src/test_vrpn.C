@@ -34,13 +34,13 @@
 #include "vrpn_Analog_Output.h"
 #include "vrpn_Poser.h"
 
-const char	*DIAL_NAME = "Dial0";
-const char	*TRACKER_NAME = "Tracker0";
-const char	*TEXT_NAME = "Text0";
-const char	*ANALOG_NAME = "Analog0";
-const char	*ANALOG_OUTPUT_NAME = "AnalogOutput0";
-const char	*BUTTON_NAME = "Button0";
-const char	*POSER_NAME = "Poser0";
+const char	*DIAL_NAME = "Dial0@localhost";
+const char	*TRACKER_NAME = "Tracker0@localhost";
+const char	*TEXT_NAME = "Text0@localhost";
+const char	*ANALOG_NAME = "Analog0@localhost";
+const char	*ANALOG_OUTPUT_NAME = "AnalogOutput0@localhost";
+const char	*BUTTON_NAME = "Button0@localhost";
+const char	*POSER_NAME = "Poser0@localhost";
 int	CONNECTION_PORT = vrpn_DEFAULT_LISTEN_PORT_NO;	// Port for connection to listen on
 
 // The connection that is used by all of the servers and remotes
@@ -74,6 +74,17 @@ vrpn_Analog_Output_Remote		*ranaout;
 vrpn_Poser_Server* sposer;
 vrpn_Poser_Remote* rposer;
 
+// Counters incremented by callback handlers.
+unsigned pcount = 0, vcount = 0, acount = 0;
+unsigned dcount = 0;
+unsigned tcount = 0;
+unsigned ancount = 0;
+unsigned aocount = 0;
+unsigned bcount = 0;
+unsigned pocount = 0, prcount = 0;
+
+unsigned p1count = 0, p2count = 0;
+
 
 /*****************************************************************************
  *
@@ -83,42 +94,50 @@ vrpn_Poser_Remote* rposer;
 
 void	VRPN_CALLBACK handle_pos (void *, const vrpn_TRACKERCB t)
 {
-	printf("Got tracker pos, sensor %d", t.sensor);
+	printf("Got tracker pos, sensor %d\n", t.sensor);
+        pcount++;
 }
 
 void	VRPN_CALLBACK handle_vel (void *, const vrpn_TRACKERVELCB t)
 {
-	printf(" + vel, sensor %d", t.sensor);
+	printf(" + vel, sensor %d\n", t.sensor);
+        vcount++;
 }
 
 void	VRPN_CALLBACK handle_acc (void *, const vrpn_TRACKERACCCB t)
 {
 	printf(" + acc, sensor %d\n", t.sensor);
+        acount++;
 }
 
 void	VRPN_CALLBACK handle_dial (void *, const vrpn_DIALCB d)
 {
 	printf("Dial %d spun by %lf\n", d.dial, d.change);
+        dcount++;
 }
 
 void	VRPN_CALLBACK handle_text (void *, const vrpn_TEXTCB t)
 {
 	printf("Received text \"%s\"\n", t.message);
+        tcount++;
 }
 
 void	VRPN_CALLBACK handle_analog (void *, const vrpn_ANALOGCB a)
 {
 	printf("Received %d analog channels\n", a.num_channel);
+        ancount++;
 }
 
 void	VRPN_CALLBACK handle_analog_output (void *, const vrpn_ANALOGOUTPUTCB a)
 {
 	printf("Received %d analog output channels (first is %lf)\n", a.num_channel, a.channel[0]);
+        aocount++;
 }
 
 void	VRPN_CALLBACK handle_button (void *, const vrpn_BUTTONCB b)
 {
 	printf("Button %d is now in state %d\n", b.button, b.state);
+        bcount++;
 }
 
 
@@ -126,6 +145,7 @@ void	VRPN_CALLBACK handle_poser( void*, const vrpn_POSERCB p )
 {
 	printf( "Poser position/orientation:  (%lf, %lf, %lf) \n\t (%lf, %lf, %lf, %lf)\n", 
 			p.pos[0], p.pos[1], p.pos[2], p.quat[0], p.quat[1], p.quat[2], p.quat[3] );
+        pocount++;
 }
 
 
@@ -133,7 +153,21 @@ void	VRPN_CALLBACK handle_poser_relative( void*, const vrpn_POSERCB p )
 {
 	printf( "Poser position/orientation relative:  (%lf, %lf, %lf) \n\t (%lf, %lf, %lf, %lf)\n", 
 			p.pos[0], p.pos[1], p.pos[2], p.quat[0], p.quat[1], p.quat[2], p.quat[3] );
+        prcount++;
 }
+
+void	VRPN_CALLBACK handle_pos1 (void *, const vrpn_TRACKERCB t)
+{
+	printf("Got tracker1 pos, sensor %d\n", t.sensor);
+        p1count++;
+}
+
+void	VRPN_CALLBACK handle_pos2 (void *, const vrpn_TRACKERCB t)
+{
+	printf("Got tracker2 pos, sensor %d\n", t.sensor);
+        p2count++;
+}
+
 
 
 /*****************************************************************************
@@ -311,7 +345,7 @@ int main (int argc, char * argv [])
 	// test the thread library
 	if (!vrpn_test_threads_and_semaphores()) {
 		fprintf(stderr, "vrpn_test_threads_and_semaphores() failed!\n");
-		return -1;
+                fprintf(stderr, "  (This is not often used within VRPN, so it should not be fatal\n");
 	} else {
 		printf("Thread code passes tests (not using for the following though)\n");
 	}
@@ -367,7 +401,8 @@ int main (int argc, char * argv [])
 	/* 
 	 * main interactive loop
 	 */
-	while ( 1 ) {
+        int repeat_tests = 4;
+	while ( repeat_tests > 0 ) {
 		static	long	secs = 0;
 		struct	timeval	now;
 
@@ -413,12 +448,62 @@ int main (int argc, char * argv [])
 			create_and_link_analog_remote();
 			create_and_link_analog_output_server();
 			create_and_link_poser_server();
+                        --repeat_tests;
 		}
 
 		// Sleep for 1ms each iteration so we don't eat the CPU
 		vrpn_SleepMsecs(1);
 	}
+        if ( (pcount == 0) || (vcount == 0) || (acount == 0) ||
+             (dcount == 0) || (tcount == 0) || (ancount == 0) ||
+             (aocount == 0) ||
+             (bcount == 0) || (pocount == 0) || (prcount == 0) ) {
+               fprintf(stderr,"Did not get callbacks from one or more device\n");
+               return -1;
+        }
 
+        printf("\nDeleting _Remote objects\n");
+        delete rtkr;
+        delete rdial;
+        delete rbtn;
+        delete rtext;
+        delete rana;
+        delete ranaout;
+        delete rposer;
+
+        printf("Testing whether two connections to a tracker each get their own messages.\n");
+        vrpn_Tracker_Remote *t1 = new vrpn_Tracker_Remote(TRACKER_NAME);
+        t1->register_change_handler(NULL, handle_pos1);
+        vrpn_Tracker_Remote *t2 = new vrpn_Tracker_Remote(TRACKER_NAME);
+        t2->register_change_handler(NULL, handle_pos2);
+        unsigned long secs;
+        struct timeval start, now;
+        vrpn_gettimeofday(&start, NULL);
+        do {
+          stkr->mainloop();
+          t1->mainloop();
+          t2->mainloop();
+          connection->mainloop();
+
+          vrpn_gettimeofday(&now, NULL);
+          secs = now.tv_sec - start.tv_sec;
+        } while (secs <= 2);
+        if ( (p1count == 0) || (p2count == 0) ) {
+               fprintf(stderr,"Did not get callbacks from trackers\n");
+               return -1;
+        }
+
+        printf("Deleting _Servers and connection\n");
+        delete stkr;
+        delete sbtn;
+        delete sdial;
+        delete stext;
+        delete sana;
+        delete sanaout;
+        delete sposer;
+        connection->removeReference();
+
+        printf("Success!\n");
 	return 0;
 
 }   /* main */
