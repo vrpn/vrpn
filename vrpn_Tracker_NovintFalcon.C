@@ -741,5 +741,4 @@ void vrpn_Tracker_NovintFalcon::mainloop()
     }
 }
 
-
 #endif
