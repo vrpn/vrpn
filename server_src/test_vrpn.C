@@ -84,6 +84,7 @@ unsigned bcount = 0;
 unsigned pocount = 0, prcount = 0;
 
 unsigned p1count = 0, p2count = 0;
+unsigned b1count = 0, b2count = 0;
 
 
 /*****************************************************************************
@@ -168,6 +169,17 @@ void	VRPN_CALLBACK handle_pos2 (void *, const vrpn_TRACKERCB t)
         p2count++;
 }
 
+void	VRPN_CALLBACK handle_button1 (void *, const vrpn_BUTTONCB b)
+{
+	printf("Button1 %d is now in state %d\n", b.button, b.state);
+        b1count++;
+}
+
+void	VRPN_CALLBACK handle_button2 (void *, const vrpn_BUTTONCB b)
+{
+	printf("Button2 %d is now in state %d\n", b.button, b.state);
+        b2count++;
+}
 
 
 /*****************************************************************************
@@ -471,18 +483,25 @@ int main (int argc, char * argv [])
         delete ranaout;
         delete rposer;
 
-        printf("Testing whether two connections to a tracker each get their own messages.\n");
+        printf("Testing whether two connections to a tracker and to a button each get their own messages.\n");
         vrpn_Tracker_Remote *t1 = new vrpn_Tracker_Remote(TRACKER_NAME);
         t1->register_change_handler(NULL, handle_pos1);
         vrpn_Tracker_Remote *t2 = new vrpn_Tracker_Remote(TRACKER_NAME);
         t2->register_change_handler(NULL, handle_pos2);
+        vrpn_Button_Remote *b1 = new vrpn_Button_Remote(BUTTON_NAME);
+        b1->register_change_handler(NULL, handle_button1);
+        vrpn_Button_Remote *b2 = new vrpn_Button_Remote(BUTTON_NAME);
+        b2->register_change_handler(NULL, handle_button2);
         unsigned long secs;
         struct timeval start, now;
         vrpn_gettimeofday(&start, NULL);
         do {
           stkr->mainloop();
+          sbtn->mainloop();
           t1->mainloop();
           t2->mainloop();
+          b1->mainloop();
+          b2->mainloop();
           connection->mainloop();
 
           vrpn_gettimeofday(&now, NULL);
@@ -490,6 +509,10 @@ int main (int argc, char * argv [])
         } while (secs <= 2);
         if ( (p1count == 0) || (p2count == 0) ) {
                fprintf(stderr,"Did not get callbacks from trackers\n");
+               return -1;
+        }
+        if ( (b1count == 0) || (b2count == 0) ) {
+               fprintf(stderr,"Did not get callbacks from buttons\n");
                return -1;
         }
 
