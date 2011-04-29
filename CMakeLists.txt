@@ -244,20 +244,16 @@ endif()
 # JsonCpp
 ###
 find_package(JsonCpp)
-if(JSONCPP_FOUND)
-	option(VRPN_USE_JSONNET
-		"Build with JSONCPP (for Android widgets)"
-		ON)
-endif()
+option_requires(VRPN_USE_JSONNET
+	"Build with JSONCPP (for Android widgets)"
+	JSONCPP_FOUND)
 
 if(VRPN_USE_JSONNET)
-	if(NOT JSONCPP_FOUND)
-		message(FATAL_ERROR
-			"ERROR: VRPN_USE_JSONNET set but JsonCpp not found ! (set JSONCPP_ROOT_DIR)")
-	endif()
 	include_directories(${JSONCPP_INCLUDE_DIRS})
 	list(APPEND SERVER_EXTRA_LIBS ${JSONCPP_LIBRARIES})
-	message("\nSee README.jsoncpp for important instructions on how to build JSONCPP and avoid LNK2005 errors \n")
+	if(MSVC)
+		message("\nSee README.jsoncpp for important instructions on how to build JSONCPP and avoid LNK2005 errors \n")
+	endif()
 endif()
 
 
