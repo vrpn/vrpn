@@ -345,7 +345,8 @@ vrpn_WiiMote::vrpn_WiiMote(const char *name, vrpn_Connection *c, unsigned which,
 		buttons[i] = 0;
 	}
 
-	vrpn_Analog_Output::o_num_channel = 1;
+	// Two channels: channel 0 is rumble, channel 1 is IR sensitivity.
+	vrpn_Analog_Output::o_num_channel = 2;
 
 	// Register a handler for the request channel change message
 	if (register_autodeleted_handler(request_m_id,
@@ -586,12 +587,23 @@ int vrpn_WiiMote::handle_request_message(void *userdata,
 		return 0;
 	}
 	me->o_channel[chan_num] = value;
-	if (value >= 0.5) {
-		wiiuse_rumble(me->wiimote->device, 1);
-	} else {
-		wiiuse_rumble(me->wiimote->device, 0);
+	switch (chan_num) {
+		case 0:
+			{
+				if (value >= 0.5) {
+					wiiuse_rumble(me->wiimote->device, 1);
+				} else {
+					wiiuse_rumble(me->wiimote->device, 0);
+				}
+				break;
+			}
+		case 1:
+			{
+				int level = static_cast<int>(value);
+				wiiuse_set_ir_sensitivity(me->wiimote->device, level);
+				break;
+			}
 	}
-
 	return 0;
 }
 
