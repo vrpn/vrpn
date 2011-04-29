@@ -25,6 +25,8 @@ include(MSVCMultipleProcessCompile)
 include(CppcheckTargets)
 include(SetDefaultBuildType)
 include(OptionRequires)
+include(CTest)
+include(CreateDashboardScripts)
 
 ###
 # Basic packaging options and versioning
@@ -809,8 +811,6 @@ endif()
 
 #-----------------------------------------------------------------------------
 # Enable testing/dashboards
-include(CTest)
-include(CreateDashboardScripts)
 create_dashboard_scripts("${CMAKE_CURRENT_SOURCE_DIR}/DashboardBuildInitialCache.cmake.in")
 
 #-----------------------------------------------------------------------------

@@ -214,6 +214,7 @@ if(BUILD_TESTING)
 		install(TARGETS ${APP}
 			RUNTIME DESTINATION bin COMPONENT tests)
 	endforeach()
+	add_test(test_vrpn test_vrpn)
 endif()
 
 ###
