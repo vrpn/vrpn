@@ -197,7 +197,7 @@ set(SRV_TEST_SOURCES
 )
 
 set(SRV_SERVER_SOURCES
-   wiimote_head_tracker.C
+	wiimote_head_tracker.C
 )
 
 
