@@ -347,7 +347,7 @@
 
 // Instructs VRPN to compile code to handle JSON network messages.
 // This requires jsoncpp.
-// JSON Network (USP) mesages are used by the vrpn widgets for Android,
+// JSON Network (UDP) mesages are used by the vrpn widgets for Android,
 //#define VRPN_USE_JSONNET
 
 //------------------------------------------------------------------//
