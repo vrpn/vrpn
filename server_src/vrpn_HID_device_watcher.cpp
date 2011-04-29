@@ -4,6 +4,7 @@
 #include <conio.h>
 #endif
 
+#if defined(VRPN_USE_HID)
 class HidDebug: public vrpn_HidInterface {
 	public:
 		HidDebug(vrpn_HidAcceptor *a);
@@ -21,8 +22,11 @@ void HidDebug::on_data_received(size_t bytes, vrpn_uint8 *buffer) {
 	}
 	puts("");
 }
+#endif
 
 int main() {
+
+#if defined(VRPN_USE_HID)
 	unsigned N = 0; // Which device to open?
 	HidDebug hid(new vrpn_HidNthMatchAcceptor(N, new vrpn_HidAlwaysAcceptor));
 	printf("HID initialized.\n");
@@ -47,8 +51,12 @@ int main() {
 					hid.reconnect();
 					break;
 			}
-#endif
+#endif // _WIN32
 	}
 
 	return 0;
+#else
+	printf("HID support not included.\n");
+	return 0;
+#endif // defined(VRPN_USE_HID)
 }
