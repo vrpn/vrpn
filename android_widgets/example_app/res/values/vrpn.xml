@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Vrpn button numbers.
+
+Keep them in a single file for easy reference and matching with your C++ code
+ 
+ -->
+ 
+<resources>
+
+<!-- For SeekBars and Spinners -->
+<item type="id" format="integer" name="VrpnAnalogLightIntensity">0</item>
+<item type="id" format="integer" name="VrpnAnalogSurfaceX">2</item>
+<item type="id" format="integer" name="VrpnAnalogSurfaceY">3</item>
+<item type="id" format="integer" name="VrpnAnalogMaterial">4</item>
+
+
+<!--  For RadioButtons, PressButtons, ToggleButtons -->
+<item type="id" format="integer" name="VrpnButtonLightsOn">0</item>
+
+
+</resources>

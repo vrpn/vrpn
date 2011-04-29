@@ -345,6 +345,11 @@
 // package installed so that we can compile the code.  
 //#define VRPN_USE_LIBUSB_1_0
 
+// Instructs VRPN to compile code to handle JSON network messages.
+// This requires jsoncpp.
+// JSON Network (USP) mesages are used by the vrpn widgets for Android,
+//#define VRPN_USE_JSONNET
+
 //------------------------------------------------------------------//
 // SYSTEM CONFIGURATION SECTION                                     //
 // EDIT THESE DEFINITIONS TO POINT TO OPTIONAL LIBRARIES.  THEY ARE //
