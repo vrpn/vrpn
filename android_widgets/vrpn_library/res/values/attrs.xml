@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="VrpnSeekBar">
+    	<attr name="hideTitle"		format="boolean"/>
+    	<attr name="hideValues"		format="boolean"/>
+        <attr name="defaultValue"	format="float"/>
+        <attr name="minValue"		format="float"/>
+        <attr name="maxValue"		format="float"/>
+        <attr name="title"			format="string"/>
+     	<attr name="vrpnAnalog"		format="integer"/>
+    </declare-styleable>
+  	
+  	<declare-styleable name="VrpnRadioButton">
+  		<!-- 
+  			This is the definition : declare the format.
+  			The next ones will be declarations, without the forat 
+		-->
+  		<attr name="vrpnButton" format="integer"/>
+  	</declare-styleable>
+  	
+   	<declare-styleable name="VrpnPressButton">
+  		<attr name="vrpnButton"/>
+  	</declare-styleable> 	
+
+   	<declare-styleable name="VrpnToggleButton">
+  		<attr name="vrpnButton"/>
+  	</declare-styleable> 	
+
+   	<declare-styleable name="VrpnSurface">
+  		<attr name="vrpnAnalogX"	format="integer"/>
+  		<attr name="vrpnAnalogY"	format="integer"/>
+  		<attr name="leftX"			format="float"/>
+  		<attr name="rightX"			format="float"/>
+  		<attr name="topY"			format="float"/>
+  		<attr name="bottomY"		format="float"/>
+  	</declare-styleable> 
+  	
+	<declare-styleable name="VrpnSpinner">
+     	<attr name="vrpnAnalog"/>
+    </declare-styleable>
+  	  	
+</resources>

@@ -241,6 +241,29 @@ if(VRPN_USE_WIIUSE)
 endif()
 
 ###
+# JsonCpp
+###
+find_package(JsonCpp)
+if(JSONCPP_FOUND)
+	option(VRPN_USE_JSONNET
+		"Build with JSONCPP (for Android widgets)"
+		ON)
+endif()
+
+if(VRPN_USE_JSONNET)
+	if(NOT JSONCPP_FOUND)
+		message(FATAL_ERROR
+			"ERROR: VRPN_USE_JSONNET set but JsonCpp not found ! (set JSONCPP_ROOT_DIR)")
+	endif()
+	include_directories(${JSONCPP_INCLUDE_DIRS})
+	list(APPEND SERVER_EXTRA_LIBS ${JSONCPP_LIBRARIES})
+	message("\nSee README.jsoncpp for important instructions on how to build JSONCPP and avoid LNK2005 errors \n")
+endif()
+
+
+
+
+###
 # libnifalcon
 ###
 find_package(LibNifalcon)
@@ -351,6 +374,9 @@ option(VRPN_USE_FREESPACE
 option(VRPN_USE_TRIVISIOCOLIBRI
 	"Build with support for TrivisioColibri tracker"
 	OFF)
+option(VRPN_USE_JSONNET
+	"Build with support JSON over UDP (for Android widgets)"
+	 OFF)
 option(VRPN_BUILD_EXTRA_COMPILER_WARNINGS
 	"Build with flags to enable extra warnings."
 	OFF)
@@ -490,6 +516,7 @@ set(VRPN_SERVER_SOURCES
 	vrpn_Tracker_GameTrak.C
 	vrpn_Tracker_isense.C
 	vrpn_Tracker_Isotrak.C
+	vrpn_Tracker_JsonNet.C
 	vrpn_Tracker_Liberty.C
 	vrpn_Tracker_MotionNode.C
 	vrpn_Tracker_NDI_Polaris.C
@@ -567,6 +594,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
     vrpn_Tracker_GameTrak.h
 	vrpn_Tracker_isense.h
 	vrpn_Tracker_Isotrak.h
+	vrpn_Tracker_JsonNet.h
 	vrpn_Tracker_Liberty.h
 	vrpn_Tracker_MotionNode.h
 	vrpn_Tracker_NDI_Polaris.h

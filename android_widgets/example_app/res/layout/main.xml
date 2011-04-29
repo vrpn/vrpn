@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+The following line :
+	xmlns:app="http://schemas.android.com/apk/res/my.application.package
+must be added after the xmlns:android line in the root widget.
+
+It allows the use of the app: custom attributes
+The list of these custom attributes is in vrpn_library/res/values/attrs.xml 
+ -->
+
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res/test.app1"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:id="@+id/main_layout"
+    >
+    
+	<TextView  
+    android:layout_width="fill_parent" 
+    android:layout_height="wrap_content" 
+    android:text="Lights"
+    />
+    
+	<eu.ensam.ii.vrpn.VrpnToggleButton
+	android:layout_width="wrap_content" 
+	android:layout_height="wrap_content" 
+	app:vrpnButton="@id/VrpnButtonLightsOn"
+	/>
+    
+	<TextView  
+    android:layout_width="fill_parent" 
+    android:layout_height="wrap_content" 
+    android:text="Light intensity"
+    />
+
+	<eu.ensam.ii.vrpn.VrpnSeekBar
+	android:layout_width="fill_parent" 
+	android:layout_height="wrap_content"
+	app:minValue="0"
+	app:maxValue="255"
+	app:defaultValue="128"
+	app:vrpnAnalog="@id/VrpnAnalogLightIntensity"
+	/>
+    
+   	<TextView  
+    android:layout_width="fill_parent" 
+    android:layout_height="wrap_content" 
+    android:text="Tracker"
+    />
+
+	<ToggleButton
+	android:layout_width="wrap_content" 
+	android:layout_height="wrap_content"
+	android:id = "@+id/btnEnableTiltTracker"
+	/>
+    
+    <eu.ensam.ii.vrpn.VrpnSpinner 
+ 	android:layout_width="fill_parent" 
+	android:layout_height="wrap_content"
+	android:prompt="@string/prompt_material"
+	android:entries="@array/array_materials"
+	app:vrpnAnalog="@id/VrpnAnalogMaterial"
+	/>
+    
+	<eu.ensam.ii.vrpn.VrpnSurface 
+	android:layout_width="fill_parent" 
+	android:layout_height="fill_parent"
+	android:background = "#444"
+	app:leftX="-1"
+	app:rightX="1"
+	app:topY="-1"
+	app:bottomY="1"
+	app:vrpnAnalogX="@id/VrpnAnalogSurfaceX"
+	app:vrpnAnalogY="@id/VrpnAnalogSurfaceY"
+	/>
+    
+</LinearLayout>

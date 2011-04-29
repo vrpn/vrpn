@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<eu.ensam.ii.vrpn.views.DebugSensors
+xmlns:android="http://schemas.android.com/apk/res/android" 
+android:layout_height="fill_parent" 
+android:layout_width="fill_parent" 
+android:orientation="vertical" 
+android:id="@+id/DebugSensors"
+>
+
+	<ToggleButton android:text="Save" android:id="@+id/BtnSave" 
+	android:layout_width="wrap_content" 
+	android:layout_height="wrap_content">
+	</ToggleButton>
+	
+	<TableLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
+	android:stretchColumns ="*">
+		<TableRow android:id="@+id/TableRow01" 
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content">
+			<TextView android:text="Sensor" android:id="@+id/TextView01" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="Rel." android:id="@+id/TextView01" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="X" android:id="@+id/TextView01" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="Y" android:id="@+id/TextView01" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="Z" android:id="@+id/TextView01" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="L" android:id="@+id/TextView01" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+		</TableRow>
+		
+		<TableRow android:id="@+id/TableRow01" 
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content">
+			<TextView android:text="Accelerator" android:id="@+id/TextView01" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="" android:id="@+id/AccAccuracy" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="X" android:id="@+id/AccX" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="Y" android:id="@+id/AccY" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="Z" android:id="@+id/AccZ" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="L" android:id="@+id/AccL" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+		</TableRow>
+		
+		
+		<TableRow android:id="@+id/TableRow01" 
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content">
+			<TextView android:text="AcceleratorN" android:id="@+id/TextView01" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="" android:id="@+id/xx" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="X" android:id="@+id/AccXn" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="Y" android:id="@+id/AccYn" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="Z" android:id="@+id/AccZn" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="L" android:id="@+id/AccLn" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+		</TableRow>
+		
+		<TableRow android:id="@+id/TableRow01" 
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content">
+			<TextView android:text="Magnetic" android:id="@+id/TextView01" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="" android:id="@+id/MagAccuracy" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="X" android:id="@+id/MagX" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="Y" android:id="@+id/MagY" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="Z" android:id="@+id/MagZ" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="L" android:id="@+id/MagL" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+		</TableRow>
+		
+		<TableRow android:id="@+id/TableRow01" 
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content">
+			<TextView android:text="Magnetic" android:id="@+id/TextView01" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="" android:id="@+id/xx" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="X" android:id="@+id/MagXn" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="Y" android:id="@+id/MagYn" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="Z" android:id="@+id/MagZn" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="L" android:id="@+id/MagLn" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+		</TableRow>
+		
+		<TableRow android:id="@+id/TableRow01" 
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content">
+			<TextView android:text="Gyroscope" android:id="@+id/TextView01" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="" android:id="@+id/GyrAccuracy" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="X" android:id="@+id/GyrX" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="Y" android:id="@+id/GyrY" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="Z" android:id="@+id/GyrZ" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+		</TableRow>
+		
+		<TableRow android:id="@+id/TableRow01" 
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content">
+			<TextView android:text="Orientation" android:id="@+id/TextView01" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="" android:id="@+id/xxx" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="X" android:id="@+id/OriX" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="Y" android:id="@+id/OriY" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="Z" android:id="@+id/OriZ" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+		</TableRow>
+		
+		<TableRow android:id="@+id/TableRow01" 
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content">
+			<TextView android:text="Or. remapped" android:id="@+id/TextView01" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="" android:id="@+id/xxx" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="X" android:id="@+id/OriRX" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="Y" android:id="@+id/OriRY" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="Z" android:id="@+id/OriRZ" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+		</TableRow>
+		
+		<TableRow android:id="@+id/TableRow01" 
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content">
+			<TextView android:text="Rotation" android:id="@+id/TextView01" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="" android:id="@+id/xxx" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="X" android:id="@+id/RotX" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="Y" android:id="@+id/RotY" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="Z" android:id="@+id/RotZ" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+		</TableRow>
+		
+		<TableRow android:id="@+id/TableRow01" 
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content">
+			<TextView android:text="inclination" android:id="@+id/TextView01" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+			<TextView android:text="X" android:id="@+id/Inclination" android:layout_width="wrap_content" android:layout_height="wrap_content"></TextView>
+		</TableRow>
+	
+	</TableLayout>
+
+</eu.ensam.ii.vrpn.views.DebugSensors>

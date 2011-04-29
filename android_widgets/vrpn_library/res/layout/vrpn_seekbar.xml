@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+Layout for the composite widget VrpnSeekBar , backed by the class VrpnSeekBar
+
+The widget includes
+- a title line
+- a line with min, max and current values of the seekbar
+- the seekbar itself
+ -->
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent" 
+	android:layout_height="wrap_content"
+	android:id="@+id/vrpn_seekbar"
+	android:orientation="vertical"
+	>
+		<TextView 
+		android:id="@+id/txtSeekBarTitle" 
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content" 
+		android:text="Label">
+		</TextView>
+
+		<LinearLayout 
+		android:id="@+id/lytSeekBarValues" 
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content" 
+		android:orientation="horizontal">
+			<TextView 
+			android:id="@+id/txtSeekBarMinValue" 
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content" 
+			android:layout_gravity="left"
+			android:gravity="bottom|left"
+			android:layout_weight="1"
+			android:text="min"
+			>
+			</TextView>
+			<TextView 
+			android:id="@+id/txtSeekBarCurrentValue"
+			android:layout_width="wrap_content" 
+			android:layout_height="wrap_content"
+			android:layout_gravity="center"
+			android:gravity="center"
+			android:textSize="20dip"
+			android:layout_weight="1"
+			android:text="Current">
+			</TextView>
+			<TextView 
+			android:id="@+id/txtSeekBarMaxValue" 
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"			
+			android:layout_gravity="right"
+			android:gravity="bottom|right"
+			android:layout_weight="1"
+			android:text="max">
+			</TextView>
+		</LinearLayout>
+		<SeekBar 
+		android:id="@+id/seekBarWidget" 
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content">
+		</SeekBar>
+</LinearLayout>

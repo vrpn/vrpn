@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<string-array name="array_materials">
+	<item>"Plastic"</item>
+	<item>"Gold"</item>
+	<item>"Wood"</item>
+	<item>"Silver"</item>
+</string-array>
+
+</resources>
