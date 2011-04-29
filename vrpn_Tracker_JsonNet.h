@@ -4,9 +4,9 @@
 #include "vrpn_Configure.h"
 #if defined(VRPN_USE_JSONNET)
 
-#include "vrpn_tracker.h"
-#include "vrpn_button.h"
-#include "vrpn_analog.h"
+#include "vrpn_Tracker.h"
+#include "vrpn_Button.h"
+#include "vrpn_Analog.h"
 
 namespace Json {
 	class Reader;
@@ -17,7 +17,7 @@ namespace Json {
  * A tracker class that accepts network updates in JSON format.
  *
  * This tracker is used by the Vrpn Android widgets. 
- * Any other application that can send USD packets with a JSON payload 
+ * Any other application that can send UDP packets with a JSON payload 
  * and feed this tracker.
  * 
  * @Author Philippe Crassous / ENSAM ParisTech-Institut Image
@@ -47,7 +47,12 @@ private:
 	bool _network_init(int udp_port);
 	int _network_receive(void *buffer, int maxlen, int tout_us);
 	void _network_release();
-	SOCKET _socket;
+#ifdef _WIN32
+    typedef SOCKET socket_type;
+#else
+    typedef int socket_type;
+#endif
+	socket_type _socket;
 	enum {
 		_NETWORK_BUFFER_SIZE = 2000,
 
