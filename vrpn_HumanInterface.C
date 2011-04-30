@@ -112,7 +112,7 @@ void vrpn_HidInterface::reconnect() {
 void vrpn_HidInterface::update()
 {
 	if (!_working) {
-		fprintf(stderr,"vrpn_HidInterface::update(): Interface not currently working\n");
+		//fprintf(stderr,"vrpn_HidInterface::update(): Interface not currently working\n");
 		return;
 	}
 
