@@ -184,8 +184,6 @@ void vrpn_Xkeys_Jog_And_Shuttle::report_changes(vrpn_uint32 class_of_service) {
 
 void vrpn_Xkeys_Jog_And_Shuttle::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 {
-	size_t i;
-
 	// Decode all full reports.
         // Full reports for all of the pro devices are 15 bytes long.
         // Because there is only one type of report, the initial "0" report-type
