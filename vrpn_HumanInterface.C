@@ -61,6 +61,7 @@ void vrpn_HidInterface::reconnect() {
           device_info.serial_number = loop->serial_number;
           device_info.manufacturer_string = loop->manufacturer_string;
           device_info.product_string = loop->product_string;
+          //printf("XXX Found vendor %x, product %x\n", (unsigned)(loop->vendor_id), (unsigned)(loop->product_id));
 
           if (_acceptor->accept(device_info)) {
             _vendor = loop->vendor_id;
@@ -70,19 +71,17 @@ void vrpn_HidInterface::reconnect() {
           }
           loop = loop->next;
         }
+        if (devs != NULL) {
+          hid_free_enumeration(devs);
+          devs = NULL;
+        }
         if (!found) {
 		fprintf(stderr,"vrpn_HidInterface::reconnect(): Device not found\n");
-                if (devs != NULL) {
-                  hid_free_enumeration(devs);
-                }
 		return;
         }
 
 	// Initialize the HID interface and open the device.
         _device = hid_open(_vendor, _product, const_cast<wchar_t *>(serial));
-        if (devs != NULL) {
-          hid_free_enumeration(devs);
-        }
         if (_device == NULL) {
 		fprintf(stderr,"vrpn_HidInterface::reconnect(): Could not open device\n");
 #ifdef linux
