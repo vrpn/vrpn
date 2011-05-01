@@ -4,8 +4,8 @@
 
 # Local HIDAPI requirements
 if(WIN32)
-	find_package(WinHID)
-	set(HIDAPI_DEPS_CHECK WINHID_FOUND)
+#	find_package(WinHID)
+#	set(HIDAPI_DEPS_CHECK WINHID_FOUND)
 
 elseif(APPLE)
 	find_package(MacHID)
