@@ -631,6 +631,11 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 		FOLDER
 		"Library")
 
+	if(UNIX)
+		add_subdirectory(atmellib)
+		target_link_libraries(vrpnserver vrpn_atmel)
+	endif()
+
 	install(TARGETS
 		vrpnserver
 		ARCHIVE
@@ -689,13 +694,6 @@ if(VRPN_BUILD_CLIENT_LIBRARY)
 endif()
 
 add_subdirectory(client_src)
-
-#-----------------------------------------------------------------------------
-# Build the atmellib library if we're building a server library
-
-if(VRPN_BUILD_SERVER_LIBRARY)
-	add_subdirectory(atmellib)
-endif()
 
 #-----------------------------------------------------------------------------
 # Build the server applications if we've been asked to and we didn't build
