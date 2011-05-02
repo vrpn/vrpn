@@ -127,6 +127,13 @@ if(NOT WIN32)
 endif()
 
 ###
+# Winsock - needed for endianness conversion
+###
+if(WIN32 AND NOT UNIX)
+	list(APPEND EXTRA_LIBS Ws2_32)
+endif()
+
+###
 # Optional packages
 ###
 message(STATUS
