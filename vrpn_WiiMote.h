@@ -83,6 +83,15 @@ struct vrpn_WiiMote_SharedData;
 //    channel[48] = guitar hero whammy bar
 //    channel[49] = guitar hero joystick angle
 //    channel[50] = guitar hero joystick magnitude
+//
+// Balance board data: (requires WiiUse 0.13 or newer, preferably 0.14 or newer)
+//    channel[64] = Balance board: top-left sensor, kg
+//    channel[65] = Balance board: top-right sensor, kg
+//    channel[66] = Balance board: bottom-left sensor, kg
+//    channel[67] = Balance board: bottom-right sensor, kg
+//    channel[68] = Balance board: total mass, kg
+//    channel[69] = Balance board: center of gravity x, in [-1, 1]
+//    channel[70] = Balance board: center of gravity y, in [-1, 1]
 // The Analog_Output 0 is a hack to enable control over the rumble, inherited from
 //  the RumblePack driver.  This should eventually move to a binary output of
 //  some kind (and so should the lights).  For now, if you set output 0 to a
