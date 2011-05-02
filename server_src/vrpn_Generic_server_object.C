@@ -3695,12 +3695,14 @@ int vrpn_Generic_Server_Object::setup_ImageStream(char * & pch, char * line, FIL
 
 int vrpn_Generic_Server_Object::setup_WiiMote(char * & pch, char * line, FILE * config_file) {
 #ifdef	VRPN_USE_WIIUSE
+  char sBDADDR [LINESIZE];
   char s2 [LINESIZE];
   unsigned controller,useMS,useIR, reorderBtns;
 
   next();
   // Get the arguments (wiimote_name, controller index)
-  if (sscanf(pch,"%511s%u %u %u %u",s2,&controller,&useMS,&useIR, &reorderBtns) != 5) {
+  int numParms = sscanf(pch,"%511s%u %u %u %u %511s",s2,&controller,&useMS,&useIR, &reorderBtns, sBDADDR);
+  if (numParms < 5) {
     fprintf(stderr,"Bad vrpn_WiiMote line: %s\n",line);
     return -1;
   }
@@ -3715,7 +3717,12 @@ int vrpn_Generic_Server_Object::setup_WiiMote(char * & pch, char * line, FILE * 
   if (verbose) {
     printf("Opening vrpn_WiiMote: %s\n", s2);
   }
-  if ((wiimotes[num_wiimotes] = new vrpn_WiiMote(s2, connection, controller, useMS, useIR, reorderBtns)) == NULL)
+  if (numParms == 5) {
+    wiimotes[num_wiimotes] = new vrpn_WiiMote(s2, connection, controller, useMS, useIR, reorderBtns);
+  } else {
+    wiimotes[num_wiimotes] = new vrpn_WiiMote(s2, connection, controller, useMS, useIR, reorderBtns, sBDADDR);
+  }
+  if (wiimotes[num_wiimotes] == NULL)
   {
     fprintf(stderr,"Can't create new vrpn_WiiMote\n");
     return -1;
