@@ -92,6 +92,7 @@ struct vrpn_WiiMote_SharedData;
 //    channel[68] = Balance board: total mass, kg
 //    channel[69] = Balance board: center of gravity x, in [-1, 1]
 //    channel[70] = Balance board: center of gravity y, in [-1, 1]
+//
 // The Analog_Output 0 is a hack to enable control over the rumble, inherited from
 //  the RumblePack driver.  This should eventually move to a binary output of
 //  some kind (and so should the lights).  For now, if you set output 0 to a
@@ -118,7 +119,8 @@ class VRPN_API vrpn_WiiMote: public vrpn_Analog, public vrpn_Button, public vrpn
 		// If there is more than one WiiMote on the machine, the zero-indexed 'which'
 		// parameter tells which one we want to open.
 		vrpn_WiiMote(const char *name, vrpn_Connection *c = NULL, unsigned which = 0
-		             , unsigned useMS = 1, unsigned useIR = 1, unsigned reorderButtons = 0);
+		             , unsigned useMS = 1, unsigned useIR = 1, unsigned reorderButtons = 0,
+		             const char *bdaddr = NULL);
 		~vrpn_WiiMote();
 
 		virtual void mainloop();
