@@ -127,10 +127,14 @@ if(NOT WIN32)
 endif()
 
 ###
-# Winsock - needed for endianness conversion
+# Windows-specific (non-Cygwin) dependencies
 ###
 if(WIN32 AND NOT UNIX)
+	# Winsock - needed for endianness conversion
 	list(APPEND EXTRA_LIBS Ws2_32)
+
+	# Windows multimedia - needed for joywin32
+	list(APPEND EXTRA_LIBS Winmm)
 endif()
 
 ###
