@@ -141,6 +141,14 @@ void vrpn_Generic_Server_Object::closeDevices (void) {
     delete freespaces[i];
   }
 #endif
+#ifdef VRPN_USE_JSONNET
+  for (i=0;i < num_JsonNets; i++) {
+    if (verbose) fprintf(stderr, "\nClosing JsonNet %d ...", i);
+    delete JsonNets[i];
+  }
+
+#endif
+
   if (verbose) { fprintf(stderr, "\nAll devices closed...\n"); }
 }
 
@@ -2759,6 +2767,72 @@ int vrpn_Generic_Server_Object::setup_VPJoystick(char* &pch, char *line, FILE *c
   return 0;
 }
 
+#ifdef VRPN_USE_JSONNET
+int vrpn_Generic_Server_Object::setup_Tracker_JsonNet (char* &pch, char* line, FILE* config_file)
+{
+	/*
+	 * Parses the section of the configuration file related to the device
+		#DeviceClass DeviceName ListenPort
+		Tracker_JsonNet GGG 7777
+	 *
+	 * Create the device object
+	 */
+
+	char* s2;
+	char* str[LINESIZE];
+	char *s;
+	char sep[] = " ,\t,\n";
+	int  count = 0;
+	int port;
+	//float timeToReachJoy;
+	//int nob, nof, nidbf;
+	//int idbf[VRPN_GSO_MAX_TRACKERS];
+	//bool actTracing;
+
+	next();
+
+	// Get the arguments:
+
+	str[count] = strtok( pch, sep );
+	while( str[count] != NULL )
+	{
+		count++;
+		// Get next token:
+		str[count] = strtok( NULL, sep );
+	}
+
+	if(count < 1){
+		fprintf(stderr,"Bad vrpn_Tracker_JsonNet line: %s\n",line);
+		return -1;
+	}
+
+	// Make sure there's room for a new one:
+
+	if (num_JsonNets >= VRPN_GSO_MAX_JSONNETS) {
+		fprintf(stderr,"Too many JsonNets in config file (max allowed : %d)\n", VRPN_GSO_MAX_JSONNETS);
+		return -1;
+	}
+
+	s2 = str[0];
+	port = (int )strtol(str[1], &s, 0);
+
+	// Open vrpn_Tracker_JsonNet:
+
+	if(verbose){
+		printf("Opening vrpn_Tracker_JsonNet: %s at port %d\n", s2, port);
+	}
+
+	if((JsonNets[num_JsonNets] = new vrpn_Tracker_JsonNet(s2, connection, port)) == NULL)
+	{
+		fprintf(stderr,"Can't create new vrpn_Tracker_JsonNet\n");
+		return -1;
+	}
+
+	num_JsonNets++;
+
+	return 0;
+}
+#endif VRPN_USE_JsonNet
 
 int vrpn_Generic_Server_Object::setup_DTrack (char* &pch, char* line, FILE* config_file)
 {
@@ -4444,6 +4518,10 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
 #ifdef	VRPN_USE_FREESPACE
   , num_freespaces(0)
 #endif
+#ifdef VRPN_USE_JSONNET
+  , num_JsonNets(0)
+#endif
+
   {
     FILE    * config_file;
 
@@ -4687,7 +4765,14 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
             CHECK(setup_Analog_5dtUSB_Glove14Left);
 	  } else if (isit("vrpn_Analog_5dtUSB_Glove14Right")) {
             CHECK(setup_Analog_5dtUSB_Glove14Right);
-	  } else {	// Never heard of it
+	  } 
+
+#ifdef VRPN_USE_JSONNET
+	  else if (isit("vrpn_Tracker_JsonNet")) {
+		  CHECK(setup_Tracker_JsonNet);
+	  }
+#endif	 
+	  else {	// Never heard of it
 		sscanf(line,"%511s",s1);	// Find out the class name
 		fprintf(stderr,"vrpn_server: Unknown Device: %s\n",s1);
 		if (d_bail_on_open_error) { d_doing_okay = false; return; }
@@ -4854,6 +4939,11 @@ void  vrpn_Generic_Server_Object::mainloop( void )
 #ifdef	VRPN_USE_FREESPACE
   for (i=0; i< num_freespaces; i++) {
 	  freespaces[i]->mainloop();
+  }
+#endif
+#ifdef VRPN_USE_JSONNET
+  for (i=0; i< num_JsonNets; i++) {
+	  JsonNets[i]->mainloop();
   }
 #endif
 }

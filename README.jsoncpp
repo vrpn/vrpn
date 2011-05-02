@@ -16,7 +16,9 @@ To build jsoncpp, see README.txt in the JSCONCPP directory, but :
 		env['CXXFLAGS']='xxxxxxx /MT'
 	by : 
 		env['CXXFLAGS']='xxxxxxx /MD'
-
+3/ To build with Visual Studio, run the Visual Studio command that configures environment variables
+	(on VS-2008-32, look for a file named vsvars32.bat), otherwise scons may not  find the compiler
+	
 Then build, for instance with the command
 	c:\Python27\python.exe scons.py platform=msvc90
 
