@@ -1,5 +1,7 @@
 
+#ifdef _WIN32
 #include <winsock2.h>
+#endif
 #include "vrpn_Tracker_JsonNet.h"
 
 #if defined(VRPN_USE_JSONNET)
