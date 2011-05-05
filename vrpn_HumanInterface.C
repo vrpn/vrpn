@@ -71,10 +71,6 @@ void vrpn_HidInterface::reconnect() {
           }
           loop = loop->next;
         }
-        if (devs != NULL) {
-          hid_free_enumeration(devs);
-          devs = NULL;
-        }
         if (!found) {
 		fprintf(stderr,"vrpn_HidInterface::reconnect(): Device not found\n");
 		return;
@@ -88,6 +84,14 @@ void vrpn_HidInterface::reconnect() {
 		fprintf(stderr,"   (Did you remember to run as root?)\n");
 #endif
                 return;
+        }
+
+	// We cannot do this before the call to open because the serial number
+	// is a pointer to a string down in there, which forms a race condition.
+	// This will be a memory leak if the device fails to open.
+        if (devs != NULL) {
+          hid_free_enumeration(devs);
+          devs = NULL;
         }
 
         // Set the device to non-blocking mode.
