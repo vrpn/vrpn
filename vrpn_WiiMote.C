@@ -210,20 +210,22 @@ void vrpn_WiiMote::handle_event() {
 
 #ifdef EXP_WII_BOARD
 		case EXP_WII_BOARD:
-			printf("Got a wii board report: %f, %f, %f, %f\n", wiimote->device->exp.wb.tl, wiimote->device->exp.wb.tr, wiimote->device->exp.wb.bl, wiimote->device->exp.wb.br);
-			//printf("Got a wii board report: %d, %d, %d, %d\n", wiimote->device->exp.wb.rtl, wiimote->device->exp.wb.rtr, wiimote->device->exp.wb.rbl, wiimote->device->exp.wb.rbr);
-			//printf("")
-			channel[64 + 0] = wiimote->device->exp.wb.tl;
-			channel[64 + 1] = wiimote->device->exp.wb.tr;
-			channel[64 + 2] = wiimote->device->exp.wb.bl;
-			channel[64 + 3] = wiimote->device->exp.wb.br;
-			/* raw channels
-			channel[64 + 4] = wiimote->device->exp.wb.rtl;
-			channel[64 + 5] = wiimote->device->exp.wb.rtr;
-			channel[64 + 6] = wiimote->device->exp.wb.rbl;
-			channel[64 + 7] = wiimote->device->exp.wb.rbr;
-			*/
-			break;
+			{
+				struct wii_board_t* wb = (wii_board_t*)&wiimote->device->exp.wb;
+				float total = wb->tl + wb->tr + wb->bl + wb->br;
+				float x = ((wb->tr + wb->br) / total) * 2 - 1;
+				float y = ((wb->tl + wb->tr) / total) * 2 - 1;
+				//printf("Got a wii board report: %f kg, @ (%f, %f)\n", total, x, y);
+				//printf("Got a wii board report: %f, %f, %f, %f\n", wb->tl, wb->tr, wb->bl, wb->br);
+				channel[64 + 0] = wb->tl;
+				channel[64 + 1] = wb->tr;
+				channel[64 + 2] = wb->bl;
+				channel[64 + 3] = wb->br;
+				channel[64 + 4] = total;
+				channel[64 + 5] = x;
+				channel[64 + 6] = y;
+				break;
+			}
 #endif
 		default:
 			struct timeval now;
@@ -345,7 +347,8 @@ vrpn_WiiMote::vrpn_WiiMote(const char *name, vrpn_Connection *c, unsigned which,
 		buttons[i] = 0;
 	}
 
-	vrpn_Analog_Output::o_num_channel = 1;
+	// Two channels: channel 0 is rumble, channel 1 is IR sensitivity.
+	vrpn_Analog_Output::o_num_channel = 2;
 
 	// Register a handler for the request channel change message
 	if (register_autodeleted_handler(request_m_id,
@@ -586,12 +589,23 @@ int vrpn_WiiMote::handle_request_message(void *userdata,
 		return 0;
 	}
 	me->o_channel[chan_num] = value;
-	if (value >= 0.5) {
-		wiiuse_rumble(me->wiimote->device, 1);
-	} else {
-		wiiuse_rumble(me->wiimote->device, 0);
+	switch (chan_num) {
+		case 0:
+			{
+				if (value >= 0.5) {
+					wiiuse_rumble(me->wiimote->device, 1);
+				} else {
+					wiiuse_rumble(me->wiimote->device, 0);
+				}
+				break;
+			}
+		case 1:
+			{
+				int level = static_cast<int>(value);
+				wiiuse_set_ir_sensitivity(me->wiimote->device, level);
+				break;
+			}
 	}
-
 	return 0;
 }
 

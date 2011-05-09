@@ -42,6 +42,7 @@ const char	*ANALOG_OUTPUT_NAME = "AnalogOutput0@localhost";
 const char	*BUTTON_NAME = "Button0@localhost";
 const char	*POSER_NAME = "Poser0@localhost";
 int	CONNECTION_PORT = vrpn_DEFAULT_LISTEN_PORT_NO;	// Port for connection to listen on
+int MAX_CONNECTION_PORT = vrpn_DEFAULT_LISTEN_PORT_NO + 10;
 
 // The connection that is used by all of the servers and remotes
 vrpn_Connection		*connection;
@@ -365,6 +366,18 @@ int main (int argc, char * argv [])
 	//---------------------------------------------------------------------
 	// explicitly open the connection
 	connection = vrpn_create_server_connection(CONNECTION_PORT);
+
+	while (!connection->doing_okay() && CONNECTION_PORT < MAX_CONNECTION_PORT) {
+		CONNECTION_PORT++;
+        fprintf(stderr, "Could not open port - assuming parallel test. Increasing port number to %d and trying again\n", CONNECTION_PORT);
+		connection = vrpn_create_server_connection(CONNECTION_PORT);
+	}
+
+	if (!connection->doing_okay()) {
+        fprintf(stderr, "Hit port number limit - assuming something in port opening is broken!\n");
+        return -1;
+    }
+
 
 	//---------------------------------------------------------------------
 	// Open the tracker server, using this connection, 2 sensors, update 1 times/sec

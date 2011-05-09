@@ -6,7 +6,6 @@ cmake_minimum_required(VERSION 2.6)
 # Move applications into subprojects in visual studio
 # XXX tracker_to_poser
 # XXX daq_server
-# XXX vrpn_hid_device_watcher
 # Fix the ones that are commented out so that they compile and run?
 
 if(NOT VRPN_BUILD_SERVER_LIBRARY)
@@ -194,11 +193,11 @@ set(SRV_TEST_SOURCES
 	test_vrpn.C
 	testimager_server.cpp
 	#text.C
-	#vrpn_HID_device_watcher.cpp
+	vrpn_HID_device_watcher.cpp
 )
 
 set(SRV_SERVER_SOURCES
-   wiimote_head_tracker.C
+	wiimote_head_tracker.C
 )
 
 
@@ -215,6 +214,7 @@ if(BUILD_TESTING)
 		install(TARGETS ${APP}
 			RUNTIME DESTINATION bin COMPONENT tests)
 	endforeach()
+	add_test(test_vrpn test_vrpn)
 endif()
 
 ###

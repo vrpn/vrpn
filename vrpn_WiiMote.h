@@ -83,11 +83,22 @@ struct vrpn_WiiMote_SharedData;
 //    channel[48] = guitar hero whammy bar
 //    channel[49] = guitar hero joystick angle
 //    channel[50] = guitar hero joystick magnitude
-// The Analog_Output is a hack to enable control over the rumble, inherited from
+//
+// Balance board data: (requires WiiUse 0.13 or newer, preferably 0.14 or newer)
+//    channel[64] = Balance board: top-left sensor, kg
+//    channel[65] = Balance board: top-right sensor, kg
+//    channel[66] = Balance board: bottom-left sensor, kg
+//    channel[67] = Balance board: bottom-right sensor, kg
+//    channel[68] = Balance board: total mass, kg
+//    channel[69] = Balance board: center of gravity x, in [-1, 1]
+//    channel[70] = Balance board: center of gravity y, in [-1, 1]
+// The Analog_Output 0 is a hack to enable control over the rumble, inherited from
 //  the RumblePack driver.  This should eventually move to a binary output of
 //  some kind (and so should the lights).  For now, if you set output 0 to a
 //  value greater than or equal to 0.5, it will turn on the rumble; if less, then
 //  it will disable it.
+// Channel 1 sets the IR sensitivity: accepts 1, 2, 3, 4, 5 (clipping to this
+// range if given other values), same as the Wii system's sensitivity settings.
 
 // XXX It would be great to use the IR and accelerometer data along with
 //      a description of the size of the official Wii sensor bar to compute

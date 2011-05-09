@@ -25,6 +25,8 @@ include(MSVCMultipleProcessCompile)
 include(CppcheckTargets)
 include(SetDefaultBuildType)
 include(OptionRequires)
+include(CTest)
+include(CreateDashboardScripts)
 
 ###
 # Basic packaging options and versioning
@@ -122,6 +124,17 @@ list(APPEND EXTRA_LIBS quat)
 if(NOT WIN32)
 	find_package(Threads REQUIRED)
 	list(APPEND EXTRA_LIBS ${CMAKE_THREAD_LIBS_INIT})
+endif()
+
+###
+# Windows-specific (non-Cygwin) dependencies
+###
+if(WIN32 AND NOT UNIX)
+	# Winsock - needed for endianness conversion
+	list(APPEND EXTRA_LIBS Ws2_32)
+
+	# Windows multimedia - needed for joywin32
+	list(APPEND EXTRA_LIBS Winmm)
 endif()
 
 ###
@@ -244,20 +257,16 @@ endif()
 # JsonCpp
 ###
 find_package(JsonCpp)
-if(JSONCPP_FOUND)
-	option(VRPN_USE_JSONNET
-		"Build with JSONCPP (for Android widgets)"
-		ON)
-endif()
+option_requires(VRPN_USE_JSONNET
+	"Build with JSONCPP (for Android widgets)"
+	JSONCPP_FOUND)
 
 if(VRPN_USE_JSONNET)
-	if(NOT JSONCPP_FOUND)
-		message(FATAL_ERROR
-			"ERROR: VRPN_USE_JSONNET set but JsonCpp not found ! (set JSONCPP_ROOT_DIR)")
-	endif()
 	include_directories(${JSONCPP_INCLUDE_DIRS})
 	list(APPEND SERVER_EXTRA_LIBS ${JSONCPP_LIBRARIES})
-	message("\nSee README.jsoncpp for important instructions on how to build JSONCPP and avoid LNK2005 errors \n")
+	if(MSVC)
+		message("\nSee README.jsoncpp for important instructions on how to build JSONCPP and avoid LNK2005 errors \n")
+	endif()
 endif()
 
 
@@ -633,6 +642,11 @@ if(VRPN_BUILD_SERVER_LIBRARY)
 		FOLDER
 		"Library")
 
+	if(UNIX)
+		add_subdirectory(atmellib)
+		target_link_libraries(vrpnserver vrpn_atmel)
+	endif()
+
 	install(TARGETS
 		vrpnserver
 		ARCHIVE
@@ -691,13 +705,6 @@ if(VRPN_BUILD_CLIENT_LIBRARY)
 endif()
 
 add_subdirectory(client_src)
-
-#-----------------------------------------------------------------------------
-# Build the atmellib library if we're building a server library
-
-if(VRPN_BUILD_SERVER_LIBRARY)
-	add_subdirectory(atmellib)
-endif()
 
 #-----------------------------------------------------------------------------
 # Build the server applications if we've been asked to and we didn't build
@@ -813,8 +820,6 @@ endif()
 
 #-----------------------------------------------------------------------------
 # Enable testing/dashboards
-include(CTest)
-include(CreateDashboardScripts)
 create_dashboard_scripts("${CMAKE_CURRENT_SOURCE_DIR}/DashboardBuildInitialCache.cmake.in")
 
 #-----------------------------------------------------------------------------

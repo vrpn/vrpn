@@ -1,11 +1,11 @@
 JSONCPP is requred to build a VRPN server for the Vrpn Android widgets (see  android_widgets directory).
 
-Get the latest JSCONCPP (r156 has been used successfully) from 
-	http://jsoncpp.svn.sourceforge.net/viewvc/jsoncpp/trunk/
+Get the latest JSONCPP (r156 has been used successfully) from 
+	http://jsoncpp.svn.sourceforge.net/svnroot/jsoncpp/trunk/jsoncpp
 
 You will also need Scons and Python
 
-To build jsoncpp, see README.txt in the JSCONCPP directory, but :
+To build jsoncpp, see README.txt in the JSONCPP directory, but :
 1/ 	Get scons-local (2.0.1 is OK) from http://www.scons.org/download.php 
 	instead of the link in the README, then
 	extract scons-local into the jsoncpp directory as mentionned in the README

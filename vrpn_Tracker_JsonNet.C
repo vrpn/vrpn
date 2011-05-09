@@ -1,10 +1,16 @@
-
-#ifdef _WIN32
-#include <winsock2.h>
-#endif
 #include "vrpn_Tracker_JsonNet.h"
 
 #if defined(VRPN_USE_JSONNET)
+
+#ifdef _WIN32
+	#include <winsock2.h>
+#else
+	#include <sys/socket.h>
+	#include <sys/time.h>
+	#include <netinet/in.h>
+	#include <unistd.h>
+	#define INVALID_SOCKET -1
+#endif
 
 #include "json/json.h"
 
@@ -114,7 +120,7 @@ bool vrpn_Tracker_JsonNet::_parse(const char* buffer, int length) {
 	if ( !parsingSuccessful ) {
 		// report to the user the failure and their locations in the document.
 		fprintf(stderr, "vrpn_Tracker_JsonNet parse error :%s\n",
-						 _pJsonReader->getFormatedErrorMessages());
+						 _pJsonReader->getFormatedErrorMessages().c_str());
 		fprintf(stderr, "%s\n",buffer);
 		return false;
 	}
@@ -277,25 +283,43 @@ bool vrpn_Tracker_JsonNet::_parse_analog(const Json::Value& root) {
  */
 bool vrpn_Tracker_JsonNet::_network_init(int udp_port) {
 	int iResult;
+#ifdef _WIN32
+	{
+		// Initialize Winsock
+		WORD versionRequested =  MAKEWORD(2,2);
+		WSADATA wsaData;
 
-    // Initialize Winsock
-    WORD versionRequested =  MAKEWORD(2,2);
-    WSADATA wsaData;
-
-	iResult = WSAStartup(versionRequested, &wsaData);
-    if (iResult != 0) {
-        printf("WSAStartup failed with error: %d\n", iResult);
-        return false;
+		iResult = WSAStartup(versionRequested, &wsaData);
+		if (iResult != 0) {
+		    printf("WSAStartup failed with error: %d\n", iResult);
+		    return false;
+		}
     }
+#endif
 
-    // Create a SOCKET for connecting to server
-	_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    if (_socket == INVALID_SOCKET) {
-        printf("socket failed with error: %ld\n", WSAGetLastError());
-        //freeaddrinfo(result);
-        WSACleanup();
-        return false;
-    }
+#ifdef _WIN32
+	{
+		// Create a SOCKET for connecting to server
+		_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+		if (_socket == INVALID_SOCKET) {
+		    printf("socket failed with error: %ld\n", WSAGetLastError());
+		    //freeaddrinfo(result);
+		    WSACleanup();
+		    return false;
+		}
+	}
+#else
+	{
+		int usock;
+		
+		usock = socket(PF_INET, SOCK_DGRAM, 0);
+	
+		if (usock < 0){
+			return false;
+		}
+		_socket = usock;
+	}
+#endif
 	struct sockaddr_in localSocketAddress;
 	localSocketAddress.sin_family = AF_INET;
 	localSocketAddress.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -303,8 +327,12 @@ bool vrpn_Tracker_JsonNet::_network_init(int udp_port) {
 
     // Setup the listening socket
 	iResult = bind( _socket, (struct sockaddr*)&localSocketAddress, sizeof(localSocketAddress));
-    if (iResult == SOCKET_ERROR) {
+    if (iResult < 0) {
+#ifdef _WIN32
         printf("bind failed with error: %d\n", WSAGetLastError());
+#else
+        printf("bind failed.");
+#endif
         //freeaddrinfo(result);
 		_network_release();
         return false;
@@ -385,8 +413,12 @@ int vrpn_Tracker_JsonNet::_network_receive(void *buffer, int maxlen, int tout_us
  * Cleanup the network resources
  */
 void vrpn_Tracker_JsonNet::_network_release() {
+#ifdef _WIN32
 	closesocket(_socket);
 	WSACleanup();
+#else
+	close(_socket);
+#endif
 }
 
 #endif // defined VRPN_USE_JSONNET

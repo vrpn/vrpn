@@ -21,43 +21,60 @@ set(JSONCPP_ROOT_DIR
 	CACHE
 	PATH
 	"Directory to search for JSONCPP")
+set(_jsoncppnames)
+set(_pathsuffixes suncc vacpp mingw msvc6 msvc7 msvc71 msvc80 msvc90 linux-gcc)
+if(CMAKE_COMPILER_IS_GNUCXX)
+	execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion
+		OUTPUT_VARIABLE _gnucxx_ver
+		OUTPUT_STRIP_TRAILING_WHITESPACE)
+	list(APPEND _jsoncppnames
+		json_linux-gcc-${_gnucxx_ver}_libmt
+		json_linux-gcc_libmt)
+	list(APPEND _pathsuffixes linux-gcc-${_gnucxx_ver})
+elseif(MSVC)
+	if(MSVC_VERSION EQUAL 1200)
+		list(APPEND _jsoncppnames json_vc6_libmt)
+	elseif(MSVC_VERSION EQUAL 1300)
+		list(APPEND _jsoncppnames json_vc7_libmt)
+	elseif(MSVC_VERSION EQUAL 1310)
+		list(APPEND _jsoncppnames json_vc71_libmt)
+	elseif(MSVC_VERSION EQUAL 1400)
+		list(APPEND _jsoncppnames json_vc8_libmt)
+	elseif(MSVC_VERSION EQUAL 1500)
+		list(APPEND _jsoncppnames json_vc9_libmt)
+	elseif(MSVC_VERSION EQUAL 1600)
+		list(APPEND _jsoncppnames json_vc10_libmt)
+	endif()
+else()
+	list(APPEND _jsoncppnames
+		json_suncc_libmt
+		json_vacpp_libmt)
+endif()
+
+list(APPEND _jsoncppnames
+	json_mingw_libmt)
 
 find_library(
 	JSONCPP_LIBRARY
-	NAMES 
-		json_vc6_libmt 
-		json_vc7_libmt 
-		json_vc71_libmt 
-		json_vc71_libmt 
-		json_vc80_libmt
-		json_vc90_libmt
-		json_suncc_libmt
-		json_vacpp_libmt
-		json_mingw_libmt
-		json_linux-gcc_libmt
+	NAMES ${_jsoncppnames}
 	PATHS "${JSONCPP_ROOT_DIR}/libs"
-	PATH_SUFFIXES suncc vacpp mingw msvc6 msvc7 msvc71 msvc80 msvc90 linux-gcc 
-
-	)
-
-get_filename_component(_libdir "${JSONCPP_LIBRARY}" PATH)
+	PATH_SUFFIXES ${_pathsuffixes})
 
 find_path(JSONCPP_INCLUDE_DIR
-	NAMES json.h
+	NAMES json/json.h
 	PATHS "${JSONCPP_ROOT_DIR}"
-	PATH_SUFFIXES "include/json"
-	)
+	PATH_SUFFIXES include)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(JSONCPP
 	DEFAULT_MSG
 	JSONCPP_LIBRARY
-	JSONCPP_INCLUDE_DIR
-	)
+	JSONCPP_INCLUDE_DIR)
 
 if(JSONCPP_FOUND)
 	set(JSONCPP_LIBRARIES "${JSONCPP_LIBRARY}")
-	set(JSONCPP_INCLUDE_DIRS "${JSONCPP_INCLUDE_DIR}/..")
+	set(JSONCPP_INCLUDE_DIRS "${JSONCPP_INCLUDE_DIR}")
+	mark_as_advanced(JSONCPP_ROOT_DIR)
 endif()
 
 mark_as_advanced(JSONCPP_INCLUDE_DIR JSONCPP_LIBRARY)
