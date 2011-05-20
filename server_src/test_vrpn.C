@@ -529,6 +529,12 @@ int main (int argc, char * argv [])
                return -1;
         }
 
+	printf("Deleting extra remote objects\n");
+	delete t1;
+	delete t2;
+	delete b1;
+	delete b2;
+
         printf("Deleting _Servers and connection\n");
         delete stkr;
         delete sbtn;
