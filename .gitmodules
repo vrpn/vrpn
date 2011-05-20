@@ -1,0 +1,3 @@
+[submodule "submodules/hidapi"]
+	path = submodules/hidapi
+	url = git://github.com/russell-taylor/hidapi.git
