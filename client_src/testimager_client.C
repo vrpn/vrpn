@@ -32,6 +32,7 @@ int			g_Xdim, g_Ydim;	//< Dimensions in X and Y
 bool g_ready_for_region = false;	//< Everything set up to handle a region?
 unsigned char *g_image = NULL;		//< Pointer to the storage for the image
 bool g_already_posted = false;		//< Posted redisplay since the last display?
+bool g_autoscale = false;               //< Should we auto-scale the brightness and contrast?
 
 //----------------------------------------------------------------------------
 // Imager callback handlers.
@@ -160,6 +161,50 @@ void print_timing_info(void)
   }
 }
 
+//----------------------------------------------------------------------------
+// Auto-scale the image so that the darkest pixel is 0 and the brightest
+// is 255.  This is to provide a function that someone using this program
+// to watch a microscope video wanted -- we're starting down the slippery
+// slope of turning this from an example program into an application...
+
+void do_autoscale(void)
+{
+  // Find the minimum and maximum value of all pixels of all colors
+  // in the image.
+  unsigned char min_val = g_image[0];
+  unsigned char max_val = min_val;
+  int x,y,c;
+  for (x = 0; x < g_Xdim; x++) {
+    for (y = 0; y < g_Ydim; y++) {
+      for (c = 0; c < 3; c++) {
+        unsigned char val = g_image[c + 3 * ( x + g_Xdim * ( y ) )];
+        if (val < min_val) { min_val = val; }
+        if (val > max_val) { max_val = val; }
+      }
+    }
+  }
+
+  // Compute the scale and offset to apply to map the minimum value to
+  // zero and the maximum value to 255.
+  float offset = min_val;
+  float scale;
+  if (max_val == min_val) {
+    scale = 1;
+  } else {
+    scale = 255.0 / (max_val - min_val);
+  }
+
+  // Apply this scaling to each pixel.
+  for (x = 0; x < g_Xdim; x++) {
+    for (y = 0; y < g_Ydim; y++) {
+      for (c = 0; c < 3; c++) {
+        float val = g_image[c + 3 * ( x + g_Xdim * ( y ) )];
+        val = (val - offset) * scale;
+        g_image[c + 3 * ( x + g_Xdim * ( y ) )] = static_cast<unsigned char>(val);
+      }
+    }
+  }
+}
 
 //----------------------------------------------------------------------------
 // Glut callback handlers.
@@ -172,6 +217,11 @@ void myDisplayFunc(void)
   glDrawBuffer(GL_BACK);
   glClearColor(0.0, 0.0, 0.0, 0.0);
   glClear(GL_COLOR_BUFFER_BIT);
+
+  // If we're auto-scaling the image, do so now.
+  if (g_autoscale) {
+    do_autoscale();
+  }
 
   // Store the pixels from the image into the frame buffer
   // so that they cover the entire image (starting from lower-left
@@ -210,6 +260,12 @@ void myKeyboardFunc(unsigned char key, int x, int y)
   case 'q':
   case 'Q':
     g_quit = 1;
+    break;
+
+  case 'a':
+  case 'A':
+    g_autoscale = !g_autoscale;
+    printf("Turning autoscaling %s\n", g_autoscale?"on":"off" );
     break;
 
   case '0': // For a number, set the throttle to that number
@@ -303,6 +359,7 @@ int main(int argc, char **argv)
   printf("Receiving images at size %dx%d\n", g_Xdim, g_Ydim);
   printf("Press '0'-'9' in OpenGL window to throttle incoming images.\n");
   printf("Press '-' to disable throttling.\n");
+  printf("Press 'a' to enable/disable autoscaling of brightness.\n");
   printf("Press 'q' or 'Q' or ESC to quit.\n");
 
   // Initialize GLUT and create the window that will display the
