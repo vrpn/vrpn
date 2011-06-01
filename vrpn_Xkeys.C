@@ -107,6 +107,7 @@ void vrpn_Xkeys_Desktop::decodePacket(size_t bytes, vrpn_uint8 *buffer) {
 	// Decode all full reports, each of which is 11 bytes long.
         // Because there is only one type of report, the initial "0" report-type
         // byte is removed by the HIDAPI driver.
+	// XXX Check to see that this works with HIDAPI, there may be two smaller reports.
 	for (size_t i = 0; i < bytes / 11; i++) {
 		vrpn_uint8 *report = buffer + (i * 11);
 
@@ -123,7 +124,7 @@ void vrpn_Xkeys_Desktop::decodePacket(size_t bytes, vrpn_uint8 *buffer) {
 		for (int btn = 0; btn < 20; btn++) {
 			vrpn_uint8 *offset, mask;
 			
-			offset = buffer + btn / 5;
+			offset = report + btn / 5;
 			mask = static_cast<vrpn_uint8>(1 << (btn % 5));
 
 			buttons[btn + 1] = (*offset & mask) != 0;
@@ -185,43 +186,115 @@ void vrpn_Xkeys_Jog_And_Shuttle::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 {
 	// Decode all full reports.
         // Full reports for all of the pro devices are 15 bytes long.
-	for (size_t i = 0; i < bytes / 15; i++) {
-		vrpn_uint8 *report = buffer + (i * 15);
-
-		if ((report[0] != 0) || !(report[14] & 0x08)) {
-			// Garbled report; skip it
-			fprintf(stderr, "vrpn_Xkeys: Found a corrupted report; # total bytes = %u\n", static_cast<unsigned>(bytes));
-			continue;
-		}
-
-		// Decode the "programming switch"
-		buttons[0] = (report[14] & 0x10) != 0;
-
-		// Decode the other buttons in column-major order
-		// This results in some gaps when using a shuttle or joystick model,
-		// but there really aren't any internally consistent numbering schemes.
-		for (int btn = 0; btn < 58; btn++) {
-			vrpn_uint8 *offset, mask;
-
-			offset = buffer + btn / 7 + 4;
-			mask = static_cast<vrpn_uint8>(1 << (btn % 7));
-
-			buttons[btn + 1] = (*offset & mask) != 0;
-		}
+        // Because there is only one type of report, the initial "0" report-type
+        // byte is removed by the HIDAPI driver, leaving 14 bytes.
+	// Also, it appears as though the
+	// remaining 14-byte command is split into two, one 8-byte that is sent
+	// first and then a 6-byte that is sent later.  So we need to check the
+	// length of the packet to see which it is and then parse it appropriately.
+	if (bytes == 8) {	// The first 8 bytes of a report (happens on Linux)
 
                 // Report jog dial as analog and dial
                 // Report shuttle knob as analog
 
                 // Double cast on channel 0 ensures negative values stay negative
-                channel[0] = static_cast<float>(static_cast<signed char>(buffer[1])) / 7.0;
-                channel[1] = static_cast<float>(buffer[2]);
+                channel[0] = static_cast<float>(static_cast<signed char>(buffer[0])) / 7.0;
+                channel[1] = static_cast<float>(buffer[1]);
 
                 // Do the unsigned/signed conversion at the last minute so the
                 // signed values work properly.
-                dials[0] = static_cast<vrpn_int8>(buffer[2] - _lastDial) / 256.0;
+                dials[0] = static_cast<vrpn_int8>(buffer[1] - _lastDial) / 256.0;
 
                 // Store the current dial position for the next delta
-                _lastDial = buffer[2];
+                _lastDial = buffer[1];
+
+		// Decode the other buttons in column-major order.  We skip the
+		// first three bytes, which record the joystick value or the
+		// shuttle/jog value (depending on device).
+		// This results in some gaps when using a shuttle or joystick model,
+		// but there really aren't any internally consistent numbering schemes.
+		// The first 35 buttons are in this report, the remaining 23 in the next.
+		for (int btn = 0; btn < 35; btn++) {
+			vrpn_uint8 *offset, mask;
+
+			offset = buffer + btn / 7 + 3;
+			mask = static_cast<vrpn_uint8>(1 << (btn % 7));
+
+			buttons[btn + 1] = (*offset & mask) != 0;
+		}
+
+	} else if (bytes == 6) {	// The last 6 bytes of a report (happens on Linux)
+
+		if (!(buffer[5] & 0x08)) {
+			// Garbled report; skip it
+			fprintf(stderr, "vrpn_Xkeys: Found a corrupted report; # total bytes = %u\n", static_cast<unsigned>(bytes));
+			return;
+		}
+
+		// Decode the "programming switch"
+		buttons[0] = (buffer[5] & 0x10) != 0;
+
+		// Decode the other buttons in column-major order.
+		// This results in some gaps when using a shuttle or joystick model,
+		// but there really aren't any internally consistent numbering schemes.
+		// The last 23 buttons are in this report, the remaining 23 in the next.
+		for (int btn = 35; btn < 58; btn++) {
+			vrpn_uint8 *offset, mask;
+			int local_btn = btn - 35;
+
+			offset = buffer + local_btn / 7;
+			mask = static_cast<vrpn_uint8>(1 << (local_btn % 7));
+
+			buttons[btn + 1] = (*offset & mask) != 0;
+		}
+
+	} else if (bytes == 14) {	// A full report in one swoop (happens on Windows)
+          // Full reports for all of the pro devices are 15 bytes long.
+          // Because there is only one type of report, the initial "0" report-type
+          // byte is removed by the HIDAPI driver, leaving 14 bytes.
+          size_t i;
+	  for (i = 0; i < bytes / 14; i++) {
+		  vrpn_uint8 *report = buffer + (i * 14);
+
+		  if (!(report[13] & 0x08)) {
+			  // Garbled report; skip it
+			  fprintf(stderr, "vrpn_Xkeys: Found a corrupted report; # total bytes = %u\n", static_cast<unsigned>(bytes));
+			  continue;
+		  }
+
+		  // Decode the "programming switch"
+		  buttons[0] = (report[13] & 0x10) != 0;
+
+		  // Decode the other buttons in column-major order
+		  // This results in some gaps when using a shuttle or joystick model,
+		  // but there really aren't any internally consistent numbering schemes.
+		  for (int btn = 0; btn < 58; btn++) {
+			  vrpn_uint8 *offset, mask;
+
+			  offset = report + btn / 7 + 3;
+			  mask = static_cast<vrpn_uint8>(1 << (btn % 7));
+
+			  buttons[btn + 1] = (*offset & mask) != 0;
+		  }
+
+                  // Report jog dial as analog and dial
+                  // Report shuttle knob as analog
+
+                  // Double cast on channel 0 ensures negative values stay negative
+                  channel[0] = static_cast<float>(static_cast<signed char>(report[0])) / 7.0;
+                  channel[1] = static_cast<float>(report[1]);
+
+                  // Do the unsigned/signed conversion at the last minute so the
+                  // signed values work properly.
+                  dials[0] = static_cast<vrpn_int8>(report[1] - _lastDial) / 256.0;
+
+                  // Store the current dial position for the next delta
+                  _lastDial = report[1];
+
+	  }
+	} else {
+		fprintf(stderr,"vrpn_Xkeys_Jog_And_Shuttle::decodePacket(): Unrecognized packet length (%u)\n", static_cast<unsigned>(bytes));
+		return;
 	}
 }
 
@@ -271,34 +344,96 @@ void vrpn_Xkeys_Joystick::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 {
 	// Decode all full reports.
         // Full reports for all of the pro devices are 15 bytes long.
-	for (size_t i = 0; i < bytes / 15; i++) {
-		vrpn_uint8 *report = buffer + (i * 15);
+        // Because there is only one type of report, the initial "0" report-type
+        // byte is removed by the HIDAPI driver, leaving 14 bytes.
+	// Also, it appears as though the
+	// remaining 14-byte command is split into two, one 8-byte that is sent
+	// first and then a 6-byte that is sent later.  So we need to check the
+	// length of the packet to see which it is and then parse it appropriately.
+	if (bytes == 8) {	// The first 8 bytes of a report
 
-		if ((report[0] != 0) || !(report[14] & 0x08)) {
-			// Garbled report; skip it
-			fprintf(stderr, "vrpn_Xkeys: Found a corrupted report; # total bytes = %u\n", static_cast<unsigned>(bytes));
-			continue;
-		}
+                // Report joystick axes as analogs				
+                channel[0] = (static_cast<float>(buffer[0]) - 128) / 128.0;
+                channel[1] = (static_cast<float>(buffer[1]) - 128) / 128.0;
+                channel[2] = (static_cast<float>(buffer[2]) - 128) / 128.0;
 
-		// Decode the "programming switch"
-		buttons[0] = (report[14] & 0x10) != 0;
-
-		// Decode the other buttons in column-major order
+		// Decode the other buttons in column-major order.  We skip the
+		// first three bytes, which record the joystick value or the
+		// shuttle/jog value (depending on device).
 		// This results in some gaps when using a shuttle or joystick model,
 		// but there really aren't any internally consistent numbering schemes.
-		for (int btn = 0; btn < 58; btn++) {
+		// The first 35 buttons are in this report, the remaining 23 in the next.
+		for (int btn = 0; btn < 35; btn++) {
 			vrpn_uint8 *offset, mask;
 
-			offset = buffer + btn / 7 + 4;
+			offset = buffer + btn / 7 + 3;
 			mask = static_cast<vrpn_uint8>(1 << (btn % 7));
 
 			buttons[btn + 1] = (*offset & mask) != 0;
 		}
 
-                // Report joystick axes as analogs				
-                channel[0] = (static_cast<float>(buffer[1]) - 128) / 128.0;
-                channel[1] = (static_cast<float>(buffer[2]) - 128) / 128.0;
-                channel[2] = (static_cast<float>(buffer[3]) - 128) / 128.0;
+	} else if (bytes == 6) {	// The last 6 bytes of a report
+
+		if (!(buffer[5] & 0x08)) {
+			// Garbled report; skip it
+			fprintf(stderr, "vrpn_Xkeys: Found a corrupted report; # total bytes = %u\n", static_cast<unsigned>(bytes));
+			return;
+		}
+
+		// Decode the "programming switch"
+		buttons[0] = (buffer[5] & 0x10) != 0;
+
+		// Decode the other buttons in column-major order.
+		// This results in some gaps when using a shuttle or joystick model,
+		// but there really aren't any internally consistent numbering schemes.
+		// The last 23 buttons are in this report, the remaining 23 in the next.
+		for (int btn = 35; btn < 58; btn++) {
+			vrpn_uint8 *offset, mask;
+			int local_btn = btn - 35;
+
+			offset = buffer + local_btn / 7;
+			mask = static_cast<vrpn_uint8>(1 << (local_btn % 7));
+
+			buttons[btn + 1] = (*offset & mask) != 0;
+		}
+
+	} else if (bytes == 14) {	// A full report in one swoop (happens on Windows)
+          // Full reports for all of the pro devices are 15 bytes long.
+          // Because there is only one type of report, the initial "0" report-type
+          // byte is removed by the HIDAPI driver, leaving 14 bytes.
+          size_t i;
+	  for (i = 0; i < bytes / 14; i++) {
+		  vrpn_uint8 *report = buffer + (i * 14);
+
+		  if (!(report[13] & 0x08)) {
+			  // Garbled report; skip it
+			  fprintf(stderr, "vrpn_Xkeys: Found a corrupted report; # total bytes = %u\n", static_cast<unsigned>(bytes));
+			  continue;
+		  }
+
+		  // Decode the "programming switch"
+		  buttons[0] = (report[13] & 0x10) != 0;
+
+		  // Decode the other buttons in column-major order
+		  // This results in some gaps when using a shuttle or joystick model,
+		  // but there really aren't any internally consistent numbering schemes.
+		  for (int btn = 0; btn < 58; btn++) {
+			  vrpn_uint8 *offset, mask;
+
+			  offset = report + btn / 7 + 3;
+			  mask = static_cast<vrpn_uint8>(1 << (btn % 7));
+
+			  buttons[btn + 1] = (*offset & mask) != 0;
+		  }
+
+                  // Report joystick axes as analogs				
+                  channel[0] = (static_cast<float>(report[0]) - 128) / 128.0;
+                  channel[1] = (static_cast<float>(report[1]) - 128) / 128.0;
+                  channel[2] = (static_cast<float>(report[2]) - 128) / 128.0;
+	  }
+	} else {
+		fprintf(stderr,"vrpn_Xkeys_Joystick::decodePacket(): Unrecognized packet length (%u)\n", static_cast<unsigned>(bytes));
+		return;
 	}
 }
 
@@ -337,29 +472,89 @@ void vrpn_Xkeys_Pro::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 {
 	// Decode all full reports.
         // Full reports for all of the pro devices are 15 bytes long.
-	for (size_t i = 0; i < bytes / 15; i++) {
-		vrpn_uint8 *report = buffer + (i * 15);
+        // Because there is only one type of report, the initial "0" report-type
+        // byte is removed by the HIDAPI driver, leaving 14 bytes.
+	// Also, it appears as though the
+	// remaining 14-byte command is split into two, one 8-byte that is sent
+	// first and then a 6-byte that is sent later.  So we need to check the
+	// length of the packet to see which it is and then parse it appropriately.
+	if (bytes == 8) {	// The first 8 bytes of a report
 
-		if ((report[0] != 0) || !(report[14] & 0x08)) {
-			// Garbled report; skip it
-			fprintf(stderr, "vrpn_Xkeys: Found a corrupted report; # total bytes = %u\n", static_cast<unsigned>(bytes));
-			continue;
-		}
-
-		// Decode the "programming switch"
-		buttons[0] = (report[14] & 0x10) != 0;
-
-		// Decode the other buttons in column-major order
+		// Decode the other buttons in column-major order.  We skip the
+		// first three bytes, which record the joystick value or the
+		// shuttle/jog value (depending on device).
 		// This results in some gaps when using a shuttle or joystick model,
 		// but there really aren't any internally consistent numbering schemes.
-		for (int btn = 0; btn < 58; btn++) {
+		// The first 35 buttons are in this report, the remaining 23 in the next.
+		for (int btn = 0; btn < 35; btn++) {
 			vrpn_uint8 *offset, mask;
 
-			offset = buffer + btn / 7 + 4;
+			offset = buffer + btn / 7 + 3;
 			mask = static_cast<vrpn_uint8>(1 << (btn % 7));
 
 			buttons[btn + 1] = (*offset & mask) != 0;
 		}
+
+	} else if (bytes == 6) {	// The last 6 bytes of a report
+
+		if (!(buffer[5] & 0x08)) {
+			// Garbled report; skip it
+			fprintf(stderr, "vrpn_Xkeys: Found a corrupted report; # total bytes = %u\n", static_cast<unsigned>(bytes));
+			return;
+		}
+
+		// Decode the "programming switch"
+		buttons[0] = (buffer[5] & 0x10) != 0;
+
+		// Decode the other buttons in column-major order.
+		// This results in some gaps when using a shuttle or joystick model,
+		// but there really aren't any internally consistent numbering schemes.
+		// The last 23 buttons are in this report, the remaining 23 in the next.
+		for (int btn = 35; btn < 58; btn++) {
+			vrpn_uint8 *offset, mask;
+			int local_btn = btn - 35;
+
+			offset = buffer + local_btn / 7;
+			mask = static_cast<vrpn_uint8>(1 << (local_btn % 7));
+
+			buttons[btn + 1] = (*offset & mask) != 0;
+		}
+
+	} else if (bytes == 14) {	// A full report in one swoop (happens on Windows)
+          // Full reports for all of the pro devices are 15 bytes long.
+          // Because there is only one type of report, the initial "0" report-type
+          // byte is removed by the HIDAPI driver, leaving 14 bytes.
+          size_t i;
+	  // Decode all full reports.
+          // Full reports for all of the pro devices are 15 bytes long.
+	  // XXX Fix to work with HIDAPI
+	  for (i = 0; i < bytes / 14; i++) {
+		  vrpn_uint8 *report = buffer + (i * 14);
+
+		  if (!(report[13] & 0x08)) {
+			  // Garbled report; skip it
+			  fprintf(stderr, "vrpn_Xkeys: Found a corrupted report; # total bytes = %u\n", static_cast<unsigned>(bytes));
+			  continue;
+		  }
+
+		  // Decode the "programming switch"
+		  buttons[0] = (report[13] & 0x10) != 0;
+
+		  // Decode the other buttons in column-major order
+		  // This results in some gaps when using a shuttle or joystick model,
+		  // but there really aren't any internally consistent numbering schemes.
+		  for (int btn = 0; btn < 58; btn++) {
+			  vrpn_uint8 *offset, mask;
+
+			  offset = buffer + btn / 7 + 3;
+			  mask = static_cast<vrpn_uint8>(1 << (btn % 7));
+
+			  buttons[btn + 1] = (*offset & mask) != 0;
+		  }
+	  }
+	} else {
+		fprintf(stderr,"vrpn_Xkeys_Pro::decodePacket(): Unrecognized packet length (%u)\n", static_cast<unsigned>(bytes));
+		return;
 	}
 }
 

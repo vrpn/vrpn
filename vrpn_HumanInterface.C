@@ -61,6 +61,7 @@ void vrpn_HidInterface::reconnect() {
           device_info.serial_number = loop->serial_number;
           device_info.manufacturer_string = loop->manufacturer_string;
           device_info.product_string = loop->product_string;
+          //printf("XXX Found vendor %x, product %x\n", (unsigned)(loop->vendor_id), (unsigned)(loop->product_id));
 
           if (_acceptor->accept(device_info)) {
             _vendor = loop->vendor_id;
@@ -72,23 +73,25 @@ void vrpn_HidInterface::reconnect() {
         }
         if (!found) {
 		fprintf(stderr,"vrpn_HidInterface::reconnect(): Device not found\n");
-                if (devs != NULL) {
-                  hid_free_enumeration(devs);
-                }
 		return;
         }
 
 	// Initialize the HID interface and open the device.
         _device = hid_open(_vendor, _product, const_cast<wchar_t *>(serial));
-        if (devs != NULL) {
-          hid_free_enumeration(devs);
-        }
         if (_device == NULL) {
 		fprintf(stderr,"vrpn_HidInterface::reconnect(): Could not open device\n");
 #ifdef linux
 		fprintf(stderr,"   (Did you remember to run as root?)\n");
 #endif
                 return;
+        }
+
+	// We cannot do this before the call to open because the serial number
+	// is a pointer to a string down in there, which forms a race condition.
+	// This will be a memory leak if the device fails to open.
+        if (devs != NULL) {
+          hid_free_enumeration(devs);
+          devs = NULL;
         }
 
         // Set the device to non-blocking mode.
@@ -112,7 +115,7 @@ void vrpn_HidInterface::reconnect() {
 void vrpn_HidInterface::update()
 {
 	if (!_working) {
-		fprintf(stderr,"vrpn_HidInterface::update(): Interface not currently working\n");
+		//fprintf(stderr,"vrpn_HidInterface::update(): Interface not currently working\n");
 		return;
 	}
 

@@ -294,6 +294,13 @@
 #cmakedefine VRPN_USE_LIBNIFALCON
 
 //------------------------
+// Instructs VRPN to compile code to handle JSON network messages.
+// This requires jsoncpp.
+// JSON Network (USP) mesages are used by the vrpn widgets for Android,
+//#define VRPN_USE_JSONNET
+#cmakedefine VRPN_USE_JSONNET
+
+//------------------------
 // Instructs VRPN to compile code to use Trivisio's Colibri inertial
 // tracker.  You will also need the SDK, which is available at 
 // http://www.trivisio.com/products/motiontracking/colibri#download

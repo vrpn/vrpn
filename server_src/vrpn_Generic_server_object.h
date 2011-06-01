@@ -92,6 +92,9 @@
 #include "vrpn_Event_Mouse.h"
 //#include "vrpn_Cirque_Extended.h"
 
+#ifdef VRPN_USE_JSONNET
+#include "vrpn_Tracker_JsonNet.h"
+#endif
 
 #ifdef VRPN_INCLUDE_TIMECODE_SERVER
 #include "timecode_generator_server\vrpn_timecode_generator.h"
@@ -136,6 +139,9 @@ const int VRPN_GSO_MAX_FREESPACES =           10;
 // BUW additions
 const int VRPN_GSO_MAX_INERTIAMOUSES =        8;
 
+#ifdef VRPN_USE_JSONNET
+const int VRPN_GSO_MAX_JSONNETS =			  4;
+#endif
 
 class vrpn_Generic_Server_Object {
 public:
@@ -218,6 +224,11 @@ protected:
   vrpn_Freespace  * freespaces [VRPN_GSO_MAX_FREESPACES];
   int           num_freespaces;
 #endif
+#ifdef VRPN_USE_JSONNET
+  vrpn_Tracker_JsonNet* JsonNets[VRPN_GSO_MAX_JSONNETS];
+	int num_JsonNets;
+#endif
+
 
   // BUW additions
   vrpn_inertiamouse * inertiamouses [VRPN_GSO_MAX_INERTIAMOUSES];
@@ -317,6 +328,10 @@ protected:
   int setup_Atmel(char* &pch, char *line, FILE *config_file);
   int setup_Event_Mouse(char* &pch, char *line, FILE *config_file);
   int setup_inertiamouse (char * & pch, char * line, FILE * config_file); 
+#ifdef VRPN_USE_JSONNET
+  int setup_Tracker_JsonNet(char* &pch, char* line, FILE* config_file);
+#endif
+
 };
 
 #endif

@@ -1,5 +1,3 @@
-
-
 #include "vrpn_Tracker_JsonNet.h"
 
 #if defined(VRPN_USE_JSONNET)
