@@ -2800,8 +2800,8 @@ int vrpn_Generic_Server_Object::setup_Tracker_JsonNet (char* &pch, char* line, F
 
 	// Make sure there's room for a new one:
 
-	if (num_JsonNets >= VRPN_GSO_MAX_JSONNETS) {
-		fprintf(stderr,"Too many JsonNets in config file (max allowed : %d)\n", VRPN_GSO_MAX_JSONNETS);
+	if (num_trackers >= VRPN_GSO_MAX_TRACKERS) {
+		fprintf(stderr,"Too many trackers in config file (max allowed : %d)\n", VRPN_GSO_MAX_TRACKERS);
 		return -1;
 	}
 
@@ -2814,13 +2814,13 @@ int vrpn_Generic_Server_Object::setup_Tracker_JsonNet (char* &pch, char* line, F
 		printf("Opening vrpn_Tracker_JsonNet: %s at port %d\n", s2, port);
 	}
 
-	if((JsonNets[num_JsonNets] = new vrpn_Tracker_JsonNet(s2, connection, port)) == NULL)
+	if((trackers[num_trackers] = new vrpn_Tracker_JsonNet(s2, connection, port)) == NULL)
 	{
 		fprintf(stderr,"Can't create new vrpn_Tracker_JsonNet\n");
 		return -1;
 	}
 
-	num_JsonNets++;
+	num_trackers++;
 
 	return 0;
 }
@@ -4517,9 +4517,6 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
 #ifdef	VRPN_USE_FREESPACE
   , num_freespaces(0)
 #endif
-#ifdef VRPN_USE_JSONNET
-  , num_JsonNets(0)
-#endif
 
   {
     FILE    * config_file;
@@ -4938,11 +4935,6 @@ void  vrpn_Generic_Server_Object::mainloop( void )
 #ifdef	VRPN_USE_FREESPACE
   for (i=0; i< num_freespaces; i++) {
 	  freespaces[i]->mainloop();
-  }
-#endif
-#ifdef VRPN_USE_JSONNET
-  for (i=0; i< num_JsonNets; i++) {
-	  JsonNets[i]->mainloop();
   }
 #endif
 }
