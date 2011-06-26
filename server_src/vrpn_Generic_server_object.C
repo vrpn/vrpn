@@ -141,14 +141,6 @@ void vrpn_Generic_Server_Object::closeDevices (void) {
     delete freespaces[i];
   }
 #endif
-#ifdef VRPN_USE_JSONNET
-  for (i=0;i < num_JsonNets; i++) {
-    if (verbose) fprintf(stderr, "\nClosing JsonNet %d ...", i);
-    delete JsonNets[i];
-  }
-
-#endif
-
   if (verbose) { fprintf(stderr, "\nAll devices closed...\n"); }
 }
 
@@ -2808,8 +2800,8 @@ int vrpn_Generic_Server_Object::setup_Tracker_JsonNet (char* &pch, char* line, F
 
 	// Make sure there's room for a new one:
 
-	if (num_JsonNets >= VRPN_GSO_MAX_JSONNETS) {
-		fprintf(stderr,"Too many JsonNets in config file (max allowed : %d)\n", VRPN_GSO_MAX_JSONNETS);
+	if (num_trackers >= VRPN_GSO_MAX_TRACKERS) {
+		fprintf(stderr,"Too many trackers in config file (max allowed : %d)\n", VRPN_GSO_MAX_TRACKERS);
 		return -1;
 	}
 
@@ -2822,13 +2814,13 @@ int vrpn_Generic_Server_Object::setup_Tracker_JsonNet (char* &pch, char* line, F
 		printf("Opening vrpn_Tracker_JsonNet: %s at port %d\n", s2, port);
 	}
 
-	if((JsonNets[num_JsonNets] = new vrpn_Tracker_JsonNet(s2, connection, port)) == NULL)
+	if((trackers[num_trackers] = new vrpn_Tracker_JsonNet(s2, connection, port)) == NULL)
 	{
 		fprintf(stderr,"Can't create new vrpn_Tracker_JsonNet\n");
 		return -1;
 	}
 
-	num_JsonNets++;
+	num_trackers++;
 
 	return 0;
 }
@@ -3769,12 +3761,14 @@ int vrpn_Generic_Server_Object::setup_ImageStream(char * & pch, char * line, FIL
 
 int vrpn_Generic_Server_Object::setup_WiiMote(char * & pch, char * line, FILE * config_file) {
 #ifdef	VRPN_USE_WIIUSE
+  char sBDADDR [LINESIZE];
   char s2 [LINESIZE];
   unsigned controller,useMS,useIR, reorderBtns;
 
   next();
   // Get the arguments (wiimote_name, controller index)
-  if (sscanf(pch,"%511s%u %u %u %u",s2,&controller,&useMS,&useIR, &reorderBtns) != 5) {
+  int numParms = sscanf(pch,"%511s%u %u %u %u %511s",s2,&controller,&useMS,&useIR, &reorderBtns, sBDADDR);
+  if (numParms < 5) {
     fprintf(stderr,"Bad vrpn_WiiMote line: %s\n",line);
     return -1;
   }
@@ -3789,7 +3783,12 @@ int vrpn_Generic_Server_Object::setup_WiiMote(char * & pch, char * line, FILE * 
   if (verbose) {
     printf("Opening vrpn_WiiMote: %s\n", s2);
   }
-  if ((wiimotes[num_wiimotes] = new vrpn_WiiMote(s2, connection, controller, useMS, useIR, reorderBtns)) == NULL)
+  if (numParms == 5) {
+    wiimotes[num_wiimotes] = new vrpn_WiiMote(s2, connection, controller, useMS, useIR, reorderBtns);
+  } else {
+    wiimotes[num_wiimotes] = new vrpn_WiiMote(s2, connection, controller, useMS, useIR, reorderBtns, sBDADDR);
+  }
+  if (wiimotes[num_wiimotes] == NULL)
   {
     fprintf(stderr,"Can't create new vrpn_WiiMote\n");
     return -1;
@@ -4518,9 +4517,6 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object(vrpn_Connection *connecti
 #ifdef	VRPN_USE_FREESPACE
   , num_freespaces(0)
 #endif
-#ifdef VRPN_USE_JSONNET
-  , num_JsonNets(0)
-#endif
 
   {
     FILE    * config_file;
@@ -4939,11 +4935,6 @@ void  vrpn_Generic_Server_Object::mainloop( void )
 #ifdef	VRPN_USE_FREESPACE
   for (i=0; i< num_freespaces; i++) {
 	  freespaces[i]->mainloop();
-  }
-#endif
-#ifdef VRPN_USE_JSONNET
-  for (i=0; i< num_JsonNets; i++) {
-	  JsonNets[i]->mainloop();
   }
 #endif
 }

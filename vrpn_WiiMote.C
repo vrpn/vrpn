@@ -13,6 +13,8 @@
 
 #include VRPN_WIIUSE_H
 
+#include <string>
+
 // Opaque class to hold WiiMote device information so we don't have
 // to include wiimote.h in the vrpn_WiiMote.h file.
 class vrpn_Wiimote_Device {
@@ -32,7 +34,7 @@ class vrpn_Wiimote_Device {
 		bool reorderButtons;
 		bool      found;
 		bool      connected;
-
+		std::string bdaddr;
 };
 
 // Helper routines.
@@ -244,8 +246,24 @@ void vrpn_WiiMote::connect_wiimote(int timeout) {
 	char msg[1024];
 
 	wiimote->device = NULL;
-	unsigned num_available = wiiuse_find(available_wiimotes, VRPN_WIIUSE_MAX_WIIMOTES, timeout);
-	wiimote->device = wiiuse_get_by_id(available_wiimotes, VRPN_WIIUSE_MAX_WIIMOTES, wiimote->which);
+	unsigned num_available;
+	num_available = wiiuse_find(available_wiimotes, VRPN_WIIUSE_MAX_WIIMOTES, timeout);
+#ifdef __linux
+	if (!wiimote->bdaddr.empty()) {
+		for (int i = 0; i < VRPN_WIIUSE_MAX_WIIMOTES; ++i) {
+			std::string current(available_wiimotes[i]->bdaddr_str);
+			if (current == wiimote->bdaddr) {
+				wiimote->device = available_wiimotes[i];
+				break;
+			} else if (!current.empty()) {
+				printf("Wiimote found, but it's not the one we want: '%s' isn't '%s'\n", available_wiimotes[i]->bdaddr_str, wiimote->bdaddr.c_str());
+			}
+		}
+	}
+#endif
+	if (wiimote->bdaddr.empty()) {
+		wiimote->device = wiiuse_get_by_id(available_wiimotes, VRPN_WIIUSE_MAX_WIIMOTES, wiimote->which);
+	}
 	if (! wiimote->device) {
 		acquireMessageLock();
 		vrpn_gettimeofday(&now, NULL);
@@ -253,6 +271,7 @@ void vrpn_WiiMote::connect_wiimote(int timeout) {
 		send_text_message(msg, now, vrpn_TEXT_ERROR);
 		releaseMessageLock();
 		wiimote->found = false;
+		return;
 	} else {
 		wiimote->found = true;
 	}
@@ -260,7 +279,7 @@ void vrpn_WiiMote::connect_wiimote(int timeout) {
 	// Make a list containing just the one we want, and then connect to it.
 	wiimote_t *selected_one[1];
 	selected_one[0] = wiimote->device;
-	wiimote->connected = (wiiuse_connect(selected_one, 1) != 0);
+	wiimote->connected = (wiiuse_connect(&(wiimote->device), 1) != 0);
 	if (wiimote->connected) {
 		acquireMessageLock();
 		vrpn_gettimeofday(&now, NULL);
@@ -323,7 +342,7 @@ void vrpn_WiiMote::initialize_wiimote_state(void) {
 // Parameters:
 // - name: VRPN name to assign to this server
 // - c: VRPN connection this device should be attached to
-vrpn_WiiMote::vrpn_WiiMote(const char *name, vrpn_Connection *c, unsigned which, unsigned useMS, unsigned useIR, unsigned reorderButtons):
+vrpn_WiiMote::vrpn_WiiMote(const char *name, vrpn_Connection *c, unsigned which, unsigned useMS, unsigned useIR, unsigned reorderButtons, const char *bdaddr):
 	vrpn_Analog(name, c),
 	vrpn_Button(name, c),
 	vrpn_Analog_Output(name, c),
@@ -378,6 +397,14 @@ vrpn_WiiMote::vrpn_WiiMote(const char *name, vrpn_Connection *c, unsigned which,
 	wiimote->useMS = useMS;
 	wiimote->useIR = useIR;
 	wiimote->reorderButtons = (reorderButtons != 0);
+	wiimote->bdaddr = std::string(bdaddr);
+#ifndef __linux
+	if (!wiimote->bdaddr.empty()) {
+		fprintf(stderr, "vrpn_WiiMote: Specifying the bluetooth address of the desired wiimote is only supported on Linux right now\n");
+		wiimote->bdaddr.clear();
+	}
+#endif
+
 	available_wiimotes = wiiuse_init(VRPN_WIIUSE_MAX_WIIMOTES);
 #if defined  (vrpn_THREADS_AVAILABLE)
 	// Pack the sharedData into another ThreadData

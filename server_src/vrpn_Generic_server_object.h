@@ -224,10 +224,6 @@ protected:
   vrpn_Freespace  * freespaces [VRPN_GSO_MAX_FREESPACES];
   int           num_freespaces;
 #endif
-#ifdef VRPN_USE_JSONNET
-  vrpn_Tracker_JsonNet* JsonNets[VRPN_GSO_MAX_JSONNETS];
-	int num_JsonNets;
-#endif
 
 
   // BUW additions

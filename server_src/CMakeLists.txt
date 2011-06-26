@@ -22,7 +22,8 @@ endif()
 #-----------------------------------------------------------------------------
 # Phantom library (if configured)
 # XXX Does not work with GHOST library
-if(VRPN_USE_PHANTOM_SERVER AND OPENHAPTICS_FOUND)
+find_package(OpenGL)
+if(VRPN_USE_PHANTOM_SERVER AND OPENHAPTICS_FOUND AND OPENGL_FOUND)
 	set(PHANTOM_SOURCES
 		ghostEffects/InstantBuzzEffect.cpp
 		buzzForceField.C
@@ -46,7 +47,7 @@ if(VRPN_USE_PHANTOM_SERVER AND OPENHAPTICS_FOUND)
 	include_directories(${OPENHAPTICS_INCLUDE_DIRS})
 	include_directories(${VRPN_SOURCE_DIR}/server_src/ghostEffects)
 	add_library(vrpn_phantom ${PHANTOM_SOURCES} ${PHANTOM_HEADERS})
-	target_link_libraries(vrpn_phantom ${OPENHAPTICS_LIBRARIES})
+	target_link_libraries(vrpn_phantom vrpnserver ${OPENGL_LIBRARIES} ${OPENHAPTICS_LIBRARIES})
 
 	set_property(TARGET
 		vrpn_phantom
