@@ -61,7 +61,7 @@ find_path(VRPN_INCLUDE_DIR
 	HINTS
 	"${VRPN_ROOT_DIR}"
 	PATHS
-	"${_progfiles}/VRPN")
+	"${_progfiles}/VRPN" /usr/local)
 
 find_library(VRPN_LIBRARY
 	NAMES
@@ -71,7 +71,7 @@ find_library(VRPN_LIBRARY
 	HINTS
 	"${VRPN_ROOT_DIR}"
 	PATHS
-	"${_progfiles}/VRPN")
+	"${_progfiles}/VRPN" /usr/local)
 
 find_library(VRPN_SERVER_LIBRARY
 	NAMES
@@ -81,7 +81,7 @@ find_library(VRPN_SERVER_LIBRARY
 	HINTS
 	"${VRPN_ROOT_DIR}"
 	PATHS
-	"${_progfiles}/VRPN")
+	"${_progfiles}/VRPN" /usr/local)
 
 ###
 # Dependencies

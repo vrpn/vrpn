@@ -43,6 +43,12 @@ set(CPACK_PACKAGE_FILE_NAME
 set(CPACK_SOURCE_PACKAGE_FILE_NAME
 	"${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-src")
 
+#-----------------------------------------------------------------------------
+# Put this in /usr/local unless overridden.  The default on Windows is
+# in Program Files, but that breaks on Windows 7 because you have to be
+# admin to write there.
+
+set(CMAKE_INSTALL_PREFIX /usr/local/)
 
 #-----------------------------------------------------------------------------
 # Compiler flags we got from Hans for Windows and from Sheldon Andrews
