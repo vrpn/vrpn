@@ -99,12 +99,16 @@ public:
 // change since the last update, in which case they are generated no faster
 // than update_rate. 
 
+// If worldFrame is TRUE, then translations and rotations take place in the
+// world frame, rather than the local frame. Useful for a simulated wand
+// when doing desktop testing of immersive apps - easier to keep under control.
+
 class VRPN_API vrpn_Tracker_AnalogFly : public vrpn_Tracker {
   public:
     vrpn_Tracker_AnalogFly (const char * name, vrpn_Connection * trackercon,
 			    vrpn_Tracker_AnalogFlyParam * params,
                             float update_rate, vrpn_bool absolute = vrpn_FALSE,
-                            vrpn_bool reportChanges = VRPN_FALSE);
+                            vrpn_bool reportChanges = VRPN_FALSE, vrpn_bool worldFrame = VRPN_FALSE);
 
     virtual ~vrpn_Tracker_AnalogFly (void);
 
@@ -122,6 +126,7 @@ class VRPN_API vrpn_Tracker_AnalogFly : public vrpn_Tracker {
     struct timeval  d_prevtime;		//< Time of the previous report
     vrpn_bool	    d_absolute;		//< Report absolute (vs. differential)?
     vrpn_bool       d_reportChanges;
+    vrpn_bool       d_worldFrame;
 
     vrpn_TAF_fullaxis	d_x, d_y, d_z, d_sx, d_sy, d_sz;
     vrpn_Button_Remote	* d_reset_button;

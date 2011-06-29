@@ -17,16 +17,18 @@ static	double	duration(struct timeval t1, struct timeval t2)
 vrpn_Tracker_AnalogFly::vrpn_Tracker_AnalogFly
          (const char * name, vrpn_Connection * trackercon,
           vrpn_Tracker_AnalogFlyParam * params, float update_rate,
-	  vrpn_bool absolute, vrpn_bool reportChanges) :
+          vrpn_bool absolute, vrpn_bool reportChanges,
+          vrpn_bool worldFrame) :
 	vrpn_Tracker (name, trackercon),
 	d_reset_button(NULL),
 	d_which_button (params->reset_which),
 	d_clutch_button(NULL),
 	d_clutch_which (params->clutch_which),
-        d_clutch_engaged(false),
+	d_clutch_engaged(false),
 	d_update_interval (update_rate ? (1/update_rate) : 1.0),
 	d_absolute (absolute),
-        d_reportChanges (reportChanges)
+	d_reportChanges (reportChanges),
+	d_worldFrame (worldFrame)
 {
 	int i;
 
@@ -475,7 +477,24 @@ void	vrpn_Tracker_AnalogFly::update_matrix_based_on_values
   } else {
       // Multiply the current matrix by the difference matrix to update
       // it to the current time. 
-      q_matrix_mult(d_currentMatrix, diffM, d_currentMatrix);
+      if (d_worldFrame) {
+        // If using world frame:
+        // 1. Separate out the translation and add to the differential translation
+        tx += d_currentMatrix[3][0];
+        ty += d_currentMatrix[3][1];
+        tz += d_currentMatrix[3][2];
+        diffM[3][0] = 0; diffM[3][1] = 0; diffM[3][2] = 0;
+        d_currentMatrix[3][0] = 0; d_currentMatrix[3][1] = 0; d_currentMatrix[3][2] = 0;
+
+        // 2. Compose the rotations.
+        q_matrix_mult(d_currentMatrix, d_currentMatrix, diffM);
+
+        // 3. Put the new translation back in the matrix.
+        d_currentMatrix[3][0] = tx; d_currentMatrix[3][1] = ty; d_currentMatrix[3][2] = tz;
+
+      } else {
+        q_matrix_mult(d_currentMatrix, diffM, d_currentMatrix);
+      }
   }
 
   // Finally, convert the matrix into a pos/quat
