@@ -20,7 +20,6 @@ project(VRPN)
 ###
 list(APPEND CMAKE_MODULE_PATH ${VRPN_SOURCE_DIR}/cmake)
 include(UseBackportedModules)
-include(GetForceIncludeDefinitions)
 include(MSVCMultipleProcessCompile)
 include(CppcheckTargets)
 include(SetDefaultBuildType)
@@ -349,10 +348,6 @@ endif()
 configure_file("${PROJECT_SOURCE_DIR}/vrpn_Configure.h.cmake_in"
 	"${PROJECT_BINARY_DIR}/vrpn_Configure.h")
 
-get_force_include_definitions(CONFIG_H_FLAG
-	"${PROJECT_BINARY_DIR}/vrpn_Configure.h")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CONFIG_H_FLAG}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CONFIG_H_FLAG}")
 add_definitions(-DVRPN_USING_CMAKE)
 
 # Configuration options controlling what gets included in the build.

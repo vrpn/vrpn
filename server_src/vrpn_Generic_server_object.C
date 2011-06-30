@@ -3820,7 +3820,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_WiimoteHead(char * & pch, char * l
 
     // set LED distance to .205, if not set
     if (numparms < 4) {
-        f1 = .205f;
+        f2 = .205f;
     }
     // set min update rate to 60, if not set
     if (numparms < 3) {
