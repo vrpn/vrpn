@@ -72,7 +72,8 @@ endif()
 #-----------------------------------------------------------------------------
 # DirectShow base-class library (if configured)
 if(VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER AND DIRECTSHOW_FOUND)
-	add_definitions(-DCOINIT_DISABLE_OLE1DDE=0x4)
+	# Add this if you can't compile.  Otherwise, don't
+	# add_definitions(-DCOINIT_DISABLE_OLE1DDE=0x4)
 	add_library(DirectShow_baseclasses
 		${DirectShow_BASECLASS_DIR}/amextra.cpp
 		${DirectShow_BASECLASS_DIR}/amfilter.cpp
@@ -105,10 +106,7 @@ if(VRPN_BUILD_DIRECTSHOW_VIDEO_SERVER AND DIRECTSHOW_FOUND)
 		${DirectShow_BASECLASS_DIR}/wxutil.cpp)
 	set(DirectShow_LIBS DirectShow_baseclasses)
 
-	include_directories(${DirectShow_BASECLASS_DIR}
-		${PLATFORM_SDK_INCLUDE_DIR}
-		${PLATFORM_SDK_ATL_INCLUDE_DIR}
-		${DIRECTX_SDK_INCLUDE_DIR})
+	include_directories(${DirectShow_INCLUDE_DIRS})
 	add_executable(directshow_video_server
 		directshow_video_server/directx_video_imager_server.cpp
 		directshow_video_server/directx_camera_server.cpp

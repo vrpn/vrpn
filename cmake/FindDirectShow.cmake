@@ -5,50 +5,54 @@
 #  DIRECTSHOW_FOUND        - True if DirectShow found.
 
 # Look for one of the sample files.
-find_path(DirectShow_BASECLASS_DIR
-	NAMES
-	streams.h
-	PATHS
-	"C:/Program Files/Microsoft Platform SDK for Windows Server 2003 R2/Samples/Multimedia/DirectShow/BaseClasses")
-mark_as_advanced(DirectShow_BASECLASS_DIR)
+FIND_PATH(DirectShow_BASECLASS_DIR NAMES streams.h
+		PATHS
+		"C:/Program Files/Microsoft Platform SDK for Windows Server 2003 R2/Samples/Multimedia/DirectShow/BaseClasses"
+		"C:/Program Files/Microsoft SDKs/Windows/v7.1/Samples/multimedia/directshow/baseclasses"
+)
+MARK_AS_ADVANCED(DirectShow_BASECLASS_DIR)
 
 # Look for the header files (picking any one from the directories we need).
-find_path(PLATFORM_SDK_INCLUDE_DIR
-	NAMES
-	AclAPI.h
-	PATHS
-	"C:/Program Files/Microsoft Platform SDK for Windows Server 2003 R2/Include")
-mark_as_advanced(PLATFORM_SDK_INCLUDE_DIR)
-find_path(PLATFORM_SDK_ATL_INCLUDE_DIR
-	NAMES
-	atlbase.h
-	PATHS
-	"C:/Program Files/Microsoft Platform SDK for Windows Server 2003 R2/Include/atl")
-mark_as_advanced(PLATFORM_SDK_ATL_INCLUDE_DIR)
-find_path(DIRECTX_SDK_INCLUDE_DIR
-	NAMES
-	comdecl.h
-	PATHS
-	"C:/Program Files/Microsoft DirectX SDK (August 2006)/Include")
-mark_as_advanced(DIRECTX_SDK_INCLUDE_DIR)
+FIND_PATH(PLATFORM_SDK_INCLUDE_DIR NAMES qedit.h
+		PATHS
+		"C:/Program Files/Microsoft Platform SDK for Windows Server 2003 R2/Include"
+		"C:/Program Files/Microsoft SDKs/Windows/v7.1/Include"
+		"C:/Program Files/Microsoft SDKs/Windows/v6.0A/Include"
+)
+MARK_AS_ADVANCED(PLATFORM_SDK_INCLUDE_DIR)
+FIND_PATH(PLATFORM_SDK_ATL_INCLUDE_DIR NAMES atlbase.h
+		PATHS
+		"C:/Program Files/Microsoft Platform SDK for Windows Server 2003 R2/Include/atl"
+)
+MARK_AS_ADVANCED(PLATFORM_SDK_ATL_INCLUDE_DIR)
+FIND_PATH(DIRECTX_SDK_INCLUDE_DIR NAMES comdecl.h
+		PATHS
+		"C:/Program Files/Microsoft DirectX SDK (August 2006)/Include"
+		"C:/Program Files (x86)/Microsoft DirectX SDK (June 2010)/Include"
+		"C:/Program Files/Microsoft DirectX SDK (June 2010)/Include"
+)
+MARK_AS_ADVANCED(DIRECTX_SDK_INCLUDE_DIR)
 
-# handle the QUIETLY and REQUIRED arguments and set DirectShow_FOUND to TRUE if
+# handle the QUIETLY and REQUIRED arguments and set DirectShow_FOUND to TRUE if 
 # all listed variables are TRUE.  The package name seems to need to be all-caps for this
 # to work.
-include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(DIRECTSHOW
-	DEFAULT_MSG
-	PLATFORM_SDK_INCLUDE_DIR
-	DirectShow_BASECLASS_DIR)
+INCLUDE(FindPackageHandleStandardArgs)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(DIRECTSHOW DEFAULT_MSG PLATFORM_SDK_INCLUDE_DIR DirectShow_BASECLASS_DIR)
 
-if(DIRECTSHOW_FOUND)
-	set(DirectShow_INCLUDE_DIRS
-		${PLATFORM_SDK_INCLUDE_DIR}
-		${PLATFORM_SDK_ATL_INCLUDE_DIR}
-		${DirectShow_BASECLASS_DIR}
-		${DirectShow_BASECLASS_DIR}
-		${DIRECTX_SDK_INCLUDE_DIR})
-else()
-	set(DirectShow_INCLUDE_DIRS)
-endif()
-mark_as_advanced(DirectShow_INCLUDE_DIRS)
+IF(DIRECTSHOW_FOUND)
+  SET(DirectShow_INCLUDE_DIRS
+	# Baseclass must be before SDK so it gets the correct refclock.h
+	${DirectShow_BASECLASS_DIR}
+	${DIRECTX_SDK_INCLUDE_DIR}
+	${PLATFORM_SDK_INCLUDE_DIR}
+  )
+  IF (PLATFORM_SDK_ATL_INCLUDE_DIR)
+    SET(DirectShow_INCLUDE_DIRS
+	${DirectShow_INCLUDE_DIRS}
+	${PLATFORM_SDK_ATL_INCLUDE_DIR}
+    )
+  ENDIF (PLATFORM_SDK_ATL_INCLUDE_DIR)
+ELSE(DIRECTSHOW_FOUND)
+  SET(DirectShow_INCLUDE_DIRS)
+ENDIF(DIRECTSHOW_FOUND)
+MARK_AS_ADVANCED(DirectShow_INCLUDE_DIRS)

@@ -6,6 +6,13 @@
 #include <stdio.h>
 #include <math.h>
 
+// Horrible hack to get around missing file in Platform SDK
+#pragma include_alias( "dxtrans.h", "qedit.h" )
+#define __IDxtCompositor_INTERFACE_DEFINED__
+#define __IDxtAlphaSetter_INTERFACE_DEFINED__
+#define __IDxtJpeg_INTERFACE_DEFINED__
+#define __IDxtKey_INTERFACE_DEFINED__
+
 // Include files for DirectShow video input
 #include <dshow.h>
 #include <qedit.h>
