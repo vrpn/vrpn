@@ -50,7 +50,9 @@
 #include "vrpn_XInputGamepad.h"
 #include "vrpn_Joywin32.h"
 #include "vrpn_GlobalHapticsOrb.h"
+#ifdef VRPN_USE_PHANTOM_SERVER
 #include "vrpn_Phantom.h"
+#endif
 #include "vrpn_ADBox.h"
 #include "vrpn_VPJoystick.h"
 #include "vrpn_Tracker_DTrack.h"
