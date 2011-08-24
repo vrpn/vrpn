@@ -149,7 +149,7 @@ void vrpn_HidInterface::update()
 }
 
 // This is based on sample code from UMinn Duluth at
-// http://www.google.com/url?sa=t&source=web&cd=4&ved=0CDUQFjAD&url=http%3A%2F%2Fwww.d.umn.edu%2F~cprince%2FPubRes%2FHardware%2FLinuxUSB%2FPICDEM%2Ftutorial1.c&rct=j&q=hid_interrrupt_read&ei=3C3gTKWeN4GClAeX9qCXAw&usg=AFQjCNHp94pwNFKjZTMqrgPfhV1nk7p5Lg&sig2=rG1A7PL-Up0Yv-sbvEMaCw&cad=rja
+// http://www.d.umn.edu/~cprince/PubRes/Hardware/LinuxUSB/PICDEM/tutorial1.c
 // It has not yet been tested.
 
 void vrpn_HidInterface::send_data(size_t bytes, const vrpn_uint8 *buffer)
