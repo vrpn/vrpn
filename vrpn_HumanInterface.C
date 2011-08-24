@@ -169,4 +169,19 @@ void vrpn_HidInterface::send_feature_report(size_t bytes, const vrpn_uint8 *buff
 	}
 }
 
+int vrpn_HidInterface::get_feature_report(size_t bytes, vrpn_uint8 *buffer) {
+	if (!_working) {
+		fprintf(stderr,"vrpn_HidInterface::get_feature_report(): Interface not currently working\n");
+		return -1;
+	}
+	fprintf(stderr, "vrpn_HidInterface::get_feature_report(): Trying to get report type %02x\n", buffer[0]);
+	int ret = hid_get_feature_report(_device, buffer, bytes);
+	if (ret = -1) {
+		fprintf(stderr, "vrpn_HidInterface::get_feature_report(): failed to get feature report\n");
+	} else {
+		fprintf(stderr, "vrpn_HidInterface::get_feature_report(): got feature report, %d bytes\n", static_cast<int>(bytes));
+	}
+	return ret;
+}
+
 #endif // any interface

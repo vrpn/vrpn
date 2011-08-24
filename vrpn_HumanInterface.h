@@ -108,6 +108,10 @@ protected:
 	/// (or 0x0 for devices without numbered reports)
 	void send_feature_report(size_t bytes, const vrpn_uint8 *buffer);
 
+	/// Call this to get a feature report from the device - first byte must be Report ID
+	/// (or 0x0 for devices without numbered reports)
+	/// @return Number of bytes received, or -1 on error
+	int get_feature_report(size_t bytes, vrpn_uint8 *buffer);
 
 	/** @brief This is the HidAcceptor we use when reconnecting.
 
