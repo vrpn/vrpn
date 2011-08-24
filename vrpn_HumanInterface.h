@@ -9,19 +9,19 @@
    the following (from a post at microchip.com/forums)
 
  mcuee@Ubuntu804:~$ lsusb
- Bus 002 Device 010: ID 04f2:0760 Chicony Electronics Co., Ltd 
- Bus 002 Device 007: ID ffff:0005  
- Bus 002 Device 005: ID 046d:c054 Logitech, Inc. 
- Bus 002 Device 004: ID 14c0:0008  
- Bus 002 Device 003: ID 1947:0033  
+ Bus 002 Device 010: ID 04f2:0760 Chicony Electronics Co., Ltd
+ Bus 002 Device 007: ID ffff:0005
+ Bus 002 Device 005: ID 046d:c054 Logitech, Inc.
+ Bus 002 Device 004: ID 14c0:0008
+ Bus 002 Device 003: ID 1947:0033
  Bus 002 Device 002: ID 058f:9360 Alcor Micro Corp. 8-in-1 Media Card Reader
- Bus 002 Device 001: ID 0000:0000  
- Bus 001 Device 001: ID 0000:0000  
+ Bus 002 Device 001: ID 0000:0000
+ Bus 001 Device 001: ID 0000:0000
  mcuee@Ubuntu804:~$ sudo libhid-detach-device 04f2:0760
  Trying to detach HID with IDs 04f2:0760... done.
  mcuee@Ubuntu804:~$ sudo lsusb -vvv | more
- 
- Bus 002 Device 010: ID 04f2:0760 Chicony Electronics Co., Ltd 
+
+ Bus 002 Device 010: ID 04f2:0760 Chicony Electronics Co., Ltd
  Device Descriptor:
    bLength                18
    bDescriptorType         1
@@ -100,7 +100,7 @@ protected:
         to me, but that's how it behaves.
 	*/
 	virtual void on_data_received(size_t bytes, vrpn_uint8 *buffer) = 0;
-	
+
 	/// Call this to send data to the device
 	void send_data(size_t bytes, const vrpn_uint8 *buffer);
 

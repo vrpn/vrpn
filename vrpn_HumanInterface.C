@@ -165,7 +165,7 @@ void vrpn_HidInterface::send_feature_report(size_t bytes, const vrpn_uint8 *buff
 	if (ret = -1) {
 		fprintf(stderr, "vrpn_HidInterface::send_feature_report(): failed to send feature report\n");
 	} else {
-		fprintf(stderr, "vrpn_HidInterface::send_feature_report(): sent feature report, %d bytes\n", bytes);
+		fprintf(stderr, "vrpn_HidInterface::send_feature_report(): sent feature report, %d bytes\n", static_cast<int>(bytes));
 	}
 }
 
