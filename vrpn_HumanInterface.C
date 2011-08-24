@@ -12,6 +12,11 @@ vrpn_uint16 vrpn_HidInterface::product() const {
 	return _product;
 }
 
+// Accessor for USB interface number of connected device
+int vrpn_HidInterface::interface_number() const {
+	return _interface;
+}
+
 // Returns true iff everything was working last time we checked
 bool vrpn_HidInterface::connected() const {
 	return _working;
@@ -24,6 +29,7 @@ vrpn_HidInterface::vrpn_HidInterface(vrpn_HidAcceptor *acceptor)
 	, _working(false)
 	, _vendor(0)
 	, _product(0)
+	, _interface(0)
 {
 	if (_acceptor == NULL) {
 		fprintf(stderr,"vrpn_HidInterface::vrpn_HidInterface(): NULL acceptor\n");
@@ -67,6 +73,7 @@ void vrpn_HidInterface::reconnect() {
           if (_acceptor->accept(device_info)) {
             _vendor = loop->vendor_id;
             _product = loop->product_id;
+            _interface = loop->interface_number;
             serial = loop->serial_number;
             found = true;
           }

@@ -89,6 +89,9 @@ public:
 	/// Returns USB product ID of connected device
 	vrpn_uint16 product() const;
 
+	/// Returns the USB interface number of connected device
+	int interface_number() const;
+
 protected:
 
 	/** @brief Derived class reimplements this callback.  It is called whenever a
@@ -126,6 +129,7 @@ protected:
 	bool _working;
 	vrpn_uint16 _vendor;
 	vrpn_uint16 _product;
+	int _interface;
 
 private:
         hid_device  *_device;   ///< The HID device to use.
