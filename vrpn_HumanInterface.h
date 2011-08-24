@@ -158,6 +158,16 @@ private:
 	const wchar_t *devNum;
 };
 
+/// Accepts any device with a particular interface number. Best in conjunction
+/// with vrpn_HidBooleanAndAcceptor.
+class VRPN_API vrpn_HidInterfaceNumberAcceptor: public vrpn_HidAcceptor {
+public:
+	vrpn_HidInterfaceNumberAcceptor(int iface) : _iface(iface) { }
+	bool accept(const vrpn_HIDDEVINFO &device) { return _iface == device.interface_number; }
+private:
+	const int _iface;
+};
+
 /** @brief Accepts the Nth device matching a given acceptor.
 
 	This demonstrates the composition of acceptors, allowing the user/programmer
