@@ -52,6 +52,7 @@ struct vrpn_HIDDEVINFO {
 // this file.
 class VRPN_API vrpn_HidAcceptor {
 public:
+	virtual ~vrpn_HidAcceptor() { }
 	virtual bool accept(const vrpn_HIDDEVINFO &device) = 0;
 	virtual void reset() { }
 };
