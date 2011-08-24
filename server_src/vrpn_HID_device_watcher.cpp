@@ -25,9 +25,35 @@ void HidDebug::on_data_received(size_t bytes, vrpn_uint8 *buffer) {
 }
 #endif
 
+int usage(char * argv0) {
+	printf("Usage:\n\n"
+		"%s -h|--help\n"
+		"	Display this help text.\n\n"
+
+		"%s [N]\n"
+		"	Open HID device number N (default to 0)\n\n"
+
+		"%s VEND PROD [N]\n"
+		"	Open HID device number N (default to 0) that matches\n"
+		"	vendor VEND and product PROD, in _decimal_\n\n"
+
+
+#ifdef  _WIN32
+		"During runtime:\n"
+		"	Press ESC to exit\n"
+		"	Press r to reconnect\n\n"
+#endif
+		,
+		argv0, argv0, argv0);
+	return 1;
+}
+
 int main(int argc, char * argv[]) {
 
 #if defined(VRPN_USE_HID)
+	if (argc > 1 && (std::string("-h") == argv[1] || std::string("--help") == argv[1])) {
+		return usage(argv[0]);
+	}
 	vrpn_HidAcceptor * acceptor = NULL;
 	unsigned N = 0; // Which device to open?
 	if (argc >= 3) {
