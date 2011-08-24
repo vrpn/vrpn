@@ -41,6 +41,7 @@ struct vrpn_HIDDEVINFO {
         wchar_t     *serial_number;     // USB device serial number
         wchar_t     *manufacturer_string;
         wchar_t     *product_string;
+        int interface_number;
 };
 
 // General interface for device enumeration:

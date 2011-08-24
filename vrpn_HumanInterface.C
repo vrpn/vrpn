@@ -61,6 +61,7 @@ void vrpn_HidInterface::reconnect() {
           device_info.serial_number = loop->serial_number;
           device_info.manufacturer_string = loop->manufacturer_string;
           device_info.product_string = loop->product_string;
+          device_info.interface_number = loop->interface_number;
           //printf("XXX Found vendor %x, product %x\n", (unsigned)(loop->vendor_id), (unsigned)(loop->product_id));
 
           if (_acceptor->accept(device_info)) {
