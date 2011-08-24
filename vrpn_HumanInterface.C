@@ -156,4 +156,17 @@ void vrpn_HidInterface::send_data(size_t bytes, const vrpn_uint8 *buffer)
 	}
 }
 
+void vrpn_HidInterface::send_feature_report(size_t bytes, const vrpn_uint8 *buffer) {
+	if (!_working) {
+		fprintf(stderr,"vrpn_HidInterface::send_feature_report(): Interface not currently working\n");
+		return;
+	}
+	int ret = hid_send_feature_report(_device, buffer, bytes);
+	if (ret = -1) {
+		fprintf(stderr, "vrpn_HidInterface::send_feature_report(): failed to send feature report\n");
+	} else {
+		fprintf(stderr, "vrpn_HidInterface::send_feature_report(): sent feature report, %d bytes\n", bytes);
+	}
+}
+
 #endif // any interface

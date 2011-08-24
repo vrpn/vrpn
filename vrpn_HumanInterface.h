@@ -104,6 +104,11 @@ protected:
 	/// Call this to send data to the device
 	void send_data(size_t bytes, const vrpn_uint8 *buffer);
 
+	/// Call this to send a feature report to the device - first byte must be Report ID
+	/// (or 0x0 for devices without numbered reports)
+	void send_feature_report(size_t bytes, const vrpn_uint8 *buffer);
+
+
 	/** @brief This is the HidAcceptor we use when reconnecting.
 
 		We do not take ownership of the pointer; it is the user's responsibility.
