@@ -3,6 +3,7 @@
 #ifdef _WIN32
 #include <conio.h>
 #endif
+#include <sstream>
 
 #if defined(VRPN_USE_HID)
 class HidDebug: public vrpn_HidInterface {
@@ -24,11 +25,34 @@ void HidDebug::on_data_received(size_t bytes, vrpn_uint8 *buffer) {
 }
 #endif
 
-int main() {
+int main(int argc, char * argv[]) {
 
 #if defined(VRPN_USE_HID)
+	vrpn_HidAcceptor * acceptor = NULL;
 	unsigned N = 0; // Which device to open?
-	HidDebug hid(new vrpn_HidNthMatchAcceptor(N, new vrpn_HidAlwaysAcceptor));
+	if (argc >= 3) {
+		vrpn_uint16 vend, prod;
+		std::istringstream vendS(argv[1]);
+		vendS >> vend;
+
+		std::istringstream prodS(argv[2]);
+		prodS >> prod;
+
+		if (argc >= 4) {
+			std::istringstream nS(argv[3]);
+			nS >> N;
+		}
+		printf("Will accept HID device number %u that has vendor:product %04x:%04x\n", N, vend, prod);
+		acceptor = new vrpn_HidProductAcceptor(vend, prod);
+	} else {
+		if (argc == 2) {
+			std::istringstream nS(argv[1]);
+			nS >> N;
+		}
+		printf("Will accept HID device number %u\n", N);
+		acceptor =  new vrpn_HidAlwaysAcceptor;
+	}
+	HidDebug hid(new vrpn_HidNthMatchAcceptor(N, acceptor));
 	printf("HID initialized.\n");
 	if (hid.connected()) {
 		printf("HID device vendor ID %u, product ID %u\n",
