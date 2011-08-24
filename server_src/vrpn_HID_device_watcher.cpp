@@ -48,6 +48,11 @@ int usage(char * argv0) {
 	return 1;
 }
 
+int failedOnArgument(int argNum, const char * expected, char * argv[]) {
+	fprintf(stderr, "Failed to interpret argument %d: expected %s, got '%s' - usage help follows.\n\n", argNum, expected, argv[argNum]);
+	return usage(argv[0]);
+}
+
 int main(int argc, char * argv[]) {
 
 #if defined(VRPN_USE_HID)
@@ -57,23 +62,32 @@ int main(int argc, char * argv[]) {
 	vrpn_HidAcceptor * acceptor = NULL;
 	unsigned N = 0; // Which device to open?
 	if (argc >= 3) {
-		vrpn_uint16 vend, prod;
+		vrpn_uint16 vend;
 		std::istringstream vendS(argv[1]);
-		vendS >> vend;
+		if (!(vendS >> vend)) {
+			return failedOnArgument(1, "a decimal vendor ID", argv);
+		}
 
+		vrpn_uint16 prod;
 		std::istringstream prodS(argv[2]);
-		prodS >> prod;
+		if (!(prodS >> prod)) {
+			return failedOnArgument(2, "a decimal product ID", argv);
+		}
 
 		if (argc >= 4) {
 			std::istringstream nS(argv[3]);
-			nS >> N;
+			if (!(nS >> N)) {
+				return failedOnArgument(3, "a number indicating which matching device to pick, or nothing for the default '0'", argv);
+			}
 		}
 		printf("Will accept HID device number %u that has vendor:product %04x:%04x\n", N, vend, prod);
 		acceptor = new vrpn_HidProductAcceptor(vend, prod);
 	} else {
 		if (argc == 2) {
 			std::istringstream nS(argv[1]);
-			nS >> N;
+			if (!(nS >> N)) {
+				return failedOnArgument(1, "a number indicating which device to pick, or nothing for the default '0'", argv);
+			}
 		}
 		printf("Will accept HID device number %u\n", N);
 		acceptor =  new vrpn_HidAlwaysAcceptor;
