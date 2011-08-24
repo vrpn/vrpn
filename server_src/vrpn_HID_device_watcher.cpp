@@ -92,16 +92,20 @@ int main(int argc, char * argv[]) {
 		printf("Will accept HID device number %u\n", N);
 		acceptor =  new vrpn_HidAlwaysAcceptor;
 	}
+
 	HidDebug hid(new vrpn_HidNthMatchAcceptor(N, acceptor));
 	printf("HID initialized.\n");
 	if (hid.connected()) {
-		printf("HID device vendor ID %u, product ID %u\n",
+		printf("Connected: HID device vendor ID %u, product ID %u, aka %04x:%04x\n",
+		       static_cast<unsigned>(hid.vendor()), static_cast<unsigned>(hid.product()),
 		       static_cast<unsigned>(hid.vendor()), static_cast<unsigned>(hid.product()));
 	} else {
+		printf("Could not connect.\n");
 		return 1;
 	}
 
 	bool go = true;
+	printf("Entering update loop.\n");
 	while (go) {
 		hid.update();
 #ifdef  _WIN32
