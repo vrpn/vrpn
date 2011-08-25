@@ -23,7 +23,7 @@
 #include "HIDDevice.h"
 
 // Library/third-party includes
-// - none
+#include <QTimer>
 
 // Standard includes
 // - none
@@ -32,30 +32,22 @@
 MainWindow::MainWindow(vrpn_HidAcceptor * acceptor, QWidget * parent)
 	: QMainWindow(parent)
 	, ui(new Ui::MainWindow)
-	, _device(new HIDDevice(acceptor, this)) {
+	, _device(new HIDDevice(acceptor, this))
+	, _timer(new QTimer(this)) {
 	ui->setupUi(this);
 	connect(_device.data(), SIGNAL(message(QString const&)), ui->textLog, SLOT(append(QString const&)));
-	/*
-	connect(ui->connect, SIGNAL(clicked()), _wand.data(), SLOT(connect()));
-	connect(ui->disconnect, SIGNAL(clicked()), _wand.data(), SLOT(disconnect()));
-
-	connect(_wand.data(), SIGNAL(startingConnectionAttempt()), this, SLOT(disableAllDuringConnectionAttempt()));
-	connect(_wand.data(), SIGNAL(connected()), this, SLOT(updateButtons()));
-	connect(_wand.data(), SIGNAL(connected()), this, SLOT(connectedWiimote()));
-	connect(_wand.data(), SIGNAL(disconnected()), this, SLOT(updateButtons()));
-	connect(_wand.data(), SIGNAL(disconnected()), this, SLOT(handleDisconnect()));
-	connect(_wand.data(), SIGNAL(connectionFailed(QString)), this, SLOT(handleMessages(QString)));
-	connect(_wand.data(), SIGNAL(statusUpdate(QString)), this, SLOT(handleMessages(QString)));
-
-
-
-	connect(_wand.data(), SIGNAL(batteryUpdate(float)), _wmPanel.data(), SLOT(setBattery(float)));
-	connect(_wand.data(), SIGNAL(disconnected()), _wmPanel.data(), SLOT(disconnected()));
-	connect(_wand.data(), SIGNAL(wiimoteNumber(int)), _wmPanel.data(), SLOT(wiimoteNumber(int)));
-	connect(_wand.data(), SIGNAL(buttonUpdate(int, bool)), _wmPanel.data(), SLOT(buttonUpdate(int, bool)));
-	*/
+	connect(_device.data(), SIGNAL(inputReport(QByteArray)), this, SLOT(gotReport(QByteArray)));
+	connect(_timer.data(), SIGNAL(timeout()), _device.data(), SLOT(do_update()));
+	_timer->start(20); // every 20 ms
 }
 
 MainWindow::~MainWindow() {
 	delete ui;
+}
+
+
+void MainWindow::gotReport(QByteArray buf) {
+	ui->reportSizeLabel->setText(QString("%1 bytes").arg(buf.size()));
+	
+	ui->reportContents->setText(buf.toHex());
 }

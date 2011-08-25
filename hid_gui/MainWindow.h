@@ -34,9 +34,11 @@
 namespace Ui {
 	class MainWindow;
 }
+class QTimer;
 
 class HIDDevice;
 class vrpn_HidAcceptor;
+
 class MainWindow : public QMainWindow {
 		Q_OBJECT
 
@@ -45,10 +47,11 @@ class MainWindow : public QMainWindow {
 		~MainWindow();
 
 	public slots:
-
+		void gotReport(QByteArray buf);
 	private:
 		Ui::MainWindow *ui;
 		QSharedPointer<HIDDevice> _device;
+		QSharedPointer<QTimer> _timer;
 
 };
 #endif // INCLUDED_MainWindow_h_GUID_2f127696_8780_4ce5_86c9_46f4df7fe245
