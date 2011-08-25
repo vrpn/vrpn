@@ -24,9 +24,30 @@
 // - none
 
 // Library/third-party includes
-// - none
+#include <QObject>
+#include <QByteArray>
 
 // Standard includes
 // - none
+
+class Inspector : public QObject {
+		Q_OBJECT
+	public:
+		explicit Inspector(std::size_t first_index, std::size_t length, bool signedVal, bool bigEndian = false, QObject * parent = NULL);
+		~Inspector() {}
+
+	signals:
+		void newValue(float val);
+	public slots:
+		void updatedData(QByteArray buf);
+
+	private:
+		void _sendNewValue(float val);
+		std::size_t _first;
+		std::size_t _length;
+		bool _signed;
+		bool _bigEndian;
+
+};
 
 #endif // INCLUDED_Inspector_h_GUID_02c5132a_e54b_4e32_a8ce_d9bf088b0d47

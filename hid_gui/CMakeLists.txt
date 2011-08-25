@@ -18,11 +18,11 @@ set(SOURCES
 	MainWindow.cpp
 	QuickChart.cpp)
 
-set(HEADERS
-	Inspector.h)
+set(HEADERS)
 
 set(MOCS
 	HIDDevice.h
+	Inspector.h
 	MainWindow.h
 	QuickChart.h)
 

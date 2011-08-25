@@ -25,6 +25,7 @@
 
 // Library/third-party includes
 #include <QFrame>
+#include <QSharedPointer>
 
 // Standard includes
 // - none
@@ -34,6 +35,8 @@ namespace Ui {
 	class Plot;
 }
 
+class QGraphicsScene;
+
 class QuickChart : public QFrame {
 		Q_OBJECT
 
@@ -42,22 +45,32 @@ class QuickChart : public QFrame {
 		~QuickChart();
 		void setMin(float v) {
 			_min = v;
+			updateViewFit();
 		}
 		float min() const {
 			return _min;
 		}
 		void setMax(float v) {
 			_max = v;
+			updateViewFit();
 		}
 		float max() const {
 			return _max;
 		}
+		void setSampleWidth(int w);
+
+		void setLabel(QString const& l);
 	public slots:
 		void addSample(float sample);
+		void updateViewFit();
 	private:
 		Ui::Plot *ui;
+		int _x;
+		float _last;
 		float _min;
 		float _max;
+		int _sampleWidth;
+		QSharedPointer<QGraphicsScene> _scene;
 
 };
 #endif // INCLUDED_QuickChart_h_GUID_bb3e58a9_c33a_4e30_82e5_c721df4f0df7

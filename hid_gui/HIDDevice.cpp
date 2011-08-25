@@ -66,7 +66,7 @@ void HIDDevice::do_update() {
 
 
 void HIDDevice::send_data_signal(size_t bytes, const char * buffer) {
-	emit inputReport(QByteArray::fromRawData(buffer, bytes));
+	emit inputReport(QByteArray(buffer, bytes));
 }
 
 void HIDDevice::send_message_signal(QString const& msg) {

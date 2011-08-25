@@ -38,7 +38,7 @@
         </property>
         <layout class="QGridLayout" name="gridLayout">
          <item row="0" column="0">
-          <layout class="QVBoxLayout" name="verticalLayout"/>
+          <layout class="QVBoxLayout" name="chartBox"/>
          </item>
         </layout>
        </widget>
@@ -107,16 +107,12 @@
     <property name="title">
      <string>&amp;Inspect</string>
     </property>
-    <widget class="QMenu" name="menuUint16">
-     <property name="title">
-      <string>uint16</string>
-     </property>
-     <addaction name="actionBig_Endian"/>
-     <addaction name="actionLittle_Endian"/>
-    </widget>
-    <addaction name="actionUint8"/>
-    <addaction name="actionInt8"/>
-    <addaction name="menuUint16"/>
+    <addaction name="actionInt8_2"/>
+    <addaction name="actionUint8_2"/>
+    <addaction name="actionInt16_LE"/>
+    <addaction name="actionInt16_BE"/>
+    <addaction name="actionUint16_LE"/>
+    <addaction name="actionUint16_BE"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Inspect"/>
@@ -148,6 +144,46 @@
   <action name="actionLittle_Endian">
    <property name="text">
     <string>Little Endian</string>
+   </property>
+  </action>
+  <action name="actionInt8_LE">
+   <property name="text">
+    <string>int8 (LE)</string>
+   </property>
+  </action>
+  <action name="actionInt8_BE">
+   <property name="text">
+    <string>int8 (BE)</string>
+   </property>
+  </action>
+  <action name="actionInt8_2">
+   <property name="text">
+    <string>int8</string>
+   </property>
+  </action>
+  <action name="actionUint8_2">
+   <property name="text">
+    <string>uint8</string>
+   </property>
+  </action>
+  <action name="actionInt16_LE">
+   <property name="text">
+    <string>int16 (LE)</string>
+   </property>
+  </action>
+  <action name="actionInt16_BE">
+   <property name="text">
+    <string>int16 (BE)</string>
+   </property>
+  </action>
+  <action name="actionUint16_LE">
+   <property name="text">
+    <string>uint16 (LE)</string>
+   </property>
+  </action>
+  <action name="actionUint16_BE">
+   <property name="text">
+    <string>uint16 (BE)</string>
    </property>
   </action>
  </widget>

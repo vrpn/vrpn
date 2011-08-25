@@ -38,6 +38,7 @@ class QTimer;
 
 class HIDDevice;
 class vrpn_HidAcceptor;
+class Inspector;
 
 class MainWindow : public QMainWindow {
 		Q_OBJECT
@@ -48,10 +49,37 @@ class MainWindow : public QMainWindow {
 
 	public slots:
 		void gotReport(QByteArray buf);
+
+		void on_actionInt8_2_triggered() {
+			_addInspector(1, true, false);
+		}
+
+		void on_actionUint8_2_triggered() {
+			_addInspector(1, false, false);
+		}
+
+		void on_actionInt16_LE_triggered() {
+			_addInspector(2, true, false);
+		}
+		void on_actionInt16_BE_triggered() {
+			_addInspector(2, true, true);
+		}
+
+
+		void on_actionUint16_LE_triggered() {
+			_addInspector(2, false, false);
+		}
+		void on_actionUint16_BE_triggered() {
+			_addInspector(2, false, true);
+		}
 	private:
 		Ui::MainWindow *ui;
 		QSharedPointer<HIDDevice> _device;
 		QSharedPointer<QTimer> _timer;
+		QSharedPointer<Inspector> _inspector;
+		typedef QSharedPointer<Inspector> InspectorPtr;
+		void _addInspector(std::size_t size, bool signedVal, bool bigEndian);
+		std::vector<InspectorPtr> _inspectors;
 
 };
 #endif // INCLUDED_MainWindow_h_GUID_2f127696_8780_4ce5_86c9_46f4df7fe245
