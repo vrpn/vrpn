@@ -50,7 +50,7 @@ if (WIN32)
 	if (NOT ONCE_SET_CMAKE_INSTALL_PREFIX)
 		set(ONCE_SET_CMAKE_INSTALL_PREFIX true CACHE BOOL
 			"Have we set the install prefix yet?" FORCE)
-		set(CMAKE_INSTALL_PREFIX /usr/local CACHE PATH
+		set(CMAKE_INSTALL_PREFIX C:/usr/local CACHE PATH
 		    "Install path prefix, prepended onto install directories"
 		    FORCE)
 	endif (NOT ONCE_SET_CMAKE_INSTALL_PREFIX)
@@ -248,6 +248,7 @@ option_requires(VRPN_USE_HID
 if(VRPN_USE_HID)
 	include_directories(${HIDAPI_INCLUDE_DIRS})
 	list(APPEND SERVER_EXTRA_LIBS ${HIDAPI_LIBRARIES})
+	option(VRPN_BUILD_HID_GUI "Should we build a GUI for analyzing live HID streams?" ON)
 else()
 	# Clear this variable if they don't want HID after all.
 	message(STATUS "NOTE: You have VRPN_USE_LOCAL_HIDAPI enabled, but "
@@ -763,6 +764,12 @@ add_subdirectory(python_vrpn)
 #-----------------------------------------------------------------------------
 # Java wrappers
 add_subdirectory(java_vrpn)
+
+#-----------------------------------------------------------------------------
+# HID Gui
+if(VRPN_BUILD_HID_GUI)
+	add_subdirectory(hid_gui)
+endif()
 
 #-----------------------------------------------------------------------------
 # Testing applications that live in the main directory.
