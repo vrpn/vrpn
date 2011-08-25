@@ -15,17 +15,20 @@ set(SOURCES
 	HIDDevice.cpp
 	Inspector.cpp
 	main.cpp
-	MainWindow.cpp)
+	MainWindow.cpp
+	QuickChart.cpp)
 
 set(HEADERS
 	Inspector.h)
 
 set(MOCS
 	HIDDevice.h
-	MainWindow.h)
+	MainWindow.h
+	QuickChart.h)
 
 set(UIS
-	mainwindow.ui)
+	mainwindow.ui
+	plot.ui)
 
 find_package(Qt4)
 if(QT_FOUND)

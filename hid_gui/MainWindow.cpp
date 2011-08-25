@@ -48,6 +48,6 @@ MainWindow::~MainWindow() {
 
 void MainWindow::gotReport(QByteArray buf) {
 	ui->reportSizeLabel->setText(QString("%1 bytes").arg(buf.size()));
-	
+
 	ui->reportContents->setText(buf.toHex());
 }
