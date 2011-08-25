@@ -26,6 +26,7 @@
 // Library/third-party includes
 #include <QObject>
 #include <QByteArray>
+#include <QString>
 
 // Standard includes
 // - none
@@ -39,13 +40,17 @@ class HIDDevice: public QObject {
 		~HIDDevice();
 	signals:
 		void inputReport(QByteArray buffer);
+		void message(QString const& msg);
+
 	public slots:
 		void do_update();
 
 	protected:
+		bool _connected;
 		class VRPNDevice;
 		friend class HIDDevice::VRPNDevice;
 		void send_data_signal(size_t bytes, const char * buffer);
+		void send_message_signal(QString const& msg);
 		VRPNDevice * _device;
 
 };

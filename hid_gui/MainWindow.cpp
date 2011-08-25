@@ -34,6 +34,7 @@ MainWindow::MainWindow(vrpn_HidAcceptor * acceptor, QWidget * parent)
 	, ui(new Ui::MainWindow)
 	, _device(new HIDDevice(acceptor, this)) {
 	ui->setupUi(this);
+	connect(_device.data(), SIGNAL(message(QString const&)), ui->textLog, SLOT(append(QString const&)));
 	/*
 	connect(ui->connect, SIGNAL(clicked()), _wand.data(), SLOT(connect()));
 	connect(ui->disconnect, SIGNAL(clicked()), _wand.data(), SLOT(disconnect()));

@@ -43,6 +43,7 @@ class HIDDevice::VRPNDevice : public vrpn_HidInterface {
 
 HIDDevice::HIDDevice(vrpn_HidAcceptor * acceptor, QObject * parent)
 	: QObject(parent)
+	, _connected(false)
 	, _device(new VRPNDevice(acceptor, this)) {}
 
 HIDDevice::~HIDDevice() {
@@ -51,6 +52,14 @@ HIDDevice::~HIDDevice() {
 }
 
 void HIDDevice::do_update() {
+	bool wasConnected = _connected;
+	_connected = _device->connected();
+
+	if (_connected && !wasConnected) {
+		emit message("Connected to device!");
+	} else if (!_connected && wasConnected) {
+		emit message("Lost connection to device!");
+	}
 	_device->update();
 }
 
@@ -58,4 +67,8 @@ void HIDDevice::do_update() {
 
 void HIDDevice::send_data_signal(size_t bytes, const char * buffer) {
 	emit inputReport(QByteArray::fromRawData(buffer, bytes));
+}
+
+void HIDDevice::send_message_signal(QString const& msg) {
+	emit message(msg);
 }
