@@ -11,9 +11,39 @@ if(NOT WIN32)
 endif()
 
 
+set(SOURCES
+	Inspector.cpp
+	main.cpp
+	MainWindow.cpp)
+
+set(HEADERS
+	Inspector.h)
+
+set(MOCS
+	MainWindow.h)
+
+set(UIS
+	mainwindow.ui)
+
 find_package(Qt4)
 if(QT_FOUND)
 	include(${QT_USE_FILE})
+	qt4_wrap_ui(GENERATED_SOURCES ${UIS})
+	qt4_wrap_cpp(GENERATED_SOURCES ${MOCS})
 	
+	source_group("Generated Sources - Do Not Edit" FILES ${GENERATED_SOURCES})
+	include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
+	# Build and link the app!
+	add_executable(vrpn_hid_gui
+		MACOSX_BUNDLE
+		WIN32
+		${SOURCES}
+		${GENERATED_SOURCES}
+		${HEADERS}
+		${UIS}
+		${MOCS}
+		${RESOURCES})
+	target_link_libraries(vrpn_hid_gui ${QT_LIBRARIES} vrpnserver)
 endif()
 
