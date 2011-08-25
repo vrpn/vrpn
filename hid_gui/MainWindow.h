@@ -25,7 +25,6 @@
 
 // Library/third-party includes
 #include <QMainWindow>
-#include <QString>
 #include <QSharedPointer>
 
 // Standard includes
@@ -36,18 +35,20 @@ namespace Ui {
 	class MainWindow;
 }
 
-
+class HIDDevice;
+class vrpn_HidAcceptor;
 class MainWindow : public QMainWindow {
 		Q_OBJECT
 
 	public:
-		explicit MainWindow(QWidget *parent = 0);
+		explicit MainWindow(vrpn_HidAcceptor * acceptor, QWidget *parent = 0);
 		~MainWindow();
 
 	public slots:
 
 	private:
 		Ui::MainWindow *ui;
+		QSharedPointer<HIDDevice> _device;
 
 };
 #endif // INCLUDED_MainWindow_h_GUID_2f127696_8780_4ce5_86c9_46f4df7fe245

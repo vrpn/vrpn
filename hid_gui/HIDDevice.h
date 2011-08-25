@@ -25,6 +25,7 @@
 
 // Library/third-party includes
 #include <QObject>
+#include <QByteArray>
 
 // Standard includes
 // - none
@@ -37,12 +38,14 @@ class HIDDevice: public QObject {
 		explicit HIDDevice(vrpn_HidAcceptor * acceptor, QObject * parent = NULL);
 		~HIDDevice();
 	signals:
-
+		void inputReport(QByteArray buffer);
 	public slots:
 		void do_update();
+
 	protected:
 		class VRPNDevice;
-		void on_data_received(size_t bytes, vrpn_uint8 *buffer);
+		friend class HIDDevice::VRPNDevice;
+		void send_data_signal(size_t bytes, const char * buffer);
 		VRPNDevice * _device;
 
 };

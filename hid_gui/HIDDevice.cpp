@@ -36,17 +36,14 @@ class HIDDevice::VRPNDevice : public vrpn_HidInterface {
 		{}
 	protected:
 		void on_data_received(size_t bytes, vrpn_uint8 *buffer) {
-
+			_container->send_data_signal(bytes, reinterpret_cast<char *>(buffer));
 		}
 
 };
 
 HIDDevice::HIDDevice(vrpn_HidAcceptor * acceptor, QObject * parent)
 	: QObject(parent)
-	, _device(new VRPNDevice(acceptor, this)) {
-
-
-}
+	, _device(new VRPNDevice(acceptor, this)) {}
 
 HIDDevice::~HIDDevice() {
 	delete _device;
@@ -59,3 +56,6 @@ void HIDDevice::do_update() {
 
 
 
+void HIDDevice::send_data_signal(size_t bytes, const char * buffer) {
+	emit inputReport(QByteArray::fromRawData(buffer, bytes));
+}

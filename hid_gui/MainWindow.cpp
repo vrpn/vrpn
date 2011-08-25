@@ -20,6 +20,7 @@
 // Internal Includes
 #include "MainWindow.h"
 #include "ui_mainwindow.h"
+#include "HIDDevice.h"
 
 // Library/third-party includes
 // - none
@@ -28,9 +29,10 @@
 // - none
 
 
-MainWindow::MainWindow(QWidget *parent) :
-	QMainWindow(parent),
-	ui(new Ui::MainWindow) {
+MainWindow::MainWindow(vrpn_HidAcceptor * acceptor, QWidget * parent)
+	: QMainWindow(parent)
+	, ui(new Ui::MainWindow)
+	, _device(new HIDDevice(acceptor, this)) {
 	ui->setupUi(this);
 	/*
 	connect(ui->connect, SIGNAL(clicked()), _wand.data(), SLOT(connect()));
