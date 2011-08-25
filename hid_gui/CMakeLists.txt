@@ -12,6 +12,7 @@ endif()
 
 
 set(SOURCES
+	HIDDevice.cpp
 	Inspector.cpp
 	main.cpp
 	MainWindow.cpp)
@@ -20,6 +21,7 @@ set(HEADERS
 	Inspector.h)
 
 set(MOCS
+	HIDDevice.h
 	MainWindow.h)
 
 set(UIS
