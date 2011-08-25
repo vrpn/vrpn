@@ -26,6 +26,7 @@
 // Standard includes
 #include <stdexcept>
 #include <iostream>
+#include <stdint.h>
 
 Inspector::Inspector(std::size_t first_index, std::size_t length, bool signedVal, bool bigEndian, QObject * parent)
 	: QObject(parent)
@@ -56,23 +57,26 @@ void Inspector::updatedData(QByteArray buf) {
 
 	}
 
-	std::cout << "my portion of the buffer " << QString(myPortion.toHex()).toStdString() << std::endl;
 	switch (_length) {
 		case 1:
 			_sendNewValue(_signed ?
 			              myPortion.at(0)
-			              : *reinterpret_cast<unsigned char *>(myPortion.data()));
+			              : *reinterpret_cast<uint8_t *>(myPortion.data()));
 			break;
 		case 2:
-			_sendNewValue(_signed ? myPortion.toShort() : myPortion.toUShort());
+
+			_sendNewValue(_signed ?
+			              *reinterpret_cast<int16_t *>(myPortion.data()) :
+			              *reinterpret_cast<uint16_t *>(myPortion.data()));
 			break;
 		case 4:
-			_sendNewValue(_signed ? myPortion.toInt() : myPortion.toUInt());
+			_sendNewValue(_signed ?
+			              *reinterpret_cast<int32_t *>(myPortion.data()) :
+			              *reinterpret_cast<uint32_t *>(myPortion.data()));
 			break;
 	}
 }
 
 void Inspector::_sendNewValue(float val) {
-	std::cout << "Got " << val << std::endl;
 	emit newValue(val);
 }
