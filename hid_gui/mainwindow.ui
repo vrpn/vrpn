@@ -33,8 +33,14 @@
           <x>0</x>
           <y>0</y>
           <width>780</width>
-          <height>326</height>
+          <height>275</height>
          </rect>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
         </property>
         <layout class="QGridLayout" name="gridLayout">
          <item row="0" column="0">
@@ -67,20 +73,33 @@
          </layout>
         </item>
         <item>
-         <widget class="QLabel" name="reportContents">
+         <widget class="QLineEdit" name="reportContents">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="font">
            <font>
             <family>Courier New</family>
             <pointsize>12</pointsize>
            </font>
           </property>
-          <property name="text">
-           <string/>
+          <property name="readOnly">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QTextBrowser" name="textLog"/>
+         <widget class="QTextBrowser" name="textLog">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>

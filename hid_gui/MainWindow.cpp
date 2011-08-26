@@ -30,18 +30,23 @@
 
 // Standard includes
 #include <cmath>
+#include <iostream>
 
 MainWindow::MainWindow(vrpn_HidAcceptor * acceptor, QWidget * parent)
 	: QMainWindow(parent)
 	, ui(new Ui::MainWindow)
 	, _device(new HIDDevice(acceptor))
-	, _timer(new QTimer) {
+	, _timer(new QTimer)
+	, _selectionLabel(new QLabel) {
 	ui->setupUi(this);
 	connect(_device.data(), SIGNAL(message(QString const&)), ui->textLog, SLOT(append(QString const&)));
 	connect(_device.data(), SIGNAL(inputReport(QByteArray)), this, SLOT(gotReport(QByteArray)));
 	connect(_timer.data(), SIGNAL(timeout()), _device.data(), SLOT(do_update()));
 	_timer->start(20); // every 20 ms
 
+
+	statusBar()->addWidget(_selectionLabel);
+	_selectionLabel->setText(QString("No selected bytes"));
 	/*
 		QuickChart * chart = new QuickChart(this);
 
@@ -61,8 +66,38 @@ MainWindow::~MainWindow() {
 
 void MainWindow::gotReport(QByteArray buf) {
 	ui->reportSizeLabel->setText(QString("%1 bytes").arg(buf.size()));
-
+	int initialStart = -1;
+	int initialLength = -1;
+	if (ui->reportContents->hasSelectedText()) {
+		initialStart = ui->reportContents->selectionStart();
+		initialLength = ui->reportContents->selectedText().length();
+	}
 	ui->reportContents->setText(buf.toHex());
+	if (initialStart >= 0) {
+		ui->reportContents->setSelection(initialStart, initialLength);
+	}
+}
+
+void MainWindow::on_reportContents_selectionChanged() {
+
+	if (ui->reportContents->hasSelectedText()) {
+		int initialStart = ui->reportContents->selectionStart();
+		int initialLength = ui->reportContents->selectedText().length();
+
+		//std::cout << initialStart << ", " << initialLength << std::endl;
+		int endingCharacter =  initialStart + initialLength;
+		/// get the initial byte
+		int startingByte = initialStart / 2;
+		int endingByte = (endingCharacter + 1) / 2;
+		int byteLength = endingByte - startingByte;
+		/// Normalize selection if needed
+		if (initialStart != startingByte * 2 || initialLength != byteLength * 2) {
+			ui->reportContents->setSelection(startingByte * 2, byteLength * 2);
+		}
+		_selectionLabel->setText(QString("Offset %1, length %2").arg(startingByte).arg(byteLength));
+	} else {
+		_selectionLabel->setText(QString("No selected bytes"));
+	}
 }
 
 void MainWindow::_addInspector(std::size_t size, bool signedVal, bool bigEndian) {
