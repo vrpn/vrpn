@@ -28,6 +28,18 @@
 #include <iostream>
 #include <stdint.h>
 
+template<typename T>
+T getFromByteArray(QByteArray const& input) {
+	union {
+		char bytes[sizeof(T)];
+		T value;
+	};
+	for (int i = 0; i < sizeof(T); ++i) {
+		bytes[i] = input.at(i);
+	}
+	return value;
+}
+
 Inspector::Inspector(std::size_t first_index, std::size_t length, bool signedVal, bool bigEndian, QObject * parent)
 	: QObject(parent)
 	, _first(first_index)
@@ -61,18 +73,18 @@ void Inspector::updatedData(QByteArray buf, qint64 timestamp) {
 		case 1:
 			_sendNewValue(timestamp, _signed ?
 			              myPortion.at(0)
-			              : *reinterpret_cast<uint8_t *>(myPortion.data()));
+			              : getFromByteArray<uint8_t>(myPortion));
 			break;
 		case 2:
 
 			_sendNewValue(timestamp, _signed ?
-			              *reinterpret_cast<int16_t *>(myPortion.data()) :
-			              *reinterpret_cast<uint16_t *>(myPortion.data()));
+			              getFromByteArray<int16_t>(myPortion) :
+			              getFromByteArray<uint16_t>(myPortion));
 			break;
 		case 4:
 			_sendNewValue(timestamp, _signed ?
-			              *reinterpret_cast<int32_t *>(myPortion.data()) :
-			              *reinterpret_cast<uint32_t *>(myPortion.data()));
+			              getFromByteArray<int32_t>(myPortion) :
+			              getFromByteArray<uint32_t>(myPortion));
 			break;
 	}
 }
