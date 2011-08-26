@@ -26,8 +26,6 @@
 // Library/third-party includes
 #include <QObject>
 #include <QByteArray>
-#include <QSharedPointer>
-#include <QTimer>
 
 // Standard includes
 // - none
@@ -35,7 +33,7 @@
 class Inspector : public QObject {
 		Q_OBJECT
 	public:
-		explicit Inspector(std::size_t first_index, std::size_t length, bool signedVal, bool bigEndian = false, int repeatIntervalMS = 200, QObject * parent = NULL);
+		explicit Inspector(std::size_t first_index, std::size_t length, bool signedVal, bool bigEndian = false, QObject * parent = NULL);
 		~Inspector() {}
 
 	signals:
@@ -43,7 +41,6 @@ class Inspector : public QObject {
 		void newValue(float elapsed, float val);
 	public slots:
 		void updatedData(QByteArray buf, qint64 timestamp);
-		void timeoutWithoutUpdate();
 
 	private:
 		void _sendNewValue(qint64 timestamp, float val);
@@ -51,11 +48,6 @@ class Inspector : public QObject {
 		std::size_t _length;
 		bool _signed;
 		bool _bigEndian;
-		int _repeatInterval;
-		bool _gotFirst;
-		QSharedPointer<QTimer> _timer;
-		float _prev;
-		qint64 _startingTimestamp;
 };
 
 #endif // INCLUDED_Inspector_h_GUID_02c5132a_e54b_4e32_a8ce_d9bf088b0d47

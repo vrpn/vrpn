@@ -21,22 +21,19 @@
 #include "Inspector.h"
 
 // Library/third-party includes
-#include <QDateTime>
+// - none
 
 // Standard includes
 #include <stdexcept>
 #include <iostream>
 #include <stdint.h>
 
-Inspector::Inspector(std::size_t first_index, std::size_t length, bool signedVal, bool bigEndian, int repeatIntervalMS, QObject * parent)
+Inspector::Inspector(std::size_t first_index, std::size_t length, bool signedVal, bool bigEndian, QObject * parent)
 	: QObject(parent)
 	, _first(first_index)
 	, _length(length)
 	, _signed(signedVal)
-	, _bigEndian(bigEndian)
-	, _repeatInterval(repeatIntervalMS)
-	, _gotFirst(false)
-	, _timer(new QTimer) {
+	, _bigEndian(bigEndian) {
 	switch (_length) {
 		case 1:
 		case 2:
@@ -45,7 +42,6 @@ Inspector::Inspector(std::size_t first_index, std::size_t length, bool signedVal
 		default:
 			throw std::logic_error("Can't get an integer with that many bytes!");
 	}
-	//connect(_timer.data(), SIGNAL(timeout()), this, SLOT(timeoutWithoutUpdate()));
 }
 
 
@@ -81,17 +77,7 @@ void Inspector::updatedData(QByteArray buf, qint64 timestamp) {
 	}
 }
 
-void Inspector::timeoutWithoutUpdate() {
-	//_sendNewValue(_prev);
-}
-
 void Inspector::_sendNewValue(qint64 timestamp, float val) {
-	_prev = val;
-	if (!_gotFirst) {
-		//_startingTimestamp = QDateTime::currentMSecsSinceEpoch();
-		//_timer->start(_repeatInterval);
-		_gotFirst = true;
-	}
 	emit newValue(val);
 	emit newValue(float(timestamp) / 1000.0f, val);
 }
