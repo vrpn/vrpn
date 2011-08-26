@@ -30,6 +30,7 @@
 // Standard includes
 // - none
 
+/// Class to extract bytes from an array and turn into some kind of value
 class Inspector : public QObject {
 		Q_OBJECT
 	public:

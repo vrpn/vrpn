@@ -43,28 +43,43 @@ class QuickChart : public QFrame {
 	public:
 		explicit QuickChart(QWidget *parent = 0);
 		~QuickChart();
+
+		/// set minimum y value
 		void setMin(float v) {
 			_min = v;
 			updateViewFit();
 		}
+
+		/// get minimum y value
 		float min() const {
 			return _min;
 		}
+
+		/// set maximum y value
 		void setMax(float v) {
 			_max = v;
 			updateViewFit();
 		}
+
+		/// get maximum y value
 		float max() const {
 			return _max;
 		}
+
+		/// set width of x values we should fit in the control at once
 		void setSampleWidth(float w);
 
+		/// Set the text of the label
 		void setLabel(QString const& l);
+
 	public slots:
+		/// Add a sample, with x defaulted to 1 + previous x
 		void addSample(float sample);
+		/// Add a sample specifying both x and the sample (y)
 		void addSample(float x, float sample);
 		void updateViewFit();
 		void setSceneRect();
+
 	private:
 		Ui::Plot *ui;
 		float _x;

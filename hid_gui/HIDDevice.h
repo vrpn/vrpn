@@ -33,6 +33,7 @@
 
 class vrpn_HidAcceptor;
 
+/// Qt wrapper for a debugging HidInterface.
 class HIDDevice: public QObject {
 		Q_OBJECT
 	public:

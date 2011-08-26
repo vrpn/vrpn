@@ -42,18 +42,25 @@ MainWindow::MainWindow(vrpn_HidAcceptor * acceptor, QWidget * parent)
 	, _selectionLabel(new QLabel) {
 
 	ui->setupUi(this);
+	/// When the device has a message, add it to the log.
 	connect(_device.data(), SIGNAL(message(QString const&)), ui->textLog, SLOT(append(QString const&)));
+
+	/// When the device gets an input report, update our controls
 	connect(_device.data(), SIGNAL(inputReport(QByteArray, qint64)), this, SLOT(gotReport(QByteArray)));
+
+	/// Update the HID device every 20 ms
 	connect(_timer.data(), SIGNAL(timeout()), _device.data(), SLOT(do_update()));
-	_timer->start(20); // every 20 ms
+	_timer->start(20);
 
-
+	/// Widget for showing what offset and length are selected
 	statusBar()->addPermanentWidget(_selectionLabel);
 	_selectionLabel->setText(QString("No selected bytes"));
 
+	/// Create context menu for when a single byte is selected
 	_singlebyteIntMenu->addAction(QString("Inspect as signed integer"), this, SLOT(addSignedLEInspector()));
 	_singlebyteIntMenu->addAction(QString("Inspect as unsigned integer"), this, SLOT(addUnsignedLEInspector()));
 
+	/// Create context menu for when 2, 4 bytes are selected
 	QMenu * submenu = _multibyteIntMenu->addMenu(QString("Inspect as signed integer"));
 	submenu->addAction(QString("Big endian"), this, SLOT(addSignedBEInspector()));
 	submenu->addAction(QString("Little endian"), this, SLOT(addSignedLEInspector()));
@@ -67,16 +74,22 @@ MainWindow::~MainWindow() {
 	delete ui;
 }
 
-
 void MainWindow::gotReport(QByteArray buf) {
+	/// Update display of report size
 	ui->reportSizeLabel->setText(QString("%1 bytes").arg(buf.size()));
+
+	/// Save selection range, if applicable
 	int initialStart = -1;
 	int initialLength = -1;
 	if (ui->reportContents->hasSelectedText()) {
 		initialStart = ui->reportContents->selectionStart();
 		initialLength = ui->reportContents->selectedText().length();
 	}
+
+	/// Update text
 	ui->reportContents->setText(buf.toHex());
+
+	/// Restore selection range
 	if (initialStart >= 0) {
 		ui->reportContents->setSelection(initialStart, initialLength);
 	}
@@ -95,7 +108,6 @@ void MainWindow::on_actionRemove_all_inspectors_triggered() {
 }
 
 void MainWindow::on_reportContents_selectionChanged() {
-
 	if (ui->reportContents->hasSelectedText()) {
 		const QPair<int, int> offsetLength = _getSelectionByteOffsetLength();
 		const int byteOffset = offsetLength.first;
@@ -133,6 +145,7 @@ void MainWindow::on_reportContents_customContextMenuRequested(const QPoint & pos
 			_multibyteIntMenu->popup(globalPos);
 			break;
 		default:
+			/// Some other number of bytes - not handled
 			statusBar()->showMessage("Can only inspect integers with powers of 2 lengths.");
 			break;
 	}
@@ -143,14 +156,15 @@ QPair<int, int> MainWindow::_getSelectionByteOffsetLength() const {
 		int initialStart = ui->reportContents->selectionStart();
 		int initialLength = ui->reportContents->selectedText().length();
 
-		//std::cout << initialStart << ", " << initialLength << std::endl;
 		int endingCharacter =  initialStart + initialLength;
+
 		/// get the initial byte
 		int startingByte = initialStart / 2;
 		int endingByte = (endingCharacter + 1) / 2;
 		int byteLength = endingByte - startingByte;
 		return QPair<int, int>(startingByte, byteLength);
 	}
+	/// Default case for when there's no selection
 	return QPair<int, int>(-1, -1);
 }
 
