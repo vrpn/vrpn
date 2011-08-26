@@ -64,6 +64,7 @@ class QuickChart : public QFrame {
 		void addSample(float sample);
 		void addSample(float x, float sample);
 		void updateViewFit();
+		void setSceneRect();
 	private:
 		Ui::Plot *ui;
 		float _x;

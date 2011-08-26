@@ -57,6 +57,7 @@ void QuickChart::addSample(float x, float sample) {
 	_gotOne = true;
 	_last = sample;
 	_x = x;
+	setSceneRect();
 	ui->lastValue->setText(QString("(%1, %2)").arg(x).arg(sample));
 }
 
@@ -67,6 +68,17 @@ void QuickChart::updateViewFit() {
 	const float xScale = w / _sampleWidth;
 	const float yScale = h / (_max - _min);
 	ui->graphicsView->setTransform(QTransform::fromScale(xScale, yScale).translate(-_min, 0));
+	setSceneRect();
+}
+
+void QuickChart::setSceneRect() {
+	float xmin = 0;
+	float width = _x;
+	if (_x < _sampleWidth) {
+		xmin = _x - _sampleWidth;
+		width = _sampleWidth;
+	}
+	_scene->setSceneRect(xmin, _min, width, _max - _min);
 }
 
 void QuickChart::setSampleWidth(float w) {
