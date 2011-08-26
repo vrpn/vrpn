@@ -26,6 +26,7 @@
 // Library/third-party includes
 #include <QMainWindow>
 #include <QSharedPointer>
+#include <QPair>
 
 // Standard includes
 // - none
@@ -36,6 +37,7 @@ namespace Ui {
 }
 class QTimer;
 class QLabel;
+class QMenu;
 
 class HIDDevice;
 class vrpn_HidAcceptor;
@@ -50,6 +52,20 @@ class MainWindow : public QMainWindow {
 
 	public slots:
 		void gotReport(QByteArray buf);
+
+		void addSignedLEInspector() {
+			_addInspector(true, false);
+		}
+		void addUnsignedLEInspector() {
+			_addInspector(false, false);
+		}
+
+		void addSignedBEInspector() {
+			_addInspector(true, true);
+		}
+		void addUnsignedBEInspector() {
+			_addInspector(false, true);
+		}
 
 		void on_actionInt8_2_triggered() {
 			_addInspector(1, true, false);
@@ -66,7 +82,6 @@ class MainWindow : public QMainWindow {
 			_addInspector(2, true, true);
 		}
 
-
 		void on_actionUint16_LE_triggered() {
 			_addInspector(2, false, false);
 		}
@@ -75,14 +90,33 @@ class MainWindow : public QMainWindow {
 		}
 
 		void on_reportContents_selectionChanged();
+
+		void on_reportContents_customContextMenuRequested(const QPoint & pos);
+
 	private:
+		/// @brief return the offset and the length, in bytes, of the selection,
+		/// or -1, -1 if no selection.
+		QPair<int, int> _getSelectionByteOffsetLength() const;
+
+		/// @brief Helper function to add an inspector from the selection
+		void _addInspector(bool signedVal, bool bigEndian);
+
+		/// @brief Helper function to add an inspector from the menu, prompting for offset
+		void _addInspector(std::size_t size, bool signedVal, bool bigEndian);
+
+		/// @brief Helper function called by the other overloads adding an inspector once
+		/// we know all the parameters
+		void _addInspector(std::size_t offset, std::size_t size, bool signedVal, bool bigEndian);
+
 		typedef QSharedPointer<Inspector> InspectorPtr;
 		Ui::MainWindow *ui;
 		QSharedPointer<HIDDevice> _device;
 		QSharedPointer<QTimer> _timer;
-		QSharedPointer<Inspector> _inspector;
-		void _addInspector(std::size_t size, bool signedVal, bool bigEndian);
 		std::vector<InspectorPtr> _inspectors;
+		QSharedPointer<QMenu> _singlebyteIntMenu;
+		QSharedPointer<QMenu> _multibyteIntMenu;
+
+		/// ownership transferred to status bar
 		QLabel * _selectionLabel;
 
 };
