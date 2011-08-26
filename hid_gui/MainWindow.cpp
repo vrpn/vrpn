@@ -89,7 +89,7 @@ void MainWindow::on_actionRemove_all_inspectors_triggered() {
 	/// remove all charts
 	QLayoutItem * child;
 	while ((child = ui->chartBox->takeAt(0)) != NULL) {
-		delete (child->widget());
+		delete child->widget();
 		delete child;
 	}
 }
