@@ -57,6 +57,7 @@ void QuickChart::addSample(float x, float sample) {
 	_gotOne = true;
 	_last = sample;
 	_x = x;
+	ui->lastValue->setText(QString("(%1, %2)").arg(x).arg(sample));
 }
 
 void QuickChart::updateViewFit() {
