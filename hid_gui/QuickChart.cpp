@@ -35,7 +35,8 @@ QuickChart::QuickChart(QWidget * parent)
 	, _last(0)
 	, _min(0)
 	, _max(255)
-	, _sampleWidth(200)
+	, _sampleWidth(60)
+	, _gotOne(false)
 	, _scene(new QGraphicsScene) {
 	ui->setupUi(this);
 	ui->graphicsView->setScene(_scene.data());
@@ -46,18 +47,23 @@ QuickChart::~QuickChart() {
 }
 
 void QuickChart::addSample(float sample) {
-	if (_x != 0) {
-		_scene->addLine(_x, _last, _x + 1, sample);
+	addSample(_x + 1, sample);
+}
+
+void QuickChart::addSample(float x, float sample) {
+	if (_gotOne) {
+		_scene->addLine(_x, _last, x, sample);
 	}
+	_gotOne = true;
 	_last = sample;
-	_x++;
+	_x = x;
 }
 
 void QuickChart::updateViewFit() {
 	ui->graphicsView->fitInView(0, _min, _sampleWidth, _max);
 }
 
-void QuickChart::setSampleWidth(int w) {
+void QuickChart::setSampleWidth(float w) {
 	_sampleWidth = w;
 	updateViewFit();
 }

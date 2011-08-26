@@ -21,7 +21,7 @@
 #include "Inspector.h"
 
 // Library/third-party includes
-// - none
+#include <QDateTime>
 
 // Standard includes
 #include <stdexcept>
@@ -45,11 +45,11 @@ Inspector::Inspector(std::size_t first_index, std::size_t length, bool signedVal
 		default:
 			throw std::logic_error("Can't get an integer with that many bytes!");
 	}
-	connect(_timer.data(), SIGNAL(timeout()), this, SLOT(timeoutWithoutUpdate()));
+	//connect(_timer.data(), SIGNAL(timeout()), this, SLOT(timeoutWithoutUpdate()));
 }
 
 
-void Inspector::updatedData(QByteArray buf) {
+void Inspector::updatedData(QByteArray buf, qint64 timestamp) {
 	QByteArray myPortion;
 	myPortion.reserve(_length);
 	if (!_bigEndian) {
@@ -63,18 +63,18 @@ void Inspector::updatedData(QByteArray buf) {
 
 	switch (_length) {
 		case 1:
-			_sendNewValue(_signed ?
+			_sendNewValue(timestamp, _signed ?
 			              myPortion.at(0)
 			              : *reinterpret_cast<uint8_t *>(myPortion.data()));
 			break;
 		case 2:
 
-			_sendNewValue(_signed ?
+			_sendNewValue(timestamp, _signed ?
 			              *reinterpret_cast<int16_t *>(myPortion.data()) :
 			              *reinterpret_cast<uint16_t *>(myPortion.data()));
 			break;
 		case 4:
-			_sendNewValue(_signed ?
+			_sendNewValue(timestamp, _signed ?
 			              *reinterpret_cast<int32_t *>(myPortion.data()) :
 			              *reinterpret_cast<uint32_t *>(myPortion.data()));
 			break;
@@ -82,14 +82,16 @@ void Inspector::updatedData(QByteArray buf) {
 }
 
 void Inspector::timeoutWithoutUpdate() {
-	_sendNewValue(_prev);
+	//_sendNewValue(_prev);
 }
 
-void Inspector::_sendNewValue(float val) {
+void Inspector::_sendNewValue(qint64 timestamp, float val) {
 	_prev = val;
 	if (!_gotFirst) {
-		_timer->start(_repeatInterval);
+		//_startingTimestamp = QDateTime::currentMSecsSinceEpoch();
+		//_timer->start(_repeatInterval);
 		_gotFirst = true;
 	}
 	emit newValue(val);
+	emit newValue(float(timestamp) / 1000.0f, val);
 }

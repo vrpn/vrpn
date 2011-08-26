@@ -39,7 +39,7 @@ class HIDDevice: public QObject {
 		explicit HIDDevice(vrpn_HidAcceptor * acceptor, QObject * parent = NULL);
 		~HIDDevice();
 	signals:
-		void inputReport(QByteArray buffer);
+		void inputReport(QByteArray buffer, qint64 timestamp);
 		void message(QString const& msg);
 
 	public slots:
@@ -52,6 +52,7 @@ class HIDDevice: public QObject {
 		void send_data_signal(size_t bytes, const char * buffer);
 		void send_message_signal(QString const& msg);
 		VRPNDevice * _device;
+		qint64 _startingTimestamp;
 
 };
 #endif // INCLUDED_HIDDevice_h_GUID_15239204_33b6_4b81_80f3_315b52f17eef

@@ -43,7 +43,7 @@ MainWindow::MainWindow(vrpn_HidAcceptor * acceptor, QWidget * parent)
 
 	ui->setupUi(this);
 	connect(_device.data(), SIGNAL(message(QString const&)), ui->textLog, SLOT(append(QString const&)));
-	connect(_device.data(), SIGNAL(inputReport(QByteArray)), this, SLOT(gotReport(QByteArray)));
+	connect(_device.data(), SIGNAL(inputReport(QByteArray, qint64)), this, SLOT(gotReport(QByteArray)));
 	connect(_timer.data(), SIGNAL(timeout()), _device.data(), SLOT(do_update()));
 	_timer->start(20); // every 20 ms
 
@@ -176,7 +176,7 @@ void MainWindow::_addInspector(std::size_t offset, std::size_t size, bool signed
 	ui->chartBox->addWidget(chart);
 
 	InspectorPtr inspect(new Inspector(offset, size, signedVal, bigEndian));
-	connect(_device.data(), SIGNAL(inputReport(QByteArray)), inspect.data(), SLOT(updatedData(QByteArray)));
-	connect(inspect.data(), SIGNAL(newValue(float)), chart, SLOT(addSample(float)));
+	connect(_device.data(), SIGNAL(inputReport(QByteArray, qint64)), inspect.data(), SLOT(updatedData(QByteArray, qint64)));
+	connect(inspect.data(), SIGNAL(newValue(float, float)), chart, SLOT(addSample(float, float)));
 	_inspectors.push_back(inspect);
 }

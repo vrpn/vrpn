@@ -57,19 +57,21 @@ class QuickChart : public QFrame {
 		float max() const {
 			return _max;
 		}
-		void setSampleWidth(int w);
+		void setSampleWidth(float w);
 
 		void setLabel(QString const& l);
 	public slots:
 		void addSample(float sample);
+		void addSample(float x, float sample);
 		void updateViewFit();
 	private:
 		Ui::Plot *ui;
-		int _x;
+		float _x;
 		float _last;
 		float _min;
 		float _max;
-		int _sampleWidth;
+		float _sampleWidth;
+		bool _gotOne;
 		QSharedPointer<QGraphicsScene> _scene;
 
 };

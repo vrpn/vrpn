@@ -22,7 +22,7 @@
 #include "vrpn_HumanInterface.h"
 
 // Library/third-party includes
-// - none
+#include <QDateTime>
 
 // Standard includes
 // - none
@@ -44,7 +44,8 @@ class HIDDevice::VRPNDevice : public vrpn_HidInterface {
 HIDDevice::HIDDevice(vrpn_HidAcceptor * acceptor, QObject * parent)
 	: QObject(parent)
 	, _connected(false)
-	, _device(new VRPNDevice(acceptor, this)) {}
+	, _device(new VRPNDevice(acceptor, this))
+	, _startingTimestamp(-1) {}
 
 HIDDevice::~HIDDevice() {
 	delete _device;
@@ -66,7 +67,11 @@ void HIDDevice::do_update() {
 
 
 void HIDDevice::send_data_signal(size_t bytes, const char * buffer) {
-	emit inputReport(QByteArray(buffer, bytes));
+	qint64 current = QDateTime::currentMSecsSinceEpoch();
+	if (_startingTimestamp < 0) {
+		_startingTimestamp = current;
+	}
+	emit inputReport(QByteArray(buffer, bytes), current - _startingTimestamp);
 }
 
 void HIDDevice::send_message_signal(QString const& msg) {

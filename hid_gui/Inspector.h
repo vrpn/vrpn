@@ -40,12 +40,13 @@ class Inspector : public QObject {
 
 	signals:
 		void newValue(float val);
+		void newValue(float elapsed, float val);
 	public slots:
-		void updatedData(QByteArray buf);
+		void updatedData(QByteArray buf, qint64 timestamp);
 		void timeoutWithoutUpdate();
 
 	private:
-		void _sendNewValue(float val);
+		void _sendNewValue(qint64 timestamp, float val);
 		std::size_t _first;
 		std::size_t _length;
 		bool _signed;
@@ -54,7 +55,7 @@ class Inspector : public QObject {
 		bool _gotFirst;
 		QSharedPointer<QTimer> _timer;
 		float _prev;
-
+		qint64 _startingTimestamp;
 };
 
 #endif // INCLUDED_Inspector_h_GUID_02c5132a_e54b_4e32_a8ce_d9bf088b0d47
