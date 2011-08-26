@@ -48,7 +48,7 @@ MainWindow::MainWindow(vrpn_HidAcceptor * acceptor, QWidget * parent)
 	_timer->start(20); // every 20 ms
 
 
-	statusBar()->addWidget(_selectionLabel);
+	statusBar()->addPermanentWidget(_selectionLabel);
 	_selectionLabel->setText(QString("No selected bytes"));
 
 	_singlebyteIntMenu->addAction(QString("Inspect as signed integer"), this, SLOT(addSignedLEInspector()));
