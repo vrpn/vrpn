@@ -25,7 +25,7 @@
 #include <QGraphicsScene>
 
 // Standard includes
-#include <iostream>
+// - none
 
 QuickChart::QuickChart(QWidget * parent)
 	: QFrame(parent)
@@ -54,7 +54,6 @@ void QuickChart::addSample(float x, float sample) {
 	if (_gotOne) {
 		_scene->addLine(_x, _last, x, sample);
 	}
-	std::cout << x << ", " << sample << std::endl;
 	_gotOne = true;
 	_last = sample;
 	_x = x;
@@ -64,15 +63,9 @@ void QuickChart::updateViewFit() {
 	const QSize s = ui->graphicsView->size();
 	const float h(s.height());
 	const float w(s.width());
-	std::cout << "Expecting input in [" << _min << ", " << _max << "]" << std::endl;
-	std::cout << "Fitting " << _sampleWidth << " in the width available." << std::endl;
-	std::cout << "size is " << h << " tall, " << w << " wide" << std::endl;
 	const float xScale = w / _sampleWidth;
 	const float yScale = h / (_max - _min);
-	//std::cout << "Scale by " << xScale << ", " << yScale << std::endl;
 	ui->graphicsView->setTransform(QTransform::fromScale(xScale, yScale).translate(-_min, 0));
-	//ui->graphicsView->setTransform(QTransform::fromTranslate(-_min, 0).scale(xScale, yScale));
-	//ui->graphicsView->fitInView(0, _min, _sampleWidth, _max);
 }
 
 void QuickChart::setSampleWidth(float w) {
