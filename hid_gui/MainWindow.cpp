@@ -30,7 +30,6 @@
 
 // Standard includes
 #include <cmath>
-#include <iostream>
 
 MainWindow::MainWindow(vrpn_HidAcceptor * acceptor, QWidget * parent)
 	: QMainWindow(parent)
