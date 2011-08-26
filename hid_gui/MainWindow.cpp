@@ -151,7 +151,11 @@ void MainWindow::_addInspector(bool signedVal, bool bigEndian) {
 
 void MainWindow::_addInspector(std::size_t size, bool signedVal, bool bigEndian) {
 	bool ok;
-	std::size_t offset = QInputDialog::getInt(this, QString("Starting index"), QString("What (0-based) index should we start at? Current report length is %1.").arg(ui->reportSizeLabel->text()), 0, 0, 255, 1, &ok);
+	std::size_t offset = QInputDialog::getInt(this,
+	                     QString("Starting index"),
+	                     QString("What (0-based) index should we start at? Current report length is %1.")
+	                     .arg(ui->reportSizeLabel->text()),
+	                     0, 0, 255, 1, &ok);
 	if (ok) {
 		_addInspector(offset, size, signedVal, bigEndian);
 	}
