@@ -47,16 +47,7 @@ MainWindow::MainWindow(vrpn_HidAcceptor * acceptor, QWidget * parent)
 
 	statusBar()->addWidget(_selectionLabel);
 	_selectionLabel->setText(QString("No selected bytes"));
-	/*
-		QuickChart * chart = new QuickChart(this);
 
-		chart->setMin(0);
-		chart->setMax(256 * 256);
-
-		ui->chartBox->addWidget(chart);
-		connect(_inspector.data(), SIGNAL(newValue(float)), chart, SLOT(addSample(float)));
-		connect(_device.data(), SIGNAL(inputReport(QByteArray)), _inspector.data(), SLOT(updatedData(QByteArray)));
-		*/
 }
 
 MainWindow::~MainWindow() {
