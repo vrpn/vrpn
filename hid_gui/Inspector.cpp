@@ -28,12 +28,15 @@
 #include <iostream>
 #include <stdint.h>
 
-Inspector::Inspector(std::size_t first_index, std::size_t length, bool signedVal, bool bigEndian, QObject * parent)
+Inspector::Inspector(std::size_t first_index, std::size_t length, bool signedVal, bool bigEndian, int repeatIntervalMS, QObject * parent)
 	: QObject(parent)
 	, _first(first_index)
 	, _length(length)
 	, _signed(signedVal)
-	, _bigEndian(bigEndian) {
+	, _bigEndian(bigEndian)
+	, _repeatInterval(repeatIntervalMS)
+	, _gotFirst(false)
+	, _timer(new QTimer) {
 	switch (_length) {
 		case 1:
 		case 2:
@@ -42,6 +45,7 @@ Inspector::Inspector(std::size_t first_index, std::size_t length, bool signedVal
 		default:
 			throw std::logic_error("Can't get an integer with that many bytes!");
 	}
+	connect(_timer.data(), SIGNAL(timeout()), this, SLOT(timeoutWithoutUpdate()));
 }
 
 
@@ -77,6 +81,15 @@ void Inspector::updatedData(QByteArray buf) {
 	}
 }
 
+void Inspector::timeoutWithoutUpdate() {
+	_sendNewValue(_prev);
+}
+
 void Inspector::_sendNewValue(float val) {
+	_prev = val;
+	if (!_gotFirst) {
+		_timer->start(_repeatInterval);
+		_gotFirst = true;
+	}
 	emit newValue(val);
 }
