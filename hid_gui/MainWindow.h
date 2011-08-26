@@ -89,6 +89,8 @@ class MainWindow : public QMainWindow {
 			_addInspector(2, false, true);
 		}
 
+		void on_actionRemove_all_inspectors_triggered();
+
 		void on_reportContents_selectionChanged();
 
 		void on_reportContents_customContextMenuRequested(const QPoint & pos);

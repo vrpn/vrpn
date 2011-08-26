@@ -126,6 +126,8 @@
     <addaction name="actionInt16_BE"/>
     <addaction name="actionUint16_LE"/>
     <addaction name="actionUint16_BE"/>
+    <addaction name="separator"/>
+    <addaction name="actionRemove_all_inspectors"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Inspect"/>
@@ -197,6 +199,11 @@
   <action name="actionUint16_BE">
    <property name="text">
     <string>uint16 (BE)</string>
+   </property>
+  </action>
+  <action name="actionRemove_all_inspectors">
+   <property name="text">
+    <string>Remove all inspectors</string>
    </property>
   </action>
  </widget>

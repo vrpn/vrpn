@@ -82,6 +82,18 @@ void MainWindow::gotReport(QByteArray buf) {
 	}
 }
 
+void MainWindow::on_actionRemove_all_inspectors_triggered() {
+	/// remove all inspectors
+	_inspectors.clear();
+
+	/// remove all charts
+	QLayoutItem * child;
+	while ((child = ui->chartBox->takeAt(0)) != NULL) {
+		delete (child->widget());
+		delete child;
+	}
+}
+
 void MainWindow::on_reportContents_selectionChanged() {
 
 	if (ui->reportContents->hasSelectedText()) {
