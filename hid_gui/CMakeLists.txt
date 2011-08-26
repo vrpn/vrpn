@@ -30,7 +30,7 @@ set(UIS
 	mainwindow.ui
 	plot.ui)
 
-find_package(Qt4)
+find_package(Qt4 4.7)
 if(QT_FOUND)
 	include(${QT_USE_FILE})
 	qt4_wrap_ui(GENERATED_SOURCES ${UIS})
