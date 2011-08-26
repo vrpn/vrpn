@@ -34,6 +34,7 @@ const unsigned int HYDRA_PRODUCT = 0x0300;
 const unsigned int HYDRA_INTERFACE = 0x0;
 
 static const vrpn_uint8 HYDRA_FEATURE_REPORT[] = {
+  0x00, // first byte must be report type
   0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x04, 0x03, 0x00, 0x00, 0x00,
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -43,7 +44,7 @@ static const vrpn_uint8 HYDRA_FEATURE_REPORT[] = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x00, 0x00, 0x00, 0x06, 0x00
 };
-static const int HYDRA_FEATURE_REPORT_LEN = 90;
+static const int HYDRA_FEATURE_REPORT_LEN = 91;
 
 vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connection * trackercon)
 	: vrpn_Tracker(name, trackercon)
@@ -59,6 +60,7 @@ vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connect
 }
 
 void vrpn_Tracker_RazerHydra::on_data_received(size_t bytes, vrpn_uint8 *buffer) {
+	fprintf(stderr, "vrpn_Tracker_RazerHydra: got %d bytes\n", bytes);
 }
 
 void vrpn_Tracker_RazerHydra::mainloop() {
@@ -88,6 +90,11 @@ void vrpn_Tracker_RazerHydra::reconnect() {
 	if (connected()) {
 		/// Prompt to start streaming motion data
 		send_feature_report(HYDRA_FEATURE_REPORT_LEN, HYDRA_FEATURE_REPORT);
+
+		vrpn_uint8 buf[91] = {0};
+		buf[0] = 0;
+		int bytes = get_feature_report(91, buf);
+		fprintf(stderr, "vrpn_Tracker_RazerHydra: feature report: read %d bytes\n", bytes);
 	}
 }
 
