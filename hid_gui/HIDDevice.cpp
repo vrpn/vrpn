@@ -25,7 +25,8 @@
 #include <QDateTime>
 
 // Standard includes
-// - none
+#include <iostream>
+
 class HIDDevice::VRPNDevice : public vrpn_HidInterface {
 		HIDDevice * _container;
 
@@ -34,6 +35,41 @@ class HIDDevice::VRPNDevice : public vrpn_HidInterface {
 			: vrpn_HidInterface(acceptor)
 			, _container(container)
 		{}
+		void handshake() {
+			_container->send_message_signal(QString("in handshake()"));
+			if (connected()) {
+				_container->send_message_signal(QString("Starting the handshake"));
+				int bytes;
+
+				vrpn_uint8 buf[91] = {0};
+				buf[0] = 0;
+				bytes = get_feature_report(13, buf);
+				_container->send_message_signal(QString("12-byte feature request 0: expected -1, got %1").arg(bytes));
+
+				buf[0] = 0;
+				bytes = get_feature_report(91, buf);
+				_container->send_message_signal(QString("90-byte feature request 0: expected -90, got %1").arg(bytes));
+				static const vrpn_uint8 HYDRA_FEATURE_REPORT[] = {
+				  0x00, // first byte must be report type
+				  0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x04, 0x03, 0x00, 0x00, 0x00,
+				  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+				  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+				  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+				  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+				  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+				  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+				  0x00, 0x00, 0x00, 0x00, 0x06, 0x00
+				};
+				static const int HYDRA_FEATURE_REPORT_LEN = 91;
+
+				/// Prompt to start streaming motion data
+				send_feature_report(HYDRA_FEATURE_REPORT_LEN, HYDRA_FEATURE_REPORT);
+
+				buf[0] = 0;
+				bytes = get_feature_report(91, buf);
+				_container->send_message_signal(QString("90-byte feature request 0: expected -90, got %1").arg(bytes));
+			}
+		}
 	protected:
 		void on_data_received(size_t bytes, vrpn_uint8 *buffer) {
 			_container->send_data_signal(bytes, reinterpret_cast<char *>(buffer));
@@ -58,6 +94,7 @@ void HIDDevice::do_update() {
 
 	if (_connected && !wasConnected) {
 		emit message("Connected to device!");
+		_device->handshake();
 	} else if (!_connected && wasConnected) {
 		emit message("Lost connection to device!");
 	}
