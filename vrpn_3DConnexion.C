@@ -34,12 +34,12 @@ static const vrpn_uint16 vrpn_3DCONNEXION_SPACEBALL5000 = 0xc621;   // 50721;
 
 vrpn_3DConnexion::vrpn_3DConnexion(vrpn_HidAcceptor *filter, unsigned num_buttons,
                                    const char *name, vrpn_Connection *c)
-  : _filter(filter)
+  : vrpn_Button(name, c)
+  , vrpn_Analog(name, c)
 #if defined(VRPN_USE_HID)
   , vrpn_HidInterface(_filter)
 #endif
-  , vrpn_Analog(name, c)
-  , vrpn_Button(name, c)
+  , _filter(filter)
 {
   vrpn_Analog::num_channel = 6;
   vrpn_Button::num_buttons = num_buttons;
@@ -204,10 +204,11 @@ int vrpn_3DConnexion::set_led(int led_state)
   if (ret < 0) {
     perror ("setting led state failed");
   }
-  return ret < sizeof(struct input_event);
+  return ret < static_cast<int>(sizeof(struct input_event));
 }
 #endif
 
+#if defined(VRPN_USE_HID)
 // Swap the endian-ness of the 2-byte entry in the buffer.
 // This is used to make the little-endian int 16 values
 // returned by the device into the big-endian format that is
@@ -219,7 +220,6 @@ static void swap_endian2(char *buffer)
 	c = buffer[0]; buffer[0] = buffer[1]; buffer[1] = c;
 }
 
-#if defined(VRPN_USE_HID)
 void vrpn_3DConnexion::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 {
 #if defined(__APPLE__)

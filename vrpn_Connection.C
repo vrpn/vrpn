@@ -2609,6 +2609,7 @@ vrpn_Endpoint_IP::vrpn_Endpoint_IP (vrpn_TypeDispatcher * dispatcher,
     d_tcpListenPort (0),
     remote_machine_name (NULL),
     d_remote_port_number (0),
+    d_tcp_only(vrpn_FALSE),
     d_udpOutboundSocket (INVALID_SOCKET),
     d_udpInboundSocket (INVALID_SOCKET),
     d_tcpOutbuf (new char [vrpn_CONNECTION_TCP_BUFLEN]),
@@ -2621,8 +2622,7 @@ vrpn_Endpoint_IP::vrpn_Endpoint_IP (vrpn_TypeDispatcher * dispatcher,
     d_udpSequenceNumber (0),
     d_tcpInbuf ((char *) d_tcpAlignedInbuf),
     d_udpInbuf ((char *) d_udpAlignedInbuf),
-    d_NICaddress (NULL),
-    d_tcp_only(vrpn_FALSE)
+    d_NICaddress (NULL)
 {
   vrpn_Endpoint_IP::init();
 }
@@ -3956,7 +3956,7 @@ int vrpn_Endpoint_IP::getOneTCPMessage (int fd, char * buf, int buflen) {
   // skip up to alignment
   vrpn_int32 header_len = sizeof(header);
   if (header_len%vrpn_ALIGN) {header_len += vrpn_ALIGN - header_len%vrpn_ALIGN;}
-  if (header_len > sizeof(header)) {
+  if (header_len > static_cast<vrpn_int32>(sizeof(header))) {
     // the difference can be no larger than this
     char rgch[vrpn_ALIGN];
     if (vrpn_noint_block_read(fd, (char *) rgch, header_len - sizeof(header)) !=
@@ -4721,6 +4721,8 @@ vrpn_Connection::vrpn_Connection
        vrpn_Endpoint_IP * (* epa) (vrpn_Connection *, vrpn_int32 *)) :
     d_numEndpoints (0),
     d_numConnectedEndpoints (0),
+    d_references (0),
+    d_autoDeleteStatus (false),
     d_dispatcher (NULL),
     d_serverLogCount (0),
     d_serverLogMode
@@ -4728,9 +4730,7 @@ vrpn_Connection::vrpn_Connection
           (local_out_logfile_name ? vrpn_LOG_OUTGOING : vrpn_LOG_NONE)),
     d_serverLogName (NULL),
     d_endpointAllocator (epa),
-    d_updateEndpoint (vrpn_FALSE),
-    d_references (0),
-    d_autoDeleteStatus (false)
+    d_updateEndpoint (vrpn_FALSE)
 {
   int retval;
   vrpn_Endpoint * endpoint;  // shorthand for d_endpoints[0]
@@ -4796,14 +4796,14 @@ vrpn_Connection::vrpn_Connection
     connectionStatus (BROKEN),  // default value if not otherwise set in ctr
     d_numEndpoints (0),
     d_numConnectedEndpoints (0),
+    d_references (0),
+    d_autoDeleteStatus (false),
     d_dispatcher (NULL),
     d_serverLogCount (0),
     d_serverLogMode (vrpn_LOG_NONE),
     d_serverLogName (NULL),
     d_endpointAllocator (epa),
-    d_updateEndpoint (vrpn_FALSE),
-    d_references (0),
-    d_autoDeleteStatus (false)
+    d_updateEndpoint (vrpn_FALSE)
 {
   vrpn_Endpoint * endpoint;
   int retval;
