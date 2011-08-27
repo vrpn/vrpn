@@ -203,7 +203,8 @@ void vrpn_Poser_Tek4662::reset()
   struct timeval wait_time = { 1, 0 };
   int bufcount = vrpn_read_available_characters( d_serial_fd, inbuf, sizeof(inbuf), &wait_time);
   if (bufcount != sizeof(inbuf)) {
-    fprintf(stderr,"vrpn_Poser_Tek4662::reset(): Expected %d characters, got %d\n", sizeof(inbuf), bufcount);
+    fprintf(stderr,"vrpn_Poser_Tek4662::reset(): Expected %d characters, got %d\n",
+	static_cast<int>(sizeof(inbuf)), bufcount);
   } else {
     // Parse the input to find our position and store it in the tracker
     // position.
@@ -410,7 +411,7 @@ int vrpn_Poser_Tek4662::handle_change_message(void* userdata,
     if (p.payload_len != (7 * sizeof(vrpn_float64)) ) {
 	    fprintf(stderr,"vrpn_Poser_Server: change message payload error\n");
 	    fprintf(stderr,"             (got %d, expected %d)\n",
-		    p.payload_len, 7 * sizeof(vrpn_float64) );
+		    p.payload_len, static_cast<int>(7 * sizeof(vrpn_float64)) );
 	    return -1;
     }
     me->p_timestamp = p.msg_time;
@@ -449,7 +450,7 @@ int vrpn_Poser_Tek4662::handle_vel_change_message(void* userdata,
     if (p.payload_len != (8 * sizeof(vrpn_float64)) ) {
 	    fprintf(stderr,"vrpn_Poser_Server: velocity message payload error\n");
 	    fprintf(stderr,"             (got %d, expected %d)\n",
-		    p.payload_len, 8 * sizeof(vrpn_float64) );
+		    p.payload_len, static_cast<int>(8 * sizeof(vrpn_float64)) );
 	    return -1;
     }
     me->p_timestamp = p.msg_time;

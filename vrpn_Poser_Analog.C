@@ -146,7 +146,7 @@ int vrpn_Poser_Analog::handle_change_message(void* userdata,
     if (p.payload_len != (7 * sizeof(vrpn_float64)) ) {
 	    fprintf(stderr,"vrpn_Poser_Server: change message payload error\n");
 	    fprintf(stderr,"             (got %d, expected %d)\n",
-		    p.payload_len, 7 * sizeof(vrpn_float64) );
+		    p.payload_len, static_cast<int>(7 * sizeof(vrpn_float64)) );
 	    return -1;
     }
     me->p_timestamp = p.msg_time;
@@ -212,7 +212,7 @@ int vrpn_Poser_Analog::handle_vel_change_message(void* userdata,
     if (p.payload_len != (8 * sizeof(vrpn_float64)) ) {
 	    fprintf(stderr,"vrpn_Poser_Server: velocity message payload error\n");
 	    fprintf(stderr,"             (got %d, expected %d)\n",
-		    p.payload_len, 8 * sizeof(vrpn_float64) );
+		    p.payload_len, static_cast<int>(8 * sizeof(vrpn_float64)) );
 	    return -1;
     }
     me->p_timestamp = p.msg_time;

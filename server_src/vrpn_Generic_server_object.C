@@ -2824,7 +2824,7 @@ int vrpn_Generic_Server_Object::setup_Tracker_JsonNet (char* &pch, char* line, F
 
 	return 0;
 }
-#endif VRPN_USE_JsonNet
+#endif // VRPN_USE_JsonNet
 
 int vrpn_Generic_Server_Object::setup_DTrack (char* &pch, char* line, FILE* config_file)
 {
