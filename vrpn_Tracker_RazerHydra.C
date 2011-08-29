@@ -63,15 +63,27 @@ static inline T unbufferLittleEndian(ByteT * & input) {
 	return value;
 }
 
-vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connection * trackercon)
-	: vrpn_Tracker(name, trackercon)
+vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connection * con)
+	: vrpn_Analog(name, con)
+	, vrpn_Button_Filter(name, con)
+	, vrpn_Tracker(name, con)
 	, vrpn_HidInterface(new vrpn_HidBooleanAndAcceptor(
 	                        new vrpn_HidInterfaceNumberAcceptor(HYDRA_INTERFACE),
 	                        new vrpn_HidProductAcceptor(HYDRA_VENDOR, HYDRA_PRODUCT)))
 	, _name(name)
-	, _con(trackercon) {
+	, _con(con) {
 
+	/// Set up sensor counts
+	vrpn_Analog::num_channel = 6; /// 3 analog channels from each controller
+	vrpn_Button::num_buttons = 16; /// 7 for each controller, starting at a nice number for each
 	vrpn_Tracker::num_sensors = 2;
+
+	/// Initialize all data
+	memset(buttons, 0, sizeof(buttons));
+	memset(lastbuttons, 0, sizeof(lastbuttons));
+	memset(channel, 0, sizeof(channel));
+	memset(last, 0, sizeof(last));
+
 	_tell_hydra_to_report();
 }
 
@@ -81,15 +93,23 @@ void vrpn_Tracker_RazerHydra::on_data_received(size_t bytes, vrpn_uint8 *buffer)
 		return;
 	}
 
-	vrpn_gettimeofday(&timestamp, NULL);
+	vrpn_gettimeofday(&_timestamp, NULL);
+	vrpn_Button::timestamp = _timestamp;
+	vrpn_Tracker::timestamp = _timestamp;
+
 	_report_for_sensor(0, buffer + 8);
 	_report_for_sensor(1, buffer + 30);
+
+	vrpn_Analog::report_changes(vrpn_CONNECTION_LOW_LATENCY, _timestamp);
+	vrpn_Button::report_changes();
 }
 
 void vrpn_Tracker_RazerHydra::mainloop() {
 	if (connected()) {
 		// server update
-		server_mainloop();
+		vrpn_Analog::server_mainloop();
+		vrpn_Button::server_mainloop();
+		vrpn_Tracker::server_mainloop();
 
 		// device update
 		update();
@@ -121,6 +141,8 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 	}
 	static const double MM_PER_METER = 0.001;
 	static const double SCALE_QUAT_ELT = 1.0 / 32768.0;
+	const int channelOffset = sensorNum * 3;
+	const int buttonOffset = sensorNum * 8;
 	d_sensor = sensorNum;
 	pos[0] = unbufferLittleEndian<vrpn_int16>(data) * MM_PER_METER;
 	pos[1] = unbufferLittleEndian<vrpn_int16>(data) * MM_PER_METER;
@@ -130,6 +152,30 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 	d_quat[Q_X] = unbufferLittleEndian<vrpn_int16>(data) * SCALE_QUAT_ELT;
 	d_quat[Q_Y] = unbufferLittleEndian<vrpn_int16>(data) * SCALE_QUAT_ELT;
 	d_quat[Q_Z] = unbufferLittleEndian<vrpn_int16>(data) * SCALE_QUAT_ELT;
+	vrpn_uint8 buttonBits = unbufferLittleEndian<vrpn_uint8>(data);
+
+	/// "middle" button
+	buttons[0 + buttonOffset] = buttonBits & 0x20;
+
+	/// Numbered buttons
+	buttons[1 + buttonOffset] = buttonBits & 0x04;
+	buttons[2 + buttonOffset] = buttonBits & 0x08;
+	buttons[3 + buttonOffset] = buttonBits & 0x02;
+	buttons[4 + buttonOffset] = buttonBits & 0x10;
+
+	/// "Bumper" button
+	buttons[5 + buttonOffset] = buttonBits & 0x01;
+
+	/// Joystick button
+	buttons[6 + buttonOffset] = buttonBits & 0x40;
+
+	/// Joystick X, Y
+	channel[0 + channelOffset] = unbufferLittleEndian<vrpn_int16>(data);
+	channel[1 + channelOffset] = unbufferLittleEndian<vrpn_int16>(data);
+
+	/// Trigger analog
+	channel[2 + channelOffset] = unbufferLittleEndian<vrpn_uint8>(data);
+
 	/*
 	d_quat[Q_W] = unbufferLittleEndian<float>(data);
 	d_quat[Q_X] = unbufferLittleEndian<float>(data);
@@ -137,8 +183,8 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 	d_quat[Q_Z] = unbufferLittleEndian<float>(data);
 	*/
 	char msgbuf[512];
-	int len = encode_to(msgbuf);
-	if (d_connection->pack_message(len, timestamp, position_m_id, d_sender_id, msgbuf,
+	int len = vrpn_Tracker::encode_to(msgbuf);
+	if (d_connection->pack_message(len, _timestamp, position_m_id, d_sender_id, msgbuf,
 	                               vrpn_CONNECTION_LOW_LATENCY)) {
 		fprintf(stderr, "vrpn_Tracker_RazerHydra: cannot write message: tossing\n");
 	}
