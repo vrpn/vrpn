@@ -88,7 +88,8 @@ vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connect
 	, vrpn_HidInterface(new vrpn_HidBooleanAndAcceptor(
 	                        new vrpn_HidInterfaceNumberAcceptor(HYDRA_INTERFACE),
 	                        new vrpn_HidProductAcceptor(HYDRA_VENDOR, HYDRA_PRODUCT)))
-	, status(HYDRA_WAITING_FOR_CONNECT) {
+	, status(HYDRA_WAITING_FOR_CONNECT)
+	, _attempt(0) {
 
 	/// Set up sensor counts
 	vrpn_Analog::num_channel = 6; /// 3 analog channels from each controller
@@ -108,7 +109,8 @@ void vrpn_Tracker_RazerHydra::on_data_received(size_t bytes, vrpn_uint8 *buffer)
 		return;
 	}
 	if (status != HYDRA_REPORTING) {
-		TEXT_MESSAGE("Got first motion controller report! This means everything is working properly now.", vrpn_TEXT_WARNING);
+		TEXT_MESSAGE("Got first motion controller report! This means everything is working properly now. (Took "
+		             << _attempt << " attempt(s) to change modes.)", vrpn_TEXT_WARNING);
 		status = HYDRA_REPORTING;
 	}
 	vrpn_gettimeofday(&_timestamp, NULL);
@@ -135,7 +137,7 @@ void vrpn_Tracker_RazerHydra::mainloop() {
 		update();
 		if (status == HYDRA_LISTENING_AFTER_CONNECT) {
 			_listening_after_connect();
-		} else if (status == HYDRA_LISTENING_AFTER_SET_FEATURE || status == HYDRA_LISTENING_AFTER_REPEATED_SET_FEATURE) {
+		} else if (status == HYDRA_LISTENING_AFTER_SET_FEATURE) {
 			_listening_after_set_feature();
 		}
 	}
@@ -151,6 +153,9 @@ void vrpn_Tracker_RazerHydra::_waiting_for_connect() {
 		status = HYDRA_LISTENING_AFTER_CONNECT;
 		vrpn_gettimeofday(&_connected, NULL);
 		TEXT_MESSAGE("Listening to see if device is in reporting mode.", vrpn_TEXT_NORMAL);
+
+		/// Reset the mode-change-attempt counter
+		_attempt = 0;
 	}
 }
 
@@ -165,14 +170,13 @@ void vrpn_Tracker_RazerHydra::_listening_after_connect() {
 	}
 }
 void vrpn_Tracker_RazerHydra::_listening_after_set_feature() {
-	assert(status == HYDRA_LISTENING_AFTER_SET_FEATURE || status == HYDRA_LISTENING_AFTER_REPEATED_SET_FEATURE);
+	assert(status == HYDRA_LISTENING_AFTER_SET_FEATURE);
 	assert(connected());
 	struct timeval now;
 	vrpn_gettimeofday(&now, NULL);
 	if (duration(now, _set_feature) > MAXIMUM_WAIT_USEC) {
 		TEXT_MESSAGE("Really sleepy device - won't start reporting despite our earlier attempt(s). Trying again...", vrpn_TEXT_WARNING);
 		_send_set_feature();
-		status = HYDRA_LISTENING_AFTER_REPEATED_SET_FEATURE;
 	}
 }
 
@@ -180,13 +184,17 @@ void vrpn_Tracker_RazerHydra::_send_set_feature() {
 	assert(status == HYDRA_LISTENING_AFTER_CONNECT || status == HYDRA_LISTENING_AFTER_SET_FEATURE);
 	assert(connected());
 
+	_attempt++;
+
 	/// Prompt to start streaming motion data
-	TEXT_MESSAGE("Setting 'feature report 0' on Hydra. An error is likely and likely harmless.", vrpn_TEXT_NORMAL);
+	TEXT_MESSAGE("Mode change attempt " << _attempt
+	             << ": Setting 'feature report 0' on Hydra. An error is likely and likely harmless.", vrpn_TEXT_NORMAL);
 	send_feature_report(HYDRA_FEATURE_REPORT_LEN, HYDRA_FEATURE_REPORT);
 
 	vrpn_uint8 buf[91] = {0};
 	buf[0] = 0;
-	TEXT_MESSAGE("Getting 'feature report 0' from Hydra. An error is likely and likely harmless.", vrpn_TEXT_NORMAL);
+	TEXT_MESSAGE("Mode change attempt " << _attempt
+	             << ": Getting 'feature report 0' from Hydra. An error is likely and likely harmless.", vrpn_TEXT_NORMAL);
 	get_feature_report(91, buf);
 
 	status = HYDRA_LISTENING_AFTER_SET_FEATURE;
