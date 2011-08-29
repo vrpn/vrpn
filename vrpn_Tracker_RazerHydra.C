@@ -46,6 +46,8 @@ static const vrpn_uint8 HYDRA_FEATURE_REPORT[] = {
 };
 static const int HYDRA_FEATURE_REPORT_LEN = 91;
 
+/// 5 seconds is as long as we give it to settle down into a mode.
+static const unsigned long MAXIMUM_WAIT_USEC = 5000000L;
 
 template<typename T, typename ByteT>
 static inline T unbufferLittleEndian(ByteT * & input) {
@@ -63,6 +65,12 @@ static inline T unbufferLittleEndian(ByteT * & input) {
 	return value;
 }
 
+
+static unsigned long duration(struct timeval t1, struct timeval t2) {
+	return (t1.tv_usec - t2.tv_usec) +
+	       1000000L * (t1.tv_sec - t2.tv_sec);
+}
+
 vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connection * con)
 	: vrpn_Analog(name, con)
 	, vrpn_Button_Filter(name, con)
@@ -70,7 +78,7 @@ vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connect
 	, vrpn_HidInterface(new vrpn_HidBooleanAndAcceptor(
 	                        new vrpn_HidInterfaceNumberAcceptor(HYDRA_INTERFACE),
 	                        new vrpn_HidProductAcceptor(HYDRA_VENDOR, HYDRA_PRODUCT)))
-	, _got_report(false) {
+	, status(HYDRA_WAITING_FOR_CONNECT) {
 
 	/// Set up sensor counts
 	vrpn_Analog::num_channel = 6; /// 3 analog channels from each controller
@@ -82,8 +90,6 @@ vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connect
 	memset(lastbuttons, 0, sizeof(lastbuttons));
 	memset(channel, 0, sizeof(channel));
 	memset(last, 0, sizeof(last));
-
-	_tell_hydra_to_report();
 }
 
 void vrpn_Tracker_RazerHydra::on_data_received(size_t bytes, vrpn_uint8 *buffer) {
@@ -91,9 +97,9 @@ void vrpn_Tracker_RazerHydra::on_data_received(size_t bytes, vrpn_uint8 *buffer)
 		fprintf(stderr, "vrpn_Tracker_RazerHydra: got %d bytes, expected 52!\n", static_cast<int>(bytes));
 		return;
 	}
-	if (!_got_report) {
-		fprintf(stderr, "vrpn_Tracker_RazerHydra: You can ignore any messages from vrpn_HidInterface above - we got a valid report so all is well.\n");
-		_got_report = true;
+	if (status != HYDRA_REPORTING) {
+		fprintf(stderr, "vrpn_Tracker_RazerHydra: Now reporting! (You can ignore any messages from vrpn_HidInterface above.)\n");
+		status = HYDRA_REPORTING;
 	}
 	vrpn_gettimeofday(&_timestamp, NULL);
 	vrpn_Button::timestamp = _timestamp;
@@ -107,35 +113,71 @@ void vrpn_Tracker_RazerHydra::on_data_received(size_t bytes, vrpn_uint8 *buffer)
 }
 
 void vrpn_Tracker_RazerHydra::mainloop() {
+	// server update
+	vrpn_Analog::server_mainloop();
+	vrpn_Button::server_mainloop();
+	vrpn_Tracker::server_mainloop();
 	if (connected()) {
-		// server update
-		vrpn_Analog::server_mainloop();
-		vrpn_Button::server_mainloop();
-		vrpn_Tracker::server_mainloop();
-
+		if (status == HYDRA_WAITING_FOR_CONNECT) {
+			_waiting_for_connect();
+		}
 		// device update
 		update();
+		if (status == HYDRA_LISTENING_AFTER_CONNECT) {
+			_listening_after_connect();
+		} else if (status == HYDRA_LISTENING_AFTER_SET_FEATURE) {
+			_listening_after_set_feature();
+		}
 	}
 }
 
 void vrpn_Tracker_RazerHydra::reconnect() {
-	_got_report = false;
+	status = HYDRA_WAITING_FOR_CONNECT;
 	vrpn_HidInterface::reconnect();
-	_tell_hydra_to_report();
-};
+}
 
-void vrpn_Tracker_RazerHydra::_tell_hydra_to_report() {
+void vrpn_Tracker_RazerHydra::_waiting_for_connect() {
+	assert(status == HYDRA_WAITING_FOR_CONNECT);
 	if (connected()) {
-		/// Prompt to start streaming motion data
-		send_feature_report(HYDRA_FEATURE_REPORT_LEN, HYDRA_FEATURE_REPORT);
-
-		vrpn_uint8 buf[91] = {0};
-		buf[0] = 0;
-		/*int bytes =*/ get_feature_report(91, buf);
-		//fprintf(stderr, "vrpn_Tracker_RazerHydra: feature report: read %d bytes\n", bytes);
-	} else {
-		//fprintf(stderr, "vrpn_Tracker_RazerHydra: in _tell_hydra_to_report but not connected!\n");
+		status = HYDRA_LISTENING_AFTER_CONNECT;
+		vrpn_gettimeofday(&_connected, NULL);
+		fprintf(stderr, "vrpn_Tracker_RazerHydra: Listening to see if device is in reporting mode.\n");
 	}
+}
+
+void vrpn_Tracker_RazerHydra::_listening_after_connect() {
+	assert(status == HYDRA_LISTENING_AFTER_CONNECT);
+	assert(connected());
+	struct timeval now;
+	vrpn_gettimeofday(&now, NULL);
+	if (duration(now, _connected) > MAXIMUM_WAIT_USEC) {
+		fprintf(stderr, "vrpn_Tracker_RazerHydra: device apparently not in reporting mode, attempting to change modes. Some errors are expected.\n");
+		_send_set_feature();
+	}
+}
+void vrpn_Tracker_RazerHydra::_listening_after_set_feature() {
+	assert(status == HYDRA_LISTENING_AFTER_SET_FEATURE);
+	assert(connected());
+	struct timeval now;
+	vrpn_gettimeofday(&now, NULL);
+	if (duration(now, _set_feature) > MAXIMUM_WAIT_USEC) {
+		fprintf(stderr, "vrpn_Tracker_RazerHydra: Really sleepy device - won't start reporting despite our earlier attempt(s). Trying again...\n");
+		_send_set_feature();
+	}
+}
+
+void vrpn_Tracker_RazerHydra::_send_set_feature() {
+	assert(status == HYDRA_LISTENING_AFTER_CONNECT || status == HYDRA_LISTENING_AFTER_SET_FEATURE);
+	assert(connected());
+
+	/// Prompt to start streaming motion data
+	send_feature_report(HYDRA_FEATURE_REPORT_LEN, HYDRA_FEATURE_REPORT);
+
+	vrpn_uint8 buf[91] = {0};
+	buf[0] = 0;
+	get_feature_report(91, buf);
+	status = HYDRA_LISTENING_AFTER_SET_FEATURE;
+	vrpn_gettimeofday(&_set_feature, NULL);
 }
 
 void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * data) {

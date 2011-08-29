@@ -77,11 +77,25 @@ class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_F
 		virtual void on_data_received(size_t bytes, vrpn_uint8 *buffer);
 
 	protected:
-		void _tell_hydra_to_report();
+		enum HydraStatus {
+			HYDRA_WAITING_FOR_CONNECT,
+			HYDRA_LISTENING_AFTER_CONNECT,
+			HYDRA_LISTENING_AFTER_SET_FEATURE,
+			HYDRA_REPORTING
+		};
+		void _waiting_for_connect();
+		void _listening_after_connect();
+		void _listening_after_set_feature();
+
+		void _send_set_feature();
+
 		void _report_for_sensor(int sensorNum, vrpn_uint8 * data);
 
+		HydraStatus status;
 		bool _got_report;
 		struct timeval _timestamp;
+		struct timeval _connected;
+		struct timeval _set_feature;
 };
 
 #endif
