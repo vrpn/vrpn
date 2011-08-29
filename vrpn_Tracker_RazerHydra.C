@@ -26,6 +26,7 @@
 
 // Standard includes
 #include <cassert>
+#include <sstream>
 
 #ifdef VRPN_USE_HID
 
@@ -71,6 +72,15 @@ static inline unsigned long duration(struct timeval t1, struct timeval t2) {
 	       1000000L * (t1.tv_sec - t2.tv_sec);
 }
 
+#define TEXT_MESSAGE(_MSG, _SEVERITY) \
+	{ \
+		struct timeval msg_now; \
+		vrpn_gettimeofday(&msg_now, NULL); \
+		std::ostringstream msg_ostream; \
+		msg_ostream << _MSG; \
+		send_text_message(msg_ostream.str().c_str(), msg_now, _SEVERITY); \
+	}
+
 vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connection * con)
 	: vrpn_Analog(name, con)
 	, vrpn_Button_Filter(name, con)
@@ -94,11 +104,11 @@ vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connect
 
 void vrpn_Tracker_RazerHydra::on_data_received(size_t bytes, vrpn_uint8 *buffer) {
 	if (bytes != 52) {
-		fprintf(stderr, "vrpn_Tracker_RazerHydra: got %d bytes, expected 52!\n", static_cast<int>(bytes));
+		TEXT_MESSAGE("Got input report of " << bytes << " bytes, expected 52! Discarding.", vrpn_TEXT_WARNING);
 		return;
 	}
 	if (status != HYDRA_REPORTING) {
-		fprintf(stderr, "vrpn_Tracker_RazerHydra: Now reporting! (You can ignore any messages from vrpn_HidInterface above.)\n");
+		TEXT_MESSAGE("Got first motion controller report! This means everything is working properly now.", vrpn_TEXT_WARNING);
 		status = HYDRA_REPORTING;
 	}
 	vrpn_gettimeofday(&_timestamp, NULL);
@@ -141,7 +151,7 @@ void vrpn_Tracker_RazerHydra::_waiting_for_connect() {
 	if (connected()) {
 		status = HYDRA_LISTENING_AFTER_CONNECT;
 		vrpn_gettimeofday(&_connected, NULL);
-		fprintf(stderr, "vrpn_Tracker_RazerHydra: Listening to see if device is in reporting mode.\n");
+		TEXT_MESSAGE("Listening to see if device is in reporting mode.", vrpn_TEXT_NORMAL);
 	}
 }
 
@@ -151,7 +161,7 @@ void vrpn_Tracker_RazerHydra::_listening_after_connect() {
 	struct timeval now;
 	vrpn_gettimeofday(&now, NULL);
 	if (duration(now, _connected) > MAXIMUM_WAIT_USEC) {
-		fprintf(stderr, "vrpn_Tracker_RazerHydra: device apparently not in reporting mode, attempting to change modes. Some errors are expected.\n");
+		TEXT_MESSAGE("device apparently not in reporting mode, attempting to change modes. Some errors are expected.", vrpn_TEXT_NORMAL);
 		_send_set_feature();
 	}
 }
@@ -161,7 +171,7 @@ void vrpn_Tracker_RazerHydra::_listening_after_set_feature() {
 	struct timeval now;
 	vrpn_gettimeofday(&now, NULL);
 	if (duration(now, _set_feature) > MAXIMUM_WAIT_USEC) {
-		fprintf(stderr, "vrpn_Tracker_RazerHydra: Really sleepy device - won't start reporting despite our earlier attempt(s). Trying again...\n");
+		TEXT_MESSAGE("Really sleepy device - won't start reporting despite our earlier attempt(s). Trying again...", vrpn_TEXT_WARNING);
 		_send_set_feature();
 	}
 }
@@ -171,11 +181,14 @@ void vrpn_Tracker_RazerHydra::_send_set_feature() {
 	assert(connected());
 
 	/// Prompt to start streaming motion data
+	TEXT_MESSAGE("Setting 'feature report 0' on Hydra. An error is likely and likely harmless.", vrpn_TEXT_NORMAL);
 	send_feature_report(HYDRA_FEATURE_REPORT_LEN, HYDRA_FEATURE_REPORT);
 
 	vrpn_uint8 buf[91] = {0};
 	buf[0] = 0;
+	TEXT_MESSAGE("Getting 'feature report 0' from Hydra. An error is likely and likely harmless.", vrpn_TEXT_NORMAL);
 	get_feature_report(91, buf);
+
 	status = HYDRA_LISTENING_AFTER_SET_FEATURE;
 	vrpn_gettimeofday(&_set_feature, NULL);
 }
