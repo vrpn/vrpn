@@ -235,12 +235,6 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 	/// Trigger analog
 	channel[2 + channelOffset] = unbufferLittleEndian<vrpn_uint8>(data) * SCALE_UINT8_TO_FLOAT_0_TO_1;
 
-	/*
-	d_quat[Q_W] = unbufferLittleEndian<float>(data);
-	d_quat[Q_X] = unbufferLittleEndian<float>(data);
-	d_quat[Q_Y] = unbufferLittleEndian<float>(data);
-	d_quat[Q_Z] = unbufferLittleEndian<float>(data);
-	*/
 	char msgbuf[512];
 	int len = vrpn_Tracker::encode_to(msgbuf);
 	if (d_connection->pack_message(len, _timestamp, position_m_id, d_sender_id, msgbuf,
