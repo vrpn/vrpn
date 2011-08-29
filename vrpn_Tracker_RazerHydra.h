@@ -83,7 +83,6 @@ class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_F
 		std::string _name;
 		vrpn_Connection *_con;
 
-		bool _should_report;
 		struct timeval _timestamp;
 };
 
