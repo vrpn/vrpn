@@ -454,6 +454,8 @@ set(VRPN_CLIENT_PUBLIC_HEADERS
 	vrpn_Imager.h
 	vrpn_LamportClock.h
 	vrpn_Log.h
+	vrpn_MainloopContainer.h
+	vrpn_MainloopObject.h
 	vrpn_Mutex.h
 	vrpn_Serial.h
 	vrpn_Shared.h
