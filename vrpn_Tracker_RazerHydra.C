@@ -135,7 +135,7 @@ void vrpn_Tracker_RazerHydra::mainloop() {
 		update();
 		if (status == HYDRA_LISTENING_AFTER_CONNECT) {
 			_listening_after_connect();
-		} else if (status == HYDRA_LISTENING_AFTER_SET_FEATURE) {
+		} else if (status == HYDRA_LISTENING_AFTER_SET_FEATURE || status == HYDRA_LISTENING_AFTER_REPEATED_SET_FEATURE) {
 			_listening_after_set_feature();
 		}
 	}
@@ -145,7 +145,6 @@ void vrpn_Tracker_RazerHydra::reconnect() {
 	status = HYDRA_WAITING_FOR_CONNECT;
 	vrpn_HidInterface::reconnect();
 }
-
 void vrpn_Tracker_RazerHydra::_waiting_for_connect() {
 	assert(status == HYDRA_WAITING_FOR_CONNECT);
 	if (connected()) {
@@ -166,13 +165,14 @@ void vrpn_Tracker_RazerHydra::_listening_after_connect() {
 	}
 }
 void vrpn_Tracker_RazerHydra::_listening_after_set_feature() {
-	assert(status == HYDRA_LISTENING_AFTER_SET_FEATURE);
+	assert(status == HYDRA_LISTENING_AFTER_SET_FEATURE || status == HYDRA_LISTENING_AFTER_REPEATED_SET_FEATURE);
 	assert(connected());
 	struct timeval now;
 	vrpn_gettimeofday(&now, NULL);
 	if (duration(now, _set_feature) > MAXIMUM_WAIT_USEC) {
 		TEXT_MESSAGE("Really sleepy device - won't start reporting despite our earlier attempt(s). Trying again...", vrpn_TEXT_WARNING);
 		_send_set_feature();
+		status = HYDRA_LISTENING_AFTER_REPEATED_SET_FEATURE;
 	}
 }
 

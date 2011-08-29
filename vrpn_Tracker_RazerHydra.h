@@ -81,6 +81,7 @@ class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_F
 			HYDRA_WAITING_FOR_CONNECT,
 			HYDRA_LISTENING_AFTER_CONNECT,
 			HYDRA_LISTENING_AFTER_SET_FEATURE,
+			HYDRA_LISTENING_AFTER_REPEATED_SET_FEATURE,
 			HYDRA_REPORTING
 		};
 		void _waiting_for_connect();
