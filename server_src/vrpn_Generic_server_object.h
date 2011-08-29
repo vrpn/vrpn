@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <fcntl.h>
 
+#include "vrpn_MainloopContainer.h"
+
 #include "vrpn_Configure.h"
 #ifdef	sgi
 #define	SGI_BDBOX
@@ -161,6 +163,7 @@ class vrpn_Generic_Server_Object
     bool            d_bail_on_open_error; //< Should we bail if we have an error opening a device?
 
     // Lists of devices
+    vrpn_MainloopContainer _devices;
     vrpn_Tracker	* trackers [VRPN_GSO_MAX_TRACKERS];
     int		num_trackers;
     vrpn_Button	* buttons [VRPN_GSO_MAX_BUTTONS];

@@ -26,6 +26,8 @@ vrpn_SGIBox	* vrpn_special_sgibox;
 
 void vrpn_Generic_Server_Object::closeDevices (void)
 {
+  _devices.clear();
+
   int i;
   for (i = 0; i < num_buttons; i++) {
     if (verbose) {
@@ -4875,6 +4877,7 @@ vrpn_Generic_Server_Object::~vrpn_Generic_Server_Object()
 
 void  vrpn_Generic_Server_Object::mainloop (void)
 {
+  _devices.mainloop();
   int	i;
 
   // Let all the buttons generate reports
