@@ -150,7 +150,7 @@ namespace detail {
 
 template<class T>
 inline vrpn_MainloopObject * vrpn_MainloopObject::wrap(T * o) {
-	return new detail::TypedMainloopObject<T>(o, true);
+	return new detail::TypedMainloopObject<T>(o);
 }
 
 template<class T>
