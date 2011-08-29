@@ -25,7 +25,7 @@
 // - none
 
 // Standard includes
-// - none
+#include <cassert>
 
 #ifdef VRPN_USE_HID
 
@@ -46,6 +46,23 @@ static const vrpn_uint8 HYDRA_FEATURE_REPORT[] = {
 };
 static const int HYDRA_FEATURE_REPORT_LEN = 91;
 
+
+template<typename T, typename ByteT>
+static inline T unbufferLittleEndian(ByteT * & input) {
+	/// @todo make this a static assertion
+	assert(sizeof(ByteT) == 1);
+
+	union {
+		ByteT bytes[sizeof(T)];
+		T value;
+	};
+	for (int i = 0; i < sizeof(T); ++i) {
+		bytes[i] = input[i];
+	}
+	input += sizeof(T);
+	return value;
+}
+
 vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connection * trackercon)
 	: vrpn_Tracker(name, trackercon)
 	, vrpn_HidInterface(new vrpn_HidBooleanAndAcceptor(
@@ -54,39 +71,37 @@ vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connect
 	, _name(name)
 	, _con(trackercon) {
 
-	memset(d_quat, 0, 4 * sizeof(float));
-	d_quat[3] = 1.0;
-
+	vrpn_Tracker::num_sensors = 2;
+	_tell_hydra_to_report();
 }
 
 void vrpn_Tracker_RazerHydra::on_data_received(size_t bytes, vrpn_uint8 *buffer) {
-	fprintf(stderr, "vrpn_Tracker_RazerHydra: got %d bytes\n", bytes);
+	if (bytes != 52) {
+		fprintf(stderr, "vrpn_Tracker_RazerHydra: got %d bytes, expected 52!\n", bytes);
+		return;
+	}
+
+	vrpn_gettimeofday(&timestamp, NULL);
+	_report_for_sensor(0, buffer + 8);
+	_report_for_sensor(1, buffer + 30);
 }
 
 void vrpn_Tracker_RazerHydra::mainloop() {
 	if (connected()) {
-		// device update
-		update();
-
 		// server update
 		server_mainloop();
 
-		vrpn_Tracker::timestamp = _timestamp;
-
-		// send tracker orientation
-		d_sensor = 0;
-		memset(pos, 0, sizeof(vrpn_float64) * 3); // no position
-
-		char msgbuf[1000];
-		int len = vrpn_Tracker::encode_to(msgbuf);
-		if (d_connection->pack_message(len, _timestamp, position_m_id, d_sender_id, msgbuf, vrpn_CONNECTION_LOW_LATENCY)) {
-			fprintf(stderr, "vrpn_Tracker_RazerHydra: can't write message: tossing\n");
-		}
+		// device update
+		update();
 	}
 }
 
 void vrpn_Tracker_RazerHydra::reconnect() {
 	vrpn_HidInterface::reconnect();
+	_tell_hydra_to_report();
+};
+
+void vrpn_Tracker_RazerHydra::_tell_hydra_to_report() {
 	if (connected()) {
 		/// Prompt to start streaming motion data
 		send_feature_report(HYDRA_FEATURE_REPORT_LEN, HYDRA_FEATURE_REPORT);
@@ -95,8 +110,39 @@ void vrpn_Tracker_RazerHydra::reconnect() {
 		buf[0] = 0;
 		int bytes = get_feature_report(91, buf);
 		fprintf(stderr, "vrpn_Tracker_RazerHydra: feature report: read %d bytes\n", bytes);
+	} else {
+		fprintf(stderr, "vrpn_Tracker_RazerHydra: in _tell_hydra_to_report but not connected!\n");
 	}
 }
 
+void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * data) {
+	if (!d_connection) {
+		return;
+	}
+	static const double MM_PER_METER = 0.001;
+	static const double SCALE_QUAT_ELT = 1.0 / 32768.0;
+	d_sensor = sensorNum;
+	pos[0] = unbufferLittleEndian<vrpn_int16>(data) * MM_PER_METER;
+	pos[1] = unbufferLittleEndian<vrpn_int16>(data) * MM_PER_METER;
+	pos[2] = unbufferLittleEndian<vrpn_int16>(data) * MM_PER_METER;
+
+	d_quat[Q_W] = unbufferLittleEndian<vrpn_int16>(data) * SCALE_QUAT_ELT;
+	d_quat[Q_X] = unbufferLittleEndian<vrpn_int16>(data) * SCALE_QUAT_ELT;
+	d_quat[Q_Y] = unbufferLittleEndian<vrpn_int16>(data) * SCALE_QUAT_ELT;
+	d_quat[Q_Z] = unbufferLittleEndian<vrpn_int16>(data) * SCALE_QUAT_ELT;
+	/*
+	d_quat[Q_W] = unbufferLittleEndian<float>(data);
+	d_quat[Q_X] = unbufferLittleEndian<float>(data);
+	d_quat[Q_Y] = unbufferLittleEndian<float>(data);
+	d_quat[Q_Z] = unbufferLittleEndian<float>(data);
+	*/
+	char msgbuf[512];
+	int len = encode_to(msgbuf);
+	if (d_connection->pack_message(len, timestamp, position_m_id, d_sender_id, msgbuf,
+	                               vrpn_CONNECTION_LOW_LATENCY)) {
+		fprintf(stderr, "vrpn_Tracker_RazerHydra: cannot write message: tossing\n");
+	}
+	print_latest_report();
+}
 
 #endif // VRPN_USE_HID

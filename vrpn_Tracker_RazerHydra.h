@@ -44,6 +44,8 @@ class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Tracker, vrpn_HidInterface {
 		virtual void on_data_received(size_t bytes, vrpn_uint8 *buffer);
 
 	protected:
+		void _tell_hydra_to_report();
+		void _report_for_sensor(int sensorNum, vrpn_uint8 * data);
 		std::string _name;
 		vrpn_Connection *_con;
 
