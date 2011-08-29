@@ -143,7 +143,8 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 		return;
 	}
 	static const double MM_PER_METER = 0.001;
-	static const double SCALE_QUAT_ELT = 1.0 / 32768.0;
+	static const double SCALE_INT16_TO_FLOAT_PLUSMINUS_1 = 1.0 / 32768.0;
+	static const double SCALE_UINT8_TO_FLOAT_0_TO_1 = 1.0 / 255.0;
 	const int channelOffset = sensorNum * 3;
 	const int buttonOffset = sensorNum * 8;
 	d_sensor = sensorNum;
@@ -151,10 +152,10 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 	pos[1] = unbufferLittleEndian<vrpn_int16>(data) * MM_PER_METER;
 	pos[2] = unbufferLittleEndian<vrpn_int16>(data) * MM_PER_METER;
 
-	d_quat[Q_W] = unbufferLittleEndian<vrpn_int16>(data) * SCALE_QUAT_ELT;
-	d_quat[Q_X] = unbufferLittleEndian<vrpn_int16>(data) * SCALE_QUAT_ELT;
-	d_quat[Q_Y] = unbufferLittleEndian<vrpn_int16>(data) * SCALE_QUAT_ELT;
-	d_quat[Q_Z] = unbufferLittleEndian<vrpn_int16>(data) * SCALE_QUAT_ELT;
+	d_quat[Q_W] = unbufferLittleEndian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
+	d_quat[Q_X] = unbufferLittleEndian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
+	d_quat[Q_Y] = unbufferLittleEndian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
+	d_quat[Q_Z] = unbufferLittleEndian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
 	vrpn_uint8 buttonBits = unbufferLittleEndian<vrpn_uint8>(data);
 
 	/// "middle" button
@@ -173,11 +174,11 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 	buttons[6 + buttonOffset] = buttonBits & 0x40;
 
 	/// Joystick X, Y
-	channel[0 + channelOffset] = unbufferLittleEndian<vrpn_int16>(data);
-	channel[1 + channelOffset] = unbufferLittleEndian<vrpn_int16>(data);
+	channel[0 + channelOffset] = unbufferLittleEndian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
+	channel[1 + channelOffset] = unbufferLittleEndian<vrpn_int16>(data) * SCALE_INT16_TO_FLOAT_PLUSMINUS_1;
 
 	/// Trigger analog
-	channel[2 + channelOffset] = unbufferLittleEndian<vrpn_uint8>(data);
+	channel[2 + channelOffset] = unbufferLittleEndian<vrpn_uint8>(data) * SCALE_UINT8_TO_FLOAT_0_TO_1;
 
 	/*
 	d_quat[Q_W] = unbufferLittleEndian<float>(data);
