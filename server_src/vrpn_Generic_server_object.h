@@ -52,7 +52,9 @@
 #include "vrpn_XInputGamepad.h"
 #include "vrpn_Joywin32.h"
 #include "vrpn_GlobalHapticsOrb.h"
+#ifdef VRPN_USE_PHANTOM_SERVER
 #include "vrpn_Phantom.h"
+#endif
 #include "vrpn_ADBox.h"
 #include "vrpn_VPJoystick.h"
 #include "vrpn_Tracker_DTrack.h"
@@ -87,6 +89,7 @@
 #include "vrpn_Tracker_GameTrak.h"
 #include "vrpn_Tracker_SpacePoint.h"
 #include "vrpn_Analog_5dtUSB.h"
+#include "vrpn_Tracker_RazerHydra.h"
 
 // BUW additions
 #include "vrpn_Atmel.h"
@@ -325,6 +328,7 @@ class vrpn_Generic_Server_Object
     int setup_Analog_5dtUSB_Glove5Right (char * &pch, char * line, FILE * config_file);
     int setup_Analog_5dtUSB_Glove14Left (char * &pch, char * line, FILE * config_file);
     int setup_Analog_5dtUSB_Glove14Right (char * &pch, char * line, FILE * config_file);
+  int setup_Tracker_RazerHydra(char * &pch, char * line, FILE * config_file);
 
     // BUW additions
     int setup_Atmel (char* &pch, char *line, FILE *config_file);

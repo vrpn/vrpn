@@ -4555,6 +4555,40 @@ int vrpn_Generic_Server_Object::setup_Analog_5dtUSB_Glove14Right (char * &pch, c
   return setup_Analog_5dtUSB<vrpn_Analog_5dtUSB_Glove14Right> ("Glove14Right", verbose, connection, analogs, num_analogs, pch, line, config_file);
 }
 
+int vrpn_Generic_Server_Object::setup_Tracker_RazerHydra (char * &pch, char * line, FILE * config_file)
+{
+  char s2 [LINESIZE];
+
+  next();
+  if (sscanf (pch, "%511s", s2) != 1) {
+    fprintf (stderr, "Bad RazerHydra line: %s\n", line);
+    return -1;
+  }
+
+#if defined(VRPN_USE_HID)
+
+  // Open the RazerHydra
+  vrpn_Tracker_RazerHydra * device;
+
+  // Open the button
+  if (verbose) {
+    printf ("Opening vrpn_Tracker_RazerHydra as device %s\n", s2);
+  }
+  if ( (device = new vrpn_Tracker_RazerHydra(s2, connection)) == NULL) {
+    fprintf (stderr, "Can't create new vrpn_Tracker_RazerHydra\n");
+    return -1;
+  } else {
+	_devices.add(device);
+  }
+
+  return 0;  // successful completion
+
+#else
+  fprintf (stderr, "vrpn_Tracker_RazerHydra requires HID support.\n");
+  return -1;
+#endif
+}
+
 vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connection_to_use, const char *config_file_name, int port, bool be_verbose, bool bail_on_open_error) :
   connection (connection_to_use),
   d_doing_okay (true),
@@ -4842,6 +4876,8 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
         CHECK (setup_Analog_5dtUSB_Glove14Left);
       } else if (isit ("vrpn_Analog_5dtUSB_Glove14Right")) {
         CHECK (setup_Analog_5dtUSB_Glove14Right);
+      } else if (isit ("vrpn_Tracker_RazerHydra")) {
+        CHECK (setup_Tracker_RazerHydra);
       }
 
 #ifdef VRPN_USE_JSONNET
