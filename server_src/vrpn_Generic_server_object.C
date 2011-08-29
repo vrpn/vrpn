@@ -4678,11 +4678,11 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
         CHECK (setup_Tracker_AnalogFly);
       } else if (isit ("vrpn_Tracker_ButtonFly")) {
         CHECK (setup_Tracker_ButtonFly);
-      } else  if (isit ("vrpn_Joystick")) {
+      } else if (isit ("vrpn_Joystick")) {
         CHECK (setup_Joystick);
-      } else  if (isit ("vrpn_Joylin")) {
+      } else if (isit ("vrpn_Joylin")) {
         CHECK (setup_Joylin);
-      } else  if (isit ("vrpn_Joywin32")) {
+      } else if (isit ("vrpn_Joywin32")) {
         CHECK (setup_Joywin32);
       } else if (isit ("vrpn_Dial_Example")) {
         CHECK (setup_DialExample);
@@ -4732,13 +4732,13 @@ vrpn_Generic_Server_Object::vrpn_Generic_Server_Object (vrpn_Connection *connect
         CHECK (setup_Button_PinchGlove);
       } else if (isit ("vrpn_Button_SerialMouse")) {
         CHECK (setup_Button_SerialMouse);
-      } else  if (isit ("vrpn_Wanda")) {
+      } else if (isit ("vrpn_Wanda")) {
         CHECK (setup_Wanda);
       } else if (isit ("vrpn_Mouse")) {
         CHECK (setup_Mouse);
       } else if (isit ("vrpn_Tng3")) {
         CHECK (setup_Tng3);
-      } else  if (isit ("vrpn_TimeCode_Generator")) {
+      } else if (isit ("vrpn_TimeCode_Generator")) {
         CHECK (setup_Timecode_Generator);
       } else if (isit ("vrpn_Tracker_InterSense")) {
         CHECK (setup_Tracker_InterSense);
