@@ -131,10 +131,10 @@ void vrpn_Tracker_RazerHydra::_tell_hydra_to_report() {
 
 		vrpn_uint8 buf[91] = {0};
 		buf[0] = 0;
-		int bytes = get_feature_report(91, buf);
-		fprintf(stderr, "vrpn_Tracker_RazerHydra: feature report: read %d bytes\n", bytes);
+		/*int bytes =*/ get_feature_report(91, buf);
+		//fprintf(stderr, "vrpn_Tracker_RazerHydra: feature report: read %d bytes\n", bytes);
 	} else {
-		fprintf(stderr, "vrpn_Tracker_RazerHydra: in _tell_hydra_to_report but not connected!\n");
+		//fprintf(stderr, "vrpn_Tracker_RazerHydra: in _tell_hydra_to_report but not connected!\n");
 	}
 }
 
@@ -191,7 +191,6 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 	                               vrpn_CONNECTION_LOW_LATENCY)) {
 		fprintf(stderr, "vrpn_Tracker_RazerHydra: cannot write message: tossing\n");
 	}
-	print_latest_report();
 }
 
 #endif // VRPN_USE_HID
