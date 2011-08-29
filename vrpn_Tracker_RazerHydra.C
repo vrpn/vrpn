@@ -70,7 +70,7 @@ vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connect
 	, vrpn_HidInterface(new vrpn_HidBooleanAndAcceptor(
 	                        new vrpn_HidInterfaceNumberAcceptor(HYDRA_INTERFACE),
 	                        new vrpn_HidProductAcceptor(HYDRA_VENDOR, HYDRA_PRODUCT)))
-	{
+	, _got_report(false) {
 
 	/// Set up sensor counts
 	vrpn_Analog::num_channel = 6; /// 3 analog channels from each controller
@@ -91,7 +91,10 @@ void vrpn_Tracker_RazerHydra::on_data_received(size_t bytes, vrpn_uint8 *buffer)
 		fprintf(stderr, "vrpn_Tracker_RazerHydra: got %d bytes, expected 52!\n", bytes);
 		return;
 	}
-
+	if (!_got_report) {
+		fprintf(stderr, "vrpn_Tracker_RazerHydra: You can ignore any messages from vrpn_HidInterface above - we got a valid report so all is well.\n");
+		_got_report = true;
+	}
 	vrpn_gettimeofday(&_timestamp, NULL);
 	vrpn_Button::timestamp = _timestamp;
 	vrpn_Tracker::timestamp = _timestamp;
@@ -116,6 +119,7 @@ void vrpn_Tracker_RazerHydra::mainloop() {
 }
 
 void vrpn_Tracker_RazerHydra::reconnect() {
+	_got_report = false;
 	vrpn_HidInterface::reconnect();
 	_tell_hydra_to_report();
 };

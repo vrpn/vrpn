@@ -81,6 +81,7 @@ class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_F
 		void _tell_hydra_to_report();
 		void _report_for_sensor(int sensorNum, vrpn_uint8 * data);
 
+		bool _got_report;
 		struct timeval _timestamp;
 };
 
