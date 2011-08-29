@@ -88,7 +88,7 @@ class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_F
 		void _listening_after_connect();
 		void _listening_after_set_feature();
 
-		void _send_set_feature();
+		void _enter_motion_controller_mode();
 
 		void _report_for_sensor(int sensorNum, vrpn_uint8 * data);
 

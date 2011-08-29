@@ -166,7 +166,7 @@ void vrpn_Tracker_RazerHydra::_listening_after_connect() {
 	vrpn_gettimeofday(&now, NULL);
 	if (duration(now, _connected) > MAXIMUM_WAIT_USEC) {
 		TEXT_MESSAGE("device apparently not in reporting mode, attempting to change modes. Some errors are expected.", vrpn_TEXT_NORMAL);
-		_send_set_feature();
+		_enter_motion_controller_mode();
 	}
 }
 void vrpn_Tracker_RazerHydra::_listening_after_set_feature() {
@@ -176,11 +176,11 @@ void vrpn_Tracker_RazerHydra::_listening_after_set_feature() {
 	vrpn_gettimeofday(&now, NULL);
 	if (duration(now, _set_feature) > MAXIMUM_WAIT_USEC) {
 		TEXT_MESSAGE("Really sleepy device - won't start reporting despite our earlier attempt(s). Trying again...", vrpn_TEXT_WARNING);
-		_send_set_feature();
+		_enter_motion_controller_mode();
 	}
 }
 
-void vrpn_Tracker_RazerHydra::_send_set_feature() {
+void vrpn_Tracker_RazerHydra::_enter_motion_controller_mode() {
 	assert(status == HYDRA_LISTENING_AFTER_CONNECT || status == HYDRA_LISTENING_AFTER_SET_FEATURE);
 	assert(connected());
 
