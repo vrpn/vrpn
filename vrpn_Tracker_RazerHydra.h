@@ -31,9 +31,9 @@
 // - none
 
 // Standard includes
-#ifdef VRPN_USE_HID
-#include <string>
+// - none
 
+#ifdef VRPN_USE_HID
 
 /** @brief Device supporting the Razer Hydra game controller as a tracker,
 	analog device, and button device, using the USB HID protocol directly
@@ -80,8 +80,6 @@ class VRPN_API vrpn_Tracker_RazerHydra: public vrpn_Analog, public vrpn_Button_F
 	protected:
 		void _tell_hydra_to_report();
 		void _report_for_sensor(int sensorNum, vrpn_uint8 * data);
-		std::string _name;
-		vrpn_Connection *_con;
 
 		struct timeval _timestamp;
 };

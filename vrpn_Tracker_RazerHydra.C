@@ -70,8 +70,7 @@ vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connect
 	, vrpn_HidInterface(new vrpn_HidBooleanAndAcceptor(
 	                        new vrpn_HidInterfaceNumberAcceptor(HYDRA_INTERFACE),
 	                        new vrpn_HidProductAcceptor(HYDRA_VENDOR, HYDRA_PRODUCT)))
-	, _name(name)
-	, _con(con) {
+	{
 
 	/// Set up sensor counts
 	vrpn_Analog::num_channel = 6; /// 3 analog channels from each controller
