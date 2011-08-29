@@ -66,7 +66,7 @@ static inline T unbufferLittleEndian(ByteT * & input) {
 }
 
 
-static unsigned long duration(struct timeval t1, struct timeval t2) {
+static inline unsigned long duration(struct timeval t1, struct timeval t2) {
 	return (t1.tv_usec - t2.tv_usec) +
 	       1000000L * (t1.tv_sec - t2.tv_sec);
 }
