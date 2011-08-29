@@ -88,7 +88,7 @@ vrpn_Tracker_RazerHydra::vrpn_Tracker_RazerHydra(const char * name, vrpn_Connect
 
 void vrpn_Tracker_RazerHydra::on_data_received(size_t bytes, vrpn_uint8 *buffer) {
 	if (bytes != 52) {
-		fprintf(stderr, "vrpn_Tracker_RazerHydra: got %d bytes, expected 52!\n", bytes);
+		fprintf(stderr, "vrpn_Tracker_RazerHydra: got %d bytes, expected 52!\n", static_cast<int>(bytes));
 		return;
 	}
 	if (!_got_report) {
