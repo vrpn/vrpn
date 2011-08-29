@@ -108,11 +108,13 @@ void vrpn_Tracker_RazerHydra::on_data_received(size_t bytes, vrpn_uint8 *buffer)
 		TEXT_MESSAGE("Got input report of " << bytes << " bytes, expected 52! Discarding.", vrpn_TEXT_WARNING);
 		return;
 	}
+
 	if (status != HYDRA_REPORTING) {
 		TEXT_MESSAGE("Got first motion controller report! This means everything is working properly now. (Took "
 		             << _attempt << " attempt(s) to change modes.)", vrpn_TEXT_WARNING);
 		status = HYDRA_REPORTING;
 	}
+
 	vrpn_gettimeofday(&_timestamp, NULL);
 	vrpn_Button::timestamp = _timestamp;
 	vrpn_Tracker::timestamp = _timestamp;
@@ -129,12 +131,17 @@ void vrpn_Tracker_RazerHydra::mainloop() {
 	vrpn_Analog::server_mainloop();
 	vrpn_Button::server_mainloop();
 	vrpn_Tracker::server_mainloop();
+
 	if (connected()) {
+		// Update state
 		if (status == HYDRA_WAITING_FOR_CONNECT) {
 			_waiting_for_connect();
 		}
+
 		// device update
 		update();
+
+		// Check/update listening state during connection/handshaking
 		if (status == HYDRA_LISTENING_AFTER_CONNECT) {
 			_listening_after_connect();
 		} else if (status == HYDRA_LISTENING_AFTER_SET_FEATURE) {
@@ -147,6 +154,7 @@ void vrpn_Tracker_RazerHydra::reconnect() {
 	status = HYDRA_WAITING_FOR_CONNECT;
 	vrpn_HidInterface::reconnect();
 }
+
 void vrpn_Tracker_RazerHydra::_waiting_for_connect() {
 	assert(status == HYDRA_WAITING_FOR_CONNECT);
 	if (connected()) {
@@ -175,7 +183,8 @@ void vrpn_Tracker_RazerHydra::_listening_after_set_feature() {
 	struct timeval now;
 	vrpn_gettimeofday(&now, NULL);
 	if (duration(now, _set_feature) > MAXIMUM_WAIT_USEC) {
-		TEXT_MESSAGE("Really sleepy device - won't start reporting despite our earlier attempt(s). Trying again...", vrpn_TEXT_WARNING);
+		TEXT_MESSAGE("Really sleepy device - won't start reporting despite our earlier "
+		             << _attempt << " attempt(s). Trying again - if this doesn't work, unplug and replug device and restart the VRPN server.", vrpn_TEXT_WARNING);
 		_enter_motion_controller_mode();
 	}
 }
@@ -210,7 +219,9 @@ void vrpn_Tracker_RazerHydra::_report_for_sensor(int sensorNum, vrpn_uint8 * dat
 	static const double SCALE_UINT8_TO_FLOAT_0_TO_1 = 1.0 / 255.0;
 	const int channelOffset = sensorNum * 3;
 	const int buttonOffset = sensorNum * 8;
+
 	d_sensor = sensorNum;
+
 	pos[0] = unbufferLittleEndian<vrpn_int16>(data) * MM_PER_METER;
 	pos[1] = unbufferLittleEndian<vrpn_int16>(data) * MM_PER_METER;
 	pos[2] = unbufferLittleEndian<vrpn_int16>(data) * MM_PER_METER;
