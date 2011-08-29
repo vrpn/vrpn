@@ -28,36 +28,6 @@ include(CTest)
 include(CreateDashboardScripts)
 
 ###
-# On Windows 7, it does not work to install in the default location,
-# which is the Program Files directory, because you have to not only have
-# file permission to write there but also "run as administrator."  This
-# means that "make install" from a Visual Studio project fails.  To get
-# around that, we need to set CMAKE_INSTALL_PREFIX to something other
-# than the default.  However, it is a cache variable that has already been
-# set.  If we make a local variable, it uses this rather than the cache
-# variable and never tells the poor user what happened (the GUI location
-# looks standard but the files end up somewhere else).  If we make it a
-# non-forced cache variable, it already has a value so does not change.
-# If we make it a forced cache variable, it gets overwritten everytime
-# and the user cannot change it on the GUI.  So we have a workaround here.
-# We make a cache variable that records whether we have ever forced the
-# install prefix.  If not, we force it.  If so, we don't force it again.
-# This has the effect of setting it the first time cmake is run, showing
-# the change in the GUI, and also letting the user change the value in
-# the GUI if they don't like what we did.  If I knew how to do this only
-# happen on Windows 7, I'd make the if(WIN32) more specific.
-if (WIN32)
-	if (NOT ONCE_SET_CMAKE_INSTALL_PREFIX)
-		set(ONCE_SET_CMAKE_INSTALL_PREFIX true CACHE BOOL
-			"Have we set the install prefix yet?" FORCE)
-		set(CMAKE_INSTALL_PREFIX C:/usr/local CACHE PATH
-		    "Install path prefix, prepended onto install directories"
-		    FORCE)
-	endif (NOT ONCE_SET_CMAKE_INSTALL_PREFIX)
-endif (WIN32)
-
-
-###
 # Basic packaging options and versioning
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/ParseVersion.cmake")
@@ -71,6 +41,7 @@ set(CPACK_PACKAGE_FILE_NAME
 	"${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
 set(CPACK_SOURCE_PACKAGE_FILE_NAME
 	"${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-src")
+
 
 #-----------------------------------------------------------------------------
 # Compiler flags we got from Hans for Windows and from Sheldon Andrews
@@ -483,6 +454,8 @@ set(VRPN_CLIENT_PUBLIC_HEADERS
 	vrpn_Imager.h
 	vrpn_LamportClock.h
 	vrpn_Log.h
+	vrpn_MainloopContainer.h
+	vrpn_MainloopObject.h
 	vrpn_Mutex.h
 	vrpn_Serial.h
 	vrpn_Shared.h
@@ -565,7 +538,6 @@ set(VRPN_SERVER_SOURCES
 	vrpn_XInputGamepad.C
 	vrpn_Xkeys.C
 	vrpn_Zaber.C
-	server_src/vrpn_Generic_server_object.C
 	${HIDAPI_SOURCES})
 
 set(VRPN_SERVER_PUBLIC_HEADERS
@@ -625,7 +597,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Tracker_Crossbow.h
 	vrpn_Tracker_DTrack.h
 	vrpn_Tracker_Fastrak.h
-	vrpn_Tracker_GameTrak.h
+    vrpn_Tracker_GameTrak.h
 	vrpn_Tracker_isense.h
 	vrpn_Tracker_Isotrak.h
 	vrpn_Tracker_JsonNet.h
@@ -634,7 +606,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_Tracker_NDI_Polaris.h
 	vrpn_Tracker_NovintFalcon.h
 	vrpn_Tracker_PhaseSpace.h
-	vrpn_Tracker_SpacePoint.h
+    vrpn_Tracker_SpacePoint.h
 	vrpn_Tracker_TrivisioColibri.h
 	vrpn_Tracker_WiimoteHead.h
 	vrpn_UNC_Joystick.h
@@ -643,8 +615,7 @@ set(VRPN_SERVER_PUBLIC_HEADERS
 	vrpn_WiiMote.h
 	vrpn_XInputGamepad.h
 	vrpn_Xkeys.h
-	vrpn_Zaber.h
-	server_src/vrpn_Generic_server_object.h)
+	vrpn_Zaber.h)
 
 if(VRPN_BUILD_SERVER_LIBRARY)
 
