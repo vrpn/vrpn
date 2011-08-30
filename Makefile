@@ -552,7 +552,10 @@ LIB_INCLUDES = \
 	vrpn_Imager.h \
 	vrpn_Analog_Output.h \
 	vrpn_Poser.h \
-	vrpn_Auxiliary_Logger.h
+	vrpn_Auxiliary_Logger.h \
+	vrpn_MainloopObject.h \
+	vrpn_MainloopContainer.h \
+	vrpn_BufferUtils.h
 
 $(LIB_OBJECTS):
 $(OBJECT_DIR)/libvrpn.a: $(MAKEFILE) $(LIB_OBJECTS)
