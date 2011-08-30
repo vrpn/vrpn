@@ -150,7 +150,7 @@ static inline T vrpn_unbuffer_from_little_endian(ByteT * & input) {
 	} value;
 
 	/// Swap known little-endian into big-endian (aka network byte order)
-	for (int i = 0, j = sizeof(T) - 1; i < sizeof(T); ++i, --j) {
+	for (unsigned int i = 0, j = sizeof(T) - 1; i < sizeof(T); ++i, --j) {
 		value.bytes[i] = input[j];
 	}
 
