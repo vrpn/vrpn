@@ -1587,7 +1587,7 @@ vrpn_ImagerPose::vrpn_ImagerPose(const char *name, vrpn_Connection *c) :
 int vrpn_ImagerPose::register_types(void)
 {
   d_description_m_id = d_connection->register_message_type("vrpn_ImagerPose Description");
-  if ((d_description_m_id == -1) ) {
+  if (d_description_m_id == -1) {
     return -1;
   } else {
     return 0;
