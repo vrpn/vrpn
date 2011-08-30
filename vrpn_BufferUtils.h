@@ -83,26 +83,6 @@ namespace vrpn_byte_order {
 		return ntohl(netval);
 	}
 
-	inline vrpn_float32 hton(vrpn_float32 hostval) {
-		union {
-			vrpn_float32 asFloat;
-			vrpn_uint32 asInt;
-		} inVal, outVal;
-		inVal.asFloat = hostval;
-		outVal.asInt = hton(inVal.asInt);
-		return outVal.asFloat;
-	}
-
-	inline vrpn_float32 ntoh(vrpn_float32 netval) {
-		union {
-			vrpn_float32 asFloat;
-			vrpn_uint32 asInt;
-		} inVal, outVal;
-		inVal.asFloat = netval;
-		outVal.asInt = ntoh(inVal.asInt);
-		return outVal.asFloat;
-	}
-
 	/// host to network byte order for 64-bit floats, using vrpn htond
 	inline vrpn_float64 hton(vrpn_float64 hostval) {
 		return htond(hostval);
