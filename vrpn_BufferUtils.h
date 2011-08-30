@@ -146,19 +146,19 @@ static inline T vrpn_unbuffer_from_little_endian(ByteT * & input) {
 	/// Union to allow type-punning
 	union {
 		typename ::detail::remove_const<ByteT>::type bytes[sizeof(T)];
-		T value;
-	};
+		T typed;
+	} value;
 
 	/// Swap known little-endian into big-endian (aka network byte order)
 	for (int i = 0, j = sizeof(T) - 1; i < sizeof(T); ++i, --j) {
-		bytes[i] = input[j];
+		value.bytes[i] = input[j];
 	}
 
 	/// Advance input pointer
 	input += sizeof(T);
 
 	/// return value in host byte order
-	return ntoh(value);
+	return ntoh(value.typed);
 }
 
 /// Function template to unbuffer values from a buffer stored in network
@@ -175,17 +175,17 @@ inline T vrpn_unbuffer(ByteT * & input) {
 	/// Union to allow type-punning and ensure alignment
 	union {
 		typename ::detail::remove_const<ByteT>::type bytes[sizeof(T)];
-		T value;
-	};
+		T typed;
+	} value;
 
 	/// Copy bytes into union
-	std::memcpy(bytes, input, sizeof(T));
+	std::memcpy(value.bytes, input, sizeof(T));
 
 	/// Advance input pointer
 	input += sizeof(T);
 
 	/// return value in host byte order
-	return ntoh(value);
+	return ntoh(value.typed);
 }
 
 #endif // INCLUDED_vrpn_BufferUtils_h_GUID_6a741cf1_9fa4_4064_8af0_fa0c6a16c810
