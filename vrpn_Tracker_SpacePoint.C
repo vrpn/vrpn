@@ -10,6 +10,7 @@
 
 #include "quat.h"
 #include "vrpn_Tracker_SpacePoint.h"
+#include "vrpn_BufferUtils.h"
 
 const unsigned SPACEPOINT_VENDOR = 0x20ff;
 const unsigned SPACEPOINT_PRODUCT = 0x0100;
@@ -48,10 +49,11 @@ void vrpn_Tracker_SpacePoint::on_data_received(size_t bytes, vrpn_uint8 *buffer)
 
     if (bytes == 15)
     {
+        vrpn_uint8 * bufptr = buffer + 6;
+
         for (int i = 0; i < 4; i++)
         {
-            unsigned short value = buffer[2*i + 6] + (buffer[2*i + 7] << 8);
-            d_quat[i] = (value - 32768) / 32768.0;
+            d_quat[i] = (vrpn_unbuffer_from_little_endian<vrpn_uint16>(bufptr) - 32768) / 32768.0;
         }
 
         buttons[0] = buffer[14] & 0x1;
