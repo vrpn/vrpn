@@ -20,8 +20,8 @@
 class VRPN_API vrpn_ADBox : public vrpn_Analog, public vrpn_Button {
 
  public:
-  vrpn_ADBox(char* name, vrpn_Connection *c, 
-             char *port="/dev/ttyS1/", long baud=9600);
+  vrpn_ADBox(char* name, vrpn_Connection *c,
+             const char *port="/dev/ttyS1/", long baud=9600);
 
   ~vrpn_ADBox();
 

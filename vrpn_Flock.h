@@ -43,7 +43,7 @@ class VRPN_API vrpn_Tracker_Flock: public vrpn_Tracker_Serial {
   
  public:
   vrpn_Tracker_Flock(char *name, vrpn_Connection *c, int cSensors=1,
-		     char *port = "/dev/ttyd3", long baud = 38400,
+		     const char *port = "/dev/ttyd3", long baud = 38400,
 		     int fStreamMode = 1, int useERT=1, bool invertQuaternion = false, int active_hemisphere=HEMI_PLUSZ);
   virtual ~vrpn_Tracker_Flock();
     

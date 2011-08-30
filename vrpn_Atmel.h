@@ -74,8 +74,8 @@ class VRPN_API vrpn_Atmel : public vrpn_Analog_Server, vrpn_Analog_Output_Server
 public:
 	
   static vrpn_Atmel *
-  Create(char* name, vrpn_Connection *c, 
-         char *port="/dev/ttyS0/", long baud=9600,
+  Create(char* name, vrpn_Connection *c,
+         const char *port="/dev/ttyS0/", long baud=9600,
          int channel_count=0,
          int * channel_mode=NULL);
 

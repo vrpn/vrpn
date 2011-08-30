@@ -84,8 +84,8 @@ check_serial(int fd)
 /* factory */
 /***************************************************************************************************/
 /* static */ vrpn_Atmel *
-vrpn_Atmel::Create(char* name, vrpn_Connection *c, 
-                    char *port, long baud,
+vrpn_Atmel::Create(char* name, vrpn_Connection *c,
+                    const char *port, long baud,
 		    int channel_count ,
 		    int * channel_mode)
 {	

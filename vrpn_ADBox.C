@@ -25,8 +25,8 @@
 #include <unistd.h>
 #endif
 
-vrpn_ADBox::vrpn_ADBox(char* name, vrpn_Connection *c, 
-                       char *port, long baud)
+vrpn_ADBox::vrpn_ADBox(char* name, vrpn_Connection *c,
+                       const char *port, long baud)
   : vrpn_Analog(name, c), vrpn_Button(name, c),
     ready(1), serial_fd(0), iNumBytes(0), iNumDigBytes(0), iFilterPos(0)
 {

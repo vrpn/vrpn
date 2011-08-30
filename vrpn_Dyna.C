@@ -25,7 +25,7 @@
 
 vrpn_Tracker_Dyna::vrpn_Tracker_Dyna(
 		      char *name, vrpn_Connection *c, int cSensors,
-		      char *port, long baud ) :
+		      const char *port, long baud ) :
 vrpn_Tracker_Serial(name,c,port,baud), cSensors(cSensors), cResets(0)
 {
     if (cSensors>MAX_SENSORS) {
