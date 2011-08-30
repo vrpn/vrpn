@@ -57,7 +57,7 @@ vrpn_Analog_5dtUSB::vrpn_Analog_5dtUSB(vrpn_HidAcceptor *filter,
 	vrpn_HidInterface(filter),
 	_isLeftHand(isLeftHand),
 	_wasConnected(false) {
-	
+
 	if (num_sensors != 5 && num_sensors != 14) {
 		throw std::logic_error("The vrpn_Analog_5dtUSB driver only supports 5 or 14 sensors, and a different number was passed!");
 	}
@@ -109,7 +109,7 @@ void vrpn_Analog_5dtUSB::on_data_received(size_t bytes, vrpn_uint8 *buffer) {
 	}
 
 	// Decode all full reports.
-	const float scale = static_cast<float>(1.0 / 4096.0);
+	const float scale = 1.0f / 4096.0f;
 	vrpn_uint8 * bufptr = buffer;
 	for (size_t i = 0; i < 16; i++) {
 		_rawVals[i] = vrpn_unbuffer<vrpn_int16>(bufptr) * scale;
