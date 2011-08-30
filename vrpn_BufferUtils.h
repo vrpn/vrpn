@@ -51,7 +51,7 @@ namespace vrpn_byte_order {
 		template<> struct uint_traits<4> {
 			typedef vrpn_uint32 type;
 		};
-	}
+	} // end of namespace detail
 
 	/// host to network byte order for 8-bit uints is a no-op
 	inline vrpn_uint8 hton(vrpn_uint8 hostval) {
@@ -118,7 +118,7 @@ namespace vrpn_byte_order {
 		outVal.asInt = ntoh(inVal.asInt);
 		return outVal.asInput;
 	}
-}
+} // end of namespace vrpn_byte_order
 
 namespace detail {
 	template<typename T>
