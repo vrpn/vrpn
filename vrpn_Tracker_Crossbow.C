@@ -43,20 +43,25 @@ void vrpn_Tracker_Crossbow::unbuffer_packet(raw_packet &dest, unsigned char *buf
 }
 
 int vrpn_Tracker_Crossbow::validate_packet(const raw_packet &packet) {
-	// Convert the packet to a string of bytes (may cause alignment issues on non-x86 architectures)
-	const vrpn_uint8 *bytes = reinterpret_cast<const vrpn_uint8 *>(&packet);
+
+	// Allow accessing the packet as a string of bytes
+	union {
+		raw_packet packet;
+		vrpn_uint8 bytes[sizeof(raw_packet)];
+	} aligned;
+	aligned.packet = packet;
 
 	// Check the header for the magic number
 	if (packet.header != 0xAA55) {
 		fprintf(stderr, "vrpn_Tracker_Crossbow: Received packet with invalid header $%02X%02X (should be $AA55)\n",
-			bytes[0], bytes[1]);
+			aligned.bytes[0], aligned.bytes[1]);
 		return 1;
 	}
 
 	// Now calculate the expected checksum
 	vrpn_uint16 checksum = 0;
 	for (int i = 2; i < 22; i++)
-		checksum += bytes[i];
+		checksum += aligned.bytes[i];
 
 	// And compare the two checksum values.
 	if (checksum != packet.checksum) {
