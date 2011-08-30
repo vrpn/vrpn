@@ -12,7 +12,7 @@
 
 #include "vrpn_Types.h"
 
-// Oct 2000: Sang-Uok changed because vrpn code was compiling but giving 
+// Oct 2000: Sang-Uok changed because vrpn code was compiling but giving
 // runtime errors with cygwin 1.1. I changed the code so it only uses unix
 // code. I had to change includes in various files.
 
@@ -152,15 +152,45 @@ extern VRPN_API	int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const ti
 extern VRPN_API	int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const char * string, vrpn_int32 length);
 
 extern VRPN_API	int vrpn_unbuffer (const char ** buffer, vrpn_int8 * cval);
+extern VRPN_API	int vrpn_unbuffer (const vrpn_uint8 ** buffer, vrpn_int8 * cval);
+
 extern VRPN_API	int vrpn_unbuffer (const char ** buffer, vrpn_int16 * lval);
+extern VRPN_API	int vrpn_unbuffer (const vrpn_uint8 ** buffer, vrpn_int16 * lval);
+
 extern VRPN_API	int vrpn_unbuffer (const char ** buffer, vrpn_uint16 * lval);
+extern VRPN_API	int vrpn_unbuffer (const vrpn_uint8 ** buffer, vrpn_uint16 * lval);
+
 extern VRPN_API	int vrpn_unbuffer (const char ** buffer, vrpn_int32 * lval);
+extern VRPN_API	int vrpn_unbuffer (const vrpn_uint8 ** buffer, vrpn_int32 * lval);
+
 extern VRPN_API	int vrpn_unbuffer (const char ** buffer, vrpn_uint32 * lval);
+extern VRPN_API	int vrpn_unbuffer (const vrpn_uint8 ** buffer, vrpn_uint32 * lval);
+
 extern VRPN_API	int vrpn_unbuffer (const char ** buffer, vrpn_float32 * fval);
+extern VRPN_API	int vrpn_unbuffer (const vrpn_uint8 ** buffer, vrpn_float32 * fval);
+
 extern VRPN_API	int vrpn_unbuffer (const char ** buffer, vrpn_float64 * dval);
+extern VRPN_API	int vrpn_unbuffer (const vrpn_uint8 ** buffer, vrpn_float64 * dval);
+
 extern VRPN_API	int vrpn_unbuffer (const char ** buffer, timeval * t);
+extern VRPN_API	int vrpn_unbuffer (const vrpn_uint8 ** buffer, timeval * t);
+
 extern VRPN_API	int vrpn_unbuffer (const char ** buffer, char * string, vrpn_int32 length);
 
+/*
+/// @name Unbuffer routines for little-endian input.
+/// Some devices provide little-endian data rather than big-endian "network byte
+/// order," and these functions allow interacting with those parallel to how
+/// we work with network byte order buffers.
+/// @{
+extern VRPN_API	int vrpn_unbuffer_from_little_endian (const vrpn_uint8 ** buffer, vrpn_int16 * lval);
+extern VRPN_API	int vrpn_unbuffer_from_little_endian (const vrpn_uint8 ** buffer, vrpn_uint16 * lval);
+extern VRPN_API	int vrpn_unbuffer_from_little_endian (const vrpn_uint8 ** buffer, vrpn_int32 * lval);
+extern VRPN_API	int vrpn_unbuffer_from_little_endian (const vrpn_uint8 ** buffer, vrpn_uint32 * lval);
+extern VRPN_API	int vrpn_unbuffer_from_little_endian (const vrpn_uint8 ** buffer, vrpn_float32 * fval);
+extern VRPN_API	int vrpn_unbuffer_from_little_endian (const vrpn_uint8 ** buffer, vrpn_float64 * dval);
+/// @}
+*/
 // From this we get the variable "vrpn_big_endian" set to true if the machine we are
 // on is big endian and to false if it is little endian.  This can be used by
 // custom packing and unpacking code to bypass the buffer and unbuffer routines
@@ -254,7 +284,7 @@ protected:
 #endif
 };
 
-// A ptr to this struct will be passed to the 
+// A ptr to this struct will be passed to the
 // thread function.  The user data ptr will be in pvUD.
 // (There used to be a non-functional semaphore object
 // also in this structure, but it was removed.  This leaves
@@ -286,7 +316,7 @@ public:
   // start/kill the thread (true on success, false on failure)
   bool go();
   bool kill();
-  
+
   // thread info: check if running, get proc id
   bool running();
 #if defined(sgi) || defined(_WIN32)
@@ -308,12 +338,12 @@ public:
   // effect the next time go() is called.
   void userData( void *pvNewUserData );
   void *userData();
-  
-protected:  
+
+protected:
   // user func and data ptrs
   void (*pfThread)(vrpn_ThreadData &ThreadData);
   vrpn_ThreadData td;
-  
+
   // utility func for calling the specified function.
   static void threadFuncShell(void *pvThread);
 

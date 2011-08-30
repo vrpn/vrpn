@@ -505,7 +505,12 @@ int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
 */
 
 int vrpn_unbuffer (const char ** buffer, char * cval) {
-  *cval = detail::unbuffer<char>(*buffer);
+  *cval = vrpn_unbuffer<char>(*buffer);
+  return 0;
+}
+
+int vrpn_unbuffer (const vrpn_uint8 ** buffer, char * cval) {
+  *cval = vrpn_unbuffer<char>(*buffer);
   return 0;
 }
 
@@ -523,7 +528,12 @@ int vrpn_unbuffer (const char ** buffer, char * cval) {
 
 int vrpn_unbuffer (const char ** buffer, vrpn_int16 * lval)
 {
-    *lval = detail::unbuffer<vrpn_int16>(*buffer);
+    *lval = vrpn_unbuffer<vrpn_int16>(*buffer);
+    return 0;
+}
+int vrpn_unbuffer (const vrpn_uint8 ** buffer, vrpn_int16 * lval)
+{
+    *lval = vrpn_unbuffer<vrpn_int16>(*buffer);
     return 0;
 }
 
@@ -541,7 +551,13 @@ int vrpn_unbuffer (const char ** buffer, vrpn_int16 * lval)
 
 int vrpn_unbuffer (const char ** buffer, vrpn_uint16 * lval)
 {
-    *lval = detail::unbuffer<vrpn_uint16>(*buffer);
+    *lval = vrpn_unbuffer<vrpn_uint16>(*buffer);
+    return 0;
+}
+
+int vrpn_unbuffer (const vrpn_uint8 ** buffer, vrpn_uint16 * lval)
+{
+    *lval = vrpn_unbuffer<vrpn_uint16>(*buffer);
     return 0;
 }
 
@@ -559,7 +575,13 @@ int vrpn_unbuffer (const char ** buffer, vrpn_uint16 * lval)
 
 int vrpn_unbuffer (const char ** buffer, vrpn_int32 * lval)
 {
-    *lval = detail::unbuffer<vrpn_int32>(*buffer);
+    *lval = vrpn_unbuffer<vrpn_int32>(*buffer);
+    return 0;
+}
+
+int vrpn_unbuffer (const vrpn_uint8 ** buffer, vrpn_int32 * lval)
+{
+    *lval = vrpn_unbuffer<vrpn_int32>(*buffer);
     return 0;
 }
 
@@ -577,7 +599,13 @@ int vrpn_unbuffer (const char ** buffer, vrpn_int32 * lval)
 
 int vrpn_unbuffer (const char ** buffer, vrpn_uint32 * lval)
 {
-    *lval = detail::unbuffer<vrpn_uint32>(*buffer);
+    *lval = vrpn_unbuffer<vrpn_uint32>(*buffer);
+    return 0;
+}
+
+int vrpn_unbuffer (const vrpn_uint8 ** buffer, vrpn_uint32 * lval)
+{
+    *lval = vrpn_unbuffer<vrpn_uint32>(*buffer);
     return 0;
 }
 
@@ -595,7 +623,13 @@ int vrpn_unbuffer (const char ** buffer, vrpn_uint32 * lval)
 
 int vrpn_unbuffer (const char ** buffer, vrpn_float32 * fval)
 {
-    *fval = detail::unbuffer<vrpn_float32>(*buffer);
+    *fval = vrpn_unbuffer<vrpn_float32>(*buffer);
+    return 0;
+}
+
+int vrpn_unbuffer (const vrpn_uint8 ** buffer, vrpn_float32 * fval)
+{
+    *fval = vrpn_unbuffer<vrpn_float32>(*buffer);
     return 0;
 }
 
@@ -615,7 +649,13 @@ int vrpn_unbuffer (const char ** buffer, vrpn_float32 * fval)
 #endif
 int vrpn_unbuffer (const char ** buffer, vrpn_float64 * dval)
 {
-    *dval = detail::unbuffer<vrpn_float64>(*buffer);
+    *dval = vrpn_unbuffer<vrpn_float64>(*buffer);
+    return 0;
+}
+
+int vrpn_unbuffer (const vrpn_uint8 ** buffer, vrpn_float64 * dval)
+{
+    *dval = vrpn_unbuffer<vrpn_float64>(*buffer);
     return 0;
 }
 
@@ -632,6 +672,19 @@ int vrpn_unbuffer (const char ** buffer, vrpn_float64 * dval)
 */
 
 int vrpn_unbuffer (const char ** buffer, timeval * t)
+{
+    vrpn_int32 sec, usec;
+
+    CHECK(vrpn_unbuffer(buffer, &sec));
+    CHECK(vrpn_unbuffer(buffer, &usec));
+
+    t->tv_sec = sec;
+    t->tv_usec = usec;
+
+    return 0;
+}
+
+int vrpn_unbuffer (const vrpn_uint8 ** buffer, timeval * t)
 {
     vrpn_int32 sec, usec;
 
@@ -679,6 +732,38 @@ int vrpn_unbuffer (const char ** buffer, char * string,
 
     return 0;
 }
+
+/*
+int vrpn_unbuffer_from_little_endian (const vrpn_uint8 ** buffer, vrpn_int16 * lval) {
+    *lval = vrpn_unbuffer_from_little_endian<vrpn_int16>(*buffer);
+    return 0;
+}
+
+int vrpn_unbuffer_from_little_endian (const vrpn_uint8 ** buffer, vrpn_uint16 * lval) {
+    *lval = vrpn_unbuffer_from_little_endian<vrpn_uint16>(*buffer);
+    return 0;
+}
+
+int vrpn_unbuffer_from_little_endian (const vrpn_uint8 ** buffer, vrpn_int32 * lval) {
+    *lval = vrpn_unbuffer_from_little_endian<vrpn_int32>(*buffer);
+    return 0;
+}
+
+int vrpn_unbuffer_from_little_endian (const vrpn_uint8 ** buffer, vrpn_uint32 * lval) {
+    *lval = vrpn_unbuffer_from_little_endian<vrpn_uint32>(*buffer);
+    return 0;
+}
+
+int vrpn_unbuffer_from_little_endian (const vrpn_uint8 ** buffer, vrpn_float32 * lval) {
+    *lval = vrpn_unbuffer_from_little_endian<vrpn_float32>(*buffer);
+    return 0;
+}
+
+int vrpn_unbuffer_from_little_endian (const vrpn_uint8 ** buffer, vrpn_float64 * lval) {
+    *lval = vrpn_unbuffer_from_little_endian<vrpn_float64>(*buffer);
+    return 0;
+}
+*/
 
 ///////////////////////////////////////////////////////////////
 // More accurate gettimeofday() on some Windows operating systems

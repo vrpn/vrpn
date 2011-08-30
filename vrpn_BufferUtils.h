@@ -1,5 +1,5 @@
 /** @file
-	@brief Header
+	@brief Internal header providing unbuffering facilities for a number of types.
 
 	@date 2011
 
@@ -130,55 +130,62 @@ namespace detail {
 	struct remove_const<const T> {
 		typedef T type;
 	};
+} // end of namespace detail
 
-	template<typename T, typename ByteT>
-	static inline T unbufferLittleEndian(ByteT * & input) {
-		using namespace vrpn_byte_order;
+/// Function template to unbuffer values from a buffer stored in network
+/// byte order. Specify the type to extract T as a template parameter.
+/// The templated buffer type ByteT will be deduced automatically.
+/// The input pointer will be advanced past the unbuffered value.
+template<typename T, typename ByteT>
+static inline T vrpn_unbuffer_from_little_endian(ByteT * & input) {
+	using namespace vrpn_byte_order;
 
-		/// @todo make this a static assertion
-		assert(sizeof(ByteT) == 1);
+	/// @todo make this a static assertion
+	assert(sizeof(ByteT) == 1);
 
-		/// Union to allow type-punning
-		union {
-			typename remove_const<ByteT>::type bytes[sizeof(T)];
-			T value;
-		};
+	/// Union to allow type-punning
+	union {
+		typename ::detail::remove_const<ByteT>::type bytes[sizeof(T)];
+		T value;
+	};
 
-		/// Swap known little-endian into big-endian (aka network byte order)
-		for (int i = 0, j = sizeof(T) - 1; i < sizeof(T); ++i, --j) {
-			bytes[i] = input[j];
-		}
-
-		/// Advance input pointer
-		input += sizeof(T);
-
-		/// return value in host byte order
-		return ntoh(value);
+	/// Swap known little-endian into big-endian (aka network byte order)
+	for (int i = 0, j = sizeof(T) - 1; i < sizeof(T); ++i, --j) {
+		bytes[i] = input[j];
 	}
 
+	/// Advance input pointer
+	input += sizeof(T);
 
-	template<typename T, typename ByteT>
-	static inline T unbuffer(ByteT * & input) {
-		using namespace vrpn_byte_order;
+	/// return value in host byte order
+	return ntoh(value);
+}
 
-		/// @todo make this a static assertion
-		assert(sizeof(ByteT) == 1);
+/// Function template to unbuffer values from a buffer stored in network
+/// byte order. Specify the type to extract T as a template parameter.
+/// The templated buffer type ByteT will be deduced automatically.
+/// The input pointer will be advanced past the unbuffered value.
+template<typename T, typename ByteT>
+inline T vrpn_unbuffer(ByteT * & input) {
+	using namespace vrpn_byte_order;
 
-		/// Union to allow type-punning and ensure alignment
-		union {
-			typename remove_const<ByteT>::type bytes[sizeof(T)];
-			T value;
-		};
+	/// @todo make this a static assertion
+	assert(sizeof(ByteT) == 1);
 
-		/// Copy bytes into union
-		std::memcpy(bytes, input, sizeof(T));
+	/// Union to allow type-punning and ensure alignment
+	union {
+		typename ::detail::remove_const<ByteT>::type bytes[sizeof(T)];
+		T value;
+	};
 
-		/// Advance input pointer
-		input += sizeof(T);
+	/// Copy bytes into union
+	std::memcpy(bytes, input, sizeof(T));
 
-		/// return value in host byte order
-		return ntoh(value);
-	}
+	/// Advance input pointer
+	input += sizeof(T);
+
+	/// return value in host byte order
+	return ntoh(value);
 }
 
 #endif // INCLUDED_vrpn_BufferUtils_h_GUID_6a741cf1_9fa4_4064_8af0_fa0c6a16c810
