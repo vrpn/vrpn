@@ -22,6 +22,8 @@
 #include "vrpn_Tracker.h"
 #include "vrpn_3Space.h"
 #include "vrpn_Serial.h"
+#include "vrpn_BufferUtils.h"
+#include "quat.h"
 
 // This constant turns the tracker binary values in the range -32768 to
 // 32768 to meters.
@@ -246,18 +248,19 @@ int vrpn_Tracker_3Space::get_report(void)
 	d_sensor = decode[1] - '1';
 
 	// Position
-	for (i=0; i<3; i++) {
-		pos[i] = (* (short*)(&decode[3+2*i])) * T_3_BINARY_TO_METERS;
-	}
+	unsigned char * unbufPtr = &decode[3];
+	pos[0] = vrpn_unbuffer_from_little_endian<vrpn_int16>(unbufPtr) * T_3_BINARY_TO_METERS;
+	pos[1] = vrpn_unbuffer_from_little_endian<vrpn_int16>(unbufPtr) * T_3_BINARY_TO_METERS;
+	pos[2] = vrpn_unbuffer_from_little_endian<vrpn_int16>(unbufPtr) * T_3_BINARY_TO_METERS;
 
 	// Quarternion orientation.  The 3Space gives quaternions
 	// as w,x,y,z while the VR code handles them as x,y,z,w,
 	// so we need to switch the order when decoding.  Also the
 	// tracker does not normalize the quaternions.
-	d_quat[3] = (* (short*)(&decode[9]));
-	for (i=0; i<3; i++) {
-		d_quat[i] = (* (short*)(&decode[11+2*i]));
-	}
+	d_quat[Q_W] = vrpn_unbuffer_from_little_endian<vrpn_int16>(unbufPtr);
+	d_quat[Q_X] = vrpn_unbuffer_from_little_endian<vrpn_int16>(unbufPtr);
+	d_quat[Q_Y] = vrpn_unbuffer_from_little_endian<vrpn_int16>(unbufPtr);
+	d_quat[Q_Z] = vrpn_unbuffer_from_little_endian<vrpn_int16>(unbufPtr);
 
 	//Normalize quaternion
 	double norm = sqrt (  d_quat[0]*d_quat[0] + d_quat[1]*d_quat[1]
