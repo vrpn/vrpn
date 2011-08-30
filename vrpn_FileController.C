@@ -8,6 +8,8 @@
 #include <netinet/in.h>
 #endif
 
+#include "vrpn_BufferUtils.h"
+
 vrpn_File_Controller::vrpn_File_Controller (vrpn_Connection * c) :
     d_connection (c) {
 
@@ -31,12 +33,17 @@ vrpn_File_Controller::~vrpn_File_Controller (void) {
 void vrpn_File_Controller::set_replay_rate (vrpn_float32 rate) {
   struct timeval now;
 
-  vrpn_float32 temp = rate;
-  vrpn_int32 netValue = htonl(*(vrpn_int32 *) &temp);
+  char buf[sizeof(vrpn_float32)];
 
+  vrpn_int32 bufLen = sizeof(vrpn_float32);
+  char * bufPtr = buf;
+
+  if (vrpn_buffer(&bufPtr, &bufLen, rate)) {
+      return;
+  }
   vrpn_gettimeofday(&now, NULL);
-  d_connection->pack_message(sizeof(netValue), now,
-                d_set_replay_rate_type, d_myId, (const char *) &netValue,
+  d_connection->pack_message(sizeof(vrpn_float32), now,
+                d_set_replay_rate_type, d_myId, buf,
                 vrpn_CONNECTION_RELIABLE);  // | vrpn_CONNECTION_LOCAL_ONLY
 };
 
