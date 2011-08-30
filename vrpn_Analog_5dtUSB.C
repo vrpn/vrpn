@@ -12,6 +12,7 @@
 */
 
 #include "vrpn_Analog_5dtUSB.h"
+#include "vrpn_BufferUtils.h"
 
 #include <iostream>
 #include <sstream>
@@ -109,11 +110,9 @@ void vrpn_Analog_5dtUSB::on_data_received(size_t bytes, vrpn_uint8 *buffer) {
 
 	// Decode all full reports.
 	const float scale = static_cast<float>(1.0 / 4096.0);
+	vrpn_uint8 * bufptr = buffer;
 	for (size_t i = 0; i < 16; i++) {
-		const char *report = static_cast<char *>(static_cast<void*>(buffer + (i * 2)));
-		vrpn_int16 temp;
-		vrpn_unbuffer(&report, &temp);
-		_rawVals[i] = temp * scale;
+		_rawVals[i] = vrpn_unbuffer<vrpn_int16>(bufptr) * scale;
 	}
 
 	switch (vrpn_Analog::num_channel) {
