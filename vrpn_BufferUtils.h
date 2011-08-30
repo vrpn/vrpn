@@ -191,7 +191,7 @@ inline T vrpn_unbuffer(ByteT * & input) {
 namespace templated_unbuffer {
 	template<typename T, typename ByteT>
 	inline int vrpn_unbuffer(ByteT ** input, T * lvalue) {
-		*lvalue = vrpn_unbuffer<T>(*input);
+		*lvalue = ::vrpn_unbuffer<T, ByteT>(*input);
 		return 0;
 	}
 } // end of namespace templated_unbuffer
