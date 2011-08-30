@@ -23,6 +23,8 @@
 #include <netinet/in.h>
 #endif
 
+#include "vrpn_BufferUtils.h"
+
 // Global variable used to indicate whether File Connections should
 // pre-load all of their records into memory when opened.  This is the
 // default behavior, but fails on very large files that eat up all
@@ -1203,8 +1205,8 @@ int vrpn_File_Connection::handle_set_replay_rate(
 {
     vrpn_File_Connection * me = (vrpn_File_Connection *) userdata;
 
-    vrpn_int32 value = ntohl(*(vrpn_int32 *) (p.buffer));
-    me->set_replay_rate(*((vrpn_float32 *) &value));
+    const char * bufPtr = p.buffer;
+    me->set_replay_rate(vrpn_unbuffer<vrpn_float32>(bufPtr));
 
     return 0;
 }
