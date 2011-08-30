@@ -237,19 +237,7 @@ vrpn_float64 ntohd (vrpn_float64 d)
 
 int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_int16 value)
 {
-    vrpn_int16 netValue = htons(value);
-    const int length = sizeof(netValue);
-
-    if (length > *buflen) {
-        fprintf(stderr, "vrpn_buffer: buffer not large enough\n");
-        return -1;
-    }
-
-    memcpy(*insertPt, &netValue, length);
-    *insertPt += length;
-    *buflen -= length;
-
-    return 0;
+    return templated_buffer::vrpn_buffer(insertPt, buflen, value);
 }
 
 /** Utility routine for placing a vrpn_uint16 into a buffer that
@@ -267,19 +255,7 @@ int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_int16 value)
 
 int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_uint16 value)
 {
-    vrpn_uint16 netValue = htons(value);
-    const int length = sizeof(netValue);
-
-    if (length > *buflen) {
-        fprintf(stderr, "vrpn_buffer: buffer not large enough\n");
-        return -1;
-    }
-
-    memcpy(*insertPt, &netValue, length);
-    *insertPt += length;
-    *buflen -= length;
-
-    return 0;
+    return templated_buffer::vrpn_buffer(insertPt, buflen, value);
 }
 
 /** Utility routine for placing a vrpn_int32 into a buffer that
@@ -297,19 +273,7 @@ int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_uint16 value)
 
 int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_int32 value)
 {
-    vrpn_int32 netValue = htonl(value);
-    const int length = sizeof(netValue);
-
-    if (length > *buflen) {
-        fprintf(stderr, "vrpn_buffer: buffer not large enough\n");
-        return -1;
-    }
-
-    memcpy(*insertPt, &netValue, length);
-    *insertPt += length;
-    *buflen -= length;
-
-    return 0;
+    return templated_buffer::vrpn_buffer(insertPt, buflen, value);
 }
 
 /** Utility routine for placing a vrpn_uint32 into a buffer that
@@ -327,19 +291,7 @@ int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const vrpn_int32 value)
 
 int vrpn_buffer(char ** insertPt, vrpn_int32 * buflen, const vrpn_uint32 value)
 {
-    vrpn_uint32 netValue = htonl(value);
-    const int length = sizeof(netValue);
-
-    if (length > *buflen) {
-        fprintf(stderr, "vrpn_buffer: buffer not large enough\n");
-        return -1;
-    }
-
-    memcpy(*insertPt, &netValue, length);
-    *insertPt += length;
-    *buflen -= length;
-
-    return 0;
+    return templated_buffer::vrpn_buffer(insertPt, buflen, value);
 }
 
 /** Utility routine for placing a character into a buffer that
@@ -357,18 +309,7 @@ int vrpn_buffer(char ** insertPt, vrpn_int32 * buflen, const vrpn_uint32 value)
 
 int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const char value)
 {
-  const vrpn_int32 length = sizeof(char);
-
-  if (*buflen < length) {
-    fprintf(stderr, "vrpn_buffer:  buffer not large enough.\n");
-    return -1;
-  }
-
-  **insertPt = value;
-  *insertPt += length;
-  *buflen -= length;
-
-  return 0;
+    return templated_buffer::vrpn_buffer(insertPt, buflen, value);
 }
 
 /** Utility routine for placing a vrpn_float32 into a buffer that
@@ -387,8 +328,7 @@ int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const char value)
 int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
                   const vrpn_float32 value)
 {
-    vrpn_int32 longval = *((vrpn_int32 *)&value);
-    return vrpn_buffer(insertPt, buflen, longval);
+    return templated_buffer::vrpn_buffer(insertPt, buflen, value);
 }
 
 /** Utility routine for placing a vrpn_float64 into a buffer that
@@ -407,19 +347,7 @@ int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
 int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
                   const vrpn_float64 value)
 {
-    vrpn_float64 netValue = htond(value);
-    const vrpn_int32 length = sizeof(netValue);
-
-    if (length > *buflen) {
-        fprintf(stderr, "vrpn_buffer: buffer not large enough\n");
-        return -1;
-    }
-
-    memcpy(*insertPt, &netValue, length);
-    *insertPt += length;
-    *buflen -= length;
-
-    return 0;
+    return templated_buffer::vrpn_buffer(insertPt, buflen, value);
 }
 
 /** Utility routine for placing a timeval struct into a buffer that
