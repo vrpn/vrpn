@@ -228,7 +228,7 @@ void vrpn_3DConnexion::decodePacket(size_t bytes, vrpn_uint8 *buffer)
     // this is.
     char  report_type = report[0];
     vrpn_uint8 *bufptr = &report[1];
-    const float scale = static_cast<float>(1.0/400.0);
+    const float scale = 1.0f/400.0f;
     switch (report_type)  {
       // Report types 1 and 2 come one after the other.  Each seems
       // to change when the puck is moved.  It looks like each pair
