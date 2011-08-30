@@ -37,6 +37,22 @@
 /// @brief Contains overloaded hton() and ntoh() functions that forward
 /// to their correctly-typed implementations.
 namespace vrpn_byte_order {
+	namespace detail {
+		/// Traits class to get the uint type of a given size
+		template<int TypeSize>
+		struct uint_traits;
+
+		template<> struct uint_traits<1> {
+			typedef vrpn_uint8 type;
+		};
+		template<> struct uint_traits<2> {
+			typedef vrpn_uint16 type;
+		};
+		template<> struct uint_traits<4> {
+			typedef vrpn_uint32 type;
+		};
+	}
+
 	/// host to network byte order for 8-bit uints is a no-op
 	inline vrpn_uint8 hton(vrpn_uint8 hostval) {
 		return hostval;
@@ -95,6 +111,32 @@ namespace vrpn_byte_order {
 	/// network to host byte order for 64-bit floats, using vrpn ntohd
 	inline vrpn_float64 ntoh(vrpn_float64 netval) {
 		return ntohd(netval);
+	}
+
+	/// Templated hton that type-puns to the same-sized uint type
+	/// as a fallback for those types not explicitly defined above.
+	template<typename T>
+	inline T hton(T input) {
+		union {
+			T asInput;
+			typename detail::uint_traits<sizeof(T)>::type asInt;
+		} inVal, outVal;
+		inVal.asInput = input;
+		outVal.asInt = hton(inVal.asInt);
+		return outVal.asInput;
+	}
+
+	/// Templated ntoh that type-puns to the same-sized uint type
+	/// as a fallback for those types not explicitly defined above.
+	template<typename T>
+	inline T ntoh(T input) {
+		union {
+			T asInput;
+			typename detail::uint_traits<sizeof(T)>::type asInt;
+		} inVal, outVal;
+		inVal.asInput = input;
+		outVal.asInt = ntoh(inVal.asInt);
+		return outVal.asInput;
 	}
 }
 
