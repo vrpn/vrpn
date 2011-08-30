@@ -120,6 +120,49 @@ void vrpn_Generic_Server_Object::closeDevices (void)
   }
 }
 
+template<typename T>
+inline int vrpn_Generic_Server_Object::templated_setup_device_name_only(char * &pch, char * line, FILE *) {
+  char s2 [LINESIZE];
+
+  VRPN_CONFIG_NEXT();
+  if (sscanf (pch, "%511s", s2) != 1) {
+    fprintf (stderr, "Bad line: %s\n", line);
+    return -1;
+  }
+  T * device = new T(s2, connection);
+  if (device == NULL) {
+    fprintf (stderr, "Can't create new device from line %s\n", line);
+    return -1;
+  }
+  _devices->add(device);
+
+  return 0;  // successful completion
+}
+
+template<typename T>
+inline int vrpn_Generic_Server_Object::templated_setup_HID_device_name_only(char * &pch, char * line, FILE *) {
+  char s2 [LINESIZE];
+
+  VRPN_CONFIG_NEXT();
+  if (sscanf (pch, "%511s", s2) != 1) {
+    fprintf (stderr, "Bad line: %s\n", line);
+    return -1;
+  }
+#ifdef VRPN_USE_HID
+  T * device = new T(s2, connection);
+  if (device == NULL) {
+    fprintf (stderr, "Can't create new device from line %s\n", line);
+    return -1;
+  }
+  _devices->add(device);
+
+  return 0;  // successful completion
+#else
+  fprintf (stderr, "HID support required for device requested by line %s:\n", line);
+  return -1;
+#endif
+}
+
 // setup_raw_SGIBox
 // uses globals:  num_sgiboxes, sgiboxes[], verbose
 // imports from main:  pch
