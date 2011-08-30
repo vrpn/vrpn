@@ -7,6 +7,7 @@
 #include <linux/input.h>
 #endif
 
+#include "vrpn_BufferUtils.h"
 #include "vrpn_3DConnexion.h"
 #include <fcntl.h>
 #include <stdio.h>
@@ -209,17 +210,6 @@ int vrpn_3DConnexion::set_led(int led_state)
 #endif
 
 #if defined(VRPN_USE_HID)
-// Swap the endian-ness of the 2-byte entry in the buffer.
-// This is used to make the little-endian int 16 values
-// returned by the device into the big-endian format that is
-// expected by the VRPN unbuffer routines.
-
-static void swap_endian2(char *buffer)
-{
-	char c;
-	c = buffer[0]; buffer[0] = buffer[1]; buffer[1] = c;
-}
-
 void vrpn_3DConnexion::decodePacket(size_t bytes, vrpn_uint8 *buffer)
 {
 #if defined(__APPLE__)
@@ -237,8 +227,7 @@ void vrpn_3DConnexion::decodePacket(size_t bytes, vrpn_uint8 *buffer)
     // There are three types of reports.  Parse whichever type
     // this is.
     char  report_type = report[0];
-    char *bufptr = static_cast<char *>(static_cast<void*>(&report[1]));
-    vrpn_int16 temp;
+    vrpn_uint8 *bufptr = &report[1];
     const float scale = static_cast<float>(1.0/400.0);
     switch (report_type)  {
       // Report types 1 and 2 come one after the other.  Each seems
@@ -251,31 +240,25 @@ void vrpn_3DConnexion::decodePacket(size_t bytes, vrpn_uint8 *buffer)
       // The first byte is the low-order byte and the second is the
       // high-order byte.
       case 1:
-        swap_endian2(bufptr); vrpn_unbuffer(const_cast<const char **>(&bufptr), &temp);
-        channel[0] = temp * scale;
+        channel[0] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
         if (channel[0] < -1.0) { channel[0] = -1.0; }
         if (channel[0] > 1.0) { channel[0] = 1.0; }
-        swap_endian2(bufptr); vrpn_unbuffer(const_cast<const char **>(&bufptr), &temp);
-        channel[1] = temp * scale;
+        channel[1] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
         if (channel[1] < -1.0) { channel[1] = -1.0; }
         if (channel[1] > 1.0) { channel[1] = 1.0; }
-        swap_endian2(bufptr); vrpn_unbuffer(const_cast<const char **>(&bufptr), &temp);
-        channel[2] = temp * scale;
+        channel[2] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
         if (channel[2] < -1.0) { channel[2] = -1.0; }
         if (channel[2] > 1.0) { channel[2] = 1.0; }
         break;
 
       case 2:
-        swap_endian2(bufptr); vrpn_unbuffer(const_cast<const char **>(&bufptr), &temp);
-        channel[3] = temp * scale;
+        channel[3] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
         if (channel[3] < -1.0) { channel[3] = -1.0; }
         if (channel[3] > 1.0) { channel[3] = 1.0; }
-        swap_endian2(bufptr); vrpn_unbuffer(const_cast<const char **>(&bufptr), &temp);
-        channel[4] = temp * scale;
+        channel[4] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
         if (channel[4] < -1.0) { channel[4] = -1.0; }
         if (channel[4] > 1.0) { channel[4] = 1.0; }
-        swap_endian2(bufptr); vrpn_unbuffer(const_cast<const char **>(&bufptr), &temp);
-        channel[5] = temp * scale;
+        channel[5] = vrpn_unbuffer_from_little_endian<vrpn_int16>(bufptr) * scale;
         if (channel[5] < -1.0) { channel[5] = -1.0; }
         if (channel[5] > 1.0) { channel[5] = 1.0; }
         break;
