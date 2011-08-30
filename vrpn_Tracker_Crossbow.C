@@ -5,6 +5,7 @@
 #include "vrpn_Tracker_Crossbow.h"
 #include "vrpn_Serial.h"
 #include "quat.h"
+#include "vrpn_BufferUtils.h"
 
 // Conversion multiplier from degrees to radians (Pi radians per 180 degrees)
 #define DEGREES_TO_RADIANS (3.1415926535897 / 180)
@@ -25,7 +26,8 @@ vrpn_Tracker_Crossbow::~vrpn_Tracker_Crossbow() {
 }
 
 // Retrieves a raw_packet from an incoming byte array, and even flips endianness as necessary.
-void vrpn_Tracker_Crossbow::unbuffer_packet(raw_packet &dest, const char *buffer) {
+void vrpn_Tracker_Crossbow::unbuffer_packet(raw_packet &dest, unsigned char *buffer) {
+	using namespace templated_unbuffer;
 	vrpn_unbuffer(&buffer, &dest.header);
 	vrpn_unbuffer(&buffer, &dest.roll_angle);
 	vrpn_unbuffer(&buffer, &dest.pitch_angle);
@@ -128,7 +130,7 @@ int vrpn_Tracker_Crossbow::get_report() {
 				return 0;
 
 			raw_packet new_data;
-			unbuffer_packet(new_data, reinterpret_cast<const char*>(&buffer[0]));
+			unbuffer_packet(new_data, &buffer[0]);
 
 			// Ensure the packet is valid
 			if (validate_packet(new_data)) {
