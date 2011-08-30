@@ -387,8 +387,7 @@ int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen, const char value)
 int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
                   const vrpn_float32 value)
 {
-    vrpn_int32 longval = *((vrpn_int32 *)&value);
-    return vrpn_buffer(insertPt, buflen, longval);
+    return templated_buffer::vrpn_buffer(insertPt, buflen, value);
 }
 
 /** Utility routine for placing a vrpn_float64 into a buffer that
