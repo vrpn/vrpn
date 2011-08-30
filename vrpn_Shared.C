@@ -93,10 +93,10 @@ timeval vrpn_TimevalSum( const timeval& tv1, const timeval& tv2 )
 timeval vrpn_TimevalDiff( const timeval& tv1, const timeval& tv2 )
 {
     timeval tv;
-    
+
     tv.tv_sec = -tv2.tv_sec;
     tv.tv_usec = -tv2.tv_usec;
-    
+
     return vrpn_TimevalSum( tv1, tv );
 }
 
@@ -163,7 +163,7 @@ void vrpn_SleepMsecs( double dMsecs )
 
     // Convert remaining milliseconds to microsec
     timeout.tv_usec = (int)(dMsecs * 1000);
-    
+
     // A select() with NULL file descriptors acts like a microsecond
     // timer.
     select(0, 0, 0, 0, & timeout);  // wait for that long;
@@ -472,7 +472,7 @@ int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
 	fprintf(stderr, "vrpn_buffer:  buffer not long enough for string.\n");
 	return -1;
     }
-    
+
     if (length == -1) {
 	size_t len = strlen(string)+1;	// +1 for the NULL terminating character
 	if (len > (unsigned)*buflen) {
@@ -487,7 +487,7 @@ int vrpn_buffer (char ** insertPt, vrpn_int32 * buflen,
 	*insertPt += length;
 	*buflen -= length;
     }
-    
+
     return 0;
 }
 
@@ -771,7 +771,7 @@ int vrpn_gettimeofday(timeval *tp, void *voidp)
 // call, Cygnus Solutions Cygwin32 environment does.
 // XXX AND ITS WRONG in the current release 10/11/99, version b20.1
 // They claim it will be fixed in the next release, version b21
-// so until then, we will make it right using our solution. 
+// so until then, we will make it right using our solution.
 #if defined(_WIN32) && !defined(__CYGWIN__)
 #include <math.h>
 
@@ -835,7 +835,7 @@ static int vrpn_AdjustFrequency(void)
     rdtsc( liEnd );
     QueryPerformanceCounter( &endperf );
 
-    double freq = perffreq.QuadPart * (liEnd.QuadPart - liStart.QuadPart) / 
+    double freq = perffreq.QuadPart * (liEnd.QuadPart - liStart.QuadPart) /
         ((double)(endperf.QuadPart - startperf.QuadPart));
 
     if (fabs(perffreq.QuadPart - freq) < 0.05*freq) {
@@ -844,7 +844,7 @@ static int vrpn_AdjustFrequency(void)
         SetPriorityClass( GetCurrentProcess() , dwPriorityClass );
         SetThreadPriority( GetCurrentThread(), iThreadPriority );
         return 0;
-    } 
+    }
 
     // either tcs and perf clock are not the same, or we could not
     // tell accurately enough with the short test. either way we now
@@ -866,21 +866,21 @@ static int vrpn_AdjustFrequency(void)
         // endperf - startperf / perf freq = time between perf queries
         // endtsc - starttsc = clock ticks between perf queries
         //    sum += (endtsc - starttsc) / ((double)(endperf - startperf)/perffreq);
-        sum += perffreq.QuadPart * (liEnd.QuadPart - liStart.QuadPart) / 
+        sum += perffreq.QuadPart * (liEnd.QuadPart - liStart.QuadPart) /
             ((double)(endperf.QuadPart - startperf.QuadPart));
     }
-  
+
     SetPriorityClass( GetCurrentProcess() , dwPriorityClass );
     SetThreadPriority( GetCurrentThread(), iThreadPriority );
 
     // might want last, not sum -- just get into cache and run
     freq = (sum/loops);
-  
+
     // if we are on a uniprocessor system, then use the freq estimate
-    // This used to check against a 200 mhz assumed clock, but now 
+    // This used to check against a 200 mhz assumed clock, but now
     // we assume the routine works and trust the result.
     //  if (fabs(freq - VRPN_CLOCK_FREQ) > 0.05 * VRPN_CLOCK_FREQ) {
-    //    cerr << "vrpn vrpn_gettimeofday: measured freq is " << freq/1e6 
+    //    cerr << "vrpn vrpn_gettimeofday: measured freq is " << freq/1e6
     //	 << " MHz - DOES NOT MATCH" << endl;
     //    return -1;
     //  }
@@ -901,7 +901,7 @@ static int vrpn_AdjustFrequency(void)
 #endif
 
 // The pc has no gettimeofday call, and the closest thing to it is _ftime.
-// _ftime, however, has only about 6 ms resolution, so we use the peformance 
+// _ftime, however, has only about 6 ms resolution, so we use the peformance
 // as an offset from a base time which is established by a call to by _ftime.
 
 // The first call to vrpn_gettimeofday will establish a new time frame
@@ -915,8 +915,8 @@ static int vrpn_AdjustFrequency(void)
 // so this is not used when compiling with gcc under WIN32
 
 // XXX AND ITS WRONG in the current release 10/11/99
-// They claim it will be fixed in the next release, 
-// so until then, we will make it right using our solution. 
+// They claim it will be fixed in the next release,
+// so until then, we will make it right using our solution.
 ///////////////////////////////////////////////////////////////
 #ifndef	VRPN_WINDOWS_CLOCK_V2
 int vrpn_gettimeofday(timeval *tp, void *voidp)
@@ -944,7 +944,7 @@ int vrpn_gettimeofday(timeval *tp, void *voidp)
         tp->tv_sec  = tbInit.time;
         tp->tv_usec = tbInit.millitm*1000;
         return 0;
-    } 
+    }
 
     if (fFirst) {
         LARGE_INTEGER liTemp;
@@ -964,7 +964,7 @@ int vrpn_gettimeofday(timeval *tp, void *voidp)
 	    GetVersionEx(&osvi);
 
 	    if (osvi.dwPlatformId != VER_PLATFORM_WIN32_NT) {
-                fprintf(stderr, "\nvrpn_gettimeofday: disabling hi performance clock on non-NT system. " 
+                fprintf(stderr, "\nvrpn_gettimeofday: disabling hi performance clock on non-NT system. "
 	             "Defaulting to _ftime (~6 ms resolution) ...\n");
 		fHasPerfCounter=0;
 	        vrpn_gettimeofday( tp, tzp );
@@ -974,7 +974,7 @@ int vrpn_gettimeofday(timeval *tp, void *voidp)
 
         // check that hi-perf clock is available
         if ( !(fHasPerfCounter = QueryPerformanceFrequency( &liTemp )) ) {
-            fprintf(stderr, "\nvrpn_gettimeofday: no hi performance clock available. " 
+            fprintf(stderr, "\nvrpn_gettimeofday: no hi performance clock available. "
                  "Defaulting to _ftime (~6 ms resolution) ...\n");
             fHasPerfCounter=0;
             vrpn_gettimeofday( tp, tzp );
@@ -982,7 +982,7 @@ int vrpn_gettimeofday(timeval *tp, void *voidp)
         }
 
         if (vrpn_AdjustFrequency()<0) {
-            fprintf(stderr, "\nvrpn_gettimeofday: can't verify clock frequency. " 
+            fprintf(stderr, "\nvrpn_gettimeofday: can't verify clock frequency. "
                  "Defaulting to _ftime (~6 ms resolution) ...\n");
             fHasPerfCounter=0;
             vrpn_gettimeofday( tp, tzp );
@@ -996,7 +996,7 @@ int vrpn_gettimeofday(timeval *tp, void *voidp)
 
         // we now consider it to be exactly the time _ftime returned
         // (beyond the resolution of _ftime, down to the perfCounter res)
-    } 
+    }
 
     // now do the regular get time call to get the current time
     rdtsc( liNow );
@@ -1008,15 +1008,15 @@ int vrpn_gettimeofday(timeval *tp, void *voidp)
     tvDiff.tv_usec = (long)(1e6*((liDiff.QuadPart-VRPN_CLOCK_FREQ
                                   *tvDiff.tv_sec)
                                  / (double) VRPN_CLOCK_FREQ) );
-    
+
     // pack the value and clean it up
     tp->tv_sec  = tbInit.time + tvDiff.tv_sec;
-    tp->tv_usec = tbInit.millitm*1000 + tvDiff.tv_usec;  
+    tp->tv_usec = tbInit.millitm*1000 + tvDiff.tv_usec;
     while (tp->tv_usec >= 1000000) {
         tp->tv_sec++;
         tp->tv_usec -= 1000000;
     }
-  
+
     return 0;
 }
 #else //defined(VRPN_WINDOWS_CLOCK_V2)
@@ -1031,7 +1031,7 @@ void get_time_using_GetLocalTime(unsigned long &sec, unsigned long &usec)
     LARGE_INTEGER   tics;   // ftime stored into a 64-bit quantity
     LARGE_INTEGER perf_counter;
 
-    // The first_count value will be zero only the first time through; we 
+    // The first_count value will be zero only the first time through; we
     // rely on this to set up the structures needed to interpret the data
     // that we get from querying the performance counter.
     if (first_count.QuadPart == 0) {
@@ -1135,7 +1135,7 @@ static int __iTrash = vrpn_gettimeofday(&__tv, (struct timezone *)NULL);
 #define ALL_ASSERT(exp, msg) if(!(exp)){ fprintf(stderr, "\nAssertion failed! \n %s (%s, %s)\n", msg, __FILE__, __LINE__); exit(-1);}
 
 // init all fields in init()
-vrpn_Semaphore::vrpn_Semaphore( int cNumResources ) : 
+vrpn_Semaphore::vrpn_Semaphore( int cNumResources ) :
   cResources(cNumResources)
 {
   init();
@@ -1144,7 +1144,7 @@ vrpn_Semaphore::vrpn_Semaphore( int cNumResources ) :
 // create a new internal structure for the semaphore
 // (binary copy is not ok)
 // This does not copy the state of the semaphore
-vrpn_Semaphore::vrpn_Semaphore( const vrpn_Semaphore& s ) : 
+vrpn_Semaphore::vrpn_Semaphore( const vrpn_Semaphore& s ) :
   cResources(s.cResources)
 {
   init();
@@ -1163,7 +1163,7 @@ bool vrpn_Semaphore::init() {
       fprintf(stderr,"vrpn_Semaphore::vrpn_Semaphore: error allocating lock from arena.\n");
       return false;
     }
-  } else {    
+  } else {
     fUsingLock=false;
     l=NULL;
     if ((ps = usnewsema(vrpn_Semaphore::ppaArena, cResources)) == NULL) {
@@ -1182,11 +1182,11 @@ bool vrpn_Semaphore::init() {
   if (!hSemaphore) {
     // get error info from windows (from FormatMessage help page)
     LPVOID lpMsgBuf;
-    
-    FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+
+    FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER |
 		   FORMAT_MESSAGE_FROM_SYSTEM,
 		   NULL,    GetLastError(),
-		   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), 
+		   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 		     // Default language
 		   (LPTSTR) &lpMsgBuf,    0,    NULL );
     fprintf(stderr,"vrpn_Semaphore::vrpn_Semaphore: error creating semaphore, "
@@ -1223,11 +1223,11 @@ bool vrpn_Semaphore::destroy() {
   if (!CloseHandle(hSemaphore)) {
     // get error info from windows (from FormatMessage help page)
     LPVOID lpMsgBuf;
-    
-    FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+
+    FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER |
 		   FORMAT_MESSAGE_FROM_SYSTEM,
 		   NULL,    GetLastError(),
-		   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), 
+		   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 		     // Default language
 		   (LPTSTR) &lpMsgBuf,    0,    NULL );
     fprintf(stderr, "vrpn_Semaphore::destroy: error destroying semaphore, "
@@ -1273,7 +1273,7 @@ bool vrpn_Semaphore::reset( int cNumResources ) {
   if (!init()) {
       fprintf(stderr, "vrpn_Semaphore::reset: error initializing semaphore.\n");
       return false;
-  }  
+  }
   return true;
 }
 
@@ -1308,11 +1308,11 @@ int vrpn_Semaphore::p() {
   case WAIT_FAILED:
     // get error info from windows (from FormatMessage help page)
     LPVOID lpMsgBuf;
-    
-    FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+
+    FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER |
 		   FORMAT_MESSAGE_FROM_SYSTEM,
 		   NULL,    GetLastError(),
-		   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), 
+		   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 		   // Default language
 		   (LPTSTR) &lpMsgBuf,    0,    NULL );
     fprintf(stderr, "vrpn_Semaphore::p: error waiting for resource, "
@@ -1353,11 +1353,11 @@ int vrpn_Semaphore::v() {
   if (!ReleaseSemaphore(hSemaphore,1,NULL)) {
     // get error info from windows (from FormatMessage help page)
     LPVOID lpMsgBuf;
-    
-    FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+
+    FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER |
 		   FORMAT_MESSAGE_FROM_SYSTEM,
 		   NULL,    GetLastError(),
-		   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), 
+		   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 		     // Default language
 		   (LPTSTR) &lpMsgBuf,    0,    NULL );
     fprintf(stderr, "vrpn_Semaphore::v: error v'ing semaphore, "
@@ -1411,11 +1411,11 @@ int vrpn_Semaphore::condP() {
   case WAIT_FAILED:
     // get error info from windows (from FormatMessage help page)
     LPVOID lpMsgBuf;
-    
-    FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+
+    FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER |
 		   FORMAT_MESSAGE_FROM_SYSTEM,
 		   NULL,    GetLastError(),
-		   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), 
+		   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 		   // Default language
 		   (LPTSTR) &lpMsgBuf,    0,    NULL );
     fprintf(stderr, "Semaphore::condP: error waiting for resource, "
@@ -1463,7 +1463,7 @@ void vrpn_Semaphore::allocArena() {
 }
 #endif
 
-vrpn_Thread::vrpn_Thread(void (*pfThread)(vrpn_ThreadData &ThreadData), 
+vrpn_Thread::vrpn_Thread(void (*pfThread)(vrpn_ThreadData &ThreadData),
 	       vrpn_ThreadData td) :
   pfThread(pfThread), td(td),
   threadID(0)
@@ -1588,9 +1588,9 @@ vrpn_Thread::~vrpn_Thread() {
 
 unsigned vrpn_Thread::number_of_processors() {
 #ifdef _WIN32
-  // Copy the hardware information to the SYSTEM_INFO structure. 
+  // Copy the hardware information to the SYSTEM_INFO structure.
   SYSTEM_INFO siSysInfo;
-  GetSystemInfo(&siSysInfo); 
+  GetSystemInfo(&siSysInfo);
   return siSysInfo.dwNumberOfProcessors;
 #elif linux
   // For Linux, we look at the /proc/cpuinfo file and count up the number
