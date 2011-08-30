@@ -359,7 +359,7 @@ vrpn_FunctionGenerator::
 const vrpn_FunctionGenerator_channel* const vrpn_FunctionGenerator::
 getChannel( vrpn_uint32 channelNum )
 {
-	if( channelNum < 0 || channelNum > vrpn_FUNCTION_CHANNELS_MAX - 1 )
+	if( channelNum > vrpn_FUNCTION_CHANNELS_MAX - 1 )
 		return NULL;
 	return channels[channelNum];
 }
