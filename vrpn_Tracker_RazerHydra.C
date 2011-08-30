@@ -158,7 +158,7 @@ void vrpn_Tracker_RazerHydra::_listening_after_connect() {
 	struct timeval now;
 	vrpn_gettimeofday(&now, NULL);
 	if (duration(now, _connected) > MAXIMUM_WAIT_USEC) {
-		TEXT_MESSAGE("device apparently not in reporting mode, attempting to change modes. Some errors are expected.", vrpn_TEXT_NORMAL);
+		TEXT_MESSAGE("device apparently not in reporting mode, attempting to change modes.", vrpn_TEXT_NORMAL);
 		_enter_motion_controller_mode();
 	}
 }
@@ -181,14 +181,10 @@ void vrpn_Tracker_RazerHydra::_enter_motion_controller_mode() {
 	_attempt++;
 
 	/// Prompt to start streaming motion data
-	TEXT_MESSAGE("Mode change attempt " << _attempt
-	             << ": Setting 'feature report 0' on Hydra. An error is likely and likely harmless.", vrpn_TEXT_NORMAL);
 	send_feature_report(HYDRA_FEATURE_REPORT_LEN, HYDRA_FEATURE_REPORT);
 
 	vrpn_uint8 buf[91] = {0};
 	buf[0] = 0;
-	TEXT_MESSAGE("Mode change attempt " << _attempt
-	             << ": Getting 'feature report 0' from Hydra. An error is likely and likely harmless.", vrpn_TEXT_NORMAL);
 	get_feature_report(91, buf);
 
 	status = HYDRA_LISTENING_AFTER_SET_FEATURE;
