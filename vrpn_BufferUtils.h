@@ -99,6 +99,15 @@ namespace vrpn_byte_order {
 }
 
 namespace detail {
+	template<typename T>
+	struct remove_const {
+		typedef T type;
+	};
+
+	template<typename T>
+	struct remove_const<const T> {
+		typedef T type;
+	};
 
 	template<typename T, typename ByteT>
 	static inline T unbufferLittleEndian(ByteT * & input) {
@@ -109,7 +118,7 @@ namespace detail {
 
 		/// Union to allow type-punning
 		union {
-			ByteT bytes[sizeof(T)];
+			typename remove_const<ByteT>::type bytes[sizeof(T)];
 			T value;
 		};
 
@@ -135,7 +144,7 @@ namespace detail {
 
 		/// Union to allow type-punning and ensure alignment
 		union {
-			ByteT bytes[sizeof(T)];
+			typename remove_const<ByteT>::type bytes[sizeof(T)];
 			T value;
 		};
 
