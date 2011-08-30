@@ -37,28 +37,32 @@
 /// @brief Contains overloaded hton() and ntoh() functions that forward
 /// to their correctly-typed implementations.
 namespace vrpn_byte_order {
-	/// hton for 8-bit ints is a no-op
+	/// host to network byte order for 8-bit uints is a no-op
 	inline vrpn_uint8 hton(vrpn_uint8 hostval) {
 		return hostval;
 	}
 
-	/// ntoh for 8-bit ints is a no-op
+	/// network to host byte order for 8-bit uints is a no-op
 	inline vrpn_uint8 ntoh(vrpn_uint8 netval) {
 		return netval;
 	}
 
+	/// host to network byte order for 16-bit uints
 	inline vrpn_uint16 hton(vrpn_uint16 hostval) {
 		return htons(hostval);
 	}
 
+	/// network to host byte order for 16-bit uints
 	inline vrpn_uint16 ntoh(vrpn_uint16 netval) {
 		return ntohs(netval);
 	}
 
+	/// host to network byte order for 32-bit uints
 	inline vrpn_uint32 hton(vrpn_uint32 hostval) {
 		return htonl(hostval);
 	}
 
+	/// network to host byte order for 32-bit uints
 	inline vrpn_uint32 ntoh(vrpn_uint32 netval) {
 		return ntohl(netval);
 	}
@@ -83,10 +87,12 @@ namespace vrpn_byte_order {
 		return outVal.asFloat;
 	}
 
+	/// host to network byte order for 64-bit floats, using vrpn htond
 	inline vrpn_float64 hton(vrpn_float64 hostval) {
 		return htond(hostval);
 	}
 
+	/// network to host byte order for 64-bit floats, using vrpn ntohd
 	inline vrpn_float64 ntoh(vrpn_float64 netval) {
 		return ntohd(netval);
 	}
