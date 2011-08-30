@@ -152,6 +152,18 @@ void vrpn_Tracker_3Space::reset()
    status = vrpn_TRACKER_SYNCING;	// We're trying for a new reading
 }
 
+static inline void decode_report(unsigned char * &buffer, unsigned char * &decode) {
+	static unsigned char mask[8] = {0x01, 0x02, 0x04, 0x08,
+					0x10, 0x20, 0x40, 0x80 };
+	for (int i=0; i<7; i++) {
+		decode[i] = buffer[i];
+		if ( (buffer[7] & mask[i]) != 0) {
+			decode[i] |= (unsigned char)(0x80);
+		}
+	}
+	decode += 7;
+	buffer += 8;
+}
 
 int vrpn_Tracker_3Space::get_report(void)
 {
@@ -203,8 +215,7 @@ int vrpn_Tracker_3Space::get_report(void)
 	unsigned char decode[17];
 	int i;
 
-	static unsigned char mask[8] = {0x01, 0x02, 0x04, 0x08,
-					0x10, 0x20, 0x40, 0x80 };
+
 	// Clear the MSB in the first byte
 	buffer[0] &= 0x7F;
 
@@ -218,29 +229,16 @@ int vrpn_Tracker_3Space::get_report(void)
 	// We decode from buffer[] into decode[] (which is 3 bytes
 	// shorter due to the removal of the bit-encoding bytes).
 
+	unsigned char * decodePtr = decode;
+	unsigned char * bufPtr = buffer;
 	// decoding from buffer[0-6] into decode[0-6]
-	for (i=0; i<7; i++) {
-		decode[i] = buffer[i];
-		if ( (buffer[7] & mask[i]) != 0) {
-			decode[i] |= (unsigned char)(0x80);
-		}
-	}
+	decode_report(bufPtr, decodePtr);
 
 	// decoding from buffer[8-14] into decode[7-13]
-	for (i=7; i<14; i++) {
-		decode[i] = buffer[i+1];
-		if ( (buffer[15] & mask[i-7]) != 0) {
-			decode[i] |= (unsigned char)(0x80);
-		}
-	}
+	decode_report(bufPtr, decodePtr);
 
 	// decoding from buffer[16-18] into decode[14-16]
-	for (i=14; i<17; i++) {
-		decode[i] = buffer[i+2];
-		if ( (buffer[19] & mask[i-14]) != 0) {
-			decode[i] |= (unsigned char)(0x80);
-		}
-	}
+	decode_report(bufPtr, decodePtr);
 
 	// Parse out sensor number, which is the second byte and is
 	// stored as the ASCII number of the sensor, with numbers
