@@ -29,6 +29,7 @@
 // Standard includes
 #include <cassert> // for assert
 #include <cstring> // for std::memcpy
+#include <stdio.h> // for fprintf, stderr
 
 #if !( defined(_WIN32) && defined(VRPN_USE_WINSOCK_SOCKETS) )
 #include <netinet/in.h>
@@ -186,6 +187,47 @@ inline T vrpn_unbuffer(ByteT * & input) {
 
 	/// return value in host byte order
 	return ntoh(value.typed);
+}
+
+namespace templated_buffer {
+	/// Function template to buffer values to a buffer stored in network
+	/// byte order. Specify the type to buffer T as a template parameter.
+	/// The templated buffer type ByteT will be deduced automatically.
+	/// The input pointer will be advanced past the unbuffered value.
+	template<typename T, typename ByteT>
+	inline int vrpn_buffer(ByteT ** insertPt, vrpn_int32 * buflen, const T inVal) {
+		using namespace vrpn_byte_order;
+
+		/// @todo make this a static assertion
+		assert(sizeof(ByteT) == 1);
+
+		assert(insertPt);
+		assert(buflen);
+
+		if (sizeof(T) > static_cast<size_t>(*buflen)) {
+			fprintf(stderr, "vrpn_buffer: buffer not large enough\n");
+			return -1;
+		}
+
+		/// Union to allow type-punning and ensure alignment
+		union {
+			typename ::detail::remove_const<ByteT>::type bytes[sizeof(T)];
+			T typed;
+		} value;
+
+		/// Populate union in network byte order
+		value.typed = hton(inVal);
+
+		/// Copy bytes into buffer
+		std::memcpy(insertPt, value.bytes, sizeof(T));
+
+		/// Advance insert pointer
+		*insertPt += sizeof(T);
+		/// Decrement buffer length
+		*buflen -= sizeof(T);
+
+		return 0;
+	}
 }
 
 namespace templated_unbuffer {
